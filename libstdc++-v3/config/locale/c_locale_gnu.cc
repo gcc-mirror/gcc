@@ -1,3 +1,4 @@
+
 // Wrapper for underlying C-language localization -*- C++ -*-
 
 // Copyright (C) 2001 Free Software Foundation, Inc.
@@ -46,7 +47,7 @@ namespace std
     // perhaps locale::categories could be made equivalent to LC_*_MASK
     //    _M_c_locale = __newlocale(1 << LC_ALL, __str.c_str(), NULL);
     //    _M_c_locale = __newlocale(locale::all, __str.c_str(), NULL);
-    __cloc = __newlocale(LC_ALL, __s, NULL);
+    __cloc = __newlocale(1 << LC_ALL, __s, 0);
     if (!__cloc)
       {
 	// This named locale is not supported by the underlying OS.

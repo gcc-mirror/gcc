@@ -1,3 +1,28 @@
+2001-08-17  Benjamin Kosnik  <bkoz@redhat.com>
+
+	Implement std::collate.	
+	* config/locale/collate_specializations_gnu.cc: Add here, implement in
+	MT-safe way.
+	* config/locale/collate_specializations_generic.cc: Add here, but
+	in a less sophisticated manner.
+	* include/bits/locale_facets.tcc (collate): Add generic definition.
+	* include/bits/locale_facets.h (~collate): Mark virtual.
+	(collate::_M_compare_helper): New.
+	(collate::_M_transform_helper): New.
+	* src/locale.cc: Remove unnecessary specializations.
+	* src/string-inst.cc: Tweak instantiation of ctors.
+	
+	* acinclude.m4 (GLIBCPP_ENABLE_CLOCALE): Do configury for collate.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+	* src/Makefile.am (sources): Add collate.cc.
+	* src/Makefile.in: Regenerate.
+	
+	* testsuite/22_locale/collate_byname.cc: New.
+	* testsuite/22_locale/collate.cc: New file.
+	* testsuite/22_locale/collate_char_members.cc: New file.
+	* testsuite/22_locale/collate_wchar_t_members.cc: New file.	
+	
 2001-08-16  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	* configure.target: Set LIMITSH for powerpc-*-*.

@@ -1060,6 +1060,7 @@ AC_DEFUN(GLIBCPP_ENABLE_CLOCALE, [
       CCODECVT_H=config/locale/codecvt_specializations_generic.h
       CMESSAGES_H=config/locale/messages_members_generic.h
       CMESSAGES_CC=config/locale/messages_members_generic.cc
+      CCOLLATE_CC=config/locale/collate_specializations_generic.cc
       ;;
     xgnu)
       AC_MSG_RESULT(gnu)
@@ -1085,6 +1086,7 @@ AC_DEFUN(GLIBCPP_ENABLE_CLOCALE, [
       CCODECVT_H=config/locale/codecvt_specializations_ieee_1003.1-200x.h
       CMESSAGES_H=config/locale/messages_members_gnu.h
       CMESSAGES_CC=config/locale/messages_members_gnu.cc
+      CCOLLATE_CC=config/locale/collate_specializations_gnu.cc
       ;;
     xieee_1003.1)
       AC_MSG_RESULT(generic)
@@ -1097,6 +1099,7 @@ AC_DEFUN(GLIBCPP_ENABLE_CLOCALE, [
       CCODECVT_H=config/locale/codecvt_specializations_ieee_1003.1-200x.h
       CMESSAGES_H=config/locale/messages_members_ieee_1003.1-200x.h
       CMESSAGES_CC=config/locale/messages_members_ieee_1003.1-200x.cc
+      CCOLLATE_CC=config/locale/collate_specializations_generic.cc
       ;;
     *)
       echo "$enable_clocale is an unknown locale package" 1>&2
@@ -1114,7 +1117,8 @@ AC_DEFUN(GLIBCPP_ENABLE_CLOCALE, [
   AC_SUBST(CCODECVT_H)
   AC_SUBST(CMESSAGES_H)
   AC_LINK_FILES($CLOCALE_CC, src/c++locale.cc)
-  AC_LINK_FILES($CMESSAGES_CC, src/messages_members.cc)
+  AC_LINK_FILES($CMESSAGES_CC, src/messages.cc)
+  AC_LINK_FILES($CCOLLATE_CC, src/collate.cc)
 ])
 
 

@@ -520,6 +520,7 @@ namespace std
     _S_literals[] = "-+xX0123456789abcdef0123456789ABCDEF";
 
    template<> _Format_cache<char>::_Format_cache();
+
 #ifdef _GLIBCPP_USE_WCHAR_T
    template<> _Format_cache<wchar_t>::_Format_cache();
 #endif
@@ -907,6 +908,7 @@ namespace std
   template<> 
     void
     numpunct<char>::_M_initialize_numpunct(__c_locale __cloc);
+
 #ifdef _GLIBCPP_USE_WCHAR_T
   template<> 
     void
@@ -944,13 +946,30 @@ namespace std
     {
     public:
       // Types:
-      typedef _CharT               char_type;
-      typedef basic_string<_CharT> string_type;
+      typedef _CharT               	char_type;
+      typedef basic_string<_CharT> 	string_type;
 
+    protected:
+      // Underlying "C" library locale information saved from
+      // initialization, needed by collate_byname as well.
+      __c_locale			_M_c_locale_collate;
+ 
+    public:
       static locale::id id;
 
       explicit 
-      collate(size_t __refs = 0) : locale::facet(__refs) { }
+      collate(size_t __refs = 0)
+      : locale::facet(__refs), _M_c_locale_collate(NULL)
+      { } 
+
+      // Non-standard.
+      explicit 
+      collate(__c_locale __cloc, size_t __refs = 0) 
+      : locale::facet(__refs)
+      { 
+	if (__cloc)
+	  _M_c_locale_collate = _S_clone_c_locale(__cloc); 
+      }
 
       int 
       compare(const _CharT* __lo1, const _CharT* __hi1,
@@ -965,8 +984,20 @@ namespace std
       hash(const _CharT* __lo, const _CharT* __hi) const
       { return this->do_hash(__lo, __hi); }
       
+      // Used to abstract out _CharT bits in virtual member functions, below.
+      int
+      _M_compare_helper(const _CharT*, const _CharT*) const;
+
+      size_t
+      _M_transform_helper(_CharT*, const _CharT*, size_t) const;;
+
   protected:
-      ~collate() { } // virtual
+      virtual
+      ~collate() 
+      {
+	if (_M_c_locale_collate)
+	  _S_destroy_c_locale(_M_c_locale_collate); 
+      }
 
       virtual int  
       do_compare(const _CharT* __lo1, const _CharT* __hi1,
@@ -982,34 +1013,24 @@ namespace std
   template<typename _CharT>
     locale::id collate<_CharT>::id;
 
-  // Required specializations.
+  // Specializations.
   template<>
     int 
-    collate<char>::do_compare(const char* __lo1, const char* __hi1, 
-			      const char* __lo2, const char* __hi2) const;
+    collate<char>::_M_compare_helper(const char*, const char*) const;
 
   template<>
-    string
-    collate<char>::do_transform(const char* __lo, const char* __hi) const;
+    size_t
+    collate<char>::_M_transform_helper(char*, const char*, size_t) const;
 
-  template<>
-    long
-    collate<char>::do_hash(const char* __lo, const char* __hi) const;
 #ifdef _GLIBCPP_USE_WCHAR_T
   template<>
     int 
-    collate<wchar_t>::do_compare(const wchar_t* __lo1, const wchar_t* __hi1, 
-				 const wchar_t* __lo2, 
-				 const wchar_t* __hi2) const;
+    collate<wchar_t>::_M_compare_helper(const wchar_t*, const wchar_t*) const;
 
   template<>
-    wstring
-    collate<wchar_t>::do_transform(const wchar_t* __lo, 
-				   const wchar_t* __hi) const;
-
-  template<>
-    long
-    collate<wchar_t>::do_hash(const wchar_t* __lo, const wchar_t* __hi) const;
+    size_t
+    collate<wchar_t>::_M_transform_helper(wchar_t*, const wchar_t*, 
+					  size_t) const;
 #endif
 
   template<typename _CharT>
@@ -1021,19 +1042,15 @@ namespace std
       typedef basic_string<_CharT> string_type;
 
       explicit 
-      collate_byname(const char*, size_t __refs = 0);
+      collate_byname(const char* __s, size_t __refs = 0)
+      : collate<_CharT>(__refs) 
+      { _S_create_c_locale(_M_c_locale_collate, __s); }
 
     protected:
       virtual 
       ~collate_byname() { }
     };
 
-  template<>
-    collate_byname<char>::collate_byname(const char*, size_t __refs);
-#ifdef _GLIBCPP_USE_WCHAR_T
-  template<>
-    collate_byname<wchar_t>::collate_byname(const char*, size_t __refs);
-#endif
 
   class time_base
   {
@@ -1420,6 +1437,7 @@ namespace std
   template<> 
     void
     moneypunct<char>::_M_initialize_moneypunct(__c_locale __cloc);
+
 #ifdef _GLIBCPP_USE_WCHAR_T
   template<> 
     void
@@ -1470,10 +1488,10 @@ namespace std
     protected:
       // Underlying "C" library locale information saved from
       // initialization, needed by messages_byname as well.
-      __c_locale	_M_c_locale_messages;
+      __c_locale			_M_c_locale_messages;
       #if 1
       // Only needed if glibc < 2.3
-      const char*	_M_name_messages;
+      const char*			_M_name_messages;
       #endif
 
     public:
@@ -1485,6 +1503,7 @@ namespace std
       _M_name_messages("C")
       { }
 
+      // Non-standard.
       explicit 
       messages(__c_locale __cloc, const char* __name, size_t __refs = 0) 
       : locale::facet(__refs)

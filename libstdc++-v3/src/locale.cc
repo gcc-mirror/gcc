@@ -1003,51 +1003,6 @@ namespace std
     return __incl_prec;
   }
 
-  template <>
-  collate<char>::collate(size_t __refs)
-  : locale::facet(__refs) { }
-  
-  template<>
-  collate<char>::~collate() { }
-  
-  template<>
-  int 
-  collate<char>::do_compare(const char* __lo1, const char* __hi1, 
-			    const char* __lo2, const char* __hi2) const
-  {
-    for (; __lo1 < __hi1 && __lo2 < __hi2; ++__lo1, ++__lo2) 
-      if (*__lo1 != *__lo2) 
-	return (*__lo1 < *__lo2) ? -1 : 1;
-    if (__lo1 < __hi1) 
-      return 1;
-    else if (__lo2 < __hi2) 
-      return -1;
-    else 
-      return 0;
-  }
-  
-  template<>
-  string
-  collate<char>::
-  do_transform(const char* __lo, const char* __hi) const
-  { return string(__lo, __hi - __lo); }
-  
-  template<>
-  long
-  collate<char>::
-  do_hash(const char* __lo, const char* __hi) const
-  {
-    unsigned long __val = 0xdeadbeef;
-    for (; __lo < __hi; ++__lo)
-      __val = *__lo ^ ((__val << 7) & 
-		   (__val >> (numeric_limits<unsigned long>::digits - 1)));
-    return __val;
-  }
-
-  template<>  
-  collate_byname<char>::collate_byname(const char* /*__s*/, size_t __refs)
-  : collate<char>(__refs) { }
-
   template<>
   moneypunct_byname<char, false>::moneypunct_byname(const char* /*__s*/, 
 						    size_t __refs)
@@ -1214,41 +1169,5 @@ namespace std
   ctype_byname<wchar_t>::
   ctype_byname(const char* /*__s*/, size_t __refs)
   : ctype<wchar_t>(__refs) { }
-
-  template<>
-  collate<wchar_t>::
-  collate(size_t __refs): locale::facet(__refs) { }
-  
-  template<>
-  collate<wchar_t>::
-  ~collate() { }
-
-  template<>
-  int 
-  collate<wchar_t>::
-  do_compare(const wchar_t* /*__lo1*/, const wchar_t* /*__hi1*/,
-	     const wchar_t* /*__lo2*/, const wchar_t* /*__hi2*/) const
-  {
-    return 0; // XXX not done
-  }
-
-  template<>  
-  wstring collate<wchar_t>::
-  do_transform(const wchar_t* /*__lo*/, const wchar_t* /*__hi*/) const
-  {
-    return wstring(); // XXX not done
-  }
-  
-  template<>
-  long collate<wchar_t>::
-  do_hash(const wchar_t* /*__lo*/, const wchar_t* /*__hi*/) const
-  {
-    return 0; // XXX not done
-  }
-
-  template<>
-  collate_byname<wchar_t>::
-  collate_byname(const char* /*__s*/, size_t __refs)
-  : collate<wchar_t> (__refs) { }
 #endif //  _GLIBCPP_USE_WCHAR_T
 } // namespace std

@@ -196,7 +196,7 @@ thread_headers =  	${thread_builddir}/gthr.h 	${thread_builddir}/gthr-single.h 	
 allstamps = stamp-std stamp-bits stamp-c_base stamp-backward stamp-ext 	stamp-target stamp-thread 
 
 
-# Target inludes for threads
+# Target includes for threads
 glibcpp_thread_h = @glibcpp_thread_h@
 uppercase = [ABCDEFGHIJKLMNOPQRSTUVWXYZ_]
 
@@ -346,7 +346,7 @@ stamp-ext: ${ext_headers}
 # This target is special.  The timestamp on a directory gets modified
 # whenever a file it contains gets modified, and that'll throw off all the
 # build dependencies that need this target.  On the other hand, someone
-# could delete the directory and not the stamp file, faking out the make.
+# could delete the directory and not the stamp file, faking out make.
 ${target_builddir}: stamp-${target_alias}
 stamp-${target_alias}:
 	@if [ ! -d ${target_builddir} ]; then \
@@ -354,8 +354,7 @@ stamp-${target_alias}:
 	  echo `date` > stamp-${target_alias} ;\
 	fi
 
-# c++config would make these be rebuilt all the time.
-# we get bizarre symlinks mazes.
+# Target includes static.
 stamp-target: ${target_headers} ${target_builddir}
 	@cd ${target_builddir} ;\
 	if [ ! -f stamp-target ]; then \
@@ -368,6 +367,7 @@ stamp-target: ${target_headers} ${target_builddir}
 	  echo `date` > stamp-target; \
 	fi
 
+# Target includes dynamic.
 ${target_builddir}/c++config.h: ../config.h \
 				${glibcpp_srcdir}/include/bits/c++config \
 				${target_builddir}
