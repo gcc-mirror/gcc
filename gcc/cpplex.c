@@ -334,7 +334,7 @@ skip_whitespace (pfile, c)
      cppchar_t c;
 {
   cpp_buffer *buffer = pfile->buffer;
-  unsigned int warned = 0;
+  bool saw_NUL = false;
 
   do
     {
@@ -343,13 +343,7 @@ skip_whitespace (pfile, c)
 	;
       /* Just \f \v or \0 left.  */
       else if (c == '\0')
-	{
-	  if (!warned)
-	    {
-	      cpp_error (pfile, DL_WARNING, "null character(s) ignored");
-	      warned = 1;
-	    }
-	}
+	saw_NUL = true;
       else if (pfile->state.in_directive && CPP_PEDANTIC (pfile))
 	cpp_error_with_line (pfile, DL_PEDWARN, pfile->line,
 			     CPP_BUF_COL (buffer),
@@ -360,6 +354,9 @@ skip_whitespace (pfile, c)
     }
   /* We only want non-vertical space, i.e. ' ' \t \f \v \0.  */
   while (is_nvspace (c));
+
+  if (saw_NUL)
+    cpp_error (pfile, DL_WARNING, "null character(s) ignored");
 
   buffer->cur--;
 }
