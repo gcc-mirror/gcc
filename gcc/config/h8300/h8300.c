@@ -825,20 +825,19 @@ function_arg (cum, mode, type, named)
      tree type;
      int named;
 {
-  rtx result = 0;
+  rtx result = NULL_RTX;
   const char *fname;
   int regpass = 0;
 
   /* Never pass unnamed arguments in registers.  */
   if (!named)
-    return 0;
+    return NULL_RTX;
 
   /* Pass 3 regs worth of data in regs when user asked on the command line.  */
   if (TARGET_QUICKCALL)
     regpass = 3;
 
   /* If calling hand written assembler, use 4 regs of args.  */
-
   if (cum->libcall)
     {
       const char * const *p;
@@ -846,7 +845,6 @@ function_arg (cum, mode, type, named)
       fname = XSTR (cum->libcall, 0);
 
       /* See if this libcall is one of the hand coded ones.  */
-
       for (p = hand_list; *p && strcmp (*p, fname) != 0; p++)
 	;
 
@@ -863,11 +861,7 @@ function_arg (cum, mode, type, named)
       else
 	size = GET_MODE_SIZE (mode);
 
-      if (size + cum->nbytes > regpass * UNITS_PER_WORD)
-	{
-	  result = 0;
-	}
-      else
+      if (size + cum->nbytes <= regpass * UNITS_PER_WORD)
 	{
 	  switch (cum->nbytes / UNITS_PER_WORD)
 	    {
@@ -883,8 +877,6 @@ function_arg (cum, mode, type, named)
 	    case 3:
 	      result = gen_rtx_REG (mode, 3);
 	      break;
-	    default:
-	      result = 0;
 	    }
 	}
     }
