@@ -1100,7 +1100,28 @@ hard_function_value (valtype, func)
      tree valtype;
      tree func;
 {
-  return FUNCTION_VALUE (valtype, func);
+  rtx val = FUNCTION_VALUE (valtype, func);
+  if (GET_CODE (val) == REG
+      && GET_MODE (val) == BLKmode)
+    {
+      int bytes = int_size_in_bytes (valtype);
+      enum machine_mode tmpmode;
+      for (tmpmode = GET_CLASS_NARROWEST_MODE (MODE_INT);
+           tmpmode != MAX_MACHINE_MODE;
+           tmpmode = GET_MODE_WIDER_MODE (tmpmode))
+        {
+          /* Have we found a large enough mode?  */
+          if (GET_MODE_SIZE (tmpmode) >= bytes)
+            break;
+        }
+
+      /* No suitable mode found.  */
+      if (tmpmode == MAX_MACHINE_MODE)
+        abort ();
+
+      PUT_MODE (val, tmpmode);
+    }      
+  return val;
 }
 
 /* Return an rtx representing the register or memory location
