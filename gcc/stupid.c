@@ -1,5 +1,5 @@
 /* Dummy data flow analysis for GNU compiler in nonoptimizing mode.
-   Copyright (C) 1987, 1991, 1994, 1995, 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1987, 91, 94, 95, 96, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -514,6 +514,19 @@ stupid_mark_refs (x, insn)
 
 	      if (last_setjmp_suid < reg_where_dead[regno])
 		regs_crosses_setjmp[regno] = 1;
+
+	      /* If this register is only used in this insn and is only
+		 set, mark it unused.  We have to do this even when not 
+		 optimizing so that MD patterns which count on this
+		 behavior (e.g., it not causing an output reload on
+		 an insn setting CC) will operate correctly.  */
+	      if (GET_CODE (SET_DEST (x)) == REG
+		  &&& REGNO_FIRST_UID (regno) == INSN_UID (insn)
+		  && REGNO_LAST_UID (regno) == INSN_UID (insn)
+		  && (code == CLOBBER || ! reg_mentioned_p (SET_DEST (x),
+							    SET_SRC (x))))
+		REG_NOTES (insn) = gen_rtx (EXPR_LIST, REG_UNUSED,
+					    SET_DEST (x), REG_NOTES (insn));
 	    }
 	}
 
