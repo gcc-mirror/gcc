@@ -1,5 +1,9 @@
 2003-11-14  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/h8300/lib1funcs.asm (___udivsi3): Add a comment.
+
+2003-11-14  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/h8300/lib1funcs.asm (modsi3): Don't save unused
 	registers.
 	(divsi3): Likewise.

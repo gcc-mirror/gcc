@@ -602,6 +602,7 @@ setone:
 
 #else /* __H8300H__ */
 
+	;; This function also computes the remainder and stores it in er3.
 	.global	___udivsi3
 ___udivsi3:
 	mov.w	A1E,A1E		; denominator top word 0?
