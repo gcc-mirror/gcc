@@ -1,6 +1,6 @@
 /* Utilities to execute a program in a subprocess (possibly linked by pipes
    with other subprocesses), and wait for it.
-   Copyright (C) 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 1998 Free Software Foundation, Inc.
 
 This file is part of the libiberty library.
 Libiberty is free software; you can redistribute it and/or
@@ -316,13 +316,9 @@ pwait (pid, status, flags)
      report SIGABRT.  */
   if (termstat == 3)
     *status = SIGABRT;
-  else {
-#ifdef __CYGWIN32__
+  else
     *status = (((termstat) & 0xff) << 8);
-#else /* !__CYGWIN32__ this is MINGW32 */
-    *status = termstat;
-#endif
-  }
+
   return pid;
 }
 
