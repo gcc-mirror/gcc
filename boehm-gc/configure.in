@@ -108,7 +108,10 @@ case "$THREADS" in
 	;;
     esac
     ;;
- decosf1 | irix | mach | os2 | solaris | win32 | dce | vxworks)
+ win32)
+    AC_DEFINE(GC_WIN32_THREADS)
+    ;;
+ decosf1 | irix | mach | os2 | solaris | dce | vxworks)
     AC_MSG_ERROR(thread package $THREADS not yet supported)
     ;;
  *)
@@ -226,12 +229,10 @@ AC_DEFINE(GC_GCJ_SUPPORT)
 AC_DEFINE(ATOMIC_UNCOLLECTABLE)
 
 dnl This is something of a hack.  When cross-compiling we turn off
-dnl some functionality.  We also enable the "small" configuration.
-dnl These is only correct when targetting an embedded system.  FIXME.
+dnl some functionality. These is only correct when targetting an
+dnl embedded system.  FIXME.
 if test -n "${with_cross_host}"; then
    AC_DEFINE(NO_SIGSET)
-   AC_DEFINE(NO_CLOCK)
-   AC_DEFINE(SMALL_CONFIG)
    AC_DEFINE(NO_DEBUGGING)
 fi
 

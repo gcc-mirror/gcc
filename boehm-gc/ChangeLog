@@ -1,3 +1,8 @@
+2001-02-11  Adam Megacz <adam@xwt.org
+
+        * gcc/boehm-gc/configure.in: support for win32, saner
+	cross-compile options
+
 2001-02-08  Anthony Green  <green@redhat.com>
 
 	* include/private/gcconfig.h: Add XSCALE NOSYS support for bare
