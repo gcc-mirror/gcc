@@ -133,14 +133,10 @@ struct induction
   struct induction *same;	/* If this giv has been combined with another
 				   giv, this points to the base giv.  The base
 				   giv will have COMBINED_WITH non-zero.  */
-  struct induction *derived_from;/* For a giv, if we decided to derive this
-				   giv from another one.  */
   HOST_WIDE_INT const_adjust;	/* Used by loop unrolling, when an address giv
 				   is split, and a constant is eliminated from
 				   the address, the -constant is stored here
 				   for later use.  */
-  int ix;			/* Used by recombine_givs, as n index into
-				   the stats array.  */
   struct induction *same_insn;	/* If there are multiple identical givs in
 				   the same insn, then all but one have this
 				   field set, and they all point to the giv
@@ -201,12 +197,6 @@ struct loop_ivs
   /* The head of a list which links together (via the next field)
      every iv class for the current loop.  */
   struct iv_class *loop_iv_list;
-
-  /* Givs made from biv increments are always splittable for loop
-     unrolling.  Since there is no regscan info for them, we have to
-     keep track of them separately.  */
-  unsigned int first_increment_giv;
-  unsigned int last_increment_giv;
 };
 
 struct loop_regs

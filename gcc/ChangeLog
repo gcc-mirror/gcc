@@ -1,5 +1,29 @@
 2000-09-19  Bernd Schmidt  <bernds@redhat.co.uk>
 
+	Undo most of the Wed Jan 27 23:39:53 1999 patch:
+	* loop.h (struct induction): Delete members derived, ix and last_use.
+	(struct loop_ivs): Delete members first_increment_giv and
+	last_increment_giv.
+	* loop.c (verify_dominator, find_life_end, cmp_recombine_givs_stats,
+	recombine_givs): Delete functions.
+	(find_and_verify_loops): Don't initialize cont_dominator.
+	(strength_reduce): Lose code to try to find bivs that can be
+	expressed as givs of another biv, and to convert biv increments
+	into givs.
+	Lose loop_scan_start variable, always use loop->scan_start.
+	Don't call recombine_givs.  Don't handle derived givs.
+	(record_giv): Don't initialize derived and last_use fields.
+	(biv_eliminiation_giv_has_0_offset): Lose code to handle derived
+	givs.
+	* unroll.c (derived_regs): Delete static variable.
+	(unroll_loop): Don't initialize it.
+	(copy_loop_body): Lose code to handle derived givs.
+	(find_splittable_givs): Don't check for givs made from biv
+	increments.
+	Don't set derived_regs.
+
+2000-09-19  Bernd Schmidt  <bernds@redhat.co.uk>
+
 	Fix misapplied earlier patch:
 	* config/sh/sh.md (floatsisf_ie): Reenable.  Remove explicit reference
 	to fpul.
@@ -76,7 +100,7 @@
 
 Mon 18-Sep-2000 22:12:44 BST  Neil Booth  <NeilB@earthling.net>
 
-        * cpp.texi: Update documentation, including some clarifications,
+	* cpp.texi: Update documentation, including some clarifications,
 	the treatment of various newline combinations, and space between
 	backslash and newline.
 
