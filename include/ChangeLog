@@ -1,3 +1,8 @@
+2004-12-11  Ben Elliston  <bje@au.ibm.com>
+
+	* fibheap.h (struct fibnode): Only use unsigned long bitfields
+	when __GNUC__ is defined and ints are less than 32-bits wide.
+
 2004-10-07  Bob Wilson  <bob.wilson@acm.org>
 
 	* xtensa-config.h (XSHAL_USE_ABSOLUTE_LITERALS,

@@ -165,6 +165,9 @@ AC_HEADER_TIME
 
 libiberty_AC_DECLARE_ERRNO
 
+# Determine the size of an int for struct fibnode.
+AC_CHECK_SIZEOF([int])
+
 AC_CHECK_TYPE(uintptr_t, unsigned long)
 
 # Look for a 64-bit type.
