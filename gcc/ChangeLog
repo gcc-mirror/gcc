@@ -1,3 +1,15 @@
+2003-05-08  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* c-decl.c (define_label): Tidy.  Don't use any of
+	error_with_file_and_line or warning_with_file_and_file.
+	(pending_xref_error): Likewise.
+	(store_parm_decls): Likewise.
+	(current_function_prototype_locus): New object.  Package from
+	current_function_prototype_file and current_function_prototype_line.
+	(start_function): Use it.
+	(current_function_prototype_file): Remove.
+	(current_function_prototype_line): Remove;
+
 2003-05-08  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* builtins.c (readonly_data_expr): New function.
