@@ -1,3 +1,9 @@
+2003-03-06  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* config/mmix/mmix.md ("*movcc_expanded"): New pattern.
+	("movcc", "movcc_uns", "movcc_fp", "movcc_fpeq", "movcc_fun"): New
+	expanders.
+
 2003-03-05  Roger Sayle  <roger@eyesopen.com>
 
 	* expr.h (lang_expand_expr): Delete obsolete prototype.
