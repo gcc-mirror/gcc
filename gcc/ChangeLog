@@ -1,3 +1,7 @@
+Thu May 25 02:27:22 2000  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* loop.c (basic_induction_var): Avoid double recording of an increment.
+
 Thu May 25 02:19:27 2000  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* Back out this patch:
