@@ -42,6 +42,10 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define LIB_SPEC "%{g:-lg} %{!p:%{!pg:-lc}}%{p:-lc_p}%{pg:-lc_p} "
 
+/* gcc should find libgcc.a itself, not ask linker to do so.  */
+
+3define LINK_LIBGCC_SPECIAL
+
 /* This is how to align the code that follows an unconditional branch.
    Don't define it, since it confuses the assembler (we hear).  */
 
