@@ -178,8 +178,7 @@ extern struct rtx_def *mips_function_value ();
     }									\
 }
 
-/* ??? Should disable for mips_abi == ABI32.  */
-#define STRICT_ARGUMENT_NAMING
+#define STRICT_ARGUMENT_NAMING (mips_abi != ABI_32)
 
 /* A C expression that indicates when an argument must be passed by
    reference.  If nonzero for an argument, a copy of that argument is
