@@ -1,3 +1,11 @@
+2004-05-23  Paolo Bonzini  <bonzini@gnu.org>
+
+	* Makefile.def (host_modules): add libcpp.
+	* Makefile.tpl: Add dependencies on and for libcpp.
+	* Makefile.in: Regenerate.
+	* configure.in: Add libcpp host module.
+	* configure: Regenerate.
+
 2004-05-21  Paolo Bonzini  <bonzini@gnu.org>
 
 	* Makefile.tpl: Whenever a recursive target is defined, wrap

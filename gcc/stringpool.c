@@ -22,7 +22,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    allocated by ggc_alloc_string are stored in an obstack which is
    never shrunk.  Identifiers are uniquely stored in a hash table.
 
-   We have our own private hash table implementation.  libiberty's
+   We use cpplib's hash table implementation.  libiberty's
    hashtab.c is not used because it requires 100% average space
    overhead per string, which is unacceptable.  Also, this algorithm
    is faster.  */
@@ -33,7 +33,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "tm.h"
 #include "ggc.h"
 #include "tree.h"
-#include "hashtable.h"
+#include "symtab.h"
 #include "cpplib.h"
 
 /* The "" allocated string.  */

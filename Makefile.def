@@ -59,6 +59,7 @@ host_modules= { module= tcl;
                 missing=mostlyclean; };
 host_modules= { module= itcl; };
 host_modules= { module= ld; bootstrap=true; };
+host_modules= { module= libcpp; bootstrap=true; };
 host_modules= { module= libgui; };
 host_modules= { module= libbanshee; bootstrap=true; no_install=true; };
 host_modules= { module= libiberty; bootstrap=true; };

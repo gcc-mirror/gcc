@@ -1,3 +1,7 @@
+2004-05-23  Paolo Bonzini  <bonzini@gnu.org>
+
+	* Make-lang.in: Link in $(LIBCPP) instead of mkdeps.o.
+
 2004-05-21  Mark Wielaard  <mark@klomp.org>
 
 	* gjavah.c (print_stub_or_jni): Mark functions only JNIEXPORT, not

@@ -573,6 +573,7 @@ configure-host: maybe-configure-gcc  \
     maybe-configure-tcl \
     maybe-configure-itcl \
     maybe-configure-ld \
+    maybe-configure-libcpp \
     maybe-configure-libgui \
     maybe-configure-libbanshee \
     maybe-configure-libiberty \
@@ -665,6 +666,7 @@ all-host: maybe-all-gcc  \
     maybe-all-tcl \
     maybe-all-itcl \
     maybe-all-ld \
+    maybe-all-libcpp \
     maybe-all-libgui \
     maybe-all-libbanshee \
     maybe-all-libiberty \
@@ -761,6 +763,7 @@ info-host: maybe-info-gcc  \
     maybe-info-tcl \
     maybe-info-itcl \
     maybe-info-ld \
+    maybe-info-libcpp \
     maybe-info-libgui \
     maybe-info-libbanshee \
     maybe-info-libiberty \
@@ -853,6 +856,7 @@ dvi-host: maybe-dvi-gcc  \
     maybe-dvi-tcl \
     maybe-dvi-itcl \
     maybe-dvi-ld \
+    maybe-dvi-libcpp \
     maybe-dvi-libgui \
     maybe-dvi-libbanshee \
     maybe-dvi-libiberty \
@@ -945,6 +949,7 @@ TAGS-host: maybe-TAGS-gcc  \
     maybe-TAGS-tcl \
     maybe-TAGS-itcl \
     maybe-TAGS-ld \
+    maybe-TAGS-libcpp \
     maybe-TAGS-libgui \
     maybe-TAGS-libbanshee \
     maybe-TAGS-libiberty \
@@ -1037,6 +1042,7 @@ install-info-host: maybe-install-info-gcc  \
     maybe-install-info-tcl \
     maybe-install-info-itcl \
     maybe-install-info-ld \
+    maybe-install-info-libcpp \
     maybe-install-info-libgui \
     maybe-install-info-libbanshee \
     maybe-install-info-libiberty \
@@ -1129,6 +1135,7 @@ installcheck-host: maybe-installcheck-gcc  \
     maybe-installcheck-tcl \
     maybe-installcheck-itcl \
     maybe-installcheck-ld \
+    maybe-installcheck-libcpp \
     maybe-installcheck-libgui \
     maybe-installcheck-libbanshee \
     maybe-installcheck-libiberty \
@@ -1221,6 +1228,7 @@ mostlyclean-host: maybe-mostlyclean-gcc  \
     maybe-mostlyclean-tcl \
     maybe-mostlyclean-itcl \
     maybe-mostlyclean-ld \
+    maybe-mostlyclean-libcpp \
     maybe-mostlyclean-libgui \
     maybe-mostlyclean-libbanshee \
     maybe-mostlyclean-libiberty \
@@ -1313,6 +1321,7 @@ clean-host: maybe-clean-gcc  \
     maybe-clean-tcl \
     maybe-clean-itcl \
     maybe-clean-ld \
+    maybe-clean-libcpp \
     maybe-clean-libgui \
     maybe-clean-libbanshee \
     maybe-clean-libiberty \
@@ -1405,6 +1414,7 @@ distclean-host: maybe-distclean-gcc  \
     maybe-distclean-tcl \
     maybe-distclean-itcl \
     maybe-distclean-ld \
+    maybe-distclean-libcpp \
     maybe-distclean-libgui \
     maybe-distclean-libbanshee \
     maybe-distclean-libiberty \
@@ -1497,6 +1507,7 @@ maintainer-clean-host: maybe-maintainer-clean-gcc  \
     maybe-maintainer-clean-tcl \
     maybe-maintainer-clean-itcl \
     maybe-maintainer-clean-ld \
+    maybe-maintainer-clean-libcpp \
     maybe-maintainer-clean-libgui \
     maybe-maintainer-clean-libbanshee \
     maybe-maintainer-clean-libiberty \
@@ -1646,6 +1657,7 @@ do-check: maybe-check-gcc  \
     maybe-check-tcl \
     maybe-check-itcl \
     maybe-check-ld \
+    maybe-check-libcpp \
     maybe-check-libgui \
     maybe-check-libbanshee \
     maybe-check-libiberty \
@@ -1758,6 +1770,7 @@ install-host-nogcc:  \
     maybe-install-tcl \
     maybe-install-itcl \
     maybe-install-ld \
+    maybe-install-libcpp \
     maybe-install-libgui \
     maybe-install-libbanshee \
     maybe-install-libiberty \
@@ -1826,6 +1839,7 @@ install-host: maybe-install-gcc  \
     maybe-install-tcl \
     maybe-install-itcl \
     maybe-install-ld \
+    maybe-install-libcpp \
     maybe-install-libgui \
     maybe-install-libbanshee \
     maybe-install-libiberty \
@@ -11540,6 +11554,311 @@ maintainer-clean-ld:
 	  || exit 1
 
 @endif ld
+
+
+.PHONY: configure-libcpp maybe-configure-libcpp
+maybe-configure-libcpp:
+@if libcpp
+maybe-configure-libcpp: configure-libcpp
+configure-libcpp:
+	@test ! -f libcpp/Makefile || exit 0; \
+	[ -d libcpp ] || mkdir libcpp; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	CC="$(CC)"; export CC; \
+	CFLAGS="$(CFLAGS)"; export CFLAGS; \
+	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
+	CXX="$(CXX)"; export CXX; \
+	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
+	AR="$(AR)"; export AR; \
+	AS="$(AS)"; export AS; \
+	CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
+	DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
+	LD="$(LD)"; export LD; \
+	LDFLAGS="$(LDFLAGS)"; export LDFLAGS; \
+	NM="$(NM)"; export NM; \
+	RANLIB="$(RANLIB)"; export RANLIB; \
+	WINDRES="$(WINDRES)"; export WINDRES; \
+	OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
+	OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
+	echo Configuring in libcpp; \
+	cd libcpp || exit 1; \
+	case $(srcdir) in \
+	  \.) \
+	    srcdiroption="--srcdir=."; \
+	    libsrcdir=".";; \
+	  /* | [A-Za-z]:[\\/]*) \
+	    srcdiroption="--srcdir=$(srcdir)/libcpp"; \
+	    libsrcdir="$$s/libcpp";; \
+	  *) \
+	    srcdiroption="--srcdir=../$(srcdir)/libcpp"; \
+	    libsrcdir="$$s/libcpp";; \
+	esac; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  || exit 1
+@endif libcpp
+
+.PHONY: all-libcpp maybe-all-libcpp
+maybe-all-libcpp:
+@if libcpp
+maybe-all-libcpp: all-libcpp
+all-libcpp: configure-libcpp
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
+	(cd libcpp && $(MAKE) $(FLAGS_TO_PASS) all)
+@endif libcpp
+
+.PHONY: check-libcpp maybe-check-libcpp
+maybe-check-libcpp:
+@if libcpp
+maybe-check-libcpp: check-libcpp
+
+check-libcpp:
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
+	(cd libcpp && $(MAKE) $(FLAGS_TO_PASS) check)
+
+@endif libcpp
+
+.PHONY: install-libcpp maybe-install-libcpp
+maybe-install-libcpp:
+@if libcpp
+maybe-install-libcpp: install-libcpp
+
+install-libcpp: installdirs
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
+	(cd libcpp && $(MAKE) $(FLAGS_TO_PASS) install)
+
+@endif libcpp
+
+# Other targets (info, dvi, etc.)
+
+.PHONY: maybe-info-libcpp info-libcpp
+maybe-info-libcpp:
+@if libcpp
+maybe-info-libcpp: info-libcpp
+
+info-libcpp: \
+    configure-libcpp 
+	@[ -f ./libcpp/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
+	for flag in $(EXTRA_HOST_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing info in libcpp" ; \
+	(cd libcpp && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          info) \
+	  || exit 1
+
+@endif libcpp
+
+.PHONY: maybe-dvi-libcpp dvi-libcpp
+maybe-dvi-libcpp:
+@if libcpp
+maybe-dvi-libcpp: dvi-libcpp
+
+dvi-libcpp: \
+    configure-libcpp 
+	@[ -f ./libcpp/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
+	for flag in $(EXTRA_HOST_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing dvi in libcpp" ; \
+	(cd libcpp && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          dvi) \
+	  || exit 1
+
+@endif libcpp
+
+.PHONY: maybe-TAGS-libcpp TAGS-libcpp
+maybe-TAGS-libcpp:
+@if libcpp
+maybe-TAGS-libcpp: TAGS-libcpp
+
+TAGS-libcpp: \
+    configure-libcpp 
+	@[ -f ./libcpp/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
+	for flag in $(EXTRA_HOST_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing TAGS in libcpp" ; \
+	(cd libcpp && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          TAGS) \
+	  || exit 1
+
+@endif libcpp
+
+.PHONY: maybe-install-info-libcpp install-info-libcpp
+maybe-install-info-libcpp:
+@if libcpp
+maybe-install-info-libcpp: install-info-libcpp
+
+install-info-libcpp: \
+    configure-libcpp \
+    info-libcpp 
+	@[ -f ./libcpp/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
+	for flag in $(EXTRA_HOST_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-info in libcpp" ; \
+	(cd libcpp && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          install-info) \
+	  || exit 1
+
+@endif libcpp
+
+.PHONY: maybe-installcheck-libcpp installcheck-libcpp
+maybe-installcheck-libcpp:
+@if libcpp
+maybe-installcheck-libcpp: installcheck-libcpp
+
+installcheck-libcpp: \
+    configure-libcpp 
+	@[ -f ./libcpp/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
+	for flag in $(EXTRA_HOST_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing installcheck in libcpp" ; \
+	(cd libcpp && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          installcheck) \
+	  || exit 1
+
+@endif libcpp
+
+.PHONY: maybe-mostlyclean-libcpp mostlyclean-libcpp
+maybe-mostlyclean-libcpp:
+@if libcpp
+maybe-mostlyclean-libcpp: mostlyclean-libcpp
+
+mostlyclean-libcpp: 
+	@[ -f ./libcpp/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
+	for flag in $(EXTRA_HOST_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing mostlyclean in libcpp" ; \
+	(cd libcpp && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          mostlyclean) \
+	  || exit 1
+
+@endif libcpp
+
+.PHONY: maybe-clean-libcpp clean-libcpp
+maybe-clean-libcpp:
+@if libcpp
+maybe-clean-libcpp: clean-libcpp
+
+clean-libcpp: 
+	@[ -f ./libcpp/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
+	for flag in $(EXTRA_HOST_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing clean in libcpp" ; \
+	(cd libcpp && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          clean) \
+	  || exit 1
+
+@endif libcpp
+
+.PHONY: maybe-distclean-libcpp distclean-libcpp
+maybe-distclean-libcpp:
+@if libcpp
+maybe-distclean-libcpp: distclean-libcpp
+
+distclean-libcpp: 
+	@[ -f ./libcpp/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
+	for flag in $(EXTRA_HOST_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing distclean in libcpp" ; \
+	(cd libcpp && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          distclean) \
+	  || exit 1
+
+@endif libcpp
+
+.PHONY: maybe-maintainer-clean-libcpp maintainer-clean-libcpp
+maybe-maintainer-clean-libcpp:
+@if libcpp
+maybe-maintainer-clean-libcpp: maintainer-clean-libcpp
+
+maintainer-clean-libcpp: 
+	@[ -f ./libcpp/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
+	for flag in $(EXTRA_HOST_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing maintainer-clean in libcpp" ; \
+	(cd libcpp && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          maintainer-clean) \
+	  || exit 1
+
+@endif libcpp
 
 
 .PHONY: configure-libgui maybe-configure-libgui
@@ -28287,11 +28606,13 @@ new-restage3: all-stage2-gcc
 # GCC needs to identify certain tools.
 # GCC also needs the information exported by the intl configure script.
 configure-gcc: maybe-configure-intl maybe-configure-binutils maybe-configure-gas maybe-configure-ld maybe-configure-bison maybe-configure-flex
-all-gcc: maybe-all-libiberty maybe-all-intl maybe-all-bison maybe-all-byacc maybe-all-binutils maybe-all-gas maybe-all-ld maybe-all-zlib maybe-all-libbanshee
+all-gcc: maybe-all-libiberty maybe-all-intl maybe-all-bison maybe-all-byacc maybe-all-binutils maybe-all-gas maybe-all-ld maybe-all-zlib maybe-all-libbanshee maybe-all-libcpp
+configure-libcpp: maybe-configure-libiberty maybe-configure-intl
+all-libcpp: maybe-all-libiberty maybe-all-intl
 # This is a slightly kludgy method of getting dependencies on 
 # all-build-libiberty correct; it would be better to build it every time.
-all-gcc: maybe-all-build-libiberty maybe-all-libbanshee
-all-bootstrap: maybe-all-binutils maybe-all-bison maybe-all-byacc maybe-all-gas maybe-all-intl maybe-all-ld maybe-all-libbanshee maybe-all-libiberty maybe-all-texinfo maybe-all-zlib 
+all-gcc: maybe-all-build-libiberty
+all-bootstrap: maybe-all-binutils maybe-all-bison maybe-all-byacc maybe-all-gas maybe-all-intl maybe-all-ld maybe-all-libcpp maybe-all-libbanshee maybe-all-libiberty maybe-all-texinfo maybe-all-zlib 
 
 # Host modules specific to gdb.
 # GDB needs to know that the simulator is being built.

@@ -20,8 +20,8 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  You are forbidden to forbid anyone else to use, share and improve
  what you give them.   Help stamp out software-hoarding!  */
 
-#ifndef GCC_MKDEPS_H
-#define GCC_MKDEPS_H
+#ifndef LIBCPP_MKDEPS_H
+#define LIBCPP_MKDEPS_H
 
 /* This is the data structure used by all the functions in mkdeps.c.
    It's quite straightforward, but should be treated as opaque.  */
@@ -69,4 +69,4 @@ extern int deps_restore (struct deps *, FILE *, const char *);
    automatic dependency schemes.  */
 extern void deps_phony_targets (const struct deps *, FILE *);
 
-#endif /* ! GCC_MKDEPS_H */
+#endif /* ! LIBCPP_MKDEPS_H */

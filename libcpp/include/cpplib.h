@@ -20,11 +20,11 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  In other words, you are welcome to use, share and improve this program.
  You are forbidden to forbid anyone else to use, share and improve
  what you give them.   Help stamp out software-hoarding!  */
-#ifndef GCC_CPPLIB_H
-#define GCC_CPPLIB_H
+#ifndef LIBCPP_CPPLIB_H
+#define LIBCPP_CPPLIB_H
 
 #include <sys/types.h>
-#include "hashtable.h"
+#include "symtab.h"
 #include "line-map.h"
 
 #ifdef __cplusplus
@@ -770,4 +770,4 @@ extern int cpp_read_state (cpp_reader *, const char *, FILE *,
 }
 #endif
 
-#endif /* ! GCC_CPPLIB_H */
+#endif /* ! LIBCPP_CPPLIB_H */

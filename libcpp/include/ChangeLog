@@ -1,0 +1,7 @@
+2004-05-23  Paolo Bonzini  <bonzini@gnu.org>
+
+	* cpplib.h: Moved from gcc.  Change header guard name.
+	* line-map.h: Moved from gcc.  Change header guard name.
+	* mkdeps.h: Moved from gcc.  Change header guard name.
+	* symtab.h: Moved from gcc/hashtable.h.  Change header
+	guard name.

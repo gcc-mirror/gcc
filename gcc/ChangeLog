@@ -1,3 +1,41 @@
+2004-05-23  Paolo Bonzini  <bonzini@gnu.org>
+
+	Move libcpp to the toplevel.
+	* Makefile.in: Remove references to libcpp files,
+	use CPPLIBS instead of libcpp.a.  Define SYMTAB_H
+	and change hashtable.h to that.
+	* aclocal.m4 (gcc_AC_HEADER_STDBOOL,
+	gcc_AC_HEADER_STRING, gcc_AC_C__BOOL): Remove.
+	* configure.ac (gcc_AC_C__BOOL, HAVE_UCHAR): Remove tests.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+	* c-ppoutput.c: Include ../libcpp/internal.h instead of cpphash.h.
+	* cppcharset.c: Removed.
+	* cpperror.c: Removed.
+	* cppexp.c: Removed.
+	* cppfiles.c: Removed.
+	* cpphash.c: Removed.
+	* cpphash.h: Removed.
+	* cppinit.c: Removed.
+	* cpplex.c: Removed.
+	* cpplib.c: Removed.
+	* cpplib.h: Removed.
+	* cppmacro.c: Removed.
+	* cpppch.c: Removed.
+	* cpptrad.c: Removed.
+	* cppucnid.h: Removed.
+	* cppucnid.pl: Removed.
+	* cppucnid.tab: Removed.
+	* hashtable.c: Removed.
+	* hashtable.h: Removed.
+	* line-map.c: Removed.
+	* line-map.h: Removed.
+	* mkdeps.c: Removed.
+	* mkdeps.h: Removed.
+	* stringpool.h: Include symtab.h instead of hashtable.h.
+	* tree.h: Include symtab.h instead of hashtable.h.
+	* system.h (O_NONBLOCK, O_NOCTTY): Do not define.
+
 2004-05-23 Paolo Bonzini <bonzini@gnu.org>
 
 	* gcc.c (struct prefix_list): Add forward declaration.

@@ -278,7 +278,6 @@ AC_PROG_CPP
 AC_C_INLINE
 
 gcc_AC_C_LONG_LONG
-gcc_AC_C__BOOL
 
 # sizeof(char) is 1 by definition.
 AC_COMPILE_CHECK_SIZEOF(void *)
@@ -806,8 +805,8 @@ AC_PROG_CPP_WERROR
 
 AC_HEADER_STDC
 AC_HEADER_TIME
-gcc_AC_HEADER_STDBOOL
-gcc_AC_HEADER_STRING
+ACX_HEADER_STDBOOL
+ACX_HEADER_STRING
 AC_HEADER_SYS_WAIT
 AC_CHECK_HEADERS(limits.h stddef.h string.h strings.h stdlib.h time.h \
 		 fcntl.h unistd.h sys/file.h sys/time.h sys/mman.h \
@@ -1037,19 +1036,6 @@ AC_TRY_COMPILE([
 if test $gcc_cv_type_clock_t = yes; then
   AC_DEFINE(HAVE_CLOCK_T, 1,
   [Define if <time.h> defines clock_t.])
-fi
-
-AC_CACHE_CHECK(for uchar, gcc_cv_type_uchar,
-[AC_TRY_COMPILE([
-#include "ansidecl.h"
-#include "system.h"
-], 
-[if ((uchar *)0) return 0;
- if (sizeof(uchar)) return 0;],
-ac_cv_type_uchar=yes, ac_cv_type_uchar=no)])
-if test $ac_cv_type_uchar = yes; then
-  AC_DEFINE(HAVE_UCHAR, 1,
-  [Define if <sys/types.h> defines \`uchar'.])
 fi
 
 # Restore CFLAGS from before the gcc_AC_NEED_DECLARATIONS tests.

@@ -21,7 +21,7 @@ Boston, MA 02111-1307, USA.  */
 #include "config.h"
 #include "system.h"
 #include "cpplib.h"
-#include "cpphash.h"
+#include "internal.h"
 
 #define PART_PRECISION (sizeof (cpp_num_part) * CHAR_BIT)
 #define HALF_MASK (~(cpp_num_part) 0 >> (PART_PRECISION / 2))

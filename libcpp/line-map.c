@@ -23,7 +23,6 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #include "config.h"
 #include "system.h"
 #include "line-map.h"
-#include "intl.h"
 
 static void trace_include (const struct line_maps *, const struct line_map *);
 

@@ -957,7 +957,7 @@ struct tree_vector GTY(())
   tree elements;
 };
 
-#include "hashtable.h"
+#include "symtab.h"
 
 /* Define fields and accessors for some special-purpose tree nodes.  */
 

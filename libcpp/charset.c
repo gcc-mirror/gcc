@@ -21,8 +21,8 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #include "config.h"
 #include "system.h"
 #include "cpplib.h"
-#include "cpphash.h"
-#include "cppucnid.h"
+#include "internal.h"
+#include "ucnid.h"
 
 /* Character set handling for C-family languages.
 
@@ -1400,7 +1400,25 @@ _cpp_default_encoding (void)
 {
   const char *current_encoding = NULL;
 
-#if defined (HAVE_LOCALE_H) && defined (HAVE_LANGINFO_CODESET)
+  /* We disable this because the default codeset is 7-bit ASCII on
+     most platforms, and this causes conversion failures on every
+     file in GCC that happens to have one of the upper 128 characters
+     in it -- most likely, as part of the name of a contributor.
+     We should definitely recognize in-band markers of file encoding,
+     like:
+     - the appropriate Unicode byte-order mark (FE FF) to recognize
+       UTF16 and UCS4 (in both big-endian and little-endian flavors)
+       and UTF8
+     - a "#i", "#d", "/*", "//", " #p" or "#p" (for #pragma) to
+       distinguish ASCII and EBCDIC.
+     - now we can parse something like "#pragma GCC encoding <xyz>
+       on the first line, or even Emacs/VIM's mode line tags (there's
+       a problem here in that VIM uses the last line, and Emacs has
+       its more elaborate "Local variables:" convention).
+     - investigate whether Java has another common convention, which
+       would be friendly to support.
+     (Zack Weinberg and Paolo Bonzini, May 20th 2004)  */
+#if defined (HAVE_LOCALE_H) && defined (HAVE_LANGINFO_CODESET) && 0
   setlocale (LC_CTYPE, "");
   current_encoding = nl_langinfo (CODESET);
 #endif

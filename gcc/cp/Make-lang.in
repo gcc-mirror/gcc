@@ -88,9 +88,9 @@ CXX_OBJS = cp/call.o cp/decl.o cp/expr.o cp/pt.o cp/typeck2.o \
 cp-warn = $(STRICT_WARN) $(WERROR)
 
 cc1plus$(exeext): $(CXX_OBJS) $(CXX_C_OBJS) $(BACKEND) \
-		  libcpp.a $(LIBDEPS)
+		  $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ \
-	      $(CXX_OBJS) $(CXX_C_OBJS) $(BACKEND) libcpp.a $(LIBS)
+	      $(CXX_OBJS) $(CXX_C_OBJS) $(BACKEND) $(LIBS)
 
 # Special build rules.
 $(srcdir)/cp/cfns.h: $(srcdir)/cp/cfns.gperf

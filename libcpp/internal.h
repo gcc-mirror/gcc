@@ -17,13 +17,13 @@ along with this program; if not, write to the Free Software
 Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
 /* This header defines all the internal data structures and functions
-   that need to be visible across files.  It's called cpphash.h for
-   historical reasons.  */
+   that need to be visible across files.  It should not be used outside
+   cpplib.  */
 
-#ifndef GCC_CPPHASH_H
-#define GCC_CPPHASH_H
+#ifndef LIBCPP_INTERNAL_H
+#define LIBCPP_INTERNAL_H
 
-#include "hashtable.h"
+#include "symtab.h"
 
 #if defined HAVE_ICONV_H && defined HAVE_ICONV
 #include <iconv.h>
@@ -648,4 +648,4 @@ ufputs (const uchar *s, FILE *f)
   return fputs ((const char *)s, f);
 }
 
-#endif /* ! GCC_CPPHASH_H */
+#endif /* ! LIBCPP_INTERNAL_H */

@@ -24,8 +24,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #include "config.h"
 #include "system.h"
 #include "cpplib.h"
-#include "cpphash.h"
-#include "intl.h"
+#include "internal.h"
 #include "mkdeps.h"
 #include "hashtab.h"
 #include "md5.h"
@@ -46,10 +45,6 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
      if (! isatty (0)) setmode (0, O_BINARY)
 #else
 #  define set_stdin_to_binary_mode() /* Nothing */
-#endif
-
-#ifndef O_BINARY
-# define O_BINARY 0
 #endif
 
 /* This structure represents a file searched for by CPP, whether it
