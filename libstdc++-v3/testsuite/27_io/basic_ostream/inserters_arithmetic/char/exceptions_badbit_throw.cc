@@ -18,44 +18,57 @@
 // Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 // USA.
 
-#include <istream>
-#include <streambuf>
+#include <locale>
+#include <sstream>
 #include <testsuite_hooks.h>
 #include <testsuite_io.h>
 
 // libstdc++/9561
-void test01()
+template<typename T>
+void test_badbit()
 {
   using namespace std;
   bool test __attribute__((unused)) = true;
 
-  __gnu_test::fail_streambuf b;
-  std::istream strm (&b);
-  strm.exceptions (std::ios::badbit);
-  int i = 0;
+  locale loc(locale::classic(), new __gnu_test::fail_num_put);
+  ostringstream stream("jaylib - champion sound");
+  stream.imbue(loc);
+
+  stream.exceptions(ios_base::badbit);
+  VERIFY( stream.rdstate() == ios_base::goodbit );
 
   try 
     {
-      i = strm.get();
-      i = strm.get();
-      i = strm.get();
+      T i;
+      stream << i;
+      VERIFY( false );
     }
-  catch (__gnu_test::underflow_error&) 
+  catch (const __gnu_test::facet_error&) 
     {
-      // strm should throw facet_error and not do anything else
-      VERIFY(strm.bad());
+      // stream should set badbit and rethrow facet_error.
+      VERIFY( stream.bad() );
+      VERIFY( (stream.rdstate() & ios_base::failbit) == 0 );
+      VERIFY( !stream.eof() );
     }
   catch (...) 
     {
       VERIFY(false);
     }
-
-  VERIFY(i == 's');
 }
 
 
 int main()
 {
-  test01();
+  test_badbit<bool>();
+  test_badbit<short>();
+  test_badbit<unsigned short>();
+  test_badbit<int>();
+  test_badbit<unsigned int>();
+  test_badbit<long>();
+  test_badbit<unsigned long>();
+
+  test_badbit<float>();
+  test_badbit<double>();
+
   return 0;
 }

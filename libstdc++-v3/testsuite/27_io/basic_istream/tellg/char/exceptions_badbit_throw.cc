@@ -1,5 +1,3 @@
-// 2003-03-08  Jerry Quinn  <jlquinn@optonline.net>
-
 // Copyright (C) 2003 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -18,42 +16,49 @@
 // Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 // USA.
 
+// As a special exception, you may use this file as part of a free software
+// library without restriction.  Specifically, if other files instantiate
+// templates or use macros or inline functions from this file, or you compile
+// this file and link it with other files to produce an executable, this
+// file does not by itself cause the resulting executable to be covered by
+// the GNU General Public License.  This exception does not however
+// invalidate any other reasons why the executable file might be covered by
+// the GNU General Public License.
+
 #include <istream>
 #include <streambuf>
+#include <sstream>
 #include <testsuite_hooks.h>
 #include <testsuite_io.h>
 
-// libstdc++/9561
+using namespace std;
+
 void test01()
 {
-  using namespace std;
   bool test __attribute__((unused)) = true;
+  __gnu_test::fail_streambuf bib;
+  istream stream(&bib);
+  stream.exceptions(ios_base::badbit);
 
-  __gnu_test::fail_streambuf b;
-  std::istream strm (&b);
-  strm.exceptions (std::ios::badbit);
-  int i = 0;
-
-  try 
+  try
     {
-      i = strm.get();
-      i = strm.get();
-      i = strm.get();
+      stream.tellg();
+      VERIFY( false );
     }
-  catch (__gnu_test::underflow_error&) 
+  catch (const __gnu_test::positioning_error&) 
     {
-      // strm should throw facet_error and not do anything else
-      VERIFY(strm.bad());
+      // stream should set badbit and rethrow facet_error.
+      VERIFY( stream.bad() );
+      VERIFY( (stream.rdstate() & ios_base::failbit) == 0 );
+      VERIFY( !stream.eof() );
     }
   catch (...) 
     {
       VERIFY(false);
     }
-
-  VERIFY(i == 's');
 }
 
-
+// libstdc++/9546
 int main()
 {
   test01();
