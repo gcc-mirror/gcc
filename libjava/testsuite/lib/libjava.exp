@@ -200,6 +200,7 @@ proc libjava_init { args } {
     if {$gccdir != ""} {
 	set gccdir [file dirname $gccdir]
 	lappend libjava_libgcc_s_path $gccdir
+	verbose "libjava_libgcc_s_path = $libjava_libgcc_s_path"
 	set compiler ${gccdir}/xgcc
 	if { [is_remote host] == 0 && [which $compiler] != 0 } {
 	    foreach i "[exec $compiler --print-multi-lib]" {
@@ -234,21 +235,24 @@ proc libjava_init { args } {
 proc libjava_find_lib {dir name} {
     global base_dir
     set gp [get_multilibs]
-    foreach sub {.libs _libs} {
-	if {$gp != ""} {
-	    if {[file exists $gp/$dir/$sub/lib${name}.a]} then {
-		# Just return the `-L' option.  The library itself
-		# will be picked up via the spec file.
-		return "-L$gp/$dir/$sub"
+    foreach extension {so dll a} {
+	foreach sub {.libs _libs} {
+	    if {$gp != ""} {
+		if {[file exists $gp/$dir/$sub/lib${name}.${extension}]} then {
+		    # Just return the `-L' option.  The library itself
+		    # will be picked up via the spec file.
+		    return "-L$gp/$dir/$sub"
+		}
 	    }
-	}
-	# Just return the `-L' option.  The library itself will be
-	# picked up via the spec file.
-	set lib [findfile $base_dir/../../$dir/$sub/lib${name}.a \
-		   "-L$base_dir/../../$dir/$sub" \
-		   ""]
-	if {$lib != ""} {
-	    return $lib
+	    # Just return the `-L' option.  The library itself will be
+	    # picked up via the spec file.
+	    set lib [findfile \
+		       $base_dir/../../$dir/$sub/lib${name}.${extension} \
+		       "-L$base_dir/../../$dir/$sub" \
+		       ""]
+	    if {$lib != ""} {
+		return $lib
+	    }
 	}
     }
     return ""
@@ -340,10 +344,6 @@ proc libjava_arguments {{mode compile}} {
 	set libz [libjava_find_lib zlib zgcj]
     }
 
-    # FIXME: there's no way to determine whether -lpthread is
-    # required.  We should get this info from configure, or it should
-    # just be in the compiler driver.
-
     verbose "using LIBJAVA = $libjava" 2
     verbose "using LIBGC = $libgc" 2
     verbose "using LIBQTHREADS = $libqthreads" 2
@@ -365,6 +365,7 @@ proc libjava_arguments {{mode compile}} {
     }
 
     set lpath [concat $lpath $libjava_libgcc_s_path]
+    verbose "lpath = $lpath ; libgcc_s_path = $libjava_libgcc_s_path"
     set ld_library_path [join $lpath :]
 
     # That's enough to make things work for the normal case.
@@ -384,13 +385,9 @@ proc libjava_arguments {{mode compile}} {
     set env(CLASSPATH) ".:$srcdir/$subdir:$objdir:$libgcj_jar"
 
     if {$mode == "link"} {
-	global wrapper_file wrap_compile_flags;
-	lappend args "additional_flags=$wrap_compile_flags";
-	lappend args "libs=$wrapper_file";
-	lappend args "libs=$libjava";
-	lappend args "libs=$libgc";
-	lappend args "libs=$libqthreads"
-	lappend args "libs=$libz"
+	global wrapper_file wrap_compile_flags
+	lappend args "additional_flags=$wrap_compile_flags"
+	lappend args "libs=$wrapper_file"
 	lappend args debug
     }
 
