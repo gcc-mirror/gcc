@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.24 $
+--                            $Revision$
 --                                                                          --
 --           Copyright (C) 1997-2001, Ada Core Technologies, Inc.           --
 --                                                                          --
@@ -191,7 +191,6 @@ procedure Gnatmem is
    Target_Protocol_Len    : Integer;
    Cross_Case             : Boolean := False;
 
-
    Tmp_Size    : Storage_Count  := 0;
    Tmp_Address : Integer_Address;
    Tmp_Alloc   : Allocation;
@@ -290,7 +289,6 @@ procedure Gnatmem is
             Put_Line (FD, "tty " & TTY);
          end if;
       end;
-
 
       if Cross_Case then
          Put (FD, "target ");
@@ -693,14 +691,14 @@ procedure Gnatmem is
             return Eof;
 
          elsif Line (1 .. 5) = "ALLOC" then
+            --  ALLOC ^ <size> ^0x <addr> ^
 
             --  Read the size
 
-            if Quiet_Mode then
-               Curs2 := 5;
-            else
-               Curs1 := 7;
-               Curs2 := Next_Separator - 1;
+            Curs1 := 7;
+            Curs2 := Next_Separator - 1;
+
+            if not Quiet_Mode then
                Tmp_Size := Storage_Count'Value (Line (Curs1 .. Curs2));
             end if;
 
@@ -713,6 +711,7 @@ procedure Gnatmem is
             return Alloc;
 
          elsif Line (1 .. 5) = "DEALL" then
+            --  DEALL ^ 0x <addr> ^
 
             --  Read the address, skip "^0x"
 

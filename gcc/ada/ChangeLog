@@ -1,3 +1,11 @@
+2001-10-25  Pascal Obry <obry@gnat.com>
+
+	* gnatmem.adb (Read_Next): fix Curs2 value to properly handle quiet 
+        mode case for ALLOC case.
+	
+	* gnatmem.adb (Read_Next): correctly fix parsing in Quiet mode on 
+        all platforms. Improvement of last change.
+
 2001-10-25  Robert Dewar <dewar@gnat.com>
 
 	* exp_ch4.adb (Expand_N_Allocator): Minor reformatting.
