@@ -1,3 +1,8 @@
+2001-05-30  Tom Tromey  <tromey@redhat.com>
+
+	* gcc.c (do_spec_1): In `%O' case, if we computed saved_suffix,
+	use it in the new association.
+
 2001-05-30  Loren J. Rittle  <ljrittle@acm.org>
 	    David O'Brien  <obrien@freebsd.org>
 
