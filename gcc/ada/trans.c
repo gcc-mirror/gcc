@@ -155,6 +155,9 @@ gigi (gnat_root, max_gnat_node, number_name,
 
      Int gigi_operating_mode;
 {
+  tree gnu_standard_long_long_float;
+  tree gnu_standard_exception_type;
+
   max_gnat_nodes = max_gnat_node;
   number_names = number_name;
   Nodes_Ptr = nodes_ptr - First_Node_Id;
@@ -199,10 +202,12 @@ gigi (gnat_root, max_gnat_node, number_name,
   dconstp5 = REAL_VALUE_ATOF ("0.5", DFmode);
   dconstmp5 = REAL_VALUE_ATOF ("-0.5", DFmode);
 
-  init_gigi_decls (gnat_to_gnu_entity (Base_Type (standard_long_long_float),
-				       NULL_TREE, 0),
-		   gnat_to_gnu_entity (Base_Type (standard_exception_type),
-				       NULL_TREE, 0));
+  gnu_standard_long_long_float
+    = gnat_to_gnu_entity (Base_Type (standard_long_long_float), NULL_TREE, 0);
+  gnu_standard_exception_type
+    = gnat_to_gnu_entity (Base_Type (standard_exception_type),  NULL_TREE, 0);
+
+  init_gigi_decls (gnu_standard_long_long_float, gnu_standard_exception_type);
 
   /* Emit global symbols containing context list info for the SGI Workshop
      debugger */

@@ -1,3 +1,8 @@
+2001-10-27  Laurent Guerby <guerby@acm.org>
+
+	* trans.c (gigi): Fix non determinism leading to bootstrap
+	comparison failures for debugging information.
+
 2001-10-26  Florian Weimer  <fw@deneb.enyo.de>
 
 	* gnat_rm.texi: Use @./@: where appropriate.
