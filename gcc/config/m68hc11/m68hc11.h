@@ -1555,14 +1555,6 @@ do {                                                                    \
 
 /* Output #ident as a .ident.  */
 
-/* This is how to output a command to make the user-level label named NAME
-   defined for reference from other files.  */
-
-#define ASM_GLOBALIZE_LABEL(FILE,NAME)	\
-  do { fprintf (FILE, "%s", GLOBAL_ASM_OP);		\
-       assemble_name (FILE, NAME);			\
-       fputs ("\n", FILE);} while (0)
-
 /* output external reference */
 #define ASM_OUTPUT_EXTERNAL(FILE,DECL,NAME) \
   {fputs ("\t; extern\t", FILE); \

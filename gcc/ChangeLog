@@ -1,3 +1,10 @@
+2002-07-30  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* m68hc11.h, m68k.h, m88k.h (ASM_GLOBALIZE_LABEL): Delete.
+	
+	* defaults.h (ASM_GLOBALIZE_LABEL): Provide a default.
+	* doc/tm.texi (ASM_GLOBALIZE_LABEL): Update docs.
+
 2002-07-30  Geoffrey Keating  <geoffk@redhat.com>
 
 	* doc/extend.texi (Hints implementation): Document that GCC
