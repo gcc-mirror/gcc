@@ -281,7 +281,7 @@ doloop_valid_p (loop, jump_insn)
      statement within a loop will generate multiple loop exits.
      Another example of a loop that currently generates multiple exit
      targets is for (i = 0; i < (foo ? 8 : 4); i++) { }.  */
-  if (loop_info->has_multiple_exit_targets)
+  if (loop_info->has_multiple_exit_targets || loop->exit_count)
     {
       if (loop_dump_stream)
 	fprintf (loop_dump_stream,
@@ -415,13 +415,15 @@ doloop_modify (loop, iterations, iterations_max,
       fputs (" iterations).", loop_dump_stream);
     }
 
+  /* Emit the label that will delimit the top of the loop.
+     This has to be done before the delete_insn call below, to prevent
+     delete_insn from deleting too much.  */
+  emit_label_after (start_label, loop->top ? loop->top : loop->start);
+  LABEL_NUSES (start_label)++;
+
   /* Discard original jump to continue loop.  The original compare
      result may still be live, so it cannot be discarded explicitly.  */
   delete_insn (jump_insn);
-
-  /* Emit the label that will delimit the start of the loop.  */
-  emit_label_after (start_label, loop->start);
-  LABEL_NUSES (start_label)++;
 
   counter_reg = XEXP (condition, 0);
   if (GET_CODE (counter_reg) == PLUS)
