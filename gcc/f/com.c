@@ -14156,7 +14156,14 @@ finish_function (int nested)
 static char *
 lang_printable_name (tree decl, int v)
 {
-  return IDENTIFIER_POINTER (DECL_NAME (decl));
+  /* Just to keep GCC quiet about the unused variable.
+     In theory, differing values of V should produce different
+     output.  */
+  switch (v)
+    {
+    default:
+      return IDENTIFIER_POINTER (DECL_NAME (decl));
+    }
 }
 
 /* g77's function to print out name of current function that caused
