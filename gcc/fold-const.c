@@ -7223,6 +7223,11 @@ fold (tree expr)
       if (TREE_CODE (arg0) == NEGATE_EXPR
 	  && reorder_operands_p (TREE_OPERAND (arg0, 0), arg1))
 	return fold (build2 (MINUS_EXPR, type, arg1, TREE_OPERAND (arg0, 0)));
+      /* Convert ~A + 1 to -A.  */
+      if (INTEGRAL_TYPE_P (type)
+	  && TREE_CODE (arg0) == BIT_NOT_EXPR
+	  && integer_onep (arg1))
+	return fold (build1 (NEGATE_EXPR, type, TREE_OPERAND (arg0, 0)));
 
       if (TREE_CODE (type) == COMPLEX_TYPE)
 	{
@@ -7661,6 +7666,16 @@ fold (tree expr)
 	  && reorder_operands_p (arg0, arg1))
 	return fold (build2 (MINUS_EXPR, type, negate_expr (arg1),
 			     TREE_OPERAND (arg0, 0)));
+      /* Convert -A - 1 to ~A.  */
+      if (INTEGRAL_TYPE_P (type)
+	  && TREE_CODE (arg0) == NEGATE_EXPR
+	  && integer_onep (arg1))
+	return fold (build1 (BIT_NOT_EXPR, type, TREE_OPERAND (arg0, 0)));
+
+      /* Convert -1 - A to ~A.  */
+      if (INTEGRAL_TYPE_P (type)
+	  && integer_all_onesp (arg0))
+	return fold (build1 (BIT_NOT_EXPR, type, arg1));
 
       if (TREE_CODE (type) == COMPLEX_TYPE)
 	{

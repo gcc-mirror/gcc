@@ -1,3 +1,9 @@
+2005-03-03  James A. Morrison  <phython@gcc.gnu.org>
+
+	PR tree-optimization/15784
+	* fold-const.c (fold): Fold ~A + 1 to -1.  Fold -A - 1
+	and -1 - A to ~A.
+
 2005-03-03  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/predicates.md (branch_comparison_operator):

@@ -1,3 +1,7 @@
+2005-03-03  James A. Morrison  <phython@gcc.gnu.org>
+
+	* gcc.dg/pr15784-4.c: New test.
+
 2005-03-03  Geoffrey Keating  <geoffk@apple.com>
 
 	* gcc.c-torture/execute/pr17133.c: New.
