@@ -643,7 +643,6 @@ FIX_PROC_HEAD( machine_name_fix )
     }
  done:
   fputs (text, stdout);
-  free (scratch);
 }
 
 
