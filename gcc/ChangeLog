@@ -2,6 +2,7 @@ Tue May 19 22:31:20 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* Makefile.in (deduced.h): Only run scan-types if $(SYSTEM_HEADER_DIR)
 	exists.
+	(stmp-fixproto): Simlarly for running fixproto.
 	* cross-make (SYSTEM_HEADER_DIR): Now $(tooldir)/sys-include.
 
 Tue May 19 19:08:52 1998  Jim Wilson  <wilson@cygnus.com>
