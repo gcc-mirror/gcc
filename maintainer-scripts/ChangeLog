@@ -1,3 +1,7 @@
+2004-05-21  Paolo Carlini  <pcarlini@suse.de>
+
+	* gcc_release (build_sources): Generate the NEWS file in toplevel.
+
 2004-05-17  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* gcc_release (build_sources): Change CRCs from brik to md5sum.
