@@ -1,3 +1,45 @@
+2004-03-12  Ito Kazumitsu  <ito.kazumitsu@hitachi-cable.co.jp>
+
+	* java/net/URI.java (toURL): Implemented.
+
+2004-03-12  Ito Kazumitsu  <ito.kazumitsu@hitachi-cable.co.jp>
+
+	* java/net/URI.java
+	(URI_REGEXP) updated to contain scheme specific part.
+	(SCHEME_SPEC_PART_GROUP) new constant.
+	(AUTHORITY_GROUP, PATH_GROUP, QUERY_GROUP, FRAGMENT_GROUP)
+	updated to make room for SCHEME_SPEC_PART_GROUP.
+	(parseURI) parse scheme specific part.
+	(resolve, isAbsolute, isOpaque, getRawSchemeSpecificPart,
+	getSchemeSpecificPart, getAuthority, getUserInfo, getPath,
+	getQuery, getFragment) implemented.
+
+2004-03-12  Dalibor Topic  <robilad@kaffe.org>
+
+	* libraries/javalib/java/net/URI.java
+	partially implemented using java.util.regex.
+	(URI_REGEXP) new constant. Used to parse URIs.
+	(SCHEME_GROUP) new constant representing index of scheme group
+	in parsed URI.
+	(AUTHORITY_GROUP) new constant representing index of authority
+	group in parsed URI.
+	(PATH_GROUP) new constant representing index of path group in
+	parsed URI.
+	(QUERY_GROUP) new constant representing index of query group in
+	parsed URI.
+	(FRAGMENT_GROUP) new constant representing index of fragment
+	group in parsed URI.
+	(getURIGroup) new static utility method.
+	(parseURI) implemented.
+	(quote) stub for new static utility method.
+	(quoteAuthority) stub for new static utility method.
+	(quoteHost) stub for new static utility method.
+	(quotePath) stub for new static utility method.
+	(quoteUserInfo) stub for new static utility method.
+	(URI) implemented.
+	(create) don't throw URISyntaxException. Implemented.
+	(toString) implemented.
+
 2004-03-12  Michael Koch  <konqueror@gmx.de>
 
 	* java/net/HttpURLConnection.java
