@@ -1,5 +1,10 @@
 2001-02-17  Mark Mitchell  <mark@codesourcery.com>
 
+	* init.c (build_new): Allow enumeration types for the array-bounds
+	in a direct-new-declarator.
+
+	* semantics.c (finish_typeof): Resolve OFFSET_REFs.
+
 	* pt.c (check_explicit_specialization): Copy TREE_PRIVATE and
 	TREE_PROTECTED from the template being specialized.
 

@@ -2152,6 +2152,9 @@ finish_typeof (expr)
       return t;
     }
 
+  if (TREE_CODE (expr) == OFFSET_REF)
+    expr = resolve_offset_ref (expr);
+
   return TREE_TYPE (expr);
 }
 

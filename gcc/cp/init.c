@@ -2081,8 +2081,8 @@ build_new (placement, decl, init, use_global_new)
 		}
 	      else
 		{
-		  int flags = pedantic ? WANT_INT : (WANT_INT | WANT_ENUM);
-		  if (build_expr_type_conversion (flags, this_nelts, 0)
+		  if (build_expr_type_conversion (WANT_INT | WANT_ENUM, 
+						  this_nelts, 0)
 		      == NULL_TREE)
 		    pedwarn ("size in array new must have integral type");
 
