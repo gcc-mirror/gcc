@@ -1,3 +1,23 @@
+1999-10-01  Tom Tromey  <tromey@cygnus.com>
+
+	* configure: Rebuilt.
+	* configure.in: Set classpath when invoking gcj.  Use changequote
+	around sed invocation.
+
+	* java/net/natPlainSocketImpl.cc: Stub native functions if
+	DISABLE_JAVA_NET is defined.
+	* java/net/natPlainDatagramSocketImpl.cc (setTimeToLive): Fixed
+	typo in exception string.
+	(getTimeToLive): Likewise.
+	Stub native functions if DISABLE_JAVA_NET is defined.
+	* java/net/natInetAddress.cc: Stub native functions if
+	DISABLE_JAVA_NET is defined.
+	* configure.host: Disable java.net for mips-tx39.
+	* configure, include/config.h.in: Rebuilt.
+	* acconfig.h (DISABLE_JAVA_NET): Undefine.
+	* configure.in: Added --disable-java-net and new define
+	`DISABLE_JAVA_NET'.
+
 1999-09-30  Tom Tromey  <tromey@cygnus.com>
 
 	* java/net/natPlainDatagramSocketImpl.cc: Indentation fix.

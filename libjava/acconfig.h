@@ -109,3 +109,6 @@
 
 /* Define if pthread_mutex_t has __m_count member.  */
 #undef PTHREAD_MUTEX_HAVE___M_COUNT
+
+/* Define if java.net native functions should be stubbed out.  */
+#undef DISABLE_JAVA_NET

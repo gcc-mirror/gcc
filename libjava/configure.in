@@ -50,6 +50,19 @@ AC_ARG_ENABLE(interpreter,
      AC_DEFINE(INTERPRETER)
   fi)
 
+dnl See if the user wants to disable java.net.  This is the mildly
+dnl ugly way that we admit that target-side configuration sucks.
+AC_ARG_ENABLE(java-net,
+[  --disable-java-net      disable java.net])
+
+dnl Whether java.net is built by default can depend on the target.
+if test -n "$enable_java_net"; then
+   enable_java_net=${enable_java_net_default-yes}
+fi
+if test "$enable_java_net" != yes; then
+   AC_DEFINE(DISABLE_JAVA_NET)
+fi
+
 dnl If the target is an eCos system, use the appropriate eCos
 dnl I/O routines.
 dnl FIXME: this should not be a local option but a global target
@@ -516,7 +529,9 @@ if test "$GCJ" = ""; then
    if test -z "${with_multisubdir}"; then
       builddotdot=.
    else
+changequote(<<,>>)
       builddotdot=`echo ${with_multisubdir} | sed -e 's:[^/][^/]*:..:g'`
+changequote([,])
    fi
    dir="`cd ${builddotdot}/../../gcc && pwd`"
    GCJ="$dir/gcj -B$dir/"
@@ -533,7 +548,8 @@ cat > conftest.java << 'END'
 public class conftest { }
 END
 use_fuse=yes
-$GCJ -fuse-divide-subroutine -fsyntax-only conftest.java > /dev/null 2>&1 \
+$GCJ -classpath $srcdir -fuse-divide-subroutine -fsyntax-only \
+   conftest.java > /dev/null 2>&1 \
    || use_fuse=no
 rm -f conftest.java
 if test "$use_fuse" = no; then

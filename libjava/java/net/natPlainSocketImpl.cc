@@ -41,6 +41,52 @@ details.  */
 #include <java/lang/Class.h>
 #include <java/lang/Integer.h>
 
+#ifdef DISABLE_JAVA_NET
+
+void
+java::net::PlainSocketImpl::create (jboolean)
+{
+  JvThrow (new java::io::IOException (JvNewStringLatin1 ("SocketImpl.create: unimplemented")));
+}
+
+void
+java::net::PlainSocketImpl::bind (java::net::InetAddress *, jint)
+{
+  JvThrow (new BindException (JvNewStringLatin1 ("SocketImpl.bind: unimplemented")));
+}
+
+void
+java::net::PlainSocketImpl::connect (java::net::InetAddress *, jint)
+{
+  JvThrow (new ConnectException (JvNewStringLatin1 ("SocketImpl.connect: unimplemented")));
+}
+
+void
+java::net::PlainSocketImpl::listen (jint)
+{
+  JvThrow (new java::io::IOException (JvNewStringLatin1 ("SocketImpl.listen: unimplemented")));
+}
+
+void
+java::net::PlainSocketImpl::accept (java::net::PlainSocketImpl *)
+{
+  JvThrow (new java::io::IOException (JvNewStringLatin1 ("SocketImpl.accept: unimplemented")));
+}
+
+void
+java::net::PlainSocketImpl::setOption (jint, java::lang::Object *)
+{
+  JvThrow (new SocketException (JvNewStringLatin1 ("SocketImpl.setOption: unimplemented")));
+}
+
+java::lang::Object *
+java::net::PlainSocketImpl::getOption (jint)
+{
+  JvThrow (new SocketException (JvNewStringLatin1 ("SocketImpl.create: unimplemented")));
+}
+
+#else /* DISABLE_JAVA_NET */
+
 #ifndef HAVE_SOCKLEN_T
 typedef int socklen_t;
 #endif
@@ -422,3 +468,5 @@ java::net::PlainSocketImpl::getOption (jint optID)
   sprintf (msg, "SocketImpl.getOption: %.*s", 80, strerr);
   JvThrow (new java::net::SocketException (JvNewStringUTF (msg)));
 }
+
+#endif /* DISABLE_JAVA_NET */

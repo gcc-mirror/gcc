@@ -52,6 +52,7 @@ case "${host}" in
 	AM_RUNTESTFLAGS="--target_board=jmr3904-sim"	
 	# Use "Ecos" processes since they are a no-op.
 	PROCESS=Ecos
+ 	enable_java_net_default=no
 	;;
   i686-*|i586-*)
 	libgcj_flags="${libgcj_flags} -ffloat-store"
