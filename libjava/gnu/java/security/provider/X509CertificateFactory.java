@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -44,16 +44,21 @@ import java.io.InputStream;
 import java.io.IOException;
 
 import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactorySpi;
+import java.security.cert.CertPath;
 import java.security.cert.CRL;
 import java.security.cert.CRLException;
 
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 
 import gnu.java.io.Base64InputStream;
 import gnu.java.security.x509.X509Certificate;
+import gnu.java.security.x509.X509CertPath;
 import gnu.java.security.x509.X509CRL;
 
 public class X509CertificateFactory extends CertificateFactorySpi
@@ -87,7 +92,9 @@ public class X509CertificateFactory extends CertificateFactorySpi
       }
     catch (IOException ioe)
       {
-        throw new CertificateException(ioe.toString());
+        CertificateException ce = new CertificateException(ioe.getMessage());
+        ce.initCause (ioe);
+        throw ce;
       }
   }
 
@@ -107,7 +114,9 @@ public class X509CertificateFactory extends CertificateFactorySpi
           }
         catch (IOException ioe)
           {
-            throw new CertificateException(ioe.toString());
+            CertificateException ce = new CertificateException(ioe.getMessage());
+            ce.initCause (ioe);
+            throw ce;
           }
       }
     return certs;
@@ -121,7 +130,9 @@ public class X509CertificateFactory extends CertificateFactorySpi
       }
     catch (IOException ioe)
       {
-        throw new CRLException(ioe.toString());
+        CRLException crle = new CRLException(ioe.getMessage());
+        crle.initCause (ioe);
+        throw crle;
       }
   }
 
@@ -141,10 +152,34 @@ public class X509CertificateFactory extends CertificateFactorySpi
           }
         catch (IOException ioe)
           {
-            throw new CRLException(ioe.toString());
+            CRLException crle = new CRLException(ioe.getMessage());
+            crle.initCause (ioe);
+            throw crle;
           }
       }
     return crls;
+  }
+
+  public CertPath engineGenerateCertPath(List certs)
+  {
+    return new X509CertPath(certs);
+  }
+
+  public CertPath engineGenerateCertPath(InputStream in)
+    throws CertificateEncodingException
+  {
+    return new X509CertPath(in);
+  }
+
+  public CertPath engineGenerateCertPath(InputStream in, String encoding)
+    throws CertificateEncodingException
+  {
+    return new X509CertPath(in, encoding);
+  }
+
+  public Iterator engineGetCertPathEncodings()
+  {
+    return X509CertPath.ENCODINGS.iterator();
   }
 
   // Own methods.
@@ -153,6 +188,8 @@ public class X509CertificateFactory extends CertificateFactorySpi
   private X509Certificate generateCert(InputStream inStream)
     throws IOException, CertificateException
   {
+    if (inStream == null)
+      throw new CertificateException("missing input stream");
     if (!inStream.markSupported())
       inStream = new BufferedInputStream(inStream, 8192);
     inStream.mark(20);
@@ -211,6 +248,8 @@ public class X509CertificateFactory extends CertificateFactorySpi
   private X509CRL generateCRL(InputStream inStream)
     throws IOException, CRLException
   {
+    if (inStream == null)
+      throw new CRLException("missing input stream");
     if (!inStream.markSupported())
       inStream = new BufferedInputStream(inStream, 8192);
     inStream.mark(20);
@@ -265,5 +304,4 @@ public class X509CertificateFactory extends CertificateFactorySpi
         return new X509CRL(inStream);
       }
   }
-
 }

@@ -1,5 +1,5 @@
-/* X509CRLEntry.java -- entry in a X.509 CRL.
-   Copyright (C) 2003 Free Software Foundation, Inc.
+/* X509CRLEntry.java -- an entry in a X.509 CRL.
+   Copyright (C) 2003, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -45,17 +45,17 @@ import java.math.BigInteger;
 
 import java.security.cert.CRLException;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
-import gnu.java.io.ASN1ParsingException;
 import gnu.java.security.OID;
-import gnu.java.security.der.DERReader;
-import gnu.java.security.der.DERValue;
-import gnu.java.security.der.DERWriter;
+import gnu.java.security.der.*;
+import gnu.java.security.x509.ext.*;
 
 /**
  * A single entry in a X.509 certificate revocation list.
@@ -64,10 +64,21 @@ import gnu.java.security.der.DERWriter;
  * @author Casey Marshall
  */
 class X509CRLEntry extends java.security.cert.X509CRLEntry
+  implements GnuPKIExtension
 {
 
   // Constants and fields.
   // ------------------------------------------------------------------------
+
+  private static final boolean DEBUG = false;
+  private static void debug(String msg)
+  {
+    if (DEBUG)
+      {
+        System.err.print(">> X509CRLEntry: ");
+        System.err.println(msg);
+      }
+  }
 
   /** The DER encoded form of this CRL entry. */
   private byte[] encoded;
@@ -78,14 +89,8 @@ class X509CRLEntry extends java.security.cert.X509CRLEntry
   /** The date the certificate was revoked. */
   private Date revocationDate;
 
-  /** The encoded extensions. */
+  /** The CRL entry extensions. */
   private HashMap extensions;
-
-  /** The set of critical extension OIDs. */
-  private HashSet critOids;
-
-  /** the set of non-critical extension OIDs. */
-  private HashSet nonCritOids;
 
   // Constructor.
   // ------------------------------------------------------------------------
@@ -99,13 +104,11 @@ class X509CRLEntry extends java.security.cert.X509CRLEntry
    * @throws CRLException If the ASN.1 structure is invalid.
    * @throws IOException  If the bytes cannot be read.
    */
-  X509CRLEntry(int version, InputStream encoded)
+  X509CRLEntry(int version, DERReader encoded)
     throws CRLException, IOException
   {
     super();
     extensions = new HashMap();
-    critOids = new HashSet();
-    nonCritOids = new HashSet();
     try
       {
         parse(version, encoded);
@@ -125,8 +128,10 @@ class X509CRLEntry extends java.security.cert.X509CRLEntry
 
   public boolean equals(Object o)
   {
-    return ((X509CRLEntry) o).serialNo.equals(serialNo) &&
-           ((X509CRLEntry) o).revocationDate.equals(revocationDate);
+    if (!(o instanceof X509CRLEntry))
+      return false;
+    return ((X509CRLEntry) o).getSerialNumber().equals(serialNo) &&
+           ((X509CRLEntry) o).getRevocationDate().equals(revocationDate);
   }
 
   public int hashCode()
@@ -157,79 +162,119 @@ class X509CRLEntry extends java.security.cert.X509CRLEntry
   public String toString()
   {
     return "X509CRLEntry serial=" + serialNo + " revocation date="
-      + revocationDate + " critExt=" + critOids + " ext=" + nonCritOids;
+      + revocationDate + " ext=" + extensions;
   }
 
   // X509Extension methods.
-  // ------------------------------------------------------------------------
+  // -------------------------------------------------------------------------
 
   public boolean hasUnsupportedCriticalExtension()
   {
-    return false; // XXX
+    for (Iterator it = extensions.values().iterator(); it.hasNext(); )
+      {
+        Extension e = (Extension) it.next();
+        if (e.isCritical() && !e.isSupported())
+          return true;
+      }
+    return false;
   }
 
   public Set getCriticalExtensionOIDs()
   {
-    return Collections.unmodifiableSet(critOids);
+    HashSet s = new HashSet();
+    for (Iterator it = extensions.values().iterator(); it.hasNext(); )
+      {
+        Extension e = (Extension) it.next();
+        if (e.isCritical())
+          s.add(e.getOid().toString());
+      }
+    return Collections.unmodifiableSet(s);
   }
 
   public Set getNonCriticalExtensionOIDs()
   {
-    return Collections.unmodifiableSet(nonCritOids);
+    HashSet s = new HashSet();
+    for (Iterator it = extensions.values().iterator(); it.hasNext(); )
+      {
+        Extension e = (Extension) it.next();
+        if (!e.isCritical())
+          s.add(e.getOid().toString());
+      }
+    return Collections.unmodifiableSet(s);
   }
 
   public byte[] getExtensionValue(String oid)
   {
-    byte[] ext = (byte[]) extensions.get(oid);
-    if (ext != null)
-      return (byte[]) ext.clone();
+    Extension e = getExtension(new OID(oid));
+    if (e != null)
+      {
+        return e.getValue().getEncoded();
+      }
     return null;
   }
 
-  // Own methods.
-  // ------------------------------------------------------------------------
+  // GnuPKIExtension method.
+  // -------------------------------------------------------------------------
 
-  private void parse(int version, InputStream in) throws Exception
+  public Extension getExtension(OID oid)
   {
-    DERReader der = new DERReader(in);
+    return (Extension) extensions.get(oid);
+  }
+
+  public Collection getExtensions()
+  {
+    return extensions.values();
+  }
+
+  // Own methods.
+  // -------------------------------------------------------------------------
+
+  private void parse(int version, DERReader der) throws Exception
+  {
+    // RevokedCertificate ::= SEQUENCE {
     DERValue entry = der.read();
+    debug("start CRL entry   len == " + entry.getLength());
     if (!entry.isConstructed())
-      throw new ASN1ParsingException("malformed revokedCertificate");
+      throw new IOException("malformed revokedCertificate");
     encoded = entry.getEncoded();
     int len = 0;
+
+    debug("encoded entry:\n" + Util.hexDump(encoded, ">>>> "));
+
+    //   userCertificate   CertificateSerialNumber,
     DERValue val = der.read();
     serialNo = (BigInteger) val.getValue();
-    len += DERWriter.definiteEncodingSize(val.getLength())
-         + val.getLength() + 1;
+    len += val.getEncodedLength();
+    debug("userCertificate == " + serialNo + "  current count == " + len);
+
+    //   revocationDate   Time,
     val = der.read();
     revocationDate = (Date) val.getValue();
-    len += DERWriter.definiteEncodingSize(val.getLength())
-         + val.getLength() + 1;
+    len += val.getEncodedLength();
+    debug("revocationDate == " + revocationDate + "  current count == " + len);
 
+    //   crlEntryExtensions   Extensions OPTIONAL
+    //                          -- if present MUST be v2
     if (len < entry.getLength())
       {
         if (version < 2)
-          throw new ASN1ParsingException("extra data in CRL entry");
-        while (len < entry.getLength())
+          throw new IOException("extra data in CRL entry");
+        DERValue exts = der.read();
+        if (!exts.isConstructed())
+          throw new IOException("malformed Extensions");
+        debug("start Extensions  len == " + exts.getLength());
+        len = 0;
+        while (len < exts.getLength())
           {
             val = der.read();
             if (!val.isConstructed())
-              throw new ASN1ParsingException("malformed Extension");
-            OID extOid = (OID) der.read().getValue();
-            Boolean critical = Boolean.valueOf(false);
-            DERValue val2 = der.read();
-            if (val2.getValue() instanceof Boolean)
-              {
-                critical = (Boolean) val2.getValue();
-                val2 = der.read();
-              }
-            byte[] ext = (byte[]) val2.getValue();
-            extensions.put(extOid.toString(), ext);
-            if (critical.booleanValue())
-              critOids.add(extOid.toString());
-            else
-              nonCritOids.add(extOid.toString());
+              throw new IOException("malformed Extension");
+            debug("start Extension  len == " + val.getLength());
+            Extension e = new Extension(val.getEncoded());
+            extensions.put(e.getOid(), e);
+            der.skip(val.getLength());
             len += val.getEncodedLength();
+            debug("current count == " + len);
           }
       }
   }
