@@ -1,3 +1,9 @@
+Mon Aug 31 15:19:32 1998  Nick Clifton  <nickc@cygnus.com>
+
+	* lib/c-torture.exp: Add support for
+	torture_eval_before_compile and torture_eval_before_execute
+	variables.
+
 Sun Aug 30 17:38:20 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.dg/980626-1.c: Delete this test.  We've declared the warning

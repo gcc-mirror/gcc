@@ -184,6 +184,13 @@ proc c-torture-execute { src args } {
 	if [info exists torture_compile_xfail] {
 	    setup_xfail $torture_compile_xfail
 	}
+	
+	# torture_execute_before_{compile,execute} can be set by the .x script
+	# (if present)
+	if [info exists torture_eval_before_compile] {
+            set ignore_me [eval $torture_eval_before_compile]
+	}
+	
 	remote_file build delete $execname;
 	verbose "Testing $testcase, $option" 1
 
@@ -252,6 +259,11 @@ proc c-torture-execute { src args } {
 	if [info exists torture_execute_xfail] {
 	    setup_xfail $torture_execute_xfail
 	}
+
+	if [info exists torture_eval_before_execute] {
+            set ignore_me [eval $torture_eval_before_execute]
+	}
+	
 	set skip 0;
 	if [info exists oldexec] {
 	    if { [remote_file build cmp $oldexec $execname] == 0 } {
@@ -343,6 +355,11 @@ proc c-torture { args } {
 	    setup_xfail $torture_compile_xfail
 	}
 
+	# torture_execute_before_compile is set by the .x script (if present)
+	if [info exists torture_eval_before_compile] {
+            set ignore_me [eval $torture_eval_before_compile]
+	}
+	
 	c-torture-compile $src "$option $options"
     }
 }
