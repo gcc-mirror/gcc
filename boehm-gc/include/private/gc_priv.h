@@ -249,34 +249,12 @@ typedef char * ptr_t;	/* A generic pointer to which we can add	*/
 
 #ifdef SAVE_CALL_CHAIN
 
-/*
- * Number of frames and arguments to save in objects allocated by
- * debugging allocator.
- */
-#   ifndef SAVE_CALL_COUNT
-#     define NFRAMES 6	/* Number of frames to save. Even for		*/
-			/* alignment reasons.				*/
-#   else
-#     define NFRAMES ((SAVE_CALL_COUNT + 1) & ~1)
-#   endif
-#   define NARGS 2	/* Mumber of arguments to save for each call.	*/
-
-#   define NEED_CALLINFO
-
 /* Fill in the pc and argument information for up to NFRAMES of my	*/
 /* callers.  Ignore my frame and my callers frame.			*/
 struct callinfo;
 void GC_save_callers GC_PROTO((struct callinfo info[NFRAMES]));
   
 void GC_print_callers GC_PROTO((struct callinfo info[NFRAMES]));
-
-#else
-
-# ifdef GC_ADD_CALLER
-#   define NFRAMES 1
-#   define NARGS 0
-#   define NEED_CALLINFO
-# endif
 
 #endif
 
@@ -396,7 +374,8 @@ struct hblk;	/* See below.	*/
                                     + GC_page_size-1)
 #   else
 #     if defined(NEXT) || defined(MACOSX) || defined(DOS4GW) || \
-	 (defined(AMIGA) && !defined(GC_AMIGA_FASTALLOC))
+	 (defined(AMIGA) && !defined(GC_AMIGA_FASTALLOC)) || \
+	 (defined(SUNOS5) && !defined(USE_MMAP))
 #       define GET_MEM(bytes) HBLKPTR((size_t) \
 				      calloc(1, (size_t)bytes + GC_page_size) \
                                       + GC_page_size-1)
@@ -787,11 +766,10 @@ struct hblkhdr {
 # define BODY_SZ (HBLKSIZE/sizeof(word))
 
 struct hblk {
-#   if 0  /* DISCARDWORDS no longer supported */
-        word garbage[DISCARD_WORDS];
-#   endif
     word hb_body[BODY_SZ];
 };
+
+# define HBLK_IS_FREE(hdr) ((hdr) -> hb_map == GC_invalid_map)
 
 # define OBJ_SZ_TO_BLOCKS(sz) \
     divHBLKSZ(WORDS_TO_BYTES(sz) + HBLKSIZE-1)
@@ -1765,8 +1743,12 @@ GC_bool GC_page_was_ever_dirty GC_PROTO((struct hblk *h));
 void GC_is_fresh GC_PROTO((struct hblk *h, word n));
   			/* Assert the region currently contains no	*/
   			/* valid pointers.				*/
-void GC_write_hint GC_PROTO((struct hblk *h));
-  			/* h is about to be written.	*/
+void GC_remove_protection GC_PROTO((struct hblk *h, word nblocks,
+			   	    GC_bool pointerfree));
+  			/* h is about to be writteni or allocated.  Ensure  */
+			/* that it's not write protected by the virtual	    */
+			/* dirty bit implementation.			    */
+			
 void GC_dirty_init GC_PROTO((void));
   
 /* Slow/general mark bit manipulation: */

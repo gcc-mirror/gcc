@@ -838,7 +838,7 @@ long GC_markers = 2;		/* Normally changed by thread-library-	*/
 				/* -specific code.			*/
 
 /* Mark using the local mark stack until the global mark stack is empty	*/
-/* and ther are no active workers.  Update GC_first_nonempty to reflect	*/
+/* and there are no active workers. Update GC_first_nonempty to reflect	*/
 /* progress.								*/
 /* Caller does not hold mark lock.					*/
 /* Caller has already incremented GC_helper_count.  We decrement it,	*/
@@ -918,7 +918,7 @@ void GC_mark_local(mse *local_mark_stack, int id)
 		    return;
 		}
 		/* else there's something on the stack again, or	*/
-		/* another help may push something.			*/
+		/* another helper may push something.			*/
 		GC_active_count++;
 	        GC_ASSERT(GC_active_count > 0);
 		GC_release_mark_lock();
@@ -950,8 +950,10 @@ void GC_do_parallel_mark()
 
     GC_acquire_mark_lock();
     GC_ASSERT(I_HOLD_LOCK());
-    GC_ASSERT(!GC_help_wanted);
-    GC_ASSERT(GC_active_count == 0);
+    /* This could be a GC_ASSERT, but it seems safer to keep it on	*/
+    /* all the time, especially since it's cheap.			*/
+    if (GC_help_wanted || GC_active_count != 0 || GC_helper_count != 0)
+	ABORT("Tried to start parallel mark in bad state");
 #   ifdef PRINTSTATS
 	GC_printf1("Starting marking for mark phase number %lu\n",
 		   (unsigned long)GC_mark_no);
@@ -1374,11 +1376,11 @@ ptr_t cold_gc_frame;
 	return;
     }
 #   ifdef STACK_GROWS_DOWN
-	GC_push_all_eager(bottom, cold_gc_frame);
 	GC_push_all(cold_gc_frame - sizeof(ptr_t), top);
+	GC_push_all_eager(bottom, cold_gc_frame);
 #   else /* STACK_GROWS_UP */
-	GC_push_all_eager(cold_gc_frame, top);
 	GC_push_all(bottom, cold_gc_frame + sizeof(ptr_t));
+	GC_push_all_eager(cold_gc_frame, top);
 #   endif /* STACK_GROWS_UP */
   } else {
     GC_push_all_eager(bottom, top);

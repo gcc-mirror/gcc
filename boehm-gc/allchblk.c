@@ -86,7 +86,6 @@ word blocks_needed;
     
 }
 
-# define HBLK_IS_FREE(hdr) ((hdr) -> hb_map == GC_invalid_map)
 # define PHDR(hhdr) HDR(hhdr -> hb_prev)
 # define NHDR(hhdr) HDR(hhdr -> hb_next)
 
@@ -719,9 +718,6 @@ int n;
 
     if (0 == hbp) return 0;
 	
-    /* Notify virtual dirty bit implementation that we are about to write. */
-    	GC_write_hint(hbp);
-    
     /* Add it to map of valid blocks */
     	if (!GC_install_counts(hbp, (word)size_needed)) return(0);
     	/* This leaks memory under very rare conditions. */
@@ -731,6 +727,11 @@ int n;
             GC_remove_counts(hbp, (word)size_needed);
             return(0); /* ditto */
         }
+
+    /* Notify virtual dirty bit implementation that we are about to write.  */
+    /* Ensure that pointerfree objects are not protected if it's avoidable. */
+    	GC_remove_protection(hbp, divHBLKSZ(size_needed),
+			     (hhdr -> hb_descr == 0) /* pointer-free */);
         
     /* We just successfully allocated a block.  Restart count of	*/
     /* consecutive failures.						*/

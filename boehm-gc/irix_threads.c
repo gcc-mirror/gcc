@@ -141,8 +141,6 @@ GC_bool GC_thr_initialized = FALSE;
 
 size_t GC_min_stack_sz;
 
-size_t GC_page_sz;
-
 # define N_FREE_LISTS 25
 ptr_t GC_stack_free_lists[N_FREE_LISTS] = { 0 };
 		/* GC_stack_free_lists[i] is free list for stacks of 	*/
@@ -171,14 +169,14 @@ ptr_t GC_stack_alloc(size_t * stack_size)
     if (result != 0) {
         GC_stack_free_lists[index] = *(ptr_t *)result;
     } else {
-        result = (ptr_t) GC_scratch_alloc(search_sz + 2*GC_page_sz);
-        result = (ptr_t)(((word)result + GC_page_sz) & ~(GC_page_sz - 1));
+        result = (ptr_t) GC_scratch_alloc(search_sz + 2*GC_page_size);
+        result = (ptr_t)(((word)result + GC_page_size) & ~(GC_page_size - 1));
         /* Protect hottest page to detect overflow. */
 #	ifdef STACK_GROWS_UP
-          /* mprotect(result + search_sz, GC_page_sz, PROT_NONE); */
+          /* mprotect(result + search_sz, GC_page_size, PROT_NONE); */
 #	else
-          /* mprotect(result, GC_page_sz, PROT_NONE); */
-          result += GC_page_sz;
+          /* mprotect(result, GC_page_size, PROT_NONE); */
+          result += GC_page_size;
 #	endif
     }
     *stack_size = search_sz;
@@ -438,7 +436,6 @@ void GC_thr_init()
     if (GC_thr_initialized) return;
     GC_thr_initialized = TRUE;
     GC_min_stack_sz = HBLKSIZE;
-    GC_page_sz = sysconf(_SC_PAGESIZE);
     (void) sigaction(SIG_SUSPEND, 0, &act);
     if (act.sa_handler != SIG_DFL)
     	ABORT("Previously installed SIG_SUSPEND handler");
@@ -602,7 +599,7 @@ GC_pthread_create(pthread_t *new_thread,
     si -> start_routine = start_routine;
     si -> arg = arg;
     LOCK();
-    if (!GC_thr_initialized) GC_thr_init();
+    if (!GC_initialized) GC_init();
     if (NULL == attr) {
         stack = 0;
 	(void) pthread_attr_init(&new_attr);

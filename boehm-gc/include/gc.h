@@ -305,6 +305,20 @@ GC_API int GC_dont_precollect;  /* Don't collect as part of 		*/
  */
 GC_API void GC_init GC_PROTO((void));
 
+GC_API unsigned long GC_time_limit;
+				/* If incremental collection is enabled, */
+				/* We try to terminate collections	 */
+				/* after this many milliseconds.  Not a	 */
+				/* hard time bound.  Setting this to 	 */
+				/* GC_TIME_UNLIMITED will essentially	 */
+				/* disable incremental collection while  */
+				/* leaving generational collection	 */
+				/* enabled.	 			 */
+#	define GC_TIME_UNLIMITED 999999
+				/* Setting GC_time_limit to this value	 */
+				/* will disable the "pause time exceeded */
+				/* tests.				 */
+
 /*
  * general purpose allocation routines, with roughly malloc calling conv.
  * The atomic versions promise that no relevant pointers are contained
@@ -462,6 +476,16 @@ GC_API size_t GC_get_total_bytes GC_PROTO((void));
 /* Only the generational piece of this is	*/
 /* functional if GC_parallel is TRUE.		*/
 GC_API void GC_enable_incremental GC_PROTO((void));
+
+/* Does incremental mode write-protect pages?  Returns zero or	*/
+/* more of the following, or'ed together:			*/
+#define GC_PROTECTS_POINTER_HEAP  1 /* May protect non-atomic objs.	*/
+#define GC_PROTECTS_PTRFREE_HEAP  2
+#define GC_PROTECTS_STATIC_DATA   4 /* Curently never.			*/
+#define GC_PROTECTS_STACK	  8 /* Probably impractical.		*/
+
+#define GC_PROTECTS_NONE 0
+GC_API int GC_incremental_protection_needs GC_PROTO((void));
 
 /* Perform some garbage collection work, if appropriate.	*/
 /* Return 0 if there is no more work to be done.		*/

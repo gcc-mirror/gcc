@@ -1,6 +1,10 @@
+2002-02-12  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	Imported GC 6.1 Alpha 3.
+
 2001-02-11  Adam Megacz <adam@xwt.org
 
-        * gcc/boehm-gc/configure.in: support for win32, saner
+	* gcc/boehm-gc/configure.in: support for win32, saner
 	cross-compile options
 
 2001-02-08  Anthony Green  <green@redhat.com>
@@ -16,13 +20,13 @@
 
 2002-02-06  Adam Megacz <adam@xwt.org>
 
-        * boehm-gc/include/gc.h: (GC_CreateThread) This function is
-        now exposed on all Win32 platforms.
-        * boehm-gc/win32_threads.c: (GC_CreateThread) This now
-        compiles on Win32; it invokes CreateThread() if GC is built
-        as a DLL; otherwise it registers the thread.
-        * boehm-gc/misc.c (GC_init): Initialize GC_allocate_ml in case
-        libgcjgc was not built as a DLL.
+	* boehm-gc/include/gc.h: (GC_CreateThread) This function is
+	now exposed on all Win32 platforms.
+	* boehm-gc/win32_threads.c: (GC_CreateThread) This now
+	compiles on Win32; it invokes CreateThread() if GC is built
+	as a DLL; otherwise it registers the thread.
+	* boehm-gc/misc.c (GC_init): Initialize GC_allocate_ml in case
+	libgcjgc was not built as a DLL.
 
 2002-02-01  Adam Megacz <adam@xwt.org>
 

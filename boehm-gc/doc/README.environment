@@ -1,5 +1,5 @@
 The garbage collector looks at a number of environment variables which are
-the used to affect its operation.  These are examined only on Un*x-like
+then used to affect its operation.  These are examined only on Un*x-like
 platforms.
 
 GC_INITIAL_HEAP_SIZE=<bytes> -	Initial heap size in bytes.  May speed up
@@ -31,6 +31,47 @@ GC_NPROCS=<n> - Linux w/threads only.  Explicitly sets the number of processors
 
 GC_NO_BLACKLIST_WARNING - Prevents the collector from issuing
 		"Needed to allocate blacklisted block at ..." warnings.
+
+GC_IGNORE_GCJ_INFO - Ignore the type descriptors implicitly supplied by
+		     GC_gcj_malloc and friends.  This is useful for debugging
+		     descriptor generation problems, and possibly for
+		     temporarily working around such problems.  It forces a
+		     fully conservative scan of all heap objects except
+		     those known to be pointerfree, and may thus have other
+		     adverse effects.
+
+GC_PRINT_BACK_HEIGHT - Print max length of chain through unreachable objects
+		     ending in a reachable one.  If this number remains
+		     bounded, then the program is "GC robust".  This ensures
+		     that a fixed number of misidentified pointers can only
+		     result in a bounded space leak.  This currently only
+		     works if debugging allocation is used throughout.
+		     It increases GC space and time requirements appreciably.
+		     This feature is still somewhat experimental, and requires
+		     that the collector have been built with MAKE_BACK_GRAPH
+		     defined.  For details, see Boehm, "Bounding Space Usage
+		     of Conservative Garbage Collectors", POPL 2001, or
+		     http://lib.hpl.hp.com/techpubs/2001/HPL-2001-251.html .
+
+GC_ENABLE_INCREMENTAL - Turn on incremental collection at startup.  Note that,
+		     depending on platform and collector configuration, this
+		     may involve write protecting pieces of the heap to
+		     track modifications.  These pieces may include pointerfree
+		     objects or not.  Although this is intended to be
+		     transparent, it may cause unintended system call failures.
+		     Use with caution.
+
+GC_PAUSE_TIME_TARGET - Set the desired garbage collector pause time in msecs.
+		     This only has an effect if incremental collection is enabled.
+		     If a collection requires appreciably more time than this,
+		     the client will be restarted, and the collector will need
+		     to do additional work to compensate.  The special value
+		     "999999" indicates that pause time is unlimited, and the
+		     incremental collector will behave completely like a
+		     simple generational collector.  If the collector is
+		     configured for parallel marking, and run on a multiprocessor,
+		     incremental collection should only be used with unlimited
+		     pause time.
 
 The following turn on runtime flags that are also program settable.  Checked
 only during initialization.  We expect that they will usually be set through

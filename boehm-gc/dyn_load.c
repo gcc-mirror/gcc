@@ -79,6 +79,14 @@
 #   define l_name	lm_name
 #endif
 
+#if defined(LINUX) && defined(__ELF__) || defined(SCO_ELF) || \
+    (defined(FREEBSD) && defined(__ELF__)) || \
+    (defined(NETBSD) && defined(__ELF__)) || defined(HURD)
+#   include <stddef.h>
+#   include <elf.h>
+#   include <link.h>
+#endif
+
 /* Newer versions of GNU/Linux define this macro.  We
  * define it similarly for any ELF systems that don't.  */
 #  ifndef ElfW
@@ -437,10 +445,6 @@ static char *parse_map_entry(char *buf_ptr, word *start, word *end,
 /* The following is the preferred way to walk dynamic libraries	*/
 /* For glibc 2.2.4+.  Unfortunately, it doesn't work for older	*/
 /* versions.  Thanks to Jakub Jelinek for most of the code.	*/
-
-#include <stddef.h>
-#include <elf.h>
-#include <link.h>
 
 # if defined(LINUX) /* Are others OK here, too? */ \
      && (__GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2) \

@@ -246,6 +246,9 @@ word integer;
 #   ifdef KEEP_BACK_PTRS
       ((oh *)p) -> oh_back_ptr = HIDE_BACK_PTR(NOT_MARKED);
 #   endif
+#   ifdef MAKE_BACK_GRAPH
+      ((oh *)p) -> oh_bg_ptr = HIDE_BACK_PTR((ptr_t)0);
+#   endif
     ((oh *)p) -> oh_string = string;
     ((oh *)p) -> oh_int = integer;
 #   ifndef SHORT_DBG_HDRS
@@ -274,6 +277,9 @@ word integer;
     /* inconsistent while we're in the handler.				*/
 #   ifdef KEEP_BACK_PTRS
       ((oh *)p) -> oh_back_ptr = HIDE_BACK_PTR(NOT_MARKED);
+#   endif
+#   ifdef MAKE_BACK_GRAPH
+      ((oh *)p) -> oh_bg_ptr = HIDE_BACK_PTR((ptr_t)0);
 #   endif
     ((oh *)p) -> oh_string = string;
     ((oh *)p) -> oh_int = integer;

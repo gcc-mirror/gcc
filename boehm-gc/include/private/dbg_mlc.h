@@ -46,7 +46,8 @@
 	/* Stored both one past the end of user object, and one before	*/
 	/* the end of the object as seen by the allocator.		*/
 
-# if defined(KEEP_BACK_PTRS) || defined(PRINT_BLACK_LIST)
+# if defined(KEEP_BACK_PTRS) || defined(PRINT_BLACK_LIST) \
+     || defined(MAKE_BACK_GRAPH)
     /* Pointer "source"s that aren't real locations.	*/
     /* Used in oh_back_ptr fields and as "source"	*/
     /* argument to some marking functions.		*/
@@ -60,28 +61,42 @@
 
 /* Object header */
 typedef struct {
-#   ifdef KEEP_BACK_PTRS
-	GC_hidden_pointer oh_back_ptr;
-	    /* We make sure that we only store even valued	*/
-	    /* pointers here, so that the hidden version has	*/
-	    /* the least significant bit set.  We never		*/
-	    /* overwrite a value with the least significant	*/
-	    /* bit clear, thus ensuring that we never overwrite	*/
-	    /* a free list link field.				*/
- 	    /* Note that blocks dropped by black-listing will	*/
- 	    /* also have the lsb clear once debugging has	*/
- 	    /* started.						*/
-	    /* The following are special back pointer values.	*/
-	    /* Note that the "hidden" (i.e. bitwise 		*/
-	    /* complemented version) of these is actually 	*/
-	    /* stored.						*/
+#   if defined(KEEP_BACK_PTRS) || defined(MAKE_BACK_GRAPH)
+	/* We potentially keep two different kinds of back 	*/
+	/* pointers.  KEEP_BACK_PTRS stores a single back 	*/
+	/* pointer in each reachable object to allow reporting	*/
+	/* of why an object was retained.  MAKE_BACK_GRAPH	*/
+	/* builds a graph containing the inverse of all 	*/
+	/* "points-to" edges including those involving 		*/
+	/* objects that have just become unreachable. This	*/
+	/* allows detection of growing chains of unreachable	*/
+	/* objects.  It may be possible to eventually combine	*/
+	/* both, but for now we keep them separate.  Both	*/
+	/* kinds of back pointers are hidden using the 		*/
+	/* following macros.  In both cases, the plain version	*/
+	/* is constrained to have an least significant bit of 1,*/
+	/* to allow it to be distinguished from a free list 	*/
+	/* link.  This means the plain version must have an	*/
+	/* lsb of 0.						*/
+	/* Note that blocks dropped by black-listing will	*/
+	/* also have the lsb clear once debugging has		*/
+	/* started.						*/
+	/* We're careful never to overwrite a value with lsb 0.	*/
 #       if ALIGNMENT == 1
 	  /* Fudge back pointer to be even.  */
 #	  define HIDE_BACK_PTR(p) HIDE_POINTER(~1 & (GC_word)(p))
 #	else
 #	  define HIDE_BACK_PTR(p) HIDE_POINTER(p)
 #	endif
-#	ifdef ALIGN_DOUBLE
+	
+#       ifdef KEEP_BACK_PTRS
+	  GC_hidden_pointer oh_back_ptr;
+#	endif
+#	ifdef MAKE_BACK_GRAPH
+	  GC_hidden_pointer oh_bg_ptr;
+#	endif
+#	if defined(ALIGN_DOUBLE) && \
+	    (defined(KEEP_BACK_PTRS) != defined(MAKE_BACK_GRAPH))
 	  word oh_dummy;
 #	endif
 #   endif
@@ -139,9 +154,9 @@ typedef struct {
   GC_bool GC_has_other_debug_info(/* p */);
 #endif
 
-#ifdef KEEP_BACK_PTRS
+#if defined(KEEP_BACK_PTRS) || defined(MAKE_BACK_GRAPH)
 # define GC_HAS_DEBUG_INFO(p) \
-	((((oh *)p)->oh_back_ptr & 1) && GC_has_other_debug_info(p))
+	((*((word *)p) & 1) && GC_has_other_debug_info(p))
 #else
 # define GC_HAS_DEBUG_INFO(p) GC_has_other_debug_info(p)
 #endif

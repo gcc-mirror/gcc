@@ -337,6 +337,20 @@ DCL_LOCK_STATE;
   {
     return((GC_PTR)REDIRECT_MALLOC(n*lb));
   }
+
+# include <string.h>
+# ifdef __STDC__
+    char *strdup(const char *s)
+# else
+    char *strdup(s)
+    char *s;
+# endif
+  {
+    size_t len = strlen + 1;
+    char * result = ((char *)REDIRECT_MALLOC(len+1));
+    BCOPY(s, result, len+1);
+    return result;
+  }
 # endif /* REDIRECT_MALLOC */
 
 /* Explicitly deallocate an object p.				*/

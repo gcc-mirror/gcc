@@ -136,7 +136,8 @@ extern mse * GC_mark_stack;
 /* Set *new_hdr_p to corr. hdr.				*/
 #ifdef __STDC__
 # ifdef PRINT_BLACK_LIST
-    ptr_t GC_find_start(ptr_t current, hdr *hhdr, hdr **new_hdr_p, word source);
+    ptr_t GC_find_start(ptr_t current, hdr *hhdr, hdr **new_hdr_p,
+		    	ptr_t source);
 # else
     ptr_t GC_find_start(ptr_t current, hdr *hhdr, hdr **new_hdr_p);
 # endif

@@ -1,8 +1,8 @@
 The collector has at various times been compiled under Windows 95 & NT,
 with the original Microsoft SDK, with Visual C++ 2.0, 4.0, and 6, with
-the GNU win32 environment, with Borland 4.5, and recently with
-Watcom C.  It is likely that some of these have been broken in the
-meantime.  Patches are appreciated.
+the GNU win32 environment, with Borland 4.5,  with Watcom C, and recently
+with the Digital Mars compiler.  It is likely that some of these have been
+broken in the meantime.  Patches are appreciated.
 
 It runs under both win32s and win32, but with different semantics.
 Under win32, all writable pages outside of the heaps and stack are
@@ -44,6 +44,13 @@ window colors.)
 
 In general -DREDIRECT_MALLOC is unlikely to work unless the
 application is completely statically linked.
+
+The collector normally allocates memory from the OS with VirtualAlloc.
+This appears to cause problems under Windows NT and Windows 2000 (but
+not Windows 95/98) if the memory is later passed to CreateDIBitmap.
+To work around this problem, build the collector with -DUSE_GLOBAL_ALLOC.
+This is currently incompatible with -DUSE_MUNMAP.  (Thanks to Jonathan
+Clark for tracking this down.)
 
 For Microsoft development tools, rename NT_MAKEFILE as
 MAKEFILE.  (Make sure that the CPU environment variable is defined
