@@ -1,3 +1,8 @@
+2003-03-27  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/10158
+	* g++.dg/template/friend18.C: New test.
+
 2003-03-26  Roger Sayle  <roger@eyesopen.com>
 
 	* g77.f-torture/compile/20030326-1.f: New test case.

@@ -1,3 +1,11 @@
+2003-03-27  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/10158
+	* parser.c (cp_parser_function_definition): Set
+	DECL_INITIALIZED_IN_CLASS for members.
+	* pt.c (instantiate_decl): Only reduce the template args for
+	friends that are not defined in class.
+
 2003-03-25  Jason Merrill  <jason@redhat.com>
 
 	* call.c (print_z_candidate): Change name of first arg to msgid.
@@ -6,23 +14,23 @@
 2003-03-24  Nathan Sidwell  <nathan@codesourcery.com>
 	
 	PR c++/9898, PR c++/383, DR 322
-	* pt.c (maybe_adjust_types_for_deduction) [DEDUCE_CONV]: Look
+	* pt.c (maybe_adjust_types_for_deduction) <DEDUCE_CONV>: Look
 	through reference types on both PARM and ARG.
 
 2003-03-24  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/10119
-	* error.c (dump_expr) [BASELINK]: Use dump_expr.
+	* error.c (dump_expr) <BASELINK>: Use dump_expr.
 	* pt.c (maybe_fold_nontype_args): New function.
-	(tsubst_copy) [SCOPE_REF]: Subst any template_id args.
-	[TEMPLATE_ID_EXPR]: Break out folding code, call it.
-	(tsubst_copy_and_build) [TEMPLATE_ID_EXPR]: Call
+	(tsubst_copy) <SCOPE_REF>: Subst any template_id args.
+	<TEMPLATE_ID_EXPR>: Break out folding code, call it.
+	(tsubst_copy_and_build) <TEMPLATE_ID_EXPR>: Call
 	maybe_fold_nontype_args.
 
 2003-03-24  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/10026
-	* decl2.c (arg_assoc_type) [ERROR_MARK]: Don't die.
+	* decl2.c (arg_assoc_type) <ERROR_MARK>: Don't die.
 
 2003-03-23  Mark Mitchell  <mark@codesourcery.com>
 
