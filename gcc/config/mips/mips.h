@@ -171,7 +171,7 @@ extern const struct mips_cpu_info *mips_tune_info;
 #define MASK_FIX_R4400	   0x01000000	/* Work around R4400 errata.  */
 #define MASK_FIX_SB1	   0x02000000	/* Work around SB-1 errata.  */
 #define MASK_FIX_VR4120	   0x04000000   /* Work around VR4120 errata.  */
-
+#define MASK_VR4130_ALIGN  0x08000000	/* Perform VR4130 alignment opts.  */
 #define MASK_FP_EXCEPTIONS 0x10000000   /* FP exceptions are enabled.  */
 
 					/* Debug switches, not documented */
@@ -253,6 +253,7 @@ extern const struct mips_cpu_info *mips_tune_info;
 					/* Work around R4400 errata.  */
 #define TARGET_FIX_R4400	(target_flags & MASK_FIX_R4400)
 #define TARGET_FIX_VR4120	(target_flags & MASK_FIX_VR4120)
+#define TARGET_VR4130_ALIGN	(target_flags & MASK_VR4130_ALIGN)
 
 #define TARGET_FP_EXCEPTIONS	(target_flags & MASK_FP_EXCEPTIONS)
 
@@ -332,6 +333,8 @@ extern const struct mips_cpu_info *mips_tune_info;
 #define TUNE_MIPS3000               (mips_tune == PROCESSOR_R3000)
 #define TUNE_MIPS3900               (mips_tune == PROCESSOR_R3900)
 #define TUNE_MIPS4000               (mips_tune == PROCESSOR_R4000)
+#define TUNE_MIPS4120               (mips_tune == PROCESSOR_R4120)
+#define TUNE_MIPS4130               (mips_tune == PROCESSOR_R4130)
 #define TUNE_MIPS5000               (mips_tune == PROCESSOR_R5000)
 #define TUNE_MIPS5400               (mips_tune == PROCESSOR_R5400)
 #define TUNE_MIPS5500               (mips_tune == PROCESSOR_R5500)
@@ -371,7 +374,9 @@ extern const struct mips_cpu_info *mips_tune_info;
 
    Multiply-accumulate instructions are a bigger win for some targets
    than others, so this macro is defined on an opt-in basis.  */
-#define TUNE_MACC_CHAINS	    TUNE_MIPS5500
+#define TUNE_MACC_CHAINS	    (TUNE_MIPS5500		\
+				     || TUNE_MIPS4120		\
+				     || TUNE_MIPS4130)
 
 #define TARGET_OLDABI		    (mips_abi == ABI_32 || mips_abi == ABI_O64)
 #define TARGET_NEWABI		    (mips_abi == ABI_N32 || mips_abi == ABI_64)
@@ -619,6 +624,10 @@ extern const struct mips_cpu_info *mips_tune_info;
      N_("Don't generate fused multiply/add instructions")},		\
   {"fused-madd",         -MASK_NO_FUSED_MADD,                           \
      N_("Generate fused multiply/add instructions")},			\
+  {"vr4130-align",	  MASK_VR4130_ALIGN,				\
+     N_("Perform VR4130-specific alignment optimizations")},		\
+  {"no-vr4130-align",	 -MASK_VR4130_ALIGN,				\
+     N_("Don't perform VR4130-specific alignment optimizations")},	\
   {"fix4300",             MASK_4300_MUL_FIX,				\
      N_("Work around early 4300 hardware bug")},			\
   {"no-fix4300",         -MASK_4300_MUL_FIX,				\

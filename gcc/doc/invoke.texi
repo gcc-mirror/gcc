@@ -483,7 +483,8 @@ in the following sections.
 -mfix-vr4120  -mno-fix-vr4120  -mfix-sb1  -mno-fix-sb1 @gol
 -mflush-func=@var{func}  -mno-flush-func @gol
 -mbranch-likely  -mno-branch-likely @gol
--mfp-exceptions -mno-fp-exceptions}
+-mfp-exceptions -mno-fp-exceptions @gol
+-mvr4130-align -mno-vr4130-align}
 
 @emph{i386 and x86-64 Options}
 @gccoptlist{-mtune=@var{cpu-type}  -march=@var{cpu-type} @gol
@@ -8245,6 +8246,18 @@ enabled.
 For instance, on the SB-1, if FP exceptions are disabled, and we are emitting
 64-bit code, then we can use both FP pipes.  Otherwise, we can only use one
 FP pipe.
+
+@item -mvr4130-align
+@itemx -mno-vr4130-align
+@opindex mvr4130-align
+The VR4130 pipeline is two-way superscalar, but can only issue two
+instructions together if the first one is 8-byte aligned.  When this
+option is enabled, GCC will align pairs of instructions that it
+thinks should execute in parallel.
+
+This option only has an effect when optimizing for the VR4130.
+It normally makes code faster, but at the expense of making it bigger.
+It is enabled by default at optimization level @option{-O3}.
 @end table
 
 @node i386 and x86-64 Options
