@@ -496,6 +496,7 @@ else
 fi
 AC_SUBST(INSTALL_DEST)
 
+m4_pattern_allow(LIBOBJS)
 L=""
 for l in x $LIBOBJS; do
   case $l in
