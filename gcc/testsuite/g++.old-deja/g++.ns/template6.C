@@ -6,7 +6,7 @@ namespace A {
    namespace B {
 
       template <class T1,class T2>
-         class B {
+         struct B {
                static const unsigned count = 0;
                template <class ForwardIter>
                void SetError(ForwardIter it,const T1& p1,const T2& p2) const { }
