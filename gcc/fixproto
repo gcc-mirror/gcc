@@ -142,7 +142,7 @@ for code in ALL STD ; do
 	  # for C++, so skip those.
 	  subdirs="$subdirs "`cd $rel_source_dir/$d; find . -type d -print | \
 	           sed -e '/^\.$/d' -e "s|^\./|${d}/|" -e 's|^\./||' \
-		     -e '/CC$/d' -e '/\+\+/d'`
+		     -e '/CC$/d' -e '/[+][+]/d'`
 	  links=
 	  links=`cd $rel_source_dir; find $d/. -type l -print | \
 		       sed -e "s|$d/./|$d/|" -e 's|^\./||'`
