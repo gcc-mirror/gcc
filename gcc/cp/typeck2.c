@@ -199,8 +199,8 @@ retry:
     case RECORD_TYPE:
     case UNION_TYPE:
     case ENUMERAL_TYPE:
-      cp_error_at
-        ("invalid use of a forward-declared, but not defined type `%#T'", type);
+      cp_error ("invalid use of undefined type `%#T'", type);
+      cp_error_at ("forward declaration of `%#T'", type);
       break;
 
     case VOID_TYPE:
