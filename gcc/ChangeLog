@@ -1,3 +1,8 @@
+2004-09-21  Paul Brook  <paul@codesourcery.com>
+
+	* varasm.c (default_assemble_integer): Return false for values wider
+	than the target word size.  Works around GAS bug.
+
 2004-09-21  Zack Weinberg  <zack@codesourcery.com>
 
 	* reg-notes.def (REG_DEP_TRUE): New entry, place first so it
