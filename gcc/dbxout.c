@@ -1011,9 +1011,12 @@ dbxout_range_type (type)
     dbxout_type (type, 0, 0); /* E.g. Pascal's ARRAY [BOOLEAN] of INTEGER */
   else
     {
-      /* This used to say `r1' and we used to take care
-	 to make sure that `int' was type number 1.  */
-      dbxout_type_index (integer_type_node);
+      /* Traditionally, we made sure 'int' was type 1, and builtin types
+	 were defined to be sub-ranges of int.  Unfortunately, this
+	 does not allow us to distinguish true sub-ranges from integer
+	 types.  So, instead we define integer (non-sub-range) types as
+	 sub-ranges of themselves. */
+      dbxout_type_index (type);
     }
   if (TREE_CODE (TYPE_MIN_VALUE (type)) == INTEGER_CST)
     fprintf (asmfile, ";%d", 
