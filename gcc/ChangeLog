@@ -1,3 +1,9 @@
+Tue Oct 26 20:42:45 1999  Richard Henderson  <rth@cygnus.com>
+
+	* resource.c (find_basic_block): Delete.
+	(mark_target_live_regs, incr_ticks_for_insn): Use BLOCK_NUM instead.
+	(init_resource_info): Call compute_bb_for_insn.
+
 Tue Oct 26 20:21:02 1999  Richard Henderson  <rth@cygnus.com>
 
 	* flow.c (merge_blocks_move_predecessor_nojumps): Cope
