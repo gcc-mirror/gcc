@@ -91,7 +91,7 @@ public class ServerSocket
       throw new NullPointerException("impl may not be null");
 
     this.impl = impl;
-    this.impl.create (true);
+    this.impl.create(true);
   }
 
   /*
@@ -370,11 +370,10 @@ public class ServerSocket
     // it is in non-blocking mode, we throw an IllegalBlockingModeException.
     // However, in our implementation if the channel itself initiated this
     // operation, then we must honor it regardless of its blocking mode.
-    if (getChannel() != null
-        && !getChannel().isBlocking ()
-        && !((PlainSocketImpl) getImpl()).isInChannelOperation())
-      throw new IllegalBlockingModeException ();
-	    
+    if (getChannel() != null && ! getChannel().isBlocking()
+        && ! ((PlainSocketImpl) getImpl()).isInChannelOperation())
+      throw new IllegalBlockingModeException();
+
     impl.accept(socket.getImpl());
   }
 
@@ -579,11 +578,9 @@ public class ServerSocket
   {
     if (! isBound())
       return "ServerSocket[unbound]";
-    
-    return ("ServerSocket[addr=" + getInetAddress()
-	    + ",port=" + impl.getPort()
-	    + ",localport=" + impl.getLocalPort()
-	    + "]");
+
+    return ("ServerSocket[addr=" + getInetAddress() + ",port="
+           + impl.getPort() + ",localport=" + impl.getLocalPort() + "]");
   }
 
   /**
