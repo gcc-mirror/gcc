@@ -9462,6 +9462,7 @@ resolve_qualified_expression_name (wfl, found_decl, where_found, type_found)
 	  *where_found = patch_method_invocation (qual_wfl, decl, type,
 						  from_super,
 						  &is_static, &ret_decl);
+	  from_super = 0;
 	  if (*where_found == error_mark_node)
 	    {
 	      RESTORE_THIS_AND_CURRENT_CLASS;
