@@ -29,7 +29,6 @@
 #
 
 # This is needed to find uname on a Pyramid OSx when run in the BSD universe.
-# Add the directory in our PATH last so BSD programs wont get overridden.
 # (ghazi@noc.rutgers.edu 8/24/94.)
 if (test -f /.attbin/uname) >/dev/null 2>&1 ; then
 	PATH=$PATH:/.attbin ; export PATH
@@ -60,9 +59,6 @@ case "${UNAME_MACHINE}:${UNAME_SYSTEM}:${UNAME_RELEASE}:${UNAME_VERSION}" in
 	echo arm-acorn-riscix${UNAME_RELEASE}
 	exit 0;;
     Pyramid*:OSx*:*:*)
-	# We want to differentiate universes because most programs will
-	# only compile in one or the other.  Programs which compile in
-	# both can case switch on pyramid-pyramid-* in configure.
 	if test "`(/bin/universe) 2>/dev/null`" = att ; then
 		echo pyramid-pyramid-sysv3
 	else
