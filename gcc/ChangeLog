@@ -1,3 +1,9 @@
+2004-02-06  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* reload1.c (check_eliminable_occurrences): Optimize the reset
+	of can_eliminate.
+	(eliminate_regs_in_insn): Likewise.
+
 2004-02-06  Daniel Berlin <dberlin@dberlin.org>
             Josef Zlomek  <zlomekj@suse.cz>
 
