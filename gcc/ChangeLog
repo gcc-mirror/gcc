@@ -1,3 +1,8 @@
+Wed Mar 31 00:50:48 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* inclhack.def (bool): Also fix bogus bool in curses_colr/curses.h
+	* fixincl.x, inclhack.sh, fixincl.sh: Rebuilt.
+
 Tue Mar 30 20:51:40 1999  Mark Mitchell  <mark@codesourcery.com>
 
 	* alias.c (alias_set_compare): Remove.
