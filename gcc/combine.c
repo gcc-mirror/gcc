@@ -1143,13 +1143,17 @@ combinable_i3pat (i3, loc, i2dest, i1dest, i1_not_in_src, pi3dest_killed)
 	       || (i1dest && reg_overlap_mentioned_p (i1dest, inner_dest))))
 	  /* This is the same test done in can_combine_p except that we
 	     allow a hard register with SMALL_REGISTER_CLASSES if SRC is a
-	     CALL operation.  */
+	     CALL operation.
+	     Moreover, we can't test all_adjacent; we don't have to, since
+	     this instruction will stay in place, thus we are not considering
+	     to increase the lifetime of INNER_DEST.  */
 	  || (GET_CODE (inner_dest) == REG
 	      && REGNO (inner_dest) < FIRST_PSEUDO_REGISTER
 	      && (! HARD_REGNO_MODE_OK (REGNO (inner_dest),
 					GET_MODE (inner_dest))
 #ifdef SMALL_REGISTER_CLASSES
-		 || (GET_CODE (src) != CALL && ! REG_USERVAR_P (inner_dest))
+		 || (GET_CODE (src) != CALL && ! REG_USERVAR_P (inner_dest)
+		     && FUNCTION_VALUE_REGNO_P (REGNO (inner_dest)))
 #endif
 		  ))
 	  || (i1_not_in_src && reg_overlap_mentioned_p (i1dest, src)))
