@@ -1,3 +1,7 @@
+2004-02-03  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* config.gcc (sh[234]l): Use little endian fragments.
+
 2004-02-03  Paul Koning  <pkoning@equallogic.com>
 
 	* config/pdp11/pdp11-modes.def: Add RESET_FLOAT_FORMAT calls.

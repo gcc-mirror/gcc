@@ -1853,7 +1853,7 @@ s390x-ibm-tpf*)
 sh-*-elf* | sh[2346l]*-*-elf* | sh*-*-kaos*)
 	tmake_file="sh/t-sh sh/t-elf"
 	case ${target} in
-	shl* | sh64l*)
+	shl* | sh[234]l* | sh64l*)
 		tm_file="sh/little.h ${tm_file}"
 		tmake_file="${tmake_file} sh/t-le"
 		;;
