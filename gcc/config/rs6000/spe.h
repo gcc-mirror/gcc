@@ -541,8 +541,6 @@ __internal_ev_mwhgumian (__ev64_opaque__ a, __ev64_opaque__ b)
 
 #define __ev_create_ufix32_u32 __ev_create_u32
 #define __ev_create_sfix32_s32 __ev_create_s32
-#define __ev_create_sfix32_fs __ev_create_fs
-#define __ev_create_ufix32_fs __ev_create_fs
 
 static inline __ev64_opaque__
 __ev_create_s16 (int16_t a, int16_t b, int16_t c, int16_t d)
@@ -625,6 +623,24 @@ __ev_create_fs (float a, float b)
 }
 
 static inline __ev64_opaque__
+__ev_create_sfix32_fs (float a, float b)
+{
+  __ev64_opaque__ ev;
+
+  ev = (__ev64_opaque__) __ev_create_fs (a, b);
+  return (__ev64_opaque__) __builtin_spe_evfsctsf (ev);
+}
+
+static inline __ev64_opaque__
+__ev_create_ufix32_fs (float a, float b)
+{
+  __ev64_opaque__ ev;
+
+  ev = (__ev64_opaque__) __ev_create_fs (a, b);
+  return (__ev64_opaque__) __builtin_spe_evfsctuf (ev);
+}
+
+static inline __ev64_opaque__
 __ev_create_s64 (int64_t a)
 {
   union
@@ -665,10 +681,10 @@ __ev_create_u64 (uint64_t a)
 #define __ev_get_lower_ufix32_u32(a) __ev_get_lower_u32(a)
 #define __ev_get_upper_sfix32_s32(a) __ev_get_upper_s32(a)
 #define __ev_get_lower_sfix32_s32(a) __ev_get_lower_s32(a)
-#define __ev_get_upper_sfix32_fs(a) __ev_get_upper_fs(a)
-#define __ev_get_lower_sfix32_fs(a) __ev_get_lower_fs(a)
-#define __ev_get_upper_ufix32_fs(a) __ev_get_upper_fs(a)
-#define __ev_get_lower_ufix32_fs(a) __ev_get_lower_fs(a)
+#define __ev_get_upper_sfix32_fs(a)  __ev_get_sfix32_fs (a, 0)
+#define __ev_get_lower_sfix32_fs(a)  __ev_get_sfix32_fs (a, 1)
+#define __ev_get_upper_ufix32_fs(a)  __ev_get_ufix32_fs (a, 0)
+#define __ev_get_lower_ufix32_fs(a)  __ev_get_ufix32_fs (a, 1)
 
 #define __ev_get_u32(a, b) __ev_get_u32_internal ((__ev64_opaque__) a, b)
 #define __ev_get_s32(a, b) __ev_get_s32_internal ((__ev64_opaque__) a, b)
@@ -678,8 +694,8 @@ __ev_create_u64 (uint64_t a)
 
 #define __ev_get_ufix32_u32(a, b) __ev_get_u32 (a, b)
 #define __ev_get_sfix32_s32(a, b) __ev_get_s32 (a, b)
-#define __ev_get_ufix32_fs(a, b) __ev_get_fs (a, b)
-#define __ev_get_sfix32_fs(a, b) __ev_get_fs (a, b)
+#define __ev_get_ufix32_fs(a, b)     __ev_get_ufix32_fs_internal ((__ev64_opaque__)(a), b)
+#define __ev_get_sfix32_fs(a, b)     __ev_get_sfix32_fs_internal ((__ev64_opaque__)(a), b)
 
 static inline uint32_t
 __ev_get_u32_internal (__ev64_opaque__ a, uint32_t pos)
@@ -720,6 +736,24 @@ __ev_get_fs_internal (__ev64_opaque__ a, uint32_t pos)
   return u.f[pos];
 }
 
+static inline float
+__ev_get_sfix32_fs_internal (__ev64_opaque__ a, uint32_t pos)
+{
+  __ev64_fs__ v;
+
+  v = __builtin_spe_evfscfsf (a);
+  return __ev_get_fs_internal (v, pos);
+}
+
+static inline float
+__ev_get_ufix32_fs_internal (__ev64_opaque__ a, uint32_t pos)
+{
+  __ev64_fs__ v;
+
+  v = __builtin_spe_evfscfuf (a);
+  return __ev_get_fs_internal (v, pos);
+}
+
 static inline uint16_t
 __ev_get_u16_internal (__ev64_opaque__ a, uint32_t pos)
 {
@@ -756,8 +790,9 @@ __ev_get_s16_internal (__ev64_opaque__ a, uint32_t pos)
 
 #define __ev_set_ufix32_u32 __ev_set_u32
 #define __ev_set_sfix32_s32 __ev_set_s32
-#define __ev_set_ufix32_fs __ev_set_fs
-#define __ev_set_sfix32_fs __ev_set_fs
+
+#define __ev_set_sfix32_fs(a, b, c)  __ev_set_sfix32_fs_internal ((__ev64_opaque__) (a), b, c)
+#define __ev_set_ufix32_fs(a, b, c)  __ev_set_ufix32_fs_internal ((__ev64_opaque__) (a), b, c)
 
 #define __ev_set_upper_u32(a, b) __ev_set_u32(a, b, 0)
 #define __ev_set_lower_u32(a, b) __ev_set_u32 (a, b, 1)
@@ -769,10 +804,10 @@ __ev_get_s16_internal (__ev64_opaque__ a, uint32_t pos)
 #define __ev_set_lower_ufix32_u32 __ev_set_lower_u32
 #define __ev_set_upper_sfix32_s32 __ev_set_upper_s32
 #define __ev_set_lower_sfix32_s32 __ev_set_lower_s32
-#define __ev_set_upper_sfix32_fs __ev_set_upper_fs
-#define __ev_set_lower_sfix32_fs __ev_set_lower_fs
-#define __ev_set_upper_ufix32_fs __ev_set_upper_fs
-#define __ev_set_lower_ufix32_fs __ev_set_lower_fs
+#define __ev_set_upper_sfix32_fs(a, b)  __ev_set_sfix32_fs (a, b, 0)
+#define __ev_set_lower_sfix32_fs(a, b)  __ev_set_sfix32_fs (a, b, 1)
+#define __ev_set_upper_ufix32_fs(a, b)  __ev_set_ufix32_fs (a, b, 0)
+#define __ev_set_lower_ufix32_fs(a, b)  __ev_set_ufix32_fs (a, b, 1)
 
 #define __ev_set_acc_vec64(a) __builtin_spe_evmra ((__ev64_opaque__)(a))
 
@@ -834,6 +869,38 @@ __ev_set_fs_internal (__ev64_opaque__ a, float b, uint32_t pos )
   u.v = a;
   u.f[pos] = b;
   return u.v;
+}
+
+static inline __ev64_opaque__
+__ev_set_sfix32_fs_internal (__ev64_opaque__ a, float b, uint32_t pos)
+{
+  __ev64_opaque__ v;
+  float other;
+
+  /* Get other half.  */
+  other = __ev_get_fs_internal (a, pos ^ 1);
+
+  /* Make an sfix32 with 'b'.  */
+  v = __ev_create_sfix32_fs (b, b);
+
+  /* Set other half to what it used to be.  */
+  return __ev_set_fs_internal (v, other, pos ^ 1);
+}
+
+static inline __ev64_opaque__
+__ev_set_ufix32_fs_internal (__ev64_opaque__ a, float b, uint32_t pos)
+{
+  __ev64_opaque__ v;
+  float other;
+
+  /* Get other half.  */
+  other = __ev_get_fs_internal (a, pos ^ 1);
+
+  /* Make an ufix32 with 'b'.  */
+  v = __ev_create_ufix32_fs (b, b);
+
+  /* Set other half to what it used to be.  */
+  return __ev_set_fs_internal (v, other, pos ^ 1);
 }
 
 static inline __ev64_opaque__
