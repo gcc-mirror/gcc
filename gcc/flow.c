@@ -378,8 +378,6 @@ find_basic_blocks (f, nonlocal_label_list)
   /* List of label_refs to all labels whose addresses are taken
      and used as data.  */
   rtx label_value_list;
-  /* List of label_refs from REG_LABEL notes.  */
-  rtx reg_label_list;
   rtx x, note, eh_note;
   enum rtx_code prev_code, code;
   int depth, pass;
@@ -389,7 +387,6 @@ find_basic_blocks (f, nonlocal_label_list)
  restart:
 
   label_value_list = 0;
-  reg_label_list = 0;
   block_live_static = block_live;
   bzero (block_live, n_basic_blocks);
   bzero (block_marked, n_basic_blocks);
@@ -553,14 +550,26 @@ find_basic_blocks (f, nonlocal_label_list)
 		    if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
 		      {
 			
-			/* We have no idea where the label referenced by this
-			   insn will actually be used.
+			/* References to labels in non-jumping insns have
+			   REG_LABEL notes attached to them.
 
-			   To create an accurate cfg we mark the target blocks
-			   as live and create a list of all the labels
-			   mentioned in REG_LABEL notes.  After we're done
-			   marking blocks, we go back and create an edge from
-			   every live block to labels on the list.  */ 
+			   This can happen for computed gotos; we don't care
+			   about them here since the values are also on the
+			   label_value_list and will be marked live if we find
+			   a live computed goto.
+
+			   This can also happen when we take the address of
+			   a label to pass as an argument to __throw.  Note
+			   throw only uses the value to determine what handler
+			   should be called -- ie the label is not used as
+			   a jump target, it just marks regions in the code.
+
+			   In theory we should be able to ignore the REG_LABEL
+			   notes, but we have to make sure that the label and
+			   associated insns aren't marked dead, so we make
+			   the block in question live and create an edge from
+			   this insn to the label.  This is not strictly
+			   correct, but it is close enough for now.  */
 			for (note = REG_NOTES (insn);
 			     note;
 			     note = XEXP (note, 1))
@@ -569,9 +578,9 @@ find_basic_blocks (f, nonlocal_label_list)
 			      {
 				x = XEXP (note, 0);
 				block_live[BLOCK_NUM (x)] = 1;
-				reg_label_list
-				  = gen_rtx (EXPR_LIST, VOIDmode, x,
-					     reg_label_list);
+				mark_label_ref (gen_rtx (LABEL_REF,
+							 VOIDmode, x),
+						insn, 0);
 			      }
 			  }
 
@@ -630,22 +639,6 @@ find_basic_blocks (f, nonlocal_label_list)
 		      }
 		  }
 	      }
-	}
-
-      /* We couldn't determine what edges are needed for labels on the
-	 reg_label_list above.  So make an edge from every live block to
-	 to every label on the reg_label_list.  */
-      if (reg_label_list)
-	{
-	  for (i = 1; i < n_basic_blocks; i++)
-	  if (block_live[i])
-	    {
-	      rtx x;
-
-	      for (x = reg_label_list; x; x = XEXP (x, 1))
-		mark_label_ref (gen_rtx (LABEL_REF, VOIDmode, XEXP (x, 0)),
-				basic_block_end[i], 0);
-	    }
 	}
 
       /* This should never happen.  If it does that means we've computed an
