@@ -711,6 +711,27 @@ print_lang_identifier (file, node, indent)
   print_node (file, "limbo value", IDENTIFIER_LIMBO_VALUE (node), indent + 4);
 }
 
+/* Hook called at end of compilation to assume 1 elt
+   for a top-level array decl that wasn't complete before.  */
+   
+void
+finish_incomplete_decl (decl)
+     tree decl;
+{
+  if (TREE_CODE (decl) == VAR_DECL && TREE_TYPE (decl) != error_mark_node)
+    {
+      tree type = TREE_TYPE (decl);
+      if (TREE_CODE (type) == ARRAY_TYPE
+	  && TYPE_DOMAIN (type) == 0
+	  && TREE_CODE (decl) != TYPE_DECL)
+	{
+	  complete_array_type (type, NULL_TREE, 1);
+
+	  layout_decl (decl, 0);
+	}
+    }
+}
+
 /* Create a new `struct binding_level'.  */
 
 static
@@ -2990,6 +3011,8 @@ init_decl_processing ()
   init_format_info_table ();
 
   init_iterators ();
+
+  incomplete_decl_finalize_hook = finish_incomplete_decl;
 }
 
 /* Return a definition for a builtin function named NAME and whose data type
@@ -3359,8 +3382,13 @@ finish_decl (decl, init, asmspec_tree)
 	{
 	  if (do_default)
 	    error_with_decl (decl, "array size missing in `%s'");
-	  else if (!pedantic && TREE_STATIC (decl))
-	    /* ??? Perhaps should set TREE_PUBLIC here?  */
+	  /* If a `static' var's size isn't known,
+	     make it extern as well as static, so it does not get
+	     allocated.
+	     If it is not `static', then do not mark extern;
+	     finish_incomplete_decl will give it a default size
+	     and it will get allocated.  */
+	  else if (!pedantic && TREE_STATIC (decl) && ! TREE_PUBLIC (decl))
 	    DECL_EXTERNAL (decl) = 1;
 	}
 
@@ -3580,14 +3608,14 @@ complete_array_type (type, initial_value, do_default)
 	    value = 1;
 
 	  /* Prevent further error messages.  */
-	  maxindex = build_int_2 (1, 0);
+	  maxindex = build_int_2 (0, 0);
 	}
     }
 
   if (!maxindex)
     {
       if (do_default)
-	maxindex = build_int_2 (1, 0);
+	maxindex = build_int_2 (0, 0);
       value = 2;
     }
 
