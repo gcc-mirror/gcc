@@ -1,3 +1,8 @@
+2003-08-06  Tom Tromey  <tromey@redhat.com>
+
+	* java/io/FilePermission.java (equals): Use correct index for
+	last character of path.
+
 2003-08-06  Alan Modra  <amodra@bigpond.net.au>
 
 	* acinclude.m4 (LIBGCJ_CONFIGURE): Remove AC_CANONICAL_BUILD.
