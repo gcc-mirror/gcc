@@ -2038,7 +2038,7 @@ expand_call (exp, target, ignore)
       if (target == 0)
 	{
 	  int bytes = int_size_in_bytes (TREE_TYPE (exp));
-	  target = assign_stack_temp (BLKmode, bytes, 0);
+	  target = assign_stack_temp (TYPE_MODE (TREE_TYPE (exp)), bytes, 0);
 	  MEM_IN_STRUCT_P (target) = AGGREGATE_TYPE_P (TREE_TYPE (exp));
 	  preserve_temp_slots (target);
 	}
