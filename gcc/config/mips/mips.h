@@ -64,7 +64,7 @@ enum processor_type {
   PROCESSOR_R4000,
   PROCESSOR_R4100,
   PROCESSOR_R4111,
-  PROCESSOR_R4121,
+  PROCESSOR_R4120,
   PROCESSOR_R4300,
   PROCESSOR_R4600,
   PROCESSOR_R4650,
@@ -357,7 +357,7 @@ extern void		sbss_section PARAMS ((void));
 #define TARGET_MIPS3900             (mips_arch == PROCESSOR_R3900)
 #define TARGET_MIPS4000             (mips_arch == PROCESSOR_R4000)
 #define TARGET_MIPS4100             (mips_arch == PROCESSOR_R4100)
-#define TARGET_MIPS4121             (mips_arch == PROCESSOR_R4121)
+#define TARGET_MIPS4120             (mips_arch == PROCESSOR_R4120)
 #define TARGET_MIPS4300             (mips_arch == PROCESSOR_R4300)
 #define TARGET_MIPS4KC              (mips_arch == PROCESSOR_R4KC)
 #define TARGET_MIPS5KC              (mips_arch == PROCESSOR_R5KC)

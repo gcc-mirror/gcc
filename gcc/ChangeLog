@@ -1,5 +1,12 @@
 2002-10-01  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config/mips/mips.h (PROCESSOR_R4121): Rename to PROCESSOR_R4120.
+	(TARGET_MIPS4121): Rename to TARGET_MIPS4120.
+	* config/mips/mips.c (mips_cpu_info): Rename vr4121 to vr4120.
+	* config/mips/mips.md: Apply same renaming here.
+
+2002-10-01  Richard Sandiford  <rsandifo@redhat.com>
+
 	* config/mips/mips.c (PROCESSOR_R4320, TARGET_MIPS4320): Remove.
 	(GENERATE_MULT3_SI): Remove use of TARGET_MIPS4320.
 	* config/mips/mips.c (mips_cpu_info): Remove vr4320 entry.
