@@ -1,3 +1,62 @@
+2003-12-11  Ed Falis  <falis@gnat.com>
+
+	* 5zinit.adb: Clean up.
+
+	* 5zintman.adb (Notify_Exception): replaced case statement with a call
+	to __gnat_map_signal, imported from init.c to support
+	signal -> exception mappings that depend on the vxWorks version.
+
+	* init.c: 
+	Created and exported __gnat_map_signal to support signal -> exception
+	mapping that is dependent on the VxWorks version.
+	Change mapping of SIGBUS from Program_Error to Storage_Error on VxWorks
+
+2003-12-11  Vasiliy Fofanv  <fofanov@act-europe.fr>
+
+	* 5wosinte.ads: Link with -mthreads switch.
+
+2003-12-11  Arnaud Charlet  <charlet@act-europe.fr>
+
+	* init.c (__gnat_install_handler [NetBSD]): Set
+	__gnat_handler_installed, as done on all other platforms.
+	Remove duplicated code.
+
+2003-12-11  Jerome Guitton  <guitton@act-europe.fr>
+
+	* Makefile.in (rts-zfp, rts-ravenscar): Create libgnat.a.
+
+2003-12-11  Thomas Quinot  <quinot@act-europe.fr>
+
+	* sinfo.ads: Fix inconsistent example code in comment.
+
+2003-12-11  Robert Dewar  <dewar@gnat.com>
+
+	* a-tiinau.adb: Add a couple of comments
+
+	* sem_ch3.adb: Minor reformatting
+
+	* sem_prag.adb: 
+	Fix bad prototype of Same_Base_Type in body (code reading cleanup)
+	Minor reformatting throughout
+
+2003-12-11  Ed Schonberg  <schonberg@gnat.com>
+
+	* exp_ch7.adb (Establish_Transient_Scope): If the call is within the
+	bounds of a loop, create a separate block in order to generate proper
+	cleanup actions to prevent memory leaks.
+
+	* sem_res.adb (Resolve_Call): After a call to
+	Establish_Transient_Scope, the call may be rewritten and relocated, in
+	which case no further processing is needed.
+
+	* sem_util.adb: (Wrong_Type): Refine previous fix.
+	 Fixes ACATS regressions.
+
+	PR ada/13353
+
+	* sem_prag.adb (Back_End_Cannot_Inline): A renaming_as_body can always
+	be inlined.
+
 2003-12-08  Jerome Guitton  <guitton@act-europe.fr>
 
 	* 5ytiitho.adb, 5zthrini.adb, 5ztiitho.adb, i-vthrea.adb,

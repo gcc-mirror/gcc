@@ -46,6 +46,8 @@ with Interfaces.C.Strings;
 package System.OS_Interface is
 pragma Preelaborate;
 
+   pragma Linker_Options ("-mthreads");
+
    subtype int  is Interfaces.C.int;
    subtype long is Interfaces.C.long;
 

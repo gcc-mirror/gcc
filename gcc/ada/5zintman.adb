@@ -53,12 +53,8 @@ with Interfaces.C;
 with System.OS_Interface;
 --  used for various Constants, Signal and types
 
-with Ada.Exceptions;
---  used for Raise_Exception
-
 package body System.Interrupt_Management is
 
-   use Ada.Exceptions;
    use System.OS_Interface;
    use type Interfaces.C.int;
 
@@ -70,6 +66,11 @@ package body System.Interrupt_Management is
    --  What are "these variables" ???, I see only one
 
    Exception_Action : aliased struct_sigaction;
+
+   procedure Map_And_Raise_Exception (signo : Signal);
+   pragma Import (C, Map_And_Raise_Exception, "__gnat_map_signal");
+   --  Map signal to Ada exception and raise it.  Different versions
+   --  of VxWorks need different mappings.
 
    -----------------------
    -- Local Subprograms --
@@ -103,20 +104,7 @@ package body System.Interrupt_Management is
          Result := taskResume (My_Id);
       end if;
 
-      case signo is
-         when SIGFPE =>
-            Raise_Exception (Constraint_Error'Identity, "SIGFPE");
-         when SIGILL =>
-            Raise_Exception (Constraint_Error'Identity, "SIGILL");
-         when SIGSEGV =>
-            Raise_Exception
-              (Program_Error'Identity,
-               "stack overflow or erroneous memory access");
-         when SIGBUS =>
-            Raise_Exception (Program_Error'Identity, "SIGBUS");
-         when others =>
-            Raise_Exception (Program_Error'Identity, "unhandled signal");
-      end case;
+      Map_And_Raise_Exception (signo);
    end Notify_Exception;
 
    ---------------------------

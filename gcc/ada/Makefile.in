@@ -1841,9 +1841,9 @@ rts-zfp: force
 	   RTS_TARGET_PAIRS="$(HIE_NONE_TARGET_PAIRS)" \
 	   COMPILABLE_SOURCES="$(COMPILABLE_HIE_SOURCES)" 
 	-$(GNATMAKE) -Prts-zfp/zfp.gpr --GCC="../../../xgcc -B../../../"
+	cd rts-zfp/adalib/ ; $(AR) r libgnat.a *.o
 	$(RM) rts-zfp/adalib/*.o
 	$(CHMOD) a-wx rts-zfp/adalib/*.ali
-	$(AR) r rts-zfp/adalib/libgnat.a
 	$(CHMOD) a-wx rts-zfp/adalib/libgnat.a
 
 rts-none: force
@@ -1862,8 +1862,9 @@ rts-ravenscar: force
 	   COMPILABLE_SOURCES="$(COMPILABLE_RAVEN_SOURCES)" 
 	-$(GNATMAKE) -Prts-ravenscar/ravenscar.gpr \
 	   --GCC="../../../xgcc -B../../../"
+	cd rts-ravenscar/adalib/ ; $(AR) r libgnat.a *.o
+	$(RM) rts-ravenscar/adalib/*.o
 	$(CHMOD) a-wx rts-ravenscar/adalib/*.ali
-	$(AR) r rts-ravenscar/adalib/libgnat.a
 	$(CHMOD) a-wx rts-ravenscar/adalib/libgnat.a
 
 # Warning: this target assumes that LIBRARY_VERSION has been set correctly.

@@ -167,6 +167,9 @@ package body Ada.Text_IO.Integer_Aux is
       Load_Digits (File, Buf, Ptr, Loaded);
 
       if Loaded then
+
+         --  Deal with based literal (note : is ok replacement for #)
+
          Load (File, Buf, Ptr, '#', ':', Loaded);
 
          if Loaded then
@@ -174,6 +177,8 @@ package body Ada.Text_IO.Integer_Aux is
             Load_Extended_Digits (File, Buf, Ptr);
             Load (File, Buf, Ptr, Buf (Hash_Loc));
          end if;
+
+         --  Deal with exponent
 
          Load (File, Buf, Ptr, 'E', 'e', Loaded);
 
