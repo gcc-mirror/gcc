@@ -232,6 +232,8 @@ static tree vect_compute_array_ref_alignment
 static tree vect_get_ptr_offset (tree, tree, tree *);
 static tree vect_get_symbl_and_dr
   (tree, tree, bool, loop_vec_info, struct data_reference **);
+static bool vect_analyze_offset_expr (tree, struct loop *, tree, tree *, 
+				      tree *, tree *);
 
 /* Utility functions for the code transformation.  */
 static tree vect_create_destination_var (tree, tree);
@@ -1139,6 +1141,10 @@ new_stmt_vec_info (tree stmt, struct loop *loop)
   STMT_VINFO_DATA_REF (res) = NULL;
   STMT_VINFO_MEMTAG (res) = NULL;
   STMT_VINFO_VECT_DR_BASE (res) = NULL;
+  STMT_VINFO_VECT_INIT_OFFSET (res) = NULL_TREE;
+  STMT_VINFO_VECT_STEP (res) = NULL_TREE;
+  STMT_VINFO_VECT_BASE_ALIGNED_P (res) = false;
+  STMT_VINFO_VECT_MISALIGNMENT (res) = NULL_TREE;
 
   return res;
 }
@@ -1335,6 +1341,189 @@ vect_get_ptr_offset (tree ref ATTRIBUTE_UNUSED,
 {
   /* TODO: Use alignment information.  */
   return NULL_TREE; 
+}
+
+
+/* Function vect_analyze_offset_expr
+
+   Given an offset expression EXPR received from get_inner_reference, analyze
+   it and create an expression for INITIAL_OFFSET by substituting the variables 
+   of EXPR with initial_condition of the corresponding access_fn in the loop. 
+   E.g., 
+      for i
+         for (j = 3; j < N; j++)
+            a[j].b[i][j] = 0;
+	 
+   For a[j].b[i][j], EXPR will be 'i * C_i + j * C_j + C'. 'i' cannot be 
+   subsituted, since its access_fn in the inner loop is i. 'j' will be 
+   substituted with 3. An INITIAL_OFFSET will be 'i * C_i + C`', where
+   C` =  3 * C_j + C.
+
+   Compute MISALIGN (the misalignment of the data reference initial access from
+   its base) if possible. Misalignment can be calculated only if all the
+   variables can be substitued with constants, or if a variable is multiplied
+   by a multiple of VECTYPE_ALIGNMENT. In the above example, since 'i' cannot
+   be substituted, MISALIGN will be NULL_TREE in case that C_i is not a multiple
+   of VECTYPE_ALIGNMENT, and C` otherwise. (We perform MISALIGN modulo 
+   VECTYPE_ALIGNMENT computation in the caller of this function).
+
+   STEP is an evolution of the data reference in this loop in bytes.
+   In the above example, STEP is C_j.
+
+   Return FALSE, if the analysis fails, e.g., there is no access_fn for a 
+   variable. In this case, all the outputs (INITIAL_OFFSET, MISALIGN and STEP) 
+   are NULL_TREEs. Otherwise, return TRUE.
+
+*/
+
+static bool
+vect_analyze_offset_expr (tree expr, 
+			  struct loop *loop, 
+			  tree vectype_alignment,
+			  tree *initial_offset,
+			  tree *misalign,
+			  tree *step)
+{
+  tree oprnd0;
+  tree oprnd1;
+  tree left_offset = size_zero_node;
+  tree right_offset = size_zero_node;
+  tree left_misalign = size_zero_node;
+  tree right_misalign = size_zero_node;
+  tree left_step = size_zero_node;
+  tree right_step = size_zero_node;
+  enum tree_code code;
+  tree init, evolution, def_stmt;
+
+  STRIP_NOPS (expr);
+  
+  *step = NULL_TREE;
+  *misalign = NULL_TREE;
+  *initial_offset = NULL_TREE;
+
+  /* Stop conditions:
+     1. Constant.  */
+  if (TREE_CONSTANT (expr))
+    {
+      *initial_offset = fold_convert (sizetype, expr);
+      *misalign = fold_convert (sizetype, expr);      
+      *step = size_zero_node;
+      return true;
+    }
+
+  /* 2. Variable. Try to substitute with initial_condition of the corresponding
+     access_fn in the current loop.  */
+  if (SSA_VAR_P (expr))
+    {
+      tree access_fn = analyze_scalar_evolution (loop, expr);
+
+      if (access_fn == chrec_dont_know)
+	/* No access_fn.  */
+	return false;
+
+      init = initial_condition_in_loop_num (access_fn, loop->num);
+      if (init == expr)
+	{
+	  def_stmt = SSA_NAME_DEF_STMT (init);
+	  if (def_stmt 
+	      && !IS_EMPTY_STMT (def_stmt)
+	      && flow_bb_inside_loop_p (loop, bb_for_stmt (def_stmt)))
+	    /* Not enough information: may be not loop invariant.  
+	       E.g., for a[b[i]], we get a[D], where D=b[i]. EXPR is D, its 
+	       initial_condition is D, but it depends on i - loop's induction
+	       variable.  */	  
+	    return false;
+	}
+
+      evolution = evolution_part_in_loop_num (access_fn, loop->num);
+      if (evolution && TREE_CODE (evolution) != INTEGER_CST)
+	/* Evolution is not constant.  */
+	return false;
+
+      if (TREE_CONSTANT (init))
+	*misalign = fold_convert (sizetype, init);
+      else
+	/* Not constant, misalignment cannot be calculated.  */
+	*misalign = NULL_TREE;
+
+      *initial_offset = fold_convert (sizetype, init); 
+
+      *step = evolution ? fold_convert (sizetype, evolution) : size_zero_node;
+      return true;      
+    }
+
+  /* Recursive computation.  */
+  oprnd0 = TREE_OPERAND (expr, 0);
+  oprnd1 = TREE_OPERAND (expr, 1);
+
+  if (!vect_analyze_offset_expr (oprnd0, loop, vectype_alignment, &left_offset, 
+				&left_misalign, &left_step)
+      || !vect_analyze_offset_expr (oprnd1, loop, vectype_alignment, 
+				    &right_offset, &right_misalign, &right_step))
+      return false;
+
+  /* The type of the operation: plus, minus or mult.  */
+  code = TREE_CODE (expr);
+  switch (code)
+    {
+    case MULT_EXPR:
+      if (!TREE_CONSTANT (right_offset))
+	/* RIGHT_OFFSET can be not constant. For example, for arrays of variable 
+	   sized types. 
+	   FORNOW: We don't support such cases.  */
+	return false;
+
+      /* Misalignment computation.  */
+      if (SSA_VAR_P (left_offset))
+	{
+	  /* If the left side contains variable that cannot be substituted with 
+	     constant, we check if the right side is a multiple of ALIGNMENT.  */
+	  if (integer_zerop (size_binop (TRUNC_MOD_EXPR, right_offset, 
+					 vectype_alignment)))
+	    *misalign = size_zero_node;
+	  else
+	    /* If the remainder is not zero or the right side isn't constant, we 
+	       can't compute  misalignment.  */
+	    *misalign = NULL_TREE;
+	}
+      else 
+	{
+	  /* The left operand was successfully substituted with constant.  */	  
+	  if (left_misalign)
+	    /* In case of EXPR '(i * C1 + j) * C2', LEFT_MISALIGN is 
+	       NULL_TREE.  */
+	    *misalign  = size_binop (code, left_misalign, right_misalign);
+	  else
+	    *misalign = NULL_TREE; 
+	}
+
+      /* Step calculation.  */
+      /* Multiply the step by the right operand.  */
+      *step  = size_binop (MULT_EXPR, left_step, right_offset);
+      break;
+   
+    case PLUS_EXPR:
+    case MINUS_EXPR:
+      /* Combine the recursive calculations for step and misalignment.  */
+      *step = size_binop (code, left_step, right_step);
+   
+      if (left_misalign && right_misalign)
+	*misalign  = size_binop (code, left_misalign, right_misalign);
+      else
+	*misalign = NULL_TREE;
+    
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
+  /* Compute offset.  */
+  *initial_offset = fold_convert (sizetype, 
+				  fold (build2 (code, TREE_TYPE (left_offset), 
+						left_offset, 
+						right_offset)));
+  return true;
 }
 
 
@@ -1885,13 +2074,13 @@ vect_create_data_ref_ptr (tree stmt, block_stmt_iterator *bsi, tree offset,
       fprintf (dump_file, "create array_ref of type: ");
       print_generic_expr (dump_file, vectype, TDF_SLIM);
       if (TREE_CODE (data_ref_base) == VAR_DECL)
-        fprintf (dump_file, "vectorizing a one dimensional array ref: ");
+        fprintf (dump_file, "\nvectorizing a one dimensional array ref: ");
       else if (TREE_CODE (data_ref_base) == ARRAY_REF)
-        fprintf (dump_file, "vectorizing a multidimensional array ref: ");
+        fprintf (dump_file, "\nvectorizing a multidimensional array ref: ");
       else if (TREE_CODE (data_ref_base) == COMPONENT_REF)
-        fprintf (dump_file, "vectorizing a record based array ref: ");
+        fprintf (dump_file, "\nvectorizing a record based array ref: ");
       else if (TREE_CODE (data_ref_base) == SSA_NAME)
-        fprintf (dump_file, "vectorizing a pointer ref: ");
+        fprintf (dump_file, "\nvectorizing a pointer ref: ");
       print_generic_expr (dump_file, base_name, TDF_SLIM);
     }
 
