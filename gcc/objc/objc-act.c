@@ -39,10 +39,7 @@ Boston, MA 02111-1307, USA.  */
    - OBJC_INT_SELECTORS  */
 
 #include "config.h"
-#include <stdio.h>
-#ifdef HAVE_STDLIB_H
-#include <stdlib.h>
-#endif
+#include "system.h"
 #include "tree.h"
 #include "c-tree.h"
 #include "c-lex.h"
@@ -51,7 +48,6 @@ Boston, MA 02111-1307, USA.  */
 #include "input.h"
 #include "except.h"
 #include "function.h"
-#include <string.h>
 #include "output.h"
 
 /* This is the default way of generating a method name.  */

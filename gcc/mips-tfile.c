@@ -605,7 +605,7 @@ Boston, MA 02111-1307, USA.  */
 #else
 #include <varargs.h>
 #endif
-#include <stdio.h>
+#include "system.h"
 
 #ifndef __SABER__
 #define saber_stop()
@@ -705,11 +705,6 @@ main ()
 #undef rindex
 #undef index
 
-#include <sys/types.h>
-#include <string.h>
-#include <ctype.h>
-#include <fcntl.h>
-#include <errno.h>
 #include <signal.h>
 #include <sys/stat.h>
 
@@ -731,23 +726,6 @@ main ()
 #define STAB_CODE_TYPE int
 #endif
 
-#ifdef _OSF_SOURCE
-#define HAS_STDLIB_H
-#define HAS_UNISTD_H
-#endif
-
-#ifdef HAS_STDLIB_H
-#include <stdlib.h>
-#endif
-
-#ifdef HAS_UNISTD_H
-#include <unistd.h>
-#endif
-
-#ifndef errno
-extern int errno;			/* MIPS errno.h doesn't declare this */
-#endif
-
 #ifndef MALLOC_CHECK
 #ifdef	__SABER__
 #define MALLOC_CHECK
@@ -755,7 +733,7 @@ extern int errno;			/* MIPS errno.h doesn't declare this */
 #endif
 
 #define IS_ASM_IDENT(ch) \
-  (isalnum (ch) || (ch) == '_' || (ch) == '.' || (ch) == '$')
+  (ISALNUM (ch) || (ch) == '_' || (ch) == '.' || (ch) == '$')
 
 
 /* Redefinition of of storage classes as an enumeration for better
@@ -1755,13 +1733,6 @@ STATIC void	  free_thead		__proto((thead_t *));
 STATIC char	 *local_index		__proto((const char *, int));
 STATIC char	 *local_rindex		__proto((const char *, int));
 
-#ifdef NEED_DECLARATION_SBRK
-extern char  *sbrk			__proto((int));
-#endif
-#ifdef NEED_DECLARATION_FREE
-extern void   free			__proto((PTR_T));
-#endif
-
 extern char  *mktemp			__proto((char *));
 extern long   strtol			__proto((const char *, char **, int));
 
@@ -1773,12 +1744,6 @@ extern char *version_string;
 #ifndef SYS_SIGLIST_DECLARED
 extern char *sys_siglist[NSIG + 1];
 #endif
-#endif
-
-#ifndef SEEK_SET	/* Symbolic constants for the "fseek" function: */
-#define	SEEK_SET 0	/* Set file pointer to offset */
-#define	SEEK_CUR 1	/* Set file pointer to its current value plus offset */
-#define	SEEK_END 2	/* Set file pointer to the size of the file plus offset */
 #endif
 
 
@@ -2835,7 +2800,7 @@ parse_begin (start)
       return;
     }
 
-  for (end_p1 = start; (ch = *end_p1) != '\0' && !isspace (ch); end_p1++)
+  for (end_p1 = start; (ch = *end_p1) != '\0' && !ISSPACE (ch); end_p1++)
     ;
 
   hash_ptr = hash_string (start,
@@ -2885,7 +2850,7 @@ parse_bend (start)
       return;
     }
 
-  for (end_p1 = start; (ch = *end_p1) != '\0' && !isspace (ch); end_p1++)
+  for (end_p1 = start; (ch = *end_p1) != '\0' && !ISSPACE (ch); end_p1++)
     ;
 
   hash_ptr = hash_string (start,
@@ -2995,7 +2960,7 @@ parse_def (name_start)
 	   (ch = *dir_end_p1) != ' ' && ch != '\t';
 	   dir_end_p1++)
 	{
-	  if (ch == '\0' || isspace (ch))
+	  if (ch == '\0' || ISSPACE (ch))
 	    {
 	      error_line = __LINE__;
 	      saber_stop ();
@@ -3011,7 +2976,7 @@ parse_def (name_start)
       while (ch == ' ' || ch == '\t')
 	ch = *++arg_start;
 
-      if (isdigit (ch) || ch == '-' || ch == '+')
+      if (ISDIGIT (ch) || ch == '-' || ch == '+')
 	{
 	  int ch2;
 	  arg_number = strtol (arg_start, (char **) &arg_end_p1, 0);
@@ -3019,7 +2984,7 @@ parse_def (name_start)
 	    arg_was_number++;
 	}
 
-      else if (ch == '\0' || isspace (ch))
+      else if (ch == '\0' || ISSPACE (ch))
 	{
 	  error_line = __LINE__;
 	  saber_stop ();
@@ -3067,7 +3032,7 @@ parse_def (name_start)
 		    ch = *++arg_start;
 
 		  arg_was_number = 0;
-		  if (isdigit (ch) || ch == '-' || ch == '+')
+		  if (ISDIGIT (ch) || ch == '-' || ch == '+')
 		    {
 		      int ch2;
 		      arg_number = strtol (arg_start, (char **) &arg_end_p1, 0);
@@ -3141,7 +3106,7 @@ parse_def (name_start)
 		    ch = *++arg_start;
 
 		  arg_was_number = 0;
-		  if (isdigit (ch) || ch == '-' || ch == '+')
+		  if (ISDIGIT (ch) || ch == '-' || ch == '+')
 		    {
 		      int ch2;
 		      arg_number = strtol (arg_start, (char **) &arg_end_p1, 0);
@@ -3520,7 +3485,7 @@ parse_end (start)
     }
 
   /* Get the function name, skipping whitespace.  */
-  for (start_func = start; isspace (*start_func); start_func++)
+  for (start_func = start; ISSPACE (*start_func); start_func++)
     ;
 
   ch = *start_func;
@@ -3579,7 +3544,7 @@ parse_ent (start)
       return;
     }
 
-  for (start_func = start; isspace (*start_func); start_func++)
+  for (start_func = start; ISSPACE (*start_func); start_func++)
     ;
 
   ch = *start_func;
@@ -3689,7 +3654,7 @@ parse_stabs_common (string_start, string_end, rest)
     mark_stabs ("");
 
   /* Read code from stabs.  */
-  if (!isdigit (*rest))
+  if (!ISDIGIT (*rest))
     {
       error ("Invalid .stabs/.stabn directive, code is non-numeric");
       return;
@@ -3709,7 +3674,7 @@ parse_stabs_common (string_start, string_end, rest)
       shash_t *shash_ptr;
 
       /* Skip ,0, */
-      if (p[0] != ',' || p[1] != '0' || p[2] != ',' || !isdigit (p[3]))
+      if (p[0] != ',' || p[1] != '0' || p[2] != ',' || !ISDIGIT (p[3]))
 	{
 	  error ("Invalid line number .stabs/.stabn directive");
 	  return;
@@ -3717,7 +3682,7 @@ parse_stabs_common (string_start, string_end, rest)
 
       code = strtol (p+3, &p, 0);
       ch = *++p;
-      if (p[-1] != ',' || isdigit (ch) || !IS_ASM_IDENT (ch))
+      if (p[-1] != ',' || ISDIGIT (ch) || !IS_ASM_IDENT (ch))
 	{
 	  error ("Invalid line number .stabs/.stabn directive");
 	  return;
@@ -3759,11 +3724,11 @@ parse_stabs_common (string_start, string_end, rest)
       /* Skip ,<num>,<num>, */
       if (*p++ != ',')
 	goto failure;
-      for (; isdigit (*p); p++)
+      for (; ISDIGIT (*p); p++)
 	;
       if (*p++ != ',')
 	goto failure;
-      for (; isdigit (*p); p++)
+      for (; ISDIGIT (*p); p++)
 	;
       if (*p++ != ',')
 	goto failure;
@@ -3775,7 +3740,7 @@ parse_stabs_common (string_start, string_end, rest)
 	  return;
 	}
 
-      if (isdigit (ch) || ch == '-')
+      if (ISDIGIT (ch) || ch == '-')
 	{
 	  st = st_Nil;
 	  sc = sc_Nil;
@@ -3843,7 +3808,7 @@ parse_stabs_common (string_start, string_end, rest)
 	  ch = *end_p1++;
 	  if (ch != '\n')
 	    {
-	      if (((!isdigit (*end_p1)) && (*end_p1 != '-'))
+	      if (((!ISDIGIT (*end_p1)) && (*end_p1 != '-'))
 		  || ((ch != '+') && (ch != '-')))
 		{
 		  error ("Invalid .stabs/.stabn directive, badly formed value");
@@ -3919,16 +3884,16 @@ parse_input __proto((void))
   while ((p = read_line ()) != (char *) 0)
     {
       /* Skip leading blanks */
-      while (isspace (*p))
+      while (ISSPACE (*p))
 	p++;
 
       /* See if it's a directive we handle.  If so, dispatch handler.  */
       for (i = 0; i < sizeof (pseudo_ops) / sizeof (pseudo_ops[0]); i++)
 	if (memcmp (p, pseudo_ops[i].name, pseudo_ops[i].len) == 0
-	    && isspace (p[pseudo_ops[i].len]))
+	    && ISSPACE (p[pseudo_ops[i].len]))
 	  {
 	    p += pseudo_ops[i].len;	/* skip to first argument */
-	    while (isspace (*p))
+	    while (ISSPACE (*p))
 	      p++;
 
 	    (*pseudo_ops[i].func)( p );

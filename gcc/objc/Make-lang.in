@@ -87,7 +87,7 @@ $(srcdir)/objc/objc-parse.y: $(srcdir)/c-parse.in
 	$(srcdir)/move-if-change tmp-objc-prs.y $(srcdir)/objc/objc-parse.y
 
 objc-act.o : $(srcdir)/objc/objc-act.c \
-   $(CONFIG_H) $(TREE_H) $(RTL_H) \
+   $(CONFIG_H) $(TREE_H) $(RTL_H) system.h \
    $(srcdir)/c-tree.h $(srcdir)/c-lex.h \
    $(srcdir)/flags.h $(srcdir)/objc/objc-act.h $(srcdir)/input.h \
    $(srcdir)/function.h $(srcdir)/output.h $(srcdir)/c-parse.h

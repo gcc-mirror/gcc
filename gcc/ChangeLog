@@ -1,3 +1,13 @@
+Wed May  6 11:43:18 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Makefile.in (mips-tfile.o, mips-tdump.o): Depend on system.h.
+	* mips-tdump.c: Include system.h, remove redundant headers.
+	* mips-tfile.c: Likewise.  Also, convert all ctype function calls
+	to calls of the macro versions defined in system.h.
+
+	* objc/Make-lang.in (objc-act.o): Depend on system.h.
+	* objc/objc-act.c: Include system.h, remove redundant headers.
+
 Wed May  6 11:21:06 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* configure.in (AC_CHECK_FUNCS): Add isascii.
