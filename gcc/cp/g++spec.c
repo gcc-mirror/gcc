@@ -1,5 +1,5 @@
 /* Specific flags and argument handling of the C++ front-end.
-   Copyright (C) 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -94,6 +94,10 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
 
   /* The total number of arguments with the new stuff.  */
   int num_args = 1;
+
+#if ENABLE_NEW_GXX_ABI
+  added++;
+#endif
 
   argc = *in_argc;
   argv = *in_argv;
@@ -234,6 +238,10 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
 	  arglist[j] = "-xnone";
 	}
   }
+
+#if ENABLE_NEW_GXX_ABI
+  arglist[j++] = "-fnew-abi";
+#endif
 
   /* Add `-lstdc++' if we haven't already done so.  */
   if (library)
