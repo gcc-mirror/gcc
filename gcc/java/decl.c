@@ -459,7 +459,8 @@ init_decl_processing ()
   TREE_TYPE (error_mark_node) = error_mark_node;
 
   /* Create sizetype first - needed for other types. */
-  sizetype = make_unsigned_type (POINTER_SIZE);
+  initialize_sizetypes ();
+  set_sizetype (make_unsigned_type (POINTER_SIZE));
   size_zero_node = build_int_2 (0, 0);
   TREE_TYPE (size_zero_node) = sizetype;
   size_one_node = build_int_2 (1, 0);
