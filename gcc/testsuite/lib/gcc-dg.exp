@@ -237,7 +237,7 @@ proc gcc-dg-debug-runtest { target_compile trivial opt_opts testcases } {
     # assembler output, but stabs debugging does not.
     # http://gcc.gnu.org/ml/gcc-regression/2003-04/msg00095.html
 	    if { [string match {*/debug-[12].c} "$nshort"] \
-		    && [string match "*O3*" "$flags"] \
+		    && [string match "*O*" "$flags"] \
 		    && ( [string match "*coff*" "$flags"] \
 			 || [string match "*stabs*" "$flags"] ) } {
 		set doit 0

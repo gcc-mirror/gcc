@@ -1,3 +1,10 @@
+2003-12-17  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* lib/gcc-dg.exp (gcc-dg-debug-runtest): Do not run debug-[12].c
+	at -O with stabs debugging formats.
+	* gcc.dg/debug/debug-1.c: Turn 'p' into a global variable.
+	* gcc.dg/debug/debug-2.c: Likewise.
+
 2003-12-16  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/12696
