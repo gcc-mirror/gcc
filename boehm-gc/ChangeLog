@@ -5,6 +5,9 @@
 	* configure.in: Don't use alpha_mach_dep.s.
 	* include/private/config.h, irix_threads.c gc_watcom.asm: Delete 
 	obsolete files.
+	* Makefile.am, Makefile.in: irix_threads.c is now
+	hpux_irix_threads.c.
+	* Makefile.orig: Updated from gc distribution Makefile.
 
 2000-03-26  Anthony Green  <green@redhat.com>
 
