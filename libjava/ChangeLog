@@ -1,5 +1,9 @@
 2004-08-02  Bryce McKinlay  <mckinlay@redhat.com>
 
+	* java/sql/Timestamp.java (valueOf): Synchronize access to dateFormat.
+
+2004-08-02  Bryce McKinlay  <mckinlay@redhat.com>
+
 	* testsuite/libjava.compile/PR16701.java: New test.
 
 2004-08-01  Andrew John Hughes  <gnu_andrew@member.fsf.org>

@@ -99,7 +99,11 @@ public class Timestamp extends java.util.Date
 
     try
       {
-	java.util.Date d = (java.util.Date) dateFormat.parseObject(str);
+        java.util.Date d;
+        synchronized (dateFormat)
+	  {
+	    d = (java.util.Date) dateFormat.parseObject(str);
+	  }
 
 	if (d == null)
 	  throw new IllegalArgumentException(str);
