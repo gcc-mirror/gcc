@@ -4759,7 +4759,7 @@ digest_init (type, init, require_constant)
   if (code == VECTOR_TYPE
       && comptypes (TREE_TYPE (inside_init), type)
       && TREE_CONSTANT (inside_init))
-    return build_vector (type, TREE_OPERAND (inside_init, 1));
+    return build_vector (type, CONSTRUCTOR_ELTS (inside_init));
 
   /* Any type can be initialized
      from an expression of the same type, optionally with braces.  */
@@ -5377,7 +5377,7 @@ push_init_level (implicit)
     {
       constructor_constant = TREE_CONSTANT (value);
       constructor_simple = TREE_STATIC (value);
-      constructor_elements = TREE_OPERAND (value, 1);
+      constructor_elements = CONSTRUCTOR_ELTS (value);
       if (constructor_elements
 	  && (TREE_CODE (constructor_type) == RECORD_TYPE
 	      || TREE_CODE (constructor_type) == ARRAY_TYPE))
