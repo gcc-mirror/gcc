@@ -1,3 +1,8 @@
+2001-08-24  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* fold-const.c (tree_expr_nonnegative_p): Handle *_DIV_EXPR,
+	*_MOD_EXPR, SAVE_EXPR and NON_LVALUE_EXPR.
+
 2001-08-23  Jason Merrill  <jason_merrill@redhat.com>
 
 	* c-pragma.h: Move weak_syms and weak_decls...

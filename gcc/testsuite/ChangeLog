@@ -1,3 +1,7 @@
+2001-08-24  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.dg/compare5.c: New testcase.
+
 2001-08-23  Jason Merrill  <jason_merrill@redhat.com>
 
 	* lib/prune.exp (prune_gcc_output): Also ignore "In constructor"

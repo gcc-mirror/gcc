@@ -7397,6 +7397,17 @@ tree_expr_nonnegative_p (t)
       return 1;
     case INTEGER_CST:
       return tree_int_cst_sgn (t) >= 0;
+    case TRUNC_DIV_EXPR:
+    case CEIL_DIV_EXPR:
+    case FLOOR_DIV_EXPR:
+    case ROUND_DIV_EXPR:
+      return tree_expr_nonnegative_p (TREE_OPERAND (t, 0))
+        && tree_expr_nonnegative_p (TREE_OPERAND (t, 1));
+    case TRUNC_MOD_EXPR:
+    case CEIL_MOD_EXPR:
+    case FLOOR_MOD_EXPR:
+    case ROUND_MOD_EXPR:
+      return tree_expr_nonnegative_p (TREE_OPERAND (t, 0));
     case COND_EXPR:
       return tree_expr_nonnegative_p (TREE_OPERAND (t, 1))
 	&& tree_expr_nonnegative_p (TREE_OPERAND (t, 2));
@@ -7412,6 +7423,10 @@ tree_expr_nonnegative_p (t)
       return tree_expr_nonnegative_p (TREE_OPERAND (t, 1));
     case BIND_EXPR:
       return tree_expr_nonnegative_p (TREE_OPERAND (t, 1));
+    case SAVE_EXPR:
+      return tree_expr_nonnegative_p (TREE_OPERAND (t, 0));
+    case NON_LVALUE_EXPR:
+      return tree_expr_nonnegative_p (TREE_OPERAND (t, 0));
     case RTL_EXPR:
       return rtl_expr_nonnegative_p (RTL_EXPR_RTL (t));
       
