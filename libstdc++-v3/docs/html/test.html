@@ -477,11 +477,11 @@ or
 make check-target-libstdc++-v3 RUNTESTFLAGS="-v -v"
 </pre>
 
+
 There are two ways to run on a simulator: set up DEJAGNU to point to a
 specially crafted site.exp, or pass down --target_board flags.
 
 Example flags to pass down for various embedded builds are as follows:
-
 <pre>
 --target=powerpc-eabism (libgloss/sim)
 make check-target-libstdc++-v3 RUNTESTFLAGS="--target_board=powerpc-sim"
@@ -492,7 +492,14 @@ make check-target-libstdc++-v3 RUNTESTFLAGS="--target_board=calmrisc32-sid"
 --target=xscale-elf (newlib/sim)
 make check-target-libstdc++-v3 RUNTESTFLAGS="--target_board=arm-sim"
 </pre>
-   
+
+<p> Also, here is an example of how to run the libstdc++ testsuite for a
+multilibed build directory with different ABI settings:
+</p>
+<pre>
+make check-target-libstdc++-v3 RUNTESTFLAGS='--target_board \"unix{-mabi=32,,-mabi=64}\"'
+</pre>
+ 
   <p> To run a subset of the library tests, simply edit the generated
   file, <em>testsuite_files </em>, to include only the files that are
   desired instead of all available test cases.
