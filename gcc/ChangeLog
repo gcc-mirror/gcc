@@ -1,3 +1,8 @@
+2002-10-24  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.md (movdi, movsi, movhi, movqi): Add peepholes2
+	to pull operands out of the literal pool where possible.
+
 2002-10-24  Denis Chertykov  <denisc@overta.ru>
 
 	* config/avr/avr.c (init_cumulative_args): Test fntype for zero.
