@@ -1,3 +1,10 @@
+Thu May 10 18:23:11 2001  Jeffrey A Law  (law@cygnus.com)
+
+	* cse.c (cse_insn): Mostly remove first hunk of code which collapsed
+	a computed jump into an unconditional jump.
+	In second hunk of code for collapsing computed and conditional jumps
+	into unconditional jumps, reemit the jump in additional cases.
+
 2001-05-10  David Edelsohn  <edelsohn@gnu.org>
 
 	* expr.c (emit_group_load): extract_bit_field requires a REG or
