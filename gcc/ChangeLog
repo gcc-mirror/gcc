@@ -1,3 +1,7 @@
+Mon Oct  6 12:47:32 1997  Manfred Hollstein  (manfred@lts.sel.alcatel.de)
+
+	* m88k.c (m88k_begin_prologue): Remove superfluous backslash.
+
 Mon Oct  6 12:04:24 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* Makefile.in (check-g77): New test target.

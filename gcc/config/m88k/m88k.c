@@ -1938,7 +1938,7 @@ m88k_begin_prologue (stream, size)
      int size;
 {
   if (TARGET_OMIT_LEAF_FRAME_POINTER && ! quiet_flag && leaf_function_p ())
-    fprintf (stderr, "$");\
+    fprintf (stderr, "$");
 
   m88k_prologue_done = 1;	/* it's ok now to put out ln directives */
 }
