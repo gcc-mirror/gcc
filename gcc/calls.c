@@ -473,6 +473,8 @@ expand_call (exp, target, ignore)
   CUMULATIVE_ARGS args_so_far;
   /* Nonzero if a reg parm has been scanned.  */
   int reg_parm_seen;
+  /* Nonzero if this is an indirect function call.  */
+  int current_call_is_indirect = 0;
 
   /* Nonzero if we must avoid push-insns in the args for this call. 
      If stack space is allocated for register parameters, but not by the
@@ -731,6 +733,15 @@ expand_call (exp, target, ignore)
 
   if (fndecl && DECL_NAME (fndecl))
     name = IDENTIFIER_POINTER (DECL_NAME (fndecl));
+
+  /* On some machines (such as the PA) indirect calls have a different
+     calling convention than normal calls.  FUNCTION_ARG in the target
+     description can look at current_call_is_indirect to determine which
+     calling convention to use.  */
+  current_call_is_indirect = (fndecl == 0);
+#if 0
+    = TREE_CODE (TREE_OPERAND (exp, 0)) == NON_LVALUE_EXPR ? 1 : 0;
+#endif
 
 #if 0
   /* Unless it's a call to a specific function that isn't alloca,
@@ -2007,6 +2018,8 @@ emit_library_call (va_alist)
   int old_inhibit_defer_pop = inhibit_defer_pop;
   int no_queue = 0;
   rtx use_insns;
+  /* library calls are never indirect calls.  */
+  int current_call_is_indirect = 0;
 
   va_start (p);
   orgfun = fun = va_arg (p, rtx);
@@ -2261,6 +2274,8 @@ emit_library_call_value (va_alist)
   rtx use_insns;
   rtx value;
   rtx mem_value = 0;
+  /* library calls are never indirect calls.  */
+  int current_call_is_indirect = 0;
 
   va_start (p);
   orgfun = fun = va_arg (p, rtx);
