@@ -1,3 +1,12 @@
+2004-09-13  Richard Henderson  <rth@redhat.com>
+
+	PR inline-asm/6806
+	* cselib.c (cselib_invalidate_rtx): Export.  Remove unused args.
+	(cselib_invalidate_rtx_note_stores): New.
+	(cselib_record_sets, cselib_process_insn): Update to match.
+	* cselib.h (cselib_invalidate_rtx): Declare.
+	* postreload.c (reload_cse_simplify): Invalidate asm clobbers.
+
 2004-09-11  Ramana Radhakrishnan <ramana.radhakrishnan@codito.com>
 
 	PR target/11476
