@@ -250,6 +250,10 @@ do {									\
 
 #define TARGET_ASM_FILE_END file_end_indicate_exec_stack
 
+/* Determine whether the the entire c99 runtime is present in the
+   runtime library.  */
+#define TARGET_C99_FUNCTIONS 1
+
 #define TARGET_HAS_F_SETLKW
 
 #undef LINK_GCC_C_SEQUENCE_SPEC
