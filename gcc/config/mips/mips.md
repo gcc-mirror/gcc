@@ -2365,6 +2365,17 @@
 ;;  ....................
 ;;
 
+(define_expand "divdf3"
+  [(set (match_operand:DF 0 "register_operand" "")
+	(div:DF (match_operand:DF 1 "reg_or_const_float_1_operand" "")
+		(match_operand:DF 2 "register_operand" "")))]
+  "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
+{
+  if (const_float_1_operand (operands[1], DFmode))
+    if (!(ISA_HAS_FP4 && flag_unsafe_math_optimizations))
+      FAIL;
+})
+
 ;; This pattern works around the early SB-1 rev2 core "F1" erratum:
 ;;
 ;; If an mfc1 or dmfc1 happens to access the floating point register
@@ -2376,7 +2387,8 @@
 ;;
 ;; The workaround is to insert an unconditional 'mov' from/to the
 ;; long latency op destination register.
-(define_insn "divdf3"
+
+(define_insn "*divdf3"
   [(set (match_operand:DF 0 "register_operand" "=f")
 	(div:DF (match_operand:DF 1 "register_operand" "f")
 		(match_operand:DF 2 "register_operand" "f")))]
@@ -2395,6 +2407,17 @@
                       (const_int 4)))])
 
 
+(define_expand "divsf3"
+  [(set (match_operand:SF 0 "register_operand" "")
+	(div:SF (match_operand:SF 1 "reg_or_const_float_1_operand" "")
+		(match_operand:SF 2 "register_operand" "")))]
+  "TARGET_HARD_FLOAT"
+{
+  if (const_float_1_operand (operands[1], SFmode))
+    if (!(ISA_HAS_FP4 && flag_unsafe_math_optimizations))
+      FAIL;
+})
+
 ;; This pattern works around the early SB-1 rev2 core "F1" erratum (see
 ;; "divdf3" comment for details).
 ;;
@@ -2406,7 +2429,7 @@
 ;; Therefore, we only allow div.s if not working around SB-1 rev2
 ;; errata, or if working around those errata and a slight loss of
 ;; precision is OK (i.e., flag_unsafe_math_optimizations is set).
-(define_insn "divsf3"
+(define_insn "*divsf3"
   [(set (match_operand:SF 0 "register_operand" "=f")
 	(div:SF (match_operand:SF 1 "register_operand" "f")
 		(match_operand:SF 2 "register_operand" "f")))]

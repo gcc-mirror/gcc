@@ -1,3 +1,15 @@
+2003-09-04  Eric Christopher  <echristo@redhat.com>
+
+	* config/mips/mips.c (mips_expand_prologue): Convert to
+	calls.struct_value_rtx hook.
+	(reg_or_const_float_1_operand): New.
+	* config/mips/mips.h: Update Comments.
+	(mips_arg): Add reg_or_const_float_1_operand.
+	* config/mips/mips.md (divdf3); Convert to expander.
+	(divsf3): Ditto.
+	(*divdf3): New pattern.
+	(*divsf3): Ditto.
+
 Thu Sep  4 10:43:24 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	* toplev.c (wrapup_global_declarations): Fix final pass in
@@ -91,7 +103,7 @@ Thu Sep  4 10:43:24 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	EXPAND_BUILTIN_SAVEREGS, SETUP_INCOMING_VARARGS,
 	STRICT_ARGUMENT_NAMING, PRETEND_OUTGOING_VARARGS_NAMED): Convert
 	to hooks.
-	
+
 	* config/alpha/alpha.c (alpha_output_mi_thunk_osf): Pass function
 	to aggregate_value_p.
 	* config/arm/arm.c (arm_init_cumulative_args,
@@ -108,7 +120,7 @@ Thu Sep  4 10:43:24 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	function to aggregate_value_p.
 	* objc/objc-act.c (generate_struct_by_value_array): Pass NULL to
 	aggregate_value_p.
-	
+
 	* config/sh/sh-protos.h (sh_builtin_saveregs): Remove.
 	(sh_attr_renesas_p, sh_cfun_attr_renesas_p, sh_function_arg,
 	sh_function_arg_advance, sh_pass_in_reg_p): New.  * config/sh/sh.c
@@ -150,7 +162,7 @@ Thu Sep  4 10:43:24 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	SETUP_INCOMING_VARARGS, EXPAND_BUILTIN_SAVEREGS,
 	PROMOTE_PROTOTYPES): Moved to sh.c.  * config/sh/sh.md (call): Set
 	call cookie to indicate renesas calls.
-	
+
 2003-09-03  Mostafa Hagog  <mustafa@il.ibm.com>
 
 	* gcse.c (replace_one_set): New function.

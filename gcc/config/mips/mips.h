@@ -515,9 +515,9 @@ extern const struct mips_cpu_info *mips_tune_info;
      N_("Use GP relative sdata/sbss sections (now ignored)")},		\
   {"gpopt",		  0,						\
      N_("Use GP relative sdata/sbss sections (now ignored)")},		\
-  {"no-gpOPT",		  0,					\
+  {"no-gpOPT",		  0,					        \
      N_("Don't use GP relative sdata/sbss sections (now ignored)")},	\
-  {"no-gpopt",		  0,					\
+  {"no-gpopt",		  0,					        \
      N_("Don't use GP relative sdata/sbss sections (now ignored)")},	\
   {"stats",		  0,						\
      N_("Output compiler statistics (now ignored)")},			\
@@ -1415,12 +1415,7 @@ extern const struct mips_cpu_info *mips_tune_info;
    on the full register even if a narrower mode is specified.  */
 #define WORD_REGISTER_OPERATIONS
 
-/* Define if loading in MODE, an integral mode narrower than BITS_PER_WORD
-   will either zero-extend or sign-extend.  The value of this macro should
-   be the code that says which one of the two operations is implicitly
-   done, NIL if none.
-
-   When in 64 bit mode, mips_move_1word will sign extend SImode and CCmode
+/* When in 64 bit mode, move insns will sign extend SImode and CCmode
    moves.  All other references are zero extended.  */
 #define LOAD_EXTEND_OP(MODE) \
   (TARGET_64BIT && ((MODE) == SImode || (MODE) == CCmode) \
@@ -1809,31 +1804,31 @@ enum reg_class
    sub-initializer must be suitable as an initializer for the type
    `HARD_REG_SET' which is defined in `hard-reg-set.h'.  */
 
-#define REG_CLASS_CONTENTS						\
-{									\
+#define REG_CLASS_CONTENTS						                                \
+{									                                \
   { 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000 },	/* no registers */	\
   { 0x0003000c, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000 },	/* mips16 nonarg regs */\
   { 0x000300fc, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000 },	/* mips16 registers */	\
   { 0x01000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000 },	/* mips16 T register */	\
   { 0x010300fc, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000 },	/* mips16 and T regs */ \
   { 0x02000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000 },	/* SVR4 PIC function address register */ \
-  { 0xfdffffff, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000 },	/* Every other GPR */ \
+  { 0xfdffffff, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000 },	/* Every other GPR */   \
   { 0xffffffff, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000 },	/* integer registers */	\
   { 0x00000000, 0xffffffff, 0x00000000, 0x00000000, 0x00000000, 0x00000000 },	/* floating registers*/	\
   { 0x00000000, 0x00000000, 0x00000001, 0x00000000, 0x00000000, 0x00000000 },	/* hi register */	\
   { 0x00000000, 0x00000000, 0x00000002, 0x00000000, 0x00000000, 0x00000000 },	/* lo register */	\
   { 0x00000000, 0x00000000, 0x00000003, 0x00000000, 0x00000000, 0x00000000 },	/* mul/div registers */	\
-  { 0x00000000, 0x00000000, 0xffff0000, 0x0000ffff, 0x00000000, 0x00000000 }, /* cop0 registers */ \
-  { 0x00000000, 0x00000000, 0x00000000, 0xffff0000, 0x0000ffff, 0x00000000 }, /* cop2 registers */ \
-  { 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0xffff0000, 0x0000ffff }, /* cop3 registers */ \
+  { 0x00000000, 0x00000000, 0xffff0000, 0x0000ffff, 0x00000000, 0x00000000 },   /* cop0 registers */    \
+  { 0x00000000, 0x00000000, 0x00000000, 0xffff0000, 0x0000ffff, 0x00000000 },   /* cop2 registers */    \
+  { 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0xffff0000, 0x0000ffff },   /* cop3 registers */    \
   { 0xffffffff, 0x00000000, 0x00000001, 0x00000000, 0x00000000, 0x00000000 },	/* union classes */     \
   { 0xffffffff, 0x00000000, 0x00000002, 0x00000000, 0x00000000, 0x00000000 },				\
   { 0x00000000, 0xffffffff, 0x00000001, 0x00000000, 0x00000000, 0x00000000 },				\
-  { 0xffffffff, 0x00000000, 0xffff0000, 0x0000ffff, 0x00000000, 0x00000000 },			\
-  { 0xffffffff, 0x00000000, 0x00000000, 0xffff0000, 0x0000ffff, 0x00000000 },	\
-  { 0xffffffff, 0x00000000, 0x00000000, 0x00000000, 0xffff0000, 0x0000ffff }, \
-  { 0x00000000, 0x00000000, 0xffff0000, 0xffffffff, 0xffffffff, 0x0000ffff }, \
-  { 0xffffffff, 0x00000000, 0xffff0000, 0xffffffff, 0xffffffff, 0x0000ffff }, \
+  { 0xffffffff, 0x00000000, 0xffff0000, 0x0000ffff, 0x00000000, 0x00000000 },			        \
+  { 0xffffffff, 0x00000000, 0x00000000, 0xffff0000, 0x0000ffff, 0x00000000 },	                        \
+  { 0xffffffff, 0x00000000, 0x00000000, 0x00000000, 0xffff0000, 0x0000ffff },                           \
+  { 0x00000000, 0x00000000, 0xffff0000, 0xffffffff, 0xffffffff, 0x0000ffff },                           \
+  { 0xffffffff, 0x00000000, 0xffff0000, 0xffffffff, 0xffffffff, 0x0000ffff },                           \
   { 0x00000000, 0x00000000, 0x000007f8, 0x00000000, 0x00000000, 0x00000000 },	/* status registers */	\
   { 0xffffffff, 0xffffffff, 0xffff07ff, 0xffffffff, 0xffffffff, 0x0000ffff }	/* all registers */	\
 }
@@ -2668,9 +2663,7 @@ typedef struct mips_args {
 
 /* Specify the machine mode that this machine uses
    for the index in the tablejump instruction.
-   ??? Using HImode in mips16 mode can cause overflow.  However, the
-   overflow is no more likely than the overflow in a branch
-   instruction.  Large functions can currently break in both ways.  */
+   ??? Using HImode in mips16 mode can cause overflow. */
 #define CASE_VECTOR_MODE \
   (TARGET_MIPS16 ? HImode : ptr_mode)
 
@@ -2808,6 +2801,7 @@ typedef struct mips_args {
   {"small_int",			{ CONST_INT }},				\
   {"mips_const_double_ok",	{ CONST_DOUBLE }},			\
   {"const_float_1_operand",	{ CONST_DOUBLE }},			\
+  {"reg_or_const_float_1_operand", { CONST_DOUBLE, REG}},               \
   {"simple_memory_operand",	{ MEM, SUBREG }},			\
   {"equality_op",		{ EQ, NE }},				\
   {"cmp_op",			{ EQ, NE, GT, GE, GTU, GEU, LT, LE,	\
@@ -3366,7 +3360,7 @@ do {									\
 do {									\
   if (TARGET_EMBEDDED_PIC || TARGET_MIPS16)				\
     function_section (current_function_decl);				\
-  (*targetm.asm_out.internal_label) (FILE, PREFIX, NUM);			\
+  (*targetm.asm_out.internal_label) (FILE, PREFIX, NUM);		\
 } while (0)
 
 /* This is how to output an assembler line
