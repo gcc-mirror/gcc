@@ -215,9 +215,9 @@ extern char * reg_names[];
 /* Print subsidiary information on the compiler version in use.
    Redefined in m88kv4.h, and m88kluna.h.  */
 #define VERSION_INFO1	"88open OCS/BCS, "
-#define VERSION_INFO2	"10/15/92"
+#define VERSION_INFO2	"10/19/92"
 #define VERSION_STRING	version_string
-#define	TM_SCCS_ID	"@(#)m88k.h	2.2.13.2 10/15/92 08:00:51"
+#define	TM_SCCS_ID	"@(#)m88k.h	2.2.13.4 10/19/92 10:34:58"
 
 /* Run-time compilation parameters selecting different hardware subsets.  */
 
@@ -840,6 +840,16 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
 #define PREFERRED_RELOAD_CLASS(X,CLASS)	\
    (CONSTANT_P(X) && (CLASS == XRF_REGS) ? NO_REGS : (CLASS))
 
+/* Return the register class of a scratch register needed to load IN
+   into a register of class CLASS in MODE.  On the m88k, when PIC, we
+   need a temporary when loading some addresses into a register.  */
+#define SECONDARY_INPUT_RELOAD_CLASS(CLASS, MODE, IN)		\
+  ((flag_pic							\
+    && GET_CODE (IN) == CONST					\
+    && GET_CODE (XEXP (IN, 0)) == PLUS				\
+    && GET_CODE (XEXP (XEXP (IN, 0), 0)) == CONST_INT		\
+    && ! SMALL_INT (XEXP (XEXP (IN, 0), 1))) ? GENERAL_REGS : NO_REGS)
+
 /* Return the maximum number of consecutive registers
    needed to represent mode MODE in a register of class CLASS.  */
 #define CLASS_MAX_NREGS(CLASS, MODE) \
@@ -1090,14 +1100,24 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
 #define FUNCTION_PROFILER(FILE, LABELNO) \
   output_function_profiler (FILE, LABELNO, "mcount", 1)
 
+/* Maximum length in instructions of the code output by FUNCTION_PROFILER.  */
+#define FUNCTION_PROFILER_LENGTH (5+3+1+5)
+
 /* Output assembler code to FILE to initialize basic-block profiling for
    the current module.  LABELNO is unique to each instance.  */
 #define FUNCTION_BLOCK_PROFILER(FILE, LABELNO) \
   output_function_block_profiler (FILE, LABELNO)
 
+/* Maximum length in instructions of the code output by
+   FUNCTION_BLOCK_PROFILER.  */
+#define FUNCTION_BLOCK_PROFILER_LENGTH (3+5+2+5)
+
 /* Output assembler code to FILE to increment the count associated with
    the basic block number BLOCKNO.  */
 #define BLOCK_PROFILER(FILE, BLOCKNO) output_block_profiler (FILE, BLOCKNO)
+
+/* Maximum length in instructions of the code output by BLOCK_PROFILER.  */
+#define BLOCK_PROFILER_LENGTH 4
 
 /* EXIT_IGNORE_STACK should be nonzero if, when returning from a function,
    the stack pointer does not matter.  The value is tested only in
@@ -1372,7 +1392,7 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
 		   force_operand (XEXP (X, 1), 0));		\
   if (GET_CODE (X) == SYMBOL_REF || GET_CODE (X) == CONST	\
 	   || GET_CODE (X) == LABEL_REF)			\
-    (X) = legitimize_address (flag_pic, X, gen_reg_rtx (Pmode)); \
+    (X) = legitimize_address (flag_pic, X, 0, 0);		\
   if (memory_address_p (MODE, X))				\
     goto WIN; }
 
@@ -1516,18 +1536,34 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
    so give the MEM rtx word mode.  */
 #define FUNCTION_MODE SImode
 
-/* A barrier will be aligned so account for the possible expansion.  A
-   volatile memory reference may be preceeded by a serializing instruction.  */
+/* A barrier will be aligned so account for the possible expansion.
+   A volatile load may be preceeded by a serializing instruction.
+   Account for profiling code output at NOTE_INSN_PROLOGUE_END.
+   Account for block profiling code at basic block boundaries.  */
 #define ADJUST_INSN_LENGTH(RTX, LENGTH)					\
   if (GET_CODE (RTX) == BARRIER						\
       || (TARGET_SERIALIZE_VOLATILE					\
 	  && GET_CODE (RTX) == INSN					\
 	  && GET_CODE (PATTERN (RTX)) == SET				\
 	  && ((GET_CODE (SET_SRC (PATTERN (RTX))) == MEM		\
-	       && MEM_VOLATILE_P (SET_SRC (PATTERN (RTX))))		\
-	      || (GET_CODE (SET_DEST (PATTERN (RTX))) == MEM		\
-		  && MEM_VOLATILE_P (SET_DEST (PATTERN (RTX)))))))	\
-    LENGTH += 1;
+	       && MEM_VOLATILE_P (SET_SRC (PATTERN (RTX)))))))		\
+    LENGTH += 1;							\
+  else if (GET_CODE (RTX) == NOTE					\
+	   && NOTE_LINE_NUMBER (RTX) == NOTE_INSN_PROLOGUE_END)		\
+    {									\
+      if (profile_block_flag)						\
+	LENGTH += FUNCTION_BLOCK_PROFILER_LENGTH;			\
+      if (profile_flag)							\
+	LENGTH += (FUNCTION_PROFILER_LENGTH + REG_PUSH_LENGTH		\
+		   + REG_POP_LENGTH);					\
+    }									\
+  else if (profile_block_flag						\
+	   && (GET_CODE (RTX) == CODE_LABEL				\
+	       || GET_CODE (RTX) == JUMP_INSN				\
+	       || (GET_CODE (RTX) == INSN				\
+		   && GET_CODE (PATTERN (RTX)) == SEQUENCE		\
+		   && GET_CODE (XVECEXP (PATTERN (RTX), 0, 0)) == JUMP_INSN)))\
+    LENGTH += BLOCK_PROFILER_LENGTH;
 
 /* Track the state of the last volatile memory reference.  Clear the
    state with CC_STATUS_INIT for now.  */
@@ -2122,6 +2158,9 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
 	   reg_names[REGNO],				\
 	   reg_names[STACK_POINTER_REGNUM])
 
+/* Length in instructions of the code output by ASM_OUTPUT_REG_PUSH.  */
+#define REG_PUSH_LENGTH 2
+
 /* This is how to output an insn to pop a register from the stack.  */
 #define ASM_OUTPUT_REG_POP(FILE,REGNO)  \
   fprintf (FILE, "\tld\t %s,%s,0\n\taddu\t %s,%s,%d\n",	\
@@ -2130,6 +2169,9 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
 	   reg_names[STACK_POINTER_REGNUM],		\
 	   reg_names[STACK_POINTER_REGNUM],		\
 	   (STACK_BOUNDARY / BITS_PER_UNIT))
+
+/* Length in instructions of the code output by ASM_OUTPUT_REG_POP.  */
+#define REG_POP_LENGTH 2
 
 /* Define the parentheses used to group arithmetic operations
    in assembler code.  */
