@@ -6281,7 +6281,10 @@ check_dbra_loop (loop_end, insn_count, loop_start)
 		  && GET_CODE (initial_value) == CONST_INT)
 		{
 		  comparison_val = comparison_val - INTVAL (bl->initial_value);
-		  initial_value = const0_rtx;
+		  /* Check for overflow.  If comparison_val ends up as a
+		     negative value, then we can't reverse the loop.  */
+		  if (comparison_val >= 0)
+		    initial_value = const0_rtx;
 		}
 
 	      /* If the initial value is not zero, or if the comparison

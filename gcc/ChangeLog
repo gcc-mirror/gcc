@@ -1,3 +1,8 @@
+Tue Apr  7 11:58:04 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* loop.c (check_dbra_loop): When normalize comparison_val, add check
+	to verify it is non-negative.
+
 Tue Apr  7 02:01:47 1998  Richard Henderson  <rth@cygnus.com>
 
 	* alpha.c (alpha_expand_block_move): Correctly collect block offsets.
