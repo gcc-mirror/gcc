@@ -1,3 +1,9 @@
+2003-12-02  Mark Wielaard  <mark@klomp.org>
+
+	Reported by Archie Cobbs:
+	* java/security/DigestInputStream.java (read(byte[], int, int): Call
+	digest.update() with temp, not len as lenght.
+
 2003-12-02  Michael Koch  <konqueror@gmx.de>
 
 	* java/net/DatagramSocket.java

@@ -1,5 +1,5 @@
 /* DigestInputStream.java --- An Input stream tied to a message digest
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -138,7 +138,7 @@ public class DigestInputStream extends FilterInputStream
     int temp = in.read(b, off, len);
 
     if (state == true && temp != -1)
-      digest.update(b, off, len);
+      digest.update(b, off, temp);
 
     return temp;
   }
