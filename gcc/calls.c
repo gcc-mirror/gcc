@@ -3071,10 +3071,19 @@ expand_call (tree exp, rtx target, int ignore)
       if (pass && (flags & ECF_LIBCALL_BLOCK))
 	{
 	  rtx insns;
+	  rtx insn;
+	  bool failed = valreg == 0 || GET_CODE (valreg) == PARALLEL;
 
-	  if (valreg == 0 || GET_CODE (valreg) == PARALLEL)
+          insns = get_insns ();
+
+	  /* Expansion of block moves possibly introduced a loop that may
+	     not appear inside libcall block.  */
+	  for (insn = insns; insn; insn = NEXT_INSN (insn))
+	    if (GET_CODE (insn) == JUMP_INSN)
+	      failed = true;
+
+	  if (failed)
 	    {
-	      insns = get_insns ();
 	      end_sequence ();
 	      emit_insn (insns);
 	    }
@@ -3095,7 +3104,6 @@ expand_call (tree exp, rtx target, int ignore)
 					  args[i].initial_value, note);
 	      note = gen_rtx_EXPR_LIST (VOIDmode, funexp, note);
 
-	      insns = get_insns ();
 	      end_sequence ();
 
 	      if (flags & ECF_PURE)
@@ -4008,9 +4016,25 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
 				     argvec[argnum].locate.offset.constant);
 		  rtx stack_area
 		    = gen_rtx_MEM (save_mode, memory_address (save_mode, adr));
-		  argvec[argnum].save_area = gen_reg_rtx (save_mode);
 
-		  emit_move_insn (argvec[argnum].save_area, stack_area);
+		  if (save_mode == BLKmode)
+		    {
+		      argvec[argnum].save_area
+			= assign_stack_temp (BLKmode,
+				             argvec[argnum].locate.size.constant,
+					     0);
+
+		      emit_block_move (validize_mem (argvec[argnum].save_area),
+			  	       stack_area,
+				       GEN_INT (argvec[argnum].locate.size.constant),
+				       BLOCK_OP_CALL_PARM);
+		    }
+		  else
+		    {
+		      argvec[argnum].save_area = gen_reg_rtx (save_mode);
+
+		      emit_move_insn (argvec[argnum].save_area, stack_area);
+		    }
 		}
 	    }
 
@@ -4229,7 +4253,13 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
 	    rtx stack_area = gen_rtx_MEM (save_mode,
 					  memory_address (save_mode, adr));
 
-	    emit_move_insn (stack_area, argvec[count].save_area);
+	    if (save_mode == BLKmode)
+	      emit_block_move (stack_area,
+		  	       validize_mem (argvec[count].save_area),
+			       GEN_INT (argvec[count].locate.size.constant),
+			       BLOCK_OP_CALL_PARM);
+	    else
+	      emit_move_insn (stack_area, argvec[count].save_area);
 	  }
 
       highest_outgoing_arg_in_use = initial_highest_arg_in_use;
