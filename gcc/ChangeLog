@@ -1,3 +1,44 @@
+2005-02-16  David Edelsohn  <edelsohn@gnu.org>
+
+	PR target/19019
+	Backport from mainline:
+	2005-02-16  David Edelsohn  <edelsohn@gnu.org>
+	* config/rs6000/t-aix43 (SHLIB_MAPFILES): Add libgcc-ppc64.ver.
+	* config/rs6000/t-aix52 (SHLIB_MAPFILES): Same.
+	2005-02-15  David Edelsohn  <edelsohn@gnu.org>
+		    Alan Modra  <amodra@bigpond.net.au>
+	* config/rs6000/darwin-ldouble.c (_xlqadd): Rename to __gcc_qadd.
+	(_xlqsub): Rename to __gcc_qsub.
+	(_xlqmul): Rename to __gcc_qmul.
+	(_xlqdiv): Rename to __gcc_qdiv.
+	Provide versioned symbol aliases with old names.
+	* config/rs6000/libgcc-ppc64.ver: Rename symbols.
+	* config/rs6000/rs6000.c (rs6000_init_libfuncs): Rename symbols.
+	* config/rs6000/t-aix43 (LIB2FUNCS_EXTRA): New.
+	* config/rs6000/t-aix52 (LIB2FUNCS_EXTRA): New.
+	* config/rs6000/t-newas (LIB2FUNCS_EXTRA): New.
+	2005-02-14  David Edelsohn  <edelsohn@gnu.org>
+	* config/rs6000/rs6000.md (trunctfdf2): Change to define_expand.
+	(trunctfdf2_internal1): New.
+	(trunctfdf2_internal2): Renamed from trunctfdf2.
+	2005-02-13  David Edelsohn  <edelsohn@gnu.org>
+	* config/rs6000/aix.h ({TARGET,MASK}_XL_CALL): Rename to
+	{TARGET,MASK}_XL_COMPAT.
+	(SUBTARGET_SWITCHES): Rename xl-call to xl-compat.  Use
+	MASK_XL_COMPAT.
+	* config/rs6000/beos.h ({TARGET,MASK}_XL_CALL): Remove.
+	* config/rs6000/rs6000.c (function_arg): Change TARGET_XL_CALL to
+	TARGET_XL_COMPAT.
+	(rs6000_arg_partial_bytes): Same.
+	(rs6000_generate_compare): Generate PARALLEL for compare if TFmode
+	and XL compatibility enabled.
+	* config/rs6000/rs6000.h (TARGET_XL_CALL): Rename to TARGET_XL_COMPAT.
+	* config/rs6000/rs6000.md (cmptf_internal1): Add !TARGET_XL_COMPAT
+	test to final condition.
+	(cmptf_internal2): New.
+	* doc/invoke.texi (RS/6000 Subtarget Options): Change xl-call to
+	xl-compat.  Add TFmode information to description.
+
 2005-02-16  Eric Christopher  <echristo@redhat.com>
 
 	PR preprocessor/19077

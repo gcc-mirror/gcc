@@ -58,8 +58,11 @@ SHLIB_LINK = $(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) -shared -nodefaultlibs \
 SHLIB_INSTALL = $(INSTALL_DATA) @shlib_base_name@.a $$(DESTDIR)$$(slibdir)/
 SHLIB_LIBS = -lc `case @shlib_base_name@ in *pthread*) echo -lpthread ;; esac`
 SHLIB_MKMAP = $(srcdir)/mkmap-flat.awk
-SHLIB_MAPFILES = $(srcdir)/libgcc-std.ver
+SHLIB_MAPFILES = $(srcdir)/libgcc-std.ver $(srcdir)/config/rs6000/libgcc-ppc64.ver
 SHLIB_NM_FLAGS = -Bpg -X32_64
+
+# GCC 128-bit long double support routines.
+LIB2FUNCS_EXTRA = $(srcdir)/config/rs6000/darwin-ldouble.c
 
 # Either 32-bit and 64-bit objects in archives.
 AR_FLAGS_FOR_TARGET = -X32_64

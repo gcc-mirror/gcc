@@ -1,12 +1,12 @@
 @c Copyright (C) 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
-@c 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+@c 2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
 @ignore
 @c man begin COPYRIGHT
 Copyright @copyright{} 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997,
-1998, 1999, 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
 
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.2 or
@@ -421,7 +421,7 @@ in the following sections.
 -mpowerpc-gfxopt  -mno-powerpc-gfxopt @gol
 -mnew-mnemonics  -mold-mnemonics @gol
 -mfull-toc   -mminimal-toc  -mno-fp-in-toc  -mno-sum-in-toc @gol
--m64  -m32  -mxl-call  -mno-xl-call  -mpe @gol
+-m64  -m32  -mxl-compat  -mno-xl-compat  -mpe @gol
 -malign-power  -malign-natural @gol
 -msoft-float  -mhard-float  -mmultiple  -mno-multiple @gol
 -mstring  -mno-string  -mupdate  -mno-update @gol
@@ -7187,13 +7187,17 @@ Specifying @option{-maix64} implies @option{-mpowerpc64} and
 @option{-mpowerpc}, while @option{-maix32} disables the 64-bit ABI and
 implies @option{-mno-powerpc64}.  GCC defaults to @option{-maix32}.
 
-@item -mxl-call
-@itemx -mno-xl-call
-@opindex mxl-call
-@opindex mno-xl-call
-On AIX, pass floating-point arguments to prototyped functions beyond the
-register save area (RSA) on the stack in addition to argument FPRs.  The
-AIX calling convention was extended but not initially documented to
+@item -mxl-compat
+@itemx -mno-xl-compat
+@opindex mxl-compat
+@opindex mno-xl-compat
+Produce code that conforms more closely to IBM XLC semantics when using
+AIX-compatible ABI.  Pass floating-point arguments to prototyped
+functions beyond the register save area (RSA) on the stack in addition
+to argument FPRs.  Do not assume that most significant double in 128
+bit long double value is properly rounded when comparing values.
+
+The AIX calling convention was extended but not initially documented to
 handle an obscure K&R C case of calling a function that takes the
 address of its arguments with fewer arguments than declared.  AIX XL
 compilers access floating point arguments which do not fit in the

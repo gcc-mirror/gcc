@@ -23,18 +23,6 @@
 #undef  TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (BeOS/PowerPC)");
 
-/* Enable AIX XL compiler calling convention breakage compatibility.  */
-#define MASK_XL_CALL		0x40000000
-#define	TARGET_XL_CALL		(target_flags & MASK_XL_CALL)
-#undef  SUBTARGET_SWITCHES
-#define SUBTARGET_SWITCHES		\
-  {"xl-call", 		MASK_XL_CALL,					\
-   N_("Always pass floating-point arguments in memory") },		\
-  {"no-xl-call",	- MASK_XL_CALL,					\
-   N_("Don't always pass floating-point arguments in memory") },	\
-  {"threads",		0},						\
-  {"pe",		0},
-
 #undef ASM_SPEC
 #define ASM_SPEC "-u %(asm_cpu)"
 
