@@ -427,7 +427,7 @@ java_parse_doc_section (c)
   /* We're parsing @deprecated */
   if (valid_tag && (c == '@'))
     {
-      char tag [10];
+      char tag [11];
       int  tag_index = 0;
 
       while (tag_index < 10 && c != UEOF && c != ' ' && c != '\n')
@@ -741,7 +741,7 @@ java_lex (java_lval)
 		  stage = 4;	/* So we fall through */
 		}
 
-	      if ((c=='-' || c =='+') && stage < 3)
+	      if ((c=='-' || c =='+') && stage == 2)
 		{
 		  stage = 3;
 		  literal_token [literal_index++] = c;

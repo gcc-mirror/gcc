@@ -11432,6 +11432,7 @@ patch_assignment (node, wfl_op1, wfl_op2)
 	}
 
       /* Build the invocation of _Jv_CheckArrayStore */
+      new_rhs = save_expr (new_rhs);
       check = build (CALL_EXPR, void_type_node,
 		     build_address_of (soft_checkarraystore_node),
 		     tree_cons (NULL_TREE, base,
