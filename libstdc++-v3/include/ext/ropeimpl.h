@@ -1,6 +1,6 @@
 // SGI's rope class implementation -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -59,7 +59,6 @@ namespace __gnu_cxx
   using std::printf;
   using std::basic_ostream;
   using std::__throw_length_error;
-  using std::__alloc;
   using std::_Destroy;
   using std::uninitialized_fill_n;
 
@@ -875,15 +874,15 @@ bool rope<_CharT, _Alloc>::_S_apply_to_pieces(
 		size_t __len = __end - __begin;
 		bool __result;
 		_CharT* __buffer =
-		  (_CharT*)__alloc::allocate(__len * sizeof(_CharT));
+		  (_CharT*)_Alloc::allocate(__len * sizeof(_CharT));
 		try {
 		  (*(__f->_M_fn))(__begin, __len, __buffer);
 		  __result = __c(__buffer, __len);
-                  __alloc::deallocate(__buffer, __len * sizeof(_CharT));
+                  _Alloc::deallocate(__buffer, __len * sizeof(_CharT));
                 }
 		catch(...)
 		  {
-		    __alloc::deallocate(__buffer, __len * sizeof(_CharT));
+		    _Alloc::deallocate(__buffer, __len * sizeof(_CharT));
 		    __throw_exception_again;
 		  }
 		return __result;

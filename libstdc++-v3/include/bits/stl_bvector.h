@@ -66,237 +66,325 @@ namespace __gnu_norm
   typedef unsigned long _Bit_type;
   enum { _S_word_bit = int(CHAR_BIT * sizeof(_Bit_type)) };
 
-struct _Bit_reference {
-
-  _Bit_type * _M_p;
-  _Bit_type _M_mask;
-  _Bit_reference(_Bit_type * __x, _Bit_type __y) 
-    : _M_p(__x), _M_mask(__y) {}
-
-public:
-  _Bit_reference() : _M_p(0), _M_mask(0) {}
-  operator bool() const { return !!(*_M_p & _M_mask); }
-  _Bit_reference& operator=(bool __x)
+  struct _Bit_reference 
   {
-    if (__x)  *_M_p |= _M_mask;
-    else      *_M_p &= ~_M_mask;
-    return *this;
-  }
-  _Bit_reference& operator=(const _Bit_reference& __x) 
+    _Bit_type * _M_p;
+    _Bit_type _M_mask;
+
+    _Bit_reference(_Bit_type * __x, _Bit_type __y) 
+    : _M_p(__x), _M_mask(__y) { }
+
+    _Bit_reference() : _M_p(0), _M_mask(0) { }
+
+    operator bool() const { return !!(*_M_p & _M_mask); }
+
+    _Bit_reference& 
+    operator=(bool __x)
+    {
+      if (__x)  
+	*_M_p |= _M_mask;
+      else      
+	*_M_p &= ~_M_mask;
+      return *this;
+    }
+
+    _Bit_reference& 
+    operator=(const _Bit_reference& __x) 
     { return *this = bool(__x); }
-  bool operator==(const _Bit_reference& __x) const
+
+    bool 
+    operator==(const _Bit_reference& __x) const
     { return bool(*this) == bool(__x); }
-  bool operator<(const _Bit_reference& __x) const
+
+    bool 
+    operator<(const _Bit_reference& __x) const
     { return !bool(*this) && bool(__x); }
-  void flip() { *_M_p ^= _M_mask; }
-};
 
-struct _Bit_iterator_base : public iterator<random_access_iterator_tag, bool>
-{
-  _Bit_type * _M_p;
-  unsigned int _M_offset;
+    void 
+    flip() { *_M_p ^= _M_mask; }
+  };
 
-  _Bit_iterator_base(_Bit_type * __x, unsigned int __y)
-    : _M_p(__x), _M_offset(__y) {}
+  struct _Bit_iterator_base : public iterator<random_access_iterator_tag, bool>
+  {
+    _Bit_type * _M_p;
+    unsigned int _M_offset;
 
-  void _M_bump_up() {
-    if (_M_offset++ == _S_word_bit - 1) {
-      _M_offset = 0;
-      ++_M_p;
+    _Bit_iterator_base(_Bit_type * __x, unsigned int __y)
+    : _M_p(__x), _M_offset(__y) { }
+
+    void 
+    _M_bump_up() 
+    {
+      if (_M_offset++ == _S_word_bit - 1) 
+	{
+	  _M_offset = 0;
+	  ++_M_p;
+	}
     }
-  }
-  void _M_bump_down() {
-    if (_M_offset-- == 0) {
-      _M_offset = _S_word_bit - 1;
-      --_M_p;
+
+    void 
+    _M_bump_down() 
+    {
+      if (_M_offset-- == 0) 
+	{
+	  _M_offset = _S_word_bit - 1;
+	  --_M_p;
+	}
     }
+    
+    void 
+    _M_incr(ptrdiff_t __i) 
+    {
+      difference_type __n = __i + _M_offset;
+      _M_p += __n / _S_word_bit;
+      __n = __n % _S_word_bit;
+      if (__n < 0) 
+	{
+	  _M_offset = static_cast<unsigned int>(__n + _S_word_bit);
+	  --_M_p;
+	} 
+      else
+	_M_offset = static_cast<unsigned int>(__n);
+    }
+    
+    bool 
+    operator==(const _Bit_iterator_base& __i) const 
+    { return _M_p == __i._M_p && _M_offset == __i._M_offset; }
+    
+    bool 
+    operator<(const _Bit_iterator_base& __i) const 
+    {
+      return _M_p < __i._M_p 
+	|| (_M_p == __i._M_p && _M_offset < __i._M_offset);
+    }
+
+    bool 
+    operator!=(const _Bit_iterator_base& __i) const 
+    { return !(*this == __i); }
+    
+    bool 
+    operator>(const _Bit_iterator_base& __i) const 
+    { return __i < *this; }
+
+    bool 
+    operator<=(const _Bit_iterator_base& __i) const 
+    { return !(__i < *this); }
+
+    bool 
+    operator>=(const _Bit_iterator_base& __i) const 
+    { return !(*this < __i); }
+  };
+
+  inline ptrdiff_t
+  operator-(const _Bit_iterator_base& __x, const _Bit_iterator_base& __y) 
+  {
+    return _S_word_bit * (__x._M_p - __y._M_p) + __x._M_offset - __y._M_offset;
   }
 
-  void _M_incr(ptrdiff_t __i) {
-    difference_type __n = __i + _M_offset;
-    _M_p += __n / _S_word_bit;
-    __n = __n % _S_word_bit;
-    if (__n < 0) {
-      _M_offset = (unsigned int) __n + _S_word_bit;
-      --_M_p;
-    } else
-      _M_offset = (unsigned int) __n;
-  }
 
-  bool operator==(const _Bit_iterator_base& __i) const {
-    return _M_p == __i._M_p && _M_offset == __i._M_offset;
-  }
-  bool operator<(const _Bit_iterator_base& __i) const {
-    return _M_p < __i._M_p || (_M_p == __i._M_p && _M_offset < __i._M_offset);
-  }
-  bool operator!=(const _Bit_iterator_base& __i) const {
-    return !(*this == __i);
-  }
-  bool operator>(const _Bit_iterator_base& __i) const {
-    return __i < *this;
-  }
-  bool operator<=(const _Bit_iterator_base& __i) const {
-    return !(__i < *this); 
-  }
-  bool operator>=(const _Bit_iterator_base& __i) const {
-    return !(*this < __i);
-  }
-};
+  struct _Bit_iterator : public _Bit_iterator_base
+  {
+    typedef _Bit_reference  reference;
+    typedef _Bit_reference* pointer;
+    typedef _Bit_iterator   iterator;
 
-inline ptrdiff_t
-operator-(const _Bit_iterator_base& __x, const _Bit_iterator_base& __y) {
-  return _S_word_bit * (__x._M_p - __y._M_p) + __x._M_offset - __y._M_offset;
-}
+    _Bit_iterator() : _Bit_iterator_base(0, 0) { }
+    _Bit_iterator(_Bit_type * __x, unsigned int __y) 
+    : _Bit_iterator_base(__x, __y) { }
+    
+    reference 
+    operator*() const { return reference(_M_p, 1UL << _M_offset); }
 
+    iterator& 
+    operator++() 
+    {
+      _M_bump_up();
+      return *this;
+    }
+    
+    iterator 
+    operator++(int) 
+    {
+      iterator __tmp = *this;
+      _M_bump_up();
+      return __tmp;
+    }
 
-struct _Bit_iterator : public _Bit_iterator_base
-{
-  typedef _Bit_reference  reference;
-  typedef _Bit_reference* pointer;
-  typedef _Bit_iterator   iterator;
+    iterator& 
+    operator--() 
+    {
+      _M_bump_down();
+      return *this;
+    }
 
-  _Bit_iterator() : _Bit_iterator_base(0, 0) {}
-  _Bit_iterator(_Bit_type * __x, unsigned int __y) 
-    : _Bit_iterator_base(__x, __y) {}
+    iterator 
+    operator--(int) 
+    {
+      iterator __tmp = *this;
+      _M_bump_down();
+      return __tmp;
+    }
 
-  reference operator*() const { return reference(_M_p, 1UL << _M_offset); }
-  iterator& operator++() {
-    _M_bump_up();
-    return *this;
-  }
-  iterator operator++(int) {
-    iterator __tmp = *this;
-    _M_bump_up();
-    return __tmp;
-  }
-  iterator& operator--() {
-    _M_bump_down();
-    return *this;
-  }
-  iterator operator--(int) {
-    iterator __tmp = *this;
-    _M_bump_down();
-    return __tmp;
-  }
-  iterator& operator+=(difference_type __i) {
-    _M_incr(__i);
-    return *this;
-  }
-  iterator& operator-=(difference_type __i) {
-    *this += -__i;
-    return *this;
-  }
-  iterator operator+(difference_type __i) const {
-    iterator __tmp = *this;
-    return __tmp += __i;
-  }
-  iterator operator-(difference_type __i) const {
-    iterator __tmp = *this;
-    return __tmp -= __i;
-  }
+    iterator& 
+    operator+=(difference_type __i) 
+    {
+      _M_incr(__i);
+      return *this;
+    }
 
-  reference operator[](difference_type __i) { return *(*this + __i); }
-};
+    iterator&
+    operator-=(difference_type __i) 
+    {
+      *this += -__i;
+      return *this;
+    }
 
-inline _Bit_iterator 
-operator+(ptrdiff_t __n, const _Bit_iterator& __x) { return __x + __n; }
+    iterator 
+    operator+(difference_type __i) const 
+    {
+      iterator __tmp = *this;
+      return __tmp += __i;
+    }
+    
+    iterator 
+    operator-(difference_type __i) const 
+    {
+      iterator __tmp = *this;
+      return __tmp -= __i;
+    }
+    
+    reference 
+    operator[](difference_type __i) { return *(*this + __i); }
+  };
+  
+  inline _Bit_iterator 
+  operator+(ptrdiff_t __n, const _Bit_iterator& __x) { return __x + __n; }
 
 
-struct _Bit_const_iterator : public _Bit_iterator_base
-{
-  typedef bool                 reference;
-  typedef bool                 const_reference;
-  typedef const bool*          pointer;
-  typedef _Bit_const_iterator  const_iterator;
+  struct _Bit_const_iterator : public _Bit_iterator_base
+  {
+    typedef bool                 reference;
+    typedef bool                 const_reference;
+    typedef const bool*          pointer;
+    typedef _Bit_const_iterator  const_iterator;
+    
+    _Bit_const_iterator() : _Bit_iterator_base(0, 0) { }
+    _Bit_const_iterator(_Bit_type * __x, unsigned int __y) 
+    : _Bit_iterator_base(__x, __y) { }
+    _Bit_const_iterator(const _Bit_iterator& __x) 
+    : _Bit_iterator_base(__x._M_p, __x._M_offset) { }
 
-  _Bit_const_iterator() : _Bit_iterator_base(0, 0) {}
-  _Bit_const_iterator(_Bit_type * __x, unsigned int __y) 
-    : _Bit_iterator_base(__x, __y) {}
-  _Bit_const_iterator(const _Bit_iterator& __x) 
-    : _Bit_iterator_base(__x._M_p, __x._M_offset) {}
+    const_reference 
+    operator*() const 
+    { return _Bit_reference(_M_p, 1UL << _M_offset); }
+    
+    const_iterator& 
+    operator++() 
+    {
+      _M_bump_up();
+      return *this;
+    }
 
-  const_reference operator*() const {
-    return _Bit_reference(_M_p, 1UL << _M_offset);
-  }
-  const_iterator& operator++() {
-    _M_bump_up();
-    return *this;
-  }
-  const_iterator operator++(int) {
-    const_iterator __tmp = *this;
-    _M_bump_up();
-    return __tmp;
-  }
-  const_iterator& operator--() {
-    _M_bump_down();
-    return *this;
-  }
-  const_iterator operator--(int) {
-    const_iterator __tmp = *this;
-    _M_bump_down();
-    return __tmp;
-  }
-  const_iterator& operator+=(difference_type __i) {
-    _M_incr(__i);
-    return *this;
-  }
-  const_iterator& operator-=(difference_type __i) {
-    *this += -__i;
-    return *this;
-  }
-  const_iterator operator+(difference_type __i) const {
-    const_iterator __tmp = *this;
-    return __tmp += __i;
-  }
-  const_iterator operator-(difference_type __i) const {
-    const_iterator __tmp = *this;
-    return __tmp -= __i;
-  }
-  const_reference operator[](difference_type __i) { 
-    return *(*this + __i); 
-  }
-};
+    const_iterator 
+    operator++(int) 
+    {
+      const_iterator __tmp = *this;
+      _M_bump_up();
+      return __tmp;
+    }
 
-inline _Bit_const_iterator 
-operator+(ptrdiff_t __n, const _Bit_const_iterator& __x) { return __x + __n; }
+    const_iterator& 
+    operator--() 
+    {
+      _M_bump_down();
+      return *this;
+    }
 
+    const_iterator 
+    operator--(int) 
+    {
+      const_iterator __tmp = *this;
+      _M_bump_down();
+      return __tmp;
+    }
 
-template <class _Alloc>
-class _Bvector_base
-  : public _Alloc::template rebind<_Bit_type>::other
-{
-  typedef typename _Alloc::template rebind<_Bit_type>::other _Bit_alloc_type;
-public:
-  typedef _Alloc allocator_type;
-  allocator_type get_allocator() const {
-    return *static_cast<const _Bit_alloc_type*>(this);
-  }
+    const_iterator& 
+    operator+=(difference_type __i) 
+    {
+      _M_incr(__i);
+      return *this;
+    }
 
-  _Bvector_base(const allocator_type& __a)
-    : _Bit_alloc_type(__a), _M_start(), _M_finish(), _M_end_of_storage(0) { }
-  ~_Bvector_base() { this->_M_deallocate(); }
+    const_iterator& 
+    operator-=(difference_type __i) 
+    {
+      *this += -__i;
+      return *this;
+    }
 
-protected:
-  _Bit_type* _M_bit_alloc(size_t __n) {
-    return _Bit_alloc_type::allocate((__n + _S_word_bit - 1)/_S_word_bit);
-  }
-  void _M_deallocate() {
-    if (_M_start._M_p)
-      _Bit_alloc_type::deallocate(_M_start._M_p, _M_end_of_storage - _M_start._M_p);
-  }  
+    const_iterator operator+(difference_type __i) const {
+      const_iterator __tmp = *this;
+      return __tmp += __i;
+    }
 
-  _Bit_iterator _M_start;
-  _Bit_iterator _M_finish;
-  _Bit_type * _M_end_of_storage;
-};
+    const_iterator 
+    operator-(difference_type __i) const 
+    {
+      const_iterator __tmp = *this;
+      return __tmp -= __i;
+    }
 
+    const_reference 
+    operator[](difference_type __i) 
+    { return *(*this + __i); }
+  };
+  
+  inline _Bit_const_iterator 
+  operator+(ptrdiff_t __n, const _Bit_const_iterator& __x) 
+  { return __x + __n; }
+
+  template<class _Alloc>
+    class _Bvector_base
+    : public _Alloc::template rebind<_Bit_type>::other
+    {
+      typedef typename _Alloc::template rebind<_Bit_type>::other _Bit_alloc_type;
+
+    public:
+      typedef _Alloc allocator_type;
+      
+      allocator_type 
+      get_allocator() const 
+      { return *static_cast<const _Bit_alloc_type*>(this); }
+      
+      _Bvector_base(const allocator_type& __a)
+      : _Bit_alloc_type(__a), _M_start(), _M_finish(), _M_end_of_storage(0) { }
+
+      ~_Bvector_base() { this->_M_deallocate(); }
+
+    protected:
+      _Bit_type* 
+      _M_bit_alloc(size_t __n) 
+      { return _Bit_alloc_type::allocate((__n + _S_word_bit - 1)/_S_word_bit);}
+
+      void 
+      _M_deallocate() 
+      {
+	if (_M_start._M_p)
+	  _Bit_alloc_type::deallocate(_M_start._M_p, 
+				      _M_end_of_storage - _M_start._M_p);
+      }  
+      
+      _Bit_iterator _M_start;
+      _Bit_iterator _M_finish;
+      _Bit_type* _M_end_of_storage;
+    };
 } // namespace __gnu_norm
 
 // Declare a partial specialization of vector<T, Alloc>.
 #include <bits/stl_vector.h>
+
 namespace __gnu_norm
 {
-
   /**
    *  @brief  A specialization of vector for booleans which offers fixed time
    *  access to individual elements in any order.
@@ -309,12 +397,13 @@ namespace __gnu_norm
    *  @ingroup Containers
    *  @ingroup Sequences
    *
-   *  In some terminology a %vector can be described as a dynamic C-style array,
-   *  it offers fast and efficient access to individual elements in any order
-   *  and saves the user from worrying about memory and size allocation.
-   *  Subscripting ( @c [] ) access is also provided as with C-style arrays.
+   *  In some terminology a %vector can be described as a dynamic
+   *  C-style array, it offers fast and efficient access to individual
+   *  elements in any order and saves the user from worrying about
+   *  memory and size allocation.  Subscripting ( @c [] ) access is
+   *  also provided as with C-style arrays.
   */
-template <typename _Alloc> 
+template<typename _Alloc> 
   class vector<bool, _Alloc> : public _Bvector_base<_Alloc> 
   {
   public:
@@ -370,7 +459,7 @@ template <typename _Alloc>
       }
     }
   
-    template <class _InputIterator>
+    template<class _InputIterator>
     void _M_initialize_range(_InputIterator __first, _InputIterator __last,
                              input_iterator_tag) {
       this->_M_start = iterator();
@@ -380,7 +469,7 @@ template <typename _Alloc>
         push_back(*__first);
     }
   
-    template <class _ForwardIterator>
+    template<class _ForwardIterator>
     void _M_initialize_range(_ForwardIterator __first, _ForwardIterator __last,
                              forward_iterator_tag) {
       size_type __n = std::distance(__first, __last);
@@ -388,7 +477,7 @@ template <typename _Alloc>
       std::copy(__first, __last, this->_M_start);
     }
   
-    template <class _InputIterator>
+    template<class _InputIterator>
     void _M_insert_range(iterator __pos,
                          _InputIterator __first, _InputIterator __last,
                          input_iterator_tag) {
@@ -398,7 +487,7 @@ template <typename _Alloc>
       }
     }
   
-    template <class _ForwardIterator>
+    template<class _ForwardIterator>
     void _M_insert_range(iterator __position,
                          _ForwardIterator __first, _ForwardIterator __last,
                          forward_iterator_tag) {
@@ -462,7 +551,7 @@ template <typename _Alloc>
       { _M_range_check(__n); return (*this)[__n]; }
   
     explicit vector(const allocator_type& __a = allocator_type())
-      : _Bvector_base<_Alloc>(__a) {}
+      : _Bvector_base<_Alloc>(__a) { }
   
     vector(size_type __n, bool __value,
               const allocator_type& __a = allocator_type())
@@ -486,19 +575,19 @@ template <typename _Alloc>
   
     // Check whether it's an integral type.  If so, it's not an iterator.
   
-    template <class _Integer>
+    template<class _Integer>
     void _M_initialize_dispatch(_Integer __n, _Integer __x, __true_type) {
       _M_initialize(__n);
       std::fill(this->_M_start._M_p, this->_M_end_of_storage, __x ? ~0 : 0);
     }
   
-    template <class _InputIterator>
+    template<class _InputIterator>
     void _M_initialize_dispatch(_InputIterator __first, _InputIterator __last,
                                 __false_type) {
       _M_initialize_range(__first, __last, std::__iterator_category(__first));
     }
   
-    template <class _InputIterator>
+    template<class _InputIterator>
     vector(_InputIterator __first, _InputIterator __last,
              const allocator_type& __a = allocator_type())
       : _Bvector_base<_Alloc>(__a)
@@ -538,21 +627,21 @@ template <typename _Alloc>
   
     void assign(size_t __n, bool __x) { _M_fill_assign(__n, __x); }
   
-    template <class _InputIterator>
+    template<class _InputIterator>
     void assign(_InputIterator __first, _InputIterator __last) {
       typedef typename _Is_integer<_InputIterator>::_Integral _Integral;
       _M_assign_dispatch(__first, __last, _Integral());
     }
   
-    template <class _Integer>
+    template<class _Integer>
     void _M_assign_dispatch(_Integer __n, _Integer __val, __true_type)
       { _M_fill_assign((size_t) __n, (bool) __val); }
   
-    template <class _InputIterator>
+    template<class _InputIterator>
     void _M_assign_dispatch(_InputIterator __first, _InputIterator __last, __false_type)
       { _M_assign_aux(__first, __last, std::__iterator_category(__first)); }
   
-    template <class _InputIterator>
+    template<class _InputIterator>
     void _M_assign_aux(_InputIterator __first, _InputIterator __last,
                        input_iterator_tag) {
       iterator __cur = begin();
@@ -564,7 +653,7 @@ template <typename _Alloc>
         insert(end(), __first, __last);
     }
   
-    template <class _ForwardIterator>
+    template<class _ForwardIterator>
     void _M_assign_aux(_ForwardIterator __first, _ForwardIterator __last,
                        forward_iterator_tag) {
       size_type __len = std::distance(__first, __last);
@@ -625,20 +714,20 @@ template <typename _Alloc>
   
     // Check whether it's an integral type.  If so, it's not an iterator.
   
-    template <class _Integer>
+    template<class _Integer>
     void _M_insert_dispatch(iterator __pos, _Integer __n, _Integer __x,
                             __true_type) {
       _M_fill_insert(__pos, __n, __x);
     }
   
-    template <class _InputIterator>
+    template<class _InputIterator>
     void _M_insert_dispatch(iterator __pos,
                             _InputIterator __first, _InputIterator __last,
                             __false_type) {
       _M_insert_range(__pos, __first, __last, std::__iterator_category(__first));
     }
   
-    template <class _InputIterator>
+    template<class _InputIterator>
     void insert(iterator __position,
                 _InputIterator __first, _InputIterator __last) {
       typedef typename _Is_integer<_InputIterator>::_Integral _Integral;
@@ -695,9 +784,6 @@ template <typename _Alloc>
   
     void clear() { erase(begin(), end()); }
   };
-
-  // This typedef is non-standard.  It is provided for backward compatibility.
-  typedef vector<bool, __alloc> bit_vector;
 } // namespace __gnu_norm
 
-#endif /* _BVECTOR_H */
+#endif 
