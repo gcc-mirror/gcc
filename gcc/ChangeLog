@@ -1,5 +1,11 @@
 2002-10-07  Richard Henderson  <rth@redhat.com>
 
+	* config/i960/i960.c (i960_setup_incoming_varargs): Create a
+	new rtx for comparing the argument pointer against zero.
+	(i960_va_start): Similarly.
+
+2002-10-07  Richard Henderson  <rth@redhat.com>
+
 	* config/i960/i960.md (*): Use TFmode, not XFmode.
 	* config/i960/i960.c (*): Likewise.
 	(i960_arg_size_and_align): Remove XFmode alignment hack.
