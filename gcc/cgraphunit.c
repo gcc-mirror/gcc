@@ -157,7 +157,7 @@ cgraph_finalize_compilation_unit ()
       tree decl = cgraph_nodes_queue->decl;
 
       node = cgraph_nodes_queue;
-      cgraph_nodes_queue = cgraph_nodes_queue->aux;
+      cgraph_nodes_queue = cgraph_nodes_queue->next_needed;
 
       if (node->lowered || !node->reachable || !DECL_SAVED_TREE (decl))
 	abort ();

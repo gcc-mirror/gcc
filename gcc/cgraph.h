@@ -75,6 +75,8 @@ struct cgraph_node GTY(())
   struct cgraph_node *nested;
   /* Pointer to the next function with same origin, if any.  */
   struct cgraph_node *next_nested;
+  /* Pointer to the next function in cgraph_nodes_queue.  */
+  struct cgraph_node *next_needed;
   PTR GTY ((skip (""))) aux;
 
   /* Set when function must be output - it is externally visible
@@ -108,7 +110,8 @@ struct cgraph_edge GTY(())
 struct cgraph_varpool_node GTY(())
 {
   tree decl;
-  PTR GTY ((skip (""))) aux;
+  /* Pointer to the next function in cgraph_varpool_nodes_queue.  */
+  struct cgraph_varpool_node *next_needed;
 
   /* Set when function must be output - it is externally visible
      or it's address is taken.  */

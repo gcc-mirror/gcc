@@ -1,3 +1,12 @@
+Wed Jul  2 02:16:48 CEST 2003  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.c (cgraph_mark_needed_node, cgraph_varpool_mark_needed_node,
+	cgraph_varpool_finalize_decl, cgraph_varpool_assemble_pending_decls):
+	Use next_needed field instead of aux to maintain the queue.
+	* cgraph.h (cgraph_node): Add next_needed.
+	(cgraph_varpool_node): Add next_needed; remove aux.
+	* cgraphunit.c (cgraph_finalize_compilation_unit): Use next_needed.
+
 Wed Jul  2 02:12:51 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	* cgraphunit.c (cgraph_finalize_function): Set finalized.
