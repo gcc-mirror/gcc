@@ -413,6 +413,7 @@ static int ix86_nsaved_regs PARAMS((void));
 static void ix86_emit_save_regs PARAMS((void));
 static void ix86_emit_restore_regs_using_mov PARAMS ((rtx, int));
 static void ix86_emit_epilogue_esp_adjustment PARAMS((int));
+static void ix86_set_move_mem_attrs_1 PARAMS ((rtx, rtx, rtx, rtx, rtx));
 static void ix86_sched_reorder_pentium PARAMS((rtx *, rtx *));
 static void ix86_sched_reorder_ppro PARAMS((rtx *, rtx *));
 static HOST_WIDE_INT ix86_GOT_alias_set PARAMS ((void));
@@ -7324,6 +7325,52 @@ ix86_variable_issue (dump, sched_verbose, insn, can_issue_more)
 	  }
       }
       return --ix86_sched_data.ppro.issued_this_cycle;
+    }
+}
+
+/* Walk through INSNS and look for MEM references whose address is DSTREG or
+   SRCREG and set the memory attribute to those of DSTREF and SRCREF, as
+   appropriate.  */
+
+void
+ix86_set_move_mem_attrs (insns, dstref, srcref, dstreg, srcreg)
+     rtx insns;
+     rtx dstref, srcref, dstreg, srcreg;
+{
+  rtx insn;
+
+  for (insn = insns; insn != 0 ; insn = NEXT_INSN (insn))
+    if (INSN_P (insn))
+      ix86_set_move_mem_attrs_1 (PATTERN (insn), dstref, srcref,
+				 dstreg, srcreg);
+}
+
+/* Subroutine of above to actually do the updating by recursively walking
+   the rtx.  */
+
+static void
+ix86_set_move_mem_attrs_1 (x, dstref, srcref, dstreg, srcreg)
+     rtx x;
+     rtx dstref, srcref, dstreg, srcreg;
+{
+  enum rtx_code code = GET_CODE (x);
+  const char *format_ptr = GET_RTX_FORMAT (code);
+  int i, j;
+
+  if (code == MEM && XEXP (x, 0) == dstreg)
+    MEM_COPY_ATTRIBUTES (x, dstref);
+  else if (code == MEM && XEXP (x, 0) == srcreg)
+    MEM_COPY_ATTRIBUTES (x, srcref);
+
+  for (i = 0; i < GET_RTX_LENGTH (code); i++, format_ptr++)
+    {
+      if (*format_ptr == 'e')
+	ix86_set_move_mem_attrs_1 (XEXP (x, i), dstref, srcref,
+				   dstreg, srcreg);
+      else if (*format_ptr == 'E')
+	for (j = XVECLEN (x, i) - 1; j >= 0; j--)
+	  ix86_set_move_mem_attrs_1 (XVECEXP (x, i, j), dstref, srcref,
+				     dstreg, srcreg);
     }
 }
 

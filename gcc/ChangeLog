@@ -1,3 +1,11 @@
+2001-03-06  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* Restore change that patch misapplied.
+	* config/i386/i386.c (ix86_set_move_mem_attrs): New function.
+	(ix86_set_move_mem_attrs_1): Likewise.
+	* config/i386/i386-protos.h (ix86_set_move_mem_attrs): New declaration.
+	* config/i386/i386.md (movstrsi): Call it.
+
 2001-03-06  Stephen L Moshier  <moshier@mediaone.net>
 
 	* config/m68k/m68k.c (const_uint32_operand): Accept any

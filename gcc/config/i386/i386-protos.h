@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler for IA-32.
-   Copyright (C) 1988, 1992, 1994, 1995, 1996, 1996, 1997, 1998, 1999, 2000
-   Free Software Foundation, Inc.
+   Copyright (C) 1988, 1992, 1994, 1995, 1996, 1996, 1997, 1998, 1999,
+   2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -140,6 +140,8 @@ extern void function_arg_advance PARAMS ((CUMULATIVE_ARGS *, enum machine_mode,
 extern void ix86_init_builtins PARAMS ((void));
 extern rtx ix86_expand_builtin PARAMS ((tree, rtx, rtx, enum machine_mode, int));
 #endif
+extern void ix86_set_move_mem_attrs PARAMS ((rtx, rtx, rtx, rtx, rtx));
+
 
 #endif
 
