@@ -1,3 +1,8 @@
+Mon Sep 28 04:15:44 1998  Craig Burley  <burley@melange.gnu.org>
+
+	* invoke.texi (-ffloat-store): Clarify that this option
+	does not affect intermediate results -- only variables.
+
 Mon Sep 28 04:11:35 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* cpp.texi: Update for Fortran usage from Craig.
