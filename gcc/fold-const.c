@@ -92,6 +92,7 @@ static tree fold_range_test	PROTO((tree));
 static tree unextend		PROTO((tree, int, int, tree));
 static tree fold_truthop	PROTO((enum tree_code, tree, tree, tree));
 static tree strip_compound_expr PROTO((tree, tree));
+static int count_cond		PROTO((tree, int));
 
 #ifndef BRANCH_COST
 #define BRANCH_COST 1
@@ -3659,6 +3660,27 @@ strip_compound_expr (t, s)
 
   return t;
 }
+
+/* Utility function for the following routine, to see how complex a nesting of
+   COND_EXPRs can be.  EXPR is the expression and LIMIT is a count beyond which
+   we don't care (to avoid spending too much time on complex expressions.).  */
+
+static int
+count_cond (expr, lim)
+     tree expr;
+     int lim;
+{
+  int true, false;
+
+  if (TREE_CODE (expr) != COND_EXPR)
+    return 0;
+  else if (lim <= 0)
+    return 0;
+
+  true = count_cond (TREE_OPERAND (expr, 1), lim - 1);
+  false = count_cond (TREE_OPERAND (expr, 2), lim - 1 - true);
+  return MIN (lim, 1 + true + false);
+}
 
 /* Perform constant folding and related simplification of EXPR.
    The related simplifications include x*1 => x, x*0 => 0, etc.,
@@ -3879,6 +3901,8 @@ fold (expr)
       else if ((TREE_CODE (arg1) == COND_EXPR
 		|| (TREE_CODE_CLASS (TREE_CODE (arg1)) == '<'
 		    && TREE_CODE_CLASS (code) != '<'))
+	       && (TREE_CODE (arg0) != COND_EXPR
+		   || count_cond (arg0, 25) + count_cond (arg1, 25) <= 25)
 	       && (! TREE_SIDE_EFFECTS (arg0)
 		   || (current_function_decl != 0
 		       && ! contains_placeholder_p (arg0))))
@@ -3952,6 +3976,8 @@ fold (expr)
       else if ((TREE_CODE (arg0) == COND_EXPR
 		|| (TREE_CODE_CLASS (TREE_CODE (arg0)) == '<'
 		    && TREE_CODE_CLASS (code) != '<'))
+	       && (TREE_CODE (arg1) != COND_EXPR
+		   || count_cond (arg0, 25) + count_cond (arg1, 25) <= 25)
 	       && (! TREE_SIDE_EFFECTS (arg1)
 		   || (current_function_decl != 0
 		       && ! contains_placeholder_p (arg1))))
