@@ -1,3 +1,5 @@
+// { dg-options -w }
+
 extern "C" void abort (void);
 
 #include "vbase8-10.h"

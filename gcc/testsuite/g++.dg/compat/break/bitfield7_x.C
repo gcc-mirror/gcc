@@ -1,3 +1,5 @@
+// { dg-options "-w" }
+
 #include "bitfield7.h"
 
 extern void bitfield7_y (U*);

@@ -1,3 +1,5 @@
+// { dg-options "-ansi -pedantic-errors -funsigned-bitfields" }
+
 #include "bitfield1.h"
 
 extern void bitfield1_y (A& a);

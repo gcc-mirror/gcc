@@ -1,3 +1,21 @@
+2003-07-21  Janis Johnson  <janis187@us.ibm.com>
+
+	* lib/compat.exp: Handle dg-options per source file.
+	* g++.dg/compat/abi/bitfield1_x.C: Specify dg-options.
+	* g++.dg/compat/abi/bitfield1_y.C: Ditto.
+	* g++.dg/compat/abi/bitfield2_x.C: Ditto.
+	* g++.dg/compat/abi/bitfield2_y.C: Ditto.
+	* g++.dg/compat/abi/vbase8-10_x.C: Ditto.
+	* g++.dg/compat/abi/vbase8-10_y.C: Ditto.
+	* g++.dg/compat/abi/vbase8-21_x.C: Ditto.
+	* g++.dg/compat/abi/vbase8-21_y.C: Ditto.
+	* g++.dg/compat/abi/vbase8-22_x.C: Ditto.
+	* g++.dg/compat/abi/vbase8-22_y.C: Ditto.
+	* g++.dg/compat/abi/vbase8-4_x.C: Ditto.
+	* g++.dg/compat/abi/vbase8-4_y.C: Ditto.
+	* g++.dg/compat/break/bitfield7_x.C: Ditto.
+	* g++.dg/compat/break/bitfield7_y.C: Ditto.
+
 2003-07-21  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR c/10320
