@@ -1,5 +1,8 @@
 2001-05-15  Geoffrey Keating  <geoffk@redhat.com>
 
+	* objc/objc-act.c (handle_class_ref): Use rest_of_decl_compilation
+	so that CHOOSE_SECTION gets used.
+
 	* config/rs6000/sysv4.h (ASM_PREFERRED_EH_DATA_FORMAT): Treat
 	TARGET_RELOCATABLE like flag_pic for now.
 
