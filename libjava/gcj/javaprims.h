@@ -1,6 +1,6 @@
 // javaprims.h - Main external header file for libgcj.  -*- c++ -*-
 
-/* Copyright (C) 1998, 1999  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -277,36 +277,6 @@ extern "C" void _Jv_Free (void*);
 
 typedef unsigned short _Jv_ushort __attribute__((__mode__(__HI__)));
 typedef unsigned int _Jv_uint __attribute__((__mode__(__SI__)));
-
-typedef union {
-  jobject o;
-  jint i;			// Also stores smaller integral types.
-  jfloat f;
-  jint ia[1];			// Half of _Jv_word2.
-  void* p;
-
-  // We use __LP64__ and not SIZEOF_VOID_P here because we want
-  // something that will be predefined by the compiler.  FIXME -- this
-  // definition probably shouldn't appear here anyway.
-#ifdef __LP64__
-  // We can safely put a long or a double in here without increasing
-  // the size of _Jv_Word; we take advantage of this in the interpreter.
-  jlong l;
-  jdouble d;
-#endif
-
-  jclass                     clazz;
-  jstring                    string;
-  struct _Jv_Field          *field;
-  struct _Jv_Utf8Const      *utf8;
-  struct _Jv_ResolvedMethod *rmethod;
-} _Jv_word;
-
-typedef union {
-  jint ia[2];
-  jlong l;
-  jdouble d;
-} _Jv_word2;                              
 
 struct _Jv_Utf8Const
 {

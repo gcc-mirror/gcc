@@ -31,6 +31,35 @@ struct _Jv_VTable
   void *method[1];
 };
 
+union _Jv_word
+{
+  jobject o;
+  jint i;			// Also stores smaller integral types.
+  jfloat f;
+  jint ia[1];			// Half of _Jv_word2.
+  void* p;
+
+#if SIZEOF_VOID_P == 8
+  // We can safely put a long or a double in here without increasing
+  // the size of _Jv_Word; we take advantage of this in the interpreter.
+  jlong l;
+  jdouble d;
+#endif
+
+  jclass                     clazz;
+  jstring                    string;
+  struct _Jv_Field          *field;
+  struct _Jv_Utf8Const      *utf8;
+  struct _Jv_ResolvedMethod *rmethod;
+};
+
+union _Jv_word2
+{
+  jint ia[2];
+  jlong l;
+  jdouble d;
+};                              
+
 /* Extract a character from a Java-style Utf8 string.
  * PTR points to the current character.
  * LIMIT points to the end of the Utf8 string.
