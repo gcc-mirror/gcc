@@ -316,9 +316,14 @@ tree class_dtable_decl;
 tree error_mark_node;
 
 /* Two expressions that are constants with value zero.
-   The first is of type `int', the second of type `void *'.  */
+   The first is of type `int', the second of type `void *'.
+   Other of type `long', `float' and `double' follow.  */
 tree integer_zero_node;
 tree null_pointer_node;
+tree long_zero_node;
+tree float_zero_node;
+tree double_zero_node;
+
 tree empty_stmt_node;
 
 /* Nodes for boolean constants TRUE and FALSE. */
@@ -467,6 +472,9 @@ init_decl_processing ()
   integer_four_node = build_int_2 (4, 0);
   integer_negative_one_node = build_int_2 (-1, 0);
 
+  long_zero_node = build_int_2 (0, 0);
+  TREE_TYPE (long_zero_node) = long_type_node;
+
   void_type_node = make_node (VOID_TYPE);
   pushdecl (build_decl (TYPE_DECL, get_identifier ("void"), void_type_node));
   layout_type (void_type_node);	/* Uses size_zero_node */
@@ -523,6 +531,9 @@ init_decl_processing ()
   pushdecl (build_decl (TYPE_DECL, get_identifier ("double"),
                         double_type_node));
   layout_type (double_type_node);
+
+  float_zero_node = build_real (float_type_node, dconst0);
+  double_zero_node = build_real (double_type_node, dconst0);
 
   unqualified_object_id_node = get_identifier ("Object");
   object_type_node = lookup_class (get_identifier ("java.lang.Object"));

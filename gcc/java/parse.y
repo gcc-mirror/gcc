@@ -237,6 +237,7 @@ static tree patch_new_array_init PROTO ((tree, tree));
 static tree patch_array_constructor PROTO ((tree, tree));
 static tree maybe_build_array_element_wfl PROTO ((tree));
 static int array_constructor_check_entry PROTO ((tree, tree));
+static char *purify_type_name PROTO ((char *));
 
 /* Number of error found so far. */
 int java_error_count; 
@@ -3022,10 +3023,15 @@ duplicate_declaration_error_p (new_field_name, new_type, cl)
 			  new_field_name);
   if (decl)
     {
-      char *t1 = strdup (lang_printable_name (new_type, 1));
+      char *t1 = strdup (purify_type_name
+			 ((TREE_CODE (new_type) == POINTER_TYPE 
+			   && TREE_TYPE (new_type) == NULL_TREE) ?
+			  IDENTIFIER_POINTER (TYPE_NAME (new_type)) :
+			  lang_printable_name (new_type, 1)));
       /* The type may not have been completed by the time we report
 	 the error */
-      char *t2 = strdup (((TREE_CODE (TREE_TYPE (decl)) == POINTER_TYPE 
+      char *t2 = strdup (purify_type_name
+			 ((TREE_CODE (TREE_TYPE (decl)) == POINTER_TYPE 
 			   && TREE_TYPE (TREE_TYPE (decl)) == NULL_TREE) ?
 			  IDENTIFIER_POINTER (TYPE_NAME (TREE_TYPE (decl))) :
 			  lang_printable_name (TREE_TYPE (decl), 1)));
@@ -3247,7 +3253,7 @@ method_header (flags, type, mdecl, throws)
   tree id = TREE_PURPOSE (mdecl);
   tree this_class = TREE_TYPE (ctxp->current_parsed_class);
   tree type_wfl = NULL_TREE;
-  tree meth_name, current, orig_arg, saved_type;
+  tree meth_name = NULL_TREE, current, orig_arg;
   int saved_lineno;
   int constructor_ok = 0, must_chain;
   
@@ -3329,8 +3335,8 @@ method_header (flags, type, mdecl, throws)
   /* Do the returned type resolution and registration if necessary */
   SET_TYPE_FOR_RESOLUTION (type, type_wfl, must_chain);
 
-  saved_type = type;
-  type = build_array_from_name (type, type_wfl, meth_name, &meth_name);
+  if (meth_name)
+    type = build_array_from_name (type, type_wfl, meth_name, &meth_name);
   EXPR_WFL_NODE (id) = meth_name;
   PROMOTE_RECORD_IF_COMPLETE (type, must_chain);
 
@@ -7823,7 +7829,9 @@ java_complete_tree (node)
       TREE_OPERAND (node, 0) = java_complete_tree (wfl_op1);
       if (TREE_OPERAND (node, 0) == error_mark_node)
 	return error_mark_node;
-      return patch_unaryop (node, wfl_op1);
+      node = patch_unaryop (node, wfl_op1);
+      CAN_COMPLETE_NORMALLY (node) = 1;
+      break;
 
     case ARRAY_REF:
       /* There are cases were wfl_op1 is a WFL. patch_array_ref knows
@@ -9301,13 +9309,16 @@ patch_unaryop (node, wfl_op)
 	}
       else
 	{
-	  /* Before the addition, binary numeric promotion if performed on
+	  /* Before the addition, binary numeric promotion is performed on
 	     both operands */
-	  value = integer_one_node;
-	  prom_type = binary_numeric_promotion (op_type, TREE_TYPE (value), 
-						&op, &value);
-	  /* And write the promoted increment back */
+	  value = build_int_2 (1, 0);
+	  TREE_TYPE (node) = 
+	    binary_numeric_promotion (op_type, TREE_TYPE (value), &op, &value);
+	  /* And write the promoted incremented and increment */
+	  TREE_OPERAND (node, 0) = op;
 	  TREE_OPERAND (node, 1) = value;
+	  /* Convert the overall back into its original type. */
+	  return fold (convert (op_type, node));
 	}
       break;
 
@@ -9327,7 +9338,7 @@ patch_unaryop (node, wfl_op)
 	  op = do_unary_numeric_promotion (op);
 	  prom_type = TREE_TYPE (op);
 	  if (code == UNARY_PLUS_EXPR)
-	    node = op;
+	    return fold (op);
 	}
       break;
 
@@ -9372,18 +9383,18 @@ patch_unaryop (node, wfl_op)
 	  error_found = 1;
 	}
       else
-	node = value;
+	return fold (value);
       break;
     }
   
   if (error_found)
     return error_mark_node;
-  /* In the case of UNARY_PLUS_EXPR, we replaced NODE by a new one */
-  else if (code != UNARY_PLUS_EXPR && code != CONVERT_EXPR)
-    {
-      TREE_OPERAND (node, 0) = op;
-      TREE_TYPE (node) = prom_type;
-    }
+
+  /* There are cases where node has been replaced by something else
+     and we don't end up returning here: UNARY_PLUS_EXPR,
+     CONVERT_EXPR, {POST,PRE}{INCR,DECR}EMENT_EXPR. */
+  TREE_OPERAND (node, 0) = op;
+  TREE_TYPE (node) = prom_type;
   return fold (node);
 }
 

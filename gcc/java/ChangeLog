@@ -1,3 +1,22 @@
+Thu Dec 10 20:00:54 1998  Alexandre Petit-Bianco  <apbianco@sendai.cygnus.com>
+
+	* decl.c (long_zero_node, float_zero_node, double_zero_node): New
+ 	global variables, initialized.
+	* java-tree.h (long_zero_node, float_zero_node, double_zero_node):
+ 	Declared new global variables.
+	* lex.c (java_lex): Return long_zero_node, float_zero_node,
+ 	double_zero_node, integer_zero_node upon direct matching.
+	* parse.y (purify_type_name): Added function prototype.
+	(duplicate_declaration_error_p): Consider new_type as potentially
+ 	being a incomplete type. Use purify_type_name on type string.
+	(method_header): saved_type: unused variable removed. Don't figure
+ 	return type if method name is invalid.
+	(java_complete_tree): Set CAN_COMPLETE_NORMALLY after `node' was
+ 	processed by patch_unaryop.
+	(patch_unaryop): Fixed typo in comment. Re-convert pre/post
+ 	increment/decrement node into its original type after binary
+ 	numeric promotion on its operands.
+
 Thu Dec 10 11:02:49 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (array_initializer:): Array init operand is NULL_TREE

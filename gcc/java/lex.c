@@ -623,19 +623,17 @@ java_lex (java_lval)
               switch (c)
 		{		
 		case 'L': case 'l':
-		  SET_LVAL_NODE_TYPE (integer_zero_node, long_type_node);
+		  SET_LVAL_NODE (long_zero_node);
 		  return (INT_LIT_TK);
 		case 'f': case 'F':
-		  SET_LVAL_NODE_TYPE (build_real (float_type_node, dconst0),
-					float_type_node);
+		  SET_LVAL_NODE (float_zero_node);
 		  return (FP_LIT_TK);
 		case 'd': case 'D':
-		  SET_LVAL_NODE_TYPE (build_real (double_type_node, dconst0),
-					double_type_node);
+		  SET_LVAL_NODE (double_zero_node);
 		  return (FP_LIT_TK);
 		default:
 		  java_unget_unicode ();
-		  SET_LVAL_NODE_TYPE (integer_zero_node, int_type_node);
+		  SET_LVAL_NODE (integer_zero_node);
 		  return (INT_LIT_TK);
 		}
 	    }
