@@ -1984,7 +1984,12 @@ init_alias_analysis ()
 	      rtx note, set;
 
 #if defined (HAVE_prologue) || defined (HAVE_epilogue)
-	      if (prologue_epilogue_contains (insn))
+	      /* The prologue/epilouge insns are not threaded onto the
+		 insn chain until after reload has completed.  Thus,
+		 there is no sense wasting time checking if INSN is in
+		 the prologue/epilogue until after reload has completed.  */
+	      if (reload_completed
+		  && prologue_epilogue_contains (insn))
 		continue;
 #endif
 
