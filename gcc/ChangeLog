@@ -1,3 +1,10 @@
+2002-03-03  Aldy Hernandez  <aldyh@redhat.com>
+
+        * config.gcc (powerpc-*-eabialtivec*): Use t-ppcendian.
+        (powerpc-*-eabisimaltivec*): Same.
+
+        * config/rs6000/t-ppcendian: New.
+
 2002-03-04  Herman A.J. ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
 
 	* c4x-protos.h, c4x.h, c4x.c, c4x.md: Add new functions
