@@ -2311,6 +2311,9 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
   rtx set = single_set (insn);
   int goal_earlyclobber, this_earlyclobber;
   enum machine_mode operand_mode[MAX_RECOG_OPERANDS];
+  /* Cache the last regno for the last pseudo we did an output reload
+     for in case the next insn uses it.  */
+  static int last_output_reload_regno = -1;
 
   this_insn = insn;
   this_insn_is_asm = 0;		/* Tentative.  */
@@ -3146,6 +3149,15 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 		  && this_alternative_matches[i] < 0)
 		bad = 1;
 
+	      /* If this is a pseudo-register that is set in the previous
+		 insns, there's a good chance that it will already be in a
+		 spill register and we can use that spill register.  So
+		 make this case cheaper.  */
+	      if (GET_CODE (operand) == REG
+		  && REGNO (operand) >= FIRST_PSEUDO_REGISTER
+		  && REGNO (operand) == last_output_reload_regno)
+		reject--;
+
 	      /* If this is a constant that is reloaded into the desired
 		 class by copying it to memory first, count that as another
 		 reload.  This is consistent with other code and is
@@ -3534,6 +3546,7 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	reload_earlyclobbers[n_earlyclobbers++] = recog_operand[i];
 
   /* Now record reloads for all the operands that need them.  */
+  last_output_reload_regno = -1;
   for (i = 0; i < noperands; i++)
     if (! goal_alternative_win[i])
       {
@@ -3580,20 +3593,27 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	      }
 	  }
 	else if (goal_alternative_matched[i] == -1)
-	  operand_reloadnum[i]
-	    = push_reload (modified[i] != RELOAD_WRITE ? recog_operand[i] : 0,
-			   modified[i] != RELOAD_READ ? recog_operand[i] : 0,
-			   (modified[i] != RELOAD_WRITE
-			    ? recog_operand_loc[i] : 0),
-			   modified[i] != RELOAD_READ ? recog_operand_loc[i] : 0,
-			   (enum reg_class) goal_alternative[i],
-			   (modified[i] == RELOAD_WRITE
-			    ? VOIDmode : operand_mode[i]),
-			   (modified[i] == RELOAD_READ
-			    ? VOIDmode : operand_mode[i]),
-			   (insn_code_number < 0 ? 0
-			    : insn_operand_strict_low[insn_code_number][i]),
-			   0, i, operand_type[i]);
+	  {
+	    operand_reloadnum[i]
+	      = push_reload ((modified[i] != RELOAD_WRITE
+			      ? recog_operand[i] : 0),
+			     modified[i] != RELOAD_READ ? recog_operand[i] : 0,
+			     (modified[i] != RELOAD_WRITE
+			      ? recog_operand_loc[i] : 0),
+			     (modified[i] != RELOAD_READ
+			      ? recog_operand_loc[i] : 0),
+			     (enum reg_class) goal_alternative[i],
+			     (modified[i] == RELOAD_WRITE
+			      ? VOIDmode : operand_mode[i]),
+			     (modified[i] == RELOAD_READ
+			      ? VOIDmode : operand_mode[i]),
+			     (insn_code_number < 0 ? 0
+			      : insn_operand_strict_low[insn_code_number][i]),
+			     0, i, operand_type[i]);
+	    if (modified[i] != RELOAD_READ
+		&& GET_CODE (recog_operand[i]) == REG)
+	      last_output_reload_regno = REGNO (recog_operand[i]);
+	  }
 	/* In a matching pair of operands, one must be input only
 	   and the other must be output only.
 	   Pass the input operand as IN and the other as OUT.  */
@@ -3610,6 +3630,9 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 			     operand_mode[goal_alternative_matched[i]],
 			     0, 0, i, RELOAD_OTHER);
 	    operand_reloadnum[goal_alternative_matched[i]] = output_reloadnum;
+	    if (GET_CODE (recog_operand[goal_alternative_matched[i]]) == REG)
+	      last_output_reload_regno
+		= REGNO (recog_operand[goal_alternative_matched[i]]);
 	  }
 	else if (modified[i] == RELOAD_WRITE
 		 && modified[goal_alternative_matched[i]] == RELOAD_READ)
@@ -3624,6 +3647,8 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 			     operand_mode[i],
 			     0, 0, i, RELOAD_OTHER);
 	    operand_reloadnum[i] = output_reloadnum;
+	    if (GET_CODE (recog_operand[i]) == REG)
+	      last_output_reload_regno = REGNO (recog_operand[i]);
 	  }
 	else if (insn_code_number >= 0)
 	  abort ();
