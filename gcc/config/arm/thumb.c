@@ -603,7 +603,6 @@ number_of_first_bit_set (mask)
 /* Generate code to return from a thumb function.  If
    'reg_containing_return_addr' is -1, then the return address is
    actually on the stack, at the stack pointer.  */
-
 static void
 thumb_exit (f, reg_containing_return_addr)
      FILE * f;
@@ -620,7 +619,6 @@ thumb_exit (f, reg_containing_return_addr)
   int restore_a4 = FALSE;
 
   /* Compute the registers we need to pop.  */
-
   regs_to_pop = 0;
   pops_needed = 0;
   
@@ -633,16 +631,14 @@ thumb_exit (f, reg_containing_return_addr)
   if (TARGET_BACKTRACE)
     {
       /* Restore frame pointer and stack pointer.  */
-      
       regs_to_pop |= (1 << FRAME_POINTER) | (1 << STACK_POINTER);
       pops_needed += 2;
     }
 
-  /* If there is nothing to pop then just emit the BX instruction and return.  */
-  
+  /* If there is nothing to pop then just emit the BX instruction and return.*/
   if (pops_needed == 0)
     {
-      asm_fprintf (f, "\tbx\t%s\n", reg_names[ reg_containing_return_addr ]);
+      asm_fprintf (f, "\tbx\t%s\n", reg_names [reg_containing_return_addr]);
 
       return;
     }
@@ -650,7 +646,6 @@ thumb_exit (f, reg_containing_return_addr)
   /* Otherwise if we are not supporting interworking and we have not created
      a backtrace structure and the function was not entered in ARM mode then
      just pop the return address straight into the PC. */
-  
   else if (   ! TARGET_THUMB_INTERWORK
 	   && ! TARGET_BACKTRACE
 	   && ! is_called_in_ARM_mode (current_function_decl))
@@ -661,7 +656,6 @@ thumb_exit (f, reg_containing_return_addr)
     }
 
   /* Find out how many of the (return) argument registers we can corrupt. */
-  
   regs_available_for_popping = 0;
   
 #ifdef RTX_CODE
@@ -671,14 +665,10 @@ thumb_exit (f, reg_containing_return_addr)
      the register is used to hold a return value.  */
 
   if (current_function_return_rtx != 0)
-    {
       mode = GET_MODE (current_function_return_rtx);
-    }
   else
 #endif
-    {
       mode = DECL_MODE (DECL_RESULT (current_function_decl));
-    }
 
   size = GET_MODE_SIZE (mode);
 
@@ -687,17 +677,23 @@ thumb_exit (f, reg_containing_return_addr)
       /* In a void function we can use any argument register.
 	 In a function that returns a structure on the stack
 	 we can use the second and third argument registers.  */
-      
       if (mode == VOIDmode)
-	regs_available_for_popping = (1 << ARG_1_REGISTER) | (1 << ARG_2_REGISTER) | (1 << ARG_3_REGISTER);
+	regs_available_for_popping =
+	    (1 << ARG_1_REGISTER)
+	  | (1 << ARG_2_REGISTER)
+	  | (1 << ARG_3_REGISTER);
       else
-	regs_available_for_popping = (1 << ARG_2_REGISTER) | (1 << ARG_3_REGISTER);
+	regs_available_for_popping =
+	    (1 << ARG_2_REGISTER)
+	  | (1 << ARG_3_REGISTER);
     }
-  else if (size <= 4) regs_available_for_popping = (1 << ARG_2_REGISTER) | (1 << ARG_3_REGISTER);
-  else if (size <= 8) regs_available_for_popping = (1 << ARG_3_REGISTER);
+  else if (size <= 4) regs_available_for_popping =
+			  (1 << ARG_2_REGISTER)
+			| (1 << ARG_3_REGISTER);
+  else if (size <= 8) regs_available_for_popping =
+			(1 << ARG_3_REGISTER);
   
   /* Match registers to be popped with registers into which we pop them.  */
-
   for (available = regs_available_for_popping,
        required  = regs_to_pop;
        required != 0 && available != 0;
@@ -706,41 +702,35 @@ thumb_exit (f, reg_containing_return_addr)
     -- pops_needed;
 
   /* If we have any popping registers left over, remove them.  */
-
   if (available > 0)
     regs_available_for_popping &= ~ available;
   
   /* Otherwise if we need another popping register we can use
      the fourth argument register.  */
-  
   else if (pops_needed)
     {
       /* If we have not found any free argument registers and
 	 reg a4 contains the return address, we must move it.  */
-
-      if (regs_available_for_popping == 0 && reg_containing_return_addr == ARG_4_REGISTER)
+      if (regs_available_for_popping == 0
+	  && reg_containing_return_addr == ARG_4_REGISTER)
 	{
 	  asm_fprintf (f, "\tmov\t%s, %s\n",
-		       reg_names[ LINK_REGISTER ],
-		       reg_names[ ARG_4_REGISTER ]);
+		       reg_names [LINK_REGISTER], reg_names [ARG_4_REGISTER]);
 	  reg_containing_return_addr = LINK_REGISTER;
 	}
       else if (size > 12)
 	{
 	  /* Register a4 is being used to hold part of the return value,
 	     but we have dire need of a free, low register.  */
-	  
 	  restore_a4 = TRUE;
 	  
 	  asm_fprintf (f, "\tmov\t%s, %s\n",
-		       reg_names[ IP_REGISTER ],
-		       reg_names[ ARG_4_REGISTER ]);
+		       reg_names [IP_REGISTER], reg_names [ARG_4_REGISTER]);
 	}
       
       if (reg_containing_return_addr != ARG_4_REGISTER)
 	{
 	  /* The fourth argument register is available.  */
-  
 	  regs_available_for_popping |= 1 << ARG_4_REGISTER;
 	  
 	  -- pops_needed;
@@ -748,41 +738,34 @@ thumb_exit (f, reg_containing_return_addr)
     }
 
   /* Pop as many registers as we can.  */
-  
-  thumb_pushpop (f, regs_available_for_popping, FALSE );
+  thumb_pushpop (f, regs_available_for_popping, FALSE);
 
   /* Process the registers we popped.  */
-  
   if (reg_containing_return_addr == -1)
     {
       /* The return address was popped into the lowest numbered register.  */
-
       regs_to_pop &= ~ (1 << LINK_REGISTER);
       
-      reg_containing_return_addr = number_of_first_bit_set (regs_available_for_popping);
+      reg_containing_return_addr =
+	number_of_first_bit_set (regs_available_for_popping);
 
       /* Remove this register for the mask of available registers, so that
          the return address will not be corrupted by futher pops.  */
-      
       regs_available_for_popping &= ~ (1 << reg_containing_return_addr);
     }
 
   /* If we popped other registers then handle them here.  */
-
   if (regs_available_for_popping)
     {
       int frame_pointer;
       
       /* Work out which register currently contains the frame pointer.  */
-      
       frame_pointer = number_of_first_bit_set (regs_available_for_popping);
 
       /* Move it into the correct place.  */
-      
-      asm_fprintf (f, "\tmov\tfp, %s\n", reg_names[ frame_pointer ]);
+      asm_fprintf (f, "\tmov\tfp, %s\n", reg_names [frame_pointer]);
 
       /* (Temporarily) remove it from the mask of popped registers.  */
-      
       regs_available_for_popping &= ~ (1 << frame_pointer);
       regs_to_pop &= ~ (1 << FRAME_POINTER);
       
@@ -790,20 +773,19 @@ thumb_exit (f, reg_containing_return_addr)
 	{
 	  int stack_pointer;
 	  
-	  /* We popped the stack pointer as well, find the register that contains it.  */
-	  
+	  /* We popped the stack pointer as well, find the register that
+	     contains it.*/
 	  stack_pointer = number_of_first_bit_set (regs_available_for_popping);
 
 	  /* Move it into the stack register.  */
-	  
-	  asm_fprintf (f, "\tmov\tsp, %s\n", reg_names[ stack_pointer ]);
+	  asm_fprintf (f, "\tmov\tsp, %s\n", reg_names [stack_pointer]);
 	  
 	  /* At this point we have popped all necessary registers, so
 	     do not worry about restoring regs_available_for_popping
 	     to its correct value:
 
 	     assert (pops_needed == 0)
-	     assert (regs_available_for_popping == (1 << stack_frame_pointer))
+	     assert (regs_available_for_popping == (1 << frame_pointer))
 	     assert (regs_to_pop == (1 << STACK_POINTER))  */
 	}
       else
@@ -811,44 +793,27 @@ thumb_exit (f, reg_containing_return_addr)
 	  /* Since we have just move the popped value into the frame
 	     pointer, the popping register is available for reuse, and
 	     we know that we still have the stack pointer left to pop.  */
-	  
 	  regs_available_for_popping |= (1 << frame_pointer);
 	}
     }
   
-  /* If we still have registers left on the stack, but we no longer
-     have any registers into which we can pop them, then we must
-     move the return address into the link register and make
-     available the register that contained it.  */
-  
+  /* If we still have registers left on the stack, but we no longer have
+     any registers into which we can pop them, then we must move the return
+     address into the link register and make available the register that
+     contained it.  */
   if (regs_available_for_popping == 0 && pops_needed > 0)
     {
       regs_available_for_popping |= 1 << reg_containing_return_addr;
       
       asm_fprintf (f, "\tmov\t%s, %s\n",
-		   reg_names[ LINK_REGISTER ],
-		   reg_names[ reg_containing_return_addr ]);
+		   reg_names [LINK_REGISTER],
+		   reg_names [reg_containing_return_addr]);
       
       reg_containing_return_addr = LINK_REGISTER;
     }
 
   /* If we have registers left on the stack then pop some more.
-     We know that we will only be popping one register here for
-     the following reasons:
-
-     1. We know that at most we want to pop LR, FP and SP.
-     2. We have already popped at least one register.
-     3. If there were 3 registers available for popping then
-        we have already popped all three of the registers.
-     4. If there were 2 registers available for popping then
-        we have already popped LR and FP, so there can only
-	be one register left on the stack: SP.  And since we
-	had two	registers available for popping we will have
-	left the LR in one of those registers and leaving
-	only one register left for popping the SP.
-     5. If there was only 1 register available for popping
-        then we can only be popping one register here.	*/
-  
+     We know that at most we will want to pop FP and SP.  */
   if (pops_needed > 0)
     {
       int  popped_into;
@@ -856,23 +821,21 @@ thumb_exit (f, reg_containing_return_addr)
       
       thumb_pushpop (f, regs_available_for_popping, FALSE);
 
-      /* We have popped either FP or SP.  Move whichever one
-	 it is into the correct register.  */
-      
+      /* We have popped either FP or SP.
+	 Move whichever one it is into the correct register.  */
       popped_into = number_of_first_bit_set (regs_available_for_popping);
       move_to     = number_of_first_bit_set (regs_to_pop);
 
-      asm_fprintf (f, "\tmov\t%s, %s\n", reg_names[ move_to ], reg_names[ popped_into ]);
+      asm_fprintf (f, "\tmov\t%s, %s\n",
+		   reg_names [move_to], reg_names [popped_into]);
 
       regs_to_pop &= ~ (1 << move_to);
 
       -- pops_needed;
     }
-
-  /* If we still have not popped everything then we must have
-     only had one register available to us and we are now
-     popping the SP.  */
   
+  /* If we still have not popped everything then we must have only
+     had one register available to us and we are now popping the SP.  */
   if (pops_needed > 0)
     {
       int  popped_into;
@@ -881,7 +844,7 @@ thumb_exit (f, reg_containing_return_addr)
 
       popped_into = number_of_first_bit_set (regs_available_for_popping);
 
-      asm_fprintf (f, "\tmov\tsp, %s\n", reg_names[ popped_into ]);
+      asm_fprintf (f, "\tmov\tsp, %s\n", reg_names [popped_into]);
 
       /*
 	assert (regs_to_pop == (1 << STACK_POINTER))
@@ -892,21 +855,25 @@ thumb_exit (f, reg_containing_return_addr)
   /* If necessary restore the a4 register.  */
   if (restore_a4)
     {
-      asm_fprintf (f, "\tmov\t%s, %s\n", reg_names[ LINK_REGISTER ], reg_names[ ARG_4_REGISTER ]);
-      asm_fprintf (f, "\tmov\t%s, %s\n", reg_names[ ARG_4_REGISTER ], reg_names[ IP_REGISTER ]);
-      reg_containing_return_addr = LINK_REGISTER;
-    }
+      if (reg_containing_return_addr != LINK_REGISTER)
+	{
+	  asm_fprintf (f, "\tmov\t%s, %s\n",
+		       reg_names [LINK_REGISTER], reg_names [ARG_4_REGISTER]);
+	  reg_containing_return_addr = LINK_REGISTER;
+	}
     
-  /* Return to caller.  */
+      asm_fprintf (f, "\tmov\t%s, %s\n",
+		   reg_names [ARG_4_REGISTER], reg_names [IP_REGISTER]);
+    }
   
-  asm_fprintf (f, "\tbx\t%s\n", reg_names[ reg_containing_return_addr ]);
+  /* Return to caller.  */
+  asm_fprintf (f, "\tbx\t%s\n", reg_names [reg_containing_return_addr]);
 }
 
 /* Emit code to push or pop registers to or from the stack.  */
-
 static void
 thumb_pushpop (f, mask, push)
-     FILE *f;
+     FILE * f;
      int mask;
      int push;
 {
@@ -915,7 +882,8 @@ thumb_pushpop (f, mask, push)
 
   if (lo_mask == 0 && ! push && (mask & (1 << 15)))
     {
-      /* Special case.  Do not generate a POP PC statement here, do it in thumb_exit() */
+      /* Special case.  Do not generate a POP PC statement here, do it in
+	 thumb_exit() */
       
       thumb_exit (f, -1);
       return;

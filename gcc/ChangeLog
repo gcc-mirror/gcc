@@ -1,3 +1,8 @@
+Wed Aug 26 09:30:59 1998  Nick Clifton  <nickc@cygnus.com>
+
+	* config/arm/thumb.c (thumb_exit): Do not move a4 into lr if it
+	already contains the return address.
+
 Wed Aug 26 12:57:09 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* mn10300.h (RTX_COSTS): Handle UDIV and UMOD too.
