@@ -99,6 +99,15 @@ Boston, MA 02111-1307, USA.  */
   { "mvme",		 0 },						\
   { "emb",		 0 },						\
 
+/* Max # of bytes for variables to automatically be put into the .sdata
+   or .sdata2 sections.  */
+extern int g_switch_value;		/* value of the -G xx switch */
+extern int g_switch_set;		/* whether -G xx was passed.  */
+
+#ifndef SDATA_DEFAULT_SIZE
+#define SDATA_DEFAULT_SIZE 8
+#endif
+
 /* Sometimes certain combinations of command options do not make sense
    on a particular target machine.  You can define a macro
    `OVERRIDE_OPTIONS' to take account of this.  This macro, if
@@ -110,10 +119,18 @@ Boston, MA 02111-1307, USA.  */
 
 #define SUBTARGET_OVERRIDE_OPTIONS					\
 do {									\
+  if (!g_switch_set)							\
+    g_switch_value = SDATA_DEFAULT_SIZE;				\
+									\
   rs6000_current_abi = ((TARGET_AIXDESC_CALLS) ? ABI_AIX :		\
 			(TARGET_NT_CALLS)      ? ABI_NT :		\
 			(TARGET_AIX_CALLS)     ? ABI_AIX_NODESC :	\
 						 ABI_V4);		\
+									\
+  /* CYGNUS LOCAL -fcombine-statics vs. -msdata */			\
+  if (TARGET_SDATA)							\
+    flag_combine_statics = 0;						\
+  /* END CYGNUS LOCAL -fcombine-statics vs. -msdata */			\
 									\
   if (TARGET_RELOCATABLE && TARGET_SDATA)				\
     {									\
@@ -499,6 +516,19 @@ extern int rs6000_pic_labelno;
 %{mrelocatable} %{mrelocatable-lib} %{memb} %{msdata: -memb} \
 %{mlittle} %{mlittle-endian} %{mbig} %{mbig-endian}"
 
+#undef CC1_SPEC
+/* Pass -G xxx to the compiler */
+#define CC1_SPEC "%{G*}"
+
+/* Switch  Recognition by gcc.c.  Add -G xx support */
+
+#undef SWITCH_TAKES_ARG
+#define SWITCH_TAKES_ARG(CHAR)						\
+  ((CHAR) == 'D' || (CHAR) == 'U' || (CHAR) == 'o'			\
+   || (CHAR) == 'e' || (CHAR) == 'T' || (CHAR) == 'u'			\
+   || (CHAR) == 'I' || (CHAR) == 'm'					\
+   || (CHAR) == 'L' || (CHAR) == 'A' || (CHAR) == 'G')
+
 /* Output .file and comments listing what options there are */
 #undef ASM_FILE_START
 #define ASM_FILE_START(FILE)						\
@@ -664,7 +694,7 @@ do {									\
 
 #undef LINK_SPEC
 #define LINK_SPEC "\
-%{h*} %{V} %{v:%{!V:-V}} \
+%{h*} %{V} %{v:%{!V:-V}} %{G*} \
 %{b} %{Wl,*:%*} \
 %{static:-dn -Bstatic} \
 %{shared:-G -dy -z text %{!h*:%{o*:-h %*}}} \

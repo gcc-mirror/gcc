@@ -836,6 +836,13 @@ input_operand (op, mode)
       && (GET_CODE (op) == SYMBOL_REF || GET_CODE (op) == LABEL_REF))
     return 1;
 
+  /* V.4 allows SYMBOL_REFs and CONSTs that are in the small data region
+     to be valid.  */
+  if (DEFAULT_ABI == ABI_V4
+      && (GET_CODE (op) == SYMBOL_REF || GET_CODE (op) == CONST)
+      && small_data_operand (op, Pmode))
+    return 1;
+
   /* Otherwise, we will be doing this SET with an add, so anything valid
      for an add will be valid.  */
   return add_operand (op, mode);
@@ -853,11 +860,19 @@ small_data_operand (op, mode)
   if (DEFAULT_ABI != ABI_V4)
     return 0;
 
-  if (GET_CODE (op) != SYMBOL_REF && GET_CODE (op) != CONST)
+  if (GET_CODE (op) == SYMBOL_REF)
+    sym_ref = op;
+
+  else if (GET_CODE (op) != CONST
+	   || GET_CODE (XEXP (op, 0)) != PLUS
+	   || GET_CODE (XEXP (XEXP (op, 0), 0)) != SYMBOL_REF
+	   || GET_CODE (XEXP (XEXP (op, 0), 1)) != CONST_INT)
     return 0;
 
-  sym_ref = eliminate_constant_term (op, &const_part);
-  if (!sym_ref || GET_CODE (sym_ref) != SYMBOL_REF || *XSTR (sym_ref, 0) != '@')
+  else
+    sym_ref = XEXP (XEXP (op, 0), 0);
+
+  if (*XSTR (sym_ref, 0) != '@')
     return 0;
 
   return 1;
@@ -2071,9 +2086,9 @@ print_operand (file, x, code)
 	     we have already done it, we can just use an offset of four.  */
 	  if (GET_CODE (XEXP (x, 0)) == PRE_INC
 	      || GET_CODE (XEXP (x, 0)) == PRE_DEC)
-	    output_address (plus_constant (XEXP (XEXP (x, 0), 0), 4));
+	    print_operand_address (file, plus_constant (XEXP (XEXP (x, 0), 0), 4));
 	  else
-	    output_address (plus_constant (XEXP (x, 0), 4));
+	    print_operand_address (file, plus_constant (XEXP (x, 0), 4));
 	}
       return;
 			    
@@ -2281,9 +2296,9 @@ print_operand (file, x, code)
 	{
 	  if (GET_CODE (XEXP (x, 0)) == PRE_INC
 	      || GET_CODE (XEXP (x, 0)) == PRE_DEC)
-	    output_address (plus_constant (XEXP (XEXP (x, 0), 0), 8));
+	    print_operand_address (file, plus_constant (XEXP (XEXP (x, 0), 0), 8));
 	  else
-	    output_address (plus_constant (XEXP (x, 0), 8));
+	    print_operand_address (file, plus_constant (XEXP (x, 0), 8));
 	}
       return;
 			    
@@ -2327,9 +2342,9 @@ print_operand (file, x, code)
 	{
 	  if (GET_CODE (XEXP (x, 0)) == PRE_INC
 	      || GET_CODE (XEXP (x, 0)) == PRE_DEC)
-	    output_address (plus_constant (XEXP (XEXP (x, 0), 0), 12));
+	    print_operand_address (file, plus_constant (XEXP (XEXP (x, 0), 0), 12));
 	  else
-	    output_address (plus_constant (XEXP (x, 0), 12));
+	    print_operand_address (file, plus_constant (XEXP (x, 0), 12));
 	}
       return;
 			    
@@ -2347,10 +2362,10 @@ print_operand (file, x, code)
 	    fprintf (file, "%d(%d)", - GET_MODE_SIZE (GET_MODE (x)),
 		     REGNO (XEXP (XEXP (x, 0), 0)));
 	  else
-	    output_address (XEXP (x, 0));
+	    print_operand_address (file, XEXP (x, 0));
 	}
       else
-	output_addr_const (file, x);
+	print_operand_address (file, x);
       return;
 
     default:
@@ -4152,8 +4167,6 @@ rs6000_select_rtx_section (mode, x)
 {
   if (ASM_OUTPUT_SPECIAL_POOL_ENTRY_P (x))
     toc_section ();
-  else if (TARGET_SDATA && GET_MODE_SIZE (mode) > 0 && GET_MODE_SIZE (mode) <= 8)
-    sdata2_section ();
   else
     const_section ();
 }
@@ -4172,12 +4185,8 @@ rs6000_select_section (decl, reloc)
 
   if (TREE_CODE (decl) == STRING_CST)
     {
-      if ((! flag_writable_strings) && TARGET_SDATA && (size <= 8))
-	sdata2_section ();
-      else if (! flag_writable_strings)
+      if (! flag_writable_strings)
 	const_section ();
-      else if (TARGET_SDATA && (size <= 8))
-	sdata_section ();
       else
 	data_section ();
     }
@@ -4190,14 +4199,14 @@ rs6000_select_section (decl, reloc)
 	  || (DECL_INITIAL (decl) != error_mark_node
 	      && !TREE_CONSTANT (DECL_INITIAL (decl))))
 	{
-	  if (TARGET_SDATA && (size <= 8) && (size > 0))
+	  if (TARGET_SDATA && (size > 0) && (size <= g_switch_value))
 	    sdata_section ();
 	  else
 	    data_section ();
 	}
       else
 	{
-	  if (TARGET_SDATA && (size <= 8) && (size > 0))
+	  if (TARGET_SDATA && (size > 0) && (size <= g_switch_value))
 	    sdata2_section ();
 	  else
 	    const_section ();

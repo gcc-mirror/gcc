@@ -1005,13 +1005,15 @@ enum reg_class
    'Q' means that is a memory operand that is just an offset from a reg.
    'R' is for AIX TOC entries.
    'S' is for Windows NT SYMBOL_REFs
-   'T' is for Windows NT LABEL_REFs.  */
+   'T' is for Windows NT LABEL_REFs.
+   'U' is for V.4 small data references.  */
 
 #define EXTRA_CONSTRAINT(OP, C)						\
   ((C) == 'Q' ? GET_CODE (OP) == MEM && GET_CODE (XEXP (OP, 0)) == REG	\
    : (C) == 'R' ? LEGITIMATE_CONSTANT_POOL_ADDRESS_P (OP)		\
    : (C) == 'S' ? (TARGET_WINDOWS_NT && DEFAULT_ABI == ABI_NT && GET_CODE (OP) == SYMBOL_REF)\
    : (C) == 'T' ? (TARGET_WINDOWS_NT && DEFAULT_ABI == ABI_NT && GET_CODE (OP) == LABEL_REF) \
+   : (C) == 'U' ? (DEFAULT_ABI == ABI_V4 && small_data_operand (OP, GET_MODE (OP))) \
    : 0)
 
 /* Given an rtx X being reloaded into a reg required to be
@@ -1687,7 +1689,9 @@ typedef struct rs6000_args
        && LEGITIMATE_CONSTANT_POOL_BASE_P (XEXP (XEXP (X, 0), 0))))
 
 #define LEGITIMATE_SMALL_DATA_P(MODE, X)				\
-  (DEFAULT_ABI == ABI_V4 && small_data_operand (X, MODE))
+  (DEFAULT_ABI == ABI_V4						\
+   && (GET_CODE (X) == SYMBOL_REF || GET_CODE (X) == CONST)		\
+   && small_data_operand (X, MODE))
 
 #define LEGITIMATE_ADDRESS_INTEGER_P(X,OFFSET)				\
  (GET_CODE (X) == CONST_INT						\
