@@ -2980,7 +2980,7 @@ output_inline_function (fndecl)
   /* There is no need to output a return label again.  */
   return_label = 0;
 
-  expand_function_end (DECL_SOURCE_FILE (fndecl), DECL_SOURCE_LINE (fndecl));
+  expand_function_end (DECL_SOURCE_FILE (fndecl), DECL_SOURCE_LINE (fndecl), 0);
 
   /* Find last insn and rebuild the constant pool.  */
   for (last = FIRST_PARM_INSN (head);
