@@ -1,3 +1,8 @@
+2003-03-04  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/Makefile.am (allstamps): Remove stamp-std-precompile.
+	* include/Makefile.in: Regenerate.
+
 2003-03-03  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/abi_check.cc (report_symbol_info): Add version info.

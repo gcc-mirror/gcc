@@ -343,7 +343,7 @@ thread_target_headers = \
 # CLEANFILES and all-local are kept up-to-date.
 allstamps = \
 	stamp-std stamp-bits stamp-c_base stamp-c_compatibility \
-	stamp-backward stamp-ext stamp-target stamp-std-precompile
+	stamp-backward stamp-ext stamp-target 
 
 # Here are the rules for building the headers
 all-local: ${target_builddir}/c++config.h ${thread_target_headers} ${allstamps}
