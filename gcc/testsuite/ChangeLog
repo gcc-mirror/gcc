@@ -1,3 +1,12 @@
+2002-01-21  David.Billinghurst <David.Billinghurst@riotinto.com>
+
+	* lib/prune.exp (prune_gcc_output): Prune "At global scope"
+	messages
+	* g++.dg/other/deprecated.C: Remove dg-bogus comment for
+	"At global scope" warning
+	* g++.dg/ext/align1.C: Change cygwin test for alignment
+	from db-bogus to dg-warning
+
 2002-01-21  Zack Weinberg  <zack@codesourcery.com>
 
 	* g77.f-torture/compile/cpp2.F: New test.
