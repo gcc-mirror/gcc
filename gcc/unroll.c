@@ -1335,11 +1335,27 @@ calculate_giv_inc (pattern, src_insn, regno)
 	 one of the LO_SUM rtx.  */
       if (GET_CODE (increment) == LO_SUM)
 	increment = XEXP (increment, 1);
+      else if (GET_CODE (increment) == IOR)
+	{
+	  /* The rs6000 port loads some constants with IOR.  */
+	  rtx second_part = XEXP (increment, 1);
+
+	  src_insn = PREV_INSN (src_insn);
+	  increment = SET_SRC (PATTERN (src_insn));
+	  /* Don't need the last insn anymore.  */
+	  delete_insn (get_last_insn ());
+
+	  if (GET_CODE (second_part) != CONST_INT
+	      || GET_CODE (increment) != CONST_INT)
+	    abort ();
+
+	  increment = GEN_INT (INTVAL (increment) | INTVAL (second_part));
+	}
 
       if (GET_CODE (increment) != CONST_INT)
 	abort ();
 		  
-      /* The insn loading the constant into a register is not longer needed,
+      /* The insn loading the constant into a register is no longer needed,
 	 so delete it.  */
       delete_insn (get_last_insn ());
     }
