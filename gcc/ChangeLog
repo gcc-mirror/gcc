@@ -1,5 +1,10 @@
 2000-01-23  Richard Henderson  <rth@cygnus.com>
 
+	* libgcc2.c (dwarf_reg_size_table): Size with DWARF_FRAME_REGISTERS.
+	(throw_helper): Iterate over DWARF_FRAME_REGISTERS.
+
+2000-01-23  Richard Henderson  <rth@cygnus.com>
+
 	* i386.c (dbx_register_map, svr4_dbx_register_map): New.
 	* i386.h (DBX_REGISTER_NUMBER): Use them.
 	* i386/beos-elf.h, i386/freebsd-elf.h, i386/i386elf.h: Likewise.
