@@ -2641,7 +2641,6 @@ dbxout_block (block, depth, args)
      tree args;
 {
   int blocknum = -1;
-  int ignored;
 
 #if DBX_BLOCKS_FUNCTION_RELATIVE
   const char *begin_label; 
@@ -2656,12 +2655,16 @@ dbxout_block (block, depth, args)
       /* Ignore blocks never expanded or otherwise marked as real.  */
       if (TREE_USED (block) && TREE_ASM_WRITTEN (block))
 	{
-#ifndef DBX_LBRAC_FIRST
+	  int did_output;
+
+#ifdef DBX_LBRAC_FIRST
+	  did_output = 1;
+#else
 	  /* In dbx format, the syms of a block come before the N_LBRAC.
 	     If nothing is output, we don't need the N_LBRAC, either. */
-	  ignored = 1;
+	  did_output = 0;
 	  if (debug_info_level != DINFO_LEVEL_TERSE || depth == 0)
-	    ignored = dbxout_syms (BLOCK_VARS (block));
+	    did_output = dbxout_syms (BLOCK_VARS (block));
 	  if (args)
 	    dbxout_reg_parms (args);
 #endif
@@ -2670,7 +2673,7 @@ dbxout_block (block, depth, args)
 	     the block.  Use the block's tree-walk order to generate
 	     the assembler symbols LBBn and LBEn
 	     that final will define around the code in this block.  */
-	  if (depth > 0 && !ignored)
+	  if (depth > 0 && did_output)
 	    {
 	      char buf[20];
 	      blocknum = BLOCK_NUMBER (block);
@@ -2720,7 +2723,7 @@ dbxout_block (block, depth, args)
 	  dbxout_block (BLOCK_SUBBLOCKS (block), depth + 1, NULL_TREE);
 
 	  /* Refer to the marker for the end of the block.  */
-	  if (depth > 0 && !ignored)
+	  if (depth > 0 && did_output)
 	    {
 	      char buf[20];
 	      ASM_GENERATE_INTERNAL_LABEL (buf, "LBE", blocknum);
