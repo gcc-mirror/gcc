@@ -1,3 +1,30 @@
+2000-07-23  Rolf W. Rasmussen  <rolfwr@ii.uib.no>
+
+	* libjava/java/awt/image/ColorModel.java: New file, replaces the
+	stub libjava/java/awt/ColorModel.java which was located in the
+	wrong package.
+	* libjava/java/awt/image/ComponentColorModel.java: New file.
+	* libjava/java/awt/image/ComponentSampleModel.java: New file.
+	* libjava/java/awt/image/DataBuffer.java: New file.
+	* libjava/java/awt/image/DataBufferByte.java: New file.
+	* libjava/java/awt/image/DataBufferInt.java: New file.
+	* libjava/java/awt/image/DataBufferUShort.java: New file.
+	* libjava/java/awt/image/DirectColorModel.java: New file.
+	* libjava/java/awt/image/PackedColorModel.java: New file.
+	* libjava/java/awt/image/Raster.java: New file.
+	* libjava/java/awt/image/SampleModel.java: New file.
+	* libjava/java/awt/image/SinglePixelPackedSampleModel.java: New
+	file.
+	* libjava/java/awt/image/IndexColorModel.java: New file.
+	* libjava/java/awt/image/ImageConsumer.java: Removed import of
+	java.awt.ColorModel stub.
+
+	* gnu/gcj/util/BitMaskExtent.java: New file, utility class.
+	* gnu/gcj/util/Buffers.java: New file, utility class.
+
+	* libjava/Makefile.am: Updated to include new files.
+	* libjava/Makefile.in: Rebuilt.
+
 2000-07-23  Oskar Liljeblad <osk@hem.passagen.se>
 
 	* java/io/StreamTokenizer.java: Merged with classpath.

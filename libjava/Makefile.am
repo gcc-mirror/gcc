@@ -486,6 +486,8 @@ gnu/gcj/convert/UnicodeToBytes.java
 special_java_source_files = java/lang/Class.java java/lang/Object.java
 
 awt_java_source_files =	\
+gnu/gcj/awt/BitMaskExtent.java \
+gnu/gcj/awt/Buffers.java \
 java/awt/AWTError.java \
 java/awt/AWTEvent.java \
 java/awt/AWTEventMulticaster.java \
@@ -495,7 +497,6 @@ java/awt/Adjustable.java \
 java/awt/BorderLayout.java \
 java/awt/CheckboxGroup.java \
 java/awt/Color.java \
-java/awt/ColorModel.java \
 java/awt/Component.java	\
 java/awt/ComponentOrientation.java \
 java/awt/Container.java	\
@@ -535,6 +536,9 @@ java/awt/TextComponent.java \
 java/awt/Toolkit.java \
 java/awt/Transparency.java \
 java/awt/Window.java \
+java/awt/color/ColorSpace.java \
+java/awt/color/ICC_ColorSpace.java \
+java/awt/color/ICC_Profile.java \
 java/awt/event/AWTEventListener.java \
 java/awt/event/ActionEvent.java	\
 java/awt/event/ActionListener.java \
@@ -582,9 +586,23 @@ java/awt/geom/PathIterator.java	\
 java/awt/geom/Point2D.java \
 java/awt/geom/Rectangle2D.java \
 java/awt/geom/RectangularShape.java \
+java/awt/image/ColorModel.java \
+java/awt/image/ComponentColorModel.java \
+java/awt/image/ComponentSampleModel.java \
+java/awt/image/DataBuffer.java \
+java/awt/image/DataBufferByte.java \
+java/awt/image/DataBufferInt.java \
+java/awt/image/DataBufferUShort.java \
+java/awt/image/DirectColorModel.java \
 java/awt/image/ImageConsumer.java \
 java/awt/image/ImageObserver.java \
 java/awt/image/ImageProducer.java \
+java/awt/image/IndexColorModel.java \
+java/awt/image/PackedColorModel.java \
+java/awt/image/Raster.java \
+java/awt/image/SampleModel.java \
+java/awt/image/SinglePixelPackedSampleModel.java \
+java/awt/image/WritableRaster.java \
 java/awt/peer/ButtonPeer.java \
 java/awt/peer/CanvasPeer.java \
 java/awt/peer/CheckboxMenuItemPeer.java	\
