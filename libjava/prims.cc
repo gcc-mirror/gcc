@@ -881,18 +881,15 @@ process_gcj_properties ()
     }
   memset ((void *) &_Jv_Environment_Properties[property_count], 
 	  0, sizeof (property_pair));
-  {
-    size_t i = 0;
 
-    // Null terminate the strings.
-    while (_Jv_Environment_Properties[i].key)
-      {
-        property_pair *prop = &_Jv_Environment_Properties[i];
-	prop->key[prop->key_length] = 0;
-	prop->value[prop->value_length] = 0;
-	i++;
-      }
-  }
+  // Null terminate the strings.
+  for (property_pair *prop = &_Jv_Environment_Properties[0];
+       prop->key != NULL;
+       prop++)
+    {
+      prop->key[prop->key_length] = 0;
+      prop->value[prop->value_length] = 0;
+    }
 }
 #endif // DISABLE_GETENV_PROPERTIES
 
