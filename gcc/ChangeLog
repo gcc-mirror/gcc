@@ -1,5 +1,16 @@
 2003-08-22  Jason Eckhardt  <jle@rice.edu>
 
+	* config.gcc (i860-*-sysv4*): Add target.
+	* config/i860/i860-protos.h: New.
+	* config/i860/i860.c: New.
+	* config/i860/i860.h: New.
+	* config/i860/i860.md: New.
+	* config/i860/sysv4.h: New.
+	* config/i860/varargs.asm: New.
+	* config/i860/x-sysv4: New.
+
+2003-08-22  Jason Eckhardt  <jle@rice.edu>
+
 	* config/pa/pa.c: Replace 'GNU CC' with 'GCC'.
 	Remove all uses of PARAMS macro.
 	Convert all function definitions to ISO C90 syntax.

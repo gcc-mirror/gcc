@@ -1,0 +1,44 @@
+# The svr4 reference port for the i860 contains an alloca.o routine
+# in /usr/ucblib/libucb.a, but we can't just try to get that by
+# setting CLIB to /usr/ucblib/libucb.a because (unfortunately)
+# there are a lot of other routines in libucb.a which are supposed
+# to be the Berkeley versions of library routines normally found in
+# libc.a and many of these Berkeley versions are badly broken.  Thus,
+# if we try to link programs with libucb.a before libc.a, those
+# programs tend to crash.
+
+# Also, the alloca() routine supplied in early version of svr4 for
+# the i860 is non-ABI compliant.  It doesn't keep the stack aligned
+# to a 16-byte boundary as the ABI requires.
+
+# More importantly however, even a fully ABI compliant alloca() routine
+# would fail to work correctly with some versions of the native svr4 C
+# compiler currently being distributed for the i860 (as of 1/29/92).
+# The problem is that the native C compiler generates non-ABI-compliant
+# function epilogues which cut back the stack (upon function exit) in
+# an incorrect manner.  Specifically, they cut back the stack by adding
+# the nominal *static* frame size (determined statically at compile-time)
+# to the stack pointer rather than setting the stack pointer based upon
+# the current value of the frame pointer (as called for in the i860 ABI).
+# This can cause serious trouble in cases where you repeatedly call a
+# routine which itself calls alloca().  In such cases, the stack will
+# grow continuously until you finally run out of swap space or exceed
+# the system's process size limit.  To avoid this problem (which can
+# arise when a stage1 gcc is being used to build a stage2 gcc) you
+# *must* link in the C language version of alloca() which is supplied
+# with gcc to your stage1 version of gcc.  The following definition
+# forces that to happen.
+
+ALLOCA=alloca.o
+
+# We build all stages *without* shared libraries because that may make
+# debugging the compiler easier (until there is a GDB which supports
+# both Dwarf *and* svr4 shared libraries).
+
+# Note that the native C compiler for the svr4 reference port on the
+# i860 recognizes a special -gg option.  Using that option causes *full*
+# Dwarf debugging information to be generated, whereas using only -g
+# causes only limited Dwarf debugging information to be generated.
+# (This is an undocumented feature of the native svr4 C compiler.)
+
+CCLIBFLAGS=-Bstatic -dn -gg
