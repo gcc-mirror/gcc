@@ -1,5 +1,5 @@
 /* Subroutines used by or related to instruction recognition.
-   Copyright (C) 1987, 1988, 91-6, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 91-97, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1702,10 +1702,7 @@ constrain_operands (insn_code_num, strict)
 	  while (*p && (c = *p++) != ',')
 	    switch (c)
 	      {
-	      case '?':
-	      case '!':
-	      case '*':
-	      case '%':
+	      case '?':  case '!': case '*':  case '%':
 		break;
 
 	      case '#':
@@ -1727,11 +1724,9 @@ constrain_operands (insn_code_num, strict)
 		earlyclobber[opno] = 1;
 		break;
 
-	      case '0':
-	      case '1':
-	      case '2':
-	      case '3':
-	      case '4':
+	      case '0':  case '1':  case '2':  case '3':  case '4':
+	      case '5':  case '6':  case '7':  case '8':  case '9':
+
 		/* This operand must be the same as a previous one.
 		   This kind of constraint is used for instructions such
 		   as add when they take only two operands.
