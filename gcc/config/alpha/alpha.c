@@ -42,6 +42,7 @@ Boston, MA 02111-1307, USA.  */
 #include "toplev.h"
 #include "ggc.h"
 #include "tm_p.h"
+#include "integrate.h"
 
 /* External data.  */
 extern int rtx_equal_function_value_matters;
@@ -357,11 +358,6 @@ override_options ()
 
   /* Acquire a unique set number for our register saves and restores.  */
   alpha_sr_alias_set = new_alias_set ();
-
-  /* Set up function hooks.  */
-  init_machine_status = alpha_init_machine_status;
-  mark_machine_status = alpha_mark_machine_status;
-  free_machine_status = alpha_free_machine_status;
 }
 
 /* Returns 1 if VALUE is a mask that contains full bytes of zero or ones.  */
@@ -3661,35 +3657,6 @@ alpha_adjust_cost (insn, link, dep_insn, cost)
 
 /* Functions to save and restore alpha_return_addr_rtx.  */
 
-static void
-alpha_init_machine_status (p)
-     struct function *p;
-{
-  p->machine =
-    (struct machine_function *) xcalloc (1, sizeof (struct machine_function));
-}
-
-static void
-alpha_mark_machine_status (p)
-     struct function *p;
-{
-  struct machine_function *machine = p->machine;
-
-  if (machine)
-    {
-      ggc_mark_rtx (machine->ra_rtx);
-      ggc_mark_rtx (machine->gp_save_rtx);
-    }
-}
-
-static void
-alpha_free_machine_status (p)
-     struct function *p;
-{
-  free (p->machine);
-  p->machine = NULL;
-}
-
 /* Start the ball rolling with RETURN_ADDR_RTX.  */
 
 rtx
@@ -3697,27 +3664,10 @@ alpha_return_addr (count, frame)
      int count;
      rtx frame ATTRIBUTE_UNUSED;
 {
-  rtx init, reg;
-
   if (count != 0)
     return const0_rtx;
 
-  reg = cfun->machine->ra_rtx;
-  if (reg == NULL)
-    {
-      /* No rtx yet.  Invent one, and initialize it from $26 in
-	 the prologue.  */
-      reg = gen_reg_rtx (Pmode);
-      cfun->machine->ra_rtx = reg;
-      init = gen_rtx_SET (VOIDmode, reg, gen_rtx_REG (Pmode, REG_RA));
-
-      /* Emit the insn to the prologue with the other argument copies.  */
-      push_topmost_sequence ();
-      emit_insn_after (init, get_insns ());
-      pop_topmost_sequence ();
-    }
-
-  return reg;
+  return get_hard_reg_initial_val (Pmode, REG_RA);
 }
 
 /* Return or create a pseudo containing the gp value for the current
@@ -3726,21 +3676,7 @@ alpha_return_addr (count, frame)
 rtx
 alpha_gp_save_rtx ()
 {
-  rtx init, reg;
-
-  reg = cfun->machine->gp_save_rtx;
-  if (reg == NULL)
-    {
-      reg = gen_reg_rtx (DImode);
-      cfun->machine->gp_save_rtx = reg;
-      init = gen_rtx_SET (VOIDmode, reg, gen_rtx_REG (DImode, 29));
-
-      push_topmost_sequence ();
-      emit_insn_after (init, get_insns ());
-      pop_topmost_sequence ();
-    }
-
-  return reg;
+  return get_hard_reg_initial_val (DImode, 29);
 }
 
 static int
@@ -3752,7 +3688,7 @@ alpha_ra_ever_killed ()
   if (current_function_is_thunk)
     return 0;
 #endif
-  if (!cfun->machine->ra_rtx)
+  if (!has_hard_reg_initial_val (Pmode, REG_RA))
     return regs_ever_live[REG_RA];
 
   push_topmost_sequence ();
