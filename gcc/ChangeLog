@@ -1,3 +1,8 @@
+Sun Apr 23 22:23:08 MET DST 2000  Jan Hubicka  <jh@suse.cz>
+
+	* loop.c (simplify_giv_expr):  Be more agressive on simplifying
+	constant MULT givs.
+
 2000-04-23  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cpphash.h (struct definition): Move file, line, col members...

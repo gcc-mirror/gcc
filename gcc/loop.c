@@ -6402,25 +6402,40 @@ simplify_giv_expr (loop, x, benefit)
 	  return GEN_INT (INTVAL (arg0) * INTVAL (arg1));
 
 	case USE:
-	  /* invar * invar.  It is a giv, but very few of these will 
-	     actually pay off, so limit to simple registers.  */
+	  /* invar * invar is a giv, but attempt to simplify it somehow.  */
 	  if (GET_CODE (arg1) != CONST_INT)
 	    return NULL_RTX;
 
 	  arg0 = XEXP (arg0, 0);
-	  if (GET_CODE (arg0) == REG)
-	    tem = gen_rtx_MULT (mode, arg0, arg1);
-	  else if (GET_CODE (arg0) == MULT
-		   && GET_CODE (XEXP (arg0, 0)) == REG
-		   && GET_CODE (XEXP (arg0, 1)) == CONST_INT)
+	  if (GET_CODE (arg0) == MULT)
 	    {
-	      tem = gen_rtx_MULT (mode, XEXP (arg0, 0), 
-				  GEN_INT (INTVAL (XEXP (arg0, 1))
-					   * INTVAL (arg1)));
+	      /* (invar_0 * invar_1) * invar_2.  Associate.  */
+	      return simplify_giv_expr (loop,
+					gen_rtx_MULT (mode,
+						      XEXP (arg0, 0),
+						      gen_rtx_MULT (mode,
+								    XEXP (arg0,
+									  1),
+								    arg1)),
+					benefit);
 	    }
-	  else
-	    return NULL_RTX;
-	  return gen_rtx_USE (mode, tem);
+	  /* Porpagate the MULT expressions to the intermost nodes.  */
+	  else if (GET_CODE (arg0) == PLUS)
+	    {
+	      /* (invar_0 + invar_1) * invar_2.  Distribute.  */
+	      return simplify_giv_expr (loop,
+					gen_rtx_PLUS (mode,
+						      gen_rtx_MULT (mode,
+								    XEXP (arg0,
+									  0),
+								    arg1),
+						      gen_rtx_MULT (mode,
+								    XEXP (arg0,
+									  1),
+								    arg1)),
+					benefit);
+	    }
+	  return gen_rtx_USE (mode, gen_rtx_MULT (mode, arg0, arg1));
 
 	case MULT:
 	  /* (a * invar_1) * invar_2.  Associate.  */
