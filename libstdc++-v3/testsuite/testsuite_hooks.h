@@ -85,6 +85,12 @@ namespace __gnu_cxx_test
   extern void
   set_memory_limits(float __size = MEMLIMIT_MB);
 
+
+  // Check mangled name demangles (using __cxa_demangle) as expected.
+  void
+  verify_demangle(const char* mangled, const char* wanted);
+
+
   // Simple callback structure for variable numbers of tests (all with
   // same signature).  Assume all unit tests are of the signature
   // void test01(); 
@@ -98,6 +104,7 @@ namespace __gnu_cxx_test
   // Run select unit tests after setting environment variables.
   void 
   run_tests_wrapped_env(const char*, const char*, const func_callback&);
+
 
   // Test data types.
   struct pod_char

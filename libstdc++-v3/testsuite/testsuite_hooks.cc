@@ -40,6 +40,7 @@
 #include <stdexcept>
 #include <clocale>
 #include <locale>
+#include <cxxabi.h>
 
 namespace __gnu_cxx_test
 {
@@ -85,6 +86,39 @@ namespace __gnu_cxx_test
   set_memory_limits(float) { }
 #endif 
 
+
+  void 
+  verify_demangle(const char* mangled, const char* wanted)
+  {
+    int status = 0;
+    const char* s = abi::__cxa_demangle(mangled, 0, 0, &status);
+    if (!s)
+      {
+	switch (status)
+	  {
+	  case 0:
+	    s = "error code = 0: success";
+	    break;
+	  case -1:
+	    s = "error code = -1: memory allocation failure";
+	    break;
+	  case -2:
+	    s = "error code = -2: invalid mangled name";
+	    break;
+	  case -3:
+	    s = "error code = -3: invalid arguments";
+	    break;
+	  default:
+	    s = "error code unknown - who knows what happened";
+	  }
+      }
+
+    std::string w(wanted);
+    if (w != s)
+      throw std::runtime_error(s);
+  }
+
+  
   // Useful exceptions.
   class locale_data : public std::runtime_error 
   {

@@ -1,6 +1,6 @@
 ## Makefile for the GNU C++ Support library.
 ##
-## Copyright (C) 2000, 2001, 2002 Free Software Foundation, Inc.
+## Copyright (C) 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 ##
 ## Process this file with automake to produce Makefile.in.
 ##
@@ -55,6 +55,8 @@ CONFIG_CXXFLAGS = \
 WARN_CXXFLAGS = \
 	@WARN_FLAGS@ $(WERROR) -fdiagnostics-show-location=once
 
+LIBSUPCXX_CXXFLAGS = @LIBSUPCXX_PICFLAGS@
+
 # Use common includes from acinclude.m4/GLIBCPP_EXPORT_INCLUDES
 GLIBCPP_INCLUDES = @GLIBCPP_INCLUDES@
 LIBSUPCXX_INCLUDES = @LIBSUPCXX_INCLUDES@
@@ -65,10 +67,6 @@ INCLUDES = \
 
 headers = \
 	exception new typeinfo cxxabi.h exception_defines.h 
-
-c_sources = \
-	cxa_demangle.c \
-	dyn-string.c 
 
 sources = \
 	del_op.cc \
@@ -98,13 +96,11 @@ sources = \
 	vec.cc \
 	vterminate.cc
 
-libsupc___la_SOURCES = $(sources) $(c_sources)
-libsupc__convenience_la_SOURCES = $(sources) $(c_sources)
+libsupc___la_SOURCES = $(sources) 
+libsupc__convenience_la_SOURCES = $(sources) 
 
 glibcppinstalldir = @gxx_include_dir@
 glibcppinstall_HEADERS = $(headers)
-
-LIBSUPCXX_CXXFLAGS = $(LIBSUPCXX_PICFLAGS)
 
 # Use special rules for pulling things out of libiberty.  These
 # objects should be compiled with the "C" compiler, not the C++
@@ -113,32 +109,16 @@ C_COMPILE = \
 	$(CC) $(DEFS) $(GCC_INCLUDES) \
 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 
-cxa_demangle.c:
-	rm -f $@
-	$(LN_S) $(toplevel_srcdir)/libiberty/cp-demangle.c $@
-cxa_demangle.lo: cxa_demangle.c
-	$(LTCOMPILE) -DIN_GLIBCPP_V3 -Wno-error -c $<
-cxa_demangle.o: cxa_demangle.c
-	$(C_COMPILE) -DIN_GLIBCPP_V3 -Wno-error -c $<
-dyn-string.c:
-	rm -f $@
-	$(LN_S) $(toplevel_srcdir)/libiberty/dyn-string.c $@
-dyn-string.lo: dyn-string.c
-	$(LTCOMPILE) -DIN_GLIBCPP_V3 -Wno-error -c $<
-dyn-string.o: dyn-string.c
-	$(C_COMPILE) -DIN_GLIBCPP_V3 -Wno-error -c $<
-
 # LTCOMPILE is copied from LTCXXCOMPILE below.
 LTCOMPILE = $(LIBTOOL) --tag CC --tag disable-shared --mode=compile $(CC) \
 	    $(DEFS) $(GCC_INCLUDES) $(LIBSUPCXX_PICFLAGS) \
             $(AM_CPPFLAGS) $(CPPFLAGS) 
 
-
 # AM_CXXFLAGS needs to be in each subdirectory so that it can be
 # modified in a per-library or per-sub-library way.  Need to manually
 # set this option because CONFIG_CXXFLAGS has to be after
 # OPTIMIZE_CXXFLAGS on the compile line so that -O2 can be overridden
-# as the occasion call for it. (ie, --enable-debug)
+# as the occasion call for it. 
 AM_CXXFLAGS = \
 	-fno-implicit-templates \
 	$(LIBSUPCXX_CXXFLAGS) \

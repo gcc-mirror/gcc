@@ -121,6 +121,7 @@ sources = \
 	complex_io.cc \
 	concept-inst.cc \
 	ctype.cc \
+	demangle.cc \
 	ext-inst.cc \
 	fstream.cc \
 	fstream-inst.cc \
@@ -176,6 +177,13 @@ concept-inst.lo: concept-inst.cc
 	$(LTCXXCOMPILE) -D_GLIBCPP_CONCEPT_CHECKS -fimplicit-templates -c $<
 concept-inst.o: concept-inst.cc
 	$(CXXCOMPILE) -D_GLIBCPP_CONCEPT_CHECKS -fimplicit-templates -c $<
+
+# Use special rules for the demangler, so that an additional implicit
+# instantiation file is not necessary.
+demangle.lo: demangle.cc
+	$(LTCXXCOMPILE) -fimplicit-templates -c $<
+demangle.o: demangle.cc
+	$(CXXCOMPILE) -fimplicit-templates -c $<
 
 
 # AM_CXXFLAGS needs to be in each subdirectory so that it can be
