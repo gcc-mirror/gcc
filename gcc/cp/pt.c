@@ -148,7 +148,6 @@ static tree process_partial_specialization (tree);
 static void set_current_access_from_decl (tree);
 static void check_default_tmpl_args (tree, tree, int, int);
 static tree tsubst_call_declarator_parms (tree, tree, tsubst_flags_t, tree);
-static tree get_template_base_r (tree, void *);
 static tree get_template_base (tree, tree, tree, tree);
 static int verify_class_unification (tree, tree, tree);
 static tree try_class_unification (tree, tree, tree, tree);
@@ -9475,30 +9474,31 @@ try_class_unification (tree tparms, tree targs, tree parm, tree arg)
   return arg;
 }
 
-typedef struct get_template_base_data_s 
-{
-  /* Parameters for unification.  */
-  tree tparms;
-  tree targs;
-  tree parm;
-  /* Base we've found to be satisfactory.  */
-  tree rval;
-} get_template_base_data;
-
-/* Called from get_template_base via dfs_walk.  */
+/* Given a template type PARM and a class type ARG, find the unique
+   base type in ARG that is an instance of PARM.  We do not examine
+   ARG itself; only its base-classes.  If there is not exactly one
+   appropriate base class, return NULL_TREE.  PARM may be the type of
+   a partial specialization, as well as a plain template type.  Used
+   by unify.  */
 
 static tree
-get_template_base_r (tree arg_binfo,
-		     void *data_)
+get_template_base (tree tparms, tree targs, tree parm, tree arg)
 {
-  get_template_base_data *data = data_;
+  tree rval = NULL_TREE;
+  tree binfo;
 
-  /* Do not look at the most derived binfo -- that's not a proper
-     base.  */
-  if (BINFO_INHERITANCE_CHAIN (arg_binfo))
+  gcc_assert (IS_AGGR_TYPE_CODE (TREE_CODE (arg)));
+  
+  binfo = TYPE_BINFO (complete_type (arg));
+  if (!binfo)
+    /* The type could not be completed.  */
+    return NULL_TREE;
+
+  /* Walk in inheritance graph order.  The search order is not
+     important, and this avoids multiple walks of virtual bases.  */
+  for (binfo = TREE_CHAIN (binfo); binfo; binfo = TREE_CHAIN (binfo))
     {
-      tree r = try_class_unification (data->tparms, data->targs,
-				      data->parm, BINFO_TYPE (arg_binfo));
+      tree r = try_class_unification (tparms, targs, parm, BINFO_TYPE (binfo));
 
       if (r)
 	{
@@ -9510,48 +9510,14 @@ get_template_base_r (tree arg_binfo,
 	      deduction fails.
 
 	     applies.  */
-	  if (data->rval && !same_type_p (r, data->rval))
-	    {
-	      data->rval = NULL_TREE;
-	      /* Terminate the walk with any non-NULL value.  */
-	      return r;
-	    }
+	  if (rval && !same_type_p (r, rval))
+	    return NULL_TREE;
 	  
-	  data->rval = r;
+	  rval = r;
 	}
     }
 
-  return NULL_TREE;
-}
-
-/* Given a template type PARM and a class type ARG, find the unique
-   base type in ARG that is an instance of PARM.  We do not examine
-   ARG itself; only its base-classes.  If there is no appropriate base
-   class, return NULL_TREE.  If there is more than one, return
-   error_mark_node.  PARM may be the type of a partial specialization,
-   as well as a plain template type.  Used by unify.  */
-
-static tree
-get_template_base (tree tparms, tree targs, tree parm, tree arg)
-{
-  get_template_base_data data;
-  tree arg_binfo;
-
-  gcc_assert (IS_AGGR_TYPE_CODE (TREE_CODE (arg)));
-  
-  arg_binfo = TYPE_BINFO (complete_type (arg));
-  if (!arg_binfo)
-    /* The type could not be completed.  */
-    return NULL_TREE;
-
-  data.tparms = tparms;
-  data.targs = targs;
-  data.parm = parm;
-  data.rval = NULL_TREE;
-
-  dfs_walk_real (arg_binfo, get_template_base_r, 0, 0, &data);
-
-  return data.rval;
+  return rval;
 }
 
 /* Returns the level of DECL, which declares a template parameter.  */
