@@ -36,6 +36,7 @@ Boston, MA 02111-1307, USA.  */
 #include "output.h"
 #include "rtl.h"
 #include "expr.h"
+#include "toplev.h"
 
 /* Nonzero if we've already printed a "missing braces around initializer"
    message within this initializer.  */

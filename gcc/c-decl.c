@@ -33,6 +33,7 @@ Boston, MA 02111-1307, USA.  */
 #include "output.h"
 #include "c-tree.h"
 #include "c-lex.h"
+#include "toplev.h"
 
 /* In grokdeclarator, distinguish syntactic contexts of declarators.  */
 enum decl_context

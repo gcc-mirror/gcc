@@ -26,6 +26,7 @@ Boston, MA 02111-1307, USA.  */
 #include "defaults.h"
 #include "c-pragma.h"
 #include "flags.h"
+#include "toplev.h"
 
 #ifdef HANDLE_SYSV_PRAGMA
 
