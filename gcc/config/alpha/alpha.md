@@ -1517,6 +1517,14 @@
   "cvt%-qc %R1,%0"
   [(set_attr "type" "fadd")])
 
+(define_insn ""
+  [(set (match_operand:SF 0 "register_operand" "=&f")
+	(float:SF (match_operand:DI 1 "register_operand" "f")))]
+  "TARGET_FP && alpha_tp == ALPHA_TP_INSN"
+  "cvtq%,%+%& %1,%0"
+  [(set_attr "type" "fadd")
+   (set_attr "trap" "yes")])
+
 (define_insn "floatdisf2"
   [(set (match_operand:SF 0 "register_operand" "=f")
 	(float:SF (match_operand:DI 1 "register_operand" "f")))]

@@ -1,3 +1,7 @@
+Tue Sep  2 18:09:39 1997  Jim Wilson  <wilson@cygnus.com>
+
+	* alpha.md (floatdisf2-1): New pattern.
+
 Tue Sep  2 18:41:55 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* mn10200.h (INITIALIZE_TRAMPOLINE): PC relative instructions
