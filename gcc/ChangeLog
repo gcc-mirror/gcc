@@ -1,3 +1,9 @@
+2005-01-15  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.md ("reload_outti"): Remove predicate for
+	output operand.  Abort if operand is not a MEM.
+	("reload_outdi", "reload_outdf"): Likewise.
+
 2005-01-15  Marc Espie  <espie@openbsd.org>
 
 	* config.gcc (*-*-openbsd*): Set HAS_LIBC_R for OpenBSD <= 3.2.
