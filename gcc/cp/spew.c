@@ -221,15 +221,10 @@ read_process_identifier (pyylval)
 	case RID_NOT_EQ: pyylval->code = NE_EXPR;	return EQCOMPARE;
 
 	default:
-	  if (C_RID_YYCODE (id) == TYPESPEC)
-	    GNU_xref_ref (current_function_decl, IDENTIFIER_POINTER (id));
-
 	  pyylval->ttype = ridpointers[C_RID_CODE (id)];
 	  return C_RID_YYCODE (id);
 	}
     }
-
-  GNU_xref_ref (current_function_decl, IDENTIFIER_POINTER (id));
 
   /* Make sure that user does not collide with our internal naming
      scheme.  This is not necessary if '.' is used to remove them from

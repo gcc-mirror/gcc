@@ -1702,8 +1702,6 @@ grokbitfield (declarator, declspecs, width)
       return void_type_node;
     }
 
-  GNU_xref_member (current_class_name, value);
-
   if (TREE_STATIC (value))
     {
       error ("static member `%D' cannot be a bit-field", value);

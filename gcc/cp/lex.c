@@ -263,8 +263,6 @@ cxx_init_options ()
 void
 cxx_finish ()
 {
-  if (flag_gnu_xref)
-    GNU_xref_end (errorcount + sorrycount);
   c_common_finish ();
 }
 
@@ -733,8 +731,6 @@ cxx_init (filename)
 
   init_cp_pragma ();
 
-  if (flag_gnu_xref)
-    GNU_xref_begin (filename);
   init_repo (filename);
 
   return filename;
@@ -931,9 +927,6 @@ extract_interface_info ()
 
   interface_only = finfo->interface_only;
   interface_unknown = finfo->interface_unknown;
-
-  /* This happens to be a convenient place to put this.  */
-  if (flag_gnu_xref) GNU_xref_file (input_filename);
 }
 
 /* Return nonzero if S is not considered part of an

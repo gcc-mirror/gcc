@@ -3284,8 +3284,6 @@ check_field_decls (t, access_decls, empty_p,
       tree x = *field;
       tree type = TREE_TYPE (x);
 
-      GNU_xref_member (current_class_name, x);
-
       next = &TREE_CHAIN (x);
 
       if (TREE_CODE (x) == FIELD_DECL)
@@ -3925,8 +3923,6 @@ check_methods (t)
 
   for (x = TYPE_METHODS (t); x; x = TREE_CHAIN (x))
     {
-      GNU_xref_member (current_class_name, x);
-
       /* If this was an evil function, don't keep it in class.  */
       if (DECL_ASSEMBLER_NAME_SET_P (x) 
 	  && IDENTIFIER_ERROR_LOCUS (DECL_ASSEMBLER_NAME (x)))
@@ -5048,8 +5044,6 @@ finish_struct_1 (t)
       popclass ();
       return;
     }
-
-  GNU_xref_decl (current_function_decl, t);
 
   /* If this type was previously laid out as a forward reference,
      make sure we lay it out again.  */
