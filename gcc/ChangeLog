@@ -1,3 +1,8 @@
+2004-02-19  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.md ("*subdf3_cc", "*subdf3_cconly", "*subsf3_cc",
+	"*subsf3_cconly"): Subtraction is not commutative.
+
 2004-02-19  Alan Modra  <amodra@bigpond.net.au>
 
 	* function.c (assign_parms): When building decl_rtl for
