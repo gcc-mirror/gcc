@@ -402,3 +402,22 @@ SYM (__div0):
 	RET	pc, lr
 
 #endif /* L_divmodsi_tools */
+
+#ifdef L_dvmd_lnx
+@ Linux division-by zero handler.  Used in place of L_dvmd_tls
+
+#include <asm/unistd.h>
+#define SIGFPE	8			@ cant use <asm/signal.h> as it
+					@ contains too much C rubbish
+	.globl SYM (__div0)
+	.align 0
+SYM (__div0):
+	stmfd	sp!, {r1, lr}
+	swi	__NR_getpid
+	cmn	r0, #1000
+	ldmgefd	sp!, {r1, pc}RETCOND	@ not much we can do
+	mov	r1, #SIGFPE
+	swi	__NR_kill
+	ldmfd	sp!, {r1, pc}RETCOND
+
+#endif /* L_dvmd_lnx */
