@@ -10,21 +10,21 @@ struct Empty {};
 
 struct Inter : Empty {};
 
-int now = 0;
+long now = 0;
 
 struct NonPod
 {
-  int m;
+  long m;
 
   NonPod () {m = 0x12345678;}
-  NonPod (int m_) {m = m_;}
+  NonPod (long m_) {m = m_;}
   NonPod &operator= (NonPod const &src) {now = m; m = src.m;}
   NonPod (NonPod const &src) {m = src.m;}
 };
 
 struct A : Inter
 {
-  A (int c) {m = c;}
+  A (long c) {m = c;}
   
   NonPod m;
 };
@@ -34,19 +34,19 @@ struct B
   Inter empty;
   NonPod m;
 
-  B (int c) {m = c;}
+  B (long c) {m = c;}
 };
 
 struct C : NonPod, Inter
 {
-  C (int c) : NonPod (c), Inter () {}
+  C (long c) : NonPod (c), Inter () {}
 };
 
 int main ()
 {
   A a (0x12131415);
   
-  int was = a.m.m;
+  long was = a.m.m;
   
   a = 0x22232425;
 

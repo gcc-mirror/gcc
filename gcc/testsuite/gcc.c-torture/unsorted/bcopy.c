@@ -51,7 +51,11 @@ bcopy3 (s, d, c)
     }
 }
 
+#if defined(STACK_SIZE) && STACK_SIZE < 16384
+#define BYTES STACK_SIZE
+#else
 #define BYTES 16384
+#endif
 
 main ()
 {

@@ -51,7 +51,7 @@ int Two::count;
 long x = 0;
 
 #define X( n ) \
-  do { if ( x & (1 << (n)) ) return 1; else x |= (1 << (n)); } while (0)
+  do { if ( x & (1L << (n)) ) return 1; else x |= (1L << (n)); } while (0)
 
 int main()
 {
