@@ -1,3 +1,7 @@
+2003-07-24  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* decl.c (reshape_init): Remove unreachable code.
+
 2003-07-24  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/11513
