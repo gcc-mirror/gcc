@@ -1,6 +1,11 @@
+2000-04-27  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* gcc_update: Refer to GCC and gcc_update instead of egcs and
+ 	egcs_update.
+
 2000-04-26  Jonathan Larmour  <jlarmour@redhat.co.uk>
 
-	* index-prop: Fix occasional problem when using cvs diff -p
+	* index-prop: Fix occasional problem when using cvs diff -p.
 
 2000-04-18  Zack Weinberg  <zack@wolery.cumb.org>
 
