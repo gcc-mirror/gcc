@@ -83,13 +83,26 @@
   ""
   "*
 {
+  int val;
+
   if (which_alternative == 0)
     return \"cmpw   %1,%0\";
 
   if (which_alternative == 1)
-    return \"cmpi   %1,%0\";
+    {
+      val = INTVAL (operands[1]);
+      if (0 <= val && val < 16)
+	return \"cmpq   %1,%0\";
+      return \"cmpi   %1,%0\";
+    }
 
   cc_status.flags |= CC_REVERSED;	/* immediate must be first */
+
+  val = INTVAL (operands[0]);
+
+  if (0 <= val && val < 16)
+    return \"cmpq   %0,%1\";
+
   return \"cmpi   %0,%1\";
 }")
 
@@ -688,12 +701,16 @@
 (define_insn "addsi3"
   [(set (match_operand:SI 0 "int_reg_operand" "=r,r,r")
 	(plus:SI (match_operand:SI 1 "int_reg_operand" "%0,r,r")
-		 (match_operand:SI 2 "nonmemory_operand" "rn,0,r")))]
+		 (match_operand:SI 2 "nonmemory_operand" "rn,0,rn")))]
   ""
   "*
 {
   if (which_alternative == 2)		/* 3 address version */
-    return \"loada  [%2](%1),%0\";
+    {
+      if (GET_CODE (operands[2]) == CONST_INT)
+	return \"loada  %a2(%1),%0\";
+      return \"loada  [%2](%1),%0\";
+    }
 					/* 2 address version */
   if (GET_CODE (operands[2]) == CONST_INT)
     {
@@ -1377,14 +1394,3 @@
 ;; These patters are jump_insns that do not allow output reloads and clipper
 ;; can only decrement and test registers.
 ;;
-
-
-;;- Local variables:
-;;- mode:c
-;;- comment-start: ";;- "
-;;- eval: (set-syntax-table (copy-sequence (syntax-table)))
-;;- eval: (modify-syntax-entry ?[ "(]")
-;;- eval: (modify-syntax-entry ?] ")[")
-;;- eval: (modify-syntax-entry ?{ "(}")
-;;- eval: (modify-syntax-entry ?} "){")
-;;- End:
