@@ -6083,7 +6083,7 @@ function_value (tree valtype, tree func ATTRIBUTE_UNUSED,
 static tree
 alpha_build_builtin_va_list (void)
 {
-  tree base, ofs, record, type_decl;
+  tree base, ofs, space, record, type_decl;
 
   if (TARGET_ABI_OPEN_VMS || TARGET_ABI_UNICOSMK)
     return ptr_type_node;
@@ -6095,9 +6095,16 @@ alpha_build_builtin_va_list (void)
 
   /* C++? SET_IS_AGGR_TYPE (record, 1); */
 
+  /* Dummy field to prevent alignment warnings.  */
+  space = build_decl (FIELD_DECL, NULL_TREE, integer_type_node);
+  DECL_FIELD_CONTEXT (space) = record;
+  DECL_ARTIFICIAL (space) = 1;
+  DECL_IGNORED_P (space) = 1;
+
   ofs = build_decl (FIELD_DECL, get_identifier ("__offset"),
 		    integer_type_node);
   DECL_FIELD_CONTEXT (ofs) = record;
+  TREE_CHAIN (ofs) = space;
 
   base = build_decl (FIELD_DECL, get_identifier ("__base"),
 		     ptr_type_node);
