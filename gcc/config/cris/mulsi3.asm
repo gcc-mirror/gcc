@@ -82,8 +82,13 @@
 	.type	___Mul,@function
 ___Mul:
 #if defined (__CRIS_arch_version) && __CRIS_arch_version >= 10
-	ret
+;; Can't have the mulu.d last on a cache-line (in the delay-slot of the
+;; "ret"), due to hardware bug.  See documentation for -mmul-bug-workaround.
+;; Not worthwhile to conditionalize here.
+	.p2alignw 2,0x050f
 	mulu.d $r11,$r10
+	ret
+	nop
 #else
 	move.d $r10,$r12
 	move.d $r11,$r9
