@@ -607,6 +607,8 @@ AC_DEFUN([AM_ICONV],
     done
    ])
 
+  AC_CHECK_HEADERS([iconv.h])
+
   AC_CACHE_CHECK(for iconv, am_cv_func_iconv, [
     am_cv_func_iconv="no, consider installing GNU libiconv"
     am_cv_lib_iconv=no
