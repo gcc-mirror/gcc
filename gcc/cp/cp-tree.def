@@ -1,7 +1,7 @@
 /* This file contains the definitions and documentation for the
    additional tree codes used in the GNU C++ compiler (see tree.def
    for the standard codes).
-   Copyright (C) 1987,88,90,93,97-8,1999 Free Software Foundation, Inc.
+   Copyright (C) 1987,88,90,93,97-8,1999, 2000 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -159,12 +159,22 @@ DEFTREECODE (TYPEOF_TYPE, "typeof_type", 't', 0)
 
 /* A thunk is a stub function.
 
-   Thunks are used to implement multiple inheritance:
-   At run-time, such a thunk subtracts THUNK_DELTA (an int, not a tree)
-   from the this pointer, and then jumps to DECL_INITIAL
-   (which is an ADDR_EXPR whose operand is a FUNCTION_DECL).
+   A THUNK_DECL is an alternate entry point for an ordinary
+   FUNCTION_DECL.  It's job is to adjust the `this' poitner before
+   transferring control to the FUNCTION_DECL.
 
-   Other kinds of thunks may be defined later. */
+   A thunk may perform either, or both, of the following operations:
+
+   o Adjust the `this' pointer by a constant offset.
+   o Adjust the `this' pointer by looking up a vcall-offset
+     in the vtable.
+
+   If both operations are performed, then the constant adjument to
+   `this' is performed first.
+
+   The constant adjustment is given by THUNK_DELTA.  If the
+   vcall-offset is required, the index into the vtable is given by
+   THUNK_VCALL_OFFSET.  */
 DEFTREECODE (THUNK_DECL, "thunk_decl", 'd', 0)
 
 /* A using declaration.  DECL_INITIAL contains the specified scope.  

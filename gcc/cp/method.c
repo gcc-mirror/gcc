@@ -2008,9 +2008,10 @@ hack_identifier (value, name)
 
 
 tree
-make_thunk (function, delta)
+make_thunk (function, delta, vcall_index)
      tree function;
      int delta;
+     int vcall_index;
 {
   tree thunk_id;
   tree thunk;
@@ -2033,6 +2034,11 @@ make_thunk (function, delta)
     icat (-delta);
   OB_PUTC ('_');
   OB_PUTID (DECL_ASSEMBLER_NAME (func_decl));
+  if (vcall_index)
+    {
+      OB_PUTC ('_');
+      icat (vcall_index);
+    }
   OB_FINISH ();
   thunk_id = get_identifier (obstack_base (&scratch_obstack));
 
@@ -2052,6 +2058,8 @@ make_thunk (function, delta)
       TREE_SET_CODE (thunk, THUNK_DECL);
       DECL_INITIAL (thunk) = function;
       THUNK_DELTA (thunk) = delta;
+      THUNK_VCALL_OFFSET (thunk) 
+	= vcall_index * TREE_INT_CST_LOW (TYPE_SIZE (vtable_entry_type));
       DECL_EXTERNAL (thunk) = 1;
       DECL_ARTIFICIAL (thunk) = 1;
       /* So that finish_file can write out any thunks that need to be: */

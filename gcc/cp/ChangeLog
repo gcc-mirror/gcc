@@ -1,3 +1,27 @@
+2000-01-27  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.def (THUNK_DECL): Discuss vcall indices.
+	* cp-tree.h (BINFO_VIRTUALS): Update documentation.
+	(BF_DELTA): New macro.
+	(BF_VCALL_INDEX): Likewise.
+	(BF_FN): Likewise.
+	(THUNK_VCALL_OFFSET): Likewise.
+	(make_thunk): Change prototype.
+	* class.c (build_vtable_entry): Integrate
+	build_vtable_entry_for_fn.  Handle vcall indices.
+	(build_vtable_entry_for_fn): Remove.
+	(set_rtti_entry): Handle vcall indices.  Use BF_DELTA,
+	BF_VCALL_INDEX, BF_FN.
+	(modify_vtable_entry): Integrate common code from
+	modify_one_vtable and dfs_fixup_vtable_deltas.
+	(add_virtual_function): Set BF_VCALL_INDEX.
+	(build_vtbl_initializer): Simplify.  Use BF_DELTA, BF_VCALL_INDEX,
+	and BF_FN.
+	(modify_one_vtable): Simplify.
+	(dfs_fixup_vtable_deltas): Likewise.
+	(override_one_vtable): Use BF_DELTA, BF_VCALL_INDEX, BF_FN. 
+	* method.c (make_thunk): Handle vcall indices.
+	
 2000-01-28  Nathan Sidwell  <sidwell@codesourcery.com>
 
 	Compiler side new abi rtti (not enabled).

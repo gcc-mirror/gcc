@@ -115,15 +115,18 @@ Boston, MA 02111-1307, USA.  */
      For a static VAR_DECL, this is DECL_INIT_PRIORITY.
 
    BINFO_VIRTUALS
-     For a binfo, this is a TREE_LIST.  The TREE_PURPOSE of each node
+     For a binfo, this is a TREE_LIST.  The BF_DELTA of each node
      gives the amount by which to adjust the `this' pointer when
      calling the function.  If the method is an overriden version of a
      base class method, then it is assumed that, prior to adjustment,
      the this pointer points to an object of the base class.
 
-     The TREE_VALUE is the declaration for the virtual function
-     itself.  When CLASSTYPE_COM_INTERFACE_P does not hold, the first
-     entry does not have a TREE_VALUE; it is just an offset.
+     The BF_VCALL_INDEX of each node, if non-NULL, gives the vtable
+     index of the vcall offset for this entry.
+
+     The BF_FN is the declaration for the virtual function itself.
+     When CLASSTYPE_COM_INTERFACE_P does not hold, the first entry
+     does not have a BF_FN; it is just an offset.
 
    DECL_ARGUMENTS
      For a VAR_DECL this is DECL_ANON_UNION_ELEMS.  
@@ -1720,6 +1723,18 @@ struct lang_type
 
 /* Get the value of the top-most type dominating the non-`normal' vfields.  */
 #define VF_DERIVED_VALUE(NODE) (VF_BINFO_VALUE (NODE) ? BINFO_TYPE (VF_BINFO_VALUE (NODE)) : NULL_TREE)
+
+/* The number of bytes by which to adjust the `this' pointer when
+   calling this virtual function.  */
+#define BF_DELTA(NODE) (TREE_PURPOSE (NODE))
+
+/* If non-NULL, the vtable index at which to find the vcall offset
+   when calling this virtual function.  */
+#define BF_VCALL_INDEX(NODE) (TREE_TYPE (NODE))
+
+/* The function to call.  */
+#define BF_FN(NODE) (TREE_VALUE (NODE))
+
 
 /* Nonzero for TREE_LIST node means that this list of things
    is a list of parameters, as opposed to a list of expressions.  */
@@ -2789,7 +2804,15 @@ extern int flag_new_for_scope;
 #define DECL_REALLY_EXTERN(NODE) \
   (DECL_EXTERNAL (NODE) && ! DECL_NOT_REALLY_EXTERN (NODE))
 
+/* An integer indicating how many bytes should be subtracted from the
+   `this' pointer when this function is called.  */
 #define THUNK_DELTA(DECL) ((DECL)->decl.frame_size.i)
+
+/* An integer indicating how many bytes should be subtracted from the
+   vtable for the `this' pointer to find the vcall offset.  (The vptr
+   is always located at offset zero from the `this' pointer.)  If
+   zero, then there is no vcall offset.  */
+#define THUNK_VCALL_OFFSET(DECL) (DECL_FIELD_SIZE (DECL))
 
 /* DECL_NEEDED_P holds of a declaration when we need to emit its
    definition.  This is true when the back-end tells us that
@@ -3918,7 +3941,7 @@ extern tree build_overload_with_type		PARAMS ((tree, tree));
 extern tree build_destructor_name		PARAMS ((tree));
 extern tree build_opfncall			PARAMS ((enum tree_code, int, tree, tree, tree));
 extern tree hack_identifier			PARAMS ((tree, tree));
-extern tree make_thunk				PARAMS ((tree, int));
+extern tree make_thunk				PROTO((tree, int, int));
 extern void emit_thunk				PARAMS ((tree));
 extern void synthesize_method			PARAMS ((tree));
 extern tree get_id_2				PARAMS ((const char *, tree));
