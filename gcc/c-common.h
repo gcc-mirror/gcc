@@ -697,6 +697,12 @@ extern tree c_add_case_label                    PARAMS ((splay_tree,
 
 extern tree build_function_call			PARAMS ((tree, tree));
 
+/* If this variable is defined to a non-NULL value, it will be called
+   after the file has been completely parsed.  The argument will be
+   the GLOBAL_NAMESPACE in C++, or the list of top-level declarations
+   in C.  */
+extern void (*back_end_hook) PARAMS ((tree));
+
 #ifdef RTX_CODE
 
 extern struct rtx_def *c_expand_expr            PARAMS ((tree, rtx,
@@ -720,3 +726,5 @@ struct c_fileinfo *get_fileinfo			PARAMS ((const char *));
 extern void dump_time_statistics		PARAMS ((void));
 
 #endif
+
+

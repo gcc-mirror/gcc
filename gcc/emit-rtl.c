@@ -4008,6 +4008,12 @@ init_emit_once (line_numbers)
   enum machine_mode mode;
   enum machine_mode double_mode;
 
+  /* Initialize the CONST_INT hash table.  */
+  const_int_htab = htab_create (37, const_int_htab_hash, 
+				const_int_htab_eq, NULL);
+  ggc_add_root (&const_int_htab, 1, sizeof (const_int_htab), 
+		rtx_htab_mark);
+
   no_line_numbers = ! line_numbers;
 
   /* Compute the word and byte modes.  */
@@ -4191,12 +4197,6 @@ init_emit_once (line_numbers)
   ggc_add_rtx_root (&static_chain_rtx, 1);
   ggc_add_rtx_root (&static_chain_incoming_rtx, 1);
   ggc_add_rtx_root (&return_address_pointer_rtx, 1);
-
-  /* Initialize the CONST_INT hash table.  */
-  const_int_htab = htab_create (37, const_int_htab_hash, 
-				const_int_htab_eq, NULL);
-  ggc_add_root (&const_int_htab, 1, sizeof (const_int_htab), 
-		rtx_htab_mark);
 }
 
 /* Query and clear/ restore no_line_numbers.  This is used by the
