@@ -31,6 +31,7 @@ typedef struct
 {
   const char *format_spec;
   va_list *args_ptr;
+  int err_no;  /* for %m */
 } text_info;
 
 /* Contants used to discriminate diagnostics.  */

@@ -1825,7 +1825,7 @@ java_get_line_col (const char *filename ATTRIBUTE_UNUSED,
   char *base;
 
   if (!(fp = fopen (filename, "r")))
-    fatal_io_error ("can't open %s", filename);
+    fatal_error ("can't open %s: %m", filename);
 
   while (cline != line)
     {

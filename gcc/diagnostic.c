@@ -502,6 +502,7 @@ output_buffer_to_stream (buffer)
    %c: character.
    %s: string.
    %p: pointer.
+   %m: strerror(text->err_no) - does not consume a value from args_ptr.
    %%: `%'.
    %*.s: a substring the length of which is specified by an integer.
    %H: location_t.  */
@@ -534,7 +535,7 @@ output_format (buffer, text)
 	  ++text->format_spec;
 	}
 
-      /* Handle %c, %d, %i, %ld, %li, %lo, %lu, %lx, %o, %s, %u,
+      /* Handle %c, %d, %i, %ld, %li, %lo, %lu, %lx, %m, %o, %s, %u,
          %x, %p, %.*s; %%.  And nothing else.  Front-ends should install
          printers to grok language specific format specifiers.  */
       switch (*text->format_spec)
@@ -583,6 +584,10 @@ output_format (buffer, text)
 	  else
 	    output_hexadecimal
               (buffer, va_arg (*text->args_ptr, unsigned int));
+	  break;
+
+	case 'm':
+	  output_add_string (buffer, xstrerror (text->err_no));
 	  break;
 
 	case '%':
@@ -662,6 +667,7 @@ output_printf VPARAMS ((struct output_buffer *buffer, const char *msgid, ...))
   VA_FIXEDARG (ap, output_buffer *, buffer);
   VA_FIXEDARG (ap, const char *, msgid);
 
+  text.err_no = errno;
   text.args_ptr = &ap;
   text.format_spec = _(msgid);
   output_format (buffer, &text);
@@ -757,8 +763,9 @@ output_verbatim VPARAMS ((output_buffer *buffer, const char *msgid, ...))
   VA_FIXEDARG (ap, output_buffer *, buffer);
   VA_FIXEDARG (ap, const char *, msgid);
 
-  text.format_spec = msgid;
+  text.err_no = errno;
   text.args_ptr = &ap;
+  text.format_spec = _(msgid);
   output_do_verbatim (buffer, &text);
   VA_CLOSE (ap);
 }
@@ -816,8 +823,9 @@ diagnostic_set_info (diagnostic, msgid, args, file, line, kind)
      int line;
      diagnostic_t kind;
 {
-  diagnostic->message.format_spec = _(msgid);
+  diagnostic->message.err_no = errno;
   diagnostic->message.args_ptr = args;
+  diagnostic->message.format_spec = _(msgid);
   /* If the diagnostic message doesn't specify a location,
      use FILE and LINE.  */
   if (!text_specifies_location (&diagnostic->message, &diagnostic->location))
@@ -1182,8 +1190,9 @@ verbatim VPARAMS ((const char *msgid, ...))
   VA_OPEN (ap, msgid);
   VA_FIXEDARG (ap, const char *, msgid);
 
-  text.format_spec = _(msgid);
+  text.err_no = errno;
   text.args_ptr = &ap;
+  text.format_spec = _(msgid);
   output_do_verbatim (&global_dc->buffer, &text);
   output_buffer_to_stream (&global_dc->buffer);
   VA_CLOSE (ap);
@@ -1428,24 +1437,6 @@ warn_deprecated_use (node)
       else
 	warning ("type is deprecated");
     }
-}
-
-/* Print a fatal I/O error message.  Argument are like printf.
-   Also include a system error message based on `errno'.  */
-void
-fatal_io_error VPARAMS ((const char *msgid, ...))
-{
-  text_info text;
-  VA_OPEN (ap, msgid);
-  VA_FIXEDARG (ap, const char *, msgid);
-
-  text.format_spec = _(msgid);
-  text.args_ptr = &ap;
-  output_printf (&global_dc->buffer, "%s: %s: ", progname, xstrerror (errno));
-  output_format (&global_dc->buffer, &text);
-  output_flush (&global_dc->buffer);
-  VA_CLOSE (ap);
-  exit (FATAL_EXIT_CODE);
 }
 
 /* Inform the user that an error occurred while trying to report some

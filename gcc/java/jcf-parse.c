@@ -513,12 +513,12 @@ read_class (tree name)
       if (!HAS_BEEN_ALREADY_PARSED_P (file))
 	{
 	  if (!(finput = fopen (input_filename, "r")))
-	    fatal_io_error ("can't reopen %s", input_filename);
+	    fatal_error ("can't reopen %s: %m", input_filename);
 	  parse_source_file_1 (file, finput);
 	  parse_source_file_2 ();
 	  parse_source_file_3 ();
 	  if (fclose (finput))
-	    fatal_io_error ("can't close %s", input_filename);
+	    fatal_error ("can't close %s: %m", input_filename);
 	}
       JCF_FINISH (current_jcf);
       java_pop_parser_context (generate);
@@ -888,7 +888,7 @@ java_parse_file (int set_yydebug ATTRIBUTE_UNUSED)
       int avail = 2000;
       finput = fopen (input_filename, "r");
       if (finput == NULL)
-	fatal_io_error ("can't open %s", input_filename);
+	fatal_error ("can't open %s: %m", input_filename);
       list = xmalloc(avail);
       next = list;
       for (;;)
@@ -907,7 +907,7 @@ java_parse_file (int set_yydebug ATTRIBUTE_UNUSED)
 	  if (count == 0)
 	    {
 	      if (! feof (finput))
-		fatal_io_error ("error closing %s", input_filename);
+		fatal_error ("error closing %s: %m", input_filename);
 	      *next = '\0';
 	      break;
 	    }
@@ -1030,11 +1030,11 @@ java_parse_file (int set_yydebug ATTRIBUTE_UNUSED)
       
       /* Close previous descriptor, if any */
       if (finput && fclose (finput))
-	fatal_io_error ("can't close input file %s", main_input_filename);
+	fatal_error ("can't close input file %s: %m", main_input_filename);
       
       finput = fopen (IDENTIFIER_POINTER (name), "rb");
       if (finput == NULL)
-	fatal_io_error ("can't open %s", IDENTIFIER_POINTER (name));
+	fatal_error ("can't open %s: %m", IDENTIFIER_POINTER (name));
 
 #ifdef IO_BUFFER_SIZE
       setvbuf (finput, xmalloc (IO_BUFFER_SIZE),

@@ -34,8 +34,6 @@ extern void print_time			PARAMS ((const char *, long));
 extern const char *trim_filename	PARAMS ((const char *));
 extern void internal_error		PARAMS ((const char *, ...))
 					       ATTRIBUTE_NORETURN;
-extern void fatal_io_error		PARAMS ((const char *, ...))
-					       ATTRIBUTE_NORETURN;
 extern void _fatal_insn_not_found	PARAMS ((struct rtx_def *,
 						const char *, int,
 						const char *))

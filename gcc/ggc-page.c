@@ -1954,20 +1954,20 @@ ggc_pch_write_object (d, f, x, newx, size)
     }
   
   if (fwrite (x, size, 1, f) != 1)
-    fatal_io_error ("can't write PCH file");
+    fatal_error ("can't write PCH file: %m");
 
   /* In the current implementation, SIZE is always equal to
      OBJECT_SIZE (order) and so the fseek is never executed.  */
   if (size != OBJECT_SIZE (order)
       && fseek (f, OBJECT_SIZE (order) - size, SEEK_CUR) != 0)
-    fatal_io_error ("can't write PCH file");
+    fatal_error ("can't write PCH file: %m");
 
   d->written[order]++;
   if (d->written[order] == d->d.totals[order]
       && fseek (f, ROUND_UP_VALUE (d->d.totals[order] * OBJECT_SIZE (order),
 				   G.pagesize),
 		SEEK_CUR) != 0)
-    fatal_io_error ("can't write PCH file");
+    fatal_error ("can't write PCH file: %m");
 }
 
 void
@@ -1976,7 +1976,7 @@ ggc_pch_finish (d, f)
      FILE *f;
 {
   if (fwrite (&d->d, sizeof (d->d), 1, f) != 1)
-    fatal_io_error ("can't write PCH file");
+    fatal_error ("can't write PCH file: %m");
   free (d);
 }
 
@@ -2068,7 +2068,7 @@ ggc_pch_read (f, addr)
   /* Allocate the appropriate page-table entries for the pages read from
      the PCH file.  */
   if (fread (&d, sizeof (d), 1, f) != 1)
-    fatal_io_error ("can't read PCH file");
+    fatal_error ("can't read PCH file: %m");
   
   for (i = 0; i < NUM_ORDERS; i++)
     {

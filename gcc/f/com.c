@@ -14269,7 +14269,7 @@ ffe_post_options (pfilename)
     finput = fopen (filename, "r");
 
   if (finput == 0)
-    fatal_io_error ("can't open %s", filename);
+    fatal_error ("can't open %s: %m", filename);
 
   return false;
 }

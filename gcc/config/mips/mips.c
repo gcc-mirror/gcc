@@ -6871,17 +6871,17 @@ copy_file_data (to, from)
   size_t len;
   rewind (from);
   if (ferror (from))
-    fatal_io_error ("can't rewind temp file");
+    fatal_error ("can't rewind temp file: %m");
 
   while ((len = fread (buffer, 1, sizeof (buffer), from)) > 0)
     if (fwrite (buffer, 1, len, to) != len)
-      fatal_io_error ("can't write to output file");
+      fatal_error ("can't write to output file: %m");
 
   if (ferror (from))
-    fatal_io_error ("can't read from temp file");
+    fatal_error ("can't read from temp file: %m");
 
   if (fclose (from))
-    fatal_io_error ("can't close temp file");
+    fatal_error ("can't close temp file: %m");
 }
 
 /* Emit either a label, .comm, or .lcomm directive, and mark that the symbol
