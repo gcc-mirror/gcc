@@ -1,3 +1,10 @@
+Mon Jun 17 18:37:42 2002  Nicola Pero  <n.pero@mi.flashnet.it>
+
+	* sendmsg.c (__objc_get_forward_imp): Fix warning by making sure
+	we always have a return value: if __objc_msg_forward does not
+	supply a forwarding implementation, return the default
+	__builtin_apply based one.
+
 2002-06-15  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Object.m: Fix signed/unsigned warning.
