@@ -3724,7 +3724,8 @@ output_addr_const (file, x)
       else
 	{
 	  output_addr_const (file, XEXP (x, 0));
-	  if (INTVAL (XEXP (x, 1)) >= 0)
+	  if (GET_CODE (XEXP (x, 1)) != CONST_INT
+	      || INTVAL (XEXP (x, 1)) >= 0)
 	    fprintf (file, "+");
 	  output_addr_const (file, XEXP (x, 1));
 	}
