@@ -209,6 +209,10 @@ package body Sem_Ch4 is
    --  for the type is not directly visible. The routine uses this type to emit
    --  a more informative message.
 
+   procedure Remove_Abstract_Operations (N : Node_Id);
+   --  Ada 2005: implementation of AI-310. An abstract non-dispatching
+   --  operation is not a candidate interpretation.
+
    function Try_Indexed_Call
      (N   : Node_Id;
       Nam : Entity_Id;
@@ -852,6 +856,8 @@ package body Sem_Ch4 is
             Generate_Reference (Entity (Nam), Nam);
 
             Set_Etype (Nam, Etype (Entity (Nam)));
+         else
+            Remove_Abstract_Operations (N);
          end if;
 
          End_Interp_List;
@@ -4125,6 +4131,8 @@ package body Sem_Ch4 is
 
    procedure Operator_Check (N : Node_Id) is
    begin
+      Remove_Abstract_Operations (N);
+
       --  Test for case of no interpretation found for operator
 
       if Etype (N) = Any_Type then
@@ -4316,6 +4324,71 @@ package body Sem_Ch4 is
          end;
       end if;
    end Operator_Check;
+
+   --------------------------------
+   -- Remove_Abstract_Operations --
+   --------------------------------
+
+   procedure Remove_Abstract_Operations (N : Node_Id) is
+      I               : Interp_Index;
+      It              : Interp;
+      Has_Abstract_Op : Boolean := False;
+
+      --  AI-310: If overloaded, remove abstract non-dispatching
+      --  operations.
+
+   begin
+      if Extensions_Allowed
+        and then Is_Overloaded (N)
+      then
+         Get_First_Interp (N, I, It);
+         while Present (It.Nam) loop
+            if not Is_Type (It.Nam)
+              and then Is_Abstract (It.Nam)
+              and then not Is_Dispatching_Operation (It.Nam)
+            then
+               Has_Abstract_Op := True;
+               Remove_Interp (I);
+               exit;
+            end if;
+
+            Get_Next_Interp (I, It);
+         end loop;
+
+         --  Remove corresponding predefined operator, which is
+         --  always added to the overload set, unless it is a universal
+         --  operation.
+
+         if Nkind (N) in N_Op
+           and then Has_Abstract_Op
+         then
+            if Nkind (N) in N_Unary_Op
+              and then
+                Present (Universal_Interpretation (Etype (Right_Opnd (N))))
+            then
+               return;
+
+            elsif Nkind (N) in N_Binary_Op
+              and then
+                Present (Universal_Interpretation (Etype (Right_Opnd (N))))
+              and then
+                Present (Universal_Interpretation (Etype (Left_Opnd (N))))
+            then
+               return;
+
+            else
+               Get_First_Interp (N, I, It);
+               while Present (It.Nam) loop
+                  if Scope (It.Nam) = Standard_Standard then
+                     Remove_Interp (I);
+                  end if;
+
+                  Get_Next_Interp (I, It);
+               end loop;
+            end if;
+         end if;
+      end if;
+   end Remove_Abstract_Operations;
 
    -----------------------
    -- Try_Indirect_Call --

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -703,7 +703,13 @@ package body Ada.Exceptions is
          P := P - 1;
       end loop;
 
-      return Name (P .. Name'Length);
+      --  Return result making sure lower bound is 1
+
+      declare
+         subtype Rname is String (1 .. Name'Length - P + 1);
+      begin
+         return Rname (Name (P .. Name'Length));
+      end;
    end Exception_Name_Simple;
 
    --------------------

@@ -351,7 +351,7 @@ package body Sem_Warn is
       E1 := First_Entity (E);
       while Present (E1) loop
 
-         --  We only look at source entities with warning flag off
+         --  We only look at source entities with warning flag on
 
          if Comes_From_Source (E1) and then not Warnings_Off (E1) then
 
@@ -367,6 +367,14 @@ package body Sem_Warn is
                --  do not consider the implicit initialization of an access
                --  type to be the assignment of a value for this purpose.
 
+               if Ekind (E1) = E_Out_Parameter
+                 and then Present (Spec_Entity (E1))
+               then
+                  UR := Unset_Reference (Spec_Entity (E1));
+               else
+                  UR := Unset_Reference (E1);
+               end if;
+
                --  If the entity is an out parameter of the current subprogram
                --  body, check the warning status of the parameter in the spec.
 
@@ -375,6 +383,23 @@ package body Sem_Warn is
                  and then Warnings_Off (Spec_Entity (E1))
                then
                   null;
+
+               elsif Warn_On_No_Value_Assigned
+                 and then Present (UR)
+                 and then Is_Access_Type (Etype (E1))
+               then
+
+                  --  For access types, the only time we made a UR
+                  --  entry was for a dereference, and so we post
+                  --  the appropriate warning here (note that the
+                  --  dereference may not be explicit in the source,
+                  --  for example in the case of a dispatching call
+                  --  with an anonymous access controlling formal, or
+                  --  of an assignment of a pointer involving a
+                  --  discriminant check on the designated object).
+
+                  Error_Msg_NE ("& may be null?", UR, E1);
+                  goto Continue;
 
                elsif Never_Set_In_Source (E1)
                  and then not Generic_Package_Spec_Entity (E1)
@@ -435,86 +460,67 @@ package body Sem_Warn is
                --  types from this check, since access types do always have
                --  a null value, and that seems legitimate in this case.
 
-               if Ekind (E1) = E_Out_Parameter
-                 and then Present (Spec_Entity (E1))
-               then
-                  UR := Unset_Reference (Spec_Entity (E1));
-               else
-                  UR := Unset_Reference (E1);
-               end if;
-
                if Warn_On_No_Value_Assigned and then Present (UR) then
-
-                  --  For access types, the only time we made a UR entry
-                  --  was for a dereference, and so we post the appropriate
-                  --  warning here. The issue is not that the value is not
-                  --  initialized here, but that it is null.
-
-                  if Is_Access_Type (Etype (E1)) then
-                     Error_Msg_NE ("& may be null?", UR, E1);
-                     goto Continue;
 
                   --  For other than access type, go back to original node
                   --  to deal with case where original unset reference
                   --  has been rewritten during expansion.
 
-                  else
-                     UR := Original_Node (UR);
+                  UR := Original_Node (UR);
 
-                     --  In some cases, the original node may be a type
-                     --  conversion or qualification, and in this case
-                     --  we want the object entity inside.
+                  --  In some cases, the original node may be a type
+                  --  conversion or qualification, and in this case
+                  --  we want the object entity inside.
 
-                     while Nkind (UR) = N_Type_Conversion
-                       or else Nkind (UR) = N_Qualified_Expression
-                     loop
-                        UR := Expression (UR);
-                     end loop;
+                  while Nkind (UR) = N_Type_Conversion
+                    or else Nkind (UR) = N_Qualified_Expression
+                  loop
+                     UR := Expression (UR);
+                  end loop;
 
-                     --  Here we issue the warning, all checks completed
-                     --  If the unset reference is prefix of a selected
-                     --  component that comes from source, mention the
-                     --  component as well. If the selected component comes
-                     --  from expansion, all we know is that the entity is
-                     --  not fully initialized at the point of the reference.
-                     --  Locate an unintialized component to get a better
-                     --  error message.
+                  --  Here we issue the warning, all checks completed
+                  --  If the unset reference is prefix of a selected
+                  --  component that comes from source, mention the
+                  --  component as well. If the selected component comes
+                  --  from expansion, all we know is that the entity is
+                  --  not fully initialized at the point of the reference.
+                  --  Locate an unintialized component to get a better
+                  --  error message.
 
-                     if Nkind (Parent (UR)) = N_Selected_Component then
-                        Error_Msg_Node_2 := Selector_Name (Parent (UR));
+                  if Nkind (Parent (UR)) = N_Selected_Component then
+                     Error_Msg_Node_2 := Selector_Name (Parent (UR));
 
-                        if not Comes_From_Source (Parent (UR)) then
-                           declare
-                              Comp : Entity_Id;
+                     if not Comes_From_Source (Parent (UR)) then
+                        declare
+                           Comp : Entity_Id;
 
-                           begin
-                              Comp := First_Entity (Etype (E1));
-                              while Present (Comp) loop
-                                 if Ekind (Comp) = E_Component
-                                   and then Nkind (Parent (Comp)) =
-                                     N_Component_Declaration
-                                   and then No (Expression (Parent (Comp)))
-                                 then
-                                    Error_Msg_Node_2 := Comp;
-                                    exit;
-                                 end if;
+                        begin
+                           Comp := First_Entity (Etype (E1));
+                           while Present (Comp) loop
+                              if Ekind (Comp) = E_Component
+                                and then Nkind (Parent (Comp)) =
+                                  N_Component_Declaration
+                                and then No (Expression (Parent (Comp)))
+                              then
+                                 Error_Msg_Node_2 := Comp;
+                                 exit;
+                              end if;
 
-                                 Next_Entity (Comp);
-                              end loop;
-                           end;
-                        end if;
-
-                        Error_Msg_N
-                          ("`&.&` may be referenced before it has a value?",
-                           UR);
-                     else
-                        Error_Msg_N
-                          ("& may be referenced before it has a value?",
-                           UR);
+                              Next_Entity (Comp);
+                           end loop;
+                        end;
                      end if;
 
-                     goto Continue;
+                     Error_Msg_N
+                       ("`&.&` may be referenced before it has a value?",
+                        UR);
+                  else
+                     Error_Msg_N
+                       ("& may be referenced before it has a value?",
+                        UR);
                   end if;
+
+                  goto Continue;
                end if;
             end if;
 

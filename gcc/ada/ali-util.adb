@@ -86,26 +86,23 @@ package body ALI.Util is
       return Checksum1 = Checksum2 and then Checksum1 /= Checksum_Error;
    end Checksums_Match;
 
-   pragma Warnings (Off);
-   --  To avoid warnings on non referenced parameters of the error procedures
-
    ---------------
    -- Error_Msg --
    ---------------
 
    procedure Error_Msg (Msg : String; Flag_Location : Source_Ptr) is
+      pragma Warnings (Off, Msg);
+      pragma Warnings (Off, Flag_Location);
    begin
       null;
    end Error_Msg;
-
-   pragma Warnings (Off);
-   --  To avoid warnings on non referenced parameters of the error procedures
 
    -----------------
    -- Error_Msg_S --
    -----------------
 
    procedure Error_Msg_S (Msg : String) is
+      pragma Warnings (Off, Msg);
    begin
       null;
    end Error_Msg_S;
@@ -115,6 +112,7 @@ package body ALI.Util is
    ------------------
 
    procedure Error_Msg_SC (Msg : String) is
+      pragma Warnings (Off, Msg);
    begin
       null;
    end Error_Msg_SC;
@@ -124,11 +122,10 @@ package body ALI.Util is
    ------------------
 
    procedure Error_Msg_SP (Msg : String) is
+      pragma Warnings (Off, Msg);
    begin
       null;
    end Error_Msg_SP;
-
-   pragma Warnings (On);
 
    -----------------------
    -- Get_File_Checksum --

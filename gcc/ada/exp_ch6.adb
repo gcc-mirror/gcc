@@ -2457,7 +2457,19 @@ package body Exp_Ch6 is
 
             --  Replace assignment with the block
 
-            Rewrite (Parent (N), Blk);
+            declare
+               Original_Assignment : constant Node_Id := Parent (N);
+               Saved_Assignment    : constant Node_Id :=
+                                       Relocate_Node (Original_Assignment);
+               pragma Warnings (Off, Saved_Assignment);
+               --  Preserve the original assignment node to keep the
+               --  complete assignment subtree consistent enough for
+               --  Analyze_Assignment to proceed. We do not use the
+               --  saved value, the point was just to do the relocation.
+
+            begin
+               Rewrite (Original_Assignment, Blk);
+            end;
 
          elsif Nkind (Parent (N)) = N_Object_Declaration then
             Set_Expression (Parent (N), Empty);
@@ -2471,7 +2483,6 @@ package body Exp_Ch6 is
 
       procedure Rewrite_Procedure_Call (N : Node_Id; Blk : Node_Id) is
          HSS  : constant Node_Id := Handled_Statement_Sequence (Blk);
-
       begin
          if Is_Empty_List (Declarations (Blk)) then
             Insert_List_After (N, Statements (HSS));

@@ -669,6 +669,7 @@ package body Ch10 is
 
             declare
                Save_Style_Check : constant Boolean := Style_Check;
+
             begin
                Style_Check := False;
 
@@ -691,7 +692,6 @@ package body Ch10 is
                   Error_Msg_SC
                     ("end of file expected, " &
                      "file can have only one compilation unit");
-
                else
                   Error_Msg_SC ("end of file expected");
                end if;
@@ -833,7 +833,7 @@ package body Ch10 is
 
             if Token /= Tok_With then
 
-               --  Keyword is beginning of private child unit.
+               --  Keyword is beginning of private child unit
 
                Restore_Scan_State (Scan_State); -- to PRIVATE
                return Item_List;
@@ -901,8 +901,25 @@ package body Ch10 is
                   Set_Limited_Present (With_Node, Has_Limited);
                   Set_Private_Present (With_Node, Has_Private);
                   First_Flag := False;
+
+                  --  All done if no comma
+
                   exit when Token /= Tok_Comma;
+
+                  --  If comma is followed by compilation unit token
+                  --  or by USE, or PRAGMA, then it should have been a
+                  --  semicolon after all
+
+                  Save_Scan_State (Scan_State);
                   Scan; -- past comma
+
+                  if Token in Token_Class_Cunit
+                    or else Token = Tok_Use
+                    or else Token = Tok_Pragma
+                  then
+                     Restore_Scan_State (Scan_State);
+                     exit;
+                  end if;
                end loop;
 
                Set_Last_Name (With_Node, True);

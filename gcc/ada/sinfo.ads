@@ -4242,7 +4242,7 @@ package Sinfo is
 
       --  PRIVATE_TYPE_DECLARATION ::=
       --    type DEFINING_IDENTIFIER [DISCRIMINANT_PART]
-      --      is [[abstract] tagged] [limited] private;
+      --      is [abstract] tagged] [limited] private;
 
       --  Note: TAGGED is not permitted in Ada 83 mode
 

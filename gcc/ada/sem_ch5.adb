@@ -339,6 +339,7 @@ package body Sem_Ch5 is
       Set_Assignment_Type (Lhs, T1);
 
       Resolve (Rhs, T1);
+      Check_Unset_Reference (Rhs);
 
       --  Remaining steps are skipped if Rhs was syntactically in error
 
@@ -347,7 +348,6 @@ package body Sem_Ch5 is
       end if;
 
       T2 := Etype (Rhs);
-      Check_Unset_Reference (Rhs);
 
       if Covers (T1, T2) then
          null;
@@ -430,9 +430,15 @@ package body Sem_Ch5 is
          Apply_Length_Check (Rhs, Etype (Lhs));
 
       else
-         --  Discriminant checks are applied in the course of expansion.
+         --  Discriminant checks are applied in the course of expansion
+
          null;
       end if;
+
+      --  Note: modifications of the Lhs may only be recorded after
+      --  checks have been applied.
+
+      Note_Possible_Modification (Lhs);
 
       --  ??? a real accessibility check is needed when ???
 
@@ -461,8 +467,6 @@ package body Sem_Ch5 is
          Error_Msg_NE
            ("?useless assignment of & to itself", N, Entity (Lhs));
       end if;
-
-      Note_Possible_Modification (Lhs);
 
       --  Check for non-allowed composite assignment
 

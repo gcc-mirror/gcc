@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *           Copyright (C) 2000-2003 Ada Core Technologies, Inc.            *
+ *           Copyright (C) 2000-2004 Ada Core Technologies, Inc.            *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -230,7 +230,7 @@ struct layout
 
 #define FRAME_OFFSET 0
 #define PC_ADJUST -4
-#define STOP_FRAME(CURRENT, TOP_STACK) ((CURRENT)->return_address == 0)
+#define STOP_FRAME(CURRENT, TOP_STACK) ((CURRENT)->next == 0)
 
 #define BASE_SKIP 1
 
@@ -321,7 +321,6 @@ extern unsigned int _image_base__;
 #ifndef CURRENT_STACK_FRAME
 # define CURRENT_STACK_FRAME  ({ char __csf; &__csf; })
 #endif
-
 
 #ifndef VALID_STACK_FRAME
 #define VALID_STACK_FRAME(ptr) 1

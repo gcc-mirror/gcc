@@ -720,6 +720,21 @@ __gnat_file_length (int fd)
   return (statbuf.st_size);
 }
 
+/* Return the number of bytes in the specified named file.  */
+
+long
+__gnat_named_file_length (char *name)
+{
+  int ret;
+  struct stat statbuf;
+
+  ret = __gnat_stat (name, &statbuf);
+  if (ret || !S_ISREG (statbuf.st_mode))
+    return 0;
+
+  return (statbuf.st_size);
+}
+
 /* Create a temporary filename and put it in string pointed to by
    TMP_FILENAME.  */
 
