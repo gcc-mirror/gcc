@@ -127,7 +127,7 @@ static tree last_error_function = NULL;
 static int last_error_tick;
 
 /* Called by report_error_function to print out function name.
- * Default may be overridden by language front-ends.  */
+   Default may be overridden by language front-ends.  */
 
 void (*print_error_function) PARAMS ((const char *)) =
   default_print_error_function;
@@ -153,6 +153,7 @@ initialize_diagnostics ()
   /* By default, we don't line-wrap messages.  */
   diagnostic_message_length_per_line = 0;
   set_message_prefixing_rule (DIAGNOSTICS_SHOW_PREFIX_ONCE);
+
   /* Proceed to actual initialization.  */
   default_initialize_buffer (diagnostic_buffer);
 }
@@ -165,6 +166,7 @@ set_message_prefixing_rule (rule)
 }
 
 /* Returns true if BUFFER is in line-wrappind mode.  */
+
 int
 output_is_line_wrapping (buffer)
      output_buffer *buffer;
@@ -173,6 +175,7 @@ output_is_line_wrapping (buffer)
 }
 
 /* Return BUFFER's prefix.  */
+
 const char *
 output_get_prefix (buffer)
      const output_buffer *buffer;
@@ -182,6 +185,7 @@ output_get_prefix (buffer)
 
 /* Subroutine of output_set_maximum_length.  Set up BUFFER's
    internal maximum characters per line.  */
+
 static void
 set_real_maximum_length (buffer)
      output_buffer *buffer;
@@ -204,6 +208,7 @@ set_real_maximum_length (buffer)
 
 /* Sets the number of maximum characters per line BUFFER can output
    in line-wrapping mode.  A LENGTH value 0 suppresses line-wrapping.  */
+
 void
 output_set_maximum_length (buffer, length)
      output_buffer *buffer;
@@ -214,6 +219,7 @@ output_set_maximum_length (buffer, length)
 }
 
 /* Sets BUFFER's PREFIX.  */
+
 void
 output_set_prefix (buffer, prefix)
      output_buffer *buffer;
@@ -224,7 +230,7 @@ output_set_prefix (buffer, prefix)
   prefix_was_emitted_for (buffer) = 0;
 }
 
-/* Free BUFFER's prefix, a previously malloc()'d string.  */
+/* Free BUFFER's prefix, a previously malloc'd string.  */
 
 void
 output_destroy_prefix (buffer)
@@ -238,6 +244,7 @@ output_destroy_prefix (buffer)
 }
 
 /* Zero out any text output so far in BUFFER.  */
+
 static void
 clear_text_info (buffer)
      output_buffer *buffer;
@@ -247,6 +254,7 @@ clear_text_info (buffer)
 }
 
 /* Zero out any diagnostic data used so far by BUFFER.  */
+
 static void
 clear_diagnostic_info (buffer)
      output_buffer *buffer;
@@ -258,6 +266,7 @@ clear_diagnostic_info (buffer)
 
 /* Construct an output BUFFER with PREFIX and of MAXIMUM_LENGTH
    characters per line.  */
+
 void
 init_output_buffer (buffer, prefix, maximum_length)
      output_buffer *buffer;
@@ -283,6 +292,7 @@ default_initialize_buffer (buffer)
 
 /* Recompute diagnostic_buffer's attributes to reflect any change
    in diagnostic formatting global options.  */
+
 void
 reshape_diagnostic_buffer ()
 {
@@ -303,6 +313,7 @@ output_clear (buffer)
 
 /* Finishes to construct a NULL-terminated character string representing
    the BUFFERed message.  */
+
 const char *
 output_finish (buffer)
      output_buffer *buffer;
@@ -313,6 +324,7 @@ output_finish (buffer)
 
 /* Return the amount of characters BUFFER can accept to
    make a full line.  */
+
 int
 output_space_left (buffer)
      const output_buffer *buffer;
@@ -321,6 +333,7 @@ output_space_left (buffer)
 }
 
 /* Write out BUFFER's prefix.  */
+
 void
 output_emit_prefix (buffer)
      output_buffer *buffer;
@@ -350,6 +363,7 @@ output_emit_prefix (buffer)
 }
 
 /* Have BUFFER start a new line.  */
+
 void
 output_add_newline (buffer)
      output_buffer *buffer;
@@ -359,6 +373,7 @@ output_add_newline (buffer)
 }
 
 /* Appends a character to BUFFER.  */
+
 void
 output_add_character (buffer, c)
      output_buffer *buffer;
@@ -371,6 +386,7 @@ output_add_character (buffer, c)
 }
 
 /* Adds a space to BUFFER.  */
+
 void
 output_add_space (buffer)
      output_buffer *buffer;
@@ -386,6 +402,7 @@ output_add_space (buffer)
 
 /* These functions format an INTEGER into BUFFER as suggested by their
    names.  */
+
 void
 output_decimal (buffer, i)
      output_buffer *buffer;
@@ -452,6 +469,7 @@ output_long_hexadecimal (buffer, i)
 
 /* Append to BUFFER a string specified by its STARTING character
    and LENGTH.  */
+
 static void
 output_append_r (buffer, start, length)
      output_buffer *buffer;
@@ -466,6 +484,7 @@ output_append_r (buffer, start, length)
    done.  However, if beginning a new line then emit output_prefix (BUFFER)
    and skip any leading whitespace if appropriate.  The caller must ensure
    that it is safe to do so.  */
+
 void
 output_append (buffer, start, end)
      output_buffer *buffer;
@@ -484,6 +503,7 @@ output_append (buffer, start, end)
 }
 
 /* Wrap a text delimited by START and END into BUFFER.  */
+
 static void
 wrap_text (buffer, start, end)
      output_buffer *buffer;
@@ -565,6 +585,7 @@ output_to_stream (buffer, file)
    %s: string.
    %%: `%'.
    %*.s: a substring the length of which is specified by an integer.  */
+
 static void
 output_format (buffer)
      output_buffer *buffer;
@@ -573,6 +594,7 @@ output_format (buffer)
        ++output_buffer_text_cursor (buffer))
     {
       int long_integer = 0;
+
       /* Ignore text.  */
       {
         const char *p = output_buffer_text_cursor (buffer);
@@ -581,6 +603,7 @@ output_format (buffer)
         maybe_wrap_text (buffer, output_buffer_text_cursor (buffer), p);
         output_buffer_text_cursor (buffer) = p;
       }
+
       if (!*output_buffer_text_cursor (buffer))
         break;
 
@@ -670,11 +693,11 @@ output_format (buffer)
           break;
 
         default:
-          if (!lang_printer || !(*lang_printer) (buffer))
+          if (! lang_printer || !(*lang_printer) (buffer))
             {
               /* Hmmm.  The front-end failed to install a format translator
                  but called us with an unrecognized format.  Sorry.  */
-              abort();
+              abort ();
             }
         }
     }
@@ -881,6 +904,7 @@ file_and_line_for_asm (insn, pfile, pline)
 /* Report a diagnostic MESSAGE (an errror or a WARNING) at the line number
    of the insn INSN.  This is used only when INSN is an `asm' with operands,
    and each ASM_OPERANDS records its own source file and line.  */
+
 static void
 diagnostic_for_asm (insn, msg, args_ptr, warn)
      rtx insn;
@@ -898,6 +922,7 @@ diagnostic_for_asm (insn, msg, args_ptr, warn)
 /* Report a diagnostic MESSAGE at the declaration DECL.
    MSG is a format string which uses %s to substitute the declaration
    name; subsequent substitutions are a la output_format.  */
+
 static void
 diagnostic_for_decl (decl, msg, args_ptr, warn)
      tree decl;
@@ -956,6 +981,7 @@ count_error (warningp)
 }
 
 /* Print a diagnistic MSGID on FILE.  */
+
 void
 fnotice VPARAMS ((FILE *file, const char *msgid, ...))
 {
@@ -998,6 +1024,7 @@ fatal_io_error (name)
 }
 
 /* Issue a pedantic warning MSGID.  */
+
 void
 pedwarn VPARAMS ((const char *msgid, ...))
 {
@@ -1018,6 +1045,7 @@ pedwarn VPARAMS ((const char *msgid, ...))
 }
 
 /* Issue a pedantic waring about DECL.  */
+
 void
 pedwarn_with_decl VPARAMS ((tree decl, const char *msgid, ...))
 {
@@ -1045,6 +1073,7 @@ pedwarn_with_decl VPARAMS ((tree decl, const char *msgid, ...))
 }
 
 /* Same as above but within the context FILE and LINE. */
+
 void
 pedwarn_with_file_and_line VPARAMS ((const char *file, int line,
 				     const char *msgid, ...))
@@ -1069,6 +1098,7 @@ pedwarn_with_file_and_line VPARAMS ((const char *file, int line,
 }
 
 /* Just apologize with MSGID.  */
+
 void
 sorry VPARAMS ((const char *msgid, ...))
 {
@@ -1268,6 +1298,18 @@ error VPARAMS ((const char *msgid, ...))
 
 /* Report a fatal error at the current line number.  Allow a front end to
    intercept the message.  */
+
+static void (*fatal_function) PARAMS((const char *, va_list *));
+
+/* Set the function to call when a fatal error occurs.  */
+
+void
+set_fatal_function (f)
+     void (*f) PARAMS ((const char *, va_list *));
+{
+  fatal_function = f;
+}
+
 void
 fatal VPARAMS ((const char *msgid, ...))
 {
@@ -1281,6 +1323,9 @@ fatal VPARAMS ((const char *msgid, ...))
 #ifndef ANSI_PROTOTYPES
   msgid = va_arg (ap, const char *);
 #endif
+
+   if (fatal_function != 0)
+     (*fatal_function) (_(msgid), &ap);
 
   report_diagnostic (msgid, &ap, input_filename, lineno, 0);
   va_end (ap);
