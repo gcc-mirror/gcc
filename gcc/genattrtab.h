@@ -1,5 +1,5 @@
 /* External definitions of source files of genattrtab.
-   Copyright (C)  2001 Free Software Foundation, Inc.
+   Copyright (C)  2001, 2003 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -23,27 +23,27 @@ Boston, MA 02111-1307, USA.  */
 #define INSN_ALTS_FUNC_NAME "insn_alts"
 
 /* Defined in genattrtab.c: */
-extern rtx check_attr_test	PARAMS ((rtx, int, int));
-extern rtx make_numeric_value	PARAMS ((int));
-extern void make_internal_attr	PARAMS ((const char *, rtx, int));
-extern char *attr_printf	PARAMS ((unsigned int, const char *, ...))
+extern rtx check_attr_test (rtx, int, int);
+extern rtx make_numeric_value (int);
+extern void make_internal_attr (const char *, rtx, int);
+extern char *attr_printf (unsigned int, const char *, ...)
   ATTRIBUTE_PRINTF_2;
 
 extern int num_dfa_decls;
 
 /* Defined in genautomata.c: */
-extern void gen_cpu_unit		PARAMS ((rtx));
-extern void gen_query_cpu_unit		PARAMS ((rtx));
-extern void gen_bypass			PARAMS ((rtx));
-extern void gen_excl_set		PARAMS ((rtx));
-extern void gen_presence_set		PARAMS ((rtx));
-extern void gen_final_presence_set	PARAMS ((rtx));
-extern void gen_absence_set		PARAMS ((rtx));
-extern void gen_final_absence_set	PARAMS ((rtx));
-extern void gen_automaton		PARAMS ((rtx));
-extern void gen_automata_option		PARAMS ((rtx));
-extern void gen_reserv   		PARAMS ((rtx));
-extern void gen_insn_reserv     	PARAMS ((rtx));
-extern void initiate_automaton_gen	PARAMS ((int, char **));
-extern void expand_automata             PARAMS ((void));
-extern void write_automata              PARAMS ((void));
+extern void gen_cpu_unit (rtx);
+extern void gen_query_cpu_unit (rtx);
+extern void gen_bypass (rtx);
+extern void gen_excl_set (rtx);
+extern void gen_presence_set (rtx);
+extern void gen_final_presence_set (rtx);
+extern void gen_absence_set (rtx);
+extern void gen_final_absence_set (rtx);
+extern void gen_automaton (rtx);
+extern void gen_automata_option (rtx);
+extern void gen_reserv (rtx);
+extern void gen_insn_reserv (rtx);
+extern void initiate_automaton_gen (int, char **);
+extern void expand_automata (void);
+extern void write_automata (void);
