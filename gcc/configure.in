@@ -4550,6 +4550,25 @@ case "$target" in
 		[Define if your assembler supports .register.])
     fi
 
+    AC_CACHE_CHECK([assembler supports -relax],
+	gcc_cv_as_relax_opt, [
+	gcc_cv_as_relax_opt=unknown
+	if test x$gcc_cv_as != x; then
+	    # Check if gas supports -relax
+	    echo ".text" > conftest.s
+	    if $gcc_cv_as -relax -o conftest.o conftest.s > /dev/null 2>&1; then
+		gcc_cv_as_relax_opt=yes
+	    else
+		gcc_cv_as_relax_opt=no
+	    fi
+	    rm -f conftest.s conftest.o
+	fi
+    ])
+    if test "x$gcc_cv_as_relax_opt" = xyes; then
+	AC_DEFINE(HAVE_AS_RELAX_OPTION, 1,
+		[Define if your assembler supports -relax option.])
+    fi
+
     case "$tm_file" in
     *64*)
 	AC_CACHE_CHECK([for 64 bit support in assembler ($gcc_cv_as)],

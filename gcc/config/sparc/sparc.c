@@ -3737,7 +3737,15 @@ output_sibcall (insn, call_operand)
 
   if (leaf_regs)
     {
+#ifdef HAVE_AS_RELAX_OPTION
+      /* If as and ld are relaxing tail call insns into branch always,
+	 use or %o7,%g0,X; call Y; or X,%g0,%o7 always, so that it can
+	 be optimized.  With sethi/jmpl as nor ld has no easy way how to
+	 find out if somebody does not branch between the sethi and jmpl.  */
+      int spare_slot = 0;
+#else
       int spare_slot = ((TARGET_ARCH32 || TARGET_CM_MEDLOW) && ! flag_pic);
+#endif
       int size = 0;
 
       if ((actual_fsize || ! spare_slot) && delay_slot)
@@ -3786,9 +3794,11 @@ output_sibcall (insn, call_operand)
 	{
 	  if (size)
 	    fprintf (asm_out_file, "\tsub\t%%sp, -%d, %%sp\n", size);
-	  output_asm_insn ("mov\t%%o7, %%g1", operands);
+	  /* Use or with rs2 %%g0 instead of mov, so that as/ld can optimize
+	     it into branch if possible.  */
+	  output_asm_insn ("or\t%%o7, %%g0, %%g1", operands);
 	  output_asm_insn ("call\t%a0, 0", operands);
-	  output_asm_insn (" mov\t%%g1, %%o7", operands);
+	  output_asm_insn (" or\t%%g1, %%g0, %%o7", operands);
 	}
       return "";
     }

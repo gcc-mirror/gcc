@@ -324,12 +324,17 @@ Unrecognized value in TARGET_CPU_DEFAULT.
 %{!m32:%{!m64:%(asm_arch_default)}} \
 "
 
+#ifdef HAVE_AS_RELAX_OPTION
+#define ASM_RELAX_SPEC "%{!mno-relax:-relax}"
+#else
+#define ASM_RELAX_SPEC ""
+#endif
+
 /* Special flags to the Sun-4 assembler when using pipe for input.  */
 
 #define ASM_SPEC "\
 %| %{R} %{!pg:%{!p:%{fpic:-k} %{fPIC:-k}}} %{keep-local-as-symbols:-L} \
-%(asm_cpu) \
-"
+%(asm_cpu) %(asm_relax)"
 
 #define LIB_SPEC "%{!shared:%{!p:%{!pg:-lc}}%{p:-lc_p}%{pg:-lc_p} %{g:-lg}}"
 
@@ -362,6 +367,7 @@ Unrecognized value in TARGET_CPU_DEFAULT.
   { "asm_cpu_default",	ASM_CPU_DEFAULT_SPEC },	\
   { "asm_arch32",	ASM_ARCH32_SPEC },	\
   { "asm_arch64",	ASM_ARCH64_SPEC },	\
+  { "asm_relax",	ASM_RELAX_SPEC },	\
   { "asm_arch_default",	ASM_ARCH_DEFAULT_SPEC },\
   { "asm_arch",		ASM_ARCH_SPEC },	\
   SUBTARGET_EXTRA_SPECS
@@ -606,6 +612,8 @@ extern int target_flags;
     {"no-stack-bias", -MASK_STACK_BIAS,			"Do not use stack bias" }, \
     {"faster-structs", MASK_FASTER_STRUCTS,			"Use structs on stronger alignment for double-word copies" }, \
     {"no-faster-structs", -MASK_FASTER_STRUCTS,		"Do not use structs on stronger alignment for double-word copies" }, \
+    {"relax", 0,					"Optimize tail call instructions in assembler and linker" }, \
+    {"no-relax", 0,					"Do not optimize tail call instructions in assembler or linker" }, \
     SUBTARGET_SWITCHES			\
     { "", TARGET_DEFAULT, ""}}
 
