@@ -46,6 +46,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* #undef HAVE_ATEXIT */
 
 #define I860_STRICT_ABI_PROLOGUES
+#define LINK_LIBGCC_SPECIAL 1
 
 /* Most of the Alliant-specific definitions here are to get stab info that
    Alliant's dbx can understand. */
@@ -113,7 +114,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 									\
   for (i=1;*dtyps[i];i++)						\
     for (decl = syms; decl; decl = TREE_CHAIN(decl))			\
-	if ((TREE_CODE (decl) == TYPE_DECL) &&				\
+	if ((TREE_CODE (decl) == TYPE_DECL) && DECL_NAME(decl) &&	\
 	    !strcmp(IDENTIFIER_POINTER(DECL_NAME(decl)), dtyps[i])) {	\
 		TYPE_SYMTAB_ADDRESS (TREE_TYPE (decl)) = i;		\
 		typevec[i] = TYPE_DEFINED;				\
@@ -122,7 +123,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 	}								\
 									\
   for (decl = syms; decl; decl = TREE_CHAIN(decl))			\
-    if ((TREE_CODE (decl) == TYPE_DECL) &&				\
+    if ((TREE_CODE (decl) == TYPE_DECL) && DECL_NAME(decl) &&		\
 	!strcmp(IDENTIFIER_POINTER(DECL_NAME(decl)),"long int")) {	\
       TYPE_SYMTAB_ADDRESS (TREE_TYPE (decl)) = i;			\
       typevec[i] = TYPE_DEFINED;					\
@@ -133,7 +134,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
     }									\
 									\
   for (decl = syms; decl; decl = TREE_CHAIN(decl))			\
-    if ((TREE_CODE (decl) == TYPE_DECL) && !strcmp(			\
+    if ((TREE_CODE (decl) == TYPE_DECL) && DECL_NAME(decl) && !strcmp(	\
 	IDENTIFIER_POINTER(DECL_NAME(decl)),"long unsigned int")) {	\
       TYPE_SYMTAB_ADDRESS (TREE_TYPE (decl)) = i;			\
       typevec[i] = TYPE_DEFINED;					\
