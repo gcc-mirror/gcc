@@ -57,8 +57,8 @@ public class Deflater
   }
 
   public native int deflate (byte[] buf, int off, int len);
-  public native void init (int level, boolean noHeader);
-  public native void update ();
+  private native void init (int level, boolean noHeader);
+  private native void update ();
 
   public Deflater ()
   {
