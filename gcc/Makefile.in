@@ -2525,8 +2525,8 @@ specs.ready: specs
 	fi
 
 # Until someone fixes this recursive make nightmare (please note where
-# BUILD_CFLAGS and WARN_CFLAGS are first expanded below versus which
-# later make invocation has the fine-grain -warn markings for fixinc):
+# BUILD_CFLAGS is first expanded below versus which later make invocation
+# has the fine-grain -warn markings for fixinc):
 fixinc.sh-warn = -Wno-error
 
 FIXINCSRCDIR=$(srcdir)/fixinc
@@ -2535,8 +2535,8 @@ fixinc.sh: $(FIXINCSRCDIR)/mkfixinc.sh $(FIXINCSRCDIR)/fixincl.c \
 	$(FIXINCSRCDIR)/server.h $(FIXINCSRCDIR)/inclhack.def specs.ready
 	(MAKE="$(MAKE)"; srcdir=`cd $(srcdir)/fixinc && ${PWD_COMMAND}` ; \
 	CC="$(CC_FOR_BUILD)"; CFLAGS="$(BUILD_CFLAGS)"; LDFLAGS="$(BUILD_LDFLAGS)"; \
-	WARN_CFLAGS=""; LIBERTY=`${PWD_COMMAND}`/"$(BUILD_LIBIBERTY)"; \
-	export MAKE srcdir CC CFLAGS LDFLAGS WARN_CFLAGS LIBERTY; \
+	LIBERTY=`${PWD_COMMAND}`/"$(BUILD_LIBIBERTY)"; \
+	export MAKE srcdir CC CFLAGS LDFLAGS LIBERTY; \
 	cd ./fixinc && \
 	$(SHELL) $${srcdir}/mkfixinc.sh $(build) $(target))
 
