@@ -23,11 +23,11 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    exception does not however invalidate any other reasons why the
    executable file might be covered by the GNU General Public License. */
 
+#include <stdarg.h>
 #include "objc/Object.h"
 #include "objc/Protocol.h"
 #include "objc/objc-api.h"
 
-#include <stdarg.h>
 extern void (*_objc_error)(id object, const char *format, va_list);
 
 extern int errno;
