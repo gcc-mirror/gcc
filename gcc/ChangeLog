@@ -1,5 +1,7 @@
 2003-06-01  Andreas Jaeger  <aj@suse.de>
 
+	* loop.c (check_insn_for_givs): Remove DONT_REDUCE_ADDR macro.
+
 	* config/d30v/d30v.h: Remove text copied from the manual.
 
 2003-06-01  Roger Sayle  <roger@eyesopen.com>
