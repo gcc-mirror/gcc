@@ -1475,10 +1475,12 @@ fix = {
 
 /*
  * Fix BSD machine/ansi.h to use __builtin_va_list to define _BSD_VA_LIST_.
+ * 
+ * On NetBSD, machine is a symbolic link to an architecture specific
+ * directory name, so we can't match a specific file name here.
  */
 fix = {
     hackname = machine_ansi_h_va_list;
-    files    = machine/ansi.h;
     select   = "define[ \t]+_BSD_VA_LIST_[ \t]";
     bypass   = '__builtin_va_list';
 

@@ -50,7 +50,6 @@ case $machine in
 		fixincludes=fixinc.interix
 		;;
 
-	*-*-netbsd* | \
 	i?86-*-openbsd*)
 		fixincludes=fixinc.wrap
 		;;
@@ -67,14 +66,12 @@ case $machine in
 	alpha*-dec-vms* | \
 	arm-semi-aout | armel-semi-aout | \
 	arm-semi-aof | armel-semi-aof | \
-	arm-*-gnu* | \
 	c*-convex-* | \
 	hppa1.1-*-osf* | \
 	hppa1.0-*-osf* | \
 	hppa1.1-*-bsd* | \
 	hppa1.0-*-bsd* | \
 	hppa*-*-lites* | \
-	*-*-gnu* | \
 	i?86-moss-msdos* | i?86-*-moss* | \
 	i?86-*-osf1* | \
 	i?86-*-win32 | \
