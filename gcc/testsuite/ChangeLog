@@ -1,3 +1,8 @@
+2004-06-24  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	* g++.dg/tree-ssa/tree-ssa.exp: Remove. dg.exp already handles
+	this directory.
+
 2004-06-23  Andrew Pinski  <apinski@apple.com>
 
 	PR middle-end/15988
