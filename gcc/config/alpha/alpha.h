@@ -1488,8 +1488,9 @@ extern void alpha_init_expanders ();
 
 /* Define as C expression which evaluates to nonzero if the tablejump
    instruction expects the table to contain offsets from the address of the
-   table.  Do not define this if the table should contain absolute addresses.
+   table.
 
+   Do not define this if the table should contain absolute addresses.
    On the Alpha, the table is really GP-relative, not relative to the PC
    of the table, but we pretend that it is PC-relative; this should be OK,
    but we should try to find some better way sometime.  */
