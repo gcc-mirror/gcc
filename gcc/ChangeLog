@@ -1,3 +1,8 @@
+Wed May  9 12:05:39 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* genrecog.c (write_switch): Avoid outputting of switch for
+	types wider than int.
+
 2001-05-03  Andrew Haley  <aph@cambridge.redhat.com>
 
 	* reload1.c (copy_eh_notes): New function.

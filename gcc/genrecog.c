@@ -1860,6 +1860,10 @@ write_switch (start, depth)
 	   || type == DT_elt_one_int
 	   || type == DT_elt_zero_wide)
     {
+      /* The argument is casted to int.  In case HOST_WIDE_INT is more exact,
+         we can't safely construct switch statement over it.  */
+      if (type == DT_elt_zero_wide && HOST_BITS_PER_WIDE_INT > sizeof (int) * CHAR_BIT)
+	  return p;
       printf ("  switch (");
       switch (type)
 	{
