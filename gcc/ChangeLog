@@ -1,5 +1,18 @@
 2000-09-08  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
 
+	* config/m68hc11/m68hc11.md: New file, machine description for
+	68HC11 & 68HC12.
+	* config/m68hc11/m68hc11.h: New file, definitions for 68HC11 & 68HC12.
+	* config/m68hc11/m68hc11.c: New file, functions for 68HC11 & 68HC12.
+	* config/m68hc11/m68hc12.h: New file, definitions for 68HC12.
+	* config/m68hc11/m68hc11-protos.h: New file.
+	* config/m68hc11/m68hc11-crt0.S: New file, startup code.
+	* config/m68hc11/t-m68hc11-gas: New file, makefile fragment.
+	* config/m68hc11/xm-m68hc11.h: New file, target defs.
+	* config/m68hc11/larith.asm: New file, libgcc routines.
+
+2000-09-08  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
+
 	* Makefile.in (DPBIT_FUNCS): Add _usi_to_df.
 	(FPBIT_FUNCS): Add _usi_to_sf.
 	* config/fp-bit.c (usi_to_float): New function.
