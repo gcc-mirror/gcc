@@ -1,3 +1,7 @@
+2004-12-18  Richard Henderson  <rth@redhat.com>
+
+	* stor-layout.c (layout_decl): Use unshare_expr, not unsave_expr.
+
 2004-12-18  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	PR rtl-optimization/19001

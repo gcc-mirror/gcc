@@ -325,8 +325,8 @@ layout_decl (tree decl, unsigned int known_align)
 
   if (DECL_SIZE (decl) == 0)
     {
-      DECL_SIZE (decl) = unsave_expr (TYPE_SIZE (type));
-      DECL_SIZE_UNIT (decl) = unsave_expr (TYPE_SIZE_UNIT (type));
+      DECL_SIZE (decl) = unshare_expr (TYPE_SIZE (type));
+      DECL_SIZE_UNIT (decl) = unshare_expr (TYPE_SIZE_UNIT (type));
     }
   else if (DECL_SIZE_UNIT (decl) == 0)
     DECL_SIZE_UNIT (decl)
