@@ -1090,6 +1090,57 @@ if [ -x /bin/sony ]; then
   fi
 fi
 
+# In limits.h, put #ifndefs around things that are supposed to be defined
+# in float.h to avoid redefinition errors if float.h is included first.
+# Solaris 2.1 has this problem.
+
+file=limits.h
+base=`basename $file`
+if [ -r ${LIB}/$file ]; then
+  file_to_fix=${LIB}/$file
+else
+  if [ -r ${INPUT}/$file ]; then
+    file_to_fix=${INPUT}/$file
+  else
+    file_to_fix=""
+  fi
+fi
+if [ \! -z "$file_to_fix" ]; then
+  echo Checking $file_to_fix
+  sed -e '/[ 	]FLT_MIN[ 	]/i\
+#ifndef FLT_MIN'\
+      -e '/[ 	]FLT_MIN[ 	]/a\
+#endif'\
+      -e '/[ 	]FLT_MAX[ 	]/i\
+#ifndef FLT_MAX'\
+      -e '/[ 	]FLT_MAX[ 	]/a\
+#endif'\
+      -e '/[ 	]FLT_DIG[ 	]/i\
+#ifndef FLT_DIG'\
+      -e '/[ 	]FLT_DIG[ 	]/a\
+#endif'\
+      -e '/[ 	]DBL_MIN[ 	]/i\
+#ifndef DBL_MIN'\
+      -e '/[ 	]DBL_MIN[ 	]/a\
+#endif'\
+      -e '/[ 	]DBL_MAX[ 	]/i\
+#ifndef DBL_MAX'\
+      -e '/[ 	]DBL_MAX[ 	]/a\
+#endif'\
+      -e '/[ 	]DBL_DIG[ 	]/i\
+#ifndef DBL_DIG'\
+      -e '/[ 	]DBL_DIG[ 	]/a\
+#endif' $file_to_fix > /tmp/$base
+  if cmp $file_to_fix /tmp/$base >/dev/null 2>&1; then \
+    echo No change needed in $file_to_fix
+  else
+    echo Fixed $file_to_fix
+    rm -f ${LIB}/$file
+    cp /tmp/$base ${LIB}/$file
+  fi
+  rm -f /tmp/$base
+fi
+
 echo 'Removing unneeded directories:'
 cd $LIB
 files=`find . -type d -print | sort -r`
