@@ -1,3 +1,9 @@
+2004-10-27  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/18140
+	* g++.dg/template/shift1.C: New test.
+	* g++.dg/template/error10.C: Adjust error markers.
+
 2004-10-26  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/18093

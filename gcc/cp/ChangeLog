@@ -1,3 +1,9 @@
+2004-10-27  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/18140
+	* parser.c (cp_parser_next_token_ends_template_argument_p): Do not
+	include ">>".
+
 2004-10-27  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR c++/13560
