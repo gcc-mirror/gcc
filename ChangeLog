@@ -1,3 +1,8 @@
+2003-06-23  Keith Seitz  <kseitz@sources.redhat.com>
+
+	* Makefile.tpl: Add maybe-configure-itcl to configure-gdb.
+	* Makefile.in: Regenerate.
+
 2003-06-23  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* Makefile.def: Introduce flags_to_pass.
