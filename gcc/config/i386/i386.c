@@ -5325,14 +5325,26 @@ ix86_adjust_cost (insn, link, dep_insn, cost)
 {
   enum attr_type insn_type, dep_insn_type;
   rtx set, set2;
+  int dep_insn_code_number;
 
   /* We describe no anti or output depenancies.  */
   if (REG_NOTE_KIND (link) != 0)
     return cost;
 
+  dep_insn_code_number = recog_memoized (dep_insn);
+
   /* If we can't recognize the insns, we can't really do anything.  */
-  if (recog_memoized (insn) < 0 || recog_memoized (dep_insn) < 0)
+  if (dep_insn_code_number < 0 || recog_memoized (insn) < 0)
     return cost;
+
+  /* Prologue and epilogue allocators have false dependency on ebp.
+     This results in one cycle extra stall on Pentium prologue scheduling, so
+     handle this important case manually. */
+
+  if ((dep_insn_code_number == CODE_FOR_prologue_allocate_stack
+       || dep_insn_code_number == CODE_FOR_epilogue_deallocate_stack)
+      && !reg_mentioned_p (stack_pointer_rtx, insn))
+    return 0;
 
   insn_type = get_attr_type (insn);
   dep_insn_type = get_attr_type (dep_insn);
