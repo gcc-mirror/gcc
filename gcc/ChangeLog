@@ -1,3 +1,8 @@
+Wed Jun 20 17:02:50 2001  J"orn Rennecke <amylaar@redhat.com>
+
+	* sh.c (barrier_align): Don't ask for alignment when seeing a
+	branch-around-a-jump from machine_dependent_reorg.
+
 Wed Jun 20 08:35:02 2001  Jeffrey A Law  (law@cygnus.com)
 
 	* ssa.c (rename_block): Update parameter to remove_phi_alternative
