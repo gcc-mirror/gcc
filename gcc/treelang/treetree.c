@@ -98,6 +98,8 @@ int warn_format_y2k = 0;
 int warn_format_extra_args = 0;
 int warn_format_nonliteral = 0;
 int warn_format_security = 0;
+int warn_format_zero_length = 0;
+
 
 /* The front end language hooks (addresses of code for this front
    end).  Mostly just use the C routines.  */

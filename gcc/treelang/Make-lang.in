@@ -128,14 +128,16 @@ treelang.rest.encap:
 treelang.info: $(srcdir)/treelang/treelang.info
 
 $(srcdir)/treelang/treelang.info: $(srcdir)/treelang/treelang.texi
-	cd $(srcdir)/treelang && $(MAKEINFO) $(MAKEINFOFLAGS) -I../doc/include \
-	-o $(srcdir)/treelang/treelang.info $(srcdir)/treelang/treelang.texi
+	cd $(srcdir) && $(MAKEINFO) $(MAKEINFOFLAGS) -Idoc/include \
+	-o treelang/treelang.info treelang/treelang.texi
 
 treelang.dvi: $(srcdir)/treelang/treelang.texi
 	TEXINPUTS=$(srcdir)/treelang:$(srcdir):$$TEXINPUTS $(TEXI2DVI) $(srcdir)/treelang/treelang.texi; \
 	  texindex treelang.??; \
 	  TEXINPUTS=$(srcdir)/treelang:$(srcdir):$$TEXINPUTS $(TEXI2DVI) $(srcdir)/treelang/treelang.texi; \
 	  mv treelang.dvi treelang;
+
+treelang.generated-manpages:
 
 #
 # Install hooks:

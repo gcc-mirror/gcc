@@ -1,3 +1,13 @@
+2002-05-19  Tim Josling  <tej@melbpc.org.au>
+
+	* treetree.c (warn_format_zero_length): Add. 
+
+2002-05-14  Tim Josling  <tej@melbpc.org.au>
+
+	* Make-lang.in: Fix build for .info files, add target for manpages.
+	A bug report and a suggested patch came from Magnus Fromreide 
+	<magfr@lysator.liu.se>.
+	
 2002-05-16  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* Make-lang.in: Allow for PWDCMD to override hardcoded pwd.
