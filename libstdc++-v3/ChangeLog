@@ -1,3 +1,7 @@
+2004-05-27  Jan Beulich  <jbeulich@novell.com>
+
+	* scripts/create_testsuite_files: Tweak.
+
 2004-05-25  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/15489
