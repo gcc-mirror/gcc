@@ -35,6 +35,7 @@
 #include "expr.h"
 #include "real.h"
 #include "output.h"
+#include "optabs.h"
 #include "toplev.h"
 #include "tm_p.h"
 
@@ -1602,7 +1603,7 @@ noce_try_abs (if_info)
 
   start_sequence ();
 
-  target = expand_simple_unop (GET_MODE (if_info->x), ABS, b, if_info->x, 0);
+  target = expand_abs_nojump (GET_MODE (if_info->x), b, if_info->x, 1);
 
   /* ??? It's a quandry whether cmove would be better here, especially
      for integers.  Perhaps combine will clean things up.  */

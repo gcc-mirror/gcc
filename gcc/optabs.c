@@ -2773,14 +2773,13 @@ expand_unop (mode, unoptab, op0, target, unsignedp)
  */
 
 rtx
-expand_abs (mode, op0, target, result_unsignedp, safe)
+expand_abs_nojump (mode, op0, target, result_unsignedp)
      enum machine_mode mode;
      rtx op0;
      rtx target;
      int result_unsignedp;
-     int safe;
 {
-  rtx temp, op1;
+  rtx temp;
 
   if (! flag_trapv)
     result_unsignedp = 1;
@@ -2867,6 +2866,23 @@ expand_abs (mode, op0, target, result_unsignedp, safe)
       if (temp != 0)
 	return temp;
     }
+
+  return NULL_RTX;
+}
+
+rtx
+expand_abs (mode, op0, target, result_unsignedp, safe)
+     enum machine_mode mode;
+     rtx op0;
+     rtx target;
+     int result_unsignedp;
+     int safe;
+{
+  rtx temp, op1;
+
+  temp = expand_abs_nojump (mode, op0, target, result_unsignedp);
+  if (temp != 0)
+    return temp;
 
   /* If that does not win, use conditional jump and negate.  */
 
