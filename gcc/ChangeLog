@@ -16,6 +16,8 @@ Wed Dec 16 17:24:07 1998  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 Tue Dec 15 13:49:55 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* mn10200.md (addsi3 expander): Use "nonmemory_operand" for operand 2.
+
 	* mn10300.md (bset, bclr): Operand 0 is a read/write operand.
 
 	* mn10200.md (abssf2, negsf2): New expanders.
