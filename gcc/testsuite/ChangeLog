@@ -1,3 +1,7 @@
+2004-05-24  Janis Johnson  <janis187@us.ibm.com>
+
+	* gcc.dg/altivec-3.c: Move call to altivec_check.
+
 2004-05-23  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/15044
