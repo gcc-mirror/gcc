@@ -3745,12 +3745,14 @@ resolve_symbol (gfc_symbol * sym)
       return;
     }
 
-  if (sym->attr.flavor == FL_PARAMETER
-      && sym->as != NULL && sym->as->type != AS_EXPLICIT)
+  /* A parameter array's shape needs to be constant.  */
+
+  if (sym->attr.flavor == FL_PARAMETER && sym->as != NULL 
+      && !gfc_is_compile_time_shape (sym->as))
     {
-      gfc_error ("Parameter array '%s' at %L must have an explicit shape",
-		 sym->name, &sym->declared_at);
-      return;
+      gfc_error ("Parameter array '%s' at %L cannot be automatic "
+		 "or assumed shape", sym->name, &sym->declared_at);
+	  return;
     }
 
   /* Make sure that character string variables with assumed length are
