@@ -327,8 +327,9 @@ typedef size_t obj_addr_t;	/* Integer type big enough for object	*/
   {
     char result;
     __asm__ __volatile__("lock; cmpxchgl %2, %0; setz %1"
-	    	: "=m"(*(addr)), "=q"(result)
-		: "r" (new_val), "0"(*(addr)), "a"(old) : "memory");
+	    	: "+m"(*(addr)), "=q"(result)
+		: "r" (new_val), "a"(old)
+		: "memory");
     return (bool) result;
   }
 
