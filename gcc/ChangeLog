@@ -1,3 +1,8 @@
+2003-10-22  David Taylor <dtaylor@emc.com>
+
+	PR debug/12500
+	* dbxout.c (dbxout_typedefs): Use COMPLETE_OR_VOID_TYPE_P.
+
 2003-10-20  Zack Weinberg  <zack@codesourcery.com>
 
 	* fixinc/inclhack.def (hpux11_snprintf): New edit.
