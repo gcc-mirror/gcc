@@ -1,3 +1,10 @@
+2002-07-02  Phil Edwards  <pme@gcc.gnu.org>
+
+	* docs/html/configopts.html, docs/html/install.html:  Tweaks.
+	* include/ext/algorithm, include/ext/hash_map, include/ext/hash_set,
+	include/ext/iterator, include/ext/numeric, include/ext/rb_tree,
+	include/ext/slist, include/ext/stl_rope.h:  Add doxygen hooks.
+
 2002-07-01  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/backward/strstream: Remove namespace std. Transfer to...

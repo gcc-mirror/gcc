@@ -73,7 +73,7 @@
       with C++ exception handling related to this change in
       libstdc++-v3).  The version of these tools should be
       <code>2.10.90</code>, or later, and you can get snapshots (as
-      well as releases) of binutils 
+      well as releases) of binutils
       <a href="ftp://sources.redhat.com/pub/binutils">here</a>. The
       configure process will automatically detect and use these
       features if the underlying support is present.
@@ -87,7 +87,7 @@
       configure process will automatically detect and use these
       features if the underlying support is present.
    </p>
- 
+
     <p>Finally, a few system-specific requirements:
       <dl>
         <dt> linux
@@ -103,22 +103,22 @@
         named locale tests. If this isn't an issue, don't worry about
         it. If named locales are needed, the underlying locale
         information must be installed. Note that rebuilding libstdc++
-        after locales are installed is not necessary. 
-	
-	<p> To install
+        after locales are installed is not necessary.
+
+        <p> To install
         support for locales, do only one of the following: </p>
         <p>
- 	  <li> install all locales
-	  <p> <code> export LC_ALL=C </code> </p>
-	  <p> <code> rpm -e glibc-common --nodeps </code> </p>
-	  <p> <code> rpm -i --define "_install_langs all" 
-	  glibc-common-2.2.5-34.i386.rpm </code> </p>
-	  </li> 
-	  <li> install just the necessary locales
-	  <p> <code> localedef -i de_DE -f ISO-8859-1 de_DE </code> </p>
-	  </li> 
+          <li> install all locales
+          <p> <code> export LC_ALL=C </code> </p>
+          <p> <code> rpm -e glibc-common --nodeps </code> </p>
+          <p> <code> rpm -i --define "_install_langs all"
+          glibc-common-2.2.5-34.i386.rpm </code> </p>
+          </li>
+          <li> install just the necessary locales
+          <p> <code> localedef -i de_DE -f ISO-8859-1 de_DE </code> </p>
+          </li>
         </p>
-	</dd>
+        </dd>
       </dt>
     </dl>
    </p>
@@ -131,7 +131,7 @@
       <ul>
          <li><em>gccsrcdir</em>:  The directory holding the source of the
                  compiler.  It should have several subdirectories like
-                 <em>gccsrcdir</em>/libio and <em>gccsrcdir</em>/gcc.
+                 <em>gccsrcdir</em>/libiberty and <em>gccsrcdir</em>/gcc.
          <li><em>libsrcdir</em>:  The directory holding the source of the
                  C++ library.
          <li><em>gccbuilddir</em>:  The build directory for the compiler
@@ -216,7 +216,7 @@
    <h3>[re]building only libstdc++</h3>
    <p>To rebuild just libstdc++, use:
       <pre>
-   make all-target-<em>libstdc++-v3</em></pre>
+   make all-target-libstdc++-v3</pre>
       This will configure and build the C++ library in the
       <em>gccbuilddir/cpu-vendor-os/</em>libstdc++ directory.
    </p>
@@ -232,7 +232,7 @@
    <p>You're done.  Now install the rebuilt pieces with
       <pre>
    make install</pre>
-      or 
+      or
       <pre>
    make install-gcc
    make install-target-libstdc++-v3</pre>

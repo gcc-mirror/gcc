@@ -85,6 +85,11 @@ inline bool
 operator==(const hash_set<_Value,_HashFcn,_EqualKey,_Alloc>& __hs1,
            const hash_set<_Value,_HashFcn,_EqualKey,_Alloc>& __hs2);
 
+/**
+ *  This is an SGI extension.
+ *  @ingroup SGIextensions
+ *  @doctodo
+*/
 template <class _Value, class _HashFcn, class _EqualKey, class _Alloc>
 class hash_set
 {
@@ -236,6 +241,11 @@ operator==(const hash_multiset<_Val,_HashFcn,_EqualKey,_Alloc>& __hs1,
            const hash_multiset<_Val,_HashFcn,_EqualKey,_Alloc>& __hs2);
 
 
+/**
+ *  This is an SGI extension.
+ *  @ingroup SGIextensions
+ *  @doctodo
+*/
 template <class _Value, class _HashFcn, class _EqualKey, class _Alloc>
 class hash_multiset
 {

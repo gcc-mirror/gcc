@@ -105,11 +105,21 @@ namespace __gnu_cxx
   // Alias for the internal name __power.  Note that power is an extension,
   // not part of the C++ standard.
 
+  /**
+   *  This is an SGI extension.
+   *  @ingroup SGIextensions
+   *  @doctodo
+  */
   template<typename _Tp, typename _Integer, typename _MonoidOperation>
     inline _Tp
     power(_Tp __x, _Integer __n, _MonoidOperation __monoid_op)
     { return __power(__x, __n, __monoid_op); }
 
+  /**
+   *  This is an SGI extension.
+   *  @ingroup SGIextensions
+   *  @doctodo
+  */
   template<typename _Tp, typename _Integer>
     inline _Tp
     power(_Tp __x, _Integer __n)
@@ -117,6 +127,11 @@ namespace __gnu_cxx
 
   // iota is not part of the C++ standard.  It is an extension.
 
+  /**
+   *  This is an SGI extension.
+   *  @ingroup SGIextensions
+   *  @doctodo
+  */
   template<typename _ForwardIter, typename _Tp>
     void 
     iota(_ForwardIter __first, _ForwardIter __last, _Tp __value)

@@ -73,6 +73,11 @@ using std::allocator;
 // Class rb_tree is not part of the C++ standard.  It is provided for
 // compatibility with the HP STL.
 
+/**
+ *  This is an SGI extension.
+ *  @ingroup SGIextensions
+ *  @doctodo
+*/
 template <class _Key, class _Value, class _KeyOfValue, class _Compare,
           class _Alloc = allocator<_Value> >
 struct rb_tree : public _Rb_tree<_Key, _Value, _KeyOfValue, _Compare, _Alloc>
