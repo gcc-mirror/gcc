@@ -7109,11 +7109,13 @@ compare_from_rtx (op0, op1, code, unsignedp, mode, size, align)
      rtx size;
      int align;
 {
+  rtx tem;
+
   /* If one operand is constant, make it the second one.  */
 
   if (GET_CODE (op0) == CONST_INT || GET_CODE (op0) == CONST_DOUBLE)
     {
-      rtx tem = op0;
+      tem = op0;
       op0 = op1;
       op1 = tem;
       code = swap_condition (code);
@@ -7127,8 +7129,9 @@ compare_from_rtx (op0, op1, code, unsignedp, mode, size, align)
 
   do_pending_stack_adjust ();
 
-  if (GET_CODE (op0) == CONST_INT && GET_CODE (op1) == CONST_INT)
-    return simplify_relational_operation (code, mode, op0, op1);
+  if (GET_CODE (op0) == CONST_INT && GET_CODE (op1) == CONST_INT
+      && (tem = simplify_relational_operation (code, mode, op0, op1)) != 0)
+    return tem;
 
 #if 0
   /* There's no need to do this now that combine.c can eliminate lots of
