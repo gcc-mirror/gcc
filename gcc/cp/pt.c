@@ -89,6 +89,7 @@ static tree maybe_fold_nontype_arg PROTO((tree));
 static tree convert_nontype_argument PROTO((tree, tree));
 static tree get_bindings_overload PROTO((tree, tree, tree));
 static int for_each_template_parm PROTO((tree, tree_fn_t, void*));
+static tree build_template_parm_index PROTO((int, int, int, tree, tree));
 
 /* Do any processing required when DECL (a member template declaration
    using TEMPLATE_PARAMETERS as its innermost parameter list) is
