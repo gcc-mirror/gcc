@@ -432,10 +432,6 @@ int warn_float_equal = 0;
 
 int warn_multichar = 1;
 
-/* The variant of the C language being processed.  */
-
-c_language_kind c_language = clk_c;
-
 /* Nonzero means `$' can be in an identifier.  */
 
 #ifndef DOLLARS_IN_IDENTIFIERS
