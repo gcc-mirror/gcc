@@ -10,8 +10,8 @@ $ !
 $ echo = "write sys$output"
 $ !
 $ if f$search("config.h") .nes. "" then delete config.h.*
-$ copy [.config]xm-vax-vms.h []config.h
-$ echo "Linked `config.h' to `[.config]xm-vax-vms.h'.
+$ copy [.config.vax]xm-vms.h []config.h
+$ echo "Linked `config.h' to `[.config.vax]xm-vms.h'.
 $ !
 $ if f$search("tconfig.h") .nes. "" then delete tconfig.h.*
 $ create []tconfig.h
@@ -24,22 +24,22 @@ $ !
 $ if f$search("hconfig.h") .nes. "" then delete hconfig.h.*
 $ create []hconfig.h
 $DECK
-/* hconfig.h == config.h :: target and host configurations are the same */
+/* hconfig.h == config.h :: host and target configurations are the same */
 #include "config.h"
 $EOD
 $ echo "Created `hconfig.h'.
 $ !
 $ if f$search("tm.h") .nes. "" then delete tm.h.*
-$ copy [.config]vax-vms.h []tm.h
-$ echo "Linked `tm.h' to `[.config]vax-vms.h'.
+$ copy [.config.vax]vms.h []tm.h
+$ echo "Linked `tm.h' to `[.config.vax]vms.h'.
 $ !
 $ if f$search("md.") .nes. "" then delete md..*
-$ copy [.config]vax.md []md.
-$ echo "Linked `md' to `[.config]vax.md'.
+$ copy [.config.vax]vax.md []md.
+$ echo "Linked `md' to `[.config.vax]vax.md'.
 $ !
 $ if f$search("aux-output.c") .nes. "" then delete aux-output.c.*
-$ copy [.config]vax.c []aux-output.c
-$ echo "Linked `aux-output.c' to `[.config]vax.c'.
+$ copy [.config.vax]vax.c []aux-output.c
+$ echo "Linked `aux-output.c' to `[.config.vax]vax.c'.
 $ !
 $!
 $!
