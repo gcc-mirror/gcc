@@ -1,3 +1,7 @@
+2004-11-22  Bob Wilson  <bob.wilson@acm.org>
+
+	* gcc.dg/uninit-H.c: Define ASM for Xtensa targets.
+
 2004-11-22  Dale Johannesen  <dalej@apple.com>
 
 	* gcc.dg/20041111-1.c:  New.
