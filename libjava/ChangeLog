@@ -1,3 +1,14 @@
+2003-06-11  Andrew Haley  <aph@redhat.com>
+
+	* jni.cc (_Jv_JNI_check_types): New.
+	(_Jv_JNI_SetPrimgitiveArrayRegion): Check array type.
+	(_Jv_JNI_GetPrimitiveArrayRegion): Ditto.
+	(_Jv_JNI_GetPrimitiveArrayElements): Ditto.
+	(_Jv_JNI_ReleasePrimitiveArrayElements): Ditto.
+	
+	* java/lang/natVMSecurityManager.cc (getClassContext): Fix
+	infinite loop.
+
 2003-06-11  Tom Tromey  <tromey@redhat.com>
 
 	* java/lang/ClassLoader.java (loadClass): Not deprecated.

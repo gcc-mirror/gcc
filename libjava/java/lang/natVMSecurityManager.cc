@@ -28,9 +28,9 @@ java::lang::VMSecurityManager::getClassContext ()
       int maxlen = t->length();
 
       int len = 0;
-      while (len < maxlen)
+      for (int i=0; i<len; i++)
 	{
-	  jclass klass = t->classAt(len);
+	  jclass klass = t->classAt(i);
 	  if (klass != NULL && klass != &java::lang::VMSecurityManager::class$
 	      && klass != &java::lang::SecurityManager::class$)
 	    ++len;
@@ -41,9 +41,9 @@ java::lang::VMSecurityManager::getClassContext ()
 					       NULL);
 
       len = 0;
-      while (len < maxlen)
+      for (int i=0; i<len; i++)
 	{
-	  jclass klass = t->classAt(len);
+	  jclass klass = t->classAt(i);
 	  if (klass != NULL && klass != &java::lang::VMSecurityManager::class$
 	      && klass != &java::lang::SecurityManager::class$)
 	    elements(result)[len++] = klass;
