@@ -39,6 +39,9 @@ case "${target_cpu}" in
   i486 | i586 | i686 | i786)
     cpu_include_dir="config/cpu/i486"
     ;;
+  m68k | m680[246]0)
+    cpu_include_dir="config/cpu/m68k"
+    ;;
   powerpc | rs6000)
     cpu_include_dir="config/cpu/powerpc"
     ;;
