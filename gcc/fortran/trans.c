@@ -23,7 +23,7 @@ Boston, MA 02111-1307, USA.  */
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
-#include "tree-simple.h"
+#include "tree-gimple.h"
 #include <stdio.h>
 #include "ggc.h"
 #include "toplev.h"
@@ -443,7 +443,7 @@ gfc_trans_code (gfc_code * code)
 
   gfc_start_block (&block);
 
-  /* Translate statements one by one to SIMPLE trees until we reach
+  /* Translate statements one by one to GIMPLE trees until we reach
      the end of this gfc_code branch.  */
   for (; code; code = code->next)
     {

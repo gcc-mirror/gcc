@@ -30,7 +30,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "rtl.h"
 #include "errors.h"
 #include "varray.h"
-#include "tree-simple.h"
+#include "tree-gimple.h"
 #include "tree-inline.h"
 #include "diagnostic.h"
 #include "langhooks.h"
@@ -3029,7 +3029,7 @@ gimplify_to_stmt_list (tree *stmt_p)
 
     GIMPLE_TEST_F points to a function that takes a tree T and
 	returns nonzero if T is in the GIMPLE form requested by the
-	caller.  The GIMPLE predicates are in tree-simple.c.
+	caller.  The GIMPLE predicates are in tree-gimple.c.
 
 	This test is used twice.  Before gimplification, the test is
 	invoked to determine whether *EXPR_P is already gimple enough.  If

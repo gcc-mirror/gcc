@@ -26,7 +26,7 @@ Boston, MA 02111-1307, USA.  */
 #include "toplev.h"
 #include "tree.h"
 #include "tree-inline.h"
-#include "tree-simple.h"
+#include "tree-gimple.h"
 #include "rtl.h"
 #include "insn-config.h"
 #include "integrate.h"

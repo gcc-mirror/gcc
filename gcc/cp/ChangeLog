@@ -1,5 +1,10 @@
 2004-05-13  Diego Novillo  <dnovillo@redhat.com>
 
+	* cp-gimplify.c: Rename from cp-simplify.c.
+	* Make-lang.in, optimize.c: Update.
+
+2004-05-13  Diego Novillo  <dnovillo@redhat.com>
+
 	Merge from tree-ssa-20020619-branch.  See
 	ChangeLog.tree-ssa for details.
 

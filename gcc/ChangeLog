@@ -1,3 +1,17 @@
+2004-05-13  Diego Novillo  <dnovillo@redhat.com>
+
+	* tree-gimple.c: Rename from tree-simple.c.
+	* tree-gimple.h: Rename from tree-simple.h.
+	* c-gimplify.c: Rename from c-simplify.c
+	* Makefile.in, c-decl.c, gimple-low.c, gimplify.c,
+	langhooks.c, tree-alias-ander.c, tree-alias-common.c,
+	tree-complex.c, tree-dfa.c, tree-flow.h, tree-inline.c,
+	tree-into-ssa.c, tree-iterator.c, tree-mudflap.c,
+	tree-nested.c, tree-nomudflap.c, tree-outof-ssa.c, tree-sra.c,
+	tree-ssa-alias.c, tree-ssa-ccp.c, tree-ssa-copyrename.c,
+	tree-ssa-dce.c, tree-ssa-live.c, tree-ssa-pre.c, tree-ssa.c:
+	Update.
+
 2004-05-14  Ranjit Mathew  <rmathew@hotmail.com>
 
 	* doc/sourcebuild.texi: Mention libbanshee and libmudflap.

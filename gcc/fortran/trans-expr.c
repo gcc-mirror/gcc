@@ -31,7 +31,7 @@ Boston, MA 02111-1307, USA.  */
 #include "ggc.h"
 #include "toplev.h"
 #include "real.h"
-#include "tree-simple.h"
+#include "tree-gimple.h"
 #include "flags.h"
 #include <gmp.h>
 #include <assert.h>
@@ -374,7 +374,7 @@ gfc_conv_unary_op (enum tree_code code, gfc_se * se, gfc_expr * expr)
 
   /* TRUTH_NOT_EXPR is not a "true" unary operator in GCC.
      We must convert it to a compare to 0 (e.g. EQ_EXPR (op1, 0)).
-     All other unary operators have an equivalent SIMPLE unary operator  */
+     All other unary operators have an equivalent GIMPLE unary operator  */
   if (code == TRUTH_NOT_EXPR)
     se->expr = build (EQ_EXPR, type, operand.expr, integer_zero_node);
   else
@@ -796,7 +796,7 @@ gfc_conv_expr_op (gfc_se * se, gfc_expr * expr)
       break;
 
       /* EQV and NEQV only work on logicals, but since we represent them
-         as integers, we can use EQ_EXPR and NE_EXPR for them in SIMPLE.  */
+         as integers, we can use EQ_EXPR and NE_EXPR for them in GIMPLE.  */
     case INTRINSIC_EQ:
     case INTRINSIC_EQV:
       code = EQ_EXPR;

@@ -51,7 +51,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "c-pragma.h"
 #include "langhooks.h"
 #include "tree-mudflap.h"
-#include "tree-simple.h"
+#include "tree-gimple.h"
 #include "diagnostic.h"
 #include "tree-dump.h"
 #include "cgraph.h"

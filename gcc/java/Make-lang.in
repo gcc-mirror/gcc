@@ -334,7 +334,7 @@ java/xref.o: java/xref.c java/xref.h $(CONFIG_H) $(JAVA_TREE_H) toplev.h \
 java/zextract.o: java/zextract.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   java/zipfile.h
 java/java-gimplify.o: java/java-gimplify.c $(CONFIG_H) $(SYSTEM_H) \
-  coretypes.h $(TM_H) $(JAVA_TREE_H) tree-simple.h toplev.h
+  coretypes.h $(TM_H) $(JAVA_TREE_H) tree-gimple.h toplev.h
 
 java/parse-scan.o: java/parse-scan.c $(CONFIG_H) $(SYSTEM_H) \
   coretypes.h $(TM_H) toplev.h $(JAVA_LEX_C) java/parse.h java/lex.h input.h

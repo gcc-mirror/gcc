@@ -31,7 +31,7 @@ Boston, MA 02111-1307, USA.  */
 #include "ggc.h"
 #include "toplev.h"
 #include "real.h"
-#include "tree-simple.h"
+#include "tree-gimple.h"
 #include "flags.h"
 #include <gmp.h>
 #include <assert.h>

@@ -80,7 +80,7 @@ Boston, MA 02111-1307, USA.  */
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
-#include "tree-simple.h"
+#include "tree-gimple.h"
 #include <stdio.h>
 #include "ggc.h"
 #include "toplev.h"

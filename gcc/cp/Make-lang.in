@@ -74,7 +74,7 @@ g++-cross$(exeext): g++$(exeext)
 CXX_C_OBJS = attribs.o c-common.o c-format.o c-pragma.o c-semantics.o c-lex.o \
 	c-dump.o $(CXX_TARGET_OBJS) c-pretty-print.o c-opts.o c-pch.o \
 	c-incpath.o cppdefault.o c-ppoutput.o c-cppbuiltin.o prefix.o \
-	c-simplify.o tree-inline.o
+	c-gimplify.o tree-inline.o
 
 # Language-specific object files.
 CXX_OBJS = cp/call.o cp/decl.o cp/expr.o cp/pt.o cp/typeck2.o \
@@ -82,7 +82,7 @@ CXX_OBJS = cp/call.o cp/decl.o cp/expr.o cp/pt.o cp/typeck2.o \
  cp/typeck.o cp/cvt.o cp/except.o cp/friend.o cp/init.o cp/method.o \
  cp/search.o cp/semantics.o cp/tree.o cp/repo.o cp/dump.o cp/optimize.o \
  cp/mangle.o cp/cp-lang.o cp/name-lookup.o cp/cxx-pretty-print.o \
- cp/cp-simplify.o tree-mudflap.o cp/cp-mudflap.o
+ cp/cp-gimplify.o tree-mudflap.o cp/cp-mudflap.o
 
 # Use strict warnings for this front end.
 cp-warn = $(STRICT_WARN) $(WERROR)
@@ -259,13 +259,13 @@ cp/semantics.o: cp/semantics.c $(CXX_TREE_H) $(TM_H) cp/lex.h except.h toplev.h 
   tree-inline.h cgraph.h
 cp/dump.o: cp/dump.c $(CXX_TREE_H) $(TM_H) tree-dump.h
 cp/optimize.o: cp/optimize.c $(CXX_TREE_H) $(TM_H) rtl.h integrate.h insn-config.h \
-  input.h $(PARAMS_H) debug.h tree-inline.h tree-simple.h
+  input.h $(PARAMS_H) debug.h tree-inline.h tree-gimple.h
 cp/mangle.o: cp/mangle.c $(CXX_TREE_H) $(TM_H) toplev.h real.h gt-cp-mangle.h \
   $(TARGET_H) $(TM_P_H)
 
 cp/parser.o: cp/parser.c $(CXX_TREE_H) $(TM_H) diagnostic.h gt-cp-parser.h \
   output.h
-cp/cp-simplify.o: cp/cp-simplify.c $(CXX_TREE_H) toplev.h c-common.h \
+cp/cp-gimplify.o: cp/cp-gimplify.c $(CXX_TREE_H) toplev.h c-common.h \
 	$(TM_H) coretypes.h
 cp/cp-mudflap.o: cp/cp-mudflap.c $(CXX_TREE_H) toplev.h c-common.h \
 	$(TM_H) coretypes.h

@@ -1,4 +1,4 @@
-/* C++-specific tree lowering bits; see also c-simplify.c and tree-simple.c.
+/* C++-specific tree lowering bits; see also c-gimplify.c and tree-gimple.c.
 
    Copyright (C) 2002, 2003 Free Software Foundation, Inc.
    Contributed by Jason Merrill <jason@redhat.com>
@@ -28,7 +28,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "cp-tree.h"
 #include "c-common.h"
 #include "toplev.h"
-#include "tree-simple.h"
+#include "tree-gimple.h"
 
 static void genericize_try_block (tree *);
 static void genericize_catch_block (tree *);
