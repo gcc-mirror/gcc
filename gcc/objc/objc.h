@@ -19,10 +19,14 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  * 
-  $Header: /usr/user/dennis_glatting/ObjC/c-runtime/include/RCS/ObjC.h,v 0.4 1991/11/19 12:37:49 dennisg Exp dennisg $
+  $Header: /usr/user/dennis_glatting/ObjC/c-runtime/include/RCS/ObjC.h,v 0.5 1991/11/29 00:24:14 dennisg Exp dennisg $
   $Author: dennisg $
-  $Date: 1991/11/19 12:37:49 $
+  $Date: 1991/11/29 00:24:14 $
   $Log: ObjC.h,v $
+ * Revision 0.5  1991/11/29  00:24:14  dennisg
+ * many changes including posing, things to make the compiler
+ * happier, structure changes, and things to make it play better.
+ *
  * Revision 0.4  1991/11/19  12:37:49  dennisg
  * changed typedef and struct decls.
  * the run-time was changed and those decls changed too.
@@ -179,12 +183,12 @@ typedef struct objc_symtab {
  *  module structure of the executable. 
  */
 typedef struct objc_module {
-  u_long    version;                            /* Compiler revision. */
-  u_long    size;                               /* sizeof(Module). */
-  char*     name;                               /* Name of the file where the 
+  u_long    	version;                        	/* Compiler revision. */
+  u_long    	size;                            	/* sizeof(Module). */
+  const char*	name;                           	/* Name of the file where the 
                                                   module was generated.   The 
                                                   name includes the path. */
-  Symtab_t  symtab;                             /* Pointer to the Symtab of
+  Symtab_t  	symtab;                          	/* Pointer to the Symtab of
                                                   the module.  The Symtab
                                                   holds an array of pointers to 
                                                   the classes and categories 
@@ -205,13 +209,13 @@ typedef struct objc_ivar_list {
                                                   variable defined in the
                                                   class. */
   struct objc_ivar {
-    char* ivar_name;                            /* Name of the instance
+    const char* ivar_name;                     	/* Name of the instance
                                                   variable as entered in the
                                                   class definition. */
-    char* ivar_type;                            /* Description of the Ivar's
+    const char* ivar_type;                     	/* Description of the Ivar's
                                                   type.  Useful for 
                                                   debuggers. */
-    int   ivar_offset;                          /* Byte offset from the base 
+    int   			ivar_offset;                  	/* Byte offset from the base 
                                                   address of the instance 
                                                   structure to the variable. */
 
@@ -237,16 +241,16 @@ typedef struct objc_method_list {
   int             method_count;               /* Number of methods defined in 
                                                 this structure. */
   struct objc_method {
-    SEL   method_name;                        /* This variable is the method's 
+    SEL   			method_name;                	/* This variable is the method's 
                                                 name.  It is a char*. 
                                                   The unique integer passed to 
                                                 objc_msgSend() is a char* too.  
                                                 It is compared against 
                                                 method_name using strcmp(). */
-    char* method_types;                       /* Description of the method's
+    const char*	method_types;                 /* Description of the method's
                                                 parameter list.  Useful for
                                                 debuggers. */
-    IMP   method_imp;                         /* Address of the method in the 
+    IMP   			method_imp;                   /* Address of the method in the 
                                                 executable. */
   } method_list[1];                           /* Variable length 
                                                 structure. */
@@ -275,7 +279,7 @@ typedef struct objc_metaClass {
   struct objc_metaClass*	super_class;        /* Pointer to meta class's
 																								super class. NULL for 
 																								Object. */
-  char*         					name;               /* Name of the meta class. */
+  const char*         		name;               /* Name of the meta class. */
   long         					 	version;            /* Unknown. */
   long          					info;               /* Bit mask.  See class masks 
                                                 defined above. */
@@ -312,7 +316,7 @@ typedef struct objc_class {
   struct objc_class*	super_class;            /* Pointer to the super 
 																								class. NULL for class 
 																								Object. */
-  char*         			name;                   /* Name of the class. */
+  const char*         name;                   /* Name of the class. */
   long          			version;                /* Unknown. */
   long          			info;                   /* Bit mask.  See class masks 
                                                 defined above. */
@@ -345,10 +349,10 @@ typedef struct objc_class {
  *  factory methods.  
  */
 typedef struct objc_category {
-  char*         category_name;                /* Name of the category.  Name
+  const char*   category_name;                /* Name of the category.  Name
                                                 contained in the () of the
                                                 category definition. */
-  char*         class_name;                   /* Name of the class to which
+  const char*   class_name;                   /* Name of the class to which
                                                 the category belongs. */
   MethodList_t  instance_methods;             /* Linked list of instance
                                                 methods defined in the 
@@ -376,5 +380,6 @@ typedef struct objc_super {
 #ifdef __cplusplus
 }
 #endif
+
 
 #endif
