@@ -928,7 +928,7 @@ btoa (uint64_t n)
 void
 write_i (fnode * f, const char *p, int len)
 {
-  write_decimal (f, p, len, (void *) itoa);
+  write_decimal (f, p, len, (void *) gfc_itoa);
 }
 
 
@@ -1042,7 +1042,7 @@ write_integer (const char *source, int length)
   int digits;
   int width;
 
-  q = itoa (extract_int (source, length));
+  q = gfc_itoa (extract_int (source, length));
 
   switch (length)
     {
