@@ -3318,7 +3318,7 @@ is_public (expr, identifier)
 	{
 	  if (decl = is_ivar (TYPE_FIELDS (basetype), identifier))
 	    {
-	      /* important diffence between the Stepstone translator:
+	      /* important difference between the Stepstone translator:
 		 
 		 all instance variables should be public within the context
 		 of the implementation...
@@ -3961,7 +3961,7 @@ start_method_def (method)
 				   build1 (INDIRECT_REF, NULLT, _cmd_id)));
 #endif /* not OBJC_INT_SELECTORS */
 
-  /* generate argument delclarations if a keyword_decl */
+  /* generate argument declarations if a keyword_decl */
   if (METHOD_SEL_ARGS (method))
     {
       tree arglist = METHOD_SEL_ARGS (method);
@@ -4148,7 +4148,7 @@ really_start_method (method, parmlist)
 
   method_decl = build_nt (CALL_EXPR, method_id, parmlist, NULLT);
 
-  /* check the delclarator portion of the return type for the method */
+  /* check the declarator portion of the return type for the method */
   if (ret_decl = TREE_VALUE (TREE_TYPE (method)))
     {
       /*
@@ -4691,7 +4691,7 @@ gen_declaration (atype_or_adecl, buf)
       tree declspecs;		/* "identifier_node", "record_type" */
       tree declarator;		/* "array_ref", "indirect_ref", "call_expr"... */
 
-      /* we have a "raw", abstract delclarator (typename) */
+      /* we have a "raw", abstract declarator (typename) */
       declarator = TREE_VALUE (atype_or_adecl);
       declspecs  = TREE_PURPOSE (atype_or_adecl);
 
