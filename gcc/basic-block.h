@@ -23,7 +23,13 @@ Boston, MA 02111-1307, USA.  */
 #include "sbitmap.h"
 #include "varray.h"
 
-typedef bitmap regset;		/* Head of register set linked list.  */
+/* Head of register set linked list.  */
+typedef bitmap_head regset_head;
+/* A pointer to a regset_head.  */
+typedef bitmap regset;
+
+/* Initialize a new regset.  */
+#define INIT_REG_SET(HEAD) bitmap_initialize (HEAD)
 
 /* Clear a register set by freeing up the linked list.  */
 #define CLEAR_REG_SET(HEAD) bitmap_clear (HEAD)
