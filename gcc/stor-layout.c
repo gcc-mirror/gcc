@@ -1036,6 +1036,7 @@ place_field (rli, field)
 	      if (rli->remaining_in_alignment < bitsize)
 		{
 		  /* out of bits; bump up to next 'word'.  */
+		  rli->offset = DECL_FIELD_OFFSET (rli->prev_field);
 		  rli->bitpos = size_binop (PLUS_EXPR,
 				      type_size,
 				      DECL_FIELD_BIT_OFFSET(rli->prev_field));
