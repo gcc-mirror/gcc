@@ -79,7 +79,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
    below, which are guarded only by if statements with compile-time
    constant conditions, do not cause link errors.  */
 #define iconv_open(x, y) (errno = EINVAL, (iconv_t)-1)
-#define iconv(a,b,c,d,e) (errno = EINVAL, (iconv_t)-1)
+#define iconv(a,b,c,d,e) (errno = EINVAL, (size_t)-1)
 #define iconv_close(x)   0
 #endif
 
