@@ -27,6 +27,7 @@ tramp.S: $(srcdir)/config/rs6000/tramp.asm
 # Switch synonyms
 MULTILIB_MATCHES_FLOAT	= msoft-float=mcpu?401 \
 			  msoft-float=mcpu?403 \
+			  msoft-float=mcpu?405 \
 			  msoft-float=mcpu?ec603e \
 			  msoft-float=mcpu?801 \
 			  msoft-float=mcpu?821 \
