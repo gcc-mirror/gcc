@@ -106,6 +106,9 @@ do { \
       call_used_regs[MACH_REG] = 0;					\
       call_used_regs[MACL_REG] = 0;					\
     }									\
+  for (regno = FIRST_FP_REG + (TARGET_LITTLE_ENDIAN != 0);		\
+       regno <= LAST_FP_REG; regno += 2)				\
+    SET_HARD_REG_BIT (reg_class_contents[DF_HI_REGS], regno);		\
   if (TARGET_SHMEDIA)							\
     {									\
       for (regno = FIRST_TARGET_REG; regno <= LAST_TARGET_REG; regno ++)\
@@ -893,13 +896,16 @@ extern char sh_additional_register_names[ADDREGNAMES_SIZE] \
    would require a tertiary reload when reloading from / to memory,
    and a secondary reload to reload from / to general regs; that
    seems to be a loosing proposition.  */
+/* We want to allow TImode FP regs so that when V4SFmode is loaded as TImode,
+   it won't be ferried through GP registers first.  */
 #define HARD_REGNO_MODE_OK(REGNO, MODE)		\
   (SPECIAL_REGISTER_P (REGNO) ? (MODE) == SImode \
    : (REGNO) == FPUL_REG ? (MODE) == SImode || (MODE) == SFmode	\
    : FP_REGISTER_P (REGNO) && (MODE) == SFmode \
    ? 1 \
    : (MODE) == V2SFmode \
-   ? (FP_REGISTER_P (REGNO) && ((REGNO) - FIRST_FP_REG) % 2 == 0) \
+   ? ((FP_REGISTER_P (REGNO) && ((REGNO) - FIRST_FP_REG) % 2 == 0) \
+      || (TARGET_SHMEDIA && GENERAL_REGISTER_P (REGNO))) \
    : (MODE) == V4SFmode \
    ? (FP_REGISTER_P (REGNO) && ((REGNO) - FIRST_FP_REG) % 4 == 0) \
    : (MODE) == V16SFmode \
@@ -912,7 +918,7 @@ extern char sh_additional_register_names[ADDREGNAMES_SIZE] \
       || ((TARGET_SH3E || TARGET_SHMEDIA) && (MODE) == SCmode) \
       || (((TARGET_SH4 && (MODE) == DFmode) || (MODE) == DCmode \
 	   || (TARGET_SHMEDIA && ((MODE) == DFmode || (MODE) == DImode \
-				  || (MODE) == V2SFmode))) \
+				  || (MODE) == V2SFmode || (MODE) == TImode))) \
 	  && (((REGNO) - FIRST_FP_REG) & 1) == 0)) \
    : XD_REGISTER_P (REGNO) \
    ? (MODE) == DFmode \
@@ -1106,6 +1112,7 @@ enum reg_class
   GENERAL_REGS,
   FP0_REGS,
   FP_REGS,
+  DF_HI_REGS,
   DF_REGS,
   FPSCR_REGS,
   GENERAL_FP_REGS,
@@ -1129,6 +1136,7 @@ enum reg_class
   "GENERAL_REGS",	\
   "FP0_REGS",		\
   "FP_REGS",		\
+  "DF_HI_REGS",		\
   "DF_REGS",		\
   "FPSCR_REGS",		\
   "GENERAL_FP_REGS",	\
@@ -1162,6 +1170,8 @@ enum reg_class
   { 0x00000000, 0x00000000, 0x00000001, 0x00000000, 0x00000000 },	\
 /* FP_REGS:  */								\
   { 0x00000000, 0x00000000, 0xffffffff, 0xffffffff, 0x00000000 },	\
+/* DF_HI_REGS:  Initialized in CONDITIONAL_REGISTER_USAGE.  */		\
+  { 0x00000000, 0x00000000, 0xffffffff, 0xffffffff, 0x0000ff00 },	\
 /* DF_REGS:  */								\
   { 0x00000000, 0x00000000, 0xffffffff, 0xffffffff, 0x0000ff00 },	\
 /* FPSCR_REGS:  */							\
@@ -1286,7 +1296,7 @@ extern const enum reg_class reg_class_from_letter[];
 
 #define SECONDARY_OUTPUT_RELOAD_CLASS(CLASS,MODE,X) \
   ((((((CLASS) == FP_REGS || (CLASS) == FP0_REGS			\
-	|| (CLASS) == DF_REGS)						\
+	|| (CLASS) == DF_REGS || (CLASS) == DF_HI_REGS)			\
       && (GET_CODE (X) == REG && GENERAL_OR_AP_REGISTER_P (REGNO (X))))	\
      || (((CLASS) == GENERAL_REGS || (CLASS) == R0_REGS)		\
 	 && GET_CODE (X) == REG						\
@@ -1301,9 +1311,6 @@ extern const enum reg_class reg_class_from_letter[];
 		  || REGNO (X) == T_REG					\
 		  || system_reg_operand (X, VOIDmode)))))		\
    ? GENERAL_REGS							\
-   : (((CLASS) == FP_REGS || (CLASS) == DF_REGS) && TARGET_SHMEDIA	\
-      && immediate_operand ((X), (MODE)))				\
-   ? GENERAL_REGS							\
    : ((CLASS) == TARGET_REGS						\
       || (TARGET_SHMEDIA && (CLASS) == SIBCALL_REGS))			\
    ? ((target_operand ((X), (MODE))					\
@@ -1312,10 +1319,14 @@ extern const enum reg_class reg_class_from_letter[];
    : (((CLASS) == MAC_REGS || (CLASS) == PR_REGS)			\
       && GET_CODE (X) == REG && ! GENERAL_REGISTER_P (REGNO (X))	\
       && (CLASS) != REGNO_REG_CLASS (REGNO (X)))			\
+   ? GENERAL_REGS							\
+   : ((CLASS) != GENERAL_REGS && GET_CODE (X) == REG			\
+      && TARGET_REGISTER_P (REGNO (X)))					\
    ? GENERAL_REGS : NO_REGS)
 
 #define SECONDARY_INPUT_RELOAD_CLASS(CLASS,MODE,X)  \
-  ((((CLASS) == FP_REGS || (CLASS) == FP0_REGS || (CLASS) == DF_REGS)	\
+  ((((CLASS) == FP_REGS || (CLASS) == FP0_REGS || (CLASS) == DF_REGS	\
+     || (CLASS) == DF_HI_REGS)						\
     && ! TARGET_SHMEDIA							\
     && immediate_operand ((X), (MODE))					\
     && ! ((fp_zero_operand (X) || fp_one_operand (X))			\
@@ -1334,6 +1345,12 @@ extern const enum reg_class reg_class_from_letter[];
       && ((GET_CODE (X) == REG && REGNO (X) >= FIRST_PSEUDO_REGISTER)	\
 	  || (GET_CODE (X) == MEM && GET_CODE (XEXP ((X), 0)) == PLUS)))\
    ? GENERAL_REGS							\
+   : (((CLASS) == FP_REGS || (CLASS) == DF_REGS || (CLASS) == DF_HI_REGS)\
+      && TARGET_SHMEDIA							\
+      && immediate_operand ((X), (MODE))				\
+      && (X) != CONST0_RTX (GET_MODE (X))				\
+      && GET_MODE (X) != V4SFmode)					\
+   ? GENERAL_REGS							\
    : SECONDARY_OUTPUT_RELOAD_CLASS((CLASS),(MODE),(X)))
 
 /* Return the maximum number of consecutive registers
@@ -1345,13 +1362,17 @@ extern const enum reg_class reg_class_from_letter[];
 
 /* If defined, gives a class of registers that cannot be used as the
    operand of a SUBREG that changes the mode of the object illegally.  */
+/* ??? We need to renumber the internal numbers for the frnn registers
+   when in little endian in order to allow mode size changes.  */
 
-#define CLASS_CANNOT_CHANGE_MODE        DF_REGS
+#define CLASS_CANNOT_CHANGE_MODE (TARGET_LITTLE_ENDIAN ? DF_REGS : DF_HI_REGS)
 
 /* Defines illegal mode changes for CLASS_CANNOT_CHANGE_MODE.  */
 
 #define CLASS_CANNOT_CHANGE_MODE_P(FROM,TO) \
-  (GET_MODE_SIZE (FROM) != GET_MODE_SIZE (TO))
+  (GET_MODE_SIZE (FROM) != GET_MODE_SIZE (TO) \
+   && ((TARGET_LITTLE_ENDIAN  && GET_MODE_SIZE (TO) < 8) \
+       || GET_MODE_SIZE (FROM) < 8))
 
 /* Stack layout; function entry, exit and calling.  */
 
@@ -2192,7 +2213,8 @@ while (0)
 
 #define LEGITIMATE_CONSTANT_P(X) \
   (TARGET_SHMEDIA							\
-   ? (GET_MODE (X) != DFmode						\
+   ? ((GET_MODE (X) != DFmode						\
+       && GET_MODE_CLASS (GET_MODE (X)) != MODE_VECTOR_FLOAT)		\
       || (X) == CONST0_RTX (GET_MODE (X))				\
       || ! TARGET_SHMEDIA_FPU						\
       || TARGET_SHMEDIA64)						\
@@ -2316,10 +2338,7 @@ while (0)
 
 /* A zero in any shape or form.  */
 #define EXTRA_CONSTRAINT_U(OP) \
-  ((OP) == const0_rtx \
-   || (GET_CODE (OP) == SUBREG && VECTOR_MODE_SUPPORTED_P(GET_MODE (OP)) \
-       && SUBREG_REG (OP) == const0_rtx && SUBREG_BYTE (OP) == 0) \
-   || GET_CODE (OP) == CONST_VECTOR && zero_vec_operand ((OP), VOIDmode))
+  ((OP) == CONST0_RTX (GET_MODE (OP)))
 
 /* Any vector constant we can handle.  */
 #define EXTRA_CONSTRAINT_W(OP) \
@@ -2642,7 +2661,9 @@ while (0)
    will either zero-extend or sign-extend.  The value of this macro should
    be the code that says which one of the two operations is implicitly
    done, NIL if none.  */
-#define LOAD_EXTEND_OP(MODE) SIGN_EXTEND
+/* FP registers can load SImode values, but don't implicitly sign-extend
+   them to DImode.  */
+#define LOAD_EXTEND_OP(MODE) ((MODE) != SImode ? SIGN_EXTEND : NIL)
 
 /* Define if loading short immediate values into registers sign extends.  */
 #define SHORT_IMMEDIATES_SIGN_EXTEND
@@ -2821,12 +2842,13 @@ while (0)
    register information here is not used for SFmode.  */
 #define REGISTER_MOVE_COST(MODE, SRCCLASS, DSTCLASS) \
  (((((DSTCLASS) == T_REGS) || ((DSTCLASS) == PR_REGS)) ? 10		\
-   : ((((DSTCLASS) == FP0_REGS || (DSTCLASS) == FP_REGS || (DSTCLASS) == DF_REGS) \
+   : ((((DSTCLASS) == FP0_REGS || (DSTCLASS) == FP_REGS			\
+	|| (DSTCLASS) == DF_REGS || (DSTCLASS) == DF_HI_REGS)		\
        && ((SRCCLASS) == GENERAL_REGS || (SRCCLASS) == R0_REGS))	\
       || (((DSTCLASS) == GENERAL_REGS || (DSTCLASS) == R0_REGS)		\
 	  && ((SRCCLASS) == FP0_REGS || (SRCCLASS) == FP_REGS		\
-	      || (SRCCLASS) == DF_REGS)))				\
-   ? (TARGET_SHMEDIA ? 2						\
+	      || (SRCCLASS) == DF_REGS || (SRCCLASS) == DF_HI_REGS)))	\
+   ? (TARGET_SHMEDIA ? 4						\
       : TARGET_FMOVD ? 8 : 12)						\
    : (((DSTCLASS) == FPUL_REGS						\
        && ((SRCCLASS) == GENERAL_REGS || (SRCCLASS) == R0_REGS))	\
@@ -3231,7 +3253,7 @@ extern int rtx_equal_function_value_matters;
   {"arith_reg_dest", {SUBREG, REG}},					\
   {"arith_reg_operand", {SUBREG, REG}},					\
   {"arith_reg_or_0_operand", {SUBREG, REG, CONST_INT, CONST_VECTOR}},	\
-  {"binary_float_operator", {PLUS, MULT}},				\
+  {"binary_float_operator", {PLUS, MINUS, MULT, DIV}},			\
   {"commutative_float_operator", {PLUS, MULT}},				\
   {"equality_comparison_operator", {EQ,NE}},				\
   {"extend_reg_operand", {SUBREG, REG, TRUNCATE}},			\
@@ -3256,7 +3278,7 @@ extern int rtx_equal_function_value_matters;
   {"sh_1el_vec", {CONST_VECTOR, PARALLEL}},				\
   {"sh_rep_vec", {CONST_VECTOR, PARALLEL}},				\
   {"symbol_ref_operand", {SYMBOL_REF}},					\
-  {"zero_vec_operand", {CONST_VECTOR}},
+  {"unary_float_operator", {ABS, NEG, SQRT}},				\
 
 /* Define this macro if it is advisable to hold scalars in registers
    in a wider mode than that declared by the program.  In such cases, 
