@@ -32,6 +32,7 @@ Boston, MA 02111-1307, USA.  */
 #include "flags.h"
 #include "output.h"
 #include "toplev.h"
+#include "cselib.h"
 #include "splay-tree.h"
 #include "ggc.h"
 
@@ -81,6 +82,7 @@ typedef struct alias_set_entry
 static rtx canon_rtx			PARAMS ((rtx));
 static int rtx_equal_for_memref_p	PARAMS ((rtx, rtx));
 static rtx find_symbolic_term		PARAMS ((rtx));
+static rtx get_addr			PARAMS ((rtx));
 static int memrefs_conflict_p		PARAMS ((int, rtx, int, rtx,
 						 HOST_WIDE_INT));
 static void record_set			PARAMS ((rtx, rtx, void *));
@@ -91,7 +93,8 @@ static rtx find_base_value		PARAMS ((rtx));
 static int mems_in_disjoint_alias_sets_p PARAMS ((rtx, rtx));
 static int insert_subset_children       PARAMS ((splay_tree_node, void*));
 static alias_set_entry get_alias_set_entry PARAMS ((int));
-static rtx fixed_scalar_and_varying_struct_p PARAMS ((rtx, rtx, int (*)(rtx)));
+static rtx fixed_scalar_and_varying_struct_p PARAMS ((rtx, rtx, rtx, rtx,
+						      int (*)(rtx)));
 static int aliases_everything_p         PARAMS ((rtx));
 static int write_dependence_p           PARAMS ((rtx, rtx, int));
 static int nonlocal_reference_p         PARAMS ((rtx));
@@ -737,6 +740,9 @@ static rtx
 find_base_term (x)
      register rtx x;
 {
+  cselib_val *val;
+  struct elt_loc_list *l;
+
   switch (GET_CODE (x))
     {
     case REG:
@@ -750,6 +756,13 @@ find_base_term (x)
     case POST_INC:
     case POST_DEC:
       return find_base_term (XEXP (x, 0));
+
+    case VALUE:
+      val = CSELIB_VAL_PTR (x);
+      for (l = val->locs; l; l = l->next)
+	if ((x = find_base_term (l->loc)) != 0)
+	  return x;
+      return 0;
 
     case CONST:
       x = XEXP (x, 0);
@@ -905,6 +918,30 @@ base_alias_check (x, y, x_mode, y_mode)
   return ! (GET_MODE (x_base) == VOIDmode && GET_MODE (y_base) == VOIDmode);
 }
 
+/* Convert the address X into something we can use.  This is done by returning
+   it unchanged unless it is a value; in the latter case we call cselib to get
+   a more useful rtx.  */
+static rtx
+get_addr (x)
+     rtx x;
+{
+  cselib_val *v;
+  struct elt_loc_list *l;
+
+  if (GET_CODE (x) != VALUE)
+    return x;
+  v = CSELIB_VAL_PTR (x);
+  for (l = v->locs; l; l = l->next)
+    if (CONSTANT_P (l->loc))
+      return l->loc;
+  for (l = v->locs; l; l = l->next)
+    if (GET_CODE (l->loc) != REG && GET_CODE (l->loc) != MEM)
+      return l->loc;
+  if (v->locs)
+    return v->locs->loc;
+  return x;
+}
+
 /*  Return the address of the (N_REFS + 1)th memory reference to ADDR
     where SIZE is the size in bytes of the memory reference.  If ADDR
     is not modified by the memory reference then ADDR is returned.  */
@@ -961,13 +998,16 @@ addr_side_effect_eval (addr, size, n_refs)
    Nice to notice that varying addresses cannot conflict with fp if no
    local variables had their addresses taken, but that's too hard now.  */
 
-
 static int
 memrefs_conflict_p (xsize, x, ysize, y, c)
      register rtx x, y;
      int xsize, ysize;
      HOST_WIDE_INT c;
 {
+  if (GET_CODE (x) == VALUE)
+    x = get_addr (x);
+  if (GET_CODE (y) == VALUE)
+    y = get_addr (y);
   if (GET_CODE (x) == HIGH)
     x = XEXP (x, 0);
   else if (GET_CODE (x) == LO_SUM)
@@ -1185,17 +1225,15 @@ read_dependence (mem, x)
    MEM2 if vice versa.  Otherwise, returns NULL_RTX.  If a non-NULL
    value is returned MEM1 and MEM2 can never alias.  VARIES_P is used
    to decide whether or not an address may vary; it should return
-   nonzero whenever variation is possible.  */
-
-static rtx
-fixed_scalar_and_varying_struct_p (mem1, mem2, varies_p)
-     rtx mem1;
-     rtx mem2;
-     int (*varies_p) PARAMS ((rtx));
-{
-  rtx mem1_addr = XEXP (mem1, 0);
-  rtx mem2_addr = XEXP (mem2, 0);
+   nonzero whenever variation is possible.
+   MEM1_ADDR and MEM2_ADDR are the addresses of MEM1 and MEM2.  */
   
+static rtx
+fixed_scalar_and_varying_struct_p (mem1, mem2, mem1_addr, mem2_addr, varies_p)
+     rtx mem1, mem2;
+     rtx mem1_addr, mem2_addr;
+     int (*varies_p) PARAMS ((rtx));
+{  
   if (MEM_SCALAR_P (mem1) && MEM_IN_STRUCT_P (mem2) 
       && !varies_p (mem1_addr) && varies_p (mem2_addr))
     /* MEM1 is a scalar at a fixed address; MEM2 is a struct at a
@@ -1260,11 +1298,14 @@ true_dependence (mem, mem_mode, x, varies)
   if (mem_mode == VOIDmode)
     mem_mode = GET_MODE (mem);
 
-  if (! base_alias_check (XEXP (x, 0), XEXP (mem, 0), GET_MODE (x), mem_mode))
+  x_addr = get_addr (XEXP (x, 0));
+  mem_addr = get_addr (XEXP (mem, 0));
+
+  if (! base_alias_check (x_addr, mem_addr, GET_MODE (x), mem_mode))
     return 0;
 
-  x_addr = canon_rtx (XEXP (x, 0));
-  mem_addr = canon_rtx (XEXP (mem, 0));
+  x_addr = canon_rtx (x_addr);
+  mem_addr = canon_rtx (mem_addr);
 
   if (! memrefs_conflict_p (GET_MODE_SIZE (mem_mode), mem_addr,
 			    SIZE_FOR_MODE (x), x_addr, 0))
@@ -1283,7 +1324,8 @@ true_dependence (mem, mem_mode, x, varies)
   if (mem_mode == BLKmode || GET_MODE (x) == BLKmode)
     return 1;
 
-  return !fixed_scalar_and_varying_struct_p (mem, x, varies);
+  return ! fixed_scalar_and_varying_struct_p (mem, x, mem_addr, x_addr,
+					      varies);
 }
 
 /* Returns non-zero if a write to X might alias a previous read from
@@ -1301,32 +1343,33 @@ write_dependence_p (mem, x, writep)
   if (MEM_VOLATILE_P (x) && MEM_VOLATILE_P (mem))
     return 1;
 
+  if (DIFFERENT_ALIAS_SETS_P (x, mem))
+    return 0;
+
   /* If MEM is an unchanging read, then it can't possibly conflict with
      the store to X, because there is at most one store to MEM, and it must
      have occurred somewhere before MEM.  */
   if (!writep && RTX_UNCHANGING_P (mem))
     return 0;
 
-  if (! base_alias_check (XEXP (x, 0), XEXP (mem, 0), GET_MODE (x),
+  x_addr = get_addr (XEXP (x, 0));
+  mem_addr = get_addr (XEXP (mem, 0));
+
+  if (! base_alias_check (x_addr, mem_addr, GET_MODE (x),
 			  GET_MODE (mem)))
     return 0;
 
-  x = canon_rtx (x);
-  mem = canon_rtx (mem);
-
-  if (DIFFERENT_ALIAS_SETS_P (x, mem))
-    return 0;
-
-  x_addr = XEXP (x, 0);
-  mem_addr = XEXP (mem, 0);
+  x_addr = canon_rtx (x_addr);
+  mem_addr = canon_rtx (mem_addr);
 
   if (!memrefs_conflict_p (SIZE_FOR_MODE (mem), mem_addr,
 			   SIZE_FOR_MODE (x), x_addr, 0))
     return 0;
 
   fixed_scalar 
-    = fixed_scalar_and_varying_struct_p (mem, x, rtx_addr_varies_p);
-  
+    = fixed_scalar_and_varying_struct_p (mem, x, mem_addr, x_addr,
+					 rtx_addr_varies_p);
+
   return (!(fixed_scalar == mem && !aliases_everything_p (x))
 	  && !(fixed_scalar == x && !aliases_everything_p (mem)));
 }

@@ -51,6 +51,7 @@ Boston, MA 02111-1307, USA.  */
 #include "flags.h"
 #include "real.h"
 #include "loop.h"
+#include "cselib.h"
 #include "except.h"
 #include "toplev.h"
 
@@ -9773,6 +9774,19 @@ load_mems (loop)
   if (loop_mems_idx == 0)
     return;
 
+  /* Find start of the extended basic block that enters the loop.  */
+  for (p = loop->start;
+       PREV_INSN (p) && GET_CODE (p) != CODE_LABEL;
+       p = PREV_INSN (p))
+    ;
+
+  cselib_init ();
+
+  /* Build table of mems that get set to constant values before the
+     loop.  */
+  for (; p != loop->start; p = NEXT_INSN (p))
+    cselib_process_insn (p);
+
   /* Check to see if it's possible that some instructions in the
      loop are never executed.  */
   for (p = next_insn_in_loop (loop, loop->scan_start); 
@@ -9924,13 +9938,49 @@ load_mems (loop)
 	loop_mems[i].optimize = 0;
       else
 	{
-	  int j;
-	  rtx set;
-
 	  /* Load the memory immediately before LOOP->START, which is
 	     the NOTE_LOOP_BEG.  */
-	  set = gen_move_insn (reg, mem);
-	  emit_insn_before (set, loop->start);
+	  cselib_val *e = cselib_lookup (mem, VOIDmode, 0);
+	  rtx set;
+	  rtx best = mem;
+	  int j;
+	  struct elt_loc_list *const_equiv = 0;
+
+	  if (e)
+	    {
+	      struct elt_loc_list *equiv;
+	      struct elt_loc_list *best_equiv = 0;
+	      for (equiv = e->locs; equiv; equiv = equiv->next)
+		{
+		  if (CONSTANT_P (equiv->loc))
+		    const_equiv = equiv;
+		  else if (GET_CODE (equiv->loc) == REG)
+		    best_equiv = equiv;
+		}
+	      /* Use the constant equivalence if that is cheap enough.  */
+	      if (! best_equiv)
+		best_equiv = const_equiv;
+	      else if (const_equiv
+		       && (rtx_cost (const_equiv->loc, SET)
+			   <= rtx_cost (best_equiv->loc, SET)))
+		{
+		  best_equiv = const_equiv;
+		  const_equiv = 0;
+		}
+
+	      /* If best_equiv is nonzero, we know that MEM is set to a
+		 constant or register before the loop.  We will use this
+		 knowledge to initialize the shadow register with that
+		 constant or reg rather than by loading from MEM.  */
+	      if (best_equiv)
+		best = copy_rtx (best_equiv->loc);
+	    }
+	  set = gen_move_insn (reg, best);
+	  set = emit_insn_before (set, loop->start);
+	  if (const_equiv)
+	    REG_NOTES (set) = gen_rtx_EXPR_LIST (REG_EQUAL,
+						 copy_rtx (const_equiv->loc),
+						 REG_NOTES (set));
 
 	  if (written)
 	    {
@@ -9992,6 +10042,8 @@ load_mems (loop)
 	    JUMP_LABEL (p) = label;
 	}
     }
+
+  cselib_finish ();
 }
 
 /* For communication between note_reg_stored and its caller.  */

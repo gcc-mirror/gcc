@@ -1,3 +1,67 @@
+2000-03-14  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* cselib.h: New file.
+	* alias.c: Include "cselib.h".
+	(fixed_scalar_and_varying_struct_p): Accept the addresses of the
+	MEMs as two new arguments.
+	(get_addr): New static function.
+	(find_base_term): Handle VALUEs.
+	(memrefs_conflict_p): Likewise.
+	(true_dependence): Call get_addr on the addresses.
+	Call fixed_scalar_and_varying_struct_p with addresses that have been
+	passed through get_addr and canon_rtx.
+	(write_dependence_p): Move DIFFERENT_ALIAS_SETS_P test for consistency
+	with true_dependence.
+	Call get_addr on the addresses; don't call canon_rtx on the MEMs.
+	* loop.c: Include "cselib.h".
+	(load_mems): Process extended basic block that enters the loop with
+	cselib.  Use that information to change initialization of the shadow
+	register so that a constant equivalence is seen by later passes.
+	* reload1.c: Include "cselib.h".
+	(reload_cse_invalidate_regno): Delete function.
+	(reload_cse_mem_conflict_p): Likewise.
+	(reload_cse_invalidate_mem): Likewise.
+	(reload_cse_invalidate_rtx): Likewise.
+	(reload_cse_regno_equal_p): Likewise.
+	(reload_cse_check_clobber): Likewise.
+	(reload_cse_record_set): Likewise.
+	(reg_values): Delete static variable.
+	(invalidate_regno_rtx): Likewise.
+	(reload_cse_delete_noop_set): New static function.
+	(reload_cse_simplify): New static function, broken out of
+	reload_cse_regs_1.
+	(reload_cse_noop_set_p): Delete unused argument INSN.
+	Just call rtx_equal_for_cselib_p on set source and destination.
+	(reload_cse_regs_1): Break out some code into reload_cse_simplify and
+	reload_cse_delete_noop_set.  Delete code to keep track of values; use
+	cselib functions instead.  Delete code to push/pop obstacks.
+	(reload_cse_simplify_set): Use cselib to find equivalent values.
+	Delete code to push/pop obstacks.
+	(reload_cse_simplify_operands): Likewise.
+	* rtl.def (VALUE): New rtx code.
+	* rtl.h (union rtunion_def): New elt rt_cselib.
+	(X0CSELIB, CSELIB_VAL_PTR): New macros.
+	* simplify_rtx.c: Include "ggc.h", "obstack.h", "cselib.h".
+	(new_elt_list, new_elt_loc_list, unchain_one_value, clear_table,
+	unchain_one_elt_list, unchain_one_elt_loc_list, check_useless_values,
+	discard_useless_locs, discard_useless_values, entry_and_rtx_equal_p,
+	hash_rtx, new_cselib_val, add_mem_for_addr, get_value_hash,
+	cselib_lookup_mem, cselib_subst_to_values, cselib_invalidate_regno,
+	cselib_mem_conflict_p, cselib_invalidate_mem, cselib_invalidate_rtx,
+	cselib_record_set, cselib_record_sets): New static functions.
+	(cselib_lookup, cselib_update_varray_sizes, cselib_init,
+	cselib_finish, cselib_process_insn, rtx_equal_for_cselib_p,
+	references_value_p): New functions.
+	(MAX_USELESS_VALUES, REG_VALUES): New macros.
+	(table, cselib_current_insn, next_unknown_value, cselib_nregs,
+	n_useless_values, reg_values, callmem, cselib_obstack,
+	cselib_startobj, empty_vals, empty_elt_lists, empty_elt_loc_lists):
+	New static variables.
+	* varray.h (union varray_data_tag): New elt te.
+	(VARRAY_ELT_LIST_INIT, VARRAY_ELT_LIST): New macros.
+	* Makefile.in (reload1.o, loop.o, simplify-rtx.o, alias.o): Update
+	dependencies.
+
 2000-03-14  Nick Clifton  <nickc@cygnus.com>
 
 	* gcc.c (do_spec_1): Catch the case where %* is used in a
