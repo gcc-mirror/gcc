@@ -385,8 +385,8 @@ static struct undobuf undobuf;
 
 static int n_occurrences;
 
-static void init_reg_last_arrays	PROTO(());
-static void setup_incoming_promotions   PROTO(());
+static void init_reg_last_arrays	PROTO((void));
+static void setup_incoming_promotions   PROTO((void));
 static void set_nonzero_bits_and_sign_copies  PROTO((rtx, rtx));
 static int can_combine_p	PROTO((rtx, rtx, rtx, rtx, rtx *, rtx *));
 static int combinable_i3pat	PROTO((rtx, rtx *, rtx, rtx, int, rtx *));
