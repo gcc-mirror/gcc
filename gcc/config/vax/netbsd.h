@@ -40,5 +40,9 @@ Boston, MA 02111-1307, USA.  */
 #define PTRDIFF_TYPE "int"
 
 /* Until they use ELF or something that handles dwarf2 unwinds
-   and initialization stuff better.  */
+   and initialization stuff better.  Use sjlj exceptions.  */
 #undef DWARF2_UNWIND_INFO
+
+/* We use gas, not the UNIX assembler.  */
+#undef TARGET_DEFAULT
+#define TARGET_DEFAULT 0

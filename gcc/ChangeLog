@@ -1,3 +1,8 @@
+2002-06-21  Matt Thomas  <matt@3am-software.com>
+
+	* config/vax/netbsd.h: Adjust a comment.
+	(TARGET_DEFAULT): Redefine as 0.
+
 2002-06-21  Richard Henderson  <rth@redhat.com>
 
 	* bb-reorder.c (make_reorder_chain_1): Search harder for the
