@@ -814,7 +814,7 @@ namespace std
       streamsize __w = __io.width();
       if (__w > static_cast<streamsize>(__len))
 	{
-	  __pad(__io, __fill, __ws2, __ws, __w, __len);
+	  __pad(__io, __fill, __ws2, __ws, __w, __len, true);
 	  __len = static_cast<int>(__w);
 	  // Switch strings.
 	  __ws = __ws2;
@@ -1913,11 +1913,15 @@ namespace std
   // Assumes 
   // __newlen > __oldlen
   // __news is allocated for __newlen size
-  // Used by both num_put and ostream inserters.
+  // Used by both num_put and ostream inserters: if __num,
+  // internal-adjusted objects are padded according to the rules below
+  // concerning 0[xX] and +-, otherwise, exactly as right-adjusted
+  // ones are.
   template<typename _CharT, typename _Traits>
     void
     __pad(ios_base& __io, _CharT __fill, _CharT* __news, const _CharT* __olds,
-	  const streamsize __newlen, const streamsize __oldlen)
+	  const streamsize __newlen, const streamsize __oldlen, 
+	  const bool __num)
     {
       typedef _CharT	char_type;
       typedef _Traits	traits_type;
@@ -1940,7 +1944,7 @@ namespace std
 	  __beglen = __oldlen;
 	  __end = __pads;
 	}
-      else if (__adjust == ios_base::internal)
+      else if (__adjust == ios_base::internal && __num)
 	{
 	  // Pad after the sign, if there is one.
 	  // Pad after 0[xX], if there is one.
@@ -1997,10 +2001,11 @@ namespace std
   template<typename _CharT>
     void
     __pad(ios_base& __io, _CharT __fill, _CharT* __news, const _CharT* __olds,
-	  const streamsize __newlen, const streamsize __oldlen)
+	  const streamsize __newlen, const streamsize __oldlen, 
+	  const bool __num)
     { 
-      return __pad<_CharT, char_traits<_CharT> >(__io, __fill, __news, 
-						 __olds, __newlen, __oldlen); 
+      return __pad<_CharT, char_traits<_CharT> >(__io, __fill, __news, __olds,
+						 __newlen, __oldlen, __num); 
     }
 
   // Used by both numeric and monetary facets.

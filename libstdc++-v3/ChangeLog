@@ -1,3 +1,14 @@
+2001-11-29  Paolo Carlini  <pcarlini@unitus.it>
+
+	libstdc++/3655
+	* include/bits/locale_facets.tcc (__pad): Add bool parameter to
+	correctly pad internal-adjusted const char*-type objects.
+	* include/bits/locale_facts.tcc (num_put::_M_insert): Update call.
+	* include/bits/ostream.tcc (operator<<(_CharT , char, const
+	_CharT*, const char*, const basic_string&): Update calls.
+	* src/locale-inst.tcc: Update declarations.
+	* testsuite/27_io/ostream_inserter_arith.cc (test04): Add test.
+
 2001-11-29  Phil Edwards  <pme@gcc.gnu.org>
 
 	* docs/html/ext/howto.html:  Finish allocator notes (inst and 3.0).
@@ -9,7 +20,6 @@
 
 2001-11-28  Paolo Carlini  <pcarlini@unitus.it>
 
-	libstdc++/3655
 	* include/bits/locale_facets.tcc (__pad): Correctly pad
 	internal-adjusted hex numbers.
 	* testsuite/27_io/ostream_inserter_arith.cc: Add testcase.
