@@ -1,3 +1,13 @@
+2003-09-27  Alexandre Petit-Bianco  <apbianco@redhat.com>
+	    Bryce McKinlay  <bryce@mckinlay.net.nz>
+
+	PR java/1333:
+	* parse.y (not_accessible_field_error): New function.
+	(resolve_expression_name): Check field access permissions.
+	(resolve_qualified_expression_name): Use
+	not_accessible_field_error.
+	(resolve_qualified_expression_name): Likewise.
+
 2003-09-24  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* class.c (build_utf8_ref): Test for HAVE_GAS_SHF_MERGE value.
