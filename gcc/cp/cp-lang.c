@@ -296,6 +296,11 @@ ok_to_generate_alias_set_for_type (tree t)
 static HOST_WIDE_INT
 cxx_get_alias_set (tree t)
 {
+  if (CLASS_TYPE_P (t) && TYPE_CONTEXT (t) && CLASS_TYPE_P (TYPE_CONTEXT (t))
+      && CLASSTYPE_AS_BASE (TYPE_CONTEXT (t)) == t)
+    /* The base variant of a type must be in the same alias set as the
+       complete type.  */
+    t = TYPE_CONTEXT (t);
   
   if (/* It's not yet safe to use alias sets for some classes in C++.  */
       !ok_to_generate_alias_set_for_type (t)
