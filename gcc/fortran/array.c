@@ -457,7 +457,7 @@ gfc_set_array_spec (gfc_symbol * sym, gfc_array_spec * as, locus * error_loc)
   if (as == NULL)
     return SUCCESS;
 
-  if (gfc_add_dimension (&sym->attr, error_loc) == FAILURE)
+  if (gfc_add_dimension (&sym->attr, sym->name, error_loc) == FAILURE)
     return FAILURE;
 
   sym->as = as;

@@ -266,7 +266,8 @@ gfc_match_label (void)
     }
 
   if (gfc_new_block->attr.flavor != FL_LABEL
-      && gfc_add_flavor (&gfc_new_block->attr, FL_LABEL, NULL) == FAILURE)
+      && gfc_add_flavor (&gfc_new_block->attr, FL_LABEL,
+			 gfc_new_block->name, NULL) == FAILURE)
     return MATCH_ERROR;
 
   for (p = gfc_state_stack; p; p = p->previous)
@@ -806,7 +807,7 @@ gfc_match_program (void)
   if (m == MATCH_ERROR)
     return m;
 
-  if (gfc_add_flavor (&sym->attr, FL_PROGRAM, NULL) == FAILURE)
+  if (gfc_add_flavor (&sym->attr, FL_PROGRAM, sym->name, NULL) == FAILURE)
     return MATCH_ERROR;
 
   gfc_new_block = sym;
@@ -2013,7 +2014,7 @@ gfc_match_call (void)
 
   if (!sym->attr.generic
       && !sym->attr.subroutine
-      && gfc_add_subroutine (&sym->attr, NULL) == FAILURE)
+      && gfc_add_subroutine (&sym->attr, sym->name, NULL) == FAILURE)
     return MATCH_ERROR;
 
   if (gfc_match_eos () != MATCH_YES)
@@ -2237,7 +2238,7 @@ gfc_match_common (void)
 	      goto cleanup;
 	    }
 
-	  if (gfc_add_in_common (&sym->attr, NULL) == FAILURE) 
+	  if (gfc_add_in_common (&sym->attr, sym->name, NULL) == FAILURE) 
 	    goto cleanup;
 
 	  if (sym->value != NULL
@@ -2252,7 +2253,7 @@ gfc_match_common (void)
 	      goto cleanup;
 	    }
 
-	  if (gfc_add_in_common (&sym->attr, NULL) == FAILURE)
+	  if (gfc_add_in_common (&sym->attr, sym->name, NULL) == FAILURE)
 	    goto cleanup;
 
 	  /* Derived type names must have the SEQUENCE attribute.  */
@@ -2287,7 +2288,7 @@ gfc_match_common (void)
 		  goto cleanup;
 		}
 
-	      if (gfc_add_dimension (&sym->attr, NULL) == FAILURE)
+	      if (gfc_add_dimension (&sym->attr, sym->name, NULL) == FAILURE)
 		goto cleanup;
 
 	      if (sym->attr.pointer)
@@ -2353,7 +2354,7 @@ gfc_match_block_data (void)
   if (gfc_get_symbol (name, NULL, &sym))
     return MATCH_ERROR;
 
-  if (gfc_add_flavor (&sym->attr, FL_BLOCK_DATA, NULL) == FAILURE)
+  if (gfc_add_flavor (&sym->attr, FL_BLOCK_DATA, sym->name, NULL) == FAILURE)
     return MATCH_ERROR;
 
   gfc_new_block = sym;
@@ -2403,7 +2404,8 @@ gfc_match_namelist (void)
 	}
 
       if (group_name->attr.flavor != FL_NAMELIST
-	  && gfc_add_flavor (&group_name->attr, FL_NAMELIST, NULL) == FAILURE)
+	  && gfc_add_flavor (&group_name->attr, FL_NAMELIST,
+			     group_name->name, NULL) == FAILURE)
 	return MATCH_ERROR;
 
       for (;;)
@@ -2415,7 +2417,7 @@ gfc_match_namelist (void)
 	    goto error;
 
 	  if (sym->attr.in_namelist == 0
-	      && gfc_add_in_namelist (&sym->attr, NULL) == FAILURE)
+	      && gfc_add_in_namelist (&sym->attr, sym->name, NULL) == FAILURE)
 	    goto error;
 
 	  nl = gfc_get_namelist ();
@@ -2471,7 +2473,8 @@ gfc_match_module (void)
   if (m != MATCH_YES)
     return m;
 
-  if (gfc_add_flavor (&gfc_new_block->attr, FL_MODULE, NULL) == FAILURE)
+  if (gfc_add_flavor (&gfc_new_block->attr, FL_MODULE,
+		      gfc_new_block->name, NULL) == FAILURE)
     return MATCH_ERROR;
 
   return MATCH_YES;
@@ -2587,7 +2590,8 @@ gfc_match_st_function (void)
 
   gfc_push_error (&old_error);
 
-  if (gfc_add_procedure (&sym->attr, PROC_ST_FUNCTION, NULL) == FAILURE)
+  if (gfc_add_procedure (&sym->attr, PROC_ST_FUNCTION,
+			 sym->name, NULL) == FAILURE)
     goto undo_error;
 
   if (gfc_match_formal_arglist (sym, 1, 0) != MATCH_YES)
