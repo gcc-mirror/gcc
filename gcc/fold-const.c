@@ -847,6 +847,18 @@ negate_expr_p (tree t)
       /* We can't turn -(A-B) into B-A when we honor signed zeros.  */
       return ! FLOAT_TYPE_P (type) || flag_unsafe_math_optimizations;
 
+    case MULT_EXPR:
+      if (TREE_UNSIGNED (TREE_TYPE (t)))
+        break;
+
+      /* Fall through.  */
+
+    case RDIV_EXPR:
+      if (! HONOR_SIGN_DEPENDENT_ROUNDING (TYPE_MODE (TREE_TYPE (t))))
+	return negate_expr_p (TREE_OPERAND (t, 1))
+	       || negate_expr_p (TREE_OPERAND (t, 0));
+      break;
+
     default:
       break;
     }
@@ -871,11 +883,17 @@ negate_expr (tree t)
   switch (TREE_CODE (t))
     {
     case INTEGER_CST:
-    case REAL_CST:
       if (! TREE_UNSIGNED (type)
 	  && 0 != (tem = fold (build1 (NEGATE_EXPR, type, t)))
 	  && ! TREE_OVERFLOW (tem))
 	return tem;
+      break;
+
+    case REAL_CST:
+      tem = build_real (type, REAL_VALUE_NEGATE (TREE_REAL_CST (t)));
+      /* Two's complement FP formats, such as c4x, may overflow.  */
+      if (! TREE_OVERFLOW (tem))
+	return convert (type, tem);
       break;
 
     case NEGATE_EXPR:
@@ -888,6 +906,30 @@ negate_expr (tree t)
 			fold (build (MINUS_EXPR, TREE_TYPE (t),
 				     TREE_OPERAND (t, 1),
 				     TREE_OPERAND (t, 0))));
+      break;
+
+    case MULT_EXPR:
+      if (TREE_UNSIGNED (TREE_TYPE (t)))
+        break;
+
+      /* Fall through.  */
+
+    case RDIV_EXPR:
+      if (! HONOR_SIGN_DEPENDENT_ROUNDING (TYPE_MODE (TREE_TYPE (t))))
+	{
+	  tem = TREE_OPERAND (t, 1);
+	  if (negate_expr_p (tem))
+	    return convert (type,
+			    fold (build (TREE_CODE (t), TREE_TYPE (t),
+					 TREE_OPERAND (t, 0),
+					 negate_expr (tem))));
+	  tem = TREE_OPERAND (t, 0);
+	  if (negate_expr_p (tem))
+	    return convert (type,
+			    fold (build (TREE_CODE (t), TREE_TYPE (t),
+					 negate_expr (tem),
+					 TREE_OPERAND (t, 1))));
+	}
       break;
 
     default:
@@ -5965,8 +6007,13 @@ fold (tree expr)
 
     case MULT_EXPR:
       /* (-A) * (-B) -> A * B  */
-      if (TREE_CODE (arg0) == NEGATE_EXPR && TREE_CODE (arg1) == NEGATE_EXPR)
-	return fold (build (MULT_EXPR, type, TREE_OPERAND (arg0, 0),
+      if (TREE_CODE (arg0) == NEGATE_EXPR && negate_expr_p (arg1))
+	return fold (build (MULT_EXPR, type,
+			    TREE_OPERAND (arg0, 0),
+			    negate_expr (arg1)));
+      if (TREE_CODE (arg1) == NEGATE_EXPR && negate_expr_p (arg0))
+	return fold (build (MULT_EXPR, type,
+			    negate_expr (arg0),
 			    TREE_OPERAND (arg1, 0)));
 
       if (! FLOAT_TYPE_P (type))
@@ -6315,14 +6362,24 @@ fold (tree expr)
 	return t;
 
       /* (-A) / (-B) -> A / B  */
-      if (TREE_CODE (arg0) == NEGATE_EXPR && TREE_CODE (arg1) == NEGATE_EXPR)
-	return fold (build (RDIV_EXPR, type, TREE_OPERAND (arg0, 0),
+      if (TREE_CODE (arg0) == NEGATE_EXPR && negate_expr_p (arg1))
+	return fold (build (RDIV_EXPR, type,
+			    TREE_OPERAND (arg0, 0),
+			    negate_expr (arg1)));
+      if (TREE_CODE (arg1) == NEGATE_EXPR && negate_expr_p (arg0))
+	return fold (build (RDIV_EXPR, type,
+			    negate_expr (arg0),
 			    TREE_OPERAND (arg1, 0)));
 
       /* In IEEE floating point, x/1 is not equivalent to x for snans.  */
       if (!HONOR_SNANS (TYPE_MODE (TREE_TYPE (arg0)))
 	  && real_onep (arg1))
 	return non_lvalue (convert (type, arg0));
+
+      /* In IEEE floating point, x/-1 is not equivalent to -x for snans.  */
+      if (!HONOR_SNANS (TYPE_MODE (TREE_TYPE (arg0)))
+	  && real_minus_onep (arg1))
+	return non_lvalue (convert (type, negate_expr (arg0)));
 
       /* If ARG1 is a constant, we can convert this to a multiply by the
 	 reciprocal.  This does not have the same rounding properties,
