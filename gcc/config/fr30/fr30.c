@@ -146,15 +146,15 @@ static rtx fr30_pass_by_value (tree, tree);
 #endif
 
 /* Initialize the GCC target structure.  */
-#undef TARGET_ASM_ALIGNED_HI_OP
+#undef  TARGET_ASM_ALIGNED_HI_OP
 #define TARGET_ASM_ALIGNED_HI_OP "\t.hword\t"
-#undef TARGET_ASM_ALIGNED_SI_OP
+#undef  TARGET_ASM_ALIGNED_SI_OP
 #define TARGET_ASM_ALIGNED_SI_OP "\t.word\t"
 
-#undef TARGET_PROMOTE_PROTOTYPES
+#undef  TARGET_PROMOTE_PROTOTYPES
 #define TARGET_PROMOTE_PROTOTYPES hook_bool_tree_true
 
-#undef TARGET_SETUP_INCOMING_VARARGS
+#undef  TARGET_SETUP_INCOMING_VARARGS
 #define TARGET_SETUP_INCOMING_VARARGS fr30_setup_incoming_varargs
 
 struct gcc_target targetm = TARGET_INITIALIZER;
@@ -413,27 +413,26 @@ fr30_expand_epilogue (void)
    ARG_REGS_USED_SO_FAR has *not* been updated for the last named argument
    which has type TYPE and mode MODE, and we rely on this fact.  */
 void
-fr30_setup_incoming_varargs (CUMULATIVE_ARGS arg_regs_used_so_far,
-			     int int_mode,
+fr30_setup_incoming_varargs (CUMULATIVE_ARGS *arg_regs_used_so_far,
+			     enum machine_mode mode,
 			     tree type ATTRIBUTE_UNUSED,
-			     int *pretend_size)
+			     int *pretend_size,
+			     int second_time ATTRIBUTE_UNUSED)
 {
-  enum machine_mode mode = (enum machine_mode)int_mode;
-  int               size;
+  int size;
 
-  
   /* All BLKmode values are passed by reference.  */
   if (mode == BLKmode)
     abort ();
 
   /* ??? This run-time test as well as the code inside the if
      statement is probably unnecessary.  */
-  if (targetm.calls.strict_argument_naming (&arg_regs_used_so_far))
+  if (targetm.calls.strict_argument_naming (arg_regs_used_so_far))
     /* If TARGET_STRICT_ARGUMENT_NAMING returns true, then the last named
        arg must not be treated as an anonymous arg.  */
-    arg_regs_used_so_far += fr30_num_arg_regs (int_mode, type);
-  
-  size = FR30_NUM_ARG_REGS - arg_regs_used_so_far;
+    arg_regs_used_so_far += fr30_num_arg_regs (mode, type);
+
+  size = FR30_NUM_ARG_REGS - (* arg_regs_used_so_far);
 
   if (size <= 0)
     return;
