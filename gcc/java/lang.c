@@ -949,7 +949,7 @@ merge_init_test_initialization (void **entry, void *x)
   
   However, what if the method that is suppoed to do the initialization
   is itself inlined in the caller?  When expanding the called method
-  we'll assume that the class initalization has already been done,
+  we'll assume that the class initialization has already been done,
   because the DECL_INITIAL of the init_test_decl is set.
   
   To fix this we remove the DECL_INITIAL (in the caller scope) of all

@@ -1416,7 +1416,7 @@ print_c_decl (FILE* stream, JCF* jcf, int name_index, int signature_index,
 	}
 
       /* Force the alignment of the first data member.  This is
-	 because the "new" C++ ABI changed the alignemnt of non-POD
+	 because the "new" C++ ABI changed the alignment of non-POD
 	 classes.  gcj, however, still uses the "old" alignment.  */
       if (is_first_data_member && ! (flags & ACC_STATIC) && ! is_method)
 	{
