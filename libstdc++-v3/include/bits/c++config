@@ -47,7 +47,7 @@
 // types. For the io library, this means that larger, out-of-line
 // member functions are only declared, and definitions are not parsed
 // by the compiler, but instead instantiated into the library binary.
-//#define _GLIBCPP_FULLY_COMPLIANT_HEADERS 1
+#define _GLIBCPP_FULLY_COMPLIANT_HEADERS 1
 
 // To enable older, ARM-style iostreams and other anachronisms use this.
 //#define _GLIBCPP_DEPRECATED 1

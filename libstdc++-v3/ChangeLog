@@ -1,3 +1,8 @@
+2001-02-14  Jeffrey Oldham  <oldham@codesourcery.com>
+
+        * include/bits/c++config (_GLIBCPP_FULLY_COMPLIANT_HEADERS):
+        Define so library is compliant.
+
 2001-02-15  Anthony Green  <green@redhat.com>
 
         * acinclude.m4 (glibcpp_toolexeclibdir): Fix test for cross
