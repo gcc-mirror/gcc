@@ -84,7 +84,13 @@ Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 int verbose = 0;
 int partial_count = 0;
+#if 0
+/* All uses of this are ifdefed out.  This is no longer needed, because
+   cccp.c implicitly forces the standard include files to be treated as C.
+   Adding an explicit extern "C" is undesireable as it breaks the SunOS 4.x
+   sun4c/romvec.h file.  */
 int missing_extern_C_count = 0;
+#endif
 int missing_errno = 0;
 
 #include "xsys-protos.h"
@@ -173,8 +179,10 @@ int
 write_lbrac ()
 {
   
+#if 0
   if (missing_extern_C_count + required_unseen_count > 0)
     fprintf (outf, "#ifdef __cplusplus\nextern \"C\" {\n#endif\n");
+#endif
 
   if (partial_count)
     {
@@ -274,8 +282,10 @@ recognized_function (fname, kind, rtype, args, file_seen, line_seen)
   struct partial_proto *partial;
   int i;
   struct fn_decl *fn;
+#if 0
   if (kind == 'f')
     missing_extern_C_count++;
+#endif
 
   fn = lookup_std_proto (fname);
 
@@ -335,8 +345,11 @@ read_scan_file (scan_file)
 
   scan_decls (scan_file);
 
-  if (missing_extern_C_count + required_unseen_count + partial_count
-      + missing_errno == 0)
+  if (required_unseen_count + partial_count + missing_errno
+#if 0
+      + missing_extern_C_count
+#endif      
+      == 0)
     {
       if (verbose)
 	fprintf (stderr, "%s: OK, nothing needs to be done.\n", inc_filename);
@@ -352,10 +365,12 @@ read_scan_file (scan_file)
       if (partial_count)
 	fprintf (stderr, "%s: %d non-prototype function declarations.\n",
 		 inc_filename, partial_count);
+#if 0
       if (missing_extern_C_count)
 	fprintf (stderr,
 		 "%s: %d declarations not protected by extern \"C\".\n",
 		 inc_filename, missing_extern_C_count);
+#endif
     }
 }
 
@@ -426,8 +441,10 @@ write_rbrac ()
     }
 
 
+#if 0
   if (missing_extern_C_count + required_unseen_count > 0)
     fprintf (outf, "#ifdef __cplusplus\n}\n#endif\n");
+#endif
 }
 
 char *
