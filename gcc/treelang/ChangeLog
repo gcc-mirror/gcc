@@ -1,3 +1,7 @@
+2003-03-05  Andreas Jaeger  <aj@suse.de>
+
+	* treetree.c (init_c_lex): Follow change to c-common.h.
+
 2003-03-04  Tom Tromey  <tromey@redhat.com>
 
 	* Make-lang.in (treelang.tags): New target.
@@ -5,12 +9,12 @@
 2003-03-01  Tim Josling  <tej@melbpc.org.au>
 
         Name clashes with rtl.h fixed.
-	
+
 	* lex.l: Tokens PLUS, MINUS, RETURN changed to tl_PLUS tl_MINUS
 	tl_RETURN.
 
-	* parse.y: Ditto.	
-	
+	* parse.y: Ditto.
+
 2003-02-24  Tim Josling  <tej@melbpc.org.au>
 
 	* parse.y (my_yylex): New - ensure lexer time is charged to
@@ -18,11 +22,11 @@
 	(yylex): redefine as invocation of my_yylex which then calls
 	flex-generated yylex.
 	(timevar.h): include.
-	
+
 2003-02-23  Tim Josling  <tej@melbpc.org.au>
 
         Fix garbage collection, add more error checking, force GC always.
-	
+
 	* Make-lang.in (treelang/tree1.o): Depend on treelang/treetree.h
 	(treelang/treetree.o): Depend on  treelang/parse.h
 
