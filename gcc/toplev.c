@@ -4750,6 +4750,10 @@ main (argc, argv)
 	}
     }
 
+  /* All command line options have been processed.  */
+  if (lang_hooks.post_options)
+    (*lang_hooks.post_options) ();
+
   /* Reflect any language-specific diagnostic option setting.  */
   reshape_diagnostic_buffer ();
 

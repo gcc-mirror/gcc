@@ -1,5 +1,19 @@
 2001-01-07  Neil Booth  <neil@daikokuya.demon.co.uk>
 
+        * toplev.c (main): Call the front-end specific post_options
+        hook if one is given.
+        * toplev.h (struct_lang_hooks, lang_hooks): New.
+        * c-lang.c (c_post_options, lang_hooks): Implement lang_hooks
+        for the C front end.
+        * cp/decl2.c (cxx_post_options, lang_hooks): Implement
+        lang_hooks for the C++ front end.
+        * objc/objc-act.c (objc_post_options, lang_hooks): Implement
+        lang_hooks for the ObjC front end.
+        * f/com.c (lang_hooks): Hooks for the Fortran front end.
+        * java/lang.c (lang_hooks): Hooks for the Java front end.
+
+2001-01-07  Neil Booth  <neil@daikokuya.demon.co.uk>
+
         * c-lex.c (init_c_lex): Request #define / #undef callbacks
         for verbose DWARF[2] debugging.
         (cb_define, cb_undef): The new callbacks.

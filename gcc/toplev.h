@@ -133,4 +133,14 @@ extern int sorrycount;
 
 extern const char *progname;
 
+/* Language-specific hooks.  */
+struct lang_hooks
+{
+  /* If non-NULL, called when all command line options have been processed.  */
+  void (*post_options) PARAMS ((void));
+};
+
+/* Each front end provides its own.  */
+extern struct lang_hooks lang_hooks;
+
 #endif /* __GCC_TOPLEV_H */
