@@ -178,6 +178,8 @@ merge_alias_info (tree orig, tree new)
   tree orig_sym = SSA_NAME_VAR (orig);
   var_ann_t new_ann = var_ann (new_sym);
   var_ann_t orig_ann = var_ann (orig_sym);
+  struct ptr_info_def *new_ptr_info;
+  struct ptr_info_def *orig_ptr_info;
 
   gcc_assert (POINTER_TYPE_P (TREE_TYPE (orig)));
   gcc_assert (POINTER_TYPE_P (TREE_TYPE (new)));
@@ -192,14 +194,28 @@ merge_alias_info (tree orig, tree new)
 	      == get_alias_set (TREE_TYPE (TREE_TYPE (orig_sym))));
 #endif
 
-  /* Merge type-based alias info.  */
+  /* Synchronize the type tags.  If both pointers had a tag and they
+     are different, then something has gone wrong.  */
   if (new_ann->type_mem_tag == NULL_TREE)
     new_ann->type_mem_tag = orig_ann->type_mem_tag;
   else if (orig_ann->type_mem_tag == NULL_TREE)
     orig_ann->type_mem_tag = new_ann->type_mem_tag;
   else
     gcc_assert (new_ann->type_mem_tag == orig_ann->type_mem_tag);
-}
+
+  /* Synchronize flow sensitive alias information.  If both pointers
+     had flow information and they are inconsistent, then something
+     has gone wrong.  */
+  new_ptr_info = get_ptr_info (new);
+  orig_ptr_info = get_ptr_info (orig);
+
+  if (new_ptr_info->name_mem_tag == NULL_TREE)
+    memcpy (new_ptr_info, orig_ptr_info, sizeof (*new_ptr_info));
+  else if (orig_ptr_info->name_mem_tag == NULL_TREE)
+    memcpy (orig_ptr_info, new_ptr_info, sizeof (*orig_ptr_info));
+  else if (orig_ptr_info->name_mem_tag != new_ptr_info->name_mem_tag)
+    abort ();
+}   
 
 
 /* Common code for propagate_value and replace_exp.

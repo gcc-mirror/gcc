@@ -556,6 +556,7 @@ extern void debug_points_to_info (void);
 extern void dump_points_to_info_for (FILE *, tree);
 extern void debug_points_to_info_for (tree);
 extern bool may_be_aliased (tree);
+extern struct ptr_info_def *get_ptr_info (tree);
 
 /* Call-back function for walk_use_def_chains().  At each reaching
    definition, a function with this prototype is called.  */

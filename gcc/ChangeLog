@@ -1,3 +1,11 @@
+2004-10-28  Diego Novillo  <dnovillo@redhat.com>
+
+	PR tree-optimization/16728
+	* tree-flow.h (get_ptr_info): Declare.
+	* tree-ssa-alias.c (get_ptr_info): Make extern.
+	* tree-ssa-copy.c (merge_alias_info): Merge flow-sensitive
+	alias information.
+
 2004-10-28  Stan Shebs  <shebs@apple.com>
 
 	* config/rs6000/darwin.h (SUBTARGET_EXTRA_SPECS): Handle -m64.
