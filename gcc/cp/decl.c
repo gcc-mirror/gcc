@@ -1970,7 +1970,7 @@ mark_named_label_lists (labs, uses)
   for (; l; l = l->next)
     {
       ggc_mark (l);
-      mark_binding_level (l->binding_level);
+      mark_binding_level (&l->binding_level);
       ggc_mark_tree (l->old_value);
       ggc_mark_tree (l->label_decl);
       ggc_mark_tree (l->bad_decls);
