@@ -5699,6 +5699,7 @@ try_pre_increment_1 (pbi, insn)
   int regno = REGNO (SET_DEST (x));
   rtx y = pbi->reg_next_use[regno];
   if (y != 0
+      && SET_DEST (x) != stack_pointer_rtx
       && BLOCK_NUM (y) == BLOCK_NUM (insn)
       /* Don't do this if the reg dies, or gets set in y; a standard addressing
 	 mode would be better.  */
