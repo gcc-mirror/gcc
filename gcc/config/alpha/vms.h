@@ -405,19 +405,8 @@ do {									\
    CXT is an RTX for the static chain value for the function.  */
 
 #undef INITIALIZE_TRAMPOLINE
-#define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT)			  \
-{									  \
-  emit_move_insn (gen_rtx (MEM, Pmode,                                    \
-			   memory_address (Pmode,			  \
-					   plus_constant ((TRAMP), 16))), \
-		  (FNADDR));		                                  \
-  emit_move_insn (gen_rtx (MEM, Pmode,					  \
-			   memory_address (Pmode,			  \
-					   plus_constant ((TRAMP), 24))), \
-		  (CXT));						  \
-}
-
-#undef TRANSFER_FROM_TRAMPOLINE
+#define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT) \
+  alpha_initialize_trampoline (TRAMP, FNADDR, CXT, 16, 24, -1)
 
 /* A C statement (sans semicolon) to output an element in the table of
    global constructors.  */

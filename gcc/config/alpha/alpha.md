@@ -3970,7 +3970,7 @@
 ;; Technically the type for call_pal is jsr, but we use that for determining
 ;; if we need a GP.  Use ibr instead since it has the same EV5 scheduling
 ;; characteristics.
-(define_insn ""
+(define_insn "imb"
   [(unspec_volatile [(const_int 0)] 0)]
   ""
   "call_pal 0x86"

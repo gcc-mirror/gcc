@@ -1,3 +1,17 @@
+Wed Jul  1 03:48:00 1998  Richard Henderson  <rth@cygnus.com>
+
+	* alpha.c (alpha_initialize_trampoline): Take arguments describing
+	the layout.  Use ptr_mode.  Disable hint generation.  Use gen_imb.
+	* alpha.h (INITIALIZE_TRAMPOLINE): Pass extra args to the init func.
+	(TRANSFER_FROM_TRAMPOLINE): Move ...
+	* alpha/osf.h: ... here.
+	* alpha/vms.h (INITIALIZE_TRAMPOLINE): Use alpha_initialize_trampoline.
+	(TRANSFER_FROM_TRAMPOLINE): Remove undef.
+	* alpha/win-nt.h: Likewise.
+	* alpha/vxworks.h: Likewise.
+
+	* alpha/linux.h: Revert gcc2 merge lossage.
+
 Wed Jul  1 10:56:55 1998  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
 
 	* c-decl.c (grokdeclarator): Don't warn about implicit int in

@@ -1,7 +1,7 @@
-/* Definitions of target machine for GNU compiler, for Alpha Linux-based GNU
-   systems using ECOFF.
+/* Definitions of target machine for GNU compiler,
+   for Alpha Linux-based GNU systems.
    Copyright (C) 1996, 1997, 1998 Free Software Foundation, Inc.
-   Contributed by Bob Manson.
+   Contributed by Richard Henderson.
 
 This file is part of GNU CC.
 
@@ -43,5 +43,3 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* Don't care about faults in the prologue.  */
 #undef TARGET_CAN_FAULT_IN_PROLOGUE
 #define TARGET_CAN_FAULT_IN_PROLOGUE 1
-
-#undef ASM_FINAL_SPEC
