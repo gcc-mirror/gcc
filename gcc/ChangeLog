@@ -1,3 +1,10 @@
+2003-01-06  Aldy Hernandez  <aldyh@redhat.com>
+
+	Segher Boessenkool  <segher@koffie.nl>
+
+        * config/rs6000/altivec.md: Remove spaces from assembler
+        instruction argument lists.
+	
 2003-01-07  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* config/c4x/c4x.c (c4x_naked_function_p): Rename from
