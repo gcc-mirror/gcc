@@ -1,7 +1,13 @@
+Sat Dec 15 08:29:45 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* expr.c (highest_pow2_factor, case INTEGER_CST): Return
+	BIGGEST_ALIGNMENT for 0.
+
 Sat Dec 15 14:13:03 CET 2001  Jan Hubicka  <jh@suse.cz>
 
-	* predict.def (PRED_NORETURN, PRED_OPCODE_POSITIVE, PRED_OPCODE_NONEQUAL,
-	PRED_ERROR_RETURN): Make probabilities match reality.
+	* predict.def (PRED_NORETURN): Make probabilities match reality.
+	(PRED_OPCODE_POSITIVE, PRED_OPCODE_NONEQUAL, PRED_ERROR_RETURN):
+	Likewise.
 
 2001-12-15  Jakub Jelinek  <jakub@redhat.com>
 
