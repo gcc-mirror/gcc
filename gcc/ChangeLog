@@ -1,3 +1,7 @@
+Sun Jan 24 08:07:59 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* rtl.def (CALL_PLACEHOLDER): New rtx code.
+
 Sun Jan 24 21:24:43 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* config/c4x/c4x.c (c4x_emit_move_sequence, c4x_encode_section_info):
