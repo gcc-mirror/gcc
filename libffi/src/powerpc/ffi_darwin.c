@@ -6,7 +6,7 @@
    Darwin ABI support (c) 2001 John Hornkvist
    AIX ABI support (c) 2002 Free Software Foundation, Inc.
 
-   $Id: ffi_darwin.c,v 1.1 2002/01/16 05:32:15 bryce Exp $
+   $Id: ffi_darwin.c,v 1.2 2002/01/17 16:04:21 dje Exp $
 
    Permission is hereby granted, free of charge, to any person obtaining
    a copy of this software and associated documentation files (the
@@ -121,13 +121,21 @@ void ffi_prep_args(extended_cif *ecif, unsigned *const stack)
     {
       switch ((*ptr)->type)
 	{
+	/* If a floating-point parameter appears before all of the general-
+	   purpose registers are filled, the corresponding GPRs that match
+	   the size of the floating-point parameter are skipped.  */
 	case FFI_TYPE_FLOAT:
-	case FFI_TYPE_DOUBLE:
- 	  if ((*ptr)->type == FFI_TYPE_FLOAT)
-	    double_tmp = *(float *)*p_argv;
+	  double_tmp = *(float *)*p_argv;
+	  if (fparg_count >= NUM_FPR_ARG_REGISTERS)
+            *(double *)next_arg = double_tmp;
 	  else
-	    double_tmp = *(double *)*p_argv;
-
+            *fpr_base++ = double_tmp;
+          next_arg++;
+	  fparg_count++;
+	  FFI_ASSERT(flags & FLAG_FP_ARGUMENTS);
+	  break;
+	case FFI_TYPE_DOUBLE:
+	  double_tmp = *(double *)*p_argv;
 	  if (fparg_count >= NUM_FPR_ARG_REGISTERS)
             *(double *)next_arg = double_tmp;
 	  else

@@ -1,3 +1,8 @@
+2002-02-21  Andreas Tobler  <toa@pop.agri.ch>
+
+	* src/powerpc/ffi_darwin.c (ffi_prep_args): Skip appropriate
+	number of GPRs for floating-point arguments.
+
 2002-01-31  Anthony Green  <green@redhat.com>
 
 	* configure: Rebuilt.
