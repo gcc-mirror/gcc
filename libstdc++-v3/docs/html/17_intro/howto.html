@@ -8,7 +8,7 @@
    <META NAME="GENERATOR" CONTENT="vi and eight fingers">
    <TITLE>libstdc++-v3 HOWTO:  Chapter 17</TITLE>
 <LINK REL=StyleSheet HREF="../lib3styles.css">
-<!-- $Id: howto.html,v 1.3 2001/05/30 08:30:02 ljrittle Exp $ -->
+<!-- $Id: howto.html,v 1.4 2001/05/30 21:54:57 pme Exp $ -->
 </HEAD>
 <BODY>
 
@@ -67,6 +67,48 @@
       means for a library (not a general program).  We currently use the
       <A HREF="http://www.sgi.com/tech/stl/thread_safety.html">same
       definition that SGI</A> uses for their STL subset.
+      <EM>Please see the many cautions given in HOWTOs on containers.</EM>
+   </P>
+   <P>
+      Here is another attempt at explaining the dangers of using the
+      STL with threading support without understanding some important
+      details.  The STL implementation is currently configured to use
+      the high-speed caching memory allocator.  If you absolutely
+      think you must change this on a global basis for your platform
+      to support multi-threading, then please consult all commentary
+      in include/bits/c++config and the HOWTOs on containers.  Be
+      fully aware that you may change the external or internal ABI of
+      libstdc++-v3 when you provide -D__USE_MALLOC on the command line
+      or make a change to that configuration file. [Placeholder in
+      case other patches don't make it before the 3.0 release: That
+      memory allocator can appear buggy in multithreaded C++ programs
+      (and has been reported to leak memory), if STL is misconfigured
+      for your platform.  You may need to provide -D_PTHREADS on the
+      command line in this case to ensure the memory allocator for
+      containers is really protected by a mutex.  Also, be aware that
+      you just changed the ABI of libstdc++-v3 when you did that thus
+      your entire application and all libraries must be compiled with
+      compatible flags.  The STL implementation doesn't currently
+      protect you from changing the mutex locking implementation to
+      one that doesn't really play together with the implementation
+      you may have compiled other application code with.]
+   </P>
+   <P>
+      If you don't like caches of objects being retained inside the
+      STL, then you might be tempted to define __USE_MALLOC either on
+      the command line or by rebuilding c++config.h.  Please note,
+      once you define __USE_MALLOC, only the malloc allocator is
+      visible to application code (i.e. the typically higher-speed
+      allocator is not even available in this configuration).  There
+      is a better way: It is possible to force the malloc-based
+      allocator on a per-case-basis for some application code even
+      when the above macro symbol is not defined.  The author of this
+      comment believes that is a better way to tune an application for
+      high-speed using this implementation of the STL.  Here is one
+      possible example displaying the forcing of the malloc-based
+      allocator over the typically higher-speed default allocator:
+
+      std::list <void*, std::malloc_alloc> my_malloc_based_list;
    </P>
    <P>A recent journal article has described &quot;atomic integer
       operations,&quot; which would allow us to, well, perform updates
@@ -82,7 +124,13 @@
       &quot;Thread Next&quot; to move down the thread.  This farm is in
       latest-to-oldest order.
       <UL>
-        <LI>
+        <LI><A HREF="http://gcc.gnu.org/ml/libstdc++/2001-05/msg00384.html">
+	inspired this most recent updating of issues with threading
+	and the SGI STL library.  It also contains some example
+	POSIX-multithreaded STL code.</A>
+	<LI> <A HREF="http://gcc.gnu.org/ml/libstdc++/2001-05/msg00136.html">
+	an early analysis of why __USE_MALLOC should be disable for
+	the 3.0 release of libstdc++.</A>
       </UL>
       <BR>
       Here are discussions that took place before the current snapshot;
@@ -144,7 +192,7 @@
 <P CLASS="fineprint"><EM>
 Comments and suggestions are welcome, and may be sent to
 <A HREF="mailto:libstdc++@gcc.gnu.org">the mailing list</A>.
-<BR> $Id: howto.html,v 1.3 2001/05/30 08:30:02 ljrittle Exp $
+<BR> $Id: howto.html,v 1.4 2001/05/30 21:54:57 pme Exp $
 </EM></P>
 
 
