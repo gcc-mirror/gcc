@@ -1,3 +1,8 @@
+2005-02-16  Kazu Hirata  <kazu@cs.umass.edu>
+
+	PR tree-optimization/19967
+	* gcc.dg/pr19967.c: New.
+
 2005-02-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/19857

@@ -5,6 +5,16 @@
 	find_basic_blocks.
 	* config/sh/sh.c (sh_output_mi_thunk): Likewise.
 
+	PR tree-optimization/19967
+	* builtins.c (expand_builtin_strstr, expand_builtin_strpbrk,
+	expand_builtin_strchr, expand_builtin_strrchr): Take a new
+	argument TYPE.  Adjust calls to fold_builtin_XXX.
+	(expand_builtin, fold_builtin_1): Adjust calls to
+	expand_builtin_XXX.
+	(fold_builtin_strchr, fold_builtin_strpbrk,
+	fold_builtin_strstr, fold_builtin_strrchr): Convert the folded
+	result to a requested type TYPE.
+
 2005-02-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/19857
