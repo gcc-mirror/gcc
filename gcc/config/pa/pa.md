@@ -6246,8 +6246,10 @@
 {
   /* The elements of the buffer are, in order:  */
   rtx fp = gen_rtx_MEM (Pmode, operands[0]);
-  rtx lab = gen_rtx_MEM (Pmode, plus_constant (operands[0], 4));
-  rtx stack = gen_rtx_MEM (Pmode, plus_constant (operands[0], 8));
+  rtx lab = gen_rtx_MEM (Pmode, plus_constant (operands[0],
+			 POINTER_SIZE / BITS_PER_UNIT));
+  rtx stack = gen_rtx_MEM (Pmode, plus_constant (operands[0],
+			   (POINTER_SIZE * 2) / BITS_PER_UNIT));
   rtx pv = gen_rtx_REG (Pmode, 1);
 
   /* This bit is the same as expand_builtin_longjmp.  */
