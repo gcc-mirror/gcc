@@ -1,5 +1,7 @@
 1998-11-19  Dave Love  <d.love@dl.ac.uk>
 
+	* bugs.texi: Formatting changes from Craig.
+
 	* intdoc.in: Terminate some @xrefs with `,'.
 
 1998-11-19  Manfred Hollstein  <manfred@s-direktnet.de>
