@@ -880,8 +880,8 @@ do {									\
 %{!mmvme: %{!msim: %{!mcall-linux: %{!mcall-solaris: %(link_start_default) }}}}"
 #endif
 
-#ifndef	LINK_START_DEFUALT_SPEC
-#define LINK_START_DEFUALT_SPEC ""
+#ifndef	LINK_START_DEFAULT_SPEC
+#define LINK_START_DEFAULT_SPEC ""
 #endif
 
 #undef LINK_SPEC
@@ -964,6 +964,10 @@ do {									\
 
 #undef	LIBGCC_SPEC
 #define	LIBGCC_SPEC "libgcc.a%s"
+
+#ifndef LIB_DEFAULT_SPEC
+#define LIB_DEFAULT_SPEC ""
+#endif
 
 #undef	ENDFILE_SPEC
 #define	ENDFILE_SPEC "\
