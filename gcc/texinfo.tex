@@ -1,5 +1,5 @@
 %% TeX macros to handle Texinfo files.
-%% $Id: texinfo.tex,v 2.210 1997/07/04 00:07:28 rms Exp karl $
+%% $Id: texinfo.tex,v 2.211 1997/07/05 21:16:39 karl Exp karl $
 
 %  Copyright (C) 1985, 86, 88, 90, 91, 92, 93,
 %                94, 95, 96, 97 Free Software Foundation, Inc.
@@ -36,7 +36,7 @@
 
 % This automatically updates the version number based on RCS.
 \def\deftexinfoversion$#1: #2 ${\def\texinfoversion{#2}}
-\deftexinfoversion$Revision: 2.210 $
+\deftexinfoversion$Revision: 2.211 $
 \message{Loading texinfo package [Version \texinfoversion]:}
 
 % If in a .fmt file, print the version number
@@ -1140,13 +1140,26 @@ where each line of input produces a line of output.}
 \font\indi=cmmi9
 \font\indsy=cmsy9
 
+% Fonts for title page:
+\setfont\titlerm\rmbshape{12}{\magstep3}
+\setfont\titleit\itbshape{10}{\magstep4}
+\setfont\titlesl\slbshape{10}{\magstep4}
+\setfont\titlett\ttbshape{12}{\magstep3}
+\setfont\titlettsl\ttslshape{10}{\magstep4}
+\setfont\titlesf\sfbshape{17}{\magstep1}
+\let\titlebf=\titlerm
+\setfont\titlesc\scbshape{10}{\magstep4}
+\font\titlei=cmmi12 scaled \magstep3
+\font\titlesy=cmsy10 scaled \magstep4
+\let\authorrm = \secrm
+
 % Chapter (and unnumbered) fonts (17.28pt).
 \setfont\chaprm\rmbshape{12}{\magstep2}
 \setfont\chapit\itbshape{10}{\magstep3}
 \setfont\chapsl\slbshape{10}{\magstep3}
 \setfont\chaptt\ttbshape{12}{\magstep2}
 \setfont\chapttsl\ttslshape{10}{\magstep3}
-\setfont\chapsf\sfbshape{12}{\magstep2}
+\setfont\chapsf\sfbshape{17}{1000}
 \let\chapbf=\chaprm
 \setfont\chapsc\scbshape{10}{\magstep3}
 \font\chapi=cmmi12 scaled \magstep2
@@ -1183,18 +1196,14 @@ where each line of input produces a line of output.}
 \setfont\ssecit\itbshape{10}{1315}
 \setfont\ssecsl\slbshape{10}{1315}
 \setfont\ssectt\ttbshape{12}{\magstephalf}
-\setfont\ssecttsl\ttslshape{10}{\magstep1}
+\setfont\ssecttsl\ttslshape{10}{1315}
 \setfont\ssecsf\sfbshape{12}{\magstephalf}
 \let\ssecbf\ssecrm
 \setfont\ssecsc\scbshape{10}{\magstep1}
 \font\sseci=cmmi12 scaled \magstephalf
-\font\ssecsy=cmsy10 scaled \magstep1
+\font\ssecsy=cmsy10 scaled 1315
 % The smallcaps and symbol fonts should actually be scaled \magstep1.5,
 % but that is not a standard magnification.
-
-% Fonts for title page:
-\setfont\titlerm\rmbshape{12}{\magstep3}
-\let\authorrm = \secrm
 
 % In order for the font changes to affect most math symbols and letters,
 % we have to define the \textfont of the standard families.  Since
@@ -1220,6 +1229,12 @@ where each line of input produces a line of output.}
   \let\tenbf=\textbf \let\tentt=\texttt \let\smallcaps=\textsc
   \let\tensf=\textsf \let\teni=\texti \let\tensy=\textsy \let\tenttsl=\textttsl
   \resetmathfonts}
+\def\titlefonts{%
+  \let\tenrm=\titlerm \let\tenit=\titleit \let\tensl=\titlesl
+  \let\tenbf=\titlebf \let\tentt=\titlett \let\smallcaps=\titlesc
+  \let\tensf=\titlesf \let\teni=\titlei \let\tensy=\titlesy
+  \let\tenttsl=\titlettsl
+  \resetmathfonts \setleading{25pt}}
 \def\chapfonts{%
   \let\tenrm=\chaprm \let\tenit=\chapit \let\tensl=\chapsl
   \let\tenbf=\chapbf \let\tentt=\chaptt \let\smallcaps=\chapsc
@@ -1439,8 +1454,6 @@ where each line of input produces a line of output.}
 \newskip\titlepagebottomglue \titlepagebottomglue = 2pc
 
 % First the title page.  Must do @settitle before @titlepage.
-\def\titlefont#1{{\titlerm #1}}
-
 \newif\ifseenauthor
 \newif\iffinishedtitlepage
 
@@ -1462,7 +1475,7 @@ where each line of input produces a line of output.}
    %
    % Now you can print the title using @title.
    \def\title{\parsearg\titlezzz}%
-   \def\titlezzz##1{\leftline{\titlefont{##1}}
+   \def\titlezzz##1{\leftline{\titlefonts\rm ##1}
                     % print a rule at the page bottom also.
                     \finishedtitlepagefalse
                     \vskip4pt \hrule height 4pt width \hsize \vskip4pt}%
