@@ -1,5 +1,8 @@
 2001-01-25  Mark Mitchell  <mark@codesourcery.com>
 
+	* src/ios.cc: Remove accidental inclusion of <stdio.h> in last
+	checkin.
+
 	* src/Makefile.am (sources): Add globals.cc.
 	* src/Makefile.in: Regenerated.
 	* src/globals.cc: New file.

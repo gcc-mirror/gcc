@@ -35,7 +35,6 @@
 #include <bits/std_ostream.h>
 #include <bits/std_istream.h>
 #include <bits/std_fstream.h>
-#include <stdio.h>
 
 namespace std 
 {
