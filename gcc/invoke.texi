@@ -2369,7 +2369,7 @@ This pass also performs global constant and copy propagation.
 Perform a number of minor optimizations that are relatively expensive.
 
 @item -foptimize-register-moves
-@item -fregmove
+@itemx -fregmove
 Attempt to reassign register numbers in move instructions and as
 operands of other simple instructions in order to maximize the amount of
 register tying.  This is especially helpful on machines with two-operand
@@ -2398,7 +2398,7 @@ especially useful on machines with a relatively small number of
 registers and where memory load instructions take more than one cycle.
 
 @item -ffunction-sections
-@item -fdata-sections
+@itemx -fdata-sections
 Place each function or data item into its own section in the output
 file if the target supports arbitrary sections.  The name of the
 function or the name of the data item determines the section's name
@@ -3803,7 +3803,7 @@ suppresses this pass.  The post-processor is never run when the
 compiler is built for cross-compilation.
 
 @item -mcpu=<name>
-@item -mtune=<name>
+@itemx -mtune=<name>
 @kindex -mcpu=
 @kindex -mtune=
 This specifies the name of the target ARM processor.  GCC uses this name
@@ -3824,7 +3824,7 @@ of the @samp{-mcpu=} option.  Permissable names are: armv2, armv2a,
 armv3, armv3m, armv4, armv4t
 
 @item -mfpe=<number>
-@item -mfp=<number>
+@itemx -mfp=<number>
 @kindex -mfpe=
 @kindex -mfp=
 This specifes the version of the floating point emulation available on
@@ -5734,8 +5734,8 @@ Which variants are supported depend on the configuration.
 All variants support @samp{-mcpu=base}, this is the default.
 
 @item -mtext=@var{text section}
-@item -mdata=@var{data section}
-@item -mrodata=@var{readonly data section}
+@itemx -mdata=@var{data section}
+@itemx -mrodata=@var{readonly data section}
 Put functions, data, and readonly data in @var{text section},
 @var{data section}, and @var{readonly data section} respectively
 by default.  This can be overridden with the @code{section} attribute.
