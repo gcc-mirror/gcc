@@ -1,3 +1,9 @@
+2003-05-01  Laurent Guerby <guerby@acm.org>
+
+        PR ada/10546 
+        * 5iosinte.ads: Increase pthread_cond_t size to match recent
+        LinuxThread and NPTL version, merge from ACT.
+	
 2003-04-28  Zack Weinberg  <zack@codesourcery.com>
 
 	* utils.c (convert): No need to clear TREE_CST_RTL.
