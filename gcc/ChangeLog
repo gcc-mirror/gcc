@@ -1,3 +1,10 @@
+2003-03-11  Hartmut Penner  <hpenner@de.ibm.com>
+
+	* df.c (read_modify_subreg_p): Change from static to global.
+	* df.h (read_modify_subreg_p): Add prototype.
+	* sched-deps.c (sched_analyze_1): Generate true dependency for
+	strict_low_part, certain subregs and zero/sign_extract. 
+
 2003-03-11  Neil Booth  <neil@daikokuya.co.uk>
 
 	* Makefile.in: Update.
