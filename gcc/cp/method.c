@@ -487,15 +487,17 @@ use_thunk (tree thunk_fndecl, bool emit_p)
 	t = tree_cons (NULL_TREE, a, t);
       t = nreverse (t);
       t = build_call (alias, t);
-      t = force_target_expr (TREE_TYPE (t), t);
-      if (!this_adjusting)
-	t = thunk_adjust (t, /*this_adjusting=*/0,
-			  fixed_offset, virtual_offset);
       
       if (VOID_TYPE_P (TREE_TYPE (t)))
 	finish_expr_stmt (t);
       else
-	finish_return_stmt (t);
+	{
+	  t = force_target_expr (TREE_TYPE (t), t);
+	  if (!this_adjusting)
+	    t = thunk_adjust (t, /*this_adjusting=*/0,
+			      fixed_offset, virtual_offset);
+	  finish_return_stmt (t);
+	}
 
       /* Since we want to emit the thunk, we explicitly mark its name as
 	 referenced.  */
