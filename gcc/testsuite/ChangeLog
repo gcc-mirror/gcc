@@ -1,3 +1,7 @@
+2003-07-03  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gcc.dg/i386-volatile-1.c: New test.
+
 2003-07-01  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/6949
