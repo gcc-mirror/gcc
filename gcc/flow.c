@@ -3056,7 +3056,8 @@ try_simplify_condjump (cbranch_block)
   /* The conditional branch must target the block after the
      unconditional branch.  */
   cbranch_dest_block = cbranch_jump_edge->dest;
-  if (cbranch_dest_block->index != jump_block->index + 1)
+
+  if (!can_fallthru (jump_block, cbranch_dest_block))
     return false;
 
   /* Invert the conditional branch.  Prevent jump.c from deleting
@@ -3079,6 +3080,10 @@ try_simplify_condjump (cbranch_block)
   cbranch_fallthru_edge->flags &= ~EDGE_FALLTHRU;
   
   flow_delete_block (jump_block);
+  /* Selectively unlink the sequence.  */
+  if (cbranch_jump_edge->src->end != PREV_INSN (cbranch_jump_edge->dest->head))
+    flow_delete_insn_chain (NEXT_INSN (cbranch_jump_edge->src->end),
+			    PREV_INSN (cbranch_jump_edge->dest->head));
   return true;
 }
 
