@@ -1,6 +1,6 @@
 ## Makefile for the GNU C++ Support library.
 ##
-## Copyright (C) 2000 Free Software Foundation, Inc.
+## Copyright (C) 2000, 2001 Free Software Foundation, Inc.
 ##
 ## Process this file with automake to produce Makefile.in.
 ##
@@ -144,8 +144,12 @@ AM_CXXFLAGS = \
 # can't decide which configuration to use, and it gives up.  The
 # correct solution is to add `--tag CXX' to LTCXXCOMPILE and maybe
 # CXXLINK, just after $(LIBTOOL), so that libtool doesn't have to
-# attempt to infer which configuration to use
-LTCXXCOMPILE = $(LIBTOOL) --tag CXX --mode=compile $(CXX) $(INCLUDES) \
+# attempt to infer which configuration to use.
+#
+# We have to put --tag disable-shared after --tag CXX lest things
+# CXX undo the affect of disable-shared.
+LTCXXCOMPILE = $(LIBTOOL) --tag CXX --tag disable-shared \
+               --mode=compile $(CXX) $(INCLUDES) \
 	       $(AM_CPPFLAGS) $(CPPFLAGS) $(CXXFLAGS) $(AM_CXXFLAGS) 
 
 # 3) We have a problem when building the shared libstdc++ object if

@@ -77,12 +77,15 @@ case "${target_os}" in
         enable_threads='no'
         ;;
     esac
+    ctype_include_dir=${os_include_dir}
     ;;
   aix*)
     os_include_dir="config/os/aix"
+    ctype_include_dir=${os_include_dir}
     ;;
   bsd* | freebsd* )
     os_include_dir="config/os/bsd/freebsd"
+    ctype_include_dir=${os_include_dir}
     ;;
   cygwin*)
     os_include_dir="config/os/newlib"
@@ -92,21 +95,27 @@ case "${target_os}" in
     ;;
   linux* | gnu*)
     os_include_dir="config/os/gnu-linux"
+    ctype_include_dir=${os_include_dir}
     ;;
   irix*)
     os_include_dir="config/os/irix"
+    ctype_include_dir=${os_include_dir}
     ;;
   netbsd*)
     os_include_dir="config/os/bsd/netbsd"
+    ctype_include_dir=${os_include_dir}
     ;;
   solaris2.5*)
     os_include_dir="config/os/solaris/solaris2.5"
+    ctype_include_dir=${os_include_dir}
     ;;
   solaris2.6*)
     os_include_dir="config/os/solaris/solaris2.6"
+    ctype_include_dir=${os_include_dir}
     ;;
   solaris2.7* | solaris2.8*)
     os_include_dir="config/os/solaris/solaris2.7"
+    ctype_include_dir=${os_include_dir}
     ;;
   hpux)
     os_include_dir="config/os/hpux"
