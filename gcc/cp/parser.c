@@ -3736,9 +3736,11 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p)
 	    koenig_p = false;
 	    if (idk == CP_ID_KIND_UNQUALIFIED)
 	      {
+		/* We do not perform argument-dependent lookup if
+		   normal lookup finds a non-function, in accordance
+		   with the expected resolution of DR 218.  */
 		if (args
 		    && (is_overloaded_fn (postfix_expression)
-			|| DECL_P (postfix_expression)
 			|| TREE_CODE (postfix_expression) == IDENTIFIER_NODE))
 		  {
 		    koenig_p = true;
@@ -14661,6 +14663,12 @@ cp_parser_late_parsing_default_args (cp_parser *parser, tree fn)
       TREE_PURPOSE (parameters) = cp_parser_assignment_expression (parser);
       if (DECL_CLASS_SCOPE_P (fn))
 	pop_nested_class ();
+
+      /* If the token stream has not been completely used up, then
+	 there was extra junk after the end of the default
+	 argument.  */
+      if (!cp_lexer_next_token_is (parser->lexer, CPP_EOF))
+	cp_parser_error (parser, "expected `,'");
 
        /* Restore saved state.  */
       parser->lexer = saved_lexer;

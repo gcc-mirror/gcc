@@ -1,3 +1,22 @@
+2004-03-01  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/14360
+	* parser.c (cp_parser_postfix_expression): Do not perform Koenig
+	lookup if ordinary name-lookup finds a non-function.
+	* pt.c (tsubst_copy_and_build): Likewise.
+
+	PR c++/14361
+	* parser.c (cp_parser_late_parsing_default_args): Check that there
+	are no extra tokens after the end of the default-argument
+	expression.
+	
+	Backport 2004-02-12  Mark Mitchell  <mark@codesourcery.com>
+	* decl.c (redeclaration_error_message): Correct handling of
+	templates.
+	* pt.c (tsubst_friend_declaration): Adjust code to determine
+	whether or not a friend template is a definition.
+	(tsubst_decl): Clear DECL_INITIAL for new FUNCTION_DECLs.
+
 2004-03-01  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	PR c++/14369

@@ -1,5 +1,14 @@
 2004-03-01  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/14360
+	* g++.old-deja/g++.ns/koenig5.C: Remove some error markers.
+	
+	PR c++/14361
+	* g++.dg/parse/defarg7.C: New test.
+
+	PR c++/14359
+	* g++.dg/template/friend26.C: New test.
+
 	PR c++/14324
 	* g++.dg/abi/mangle21.C: New test.
 
