@@ -1,5 +1,8 @@
 Sun Jul 26 01:11:12 1998  H.J. Lu  (hjl@gnu.org)
 
+	* i386.h (CONST_DOUBLE_OK_FOR_LETTER_P): Return 0 when eliminating
+	the frame pointer and compiling PIC code and reload has not completed.
+
 	* i386.c (output_to_reg): Add code to emulate non-popping DImode
 	case.
 
