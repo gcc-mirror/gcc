@@ -306,11 +306,10 @@ DEFTREECODE (STRING_CST, "string_cst", 'c', 3)
    DECL_RESULT holds a RESULT_DECL node for the value of a function,
     or it is 0 for a function that returns no value.
     (C functions returning void have zero here.)
-   DECL_RESULT_TYPE holds the type in which the result is actually
-    returned.  This is usually the same as the type of DECL_RESULT,
-    but (1) it may be a wider integer type and
-    (2) it remains valid, for the sake of inlining, even after the
-    function's compilation is done.
+    The TREE_TYPE field is the type in which the result is actually
+    returned.  This is usually the same as the return type of the
+    FUNCTION_DECL, but it may be a wider integer type because of
+    promotion.
    DECL_FUNCTION_CODE is a code number that is nonzero for
     built-in functions.  Its value is an enum built_in_function
     that says which built-in function it is.
