@@ -2773,10 +2773,13 @@ simplify_relational_operation (enum rtx_code code, enum machine_mode mode,
 
    MODE is the mode of the result, while CMP_MODE specifies in which
    mode the comparison is done in, so it is the mode of the operands.  */
-rtx
+
+static rtx
 simplify_relational_operation_1 (enum rtx_code code, enum machine_mode mode,
 				 enum machine_mode cmp_mode, rtx op0, rtx op1)
 {
+  enum rtx_code op0code = GET_CODE (op0);
+
   if (GET_CODE (op1) == CONST_INT)
     {
       if (INTVAL (op1) == 0 && COMPARISON_P (op0))
@@ -2798,6 +2801,20 @@ simplify_relational_operation_1 (enum rtx_code code, enum machine_mode mode,
 					        XEXP (op0, 0), XEXP (op0, 1));
 	    }
 	}
+    }
+
+  /* (eq/ne (plus x cst1) cst2) simplifies to (eq/ne x (cst2 - cst1))  */
+  if ((code == EQ || code == NE)
+      && (op0code == PLUS || op0code == MINUS)
+      && CONSTANT_P (op1)
+      && CONSTANT_P (XEXP (op0, 1)))
+    {
+      rtx x = XEXP (op0, 0);
+      rtx c = XEXP (op0, 1);
+
+      c = simplify_gen_binary (op0code == PLUS ? MINUS : PLUS,
+			       cmp_mode, op1, c);
+      return simplify_gen_relational (code, mode, cmp_mode, x, c);
     }
 
   return NULL_RTX;
