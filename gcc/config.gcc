@@ -184,10 +184,7 @@ md_file=
 
 # Obsolete configurations.
 case ${target} in
-   sparclite-*-coff*	\
- | sparclite-*-elf*	\
- | sparc86x-*-elf*	\
- | sparc-*-openbsd*	\
+   sparc-*-openbsd*	\
  | i860-*-sysv4*	\
  | ip2k-*-elf		\
  | ns32k-*-netbsdelf*	\
@@ -2031,22 +2028,6 @@ sparc-*-sysv4*)
 	extra_parts="crtbegin.o crtend.o"
 	use_fixproto=yes
 	;;
-sparclite-*-coff*)
-	tm_file="${tm_file} sparc/lite.h svr3.h sparc/litecoff.h dbxcoff.h libgloss.h"
-	tmake_file=sparc/t-sparclite
-	;;
-sparclite-*-elf*)
-	tm_file="${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h sparc/sp-elf.h sparc/liteelf.h"
-	tmake_file="sparc/t-sparclite sparc/t-crtfm"
-        extra_parts="crtbegin.o crtend.o"
-	use_fixproto=yes
-	;;
-sparc86x-*-elf*)
-	tm_file="${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h sparc/sp-elf.h sparc/sp86x-elf.h"
-	tmake_file="sparc/t-sp86x sparc/t-crtfm"
-        extra_parts="crtbegin.o crtend.o"
-	use_fixproto=yes
-	;;
 sparc64-*-elf*)
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h sparc/sp64-elf.h"
 	tmake_file="${tmake_file} sparc/t-crtfm"
@@ -2773,9 +2754,6 @@ case ${target} in
 		case x$with_cpu in
 		xsparc)
 			with_cpu=v7
-			;;
-		xsparc86x)
-			with_cpu=sparclite86x
 			;;
 		xsparcv9 | xsparc64)
 			with_cpu=v9
