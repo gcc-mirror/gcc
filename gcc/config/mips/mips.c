@@ -1543,7 +1543,12 @@ mips_move_2words (operands, insn)
   /* Sanity check.  */
   if (GET_CODE (operands[1]) == SIGN_EXTEND
       && code1 != REG
-      && code1 != CONST_INT)
+      && code1 != CONST_INT
+      /* The following three can happen as the result of a questionable
+	 cast.  */
+      && code1 != LABEL_REF
+      && code1 != SYMBOL_REF
+      && code1 != CONST)
     abort ();
 
   if (code0 == REG)
@@ -1803,7 +1808,14 @@ mips_move_2words (operands, insn)
 	  if (TARGET_STATS)
 	    mips_count_memory_refs (op1, 2);
 
-	  ret = "dla\t%0,%a1";
+	  if (GET_CODE (operands[1]) == SIGN_EXTEND)
+	    /* We deliberately remove the 'a' from '%1', so that we don't
+	       have to add SIGN_EXTEND support to print_operand_address.
+	       print_operand will just call print_operand_address in this
+	       case, so there is no problem.  */
+	    ret = "la\t%0,%1";
+	  else
+	    ret = "dla\t%0,%a1";
 	}
     }
 
