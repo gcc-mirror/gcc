@@ -1,6 +1,9 @@
 #!/bin/sh
 # Configuration validation subroutine script, version 1.0.
-#   Copyright (C) 1991 Free Software Foundation, Inc.
+#   Copyright (C) 1991, 1992 Free Software Foundation, Inc.
+# This file is (in principle) common to ALL GNU software.
+# The presence of a machine in this file suggests that SOME GNU software
+# can handle that machine.  It does not imply ALL GNU software can. 
 
 #This file is free software; you can redistribute it and/or modify
 #it under the terms of the GNU General Public License as published by
@@ -472,6 +475,8 @@ case $os in
 		;;
 	-svr3)
 		os=-sysv3
+		;;
+	-none)
 		;;
 	*)
 		# Get rid of the `-' at the beginning of $os.
