@@ -1,5 +1,11 @@
 2001-06-04  Jeffrey Oldham  <oldham@codesourcery.com>
 
+	* include/bits/char_traits.h (move): Reverse qualification of
+	memmove with std::.
+	(copy): Reverse qualification of memcpy with std::.
+
+2001-06-04  Jeffrey Oldham  <oldham@codesourcery.com>
+
 	* include/bits/char_traits.h (move): Qualify memmove with std::.
 	(copy): Qualify memcpy with std::.
 	* testsuite/27_io/filebuf_virtuals.cc (test01): Qualify strlen and
