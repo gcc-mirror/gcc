@@ -206,19 +206,40 @@
   "fpmpy_700*18")
 
 (define_insn_reservation "W7" 2
-  (and (eq_attr "type" "load,fpload")
+  (and (eq_attr "type" "load")
        (eq_attr "cpu" "700"))
   "mem_700")
 
-(define_insn_reservation "W8" 3
-  (and (eq_attr "type" "store,fpstore")
+(define_insn_reservation "W8" 2
+  (and (eq_attr "type" "fpload")
+       (eq_attr "cpu" "700"))
+  "mem_700")
+
+(define_insn_reservation "W9" 3
+  (and (eq_attr "type" "store")
        (eq_attr "cpu" "700"))
   "mem_700*3")
 
-(define_insn_reservation "W9" 1
+(define_insn_reservation "W10" 3
+  (and (eq_attr "type" "fpstore")
+       (eq_attr "cpu" "700"))
+  "mem_700*3")
+
+(define_insn_reservation "W11" 1
   (and (eq_attr "type" "!fpcc,fpalu,fpmulsgl,fpmuldbl,fpdivsgl,fpdivdbl,fpsqrtsgl,fpsqrtdbl,load,fpload,store,fpstore")
        (eq_attr "cpu" "700"))
   "dummy_700")
+
+;; We have a bypass for all computations in the FP unit which feed an
+;; FP store as long as the sizes are the same.
+(define_bypass 2 "W1,W2" "W10" "hppa_fpstore_bypass_p")
+(define_bypass 9 "W3" "W10" "hppa_fpstore_bypass_p")
+(define_bypass 11 "W4" "W10" "hppa_fpstore_bypass_p")
+(define_bypass 13 "W5" "W10" "hppa_fpstore_bypass_p")
+(define_bypass 17 "W6" "W10" "hppa_fpstore_bypass_p")
+
+;; We have an "anti-bypass" for FP loads which feed an FP store.
+(define_bypass 4 "W8" "W10" "hppa_fpstore_bypass_p")
 
 ;; Function units for the 7100 and 7150.  The 7100/7150 can dual-issue
 ;; floating point computations with non-floating point computations (fp loads
@@ -228,8 +249,12 @@
 ;; take two cycles, during which no Dcache operations should be scheduled.
 ;; Any special cases are handled in pa_adjust_cost.  The 7100, 7150 and 7100LC
 ;; all have the same memory characteristics if one disregards cache misses.
-
+;;
 ;; The 7100/7150 has three floating-point units: ALU, MUL, and DIV.
+;; There's no value in modeling the ALU and MUL separately though
+;; since there can never be a functional unit conflict given the
+;; latency and issue rates for those units.
+;;
 ;; Timings:
 ;; Instruction	Time	Unit	Minimum Distance (unit contention)
 ;; fcpy		2	ALU	1
@@ -247,11 +272,6 @@
 ;; fdiv,dbl	15	DIV	15
 ;; fsqrt,sgl	8	DIV	8
 ;; fsqrt,dbl	15	DIV	15
-;;
-;; We don't really model the FP ALU/MPY units properly (they are
-;; distinct subunits in the FP unit).  However, there can never be
-;; a functional unit; conflict given the latency and issue rates
-;; for those units.
 
 (define_automaton "pa7100")
 (define_cpu_unit "i_7100, f_7100,fpmac_7100,fpdivsqrt_7100,mem_7100" "pa7100")
@@ -272,21 +292,45 @@
   "f_7100+fpdivsqrt_7100,fpdivsqrt_7100*14")
 
 (define_insn_reservation "X3" 2
-  (and (eq_attr "type" "load,fpload")
+  (and (eq_attr "type" "load")
        (eq_attr "cpu" "7100"))
   "i_7100+mem_7100")
 
 (define_insn_reservation "X4" 2
-  (and (eq_attr "type" "store,fpstore")
+  (and (eq_attr "type" "fpload")
+       (eq_attr "cpu" "7100"))
+  "i_7100+mem_7100")
+
+(define_insn_reservation "X5" 2
+  (and (eq_attr "type" "store")
        (eq_attr "cpu" "7100"))
   "i_7100+mem_7100,mem_7100")
 
-(define_insn_reservation "X5" 1
+(define_insn_reservation "X6" 2
+  (and (eq_attr "type" "fpstore")
+       (eq_attr "cpu" "7100"))
+  "i_7100+mem_7100,mem_7100")
+
+(define_insn_reservation "X7" 1
   (and (eq_attr "type" "!fpcc,fpalu,fpmulsgl,fpmuldbl,fpdivsgl,fpsqrtsgl,fpdivdbl,fpsqrtdbl,load,fpload,store,fpstore")
        (eq_attr "cpu" "7100"))
   "i_7100")
 
+;; We have a bypass for all computations in the FP unit which feed an
+;; FP store as long as the sizes are the same.
+(define_bypass 1 "X0" "X6" "hppa_fpstore_bypass_p")
+(define_bypass 7 "X1" "X6" "hppa_fpstore_bypass_p")
+(define_bypass 14 "X2" "X6" "hppa_fpstore_bypass_p")
+
+;; We have an "anti-bypass" for FP loads which feed an FP store.
+(define_bypass 3 "X4" "X6" "hppa_fpstore_bypass_p")
+
 ;; The 7100LC has three floating-point units: ALU, MUL, and DIV.
+;; There's no value in modeling the ALU and MUL separately though
+;; since there can never be a functional unit conflict that
+;; can be avoided given the latency, issue rates and mandatory
+;; one cycle cpu-wide lock for a double precision fp multiply.
+;;
 ;; Timings:
 ;; Instruction	Time	Unit	Minimum Distance (unit contention)
 ;; fcpy		2	ALU	1
@@ -321,29 +365,25 @@
 ;;
 ;;   load-load pairs
 ;;   store-store pairs
-;;   fmpyadd,dbl
-;;   fmpysub,dbl
 ;;   other issue modeling
 
 (define_automaton "pa7100lc")
 (define_cpu_unit "i0_7100lc, i1_7100lc, f_7100lc" "pa7100lc")
-(define_cpu_unit "fpalu_7100lc,fpmul_7100lc" "pa7100lc")
+(define_cpu_unit "fpmac_7100lc" "pa7100lc")
 (define_cpu_unit "mem_7100lc" "pa7100lc")
-
-(define_insn_reservation "Y0" 2
-  (and (eq_attr "type" "fpcc,fpalu")
-       (eq_attr "cpu" "7100LC,7200,7300"))
-  "f_7100lc,fpalu_7100lc")
 
 ;; Double precision multiplies lock the entire CPU for one
 ;; cycle.  There is no way to avoid this lock and trying to
 ;; schedule around the lock is pointless and thus there is no
-;; value in trying to model this lock.  Not modeling the lock
-;; allows for a smaller DFA and may reduce register pressure.
-(define_insn_reservation "Y1" 2
-  (and (eq_attr "type" "fpmulsgl,fpmuldbl")
+;; value in trying to model this lock.
+;;
+;; Not modeling the lock allows us to treat fp multiplies just
+;; like any other FP alu instruction.  It allows for a smaller
+;; DFA and may reduce register pressure.
+(define_insn_reservation "Y0" 2
+  (and (eq_attr "type" "fpcc,fpalu,fpmulsgl,fpmuldbl")
        (eq_attr "cpu" "7100LC,7200,7300"))
-  "f_7100lc,fpmul_7100lc")
+  "f_7100lc,fpmac_7100lc")
 
 ;; fp division and sqrt instructions lock the entire CPU for
 ;; 7 cycles (single precision) or 14 cycles (double precision).
@@ -351,42 +391,65 @@
 ;; around the lock is pointless and thus there is no value in
 ;; trying to model this lock.  Not modeling the lock allows
 ;; for a smaller DFA and may reduce register pressure.
-(define_insn_reservation "Y2" 1
+(define_insn_reservation "Y1" 1
   (and (eq_attr "type" "fpdivsgl,fpsqrtsgl,fpdivdbl,fpsqrtdbl")
        (eq_attr "cpu" "7100LC,7200,7300"))
   "f_7100lc")
 
+(define_insn_reservation "Y2" 2
+  (and (eq_attr "type" "load")
+       (eq_attr "cpu" "7100LC,7200,7300"))
+  "i1_7100lc+mem_7100lc")
+
 (define_insn_reservation "Y3" 2
-  (and (eq_attr "type" "load,fpload")
+  (and (eq_attr "type" "fpload")
        (eq_attr "cpu" "7100LC,7200,7300"))
   "i1_7100lc+mem_7100lc")
 
 (define_insn_reservation "Y4" 2
-  (and (eq_attr "type" "store,fpstore")
+  (and (eq_attr "type" "store")
        (eq_attr "cpu" "7100LC"))
   "i1_7100lc+mem_7100lc,mem_7100lc")
 
-(define_insn_reservation "Y5" 1
+(define_insn_reservation "Y5" 2
+  (and (eq_attr "type" "fpstore")
+       (eq_attr "cpu" "7100LC"))
+  "i1_7100lc+mem_7100lc,mem_7100lc")
+
+(define_insn_reservation "Y6" 1
   (and (eq_attr "type" "shift,nullshift")
        (eq_attr "cpu" "7100LC,7200,7300"))
   "i1_7100lc")
 
-(define_insn_reservation "Y6" 1
+(define_insn_reservation "Y7" 1
   (and (eq_attr "type" "!fpcc,fpalu,fpmulsgl,fpmuldbl,fpdivsgl,fpsqrtsgl,fpdivdbl,fpsqrtdbl,load,fpload,store,fpstore,shift,nullshift")
        (eq_attr "cpu" "7100LC,7200,7300"))
   "(i0_7100lc|i1_7100lc)")
 
 ;; The 7200 has a store-load penalty
-(define_insn_reservation "Y7" 2
-  (and (eq_attr "type" "store,fpstore")
+(define_insn_reservation "Y8" 2
+  (and (eq_attr "type" "store")
+       (eq_attr "cpu" "7200"))
+  "i1_7100lc,mem_7100lc")
+
+(define_insn_reservation "Y9" 2
+  (and (eq_attr "type" "fpstore")
        (eq_attr "cpu" "7200"))
   "i1_7100lc,mem_7100lc")
 
 ;; The 7300 has no penalty for store-store or store-load
-(define_insn_reservation "Y8" 2
-  (and (eq_attr "type" "store,fpstore")
+(define_insn_reservation "Y10" 2
+  (and (eq_attr "type" "store")
        (eq_attr "cpu" "7300"))
   "i1_7100lc")
+
+(define_insn_reservation "Y11" 2
+  (and (eq_attr "type" "fpstore")
+       (eq_attr "cpu" "7300"))
+  "i1_7100lc")
+
+;; We have an "anti-bypass" for FP loads which feed an FP store.
+(define_bypass 3 "Y3" "Y5,Y9,Y11" "hppa_fpstore_bypass_p")
 
 ;; Scheduling for the PA8000 is somewhat different than scheduling for a
 ;; traditional architecture.
