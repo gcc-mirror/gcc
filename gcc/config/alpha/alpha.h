@@ -501,6 +501,15 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, ALL_REGS,
 		   && zap_mask (CONST_DOUBLE_HIGH (VALUE)))		\
    : 0)
 
+/* Optional extra constraints for this machine.
+
+   For the Alpha, `Q' means that this is a memory operand but not a
+   reference to an unaligned location.  */
+
+#define EXTRA_CONSTRAINT(OP, C)				\
+  ((C) == 'Q' ? GET_CODE (OP) == MEM && GET_CODE (XEXP (OP, 0)) != AND \
+   : 0)
+
 /* Given an rtx X being reloaded into a reg required to be
    in class CLASS, return the class of reg to actually use.
    In general this is just CLASS; but on some machines
@@ -516,7 +525,8 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, ALL_REGS,
 
 /* Loading and storing HImode or QImode values to and from memory
    usually requires a scratch register.  The exceptions are loading
-   QImode and HImode from an aligned address to a general register. */
+   QImode and HImode from an aligned address to a general register. 
+   We also cannot load an unaligned address into an FP register.  */
 
 #define SECONDARY_INPUT_RELOAD_CLASS(CLASS,MODE,IN)			\
 (((GET_CODE (IN) == MEM 						\
@@ -529,7 +539,10 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, ALL_REGS,
        && ((MODE) == SImode || (MODE) == HImode || (MODE) == QImode))	\
       || (((MODE) == QImode || (MODE) == HImode)			\
 	  && unaligned_memory_operand (IN, MODE))))			\
- ? GENERAL_REGS : NO_REGS)
+ ? GENERAL_REGS								\
+ : ((CLASS) == FLOAT_REGS && GET_CODE (IN) == MEM			\
+    && GET_CODE (XEXP (IN, 0)) == AND) ? GENERAL_REGS			\
+ : NO_REGS)
 
 #define SECONDARY_OUTPUT_RELOAD_CLASS(CLASS,MODE,OUT)			\
 (((GET_CODE (OUT) == MEM 						\
@@ -540,7 +553,10 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, ALL_REGS,
 	       && REGNO (SUBREG_REG (OUT)) >= FIRST_PSEUDO_REGISTER)))) \
   && (((MODE) == HImode || (MODE) == QImode				\
        || ((MODE) == SImode && (CLASS) == FLOAT_REGS))))		\
- ? GENERAL_REGS : NO_REGS)
+ ? GENERAL_REGS								\
+ : ((CLASS) == FLOAT_REGS && GET_CODE (OUT) == MEM			\
+    && GET_CODE (XEXP (OUT, 0)) == AND) ? GENERAL_REGS			\
+  : NO_REGS)
 
 /* If we are copying between general and FP registers, we need a memory
    location.  */
