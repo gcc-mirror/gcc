@@ -1,3 +1,8 @@
+2004-04-04  Roger Sayle  <roger@eyesopen.com>
+
+	* simplify-rtx.c (simplify_binary_operation): Constant fold
+	DIV, MOD, UDIV and UMOD using div_and_round_double.
+
 2004-04-04  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/14804
