@@ -1,5 +1,5 @@
 /* CPP Library.
-   Copyright (C) 1986, 87, 89, 92-98, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1986, 87, 89, 92-99, 2000 Free Software Foundation, Inc.
    Contributed by Per Bothner, 1994-95.
    Based on CCCP program by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
@@ -200,7 +200,8 @@ static void append_include_chain	PARAMS ((cpp_reader *,
 static char *base_name			PARAMS ((const char *));
 static void dump_special_to_buffer	PARAMS ((cpp_reader *, const char *));
 static void initialize_dependency_output PARAMS ((cpp_reader *));
-static void new_pending_define PARAMS ((struct cpp_options *, const char *));
+static void new_pending_define		PARAMS ((struct cpp_options *,
+						 const char *));
 
 /* Last argument to append_include_chain: chain to use */
 enum { QUOTE = 0, BRACKET, SYSTEM, AFTER };
@@ -418,9 +419,6 @@ cpp_reader_init (pfile)
      cpp_reader *pfile;
 {
   bzero ((char *) pfile, sizeof (cpp_reader));
-#if 0
-  pfile->get_token = cpp_get_token;
-#endif
 
   pfile->token_buffer_size = 200;
   pfile->token_buffer = (U_CHAR *) xmalloc (pfile->token_buffer_size);
@@ -1283,17 +1281,6 @@ cpp_handle_option (pfile, argc, argv)
 	    CPP_PEDANTIC (pfile) = 1;
 	    opts->pedantic_errors = 1;
 	  }
-#if 0
-	else if (!strcmp (argv[i], "-pcp")) {
-	  char *pcp_fname = argv[++i];
-	  pcp_outfile = ((pcp_fname[0] != '-' || pcp_fname[1] != '\0')
-			 ? fopen (pcp_fname, "w")
-			 : fdopen (dup (fileno (stdout)), "w"));
-	  if (pcp_outfile == 0)
-	    cpp_pfatal_with_name (pfile, pcp_fname);
-	  no_precomp = 1;
-	}
-#endif
 	break;
       
       case 't':
@@ -1332,8 +1319,6 @@ cpp_handle_option (pfile, argc, argv)
 	  opts->lang_asm = 1;
 	if (! strcmp (argv[i], "-lang-fortran"))
 	  opts->lang_fortran = 1, opts->cplusplus_comments = 0;
-	if (! strcmp (argv[i], "-lint"))
-	  opts->for_lint = 1;
 	if (! strcmp (argv[i], "-lang-chill"))
 	  opts->objc = 0, opts->cplusplus = 0, opts->chill = 1,
 	    opts->traditional = 1;
@@ -1633,10 +1618,6 @@ cpp_handle_option (pfile, argc, argv)
 	else if (!strcmp (argv[i], "-nostdinc++"))
 	  /* -nostdinc++ causes no default C++-specific include directories. */
 	  opts->no_standard_cplusplus_includes = 1;
-#if 0
-	else if (!strcmp (argv[i], "-noprecomp"))
-	  no_precomp = 1;
-#endif
 	break;
       
       case 'r':

@@ -1796,35 +1796,35 @@ do_elif (pfile, keyword)
      cpp_reader *pfile;
      const struct directive *keyword ATTRIBUTE_UNUSED;
 {
-  if (pfile->if_stack == CPP_BUFFER (pfile)->if_stack) {
-    cpp_error (pfile, "`#elif' not within a conditional");
-    return 0;
-  } else {
-    if (pfile->if_stack->type != T_IF && pfile->if_stack->type != T_ELIF) {
-      cpp_error (pfile, "`#elif' after `#else'");
-#if 0
-      fprintf (stderr, " (matches line %d", pfile->if_stack->lineno);
-#endif
-      if (pfile->if_stack->fname != NULL && CPP_BUFFER (pfile)->fname != NULL
-	  && strcmp (pfile->if_stack->fname,
-		     CPP_BUFFER (pfile)->nominal_fname) != 0)
-	fprintf (stderr, ", file %s", pfile->if_stack->fname);
-      fprintf (stderr, ")\n");
+  if (pfile->if_stack == CPP_BUFFER (pfile)->if_stack)
+    {
+      cpp_error (pfile, "`#elif' not within a conditional");
+      return 0;
     }
-    pfile->if_stack->type = T_ELIF;
-  }
+  else
+    {
+      if (pfile->if_stack->type != T_IF && pfile->if_stack->type != T_ELIF)
+	{
+	  cpp_error (pfile, "`#elif' after `#else'");
+	  cpp_error_with_line (pfile, pfile->if_stack->lineno, -1,
+			       "the conditional began here");
+	}
+      pfile->if_stack->type = T_ELIF;
+    }
 
   if (pfile->if_stack->if_succeeded)
     skip_if_group (pfile);
-  else {
-    HOST_WIDEST_INT value = eval_if_expression (pfile);
-    if (value == 0)
-      skip_if_group (pfile);
-    else {
-      ++pfile->if_stack->if_succeeded;	/* continue processing input */
-      output_line_command (pfile, same_file);
+  else
+    {
+      HOST_WIDEST_INT value = eval_if_expression (pfile);
+      if (value == 0)
+	skip_if_group (pfile);
+      else
+	{
+	  ++pfile->if_stack->if_succeeded;	/* continue processing input */
+	  output_line_command (pfile, same_file);
+	}
     }
-  }
   return 0;
 }
 
@@ -1840,9 +1840,7 @@ eval_if_expression (pfile)
   HOST_WIDEST_INT value;
   long old_written = CPP_WRITTEN (pfile);
 
-  pfile->pcp_inside_if = 1;
   value = cpp_parse_expr (pfile);
-  pfile->pcp_inside_if = 0;
 
   CPP_SET_WRITTEN (pfile, old_written); /* Pop */
 
@@ -1917,20 +1915,6 @@ do_xifdef (pfile, keyword)
 	cpp_pedwarn (pfile, "garbage at end of `#%s' argument", keyword->name);
     }
   skip_rest_of_line (pfile);
-
-#if 0
-    if (pcp_outfile) {
-      /* Output a precondition for this macro.  */
-      if (hp && hp->value.defn->predefined)
-	fprintf (pcp_outfile, "#define %s\n", hp->name);
-      else {
-	U_CHAR *cp = buf;
-	fprintf (pcp_outfile, "#undef ");
-	while (is_idchar(*cp)) /* Ick! */
-	  fputc (*cp++, pcp_outfile);
-	putc ('\n', pcp_outfile);
-      }
-#endif
 
   conditional_skip (pfile, skip, T_IF, control_macro);
   return 0;
@@ -2010,9 +1994,6 @@ consider_directive_while_skipping (pfile, stack)
 	      validate_else (pfile, "#else");
 	    /* fall through */
 	case T_ELIF:
-	    if (pfile->if_stack->type == T_ELSE)
-	      cpp_error (pfile, "`%s' after `#else'", kt->name);
-	    
 	    if (pfile->if_stack == stack)
 	      return 1;
 	    else
@@ -2136,35 +2117,36 @@ do_else (pfile, keyword)
      cpp_reader *pfile;
      const struct directive *keyword ATTRIBUTE_UNUSED;
 {
-  cpp_buffer *ip = CPP_BUFFER (pfile);
-
   validate_else (pfile, "#else");
   skip_rest_of_line (pfile);
 
-  if (pfile->if_stack == CPP_BUFFER (pfile)->if_stack) {
-    cpp_error (pfile, "`#else' not within a conditional");
-    return 0;
-  } else {
-    /* #ifndef can't have its special treatment for containing the whole file
-       if it has a #else clause.  */
-    pfile->if_stack->control_macro = 0;
-
-    if (pfile->if_stack->type != T_IF && pfile->if_stack->type != T_ELIF) {
-      cpp_error (pfile, "`#else' after `#else'");
-      fprintf (stderr, " (matches line %d", pfile->if_stack->lineno);
-      if (strcmp (pfile->if_stack->fname, ip->nominal_fname) != 0)
-	fprintf (stderr, ", file %s", pfile->if_stack->fname);
-      fprintf (stderr, ")\n");
+  if (pfile->if_stack == CPP_BUFFER (pfile)->if_stack)
+    {
+      cpp_error (pfile, "`#else' not within a conditional");
+      return 0;
     }
-    pfile->if_stack->type = T_ELSE;
-  }
+  else
+    {
+      /* #ifndef can't have its special treatment for containing the whole file
+	 if it has a #else clause.  */
+      pfile->if_stack->control_macro = 0;
+
+      if (pfile->if_stack->type != T_IF && pfile->if_stack->type != T_ELIF)
+	{
+	  cpp_error (pfile, "`#else' after `#else'");
+	  cpp_error_with_line (pfile, pfile->if_stack->lineno, -1,
+			       "the conditional began here");
+	}
+      pfile->if_stack->type = T_ELSE;
+    }
 
   if (pfile->if_stack->if_succeeded)
     skip_if_group (pfile);
-  else {
-    ++pfile->if_stack->if_succeeded;	/* continue processing input */
-    output_line_command (pfile, same_file);
-  }
+  else
+    {
+      ++pfile->if_stack->if_succeeded;	/* continue processing input */
+      output_line_command (pfile, same_file);
+    }
   return 0;
 }
 
@@ -2347,51 +2329,7 @@ cpp_get_token (pfile)
 	      CPP_PUTC (pfile, c);
 	      return CPP_HSPACE;
 	    }
-#if 0
-	  if (opts->for_lint) {
-	    U_CHAR *argbp;
-	    int cmdlen, arglen;
-	    char *lintcmd = get_lintcmd (ibp, limit, &argbp, &arglen, &cmdlen);
-	    
-	    if (lintcmd != NULL) {
-	      /* I believe it is always safe to emit this newline: */
-	      obp[-1] = '\n';
-	      bcopy ("#pragma lint ", (char *) obp, 13);
-	      obp += 13;
-	      bcopy (lintcmd, (char *) obp, cmdlen);
-	      obp += cmdlen;
-
-	      if (arglen != 0) {
-		*(obp++) = ' ';
-		bcopy (argbp, (char *) obp, arglen);
-		obp += arglen;
-	      }
-
-	      /* OK, now bring us back to the state we were in before we entered
-		 this branch.  We need #line because the newline for the pragma
-		 could mess things up.  */
-	      output_line_command (pfile, same_file);
-	      *(obp++) = ' ';	/* just in case, if comments are copied thru */
-	      *(obp++) = '/';
-	    }
-	  }
-#endif
-
 	case '#':
-#if 0
-	  /* If this is expanding a macro definition, don't recognize
-	     preprocessor directives.  */
-	  if (ip->macro != 0)
-	    goto randomchar;
-	  /* If this is expand_into_temp_buffer, recognize them
-	     only after an actual newline at this level,
-	     not at the beginning of the input level.  */
-	  if (ip->fname == 0 && beg_of_line == ip->buf)
-	    goto randomchar;
-	  if (ident_length)
-	    goto specialchar;
-#endif
-
 	  if (!pfile->only_seen_white)
 	    goto randomchar;
 	  /* -traditional directives are recognized only with the # in
@@ -3555,15 +3493,3 @@ cpp_perror_with_name (pfile, name)
 {
   cpp_message (pfile, 1, "%s: %s: %s", progname, name, my_strerror (errno));
 }
-
-/* TODO:
- * No pre-compiled header file support.
- *
- * Possibly different enum token codes for each C/C++ token.
- *
- * Find and cleanup remaining uses of static variables,
- *
- * Support -dM flag (dump_all_macros).
- *
- * Support for_lint flag.
- */

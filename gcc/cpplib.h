@@ -200,11 +200,6 @@ struct cpp_reader
 
   struct if_stack *if_stack;
 
-  /* Nonzero means we are inside an IF during a -pcp run.  In this mode
-     macro expansion is done, and preconditions are output for all macro
-     uses requiring them. */
-  char pcp_inside_if;
-
   /* Nonzero means we have printed (while error reporting) a list of
      containing files that matches the current status. */
   char input_stack_listing_current;
@@ -368,10 +363,6 @@ struct cpp_options {
      this does not ignore unrecognized directives.  */
 
   char lang_fortran;
-
-  /* Nonzero means turn NOTREACHED into #pragma NOTREACHED etc */
-
-  char for_lint;
 
   /* Nonzero means handle CHILL comment syntax
      and output CHILL string delimiter for __DATE___ etc. */
