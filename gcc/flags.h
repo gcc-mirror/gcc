@@ -356,6 +356,11 @@ extern int flag_branch_on_count_reg;
 
 extern int flag_delayed_branch;
 
+/* Nonzero means suppress output of instruction numbers and line number
+   notes in debugging dumps.  */
+
+extern int flag_dump_unnumbered;
+
 /* Nonzero means pretend it is OK to examine bits of target floats,
    even if that isn't true.  The resulting code will have incorrect constants,
    but the same series of instructions that the native compiler would make.  */

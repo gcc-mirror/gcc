@@ -3171,7 +3171,6 @@ print_rtl_with_bb (outf, rtx_first)
      FILE *outf;
      rtx rtx_first;
 {
-  extern int flag_dump_unnumbered;
   register rtx tmp_rtx;
 
   if (rtx_first == 0)
@@ -3209,6 +3208,8 @@ print_rtl_with_bb (outf, rtx_first)
 
       for (tmp_rtx = rtx_first; NULL != tmp_rtx; tmp_rtx = NEXT_INSN (tmp_rtx))
 	{
+	  int did_output;
+
 	  if ((bb = start[INSN_UID (tmp_rtx)]) >= 0)
 	    {
 	      fprintf (outf, ";; Start of basic block %d, registers live:",
@@ -3231,13 +3232,12 @@ print_rtl_with_bb (outf, rtx_first)
 	  else if (in_bb_p[ INSN_UID(tmp_rtx)] == IN_MULTIPLE_BB)
 	    fprintf (outf, ";; Insn is in multiple basic blocks\n");
 
-	  print_rtl_single (outf, tmp_rtx);
+	  did_output = print_rtl_single (outf, tmp_rtx);
 
 	  if ((bb = end[INSN_UID (tmp_rtx)]) >= 0)
 	    fprintf (outf, ";; End of basic block %d\n", bb);
 
-	  if (! flag_dump_unnumbered
-	      || GET_CODE (tmp_rtx) != NOTE || NOTE_LINE_NUMBER (tmp_rtx) < 0)
+	  if (did_output)
 	    putc ('\n', outf);
 	}
     }

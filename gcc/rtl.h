@@ -1344,7 +1344,7 @@ extern void debug_rtx_list		PROTO ((rtx, int));
 extern rtx debug_rtx_find		PROTO ((rtx, int));
 #ifdef BUFSIZ
 extern void print_rtl			PROTO ((FILE *, rtx));
-extern void print_rtl_single		PROTO ((FILE *, rtx));
+extern int print_rtl_single		PROTO ((FILE *, rtx));
 extern void print_inline_rtx		PROTO ((FILE *, rtx, int));
 #endif
 

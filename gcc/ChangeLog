@@ -1,3 +1,13 @@
+Tue Oct  6 17:00:42 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* flags.h (flag_dump_unnumbered): Declare.
+	* toplev.c (flag_dump_unnumbered): Don't declare.
+	* print-rtl.c (flags.h): Include.
+	(print_rtl_single): Add return value.
+	* rtl.h (print_rtl_single): Update declaration.
+	* flow.c (flag_dump_unnumbered): Don't declare.
+	(print_rtl_with_bb): Use return value of print_rtl_single.
+
 Tue Oct  6 01:36:00 1998  Bernd Schmidt <crux@Pool.Informatik.RWTH-Aachen.DE>
 
 	* Makefile.in (stupid.o): Update dependencies.
