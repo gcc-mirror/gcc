@@ -1,3 +1,9 @@
+2004-01-21  Tom Tromey  <tromey@redhat.com>
+
+	PR java/13468:
+	* Makefile.in: Rebuilt.
+	* Makefile.am (interpret.lo): New target.
+
 2004-01-20  Jakub Jelinek  <jakub@redhat.com>
 
 	* Makefile.am (lib_org_w3c_dom_la_LIBADD,

@@ -449,6 +449,13 @@ $(nat_files) $(x_nat_files): %.lo: %.cc
 $(c_files): %.lo: %.c
 	$(LTCOMPILE) -c -o $@ $<
 
+## A special rule for interpret.lo for the time being.  Our current
+## approach to stack-trace handling is fragile and will not work with
+## unit-at-a-time.  So, for now we disable it.  This will be fixed by
+## a larger patch in the future.
+interpret.lo: interpret.cc
+	$(LTCXXCOMPILE) -fno-unit-at-a-time -c -o $@ $<
+
 $(extra_cc_files): %.lo: %.cc
 	$(LTCXXCOMPILE) -c -o $@ $<
 

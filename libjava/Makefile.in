@@ -5241,6 +5241,9 @@ $(nat_files) $(x_nat_files): %.lo: %.cc
 $(c_files): %.lo: %.c
 	$(LTCOMPILE) -c -o $@ $<
 
+interpret.lo: interpret.cc
+	$(LTCXXCOMPILE) -fno-unit-at-a-time -c -o $@ $<
+
 $(extra_cc_files): %.lo: %.cc
 	$(LTCXXCOMPILE) -c -o $@ $<
 
