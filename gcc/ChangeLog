@@ -4,7 +4,7 @@
 	x86-64 pic support.
 
 	* lcm.c (optimize_mode_switching): Avoid warning for unused
-	variable if !NORMAL_MODE
+	variable if !NORMAL_MODE.
 
 	* flow.c (try_crossjump_to_edge): Remove unused variable.
 
