@@ -1826,7 +1826,9 @@ case "${cache_file}" in
   cache_file_option="--cache-file=../${cache_file}" ;;
 esac
 
-host_configargs="${cache_file_option} --build=${build_alias} --host=${host_alias} --target=${target_alias} ${extra_host_args} ${baseargs}"
+# Host dirs don't like to share a cache file either, horribly enough.
+# This seems to be due to autoconf 2.5x stupidity.
+host_configargs="--cache-file=config.cache --build=${build_alias} --host=${host_alias} --target=${target_alias} ${extra_host_args} ${baseargs}"
 
 target_configargs=${baseargs}
 
