@@ -200,6 +200,19 @@ struct lang_hooks
      Fourth argument is actually an enum expand_modifier.  */
   rtx (*expand_expr) PARAMS ((tree, rtx, enum machine_mode, int));
 
+  /* Prepare expr to be an argument of a TRUTH_NOT_EXPR or other logical
+     operation.
+
+     This preparation consists of taking the ordinary representation
+     of an expression expr and producing a valid tree boolean
+     expression describing whether expr is nonzero.  We could simply
+     always do build_binary_op (NE_EXPR, expr, integer_zero_node, 1),
+     but we optimize comparisons, &&, ||, and !.
+
+     The result should be an expression of boolean type (if not an
+     error_mark_node).  */
+  tree (*truthvalue_conversion) PARAMS ((tree));
+
   /* Possibly apply default attributes to a function (represented by
      a FUNCTION_DECL).  */
   void (*insert_default_attributes) PARAMS ((tree));

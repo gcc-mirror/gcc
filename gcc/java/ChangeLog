@@ -1,3 +1,10 @@
+2002-04-04  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* expr.c (truthvalue_conversion): Rename.  Update.
+	(expand_compare): Update.
+	* java-tree.h (java_truthvalue_conversion): New.
+	* lang.c (LANG_HOOKS_TRUTHVALUE_CONVERSION): Redefine.
+
 2002-04-01  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* java-tree.h (java_mark_addressable): New.

@@ -2946,7 +2946,6 @@ extern int lang_attribute_common;
 /* In front end.  */
 
 extern void incomplete_type_error	PARAMS ((tree, tree));
-extern tree truthvalue_conversion	PARAMS ((tree));
 
 /* In integrate.c */
 extern void save_for_inline		PARAMS ((tree));

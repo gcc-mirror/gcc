@@ -42,7 +42,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    Here is a list of all the functions that assume that widening and
    narrowing is always done with a NOP_EXPR:
      In convert.c, convert_to_integer.
-     In c-typeck.c, build_binary_op (boolean ops), and truthvalue_conversion.
+     In c-typeck.c, build_binary_op (boolean ops), and
+	c_common_truthvalue_conversion.
      In expr.c: expand_expr, for operands of a MULT_EXPR.
      In fold-const.c: fold.
      In tree.c: get_narrower and get_unwidened.  */
@@ -90,9 +91,9 @@ convert (type, expr)
     return fold (convert_to_integer (type, e));
   if (code == BOOLEAN_TYPE)
     {
-      tree t = truthvalue_conversion (expr);
-      /* If truthvalue_conversion returns a NOP_EXPR, we must fold it here
-	 to avoid infinite recursion between fold () and convert ().  */
+      tree t = c_common_truthvalue_conversion (expr);
+      /* If it returns a NOP_EXPR, we must fold it here to avoid
+	 infinite recursion between fold () and convert ().  */
       if (TREE_CODE (t) == NOP_EXPR)
 	return fold (build1 (NOP_EXPR, type, TREE_OPERAND (t, 0)));
       else

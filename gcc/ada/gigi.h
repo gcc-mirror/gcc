@@ -654,7 +654,7 @@ extern tree unchecked_convert		PARAMS ((tree, tree));
    The resulting type should always be the same as the input type.
    This function is simpler than the corresponding C version since
    the only possible operands will be things of Boolean type.  */
-extern tree truthvalue_conversion      PARAMS((tree));
+extern tree gnat_truthvalue_conversion      PARAMS((tree));
 
 /* Return the base type of TYPE.  */
 extern tree get_base_type	PARAMS((tree));

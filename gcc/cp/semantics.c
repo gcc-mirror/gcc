@@ -1140,7 +1140,7 @@ finish_parenthesized_expr (expr)
      tree expr;
 {
   if (IS_EXPR_CODE_CLASS (TREE_CODE_CLASS (TREE_CODE (expr))))
-    /* This inhibits warnings in truthvalue_conversion.  */
+    /* This inhibits warnings in c_common_truthvalue_conversion.  */
     C_SET_EXP_ORIGINAL_CODE (expr, ERROR_MARK); 
 
   if (TREE_CODE (expr) == OFFSET_REF)

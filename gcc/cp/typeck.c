@@ -4191,8 +4191,9 @@ build_x_unary_op (code, xarg)
   return exp;
 }
 
-/* Like truthvalue_conversion, but handle pointer-to-member constants, where
-   a null value is represented by an INTEGER_CST of -1.  */
+/* Like c_common_truthvalue_conversion, but handle pointer-to-member
+   constants, where a null value is represented by an INTEGER_CST of
+   -1.  */
 
 tree
 cp_truthvalue_conversion (expr)
@@ -4202,7 +4203,7 @@ cp_truthvalue_conversion (expr)
   if (TYPE_PTRMEM_P (type))
     return build_binary_op (NE_EXPR, expr, integer_zero_node, 1);
   else
-    return truthvalue_conversion (expr);
+    return c_common_truthvalue_conversion (expr);
 }
 
 /* Just like cp_truthvalue_conversion, but we want a CLEANUP_POINT_EXPR.  */

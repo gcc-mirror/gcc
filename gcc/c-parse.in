@@ -566,19 +566,22 @@ expr_no_commas:
 	| expr_no_commas '^' expr_no_commas
 		{ $$ = parser_build_binary_op ($2, $1, $3); }
 	| expr_no_commas ANDAND
-		{ $1 = truthvalue_conversion (default_conversion ($1));
+		{ $1 = c_common_truthvalue_conversion
+		    (default_conversion ($1));
 		  skip_evaluation += $1 == boolean_false_node; }
 	  expr_no_commas
 		{ skip_evaluation -= $1 == boolean_false_node;
 		  $$ = parser_build_binary_op (TRUTH_ANDIF_EXPR, $1, $4); }
 	| expr_no_commas OROR
-		{ $1 = truthvalue_conversion (default_conversion ($1));
+		{ $1 = c_common_truthvalue_conversion
+		    (default_conversion ($1));
 		  skip_evaluation += $1 == boolean_true_node; }
 	  expr_no_commas
 		{ skip_evaluation -= $1 == boolean_true_node;
 		  $$ = parser_build_binary_op (TRUTH_ORIF_EXPR, $1, $4); }
 	| expr_no_commas '?'
-		{ $1 = truthvalue_conversion (default_conversion ($1));
+		{ $1 = c_common_truthvalue_conversion
+		    (default_conversion ($1));
 		  skip_evaluation += $1 == boolean_false_node; }
           expr ':'
 		{ skip_evaluation += (($1 == boolean_true_node)
@@ -591,7 +594,8 @@ expr_no_commas:
 		    pedwarn ("ISO C forbids omitting the middle term of a ?: expression");
 		  /* Make sure first operand is calculated only once.  */
 		  $<ttype>2 = save_expr ($1);
-		  $1 = truthvalue_conversion (default_conversion ($<ttype>2));
+		  $1 = c_common_truthvalue_conversion
+		    (default_conversion ($<ttype>2));
 		  skip_evaluation += $1 == boolean_true_node; }
 	  ':' expr_no_commas
 		{ skip_evaluation -= $1 == boolean_true_node;
@@ -606,7 +610,8 @@ expr_no_commas:
 	| expr_no_commas ASSIGN expr_no_commas
 		{ char class;
 		  $$ = build_modify_expr ($1, $2, $3);
-		  /* This inhibits warnings in truthvalue_conversion.  */
+		  /* This inhibits warnings in
+		     c_common_truthvalue_conversion.  */
 		  class = TREE_CODE_CLASS (TREE_CODE ($$));
 		  if (IS_EXPR_CODE_CLASS (class))
 		    C_SET_EXP_ORIGINAL_CODE ($$, ERROR_MARK);
@@ -2189,7 +2194,7 @@ if_prefix:
           IF
                 { $<ttype>$ = c_begin_if_stmt (); }
             '(' expr ')'
-		{ c_expand_start_cond (truthvalue_conversion ($4), 
+		{ c_expand_start_cond (c_common_truthvalue_conversion ($4), 
 				       compstmt_count,$<ttype>2);
 		  $<itype>$ = stmt_count;
 		  if_stmt_file = $<filename>-2;
@@ -2301,15 +2306,15 @@ select_or_iter_stmt:
                 { stmt_count++; 
 		  $<ttype>$ = c_begin_while_stmt (); }
 	  '(' expr ')'
-                { $4 = truthvalue_conversion ($4);
-		  c_finish_while_stmt_cond (truthvalue_conversion ($4),
-					    $<ttype>2);
+                { $4 = c_common_truthvalue_conversion ($4);
+		  c_finish_while_stmt_cond
+		    (c_common_truthvalue_conversion ($4), $<ttype>2);
 		  $<ttype>$ = add_stmt ($<ttype>2); }
 	  c99_block_lineno_labeled_stmt
 		{ RECHAIN_STMTS ($<ttype>6, WHILE_BODY ($<ttype>6)); }
 	| do_stmt_start
 	  '(' expr ')' ';'
-                { DO_COND ($1) = truthvalue_conversion ($3); }
+                { DO_COND ($1) = c_common_truthvalue_conversion ($3); }
 	| do_stmt_start error
  		{ }
 	| FOR
@@ -2321,7 +2326,8 @@ select_or_iter_stmt:
 		  RECHAIN_STMTS ($<ttype>2, FOR_INIT_STMT ($<ttype>2)); }
 	  xexpr ';'
                 { if ($6) 
-		    FOR_COND ($<ttype>2) = truthvalue_conversion ($6); }
+		    FOR_COND ($<ttype>2)
+		      = c_common_truthvalue_conversion ($6); }
 	  xexpr ')'
 		{ FOR_EXPR ($<ttype>2) = $9; }
 	  c99_block_lineno_labeled_stmt

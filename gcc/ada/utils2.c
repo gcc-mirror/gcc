@@ -66,7 +66,7 @@ static tree build_simple_component_ref	PARAMS ((tree, tree, tree));
    the only possible operands will be things of Boolean type.  */
 
 tree
-truthvalue_conversion (expr)
+gnat_truthvalue_conversion (expr)
      tree expr;
 {
   tree type = TREE_TYPE (expr);
@@ -85,13 +85,14 @@ truthvalue_conversion (expr)
 
     case COND_EXPR:
       /* Distribute the conversion into the arms of a COND_EXPR.  */
-      return fold (build (COND_EXPR, type, TREE_OPERAND (expr, 0),
-			  truthvalue_conversion (TREE_OPERAND (expr, 1)),
-			  truthvalue_conversion (TREE_OPERAND (expr, 2))));
+      return fold
+	(build (COND_EXPR, type, TREE_OPERAND (expr, 0),
+		gnat_truthvalue_conversion (TREE_OPERAND (expr, 1)),
+		gnat_truthvalue_conversion (TREE_OPERAND (expr, 2))));
 
     case WITH_RECORD_EXPR:
       return build (WITH_RECORD_EXPR, type,
-		    truthvalue_conversion (TREE_OPERAND (expr, 0)),
+		    gnat_truthvalue_conversion (TREE_OPERAND (expr, 0)),
 		    TREE_OPERAND (expr, 1));
 
     default:
@@ -983,8 +984,8 @@ build_binary_op (op_code, result_type, left_operand, right_operand)
     case TRUTH_AND_EXPR:
     case TRUTH_OR_EXPR:
     case TRUTH_XOR_EXPR:
-      left_operand = truthvalue_conversion (left_operand);
-      right_operand = truthvalue_conversion (right_operand);
+      left_operand = gnat_truthvalue_conversion (left_operand);
+      right_operand = gnat_truthvalue_conversion (right_operand);
       goto common;
 
     case BIT_AND_EXPR:
@@ -1115,7 +1116,7 @@ build_unary_op (op_code, result_type, operand)
       if (result_type != base_type)
 	gigi_abort (508);
 
-      result = invert_truthvalue (truthvalue_conversion (operand));
+      result = invert_truthvalue (gnat_truthvalue_conversion (operand));
       break;
 
     case ATTR_ADDR_EXPR:
