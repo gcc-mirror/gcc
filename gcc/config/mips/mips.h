@@ -1424,10 +1424,6 @@ extern const struct mips_cpu_info *mips_tune_info;
 #define PAD_VARARGS_DOWN \
   (FUNCTION_ARG_PADDING (TYPE_MODE (type), type) == downward)
 
-/* Arguments declared as 'char' or 'short' in a prototype should be
-   passed as 'int's.  */
-#define PROMOTE_PROTOTYPES 1
-
 /* Define if operations between registers always perform the operation
    on the full register even if a narrower mode is specified.  */
 #define WORD_REGISTER_OPERATIONS
@@ -1455,15 +1451,6 @@ extern const struct mips_cpu_info *mips_tune_info;
 
 /* Define if loading short immediate values into registers sign extends.  */
 #define SHORT_IMMEDIATES_SIGN_EXTEND
-
-
-/* Define this if function arguments should also be promoted using the above
-   procedure.  */
-#define PROMOTE_FUNCTION_ARGS
-
-/* Likewise, if the function return value is promoted.  */
-#define PROMOTE_FUNCTION_RETURN
-
 
 /* Standard register usage.  */
 
@@ -1682,9 +1669,6 @@ extern char mips_hard_regno_mode_ok[][FIRST_PSEUDO_REGISTER];
 
 /* Register in which static-chain is passed to a function.  */
 #define STATIC_CHAIN_REGNUM (GP_REG_FIRST + 2)
-
-/* Pass structure addresses as an "invisible" first argument.  */
-#define STRUCT_VALUE 0
 
 /* Registers used as temporaries in prologue/epilogue code.  If we're
    generating mips16 code, these registers must come from the core set
@@ -2225,15 +2209,7 @@ extern enum reg_class mips_char_to_class[256];
     || (IN_RANGE((N), FP_ARG_FIRST, FP_ARG_LAST)		\
 	&& ((N) % FP_INC == 0) && mips_abi != ABI_O64))		\
    && !fixed_regs[N])
-
-#define RETURN_IN_MEMORY(TYPE) mips_return_in_memory (TYPE)
-
-#define SETUP_INCOMING_VARARGS(CUM,MODE,TYPE,PRETEND_SIZE,NO_RTL)	\
-	(PRETEND_SIZE) = mips_setup_incoming_varargs (&(CUM), (MODE),	\
-						      (TYPE), (NO_RTL))
 
-#define STRICT_ARGUMENT_NAMING (mips_abi != ABI_32 && mips_abi != ABI_O64)
-
 /* This structure has to cope with two different argument allocation
    schemes.  Most MIPS ABIs view the arguments as a struct, of which the
    first N words go in registers and the rest go on the stack.  If I < N,

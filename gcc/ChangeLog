@@ -1,5 +1,28 @@
 2004-01-25  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/mips/mips-protos.h: Remove the prototypes for
+	mips_setup_incoming_varargs and mips_return_in_memory.
+	* config/mips/mips.c (TARGET_PROMOTE_FUNCTION_ARGS): New.
+	(TARGET_PROMOTE_FUNCTION_RETURN): Likewise.
+	(TARGET_PROMOTE_PROTOTYPES): Likewise.
+	(TARGET_STRUCT_VALUE_RTX): Likewise.
+	(TARGET_RETURN_IN_MEMORY): Likewise.
+	(TARGET_SETUP_INCOMING_VARARGS): Likewise.
+	(TARGET_STRICT_ARGUMENT_NAMING): Likewise.
+	(mips_setup_incoming_varargs): Match the prototype for
+	TARGET_SETUP_INCOMING_VARARGS.
+	(mips_return_in_memory): Make it static.  Add argument fntype.
+	(mips_strict_argument_naming): New.
+	* config/mips/mips.h (PROMOTE_PROTOTYPES): Remove.
+	(PROMOTE_FUNCTION_ARGS): Likewise.
+	(PROMOTE_FUNCTION_RETURN): Likewise.
+	(STRUCT_VALUE): Likewise.
+	(RETURN_IN_MEMORY): Likewise.
+	(SETUP_INCOMING_VARARGS): Likewise.
+	(STRICT_ARGUMENT_NAMING): Likewise.
+
+2004-01-25  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/ip2k/ip2k.c (TARGET_STRUCT_VALUE_RTX): New.
 	(TARGET_RETURN_IN_MEMORY): Likewise.
 	(TARGET_SETUP_INCOMING_VARARGS): Likewise.

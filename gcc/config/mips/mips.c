@@ -279,9 +279,13 @@ static bool mips_matching_cpu_name_p (const char *, const char *);
 static const struct mips_cpu_info *mips_parse_cpu (const char *, const char *);
 static const struct mips_cpu_info *mips_cpu_info_from_isa (int);
 static int mips_adjust_cost (rtx, rtx, rtx, int);
+static bool mips_return_in_memory (tree, tree);
+static bool mips_strict_argument_naming (CUMULATIVE_ARGS *);
 static int mips_issue_rate (void);
 static int mips_use_dfa_pipeline_interface (void);
 static void mips_init_libfuncs (void);
+static void mips_setup_incoming_varargs (CUMULATIVE_ARGS *, enum machine_mode,
+					 tree, int *, int);
 static tree mips_build_builtin_va_list (void);
 
 #if TARGET_IRIX
@@ -795,6 +799,18 @@ const struct mips_cpu_info mips_cpu_info_table[] = {
 
 #undef TARGET_BUILD_BUILTIN_VA_LIST
 #define TARGET_BUILD_BUILTIN_VA_LIST mips_build_builtin_va_list
+
+#undef TARGET_PROMOTE_FUNCTION_ARGS
+#define TARGET_PROMOTE_FUNCTION_ARGS hook_bool_tree_true
+#undef TARGET_PROMOTE_FUNCTION_RETURN
+#define TARGET_PROMOTE_FUNCTION_RETURN hook_bool_tree_true
+#undef TARGET_PROMOTE_PROTOTYPES
+#define TARGET_PROMOTE_PROTOTYPES hook_bool_tree_true
+
+#undef TARGET_STRUCT_VALUE_RTX
+#define TARGET_STRUCT_VALUE_RTX hook_rtx_tree_int_null
+#undef TARGET_RETURN_IN_MEMORY
+#define TARGET_RETURN_IN_MEMORY mips_return_in_memory
 #undef TARGET_RETURN_IN_MSB
 #define TARGET_RETURN_IN_MSB mips_return_in_msb
 
@@ -802,6 +818,11 @@ const struct mips_cpu_info mips_cpu_info_table[] = {
 #define TARGET_ASM_OUTPUT_MI_THUNK mips_output_mi_thunk
 #undef TARGET_ASM_CAN_OUTPUT_MI_THUNK
 #define TARGET_ASM_CAN_OUTPUT_MI_THUNK hook_bool_tree_hwi_hwi_tree_true
+
+#undef TARGET_SETUP_INCOMING_VARARGS
+#define TARGET_SETUP_INCOMING_VARARGS mips_setup_incoming_varargs
+#undef TARGET_STRICT_ARGUMENT_NAMING
+#define TARGET_STRICT_ARGUMENT_NAMING mips_strict_argument_naming
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -3885,9 +3906,9 @@ mips_pad_reg_upward (enum machine_mode mode, tree type)
   return mips_pad_arg_upward (mode, type);
 }
 
-int
-mips_setup_incoming_varargs (const CUMULATIVE_ARGS *cum,
-			     enum machine_mode mode, tree type, int no_rtl)
+static void
+mips_setup_incoming_varargs (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+			     tree type, int *pretend_size, int no_rtl)
 {
   CUMULATIVE_ARGS local_cum;
   int gp_saved, fp_saved;
@@ -3958,10 +3979,13 @@ mips_setup_incoming_varargs (const CUMULATIVE_ARGS *cum,
 	}
     }
   if (mips_abi == ABI_32 || mips_abi == ABI_O64)
-    /* No need for pretend arguments: the register parameter area was
-       allocated by the caller.  */
-    return 0;
-  return (gp_saved * UNITS_PER_WORD) + (fp_saved * UNITS_PER_FPREG);
+    {
+      /* No need for pretend arguments: the register parameter area was
+	 allocated by the caller.  */
+      *pretend_size = 0;
+      return;
+    }
+  *pretend_size = (gp_saved * UNITS_PER_WORD) + (fp_saved * UNITS_PER_FPREG);
 }
 
 /* Create the va_list data type.
@@ -7466,8 +7490,8 @@ mips_function_value (tree valtype, tree func ATTRIBUTE_UNUSED,
       mode = TYPE_MODE (valtype);
       unsignedp = TREE_UNSIGNED (valtype);
 
-      /* Since we define PROMOTE_FUNCTION_RETURN, we must promote
-	 the mode just as PROMOTE_MODE does.  */
+      /* Since we define TARGET_PROMOTE_FUNCTION_RETURN that returns
+	 true, we must promote the mode just as PROMOTE_MODE does.  */
       mode = promote_mode (valtype, mode, &unsignedp, 1);
 
       /* Handle structures whose fields are returned in $f0/$f2.  */
@@ -9517,20 +9541,26 @@ mips_hard_regno_nregs (int regno, enum machine_mode mode)
     return ((GET_MODE_SIZE (mode) + UNITS_PER_FPREG - 1) / UNITS_PER_FPREG);
 }
 
-/* Implement RETURN_IN_MEMORY.  Under the old (i.e., 32 and O64 ABIs)
+/* Implement TARGET_RETURN_IN_MEMORY.  Under the old (i.e., 32 and O64 ABIs)
    all BLKmode objects are returned in memory.  Under the new (N32 and
    64-bit MIPS ABIs) small structures are returned in a register.
    Objects with varying size must still be returned in memory, of
    course.  */
 
-int
-mips_return_in_memory (tree type)
+static bool
+mips_return_in_memory (tree type, tree fndecl ATTRIBUTE_UNUSED)
 {
   if (mips_abi == ABI_32 || mips_abi == ABI_O64)
     return (TYPE_MODE (type) == BLKmode);
   else
     return ((int_size_in_bytes (type) > (2 * UNITS_PER_WORD))
 	    || (int_size_in_bytes (type) == -1));
+}
+
+static bool
+mips_strict_argument_naming (CUMULATIVE_ARGS *ca ATTRIBUTE_UNUSED)
+{
+  return (mips_abi != ABI_32 && mips_abi != ABI_O64);
 }
 
 static int
