@@ -1,3 +1,14 @@
+2001-08-31  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Makefile.in (c-pragma.o): Depend on output.h.
+	(reorg.o): Depend on except.h.
+
+	* c-pragma.c: Include output.h.
+
+	* reorg.c: Include except.h.
+
+	* unwind-dw2.c: Call __builtin_alloca, not alloca.
+
 2001-08-31  Richard Henderson  <rth@redhat.com>
 
 	* sched-deps.c (add_dependence): Don't elide dependancy if the
