@@ -1,3 +1,9 @@
+1998-07-16  Mark Mitchell  <mark@markmitchell.com>
+
+	* semantics.c (finish_object_call_expr): Move test for the
+	function called being a TYPE_DECL to ...
+	* call.c (build_new_method_call): Here.
+
 1998-07-15  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl2.c (arg_assoc_class): Also look at template arguments, if any.
