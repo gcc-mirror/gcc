@@ -1,3 +1,9 @@
+Wed Oct  6 16:10:35 1999  Michael Meissner  <meissner@cygnus.com>
+
+	* varray.h (VARRAY_CHECK): Fix up appropriate revision check, in
+	case somebody tries to compile --enable-checking code with gcc
+	1.34 or such.
+
 Wed Oct  6 12:22:50 1999  Richard Henderson  <rth@cygnus.com>
 
 	* genrecog.c (add_to_sequence): Verify operand to label_ref is
