@@ -2305,6 +2305,12 @@ tested, should also use the above mechanism.  @xref{Jump Patterns}.
 The above discussion also applies to the @samp{mov@var{mode}cc} and
 @samp{s@var{cond}} patterns.
 
+@cindex @code{jump} instruction pattern
+@item @samp{jump}
+A jump inside a function; an unconditional branch.  Operand 0 is the
+@code{label_ref} of the label to jump to.  This pattern name is mandatory
+on all machines.
+
 @cindex @code{call} instruction pattern
 @item @samp{call}
 Subroutine call instruction returning no value.  Operand 0 is the
