@@ -1,5 +1,10 @@
 2005-04-04  Tom Tromey  <tromey@redhat.com>
 
+	* java/lang/ClassLoader.java (loadClass): Resolve class even if
+	it was already found.
+
+2005-04-04  Tom Tromey  <tromey@redhat.com>
+
 	* java/net/URL.java (DEFAULT_SEARCH_PATH): Added
 	org.metastatic.jessie.
 
