@@ -71,7 +71,17 @@ struct lang_hooks_for_tree_dump
 
 struct lang_hooks_for_types
 {
+  /* Return a new type (with the indicated CODE), doing whatever
+     language-specific processing is required.  */
   tree (*make_type) PARAMS ((enum tree_code));
+  
+  /* Given MODE and UNSIGNEDP, return a suitable type-tree with that
+     mode.  */
+  tree (*type_for_mode) PARAMS ((enum machine_mode, int));
+
+  /* Given PRECISION and UNSIGNEDP, return a suitable type-tree for an
+     integer type with at least that precision.  */
+  tree (*type_for_size) PARAMS ((unsigned, int));
 };
 
 /* Language hooks related to decls and the symbol table.  */

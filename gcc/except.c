@@ -396,7 +396,8 @@ init_eh ()
       DECL_FIELD_CONTEXT (f_cs) = sjlj_fc_type_node;
 
       tmp = build_index_type (build_int_2 (4 - 1, 0));
-      tmp = build_array_type (type_for_mode (word_mode, 1), tmp);
+      tmp = build_array_type ((*lang_hooks.types.type_for_mode) (word_mode, 1),
+			      tmp);
       f_data = build_decl (FIELD_DECL, get_identifier ("__data"), tmp);
       DECL_FIELD_CONTEXT (f_data) = sjlj_fc_type_node;
 

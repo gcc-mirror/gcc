@@ -13247,7 +13247,7 @@ finish_enum (enumtype)
   if (flag_short_enums || (precision > TYPE_PRECISION (integer_type_node)))
     /* Use the width of the narrowest normal C type which is wide
        enough.  */
-    TYPE_PRECISION (enumtype) = TYPE_PRECISION (type_for_size
+    TYPE_PRECISION (enumtype) = TYPE_PRECISION (c_common_type_for_size
 						(precision, 1));
   else
     TYPE_PRECISION (enumtype) = TYPE_PRECISION (integer_type_node);

@@ -2611,20 +2611,6 @@ extern tree get_unwidened		PARAMS ((tree, tree));
 
 extern tree get_narrower		PARAMS ((tree, int *));
 
-/* Given MODE and UNSIGNEDP, return a suitable type-tree
-   with that mode.
-   The definition of this resides in language-specific code
-   as the repertoire of available types may vary.  */
-
-extern tree type_for_mode		PARAMS ((enum machine_mode, int));
-
-/* Given PRECISION and UNSIGNEDP, return a suitable type-tree
-   for an integer type with at least that precision.
-   The definition of this resides in language-specific code
-   as the repertoire of available types may vary.  */
-
-extern tree type_for_size		PARAMS ((unsigned, int));
-
 /* Given an integer type T, return a type like T but unsigned.
    If T is unsigned, the value is T.
    The definition of this resides in language-specific code

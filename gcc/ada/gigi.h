@@ -423,11 +423,11 @@ extern void gnat_init_gcc_eh		PARAMS ((void));
 /* Return an integer type with the number of bits of precision given by  
    PRECISION.  UNSIGNEDP is nonzero if the type is unsigned; otherwise
    it is a signed type.  */
-extern tree type_for_size		PARAMS ((unsigned, int));
+extern tree gnat_type_for_size		PARAMS ((unsigned, int));
 
 /* Return a data type that has machine mode MODE.  UNSIGNEDP selects
    an unsigned type; otherwise a signed type is returned.  */
-extern tree type_for_mode		PARAMS ((enum machine_mode, int));
+extern tree gnat_type_for_mode		PARAMS ((enum machine_mode, int));
 
 /* Return the unsigned version of a TYPE_NODE, a scalar type.  */
 extern tree unsigned_type		PARAMS ((tree));

@@ -30,7 +30,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "tree.h"
 #include "ggc.h"
 #include "flags.h"
-
+#include "langhooks.h"
 #include "java-tree.h"
 
 enum builtin_type 

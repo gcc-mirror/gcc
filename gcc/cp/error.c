@@ -387,7 +387,7 @@ dump_type (t, flags)
 	   which has no name and is not very useful for diagnostics.  So
 	   look up the equivalent C type and print its name.  */
 	tree elt = TREE_TYPE (t);
-	elt = type_for_mode (TYPE_MODE (elt), TREE_UNSIGNED (elt));
+	elt = c_common_type_for_mode (TYPE_MODE (elt), TREE_UNSIGNED (elt));
 	dump_type (elt, flags);
       }
       break;

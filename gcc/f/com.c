@@ -261,6 +261,8 @@ struct _ffecom_concat_list_
 
 /* Static functions (internal). */
 
+static tree ffe_type_for_mode PARAMS ((enum machine_mode, int));
+static tree ffe_type_for_size PARAMS ((unsigned int, int));
 static void ffecom_init_decl_processing PARAMS ((void));
 static tree ffecom_arglist_expr_ (const char *argstring, ffebld args);
 static tree ffecom_widest_expr_type_ (ffebld list);
@@ -14225,6 +14227,10 @@ static void ffe_mark_tree (tree);
 #define LANG_HOOKS_PRINT_IDENTIFIER	ffe_print_identifier
 #undef  LANG_HOOKS_DECL_PRINTABLE_NAME
 #define LANG_HOOKS_DECL_PRINTABLE_NAME	ffe_printable_name
+#undef  LANG_HOOKS_TYPE_FOR_MODE
+#define LANG_HOOKS_TYPE_FOR_MODE	ffe_type_for_mode
+#undef  LANG_HOOKS_TYPE_FOR_SIZE
+#define LANG_HOOKS_TYPE_FOR_SIZE	ffe_type_for_size
 
 /* We do not wish to use alias-set based aliasing at all.  Used in the
    extreme (every object with its own set, with equivalences recorded) it
@@ -14758,7 +14764,7 @@ signed_or_unsigned_type (unsignedp, type)
     return (unsignedp ? long_long_unsigned_type_node
 	    : long_long_integer_type_node);
 
-  type2 = type_for_size (TYPE_PRECISION (type), unsignedp);
+  type2 = ffe_type_for_size (TYPE_PRECISION (type), unsignedp);
   if (type2 == NULL_TREE)
     return type;
 
@@ -14794,7 +14800,7 @@ signed_type (type)
     return intQI_type_node;
 #endif
 
-  type2 = type_for_size (TYPE_PRECISION (type1), 0);
+  type2 = ffe_type_for_size (TYPE_PRECISION (type1), 0);
   if (type2 != NULL_TREE)
     return type2;
 
@@ -14992,8 +14998,8 @@ truthvalue_conversion (expr)
 		   convert (TREE_TYPE (expr), integer_zero_node));
 }
 
-tree
-type_for_mode (mode, unsignedp)
+static tree
+ffe_type_for_mode (mode, unsignedp)
      enum machine_mode mode;
      int unsignedp;
 {
@@ -15049,8 +15055,8 @@ type_for_mode (mode, unsignedp)
   return 0;
 }
 
-tree
-type_for_size (bits, unsignedp)
+static tree
+ffe_type_for_size (bits, unsignedp)
      unsigned bits;
      int unsignedp;
 {
@@ -15114,7 +15120,7 @@ unsigned_type (type)
     return unsigned_intQI_type_node;
 #endif
 
-  type2 = type_for_size (TYPE_PRECISION (type1), 1);
+  type2 = ffe_type_for_size (TYPE_PRECISION (type1), 1);
   if (type2 != NULL_TREE)
     return type2;
 

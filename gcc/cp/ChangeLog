@@ -1,3 +1,14 @@
+2002-03-29  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cp-lang.c (LANG_HOOKS_TYPE_FOR_MODE, LANG_HOOKS_TYPE_FOR_SIZE):
+	Redefine.
+	* cvt.c (cp_convert_to_pointer, type_promotes_to): Use new hooks.
+	* decl.c (finish_enum): Similarly.
+	* error.c (dump_type): Similarly.
+	* lex.c (cxx_init): Similarly.
+	* mangle.c (write_builtin_type): Similarly.
+	* typeck.c (comptypes): Similarly.
+
 2002-03-28  Roger Sayle  <roger@eyesopen.com>
 
 	PR c++/5998:

@@ -4027,8 +4027,9 @@ store_expr (exp, target, want_value)
 					  TREE_TYPE (exp)),
 		 exp);
 
-	  exp = convert (type_for_mode (GET_MODE (SUBREG_REG (target)),
-					SUBREG_PROMOTED_UNSIGNED_P (target)),
+	  exp = convert ((*lang_hooks.types.type_for_mode)
+			 (GET_MODE (SUBREG_REG (target)),
+			  SUBREG_PROMOTED_UNSIGNED_P (target)),
 			 exp);
 
 	  inner_target = SUBREG_REG (target);
@@ -4526,7 +4527,8 @@ store_constructor (exp, target, cleared, size)
 
 	      if (TYPE_PRECISION (type) < BITS_PER_WORD)
 		{
-		  type = type_for_size (BITS_PER_WORD, TREE_UNSIGNED (type));
+		  type = (*lang_hooks.types.type_for_size)
+		    (BITS_PER_WORD, TREE_UNSIGNED (type));
 		  value = convert (type, value);
 		}
 
@@ -4955,7 +4957,8 @@ store_constructor (exp, target, cleared, size)
 	    {
 	      targetx
 		= assign_temp
-		  ((build_qualified_type (type_for_mode (GET_MODE (target), 0),
+		  ((build_qualified_type ((*lang_hooks.types.type_for_mode)
+					  (GET_MODE (target), 0),
 					  TYPE_QUAL_CONST)),
 		   0, 1, 1);
 	      emit_move_insn (targetx, target);
@@ -7015,7 +7018,8 @@ expand_expr (exp, target, tmode, modifier)
 	    if (mode == BLKmode)
 	      {
 		rtx new = assign_temp (build_qualified_type
-				       (type_for_mode (ext_mode, 0),
+				       ((*lang_hooks.types.type_for_mode)
+					(ext_mode, 0),
 					TYPE_QUAL_CONST), 0, 1, 1);
 
 		emit_move_insn (new, op0);
@@ -9252,7 +9256,7 @@ do_jump (exp, if_false_label, if_true_label)
 	  && TYPE_PRECISION (TREE_TYPE (exp)) <= HOST_BITS_PER_WIDE_INT
 	  && (i = tree_floor_log2 (TREE_OPERAND (exp, 1))) >= 0
 	  && (mode = mode_for_size (i + 1, MODE_INT, 0)) != BLKmode
-	  && (type = type_for_mode (mode, 1)) != 0
+	  && (type = (*lang_hooks.types.type_for_mode) (mode, 1)) != 0
 	  && TYPE_PRECISION (type) < TYPE_PRECISION (TREE_TYPE (exp))
 	  && (cmp_optab->handlers[(int) TYPE_MODE (type)].insn_code
 	      != CODE_FOR_nothing))
@@ -9312,7 +9316,7 @@ do_jump (exp, if_false_label, if_true_label)
 	get_inner_reference (exp, &bitsize, &bitpos, &offset, &mode,
 			     &unsignedp, &volatilep);
 
-	type = type_for_size (bitsize, unsignedp);
+	type = (*lang_hooks.types.type_for_size) (bitsize, unsignedp);
 	if (! SLOW_BYTE_ACCESS
 	    && type != 0 && bitsize >= 0
 	    && TYPE_PRECISION (type) < TYPE_PRECISION (TREE_TYPE (exp))
@@ -10393,8 +10397,8 @@ try_casesi (index_type, index_expr, minval, range,
     {
       if (TYPE_MODE (index_type) != index_mode)
 	{
-	  index_expr = convert (type_for_size (index_bits, 0),
-				index_expr);
+	  index_expr = convert ((*lang_hooks.types.type_for_size)
+				(index_bits, 0), index_expr);
 	  index_type = TREE_TYPE (index_expr);
 	}
 

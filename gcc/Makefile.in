@@ -1319,7 +1319,8 @@ prefix.o: prefix.c $(CONFIG_H) $(SYSTEM_H) Makefile prefix.h
 	-DPREFIX=\"$(prefix)\" \
 	  -c $(srcdir)/prefix.c $(OUTPUT_OPTION)
 
-convert.o: convert.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) flags.h convert.h toplev.h
+convert.o: convert.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) flags.h convert.h \
+   toplev.h langhooks.h
 
 langhooks.o : langhooks.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) toplev.h \
    tree-inline.h $(RTL_H) insn-config.h integrate.h langhooks.h \
@@ -1395,11 +1396,12 @@ builtins.o : builtins.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) $(TREE_H) flags.h \
    $(TARGET_H) function.h $(REGS_H) $(EXPR_H) $(OPTABS_H) insn-config.h \
    $(RECOG_H) output.h typeclass.h hard-reg-set.h toplev.h hard-reg-set.h \
    except.h $(TM_P_H) $(PREDICT_H) libfuncs.h
-calls.o : calls.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) $(TREE_H) flags.h $(EXPR_H) \
+calls.o : calls.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) $(TREE_H) flags.h \
+   $(EXPR_H) langhooks.h \
    libfuncs.h $(REGS_H) toplev.h output.h function.h $(TIMEVAR_H) $(TM_P_H)
 expmed.o : expmed.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) $(TREE_H) flags.h  \
    insn-config.h $(EXPR_H) $(OPTABS_H) $(RECOG_H) real.h \
-   toplev.h $(TM_P_H)
+   toplev.h $(TM_P_H) langhooks.h
 explow.o : explow.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) $(TREE_H) flags.h \
    hard-reg-set.h insn-config.h $(EXPR_H) $(OPTABS_H) $(RECOG_H) \
    toplev.h function.h ggc.h $(TM_P_H)

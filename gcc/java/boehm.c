@@ -230,6 +230,6 @@ get_boehm_type_descriptor (tree type)
       value = build_int_2 (2, 0);
     }
 
-  TREE_TYPE (value) = type_for_mode (ptr_mode, 1);
+  TREE_TYPE (value) = java_type_for_mode (ptr_mode, 1);
   return value;
 }

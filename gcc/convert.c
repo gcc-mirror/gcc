@@ -29,6 +29,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "flags.h"
 #include "convert.h"
 #include "toplev.h"
+#include "langhooks.h"
 
 /* Convert EXPR to some pointer or reference type TYPE.
 
@@ -61,7 +62,8 @@ convert_to_pointer (type, expr)
 
       return
 	convert_to_pointer (type,
-			    convert (type_for_size (POINTER_SIZE, 0), expr));
+			    convert ((*lang_hooks.types.type_for_size)
+				     (POINTER_SIZE, 0), expr));
 
     default:
       error ("cannot convert to a pointer type");
@@ -138,8 +140,8 @@ convert_to_integer (type, expr)
       if (integer_zerop (expr))
 	expr = integer_zero_node;
       else
-	expr = fold (build1 (CONVERT_EXPR,
-			     type_for_size (POINTER_SIZE, 0), expr));
+	expr = fold (build1 (CONVERT_EXPR, (*lang_hooks.types.type_for_size)
+			     (POINTER_SIZE, 0), expr));
 
       return convert_to_integer (type, expr);
 
@@ -189,8 +191,8 @@ convert_to_integer (type, expr)
       else if (TREE_CODE (type) == ENUMERAL_TYPE
 	       || outprec != GET_MODE_BITSIZE (TYPE_MODE (type)))
 	return build1 (NOP_EXPR, type,
-		       convert (type_for_mode (TYPE_MODE (type),
-					       TREE_UNSIGNED (type)),
+		       convert ((*lang_hooks.types.type_for_mode)
+				(TYPE_MODE (type), TREE_UNSIGNED (type)),
 				expr));
 
       /* Here detect when we can distribute the truncation down past some
@@ -300,8 +302,8 @@ convert_to_integer (type, expr)
 		/* Can't do arithmetic in enumeral types
 		   so use an integer type that will hold the values.  */
 		if (TREE_CODE (typex) == ENUMERAL_TYPE)
-		  typex = type_for_size (TYPE_PRECISION (typex),
-					 TREE_UNSIGNED (typex));
+		  typex = (*lang_hooks.types.type_for_size)
+		    (TYPE_PRECISION (typex), TREE_UNSIGNED (typex));
 
 		/* But now perhaps TYPEX is as wide as INPREC.
 		   In that case, do nothing special here.
@@ -338,8 +340,8 @@ convert_to_integer (type, expr)
 	    /* Can't do arithmetic in enumeral types
 	       so use an integer type that will hold the values.  */
 	    if (TREE_CODE (typex) == ENUMERAL_TYPE)
-	      typex = type_for_size (TYPE_PRECISION (typex),
-				     TREE_UNSIGNED (typex));
+	      typex = (*lang_hooks.types.type_for_size)
+		(TYPE_PRECISION (typex), TREE_UNSIGNED (typex));
 
 	    /* But now perhaps TYPEX is as wide as INPREC.
 	       In that case, do nothing special here.

@@ -216,9 +216,9 @@ common_type (t1, t2)
   /* Treat an enum type as the unsigned integer type of the same width.  */
 
   if (TREE_CODE (t1) == ENUMERAL_TYPE)
-    t1 = type_for_size (TYPE_PRECISION (t1), 1);
+    t1 = c_common_type_for_size (TYPE_PRECISION (t1), 1);
   if (TREE_CODE (t2) == ENUMERAL_TYPE)
-    t2 = type_for_size (TYPE_PRECISION (t2), 1);
+    t2 = c_common_type_for_size (TYPE_PRECISION (t2), 1);
 
   code1 = TREE_CODE (t1);
   code2 = TREE_CODE (t2);
@@ -465,9 +465,9 @@ comptypes (type1, type2)
      signedness.  */
 
   if (TREE_CODE (t1) == ENUMERAL_TYPE)
-    t1 = type_for_size (TYPE_PRECISION (t1), TREE_UNSIGNED (t1));
+    t1 = c_common_type_for_size (TYPE_PRECISION (t1), TREE_UNSIGNED (t1));
   if (TREE_CODE (t2) == ENUMERAL_TYPE)
-    t2 = type_for_size (TYPE_PRECISION (t2), TREE_UNSIGNED (t2));
+    t2 = c_common_type_for_size (TYPE_PRECISION (t2), TREE_UNSIGNED (t2));
 
   if (t1 == t2)
     return 1;
@@ -994,11 +994,11 @@ default_conversion (exp)
      but convert wide enums to something wider.  */
   if (code == ENUMERAL_TYPE)
     {
-      type = type_for_size (MAX (TYPE_PRECISION (type),
-				 TYPE_PRECISION (integer_type_node)),
-			    ((TYPE_PRECISION (type)
-			      >= TYPE_PRECISION (integer_type_node))
-			     && TREE_UNSIGNED (type)));
+      type = c_common_type_for_size (MAX (TYPE_PRECISION (type),
+					  TYPE_PRECISION (integer_type_node)),
+				     ((TYPE_PRECISION (type)
+				       >= TYPE_PRECISION (integer_type_node))
+				      && TREE_UNSIGNED (type)));
 
       return convert (type, exp);
     }

@@ -3799,7 +3799,8 @@ force_const_mem (mode, x)
   /* Align the location counter as required by EXP's data type.  */
   align = GET_MODE_ALIGNMENT (mode == VOIDmode ? word_mode : mode);
 #ifdef CONSTANT_ALIGNMENT
-  align = CONSTANT_ALIGNMENT (make_tree (type_for_mode (mode, 0), x), align);
+  align = CONSTANT_ALIGNMENT (make_tree ((*lang_hooks.types.type_for_mode)
+					 (mode, 0), x), align);
 #endif
 
   pool_offset += (align / BITS_PER_UNIT) - 1;
@@ -3837,7 +3838,7 @@ force_const_mem (mode, x)
   pool->desc->rtl = def
     = gen_rtx_MEM (mode, gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (label)));
   set_mem_alias_set (def, const_alias_set);
-  set_mem_attributes (def, type_for_mode (mode, 0), 1);
+  set_mem_attributes (def, (*lang_hooks.types.type_for_mode) (mode, 0), 1);
   RTX_UNCHANGING_P (def) = 1;
 
   /* Add label to symbol hash table.  */

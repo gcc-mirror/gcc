@@ -910,9 +910,9 @@ comptypes (t1, t2, strict)
       /* Treat an enum type as the unsigned integer type of the same width.  */
 
       if (TREE_CODE (t1) == ENUMERAL_TYPE)
-	t1 = type_for_size (TYPE_PRECISION (t1), 1);
+	t1 = c_common_type_for_size (TYPE_PRECISION (t1), 1);
       if (TREE_CODE (t2) == ENUMERAL_TYPE)
-	t2 = type_for_size (TYPE_PRECISION (t2), 1);
+	t2 = c_common_type_for_size (TYPE_PRECISION (t2), 1);
 
       if (t1 == t2)
 	return 1;

@@ -1560,7 +1560,8 @@ write_builtin_type (type)
 
 	  if (itk == itk_none)
 	    {
-	      tree t = type_for_mode (TYPE_MODE (type), TREE_UNSIGNED (type));
+	      tree t = c_common_type_for_mode (TYPE_MODE (type),
+					       TREE_UNSIGNED (type));
 	      if (type == t)
 		{
 		  if (TYPE_PRECISION (type) == 128)

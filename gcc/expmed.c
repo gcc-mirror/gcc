@@ -33,6 +33,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "optabs.h"
 #include "real.h"
 #include "recog.h"
+#include "langhooks.h"
 
 static void store_fixed_bit_field	PARAMS ((rtx, unsigned HOST_WIDE_INT,
 						 unsigned HOST_WIDE_INT,
@@ -4168,9 +4169,10 @@ expand_mult_add (x, target, mult, add, mode, unsignedp)
      enum machine_mode mode;
      int unsignedp;
 {
-  tree type = type_for_mode (mode, unsignedp);
+  tree type = (*lang_hooks.types.type_for_mode) (mode, unsignedp);
   tree add_type = (GET_MODE (add) == VOIDmode
-		   ? type : type_for_mode (GET_MODE (add), unsignedp));
+		   ? type: (*lang_hooks.types.type_for_mode) (GET_MODE (add),
+							      unsignedp));
   tree result =  fold (build (PLUS_EXPR, type,
 			      fold (build (MULT_EXPR, type,
 					   make_tree (type, x),
