@@ -1,5 +1,8 @@
 2000-09-06  Tom Tromey  <tromey@cygnus.com>
 
+	* java/lang/reflect/natMethod.cc (_Jv_CallAnyMethodA): Accept null
+	`args' if method takes no parameters.
+
 	Fix for PR java.lang/339:
 	* java/lang/natPosixProcess.cc (fail): New function.
 	(cleanup): New function.
