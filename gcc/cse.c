@@ -761,6 +761,57 @@ approx_reg_cost (rtx x)
   return cost;
 }
 
+/* Returns a canonical version of X for the address, from the point of view,
+   that all multiplications are repesented as MULT instead of the multiply
+   by a power of 2 being repesented as ASHIFT.  */
+
+static rtx
+canon_for_address (rtx x)
+{
+  enum rtx_code code;
+  enum machine_mode mode;
+  rtx new = 0;
+  int i;
+  const char *fmt;
+  
+  if (!x)
+    return x;
+  
+  code = GET_CODE (x);
+  mode = GET_MODE (x);
+  
+  switch (code)
+    {
+    case ASHIFT:
+      if (GET_CODE (XEXP (x, 1)) == CONST_INT
+	  && INTVAL (XEXP (x, 1)) < GET_MODE_BITSIZE (mode)
+	  && INTVAL (XEXP (x, 1)) >= 0)
+        {
+	  new = canon_for_address (XEXP (x, 0));
+	  new = gen_rtx_MULT (mode, new,
+			      gen_int_mode ((HOST_WIDE_INT) 1
+				            << INTVAL (XEXP (x, 1)),
+					    mode));
+	}
+      break;
+    default:
+      break;
+      
+    }
+  if (new)
+    return new;
+  
+  /* Now recursively process each operand of this operation.  */
+  fmt = GET_RTX_FORMAT (code);
+  for (i = 0; i < GET_RTX_LENGTH (code); i++)
+    if (fmt[i] == 'e')
+      {
+	new = canon_for_address (XEXP (x, i));
+	XEXP (x, i) = new;
+      }
+  return x;
+}
+
 /* Return a negative value if an rtx A, whose costs are given by COST_A
    and REGCOST_A, is more desirable than an rtx B.
    Return a positive value if A is less desirable, or 0 if the two are
@@ -2933,6 +2984,11 @@ find_best_addr (rtx insn, rtx *loc, enum machine_mode mode)
 		rtx new = simplify_gen_binary (GET_CODE (*loc), Pmode,
 					       p->exp, op1);
 		int new_cost;
+		
+		/* Get the canonical version of the address so we can accept
+		   more. */
+		new = canon_for_address (new);
+		
 		new_cost = address_cost (new, mode);
 
 		if (new_cost < best_addr_cost

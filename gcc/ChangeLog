@@ -1,3 +1,10 @@
+2004-11-25  Andrew Pinski <pinskia@physics.uc.edu>
+
+	parts of PR rtl-opt/18463, rtl-opt/17647
+	* cse.c (canon_for_address): New function.
+	(find_best_addr): Call canon_for_address before getting the
+	address's cost when checking if we should take that address.
+
 2004-11-25  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree-phinodes.c (add_phi_arg): Take "tree" instead of
