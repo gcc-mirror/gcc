@@ -21,8 +21,8 @@ fp-bit.c: $(srcdir)/config/fp-bit.c
 	echo '#endif' 		>> fp-bit.c
 	cat $(srcdir)/config/fp-bit.c >> fp-bit.c
 
-MULTILIB_OPTIONS = ml m2
-MULTILIB_DIRNAMES = ml m2
+MULTILIB_OPTIONS= ml m2/m3e
+MULTILIB_DIRNAMES= 
 MULTILIB_MATCHES = m2=m3
 
 LIBGCC = stmp-multilib
