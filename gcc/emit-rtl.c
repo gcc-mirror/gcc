@@ -719,7 +719,7 @@ subreg_hard_regno (x, check_mode)
   base_regno = REGNO (reg);
   if (base_regno >= FIRST_PSEUDO_REGISTER)
     abort ();
-  if (! HARD_REGNO_MODE_OK (base_regno, GET_MODE (reg)))
+  if (check_mode && ! HARD_REGNO_MODE_OK (base_regno, GET_MODE (reg)))
     abort ();
 
   /* Catch non-congruent offsets too.  */

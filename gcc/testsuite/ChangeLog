@@ -1,5 +1,9 @@
 2001-04-25  Jakub Jelinek  <jakub@redhat.com>
 
+	* gcc.dg/20010423-1.c: New test.
+
+2001-04-25  Jakub Jelinek  <jakub@redhat.com>
+
 	* gcc.c-torture/execute/20010422-1.c: New test.
 
 2001-04-25  Nathan Sidwell  <nathan@codesourcery.com>

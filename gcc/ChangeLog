@@ -1,5 +1,10 @@
 2001-04-25  Jakub Jelinek  <jakub@redhat.com>
 
+	* emit-rtl.c (subreg_hard_regno): Only do HARD_REGNO_MODE_OK check
+	if check_mode is non-zero.
+
+2001-04-25  Jakub Jelinek  <jakub@redhat.com>
+
 	* config/i386/i386.c (ix86_expand_int_movcc): If overlap between
 	out and comparison sequence has been detected, put result into
 	proper temporary pseudo.
