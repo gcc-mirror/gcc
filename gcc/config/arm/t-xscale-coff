@@ -37,7 +37,6 @@ MULTILIB_EXCEPTIONS += *mhard-float/*mthumb*
 
 MULTILIB_REDUNDANT_DIRS = interwork/thumb=thumb
 
-EXTRA_MULTILIB_PARTS = crtbegin.o crtend.o
 LIBGCC               = stmp-multilib
 INSTALL_LIBGCC       = install-multilib
 

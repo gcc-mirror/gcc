@@ -1,5 +1,7 @@
 2001-12-19  Nick Clifton  <nickc@cambridge.redhat.com>
 
+	* config/arm/t-xscale-coff (EXTRA_MULTILIB_PARTS): Remove definition.
+
 	* config/arm/coff.h (SUPPORTS_INIT_PRIORITY): Define (to false).
 	* config/arm/elf.h (SUPPORTS_INIT_PRIORITY): Define (to true).	
 
