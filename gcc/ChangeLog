@@ -1,3 +1,11 @@
+2004-11-22 Kazuhiro Inaoka <inaoka.kazuhiro@renesas.com>
+
+	* config.gcc: Use t-slibgcc-elf to build libgcc_s.so on
+        m32r*linux.
+	* config/m32r/t-linux (SHLIB_MAPFILES): Override to use
+	m32r/libgcc-glibc.ver.
+	* config/m32r/libgcc-glibc.ver: Add New file.
+
 2004-11-22  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* bitmap.h (struct bitmap_obstack): New obstack type.
