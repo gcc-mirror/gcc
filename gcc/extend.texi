@@ -3296,6 +3296,7 @@ function as well.
 @findex fabsl
 @findex ffs
 @findex fputs
+@findex imaxabs
 @findex index
 @findex labs
 @findex llabs
@@ -3348,7 +3349,8 @@ as builtins.  Corresponding versions @code{__builtin_alloca},
 @code{__builtin_rindex} and @code{__builtin_ffs} are also recognized in
 strict ISO C mode.
 
-The ISO C99 function @code{llabs} is handled as a builtin except in
+The ISO C99 functions @code{llabs} and @code{imaxabs}
+are handled as builtins except in
 strict ISO C89 mode.  There are also builtin versions of the ISO C99
 functions @code{cosf}, @code{cosl}, @code{fabsf}, @code{fabsl},
 @code{sinf}, @code{sinl}, @code{sqrtf}, and @code{sqrtl}, that are

@@ -1,5 +1,15 @@
 2000-12-01  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* builtins.def (BUILT_IN_IMAXABS): Add.
+	* builtins.c (expand_builtin): Also abort on BUILT_IN_IMAXABS.
+	* c-common.c (c_common_nodes_and_builtins): Create builtin
+	functions __builtin_imaxabs, and plain imaxabs unless
+	flag_no_nonansi_builtin outside C99 mode.
+	(expand_tree_builtin): Handle BUILT_IN_IMAXABS.
+	* extend.texi: Document builtin imaxabs.
+
+2000-12-01  Joseph S. Myers  <jsm28@cam.ac.uk>
+
 	* c-common.c: Include "defaults.h".
 	(WINT_TYPE, INTMAX_TYPE, UINTMAX_TYPE): Define.
 	(c_common_nodes_and_builtins): Create string_type_node,

@@ -4911,6 +4911,7 @@ c_common_nodes_and_builtins ()
   tree string_ftype_string_cstring_sizet, int_ftype_cstring_cstring_sizet;
   tree long_ftype_long;
   tree longlong_ftype_longlong;
+  tree intmax_ftype_intmax;
   /* Either char* or void*.  */
   tree traditional_ptr_type_node;
   /* Either const char* or const void*.  */
@@ -5005,6 +5006,11 @@ c_common_nodes_and_builtins ()
   longlong_ftype_longlong
     = build_function_type (long_long_integer_type_node,
 			   tree_cons (NULL_TREE, long_long_integer_type_node,
+				      endlink));
+
+  intmax_ftype_intmax
+    = build_function_type (intmax_type_node,
+			   tree_cons (NULL_TREE, intmax_type_node,
 				      endlink));
 
   int_ftype_cptr_cptr_sizet
@@ -5189,6 +5195,8 @@ c_common_nodes_and_builtins ()
   builtin_function ("__builtin_labs", long_ftype_long, BUILT_IN_LABS,
 		    BUILT_IN_NORMAL, NULL_PTR);
   builtin_function ("__builtin_llabs", longlong_ftype_longlong, BUILT_IN_LLABS,
+		    BUILT_IN_NORMAL, NULL_PTR);
+  builtin_function ("__builtin_imaxabs", intmax_ftype_intmax, BUILT_IN_IMAXABS,
 		    BUILT_IN_NORMAL, NULL_PTR);
   builtin_function ("__builtin_saveregs", ptr_ftype, BUILT_IN_SAVEREGS,
 		    BUILT_IN_NORMAL, NULL_PTR);
@@ -5375,8 +5383,12 @@ c_common_nodes_and_builtins ()
       builtin_function ("labs", long_ftype_long, BUILT_IN_LABS,
 			BUILT_IN_NORMAL, NULL_PTR);
       if (flag_isoc99 || ! flag_no_nonansi_builtin)
-	builtin_function ("llabs", longlong_ftype_longlong, BUILT_IN_LLABS,
-			  BUILT_IN_NORMAL, NULL_PTR);
+	{
+	  builtin_function ("llabs", longlong_ftype_longlong, BUILT_IN_LLABS,
+			    BUILT_IN_NORMAL, NULL_PTR);
+	  builtin_function ("imaxabs", intmax_ftype_intmax, BUILT_IN_IMAXABS,
+			    BUILT_IN_NORMAL, NULL_PTR);
+	}
       builtin_function ("memcpy", memcpy_ftype, BUILT_IN_MEMCPY,
 			BUILT_IN_NORMAL, NULL_PTR);
       builtin_function ("memcmp", int_ftype_cptr_cptr_sizet, BUILT_IN_MEMCMP,
@@ -5573,6 +5585,7 @@ expand_tree_builtin (function, params, coerced_params)
     case BUILT_IN_ABS:
     case BUILT_IN_LABS:
     case BUILT_IN_LLABS:
+    case BUILT_IN_IMAXABS:
     case BUILT_IN_FABS:
       if (coerced_params == 0)
 	return integer_zero_node;
