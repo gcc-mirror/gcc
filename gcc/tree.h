@@ -732,14 +732,15 @@ struct tree_type
 #define DECL_INCOMING_RTL(NODE) ((NODE)->decl.saved_insns.r)
 /* For FUNCTION_DECL, if it is inline, holds the saved insn chain.  */
 #define DECL_SAVED_INSNS(NODE) ((NODE)->decl.saved_insns.r)
-/* For FUNCTION_DECL for built-in function.  */
+/* For FUNCTION_DECL, if it is inline,
+   holds the size of the stack frame, as an integer.  */
+#define DECL_FRAME_SIZE(NODE) ((NODE)->decl.frame_size)
+/* For FUNCTION_DECL, if it is built-in,
+   this identifies which built-in operation it is.  */
 #define DECL_FUNCTION_CODE(NODE) \
  ((enum built_in_function) (NODE)->decl.frame_size)
 #define DECL_SET_FUNCTION_CODE(NODE,VAL) \
  ((NODE)->decl.frame_size = (int) (VAL))
-/* For FUNCTION_DECL, if it is inline,
-   holds the size of the stack frame, as an integer.  */
-#define DECL_FRAME_SIZE(NODE) ((NODE)->decl.frame_size)
 /* For a FIELD_DECL, holds the size of the member as an integer.  */
 #define DECL_FIELD_SIZE(NODE) ((NODE)->decl.saved_insns.i)
 
@@ -887,7 +888,8 @@ struct tree_decl
   struct rtx_def *rtl;	/* acts as link to register transfer language
 				   (rtl) info */
   /* For a FUNCTION_DECL, if inline, this is the size of frame needed.
-     If built-in, this is the code for which built-in function.  */
+     If built-in, this is the code for which built-in function.
+     For other kinds of decls, this is DECL_ALIGN.  */
   int frame_size;
   /* For FUNCTION_DECLs: points to insn that constitutes its definition
      on the permanent obstack.  For any other kind of decl, this is the
