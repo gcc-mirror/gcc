@@ -978,8 +978,8 @@ override_options ()
   if (ix86_preferred_stack_boundary_string)
     {
       i = atoi (ix86_preferred_stack_boundary_string);
-      if (i < (TARGET_64BIT ? 3 : 2) || i > 31)
-	error ("-mpreferred-stack-boundary=%d is not between %d and 31", i,
+      if (i < (TARGET_64BIT ? 3 : 2) || i > 12)
+	error ("-mpreferred-stack-boundary=%d is not between %d and 12", i,
 	       TARGET_64BIT ? 3 : 2);
       else
 	ix86_preferred_stack_boundary = (1 << i) * BITS_PER_UNIT;
