@@ -104,6 +104,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 struct iv
 {
   tree base;		/* Initial value of the iv.  */
+  tree base_object;	/* A memory object to that the induction variable points.  */
   tree step;		/* Step of the iv (constant only).  */
   tree ssa_name;	/* The ssa name with the value.  */
   bool biv_p;		/* Is it a biv?  */
@@ -301,9 +302,12 @@ extern void dump_iv (FILE *, struct iv *);
 void
 dump_iv (FILE *file, struct iv *iv)
 {
-  fprintf (file, "ssa name ");
-  print_generic_expr (file, iv->ssa_name, TDF_SLIM);
-  fprintf (file, "\n");
+  if (iv->ssa_name)
+    {
+      fprintf (file, "ssa name ");
+      print_generic_expr (file, iv->ssa_name, TDF_SLIM);
+      fprintf (file, "\n");
+    }
 
   fprintf (file, "  type ");
   print_generic_expr (file, TREE_TYPE (iv->base), TDF_SLIM);
@@ -326,6 +330,13 @@ dump_iv (FILE *file, struct iv *iv)
       fprintf (file, "\n");
     }
 
+  if (iv->base_object)
+    {
+      fprintf (file, "  base object ");
+      print_generic_expr (file, iv->base_object, TDF_SLIM);
+      fprintf (file, "\n");
+    }
+
   if (iv->biv_p)
     fprintf (file, "  is a biv\n");
 }
@@ -336,8 +347,6 @@ extern void dump_use (FILE *, struct iv_use *);
 void
 dump_use (FILE *file, struct iv_use *use)
 {
-  struct iv *iv = use->iv;
-
   fprintf (file, "use %d\n", use->id);
 
   switch (use->type)
@@ -371,26 +380,7 @@ dump_use (FILE *file, struct iv_use *use)
     print_generic_expr (file, *use->op_p, TDF_SLIM);
   fprintf (file, "\n");
 
-  fprintf (file, "  type ");
-  print_generic_expr (file, TREE_TYPE (iv->base), TDF_SLIM);
-  fprintf (file, "\n");
-
-  if (iv->step)
-    {
-      fprintf (file, "  base ");
-      print_generic_expr (file, iv->base, TDF_SLIM);
-      fprintf (file, "\n");
-
-      fprintf (file, "  step ");
-      print_generic_expr (file, iv->step, TDF_SLIM);
-      fprintf (file, "\n");
-    }
-  else
-    {
-      fprintf (file, "  invariant ");
-      print_generic_expr (file, iv->base, TDF_SLIM);
-      fprintf (file, "\n");
-    }
+  dump_iv (file, use->iv);
 
   fprintf (file, "  related candidates ");
   dump_bitmap (file, use->related_cands);
@@ -446,26 +436,7 @@ dump_cand (FILE *file, struct iv_cand *cand)
       break;
     }
 
-  fprintf (file, "  type ");
-  print_generic_expr (file, TREE_TYPE (iv->base), TDF_SLIM);
-  fprintf (file, "\n");
-
-  if (iv->step)
-    {
-      fprintf (file, "  base ");
-      print_generic_expr (file, iv->base, TDF_SLIM);
-      fprintf (file, "\n");
-
-      fprintf (file, "  step ");
-      print_generic_expr (file, iv->step, TDF_SLIM);
-      fprintf (file, "\n");
-    }
-  else
-    {
-      fprintf (file, "  invariant ");
-      print_generic_expr (file, iv->base, TDF_SLIM);
-      fprintf (file, "\n");
-    }
+  dump_iv (file, iv);
 }
 
 /* Returns the info for ssa version VER.  */
@@ -626,6 +597,52 @@ tree_ssa_iv_optimize_init (struct loops *loops, struct ivopts_data *data)
   VARRAY_GENERIC_PTR_NOGC_INIT (decl_rtl_to_reset, 20, "decl_rtl_to_reset");
 }
 
+/* Returns a memory object to that EXPR points.  In case we are able to
+   determine that it does not point to any such object, NULL is returned.  */
+
+static tree
+determine_base_object (tree expr)
+{
+  enum tree_code code = TREE_CODE (expr);
+  tree base, obj, op0, op1;
+
+  if (!POINTER_TYPE_P (TREE_TYPE (expr)))
+    return NULL_TREE;
+
+  switch (code)
+    {
+    case INTEGER_CST:
+      return NULL_TREE;
+
+    case ADDR_EXPR:
+      obj = TREE_OPERAND (expr, 0);
+      base = get_base_address (obj);
+
+      if (!base)
+	return fold_convert (ptr_type_node, expr);
+
+      return fold (build1 (ADDR_EXPR, ptr_type_node, base));
+
+    case PLUS_EXPR:
+    case MINUS_EXPR:
+      op0 = determine_base_object (TREE_OPERAND (expr, 0));
+      op1 = determine_base_object (TREE_OPERAND (expr, 1));
+      
+      if (!op1)
+	return op0;
+
+      if (!op0)
+	return (code == PLUS_EXPR
+		? op1
+		: fold (build1 (NEGATE_EXPR, ptr_type_node, op1)));
+
+      return fold (build (code, ptr_type_node, op0, op1));
+
+    default:
+      return fold_convert (ptr_type_node, expr);
+    }
+}
+
 /* Allocates an induction variable with given initial value BASE and step STEP
    for loop LOOP.  */
 
@@ -638,6 +655,7 @@ alloc_iv (tree base, tree step)
     step = NULL_TREE;
 
   iv->base = base;
+  iv->base_object = determine_base_object (base);
   iv->step = step;
   iv->biv_p = false;
   iv->have_use_for = false;
@@ -1000,6 +1018,10 @@ record_use (struct ivopts_data *data, tree *use_p, struct iv *iv,
   use->stmt = stmt;
   use->op_p = use_p;
   use->related_cands = BITMAP_XMALLOC ();
+
+  /* To avoid showing ssa name in the dumps, if it was not reset by the
+     caller.  */
+  iv->ssa_name = NULL_TREE;
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     dump_use (dump_file, use);
@@ -2794,6 +2816,19 @@ get_computation_cost_at (struct ivopts_data *data,
       return INFTY;
     }
 
+  if (address_p)
+    {
+      /* Do not try to express address of an object with computation based
+	 on address of a different object.  This may cause problems in rtl
+	 level alias analysis (that does not expect this to be happening,
+	 as this is illegal in C), and would be unlikely to be useful
+	 anyway.  */
+      if (use->iv->base_object
+	  && cand->iv->base_object
+	  && !operand_equal_p (use->iv->base_object, cand->iv->base_object, 0))
+	return INFTY;
+    }
+
   if (!cst_and_fits_in_hwi (ustep)
       || !cst_and_fits_in_hwi (cstep))
     return INFTY;
@@ -2974,23 +3009,31 @@ may_eliminate_iv (struct loop *loop,
 		  struct iv_use *use, struct iv_cand *cand,
 		  enum tree_code *compare, tree *bound)
 {
+  basic_block ex_bb;
   edge exit;
-  struct tree_niter_desc *niter, new_niter;
+  struct tree_niter_desc niter, new_niter;
   tree wider_type, type, base;
-
-  /* For now just very primitive -- we work just for the single exit condition,
-     and are quite conservative about the possible overflows.  TODO -- both of
-     these can be improved.  */
-  exit = single_dom_exit (loop);
-  if (!exit)
+  
+  /* For now works only for exits that dominate the loop latch.  TODO -- extend
+     for other conditions inside loop body.  */
+  ex_bb = bb_for_stmt (use->stmt);
+  if (use->stmt != last_stmt (ex_bb)
+      || TREE_CODE (use->stmt) != COND_EXPR)
     return false;
-  if (use->stmt != last_stmt (exit->src))
+  if (!dominated_by_p (CDI_DOMINATORS, loop->latch, ex_bb))
     return false;
 
-  niter = &loop_data (loop)->niter;
-  if (!niter->niter
-      || !integer_nonzerop (niter->assumptions)
-      || !integer_zerop (niter->may_be_zero))
+  exit = EDGE_SUCC (ex_bb, 0);
+  if (flow_bb_inside_loop_p (loop, exit->dest))
+    exit = EDGE_SUCC (ex_bb, 1);
+  if (flow_bb_inside_loop_p (loop, exit->dest))
+    return false;
+
+  niter.niter = NULL_TREE;
+  number_of_iterations_exit (loop, exit, &niter);
+  if (!niter.niter
+      || !integer_nonzerop (niter.assumptions)
+      || !integer_zerop (niter.may_be_zero))
     return false;
 
   if (exit->flags & EDGE_TRUE_VALUE)
@@ -2998,7 +3041,7 @@ may_eliminate_iv (struct loop *loop,
   else
     *compare = NE_EXPR;
 
-  *bound = cand_value_at (loop, cand, use->stmt, niter->niter);
+  *bound = cand_value_at (loop, cand, use->stmt, niter.niter);
 
   /* Let us check there is not some problem with overflows, by checking that
      the number of iterations is unchanged.  */
@@ -3017,9 +3060,9 @@ may_eliminate_iv (struct loop *loop,
     return false;
 
   wider_type = TREE_TYPE (new_niter.niter);
-  if (TYPE_PRECISION (wider_type) < TYPE_PRECISION (TREE_TYPE (niter->niter)))
-    wider_type = TREE_TYPE (niter->niter);
-  if (!operand_equal_p (fold_convert (wider_type, niter->niter),
+  if (TYPE_PRECISION (wider_type) < TYPE_PRECISION (TREE_TYPE (niter.niter)))
+    wider_type = TREE_TYPE (niter.niter);
+  if (!operand_equal_p (fold_convert (wider_type, niter.niter),
 			fold_convert (wider_type, new_niter.niter), 0))
     return false;
 
