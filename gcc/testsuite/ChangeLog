@@ -1,5 +1,16 @@
 2005-03-31  Janis Johnson  <janis187@us.ibm.com>
 
+	* g++.dg/parse/repo1.C: Use cleanup-repo-files.
+	* g++.dg/template/repo1.C: Ditto.
+	* g++.dg/template/repo2.C: Ditto.
+	* g++.dg/template/repo3.C: Ditto.
+	* g++.old-deja/g++.pt/instantiate4.C: Ditto.
+	* g++.old-deja/g++.pt/instantiate6.C: Ditto.
+	* g++.old-deja/g++.pt/repo1.C: Ditto.
+	* g++.old-deja/g++.pt/repo2.C: Ditto.
+	* g++.old-deja/g++.pt/repo3.C: Ditto.
+	* g++.old-deja/g++.pt/repo4.C: Ditto.
+
 	* gcc.dg/20020201-1.c: Use cleanup-coverage_files.
 	* gcc.dg/20030107-1.c: Ditto.
 	* gcc.dg/20030702-1.c: Ditto.

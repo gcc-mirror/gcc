@@ -14,3 +14,5 @@ int main ()
 {
   S<int> s;
 }
+
+// { dg-final { cleanup-repo-files } }

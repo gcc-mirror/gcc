@@ -12,3 +12,5 @@ template unsigned char __Atomicity_lock<0>::_S_atomicity_lock;
 
 int main () {
 }
+
+// { dg-final { cleanup-repo-files } }

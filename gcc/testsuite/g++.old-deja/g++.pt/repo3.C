@@ -30,3 +30,5 @@ main ()
 {
   D<int> x;
 }
+
+// { dg-final { cleanup-repo-files } }

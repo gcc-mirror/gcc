@@ -18,3 +18,5 @@ int main ()
 {
   g (42);
 }
+
+// { dg-final { cleanup-repo-files } }
