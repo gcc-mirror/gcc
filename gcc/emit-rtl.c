@@ -2213,6 +2213,8 @@ emit_insns_after (first, after)
   if (after_after)
     PREV_INSN (after_after) = last;
 
+  if (after == last_insn)
+    last_insn = last;
   return last;
 }
 
