@@ -2886,6 +2886,7 @@ process_command (argc, argv)
   int lang_n_infiles = 0;
 #ifdef MODIFY_TARGET_NAME
   int is_modify_target_name;
+  int j;
 #endif
 
   GET_ENV_PATH_LIST (gcc_exec_prefix, "GCC_EXEC_PREFIX");
