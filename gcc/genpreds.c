@@ -167,7 +167,7 @@ mark_mode_tests (rtx exp)
 	struct pred_data *p = lookup_predicate (XSTR (exp, 1));
 	if (!p)
 	  error ("reference to undefined predicate '%s'", XSTR (exp, 1));
-	else if (p->special)
+	else if (p->special || GET_MODE (exp) != VOIDmode)
 	  NO_MODE_TEST (exp) = 1;
       }
       break;
@@ -366,7 +366,10 @@ write_predicate_expr (const char *name, rtx exp)
       break;
 
     case MATCH_OPERAND:
-      printf ("%s (op, mode)", XSTR (exp, 1));
+      if (GET_MODE (exp) == VOIDmode)
+        printf ("%s (op, mode)", XSTR (exp, 1));
+      else
+        printf ("%s (op, %smode)", XSTR (exp, 1), mode_name[GET_MODE (exp)]);
       break;
 
     case MATCH_CODE:
