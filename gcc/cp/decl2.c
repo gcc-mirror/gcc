@@ -945,7 +945,7 @@ grok_x_components (specs, components)
 		x = DECL_NAME (CLASSTYPE_TI_TEMPLATE (t));
 	      else
 		x = TYPE_IDENTIFIER (t);
-	      t = xref_tag (tcode, x, NULL_TREE, 0);
+	      t = xref_tag (tcode, x, 0);
 	    }
 
 	  if (ANON_UNION_TYPE_P (t))
@@ -989,7 +989,7 @@ grok_x_components (specs, components)
 
 	case ENUMERAL_TYPE:
 	  tcode = enum_type_node;
-	  t = xref_tag (tcode, TYPE_IDENTIFIER (t), NULL_TREE, 0);
+	  t = xref_tag (tcode, TYPE_IDENTIFIER (t), 0);
 	  x = grok_enum_decls (NULL_TREE);
 	  return x;
 	  break;
@@ -4943,6 +4943,6 @@ handle_class_head (aggr, scope, id)
     cp_error ("no file-scope type named `%D'", id);
 
   id = xref_tag
-    (aggr, make_anon_name (), NULL_TREE, 1);
+    (aggr, make_anon_name (), 1);
   return TYPE_MAIN_DECL (id);
 }

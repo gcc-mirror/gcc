@@ -476,7 +476,7 @@ do_friend (ctype, declarator, decl, parmdecls, flags, quals, funcdef_flag)
       if (decl == NULL_TREE)
 	{
 	  cp_warning ("implicitly declaring `%T' as struct", declarator);
-	  decl = xref_tag (record_type_node, declarator, NULL_TREE, 1);
+	  decl = xref_tag (record_type_node, declarator, 1);
 	  decl = TYPE_MAIN_DECL (decl);
 	}
 

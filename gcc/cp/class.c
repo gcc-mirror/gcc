@@ -266,17 +266,8 @@ build_vbase_path (code, type, expr, path, nonnull)
 
   if (BINFO_INHERITANCE_CHAIN (path))
     {
-      tree reverse_path = NULL_TREE;
-
       push_expression_obstack ();
-      while (path)
-	{
-	  tree r = copy_node (path);
-	  BINFO_INHERITANCE_CHAIN (r) = reverse_path;
-	  reverse_path = r;
-	  path = BINFO_INHERITANCE_CHAIN (path);
-	}
-      path = reverse_path;
+      path = reverse_path (path, /*copy=*/1);
       pop_obstacks ();
     }
 
@@ -1758,35 +1749,6 @@ finish_base_struct (t, b)
 	}
     }
 
-  /* This comment said "Must come after offsets are fixed for all bases."
-     Well, now this happens before the offsets are fixed, but it seems to
-     work fine.  Guess we'll see...  */
-  for (i = 0; i < n_baseclasses; i++)
-    {
-      tree base_binfo = TREE_VEC_ELT (binfos, i);
-      tree basetype = BINFO_TYPE (base_binfo);
-
-      if (get_base_distance (basetype, t, 0, (tree*)0) == -2)
-	{
-	  cp_warning ("direct base `%T' inaccessible in `%T' due to ambiguity",
-		      basetype, t);
-	}
-    }
-  {
-    tree v = get_vbase_types (t);
-
-    for (; v; v = TREE_CHAIN (v))
-      {
-	tree basetype = BINFO_TYPE (v);
-	if (get_base_distance (basetype, t, 0, (tree*)0) == -2)
-	  {
-	    if (extra_warnings)
-	      cp_warning ("virtual base `%T' inaccessible in `%T' due to ambiguity",
-			  basetype, t);
-	  }
-      }
-  }    
-
   {
     tree vfields;
     /* Find the base class with the largest number of virtual functions.  */
@@ -2413,10 +2375,6 @@ modify_one_vtable (binfo, t, fndecl, pfn)
 				    BINFO_OFFSET (binfo));
 	  this_offset = ssize_binop (MINUS_EXPR, offset, base_offset);
 
-	  /* Make sure we can modify the derived association with immunity.  */
-	  if (TREE_USED (binfo))
-	    my_friendly_assert (0, 999);
-
 	  if (binfo == TYPE_BINFO (t))
 	    {
 	      /* In this case, it is *type*'s vtable we are modifying.
@@ -2516,9 +2474,6 @@ fixup_vtable_deltas1 (binfo, t)
 	  if (! tree_int_cst_equal (this_offset, delta))
 	    {
 	      /* Make sure we can modify the derived association with immunity.  */
-	      if (TREE_USED (binfo))
-		my_friendly_assert (0, 999);
-
 	      if (binfo == TYPE_BINFO (t))
 		{
 		  /* In this case, it is *type*'s vtable we are modifying.

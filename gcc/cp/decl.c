@@ -6166,7 +6166,7 @@ init_decl_processing ()
     if (flag_honor_std)
       push_namespace (get_identifier ("std"));
     bad_alloc_type_node = xref_tag
-      (class_type_node, get_identifier ("bad_alloc"), NULL_TREE, 1);
+      (class_type_node, get_identifier ("bad_alloc"), 1);
     if (flag_honor_std)
       pop_namespace ();
     newtype = build_exception_variant
@@ -11415,9 +11415,9 @@ grok_op_properties (decl, virtualp, friendp)
    scope.)  */
 
 tree
-xref_tag (code_type_node, name, binfo, globalize)
+xref_tag (code_type_node, name, globalize)
      tree code_type_node;
-     tree name, binfo;
+     tree name;
      int globalize;
 {
   enum tag_types tag_code;
@@ -11623,9 +11623,6 @@ xref_tag (code_type_node, name, binfo, globalize)
 	redeclare_class_template (ref, current_template_parms);
     }
 
-  if (binfo)
-    xref_basetypes (code_type_node, name, ref, binfo);
-
   /* Until the type is defined, tentatively accept whatever
      structure tag the user hands us.  */
   if (TYPE_SIZE (ref) == NULL_TREE
@@ -11662,7 +11659,7 @@ xref_tag_from_type (old, id, globalize)
   if (id == NULL_TREE)
     id = TYPE_IDENTIFIER (old);
 
-  return xref_tag (code_type_node, id, NULL_TREE, globalize);
+  return xref_tag (code_type_node, id, globalize);
 }
 
 void
@@ -11759,7 +11756,7 @@ xref_basetypes (code_type_node, name, ref, binfo)
   
 	  base_binfo = make_binfo (integer_zero_node, basetype,
 				   TYPE_BINFO_VTABLE (basetype),
-				   TYPE_BINFO_VIRTUALS (basetype), NULL_TREE);
+				   TYPE_BINFO_VIRTUALS (basetype));
  
 	  TREE_VEC_ELT (binfos, i) = base_binfo;
 	  TREE_VIA_PUBLIC (base_binfo) = via_public;
