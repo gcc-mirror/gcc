@@ -1,3 +1,8 @@
+2004-07-18  Bud Davis  <bdavis9659@comcast.net>
+
+	* configure.ac: Add check for LFS support. 
+	* configure: Regenerate
+
 2004-07-11  Paul Brook  <paul@codesourcery.com>
 
 	PR fortran/16303
