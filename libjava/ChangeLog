@@ -1,3 +1,9 @@
+2000-12-01  Tom Tromey  <tromey@redhat.com>
+
+	* java/util/Vector.java (insertElementAt): Unconditionally
+	increment elementCount.
+	(removeRange): Clear unused slots in vector.
+
 2000-12-02  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* java/lang/natMath.cc: Declare fabsf() function.
