@@ -159,11 +159,10 @@ rdata_section ()						\
       									\
       if (TREE_CODE (DECL) == FUNCTION_DECL)				\
 	sec = 0;							\
-      else if (DECL_INITIAL (DECL) == 0					\
-	       || DECL_INITIAL (DECL) == error_mark_node)		\
-	sec = 3;							\
       else if (DECL_READONLY_SECTION (DECL, RELOC))			\
 	sec = 1;							\
+      else if (DECL_INITIAL (DECL) == NULL_TREE)			\
+	sec = 3;							\
       else								\
 	sec = 2;							\
       									\

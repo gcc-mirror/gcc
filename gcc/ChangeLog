@@ -1,3 +1,10 @@
+2000-05-18  Nick Clifton  <nickc@cygnus.com>
+
+	* config/arm/unknown-elf.h (UNIQUE_SECTION): Place constant,
+	uninitialised data in .rodata not .bss, and do not interpret an
+	error in the initialisation value as meaning that the variable
+	should be placed in the .bss section.
+
 Thu May 18 12:10:18 2000  Philippe De Muyter  <phdm@macqel.be>
 
 	* configure.in (NO_MINUS_C_MINUS_O): Test `$ac_cv_prog_cc_${ac_cc}_c_o',
