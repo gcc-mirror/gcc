@@ -90,6 +90,9 @@ case "${UNAME_MACHINE}:${UNAME_SYSTEM}:${UNAME_RELEASE}:${UNAME_VERSION}" in
 		echo m88k-dg-dguxbcs${UNAME_RELEASE}
 	fi
  	exit 0 ;;
+    M88*:DolphinOS:*:*)	# DolphinOS (SVR3)
+	echo m88k-dolphin-sysv3
+	exit 0 ;;
     M88*:*:R3*:*)
 	# Delta 88k system running SVR3
 	echo m88k-motorola-sysv3
