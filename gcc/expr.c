@@ -3532,8 +3532,8 @@ safe_from_p (x, exp)
 	 have no way of allocating temporaries of variable size.  So we
 	 assume here that something at a higher level has prevented a
 	 clash.  This is somewhat bogus, but the best we can do.  */
-      || (TREE_TYPE (exp) != 0 &&
-	  TREE_CODE (TYPE_SIZE (TREE_TYPE (exp))) != INTEGER_CST))
+      || (TREE_TYPE (exp) != 0 && TYPE_SIZE (TREE_TYPE (exp)) != 0
+	  && TREE_CODE (TYPE_SIZE (TREE_TYPE (exp))) != INTEGER_CST))
     return 1;
 
   /* If this is a subreg of a hard register, declare it unsafe, otherwise,
