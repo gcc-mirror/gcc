@@ -249,8 +249,8 @@ proc run-gcov { args } {
     }
 
     verbose "Running $GCOV $testcase" 2
-    set testcase [remote_download host $testcase];
-    set result [remote_exec host $GCOV $gcov_args];
+    set testcase [remote_download host $testcase]
+    set result [remote_exec host $GCOV $gcov_args]
     if { [lindex $result 0] != 0 } {
 	fail "$subdir/$testcase gcov failed: [lindex $result 1]"
 	clean-gcov $testcase
@@ -262,9 +262,9 @@ proc run-gcov { args } {
     if { $files == "" } {
         fail "$subdir/$testcase gcov failed: $testcase.gcov does not exist"
         clean-gcov $testcase
-        return;
+        return
     }
-    remote_upload host $testcase.gcov $testcase.gcov;
+    remote_upload host $testcase.gcov $testcase.gcov
 
     if { $gcov_verify_xfail != "" } {
 	eval setup_xfail [split $gcov_verify_xfail]

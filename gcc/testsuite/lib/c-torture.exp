@@ -80,7 +80,7 @@ proc c-torture-compile { src option } {
     set options ""
     lappend options "additional_flags=-w $option"
 
-    set comp_output [gcc_target_compile "$src" "$output" object $options];
+    set comp_output [gcc_target_compile "$src" "$output" object $options]
     gcc_check_compile $testcase $option $output $comp_output
     remote_file build delete $output
 }
@@ -102,9 +102,9 @@ proc c-torture-execute { sources args } {
     set src [lindex $sources 0]
 
     if { [llength $args] > 0 } {
-	set additional_flags [lindex $args 0];
+	set additional_flags [lindex $args 0]
     } else {
-	set additional_flags "";
+	set additional_flags ""
     }
     # Check for alternate driver.
     if [file exists [file rootname $src].x] {
@@ -136,14 +136,14 @@ proc c-torture-execute { sources args } {
 	set testcase "[file tail [file dirname $src]]/[file tail $src]"
     }
 
-    set count 0;
-    set oldstatus "foo";
+    set count 0
+    set oldstatus "foo"
     foreach option $option_list {
 	if { $count > 0 } {
-	    set oldexec $execname;
+	    set oldexec $execname
 	}
-	set execname "${executable}${count}";
-	incr count;
+	set execname "${executable}${count}"
+	incr count
 
 	# torture_{compile,execute}_xfail are set by the .x script
 	# (if present)
@@ -157,15 +157,15 @@ proc c-torture-execute { sources args } {
             set ignore_me [eval $torture_eval_before_compile]
 	}
 
-	remote_file build delete $execname;
+	remote_file build delete $execname
 	verbose "Testing $testcase, $option" 1
 
 	set options ""
 	lappend options "additional_flags=-w $option"
 	if { $additional_flags != "" } {
-	    lappend options "additional_flags=$additional_flags";
+	    lappend options "additional_flags=$additional_flags"
 	}
-	set comp_output [gcc_target_compile "$sources" "${execname}" executable $options];
+	set comp_output [gcc_target_compile "$sources" "${execname}" executable $options]
 
 	if ![gcc_check_compile "$testcase compilation" $option $execname $comp_output] {
 	    unresolved "$testcase execution, $option"
@@ -204,26 +204,26 @@ proc c-torture-execute { sources args } {
 	# Do not do this for native testing since the cost to load/execute
 	# the test is fairly small and the comparison step actually slows
 	# the entire process down because it usually does not "hit".
-	set skip 0;
+	set skip 0
 	if { ![isnative] && [info exists oldexec] } {
 	    if { [remote_file build cmp $oldexec $execname] == 0 } {
-		set skip 1;
+		set skip 1
 	    }
 	}
 	if { $skip == 0 } {
 	    set result [gcc_load "$execname" "" ""]
-	    set status [lindex $result 0];
-	    set output [lindex $result 1];
+	    set status [lindex $result 0]
+	    set output [lindex $result 1]
 	}
         if { $oldstatus == "pass" } {
-	    remote_file build delete $oldexec;
+	    remote_file build delete $oldexec
         }
 	$status "$testcase execution, $option"
-	set oldstatus $status;
+	set oldstatus $status
     }
     if [info exists status] {
 	if { $status == "pass" } {
-	    remote_file build delete $execname;
+	    remote_file build delete $execname
 	}
     }
 }
@@ -257,9 +257,9 @@ proc search_for { file pattern } {
 proc c-torture { args } {
     global srcdir subdir compiler_conditional_xfail_data
 
-    set src [lindex $args 0];
+    set src [lindex $args 0]
     if { [llength $args] > 1 } {
-	set options [lindex $args 1];
+	set options [lindex $args 1]
     } else {
 	set options ""
     }

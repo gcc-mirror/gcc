@@ -57,7 +57,7 @@ proc set_ld_library_path_env_vars { } {
   }
 
   if { $orig_environment_saved == 0 } {
-    global env;
+    global env
 
     set orig_environment_saved 1
 
