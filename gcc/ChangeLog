@@ -1,3 +1,10 @@
+Sun Jul 30 20:42:21 MET DST 2000  Jan Hubicka  <jh@suse.cz>
+
+	* gcse.c (try_replace_reg): Use validate_replace_rtx_subexp
+	instead of replace_rtx.
+	* recog.c (validate_replace_rtx_subexp): New function.
+	* recog.h (validate_replace_rtx_subexp): Declare.
+
 Sun Jul 30 20:38:26 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 
 	* combine.c (simplify_set, make_extraction, make_compound_operation

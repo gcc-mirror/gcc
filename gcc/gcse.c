@@ -3578,8 +3578,10 @@ try_replace_reg (from, to, insn)
     {
       rtx simplified;
 
+      if (!validate_replace_rtx_subexp (from, to, insn, &XEXP (note, 0)))
+	abort();
+
       src = XEXP (note, 0);
-      replace_rtx (src, from, to);
 
       /* Try to simplify resulting note. */
       simplified = simplify_rtx (src);

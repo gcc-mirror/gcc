@@ -79,6 +79,7 @@ extern void cancel_changes		PARAMS ((int));
 extern int constrain_operands		PARAMS ((int));
 extern int memory_address_p		PARAMS ((enum machine_mode, rtx));
 extern int strict_memory_address_p	PARAMS ((enum machine_mode, rtx));
+extern int validate_replace_rtx_subexp	PARAMS ((rtx, rtx, rtx, rtx *));
 extern int validate_replace_rtx		PARAMS ((rtx, rtx, rtx));
 extern void validate_replace_rtx_group	PARAMS ((rtx, rtx, rtx));
 extern int validate_replace_src		PARAMS ((rtx, rtx, rtx));
