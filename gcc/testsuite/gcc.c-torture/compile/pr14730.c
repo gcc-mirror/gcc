@@ -12,5 +12,5 @@ int t (char i)
     case 256:
       return 0;
     }
-  return 0;
+  return 1;
 }

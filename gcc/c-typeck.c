@@ -6270,12 +6270,18 @@ c_finish_return (tree retval)
 struct c_switch {
   /* The SWITCH_STMT being built.  */
   tree switch_stmt;
+
+  /* The original type of the testing expression, ie. before the
+     default conversion is applied.  */
+  tree orig_type;
+
   /* A splay-tree mapping the low element of a case range to the high
      element, or NULL_TREE if there is no high element.  Used to
      determine whether or not a new case label duplicates an old case
      label.  We need a tree, rather than simply a hash table, because
      of the GNU case range extension.  */
   splay_tree cases;
+
   /* The next node on the stack.  */
   struct c_switch *next;
 };
@@ -6326,6 +6332,7 @@ c_start_case (tree exp)
   /* Add this new SWITCH_STMT to the stack.  */
   cs = xmalloc (sizeof (*cs));
   cs->switch_stmt = build_stmt (SWITCH_STMT, exp, NULL_TREE, orig_type);
+  cs->orig_type = orig_type;
   cs->cases = splay_tree_new (case_compare, NULL, NULL);
   cs->next = c_switch_stack;
   c_switch_stack = cs;
@@ -6344,6 +6351,7 @@ do_case (tree low_value, tree high_value)
     {
       label = c_add_case_label (c_switch_stack->cases,
 				SWITCH_COND (c_switch_stack->switch_stmt),
+				c_switch_stack->orig_type,
 				low_value, high_value);
       if (label == error_mark_node)
 	label = NULL_TREE;

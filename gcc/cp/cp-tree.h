@@ -1544,29 +1544,25 @@ struct lang_decl_flags GTY(())
   unsigned this_thunk_p : 1;
 
   union lang_decl_u {
-    /* In a FUNCTION_DECL for which DECL_THUNK_P does not hold,
+    /* In a FUNCTION_DECL for which DECL_THUNK_P holds, this is
+       THUNK_ALIAS.
+       In a FUNCTION_DECL for which DECL_THUNK_P does not hold,
        VAR_DECL, TYPE_DECL, or TEMPLATE_DECL, this is
        DECL_TEMPLATE_INFO.  */
     tree GTY ((tag ("0"))) template_info;
 
     /* In a NAMESPACE_DECL, this is NAMESPACE_LEVEL.  */
     struct cp_binding_level * GTY ((tag ("1"))) level;
-
-    /* In a FUNCTION_DECL for which DECL_THUNK_P holds, this is
-       THUNK_ALIAS.  */
-    tree GTY ((tag ("2"))) thunk_alias;
   } GTY ((desc ("%1.u1sel"))) u;
 
   union lang_decl_u2 {
-    /* This is DECL_ACCESS.  */
+    /* In a FUNCTION_DECL for which DECL_THUNK_P holds, this is
+       THUNK_VIRTUAL_OFFSET.
+       Otherwise this is DECL_ACCESS.  */
     tree GTY ((tag ("0"))) access;
 
     /* For VAR_DECL in function, this is DECL_DISCRIMINATOR.  */
     int GTY ((tag ("1"))) discriminator;
-
-    /* In a FUNCTION_DECL for which DECL_THUNK_P holds, this is
-       THUNK_VIRTUAL_OFFSET.  */
-    tree GTY((tag ("2"))) virtual_offset;
   } GTY ((desc ("%1.u2sel"))) u2;
 };
 
@@ -2827,11 +2823,11 @@ struct lang_decl GTY(())
    binfos.)  */
 
 #define THUNK_VIRTUAL_OFFSET(DECL) \
-  (LANG_DECL_U2_CHECK (FUNCTION_DECL_CHECK (DECL), 0)->virtual_offset)
+  (LANG_DECL_U2_CHECK (FUNCTION_DECL_CHECK (DECL), 0)->access)
 
 /* A thunk which is equivalent to another thunk.  */
 #define THUNK_ALIAS(DECL) \
-  (DECL_LANG_SPECIFIC (FUNCTION_DECL_CHECK (DECL))->decl_flags.u.thunk_alias)
+  (DECL_LANG_SPECIFIC (FUNCTION_DECL_CHECK (DECL))->decl_flags.u.template_info)
 
 /* For thunk NODE, this is the FUNCTION_DECL thunked to.  */
 #define THUNK_TARGET(NODE)				\

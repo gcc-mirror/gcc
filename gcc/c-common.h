@@ -644,8 +644,6 @@ extern void binary_op_error (enum tree_code);
 #define my_friendly_assert(EXP, N) (void) \
  (((EXP) == 0) ? (fancy_abort (__FILE__, __LINE__, __FUNCTION__), 0) : 0)
 
-/* Validate the expression after `case' and apply default promotions.  */
-extern tree check_case_value (tree);
 extern tree fix_string_type (tree);
 struct varray_head_tag;
 extern void constant_expression_warning (tree);
@@ -818,7 +816,7 @@ extern void extract_interface_info (void);
 
 extern int case_compare (splay_tree_key, splay_tree_key);
 
-extern tree c_add_case_label (splay_tree, tree, tree, tree);
+extern tree c_add_case_label (splay_tree, tree, tree, tree, tree);
 
 extern void c_do_switch_warnings (splay_tree, tree);
 

@@ -1,3 +1,22 @@
+2004-07-20  Steven Bosscher  <stevenb@suse.de>
+
+	* c-common.h (check_case_value): Remove prototype.
+	(c_add_case_label): Adjust prototype.
+	* c-common.c (check_case_value): Make static.
+	(check_case_bounds): New function.
+	(c_add_case_label): Use it.  Take new argument orig_type.
+	* c-typeck.c (struct c_switch): New orig_type field.
+	(c_start_case): Set it.
+	(do_case): Pass it to c_add_case_label.
+	* expr.c (expand_expr_real_1): Don't warn for out-of-bounds
+	cases from here.  Add the labels in reverse order.
+	* stmt.c (struct case_node): Adjust comment.  Remove balance field.
+	(add_case_node): Return nothing, don't check for duplicate cases.
+	Insert new case nodes in a list, not in an AVL tree.
+	(expand_end_case_type): Don't turn a case tree into a case list.
+	(case_tree2list): Remove.
+	* tree.h (add_case_node): Adjust prototype.
+
 2004-07-19  Paolo Bonzini  <bonzini@gnu.org>
 
 	* genattr.c (struct range, struct function_unit,
