@@ -6704,7 +6704,7 @@ fold_builtin (tree exp)
 		    BUILTIN_SQRT_P (fcode) ? dconsthalf : dconstthird;
 		  
 		  /* Adjust for the outer root.  */
-		  dconstroot.exp--;
+		  SET_REAL_EXP (&dconstroot, REAL_EXP (&dconstroot) - 1);
 		  dconstroot = real_value_truncate (TYPE_MODE (type), dconstroot);
 		  tree_root = build_real (type, dconstroot);
 		  arglist = tree_cons (NULL_TREE, arg0,
@@ -6769,7 +6769,7 @@ fold_builtin (tree exp)
 		  tree tree_root;
 		  REAL_VALUE_TYPE dconstroot = dconstthird;
 
-		  dconstroot.exp--;
+		  SET_REAL_EXP (&dconstroot, REAL_EXP (&dconstroot) - 1);
 		  dconstroot = real_value_truncate (TYPE_MODE (type), dconstroot);
 		  tree_root = build_real (type, dconstroot);
 		  arglist = tree_cons (NULL_TREE, arg0,
