@@ -1,4 +1,4 @@
-/* config.in.  Generated automatically from configure.in by autoheader 2.13.  */
+/* config.in.  Generated automatically from configure.in by autoheader.  */
 
 /* Define if using alloca.c.  */
 #undef C_ALLOCA
@@ -22,9 +22,6 @@
 
 /* Define if you have <alloca.h> and it should be used (not on Ultrix).  */
 #undef HAVE_ALLOCA_H
-
-/* Define if you have the ANSI # stringizing operator in cpp. */
-#undef HAVE_STRINGIZE
 
 /* Define if you have <sys/wait.h> that is POSIX.1 compatible.  */
 #undef HAVE_SYS_WAIT_H

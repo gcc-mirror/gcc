@@ -1,3 +1,13 @@
+2003-06-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* builtin-attrs.def, builtin-attrs.def, builtins.c, cpplex.c,
+	cpplib.c, gencheck.c, gengenrtl.c, machmode.def, protoize.c: Don't
+	use macros from "symcat.h", instead rely on ISO C.
+	
+	* system.h: Don't include "symcat.h".
+	* configure.in (AC_C_STRINGIZE): Delete.
+	* config.in, configure: Regenerate.
+
 2003-06-16  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* Makefile.in (install-mkheaders): Use INSTALL_SCRIPT for scripts.

@@ -765,10 +765,6 @@ LDEXP_LIB="$LIBS"
 LIBS="$save_LIBS"
 AC_SUBST(LDEXP_LIB)
 
-# See if the stage1 system preprocessor understands the ANSI C
-# preprocessor stringification operator.  (Used by symcat.h.)
-AC_C_STRINGIZE
-
 # Use <inttypes.h> only if it exists,
 # doesn't clash with <sys/types.h>, and declares intmax_t.
 AC_MSG_CHECKING(for inttypes.h)

@@ -162,7 +162,7 @@ DEF_MACHMODE (CCmode, "CC", MODE_CC, BITS_PER_UNIT*4, 4, 4, VOIDmode, VOIDmode)
 
 #ifdef EXTRA_MODES_FILE
 #define CC(N)  \
-  DEF_MACHMODE (CONCAT2 (N,mode), STRINGX (N), \
+  DEF_MACHMODE (N##mode, #N, \
                 MODE_CC, BITS_PER_UNIT*4, 4, 4, VOIDmode, VOIDmode)
 #include EXTRA_MODES_FILE
 #undef CC
