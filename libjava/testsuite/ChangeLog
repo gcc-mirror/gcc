@@ -1,3 +1,8 @@
+2001-03-14  Tom Tromey  <tromey@redhat.com>
+
+	* libjava.compile/assignment.xfail: Removed.
+	* libjava.compile/assignment_2.xfail: Removed.
+
 2001-02-08  Warren Levy  <warrenl@redhat.com>
 
 	* libjava.mauve/mauve.exp: Added support for XFAILs.
