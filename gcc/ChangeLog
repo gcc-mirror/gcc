@@ -1,3 +1,12 @@
+2000-11-17  Hans-Peter Nilsson  <hp@axis.com>
+
+	* Makefile.in (config.status): Depend on config.gcc.
+	* configure.in <for machine in $build $host $target>: Move
+	contents of loop into config.gcc, removing autoconf quoting.
+	Fix changequote bug for alpha*-*-vxworks*.
+	* configure: Regenerate.
+	* config.gcc: New.
+
 2000-11-16  Zack Weinberg  <zack@wolery.stanford.edu>
 
 	* c-parse.in (if_prefix): Find the filename and line number at
