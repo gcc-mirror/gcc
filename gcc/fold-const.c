@@ -5560,6 +5560,22 @@ fold (expr)
 					     TREE_OPERAND (arg0, 0),
 					     TREE_OPERAND (arg1, 0))),
 				TREE_OPERAND (arg0, 1)));
+
+	  /* Fold A - (A & B) into ~B & A.  */
+	  if (!TREE_SIDE_EFFECTS (arg0)
+	      && TREE_CODE (arg1) == BIT_AND_EXPR)
+	    {
+	      if (operand_equal_p (arg0, TREE_OPERAND (arg1, 1), 0))
+		return fold (build (BIT_AND_EXPR, type,
+				    fold (build1 (BIT_NOT_EXPR, type,
+						  TREE_OPERAND (arg1, 0))),
+				    arg0));
+	      if (operand_equal_p (arg0, TREE_OPERAND (arg1, 0), 0))
+		return fold (build (BIT_AND_EXPR, type,
+				    fold (build1 (BIT_NOT_EXPR, type,
+						  TREE_OPERAND (arg1, 1))),
+				    arg0));
+	    }
 	}
 
       /* See if ARG1 is zero and X - ARG1 reduces to X.  */

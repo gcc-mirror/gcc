@@ -1,3 +1,7 @@
+2003-03-20  Kazu Hirata  <kazu at cs dot umass dot edu>
+
+	* fold-const.c (fold): Fold A - (A & B) into ~B & A.
+
 2003-03-20  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.md (a peephole2): New.
