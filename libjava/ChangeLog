@@ -1,5 +1,8 @@
 2000-01-05  Tom Tromey  <tromey@cygnus.com>
 
+	* java/lang/Class.h (_getMethods): Correctly declare as private,
+	not public.
+
 	* java/lang/Class.h (_getMethods): Declare.
 	* java/lang/Class.java (_getMethods): Declare.
 	* java/lang/natClass.cc (getDeclaringClass): Always return NULL.

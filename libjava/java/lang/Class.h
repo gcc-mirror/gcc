@@ -97,6 +97,8 @@ private:
   jint _getFields (JArray<java::lang::reflect::Field *> *result, jint offset);
   JArray<java::lang::reflect::Constructor *> *_getConstructors (jboolean);
   java::lang::reflect::Field *getField (jstring, jint);
+  jint _getMethods (JArray<java::lang::reflect::Method *> *result,
+		    jint offset);
 public:
   JArray<java::lang::reflect::Field *> *getFields (void);
 
@@ -105,8 +107,6 @@ public:
   void getSignature (java::lang::StringBuffer *buffer);
   static jstring getSignature (JArray<jclass> *, jboolean is_constructor);
   java::lang::reflect::Method *getMethod (jstring, JArray<jclass> *);
-  jint _getMethods (JArray<java::lang::reflect::Method *> *result,
-		    jint offset);
   JArray<java::lang::reflect::Method *> *getMethods (void);
 
   jint getModifiers (void)
