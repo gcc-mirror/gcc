@@ -64,7 +64,7 @@
 %{mcpu=*:-mcpu=%*} \
 %{march=*:-march=%*} \
 %{mapcs-float:-mfloat} \
-%{msoft-float:-mno-fpu} \
+%{msoft-float:-mfpu=softfpa} \
 %{mthumb-interwork:-mthumb-interwork} \
 %(subtarget_extra_asm_spec)"
 #endif

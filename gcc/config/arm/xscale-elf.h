@@ -28,7 +28,30 @@
 #define SUBTARGET_CPU_DEFAULT 		TARGET_CPU_xscale
 #endif
 
-#define SUBTARGET_EXTRA_ASM_SPEC "%{!mcpu=*:-mcpu=xscale} %{!mhard-float:-mno-fpu}"
+/* Note - there are three possible -mfpu= arguments that can be passed to
+   the assembler:
+   
+     -mfpu=softvfp   This is the default.  It indicates thats doubles are
+                     stored in a format compatable with the VFP
+		     specification.  This is the newer double format, whereby
+		     the endian-ness of the doubles matches the endian-ness
+		     of the memory architecture.
+     
+     -mfpu=fpa       This is when -mhard-float is specified.
+                     [It is not known if any XScale's have been made with
+		     hardware floating point support, but nevertheless this
+		     is what happens].
+		     
+     -mfpu=softfpa   This is when -msoft-float is specified.
+                     This is the normal beahviour of other arm configurations,
+		     which for backwards compatability purposes default to
+		     supporting the old FPA format which was always big
+		     endian, regardless of the endian-ness of the memory
+		     system.  */
+		     
+#define SUBTARGET_EXTRA_ASM_SPEC "%{!mcpu=*:-mcpu=xscale} \
+  %{mhard-float:-mfpu=fpa} \
+  %{!mhard-float: %{msoft-float:-mfpu=softfpa;:-mfpu=softvfp}}"
 
 #ifndef MULTILIB_DEFAULTS
 #define MULTILIB_DEFAULTS \
