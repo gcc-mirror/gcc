@@ -651,7 +651,7 @@ noce_try_store_flag_constants (if_info)
       mode = GET_MODE (if_info->x);
       ifalse = INTVAL (if_info->a);
       itrue = INTVAL (if_info->b);
-      diff = trunc_int_for_mode (mode, itrue - ifalse);
+      diff = trunc_int_for_mode (itrue - ifalse, mode);
 
       can_reverse = (reversed_comparison_code (if_info->cond, if_info->jump)
 		     != UNKNOWN);
@@ -682,7 +682,7 @@ noce_try_store_flag_constants (if_info)
       if (reversep)
       	{
 	  tmp = itrue; itrue = ifalse; ifalse = tmp;
-	  diff = trunc_int_for_mode (mode, -diff);
+	  diff = trunc_int_for_mode (-diff, mode);
 	}
 
       start_sequence ();
