@@ -840,7 +840,8 @@ print_operand (file, x, code)
       if (i == -1)
 	output_operand_lossage ("invalid %%J code");
       else
-	fprintf (file, "%d", i + 1);
+	/* If we want bit 31, write a shift count of zero, not 32.  */
+	fprintf (file, "%d", i == 31 ? 0 : i + 1);
       return;
 
     case 'k':
