@@ -1,6 +1,6 @@
 /* Control flow optimization code for GNU compiler.
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1751,22 +1751,33 @@ try_optimize_cfg (mode)
 static bool
 delete_unreachable_blocks ()
 {
-  int i;
+  int i, j;
   bool changed = false;
 
   find_unreachable_blocks ();
 
-  /* Delete all unreachable basic blocks.  Count down so that we
-     don't interfere with the block renumbering that happens in
-     flow_delete_block.  */
+  /* Delete all unreachable basic blocks.  Do compaction concurrently,
+     as otherwise we can wind up with O(N^2) behaviour here when we 
+     have oodles of dead code.  */
 
-  for (i = n_basic_blocks - 1; i >= 0; --i)
+  for (i = j = 0; i < n_basic_blocks; ++i)
     {
       basic_block b = BASIC_BLOCK (i);
 
       if (!(b->flags & BB_REACHABLE))
-	flow_delete_block (b), changed = true;
+	{
+	  flow_delete_block_noexpunge (b);
+	  expunge_block_nocompact (b);
+	  changed = true;
+	}
+      else
+	{
+	  BASIC_BLOCK (j) = b;
+	  b->index = j++;
+	}
     }
+  n_basic_blocks = j;
+  basic_block_info->num_elements = j;
 
   if (changed)
     tidy_fallthru_edges ();

@@ -339,7 +339,7 @@ is_cfg_nonregular ()
   /* If we have exception handlers, then we consider the cfg not well
      structured.  ?!?  We should be able to handle this now that flow.c
      computes an accurate cfg for EH.  */
-  if (exception_handler_labels)
+  if (current_function_has_exception_handlers ())
     return 1;
 
   /* If we have non-jumping insns which refer to labels, then we consider
