@@ -1,3 +1,8 @@
+2000-09-12  Philipp Thomas  <pthomas@suse.de>
+
+	* aclocal.m4 (AM_WITH_NLS): Don't force use of included gettext.
+	* configure: Rebuilt.
+
 2000-09-13  Michael Hayes  <mhayes@cygnus.com>
 
 	* flow.c (split_block): Fix update of registers live at

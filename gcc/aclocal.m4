@@ -313,7 +313,7 @@ AC_DEFUN(AM_WITH_NLS,
       AC_ARG_WITH(included-gettext,
         [  --with-included-gettext use the GNU gettext library included here],
         nls_cv_force_use_gnu_gettext=$withval,
-        nls_cv_force_use_gnu_gettext=yes)
+        nls_cv_force_use_gnu_gettext=no)
       AC_MSG_RESULT($nls_cv_force_use_gnu_gettext)
 
       nls_cv_use_gnu_gettext="$nls_cv_force_use_gnu_gettext"
