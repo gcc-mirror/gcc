@@ -1,5 +1,5 @@
 /* Handler.java -- "file" protocol handler for java.net
-   Copyright (C) 1998, 1999, 2000, 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2002, 2003, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -76,17 +76,14 @@ public class Handler extends URLStreamHandler
     String host = url.getHost();
     if ((host != null) && (! host.equals("")))
       {
-        throw new IOException("ftp protocol handler not yet implemented.");
-        /*
 	// Reset the protocol (and implicitly the handler) for this URL.
 	// Then have the URL attempt the connection again, as it will
 	// get the changed handler the next time around.
+	// If the ftp protocol handler is not installed, an 
+	// exception will be thrown from the new openConnection() call.
 	setURL (url, "ftp", url.getHost(), url.getPort(), url.getFile(),
-		url.getRef());
-	// Until the ftp protocol handler is written, this will cause
-	// a NullPointerException.
+	        url.getRef());
 	return url.openConnection();
-	*/
       }
 
     return new Connection(url);
