@@ -17,8 +17,8 @@
 # It sets the following shell variables:
 #
 #   cpu_include_dir        CPU-specific directory, defaults to cpu/generic
-#                          if cpu/host_cpu doesn't exist.  This is
-#                          used to set atomicity_include_dir.
+#                          if cpu/host_cpu doesn't exist.  This is not used
+#                          directly, but sets the default for others.
 #
 #   os_include_dir         OS-specific directory, defaults to os/generic.
 #
@@ -29,6 +29,9 @@
 #
 #   abi_baseline_pair      directory name for ABI compat testing,
 #                          defaults to host_cpu-host_os (as per config.guess)
+#
+#   abi_tweaks_dir         location of cxxabi_tweaks.h,
+#                          defaults to cpu_include_dir
 #
 #   atomicity_dir          location of atomicity.h,
 #                          defaults to cpu_include_dir
@@ -72,6 +75,9 @@ case "${host_cpu}" in
   alpha*)
     try_cpu=alpha
     ;;
+  arm* | xscale | ep9312)
+    try_cpu=arm
+    ;;
   i[567]86 | x86_64)
     try_cpu=i486
     ;;
@@ -97,9 +103,6 @@ case "${host_cpu}" in
   sparc* | ultrasparc)
     try_cpu=sparc
     ;;
-  arm* | xscale | ep9312)
-    try_cpu=arm
-    ;;
   *)
     if test -d ${glibcxx_srcdir}/config/cpu/${host_cpu}; then
       try_cpu=${host_cpu}
@@ -123,8 +126,9 @@ esac
 # Now look for the file(s) usually tied to a CPU model, and make
 # default choices for those if they haven't been explicitly set
 # already.  
-cpu_include_dir="cpu/${try_cpu}"
+cpu_include_dir=cpu/${try_cpu}
 abi_baseline_pair=${try_cpu}-${host_os}
+unset try_cpu
 
 if test -f ${glibcxx_srcdir}/config/${cpu_include_dir}/atomicity.h ; then
   atomicity_dir=$cpu_include_dir
@@ -205,7 +209,7 @@ case "${host_os}" in
     # This too-vague configuration does not provide enough information
     # to select a ctype include, and thus os_include_dir is a crap shoot.
     echo "Please specify the full version of Solaris, ie. solaris2.9 " 1>&2
-    exit 1;
+    exit 1
     ;;
   solaris2.5 | solaris2.5.[0-9])
     os_include_dir="os/solaris/solaris2.5"

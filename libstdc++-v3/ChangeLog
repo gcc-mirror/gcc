@@ -1,3 +1,11 @@
+2004-07-11  Phil Edwards  <phil@codesourcery.com>
+
+	* acinclude.m4:  Cosmetic shell syntax fixes.
+	* configure.ac:  Bring comment inline with reality.
+	* configure.host:  Both of the above.  Move 'arm' case to right
+	place in host_cpu switch.
+	* aclocal.m4, configure:  Regenerate.
+
 2004-07-09  Paolo Carlini  <pcarlini@suse.de>
 
 	Add wchar_t counterparts of the basic_stringbuf<char> tests.
