@@ -1,3 +1,8 @@
+Sat Nov 18 13:54:49 2000  Matthias Klose  <doko@cs.tu-berlin.de> 
+ 
+	* g77.texi (Floating-point Exception Handling): Adjust
+	example to work with glibc (>= 2.1).
+
 2000-11-18  Alexandre Oliva  <aoliva@redhat.com>
 
 	* Make-lang.in (INTDOC_DEPS): New macro.
