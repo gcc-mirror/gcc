@@ -4733,7 +4733,7 @@ emit_note (int note_no)
   note = rtx_alloc (NOTE);
   INSN_UID (note) = cur_insn_uid++;
   NOTE_LINE_NUMBER (note) = note_no;
-  NOTE_DATA (note) = 0;
+  memset (&NOTE_DATA (note), 0, sizeof (NOTE_DATA (note)));
   BLOCK_FOR_INSN (note) = NULL;
   add_insn (note);
   return note;
