@@ -4736,8 +4736,9 @@ function_arg_pass_by_reference (cum, mode, type, named)
       return ((type && TREE_CODE (type) == ARRAY_TYPE)
 	      /* Consider complex values as aggregates, so care for TCmode.  */
 	      || GET_MODE_SIZE (mode) > 16
-	      || (type && AGGREGATE_TYPE_P (type)
-		  && int_size_in_bytes (type) > 16));
+	      || (type
+		  && AGGREGATE_TYPE_P (type)
+		  && (unsigned HOST_WIDE_INT) int_size_in_bytes (type) > 16));
     }
 }
 
@@ -4938,7 +4939,7 @@ sparc_va_arg (valist, type)
 
       if (AGGREGATE_TYPE_P (type))
 	{
-	  if (size > 16)
+	  if ((unsigned HOST_WIDE_INT) size > 16)
 	    {
 	      indirect = 1;
 	      size = rsize = UNITS_PER_WORD;
