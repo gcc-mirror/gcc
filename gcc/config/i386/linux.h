@@ -151,11 +151,7 @@ Boston, MA 02111-1307, USA.  */
 #define CPP_PREDEFINES "-D__ELF__ -Dunix -Dlinux -Asystem(posix)"
 
 #undef CPP_SPEC
-#if TARGET_CPU_DEFAULT == 2
-#define CPP_SPEC "%(cpp_cpu) %[cpp_cpu] %{fPIC:-D__PIC__ -D__pic__} %{fpic:-D__PIC__ -D__pic__} %{!m386:-D__i486__} %{posix:-D_POSIX_SOURCE}"
-#else
-#define CPP_SPEC "%(cpp_cpu) %[cpp_cpu] %{fPIC:-D__PIC__ -D__pic__} %{fpic:-D__PIC__ -D__pic__} %{m486:-D__i486__} %{posix:-D_POSIX_SOURCE}"
-#endif
+#define CPP_SPEC "%(cpp_cpu) %[cpp_cpu] %{fPIC:-D__PIC__ -D__pic__} %{fpic:-D__PIC__ -D__pic__} %{posix:-D_POSIX_SOURCE}"
 
 /* Provide a LINK_SPEC appropriate for Linux.  Here we provide support
    for the special GCC options -static and -shared, which allow us to
