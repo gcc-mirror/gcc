@@ -1,3 +1,8 @@
+2000-06-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* dbxout.c (dbxout_type_fields): Don't segfault on fields with
+	incomplete types.
+
 2000-06-08  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* frame.c (end_fde_sort): Remove extraneous erratic array test.

@@ -634,6 +634,7 @@ dbxout_type_fields (type)
 	     represent.  */
 	  || (TREE_CODE (tem) == FIELD_DECL
 	      && (! host_integerp (bit_position (tem), 0)
+		  || ! DECL_SIZE (tem)
 		  || ! host_integerp (DECL_SIZE (tem), 1)))
 	  /* Omit here the nameless fields that are used to skip bits.  */
 	   || DECL_IGNORED_P (tem))
