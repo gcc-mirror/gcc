@@ -1,5 +1,8 @@
 2000-05-10  Zack Weinberg  <zack@wolery.cumb.org>
 
+	* cppexp.c (lex): Use %.*s to print non-NUL-terminated string.
+	Make error message friendlier.
+
 	* cpphash.h (struct hashnode): Use struct hack for name
 	member.
 	* cpphash.c (struct hashdummy): New.
