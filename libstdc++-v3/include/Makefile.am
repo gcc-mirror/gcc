@@ -43,6 +43,7 @@ bits_headers = \
 	${bits_srcdir}/codecvt.h \
 	${bits_srcdir}/concept_check.h \
 	${bits_srcdir}/cpp_type_traits.h \
+	${bits_srcdir}/deque.tcc \
 	${bits_srcdir}/fpos.h \
 	${bits_srcdir}/fstream.tcc \
 	${bits_srcdir}/functexcept.h \
@@ -52,6 +53,7 @@ bits_headers = \
 	${bits_srcdir}/indirect_array.h \
 	${bits_srcdir}/ios_base.h \
 	${bits_srcdir}/istream.tcc \
+	${bits_srcdir}/list.tcc \
 	${bits_srcdir}/locale_facets.h \
 	${bits_srcdir}/locale_facets.tcc \
 	${bits_srcdir}/localefwd.h \
@@ -96,7 +98,8 @@ bits_headers = \
 	${bits_srcdir}/type_traits.h \
 	${bits_srcdir}/valarray_array.h \
 	${bits_srcdir}/valarray_array.tcc \
-	${bits_srcdir}/valarray_meta.h
+	${bits_srcdir}/valarray_meta.h \
+	${bits_srcdir}/vector.tcc
 
 backward_srcdir = ${glibcpp_srcdir}/include/backward
 backward_builddir = ./backward

@@ -65,13 +65,10 @@
 // Hashtable class, used to implement the hashed associative containers
 // hash_set, hash_map, hash_multiset, and hash_multimap.
 
-#include <bits/stl_algobase.h>
-#include <bits/stl_alloc.h>
-#include <bits/stl_construct.h>
+#include <vector>
+#include <iterator>
 #include <bits/stl_algo.h>
-#include <bits/stl_uninitialized.h>
 #include <bits/stl_function.h>
-#include <bits/stl_vector.h>
 #include <ext/stl_hash_fun.h>
 
 namespace __gnu_cxx

@@ -1,3 +1,18 @@
+2002-06-12  Phil Edwards  <pme@gcc.gnu.org>
+
+	* include/Makefile.am:  Add new files.
+	* include/Makefile.in:  Regenerate.
+
+	* include/bits/stl_deque.h, include/bits/stl_list.h,
+	include/bits/stl_vector.h:  Clean up, reformat.  Move definitions...
+	* include/bits/deque.tcc, include/bits/list.tcc,
+	include/bits/vector.tcc:  ...to here.  New files.
+
+	* include/ext/stl_hashtable.h:  Inclide correct full headers.
+	* include/std/std_deque.h:  Include .tcc files for now.
+	* include/std/std_list.h:  Likewise.
+	* include/std/std_vector.h:  Likewise.
+
 2002-06-12  Daniel Jacobowitz  <drow@mvista.com>
 
 	* Makefile.am: Add FLAGS_TO_PASS.

@@ -796,15 +796,7 @@ public:
    *  time, and does not invalidate iterators and references.
   */
   iterator
-  insert(iterator __position, const value_type& __x)
-  {
-    _Node* __tmp = _M_create_node(__x);
-    __tmp->_M_next = __position._M_node;
-    __tmp->_M_prev = __position._M_node->_M_prev;
-    __position._M_node->_M_prev->_M_next = __tmp;
-    __position._M_node->_M_prev = __tmp;
-    return __tmp;
-  }
+  insert(iterator __position, const value_type& __x);
 
 #ifdef _GLIBCPP_DEPRECATED
   /**
@@ -880,17 +872,7 @@ public:
    *  the pointer is the user's responsibilty.
   */
   iterator
-  erase(iterator __position)
-  {
-    _List_node_base* __next_node = __position._M_node->_M_next;
-    _List_node_base* __prev_node = __position._M_node->_M_prev;
-    _Node* __n = static_cast<_Node*>(__position._M_node);
-    __prev_node->_M_next = __next_node;
-    __next_node->_M_prev = __prev_node;
-    _Destroy(&__n->_M_data);
-    _M_put_node(__n);
-    return iterator(static_cast<_Node*>(__next_node));
-  }
+  erase(iterator __position);
 
   /**
    *  @brief  Remove a range of elements.
@@ -911,7 +893,12 @@ public:
    *  way.  Managing the pointer is the user's responsibilty.
   */
   iterator
-  erase(iterator __first, iterator __last);
+  erase(iterator __first, iterator __last)
+  {
+    while (__first != __last)
+      erase(__first++);
+    return __last;
+  }
 
   /**
    *  @brief  Swaps data with another %list.
@@ -1010,7 +997,7 @@ public:
    *  @doctodo
   */
   void
-  reverse();
+  reverse() { __List_base_reverse(this->_M_node); }
 
   /**
    *  @doctodo
@@ -1064,12 +1051,20 @@ protected:
     void
     _M_insert_dispatch(iterator __pos,
                        _InputIterator __first, _InputIterator __last,
-                       __false_type);
+                       __false_type)
+    {
+      for ( ; __first != __last; ++__first)
+        insert(__pos, *__first);
+    }
 
   // Called by insert(p,n,x), and the range insert when it turns out to be
   // the same thing.
   void
-  _M_fill_insert(iterator __pos, size_type __n, const value_type& __x);
+  _M_fill_insert(iterator __pos, size_type __n, const value_type& __x)
+  {
+    for ( ; __n > 0; --__n)
+      insert(__pos, __x);
+  }
 
 
   // Moves the elements from [first,last) before position.
@@ -1167,281 +1162,6 @@ template<typename _Tp, typename _Alloc>
   inline void
   swap(list<_Tp, _Alloc>& __x, list<_Tp, _Alloc>& __y)
   { __x.swap(__y); }
-
-
-template<typename _Tp, typename _Alloc>
-  void _List_base<_Tp,_Alloc>::
-  __clear()
-  {
-    _List_node<_Tp>* __cur = static_cast<_List_node<_Tp>*>(_M_node->_M_next);
-    while (__cur != _M_node) {
-      _List_node<_Tp>* __tmp = __cur;
-      __cur = static_cast<_List_node<_Tp>*>(__cur->_M_next);
-      _Destroy(&__tmp->_M_data);
-      _M_put_node(__tmp);
-    }
-    _M_node->_M_next = _M_node;
-    _M_node->_M_prev = _M_node;
-  }
-
-template<typename _Tp, typename _Alloc>
-  template <typename _InputIter>
-    void list<_Tp, _Alloc>::
-    _M_insert_dispatch(iterator __position, _InputIter __first, _InputIter __last,
-                                          __false_type)
-    {
-      for ( ; __first != __last; ++__first)
-        insert(__position, *__first);
-
-    }
-
-template<typename _Tp, typename _Alloc>
-  void list<_Tp, _Alloc>::
-  _M_fill_insert(iterator __position, size_type __n, const _Tp& __x)
-  {
-    for ( ; __n > 0; --__n)
-      insert(__position, __x);
-  }
-
-template<typename _Tp, typename _Alloc>
-  typename list<_Tp,_Alloc>::iterator list<_Tp, _Alloc>::
-  erase(iterator __first, iterator __last)
-  {
-    while (__first != __last)
-      erase(__first++);
-    return __last;
-  }
-
-template<typename _Tp, typename _Alloc>
-  void list<_Tp, _Alloc>::
-  resize(size_type __new_size, const _Tp& __x)
-  {
-    iterator __i = begin();
-    size_type __len = 0;
-    for ( ; __i != end() && __len < __new_size; ++__i, ++__len)
-      ;
-    if (__len == __new_size)
-      erase(__i, end());
-    else                          // __i == end()
-      insert(end(), __new_size - __len, __x);
-  }
-
-template<typename _Tp, typename _Alloc>
-  list<_Tp, _Alloc>& list<_Tp, _Alloc>::
-  operator=(const list<_Tp, _Alloc>& __x)
-  {
-    if (this != &__x) {
-      iterator __first1 = begin();
-      iterator __last1 = end();
-      const_iterator __first2 = __x.begin();
-      const_iterator __last2 = __x.end();
-      while (__first1 != __last1 && __first2 != __last2)
-        *__first1++ = *__first2++;
-      if (__first2 == __last2)
-        erase(__first1, __last1);
-      else
-        insert(__last1, __first2, __last2);
-    }
-    return *this;
-  }
-
-template<typename _Tp, typename _Alloc>
-  void list<_Tp, _Alloc>::
-  _M_fill_assign(size_type __n, const _Tp& __val) {
-    iterator __i = begin();
-    for ( ; __i != end() && __n > 0; ++__i, --__n)
-      *__i = __val;
-    if (__n > 0)
-      insert(end(), __n, __val);
-    else
-      erase(__i, end());
-  }
-
-template<typename _Tp, typename _Alloc>
-  template <typename _InputIter>
-    void list<_Tp, _Alloc>::
-    _M_assign_dispatch(_InputIter __first2, _InputIter __last2, __false_type)
-    {
-      iterator __first1 = begin();
-      iterator __last1 = end();
-      for ( ; __first1 != __last1 && __first2 != __last2; ++__first1, ++__first2)
-        *__first1 = *__first2;
-      if (__first2 == __last2)
-        erase(__first1, __last1);
-      else
-        insert(__last1, __first2, __last2);
-    }
-
-template<typename _Tp, typename _Alloc>
-  void list<_Tp, _Alloc>::
-  remove(const _Tp& __value)
-  {
-    iterator __first = begin();
-    iterator __last = end();
-    while (__first != __last) {
-      iterator __next = __first;
-      ++__next;
-      if (*__first == __value) erase(__first);
-      __first = __next;
-    }
-  }
-
-template<typename _Tp, typename _Alloc>
-  void list<_Tp, _Alloc>::
-  unique()
-  {
-    iterator __first = begin();
-    iterator __last = end();
-    if (__first == __last) return;
-    iterator __next = __first;
-    while (++__next != __last) {
-      if (*__first == *__next)
-        erase(__next);
-      else
-        __first = __next;
-      __next = __first;
-    }
-  }
-
-template<typename _Tp, typename _Alloc>
-  void list<_Tp, _Alloc>::
-  merge(list<_Tp, _Alloc>& __x)
-  {
-    iterator __first1 = begin();
-    iterator __last1 = end();
-    iterator __first2 = __x.begin();
-    iterator __last2 = __x.end();
-    while (__first1 != __last1 && __first2 != __last2)
-      if (*__first2 < *__first1) {
-        iterator __next = __first2;
-        _M_transfer(__first1, __first2, ++__next);
-        __first2 = __next;
-      }
-      else
-        ++__first1;
-    if (__first2 != __last2) _M_transfer(__last1, __first2, __last2);
-  }
-
-inline void
-__List_base_reverse(_List_node_base* __p)
-{
-  _List_node_base* __tmp = __p;
-  do {
-    std::swap(__tmp->_M_next, __tmp->_M_prev);
-    __tmp = __tmp->_M_prev;     // Old next node is now prev.
-  } while (__tmp != __p);
-}
-
-template<typename _Tp, typename _Alloc>
-inline void list<_Tp, _Alloc>::
-reverse()
-{ __List_base_reverse(this->_M_node); }
-
-template<typename _Tp, typename _Alloc>
-  void list<_Tp, _Alloc>::
-  sort()
-  {
-    // Do nothing if the list has length 0 or 1.
-    if (_M_node->_M_next != _M_node && _M_node->_M_next->_M_next != _M_node) {
-      list<_Tp, _Alloc> __carry;
-      list<_Tp, _Alloc> __counter[64];
-      int __fill = 0;
-      while (!empty()) {
-        __carry.splice(__carry.begin(), *this, begin());
-        int __i = 0;
-        while(__i < __fill && !__counter[__i].empty()) {
-          __counter[__i].merge(__carry);
-          __carry.swap(__counter[__i++]);
-        }
-        __carry.swap(__counter[__i]);
-        if (__i == __fill) ++__fill;
-      }
-
-      for (int __i = 1; __i < __fill; ++__i)
-        __counter[__i].merge(__counter[__i-1]);
-      swap(__counter[__fill-1]);
-    }
-  }
-
-template<typename _Tp, typename _Alloc>
-  template <typename _Predicate>
-    void list<_Tp, _Alloc>::
-    remove_if(_Predicate __pred)
-    {
-      iterator __first = begin();
-      iterator __last = end();
-      while (__first != __last) {
-        iterator __next = __first;
-        ++__next;
-        if (__pred(*__first)) erase(__first);
-        __first = __next;
-      }
-    }
-
-template<typename _Tp, typename _Alloc>
-  template <typename _BinaryPredicate>
-    void list<_Tp, _Alloc>::
-    unique(_BinaryPredicate __binary_pred)
-    {
-      iterator __first = begin();
-      iterator __last = end();
-      if (__first == __last) return;
-      iterator __next = __first;
-      while (++__next != __last) {
-        if (__binary_pred(*__first, *__next))
-          erase(__next);
-        else
-          __first = __next;
-        __next = __first;
-      }
-    }
-
-template<typename _Tp, typename _Alloc>
-  template <typename _StrictWeakOrdering>
-    void list<_Tp, _Alloc>::
-    merge(list<_Tp, _Alloc>& __x, _StrictWeakOrdering __comp)
-    {
-      iterator __first1 = begin();
-      iterator __last1 = end();
-      iterator __first2 = __x.begin();
-      iterator __last2 = __x.end();
-      while (__first1 != __last1 && __first2 != __last2)
-        if (__comp(*__first2, *__first1)) {
-          iterator __next = __first2;
-          _M_transfer(__first1, __first2, ++__next);
-          __first2 = __next;
-        }
-        else
-          ++__first1;
-      if (__first2 != __last2) _M_transfer(__last1, __first2, __last2);
-    }
-
-template<typename _Tp, typename _Alloc>
-  template <typename _StrictWeakOrdering>
-  void list<_Tp, _Alloc>::
-  sort(_StrictWeakOrdering __comp)
-  {
-    // Do nothing if the list has length 0 or 1.
-    if (_M_node->_M_next != _M_node && _M_node->_M_next->_M_next != _M_node) {
-      list<_Tp, _Alloc> __carry;
-      list<_Tp, _Alloc> __counter[64];
-      int __fill = 0;
-      while (!empty()) {
-        __carry.splice(__carry.begin(), *this, begin());
-        int __i = 0;
-        while(__i < __fill && !__counter[__i].empty()) {
-          __counter[__i].merge(__carry, __comp);
-          __carry.swap(__counter[__i++]);
-        }
-        __carry.swap(__counter[__i]);
-        if (__i == __fill) ++__fill;
-      }
-
-      for (int __i = 1; __i < __fill; ++__i)
-        __counter[__i].merge(__counter[__i-1], __comp);
-      swap(__counter[__fill-1]);
-    }
-  }
 
 } // namespace std
 
