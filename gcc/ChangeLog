@@ -1,3 +1,11 @@
+Wed Oct  1 13:43:53 1997  Jim Wilson  <wilson@cygnus.com>
+
+	Bring over from FSF.
+	Tue Aug  5 16:10:45 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* mips.c (function_arg): Handle passing a struct 
+	containing a double in a DFmode register without the PARALLEL.
+
 Wed Oct  1 11:13:25 1997  Ian Lance Taylor  <ian@cygnus.com>
 
         * pexecute.c: Use spawn if __CYGWIN32__.
