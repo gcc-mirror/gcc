@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -4079,63 +4079,65 @@ package body Make is
 
       if Main_Project /= No_Project then
 
-         if Projects.Table (Main_Project).Object_Directory = No_Name then
-            Make_Failed ("no sources to compile");
+         if Projects.Table (Main_Project).Object_Directory /= No_Name then
+
+            --  Change the current directory to the object directory of
+            --  the main project.
+
+            begin
+               Project_Object_Directory := No_Project;
+               Change_To_Object_Directory (Main_Project);
+
+            exception
+               when Directory_Error =>
+
+                  --  This should never happen. But, if it does, display the
+                  --  content of the parent directory of the obj dir.
+
+                  declare
+                     Parent : constant Dir_Name_Str :=
+                                Dir_Name
+                                  (Get_Name_String
+                                     (Projects.Table
+                                        (Main_Project).Object_Directory));
+
+                     Dir  : Dir_Type;
+                     Str  : String (1 .. 200);
+                     Last : Natural;
+
+                  begin
+                     Write_Str ("Contents of directory """);
+                     Write_Str (Parent);
+                     Write_Line (""":");
+
+                     Open (Dir, Parent);
+
+                     loop
+                        Read (Dir, Str, Last);
+                        exit when Last = 0;
+                        Write_Str ("   ");
+                        Write_Line (Str (1 .. Last));
+                     end loop;
+
+                     Close (Dir);
+
+                  exception
+                     when X : others =>
+                        Write_Line ("(unexpected exception)");
+                        Write_Line (Exception_Information (X));
+
+                        if Is_Open (Dir) then
+                           Close (Dir);
+                        end if;
+                  end;
+
+                  Make_Failed
+                    ("unable to change working directory to """,
+                     Get_Name_String
+                       (Projects.Table (Main_Project).Object_Directory),
+                     """");
+            end;
          end if;
-
-         --  Change the current directory to the object directory of the main
-         --  project.
-
-         begin
-            Project_Object_Directory := No_Project;
-            Change_To_Object_Directory (Main_Project);
-
-         exception
-            when Directory_Error =>
-
-               --  This should never happen. But, if it does, display the
-               --  content of the parent directory of the obj dir.
-
-               declare
-                  Parent : constant Dir_Name_Str :=
-                    Dir_Name
-                      (Get_Name_String
-                           (Projects.Table (Main_Project).Object_Directory));
-                  Dir : Dir_Type;
-                  Str : String (1 .. 200);
-                  Last : Natural;
-
-               begin
-                  Write_Str ("Contents of directory """);
-                  Write_Str (Parent);
-                  Write_Line (""":");
-
-                  Open (Dir, Parent);
-
-                  loop
-                     Read (Dir, Str, Last);
-                     exit when Last = 0;
-                     Write_Str ("   ");
-                     Write_Line (Str (1 .. Last));
-                  end loop;
-
-                  Close (Dir);
-
-               exception
-                  when X : others =>
-                     Write_Line ("(unexpected exception)");
-                     Write_Line (Exception_Information (X));
-
-                     if Is_Open (Dir) then
-                        Close (Dir);
-                     end if;
-               end;
-
-               Make_Failed ("unable to change working directory to """,
-                            Get_Name_String
-                             (Projects.Table (Main_Project).Object_Directory),
-                            """");
-         end;
 
          --  Source file lookups should be cached for efficiency.
          --  Source files are not supposed to change.
