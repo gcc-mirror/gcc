@@ -142,7 +142,7 @@
    (set_attr "mode"	"SI")
    (set_attr "length"	"2,2,3,3,3")])
 
-(define_insn ""
+(define_insn "*addx2"
   [(set (match_operand:SI 0 "register_operand" "=a")
 	(plus:SI (mult:SI (match_operand:SI 1 "register_operand" "r")
 			  (const_int 2))
@@ -153,7 +153,7 @@
    (set_attr "mode"	"SI")
    (set_attr "length"	"3")])
 
-(define_insn ""
+(define_insn "*addx4"
   [(set (match_operand:SI 0 "register_operand" "=a")
 	(plus:SI (mult:SI (match_operand:SI 1 "register_operand" "r")
 			  (const_int 4))
@@ -164,7 +164,7 @@
    (set_attr "mode"	"SI")
    (set_attr "length"	"3")])
 
-(define_insn ""
+(define_insn "*addx8"
   [(set (match_operand:SI 0 "register_operand" "=a")
 	(plus:SI (mult:SI (match_operand:SI 1 "register_operand" "r")
 			  (const_int 8))
@@ -236,7 +236,7 @@
    (set_attr "mode"	"SI")
    (set_attr "length"	"3")])
 
-(define_insn ""
+(define_insn "*subx2"
   [(set (match_operand:SI 0 "register_operand" "=a")
 	(minus:SI (mult:SI (match_operand:SI 1 "register_operand" "r")
 			   (const_int 2))
@@ -247,7 +247,7 @@
    (set_attr "mode"	"SI")
    (set_attr "length"	"3")])
 
-(define_insn ""
+(define_insn "*subx4"
   [(set (match_operand:SI 0 "register_operand" "=a")
 	(minus:SI (mult:SI (match_operand:SI 1 "register_operand" "r")
 			   (const_int 4))
@@ -258,7 +258,7 @@
    (set_attr "mode"	"SI")
    (set_attr "length"	"3")])
 
-(define_insn ""
+(define_insn "*subx8"
   [(set (match_operand:SI 0 "register_operand" "=a")
 	(minus:SI (mult:SI (match_operand:SI 1 "register_operand" "r")
 			   (const_int 8))
@@ -423,7 +423,7 @@
    (set_attr "mode"	"SF")
    (set_attr "length"	"3")])
 
-(define_insn ""
+(define_insn "*recipsf2"
   [(set (match_operand:SF 0 "register_operand" "=f")
 	(div:SF (match_operand:SF 1 "const_float_1_operand" "")
 		(match_operand:SF 2 "register_operand" "f")))]
@@ -480,7 +480,7 @@
    (set_attr "mode"	"SF")
    (set_attr "length"	"3")])
 
-(define_insn ""
+(define_insn "*rsqrtsf2"
   [(set (match_operand:SF 0 "register_operand" "=f")
 	(div:SF (match_operand:SF 1 "const_float_1_operand" "")
 		(sqrt:SF (match_operand:SF 2 "register_operand" "f"))))]
@@ -1142,13 +1142,12 @@
    (set_attr "mode"	"SF")
    (set_attr "length"	"3,3,3,2,2,2,3,3,3,3,3,3")])
 
-(define_insn ""
-  [(parallel
-    [(set (match_operand:SF 0 "register_operand" "=f")
-	  (mem:SF (plus:SI (match_operand:SI 1 "register_operand" "+a")
-			   (match_operand:SI 2 "fpmem_offset_operand" "i"))))
-     (set (match_dup 1)
-	  (plus:SI (match_dup 1) (match_dup 2)))])]
+(define_insn "*lsiu"
+  [(set (match_operand:SF 0 "register_operand" "=f")
+	(mem:SF (plus:SI (match_operand:SI 1 "register_operand" "+a")
+			 (match_operand:SI 2 "fpmem_offset_operand" "i"))))
+   (set (match_dup 1)
+	(plus:SI (match_dup 1) (match_dup 2)))]
   "TARGET_HARD_FLOAT"
   "*
 {
@@ -1160,13 +1159,12 @@
    (set_attr "mode"	"SF")
    (set_attr "length"	"3")])
 
-(define_insn ""
-  [(parallel
-    [(set (mem:SF (plus:SI (match_operand:SI 0 "register_operand" "+a")
-			   (match_operand:SI 1 "fpmem_offset_operand" "i")))
-	  (match_operand:SF 2 "register_operand" "f"))
-     (set (match_dup 0)
-	  (plus:SI (match_dup 0) (match_dup 1)))])]
+(define_insn "*ssiu"
+  [(set (mem:SF (plus:SI (match_operand:SI 0 "register_operand" "+a")
+			 (match_operand:SI 1 "fpmem_offset_operand" "i")))
+	(match_operand:SF 2 "register_operand" "f"))
+   (set (match_dup 0)
+	(plus:SI (match_dup 0) (match_dup 1)))]
   "TARGET_HARD_FLOAT"
   "*
 {
@@ -1275,12 +1273,12 @@
 }")
 
 (define_insn "movstrsi_internal"
-  [(parallel [(set (match_operand:BLK 0 "memory_operand" "=U")
-		   (match_operand:BLK 1 "memory_operand" "U"))
-	      (use (match_operand:SI 2 "arith_operand" ""))
-	      (use (match_operand:SI 3 "const_int_operand" ""))
-	      (clobber (match_scratch:SI 4 "=&r"))
-	      (clobber (match_scratch:SI 5 "=&r"))])]
+  [(set (match_operand:BLK 0 "memory_operand" "=U")
+	(match_operand:BLK 1 "memory_operand" "U"))
+   (use (match_operand:SI 2 "arith_operand" ""))
+   (use (match_operand:SI 3 "const_int_operand" ""))
+   (clobber (match_scratch:SI 4 "=&r"))
+   (clobber (match_scratch:SI 5 "=&r"))]
   ""
   "*
 {
@@ -1553,7 +1551,7 @@
 
 ;; Branch patterns for standard integer comparisons
 
-(define_insn ""
+(define_insn "*btrue"
   [(set (pc)
 	(if_then_else (match_operator 3 "branch_operator"
 			 [(match_operand:SI 0 "register_operand" "r,r")
@@ -1607,7 +1605,7 @@
    (set_attr "mode"	"none")
    (set_attr "length"	"3,3")])
 
-(define_insn ""
+(define_insn "*bfalse"
   [(set (pc)
 	(if_then_else (match_operator 3 "branch_operator"
 			 [(match_operand:SI 0 "register_operand" "r,r")
@@ -1661,7 +1659,7 @@
    (set_attr "mode"	"none")
    (set_attr "length"	"3,3")])
 
-(define_insn ""
+(define_insn "*ubtrue"
   [(set (pc)
 	(if_then_else (match_operator 3 "ubranch_operator"
 			 [(match_operand:SI 0 "register_operand" "r,r")
@@ -1696,7 +1694,7 @@
    (set_attr "mode"	"none")
    (set_attr "length"	"3,3")])
 
-(define_insn ""
+(define_insn "*ubfalse"
   [(set (pc)
 	(if_then_else (match_operator 3 "ubranch_operator"
 			 [(match_operand:SI 0 "register_operand" "r,r")
@@ -1733,7 +1731,7 @@
 
 ;; Branch patterns for bit testing
 
-(define_insn ""
+(define_insn "*bittrue"
   [(set (pc)
 	(if_then_else (match_operator 3 "boolean_operator"
 			[(zero_extract:SI
@@ -1773,7 +1771,7 @@
    (set_attr "mode"	"none")
    (set_attr "length"	"3")])
 
-(define_insn ""
+(define_insn "*bitfalse"
   [(set (pc)
 	(if_then_else (match_operator 3 "boolean_operator"
 			[(zero_extract:SI
@@ -1813,7 +1811,7 @@
    (set_attr "mode"	"none")
    (set_attr "length"	"3")])
 
-(define_insn ""
+(define_insn "*masktrue"
   [(set (pc)
 	(if_then_else (match_operator 3 "boolean_operator"
 		 [(and:SI (match_operand:SI 0 "register_operand" "r")
@@ -1837,7 +1835,7 @@
    (set_attr "mode"	"none")
    (set_attr "length"	"3")])
 
-(define_insn ""
+(define_insn "*maskfalse"
   [(set (pc)
 	(if_then_else (match_operator 3 "boolean_operator"
 		 [(and:SI (match_operand:SI 0 "register_operand" "r")
@@ -1868,13 +1866,12 @@
 ;; since since loop end is handled in hardware.
 
 (define_insn "zero_cost_loop_start"
-  [(parallel [(set (pc) (if_then_else (eq (match_operand:SI 0 "register_operand" "a")
-					  (const_int 0))
-				      (label_ref (match_operand 1 "" ""))
-				      (pc)))
-	      (set (reg:SI 19)
-		   (plus:SI (match_dup 0)
-			    (const_int -1)))])]
+  [(set (pc) (if_then_else (eq (match_operand:SI 0 "register_operand" "a")
+			       (const_int 0))
+			   (label_ref (match_operand 1 "" ""))
+			   (pc)))
+   (set (reg:SI 19)
+	(plus:SI (match_dup 0) (const_int -1)))]
   ""
   "loopnez %0, %l1"
   [(set_attr "type"	"jump")
@@ -1882,13 +1879,11 @@
    (set_attr "length"	"3")])
 
 (define_insn "zero_cost_loop_end"
-  [(parallel [(set (pc) (if_then_else (ne (reg:SI 19)
-					  (const_int 0))
-				      (label_ref (match_operand 0 "" ""))
-				      (pc)))
-	      (set (reg:SI 19)
-		   (plus:SI (reg:SI 19)
-			    (const_int -1)))])]
+  [(set (pc) (if_then_else (ne (reg:SI 19) (const_int 0))
+			   (label_ref (match_operand 0 "" ""))
+			   (pc)))
+   (set (reg:SI 19)
+	(plus:SI (reg:SI 19) (const_int -1)))]
   ""
   "*
     xtensa_emit_loop_end (insn, operands);
@@ -2426,7 +2421,7 @@
 ;; The preceding splitter needs something to split the insn into;
 ;; things start breaking if the result is just a "use" so instead we
 ;; generate the following insn.
-(define_insn ""
+(define_insn "*unspec_nop"
   [(unspec [(const_int 0)] UNSPEC_NOP)]
   ""
   ""
@@ -2461,7 +2456,7 @@ srli\\t%3, %3, 30\;slli\\t%0, %1, 2\;ssai\\t2\;src\\t%0, %3, %0"
 
 ;; branch patterns
 
-(define_insn ""
+(define_insn "*booltrue"
   [(set (pc)
 	(if_then_else (match_operator 2 "boolean_operator"
 			 [(match_operand:CC 0 "register_operand" "b")
@@ -2480,7 +2475,7 @@ srli\\t%3, %3, 30\;slli\\t%0, %1, 2\;ssai\\t2\;src\\t%0, %3, %0"
    (set_attr "mode"	"none")
    (set_attr "length"	"3")])
 
-(define_insn ""
+(define_insn "*boolfalse"
   [(set (pc)
 	(if_then_else (match_operator 2 "boolean_operator"
 			 [(match_operand:CC 0 "register_operand" "b")
