@@ -1,3 +1,8 @@
+2004-08-02  Paul Brook  <paul@codesourcery.com>
+
+	PR rtl-optimization/15068
+	* flow.c (init_propagate_block_info): Check condition is reversible.
+
 2004-08-02  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* gengtype.h (options::info): Change type to const char *.
