@@ -1,3 +1,8 @@
+2000-01-12  Fred Fish <fnf@be.com>
+
+	* configure.in (*-*-beos*): Recognize.
+	* config/beos.mt: New file.
+
 1999-12-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* libio.h (_IO_cookie_io_functions_t): Use _IO_off_t instead of
