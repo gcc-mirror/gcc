@@ -1,3 +1,17 @@
+2004-05-13  Benjamin Kosnik  <bkoz@redhat.com>
+	
+	* docs/html/abi.html: New.
+	* docs/html/abi.txt: Remove.
+	* docs/html/documentation.html: Add link.
+	* testsuite/Makefile.am: Add files.
+	* testsuite/Makefile.in: Regenerated.
+	* testsuite/abi_check.cc: Move and modify code into...
+	* testsuite/testsuite_abi.cc: Add.
+	* testsuite/testsuite_abi.h: Add.
+
+	* docs/html/17_intro/TODO: Update.
+	* include/bits/stl_pair.h: Format.
+	
 2004-05-06  Matthias Klose  <doko@debian.org>
 
 	* include/backward/iterator.h: 	Add GPL copyright info,
