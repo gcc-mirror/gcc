@@ -1,3 +1,15 @@
+2002-08-21  Tom Tromey  <tromey@redhat.com>
+
+	For PR java/6005 and PR java/7611:
+	* fold-const.c (fold_truthop): Use can_use_bit_fields_p.
+	(fold): Likewise.
+	* langhooks.c (lhd_can_use_bit_fields_p): New function.
+	* langhooks-def.h (lhd_can_use_bit_fields_p): Declare.
+	(LANG_HOOKS_CAN_USE_BIT_FIELDS_P): New define.
+	(LANG_HOOKS_INITIALIZER): Use it.
+	* langhooks.h (struct lang_hooks) [can_use_bit_fields_p]: New
+	field.
+
 2002-08-21  Stan Shebs  <shebs@apple.com>
 
 	* tree.c (finish_vector_type): Fix a typo in a comment.

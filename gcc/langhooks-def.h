@@ -59,6 +59,7 @@ extern rtx lhd_expand_expr PARAMS ((tree, rtx, enum machine_mode, int));
 extern void lhd_print_error_function PARAMS ((struct diagnostic_context *,
 					      const char *));
 extern void lhd_set_decl_assembler_name PARAMS ((tree));
+extern bool lhd_can_use_bit_fields_p PARAMS ((void));
 extern bool lhd_warn_unused_global_decl PARAMS ((tree));
 extern void lhd_incomplete_type_error PARAMS ((tree, tree));
 extern tree lhd_type_promotes_to PARAMS ((tree));
@@ -102,6 +103,7 @@ tree lhd_tree_inlining_convert_parm_for_inlining PARAMS ((tree, tree, tree));
 #define LANG_HOOKS_UNSAVE_EXPR_NOW	lhd_unsave_expr_now
 #define LANG_HOOKS_MAYBE_BUILD_CLEANUP	lhd_return_null_tree
 #define LANG_HOOKS_SET_DECL_ASSEMBLER_NAME lhd_set_decl_assembler_name
+#define LANG_HOOKS_CAN_USE_BIT_FIELDS_P lhd_can_use_bit_fields_p
 #define LANG_HOOKS_HONOR_READONLY	false
 #define LANG_HOOKS_PRINT_STATISTICS	lhd_do_nothing
 #define LANG_HOOKS_PRINT_XNODE		lhd_print_tree_nothing
@@ -241,6 +243,7 @@ int lhd_tree_dump_type_quals			PARAMS ((tree));
   LANG_HOOKS_UNSAVE_EXPR_NOW, \
   LANG_HOOKS_MAYBE_BUILD_CLEANUP, \
   LANG_HOOKS_SET_DECL_ASSEMBLER_NAME, \
+  LANG_HOOKS_CAN_USE_BIT_FIELDS_P, \
   LANG_HOOKS_HONOR_READONLY, \
   LANG_HOOKS_PRINT_STATISTICS, \
   LANG_HOOKS_PRINT_XNODE, \
