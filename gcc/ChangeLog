@@ -1,3 +1,12 @@
+2000-04-04  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
+
+	* Makefile (gccbug): New target.
+	(doc): Depend on it.
+	* gcc.texi (Bugs): Link subnodes.
+	(gccbug): New node.
+	* gccbug.in (CATEGORIES): Remove gc, host, profiling, libgcc.
+	Document severities, priorities, and classes in bug form.
+
 2000-04-04  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cpplex.c (trigraph_map, speccase): Combine into single
@@ -188,7 +197,7 @@ Mon Apr  3 00:02:59 2000  Brad Lucier <lucier@math.purdue.edu>
 2000-04-02  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* config/c4x/c4x.c (c4x_function_arg): Check for void_type_node
- 	before checking MUST_PASS_IN_STACK.
+	before checking MUST_PASS_IN_STACK.
 
 2000-04-02  Neil Booth <NeilB@earthling.net>
 
@@ -262,18 +271,18 @@ Mon Apr  3 00:02:59 2000  Brad Lucier <lucier@math.purdue.edu>
 
 2000-04-01  Neil Booth <NeilB@earthling.net>
 
-        * cppexp.c: Redefine priority constants.
-        (_cpp_parse_expr): Replace left and right priority scheme with
+	* cppexp.c: Redefine priority constants.
+	(_cpp_parse_expr): Replace left and right priority scheme with
 	single priority logic.  Move LOGICAL to same place as COMPARE.
 	Remove bogus check for multiple unary +/- operators.
 
 2000-04-01  Neil Booth <NeilB@earthling.net>
 
-        * cppexp.c: (_cpp_parse_expr): Numerical constants are pushed
-        within the switch statement.  Binary operations break out of
-        the switch naturally.  '(' tokens handled by forcing
-        immediate shift.  ')' handled by forcing immediate reduce to
-        the previous '('.  New error messages.
+	* cppexp.c: (_cpp_parse_expr): Numerical constants are pushed
+	within the switch statement.  Binary operations break out of
+	the switch naturally.  '(' tokens handled by forcing
+	immediate shift.  ')' handled by forcing immediate reduce to
+	the previous '('.  New error messages.
 	
 2000-03-31  Geoff Keating  <geoffk@cygnus.com>
 
@@ -432,7 +441,7 @@ Thu Mar 30 06:32:51 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* stmt.c (expand_decl): Likewise.
 	(copy_rtx_and_substitute): Likewise.
 	* expr.c (expand_expr, expand_expr_unaligned): Likewise.
- 	(clear_by_pieces): Fix error in last change.
+	(clear_by_pieces): Fix error in last change.
 	* emit-rtl.c (init_emit): Set known registers alignment in bits.
 	* function.h (regno_pointer_align): Now unsigned.
 	* config/arm/arm.c (alignable_memory_operand): REGNO_POINTER_ALIGN
@@ -2270,7 +2279,7 @@ Tue Mar 14 08:42:21 2000  Jeffrey A Law  (law@cygnus.com)
 	
 2000-03-12  Zack Weinberg  <zack@wolery.cumb.org>
 
- 	* cpphash.c: Don't include version.h.
+	* cpphash.c: Don't include version.h.
 	(special_symbol) [case T_VERSION]: Look for the string in
 	hp->value.cpval; don't use version_string.
 	* cppinit.c (initialize_builtins): Set hp->value.cpval for
@@ -2375,7 +2384,7 @@ Sat Mar 11 16:18:12 2000  Jim Wilson  <wilson@cygnus.com>
 	remap_filename, _cpp_read_include_file, actual_directory,
 	hack_vms_include_specification): Replace bcopy(), index() etc
 	calls.  Add casts to some allocations.  Make some variables
- 	pointers to const [unsigned] char.
+	pointers to const [unsigned] char.
 	* cpphash.c (_cpp_install, macro_cleanup, collect_expansion,
 	collect_formal_parameters): Similarly.
 	* cppinit.c (struct pending_option, append_include_chain,
@@ -3609,7 +3618,7 @@ Mon Feb 28 22:11:12 2000  J"orn Rennecke <amylaar@cygnus.co.uk>
 Mon Feb 28 14:21:15 2000  Catherine Moore  <clm@cygnus.com>
 
 	* config/pa/som.h (MAKE_DECL_ONE_ONLY): Define.
- 	(ASM_WEAKEN_LABEL): Define.
+	(ASM_WEAKEN_LABEL): Define.
  
 Mon Feb 28 13:07:19 MET 2000  Jan Hubicka  <jh@suse.cz>
 
@@ -4167,7 +4176,7 @@ Fri Feb 18 20:08:57 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* config/alpha/alpha.c (alpha_emit_xfloating_libcall): Cast FUNC
 	to (char *).
 	(alpha_expand_unaligned_load, alpha_expand_unaligned_store):
- 	Cast switch operand of size to int.
+	Cast switch operand of size to int.
 	(alpha_expand_epilogue): Always initialize fp_offset and sa_reg.
 	* config/alpha/alpha.h (INITIAL_ELIMINATION_OFFSET): Add abort
 	in unhandled case.
@@ -4528,7 +4537,7 @@ Sun Feb 13 12:57:52 2000  Neil Booth <NeilB@earthling.net>
 2000-02-13  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* flow.c (flow_loop_tree_node_add): Use better algorithm by passing
- 	previously inserted node instead of root node.	Caller changed.
+	previously inserted node instead of root node.	Caller changed.
 
 2000-02-13  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
@@ -4704,10 +4713,10 @@ Fri Feb 11 02:48:30 2000  Brad Lucier  (lucier@math.purdue.edu)
 	(ASM_OUTPUT_EXTERNAL_LIBCALL): Likewise.
 	(ASM_FILE_END): Use c4x_file_end.
 	* config/c4x/c4x.c (c4x_global_label): New function.
- 	(c4x_external_ref, c4x_file_end): Likewise.
+	(c4x_external_ref, c4x_file_end): Likewise.
 
 	* config/c4x/c4x-protos.h (c4x_global_label): Add prototype.
- 	(c4x_external_ref, c4x_end_file): Likewise.
+	(c4x_external_ref, c4x_end_file): Likewise.
 
 2000-02-10  Zack Weinberg  <zack@wolery.cumb.org>
 
@@ -5229,14 +5238,14 @@ Mon Feb  7 18:36:41 MET 2000  Jan Hubicka  <jh@suse.cz>
 
 2000-02-04  Zack Weinberg  <zack@wolery.cumb.org>
 
- 	* recog.h: Remove NO_MD_PROTOTYPES ifdefs.
- 	* genflags.c: Use the max_operand_1 logic from genemit.c to
- 	calculate how many arguments gen_insn prototypes have.  Remove
- 	NO_MD_PROTOTYPES ifdefs from the generated file.
- 	* genoutput.c: Don't define NO_MD_PROTOTYPES in the generated
- 	file.  Cast gen_insn initializers to insn_gen_fn.
- 	* config/alpha/vms.h: Don't define NO_MD_PROTOTYPES.
- 	* gcc.texi: Remove documentation of NO_MD_PROTOTYPES.
+	* recog.h: Remove NO_MD_PROTOTYPES ifdefs.
+	* genflags.c: Use the max_operand_1 logic from genemit.c to
+	calculate how many arguments gen_insn prototypes have.  Remove
+	NO_MD_PROTOTYPES ifdefs from the generated file.
+	* genoutput.c: Don't define NO_MD_PROTOTYPES in the generated
+	file.  Cast gen_insn initializers to insn_gen_fn.
+	* config/alpha/vms.h: Don't define NO_MD_PROTOTYPES.
+	* gcc.texi: Remove documentation of NO_MD_PROTOTYPES.
 
 2000-02-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
