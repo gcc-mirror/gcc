@@ -21,6 +21,7 @@ Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define HASH_SIZE 2503 /* a prime */
 
 int hash_tab[HASH_SIZE];
+int verbose = 0;
 
 sstring linebuf;
 
@@ -82,8 +83,9 @@ main (argc, argv)
 
       if (!isalnum (*ptr))
 	{
-	  fprintf (stderr, "%s: Can't handle this complex prototype: %s\n",
-		   argv[0], linebuf.base);
+	  if (verbose)
+	    fprintf (stderr, "%s: Can't handle this complex prototype: %s\n",
+		     argv[0], linebuf.base);
 	  continue;
 	}
       name_end = ptr+1;
