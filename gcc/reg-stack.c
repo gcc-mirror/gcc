@@ -435,8 +435,7 @@ reg_to_stack (first, file)
   life_analysis (first, max_reg_num (), file, 0);
 
   /* Set up block info for each basic block.  */
-  bi = (block_info) alloca ((n_basic_blocks + 1) * sizeof (*bi));
-  memset (bi, 0, (n_basic_blocks + 1) * sizeof (*bi));
+  bi = (block_info) xcalloc ((n_basic_blocks + 1), sizeof (*bi));
   for (i = n_basic_blocks - 1; i >= 0; --i)
     BASIC_BLOCK (i)->aux = bi + i;
   EXIT_BLOCK_PTR->aux = bi + n_basic_blocks;
@@ -483,7 +482,9 @@ reg_to_stack (first, file)
 		     !JUMP_NOOP_MOVES, !JUMP_AFTER_REGSCAN);
     }
 
+  /* Clean up.  */
   VARRAY_FREE (stack_regs_mentioned_data);
+  free (bi);
 }
 
 /* Check PAT, which is in INSN, for LABEL_REFs.  Add INSN to the
@@ -2616,7 +2617,7 @@ convert_regs_2 (file, block)
   basic_block *stack, *sp;
   int inserted;
 
-  stack = (basic_block *) alloca (sizeof (*stack) * n_basic_blocks);
+  stack = (basic_block *) xmalloc (sizeof (*stack) * n_basic_blocks);
   sp = stack;
 
   *sp++ = block;

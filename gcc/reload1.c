@@ -4309,9 +4309,8 @@ reload_as_needed (live_known)
 
   bzero ((char *) spill_reg_rtx, sizeof spill_reg_rtx);
   bzero ((char *) spill_reg_store, sizeof spill_reg_store);
-  reg_last_reload_reg = (rtx *) alloca (max_regno * sizeof (rtx));
-  bzero ((char *) reg_last_reload_reg, max_regno * sizeof (rtx));
-  reg_has_output_reload = (char *) alloca (max_regno);
+  reg_last_reload_reg = (rtx *) xcalloc (max_regno, sizeof (rtx));
+  reg_has_output_reload = (char *) xmalloc (max_regno);
   CLEAR_HARD_REG_SET (reg_reloaded_valid);
 
   set_initial_elim_offsets ();
@@ -4573,11 +4572,11 @@ reload_as_needed (live_known)
 	    && INSN_CLOBBERS_REGNO_P (insn, i))
 	  CLEAR_HARD_REG_BIT (reg_reloaded_valid, i);
 #endif
-
-#ifdef USE_C_ALLOCA
-      alloca (0);
-#endif
     }
+
+  /* Clean up.  */
+  free (reg_last_reload_reg);
+  free (reg_has_output_reload);
 }
 
 /* Discard all record of any value reloaded from X,
