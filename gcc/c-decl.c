@@ -3734,10 +3734,11 @@ finish_decl (decl, init, asmspec_tree)
 		   Also if it is not file scope.
 		   Otherwise, let it through, but if it is not `extern'
 		   then it may cause an error message later.  */
-	      /* We must use DECL_CONTEXT instead of current_binding_level,
-		 because a duplicate_decls call could have changed the binding
-		 level of this decl.  */
-		(DECL_INITIAL (decl) != 0 || DECL_CONTEXT (decl) != 0)
+	      /* A duplicate_decls call could have changed an extern
+		 declaration into a file scope one.  This can be detected
+		 by TREE_ASM_WRITTEN being set.  */
+		(DECL_INITIAL (decl) != 0
+		 || DECL_CONTEXT (decl) != 0 && ! TREE_ASM_WRITTEN (decl))
 	      :
 		/* An automatic variable with an incomplete type
 		   is an error.  */
@@ -3779,7 +3780,9 @@ finish_decl (decl, init, asmspec_tree)
 	  end_temporary_allocation ();
 	  /* This is a no-op in c-lang.c or something real in objc-actions.c.  */
 	  maybe_objc_check_decl (decl);
-	  rest_of_decl_compilation (decl, asmspec, DECL_CONTEXT (decl) == 0,
+	  rest_of_decl_compilation (decl, asmspec,
+				    (DECL_CONTEXT (decl) == 0
+				     || TREE_ASM_WRITTEN (decl)),
 				    0);
 	  pop_obstacks ();
 	}
