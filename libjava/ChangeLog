@@ -1,3 +1,18 @@
+2003-02-13  Michael Koch  <konqueror@gmx.de>
+
+	* java/awt/GridBagConstraints.java
+ 	(FIRST_LINE_ENT, FIRST_LINE_START, LAST_LINE_END, LAST_LINE_START,
+ 	LINE_END, LINE_START, PAGE_END, PAGE_START): New constants.
+ 	* java/awt/KeyboardFocusManager.java
+ 	(setGlobalCurrentFocusCycleRoot): Must be public.
+ 	* java/awt/MenuComponent.java
+ 	(MenuComponent): Must be public.
+ 	* java/awt/Toolkit.java:
+ 	Added some empty lines to make documentation more readable.
+ 	(getFontPeer): Added @deprecated.
+ 	(getColorModel): Added exception documentation.
+ 	(getProperty): Fixed documentation.
+ 
 2003-02-12  Jeff Sturm  <jsturm@one-point.com>
 
 	* configure.host (alpha*-*): Default to -mieee.

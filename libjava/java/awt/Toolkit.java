@@ -134,6 +134,7 @@ public abstract class Toolkit
    * Creates a peer object for the specified <code>TextField</code>.
    *
    * @param target The <code>TextField</code> to create the peer for.
+   *
    * @return The peer for the specified <code>TextField</code> object.
    *
    * @exception HeadlessException If GraphicsEnvironment.isHeadless() is true.
@@ -144,6 +145,7 @@ public abstract class Toolkit
    * Creates a peer object for the specified <code>Label</code>.
    *
    * @param target The <code>Label</code> to create the peer for.
+   *
    * @return The peer for the specified <code>Label</code> object.
    *
    * @exception HeadlessException If GraphicsEnvironment.isHeadless() is true.
@@ -154,6 +156,7 @@ public abstract class Toolkit
    * Creates a peer object for the specified <code>List</code>.
    *
    * @param target The <code>List</code> to create the peer for.
+   *
    * @return The peer for the specified <code>List</code> object.
    *
    * @exception HeadlessException If GraphicsEnvironment.isHeadless() is true.
@@ -164,6 +167,7 @@ public abstract class Toolkit
    * Creates a peer object for the specified <code>Checkbox</code>.
    *
    * @param target The <code>Checkbox</code> to create the peer for.
+   *
    * @return The peer for the specified <code>Checkbox</code> object.
    *
    * @exception HeadlessException If GraphicsEnvironment.isHeadless() is true.
@@ -174,6 +178,7 @@ public abstract class Toolkit
    * Creates a peer object for the specified <code>Scrollbar</code>.
    *
    * @param target The <code>Scrollbar</code> to create the peer for.
+   *
    * @return The peer for the specified <code>Scrollbar</code> object.
    *
    * @exception HeadlessException If GraphicsEnvironment.isHeadless() is true.
@@ -184,6 +189,7 @@ public abstract class Toolkit
    * Creates a peer object for the specified <code>ScrollPane</code>.
    *
    * @param target The <code>ScrollPane</code> to create the peer for.
+   *
    * @return The peer for the specified <code>ScrollPane</code> object.
    *
    * @exception HeadlessException If GraphicsEnvironment.isHeadless() is true.
@@ -194,6 +200,7 @@ public abstract class Toolkit
    * Creates a peer object for the specified <code>TextArea</code>.
    *
    * @param target The <code>TextArea</code> to create the peer for.
+   *
    * @return The peer for the specified <code>TextArea</code> object.
    *
    * @exception HeadlessException If GraphicsEnvironment.isHeadless() is true.
@@ -204,6 +211,7 @@ public abstract class Toolkit
    * Creates a peer object for the specified <code>Choice</code>.
    *
    * @param target The <code>Choice</code> to create the peer for.
+   *
    * @return The peer for the specified <code>Choice</code> object.
    *
    * @exception HeadlessException If GraphicsEnvironment.isHeadless() is true.
@@ -214,6 +222,7 @@ public abstract class Toolkit
    * Creates a peer object for the specified <code>Frame</code>.
    *
    * @param target The <code>Frame</code> to create the peer for.
+   *
    * @return The peer for the specified <code>Frame</code> object.
    *
    * @exception HeadlessException If GraphicsEnvironment.isHeadless() is true.
@@ -224,6 +233,7 @@ public abstract class Toolkit
    * Creates a peer object for the specified <code>Canvas</code>.
    *
    * @param target The <code>Canvas</code> to create the peer for.
+   *
    * @return The peer for the specified <code>Canvas</code> object.
    */
   protected abstract CanvasPeer createCanvas(Canvas target);
@@ -232,6 +242,7 @@ public abstract class Toolkit
    * Creates a peer object for the specified <code>Panel</code>.
    *
    * @param target The <code>Panel</code> to create the peer for.
+   *
    * @return The peer for the specified <code>Panel</code> object.
    */
   protected abstract PanelPeer createPanel(Panel target);
@@ -240,6 +251,7 @@ public abstract class Toolkit
    * Creates a peer object for the specified <code>Window</code>.
    *
    * @param target The <code>Window</code> to create the peer for.
+   *
    * @return The peer for the specified <code>Window</code> object.
    *
    * @exception HeadlessException If GraphicsEnvironment.isHeadless() is true.
@@ -250,6 +262,7 @@ public abstract class Toolkit
    * Creates a peer object for the specified <code>Dialog</code>.
    *
    * @param target The dialog to create the peer for
+   *
    * @return The peer for the specified font name.
    *
    * @exception HeadlessException If GraphicsEnvironment.isHeadless() is true.
@@ -260,6 +273,7 @@ public abstract class Toolkit
    * Creates a peer object for the specified <code>MenuBar</code>.
    *
    * @param target The <code>MenuBar</code> to create the peer for.
+   *
    * @return The peer for the specified <code>MenuBar</code> object.
    *
    * @exception HeadlessException If GraphicsEnvironment.isHeadless() is true.
@@ -270,6 +284,7 @@ public abstract class Toolkit
    * Creates a peer object for the specified <code>Menu</code>.
    *
    * @param target The <code>Menu</code> to create the peer for.
+   *
    * @return The peer for the specified <code>Menu</code> object.
    *
    * @exception HeadlessException If GraphicsEnvironment.isHeadless() is true.
@@ -280,6 +295,7 @@ public abstract class Toolkit
    * Creates a peer object for the specified <code>PopupMenu</code>.
    *
    * @param target The <code>PopupMenu</code> to create the peer for.
+   *
    * @return The peer for the specified <code>PopupMenu</code> object.
    *
    * @exception HeadlessException If GraphicsEnvironment.isHeadless() is true.
@@ -290,6 +306,7 @@ public abstract class Toolkit
    * Creates a peer object for the specified <code>MenuItem</code>.
    *
    * @param target The <code>MenuItem</code> to create the peer for.
+   *
    * @return The peer for the specified <code>MenuItem</code> object.
    *
    * @exception HeadlessException If GraphicsEnvironment.isHeadless() is true.
@@ -300,6 +317,7 @@ public abstract class Toolkit
    * Creates a peer object for the specified <code>FileDialog</code>.
    *
    * @param target The <code>FileDialog</code> to create the peer for.
+   *
    * @return The peer for the specified <code>FileDialog</code> object.
    *
    * @exception HeadlessException If GraphicsEnvironment.isHeadless() is true.
@@ -310,6 +328,7 @@ public abstract class Toolkit
    * Creates a peer object for the specified <code>CheckboxMenuItem</code>.
    *
    * @param target The <code>CheckboxMenuItem</code> to create the peer for.
+   *
    * @return The peer for the specified <code>CheckboxMenuItem</code> object.
    *
    * @exception HeadlessException If GraphicsEnvironment.isHeadless() is true.
@@ -326,6 +345,7 @@ public abstract class Toolkit
    * XXX: FIXME
    *
    * @param target The <code>Component</code> to create the peer for.
+   *
    * @return The peer for the specified <code>Component</code> object.
    */
   protected LightweightPeer createComponent(Component target)
@@ -338,7 +358,10 @@ public abstract class Toolkit
    *
    * @param name The font to create the peer for.
    * @param style The font style to create the peer for.
+   *
    * @return The peer for the specified font name.
+   *
+   * @deprecated
    */
   protected abstract FontPeer getFontPeer(String name, int style);
 
@@ -416,6 +439,8 @@ public abstract class Toolkit
    * Returns the color model of the screen.
    *
    * @return The color model of the screen.
+   * 
+   * @exception HeadlessException If GraphicsEnvironment.isHeadless() is true.
    */
   public abstract ColorModel getColorModel();
 
@@ -430,6 +455,7 @@ public abstract class Toolkit
    * Return the font metrics for the specified font
    *
    * @param name The name of the font to return metrics for.
+   *
    * @return The requested font metrics.
    */
   public abstract FontMetrics getFontMetrics(Font name);
@@ -647,6 +673,7 @@ public abstract class Toolkit
    * component.
    *
    * @param component The component to fetch the native container for.
+   *
    * @return The native container object for this component.
    */
   protected static Container getNativeContainer(Component component)
@@ -700,7 +727,7 @@ public abstract class Toolkit
    * default value if the property does not exist.
    *
    * @param key The name of the property to retrieve.
-   * @param defThe default value of the property.
+   * @param def The default value of the property.
    */
   public static String getProperty(String key, String def)
   {
