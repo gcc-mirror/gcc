@@ -1302,7 +1302,6 @@ bool
 cleanup_cfg (mode)
      int mode;
 {
-  int i;
   bool changed = false;
 
   timevar_push (TV_CLEANUP_CFG);
