@@ -20,7 +20,7 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
-#include "m88k.h"
+#include "m88k/m88k.h"
 
 /* Default switches */
 #undef	TARGET_DEFAULT

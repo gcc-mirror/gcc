@@ -31,7 +31,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #endif
 
 #include "svr4.h"
-#include "m88k.h"
+#include "m88k/m88k.h"
 
 /* Identify the compiler.  */
 #undef  VERSION_INFO1
