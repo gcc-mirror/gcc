@@ -1,3 +1,8 @@
+2001-02-16  Nick Clifton  <nickc@redhat.com>
+
+	* configure.in (noconfigdirs): Allow configuration of texinfo
+	for Cygwin hosts.
+
 2001-02-15  Anthony Green  <green@redhat.com>
 
 	* configure: Introduce GCJ_FOR_TARGET.
