@@ -1,3 +1,7 @@
+2004-01-30  Steven Bosscher <s.bosscher@student.tudelft.nl>
+
+	* toplev.c: Fix broken checkin of 2003-12-30, again.
+
 2004-01-30  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* configure.ac (gcc_cv_as_dwarf2_debug_line): Enable test for
@@ -3206,6 +3210,10 @@
 	* system.h (ASM_OUTPUT_MAIN_SOURCE_FILENAME): Poison.
 	* toplev.c (output_file_directive): Don't use
 	ASM_OUTPUT_MAIN_SOURCE_FILENAME.
+
+2004-01-05  Steven Bosscher <s.bosscher@student.tudelft.nl>
+
+	* toplev.c: Fix broken checkin of 2003-12-30.
 
 2004-01-05  Daniel Berlin  <dberlin@dberlin.org>
 
