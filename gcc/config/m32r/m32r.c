@@ -1000,7 +1000,7 @@ gen_compare (enum rtx_code code, rtx x, rtx y, int need_compare)
 	    {
 	      rtx tmp = gen_reg_rtx (SImode);		
 	      
-	      emit_insn (gen_cmp_ne_small_const_insn (tmp, x, y));
+	      emit_insn (gen_addsi3 (tmp, x, GEN_INT (-INTVAL (y))));
 	      x = tmp;
 	      y = const0_rtx;
 	    }
@@ -1035,7 +1035,7 @@ gen_compare (enum rtx_code code, rtx x, rtx y, int need_compare)
 		  if (y == const0_rtx)
 		    tmp = const1_rtx;
 		  else
-		    emit_insn (gen_cmp_ne_small_const_insn (tmp, y, const1_rtx));
+		    emit_insn (gen_addsi3 (tmp, y, constm1_rtx));
 		  emit_insn (gen_cmp_ltsi_insn (x, tmp));
 		  code = EQ;
 		  break;
@@ -1043,7 +1043,7 @@ gen_compare (enum rtx_code code, rtx x, rtx y, int need_compare)
 		  if (GET_CODE (y) == CONST_INT)
 		    tmp = gen_rtx (PLUS, SImode, y, const1_rtx);
 		  else
-		    emit_insn (gen_cmp_ne_small_const_insn (tmp, y, const1_rtx));
+		    emit_insn (gen_addsi3 (tmp, y, constm1_rtx));
 		  emit_insn (gen_cmp_ltsi_insn (x, tmp));
 		  code = NE;
 		  break;
@@ -1075,7 +1075,7 @@ gen_compare (enum rtx_code code, rtx x, rtx y, int need_compare)
 		  if (y == const0_rtx)
 		    tmp = const1_rtx;
 		  else
-		    emit_insn (gen_cmp_ne_small_const_insn (tmp, y, const1_rtx));
+		    emit_insn (gen_addsi3 (tmp, y, constm1_rtx));
 		  emit_insn (gen_cmp_ltusi_insn (x, tmp));
 		  code = EQ;
 		  break;
@@ -1083,7 +1083,7 @@ gen_compare (enum rtx_code code, rtx x, rtx y, int need_compare)
 		  if (GET_CODE (y) == CONST_INT)
 		    tmp = gen_rtx (PLUS, SImode, y, const1_rtx);
 		  else
-		    emit_insn (gen_cmp_ne_small_const_insn (tmp, y, const1_rtx));
+		    emit_insn (gen_addsi3 (tmp, y, constm1_rtx));
 		  emit_insn (gen_cmp_ltusi_insn (x, tmp));
 		  code = NE;
 		  break;
@@ -1122,7 +1122,7 @@ gen_compare (enum rtx_code code, rtx x, rtx y, int need_compare)
 	{
 	  rtx tmp = gen_reg_rtx (SImode);
 
-	  emit_insn (gen_cmp_ne_small_const_insn (tmp, x, y));
+	  emit_insn (gen_addsi3 (tmp, x, GEN_INT (-INTVAL (y))));
 	  return gen_rtx (code, CCmode, tmp, const0_rtx);
 	}
       

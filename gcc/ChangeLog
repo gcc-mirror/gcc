@@ -1,3 +1,10 @@
+2003-12-16  Kazu Hirata  <kazu@cs.umass.edu>
+
+	PR target/11012
+	* config/m32r/m32r.c (gen_compare): Call gen_addsi3 instead of
+	gen_cmp_ne_small_const_insn.
+	* config/m32r/m32r.md (cmp_ne_small_const_insn): Remove.
+
 2003-12-17  Neil Booth  <neil@daikokuya.co.uk>
             Joseph S. Myers  <jsm@polyomino.org.uk>
 
