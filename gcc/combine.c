@@ -9773,6 +9773,16 @@ distribute_notes (notes, from_insn, i3, i2, elim_i2, elim_i1)
 			all_used = 0;
 		      }
 
+		  /* Check for the case where the register dying partially
+		     overlaps the register set by this insn.  */
+		  if (all_used)
+		    for (i = regno; i < endregno; i++)
+		      if (dead_or_set_regno_p (place, i))
+			  {
+			    all_used = 0;
+			    break;
+			  }
+
 		  if (! all_used)
 		    {
 		      /* Put only REG_DEAD notes for pieces that are
