@@ -111,6 +111,11 @@ extern int errno;
 
 #include <ldfcn.h>
 
+/* Mips-news overrides this macro.  */
+#ifndef MY_ISCOFF
+#define MY_ISCOFF(X) ISCOFF (X)
+#endif
+
 #endif /* OBJECT_FORMAT_COFF */
 
 #ifdef OBJECT_FORMAT_ROSE
@@ -1183,7 +1188,7 @@ scan_prog_file (prog_name, which_pass)
   if ((ldptr = ldopen (prog_name, ldptr)) == NULL)
     fatal ("%s: can't open as COFF file", prog_name);
       
-  if (!ISCOFF (HEADER(ldptr).f_magic))
+  if (!MY_ISCOFF (HEADER (ldptr).f_magic))
     fatal ("%s: not a COFF file", prog_name);
 
   if (GCC_CHECK_HDR (ldptr))
