@@ -1,3 +1,7 @@
+Thu Sep  4 09:43:01 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* version.c: Bump for snapshot.
+
 Thu Sep  4 11:04:21 1997  Michael Meissner  <meissner@cygnus.com>
 
 	* bitmap.h (EXECUTE_IF_AND_IN_BITMAP): New macro, to iterate over
