@@ -394,11 +394,9 @@ in the following sections.
 
 @emph{MN10300 Options}
 @gccoptlist{
--mmult-bug @gol
--mno-mult-bug @gol
--mam33 @gol
--mno-am33 @gol
--mrelax}
+-mmult-bug  -mno-mult-bug @gol
+-mam33  -mno-am33 @gol
+-mno-crt0  -mrelax}
 
 @emph{M32R/D Options}
 @gccoptlist{
@@ -522,9 +520,8 @@ in the following sections.
 -m4-nofpu  -m4-single-only  -m4-single  -m4 @gol
 -mb  -ml  -mdalign  -mrelax @gol
 -mbigtable  -mfmovd  -mhitachi  -mnomacsave @gol
--misize  -mpadstruct  -mspace @gol
--mprefergot
--musermode}
+-mieee  -misize  -mpadstruct  -mspace @gol
+-mprefergot  -musermode}
 
 @emph{System V Options}
 @gccoptlist{
@@ -6102,6 +6099,10 @@ Generate code which uses features specific to the AM33 processor.
 Do not generate code which uses features specific to the AM33 processor.  This
 is the default.
 
+@item -mno-crt0
+@opindex mno-crt0
+Do not link in the C run-time initialization object file.
+
 @item -mrelax
 @opindex mrelax
 Indicate to the linker that it should perform a relaxation optimization pass
@@ -8153,6 +8154,10 @@ Comply with the calling conventions defined by Hitachi.
 @opindex mnomacsave
 Mark the @code{MAC} register as call-clobbered, even if
 @option{-mhitachi} is given.
+
+@item -mieee
+@opindex mieee
+Increase IEEE-compliance of floating-point code.
 
 @item -misize
 @opindex misize
