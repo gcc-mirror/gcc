@@ -97,7 +97,7 @@ If you are an experienced user of one of the languages GCC supports, your
 suggestions for improvement of GCC are welcome in any case.
 @end itemize
 
-@node Bug Reporting,Trouble,Bug Criteria,Bugs
+@node Bug Reporting,,Bug Criteria,Bugs
 @section How and where to Report Bugs
 @cindex compiler bugs, reporting
 
