@@ -1,3 +1,8 @@
+2003-07-24  H. Väisänen  <hvaisane@joyx.joensuu.fi>
+
+	* java/text/SimpleDateFormat.java (format) [YEAR_FIELD]: Zero pad
+	unless field size is 2.
+
 2003-07-23  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
 	* gnu/java/awt/peer/gtk/GtkTextComponentPeer.java

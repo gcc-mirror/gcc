@@ -430,11 +430,15 @@ public class SimpleDateFormat extends DateFormat
 	  buffer.append(formatData.eras[calendar.get(Calendar.ERA)]);
 	  break;
 	case YEAR_FIELD:
-	  temp = String.valueOf(calendar.get(Calendar.YEAR));
-	  if (p.size < 4)
-	    buffer.append(temp.substring(temp.length()-2));
+	  // If we have two digits, then we truncate.  Otherwise, we
+	  // use the size of the pattern, and zero pad.
+	  if (p.size == 2)
+	    {
+	      temp = String.valueOf(calendar.get(Calendar.YEAR));
+	      buffer.append(temp.substring(temp.length() - 2));
+	    }
 	  else
-	    buffer.append(temp);
+	    withLeadingZeros(calendar.get(Calendar.YEAR), p.size, buffer);
 	  break;
 	case MONTH_FIELD:
 	  if (p.size < 3)
