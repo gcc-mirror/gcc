@@ -1208,6 +1208,9 @@ do {									\
 #define RETURN_IN_MEMORY(TYPE) \
   ix86_return_in_memory (TYPE)
 
+/* This is overriden by <cygwin.h>.  */
+#define MS_AGGREGATE_RETURN 0
+
 
 /* Define the classes of registers for register constraints in the
    machine description.  Also define ranges of constants.

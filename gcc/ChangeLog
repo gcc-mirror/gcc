@@ -1,3 +1,11 @@
+2003-03-07  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	* config/i386/i386.h (MS_AGGREGATE_RETURN): New define.
+	* config/i386/cygwin.h (MS_AGGREGATE_RETURN): Override default
+	definition.
+	* config/i386/i386.h (ix86_return_in_memory): Return aggregate
+	types of up to 8 bytes via registers if MS_AGGREGATE_RETURN.
+
 Fri Feb  7 22:22:40 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (movdi_rex64_1): Fix mmx<->int move opcode.

@@ -2608,12 +2608,18 @@ ix86_return_in_memory (type)
     }
   else
     {
-      if (TYPE_MODE (type) == BLKmode
-	  || (VECTOR_MODE_P (TYPE_MODE (type))
-	      && int_size_in_bytes (type) == 8)
-	  || (int_size_in_bytes (type) > 12 && TYPE_MODE (type) != TImode
-	      && TYPE_MODE (type) != TFmode
-	      && !VECTOR_MODE_P (TYPE_MODE (type))))
+      if (TYPE_MODE (type) == BLKmode)
+	return 1;
+      else if (MS_AGGREGATE_RETURN
+	       && AGGREGATE_TYPE_P (type)
+	       && int_size_in_bytes(type) <= 8)
+	return 0;
+      else if ((VECTOR_MODE_P (TYPE_MODE (type))
+	        && int_size_in_bytes (type) == 8)
+	       || (int_size_in_bytes (type) > 12
+		   && TYPE_MODE (type) != TImode
+		   && TYPE_MODE (type) != TFmode
+		   && !VECTOR_MODE_P (TYPE_MODE (type))))
 	return 1;
       return 0;
     }
