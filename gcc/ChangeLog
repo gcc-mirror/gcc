@@ -1,3 +1,8 @@
+2001-02-20  Stan Shebs  <shebs@apple.com>
+
+	* config/rs6000/rs6000.c (output_cbranch): Output branches
+	on separate lines instead of using ';' to separate.
+
 2001-02-20  Neil Booth  <neil@daikokuya.demon.co.uk>
 
         * cppinit.c (set_lang):  Move builtin handling to...
