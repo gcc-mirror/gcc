@@ -583,9 +583,9 @@
 
 (define_expand "movsicc"
   [(set (match_operand:SI 0 "register_operand" "")
-	(if_then_else (match_operand 1 "comparison_operator" "")
-		      (match_operand:SI 2 "nonmemory_operand" "")
-		      (match_operand:SI 3 "register_operand" "")))]
+	(if_then_else:SI (match_operand 1 "comparison_operator" "")
+			 (match_operand:SI 2 "nonmemory_operand" "")
+			 (match_operand:SI 3 "register_operand" "")))]
   ""
   "
 {
@@ -599,9 +599,9 @@
 
 ;(define_expand "movdicc"
 ;  [(set (match_operand:DI 0 "register_operand" "")
-;	(if_then_else (match_operand 1 "comparison_operator" "")
-;		      (match_operand:DI 2 "nonmemory_operand" "")
-;		      (match_operand:DI 3 "register_operand" "")))]
+;	(if_then_else:DI (match_operand 1 "comparison_operator" "")
+;			 (match_operand:DI 2 "nonmemory_operand" "")
+;			 (match_operand:DI 3 "register_operand" "")))]
 ;  "0 /* ??? this would work better if we had cmpdi */"
 ;  "
 ;{
@@ -612,12 +612,12 @@
 ;
 ;  operands[1] = gen_rtx (code, VOIDmode, ccreg, const0_rtx);
 ;}")
-(define_expand "movsfcc"
 
+(define_expand "movsfcc"
   [(set (match_operand:SF 0 "register_operand" "")
-	(if_then_else (match_operand 1 "comparison_operator" "")
-		      (match_operand:SF 2 "nonmemory_operand" "")
-		      (match_operand:SF 3 "register_operand" "")))]
+	(if_then_else:SF (match_operand 1 "comparison_operator" "")
+			 (match_operand:SF 2 "nonmemory_operand" "")
+			 (match_operand:SF 3 "register_operand" "")))]
   ""
   "
 {
@@ -631,9 +631,9 @@
 
 ;(define_expand "movdfcc"
 ;  [(set (match_operand:DF 0 "register_operand" "")
-;	(if_then_else (match_operand 1 "comparison_operator" "")
-;		      (match_operand:DF 2 "nonmemory_operand" "")
-;		      (match_operand:DF 3 "register_operand" "")))]
+;	(if_then_else:DF (match_operand 1 "comparison_operator" "")
+;			 (match_operand:DF 2 "nonmemory_operand" "")
+;			 (match_operand:DF 3 "register_operand" "")))]
 ;  "0 /* ??? can generate less efficient code if constants involved */"
 ;  "
 ;{
@@ -647,9 +647,9 @@
 
 (define_insn "*movsicc_insn"
   [(set (match_operand:SI 0 "register_operand" "=r")
-	(if_then_else (match_operand 1 "comparison_operator" "")
-		      (match_operand:SI 2 "nonmemory_operand" "rJi")
-		      (match_operand:SI 3 "register_operand" "0")))]
+	(if_then_else:SI (match_operand 1 "comparison_operator" "")
+			 (match_operand:SI 2 "nonmemory_operand" "rJi")
+			 (match_operand:SI 3 "register_operand" "0")))]
   ""
   "mov.%d1 %0,%S2"
   [(set_attr "type" "cmove")])
@@ -657,9 +657,9 @@
 ; ??? This doesn't properly handle constants.
 ;(define_insn "*movdicc_insn"
 ;  [(set (match_operand:DI 0 "register_operand" "=r,r")
-;	(if_then_else (match_operand 1 "comparison_operator" "")
-;		      (match_operand:DI 2 "nonmemory_operand" "r,Ji")
-;		      (match_operand:DI 3 "register_operand" "0,0")))]
+;	(if_then_else:DI (match_operand 1 "comparison_operator" "")
+;			 (match_operand:DI 2 "nonmemory_operand" "r,Ji")
+;			 (match_operand:DI 3 "register_operand" "0,0")))]
 ;  "0"
 ;  "*
 ;{
@@ -682,9 +682,9 @@
 
 (define_insn "*movsfcc_insn"
   [(set (match_operand:SF 0 "register_operand" "=r,r")
-	(if_then_else (match_operand 1 "comparison_operator" "")
-		      (match_operand:SF 2 "nonmemory_operand" "r,E")
-		      (match_operand:SF 3 "register_operand" "0,0")))]
+	(if_then_else:SF (match_operand 1 "comparison_operator" "")
+			 (match_operand:SF 2 "nonmemory_operand" "r,E")
+			 (match_operand:SF 3 "register_operand" "0,0")))]
   ""
   "@
    mov.%d1 %0,%2
@@ -693,9 +693,9 @@
 
 ;(define_insn "*movdfcc_insn"
 ;  [(set (match_operand:DF 0 "register_operand" "=r,r")
-;	(if_then_else (match_operand 1 "comparison_operator" "")
-;		      (match_operand:DF 2 "nonmemory_operand" "r,E")
-;		      (match_operand:DF 3 "register_operand" "0,0")))]
+;	(if_then_else:DF (match_operand 1 "comparison_operator" "")
+;			 (match_operand:DF 2 "nonmemory_operand" "r,E")
+;			 (match_operand:DF 3 "register_operand" "0,0")))]
 ;  "0"
 ;  "*
 ;{

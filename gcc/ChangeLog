@@ -1,7 +1,16 @@
 2002-03-20  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/4792
+	* config/arc/arc.md (movsicc, movdicc, movsfcc, movdfcc): Add mode
+	to if_then_else.
+	(movsicc_insn, movdicc_insn, movsfcc_insn, movdfcc_insn): Likewise.
+	* config/arc/arc.c (arc_final_prescan_insn): Use extract_insn_cached
+	instead of insn_extract.
+
+2002-03-20  Jakub Jelinek  <jakub@redhat.com>
+
 	PR bootstrap/4192
-	* config/fr30/fr30.md (jump): Comment out clobber of fixed register.
+	* config/fr30/fr30.md (jump): Remove clobber of fixed register.
 
 	* genemit.c (output_added_clobbers_hard_reg_p): Only output return
 	stmt if some case has been output.
