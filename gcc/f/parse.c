@@ -34,7 +34,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 void
 main (int argc, char *argv[])
 #elif FFECOM_targetCURRENT == FFECOM_targetGCC
-FILE *finput;
+extern FILE *finput;
 
 int
 yyparse ()
