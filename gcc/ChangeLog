@@ -1,3 +1,8 @@
+2002-06-11  David S. Miller  <davem@redhat.com>
+
+	* emit-rtl.c (emit_*_scope): Only access INSN_SCOPE if
+	active_insn_p.
+
 2002-06-11  Richard Henderson  <rth@redhat.com>
 
 	* c-common.c (builtin_define_type_max): New.
