@@ -204,6 +204,7 @@
 
 2004-01-11  Steven Bosscher  <stevenb@suse.de>
 
+	PR fortran/9972
 	* toplev.c (rest_of_handle_inline): Also consider functions
 	for deferral if the language is GNU F77.
 
