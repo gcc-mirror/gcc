@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for PRO.
-   Copyright (C) 1997, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1997, 2000, 2002 Free Software Foundation, Inc.
    Contributed by Joel Sherrill (joel@OARcorp.com).
 
 This file is part of GNU CC.
@@ -23,12 +23,9 @@ Boston, MA 02111-1307, USA.  */
 
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES "-Dhppa -DPWB -Acpu=hppa -Amachine=hppa \
-   -Drtems -D__rtems__ -Asystem=rtems"
+   -D__rtems__ -Asystem=rtems"
 
 /* Generate calls to memcpy, memcmp and memset.  */
 #ifndef TARGET_MEM_FUNCTIONS
 #define TARGET_MEM_FUNCTIONS
 #endif
-
-/* Get machine-independent configuration parameters for RTEMS.  */
-#include <rtems.h>

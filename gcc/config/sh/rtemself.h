@@ -1,5 +1,5 @@
 /* Definitions for rtems targeting a SH using elf.
-   Copyright (C) 1997, 1998, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1997, 1998, 2000, 2002 Free Software Foundation, Inc.
    Contributed by Joel Sherrill (joel@OARcorp.com).
 
 This file is part of GNU CC.
@@ -22,13 +22,10 @@ Boston, MA 02111-1307, USA.  */
 /* Specify predefined symbols in preprocessor.  */
 
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-D__sh__ -D__ELF__ -Drtems -D__rtems__ \
+#define CPP_PREDEFINES "-D__sh__ -D__ELF__ -D__rtems__ \
   -Asystem=rtems -Acpu=sh -Amachine=sh"
 
 /* Generate calls to memcpy, memcmp and memset.  */
 #ifndef TARGET_MEM_FUNCTIONS
 #define TARGET_MEM_FUNCTIONS
 #endif
-
-/* Get machine-independent configuration parameters for RTEMS.  */
-#include <rtems.h>

@@ -1,5 +1,5 @@
 /* Definitions for rtems targeting a Motorola m68k using coff.
-   Copyright (C) 1996, 1997, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 2000, 2002 Free Software Foundation, Inc.
    Contributed by Joel Sherrill (joel@OARcorp.com).
 
 This file is part of GNU CC.
@@ -19,18 +19,13 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#include "m68k/m68k-coff.h"
-
 /* Specify predefined symbols in preprocessor.  */
 
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-Dmc68000 -Drtems -D__rtems__ \
+#define CPP_PREDEFINES "-Dmc68000 -D__rtems__ \
    -Asystem=rtems -Acpu=mc68000 -Acpu=m68k -Amachine=m68k"
 
 /* Generate calls to memcpy, memcmp and memset.  */
 #ifndef TARGET_MEM_FUNCTIONS
 #define TARGET_MEM_FUNCTIONS
 #endif
-
-/* Get machine-independent configuration parameters for RTEMS.  */
-#include <rtems.h>

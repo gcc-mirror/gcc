@@ -1,5 +1,5 @@
 /* Definitions for RTEMS based ARM systems using ELF
-   Copyright (C) 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2002 Free Software Foundation, Inc.
  
 This file is part of GNU CC.
  
@@ -19,15 +19,13 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 /* Run-time Target Specification.  */
-#undef  TARGET_VERSION
 #define TARGET_VERSION  fputs (" (ARM/ELF RTEMS)", stderr);
 
 #define HAS_INIT_SECTION
 
-#undef  CPP_PREDEFINES
-#define CPP_PREDEFINES "-Darm -Darm_elf -Drtems -D__rtems__ -D__ELF__ \
+#undef CPP_PREDEFINES
+#define CPP_PREDEFINES "-D__rtems__ -D__ELF__ \
    -Asystem(rtems) -Acpu(arm) -Amachine(arm)"
 
-/*#undef INVOKE_main*/
-
+#undef INVOKE_main
 

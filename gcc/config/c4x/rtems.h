@@ -1,5 +1,5 @@
 /* Definitions of RTEMS executing on an TMS320C[34]x using coff
-   Copyright (C) 1996, 1997, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 1999, 2002 Free Software Foundation, Inc.
    Contributed by Joel Sherrill (joel@OARcorp.com).
 
 This file is part of GNU CC.
@@ -19,19 +19,12 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#include "c4x/c4x.h"
-
 /* Specify predefined symbols in preprocessor.  */
 
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-D__rtems__ -Asystem=rtems"
+#define CPP_PREDEFINES "-D__rtems__ -Asystem=rtems -D__USE_INIT_FINI__"
 
 /* Generate calls to memcpy, memcmp and memset.  */
 #ifndef TARGET_MEM_FUNCTIONS
 #define TARGET_MEM_FUNCTIONS
 #endif
-
-/* Include machine independent RTEMS configuration parameters.  */
-#include <rtems.h>
-
-/* End of c4x/rtems.h.  */
