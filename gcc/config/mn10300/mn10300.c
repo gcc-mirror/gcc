@@ -265,7 +265,6 @@ notice_update_cc (body, insn)
      rtx body;
      rtx insn;
 {
-#if 0
   switch (get_attr_cc (insn))
     {
     case CC_NONE:
@@ -289,6 +288,12 @@ notice_update_cc (body, insn)
       break;
 
     case CC_SET:
+      /* The insn sets all the condition codes, except v is bogus.  */
+      CC_STATUS_INIT;
+      cc_status.flags |= CC_OVERFLOW_UNUSABLE;
+      cc_status.value1 = recog_operand[0];
+      break;
+
     case CC_COMPARE:
       /* The insn is a compare instruction.  */
       CC_STATUS_INIT;
@@ -299,9 +304,10 @@ notice_update_cc (body, insn)
       /* Insn doesn't leave CC in a usable state.  */
       CC_STATUS_INIT;
       break;
+
+    default:
+      abort ();
     }
-#endif
-  CC_STATUS_INIT;
 }
 
 /* Return true if OP is a valid call operand.  */
