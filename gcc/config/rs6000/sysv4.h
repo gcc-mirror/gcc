@@ -185,25 +185,46 @@ do {									\
       else								\
 	error ("Bad value for -msdata=%s", rs6000_sdata_name);		\
     }									\
+  else if (TARGET_SDATA && TARGET_EABI)					\
+    {									\
+      rs6000_sdata = SDATA_EABI;					\
+      rs6000_sdata_name = "eabi";					\
+    }									\
   else if (TARGET_SDATA)						\
-    rs6000_sdata = (TARGET_EABI) ? SDATA_EABI : SDATA_SYSV;		\
+    {									\
+      rs6000_sdata = SDATA_SYSV;					\
+      rs6000_sdata_name = "sysv";					\
+    }									\
   else if (DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS)		\
     {									\
       rs6000_sdata = SDATA_DATA;					\
+      rs6000_sdata_name = "data";					\
       target_flags |= MASK_SDATA;					\
     }									\
   else									\
-    rs6000_sdata = SDATA_NONE;						\
+    {									\
+      rs6000_sdata = SDATA_NONE;					\
+      rs6000_sdata_name = "none";					\
+    }									\
 									\
   if (TARGET_RELOCATABLE &&						\
       (rs6000_sdata == SDATA_EABI || rs6000_sdata == SDATA_SYSV))	\
     {									\
       rs6000_sdata = SDATA_DATA;					\
-      error ("-mrelocatable and -msdata are incompatible.");		\
+      error ("-mrelocatable and -msdata=%s are incompatible.",		\
+	     rs6000_sdata_name);					\
     }									\
 									\
-  if (TARGET_SDATA && DEFAULT_ABI != ABI_V4				\
-      && DEFAULT_ABI != ABI_SOLARIS)					\
+  else if (flag_pic &&							\
+	   (rs6000_sdata == SDATA_EABI || rs6000_sdata == SDATA_SYSV))	\
+    {									\
+      rs6000_sdata = SDATA_DATA;					\
+      error ("-f%s and -msdata=%s are incompatible.",			\
+	     (flag_pic > 1) ? "PIC" : "pic",				\
+	     rs6000_sdata_name);					\
+    }									\
+									\
+  if (TARGET_SDATA && DEFAULT_ABI != ABI_V4 && DEFAULT_ABI != ABI_SOLARIS) \
     {									\
       target_flags &= ~MASK_SDATA;					\
       error ("-msdata and -mcall-%s are incompatible.", rs6000_abi_name); \
@@ -234,6 +255,14 @@ do {									\
       target_flags |= MASK_LITTLE_ENDIAN;				\
       error ("-mcall-nt must be little endian");			\
     }									\
+									\
+  /* Treat -fPIC the same as -mrelocatable */				\
+  if (flag_pic > 1)							\
+    target_flags |= MASK_RELOCATABLE;					\
+									\
+  else if (TARGET_RELOCATABLE)						\
+    flag_pic = 2;							\
+									\
 } while (0)
 
 /* Default ABI to compile code for */
