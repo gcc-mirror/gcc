@@ -2063,7 +2063,7 @@ and tested on @samp{i386-*-freebsd4.5} and @samp{alpha-*-freebsd5.0}.
 The static
 library may be incorrectly built (symbols are missing at link time).
 There is a rare timing-based startup hang (probably involves an
-assupmtion about the thread library).  Multi-threaded boehm-gc (required for
+assumption about the thread library).  Multi-threaded boehm-gc (required for
 libjava) exposes severe threaded signal-handling bugs on FreeBSD before
 4.5-RELEASE.  The alpha port may not fully bootstrap without some manual
 intervention: @command{gcjh} will crash with a floating-point exception while

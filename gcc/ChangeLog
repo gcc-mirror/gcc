@@ -1,3 +1,17 @@
+2002-12-17  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* doc/c-tree.texi: Fix typos and follow spelling conventions.
+	* doc/cpp.texi: Likewise.
+	* doc/extend.texi: Likewise.
+	* doc/gty.texi: Likewise.
+	* doc/install.texi: Likewise.
+	* doc/invoke.texi: Likewise.
+	* doc/md.texi: Likewise.
+	* doc/passes.texi: Likewise.
+	* doc/rtl.texi: Likewise.
+	* doc/sourcebuild.texi: Likewise.
+	* doc/tm.texi: Likewise.
+
 2002-12-17  Jerry Quinn  <jlquinn@optonline.net>
 
 	* doc/invoke.texi: Minor spelling and grammar fixes.
