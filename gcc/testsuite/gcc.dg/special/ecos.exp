@@ -1,4 +1,4 @@
-#   Copyright (C) 1999 Free Software Foundation, Inc.
+#   Copyright (C) 1999, 2000 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -134,7 +134,7 @@ if { [ check_weak_available ] == 1 } {
 # gcsec-1.c
 ###########
 
-set ld_output [ exec [ find_ld ] --help ]
+set ld_output [ remote_exec host "[ find_ld ]" "--help" ]
 
 if { [ string first "--gc-sections" $ld_output ] >= 0 } {
 
