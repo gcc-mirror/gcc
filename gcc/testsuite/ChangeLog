@@ -1,3 +1,7 @@
+2004-06-22  Loren James Rittle  <ljrittle@acm.org>
+
+	* gcc.dg/builtins-config.h: Handle FreeBSD.
+
 2006-06-22  Richard Henderson  <rth@redhat.com>
 
 	* g++.dg/opt/devirt1.C: New.

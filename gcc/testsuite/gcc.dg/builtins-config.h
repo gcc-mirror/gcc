@@ -15,6 +15,8 @@
 /* Solaris doesn't have the entire C99 runtime.  */
 #elif defined(__sgi)
 /* Irix6 doesn't have the entire C99 runtime.  */
+#elif defined(__FreeBSD__) && (__FreeBSD__ < 5)
+/* FreeBSD before version 5 doesn't have the entire C99 runtime. */
 #else
 /* Newlib has the "f" variants of the math functions, but not the "l"
    variants.  TARGET_C99_FUNCTIONS is only defined if all C99
