@@ -1,3 +1,20 @@
+2002-09-10  Paolo Carlini  <pcarlini@unitus.it>
+
+	* include/bits/codecvt.h (class __codecvt_abstract_base):
+	Add __c_locale type _M_c_locale_codecvt member.
+	(class codecvt<char, char, mbstate_t>,
+	class codecvt<wchar_t, char, mbstate_t>): Add new
+	codecvt(__c_locale, size_t) constructor.
+	(codecvt_byname::codecvt_byname): Update.
+	* src/codecvt.cc (class codecvt<char, char, mbstate_t>,
+	class codecvt<wchar_t, char, mbstate_t>): Update codecvt(size_t)
+	constructor and ~codecvt() destructor; define
+	codecvt(__c_locale, size_t) constructor.
+	(codecvt::do_out): Switch to _M_c_locale_codecvt around wcsrtombs call.
+	(codecvt::do_in): Ditto for mbsrtowcs call.
+	* src/localename.cc (locale::_Impl::_Impl(const char*, size_t)):
+	Tweak construction of codecvt facets.
+
 2002-09-10  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	* include/bits/locale_facets.tcc (__convert_from_v):

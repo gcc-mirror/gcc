@@ -39,10 +39,19 @@ namespace std
   codecvt<char, char, mbstate_t>::
   codecvt(size_t __refs)
   : __codecvt_abstract_base<char, char, mbstate_t>(__refs)
-  { }
+  { _M_c_locale_codecvt = _S_c_locale; }
 
   codecvt<char, char, mbstate_t>::
-  ~codecvt() { }
+  codecvt(__c_locale __cloc, size_t __refs)
+  : __codecvt_abstract_base<char, char, mbstate_t>(__refs)
+  { _M_c_locale_codecvt = _S_clone_c_locale(__cloc); }
+
+  codecvt<char, char, mbstate_t>::
+  ~codecvt()
+   {
+     if (_M_c_locale_codecvt != _S_c_locale)
+       _S_destroy_c_locale(_M_c_locale_codecvt);
+   }
   
   codecvt_base::result
   codecvt<char, char, mbstate_t>::
@@ -106,10 +115,20 @@ namespace std
   // codecvt<wchar_t, char, mbstate_t> required specialization
   codecvt<wchar_t, char, mbstate_t>::
   codecvt(size_t __refs)
-  : __codecvt_abstract_base<wchar_t, char, mbstate_t>(__refs) { }
+  : __codecvt_abstract_base<wchar_t, char, mbstate_t>(__refs)
+  { _M_c_locale_codecvt = _S_c_locale; }  
 
   codecvt<wchar_t, char, mbstate_t>::
-  ~codecvt() { }
+  codecvt(__c_locale __cloc, size_t __refs)
+  : __codecvt_abstract_base<wchar_t, char, mbstate_t>(__refs)
+  { _M_c_locale_codecvt = _S_clone_c_locale(__cloc); }
+
+  codecvt<wchar_t, char, mbstate_t>::
+  ~codecvt()
+  {
+    if (_M_c_locale_codecvt != _S_c_locale)
+      _S_destroy_c_locale(_M_c_locale_codecvt); 
+  }
   
   codecvt_base::result
   codecvt<wchar_t, char, mbstate_t>::
@@ -120,7 +139,13 @@ namespace std
   {
     result __ret = error;
     size_t __len = min(__from_end - __from, __to_end - __to);
+#if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
+    __c_locale __old = __uselocale(_M_c_locale_codecvt);
+#endif
     size_t __conv = wcsrtombs(__to, &__from, __len, &__state);
+#if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
+    __uselocale(__old);
+#endif
 
     if (__conv == __len)
       {
@@ -158,7 +183,13 @@ namespace std
   {
     result __ret = error;
     size_t __len = min(__from_end - __from, __to_end - __to);
+#if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
+    __c_locale __old = __uselocale(_M_c_locale_codecvt);
+#endif
     size_t __conv = mbsrtowcs(__to, &__from, __len, &__state);
+#if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
+    __uselocale(__old);
+#endif
 
     if (__conv == __len)
       {
