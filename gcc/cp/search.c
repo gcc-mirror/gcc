@@ -1549,7 +1549,7 @@ lookup_field (xbasetype, name, protect, want_type)
   if (rval && TREE_CODE (rval) == TYPE_DECL
       && ! DECL_ARTIFICIAL (rval)
       && processing_template_decl
-      && BINFO_TYPE (rval_binfo) != current_class_type
+      && ! currently_open_class (BINFO_TYPE (rval_binfo))
       && uses_template_parms (type))
     {
       binfo = rval_binfo;
@@ -1577,14 +1577,14 @@ lookup_nested_field (name, complain)
   register tree t;
 
   tree id = NULL_TREE;
-  if (TREE_CHAIN (current_class_type))
+  if (TYPE_MAIN_DECL (current_class_type))
     {
       /* Climb our way up the nested ladder, seeing if we're trying to
 	 modify a field in an enclosing class.  If so, we should only
 	 be able to modify if it's static.  */
-      for (t = TREE_CHAIN (current_class_type);
+      for (t = TYPE_MAIN_DECL (current_class_type);
 	   t && DECL_CONTEXT (t);
-	   t = TREE_CHAIN (DECL_CONTEXT (t)))
+	   t = TYPE_MAIN_DECL (DECL_CONTEXT (t)))
 	{
 	  if (TREE_CODE (DECL_CONTEXT (t)) != RECORD_TYPE)
 	    break;
