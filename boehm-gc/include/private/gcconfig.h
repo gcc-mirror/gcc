@@ -44,7 +44,7 @@
 # endif
 
 /* Determine the machine type: */
-# if defined(__XSCALE__)
+# if defined(__arm__) || defined(__thumb__)
 #    define ARM32
 #    if !defined(LINUX)
 #      define NOSYS
