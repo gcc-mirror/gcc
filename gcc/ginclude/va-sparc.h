@@ -3,9 +3,15 @@
 
 /* Make this a macro rather than a typedef, so we can undef any other defn.  */
 #define va_list __va___list
+#ifndef __svr4__
 /* This has to be a char * to be compatible with Sun.
    i.e., we have to pass a `va_list' to vsprintf.  */
 typedef char * __va___list;
+#else
+/* This has to be a void * to be compatible with Sun svr4.
+   i.e., we have to pass a `va_list' to vsprintf.  */
+typedef void * __va___list;
+#endif
 
 /* In GCC version 2, we want an ellipsis at the end of the declaration
    of the argument list.  GCC version 1 can't parse it.  */
