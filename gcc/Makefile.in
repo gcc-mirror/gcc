@@ -53,7 +53,8 @@ ALLOCA_FINISH = true
 # CFLAGS is for the user to override to, e.g., do a bootstrap with -O2.
 # BOOT_CFLAGS is the value of CFLAGS to pass
 # to the stage2 and stage3 compilations
-# WARN_CFLAGS are the warning flags to pass to stage2 and stage3.  It is
+# WARN_CFLAGS are the warning flags to pass to stage2 and stage3.  
+# (And for stage 1 if the native compiler is GCC.)  It is
 # separate from BOOT_CFLAGS because people tend to override optimization
 # flags and we'd like them to still have warnings turned on.  They are free
 # to explicitly turn warnings off if they wish.
@@ -61,7 +62,7 @@ ALLOCA_FINISH = true
 # TCFLAGS is used for compilations with the GCC just built.
 XCFLAGS =
 TCFLAGS =
-CFLAGS = -g
+CFLAGS = -g @stage1_warn_cflags@
 BOOT_CFLAGS = -O2 $(CFLAGS)
 WARN_CFLAGS = -W -Wall
 # These exists to be overridden by the x-* and t-* files, respectively.
