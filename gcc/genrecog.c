@@ -842,18 +842,16 @@ add_to_sequence (pattern, last, position, insn_type, top)
 	    test->u.pred.name = pred_name;
 	    test->u.pred.mode = mode;
 
-	    /* See if we know about this predicate and save its number.  If
-	       we do, and it only accepts one code, note that fact.  The
-	       predicate `const_int_operand' only tests for a CONST_INT, so
-	       if we do so we can avoid calling it at all.
+	    /* See if we know about this predicate and save its number.
+	       If we do, and it only accepts one code, note that fact.
 
-	       Finally, if we know that the predicate does not allow
-	       CONST_INT, we know that the only way the predicate can match
-	       is if the modes match (here we use the kludge of relying on
-	       the fact that "address_operand" accepts CONST_INT; otherwise,
-	       it would have to be a special case), so we can test the mode
-	       (but we need not).  This fact should considerably simplify the
-	       generated code.  */
+	       If we know that the predicate does not allow CONST_INT,
+	       we know that the only way the predicate can match is if
+	       the modes match (here we use the kludge of relying on the
+	       fact that "address_operand" accepts CONST_INT; otherwise,
+	       it would have to be a special case), so we can test the
+	       mode (but we need not).  This fact should considerably
+	       simplify the generated code.  */
 
 	    for (i = 0; i < NUM_KNOWN_PREDS; i++)
 	      if (! strcmp (preds[i].name, pred_name))
