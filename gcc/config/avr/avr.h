@@ -46,19 +46,33 @@ Boston, MA 02111-1307, USA.  */
 /* This declaration should be present. */
 extern int target_flags;
 
-#define TARGET_ORDER_1		(target_flags &  0x1000)
-#define TARGET_ORDER_2		(target_flags &  0x4000)
-#define TARGET_INT8  		(target_flags & 0x10000)
-#define TARGET_NO_INTERRUPTS	(target_flags & 0x20000)
-#define TARGET_INSN_SIZE_DUMP	(target_flags &  0x2000)
-#define TARGET_CALL_PROLOGUES	(target_flags & 0x40000)
-#define TARGET_TINY_STACK	(target_flags & 0x80000)
+#define MASK_RTL_DUMP		0x00000010
+#define MASK_ALL_DEBUG		0x00000FE0
+#define MASK_ORDER_1		0x00001000
+#define MASK_INSN_SIZE_DUMP	0x00002000
+#define MASK_ORDER_2		0x00004000
+#define MASK_INT8		0x00010000
+#define MASK_NO_INTERRUPTS	0x00020000
+#define MASK_CALL_PROLOGUES	0x00040000
+#define MASK_TINY_STACK		0x00080000
+#define MASK_PACK_ARGS		0x00100000
+#define MASK_ENHANCED		0x00200000
+
+#define TARGET_ORDER_1		(target_flags & MASK_ORDER_1)
+#define TARGET_ORDER_2		(target_flags & MASK_ORDER_2)
+#define TARGET_INT8  		(target_flags & MASK_INT8)
+#define TARGET_NO_INTERRUPTS	(target_flags & MASK_NO_INTERRUPTS)
+#define TARGET_INSN_SIZE_DUMP	(target_flags & MASK_INSN_SIZE_DUMP)
+#define TARGET_CALL_PROLOGUES	(target_flags & MASK_CALL_PROLOGUES)
+#define TARGET_TINY_STACK	(target_flags & MASK_TINY_STACK)
+#define TARGET_PACK_ARGS	(target_flags & MASK_PACK_ARGS)
+#define TARGET_ENHANCED		(target_flags & MASK_ENHANCED)
 
 /* Dump each assembler insn's rtl into the output file.
    This is for debugging the compiler itself.  */
 
-#define TARGET_RTL_DUMP		(target_flags &   0x010)
-#define TARGET_ALL_DEBUG 	(target_flags &   0xfe0)
+#define TARGET_RTL_DUMP		(target_flags & MASK_RTL_DUMP)
+#define TARGET_ALL_DEBUG 	(target_flags & MASK_ALL_DEBUG)
 
 /* `TARGET_...'
    This series of macros is to allow compiler command arguments to
@@ -83,17 +97,24 @@ extern int target_flags;
 
 
 #define TARGET_SWITCHES {						\
-  {"order1",0x1000, NULL},						\
-  {"order2",0x4000, NULL},						\
-  {"int8",0x10000,"Assume int to be 8 bit integer"},			\
-  {"no-interrupts",0x20000,"Don't output interrupt compatible code"},	\
-  {"call-prologues",0x40000,						\
-   "Use subroutines for functions prologue/epilogue"},			\
-  {"tiny-stack", 0x80000, "Change only low 8 bits of stack pointer"},	\
-  {"rtl",0x10, NULL},							\
-  {"size",0x2000,"Output instruction size's to the asm file"},		\
-  {"deb",0xfe0, NULL},							\
-  {"",0, NULL}}
+  { "order1", MASK_ORDER_1, NULL },					\
+  { "order2", MASK_ORDER_2, NULL },					\
+  { "int8", MASK_INT8, N_("Assume int to be 8 bit integer") },		\
+  { "no-interrupts", MASK_NO_INTERRUPTS,				\
+    N_("Change the stack pointer without disabling interrupts") },	\
+  { "call-prologues", MASK_CALL_PROLOGUES,				\
+    N_("Use subroutines for function prologue/epilogue") },		\
+  { "tiny-stack", MASK_TINY_STACK,					\
+    N_("Change only the low 8 bits of the stack pointer") },		\
+  { "pack-args", MASK_PACK_ARGS,					\
+    N_("Do not align function arguments on even numbered registers") },	\
+  { "enhanced", MASK_ENHANCED,						\
+    N_("Generate code for the enhanced AVR core") },			\
+  { "rtl", MASK_RTL_DUMP, NULL },					\
+  { "size", MASK_INSN_SIZE_DUMP,					\
+    N_("Output instruction sizes to the asm file") },			\
+  { "deb", MASK_ALL_DEBUG, NULL },					\
+  { "", 0, NULL } }
 /* This macro defines names of command options to set and clear bits
    in `target_flags'.  Its definition is an initializer with a
    subgrouping for each command option.
@@ -129,9 +150,8 @@ extern struct mcu_type_s *avr_mcu_type;
 #define AVR_MEGA (avr_mcu_type->mega)
 
 #define TARGET_OPTIONS {						      \
- {"init-stack=",&avr_ram_end,"Specify the initial stack address" },	      \
- {"mcu=", &avr_mcu_name,						      \
-  "Specify the MCU name (at90s23xx,attiny22,at90s44xx,at90s85xx,atmega603,atmega103)"}}
+ { "init-stack=", &avr_ram_end, N_("Specify the initial stack address") },    \
+ { "mcu=", &avr_mcu_name, N_("Specify the MCU name") } }
 /* This macro is similar to `TARGET_SWITCHES' but defines names of
    command options that have values.  Its definition is an
    initializer with a subgrouping for each command option.
@@ -1984,7 +2004,8 @@ progmem_section (void)							      \
 {									      \
   if (in_section != in_progmem)						      \
     {									      \
-      fprintf (asm_out_file, ".section .progmem.gcc_sw_table\n");	      \
+      fprintf (asm_out_file,						      \
+	       ".section .progmem.gcc_sw_table, \"a\", @progbits\n");	      \
       in_section = in_progmem;						      \
     }									      \
 }
