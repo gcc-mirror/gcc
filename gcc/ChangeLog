@@ -1,3 +1,8 @@
+Sun Feb 22 20:46:31 1998  Bernd Schmidt <crux@ohara.Informatik.RWTH-Aachen.DE>
+
+	* expr.c (emit_move_insn_1): When moving complex values in several
+	steps, emit a CLOBBER to show the destination dies.
+
 Sun Feb 22 20:06:34 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* iris5.h (DWARF2_UNWIND_INFO): Define to 0.
