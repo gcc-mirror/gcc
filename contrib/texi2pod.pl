@@ -192,7 +192,7 @@ while(<STDIN>)
 	push @endwstack, $endw;
 	push @icstack, $ic;
 	$ic = $1;
-	$ic =~ s/\@(?:samp|strong|key)/B/;
+	$ic =~ s/\@(?:samp|strong|key|gcctabopt|env)/B/;
 	$ic =~ s/\@(?:code|kbd)/C/;
 	$ic =~ s/\@(?:dfn|var|emph|cite|i)/I/;
 	$ic =~ s/\@(?:file)/F/;
@@ -251,7 +251,7 @@ sub postprocess
     # Formatting commands.
     s/\@(?:dfn|var|emph|cite|i)\{([^\}]*)\}/I<$1>/g;
     s/\@(?:code|kbd)\{([^\}]*)\}/C<$1>/g;
-    s/\@(?:samp|strong|key|option|env|b)\{([^\}]*)\}/B<$1>/g;
+    s/\@(?:samp|strong|key|option|env|command|b)\{([^\}]*)\}/B<$1>/g;
     s/\@sc\{([^\}]*)\}/\U$1/g;
     s/\@file\{([^\}]*)\}/F<$1>/g;
     s/\@w\{([^\}]*)\}/S<$1>/g;
@@ -272,7 +272,7 @@ sub postprocess
     # @uref can take one, two, or three arguments, with different
     # semantics each time.  @url and @email are just like @uref with
     # one argument, for our purposes.
-    s/\@(?:uref|url|email)\{([^\},]*)\}/&lt;C<$1>&gt;/g;
+    s/\@(?:uref|url|email)\{([^\},]*)\}/&lt;B<$1>&gt;/g;
     s/\@uref\{([^\},]*),([^\},]*)\}/$2 (C<$1>)/g;
     s/\@uref\{([^\},]*),([^\},]*),([^\},]*)\}/$3/g;
 

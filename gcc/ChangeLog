@@ -1,3 +1,11 @@
+2001-01-10  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* gcc.texi: Define macro gcctabopt.
+	* invoke.texi: Add manpage sections BUGS and AUTHOR.  Use
+	@command, @env and @option in some places where appropriate.  Use
+	@gcctabopt where appropriate.  Put URLs and email addresses inside
+	@w.
+
 2001-01-10  Nathan Sidwell  <nathan@codesourcery.com>
 	
         * gcc.c (cpp_options): Set MD file name from output
