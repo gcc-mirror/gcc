@@ -202,7 +202,7 @@ extern int target_flags;
 #define CPUMASK (1 << ix86_cpu)
 extern const int x86_use_leave, x86_push_memory, x86_zero_extend_with_and;
 extern const int x86_use_bit_test, x86_cmove, x86_deep_branch;
-extern const int x86_unroll_strlen;
+extern const int x86_branch_hints, x86_unroll_strlen;
 extern const int x86_double_with_add, x86_partial_reg_stall, x86_movx;
 extern const int x86_use_loop, x86_use_fiop, x86_use_mov0;
 extern const int x86_use_cltd, x86_read_modify_write;
@@ -222,6 +222,7 @@ extern const int x86_partial_reg_dependency, x86_memory_mismatch_stall;
    safe to enable all CMOVE instructions.  */
 #define TARGET_CMOVE ((x86_cmove & (1 << ix86_arch)) || TARGET_SSE)
 #define TARGET_DEEP_BRANCH_PREDICTION (x86_deep_branch & CPUMASK)
+#define TARGET_BRANCH_PREDICTION_HINTS (x86_branch_hints & CPUMASK)
 #define TARGET_DOUBLE_WITH_ADD (x86_double_with_add & CPUMASK)
 #define TARGET_USE_SAHF ((x86_use_sahf & CPUMASK) && !TARGET_64BIT)
 #define TARGET_MOVX (x86_movx & CPUMASK)
@@ -2755,11 +2756,6 @@ while (0)
    For float regs, the stack top is sometimes referred to as "%st(0)"
    instead of just "%st".  PRINT_REG handles this with the "y" code.  */
 
-#define HI_REGISTER_NAMES						\
-{"ax","dx","cx","bx","si","di","bp","sp",				\
- "st","st(1)","st(2)","st(3)","st(4)","st(5)","st(6)","st(7)","",	\
- "flags","fpsr", "dirflag", "frame" }
-
 #undef  HI_REGISTER_NAMES						
 #define HI_REGISTER_NAMES						\
 {"ax","dx","cx","bx","si","di","bp","sp",				\
@@ -2797,9 +2793,6 @@ number as al, and ax.
 
 #define QI_HIGH_REGISTER_NAMES \
 {"ah", "dh", "ch", "bh", }
-
-#define MMX_REGISTER_NAMES \
-{0,0,0,0,0,0,0,0,"mm0","mm1","mm2","mm3","mm4","mm5","mm6","mm7"}
 
 /* How to renumber registers for dbx and gdb.  */
 
@@ -2970,33 +2963,19 @@ do { long l;						\
 
 /* Print operand X (an rtx) in assembler syntax to file FILE.
    CODE is a letter or dot (`z' in `%z0') or 0 if no letter was specified.
-   The CODE z takes the size of operand from the following digit, and
-   outputs b,w,or l respectively.
-
-   On the 80386, we use several such letters:
-   f -- float insn (print a CONST_DOUBLE as a float rather than in hex).
-   L,W,B,Q,S,T -- print the opcode suffix for specified size of operand.
-   R -- print the prefix for register names.
-   z -- print the opcode suffix for the size of the current operand.
-   * -- print a star (in certain assembler syntax)
-   A -- print an absolute memory reference.
-   P -- if PIC, print an @PLT suffix.
-   X -- don't print any sort of PIC '@' suffix for a symbol.
-   s -- ??? something to do with double shifts.  not actually used, afaik.
-   C -- print a conditional move suffix corresponding to the op code.
-   c -- likewise, but reverse the condition.
-   F,f -- likewise, but for floating-point.  */
+   Effect of various CODE letters is described in i386.c near
+   print_operand function.  */
 
 #define PRINT_OPERAND_PUNCT_VALID_P(CODE)				\
-  ((CODE) == '*')
+  ((CODE) == '*' || (CODE) == '+')
 
 /* Print the name of a register based on its machine mode and number.
    If CODE is 'w', pretend the mode is HImode.
    If CODE is 'b', pretend the mode is QImode.
    If CODE is 'k', pretend the mode is SImode.
-   If CODE is 'd', pretend the mode is DImode.
+   If CODE is 'q', pretend the mode is DImode.
    If CODE is 'h', pretend the reg is the `high' byte register.
-   If CODE is 'y', print "st(0)" instead of "st", if the reg is stack op. */
+   If CODE is 'y', print "st(0)" instead of "st", if the reg is stack op.  */
 
 #define PRINT_REG(X, CODE, FILE)  \
   print_reg (X, CODE, FILE)

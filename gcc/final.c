@@ -4086,6 +4086,25 @@ leaf_function_p ()
   return 1;
 }
 
+/* Return 1 if branch is an forward branch.
+   Uses insn_shuid array, so it works only in the final pass.  May be used by
+   output templates to customary add branch prediction hints.
+ */
+int
+final_forward_branch_p (insn)
+     rtx insn;
+{
+  int insn_id, label_id;
+  if (!uid_shuid)
+    abort ();
+  insn_id = INSN_SHUID (insn);
+  label_id = INSN_SHUID (JUMP_LABEL (insn));
+  /* We've hit some insns that does not have id information available.  */
+  if (!insn_id || !label_id)
+    abort ();
+  return insn_id < label_id;
+}
+
 /* On some machines, a function with no call insns
    can run faster if it doesn't create its own register window.
    When output, the leaf function should use only the "output"
