@@ -1,5 +1,10 @@
 2002-11-26  Jakub Jelinek  <jakub@redhat.com>
 
+	* varasm.c (output_constant_pool): For pool constants in mergeable
+	section ensure each constant is padded to multiple of entity size.
+
+2002-11-26  Jakub Jelinek  <jakub@redhat.com>
+
 	* varasm.c (default_exception_section): Move to...
 	* except.c (default_exception_section): ... here. Make
 	.gcc_except_table read-only if it is not expected to have any
