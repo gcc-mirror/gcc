@@ -53,8 +53,11 @@ namespace std {
   typedef _IO_lock_t	__c_lock;
 
 // from basic_file.h
-  typedef _IO_FILE 	__c_file_type;
 #define _GLIBCPP_BASIC_FILE_INHERITANCE 1
+  typedef _IO_FILE 	__c_file_type;
+  typedef _IO_wide_data __c_wfile_type;
+
+  extern "C" struct _IO_codecvt __c_libio_codecvt;
 
 // from ios_base.h
   struct __ios_flags

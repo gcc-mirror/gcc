@@ -235,10 +235,30 @@ namespace std
 
 	  if (__testinit || __testget)
 	    {
+#if 1
+	      streamsize __size = _M_file->xsgetn(_M_in_beg, _M_buf_size);
+	      if (0 < __size)
+		{
+		  _M_set_determinate(__size);
+		  streamoff __p = _M_file->seekoff(0 - __size, ios_base::cur, 
+						   ios_base::in);
+		  if (__p == -1)
+		    {
+		      // XXX Something is wrong, do error checking.
+		    }
+		  else
+		    {
+		      if (__testout)
+			_M_out_cur = _M_in_cur;
+		      __ret = traits_type::to_int_type(*_M_in_cur);
+		    }
+		}
+#else
+	      // 2000-08-04 bkoz disable
 	      // Part one: (Re)fill external buf (_M_file->_IO_*) from
 	      // external byte sequence (whatever physical byte sink or
 	      // FILE actually is.)
-	      char __conv_buf[_M_buf_size];
+	      char_type __conv_buf[_M_buf_size];
 	      streamsize __size = _M_file->xsgetn(__conv_buf, _M_buf_size);
 	      
 	      // Part two: (Re)fill internal buf contents from external buf.
@@ -278,7 +298,8 @@ namespace std
 		      // XXX Something is wrong, do error checking.
 		    }
 		}
-	    }	      
+#endif	      
+	    }
 	}
       _M_last_overflowed = false;	
       return __ret;
@@ -384,10 +405,29 @@ namespace std
     {
       int_type __ret = traits_type::eof();
       bool __testput = _M_out_cur && _M_out_beg < _M_out_end;
-      bool __testeof = traits_type::eq_int_type(__c, traits_type::eof());
       
       if (__testput)
 	{
+	  bool __testeof = traits_type::eq_int_type(__c, traits_type::eof());
+#if 1
+	  int __plen = _M_out_end - _M_out_beg;
+	  streamsize __len = _M_file->xsputn(_M_out_beg, __plen);
+	  if (!__testeof)
+	    {
+	      char_type __pending = traits_type::to_char_type(__c);
+	      __len += _M_file->xsputn(&__pending, 1);
+	      ++__plen;
+	    }
+	  traits_type::to_char_type(__c);
+	  // NB: Need this so that external byte sequence reflects
+	  // internal buffer.
+	  _M_file->sync();
+	  if (__len == __plen)
+	    {
+	      _M_set_indeterminate();
+	      __ret = traits_type::not_eof(__c);
+	    }
+#else
 	  // Part one: Allocate temporary conversion buffer on
 	  // stack. Convert internal buffer plus __c (ie,
 	  // "pending sequence") to temporary conversion buffer.
@@ -427,6 +467,7 @@ namespace std
 		  __ret = traits_type::not_eof(__c);
 		}
 	    }
+#endif
 	}	      
       _M_last_overflowed = true;	
       return __ret;

@@ -190,7 +190,7 @@ void test04(int size)
 void test05(int size)
 {
   bool test = true;
-  const char* filename = "testsuite/inserters_extractors-1.txt";
+  const char filename[] = "testsuite/inserters_extractors-1.txt";
   const char fillc = 'f';
   std::ofstream ofs(filename);
   std::string str(size, fillc);
