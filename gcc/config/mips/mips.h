@@ -1138,10 +1138,13 @@ do {							\
    All registers that the compiler knows about must be given numbers,
    even those that are not normally considered general registers.
 
-   On the Mips, we have 32 integer registers, 32 floating point registers
-   and the special registers hi, lo, and fp status.  */
+   On the Mips, we have 32 integer registers, 32 floating point
+   registers and the special registers hi, lo, hilo, and fp status.
+   The hilo register is only used in 64 bit mode.  It represents a 64
+   bit value stored as two 32 bit values in the hi and lo registers;
+   this is the result of the mult instruction.  */
 
-#define FIRST_PSEUDO_REGISTER 67
+#define FIRST_PSEUDO_REGISTER 68
 
 /* 1 for registers that have pervasive standard uses
    and are not available for the register allocator.
@@ -1154,7 +1157,7 @@ do {							\
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1,			\
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,			\
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,			\
-  0, 0, 1								\
+  0, 0, 0, 1								\
 }
 
 
@@ -1171,7 +1174,7 @@ do {							\
   0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1,			\
   1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,			\
   1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,			\
-  1, 1, 1								\
+  1, 1, 1, 1								\
 }
 
 
@@ -1190,16 +1193,17 @@ do {							\
 #define FP_DBX_FIRST ((write_symbols == DBX_DEBUG) ? 38 : 32)
 
 #define MD_REG_FIRST 64
-#define MD_REG_LAST  65
+#define MD_REG_LAST  66
 #define MD_REG_NUM   (MD_REG_LAST - MD_REG_FIRST + 1)
 
-#define ST_REG_FIRST 66
-#define ST_REG_LAST  66
+#define ST_REG_FIRST 67
+#define ST_REG_LAST  67
 #define ST_REG_NUM   (ST_REG_LAST - ST_REG_FIRST + 1)
 
 #define AT_REGNUM	(GP_REG_FIRST + 1)
 #define HI_REGNUM	(MD_REG_FIRST + 0)
 #define LO_REGNUM	(MD_REG_FIRST + 1)
+#define HILO_REGNUM	(MD_REG_FIRST + 2)
 #define FPSW_REGNUM	ST_REG_FIRST
 
 #define GP_REG_P(REGNO) ((unsigned) ((REGNO) - GP_REG_FIRST) < GP_REG_NUM)
@@ -1342,6 +1346,7 @@ enum reg_class
   FP_REGS,			/* floating point registers */
   HI_REG,			/* hi register */
   LO_REG,			/* lo register */
+  HILO_REG,			/* hilo register pair for 64 bit mode mult */
   MD_REGS,			/* multiply/divide registers (hi/lo) */
   ST_REGS,			/* status registers (fp status) */
   ALL_REGS,			/* all registers */
@@ -1363,6 +1368,7 @@ enum reg_class
   "FP_REGS",								\
   "HI_REG",								\
   "LO_REG",								\
+  "HILO_REG",								\
   "MD_REGS",								\
   "ST_REGS",								\
   "ALL_REGS"								\
@@ -1386,9 +1392,10 @@ enum reg_class
   { 0x00000000, 0xffffffff, 0x00000000 },	/* floating registers*/	\
   { 0x00000000, 0x00000000, 0x00000001 },	/* hi register */	\
   { 0x00000000, 0x00000000, 0x00000002 },	/* lo register */	\
+  { 0x00000000, 0x00000000, 0x00000004 },	/* hilo register */	\
   { 0x00000000, 0x00000000, 0x00000003 },	/* mul/div registers */	\
-  { 0x00000000, 0x00000000, 0x00000004 },	/* status registers */	\
-  { 0xffffffff, 0xffffffff, 0x00000007 }	/* all registers */	\
+  { 0x00000000, 0x00000000, 0x00000008 },	/* status registers */	\
+  { 0xffffffff, 0xffffffff, 0x0000000f }	/* all registers */	\
 }
 
 
@@ -1428,7 +1435,9 @@ extern enum reg_class mips_regno_to_class[];
    'h'	Hi register
    'l'	Lo register
    'x'	Multiply/divide registers
-   'z'	FP Status register */
+   'a'	HILO_REG
+   'z'	FP Status register
+   'b'	All registers */
 
 extern enum reg_class mips_char_to_class[];
 
@@ -1548,8 +1557,10 @@ extern enum reg_class mips_char_to_class[];
 /* The HI and LO registers can only be reloaded via the general
    registers.  */
 
-#define SECONDARY_RELOAD_CLASS(CLASS, MODE, X)				\
-  mips_secondary_reload_class (CLASS, MODE, X)
+#define SECONDARY_INPUT_RELOAD_CLASS(CLASS, MODE, X)			\
+  mips_secondary_reload_class (CLASS, MODE, X, 1)
+#define SECONDARY_OUTPUT_RELOAD_CLASS(CLASS, MODE, X)			\
+  mips_secondary_reload_class (CLASS, MODE, X, 0)
 
 /* Not declared above, with the other functions, because enum
    reg_class is not declared yet.  */
@@ -2870,9 +2881,11 @@ while (0)
    : (FROM) == FP_REGS && (TO) == FP_REGS ? 2				\
    : (FROM) == GR_REGS && (TO) == FP_REGS ? 4				\
    : (FROM) == FP_REGS && (TO) == GR_REGS ? 4				\
-   : (((FROM) == HI_REG || (FROM) == LO_REG || (FROM) == MD_REGS)	\
+   : (((FROM) == HI_REG || (FROM) == LO_REG				\
+       || (FROM) == MD_REGS || (FROM) == HILO_REG)			\
       && (TO) == GR_REGS) ? 6						\
-   : (((TO) == HI_REG || (TO) == LO_REG || (TO) == MD_REGS)		\
+   : (((TO) == HI_REG || (TO) == LO_REG					\
+       || (TO) == MD_REGS || (FROM) == HILO_REG)			\
       && (FROM) == GR_REGS) ? 6						\
    : 12)
 
@@ -3085,6 +3098,7 @@ while (0)
   &mips_reg_names[64][0],						\
   &mips_reg_names[65][0],						\
   &mips_reg_names[66][0],						\
+  &mips_reg_names[67][0],						\
 }
 
 /* print-rtl.c can't use REGISTER_NAMES, since it depends on mips.c.
@@ -3099,7 +3113,7 @@ while (0)
   "$f8",  "$f9",  "$f10", "$f11", "$f12", "$f13", "$f14", "$f15",	\
   "$f16", "$f17", "$f18", "$f19", "$f20", "$f21", "$f22", "$f23",	\
   "$f24", "$f25", "$f26", "$f27", "$f28", "$f29", "$f30", "$f31",	\
-  "hi",   "lo",   "$fcr31"						\
+  "hi",   "lo",   "accum","$fcr31"					\
 }
 
 /* If defined, a C initializer for an array of structures
