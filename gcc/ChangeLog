@@ -1,3 +1,28 @@
+2000-07-10  Benjamin Chelf  <chelf@codesourcery.com>
+
+	* c-common.h (build_stmt): Declare.
+	(build_continue_stmt): Likewise.
+	(build_break_stmt): Likewise.
+	(build_return_stmt): Likewise.
+
+	* c-decl.c (do_case): Rewrite to do what previously done in
+	c-parse.in.
+
+	* c-semantics.c (build_stmt): Define.
+	(build_return_stmt): Likewise.
+	(build_break_stmt): Likewise.
+	(build_continue_stmt): Likewise.
+	(build_case_label): Likewise.
+
+	* c-parse.in (BREAK): Change to build tree, then generate RTL.
+	(CONTINUE): Likewise.
+	(RETURN): Likewise.
+	(CASE): Likewise.
+	(DEFAULT): Likewise.
+
+	* c-parse.y: Regenerate.
+	* c-pasre.c: Likewise.
+	
 2000-07-09  Jason Merrill  <jason@redhat.com>
 
 	* expr.c (expand_expr): Bail earlier if we get an error_mark_node.

@@ -1843,23 +1843,21 @@ stmt:
 	  lineno_labeled_stmt
 		{ expand_end_case ($3); }
 	| BREAK ';'
-		{ stmt_count++;
-		  emit_line_note ($<filename>-1, $<lineno>0);
-		  if ( ! expand_exit_something ())
-		    error ("break statement not within loop or switch"); }
+	        { tree break_stmt = build_break_stmt ();
+		  stmt_count++;
+		  genrtl_break_stmt (); }
 	| CONTINUE ';'
-		{ stmt_count++;
-		  emit_line_note ($<filename>-1, $<lineno>0);
-		  if (! expand_continue_loop (NULL_PTR))
-		    error ("continue statement not within a loop"); }
+                { tree continue_stmt = build_continue_stmt ();
+                  stmt_count++;
+		  genrtl_continue_stmt (); }
 	| RETURN ';'
-		{ stmt_count++;
-		  emit_line_note ($<filename>-1, $<lineno>0);
-		  c_expand_return (NULL_TREE); }
+                { tree return_stmt = build_return_stmt (NULL_TREE);
+                  stmt_count++;
+		  genrtl_return_stmt (RETURN_EXPR(return_stmt)); }
 	| RETURN expr ';'
-		{ stmt_count++;
-		  emit_line_note ($<filename>-1, $<lineno>0);
-		  c_expand_return ($2); }
+                { tree return_stmt = build_return_stmt ($2);
+                  stmt_count++;
+		  genrtl_return_stmt (RETURN_EXPR(return_stmt)); }
 	| ASM_KEYWORD maybe_type_qual '(' expr ')' ';'
 		{ stmt_count++;
 		  emit_line_note ($<filename>-1, $<lineno>0);
@@ -1971,82 +1969,23 @@ all_iter_stmt_with_decl:
    also at the end of a compound statement.  */
 
 label:	  CASE expr_no_commas ':'
-		{ register tree value = check_case_value ($2);
-		  register tree label
-		    = build_decl (LABEL_DECL, NULL_TREE, NULL_TREE);
-
+                { tree case_label_tree = build_case_label ($2, NULL_TREE);
 		  stmt_count++;
-
-		  if (value != error_mark_node)
-		    {
-		      tree duplicate;
-		      int success;
-
-		      if (pedantic && ! INTEGRAL_TYPE_P (TREE_TYPE (value)))
-			pedwarn ("label must have integral type in ANSI C");
-
-		      success = pushcase (value, convert_and_check,
-					  label, &duplicate);
-
-		      if (success == 1)
-			error ("case label not within a switch statement");
-		      else if (success == 2)
-			{
-			  error ("duplicate case value");
-			  error_with_decl (duplicate, "this is the first entry for that value");
-			}
-		      else if (success == 3)
-			warning ("case value out of range");
-		      else if (success == 5)
-			error ("case label within scope of cleanup or variable array");
-		    }
-		  position_after_white_space (); }
+		  genrtl_case_label(CASE_LOW(case_label_tree), CASE_HIGH(case_label_tree));
+		  position_after_white_space ();
+		}
 	| CASE expr_no_commas ELLIPSIS expr_no_commas ':'
-		{ register tree value1 = check_case_value ($2);
-		  register tree value2 = check_case_value ($4);
-		  register tree label
-		    = build_decl (LABEL_DECL, NULL_TREE, NULL_TREE);
-
-		  if (pedantic)
-		    pedwarn ("ANSI C forbids case ranges");
+                { tree case_label_tree = build_case_label ($2, $4);
 		  stmt_count++;
-
-		  if (value1 != error_mark_node && value2 != error_mark_node)
-		    {
-		      tree duplicate;
-		      int success = pushcase_range (value1, value2,
-						    convert_and_check, label,
-						    &duplicate);
-		      if (success == 1)
-			error ("case label not within a switch statement");
-		      else if (success == 2)
-			{
-			  error ("duplicate case value");
-			  error_with_decl (duplicate, "this is the first entry for that value");
-			}
-		      else if (success == 3)
-			warning ("case value out of range");
-		      else if (success == 4)
-			warning ("empty case range");
-		      else if (success == 5)
-			error ("case label within scope of cleanup or variable array");
-		    }
-		  position_after_white_space (); }
+		  genrtl_case_label(CASE_LOW(case_label_tree), CASE_HIGH(case_label_tree));
+		  position_after_white_space ();
+		}
 	| DEFAULT ':'
-		{
-		  tree duplicate;
-		  register tree label
-		    = build_decl (LABEL_DECL, NULL_TREE, NULL_TREE);
-		  int success = pushcase (NULL_TREE, 0, label, &duplicate);
+                { tree case_label_tree = build_case_label (NULL_TREE, NULL_TREE);
 		  stmt_count++;
-		  if (success == 1)
-		    error ("default label not within a switch statement");
-		  else if (success == 2)
-		    {
-		      error ("multiple default labels in one switch");
-		      error_with_decl (duplicate, "this is the first default label");
-		    }
-		  position_after_white_space (); }
+		  genrtl_case_label(CASE_LOW(case_label_tree), CASE_HIGH(case_label_tree));
+		  position_after_white_space ();
+		}
 	| identifier ':' maybe_attribute
 		{ tree label = define_label (input_filename, lineno, $1);
 		  stmt_count++;

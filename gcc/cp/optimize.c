@@ -279,7 +279,7 @@ copy_body_r (tp, walk_subtrees, data)
       tree goto_stmt;
 
       /* Build the GOTO_STMT.  */
-      goto_stmt = build_min_nt (GOTO_STMT, id->ret_label);
+      goto_stmt = build_stmt (GOTO_STMT, id->ret_label);
       TREE_CHAIN (goto_stmt) = TREE_CHAIN (return_stmt);
 
       /* If we're returning something, just turn that into an
@@ -287,8 +287,8 @@ copy_body_r (tp, walk_subtrees, data)
 	 RESULT_DECL.  */
       if (RETURN_EXPR (return_stmt))
 	{
-	  *tp = build_min_nt (EXPR_STMT, 
-			      RETURN_EXPR (return_stmt));
+	  *tp = build_stmt (EXPR_STMT, 
+			    RETURN_EXPR (return_stmt));
 	  /* And then jump to the end of the function.  */
 	  TREE_CHAIN (*tp) = goto_stmt;
 	}
@@ -431,7 +431,7 @@ initialize_inlined_parameters (id, args, fn)
 			 (splay_tree_value) var);
 
       /* Declare this new variable.  */
-      init_stmt = build_min_nt (DECL_STMT, var);
+      init_stmt = build_stmt (DECL_STMT, var);
       TREE_CHAIN (init_stmt) = init_stmts;
       init_stmts = init_stmt;
 
@@ -444,9 +444,9 @@ initialize_inlined_parameters (id, args, fn)
 	DECL_INITIAL (var) = value;
       else
 	{
-	  init_stmt = build_min_nt (EXPR_STMT,
-				    build (INIT_EXPR, TREE_TYPE (p),
-					   var, value));
+	  init_stmt = build_stmt (EXPR_STMT,
+				  build (INIT_EXPR, TREE_TYPE (p),
+					 var, value));
 	  /* Add this initialization to the list.  Note that we want the
 	     declaration *after* the initialization because we are going
 	     to reverse all the initialization statements below.  */
@@ -515,12 +515,12 @@ declare_return_variable (id, use_stmt)
 		     (splay_tree_value) var);
 
   /* Build the USE_STMT.  */
-  *use_stmt = build_min_nt (EXPR_STMT, var);
+  *use_stmt = build_stmt (EXPR_STMT, var);
 
   /* Build the declaration statement if FN does not return an
      aggregate.  */
   if (!aggregate_return_p)
-    return build_min_nt (DECL_STMT, var);
+    return build_stmt (DECL_STMT, var);
   /* If FN does return an aggregate, there's no need to declare the
      return variable; we're using a variable in our caller's frame.  */
   else
@@ -704,7 +704,7 @@ expand_call_inline (tp, walk_subtrees, data)
   /* Create a block to put the parameters in.  We have to do this
      after the parameters have been remapped because remapping
      parameters is different from remapping ordinary variables.  */
-  scope_stmt = build_min_nt (SCOPE_STMT, DECL_INITIAL (fn));
+  scope_stmt = build_stmt (SCOPE_STMT, DECL_INITIAL (fn));
   SCOPE_BEGIN_P (scope_stmt) = 1;
   SCOPE_NO_CLEANUPS_P (scope_stmt) = 1;
   remap_block (scope_stmt, DECL_ARGUMENTS (fn), id);
@@ -729,7 +729,7 @@ expand_call_inline (tp, walk_subtrees, data)
   *inlined_body = copy_body (id);
 
   /* Close the block for the parameters.  */
-  scope_stmt = build_min_nt (SCOPE_STMT, DECL_INITIAL (fn));
+  scope_stmt = build_stmt (SCOPE_STMT, DECL_INITIAL (fn));
   SCOPE_NO_CLEANUPS_P (scope_stmt) = 1;
   my_friendly_assert (DECL_INITIAL (fn) 
 		      && TREE_CODE (DECL_INITIAL (fn)) == BLOCK,
@@ -743,7 +743,7 @@ expand_call_inline (tp, walk_subtrees, data)
      may cause RTL to be generated.  */
   STMT_EXPR_STMT (expr)
     = chainon (STMT_EXPR_STMT (expr), 
-	       build_min_nt (LABEL_STMT, id->ret_label));
+	       build_stmt (LABEL_STMT, id->ret_label));
 
   /* Finally, mention the returned value so that the value of the
      statement-expression is the returned value of the function.  */

@@ -206,7 +206,7 @@ finish_goto_stmt (destination)
   
   check_goto (destination);
 
-  add_tree (build_min_nt (GOTO_STMT, destination));
+  add_tree (build_stmt (GOTO_STMT, destination));
 }
 
 /* COND is the condition-expression for an if, while, etc.,
@@ -250,7 +250,7 @@ finish_expr_stmt (expr)
       if (!processing_template_decl)
 	expr = break_out_cleanups (expr);
       
-      add_tree (build_min_nt (EXPR_STMT, expr));
+      add_tree (build_stmt (EXPR_STMT, expr));
     }
 
   finish_stmt ();
@@ -269,7 +269,7 @@ begin_if_stmt ()
 {
   tree r;
   do_pushlevel ();
-  r = build_min_nt (IF_STMT, NULL_TREE, NULL_TREE, NULL_TREE);
+  r = build_stmt (IF_STMT, NULL_TREE, NULL_TREE, NULL_TREE);
   add_tree (r);
   return r;
 }
@@ -344,7 +344,7 @@ tree
 begin_while_stmt ()
 {
   tree r;
-  r = build_min_nt (WHILE_STMT, NULL_TREE, NULL_TREE);
+  r = build_stmt (WHILE_STMT, NULL_TREE, NULL_TREE);
   add_tree (r);
   do_pushlevel ();
   return r;
@@ -380,7 +380,7 @@ finish_while_stmt (while_stmt)
 tree
 begin_do_stmt ()
 {
-  tree r = build_min_nt (DO_STMT, NULL_TREE, NULL_TREE);
+  tree r = build_stmt (DO_STMT, NULL_TREE, NULL_TREE);
   add_tree (r);
   return r;
 }
@@ -439,7 +439,7 @@ finish_return_stmt (expr)
 	  return;
 	}
     }
-  add_tree (build_min_nt (RETURN_STMT, expr));
+  add_tree (build_stmt (RETURN_STMT, expr));
   finish_stmt ();
 }
 
@@ -450,8 +450,8 @@ begin_for_stmt ()
 {
   tree r;
 
-  r = build_min_nt (FOR_STMT, NULL_TREE, NULL_TREE, 
-		    NULL_TREE, NULL_TREE);
+  r = build_stmt (FOR_STMT, NULL_TREE, NULL_TREE, 
+		  NULL_TREE, NULL_TREE);
   NEW_FOR_SCOPE_P (r) = flag_new_for_scope > 0;
   add_tree (r);
   if (NEW_FOR_SCOPE_P (r))
@@ -520,8 +520,7 @@ finish_for_stmt (for_stmt)
 void
 finish_break_stmt ()
 {
-  emit_line_note (input_filename, lineno);
-  add_tree (build_min_nt (BREAK_STMT));
+  add_tree (build_stmt (BREAK_STMT));
 }
 
 /* Finish a continue-statement.  */
@@ -529,8 +528,7 @@ finish_break_stmt ()
 void
 finish_continue_stmt ()
 {
-  emit_line_note (input_filename, lineno);
-  add_tree (build_min_nt (CONTINUE_STMT));
+  add_tree (build_stmt (CONTINUE_STMT));
 }
 
 /* Begin a switch-statement.  Returns a new SWITCH_STMT if
@@ -540,7 +538,7 @@ tree
 begin_switch_stmt ()
 {
   tree r;
-  r = build_min_nt (SWITCH_STMT, NULL_TREE, NULL_TREE);
+  r = build_stmt (SWITCH_STMT, NULL_TREE, NULL_TREE);
   add_tree (r);
   do_pushlevel ();
   return r;
@@ -594,7 +592,7 @@ finish_case_label (low_value, high_value)
 {
   /* Add a representation for the case label to the statement
      tree.  */
-  add_tree (build_min_nt (CASE_LABEL, low_value, high_value));
+  add_tree (build_stmt (CASE_LABEL, low_value, high_value));
   /* And warn about crossing initializations, etc.  */
   if (!processing_template_decl)
     define_case_label ();
@@ -649,7 +647,7 @@ void genrtl_try_block (t)
 tree
 begin_try_block ()
 {
-  tree r = build_min_nt (TRY_BLOCK, NULL_TREE, NULL_TREE);
+  tree r = build_stmt (TRY_BLOCK, NULL_TREE, NULL_TREE);
   add_tree (r);
   return r;
 }
@@ -659,7 +657,7 @@ begin_try_block ()
 tree
 begin_function_try_block ()
 {
-  tree r = build_min_nt (TRY_BLOCK, NULL_TREE, NULL_TREE);
+  tree r = build_stmt (TRY_BLOCK, NULL_TREE, NULL_TREE);
   FN_TRY_BLOCK_P (r) = 1;
   add_tree (r);
   return r;
@@ -761,7 +759,7 @@ tree
 begin_handler ()
 {
   tree r;
-  r = build_min_nt (HANDLER, NULL_TREE, NULL_TREE);
+  r = build_stmt (HANDLER, NULL_TREE, NULL_TREE);
   add_tree (r);
   do_pushlevel ();
   return r;
@@ -857,7 +855,7 @@ begin_compound_stmt (has_no_scope)
   tree r; 
   int is_try = 0;
 
-  r = build_min_nt (COMPOUND_STMT, NULL_TREE);
+  r = build_stmt (COMPOUND_STMT, NULL_TREE);
 
   if (last_tree && TREE_CODE (last_tree) == TRY_BLOCK)
     is_try = 1;
@@ -872,7 +870,7 @@ begin_compound_stmt (has_no_scope)
     {
       do_pushlevel ();
       if (is_try)
-	note_level_for_eh ();
+      	note_level_for_eh ();
     }
   else
     /* Normally, we try hard to keep the BLOCK for a
@@ -955,9 +953,9 @@ finish_asm_stmt (cv_qualifier, string, output_operands,
     for (t = input_operands; t; t = TREE_CHAIN (t))
       TREE_VALUE (t) = decay_conversion (TREE_VALUE (t));
 
-  r = build_min_nt (ASM_STMT, cv_qualifier, string,
-		    output_operands, input_operands,
-		    clobbers);
+  r = build_stmt (ASM_STMT, cv_qualifier, string,
+		  output_operands, input_operands,
+		  clobbers);
   add_tree (r);
 }
 
@@ -968,7 +966,7 @@ finish_label_stmt (name)
      tree name;
 {
   tree decl = define_label (input_filename, lineno, name);
-  add_tree (build_min_nt (LABEL_STMT, decl));
+  add_tree (build_stmt (LABEL_STMT, decl));
 }
 
 /* Finish a series of declarations for local labels.  G++ allows users
@@ -993,7 +991,7 @@ add_decl_stmt (decl)
   tree decl_stmt;
 
   /* We need the type to last until instantiation time.  */
-  decl_stmt = build_min_nt (DECL_STMT, decl);
+  decl_stmt = build_stmt (DECL_STMT, decl);
   add_tree (decl_stmt); 
 }
 
@@ -1014,7 +1012,7 @@ void
 finish_subobject (cleanup)
      tree cleanup;
 {
-  tree r = build_min_nt (SUBOBJECT, cleanup);
+  tree r = build_stmt (SUBOBJECT, cleanup);
   add_tree (r);
 }
 
@@ -1025,7 +1023,7 @@ finish_decl_cleanup (decl, cleanup)
      tree decl;
      tree cleanup;
 {
-  add_tree (build_min_nt (CLEANUP_STMT, decl, cleanup));
+  add_tree (build_stmt (CLEANUP_STMT, decl, cleanup));
 }
 
 /* Generate the RTL for a RETURN_INIT. */
@@ -1125,7 +1123,7 @@ finish_named_return_value (return_id, init)
       DECL_INITIAL (decl) = init;
       if (doing_semantic_analysis_p ())
 	pushdecl (decl);
-      add_tree (build_min_nt (RETURN_INIT, return_id, init));
+      add_tree (build_stmt (RETURN_INIT, return_id, init));
     }
 
   /* Don't use tree-inlining for functions with named return values.
@@ -1219,7 +1217,7 @@ setup_vtbl_ptr (member_init_list, base_init_list)
 	  tree ctor_stmt;
 
 	  /* Mark the beginning of the constructor.  */
-	  ctor_stmt = build_min_nt (CTOR_STMT);
+	  ctor_stmt = build_stmt (CTOR_STMT);
 	  CTOR_BEGIN_P (ctor_stmt) = 1;
 	  add_tree (ctor_stmt);
 	  
@@ -1299,7 +1297,7 @@ add_scope_stmt (begin_p, partial_p)
   tree top;
 
   /* Build the statement.  */
-  ss = build_min_nt (SCOPE_STMT, NULL_TREE);
+  ss = build_stmt (SCOPE_STMT, NULL_TREE);
   SCOPE_BEGIN_P (ss) = begin_p;
   SCOPE_PARTIAL_P (ss) = partial_p;
 

@@ -36,6 +36,38 @@ Boston, MA 02111-1307, USA.  */
 #include "output.h"
 #include "timevar.h"
 
+/* Build a generic statement based on the given type of node and
+   arguments. Similar to `build_nt', except that we set
+   TREE_COMPLEXITY to be the current line number.  */
+
+tree
+build_stmt VPARAMS ((enum tree_code code, ...))
+{
+#ifndef ANSI_PROTOTYPES
+  enum tree_code code;
+#endif
+  va_list p;
+  register tree t;
+  register int length;
+  register int i;
+
+  VA_START (p, code);
+
+#ifndef ANSI_PROTOTYPES
+  code = va_arg (p, enum tree_code);
+#endif
+
+  t = make_node (code);
+  length = TREE_CODE_LENGTH (code);
+  TREE_COMPLEXITY (t) = lineno;
+
+  for (i = 0; i < length; i++)
+    TREE_OPERAND (t, i) = va_arg (p, tree);
+
+  va_end (p);
+  return t;
+}
+
 /* Some statements, like for-statements or if-statements, require a
    condition.  This condition can be a declaration.  If T is such a
    declaration it is processed, and an expression appropriate to use
@@ -276,6 +308,15 @@ genrtl_do_stmt (t)
   expand_end_loop ();
 }
 
+/* Build the node for a return statement and return it. */
+
+tree
+build_return_stmt (expr)
+     tree expr;
+{
+  return (build_stmt (RETURN_STMT, expr));
+}
+
 /* Generate the RTL for EXPR, which is a RETURN_STMT. */
 
 void
@@ -319,6 +360,14 @@ genrtl_for_stmt (t)
   expand_end_loop ();
 }
 
+/* Build a break statement node and return it. */
+
+tree
+build_break_stmt ()
+{
+  return (build_stmt (BREAK_STMT));
+}
+
 /* Generate the RTL for a BREAK_STMT. */
 
 void
@@ -327,6 +376,14 @@ genrtl_break_stmt ()
   emit_line_note (input_filename, lineno);
   if ( ! expand_exit_something ())
     error ("break statement not within loop or switch");
+}
+
+/* Build a continue statement node and return it. */
+
+tree
+build_continue_stmt ()
+{
+  return (build_stmt (CONTINUE_STMT));
 }
 
 /* Generate the RTL for a CONTINUE_STMT. */
@@ -387,6 +444,17 @@ genrtl_switch_stmt (t)
 
   expand_end_case (cond);
 }
+
+/* Create a CASE_LABEL tree node and return it. */
+
+tree
+build_case_label (low_value, high_value)
+     tree low_value;
+     tree high_value;
+{
+  return build_stmt (CASE_LABEL, low_value, high_value);
+}
+
 
 /* Generate the RTL for a CASE_LABEL. */
 

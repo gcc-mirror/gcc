@@ -14097,7 +14097,7 @@ finish_constructor_body ()
 {
   /* Any return from a constructor will end up here.  */
   if (ctor_label)
-    add_tree (build_min_nt (LABEL_STMT, ctor_label));
+    add_tree (build_stmt (LABEL_STMT, ctor_label));
 
   /* Clear CTOR_LABEL so that finish_return_stmt knows to really
      generate the return, rather than a goto to CTOR_LABEL.  */
@@ -14106,7 +14106,7 @@ finish_constructor_body ()
      constructor to a return of `this'.  */
   finish_return_stmt (NULL_TREE);
   /* Mark the end of the constructor.  */
-  add_tree (build_min_nt (CTOR_STMT));
+  add_tree (build_stmt (CTOR_STMT));
 }
 
 /* At the end of every destructor we generate code to restore virtual
@@ -14125,7 +14125,7 @@ finish_destructor_body ()
   compound_stmt = begin_compound_stmt (/*has_no_scope=*/0);
 
   /* Any return from a destructor will end up here.  */
-  add_tree (build_min_nt (LABEL_STMT, dtor_label));
+  add_tree (build_stmt (LABEL_STMT, dtor_label));
 
   /* Generate the code to call destructor on base class.  If this
      destructor belongs to a class with virtual functions, then set
