@@ -1,3 +1,9 @@
+2002-04-15  Keith Seitz  <keiths@redhat.com>
+
+	* acinclude.m4 (CYG_AC_PATH_TCLCONFIG): Search the win/ directory,
+	too.
+	(CYG_AC_PATH_TKCONFIG): Likewise.
+
 2001-10-07  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* acinclude.m4: Fix spelling error of "separate" as "seperate".
