@@ -1,3 +1,7 @@
+2002-12-07  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.md (*iorhi_shift_8): New.
+
 2002-12-06  Bernd Schmidt  <bernds@redhat.com>
 
 	* doc/invoke.texi: Document FRV port options.
