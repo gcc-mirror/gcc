@@ -1193,6 +1193,10 @@ build_opfncall (code, flags, xarg1, xarg2, arg3)
   int try_second;
   int binary_is_unary;
 
+#ifdef NEW_OVER
+  return build_new_op (code, flags, xarg1, xarg2, arg3);
+#endif
+
   if (xarg1 == error_mark_node)
     return error_mark_node;
 
@@ -2203,7 +2207,12 @@ synthesize_method (fndecl)
       /* Turn off DECL_INLINE for the moment so function_cannot_inline_p
          will check our size.  */
       DECL_INLINE (fndecl) = 0;
-      if (function_cannot_inline_p (fndecl) == 0)
+
+      /* We say !at_eof because at the end of the file some of the rtl
+	 for fndecl may have been allocated on the temporary obstack.
+	 (The function_obstack is the temporary one if we're not in a
+	 function). */
+      if ((! at_eof) && function_cannot_inline_p (fndecl) == 0)
 	DECL_INLINE (fndecl) = 1;
     }
 

@@ -676,14 +676,14 @@ init_lex ()
   opname_tab[(int) COMPONENT_REF] = "->";
   opname_tab[(int) MEMBER_REF] = "->*";
   opname_tab[(int) METHOD_CALL_EXPR] = "->()";
-  opname_tab[(int) INDIRECT_REF] = "(unary *)";
+  opname_tab[(int) INDIRECT_REF] = "*";
   opname_tab[(int) ARRAY_REF] = "[]";
   opname_tab[(int) MODIFY_EXPR] = "=";
   opname_tab[(int) NEW_EXPR] = "new";
   opname_tab[(int) DELETE_EXPR] = "delete";
   opname_tab[(int) VEC_NEW_EXPR] = "new []";
   opname_tab[(int) VEC_DELETE_EXPR] = "delete []";
-  opname_tab[(int) COND_EXPR] = "... ? ... : ...";
+  opname_tab[(int) COND_EXPR] = "?:";
   opname_tab[(int) CALL_EXPR] = "()";
   opname_tab[(int) PLUS_EXPR] = "+";
   opname_tab[(int) MINUS_EXPR] = "-";
@@ -720,9 +720,9 @@ init_lex ()
   opname_tab[(int) EQ_EXPR] = "==";
   opname_tab[(int) NE_EXPR] = "!=";
   opname_tab[(int) IN_EXPR] = "in";
-  opname_tab[(int) RANGE_EXPR] = "..";
-  opname_tab[(int) CONVERT_EXPR] = "(unary +)";
-  opname_tab[(int) ADDR_EXPR] = "(unary &)";
+  opname_tab[(int) RANGE_EXPR] = "...";
+  opname_tab[(int) CONVERT_EXPR] = "+";
+  opname_tab[(int) ADDR_EXPR] = "&";
   opname_tab[(int) PREDECREMENT_EXPR] = "--";
   opname_tab[(int) PREINCREMENT_EXPR] = "++";
   opname_tab[(int) POSTDECREMENT_EXPR] = "--";
@@ -764,7 +764,7 @@ init_lex ()
 
 #if 0
   /* let's parse things, and if they use it, then give them an error.  */
-  if (!flag_handle_exceptions)
+  if (!flag_exceptions)
     {
       UNSET_RESERVED_WORD ("throw");
       UNSET_RESERVED_WORD ("try");
@@ -3039,7 +3039,7 @@ real_yylex ()
 	    || strcmp ("try", token_buffer) == 0)
 	  {
 	    static int did_warn = 0;
-	    if (! did_warn  && ! flag_handle_exceptions)
+	    if (! did_warn  && ! flag_exceptions)
 	      {
 		pedwarn ("`catch', `throw', and `try' are all C++ reserved words");
 		did_warn = 1;

@@ -126,8 +126,6 @@ static struct stack_level *decl_stack;
 static tree grokparms				PROTO((tree, int));
 static tree lookup_nested_type			PROTO((tree, tree));
 static char *redeclaration_error_message	PROTO((tree, tree));
-extern void* push_eh_context		 	PROTO(());
-extern void pop_eh_context		 	PROTO((void *));
 
 tree define_function		
 	PROTO((char *, tree, enum built_in_function, void (*)(), char *));
@@ -5493,7 +5491,7 @@ init_decl_processing ()
   init_search_processing ();
   init_rtti_processing ();
 
-  if (flag_handle_exceptions)
+  if (flag_exceptions)
     init_exception_processing ();
   if (flag_no_inline)
     {
@@ -10892,7 +10890,6 @@ start_function (declspecs, declarator, raises, attrs, pre_parsed_p)
   current_function_parms_stored = 0;
   original_result_rtx = NULL_RTX;
   base_init_expr = NULL_TREE;
-  protect_list = NULL_TREE;
   current_base_init_list = NULL_TREE;
   current_member_init_list = NULL_TREE;
   ctor_label = dtor_label = NULL_TREE;
@@ -11092,7 +11089,11 @@ start_function (declspecs, declarator, raises, attrs, pre_parsed_p)
 	  = (interface_only
 	     || (DECL_THIS_INLINE (decl1) && ! flag_implement_inlines));
       else
-	DECL_EXTERNAL (decl1) = 0;
+	{
+	  DECL_EXTERNAL (decl1) = 0;
+	  if (DECL_C_STATIC (decl1))
+	    TREE_PUBLIC (decl1) = 0;
+	}	  
       DECL_NOT_REALLY_EXTERN (decl1) = 0;
       DECL_INTERFACE_KNOWN (decl1) = 1;
     }
@@ -11227,6 +11228,32 @@ start_function (declspecs, declarator, raises, attrs, pre_parsed_p)
 }
 
 void
+store_after_parms (insns)
+     rtx insns;
+{
+  rtx x;
+
+  for (x = get_insns (); x; x = next_insn (x))
+    {
+      if (GET_CODE (x) == NOTE && NOTE_LINE_NUMBER (x) == NOTE_INSN_FUNCTION_BEG)
+	{
+	  emit_insns_after (insns, x);
+	  return;
+	}
+    }
+#if 0
+  /* This doesn't work, because the inline output routine doesn't reset
+     last_parm_insn correctly for get_first_nonparm_insn () to work.  */
+
+  last_parm_insn = get_first_nonparm_insn ();
+  if (last_parm_insn == NULL_RTX)
+    emit_insns (insns);
+  else
+    emit_insns_before (insns,  last_parm_insn);
+#endif
+}
+
+void
 expand_start_early_try_stmts ()
 {
   rtx insns;
@@ -11234,20 +11261,11 @@ expand_start_early_try_stmts ()
   expand_start_try_stmts ();
   insns = get_insns ();
   end_sequence ();
-  store_in_parms (insns);
-}
-
-void
-store_in_parms (insns)
-     rtx insns;
-{
-  rtx last_parm_insn;
-
-  last_parm_insn = get_first_nonparm_insn ();
-  if (last_parm_insn == NULL_RTX)
-    emit_insns (insns);
-  else
-    emit_insns_before (insns, previous_insn (last_parm_insn));
+#if 1
+  emit_insns_after (insns, get_insns ());
+#else
+  store_after_parms (insns);
+#endif
 }
 
 /* Store the parameter declarations into the current function declaration.
@@ -11395,23 +11413,27 @@ store_parm_decls ()
     }
 
   /* Take care of exception handling things. */
-  if (! current_template_parms && flag_handle_exceptions)
+  if (! current_template_parms && flag_exceptions)
     {
       rtx insns;
       start_sequence ();
 
+#if 0
       /* Mark the start of a stack unwinder if we need one.  */
       start_eh_unwinder ();
+#endif
 
+#if 0
       /* Do the starting of the exception specifications, if we have any.  */
       if (TYPE_RAISES_EXCEPTIONS (TREE_TYPE (current_function_decl)))
 	expand_start_eh_spec ();
+#endif
 
       insns = get_insns ();
       end_sequence ();
 
       if (insns)
-	store_in_parms (insns);
+	store_after_parms (insns);
     }
   last_dtor_insn = get_last_insn ();
 }
@@ -11915,7 +11937,7 @@ finish_function (lineno, call_poplevel, nested)
       /* Generate rtl for function exit.  */
       expand_function_end (input_filename, lineno, 1);
 
-      if (flag_handle_exceptions)
+      if (flag_exceptions)
 	expand_exception_blocks ();
     }
 
@@ -12478,7 +12500,6 @@ struct cp_function
   tree ctor_label;
   tree dtor_label;
   rtx last_dtor_insn;
-  tree protect_list;
   tree base_init_list;
   tree member_init_list;
   tree base_init_expr;
@@ -12487,7 +12508,6 @@ struct cp_function
   rtx result_rtx;
   struct cp_function *next;
   struct binding_level *binding_level;
-  void* eh_context;
 };
 
 
@@ -12525,14 +12545,11 @@ push_cp_function_context (context)
   p->parms_stored = current_function_parms_stored;
   p->result_rtx = original_result_rtx;
   p->base_init_expr = base_init_expr;
-  p->protect_list = protect_list;
   p->temp_name_counter = temp_name_counter;
   p->base_init_list = current_base_init_list;
   p->member_init_list = current_member_init_list;
   p->current_class_ptr = current_class_ptr;
   p->current_class_ref = current_class_ref;
-
-  p->eh_context = push_eh_context ();
 }
 
 /* Restore the variables used during compilation of a C++ function.  */
@@ -12563,7 +12580,6 @@ pop_cp_function_context (context)
   ctor_label = p->ctor_label;
   dtor_label = p->dtor_label;
   last_dtor_insn = p->last_dtor_insn;
-  protect_list = p->protect_list;
   current_function_assigns_this = p->assigns_this;
   current_function_just_assigned_this = p->just_assigned_this;
   current_function_parms_stored = p->parms_stored;
@@ -12574,8 +12590,6 @@ pop_cp_function_context (context)
   current_member_init_list = p->member_init_list;
   current_class_ptr = p->current_class_ptr;
   current_class_ref = p->current_class_ref;
-
-  pop_eh_context (p->eh_context);
 
   free (p);
 }

@@ -155,7 +155,7 @@ int warn_implicit = 1;
 int warn_ctor_dtor_privacy = 1;
 
 /* True if we want to implement vtables using "thunks".
-   The default is off by default, on if explicitly supported.  */
+   The default is off.  */
 
 int flag_vtable_thunks;
 
@@ -301,11 +301,6 @@ int write_virtuals;
 
 int flag_elide_constructors;
 
-/* Nonzero means recognize and handle exception handling constructs.
-   Use ansi syntax and semantics.  WORK IN PROGRESS!  */
-
-int flag_handle_exceptions;
-
 /* Nonzero means recognize and handle signature language constructs.  */
 
 int flag_handle_signatures;
@@ -405,7 +400,6 @@ static struct { char *string; int *variable; int on_value;} lang_f_options[] =
   {"all-virtual", &flag_all_virtual, 1},
   {"memoize-lookups", &flag_memoize_lookups, 1},
   {"elide-constructors", &flag_elide_constructors, 1},
-  {"handle-exceptions", &flag_handle_exceptions, 1},
   {"handle-signatures", &flag_handle_signatures, 1},
   {"default-inline", &flag_default_inline, 1},
   {"dollars-in-identifiers", &dollars_in_ident, 1},
@@ -2542,10 +2536,6 @@ import_export_vtable (decl, type, final)
 	      TREE_PUBLIC (decl) = 1;
 	      DECL_WEAK (decl) = 1;
 	    }
-#ifdef ASM_OUTPUT_EXTERNAL
-	  else if (TREE_PUBLIC (decl))
-	    cp_error ("all virtual functions redeclared inline");
-#endif
 	  else
 	    TREE_PUBLIC (decl) = 0;
 	  DECL_EXTERNAL (decl) = 0;
@@ -2995,7 +2985,7 @@ finish_file ()
 
   vars = static_aggregates;
 
-  if (static_ctors || vars || might_have_exceptions_p ())
+  if (static_ctors || vars || exception_table_p ())
     needs_messing_up = 1;
   if (static_dtors)
     needs_cleaning = 1;
@@ -3096,7 +3086,7 @@ finish_file ()
       push_momentary ();
       expand_start_bindings (0);
 
-      if (might_have_exceptions_p ())
+      if (exception_table_p ())
 	register_exception_table ();
 
       while (vars)
@@ -3317,9 +3307,6 @@ finish_file ()
 	  && DECL_C_STATIC (vars))
 	TREE_PUBLIC (vars) = 0;
     }
-
-  if (might_have_exceptions_p ())
-    emit_exception_table ();
 
   if (write_virtuals == 2)
     {

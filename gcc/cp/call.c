@@ -2792,7 +2792,7 @@ build_overload_call_real (fnname, parms, flags, final_cp, require_complete)
 
 	  i = type_unification (DECL_TEMPLATE_PARMS (function), targs,
 				TYPE_ARG_TYPES (TREE_TYPE (function)),
-				parms, &template_cost, 0);
+				parms, &template_cost, 0, 0);
 	  if (i == 0)
 	    {
 	      function = instantiate_template (function, targs);

@@ -132,8 +132,9 @@ complete_type (type)
   else if (TREE_CODE (type) == ARRAY_TYPE && TYPE_DOMAIN (type))
     {
       tree t = complete_type (TREE_TYPE (type));
-      if (TYPE_SIZE (t) != NULL_TREE)
-	type = build_cplus_array_type (t, TYPE_DOMAIN (type));
+      if (TYPE_SIZE (t) != NULL_TREE
+	  && current_template_parms == NULL_TREE)
+	layout_type (type);
     }
   else if (IS_AGGR_TYPE (type) && CLASSTYPE_TEMPLATE_INSTANTIATION (type))
     instantiate_class_template (TYPE_MAIN_VARIANT (type));
@@ -1632,65 +1633,7 @@ build_component_ref_1 (datum, field, protect)
      tree datum, field;
      int protect;
 {
-  register tree basetype = TREE_TYPE (datum);
-  register enum tree_code code = TREE_CODE (basetype);
-  register tree ref;
-
-  if (code == REFERENCE_TYPE)
-    {
-      datum = convert_from_reference (datum);
-      basetype = TREE_TYPE (datum);
-      code = TREE_CODE (basetype);
-    }
-
-  if (! IS_AGGR_TYPE_CODE (code))
-    {
-      if (code != ERROR_MARK)
-	cp_error ("request for member `%D' in `%E', which is of non-aggregate type `%T'",
-		  field, datum, basetype);
-      return error_mark_node;
-    }
-
-  if (TYPE_SIZE (basetype) == 0)
-    {
-      incomplete_type_error (0, basetype);
-      return error_mark_node;
-    }
-
-  /* Look up component name in the structure type definition.  */
-
-  if (field == error_mark_node)
-    my_friendly_abort (115);
-
-  if (TREE_STATIC (field))
-    return field;
-
-  if (datum == current_class_ref)
-    {
-      tree access = compute_access (TYPE_BINFO (current_class_type), field);
-
-      if (access == access_private_node)
-	{
-	  cp_error ("field `%D' is private", field);
-	  return error_mark_node;
-	}
-      else if (access == access_protected_node)
-	{
-	  cp_error ("field `%D' is protected", field);
-	  return error_mark_node;
-	}
-    }
-
-  ref = build (COMPONENT_REF, TREE_TYPE (field), datum, field);
-
-  if (TREE_READONLY (datum) || TREE_READONLY (field))
-    TREE_READONLY (ref) = 1;
-  if (TREE_THIS_VOLATILE (datum) || TREE_THIS_VOLATILE (field))
-    TREE_THIS_VOLATILE (ref) = 1;
-  if (DECL_MUTABLE_P (field))
-    TREE_READONLY (ref) = 0;
-
-  return ref;
+  return build_component_ref (datum, field, NULL_TREE, protect);
 }
 
 /* Given a COND_EXPR in T, return it in a form that we can, for
@@ -2414,8 +2357,7 @@ build_x_function_call (function, params, decl)
       if (TREE_CODE (type) == REFERENCE_TYPE)
 	type = TREE_TYPE (type);
 
-      if (TYPE_LANG_SPECIFIC (type)
-	  && TYPE_OVERLOADS_CALL_EXPR (complete_type (type)))
+      if (IS_AGGR_TYPE (type))
 	return build_opfncall (CALL_EXPR, LOOKUP_NORMAL, function, params, NULL_TREE);
     }
 
@@ -5586,10 +5528,8 @@ build_modify_expr (lhs, modifycode, rhs)
       else if (TYPE_HAS_TRIVIAL_ASSIGN_REF (lhstype)
 	       && TYPE_MAIN_VARIANT (lhstype) == TYPE_MAIN_VARIANT (TREE_TYPE (newrhs)))
 	{
-	  if (warn_synth)
-	    /* If we care about this, do overload resolution.  */
-	    build_opfncall (MODIFY_EXPR, LOOKUP_NORMAL,
-			    lhs, rhs, make_node (NOP_EXPR));
+	  build_opfncall (MODIFY_EXPR, LOOKUP_NORMAL,
+			  lhs, rhs, make_node (NOP_EXPR));
 
 	  /* Do the default thing */;
 	}
@@ -6777,6 +6717,8 @@ convert_for_initialization (exp, type, rhs, flags, errtype, fndecl, parmnum)
 
   if (TREE_CODE (rhstype) == REFERENCE_TYPE)
     rhstype = TREE_TYPE (rhstype);
+
+  type = complete_type (type);
 
   if (TYPE_LANG_SPECIFIC (type)
       && (IS_SIGNATURE_POINTER (type) || IS_SIGNATURE_REFERENCE (type)))

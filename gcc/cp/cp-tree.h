@@ -295,11 +295,6 @@ extern int flag_elide_constructors;
 
 extern int flag_ansi;
 
-/* Nonzero means recognize and handle ansi-style exception handling
-   constructs.  */
-
-extern int flag_handle_exceptions;
-
 /* Nonzero means recognize and handle signature language constructs.  */
 
 extern int flag_handle_signatures;
@@ -336,8 +331,8 @@ enum languages { lang_c, lang_cplusplus };
 #define IS_AGGR_TYPE_2(TYPE1,TYPE2) \
   (TREE_CODE (TYPE1) == TREE_CODE (TYPE2)	\
    && IS_AGGR_TYPE (TYPE1)&IS_AGGR_TYPE (TYPE2))
-#define IS_OVERLOAD_TYPE_CODE(t) (IS_AGGR_TYPE_CODE (t) || t == ENUMERAL_TYPE)
-#define IS_OVERLOAD_TYPE(t) (IS_OVERLOAD_TYPE_CODE (TREE_CODE (t)))
+#define IS_OVERLOAD_TYPE(t) \
+  (IS_AGGR_TYPE (t) || TREE_CODE (t) == ENUMERAL_TYPE)
 
 /* In a *_TYPE, nonzero means a built-in type.  */
 #define TYPE_BUILT_IN(NODE) TYPE_LANG_FLAG_6(NODE)
@@ -1951,7 +1946,7 @@ extern void add_method				PROTO((tree, tree *, tree));
 extern tree get_vfield_offset			PROTO((tree));
 extern void duplicate_tag_error			PROTO((tree));
 extern tree finish_struct			PROTO((tree, tree, tree, int));
-extern tree finish_struct_1			PROTO((tree, tree, int));
+extern tree finish_struct_1			PROTO((tree, int));
 extern tree finish_struct_methods		PROTO((tree, tree, int));
 extern int resolves_to_fixed_type_p		PROTO((tree, int *));
 extern void init_class_processing		PROTO((void));
@@ -2122,9 +2117,9 @@ extern void mark_used				PROTO((tree));
 
 /* in except.c */
 extern tree protect_list;
-extern void start_protect			PROTO((void));
-extern void end_protect				PROTO((tree));
-extern void end_protect_partials		();
+extern void expand_eh_region_start		PROTO((void));
+extern void expand_eh_region_end		PROTO((tree));
+extern void end_protect_partials		PROTO((void));
 extern void expand_exception_blocks		PROTO((void));
 extern void expand_start_try_stmts		PROTO((void));
 extern void expand_end_try_stmts		PROTO((void));
@@ -2133,8 +2128,6 @@ extern void expand_end_all_catch		PROTO((void));
 extern void start_catch_block			PROTO((tree, tree));
 extern void end_catch_block			PROTO((void));
 extern void expand_throw			PROTO((tree));
-extern int might_have_exceptions_p		PROTO((void));
-extern void emit_exception_table		PROTO((void));
 extern tree build_throw				PROTO((tree));
 extern void init_exception_processing		PROTO((void));
 extern void expand_builtin_throw		PROTO((void));
@@ -2292,7 +2285,7 @@ extern int uses_template_parms			PROTO((tree));
 extern tree instantiate_class_template		PROTO((tree));
 extern tree instantiate_template		PROTO((tree, tree *));
 extern void overload_template_name		PROTO((tree));
-extern int type_unification			PROTO((tree, tree *, tree, tree, int *, int));
+extern int type_unification			PROTO((tree, tree *, tree, tree, int *, int, int));
 struct tinst_level *tinst_for_decl		PROTO((void));
 extern void mark_decl_instantiated		PROTO((tree, int));
 extern void mark_class_instantiated		PROTO((tree, int));

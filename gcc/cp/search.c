@@ -919,7 +919,7 @@ compute_access (basetype_path, field)
 	{
 	  if (current_class_type
 	      && static_mem
-  	      && ACCESSIBLY_DERIVED_FROM_P (context, current_class_type))
+	      && ACCESSIBLY_DERIVED_FROM_P (context, current_class_type))
 	    PUBLIC_RETURN;
 	  else
 	    PROTECTED_RETURN;
@@ -1580,7 +1580,7 @@ lookup_fnfields_1 (type, name)
    which gives the following information (in a list):
 
    TREE_TYPE: list of basetypes needed to get to...
-   TREE_VALUE: list of all functions in of given type
+   TREE_VALUE: list of all functions in a given type
    which have name NAME.
 
    No access information is computed by this function,
@@ -1898,7 +1898,7 @@ lookup_fnfields (basetype_path, name, complain)
 
 /* Search a multiple inheritance hierarchy by breadth-first search.
 
-   TYPE is an aggregate type, possibly in a multiple-inheritance hierarchy.
+   BINFO is an aggregate type, possibly in a multiple-inheritance hierarchy.
    TESTFN is a function, which, if true, means that our condition has been met,
    and its return value should be returned.
    QFN, if non-NULL, is a predicate dictating whether the type should
@@ -3084,11 +3084,14 @@ build_mi_matrix (type)
     }
 #endif
 
+  dfs_walk (binfo, dfs_number, unnumberedp);
+
   mi_size = CLASSTYPE_N_SUPERCLASSES (type) + CLASSTYPE_N_VBASECLASSES (type);
+  if (mi_size < cid)
+    mi_size = cid;
   mi_matrix = (char *)xmalloc ((mi_size + 1) * (mi_size + 1));
   mi_type = type;
   bzero (mi_matrix, (mi_size + 1) * (mi_size + 1));
-  dfs_walk (binfo, dfs_number, unnumberedp);
   dfs_walk (binfo, dfs_record_inheritance, unmarkedp);
   dfs_walk (binfo, dfs_unmark, markedp);
 }
@@ -3558,4 +3561,83 @@ lookup_conversions (type)
   if (TYPE_SIZE (type))
     dfs_walk (TYPE_BINFO (type), add_conversions, 0);
   return conversions;
+}
+
+/* Subroutine of get_template_base.  */
+
+static tree
+get_template_base_recursive (binfo, rval, template, via_virtual)
+     tree binfo, template, rval;
+     int via_virtual;
+{
+  tree binfos;
+  int i, n_baselinks;
+  tree type = BINFO_TYPE (binfo);
+
+  if (CLASSTYPE_TEMPLATE_INFO (type)
+      && CLASSTYPE_TI_TEMPLATE (type) == template)
+    {
+      if (rval == NULL_TREE || rval == type)
+	return type;
+      else
+	return error_mark_node;
+    }
+
+  binfos = BINFO_BASETYPES (binfo);
+  n_baselinks = binfos ? TREE_VEC_LENGTH (binfos) : 0;
+
+  /* Process base types.  */
+  for (i = 0; i < n_baselinks; i++)
+    {
+      tree base_binfo = TREE_VEC_ELT (binfos, i);
+
+      /* Find any specific instance of a virtual base, when searching with
+	 a binfo...  */
+      if (BINFO_MARKED (base_binfo) == 0)
+	{
+	  int this_virtual = via_virtual || TREE_VIA_VIRTUAL (base_binfo);
+
+	  /* When searching for a non-virtual, we cannot mark
+	     virtually found binfos.  */
+	  if (! this_virtual)
+	    SET_BINFO_MARKED (base_binfo);
+
+	  rval = get_template_base_recursive
+	    (base_binfo, rval, template, this_virtual);
+	  if (rval == error_mark_node)
+	    return rval;
+	}
+    }
+
+  return rval;
+}
+
+/* Given a class template TEMPLATE and a class type or binfo node BINFO,
+   find the unique base type in BINFO that is an instance of TEMPLATE.
+   If there are more than one, return error_mark_node.  Used by unify.  */
+
+tree
+get_template_base (template, binfo)
+     register tree template, binfo;
+{
+  tree type, rval;
+
+  if (TREE_CODE (binfo) == TREE_VEC)
+    type = BINFO_TYPE (binfo);
+  else if (IS_AGGR_TYPE_CODE (TREE_CODE (binfo)))
+    {
+      type = complete_type (binfo);
+      binfo = TYPE_BINFO (type);
+    }
+  else
+    my_friendly_abort (92);
+
+  if (CLASSTYPE_TEMPLATE_INFO (type)
+      && CLASSTYPE_TI_TEMPLATE (type) == template)
+    return type;
+
+  rval = get_template_base_recursive (binfo, NULL_TREE, template, 0);
+  dfs_walk (binfo, dfs_unmark, markedp);
+
+  return rval;
 }
