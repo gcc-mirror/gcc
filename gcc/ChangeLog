@@ -1,3 +1,8 @@
+Mon Jun  8 02:49:23 1998  H.J. Lu  (hjl@gnu.org)
+
+	* reg-stack.c (subst_stack_regs_pat): Make sure the top of
+	stack is the destination for conditional move insn.
+
 Mon Jun  8 01:21:13 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* tree.h (TREE_VEC_END): Cast unused value to void.

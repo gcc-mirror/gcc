@@ -2344,6 +2344,15 @@ subst_stack_regs_pat (insn, regstack, pat)
       case IF_THEN_ELSE:
 	/* This insn requires the top of stack to be the destination. */
 
+	/* If the comparison operator is an FP comparison operator,
+	   it is handled correctly by compare_for_stack_reg () who
+	   will move the destination to the top of stack. But if the
+	   comparison operator is not an FP comparison operator, we
+	   have to handle it here. */
+	if (get_hard_regnum (regstack, *dest) >= FIRST_STACK_REG
+	    && REGNO (*dest) != regstack->reg[regstack->top])
+	  emit_swap_insn (insn, regstack, *dest);	
+
 	src1 = get_true_reg (&XEXP (SET_SRC (pat), 1));
 	src2 = get_true_reg (&XEXP (SET_SRC (pat), 2));
 
