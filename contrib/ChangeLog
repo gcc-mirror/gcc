@@ -1,3 +1,15 @@
+1999-06-12  Alexandre Oliva  <oliva@dcc.unicamp.br>
+
+	* test_summary: Set default mail-address and version for egcs
+	instead of relying on unpredictable pathnames.
+	Reported by Andreas Jaeger <aj@arthur.rhein-neckar.de>
+
+1999-06-12  Alexandre Oliva  <oliva@dcc.unicamp.br>
+
+	* test_summary: Set default mail-address and version for egcs
+	instead of relying on unpredictable pathnames.
+	Reported by Andreas Jaeger <aj@arthur.rhein-neckar.de>
+
 Fri Apr  2 16:09:02 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* fixinc/*: Delete obsolete files.

@@ -85,6 +85,8 @@ if $forcemail || $anychange; then :; else mailto=nobody; fi &&
 $AWK '
 BEGIN {
   lang="";
+  address="egcs-testresults@egcs.cygnus.com";
+  version="egcs";
   print "cat <<\EOF |";
 '${prepend_logs+"  system(\"cat $prepend_logs\"); "}'
 }
@@ -94,16 +96,6 @@ $1 ~ /\/configure$/ { $1 = "configure flags:"; configflags = $0 }
 /^Native / { if (host != "") next; else host = $4; }
 /^[ 	]*=== [^ 	]+ tests ===/ {
   if (lang == "") lang = " "$2" "; else lang = " ";
-}
-/\/ss(\/|c? )/ {
-  program="ss";
-  if (lang == " ") address="nobody";
-  else if (lang == " gcc ") address="gcc2@cygnus.com";
-  else address="g++@cygnus.com";
-}
-/\/egcsh?((-[^ ]*)?\/|c?[ -])/ {
-  address="egcs-testresults@egcs.cygnus.com";
-  if (version == 0) version="egcs";
 }
 /--disable-haifa/ { prefix="haifa-disabled "; }
 /--enable-haifa/ { prefix="haifa-enabled "; }
