@@ -1,3 +1,8 @@
+2005-01-08  Steven G. Kargl  <kargls@comcast.net>
+
+	* gfortran.dg/select_2.f90, gfortran.dg/select_3.f90,
+	gfortran.dg/select_4.f90: New.
+
 2005-01-07  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.c-torture/execute/20050107-1.c: New test.
@@ -526,7 +531,7 @@
 	* cpp/inc/pragma-once-1a.h: Likewise.
 
 2004-12-15  Bud Davis  <bdavis9659@comcast.net>
-            Steven G. Kargle  <kargls@comcast.net>
+            Steven G. Kargl  <kargls@comcast.net>
 
 	PR fortran/17597
 	* gfortran.dg/list_read_3.f90: New test.
