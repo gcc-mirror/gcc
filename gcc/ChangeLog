@@ -1,3 +1,8 @@
+Mon Sep 21 14:02:23 1998
+
+	* i386.h: (TARGET_SWITCHES) Improve doc for align-double.  Fix
+	typo in no-fancy-math-387 description.
+
 Mon Sep 21 09:27:18 PDT 1998 Jeff Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.
