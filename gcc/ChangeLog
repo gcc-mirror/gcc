@@ -1,9 +1,26 @@
+2000-05-25  Jan Hubicka  <jh@suse.cz>
+
+	* jump.c (invert_exp_1): Remove first argument, use pc_set
+	to get the expression.
+	(redirect_exp): Make static; redirect only the pc_set expression,
+	remove first argument.
+	(invert_exp): Remove first argument, make static.
+	(jump_optimize): Use any_condjump_p, any_uncondjump_p and
+	any_onlyjump at most places where we originaly did condjump_p
+	and simplejump_p.
+	(jump_back_p, follow_jumps, thread_jumps): Likewise.
+	(delete_barrier_succesors): Use pc_set.
+	(invert_jump_1, invert_jump, redirect_jump_1, redirect_jump): Update
+	calls of invert_exp and redirect_exp.
+	* rtl.h (redirect_exp, invert_exp): Remove.
+	* unroll.c (copy_loop_body): Use invert_jump and redirect_jump.
+
 2000-05-25  Richard Henderson  <rth@cygnus.com>
 
 	* stmt.c (expand_end_bindings): Fix thinko last change.
 
 2000-05-25  Andrew MacLeod  <amacleod@cygnus.com>
-            Andrew Haley  <aph@cygnus.com>
+	    Andrew Haley  <aph@cygnus.com>
 
 	* except.c  (func_eh_entry): Add emitted field.
 	(new_eh_region_entry): Set emitted field to 0;
@@ -143,12 +160,12 @@ Thu May 25 02:19:27 2000  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* Back out this patch:
 	Tue Dec  7 19:22:06 1999  Richard Henderson  <rth@cygnus.com>
-          * loop.h (struct induction): Add multi_insn_incr.
-          * loop.c (basic_induction_var): New multi_insn_incr argument.
-          Set it if we search back through previous insns for the biv.
-          (record_biv): New multi_insn_incr argument; fill in struct induction.
-          (strength_reduce): Discard an iv with multiple bivs, any of
-          which require multiple insns to increment.
+	  * loop.h (struct induction): Add multi_insn_incr.
+	  * loop.c (basic_induction_var): New multi_insn_incr argument.
+	  Set it if we search back through previous insns for the biv.
+	  (record_biv): New multi_insn_incr argument; fill in struct induction.
+	  (strength_reduce): Discard an iv with multiple bivs, any of
+	  which require multiple insns to increment.
 
 	* loop.c (check_insn_for_bivs): Remove bits copied from above patch.
 
