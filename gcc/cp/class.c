@@ -412,9 +412,8 @@ dfs_build_vcall_offset_vtbl_entries (binfo, data)
       fn = TREE_VALUE (virtuals);
       base = DECL_CONTEXT (fn);
 
-      /* The FN is comes from BASE.  So, we must caculate the
-	 adjustment from the virtual base that derived from BINFO to
-	 BASE.  */
+      /* The FN comes from BASE.  So, we must caculate the adjustment
+	 from the virtual base that derived from BINFO to BASE.  */
       base_binfo = get_binfo (base, vod->derived, /*protect=*/0);
       offset = ssize_binop (MINUS_EXPR,
 			    BINFO_OFFSET (base_binfo),
@@ -684,23 +683,18 @@ build_vbase_path (code, type, expr, path, nonnull)
 
 /* Build an entry in the virtual function table.  DELTA is the offset
    for the `this' pointer.  VCALL_INDEX is the vtable index containing
-   the vcall offset; zero if none.  FNDECL is the virtual function
-   itself.  */
+   the vcall offset; zero if none.  ENTRY is the virtual function
+   table entry itself.  It's TREE_TYPE must be VFUNC_PTR_TYPE_NODE,
+   but it may not actually be a virtual function table pointer.  (For
+   example, it might be the address of the RTTI object, under the new
+   ABI.)  */
 
 static tree
-build_vtable_entry (delta, vcall_index, fndecl)
+build_vtable_entry (delta, vcall_index, entry)
      tree delta;
      tree vcall_index;
-     tree fndecl;
+     tree entry;
 {
-  tree pfn;
-
-  /* Take the address of the function, considering it to be of an
-     appropriate generic type.  */
-  pfn = build1 (ADDR_EXPR, vfunc_ptr_type_node, fndecl);
-  /* The address of a function can't change.  */
-  TREE_CONSTANT (pfn) = 1;
-
   if (flag_vtable_thunks)
     {
       HOST_WIDE_INT idelta;
@@ -709,24 +703,24 @@ build_vtable_entry (delta, vcall_index, fndecl)
       idelta = TREE_INT_CST_LOW (delta);
       ivindex = TREE_INT_CST_LOW (vcall_index);
       if ((idelta || ivindex) 
-	  && ! DECL_PURE_VIRTUAL_P (TREE_OPERAND (pfn, 0)))
+	  && ! DECL_PURE_VIRTUAL_P (TREE_OPERAND (entry, 0)))
 	{
-	  pfn = make_thunk (pfn, idelta, ivindex);
-	  pfn = build1 (ADDR_EXPR, vtable_entry_type, pfn);
-	  TREE_READONLY (pfn) = 1;
-	  TREE_CONSTANT (pfn) = 1;
+	  entry = make_thunk (entry, idelta, ivindex);
+	  entry = build1 (ADDR_EXPR, vtable_entry_type, entry);
+	  TREE_READONLY (entry) = 1;
+	  TREE_CONSTANT (entry) = 1;
 	}
 #ifdef GATHER_STATISTICS
       n_vtable_entries += 1;
 #endif
-      return pfn;
+      return entry;
     }
   else
     {
       extern int flag_huge_objects;
       tree elems = tree_cons (NULL_TREE, delta,
 			      tree_cons (NULL_TREE, integer_zero_node,
-					 build_tree_list (NULL_TREE, pfn)));
+					 build_tree_list (NULL_TREE, entry)));
       tree entry = build (CONSTRUCTOR, vtable_entry_type, NULL_TREE, elems);
 
       /* We don't use vcall offsets when not using vtable thunks.  */
@@ -1001,7 +995,8 @@ set_rtti_entry (virtuals, offset, type)
    impossible to actually build the vtable, but is useful to get at those
    which are known to exist in the runtime.  */
 
-tree get_vtable_decl (type, complete)
+tree 
+get_vtable_decl (type, complete)
      tree type;
      int complete;
 {
@@ -2694,6 +2689,7 @@ build_vtbl_initializer (binfo, t)
       tree delta;
       tree vcall_index;
       tree fn;
+      tree pfn;
       tree init;
 
       /* Pull the offset for `this', and the function to call, out of
@@ -2709,8 +2705,13 @@ build_vtbl_initializer (binfo, t)
       if (DECL_PURE_VIRTUAL_P (fn))
 	fn = abort_fndecl;
 
-      /* Package up that information for the vtable.  */
-      init = build_vtable_entry (delta, vcall_index, fn);
+      /* Take the address of the function, considering it to be of an
+	 appropriate generic type.  */
+      pfn = build1 (ADDR_EXPR, vfunc_ptr_type_node, fn);
+      /* The address of a function can't change.  */
+      TREE_CONSTANT (pfn) = 1;
+      /* Enter it in the vtable.  */
+      init = build_vtable_entry (delta, vcall_index, pfn);
       /* And add it to the chain of initializers.  */
       inits = tree_cons (NULL_TREE, init, inits);
 
@@ -3128,6 +3129,7 @@ modify_all_vtables (t, has_virtual_p, overridden_virtuals)
 	      /* We don't need to convert to a base class when calling
 		 this function.  */
 	      DECL_VIRTUAL_CONTEXT (fn) = t;
+
 	      /* We don't need to adjust the `this' pointer when
 		 calling this function.  */
 	      BV_DELTA (*fnsp) = integer_zero_node;
