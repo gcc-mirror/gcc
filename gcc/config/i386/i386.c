@@ -2540,9 +2540,9 @@ output_387_binary_op (insn, operands)
 	return strcat (buf, AS2 (p,%2,%0));
 
       if (STACK_TOP_P (operands[0]))
-	return strcat (buf, AS2 (,%y2,%0));
+	return strcat (buf, AS2C (%y2,%0));
       else
-	return strcat (buf, AS2 (,%2,%0));
+	return strcat (buf, AS2C (%2,%0));
 
     case MINUS:
     case DIV:
@@ -2575,12 +2575,12 @@ output_387_binary_op (insn, operands)
       if (STACK_TOP_P (operands[0]))
 	{
 	  if (STACK_TOP_P (operands[1]))
-	    return strcat (buf, AS2 (,%y2,%0));
+	    return strcat (buf, AS2C (%y2,%0));
 	  else
 	    return strcat (buf, AS2 (r,%y1,%0));
 	}
       else if (STACK_TOP_P (operands[1]))
-	return strcat (buf, AS2 (,%1,%0));
+	return strcat (buf, AS2C (%1,%0));
       else
 	return strcat (buf, AS2 (r,%2,%0));
 
