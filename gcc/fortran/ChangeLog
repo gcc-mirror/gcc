@@ -1,3 +1,41 @@
+2004-06-29  Steven Bosscher  <stevenb@suse.de>
+
+	Make sure types in assignments are compatible.  Mostly mechanical.
+	* trans-const.h (gfc_index_one_node): New define.
+	* trans-array.c (gfc_trans_allocate_array_storage,
+	gfc_trans_allocate_temp_array, gfc_trans_array_constructor_subarray,
+	gfc_trans_array_constructor_value, gfc_trans_array_constructor,
+	gfc_conv_array_ubound, gfc_conv_array_ref,
+	gfc_trans_scalarized_loop_end, gfc_conv_section_startstride,
+	gfc_conv_ss_startstride, gfc_conv_loop_setup, gfc_array_init_size,
+	gfc_trans_array_bounds, gfc_trans_dummy_array_bias,
+	gfc_conv_expr_descriptor, gfc_trans_deferred_array): Use the correct
+	types in assignments, conversions and conditionals for expressions.
+	* trans-expr.c (gfc_conv_expr_present, gfc_conv_substring,
+	gfc_conv_unary_op, gfc_conv_cst_int_power, gfc_conv_string_tmp,
+	gfc_conv_function_call, gfc_trans_pointer_assignment,
+	gfc_trans_scalar_assign): Likewise.
+	* trans-intrinsic.c (build_fixbound_expr, gfc_conv_intrinsic_bound,
+	gfc_conv_intrinsic_anyall, gfc_conv_intrinsic_count,
+	gfc_conv_intrinsic_minmaxloc, gfc_conv_intrinsic_btest,
+	gfc_conv_intrinsic_singlebitop, gfc_conv_intrinsic_ishft,
+	gfc_conv_intrinsic_ishftc, gfc_conv_intrinsic_strcmp,
+	gfc_conv_allocated, gfc_conv_associated,
+	gfc_conv_intrinsic_rrspacing, gfc_conv_intrinsic_trim): Likewise.
+	* trans-io.c (set_string): Likewise.
+	* trans-stmt.c (gfc_trans_do, gfc_trans_forall_loop,
+	gfc_do_allocate, generate_loop_for_temp_to_lhs,
+	generate_loop_for_rhs_to_temp, compute_inner_temp_size,
+	compute_overall_iter_number, gfc_trans_assign_need_temp,
+	gfc_trans_pointer_assign_need_temp, gfc_trans_forall_1,
+	gfc_evaluate_where_mask, gfc_trans_where_assign,
+	gfc_trans_where_2): Likewise.
+	* trans-types.c (gfc_get_character_type, gfc_build_array_type,
+	gfc_get_nodesc_array_type, gfc_get_array_type_bounds): Likewise.
+
+	* trans.c (gfc_add_modify_expr): Add sanity check that types
+	for the lhs and rhs are the same for scalar assignments.
+
 2004-06-29  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* dump-parse-tree.c (show_common): New function.

@@ -135,7 +135,8 @@ gfc_conv_expr_present (gfc_symbol * sym)
              || GFC_ARRAY_TYPE_P (TREE_TYPE (decl)));
       decl = GFC_DECL_SAVED_DESCRIPTOR (decl);
     }
-  return build (NE_EXPR, boolean_type_node, decl, null_pointer_node);
+  return build (NE_EXPR, boolean_type_node, decl,
+		fold_convert (TREE_TYPE (decl), null_pointer_node));
 }
 
 
@@ -174,9 +175,7 @@ gfc_conv_substring (gfc_se * se, gfc_ref * ref, int kind)
   gfc_add_block_to_block (&se->pre, &start.pre);
 
   if (integer_onep (start.expr))
-    {
-      gfc_conv_string_parameter (se);
-    }
+    gfc_conv_string_parameter (se);
   else
     {
       /* Change the start of the string.  */
@@ -198,7 +197,9 @@ gfc_conv_substring (gfc_se * se, gfc_ref * ref, int kind)
       gfc_add_block_to_block (&se->pre, &end.pre);
     }
   tmp =
-    build (MINUS_EXPR, gfc_strlen_type_node, integer_one_node, start.expr);
+    build (MINUS_EXPR, gfc_strlen_type_node,
+	   fold_convert (gfc_strlen_type_node, integer_one_node),
+	   start.expr);
   tmp = build (PLUS_EXPR, gfc_strlen_type_node, end.expr, tmp);
   se->string_length = fold (tmp);
 }
@@ -376,7 +377,8 @@ gfc_conv_unary_op (enum tree_code code, gfc_se * se, gfc_expr * expr)
      We must convert it to a compare to 0 (e.g. EQ_EXPR (op1, 0)).
      All other unary operators have an equivalent GIMPLE unary operator  */
   if (code == TRUTH_NOT_EXPR)
-    se->expr = build (EQ_EXPR, type, operand.expr, integer_zero_node);
+    se->expr = build (EQ_EXPR, type, operand.expr,
+		      convert (type, integer_zero_node));
   else
     se->expr = build1 (code, type, operand.expr);
 
@@ -502,24 +504,27 @@ gfc_conv_cst_int_power (gfc_se * se, tree lhs, tree rhs)
   if ((sgn == -1) && (TREE_CODE (type) == INTEGER_TYPE))
     {
       tmp = build (EQ_EXPR, boolean_type_node, lhs,
-			integer_minus_one_node);
+		   fold_convert (TREE_TYPE (lhs), integer_minus_one_node));
       cond = build (EQ_EXPR, boolean_type_node, lhs,
-			integer_one_node);
+		    convert (TREE_TYPE (lhs), integer_one_node));
 
       /* If rhs is an even,
-	result = (lhs == 1 || lhs == -1) ? 1 : 0.  */
+	 result = (lhs == 1 || lhs == -1) ? 1 : 0.  */
       if ((n & 1) == 0)
         {
 	  tmp = build (TRUTH_OR_EXPR, boolean_type_node, tmp, cond);
-	  se->expr = build (COND_EXPR, type, tmp, integer_one_node, 
-			integer_zero_node);
+	  se->expr = build (COND_EXPR, type, tmp,
+			    convert (type, integer_one_node),
+			    convert (type, integer_zero_node));
 	  return 1;
 	}
       /* If rhs is an odd,
 	 result = (lhs == 1) ? 1 : (lhs == -1) ? -1 : 0.  */
-      tmp = build (COND_EXPR, type, tmp, integer_minus_one_node,
-			integer_zero_node);
-      se->expr = build (COND_EXPR, type, cond, integer_one_node,
+      tmp = build (COND_EXPR, type, tmp,
+		   convert (type, integer_minus_one_node),
+		   convert (type, integer_zero_node));
+      se->expr = build (COND_EXPR, type, cond,
+			convert (type, integer_one_node),
 			tmp);
       return 1;
     }
@@ -675,11 +680,16 @@ gfc_conv_string_tmp (gfc_se * se, tree type, tree len)
   tree tmp;
   tree args;
 
+  if (TREE_TYPE (len) != gfc_strlen_type_node)
+    abort ();
+
   if (gfc_can_put_var_on_stack (len))
     {
       /* Create a temporary variable to hold the result.  */
-      tmp = fold (build (MINUS_EXPR, TREE_TYPE (len), len, integer_one_node));
-      tmp = build_range_type (gfc_array_index_type, integer_zero_node, tmp);
+      tmp = fold (build (MINUS_EXPR, gfc_strlen_type_node, len,
+			 convert (gfc_strlen_type_node,
+				  integer_one_node)));
+      tmp = build_range_type (gfc_array_index_type, gfc_index_zero_node, tmp);
       tmp = build_array_type (gfc_character1_type_node, tmp);
       var = gfc_create_var (tmp, "str");
       var = gfc_build_addr_expr (type, var);
@@ -1030,7 +1040,8 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
 	  /* Zero the first stride to indicate a temporary.  */
 	  tmp =
 	    gfc_conv_descriptor_stride (info->descriptor, gfc_rank_cst[0]);
-	  gfc_add_modify_expr (&se->pre, tmp, integer_zero_node);
+	  gfc_add_modify_expr (&se->pre, tmp,
+			       convert (TREE_TYPE (tmp), integer_zero_node));
 	  /* Pass the temporary as the first argument.  */
 	  tmp = info->descriptor;
 	  tmp = gfc_build_addr_expr (NULL, tmp);
@@ -1080,8 +1091,10 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
 	      parmse.expr = null_pointer_node;
               if (arg->missing_arg_type == BT_CHARACTER)
                 {
-                  stringargs = gfc_chainon_list (stringargs,
-                      convert (gfc_strlen_type_node, integer_zero_node));
+                  stringargs =
+		    gfc_chainon_list (stringargs,
+				      convert (gfc_strlen_type_node,
+					       integer_zero_node));
                 }
 	    }
 	}
@@ -1589,7 +1602,6 @@ gfc_trans_pointer_assignment (gfc_expr * expr1, gfc_expr * expr2)
   gfc_ss *lss;
   gfc_ss *rss;
   stmtblock_t block;
-  tree tmp;
 
   gfc_start_block (&block);
 
@@ -1607,7 +1619,8 @@ gfc_trans_pointer_assignment (gfc_expr * expr1, gfc_expr * expr2)
       gfc_conv_expr (&rse, expr2);
       gfc_add_block_to_block (&block, &lse.pre);
       gfc_add_block_to_block (&block, &rse.pre);
-      gfc_add_modify_expr (&block, lse.expr, rse.expr);
+      gfc_add_modify_expr (&block, lse.expr,
+			   fold_convert (TREE_TYPE (lse.expr), rse.expr));
       gfc_add_block_to_block (&block, &rse.post);
       gfc_add_block_to_block (&block, &lse.post);
     }
@@ -1618,9 +1631,8 @@ gfc_trans_pointer_assignment (gfc_expr * expr1, gfc_expr * expr2)
       if (expr2->expr_type == EXPR_NULL)
         {
           lse.expr = gfc_conv_descriptor_data (lse.expr);
-          rse.expr = null_pointer_node;
-          tmp = build_v (MODIFY_EXPR, lse.expr, rse.expr);
-          gfc_add_expr_to_block (&block, tmp);
+          rse.expr = fold_convert (TREE_TYPE (lse.expr), null_pointer_node);
+          gfc_add_modify_expr (&block, lse.expr, rse.expr);
         }
       else
         {
@@ -1690,7 +1702,8 @@ gfc_trans_scalar_assign (gfc_se * lse, gfc_se * rse, bt type)
       gfc_add_block_to_block (&block, &lse->pre);
       gfc_add_block_to_block (&block, &rse->pre);
 
-      gfc_add_modify_expr (&block, lse->expr, rse->expr);
+      gfc_add_modify_expr (&block, lse->expr,
+			   fold_convert (TREE_TYPE (lse->expr), rse->expr));
     }
 
   gfc_add_block_to_block (&block, &lse->post);

@@ -404,13 +404,14 @@ set_string (stmtblock_t * block, stmtblock_t * postblock, tree var,
   len = build (COMPONENT_REF, TREE_TYPE (var_len), ioparm_var, var_len,
 	       NULL_TREE);
 
-  /*  Integer variable assigned a format label.  */
+  /* Integer variable assigned a format label.  */
   if (e->ts.type == BT_INTEGER && e->symtree->n.sym->attr.assign == 1)
     {
       msg =
         gfc_build_string_const (37, "Assigned label is not a format label");
       tmp = GFC_DECL_STRING_LEN (se.expr);
-      tmp = build (LE_EXPR, boolean_type_node, tmp, integer_minus_one_node);
+      tmp = build (LE_EXPR, boolean_type_node,
+		   tmp, convert (TREE_TYPE (tmp), integer_minus_one_node));
       gfc_trans_runtime_check (tmp, msg, &se.pre);
       gfc_add_modify_expr (&se.pre, io, GFC_DECL_ASSIGN_ADDR (se.expr));
       gfc_add_modify_expr (&se.pre, len, GFC_DECL_STRING_LEN (se.expr));
@@ -418,7 +419,7 @@ set_string (stmtblock_t * block, stmtblock_t * postblock, tree var,
   else
     {
       gfc_conv_string_parameter (&se);
-      gfc_add_modify_expr (&se.pre, io, se.expr);
+      gfc_add_modify_expr (&se.pre, io, fold_convert (TREE_TYPE (io), se.expr));
       gfc_add_modify_expr (&se.pre, len, se.string_length);
     }
 
@@ -432,10 +433,10 @@ set_string (stmtblock_t * block, stmtblock_t * postblock, tree var,
 static void
 set_flag (stmtblock_t *block, tree var)
 {
-  tree tmp;
+  tree tmp, type = TREE_TYPE (var);
 
-  tmp = build (COMPONENT_REF, TREE_TYPE(var), ioparm_var, var, NULL_TREE);
-  gfc_add_modify_expr (block, tmp, integer_one_node);
+  tmp = build (COMPONENT_REF, type, ioparm_var, var, NULL_TREE);
+  gfc_add_modify_expr (block, tmp, convert (type, integer_one_node));
 }
 
 
