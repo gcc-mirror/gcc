@@ -1,3 +1,9 @@
+2004-02-11  David Edelsohn  <edelsohn@gnu.org>
+
+	* configure.in (powerpc-*-aix*): Add target-libada to noconfigdirs.
+	(rs6000-*-aix*): Same.
+	* configure: Regenerate.
+
 2004-02-11  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* configure.in (host): Add in missing $noconfigdirs to defines.
