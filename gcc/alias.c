@@ -448,7 +448,7 @@ get_alias_set (t)
 
   /* If this is an aggregate type, we must record any component aliasing
      information.  */
-  if (AGGREGATE_TYPE_P (t))
+  if (AGGREGATE_TYPE_P (t) || TREE_CODE (t) == COMPLEX_TYPE)
     record_component_aliases (t);
 
   return set;
@@ -553,6 +553,10 @@ record_component_aliases (type)
       for (field = TYPE_FIELDS (type); field != 0; field = TREE_CHAIN (field))
 	if (TREE_CODE (field) == FIELD_DECL && ! DECL_NONADDRESSABLE_P (field))
 	  record_alias_subset (superset, get_alias_set (TREE_TYPE (field)));
+      break;
+
+    case COMPLEX_TYPE:
+      record_alias_subset (superset, get_alias_set (TREE_TYPE (type)));
       break;
 
     default:
