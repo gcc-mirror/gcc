@@ -328,7 +328,7 @@ likely_value (tree stmt)
         return UNKNOWN_VAL;
 	
 #ifdef ENABLE_CHECKING
-  /* There should be no VUSE operands that are UNDEFINED. */
+  /* There should be no VUSE operands that are UNDEFINED.  */
   if (val->lattice_val == UNDEFINED)
     abort ();
 #endif
@@ -773,7 +773,7 @@ ccp_visit_phi_node (tree phi)
       fprintf (dump_file, "\n\n");
     }
 
-  /* Check for an invalid change from UNKNOWN_VAL to UNDEFINED. */
+  /* Check for an invalid change from UNKNOWN_VAL to UNDEFINED.  */
   if (old_val->lattice_val == UNKNOWN_VAL
       && new_val.lattice_val == UNDEFINED)
     return SSA_PROP_NOT_INTERESTING;
@@ -1076,7 +1076,7 @@ visit_assignment (tree stmt, tree *output_p)
   }
 
   /* If LHS is not a gimple register, then it cannot take on an
-     UNDEFINED value. */
+     UNDEFINED value.  */
   if (!is_gimple_reg (SSA_NAME_VAR (lhs)) 
       && val.lattice_val == UNDEFINED)
     val.lattice_val = UNKNOWN_VAL;      

@@ -10584,7 +10584,7 @@ round_up (tree value, int divisor)
   /* See if VALUE is already a multiple of DIVISOR.  If so, we don't
      have to do anything.  Only do this when we are not given a const,
      because in that case, this check is more expensive than just
-     doing it. */
+     doing it.  */
   if (TREE_CODE (value) != INTEGER_CST)
     {
       div = build_int_cst (TREE_TYPE (value), divisor);
@@ -10629,7 +10629,7 @@ round_down (tree value, int divisor)
   /* See if VALUE is already a multiple of DIVISOR.  If so, we don't
      have to do anything.  Only do this when we are not given a const,
      because in that case, this check is more expensive than just
-     doing it. */
+     doing it.  */
   if (TREE_CODE (value) != INTEGER_CST)
     {
       div = build_int_cst (TREE_TYPE (value), divisor);

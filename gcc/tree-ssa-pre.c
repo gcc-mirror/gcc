@@ -225,7 +225,7 @@ typedef struct value_set
 
 
 /* An unordered bitmap set.  One bitmap tracks values, the other,
-   expressions. */
+   expressions.  */
 typedef struct bitmap_set
 {
   bitmap expressions;
@@ -321,7 +321,7 @@ static htab_t phi_translate_table;
 
 typedef struct expr_pred_trans_d
 {
-  /* The expression. */
+  /* The expression.  */
   tree e;
 
   /* The predecessor block along which we translated the expression.  */
@@ -371,7 +371,7 @@ expr_pred_trans_eq (const void *p1, const void *p2)
 
 /* Search in the phi translation table for the translation of
    expression E in basic block PRED. Return the translated value, if
-   found, NULL otherwise. */ 
+   found, NULL otherwise.  */ 
 
 static inline tree
 phi_trans_lookup (tree e, basic_block pred)
@@ -703,7 +703,7 @@ bitmap_set_subtract_from_value_set (value_set_t a, bitmap_set_t b,
   return ret;
 }
 
-/* Return true if two sets are equal. */
+/* Return true if two sets are equal.  */
 
 static bool
 set_equal (value_set_t a, value_set_t b)
@@ -1533,7 +1533,7 @@ insert_aux (basic_block block)
 			      fprintf (dump_file, "\n");
 			    }
 
-			  /* Make the necessary insertions. */
+			  /* Make the necessary insertions.  */
 			  for (pred = block->pred;
 			       pred;
 			       pred = pred->pred_next)

@@ -514,7 +514,7 @@ compute_overall_effect_of_inner_loop (struct loop *loop, tree evolution_fn)
 		 its value in the nb_iter-th iteration.  */
 	      res = chrec_apply (inner_loop->num, evolution_fn, nb_iter);
 	      
-	      /* Continue the computation until ending on a parent of LOOP. */
+	      /* Continue the computation until ending on a parent of LOOP.  */
 	      return compute_overall_effect_of_inner_loop (loop, res);
 	    }
 	}
@@ -1572,7 +1572,7 @@ analyze_evolution_in_loop (tree loop_phi_node,
 	ev_fn = chrec_dont_know;
       
       /* When there are multiple back edges of the loop (which in fact never
-	 happens currently, but nevertheless), merge their evolutions. */
+	 happens currently, but nevertheless), merge their evolutions.  */
       evolution_function = chrec_merge (evolution_function, ev_fn);
     }
   

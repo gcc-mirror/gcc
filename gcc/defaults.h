@@ -243,7 +243,7 @@ do { fputs (integer_asm_op (POINTER_SIZE / BITS_PER_UNIT, TRUE), FILE); \
    archive's table of contents.  Defining this macro to be nonzero has
    the consequence that certain symbols will not be made weak that
    otherwise would be.  The C++ ABI requires this macro to be zero;
-   see the documentation. */
+   see the documentation.  */
 #ifndef TARGET_WEAK_NOT_IN_ARCHIVE_TOC
 #define TARGET_WEAK_NOT_IN_ARCHIVE_TOC 0
 #endif

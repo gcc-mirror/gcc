@@ -183,7 +183,7 @@ remap_decl (tree decl, inline_data *id)
       walk_tree (&DECL_SIZE (t), copy_body_r, id, NULL);
       walk_tree (&DECL_SIZE_UNIT (t), copy_body_r, id, NULL);
 
-      /* If fields, do likewise for offset and qualifier. */
+      /* If fields, do likewise for offset and qualifier.  */
       if (TREE_CODE (t) == FIELD_DECL)
 	{
 	  walk_tree (&DECL_FIELD_OFFSET (t), copy_body_r, id, NULL);
@@ -691,7 +691,7 @@ setup_one_parameter (inline_data *id, tree p, tree value, tree fn,
 
   /* Make an equivalent VAR_DECL.  Note that we must NOT remap the type
      here since the type of this decl must be visible to the calling
-     function. */
+     function.  */
   var = copy_decl_for_inlining (p, fn, VARRAY_TREE (id->fns, 0));
 
   /* Register the VAR_DECL as the equivalent for the PARM_DECL;
@@ -1965,7 +1965,7 @@ walk_type_fields (tree type, walk_tree_fn func, void *data, void *htab)
 
     case ARRAY_TYPE:
       /* Don't follow this nodes's type if a pointer for fear that we'll
-	 have infinite recursion.  Those types are uninteresting anyway. */
+	 have infinite recursion.  Those types are uninteresting anyway.  */
       if (!POINTER_TYPE_P (TREE_TYPE (type))
 	  && TREE_CODE (TREE_TYPE (type)) != OFFSET_TYPE)
 	WALK_SUBTREE (TREE_TYPE (type));

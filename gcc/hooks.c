@@ -48,7 +48,7 @@ hook_bool_void_true (void)
   return true;
 }
 
-/* Generic hook that takes no arguments and returns NO_REGS. */
+/* Generic hook that takes no arguments and returns NO_REGS.  */
 int
 hook_int_void_no_regs (void)
 {

@@ -28,7 +28,7 @@ enum vect_var_kind {
   vect_pointer_var
 };
 
-/* Defines type of operation: unary or binary. */
+/* Defines type of operation: unary or binary.  */
 enum operation_type {
   unary_op = 1,
   binary_op

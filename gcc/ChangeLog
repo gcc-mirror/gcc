@@ -1,5 +1,16 @@
 2004-09-05  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* c-common.c, c-decl.c, combine.c, defaults.h, fold-const.c,
+	gimplify.c, gthr-nks.h, hooks.c, lambda-code.c, lambda-mat.c,
+	stor-layout.c, target.h, tree-cfg.c, tree-chrec.c,
+	tree-if-conv.c, tree-inline.c, tree-into-ssa.c,
+	tree-mudflap.c, tree-optimize.c, tree-scalar-evolution.c,
+	tree-ssa-alias.c, tree-ssa-ccp.c, tree-ssa-dce.c,
+	tree-ssa-pre.c, tree-vectorizer.c, tree-vectorizer.h, tree.h,
+	vec.h: Fix comment formatting.
+
+2004-09-05  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* c-common.c, cfgexpand.c, cgraphunit.c, defaults.h,
 	et-forest.c, expr.c, gimplify.c, global.c, gthr-lynx.h,
 	hard-reg-set.h, modulo-sched.c, optabs.c, postreload-gcse.c,

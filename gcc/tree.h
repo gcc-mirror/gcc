@@ -1097,7 +1097,7 @@ struct tree_vec GTY(())
 #define SET_EXPR_LOCATION(NODE, FROM) \
   (EXPR_CHECK (NODE)->exp.locus = (FROM))
 #define EXPR_HAS_LOCATION(NODE) (EXPR_LOCATION (NODE) != UNKNOWN_LOCATION)
-/* EXPR_LOCUS and SET_EXPR_LOCUS are deprecated. */
+/* EXPR_LOCUS and SET_EXPR_LOCUS are deprecated.  */
 #define EXPR_LOCUS(NODE)					\
   (IS_EXPR_CODE_CLASS (TREE_CODE_CLASS (TREE_CODE (NODE)))	\
    ? &(NODE)->exp.locus						\
@@ -1430,7 +1430,7 @@ struct tree_block GTY(())
 #define TYPE_DEBUG_REPRESENTATION_TYPE(NODE) (VECTOR_TYPE_CHECK (NODE)->type.values)
 
 /* For record and union types, information about this type, as a base type
-   for itself. */
+   for itself.  */
 #define TYPE_BINFO(NODE) (RECORD_OR_UNION_CHECK(NODE)->type.binfo)
 
 /* For non record and union types, used in a language-dependent way.  */
@@ -2369,7 +2369,7 @@ struct tree_value_handle GTY(())
 
   /* Unique ID for this value handle.  IDs are handed out in a
      conveniently dense form starting at 0, so that we can make
-     bitmaps of value handles. */
+     bitmaps of value handles.  */
   unsigned int id;
 };
 
@@ -3109,7 +3109,7 @@ extern void put_pending_sizes (tree);
 
 /* If nonzero, an upper limit on alignment of structure fields, in bits,  */
 extern unsigned int maximum_field_alignment;
-/* and its original value in bytes, specified via -fpack-struct=<value>. */
+/* and its original value in bytes, specified via -fpack-struct=<value>.  */
 extern unsigned int initial_max_fld_align;
 
 /* If nonzero, the alignment of a bitstring or (power-)set value, in bits.  */
