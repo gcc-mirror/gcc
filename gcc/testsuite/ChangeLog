@@ -1,3 +1,8 @@
+2003-12-30  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/10079
+	* g++.dg/template/crash16.C: New test.
+
 2003-12-30  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.dg/abi/vbase10.C: XFAIL on arm*-*-*.
