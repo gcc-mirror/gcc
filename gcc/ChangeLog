@@ -1,5 +1,9 @@
 2004-02-29  Mark Mitchell  <mark@codesourcery.com>
 
+	PR debug/14328
+	* dwarf2out.c (gen_enumeration_type_die): Output all enumeration
+	constants as signed values.
+
 	PR middle-end/13448
 	* c-tree.h (readonly_warning): Rename to ...
 	(readonly_error): ... this.
