@@ -1,3 +1,19 @@
+2003-12-02  Dalibor Topic <robilad@kaffe.org>
+
+	Reported by: Jim Pick <jim@kaffe.org>
+	* libraries/javalib/java/util/Hashtable.java
+	(internalcontainsValue): New method.
+	(contains): Delegate to internalContainsValue.
+	
+	Reported by: Mark Wielaard  <mark@klomp.org>
+	* libraries/javalib/java/util/Hashtable.java
+	(contains): Improved comment.
+	
+	Reported by: Jeroen Frijters  <jeroen@frijters.net>
+	* libraries/javalib/java/util/Hashtable.java
+	(containsValue): Delegate to contains(Object) to make sure older
+	code overwriting it continues to work.
+
 2003-12-02  Fernando Nasser  <fnasser@redhat.com>
 
 	* gnu/java/awt/peer/gtk/GtkListPeer.java (handleEvent): New

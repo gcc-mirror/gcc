@@ -333,7 +333,11 @@ public class Hashtable extends Dictionary
    */
   public synchronized boolean contains(Object value)
   {
-    return containsValue(value);
+    /* delegate to non-overridable worker method 
+     * to avoid blowing up the stack, when called 
+     * from overridden contains[Value]() method.
+     */
+    return internalContainsValue(value);
   }
 
   /**
@@ -349,6 +353,25 @@ public class Hashtable extends Dictionary
    * @since 1.2
    */
   public boolean containsValue(Object value)
+  {
+    /* delegate to older method to make sure code overwriting it 
+     * continues to work.
+     */
+    return contains(value);
+  }
+
+  /**
+   * Returns true if this Hashtable contains a value <code>o</code>, such that
+   * <code>o.equals(value)</code>. This is an internal worker method
+   * called by <code>contains()</code> and <code>containsValue()</code>.
+   *
+   * @param value the value to search for in this Hashtable
+   * @return true if at least one key maps to the value
+   * @see #contains(Object)
+   * @see #containsKey(Object)
+   * @throws NullPointerException if <code>value</code> is null
+   */
+  private boolean internalContainsValue(Object value)
   {
     for (int i = buckets.length - 1; i >= 0; i--)
       {
