@@ -477,8 +477,7 @@ declare_return_variable (id, use_stmt)
 
   /* We don't need to do anything for functions that don't return
      anything.  */
-  if (!result || same_type_p (TYPE_MAIN_VARIANT (TREE_TYPE (result)), 
-			      void_type_node))
+  if (!result || VOID_TYPE_P (TREE_TYPE (result)))
     {
       *use_stmt = NULL_TREE;
       return NULL_TREE;

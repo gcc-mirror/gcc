@@ -1466,7 +1466,7 @@ add_exception_specifier (list, spec, complain)
     core = TREE_TYPE (core);
   if (complain < 0)
     ok = 1;
-  else if (TYPE_MAIN_VARIANT (core) == void_type_node)
+  else if (VOID_TYPE_P (core))
     ok = is_ptr;
   else if (TREE_CODE (core) == TEMPLATE_TYPE_PARM)
     ok = 1;

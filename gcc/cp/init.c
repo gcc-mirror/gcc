@@ -3163,7 +3163,7 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
   if (TREE_CODE (type) == POINTER_TYPE)
     {
       type = TYPE_MAIN_VARIANT (TREE_TYPE (type));
-      if (type != void_type_node && !complete_type_or_else (type, addr))
+      if (!VOID_TYPE_P (type) && !complete_type_or_else (type, addr))
 	return error_mark_node;
       if (TREE_CODE (type) == ARRAY_TYPE)
 	goto handle_array;

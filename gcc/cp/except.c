@@ -1073,7 +1073,7 @@ complete_ptr_ref_or_void_ptr_p (type, from)
     {
       tree core = TREE_TYPE (type);
   
-      if (is_ptr && same_type_p (TYPE_MAIN_VARIANT (core), void_type_node))
+      if (is_ptr && VOID_TYPE_P (core))
         /* OK */;
       else if (!complete_type_or_else (core, from))
         return 0;

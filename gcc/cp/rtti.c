@@ -233,7 +233,7 @@ get_tinfo_decl_dynamic (exp)
   /* Peel off cv qualifiers.  */
   type = TYPE_MAIN_VARIANT (type);
   
-  if (type != void_type_node)
+  if (!VOID_TYPE_P (type))
     type = complete_type_or_else (type, exp);
   
   if (!type)
@@ -513,7 +513,7 @@ get_typeid (type)
      that is the operand of typeid are always ignored.  */
   type = TYPE_MAIN_VARIANT (type);
 
-  if (type != void_type_node)
+  if (!VOID_TYPE_P (type))
     type = complete_type_or_else (type, NULL_TREE);
   
   if (!type)
@@ -702,8 +702,7 @@ build_dynamic_cast_1 (type, expr)
     {
       tree expr1;
       /* if TYPE is `void *', return pointer to complete object.  */
-      if (tc == POINTER_TYPE
-	  && TYPE_MAIN_VARIANT (TREE_TYPE (type)) == void_type_node)
+      if (tc == POINTER_TYPE && VOID_TYPE_P (TREE_TYPE (type)))
 	{
 	  /* if b is an object, dynamic_cast<void *>(&b) == (void *)&b.  */
 	  if (TREE_CODE (expr) == ADDR_EXPR

@@ -443,13 +443,13 @@ composite_pointer_type (t1, t2, arg1, arg2, location)
   
   if (comp_target_types (t1, t2, 1))
     result_type = common_type (t1, t2);
-  else if (TYPE_MAIN_VARIANT (TREE_TYPE (t1)) == void_type_node)
+  else if (VOID_TYPE_P (TREE_TYPE (t1)))
     {
       if (pedantic && TREE_CODE (t2) == FUNCTION_TYPE)
 	pedwarn ("ISO C++ forbids %s between pointer of type `void *' and pointer-to-function", location);
       result_type = qualify_type (t1, t2);
     }
-  else if (TYPE_MAIN_VARIANT (TREE_TYPE (t2)) == void_type_node)
+  else if (VOID_TYPE_P (TREE_TYPE (t2)))
     {
       if (pedantic && TREE_CODE (t1) == FUNCTION_TYPE)
 	pedwarn ("ISO C++ forbids %s between pointer of type `void *' and pointer-to-function", location);
@@ -600,7 +600,7 @@ common_type (t1, t2)
 
 	if (tt1 == tt2)
 	  target = tt1;
-	else if (tt1 == void_type_node || tt2 == void_type_node)
+	else if (VOID_TYPE_P (tt1) || VOID_TYPE_P (tt2))
 	  target = void_type_node;
 	else if (tt1 == unknown_type_node)
 	  target = tt2;
@@ -2330,7 +2330,7 @@ build_indirect_ref (ptr, errorstring)
 	 types.  */
       tree t = canonical_type_variant (TREE_TYPE (type));
 
-      if (same_type_p (TYPE_MAIN_VARIANT (t), void_type_node))
+      if (VOID_TYPE_P (t))
         {
           /* A pointer to incomplete type (other than cv void) can be
              dereferenced [expr.unary.op]/1  */
@@ -3582,7 +3582,7 @@ build_binary_op (code, orig_op0, orig_op1)
 
 	  if (comp_target_types (type0, type1, 1))
 	    result_type = common_type (type0, type1);
-	  else if (tt0 == void_type_node)
+	  else if (VOID_TYPE_P (tt0))
 	    {
 	      if (pedantic && TREE_CODE (tt1) == FUNCTION_TYPE
 		  && tree_int_cst_lt (TYPE_SIZE (type0), TYPE_SIZE (type1)))
@@ -3590,7 +3590,7 @@ build_binary_op (code, orig_op0, orig_op1)
 	      else if (TREE_CODE (tt1) == OFFSET_TYPE)
 		pedwarn ("ISO C++ forbids conversion of a pointer to member to `void *'");
 	    }
-	  else if (tt1 == void_type_node)
+	  else if (VOID_TYPE_P (tt1))
 	    {
 	      if (pedantic && TREE_CODE (tt0) == FUNCTION_TYPE
 		  && tree_int_cst_lt (TYPE_SIZE (type1), TYPE_SIZE (type0)))
@@ -5058,7 +5058,7 @@ build_x_compound_expr (list)
          unless it was explicitly cast to (void).  */
       if ((extra_warnings || warn_unused_value)
            && !(TREE_CODE (TREE_VALUE(list)) == CONVERT_EXPR
-                && TREE_TYPE (TREE_VALUE(list)) == void_type_node))
+                && VOID_TYPE_P (TREE_TYPE (TREE_VALUE(list)))))
         warning("left-hand operand of comma expression has no effect");
     }
 #if 0 /* this requires a gcc backend patch to export warn_if_unused_value */
@@ -6799,7 +6799,7 @@ check_return_expr (retval)
   result = DECL_RESULT (current_function_decl);
   valtype = TREE_TYPE (result);
   my_friendly_assert (valtype != NULL_TREE, 19990924);
-  fn_returns_value_p = !same_type_p (valtype, void_type_node);
+  fn_returns_value_p = !VOID_TYPE_P (valtype);
   if (!retval && DECL_NAME (result) && fn_returns_value_p)
     retval = result;
 
@@ -6817,7 +6817,7 @@ check_return_expr (retval)
      isn't supposed to return a value.  */
   else if (retval && !fn_returns_value_p)
     {     
-      if (same_type_p (TREE_TYPE (retval), void_type_node))
+      if (VOID_TYPE_P (TREE_TYPE (retval)))
 	/* You can return a `void' value from a function of `void'
 	   type.  In that case, we have to evaluate the expression for
 	   its side-effects.  */
