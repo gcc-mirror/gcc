@@ -1,3 +1,8 @@
+2000-08-02  Jim Wilson  <wilson@cygnus.com>
+
+	* config/ia64/ia64-protos.h (flag_ssa): Declare.
+	* config/ia64/ia64.md (movti_internal, movti_internal+1): New.
+
 2000-08-02  Mark Mitchell  <mark@codesourcery.com>
 
 	* dce.c: Remove all uses of assert.
