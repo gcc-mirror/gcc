@@ -139,13 +139,13 @@ namespace std
       {
 	size_type __dnew = static_cast<size_type>(distance(__beg, __end));
 
+	if (__beg == __end && __a == _Alloc())
+	  return _S_empty_rep()._M_refcopy();
+
 	// NB: Not required, but considered best practice.
 	if (__builtin_expect(__beg == _InIter(), 0))
 	  __throw_logic_error("attempt to create string with null pointer");
 	
-	if (__beg == __end && __a == _Alloc())
-	  return _S_empty_rep()._M_refcopy();
-
 	// Check for out_of_range and length_error exceptions.
 	_Rep* __r = _Rep::_S_create(__dnew, __a);
 	try 
@@ -223,8 +223,8 @@ namespace std
   template<typename _CharT, typename _Traits, typename _Alloc>
     basic_string<_CharT, _Traits, _Alloc>::
     basic_string(const _CharT* __s, const _Alloc& __a)
-    : _M_dataplus(_S_construct(__s, __s ? __s + traits_type::length(__s) : 0, 
-			       __a), __a)
+    : _M_dataplus(_S_construct(__s, __s ? __s + traits_type::length(__s) :
+			       __s + npos, __a), __a)
     { }
 
   template<typename _CharT, typename _Traits, typename _Alloc>

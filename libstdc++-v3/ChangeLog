@@ -1,3 +1,13 @@
+2002-10-29  Paolo Carlini  <pcarlini@unitus.it>
+
+	PR libstdc++/8347
+	* include/bits/basic_string.tcc
+	(string::_S_construct(_InIter, _InIter, const _Alloc&,
+	forward_iterator_tag)): Do not throw logic error if
+	__beg == NULL && __end == __beg.
+	(string::string(const _CharT*, const _Alloc&)): Tweak.
+	* testsuite/21_strings/ctor_copy_dtor.cc: Add test05 from PR.
+
 2002-10-23  Jakub Jelinek  <jakub@redhat.com>
 
 	* testsuite/22_locale/num_put_members_char.cc (test01): Swap size
