@@ -20,7 +20,7 @@
    MA 02111-1307, USA.  */
 
 /* 128-bit floating point.  ABI_V4 uses IEEE quad, AIX/Darwin
-   adjust this in rs6000_override_options. */
+   adjust this in rs6000_override_options.  */
 FLOAT_MODE (TF, 16, ieee_quad_format);
 
 /* PSImode is used for the XER register.  The XER register

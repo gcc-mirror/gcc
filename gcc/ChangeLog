@@ -1,5 +1,13 @@
 2003-12-30  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/rs6000/aix.h: Fix comment formatting.
+	* config/rs6000/rs6000-modes.def: Likewise.
+	* config/rs6000/rs6000.c: Likewise.
+	* config/rs6000/rs6000.h: Likewise.
+	* config/rs6000/rs6000.md: Likewise.
+
+2003-12-30  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/i386/i386-protos.h: Remove prototype for
 	const_int_1_operand.
 	* config/i386/i386.c (const_int_1_operand): Remove.

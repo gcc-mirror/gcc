@@ -2231,7 +2231,7 @@ do {								\
    between pointers and any other objects of this machine mode.  */
 #define Pmode (TARGET_32BIT ? SImode : DImode)
 
-/* Supply definition of STACK_SIZE_MODE for allocate_dynamic_stack_space. */
+/* Supply definition of STACK_SIZE_MODE for allocate_dynamic_stack_space.  */
 #define STACK_SIZE_MODE (TARGET_32BIT ? SImode : DImode)
 
 /* Mode of a function address in a call instruction (for indexing purposes).

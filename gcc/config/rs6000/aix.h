@@ -128,7 +128,7 @@
 #define LIB_SPEC "%{pg:-L/lib/profiled -L/usr/lib/profiled}\
 %{p:-L/lib/profiled -L/usr/lib/profiled} %{!shared:%{g*:-lg}} -lc"
 
-/* This now supports a natural alignment mode. */
+/* This now supports a natural alignment mode.  */
 /* AIX word-aligns FP doubles but doubleword-aligns 64-bit ints.  */
 #define ADJUST_FIELD_ALIGN(FIELD, COMPUTED) \
   (TARGET_ALIGN_NATURAL ? (COMPUTED) : \
