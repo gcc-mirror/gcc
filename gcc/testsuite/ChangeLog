@@ -1,3 +1,8 @@
+2003-01-22  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/9328
+	* g++.dg/ext/typeof3.C: New test.
+
 2003-01-20  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* gcc.c-torture/execute/20030120-1.c: New.

@@ -1,3 +1,10 @@
+2003-01-22  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/9328
+	* error.c (dump_decl): For an OVERLOAD, just print the name of the
+	function; it doesn't make sense to try to print its type.
+	* semantics.c (finish_typeof): Issue errors about invalid uses.
+
 2003-01-22  Josef Zlomek  <zlomekj@suse.cz>
 
 	PR/9386, PR/8801
