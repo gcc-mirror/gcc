@@ -2,6 +2,17 @@
 
 	* docs/download.html:  Add link to list of mirror sites.
 
+2000-04-28  Loren J. Rittle  <ljrittle@acm.org>
+
+        * mkcheck.in: Rely on exit status instead of the presence of a
+        core file.  Added comments on how/where to save core and exe
+        files.  Move shell wildcards outside quotes and fix core path.
+	
+2000-04-27  scott snyder  <snyder@fnal.gov>
+
+        * src/misc-inst.cc: Explicitly instantiate ifstream and ofstream
+        classes.
+
 2000-04-26  Nathan C. Myers  <ncm@cantrip.org>
 
 	* bits/basic_string.h: include <bits/atomicity.h> instead
