@@ -81,6 +81,8 @@ struct directive
 
 static void skip_rest_of_line	PARAMS ((cpp_reader *));
 static void check_eol		PARAMS ((cpp_reader *));
+static void start_directive	PARAMS ((cpp_reader *));
+static void end_directive	PARAMS ((cpp_reader *, int));
 static void run_directive	PARAMS ((cpp_reader *, int,
 					 const char *, size_t,
 					 const char *));
@@ -214,18 +216,12 @@ check_eol (pfile)
     }
 }
 
-/* Check if a token's name matches that of a known directive.  Put in
-   this file to save exporting dtable and other unneeded information.  */
-int
-_cpp_handle_directive (pfile, indented)
+/* Called when entering a directive, _Pragma or command-line directive.  */
+static void
+start_directive (pfile)
      cpp_reader *pfile;
-     int indented;
 {
-  struct cpp_lookahead *la_saved;
   cpp_buffer *buffer = pfile->buffer;
-  const directive *dir = 0;
-  cpp_token dname;
-  int not_asm = 1;
 
   /* Setup in-directive state.  */
   pfile->state.in_directive = 1;
@@ -235,8 +231,51 @@ _cpp_handle_directive (pfile, indented)
   pfile->directive_pos = pfile->lexer_pos;
 
   /* Don't save directive tokens for external clients.  */
-  la_saved = pfile->la_write;
+  pfile->la_saved = pfile->la_write;
   pfile->la_write = 0;
+
+  /* Turn off skipping.  */
+  buffer->was_skipping = pfile->skipping;
+  pfile->skipping = 0;
+}
+
+/* Called when leaving a directive, _Pragma or command-line directive.  */
+static void
+end_directive (pfile, skip_line)
+     cpp_reader *pfile;
+     int skip_line;
+{
+  cpp_buffer *buffer = pfile->buffer;
+
+  /* Restore pfile->skipping before skip_rest_of_line.  This avoids
+     warning about poisoned identifiers in skipped #error lines.  */
+  pfile->skipping = buffer->was_skipping;
+
+  /* We don't skip for an assembler #.  */
+  if (skip_line)
+    skip_rest_of_line (pfile);
+
+  /* Restore state.  */
+  pfile->la_write = pfile->la_saved;
+  pfile->state.save_comments = ! CPP_OPTION (pfile, discard_comments);
+  pfile->state.in_directive = 0;
+  pfile->state.angled_headers = 0;
+  pfile->directive = 0;
+}
+
+/* Check if a token's name matches that of a known directive.  Put in
+   this file to save exporting dtable and other unneeded information.  */
+int
+_cpp_handle_directive (pfile, indented)
+     cpp_reader *pfile;
+     int indented;
+{
+  cpp_buffer *buffer = pfile->buffer;
+  const directive *dir = 0;
+  cpp_token dname;
+  int skip = 1;
+
+  start_directive (pfile);
 
   /* Lex the directive name directly.  */
   _cpp_lex_token (pfile, &dname);
@@ -254,7 +293,7 @@ _cpp_handle_directive (pfile, indented)
 	 skipped conditional groups.  Complain about this form if
 	 we're being pedantic, but not if this is regurgitated input
 	 (preprocessed or fed back in by the C++ frontend).  */
-      if (! pfile->skipping  && !CPP_OPTION (pfile, lang_asm))
+      if (! buffer->was_skipping  && !CPP_OPTION (pfile, lang_asm))
 	{
 	  dir = &dtable[T_LINE];
 	  _cpp_push_token (pfile, &dname, &pfile->directive_pos);
@@ -294,7 +333,7 @@ _cpp_handle_directive (pfile, indented)
 
 	  /* If we are skipping a failed conditional group, all
 	     non-conditional directives are ignored.  */
-	  if (! pfile->skipping || (dir->flags & COND))
+	  if (! buffer->was_skipping || (dir->flags & COND))
 	    {
 	      /* Issue -pedantic warnings for extensions.   */
 	      if (CPP_PEDANTIC (pfile) && dir->origin == EXTENSION)
@@ -305,20 +344,11 @@ _cpp_handle_directive (pfile, indented)
 	      if (! (dir->flags & IF_COND))
 		pfile->mi_state = MI_FAILED;
 
-	      buffer->was_skipping = pfile->skipping;
-	      pfile->skipping = 0;
 	      (*dir->handler) (pfile);
-	      pfile->skipping = buffer->was_skipping;
 	    }
 	}
     }
-  else if (dname.type == CPP_EOF)
-    {
-      /* The null directive.  */
-      if (indented && CPP_WTRADITIONAL (pfile))
-	cpp_warning (pfile, "traditional C ignores #\\n with the # indented");
-    }
-  else if (!pfile->skipping)
+  else if (dname.type != CPP_EOF && ! pfile->skipping)
     {
       /* An unknown directive.  Don't complain about it in assembly
 	 source: we don't know where the comments are, and # may
@@ -327,26 +357,16 @@ _cpp_handle_directive (pfile, indented)
       if (CPP_OPTION (pfile, lang_asm))
 	{
 	  /* Output the # and lookahead token for the assembler.  */
-	  not_asm = 0;
 	  _cpp_push_token (pfile, &dname, &pfile->directive_pos);
+	  skip = 0;
 	}
       else
 	cpp_error (pfile, "invalid preprocessing directive #%s",
 		   cpp_token_as_text (pfile, &dname));
     }
 
-  /* Save the lookahead token for assembler.  */
-  if (not_asm)
-    skip_rest_of_line (pfile);
-
-  /* Restore state.  */
-  pfile->la_write = la_saved;
-  pfile->state.save_comments = ! CPP_OPTION (pfile, discard_comments);
-  pfile->state.in_directive = 0;
-  pfile->state.angled_headers = 0;
-  pfile->directive = 0;
-
-  return not_asm;
+  end_directive (pfile, skip);
+  return skip;
 }
 
 /* Directive handler wrapper used by the command line option
@@ -360,41 +380,37 @@ run_directive (pfile, dir_no, buf, count, name)
      const char *name;
 {
   unsigned int output_line = pfile->lexer_pos.output_line;
+  cpp_buffer *buffer = cpp_push_buffer (pfile, (const U_CHAR *) buf, count);
 
-  if (cpp_push_buffer (pfile, (const U_CHAR *) buf, count) != NULL)
+  if (buffer)
     {
-      const struct directive *dir = &dtable[dir_no], *orig_dir;
-      unsigned char orig_in_directive;
+      const struct directive *dir = &dtable[dir_no];
 
       if (name)
-	CPP_BUFFER (pfile)->nominal_fname = name;
+	buffer->nominal_fname = name;
       else
-	CPP_BUFFER (pfile)->nominal_fname = _("<command line>");
-
-      /* A kludge to avoid line markers for _Pragma.  */
-      if (dir_no == T_PRAGMA)
-	pfile->lexer_pos.output_line = output_line;
-
-      /* Save any in-process directive; _Pragma can appear in one.  */
-      orig_dir = pfile->directive;
-      orig_in_directive = pfile->state.in_directive;
+	buffer->nominal_fname = _("<command line>");
 
       /* For _Pragma, the text is passed through preprocessing stage 3
 	 only, i.e. no trigraphs, no escaped newline removal, and no
 	 macro expansion.  Do the same for command-line directives.  */
-      pfile->buffer->from_stage3 = 1;
-      pfile->state.in_directive = 1;
-      pfile->directive = dir;
+      buffer->from_stage3 = 1;
+
+      if (dir_no == T_PRAGMA)
+	{
+	  /* A kludge to avoid line markers for _Pragma.  */
+	  pfile->lexer_pos.output_line = output_line;
+	  /* Avoid interpretation of directives in a _Pragma string.  */
+	  pfile->state.next_bol = 0;
+	}
+
+      start_directive (pfile);
       pfile->state.prevent_expansion++;
       (void) (*dir->handler) (pfile);
       pfile->state.prevent_expansion--;
-      pfile->directive = orig_dir;
-      pfile->state.in_directive = orig_in_directive;
+      check_eol (pfile);
+      end_directive (pfile, 1);
 
-      skip_rest_of_line (pfile);
-      if (pfile->buffer->cur != pfile->buffer->rlimit)
-	cpp_error (pfile, "extra text after end of #%s directive",
-		   dtable[dir_no].name);
       cpp_pop_buffer (pfile);
     }
 }
@@ -1713,7 +1729,6 @@ cpp_push_buffer (pfile, buffer, length)
   new->rlimit = buffer + length;
   new->prev = buf;
   new->pfile = pfile;
-  new->was_skipping = 0;
   /* Preprocessed files don't do trigraph and escaped newline processing.  */
   new->from_stage3 = CPP_OPTION (pfile, preprocessed);
   /* No read ahead or extra char initially.  */

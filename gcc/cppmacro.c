@@ -959,7 +959,10 @@ cpp_get_token (pfile, token)
 	    continue;
 	}
 
-      if (token->val.node != pfile->spec_nodes.n__Pragma)
+      /* Don't interpret _Pragma within directives.  The standard is
+         not clear on this, but to me this makes most sense.  */
+      if (token->val.node != pfile->spec_nodes.n__Pragma
+	  || pfile->state.in_directive)
 	break;
 
       /* Handle it, and loop back for another token.  MI is cleared
