@@ -90,7 +90,7 @@ Directory g77.f-torture/compile
 20010519-1.f			Y  Add dg-warnings for ASSIGN
 20020307-1.f			Y
 20030115-1.f			Y  Add dg-warnings for ASSIGN
-20030326-1.f			Y  XFAIL PR 16512
+20030326-1.f			Y
 8485.f				Y
 960317-1.f			Y
 970125-0.f			Y  Add dg-excess-errors. Investigate.later.

@@ -1,4 +1,10 @@
-1004-10-28  Matt Austern  <austern@apple.com>
+2004-10-29  David Billinghurst <David.Billinghurst@riotinto.com>
+
+	PR fortran/13490
+	* gfortran.dg/g77/20030326-1.f: Change xfail on error to warning.
+	* gfortran.dg/g77/README: Update.
+
+2004-10-28  Matt Austern  <austern@apple.com>
 
 	PR c++/14124
 	* g++.dg/ext/packed7.C: New test.
