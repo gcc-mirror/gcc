@@ -1,4 +1,4 @@
-/* Copyright (C) 1999, 2000, 2001, 2002  Free Software Foundation
+/* Copyright (C) 1999, 2000, 2001, 2002, 2003  Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package java.awt;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
 import java.awt.event.InvocationEvent;
 import java.lang.reflect.InvocationTargetException;
 import java.util.EmptyStackException;
@@ -44,7 +46,7 @@ import java.util.EmptyStackException;
 /* Written using on-line Java 2 Platform Standard Edition v1.3 API 
  * Specification, as well as "The Java Class Libraries", 2nd edition 
  * (Addison-Wesley, 1998).
- * Status:  Believed complete, but untested. Check FIXME's.
+ * Status:  Believed complete, but untested.
  */
 
 /**
@@ -65,6 +67,8 @@ public class EventQueue
 
   private EventQueue next;
   private EventQueue prev;
+  private AWTEvent currentEvent;
+  private long lastWhen = System.currentTimeMillis();
 
   private EventDispatchThread dispatchThread = new EventDispatchThread(this);
 
@@ -162,7 +166,6 @@ public class EventQueue
         next.postEvent(evt);
         return;
       }
-    // FIXME: Security checks?
 
     /* Check for any events already on the queue with the same source 
        and ID. */	
@@ -249,6 +252,10 @@ public class EventQueue
   }
 
   /**
+   * This arranges for runnable to have its run method called in the
+   * dispatch thread of the EventQueue.  This will happen after all
+   * pending events are processed.
+   *
    * @since 1.2
    */
   public static void invokeLater(Runnable runnable)
@@ -261,10 +268,29 @@ public class EventQueue
     eq.postEvent(ie);
   }
 
+  /**
+   * Return true if the current thread is the AWT event dispatch
+   * thread.
+   */
   public static boolean isDispatchThread()
   {
     EventQueue eq = Toolkit.getDefaultToolkit().getSystemEventQueue(); 
     return (Thread.currentThread() == eq.dispatchThread);
+  }
+
+  /**
+   * Return the event currently being dispatched by the event
+   * dispatch thread.  If the current thread is not the event
+   * dispatch thread, this method returns null.
+   *
+   * @since 1.4
+   */
+  public static AWTEvent getCurrentEvent()
+  {
+    EventQueue eq = Toolkit.getDefaultToolkit().getSystemEventQueue(); 
+    if (Thread.currentThread() != eq.dispatchThread)
+      return null;
+    return eq.currentEvent;
   }
 
   /**
@@ -332,6 +358,15 @@ public class EventQueue
    */
   protected void dispatchEvent(AWTEvent evt)
   {
+    currentEvent = evt;
+
+    if (evt instanceof InputEvent)
+      lastWhen = ((InputEvent) evt).getWhen();
+    else if (evt instanceof ActionEvent)
+      lastWhen = ((ActionEvent) evt).getWhen();
+    else if (evt instanceof InvocationEvent)
+      lastWhen = ((InvocationEvent) evt).getWhen();
+
     if (evt instanceof ActiveEvent)
       {
         ActiveEvent active_evt = (ActiveEvent) evt;
@@ -373,7 +408,9 @@ public class EventQueue
    */
   public static long getMostRecentEventTime()
   {
-    // XXX For now, this ONLY does the current time.
-    return System.currentTimeMillis();
+    EventQueue eq = Toolkit.getDefaultToolkit().getSystemEventQueue(); 
+    if (Thread.currentThread() != eq.dispatchThread)
+      return System.currentTimeMillis();
+    return eq.lastWhen;
   }
 }
