@@ -127,7 +127,7 @@ GLIBCPP_3.2 {
 
     # __num_base
     _ZNSt10__num_base13_S_format_intERKSt8ios_basePccc;
-    _ZNSt10__num_base15_S_format_floatERKSt8ios_basePcci;
+    _ZNSt10__num_base15_S_format_floatERKSt8ios_basePcc[il];
     _ZNSt10__num_base8_S_atomsE;
 
     # std::string minus binary operator plus
