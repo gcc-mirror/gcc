@@ -2700,7 +2700,13 @@ push_block (size, extra, below)
       anti_adjust_stack (temp);
     }
 
-#ifdef STACK_GROWS_DOWNWARD
+#if defined (STACK_GROWS_DOWNWARD) \
+    || (defined (ARGS_GROW_DOWNWARD) \
+	&& !defined (ACCUMULATE_OUTGOING_ARGS))
+
+  /* Return the lowest stack address when STACK or ARGS grow downward and
+     we are not aaccumulating outgoing arguments (the c4x port uses such
+     conventions).  */
   temp = virtual_outgoing_args_rtx;
   if (extra != 0 && below)
     temp = plus_constant (temp, extra);
