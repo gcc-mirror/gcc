@@ -2900,7 +2900,7 @@ find_splittable_givs (bl, unroll_type, loop_start, loop_end, increment,
 			 copy_loop_body works around the problem for the
 			 DEST_REG givs themselves, but it can't handle
 			 DEST_ADDR givs that have been combined with
-			 derived a derived DEST_REG giv.
+			 a derived DEST_REG giv.
 			 So Handle V as if the giv from which V->SAME has
 			 been derived has been combined with V.
 			 recombine_givs only derives givs from givs that
@@ -2909,6 +2909,8 @@ find_splittable_givs (bl, unroll_type, loop_start, loop_end, increment,
 
 		      same = same->derived_from;
 		      new_reg = express_from (same, v);
+		      new_reg = replace_rtx (new_reg, same->dest_reg,
+					     same->new_reg);
 		    }
 
 		  /* If the address giv has a constant in its new_reg value,
@@ -3025,6 +3027,8 @@ find_splittable_givs (bl, unroll_type, loop_start, loop_end, increment,
 
 		      v->same = v->same->derived_from;
 		      v->new_reg = express_from (v->same, v);
+		      v->new_reg = replace_rtx (v->new_reg, v->same->dest_reg,
+						v->same->new_reg);
 		    }
 
 		}
