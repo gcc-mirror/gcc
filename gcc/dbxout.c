@@ -1100,6 +1100,16 @@ dbxout_type (type, full, show_arg_types)
       break;
 
     case SET_TYPE:
+      if (use_gnu_debug_info_extensions)
+	{
+	  have_used_extensions = 1;
+	  fprintf (asmfile, "@s%d;",
+		   BITS_PER_UNIT * int_size_in_bytes (type));
+	  /* Check if a bitstring type, which in Chill is
+	     different from a [power]set. */
+	  if (TYPE_STRING_FLAG (type))
+	    fprintf (asmfile, "@S;");
+	}
       putc ('S', asmfile);
       CHARS (1);
       dbxout_type (TYPE_DOMAIN (type), 0, 0);
@@ -1110,6 +1120,13 @@ dbxout_type (type, full, show_arg_types)
 	 for the index type of the array
 	 followed by a reference to the target-type.
 	 ar1;0;N;M for a C array of type M and size N+1.  */
+      /* Check if a character string type, which in Chill is
+	 different from an array of characters. */
+      if (TYPE_STRING_FLAG (type) && use_gnu_debug_info_extensions)
+	{
+	  have_used_extensions = 1;
+	  fprintf (asmfile, "@S;");
+	}
       tem = TYPE_DOMAIN (type);
       if (tem == NULL)
 	fprintf (asmfile, "ar%d;0;-1;",
