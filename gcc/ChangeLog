@@ -1,5 +1,10 @@
 2001-11-03  Geoffrey Keating  <geoffk@redhat.com>
 
+	* config/stormy16/stormy16.h (CONST_COSTS): Define.
+	(RTX_COSTS): Define.
+	(ADDRESS_COST): Define.
+	(MEMORY_MOVE_COST): Allow for memory_move_secondary_cost.
+
 	* config/stormy16/stormy16.h (ASM_SPEC): Pass -g to the assembler.
 
 	* config/stormy16/stormy16.h (ASM_OUTPUT_MI_THUNK): Call

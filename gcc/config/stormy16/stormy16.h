@@ -3240,7 +3240,17 @@ do {							\
 
    CODE is the expression code--redundant, since it can be obtained with
    `GET_CODE (X)'.  */
-/* #define CONST_COSTS(X, CODE, OUTER_CODE)  */     
+#define CONST_COSTS(X, CODE, OUTER_CODE)	\
+  case CONST_INT:				\
+    if (INTVAL (X) < 16 && INTVAL (X) >= 0)	\
+      return COSTS_N_INSNS (1)/2;		\
+    if (INTVAL (X) < 256 && INTVAL (X) >= 0)	\
+      return COSTS_N_INSNS (1);			\
+  case CONST_DOUBLE:				\
+  case CONST:					\
+  case SYMBOL_REF:				\
+  case LABEL_REF:				\
+     return COSTS_N_INSNS(2);
 
 /* Like `CONST_COSTS' but applies to nonconstant RTL expressions.  This can be
    used, for example, to indicate how costly a multiply instruction is.  In
@@ -3250,7 +3260,11 @@ do {							\
 
    This macro is optional; do not define it if the default cost assumptions are
    adequate for the target machine.  */
-/* #define RTX_COSTS(X, CODE, OUTER_CODE) */
+#define RTX_COSTS(X, CODE, OUTER_CODE)		\
+  case MULT:					\
+    return COSTS_N_INSNS (35 + 6);		\
+  case DIV:					\
+    return COSTS_N_INSNS (51 - 6);
 
 /* An expression giving the cost of an addressing mode that contains ADDRESS.
    If not defined, the cost is computed from the ADDRESS expression and the
@@ -3288,8 +3302,12 @@ do {							\
    Equivalent costs should probably only be given to addresses with different
    numbers of registers on machines with lots of registers.
 
-   This macro will normally either not be defined or be defined as a constant.  */
-/* #define ADDRESS_COST(ADDRESS) */
+   This macro will normally either not be defined or be defined as a
+   constant.  */
+#define ADDRESS_COST(ADDRESS)			\
+  (GET_CODE (ADDRESS) == CONST_INT ? 2		\
+   : GET_CODE (ADDRESS) == PLUS ? 7		\
+   : 5)
 
 /* A C expression for the cost of moving data of mode MODE from a
    register in class FROM to one in class TO.  The classes are
@@ -3315,7 +3333,7 @@ do {							\
 
    If moving between registers and memory is more expensive than between two
    registers, you should define this macro to express the relative cost.  */
-#define MEMORY_MOVE_COST(M,C,I) 5
+#define MEMORY_MOVE_COST(M,C,I) (5 + memory_move_secondary_cost (M, C, I))
 
 /* A C expression for the cost of a branch instruction.  A value of 1 is the
    default; other values are interpreted relative to that.  */
