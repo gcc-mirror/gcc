@@ -4037,8 +4037,9 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p)
 
 	    /* Function calls are not permitted in
 	       constant-expressions.  */
-	    if (cp_parser_non_integral_constant_expression (parser,
-							    "a function call"))
+	    if (! builtin_valid_in_constant_expr_p (postfix_expression)
+		&& cp_parser_non_integral_constant_expression (parser,
+							       "a function call"))
 	      {
 		postfix_expression = error_mark_node;
 		break;

@@ -2663,7 +2663,8 @@ finish_id_expression (tree id_expression,
          expression.  Enumerators and template parameters have already
          been handled above.  */
       if (integral_constant_expression_p
-	  && !DECL_INTEGRAL_CONSTANT_VAR_P (decl))
+	  && ! DECL_INTEGRAL_CONSTANT_VAR_P (decl)
+	  && ! builtin_valid_in_constant_expr_p (decl))
 	{
 	  if (!allow_non_integral_constant_expression_p)
 	    {
