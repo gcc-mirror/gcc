@@ -1,3 +1,17 @@
+Tue Feb  2 10:39:47 1999  Per Bothner  <bothner@cygnus.com>
+
+	Optimize: `return (a ? b : c)' as: `if (a) return b; else return c;'.
+	* jcf-write.c (generate_bytecode_return):  New function.
+	(generate_bytecode_insns):  Use it, for RETURN_EXPR.
+
+	* jcf-write.c (generate_bytecode_insns):  For REAL_CST that is 0 or 1,
+	generate special [fd]const_[01] instructions.
+	
+	* jcf-parse.c (yyparse):  Don't emit_register_classes if -fsyntax-only.
+
+	* verify.c (verify_jvm_instructions):  Do INVALIDATE_PC after
+	handling OPCODE_lookupswitch or OPCODE_tableswitch.
+
 Mon Feb  1 20:44:47 1999  Per Bothner  <bothner@cygnus.com>
 
 	* parse.y (patch_method_invocation):  Handle calling static methods,
