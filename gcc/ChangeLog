@@ -2,6 +2,9 @@
 
 	* tree-cfg.c (tree_can_merge_blocks_p): Reorder two checks.
 
+	* tree-cfg.c (tree_forwarder_block_p): Speed up by walking
+	through the statements backward.
+
 2005-01-17  Ian Lance Taylor  <ian@airs.com>
 
 	PR middle-end/13127:
