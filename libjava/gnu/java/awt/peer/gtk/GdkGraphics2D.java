@@ -44,6 +44,8 @@ import java.awt.font.*;
 import java.awt.color.*;
 import java.awt.image.*;
 import java.awt.image.renderable.*;
+import java.util.HashMap;
+import java.util.Map;
 
 import java.text.AttributedCharacterIterator;
 import java.util.Map;
@@ -81,6 +83,7 @@ public class GdkGraphics2D extends Graphics2D
   private AffineTransform transform;
   private GtkComponentPeer component;
   private Font font;  
+  private RenderingHints hints;
 
   private Stack stateStack;
   
@@ -108,6 +111,7 @@ public class GdkGraphics2D extends Graphics2D
   {
     paint = g.paint;
     stroke = g.stroke;
+    hints = g.hints;
 
     if (g.fg.getAlpha() != -1)
       fg = new Color (g.fg.getRed (), g.fg.getGreen (), 
@@ -154,6 +158,7 @@ public class GdkGraphics2D extends Graphics2D
     setFont (new Font("SansSerif", Font.PLAIN, 12));
     setTransform (new AffineTransform ());
     setStroke (new BasicStroke ());
+    setRenderingHints (new HashMap ());
 
     stateStack = new Stack();
   }
@@ -169,6 +174,7 @@ public class GdkGraphics2D extends Graphics2D
     setFont (new Font("SansSerif", Font.PLAIN, 12));
     setTransform (new AffineTransform ());
     setStroke (new BasicStroke ());
+    setRenderingHints (new HashMap ());
 
     stateStack = new Stack ();
   }
@@ -335,6 +341,29 @@ public class GdkGraphics2D extends Graphics2D
   }
 
 
+  private Map getDefaultHints()
+  {
+    HashMap defaultHints = new HashMap ();
+    
+    defaultHints.put (RenderingHints.KEY_TEXT_ANTIALIASING, 
+                      RenderingHints.VALUE_TEXT_ANTIALIAS_DEFAULT);
+		      
+    defaultHints.put (RenderingHints.KEY_STROKE_CONTROL, 
+                      RenderingHints.VALUE_STROKE_DEFAULT);    
+		      
+    defaultHints.put (RenderingHints.KEY_FRACTIONALMETRICS, 
+                      RenderingHints.VALUE_FRACTIONALMETRICS_OFF);    
+		      
+    defaultHints.put (RenderingHints.KEY_ANTIALIASING, 
+                      RenderingHints.VALUE_ANTIALIAS_OFF);    
+		      
+    defaultHints.put (RenderingHints.KEY_RENDERING,  
+                      RenderingHints.VALUE_RENDER_DEFAULT);
+    
+    return defaultHints;
+    
+  }
+
   //////////////////////////////////////////////////
   ////// Implementation of Graphics2D Methods //////
   //////////////////////////////////////////////////
@@ -351,6 +380,14 @@ public class GdkGraphics2D extends Graphics2D
 
     stateSave ();
     cairoNewPath ();
+
+    boolean normalize;
+    normalize = hints.containsValue (RenderingHints.VALUE_STROKE_NORMALIZE)
+                || hints.containsValue (RenderingHints.VALUE_STROKE_DEFAULT);
+
+    if (normalize)
+      translate (0.5,0.5);      
+    
     if (s instanceof Rectangle2D)
       {
         Rectangle2D r = (Rectangle2D)s;
@@ -359,6 +396,10 @@ public class GdkGraphics2D extends Graphics2D
     else      
       walkPath (s.getPathIterator (null));
     cairoStroke ();
+    
+    if (normalize)
+      translate (-0.5,-0.5);
+      
     stateRestore ();
   }
 
@@ -640,6 +681,19 @@ public class GdkGraphics2D extends Graphics2D
     stateSave ();
     
     cairoNewPath ();
+    
+    boolean normalize;
+    normalize = hints.containsValue (RenderingHints.VALUE_STROKE_NORMALIZE)
+                || hints.containsValue (RenderingHints.VALUE_STROKE_DEFAULT);
+		
+    if (normalize) 
+      {
+    	x1 += 0.5;
+	y1 += 0.5; 
+	x2 += 0.5;
+	y2 += 0.5; 
+      }
+    
     setColor (light);
     cairoMoveTo (x1, y1);
     cairoLineTo (x2, y1);
@@ -1006,27 +1060,28 @@ public class GdkGraphics2D extends Graphics2D
   public void setRenderingHint(RenderingHints.Key hintKey,
                                Object hintValue)
   {
-    throw new java.lang.UnsupportedOperationException ();
+    hints.put (hintKey, hintValue);    
   }
 
   public Object getRenderingHint(RenderingHints.Key hintKey)
   {
-    throw new java.lang.UnsupportedOperationException ();
+    return hints.get (hintKey);
   }
   
   public void setRenderingHints(Map hints)
   {
-    throw new java.lang.UnsupportedOperationException ();
+    this.hints = new RenderingHints (getDefaultHints ());
+    this.hints.add (new RenderingHints (hints));
   }
 
   public void addRenderingHints(Map hints)
   {
-    throw new java.lang.UnsupportedOperationException ();
+    this.hints.add (new RenderingHints (hints));
   }
 
   public RenderingHints getRenderingHints()
   {
-    throw new java.lang.UnsupportedOperationException ();
+    return hints;
   }
 
   public Composite getComposite()

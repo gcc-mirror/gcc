@@ -1,3 +1,14 @@
+2004-01-15  Olga Rodimina <rodimina@redhat.com>
+
+	* gnu/java/awt/peer/gtk/GdkGraphics2D.java:
+	Implemented rendering hints related methods.
+	(getDefaultHints): New helper method. Returns
+	default rendering hints.
+	(walkPath): changed to normalize path if
+	the KEY_STROKE_CONTROL key is in "normalize" mode.
+	(draw3DRect): changed coordinates of rectangle by +0.5
+	if in "normalize" mode.
+
 2004-01-15  Tom Tromey  <tromey@redhat.com>
 
 	* Makefile.in: Rebuilt.
