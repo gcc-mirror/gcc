@@ -1136,13 +1136,12 @@ expand_start_catch_block (declspecs, declarator)
   else
     type = NULL_TREE;
 
-  false_label_rtx = gen_label_rtx ();
-  push_label_entry (&false_label_stack, false_label_rtx);
-
-  /* This is saved for the exception table.  */
+  /* These are saved for the exception table.  */
   push_rtl_perm ();
+  false_label_rtx = gen_label_rtx ();
   protect_label_rtx = gen_label_rtx ();
   pop_rtl_from_perm ();
+  push_label_entry (&false_label_stack, false_label_rtx);
   push_label_entry (&false_label_stack, protect_label_rtx);
 
   if (type)
