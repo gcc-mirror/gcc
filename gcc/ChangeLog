@@ -1,3 +1,15 @@
+Sat Jan 10 21:50:16 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+			  Jeffrey A Law  (law@cygnus.com)
+
+	* regmove.c: New implementation of regmove pass.
+	* local-alloc.c (optimize_reg_copy_1, optimize_reg_copy_2): Remove
+	decls, make them have external linkage.  Return a value from
+	optimize_reg_copy_1.
+	* reload.h (count_occurrences): Add decl.
+	* reload1.c (count_occurrences): Delete decl, make it have external
+	linkage.
+	* rtl.h (optimize_reg_copy_1, optimize_reg_copy_2): Declare.
+
 Sat Jan 10 20:30:12 1998  Jeffrey A Law  (law@cygnus.com)
  
 	* regclass.c (record_address_regs): Don't use REG_OK_FOR_BASE_P

@@ -1,5 +1,5 @@
 /* Communication between reload.c and reload1.c.
-   Copyright (C) 1987, 91, 92, 93, 94, 95, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1987, 91-95, 1997, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -200,8 +200,9 @@ extern rtx find_equiv_reg PROTO((rtx, rtx, enum reg_class, int, short *,
 /* Return 1 if register REGNO is the subject of a clobber in insn INSN.  */
 extern int regno_clobbered_p PROTO((int, rtx));
 
-
 /* Functions in reload1.c:  */
+
+int count_occurrences            PROTO((rtx, rtx));
 
 /* Initialize the reload pass once per compilation.  */
 extern void init_reload PROTO((void));

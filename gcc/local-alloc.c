@@ -1,5 +1,5 @@
 /* Allocate registers within a basic block, for GNU compiler.
-   Copyright (C) 1987, 88, 91, 93-6, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 91, 93-97, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -249,8 +249,6 @@ static int validate_equiv_mem	PROTO((rtx, rtx, rtx));
 static int contains_replace_regs PROTO((rtx, char *));
 static int memref_referenced_p	PROTO((rtx, rtx));
 static int memref_used_between_p PROTO((rtx, rtx, rtx));
-static void optimize_reg_copy_1	PROTO((rtx, rtx, rtx));
-static void optimize_reg_copy_2	PROTO((rtx, rtx, rtx));
 static void update_equiv_regs	PROTO((void));
 static void block_alloc		PROTO((int));
 static int qty_sugg_compare    	PROTO((int, int));
@@ -752,7 +750,7 @@ memref_used_between_p (memref, start, end)
    DEST to be tied to SRC, thus often saving one register in addition to a
    register-register copy.  */
 
-static void
+int
 optimize_reg_copy_1 (insn, dest, src)
      rtx insn;
      rtx dest;
@@ -764,15 +762,15 @@ optimize_reg_copy_1 (insn, dest, src)
   int sregno = REGNO (src);
   int dregno = REGNO (dest);
 
-  /* We don't want to mess with hard regs if register classes are small. */
   if (sregno == dregno
+      /* We don't want to mess with hard regs if register classes are small. */
       || (SMALL_REGISTER_CLASSES
 	  && (sregno < FIRST_PSEUDO_REGISTER
 	      || dregno < FIRST_PSEUDO_REGISTER))
       /* We don't see all updates to SP if they are in an auto-inc memory
 	 reference, so we must disallow this optimization on them.  */
       || sregno == STACK_POINTER_REGNUM || dregno == STACK_POINTER_REGNUM)
-    return;
+    return 0;
 
   for (p = NEXT_INSN (insn); p; p = NEXT_INSN (p))
     {
@@ -864,9 +862,13 @@ optimize_reg_copy_1 (insn, dest, src)
 		 later.  Make sure ALL of DEST dies here; again, this is
 		 overly conservative.  */
 	      if (dest_death == 0
-		  && (dest_death = find_regno_note (q, REG_DEAD, dregno)) != 0
-		  && GET_MODE (XEXP (dest_death, 0)) == GET_MODE (dest))
-		remove_note (q, dest_death);
+		  && (dest_death = find_regno_note (q, REG_DEAD, dregno)) != 0)
+		{
+		  if (GET_MODE (XEXP (dest_death, 0)) != GET_MODE (dest))
+		    failed = 1, dest_death = 0;
+		  else
+		    remove_note (q, dest_death);
+		}
 	    }
 
 	  if (! failed)
@@ -876,7 +878,7 @@ optimize_reg_copy_1 (insn, dest, src)
 		  if (REG_LIVE_LENGTH (sregno) >= 0)
 		    {
 		      REG_LIVE_LENGTH (sregno) -= length;
-		      /* reg_live_length is only an approximation after
+		      /* REG_LIVE_LENGTH is only an approximation after
 			 combine if sched is not run, so make sure that we
 			 still have a reasonable value.  */
 		      if (REG_LIVE_LENGTH (sregno) < 2)
@@ -907,7 +909,7 @@ optimize_reg_copy_1 (insn, dest, src)
 	      REG_NOTES (p) = dest_death;
 	    }
 
-	  return;
+	  return ! failed;
 	}
 
       /* If SRC is a hard register which is set or killed in some other
@@ -916,6 +918,7 @@ optimize_reg_copy_1 (insn, dest, src)
 	       && dead_or_set_p (p, src))
 	break;
     }
+  return 0;
 }
 
 /* INSN is a copy of SRC to DEST, in which SRC dies.  See if we now have
@@ -932,7 +935,7 @@ optimize_reg_copy_1 (insn, dest, src)
    It is assumed that DEST and SRC are pseudos; it is too complicated to do
    this for hard registers since the substitutions we may make might fail.  */
 
-static void
+void
 optimize_reg_copy_2 (insn, dest, src)
      rtx insn;
      rtx dest;
