@@ -1,3 +1,7 @@
+2002-03-10  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	* include/posix.h: Add multiple include header protection.
+
 2002-03-10  Adam Megacz <adam@xwt.org>
 
 	* java/net/natPlainSocketImpl.cc: Removed #include "posix.h".
