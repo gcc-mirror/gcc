@@ -1,3 +1,15 @@
+2004-06-27  Mark Wielaard  <mark@klomp.org>
+
+	* java/awt/EventQueue.java (postEvent): Throw NullPointerException
+	when argument is null.
+
+2004-06-26  Mark Wielaard  <mark@klomp.org>
+
+	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkFileDialogPeer.c
+	(ok_clicked): Use Ljava/lang/String; not Ljava.lang.String; in JNI
+	GetMethodID call.
+	(cancel_clicked): Likewise.
+
 2004-06-26  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMainThread.c

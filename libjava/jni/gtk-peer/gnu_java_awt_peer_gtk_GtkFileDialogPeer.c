@@ -198,7 +198,7 @@ ok_clicked (GtkButton *button __attribute__((unused)),
       jclass cx = (*gdk_env)->GetObjectClass (gdk_env, peer_obj);
       hideID = (*gdk_env)->GetMethodID (gdk_env, cx, "gtkHideFileDialog", "()V");
       gtkSetFilenameID = (*gdk_env)->GetMethodID (gdk_env, cx,
-                                   "gtkSetFilename", "(Ljava.lang.String;)V");
+                                   "gtkSetFilename", "(Ljava/lang/String;)V");
       isIDSet = 1;
     }
     
@@ -230,7 +230,7 @@ cancel_clicked (GtkButton *button __attribute__((unused)),
       jclass cx = (*gdk_env)->GetObjectClass (gdk_env, peer_obj);
       hideID = (*gdk_env)->GetMethodID (gdk_env, cx, "gtkHideFileDialog", "()V");
       gtkSetFilenameID = (*gdk_env)->GetMethodID (gdk_env, cx,
-                                   "gtkSetFilename", "(Ljava.lang.String;)V");
+                                   "gtkSetFilename", "(Ljava/lang/String;)V");
       isIDSet = 1;
     }
     
