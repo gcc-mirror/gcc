@@ -84,7 +84,7 @@ typedef_struct: ENT_TYPEDEF_STRUCT options '{' struct_fields '}' ID
 
 externstatic: ENT_EXTERNSTATIC options lasttype ID semiequal
 	         {
-	           note_variable ($4, adjust_field_type ($3, $2), $2, 
+	           note_variable ($4, adjust_field_type ($3, $2), $2,
 				  &lexer_line);
 	         }
 	      | ENT_EXTERNSTATIC options lasttype ID ARRAY semiequal
@@ -101,7 +101,7 @@ externstatic: ENT_EXTERNSTATIC options lasttype ID semiequal
 	      ;
 
 lasttype: type
-	    { 
+	    {
 	      lexer_toplevel_done = 1;
 	      $$ = $1;
 	    }
@@ -121,7 +121,7 @@ yacc_union: ENT_YACCUNION options struct_fields '}' yacc_typematch
 yacc_typematch: /* empty */
 		   { $$ = NULL; }
 		| yacc_typematch PERCENT_ID yacc_ids
-		   { 
+		   {
 		     pair_p p;
 		     for (p = $3; p->next != NULL; p = p->next)
 		       {
@@ -154,7 +154,7 @@ yacc_typematch: /* empty */
 yacc_ids: /* empty */
 	{ $$ = NULL; }
      | yacc_ids ID
-        { 
+        {
 	  pair_p p = xcalloc (1, sizeof (*p));
 	  p->next = $1;
 	  p->line = lexer_line;
@@ -272,7 +272,7 @@ option:	type_option '(' type ')'
 	     $$ = o;
 	   }
 	| ID '(' STRING ')'
-	   { 
+	   {
 	     options_p o = xmalloc (sizeof (*o));
 	     o->name = $1;
 	     o->info = (void *)$3;
@@ -292,7 +292,7 @@ optionseq: option
 	      }
 	    ;
 
-optionseqopt: { $$ = NULL }
+optionseqopt: { $$ = NULL; }
 	      | optionseq { $$ = $1; }
 	      ;
 %%
