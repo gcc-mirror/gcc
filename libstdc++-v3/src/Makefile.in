@@ -125,7 +125,7 @@ libio_la = @libio_la@
 libtool_VERSION = @libtool_VERSION@
 toplevel_srcdir = @toplevel_srcdir@
 
-AUTOMAKE_OPTIONS = 1.3 gnits
+AUTOMAKE_OPTIONS = 1.3 cygnus
 MAINT_CHARSET = latin1
 
 mkinstalldirs = $(SHELL) $(toplevel_srcdir)/mkinstalldirs
@@ -143,13 +143,11 @@ OPTIMIZE_CXXFLAGS = @OPTIMIZE_CXXFLAGS@
 # These bits are all figured out from configure. Look in acinclude.m4
 # or configure.in to see how they are set. See GLIBCPP_EXPORT_FLAGS
 # NB: DEBUGFLAGS have to be at the end so that -O2 can be overridden.
-CONFIG_CXXFLAGS = \
-	@EXTRA_CXX_FLAGS@ @SECTION_FLAGS@ @DEBUG_FLAGS@ 
+CONFIG_CXXFLAGS =  	@EXTRA_CXX_FLAGS@ @SECTION_FLAGS@ @DEBUG_FLAGS@ 
 
 
 # Warning flags to use.
-WARN_CXXFLAGS = \
-	@WARN_FLAGS@ $(WERROR) -fdiagnostics-show-location=once
+WARN_CXXFLAGS =  	@WARN_FLAGS@ $(WERROR) -fdiagnostics-show-location=once
 
 
 # Use common includes from acinclude.m4/GLIBCPP_EXPORT_INCLUDES
@@ -159,40 +157,22 @@ LIBSUPCXX_INCLUDES = @LIBSUPCXX_INCLUDES@
 LIBIO_INCLUDES = @LIBIO_INCLUDES@
 TOPLEVEL_INCLUDES = @TOPLEVEL_INCLUDES@
 
-INCLUDES = \
-	-nostdinc++ \
-	$(GLIBCPP_INCLUDES) \
-	$(LIBSUPCXX_INCLUDES) $(LIBIO_INCLUDES) $(LIBMATH_INCLUDES) \
-	$(TOPLEVEL_INCLUDES)
+INCLUDES =  	-nostdinc++ 	$(GLIBCPP_INCLUDES) 	$(LIBSUPCXX_INCLUDES) $(LIBIO_INCLUDES) $(LIBMATH_INCLUDES) 	$(TOPLEVEL_INCLUDES)
 
 
-sources = \
-	globals.cc limits.cc \
-	basic_file.cc complex_io.cc ios.cc strstream.cc \
-	bitset.cc \
-	functexcept.cc stdexcept.cc vterminate.cc \
-	c++locale.cc locale.cc localename.cc codecvt.cc \
-	collate.cc ctype.cc messages.cc monetary.cc numeric.cc time.cc \
-	concept-inst.cc locale-inst.cc misc-inst.cc stl-inst.cc \
-	string-inst.cc wstring-inst.cc valarray-inst.cc  ext-inst.cc \
-	fstream.cc fstream-inst.cc io-inst.cc istream-inst.cc \
-	ostream-inst.cc streambuf-inst.cc sstream-inst.cc
+sources =  	globals.cc limits.cc 	basic_file.cc complex_io.cc ios.cc strstream.cc 	bitset.cc 	functexcept.cc stdexcept.cc vterminate.cc 	c++locale.cc locale.cc localename.cc codecvt.cc 	collate.cc ctype.cc messages.cc monetary.cc numeric.cc time.cc 	concept-inst.cc locale-inst.cc misc-inst.cc stl-inst.cc 	string-inst.cc wstring-inst.cc valarray-inst.cc  ext-inst.cc 	fstream.cc fstream-inst.cc io-inst.cc istream-inst.cc 	ostream-inst.cc streambuf-inst.cc sstream-inst.cc
 
 
 VPATH = $(top_srcdir)/src:$(top_srcdir)
 
 libstdc___la_SOURCES = $(sources)
 
-libstdc___la_LIBADD = \
-	../libmath/libmath.la @libio_la@ \
-	../libsupc++/libsupc++convenience.la
+libstdc___la_LIBADD =  	../libmath/libmath.la @libio_la@ 	../libsupc++/libsupc++convenience.la
 
-@GLIBCPP_BUILD_VERSIONED_SHLIB_TRUE@version_arg = @GLIBCPP_BUILD_VERSIONED_SHLIB_TRUE@-Wl,--version-script=linker.map
+@GLIBCPP_BUILD_VERSIONED_SHLIB_TRUE@version_arg = -Wl,--version-script=linker.map
 @GLIBCPP_BUILD_VERSIONED_SHLIB_FALSE@version_arg = 
 
-libstdc___la_LDFLAGS = \
-	-version-info @libtool_VERSION@ ${version_arg} \
-	-lm @LIBUNWIND_FLAG@ 
+libstdc___la_LDFLAGS =  	-version-info @libtool_VERSION@ ${version_arg} 	-lm @LIBUNWIND_FLAG@ 
 
 
 libstdc___la_DEPENDENCIES = $(libstdc___la_LIBADD) linker.map
@@ -206,12 +186,7 @@ GLIBCPP_INCLUDE_DIR = @glibcpp_builddir@/include
 # set this option because CONFIG_CXXFLAGS has to be after
 # OPTIMIZE_CXXFLAGS on the compile line so that -O2 can be overridden
 # as the occasion call for it. (ie, --enable-debug)
-AM_CXXFLAGS = \
-	-fno-implicit-templates \
-	$(LIBSUPCXX_CXXFLAGS) \
-	$(WARN_CXXFLAGS) \
-	$(OPTIMIZE_CXXFLAGS) \
-	$(CONFIG_CXXFLAGS) 
+AM_CXXFLAGS =  	-fno-implicit-templates 	$(LIBSUPCXX_CXXFLAGS) 	$(WARN_CXXFLAGS) 	$(OPTIMIZE_CXXFLAGS) 	$(CONFIG_CXXFLAGS) 
 
 
 # libstdc++ libtool notes
@@ -232,8 +207,7 @@ AM_CXXFLAGS = \
 # correct solution is to add `--tag CXX' to LTCXXCOMPILE and maybe
 # CXXLINK, just after $(LIBTOOL), so that libtool doesn't have to
 # attempt to infer which configuration to use
-LTCXXCOMPILE = $(LIBTOOL) --tag CXX --mode=compile $(CXX) $(INCLUDES) \
-	       $(AM_CPPFLAGS) $(CPPFLAGS) $(CXXFLAGS) $(AM_CXXFLAGS) 
+LTCXXCOMPILE = $(LIBTOOL) --tag CXX --mode=compile $(CXX) $(INCLUDES) 	       $(AM_CPPFLAGS) $(CPPFLAGS) $(CXXFLAGS) $(AM_CXXFLAGS) 
 
 
 # 3) We'd have a problem when building the shared libstdc++ object if
@@ -242,8 +216,7 @@ LTCXXCOMPILE = $(LIBTOOL) --tag CXX --mode=compile $(CXX) $(INCLUDES) \
 # course is problematic at this point.  So, we get the top-level
 # directory to configure libstdc++-v3 to use gcc as the C++
 # compilation driver.
-CXXLINK = $(LIBTOOL) --tag CXX --mode=link $(CXX) \
-	  @OPT_LDFLAGS@ @SECTION_LDFLAGS@ $(AM_CXXFLAGS) $(LDFLAGS) -o $@
+CXXLINK = $(LIBTOOL) --tag CXX --mode=link $(CXX) 	  @OPT_LDFLAGS@ @SECTION_LDFLAGS@ $(AM_CXXFLAGS) $(LDFLAGS) -o $@
 
 CONFIG_HEADER = ../config.h
 CONFIG_CLEAN_FILES = 
@@ -269,7 +242,7 @@ DIST_COMMON =  Makefile.am Makefile.in
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
-TAR = gtar
+TAR = tar
 GZIP_ENV = --best
 SOURCES = $(libstdc___la_SOURCES)
 OBJECTS = $(libstdc___la_OBJECTS)

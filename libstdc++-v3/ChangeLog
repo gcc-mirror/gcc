@@ -1,3 +1,11 @@
+2002-09-05  Loren J. Rittle  <ljrittle@acm.org>
+
+	Move from mainline.
+	* src/Makefile.am (AUTOMAKE_OPTIONS): Use cygnus-style generation.
+	* testsuite/Makefile.am (AUTOMAKE_OPTIONS): Likewise.
+	* src/Makefile.in: Regenerate (explicitly with --cygnus option).
+	* testsuite/Makefile.in: Likewise.
+
 2002-09-05  Paolo Carlini  <pcarlini@unitus.it>
             Roland McGrath  <roland@redhat.com>
 
