@@ -1657,7 +1657,6 @@ do {							\
   fprintf (FILE, "%s%s", USER_LABEL_PREFIX, real_name);	\
 } while (0)           
 
-/* CYGNUS LOCAL -- m32rx/meissner */
 /* For the m32r if -Os, don't force line number label to begin
    at the beginning of the word.  */
 
@@ -1676,7 +1675,6 @@ do									\
     sym_lineno += 1;							\
   }									\
 while (0)
-/* END CYGNUS LOCAL -- m32rx/meissner */
 
 /* Store in OUTPUT a string (made with alloca) containing
    an assembler-name for a local static variable named NAME.
