@@ -3750,6 +3750,11 @@ find_exception_handler (void *pc, exception_descriptor *table,
 
 typedef int ptr_type __attribute__ ((mode (pointer)));
 
+typedef struct
+{
+  word_type *reg[DWARF_FRAME_REGISTERS];
+} saved_regs_t;
+
 #ifdef INCOMING_REGNO
 /* Is the saved value for register REG in frame UDATA stored in a register
    window in the previous frame?  */
@@ -3802,7 +3807,8 @@ get_reg_addr (unsigned reg, frame_state *udata, frame_state *sub_udata)
   if (udata->saved[reg] == REG_SAVED_OFFSET)
     return (word_type *)(udata->cfa + udata->reg_or_offset[reg]);
   else
-    abort ();
+    /* We don't have a saved copy of this register.  */
+    return NULL;
 }
 
 /* Get the value of register REG as saved in UDATA, where SUB_UDATA is a
@@ -3822,16 +3828,14 @@ put_reg (unsigned reg, void *val, frame_state *udata)
   *get_reg_addr (reg, udata, NULL) = (word_type)(ptr_type) val;
 }
 
-/* Copy the saved value for register REG from frame UDATA to frame
+/* Copy the saved value for register REG from PTREG to frame
    TARGET_UDATA.  Unlike the previous two functions, this can handle
    registers that are not one word large.  */
 
 static void
-copy_reg (unsigned reg, frame_state *udata, frame_state *target_udata)
+copy_reg (unsigned reg, word_type *preg, frame_state *target_udata)
 {
-  word_type *preg = get_reg_addr (reg, udata, NULL);
   word_type *ptreg = get_reg_addr (reg, target_udata, NULL);
-
   memcpy (ptreg, preg, dwarf_reg_size_table [reg]);
 }
 
@@ -3854,22 +3858,36 @@ put_return_addr (void *val, frame_state *udata)
 }
 
 /* Given the current frame UDATA and its return address PC, return the
-   information about the calling frame in CALLER_UDATA.  */
+   information about the calling frame in CALLER_UDATA and update the
+   register array in SAVED_REGS.  */
 
 static void *
-next_stack_level (void *pc, frame_state *udata, frame_state *caller_udata)
+next_stack_level (void *pc, frame_state *udata, frame_state *caller_udata,
+		  saved_regs_t *saved_regs)
 {
+  int i;
+  word_type *p;
+
+  /* Collect all of the registers for the current frame.  */
+  for (i = 0; i < DWARF_FRAME_REGISTERS; i++)
+    if (udata->saved[i])
+      saved_regs->reg[i] = get_reg_addr (i, udata, caller_udata);
+
   caller_udata = __frame_state_for (pc, caller_udata);
   if (! caller_udata)
     return 0;
 
-  /* Now go back to our caller's stack frame.  If our caller's CFA register
-     was saved in our stack frame, restore it; otherwise, assume the CFA
-     register is SP and restore it to our CFA value.  */
-  if (udata->saved[caller_udata->cfa_reg])
-    caller_udata->cfa = get_reg (caller_udata->cfa_reg, udata, 0);
+  /* Now go back to our caller's stack frame.  If our caller's CFA was
+     saved in a register in this stack frame or a previous one,
+     restore it; otherwise, assume CFA register was saved in SP and
+     restore it to our CFA value.  */
+
+  p = saved_regs->reg[caller_udata->cfa_reg];
+  if (p)
+    caller_udata->cfa = (void *)(ptr_type)*p;
   else
     caller_udata->cfa = udata->cfa;
+ 
   if (caller_udata->indirect)
     caller_udata->cfa = * (void **) ((unsigned char *)caller_udata->cfa 
 				     + caller_udata->base_offset);
@@ -3908,6 +3926,7 @@ throw_helper (struct eh_context *eh, void *pc, frame_state *my_udata,
   void *handler;
   void *handler_p = 0;
   void *pc_p = 0;
+  void *callee_cfa = 0;
   frame_state saved_ustruct;
   int new_eh_model;
   int cleanup = 0;
@@ -3915,7 +3934,12 @@ throw_helper (struct eh_context *eh, void *pc, frame_state *my_udata,
   int rethrow = 0;
   int saved_state = 0;
   long args_size;
+  saved_regs_t saved_regs, cleanup_regs;
   __eh_info *eh_info = (__eh_info *)eh->info;
+  int i;
+
+  memset (saved_regs.reg, 0, sizeof saved_regs.reg);
+  memset (sub_udata->saved, REG_UNSAVED, sizeof sub_udata->saved);
 
   /* Do we find a handler based on a re-throw PC? */
   if (eh->table_index != (void *) 0)
@@ -3927,7 +3951,8 @@ throw_helper (struct eh_context *eh, void *pc, frame_state *my_udata,
   for (;;)
     { 
       frame_state *p = udata;
-      udata = next_stack_level (pc, udata, sub_udata);
+
+      udata = next_stack_level (pc, udata, sub_udata, &saved_regs);
       sub_udata = p;
 
       /* If we couldn't find the next frame, we lose.  */
@@ -3938,13 +3963,13 @@ throw_helper (struct eh_context *eh, void *pc, frame_state *my_udata,
         new_eh_model = 0;
       else
         new_eh_model = (((exception_descriptor *)(udata->eh_ptr))->
-                                          runtime_id_field == NEW_EH_RUNTIME);
+			runtime_id_field == NEW_EH_RUNTIME);
 
       if (rethrow) 
         {
           rethrow = 0;
           handler = find_exception_handler (eh->table_index, udata->eh_ptr, 
-                                          eh_info, 1, &cleanup);
+					    eh_info, 1, &cleanup);
           eh->table_index = (void *)0;
         }
       else
@@ -3959,20 +3984,28 @@ throw_helper (struct eh_context *eh, void *pc, frame_state *my_udata,
          us to call a debug hook if there are nothing but cleanups left. */
       if (handler)
 	{
+	  /* sub_udata now refers to the frame called by the handler frame.  */
+
 	  if (cleanup)
 	    {
 	      if (!saved_state)
 		{
 		  saved_ustruct = *udata;
+		  cleanup_regs = saved_regs;
 		  handler_p = handler;
 		  pc_p = pc;
 		  saved_state = 1;
 		  only_cleanup = 1;
+		  /* Save the CFA of the frame called by the handler
+                     frame.  */
+		  callee_cfa = sub_udata->cfa;
 		}
 	    }
 	  else
 	    {
 	      only_cleanup = 0;
+	      if (!saved_state)
+		callee_cfa = sub_udata->cfa;
 	      break;
 	    }
 	}
@@ -3985,6 +4018,7 @@ throw_helper (struct eh_context *eh, void *pc, frame_state *my_udata,
   if (saved_state) 
     {
       udata = &saved_ustruct;
+      saved_regs = cleanup_regs;
       handler = handler_p;
       pc = pc_p;
       if (only_cleanup)
@@ -4000,69 +4034,27 @@ throw_helper (struct eh_context *eh, void *pc, frame_state *my_udata,
 
   args_size = udata->args_size;
 
-  if (pc == saved_pc)
-    /* We found a handler in the throw context, no need to unwind.  */
-    udata = my_udata;
-  else
-    {
-      int i;
-
-      /* Unwind all the frames between this one and the handler by copying
-	 their saved register values into our register save slots.  */
-
-      /* Remember the PC where we found the handler.  */
-      void *handler_pc = pc;
-
-      /* Start from the throw context again.  */
-      pc = saved_pc;
-      memcpy (udata, my_udata, sizeof (*udata));
-
-      while (pc != handler_pc)
-	{
-	  frame_state *p = udata;
-	  udata = next_stack_level (pc, udata, sub_udata);
-	  sub_udata = p;
-
-	  for (i = 0; i < DWARF_FRAME_REGISTERS; ++i)
-	    if (i != udata->retaddr_column && udata->saved[i])
-	      {
-		/* If you modify the saved value of the return address
-		   register on the SPARC, you modify the return address for
-		   your caller's frame.  Don't do that here, as it will
-		   confuse get_return_addr.  */
-		if (in_reg_window (i, udata)
-		    && udata->saved[udata->retaddr_column] == REG_SAVED_REG
-		    && udata->reg_or_offset[udata->retaddr_column] == i)
-		  continue;
-		copy_reg (i, udata, my_udata);
-	      }
-
-	  pc = get_return_addr (udata, sub_udata) - 1;
-	}
-
-      /* But we do need to update the saved return address register from
-	 the last frame we unwind, or the handler frame will have the wrong
-	 return address.  */
-      if (udata->saved[udata->retaddr_column] == REG_SAVED_REG)
-	{
-	  i = udata->reg_or_offset[udata->retaddr_column];
-	  if (in_reg_window (i, udata))
-	    copy_reg (i, udata, my_udata);
-	}
-    }
-  /* udata now refers to the frame called by the handler frame.  */
-
   /* We adjust SP by the difference between __throw's CFA and the CFA for
      the frame called by the handler frame, because those CFAs correspond
      to the SP values at the two call sites.  We need to further adjust by
      the args_size of the handler frame itself to get the handler frame's
      SP from before the args were pushed for that call.  */
 #ifdef STACK_GROWS_DOWNWARD
-  *offset_p = udata->cfa - my_udata->cfa + args_size;
+  *offset_p = callee_cfa - my_udata->cfa + args_size;
 #else
-  *offset_p = my_udata->cfa - udata->cfa - args_size;
+  *offset_p = my_udata->cfa - callee_cfa - args_size;
 #endif
 		       
+  /* If we found a handler in the throw context there's no need to
+     unwind.  */
+  if (pc != saved_pc)
+    {
+      /* Copy saved register values into our register save slots.  */
+      for (i = 0; i < DWARF_FRAME_REGISTERS; i++)
+	if (i != udata->retaddr_column && saved_regs.reg[i])
+	  copy_reg (i, saved_regs.reg[i], my_udata);
+    }
+
   return handler;
 }
 
