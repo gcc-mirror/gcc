@@ -1,3 +1,8 @@
+2004-05-27  Olivier Hainque  <hainque@act-europe.fr>
+
+	* expr.c (store_constructor): Restore sanity check on
+	the size of the type before clearing.
+
 2004-05-27  Alan Modra  <amodra@bigpond.net.au>
 
 	PR target/14478
