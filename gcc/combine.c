@@ -237,12 +237,12 @@ static rtx *reg_last_set_value;
 /* Record the value of label_tick when the value for register n is placed in
    reg_last_set_value[n].  */
 
-static short *reg_last_set_label;
+static int *reg_last_set_label;
 
 /* Record the value of label_tick when an expression involving register n
    is placed in reg_last_set_value. */
 
-static short *reg_last_set_table_tick;
+static int *reg_last_set_table_tick;
 
 /* Set non-zero if references to register n in expressions should not be
    used.  */
@@ -251,7 +251,7 @@ static char *reg_last_set_invalid;
 
 /* Incremented for each label. */
 
-static short label_tick;
+static int label_tick;
 
 /* Some registers that are set more than once and used in more than one
    basic block are nevertheless always set in similar ways.  For example,
@@ -424,8 +424,8 @@ combine_instructions (f, nregs)
   reg_last_death = (rtx *) alloca (nregs * sizeof (rtx));
   reg_last_set = (rtx *) alloca (nregs * sizeof (rtx));
   reg_last_set_value = (rtx *) alloca (nregs * sizeof (rtx));
-  reg_last_set_table_tick = (short *) alloca (nregs * sizeof (short));
-  reg_last_set_label = (short *) alloca (nregs * sizeof (short));
+  reg_last_set_table_tick = (int *) alloca (nregs * sizeof (int));
+  reg_last_set_label = (int *) alloca (nregs * sizeof (int));
   reg_last_set_invalid = (char *) alloca (nregs * sizeof (char));
   reg_last_set_mode
     = (enum machine_mode *) alloca (nregs * sizeof (enum machine_mode));
@@ -441,8 +441,8 @@ combine_instructions (f, nregs)
   bzero (reg_last_death, nregs * sizeof (rtx));
   bzero (reg_last_set, nregs * sizeof (rtx));
   bzero (reg_last_set_value, nregs * sizeof (rtx));
-  bzero (reg_last_set_table_tick, nregs * sizeof (short));
-  bzero (reg_last_set_label, nregs * sizeof (short));
+  bzero (reg_last_set_table_tick, nregs * sizeof (int));
+  bzero (reg_last_set_label, nregs * sizeof (int));
   bzero (reg_last_set_invalid, nregs * sizeof (char));
   bzero (reg_last_set_mode, nregs * sizeof (enum machine_mode));
   bzero (reg_last_set_nonzero_bits, nregs * sizeof (HOST_WIDE_INT));
@@ -508,8 +508,8 @@ combine_instructions (f, nregs)
   bzero (reg_last_death, nregs * sizeof (rtx));
   bzero (reg_last_set, nregs * sizeof (rtx));
   bzero (reg_last_set_value, nregs * sizeof (rtx));
-  bzero (reg_last_set_table_tick, nregs * sizeof (short));
-  bzero (reg_last_set_label, nregs * sizeof (short));
+  bzero (reg_last_set_table_tick, nregs * sizeof (int));
+  bzero (reg_last_set_label, nregs * sizeof (int));
   bzero (reg_last_set_invalid, nregs * sizeof (char));
 
   setup_incoming_promotions ();
