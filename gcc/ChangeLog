@@ -1,3 +1,8 @@
+2003-11-26  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	* config/i386/cygming.h (ASM_OUTPUT_DEF_FROM_DECLS): Declare
+	function aliases as functions.
+
 2003-11-26  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* aclocal.m4 (gcc_AC_PROG_GNAT): Rewrite to account for removal
@@ -2239,7 +2244,7 @@
 
 2003-10-24  Danny Smith  <dannysmith@users.sourceforge.net>
 
-	* config/i386/cygwin.asm. Add copyright notice. Add comment
+	* config/i386/cygwin.asm: Add copyright notice. Add comment
 	on why this code is needed.
 
 2003-10-23  Kazu Hirata  <kazu@cs.umass.edu>
