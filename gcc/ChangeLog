@@ -1,3 +1,8 @@
+2003-09-25  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.c (all_cores): arm710t, arm720t and arm740t are all based on the
+	arm7tdmi core.
+
 2003-09-25  Ziemowit Laski  <zlaski@apple.com>
 
 	* config/darwin-protos.h (objc_image_info_section):
