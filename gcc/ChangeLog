@@ -1,3 +1,10 @@
+2004-01-22  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.c (s390_frame_info): Allow large frame sizes
+	for TARGET_64BIT.
+	(s390_arg_frame_offset): Change return type to HOST_WIDE_INT.
+	* config/s390/s390-protos.h (s390_arg_frame_offset): Likewise.
+
 2004-01-22  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* doc/tm.texi (CASE_VECTOR_PC_RELATIVE): Mention that the
