@@ -2715,13 +2715,20 @@ build_new (placement, decl, init, use_global_new)
 	{
 	  tree cleanup;
 
+	  if (use_cookie)
+	    cleanup = build (MINUS_EXPR, TREE_TYPE (alloc_expr),
+			     alloc_expr, BI_header_size);
+	  else
+	    cleanup = alloc_expr;
+
 	  if (! use_global_new && TYPE_LANG_SPECIFIC (true_type)
 	      && (TYPE_GETS_DELETE (true_type) & (1 << has_array)))
-	    cleanup = build_opfncall (DELETE_EXPR, LOOKUP_NORMAL,
-				      alloc_expr, size, NULL_TREE);
+	    cleanup = build_opfncall (has_array? VEC_DELETE_EXPR : DELETE_EXPR,
+				      LOOKUP_NORMAL, cleanup, size, NULL_TREE);
 	  else
 	    cleanup = build_builtin_call
-	      (void_type_node, BID, build_expr_list (NULL_TREE, alloc_expr));
+	      (void_type_node, has_array ? BIVD : BID,
+	       build_expr_list (NULL_TREE, cleanup));
 					 
 	  rval = build (TRY_CATCH_EXPR, TREE_TYPE (rval), rval, cleanup);
 	  rval = build (COMPOUND_EXPR, TREE_TYPE (rval), alloc_expr, rval);
