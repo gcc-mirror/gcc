@@ -1088,6 +1088,8 @@ unary_expr:
 	/* Refer to the address of a label as a pointer.  */
 	| ANDAND identifier
 		{ tree label = lookup_label ($2);
+		  if (pedantic)
+		    pedwarn ("ANSI C++ forbids `&&'");
 		  if (label == NULL_TREE)
 		    $$ = null_pointer_node;
 		  else
