@@ -1,3 +1,7 @@
+Wed Sep  8 11:14:25 1999  Andreas Schwab  <schwab@suse.de>
+
+	* cccp.c (main): Fix handling of -include and -imacros options.
+
 Wed Sep  8 02:23:08 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* cpplib.c (cpp_push_buffer): Fix order of arguments.

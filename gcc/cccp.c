@@ -1301,16 +1301,16 @@ main (argc, argv)
 	  if (i + 1 == argc)
 	    fatal ("Filename missing after `-include' option");
 	  else {
-	    simplify_filename (pend_includes[i] = argv[i]);
 	    i++;
+	    simplify_filename (pend_includes[i] = argv[i]);
 	  }
 	}
 	if (!strcmp (argv[i], "-imacros")) {
 	  if (i + 1 == argc)
 	    fatal ("Filename missing after `-imacros' option");
 	  else {
-	    simplify_filename (pend_files[i] = argv[i]);
 	    i++;
+	    simplify_filename (pend_files[i] = argv[i]);
 	  }
 	}
 	if (!strcmp (argv[i], "-iprefix")) {
