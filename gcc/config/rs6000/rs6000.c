@@ -211,9 +211,6 @@ rs6000_override_options (default_cpu)
       int target_disable;	/* Target flags to disable.  */
     } processor_target_table[]
       = {{"common", PROCESSOR_COMMON, 0, POWER_MASKS | POWERPC_MASKS},
-	 {"rs6000", PROCESSOR_POWER,
-	    MASK_POWER | MASK_MULTIPLE | MASK_STRING,
-	    MASK_POWER2 | POWERPC_MASKS | MASK_NEW_MNEMONICS},
 	 {"power", PROCESSOR_POWER,
 	    MASK_POWER | MASK_MULTIPLE | MASK_STRING,
 	    MASK_POWER2 | POWERPC_MASKS | MASK_NEW_MNEMONICS},

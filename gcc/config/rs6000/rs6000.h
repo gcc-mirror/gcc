@@ -59,7 +59,6 @@ Boston, MA 02111-1307, USA.  */
   %{mno-power: %{!mpowerpc*: -D_ARCH_COM}} \
   %{!mno-power: %{!mpower2: -D_ARCH_PWR}}} \
 %{mcpu=common: -D_ARCH_COM} \
-%{mcpu=rs6000: -D_ARCH_PWR} \
 %{mcpu=power: -D_ARCH_PWR} \
 %{mcpu=power2: -D_ARCH_PWR2} \
 %{mcpu=powerpc: -D_ARCH_PPC} \
