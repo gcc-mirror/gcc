@@ -1638,6 +1638,7 @@ LOCAL(large_divisor):
 	.section	.text..SHmedia32,"ax"
 	.align	2
 	.global	GLOBAL(udivdi3)
+	FUNC(GLOBAL(udivdi3))
 GLOBAL(udivdi3):
 	shlri r3,1,r4
 	nsb r4,r22
@@ -1745,6 +1746,7 @@ LOCAL(no_lo_adj):
 	cmpgtu r5,r2,r5
 	sub r8,r5,r2
 	blink tr0,r63
+	ENDFUNC(GLOBAL(udivdi3))
 /* Note 1: To shift the result of the second divide stage so that the result
    always fits into 32 bits, yet we still reduce the rest sufficiently
    would require a lot of instructions to do the shifts just right.  Using
@@ -1763,6 +1765,7 @@ LOCAL(no_lo_adj):
 	.section	.text..SHmedia32,"ax"
 	.align	2
 	.global	GLOBAL(divdi3)
+	FUNC(GLOBAL(divdi3))
 GLOBAL(divdi3):
 	pta GLOBAL(udivdi3),tr0
 	shari r2,63,r22
@@ -1776,6 +1779,7 @@ GLOBAL(divdi3):
 	blink tr0,r18
 	sub r63,r2,r2
 	blink tr1,r63
+	ENDFUNC(GLOBAL(divdi3))
 #endif /* __SHMEDIA__ */
 #endif /* L_divdi3 */
 
@@ -1785,6 +1789,7 @@ GLOBAL(divdi3):
 	.section	.text..SHmedia32,"ax"
 	.align	2
 	.global	GLOBAL(umoddi3)
+	FUNC(GLOBAL(umoddi3))
 GLOBAL(umoddi3):
 	shlri r3,1,r4
 	nsb r4,r22
@@ -1893,6 +1898,7 @@ LOCAL(no_lo_adj):
 	sub r2,r5,r2
 	shlrd r2,r22,r2
 	blink tr0,r63
+	ENDFUNC(GLOBAL(umoddi3))
 /* Note 1: To shift the result of the second divide stage so that the result
    always fits into 32 bits, yet we still reduce the rest sufficiently
    would require a lot of instructions to do the shifts just right.  Using
@@ -1911,6 +1917,7 @@ LOCAL(no_lo_adj):
 	.section	.text..SHmedia32,"ax"
 	.align	2
 	.global	GLOBAL(moddi3)
+	FUNC(GLOBAL(moddi3))
 GLOBAL(moddi3):
 	pta GLOBAL(umoddi3),tr0
 	shari r2,63,r22
@@ -1924,6 +1931,7 @@ GLOBAL(moddi3):
 	blink tr0,r18
 	sub r63,r2,r2
 	blink tr1,r63
+	ENDFUNC(GLOBAL(moddi3))
 #endif /* __SHMEDIA__ */
 #endif /* L_moddi3 */
 
@@ -1936,7 +1944,17 @@ GLOBAL(moddi3):
 	FUNC(GLOBAL(set_fpscr))
 GLOBAL(set_fpscr):
 	lds r4,fpscr
+#ifdef __PIC__
+	mov.l	r12,@-r15
+	mova	LOCAL(set_fpscr_L0),r0
+	mov.l	LOCAL(set_fpscr_L0),r12
+	add	r0,r12
+	mov.l	LOCAL(set_fpscr_L1),r0
+	mov.l	@(r0,r12),r1
+	mov.l	@r15+,r12
+#else
 	mov.l LOCAL(set_fpscr_L1),r1
+#endif
 	swap.w r4,r0
 	or #24,r0
 #ifndef FMOVD_WORKS
@@ -1964,8 +1982,15 @@ GLOBAL(set_fpscr):
 	mov.l r3,@(4,r1)
 #endif
 	.align 2
+#ifdef __PIC__
+LOCAL(set_fpscr_L0):
+	.long _GLOBAL_OFFSET_TABLE_
+LOCAL(set_fpscr_L1):
+	.long GLOBAL(fpscr_values@GOT)
+#else
 LOCAL(set_fpscr_L1):
 	.long GLOBAL(fpscr_values)
+#endif
 
 	ENDFUNC(GLOBAL(set_fpscr))
 #ifndef NO_FPSCR_VALUES
@@ -1983,6 +2008,7 @@ LOCAL(set_fpscr_L1):
 	.section	.text..SHmedia32,"ax"
 	.align	2
 	.global	GLOBAL(init_trampoline)
+	FUNC(GLOBAL(init_trampoline))
 GLOBAL(init_trampoline):
 	st.l	r0,8,r2
 #ifdef __LITTLE_ENDIAN__
@@ -1999,6 +2025,7 @@ GLOBAL(init_trampoline):
 	st.q	r0,0,r20
 	st.l	r0,12,r3
 	.global	GLOBAL(ic_invalidate)
+	FUNC(GLOBAL(ic_invalidate))
 GLOBAL(ic_invalidate):
 	ocbwb	r0,0
 	synco
@@ -2006,6 +2033,9 @@ GLOBAL(ic_invalidate):
 	ptabs	r18, tr0
 	synci
 	blink	tr0, r63
+
+	ENDFUNC(GLOBAL(ic_invalidate))
+	ENDFUNC(GLOBAL(init_trampoline))
 #elif defined(__SH4_SINGLE__) || defined(__SH4__) || defined(__SH4_SINGLE_ONLY__)
 	.global GLOBAL(ic_invalidate)
 	FUNC(GLOBAL(ic_invalidate))

@@ -1,3 +1,11 @@
+2003-08-11  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/lib1funcs.asm (__udivdi3): Add .type and .size
+	information in SHmedia case too.
+	(__divdi3, __umoddi3, __moddi3, __init_trampoline, __ic_invalidate):
+	Likewise.
+	(__set_fpscr): Use an access via GOT for PIC case.
+
 2003-08-11  Kelley Cook  <kelleycook@wideopenwest.com>
 
 	* configure.in (intermodule): Make switch test more portable.
