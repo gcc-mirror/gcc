@@ -1406,7 +1406,7 @@ output_epilog (file, size)
        from the function start.  */
     if (*fname == '*')
       ++fname;
-    fprintf (file, "L..tbtab_");
+    fprintf (file, "LT..");
     ASM_OUTPUT_LABEL (file, fname);
 
     /* The .tbtab psuedo-op can only be used for the first eight
@@ -1534,7 +1534,7 @@ output_epilog (file, size)
       fprintf (file, "\t.long %d\n", parm_info);
 
     /* Offset from start of code to tb table.  */
-    fprintf (file, "\t.long L..tbtab_");
+    fprintf (file, "\t.long LT..");
     RS6000_OUTPUT_BASENAME (file, fname);
     fprintf (file, "-.");
     RS6000_OUTPUT_BASENAME (file, fname);
@@ -1621,9 +1621,9 @@ output_toc (file, x, labelno)
   RS6000_OUTPUT_BASENAME (file, name);
 
   if (offset < 0)
-    fprintf (file, "P.N.%d", - offset);
+    fprintf (file, ".N%d", - offset);
   else if (offset)
-    fprintf (file, ".P.%d", offset);
+    fprintf (file, ".P%d", offset);
 
   fprintf (file, "[TC],");
   output_addr_const (file, x);
@@ -1766,7 +1766,7 @@ output_function_profiler (file, labelno)
 
   /* Set up a TOC entry for the profiler label.  */
   toc_section ();
-  fprintf (file, "LPTOC..%d:\n\t.tc\tLP..%d[TC], LP..%d\n",
+  fprintf (file, "LPC..%d:\n\t.tc\tLP..%d[TC],LP..%d\n",
 	   labelno, labelno, labelno);
   text_section ();
 
@@ -1787,7 +1787,7 @@ output_function_profiler (file, labelno)
 
   /* Load location address into r3, and call mcount.  */
 
-  fprintf (file, "\tl 3,LPTOC..%d(2)\n\tbl .mcount\n", labelno);
+  fprintf (file, "\tl 3,LPC..%d(2)\n\tbl .mcount\n", labelno);
 
   /* Restore parameter registers.  */
 
