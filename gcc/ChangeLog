@@ -1,3 +1,12 @@
+2004-02-19  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* opts.c (decode_options): Don't use DEFAULT_SHORT_ENUMS.
+	* system.h (DEFAULT_SHORT_ENUMS): Poison.
+	* config/cris/cris.h: Remove a comment about
+	DEFAULT_SHORT_ENUMS.
+	* config/ip2k/ip2k.h: Likewise.
+	* doc/tm.texi (DEFAULT_SHORT_ENUMS): Remove.
+
 2004-02-19  Zack Weinberg  <zack@codesourcery.com>
 
 	* config/ia64/ia64.c (ia64_function_arg): In big-endian mode,
