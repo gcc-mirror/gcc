@@ -31,31 +31,20 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 static void print_location PARAMS ((cpp_reader *, unsigned int, unsigned int));
 
-/* Don't remove the blank before do, as otherwise the exgettext
-   script will mistake this as a function definition */
-#define v_message(msgid, ap) \
- do { vfprintf (stderr, _(msgid), ap); putc ('\n', stderr); } while (0)
-
 /* Print the logical file location (LINE, COL) in preparation for a
-   diagnostic.  Outputs the #include chain if it has changed.  */
+   diagnostic.  Outputs the #include chain if it has changed.  A line
+   of zero suppresses the include stack, and outputs the program name
+   instead.  */
 static void
 print_location (pfile, line, col)
      cpp_reader *pfile;
      unsigned int line, col;
 {
-  cpp_buffer *buffer = pfile->buffer;
-
-  if (!buffer)
+  if (!pfile->buffer || line == 0)
     fprintf (stderr, "%s: ", progname);
   else
     {
       const struct line_map *map;
-
-      if (line == 0)
-	{
-	  line = pfile->cur_token[-1].line;
-	  col = pfile->cur_token[-1].col;
-	}
 
       map = lookup_line (&pfile->line_maps, line);
       print_containing_files (&pfile->line_maps, map);
@@ -75,109 +64,91 @@ print_location (pfile, line, col)
     }
 }
 
-/* Set up for an error message: print the file and line, bump the error
+/* Set up for a diagnostic: print the file and line, bump the error
    counter, etc.  LINE is the logical line number; zero means to print
-   at the location of the previously lexed token, which tends to be the
-   correct place by default.  Returns 0 if the error has been suppressed.  */
+   at the location of the previously lexed token, which tends to be
+   the correct place by default.  Returns 0 if the error has been
+   suppressed.  */
 int
 _cpp_begin_message (pfile, code, line, column)
      cpp_reader *pfile;
-     enum error_type code;
+     int code;
      unsigned int line, column;
 {
-  int is_warning = 0;
+  int level = DL_EXTRACT (code);
 
-  switch (code)
+  switch (level)
     {
-    case PEDWARN:
-    case WARNING:
+    case DL_WARNING:
+    case DL_PEDWARN:
       if (CPP_IN_SYSTEM_HEADER (pfile)
 	  && ! CPP_OPTION (pfile, warn_system_headers))
 	return 0;
-    case WARNING_SYSHDR:
+      /* Fall through.  */
+
+    case DL_WARNING_SYSHDR:
       if (CPP_OPTION (pfile, warnings_are_errors)
-	  || (code == PEDWARN && CPP_OPTION (pfile, pedantic_errors)))
+	  || (level == DL_PEDWARN && CPP_OPTION (pfile, pedantic_errors)))
 	{
 	  if (CPP_OPTION (pfile, inhibit_errors))
 	    return 0;
 	  if (pfile->errors < CPP_FATAL_LIMIT)
 	    pfile->errors++;
 	}
-      else
-	{
-          if (CPP_OPTION (pfile, inhibit_warnings))
-	    return 0;
-	  is_warning = 1;
-	}
+      else if (CPP_OPTION (pfile, inhibit_warnings))
+	return 0;
       break;
 	
-    case ERROR:
+    case DL_ERROR:
       if (CPP_OPTION (pfile, inhibit_errors))
 	return 0;
       if (pfile->errors < CPP_FATAL_LIMIT)
 	pfile->errors++;
       break;
+
       /* Fatal errors cannot be inhibited.  */
-    case FATAL:
-      pfile->errors = CPP_FATAL_LIMIT;
-      break;
-    case ICE:
-      fprintf (stderr, _("internal error: "));
+    case DL_FATAL:
+    case DL_ICE:
       pfile->errors = CPP_FATAL_LIMIT;
       break;
     }
 
   print_location (pfile, line, column);
-  if (is_warning)
+  if (DL_WARNING_P (level))
     fputs (_("warning: "), stderr);
+  else if (level == DL_ICE)
+    fputs (_("internal error: "), stderr);
 
   return 1;
 }
 
+/* Don't remove the blank before do, as otherwise the exgettext
+   script will mistake this as a function definition */
+#define v_message(msgid, ap) \
+ do { vfprintf (stderr, _(msgid), ap); putc ('\n', stderr); } while (0)
+
 /* Exported interface.  */
-
-/* For reporting internal errors.  Prints "internal error: " for you,
-   otherwise identical to cpp_fatal.  */
-void
-cpp_ice VPARAMS ((cpp_reader *pfile, const char *msgid, ...))
-{  
-  VA_OPEN (ap, msgid);
-  VA_FIXEDARG (ap, cpp_reader *, pfile);
-  VA_FIXEDARG (ap, const char *, msgid);
-
-  if (_cpp_begin_message (pfile, ICE, 0, 0))
-    v_message (msgid, ap);
-
-  VA_CLOSE (ap);
-}
-
-/* Same as cpp_error, except we consider the error to be "fatal",
-   such as inconsistent options.  I.e. there is little point in continuing.
-   (We do not exit, to support use of cpplib as a library.
-   Instead, it is the caller's responsibility to check
-   CPP_FATAL_ERRORS.  */
-void
-cpp_fatal VPARAMS ((cpp_reader *pfile, const char *msgid, ...))
-{  
-  VA_OPEN (ap, msgid);
-  VA_FIXEDARG (ap, cpp_reader *, pfile);
-  VA_FIXEDARG (ap, const char *, msgid);
-
-  if (_cpp_begin_message (pfile, FATAL, 0, 0))
-    v_message (msgid, ap);
-
-  VA_CLOSE (ap);
-}
 
 /* Print an error at the location of the previously lexed token.  */
 void
-cpp_error VPARAMS ((cpp_reader * pfile, const char *msgid, ...))
+cpp_error VPARAMS ((cpp_reader * pfile, int level, const char *msgid, ...))
 {
+  unsigned int line, column;
+
   VA_OPEN (ap, msgid);
   VA_FIXEDARG (ap, cpp_reader *, pfile);
+  VA_FIXEDARG (ap, int, level);
   VA_FIXEDARG (ap, const char *, msgid);
 
-  if (_cpp_begin_message (pfile, ERROR, 0, 0))
+  if (pfile->buffer)
+    {
+      line = pfile->cur_token[-1].line;
+      column = pfile->cur_token[-1].col;
+    }
+  else
+    line = column = 0;
+
+  if (_cpp_begin_message (pfile, level, line, column))
     v_message (msgid, ap);
 
   VA_CLOSE (ap);
@@ -185,116 +156,31 @@ cpp_error VPARAMS ((cpp_reader * pfile, const char *msgid, ...))
 
 /* Print an error at a specific location.  */
 void
-cpp_error_with_line VPARAMS ((cpp_reader *pfile, int line, int column,
-			     const char *msgid, ...))
+cpp_error_with_line VPARAMS ((cpp_reader *pfile, int level,
+			      unsigned int line, unsigned int column,
+			      const char *msgid, ...))
 {
   VA_OPEN (ap, msgid);
   VA_FIXEDARG (ap, cpp_reader *, pfile);
-  VA_FIXEDARG (ap, int, line);
-  VA_FIXEDARG (ap, int, column);
+  VA_FIXEDARG (ap, int, level);
+  VA_FIXEDARG (ap, unsigned int, line);
+  VA_FIXEDARG (ap, unsigned int, column);
   VA_FIXEDARG (ap, const char *, msgid);
 
-  if (_cpp_begin_message (pfile, ERROR, line, column))
+  if (_cpp_begin_message (pfile, level, line, column))
     v_message (msgid, ap);
 
   VA_CLOSE (ap);
 }
 
-/* Error including a message from `errno'.  */
 void
-cpp_error_from_errno (pfile, name)
+cpp_errno (pfile, level, msgid)
      cpp_reader *pfile;
-     const char *name;
+     int level;
+     const char *msgid;
 {
-  cpp_error (pfile, "%s: %s", name, xstrerror (errno));
-}
+  if (msgid[0] == '\0')
+    msgid = _("stdout");
 
-/* Print a warning at the location of the previously lexed token.  */
-void
-cpp_warning VPARAMS ((cpp_reader * pfile, const char *msgid, ...))
-{
-  VA_OPEN (ap, msgid);
-  VA_FIXEDARG (ap, cpp_reader *, pfile);
-  VA_FIXEDARG (ap, const char *, msgid);
-
-  if (_cpp_begin_message (pfile, WARNING, 0, 0))
-    v_message (msgid, ap);
-
-  VA_CLOSE (ap);
-}
-
-/* Print a warning at a specific location.  */
-void
-cpp_warning_with_line VPARAMS ((cpp_reader * pfile, int line, int column,
-			       const char *msgid, ...))
-{
-  VA_OPEN (ap, msgid);
-  VA_FIXEDARG (ap, cpp_reader *, pfile);
-  VA_FIXEDARG (ap, int, line);
-  VA_FIXEDARG (ap, int, column);
-  VA_FIXEDARG (ap, const char *, msgid);
-
-  if (_cpp_begin_message (pfile, WARNING, line, column))
-    v_message (msgid, ap);
-
-  VA_CLOSE (ap);
-}
-
-/* Pedwarn at the location of the previously lexed token.  */
-void
-cpp_pedwarn VPARAMS ((cpp_reader * pfile, const char *msgid, ...))
-{
-  VA_OPEN (ap, msgid);
-  VA_FIXEDARG (ap, cpp_reader *, pfile);
-  VA_FIXEDARG (ap, const char *, msgid);
-
-  if (_cpp_begin_message (pfile, PEDWARN, 0, 0))
-    v_message (msgid, ap);
-
-  VA_CLOSE (ap);
-}
-
-/* Pedwarn at a specific location.  */
-void
-cpp_pedwarn_with_line VPARAMS ((cpp_reader * pfile, int line, int column,
-			       const char *msgid, ...))
-{
-  VA_OPEN (ap, msgid);
-  VA_FIXEDARG (ap, cpp_reader *, pfile);
-  VA_FIXEDARG (ap, int, line);
-  VA_FIXEDARG (ap, int, column);
-  VA_FIXEDARG (ap, const char *, msgid);
-
-  if (_cpp_begin_message (pfile, PEDWARN, line, column))
-    v_message (msgid, ap);
-
-  VA_CLOSE (ap);
-}
-
-/* Print an error message not associated with the translation unit.  */
-void
-cpp_notice VPARAMS ((cpp_reader *pfile, const char *msgid, ...))
-{
-  VA_OPEN (ap, msgid);
-  VA_FIXEDARG (ap, cpp_reader *, pfile);
-  VA_FIXEDARG (ap, const char *, msgid);
-
-  if (pfile->errors < CPP_FATAL_LIMIT)
-    pfile->errors++;
-
-  v_message (msgid, ap);
-
-  VA_CLOSE (ap);
-}
-
-/* Print an error message originating from ERRNO and not associated
-   with the translation unit.  */
-void
-cpp_notice_from_errno (pfile, name)
-     cpp_reader *pfile;
-     const char *name;
-{
-  if (name[0] == '\0')
-    name = "stdout";
-  cpp_notice (pfile, "%s: %s", name, xstrerror (errno));
+  cpp_error (pfile, level, "%s: %s", msgid, xstrerror (errno));
 }

@@ -54,12 +54,10 @@ struct op
 
 /* With -O2, gcc appears to produce nice code, moving the error
    message load and subsequent jump completely out of the main path.  */
-#define CPP_ICE(msgid) \
-  do { cpp_ice (pfile, msgid); goto syntax_error; } while(0)
 #define SYNTAX_ERROR(msgid) \
-  do { cpp_error (pfile, msgid); goto syntax_error; } while(0)
+  do { cpp_error (pfile, DL_ERROR, msgid); goto syntax_error; } while(0)
 #define SYNTAX_ERROR2(msgid, arg) \
-  do { cpp_error (pfile, msgid, arg); goto syntax_error; } while(0)
+  do { cpp_error (pfile, DL_ERROR, msgid, arg); goto syntax_error; } while(0)
 
 struct suffix
 {
@@ -172,23 +170,26 @@ parse_number (pfile, tok)
       if (CPP_WTRADITIONAL (pfile)
 	  && sufftab[i].u
 	  && ! cpp_sys_macro_p (pfile))
-	cpp_warning (pfile, "traditional C rejects the `U' suffix");
+	cpp_error (pfile, DL_WARNING, "traditional C rejects the `U' suffix");
       if (sufftab[i].l == 2 && CPP_OPTION (pfile, pedantic)
 	  && ! CPP_OPTION (pfile, c99))
-	cpp_pedwarn (pfile, "too many 'l' suffixes in integer constant");
+	cpp_error (pfile, DL_PEDWARN,
+		   "too many 'l' suffixes in integer constant");
     }
   
   if (base <= largest_digit)
-    cpp_pedwarn (pfile, "integer constant contains digits beyond the radix");
+    cpp_error (pfile, DL_PEDWARN,
+	       "integer constant contains digits beyond the radix");
 
   if (overflow)
-    cpp_pedwarn (pfile, "integer constant out of range");
+    cpp_error (pfile, DL_PEDWARN, "integer constant out of range");
 
   /* If too big to be signed, consider it unsigned.  */
   else if ((HOST_WIDEST_INT) n < 0 && ! op.unsignedp)
     {
       if (base == 10)
-	cpp_warning (pfile, "integer constant is so large that it is unsigned");
+	cpp_error (pfile, DL_WARNING,
+		   "integer constant is so large that it is unsigned");
       op.unsignedp = 1;
     }
 
@@ -197,7 +198,7 @@ parse_number (pfile, tok)
   return op;
 
  invalid_suffix:
-  cpp_error (pfile, "invalid suffix '%.*s' on integer constant",
+  cpp_error (pfile, DL_ERROR, "invalid suffix '%.*s' on integer constant",
 	     (int) (end - p), p);
  syntax_error:
   op.op = CPP_ERROR;
@@ -230,20 +231,21 @@ parse_defined (pfile)
       node = token->val.node;
       if (paren && cpp_get_token (pfile)->type != CPP_CLOSE_PAREN)
 	{
-	  cpp_error (pfile, "missing ')' after \"defined\"");
+	  cpp_error (pfile, DL_ERROR, "missing ')' after \"defined\"");
 	  node = 0;
 	}
     }
   else
     {
-      cpp_error (pfile, "operator \"defined\" requires an identifier");
+      cpp_error (pfile, DL_ERROR,
+		 "operator \"defined\" requires an identifier");
       if (token->flags & NAMED_OP)
 	{
 	  cpp_token op;
 
 	  op.flags = 0;
 	  op.type = token->type;
-	  cpp_error (pfile,
+	  cpp_error (pfile, DL_ERROR,
 		     "(\"%s\" is an alternative token for \"%s\" in C++)",
 		     cpp_token_as_text (pfile, token),
 		     cpp_token_as_text (pfile, &op));
@@ -255,7 +257,8 @@ parse_defined (pfile)
   else
     {
       if (pfile->context != initial_context)
-	cpp_warning (pfile, "this use of \"defined\" may not be portable");
+	cpp_error (pfile, DL_WARNING,
+		   "this use of \"defined\" may not be portable");
 
       op.value = node->type == NT_MACRO;
       op.unsignedp = 0;
@@ -326,8 +329,9 @@ lex (pfile, skip_evaluation)
 	     and stdbool.h has not been included.  */
 	  if (CPP_PEDANTIC (pfile)
 	      && ! cpp_defined (pfile, DSC("__bool_true_false_are_defined")))
-	    cpp_pedwarn (pfile, "ISO C++ does not permit \"%s\" in #if",
-			 NODE_NAME (token->val.node));
+	    cpp_error (pfile, DL_PEDWARN,
+		       "ISO C++ does not permit \"%s\" in #if",
+		       NODE_NAME (token->val.node));
 	  return op;
 	}
       else
@@ -337,8 +341,8 @@ lex (pfile, skip_evaluation)
 	  op.value = 0;
 
 	  if (CPP_OPTION (pfile, warn_undef) && !skip_evaluation)
-	    cpp_warning (pfile, "\"%s\" is not defined",
-			 NODE_NAME (token->val.node));
+	    cpp_error (pfile, DL_WARNING, "\"%s\" is not defined",
+		       NODE_NAME (token->val.node));
 	  return op;
 	}
 
@@ -378,7 +382,8 @@ integer_overflow (pfile)
      cpp_reader *pfile;
 {
   if (CPP_PEDANTIC (pfile))
-    cpp_pedwarn (pfile, "integer overflow in preprocessor expression");
+    cpp_error (pfile, DL_PEDWARN,
+	       "integer overflow in preprocessor expression");
 }
 
 /* Handle shifting A left by B bits.  UNSIGNEDP is non-zero if A is
@@ -657,8 +662,8 @@ _cpp_parse_expr (pfile)
 	  switch (top[1].op)
 	    {
 	    default:
-	      cpp_ice (pfile, "impossible operator '%s'",
-			       op_as_text (pfile, top[1].op));
+	      cpp_error (pfile, DL_ICE, "impossible operator '%s'",
+			 op_as_text (pfile, top[1].op));
 	      goto syntax_error;
 
 	    case CPP_NOT:	 UNARY(!);	break;
@@ -688,7 +693,7 @@ _cpp_parse_expr (pfile)
 		  top->flags |= HAVE_VALUE;
 
 		  if (CPP_WTRADITIONAL (pfile))
-		    cpp_warning (pfile,
+		    cpp_error (pfile, DL_WARNING,
 			"traditional C rejects the unary plus operator");
 		}
 	      else
@@ -767,7 +772,8 @@ _cpp_parse_expr (pfile)
 	      break;
 	    case CPP_COMMA:
 	      if (CPP_PEDANTIC (pfile))
-		cpp_pedwarn (pfile, "comma operator in operand of #if");
+		cpp_error (pfile, DL_PEDWARN,
+			   "comma operator in operand of #if");
 	      top->value = v2;
 	      top->unsignedp = unsigned2;
 	      break;
@@ -860,7 +866,10 @@ _cpp_parse_expr (pfile)
   result = (top[1].value != 0);
 
   if (top != stack)
-    CPP_ICE ("unbalanced stack in #if");
+    {
+      cpp_error (pfile, DL_ICE, "unbalanced stack in #if");
+      goto syntax_error;
+    }
   else if (!(top[1].flags & HAVE_VALUE))
     {
       SYNTAX_ERROR ("#if with no expression");

@@ -546,32 +546,50 @@ extern cpp_buffer *cpp_push_buffer PARAMS ((cpp_reader *,
 					    int, int));
 extern int cpp_defined PARAMS ((cpp_reader *, const unsigned char *, int));
 
+/* Diagnostic levels.  To get a dianostic without associating a
+   position in the translation unit with it, use cpp_error_with_line
+   with a line number of zero.  */
+
+/* Warning, an error with -Werror.  */
+#define DL_WARNING		0x00
+/* Same as DL_WARNING, except it is not suppressed in system headers.  */
+#define DL_WARNING_SYSHDR	0x01
+/* Warning, an error with -pedantic-errors or -Werror.  */
+#define DL_PEDWARN		0x02
+/* An error.  */
+#define DL_ERROR		0x03
+/* A fatal error.  We do not exit, to support use of cpplib as a
+   library, but may only return CPP_EOF tokens thereon.  It is the
+   caller's responsibility to check CPP_FATAL_ERRORS.  */
+#define DL_FATAL		0x04
+/* An internal consistency check failed.  Prints "internal error: ",
+   otherwise the same as DL_FATAL.  */
+#define DL_ICE			0x05
+/* Extracts a diagnostic level from an int.  */
+#define DL_EXTRACT(l)		(l & 0xf)
+/* Non-zero if a diagnostic level is one of the warnings.  */
+#define DL_WARNING_P(l)		(DL_EXTRACT (l) >= DL_WARNING \
+				 && DL_EXTRACT (l) <= DL_PEDWARN)
+
 /* N.B. The error-message-printer prototypes have not been nicely
    formatted because exgettext needs to see 'msgid' on the same line
    as the name of the function in order to work properly.  Only the
    string argument gets a name in an effort to keep the lines from
    getting ridiculously oversized.  */
 
-extern void cpp_ice PARAMS ((cpp_reader *, const char *msgid, ...))
-  ATTRIBUTE_PRINTF_2;
-extern void cpp_fatal PARAMS ((cpp_reader *, const char *msgid, ...))
-  ATTRIBUTE_PRINTF_2;
-extern void cpp_error PARAMS ((cpp_reader *, const char *msgid, ...))
-  ATTRIBUTE_PRINTF_2;
-extern void cpp_warning PARAMS ((cpp_reader *, const char *msgid, ...))
-  ATTRIBUTE_PRINTF_2;
-extern void cpp_pedwarn PARAMS ((cpp_reader *, const char *msgid, ...))
-  ATTRIBUTE_PRINTF_2;
-extern void cpp_notice PARAMS ((cpp_reader *, const char *msgid, ...))
-  ATTRIBUTE_PRINTF_2;
-extern void cpp_error_with_line PARAMS ((cpp_reader *, int, int, const char *msgid, ...))
-  ATTRIBUTE_PRINTF_4;
-extern void cpp_warning_with_line PARAMS ((cpp_reader *, int, int, const char *msgid, ...))
-  ATTRIBUTE_PRINTF_4;
-extern void cpp_pedwarn_with_line PARAMS ((cpp_reader *, int, int, const char *msgid, ...))
-  ATTRIBUTE_PRINTF_4;
-extern void cpp_error_from_errno PARAMS ((cpp_reader *, const char *));
-extern void cpp_notice_from_errno PARAMS ((cpp_reader *, const char *));
+/* Output a diagnostic of some kind.  */
+extern void cpp_error PARAMS ((cpp_reader *, int, const char *msgid, ...))
+  ATTRIBUTE_PRINTF_3;
+
+/* Output a diagnostic of severity LEVEL, with "MSG: " preceding the
+   error string of errno.  No location is printed.  */
+extern void cpp_errno PARAMS ((cpp_reader *, int level, const char *msg));
+
+/* Same as cpp_error, except additionally specifies a position as a
+   (translation unit) physical line and physical column.  If the line is
+   zero, then no location is printed.  */
+extern void cpp_error_with_line PARAMS ((cpp_reader *, int, unsigned, unsigned, const char *msgid, ...))
+  ATTRIBUTE_PRINTF_5;
 
 /* In cpplex.c */
 extern int cpp_ideq			PARAMS ((const cpp_token *,
