@@ -2,7 +2,8 @@
    we know the correct value of '0'.  PR 18785.  */
 
 /* { dg-do run } */
-/* { dg-options "-O2 -fno-inline -fexec-charset=IBM-1047" } */
+/* { dg-require-iconv "IBM1047" } */
+/* { dg-options "-O2 -fno-inline -fexec-charset=IBM1047" } */
 
 extern int isdigit(int);
 extern void abort(void);

@@ -1,6 +1,6 @@
 /* Test for string translation.  */
 /* { dg-do compile }
-   { dg-require-iconv "IBM-1047" } 
+   { dg-require-iconv "IBM1047" } 
    { dg-final { scan-assembler "foo" } } */
 int main()
 {

@@ -2,7 +2,7 @@
    If we ever get a good way to test error recovery
    the string "foobar" should be translated.  */
 /* { dg-do compile } */
-/* { dg-require-iconv "IBM-1047" } */
+/* { dg-require-iconv "IBM1047" } */
 asm (not_a_string); /* { dg-error "(parse error|syntax error|expected string literal) before" "not_a_string" } */
 char x[] = "foobar";
 

@@ -1,5 +1,5 @@
 /* { dg-do compile }
-   { dg-require-iconv "IBM-1047" }
+   { dg-require-iconv "IBM1047" }
    { dg-final { scan-assembler ".ascii bar" } }
    { dg-final { scan-assembler ".ascii foo" } }
  */
