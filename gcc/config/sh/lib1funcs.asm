@@ -930,6 +930,7 @@ GLOBAL(sdivsi3_i4):
 	.text
 #endif
 	.align	2
+#if 0
 /* The assembly code that follows is a hand-optimized version of the C
    code that follows.  Note that the registers that are modified are
    exactly those listed as clobbered in the patterns divsi3_i1 and
@@ -987,7 +988,100 @@ LOCAL(sdivsi3_dontadd):
 	muls.l	r0, r2, r0
 	add.l	r0, r63, r0
 	blink	tr0, r63
-#else
+#else /* ! 0 */
+ // inputs: r4,r5
+ // clobbered: r1,r2,r3,r18,r19,r20,r21,r25,tr0
+ // result in r0
+GLOBAL(sdivsi3):
+ // can create absolute value without extra latency,
+ // but dependent on proper sign extension of inputs:
+ // shari.l r5,31,r2
+ // xor r5,r2,r20
+ // sub r20,r2,r20 // r20 is now absolute value of r5, zero-extended.
+ shari.l r5,31,r2
+ ori r2,1,r2
+ muls.l r5,r2,r20 // r20 is now absolute value of r5, zero-extended.
+ movi 0xffffffffffffbb0c,r19 // shift count eqiv 76
+ shari.l r4,31,r3
+ nsb r20,r0
+ shlld r20,r0,r25
+ shlri r25,48,r25
+ sub r19,r25,r1
+ mmulfx.w r1,r1,r2
+ mshflo.w r1,r63,r1
+ // If r4 was to be used in-place instead of r21, could use this sequence
+ // to compute absolute:
+ // sub r63,r4,r19 // compute absolute value of r4
+ // shlri r4,32,r3 // into lower 32 bit of r4, keeping
+ // mcmv r19,r3,r4 // the sign in the upper 32 bits intact.
+ ori r3,1,r3
+ mmulfx.w r25,r2,r2
+ sub r19,r0,r0
+ muls.l r4,r3,r21
+ msub.w r1,r2,r2
+ addi r2,-2,r1
+ mulu.l r21,r1,r19
+ mmulfx.w r2,r2,r2
+ shlli r1,15,r1
+ shlrd r19,r0,r19
+ mulu.l r19,r20,r3
+ mmacnfx.wl r25,r2,r1
+ ptabs r18,tr0
+ sub r21,r3,r25
+
+ mulu.l r25,r1,r2
+ addi r0,14,r0
+ xor r4,r5,r18
+ shlrd r2,r0,r2
+ mulu.l r2,r20,r3
+ add r19,r2,r19
+ shari.l r18,31,r18
+ sub r25,r3,r25
+
+ mulu.l r25,r1,r2
+ sub r25,r20,r25
+ add r19,r18,r19
+ shlrd r2,r0,r2
+ mulu.l r2,r20,r3
+ addi r25,1,r25
+ add r19,r2,r19
+
+ cmpgt r25,r3,r25
+ add.l r19,r25,r0
+ xor r0,r18,r0
+ blink tr0,r63
+#endif
+#elif defined __SHMEDIA__
+/* m5compact-nofpu */
+ // clobbered: r18,r19,r20,r21,r25,tr0,tr1,tr2
+	.mode	SHmedia
+	.section	.text..SHmedia32,"ax"
+	.align	2
+GLOBAL(sdivsi3):
+	pt/l LOCAL(sdivsi3_dontsub), tr0
+	pt/l LOCAL(sdivsi3_loop), tr1
+	ptabs/l r18,tr2
+	shari.l r4,31,r18
+	shari.l r5,31,r19
+	xor r4,r18,r20
+	xor r5,r19,r21
+	sub.l r20,r18,r20
+	sub.l r21,r19,r21
+	xor r18,r19,r19
+	shlli r21,32,r25
+	addi r25,-1,r21
+	addz.l r20,r63,r20
+LOCAL(sdivsi3_loop):
+	shlli r20,1,r20
+	bgeu/u r21,r20,tr0
+	sub r20,r21,r20
+LOCAL(sdivsi3_dontsub):
+	addi.l r25,-1,r25
+	bnei r25,-32,tr1
+	xor r20,r19,r20
+	sub.l r20,r19,r0
+	blink tr2,r63
+#else /* ! __SHMEDIA__ */
 GLOBAL(sdivsi3):
 	mov	r4,r1
 	mov	r5,r0
@@ -1187,11 +1281,6 @@ L1:
 /* __SH4_SINGLE_ONLY__ keeps this part for link compatibility with
    sh3e code.  */
 #if (! defined(__SH4__) && ! defined (__SH4_SINGLE__)) || defined (__linux__)
-!!
-!! Steve Chamberlain
-!! sac@cygnus.com
-!!
-!!
 
 !! args in r4 and r5, result in r0, clobbers r4, pr, and t bit
 	.global	GLOBAL(udivsi3)
@@ -1203,6 +1292,7 @@ L1:
 	.text
 #endif
 	.align	2
+#if 0
 /* The assembly code that follows is a hand-optimized version of the C
    code that follows.  Note that the registers that are modified are
    exactly those listed as clobbered in the patterns udivsi3_i1 and
@@ -1248,56 +1338,436 @@ LOCAL(udivsi3_dontadd):
 	blink	tr0, r63
 #else
 GLOBAL(udivsi3):
-longway:
-	mov	#0,r0
-	div0u
-	! get one bit from the msb of the numerator into the T
-	! bit and divide it by whats in r5.  Put the answer bit
-	! into the T bit so it can come out again at the bottom
+ // inputs: r4,r5
+ // clobbered: r18,r19,r20,r21,r22,r25,tr0
+ // result in r0.
+ addz.l r5,r63,r22
+ nsb r22,r0
+ shlld r22,r0,r25
+ shlri r25,48,r25
+ movi 0xffffffffffffbb0c,r20 // shift count eqiv 76
+ sub r20,r25,r21
+ mmulfx.w r21,r21,r19
+ mshflo.w r21,r63,r21
+ ptabs r18,tr0
+ mmulfx.w r25,r19,r19
+ sub r20,r0,r0
+ /* bubble */
+ msub.w r21,r19,r19
+ addi r19,-2,r21 /* It would be nice for scheduling to do this add to r21
+		    before the msub.w, but we need a different value for
+		    r19 to keep errors under control.  */
+ mulu.l r4,r21,r18
+ mmulfx.w r19,r19,r19
+ shlli r21,15,r21
+ shlrd r18,r0,r18
+ mulu.l r18,r22,r20
+ mmacnfx.wl r25,r19,r21
+ /* bubble */
+ sub r4,r20,r25
 
-	rotcl	r4 ; div1 r5,r0
-	rotcl	r4 ; div1 r5,r0
-	rotcl	r4 ; div1 r5,r0
-	rotcl	r4 ; div1 r5,r0
-	rotcl	r4 ; div1 r5,r0
-	rotcl	r4 ; div1 r5,r0
-	rotcl	r4 ; div1 r5,r0
-	rotcl	r4 ; div1 r5,r0
+ mulu.l r25,r21,r19
+ addi r0,14,r0
+ /* bubble */
+ shlrd r19,r0,r19
+ mulu.l r19,r22,r20
+ add r18,r19,r18
+ /* bubble */
+ sub.l r25,r20,r25
 
-	rotcl	r4 ; div1 r5,r0
-	rotcl	r4 ; div1 r5,r0
-	rotcl	r4 ; div1 r5,r0
-	rotcl	r4 ; div1 r5,r0
-	rotcl	r4 ; div1 r5,r0
-	rotcl	r4 ; div1 r5,r0
-	rotcl	r4 ; div1 r5,r0
-	rotcl	r4 ; div1 r5,r0
-shortway:
-	rotcl	r4 ; div1 r5,r0
-	rotcl	r4 ; div1 r5,r0
-	rotcl	r4 ; div1 r5,r0
-	rotcl	r4 ; div1 r5,r0
-	rotcl	r4 ; div1 r5,r0
-	rotcl	r4 ; div1 r5,r0
-	rotcl	r4 ; div1 r5,r0
-	rotcl	r4 ; div1 r5,r0
+ mulu.l r25,r21,r19
+ addz.l r25,r63,r25
+ sub r25,r22,r25
+ shlrd r19,r0,r19
+ mulu.l r19,r22,r20
+ addi r25,1,r25
+ add r18,r19,r18
 
-vshortway:
-	rotcl	r4 ; div1 r5,r0
-	rotcl	r4 ; div1 r5,r0
-	rotcl	r4 ; div1 r5,r0
-	rotcl	r4 ; div1 r5,r0
-	rotcl	r4 ; div1 r5,r0
-	rotcl	r4 ; div1 r5,r0
-	rotcl	r4 ; div1 r5,r0
-	rotcl	r4 ; div1 r5,r0
-	rotcl	r4
-ret:	rts
-	mov	r4,r0
+ cmpgt r25,r20,r25
+ add.l r18,r25,r0
+ blink tr0,r63
+#endif
+#elif defined (__SHMEDIA__)
+/* m5compact-nofpu - more emphasis on code size than on speed, but don't
+   ignore speed altogether - div1 needs 9 cycles, subc 7 and rotcl 4.
+   So use a short shmedia loop.  */
+ // clobbered: r20,r21,r25,tr0,tr1,tr2
+	.mode	SHmedia
+	.section	.text..SHmedia32,"ax"
+	.align	2
+GLOBAL(udivsi3):
+ pt/l LOCAL(udivsi3_dontsub), tr0
+ pt/l LOCAL(udivsi3_loop), tr1
+ ptabs/l r18,tr2
+ shlli r5,32,r25
+ addi r25,-1,r21
+ addz.l r4,r63,r20
+LOCAL(udivsi3_loop):
+ shlli r20,1,r20
+ bgeu/u r21,r20,tr0
+ sub r20,r21,r20
+LOCAL(udivsi3_dontsub):
+ addi.l r25,-1,r25
+ bnei r25,-32,tr1
+ add.l r20,r63,r0
+ blink tr2,r63
+#else /* ! defined (__SHMEDIA__) */
+LOCAL(div8):
+ div1 r5,r4
+LOCAL(div7):
+ div1 r5,r4; div1 r5,r4; div1 r5,r4
+ div1 r5,r4; div1 r5,r4; div1 r5,r4; rts; div1 r5,r4
+
+LOCAL(divx4):
+ div1 r5,r4; rotcl r0
+ div1 r5,r4; rotcl r0
+ div1 r5,r4; rotcl r0
+ rts; div1 r5,r4
+
+GLOBAL(udivsi3):
+ sts.l pr,@-r15
+ extu.w r5,r0
+ cmp/eq r5,r0
+#ifdef __sh1__
+ bf LOCAL(large_divisor)
+#else
+ bf/s LOCAL(large_divisor)
+#endif
+ div0u
+ swap.w r4,r0
+ shlr16 r4
+ bsr LOCAL(div8)
+ shll16 r5
+ bsr LOCAL(div7)
+ div1 r5,r4
+ xtrct r4,r0
+ xtrct r0,r4
+ bsr LOCAL(div8)
+ swap.w r4,r4
+ bsr LOCAL(div7)
+ div1 r5,r4
+ lds.l @r15+,pr
+ xtrct r4,r0
+ swap.w r0,r0
+ rotcl r0
+ rts
+ shlr16 r5
+
+LOCAL(large_divisor):
+#ifdef __sh1__
+ div0u
+#endif
+ mov #0,r0
+ xtrct r4,r0
+ xtrct r0,r4
+ bsr LOCAL(divx4)
+ rotcl r0
+ bsr LOCAL(divx4)
+ rotcl r0
+ bsr LOCAL(divx4)
+ rotcl r0
+ bsr LOCAL(divx4)
+ rotcl r0
+ lds.l @r15+,pr
+ rts
+ rotcl r0
 
 #endif /* ! __SHMEDIA__ */
 #endif /* __SH4__ */
-#endif
+#endif /* L_udivsi3 */
+
+#ifdef L_udivdi3
+#ifdef __SHMEDIA__
+	.mode	SHmedia
+	.section	.text..SHmedia32,"ax"
+	.align	2
+	.global	GLOBAL(udivdi3)
+GLOBAL(udivdi3):
+	shlri r3,1,r4
+	nsb r4,r22
+	shlld r3,r22,r6
+	shlri r6,49,r5
+	movi 0xffffffffffffbaf1,r21 /* .l shift count 17.  */
+	sub r21,r5,r1
+	mmulfx.w r1,r1,r4
+	mshflo.w r1,r63,r1
+	sub r63,r22,r20 // r63 == 64 % 64
+	mmulfx.w r5,r4,r4
+	pta LOCAL(large_divisor),tr0
+	addi r20,32,r9
+	msub.w r1,r4,r1
+	madd.w r1,r1,r1
+	mmulfx.w r1,r1,r4
+	shlri r6,32,r7
+	bgt/u r9,r63,tr0 // large_divisor
+	mmulfx.w r5,r4,r4
+	shlri r2,32,r19
+	addi r20,14-1,r0
+	msub.w r1,r4,r1
+
+	mulu.l r1,r7,r4
+	addi r1,-3,r5
+	mulu.l r5,r19,r5
+	shlri r4,2,r4 /* chop off leading %0000000000000000 001.00000000000 - or, as
+	                 the case may be, %0000000000000000 000.11111111111, still */
+	muls.l r1,r4,r4 /* leaving at least one sign bit.  */
+	shlrd r5,r0,r8
+	mulu.l r8,r3,r5
+	mshalds.l r1,r21,r1
+	shari r4,26,r4
+	shlli r5,32,r5
+	sub r1,r4,r1 // 31 bit unsigned reciprocal now in r1 (msb equiv. 0.5)
+	sub r2,r5,r2
+	/* Can do second step of 64 : 32 div now, using r1 and the rest in r2.  */
+
+	shlri r2,22,r21
+	mulu.l r21,r1,r21
+	addi r20,30-22,r0
+	shlli r8,32,r8
+	shlrd r21,r0,r21
+	mulu.l r21,r3,r5
+	add r8,r21,r8
+	mcmpeq.l r21,r63,r21 // See Note 1
+	addi r20,30,r0
+	mshfhi.l r63,r21,r21
+	sub r2,r5,r2
+	andc r2,r21,r2
+
+	/* small divisor: need a third divide step */
+	mulu.l r2,r1,r7
+	ptabs r18,tr0
+	addi r2,1,r2
+	shlrd r7,r0,r7
+	mulu.l r7,r3,r5
+	add r8,r7,r8
+	sub r2,r3,r2
+	cmpgt r2,r5,r5
+	add r8,r5,r2
+	/* could test r3 here to check for divide by zero.  */
+	blink tr0,r63
+
+LOCAL(large_divisor):
+	mmulfx.w r5,r4,r4
+	shlrd r2,r9,r25
+	shlri r25,32,r8
+	msub.w r1,r4,r1
+
+	mulu.l r1,r7,r4
+	addi r1,-3,r5
+	mulu.l r5,r8,r5
+	shlri r4,2,r4 /* chop off leading %0000000000000000 001.00000000000 - or, as
+	                 the case may be, %0000000000000000 000.11111111111, still */
+	muls.l r1,r4,r4 /* leaving at least one sign bit.  */
+	shlri r5,14-1+32,r8
+	mulu.l r8,r7,r5
+	mshalds.l r1,r21,r1
+	shari r4,26,r4
+	sub r1,r4,r1 // 31 bit unsigned reciprocal now in r1 (msb equiv. 0.5)
+	sub r25,r5,r25
+	/* Can do second step of 64 : 32 div now, using r1 and the rest in r25.  */
+
+	shlri r25,22,r21
+	mulu.l r21,r1,r21
+	pta LOCAL(no_lo_adj),tr0
+	addi r22,32,r0
+	shlri r21,40,r21
+	mulu.l r21,r7,r5
+	add r8,r21,r8
+	shlld r2,r0,r2
+	sub r25,r5,r25
+	mextr4 r2,r25,r2
+	bgtu/u r6,r2,tr0 // no_lo_adj
+	addi r8,1,r8
+	sub r2,r6,r2
+LOCAL(no_lo_adj):
+
+	/* large_divisor: only needs a few adjustments.  */
+	mulu.l r8,r6,r5
+	ptabs r18,tr0
+	/* bubble */
+	cmpgtu r5,r2,r5
+	sub r8,r5,r2
+	blink tr0,r63
+/* Note 1: To shift the result of the second divide stage so that the result
+   always fits into 32 bits, yet we still reduce the rest sufficiently
+   would require a lot of instructions to do the shifts just right.  Using
+   the full 64 bit shift result to multiply with the divisor would require
+   four extra instructions for the upper 32 bits (shift / mulu / shift / sub).
+   Fortunately, if the upper 32 bits of the shift result are non-zero, we
+   know that the rest after taking this partial result into account will
+   fit into 32 bits.  So we just clear the upper 32 bits of the rest if the
+   upper 32 bits of the partial result are non-zero.  */
+#endif /* __SHMEDIA__ */
+#endif /* L_udivdi3 */
+
+#ifdef L_divdi3
+#ifdef __SHMEDIA__
+	.mode	SHmedia
+	.section	.text..SHmedia32,"ax"
+	.align	2
+	.global	GLOBAL(divdi3)
+GLOBAL(divdi3):
+	pta GLOBAL(udivdi3),tr0
+	shari r2,63,r22
+	shari r3,63,r23
+	xor r2,r22,r2
+	xor r3,r23,r3
+	sub r2,r22,r2
+	sub r3,r23,r3
+	beq/u r22,r23,tr0
+	ptabs r18,tr1
+	blink tr0,r18
+	sub r63,r2,r2
+	blink tr1,r63
+#endif /* __SHMEDIA__ */
+#endif /* L_divdi3 */
+
+#ifdef L_umoddi3
+#ifdef __SHMEDIA__
+	.mode	SHmedia
+	.section	.text..SHmedia32,"ax"
+	.align	2
+	.global	GLOBAL(umoddi3)
+GLOBAL(umoddi3):
+	shlri r3,1,r4
+	nsb r4,r22
+	shlld r3,r22,r6
+	shlri r6,49,r5
+	movi 0xffffffffffffbaf1,r21 /* .l shift count 17.  */
+	sub r21,r5,r1
+	mmulfx.w r1,r1,r4
+	mshflo.w r1,r63,r1
+	sub r63,r22,r20 // r63 == 64 % 64
+	mmulfx.w r5,r4,r4
+	pta LOCAL(large_divisor),tr0
+	addi r20,32,r9
+	msub.w r1,r4,r1
+	madd.w r1,r1,r1
+	mmulfx.w r1,r1,r4
+	shlri r6,32,r7
+	bgt/u r9,r63,tr0 // large_divisor
+	mmulfx.w r5,r4,r4
+	shlri r2,32,r19
+	addi r20,14-1,r0
+	msub.w r1,r4,r1
+
+	mulu.l r1,r7,r4
+	addi r1,-3,r5
+	mulu.l r5,r19,r5
+	shlri r4,2,r4 /* chop off leading %0000000000000000 001.00000000000 - or, as
+	                 the case may be, %0000000000000000 000.11111111111, still */
+	muls.l r1,r4,r4 /* leaving at least one sign bit.  */
+	shlrd r5,r0,r8
+	mulu.l r8,r3,r5
+	mshalds.l r1,r21,r1
+	shari r4,26,r4
+	shlli r5,32,r5
+	sub r1,r4,r1 // 31 bit unsigned reciprocal now in r1 (msb equiv. 0.5)
+	sub r2,r5,r2
+	/* Can do second step of 64 : 32 div now, using r1 and the rest in r2.  */
+
+	shlri r2,22,r21
+	mulu.l r21,r1,r21
+	addi r20,30-22,r0
+	/* bubble */ /* could test r3 here to check for divide by zero.  */
+	shlrd r21,r0,r21
+	mulu.l r21,r3,r5
+	mcmpeq.l r21,r63,r21 // See Note 1
+	addi r20,30,r0
+	mshfhi.l r63,r21,r21
+	sub r2,r5,r2
+	andc r2,r21,r2
+
+	/* small divisor: need a third divide step */
+	mulu.l r2,r1,r7
+	ptabs r18,tr0
+	sub r2,r3,r8 /* re-use r8 here for rest - r3 */
+	shlrd r7,r0,r7
+	mulu.l r7,r3,r5
+	/* bubble */
+	addi r8,1,r7
+	cmpgt r7,r5,r7
+	cmvne r7,r8,r2
+	sub r2,r5,r2
+	blink tr0,r63
+
+LOCAL(large_divisor):
+	mmulfx.w r5,r4,r4
+	shlrd r2,r9,r25
+	shlri r25,32,r8
+	msub.w r1,r4,r1
+
+	mulu.l r1,r7,r4
+	addi r1,-3,r5
+	mulu.l r5,r8,r5
+	shlri r4,2,r4 /* chop off leading %0000000000000000 001.00000000000 - or, as
+	                 the case may be, %0000000000000000 000.11111111111, still */
+	muls.l r1,r4,r4 /* leaving at least one sign bit.  */
+	shlri r5,14-1+32,r8
+	mulu.l r8,r7,r5
+	mshalds.l r1,r21,r1
+	shari r4,26,r4
+	sub r1,r4,r1 // 31 bit unsigned reciprocal now in r1 (msb equiv. 0.5)
+	sub r25,r5,r25
+	/* Can do second step of 64 : 32 div now, using r1 and the rest in r25.  */
+
+	shlri r25,22,r21
+	mulu.l r21,r1,r21
+	pta LOCAL(no_lo_adj),tr0
+	addi r22,32,r0
+	shlri r21,40,r21
+	mulu.l r21,r7,r5
+	add r8,r21,r8
+	shlld r2,r0,r2
+	sub r25,r5,r25
+	mextr4 r2,r25,r2
+	bgtu/u r6,r2,tr0 // no_lo_adj
+	addi r8,1,r8
+	sub r2,r6,r2
+LOCAL(no_lo_adj):
+
+	/* large_divisor: only needs a few adjustments.  */
+	mulu.l r8,r6,r5
+	ptabs r18,tr0
+	add r2,r3,r7
+	cmpgtu r5,r2,r8
+	cmvne r8,r7,r2
+	sub r2,r5,r2
+	blink tr0,r63
+/* Note 1: To shift the result of the second divide stage so that the result
+   always fits into 32 bits, yet we still reduce the rest sufficiently
+   would require a lot of instructions to do the shifts just right.  Using
+   the full 64 bit shift result to multiply with the divisor would require
+   four extra instructions for the upper 32 bits (shift / mulu / shift / sub).
+   Fortunately, if the upper 32 bits of the shift result are non-zero, we
+   know that the rest after taking this partial result into account will
+   fit into 32 bits.  So we just clear the upper 32 bits of the rest if the
+   upper 32 bits of the partial result are non-zero.  */
+#endif /* __SHMEDIA__ */
+#endif /* L_umoddi3 */
+
+#ifdef L_moddi3
+#ifdef __SHMEDIA__
+	.mode	SHmedia
+	.section	.text..SHmedia32,"ax"
+	.align	2
+	.global	GLOBAL(moddi3)
+GLOBAL(moddi3):
+	pta GLOBAL(umoddi3),tr0
+	shari r2,63,r22
+	shari r3,63,r23
+	xor r2,r22,r2
+	xor r3,r23,r3
+	sub r2,r22,r2
+	sub r3,r23,r3
+	beq/u r22,r63,tr0
+	ptabs r18,tr1
+	blink tr0,r18
+	sub r63,r2,r2
+	blink tr1,r63
+#endif /* __SHMEDIA__ */
+#endif /* L_moddi3 */
+
 #ifdef L_set_fpscr
 #if defined (__SH3E__) || defined(__SH4_SINGLE__) || defined(__SH4__) || defined(__SH4_SINGLE_ONLY__) || __SH5__ == 32
 #ifdef __SH5__
@@ -1350,6 +1820,8 @@ LOCAL(set_fpscr_L1):
 	.align	2
 	.global	GLOBAL(ic_invalidate)
 GLOBAL(ic_invalidate):
+	ocbwb	r0,0
+	synco
 	icbi	r0, 0
 	ptabs	r18, tr0
 	synci

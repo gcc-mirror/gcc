@@ -1,4 +1,14 @@
-Mon Jun 24 18:53:56 2002  J"orn Rennecke <joern.rennecke@superh.com>
+Mon Jun 24 21:05:09 2002  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* lib1funcs.asm (sdivsi3): Add optimized SH64 implementations.
+	(udivsi3): Likewise.  Rewrite SH1 implementation.
+	(udivdi3, divdi3, umoddi3, moddi3): New SHmedia functions.
+	* sh.md (R20_REG, R21_REG, R22_REG, R23_REG, FR23_REG): New constants.
+	(udivsi3_i1_media, divsi3_i1_media): Fix clobber list.
+	* config/sh/t-sh64 (LIB1ASMFUNCS): (_udivdi3, _divdi3, _umoddi3): Add.
+	(_moddi3): Likewise.
+
+	* lib1funcs.asm (ic_invalidate): Add data cache line writeback.
 
 	* sh.h (FUNCTION_ARG_ADVANCE): Take SHCOMPACT_FORCE_ON_STACK
 	arguments into account for stack_regs.

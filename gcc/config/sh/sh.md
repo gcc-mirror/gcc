@@ -99,10 +99,15 @@
   (R8_REG	8)
   (R9_REG	9)
   (R10_REG	10)
+  (R20_REG	20)
+  (R21_REG	21)
+  (R22_REG	22)
+  (R23_REG	23)
 
   (DR0_REG	64)
   (DR2_REG	66)
   (DR4_REG	68)
+  (FR23_REG	87)
 
   (TR0_REG	128)
   (TR1_REG	129)
@@ -1281,12 +1286,20 @@
   [(set_attr "type" "sfunc")
    (set_attr "needs_delay_slot" "yes")])
 
+; Since shmedia-nofpu code could be linked against shcompact code, and
+; the udivsi3 libcall has the same name, we must consider all registers
+; clobbered that are in the union of the registers clobbered by the
+; shmedia and the shcompact implementation.  Note, if the shcompact
+; implemenation actually used shcompact code, we'd need to clobber
+; also r23 and fr23.
 (define_insn "udivsi3_i1_media"
   [(set (match_operand:SI 0 "register_operand" "=z")
 	(udiv:SI (reg:SI R4_REG) (reg:SI R5_REG)))
    (clobber (reg:SI T_MEDIA_REG))
    (clobber (reg:SI PR_MEDIA_REG))
-   (clobber (reg:SI R4_REG))
+   (clobber (reg:SI R20_REG))
+   (clobber (reg:SI R21_REG))
+   (clobber (reg:SI R22_REG))
    (clobber (reg:DI TR0_REG))
    (clobber (reg:DI TR1_REG))
    (clobber (reg:DI TR2_REG))
@@ -1430,6 +1443,12 @@
   [(set_attr "type" "sfunc")
    (set_attr "needs_delay_slot" "yes")])
 
+; Since shmedia-nofpu code could be linked against shcompact code, and
+; the udivsi3 libcall has the same name, we must consider all registers
+; clobbered that are in the union of the registers clobbered by the
+; shmedia and the shcompact implementation.  Note, if the shcompact
+; implemenation actually used shcompact code, we'd need to clobber
+; also r22, r23 and fr23.
 (define_insn "divsi3_i1_media"
   [(set (match_operand:SI 0 "register_operand" "=z")
 	(div:SI (reg:SI R4_REG) (reg:SI R5_REG)))
@@ -1438,6 +1457,8 @@
    (clobber (reg:SI R1_REG))
    (clobber (reg:SI R2_REG))
    (clobber (reg:SI R3_REG))
+   (clobber (reg:SI R20_REG))
+   (clobber (reg:SI R21_REG))
    (clobber (reg:DI TR0_REG))
    (clobber (reg:DI TR1_REG))
    (clobber (reg:DI TR2_REG))
