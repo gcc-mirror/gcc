@@ -832,10 +832,10 @@ alloc_EXPR_LIST (kind, val, next)
 {
   rtx r;
 
-  if (unused_insn_list)
+  if (unused_expr_list)
     {
-      r = unused_insn_list;
-      unused_insn_list = XEXP (r, 1);
+      r = unused_expr_list;
+      unused_expr_list = XEXP (r, 1);
       XEXP (r, 0) = val;
       XEXP (r, 1) = next;
       PUT_REG_NOTE_KIND (r, kind);
