@@ -1,3 +1,34 @@
+Sat Feb  7 23:54:29 1998   Robert Lipe  <robertl@dgii.com>
+
+	* c-common.c: Include <stdlib.h> and <string.h>/<strings.h>.
+
+        * calls.c (expand_call): Remove unused variables funtree,
+        n_regs, and tmpmode.
+
+	* dbxout.c, except.c: Include <string.h>/<strings.h>.
+
+        * explow.c: (plus_constant_for_output_wide) Removed unused
+        variable all_constant.
+
+        * c-decl.c, genattr.c, genattrtab.c, getconfig.c, genemit.c
+        genextract.c, genflags.c, genopinit.c genoutput.c, genpeep.c,
+        genrecog.c, global.c, integrate.c , stupid.c : Include
+        <stdlib.h>.
+
+	* genextract.c: (walk_rtx) Remove unused variable link.
+
+	* genrecog.c: (concat) Remove unreferenced static function.
+
+	* prefix.c: Include <string.h>/<strings.h>, <stdlib.h>
+
+	* stmt.c: Include <stdlib.h>.  
+	(expand_asm_operands): Remove unused variable val1.  
+	(expand_return): Remove unused variable block.
+	(pushcase): Remove unused variables l and n.
+	(pushcaserange): Likewise.
+
+	* unroll.c (unroll_loop): Remove unused variable temp.
+
 Sat Feb  7 23:46:09 1998  Greg McGary  <gkm@gnu.org>
 
 	* c-decl.c (pushdecl): Set DECL_ORIGINAL_TYPE once only.

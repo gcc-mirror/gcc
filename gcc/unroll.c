@@ -831,7 +831,7 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
       if (precondition_loop_p (&initial_value, &final_value, &increment,
 			       loop_start, loop_end))
 	{
-	  register rtx diff, temp;
+	  register rtx diff ;
 	  enum machine_mode mode;
 	  rtx *labels;
 	  int abs_inc, neg_inc;

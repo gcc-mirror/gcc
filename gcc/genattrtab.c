@@ -121,6 +121,10 @@ Boston, MA 02111-1307, USA.  */
 # include <sys/resource.h>
 #endif
 
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+
 /* We must include obstack.h after <sys/time.h>, to avoid lossage with
    /usr/include/sys/stdtypes.h on Sun OS 4.x.  */
 #include "obstack.h"

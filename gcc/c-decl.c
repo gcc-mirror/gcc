@@ -34,6 +34,10 @@ Boston, MA 02111-1307, USA.  */
 #include "c-tree.h"
 #include "c-lex.h"
 
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+
 /* In grokdeclarator, distinguish syntactic contexts of declarators.  */
 enum decl_context
 { NORMAL,			/* Ordinary declaration */

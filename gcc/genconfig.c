@@ -1,7 +1,6 @@
 /* Generate from machine description:
-
    - some #define configuration flags.
-   Copyright (C) 1987, 1991 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1991, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -25,6 +24,10 @@ Boston, MA 02111-1307, USA.  */
 #include "hconfig.h"
 #include "rtl.h"
 #include "obstack.h"
+
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
 
 static struct obstack obstack;
 struct obstack *rtl_obstack = &obstack;
@@ -142,6 +145,9 @@ walk_insn_part (part, recog_p, non_pc_set_src)
     case REG: case CONST_INT: case SYMBOL_REF:
     case PC:
       return;
+
+    default:
+      break;
     }
 
   format_ptr = GET_RTX_FORMAT (GET_CODE (part));

@@ -1,5 +1,5 @@
 /* Generate code from machine description to extract operands from insn as rtl.
-   Copyright (C) 1987, 1991, 1992, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1991, 1992, 1993, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -24,6 +24,10 @@ Boston, MA 02111-1307, USA.  */
 #include "rtl.h"
 #include "obstack.h"
 #include "insn-config.h"
+
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
 
 static struct obstack obstack;
 struct obstack *rtl_obstack = &obstack;
@@ -196,7 +200,6 @@ walk_rtx (x, path)
   register int i;
   register int len;
   register char *fmt;
-  register struct code_ptr *link;
   int depth = strlen (path);
   char *newpath;
 
@@ -275,6 +278,9 @@ walk_rtx (x, path)
     case ADDRESS:
       walk_rtx (XEXP (x, 0), path);
       return;
+
+    default:
+      break;
     }
 
   newpath = (char *) alloca (depth + 2);
@@ -438,6 +444,7 @@ main (argc, argv)
 from the machine description file `md'.  */\n\n");
 
   printf ("#include \"config.h\"\n");
+  printf ("#include <stdio.h>\n");
   printf ("#include \"rtl.h\"\n\n");
 
   /* This variable exists only so it can be the "location"
