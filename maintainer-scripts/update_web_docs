@@ -87,19 +87,21 @@ cd $WORKDIR
 find $CVSROOT/gcc -name \*.texi,v -print | fgrep -v -f/home/gccadmin/scripts/doc_exclude | sed -e s#$CVSROOT/##g -e s#,v##g -e s#Attic/##g > FILES
 
 
-# Checkout all the texi files and get them into a single directory.
-# If we ever have texi files with the same name we'll have to do this
-# differently.
+# Checkout all the texi files.
 cvs -Q co -r$RELEASE `cat FILES` gcc/gcc/doc/install.texi2html gcc/gcc/texinfo.tex gcc/gcc/doc/texinfo.tex gcc/gcc/doc/include/texinfo.tex
-mv `find . -name \*.texi -print` .
-mv `find . -name \*.tex -print` .
+
+# Find the directory to pass to -I; this is the one with texinfo.tex
+# and fdl.texi.
+texitexloc=`find . -name texinfo.tex`
+includedir=${texitexloc%/*}
 
 # Now convert the relevant files from texi to HTML and PostScript.
 for file in cpp chill cppinternals gcc gcj g77 gnat-style libiberty \
     objc-features porting; do
-  if [ -e ${file}.texi ]; then
-    /usr/local/bin/texi2html -glossary -menu -split_chapter ${file}.texi
-    texi2dvi ${file}.texi </dev/null && dvips -o ${file}.ps ${file}.dvi
+  filename=`find . -name ${file}.texi`
+  if [ "${filename}" ]; then
+    /usr/local/bin/texi2html -glossary -menu -split_chapter -I ${includedir} ${filename}
+    texi2dvi -I ${includedir} ${filename} </dev/null && dvips -o ${file}.ps ${file}.dvi
   fi
 done
 

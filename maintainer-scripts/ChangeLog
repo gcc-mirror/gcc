@@ -1,3 +1,8 @@
+2001-11-05  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* update_web_docs: Allow for the same file name in different
+	directories.
+
 2001-10-29  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* update_web_docs: Generate libiberty and gnat-style manuals.
