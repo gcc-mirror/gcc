@@ -1,3 +1,7 @@
+2004-07-22  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* pt.c (get_template_base): Check type is completable.
+
 2004-07-21  Eric Christopher  <echristo@redhat.com>
 
 	* decl.c (poplevel): Inline unused variable checking.

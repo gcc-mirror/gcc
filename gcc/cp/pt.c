@@ -9458,6 +9458,10 @@ get_template_base (tree tparms, tree targs, tree parm, tree arg)
   my_friendly_assert (IS_AGGR_TYPE_CODE (TREE_CODE (arg)), 92);
   
   arg_binfo = TYPE_BINFO (complete_type (arg));
+  if (!arg_binfo)
+    /* The type could not be completed.  */
+    return NULL_TREE;
+  
   rval = get_template_base_recursive (tparms, targs,
 				      parm, arg_binfo, 
 				      NULL_TREE,
