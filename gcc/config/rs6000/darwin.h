@@ -381,16 +381,6 @@ extern const char *darwin_one_byte_bool;
 
 #define HAS_MD_FALLBACK_FRAME_STATE_FOR 1
 
-#undef SUBTARGET_OPTIONS
-#define	SUBTARGET_OPTIONS \
-  {"fix-and-continue", &darwin_fix_and_continue_switch,			\
-   N_("Generate code suitable for fast turn around debugging"), 0},	\
-  {"no-fix-and-continue", &darwin_fix_and_continue_switch,		\
-   N_("Don't generate code suitable for fast turn around debugging"), 0}
-
-extern int darwin_fix_and_continue;
-extern const char *darwin_fix_and_continue_switch;
-
 /* True, iff we're generating fast turn around debugging code.  When
    true, we arrange for function prologues to start with 4 nops so
    that gdb may insert code to redirect them, and for data to accessed
