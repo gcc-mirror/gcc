@@ -11293,9 +11293,7 @@ friend declaration requires class-key, i.e. `friend %#T'",
 	  /* Only try to do this stuff if we didn't already give up.  */
 	  if (type != integer_type_node)
 	    {
-	      /* DR 209. The friendly class does not need to be accessible
-                 in the scope of the class granting friendship. */
-	      skip_type_access_control ();
+	      decl_type_access_control (TYPE_NAME (type));
 
 	      /* A friendly class?  */
 	      if (current_class_type)
@@ -11557,33 +11555,32 @@ friend declaration requires class-key, i.e. `friend %#T'",
 	if (friendp)
 	  {
 	    /* Friends are treated specially.  */
-            tree t = NULL_TREE;
-	    
-	    /* DR 209. The friend does not need to be accessible at this
-               point. */
-	    skip_type_access_control ();
-	    
 	    if (ctype == current_class_type)
 	      warning ("member functions are implicitly friends of their class");
-
-            if (decl && DECL_NAME (decl))
-              {
-                if (template_class_depth (current_class_type) == 0)
-                  {
-              	    decl = check_explicit_specialization
-              	            (declarator, decl,
-              	             template_count, 2 * (funcdef_flag != 0) + 4);
-              	    if (decl == error_mark_node)
-              	      return error_mark_node;
-                  }
-              
-                t = do_friend (ctype, declarator, decl,
-              		       last_function_parms, *attrlist, flags, quals,
-              		       funcdef_flag);
-              }
-            if (t && funcdef_flag)
-              return t;
-	    return void_type_node;
+ 	    else
+ 	      {
+ 		tree t = NULL_TREE;
+ 		if (decl && DECL_NAME (decl))
+ 		  {
+ 		    if (template_class_depth (current_class_type) == 0)
+ 		      {
+ 			decl
+ 			  = check_explicit_specialization
+ 			  (declarator, decl,
+ 			   template_count, 2 * (funcdef_flag != 0) + 4);
+ 			if (decl == error_mark_node)
+ 			  return error_mark_node;
+ 		      }
+		    
+ 		    t = do_friend (ctype, declarator, decl,
+ 				   last_function_parms, *attrlist,
+				   flags, quals, funcdef_flag);
+ 		  }
+ 		if (t && funcdef_flag)
+ 		  return t;
+  
+ 		return void_type_node;
+ 	      }
 	  }
 
 	/* Structure field.  It may not be a function, except for C++ */

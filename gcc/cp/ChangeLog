@@ -1,5 +1,18 @@
 2002-03-11  Nathan Sidwell  <nathan@codesourcery.com>
 
+	Revert 2001-03-26  Nathan Sidwell  <nathan@codesourcery.com>,
+	DR209 is now not a defect.
+	* cp-tree.h (skip_type_access_control): Remove.
+	* decl.c (grokdeclarator): Do type access control for friend
+	declarations.
+	* semantics.c (decl_type_access_control): Don't reset
+	current_type_lookups.
+	(save_type_access_control): Always save the lookups.
+	(skip_type_access_control): Remove.
+	(finish_class_definition): Don't change type_lookups.
+
+2002-03-11  Nathan Sidwell  <nathan@codesourcery.com>
+
 	Revert 2000-12-01  Nathan Sidwell  <nathan@codesourcery.com>,
 	It is incorrect.
 	* typeck.c (build_static_cast): Compare non-qualified types
