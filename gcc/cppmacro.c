@@ -1,6 +1,6 @@
 /* Part of CPP library.  (Macro and #define handling.)
    Copyright (C) 1986, 1987, 1989, 1992, 1993, 1994, 1995, 1996, 1998,
-   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
    Written by Per Bothner, 1994.
    Based on CCCP program by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
@@ -89,8 +89,6 @@ _cpp_warn_if_unused_macro (pfile, node, v)
       cpp_macro *macro = node->value.macro;
 
       if (!macro->used
-	  /* Skip front-end built-ins and command line macros.  */
-	  && macro->line >= pfile->first_unused_line
 	  && MAIN_FILE_P (lookup_line (&pfile->line_maps, macro->line)))
 	cpp_error_with_line (pfile, DL_WARNING, macro->line, 0,
 			     "macro \"%s\" is not used", NODE_NAME (node));
@@ -1568,7 +1566,7 @@ _cpp_create_definition (pfile, node)
   macro->params = 0;
   macro->paramc = 0;
   macro->variadic = 0;
-  macro->used = 0;
+  macro->used = !CPP_OPTION (pfile, warn_unused_macros);
   macro->count = 0;
   macro->fun_like = 0;
   /* To suppress some diagnostics.  */

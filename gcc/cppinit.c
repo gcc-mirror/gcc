@@ -48,7 +48,6 @@ struct cpp_pending
 {
   struct pending_option *directive_head, *directive_tail;
   struct pending_option *imacros_head, *imacros_tail;
-  struct pending_option *include_head, *include_tail;
 };
 
 #ifdef __STDC__
@@ -278,7 +277,6 @@ cpp_destroy (pfile)
   cpp_context *context, *contextn;
   tokenrun *run, *runn;
 
-  free_chain (CPP_OPTION (pfile, pending)->include_head);
   free (CPP_OPTION (pfile, pending));
   free (pfile->op_stack);
 
@@ -603,8 +601,6 @@ cpp_finish_options (pfile)
     {
       struct pending_option *p;
 
-      /* Prevent -Wunused-macros with command-line redefinitions.  */
-      pfile->first_unused_line = (unsigned int) -1;
       _cpp_do_file_change (pfile, LC_RENAME, _("<built-in>"), 1, 0);
       init_builtins (pfile);
       _cpp_do_file_change (pfile, LC_RENAME, _("<command line>"), 1, 0);
@@ -617,40 +613,10 @@ cpp_finish_options (pfile)
       for (p = CPP_OPTION (pfile, pending)->imacros_head; p; p = p->next)
 	if (cpp_push_include (pfile, p->arg))
 	  cpp_scan_nooutput (pfile);
-
-      pfile->next_include_file = &CPP_OPTION (pfile, pending)->include_head;
-      _cpp_maybe_push_include_file (pfile);
     }
-
-  pfile->first_unused_line = pfile->line;
 
   free_chain (CPP_OPTION (pfile, pending)->imacros_head);
   free_chain (CPP_OPTION (pfile, pending)->directive_head);
-}
-
-/* Push the next buffer on the stack given by -include, if any.  */
-void
-_cpp_maybe_push_include_file (pfile)
-     cpp_reader *pfile;
-{
-  if (pfile->next_include_file)
-    {
-      struct pending_option *head = *pfile->next_include_file;
-
-      while (head && !cpp_push_include (pfile, head->arg))
-	head = head->next;
-
-      if (head)
-	pfile->next_include_file = &head->next;
-      else
-	{
-	  /* All done; restore the line map from <command line>.  */
-	  _cpp_do_file_change (pfile, LC_RENAME,
-			       pfile->line_maps.maps[0].to_file, 1, 0);
-	  /* Don't come back here again.  */
-	  pfile->next_include_file = NULL;
-	}
-    }
 }
 
 /* This is called at the end of preprocessing.  It pops the last
@@ -723,7 +689,7 @@ new_pending_directive (pend, text, handler)
   DEF_OPT("D",                        no_mac, OPT_D)                          \
   DEF_OPT("U",                        no_mac, OPT_U)                          \
   DEF_OPT("imacros",                  no_fil, OPT_imacros)                    \
-  DEF_OPT("include",                  no_fil, OPT_include)
+
 
 #define DEF_OPT(text, msg, code) code,
 enum opt_code
@@ -887,7 +853,6 @@ cpp_handle_option (pfile, argc, argv)
 	case OPT_U:
 	  new_pending_directive (pend, arg, cpp_undef);
 	  break;
-	case OPT_include:
 	case OPT_imacros:
 	  {
 	    struct pending_option *o = (struct pending_option *)
@@ -895,10 +860,7 @@ cpp_handle_option (pfile, argc, argv)
 	    o->arg = arg;
 	    o->next = NULL;
 
-	    if (opt_code == OPT_include)
-	      APPEND (pend, include, o);
-	    else
-	      APPEND (pend, imacros, o);
+	    APPEND (pend, imacros, o);
 	  }
 	  break;
 	}
