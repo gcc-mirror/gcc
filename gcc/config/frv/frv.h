@@ -109,7 +109,7 @@
     %{mmedia} %{mno-media} \
     %{mmuladd} %{mno-muladd} \
     %{mpack} %{mno-pack} \
-    %{mfdpic} \
+    %{mno-fdpic:-mnopic} %{mfdpic} \
     %{fpic|fpie: -mpic} %{fPIC|fPIE: -mPIC} %{mlibrary-pic}}"
 
 /* Another C string constant used much like `LINK_SPEC'.  The difference
@@ -151,7 +151,7 @@
 %{mcpu=tomcat: %(cpp_fr500)} \
 %{mcpu=simple: %(cpp_simple)} \
 %{!mcpu*: %(cpp_cpu_default)} \
-%{mno-media: -D__FRV_ACC__=0 %{msoft-float: -D__FRV_FPR__=0}} \
+%{mno-media: -U__FRV_ACC__ -D__FRV_ACC__=0 %{msoft-float: -U__FRV_FPR__ -D__FRV_FPR__=0}} \
 %{mhard-float: -D__FRV_HARD_FLOAT__} \
 %{msoft-float: -U__FRV_HARD_FLOAT__} \
 %{mgpr-32: -U__FRV_GPR__ -D__FRV_GPR__=32} \
@@ -203,7 +203,7 @@
 -D__FRV_GPR__=32 \
 -D__FRV_FPR__=0 \
 -D__FRV_ACC__=0 \
-%{mmedia: -D__FRV_ACC__=8} \
+%{mmedia: -U__FRV_ACC__ -D__FRV_ACC__=8} \
 %{mhard-float|mmedia: -D__FRV_FPR__=64}"
 
 #define MASK_DEFAULT_FRV	\
