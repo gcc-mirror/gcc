@@ -36,6 +36,7 @@ Boston, MA 02111-1307, USA.  */
 {"@treelang",
     "tree1\
        %{!Q:-quiet}\
+       -dumpbase %B \
        %{d*}\
        %{m*}\
        %{a}\

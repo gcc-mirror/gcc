@@ -591,8 +591,11 @@ INTEGER {
   struct prod_token_parm_item *tok = $2;
   struct prod_token_parm_item *op1 = $1;
   struct prod_token_parm_item *op2 = $3;
+  int type_code = NUMERIC_TYPE (op1);
+  if (!type_code)
+    YYERROR;
   $$ = make_plus_expression
-     (tok, op1, op2, SIGNED_INT, EXP_EQUALS);
+     (tok, op1, op2, type_code, EXP_EQUALS);
 }
 |variable_ref ASSIGN expression {
   struct prod_token_parm_item *tok = $2;
@@ -672,7 +675,7 @@ NAME LEFT_PARENTHESIS expressions_with_commas_opt RIGHT_PARENTHESIS {
   type = tree_code_get_type (NUMERIC_TYPE (prod));
   prod->tp.pro.code = tree_code_get_expression (EXP_FUNCTION_INVOCATION, type,
                                                 proto->tp.pro.code, parms,
-                                                NULL);
+                                                NULL, tok->tp.tok.location);
   $$ = prod;
 }
 ;
@@ -727,8 +730,9 @@ NAME {
   OP1 (prod) = $1;
   
   prod->tp.pro.code =
-    tree_code_get_expression (EXP_REFERENCE, type, 
-			      symbol_table_entry->tp.pro.code, NULL, NULL);
+    tree_code_get_expression (EXP_REFERENCE, type,
+			      symbol_table_entry->tp.pro.code, NULL, NULL,
+			      tok->tp.tok.location);
   $$ = prod;
 }
 ;
@@ -917,7 +921,8 @@ make_plus_expression (struct prod_token_parm_item* tok,
       
   prod->tp.pro.code = tree_code_get_expression (prod_code, type,
 						op1->tp.pro.code,
-						op2->tp.pro.code, NULL);
+						op2->tp.pro.code, NULL,
+						tok->tp.tok.location);
 
   return prod;
 }

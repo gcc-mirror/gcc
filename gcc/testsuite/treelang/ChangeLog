@@ -1,3 +1,18 @@
+2005-03-11  James A. Morrison  <phython@gcc.gnu.org>
+
+	Backport recent test cases added to mainline:
+	2005-02-26  James A. Morrison  <phython@gcc.gnu.org>
+
+	* compile/var_defs: Add uninitialized variables.
+
+	2005-02-26  James A. Morrison  <phython@gcc.gnu.org>
+
+	* compile/extrafunc.tree, compile/extravar.tree: New tests.
+
+	2005-02-26  James A. Morrison  <phython@gcc.gnu.org>
+
+	* compile/unsigned.tree: New test.
+
 2005-02-24  James A. Morrison  <phython@gcc.gnu.org>
 
 	PR other/19896

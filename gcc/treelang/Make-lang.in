@@ -33,8 +33,8 @@
 #
 # It should also provide rules for:
 #
-# - making any compiler driver (eg: GCC)
-# - the compiler proper (eg: treelang)
+# - making any compiler driver (eg: gcc)
+# - the compiler proper (eg: tree1)
 # - define the names for selecting the language in LANGUAGES.
 #
 
@@ -54,7 +54,9 @@ GCC_EXTRAS = -B./ -B$(build_tooldir)/bin/ -isystem $(build_tooldir)/include
 # GCC_FOR_TREELANG = ./xgcc $(GCC_EXTRAS)
 
 TREE_GENERATED = lex.c parse.c parse.h parse.output
-TREE_EXES = tree1
+# We need to use something other than treelang here because the directory
+# is called treelang
+TREE_EXES = gtreelang
 
 #strict warnings for treelang
 treelang-warn = $(STRICT_WARN)
@@ -70,7 +72,7 @@ treelang/lex.o-warn = -Wno-error
 
 treelang TREELANG:treelang.done
 
-treelang.done: tree1$(exeext)
+treelang.done: gtreelang$(exeext) tree1$(exeext)
 	$(STAMP) treelang.done
 
 # no preprocessor
@@ -83,6 +85,14 @@ tree1$(exeext): treelang/tree1.o treelang/treetree.o treelang/tree-convert.o \
 	treelang/tree1.o treelang/treetree.o treelang/tree-convert.o \
 	treelang/lex.o treelang/parse.o \
 	$(BACKEND) $(LIBS) attribs.o
+
+# Create the compiler driver treelang.
+gtreelang$(exeext): gcc.o version.o prefix.o intl.o $(EXTRA_GCC_OBJS) \
+  $(LIBDEPS) treelang/spec.o
+	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ treelang/spec.o \
+	  gcc.o version.o prefix.o intl.o $(EXTRA_GCC_OBJS) $(LIBS)
+
+
 
 #
 # Compiling object files from source files.
@@ -100,6 +110,9 @@ treelang/treetree.o: treelang/treetree.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
   treelang/treetree.h treelang/parse.h
 
 treelang/tree-convert.o: treelang/tree-convert.c $(CONFIG_H) $(SYSTEM_H) \
+  coretypes.h diagnostic.h $(TREE_H) flags.h toplev.h langhooks.h $(TM_H)
+
+treelang/spec.o: treelang/spec.c $(CONFIG_H) $(SYSTEM_H) \
   coretypes.h diagnostic.h $(TREE_H) flags.h toplev.h langhooks.h $(TM_H)
 
 treelang/parse.o: treelang/parse.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
@@ -293,7 +306,6 @@ treelang.check: $(TESTSUITEDIR)/site.exp
 	gcc_extras="-B`cd ..;${PWD_COMMAND}` -B`cd ..;${PWD_COMMAND}`/treelang"; export gcc_extras; \
 	$(RUNTEST) --tool treelang $(RUNTESTFLAGS)
 	rm $(srcdir)/testsuite/treelang/{a01gcco01runpgmerr,a01gcc.out01,a01gcc.out01err}
-#	GCC_EXTRAS="$(GCC_EXTRAS)"; export GCC_EXTRAS; \
 
 # copy the output files from the current test to source ie say the new results are OK
 treelang.check.fix: force

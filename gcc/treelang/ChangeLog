@@ -1,3 +1,61 @@
+2005-03-11  James A. Morrison  <phython@gcc.gnu.org>
+
+	Backport recent patches to mainline:
+	2005-03-06  James A. Morrison  <phython@gcc.gnu.org>
+
+	PR other/20326
+	* Make-lang.in (gtreelang, treelang/spec.o): New targets.
+	* spec.c: New file.
+
+	2005-02-27  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* treelang.texi: Fix a typo.
+
+	2005-02-26  James A. Morrison  <phython@gcc.gnu.org>
+
+	* parse.y (function_invocation, variable-ref, make_plus_expression):
+	Pass location to tree_code_get_expression.
+	* treetree.c (tree_code_generate_return): Set EXPR_LOCUS on retval.
+	(tree_code_get_expression): Wrap variable references in NOP_EXPRs and
+	set EXPR_LOCATION on ret1.
+	* treetree.h (tree_code_get_expression): Take the location of the
+	expression as an argument.
+
+	2005-02-26  James A. Morrison  <phython@gcc.gnu.org>
+
+	* treelang.texi: Treelang does have warnings.
+	* treetree.c (tree_code_create_function_prototype): Don't set
+	TREE_USED and set TREE_PUBLIC, DECL_EXTERNAL, and TREE_STATIC
+	as few times as needed on the function declaration.
+	(tree_code_create_function_initial): Don't set TREE_USED,
+	TREE_ADDRESSABLE, but set TREE_STATIC on the function declaration.
+	(tree_code_create_variable): Don't set TREE_USED on VAR_DECL.
+	(tree_code_get_expression): Set TREE_USED for variable references
+	and function calls.
+
+	2005-02-26  James A. Morrison  <phython@gcc.gnu.org>
+
+	* parse.y: Do comparisons as the type of the first expression.
+	* treetree.c (tree_code_get_integer_value): Build integer constants
+	with the proper type.
+
+	2005-02-26  James A. Morrison  <phython@gcc.gnu.org>
+
+	* Make-lang.in: Remove commented out code.
+	* lang-specs.h: Always pass -dumpbase to tree1.
+
+	2005-02-25  James A. Morrrison  <phython@gcc.gnu.org>
+
+	* treelang.texi: Remove extra contribution notice.
+	Split up some run-on sentences.  Document function parameters
+	as optional.  Indicate automatic variables can now be at any scope.
+	Mention literals are only signed if they are preceded by a unary
+	plus or minus.  Clarify interoperability with C.
+
+	2005-02-25  James A. Morrison  <phython@gcc.gnu.org>
+
+	* treelang.texi: Fix whitespacing.
+
 2005-02-24  James A. Morrison  <phython@gcc.gnu.org>
 
 	PR other/19896

@@ -352,25 +352,19 @@ tree_code_create_function_prototype (unsigned char* chars,
   DECL_CONTEXT (fn_decl) = NULL_TREE;
   DECL_SOURCE_LOCATION (fn_decl) = loc;
 
-  TREE_USED (fn_decl) = 1;
-
   TREE_PUBLIC (fn_decl) = 0;
   DECL_EXTERNAL (fn_decl) = 0;
   TREE_STATIC (fn_decl) = 0;
   switch (storage_class)
     {
     case STATIC_STORAGE:
-      TREE_PUBLIC (fn_decl) = 0;
       break;
 
     case EXTERNAL_DEFINITION_STORAGE:
       TREE_PUBLIC (fn_decl) = 1;
-      TREE_STATIC (fn_decl) = 0;
-      DECL_EXTERNAL (fn_decl) = 0;
       break;
 
     case EXTERNAL_REFERENCE_STORAGE:
-      TREE_PUBLIC (fn_decl) = 0;
       DECL_EXTERNAL (fn_decl) = 1;
       break;
 
@@ -457,11 +451,7 @@ tree_code_create_function_initial (tree prev_saved,
 
   pushlevel (0);
 
-  /* Force it to be output, else may be solely inlined.  */
-  TREE_ADDRESSABLE (fn_decl) = 1;
-
-  /* Stop -O3 from deleting it.  */
-  TREE_USED (fn_decl) = 1;
+  TREE_STATIC (fn_decl) = 1;
 }
 
 /* Wrapup a function contained in file FILENAME, ending at line LINENO.  */
@@ -570,9 +560,6 @@ tree_code_create_variable (unsigned int storage_class,
       gcc_unreachable ();
     }
 
-  /* This should really only be set if the variable is used.  */
-  TREE_USED (var_decl) = 1;
-
   TYPE_NAME (TREE_TYPE (var_decl)) = TYPE_NAME (var_type);
   return pushdecl (copy_node (var_decl));
 }
@@ -602,6 +589,9 @@ tree_code_generate_return (tree type, tree exp)
       TREE_SIDE_EFFECTS (setret) = 1;
       TREE_USED (setret) = 1;
       setret = build1 (RETURN_EXPR, type, setret);
+      /* Use EXPR_LOCUS so we don't lose any information about the file we
+	 are compiling.  */
+      SET_EXPR_LOCUS (setret, EXPR_LOCUS (exp));
     }
    else
      setret = build1 (RETURN_EXPR, type, NULL_TREE);
@@ -650,7 +640,8 @@ tree_code_get_integer_value (unsigned char* chars, unsigned int length)
   for (ix = start; ix < length; ix++)
     val = val * 10 + chars[ix] - (unsigned char)'0';
   val = val*negative;
-  return build_int_cst_wide (NULL_TREE,
+  return build_int_cst_wide (start == 1 ?
+				integer_type_node : unsigned_type_node,
 			     val & 0xffffffff, (val >> 32) & 0xffffffff);
 }
 
@@ -659,7 +650,8 @@ tree_code_get_integer_value (unsigned char* chars, unsigned int length)
 tree
 tree_code_get_expression (unsigned int exp_type,
                           tree type, tree op1, tree op2,
-			  tree op3 ATTRIBUTE_UNUSED)
+			  tree op3 ATTRIBUTE_UNUSED,
+			  location_t loc)
 {
   tree ret1;
   int operator;
@@ -697,11 +689,13 @@ tree_code_get_expression (unsigned int exp_type,
 
       /* Reference to a variable.  This is dead easy, just return the
          decl for the variable.  If the TYPE is different than the
-         variable type, convert it.  */
+         variable type, convert it.  However, to keep accurate location
+	 information we wrap it in a NOP_EXPR is is easily stripped.  */
     case EXP_REFERENCE:
       gcc_assert (op1);
+      TREE_USED (op1) = 1;
       if (type == TREE_TYPE (op1))
-        ret1 = op1;
+        ret1 = build1 (NOP_EXPR, type, op1);
       else
         ret1 = fold (build1 (CONVERT_EXPR, type, op1));
       break;
@@ -710,6 +704,7 @@ tree_code_get_expression (unsigned int exp_type,
       gcc_assert (op1);
       {
         tree fun_ptr;
+	TREE_USED (op1) = 1;
         fun_ptr = fold (build1 (ADDR_EXPR,
                                 build_pointer_type (TREE_TYPE (op1)), op1));
         ret1 = build3 (CALL_EXPR, type, fun_ptr, nreverse (op2), NULL_TREE);
@@ -720,6 +715,10 @@ tree_code_get_expression (unsigned int exp_type,
       gcc_unreachable ();
     }
 
+  /* Declarations already have a location and constants can be shared so they
+     shouldn't a location set on them.  */
+  if (! DECL_P (ret1) && ! TREE_CONSTANT (ret1))
+    SET_EXPR_LOCATION (ret1, loc);
   return ret1;
 }
 
