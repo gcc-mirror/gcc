@@ -3161,7 +3161,20 @@ find_comparison_args (code, parg1, parg2, pmode1, pmode2)
 	p = lookup (arg1, safe_hash (arg1, GET_MODE (arg1)) & HASH_MASK,
 		    GET_MODE (arg1));
       if (p)
-	p = p->first_same_value;
+	{
+	  p = p->first_same_value;
+
+	  /* If what we compare is already known to be constant, that is as
+	     good as it gets.
+	     We need to break the loop in this case, because otherwise we
+	     can have an infinite loop when looking at a reg that is known
+	     to be a constant which is the same as a comparison of a reg
+	     against zero which appears later in the insn stream, which in
+	     turn is constant and the same as the comparison of the first reg
+	     against zero...  */
+	  if (p->is_const)
+	    break;
+	}
 
       for (; p; p = p->next_same_value)
 	{
