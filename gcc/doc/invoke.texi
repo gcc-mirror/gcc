@@ -242,15 +242,15 @@ in the following sections.
 -fdump-tree-original@r{[}-@var{n}@r{]}  @gol
 -fdump-tree-optimized@r{[}-@var{n}@r{]} @gol
 -fdump-tree-inlined@r{[}-@var{n}@r{]} @gol
--feliminate-dwarf2-dups  -fmem-report @gol
--fprofile-arcs  -fsched-verbose=@var{n} @gol
+-feliminate-dwarf2-dups -feliminate-unused-debug-types @gol
+-fmem-report -fprofile-arcs @gol
+-frandom-seed=@var{string} -fsched-verbose=@var{n} @gol
 -ftest-coverage  -ftime-report @gol
 -g  -g@var{level}  -gcoff  -gdwarf  -gdwarf-1  -gdwarf-1+  -gdwarf-2 @gol
 -ggdb  -gstabs  -gstabs+  -gvms  -gxcoff  -gxcoff+ @gol
 -p  -pg  -print-file-name=@var{library}  -print-libgcc-file-name @gol
 -print-multi-directory  -print-multi-lib @gol
 -print-prog-name=@var{program}  -print-search-dirs  -Q @gol
--feliminate-unused-debug-types @gol
 -save-temps  -time}
 
 @item Optimization Options
@@ -3279,6 +3279,14 @@ Dump after all tree based optimization, to @file{@var{file}.optimized}.
 @item inlined
 Dump after function inlining, to @file{@var{file}.inlined}.
 @end table
+
+@item -frandom-seed=@var{string}
+@opindex frandom-string
+This option provides a seed that GCC uses when it would otherwise use
+random numbers.  At present, this is used to generate certain symbol names
+that have to be different in every compiled file.
+
+The @var{string} should be different for every file you compile.
 
 @item -fsched-verbose=@var{n}
 @opindex fsched-verbose

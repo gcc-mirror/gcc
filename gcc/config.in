@@ -1,4 +1,4 @@
-/* config.in.  Generated automatically from configure.in by autoheader 2.13.  */
+/* config.in.  Generated automatically from configure.in by autoheader.  */
 
 /* Define if using alloca.c.  */
 #undef C_ALLOCA
@@ -149,6 +149,9 @@
 
 /* Define if you have the getrusage function.  */
 #undef HAVE_GETRUSAGE
+
+/* Define if you have the gettimeofday function.  */
+#undef HAVE_GETTIMEOFDAY
 
 /* Define if you have the getuid function.  */
 #undef HAVE_GETUID
