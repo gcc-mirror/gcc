@@ -1,6 +1,6 @@
-;;- Machine description for SPARC chip for GNU C compiler
+;- Machine description for SPARC chip for GNU C compiler
 ;;  Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-;;  1999, 2000 Free Software Foundation, Inc.
+;;  1999, 2000, 2001 Free Software Foundation, Inc.
 ;;  Contributed by Michael Tiemann (tiemann@cygnus.com)
 ;;  64 bit SPARC V9 support by Michael Tiemann, Jim Wilson, and Doug Evans,
 ;;  at Cygnus Support.
@@ -149,7 +149,7 @@
   [(eq_attr "in_call_delay" "true") (nil) (nil)])
 
 (define_attr "eligible_for_sibcall_delay" "false,true"
-  (symbol_ref "eligible_for_sibcall_delay(insn)"))
+  (symbol_ref "eligible_for_sibcall_delay (insn)"))
 
 (define_delay (eq_attr "type" "sibcall")
   [(eq_attr "eligible_for_sibcall_delay" "true") (nil) (nil)])
@@ -158,7 +158,7 @@
   (const (symbol_ref "current_function_uses_only_leaf_regs")))
 
 (define_attr "eligible_for_return_delay" "false,true"
-  (symbol_ref "eligible_for_return_delay(insn)"))
+  (symbol_ref "eligible_for_return_delay (insn)"))
 
 (define_attr "in_return_delay" "false,true"
   (if_then_else (and (and (and (eq_attr "type" "move,load,sload,store,binary,ialu")
@@ -8598,7 +8598,7 @@
   [(set_attr "type" "call")])
 
 (define_insn "*call_address_sp64"
-  [(call (mem:SI (match_operand:DI 0 "address_operand" "p"))
+  [(call (mem:DI (match_operand:DI 0 "address_operand" "p"))
 	 (match_operand 1 "" ""))
    (clobber (reg:DI 15))]
   ;;- Do not use operand 1 for most machines.
@@ -8607,7 +8607,7 @@
   [(set_attr "type" "call")])
 
 (define_insn "*call_symbolic_sp64"
-  [(call (mem:SI (match_operand:DI 0 "symbolic_operand" "s"))
+  [(call (mem:DI (match_operand:DI 0 "symbolic_operand" "s"))
 	 (match_operand 1 "" ""))
    (clobber (reg:DI 15))]
   ;;- Do not use operand 1 for most machines.
@@ -8666,7 +8666,7 @@
   ;; Note that this expression is not used for generating RTL.
   ;; All the RTL is generated explicitly below.
   [(set (match_operand 0 "register_operand" "=rf")
-	(call (match_operand:SI 1 "" "")
+	(call (match_operand 1 "" "")
 	      (match_operand 4 "" "")))]
   ;; operand 2 is stack_size_rtx
   ;; operand 3 is next_arg_register
@@ -8722,7 +8722,7 @@
 
 (define_insn "*call_value_address_sp64"
   [(set (match_operand 0 "" "")
-	(call (mem:SI (match_operand:DI 1 "address_operand" "p"))
+	(call (mem:DI (match_operand:DI 1 "address_operand" "p"))
 	      (match_operand 2 "" "")))
    (clobber (reg:DI 15))]
   ;;- Do not use operand 2 for most machines.
@@ -8732,7 +8732,7 @@
 
 (define_insn "*call_value_symbolic_sp64"
   [(set (match_operand 0 "" "")
-	(call (mem:SI (match_operand:DI 1 "symbolic_operand" "s"))
+	(call (mem:DI (match_operand:DI 1 "symbolic_operand" "s"))
 	      (match_operand 2 "" "")))
    (clobber (reg:DI 15))]
   ;;- Do not use operand 2 for most machines.
@@ -8785,7 +8785,7 @@
   [(set_attr "type" "sibcall")])
 
 (define_insn "*sibcall_symbolic_sp64"
-  [(call (mem:SI (match_operand:DI 0 "symbolic_operand" "s"))
+  [(call (mem:DI (match_operand:DI 0 "symbolic_operand" "s"))
 	 (match_operand 1 "" ""))
    (return)]
   "TARGET_ARCH64"
@@ -8794,7 +8794,7 @@
 
 (define_expand "sibcall_value"
   [(parallel [(set (match_operand 0 "register_operand" "=rf")
-		(call (match_operand:SI 1 "" "") (const_int 0)))
+		(call (match_operand 1 "" "") (const_int 0)))
 	      (return)])]
   ""
   "")
@@ -8810,7 +8810,7 @@
 
 (define_insn "*sibcall_value_symbolic_sp64"
   [(set (match_operand 0 "" "")
-	(call (mem:SI (match_operand:DI 1 "symbolic_operand" "s"))
+	(call (mem:DI (match_operand:DI 1 "symbolic_operand" "s"))
 	      (match_operand 2 "" "")))
    (return)]
   "TARGET_ARCH64"

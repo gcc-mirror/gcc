@@ -765,11 +765,7 @@ extern struct sparc_cpu_select sparc_select[];
 
 /* Width of a word, in units (bytes).  */
 #define UNITS_PER_WORD		(TARGET_ARCH64 ? 8 : 4)
-#ifdef IN_LIBGCC2
-#define MIN_UNITS_PER_WORD	UNITS_PER_WORD
-#else
 #define MIN_UNITS_PER_WORD	4
-#endif
 
 /* Now define the sizes of the C data types.  */
 
@@ -780,7 +776,7 @@ extern struct sparc_cpu_select sparc_select[];
 #define FLOAT_TYPE_SIZE		32
 #define DOUBLE_TYPE_SIZE	64
 
-#if defined (SPARC_BI_ARCH)
+#ifdef SPARC_BI_ARCH
 #define MAX_LONG_TYPE_SIZE	64
 #endif
 
@@ -796,6 +792,11 @@ extern struct sparc_cpu_select sparc_select[];
    See also the macro `Pmode' defined below.  */
 #define POINTER_SIZE (TARGET_PTR64 ? 64 : 32)
 
+/* If we have to extend pointers (only when TARGET_ARCH64 and not
+   TARGET_PTR64), we want to do it unsigned.   This macro does nothing
+   if ptr_mode and Pmode are the same.  */
+#define POINTERS_EXTEND_UNSIGNED 1
+
 /* A macro to update MODE and UNSIGNEDP when an object whose type
    is TYPE and which has the specified mode and signedness is to be
    stored in a register.  This macro is only called when TYPE is a
@@ -804,9 +805,7 @@ extern struct sparc_cpu_select sparc_select[];
 if (TARGET_ARCH64				\
     && GET_MODE_CLASS (MODE) == MODE_INT	\
     && GET_MODE_SIZE (MODE) < UNITS_PER_WORD)	\
-{						\
-  (MODE) = DImode;				\
-}
+  (MODE) = DImode;
 
 /* Define this macro if the promotion described by PROMOTE_MODE
    should also be done for outgoing function arguments.  */
@@ -2697,7 +2696,7 @@ do {                                                                    \
 /* Specify the machine mode that pointers have.
    After generation of rtl, the compiler makes no further distinction
    between pointers and any other objects of this machine mode.  */
-#define Pmode (TARGET_PTR64 ? DImode : SImode)
+#define Pmode (TARGET_ARCH64 ? DImode : SImode)
 
 /* Generate calls to memcpy, memcmp and memset.  */
 #define TARGET_MEM_FUNCTIONS
@@ -2735,10 +2734,8 @@ do {                                                                    \
    code knows how to reverse it correctly we keep the old definition.  */
 #define REVERSIBLE_CC_MODE(MODE) ((MODE) != CCFPEmode && (MODE) != CCFPmode)
 
-/* A function address in a call instruction
-   is a byte address (for indexing purposes)
-   so give the MEM rtx a byte's mode.  */
-#define FUNCTION_MODE SImode
+/* A function address in a call instruction for indexing purposes.  */
+#define FUNCTION_MODE Pmode
 
 /* Define this if addresses of constant functions
    shouldn't be put through pseudo regs where they can be cse'd.
