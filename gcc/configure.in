@@ -2516,6 +2516,8 @@ changequote([,])dnl
 		;;
 	m88k-*-openbsd*)
 		tmake_file="${tmake_file} m88k/t-luna-gas"
+		tm_file="m88k/aout-dbx.h aoutos.h m88k/m88k.h openbsd.h ${tm_file}"
+		xm_file="xm-openbsd.h m88k/xm-m88k.h ${xm_file}"
 		;;
 	m88k-*-sysv3*)
 		tm_file=m88k/sysv3.h
