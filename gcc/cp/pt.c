@@ -1934,6 +1934,7 @@ redeclare_class_template (type, parms)
 	     A template-parameter may not be given default arguments
 	     by two different declarations in the same scope.  */
 	  cp_error ("redefinition of default argument for `%#D'", parm);
+	  cp_error_at ("  original definition appeared here", tmpl_parm);
 	  return;
 	}
 
