@@ -1,3 +1,9 @@
+2003-05-24  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* gcc_release (build_sources): Only update ChangeLog files which
+	do not yet contain the entry we are going to add.
+	Fix typo in added ChangeLog entries.
+
 2003-05-20  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* gcc_release (upload_files): Put diff files into a "diffs"
@@ -12,7 +18,7 @@
 	* gcc_release (usage): Print more detailed description of all
 	command-line options.
 
-2003-05-09  Gerald Pfeifer  <gerald@sourceware.org>
+2003-05-09  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* update_version (ADD_BRANCHES): Add, set to MAIN and
 	tree-ssa-20020619-branch.
@@ -23,12 +29,12 @@
 	* update_version (textstring_FILES): Only version.c needs to be
 	updated, now that we do not consider older branches any more.
 
-2003-05-02  Gerald Pfeifer  <gerald@pfeifer@dbai.tuwien.ac.at>
+2003-05-02  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* update_version (IGNORE_BRANCHES): Add.
 	(BRANCHES): Do not consider branches matching $IGNORE_BRANCHES.
 
-2003-05-02  Gerald Pfeifer  <gerald@pfeifer@dbai.tuwien.ac.at>
+2003-05-02  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* update_version: Add a trace of which branch we are currently
 	working on.
