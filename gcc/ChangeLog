@@ -1,3 +1,9 @@
+2003-01-12  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/9264
+	* c-lex.c (c_lex): Set the token value to error_mark_node for
+	invalid numeric constants.
+
 2003-01-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* c-pch.c (asm_file_startpos): Change to `long'.

@@ -1,3 +1,11 @@
+2003-01-12  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/9264
+	* g++.dg/parse/octal1.C: New file.
+
+	PR c++/9172
+	* g++.dg/parse/typename1.C: New file.
+
 2003-01-10  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	* gcc.dg/bf-ms-layout.c: Enable for cygwin and mingw32 targets.

@@ -712,6 +712,7 @@ c_lex (value)
 	  {
 	  case CPP_N_INVALID:
 	    /* cpplib has issued an error.  */
+	    *value = error_mark_node;
 	    break;
 
 	  case CPP_N_INTEGER:
