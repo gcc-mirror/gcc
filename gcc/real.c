@@ -79,7 +79,10 @@ netlib.att.com: netlib/cephes.   */
    `C4X' refers specifically to the floating point format used on
    Texas Instruments TMS320C3x and TMS320C4x digital signal
    processors.  This supports QFmode (32-bit float, double) and HFmode
-   (40-bit long double) where BITS_PER_BYTE is 32.
+   (40-bit long double) where BITS_PER_BYTE is 32. Unlike IEEE
+   floats, C4x floats are not rounded to be even. The C4x conversions
+   were contributed by m.hayes@elec.canterbury.ac.nz (Michael Hayes) and
+   Haj.Ten.Brugge@net.HCC.nl (Herman ten Brugge).
 
    If LONG_DOUBLE_TYPE_SIZE = 64 (the default, unless tm.h defines it)
    then `long double' and `double' are both implemented, but they
@@ -2594,6 +2597,7 @@ emdnorm (s, lost, subflg, exp, rcntrl)
   s[rw] &= ~rmsk;
   if ((r & rmbit) != 0)
     {
+#ifndef C4X
       if (r == rmbit)
 	{
 	  if (lost == 0)
@@ -2607,6 +2611,7 @@ emdnorm (s, lost, subflg, exp, rcntrl)
 		goto mddone;
 	    }
 	}
+#endif
       eaddm (rbit, s);
     }
  mddone:
@@ -4932,8 +4937,10 @@ etoasc (x, string, ndigs)
 	  emovo (y, t);
 	  if (ecmp (t, ezero) != 0)
 	    goto roun;		/* round to nearest */
+#ifndef C4X
 	  if ((*(s - 1) & 1) == 0)
 	    goto doexp;		/* round to even */
+#endif
 	}
       /* Round up and propagate carry-outs */
     roun:

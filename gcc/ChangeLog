@@ -11,6 +11,9 @@ Wed Oct 14 00:38:40 1998  Jeffrey A Law  (law@cygnus.com)
 
 1998-10-13 Herman A.J. ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
 
+	* real.c (emdnorm and etoasc): Disable round to even for c4x target
+	to be compatible with TI compiler.
+
 	* Makefile.in (USER_H): Add va-c4x.h to definition.
 
 Tue Oct 13 23:03:37 1998  Richard Henderson  <rth@cygnus.com>
