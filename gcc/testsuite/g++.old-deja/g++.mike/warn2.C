@@ -17,6 +17,8 @@ OpResult fn1() {
 }
 
 extern void foo();
+
+int
 main () {
   if (fn1() == Ok) {	// WARNING - 
     foo();

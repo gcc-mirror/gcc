@@ -18,6 +18,8 @@ struct Type
 Type a;
 Type b;
 TypeKind c;
+
+int
 main() {
   a.kind = b.kind = c;
   (a.kind = c) = b.kind;	// gets bogus error
