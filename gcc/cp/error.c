@@ -186,8 +186,7 @@ dump_type (t, v)
       break;
 
     case TYPE_DECL:
-      dump_readonly_or_volatile (t, after);
-      OB_PUTID (DECL_NAME (t));
+      dump_decl (t, v);
       break;
 
     case INTEGER_TYPE:
@@ -553,6 +552,17 @@ dump_decl (t, v)
       OB_PUTS (" /* decl error */ ");
       break;
 
+    case TYPE_DECL:
+      if (TYPE_NAME (TREE_TYPE (t)) != t)
+	{
+	  if (v > 0)
+	    OB_PUTS ("typedef ");
+	  goto general;
+	}
+
+      dump_type (TREE_TYPE (t), v);
+      break;
+      
     case VAR_DECL:
       if (VTABLE_NAME_P (DECL_NAME (t)))
 	{
@@ -563,10 +573,11 @@ dump_decl (t, v)
       /* else fall through */
     case FIELD_DECL:
     case PARM_DECL:
+    general:
       if (v > 0)
 	{
 	  dump_type_prefix (TREE_TYPE (t), v);
-	  OB_PUTC(' ');
+	  OB_PUTC (' ');
 	}
       /* DECL_CLASS_CONTEXT isn't being set in some cases.  Hmm...  */
       if (TREE_CODE (t) == FIELD_DECL
@@ -574,13 +585,14 @@ dump_decl (t, v)
 	      && TREE_CODE_CLASS (TREE_CODE (DECL_CONTEXT (t))) == 't'))
 	{
 	  dump_type (DECL_CONTEXT (t), 0);
-	  OB_PUTC2(':', ':');
+	  OB_PUTC2 (':', ':');
 	}
       if (DECL_NAME (t))
 	dump_decl (DECL_NAME (t), v);
       else
 	OB_PUTS ("{anon}");
-      if (v > 0) dump_type_suffix (TREE_TYPE (t), v);
+      if (v > 0)
+	dump_type_suffix (TREE_TYPE (t), v);
       break;
 
     case ARRAY_REF:
@@ -596,10 +608,6 @@ dump_decl (t, v)
     case UNION_TYPE:
     case ENUMERAL_TYPE:
       dump_type (t, v);
-      break;
-
-    case TYPE_DECL:
-      dump_type (TREE_TYPE (t), v);
       break;
 
     case TYPE_EXPR:

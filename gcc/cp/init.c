@@ -50,7 +50,7 @@ void expand_aggr_init ();
 static void expand_aggr_init_1 ();
 static void expand_recursive_init_1 ();
 static void expand_recursive_init ();
-static void expand_virtual_init PROTO((tree, tree, tree));
+static void expand_virtual_init PROTO((tree, tree));
 tree expand_vec_init ();
 
 static void add_friend (), add_friends ();
@@ -101,23 +101,40 @@ void init_init_processing ()
    virtual base classes.  Initialize binfo's vtable pointer, if
    INIT_SELF is true.  CAN_ELIDE is true when we know that all virtual
    function table pointers in all bases have been initialized already,
-   probably because their constructors have just be run.  */
+   probably because their constructors have just be run.  ADDR is the
+   pointer to the object whos vtables we are going to initialize.
+
+   REAL_BINFO is usually the same as BINFO, except when addr is not of
+   pointer to the type of the real derived type that we want to
+   initialize for.  This is the case when addr is a pointer to a sub
+   object of a complete object, and we only want to do part of the
+   complete object's initiailzation of vtable pointers.  This is done
+   for all virtual table pointers in virtual base classes.  REAL_BINFO
+   is used to find the BINFO_VTABLE that we initialize with.  BINFO is
+   used for conversions of addr to subobjects.
+
+   BINFO_TYPE (real_binfo) must be BINFO_TYPE (binfo).
+
+   Relies upon binfo being inside TYPE_BINFO (TREE_TYPE (TREE_TYPE
+   (addr))).  */
 void
-init_vtbl_ptrs (binfo, init_self, can_elide)
-     tree binfo;
+expand_direct_vtbls_init (real_binfo, binfo, init_self, can_elide, addr)
+     tree real_binfo, binfo, addr;
      int init_self, can_elide;
 {
-  tree vfields;
+  tree real_binfos = BINFO_BASETYPES (real_binfo);
   tree binfos = BINFO_BASETYPES (binfo);
-  int i, n_baselinks = binfos ? TREE_VEC_LENGTH (binfos) : 0;
+  int i, n_baselinks = real_binfos ? TREE_VEC_LENGTH (real_binfos) : 0;
 
   for (i = 0; i < n_baselinks; i++)
     {
+      tree real_base_binfo = TREE_VEC_ELT (real_binfos, i);
       tree base_binfo = TREE_VEC_ELT (binfos, i);
       int is_not_base_vtable =
-	i != CLASSTYPE_VFIELD_PARENT (BINFO_TYPE (binfo));
-      if (! TREE_VIA_VIRTUAL (base_binfo))
-	init_vtbl_ptrs (base_binfo, is_not_base_vtable, can_elide);
+	i != CLASSTYPE_VFIELD_PARENT (BINFO_TYPE (real_binfo));
+      if (! TREE_VIA_VIRTUAL (real_base_binfo))
+	expand_direct_vtbls_init (real_base_binfo, base_binfo,
+				  is_not_base_vtable, can_elide, addr);
     }
 #if 0
   /* Before turning this on, make sure it is correct.  */
@@ -125,10 +142,10 @@ init_vtbl_ptrs (binfo, init_self, can_elide)
     return;
 #endif
   /* Should we use something besides CLASSTYPE_VFIELDS? */
-  if (init_self && CLASSTYPE_VFIELDS (BINFO_TYPE (binfo)))
+  if (init_self && CLASSTYPE_VFIELDS (BINFO_TYPE (real_binfo)))
     {
-      tree base_ptr = convert_pointer_to_real (binfo, current_class_decl);
-      expand_virtual_init (binfo, binfo, base_ptr);
+      tree base_ptr = convert_pointer_to_real (binfo, addr);
+      expand_virtual_init (real_binfo, base_ptr);
     }
 }
 
@@ -605,17 +622,13 @@ emit_base_init (t, immediately)
   /* Initialize all the virtual function table fields that
      do come from virtual base classes. */
   if (TYPE_USES_VIRTUAL_BASECLASSES (t))
-    expand_vbase_vtables_init (t_binfo, t_binfo,
-				C_C_D, current_class_decl, 0);
+    expand_indirect_vtbls_init (t_binfo, C_C_D, current_class_decl, 0);
   for (vbases = CLASSTYPE_VBASECLASSES (t); vbases; vbases = TREE_CHAIN (vbases))
     CLEAR_BINFO_BASEINIT_MARKED (vbases);
 
   /* Initialize all the virtual function table fields that
      do not come from virtual base classes.  */
-  init_vtbl_ptrs (t_binfo, 0, 1);
-
-  if (CLASSTYPE_NEEDS_VIRTUAL_REINIT (t))
-    expand_virtual_init (TYPE_BINFO (t), t, current_class_decl);
+  expand_direct_vtbls_init (t_binfo, t_binfo, 1, 1, current_class_decl);
 
   if (current_member_init_list)
     {
@@ -709,84 +722,31 @@ check_base_init (t)
    BINFO is the exact type that DECL is supposed to be.  In
    multiple inheritance, this might mean "C's A" if C : A, B.  */
 static void
-expand_virtual_init (main_binfo, binfo, decl)
-     tree main_binfo, binfo;
-     tree decl;
+expand_virtual_init (binfo, decl)
+     tree binfo, decl;
 {
-  tree type;
+  tree type = BINFO_TYPE (binfo);
   tree vtbl, vtbl_ptr;
   tree vtype, vtype_binfo;
 
-  if (TREE_CODE (binfo) == TREE_VEC)
-    type = BINFO_TYPE (binfo);
-  else if (TREE_CODE (binfo) == RECORD_TYPE)
-    {
-      type = binfo;
-      binfo = TYPE_BINFO (type);
-    }
-  else
-    my_friendly_abort (46);
-
+  /* This code is crusty.  Should be simple, like:
+     vtbl = BINFO_VTABLE (binfo);
+     */
   vtype = DECL_CONTEXT (CLASSTYPE_VFIELD (type));
   vtype_binfo = get_binfo (vtype, TREE_TYPE (TREE_TYPE (decl)), 0);
-#if 0
-  /* This code suggests that it's time to rewrite how we handle
-     replicated baseclasses in G++.  */
-  if (get_base_distance (vtype, TREE_TYPE (TREE_TYPE (decl)),
-			 0, (tree *) 0) == -2)
-    {
-      tree binfos = TYPE_BINFO_BASETYPES (TREE_TYPE (TREE_TYPE (decl)));
-      int i, n_baselinks = binfos ? TREE_VEC_LENGTH (binfos) : 0;
-
-      for (i = n_baselinks-1; i >= 0; i--)
-	{
-	  tree base_binfo = TREE_VEC_ELT (binfos, i);
-	  tree this_decl;
-
-	  if (get_base_distance (vtype, BINFO_TYPE (base_binfo), 0, 0) == -1)
-	    continue;
-
-	  if (TREE_VIA_VIRTUAL (base_binfo))
-	    this_decl = build_vbase_pointer (build_indirect_ref (decl, NULL_PTR), BINFO_TYPE (base_binfo));
-	  else if (BINFO_OFFSET_ZEROP (base_binfo))
-	    this_decl = build1 (NOP_EXPR, TYPE_POINTER_TO (BINFO_TYPE (base_binfo)),
-				decl);
-	  else
-	    this_decl = build (PLUS_EXPR, TYPE_POINTER_TO (BINFO_TYPE (base_binfo)),
-			       decl, BINFO_OFFSET (base_binfo));
-	  expand_virtual_init (main_binfo, base_binfo, this_decl);
-	}
-      return;
-    }
-#endif
-
-    {
-#if 1
-#if 1
-      vtbl = BINFO_VTABLE (binfo_value (DECL_FIELD_CONTEXT (CLASSTYPE_VFIELD (type)), binfo));
-#else
-      /* The below does not work when we have to step through the
-	 vfield, on our way down to the most base class for the
-	 vfield. */
-      vtbl = BINFO_VTABLE (binfo_value (DECL_FIELD_CONTEXT (CLASSTYPE_VFIELD (type)),
-					BINFO_TYPE (main_binfo)));
-#endif
-#else
-      my_friendly_assert (BINFO_TYPE (main_binfo) == BINFO_TYPE (binfo), 208);
-      vtbl = BINFO_VTABLE (main_binfo);
-#endif /* 1 */
-      assemble_external (vtbl);
-      TREE_USED (vtbl) = 1;
-      vtbl = build1 (ADDR_EXPR, TYPE_POINTER_TO (TREE_TYPE (vtbl)), vtbl);
-    }
+  vtbl = BINFO_VTABLE (binfo_value (DECL_FIELD_CONTEXT (CLASSTYPE_VFIELD (type)), binfo));
+  if (!flag_vtable_thunks)
+    assemble_external (vtbl);
+  TREE_USED (vtbl) = 1;
+  vtbl = build1 (ADDR_EXPR, TYPE_POINTER_TO (TREE_TYPE (vtbl)), vtbl);
   decl = convert_pointer_to_real (vtype_binfo, decl);
   vtbl_ptr = build_vfield_ref (build_indirect_ref (decl, NULL_PTR), vtype);
   if (vtbl_ptr == error_mark_node)
     return;
 
   /* Have to convert VTBL since array sizes may be different.  */
-  expand_expr_stmt (build_modify_expr (vtbl_ptr, NOP_EXPR,
-				       convert (TREE_TYPE (vtbl_ptr), vtbl)));
+  vtbl = convert_force (TREE_TYPE (vtbl_ptr), vtbl);
+  expand_expr_stmt (build_modify_expr (vtbl_ptr, NOP_EXPR, vtbl));
 }
 
 /* Subroutine of `expand_aggr_vbase_init'.
@@ -1307,7 +1267,7 @@ expand_default_init (binfo, true_exp, exp, type, init, alias_this, flags)
 	      tree addr = build_unary_op (ADDR_EXPR, exp, 0);
 	      expand_aggr_vbase_init (binfo, exp, addr, NULL_TREE);
 
-	      expand_vbase_vtables_init (binfo, binfo, exp, addr, 1);
+	      expand_indirect_vtbls_init (binfo, exp, addr, 1);
 	    }
 	  expand_expr_stmt (build_modify_expr (exp, INIT_EXPR, init));
 	  return;
@@ -1716,14 +1676,16 @@ expand_recursive_init_1 (binfo, true_exp, addr, init_list, alias_this)
 		 are initializing the ultimate users of those vtables.  */
 	      if (TREE_VALUE (init_list))
 		{
-		  /* We have to ensure that the second argment to
+		  /* We have to ensure that the first argment to
 		     expand_virtual_init is in binfo's hierarchy.  */
-		  expand_virtual_init (binfo,
-				      get_binfo (TREE_VALUE (init_list), binfo, 0),
+		  /* Is it the case that this is exactly the right binfo? */
+		  /* If it is ok, then fixup expand_virtual_init, to make
+		     it much simpler. */
+		  expand_virtual_init (get_binfo (TREE_VALUE (init_list), binfo, 0),
 				      addr);
 		  if (TREE_VALUE (init_list) == binfo
 		      && TYPE_USES_VIRTUAL_BASECLASSES (BINFO_TYPE (binfo)))
-		    expand_vbase_vtables_init (binfo,binfo, true_exp, addr, 1);
+		    expand_indirect_vtbls_init (binfo, true_exp, addr, 1);
 		}
 	    }
 	  else
@@ -1772,7 +1734,7 @@ expand_recursive_init (binfo, true_exp, exp, init, init_list, alias_this)
   if (true_exp == exp && TYPE_USES_VIRTUAL_BASECLASSES (BINFO_TYPE (binfo)))
     {
       expand_aggr_vbase_init (binfo, exp, addr, init_list);
-      expand_vbase_vtables_init (binfo, binfo, true_exp, addr, 1);
+      expand_indirect_vtbls_init (binfo, true_exp, addr, 1);
     }
   expand_recursive_init_1 (binfo, true_exp, addr, init_list, alias_this);
 
@@ -2202,14 +2164,6 @@ get_member_function (exp_addr_ptr, exp, member)
       /* Cast function to signed integer.  */
       e0 = build1 (NOP_EXPR, integer_type_node, function);
 
-#ifdef VTABLE_USES_MASK
-      /* If we are willing to limit the number of
-	 virtual functions a class may have to some
-	 *small* number, then if, for a function address,
-	 we are passed some small number, we know that
-	 it is a virtual function index, and work from there.  */
-      e1 = build (BIT_AND_EXPR, integer_type_node, e0, vtbl_mask);
-#else
       /* There is a hack here that takes advantage of
 	 twos complement arithmetic, and the fact that
 	 there are more than one UNITS to the WORD.
@@ -2224,7 +2178,6 @@ get_member_function (exp_addr_ptr, exp, member)
       e1 = build_compound_expr (tree_cons (NULL_TREE, exp_addr,
 					   build_tree_list (NULL_TREE, e1)));
       e1 = save_expr (e1);
-#endif
 
       if (TREE_SIDE_EFFECTS (*exp_addr_ptr))
 	{
@@ -2830,7 +2783,9 @@ do_friend (ctype, declarator, decl, parmdecls, flags, quals)
       add_friend (current_class_type, decl);
 
       DECL_FRIEND_P (decl) = 1;
+#if 0
       TREE_OVERLOADED (declarator) = 1;
+#endif
     }
   else
     {

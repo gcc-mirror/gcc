@@ -662,6 +662,8 @@ comp_target_types (ttl, ttr, nptrs)
   ttr = TYPE_MAIN_VARIANT (ttr);
   if (ttl == ttr)
     return 1;
+  if (TREE_CODE (ttr) == TEMPLATE_TYPE_PARM)
+    return 1;
 
   if (TREE_CODE (ttr) != TREE_CODE (ttl))
     return 0;
@@ -877,12 +879,18 @@ comp_target_parms (parms1, parms2, strict)
       p2 = TREE_VALUE (t2);
       if (p1 == p2)
 	continue;
+      if (TREE_CODE (p2) == TEMPLATE_TYPE_PARM)
+	continue;
+
       if ((TREE_CODE (p1) == POINTER_TYPE && TREE_CODE (p2) == POINTER_TYPE)
 	  || (TREE_CODE (p1) == REFERENCE_TYPE && TREE_CODE (p2) == REFERENCE_TYPE))
 	{
 	  if (strict <= 0
 	      && (TYPE_MAIN_VARIANT (TREE_TYPE (p1))
 		  == TYPE_MAIN_VARIANT (TREE_TYPE (p2))))
+	    continue;
+
+	  if (TREE_CODE (TREE_TYPE (p2)) == TEMPLATE_TYPE_PARM)
 	    continue;
 
 	  /* The following is wrong for contravariance,
@@ -4591,24 +4599,28 @@ build_conditional_expr (ifexp, op1, op2)
   else if (code1 == POINTER_TYPE && code2 == INTEGER_TYPE)
     {
       if (!integer_zerop (op2))
-	warning ("pointer/integer type mismatch in conditional expression");
+	pedwarn ("pointer/integer type mismatch in conditional expression");
       else
 	{
 	  op2 = null_pointer_node;
+#if 0				/* Sez who? */
 	  if (pedantic && TREE_CODE (type1) == FUNCTION_TYPE)
 	    pedwarn ("ANSI C++ forbids conditional expr between 0 and function pointer");
+#endif
 	}
       result_type = type1;
     }
   else if (code2 == POINTER_TYPE && code1 == INTEGER_TYPE)
     {
       if (!integer_zerop (op1))
-	warning ("pointer/integer type mismatch in conditional expression");
+	pedwarn ("pointer/integer type mismatch in conditional expression");
       else
 	{
 	  op1 = null_pointer_node;
+#if 0				/* Sez who? */
 	  if (pedantic && TREE_CODE (type2) == FUNCTION_TYPE)
 	    pedwarn ("ANSI C++ forbids conditional expr between 0 and function pointer");
+#endif
 	}
       result_type = type2;
       op1 = null_pointer_node;
@@ -6186,19 +6198,19 @@ convert_for_assignment (type, rhs, errtype, fndecl, parmnum)
 	  if (! TYPE_READONLY (ttl) && TYPE_READONLY (ttr))
 	    {
 	      if (fndecl)
-		cp_warning ("passing `%T' as argument %P of `%D' discards const",
+		cp_pedwarn ("passing `%T' as argument %P of `%D' discards const",
 			    rhstype, parmnum, fndecl);
 	      else
-		cp_warning ("%s to `%T' from `%T' discards const",
+		cp_pedwarn ("%s to `%T' from `%T' discards const",
 			    errtype, type, rhstype);
 	    }
 	  if (! TYPE_VOLATILE (ttl) && TYPE_VOLATILE (ttr))
 	    {
 	      if (fndecl)
-		cp_warning ("passing `%T' as argument %P of `%D' discards volatile",
+		cp_pedwarn ("passing `%T' as argument %P of `%D' discards volatile",
 			    rhstype, parmnum, fndecl);
 	      else
-		cp_warning ("%s to `%T' from `%T' discards volatile",
+		cp_pedwarn ("%s to `%T' from `%T' discards volatile",
 			    errtype, type, rhstype);
 	    }
 	}
@@ -6244,19 +6256,19 @@ convert_for_assignment (type, rhs, errtype, fndecl, parmnum)
 	      if (! TYPE_READONLY (ttl) && TYPE_READONLY (ttr))
 		{
 		  if (fndecl)
-		    cp_warning ("passing `%T' as argument %P of `%D' discards const",
+		    cp_pedwarn ("passing `%T' as argument %P of `%D' discards const",
 				rhstype, parmnum, fndecl);
 		  else
-		    cp_warning ("%s to `%T' from `%T' discards const",
+		    cp_pedwarn ("%s to `%T' from `%T' discards const",
 				errtype, type, rhstype);
 		}
 	      if (! TYPE_VOLATILE (ttl) && TYPE_VOLATILE (ttr))
 		{
 		  if (fndecl)
-		    cp_warning ("passing `%T' as argument %P of `%D' discards volatile",
+		    cp_pedwarn ("passing `%T' as argument %P of `%D' discards volatile",
 				rhstype, parmnum, fndecl);
 		  else
-		    cp_warning ("%s to `%T' from `%T' discards volatile",
+		    cp_pedwarn ("%s to `%T' from `%T' discards volatile",
 				errtype, type, rhstype);
 		}
 	    }

@@ -311,7 +311,8 @@ yylex()
 	      if (lastiddecl != trrr)
 		{
 		  lastiddecl = trrr;
-		  tmp_token.yylval.ttype = DECL_NESTED_TYPENAME (trrr);
+		  if (got_scope)
+		    tmp_token.yylval.ttype = DECL_NESTED_TYPENAME (trrr);
 		}
 	      break;
 	    case IDENTIFIER:
@@ -326,6 +327,7 @@ yylex()
 	}
       else
 	lastiddecl = trrr;
+      got_scope = NULL_TREE;
       /* and fall through to... */
     case TYPENAME:
     case PTYPENAME:

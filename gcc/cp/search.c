@@ -687,6 +687,22 @@ lookup_field_1 (type, name)
   return NULL_TREE;
 }
 
+/* There are a number of cases we need to be aware of here:
+			 current_class_type	current_function_decl
+   * global			NULL			NULL
+   * fn-local			NULL			SET
+   * class-local		SET			NULL
+   * class->fn			SET			SET
+   * fn->class			SET			SET
+
+   Those last two make life interesting.  If we're in a function which is
+   itself inside a class, we need decls to go into the fn's decls (our
+   second case below).  But if we're in a class and the class itself is
+   inside a function, we need decls to go into the decls for the class.  To
+   achieve this last goal, we must see if, when both current_class_decl and
+   current_function_decl are set, the class was declared inside that
+   function.  If so, we know to put the decls into the class's scope.  */
+
 tree
 current_scope ()
 {
@@ -1842,14 +1858,14 @@ int tree_has_any_destructor_p (binfo, i)
   return TYPE_NEEDS_DESTRUCTOR (type);
 }
 
-/* Given a class type TYPE, and a function decl FNDECL,
-   look for the first function the TYPE's hierarchy which
-   FNDECL could match as a virtual function.
+/* Given a class type TYPE, and a function decl FNDECL, look for a
+   virtual function in TYPE's hierarchy which FNDECL could match as a
+   virtual function.  It doesn't matter which one we find.
 
    DTORP is nonzero if we are looking for a destructor.  Destructors
    need special treatment because they do not match by name.  */
 tree
-get_first_matching_virtual (binfo, fndecl, dtorp)
+get_matching_virtual (binfo, fndecl, dtorp)
      tree binfo, fndecl;
      int dtorp;
 {
@@ -1863,22 +1879,11 @@ get_first_matching_virtual (binfo, fndecl, dtorp)
 	tmp = get_virtual_destructor (binfo, -1);
 
       if (tmp)
-	{
-	  if (get_base_distance (DECL_CONTEXT (tmp),
-				 DECL_CONTEXT (fndecl), 0, 0) > 0)
-	    DECL_CONTEXT (fndecl) = DECL_CONTEXT (tmp);
-	  return tmp;
-	}
+	return tmp;
 
       tmp = (tree) breadth_first_search (binfo,
 					 (pfi) get_virtual_destructor,
 					 tree_has_any_destructor_p);
-      if (tmp)
-	{
-	  if (get_base_distance (DECL_CONTEXT (tmp),
-				 DECL_CONTEXT (fndecl), 0, 0) > 0)
-	    DECL_CONTEXT (fndecl) = DECL_CONTEXT (tmp);
-	}
       return tmp;
     }
   else
@@ -1931,33 +1936,20 @@ get_first_matching_virtual (binfo, fndecl, dtorp)
 	    }
 	  if (tmp)
 	    {
-	      /* If this is ambiguous, we will warn about it later.  */
-	      if (best)
-		{
-		  if (get_base_distance (DECL_CLASS_CONTEXT (best),
-					 DECL_CLASS_CONTEXT (tmp), 0, 0) > 0)
-		    best = tmp;
-		}
-	      else
-		best = tmp;
+	      best = tmp;
+	      break;
 	    }
 	}
       if (best == NULL_TREE && warn_overloaded_virtual)
 	cp_warning_at ("conflicting specification deriving virtual function `%D'", fndecl);
 
-      if (best)
-	{
-	  if (get_base_distance (DECL_CONTEXT (best),
-				 DECL_CONTEXT (fndecl), 0, 0) > 0)
-	    DECL_CONTEXT (fndecl) = DECL_CONTEXT (best);
-	}
       return best;
     }
 }
 
-/* Return the list of virtual functions which are abstract in type TYPE
-   that come from non virtual base classes.  See init_vtbl_ptrs for
-   the style of search we do.  */
+/* Return the list of virtual functions which are abstract in type
+   TYPE that come from non virtual base classes.  See
+   expand_direct_vtbls_init for the style of search we do.  */
 static tree
 get_abstract_virtuals_1 (binfo, do_self, abstract_virtuals)
      tree binfo, abstract_virtuals;
@@ -2364,7 +2356,9 @@ dfs_debug_mark (binfo)
 }
 
 /*  Attach to the type of the virtual base class, the pointer to the
-    virtual base class, given the global pointer vbase_decl_ptr.  */
+    virtual base class, given the global pointer vbase_decl_ptr.
+
+    We use the global vbase_types.  ICK!  */
 static void
 dfs_find_vbases (binfo)
      tree binfo;
@@ -2471,32 +2465,32 @@ init_vbase_pointers (type, decl_ptr)
 
 /* Build a COMPOUND_EXPR which when expanded will generate the code
    needed to initialize all the virtual function table slots of all
-   the virtual baseclasses.  FOR_TYPE is the type which determines the
-   virtual baseclasses to use; TYPE is the type of the object to which
-   the initialization applies.  TRUE_EXP is the true object we are
-   initializing, and DECL_PTR is the pointer to the sub-object we
+   the virtual baseclasses.  MAIN_BINFO is the binfo which determines
+   the virtual baseclasses to use; TYPE is the type of the object to
+   which the initialization applies.  TRUE_EXP is the true object we
+   are initializing, and DECL_PTR is the pointer to the sub-object we
    are initializing.
 
    When USE_COMPUTED_OFFSETS is non-zero, we can assume that the
    object was laidout by a top-level contructor and the computed
    offsets are valid to store vtables.  When zero, we must store new
-   vtables through virtual baseclass pointers.  */
+   vtables through virtual baseclass pointers.
+
+   We setup and use the globals: vbase_decl, vbase_decl_ptr, vbase_types
+   ICK!  */
 
 void
-expand_vbase_vtables_init (main_binfo, binfo, true_exp, decl_ptr,
-			   use_computed_offsets)
-     tree main_binfo, binfo;
+expand_indirect_vtbls_init (binfo, true_exp, decl_ptr, use_computed_offsets)
+     tree binfo;
      tree true_exp, decl_ptr;
      int use_computed_offsets;
 {
-  tree for_type = BINFO_TYPE (main_binfo);
   tree type = BINFO_TYPE (binfo);
   if (TYPE_USES_VIRTUAL_BASECLASSES (type))
     {
       int old_flag = flag_this_is_variable;
       tree vbases = CLASSTYPE_VBASECLASSES (type);
-
-      vbase_types = CLASSTYPE_VBASECLASSES (for_type);
+      vbase_types = vbases;
       vbase_decl_ptr = true_exp ? build_unary_op (ADDR_EXPR, true_exp, 0) : decl_ptr;
       vbase_decl = true_exp ? true_exp : build_indirect_ref (decl_ptr, NULL_PTR);
 
@@ -2504,38 +2498,25 @@ expand_vbase_vtables_init (main_binfo, binfo, true_exp, decl_ptr,
 	{
 	  /* This is an object of type IN_TYPE,  */
 	  flag_this_is_variable = -2;
-	  dfs_walk (main_binfo, dfs_find_vbases, unmarked_new_vtablep);
+	  dfs_walk (binfo, dfs_find_vbases, unmarked_new_vtablep);
 	}
 
       /* Initialized with vtables of type TYPE.  */
       while (vbases)
 	{
-	  /* This time through, not every class's vtable
-	     is going to be initialized.  That is, we only initialize
-	     the "last" vtable pointer.  */
+	  tree addr;
+	  if (use_computed_offsets)
+	    addr = (tree)CLASSTYPE_SEARCH_SLOT (BINFO_TYPE (vbases));
+	  else
+	    addr = convert_pointer_to (vbases, vbase_decl_ptr);
+	  if (addr == error_mark_node)
+	    continue;
 
-	  if (CLASSTYPE_VSIZE (BINFO_TYPE (vbases)))
-	    {
-	      tree addr;
-	      tree vtbl = BINFO_VTABLE (vbases);
-	      tree init = build_unary_op (ADDR_EXPR, vtbl, 0);
-	      if (!flag_vtable_thunks)
-		assemble_external (vtbl);
-	      TREE_USED (vtbl) = 1;
-
-	      if (use_computed_offsets)
-		addr = (tree)CLASSTYPE_SEARCH_SLOT (BINFO_TYPE (vbases));
-	      else
-		addr = convert_pointer_to (vbases, vbase_decl_ptr);
-
-	      if (addr)
-		{
-		  tree ref = build_vfield_ref (build_indirect_ref (addr, NULL_PTR),
-					       BINFO_TYPE (vbases));
-		  init = convert_force (TREE_TYPE (ref), init);
-		  expand_expr_stmt (build_modify_expr (ref, NOP_EXPR, init));
-		}
-	    }
+	  /* Do all vtables from this virtual base. */
+	  /* This assumes that virtual bases can never serve as parent
+	     binfos.  (in the CLASSTPE_VFIELD_PARENT sense)  */
+	  expand_direct_vtbls_init (vbases, TYPE_BINFO (BINFO_TYPE (vbases)),
+				    1, 0, addr);
 	  vbases = TREE_CHAIN (vbases);
 	}
 
@@ -3112,46 +3093,6 @@ pop_class_decls (type)
      so we'd better not try to pop it.  */
   if (search_stack)
     search_stack = pop_search_level (search_stack);
-}
-
-static int
-bfs_unmark_finished_struct (binfo, i)
-     tree binfo;
-     int i;
-{
-  if (i >= 0)
-    binfo = BINFO_BASETYPE (binfo, i);
-
-  if (BINFO_NEW_VTABLE_MARKED (binfo))
-    {
-      tree decl, context;
-
-      if (TREE_VIA_VIRTUAL (binfo))
-	binfo = binfo_member (BINFO_TYPE (binfo),
-			      CLASSTYPE_VBASECLASSES (current_class_type));
-
-      decl = BINFO_VTABLE (binfo);
-      context = DECL_CONTEXT (decl);
-      DECL_CONTEXT (decl) = 0;
-      if (write_virtuals >= 0
-	  && DECL_INITIAL (decl) != BINFO_VIRTUALS (binfo))
-	DECL_INITIAL (decl) = build_nt (CONSTRUCTOR, NULL_TREE,
-					BINFO_VIRTUALS (binfo));
-      finish_decl (decl, DECL_INITIAL (decl), NULL_TREE, 0);
-      DECL_CONTEXT (decl) = context;
-    }
-  CLEAR_BINFO_VTABLE_PATH_MARKED (binfo);
-  CLEAR_BINFO_NEW_VTABLE_MARKED (binfo);
-  return 0;
-}
-
-void
-unmark_finished_struct (type)
-     tree type;
-{
-  tree binfo = TYPE_BINFO (type);
-  bfs_unmark_finished_struct (binfo, -1);
-  breadth_first_search (binfo, bfs_unmark_finished_struct, bfs_marked_vtable_pathp);
 }
 
 void

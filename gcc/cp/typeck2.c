@@ -329,7 +329,7 @@ ack (s, v, v2)
    silly.  So instead, we just do the equivalent of a call to fatal in the
    same situation (call exit).  */
 
-/* First used: 0 (reserved), Last used: 355.  Free: 180.  */
+/* First used: 0 (reserved), Last used: 357.  Free:  */
 
 static int abortcount = 0;
 
@@ -707,56 +707,6 @@ digest_init (type, init, tail)
       return element;
     }
 
-  /* Check for initializing a union by its first field.
-     Such an initializer must use braces.  */
-
-  if (code == UNION_TYPE)
-    {
-      tree result, field = TYPE_FIELDS (type);
-
-      /* Find the first named field.  ANSI decided in September 1990
-	 that only named fields count here.  */
-      while (field && DECL_NAME (field) == 0)
-	field = TREE_CHAIN (field);
-
-      if (field == 0)
-	{
-	  error ("union with no named members cannot be initialized");
-	  return error_mark_node;
-	}
-
-      if (raw_constructor && !TYPE_NEEDS_CONSTRUCTING (type))
-	{
-	  result = process_init_constructor (type, init, NULL_PTR);
-	  return result;
-	}
-
-      if (! raw_constructor)
-	{
-	  error ("type mismatch in initialization");
-	  return error_mark_node;
-	}
-      if (element == 0)
-	{
-	  if (!TYPE_NEEDS_CONSTRUCTING (type))
-	    {
-	      error ("union initializer requires one element");
-	      return error_mark_node;
-	    }
-	}
-      else
-	{
-	  /* Take just the first element from within the constructor
-	     and it should match the type of the first element.  */
-	  element = digest_init (TREE_TYPE (field), element, (tree *) 0);
-	  result = build (CONSTRUCTOR, type, 0, build_tree_list (field, element));
-	  TREE_CONSTANT (result) = TREE_CONSTANT (element);
-	  TREE_STATIC (result) = (initializer_constant_valid_p (element)
-				  && TREE_CONSTANT (element));
-	  return result;
-	}
-    }
-
   /* Initialization of an array of chars from a string constant
      optionally enclosed in braces.  */
 
@@ -834,7 +784,8 @@ digest_init (type, init, tail)
 
   if (TYPE_SIZE (type) && ! TREE_CONSTANT (TYPE_SIZE (type)))
     {
-      error ("variable-sized object may not be initialized");
+      cp_error ("variable-sized object of type `%T' may not be initialized",
+		type);
       return error_mark_node;
     }
 
@@ -1097,6 +1048,12 @@ process_init_constructor (type, init, elts)
 	  if (!win)
 	    TREE_VALUE (tail) = error_mark_node;
 	}
+      else if (field == 0)
+	{
+	  cp_error ("union `%T' with no named members cannot be initialized",
+		    type);
+	  TREE_VALUE (tail) = error_mark_node;
+	}
 
       if (TREE_VALUE (tail) != 0)
 	{
@@ -1105,7 +1062,7 @@ process_init_constructor (type, init, elts)
 	  next1 = digest_init (TREE_TYPE (field),
 			       TREE_VALUE (tail), &tail1);
 	  if (tail1 != 0 && TREE_CODE (tail1) != TREE_LIST)
-	    abort ();
+	    my_friendly_abort (357);
 	  tail = tail1;
 	}
       else
@@ -1129,7 +1086,7 @@ process_init_constructor (type, init, elts)
   /* If arguments were specified as a constructor,
      complain unless we used all the elements of the constructor.  */
   else if (tail)
-    warning ("excess elements in aggregate initializer");
+    pedwarn ("excess elements in aggregate initializer");
 
   if (erroneous)
     return error_mark_node;

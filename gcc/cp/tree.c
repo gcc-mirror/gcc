@@ -585,6 +585,9 @@ layout_vbasetypes (rec, max)
 
    Offsets for immediate nonvirtual baseclasses are also computed here.
 
+   TYPE_BINFO (REC) should be NULL_TREE on entry, and this routine
+   creates a list of base_binfos in TYPE_BINFO (REC) from BINFOS.
+
    Returns list of virtual base classes in a FIELD_DECL chain.  */
 tree
 layout_basetypes (rec, binfos)

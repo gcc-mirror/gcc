@@ -706,10 +706,11 @@ convert_to_reference (decl, reftype, expr, fndecl, parmnum,
 
       else if (form == REFERENCE_TYPE)
 	{
-	  rval = copy_node (expr);
-	  TREE_TYPE (rval) = build_pointer_type (TREE_TYPE (TREE_TYPE (expr)));
+	  rval = build1 (NOP_EXPR,
+			 build_pointer_type (TREE_TYPE (TREE_TYPE (expr))),
+			 expr);
 	  rval = convert (build_pointer_type (TREE_TYPE (reftype)), rval);
-	  TREE_TYPE (rval) = reftype;
+	  rval = build1 (NOP_EXPR, reftype, rval);
 	  return rval;
 	}
 
@@ -734,7 +735,7 @@ convert_to_reference (decl, reftype, expr, fndecl, parmnum,
       if (rval != error_mark_node)
 	rval = convert_force (build_pointer_type (TREE_TYPE (reftype)), rval);
       if (rval != error_mark_node)
-	TREE_TYPE (rval) = reftype;
+	rval = build1 (NOP_EXPR, reftype, rval);
     }
   else if (decl == error_mark_node || decl == NULL_TREE)
     {
@@ -1146,9 +1147,8 @@ convert_pointer_to_real (binfo, expr)
 	 but if it is, give them an error message that they can read.  */
       if (distance < 0)
 	{
-	  cp_error ("cannot convert a pointer of type `%T'",
-		    TREE_TYPE (intype));
-	  cp_error ("to a pointer of type `%T'", type);
+	  cp_error ("cannot convert a pointer of type `%T' to a pointer of type `%T'",
+		    TREE_TYPE (intype), type);
 
 	  if (distance == -2)
 	    cp_error ("because `%T' is an ambiguous base class", type);

@@ -1381,6 +1381,10 @@ grokfield (declarator, declspecs, raises, init, asmspec_tree)
       if (DECL_FRIEND_P (value))
 	return void_type_node;
 
+      if (current_function_decl)
+	cp_error ("method `%#D' of local class must be defined in class body",
+		  value);
+
       DECL_IN_AGGR_P (value) = 1;
       return value;
     }
@@ -2307,6 +2311,37 @@ mark_vtable_entries (decl)
       tree fnaddr = FNADDR_FROM_VTABLE_ENTRY (TREE_VALUE (entries));
       tree fn = TREE_OPERAND (fnaddr, 0);
       TREE_ADDRESSABLE (fn) = 1;
+      if (DECL_ABSTRACT_VIRTUAL_P (fn))
+	{
+	  extern tree abort_fndecl;
+	  TREE_OPERAND (fnaddr, 0) = abort_fndecl;
+	}
+    }
+}
+
+/* Set TREE_PUBLIC and/or TREE_EXTERN on the vtable DECL,
+   based on TYPE and other static flags.
+
+   Note that anything public is tagged TREE_PUBLIC, whether
+   it's public in this file or in another one.  */
+
+static void
+import_export_vtable (decl, type)
+  tree decl, type;
+{
+  if (write_virtuals >= 2)
+    {
+      if (CLASSTYPE_INTERFACE_KNOWN (type))
+	{
+	  TREE_PUBLIC (decl) = 1;
+	  DECL_EXTERNAL (decl) = ! CLASSTYPE_VTABLE_NEEDS_WRITING (type);
+	}
+    }
+  else if (write_virtuals != 0)
+    {
+      TREE_PUBLIC (decl) = 1;
+      if (write_virtuals < 0)
+	DECL_EXTERNAL (decl) = 1;
     }
 }
 
@@ -2315,6 +2350,8 @@ finish_vtable_vardecl (prev, vars)
      tree prev, vars;
 {
   tree ctype = DECL_CONTEXT (vars);
+  import_export_vtable (vars, ctype);
+
   if (flag_vtable_thunks && !CLASSTYPE_INTERFACE_KNOWN (ctype))
     {
       tree method;
@@ -2578,6 +2615,10 @@ finish_file ()
 	      lineno = DECL_SOURCE_LINE (decl);
 	      emit_note (input_filename, lineno);
 
+	      /* 9.5p5: The initializer of a static member of a class has
+		 the same acess rights as a member function.  */
+	      DECL_CLASS_CONTEXT (current_function_decl) = DECL_CONTEXT (decl);
+
 	      if (init)
 		{
 		  if (TREE_CODE (init) == VAR_DECL)
@@ -2615,19 +2656,7 @@ finish_file ()
 	      if (IS_AGGR_TYPE (TREE_TYPE (decl))
 		  || init == 0
 		  || TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE)
-		{
-#if 0
-		  /* Set this up so is_friend() works properly on _GLOBAL_
-                     fns.  */
-		  tree old_dcc = DECL_CLASS_CONTEXT (current_function_decl);
-		  if (old_dcc == NULL_TREE && IS_AGGR_TYPE (TREE_TYPE (decl)))
-		    DECL_CLASS_CONTEXT (current_function_decl) = TREE_TYPE (decl);
-		  expand_aggr_init (decl, init, 0);
-		  DECL_CLASS_CONTEXT (current_function_decl) = old_dcc;
-#else
-		  expand_aggr_init (decl, init, 0);
-#endif
-		}
+		expand_aggr_init (decl, init, 0);
 	      else if (TREE_CODE (init) == TREE_VEC)
 		{
 		  expand_expr (expand_vec_init (decl, TREE_VEC_ELT (init, 0),
@@ -2638,6 +2667,8 @@ finish_file ()
 		}
 	      else
 		expand_assignment (decl, init, 0, 0);
+
+	      DECL_CLASS_CONTEXT (current_function_decl) = NULL_TREE;
 	    }
 	  else if (TREE_CODE (decl) == SAVE_EXPR)
 	    {
