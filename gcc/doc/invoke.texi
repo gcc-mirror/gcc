@@ -10134,8 +10134,9 @@ instructions available on z/Architecture.
 When @option{-mesa} is specified, generate code using the 
 instructions available on ESA/390. Note that @option{-mesa} is
 not possible with @option{-m64}.
-For the @samp{s390} targets, the default is @option{-mesa}, 
-while the @samp{s390x} targets default to @option{-mzarch}.
+When generating code compliant to the Linux for S/390 ABI,
+the default is @option{-mesa}.  When generating code compliant
+to the Linux for zSeries ABI, the default is @option{-mzarch}.
 
 @item -mmvcle
 @itemx -mno-mvcle
@@ -10152,17 +10153,21 @@ use a @code{mvc} loop instead.  This is the default.
 Print (or do not print) additional debug information when compiling.
 The default is to not print debug information.
 
-@item -march=@var{arch}
+@item -march=@var{cpu-type}
 @opindex march
-Generate code that will run on @var{arch}, which is the name of system
+Generate code that will run on @var{cpu-type}, which is the name of a system
 representing a certain processor type. Possible values for
-@var{cpu-type} are @samp{g5}, @samp{g6} and @samp{z900}. 
+@var{cpu-type} are @samp{g5}, @samp{g6}, @samp{z900}, and @samp{z990}.
+When generating code using the instructions available on z/Architecture,
+the default is @option{-march=z900}.  Otherwise, the default is
+@option{-march=g5}.
 
-@item -mtune=@var{arch}
+@item -mtune=@var{cpu-type}
 @opindex mtune
 Tune to @var{cpu-type} everything applicable about the generated code,
- except for the ABI and the set of available instructions. 
-The list of @var{arch} values is the same as for @option{-march}.
+except for the ABI and the set of available instructions.
+The list of @var{cpu-type} values is the same as for @option{-march}.
+The default is the value used for @option{-march}.
 
 @end table
 

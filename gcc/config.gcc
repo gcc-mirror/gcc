@@ -2444,6 +2444,35 @@ then
 		done
 		;;
 
+	s390*-*-*)
+		supported_defaults="arch mode tune"
+
+		for which in arch tune; do
+			eval "val=\$with_$which"
+			case x$val in
+			x \
+			| xg5 | xg6 | xz900 | xz990)
+				# OK
+				;;
+			*)
+				echo "Unknown cpu used in --with-$which=$val." 1>&2
+				exit 1
+				;;
+			esac
+		done
+
+		case "x$with_mode" in
+		x \
+		| xesa | xzarch)
+			# OK
+			;;
+		*)
+			echo "Unknown architecture mode used in --with-mode=$with_mode." 1>&2
+			exit 1
+			;;
+		esac
+		;;
+
 	sparc*-*-*)
 		supported_defaults="cpu float tune"
 
@@ -2608,7 +2637,7 @@ then
 	esac
 
 	t=
-	all_defaults="abi cpu arch tune schedule float"
+	all_defaults="abi cpu arch tune schedule float mode"
 	for option in $all_defaults
 	do
 		eval "val=\$with_$option"

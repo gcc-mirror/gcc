@@ -69,13 +69,8 @@ Boston, MA 02111-1307, USA.  */
 
 /* Target specific assembler settings.  */
 
-#ifdef DEFAULT_TARGET_64BIT
 #undef  ASM_SPEC
-#define ASM_SPEC "%{m31:-m31 -Aesa}"
-#else
-#undef  ASM_SPEC
-#define ASM_SPEC "%{m64:-m64 -Aesame}"
-#endif
+#define ASM_SPEC "%{m31&m64}%{mesa&mzarch}%{march=*}"
 
 
 /* Target specific linker settings.  */
@@ -86,40 +81,18 @@ Boston, MA 02111-1307, USA.  */
 #define MULTILIB_DEFAULTS { "m31" }
 #endif
 
-#define LINK_ARCH31_SPEC \
-  "-m elf_s390 \
+#undef  LINK_SPEC
+#define LINK_SPEC \
+  "%{m31:-m elf_s390}%{m64:-m elf64_s390} \
    %{shared:-shared} \
    %{!shared: \
       %{static:-static} \
       %{!static: \
 	%{rdynamic:-export-dynamic} \
-	%{!dynamic-linker:-dynamic-linker /lib/ld.so.1}}}"
+	%{!dynamic-linker: \
+          %{m31:-dynamic-linker /lib/ld.so.1} \
+          %{m64:-dynamic-linker /lib/ld64.so.1}}}}"
 
-#define LINK_ARCH64_SPEC \
-  "-m elf64_s390 \
-   %{shared:-shared} \
-   %{!shared: \
-      %{static:-static} \
-      %{!static: \
-	%{rdynamic:-export-dynamic} \
-	%{!dynamic-linker:-dynamic-linker /lib/ld64.so.1}}}"
-
-#ifdef DEFAULT_TARGET_64BIT
-#undef  LINK_SPEC
-#define LINK_SPEC "%{m31:%(link_arch31)} %{!m31:%(link_arch64)}"
-#else
-#undef  LINK_SPEC
-#define LINK_SPEC "%{m64:%(link_arch64)} %{!m64:%(link_arch31)}"
-#endif
-
-
-/* This macro defines names of additional specifications to put in the specs
-   that can be used in various specifications like CC1_SPEC.  Its definition
-   is an initializer with a subgrouping for each command option.  */
-
-#define EXTRA_SPECS \
-  { "link_arch31",	LINK_ARCH31_SPEC },	\
-  { "link_arch64",	LINK_ARCH64_SPEC },	\
 
 #define TARGET_ASM_FILE_END file_end_indicate_exec_stack
 
