@@ -1,3 +1,8 @@
+Thu Mar 18 19:09:50 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* reload.c (find_reloads_toplev): When processing X recursively,
+	don't alter it destructively except by filling in constants.
+
 Thu Mar 18 10:14:18 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* cccp.c (default_include): Initialize structure memebers.

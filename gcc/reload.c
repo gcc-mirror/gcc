@@ -4367,6 +4367,7 @@ find_reloads_toplev (x, opnum, type, ind_levels, is_set_dest, insn)
 
   register char *fmt = GET_RTX_FORMAT (code);
   register int i;
+  int copied;
 
   if (code == REG)
     {
@@ -4503,11 +4504,24 @@ find_reloads_toplev (x, opnum, type, ind_levels, is_set_dest, insn)
 					 insn);
     }
 
-  for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
+  for (copied = 0, i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
     {
       if (fmt[i] == 'e')
-	XEXP (x, i) = find_reloads_toplev (XEXP (x, i), opnum, type,
-					   ind_levels, is_set_dest, insn);
+	{
+	  rtx new_part = find_reloads_toplev (XEXP (x, i), opnum, type,
+					      ind_levels, is_set_dest, insn);
+	  /* If we have replaced a reg with it's equivalent memory loc -
+	     that can still be handled here e.g. if it's in a paradoxical
+	     subreg - we must make the change in a copy, rather than using
+	     a destructive change.  This way, find_reloads can still elect
+	     not to do the change.  */
+	  if (new_part != XEXP (x, i) && ! CONSTANT_P (new_part) && ! copied)
+	    {
+	      x = copy_rtx (x);
+	      copied = 1;
+	    }
+	  XEXP (x, i) = new_part;
+	}
     }
   return x;
 }
