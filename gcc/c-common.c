@@ -2990,14 +2990,13 @@ c_get_alias_set (t)
     return 0;
 
   type = (TREE_CODE_CLASS (TREE_CODE (t)) == 't')
-    ? t :  TREE_TYPE (t);
+    ? t : TREE_TYPE (t);
 
   if (type == error_mark_node)
     return 0;
 
-  if (TYPE_ALIAS_SET_KNOWN_P (type))
-    /* If we've already calculated the value, just return it.  */
-    return TYPE_ALIAS_SET (type);
+  /* Deal with special cases first; for certain kinds of references
+     we're interested in more than just the type.  */
 
   if (TREE_CODE (t) == BIT_FIELD_REF)
     /* Perhaps reads and writes to this piece of data alias fields
@@ -3005,6 +3004,7 @@ c_get_alias_set (t)
        let's just assume that bitfields can alias everything, which is
        the conservative assumption.  */
     return 0;
+
   if (TREE_CODE (t) == COMPONENT_REF
       && TREE_CODE (TREE_TYPE (TREE_OPERAND (t, 0))) == UNION_TYPE)
     /* Permit type-punning when accessing a union, provided the
@@ -3014,13 +3014,16 @@ c_get_alias_set (t)
        GCC extension, albeit a common and useful one; the C standard
        says that such accesses have implementation-defined behavior.  */ 
     return 0;
+
+  /* From here on, only the type matters.  */
+
+  if (TYPE_ALIAS_SET_KNOWN_P (type))
+    /* If we've already calculated the value, just return it.  */
+    return TYPE_ALIAS_SET (type);
   else if (TYPE_MAIN_VARIANT (type) != type)
-    {
-      /* The C standard specifically allows aliasing between
-	 cv-qualified variants of types.  */
-      TYPE_ALIAS_SET (type) = c_get_alias_set (TYPE_MAIN_VARIANT (type));
-      return TYPE_ALIAS_SET (type);
-    }
+    /* The C standard specifically allows aliasing between
+       cv-qualified variants of types.  */
+    TYPE_ALIAS_SET (type) = c_get_alias_set (TYPE_MAIN_VARIANT (type));
   else if (TREE_CODE (type) == INTEGER_TYPE)
     {
       tree signed_variant;
@@ -3031,34 +3034,37 @@ c_get_alias_set (t)
       signed_variant = signed_type (type);
 
       if (signed_variant != type)
-	{
-	  TYPE_ALIAS_SET (type) = c_get_alias_set (signed_variant);
-	  return TYPE_ALIAS_SET (type);
-	}
+	TYPE_ALIAS_SET (type) = c_get_alias_set (signed_variant);
       else if (signed_variant == signed_char_type_node)
 	/* The C standard guarantess that any object may be accessed
 	   via an lvalue that has character type.  We don't have to
 	   check for unsigned_char_type_node or char_type_node because
 	   we are specifically looking at the signed variant.  */
-	{
-	  TYPE_ALIAS_SET (type) = 0;
-	  return TYPE_ALIAS_SET (type);
-	}
+	TYPE_ALIAS_SET (type) = 0;
     }
+  else if (TREE_CODE (type) == ARRAY_TYPE)
+    /* Anything that can alias one of the array elements can alias
+       the entire array as well.  */
+    TYPE_ALIAS_SET (type) = c_get_alias_set (TREE_TYPE (type));
+  else if (TREE_CODE (type) == FUNCTION_TYPE)
+    /* There are no objects of FUNCTION_TYPE, so there's no point in
+       using up an alias set for them.  (There are, of course,
+       pointers and references to functions, but that's 
+       different.)  */
+    TYPE_ALIAS_SET (type) = 0;
   else if (TREE_CODE (type) == RECORD_TYPE
 	   || TREE_CODE (type) == UNION_TYPE)
-    {
-      /* If TYPE is a struct or union type then we're reading or
-	 writing an entire struct.  Thus, we don't know anything about
-	 aliasing.  (In theory, such an access can only alias objects
-	 whose type is the same as one of the fields, recursively, but
-	 we don't yet make any use of that information.)  */
-      TYPE_ALIAS_SET (type) = 0;
-      return TYPE_ALIAS_SET (type);
-    }
+    /* If TYPE is a struct or union type then we're reading or
+       writing an entire struct.  Thus, we don't know anything about
+       aliasing.  (In theory, such an access can only alias objects
+       whose type is the same as one of the fields, recursively, but
+       we don't yet make any use of that information.)  */
+    TYPE_ALIAS_SET (type) = 0;
 
-  /* TYPE is something we haven't seen before.  Put it in a new alias
-     set.  */
-  TYPE_ALIAS_SET (type) = new_alias_set ();
+  if (!TYPE_ALIAS_SET_KNOWN_P (type)) 
+    /* TYPE is something we haven't seen before.  Put it in a new
+       alias set.  */
+    TYPE_ALIAS_SET (type) = new_alias_set ();
+
   return TYPE_ALIAS_SET (type);
 }
