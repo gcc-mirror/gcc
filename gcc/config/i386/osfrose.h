@@ -121,13 +121,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define TARGET_VERSION_INTERNAL(STREAM) fputs (I386_VERSION, STREAM)
 #define TARGET_VERSION TARGET_VERSION_INTERNAL (stderr)
 
-#ifdef  MACHINE_TYPE
-#undef  MACHINE_TYPE
-#endif
-
-#define MACHINE_TYPE   ((!TARGET_486) ? "80386 running OSF/1 with OSF/rose objects" :  \
-                                        "80486 running OSF/1 with OSF/rose objects")
-
 #ifdef  MD_EXEC_PREFIX
 #undef  MD_EXEC_PREFIX
 #endif
