@@ -1021,6 +1021,25 @@ __floatdidf (u)
 #define WORD_SIZE (sizeof (SItype) * BITS_PER_UNIT)
 #define HIGH_HALFWORD_COEFF (((UDItype) 1) << (WORD_SIZE / 2))
 #define HIGH_WORD_COEFF (((UDItype) 1) << WORD_SIZE)
+#define DI_SIZE (sizeof (DItype) * BITS_PER_UNIT)
+#if TARGET_FLOAT_FORMAT == IEEE_FLOAT_FORMAT
+#define DF_SIZE 53
+#define SF_SIZE 24
+#else
+#if TARGET_FLOAT_FORMAT == IBM_FLOAT_FORMAT
+#define DF_SIZE 56
+#define SF_SIZE 24
+#else
+#if TARGET_FLOAT_FORMAT == VAX_FLOAT_FORMAT
+#define DF_SIZE 56
+#define SF_SIZE 24
+#else
+#define DF_SIZE 0
+#define SF_SIZE 0
+#endif
+#endif
+#endif
+
 
 SFtype
 __floatdisf (u)
@@ -1035,6 +1054,22 @@ __floatdisf (u)
   if (u < 0)
     u = -u, negate = 1;
 
+  /* Protect against double-rounding error.
+     Represent any low-order bits, that might be truncated in DFmode,
+     by a bit that won't be lost.  The bit can go in anywhere below the
+     rounding position of the SFmode.  A fixed mask and bit position
+     handles all usual configurations.  It doesn't handle the case
+     of 128-bit DImode, however.  */
+  if (DF_SIZE < DI_SIZE
+      && DF_SIZE > (DI_SIZE - DF_SIZE + SF_SIZE))
+    {
+#define REP_BIT ((USItype) 1 << (DI_SIZE - DF_SIZE))
+      if (u >= ((UDItype) 1 << DF_SIZE))
+	{
+	  if ((USItype) u & (REP_BIT - 1))
+	    u |= REP_BIT;
+	}
+    }
   f = (USItype) (u >> WORD_SIZE);
   f *= HIGH_HALFWORD_COEFF;
   f *= HIGH_HALFWORD_COEFF;
