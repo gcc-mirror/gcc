@@ -1835,6 +1835,7 @@ typedef struct
 #define ARM_NAME_ENCODING_LENGTHS		\
   case SHORT_CALL_FLAG_CHAR: return 1;		\
   case LONG_CALL_FLAG_CHAR:  return 1;		\
+  case '*':  return 1;				\
   SUBTARGET_NAME_ENCODING_LENGTHS		
 
 /* This has to be handled by a function because more than part of the
