@@ -1,3 +1,9 @@
+2003-07-23  Alexandre Oliva  <aoliva@redhat.com>
+
+	* acinclude.m4 (GLIBCXX_ENABLE_PCH): Rework test such that it
+	tests not only generation of pch files, but also their use.
+	* aclocal.m4, configure: Rebuilt.
+
 2003-07-23  Steve Ellcey  <sje@cup.hp.com>
 
 	* config/cpu/hppa/atomicity.h: Change
