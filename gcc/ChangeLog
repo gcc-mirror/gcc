@@ -1,5 +1,22 @@
 2005-04-03 Mostafa Hagog <mustafa@il.ibm.com>
 
+	* cfg.c (clear_bb_flags): Don't clear BB_DISABLE_SCHEDULE.
+	* modulo-sched.c (undo_replace_buff_elem): New structure.
+	(kernel_number_of_cycles, ps_unschedule_node,
+	undo_generate_reg_moves,free_undo_replace_buff,
+	undo_permute_partial_schedule, 	loop_single_full_bb_p,
+	SIMPLE_SMS_LOOP_P, loop_canon_p, canon_loop,
+	build_loops_structure, get_sched_window): New.
+	(generate_reg_moves): Return undo_replace_buff_elem and other
+	fixes.
+	(generate_prolog_epilog): Remove old loop versioning.
+	(sms_schedule): Use loop information and loop_version.
+	(sms_schedule_by_order): Split part of it to get_sched_window.
+	* passes.c (rest_of_handle_sms): call cfg_layout_initialize
+	cfg_layout_finalize and free_dominance_info before/after SMS.
+
+2005-04-03 Mostafa Hagog <mustafa@il.ibm.com>
+
 	* cfghooks.c (lv_flush_pending_stmts,
 	cfg_hook_duplicate_loop_to_header_edge, extract_cond_bb_edges,
 	lv_adjust_loop_header_phi, lv_add_condition_to_bb): New.

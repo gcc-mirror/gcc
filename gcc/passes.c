@@ -577,6 +577,7 @@ rest_of_handle_partition_blocks (void)
 static void
 rest_of_handle_sms (void)
 {
+  basic_block bb;
   sbitmap blocks;
 
   timevar_push (TV_SMS);
@@ -584,9 +585,10 @@ rest_of_handle_sms (void)
 
   /* We want to be able to create new pseudos.  */
   no_new_pseudos = 0;
+  /* Collect loop information to be used in SMS.  */
+  cfg_layout_initialize (CLEANUP_UPDATE_LIFE);
   sms_schedule (dump_file);
   close_dump_file (DFI_sms, print_rtl, get_insns ());
-
 
   /* Update the life information, because we add pseudos.  */
   max_regno = max_reg_num ();
@@ -601,6 +603,12 @@ rest_of_handle_sms (void)
 
   no_new_pseudos = 1;
 
+  /* Finalize layout changes.  */
+  FOR_EACH_BB (bb)
+    if (bb->next_bb != EXIT_BLOCK_PTR)
+      bb->rbi->next = bb->next_bb;
+  cfg_layout_finalize ();
+  free_dominance_info (CDI_DOMINATORS);
   ggc_collect ();
   timevar_pop (TV_SMS);
 }
