@@ -1,3 +1,10 @@
+2003-06-02  Neil Booth  <neil@daikokuya.co.uk>
+
+	* c-opts.c (CL_REJECT_NEGATIVE): New.
+	(c_common_decode_option): Update to use it.
+	* c.opt: Update documentation; use RejectNegative.
+	* opts.sh: Handle RejectNegative.
+
 2003-06-01  Zack Weinberg  <zack@codesourcery.com>
 
 	* ggc-page.c (init_ggc): Give better diagnostics on failure to

@@ -119,12 +119,13 @@ static void finish_options PARAMS ((void));
 #define STDC_0_IN_SYSTEM_HEADERS 0
 #endif
 
-#define CL_C		(1 << 0) /* Only C.  */
-#define CL_OBJC		(1 << 1) /* Only ObjC.  */
-#define CL_CXX		(1 << 2) /* Only C++.  */
-#define CL_OBJCXX	(1 << 3) /* Only ObjC++.  */
-#define CL_JOINED	(1 << 4) /* If takes joined argument.  */
-#define CL_SEPARATE	(1 << 5) /* If takes a separate argument.  */
+#define CL_C			(1 << 0) /* Only C.  */
+#define CL_OBJC			(1 << 1) /* Only ObjC.  */
+#define CL_CXX			(1 << 2) /* Only C++.  */
+#define CL_OBJCXX		(1 << 3) /* Only ObjC++.  */
+#define CL_JOINED		(1 << 4) /* If takes joined argument.  */
+#define CL_SEPARATE		(1 << 5) /* If takes a separate argument.  */
+#define CL_REJECT_NEGATIVE	(1 << 6) /* Reject no- form.  */
 
 #include "c-options.c"
 
@@ -398,8 +399,14 @@ c_common_decode_option (argc, argv)
   if (opt_index == N_OPTS)
     goto done;
 
-  result = 1;
   option = &cl_options[opt_index];
+
+  /* Reject negative form of switches that don't take negatives.  */
+  if (!on && (option->flags & CL_REJECT_NEGATIVE))
+    goto done;
+
+  /* We've recognised this switch.  */
+  result = 1;
 
   /* Sort out any argument the switch takes.  */
   if (option->flags & (CL_JOINED | CL_SEPARATE))
@@ -629,10 +636,7 @@ c_common_decode_option (argc, argv)
       break;
 
     case OPT_Werror_implicit_function_declaration:
-      if (!on)
-	result = 0;
-      else
-	mesg_implicit_function_declaration = 2;
+      mesg_implicit_function_declaration = 2;
       break;
 
     case OPT_Wfloat_equal:
@@ -908,7 +912,7 @@ c_common_decode_option (argc, argv)
       break;
 
     case OPT_fdump_:
-      if (!on || !dump_switch_p (argv[0] + strlen ("-f")))
+      if (!dump_switch_p (argv[0] + strlen ("-f")))
 	result = 0;
       break;
 
@@ -1072,10 +1076,6 @@ c_common_decode_option (argc, argv)
       break;
 
     case OPT_ftabstop_:
-      /* Don't recognize -fno-tabstop=.  */
-      if (!on)
-	return 0;
-
       /* It is documented that we silently ignore silly values.  */
 	{
 	  char *endptr;
