@@ -1961,7 +1961,7 @@ primary_no_new_array:
 |	array_access
 |	type_literals
         /* Added, JDK1.1 inner classes. Documentation is wrong
-           refering to a 'ClassName' (class_name) rule that doesn't
+           referring to a 'ClassName' (class_name) rule that doesn't
            exist. Used name: instead.  */
 |	name DOT_TK THIS_TK
 		{
@@ -2068,7 +2068,7 @@ anonymous_class_creation:
 		     later on in verify_constructor_super.
 
 		     It's during the expansion of a `new' statement
-		     refering to an anonymous class that a ctor will
+		     referring to an anonymous class that a ctor will
 		     be generated for the anonymous class, with the
 		     right arguments. */
 
@@ -15364,7 +15364,7 @@ patch_try_statement (tree node)
   /* Check catch clauses, if any. Every time we find an error, we try
      to process the next catch clause. We process the catch clause before
      the try block so that when processing the try block we can check thrown
-     exceptions againts the caught type list. */
+     exceptions against the caught type list. */
   for (current = catch; current; current = TREE_CHAIN (current))
     {
       tree carg_decl, carg_type;

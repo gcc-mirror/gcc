@@ -91,7 +91,7 @@ int this_class_index = 0;
 
 int class_access_flags = 0;
 
-/* Print in format similar to javap.  VERY IMCOMPLETE. */
+/* Print in format similar to javap.  VERY INCOMPLETE. */
 int flag_javap_compatible = 0;
 
 static void print_access_flags (FILE *, uint16, char);

@@ -927,7 +927,7 @@ primary_no_new_array:
 |	array_access
 |	type_literals
         /* Added, JDK1.1 inner classes. Documentation is wrong
-           refering to a 'ClassName' (class_name) rule that doesn't
+           referring to a 'ClassName' (class_name) rule that doesn't
            exist. Used name instead.  */
 |	name DOT_TK THIS_TK
 		{ USE_ABSORBER; }

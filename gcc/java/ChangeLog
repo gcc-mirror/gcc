@@ -1,3 +1,9 @@
+2004-09-25  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* expr.c, jcf-dump.c, parse-scan.y, parse.y: Fix
+	comment typos.
+	* gcj.texi: Fix typos.
+
 2004-09-24  Tom Tromey  <tromey@redhat.com>
 
 	PR java/15656:
