@@ -2712,7 +2712,11 @@ extern int flag_new_for_scope;
 /* Returns the pfn field from a TYPE_PTRMEMFUNC_P.  */
 #define PFN_FROM_PTRMEMFUNC(NODE) pfn_from_ptrmemfunc ((NODE))
 
-/* For a pointer-to-member type of the form `T X::*', this is `X'.  */
+/* For a pointer-to-member type of the form `T X::*', this is `X'.
+   For a type like `void (X::*)() const', this type is `X', not `const
+   X'.  To get at the `const X' you have to look at the
+   TYPE_PTRMEM_POINTED_TO_TYPE; there, the first parameter will have
+   type `const X*'.  */
 #define TYPE_PTRMEM_CLASS_TYPE(NODE)			\
   (TYPE_PTRMEM_P ((NODE))				\
    ? TYPE_OFFSET_BASETYPE (TREE_TYPE ((NODE)))		\

@@ -1,5 +1,9 @@
 2001-04-15  Mark Mitchell  <mark@codesourcery.com>
 
+	* cp-tree.h (TYPE_PTRMEM_CLASS_TYPE): Improve documentation.
+	* mangle.c (write_pointer_to_member_type): Fix mangling of
+	pointers to cv-qualified member function types.
+
 	* init.c (build_delete): Create a SAVE_EXPR for the address if
 	we're going to use it more than once.
 
