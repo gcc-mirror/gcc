@@ -1,5 +1,5 @@
 /* Bytecode conversion definitions for GNU C-compiler.
-   Copyright (C) 1993 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1994 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -724,9 +724,9 @@ bc_expand_binary_operation (optab, resulttype, arg0, arg1)
   if (besti == -1)
     abort ();
 
-  expand_expr (arg1);
+  expand_expr (arg1, 0, VOIDmode, 0);
   emit_typecode_conversion (arg1code, optab[besti].arg1);
-  expand_expr (arg0);
+  expand_expr (arg0, 0, VOIDmode, 0);
   emit_typecode_conversion (arg0code, optab[besti].arg0);
   bc_emit_instruction (optab[besti].opcode);
   emit_typecode_conversion (optab[besti].result, resultcode);
@@ -761,7 +761,7 @@ bc_expand_unary_operation (optab, resulttype, arg0)
   if (besti == -1)
     abort ();
 
-  expand_expr (arg0);
+  expand_expr (arg0, 0, VOIDmode, 0);
   emit_typecode_conversion (arg0code, optab[besti].arg0);
   bc_emit_instruction (optab[besti].opcode);
   emit_typecode_conversion (optab[besti].result, resultcode);
