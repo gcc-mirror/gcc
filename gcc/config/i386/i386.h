@@ -182,10 +182,10 @@ extern const int x86_double_with_add;
   { "hard-float",		 MASK_80387, "Use hardware fp" },	\
   { "soft-float",		-MASK_80387, "Do not use hardware fp" },\
   { "no-soft-float",		 MASK_80387, "Use hardware fp" },	\
-  { "386",			 0, "Optimize for i80386" },		\
-  { "486",			 0, "Optimize for i80486" },		\
-  { "pentium",			 0, "Optimize for Pentium" },		\
-  { "pentiumpro",		 0, "Optimize for Pentium Pro, Pentium II" },\
+  { "386",			 0, "Same as -mcpu=i386" },		\
+  { "486",			 0, "Same as -mcpu=i486" },		\
+  { "pentium",			 0, "Same as -mcpu=pentium" },		\
+  { "pentiumpro",		 0, "Same as -mcpu=pentiumpro" },	\
   { "rtd",			 MASK_RTD, "Alternate calling convention" },\
   { "no-rtd",			-MASK_RTD, "Use normal calling convention" },\
   { "align-double",		 MASK_ALIGN_DOUBLE, "Align some doubles on dword boundary" },\
@@ -265,6 +265,7 @@ extern int ix86_arch;
   { "align-loops=",	&i386_align_loops_string, "Loop code aligned to this power of 2" }, \
   { "align-jumps=",	&i386_align_jumps_string, "Jump targets are aligned to this power of 2" }, \
   { "align-functions=",	&i386_align_funcs_string, "Function starts are aligned to this power of 2" }, \
+  { "preferred-stack-boundary=", &i386_preferred_stack_boundary_string, "Attempt to keep stack aligned to this power of 2" }, \
   { "branch-cost=",	&i386_branch_cost_string, "Branches are this expensive (1-5, arbitrary units)" },			\
   SUBTARGET_OPTIONS							\
 }
@@ -407,13 +408,12 @@ extern int ix86_arch;
 /* Allocation boundary (in *bits*) for storing arguments in argument list.  */
 #define PARM_BOUNDARY 32
 
-/* Boundary (in *bits*) on which stack pointer should be aligned.  */
+/* Boundary (in *bits*) on which the stack pointer must be aligned.  */
 #define STACK_BOUNDARY 32
 
-/* We want to keep the stack aligned to 128 bits when possible, for the
-   benefit of doubles and SSE __m128.  But the compiler can not rely on
-   the stack having this alignment.*/
-#define PREFERRED_STACK_BOUNDARY 128
+/* Boundary (in *bits*) on which the stack pointer preferrs to be
+   aligned; the compiler cannot rely on having this alignment.  */
+#define PREFERRED_STACK_BOUNDARY i386_preferred_stack_boundary
 
 /* Allocation boundary (in *bits*) for the code of a function.
    For i486, we get better performance by aligning to a cache
@@ -2781,11 +2781,13 @@ extern char *i386_regparm_string;		/* # registers to use to pass args */
 extern char *i386_align_loops_string;		/* power of two alignment for loops */
 extern char *i386_align_jumps_string;		/* power of two alignment for non-loop jumps */
 extern char *i386_align_funcs_string;		/* power of two alignment for functions */
+extern char *i386_preferred_stack_boundary_string;/* power of two alignment for stack boundary */
 extern char *i386_branch_cost_string;		/* values 1-5: see jump.c */
 extern int i386_regparm;			/* i386_regparm_string as a number */
 extern int i386_align_loops;			/* power of two alignment for loops */
 extern int i386_align_jumps;			/* power of two alignment for non-loop jumps */
 extern int i386_align_funcs;			/* power of two alignment for functions */
+extern int i386_preferred_stack_boundary;	/* preferred stack boundary alignment in bits */
 extern int i386_branch_cost;			/* values 1-5: see jump.c */
 extern char *hi_reg_name[];			/* names for 16 bit regs */
 extern char *qi_reg_name[];			/* names for 8 bit regs (low) */

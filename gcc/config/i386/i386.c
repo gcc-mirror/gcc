@@ -203,6 +203,12 @@ char *i386_align_loops_string;
 /* Power of two alignment for non-loop jumps. */
 char *i386_align_jumps_string;
 
+/* Power of two alignment for stack boundary in bytes.  */
+char *i386_preferred_stack_boundary_string;
+
+/* Preferred alignment for stack boundary in bits.  */
+int i386_preferred_stack_boundary;
+
 /* Values 1-5: see jump.c */
 int i386_branch_cost;
 char *i386_branch_cost_string;
@@ -239,16 +245,16 @@ override_options ()
       struct processor_costs *cost; /* Processor costs */
       int target_enable;	/* Target flags to enable.  */
       int target_disable;	/* Target flags to disable.  */
-    } processor_target_table[]
-      = {{PROCESSOR_I386_STRING, PROCESSOR_I386, &i386_cost, 0, 0},
-	   {PROCESSOR_I486_STRING, PROCESSOR_I486, &i486_cost, 0, 0},
-	   {PROCESSOR_I586_STRING, PROCESSOR_PENTIUM, &pentium_cost, 0, 0},
-	   {PROCESSOR_PENTIUM_STRING, PROCESSOR_PENTIUM, &pentium_cost, 0, 0},
-	   {PROCESSOR_I686_STRING, PROCESSOR_PENTIUMPRO, &pentiumpro_cost,
-	      0, 0},
-	   {PROCESSOR_PENTIUMPRO_STRING, PROCESSOR_PENTIUMPRO,
-	      &pentiumpro_cost, 0, 0},
-      	   {PROCESSOR_K6_STRING, PROCESSOR_K6, &k6_cost, 0, 0}};
+    } processor_target_table[] = {
+      {PROCESSOR_I386_STRING, PROCESSOR_I386, &i386_cost, 0, 0},
+      {PROCESSOR_I486_STRING, PROCESSOR_I486, &i486_cost, 0, 0},
+      {PROCESSOR_I586_STRING, PROCESSOR_PENTIUM, &pentium_cost, 0, 0},
+      {PROCESSOR_PENTIUM_STRING, PROCESSOR_PENTIUM, &pentium_cost, 0, 0},
+      {PROCESSOR_I686_STRING, PROCESSOR_PENTIUMPRO, &pentiumpro_cost, 0, 0},
+      {PROCESSOR_PENTIUMPRO_STRING, PROCESSOR_PENTIUMPRO,
+       &pentiumpro_cost, 0, 0},
+      {PROCESSOR_K6_STRING, PROCESSOR_K6, &k6_cost, 0, 0}
+    };
 
   int ptt_size = sizeof (processor_target_table) / sizeof (struct ptt);
 
@@ -346,6 +352,11 @@ override_options ()
   def_align = (TARGET_486) ? 4 : 2;
 
   /* Validate -malign-loops= value, or provide default.  */
+#ifdef ASM_OUTPUT_MAX_SKIP_ALIGN
+  i386_align_loops = 4;
+#else
+  i386_align_loops = 2;
+#endif
   if (i386_align_loops_string)
     {
       i386_align_loops = atoi (i386_align_loops_string);
@@ -353,14 +364,13 @@ override_options ()
 	fatal ("-malign-loops=%d is not between 0 and %d",
 	       i386_align_loops, MAX_CODE_ALIGN);
     }
-  else
-#ifdef ASM_OUTPUT_MAX_SKIP_ALIGN
-    i386_align_loops = 4;
-#else
-    i386_align_loops = 2;
-#endif
 
   /* Validate -malign-jumps= value, or provide default.  */
+#ifdef ASM_OUTPUT_MAX_SKIP_ALIGN
+  i386_align_jumps = 4;
+#else
+  i386_align_jumps = def_align;
+#endif
   if (i386_align_jumps_string)
     {
       i386_align_jumps = atoi (i386_align_jumps_string);
@@ -368,14 +378,9 @@ override_options ()
 	fatal ("-malign-jumps=%d is not between 0 and %d",
 	       i386_align_jumps, MAX_CODE_ALIGN);
     }
-  else
-#ifdef ASM_OUTPUT_MAX_SKIP_ALIGN
-    i386_align_jumps = 4;
-#else
-    i386_align_jumps = def_align;
-#endif
 
   /* Validate -malign-functions= value, or provide default. */
+  i386_align_funcs = def_align;
   if (i386_align_funcs_string)
     {
       i386_align_funcs = atoi (i386_align_funcs_string);
@@ -383,19 +388,26 @@ override_options ()
 	fatal ("-malign-functions=%d is not between 0 and %d",
 	       i386_align_funcs, MAX_CODE_ALIGN);
     }
-  else
-    i386_align_funcs = def_align;
+
+  /* Validate -mpreferred_stack_boundary= value, or provide default.
+     The default of 128 bits is for Pentium III's SSE __m128.  */
+  i386_preferred_stack_boundary = 128;
+  if (i386_preferred_stack_boundary_string)
+    {
+      i = atoi (i386_preferred_stack_boundary_string);
+      if (i < 2 || i > 31)
+	fatal ("-mpreferred_stack_boundary=%d is not between 2 and 31", i);
+      i386_preferred_stack_boundary = (1 << i) * BITS_PER_UNIT;
+    }
 
   /* Validate -mbranch-cost= value, or provide default. */
+  i386_branch_cost = 1;
   if (i386_branch_cost_string)
     {
       i386_branch_cost = atoi (i386_branch_cost_string);
       if (i386_branch_cost < 0 || i386_branch_cost > 5)
-	fatal ("-mbranch-cost=%d is not between 0 and 5",
-	       i386_branch_cost);
+	fatal ("-mbranch-cost=%d is not between 0 and 5", i386_branch_cost);
     }
-  else
-    i386_branch_cost = 1;
 
   /* Keep nonleaf frame pointers.  */
   if (TARGET_OMIT_LEAF_FRAME_POINTER)

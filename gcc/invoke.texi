@@ -342,7 +342,7 @@ in the following sections.
 -mno-wide-multiply  -mrtd  -malign-double
 -mreg-alloc=@var{list}  -mregparm=@var{num}
 -malign-jumps=@var{num}  -malign-loops=@var{num}
--malign-functions=@var{num}
+-malign-functions=@var{num} -mpreferred_stack_boundary=@var{num}
 
 @emph{HPPA Options}
 -mbig-switch  -mdisable-fpregs  -mdisable-indexing  
@@ -5170,6 +5170,32 @@ than 8 bytes away.
 Align the start of functions to a 2 raised to @var{num} byte boundary.
 If @samp{-malign-functions} is not specified, the default is 2 if optimizing
 for a 386, and 4 if optimizing for a 486.
+@end table
+
+@item -mpreferred-stack-boundary=@var{num}
+Attempt to keep the stack boundary aligned to a 2 raised to @var{num}
+byte boundary.  If @samp{-mpreferred-stack-boundary} is not specified,
+the default is 4 (16 bytes or 128 bits).
+
+The stack is required to be aligned on a 4 byte boundary.  On Pentium
+and PentiumPro, @code{double} and @code{long double} values should be
+aligned to an 8 byte boundary (see @samp{-malign-double}) or suffer
+significant run time performance penalties.  On Pentium III, the
+Streaming SIMD Extention (SSE) data type @code{__m128} suffers similar
+penalties if it is not 16 byte aligned.
+
+To ensure proper alignment of this values on the stack, the stack boundary
+must be as aligned as that required by any value stored on the stack. 
+Further, every function must be generated such that it keeps the stack
+aligned.  Thus calling a function compiled with a higher preferred
+stack boundary from a function compiled with a lower preferred stack
+boundary will most likely misalign the stack.  It is recommended that
+libraries that use callbacks always use the default setting.
+
+This extra alignment does consume extra stack space.  Code that is sensitive
+to stack space usage, such as embedded systems and operating system kernels,
+may want to reduce the preferred alignment to
+@samp{-mpreferred-stack-boundary=2}.
 @end table
 
 @node HPPA Options
