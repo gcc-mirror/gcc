@@ -143,9 +143,6 @@ Boston, MA 02111-1307, USA.  */
 
 #undef HAS_INIT_SECTION
 
-#undef DEFAULT_VTABLE_THUNKS
-#define DEFAULT_VTABLE_THUNKS 1
-
 /* This is how we tell the assembler that two symbols have the same value.  */
 
 #define ASM_OUTPUT_DEF(FILE,NAME1,NAME2) \
