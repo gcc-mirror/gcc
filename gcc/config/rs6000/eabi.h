@@ -96,7 +96,8 @@ do {									\
       && in_section != in_dtors						\
       && !recurse							\
       && GET_CODE (VALUE) != CONST_INT					\
-      && GET_CODE (VALUE) != CONST_DOUBLE)				\
+      && GET_CODE (VALUE) != CONST_DOUBLE				\
+      && CONSTANT_P (VALUE))						\
     {									\
       static int labelno = 0;						\
       char buf[256], *p;						\
