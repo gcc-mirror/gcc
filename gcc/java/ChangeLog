@@ -1,3 +1,15 @@
+2001-04-26  Per Bothner  <per@bothner.com>
+
+	* jcf-write.c (generate_bytecode_insns case SWITCH_EXPR):
+	Fix thinko:  If a single case, use if_icmpeq, not ifeq.
+
+	* constants.c (find_methodref_with_class_index):  New function.
+	(find_methodref_index):  Use find_methodref_with_class_index.
+	* java-tree.h (find_methodref_with_class_index):  New declaration.
+	* jcf-write.c (generate_bytecode_insns case CALL_EXPR):  Don't change
+	DECL_CONTEXT, instead use new find_methodref_with_class_index function.
+	If context changed from interface to class, don't use invokeinterface.
+
 2001-04-25  Per Bothner  <per@bothner.com>
 
 	* verify.c (verify_jvm_instructions):  For field instructions,
