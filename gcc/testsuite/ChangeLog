@@ -1,3 +1,10 @@
+2003-08-19  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* gcc.dg/uninit-D.c: New Test.
+	* gcc.dg/uninit-E.c: New Test.
+	* gcc.dg/uninit-F.c: New Test.
+	* gcc.dg/uninit-G.c: New Test.
+
 2003-08-19  Michael Ritzert  <ritzert@t-online.de>
 
 	* g++.dg/README: Describe the pch directory.

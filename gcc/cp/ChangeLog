@@ -1,3 +1,8 @@
+2003-08-19  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR c++/10538, PR c/5582
+	* cp/cp-lang.c (LANG_HOOKS_DECL_UNINIT): Define.
+
 2003-08-19  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/11174
