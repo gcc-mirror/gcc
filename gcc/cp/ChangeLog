@@ -1,3 +1,18 @@
+2000-01-23  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (register_dtor_fn): New function.
+	* decl.c (destroy_local_static): Rename to ...
+	(register_dtor_fn): ... this.  Give it external linkage.
+	(expand_static_init): Use it.
+	* decl2.c (do_static_initialization): Likewise, if using
+	__cxa_atexit.
+	(do_static_destruction): Check that __cxa_atexit is not in use.
+	(finish_file): Don't call do_static_destruction if using
+	__cxa_atexit.
+
+	* typeck.c (convert_arguments): Restore two-message error
+	reporting.
+	
 2000-01-20  Nathan Sidwell  <sidwell@codesourcery.com>
 
 	Remap dynamic cast hint values to be consistent across ABIs.

@@ -3204,6 +3204,11 @@ do_static_initialization (decl, init)
     }
   finish_expr_stmt (expr);
 
+  /* If we're using __cxa_atexit, register a a function that calls the
+     destructor for the object.  */
+  if (flag_use_cxa_atexit)
+    register_dtor_fn (decl);
+
   /* Finsh up.  */
   finish_static_initialization_or_destruction (sentry_if_stmt);
 }
@@ -3219,10 +3224,14 @@ do_static_destruction (decl)
 {
   tree sentry_if_stmt;
 
+  /* If we're using __cxa_atexit, then destructors are registered
+     immediately after objects are initialized.  */
+  my_friendly_assert (!flag_use_cxa_atexit, 20000121);
+
   /* If we don't need a destructor, there's nothing to do.  */
   if (!TYPE_NEEDS_DESTRUCTOR (TREE_TYPE (decl)))
     return;
-    
+
   /* Actually do the destruction.  */
   sentry_if_stmt = start_static_initialization_or_destruction (decl,
 							       /*initp=*/0);
@@ -3468,10 +3477,18 @@ finish_file ()
 
 	  /* Then, generate code to do all the destructions.  Do these
 	     in reverse order so that the most recently constructed
-	     variable is the first destroyed.  */
-	  vars = nreverse (vars);
-	  for (v = vars; v; v = TREE_CHAIN (v))
-	    do_static_destruction (TREE_VALUE (v));
+	     variable is the first destroyed.  If we're using
+	     __cxa_atexit, then we don't need to do this; functions
+	     we're registered at initialization time to destroy the
+	     local statics.  */
+	  if (!flag_use_cxa_atexit)
+	    {
+	      vars = nreverse (vars);
+	      for (v = vars; v; v = TREE_CHAIN (v))
+		do_static_destruction (TREE_VALUE (v));
+	    }
+	  else
+	    vars = NULL_TREE;
 
 	  /* Finish up the static storage duration function for this
 	     round.  */
