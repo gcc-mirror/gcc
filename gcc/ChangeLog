@@ -1,5 +1,12 @@
 Mon Jan  1 07:38:33 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* config.gcc (sparc-*-elf): Include sparc/sol2.h.
+	(sparc-*-rtems*): Include sparc/sol2.h and sparc/elf.h.
+	(sparclite-*-elf*, sparc86x-*-elf*): Likewise.
+	* config/sparc/elf.h: No longer include sol2.h.
+	* config/sparc/lifeelf.h: No longer include sparc/elf.h.
+	* config/sparc/rtemself.h, config/sparc/sp86x-elf.h: Likewise.
+
 	* config/sparc/sparc.md: Test TARGET_ARCH64 instead of TARGET_PTR64.
 
 2001-01-01  Michael Hayes  <mhayes@redhat.com>
