@@ -1,3 +1,7 @@
+2004-03-14  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.h (EXTRA_CONSTRAINT_STR_ARM): Update comment.
+
 2004-03-13  Dara Hazeghi  <dhazeghi@yahoo.com>
 
 	* doc/install.texi: Note status of -fnew-ra.
