@@ -1,3 +1,35 @@
+2003-03-26  Vladimir Makarov  <vmakarov@redhat.com>
+
+        * config/rs6000/8540.md: New file.
+	
+	* config/rs6000/{40x.md, 603.md, 6xx.md, 7450.md, 7xx.md, mpc.md,
+	power4.md, rios1.md, rios2.md, rs64.md}: Add mult_compare to
+	reservations for imul.
+
+	* config/rs6000/rs6000.md: Include 8540.md.  Change
+	delayed_compare onto mult_compare for insns generating
+	multiplication.
+	(mult_compare, fpsimple, brinc, vecdiv, veccmpsimple, vecfdiv):
+	New type attribute values.
+
+	* config/rs6000/spe.md (*negsf2_gp, *abssf2_gpr): Use type
+	fpsimple instead of fp.
+	(*divsf3_gpr): Use type vecfdiv instead of fp.
+	(spe_evfsabs, spe_evfsnabs, spe_evfsneg): Use type vecsimple
+	instead of vecfloat.
+	(spe_evfsdive): Use type vecfdiv instead of vecfloat.
+	(spe_brinc): Use type brinc instead of veccomplex.
+	(spe_evaddw, spe_evaddiw): Use type vecsimple instead of
+	veccomplex.
+	(spe_evdivws, spe_evdivwu): Use type vecdiv instead of veccomplex.
+	(*movv2si_internal, *movv1di_internal, *movv4hi_internal,
+	*movv2sf_internal): Define type attribute values for all
+	alternatives.
+	(cmpsfeq_gpr, cmpsfgt_gpr, cmpsflt_gpr): Use type veccmp instead
+	of fpcompare.
+	(tstsfeq_gpr, tstsfgt_gpr, tstsflt_gpr): Use type veccmpsimple
+	instead of fpcompare.
+		
 2003-03-26  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/power4.md: Allow delay between dispatch and

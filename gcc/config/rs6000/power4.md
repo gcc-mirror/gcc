@@ -197,7 +197,7 @@
 (define_bypass 2 "power4-compare" "power4-integer")
 
 (define_insn_reservation "power4-imul" 7
-  (and (eq_attr "type" "imul,lmul")
+  (and (eq_attr "type" "imul,lmul,mult_compare")
        (eq_attr "cpu" "power4"))
   "(q1_power4,iu1_power4*6)|(q2_power4,iu2_power4*6)")
 
