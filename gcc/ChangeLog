@@ -1,3 +1,7 @@
+2004-04-03  Jan Hubicka  <jh@suse.cz>
+
+	* md.texi (vec_set, vec_extract, vec_init): Document.
+
 2004-04-02  Gabor Loki <loki@inf.u-szeged.hu>
 
        * opts.c (decode_options): Do function inlining with very small
