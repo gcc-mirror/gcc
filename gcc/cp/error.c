@@ -80,7 +80,7 @@ static char *scratch_firstobj;
 		 IDENTIFIER_LENGTH (ID)))
 # define OB_PUTCP(S) (obstack_grow (&scratch_obstack, (S), strlen (S)))
 # define OB_FINISH() (obstack_1grow (&scratch_obstack, '\0'))
-# define OB_PUTI(CST) do { sprintf (digit_buffer, "%d", (CST)); \
+# define OB_PUTI(CST) do { sprintf (digit_buffer, HOST_WIDE_INT_PRINT_DEC, (HOST_WIDE_INT)(CST)); \
 			   OB_PUTCP (digit_buffer); } while (0)
 # define OB_UNPUT(N) obstack_blank (&scratch_obstack, - (N));
 

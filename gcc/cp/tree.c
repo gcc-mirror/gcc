@@ -1250,9 +1250,9 @@ debug_binfo (elem)
   unsigned HOST_WIDE_INT n;
   tree virtuals;
 
-  fprintf (stderr, "type \"%s\"; offset = %d\n",
+  fprintf (stderr, "type \"%s\"; offset = %ld\n",
 	   TYPE_NAME_STRING (BINFO_TYPE (elem)),
-	   TREE_INT_CST_LOW (BINFO_OFFSET (elem)));
+	   (long) TREE_INT_CST_LOW (BINFO_OFFSET (elem)));
   fprintf (stderr, "vtable type:\n");
   debug_tree (BINFO_TYPE (elem));
   if (BINFO_VTABLE (elem))
@@ -1267,9 +1267,9 @@ debug_binfo (elem)
   while (virtuals)
     {
       tree fndecl = TREE_OPERAND (FNADDR_FROM_VTABLE_ENTRY (TREE_VALUE (virtuals)), 0);
-      fprintf (stderr, "%s [%d =? %d]\n",
+      fprintf (stderr, "%s [%ld =? %ld]\n",
 	       IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (fndecl)),
-	       n, TREE_INT_CST_LOW (DECL_VINDEX (fndecl)));
+	       (long) n, (long) TREE_INT_CST_LOW (DECL_VINDEX (fndecl)));
       ++n;
       virtuals = TREE_CHAIN (virtuals);
     }
