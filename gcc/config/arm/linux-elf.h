@@ -159,8 +159,6 @@ do {				 				\
    definition in the target-specific file which includes this file.  */
 #define SUBTARGET_EXTRA_SECTION_FUNCTIONS	CONST_SECTION_FUNCTION
 
-extern void text_section ();
-
 #define CONST_SECTION_ASM_OP	".section\t.rodata"
 
 #define CONST_SECTION_FUNCTION						\

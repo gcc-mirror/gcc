@@ -1,5 +1,9 @@
 2000-08-15  Richard Earnshaw <rearnsha@arm.com>
 
+	* arm/linux-elf.h (text_section): Delete declaration.
+
+2000-08-15  Richard Earnshaw <rearnsha@arm.com>
+
 	ARM support for unordered FP operations.
 	* arm-protos.h (arm_comparison_operator): Declare.
 	* arm.c (arm_comparison_operator): New function.
