@@ -1,5 +1,8 @@
 Sun Oct  4 07:11:34 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* loop.c (strength_reduce): Track maybe_multiple on giv scan.
+	(find_mem_givs, record_giv): New argument maybe_multiple.
+
 	* reorg.c (fill_{simple,eager}_delay_slots): If insn no longer needs
 	delay slots, just skip instead of aborting.
 
