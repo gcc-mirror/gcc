@@ -3022,8 +3022,20 @@ fill_simple_delay_slots (non_jumps_p)
       else
 	flags = get_jump_flags (insn, NULL_RTX);
       slots_to_fill = num_delay_slots (insn);
+
+      /* Some machine description have defined instructions to have
+	 delay slots only in certain circumstances which may depend on
+	 nearby insns (which change due to reorg's actions).
+
+	 For example, the PA port normally has delay slots for unconditional
+	 jumps.
+
+	 However, the PA port claims such jumps do not have a delay slot
+	 if they are immediate successors of certain CALL_INSNs.  This
+	 allows the port to favor filling the delay slot of the call with
+	 the unconditional jump.  */
       if (slots_to_fill == 0)
-	abort ();
+	continue;
 
       /* This insn needs, or can use, some delay slots.  SLOTS_TO_FILL
 	 says how many.  After initialization, first try optimizing
@@ -3896,8 +3908,19 @@ fill_eager_delay_slots ()
 	continue;
 
       slots_to_fill = num_delay_slots (insn);
+      /* Some machine description have defined instructions to have
+	 delay slots only in certain circumstances which may depend on
+	 nearby insns (which change due to reorg's actions).
+
+ 	 For example, the PA port normally has delay slots for unconditional
+	 jumps.
+
+	 However, the PA port claims such jumps do not have a delay slot
+	 if they are immediate successors of certain CALL_INSNs.  This
+	 allows the port to favor filling the delay slot of the call with
+	 the unconditional jump.  */
       if (slots_to_fill == 0)
-	abort ();
+        continue;
 
       slots_filled = 0;
       target_label = JUMP_LABEL (insn);

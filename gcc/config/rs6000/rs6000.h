@@ -716,7 +716,7 @@ extern int rs6000_debug_arg;		/* debug argument handling */
 	mq		(not saved; best to use it if we can)
 	ctr		(not saved; when we have the choice ctr is better)
 	lr		(saved)
-        cr5, r1, r2, ap	(fixed)  */
+        cr5, r1, r2, ap, fpmem (fixed)  */
 
 #define REG_ALLOC_ORDER					\
   {32, 							\
@@ -1798,7 +1798,12 @@ typedef struct rs6000_args
    the sum of two registers, or a register indirect, possibly with an
    auto-increment.  For DFmode and DImode with an constant plus register,
    we must ensure that both words are addressable or PowerPC64 with offset
-   word aligned.  */
+   word aligned.
+
+   For modes spanning multiple registers (DFmode in 32-bit GPRs,
+   32-bit DImode, TImode), indexed addressing cannot be used because
+   adjacent memory cells are accessed by adding word-sized offsets
+   during assembly output.  */
 
 #define LEGITIMATE_CONSTANT_POOL_BASE_P(X)				\
   (TARGET_TOC && GET_CODE (X) == SYMBOL_REF				\
@@ -1875,8 +1880,8 @@ typedef struct rs6000_args
   if (LEGITIMATE_OFFSET_ADDRESS_P (MODE, X))		\
     goto ADDR;						\
   if ((MODE) != TImode					\
-      && (TARGET_HARD_FLOAT || TARGET_64BIT || (MODE) != DFmode) \
-      && (TARGET_64BIT || (MODE) != DImode)		\
+      && (TARGET_HARD_FLOAT || TARGET_POWERPC64 || (MODE) != DFmode) \
+      && (TARGET_POWERPC64 || (MODE) != DImode)		\
       && LEGITIMATE_INDEXED_ADDRESS_P (X))		\
     goto ADDR;						\
   if (LEGITIMATE_LO_SUM_ADDRESS_P (MODE, X))		\
@@ -1923,8 +1928,8 @@ typedef struct rs6000_args
     }									\
   else if (GET_CODE (X) == PLUS && GET_CODE (XEXP (X, 0)) == REG	\
 	   && GET_CODE (XEXP (X, 1)) != CONST_INT			\
-	   && (TARGET_HARD_FLOAT || TARGET_64BIT || (MODE) != DFmode)	\
-	   && (TARGET_64BIT || (MODE) != DImode)			\
+	   && (TARGET_HARD_FLOAT || TARGET_POWERPC64 || (MODE) != DFmode) \
+	   && (TARGET_POWERPC64 || (MODE) != DImode)			\
 	   && (MODE) != TImode)						\
     {									\
       (X) = gen_rtx_PLUS (Pmode, XEXP (X, 0),				\

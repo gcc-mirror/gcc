@@ -1,3 +1,23 @@
+Tue Aug 25 19:43:11 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* reorg.c (fill_simple_delay_slots): Do not abort if we encounter
+	an insn on the unfilled_slots_list that has no delay slots.
+	(fill_eager_delay_slots): Similarly.
+
+Mon Aug 24 15:20:19 1998  David Edelsohn  <edelsohn@mhpcc.edu>
+
+	* rs6000.h (GO_IF_LEGITIMATE_ADDRESS): Use TARGET_POWERPC64
+	when testing LEGITIMATE_INDEXED_ADDRESS_P DFmode and DImode.
+	(LEGITIMIZE_ADDRESS): Use TARGET_POWERPC64 for INDEXED fixup.
+	* rs6000.c (print_operand, case 'L'): Add UNITS_PER_WORD, not 4.
+	(print_operand, cases 'O' and 'T'): Fix typos in lossage strings.
+	* rs6000.md (fix_truncdfsi2_store): Remove %w from non-CONST_INT
+	operand.
+	(movdf_softfloat32, movdf_hardfloat64, movdf_softfloat64): Change
+	'o' to 'm' for GPR variant constraints.
+
+	* rs6000.md (movqi, movhi): Add CONSTANT_P_RTX.
+
 Mon Aug 24 01:21:38 PDT 1998 Jeff Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.
