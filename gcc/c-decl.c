@@ -4084,6 +4084,12 @@ grokdeclarator (const struct c_declarator *declarator,
 		  }
 		else
 		  {
+		    /* Arrange for the SAVE_EXPR on the inside of the
+		       MINUS_EXPR, which allows the -1 to get folded
+		       with the +1 that happens when building TYPE_SIZE.  */
+		    if (size_varies)
+		      size = variable_size (size);
+
 		    /* Compute the maximum valid index, that is, size
 		       - 1.  Do the calculation in index_type, so that
 		       if it is a variable the computations will be
@@ -4107,8 +4113,6 @@ grokdeclarator (const struct c_declarator *declarator,
 			continue;
 		      }
 		    
-		    if (size_varies)
-		      itype = variable_size (itype);
 		    itype = build_index_type (itype);
 		  }
 	      }
