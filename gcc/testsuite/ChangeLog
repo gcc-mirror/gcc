@@ -1,3 +1,7 @@
+2000-09-12  Alexandre Oliva  <aoliva@redhat.com>
+
+	* g++.other/inline13.C: New test.
+ 
 2000-09-12  Andreas Jaeger  <aj@suse.de>
 
 	* gcc.c-torture/execute/widechar-2.c: New test for wchar_t
