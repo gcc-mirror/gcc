@@ -1,6 +1,7 @@
-Wed Dec 10 18:14:10 1997  Jeffrey A Law  (law@cygnus.com)
+Thu Dec 11 15:50:29 1997 David Edelsohn  <edelsohn@mhpcc.edu>
 
-	* combine.c (simplify_rtx, case ABS): Do nothing for ASM_OPERANDS.
+	* configure.in ({rs6000,powerpc}-*-*): Enable Haifa scheduler by
+	default.
 
 Wed Dec 10 12:30:18 1997  Anthony Green  <green@cygnus.com>
 
