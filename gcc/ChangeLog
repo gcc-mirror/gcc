@@ -1,7 +1,9 @@
-Mon Aug 17 00:12:42 1998  Paul Eggert  <eggert@twinsun.com>
+Mon Aug 17 02:19:30 1998  David Edelsohn <dje@watson.ibm.com>
 
 	* xcoffout.c (UNKNOWN_STAB): Fix typo in previous change; missing
  	backslash before newline.
+
+Mon Aug 17 00:12:42 1998  Paul Eggert  <eggert@twinsun.com>
   	
 	* reorg.c (check_annul_list_true_false): Fix typo in Jul 17 change.
 
