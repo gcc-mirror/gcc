@@ -1,3 +1,14 @@
+2004-07-09  David Billinghurst (David.Billinghurst@riotinto.com)
+
+	* gfortran.dg/g77/7388.f: Copy from g77.dg
+	* gfortran.dg/g77/f77-edit-i-out.f: Likewise
+	* gfortran.dg/g77/f77-edit-apostrophe-out.f: Likewise  
+	* gfortran.dg/g77/f77-edit-slash-out.f: Likewise
+	* gfortran.dg/g77/f77-edit-colon-out.f: Likewise
+	* gfortran.dg/g77/f77-edit-t-out.f: Likewise
+	* gfortran.dg/g77/f77-edit-h-out.f: Likewise
+	* gfortran.dg/g77/strlen0.f: Likewise
+
 2004-07-09   David Billinghurst (David.Billinghurst@riotinto.com)
 
  	* lib/gfortran-dg.exp: New file (adapted from lib/g77-dg.exp)
