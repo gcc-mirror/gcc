@@ -1,3 +1,8 @@
+Sun Jan 13 07:23:01 2002  Douglas B Rupp  <rupp@gnat.com>
+
+	* Makefile.in (LIB2FUNCS): Split into LIB2FUNCS_1 and LIB2FUNCS_2.
+	* mklibgcc.in (LIB2FUNCS): Split into LIB2FUNCS_1 and LIB2FUNCS_2.
+
 Sun Jan 13 06:55:31 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* dwarf2out.c (mem_loc_descriptor, case ADDRESSOF): New case.
