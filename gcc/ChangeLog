@@ -1,3 +1,7 @@
+2005-03-07  Per Bothner  <per@bothner.com>
+
+	* tree.h (DECL_IS_BUILTIN): Reverted my patch from earlier today.
+
 2005-03-06  Andrew Pinski  <pinskia@physics.uc.edu>
 	
 	PR tree-opt/17671
