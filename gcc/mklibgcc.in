@@ -94,6 +94,9 @@ libgcov_c_dep='stmp-dirs $(srcdir)/libgcov.c $(srcdir)/gcov-io.h $(srcdir)/gcov-
 # Dependencies for fp-bit.c
 fpbit_c_dep='stmp-dirs config.status tsystem.h'
 
+# Flag whether we need eh_dummy.c
+need_eh_dummy=
+
 if [ "$SHLIB_LINK" ]; then
   # Test -fvisibility=hidden.  We need both a -fvisibility=hidden on
   # the command line, and a #define to prevent libgcc2.h etc from
@@ -540,6 +543,19 @@ for ml in $MULTILIBS; do
       fi
     done
 
+    # If nothing went into libgcc_eh.a, create a dummy object -
+    # some linkers don't like totally empty archives.
+    if [ -z "$LIB2ADDEHSTATIC" ]; then
+      file=eh_dummy.c
+      out="libgcc/${dir}/eh_dummy${objext}"
+      need_eh_dummy=1
+
+      echo $out: stmp-dirs $file
+      echo "	$gcc_compile" $flags '$(vis_hide)' -fexceptions -c $file -o $out
+      echo $libgcc_eh_a: $out
+    fi
+   
+
   else # no libgcc_eh.a
     for file in $LIB2ADDEH; do
       case $file in
@@ -759,6 +775,11 @@ echo "	for d in \$(dirs); do \\"
 echo "	  if [ -d \$\$d ]; then true; else $mkinstalldirs \$\$d; fi; \\"
 echo "	done"
 echo "	if [ -f stmp-dirs ]; then true; else touch stmp-dirs; fi"
+
+if [ "$need_eh_dummy" ]; then
+  echo "eh_dummy.c:"
+  echo "	echo 'struct eh_dummy;' > \$@"
+fi
 
 echo ""
 echo "install: all"

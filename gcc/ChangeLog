@@ -1,3 +1,9 @@
+2005-02-19  Zack Weinberg  <zack@codesourcery.com>
+
+	* mklibgcc.in: If libgcc_eh.a would be empty, put a dummy
+	object inside.
+	* config/ia64/hpux.h: Don't define LIBGCC_SPEC.
+
 2005-02-19  Richard Sandiford  <rsandifo@redhat.com>
 
 	PR other/19525
@@ -133,7 +139,7 @@
 	* stmt.c (emit_case_bit_tests): Call fold_convert instead of convert.
 	(estimate_case_costs): Don't call convert.
 	* expmed.c (expand_shift): Likewise.
-	(make_tree): Call fold_convert instead of convert. 
+	(make_tree): Call fold_convert instead of convert.
 
 2005-02-18  Jakub Jelinek  <jakub@redhat.com>
 
@@ -180,9 +186,9 @@
 2005-02-17  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* builtins.c (expand_builtin_return_addr): Remove tem parameter.
-	tem becomes a local variable which is set to the value of the 
+	tem becomes a local variable which is set to the value of the
 	back end defined INITIAL_FRAME_ADDRESS macro.
-	(expand_builtin_frame_address): Omit the base parameter to 
+	(expand_builtin_frame_address): Omit the base parameter to
 	expand_builtin_return_addr.
 	(expand_builtin_profile_func): Likewise.
 	* config/s390/s390.h (INITIAL_FRAME_ADDRESS_RTX): Define new macro.
@@ -264,11 +270,11 @@
 
 2005-02-17  Ralf Corsepius  <ralf.corsepius@rtems.org>
 
-	* config/rs6000/t-rtems: Completely reworked. 
+	* config/rs6000/t-rtems: Completely reworked.
 
 2005-02-17  Ira Rosen  <irar@il.ibm.com>
 
-        * tree-data-ref.c (array_base_name_differ_p): Remove gcc_assert.
+	* tree-data-ref.c (array_base_name_differ_p): Remove gcc_assert.
 
 2005-02-17  Ira Rosen  <irar@il.ibm.com>
 
@@ -293,11 +299,11 @@
 	declaration in tree-vectorizer.c, now has an extern declaration in
 	tree-vectorizer.h).
 	(slpeel_make_loop_iterate_ntimes, slpeel_can_duplicate_loop_p,
-	slpeel_verify_cfg_after_peeling, vect_strip_conversion, 
-	get_vectype_for_scalar_type, vect_is_simple_use, 
+	slpeel_verify_cfg_after_peeling, vect_strip_conversion,
+	get_vectype_for_scalar_type, vect_is_simple_use,
 	vect_is_simple_iv_evolution, vect_can_force_dr_alignment_p,
 	vect_supportable_dr_alignment, new_loop_vec_info, destroy_loop_vec_info,
-	new_stmt_vec_info, vect_analyze_loop, vectorizable_load, 
+	new_stmt_vec_info, vect_analyze_loop, vectorizable_load,
 	vectorizable_store, vectorizable_operation, vectorizable_assignment,
 	vect_transform_loop, vect_print_dump_info, vect_set_verbosity_level,
 	find_loop_location): Likewise.
@@ -313,7 +319,7 @@
 	destroy_loop_vec_info, new_stmt_vec_info, vect_print_dump_info,
 	vect_set_verbosity_level, find_loop_location): Likewise.
 
-	(vect_analyze_loop): Function externalized. Declaration moved to 
+	(vect_analyze_loop): Function externalized. Declaration moved to
 	tree-vectorized.h. Function definition moved to tree-vect-analyze.c.
 	(vect_analyze_loop_form): Moved to tree-vect-analyze.c.
 	(vect_mark_stmts_to_be_vectorized, vect_analyze_scalar_cycles,
@@ -328,12 +334,12 @@
 	vect_base_addr_differ_p, vect_object_analysis, vect_address_analysis,
 	vect_get_memtag): Likewise.
 
-	(vectorizable_load): Function externalized. Declaration moved to 
+	(vectorizable_load): Function externalized. Declaration moved to
 	tree-vectorized.h. Function definition moved to tree-vect-transform.c.
 	(vectorizable_store, vectorizable_operation, vectorizable_assignment,
 	vect_transform_loop): Likewise.
 	(vect_transform_stmt): Moved to tree-vect-transform.c.
-	(vect_align_data_ref, vect_create_destination_var, 
+	(vect_align_data_ref, vect_create_destination_var,
 	vect_create_data_ref_ptr, vect_create_index_for_vector_ref,
 	vect_create_addr_base_for_vector_ref, vect_get_new_vect_var,
 	vect_get_vec_def_for_operand, vect_init_vector,
@@ -342,7 +348,7 @@
 	vect_gen_niters_for_prolog_loop, vect_update_inits_of_dr,
 	vect_update_inits_of_drs, vect_do_peeling_for_alignment,
 	vect_do_peeling_for_loop_bound): Likewise.
-	
+
 	* tree-vect-analyze.c: New file.
 	* tree-vect-transform.c: New file.
 
@@ -356,7 +362,7 @@
 
 	* doc/install.texi (Specific): Update link for Darwin-specific
 	tool binary site.
-	
+
 2005-02-16  James A. Morrison  <phython@gcc.gnu.org>
 
 	* fold-const.c (invert_truthvalue): <INTEGER_CST>: Call
@@ -530,7 +536,7 @@
 
 2005-02-15  Richard Henderson  <rth@redhat.com>
 
-	* bb-reorder.c (find_traces_1_round): Force fallthru edge from a 
+	* bb-reorder.c (find_traces_1_round): Force fallthru edge from a
 	call to be best_edge.
 
 2005-02-14  Kazu Hirata  <kazu@cs.umass.edu>
@@ -546,7 +552,7 @@
 	* rtl.h: Adjust the prototype for recompute_reg_usage.
 
 2005-02-14  Daniel Berlin  <dberlin@dberlin.org>
-	
+
 	* tree-dump.c (dump_files): Update to reflect new member
 	of dump_file_info.
 	(dump_register): Add new argument.
@@ -812,7 +818,7 @@
 	* config/rs6000/t-rtems:
 	(MULTILIB_OPTIONS): Remove mcpu=602.
 	(MUTLILIB_DIRNAMES): Remove m602.
-	(MULTILIB_MATCHES): Add ${MULTILIB_MATCHES_FLOAT}. 
+	(MULTILIB_MATCHES): Add ${MULTILIB_MATCHES_FLOAT}.
 	Let mcpu=602 match mcpu=603.
 	(MULTILIB_NEW_EXCEPTIONS_ONLY): Add mcpu=601, mcpu=602, mcpu=m603.
 
@@ -989,7 +995,7 @@
 
 2005-02-09  Dorit Naishlos  <dorit@il.ibm.com>
 
-	* tree-vectorizer.c (vect_set_dump_settings): Check that dump_file 
+	* tree-vectorizer.c (vect_set_dump_settings): Check that dump_file
 	exists.
 
 2005-02-09  Richard Guenther  <rguenth@gcc.gnu.org>
@@ -1100,8 +1106,8 @@
 	(slpeel_tree_peel_loop_to_edge): Likewise.
 
 	(vect_analyze_offset_expr): Call to vect_print_dump_info with
-	appropriate verbosity level instead of call to vect_debug_details 
-	or vect_debug_stats. 
+	appropriate verbosity level instead of call to vect_debug_details
+	or vect_debug_stats.
 	(vect_get_base_and_offset):
 	(vect_create_addr_base_for_vector_ref):
 	(get_vectype_for_scalar_type):
@@ -1155,7 +1161,7 @@
 	(vect_mark_stmts_to_be_vectorized):
 	(vect_get_loop_niters):
 	(vect_analyze_loop_form):
-	(vect_analyze_loop): Likewise. 
+	(vect_analyze_loop): Likewise.
 	(vect_mark_stmts_to_be_vectorized): Add call to print_generic_expr.
 
 2005-02-07  Richard Sandiford  <rsandifo@redhat.com>
@@ -1185,7 +1191,7 @@
 
 2005-02-07  Ralf Corsepius  <ralf.corsepius@rtems.org>
 
-	* config/arm/rtems-elf.h (SUBTARGET_EXTRA_ASM_SPEC): 
+	* config/arm/rtems-elf.h (SUBTARGET_EXTRA_ASM_SPEC):
 	Let !-mhard-float !-msoft-float imply -mfpu=softfpa.
 
 2005-02-06  Roger Sayle  <roger@eyesopen.com>
@@ -1346,7 +1352,7 @@
 	(vect_analyze_loop_form): Argument in call to vect_debug_details/stats
 	changed from loop to loop_loc.
 
-	(vect_enhance_data_refs_alignment): Removed unused variable loop.	
+	(vect_enhance_data_refs_alignment): Removed unused variable loop.
 
 2005-02-03  Leehod Baruch  <leehod@il.ibm.com>
 	    Dorit Naishlos  <dorit@il.ibm.com>
@@ -1361,7 +1367,7 @@
 	(vect_create_index_for_vector_ref): Likewise.
 	(vect_update_ivs_after_vectorizer): Likewise.
 	(new_stmt_vec_info): Likewise.
-	
+
 	(new_loop_vec_info): Second argument in call to new_stmt_vec_info was
 	changed from loop to loop_vinfo.
 	(vect_create_data_ref_ptr): First argument in call to
@@ -1377,7 +1383,7 @@
 	was changed from loop to loop_vinfo.
 	(vect_analyze_data_ref_dependences): Third argument in call to
 	vect_analyze_data_ref_dependence was changed from loop to loop_vinfo.
-	
+
 	(vect_create_index_for_vector_ref): Get the loop from loop_vinfo.
 	(vect_create_data_ref_ptr): Likewise.
 	(vect_init_vector): Likewise.
@@ -1456,11 +1462,11 @@
 2005-02-03  Dorit Naishlos  <dorit@il.ibm.com>
 
 	* tree-vectorizer.c (slpeel_make_loop_iterate_ntimes): Call
-	standard_iv_increment_position. Remove call to bsi_next 
+	standard_iv_increment_position. Remove call to bsi_next
 	(no need to bump the iterator anymore).
 	(vect_create_index_for_vector_ref): Call
 	standard_iv_increment_position. Remove second function argument.
-	(vect_finish_stmt_generation): Remove call to bsi_next 
+	(vect_finish_stmt_generation): Remove call to bsi_next
 	(no need to bump the iterator anymore).
 	(vect_create_data_ref_ptr): Remove second argument (bsi) in call
 	to vect_create_index_for_vector_ref.
@@ -1728,16 +1734,16 @@
 
 	* config.gcc: Don't include embedded systems fragment, switches default
 	debugging format to ELF.
-	* config/i386/openbsdelf.h: Add DBX_REGISTER_NUMBER since we no 
+	* config/i386/openbsdelf.h: Add DBX_REGISTER_NUMBER since we no
 	longer pick it up there.
 
 2005-01-31  Dale Johannesen  <dalej@apple.com>
-	
+
 	* doc/extend.texi (nested functions): Fix linkage description.
 	Clarify that static is not allowed.
 
 2005-01-31  Dale Johannesen  <dalej@apple.com>
-	
+
 	* config/rs6000/darwin.md (movsf_low_di):  Make work.
 	(movdf_low_di):  Make work.
 
@@ -1818,7 +1824,7 @@
 2005-01-30  Daniel Berlin  <dberlin@dberlin.org>
 
 	Fix PR tree-optimization/19624
-	
+
 	* Makefile.in (tree-ssa-pre.o): Add CFGLOOP_H.
 	* tree-ssa-pre.c: Add cfgloop.h.
 	Update comment.
@@ -1851,7 +1857,7 @@
 	PR target/19700
 	* config/i386/i386.c (ix86_expand_copysign): New.
 	(ix86_split_copysign_const): New.
-	(ix86_split_copysign_var): Rename from ix86_split_copysign, 
+	(ix86_split_copysign_var): Rename from ix86_split_copysign,
 	rearrange op1/nmask operands.
 	* config/i386/i386-protos.h: Update.
 	* config/i386/i386.md (copysignsf3): Use ix86_expand_copysign.
@@ -2227,7 +2233,7 @@
 
 2005-01-26  Steven Bosscher  <stevenb@suse.de>
 
-	PR middle-end/19616	
+	PR middle-end/19616
 	* tree.h (CALL_EXPR_TAILCALL): Add comment.
 	* calls.c (check_sibcall_argument_overlap_1): Revert the change
 	to this function from 2004-07-10.
@@ -2623,7 +2629,7 @@
 
 2005-01-21  Mark Dettinger  <dettinge@de.ibm.com>
 
-	* config/s390/s390.c (struct processor_costs): New fields 
+	* config/s390/s390.c (struct processor_costs): New fields
 	dlgr, dlr, dr, dsgfr, dsgr.
 	(z900_cost, z990_cost): Values for new fields.
 	(s390_rtx_costs): New cases MEM und COMPARE in switch
@@ -2807,7 +2813,7 @@
 	(add_location_or_const_value_attribute): Use it.
 	Also try to generate a frame_base from a single element location
 	list.
-	
+
 2005-01-20  Kazu Hirata  <kazu@cs.umass.edu>
 
 	PR tree-optimization/15349
@@ -2947,7 +2953,7 @@
 2005-01-19  Ralf Corsepius  <ralf.corsepius@rtems.org>
 
 	PR target/19529
-	* config/sh/t-rtems: New. 
+	* config/sh/t-rtems: New.
 	* config.gcc (sh-*-rtems*): Reflect having added config/sh/t-rtems.
 
 2005-01-19  Zdenek Dvorak  <dvorakz@suse.cz>
@@ -3369,7 +3375,7 @@
 2005-01-15  Ralf Corsepius  <ralf.corsepius@rtems.org>
 
 	* config/mips/rtems.h (MIPS_DEFAULT_GVALUE): Set to 0.
-	* config/mips/t-rtems (MULTILIBS_DIRNAMES,MULTILIB_OPTIONS): 
+	* config/mips/t-rtems (MULTILIBS_DIRNAMES,MULTILIB_OPTIONS):
 	Remove little endian multilib variants.
 	Add mips32 multilib variant.
 
@@ -3481,7 +3487,7 @@
 	(TARGET_ASM_FILE_END): Call arm_file_end.
 	(aof_file_end): Likewise.
 	* arm-protos.h (thumb_call_via_reg): Declare.
-	* arm.md (call_reg_thumb, call_value_reg_thumb): Call 
+	* arm.md (call_reg_thumb, call_value_reg_thumb): Call
 	thumb_call_via_reg in normal case.
 
 2005-01-14  Jakub Jelinek  <jakub@redhat.com>
@@ -3568,7 +3574,7 @@
 	IX86_BUILTIN_MOVDQ2Q): Remove.
 	(IX86_BUILTIN_VEC_EXT_V4SI): New.
 	(ix86_init_mmx_sse_builtins, ix86_expand_builtin): Update to match.
-	(ix86_expand_vector_extract): For V4S[FI], extract element 0 after 
+	(ix86_expand_vector_extract): For V4S[FI], extract element 0 after
 	shuffling.
 	* config/i386/sse.md (sse_concatv2sf): Accept zero operand 2.
 	(sse2_pextrw): Fix immediate constraint.
@@ -3729,7 +3735,7 @@
 	vec_extractv16qi, vec_initv16qi): New.
 
 	* config/i386/emmintrin.h (__m128i, __m128d): Use typedef, not define.
-	(_mm_set_sd, _mm_set1_pd, _mm_setzero_pd, _mm_set_epi64x, 
+	(_mm_set_sd, _mm_set1_pd, _mm_setzero_pd, _mm_set_epi64x,
 	_mm_set_epi32, _mm_set_epi16, _mm_set_epi8, _mm_setzero_si128): Use
 	constructor form.
 	(_mm_load_pd, _mm_store_pd): Use plain dereference.
