@@ -153,7 +153,7 @@ java::net::PlainSocketImpl::bind (java::net::InetAddress *host, jint lport)
     }
 #endif
   else
-    goto error;
+    throw new java::net::SocketException (JvNewStringUTF ("invalid length"));
 
   // Enable SO_REUSEADDR, so that servers can reuse ports left in TIME_WAIT.
   ::setsockopt(fnum, SOL_SOCKET, SO_REUSEADDR, (char *) &i, sizeof(i));
@@ -201,17 +201,20 @@ java::net::PlainSocketImpl::connect (java::net::InetAddress *host, jint rport)
     }
 #endif
   else
-    goto error;
+    throw new java::net::SocketException (JvNewStringUTF ("invalid length"));
+
   if (::connect (fnum, ptr, len) != 0)
     goto error;
   address = host;
   port = rport;
   // A bind may not have been done on this socket; if so, set localport now.
   if (localport == 0)
-    if (::getsockname (fnum, (sockaddr*) &u, &addrlen) == 0)
-      localport = ntohs (u.address.sin_port);
-    else
-      goto error;
+    {
+      if (::getsockname (fnum, (sockaddr*) &u, &addrlen) == 0)
+	localport = ntohs (u.address.sin_port);
+      else
+	goto error;
+    }
   return;  
  error:
   char* strerr = strerror (errno);
@@ -272,7 +275,8 @@ java::net::PlainSocketImpl::accept (java::net::PlainSocketImpl *s)
     }
 #endif
   else
-    goto error;
+    throw new java::net::SocketException (JvNewStringUTF ("invalid family"));
+
   s->fnum = new_socket;
   s->localport = localport;
   s->address = new InetAddress (raddr, NULL);
@@ -445,7 +449,8 @@ java::net::PlainSocketImpl::getOption (jint optID)
 	      }
 #endif
 	    else
-	      goto error;
+	      throw
+		new java::net::SocketException (JvNewStringUTF ("invalid family"));
 	    localAddress = new java::net::InetAddress (laddr, NULL);
 	  }
 	return localAddress;

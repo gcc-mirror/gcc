@@ -199,7 +199,8 @@ java::net::PlainDatagramSocketImpl::bind (jint lport,
     }
 #endif
   else
-    goto error;
+    throw new java::net::SocketException (JvNewStringUTF ("invalid length"));
+
   if (::bind (fnum, ptr, len) == 0)
     {
       socklen_t addrlen = sizeof(u);
@@ -245,7 +246,8 @@ java::net::PlainDatagramSocketImpl::peek (java::net::InetAddress *i)
     }
 #endif
   else
-    goto error;
+    throw new java::net::SocketException (JvNewStringUTF ("invalid family"));
+
   i->address = raddr;
   return rport;
  error:
@@ -281,7 +283,8 @@ java::net::PlainDatagramSocketImpl::send (java::net::DatagramPacket *p)
     }
 #endif
   else
-    goto error;
+    throw new java::net::SocketException (JvNewStringUTF ("invalid length"));
+
   if (::sendto (fnum, (char *) dbytes, p->getLength(), 0, ptr, len) >= 0)
     return;
  error:
@@ -337,7 +340,8 @@ java::net::PlainDatagramSocketImpl::receive (java::net::DatagramPacket *p)
     }
 #endif
   else
-    goto error;
+    throw new java::net::SocketException (JvNewStringUTF ("invalid family"));
+
   p->setAddress (new InetAddress (raddr, NULL));
   p->setPort (rport);
   p->setLength ((jint) retlen);
@@ -412,7 +416,8 @@ java::net::PlainDatagramSocketImpl::mcastGrp (java::net::InetAddress *inetaddr,
     }
 #endif
   else
-    goto error;
+    throw new java::net::SocketException (JvNewStringUTF ("invalid length"));
+
   if (::setsockopt (fnum, level, opname, ptr, len) == 0)
     return;
  error:
@@ -507,7 +512,9 @@ java::net::PlainDatagramSocketImpl::setOption (jint optID,
 	  }
 #endif
 	else
-	  goto error;
+	  throw
+	    new java::net::SocketException (JvNewStringUTF ("invalid length"));
+
 	if (::setsockopt (fnum, level, opname, ptr, len) != 0)
 	  goto error;
         return;
@@ -576,7 +583,7 @@ java::net::PlainDatagramSocketImpl::getOption (jint optID)
 	      }
 #endif
 	    else
-	      goto error;
+	      throw new java::net::SocketException (JvNewStringUTF ("invalid family"));
 	    localAddress = new java::net::InetAddress (laddr, NULL);
 	  }
 	return localAddress;  
