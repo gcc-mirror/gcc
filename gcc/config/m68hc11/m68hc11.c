@@ -1401,15 +1401,19 @@ m68hc11_initial_elimination_offset (int from, int to)
   /* For a trap handler, we must take into account the registers which
      are pushed on the stack during the trap (except the PC).  */
   func_attr = TYPE_ATTRIBUTES (TREE_TYPE (current_function_decl));
+  current_function_interrupt = lookup_attribute ("interrupt",
+						 func_attr) != NULL_TREE;
+  trap_handler = lookup_attribute ("trap", func_attr) != NULL_TREE;
 
   if (lookup_attribute ("far", func_attr) != 0)
     current_function_far = 1;
   else if (lookup_attribute ("near", func_attr) != 0)
     current_function_far = 0;
   else
-    current_function_far = TARGET_LONG_CALLS != 0;
+    current_function_far = (TARGET_LONG_CALLS != 0
+                            && !current_function_interrupt
+                            && !trap_handler);
 
-  trap_handler = lookup_attribute ("trap", func_attr) != NULL_TREE;
   if (trap_handler && from == ARG_POINTER_REGNUM)
     size = 7;
 
@@ -1689,7 +1693,9 @@ expand_prologue (void)
   else if (lookup_attribute ("near", func_attr) != NULL_TREE)
     current_function_far = 0;
   else
-    current_function_far = TARGET_LONG_CALLS != 0;
+    current_function_far = (TARGET_LONG_CALLS != 0
+                            && !current_function_interrupt
+                            && !current_function_trap);
 
   /* Get the scratch register to build the frame and push registers.
      If the first argument is a 32-bit quantity, the D+X registers
@@ -3230,7 +3236,7 @@ m68hc11_gen_movhi (rtx insn, rtx *operands)
 	      output_asm_insn ("psh%1", operands);
 	      break;
             case HARD_SP_REGNUM:
-              output_asm_insn ("sts\t-2,sp", operands);
+              output_asm_insn ("sts\t2,-sp", operands);
               break;
 	    default:
 	      abort ();
