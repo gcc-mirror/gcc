@@ -1,3 +1,7 @@
+Fri Feb 18 20:01:58 2000  Jeffrey A Law  (law@cygnus.com)
+
+	* pa/quadlib.asm (_U_QFgt, _U_Qfge): Fix flags for _U_Qfcmp call.
+
 2000-02-18  Geoff Keating  <geoffk@cygnus.com>
 
 	* invoke.texi (Warning Options): Add an explanation of why
