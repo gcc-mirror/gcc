@@ -228,11 +228,12 @@ hook_rtx_tree_int_null (tree a ATTRIBUTE_UNUSED, int b ATTRIBUTE_UNUSED)
   return NULL;
 }
 
-/* Generic hook that takes a tree and returns it as is.  */
+/* Generic hook that takes three trees and returns the last one as is.  */
 tree
-hook_tree_tree_identity (tree a)
+hook_tree_tree_tree_tree_3rd_identity (tree a ATTRIBUTE_UNUSED,
+				       tree b ATTRIBUTE_UNUSED, tree c)
 {
-  return a;
+  return c;
 }
 
 /* Generic hook that takes a tree and returns a NULL string.  */

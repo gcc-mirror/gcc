@@ -125,7 +125,7 @@ static bool cris_pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode,
 				    tree, bool);
 static int cris_arg_partial_bytes (CUMULATIVE_ARGS *, enum machine_mode,
 				   tree, bool);
-static tree cris_md_asm_clobbers (tree);
+static tree cris_md_asm_clobbers (tree, tree, tree);
 
 /* This is the argument from the "-max-stack-stackframe=" option.  */
 const char *cris_max_stackframe_str;
@@ -3060,8 +3060,38 @@ cris_arg_partial_bytes (CUMULATIVE_ARGS *ca, enum machine_mode mode,
 /* Worker function for TARGET_MD_ASM_CLOBBERS.  */
 
 static tree
-cris_md_asm_clobbers (tree clobbers)
+cris_md_asm_clobbers (tree outputs, tree inputs, tree clobbers)
 {
+  HARD_REG_SET mof_set;
+  tree t;
+
+  CLEAR_HARD_REG_SET (mof_set);
+  SET_HARD_REG_BIT (mof_set, CRIS_MOF_REGNUM);
+
+  for (t = outputs; t != NULL; t = TREE_CHAIN (t))
+    {
+      tree val = TREE_VALUE (t);
+
+      /* The constraint letter for the singleton register class of MOF
+	 is 'h'.  If it's mentioned in the constraints, the asm is
+	 MOF-aware and adding it to the clobbers would cause it to have
+	 impossible constraints.  */
+      if (strchr (TREE_STRING_POINTER (TREE_VALUE (TREE_PURPOSE (t))),
+		  'h') != NULL
+	  || decl_overlaps_hard_reg_set_p (val, mof_set))
+	return clobbers;
+    }
+
+  for (t = inputs; t != NULL; t = TREE_CHAIN (t))
+    {
+      tree val = TREE_VALUE (t);
+
+      if (strchr (TREE_STRING_POINTER (TREE_VALUE (TREE_PURPOSE (t))),
+		  'h') != NULL
+	  || decl_overlaps_hard_reg_set_p (val, mof_set))
+	return clobbers;
+    }
+
   return tree_cons (NULL_TREE,
 		    build_string (strlen (reg_names[CRIS_MOF_REGNUM]),
 				  reg_names[CRIS_MOF_REGNUM]),

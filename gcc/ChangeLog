@@ -1,3 +1,31 @@
+2005-03-23  Hans-Peter Nilsson  <hp@axis.com>
+
+	* doc/tm.texi (TARGET_MD_ASM_CLOBBERS): Adjust wording to not
+	imply that this is called once, independent of asms in code.
+	Adjust to now being pased output and input lists.  Mention helper
+	function decl_overlaps_hard_reg_set_p.
+	* hooks.c (hook_tree_tree_tree_tree_3rd_identity): Rename from
+	hook_tree_tree_identity and to take three trees, returning third.
+	* hooks.h (hook_tree_tree_tree_tree_3rd_identity): Adjust the
+	prototype.
+	* stmt.c: include hard-reg-set.h before tree.h.
+	(decl_overlaps_hard_reg_set_p): New function, broken out from...
+	(decl_conflicts_with_clobbers_p): Call
+	decl_overlaps_hard_reg_set_p.
+	(expand_asm_operands): Pass output and input lists in call to
+	targetm.md_asm_clobbers.
+	* target-def.h (TARGET_MD_ASM_CLOBBERS): Define as
+	hook_tree_tree_tree_tree_3rd_identity.
+	* target.h (struct gcc_target.md_asm_clobbers): Take three tree
+	parameters.
+	* tree.h [HARD_CONST] (decl_overlaps_hard_reg_set_p): Prototype.
+	* config/i386/i386.c (ix86_md_asm_clobbers): Adjust to three
+	parameters, first two unused.
+	* config/cris/cris.c (cris_md_asm_clobbers): Adjust to added
+	parameters.  Only add MOF to clobbers if there's no 'h' mentioned
+	in constraint letters and MOF is not mentioned as a asm-declared
+	register in neither of the input and output lists.
+
 2005-03-23  DJ Delorie  <dj@redhat.com>
 
 	* optabs.c (expand_binop): Make sure the first subword's result

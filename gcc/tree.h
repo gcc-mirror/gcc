@@ -3756,6 +3756,10 @@ extern tree resolve_asm_operand_names (tree, tree, tree);
 extern void expand_case (tree);
 extern void expand_decl (tree);
 extern void expand_anon_union_decl (tree, tree, tree);
+#ifdef HARD_CONST
+/* Silly ifdef to avoid having all includers depend on hard-reg-set.h.  */
+extern bool decl_overlaps_hard_reg_set_p (tree, const HARD_REG_SET);
+#endif
 
 /* In gimplify.c.  */
 extern tree create_artificial_label (void);
