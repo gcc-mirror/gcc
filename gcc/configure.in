@@ -249,7 +249,7 @@ for machine in $build $host $target; do
 	a29k-*-*)			# Default a29k environment.
 		use_collect2=yes
 		;;
-	alpha-*-linux*ecoff*)
+	alpha-*-linux-gnuecoff*)
 		tm_file="${tm_file} alpha/linux.h"
 		xm_file="${xm_file} alpha/xm-linux.h"
 		target_cpu_default=4
@@ -257,7 +257,7 @@ for machine in $build $host $target; do
 		fixincludes=Makefile.in
 		gas=yes gnu_ld=yes
 		;;
-	alpha-*-linux*)
+	alpha-*-linux-gnu*)
 		tm_file="${tm_file} alpha/linux.h alpha/elf.h"
 		xm_file="${xm_file} alpha/xm-linux.h"
 		target_cpu_default=4
@@ -375,7 +375,7 @@ for machine in $build $host $target; do
 		tmake_file=arm/t-semiaof
 		fixincludes=Makefile.in # There is nothing to fix
 		;;
-	arm-*-linuxaout)		# ARM Linux
+	arm-*-linux-gnuaout*)		# ARM Linux
 		cpu_type=arm
 		xm_file=arm/xm-linux.h
 		xmake_file=x-linux
@@ -757,7 +757,7 @@ for machine in $build $host $target; do
 		install_headers_dir=install-headers-cpio
 		broken_install=yes
 		;;
-	i[[3456]]86-*-linux*oldld*)	# Intel 80386's running Linux
+	i[[3456]]86-*-linux-gnuoldld*)	# Intel 80386's running Linux
 		xm_file=i386/xm-linux.h # with a.out format using pre BFD linkers
 		xmake_file=x-linux-aout
 		tmake_file="t-linux-aout i386/t-crtstuff"
@@ -766,7 +766,7 @@ for machine in $build $host $target; do
 		broken_install=yes
 		gnu_ld=yes
 		;;
-	i[[3456]]86-*-linux*aout*)		# Intel 80386's running Linux
+	i[[3456]]86-*-linux-gnuaout*)		# Intel 80386's running Linux
 		xm_file=i386/xm-linux.h		# with a.out format
 		xmake_file=x-linux-aout
 		tmake_file="t-linux-aout i386/t-crtstuff"
@@ -775,7 +775,7 @@ for machine in $build $host $target; do
 		broken_install=yes
 		gnu_ld=yes
 		;;
-	i[[3456]]86-*-linux*gnulibc1)
+	i[[3456]]86-*-linux-gnulibc1)
 		xm_file=i386/xm-linux.h	# Intel 80386's running Linux
 		xmake_file=x-linux	# with ELF format using the
 		tm_file=i386/linux.h	# Linux C library 5
@@ -788,7 +788,7 @@ for machine in $build $host $target; do
  			thread_file='single'
  		fi
 		;;
-	i[[3456]]86-*-linux*)		# Intel 80386's running Linux
+	i[[3456]]86-*-linux-gnu*)		# Intel 80386's running Linux
 		xm_file=i386/xm-linux.h # with ELF format using glibc 2
 		xmake_file=x-linux	# aka Linux C library 6
 		tm_file=i386/linux.h
@@ -1417,7 +1417,7 @@ for machine in $build $host $target; do
 		extra_parts="crtbegin.o crtend.o"
 		extra_headers=math-68881.h
 		;;
-	m68k-*-linux*aout*)		# Motorola m68k's running Linux
+	m68k-*-linux-gnuaout*)		# Motorola m68k's running Linux
 		xm_file=m68k/xm-linux.h	# with a.out format
 		xmake_file=x-linux
 		tm_file=m68k/linux-aout.h
@@ -1426,7 +1426,7 @@ for machine in $build $host $target; do
 		extra_headers=math-68881.h
 		gnu_ld=yes
 		;;
-	m68k-*-linux*)			# Motorola m68k's running Linux
+	m68k-*-linux-gnu*)			# Motorola m68k's running Linux
 		xm_file=m68k/xm-linux.h	# with ELF format
 		xmake_file=x-linux
 		tm_file=m68k/linux.h
@@ -2097,7 +2097,7 @@ for machine in $build $host $target; do
 		fixincludes=Makefile.in
 		extra_headers=ppc-asm.h
 		;;
-	powerpc-*-linux*)
+	powerpc-*-linux-gnu*)
 		tm_file=rs6000/linux.h
 		xm_file=rs6000/xm-sysv4.h
 		out_file=rs6000/rs6000.c
@@ -2258,7 +2258,7 @@ for machine in $build $host $target; do
 	sparc-*-bsd*)
 		tm_file=sparc/bsd.h
 		;;
-	sparc-*-linux*aout*)		# Sparc's running Linux, a.out
+	sparc-*-linux-gnuaout*)		# Sparc's running Linux, a.out
 		xm_file=sparc/xm-linux.h
 		tm_file=sparc/linux-aout.h
 		xmake_file=x-linux
@@ -2266,7 +2266,7 @@ for machine in $build $host $target; do
 		broken_install=yes
 		gnu_ld=yes
 		;;
-	sparc-*-linux*)			# Sparc's running Linux, ELF
+	sparc-*-linux-gnu*)			# Sparc's running Linux, ELF
 		xm_file=sparc/xm-linux.h
 		tm_file=sparc/linux.h
 		xmake_file=x-linux
