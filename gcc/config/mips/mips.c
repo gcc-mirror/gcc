@@ -179,6 +179,7 @@ struct constant;
 struct mips_arg_info;
 struct mips_constant_info;
 struct mips_address_info;
+struct mips_integer_op;
 static enum mips_constant_type mips_classify_constant
 				PARAMS ((struct mips_constant_info *, rtx));
 static enum mips_symbol_type mips_classify_symbol
@@ -209,6 +210,13 @@ static rtx mips_emit_high			PARAMS ((rtx, rtx));
 static bool mips_legitimize_symbol		PARAMS ((rtx, rtx *, int));
 static rtx mips_reloc				PARAMS ((rtx, int));
 static rtx mips_lui_reloc			PARAMS ((rtx, int));
+static unsigned int mips_build_shift	PARAMS ((struct mips_integer_op *,
+						 HOST_WIDE_INT));
+static unsigned int mips_build_lower	PARAMS ((struct mips_integer_op *,
+						 unsigned HOST_WIDE_INT));
+static unsigned int mips_build_integer	PARAMS ((struct mips_integer_op *,
+						 unsigned HOST_WIDE_INT));
+static void mips_move_integer		PARAMS ((rtx, unsigned HOST_WIDE_INT));
 static void mips_legitimize_const_move		PARAMS ((enum machine_mode,
 							 rtx, rtx));
 static int m16_check_op				PARAMS ((rtx, int, int, int));
@@ -393,6 +401,29 @@ struct mips_address_info
   rtx offset;
   struct mips_constant_info c;
 };
+
+
+/* One stage in a constant building sequence.  These sequences have
+   the form:
+
+	A = VALUE[0]
+	A = A CODE[1] VALUE[1]
+	A = A CODE[2] VALUE[2]
+	...
+
+   where A is an accumulator, each CODE[i] is a binary rtl operation
+   and each VALUE[i] is a constant integer.  */
+struct mips_integer_op {
+  enum rtx_code code;
+  unsigned HOST_WIDE_INT value;
+};
+
+
+/* The largest number of operations needed to load an integer constant.
+   The worst accepted case for 64-bit constants is LUI,ORI,SLL,ORI,SLL,ORI.
+   When the lowest bit is clear, we can try, but reject a sequence with
+   an extra SLL at the end.  */
+#define MIPS_MAX_INTEGER_OPS 7
 
 
 /* Global variables for machine-dependent things.  */
@@ -1255,6 +1286,7 @@ mips_const_insns (x)
      rtx x;
 {
   struct mips_constant_info c;
+  struct mips_integer_op codes[MIPS_MAX_INTEGER_OPS];
 
   switch (GET_CODE (x))
     {
@@ -1274,15 +1306,7 @@ mips_const_insns (x)
 		: SMALL_OPERAND_UNSIGNED (-INTVAL (x)) ? 3
 		: 0);
 
-      /* Return 1 for constants that can be loaded using ORI, ADDIU,
-	 or LUI.  Return 2 for constants that can be loaded using
-	 LUI followed by ORI.  Assume the worst case for all others.
-	 (The worst case is: LUI, ORI, SLL, ORI, SLL, ORI.)  */
-      return (SMALL_OPERAND (INTVAL (x)) ? 1
-	      : SMALL_OPERAND_UNSIGNED (INTVAL (x)) ? 1
-	      : LUI_OPERAND (INTVAL (x)) ? 1
-	      : LUI_OPERAND (INTVAL (x) & ~(unsigned HOST_WIDE_INT) 0xffff) ? 2
-	      : 6);
+      return mips_build_integer (codes, INTVAL (x));
 
     case CONST_DOUBLE:
       return (!TARGET_MIPS16 && x == CONST0_RTX (GET_MODE (x)) ? 1 : 0);
@@ -1610,6 +1634,8 @@ move_operand (op, mode)
 
   if (GET_CODE (op) == HIGH && TARGET_ABICALLS)
     return false;
+  if (GET_CODE (op) == CONST_INT && !TARGET_MIPS16)
+    return (SMALL_INT (op) || SMALL_INT_UNSIGNED (op) || LUI_INT (op));
   if (mips_classify_constant (&c, op) == CONSTANT_SYMBOLIC)
     return mips_symbolic_address_p (c.symbol, c.offset, word_mode, 1);
   return general_operand (op, mode);
@@ -1938,6 +1964,144 @@ mips_legitimize_address (xloc, mode)
 }
 
 
+/* Subroutine of mips_build_integer (with the same interface).
+   Assume that the final action in the sequence should be a left shift.  */
+
+static unsigned int
+mips_build_shift (codes, value)
+     struct mips_integer_op *codes;
+     HOST_WIDE_INT value;
+{
+  unsigned int i, shift;
+
+  /* Shift VALUE right until its lowest bit is set.  Shift arithmetically
+     since signed numbers are easier to load than unsigned ones.  */
+  shift = 0;
+  while ((value & 1) == 0)
+    value /= 2, shift++;
+
+  i = mips_build_integer (codes, value);
+  codes[i].code = ASHIFT;
+  codes[i].value = shift;
+  return i + 1;
+}
+
+
+/* As for mips_build_shift, but assume that the final action will be
+   an IOR or PLUS operation.  */
+
+static unsigned int
+mips_build_lower (codes, value)
+     struct mips_integer_op *codes;
+     unsigned HOST_WIDE_INT value;
+{
+  unsigned HOST_WIDE_INT high;
+  unsigned int i;
+
+  high = value & ~(unsigned HOST_WIDE_INT) 0xffff;
+  if (!LUI_OPERAND (high) && (value & 0x18000) == 0x18000)
+    {
+      /* The constant is too complex to load with a simple lui/ori pair
+	 so our goal is to clear as many trailing zeros as possible.
+	 In this case, we know bit 16 is set and that the low 16 bits
+	 form a negative number.  If we subtract that number from VALUE,
+	 we will clear at least the lowest 17 bits, maybe more.  */
+      i = mips_build_integer (codes, CONST_HIGH_PART (value));
+      codes[i].code = PLUS;
+      codes[i].value = CONST_LOW_PART (value);
+    }
+  else
+    {
+      i = mips_build_integer (codes, high);
+      codes[i].code = IOR;
+      codes[i].value = value & 0xffff;
+    }
+  return i + 1;
+}
+
+
+/* Fill CODES with a sequence of rtl operations to load VALUE.
+   Return the number of operations needed.  */
+
+static unsigned int
+mips_build_integer (codes, value)
+     struct mips_integer_op *codes;
+     unsigned HOST_WIDE_INT value;
+{
+  if (SMALL_OPERAND (value)
+      || SMALL_OPERAND_UNSIGNED (value)
+      || LUI_OPERAND (value))
+    {
+      /* The value can be loaded with a single instruction.  */
+      codes[0].code = NIL;
+      codes[0].value = value;
+      return 1;
+    }
+  else if ((value & 1) != 0 || LUI_OPERAND (CONST_HIGH_PART (value)))
+    {
+      /* Either the constant is a simple LUI/ORI combination or its
+	 lowest bit is set.  We don't want to shift in this case.  */
+      return mips_build_lower (codes, value);
+    }
+  else if ((value & 0xffff) == 0)
+    {
+      /* The constant will need at least three actions.  The lowest
+	 16 bits are clear, so the final action will be a shift.  */
+      return mips_build_shift (codes, value);
+    }
+  else
+    {
+      /* The final action could be a shift, add or inclusive OR.
+	 Rather than use a complex condition to select the best
+	 approach, try both mips_build_shift and mips_build_lower
+	 and pick the one that gives the shortest sequence.
+	 Note that this case is only used once per constant.  */
+      struct mips_integer_op alt_codes[MIPS_MAX_INTEGER_OPS];
+      unsigned int cost, alt_cost;
+
+      cost = mips_build_shift (codes, value);
+      alt_cost = mips_build_lower (alt_codes, value);
+      if (alt_cost < cost)
+	{
+	  memcpy (codes, alt_codes, alt_cost * sizeof (codes[0]));
+	  cost = alt_cost;
+	}
+      return cost;
+    }
+}
+
+
+/* Move VALUE into register DEST.  */
+
+static void
+mips_move_integer (dest, value)
+     rtx dest;
+     unsigned HOST_WIDE_INT value;
+{
+  struct mips_integer_op codes[MIPS_MAX_INTEGER_OPS];
+  enum machine_mode mode;
+  unsigned int i, cost;
+  rtx x;
+
+  mode = GET_MODE (dest);
+  cost = mips_build_integer (codes, value);
+
+  /* Apply each binary operation to X.  Invariant: X is a legitimate
+     source operand for a SET pattern.  */
+  x = GEN_INT (codes[0].value);
+  for (i = 1; i < cost; i++)
+    {
+      if (no_new_pseudos)
+	emit_move_insn (dest, x), x = dest;
+      else
+	x = force_reg (mode, x);
+      x = gen_rtx_fmt_ee (codes[i].code, mode, x, GEN_INT (codes[i].value));
+    }
+
+  emit_insn (gen_rtx_SET (VOIDmode, dest, x));
+}
+
+
 /* Subroutine of mips_legitimize_move.  Move constant SRC into register
    DEST given that SRC satisfies immediate_operand but doesn't satisfy
    move_operand.  */
@@ -1955,6 +2119,12 @@ mips_legitimize_const_move (mode, dest, src)
   if (GET_CODE (src) == HIGH)
     {
       mips_emit_high (dest, XEXP (src, 0));
+      return;
+    }
+
+  if (GET_CODE (src) == CONST_INT && !TARGET_MIPS16)
+    {
+      mips_move_integer (dest, INTVAL (src));
       return;
     }
 
@@ -2007,7 +2177,13 @@ mips_legitimize_move (mode, dest, src)
       return true;
     }
 
-  if (CONSTANT_P (src) && !move_operand (src, mode))
+  /* The source of an SImode move must be a move_operand.  Likewise
+     DImode moves on 64-bit targets.  We need to deal with constants
+     that would be legitimate immediate_operands but not legitimate
+     move_operands.  */
+  if (GET_MODE_SIZE (mode) <= UNITS_PER_WORD
+      && CONSTANT_P (src)
+      && !move_operand (src, mode))
     {
       mips_legitimize_const_move (mode, dest, src);
       set_unique_reg_note (get_last_insn (), REG_EQUAL, copy_rtx (src));

@@ -1,3 +1,16 @@
+2003-05-03  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips.c (mips_integer_op): New structure.
+	(MIPS_MAX_INTEGER_OPS): Define.
+	(mips_const_insns): Use mips_build_integer to determine the number
+	of instructions needed to load a CONST_INT.
+	(move_operand): Reject compound CONST_INTs.
+	(mips_build_shift, mips_build_lower, mips_build_integer): New fns.
+	(mips_move_integer): New fn.
+	(mips_legitimize_const_move): Pass CONST_INTs to mips_move_integer.
+	(mips_legitimize_move): Only legitimize constants when moving
+	word or subword values.
+
 2003-05-02  Matt Kraai  <kraai@alumni.cmu.edu>
 
 	* Makefile.in (gcov-iov.h): Use move-if-change and a stamp.
