@@ -79,7 +79,7 @@ import java.security.BasicPermission;
  * <tr>
  *   <td><code>fullScreenExclusive</code></td>
  *   <td>enter full-screen exclusive mode</td>
- *   <td>malicious code could masquerade as a trusted program</td><tr>
+ *   <td>malicious code could masquerade as a trusted program</td></tr>
  * </table>
  *
  * @author Tom Tromey <tromey@redhat.com>

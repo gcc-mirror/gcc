@@ -47,12 +47,12 @@ package java.awt;
   * least the following methods:
   * <p>
   * <ul>
-  * <li>getAscent
-  * <li>getDescent
-  * <li>getLeading()
-  * <li>getMaxAdvance()
-  * <li>charWidth(char)
-  * <li>charsWidth(char[], int, int)
+  * <li>getAscent()</li>
+  * <li>getDescent()</li>
+  * <li>getLeading()</li>
+  * <li>getMaxAdvance()</li>
+  * <li>charWidth(char)</li>
+  * <li>charsWidth(char[], int, int)</li>
   * </ul>
   *
   * @author Aaron M. Renn (arenn@urbanophile.com)
