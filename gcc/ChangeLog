@@ -1,3 +1,7 @@
+Fri May 31 12:38:43 2002  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* config/sh/elf.h (ASM_SPEC): Use subtarget_endian_asm_spec.
+
 Fri May 31 13:50:19 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (classify_argument): Properly handle base types.
