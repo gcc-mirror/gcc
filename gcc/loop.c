@@ -7569,7 +7569,6 @@ insert_bct (loop_start, loop_end)
     /* compute the number of iterations */
     start_sequence ();
     {
-      /* CYGNUS LOCAL: HAIFA bug fix */
       rtx temp_reg;
 
       /* Again, the number of iterations is calculated by:
@@ -7611,7 +7610,6 @@ insert_bct (loop_start, loop_end)
 	}
       else
 	iterations_num_reg = temp_reg;
-      /* END CYGNUS LOCAL: HAIFA bug fix */
     }
     sequence = gen_sequence ();
     end_sequence ();
