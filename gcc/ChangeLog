@@ -1,3 +1,10 @@
+2002-03-12  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cris/cris.c (cris_target_asm_function_prologue):  Do not
+	emit pic register load if "internal" visibility.
+	(cris_print_operand): Avoid traditional-warning for 0xffffffff.
+	(cris_expand_builtin_va_arg): Do all computations on trees.
+
 2002-03-11  Richard Henderson  <rth@redhat.com>
 
 	* rtlanal.c: Include recog.h.
