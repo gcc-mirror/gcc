@@ -1,5 +1,5 @@
 /* Prototypes for exported functions defined in arm.c and pe.c
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000 Free Software Foundation, Inc.
    Contributed by Richard Earnshaw (rearnsha@arm.com)
    Minor hacks by Nick Clifton (nickc@cygnus.com)
 
