@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.125 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -452,6 +452,16 @@ package body Exp_Pakd is
    --  Given an expression of a packed array type, builds a corresponding
    --  expression whose type is the implementation type used to represent
    --  the packed array. Aexp is analyzed and resolved on entry and on exit.
+
+   function Known_Aligned_Enough (Obj : Node_Id; Csiz : Nat) return Boolean;
+   --  There are two versions of the Set routines, the ones used when the
+   --  object is known to be sufficiently well aligned given the number of
+   --  bits, and the ones used when the object is not known to be aligned.
+   --  This routine is used to determine which set to use. Obj is a reference
+   --  to the object, and Csiz is the component size of the packed array.
+   --  True is returned if the alignment of object is known to be sufficient,
+   --  defined as 1 for odd bit sizes, 4 for bit sizes divisible by 4, and
+   --  2 otherwise.
 
    function Make_Shift_Left (N : Node_Id; S : Node_Id) return Node_Id;
    --  Build a left shift node, checking for the case of a shift count of zero
@@ -1426,7 +1436,7 @@ package body Exp_Pakd is
             --  Acquire proper Set entity. We use the aligned or unaligned
             --  case as appropriate.
 
-            if Must_Be_Aligned (Obj) then
+            if Known_Aligned_Enough (Obj, Csiz) then
                Set_nn := RTE (Set_Id (Csiz));
             else
                Set_nn := RTE (SetU_Id (Csiz));
@@ -1816,7 +1826,7 @@ package body Exp_Pakd is
             --  Acquire proper Get entity. We use the aligned or unaligned
             --  case as appropriate.
 
-            if Must_Be_Aligned (Obj) then
+            if Known_Aligned_Enough (Obj, Csiz) then
                Get_nn := RTE (Get_Id (Csiz));
             else
                Get_nn := RTE (GetU_Id (Csiz));
@@ -2088,6 +2098,122 @@ package body Exp_Pakd is
       end if;
    end Involves_Packed_Array_Reference;
 
+   --------------------------
+   -- Known_Aligned_Enough --
+   --------------------------
+
+   function Known_Aligned_Enough (Obj : Node_Id; Csiz : Nat) return Boolean is
+      Typ : constant Entity_Id := Etype (Obj);
+
+      function In_Partially_Packed_Record (Comp : Entity_Id) return Boolean;
+      --  If the component is in a record that contains previous packed
+      --  components, consider it unaligned because the back-end might
+      --  choose to pack the rest of the record. Lead to less efficient code,
+      --  but safer vis-a-vis of back-end choices.
+
+      --------------------------------
+      -- In_Partially_Packed_Record --
+      --------------------------------
+
+      function In_Partially_Packed_Record (Comp : Entity_Id) return Boolean is
+         Rec_Type  : constant Entity_Id := Scope (Comp);
+         Prev_Comp : Entity_Id;
+
+      begin
+         Prev_Comp := First_Entity (Rec_Type);
+         while Present (Prev_Comp) loop
+            if Is_Packed (Etype (Prev_Comp)) then
+               return True;
+
+            elsif Prev_Comp = Comp then
+               return False;
+            end if;
+
+            Next_Entity (Prev_Comp);
+         end loop;
+
+         return False;
+      end  In_Partially_Packed_Record;
+
+   --  Start of processing for Known_Aligned_Enough
+
+   begin
+      --  Odd bit sizes don't need alignment anyway
+
+      if Csiz mod 2 = 1 then
+         return True;
+
+      --  If we have a specified alignment, see if it is sufficient, if not
+      --  then we can't possibly be aligned enough in any case.
+
+      elsif Is_Entity_Name (Obj)
+        and then Known_Alignment (Entity (Obj))
+      then
+         --  Alignment required is 4 if size is a multiple of 4, and
+         --  2 otherwise (e.g. 12 bits requires 4, 10 bits requires 2)
+
+         if Alignment (Entity (Obj)) < 4 - (Csiz mod 4) then
+            return False;
+         end if;
+      end if;
+
+      --  OK, alignment should be sufficient, if object is aligned
+
+      --  If object is strictly aligned, then it is definitely aligned
+
+      if Strict_Alignment (Typ) then
+         return True;
+
+      --  Case of subscripted array reference
+
+      elsif Nkind (Obj) = N_Indexed_Component then
+
+         --  If we have a pointer to an array, then this is definitely
+         --  aligned, because pointers always point to aligned versions.
+
+         if Is_Access_Type (Etype (Prefix (Obj))) then
+            return True;
+
+         --  Otherwise, go look at the prefix
+
+         else
+            return Known_Aligned_Enough (Prefix (Obj), Csiz);
+         end if;
+
+      --  Case of record field
+
+      elsif Nkind (Obj) = N_Selected_Component then
+
+         --  What is significant here is whether the record type is packed
+
+         if Is_Record_Type (Etype (Prefix (Obj)))
+           and then Is_Packed (Etype (Prefix (Obj)))
+         then
+            return False;
+
+         --  Or the component has a component clause which might cause
+         --  the component to become unaligned (we can't tell if the
+         --  backend is doing alignment computations).
+
+         elsif Present (Component_Clause (Entity (Selector_Name (Obj)))) then
+            return False;
+
+         elsif In_Partially_Packed_Record (Entity (Selector_Name (Obj))) then
+            return False;
+
+         --  In all other cases, go look at prefix
+
+         else
+            return Known_Aligned_Enough (Prefix (Obj), Csiz);
+         end if;
+
+      --  If not selected or indexed component, must be aligned
+
+      else
+         return True;
+      end if;
+   end Known_Aligned_Enough;
+
    ---------------------
    -- Make_Shift_Left --
    ---------------------
@@ -2184,6 +2310,7 @@ package body Exp_Pakd is
    --  All we have to do here is to find the subscripts that correspond
    --  to the index positions that have non-standard enumeration types
    --  and insert a Pos attribute to get the proper subscript value.
+
    --  Finally the prefix must be uncheck converted to the corresponding
    --  packed array type.
 

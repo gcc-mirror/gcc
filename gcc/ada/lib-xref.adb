@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.56 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1998-2001, Free Software Foundation, Inc.         --
 --                                                                          --
@@ -28,6 +28,7 @@
 
 with Atree;    use Atree;
 with Csets;    use Csets;
+with Debug;    use Debug;
 with Lib.Util; use Lib.Util;
 with Namet;    use Namet;
 with Opt;      use Opt;
@@ -83,10 +84,6 @@ package body Lib.Xref is
      Table_Initial        => Alloc.Xrefs_Initial,
      Table_Increment      => Alloc.Xrefs_Increment,
      Table_Name           => "Xrefs");
-
-   function Get_Xref_Index (E : Entity_Id) return Xref_Entry_Number;
-   --  Returns the Xref entry table index for entity E.
-   --  So : Xrefs.Table (Get_Xref_Index (E)).Ent = E
 
    -------------------------
    -- Generate_Definition --
@@ -328,23 +325,6 @@ package body Lib.Xref is
       end if;
    end Generate_Reference;
 
-   --------------------
-   -- Get_Xref_Index --
-   --------------------
-
-   function Get_Xref_Index (E : Entity_Id) return Xref_Entry_Number is
-   begin
-      for K in 1 .. Xrefs.Last loop
-         if Xrefs.Table (K).Ent = E then
-            return K;
-         end if;
-      end loop;
-
-      --  not found, this happend if the entity is not in the compiled unit.
-
-      return 0;
-   end Get_Xref_Index;
-
    -----------------------
    -- Output_References --
    -----------------------
@@ -466,35 +446,18 @@ package body Lib.Xref is
          Ctyp : Character;
          --  Entity type character
 
-         Parent_Entry : Int;
-         --  entry for parent of derived type.
+         Tref : Entity_Id;
+         --  Type reference
+
+         Trunit : Unit_Number_Type;
+         --  Unit number for type reference
 
          function Name_Change (X : Entity_Id) return Boolean;
          --  Determines if entity X has a different simple name from Curent
 
-         function Get_Parent_Entry (X : Entity_Id) return Int;
-         --  For a derived type, locate entry of parent type, if defined in
-         --  in the current unit.
-
-         function Get_Parent_Entry (X : Entity_Id) return Int is
-            Parent_Type : Entity_Id;
-
-         begin
-            if not Is_Type (X)
-              or else not Is_Derived_Type (X)
-            then
-               return 0;
-            else
-               Parent_Type := First_Subtype (Etype (Base_Type (X)));
-
-               if Comes_From_Source (Parent_Type) then
-                  return Get_Xref_Index (Parent_Type);
-
-               else
-                  return 0;
-               end if;
-            end if;
-         end Get_Parent_Entry;
+         -----------------
+         -- Name_Change --
+         -----------------
 
          function Name_Change (X : Entity_Id) return Boolean is
          begin
@@ -529,6 +492,11 @@ package body Lib.Xref is
                WC  : Char_Code;
                Err : Boolean;
                Ent : Entity_Id;
+               Sav : Entity_Id;
+
+               Left  : Character;
+               Right : Character;
+               --  Used for {} or <> for type reference
 
             begin
                Ent := XE.Ent;
@@ -709,34 +677,123 @@ package body Lib.Xref is
                         end loop;
                      end if;
 
-                     --  Output derived entity name if it is available
+                     --  Output type reference if any
 
-                     Parent_Entry := Get_Parent_Entry (XE.Ent);
+                     Tref := XE.Ent;
+                     Left := '{';
+                     Right := '}';
 
-                     if Parent_Entry /= 0 then
-                        declare
-                           XD : Xref_Entry renames Xrefs.Table (Parent_Entry);
+                     loop
+                        Sav := Tref;
 
-                        begin
-                           Write_Info_Char ('<');
+                        --  Processing for types
 
-                           --  Write unit number only if different from the
-                           --  current one.
+                        if Is_Type (Tref) then
 
-                           if XE.Eun /= XD.Eun then
-                              Write_Info_Nat (Dependency_Num (XD.Eun));
+                           --  Case of base type
+
+                           if Base_Type (Tref) = Tref then
+
+                              --  If derived, then get first subtype
+
+                              if Tref /= Etype (Tref) then
+                                 Tref := First_Subtype (Etype (Tref));
+                                 Left := '<';
+                                 Right := '>';
+
+                              --  If non-derived ptr, get designated type
+
+                              elsif Is_Access_Type (Tref) then
+                                 Tref := Designated_Type (Tref);
+                                 Left := '(';
+                                 Right := ')';
+
+                              --  For other non-derived base types, nothing
+
+                              else
+                                 exit;
+                              end if;
+
+                           --  For a subtype, go to ancestor subtype
+
+                           else
+                              Tref := Ancestor_Subtype (Tref);
+
+                              --  If no ancestor subtype, go to base type
+
+                              if No (Tref) then
+                                 Tref := Base_Type (Sav);
+                              end if;
+                           end if;
+
+                        --  For objects, functions, enum literals,
+                        --  just get type from Etype field.
+
+                        elsif Is_Object (Tref)
+                          or else Ekind (Tref) = E_Enumeration_Literal
+                          or else Ekind (Tref) = E_Function
+                          or else Ekind (Tref) = E_Operator
+                        then
+                           Tref := Etype (Tref);
+
+                        --  For anything else, exit
+
+                        else
+                           exit;
+                        end if;
+
+                        --  Exit if no type reference, or we are stuck in
+                        --  some loop trying to find the type reference.
+
+                        exit when No (Tref) or else Tref = Sav;
+
+                        --  Case of standard entity, output name
+
+                        if Sloc (Tref) = Standard_Location then
+
+                           --  For now, output only if speial -gnatdM flag set
+
+                           exit when not Debug_Flag_MM;
+
+                           Write_Info_Char (Left);
+                           Write_Info_Name (Chars (Tref));
+                           Write_Info_Char (Right);
+                           exit;
+
+                        --  Case of source entity, output location
+
+                        elsif Comes_From_Source (Tref) then
+
+                           --  For now, output only derived type entries
+                           --  unless we have special debug flag -gnatdM
+
+                           exit when not (Debug_Flag_MM or else Left = '<');
+
+                           --  Output the reference
+
+                           Write_Info_Char (Left);
+                           Trunit := Get_Source_Unit (Sloc (Tref));
+
+                           if Trunit /= Curxu then
+                              Write_Info_Nat (Dependency_Num (Trunit));
                               Write_Info_Char ('|');
                            end if;
 
                            Write_Info_Nat
-                             (Int (Get_Logical_Line_Number (XD.Def)));
+                             (Int (Get_Logical_Line_Number (Sloc (Tref))));
                            Write_Info_Char
-                             (Xref_Entity_Letters (Ekind (XD.Ent)));
-                           Write_Info_Nat (Int (Get_Column_Number (XD.Def)));
+                             (Xref_Entity_Letters (Ekind (Tref)));
+                           Write_Info_Nat
+                             (Int (Get_Column_Number (Sloc (Tref))));
+                           Write_Info_Char (Right);
+                           exit;
 
-                           Write_Info_Char ('>');
-                        end;
-                     end if;
+                        --  If non-standard, non-source entity, keep looking
+
+                        else
+                           null;
+                        end if;
+                     end loop;
 
                      Curru := Curxu;
                      Crloc := No_Location;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.88 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -80,7 +80,7 @@ package body Debug is
    --  dJ   Output debugging trace info for JGNAT (Java VM version of GNAT)
    --  dK   Kill all error messages
    --  dL   Output trace information on elaboration checking
-   --  dM
+   --  dM   Modified ali file output
    --  dN   Do not generate file/line exception messages
    --  dO   Output immediate error messages
    --  dP   Do not check for controlled objects in preelaborable packages
@@ -283,6 +283,11 @@ package body Debug is
    --       Of course they may not have any useful effect, and in particular
    --       attempting to generate code with this flag set may blow up.
    --       The flag also forces the use of 64-bits for Long_Integer.
+
+   --  dM   Generate modified ALI output. Several ALI extensions are being
+   --       developed for version 3.15w, and this switch is used to enable
+   --       these extensions. This switch will disappear when this work is
+   --       completed.
 
    --  dn   Generate messages for node/list allocation. Each time a node or
    --       list header is allocated, a line of output is generated. Certain

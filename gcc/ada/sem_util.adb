@@ -720,8 +720,7 @@ package body Sem_Util is
          if Is_Protected_Type (S) then
             if Restricted_Profile then
                Insert_Before (N,
-                  Make_Raise_Statement (Loc,
-                   Name => New_Occurrence_Of (Standard_Program_Error, Loc)));
+                  Make_Raise_Program_Error (Loc));
                Error_Msg_N ("potentially blocking operation, " &
                  " Program Error will be raised at run time?", N);
 

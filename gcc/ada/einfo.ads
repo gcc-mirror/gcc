@@ -302,6 +302,7 @@ package Einfo is
 --       only if the actual subtype differs from the nominal subtype. If the
 --       actual and nominal subtypes are the same, then the Actual_Subtype
 --       field is Empty, and Etype indicates both types.
+--
 --       For objects, the Actual_Subtype is set only if this is a discriminated
 --       type. For arrays, the bounds of the expression are obtained and the
 --       Etype of the object is directly the constrained subtype. This is

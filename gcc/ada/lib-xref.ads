@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.31 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1998-2001, Free Software Foundation, Inc.         --
 --                                                                          --
@@ -56,7 +56,7 @@ package Lib.Xref is
    --
    --  The lines following the header look like
    --
-   --     line type col level  entity ptype  ref  ref  ref
+   --     line type col level  entity typeref  ref  ref  ref
    --
    --        line is the line number of the referenced entity. It starts
    --        in column one.
@@ -74,17 +74,30 @@ package Lib.Xref is
    --        entity is the name of the referenced entity, with casing in
    --        the canical casing for the source file where it is defined.
    --
-   --        ptype is the parent's entity reference. This part is optional (it
-   --        is only set for derived types) and has the following format:
+   --        typeref is the reference for the type. This part is optional.
+   --        It is present for the following cases:
    --
-   --        < file | line type col >
+   --          derived types (points to the parent type)   LR=<>
+   --          access types (points to designated type)    LR=()
+   --          subtypes (points to ancestor type)          LR={}
+   --          functions (points to result type)           LR={}
+   --          enumeration literals (points to enum type)  LR={}
+   --          objects and components (points to type)     LR={}
    --
-   --        file is the dependency number of the file containing the
-   --        declaration of the parent type. This number and the following
-   --        vertical bar are omitted if the parent type is defined in the
-   --        same file as the derived type. The line, type, col are defined
-   --        as previously described, and give the location of the parent
-   --        type declaration in the referenced file.
+   --        In the above list LR shows the brackets used in the output,
+   --        which has one of the two following forms:
+   --
+   --          L file | line type col R      user entity
+   --          L name-in-lower-case   R      standard entity
+   --
+   --        For the form for a user entity, file is the dependency number
+   --        of the file containing the declaration of the parent type. This
+   --        number and the following vertical bar are omitted if the relevant
+   --        type is defined in the same file as the current entity. The line,
+   --        type, col are defined as previously described, and specify the
+   --        location of the relevant type declaration in the referenced file.
+   --        For the standard entity form, the name between the brackets is
+   --        the normal name of the entity in lower case letters.
    --
    --     There may be zero or more ref entries on each line
    --
