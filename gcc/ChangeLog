@@ -1,3 +1,8 @@
+2004-11-25  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* tree-cfg.c (tree_verify_flow_info): Do not terminate error()
+	message with \n.
+
 2004-11-25  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* config/rs6000/altivec.md (VIshort): New mode macro.

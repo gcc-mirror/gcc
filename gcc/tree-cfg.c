@@ -3816,7 +3816,7 @@ tree_verify_flow_info (void)
 
 		if (label_bb->aux != (void *)2)
 		  {
-		    error ("Missing edge %i->%i\n",
+		    error ("Missing edge %i->%i",
 			   bb->index, label_bb->index);
 		    err = 1;
 		  }
