@@ -270,6 +270,7 @@ enum java_tree_index
   JTI_SUPER_IDENTIFIER_NODE,  
   JTI_CONTINUE_IDENTIFIER_NODE,  
   JTI_ACCESS0_IDENTIFIER_NODE, 
+  JTI_CLASSDOLLAR_IDENTIFIER_NODE,
   JTI_ONE_ELT_ARRAY_DOMAIN_TYPE,
 
   JTI_RETURN_ADDRESS_TYPE_NODE,
@@ -460,6 +461,8 @@ extern tree java_global_trees[JTI_MAX];
   java_global_trees[JTI_CONTINUE_IDENTIFIER_NODE]  /* "continue" */
 #define access0_identifier_node \
   java_global_trees[JTI_ACCESS0_IDENTIFIER_NODE] /* "access$0" */
+#define classdollar_identifier_node \
+  java_global_trees[JTI_CLASSDOLLAR_IDENTIFIER_NODE] /* "class$" */
 #define one_elt_array_domain_type \
   java_global_trees[JTI_ONE_ELT_ARRAY_DOMAIN_TYPE]
 /* The type of the return address of a subroutine. */
@@ -1154,6 +1157,7 @@ struct rtx_def * java_lang_expand_expr PARAMS ((tree, rtx, enum machine_mode,
 #define ID_FINIT_P(ID)  ((ID) == finit_identifier_node \
 			 || (ID) == finit_leg_identifier_node)
 #define ID_CLINIT_P(ID) ((ID) == clinit_identifier_node)
+#define ID_CLASSDOLLAR_P(ID) ((ID) == classdollar_identifier_node)
 
 /* Access flags etc for a variable/field (a FIELD_DECL): */
 
