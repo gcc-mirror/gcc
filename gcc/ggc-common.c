@@ -234,76 +234,92 @@ ggc_mark_rtx_children (r)
 {
   const char *fmt;
   int i;
-  enum rtx_code code = GET_CODE (r);
+  rtx next_rtx;
 
-  /* Collect statistics, if appropriate.  */
-  if (ggc_stats)
+  do 
     {
-      ++ggc_stats->num_rtxs[(int) code];
-      ggc_stats->size_rtxs[(int) code] += ggc_get_size (r);
-    }
+      enum rtx_code code = GET_CODE (r);
+      /* This gets set to a child rtx to eliminate tail recursion.  */
+      next_rtx = NULL;
 
-  /* ??? If (some of) these are really pass-dependant info, do we have
-     any right poking our noses in?  */
-  switch (code)
-    {
-    case JUMP_INSN:
-      ggc_mark_rtx (JUMP_LABEL (r));
-      break;
-    case CODE_LABEL:
-      ggc_mark_rtx (LABEL_REFS (r));
-      ggc_mark_string (LABEL_ALTERNATE_NAME (r));
-      break;
-    case LABEL_REF:
-      ggc_mark_rtx (LABEL_NEXTREF (r));
-      ggc_mark_rtx (CONTAINING_INSN (r));
-      break;
-    case ADDRESSOF:
-      ggc_mark_tree (ADDRESSOF_DECL (r));
-      break;
-    case CONST_DOUBLE:
-      ggc_mark_rtx (CONST_DOUBLE_CHAIN (r));
-      break;
-    case NOTE:
-      switch (NOTE_LINE_NUMBER (r))
+      /* Collect statistics, if appropriate.  */
+      if (ggc_stats)
 	{
-	case NOTE_INSN_RANGE_START:
-	case NOTE_INSN_RANGE_END:
-	case NOTE_INSN_LIVE:
-	  ggc_mark_rtx (NOTE_RANGE_INFO (r));
-	  break;
+	  ++ggc_stats->num_rtxs[(int) code];
+	  ggc_stats->size_rtxs[(int) code] += ggc_get_size (r);
+	}
 
-	case NOTE_INSN_BLOCK_BEG:
-	case NOTE_INSN_BLOCK_END:
-	  ggc_mark_tree (NOTE_BLOCK (r));
+      /* ??? If (some of) these are really pass-dependant info, do we
+	 have any right poking our noses in?  */
+      switch (code)
+	{
+	case JUMP_INSN:
+	  ggc_mark_rtx (JUMP_LABEL (r));
+	  break;
+	case CODE_LABEL:
+	  ggc_mark_rtx (LABEL_REFS (r));
+	  ggc_mark_string (LABEL_ALTERNATE_NAME (r));
+	  break;
+	case LABEL_REF:
+	  ggc_mark_rtx (LABEL_NEXTREF (r));
+	  ggc_mark_rtx (CONTAINING_INSN (r));
+	  break;
+	case ADDRESSOF:
+	  ggc_mark_tree (ADDRESSOF_DECL (r));
+	  break;
+	case CONST_DOUBLE:
+	  ggc_mark_rtx (CONST_DOUBLE_CHAIN (r));
+	  break;
+	case NOTE:
+	  switch (NOTE_LINE_NUMBER (r))
+	    {
+	    case NOTE_INSN_RANGE_START:
+	    case NOTE_INSN_RANGE_END:
+	    case NOTE_INSN_LIVE:
+	      ggc_mark_rtx (NOTE_RANGE_INFO (r));
+	      break;
+
+	    case NOTE_INSN_BLOCK_BEG:
+	    case NOTE_INSN_BLOCK_END:
+	      ggc_mark_tree (NOTE_BLOCK (r));
+	      break;
+
+	    default:
+	      if (NOTE_LINE_NUMBER (r) >= 0)
+		ggc_mark_string (NOTE_SOURCE_FILE (r));
+	      break;
+	    }
 	  break;
 
 	default:
-	  if (NOTE_LINE_NUMBER (r) >= 0)
-	    ggc_mark_string (NOTE_SOURCE_FILE (r));
 	  break;
 	}
-      break;
 
-    default:
-      break;
-    }
-
-  for (fmt = GET_RTX_FORMAT (GET_CODE (r)), i = 0; *fmt ; ++fmt, ++i)
-    {
-      switch (*fmt)
+      for (fmt = GET_RTX_FORMAT (GET_CODE (r)), i = 0; *fmt ; ++fmt, ++i)
 	{
-	case 'e': case 'u':
-	  ggc_mark_rtx (XEXP (r, i));
-	  break;
-	case 'V': case 'E':
-	  ggc_mark_rtvec (XVEC (r, i));
-	  break;
-	case 'S': case 's':
-	  ggc_mark_if_gcable (XSTR (r, i));
-	  break;
+	  rtx exp;
+	  switch (*fmt)
+	    {
+	    case 'e': case 'u':
+	      exp = XEXP (r, i);
+	      if (ggc_test_and_set_mark (exp))
+		{ 
+		  if (next_rtx == NULL) 
+		    next_rtx = exp; 
+		  else 
+		    ggc_mark_rtx_children (exp);
+		} 
+	      break;
+	    case 'V': case 'E':
+	      ggc_mark_rtvec (XVEC (r, i));
+	      break;
+	    case 'S': case 's':
+	      ggc_mark_if_gcable (XSTR (r, i));
+	      break;
+	    }
 	}
     }
+  while ((r = next_rtx) != NULL);
 }
 
 /* V had not been previously marked, but has now been marked via
