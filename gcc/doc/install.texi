@@ -305,7 +305,7 @@ directories require autoconf 2.59 (exactly), but the toplevel and
 @file{libjava} (but not @file{libjava/libltdl}) still require autoconf
 2.13 (exactly) and @file{libmudflap} requires autoconf 2.57 (exactly).
 
-@item automake versions 1.4-gcj, 1.7.8, 1.7.9, 1.8.2, 1.8.4 and 1.8.5
+@item automake versions 1.4-gcj, 1.7.8, 1.7.9 and 1.8.5
 
 Necessary when modifying a @file{Makefile.am} file to regenerate its
 associated @file{Makefile.in}.
@@ -321,14 +321,12 @@ require a modified version of automake 1.4 downloadable from
 
 The @file{libmudflap} directory requires automake 1.7.8.
 
-The @file{fastjar}, @file{libbanshee}, @file{libffi},
-@file{libjava/libltdl} and @file{zlib} directories require automake
-1.7.9.
+The @file{libffi} and @file{zlib} directories require
+automake 1.7.9.
 
-The @file{libcpp} directory requires automake 1.8.4.
-
-The @file{libgfortran} and @file{libstdc++-v3} directories require
-automake 1.8.5.
+The @file{fastjar}, @file{libbanshee}, @file{libcpp},
+@file{libjava/libltdl}, @file{libgfortran} and @file{libstdc++-v3}
+directories require automake 1.8.5.
 
 @item gettext version 0.12 (or later)
 

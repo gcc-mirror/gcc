@@ -1,3 +1,9 @@
+2004-06-15  Paolo Bonzini  <bonzini@gnu.org>
+
+	* doc/install.texi (Prerequisites): Update libbanshee,
+	fastjar, libcpp, libjava/libltdl entries to
+	automake 1.8.5.
+
 2004-06-15  Eric Botcazou  <ebotcazou@act-europe.fr>
             Olivier Hainque  <hainque@act-europe.fr>
 
