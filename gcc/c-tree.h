@@ -400,6 +400,10 @@ extern int flag_traditional;
 
 extern int warn_parentheses;
 
+/* Warn if initializer is not completely bracketed.  */
+
+extern int warn_missing_braces;
+
 /* Nonzero means this is a function to call to perform comptypes
    on two record types.  */
 
