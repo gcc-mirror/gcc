@@ -862,7 +862,7 @@ regmove_optimize (f, nregs, regmove_dump_file)
   for (i = maxregnum; --i >= 0; ) regno_src_regno[i] = -1;
 
   regmove_bb_head = (int *)alloca (sizeof (int) * (get_max_uid () + 1));
-  for (i = get_max_uid (); --i >= 0; ) regmove_bb_head[i] = -1;
+  for (i = get_max_uid (); i >= 0; i--) regmove_bb_head[i] = -1;
   for (i = 0; i < n_basic_blocks; i++)
     regmove_bb_head[INSN_UID (basic_block_head[i])] = i;
 
