@@ -1,3 +1,9 @@
+Mon Jun  8 02:55:56 1998  Graham  <grahams@rcp.co.uk>
+
+	* tree.c (tree_class_check): Add braces to eliminate ambigious
+	else warning.
+	(tree_check): Likewise.
+
 Mon Jun  8 02:49:23 1998  H.J. Lu  (hjl@gnu.org)
 
 	* reg-stack.c (subst_stack_regs_pat): Make sure the top of
