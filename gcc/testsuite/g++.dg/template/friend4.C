@@ -3,7 +3,7 @@
 // Copyright (C) 2002 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 18 Dec 2001 <nathan@codesourcery.com>
 
-// PR 109, dependant member friends
+// PR 109, dependent member friends
 
 struct B
 {

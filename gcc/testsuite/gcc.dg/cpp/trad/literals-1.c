@@ -1,4 +1,4 @@
-/* Test that (what looks like) comments are not recognised in literals
+/* Test that (what looks like) comments are not recognized in literals
    and that quotes within quotes do not confused the preprocessor.  */
 
 /* { dg-do run } */

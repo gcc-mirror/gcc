@@ -1,3 +1,19 @@
+2002-09-15  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* ChangeLog: Follow spelling conventions.
+	* g++.dg/template/friend4.C: Likewise.
+	* g++.old-deja/g++.pt/crash67.C: Likewise.
+	* gcc.c-torture/execute/20000801-4.c: Likewise.
+	* gcc.dg/c90-digraph-1.c: Likewise.
+	* gcc.dg/c94-digraph-1.c: Likewise.
+	* gcc.dg/c99-digraph-1.c: Likewise.
+	* gcc.dg/cpp/line5.c: Likewise.
+	* gcc.dg/cpp/multiline.c: Likewise.
+	* gcc.dg/cpp/trad/literals-1.c: Likewise.
+	* gcc.dg/format/attr-3.c: Likewise.
+	* gcc.dg/format/c90-scanf-3.c: Likewise.
+	* gcc.dg/format/ext-4.c: Likewise.
+
 2002-09-15  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.dg/template/pretty1.C: New test.
@@ -2057,7 +2073,7 @@ Thu Mar  7 10:05:31 2002  Jeffrey A Law  (law@redhat.com)
 	* lib/prune.exp: Remove "In (program|subroutine"block-data)"
 	message from g77
 	* lib/g77-dg.exp: Trim g77 error messages so that they are
-	recognised by dg.exp.
+	recognized by dg.exp.
 
 2002-02-07  David Billinghurst <David.Billinghurst@riotinto.com>
 
