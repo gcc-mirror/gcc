@@ -1,5 +1,11 @@
 2000-08-10  Kazu Hirata  <kazu@hxi.com>
 
+	* h8300.c: Fix comment typos.
+	(dosize): Declare the variable amount as unsigned.
+	(get_shift_alg): Fix a comparison between signed and unsigned.
+	(emit_a_shift): Likewise.
+	(h8300_adjust_insn_length): Simplify the code.
+
 	* c-decl.c: Fix formatting.
 
 2000-08-10  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
