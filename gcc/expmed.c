@@ -2785,7 +2785,7 @@ expand_mult_highpart (mode, op0, cnst1, target, unsignedp, max_cost)
     {
       mul_highpart_optab = unsignedp ? umul_highpart_optab : smul_highpart_optab;
       target = expand_binop (mode, mul_highpart_optab,
-			     op0, wide_op1, target, unsignedp, OPTAB_DIRECT);
+			     op0, op1, target, unsignedp, OPTAB_DIRECT);
       if (target)
 	return target;
     }
@@ -2796,7 +2796,7 @@ expand_mult_highpart (mode, op0, cnst1, target, unsignedp, max_cost)
     {
       mul_highpart_optab = unsignedp ? smul_highpart_optab : umul_highpart_optab;
       target = expand_binop (mode, mul_highpart_optab,
-			     op0, wide_op1, target, unsignedp, OPTAB_DIRECT);
+			     op0, op1, target, unsignedp, OPTAB_DIRECT);
       if (target)
 	/* We used the wrong signedness.  Adjust the result.  */
 	return expand_mult_highpart_adjust (mode, target, op0,
