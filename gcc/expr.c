@@ -4134,7 +4134,43 @@ expand_expr (exp, target, tmode, modifier)
 	  return target;
 	}
       op0 = expand_expr (TREE_OPERAND (exp, 0), NULL_RTX, mode, 0);
-      if (GET_MODE (op0) == mode || GET_MODE (op0) == VOIDmode)
+      if (GET_MODE (op0) == mode)
+	return op0;
+      /* If arg is a constant integer being extended from a narrower mode,
+	 we must really truncate to get the extended bits right.  Otherwise
+	 (unsigned long) (unsigned char) ("\377"[0])
+	 would come out as ffffffff.  */
+      if (GET_MODE (op0) == VOIDmode
+	  && (GET_MODE_BITSIZE (TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0))))
+	      < GET_MODE_BITSIZE (mode)))
+	{
+	  /* MODE must be narrower than HOST_BITS_PER_INT.  */
+	  int width = GET_MODE_BITSIZE (TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0))));
+
+	  if (width < HOST_BITS_PER_WIDE_INT)
+	    {
+	      HOST_WIDE_INT val = (GET_CODE (op0) == CONST_INT ? INTVAL (op0)
+				   : CONST_DOUBLE_LOW (op0));
+	      if (TREE_UNSIGNED (TREE_TYPE (TREE_OPERAND (exp, 0)))
+		  || !(val & ((HOST_WIDE_INT) 1 << (width - 1))))
+		val &= ((HOST_WIDE_INT) 1 << width) - 1;
+	      else
+		val |= ~(((HOST_WIDE_INT) 1 << width) - 1);
+
+	      op0 = GEN_INT (val);
+	    }
+	  else
+	    {
+	      op0 = (simplify_unary_operation
+		     ((TREE_UNSIGNED (TREE_TYPE (TREE_OPERAND (exp, 0)))
+		       ? ZERO_EXTEND : SIGN_EXTEND),
+		      mode, op0,
+		      TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0)))));
+	      if (op0 == 0)
+		abort ();
+	    }
+	}
+      if (GET_MODE (op0) == VOIDmode)
 	return op0;
       if (modifier == EXPAND_INITIALIZER)
 	return gen_rtx (unsignedp ? ZERO_EXTEND : SIGN_EXTEND, mode, op0);
