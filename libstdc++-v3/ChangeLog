@@ -1,3 +1,30 @@
+2003-12-05  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/13189
+	* include/ext/enc_filebuf.h: Fix.
+	* include/bits/fstream.tcc: Tweak formatting.
+	* include/bits/postypes.h: Same.
+	* include/bits/sstream.tcc: Same.
+	* include/bits/streambuf.tcc: Same.
+	* testsuite/ext/stdio_filebuf.cc: Split.
+	* testsuite/ext/stdio_filebuf_2.cc: Split.
+	* testsuite/ext/stdio_sync_filebuf_char.cc: Split.
+	* testsuite/ext/stdio_sync_filebuf_wchar_t.cc: Split.
+	* testsuite/ext/enc_filebuf/char/13189.cc: New.
+	* testsuite/ext/enc_filebuf/wchar_t/13189.cc: New.
+	* testsuite/ext/stdio_filebuf/char/1.cc: New.
+	* testsuite/ext/stdio_filebuf/char/2.cc: New.
+	* testsuite/ext/stdio_sync_filebuf/char/1.cc: New.
+	* testsuite/ext/stdio_sync_filebuf/char/12048-1.cc: New.
+	* testsuite/ext/stdio_sync_filebuf/char/12048-2.cc: New.
+	* testsuite/ext/stdio_sync_filebuf/char/12048-3.cc: New.
+	* testsuite/ext/stdio_sync_filebuf/char/12048-4.cc: New.
+	* testsuite/ext/stdio_sync_filebuf/wchar_t/1.cc: New.
+	* testsuite/ext/stdio_sync_filebuf/wchar_t/12948-1.cc: New.
+	* testsuite/ext/stdio_sync_filebuf/wchar_t/12948-2.cc: New.
+	* testsuite/ext/stdio_sync_filebuf/wchar_t/12948-3.cc: New.
+	* testsuite/ext/stdio_sync_filebuf/wchar_t/12948-4.cc: New.
+
 2003-12-05  Carlo Wood  <carlo@alinoe.com>
 
 	PR libstdc++/13045

@@ -146,8 +146,8 @@ namespace std
     private:
       friend class streamoff;
 
-      __streamoff_base_type _M_off;
-      _StateT _M_state;
+      __streamoff_base_type 	_M_off;
+      _StateT 			_M_state;
 
     public:
       // The standard doesn't require that fpos objects can be default
