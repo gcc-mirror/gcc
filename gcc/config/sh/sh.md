@@ -1903,14 +1903,16 @@
 
 ;; ??? This should be a define expand.
 
+;; x/r can be created by inlining/cse, e.g. for execute/961213-1.c
+;; compiled with -m2 -ml -O3 -funroll-loops
 (define_insn ""
-  [(set (match_operand:DI 0 "general_movdst_operand" "=r,r,r,m,r,r,r")
-	(match_operand:DI 1 "general_movsrc_operand" "Q,r,m,r,I,i,x"))]
+  [(set (match_operand:DI 0 "general_movdst_operand" "=r,r,r,m,r,r,r,*!x")
+	(match_operand:DI 1 "general_movsrc_operand" "Q,r,m,r,I,i,x,r"))]
   "arith_reg_operand (operands[0], DImode)
    || arith_reg_operand (operands[1], DImode)"
   "* return output_movedouble (insn, operands, DImode);"
   [(set_attr "length" "4")
-   (set_attr "type" "pcload,move,load,store,move,pcload,move")])
+   (set_attr "type" "pcload,move,load,store,move,pcload,move,move")])
 
 ;; If the output is a register and the input is memory or a register, we have
 ;; to be careful and see which word needs to be loaded first.  
