@@ -4373,21 +4373,71 @@ pre_insert_insn (expr, bb)
       add_label_notes (SET_SRC (pat), new_insn);
       if (BLOCK_HEAD (bb) == insn)
 	BLOCK_HEAD (bb) = new_insn;
-      /* Keep block number table up to date.  */
-      set_block_num (new_insn, bb);
-      /* Keep register set table up to date.  */
-      record_one_set (regno, new_insn);
+    }
+  /* Likewise if the last insn is a call, as will happen in the presence
+     of exception handling.  */
+  else if (GET_CODE (insn) == CALL_INSN)
+    {
+      HARD_REG_SET parm_regs;
+      int nparm_regs;
+      rtx p;
+
+      /* Keeping in mind SMALL_REGISTER_CLASSES and parameters in registers,
+	 we search backward and place the instructions before the first
+	 parameter is loaded.  Do this for everyone for consistency and a
+	 presumtion that we'll get better code elsewhere as well.  */
+
+      /* It should always be the case that we can put these instructions
+	 anywhere in the basic block.  Check this.  */
+      if (!TEST_BIT (pre_antloc[bb], expr->bitmap_index)
+	  && !TEST_BIT (pre_transp[bb], expr->bitmap_index))
+	abort ();
+
+      /* Since different machines initialize their parameter registers
+	 in different orders, assume nothing.  Collect the set of all
+	 parameter registers.  */
+      CLEAR_HARD_REG_SET (parm_regs);
+      nparm_regs = 0;
+      for (p = CALL_INSN_FUNCTION_USAGE (insn); p ; p = XEXP (p, 1))
+	if (GET_CODE (XEXP (p, 0)) == USE
+	    && GET_CODE (XEXP (XEXP (p, 0), 0)) == REG)
+	  {
+	    int regno = REGNO (XEXP (XEXP (p, 0), 0));
+	    if (regno >= FIRST_PSEUDO_REGISTER)
+	      abort();
+	    SET_HARD_REG_BIT (parm_regs, regno);
+	    nparm_regs++;
+	  }
+
+      /* Search backward for the first set of a register in this set.  */
+      while (nparm_regs && BLOCK_HEAD (bb) != insn)
+	{
+	  insn = PREV_INSN (insn);
+	  p = single_set (insn);
+	  if (p && GET_CODE (SET_DEST (p)) == REG
+	      && REGNO (SET_DEST (p)) < FIRST_PSEUDO_REGISTER
+	      && TEST_HARD_REG_BIT (parm_regs, REGNO (SET_DEST (p))))
+	    {
+	      CLEAR_HARD_REG_BIT (parm_regs, REGNO (SET_DEST (p)));
+	      nparm_regs--;
+	    }
+	}
+      
+      new_insn = emit_insn_before (pat, insn);
+      if (BLOCK_HEAD (bb) == insn)
+	BLOCK_HEAD (bb) = new_insn;
     }
   else
     {
       new_insn = emit_insn_after (pat, insn);
       add_label_notes (SET_SRC (pat), new_insn);
       BLOCK_END (bb) = new_insn;
-      /* Keep block number table up to date.  */
-      set_block_num (new_insn, bb);
-      /* Keep register set table up to date.  */
-      record_one_set (regno, new_insn);
     }
+
+  /* Keep block number table up to date.  */
+  set_block_num (new_insn, bb);
+  /* Keep register set table up to date.  */
+  record_one_set (regno, new_insn);
 
   gcse_create_count++;
 
