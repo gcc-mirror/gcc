@@ -1,3 +1,9 @@
+2000-08-30  Alexandre Oliva  <aoliva@redhat.com>
+
+	* config/sh/sh.md (cmpeqsi_ior_t, cmpeqsi_and_t): New insns.
+	(cmpeqdi_t splitter): Use cmpeqsi_and_t instead of emitting jumps
+	and labels.
+
 2000-08-30  J. David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* fixinc/gnu-regex.c: Don't define `const'.
