@@ -25,7 +25,7 @@
 	    Joseph S. Myers  <joseph@codesourcery.com>
 
 	PR c++/19797
-	* elf.h, pa64-hpux.h, som.h (ASM_OUTPUT_EXTERNAL_REAL): Define.
+	* pa/elf.h, pa64-hpux.h, som.h (ASM_OUTPUT_EXTERNAL_REAL): Define.
 	(ASM_OUTPUT_EXTERNAL): Call pa_hpux_asm_output_external.
 	* pa-protos.h (pa_hpux_asm_output_external): Add prototype.
 	* pa.c (get_plabel): Change argument to symbol_ref.  Call
