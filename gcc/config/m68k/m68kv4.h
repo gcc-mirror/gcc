@@ -28,6 +28,7 @@ Boston, MA 02111-1307, USA.  */
 /* TODO: convert includes to ${tm_file} list in config.gcc.  */
 #include "m68k/sgs.h"		/* The m68k/SVR4 assembler is SGS based */
 
+#include "dbxelf.h"
 #include "elfos.h"
 #include "svr4.h"		/* Pick up the generic SVR4 macros */
 

@@ -2,6 +2,8 @@
    This is meant to be included after m68k.h.
    Copyright (C) 1994, 1995, 1998, 1999 Free Software Foundation, Inc.  */
 
+/* Override the SVR4 ABI for this target.  */
+
 #define PTRDIFF_TYPE "long int"
 #define SIZE_TYPE "long unsigned int"
 

@@ -1,3 +1,14 @@
+2001-12-11  David O'Brien  <obrien@FreeBSD.org>
+
+	* config.gcc (m68020-*-elf*): Expand tm_file to include all needed
+	cpu configuration headers.
+	* config/h8300/elf.h: Include dbxelf.h.
+	* config/m68k/linux.h: Likewise.
+	* config/m68k/m68020-elf.h: Likewise.
+	* config/m68k/m68kv4.h: Likewise.
+	* config/sh/elf.h: Likewise.
+	* config/m68k/m68kemb.h: Add comment about the its purpose.
+
 2001-12-11  Richard Henderson  <rth@redhat.com>
 
 	* objc/objc-act.c (build_constructor): Cast initializer values
