@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for DEC Alpha.
-   Copyright (C) 1992 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1993 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@nyu.edu)
 
 This file is part of GNU CC.
@@ -114,6 +114,9 @@ extern int target_flags;
 }
 
 /* target machine storage layout */
+
+/* Define to enable software floating point emulation. */
+#define REAL_ARITHMETIC
 
 /* Define the size of `int'.  The default is the same as the word size.  */
 #define INT_TYPE_SIZE 32
@@ -1455,14 +1458,20 @@ literal_section ()						\
 
 /* This is how to output an assembler line defining a `double' constant.  */
 
-#define ASM_OUTPUT_DOUBLE(FILE,VALUE)		\
-  fprintf (FILE, "\t.t_floating %.20e\n", (VALUE))
+#define ASM_OUTPUT_DOUBLE(FILE,VALUE)			\
+do { char dstr[30];					\
+     REAL_VALUE_TO_DECIMAL (VALUE, "%.20e", dstr);	\
+     fprintf (FILE, "\t.t_floating %s\n", dstr);	\
+   } while (0)
 
 /* This is how to output an assembler line defining a `float' constant.  */
 
-#define ASM_OUTPUT_FLOAT(FILE,VALUE)		\
-  fprintf (FILE, "\t.s_floating %.20e\n", (VALUE))
-
+#define ASM_OUTPUT_FLOAT(FILE,VALUE)			\
+do { char dstr[30];					\
+     REAL_VALUE_TO_DECIMAL (VALUE, "%.20e", dstr);	\
+     fprintf (FILE, "\t.s_floating %s\n", dstr);	\
+   } while (0)
+  
 /* This is how to output an assembler line defining an `int' constant.  */
 
 #define ASM_OUTPUT_INT(FILE,VALUE)  		\
