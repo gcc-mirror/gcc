@@ -380,8 +380,8 @@ AC_DEFUN(AM_WITH_NLS,
 		 AC_PATH_PROG(GMSGFMT, gmsgfmt, no)
 		 if test "$GMSGFMT" = "no"; then
 		   AM_PATH_PROG_WITH_TEST(GMSGFMT, msgfmt,
-		    [test -z "`$ac_dir/$ac_word -h 2>&1 | grep 'dv '`"], no)
-		   if test "$GMSGFMT" = "no"; then
+		    [test -z "`$ac_dir/$ac_word -h 2>&1 | grep 'dv '`"], msgfmt)
+		   if test "$GMSGFMT" = "msgfmt"; then
 		     AC_MSG_WARN(No program for catalog building found, so disabling building them)
 		     create_catalogs="no"
 		   fi
@@ -412,16 +412,13 @@ AC_DEFUN(AM_WITH_NLS,
         dnl Mark actions used to generate GNU NLS library.
         INTLOBJS="\$(GETTOBJS)"
         AM_PATH_PROG_WITH_TEST(MSGFMT, msgfmt,
-	  [test -z "`$ac_dir/$ac_word -h 2>&1 | grep 'dv '`"], no)
-        AC_PATH_PROG(GMSGFMT, gmsgfmt, no)
-
+	  [test -z "`$ac_dir/$ac_word -h 2>&1 | grep 'dv '`"], msgfmt)
+        AC_PATH_PROG(GMSGFMT, gmsgfmt, $MSGFMT)
         dnl If we didn't find either msgfmt or gmsgfmt, don't try to
         dnl create a catalog.
-	if test "$MSGFMT" = "no" && test "$GMSGFMT" = "no"; then
+	if test "$MSGFMT" = "msgfmt" && test "$GMSGFMT" = "msgfmt"; then
 	  AC_MSG_WARN(Neither msgfmt nor gmsgfmt found. No catalogs will be built)
 	  create_catalogs="no"
-	  MSGFMT=msgfmt
-	  GMSGFMT=msgfmt
 	fi
         AM_PATH_PROG_WITH_TEST(XGETTEXT, xgettext,
 	  [test -z "`$ac_dir/$ac_word -h 2>&1 | grep '(HELP)'`"], :)
