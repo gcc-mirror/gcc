@@ -1,3 +1,6 @@
+2004-03-03  Stuart Hastings  <stuart@apple.com>
+	* gcc/config.gcc: Arrange for Darwin/x86 to build libgcc_eh.a.
+	
 2004-03-03  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* config/sparc/sparc.c (noov_compare64_op): Fix typo.
