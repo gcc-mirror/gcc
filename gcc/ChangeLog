@@ -1,3 +1,8 @@
+2004-06-11  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* doc/install.texi (--enable-shared): Update libobjc's shared library status.
+	Remove reference to libf2c.
+
 2004-06-11  Jason Merrill  <jason@redhat.com>
 
 	* config/i386/i386.h (EXPAND_BUILTIN_VA_ARG): Just abort.
