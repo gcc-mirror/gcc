@@ -1,3 +1,8 @@
+2003-12-05  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/13314
+	* g++.dg/template/error7.C: New test.
+
 2003-12-05  Stuart Menefy <stuart.menefy@st.com>
             J"orn Rennecke <joern.rennecke@superh.com>
 

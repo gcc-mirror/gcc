@@ -1826,6 +1826,8 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
     return;
 
   type = TYPE_P (t) ? t : TREE_TYPE (t);
+  if (type == error_mark_node)
+    return;
 
   /* If we have already set DECL_RTL = ref, get_alias_set will get the
      wrong answer, as it assumes that DECL_RTL already has the right alias
