@@ -1,3 +1,8 @@
+2004-05-04  Andreas Jaeger  <aj@suse.de>
+
+	* demangle.h: Do not use C++ reserved keyword typename as
+	parameter for cplus_demangle_fill_builtin_type.
+
 2004-04-22  Richard Henderson  <rth@redhat.com>
 
 	* hashtab.h (struct htab): Add size_prime_index.
@@ -549,8 +554,8 @@ Tue May 30 16:53:34 2000  Andrew Cagney  <cagney@b1.cygnus.com>
 
 2000-05-06  Zack Weinberg  <zack@wolery.cumb.org>
 
- 	* ansidecl.h: #define __extension__ to nothing if
- 	GCC_VERSION < 2008.
+	* ansidecl.h: #define __extension__ to nothing if
+	GCC_VERSION < 2008.
 
 2000-05-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
@@ -795,8 +800,8 @@ Tue Feb 24 13:05:02 1998  Doug Evans  <devans@canuck.cygnus.com>
 Tue Feb 17 12:32:18 1998  Andrew Cagney  <cagney@b1.cygnus.com>
 
 	* remote-sim.h (sim_fetch_register, sim_store_register): Add
- 	register length parameter.  Functions return actual length of
- 	register.
+	register length parameter.  Functions return actual length of
+	register.
 
 Thu Feb 12 16:29:01 1998  Ian Lance Taylor  <ian@cygnus.com>
 
@@ -854,7 +859,7 @@ Tue Nov 25 01:35:52 1997  Doug Evans  <devans@seba.cygnus.com>
 Sat Nov 22 23:34:15 1997  Andrew Cagney  <cagney@b1.cygnus.com>
 
 	* remote-sim.h (sim_stop_reason): Clarify sim_signalled SIGRC
- 	argument.
+	argument.
 
 Mon Nov 17 14:00:51 1997  Doug Evans  <devans@seba.cygnus.com>
 
@@ -934,12 +939,12 @@ Fri May 23 13:43:41 1997  Fred Fish  <fnf@cygnus.com>
 Thu May 22 11:32:49 1997  Andrew Cagney  <cagney@b1.cygnus.com>
 
 	* remote-sim.h: Review documentation.  Clarify restrictions on
- 	when functions can be called.
+	when functions can be called.
 
 Wed May 21 16:47:53 1997  Andrew Cagney  <cagney@b1.cygnus.com>
 
 	* remote-sim.h (sim_set_profile_size): Add prototype, document as
- 	depreciated.
+	depreciated.
 
 Tue May 20 09:32:22 1997  Andrew Cagney  <cagney@b1.cygnus.com>
 
@@ -973,16 +978,16 @@ Tue Apr 22 10:24:34 1997  Fred Fish  <fnf@cygnus.com>
 Fri Apr 18 13:04:49 1997  Andrew Cagney  <cagney@b1.cygnus.com>
 
 	* remote-sim.h (sim_stop): New interface - asynchronous
- 	notification of a request to stop / suspend the running
- 	simulation.
+	notification of a request to stop / suspend the running
+	simulation.
 
 	* remote-sim.h (enum sim_stop): Add sim_running and sim_polling as
- 	states for use internal to simulators.
+	states for use internal to simulators.
 
 	* callback.h (struct host_callback_strut): Put a magic number at
- 	the end of the struct to allow basic checking.
+	the end of the struct to allow basic checking.
 	(struct host_callback_struct ): Add poll_quit - so
- 	that the console etc can be polled at regular intervals.
+	that the console etc can be polled at regular intervals.
 
 Thu Apr 17 02:17:12 1997  Doug Evans  <dje@canuck.cygnus.com>
 
@@ -993,7 +998,7 @@ Thu Apr 17 02:17:12 1997  Doug Evans  <dje@canuck.cygnus.com>
 Wed Apr  2 17:09:12 1997  Andrew Cagney  <cagney@kremvax.cygnus.com>
 
 	* remote-sim.h (sim_trace, sim_size): Make these global.  They
- 	will go away shortly.
+	will go away shortly.
 
 Wed Apr  2 15:23:49 1997  Doug Evans  <dje@canuck.cygnus.com>
 
@@ -1023,7 +1028,7 @@ Mon Mar 17 19:22:12 1997  Ian Lance Taylor  <ian@cygnus.com>
 Mon Mar 17 14:57:55 1997  Andrew Cagney  <cagney@kremvax.cygnus.com>
 
 	* remote-sim.h: New file, copied in from gdb/remote-sim.h.  One
- 	day this will be placed in a directory of its own.
+	day this will be placed in a directory of its own.
 
 Sat Mar 15 19:00:14 1997  Ian Lance Taylor  <ian@cygnus.com>
 
@@ -1032,8 +1037,8 @@ Sat Mar 15 19:00:14 1997  Ian Lance Taylor  <ian@cygnus.com>
 Thu Mar  6 15:46:59 1997  Andrew Cagney  <cagney@kremvax.cygnus.com>
 
 	* callback.h (struct host_callback_struct): Add callbacks -
- 	flush_stdout, write_stderr, flush_stderr, vprintf_filtered,
- 	evprintf_filtered.  Delete redundant callbacks - printf_filtered.
+	flush_stdout, write_stderr, flush_stderr, vprintf_filtered,
+	evprintf_filtered.  Delete redundant callbacks - printf_filtered.
 
 Thu Feb 27 23:18:27 1997  Ian Lance Taylor  <ian@cygnus.com>
 
@@ -1145,7 +1150,7 @@ Tue Jul 23 17:37:58 1996  Fred Fish  <fnf@cygnus.com>
 	can define PRIVATE_XMALLOC and then define xmalloc and
 	xrealloc anyway they want.
 	(basename): Document in source that we can't declare the
- 	parameter type because it is declared inconsistently across
+	parameter type because it is declared inconsistently across
 	different systems.
 
 Mon Jul 22 13:16:13 1996  Richard Henderson  <rth@tamu.edu>
@@ -1940,7 +1945,7 @@ Sat Nov 30 20:46:43 1991  Steve Chamberlain  (sac at rtl.cygnus.com)
 Wed Nov 27 10:38:31 1991  Steve Chamberlain  (sac at rtl.cygnus.com)
 
 	* internalcoff.h: (internal_scnhdr) took out #def dependency, now
-	s_nreloc and s_nlnno are always long. 	(internal_reloc): allways
+	s_nreloc and s_nlnno are always long.	(internal_reloc): allways
 	has an offset field now.
 
 Fri Nov 22 08:12:58 1991  John Gilmore  (gnu at cygnus.com)

@@ -458,7 +458,7 @@ cplus_demangle_fill_name PARAMS ((struct demangle_component *fill,
 
 extern int
 cplus_demangle_fill_builtin_type PARAMS ((struct demangle_component *fill,
-					  const char *typename));
+					  const char *type_name));
 
 /* Fill in a DEMANGLE_COMPONENT_OPERATOR, using the name of the
    operator and the number of arguments which it takes (the latter is
