@@ -103,6 +103,7 @@ extern int is_function_label_plus_const PARAMS ((rtx));
 extern int jump_in_call_delay PARAMS ((rtx));
 extern enum reg_class secondary_reload_class PARAMS ((enum reg_class,
 						      enum machine_mode, rtx));
+extern int hppa_fpstore_bypass_p PARAMS ((rtx, rtx));
 
 /* Declare functions defined in pa.c and used in templates.  */
 

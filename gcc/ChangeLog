@@ -1,3 +1,13 @@
+2002-05-06  Jeff Law  <law@redhat.com>
+
+	* pa-protos.h (hppa_fpstore_bypass_p): Declare.
+	* pa.c (pa_adjust_cost): Remove all true dependency cost
+	adjustments.  Also remove support for non-DFA scheduling.
+	* pa.md (700, 7100, 7100lc, 7200, 7300): Use bypass mechanism
+	to adjust true dependency costs.  Update various comments.
+	(7100lc, 7200, 7300 scheduling): Simplify by combining the
+	FP ALU & MPY units into a single unit.
+
 2002-05-06  Catherine Moore  <clm@redhat.com>
 
 	* config/v850/v850.c (compute_register_save_size): Make sure

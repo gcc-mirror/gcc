@@ -60,6 +60,33 @@ hppa_use_dfa_pipeline_interface ()
   return 1;
 }
 
+/* Return nonzero if there is a bypass for the output of 
+   OUT_INSN and the fp store IN_INSN.  */
+int
+hppa_fpstore_bypass_p (out_insn, in_insn)
+     rtx out_insn, in_insn;
+{
+  enum machine_mode store_mode;
+  enum machine_mode other_mode;
+  rtx set;
+
+  if (recog_memoized (in_insn) < 0
+      || get_attr_type (in_insn) != TYPE_FPSTORE
+      || recog_memoized (out_insn) < 0)
+    return 0;
+
+  store_mode = GET_MODE (SET_SRC (PATTERN (in_insn)));
+
+  set = single_set (out_insn);
+  if (!set)
+    return 0;
+
+  other_mode = GET_MODE (SET_SRC (set));
+
+  return (GET_MODE_SIZE (store_mode) == GET_MODE_SIZE (other_mode));
+}
+  
+
 #ifndef DO_FRAME_NOTES
 #ifdef INCOMING_RETURN_ADDR_RTX
 #define DO_FRAME_NOTES 1
@@ -3907,8 +3934,9 @@ pa_adjust_cost (insn, link, dep_insn, cost)
 {
   enum attr_type attr_type;
 
-  /* Don't adjust costs for a pa8000 chip.  */
-  if (pa_cpu >= PROCESSOR_8000)
+  /* Don't adjust costs for a pa8000 chip, also do not adjust any
+     true dependencies as they are described with bypasses now.  */
+  if (pa_cpu >= PROCESSOR_8000 || REG_NOTE_KIND (link) == 0)
     return cost;
 
   if (! recog_memoized (insn))
@@ -3916,65 +3944,7 @@ pa_adjust_cost (insn, link, dep_insn, cost)
 
   attr_type = get_attr_type (insn);
 
-  if (REG_NOTE_KIND (link) == 0)
-    {
-      /* Data dependency; DEP_INSN writes a register that INSN reads some
-	 cycles later.  */
-
-      if (attr_type == TYPE_FPSTORE)
-	{
-	  rtx pat = PATTERN (insn);
-	  rtx dep_pat = PATTERN (dep_insn);
-	  if (GET_CODE (pat) == PARALLEL)
-	    {
-	      /* This happens for the fstXs,mb patterns.  */
-	      pat = XVECEXP (pat, 0, 0);
-	    }
-	  if (GET_CODE (pat) != SET || GET_CODE (dep_pat) != SET)
-	    /* If this happens, we have to extend this to schedule
-	       optimally.  Return 0 for now.  */
-	  return 0;
-
-	  if (rtx_equal_p (SET_DEST (dep_pat), SET_SRC (pat)))
-	    {
-	      if (! recog_memoized (dep_insn))
-		return 0;
-	      /* DEP_INSN is writing its result to the register
-		 being stored in the fpstore INSN.  */
-	      switch (get_attr_type (dep_insn))
-		{
-		case TYPE_FPLOAD:
-		  /* This cost 3 cycles, not 2 as the md says for the
-		     700 and 7100, 7100lc, 7200 and 7300.  */
-		  return cost + 1;
-
-		case TYPE_FPALU:
-		case TYPE_FPMULSGL:
-		case TYPE_FPMULDBL:
-		case TYPE_FPDIVSGL:
-		case TYPE_FPDIVDBL:
-		case TYPE_FPSQRTSGL:
-		case TYPE_FPSQRTDBL:
-		  /* In these important cases, we save one cycle compared to
-		     when flop instruction feed each other.  */
-		  return cost - 1;
-
-		default:
-		  return cost;
-		}
-	    }
-
-	  /* A flop-flop true depenendency where the sizes of the operand
-	     carrying the dependency is difference causes an additional
-	     cycle stall on the 7100lc, 7200, and 7300.   Similarly for
-	     a fpload-flop true dependency.  */
-	}
-
-      /* For other data dependencies, the default cost specified in the
-	 md is correct.  */
-      return cost;
-    }
-  else if (REG_NOTE_KIND (link) == REG_DEP_ANTI)
+  if (REG_NOTE_KIND (link) == REG_DEP_ANTI)
     {
       /* Anti dependency; DEP_INSN reads a register that INSN writes some
 	 cycles later.  */
@@ -4010,10 +3980,7 @@ pa_adjust_cost (insn, link, dep_insn, cost)
 		     preceding arithmetic operation has finished if
 		     the target of the fpload is any of the sources
 		     (or destination) of the arithmetic operation.  */
-		  if (hppa_use_dfa_pipeline_interface ())
-		    return insn_default_latency (dep_insn) - 1;
-		  else
-		    return cost - 1;
+		  return insn_default_latency (dep_insn) - 1;
 
 		default:
 		  return 0;
@@ -4048,10 +4015,7 @@ pa_adjust_cost (insn, link, dep_insn, cost)
 		     preceding divide or sqrt operation has finished if
 		     the target of the ALU flop is any of the sources
 		     (or destination) of the divide or sqrt operation.  */
-		  if (hppa_use_dfa_pipeline_interface ())
-		    return insn_default_latency (dep_insn) - 2;
-		  else
-		    return cost - 2;
+		  return insn_default_latency (dep_insn) - 2;
 
 		default:
 		  return 0;
@@ -4101,10 +4065,7 @@ pa_adjust_cost (insn, link, dep_insn, cost)
 		     Exception: For PA7100LC, PA7200 and PA7300, the cost
 		     is 3 cycles, unless they bundle together.   We also
 		     pay the penalty if the second insn is a fpload.  */
-		  if (hppa_use_dfa_pipeline_interface ())
-		    return insn_default_latency (dep_insn) - 1;
-		  else
-		    return cost - 1;
+		  return insn_default_latency (dep_insn) - 1;
 
 		default:
 		  return 0;
@@ -4139,10 +4100,7 @@ pa_adjust_cost (insn, link, dep_insn, cost)
 		     preceding divide or sqrt operation has finished if
 		     the target of the ALU flop is also the target of
 		     the divide or sqrt operation.  */
-		  if (hppa_use_dfa_pipeline_interface ())
-		    return insn_default_latency (dep_insn) - 2;
-		  else
-		    return cost - 2;
+		  return insn_default_latency (dep_insn) - 2;
 
 		default:
 		  return 0;
