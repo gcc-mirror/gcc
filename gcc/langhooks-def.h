@@ -99,7 +99,6 @@ extern void lhd_initialize_diagnostics (struct diagnostic_context *);
 #define LANG_HOOKS_FINISH_INCOMPLETE_DECL lhd_do_nothing_t
 #define LANG_HOOKS_UNSAFE_FOR_REEVAL	lhd_unsafe_for_reeval
 #define LANG_HOOKS_STATICP		lhd_staticp
-#define LANG_HOOKS_INSERT_DEFAULT_ATTRIBUTES lhd_do_nothing_t
 #define LANG_HOOKS_DUP_LANG_SPECIFIC_DECL lhd_do_nothing_t
 #define LANG_HOOKS_UNSAVE_EXPR_NOW	lhd_unsave_expr_now
 #define LANG_HOOKS_MAYBE_BUILD_CLEANUP	lhd_return_null_tree
@@ -259,7 +258,6 @@ extern int lhd_tree_dump_type_quals (tree);
   LANG_HOOKS_EXPAND_CONSTANT, \
   LANG_HOOKS_EXPAND_EXPR, \
   LANG_HOOKS_TRUTHVALUE_CONVERSION, \
-  LANG_HOOKS_INSERT_DEFAULT_ATTRIBUTES, \
   LANG_HOOKS_SAFE_FROM_P, \
   LANG_HOOKS_FINISH_INCOMPLETE_DECL, \
   LANG_HOOKS_UNSAFE_FOR_REEVAL, \

@@ -1459,7 +1459,6 @@ set_std_c89 (int c94, int iso)
   flag_no_asm = iso;
   flag_no_gnu_keywords = iso;
   flag_no_nonansi_builtin = iso;
-  flag_noniso_default_format_attributes = !iso;
   flag_isoc94 = c94;
   flag_isoc99 = 0;
   flag_writable_strings = 0;
@@ -1472,7 +1471,6 @@ set_std_c99 (int iso)
   cpp_set_lang (parse_in, iso ? CLK_STDC99: CLK_GNUC99);
   flag_no_asm = iso;
   flag_no_nonansi_builtin = iso;
-  flag_noniso_default_format_attributes = !iso;
   flag_iso = iso;
   flag_isoc99 = 1;
   flag_isoc94 = 1;
@@ -1486,7 +1484,6 @@ set_std_cxx98 (int iso)
   cpp_set_lang (parse_in, iso ? CLK_CXX98: CLK_GNUCXX);
   flag_no_gnu_keywords = iso;
   flag_no_nonansi_builtin = iso;
-  flag_noniso_default_format_attributes = !iso;
   flag_iso = iso;
 }
 

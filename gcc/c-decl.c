@@ -2370,17 +2370,6 @@ builtin_function (const char *name, tree type, int function_code,
 
   return decl;
 }
-
-/* Apply default attributes to a function, if a system function with default
-   attributes.  */
-
-void
-c_insert_default_attributes (tree decl)
-{
-  if (!TREE_PUBLIC (decl))
-    return;
-  c_common_insert_default_attributes (decl);
-}
 
 /* Called when a declaration is seen that contains no names to declare.
    If its type is a reference to a structure, union or enum inherited

@@ -1,3 +1,31 @@
+2003-08-04  Roger Sayle  <roger@eyesopen.com>
+
+	* c-common.c (flag_noniso_default_format_attributes): Delete.
+	(built_in_attribute): Don't define/undefine DEF_FN_ATTR.
+	(c_attrs_initialized): Delete.
+	(c_common_nodes_and_builtins): Don't test c_attrs_initialized,
+	always call c_init_attributes.
+	(c_init_attributes): Don't define/undefine DEF_FN_ATTR.  Don't
+	set c_attrs_initialized when done.
+	(c_common_insert_default_attributes): Delete.
+	* c-common.h (flag_noniso_default_format_attributes): Delete.
+	(c_coomon_insert_default_attributes): Delete prototype.
+	* c-opts.c (set_std_c89, set_std_c99, set_std_cxx98): Dont set
+	flag_noniso_default_format_attributes.
+
+	* c-decl.c (c_insert_default_attributes): Delete.
+	* c-tree.h (c_insert_default_attributes): Delete prototype.
+
+	* attribs.c (decl_attributes): Don't call insert_default_attributes
+	langhook.  Update function description comment.
+	* langhooks.h (lang_hooks): Remove insert_default_attributes field.
+	* langhooks-def.h (LANG_HOOKS_INSERT_DEFAULT_ATTRIBUTES): Delete.
+	* c-lang.c (LANG_HOOKS_INSERT_DEFAULT_ATTRIBUTES): Don't define.
+	* system.h: Poison LANG_HOOKS_INSERT_DEFAULT_ATTRIBUTES macro.
+
+	* objc/objc-lang.c (LANG_HOOKS_INSERT_DEFAULT_ATTRIBUTES): Don't
+	define.
+
 2003-08-04  Richard Sandiford  <rsandif@redhat.com>
 
 	* config/mips/mips.c (override_options): Disable -G on targets that
