@@ -262,7 +262,7 @@ package body System.Tasking.Entry_Calls is
 
                if Ceiling_Violation then
                   declare
-                     Current_Task      : Task_ID := STPO.Self;
+                     Current_Task      : constant Task_ID := STPO.Self;
                      Old_Base_Priority : System.Any_Priority;
 
                   begin

@@ -393,6 +393,14 @@ package body Make is
    Bind_Shared_Known : Boolean := False;
    --  Set to True after the first time Bind_Shared is computed
 
+   Shared_Libgcc : aliased String := "-shared-libgcc";
+
+   No_Shared_Libgcc_Switch : aliased Argument_List := (1 .. 0 => null);
+   Shared_Libgcc_Switch    : aliased Argument_List :=
+                               (1 => Shared_Libgcc'Access);
+   Link_With_Shared_Libgcc : Argument_List_Access :=
+                               No_Shared_Libgcc_Switch'Access;
+
    procedure Make_Failed (S1 : String; S2 : String := ""; S3 : String := "");
    --  Delete all temp files created by Gnatmake and call Osint.Fail,
    --  with the parameter S1, S2 and S3 (see osint.ads).
@@ -3383,6 +3391,7 @@ package body Make is
       Make.Initialize;
 
       Bind_Shared := No_Shared_Switch'Access;
+      Link_With_Shared_Libgcc := No_Shared_Libgcc_Switch'Access;
       Bind_Shared_Known := False;
 
       Failed_Links.Set_Last (0);
@@ -4769,6 +4778,12 @@ package body Make is
                           Projects.Table (Proj).Library_Kind /= Static
                         then
                            Bind_Shared := Shared_Switch'Access;
+
+                           if GCC_Version >= 3 then
+                              Link_With_Shared_Libgcc :=
+                                Shared_Libgcc_Switch'Access;
+                           end if;
+
                            exit;
                         end if;
                      end loop;
@@ -5276,7 +5291,9 @@ package body Make is
                   --  And invoke the linker
 
                   begin
-                     Link (Main_ALI_File, Args (Args'First .. Last_Arg));
+                     Link (Main_ALI_File,
+                           Link_With_Shared_Libgcc.all &
+                           Args (Args'First .. Last_Arg));
                      Successful_Links.Increment_Last;
                      Successful_Links.Table (Successful_Links.Last) :=
                        Main_ALI_File;

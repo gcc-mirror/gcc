@@ -64,7 +64,7 @@ package body GNAT.Sockets.Thin is
    Thread_Blocking_IO : Boolean := True;
 
    Unknown_System_Error : constant C.Strings.chars_ptr :=
-     C.Strings.New_String ("Unknown system error");
+                            C.Strings.New_String ("Unknown system error");
 
    --  The following types and variables are required to create a Hostent
    --  record "by hand".

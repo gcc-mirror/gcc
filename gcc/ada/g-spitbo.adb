@@ -169,7 +169,7 @@ package body GNAT.Spitbol is
 
    procedure Reverse_String (Str : in out VString) is
       Len    : constant Natural := Length (Str);
-      Chars  : String_Access := Get_String (Str);
+      Chars  : constant String_Access := Get_String (Str);
       Temp   : Character;
 
    begin

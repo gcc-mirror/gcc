@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2003, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2004, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -443,6 +443,15 @@ package Opt is
    Full_List : Boolean := False;
    --  GNAT
    --  Set True to generate full source listing with embedded errors
+
+   function get_gcc_version return Int;
+   pragma Import (C, get_gcc_version, "get_gcc_version");
+
+   GCC_Version : constant Nat := get_gcc_version;
+   --  GNATMAKE
+   --  Indicates which version of gcc is in use (2 = 2.8.1, 3 = 3.x).
+   --  Used in particular to decide if gcc switch -shared-libgcc should be
+   --  used (it cannot be used for 2.8.1).
 
    Global_Discard_Names : Boolean := False;
    --  GNAT, GNATBIND

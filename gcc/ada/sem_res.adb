@@ -408,9 +408,10 @@ package body Sem_Res is
               and then Scope (Disc) = Current_Scope
               and then not
                 (Nkind (Parent (P)) = N_Subtype_Indication
-                 and then
-                  (Nkind (Parent (Parent (P))) = N_Component_Definition
-                   or else Nkind (Parent (Parent (P))) = N_Subtype_Declaration)
+                   and then
+                    (Nkind (Parent (Parent (P))) = N_Component_Definition
+                       or else
+                     Nkind (Parent (Parent (P))) = N_Subtype_Declaration)
                   and then Paren_Count (N) = 0)
             then
                Error_Msg_N
@@ -419,8 +420,9 @@ package body Sem_Res is
             end if;
 
             --   Detect a common beginner error:
+
             --   type R (D : Positive := 100) is record
-            --     Name: String (1 .. D);
+            --     Name : String (1 .. D);
             --   end record;
 
             --  The default value causes an object of type R to be

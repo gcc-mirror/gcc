@@ -3221,7 +3221,7 @@ package body Sem_Util is
       function Has_Dependent_Constraint (Comp : Entity_Id) return Boolean is
          Comp_Decl  : constant Node_Id := Parent (Comp);
          Subt_Indic : constant Node_Id :=
-           Subtype_Indication (Component_Definition (Comp_Decl));
+                        Subtype_Indication (Component_Definition (Comp_Decl));
          Constr     : Node_Id;
          Assn       : Node_Id;
 

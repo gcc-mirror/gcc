@@ -678,7 +678,7 @@ procedure Gnatlink is
       --  terminator.
 
       function Index (S, Pattern : String) return Natural;
-      --  Return the first occurrence of Pattern in S, or 0 if none.
+      --  Return the last occurrence of Pattern in S, or 0 if none.
 
       function Is_Option_Present (Opt : in String) return Boolean;
       --  Return true if the option Opt is already present in
@@ -727,8 +727,9 @@ procedure Gnatlink is
 
       function Index (S, Pattern : String) return Natural is
          Len : constant Natural := Pattern'Length;
+
       begin
-         for J in S'First .. S'Last - Len + 1 loop
+         for J in reverse S'First .. S'Last - Len + 1 loop
             if Pattern = S (J .. J + Len - 1) then
                return J;
             end if;
@@ -1061,7 +1062,42 @@ procedure Gnatlink is
                                  --  Also add path to find libgcc_s.so, if
                                  --  relevant.
 
-                                 GCC_Index := Index (File_Path.all, "gcc-lib");
+                                 --  To find the location of the shared version
+                                 --  of libgcc, we look for "gcc-lib" in the
+                                 --  path of the library. However, this
+                                 --  subdirectory is no longer present in
+                                 --  in recent version of GCC. So, we look for
+                                 --  the last subdirectory "lib" in the path.
+
+                                 GCC_Index :=
+                                   Index (File_Path.all, "gcc-lib");
+
+                                 if GCC_Index /= 0 then
+                                    --  The shared version of libgcc is
+                                    --  located in the parent directory.
+
+                                    GCC_Index := GCC_Index - 1;
+
+                                 else
+                                    GCC_Index :=
+                                      Index (File_Path.all, "/lib/");
+
+                                    if GCC_Index = 0 then
+                                       GCC_Index :=
+                                         Index (File_Path.all,
+                                                Directory_Separator &
+                                                "lib" &
+                                                Directory_Separator);
+                                    end if;
+
+                                    --  We have found a subdirectory "lib",
+                                    --  this is where the shared version of
+                                    --  libgcc should be located.
+
+                                    if GCC_Index /= 0 then
+                                       GCC_Index := GCC_Index + 3;
+                                    end if;
+                                 end if;
 
                                  --  Look for an eventual run_path_option in
                                  --  the linker switches.
@@ -1124,7 +1160,7 @@ procedure Gnatlink is
                                                  (1 .. File_Path'Length
                                                        - File_Name'Length)
                                              & Path_Separator
-                                             & File_Path (1 .. GCC_Index - 1));
+                                             & File_Path (1 .. GCC_Index));
 
                                     else
                                        Linker_Options.Table
@@ -1137,7 +1173,7 @@ procedure Gnatlink is
                                                  (1 .. File_Path'Length
                                                        - File_Name'Length)
                                              & Path_Separator
-                                             & File_Path (1 .. GCC_Index - 1));
+                                             & File_Path (1 .. GCC_Index));
                                     end if;
                                  end if;
                               end if;

@@ -2612,10 +2612,10 @@ package body Exp_Ch9 is
                            (Parent (Efam)))), Loc))),
 
                     Component_Definition =>
-                       Make_Component_Definition (Loc,
-                          Aliased_Present    => False,
-                          Subtype_Indication =>
-                             New_Reference_To (Standard_Character, Loc))));
+                      Make_Component_Definition (Loc,
+                        Aliased_Present    => False,
+                        Subtype_Indication =>
+                          New_Reference_To (Standard_Character, Loc))));
 
             Insert_After (Current_Node, Efam_Decl);
             Current_Node := Efam_Decl;
@@ -2629,10 +2629,12 @@ package body Exp_Ch9 is
                 Component_Definition =>
                   Make_Component_Definition (Loc,
                     Aliased_Present    => False,
+
                     Subtype_Indication =>
                       Make_Subtype_Indication (Loc,
                         Subtype_Mark =>
                           New_Occurrence_Of (Efam_Type, Loc),
+
                         Constraint  =>
                           Make_Index_Or_Discriminant_Constraint (Loc,
                             Constraints => New_List (
@@ -7283,11 +7285,13 @@ package body Exp_Ch9 is
            Make_Component_Declaration (Loc,
              Defining_Identifier =>
                Make_Defining_Identifier (Loc, Name_uTask_Info),
+
              Component_Definition =>
                Make_Component_Definition (Loc,
                  Aliased_Present    => False,
                  Subtype_Indication =>
                    New_Reference_To (RTE (RE_Task_Info_Type), Loc)),
+
              Expression => New_Copy (
                Expression (First (
                  Pragma_Argument_Associations (
