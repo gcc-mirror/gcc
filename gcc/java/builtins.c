@@ -156,7 +156,7 @@ build_function_call_expr (tree fn, tree arglist)
 
 static tree
 cos_builtin (method_return_type, method_arguments)
-     tree method_return_type, method_arguments;
+     tree method_return_type ATTRIBUTE_UNUSED, method_arguments;
 {
   /* FIXME: this assumes that jdouble and double are the same.  */
   tree fn = built_in_decls[BUILT_IN_COS];
@@ -167,7 +167,7 @@ cos_builtin (method_return_type, method_arguments)
 
 static tree
 sin_builtin (method_return_type, method_arguments)
-     tree method_return_type, method_arguments;
+     tree method_return_type ATTRIBUTE_UNUSED, method_arguments;
 {
   /* FIXME: this assumes that jdouble and double are the same.  */
   tree fn = built_in_decls[BUILT_IN_SIN];
@@ -178,7 +178,7 @@ sin_builtin (method_return_type, method_arguments)
 
 static tree
 sqrt_builtin (method_return_type, method_arguments)
-     tree method_return_type, method_arguments;
+     tree method_return_type ATTRIBUTE_UNUSED, method_arguments;
 {
   /* FIXME: this assumes that jdouble and double are the same.  */
   tree fn = built_in_decls[BUILT_IN_SQRT];
