@@ -2869,7 +2869,8 @@ convert_filename (name, do_exe)
       return name;
 
   obstack_grow (&obstack, name, len);
-  obstack_grow0 (&obstack, TARGET_EXECUTABLE_SUFFIX, strlen (TARGET_EXECUTABLE_SUFFIX));
+  obstack_grow0 (&obstack, TARGET_EXECUTABLE_SUFFIX,
+		 strlen (TARGET_EXECUTABLE_SUFFIX));
   name = obstack_finish (&obstack);
 #endif
 

@@ -2542,10 +2542,11 @@ eliminate_regs (x, mem_mode, insn)
 		      (reg:m2 R) later, expecting all bits to be preserved.
 		      So if the number of words is the same, preserve the
 		      subreg so that push_reloads can see it.  */
-		   && ! ((x_size-1)/UNITS_PER_WORD == (new_size-1)/UNITS_PER_WORD)
+		   && ! ((x_size - 1) / UNITS_PER_WORD
+			 == (new_size -1 ) / UNITS_PER_WORD)
 #endif
 		   )
-		  || (x_size == new_size))
+		  || x_size == new_size)
 	      )
 	    {
 	      int offset = SUBREG_BYTE (x);
