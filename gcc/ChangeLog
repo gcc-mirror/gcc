@@ -1,3 +1,10 @@
+2005-01-12  Nick Clifton  <nickc@redhat.com>
+
+	* config/sh/sh.md (udivsi3_sh2a, divsi3_sh2a): Give these patterns
+	an "in_delay_slot" attribute of "no" to prevent them being used in
+	delay slots.  This is forbidden because they might generate
+	exceptions.
+
 2005-01-12  Alan Modra  <amodra@bigpond.net.au>
 
 	PR target/19389
