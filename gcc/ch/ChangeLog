@@ -1,5 +1,8 @@
 Mon Sep 14 16:46:36 1998  Dave Brolley  <brolley@cygnus.com>
 
+	* typeck.c (build_chill_slice): Always use TYPE_DOMAIN to get the
+	domain type of the array.
+
 	* expr.c (build_chill_function_call): Remove redundant call to
  	chill_convert_to_assignment
 
