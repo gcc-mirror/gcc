@@ -161,14 +161,9 @@ static void sdbout_reg_parms		PARAMS ((tree));
 
 #ifndef PUT_SDB_DEF
 #define PUT_SDB_DEF(a)				\
-
-#undef PUT_SDB_DEF
-PUT_SDB_DEF(a)				\
-char *a; {
 do { fprintf (asm_out_file, "\t.def\t");	\
      assemble_name (asm_out_file, a); 	\
      fprintf (asm_out_file, SDB_DELIM); } while (0)
-; }
 #endif
 
 #ifndef PUT_SDB_PLAIN_DEF
