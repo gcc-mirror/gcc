@@ -1728,7 +1728,6 @@
   "*
 {
   static char *const madd[] = { \"madd\\t%1,%2\",    \"madd\\t%0,%1,%2\" };
-  static char *const macc[] = { \"macc\\t$0,%1,%2\", \"macc\\t%0,%1,%2\" };
   if (which_alternative == 2)
     return \"#\";
   return madd[which_alternative];
