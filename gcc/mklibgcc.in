@@ -1,6 +1,6 @@
 #!/bin/sh
 # Construct makefile for libgcc.
-#   Copyright (C) 2000, 2002, 2003 Free Software Foundation, Inc.
+#   Copyright (C) 2000, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 
@@ -72,6 +72,7 @@ fi
 # Build lines.
 
 gcc_compile='$(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) $(INCLUDES)'
+gcc_s_compile="$gcc_compile -DSHARED"
 make_compile='$(MAKE) GCC_FOR_TARGET="$(GCC_FOR_TARGET)" \
 	  AR_FOR_TARGET="$(AR_FOR_TARGET)" \
 	  AR_CREATE_FOR_TARGET="$(AR_CREATE_FOR_TARGET)" \
@@ -218,7 +219,7 @@ for ml in $MULTILIBS; do
       outV="libgcc/${dir}/${name}.vis"
 
       echo ${outS}: stmp-dirs '$(srcdir)/config/$(LIB1ASMSRC)'
-      echo "	$gcc_compile" $flags -DL$name -xassembler-with-cpp \
+      echo "	$gcc_s_compile" $flags -DL$name -xassembler-with-cpp \
 	  -c '$(srcdir)/config/$(LIB1ASMSRC)' -o $outS
 
       echo ${out}: stmp-dirs '$(srcdir)/config/$(LIB1ASMSRC)' ${outV}
@@ -251,7 +252,8 @@ for ml in $MULTILIBS; do
       outS="libgcc/${dir}/${name}_s${objext}"
 
       echo $outS: $libgcc2_c_dep
-      echo "	$gcc_compile" $flags -DL$name -c '$(srcdir)/libgcc2.c' -o $outS
+      echo "	$gcc_s_compile" $flags -DL$name -c '$(srcdir)/libgcc2.c' \
+	-o $outS
 
       echo $out: $libgcc2_c_dep
       echo "	$gcc_compile" $flags -DL$name '$(vis_hide)' \
@@ -285,7 +287,7 @@ for ml in $MULTILIBS; do
       outS="libgcc/${dir}/${name}_s${objext}"
 
       echo $outS: $libgcc2_c_dep
-      echo "	$gcc_compile" $flags -DL$name \
+      echo "	$gcc_s_compile" $flags -DL$name \
         -fexceptions -fnon-call-exceptions -c '$(srcdir)/libgcc2.c' -o $outS
 
       echo $out: $libgcc2_c_dep
@@ -317,7 +319,7 @@ for ml in $MULTILIBS; do
 	outS="libgcc/${dir}/${name}_s${objext}"
 
 	echo $outS: $FPBIT $fpbit_c_dep
-	echo "	$gcc_compile" -DFINE_GRAINED_LIBRARIES $flags -DL$name \
+	echo "	$gcc_s_compile" -DFINE_GRAINED_LIBRARIES $flags -DL$name \
 	  -c $FPBIT -o $outS
 
         echo $out: $FPBIT $fpbit_c_dep
@@ -347,7 +349,7 @@ for ml in $MULTILIBS; do
 	outS="libgcc/${dir}/${name}_s${objext}"
 
 	echo $outS: $DPBIT $fpbit_c_dep
-	echo "	$gcc_compile" -DFINE_GRAINED_LIBRARIES $flags -DL$name \
+	echo "	$gcc_s_compile" -DFINE_GRAINED_LIBRARIES $flags -DL$name \
 	  -c $DPBIT -o $outS
 
         echo $out: $DPBIT $fpbit_c_dep
@@ -377,7 +379,7 @@ for ml in $MULTILIBS; do
 	outS="libgcc/${dir}/${name}_s${objext}"
 
 	echo $outS: $TPBIT $fpbit_c_dep
-	echo "	$gcc_compile" -DFINE_GRAINED_LIBRARIES $flags -DL$name \
+	echo "	$gcc_s_compile" -DFINE_GRAINED_LIBRARIES $flags -DL$name \
 	  -c $TPBIT -o $outS
 
         echo $out: $TPBIT $fpbit_c_dep
@@ -411,7 +413,7 @@ for ml in $MULTILIBS; do
       case $file in
 	*.c)
 	  echo $outS: stmp-dirs $file $libgcc_dep
-	  echo "	$gcc_compile" $flags -c $file -o $outS
+	  echo "	$gcc_s_compile" $flags -c $file -o $outS
 
 	  echo $out: stmp-dirs $file $libgcc_dep
 	  echo "	$gcc_compile" $flags '$(vis_hide)' -c $file -o $out
@@ -421,7 +423,7 @@ for ml in $MULTILIBS; do
 	  outV="libgcc/${dir}/${oname}.vis"
 
 	  echo $outS: stmp-dirs $file $libgcc_dep
-	  echo "	$gcc_compile" $flags -xassembler-with-cpp \
+	  echo "	$gcc_s_compile" $flags -xassembler-with-cpp \
 	         -c $file -o $outS
 
 	  echo $out: stmp-dirs $file $libgcc_dep $outV
@@ -533,13 +535,13 @@ for ml in $MULTILIBS; do
 
       name=`echo $file | sed -e 's/[.]c$//'`
       oname=`echo $name | sed -e 's,.*/,,'`
-      out="libgcc/${dir}/${oname}_s${objext}"
+      outS="libgcc/${dir}/${oname}_s${objext}"
 
-      echo $out: stmp-dirs $file $LIB2ADDEHDEP $libgcc_dep
-      echo "	$gcc_compile" $flags -fexceptions -c $file -o $out
-      echo $libgcc_s_so: $out
+      echo $outS: stmp-dirs $file $LIB2ADDEHDEP $libgcc_dep
+      echo "	$gcc_s_compile" $flags -fexceptions -c $file -o $outS
+      echo $libgcc_s_so: $outS
       if [ "$SHLIB_MKMAP" ]; then
-	echo libgcc/${dir}/libgcc.map: $out
+	echo libgcc/${dir}/libgcc.map: $outS
       fi
     done
 
@@ -592,7 +594,7 @@ for ml in $MULTILIBS; do
 	echo "	$gcc_compile $flags -fexceptions \$(vis_hide) -c $file -o $out"
 
 	echo $outS: stmp-dirs $file $LIBUNWINDDEP
-	echo "	$gcc_compile $flags -fexceptions -DSHARED -c $file -o $outS"
+	echo "	$gcc_s_compile $flags -fexceptions -c $file -o $outS"
 
 	echo $libunwind_a: $out
 	echo $libunwind_so: $outS

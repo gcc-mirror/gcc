@@ -67,7 +67,7 @@ extern long double __gcc_qsub (double, double, double, double);
 extern long double __gcc_qmul (double, double, double, double);
 extern long double __gcc_qdiv (double, double, double, double);
 
-#ifdef __ELF__
+#if defined __ELF__ && defined SHARED
 /* Provide definitions of the old symbol names to statisfy apps and
    shared libs built against an older libgcc.  To access the _xlq
    symbols an explicit version reference is needed, so these won't
