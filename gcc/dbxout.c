@@ -1,5 +1,5 @@
 /* Output dbx-format symbol table information from GNU compiler.
-   Copyright (C) 1987, 1988, 1992, 1993, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 92, 93, 94, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -518,7 +518,7 @@ dbxout_source_file (file, filename)
       fprintf (file, "%s ", ASM_STABS_OP);
       output_quoted_string (file, filename);
       fprintf (file, ",%d,0,0,%s\n", N_SOL, &ltext_label_name[1]);
-      if (current_function_decl
+      if (current_function_decl != NULL_TREE
 	  && DECL_SECTION_NAME (current_function_decl) != NULL_TREE)
 	; /* Don't change section amid function.  */
       else
