@@ -1,3 +1,8 @@
+2004-07-15  Richard Henderson  <rth@redhat.com>
+
+	* tree-ssa-operands.c (get_expr_operands): Use a switch.  Split out...
+	(get_indirect_ref_operands, get_call_expr_operands): ... these.
+
 2004-07-15  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* vec.h (VEC_address): New function.
