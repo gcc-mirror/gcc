@@ -31,7 +31,7 @@ testfunc (void)
   static union foo1 f7 = {1.0}; /* { dg-warning "traditional C rejects initialization of unions" "initialization of unions" } */
   static union foo2 f8 = {1.0}; /* { dg-warning "traditional C rejects initialization of unions" "initialization of unions" } */
 
-#line 35 "sys-header.h" 3
+# 35 "sys-header.h" 3
 /* We are in system headers now, no -Wtraditional warnings should issue.  */
 
   static union foo1 b1 = {0};

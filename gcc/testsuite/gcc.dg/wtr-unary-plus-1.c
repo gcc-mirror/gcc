@@ -12,7 +12,7 @@ testfunc (void)
   i = +1; /* { dg-warning "unary plus operator" "unary plus operator" } */
   i = +i; /* { dg-warning "unary plus operator" "unary plus operator" } */
   
-#line 16 "sys-header.h" 3
+# 16 "sys-header.h" 3
 /* We are in system headers now, no -Wtraditional warnings should issue.  */
 
   i = +1;

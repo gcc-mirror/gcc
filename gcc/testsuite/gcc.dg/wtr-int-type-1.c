@@ -25,7 +25,7 @@ testfunc (void)
      test passes and both matched by checking for "integer constant".  */
   i = 18446744073709551615; /* { dg-warning "integer constant" "integer constant" } */
   
-#line 29 "sys-header.h" 3
+# 29 "sys-header.h" 3
 /* We are in system headers now, no -Wtraditional warnings should issue.  */
 
   i = 0x80000000;

@@ -22,7 +22,7 @@ testfunc1 (void)
   f3 = f4;
 }
   
-#line 26 "sys-header.h" 3
+# 26 "sys-header.h" 3
 /* We are in system headers now, no -Wtraditional warnings should issue.  */
 
 struct foo f5 = { 0, 0 };

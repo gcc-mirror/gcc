@@ -50,7 +50,7 @@ testfunc (void)
   static struct baz2 f5 = { 1, 2, {0} };
   static struct baz2 f6 = { 1, 2, {1} }; /* { dg-warning "traditional C rejects initialization of unions" "initialization of unions" } */
 
-#line 54 "sys-header.h" 3
+# 54 "sys-header.h" 3
 /* We are in system headers now, no -Wtraditional warnings should issue.  */
 
   static union foo b1 = {{0,0}};

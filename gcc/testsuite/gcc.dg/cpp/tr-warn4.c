@@ -13,7 +13,7 @@
 #if 1l
 #endif
   
-#line 17 "sys-header.h" 3
+# 17 "sys-header.h" 3
 /* We are in system headers now, no -Wtraditional warnings should issue.  */
 
 #if 1U
