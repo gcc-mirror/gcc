@@ -1,5 +1,12 @@
 2004-02-02  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/bits/stl_function.h: Additional minor tweaks.
+	* include/bits/stl_multiset.h: Likewise.
+
+	* include/bits/stl_queue.h: Minor tweaks.
+
+2004-02-02  Paolo Carlini  <pcarlini@suse.de>
+
 	PR libstdc++/13976 (continued)
 	* include/ext/malloc_allocator.h (malloc_allocator::deallocate):
 	Make the second parameter unnamed, to void unused parameter

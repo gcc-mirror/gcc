@@ -1,6 +1,6 @@
 // Queue implementation -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -112,9 +112,9 @@ namespace std
       __glibcxx_class_requires(_Sequence, _BackInsertionSequenceConcept)
       __glibcxx_class_requires2(_Tp, _Sequence_value_type, _SameTypeConcept)
   
-	template<typename _Tp1, typename _Seq1>
-          friend bool 
-          operator==(const queue<_Tp1, _Seq1>&, const queue<_Tp1, _Seq1>&);
+      template<typename _Tp1, typename _Seq1>
+        friend bool 
+        operator==(const queue<_Tp1, _Seq1>&, const queue<_Tp1, _Seq1>&);
 
       template<typename _Tp1, typename _Seq1>
         friend bool 
@@ -149,11 +149,13 @@ namespace std
        *  Returns true if the %queue is empty.
        */
       bool
-      empty() const { return c.empty(); }
+      empty() const
+      { return c.empty(); }
       
       /**  Returns the number of elements in the %queue.  */
       size_type
-      size() const { return c.size(); }
+      size() const
+      { return c.size(); }
       
       /**
        *  Returns a read/write reference to the data at the first
@@ -209,7 +211,8 @@ namespace std
        *  underlying sequence.
        */
       void
-      push(const value_type& __x) { c.push_back(__x); }
+      push(const value_type& __x)
+      { c.push_back(__x); }
       
       /**
        *  @brief  Removes first element.
@@ -292,8 +295,7 @@ namespace std
     operator>=(const queue<_Tp,_Sequence>& __x, 
 	       const queue<_Tp,_Sequence>& __y)
     { return !(__x < __y); }
-  
-  
+    
   /**
    *  @brief  A standard container automatically sorting its contents.
    *
@@ -333,7 +335,7 @@ namespace std
    *  the elements for you.  (How could it know to do so?)
   */
   template<typename _Tp, typename _Sequence = vector<_Tp>,
-            typename _Compare  = less<typename _Sequence::value_type> >
+	   typename _Compare  = less<typename _Sequence::value_type> >
     class priority_queue
     {
       // concept requirements
@@ -344,7 +346,7 @@ namespace std
       __glibcxx_class_requires2(_Tp, _Sequence_value_type, _SameTypeConcept)
       __glibcxx_class_requires4(_Compare, bool, _Tp,_Tp,_BinaryFunctionConcept)
   
-	public:
+    public:
       typedef typename _Sequence::value_type                value_type;
       typedef typename _Sequence::reference                 reference;
       typedef typename _Sequence::const_reference           const_reference;

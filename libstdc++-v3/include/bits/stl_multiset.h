@@ -144,8 +144,9 @@ namespace __gnu_norm
       multiset()
       : _M_t(_Compare(), allocator_type()) { }
 
-      explicit multiset(const _Compare& __comp,
-			const allocator_type& __a = allocator_type())
+      explicit
+      multiset(const _Compare& __comp,
+	       const allocator_type& __a = allocator_type())
       : _M_t(__comp, __a) { }
 
       /**
