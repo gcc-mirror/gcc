@@ -278,6 +278,14 @@ layout_decl (decl, known_align)
 	}
     }
 
+  /* Turn off DECL_BIT_FIELD if we won't need it set.  */
+  if (DECL_BIT_FIELD (decl) && TYPE_MODE (type) == BLKmode
+      && known_align % TYPE_ALIGN (type) == 0
+      && DECL_SIZE (decl) != 0
+      && (TREE_CODE (DECL_SIZE (decl)) != INTEGER_CST
+	  || (TREE_INT_CST_LOW (DECL_SIZE (decl)) % BITS_PER_UNIT) == 0))
+    DECL_BIT_FIELD (decl) = 0;
+
   /* Evaluate nonconstant size only once, either now or as soon as safe.  */
   if (DECL_SIZE (decl) != 0 && TREE_CODE (DECL_SIZE (decl)) != INTEGER_CST)
     DECL_SIZE (decl) = variable_size (DECL_SIZE (decl));
