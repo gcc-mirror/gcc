@@ -29,7 +29,12 @@ final class Clip
 
   private native void init(Rectangle[] rects);
 
-  public native void finalize();
+  public void finalize()
+  {
+    dispose ();
+  }
+  
+  public native void dispose();
 
   RawData xrects;
 }

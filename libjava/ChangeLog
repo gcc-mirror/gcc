@@ -1,3 +1,28 @@
+2003-04-19  Scott Gilbertson  <scottg@mantatest.com>
+
+	* gnu/awt/xlib/XGraphics.java (XGraphics): Use new GC.create.
+	(dispose): Null metrics.
+	* gnu/awt/xlib/XToolkit.java (sync): Implement.
+	* gnu/gcj/xlib/Clip.java (dispose): Change name of native from
+	finalize.
+	(finalize): Call dispose.
+	* gnu/gcj/xlib/Drawable.java (gcCache): New field.
+	(gcCachedCount): New field.
+	(finalize): New method.
+	(putGCInCache): New method.
+	(getGCFromCache): New method.
+	* gnu/gcj/xlib/GC.java (GC): Make protected.
+	(clone): Get new GC from cache if possible.
+	(create): New static method.
+	(dispose): Save old GC in cache.
+	* gnu/gcj/xlib/natClip.cc (dispose): Check for null before
+	deleting.
+	* gnu/gcj/xlib/natGC.cc (initStructure): Call XCreateGC only if gc
+	is null.
+	* gnu/gcj/xlib/Pixmap.java (Pixmap): Use new GC.create.
+	* java/awt/Container.java (visitChild): Dispose gfx2 when
+	finished.
+
 2003-04-19  Jerry Quinn  <jlquinn@optonline.net>
 
 	* java/math/BigInteger.java (probablePrime): New.

@@ -34,12 +34,16 @@ void gnu::gcj::xlib::GC::initStructure(GC* copyFrom)
 {
   Display* display = target->getDisplay();
   ::Display* dpy = (::Display*) (display->display);
-  ::Drawable drawableXID = target->getXID();
-    
-  ::GC gc = XCreateGC(dpy, drawableXID, 0, 0);
-  
-  if (gc == 0) 
-    throw new XException(JvNewStringLatin1("GC creation failed"));
+  ::GC gc = (::GC) structure;
+  if (gc == 0)
+  {
+    // If we haven't already created a GC, create one now
+    ::Drawable drawableXID = target->getXID();
+    gc = XCreateGC(dpy, drawableXID, 0, 0);
+    structure = reinterpret_cast<gnu::gcj::RawData*>(gc);
+    if (gc == 0) 
+      throw new XException(JvNewStringLatin1("GC creation failed"));
+  }
 
   if (copyFrom != 0)
     {
@@ -47,8 +51,6 @@ void gnu::gcj::xlib::GC::initStructure(GC* copyFrom)
       XCopyGC(dpy, fromGC, ~0, gc);
       // no fast fail
     }
-
-  structure = reinterpret_cast<gnu::gcj::RawData*>(gc);
 }
 
 void gnu::gcj::xlib::GC::disposeImpl()

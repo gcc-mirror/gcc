@@ -25,7 +25,7 @@ public class Pixmap extends Drawable
     /* FIXME: don't create a new GC all the time.  This might actually
     not be as bad as initially believed.  The GC cache of Xlib makes
     this operation less costly. */
-    GC gc = new GC(this);
+    GC gc = GC.create (this);
     
     gc.putImage(image, 0, 0, 0, 0, image.getWidth(), image.getHeight());
   }

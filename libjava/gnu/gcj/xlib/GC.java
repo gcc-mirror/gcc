@@ -23,17 +23,25 @@ import java.awt.Rectangle;
  */
 public class GC implements Cloneable
 {
-  
-  public GC(Drawable target)
+  /** Protected constructor, because GC.create(target) should be used instead.
+   */
+  protected GC(Drawable target)
   {
     this.target = target;
     initStructure(null);
   }
 
+  /** Try to get a suitable GC from the drawable's cache.
+   * If there isn't one, create one.
+   */
   public Object clone()
   {
-    GC gcClone = (GC) super.clone();
-    gcClone.structure = null;
+    GC gcClone = target.getGCFromCache ();
+    if (gcClone==null)
+    {
+      gcClone = (GC) super.clone();
+      gcClone.structure = null;
+    }
     gcClone.initStructure(this);
     gcClone.updateClip();
     return gcClone;
@@ -45,15 +53,31 @@ public class GC implements Cloneable
   {
     return (GC) clone();
   }
+  
+  /** Create a GC, or if one is already cached for target, return that.
+   * @param target The Drawable for which a GC is needed
+   * @return The new or retrieved GC
+   */
+  static public GC create (Drawable target)
+  {
+    GC returnValue = target.getGCFromCache ();
+    if (returnValue == null)
+      returnValue = new GC (target);
+    return returnValue;
+  }
 
   public void finalize()
   {
     disposeImpl();
   }
 
+  /** Save this GC in the drawable's cache.
+   *  The "real" dispose (disposeImpl) is called when the
+   *  drawable is finialized, to free X server resources.
+   */
   public void dispose()
   {
-    disposeImpl();
+    target.putGCInCache (this);
   }
 
   public synchronized native void disposeImpl();

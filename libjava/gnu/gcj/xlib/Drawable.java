@@ -16,6 +16,9 @@ import java.awt.Rectangle;
  */
 public class Drawable extends XID
 {
+  private GC[] gcCache = new GC[10];
+  private int gcCachedCount = 0;
+
   public Drawable(Display display, int xid)
   {
     super(display, xid);
@@ -78,5 +81,36 @@ public class Drawable extends XID
   
   private static final String MSG_XGETSUBIMAGE_FAILED =
     "XGetSubImage() failed.";
-    
+
+  protected void finalize() throws Throwable
+  {
+    // Dispose all the cached GCs, to reduce X server resource usage
+    for (int i=0; i<gcCachedCount; i++)
+      gcCache[i].disposeImpl ();
+    gcCachedCount = 0;
+    super.finalize();
+  }
+
+  /** Put a GC in the cache for this drawable, so it can be retrieved later.
+   * @param gc The GC to put
+   */
+  void putGCInCache (GC gc)
+  {
+    if (gcCachedCount >= gcCache.length)
+    {
+      // List full - extend it to double its present size
+      GC[] oldList = gcCache;
+      gcCache = new GC[oldList.length*2];
+      System.arraycopy (oldList,0,gcCache,0,oldList.length);
+    }
+    gcCache[gcCachedCount++] = gc;
+  }
+
+  /** Get a GC from the cache, if available
+   * @return A GC from the cache, or null if the cache is empty
+   */
+  GC getGCFromCache ()
+  {
+    return (gcCachedCount>0) ? gcCache[--gcCachedCount] : null;
+  }
 }
