@@ -1,3 +1,14 @@
+2004-04-29  Matthias Klose  <doko@debian.org>
+
+	Backport:
+
+	2004-03-04  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR optimization/14235
+	* expr.c (expand_expr_real) <NOP_EXPR>: Return a new
+	pseudo when converting from a sub-word source to a
+	larger-than-word register which conflicts with the source.
+
 2004-04-29  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/sparc/sparc.h (FLOATDITF2_LIBCALL, FIX_TRUNCTFDI2_LIBCALL,

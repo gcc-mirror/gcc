@@ -1,3 +1,11 @@
+2004-04-29  Matthias Klose  <doko@debian.org>
+
+	Backport:
+
+	2004-03-04  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gcc.c-torture/compile/20040304-1.c: New test.
+
 2004-04-20  Paul Brook  <paul@codesourcery.com>
 
 	PR 2123

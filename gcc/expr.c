@@ -7909,9 +7909,18 @@ expand_expr (exp, target, tmode, modifier)
 	return
 	  convert_to_mode (mode, op0,
 			   TREE_UNSIGNED (TREE_TYPE (TREE_OPERAND (exp, 0))));
-      else
-	convert_move (target, op0,
-		      TREE_UNSIGNED (TREE_TYPE (TREE_OPERAND (exp, 0))));
+
+      /* Check if convert_move may do the conversion by using a low-part,
+	 after clobbering the whole target which is known to conflict with
+	 the source.  In this case, play safe and make a new pseudo.  */
+      if (GET_CODE (target) == REG
+	  && GET_MODE_BITSIZE (GET_MODE (op0)) < BITS_PER_WORD
+	  && GET_MODE_BITSIZE (mode) > BITS_PER_WORD
+	  && ! safe_from_p (target, TREE_OPERAND (exp, 0), 1))
+	target = gen_reg_rtx (mode);
+ 
+      convert_move (target, op0,
+		    TREE_UNSIGNED (TREE_TYPE (TREE_OPERAND (exp, 0))));
       return target;
 
     case VIEW_CONVERT_EXPR:
