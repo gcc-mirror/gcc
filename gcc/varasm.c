@@ -203,19 +203,28 @@ in_text_section ()
   return in_section == in_text;
 }
 
-/* Tell assembler to change to named section.  */
+/* Tell assembler to change to section NAME for DECL.
+   If DECL is NULL, just switch to section NAME.
+   If NAME is NULL, get the name from DECL.  */
 
 void
-named_section (name)
+named_section (decl, name)
+     tree decl;
      char *name;
 {
+  if (decl != NULL_TREE
+      && (TREE_CODE (decl) != FUNCTION_DECL && TREE_CODE (decl) != VAR_DECL))
+    abort ();
+  if (name == NULL)
+    name = TREE_STRING_POINTER (DECL_SECTION_NAME (decl));
+
   if (in_section != in_named || strcmp (name, in_named_name))
     {
       in_named_name = name;
       in_section = in_named;
     
 #ifdef ASM_OUTPUT_SECTION_NAME
-      ASM_OUTPUT_SECTION_NAME (asm_out_file, name);
+      ASM_OUTPUT_SECTION_NAME (asm_out_file, decl, name);
 #else
       /* Section attributes are not supported if this macro isn't provided -
 	 some host formats don't support them at all.  The front-end should
@@ -713,7 +722,7 @@ assemble_start_function (decl, fnname)
   output_constant_pool (fnname, decl);
 
   if (IN_NAMED_SECTION (decl))
-    named_section (TREE_STRING_POINTER (DECL_SECTION_NAME (decl)));
+    named_section (decl, NULL);
   else
     text_section ();
 
@@ -1141,7 +1150,7 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
 
   /* Switch to the proper section for this data.  */
   if (IN_NAMED_SECTION (decl))
-    named_section (TREE_STRING_POINTER (DECL_SECTION_NAME (decl)));
+    named_section (decl, NULL);
   else
     {
       /* C++ can have const variables that get initialized from constructors,
@@ -2673,7 +2682,7 @@ output_constant_def_contents (exp, reloc, labelno)
   int align;
 
   if (IN_NAMED_SECTION (exp))
-    named_section (TREE_STRING_POINTER (DECL_SECTION_NAME (exp)));
+    named_section (exp, NULL);
   else
     {
       /* First switch to text section, except for writable strings.  */
