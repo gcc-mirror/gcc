@@ -1,3 +1,8 @@
+2000-06-22  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* call.c (build_x_va_arg): Check if in a template decl.
+	* pt.c (tsubst_copy, case VA_ARG_EXPR): Use build_x_va_arg.
+
 2000-06-20  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* class.c (push_lang_context): TYPE_NAME gets you to the Java

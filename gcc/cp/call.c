@@ -3838,6 +3838,9 @@ build_x_va_arg (expr, type)
      tree expr;
      tree type;
 {
+  if (processing_template_decl)
+    return build_min (VA_ARG_EXPR, type, expr);
+  
   type = complete_type_or_else (type, NULL_TREE);
 
   if (expr == error_mark_node || !type)
