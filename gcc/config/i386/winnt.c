@@ -561,7 +561,7 @@ i386_pe_asm_file_end (file)
       decl = get_identifier (p->name);
 
       /* Positively ensure only one declaration for any given symbol.  */
-      if (! TREE_ASM_WRITTEN (decl))
+      if (! TREE_ASM_WRITTEN (decl) && TREE_SYMBOL_REFERENCED (decl))
 	{
 	  TREE_ASM_WRITTEN (decl) = 1;
 	  i386_pe_declare_function_type (file, p->name, TREE_PUBLIC (decl));
