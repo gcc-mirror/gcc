@@ -38,7 +38,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* That last item is just to prevent a spurious error.  */
 
 #undef LINK_SPEC
-#define LINK_SPEC "%{!e*:-e _start} -dc -dp %{static:-Bstatic}"
+#define LINK_SPEC \
+  "%{!nostdlib:%{!r*:%{!e*:-e _start}}} -dc -dp %{static:-Bstatic}"
 
 /* Extra switches to give the assembler.  */
 
