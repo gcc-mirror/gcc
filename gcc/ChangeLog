@@ -1,3 +1,8 @@
+Sun Jul 30 20:25:21 MET DST 2000  Jan Hubicka  <jh@suse.cz>
+
+	* function.c (assign_stack_local_1, assign_stack_temp_for_type): 
+	Do not call gen_mode_alignment when mode is BLKmode.
+
 Sun Jul 30 20:21:54 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 
 	* loop.c (express_from_1): Fix call of simplify_gen_binary.
