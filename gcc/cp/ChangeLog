@@ -1,3 +1,9 @@
+2003-09-18  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	PR c++/12320
+	* call.c (type_passed_as): Check for incomplete type.
+	(convert_for_arg_passing): Likewise.
+
 2003-09-18  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/9848
