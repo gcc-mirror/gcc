@@ -1,5 +1,12 @@
 2002-03-07  Geert Bosch  <bosch@gnat.com>
 
+	* adadecode.c, adadecode.h, aux-io.c, s-traces.adb, s-traces.ads, 
+	s-tratas.adb, s-tratas.ads, sinput-d.adb, sinput-d.ads, 
+	switch-b.adb, switch-b.ads, switch-c.adb, switch-c.ads, 
+	switch-m.adb, switch-m.ads : New files.
+
+2002-03-07  Geert Bosch  <bosch@gnat.com>
+
 	* 41intnam.ads, 42intnam.ads, 4aintnam.ads, 4cintnam.ads,
 	4dintnam.ads, 4gintnam.ads, 4hintnam.ads, 4lintnam.ads,
 	4mintnam.ads, 4pintnam.ads, 4rintnam.ads, 4sintnam.ads,
