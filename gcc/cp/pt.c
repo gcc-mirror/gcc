@@ -7176,7 +7176,7 @@ tsubst_copy (t, args, complain, in_decl)
 	  ctx = tsubst_aggr_type (DECL_CONTEXT (t), args, complain, in_decl,
 				  /*entering_scope=*/1);
 	  if (ctx != DECL_CONTEXT (t))
-	    return lookup_field (ctx, DECL_NAME (t), 0, 0);
+	    return lookup_field (ctx, DECL_NAME (t), 0, false);
 	}
       return t;
 
@@ -8166,7 +8166,7 @@ tsubst_copy_and_build (t, args, complain, in_decl)
 		&& (TREE_CODE ((id = TREE_OPERAND (name, 0)))
 		    == IDENTIFIER_NODE)
 		&& (!current_class_type
-		    || !lookup_member (current_class_type, id, 0, 0)))
+		    || !lookup_member (current_class_type, id, 0, false)))
 	      {
 		/* Do Koenig lookup if there are no class members.  */
 		name = do_identifier (id, copy_args);
@@ -10235,7 +10235,7 @@ do_decl_instantiation (tree decl, tree storage)
 	 VAR_DECLs so we do the lookup here.  Probably, grokdeclarator
 	 should handle VAR_DECLs as it currently handles
 	 FUNCTION_DECLs.  */
-      result = lookup_field (DECL_CONTEXT (decl), DECL_NAME (decl), 0, 0);
+      result = lookup_field (DECL_CONTEXT (decl), DECL_NAME (decl), 0, false);
       if (!result || TREE_CODE (result) != VAR_DECL)
 	{
 	  error ("no matching template for `%D' found", decl);
@@ -11546,7 +11546,7 @@ resolve_typename_type (tree type, bool only_current_p)
      longer be considered a dependent type.  */
   push_scope (scope);
   /* Look up the declaration.  */
-  decl = lookup_member (scope, name, /*protect=*/0, /*want_type=*/1);
+  decl = lookup_member (scope, name, /*protect=*/0, /*want_type=*/true);
   /* Obtain the set of qualifiers applied to the TYPE.  */
   quals = cp_type_quals (type);
   /* For a TYPENAME_TYPE like "typename X::template Y<T>", we want to

@@ -1122,7 +1122,7 @@ handle_using_decl (tree using_decl, tree t)
       return;
     }
 
-  fdecl = lookup_member (binfo, name, 0, 0);
+  fdecl = lookup_member (binfo, name, 0, false);
   
   if (!fdecl)
     {

@@ -1,6 +1,6 @@
 /* Process declarations and variables for C++ compiler.
    Copyright (C) 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -3087,7 +3087,7 @@ build_expr_from_tree (t)
               && !LOOKUP_EXPR_GLOBAL (name)
               && TREE_CODE ((id = TREE_OPERAND (name, 0))) == IDENTIFIER_NODE
               && (!current_class_type
-                  || !lookup_member (current_class_type, id, 0, 0)))
+                  || !lookup_member (current_class_type, id, 0, false)))
             {
               /* Do Koenig lookup if there are no class members.  */
               name = do_identifier (id, args);
@@ -3325,7 +3325,7 @@ build_call_from_tree (tree fn, tree args, bool disallow_virtual)
 	      && DECL_FUNCTION_MEMBER_P (f))))
     {
       f = lookup_member (current_class_type, DECL_NAME (f), 
-			 /*protect=*/1, /*want_type=*/0);
+			 /*protect=*/1, /*want_type=*/false);
       if (f)
 	fn = f;
     }

@@ -1,3 +1,20 @@
+2003-02-14  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* search.c: ANSIfy function declarations and definitions.
+	* cp-tree.h (lookup_field, lookup_member): Last parameter is a bool.
+	* call.c (build_method_call, resolve_scoped_fn_name,
+	build_java_interface_fn_ref): Adjust lookup_field, lookup_member
+	calls.
+	* class.c (handle_using_decl): Likewise.
+	* decl.c (make_typename_type, make_unmound_class_template,
+	start_decl, compute_array_index_type): Likewise.
+	* decl2.c (build_expr_from_tree, build_call_from_tree): Likewise.
+	* init.c (expand_member_init, build_member_call): Likewise.
+	* pt.c (tsubst_copy, tsubst_copy_and_build, do_decl_instantiation,
+	resolve_typename_type): Likewise.
+	* typeck.c (lookup_destructor, finish_class_member_access_exprm
+	build_prememfunc_access_expr): Likewise.
+
 2003-02-13  Gabriel Dos Reis <gdr@integrable-solutions.net>
 
 	* decl2.c: Include "timevar.h".
