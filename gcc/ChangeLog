@@ -1,3 +1,8 @@
+Tue Jan 13 01:16:36 1998   Robert Lipe (robertl@dgii.com)
+
+	* configure.in: (i[3456]86-UnixWare7-sysv5): Treat much like SVR4
+	for now.
+
 Thu Dec 18 18:40:17 1997  Mumit Khan <khan@xraylith.wisc.edu>
 	
 	* i386/mingw32.h (INCOMING_RETURN_ADDR_RTX): Delete. Use the value
