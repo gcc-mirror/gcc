@@ -1,3 +1,17 @@
+Sun Oct 17 02:09:50 1999  Andrew MacLeod  <amacleod@cygnus.com>
+
+	* basic-block.h (pre_edge_lcm, pre_edge_rev_lcm, compute_available):
+	Prototype for exported functions.
+	(pre_lcm, pre_rev_lcm): Remove prototypes.
+	* gcse.c (compute_ae_kill): Add ae_gen and ae_kill as parameters.
+	(compute_available): Move to lcm.c, and change parameter order.
+	(one_classic_gcse_pass): Call compute_ae_kill with parameters.
+	(pre_insert): Delete.
+	
+	* lcm.c: Remove all the old LCM functions.  Replace with new ones
+	that work with the new cfg datastructures and work with edges
+	instead of blocks.
+
 Sun Oct 17 00:44:17 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* reload.h (struct reload): Add new fields "mode" and "nregs".
