@@ -1708,7 +1708,7 @@ extern struct rtx_def *sh_builtin_saveregs ();
    is the default; other values are interpreted relative to that.
    The SH1 does not have delay slots, hence we get a pipeline stall
    at every branch.  The SH4 is superscalar, so the single delay slot
-   in  not sufficient to keep both pipelines filled.  */
+   is not sufficient to keep both pipelines filled.  */
 #define BRANCH_COST (! TARGET_SH2 || TARGET_HARD_SH4 ? 2 : 1)
 
 /* Assembler output control.  */
