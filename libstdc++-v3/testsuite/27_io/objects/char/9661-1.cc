@@ -50,7 +50,8 @@ void test01()
   if (child == 0)
     {
       sleep(1);
-      FILE* file = fopen(name, "w");
+      FILE* file = fopen(name, "r+");
+      VERIFY (file != NULL);
       fputs("Whatever\n", file);
       fflush(file);
       sleep(2);
