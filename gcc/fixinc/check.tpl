@@ -25,53 +25,51 @@ export TARGET_MACHINE DESTDIR SRCDIR FIND_BASE VERBOSE INPUT ORIGDIR
 
 rm -rf ${DESTDIR} ${SRCDIR}
 mkdir ${DESTDIR} ${SRCDIR}
-
-( cd ${SRCDIR}
-  set +e
-  for f in [=
-
-  (shellf "echo `
-
-  for f in %s
-  do case $f in
-     */* ) echo $f | sed 's;/[^/]*$;;' ;;
-     esac
-  done | sort -u
-
-  ` " (join " " (stack "fix.files"))  ) =]
-  do
-    mkdir $f || mkdir -p $f
-  done ) > /dev/null 2>&1
-
+(
+[=
+  (shellf
+    "for f in %s
+     do case $f in
+        */* ) echo $f | sed 's;/[^/]*$;;' ;;
+        esac
+     done | sort -u | \
+     while read g
+     do echo \"  mkdir \\${SRCDIR}/$g || mkdir -p \\${SRCDIR}/$g || exit 1\"
+     done" (join " " (stack "fix.files"))  ) =]
+) 2> /dev/null[= # suppress 'No such file or directory' messages =]
 cd inc
 [=
+(define sfile "")
+(define dfile "")              =][=
 
-FOR fix =][=
+FOR fix                        =][=
 
-  IF (> (count "test_text") 1) =]
-#
-#  [=hackname=] has [=(count "test_text")=] tests
-#
-sfile=[=
-    IF (exist? "files") =][=
-      files[] =][=
-    ELSE  =]testing.h[=
-    ENDIF =][=
-    FOR test_text FROM 1 =]
-dfile=`dirname $sfile`/[=(string-tr! (get "hackname") "_A-Z" "-a-z")
-                        =]-[=(for-index)=].h
-cat >> $sfile <<_HACK_EOF_
+  IF (> (count "test_text") 1) =][=
+
+    (set! sfile (if (exist? "files") (get "files[]") "testing.h"))
+    (set! dfile (string-append
+          (if (*==* sfile "/")
+              (shellf "echo \"%s\"|sed 's,/[^/]*,/,'" sfile )
+              "" )
+          (string-tr! (get "hackname") "_A-Z" "-a-z")
+    )           )              =][=
+
+    FOR test_text (for-from 1) =]
+cat >> [=(. sfile)=] <<_HACK_EOF_
 
 
 #if defined( [=(string-upcase! (get "hackname"))=]_CHECK_[=(for-index)=] )
 [=test_text=]
 #endif  /* [=(string-upcase! (get "hackname"))=]_CHECK_[=(for-index)=] */
 _HACK_EOF_
-echo $sfile | ../../fixincl
-mv -f $sfile $dfile
-[ -f ${DESTDIR}/$sfile ] && mv ${DESTDIR}/$sfile ${DESTDIR}/$dfile[=
+echo [=(. sfile)=] | ../../fixincl
+mv -f [=(. sfile)=] [=(. dfile)=]-[=(for-index)=].h
+[ -f ${DESTDIR}/[=(. sfile)=] ] && [=#
+   =]mv ${DESTDIR}/[=(. sfile)=] ${DESTDIR}/[=(. dfile)=]-[=(for-index)=].h[=
+
     ENDFOR  test_text =][=
-  ENDIF               =][=
+
+  ENDIF  multi-test   =][=
 
 ENDFOR  fix
 
@@ -138,7 +136,7 @@ do
     :
 
   else
-    diff -c $f ${TESTBASE}/$f >&2 || :
+    diff -u $f ${TESTBASE}/$f >&2 || :
     exitok=false
   fi
 done
