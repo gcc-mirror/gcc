@@ -536,17 +536,17 @@ namespace std
     // Below are the indices into _S_atoms_out.
     enum 
       {  
-        _S_minus, 
-        _S_plus, 
-        _S_x, 
-        _S_X, 
-        _S_digits,
-        _S_digits_end = _S_digits + 16,
-        _S_udigits = _S_digits_end,  
-        _S_udigits_end = _S_udigits + 16,
-        _S_e = _S_digits + 14,  // For scientific notation, 'e'
-        _S_E = _S_udigits + 14, // For scientific notation, 'E'
-	_S_end = _S_udigits_end
+        _S_ominus, 
+        _S_oplus, 
+        _S_ox, 
+        _S_oX, 
+        _S_odigits,
+        _S_odigits_end = _S_odigits + 16,
+        _S_oudigits = _S_odigits_end,  
+        _S_oudigits_end = _S_oudigits + 16,
+        _S_oe = _S_odigits + 14,  // For scientific notation, 'e'
+        _S_oE = _S_oudigits + 14, // For scientific notation, 'E'
+	_S_oend = _S_oudigits_end
       };
     
     // A list of valid numeric literals for output.  This array
@@ -556,27 +556,22 @@ namespace std
     // "-+xX0123456789abcdef0123456789ABCDEF".
     static const char* _S_atoms_out;
 
-  protected:
     // String literal of acceptable (narrow) input, for num_get.
     // "0123456789eEabcdfABCDF"
     static const char* _S_atoms_in;
 
     enum 
     {  
-      _M_zero,
-      _M_e = _M_zero + 10,
-      _M_E = _M_zero + 11,
-      _M_size = 21 + 1
+      _S_izero,
+      _S_ie = _S_izero + 10,
+      _S_iE = _S_izero + 11,
+      _S_iend = 21 + 1
     };
 
     // num_put
     // Construct and return valid scanf format for floating point types.
     static void
     _S_format_float(const ios_base& __io, char* __fptr, char __mod);
-    
-    // Construct and return valid scanf format for integer types.
-    static void
-    _S_format_int(const ios_base& __io, char* __fptr, char __mod, char __modl);
   };
 
 
@@ -1966,7 +1961,7 @@ namespace std
       // locale, this is "-+xX0123456789abcdef0123456789ABCDEF".  This
       // array contains the chars after having been passed through the
       // current locale's ctype<_CharT>.widen().
-      _CharT                    _M_literals[__num_base::_S_end];
+      _CharT                    _M_literals[__num_base::_S_oend];
 
       // The sign used to separate decimal values: for standard US
       // locales, this would usually be: "."  Abstracted from

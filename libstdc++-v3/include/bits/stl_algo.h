@@ -1,6 +1,6 @@
 // Algorithm implementation -*- C++ -*-
 
-// Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -1926,7 +1926,7 @@ __result, __binary_pred, _IterType());
    *  This controls some aspect of the sort routines.
    *  @endif
   */
-  enum { _M_threshold = 16 };
+  enum { _S_threshold = 16 };
 
   /**
    *  @if maint
@@ -2053,9 +2053,9 @@ __result, __binary_pred, _IterType());
     void
     __final_insertion_sort(_RandomAccessIter __first, _RandomAccessIter __last)
     {
-      if (__last - __first > _M_threshold) {
-	__insertion_sort(__first, __first + _M_threshold);
-	__unguarded_insertion_sort(__first + _M_threshold, __last);
+      if (__last - __first > _S_threshold) {
+	__insertion_sort(__first, __first + _S_threshold);
+	__unguarded_insertion_sort(__first + _S_threshold, __last);
       }
       else
 	__insertion_sort(__first, __last);
@@ -2071,9 +2071,9 @@ __result, __binary_pred, _IterType());
     __final_insertion_sort(_RandomAccessIter __first, _RandomAccessIter __last,
 			   _Compare __comp)
     {
-      if (__last - __first > _M_threshold) {
-	__insertion_sort(__first, __first + _M_threshold, __comp);
-	__unguarded_insertion_sort(__first + _M_threshold, __last, __comp);
+      if (__last - __first > _S_threshold) {
+	__insertion_sort(__first, __first + _S_threshold, __comp);
+	__unguarded_insertion_sort(__first + _S_threshold, __last, __comp);
       }
       else
 	__insertion_sort(__first, __last, __comp);
@@ -2105,7 +2105,7 @@ __result, __binary_pred, _IterType());
     {
       typedef typename iterator_traits<_RandomAccessIter>::value_type _ValueType;
 
-      while (__last - __first > _M_threshold) {
+      while (__last - __first > _S_threshold) {
 	if (__depth_limit == 0) {
 	  partial_sort(__first, __last, __last);
 	  return;
@@ -2133,7 +2133,7 @@ __result, __binary_pred, _IterType());
     {
       typedef typename iterator_traits<_RandomAccessIter>::value_type _ValueType;
 
-      while (__last - __first > _M_threshold) {
+      while (__last - __first > _S_threshold) {
 	if (__depth_limit == 0) {
 	  partial_sort(__first, __last, __last, __comp);
 	  return;
@@ -2300,7 +2300,7 @@ __result, __binary_pred, _IterType());
 	    __comp);
     }
 
-  enum { _M_chunk_size = 7 };
+  enum { _S_chunk_size = 7 };
 
   template<typename _RandomAccessIter, typename _Distance>
     void
@@ -2336,7 +2336,7 @@ __result, __binary_pred, _IterType());
       _Distance __len = __last - __first;
       _Pointer __buffer_last = __buffer + __len;
 
-      _Distance __step_size = _M_chunk_size;
+      _Distance __step_size = _S_chunk_size;
       __chunk_insertion_sort(__first, __last, __step_size);
 
       while (__step_size < __len) {
@@ -2357,7 +2357,7 @@ __result, __binary_pred, _IterType());
       _Distance __len = __last - __first;
       _Pointer __buffer_last = __buffer + __len;
 
-      _Distance __step_size = _M_chunk_size;
+      _Distance __step_size = _S_chunk_size;
       __chunk_insertion_sort(__first, __last, __step_size, __comp);
 
       while (__step_size < __len) {

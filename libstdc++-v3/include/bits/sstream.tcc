@@ -110,9 +110,9 @@ namespace std
 	  _M_string.swap(__tmp);
 	  // Just to be sure...
 	  _M_string.reserve(__len);
-	  _M_really_sync(const_cast<char_type*>(_M_string.data()),
-			 this->_M_in_cur - this->_M_in_beg, 
-			 this->_M_out_cur - this->_M_out_beg);
+	  _M_sync(const_cast<char_type*>(_M_string.data()),
+		  this->_M_in_cur - this->_M_in_beg, 
+		  this->_M_out_cur - this->_M_out_beg);
 	}
       return this->sputc(traits_type::to_char_type(__c));
     }

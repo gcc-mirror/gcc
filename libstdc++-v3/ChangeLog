@@ -1,3 +1,28 @@
+2003-05-06  Benjamin Kosnik  <bkoz@redhat.com>
+	
+	* include/bits/stl_algo.h: Enums as _S_.
+	* include/bits/stl_tree.h: Same.
+	* include/bits/stl_bvector.h: Same.
+	* include/bits/ios_base.h: Same.
+	* include/bits/stl_alloc.h: Same.
+	* include/ext/stl_hashtable.h: Same.
+	* src/ios.cc: And here.
+	
+	* include/std/std_sstream.h: Replace _M_really_sync to _M_sync. 
+	* include/bits/sstream.tcc: Same.
+
+        * include/bits/basic_ios.h: Correct spacing for '< ctype'.
+ 
+	* include/bits/locale_facets.tcc: Replace __temp to __tmp.
+
+	* include/bits/locale_facets.h (__num_base): Remove protected.
+	Use _S_[io]* names for enumerations.
+	(_S_format_int): Remove.
+	* include/bits/locale_facets.tcc: Same.
+	* src/locale.cc: Same.
+	
+	* include/std/std_sstream.h (stringbuf::str): Tweak formatting.
+	
 2003-05-06  Phil Edwards  <pme@gcc.gnu.org>
 
 	* docs/html/faq/index.html (3.10):  Add note about mips atomicity.h.

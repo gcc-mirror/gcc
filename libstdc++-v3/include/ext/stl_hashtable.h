@@ -1,6 +1,6 @@
 // Hashtable implementation used by containers -*- C++ -*-
 
-// Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -180,9 +180,9 @@ struct _Hashtable_const_iterator {
 };
 
 // Note: assumes long is at least 32 bits.
-enum { __stl_num_primes = 28 };
+enum { _S_num_primes = 28 };
 
-static const unsigned long __stl_prime_list[__stl_num_primes] =
+static const unsigned long __stl_prime_list[_S_num_primes] =
 {
   53ul,         97ul,         193ul,       389ul,       769ul,
   1543ul,       3079ul,       6151ul,      12289ul,     24593ul,
@@ -195,7 +195,7 @@ static const unsigned long __stl_prime_list[__stl_num_primes] =
 inline unsigned long __stl_next_prime(unsigned long __n)
 {
   const unsigned long* __first = __stl_prime_list;
-  const unsigned long* __last = __stl_prime_list + (int)__stl_num_primes;
+  const unsigned long* __last = __stl_prime_list + (int)_S_num_primes;
   const unsigned long* pos = std::lower_bound(__first, __last, __n);
   return pos == __last ? *(__last - 1) : *pos;
 }
@@ -363,7 +363,7 @@ public:
   size_type bucket_count() const { return _M_buckets.size(); }
 
   size_type max_bucket_count() const
-    { return __stl_prime_list[(int)__stl_num_primes - 1]; } 
+    { return __stl_prime_list[(int)_S_num_primes - 1]; } 
 
   size_type elems_in_bucket(size_type __bucket) const
   {

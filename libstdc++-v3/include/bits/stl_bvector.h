@@ -64,7 +64,7 @@
 namespace std
 { 
   typedef unsigned long _Bit_type;
-  enum { _M_word_bit = int(CHAR_BIT * sizeof(_Bit_type)) };
+  enum { _S_word_bit = int(CHAR_BIT * sizeof(_Bit_type)) };
 
 struct _Bit_reference {
 
@@ -100,24 +100,24 @@ struct _Bit_iterator_base : public iterator<random_access_iterator_tag, bool>
     : _M_p(__x), _M_offset(__y) {}
 
   void _M_bump_up() {
-    if (_M_offset++ == _M_word_bit - 1) {
+    if (_M_offset++ == _S_word_bit - 1) {
       _M_offset = 0;
       ++_M_p;
     }
   }
   void _M_bump_down() {
     if (_M_offset-- == 0) {
-      _M_offset = _M_word_bit - 1;
+      _M_offset = _S_word_bit - 1;
       --_M_p;
     }
   }
 
   void _M_incr(ptrdiff_t __i) {
     difference_type __n = __i + _M_offset;
-    _M_p += __n / _M_word_bit;
-    __n = __n % _M_word_bit;
+    _M_p += __n / _S_word_bit;
+    __n = __n % _S_word_bit;
     if (__n < 0) {
-      _M_offset = (unsigned int) __n + _M_word_bit;
+      _M_offset = (unsigned int) __n + _S_word_bit;
       --_M_p;
     } else
       _M_offset = (unsigned int) __n;
@@ -145,7 +145,7 @@ struct _Bit_iterator_base : public iterator<random_access_iterator_tag, bool>
 
 inline ptrdiff_t
 operator-(const _Bit_iterator_base& __x, const _Bit_iterator_base& __y) {
-  return _M_word_bit * (__x._M_p - __y._M_p) + __x._M_offset - __y._M_offset;
+  return _S_word_bit * (__x._M_p - __y._M_p) + __x._M_offset - __y._M_offset;
 }
 
 
@@ -277,7 +277,7 @@ public:
 
 protected:
   _Bit_type * _M_bit_alloc(size_t __n) 
-    { return _M_data_allocator.allocate((__n + _M_word_bit - 1)/_M_word_bit); }
+    { return _M_data_allocator.allocate((__n + _S_word_bit - 1)/_S_word_bit); }
   void _M_deallocate() {
     if (_M_start._M_p)
       _M_data_allocator.deallocate(_M_start._M_p, 
@@ -307,7 +307,7 @@ protected:
           _Alloc_type;
           
   _Bit_type * _M_bit_alloc(size_t __n) 
-    { return _Alloc_type::allocate((__n + _M_word_bit - 1)/_M_word_bit); }
+    { return _Alloc_type::allocate((__n + _S_word_bit - 1)/_S_word_bit); }
   void _M_deallocate() {
     if (_M_start._M_p)
       _Alloc_type::deallocate(_M_start._M_p,
@@ -374,7 +374,7 @@ template <typename _Alloc>
   protected:
     void _M_initialize(size_type __n) {
       _Bit_type * __q = _M_bit_alloc(__n);
-      this->_M_end_of_storage = __q + (__n + _M_word_bit - 1)/_M_word_bit;
+      this->_M_end_of_storage = __q + (__n + _S_word_bit - 1)/_S_word_bit;
       this->_M_start = iterator(__q, 0);
       this->_M_finish = this->_M_start + difference_type(__n);
     }
@@ -386,13 +386,13 @@ template <typename _Alloc>
       }
       else {
         size_type __len = size() 
-	                  ? 2 * size() : static_cast<size_type>(_M_word_bit);
+	                  ? 2 * size() : static_cast<size_type>(_S_word_bit);
         _Bit_type * __q = _M_bit_alloc(__len);
         iterator __i = copy(begin(), __position, iterator(__q, 0));
         *__i++ = __x;
         this->_M_finish = copy(__position, end(), __i);
         _M_deallocate();
-        this->_M_end_of_storage = __q + (__len + _M_word_bit - 1)/_M_word_bit;
+        this->_M_end_of_storage = __q + (__len + _S_word_bit - 1)/_S_word_bit;
         this->_M_start = iterator(__q, 0);
       }
     }
@@ -445,7 +445,7 @@ template <typename _Alloc>
           this->_M_finish = copy(__position, end(), __i);
           _M_deallocate();
           this->_M_end_of_storage
-	    = __q + (__len + _M_word_bit - 1)/_M_word_bit;
+	    = __q + (__len + _S_word_bit - 1)/_S_word_bit;
           this->_M_start = iterator(__q, 0);
         }
       }
@@ -613,7 +613,7 @@ template <typename _Alloc>
         this->_M_finish = copy(begin(), end(), iterator(__q, 0));
         _M_deallocate();
         this->_M_start = iterator(__q, 0);
-        this->_M_end_of_storage = __q + (__n + _M_word_bit - 1)/_M_word_bit;
+        this->_M_end_of_storage = __q + (__n + _S_word_bit - 1)/_S_word_bit;
       }
     }
   
@@ -687,7 +687,7 @@ template <typename _Alloc>
         fill_n(__i, __n, __x);
         this->_M_finish = copy(__position, end(), __i + difference_type(__n));
         _M_deallocate();
-        this->_M_end_of_storage = __q + (__len + _M_word_bit - 1)/_M_word_bit;
+        this->_M_end_of_storage = __q + (__len + _S_word_bit - 1)/_S_word_bit;
         this->_M_start = iterator(__q, 0);
       }
     }

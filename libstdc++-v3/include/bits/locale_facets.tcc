@@ -113,7 +113,7 @@ namespace std
 	}
 
       // Next, strip leading zeros.
-      const char_type __zero = __ctype.widen(_S_atoms_in[_M_zero]);
+      const char_type __zero = __ctype.widen(_S_atoms_in[_S_izero]);
       bool __found_zero = false;
       while (__traits_type::eq(__c, __zero) && __beg != __end)
 	{
@@ -122,12 +122,12 @@ namespace std
 	}
       if (__found_zero)
 	{
-	  __xtrc += _S_atoms_in[_M_zero];
+	  __xtrc += _S_atoms_in[_S_izero];
 	  ++__pos;
 	}
 
       // Only need acceptable digits for floating point numbers.
-      const size_t __len = _M_E - _M_zero + 1;
+      const size_t __len = _S_iE - _S_izero + 1;
       char_type  __watoms[__len];
       __ctype.widen(_S_atoms_in, _S_atoms_in + __len, __watoms);
       bool __found_dec = false;
@@ -183,8 +183,8 @@ namespace std
 	      __c = *(++__beg);
 	      __found_dec = true;
 	    }
-	  else if ((__traits_type::eq(__c, __watoms[_M_e]) 
-		    || __traits_type::eq(__c, __watoms[_M_E])) 
+	  else if ((__traits_type::eq(__c, __watoms[_S_ie]) 
+		    || __traits_type::eq(__c, __watoms[_S_iE])) 
 		   && !__found_sci && __pos)
 	    {
 	      // Scientific notation.
@@ -261,7 +261,7 @@ namespace std
 	}
 
       // Next, strip leading zeros and check required digits for base formats.
-      const char_type __zero = __ctype.widen(_S_atoms_in[_M_zero]);
+      const char_type __zero = __ctype.widen(_S_atoms_in[_S_izero]);
       const char_type __x = __ctype.widen('x');
       const char_type __X = __ctype.widen('X');
       if (__base == 10)
@@ -274,7 +274,7 @@ namespace std
 	    }
 	  if (__found_zero)
 	    {
-	      __xtrc += _S_atoms_in[_M_zero];
+	      __xtrc += _S_atoms_in[_S_izero];
 	      ++__pos;
 	      if (__basefield == 0)
 		{	      
@@ -296,7 +296,7 @@ namespace std
 	{
 	  if (__traits_type::eq(__c, __zero) && __beg != __end)
 	    {
-	      __xtrc += _S_atoms_in[_M_zero];
+	      __xtrc += _S_atoms_in[_S_izero];
 	      ++__pos;
 	      __c = *(++__beg); 
 	      if ((__traits_type::eq(__c, __x) || __traits_type::eq(__c, __X))
@@ -313,12 +313,12 @@ namespace std
       // base digits as valid input.
       size_t __len;
       if (__base == 16)
-	__len = _M_size;
+	__len = _S_iend;
       else
 	__len = __base;
 
       // Extract.
-      char_type __watoms[_M_size];
+      char_type __watoms[_S_iend];
       __ctype.widen(_S_atoms_in, _S_atoms_in + __len, __watoms);
       string __found_grouping;
       const string __grouping = __np.grouping();
@@ -682,19 +682,19 @@ namespace std
 	  // Octal.
 	  do 
 	    {
-	      *__buf-- = __lit[(__v & 0x7) + __num_base::_S_digits];
+	      *__buf-- = __lit[(__v & 0x7) + __num_base::_S_odigits];
 	      __v >>= 3;
 	    } 
 	  while (__v != 0);
 	  if (__showbase)
-	    *__buf-- = __lit[__num_base::_S_digits];
+	    *__buf-- = __lit[__num_base::_S_odigits];
 	}
       else if (__builtin_expect(__basefield == ios_base::hex, false))
 	{
 	  // Hex.
 	  const bool __uppercase = __flags & ios_base::uppercase;
-	  int __case_offset = __uppercase
-	                      ? __num_base::_S_udigits : __num_base::_S_digits;
+	  int __case_offset = __uppercase ? __num_base::_S_oudigits 
+	                                  : __num_base::_S_odigits;
 	  do 
 	    {
 	      *__buf-- = __lit[(__v & 0xf) + __case_offset];
@@ -704,9 +704,9 @@ namespace std
 	  if (__showbase)
 	    {
 	      // 'x' or 'X'
-	      *__buf-- = __lit[__num_base::_S_x + __uppercase];
+	      *__buf-- = __lit[__num_base::_S_ox + __uppercase];
 	      // '0'
-	      *__buf-- = __lit[__num_base::_S_digits];
+	      *__buf-- = __lit[__num_base::_S_odigits];
 	    }
 	}
       else
@@ -714,14 +714,14 @@ namespace std
 	  // Decimal.
 	  do 
 	    {
-	      *__buf-- = __lit[(__v % 10) + __num_base::_S_digits];
+	      *__buf-- = __lit[(__v % 10) + __num_base::_S_odigits];
 	      __v /= 10;
 	    } 
 	  while (__v != 0);
 	  if (__neg)
-	    *__buf-- = __lit[__num_base::_S_minus];
+	    *__buf-- = __lit[__num_base::_S_ominus];
 	  else if (__flags & ios_base::showpos)
-	    *__buf-- = __lit[__num_base::_S_plus];
+	    *__buf-- = __lit[__num_base::_S_oplus];
 	}
       int __ret = __bufend - __buf - 1;
       return __ret;
@@ -1128,7 +1128,7 @@ namespace std
       bool __testdecfound = false; 
 
       // The tentative returned string is stored here.
-      string_type __temp_units;
+      string_type __tmp_units;
 
       char_type __c = *__beg;
       char_type __eof = static_cast<char_type>(char_traits<char_type>::eof());
@@ -1223,7 +1223,7 @@ namespace std
 			}
 		      else
 			{
-			  __temp_units += __c;
+			  __tmp_units += __c;
 			  ++__sep_pos;
 			}
 		      __c = *(++__beg);
@@ -1254,11 +1254,11 @@ namespace std
 	}
 
       // Strip leading zeros.
-      while (__temp_units[0] == __ctype.widen('0'))
-	__temp_units.erase(__temp_units.begin());
+      while (__tmp_units[0] == __ctype.widen('0'))
+	__tmp_units.erase(__tmp_units.begin());
 
       if (__sign.size() && __sign == __neg_sign)
-	__temp_units.insert(__temp_units.begin(), __ctype.widen('-'));
+	__tmp_units.insert(__tmp_units.begin(), __ctype.widen('-'));
 
       // Test for grouping fidelity.
       if (__grouping.size() && __grouping_tmp.size())
@@ -1272,11 +1272,11 @@ namespace std
 	__err |= ios_base::eofbit;
 
       // Iff valid sequence is not recognized.
-      if (!__testvalid || !__temp_units.size())
+      if (!__testvalid || !__tmp_units.size())
 	__err |= ios_base::failbit;
       else
-	// Use the "swap trick" to copy __temp_units into __units.
-	__temp_units.swap(__units);
+	// Use the "swap trick" to copy __tmp_units into __units.
+	__tmp_units.swap(__units);
 
       return __beg; 
     }
@@ -2281,7 +2281,7 @@ namespace std
 	{
 	  const ctype<_CharT>& __ct = use_facet<ctype<_CharT> >(__loc);
 	  __ct.widen(__num_base::_S_atoms_out,
-		     __num_base::_S_atoms_out + __num_base::_S_end, 
+		     __num_base::_S_atoms_out + __num_base::_S_oend, 
 		     _M_literals);
 	}
     }

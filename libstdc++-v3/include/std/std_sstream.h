@@ -133,11 +133,10 @@ namespace std
       __string_type
       str() const
       {
-	const bool __testout = this->_M_mode & ios_base::out;
 	__string_type __ret = _M_string;
+	const bool __testout = this->_M_mode & ios_base::out;
 	if (__testout && this->_M_out_beg < this->_M_out_lim)
-	  __ret = __string_type(this->_M_out_beg,
-				this->_M_out_lim);
+	  __ret = __string_type(this->_M_out_beg, this->_M_out_lim);
 	return __ret;
       }
 
@@ -171,7 +170,7 @@ namespace std
 	__size_type __len = 0;
 	if (this->_M_mode & (ios_base::ate | ios_base::app))
 	  __len = _M_string.size();
-	_M_really_sync(const_cast<char_type*>(_M_string.data()), 0, __len);
+	_M_sync(const_cast<char_type*>(_M_string.data()), 0, __len);
       }
 
       // Overridden virtual functions:
@@ -220,7 +219,7 @@ namespace std
 	    _M_string = __string_type(__s, __n);
 	    
 	    // Step 2: Use the external array.
-	    _M_really_sync(__s, 0, 0);
+	    _M_sync(__s, 0, 0);
 	  }
 	return this;
       }
@@ -247,7 +246,7 @@ namespace std
        *  @endif
       */
       virtual void
-      _M_really_sync(char_type* __base, __size_type __i, __size_type __o)
+      _M_sync(char_type* __base, __size_type __i, __size_type __o)
       {
 	const bool __testin = this->_M_mode & ios_base::in;
 	const bool __testout = this->_M_mode & ios_base::out;

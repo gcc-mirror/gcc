@@ -384,7 +384,7 @@ namespace std
        *
        *  Returns the result of
        *  @code
-       *    std::use_facet< ctype<char_type> >(getloc()).narrow(c,dfault)
+       *    std::use_facet<ctype<char_type> >(getloc()).narrow(c,dfault)
        *  @endcode
        *
        *  Additional l10n notes are at
@@ -402,7 +402,7 @@ namespace std
        *
        *  Returns the result of
        *  @code
-       *    std::use_facet< ctype<char_type> >(getloc()).widen(c)
+       *    std::use_facet<ctype<char_type> >(getloc()).widen(c)
        *  @endcode
        *
        *  Additional l10n notes are at
