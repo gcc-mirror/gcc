@@ -1,3 +1,13 @@
+2004-07-27  Diego Novillo  <dnovillo@redhat.com>
+
+	* tree-ssa-alias.c (create_name_tags): Ignore pointers that
+	don't have PT_VARS nor PT_MALLOC set.
+	Clear name tag from pointers that have not been dereferenced.
+	(set_pt_anything, set_pt_malloc): Forward declare.
+	* tree-ssa-copy.c (may_propagate_copy): Compare alias sets,
+	not type compatibility when determining if a pointer can be
+	copy propagated.
+
 2004-07-27  Richard Sandiford  <rsandifo@redhat.com>
 
 	* expr.h (canonicalize_condition, get_condition): Add an int argument.

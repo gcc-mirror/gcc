@@ -112,6 +112,9 @@ may_propagate_copy (tree dest, tree orig)
 	return false;
       else if (!lang_hooks.types_compatible_p (type_d, type_o))
 	return false;
+      else if (!alias_sets_conflict_p (get_alias_set (type_d),
+				       get_alias_set (type_o)))
+	return false;
     }
 
   /* If the destination is a SSA_NAME for a virtual operand, then we have

@@ -157,6 +157,8 @@ static bool ptr_is_dereferenced_by (tree, tree, bool *);
 static void maybe_create_global_var (struct alias_info *ai);
 static void group_aliases (struct alias_info *);
 static struct ptr_info_def *get_ptr_info (tree t);
+static void set_pt_anything (tree ptr);
+static void set_pt_malloc (tree ptr);
 
 /* Global declarations.  */
 
@@ -773,7 +775,12 @@ create_name_tags (struct alias_info *ai)
       struct ptr_info_def *pi = SSA_NAME_PTR_INFO (ptr);
 
       if (!pi->is_dereferenced)
-	continue;
+	{
+	  /* No name tags for pointers that have not been
+	     dereferenced.  */
+	  pi->name_mem_tag = NULL_TREE;
+	  continue;
+	}
 
       if (pi->pt_vars)
 	{
@@ -828,7 +835,8 @@ create_name_tags (struct alias_info *ai)
 	  /* Only pointers that may point to malloc or other variables
 	     may receive a name tag.  If the pointer does not point to
 	     a known spot, we should use type tags.  */
-	  abort ();
+	  set_pt_anything (ptr);
+	  continue;
 	}
 
       /* Mark the new name tag for renaming.  */
