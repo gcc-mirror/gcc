@@ -1,3 +1,9 @@
+2005-01-10  Roger Sayle  <roger@eyesopen.com>
+
+	PR c++/19355
+	* c-common.c (c_common_truthvalue_conversion): TRUTH_NOT_EXPR is a
+	unary operator and can't be treated as a binary/comparison operator.
+
 2005-01-10  Richard Henderson  <rth@redhat.com>
 
 	* config/i386/i386.c (ix86_function_value): Use type_natural_mode.
