@@ -2648,7 +2648,13 @@ pointer_int_sum (resultcode, ptrop, intop)
       && TREE_CONSTANT (size_exp)
       /* If the constant comes from pointer subtraction,
 	 skip this optimization--it would cause an error.  */
-      && TREE_CODE (TREE_TYPE (TREE_OPERAND (intop, 0))) == INTEGER_TYPE)
+      && TREE_CODE (TREE_TYPE (TREE_OPERAND (intop, 0))) == INTEGER_TYPE
+      /* If the constant is unsigned, and smaller than the pointer size,
+	 then we must skip this optimization.  This is because it could cause
+	 an overflow error if the constant is negative but INTOP is not.  */
+      && (! TREE_UNSIGNED (TREE_TYPE (intop))
+	  || (TYPE_PRECISION (TREE_TYPE (intop))
+	      == TYPE_PRECISION (TREE_TYPE (ptrop)))))
     {
       enum tree_code subcode = resultcode;
       tree int_type = TREE_TYPE (intop);
