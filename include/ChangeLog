@@ -1,3 +1,8 @@
+2001-09-17  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* libiberty.h (ASTRDUP): New macro.
+	libiberty_optr, libiberty_nptr, libiberty_len): Declare.
+
 2001-08-29  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* ansidecl.h: Update comments reflecting previous change.

@@ -246,12 +246,25 @@ extern PTR C_alloca PARAMS((size_t));
 #if GCC_VERSION >= 2000 && !defined USE_C_ALLOCA
 # define alloca(x) __builtin_alloca(x)
 # undef C_ALLOCA
+# define ASTRDUP(X) \
+  (__extension__ ({ const char *const libiberty_optr = (X); \
+   const unsigned long libiberty_len = strlen (libiberty_optr) + 1; \
+   char *const libiberty_nptr = alloca (libiberty_len); \
+   (char *) memcpy (libiberty_nptr, libiberty_optr, libiberty_len); }))
 #else
 # define alloca(x) C_alloca(x)
 # undef USE_C_ALLOCA
 # define USE_C_ALLOCA 1
 # undef C_ALLOCA
 # define C_ALLOCA 1
+extern const char *libiberty_optr;
+extern char *libiberty_nptr;
+extern unsigned long libiberty_len;
+# define ASTRDUP(X) \
+  (libiberty_optr = (X), \
+   libiberty_len = strlen (libiberty_optr) + 1, \
+   libiberty_nptr = alloca (libiberty_len), \
+   (char *) memcpy (libiberty_nptr, libiberty_optr, libiberty_len))
 #endif
 
 #ifdef __cplusplus
