@@ -1,0 +1,201 @@
+The g77 testsuite is being transferred to the gfortran testsuite.
+This file documents the status of each test case.
+
+	Y	Test has been transferred.
+        Y XFAIL This test has been transferred but fails
+	N	This feature will not be supported by gfortran.
+	F	This test fails with gfortran.  Not transferred (yet).
+	?	We looked at this case, but haven't decided.
+
+Directory g77.dg
+
+12632.f				Y
+20010216-1.f			Y
+7388.f				Y
+f77-edit-apostrophe-out.f	Y
+f77-edit-colon-out.f		Y
+f77-edit-h-out.f		Y
+f77-edit-i-in.f			Y
+f77-edit-i-out.f		Y
+f77-edit-s-out.f		Y  XFAIL PR 16434
+f77-edit-slash-out.f		Y
+f77-edit-t-in.f			Y  XFAIL PR 16436
+f77-edit-t-out.f		Y
+f77-edit-x-out.f		Y  XFAIL PR 16435
+fbackslash.f			?
+fcase-preserve.f		?
+ff90-1.f			?
+ffixed-form-1.f			Y
+ffixed-form-2.f			Y
+ffixed-line-length-0.f		F  PR 16464
+ffixed-line-length-132.f	F  PR 16464
+ffixed-line-length-7.f		F  PR 16464
+ffixed-line-length-72.f		F  PR 16464
+ffixed-line-length-none.f	F  PR 16464
+ffree-form-1.f			Y
+ffree-form-2.f			Y
+ffree-form-3.f			Y
+fno-backslash.f			?
+fno-f90-1.f			?
+fno-fixed-form-1.f		?
+fno-onetrip.f			?
+fno-typeless-boz.f		?
+fno-underscoring.f		Y
+fno-vxt-1.f			?
+fonetrip.f			?
+ftypeless-boz.f			?
+fugly-assumed.f			?
+funderscoring.f			Y
+fvxt-1.f			?
+pr3743-1.f			?
+pr3743-2.f			?
+pr3743-3.f			?
+pr3743-4.f			?
+pr5473.f			?
+pr9258.f			Y
+strlen0.f			Y
+
+
+Directory g77.dg/bprob
+g77-bprob-1.f
+
+
+Directory g77.dg/gcov
+gcov-1.f 
+
+Directory g77.f-torture/compile
+12002.f				Y
+13060.f				Y
+19990218-0.f			Y
+19990305-0.f			Y
+19990419-0.f			Y
+19990502-0.f			Y
+19990502-1.f			Y
+19990525-0.f			Y
+19990826-1.f			Y
+19990826-3.f			Y
+19990905-0.f			Y  XFAIL PR 16511
+19990905-2.f			Y
+20000412-1.f			Y
+20000511-1.f			Y
+20000511-2.f			Y
+20000518.f			Y
+20000601-1.f			Y
+20000601-2.f			Y
+20000629-1.f			Y
+20000630-2.f			Y
+20010115.f			Y
+20010321-1.f			Y
+20010426.f			Y
+20010519-1.f			Y  Add dg-warnings for ASSIGN
+20020307-1.f			Y
+20030115-1.f			Y  Add dg-warnings for ASSIGN
+20030326-1.f			Y  XFAIL PR 16512
+8485.f				Y
+960317-1.f			Y
+970125-0.f			Y  Add dg-excess-errors. Investigate.later.
+970915-0.f			Y
+980310-1.f			Y
+980310-2.f			Y
+980310-3.f			Y
+980310-4.f			Y
+980310-6.f			Y
+980310-7.f			Y
+980310-8.f			Y
+980419-2.f			Y
+980424-0.f			Y
+980427-0.f			Y
+980519-2.f			Y  Modify slightly
+980729-0.f			Y
+981117-1.f			Y
+990115-1.f			Y  Declare variable RANK
+alpha1.f			Y  Work around PR 16508 and PR 16509
+toon_1.f			Y
+xformat.f			Y  Add dg-warning for extension
+cpp.F				Y
+cpp2.F				Y
+
+g77.f-torture/execute
+10197.f & 10197.x
+13037.f
+1832.f
+19981119-0.f
+19990313-0.f
+19990313-1.f
+19990313-2.f
+19990313-3.f
+19990325-0.f
+19990325-1.f
+19990419-1.f
+19990826-0.f
+19990826-2.f
+20000503-1.f
+20001111.f
+20001201.f & 20001201.x
+20010116.f
+20010426.f
+20010430.f
+20010610.f
+5122.f
+6177.f
+6367.f & 6367.x
+947.f
+970625-2.f
+970816-3.f
+971102-1.f
+980520-1.f
+980628-0.f
+980628-1.f
+980628-10.f
+980628-2.f
+980628-3.f
+980628-4.f & 980628-4.x
+980628-5.f & 980628-5.x
+980628-6.f & 980628-6.x
+980628-7.f
+980628-8.f
+980628-9.f
+980701-0.f
+980701-1.f
+CVS
+alpha2.f & alpha2.x
+auto0.f & auto0.x
+auto1.f & auto1.x
+cabs.f
+claus.f
+complex_1.f
+cpp.F
+cpp2.F
+dcomplex.f
+dnrm2.f
+erfc.f
+exp.f
+f90-intrinsic-bit.f
+f90-intrinsic-mathematical.f
+f90-intrinsic-numeric.f
+int8421.f
+intrinsic-f2c-z.f
+intrinsic-unix-bessel.f
+intrinsic-unix-erf.f
+intrinsic-vax-cd.f
+intrinsic77.f
+io0.f & io0.x
+io1.f & io1.x
+labug1.f
+large_vec.f
+le.f
+select.f
+short.f
+u77-test.f & u77-test.x
+
+Directory g77.f-torture/noncompile
+19981216-0.f			Y Accepted by gfortran
+19990218-1.f			Y g77 issued warning.
+19990826-4.f			?
+19990905-1.f			Y XFAIL 16520  gfortran ICE on invalid
+9263.f				Y
+970626-2.f			?
+980615-0.f                      Y
+980616-0.f			Y
+check0.f			Y
+select_no_compile.f		Y

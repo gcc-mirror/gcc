@@ -1,5 +1,19 @@
 2004-07-13  David Billinghurst (David.Billinghurst@riotinto.com)
 
+	* gfortran.dg/g77/README: New file
+	* gfortran.dg/g77/19981216-0.f:  Copy from 
+	g77.f-torture/noncompile.  Add "dg-do compile" and
+	dg-error as required.
+	* gfortran.dg/g77/19990218-1.f: Likewise
+	* gfortran.dg/g77/19990905-1.f: Likewise
+	* gfortran.dg/g77/9263.f: Likewise
+	* gfortran.dg/g77/980615-0.f: Likewise
+	* gfortran.dg/g77/980616-0.f: Likewise
+	* gfortran.dg/g77/check0.f: Likewise
+	* gfortran.dg/g77/select_no_compile.f: Likewise
+
+2004-07-13  David Billinghurst (David.Billinghurst@riotinto.com)
+
 	Copy files from g77.f-torture/compile.
 	Add "{ dg-do compile}".  Other changes as noted
 	* gfortran.dg/g77/19990905-0.f: XFAIL PR 16511
