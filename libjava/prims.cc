@@ -519,7 +519,7 @@ class _Jv_PrimClass : public java::lang::Class
 public:
   // FIXME: calling convention is weird.  If we use the natural types
   // then the compiler will complain because they aren't Java types.
-  _Jv_PrimClass (jobject cname, jbyte sig, jint len)
+  _Jv_PrimClass (jobject cname, jbyte sig, jint len, jobject array_vtable)
     {
       using namespace java::lang::reflect;
 
@@ -545,11 +545,21 @@ public:
       interface_count = 0;
       state = JV_STATE_NOTHING;
       thread = NULL;
+
+      // Note that we have to set `methods' to NULL.
+      if (sig != 'V')
+	_Jv_FindArrayClass (this, NULL, (_Jv_VTable *) array_vtable);
     }
 };
 
+// We use this to define both primitive classes and the vtables for
+// arrays of primitive classes.  The latter are given names so that we
+// can refer to them from the compiler, allowing us to construct
+// arrays of primitives statically.
 #define DECLARE_PRIM_TYPE(NAME, SIG, LEN) \
-  _Jv_PrimClass _Jv_##NAME##Class((jobject) #NAME, (jbyte) SIG, (jint) LEN)
+  _Jv_ArrayVTable _Jv_##NAME##VTable; \
+  _Jv_PrimClass _Jv_##NAME##Class((jobject) #NAME, (jbyte) SIG, (jint) LEN, \
+                                  (jobject) &_Jv_##NAME##VTable)
 
 DECLARE_PRIM_TYPE(byte, 'B', 1);
 DECLARE_PRIM_TYPE(short, 'S', 2);
