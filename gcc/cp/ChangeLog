@@ -1,3 +1,11 @@
+2000-11-17  Zack Weinberg  <zack@wolery.stanford.edu>
+
+	* lex.c (mark_impl_file_chain): Delete.
+	(init_parse): Remove call to ggc_add_string_root.  No need to
+	ggc_strdup a string constant.  Do not add impl_file_chain to GC
+	roots.
+	(handle_pragma_implementation): No need to ggc_strdup main_filename.
+
 2000-11-17  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* pt.c (tsubst_expr, DECL_STMT): Instantiate decl's type.
@@ -101,7 +109,7 @@
 	(cp_dump_tree): New function.
 	* pt.c (add_maybe_template): Remove.
 	* typeck.c (strip_array_types): Likewise.
-	
+
 2000-11-07  Eric Christopher  <echristo@redhat.com>
 
 	* decl.c (init_decl_processing): Change definition of
@@ -631,7 +639,7 @@ Thu Sep 14 12:10:45 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2000-09-11  Gabriel Dos Reis  <gdr@codesourcery.com>
 
-        * ir.texi: Add more documentation.
+	* ir.texi: Add more documentation.
 
 2000-09-11  Mark Mitchell  <mark@codesourcery.com>
 

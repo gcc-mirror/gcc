@@ -454,8 +454,6 @@ dbxout_init (asm_file, input_file_name, syms)
      and output them all, except for those already output.  */
 
   dbxout_typedefs (syms);
-
-  ggc_add_string_root ((char **) &lastfile, 1);
 }
 
 /* Output any typedef names for types described by TYPE_DECLs in SYMS,

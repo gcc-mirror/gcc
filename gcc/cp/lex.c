@@ -55,7 +55,6 @@ static int interface_strcmp PARAMS ((const char *));
 static int *init_cpp_parse PARAMS ((void));
 static void init_reswords PARAMS ((void));
 static void init_cp_pragma PARAMS ((void));
-static void mark_impl_file_chain PARAMS ((PTR));
 
 static tree parse_strconst_pragma PARAMS ((const char *, int));
 static void handle_pragma_vtable PARAMS ((cpp_reader *));
@@ -137,11 +136,6 @@ struct impl_files
 
 static struct impl_files *impl_file_chain;
 
-/* The string used to represent the filename of internally generated
-   tree nodes.  The variable, which is dynamically allocated, should
-   be used; the macro is only used to initialize it.  */
-static const char *internal_filename;
-#define INTERNAL_FILENAME ("<internal>")
 
 /* Return something to represent absolute declarators containing a *.
    TARGET is the absolute declarator that the * contains.
@@ -708,9 +702,7 @@ init_parse (filename)
   set_identifier_size (sizeof (struct lang_identifier));
   decl_printable_name = lang_printable_name;
 
-  internal_filename = ggc_alloc_string (INTERNAL_FILENAME,
-					sizeof (INTERNAL_FILENAME));
-  input_filename = internal_filename;
+  input_filename = "<internal>";
 
   init_reswords ();
   init_pragma ();
@@ -763,10 +755,6 @@ init_parse (filename)
 
   token_count = init_cpp_parse ();
   interface_unknown = 1;
-
-  ggc_add_string_root (&internal_filename, 1);
-  ggc_add_root (&impl_file_chain, 1, sizeof (impl_file_chain),
-		mark_impl_file_chain);
 
   return init_c_lex (filename);
 }
@@ -951,23 +939,6 @@ set_yydebug (value)
 #else
   warning ("YYDEBUG not defined.");
 #endif
-}
-
-
-/* Mark ARG (which is really a struct impl_files **) for GC.  */
-
-static void
-mark_impl_file_chain (arg)
-     void *arg;
-{
-  struct impl_files *ifs;
-
-  ifs = *(struct impl_files **) arg;
-  while (ifs)
-    {
-      ggc_mark_string (ifs->filename);
-      ifs = ifs->next;
-    }
 }
 
 /* Helper function to load global variables with interface
@@ -1219,7 +1190,7 @@ handle_pragma_implementation (dfile)
   if (ifiles == 0)
     {
       ifiles = (struct impl_files*) xmalloc (sizeof (struct impl_files));
-      ifiles->filename = ggc_alloc_string (main_filename, -1);
+      ifiles->filename = main_filename;
       ifiles->next = impl_file_chain;
       impl_file_chain = ifiles;
     }

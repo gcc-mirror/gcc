@@ -504,7 +504,7 @@ create_rethrow_ref (region_num)
   char buf[60];
 
   ASM_GENERATE_INTERNAL_LABEL (buf, "LRTH", region_num);
-  ptr = ggc_alloc_string (buf, -1);
+  ptr = ggc_strdup (buf);
   def = gen_rtx_SYMBOL_REF (Pmode, ptr);
   SYMBOL_REF_NEED_ADJUST (def) = 1;
 

@@ -224,7 +224,6 @@ ggc_mark_rtx_children (r)
 	  break;
 	case CODE_LABEL:
 	  ggc_mark_rtx (LABEL_REFS (r));
-	  ggc_mark_string (LABEL_ALTERNATE_NAME (r));
 	  break;
 	case LABEL_REF:
 	  ggc_mark_rtx (LABEL_NEXTREF (r));
@@ -252,11 +251,6 @@ ggc_mark_rtx_children (r)
 	      break;
 
 	    default:
-	      if (NOTE_LINE_NUMBER (r) >= 0)
-		{
-	    case NOTE_INSN_DELETED_LABEL:
-		  ggc_mark_string (NOTE_SOURCE_FILE (r));
-		}
 	      break;
 	    }
 	  break;
@@ -354,10 +348,6 @@ ggc_mark_trees ()
 	  ggc_mark_tree (TREE_IMAGPART (t));
 	  break;
 
-	case STRING_CST:
-	  ggc_mark_string (TREE_STRING_POINTER (t));
-	  break;
-
 	case PARM_DECL:
 	  ggc_mark_rtx (DECL_INCOMING_RTL (t));
 	  break;
@@ -367,7 +357,6 @@ ggc_mark_trees ()
 	  break;
 
 	case IDENTIFIER_NODE:
-	  ggc_mark_string (IDENTIFIER_POINTER (t));
 	  lang_mark_tree (t);
 	  continue;
 
@@ -379,7 +368,6 @@ ggc_mark_trees ()
       switch (TREE_CODE_CLASS (code))
 	{
 	case 'd': /* A decl node.  */
-	  ggc_mark_string (DECL_SOURCE_FILE (t));
 	  ggc_mark_tree (DECL_SIZE (t));
 	  ggc_mark_tree (DECL_SIZE_UNIT (t));
 	  ggc_mark_tree (DECL_NAME (t));

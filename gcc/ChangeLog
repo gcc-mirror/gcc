@@ -1,3 +1,52 @@
+2000-11-17  Zack Weinberg  <zack@wolery.stanford.edu>
+
+	* ggc.h: Delete ggc_add_string_root and ggc_mark_string.  Add
+	digit_vector and digit_string.
+	* stringpool.c (digit_vector): New.
+	(ggc_alloc_string): Use digit_string.
+
+	* stmt.c (digit_strings): Delete.
+	(init_stmt): Do not initialize digit_strings.
+	(expand_asm_operands): Use ggc.h's digit_string macro.
+	* toplev.c (mark_file_stack): Delete.
+	(compile_file): Don't call init_tree_codes.
+	(main): No need to make the file stack a GC root.
+	* tree.c (init_tree_codes): Delete.
+	* tree.h (init_tree_codes): Delete.
+
+	* c-lex.c: Don't include ggc.h.
+	(mark_splay_tree_node, mark_splay_tree): Delete.
+	(init_c_lex): No need to ggc_strdup string constant.  Don't add
+	file_info_tree to GGC roots.
+	(cb_enter_file, cb_rename_file): No need to ggc_strdup
+	ip->nominal_fname.
+
+	* Makefile.in (c-lex.o): No longer depends on $(GGC_H).
+
+	* dbxout.c (dbxout_init),
+	dwarf2out.c (dwarf2out_line),
+	ggc-common.c (ggc_mark_rtx_children, ggc_mark_trees),
+	varasm.c (mark_const_hash_entry, mark_pool_constant, init_varasm_once),
+	xcoffout.c (xcoffout_source_file),
+	i386.c (load_pic_register):
+	Delete call(s) to ggc_add_string_root and/or ggc_mark_string.
+
+	* except.c (create_rethrow_ref),
+	profile.c (init_edge_profiler),
+	toplev.c (compile_file),
+	varasm.c (named_section, assemble_static_space,
+	assemble_trampoline_template, output_constant_def, force_const_mem),
+	i386.c (load_pic_register),
+	ia64.c (ia64_encode_section_info),
+	rs6000.c (rs6000_emit_load_toc_table, create_TOC_reference,
+	rs6000_emit_prologue, rs6000_emit_epilogue),
+	rs6000.md (load_toc_aix_si, load_toc_aix_di):
+	Change ggc_alloc_string (var, -1) to ggc_strdup (var).
+
+	* profile.c (output_func_start_profiler),
+	tree.c (make_node),
+	i386.c (load_pic_register): No need to ggc_strdup string constant.
+
 2000-11-17  Hans-Peter Nilsson  <hp@axis.com>
 
 	* Makefile.in (config.status): Depend on config.gcc.
@@ -112,17 +161,17 @@
 
 2000-11-15  Neil Booth  <neilb@earthling.net>
 
-        * cpplib.c (start_directive, end_directive): New functions.
-        (_cpp_handle_directive, run_directive): Use them.
-        (_cpp_handle_directive): Don't -Wtraditional on indented
-        null directives.
-        (_cpp_push_buffer): Don't re-clear was_skipping.
-        * cpplib.h (struct cpp_reader): New member la_saved.
-        * cppmacro.c (cpp_get_token): Don't interpret _Pragma in
-        directives.
+	* cpplib.c (start_directive, end_directive): New functions.
+	(_cpp_handle_directive, run_directive): Use them.
+	(_cpp_handle_directive): Don't -Wtraditional on indented
+	null directives.
+	(_cpp_push_buffer): Don't re-clear was_skipping.
+	* cpplib.h (struct cpp_reader): New member la_saved.
+	* cppmacro.c (cpp_get_token): Don't interpret _Pragma in
+	directives.
 
-        gcc.dg/cpp/_Pragma1.c: Update.
-        gcc.dg/cpp/_Pragma2.c: New test.
+	gcc.dg/cpp/_Pragma1.c: Update.
+	gcc.dg/cpp/_Pragma2.c: New test.
 
 2000-11-15  Mark Mitchell  <mark@codesourcery.com>
 
@@ -177,7 +226,7 @@
 	* configure.in: Move check for V3 above check for C++ header-file
 	directory.
 	* configure: Regenerated.
-	
+
 2000-11-14  DJ Delorie  <dj@redhat.com>
 
 	* config/v850/v850.c: Remove obstacks.
@@ -471,7 +520,7 @@ Tue Nov 14 12:34:56 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* configure.in: Turn on libstdc++ V3 by default.
 	* configure: Regenerated.
-	
+
 	* fixinc/mkfixinc.sh: Use the ordinary fixincludes on Solaris.
 
 2000-11-12  Jakub Jelinek  <jakub@redhat.com>
@@ -488,7 +537,7 @@ Tue Nov 14 12:34:56 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	of #include headers.
 
 2000-11-12  Marc Espie <espie@openbsd.org>
-	
+
 	* configure.in: Fix filds test.
 	* configure: Regen.
 
@@ -499,32 +548,32 @@ Tue Nov 14 12:34:56 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2000-11-12  Neil Booth  <neilb@earthling.net>
 
-        * cppexp.c: Don't worry about pfile->skipping.
-        * cpplib.c (struct if_stack): Make was_skipping unsigned char.
-        (cpp_handle_directive): Save pfile->skipping in struct cpp_buffer
-        for handled directives.
-        (skip_rest_of_line): Use _cpp_lex_token after popping contexts
-        and releasing lookaheads.
-        (do_ifdef, do_ifndef, do_if): Use buffer->was_skipping.
-        (do_else, do_elif, push_conditional): Update logic.
-        (do_endif): Set buffer->was_skipping rather than pfile->skipping.
-        (unwind_if_stack): Inline into cpp_pop_buffer.
-        (cpp_push_buffer): Clear ifs->was_skipping for cpp_handle_directive.
-        * cpplex.c (_cpp_lex_token): Clear skipping on EOF.  Handle
-        multiple-include optimisation.
-        * cpplib.h (struct cpp_buffer): New member was_skipping.
-        * cppmacro.c (_cpp_get_token): Loop whilst pfile->skipping.  This
-        works because skipping == 0 in directives.
-        (_cpp_release_lookahead): Renamed from release_lookahead.
-        (cpp_get_token): No need to check skipping as _cpp_get_token does
-        this for us.  No need to handle MI optimisation.
+	* cppexp.c: Don't worry about pfile->skipping.
+	* cpplib.c (struct if_stack): Make was_skipping unsigned char.
+	(cpp_handle_directive): Save pfile->skipping in struct cpp_buffer
+	for handled directives.
+	(skip_rest_of_line): Use _cpp_lex_token after popping contexts
+	and releasing lookaheads.
+	(do_ifdef, do_ifndef, do_if): Use buffer->was_skipping.
+	(do_else, do_elif, push_conditional): Update logic.
+	(do_endif): Set buffer->was_skipping rather than pfile->skipping.
+	(unwind_if_stack): Inline into cpp_pop_buffer.
+	(cpp_push_buffer): Clear ifs->was_skipping for cpp_handle_directive.
+	* cpplex.c (_cpp_lex_token): Clear skipping on EOF.  Handle
+	multiple-include optimisation.
+	* cpplib.h (struct cpp_buffer): New member was_skipping.
+	* cppmacro.c (_cpp_get_token): Loop whilst pfile->skipping.  This
+	works because skipping == 0 in directives.
+	(_cpp_release_lookahead): Renamed from release_lookahead.
+	(cpp_get_token): No need to check skipping as _cpp_get_token does
+	this for us.  No need to handle MI optimisation.
 
 Sat Nov 11 21:14:02 2000  Mark P Mitchell  <mark@codesourcery.com>
 
 	* fixinc/inclhack.def (sunos_matherr_decl): Bypass matherr
 	declarations that use `__MATH_EXCEPTION' in their prototypes, too.
 	* fixinc/fixincl.x: Regenerated.
-	
+
 2000-11-11  Bruce Korb  <bkorb@gnu.org>
 
 	* fixinc/inclhack.def (avoid_bool_type): avoid commenting out #endif
@@ -543,7 +592,7 @@ Sat Nov 11 18:41:20 2000  Mark P Mitchell  <mark@codesourcery.com>
 
 2000-11-11  Jason Merrill  <jason@redhat.com>
 
-	* function.c (assign_parms): If TREE_ADDRESSABLE is set, try to 
+	* function.c (assign_parms): If TREE_ADDRESSABLE is set, try to
 	give the parm a register and then call put_var_into_stack.
 	* stmt.c (expand_decl): Likewise.
 
@@ -567,7 +616,7 @@ Sat Nov 11 18:41:20 2000  Mark P Mitchell  <mark@codesourcery.com>
 	* cppexp.c (lex): Don't handle CPP_PLACEMARKER.
 	* cpplex.c (_cpp_lex_token): Rename skip_newlines to next_bol
 	* cpplib.c (skip_rest_of_line, check_eol, cpp_push_buffer):
-	           Similarly.
+		   Similarly.
 	* cpplib.h: Remove CPP_PLACEMARKER.
 	(struct lexer_state): Rename skip_newlines to next_bol.
 	* cppmacro.c (stringify_arg): Don't handle CPP_PLACEMARKER.
@@ -669,15 +718,15 @@ Sat Nov 11 18:41:20 2000  Mark P Mitchell  <mark@codesourcery.com>
 	* config/ia64/ia64.md (extendsfdf2, extendsftf2, extenddftf2): Emit
 	a no-op move if regs are equal.
 	* toplev.c (rest_of_compilation): Do the noop moves elimination pass
-	when calling jump after post-reload splitting. 
+	when calling jump after post-reload splitting.
 
 2000-11-09  Jan van Male  <jan.vanmale@fenk.wau.nl>
 
-        * c-tree.texi: Fix typos.
-        * extend.texi: Likewise
-        * gcov.texi: Likewise
-        * rtl.texi: Likewise
-        * tm.texi: Likewise
+	* c-tree.texi: Fix typos.
+	* extend.texi: Likewise
+	* gcov.texi: Likewise
+	* rtl.texi: Likewise
+	* tm.texi: Likewise
 
 2000-11-09  Hans-Peter Nilsson  <hp@axis.com>
 
@@ -708,12 +757,12 @@ Sat Nov 11 18:41:20 2000  Mark P Mitchell  <mark@codesourcery.com>
 	* c-common.c (flag_dump_translation_unit): Define it.
 	(strip_array_types): New function.
 	* c-decl.c (c_decode_option): Handle -fdump-translation-unit.
-	* c-lang.c (finish_file): Call dump_node_to_file if 
+	* c-lang.c (finish_file): Call dump_node_to_file if
 	flag_dump_translation_unit.
 	* c-semantics.c (mark_rtl_for_local_static): Fix typo in comment.
 	* c-tree.h (DECL_C_BIT_FIELD): Remove declaration.
 	* c-dump.c: New file.
-	
+
 2000-11-09  Christopher Faylor <cgf@cygnus.com>
 
 	* config/i386/cygwin.h: Add mingw startfile prefix.
@@ -774,7 +823,7 @@ Sat Nov 11 18:41:20 2000  Mark P Mitchell  <mark@codesourcery.com>
 
 2000-11-09  Graham Stott  <grahams@redhat.com>
 
-        * config/i386/i386.md (mmx_pinsrw): Output operands in correct
+	* config/i386/i386.md (mmx_pinsrw): Output operands in correct
 	order for -mintel-syntax.  Remove comment now that the operand
 	order has been checked.
 	(mmx_pextrw): Likewise.
@@ -846,15 +895,15 @@ Wed Nov  8 21:58:20 2000  Christopher Faylor <cgf@cygnus.com>
 
 2000-11-08  Neil Booth  <neilb@earthling.net>
 
-        Move directive handling into the lexer itself.
-	  
-        * cpplex.c (_cpp_lex_token): Handle directives directly.
-        In the case of a directive interrupting a function-like
-        macro invocation, use extra_char since read_ahead is
-        used to store the '#'.  Return a CPP_EOF in this case.
-        * cppmacro.c (parse_arg): No need to handle CPP_DHASH any more.
-        (cpp_get_token): Don't handle directives here.
-        * cpplib.h: Remove CPP_DHASH token type.
+	Move directive handling into the lexer itself.
+
+	* cpplex.c (_cpp_lex_token): Handle directives directly.
+	In the case of a directive interrupting a function-like
+	macro invocation, use extra_char since read_ahead is
+	used to store the '#'.  Return a CPP_EOF in this case.
+	* cppmacro.c (parse_arg): No need to handle CPP_DHASH any more.
+	(cpp_get_token): Don't handle directives here.
+	* cpplib.h: Remove CPP_DHASH token type.
 
 Wed Nov  8 21:53:41 MET 2000  Jan Hubicka  <jh@suse.cz>
 
@@ -885,7 +934,7 @@ Wed Nov  8 21:53:41 MET 2000  Jan Hubicka  <jh@suse.cz>
 	passed in multiple non-contiguous locations.
 
 2000-11-08  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
-	
+
 	* README.gnat: Remove file.
 
 2000-11-08  Alexandre Oliva  <aoliva@redhat.com>
@@ -922,7 +971,7 @@ Wed Nov  8 21:53:41 MET 2000  Jan Hubicka  <jh@suse.cz>
 	* c-lang.c (start_cdtor, finish_cdtor): New functions.
 	(finish_file): Use them in building constructor/destructor functions.
 
-	* config/alpha/alpha.h (HAS_INIT_SECTION, LD_INIT_SWITCH, 
+	* config/alpha/alpha.h (HAS_INIT_SECTION, LD_INIT_SWITCH,
 	LD_FINI_SWITCH): Move ...
 	* config/alpha/osf.h: ... here.
 	* config/alpha/alpha-interix.h: Don't undef them.
@@ -1045,7 +1094,7 @@ Mon Nov  6 20:08:13 2000  J"orn Rennecke <amylaar@redhat.com>
 
 2000-11-06  Neil Booth  <neilb@earthling.net>
 
-        * tradcpp.c (special_symbol): Assign an null string rather
+	* tradcpp.c (special_symbol): Assign an null string rather
 	than writing to an unallocated buffer.
 
 2000-11-06  Neil Booth  <neilb@earthling.net>
@@ -1105,13 +1154,13 @@ Sat Sep 23 19:10:20 2000  Denis Chertykov  <denisc@overta.ru> & Marek Michalkiew
 
 2000-11-04  Neil Booth  <neilb@earthling.net>
 
-        * cpplex.c (parse_string): Don't allow multiline strings in
-        #include family directives.
+	* cpplex.c (parse_string): Don't allow multiline strings in
+	#include family directives.
 
 2000-11-04  Neil Booth  <neilb@earthling.net>
 
 	* cpplib.c (do_line): Only warn pedantically if not reading
-        preprocessed input.
+	preprocessed input.
 
 2000-11-04  Alexandre Oliva  <aoliva@redhat.com>
 
@@ -1228,7 +1277,7 @@ config:
 	sparc/sparc.h, sparc/sysv4.h, sparc/vxsim.h, sparc/vxsparc.h,
 	v850/rtems.h, vax/netbsd.h, vax/openbsd.h, vax/ultrix.h, vax/vax.h,
 	vax/vaxv.h, vax/vms.h, we32k/we32k.h
-	
+
 	Replace -A() with -A=, the new assertion syntax.
 
 Thu Nov  2 21:52:35 2000  J"orn Rennecke <amylaar@redhat.com>
@@ -1266,17 +1315,17 @@ Thu Nov  2 19:20:12 2000  J"orn Rennecke <amylaar@redhat.com>
 
 2000-11-02  Zack Weinberg <zackw@Stanford.EDU>
 
-        Integrated CPP.
-	  
-        * c-lex.c (init_c_lex): Update cpp_start_read call.
-        (cb_ident): Update for new callback prototype.
-        (cb_def_pragma): Update for new cpp_get_token prototype.
-        (c_lex): Similarly.  Use cpp_get_line.
-	  
-        * c-parse.in (finish_parse): Update for new cpp_finish
-        prototype.
-	  
-        * cp/lex.c (finish_parse): Similarly.
+	Integrated CPP.
+
+	* c-lex.c (init_c_lex): Update cpp_start_read call.
+	(cb_ident): Update for new callback prototype.
+	(cb_def_pragma): Update for new cpp_get_token prototype.
+	(c_lex): Similarly.  Use cpp_get_line.
+
+	* c-parse.in (finish_parse): Update for new cpp_finish
+	prototype.
+
+	* cp/lex.c (finish_parse): Similarly.
 
 2000-11-01  Geoff Keating  <geoffk@cygnus.com>
 
@@ -1290,10 +1339,10 @@ Thu Nov  2 19:20:12 2000  J"orn Rennecke <amylaar@redhat.com>
 
 2000-11-01  Neil Booth  <neilb@earthling.net>
 
-        * cpplib.c (run_directive): Use correct line number for output
-        of _Pragma.  Remember any in-progress directive. 
-  
-        * gcc.dg/cpp/vararg2.c, gcc.dg/cpp/_Pragm1.c: New tests.
+	* cpplib.c (run_directive): Use correct line number for output
+	of _Pragma.  Remember any in-progress directive.
+
+	* gcc.dg/cpp/vararg2.c, gcc.dg/cpp/_Pragm1.c: New tests.
 
 2000-11-01  Richard Henderson  <rth@redhat.com>
 
@@ -1313,7 +1362,7 @@ Thu Nov  2 19:20:12 2000  J"orn Rennecke <amylaar@redhat.com>
 2000-11-01  Richard Henderson  <rth@redhat.com>
 
 	* stmt.c (expand_start_null_loop): New.
-	(expand_end_null_loop): New.	
+	(expand_end_null_loop): New.
 	* c-semantics.c (genrtl_do_stmt): Use them.
 	* tree.h: Declare them.
 
@@ -1376,7 +1425,7 @@ Thu Nov  2 19:20:12 2000  J"orn Rennecke <amylaar@redhat.com>
 	(dwarf2out_end_block, dwarf2out_label): Likewise.
 	* final.c (final_scan_insn, case NOTE_INSN_DELETED_LABEL): Likewise
 	* config/ia64/ia64.h (ASM_OUTPUT_DEBUG_LABEL): Define.
-	
+
 2000-10-31  Richard Henderson  <rth@redhat.com>
 
 	* dwarf2out.c (struct dw_loc_descr_struct): Add dw_loc_addr.
@@ -1475,7 +1524,7 @@ Tue Oct 31 15:33:27 2000  J"orn Rennecke <amylaar@redhat.com>
 
 2000-10-31  Bernd Schmidt  <bernds@redhat.co.uk>
 
-        * config/i386/i386.c (ix86_init_builtins): Correct return type
+	* config/i386/i386.c (ix86_init_builtins): Correct return type
 	building v4hi_ftype_v4hi_int_int tree node.
 	(ix86_expand_builtin): Use correct operand numbers 0 and 1.
 	Copy operand 0 into a Pmode register, don't generate a MEM rtx.
@@ -1555,7 +1604,7 @@ Tue Oct 31 15:33:27 2000  J"orn Rennecke <amylaar@redhat.com>
 2000-10-29  Neil Booth  <neilb@earthling.net>
 
 	* cppmacro.c (_cpp_create_definition): Optimize the case of
-        a macro defined to itself.
+	a macro defined to itself.
 
 2000-10-29  Neil Booth  <neilb@earthling.net>
 
@@ -1625,7 +1674,7 @@ Tue Oct 31 15:33:27 2000  J"orn Rennecke <amylaar@redhat.com>
 2000-10-28  Neil Booth  <neilb@earthling.net>
 
 	New macro expander.
-	
+
 	* cpplib.c (struct answer): New.
 	(struct if_stack): Use cpp_lexer_pos rather than line and col.
 	Rename cmacro mi_cmacro.
@@ -1766,7 +1815,7 @@ Tue Oct 31 15:33:27 2000  J"orn Rennecke <amylaar@redhat.com>
 	_cpp_cleanup_hashtable.
 
 	* Makefile.in: Remove cppoutput.c.
-	
+
 	* cppoutput.c: Delete
 
 	* fixheader.c (read_scan_file): Update for new cpp_get_token
@@ -1779,7 +1828,7 @@ Tue Oct 31 15:33:27 2000  J"orn Rennecke <amylaar@redhat.com>
 	* scan.h (recognized_function): Update prototype.
 
 	* po/POTFILES.in: Remove cppoutput.c.
-	
+
 2000-10-27  Mark Mitchell  <mark@codesourcery.com>
 
 	* c-typeck.c (check_init_type_bitfields): Remove.
@@ -1797,7 +1846,7 @@ Tue Oct 31 15:33:27 2000  J"orn Rennecke <amylaar@redhat.com>
 2000-10-21  Mike Coleman  <mcoleman2@kc.rr.com>
 
 	* c-pragma.c (handle_pragma_pack): Initialize align to -1.
-	Improve error messages.  Correct parsing of 
+	Improve error messages.  Correct parsing of
 	#pragma pack(pop [,id]).  Do not check the user-supplied
 	alignment if we're popping.
 
@@ -1836,11 +1885,11 @@ Tue Oct 31 15:33:27 2000  J"orn Rennecke <amylaar@redhat.com>
 2000-10-27  Bernd Schmidt  <bernds@redhat.co.uk>
 	    Richard Henderson  <rth@redhat.com>
 
-        * regrename.c: Rewrite to handle multi-register modes and
-        cond_exec instructions.
-        * Makefile.in (regrename.o): Update dependancies.
-        * recog.h (struct operand_alternative): Add is_address.
-        * recog.c (preprocess_constraints) [case 'p']: Set it.
+	* regrename.c: Rewrite to handle multi-register modes and
+	cond_exec instructions.
+	* Makefile.in (regrename.o): Update dependancies.
+	* recog.h (struct operand_alternative): Add is_address.
+	* recog.c (preprocess_constraints) [case 'p']: Set it.
 
 2000-10-27  Zack Weinberg  <zack@wolery.stanford.edu>
 
@@ -1857,23 +1906,23 @@ Tue Oct 31 15:33:27 2000  J"orn Rennecke <amylaar@redhat.com>
 	switch is given, nothing otherwise.
 	* configure.lang: Delete.
 
-        * Makefile.in: Expunge all traces of extra_c_objs,
-        extra_cxx_objs, and extra_cpp_objs.  Set MAYBE_CPPLIB from
-        @maybe_cpplib@. Add $(MAYBE_CPPLIB) to C_AND_OBJC_OBJS.  Set
-        warning options via a three level scheme so that -pedantic and
-        -Wtraditional are not used for non-C front ends: LOOSE_WARN,
-        STRICT1_WARN, STRICT2_WARN -> $(@D)-warn, GCC_WARN_CFLAGS ->
-        WARN_CFLAGS.  Distinguish STAGE1_CFLAGS from BOOT_CFLAGS.
+	* Makefile.in: Expunge all traces of extra_c_objs,
+	extra_cxx_objs, and extra_cpp_objs.  Set MAYBE_CPPLIB from
+	@maybe_cpplib@. Add $(MAYBE_CPPLIB) to C_AND_OBJC_OBJS.  Set
+	warning options via a three level scheme so that -pedantic and
+	-Wtraditional are not used for non-C front ends: LOOSE_WARN,
+	STRICT1_WARN, STRICT2_WARN -> $(@D)-warn, GCC_WARN_CFLAGS ->
+	WARN_CFLAGS.  Distinguish STAGE1_CFLAGS from BOOT_CFLAGS.
 	Add -I$(@D) and -I$(srcdir)/$(@D) to INCLUDES.
 	Set OUTPUT_OPTION, ZLIB, ZLIBINC.  Do not set P,
-        LANG_FLAGS_TO_PASS.  Add OUTPUT_OPTION to all object-file
-        generation rules.  Wrap all rules that change the current
-        directory in parentheses; pmake doesn't spawn a new shell for
-        each command.  Expunge all references to $(P).  When one
-        command depends on another and they're run all at once, use &&
-        to separate them, not ;.  Add libgcc_s$(SHLIB_EXT) to files
-        deleted on make clean.  Force OUTPUT_OPTION='-o $@' in stage2
-        and beyond.
+	LANG_FLAGS_TO_PASS.  Add OUTPUT_OPTION to all object-file
+	generation rules.  Wrap all rules that change the current
+	directory in parentheses; pmake doesn't spawn a new shell for
+	each command.  Expunge all references to $(P).  When one
+	command depends on another and they're run all at once, use &&
+	to separate them, not ;.  Add libgcc_s$(SHLIB_EXT) to files
+	deleted on make clean.  Force OUTPUT_OPTION='-o $@' in stage2
+	and beyond.
 
 	* objc/Make-lang.in: Wrap all rules that change the current
 	directory in parentheses.  Expunge all references to $(P).

@@ -4817,7 +4817,7 @@ ia64_encode_section_info (decl)
   else if (symbol_str[0] == SDATA_NAME_FLAG_CHAR)
     {
       XSTR (XEXP (DECL_RTL (decl), 0), 0)
-	= ggc_alloc_string (symbol_str + 1, -1);
+	= ggc_strdup (symbol_str + 1);
     }
 }
 

@@ -171,7 +171,6 @@ static void output_lang_identify PARAMS ((FILE *)) ATTRIBUTE_UNUSED;
 static void compile_file PARAMS ((const char *));
 static void display_help PARAMS ((void));
 static void display_target_options PARAMS ((void));
-static void mark_file_stack PARAMS ((void *));
 
 static void decode_d_option PARAMS ((const char *));
 static int decode_f_option PARAMS ((const char *));
@@ -1503,26 +1502,6 @@ decl_name (decl, verbosity)
   return IDENTIFIER_POINTER (DECL_NAME (decl));
 }
 
-/* Mark P for GC.  Also mark main_input_filename and input_filename.  */
-
-static void
-mark_file_stack (p)
-     void *p;
-{
-  struct file_stack *stack = *(struct file_stack **)p;
-
-  /* We're only called for input_file_stack, so we can mark the current
-     input_filename here as well.  */
-  ggc_mark_string (main_input_filename);
-  ggc_mark_string (input_filename);
-
-  while (stack)
-    {
-      ggc_mark_string (stack->name);
-      stack = stack->next;
-    }
-}
-
 
 /* This calls abort and is used to avoid problems when abort if a macro.
    It is used when we need to pass the address of abort.  */
@@ -2183,7 +2162,6 @@ compile_file (name)
   /* Initialize data in various passes.  */
 
   init_obstacks ();
-  init_tree_codes ();
   name = init_parse (name);
   init_emit_once (debug_info_level == DINFO_LEVEL_NORMAL
 		  || debug_info_level == DINFO_LEVEL_VERBOSE
@@ -2251,7 +2229,7 @@ compile_file (name)
 #endif
 
   if (name != 0)
-    name = ggc_alloc_string (name, strlen (name));
+    name = ggc_strdup (name);
 
   input_filename = name;
 
@@ -4584,8 +4562,6 @@ main (argc, argv)
   /* Initialize the garbage-collector.  */
   init_ggc ();
   init_stringpool ();
-  ggc_add_root (&input_file_stack, 1, sizeof input_file_stack,
-		mark_file_stack);
   ggc_add_rtx_root (&stack_limit_rtx, 1);
   ggc_add_tree_root (&current_function_decl, 1);
   ggc_add_tree_root (&current_function_func_begin_label, 1);

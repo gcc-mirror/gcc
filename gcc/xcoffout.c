@@ -352,10 +352,6 @@ xcoffout_source_file (file, filename, inline_p)
 	  fprintf (file, "\n");
 	  xcoff_current_include_file = filename;
 	}
-
-      if (!xcoff_lastfile)
-	ggc_add_string_root ((char **) &xcoff_lastfile, 1);
-
       xcoff_lastfile = filename;
     }
 }
