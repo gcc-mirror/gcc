@@ -2314,23 +2314,23 @@ perfect_nestify (struct loops *loops,
   preheaderbb =  loop_split_edge_with (loop->single_exit, NULL);
   headerbb = create_empty_bb (EXIT_BLOCK_PTR->prev_bb);
   
-  /* This is done because otherwise, it will release the ssa_name too early
-     when the edge gets redirected and it will get reused, causing the use of
-     the phi node to get rewritten.  */
-
+  /* Push the exit phi nodes that we are moving.  */
   for (phi = phi_nodes (olddest); phi; phi = PHI_CHAIN (phi))
     {
       VEC_safe_push (tree, phis, PHI_RESULT (phi));
       VEC_safe_push (tree, phis, PHI_ARG_DEF (phi, 0));
-      mark_for_rewrite (PHI_RESULT (phi));
     }
   e = redirect_edge_and_branch (EDGE_SUCC (preheaderbb, 0), headerbb);
 
-  /* Remove the exit phis from the old basic block.  */
+  /* Remove the exit phis from the old basic block.  Make sure to set
+     PHI_RESULT to null so it doesn't get released.  */
   while (phi_nodes (olddest) != NULL)
-    remove_phi_node (phi_nodes (olddest), NULL, olddest);
+    {
+      SET_PHI_RESULT (phi_nodes (olddest), NULL);
+      remove_phi_node (phi_nodes (olddest), NULL, olddest);
+    }      
 
-  /* and add them to the new basic block.  */
+  /* and add them back to the new basic block.  */
   while (VEC_length (tree, phis) != 0)
     {
       tree def;
@@ -2341,7 +2341,6 @@ perfect_nestify (struct loops *loops,
       add_phi_arg (phi, def, EDGE_PRED (preheaderbb, 0));
     }       
   flush_pending_stmts (e);
-  unmark_all_for_rewrite ();
 
   bodybb = create_empty_bb (EXIT_BLOCK_PTR->prev_bb);
   latchbb = create_empty_bb (EXIT_BLOCK_PTR->prev_bb);

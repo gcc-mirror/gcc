@@ -1,3 +1,11 @@
+2005-02-17  Daniel Berlin  <dberlin@dberlin.org>
+
+	* lambda-code (perfect_nestify): Remove mark/unmark
+	for rewriting hack.
+	* tree-loop-linear.c (linear_transform_loops): Add
+	rewrite_into_ssa call so that ssa is correct for
+	rewriting into loop closed.
+
 2005-02-17  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* bitmap.h (BITMAP_XMALLOC, BITMAP_XFREE): Remove.
