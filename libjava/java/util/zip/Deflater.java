@@ -63,7 +63,7 @@ public class Deflater
 
   public native void end ();
 
-  public void finalize ()
+  protected void finalize ()
   {
     end ();
   }

@@ -26,7 +26,7 @@ import java.io.*;
 // we probably should.  FIXME.
    
 
-public class ZipInputStream extends InflaterInputStream
+public class ZipInputStream extends InflaterInputStream implements ZipConstants
 {
   public ZipInputStream (InputStream in)
   {
@@ -36,7 +36,7 @@ public class ZipInputStream extends InflaterInputStream
   public ZipEntry getNextEntry () throws IOException
   {
     if (current != null)
-      closeZipEntry();
+      closeEntry();
     if (in.read() != 'P'
 	|| in.read() != 'K')
       return null;
@@ -184,7 +184,7 @@ public class ZipInputStream extends InflaterInputStream
       + ((byte1 & 0xFF) << 8) + (byte0 & 0xFF);
   }
 
-  public void closeZipEntry ()  throws IOException
+  public void closeEntry ()  throws IOException
   {
     if (current != null)
       {

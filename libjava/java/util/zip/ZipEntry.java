@@ -19,7 +19,7 @@ package java.util.zip;
  * Status:  Believed complete and correct.
  */
 
-public class ZipEntry
+public class ZipEntry implements ZipConstants
 {
   // These values were determined using a simple test program.
   public static final int STORED = 0;

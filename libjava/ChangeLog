@@ -1,3 +1,17 @@
+1999-06-23  Warren Levy  <warrenl@cygnus.com>
+
+	* java/net/DatagramSocketImpl.java (localPort): Fixed typo to match JDK.
+	* java/net/natPlainDatagramSocketImpl.cc (bind): ditto.
+	* java/text/ChoiceFormat.java (nextDouble(double, boolean)): Method
+	is not final per JDK.
+	* java/util/PropertyResourceBundle.java (handleGetObject): Method is
+	public per JDK.
+	* java/util/zip/DataFormatException.java: Class extends Exception.
+	* java/util/zip/Deflater.java (finalize): Method is protected per JDK.
+	* java/util/zip/ZipEntry.java: Class implements ZipConstants.
+	* java/util/zip/ZipInputStream.java: ditto.
+	(closeEntry): Changed method name to match JDK spec.
+
 1999-06-21  Tom Tromey  <tromey@cygnus.com>
 
 	* java/lang/ieeefp.h (__IEEE_LITTLE_ENDIAN): Define for alpha.

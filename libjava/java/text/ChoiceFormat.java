@@ -182,7 +182,7 @@ public class ChoiceFormat extends NumberFormat
       return nextDouble (d, true);
     }
 
-  public static final double nextDouble (double d, boolean next)
+  public static double nextDouble (double d, boolean next)
     {
       if (Double.isInfinite(d) || Double.isNaN(d))
 	return d;

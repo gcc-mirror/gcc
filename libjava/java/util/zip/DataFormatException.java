@@ -19,7 +19,7 @@ package java.util.zip;
  * Believed complete and correct.
  */
 
-public class DataFormatException extends java.io.IOException
+public class DataFormatException extends Exception
 {
   public DataFormatException ()
   {
