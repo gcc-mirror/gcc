@@ -82,6 +82,10 @@ Fri Oct 31 01:47:57 1997  Jason Merrill  <jason@yorick.cygnus.com>
 	when we rethrow.
 	(expand_builtin_throw): Don't refer to empty_fndecl.
 
+Sun Oct 26 01:28:29 1997  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* decl.c (init_decl_processing): Call using_eh_for_cleanups.
+
 Thu Oct 23 02:01:30 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* pt.c (instantiate_decl): SET_DECL_IMPLICIT_INSTANTIATION on new decl.
