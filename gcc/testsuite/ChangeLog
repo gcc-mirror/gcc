@@ -1,3 +1,8 @@
+2003-03-03  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/9878
+	* g++.dg/init/ref1.C: New test.
+
 Mon Mar  3 20:42:04 2003  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* gcc.dg/sh-relax.c: New SH-only test.
