@@ -173,12 +173,12 @@ extern tree (*lang_eh_runtime_type) PARAMS ((tree));
    mean that we can use call frame exceptions.  Detect that the target
    has appropriate support.  */
 
-#if !defined (EH_RETURN_DATA_REGNO)		\
-    || !defined(EH_RETURN_STACKADJ_RTX)		\
-    || ! (defined(EH_RETURN_HANDLER_RTX)	\
-	  || defined(HAVE_eh_return))		\
-    || ! (defined(DWARF2_UNWIND_INFO)		\
-	  || defined(IA64_UNWIND_INFO))
+#if ! (defined (EH_RETURN_DATA_REGNO)			\
+       && (defined (IA64_UNWIND_INFO)			\
+	   || (defined (DWARF2_UNWIND_INFO)		\
+	       && defined (EH_RETURN_STACKADJ_RTX)	\
+	       && (defined (EH_RETURN_HANDLER_RTX)	\
+		   || defined (HAVE_eh_return)))))
 #define MUST_USE_SJLJ_EXCEPTIONS	1
 #else
 #define MUST_USE_SJLJ_EXCEPTIONS	0

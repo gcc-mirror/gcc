@@ -1583,12 +1583,9 @@ final_start_function (first, file, optimize)
     last_linenum = high_block_linenum = high_function_linenum
       = NOTE_LINE_NUMBER (first);
 
-#if defined (DWARF2_UNWIND_INFO) || defined (DWARF2_DEBUGGING_INFO)
-  /* Output DWARF definition of the function.  */
-  if (dwarf2out_do_frame ())
-    dwarf2out_begin_prologue ();
-  else
-    current_function_func_begin_label = 0;
+#if defined (DWARF2_UNWIND_INFO) || defined (IA64_UNWIND_INFO) \
+    || defined (DWARF2_DEBUGGING_INFO)
+  dwarf2out_begin_prologue ();
 #endif
 
   /* For SDB and XCOFF, the function beginning must be marked between
@@ -1810,10 +1807,6 @@ final_end_function (first, file, optimize)
 #endif
 
   bb_func_label_num = -1;	/* not in function, nuke label # */
-
-#ifdef IA64_UNWIND_INFO
-  output_function_exception_table ();
-#endif
 
   /* If FUNCTION_EPILOGUE is not defined, then the function body
      itself contains return instructions wherever needed.  */

@@ -1,4 +1,4 @@
-/* Copyright (C) 1999, 2000 Free Software Foundation, Inc.
+/* Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.
    Contributed by Andrew MacLeod  <amacleod@cygnus.com>
                   Andrew Haley  <aph@cygnus.com>
 
@@ -19,18 +19,13 @@
    the Free Software Foundation, 59 Temple Place - Suite 330,
    Boston, MA 02111-1307, USA.  */
 
-/* This structure represents a single unwind table entry.  We lie and say
-   its the dwarf_fde structure to use the common object in frame.h */
-
-typedef struct dwarf_fde
+struct unw_table_entry
 {
-  long start_offset;
-  long end_offset;
-  long unwind_offset;
-} unwind_table_entry;
-  
-/* Defining dwarf_fde allows us to use the common object registration.  */
-typedef unwind_table_entry dwarf_fde;
-typedef unwind_table_entry fde;
+  unsigned long start_offset;
+  unsigned long end_offset;
+  unsigned long info_offset;
+};
 
-extern fde *__ia64_find_fde (void *, void **);
+extern struct unw_table_entry *
+_Unwind_FindTableEntry (void *pc, unsigned long *segment_base,
+			unsigned long *gp);

@@ -116,6 +116,8 @@ GCC_3.0 {
   _Unwind_GetIP
   _Unwind_GetLanguageSpecificData
   _Unwind_GetRegionStart
+  _Unwind_GetTextRelBase
+  _Unwind_GetDataRelBase
   _Unwind_RaiseException
   _Unwind_Resume
   _Unwind_SetGR

@@ -314,6 +314,19 @@ _Unwind_GetRegionStart (struct _Unwind_Context *context)
   return (_Unwind_Ptr) context->bases.func;
 }
 
+#ifndef __ia64__
+_Unwind_Ptr
+_Unwind_GetDataRelBase (struct _Unwind_Context *context)
+{
+  return (_Unwind_Ptr) context->bases.dbase;
+}
+
+_Unwind_Ptr
+_Unwind_GetTextRelBase (struct _Unwind_Context *context)
+{
+  return (_Unwind_Ptr) context->bases.tbase;
+}
+#endif
 
 /* Extract any interesting information from the CIE for the translation
    unit F belongs to.  Return a pointer to the byte after the augmentation,

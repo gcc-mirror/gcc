@@ -62,6 +62,7 @@ Boston, MA 02111-1307, USA.  */
 #include "output.h"
 #include "dwarf2asm.h"
 #include "dwarf2out.h"
+#include "dwarf2.h"
 #include "toplev.h"
 #include "hashtab.h"
 #include "intl.h"
@@ -3366,24 +3367,6 @@ push_sleb128 (data_area, value)
 }
 
 
-#define DW_EH_PE_absptr		0x00
-#define DW_EH_PE_omit		0xff
-
-#define DW_EH_PE_uleb128	0x01
-#define DW_EH_PE_udata2		0x02
-#define DW_EH_PE_udata4		0x03
-#define DW_EH_PE_udata8		0x04
-#define DW_EH_PE_sleb128	0x09
-#define DW_EH_PE_sdata2		0x0A
-#define DW_EH_PE_sdata4		0x0B
-#define DW_EH_PE_sdata8		0x0C
-#define DW_EH_PE_signed		0x08
-
-#define DW_EH_PE_pcrel		0x10
-#define DW_EH_PE_textrel	0x20
-#define DW_EH_PE_datarel	0x30
-#define DW_EH_PE_funcrel	0x40
-
 static const char *
 eh_data_format_name (format)
      int format;
@@ -3437,6 +3420,74 @@ eh_data_format_name (format)
     case DW_EH_PE_sdata2 | DW_EH_PE_funcrel:	return "funcrel sdata2";
     case DW_EH_PE_sdata4 | DW_EH_PE_funcrel:	return "funcrel sdata4";
     case DW_EH_PE_sdata8 | DW_EH_PE_funcrel:	return "funcrel sdata8";
+
+    case DW_EH_PE_indirect | DW_EH_PE_uleb128 | DW_EH_PE_pcrel:
+      return "indirect pcrel uleb128";
+    case DW_EH_PE_indirect | DW_EH_PE_udata2 | DW_EH_PE_pcrel:
+      return "indirect pcrel udata2";
+    case DW_EH_PE_indirect | DW_EH_PE_udata4 | DW_EH_PE_pcrel:
+      return "indirect pcrel udata4";
+    case DW_EH_PE_indirect | DW_EH_PE_udata8 | DW_EH_PE_pcrel:
+      return "indirect pcrel udata8";
+    case DW_EH_PE_indirect | DW_EH_PE_sleb128 | DW_EH_PE_pcrel:
+      return "indirect pcrel sleb128";
+    case DW_EH_PE_indirect | DW_EH_PE_sdata2 | DW_EH_PE_pcrel:
+      return "indirect pcrel sdata2";
+    case DW_EH_PE_indirect | DW_EH_PE_sdata4 | DW_EH_PE_pcrel:
+      return "indirect pcrel sdata4";
+    case DW_EH_PE_indirect | DW_EH_PE_sdata8 | DW_EH_PE_pcrel:
+      return "indirect pcrel sdata8";
+
+    case DW_EH_PE_indirect | DW_EH_PE_uleb128 | DW_EH_PE_textrel:
+      return "indirect textrel uleb128";
+    case DW_EH_PE_indirect | DW_EH_PE_udata2 | DW_EH_PE_textrel:
+      return "indirect textrel udata2";
+    case DW_EH_PE_indirect | DW_EH_PE_udata4 | DW_EH_PE_textrel:
+      return "indirect textrel udata4";
+    case DW_EH_PE_indirect | DW_EH_PE_udata8 | DW_EH_PE_textrel:
+      return "indirect textrel udata8";
+    case DW_EH_PE_indirect | DW_EH_PE_sleb128 | DW_EH_PE_textrel:
+      return "indirect textrel sleb128";
+    case DW_EH_PE_indirect | DW_EH_PE_sdata2 | DW_EH_PE_textrel:
+      return "indirect textrel sdata2";
+    case DW_EH_PE_indirect | DW_EH_PE_sdata4 | DW_EH_PE_textrel:
+      return "indirect textrel sdata4";
+    case DW_EH_PE_indirect | DW_EH_PE_sdata8 | DW_EH_PE_textrel:
+      return "indirect textrel sdata8";
+
+    case DW_EH_PE_indirect | DW_EH_PE_uleb128 | DW_EH_PE_datarel:
+      return "indirect datarel uleb128";
+    case DW_EH_PE_indirect | DW_EH_PE_udata2 | DW_EH_PE_datarel:
+      return "indirect datarel udata2";
+    case DW_EH_PE_indirect | DW_EH_PE_udata4 | DW_EH_PE_datarel:
+      return "indirect datarel udata4";
+    case DW_EH_PE_indirect | DW_EH_PE_udata8 | DW_EH_PE_datarel:
+      return "indirect datarel udata8";
+    case DW_EH_PE_indirect | DW_EH_PE_sleb128 | DW_EH_PE_datarel:
+      return "indirect datarel sleb128";
+    case DW_EH_PE_indirect | DW_EH_PE_sdata2 | DW_EH_PE_datarel:
+      return "indirect datarel sdata2";
+    case DW_EH_PE_indirect | DW_EH_PE_sdata4 | DW_EH_PE_datarel:
+      return "indirect datarel sdata4";
+    case DW_EH_PE_indirect | DW_EH_PE_sdata8 | DW_EH_PE_datarel:
+      return "indirect datarel sdata8";
+
+    case DW_EH_PE_indirect | DW_EH_PE_uleb128 | DW_EH_PE_funcrel:
+      return "indirect funcrel uleb128";
+    case DW_EH_PE_indirect | DW_EH_PE_udata2 | DW_EH_PE_funcrel:
+      return "indirect funcrel udata2";
+    case DW_EH_PE_indirect | DW_EH_PE_udata4 | DW_EH_PE_funcrel:
+      return "indirect funcrel udata4";
+    case DW_EH_PE_indirect | DW_EH_PE_udata8 | DW_EH_PE_funcrel:
+      return "indirect funcrel udata8";
+    case DW_EH_PE_indirect | DW_EH_PE_sleb128 | DW_EH_PE_funcrel:
+      return "indirect funcrel sleb128";
+    case DW_EH_PE_indirect | DW_EH_PE_sdata2 | DW_EH_PE_funcrel:
+      return "indirect funcrel sdata2";
+    case DW_EH_PE_indirect | DW_EH_PE_sdata4 | DW_EH_PE_funcrel:
+      return "indirect funcrel sdata4";
+    case DW_EH_PE_indirect | DW_EH_PE_sdata8 | DW_EH_PE_funcrel:
+      return "indirect funcrel sdata8";
 
     default:
       abort ();
@@ -3551,7 +3602,7 @@ sjlj_output_call_site_table ()
 void
 output_function_exception_table ()
 {
-  int format, i, n;
+  int tt_format, cs_format, lp_format, i, n;
 #ifdef HAVE_AS_LEB128
   char ttype_label[32];
   char cs_after_size_label[32];
@@ -3570,7 +3621,15 @@ output_function_exception_table ()
 		    ? sjlj_funcdef_number
 		    : current_funcdef_number);
 
+#ifdef IA64_UNWIND_INFO
+  fputs ("\t.personality\t", asm_out_file);
+  output_addr_const (asm_out_file, eh_personality_libfunc);
+  fputs ("\n\t.handlerdata\n", asm_out_file);
+  /* Note that varasm still thinks we're in the function's code section.
+     The ".endp" directive that will immediately follow will take us back.  */
+#else
   exception_section ();
+#endif
 
   have_tt_data = (VARRAY_ACTIVE_SIZE (cfun->eh->ttype_data) > 0
 		  || VARRAY_ACTIVE_SIZE (cfun->eh->ehspec_data) > 0);
@@ -3588,26 +3647,24 @@ output_function_exception_table ()
      be most useful in moving the landing pads completely out of
      line to another section, but it could also be used to minimize
      the size of uleb128 landing pad offsets.  */
-  format = DW_EH_PE_omit;
-  dw2_asm_output_data (1, format, "@LPStart format (%s)",
-		       eh_data_format_name (format));
+  lp_format = DW_EH_PE_omit;
+  dw2_asm_output_data (1, lp_format, "@LPStart format (%s)",
+		       eh_data_format_name (lp_format));
 
   /* @LPStart pointer would go here.  */
 
   /* Indicate the format of the @TType entries.  */
   if (! have_tt_data)
-    format = DW_EH_PE_omit;
+    tt_format = DW_EH_PE_omit;
   else
     {
-      /* ??? Define a ASM_PREFERRED_DATA_FORMAT to say what 
-	 sort of dynamic-relocation-free reference to emit.  */
-      format = 0;
+      tt_format = ASM_PREFERRED_EH_DATA_FORMAT (/*code=*/0, /*global=*/1);
 #ifdef HAVE_AS_LEB128
       ASM_GENERATE_INTERNAL_LABEL (ttype_label, "LLSDATT", funcdef_number);
 #endif
     }
-  dw2_asm_output_data (1, format, "@TType format (%s)",
-		       eh_data_format_name (format));
+  dw2_asm_output_data (1, tt_format, "@TType format (%s)",
+		       eh_data_format_name (tt_format));
 
 #ifndef HAVE_AS_LEB128
   if (USING_SJLJ_EXCEPTIONS)
@@ -3659,12 +3716,12 @@ output_function_exception_table ()
 
   /* Indicate the format of the call-site offsets.  */
 #ifdef HAVE_AS_LEB128
-  format = DW_EH_PE_uleb128;
+  cs_format = DW_EH_PE_uleb128;
 #else
-  format = DW_EH_PE_udata4;
+  cs_format = DW_EH_PE_udata4;
 #endif
-  dw2_asm_output_data (1, format, "call-site format (%s)",
-		       eh_data_format_name (format));
+  dw2_asm_output_data (1, cs_format, "call-site format (%s)",
+		       eh_data_format_name (cs_format));
 
 #ifdef HAVE_AS_LEB128
   ASM_GENERATE_INTERNAL_LABEL (cs_after_size_label, "LLSDACSB",
@@ -3706,8 +3763,9 @@ output_function_exception_table ()
       else
 	type = lookup_type_for_runtime (type);
 
-      /* ??? Handle ASM_PREFERRED_DATA_FORMAT.  */
-      output_constant (type, GET_MODE_SIZE (ptr_mode));
+      dw2_asm_output_encoded_addr_rtx (tt_format,
+				       expand_expr (type, NULL_RTX, VOIDmode,
+						    EXPAND_INITIALIZER));
     }
 
 #ifdef HAVE_AS_LEB128
