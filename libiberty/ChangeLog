@@ -1,5 +1,18 @@
 2005-03-24  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* Makefile.in (CFILES): Add strndup.c and xstrndup.c.
+	(REQUIRED_OFILES): Add xstrndup.o.
+	(CONFIGURED_OFILES): Add strndup.o.
+	Regenerate dependencies.
+
+	* configure.ac (funcs, AC_CHECK_FUNCS): Add strndup.
+
+	* strndup.c, xstrndup.c: New.
+
+	* config.in, configure, functions.texi: Regenerate.
+
+2005-03-24  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* xmemdup.c, xstrdup.c: Expose the tail call.
 
 2005-03-09  Mark Mitchell  <mark@codesourcery.com>

@@ -339,6 +339,14 @@ between calls to @code{getpwd}.
 
 @end deftypefn
 
+@c gettimeofday.c:12
+@deftypefn int gettimeofday (struct timeval *@var{tp}, void *@var{tz})
+
+Writes the current time to @var{tp}.  This implementation requires
+that @var{tz} be NULL.  Returns 0 on success, -1 on failure.
+
+@end deftypefn
+
 @c hex.c:30
 @deftypefn Extension void hex_init (void)
 
@@ -893,6 +901,15 @@ Compares the first @var{n} bytes of two strings, returning a value as
 
 @end deftypefn
 
+@c strndup.c:23
+@deftypefn Extension char* strndup (const char *@var{s}, size_t @var{n})
+
+Returns a pointer to a copy of @var{s} with at most @var{n} characters
+in memory obtained from @code{malloc}, or @code{NULL} if insufficient
+memory was available.  The result is always NUL terminated.
+
+@end deftypefn
+
 @c strrchr.c:6
 @deftypefn Supplemental char* strrchr (const char *@var{s}, int @var{c})
 
@@ -1005,6 +1022,16 @@ will be a valid file name yet not exist when @code{tmpnam} checks for
 it.  @var{s} must point to a buffer of at least @code{L_tmpnam} bytes,
 or be @code{NULL}.  Use of this function creates a security risk, and it must
 not be used in new projects.  Use @code{mkstemp} instead.
+
+@end deftypefn
+
+@c unlink-if-ordinary.c:27
+@deftypefn Supplemental int unlink_if_ordinary (const char*)
+
+Unlinks the named file, unless it is special (e.g. a device file).
+Returns 0 when the file was unlinked, a negative value (and errno set) when
+there was an error deleting the file, and a positive value if no attempt
+was made to unlink the file because it is special.
 
 @end deftypefn
 
@@ -1150,6 +1177,15 @@ obtain memory.
 
 Behaves exactly like the standard @code{strerror} function, but
 will never return a @code{NULL} pointer.
+
+@end deftypefn
+
+@c xstrndup.c:23
+@deftypefn Replacement char* xstrndup (const char *@var{s}, size_t @var{n})
+
+Returns a pointer to a copy of @var{s} with at most @var{n} characters
+without fail, using @code{xmalloc} to obtain memory.  The result is
+always NUL terminated.
 
 @end deftypefn
 

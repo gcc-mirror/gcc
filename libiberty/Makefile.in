@@ -150,12 +150,13 @@ CFILES = alloca.c argv.c asprintf.c atexit.c				\
 	safe-ctype.c setenv.c sigsetmask.c snprintf.c sort.c spaces.c	\
 	 splay-tree.c stpcpy.c stpncpy.c strcasecmp.c strchr.c strdup.c	\
 	 strerror.c strncasecmp.c strncmp.c strrchr.c strsignal.c	\
-	 strstr.c strtod.c strtol.c strtoul.c				\
+	 strstr.c strtod.c strtol.c strtoul.c strndup.c			\
 	ternary.c tmpnam.c						\
 	unlink-if-ordinary.c						\
 	vasprintf.c vfork.c vfprintf.c vprintf.c vsnprintf.c vsprintf.c	\
 	waitpid.c							\
-	xatexit.c xexit.c xmalloc.c xmemdup.c xstrdup.c xstrerror.c
+	xatexit.c xexit.c xmalloc.c xmemdup.c xstrdup.c xstrerror.c	\
+	 xstrndup.c
 
 # These are always included in the library.  The first four are listed
 # first and by compile time to optimize parallel builds.
@@ -175,7 +176,7 @@ REQUIRED_OFILES = ./regex.o ./cplus-dem.o ./cp-demangle.o ./md5.o	\
 	./ternary.o							\
 	./unlink-if-ordinary.o						\
 	./xatexit.o ./xexit.o ./xmalloc.o ./xmemdup.o ./xstrdup.o	\
-	 ./xstrerror.o
+	 ./xstrerror.o ./xstrndup.o
 
 # These are all the objects that configure may add to the library via
 # $funcs or EXTRA_OFILES.  This list exists here only for "make
@@ -195,7 +196,7 @@ CONFIGURED_OFILES = ./asprintf.o ./atexit.o				\
 	./random.o ./rename.o ./rindex.o				\
 	./setenv.o ./sigsetmask.o ./snprintf.o ./stpcpy.o ./stpncpy.o	\
 	 ./strcasecmp.o ./strchr.o ./strdup.o ./strncasecmp.o		\
-	 ./strncmp.o ./strrchr.o ./strstr.o				\
+	 ./strncmp.o ./strndup.o ./strrchr.o ./strstr.o			\
 	 ./strtod.o ./strtol.o ./strtoul.o				\
 	./tmpnam.o							\
 	./vasprintf.o ./vfork.o ./vfprintf.o ./vprintf.o ./vsnprintf.o	\
@@ -916,6 +917,12 @@ $(CONFIGURED_OFILES): stamp-picdir
 	else true; fi
 	$(COMPILE.c) $(srcdir)/strncmp.c $(OUTPUT_OPTION)
 
+./strndup.o: $(srcdir)/strndup.c $(INCDIR)/ansidecl.h
+	if [ x"$(PICFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(srcdir)/strndup.c -o pic/$@; \
+	else true; fi
+	$(COMPILE.c) $(srcdir)/strndup.c $(OUTPUT_OPTION)
+
 ./strrchr.o: $(srcdir)/strrchr.c $(INCDIR)/ansidecl.h
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/strrchr.c -o pic/$@; \
@@ -1057,4 +1064,11 @@ $(CONFIGURED_OFILES): stamp-picdir
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/xstrerror.c -o pic/$@; \
 	else true; fi
 	$(COMPILE.c) $(srcdir)/xstrerror.c $(OUTPUT_OPTION)
+
+./xstrndup.o: $(srcdir)/xstrndup.c config.h $(INCDIR)/ansidecl.h \
+	$(INCDIR)/libiberty.h
+	if [ x"$(PICFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(srcdir)/xstrndup.c -o pic/$@; \
+	else true; fi
+	$(COMPILE.c) $(srcdir)/xstrndup.c $(OUTPUT_OPTION)
 

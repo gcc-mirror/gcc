@@ -255,6 +255,10 @@ extern PTR xcalloc PARAMS ((size_t, size_t)) ATTRIBUTE_MALLOC;
 
 extern char *xstrdup PARAMS ((const char *)) ATTRIBUTE_MALLOC;
 
+/* Copy at most N characters from string into a buffer without fail.  */
+
+extern char *xstrndup PARAMS ((const char *, size_t)) ATTRIBUTE_MALLOC;
+
 /* Copy an existing memory buffer to a new memory buffer without fail.  */
 
 extern PTR xmemdup PARAMS ((const PTR, size_t, size_t)) ATTRIBUTE_MALLOC;
