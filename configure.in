@@ -482,16 +482,10 @@ case "${target}" in
   arm-*-pe*)
     noconfigdirs="$noconfigdirs target-libgloss ${libgcj}"
     ;;
-  arm-*-oabi*)
-    noconfigdirs="$noconfigdirs target-libgloss ${libgcj}"
-    ;;
   thumb-*-coff)
     noconfigdirs="$noconfigdirs target-libgloss ${libgcj}"
     ;;
   thumb-*-elf)
-    noconfigdirs="$noconfigdirs target-libgloss ${libgcj}"
-    ;;
-  thumb-*-oabi)
     noconfigdirs="$noconfigdirs target-libgloss ${libgcj}"
     ;;
   thumb-*-pe)
