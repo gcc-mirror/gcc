@@ -1,3 +1,13 @@
+2002-10-09  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.md (extenddftf2): Change to define_insn
+	which copies first FPR and clears second.
+	(extendsftf2): Same.
+	(floatditf2): Fix typo.
+	(floatsitf2): Same.
+	(fix_trunctfdi2): Same.
+	(fix_trunctfsi2): Same.
+
 2002-10-09  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* conflict.c (arc_hash): Change return type to hashval_t.
