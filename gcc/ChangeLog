@@ -1,3 +1,8 @@
+2004-08-07  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.c (ix86_expand_clrmem): Properly call
+	gen_strset for 64bit target.
+
 2004-08-07  Olivier Hainque  <hainque@act-europe.fr>
 
 	* config/vxworks.h (HANDLE_SYSV_PRAGMA): Remove definition.
