@@ -1,3 +1,15 @@
+2002-09-30  Bob Wilson  <bob.wilson@acm.org>
+
+	* config/xtensa/xtensa.h (REG_CLASS_NAMES, REG_CLASS_CONTENTS):
+	Add new RL_REGS register class.
+	(PREFERRED_RELOAD_CLASS, PREFERRED_OUTPUT_RELOAD_CLASS):
+	Call xtensa_preferred_reload_class for both input and output reloads.
+	* config/xtensa/xtensa.c (xtensa_regno_to_class): Use new RL_REGS class.
+	(xtensa_preferred_reload_class): Handle output reloads; use RL_REGS
+	instead of either AR_REGS or GR_REGS classes.
+	(xtensa_secondary_reload_class): Use new RL_REGS class.
+	* config/xtensa/xtensa-protos.h (xtensa_preferred_reload_class): Update.
+
 2002-07-12  Marek Michalkiewicz  <marekm@amelek.gda.pl>
 
 	* config/avr/avr.c (test_hard_reg_class): Fix TEST_HARD_REG_BIT
