@@ -1,3 +1,8 @@
+2001-02-18  Shane Nay  <shane@agendacomputing.com>
+
+	* mips.c (mips_expand_prologue) Add REG_MAYBE_DEAD to
+	structure shift insns.
+
 2001-02-18  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/alpha.md (movsi_fix): Fix typo in pattern name.
