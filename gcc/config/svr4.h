@@ -1,8 +1,7 @@
 /* svr4.h  --  operating system specific defines to be used when
    targeting GCC for some generic System V Release 4 system.
-   Copyright (C) 1991 Free Software Foundation, Inc.
-
-   Written by Ron Guilmette (rfg@ncd.com).
+   Copyright (C) 1991, 1994 Free Software Foundation, Inc.
+   Contributed by Ron Guilmette (rfg@netcom.com).
 
 This file is part of GNU CC.
 
@@ -612,6 +611,7 @@ do {									 \
 	 && DECL_INITIAL (DECL) == error_mark_node			 \
 	 && !size_directive_output)					 \
        {								 \
+	 size_directive_output = 1;					 \
 	 fprintf (FILE, "\t%s\t ", SIZE_ASM_OP);			 \
 	 assemble_name (FILE, name);					 \
 	 fprintf (FILE, ",%d\n",  int_size_in_bytes (TREE_TYPE (DECL))); \
