@@ -17,6 +17,8 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
+#ifndef NO_HALF_PIC
+
 /* Add prototype support.  */
 #ifndef PROTO
 #if defined (USE_PROTOTYPES) ? USE_PROTOTYPES : defined (__STDC__)
@@ -78,3 +80,5 @@ extern struct rtx_def *half_pic_ptr PROTO((struct rtx_def *));	/* return RTX for
 #ifndef HALF_PIC_PREFIX
 #define	HALF_PIC_PREFIX	"__pic_"
 #endif
+
+#endif /* NO_HALF_PIC */
