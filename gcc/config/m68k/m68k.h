@@ -1371,8 +1371,10 @@ __transfer_from_trampoline ()					\
    work properly in synth_mult on the 68020,
    relative to an average of the time for add and the time for shift,
    taking away a little more because sometimes move insns are needed.  */
+/* div?.w is relatively cheaper on 68000 counted in COSTS_N_INSNS terms.  */
 #define MULL_COST (TARGET_68040 ? 5 : 13)
-#define MULW_COST (TARGET_68040 ? 3 : 8)
+#define MULW_COST (TARGET_68040 ? 3 : TARGET_68020 ? 8 : 5)
+#define DIVW_COST (TARGET_68020 ? 27 : 12)
 
 #define RTX_COSTS(X,CODE,OUTER_CODE)				\
   case PLUS:							\
@@ -1389,7 +1391,19 @@ __transfer_from_trampoline ()					\
     break;							\
   case ASHIFT:							\
   case ASHIFTRT:						\
-  case LSHIFTRT:						\
+  case LSHIFTRT:							\
+    if (! TARGET_68020)							\
+      {									\
+	if (GET_CODE (XEXP (X, 1)) == CONST_INT)			\
+	  {								\
+	    if (INTVAL (XEXP (X, 1)) < 16)				\
+	      return COSTS_N_INSNS (2) + INTVAL (XEXP (X, 1)) / 2;	\
+	    else							\
+	      /* We're using clrw + swap for these cases.  */		\
+	      return COSTS_N_INSNS (4) + (INTVAL (XEXP (X, 1)) - 16) / 2; \	
+	  }								\
+	return COSTS_N_INSNS (10); /* worst case */			\
+      }									\
     /* A shift by a big integer takes an extra instruction.  */ \
     if (GET_CODE (XEXP (X, 1)) == CONST_INT			\
 	&& (INTVAL (XEXP (X, 1)) == 16))			\
@@ -1400,6 +1414,10 @@ __transfer_from_trampoline ()					\
       return COSTS_N_INSNS (3);	 /* lsr #i,dn */		\
     break;							\
   case MULT:							\
+    if ((GET_CODE (XEXP (X, 0)) == ZERO_EXTEND			\
+	 || GET_CODE (XEXP (X, 0)) == SIGN_EXTEND)		\
+	&& GET_MODE (X) == SImode)				\
+      return COSTS_N_INSNS (MULW_COST);				\
     if (GET_MODE (X) == QImode || GET_MODE (X) == HImode)	\
       return COSTS_N_INSNS (MULW_COST);				\
     else							\
@@ -1409,7 +1427,7 @@ __transfer_from_trampoline ()					\
   case MOD:							\
   case UMOD:							\
     if (GET_MODE (X) == QImode || GET_MODE (X) == HImode)	\
-      return COSTS_N_INSNS (27); /* div.w */			\
+      return COSTS_N_INSNS (DIVW_COST); /* div.w */		\
     return COSTS_N_INSNS (43);	 /* div.l */
 
 /* Tell final.c how to eliminate redundant test instructions.  */
