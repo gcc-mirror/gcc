@@ -1,3 +1,9 @@
+1999-07-26  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (ncp_convert): Rename to perform_implicit_conversion.
+	* call.c: All uses changed.
+	* typeck.c: Likewise.
+
 1999-07-26  Nathan Sidwell  <nathan@acm.org>
 
 	* exception.cc (__cplus_type_matcher): Match __eh_matcher

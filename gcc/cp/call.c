@@ -2977,8 +2977,8 @@ build_conditional_expr (arg1, arg2, arg3)
       /* In this case, there is always a common type.  */
       result_type = type_after_usual_arithmetic_conversions (arg2_type, 
 							     arg3_type);
-      arg2 = ncp_convert (result_type, arg2);
-      arg3 = ncp_convert (result_type, arg3);
+      arg2 = perform_implicit_conversion (result_type, arg2);
+      arg3 = perform_implicit_conversion (result_type, arg3);
     }
   /* [expr.cond]
 
@@ -3009,8 +3009,8 @@ build_conditional_expr (arg1, arg2, arg3)
     {
       result_type = composite_pointer_type (arg2_type, arg3_type, arg2,
 					    arg3, "conditional expression");
-      arg2 = ncp_convert (result_type, arg2);
-      arg3 = ncp_convert (result_type, arg3);
+      arg2 = perform_implicit_conversion (result_type, arg2);
+      arg3 = perform_implicit_conversion (result_type, arg3);
     }
 
   if (!result_type)
@@ -5060,12 +5060,16 @@ tourney (candidates)
   return champ;
 }
 
+/* Returns non-zero if things of type FROM can be converted to TO.  */
+
 int
 can_convert (to, from)
      tree to, from;
 {
   return can_convert_arg (to, from, NULL_TREE);
 }
+
+/* Returns non-zero if ARG (of type FROM) can be converted to TO.  */
 
 int
 can_convert_arg (to, from, arg)
@@ -5075,8 +5079,10 @@ can_convert_arg (to, from, arg)
   return (t && ! ICS_BAD_FLAG (t));
 }
 
+/* Convert EXPR to TYPE.  Return the converted expression.  */
+
 tree
-ncp_convert (type, expr)
+perform_implicit_conversion (type, expr)
      tree type;
      tree expr;
 {

@@ -6526,7 +6526,7 @@ convert_for_assignment (type, rhs, errtype, fndecl, parmnum)
 		  errtype);
       return error_mark_node;
     }
-  return ncp_convert (strip_top_quals (type), rhs);
+  return perform_implicit_conversion (strip_top_quals (type), rhs);
 }
 
 /* Convert RHS to be of type TYPE.
