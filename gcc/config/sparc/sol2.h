@@ -81,6 +81,33 @@ Boston, MA 02111-1307, USA.  */
 #define ASM_GENERATE_INTERNAL_LABEL(LABEL,PREFIX,NUM)	\
   sprintf ((LABEL), "*.L%s%ld", (PREFIX), (long)(NUM))
 
+/* The native TLS-enabled assembler requires the directive #tls_object
+   to be put on objects in TLS sections (as of v7.1).  This is not
+   required by the GNU assembler but supported on SPARC.  */
+#undef  ASM_DECLARE_OBJECT_NAME
+#define ASM_DECLARE_OBJECT_NAME(FILE, NAME, DECL)		\
+  do								\
+    {								\
+      HOST_WIDE_INT size;					\
+								\
+      if (DECL_THREAD_LOCAL (DECL))				\
+	ASM_OUTPUT_TYPE_DIRECTIVE (FILE, NAME, "tls_object");	\
+      else							\
+	ASM_OUTPUT_TYPE_DIRECTIVE (FILE, NAME, "object");	\
+								\
+      size_directive_output = 0;				\
+      if (!flag_inhibit_size_directive				\
+	  && (DECL) && DECL_SIZE (DECL))			\
+	{							\
+	  size_directive_output = 1;				\
+	  size = int_size_in_bytes (TREE_TYPE (DECL));		\
+	  ASM_OUTPUT_SIZE_DIRECTIVE (FILE, NAME, size);		\
+	}							\
+								\
+      ASM_OUTPUT_LABEL (FILE, NAME);				\
+    }								\
+  while (0)
+
 
 
 #undef  ENDFILE_SPEC
