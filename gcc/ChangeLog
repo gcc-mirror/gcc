@@ -1,3 +1,8 @@
+Wed May 17 18:06:12 2000  John David Anglin <dave@hiauly1.hia.nrc.ca>
+
+	* tree.c (build_common_tree_nodes): Do not build TI nodes unless
+	HOST_BITS_PER_WIDE_INT is >= 64.
+
 2000-05-17  Richard Henderson  <rth@cygnus.com>
 
 	* jump.c (jump_optimize_1): Remove inactive but real insns
