@@ -1,5 +1,9 @@
 2004-10-21  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* expr.c (store_expr): Remove dont_store_target.
+
+2004-10-21  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* tree-cfg.c (thread_jumps): Speed up by using a worklist.
 
 2004-10-21  Kazu Hirata  <kazu@cs.umass.edu>

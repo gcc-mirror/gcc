@@ -3754,7 +3754,6 @@ store_expr (tree exp, rtx target, int call_param_p)
   rtx temp;
   rtx alt_rtl = NULL_RTX;
   int dont_return_target = 0;
-  int dont_store_target = 0;
 
   if (VOID_TYPE_P (TREE_TYPE (exp)))
     {
@@ -3901,7 +3900,6 @@ store_expr (tree exp, rtx target, int call_param_p)
        || (temp != target && (side_effects_p (temp)
 			      || side_effects_p (target))))
       && TREE_CODE (exp) != ERROR_MARK
-      && ! dont_store_target
       /* If store_expr stores a DECL whose DECL_RTL(exp) == TARGET,
 	 but TARGET is not valid memory reference, TEMP will differ
 	 from TARGET although it is really the same location.  */
