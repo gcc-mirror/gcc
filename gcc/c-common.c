@@ -1335,6 +1335,21 @@ init_function_format_info ()
   record_function_format (get_identifier ("strftime"), NULL_TREE,
 			  strftime_format_type, 3, 0);
 
+  if (flag_isoc99)
+    {
+      /* ISO C99 adds the snprintf and vscanf family functions.  */
+      record_function_format (get_identifier ("snprintf"), NULL_TREE,
+			      printf_format_type, 3, 4);
+      record_function_format (get_identifier ("vsnprintf"), NULL_TREE,
+			      printf_format_type, 3, 0);
+      record_function_format (get_identifier ("vscanf"), NULL_TREE,
+			      scanf_format_type, 1, 0);
+      record_function_format (get_identifier ("vfscanf"), NULL_TREE,
+			      scanf_format_type, 2, 0);
+      record_function_format (get_identifier ("vsscanf"), NULL_TREE,
+			      scanf_format_type, 2, 0);
+    }
+
   record_international_format (get_identifier ("gettext"), NULL_TREE, 1);
   record_international_format (get_identifier ("dgettext"), NULL_TREE, 2);
   record_international_format (get_identifier ("dcgettext"), NULL_TREE, 2);
