@@ -1,3 +1,13 @@
+2004-03-23  Roger Sayle  <roger@eyesopen.com>
+
+	* reg-stack.c (get_true_reg): Handle FLOAT_TRUNCATE like FLOAT_EXTEND
+	if flag_unsafe_math_optimizations.
+	* config/i386/i386.md (truncdfsf2): If flag_unsafe_math_optimizations
+	and TARGET_80387 expand using truncdfsf2_noop pattern.
+	(truncxfsf2): Likewise using truncxfsf2_noop.
+	(truncxfdf2): Likewise using truncxfdf2_noop.
+	(truncdfsf2_noop, truncxfsf2_noop, truncxfdf2_noop): New patterns.
+
 2004-03-23  Ziemowit Laski  <zlaski@apple.com>
 
 	* hooks.c (hook_constcharptr_tree_null): New hook.

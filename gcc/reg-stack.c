@@ -574,6 +574,13 @@ get_true_reg (rtx *pat)
       case FIX:
       case FLOAT_EXTEND:
 	pat = & XEXP (*pat, 0);
+	break;
+
+      case FLOAT_TRUNCATE:
+	if (!flag_unsafe_math_optimizations)
+	  return pat;
+	pat = & XEXP (*pat, 0);
+	break;
       }
 }
 
