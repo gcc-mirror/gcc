@@ -1,3 +1,14 @@
+2001-07-20  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
+
+	* config/m68hc11/m68hc11.md ("andqi3"): Accept d as second operand.
+	("iorqi3"): Likewise.
+	("xorqi3"): Likewise.
+	("*addhi3"): Fix constraint to avoid reloading in a soft register.
+	("*subhi3_sp): Likewise.
+	("*subhi3"): Likewise.
+	("extendhisi2"): Accept D, X and Y as source operand to avoid 
+	reload problems.
+
 2001-07-20  Bruce Korb  <bkorb@gnu.org>
 
 	* fixinc/fixincl.c(test_for_changes): force unsigned char comparisons
