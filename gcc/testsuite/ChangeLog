@@ -1,3 +1,8 @@
+Fri Jul 10 23:43:33 1998 Martin von Loewis <martin@mira.isdn.cs.tu-berlin.de>
+	
+	*  g++.other/singleton.C: Return error value instead of taking
+	SIGSEGV.
+
 Fri Jul 10 10:02:03 1998  Klaus-Georg Adams <Klaus-Georg.Adams@chemie.uni-karlsruhe.de> 
 
 	*  g++.other/singleton.C: New test.   Warning is under dispute.
