@@ -1,3 +1,12 @@
+2002-05-07  Tom Tromey  <tromey@redhat.com>
+
+	Fix for PR java/1200:
+	* gjavah.c (throwable_p): New function.
+	(decode_signature_piece): Use it.  A `WeakReference' isn't the
+	same as a `jweak'.
+	Include hashtab.h.
+	(gcjh_streq): New function.
+
 2002-05-07  Andreas Jaeger  <aj@suse.de>
 
         * parse.y (finish_for_loop): Fix if statement.
