@@ -22,6 +22,8 @@ extern "C" {
 /* CYGNUS LOCAL: Include files.  */
 #include "ieeefp.h"
 
+#include "mprec.h"
+
 /* CYGNUS LOCAL: Default to XOPEN_MODE.  */
 #define _XOPEN_MODE
 
@@ -31,7 +33,9 @@ extern "C" {
 #define	__P(p)	()
 #endif
 
+#ifndef HUGE
 #define	HUGE	((float)3.40282346638528860e+38)
+#endif
 
 /* 
  * set X_TLOSS = pi*2**52, which is possibly defined in <values.h>
@@ -41,11 +45,6 @@ extern "C" {
 #define X_TLOSS		1.41484755040568800000e+16 
 
 /* These typedefs are true for the targets running Java. */
-
-#ifndef HAVE_INT32_DEFINED
-typedef int __int32_t;
-typedef unsigned int __uint32_t;
-#endif
 
 #define _IEEE_LIBM
 
@@ -135,7 +134,7 @@ extern double __ieee754_y1 __P((double));
 extern double __ieee754_jn __P((int,double));
 extern double __ieee754_yn __P((int,double));
 extern double __ieee754_remainder __P((double,double));
-extern __int32_t __ieee754_rem_pio2 __P((double,double*));
+extern int32_t __ieee754_rem_pio2 __P((double,double*));
 #ifdef _SCALB_INT
 extern double __ieee754_scalb __P((double,int));
 #else
@@ -147,7 +146,7 @@ extern double __kernel_standard __P((double,double,int));
 extern double __kernel_sin __P((double,double,int));
 extern double __kernel_cos __P((double,double));
 extern double __kernel_tan __P((double,double,int));
-extern int    __kernel_rem_pio2 __P((double*,double*,int,int,int,const __int32_t*));
+extern int    __kernel_rem_pio2 __P((double*,double*,int,int,int,const int32_t*));
 
 /* Undocumented float functions.  */
 extern float logbf __P((float));
@@ -191,7 +190,7 @@ extern float __ieee754_y1f __P((float));
 extern float __ieee754_jnf __P((int,float));
 extern float __ieee754_ynf __P((int,float));
 extern float __ieee754_remainderf __P((float,float));
-extern __int32_t __ieee754_rem_pio2f __P((float,float*));
+extern int32_t __ieee754_rem_pio2f __P((float,float*));
 #ifdef _SCALB_INT
 extern float __ieee754_scalbf __P((float,int));
 #else
@@ -202,7 +201,7 @@ extern float __ieee754_scalbf __P((float,float));
 extern float __kernel_sinf __P((float,float,int));
 extern float __kernel_cosf __P((float,float));
 extern float __kernel_tanf __P((float,float,int));
-extern int   __kernel_rem_pio2f __P((float*,float*,int,int,int,const __int32_t*));
+extern int   __kernel_rem_pio2f __P((float*,float*,int,int,int,const int32_t*));
 
 /* The original code used statements like
 	n0 = ((*(int*)&one)>>29)^1;		* index of high word *
@@ -231,8 +230,8 @@ typedef union
   double value;
   struct 
   {
-    __uint32_t msw;
-    __uint32_t lsw;
+    uint32_t msw;
+    uint32_t lsw;
   } parts;
 } ieee_double_shape_type;
 
@@ -245,8 +244,8 @@ typedef union
   double value;
   struct 
   {
-    __uint32_t lsw;
-    __uint32_t msw;
+    uint32_t lsw;
+    uint32_t msw;
   } parts;
 } ieee_double_shape_type;
 
@@ -316,7 +315,7 @@ do {								\
 typedef union
 {
   float value;
-  __uint32_t word;
+  uint32_t word;
 } ieee_float_shape_type;
 
 /* Get a 32 bit int from a float.  */
