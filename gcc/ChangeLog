@@ -1,3 +1,13 @@
+2001-03-04  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
+
+	* config/m68hc11/m68hc11.md (X_REGNUM, D_REGNUM): New constant.
+	(Y_REGNUM, SP_REGNUM, PC_REGNUM, A_REGNUM, B_REGNUM): Likewise.
+	(CC_REGNUM): Likewise.
+	(*unnamed splits): Use above constants instead of hard coded numbers.
+	(*adcq, *subcq, *addsi_carry, *rotlqi3_with_carry): Likewise.
+	(*rotlhi3_with_carry, *rotrhi3_with_carry): Likewise.
+	(*return_16bit, *unnamed peepholes): Likewise.
+
 2001-03-03  Laurynas Biveinis  <lauras@softhome.net>
 
 	* gcc.c (convert_filename): Append executable suffix
