@@ -1,7 +1,8 @@
 /* Definitions of MIPS sub target machine for GNU compiler. 
    Toshiba r3900.  You should include mips.h after this.
 
-   Copyright (C) 1989, 90-6, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997
+   Free Software Foundation, Inc.
    Contributed by Gavin Koch (gavin@cygnus.com).
 
 This file is part of GNU CC.
