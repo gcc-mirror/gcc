@@ -35,6 +35,14 @@
         stop
         end
 
-! { dg-final { scan-tree-dump-times "vectorized 2 loops" 1 "vect" { xfail vect_no_align } } }
-! { dg-final { scan-tree-dump-times "Alignment of access forced using peeling" 1 "vect" { xfail vect_no_align } } }
-! { dg-final { scan-tree-dump-times "Vectorizing an unaligned access" 2 "vect" { xfail vect_no_align } } }
+! { dg-final { scan-tree-dump-times "vectorized 2 loops" 1 "vect" { xfail { vect_no_align || lp64 } } } }
+! { dg-final { scan-tree-dump-times "Alignment of access forced using peeling" 1 "vect" { xfail { vect_no_align || lp64 } } } }
+! { dg-final { scan-tree-dump-times "Vectorizing an unaligned access" 2 "vect" { xfail { vect_no_align || lp64 } } } }
+
+! We also expect to vectorize one loop for lp64 targets that support 
+! misaligned access:
+!   scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target { lp64 && !vect_no_align } }
+!   scan-tree-dump-times "Alignment of access forced using peeling" 1 "vect" { target { lp64 && !vect_no_align } }
+!   scan-tree-dump-times "Vectorizing an unaligned access" 1 "vect" { target { lp64 && !vect_no_align } }
+! but we currently can't combine logical operators. (Could define 
+! a keyword for "not_vect_no_align" if desired). 
