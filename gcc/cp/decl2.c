@@ -5235,19 +5235,33 @@ handle_class_head (aggr, scope, id)
     decl = DECL_TEMPLATE_RESULT (id);
   else 
     {
-      if (scope)
-	{
-	  cp_error ("`%T' does not have a nested type named `%D'", scope, id);
-	  return error_mark_node;
-	}
+      tree current = current_scope();
+  
+      if (current == NULL_TREE)
+        current = current_namespace;
+      if (scope == std_node)
+        scope = global_namespace;
+      if (scope == NULL_TREE)
+        scope = global_namespace;
+      if (scope == current)
+        {
+          /* We've been given AGGR SCOPE::ID, when we're already inside SCOPE.
+             Be nice about it.  */
+          if (pedantic)
+            cp_pedwarn ("extra qualification `%T::' on member `%D' ignored",
+                        FROB_CONTEXT (scope), id);
+        }
+      else if (scope != global_namespace)
+	cp_error ("`%T' does not have a nested type named `%D'", scope, id);
       else
 	cp_error ("no file-scope type named `%D'", id);
       
-      decl = TYPE_MAIN_DECL (xref_tag (aggr, make_anon_name (), 1));
+      /* Inject it at the current scope.  */
+      decl = TYPE_MAIN_DECL (xref_tag (aggr, id, 1));
     }
-
-  /* This syntax is only allowed when we're defining a type, so we
-     enter the SCOPE.  */
+ 
+  /* Enter the SCOPE.  If this turns out not to be a definition, the
+     parser must leave the scope.  */
   push_scope (CP_DECL_CONTEXT (decl));
 
   /* If we see something like:

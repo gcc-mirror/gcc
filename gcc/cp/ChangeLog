@@ -1,3 +1,8 @@
+1999-08-25  Nathan Sidwell  <nathan@acm.org>
+
+	* decl2.c (handle_class_head): Be graceful about additional
+	scope qualifiers. Adjust comments to reflect reality.
+
 1999-08-24  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* call.c (build_conditional_expr): Fix typo.
