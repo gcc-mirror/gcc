@@ -1,4 +1,4 @@
-2000-07-04  Hans-Peter Nilsson  <hp@axis.com>
+2000-07-10  Hans-Peter Nilsson  <hp@axis.com>
 	    Bruce Korb  <bkorb@gnu.org>
 
 	* fixinc/inclhack.def (libc1_ifdefd_memx): New fix.
