@@ -305,6 +305,18 @@ print_operand (stream, x, code)
     }
 }
 
+static void force_into PROTO ((rtx, rtx));
+
+/* Like force_operand, but guarantees that VALUE ends up in TARGET.  */
+static void
+force_into (value, target)
+     rtx value, target;
+{
+  value = force_operand (value, target);
+  if (! rtx_equal_p (value, target))
+    emit_insn (gen_move_insn (target, value));
+}
+
 /* Emit code to perform a block move.  Choose the best method.
 
    OPERANDS[0] is the destination.
@@ -342,8 +354,8 @@ expand_block_move (operands)
 	    = copy_to_mode_reg (Pmode,
 				gen_rtx_SYMBOL_REF (Pmode,
 						    IDENTIFIER_POINTER (entry_name)));
-	  emit_insn (gen_move_insn (r4, XEXP (operands[0], 0)));
-	  emit_insn (gen_move_insn (r5, XEXP (operands[1], 0)));
+	  force_into (XEXP (operands[0], 0), r4);
+	  force_into (XEXP (operands[1], 0), r5);
 	  emit_insn (gen_block_move_real_i4 (func_addr_rtx));
 	  return 1;
 	}
@@ -363,8 +375,8 @@ expand_block_move (operands)
 	    = copy_to_mode_reg (Pmode,
 				gen_rtx_SYMBOL_REF (Pmode,
 						    IDENTIFIER_POINTER (entry_name)));
-	  emit_insn (gen_move_insn (r4, XEXP (operands[0], 0)));
-	  emit_insn (gen_move_insn (r5, XEXP (operands[1], 0)));
+	  force_into (XEXP (operands[0], 0), r4);
+	  force_into (XEXP (operands[1], 0), r5);
 
 	  dwords = bytes >> 3;
 	  emit_insn (gen_move_insn (r6, GEN_INT (dwords - 1)));
@@ -389,8 +401,8 @@ expand_block_move (operands)
 	= copy_to_mode_reg (Pmode,
 			    gen_rtx (SYMBOL_REF, Pmode,
 				     IDENTIFIER_POINTER (entry_name)));
-      emit_insn (gen_move_insn (r4, XEXP (operands[0], 0)));
-      emit_insn (gen_move_insn (r5, XEXP (operands[1], 0)));
+      force_into (XEXP (operands[0], 0), r4);
+      force_into (XEXP (operands[1], 0), r5);
       emit_insn (gen_block_move_real (func_addr_rtx));
       return 1;
     }
@@ -411,8 +423,8 @@ expand_block_move (operands)
 	= copy_to_mode_reg (Pmode,
 			    gen_rtx (SYMBOL_REF, Pmode,
 				     IDENTIFIER_POINTER (entry_name)));
-      emit_insn (gen_move_insn (r4, XEXP (operands[0], 0)));
-      emit_insn (gen_move_insn (r5, XEXP (operands[1], 0)));
+      force_into (XEXP (operands[0], 0), r4);
+      force_into (XEXP (operands[1], 0), r5);
 
       /* r6 controls the size of the move.  16 is decremented from it
 	 for each 64 bytes moved.  Then the negative bit left over is used
