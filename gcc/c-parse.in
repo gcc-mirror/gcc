@@ -176,6 +176,7 @@ end ifc
 %type <ttype> compstmt compstmt_start compstmt_nostart compstmt_primary_start
 %type <ttype> do_stmt_start poplevel
 
+%type <ttype> c99_block_start c99_block_end
 %type <ttype> declarator
 %type <ttype> notype_declarator after_type_declarator
 %type <ttype> parm_declarator
@@ -1623,6 +1624,40 @@ end ifobjc
 poplevel:  /* empty */
                 { $$ = add_scope_stmt (/*begin_p=*/0, /*partial_p=*/0); }
 
+/* Start and end blocks created for the new scopes of C99.  */
+c99_block_start: /* empty */
+		{ if (flag_isoc99)
+		    {
+		      $$ = c_begin_compound_stmt ();
+		      pushlevel (0);
+		      clear_last_expr ();
+		      add_scope_stmt (/*begin_p=*/1, /*partial_p=*/0);
+ifobjc
+		      if (objc_method_context)
+			add_objc_decls ();
+end ifobjc
+		    }
+		  else
+		    $$ = NULL_TREE;
+		}
+	;
+
+/* Productions using c99_block_start and c99_block_end will need to do what's
+   in compstmt: RECHAIN_STMTS ($1, COMPOUND_BODY ($1)); $$ = $2; where
+   $1 is the value of c99_block_start and $2 of c99_block_end.  */
+c99_block_end: /* empty */
+                { if (flag_isoc99)
+		    {
+		      tree scope_stmt = add_scope_stmt (/*begin_p=*/0, /*partial_p=*/0);
+		      $$ = poplevel (kept_level_p (), 0, 0); 
+		      SCOPE_STMT_BLOCK (TREE_PURPOSE (scope_stmt)) 
+			= SCOPE_STMT_BLOCK (TREE_VALUE (scope_stmt))
+			= $$;
+		    }
+		  else
+		    $$ = NULL_TREE; }
+	;
+
 /* Read zero or more forward-declarations for labels
    that nested functions can jump to.  */
 maybe_label_decls:
@@ -1703,7 +1738,7 @@ compstmt: compstmt_start compstmt_nostart
 
 /* Value is number of statements counted as of the closeparen.  */
 simple_if:
-	  if_prefix lineno_labeled_stmt
+	  if_prefix c99_block_lineno_labeled_stmt
                 { c_finish_then (); }
 /* Make sure c_expand_end_cond is run once
    for each call to c_expand_start_cond.
@@ -1735,7 +1770,7 @@ do_stmt_start:
 		     condition now.  Otherwise, we can get crashes at
 		     RTL-generation time.  */
 		  DO_COND ($<ttype>$) = error_mark_node; }
-	  lineno_labeled_stmt WHILE
+	  c99_block_lineno_labeled_stmt WHILE
 		{ $$ = $<ttype>2;
 		  RECHAIN_STMTS ($$, DO_BODY ($$)); }
 	;
@@ -1765,6 +1800,13 @@ lineno_labeled_stmt:
 		{ }
 	;
 
+/* Like lineno_labeled_stmt, but a block in C99.  */
+c99_block_lineno_labeled_stmt:
+	  c99_block_start lineno_labeled_stmt c99_block_end
+		{ if (flag_isoc99)
+		    RECHAIN_STMTS ($1, COMPOUND_BODY ($1)); }
+	;
+
 lineno_stmt_or_label:
 	  save_filename save_lineno stmt_or_label
 		{ $$ = $3; }
@@ -1777,17 +1819,11 @@ stmt_or_label:
 		{ $$ = 1; }
 	;
 
-/* Parse a single real statement, not including any labels.  */
-stmt:
-	  compstmt
-		{ stmt_count++; }
-	| expr ';'
-		{ stmt_count++;
-		  c_expand_expr_stmt ($1); }
-	| simple_if ELSE
+select_or_iter_stmt:
+	  simple_if ELSE
 		{ c_expand_start_else ();
 		  $<itype>1 = stmt_count; }
-	  lineno_labeled_stmt
+	  c99_block_lineno_labeled_stmt
                 { c_finish_else ();
 		  c_expand_end_cond ();
 		  if (extra_warnings && stmt_count == $<itype>1)
@@ -1812,7 +1848,7 @@ stmt:
                 { $4 = truthvalue_conversion ($4);
 		  $<ttype>$ 
 		    = add_stmt (build_stmt (WHILE_STMT, $4, NULL_TREE)); }
-	  lineno_labeled_stmt
+	  c99_block_lineno_labeled_stmt
 		{ RECHAIN_STMTS ($<ttype>6, WHILE_BODY ($<ttype>6)); }
 	| do_stmt_start
 	  '(' expr ')' ';'
@@ -1831,13 +1867,25 @@ stmt:
                 { FOR_COND ($<ttype>5) = $6; }
 	  xexpr ')'
 		{ FOR_EXPR ($<ttype>5) = $9; }
-	  lineno_labeled_stmt
+	  c99_block_lineno_labeled_stmt
                 { RECHAIN_STMTS ($<ttype>5, FOR_BODY ($<ttype>5)); }
 	| SWITCH '(' expr ')'
 		{ stmt_count++;
 		  $<ttype>$ = c_start_case ($3); }
-	  lineno_labeled_stmt
+	  c99_block_lineno_labeled_stmt
                 { c_finish_case (); }
+	;
+
+/* Parse a single real statement, not including any labels.  */
+stmt:
+	  compstmt
+		{ stmt_count++; }
+	| expr ';'
+		{ stmt_count++;
+		  c_expand_expr_stmt ($1); }
+	| c99_block_start select_or_iter_stmt c99_block_end
+		{ if (flag_isoc99)
+		    RECHAIN_STMTS ($1, COMPOUND_BODY ($1)); }
 	| BREAK ';'
 	        { stmt_count++;
 		  add_stmt (build_break_stmt ()); }

@@ -1,5 +1,13 @@
 2000-11-13  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* c-parse.in (c99_block_start, c99_block_end,
+	c99_block_lineno_labeled_stmt): New.
+	(simple_if, do_stmt_start): Use c99_block_lineno_labeled_stmt.
+	(stmt): Split off selection and iteration statements into...
+	(select_or_iter_stmt): New.  Use c99_block_lineno_labeled_stmt.
+
+2000-11-13  Joseph S. Myers  <jsm28@cam.ac.uk>
+
 	* invoke.texi (-Wtrigraphs, -fdump-translation-unit, -save-temps,
 	-time): Update.
 
