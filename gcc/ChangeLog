@@ -1,3 +1,15 @@
+2003-03-18  Geoffrey Keating  <geoffk@apple.com>
+
+	* Makefile.in (emit-rtl.o): Add gt-emit-rtl.h to dependencies.
+
+	* gengtype.c: Include rtl.h.
+	(enum rtx_code): Don't define.
+	(rtx_format): Make declaration match rtl.h.
+	(rtx_next_new): Rename from rtx_next to avoid conflict.  Change all
+	users.
+	(adjust_field_rtx_def): Describe strings in NOTE_LINE_NUMBER notes.
+	* Makefile.in (gengtype.o): Update dependencies.
+
 2003-03-18  Andreas Schwab  <schwab@suse.de>
 
 	* config/m68k/m68k.md (iordi3): Fix setting low half to -1.  From

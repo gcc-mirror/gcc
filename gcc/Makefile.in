@@ -1561,7 +1561,7 @@ xcoffout.o : xcoffout.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(
 emit-rtl.o : emit-rtl.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) $(TREE_H) \
    flags.h function.h $(REGS_H) insn-config.h $(RECOG_H) real.h $(GGC_H) \
    $(EXPR_H) $(srcdir)/../include/obstack.h hard-reg-set.h bitmap.h toplev.h \
-   $(HASHTAB_H) $(TM_P_H) debug.h langhooks.h
+   $(HASHTAB_H) $(TM_P_H) debug.h langhooks.h gt-emit-rtl.h
 real.o : real.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) toplev.h $(TM_P_H)
 integrate.o : integrate.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) $(TREE_H) \
    flags.h debug.h $(INTEGRATE_H) insn-config.h $(EXPR_H) real.h $(REGS_H) \
@@ -2188,7 +2188,7 @@ gengtype$(build_exeext) : gengtype.o gengtype-lex.o gengtype-yacc.o \
 	 gengtype.o gengtype-lex.o gengtype-yacc.o $(BUILD_LIBS)
 
 gengtype.o : gengtype.c gengtype.h $(BCONFIG_H) $(SYSTEM_H) coretypes.h $(GTM_H) \
-  real.h rtl.def gtyp-gen.h
+  real.h $(RTL_BASE_H) gtyp-gen.h
 	$(BUILD_CC) -c $(BUILD_CFLAGS) $(BUILD_CPPFLAGS) $(INCLUDES) \
 	  $(srcdir)/gengtype.c $(OUTPUT_OPTION)
 

@@ -25,6 +25,10 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "gengtype.h"
 #include "gtyp-gen.h"
 
+#define NO_GENRTL_H
+#include "rtl.h"
+#undef abort
+
 /* Nonzero iff an error has occurred.  */
 static int hit_error = 0;
 
@@ -347,22 +351,15 @@ note_variable (s, t, o, pos)
   variables = n;
 }
 
-enum rtx_code {
-#define DEF_RTL_EXPR(ENUM, NAME, FORMAT, CLASS)   ENUM ,
-#include "rtl.def"
-#undef DEF_RTL_EXPR
-    NUM_RTX_CODE
-};
-
 /* We really don't care how long a CONST_DOUBLE is.  */
 #define CONST_DOUBLE_FORMAT "ww"
-static const char * const rtx_format[NUM_RTX_CODE] = {
+const char * const rtx_format[NUM_RTX_CODE] = {
 #define DEF_RTL_EXPR(ENUM, NAME, FORMAT, CLASS)   FORMAT ,
 #include "rtl.def"
 #undef DEF_RTL_EXPR
 };
 
-static int rtx_next[NUM_RTX_CODE];
+static int rtx_next_new[NUM_RTX_CODE];
 
 /* Generate the contents of the rtx_next array.  This really doesn't belong
    in gengtype at all, but it's needed for adjust_field_rtx_def.  */
@@ -375,15 +372,15 @@ gen_rtx_next ()
     {
       int k;
       
-      rtx_next[i] = -1;
+      rtx_next_new[i] = -1;
       if (strncmp (rtx_format[i], "iuu", 3) == 0)
-	rtx_next[i] = 2;
+	rtx_next_new[i] = 2;
       else if (i == COND_EXEC || i == SET || i == EXPR_LIST || i == INSN_LIST)
-	rtx_next[i] = 1;
+	rtx_next_new[i] = 1;
       else 
 	for (k = strlen (rtx_format[i]) - 1; k >= 0; k--)
 	  if (rtx_format[i][k] == 'e' || rtx_format[i][k] == 'u')
-	    rtx_next[i] = k;
+	    rtx_next_new[i] = k;
     }
 }
 
@@ -397,12 +394,12 @@ write_rtx_next ()
   oprintf (f, "\n/* Used to implement the RTX_NEXT macro.  */\n");
   oprintf (f, "const unsigned char rtx_next[NUM_RTX_CODE] = {\n");
   for (i = 0; i < NUM_RTX_CODE; i++)
-    if (rtx_next[i] == -1)
+    if (rtx_next_new[i] == -1)
       oprintf (f, "  0,\n");
     else
       oprintf (f, 
 	       "  offsetof (struct rtx_def, fld) + %d * sizeof (rtunion),\n",
-	       rtx_next[i]);
+	       rtx_next_new[i]);
   oprintf (f, "};\n");
 }
 
@@ -451,28 +448,47 @@ adjust_field_rtx_def (t, opt)
   {
     pair_p note_flds = NULL;
     int c;
-    
-    for (c = 0; c < 3; c++)
+
+    for (c = NOTE_INSN_BIAS; c <= NOTE_INSN_MAX; c++)
       {
 	pair_p old_note_flds = note_flds;
 	
 	note_flds = xmalloc (sizeof (*note_flds));
 	note_flds->line.file = __FILE__;
 	note_flds->line.line = __LINE__;
-	note_flds->name = "rttree";
-	note_flds->type = tree_tp;
 	note_flds->opt = xmalloc (sizeof (*note_flds->opt));
 	note_flds->opt->next = nodot;
 	note_flds->opt->name = "tag";
+	note_flds->opt->info = xasprintf ("%d", c);
 	note_flds->next = old_note_flds;
+
+	switch (c)
+	  {
+	    /* NOTE_INSN_MAX is used as the default field for line
+	       number notes.  */
+	  case NOTE_INSN_MAX:
+	    note_flds->opt->name = "default";
+	    note_flds->name = "rtstr";
+	    note_flds->type = &string_type;
+	    break;
+
+	  case NOTE_INSN_BLOCK_BEG:
+	  case NOTE_INSN_BLOCK_END:
+	    note_flds->name = "rttree";
+	    note_flds->type = tree_tp;
+	    break;
+	    
+	  case NOTE_INSN_EXPECTED_VALUE:
+	    note_flds->name = "rtx";
+	    note_flds->type = rtx_tp;
+	    break;
+
+	  default:
+	    note_flds->name = "rtint";
+	    note_flds->type = scalar_tp;
+	    break;
+	  }
       }
-    
-    note_flds->type = rtx_tp;
-    note_flds->name = "rtx";
-    note_flds->opt->info = "NOTE_INSN_EXPECTED_VALUE";
-    note_flds->next->opt->info = "NOTE_INSN_BLOCK_BEG";
-    note_flds->next->next->opt->info = "NOTE_INSN_BLOCK_END";
-    
     new_structure ("rtx_def_note_subunion", 1, &lexer_line, note_flds, NULL);
   }
   
