@@ -1,5 +1,10 @@
 2004-02-20  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* lib/target-supports.exp (check_alias_available): Don't mangle
+	function `g' in test program.
+
+2004-02-20  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* lib/target-supports.exp (check_profiling_available): Check
 	argument to determine whether we support a profiling type.
 	* lib/gcc-dg.exp (dg-require-profiling): Pass argument to
