@@ -19,6 +19,10 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* Language-dependent contents of an identifier.  */
 
+/* The limbo_value is used for block level extern declarations, which need
+   to be type checked against subsequent extern declarations.  They can't
+   be referenced after they fall out of scope, so they can't be global.  */
+
 struct lang_identifier
 {
   struct tree_identifier ignore;
@@ -53,6 +57,8 @@ struct lang_identifier
    message for this identifier.  Value is a FUNCTION_DECL or null.  */
 #define IDENTIFIER_ERROR_LOCUS(NODE)	\
   (((struct lang_identifier *)(NODE))->error_locus)
+#define IDENTIFIER_LIMBO_VALUE(NODE)	\
+  (((struct lang_identifier *)(NODE))->limbo_value)
 
 /* In identifiers, C uses the following fields in a special way:
    TREE_PUBLIC        to record that there was a previous local extern decl.
