@@ -2355,6 +2355,9 @@ comdat_linkage (decl)
 
   if (DECL_LANG_SPECIFIC (decl))
     DECL_COMDAT (decl) = 1;
+
+  if (TREE_CODE (decl) == FUNCTION_DECL)
+    DECL_DEFER_OUTPUT (decl) = 1;
 }
 
 /* For win32 we also want to put explicit instantiations in
