@@ -1,5 +1,4 @@
-// Build don't link:
-// Special g++ Options: -gdwarf-2 -O0
+// { dg-do compile }
 
 int foo()
 {
