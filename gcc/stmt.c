@@ -2149,8 +2149,6 @@ void
 expand_expr_stmt (exp)
      tree exp;
 {
-  bool want_value = last_expr_value != NULL_RTX;
-
   /* If -W, warn about statements with no side effects,
      except for an explicit cast to void (e.g. for assert()), and
      except inside a ({...}) where they may be useful.  */
@@ -2177,7 +2175,7 @@ expand_expr_stmt (exp)
      last_expr_value to get reset.  Therefore, we set last_expr_value
      and last_expr_type *after* calling expand_expr.  */
   last_expr_value = expand_expr (exp,
-				 (want_value && expr_stmts_for_value
+				 (expr_stmts_for_value
 				  ? NULL_RTX : const0_rtx),
 				 VOIDmode, 0);
   last_expr_type = TREE_TYPE (exp);
@@ -2190,7 +2188,7 @@ expand_expr_stmt (exp)
       if (TYPE_MODE (TREE_TYPE (exp)) == VOIDmode)
 	;
       else if (TYPE_MODE (TREE_TYPE (exp)) != BLKmode)
-	last_expr_value = copy_to_reg (last_expr_value);
+	copy_to_reg (last_expr_value);
       else
 	{
 	  rtx lab = gen_label_rtx ();
@@ -2212,14 +2210,6 @@ expand_expr_stmt (exp)
      used as a result of this expression will already have been preserved
      above.  */
   free_temp_slots ();
-
-  if (! want_value && last_expr_value)
-    {
-      protect_from_queue (last_expr_value, 0);
-      last_expr_value = NULL_RTX;
-    }
-  else if (want_value && ! last_expr_value)
-    last_expr_value = const0_rtx;
 
   emit_queue ();
 }
@@ -2346,8 +2336,7 @@ clear_last_expr ()
    The caller must save that value and pass it to expand_end_stmt_expr.  */
 
 tree
-expand_start_stmt_expr (want_value)
-     int want_value;
+expand_start_stmt_expr ()
 {
   tree t;
 
@@ -2358,7 +2347,6 @@ expand_start_stmt_expr (want_value)
   start_sequence_for_rtl_expr (t);
   NO_DEFER_POP;
   expr_stmts_for_value++;
-  last_expr_value = want_value ? const0_rtx : NULL_RTX;
   return t;
 }
 

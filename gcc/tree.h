@@ -2706,7 +2706,7 @@ extern int type_num_arguments                   PARAMS ((tree));
 
 extern int in_control_zone_p			PARAMS ((void));
 extern void expand_fixups			PARAMS ((rtx));
-extern tree expand_start_stmt_expr		PARAMS ((int));
+extern tree expand_start_stmt_expr		PARAMS ((void));
 extern tree expand_end_stmt_expr		PARAMS ((tree));
 extern void expand_expr_stmt			PARAMS ((tree));
 extern int warn_if_unused_value			PARAMS ((tree));
