@@ -1,5 +1,8 @@
 2000-04-21  Tom Tromey  <tromey@cygnus.com>
 
+	* java/io/PipedInputStream.java, java/io/PipedOutputStream.java:
+	Yet another new version from Classpath.
+
 	Fix for PR libgcj/15:
 	* java/util/natGregorianCalendar.cc (_REENTRANT,
 	_POSIX_PTHREAD_SEMANTICS): Don't define.

@@ -1,5 +1,5 @@
 /* PipedOutputStream.java -- Write portion of piped streams.
-   Copyright (C) 1998 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -164,10 +164,7 @@ close() throws IOException
 public synchronized void
 write(int b) throws IOException
 {
-  byte[] buf = new byte[1];
-  buf[0] = (byte)(b & 0xFF);
-
-  snk.write(buf, 0, buf.length);
+  snk.receive (b);
 }
 
 /*************************************************************************/
@@ -188,7 +185,7 @@ write(int b) throws IOException
 public void
 write(byte[] buf, int offset, int len) throws IOException
 {
-  snk.write(buf, 0, len);
+  snk.receive (buf, 0, len);
 }
 
 /*************************************************************************/

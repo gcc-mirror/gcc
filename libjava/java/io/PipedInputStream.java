@@ -398,30 +398,19 @@ read(byte[] buf, int offset, int len) throws IOException
   * If there is no data ready to be written, or if the internal circular
   * buffer is full, this method blocks.
   *
-  * *****What is this method really supposed to do *********
+  * @param byte_received The byte to write to this stream
+  *
+  * @exception IOException if error occurs
+  *
   */
 protected synchronized void
 receive(int byte_received) throws IOException
 {
-  int orig_in = in;
-
-  for (;;)
-    {
-      // Wait for something to happen
-      try
-        {
-          wait();
-        }
-      catch(InterruptedException e) { ; }
-
-      // See if we woke up because the stream was closed on us
-      if (closed)
-        throw new IOException("Stream closed before receiving byte");
-
-      // See if a byte of data was received
-      if (in != orig_in)
-        return;
-    }
+  // This is really slow, but it has the benefit of not duplicating
+  // the complicated machinery in receive(byte[],int,int).
+  byte[] buf = new byte[1];
+  buf[0] = (byte) (byte_received & 0xff);
+  receive (buf, 0, 1);
 }
 
 /*************************************************************************/
@@ -439,7 +428,7 @@ receive(int byte_received) throws IOException
   * @exception IOException If an error occurs
   */
 synchronized void
-write(byte[] buf, int offset, int len) throws IOException
+receive(byte[] buf, int offset, int len) throws IOException
 {
   if (len <= 0)
     return;
