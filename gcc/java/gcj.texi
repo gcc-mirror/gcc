@@ -515,6 +515,17 @@ Sometimes the @code{libgcj} implementation of a method or class differs
 from the JDK implementation.  This is not always a bug.  Still, if it
 affects you, it probably makes sense to report it so that we can discuss
 the appropriate response.
+
+@item
+@command{gcj} does not currently allow for piecemeal replacement of
+components within @code{libgcj}. Unfortunately, programmers often want
+to use newer versions of certain packages, such as those provided by
+the Apache Software Foundation's Jakarta project.  This has forced us
+to place the @code{org.w3c.dom} and @code{org.xml.sax} packages into
+their own libraries, separate from @code{libgcj}.  If you intend to
+use these classes, you must link them explicitly with
+@code{-l-org-w3c-dom} and @code{-l-org-xml-sax}.  Future versions of
+@command{gcj} may not have this restriction.
 @end itemize
 
 @node Extensions
