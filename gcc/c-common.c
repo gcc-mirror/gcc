@@ -1224,16 +1224,20 @@ check_format_info (info, params)
 	      cur_type = TREE_TYPE (cur_type);
 	      continue;
 	    }
-	  sprintf (message,
-		   "format argument is not a %s (arg %d)",
-		   ((fci->pointer_count == 1) ? "pointer" : "pointer to a pointer"),
-		   arg_num);
-	  warning (message);
+	  if (TREE_CODE (cur_type) != ERROR_MARK)
+	    {
+	      sprintf (message,
+		       "format argument is not a %s (arg %d)",
+		       ((fci->pointer_count == 1) ? "pointer" : "pointer to a pointer"),
+		       arg_num);
+	      warning (message);
+	    }
 	  break;
 	}
 
       /* Check the type of the "real" argument, if there's a type we want.  */
       if (i == fci->pointer_count && wanted_type != 0
+	  && TREE_CODE (cur_type) != ERROR_MARK
 	  && wanted_type != TYPE_MAIN_VARIANT (cur_type)
 	  /* If we want `void *', allow any pointer type.
 	     (Anything else would already have got a warning.)  */
