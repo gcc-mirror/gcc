@@ -46,6 +46,7 @@ Boston, MA 02111-1307, USA.  */
 #include "tm_p.h"
 #include "target.h"
 #include "c-common.h"
+#include "diagnostic.h"
 
 extern const struct attribute_spec *lang_attribute_table;
 
@@ -10144,7 +10145,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	 common.  With no options, it is allowed.  With -Wreturn-type,
 	 it is a warning.  It is only an error with -pedantic-errors.  */
       is_main = (funcdef_flag
-		 && MAIN_NAME_P (dname)
+		 && dname && MAIN_NAME_P (dname)
 		 && ctype == NULL_TREE
 		 && in_namespace == NULL_TREE
 		 && current_namespace == global_namespace);
@@ -14163,8 +14164,28 @@ finish_function (flags)
   /* This must come after expand_function_end because cleanups might
      have declarations (from inline functions) that need to go into
      this function's blocks.  */
+  
+  /* If the current binding level isn't the outermost binding level
+     for this function, either there is a bug, or we have experienced
+     syntax errors and the statement tree is malformed.  */
   if (current_binding_level->parm_flag != 1)
-    abort ();
+    {
+      /* Make sure we have already experienced errors.  */
+      if (errorcount == 0)
+	abort ();
+
+      /* Throw away the broken statement tree and extra binding
+         levels.  */
+      DECL_SAVED_TREE (fndecl) = build_stmt (COMPOUND_STMT, NULL_TREE);
+
+      while (current_binding_level->parm_flag != 1)
+	{
+	  if (current_binding_level->parm_flag == 2)
+	    pop_nested_class ();
+	  else
+	    poplevel (0, 0, 0);
+	}
+    }
   poplevel (1, 0, 1);
 
   /* Set up the named return value optimization, if we can.  Here, we

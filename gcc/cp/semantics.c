@@ -1669,6 +1669,9 @@ tree
 begin_class_definition (t)
      tree t;
 {
+  if (t == error_mark_node)
+    return error_mark_node;
+
   /* Check the bases are accessible. */
   decl_type_access_control (TYPE_NAME (t));
   reset_type_access_control ();
@@ -1878,6 +1881,9 @@ finish_class_definition (t, attributes, semi, pop_scope_p)
      int semi;
      int pop_scope_p;
 {
+  if (t == error_mark_node)
+    return error_mark_node;
+
   /* finish_struct nukes this anyway; if finish_exception does too,
      then it can go.  */
   if (semi)

@@ -1,5 +1,27 @@
 2002-01-23  Zack Weinberg  <zack@codesourcery.com>
 
+	* Make-lang.in (parse.c): Adjust expected number of
+	shift-reduce conflicts.
+	(decl.o): Depend on diagnostic.h.
+	* decl.c: Include diagnostic.h.
+	(grokdeclarator): Check for null pointer.
+	(finish_function): Don't abort when
+	current_binding_level->parm_flag != 1, if errors have
+	occurred; throw away the statement tree and extra binding
+	levels, and continue.
+	* lex.c (note_list_got_semicolon): Check for null pointer.
+	* method.c (hack_identifier): Just return error_mark_node if
+	value is error_mark_node.
+	* parse.y (primary: TYPEID(type_id)): No need to use
+	TYPE_MAIN_VARIANT here.
+	(handler_seq): Accept an empty list of catch clauses and
+	generate a fake handler block to avoid later crashes.
+	(ansi_raise_identifier): Accept the error token too.
+	* semantics.c (begin_class_definition,
+	finish_class_definition): Check for error_mark_node.
+
+2002-01-23  Zack Weinberg  <zack@codesourcery.com>
+
 	* typeck2.c (friendly_abort): Delete definition.
 	* cp-tree.h (friendly_abort): Don't prototype.
 	(my_friendly_assert): Use fancy_abort.
