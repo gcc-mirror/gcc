@@ -1,5 +1,11 @@
 2005-03-01  Per Bothner  <per@bothner.com>
 
+	* jcf-reader.c (get_attribute): Handle SourceDebugExtension (JSR 45)
+	if HANDLE_SOURCEDEBUGEXTENSION_ATTRIBUTE is defined.
+	* jcf-dump.c (HANDLE_SOURCEDEBUGEXTENSION_ATTRIBUTE): Print contents.
+
+2005-03-01  Per Bothner  <per@bothner.com>
+
 	* java-tree.h (IDENTIFIER_HANDLECLASS_VALUE): Remove ancient macro.
 
 2005-02-23  Thomas Fitzsimmons  <fitzsim@redhat.com>
