@@ -2696,6 +2696,9 @@ decls_match (newdecl, olddecl)
 {
   int types_match;
 
+  if (newdecl == olddecl)
+    return 1;
+
   if (TREE_CODE (newdecl) != TREE_CODE (olddecl))
     /* If the two DECLs are not even the same kind of thing, we're not
        interested in their types.  */
@@ -4239,6 +4242,8 @@ push_overloaded_decl (decl, flags)
 	new_binding = ovl_cons (decl, ovl_cons (old, NULL_TREE));
       else
 	new_binding = ovl_cons (decl, old);
+      if (flags & PUSH_USING)
+	OVL_USED (new_binding) = 1;
     }
   else
     /* NAME is not ambiguous.  */
