@@ -2182,7 +2182,6 @@ classify_argument (enum machine_mode mode, tree type,
       return 1;
     case CDImode:
     case TImode:
-    case TCmode:
       classes[0] = classes[1] = X86_64_INTEGER_CLASS;
       return 2;
     case CTImode:
@@ -2203,9 +2202,8 @@ classify_argument (enum machine_mode mode, tree type,
       classes[1] = X86_64_X87UP_CLASS;
       return 2;
     case TFmode:
-      classes[0] = X86_64_INTEGER_CLASS;
-      classes[1] = X86_64_INTEGER_CLASS;
-      return 2;
+    case TCmode:
+      return 0;
     case XCmode:
       classes[0] = X86_64_X87_CLASS;
       classes[1] = X86_64_X87UP_CLASS;
@@ -2784,7 +2782,7 @@ ix86_return_in_memory (tree type)
 	}
     }
 
-  if (mode == TFmode || mode == XFmode)
+  if (mode == XFmode)
     return 0;
 
   if (size > 12)
@@ -2810,18 +2808,6 @@ ix86_libcall_value (enum machine_mode mode)
 	case XCmode:
 	  return gen_rtx_REG (mode, FIRST_FLOAT_REG);
 	case TFmode:
-	  {
-	    rtx ret = gen_rtx_PARALLEL (mode, rtvec_alloc (2));
-	    XVECEXP (ret, 0, 0) = gen_rtx_EXPR_LIST
-	       (VOIDmode,
-		gen_rtx_REG (DImode, x86_64_int_parameter_registers [0]),
-			     const0_rtx);
-	    XVECEXP (ret, 0, 1) = gen_rtx_EXPR_LIST
-	       (VOIDmode,
-		gen_rtx_REG (DImode, x86_64_int_parameter_registers [1]),
-			     GEN_INT (64));
-	    return ret;
-	  }
 	case TCmode:
 	  return NULL;
 	default:
