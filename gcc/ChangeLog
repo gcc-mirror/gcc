@@ -1,3 +1,8 @@
+2003-04-21  Mark Mitchell  <mark@codesourcery.com>
+
+	* config/i386/winnt.c (i386_pe_mark_dllimport): Revert previous
+	changes.
+
 2003-04-21  Aldy Hernandez  <aldyh@redhat.com>
 
         * config/rs6000/rs6000.c (rs6000_override_options): No SPE means
