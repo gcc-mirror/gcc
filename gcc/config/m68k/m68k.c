@@ -1492,6 +1492,10 @@ standard_68881_constant_p (x)
   int i;
   enum machine_mode mode;
 
+#ifdef NO_ASM_FMOVECR
+  return 0;
+#endif
+
   /* fmovecr must be emulated on the 68040, so it shouldn't be used at all. */
   if (TARGET_68040)
     return 0;
