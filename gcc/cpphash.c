@@ -424,6 +424,7 @@ collect_expansion (pfile, arglist)
       continue;
 
     maybe_trad_stringify:
+      last_token = NORM;
       {
 	U_CHAR *base, *p, *limit;
 	struct reflist *tpat;
@@ -487,21 +488,31 @@ collect_expansion (pfile, arglist)
   else if (last_token == PASTE)
     cpp_error (pfile, "`##' at end of macro definition");
 
-  /* Trim trailing white space from definition.  */
-  here = CPP_WRITTEN (pfile);
-  while (here > last && is_hspace (pfile->token_buffer [here-1]))
-    here--;
-  CPP_SET_WRITTEN (pfile, here);
+  if (last_token == START)
+    {
+      /* Empty macro definition.  */
+      exp = xstrdup ("\r \r ");
+      len = 1;
+    }
+  else
+    {
+      /* Trim trailing white space from definition.  */
+      here = CPP_WRITTEN (pfile);
+      while (here > last && is_hspace (pfile->token_buffer [here-1]))
+	here--;
+      CPP_SET_WRITTEN (pfile, here);
   
-  CPP_NUL_TERMINATE (pfile);
-  len = CPP_WRITTEN (pfile) - start + 1;
-  exp = xmalloc (len + 4); /* space for no-concat markers at either end */
-  exp[0] = '\r';
-  exp[1] = ' ';
-  exp[len + 1] = '\r';
-  exp[len + 2] = ' ';
-  exp[len + 3] = '\0';
-  memcpy (&exp[2], pfile->token_buffer + start, len - 1);
+      CPP_NUL_TERMINATE (pfile);
+      len = CPP_WRITTEN (pfile) - start + 1;
+      exp = xmalloc (len + 4); /* space for no-concat markers at either end */
+      exp[0] = '\r';
+      exp[1] = ' ';
+      exp[len + 1] = '\r';
+      exp[len + 2] = ' ';
+      exp[len + 3] = '\0';
+      memcpy (&exp[2], pfile->token_buffer + start, len - 1);
+    }
+
   CPP_SET_WRITTEN (pfile, start);
 
   defn = (DEFINITION *) xmalloc (sizeof (DEFINITION));
@@ -700,6 +711,7 @@ create_definition (pfile, funlike)
   pfile->no_macro_expand++;
   pfile->parsing_define_directive++;
   CPP_OPTIONS (pfile)->discard_comments++;
+  CPP_OPTIONS (pfile)->no_line_commands++;
   
   if (funlike)
     {
@@ -719,12 +731,14 @@ create_definition (pfile, funlike)
   pfile->no_macro_expand--;
   pfile->parsing_define_directive--;
   CPP_OPTIONS (pfile)->discard_comments--;
+  CPP_OPTIONS (pfile)->no_line_commands--;
   return defn;
 
  err:
   pfile->no_macro_expand--;
   pfile->parsing_define_directive--;
   CPP_OPTIONS (pfile)->discard_comments--;
+  CPP_OPTIONS (pfile)->no_line_commands--;
   return 0;
 }
 
@@ -1560,6 +1574,9 @@ dump_definition (pfile, sym, len, defn)
      long len;
      DEFINITION *defn;
 {
+  if (pfile->lineno == 0)
+    output_line_command (pfile, same_file);
+
   CPP_RESERVE (pfile, len + sizeof "#define ");
   CPP_PUTS_Q (pfile, "#define ", sizeof "#define " -1);
   CPP_PUTS_Q (pfile, sym, len);
@@ -1573,7 +1590,6 @@ dump_definition (pfile, sym, len, defn)
 	 So we need length-4 chars of space, plus one for the NUL.  */
       CPP_RESERVE (pfile, defn->length - 4 + 1);
       CPP_PUTS_Q (pfile, defn->expansion + 2, defn->length - 4);
-      CPP_NUL_TERMINATE_Q (pfile);
     }
   else
     {
@@ -1644,6 +1660,9 @@ dump_definition (pfile, sym, len, defn)
       i = defn->length - (x - defn->expansion) - 2;
       if (*x == '\r') x += 2, i -= 2;
       if (i > 0) CPP_PUTS (pfile, x, i);
-      CPP_NUL_TERMINATE (pfile);
     }
+
+  if (pfile->lineno == 0)
+    CPP_PUTC (pfile, '\n');
+  CPP_NUL_TERMINATE (pfile);
 }

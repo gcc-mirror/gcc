@@ -609,6 +609,62 @@ remap_filename (pfile, name, loc)
   return name;
 }
 
+/* Push an input buffer and load it up with the contents of FNAME.
+   If FNAME is "" or NULL, read standard input.  */
+int
+cpp_read_file (pfile, fname)
+     cpp_reader *pfile;
+     const char *fname;
+{
+  struct include_hash *ih_fake;
+  int f;
+
+  if (fname == NULL || *fname == 0)
+    {
+      fname = "";
+      f = 0;
+    }
+
+  /* Open the file in nonblocking mode, so we don't get stuck if
+     someone clever has asked cpp to process /dev/rmt0.  finclude()
+     will check that we have a real file to work with.  Also take
+     care not to acquire a controlling terminal by mistake (this can't
+     happen on sane systems, but paranoia is a virtue).  */
+  else if ((f = open (fname, O_RDONLY|O_NONBLOCK|O_NOCTTY, 0666)) < 0)
+    {
+      cpp_notice_from_errno (pfile, fname);
+      return 0;
+    }
+
+  /* Push the buffer.  */
+  if (!cpp_push_buffer (pfile, NULL, 0))
+    goto failed_push;
+  
+  /* Gin up an include_hash structure for this file and feed it
+     to finclude.  */
+
+  ih_fake = (struct include_hash *) xmalloc (sizeof (struct include_hash));
+  ih_fake->next = 0;
+  ih_fake->next_this_file = 0;
+  ih_fake->foundhere = ABSOLUTE_PATH;  /* well sort of ... */
+  ih_fake->name = fname;
+  ih_fake->control_macro = 0;
+  ih_fake->buf = (char *)-1;
+  ih_fake->limit = 0;
+  if (!finclude (pfile, f, ih_fake))
+    goto failed_finclude;
+
+  return 1;
+
+ failed_finclude:
+  /* If finclude fails, it pops the buffer.  */
+  free (ih_fake);
+ failed_push:
+  if (f)
+    close (f);
+  return 0;
+}
+
 /* Read the contents of FD into the buffer on the top of PFILE's stack.
    IHASH points to the include hash entry for the file associated with
    FD.

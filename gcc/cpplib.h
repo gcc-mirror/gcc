@@ -34,7 +34,8 @@ typedef struct cpp_reader cpp_reader;
 typedef struct cpp_buffer cpp_buffer;
 typedef struct cpp_options cpp_options;
 
-enum cpp_token {
+enum cpp_token
+{
   CPP_EOF = -1,
   CPP_OTHER = 0,
   CPP_COMMENT = 1,
@@ -188,23 +189,23 @@ struct cpp_reader
   struct if_stack *if_stack;
 
   /* Nonzero means we have printed (while error reporting) a list of
-     containing files that matches the current status. */
+     containing files that matches the current status.  */
   char input_stack_listing_current;
 
-  /* If non-zero, macros are not expanded. */
+  /* If non-zero, macros are not expanded.  */
   char no_macro_expand;
 
   /* If non-zero, directives cause a hard error.  Used when parsing
      macro arguments.  */
   char no_directives;
 
-  /* Print column number in error messages. */
+  /* Print column number in error messages.  */
   char show_column;
 
-  /* We're printed a warning recommending against using #import. */
+  /* We're printed a warning recommending against using #import.  */
   char import_warning;
 
-  /* If true, character between '<' and '>' are a single (string) token. */
+  /* If true, character between '<' and '>' are a single (string) token.  */
   char parsing_include_directive;
 
   /* If true, # introduces an assertion (see do_assert) */
@@ -214,18 +215,13 @@ struct cpp_reader
   char parsing_define_directive;
 
   /* True if escape sequences (as described for has_escapes in
-     parse_buffer) should be emitted. */
+     parse_buffer) should be emitted.  */
   char output_escapes;
 
   /* 0: Have seen non-white-space on this line.
      1: Only seen white space so far on this line.
-     2: Only seen white space so far in this file. */
-   char only_seen_white;
-
-  /* Nonzero means this file was included with a -imacros or -include
-     command line and should not be recorded as an include file.  */
-
-  char no_record_file;
+     2: Only seen white space so far in this file.  */
+  char only_seen_white;
 
   long lineno;
 
@@ -432,7 +428,6 @@ struct cpp_options {
   char remap;
 
   /* Nonzero means don't output line number information.  */
-
   char no_line_commands;
 
   /* Nonzero means -I- has been seen,
@@ -713,6 +708,7 @@ extern int find_include_file		PARAMS ((cpp_reader *, const char *,
 						int *));
 extern int finclude			PARAMS ((cpp_reader *, int,
 					        struct include_hash *));
+extern int cpp_read_file		PARAMS ((cpp_reader *, const char *));
 extern void deps_output			PARAMS ((cpp_reader *,
 						const char *, int));
 extern struct include_hash *include_hash PARAMS ((cpp_reader *, const char *, int));
