@@ -1,3 +1,8 @@
+Sun Apr 19 18:27:11 1998  Alan Modra <alan@spri.levels.unisa.edu.au>
+
+	* i386.c (output_387_binary_op): Swap operands when popping if result
+	is st(0).
+
 Sun Apr 19 17:58:01 1998  Peter Jeremy  <peter.jeremy@alcatel.com.au>
 
 	* expr.c (do_jump_by_parts_equality_rtx): Now public.
