@@ -1,3 +1,48 @@
+Thu Feb 10 16:26:49 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* combine.c (make_extraction, force_to_mode): Avoid warning on
+	mixed-signedness conditionals.
+	(make_field_assignment, nonzero_bits): Likewise.
+	* expmed.c (store_fixed_bit_field): ALIGN arg now unsigned.
+	(store_split_bit_field, extract_split_bit_field): Likewise.
+	(extract_fixed_bit_field, store_bit_field, 
+	* expr.c: Change alignment to be unsigned everywhere.
+	(move_by_pieces, store_constructor_field, store_constructor): 
+	Alignment parm is unsigned.
+	(emit_block_move, emit_group_load, emit_group_store): Likewise.
+	(clear_storage, emit_push_insn, compare_from_rtx): Likewise.
+	(do_compare_rtx_and_jump): Likewise.
+	(move_by_pieces_ninsns, clear_by_pieces): Likewise.
+	Compare align with GET_MODE_ALIGNMENT.
+	(expand_expr_unaligned): Pointer to alignment is pointer to unsigned.
+	(get_inner_reference): Likewise.
+	(copy_blkmode_from_reg, emit_push_insn): Remove unneeded casts.
+	(expand_assignment): Local vars for alignment now unsigned.
+	(store_constructor, store_field, expand_expr, do_jump): Likewise.
+	(do_compare_and_jump): Likewise.
+	(store_field): Call new function expr_align.
+	* expr.h (emit_block_move, emit_group_load, emit_group_store):
+	Alignment arg now unsigned.
+	(clear_storage, emit_push_insn, compare_from_rtx): Likewise.
+	(do_compare_rtx_and_jump, store_bit_field): Likewise.
+	(extract_bit_field): Likewise.
+	* fold-const.c (add_double): Add cast to eliminate signedness warning.
+	* machmode.h (GET_MODE_ALIGNMENT): Result is unsigned.
+	(get_best_mode): Alignment arg is unsigned.
+	* rtl.h (move_by_pieces): Likewise.
+	* store-layout.c (maximum_field_alignment, set_alignment):
+	Now unsigned.
+	(layout_decl): Alignment arg is now unsigned.
+	Remove unneeded casts.
+	(layout_record, layout_union, layout_type): Remove unneeded casts.
+	Local alignment variables now unsigned.
+	(get_best_mode): Alignment arg now unsigned.
+	* tree.c (expr_align): New function.
+	* tree.h (expr_align): Likewise.
+	(maximum_field_alignment, set_alignment): Now unsigned.
+	(get_inner_reference): Alignment argument is now pointer to unsigned.
+	* varasm.c (assemble_variable): Add cast to eliminate warning.
+
 Thu Feb 10 12:56:47 2000  Jim Wilson  <wilson@cygnus.com>
 
 	* expmed.c (store_bit_field): If op0 and fieldmode are the same size,

@@ -132,21 +132,21 @@ extern struct obstack permanent_obstack;
 static rtx get_push_address	PARAMS ((int));
 
 static rtx enqueue_insn		PARAMS ((rtx, rtx));
-static int move_by_pieces_ninsns PARAMS ((unsigned int, int));
+static int move_by_pieces_ninsns PARAMS ((unsigned int, unsigned int));
 static void move_by_pieces_1	PARAMS ((rtx (*) (rtx, ...), enum machine_mode,
 					 struct move_by_pieces *));
-static void clear_by_pieces	PARAMS ((rtx, int, int));
+static void clear_by_pieces	PARAMS ((rtx, int, unsigned int));
 static void clear_by_pieces_1	PARAMS ((rtx (*) (rtx, ...),
 					 enum machine_mode,
 					 struct clear_by_pieces *));
 static int is_zeros_p		PARAMS ((tree));
 static int mostly_zeros_p	PARAMS ((tree));
 static void store_constructor_field PARAMS ((rtx, int, int, enum machine_mode,
-					     tree, tree, int, int));
-static void store_constructor	PARAMS ((tree, rtx, int, int, int));
+					     tree, tree, unsigned int, int));
+static void store_constructor	PARAMS ((tree, rtx, unsigned int, int, int));
 static rtx store_field		PARAMS ((rtx, int, int, enum machine_mode,
-					 tree, enum machine_mode, int, int,
-					 int, int));
+					 tree, enum machine_mode, int,
+					 unsigned int, int, int));
 static enum memory_use_mode
   get_memory_usage_from_modifier PARAMS ((enum expand_modifier));
 static tree save_noncopied_parts PARAMS ((tree, tree));
@@ -155,7 +155,7 @@ static int safe_from_p		PARAMS ((rtx, tree, int));
 static int fixed_type_p		PARAMS ((tree));
 static rtx var_rtx		PARAMS ((tree));
 static int readonly_fields_p	PARAMS ((tree));
-static rtx expand_expr_unaligned PARAMS ((tree, int *));
+static rtx expand_expr_unaligned PARAMS ((tree, unsigned int *));
 static rtx expand_increment	PARAMS ((tree, int, int));
 static void preexpand_calls	PARAMS ((tree));
 static void do_jump_by_parts_greater PARAMS ((tree, int, rtx, rtx));
@@ -1360,7 +1360,8 @@ convert_modes (mode, oldmode, x, unsignedp)
 void
 move_by_pieces (to, from, len, align)
      rtx to, from;
-     int len, align;
+     int len;
+     unsigned int align;
 {
   struct move_by_pieces data;
   rtx to_addr = XEXP (to, 0), from_addr = XEXP (from, 0);
@@ -1455,7 +1456,7 @@ move_by_pieces (to, from, len, align)
       icode = mov_optab->handlers[(int) mode].insn_code;
       if (icode != CODE_FOR_nothing
 	  && align >= MIN (BIGGEST_ALIGNMENT / BITS_PER_UNIT,
-			   GET_MODE_SIZE (mode)))
+			   (unsigned int) GET_MODE_SIZE (mode)))
 	move_by_pieces_1 (GEN_FCN (icode), mode, &data);
 
       max_size = GET_MODE_SIZE (mode);
@@ -1472,7 +1473,7 @@ move_by_pieces (to, from, len, align)
 static int
 move_by_pieces_ninsns (l, align)
      unsigned int l;
-     int align;
+     unsigned int align;
 {
   register int n_insns = 0;
   int max_size = MOVE_MAX + 1;
@@ -1496,8 +1497,7 @@ move_by_pieces_ninsns (l, align)
 
       icode = mov_optab->handlers[(int) mode].insn_code;
       if (icode != CODE_FOR_nothing
-	  && align >= MIN (BIGGEST_ALIGNMENT / BITS_PER_UNIT,
-			   GET_MODE_SIZE (mode)))
+	  && align >= GET_MODE_ALIGNMENT (mode) / BITS_PER_UNIT)
 	n_insns += l / GET_MODE_SIZE (mode), l %= GET_MODE_SIZE (mode);
 
       max_size = GET_MODE_SIZE (mode);
@@ -1574,7 +1574,7 @@ rtx
 emit_block_move (x, y, size, align)
      rtx x, y;
      rtx size;
-     int align;
+     unsigned int align;
 {
   rtx retval = 0;
 #ifdef TARGET_MEM_FUNCTIONS
@@ -1883,7 +1883,8 @@ move_block_from_reg (regno, x, nregs, size)
 void
 emit_group_load (dst, orig_src, ssize, align)
      rtx dst, orig_src;
-     int align, ssize;
+     unsigned int align;
+     int ssize;
 {
   rtx *tmps, src;
   int start, i;
@@ -1926,13 +1927,13 @@ emit_group_load (dst, orig_src, ssize, align)
 	  shift = (bytelen - (ssize - bytepos)) * BITS_PER_UNIT;
 	  bytelen = ssize - bytepos;
 	  if (bytelen <= 0)
-	    abort();
+	    abort ();
 	}
 
       /* Optimize the access just a bit.  */
       if (GET_CODE (src) == MEM
-	  && align*BITS_PER_UNIT >= GET_MODE_ALIGNMENT (mode)
-	  && bytepos*BITS_PER_UNIT % GET_MODE_ALIGNMENT (mode) == 0
+	  && align * BITS_PER_UNIT >= GET_MODE_ALIGNMENT (mode)
+	  && bytepos * BITS_PER_UNIT % GET_MODE_ALIGNMENT (mode) == 0
 	  && bytelen == GET_MODE_SIZE (mode))
 	{
 	  tmps[i] = gen_reg_rtx (mode);
@@ -1979,7 +1980,8 @@ emit_group_load (dst, orig_src, ssize, align)
 void
 emit_group_store (orig_dst, src, ssize, align)
      rtx orig_dst, src;
-     int ssize, align;
+     int ssize;
+     unsigned int align;
 {
   rtx *tmps, dst;
   int start, i;
@@ -2063,21 +2065,18 @@ emit_group_store (orig_dst, src, ssize, align)
 
       /* Optimize the access just a bit.  */
       if (GET_CODE (dst) == MEM
-	  && align*BITS_PER_UNIT >= GET_MODE_ALIGNMENT (mode)
-	  && bytepos*BITS_PER_UNIT % GET_MODE_ALIGNMENT (mode) == 0
+	  && align * BITS_PER_UNIT >= GET_MODE_ALIGNMENT (mode)
+	  && bytepos * BITS_PER_UNIT % GET_MODE_ALIGNMENT (mode) == 0
 	  && bytelen == GET_MODE_SIZE (mode))
-	{
-	  emit_move_insn (change_address (dst, mode,
-					  plus_constant (XEXP (dst, 0),
-							 bytepos)),
-			  tmps[i]);
-	}
+	emit_move_insn (change_address (dst, mode,
+					plus_constant (XEXP (dst, 0),
+						       bytepos)),
+			tmps[i]);
       else
-	{
-	  store_bit_field (dst, bytelen*BITS_PER_UNIT, bytepos*BITS_PER_UNIT,
+	store_bit_field (dst, bytelen * BITS_PER_UNIT, bytepos * BITS_PER_UNIT,
 			   mode, tmps[i], align, ssize);
-	}
     }
+
   emit_queue();
 
   /* Copy from the pseudo into the (probable) hard reg.  */
@@ -2092,18 +2091,17 @@ emit_group_store (orig_dst, src, ssize, align)
    The primary purpose of this routine is to handle functions
    that return BLKmode structures in registers.  Some machines
    (the PA for example) want to return all small structures
-   in registers regardless of the structure's alignment.
-  */
+   in registers regardless of the structure's alignment. */
 
 rtx
-copy_blkmode_from_reg(tgtblk,srcreg,type)
+copy_blkmode_from_reg (tgtblk,srcreg,type)
      rtx tgtblk;
      rtx srcreg;
      tree type;
 {
       int bytes = int_size_in_bytes (type);
       rtx src = NULL, dst = NULL;
-      int bitsize = MIN (TYPE_ALIGN (type), (unsigned int) BITS_PER_WORD);
+      int bitsize = MIN (TYPE_ALIGN (type), BITS_PER_WORD);
       int bitpos, xbitpos, big_endian_correction = 0;
       
       if (tgtblk == 0)
@@ -2232,7 +2230,8 @@ use_group_regs (call_fusage, regs)
 static void
 clear_by_pieces (to, len, align)
      rtx to;
-     int len, align;
+     int len;
+     unsigned int align;
 {
   struct clear_by_pieces data;
   rtx to_addr = XEXP (to, 0);
@@ -2302,8 +2301,7 @@ clear_by_pieces (to, len, align)
 
       icode = mov_optab->handlers[(int) mode].insn_code;
       if (icode != CODE_FOR_nothing
-	  && align >= MIN (BIGGEST_ALIGNMENT / BITS_PER_UNIT,
-			   GET_MODE_SIZE (mode)))
+	  && align >= GET_MODE_ALIGNMENT (mode) / BITS_PER_UNIT)
 	clear_by_pieces_1 (GEN_FCN (icode), mode, &data);
 
       max_size = GET_MODE_SIZE (mode);
@@ -2361,7 +2359,7 @@ rtx
 clear_storage (object, size, align)
      rtx object;
      rtx size;
-     int align;
+     unsigned int align;
 {
 #ifdef TARGET_MEM_FUNCTIONS
   static tree fn;
@@ -2905,7 +2903,7 @@ emit_push_insn (x, mode, type, size, align, partial, reg, extra,
      enum machine_mode mode;
      tree type;
      rtx size;
-     int align;
+     unsigned int align;
      int partial;
      rtx reg;
      int extra;
@@ -3066,7 +3064,7 @@ emit_push_insn (x, mode, type, size, align, partial, reg, extra,
 
 	  /* TEMP is the address of the block.  Copy the data there.  */
 	  if (GET_CODE (size) == CONST_INT
-	      && (MOVE_BY_PIECES_P ((unsigned) INTVAL (size), align)))
+	      && MOVE_BY_PIECES_P ((unsigned) INTVAL (size), align))
 	    {
 	      move_by_pieces (gen_rtx_MEM (BLKmode, temp), xinner,
 			      INTVAL (size), align);
@@ -3328,7 +3326,7 @@ expand_assignment (to, from, want_value, suggest_reg)
       int unsignedp;
       int volatilep = 0;
       tree tem;
-      int alignment;
+      unsigned int alignment;
 
       push_temp_slots ();
       tem = get_inner_reference (to, &bitsize, &bitpos, &offset, &mode1,
@@ -4053,7 +4051,7 @@ store_constructor_field (target, bitsize, bitpos,
      int bitsize, bitpos;
      enum machine_mode mode;
      tree exp, type;
-     int align;
+     unsigned int align;
      int cleared;
 {
   if (TREE_CODE (exp) == CONSTRUCTOR
@@ -4092,7 +4090,7 @@ static void
 store_constructor (exp, target, align, cleared, size)
      tree exp;
      rtx target;
-     int align;
+     unsigned int align;
      int cleared;
      int size;
 {
@@ -4361,7 +4359,7 @@ store_constructor (exp, target, align, cleared, size)
 	  int bitpos;
 	  int unsignedp;
 	  tree value = TREE_VALUE (elt);
-	  int align = TYPE_ALIGN (TREE_TYPE (value));
+	  unsigned int align = TYPE_ALIGN (TREE_TYPE (value));
 	  tree index = TREE_PURPOSE (elt);
 	  rtx xtarget = target;
 
@@ -4711,7 +4709,7 @@ store_field (target, bitsize, bitpos, mode, exp, value_mode,
      tree exp;
      enum machine_mode value_mode;
      int unsignedp;
-     int align;
+     unsigned int align;
      int total_size;
      int alias_set;
 {
@@ -4809,6 +4807,8 @@ store_field (target, bitsize, bitpos, mode, exp, value_mode,
 	 boundary.  If so, we simply do a block copy.  */
       if (GET_MODE (target) == BLKmode && GET_MODE (temp) == BLKmode)
 	{
+	  unsigned int exp_align = expr_align (exp) / BITS_PER_UNIT;
+
 	  if (GET_CODE (target) != MEM || GET_CODE (temp) != MEM
 	      || bitpos % BITS_PER_UNIT != 0)
 	    abort ();
@@ -4817,12 +4817,8 @@ store_field (target, bitsize, bitpos, mode, exp, value_mode,
 				   plus_constant (XEXP (target, 0),
 						bitpos / BITS_PER_UNIT));
 
-	  /* Make sure that ALIGN is no stricter than the alignment of
-	     EXP.  */
-	  if (TREE_CODE (exp) == VAR_DECL)
-	    align = MIN (DECL_ALIGN (exp) / BITS_PER_UNIT, align);
-	  else
-	    align = MIN (TYPE_ALIGN (TREE_TYPE (exp)) / BITS_PER_UNIT, align);
+	  /* Make sure that ALIGN is no stricter than the alignment of EXP.  */
+	  align = MIN (exp_align, align);
 
 	  /* Find an alignment that is consistent with the bit position.  */
 	  while ((bitpos % (align * BITS_PER_UNIT)) != 0)
@@ -4928,7 +4924,7 @@ get_inner_reference (exp, pbitsize, pbitpos, poffset, pmode,
      enum machine_mode *pmode;
      int *punsignedp;
      int *pvolatilep;
-     int *palignment;
+     unsigned int *palignment;
 {
   tree orig_exp = exp;
   tree size_tree = 0;
@@ -6610,7 +6606,7 @@ expand_expr (exp, target, tmode, modifier)
 	int bitpos;
 	tree offset;
 	int volatilep = 0;
-	int alignment;
+	unsigned int alignment;
 	tree tem = get_inner_reference (exp, &bitsize, &bitpos, &offset,
 					&mode1, &unsignedp, &volatilep,
 					&alignment);
@@ -8477,7 +8473,7 @@ expand_expr (exp, target, tmode, modifier)
 static rtx
 expand_expr_unaligned (exp, palign)
      register tree exp;
-     int *palign;
+     unsigned int *palign;
 {
   register rtx op0;
   tree type = TREE_TYPE (exp);
@@ -8607,7 +8603,7 @@ expand_expr_unaligned (exp, palign)
 	int bitpos;
 	tree offset;
 	int volatilep = 0;
-	int alignment;
+	unsigned int alignment;
 	int unsignedp;
 	tree tem = get_inner_reference (exp, &bitsize, &bitpos, &offset,
 					&mode1, &unsignedp, &volatilep,
@@ -9340,7 +9336,7 @@ do_jump (exp, if_false_label, if_true_label)
 	tree type;
 	tree offset;
 	int volatilep = 0;
-	int alignment;
+	unsigned int alignment;
 
 	/* Get description of this reference.  We don't actually care
 	   about the underlying object here.  */
@@ -9804,7 +9800,7 @@ compare_from_rtx (op0, op1, code, unsignedp, mode, size, align)
      int unsignedp;
      enum machine_mode mode;
      rtx size;
-     int align;
+     unsigned int align;
 {
   rtx tem;
 
@@ -9876,7 +9872,7 @@ do_compare_rtx_and_jump (op0, op1, code, unsignedp, mode, size, align,
      int unsignedp;
      enum machine_mode mode;
      rtx size;
-     int align;
+     unsigned int align;
      rtx if_false_label, if_true_label;
 {
   rtx tem;
@@ -9981,7 +9977,7 @@ do_compare_and_jump (exp, signed_code, unsigned_code, if_false_label,
      enum rtx_code signed_code, unsigned_code;
      rtx if_false_label, if_true_label;
 {
-  int align0, align1;
+  unsigned int align0, align1;
   register rtx op0, op1;
   register tree type;
   register enum machine_mode mode;

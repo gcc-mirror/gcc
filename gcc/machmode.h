@@ -120,13 +120,14 @@ extern enum machine_mode int_mode_for_mode PARAMS ((enum machine_mode));
 
 /* Find the best mode to use to access a bit field.  */
 
-extern enum machine_mode get_best_mode PARAMS ((int, int, int, enum machine_mode, int));
+extern enum machine_mode get_best_mode PARAMS ((int, int, unsigned int,
+						enum machine_mode, int));
 
 /* Determine alignment, 1<=result<=BIGGEST_ALIGNMENT.  */
 
 #define GET_MODE_ALIGNMENT(MODE)   \
-  MIN (BIGGEST_ALIGNMENT, 	   \
-       MAX (1, (GET_MODE_UNIT_SIZE (MODE) * BITS_PER_UNIT)))
+  (unsigned int) MIN (BIGGEST_ALIGNMENT, 	   \
+		      MAX (1, (GET_MODE_UNIT_SIZE (MODE) * BITS_PER_UNIT)))
 
 /* For each class, get the narrowest mode in that class.  */
 

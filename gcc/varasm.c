@@ -1511,7 +1511,7 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
 		 * (BIGGEST_ALIGNMENT / BITS_PER_UNIT));
       
 #if !defined(ASM_OUTPUT_ALIGNED_COMMON) && !defined(ASM_OUTPUT_ALIGNED_BSS)
-      if ( (DECL_ALIGN (decl) / BITS_PER_UNIT) > rounded)
+      if ((DECL_ALIGN (decl) / BITS_PER_UNIT) > (unsigned int) rounded)
          warning_with_decl 
            (decl, "requested alignment for %s is greater than implemented alignment of %d.",rounded);
 #endif

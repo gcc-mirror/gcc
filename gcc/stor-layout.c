@@ -37,11 +37,11 @@ struct sizetype_tab sizetype_tab;
 
 /* If nonzero, this is an upper limit on alignment of structure fields.
    The value is measured in bits.  */
-int maximum_field_alignment;
+unsigned int maximum_field_alignment;
 
 /* If non-zero, the alignment of a bitstring or (power-)set value, in bits.
    May be overridden by front-ends.  */
-int set_alignment = 0;
+unsigned int set_alignment = 0;
 
 static tree layout_record	PARAMS ((tree));
 static void layout_union	PARAMS ((tree));
@@ -241,7 +241,7 @@ round_up (value, divisor)
 void
 layout_decl (decl, known_align)
      tree decl;
-     unsigned known_align;
+     unsigned int known_align;
 {
   register tree type = TREE_TYPE (decl);
   register enum tree_code code = TREE_CODE (decl);
@@ -289,8 +289,7 @@ layout_decl (decl, known_align)
     {
       DECL_BIT_FIELD_TYPE (decl) = DECL_BIT_FIELD (decl) ? type : 0;
       if (maximum_field_alignment != 0)
-	DECL_ALIGN (decl) = MIN (DECL_ALIGN (decl),
-				 (unsigned)maximum_field_alignment);
+	DECL_ALIGN (decl) = MIN (DECL_ALIGN (decl), maximum_field_alignment);
       else if (DECL_PACKED (decl))
 	DECL_ALIGN (decl) = MIN (DECL_ALIGN (decl), BITS_PER_UNIT);
     }
@@ -306,7 +305,7 @@ layout_decl (decl, known_align)
       if (xmode != BLKmode
 	  && known_align % GET_MODE_ALIGNMENT (xmode) == 0)
 	{
-	  DECL_ALIGN (decl) = MAX ((unsigned) GET_MODE_ALIGNMENT (xmode),
+	  DECL_ALIGN (decl) = MAX (GET_MODE_ALIGNMENT (xmode),
 				   DECL_ALIGN (decl));
 	  DECL_MODE (decl) = xmode;
 	  DECL_SIZE (decl) = bitsize_int (GET_MODE_BITSIZE (xmode), 0);
@@ -346,8 +345,8 @@ layout_record (rec)
      tree rec;
 {
   register tree field;
-  unsigned record_align = MAX (BITS_PER_UNIT, TYPE_ALIGN (rec));
-  unsigned unpacked_align = record_align;
+  unsigned int record_align = MAX (BITS_PER_UNIT, TYPE_ALIGN (rec));
+  unsigned int unpacked_align = record_align;
   /* These must be laid out *after* the record is.  */
   tree pending_statics = NULL_TREE;
   /* Record size so far is CONST_SIZE + VAR_SIZE bits,
@@ -355,11 +354,11 @@ layout_record (rec)
      and VAR_SIZE is a tree expression.
      If VAR_SIZE is null, the size is just CONST_SIZE.
      Naturally we try to avoid using VAR_SIZE.  */
-  register HOST_WIDE_INT const_size = 0;
-  register tree var_size = 0;
+  HOST_WIDE_INT const_size = 0;
+  tree var_size = 0;
   /* Once we start using VAR_SIZE, this is the maximum alignment
      that we know VAR_SIZE has.  */
-  register int var_align = BITS_PER_UNIT;
+  unsigned int var_align = BITS_PER_UNIT;
   int packed_maybe_necessary = 0;
 
 #ifdef STRUCTURE_SIZE_BOUNDARY
@@ -370,8 +369,8 @@ layout_record (rec)
 
   for (field = TYPE_FIELDS (rec); field; field = TREE_CHAIN (field))
     {
-      register int known_align = var_size ? var_align : const_size;
-      register int desired_align = 0;
+      unsigned int known_align = var_size ? var_align : const_size;
+      unsigned int desired_align = 0;
       tree type = TREE_TYPE (field);
 
       /* If FIELD is static, then treat it like a separate variable,
@@ -422,20 +421,21 @@ layout_record (rec)
 	     It does, however, affect the alignment of the next field
 	     within the structure.  */
 	  if (! integer_zerop (DECL_SIZE (field)))
-	    record_align = MAX ((int)record_align, desired_align);
+	    record_align = MAX (record_align, desired_align);
 	  else if (! DECL_PACKED (field))
 	    desired_align = TYPE_ALIGN (type);
 	  /* A named bit field of declared type `int'
 	     forces the entire structure to have `int' alignment.  */
 	  if (DECL_NAME (field) != 0)
 	    {
-	      int type_align = TYPE_ALIGN (type);
+	      unsigned int type_align = TYPE_ALIGN (type);
+
 	      if (maximum_field_alignment != 0)
 		type_align = MIN (type_align, maximum_field_alignment);
 	      else if (DECL_PACKED (field))
 		type_align = MIN (type_align, BITS_PER_UNIT);
 
-	      record_align = MAX ((int) record_align, type_align);
+	      record_align = MAX (record_align, type_align);
 	      if (warn_packed)
 		unpacked_align = MAX (unpacked_align, TYPE_ALIGN (type));
 	    }
@@ -443,7 +443,7 @@ layout_record (rec)
       else
 #endif
 	{
-	  record_align = MAX ((int) record_align, desired_align);
+	  record_align = MAX (record_align, desired_align);
 	  if (warn_packed)
 	    unpacked_align = MAX (unpacked_align, TYPE_ALIGN (type));
 	}
@@ -451,8 +451,7 @@ layout_record (rec)
       if (warn_packed && DECL_PACKED (field))
 	{
 	  if (const_size % TYPE_ALIGN (type) == 0
-	      || (var_align % TYPE_ALIGN (type) == 0
-		  && var_size != NULL_TREE))
+	      || (var_align % TYPE_ALIGN (type) == 0 && var_size != NULL_TREE))
 	    {
 	      if (TYPE_ALIGN (type) > desired_align)
 		{
@@ -471,8 +470,7 @@ layout_record (rec)
 	 own alignment?  */
 
       if (const_size % desired_align != 0
-	  || (var_align % desired_align != 0
-	      && var_size != NULL_TREE))
+	  || (var_align % desired_align != 0 && var_size != NULL_TREE))
 	{
 	  /* No, we need to skip space before this field.
 	     Bump the cumulative size to multiple of field alignment.  */
@@ -480,8 +478,7 @@ layout_record (rec)
 	  if (warn_padded)
 	    warning_with_decl (field, "padding struct to align `%s'");
 
-	  if (var_size == NULL_TREE
-	      || var_align % desired_align == 0)
+	  if (var_size == NULL_TREE || var_align % desired_align == 0)
 	    const_size
 	      = CEIL (const_size, desired_align) * desired_align;
 	  else
@@ -504,7 +501,7 @@ layout_record (rec)
 	  && maximum_field_alignment == 0
 	  && !integer_zerop (DECL_SIZE (field)))
 	{
-	  int type_align = TYPE_ALIGN (type);
+	  unsigned int type_align = TYPE_ALIGN (type);
 	  register tree dsize = DECL_SIZE (field);
 	  int field_size = TREE_INT_CST_LOW (dsize);
 
@@ -527,7 +524,7 @@ layout_record (rec)
 	  && !DECL_PACKED (field)
 	  && !integer_zerop (DECL_SIZE (field)))
 	{
-	  int type_align = TYPE_ALIGN (type);
+	  unsigned int type_align = TYPE_ALIGN (type);
 	  register tree dsize = DECL_SIZE (field);
 	  int field_size = TREE_INT_CST_LOW (dsize);
 
@@ -598,9 +595,7 @@ layout_record (rec)
      Round it up to a multiple of the record's alignment.  */
 
   if (var_size == NULL_TREE)
-    {
-      TYPE_SIZE (rec) = bitsize_int (const_size, 0L);
-    }
+    TYPE_SIZE (rec) = bitsize_int (const_size, 0L);
   else
     {
       if (const_size)
@@ -623,12 +618,14 @@ layout_record (rec)
   
   {
     tree unpadded_size = TYPE_SIZE (rec);
+
 #ifdef ROUND_TYPE_SIZE
     TYPE_SIZE (rec) = ROUND_TYPE_SIZE (rec, TYPE_SIZE (rec), TYPE_ALIGN (rec));
 #else
     /* Round the size up to be a multiple of the required alignment */
     TYPE_SIZE (rec) = round_up (TYPE_SIZE (rec), TYPE_ALIGN (rec));
 #endif
+
     if (warn_padded && var_size == NULL_TREE
 	&& simple_cst_equal (unpadded_size, TYPE_SIZE (rec)) == 0)
       warning ("padding struct size to alignment boundary");
@@ -638,6 +635,7 @@ layout_record (rec)
       && var_size == NULL_TREE)
     {
       tree unpacked_size;
+
       TYPE_PACKED (rec) = 0;
 #ifdef ROUND_TYPE_ALIGN
       unpacked_align
@@ -650,11 +648,13 @@ layout_record (rec)
 #else
       unpacked_size = round_up (TYPE_SIZE (rec), unpacked_align);
 #endif
+
       if (simple_cst_equal (unpacked_size, TYPE_SIZE (rec)))
 	{
 	  if (TYPE_NAME (rec))
 	    {
 	      char *name;
+
 	      if (TREE_CODE (TYPE_NAME (rec)) == IDENTIFIER_NODE)
 		name = IDENTIFIER_POINTER (TYPE_NAME (rec));
 	      else
@@ -689,7 +689,7 @@ layout_union (rec)
      tree rec;
 {
   register tree field;
-  unsigned union_align = BITS_PER_UNIT;
+  unsigned int union_align = BITS_PER_UNIT;
 
   /* The size of the union, based on the fields scanned so far,
      is max (CONST_SIZE, VAR_SIZE).
@@ -1111,9 +1111,11 @@ layout_type (type)
 	     then stick with BLKmode.  */
 	  && (! STRICT_ALIGNMENT
 	      || TYPE_ALIGN (type) >= BIGGEST_ALIGNMENT
-	      || (int)TYPE_ALIGN (type) >= TREE_INT_CST_LOW (TYPE_SIZE (type))))
+	      || ((int) TYPE_ALIGN (type)
+		  >= TREE_INT_CST_LOW (TYPE_SIZE (type)))))
 	{
 	  tree field;
+
 	  /* A union which has any BLKmode members must itself be BLKmode;
 	     it can't go in a register.
 	     Unless the member is BLKmode only because it isn't aligned.  */
@@ -1144,16 +1146,19 @@ layout_type (type)
 #ifndef SET_WORD_SIZE
 #define SET_WORD_SIZE BITS_PER_WORD
 #endif
-	  int alignment = set_alignment ? set_alignment : SET_WORD_SIZE;
+	  unsigned int alignment
+	    = set_alignment ? set_alignment : SET_WORD_SIZE;
 	  int size_in_bits
 	    = (TREE_INT_CST_LOW (TYPE_MAX_VALUE (TYPE_DOMAIN (type)))
 	       - TREE_INT_CST_LOW (TYPE_MIN_VALUE (TYPE_DOMAIN (type))) + 1);
 	  int rounded_size
 	    = ((size_in_bits + alignment - 1) / alignment) * alignment;
-	  if (rounded_size > alignment)
+
+	  if (rounded_size > (int) alignment)
 	    TYPE_MODE (type) = BLKmode;
 	  else
 	    TYPE_MODE (type) = mode_for_size (alignment, MODE_INT, 1);
+
 	  TYPE_SIZE (type) = bitsize_int (rounded_size, 0L);
 	  TYPE_SIZE_UNIT (type) = size_int (rounded_size / BITS_PER_UNIT);
 	  TYPE_ALIGN (type) = alignment;
@@ -1170,7 +1175,7 @@ layout_type (type)
 
     default:
       abort ();
-    } /* end switch */
+    }
 
   /* Normally, use the alignment corresponding to the mode chosen.
      However, where strict alignment is not required, avoid
@@ -1224,7 +1229,7 @@ layout_type (type)
       /* Record layout info of this variant.  */
       tree size = TYPE_SIZE (type);
       tree size_unit = TYPE_SIZE_UNIT (type);
-      int align = TYPE_ALIGN (type);
+      unsigned int align = TYPE_ALIGN (type);
       enum machine_mode mode = TYPE_MODE (type);
 
       /* Copy it into all variants.  */
@@ -1281,7 +1286,6 @@ make_signed_type (precision)
     set_sizetype (type);
 
   /* Lay out the type: set its alignment, size, etc.  */
-
   layout_type (type);
   return type;
 }
@@ -1386,7 +1390,6 @@ fixup_signed_type (type)
   TREE_TYPE (TYPE_MAX_VALUE (type)) = type;
 
   /* Lay out the type: set its alignment, size, etc.  */
-
   layout_type (type);
 }
 
@@ -1413,7 +1416,6 @@ fixup_unsigned_type (type)
   TREE_TYPE (TYPE_MAX_VALUE (type)) = type;
 
   /* Lay out the type: set its alignment, size, etc.  */
-
   layout_type (type);
 }
 
@@ -1435,7 +1437,7 @@ fixup_unsigned_type (type)
 enum machine_mode
 get_best_mode (bitsize, bitpos, align, largest_mode, volatilep)
      int bitsize, bitpos;
-     int align;
+     unsigned int align;
      enum machine_mode largest_mode;
      int volatilep;
 {
@@ -1459,7 +1461,7 @@ get_best_mode (bitsize, bitpos, align, largest_mode, volatilep)
 	 if the extra 4th byte is past the end of memory.
 	 (Though at least one Unix compiler ignores this problem:
 	 that on the Sequent 386 machine.  */
-      || MIN (unit, BIGGEST_ALIGNMENT) > align
+      || MIN (unit, BIGGEST_ALIGNMENT) > (int) align
       || (largest_mode != VOIDmode && unit > GET_MODE_BITSIZE (largest_mode)))
     return VOIDmode;
 
@@ -1473,7 +1475,7 @@ get_best_mode (bitsize, bitpos, align, largest_mode, volatilep)
 	  unit = GET_MODE_BITSIZE (tmode);
 	  if (bitpos / unit == (bitpos + bitsize - 1) / unit
 	      && unit <= BITS_PER_WORD
-	      && unit <= MIN (align, BIGGEST_ALIGNMENT)
+	      && unit <= (int) MIN (align, BIGGEST_ALIGNMENT)
 	      && (largest_mode == VOIDmode
 		  || unit <= GET_MODE_BITSIZE (largest_mode)))
 	    wide_mode = tmode;
