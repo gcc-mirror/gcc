@@ -2357,13 +2357,13 @@ find_splittable_regs (unroll_type, loop_start, loop_end, end_insert_before,
 	 it is unsafe to split the biv since it may not have the proper
 	 value on loop exit.  */
 
-      /* loop_number_exit_labels is non-zero if the loop has an exit other than
+      /* loop_number_exit_count is non-zero if the loop has an exit other than
 	 a fall through at the end.  */
 
       biv_splittable = 1;
       biv_final_value = 0;
       if (unroll_type != UNROLL_COMPLETELY
-	  && (loop_number_exit_labels[uid_loop_num[INSN_UID (loop_start)]]
+	  && (loop_number_exit_count[uid_loop_num[INSN_UID (loop_start)]]
 	      || unroll_type == UNROLL_NAIVE)
 	  && (uid_luid[regno_last_uid[bl->regno]] >= INSN_LUID (loop_end)
 	      || ! bl->init_insn
@@ -2451,7 +2451,7 @@ find_splittable_regs (unroll_type, loop_start, loop_end, end_insert_before,
 	     loop to ensure that it will always be executed no matter
 	     how the loop exits.  Otherwise emit the insn after the loop,
 	     since this is slightly more efficient.  */
-	  if (! loop_number_exit_labels[uid_loop_num[INSN_UID (loop_start)]])
+	  if (! loop_number_exit_count[uid_loop_num[INSN_UID (loop_start)]])
 	    emit_insn_before (gen_move_insn (bl->biv->src_reg,
 					     biv_final_value),
 			      end_insert_before);
@@ -2574,7 +2574,7 @@ find_splittable_givs (bl, unroll_type, loop_start, loop_end, increment,
 
       final_value = 0;
       if (unroll_type != UNROLL_COMPLETELY
-	  && (loop_number_exit_labels[uid_loop_num[INSN_UID (loop_start)]]
+	  && (loop_number_exit_count[uid_loop_num[INSN_UID (loop_start)]]
 	      || unroll_type == UNROLL_NAIVE)
 	  && v->giv_type != DEST_ADDR
 	  && ((regno_first_uid[REGNO (v->dest_reg)] != INSN_UID (v->insn)
@@ -2914,13 +2914,26 @@ reg_dead_after_loop (reg, loop_start, loop_end)
   rtx insn, label;
   enum rtx_code code;
   int jump_count = 0;
+  int label_count = 0;
+  int this_loop_num = uid_loop_num[INSN_UID (loop_start)];
+
+  /* In addition to checking all exits of this loop, we must also check
+     all exits of inner nested loops that would exit this loop.  We don't
+     have any way to identify those, so we just give up if there are any
+     such inner loop exits.  */
+     
+  for (label = loop_number_exit_labels[this_loop_num]; label;
+       label = LABEL_NEXTREF (label))
+    label_count++;
+
+  if (label_count != loop_number_exit_count[this_loop_num])
+    return 0;
 
   /* HACK: Must also search the loop fall through exit, create a label_ref
      here which points to the loop_end, and append the loop_number_exit_labels
      list to it.  */
   label = gen_rtx (LABEL_REF, VOIDmode, loop_end);
-  LABEL_NEXTREF (label)
-    = loop_number_exit_labels[uid_loop_num[INSN_UID (loop_start)]];
+  LABEL_NEXTREF (label) = loop_number_exit_labels[this_loop_num];
 
   for ( ; label; label = LABEL_NEXTREF (label))
     {
@@ -2999,7 +3012,7 @@ final_biv_value (bl, loop_start, loop_end)
      value of the biv must be invariant.  */
 
   if (loop_n_iterations != 0
-      && ! loop_number_exit_labels[uid_loop_num[INSN_UID (loop_start)]]
+      && ! loop_number_exit_count[uid_loop_num[INSN_UID (loop_start)]]
       && invariant_p (bl->initial_value))
     {
       increment = biv_total_increment (bl, loop_start, loop_end);
@@ -3077,7 +3090,7 @@ final_giv_value (v, loop_start, loop_end)
      to be known.  */
 
   if (loop_n_iterations != 0
-      && ! loop_number_exit_labels[uid_loop_num[INSN_UID (loop_start)]])
+      && ! loop_number_exit_count[uid_loop_num[INSN_UID (loop_start)]])
     {
       /* ?? It is tempting to use the biv's value here since these insns will
 	 be put after the loop, and hence the biv will have its final value
