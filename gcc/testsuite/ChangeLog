@@ -6,7 +6,7 @@
 	* lib/scanasm.exp: New.
 	(scan-assembler, scan-assembler-not): Add optional arguments to
 	test name, or if not present, the pattern name.
-	(scan-assembler-dem, scan-assembler-demnot): New.
+	(scan-assembler-dem, scan-assembler-dem-not): New.
 
 	* g++.dg/dg.exp: New.
 
