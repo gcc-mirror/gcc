@@ -1,5 +1,11 @@
 2003-01-28  Andreas Schwab  <schwab@suse.de>
 
+	* cfgloopmanip.c (create_preheader): Initialize src to avoid
+	warning.
+
+	* expmed.c (emit_store_flag): Fix cast to avoid sign
+	comparison warning.
+
 	* combine.c (force_to_mode): Add cast to fix warning when
 	STORE_FLAG_VALUE is negative.
 
