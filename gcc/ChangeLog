@@ -1,3 +1,26 @@
+2002-03-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* c-common.c (c_tree_code_type, c_tree_code_length,
+	c_tree_code_name, add_c_tree_codes): Delete.
+	* c-common.h (add_c_tree_codes): Delete.
+	* c-lang.c (tree_code_type, tree_code_length, tree_code_name):
+	Define.
+	* c-objc-common.c (c_objc_common_init): Don't call
+	add_c_tree_codes, instead set lang_unsafe_for_reeval.
+	* objc/objc-act.c (objc_tree_code_type, objc_tree_code_length,
+	objc_tree_code_name, add_objc_tree_codes): Delete.
+	(objc_init): Don't call add_objc_tree_codes.
+	* objc/objc-lang.c (tree_code_type, tree_code_length,
+	tree_code_name): Define.
+	* toplev.c (lang_independent_init): Don't set
+	tree_code_length[IDENTIFIER_NODE].
+	* tree.c (tree_code_type, tree_code_length, tree_code_name):
+	Delete definitions, moved to language front-ends.
+	* tree.def (IDENTIFIER_NODE): Hardwire the length.
+	* tree.h (tree_code_type, tree_code_length, tree_code_name):
+	Const-ify.
+	(tree_code_length): Change type to unsigned char.
+
 2002-03-12  Richard Henderson  <rth@redhat.com>
 
 	* config/i386/i386.c (ix86_expand_prologue): Revert 2002-03-03

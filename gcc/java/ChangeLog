@@ -1,3 +1,11 @@
+2002-03-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* lang.c (java_tree_code_type, java_tree_code_length,
+	tree_code_name): Delete.
+	(tree_code_type, tree_code_length, tree_code_name): Define.
+	(java_init): Don't try to copy into the various tree_code
+	arrays.
+
 2002-03-12  Tom Tromey  <tromey@redhat.com>
 
 	* jcf-parse.c (get_constant) [CONSTANT_String]: String values are

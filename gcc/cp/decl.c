@@ -3781,7 +3781,7 @@ duplicate_decls (newdecl, olddecl)
       memcpy ((char *) olddecl + sizeof (struct tree_common),
 	      (char *) newdecl + sizeof (struct tree_common),
 	      sizeof (struct tree_decl) - sizeof (struct tree_common)
-	      + tree_code_length [(int)TREE_CODE (newdecl)] * sizeof (char *));
+	      + TREE_CODE_LENGTH (TREE_CODE (newdecl)) * sizeof (char *));
     }
 
   DECL_UID (olddecl) = olddecl_uid;

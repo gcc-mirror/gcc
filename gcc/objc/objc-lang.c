@@ -66,6 +66,50 @@ static void objc_post_options                   PARAMS ((void));
 /* Each front end provides its own hooks, for toplev.c.  */
 const struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
 
+/* Define the special tree codes that we use.  */
+
+/* Table indexed by tree code giving a string containing a character
+   classifying the tree code.  */
+
+#define DEFTREECODE(SYM, NAME, TYPE, LENGTH) TYPE,
+
+const char tree_code_type[] = {
+#include "tree.def"
+  'x',
+#include "c-common.def"
+  'x',
+#include "objc-tree.def"
+};
+#undef DEFTREECODE
+
+/* Table indexed by tree code giving number of expression
+   operands beyond the fixed part of the node structure.
+   Not used for types or decls.  */
+
+#define DEFTREECODE(SYM, NAME, TYPE, LENGTH) LENGTH,
+
+const unsigned char tree_code_length[] = {
+#include "tree.def"
+  0,
+#include "c-common.def"
+  0,
+#include "objc-tree.def"
+};
+#undef DEFTREECODE
+
+/* Names of tree components.
+   Used for printing out the tree and error messages.  */
+#define DEFTREECODE(SYM, NAME, TYPE, LEN) NAME,
+
+const char * const tree_code_name[] = {
+#include "tree.def"
+  "@@dummy",
+#include "c-common.def"
+  "@@dummy",
+#include "objc-tree.def"
+};
+#undef DEFTREECODE
+
 static void 
 objc_init_options ()
 {

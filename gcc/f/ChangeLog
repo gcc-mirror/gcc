@@ -1,3 +1,8 @@
+Tue Mar 12 20:23:18 2002  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* com.c (tree_code_type, tree_code_length, tree_code_name):
+	Define.
+
 Sun Mar 10 12:37:42 2002  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* target.c (ffetarget_print_hex): Const-ify.

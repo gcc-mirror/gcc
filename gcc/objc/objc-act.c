@@ -86,40 +86,6 @@ Boston, MA 02111-1307, USA.  */
 #define OBJC_FORWARDING_MIN_OFFSET 0
 #endif
 
-/* Define the special tree codes that we use.  */
-
-/* Table indexed by tree code giving a string containing a character
-   classifying the tree code.  */
-
-#define DEFTREECODE(SYM, NAME, TYPE, LENGTH) TYPE,
-
-static const char objc_tree_code_type[] = {
-  'x',
-#include "objc-tree.def"
-};
-#undef DEFTREECODE
-
-/* Table indexed by tree code giving number of expression
-   operands beyond the fixed part of the node structure.
-   Not used for types or decls.  */
-
-#define DEFTREECODE(SYM, NAME, TYPE, LENGTH) LENGTH,
-
-static const int objc_tree_code_length[] = {
-  0,
-#include "objc-tree.def"
-};
-#undef DEFTREECODE
-
-/* Names of tree components.
-   Used for printing out the tree and error messages.  */
-#define DEFTREECODE(SYM, NAME, TYPE, LEN) NAME,
-
-static const char * const objc_tree_code_name[] = {
-  "@@dummy",
-#include "objc-tree.def"
-};
-#undef DEFTREECODE
 
 /* Set up for use of obstacks.  */
 
@@ -270,7 +236,6 @@ static void dump_interface			PARAMS ((FILE *, tree));
 
 /* Everything else.  */
 
-static void add_objc_tree_codes			PARAMS ((void));
 static tree define_decl				PARAMS ((tree, tree));
 static tree lookup_method_in_protocol_list	PARAMS ((tree, tree, int));
 static tree lookup_protocol_in_reflist		PARAMS ((tree, tree));
@@ -511,7 +476,6 @@ objc_init (filename)
      const char *filename;
 {
   filename = c_objc_common_init (filename);
-  add_objc_tree_codes ();
 
   decl_printable_name = objc_printable_name;
 
@@ -8070,22 +8034,6 @@ objc_printable_name (decl, kind)
      int kind ATTRIBUTE_UNUSED;
 {
   return objc_demangle (IDENTIFIER_POINTER (DECL_NAME (decl)));
-}
-
-/* Adds the tree codes specific to the ObjC/ObjC++ front end to the
-   list of all tree codes.  */
-
-static void
-add_objc_tree_codes ()
-{
-  int add = (int) LAST_OBJC_TREE_CODE - (int) LAST_BASE_TREE_CODE;
-
-  memcpy (tree_code_type + (int) LAST_BASE_TREE_CODE,
-	  objc_tree_code_type, add);
-  memcpy (tree_code_length + (int) LAST_BASE_TREE_CODE,
-	  objc_tree_code_length, add * sizeof (int));
-  memcpy (tree_code_name + (int) LAST_BASE_TREE_CODE,
-	  objc_tree_code_name, add * sizeof (char *));
 }
 
 static void

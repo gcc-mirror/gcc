@@ -6,7 +6,7 @@
  *                                                                          *
  *                           C Implementation File                          *
  *                                                                          *
- *                             $Revision$
+ *                             $Revision: 1.20 $
  *                                                                          *
  *          Copyright (C) 1992-2002 Free Software Foundation, Inc.          *
  *                                                                          *
@@ -77,42 +77,6 @@ extern FILE *asm_out_file;
 extern int save_argc;
 extern char **save_argv;
 
-/* Tables describing GCC tree codes used only by GNAT.  
-
-   Table indexed by tree code giving a string containing a character
-   classifying the tree code.  Possibilities are
-   t, d, s, c, r, <, 1 and 2.  See cp-tree.def for details.  */
-
-#define DEFTREECODE(SYM, NAME, TYPE, LENGTH) TYPE,
-
-static const char gnat_tree_code_type[] = {
-  'x',
-#include "ada-tree.def"
-};
-#undef DEFTREECODE
-
-/* Table indexed by tree code giving number of expression
-   operands beyond the fixed part of the node structure.
-   Not used for types or decls.  */
-
-#define DEFTREECODE(SYM, NAME, TYPE, LENGTH) LENGTH,
-
-static const int gnat_tree_code_length[] = {
-  0,
-#include "ada-tree.def"
-};
-#undef DEFTREECODE
-
-/* Names of tree components.
-   Used for printing out the tree and error messages.  */
-#define DEFTREECODE(SYM, NAME, TYPE, LEN) NAME,
-
-const char * const gnat_tree_code_name[] = {
-  "@@dummy",
-#include "ada-tree.def"
-};
-#undef DEFTREECODE
-
 static const char *gnat_init		PARAMS ((const char *));
 static void gnat_init_options		PARAMS ((void));
 static int gnat_decode_option		PARAMS ((int, char **));
@@ -145,6 +109,45 @@ static int gnat_eh_type_covers		PARAMS ((tree, tree));
 #define LANG_HOOKS_PRINT_TYPE		gnat_print_type
 
 const struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
+
+/* Tables describing GCC tree codes used only by GNAT.  
+
+   Table indexed by tree code giving a string containing a character
+   classifying the tree code.  Possibilities are
+   t, d, s, c, r, <, 1 and 2.  See cp-tree.def for details.  */
+
+#define DEFTREECODE(SYM, NAME, TYPE, LENGTH) TYPE,
+
+const char tree_code_type[] = {
+#include "tree.def"
+  'x',
+#include "ada-tree.def"
+};
+#undef DEFTREECODE
+
+/* Table indexed by tree code giving number of expression
+   operands beyond the fixed part of the node structure.
+   Not used for types or decls.  */
+
+#define DEFTREECODE(SYM, NAME, TYPE, LENGTH) LENGTH,
+
+const unsigned char tree_code_length[] = {
+#include "tree.def"
+  0,
+#include "ada-tree.def"
+};
+#undef DEFTREECODE
+
+/* Names of tree components.
+   Used for printing out the tree and error messages.  */
+#define DEFTREECODE(SYM, NAME, TYPE, LEN) NAME,
+
+const char *const tree_code_name[] = {
+#include "tree.def"
+  "@@dummy",
+#include "ada-tree.def"
+};
+#undef DEFTREECODE
 
 /* gnat standard argc argv */
 
@@ -357,21 +360,6 @@ gnat_init (filename)
 
   lang_expand_expr = gnat_expand_expr;
   decl_printable_name = gnat_printable_name;
-
-  memcpy ((char *) (tree_code_type + (int) LAST_AND_UNUSED_TREE_CODE),
-	  (char *) gnat_tree_code_type,
-	  ((LAST_GNAT_TREE_CODE - (int) LAST_AND_UNUSED_TREE_CODE)
-	   * sizeof (char *)));
-
-  memcpy ((char *) (tree_code_length + (int) LAST_AND_UNUSED_TREE_CODE),
-	  (char *) gnat_tree_code_length,
-	  ((LAST_GNAT_TREE_CODE - (int) LAST_AND_UNUSED_TREE_CODE)
-	   * sizeof (int)));
-
-  memcpy ((char *) (tree_code_name + (int) LAST_AND_UNUSED_TREE_CODE),
-	  (char *) gnat_tree_code_name,
-	  ((LAST_GNAT_TREE_CODE - (int) LAST_AND_UNUSED_TREE_CODE)
-	   * sizeof (char *)));
 
   gnat_init_decl_processing ();
 

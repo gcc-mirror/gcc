@@ -534,7 +534,8 @@ int warn_missing_braces;
 
 #define DEFTREECODE(SYM, NAME, TYPE, LENGTH) TYPE,
   
-  const char chill_tree_code_type[] = {
+const char tree_code_type[] = {
+#include "tree.def"
     'x',
 #include "ch-tree.def"
   };
@@ -546,7 +547,8 @@ int warn_missing_braces;
 
 #define DEFTREECODE(SYM, NAME, TYPE, LENGTH) LENGTH,
   
-int chill_tree_code_length[] = {
+const unsigned char tree_code_length[] = {
+#include "tree.def"
     0,
 #include "ch-tree.def"
   };
@@ -557,7 +559,8 @@ int chill_tree_code_length[] = {
    Used for printing out the tree and error messages.  */
 #define DEFTREECODE(SYM, NAME, TYPE, LEN) NAME,
   
-const char *chill_tree_code_name[] = {
+const char *const tree_code_name[] = {
+#include "tree.def"
     "@@dummy",
 #include "ch-tree.def"
   };
@@ -3482,18 +3485,6 @@ init_decl_processing ()
   DECL_SOURCE_LINE (temp) = 0;
   initializer_type = TREE_TYPE (temp);
 
-  memcpy (tree_code_type + (int) LAST_AND_UNUSED_TREE_CODE,
-	  chill_tree_code_type,
-	  (((int) LAST_CHILL_TREE_CODE - (int) LAST_AND_UNUSED_TREE_CODE)
-	   * sizeof (char)));
-  memcpy (tree_code_length + (int) LAST_AND_UNUSED_TREE_CODE,
-	  chill_tree_code_length,
-	  (((int) LAST_CHILL_TREE_CODE - (int) LAST_AND_UNUSED_TREE_CODE)
-	   * sizeof (int)));
-  memcpy (tree_code_name + (int) LAST_AND_UNUSED_TREE_CODE,
-	  chill_tree_code_name,
-	  (((int) LAST_CHILL_TREE_CODE - (int) LAST_AND_UNUSED_TREE_CODE)
-	   * sizeof (char *)));
   boolean_code_name = (const char **) xcalloc (sizeof (char *),
 					       (int) LAST_CHILL_TREE_CODE);
 
