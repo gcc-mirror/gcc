@@ -3126,6 +3126,17 @@ There are patches for Solaris 2.6 (105633-56 or newer for SPARC,
 108377-20 for Intel), and Solaris 8 (108652-24 or newer for SPARC,
 108653-22 for Intel) that fix this bug.
 
+Sun bug 4927647 sometimes causes random spurious testsuite failures
+related to missing diagnostic output.  This bug doesn't affect GCC
+itself, rather it is a kernel bug triggered by the @command{expect}
+program which is used only by the GCC testsuite driver.  When the bug
+causes the @command{expect} program to miss anticipated output, extra
+testsuite failures appear.
+
+There are patches for Solaris 8 (117350-12 or newer for SPARC,
+117351-12 or newer for Intel) and Solaris 9 (117171-11 or newer for
+SPARC, 117172-11 or newer for Intel) that address this problem.
+
 @html
 <hr />
 @end html
