@@ -1,5 +1,10 @@
 2003-12-08  Fernando Nasser  <fnasser@redhat.com>
  
+	* java/awt/datatransfer/StringSelection.java (getTransferData): Return
+	object of type expected by specified DataFlavor.
+
+2003-12-08  Fernando Nasser  <fnasser@redhat.com>
+ 
 	* java/awt/datatransfer/DataFlavor.java (getParameter): Fix off-by-one
 	error which was clipping off the first character of a parameter value.
 
