@@ -102,6 +102,8 @@ static void cxx_initialize_diagnostics (diagnostic_context *);
 #define LANG_HOOKS_DECL_PRINTABLE_NAME	cxx_printable_name
 #undef LANG_HOOKS_PRINT_ERROR_FUNCTION
 #define LANG_HOOKS_PRINT_ERROR_FUNCTION	cxx_print_error_function
+#undef LANG_HOOKS_BUILTIN_TYPE_DECLS
+#define LANG_HOOKS_BUILTIN_TYPE_DECLS cxx_builtin_type_decls
 #undef LANG_HOOKS_PUSHLEVEL
 #define LANG_HOOKS_PUSHLEVEL lhd_do_nothing_i
 #undef LANG_HOOKS_POPLEVEL

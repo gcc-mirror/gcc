@@ -46,6 +46,7 @@ extern void lhd_do_nothing_f (struct function *);
 extern bool lhd_post_options (const char **);
 extern HOST_WIDE_INT lhd_get_alias_set (tree);
 extern tree lhd_return_tree (tree);
+extern tree lhd_return_null_tree_v (void);
 extern tree lhd_return_null_tree (tree);
 extern tree lhd_do_nothing_iii_return_null_tree (int, int, int);
 extern int lhd_safe_from_p (rtx, tree);
@@ -239,6 +240,7 @@ extern int lhd_tree_dump_type_quals (tree);
 #define LANG_HOOKS_SET_BLOCK	set_block
 #define LANG_HOOKS_PUSHDECL	pushdecl
 #define LANG_HOOKS_GETDECLS	getdecls
+#define LANG_HOOKS_BUILTIN_TYPE_DECLS lhd_return_null_tree_v
 #define LANG_HOOKS_WARN_UNUSED_GLOBAL_DECL lhd_warn_unused_global_decl
 #define LANG_HOOKS_WRITE_GLOBALS write_global_declarations
 #define LANG_HOOKS_PREPARE_ASSEMBLE_VARIABLE NULL
@@ -252,6 +254,7 @@ extern int lhd_tree_dump_type_quals (tree);
   LANG_HOOKS_SET_BLOCK, \
   LANG_HOOKS_PUSHDECL, \
   LANG_HOOKS_GETDECLS, \
+  LANG_HOOKS_BUILTIN_TYPE_DECLS, \
   LANG_HOOKS_WARN_UNUSED_GLOBAL_DECL, \
   LANG_HOOKS_WRITE_GLOBALS, \
   LANG_HOOKS_PREPARE_ASSEMBLE_VARIABLE, \

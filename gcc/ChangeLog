@@ -1,3 +1,13 @@
+2003-09-17  Mark Mitchell  <mark@codesourcery.com>
+
+	PR debug/12066
+	* dbxout.c (dbxout_init): Use a langhook to find builtin types.
+	* langhooks-def.h (lhd_return_null_tree_v): New function.
+	(LANG_HOOKS_BUILTIN_TYPE_DECLS): New macro.
+	(LANG_HOOKS_DECLS): Add it to the intializer.
+	* langhooks.c (lhd_return_null_tree_v): New function.
+	* langhooks.h (lang_hooks_for_decls): Add builtin_type_decls.
+
 2003-09-17  Daniel Jacobowitz  <drow@mvista.com>
 
 	* configure.in: Quote gcc_config_arguments for configargs.h.

@@ -84,6 +84,14 @@ lhd_return_tree (tree t)
 /* Do nothing (return NULL_TREE).  */
 
 tree
+lhd_return_null_tree_v (void)
+{
+  return NULL_TREE;
+}
+
+/* Do nothing (return NULL_TREE).  */
+
+tree
 lhd_return_null_tree (tree t ATTRIBUTE_UNUSED)
 {
   return NULL_TREE;
