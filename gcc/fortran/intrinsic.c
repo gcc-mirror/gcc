@@ -453,6 +453,33 @@ static void add_sym_3 (const char *name, int elemental, int actual_ok, bt type,
 	   (void*)0);
 }
 
+/* Add the name of an intrinsic subroutine with three arguments to the list
+   of intrinsic names. */
+
+static void add_sym_3s (const char *name, int elemental, int actual_ok, bt type,
+		       int kind,
+		       try (*check)(gfc_expr *,gfc_expr *,gfc_expr *),
+		       gfc_expr *(*simplify)(gfc_expr *,gfc_expr *,gfc_expr *),
+		       void (*resolve)(gfc_code *),
+		       const char* a1, bt type1, int kind1, int optional1,
+		       const char* a2, bt type2, int kind2, int optional2,
+		       const char* a3, bt type3, int kind3, int optional3
+		       ) {
+  gfc_check_f cf;
+  gfc_simplify_f sf;
+  gfc_resolve_f rf;
+
+  cf.f3 = check;
+  sf.f3 = simplify;
+  rf.s1 = resolve;
+
+  add_sym (name, elemental, actual_ok, type, kind, cf, sf, rf,
+	   a1, type1, kind1, optional1,
+	   a2, type2, kind2, optional2,
+	   a3, type3, kind3, optional3,
+	   (void*)0);
+}
+
 
 static void add_sym_4 (const char *name, int elemental, int actual_ok, bt type,
 		       int kind,
@@ -1632,8 +1659,8 @@ add_subroutines (void)
 	     sz, BT_INTEGER, di, 1, pt, BT_INTEGER, di, 1,
 	     gt, BT_INTEGER, di, 1);
 
-  add_sym_3 ("system_clock", 0, 1, BT_UNKNOWN, 0,
-	     NULL, NULL, NULL,
+  add_sym_3s ("system_clock", 0, 1, BT_UNKNOWN, 0,
+	     gfc_check_system_clock, NULL, gfc_resolve_system_clock,
 	     c, BT_INTEGER, di, 1, cr, BT_INTEGER, di, 1,
 	     cm, BT_INTEGER, di, 1);
 }

@@ -121,8 +121,8 @@ am__objects_33 = associated.lo abort.lo cpu_time.lo cshift0.lo \
 	eoshift0.lo eoshift2.lo ishftc.lo pack_generic.lo size.lo \
 	spread_generic.lo string_intrinsics.lo random.lo \
 	reshape_generic.lo reshape_packed.lo selected_kind.lo \
-	transpose_generic.lo unpack_generic.lo in_pack_generic.lo \
-	in_unpack_generic.lo
+	system_clock.lo transpose_generic.lo unpack_generic.lo \
+	in_pack_generic.lo in_unpack_generic.lo
 am__objects_34 =
 am__objects_35 = _abs_c4.lo _abs_c8.lo _abs_i4.lo _abs_i8.lo \
 	_abs_r4.lo _abs_r8.lo _exp_r4.lo _exp_r8.lo _exp_c4.lo \
@@ -272,6 +272,7 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/sum_c4.Plo ./$(DEPDIR)/sum_c8.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/sum_i4.Plo ./$(DEPDIR)/sum_i8.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/sum_r4.Plo ./$(DEPDIR)/sum_r8.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/system_clock.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/transfer.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/transpose_generic.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/transpose_i4.Plo \
@@ -442,6 +443,7 @@ intrinsics/random.c \
 intrinsics/reshape_generic.c \
 intrinsics/reshape_packed.c \
 intrinsics/selected_kind.f90 \
+intrinsics/system_clock.c \
 intrinsics/transpose_generic.c \
 intrinsics/unpack_generic.c \
 runtime/in_pack_generic.c \
@@ -1009,6 +1011,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sum_i8.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sum_r4.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sum_r8.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/system_clock.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/transfer.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/transpose_generic.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/transpose_i4.Plo@am__quote@
@@ -4595,6 +4598,30 @@ reshape_packed.lo: intrinsics/reshape_packed.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	depfile='$(DEPDIR)/reshape_packed.Plo' tmpdepfile='$(DEPDIR)/reshape_packed.TPlo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o reshape_packed.lo `test -f 'intrinsics/reshape_packed.c' || echo '$(srcdir)/'`intrinsics/reshape_packed.c
+
+system_clock.o: intrinsics/system_clock.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT system_clock.o -MD -MP -MF "$(DEPDIR)/system_clock.Tpo" -c -o system_clock.o `test -f 'intrinsics/system_clock.c' || echo '$(srcdir)/'`intrinsics/system_clock.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/system_clock.Tpo" "$(DEPDIR)/system_clock.Po"; else rm -f "$(DEPDIR)/system_clock.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='intrinsics/system_clock.c' object='system_clock.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	depfile='$(DEPDIR)/system_clock.Po' tmpdepfile='$(DEPDIR)/system_clock.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o system_clock.o `test -f 'intrinsics/system_clock.c' || echo '$(srcdir)/'`intrinsics/system_clock.c
+
+system_clock.obj: intrinsics/system_clock.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT system_clock.obj -MD -MP -MF "$(DEPDIR)/system_clock.Tpo" -c -o system_clock.obj `if test -f 'intrinsics/system_clock.c'; then $(CYGPATH_W) 'intrinsics/system_clock.c'; else $(CYGPATH_W) '$(srcdir)/intrinsics/system_clock.c'; fi`; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/system_clock.Tpo" "$(DEPDIR)/system_clock.Po"; else rm -f "$(DEPDIR)/system_clock.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='intrinsics/system_clock.c' object='system_clock.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	depfile='$(DEPDIR)/system_clock.Po' tmpdepfile='$(DEPDIR)/system_clock.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o system_clock.obj `if test -f 'intrinsics/system_clock.c'; then $(CYGPATH_W) 'intrinsics/system_clock.c'; else $(CYGPATH_W) '$(srcdir)/intrinsics/system_clock.c'; fi`
+
+system_clock.lo: intrinsics/system_clock.c
+@am__fastdepCC_TRUE@	if $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT system_clock.lo -MD -MP -MF "$(DEPDIR)/system_clock.Tpo" -c -o system_clock.lo `test -f 'intrinsics/system_clock.c' || echo '$(srcdir)/'`intrinsics/system_clock.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/system_clock.Tpo" "$(DEPDIR)/system_clock.Plo"; else rm -f "$(DEPDIR)/system_clock.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='intrinsics/system_clock.c' object='system_clock.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	depfile='$(DEPDIR)/system_clock.Plo' tmpdepfile='$(DEPDIR)/system_clock.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o system_clock.lo `test -f 'intrinsics/system_clock.c' || echo '$(srcdir)/'`intrinsics/system_clock.c
 
 transpose_generic.o: intrinsics/transpose_generic.c
 @am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT transpose_generic.o -MD -MP -MF "$(DEPDIR)/transpose_generic.Tpo" -c -o transpose_generic.o `test -f 'intrinsics/transpose_generic.c' || echo '$(srcdir)/'`intrinsics/transpose_generic.c; \

@@ -1864,3 +1864,62 @@ gfc_check_random_seed (gfc_expr * size, gfc_expr * put, gfc_expr * get)
 
   return SUCCESS;
 }
+
+/* The arguments of SYSTEM_CLOCK are scalar, integer variables.  Note,
+   count, count_rate, and count_max are all optional arguments */
+
+try
+gfc_check_system_clock (gfc_expr * count, gfc_expr * count_rate,
+                        gfc_expr * count_max)
+{
+
+  if (count != NULL)
+    {
+      if (scalar_check (count, 0) == FAILURE)
+        return FAILURE;
+
+      if (type_check (count, 0, BT_INTEGER) == FAILURE)
+        return FAILURE;
+
+      if (variable_check (count, 0) == FAILURE)
+        return FAILURE;
+    }
+
+  if (count_rate != NULL)
+    {
+      if (scalar_check (count_rate, 1) == FAILURE)
+        return FAILURE;
+
+      if (type_check (count_rate, 1, BT_INTEGER) == FAILURE)
+        return FAILURE;
+
+      if (variable_check (count_rate, 1) == FAILURE)
+        return FAILURE;
+
+      if (count != NULL && same_type_check(count, 0, count_rate, 1) == FAILURE)
+        return FAILURE;
+
+    }
+
+  if (count_max != NULL)
+    {
+      if (scalar_check (count_max, 2) == FAILURE)
+        return FAILURE;
+
+      if (type_check (count_max, 2, BT_INTEGER) == FAILURE)
+        return FAILURE;
+
+      if (variable_check (count_max, 2) == FAILURE)
+        return FAILURE;
+
+      if (count != NULL && same_type_check(count, 0, count_max, 2) == FAILURE)
+        return FAILURE;
+
+      if (count_rate != NULL
+          && same_type_check(count_rate, 1, count_max, 2) == FAILURE)
+        return FAILURE;
+
+   }
+
+    return SUCCESS;
+}

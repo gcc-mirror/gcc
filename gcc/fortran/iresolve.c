@@ -1369,6 +1369,27 @@ gfc_resolve_random_number (gfc_code * c ATTRIBUTE_UNUSED)
   c->resolved_sym = gfc_get_intrinsic_sub_symbol (name);
 }
 
+/* Determine if the arguments to SYSTEM_CLOCK are INTEGER(4) or INTEGER(8) */
+
+void
+gfc_resolve_system_clock (gfc_code * c)
+{
+  const char *name;
+  int kind;
+
+  if (c->ext.actual->expr != NULL)
+    kind = c->ext.actual->expr->ts.kind;
+  else if (c->ext.actual->next->expr != NULL)
+      kind = c->ext.actual->next->expr->ts.kind;
+  else if (c->ext.actual->next->next->expr != NULL)
+      kind = c->ext.actual->next->next->expr->ts.kind;
+  else
+    kind = gfc_default_integer_kind ();
+
+  name = gfc_get_string (PREFIX("system_clock_%d"), kind);
+  c->resolved_sym = gfc_get_intrinsic_sub_symbol (name);
+}
+
 
 void
 gfc_iresolve_init_1 (void)
