@@ -1937,6 +1937,253 @@ expand_builtin_mathfn_2 (tree exp, rtx target, rtx subtarget)
   return target;
 }
 
+/* To evaluate powi(x,n), the floating point value x raised to the
+   constant integer exponent n, we use a hybrid algorithm that
+   combines the "window method" with look-up tables.  For an
+   introduction to exponentiation algorithms and "addition chains",
+   see section 4.6.3, "Evaluation of Powers" of Donald E. Knuth,
+   "Seminumerical Algorithms", Vol. 2, "The Art of Computer Programming",
+   3rd Edition, 1998, and Daniel M. Gordon, "A Survey of Fast Exponentiation
+   Methods", Journal of Algorithms, Vol. 27, pp. 129-146, 1998.  */
+
+/* Provide a default value for POWI_MAX_MULTS, the maximum number of
+   multiplications to inline before calling the system library's pow
+   function.  powi(x,n) requires at worst 2*bits(n)-2 multiplications,
+   so this default never requires calling pow, powf or powl.  */
+ 
+#ifndef POWI_MAX_MULTS
+#define POWI_MAX_MULTS  (2*HOST_BITS_PER_WIDE_INT-2)
+#endif
+
+/* The size of the "optimal power tree" lookup table.  All
+   exponents less than this value are simply looked up in the
+   powi_table below.  This threshold is also used to size the
+   cache of pseudo registers that hold intermediate results.  */
+#define POWI_TABLE_SIZE 256
+
+/* The size, in bits of the window, used in the "window method"
+   exponentiation algorithm.  This is equivalent to a radix of
+   (1<<POWI_WINDOW_SIZE) in the corresponding "m-ary method".  */
+#define POWI_WINDOW_SIZE 3
+
+/* The following table is an efficient representation of an
+   "optimal power tree".  For each value, i, the corresponding
+   value, j, in the table states than an optimal evaluation
+   sequence for calculating pow(x,i) can be found by evaluating
+   pow(x,j)*pow(x,i-j).  An optimal power tree for the first
+   100 integers is given in Knuth's "Seminumerical algorithms".  */
+
+static const unsigned char powi_table[POWI_TABLE_SIZE] =
+  {
+      0,   1,   1,   2,   2,   3,   3,   4,  /*   0 -   7 */
+      4,   6,   5,   6,   6,  10,   7,   9,  /*   8 -  15 */
+      8,  16,   9,  16,  10,  12,  11,  13,  /*  16 -  23 */
+     12,  17,  13,  18,  14,  24,  15,  26,  /*  24 -  31 */
+     16,  17,  17,  19,  18,  33,  19,  26,  /*  32 -  39 */
+     20,  25,  21,  40,  22,  27,  23,  44,  /*  40 -  47 */
+     24,  32,  25,  34,  26,  29,  27,  44,  /*  48 -  55 */
+     28,  31,  29,  34,  30,  60,  31,  36,  /*  56 -  63 */
+     32,  64,  33,  34,  34,  46,  35,  37,  /*  64 -  71 */
+     36,  65,  37,  50,  38,  48,  39,  69,  /*  72 -  79 */
+     40,  49,  41,  43,  42,  51,  43,  58,  /*  80 -  87 */
+     44,  64,  45,  47,  46,  59,  47,  76,  /*  88 -  95 */
+     48,  65,  49,  66,  50,  67,  51,  66,  /*  96 - 103 */
+     52,  70,  53,  74,  54, 104,  55,  74,  /* 104 - 111 */
+     56,  64,  57,  69,  58,  78,  59,  68,  /* 112 - 119 */
+     60,  61,  61,  80,  62,  75,  63,  68,  /* 120 - 127 */
+     64,  65,  65, 128,  66, 129,  67,  90,  /* 128 - 135 */
+     68,  73,  69, 131,  70,  94,  71,  88,  /* 136 - 143 */
+     72, 128,  73,  98,  74, 132,  75, 121,  /* 144 - 151 */
+     76, 102,  77, 124,  78, 132,  79, 106,  /* 152 - 159 */
+     80,  97,  81, 160,  82,  99,  83, 134,  /* 160 - 167 */
+     84,  86,  85,  95,  86, 160,  87, 100,  /* 168 - 175 */
+     88, 113,  89,  98,  90, 107,  91, 122,  /* 176 - 183 */
+     92, 111,  93, 102,  94, 126,  95, 150,  /* 184 - 191 */
+     96, 128,  97, 130,  98, 133,  99, 195,  /* 192 - 199 */
+    100, 128, 101, 123, 102, 164, 103, 138,  /* 200 - 207 */
+    104, 145, 105, 146, 106, 109, 107, 149,  /* 208 - 215 */
+    108, 200, 109, 146, 110, 170, 111, 157,  /* 216 - 223 */
+    112, 128, 113, 130, 114, 182, 115, 132,  /* 224 - 231 */
+    116, 200, 117, 132, 118, 158, 119, 206,  /* 232 - 239 */
+    120, 240, 121, 162, 122, 147, 123, 152,  /* 240 - 247 */
+    124, 166, 125, 214, 126, 138, 127, 153,  /* 248 - 255 */
+  };
+
+
+/* Return the number of multiplications required to calculate
+   powi(x,n) where n is less than POWI_TABLE_SIZE.  This is a
+   subroutine of powi_cost.  CACHE is an array indicating
+   which exponents have already been calculated.  */
+
+static int
+powi_lookup_cost (unsigned HOST_WIDE_INT n, bool *cache)
+{
+  /* If we've already calculated this exponent, then this evaluation
+     doesn't require any additional multiplications.  */
+  if (cache[n])
+    return 0;
+
+  cache[n] = true;
+  return powi_lookup_cost (n - powi_table[n], cache)
+	 + powi_lookup_cost (powi_table[n], cache) + 1;
+}
+
+/* Return the number of multiplications required to calculate
+   powi(x,n) for an arbitrary x, given the exponent N.  This
+   function needs to be kept in sync with expand_powi below.  */
+
+static int
+powi_cost (HOST_WIDE_INT n)
+{
+  bool cache[POWI_TABLE_SIZE];
+  unsigned HOST_WIDE_INT digit;
+  unsigned HOST_WIDE_INT val;
+  int result;
+
+  if (n == 0)
+    return 0;
+
+  /* Ignore the reciprocal when calculating the cost.  */
+  val = (n < 0) ? -n : n;
+
+  /* Initialize the exponent cache.  */
+  memset (cache, 0, POWI_TABLE_SIZE * sizeof (bool));
+  cache[1] = true;
+
+  result = 0;
+
+  while (val >= POWI_TABLE_SIZE)
+    {
+      if (val & 1)
+	{
+	  digit = val & ((1 << POWI_WINDOW_SIZE) - 1);
+	  result += powi_lookup_cost (digit, cache)
+		    + POWI_WINDOW_SIZE + 1;
+	  val >>= POWI_WINDOW_SIZE;
+	}
+      else
+	{
+	  val >>= 1;
+	  result++;
+	}
+    }
+  
+  return result + powi_lookup_cost (n, cache);
+}
+
+/* Recursive subroutine of expand_powi.  This function takes the array,
+   CACHE, of already calculated exponents and an exponent N and returns
+   an RTX that corresponds to CACHE[1]**N, as calculated in mode MODE.  */
+
+static rtx
+expand_powi_1 (enum machine_mode mode, unsigned HOST_WIDE_INT n, rtx *cache)
+{
+  unsigned HOST_WIDE_INT digit;
+  rtx target, result;
+  rtx op0, op1;
+
+  if (n < POWI_TABLE_SIZE)
+    {
+      if (cache[n])
+        return cache[n];
+
+      target = gen_reg_rtx (mode);
+      cache[n] = target;
+
+      op0 = expand_powi_1 (mode, n - powi_table[n], cache);
+      op1 = expand_powi_1 (mode, powi_table[n], cache);
+    }
+  else if (n & 1)
+    {
+      target = gen_reg_rtx (mode);
+      digit = n & ((1 << POWI_WINDOW_SIZE) - 1);
+      op0 = expand_powi_1 (mode, n - digit, cache);
+      op1 = expand_powi_1 (mode, digit, cache);
+    }
+  else
+    {
+      target = gen_reg_rtx (mode);
+      op0 = expand_powi_1 (mode, n >> 1, cache);
+      op1 = op0;
+    }
+
+  result = expand_mult (mode, op0, op1, target, 0);
+  if (result != target)
+    emit_move_insn (target, result);
+  return target;
+}
+
+/* Expand the RTL to evaluate powi(x,n) in mode MODE.  X is the
+   floating point operand in mode MODE, and N is the exponent.  This
+   function needs to be kept in sync with powi_cost above.  */
+   
+static rtx
+expand_powi (rtx x, enum machine_mode mode, HOST_WIDE_INT n)
+{
+  unsigned HOST_WIDE_INT val;
+  rtx cache[POWI_TABLE_SIZE];
+  rtx result;
+
+  if (n == 0)
+    return CONST1_RTX (mode);
+
+  val = (n < 0) ? -n : n;
+
+  memset (cache, 0, sizeof(cache));
+  cache[1] = x;
+
+  result = expand_powi_1 (mode, (n < 0) ? -n : n, cache);
+
+  /* If the original exponent was negative, reciprocate the result.  */
+  if (n < 0)
+    result = expand_binop (mode, sdiv_optab, CONST1_RTX (mode),
+			   result, NULL_RTX, 0, OPTAB_LIB_WIDEN);
+
+  return result;
+}
+
+/* Expand a call to the pow built-in mathematical function.  Return 0 if
+   a normal call should be emitted rather than expanding the function
+   in-line.  EXP is the expression that is a call to the builtin
+   function; if convenient, the result should be placed in TARGET.  */
+
+static rtx
+expand_builtin_pow (tree exp, rtx target, rtx subtarget)
+{
+  tree arglist = TREE_OPERAND (exp, 1);
+  tree arg0, arg1;
+
+  if (! validate_arglist (arglist, REAL_TYPE, REAL_TYPE, VOID_TYPE))
+    return 0;
+
+  arg0 = TREE_VALUE (arglist);
+  arg1 = TREE_VALUE (TREE_CHAIN (arglist));
+
+  if (flag_unsafe_math_optimizations
+      && ! flag_errno_math
+      && ! optimize_size
+      && TREE_CODE (arg1) == REAL_CST
+      && ! TREE_CONSTANT_OVERFLOW (arg1))
+    {
+      REAL_VALUE_TYPE cint;
+      REAL_VALUE_TYPE c;
+      HOST_WIDE_INT n;
+
+      c = TREE_REAL_CST (arg1);
+      n = real_to_integer (&c);
+      real_from_integer (&cint, VOIDmode, n, n < 0 ? -1 : 0, 0);
+      if (real_identical (&c, &cint)
+	  && powi_cost (n) <= POWI_MAX_MULTS)
+	{
+          enum machine_mode mode = TYPE_MODE (TREE_TYPE (exp));
+          rtx op = expand_expr (arg0, subtarget, VOIDmode, 0);
+          op = force_reg (mode, op);
+          return expand_powi (op, mode, n);
+	}
+    }
+  return expand_builtin_mathfn_2 (exp, target, NULL_RTX);
+}
+
 /* Expand expression EXP which is a call to the strlen builtin.  Return 0
    if we failed the caller should emit a normal call, otherwise
    try to get the result in TARGET, if convenient.  */
@@ -4588,6 +4835,13 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
     case BUILT_IN_POW:
     case BUILT_IN_POWF:
     case BUILT_IN_POWL:
+      if (! flag_unsafe_math_optimizations)
+	break;
+      target = expand_builtin_pow (exp, target, subtarget);
+      if (target)
+	return target;
+      break;
+
     case BUILT_IN_ATAN2:
     case BUILT_IN_ATAN2F:
     case BUILT_IN_ATAN2L:

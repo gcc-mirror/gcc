@@ -1,3 +1,17 @@
+2003-06-23  Roger Sayle  <roger@eyesopen.com>
+
+	* builtins.c (expand_builtin): Use expand_builtin_pow to expand
+	calls for pow, powf, powl and their __builtin_ variants.
+	(expand_builtin_pow): If the second argument is a constant
+	integer and compiling with -ffast-math, use expand_powi to
+	generate RTL if powi_cost is less than POWI_MAX_MULTS.
+	(powi_cost): New function to return the number of multiplications
+	necessary to evaluate an Nth power, for integer constant N.
+	(expand_powi): New function to expand the RTL for evaluating
+	the Nth power of a floating point value, for integer constant N.
+
+	* doc/tm.texi (POWI_MAX_MULTS): Document new target macro.
+
 Mon Jun 23 23:07:35 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	* cgraph.c (cgraph_nodes_queue): Declare.
