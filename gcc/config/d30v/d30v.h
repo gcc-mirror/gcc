@@ -4238,7 +4238,7 @@ fprintf (STREAM, "\t.word .L%d\n", VALUE)
 /* Define this macro to handle System V style pragmas (particularly #pack).
 
    Defined in svr4.h.  */
-#define HANDLE_SYSV_PRAGMA
+#define HANDLE_SYSV_PRAGMA 1
 
 /* Define this macro if you want to handle #pragma weak (HANDLE_SYSV_PRAGMA
    must also be defined).  */

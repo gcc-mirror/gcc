@@ -45,7 +45,7 @@ Boston, MA 02111-1307, USA.  */
 #define COLLECT_EXPORT_LIST
 
 /* Handle #pragma weak and #pragma pack.  */
-#define HANDLE_SYSV_PRAGMA
+#define HANDLE_SYSV_PRAGMA 1
 
 /* This is the only version of nm that collect2 can work with.  */
 #define REAL_NM_FILE_NAME "/usr/ucb/nm"

@@ -58,7 +58,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Handle #pragma weak and #pragma pack.  */
 
-#define HANDLE_SYSV_PRAGMA
+#define HANDLE_SYSV_PRAGMA 1
 
 /* System V Release 4 uses DWARF debugging info.  */
 

@@ -213,7 +213,6 @@ __enable_execute_stack (addr)						\
 #define ASM_WEAKEN_LABEL(FILE, NAME) ASM_OUTPUT_WEAK_ALIAS(FILE, NAME, 0)
 
 /* Handle #pragma weak and #pragma pack.  */
-#undef HANDLE_SYSV_PRAGMA
 #define HANDLE_SYSV_PRAGMA 1
 
 /* Handle #pragma extern_prefix.  Technically only needed for Tru64 5.x,

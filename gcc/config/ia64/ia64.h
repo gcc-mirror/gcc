@@ -2388,7 +2388,7 @@ do {									\
 
 #define PREFETCH_BLOCK 32
 
-#define HANDLE_SYSV_PRAGMA
+#define HANDLE_SYSV_PRAGMA 1
 
 /* In rare cases, correct code generation requires extra machine dependent
    processing between the second jump optimization pass and delayed branch

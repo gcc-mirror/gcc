@@ -70,7 +70,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Handle #pragma pack and sometimes #pragma weak.  */
 
-#define HANDLE_SYSV_PRAGMA
+#define HANDLE_SYSV_PRAGMA 1
 
 #define TARGET_THREADS	(target_flags & MASK_THREADS)
 #define MASK_THREADS	0x40000000

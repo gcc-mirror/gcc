@@ -80,7 +80,7 @@ Boston, MA 02111-1307, USA.  */
 #undef PTRDIFF_TYPE
 #define PTRDIFF_TYPE "int"
 
-#define HANDLE_SYSV_PRAGMA
+#define HANDLE_SYSV_PRAGMA 1
 
 /* We don't have any limit on the length as out debugger is GDB.  */
 #undef DBX_CONTIN_LENGTH

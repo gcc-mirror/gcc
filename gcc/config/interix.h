@@ -85,7 +85,7 @@ for windows/multi thread */
 
 #define STDC_0_IN_SYSTEM_HEADERS 1
 
-#define HANDLE_SYSV_PRAGMA
+#define HANDLE_SYSV_PRAGMA 1
 #undef HANDLE_PRAGMA_WEAK  /* until the link format can handle it */
 
 /* Names to predefine in the preprocessor for this target machine.  */
