@@ -700,7 +700,7 @@ genrtl_compound_stmt (t)
 
 #ifdef ENABLE_CHECKING
   /* Make sure that we've pushed and popped the same number of levels.  */
-  if (n != current_nesting_level ())
+  if (!COMPOUND_STMT_NO_SCOPE (t) && n != current_nesting_level ())
     abort ();
 #endif
 }
