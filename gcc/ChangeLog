@@ -1,3 +1,7 @@
+Tue Jul 21 23:28:35 1998  Klaus Kaempf <kkaempf@rmi.de>
+
+	* cccp.c (do_include): Fix vax c style include handling.
+
 Tue Jul 21 13:28:19 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* cplus-dem.c (do_type): Use demangle_template_value_parm for arrays.
