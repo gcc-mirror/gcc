@@ -761,8 +761,8 @@ c_sizeof (type)
   t = size_binop (CEIL_DIV_EXPR, TYPE_SIZE (type), 
 		  size_int (TYPE_PRECISION (char_type_node)));
   /* size_binop does not put the constant in range, so do it now.  */
-  if (TREE_CODE (t) == INTEGER_CST)
-    TREE_CONSTANT_OVERFLOW (t) |= force_fit_type (t, 0);
+  if (TREE_CODE (t) == INTEGER_CST && force_fit_type (t, 0))
+    TREE_CONSTANT_OVERFLOW (t) = TREE_OVERFLOW (t) = 1;
   return t;
 }
 
@@ -3870,7 +3870,7 @@ build_c_cast (type, expr)
     }
   else
     {
-      tree otype;
+      tree otype, ovalue;
 
       /* If casting to void, avoid the error that would come
 	 from default_conversion in the case of a non-lvalue array.  */
@@ -3925,11 +3925,15 @@ build_c_cast (type, expr)
 	  && !TREE_CONSTANT (value))
 	warning ("cast to pointer from integer of different size");
 
+      ovalue = value;
       value = convert (type, value);
 
       /* Ignore any integer overflow caused by the cast.  */
       if (TREE_CODE (value) == INTEGER_CST)
-	TREE_CONSTANT_OVERFLOW (value) = 0;
+	{
+	  TREE_OVERFLOW (value) = TREE_OVERFLOW (ovalue);
+	  TREE_CONSTANT_OVERFLOW (value) = TREE_CONSTANT_OVERFLOW (ovalue);
+	}
     }
 
   if (value == expr && pedantic)
@@ -4535,10 +4539,11 @@ store_init_value (decl, init)
     }
 #endif
 
-  /* ANSI wants warnings about out-of-range constant initializers.  */
-  constant_expression_warning (value);
-
   DECL_INITIAL (decl) = value;
+
+  /* ANSI wants warnings about out-of-range constant initializers.  */
+  STRIP_TYPE_NOPS (value);
+  constant_expression_warning (value);
 }
 
 /* Methods for storing and printing names for error messages.  */
