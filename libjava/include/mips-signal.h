@@ -1,7 +1,7 @@
 // mips-signal.h - Catch runtime signals and turn them into exceptions
 // on an mips based Linux system. 
 
-/* Copyright (C) 1998, 1999, 2001, 2002, 2003  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2001, 2002, 2003, 2004 Free Software Foundation
 
    This file is part of libgcj.
 
