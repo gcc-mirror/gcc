@@ -27,6 +27,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "real.h"
 #include "obstack.h"
 #include "bytecode.h"
+#include "bytetypes.h"
 #include "bc-emit.h"
 #include "bc-opcode.h"
 #include "bc-typecd.h"
@@ -886,8 +887,8 @@ bc_emit_bytecode (bytecode)
 	max_stack_depth = stack_depth;
     }
 
-#ifdef VALIDATE_STACK
-  VALIDATE_STACK ();
+#ifdef VALIDATE_STACK_FOR_BC
+  VALIDATE_STACK_FOR_BC ();
 #endif
 }
 
@@ -924,10 +925,14 @@ bc_emit_instruction (va_alist)
 
       switch (arityvec[instruction].literals[nliteral])
 	{
+/* This conditional is a kludge, but it's necessary
+   because TYPE might be long long.  */
+#ifdef __GNUC__
 	  /* Expand definitions into case statements */
 #define DEFTYPECODE(CODE, NAME, MODE, TYPE)				\
 	case CODE:							\
-	  { TYPE temp = va_arg (arguments, TYPE); 			\
+	  {								\
+	    TYPE temp = va_arg (arguments, TYPE); 			\
 	    bc_emit_bytecode_const ((void *) &temp, sizeof temp); 	\
 	    PRLIT (TYPE, &temp); }					\
 	  break;
@@ -935,6 +940,7 @@ bc_emit_instruction (va_alist)
 #include "bc-typecd.def"
 
 #undef DEFTYPECODE
+#endif /* __GNUC__ */
 
 	default:
 	  abort ();
