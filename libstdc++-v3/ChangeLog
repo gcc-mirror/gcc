@@ -1,3 +1,10 @@
+2004-10-30  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/ext/bitmap_allocator.h (allocate(size_type)): Minor tweak.
+
+	* testsuite/ext/bitmap_allocator/check_delete.cc: New.
+	* testsuite/ext/bitmap_allocator/check_new.cc: Likewise.
+
 2004-10-29  Geoffrey Keating  <geoffk@apple.com>
 
 	* configure.host (darwin*): Set os_include_dir to a separate directory
