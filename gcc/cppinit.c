@@ -29,12 +29,6 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #include "mkdeps.h"
 #include "cppdefault.h"
 
-/* Predefined symbols, built-in macros, and the default include path.  */
-
-#ifndef GET_ENV_PATH_LIST
-#define GET_ENV_PATH_LIST(VAR,NAME)	do { (VAR) = getenv (NAME); } while (0)
-#endif
-
 /* Windows does not natively support inodes, and neither does MSDOS.
    Cygwin's emulation can generate non-unique inodes, so don't use it.
    VMS has non-numeric inodes.  */
@@ -729,23 +723,23 @@ init_standard_includes (pfile)
      etc. specify an additional list of directories to be searched as
      if specified with -isystem, for the language indicated.  */
 
-  GET_ENV_PATH_LIST (path, "CPATH");
+  GET_ENVIRONMENT (path, "CPATH");
   if (path != 0 && *path != 0)
     path_include (pfile, path, BRACKET);
 
   switch ((CPP_OPTION (pfile, objc) << 1) + CPP_OPTION (pfile, cplusplus))
     {
     case 0:
-      GET_ENV_PATH_LIST (path, "C_INCLUDE_PATH");
+      GET_ENVIRONMENT (path, "C_INCLUDE_PATH");
       break;
     case 1:
-      GET_ENV_PATH_LIST (path, "CPLUS_INCLUDE_PATH");
+      GET_ENVIRONMENT (path, "CPLUS_INCLUDE_PATH");
       break;
     case 2:
-      GET_ENV_PATH_LIST (path, "OBJC_INCLUDE_PATH");
+      GET_ENVIRONMENT (path, "OBJC_INCLUDE_PATH");
       break;
     case 3:
-      GET_ENV_PATH_LIST (path, "OBJCPLUS_INCLUDE_PATH");
+      GET_ENVIRONMENT (path, "OBJCPLUS_INCLUDE_PATH");
       break;
     }
   if (path != 0 && *path != 0)

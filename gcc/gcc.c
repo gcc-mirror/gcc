@@ -125,10 +125,6 @@ static const char dir_separator_str[] = { DIR_SEPARATOR, 0 };
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
 
-#ifndef GET_ENV_PATH_LIST
-#define GET_ENV_PATH_LIST(VAR,NAME)	do { (VAR) = getenv (NAME); } while (0)
-#endif
-
 /* Most every one is fine with LIBRARY_PATH.  For some, it conflicts.  */
 #ifndef LIBRARY_PATH_ENV
 #define LIBRARY_PATH_ENV "LIBRARY_PATH"
@@ -2352,7 +2348,7 @@ make_relative_prefix (progname, bin_prefix, prefix)
     {
       char *temp;
 
-      GET_ENV_PATH_LIST (temp, "PATH");
+      GET_ENVIRONMENT (temp, "PATH");
       if (temp)
 	{
 	  char *startp, *endp, *nstore;
@@ -3169,7 +3165,7 @@ process_command (argc, argv)
   int j;
 #endif
 
-  GET_ENV_PATH_LIST (gcc_exec_prefix, "GCC_EXEC_PREFIX");
+  GET_ENVIRONMENT (gcc_exec_prefix, "GCC_EXEC_PREFIX");
 
   n_switches = 0;
   n_infiles = 0;
@@ -3282,7 +3278,7 @@ process_command (argc, argv)
   /* COMPILER_PATH and LIBRARY_PATH have values
      that are lists of directory names with colons.  */
 
-  GET_ENV_PATH_LIST (temp, "COMPILER_PATH");
+  GET_ENVIRONMENT (temp, "COMPILER_PATH");
   if (temp)
     {
       const char *startp, *endp;
@@ -3317,7 +3313,7 @@ process_command (argc, argv)
 	}
     }
 
-  GET_ENV_PATH_LIST (temp, LIBRARY_PATH_ENV);
+  GET_ENVIRONMENT (temp, LIBRARY_PATH_ENV);
   if (temp && *cross_compile == '0')
     {
       const char *startp, *endp;
@@ -3350,7 +3346,7 @@ process_command (argc, argv)
     }
 
   /* Use LPATH like LIBRARY_PATH (for the CMU build program).  */
-  GET_ENV_PATH_LIST (temp, "LPATH");
+  GET_ENVIRONMENT (temp, "LPATH");
   if (temp && *cross_compile == '0')
     {
       const char *startp, *endp;

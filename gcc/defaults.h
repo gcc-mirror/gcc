@@ -23,6 +23,10 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #ifndef GCC_DEFAULTS_H
 #define GCC_DEFAULTS_H
 
+#ifndef GET_ENVIRONMENT
+#define GET_ENVIRONMENT(VALUE, NAME) do { (VALUE) = getenv (NAME); } while (0)
+#endif
+
 /* Define default standard character escape sequences.  */
 #ifndef TARGET_BELL
 #  define TARGET_BELL 007
