@@ -1,3 +1,9 @@
+Tue Nov  2 14:21:37 1999  Jason Eckhardt  <jle@cygnus.com>
+
+	* config/pa/pa.md (height reduction patterns): Add checks for
+        overlapping operands to avoid semantic-destroying splits for 
+        height reduction patterns.
+
 Tue Nov  2 15:27:31 1999  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
 
 	* configure.in (m68k-hp-hpux*, xm_alloca.h): The underscore should
@@ -85,6 +91,7 @@ Mon Nov  1 15:41:01 1999  Mark P. Mitchell  <mark@codesourcery.com>
 
 	* combine.c (combine_instructions): Use xmalloc instead of alloca.
 
+>>>>>>> 1.4890
 Mon Nov  1 13:22:30 1999  Richard Henderson  <rth@cygnus.com>
 
 	* toplev.c (rest_of_compilation): Don't optimize the CFG
@@ -834,6 +841,7 @@ Wed Oct 27 12:33:40 1999  Mark Mitchell  <mark@codesourcery.com>
 	* stupid.c (find_clobbered_regs): Take additional parameter.
 	(stupid_life_analysis): Adjust calls to note_stores.
 	
+>>>>>>> 1.4876
 Wed Oct 27 19:26:12 1999  Nick Clifton  <nickc@cygnus.com>
 
 	* config/arm/coff.h (STRUCTURE_SIZE_BOUNDARY): Delete
