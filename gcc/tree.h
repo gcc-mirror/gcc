@@ -1802,6 +1802,14 @@ typedef struct record_layout_info
 } *record_layout_info;
 
 extern record_layout_info start_record_layout PARAMS ((tree));
+extern tree bit_from_pos		PARAMS ((tree, tree));
+extern tree byte_from_pos		PARAMS ((tree, tree));
+extern void pos_from_byte		PARAMS ((tree *, tree *, unsigned int,
+						 tree));
+extern void pos_from_bit		PARAMS ((tree *, tree *, unsigned int,
+						 tree));
+extern void normalize_offset		PARAMS ((tree *, tree *,
+						 unsigned int));
 extern tree rli_size_unit_so_far	PARAMS ((record_layout_info));
 extern tree rli_size_so_far		PARAMS ((record_layout_info));
 extern void normalize_rli		PARAMS ((record_layout_info));

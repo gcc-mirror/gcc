@@ -1,3 +1,11 @@
+Wed Mar 29 15:39:10 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* stor-layout.c (bit_from_pos, byte_from_pos): New functions.
+	(pos_from_byte, pos_from_bit, normalize_offset): Likewise.
+	(normalize_rli, rli_size_so_far, rli_size_unit_so_far): Use them.
+	* tree.c (bit_position, byte_position): Likewise.
+	* tree.h: Declare new functions.
+
 2000-03-29  Nick Clifton  <nickc@cygnus.com>
 
 	* config/arm/arm.c: Minor formatting changes/
