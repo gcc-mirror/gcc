@@ -4777,14 +4777,21 @@ digest_init (type, init, require_constant, constructor_constant)
 	  if (flag_pedantic_errors)
 	    inside_init = error_mark_node;
 	}
-      else if (require_constant && ! TREE_CONSTANT (inside_init))
+      else if (require_constant 
+	       && (!TREE_CONSTANT (inside_init)
+		   /* This test catches things like `7 / 0' which
+		      result in an expression for which TREE_CONSTANT
+		      is true, but which is not actually something
+		      that is a legal constant.  We really should not
+		      be using this function, because it is a part of
+		      the back-end.  Instead, the expression should
+		      already have been turned into ERROR_MARK_NODE.  */
+		   || !initializer_constant_valid_p (inside_init,
+						     TREE_TYPE (inside_init))))
 	{
 	  error_init ("initializer element is not constant");
 	  inside_init = error_mark_node;
 	}
-      else if (require_constant
-	       && initializer_constant_valid_p (inside_init, TREE_TYPE (inside_init)) == 0)
-	pedwarn ("initializer element is not computable at load time");
 
       return inside_init;
     }
