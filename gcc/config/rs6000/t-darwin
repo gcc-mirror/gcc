@@ -11,3 +11,6 @@ LIB2FUNCS_STATIC_EXTRA = \
 # even though they use AltiVec instructions.  -Wa is used because
 # -force_cpusubtype_ALL doesn't work with -dynamiclib.
 TARGET_LIBGCC2_CFLAGS = -Wa,-force_cpusubtype_ALL
+
+# Export the _xlq* symbols from darwin-ldouble.c.
+SHLIB_MAPFILES += $(srcdir)/config/rs6000/libgcc-ppc64.ver
