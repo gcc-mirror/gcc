@@ -1,5 +1,10 @@
 2004-11-12  Ziemowit Laski  <zlaski@apple.com>
 
+	* varasm.c (output_addressed_constants): For CONST_DECLs,
+	output the initializer if present.
+
+2004-11-12  Ziemowit Laski  <zlaski@apple.com>
+
 	* config/rs6000/darwin.h: Fix confusing typo in comment.
 
 2004-11-12  Devang Patel  <dpatel@apple.com>
