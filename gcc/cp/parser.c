@@ -1196,6 +1196,10 @@ typedef struct cp_parser_context GTY (())
 static cp_parser_context *cp_parser_context_new
   PARAMS ((cp_parser_context *));
 
+/* Class variables.  */
+
+static GTY(()) cp_parser_context* cp_parser_context_free_list;
+
 /* Constructors and destructors.  */
 
 /* Construct a new context.  The context below this one on the stack
@@ -1208,8 +1212,16 @@ cp_parser_context_new (next)
   cp_parser_context *context;
 
   /* Allocate the storage.  */
-  context = ((cp_parser_context *) 
-	     ggc_alloc_cleared (sizeof (cp_parser_context)));
+  if (cp_parser_context_free_list != NULL)
+    {
+      /* Pull the first entry from the free list.  */
+      context = cp_parser_context_free_list;
+      cp_parser_context_free_list = context->next;
+      memset ((char *)context, 0, sizeof (*context));
+    }
+  else
+    context = ((cp_parser_context *) 
+	       ggc_alloc_cleared (sizeof (cp_parser_context)));
   /* No errors have occurred yet in this context.  */
   context->status = CP_PARSER_STATUS_KIND_NO_ERROR;
   /* If this is not the bottomost context, copy information that we
@@ -1704,7 +1716,7 @@ static tree cp_parser_functional_cast
 static void cp_parser_late_parsing_for_member
   PARAMS ((cp_parser *, tree));
 static void cp_parser_late_parsing_default_args
-  PARAMS ((cp_parser *, tree));
+  (cp_parser *, tree, tree);
 static tree cp_parser_sizeof_operand
   PARAMS ((cp_parser *, enum rid));
 static bool cp_parser_declares_only_class_p
@@ -1741,7 +1753,7 @@ static bool cp_parser_committed_to_tentative_parse
   PARAMS ((cp_parser *));
 static void cp_parser_error
   PARAMS ((cp_parser *, const char *));
-static void cp_parser_simulate_error
+static bool cp_parser_simulate_error
   PARAMS ((cp_parser *));
 static void cp_parser_check_type_definition
   PARAMS ((cp_parser *));
@@ -2213,24 +2225,26 @@ cp_parser_error (parser, message)
      cp_parser *parser;
      const char *message;
 {
-  /* Remember that we have issued an error.  */
-  cp_parser_simulate_error (parser);
   /* Output the MESSAGE -- unless we're parsing tentatively.  */
-  if (!cp_parser_parsing_tentatively (parser) 
-      || cp_parser_committed_to_tentative_parse (parser))
+  if (!cp_parser_simulate_error (parser))
     error (message);
 }
 
 /* If we are parsing tentatively, remember that an error has occurred
-   during this tentative parse.  */
+   during this tentative parse.  Returns true if the error was
+   simulated; false if a messgae should be issued by the caller.  */
 
-static void
+static bool
 cp_parser_simulate_error (parser)
      cp_parser *parser;
 {
   if (cp_parser_parsing_tentatively (parser)
       && !cp_parser_committed_to_tentative_parse (parser))
-    parser->context->status = CP_PARSER_STATUS_KIND_ERROR;
+    {
+      parser->context->status = CP_PARSER_STATUS_KIND_ERROR;
+      return true;
+    }
+  return false;
 }
 
 /* This function is called when a type is defined.  If type
@@ -3117,8 +3131,16 @@ cp_parser_id_expression (cp_parser *parser,
       cp_token *token;
       tree id;
 
-      /* We don't know yet whether or not this will be a 
-	 template-id.  */
+      /* Peek at the next token.  */
+      token = cp_lexer_peek_token (parser->lexer);
+
+      /* If it's an identifier, and the next token is not a "<", then
+	 we can avoid the template-id case.  This is an optimization
+	 for this common case.  */
+      if (token->type == CPP_NAME 
+	  && cp_lexer_peek_nth_token (parser->lexer, 2)->type != CPP_LESS)
+	return cp_parser_identifier (parser);
+
       cp_parser_parse_tentatively (parser);
       /* Try a template-id.  */
       id = cp_parser_template_id (parser, 
@@ -3128,7 +3150,8 @@ cp_parser_id_expression (cp_parser *parser,
       if (cp_parser_parse_definitely (parser))
 	return id;
 
-      /* Peek at the next token.  */
+      /* Peek at the next token.  (Changes in the token buffer may
+	 have invalidated the pointer obtained above.)  */
       token = cp_lexer_peek_token (parser->lexer);
 
       switch (token->type)
@@ -11331,7 +11354,16 @@ cp_parser_class_name (cp_parser *parser,
   tree decl;
   tree scope;
   bool typename_p;
-  
+  cp_token *token;
+
+  /* All class-names start with an identifier.  */
+  token = cp_lexer_peek_token (parser->lexer);
+  if (token->type != CPP_NAME && token->type != CPP_TEMPLATE_ID)
+    {
+      cp_parser_error (parser, "expected class-name");
+      return error_mark_node;
+    }
+    
   /* PARSER->SCOPE can be cleared when parsing the template-arguments
      to a template-id, so we save it here.  */
   scope = parser->scope;
@@ -11339,21 +11371,11 @@ cp_parser_class_name (cp_parser *parser,
      in a qualified name where the enclosing scope is type-dependent.  */
   typename_p = (typename_keyword_p && scope && TYPE_P (scope)
 		&& cp_parser_dependent_type_p (scope));
-
-  /* We don't know whether what comes next is a template-id or 
-     not.  */
-  cp_parser_parse_tentatively (parser);
-  /* Try a template-id.  */
-  decl = cp_parser_template_id (parser, template_keyword_p,
-				check_dependency_p);
-  if (cp_parser_parse_definitely (parser))
+  /* Handle the common case (an identifier, but not a template-id)
+     efficiently.  */
+  if (token->type == CPP_NAME 
+      && cp_lexer_peek_nth_token (parser->lexer, 2)->type != CPP_LESS)
     {
-      if (decl == error_mark_node)
-	return error_mark_node;
-    }
-  else
-    {
-      /* If it wasn't a template-id, try a simple identifier.  */
       tree identifier;
 
       /* Look for the identifier.  */
@@ -11384,6 +11406,14 @@ cp_parser_class_name (cp_parser *parser,
 					type_p,
 					check_dependency_p);
 	}
+    }
+  else
+    {
+      /* Try a template-id.  */
+      decl = cp_parser_template_id (parser, template_keyword_p,
+				    check_dependency_p);
+      if (decl == error_mark_node)
+	return error_mark_node;
     }
 
   decl = cp_parser_maybe_treat_template_as_class (decl, class_head_p);
@@ -11515,7 +11545,7 @@ cp_parser_class_specifier (parser)
 	   parser->default_arg_types;
 	   parser->default_arg_types = TREE_CHAIN (parser->default_arg_types))
 	cp_parser_late_parsing_default_args
-	  (parser, TREE_PURPOSE (parser->default_arg_types));
+	  (parser, TREE_PURPOSE (parser->default_arg_types), NULL_TREE);
       
       /* Reverse the queue, so that we process it in the order the
 	 functions were declared.  */
@@ -13392,9 +13422,7 @@ cp_parser_lookup_name (parser, name, check_access, is_type,
     {
       /* The error message we have to print is too complicated for
 	 cp_parser_error, so we incorporate its actions directly.  */
-      cp_parser_simulate_error (parser);
-      if (!cp_parser_parsing_tentatively (parser)
-	  || cp_parser_committed_to_tentative_parse (parser))
+      if (!cp_parser_simulate_error (parser))
 	{
 	  error ("reference to `%D' is ambiguous", name);
 	  print_candidates (decl);
@@ -14216,11 +14244,10 @@ cp_parser_late_parsing_for_member (parser, member_function)
 
   /* If there are default arguments that have not yet been processed,
      take care of them now.  */
-  if (DECL_FUNCTION_MEMBER_P (member_function))
-    push_nested_class (DECL_CONTEXT (member_function), 1);
-  cp_parser_late_parsing_default_args (parser, TREE_TYPE (member_function));
-  if (DECL_FUNCTION_MEMBER_P (member_function))
-    pop_nested_class ();
+  cp_parser_late_parsing_default_args (parser, TREE_TYPE (member_function),
+				       DECL_FUNCTION_MEMBER_P (member_function)
+				       ? DECL_CONTEXT (member_function)
+				       : NULL_TREE);
 
   /* If the body of the function has not yet been parsed, parse it
      now.  */
@@ -14276,12 +14303,12 @@ cp_parser_late_parsing_for_member (parser, member_function)
 }
 
 /* TYPE is a FUNCTION_TYPE or METHOD_TYPE which contains a parameter
-   with an unparsed DEFAULT_ARG.  Parse those default args now.  */
+   with an unparsed DEFAULT_ARG.  If non-NULL, SCOPE is the class in
+   whose context name lookups in the default argument should occur.
+   Parse the default args now.  */
 
 static void
-cp_parser_late_parsing_default_args (parser, type)
-     cp_parser *parser;
-     tree type;
+cp_parser_late_parsing_default_args (cp_parser *parser, tree type, tree scope)
 {
   cp_lexer *saved_lexer;
   cp_token_cache *tokens;
@@ -14312,7 +14339,11 @@ cp_parser_late_parsing_default_args (parser, type)
       saved_local_variables_forbidden_p = parser->local_variables_forbidden_p;
       parser->local_variables_forbidden_p = true;
        /* Parse the assignment-expression.  */
+      if (scope)
+	push_nested_class (scope, 1);
       TREE_PURPOSE (parameters) = cp_parser_assignment_expression (parser);
+      if (scope)
+	pop_nested_class ();
 
        /* Restore saved state.  */
       parser->lexer = saved_lexer;
@@ -14450,14 +14481,9 @@ cp_parser_require (parser, type, token_desc)
     return cp_lexer_consume_token (parser->lexer);
   else
     {
-      dyn_string_t error_msg;
-
-      /* Format the error message.  */
-      error_msg = dyn_string_new (0);
-      dyn_string_append_cstr (error_msg, "expected ");
-      dyn_string_append_cstr (error_msg, token_desc);
-      cp_parser_error (parser, error_msg->s);
-      dyn_string_delete (error_msg);
+      /* Output the MESSAGE -- unless we're parsing tentatively.  */
+      if (!cp_parser_simulate_error (parser))
+	error ("expected %s", token_desc);
       return NULL;
     }
 }
@@ -14759,15 +14785,16 @@ cp_parser_parse_definitely (parser)
 	parser->context->deferred_access_checks 
 	  = chainon (parser->context->deferred_access_checks,
 		     context->deferred_access_checks);
-      return true;
     }
   /* Otherwise, if errors occurred, roll back our state so that things
      are just as they were before we began the tentative parse.  */
   else
-    {
-      cp_lexer_rollback_tokens (parser->lexer);
-      return false;
-    }
+    cp_lexer_rollback_tokens (parser->lexer);
+  /* Add the context to the front of the free list.  */
+  context->next = cp_parser_context_free_list;
+  cp_parser_context_free_list = context;
+
+  return !error_occurred;
 }
 
 /* Returns non-zero if we are parsing tentatively.  */
