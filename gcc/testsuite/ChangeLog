@@ -1,3 +1,8 @@
+2003-04-23  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/10471
+	* g++.dg/template/defarg2.C: New test.
+
 2003-04-23  Neil Booth  <neil@daikokuya.co.uk>
 
 	* gcc.dg/cpp/include2.c: Update.

@@ -4737,7 +4737,9 @@ build_cxx_call(tree fn, tree args, tree converted_args)
 
   /* If this call might throw an exception, note that fact.  */
   fndecl = get_callee_fndecl (fn);
-  if ((!fndecl || !TREE_NOTHROW (fndecl)) && at_function_scope_p ())
+  if ((!fndecl || !TREE_NOTHROW (fndecl)) 
+      && at_function_scope_p ()
+      && cfun)
     cp_function_chain->can_throw = 1;
 
   /* Some built-in function calls will be evaluated at compile-time in
