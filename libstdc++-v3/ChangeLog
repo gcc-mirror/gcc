@@ -1,3 +1,8 @@
+2003-06-20  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/testsuite_performance.h (resource_counter): Don't use
+	mallinfo at the moment.
+
 2003-06-20  Matthias Klose  <doko@debian.org>
 
 	* configure.host: Set try_cpu to target_cpu for existing
