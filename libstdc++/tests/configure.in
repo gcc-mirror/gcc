@@ -43,8 +43,13 @@ for TEST in ${TESTS} ; do
   echo '	diff -c $(srcdir)/'"${TEST}.exp ${TEST}.out"  >>Makefile
   CHECK="${CHECK} check-${TEST}"
 done
-echo "
+if [ -d ${srcdir}/../../gcc ] ; then
+  echo "
 check:
 check-old: ${CHECK}" >>Makefile
+else
+  echo "
+check: ${CHECK}" >>Makefile
+fi
 
 

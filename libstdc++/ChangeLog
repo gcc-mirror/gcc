@@ -1,3 +1,11 @@
+Tue Jan 13 21:23:05 1998  H.J. Lu  (hjl@gnu.org)
+
+	* configure.in (configdirs): Include testsuite only if
+	${srcdir}/../gcc exists.
+
+	* tests/configure.in (check): Set to ${CHECK} if
+	${srcdir}/../../gcc doesn't exists.
+
 1998-01-05  Brendan Kehoe  <brendan@lisa.cygnus.com>
 
 	* std/bastring.cc (basic_string::Rep::operator delete): Don't claim
