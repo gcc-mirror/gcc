@@ -1,3 +1,9 @@
+2000-04-04  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* configure: Rebuilt.
+	* configure.in: (i*86-*-solaris*): New libffi target. Patch
+	proposed by Bryce McKinlay.
+
 2000-03-20  Tom Tromey  <tromey@cygnus.com>
 
 	* Makefile.in: Hand edit for java_raw_api.lo.
