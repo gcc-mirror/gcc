@@ -1134,7 +1134,7 @@ int
 dfs_enumerate_from (bb, reverse, predicate, rslt, rslt_max, data)
      basic_block bb;
      int reverse;
-     bool (*predicate) (basic_block, void *);
+     bool (*predicate) PARAMS ((basic_block, void *));
      basic_block *rslt;
      int rslt_max;
      void *data;

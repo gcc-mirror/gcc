@@ -104,8 +104,10 @@ extern char test_real_width
 struct real_format
 {
   /* Move to and from the target bytes.  */
-  void (*encode) (const struct real_format *, long *, const REAL_VALUE_TYPE *);
-  void (*decode) (const struct real_format *, REAL_VALUE_TYPE *, const long *);
+  void (*encode) PARAMS ((const struct real_format *, long *,
+			  const REAL_VALUE_TYPE *));
+  void (*decode) PARAMS ((const struct real_format *, REAL_VALUE_TYPE *,
+			  const long *));
 
   /* The radix of the exponent and digits of the significand.  */
   int b;

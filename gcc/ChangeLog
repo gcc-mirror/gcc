@@ -1,3 +1,11 @@
+2002-10-11  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* cfganal.c (dfs_enumerate_from): Use PARAMS.
+	* genautomata.c (output_insn_code_cases): Likewise.
+	* real.c (real_format): Likewise.
+	* tree.c (tree_size): Revise expressions using TREE_CODE_LENGTH to
+	ensure value is promoted before doing subtraction.
+
 Fri Oct 11 22:22:38 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* calls.c (expand_call): Simplify noreturn call.
