@@ -661,7 +661,8 @@ void GC_my_stack_limits()
 }
 
 
-/* We hold allocation lock.  We assume the world is stopped.	*/
+/* We hold allocation lock.  Should do exactly the right thing if the	*/
+/* world is stopped.  Should not fail if it isn't.			*/
 void GC_push_all_stacks()
 {
     register int i;
@@ -900,7 +901,7 @@ GC_thr_create(void *stack_base, size_t stack_size,
     }
     GC_multithreaded++;
     if (stack == 0) {
-     	if (stack_size == 0) stack_size = GC_min_stack_sz;
+     	if (stack_size == 0) stack_size = 1024*1024;
      	stack = (void *)GC_stack_alloc(&stack_size);
      	if (stack == 0) {
 	    GC_multithreaded--;

@@ -430,7 +430,7 @@ word env;
     	if (bm & 1) {
     	    current = *current_p;
     	    if ((ptr_t)current >= least_ha && (ptr_t)current <= greatest_ha) {
-    	        PUSH_CONTENTS(current, mark_stack_ptr,
+    	        PUSH_CONTENTS((ptr_t)current, mark_stack_ptr,
 			      mark_stack_limit, current_p, exit1);
     	    }
     	}
@@ -665,6 +665,7 @@ DCL_LOCK_STATE;
 #	    endif
         } else {
             *opp = obj_link(op);
+	    obj_link(op) = 0;
             GC_words_allocd += lw;
             FASTUNLOCK();
         }
@@ -708,6 +709,7 @@ DCL_LOCK_STATE;
 #	    endif
         } else {
             *opp = obj_link(op);
+	    obj_link(op) = 0;
             GC_words_allocd += lw;
             FASTUNLOCK();
         }
@@ -717,7 +719,7 @@ DCL_LOCK_STATE;
        lw = BYTES_TO_WORDS(GC_size(op));
    }
    if (op != NULL)
-   ((word *)op)[lw - 1] = d;
+       ((word *)op)[lw - 1] = d;
    return((GC_PTR) op);
 }
 
@@ -772,6 +774,7 @@ DCL_LOCK_STATE;
 #	    endif
         } else {
             *opp = obj_link(op);
+	    obj_link(op) = 0;
             GC_words_allocd += lw;
             FASTUNLOCK();
         }

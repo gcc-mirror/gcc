@@ -2,6 +2,7 @@
  * Copyright 1988, 1989 Hans-J. Boehm, Alan J. Demers
  * Copyright (c) 1991-1995 by Xerox Corporation.  All rights reserved.
  * Copyright (c) 1997 by Silicon Graphics.  All rights reserved.
+ * Copyright (c) 1999 by Hewlett-Packard Company.  All rights reserved.
  *
  * THIS MATERIAL IS PROVIDED AS IS, WITH ABSOLUTELY NO WARRANTY EXPRESSED
  * OR IMPLIED.  ANY USE IS AT YOUR OWN RISK.
@@ -12,64 +13,14 @@
  * provided the above notices are retained, and a notice that the code was
  * modified is included with the above copyright notice.
  */
-# define I_HIDE_POINTERS
-# include "gc_priv.h"
-# ifdef KEEP_BACK_PTRS
-#   include "backptr.h"
-# endif
+
+#include "dbg_mlc.h"
 
 void GC_default_print_heap_obj_proc();
 GC_API void GC_register_finalizer_no_order
     	GC_PROTO((GC_PTR obj, GC_finalization_proc fn, GC_PTR cd,
 		  GC_finalization_proc *ofn, GC_PTR *ocd));
 
-/* Do we want to and know how to save the call stack at the time of	*/
-/* an allocation?  How much space do we want to use in each object?	*/
-
-# define START_FLAG ((word)0xfedcedcb)
-# define END_FLAG ((word)0xbcdecdef)
-	/* Stored both one past the end of user object, and one before	*/
-	/* the end of the object as seen by the allocator.		*/
-
-
-/* Object header */
-typedef struct {
-#   ifdef KEEP_BACK_PTRS
-	ptr_t oh_back_ptr;
-#	define MARKED_FOR_FINALIZATION (ptr_t)(-1)
-	    /* Object was marked because it is finalizable. */
-#	ifdef ALIGN_DOUBLE
-	  word oh_dummy;
-#	endif
-#   endif
-    char * oh_string;		/* object descriptor string	*/
-    word oh_int;		/* object descriptor integers	*/
-#   ifdef NEED_CALLINFO
-      struct callinfo oh_ci[NFRAMES];
-#   endif
-    word oh_sz;			/* Original malloc arg.		*/
-    word oh_sf;			/* start flag */
-} oh;
-/* The size of the above structure is assumed not to dealign things,	*/
-/* and to be a multiple of the word length.				*/
-
-#define DEBUG_BYTES (sizeof (oh) + sizeof (word))
-#undef ROUNDED_UP_WORDS
-#define ROUNDED_UP_WORDS(n) BYTES_TO_WORDS((n) + WORDS_TO_BYTES(1) - 1)
-
-
-#ifdef SAVE_CALL_CHAIN
-#   define ADD_CALL_CHAIN(base, ra) GC_save_callers(((oh *)(base)) -> oh_ci)
-#   define PRINT_CALL_CHAIN(base) GC_print_callers(((oh *)(base)) -> oh_ci)
-#else
-# ifdef GC_ADD_CALLER
-#   define ADD_CALL_CHAIN(base, ra) ((oh *)(base)) -> oh_ci[0].ci_pc = (ra)
-#   define PRINT_CALL_CHAIN(base) GC_print_callers(((oh *)(base)) -> oh_ci)
-# else
-#   define ADD_CALL_CHAIN(base, ra)
-#   define PRINT_CALL_CHAIN(base)
-# endif
-#endif
 
 /* Check whether object with base pointer p has debugging info	*/ 
 /* p is assumed to point to a legitimate object in our part	*/
@@ -116,7 +67,7 @@ ptr_t p;
 
   /* Store information about the object referencing dest in *base_p	*/
   /* and *offset_p.							*/
-  /*   source is root ==> *base_p = 0, *offset_p = address		*/
+  /*   source is root ==> *base_p = address, *offset_p = 0		*/
   /*   source is heap object ==> *base_p != 0, *offset_p = offset 	*/
   /*   Returns 1 on success, 0 if source couldn't be determined.	*/
   /* Dest can be any address within a heap object.			*/
@@ -128,6 +79,7 @@ ptr_t p;
     if (!GC_has_debug_info((ptr_t) hdr)) return GC_NO_SPACE;
     bp = hdr -> oh_back_ptr;
     if (MARKED_FOR_FINALIZATION == bp) return GC_FINALIZER_REFD;
+    if (MARKED_FROM_REGISTER == bp) return GC_REFD_FROM_REG;
     if (0 == bp) return GC_UNREFERENCED;
     bp = REVEAL_POINTER(bp);
     bp_base = GC_base(bp);
@@ -177,18 +129,15 @@ ptr_t p;
     }
   }
 
-  /* Force a garbage collection and generate a backtrace from a	*/
-  /* random heap address.					*/
-  void GC_generate_random_backtrace(void)
+  /* Print back trace for p */
+  void GC_print_backtrace(void *p)
   {
-    void * current;
+    void *current = p;
     int i;
-    void * base;
-    size_t offset;
     GC_ref_kind source;
-    GC_gcollect();
-    current = GC_generate_random_valid_address();
-    GC_printf1("Chose address 0x%lx in object\n", (unsigned long)current);
+    size_t offset;
+    void *base;
+
     GC_print_heap_obj(GC_base(current));
     GC_err_printf0("\n");
     for (i = 0; ; ++i) {
@@ -207,6 +156,9 @@ ptr_t p;
 	case GC_REFD_FROM_ROOT:
 	  GC_err_printf1("root at 0x%lx\n", (unsigned long)base);
 	  goto out;
+	case GC_REFD_FROM_REG:
+	  GC_err_printf0("root in register\n");
+	  goto out;
 	case GC_FINALIZER_REFD:
 	  GC_err_printf0("list of finalizable objects\n");
 	  goto out;
@@ -220,6 +172,17 @@ ptr_t p;
       current = base;
     }
     out:;
+  }
+
+  /* Force a garbage collection and generate a backtrace from a	*/
+  /* random heap address.					*/
+  void GC_generate_random_backtrace(void)
+  {
+    void * current;
+    GC_gcollect();
+    current = GC_generate_random_valid_address();
+    GC_printf1("Chose address 0x%lx in object\n", (unsigned long)current);
+    GC_print_backtrace(current);
   }
     
 #endif /* KEEP_BACK_PTRS */
@@ -342,16 +305,8 @@ void GC_start_debugging()
     GC_register_displacement((word)sizeof(oh) + offset);
 }
 
-# ifdef GC_ADD_CALLER
-#   define EXTRA_ARGS word ra, CONST char * s, int i
-#   define OPT_RA ra,
-# else
-#   define EXTRA_ARGS CONST char * s, int i
-#   define OPT_RA
-# endif
-
 # ifdef __STDC__
-    GC_PTR GC_debug_malloc(size_t lb, EXTRA_ARGS)
+    GC_PTR GC_debug_malloc(size_t lb, GC_EXTRA_PARAMS)
 # else
     GC_PTR GC_debug_malloc(lb, s, i)
     size_t lb;
@@ -379,7 +334,7 @@ void GC_start_debugging()
 }
 
 # ifdef __STDC__
-    GC_PTR GC_debug_generic_malloc(size_t lb, int k, EXTRA_ARGS)
+    GC_PTR GC_debug_generic_malloc(size_t lb, int k, GC_EXTRA_PARAMS)
 # else
     GC_PTR GC_debug_malloc(lb, k, s, i)
     size_t lb;
@@ -409,7 +364,7 @@ void GC_start_debugging()
 
 #ifdef STUBBORN_ALLOC
 # ifdef __STDC__
-    GC_PTR GC_debug_malloc_stubborn(size_t lb, EXTRA_ARGS)
+    GC_PTR GC_debug_malloc_stubborn(size_t lb, GC_EXTRA_PARAMS)
 # else
     GC_PTR GC_debug_malloc_stubborn(lb, s, i)
     size_t lb;
@@ -476,7 +431,7 @@ GC_PTR p;
 #endif /* STUBBORN_ALLOC */
 
 # ifdef __STDC__
-    GC_PTR GC_debug_malloc_atomic(size_t lb, EXTRA_ARGS)
+    GC_PTR GC_debug_malloc_atomic(size_t lb, GC_EXTRA_PARAMS)
 # else
     GC_PTR GC_debug_malloc_atomic(lb, s, i)
     size_t lb;
@@ -501,7 +456,7 @@ GC_PTR p;
 }
 
 # ifdef __STDC__
-    GC_PTR GC_debug_malloc_uncollectable(size_t lb, EXTRA_ARGS)
+    GC_PTR GC_debug_malloc_uncollectable(size_t lb, GC_EXTRA_PARAMS)
 # else
     GC_PTR GC_debug_malloc_uncollectable(lb, s, i)
     size_t lb;
@@ -527,7 +482,7 @@ GC_PTR p;
 
 #ifdef ATOMIC_UNCOLLECTABLE
 # ifdef __STDC__
-    GC_PTR GC_debug_malloc_atomic_uncollectable(size_t lb, EXTRA_ARGS)
+    GC_PTR GC_debug_malloc_atomic_uncollectable(size_t lb, GC_EXTRA_PARAMS)
 # else
     GC_PTR GC_debug_malloc_atomic_uncollectable(lb, s, i)
     size_t lb;
@@ -607,7 +562,7 @@ GC_PTR p;
 }
 
 # ifdef __STDC__
-    GC_PTR GC_debug_realloc(GC_PTR p, size_t lb, EXTRA_ARGS)
+    GC_PTR GC_debug_realloc(GC_PTR p, size_t lb, GC_EXTRA_PARAMS)
 # else
     GC_PTR GC_debug_realloc(p, lb, s, i)
     GC_PTR p;
@@ -810,7 +765,7 @@ struct closure {
     				     GC_PTR cd, GC_finalization_proc *ofn,
 				     GC_PTR *ocd)
 # else
-    void GC_debug_register_finalizer_no_order
+    void GC_debug_register_finalizer_ignore_self
     				    (obj, fn, cd, ofn, ocd)
     GC_PTR obj;
     GC_finalization_proc fn;
@@ -822,9 +777,9 @@ struct closure {
     ptr_t base = GC_base(obj);
     if (0 == base || (ptr_t)obj - base != sizeof(oh)) {
         GC_err_printf1(
-	    "GC_register_finalizer_no_order called with non-base-pointer 0x%lx\n",
+	    "GC_register_finalizer_ignore_self called with non-base-pointer 0x%lx\n",
 	    obj);
     }
-    GC_register_finalizer_no_order(base, GC_debug_invoke_finalizer,
+    GC_register_finalizer_ignore_self(base, GC_debug_invoke_finalizer,
     			  	      GC_make_closure(fn,cd), ofn, ocd);
 }

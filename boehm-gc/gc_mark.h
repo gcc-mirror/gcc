@@ -20,6 +20,10 @@
 #ifndef GC_MARK_H
 # define GC_MARK_H
 
+# ifdef KEEP_BACK_PTRS
+#   include "dbg_mlc.h"
+# endif
+
 /* A client supplied mark procedure.  Returns new mark stack pointer.	*/
 /* Primary effect should be to push new entries on the mark stack.	*/
 /* Mark stack pointer values are passed and returned explicitly.	*/
@@ -41,8 +45,10 @@
 /* The real declarations of the following are in gc_priv.h, so that	*/
 /* we can avoid scanning the following table.				*/
 /*
-typedef struct ms_entry * (*mark_proc)(   word * addr, mark_stack_ptr,
-					  mark_stack_limit, env   );
+typedef struct ms_entry * (*mark_proc)(   word * addr,
+					  struct ms_entry *mark_stack_ptr,
+					  struct ms_entry *mark_stack_limit,
+					  word env   );
 					  
 # define LOG_MAX_MARK_PROCS 6
 # define MAX_MARK_PROCS (1 << LOG_MAX_MARK_PROCS)
@@ -50,6 +56,12 @@ extern mark_proc GC_mark_procs[MAX_MARK_PROCS];
 */
 
 extern word GC_n_mark_procs;
+
+/* In a few cases it's necessary to assign statically known indices to	*/
+/* certain mark procs.  Thus we reserve a few for well known clients.	*/
+/* (This is necessary if mark descriptors are compiler generated.)	*/
+#define GC_RESERVED_MARK_PROCS 8
+#   define GCJ_RESERVED_MARK_PROC_INDEX 0
 
 /* Object descriptors on mark stack or in objects.  Low order two	*/
 /* bits are tags distinguishing among the following 4 possibilities	*/
@@ -84,6 +96,13 @@ extern word GC_n_mark_procs;
 #define DS_PER_OBJECT 3	/* The real descriptor is at the		*/
 			/* byte displacement from the beginning of the	*/
 			/* object given by descr & ~DS_TAGS		*/
+			/* If the descriptor is negative, the real	*/
+			/* descriptor is at (*<object_start>) -		*/
+			/* (descr & ~DS_TAGS) - INDIR_PER_OBJ_BIAS	*/
+			/* The latter alternative can be used if each	*/
+			/* object contains a type descriptor in the	*/
+			/* first word.					*/
+#define INDIR_PER_OBJ_BIAS 0x10
 			
 typedef struct ms_entry {
     word * mse_start;   /* First word of object */
@@ -98,7 +117,7 @@ extern mse * GC_mark_stack_top;
 
 extern mse * GC_mark_stack;
 
-word GC_find_start();
+ptr_t GC_find_start();
 
 mse * GC_signal_mark_stack_overflow();
 
@@ -144,16 +163,60 @@ mse * GC_signal_mark_stack_overflow();
 # define PUSH_CONTENTS(current, mark_stack_top, mark_stack_limit, \
 		       source, exit_label) \
 { \
-    register int displ;  /* Displacement in block; first bytes, then words */ \
-    register hdr * hhdr; \
-    register map_entry_type map_entry; \
-    \
-    GET_HDR(current,hhdr); \
-    if (IS_FORWARDING_ADDR_OR_NIL(hhdr)) { \
-         current = GC_FIND_START(current, hhdr, (word)source); \
-         if (current == 0) goto exit_label; \
-         hhdr = HDR(current); \
+    hdr * my_hhdr; \
+    ptr_t my_current = current; \
+ \
+    GET_HDR(my_current, my_hhdr); \
+    if (IS_FORWARDING_ADDR_OR_NIL(my_hhdr)) { \
+         my_current = GC_FIND_START(my_current, my_hhdr, (word)source); \
+         if (my_current == 0) goto exit_label; \
+         my_hhdr = GC_find_header(my_current); \
     } \
+    PUSH_CONTENTS_HDR(my_current, mark_stack_top, mark_stack_limit, \
+		  source, exit_label, my_hhdr);	\
+exit_label: ; \
+}
+
+/* As above, but use header cache for header lookup.	*/
+# define HC_PUSH_CONTENTS(current, mark_stack_top, mark_stack_limit, \
+		       source, exit_label) \
+{ \
+    hdr * my_hhdr; \
+    ptr_t my_current = current; \
+ \
+    HC_GET_HDR(my_current, my_hhdr, source); \
+    PUSH_CONTENTS_HDR(my_current, mark_stack_top, mark_stack_limit, \
+		  source, exit_label, my_hhdr);	\
+exit_label: ; \
+}
+
+/* As above, but deal with two pointers in interleaved fashion.	*/
+# define HC_PUSH_CONTENTS2(current1, current2, mark_stack_top, \
+			   mark_stack_limit, \
+		           source1, source2, exit_label1, exit_label2) \
+{ \
+    hdr * hhdr1; \
+    ptr_t my_current1 = current1; \
+    hdr * hhdr2; \
+    ptr_t my_current2 = current2; \
+ \
+    HC_GET_HDR2(my_current1, hhdr1, source1, my_current2, hhdr2, source2); \
+    PUSH_CONTENTS_HDR(my_current1, mark_stack_top, mark_stack_limit, \
+		  source1, exit_label1, hhdr1);	\
+exit_label1: ; \
+    if (0 != hhdr2) { \
+      PUSH_CONTENTS_HDR(my_current2, mark_stack_top, mark_stack_limit, \
+		  source2, exit_label2, hhdr2);	\
+    } \
+exit_label2: ; \
+}
+
+# define PUSH_CONTENTS_HDR(current, mark_stack_top, mark_stack_limit, \
+		           source, exit_label, hhdr) \
+{ \
+    int displ;  /* Displacement in block; first bytes, then words */ \
+    map_entry_type map_entry; \
+    \
     displ = HBLKDISPL(current); \
     map_entry = MAP_ENTRY((hhdr -> hb_map), displ); \
     if (map_entry == OBJ_INVALID) { \
@@ -177,10 +240,9 @@ mse * GC_signal_mark_stack_overflow();
     } \
     PUSH_OBJ(((word *)(HBLKPTR(current)) + displ), hhdr, \
     	     mark_stack_top, mark_stack_limit) \
-  exit_label: ; \
 }
 
-#ifdef PRINT_BLACK_LIST
+#if defined(PRINT_BLACK_LIST) || defined(KEEP_BACK_PTRS)
 #   define PUSH_ONE_CHECKED(p, ip, source) \
 	GC_push_one_checked(p, ip, (ptr_t)(source))
 #else

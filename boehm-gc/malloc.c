@@ -81,6 +81,10 @@ register ptr_t *opp;
         /* but that's benign.				*/
         /* Volatile declarations may need to be added	*/
         /* to prevent the compiler from breaking things.*/
+	/* If we only execute the second of the 	*/
+	/* following assignments, we lose the free	*/
+	/* list, but that should still be OK, at least	*/
+	/* for garbage collected memory.		*/
         *opp = obj_link(op);
         obj_link(op) = 0;
     } else {

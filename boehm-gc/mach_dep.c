@@ -80,6 +80,24 @@ void GC_push_regs()
 #       ifdef RT
 	  register long TMP_SP; /* must be bound to r11 */
 #       endif
+
+#       if defined(MIPS) && defined(LINUX)
+	  /* I'm not sure whether this has actually been tested. */
+#         define call_push(x)     asm("move $4," x ";"); asm("jal GC_push_one")
+	  call_push("$2");
+	  call_push("$3");
+	  call_push("$16");
+	  call_push("$17");
+	  call_push("$18");
+	  call_push("$19");
+	  call_push("$20");
+	  call_push("$21");
+	  call_push("$22");
+	  call_push("$23");
+	  call_push("$30");
+#         undef call_push
+#       endif	/* MIPS && LINUX */
+
 #       ifdef VAX
 	  /* VAX - generic code below does not work under 4.2 */
 	  /* r1 through r5 are caller save, and therefore     */
@@ -199,10 +217,11 @@ void GC_push_regs()
 #	endif	/* __MWERKS__ */
 #   endif	/* MACOS */
 
-#       if defined(I386) &&!defined(OS2) &&!defined(SVR4) &&!defined(MSWIN32) \
+#       if defined(I386) &&!defined(OS2) &&!defined(SVR4) \
+	&& (defined(__MINGW32__) || !defined(MSWIN32)) \
 	&& !defined(SCO) && !defined(SCO_ELF) \
  	&& !(defined(LINUX)       && defined(__ELF__)) \
-	&& !(defined(__FreeBSD__) && defined(__ELF__)) \
+	&& !(defined(FREEBSD) && defined(__ELF__)) \
 	&& !defined(DOS4GW)
 	/* I386 code, generic code does not appear to work */
 	/* It does appear to work under OS2, and asms dont */
@@ -217,20 +236,25 @@ void GC_push_regs()
 #       endif
 
 #	if ( defined(I386) && defined(LINUX) && defined(__ELF__) ) \
-	|| ( defined(I386) && defined(__FreeBSD__) && defined(__ELF__) )
+	|| ( defined(I386) && defined(FREEBSD) && defined(__ELF__) )
 
 	/* This is modified for Linux with ELF (Note: _ELF_ only) */
 	/* This section handles FreeBSD with ELF. */
-	  asm("pushl %eax");  asm("call GC_push_one"); asm("addl $4,%esp");
-	  asm("pushl %ecx");  asm("call GC_push_one"); asm("addl $4,%esp");
-	  asm("pushl %edx");  asm("call GC_push_one"); asm("addl $4,%esp");
-	  asm("pushl %ebp");  asm("call GC_push_one"); asm("addl $4,%esp");
-	  asm("pushl %esi");  asm("call GC_push_one"); asm("addl $4,%esp");
-	  asm("pushl %edi");  asm("call GC_push_one"); asm("addl $4,%esp");
-	  asm("pushl %ebx");  asm("call GC_push_one"); asm("addl $4,%esp");
+	/* Eax is caller-save and dead here.  Other caller-save 	*/
+	/* registers could also be skipped.  We assume there are no	*/
+	/* pointers in MMX registers, etc.				*/
+	/* We combine instructions in a single asm to prevent gcc from 	*/
+	/* inserting code in the middle.				*/
+	  asm("pushl %ecx; call GC_push_one; addl $4,%esp");
+	  asm("pushl %edx; call GC_push_one; addl $4,%esp");
+	  asm("pushl %ebp; call GC_push_one; addl $4,%esp");
+	  asm("pushl %esi; call GC_push_one; addl $4,%esp");
+	  asm("pushl %edi; call GC_push_one; addl $4,%esp");
+	  asm("pushl %ebx; call GC_push_one; addl $4,%esp");
 #	endif
 
-#       if defined(I386) && defined(MSWIN32) && !defined(USE_GENERIC)
+#       if defined(I386) && defined(MSWIN32) && !defined(__MINGW32__) \
+	   && !defined(USE_GENERIC)
 	/* I386 code, Microsoft variant		*/
 	  __asm  push eax
 	  __asm  call GC_push_one
@@ -274,11 +298,10 @@ void GC_push_regs()
 	  asm ("movd r7, tos"); asm ("bsr ?_GC_push_one"); asm ("adjspb $-4");
 #       endif
 
-#       if defined(SPARC) || defined(IA64)
+#       if defined(SPARC)
 	  {
 	      word GC_save_regs_in_stack();
 	      
-	      /* generic code will not work */
 	      GC_save_regs_ret_val = GC_save_regs_in_stack();
 	  }
 #       endif
@@ -351,8 +374,8 @@ void GC_push_regs()
       /* other machines... */
 #       if !(defined M68K) && !(defined VAX) && !(defined RT) 
 #	if !(defined SPARC) && !(defined I386) && !(defined NS32K)
-#	if !defined(POWERPC) && !defined(UTS4) && !defined(IA64)
-#       if !defined(PJ)
+#	if !defined(POWERPC) && !defined(UTS4) 
+#       if !defined(PJ) && !(defined(MIPS) && defined(LINUX))
 	    --> bad news <--
 #	endif
 #       endif
@@ -379,11 +402,24 @@ ptr_t cold_gc_frame;
 		for (; (char *)i < lim; i++) {
 		    *i = 0;
 		}
-#	    if defined(POWERPC) || defined(MSWIN32) || defined(UTS4)
+#	    if defined(POWERPC) || defined(MSWIN32) || defined(UTS4) || defined(LINUX)
 		(void) setjmp(regs);
 #	    else
 	        (void) _setjmp(regs);
 #	    endif
+#           if defined(SPARC) || defined(IA64)
+	      /* On a register window machine, we need to save register	*/
+	      /* contents on the stack for this to work.  The setjmp	*/
+	      /* is probably not needed on SPARC, since pointers are	*/
+	      /* only stored in windowed or scratch registers.  It is	*/
+	      /* needed on IA64, since some non-windowed registers are	*/
+	      /* preserved.						*/
+	      {
+	        word GC_save_regs_in_stack();
+	      
+	        GC_save_regs_ret_val = GC_save_regs_in_stack();
+	      }
+#           endif
 	    GC_push_current_stack(cold_gc_frame);
 	}
 }

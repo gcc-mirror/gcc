@@ -70,8 +70,6 @@ int GC_full_freq = 19;	   /* Every 20th collection is a full	*/
 GC_bool GC_need_full_gc = FALSE;
 			   /* Need full GC do to heap growth.	*/
 
-#define USED_HEAP_SIZE (GC_heapsize - GC_large_free_bytes)
-
 word GC_used_heap_size_after_full = 0;
 
 char * GC_copyright[] =
@@ -655,7 +653,8 @@ word bytes;
     if (GC_n_heap_sects >= MAX_HEAP_SECTS) {
     	ABORT("Too many heap sections: Increase MAXHINCR or MAX_HEAP_SECTS");
     }
-    if (!GC_install_header(p)) {
+    phdr = GC_install_header(p);
+    if (0 == phdr) {
     	/* This is extremely unlikely. Can't add it.  This will		*/
     	/* almost certainly result in a	0 return from the allocator,	*/
     	/* which is entirely appropriate.				*/
@@ -665,7 +664,6 @@ word bytes;
     GC_heap_sects[GC_n_heap_sects].hs_bytes = bytes;
     GC_n_heap_sects++;
     words = BYTES_TO_WORDS(bytes - HDR_BYTES);
-    phdr = HDR(p);
     phdr -> hb_sz = words;
     phdr -> hb_map = (char *)1;   /* A value != GC_invalid_map	*/
     phdr -> hb_flags = 0;
@@ -814,6 +812,7 @@ word n;
     LOCK();
     if (!GC_is_initialized) GC_init_inner();
     result = (int)GC_expand_hp_inner(divHBLKSZ((word)bytes));
+    if (result) GC_requested_heapsize += bytes;
     UNLOCK();
     ENABLE_SIGNALS();
     return(result);
@@ -827,7 +826,8 @@ GC_bool GC_collect_or_expand(needed_blocks, ignore_off_page)
 word needed_blocks;
 GC_bool ignore_off_page;
 {
-    if (!GC_incremental && !GC_dont_gc && GC_should_collect()) {
+    if (!GC_incremental && !GC_dont_gc &&
+	(GC_dont_expand && GC_words_allocd > 0 || GC_should_collect())) {
       GC_notify_full_gc();
       GC_gcollect_inner();
     } else {

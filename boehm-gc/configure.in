@@ -134,9 +134,11 @@ AC_SUBST(CXXINCLUDES)
 
 machdep=
 case "$host" in
- alpha*-*-*)
-    machdep="alpha_mach_dep.lo"
-    ;;
+# alpha_mach_dep.s assumes that pointers are not saved in fp registers.
+# Gcc on a 21264 can spill pointers to fp registers.  Oops.
+# alpha*-*-*)
+#    machdep="alpha_mach_dep.lo"
+#    ;;
  mipstx39-*-elf*)
     machdep="mips_ultrix_mach_dep.lo"
     AC_DEFINE(STACKBASE, __stackbase)

@@ -36,16 +36,26 @@
 # if defined(LINUX_THREADS)
 
 # include <pthread.h>
+# include <sched.h>
 # include <time.h>
 # include <errno.h>
 # include <unistd.h>
 # include <sys/mman.h>
 # include <sys/time.h>
 # include <semaphore.h>
+# include <signal.h>
 
-#undef pthread_create
-#undef pthread_sigmask
-#undef pthread_join
+#ifdef USE_LD_WRAP
+#   define WRAP_FUNC(f) __wrap_##f
+#   define REAL_FUNC(f) __real_##f
+#else
+#   define WRAP_FUNC(f) GC_##f
+#   define REAL_FUNC(f) f
+#   undef pthread_create
+#   undef pthread_sigmask
+#   undef pthread_join
+#endif
+
 
 void GC_thr_init();
 
@@ -86,8 +96,12 @@ typedef struct GC_Thread_Rep {
 #	define DETACHED 2	/* Thread is intended to be detached.	*/
 #	define MAIN_THREAD 4	/* True for the original thread only.	*/
 
-    ptr_t stack_end;
-    ptr_t stack_ptr;  		/* Valid only when stopped. */
+    ptr_t stack_end;		/* Cold end of the stack.		*/
+    ptr_t stack_ptr;  		/* Valid only when stopped.      	*/
+#   ifdef IA64
+	ptr_t backing_store_end;
+	ptr_t backing_store_ptr;
+#   endif
     int	signal;
     void * status;		/* The value returned from the thread.  */
     				/* Used only to avoid premature 	*/
@@ -138,6 +152,10 @@ static inline ptr_t GC_linux_thread_top_of_stack(void)
   return tos;
 }
 
+#ifdef IA64
+  extern word GC_save_regs_in_stack();
+#endif
+
 void GC_suspend_handler(int sig)
 {
     int dummy;
@@ -160,7 +178,9 @@ void GC_suspend_handler(int sig)
     /* to stop the world.  Thus concurrent modification of the	*/
     /* data structure is impossible.				*/
     me -> stack_ptr = (ptr_t)(&dummy);
-    me -> stack_end = GC_linux_thread_top_of_stack();
+#   ifdef IA64
+	me -> backing_store_ptr = (ptr_t)GC_save_regs_in_stack();
+#   endif
 
     /* Tell the thread that wants to stop the world that this   */
     /* thread has been stopped.  Note that sem_post() is  	*/
@@ -173,11 +193,11 @@ void GC_suspend_handler(int sig)
     /* is no race.						*/
     if (sigfillset(&mask) != 0) ABORT("sigfillset() failed");
     if (sigdelset(&mask, SIG_RESTART) != 0) ABORT("sigdelset() failed");
-#ifdef NO_SIGNALS
-    if (sigdelset(&mask, SIGINT) != 0) ABORT("sigdelset() failed");
-    if (sigdelset(&mask, SIGQUIT) != 0) ABORT("sigdelset() failed");
-    if (sigdelset(&mask, SIGTERM) != 0) ABORT("sigdelset() failed");
-#endif
+#   ifdef NO_SIGNALS
+      if (sigdelset(&mask, SIGINT) != 0) ABORT("sigdelset() failed");
+      if (sigdelset(&mask, SIGQUIT) != 0) ABORT("sigdelset() failed");
+      if (sigdelset(&mask, SIGTERM) != 0) ABORT("sigdelset() failed");
+#   endif
     do {
 	    me->signal = 0;
 	    sigsuspend(&mask);             /* Wait for signal */
@@ -380,13 +400,21 @@ void GC_start_world()
     #endif
 }
 
-/* We hold allocation lock.  We assume the world is stopped.	*/
+# ifdef IA64
+#   define IF_IA64(x) x
+# else
+#   define IF_IA64(x)
+# endif
+/* We hold allocation lock.  Should do exactly the right thing if the	*/
+/* world is stopped.  Should not fail if it isn't.			*/
 void GC_push_all_stacks()
 {
-    register int i;
-    register GC_thread p;
-    register ptr_t sp = GC_approx_sp();
-    register ptr_t lo, hi;
+    int i;
+    GC_thread p;
+    ptr_t sp = GC_approx_sp();
+    ptr_t lo, hi;
+    /* On IA64, we also need to scan the register backing store. */
+    IF_IA64(ptr_t bs_lo; ptr_t bs_hi;)
     pthread_t me = pthread_self();
     
     if (!GC_thr_initialized) GC_thr_init();
@@ -398,25 +426,33 @@ void GC_push_all_stacks()
         if (p -> flags & FINISHED) continue;
         if (pthread_equal(p -> id, me)) {
 	    lo = GC_approx_sp();
+	    IF_IA64(bs_hi = (ptr_t)GC_save_regs_in_stack();)
 	} else {
 	    lo = p -> stack_ptr;
+	    IF_IA64(bs_hi = p -> backing_store_ptr;)
 	}
         if ((p -> flags & MAIN_THREAD) == 0) {
-	    if (pthread_equal(p -> id, me)) {
-		hi = GC_linux_thread_top_of_stack();
-	    } else {
-		hi = p -> stack_end;
-	    }
+	    hi = p -> stack_end;
+	    IF_IA64(bs_lo = p -> backing_store_end);
         } else {
             /* The original stack. */
             hi = GC_stackbottom;
+	    IF_IA64(bs_lo = BACKING_STORE_BASE;)
         }
         #if DEBUG_THREADS
             GC_printf3("Stack for thread 0x%lx = [%lx,%lx)\n",
     	        (unsigned long) p -> id,
 		(unsigned long) lo, (unsigned long) hi);
         #endif
+	if (0 == lo) ABORT("GC_push_all_stacks: sp not set!\n");
         GC_push_all_stack(lo, hi);
+#	ifdef IA64
+          if (pthread_equal(p -> id, me)) {
+	    GC_push_all_eager(bs_lo, bs_hi);
+	  } else {
+	    GC_push_all_stack(bs_lo, bs_hi);
+	  }
+#	endif
       }
     }
 }
@@ -425,6 +461,7 @@ void GC_push_all_stacks()
 /* We hold the allocation lock.	*/
 void GC_thr_init()
 {
+    int dummy;
     GC_thread t;
     struct sigaction act;
 
@@ -439,19 +476,13 @@ void GC_thr_init()
     	ABORT("sigfillset() failed");
     }
 
-#ifdef NO_SIGNALS
-    if (sigdelset(&act.sa_mask, SIGINT) != 0) {
-       ABORT("sigdelset() failed");
-    }
-
-    if (sigdelset(&act.sa_mask, SIGQUIT) != 0) {
-       ABORT("sigdelset() failed");
-    }
-
-    if (sigdelset(&act.sa_mask, SIGTERM) != 0) {
-       ABORT("sigdelset() failed");
-    }
-#endif
+#   ifdef NO_SIGNALS
+      if (sigdelset(&act.sa_mask, SIGINT) != 0
+	  || sigdelset(&act.sa_mask, SIGQUIT != 0)
+	  || sigdelset(&act.sa_mask, SIGTERM != 0)) {
+        ABORT("sigdelset() failed");
+      }
+#   endif
 
     /* SIG_RESTART is unmasked by the handler when necessary. 	*/
     act.sa_handler = GC_suspend_handler;
@@ -466,11 +497,11 @@ void GC_thr_init()
 
     /* Add the initial thread, so we can stop it.	*/
       t = GC_new_thread(pthread_self());
-      t -> stack_ptr = 0;
+      t -> stack_ptr = (ptr_t)(&dummy);
       t -> flags = DETACHED | MAIN_THREAD;
 }
 
-int GC_pthread_sigmask(int how, const sigset_t *set, sigset_t *oset)
+int WRAP_FUNC(pthread_sigmask)(int how, const sigset_t *set, sigset_t *oset)
 {
     sigset_t fudged_set;
     
@@ -479,7 +510,7 @@ int GC_pthread_sigmask(int how, const sigset_t *set, sigset_t *oset)
         sigdelset(&fudged_set, SIG_SUSPEND);
         set = &fudged_set;
     }
-    return(pthread_sigmask(how, set, oset));
+    return(REAL_FUNC(pthread_sigmask)(how, set, oset));
 }
 
 struct start_info {
@@ -503,10 +534,25 @@ void GC_thread_exit_proc(void *arg)
     } else {
 	me -> flags |= FINISHED;
     }
+    if (GC_incremental && GC_collection_in_progress()) {
+	int old_gc_no = GC_gc_no;
+
+	/* Make sure that no part of our stack is still on the mark stack, */
+	/* since it's about to be unmapped.				   */
+	while (GC_incremental && GC_collection_in_progress()
+	       && old_gc_no == GC_gc_no) {
+	    ENTER_GC();
+            GC_collect_a_little_inner(1);
+	    EXIT_GC();
+	    UNLOCK();
+	    sched_yield();
+	    LOCK();
+	}
+    }
     UNLOCK();
 }
 
-int GC_pthread_join(pthread_t thread, void **retval)
+int WRAP_FUNC(pthread_join)(pthread_t thread, void **retval)
 {
     int result;
     GC_thread thread_gc_id;
@@ -516,7 +562,7 @@ int GC_pthread_join(pthread_t thread, void **retval)
     /* This is guaranteed to be the intended one, since the thread id	*/
     /* cant have been recycled by pthreads.				*/
     UNLOCK();
-    result = pthread_join(thread, retval);
+    result = REAL_FUNC(pthread_join)(thread, retval);
     LOCK();
     /* Here the pthread thread id may have been recycled. */
     GC_delete_gc_thread(thread, thread_gc_id);
@@ -526,6 +572,7 @@ int GC_pthread_join(pthread_t thread, void **retval)
 
 void * GC_start_routine(void * arg)
 {
+    int dummy;
     struct start_info * si = arg;
     void * result;
     GC_thread me;
@@ -534,22 +581,45 @@ void * GC_start_routine(void * arg)
     void *start_arg;
 
     my_pthread = pthread_self();
+#   ifdef DEBUG_THREADS
+        GC_printf1("Starting thread 0x%lx\n", my_pthread);
+        GC_printf1("pid = %ld\n", (long) getpid());
+        GC_printf1("sp = 0x%lx\n", (long) &arg);
+#   endif
     LOCK();
     me = GC_new_thread(my_pthread);
     me -> flags = si -> flags;
     me -> stack_ptr = 0;
-    me -> stack_end = 0;
+    /* me -> stack_end = GC_linux_stack_base(); -- currently (11/99)	*/
+    /* doesn't work because the stack base in /proc/self/stat is the 	*/
+    /* one for the main thread.  There is a strong argument that that's	*/
+    /* a kernel bug, but a pervasive one.				*/
+#   ifdef STACK_GROWS_DOWN
+      me -> stack_end = (ptr_t)(((word)(&dummy) + (GC_page_size - 1))
+		                & ~(GC_page_size - 1));
+      me -> stack_ptr = me -> stack_end - 0x10;
+	/* Needs to be plausible, since an asynchronous stack mark	*/
+	/* should not crash.						*/
+#   else
+      me -> stack_end = (ptr_t)(((word)(&dummy) & ~(GC_page_size - 1));
+      me -> stack_ptr = me -> stack_end + 0x10;
+#   endif
+    /* This is dubious, since we may be more than a page into the stack, */
+    /* and hence skip some of it, though it's not clear that matters.	 */
+#   ifdef IA64
+      me -> backing_store_end = (ptr_t)
+			(GC_save_regs_in_stack() & ~(GC_page_size - 1));
+      /* This is also < 100% convincing.  We should also read this 	*/
+      /* from /proc, but the hook to do so isn't there yet.		*/
+#   endif /* IA64 */
     UNLOCK();
     start = si -> start_routine;
+#   ifdef DEBUG_THREADS
+	GC_printf1("start_routine = 0x%lx\n", start);
+#   endif
     start_arg = si -> arg;
     sem_post(&(si -> registered));
     pthread_cleanup_push(GC_thread_exit_proc, si);
-#   ifdef DEBUG_THREADS
-        GC_printf1("Starting thread 0x%lx\n", pthread_self());
-        GC_printf1("pid = %ld\n", (long) getpid());
-        GC_printf1("sp = 0x%lx\n", (long) &arg);
-	GC_printf1("start_routine = 0x%lx\n", start);
-#   endif
     result = (*start)(start_arg);
 #if DEBUG_THREADS
         GC_printf1("Finishing thread 0x%x\n", pthread_self());
@@ -564,7 +634,7 @@ void * GC_start_routine(void * arg)
 }
 
 int
-GC_pthread_create(pthread_t *new_thread,
+WRAP_FUNC(pthread_create)(pthread_t *new_thread,
 		  const pthread_attr_t *attr,
                   void *(*start_routine)(void *), void *arg)
 {
@@ -596,7 +666,14 @@ GC_pthread_create(pthread_t *new_thread,
     if (PTHREAD_CREATE_DETACHED == detachstate) my_flags |= DETACHED;
     si -> flags = my_flags;
     UNLOCK();
-    result = pthread_create(new_thread, &new_attr, GC_start_routine, si);
+#   ifdef DEBUG_THREADS
+        GC_printf1("About to start new thread from thread 0x%X\n",
+		   pthread_self());
+#   endif
+    result = REAL_FUNC(pthread_create)(new_thread, &new_attr, GC_start_routine, si);
+#   ifdef DEBUG_THREADS
+        GC_printf1("Started thread 0x%X\n", *new_thread);
+#   endif
     /* Wait until child has been added to the thread table.		*/
     /* This also ensures that we hold onto si until the child is done	*/
     /* with it.  Thus it doesn't matter whether it is otherwise		*/
@@ -608,7 +685,9 @@ GC_pthread_create(pthread_t *new_thread,
     return(result);
 }
 
-GC_bool GC_collecting = 0;
+#if defined(USE_SPIN_LOCK)
+
+VOLATILE GC_bool GC_collecting = 0;
 			/* A hint that we're in the collector and       */
                         /* holding the allocation lock for an           */
                         /* extended period.                             */
@@ -680,6 +759,8 @@ yield:
 	}
     }
 }
+
+#endif /* known architecture */
 
 # endif /* LINUX_THREADS */
 

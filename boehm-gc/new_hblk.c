@@ -103,10 +103,10 @@ ptr_t ofl;
     p[3] = 0;
     p += 4;
     for (; p < lim; p += 4) {
+	PREFETCH_FOR_WRITE(p+64);
         p[0] = (word)(p-4);
         p[1] = 0;
-        p[2] = 0;
-        p[3] = 0;
+	CLEAR_DOUBLE(p+2);
     };
     return((ptr_t)(p-4));
 }
@@ -141,6 +141,7 @@ ptr_t ofl;
     p[4] = (word)p;
     p += 8;
     for (; p < lim; p += 8) {
+	PREFETCH_FOR_WRITE(p+64);
         p[0] = (word)(p-4);
         p[4] = (word)p;
     };
@@ -179,6 +180,10 @@ int kind;
   /* Mark all objects if appropriate. */
       if (IS_UNCOLLECTABLE(kind)) GC_set_hdr_marks(HDR(h));
 
+  PREFETCH_FOR_WRITE((char *)h);
+  PREFETCH_FOR_WRITE((char *)h + 128);
+  PREFETCH_FOR_WRITE((char *)h + 256);
+  PREFETCH_FOR_WRITE((char *)h + 378);
   /* Handle small objects sizes more efficiently.  For larger objects 	*/
   /* the difference is less significant.				*/
 #  ifndef SMALL_CONFIG

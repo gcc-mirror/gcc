@@ -241,9 +241,18 @@ register word sz;
 		/* Clear object, advance p to next object in the process */
 		    q = p + sz;
                     p++; /* Skip link field */
-                    while (p < q) {
+#		    if defined(SMALL_CONFIG) && defined(ALIGN_DOUBLE)
+		      /* We assert that sz must be even	*/
+		      *p++ = 0;
+		      while (p < q) {
+			CLEAR_DOUBLE(p);
+			p += 2;
+		      }
+#		    else
+                      while (p < q) {
 			*p++ = 0;
-		    }
+		      }
+#		    endif
 	    }
 	    word_no += sz;
 	}
@@ -321,8 +330,7 @@ register ptr_t list;
 	    p[start_displ] = (word)list; \
 	    list = (ptr_t)(p+start_displ); \
 	    p[start_displ+1] = 0; \
-	    p[start_displ+2] = 0; \
-	    p[start_displ+3] = 0; \
+	    CLEAR_DOUBLE(p + start_displ + 2); \
 	    INCR_WORDS(4); \
 	}
     
@@ -814,6 +822,12 @@ int report_if_found;		/* Abort if a GC_reclaimable object is found */
   /* Go through all heap blocks (in hblklist) and reclaim unmarked objects */
   /* or enqueue the block for later processing.				   */
     GC_apply_to_all_blocks(GC_reclaim_block, (word)report_if_found);
+
+# ifdef EAGER_SWEEP
+    /* This is a very stupid thing to do.  We make it possible anyway,	*/
+    /* so that you can convince yourself that it really is very stupid.	*/
+    GC_reclaim_all((GC_stop_func)0, FALSE);
+# endif
     
 }
 
@@ -847,7 +861,7 @@ int kind;
  * Abort and return FALSE when/if (*stop_func)() returns TRUE.
  * If this returns TRUE, then it's safe to restart the world
  * with incorrectly cleared mark bits.
- * If ignore_old is TRUE, then reclain only blocks that have been 
+ * If ignore_old is TRUE, then reclaim only blocks that have been 
  * recently reclaimed, and discard the rest.
  * Stop_func may be 0.
  */

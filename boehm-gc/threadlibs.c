@@ -3,7 +3,16 @@
 
 int main()
 {
-#   if defined(IRIX_THREADS) || defined(LINUX_THREADS)
+#   if defined(LINUX_THREADS)
+#     ifdef USE_LD_WRAP
+	printf("-Wl,\"--wrap read\" -Wl,\"--wrap dlopen\" "
+	       "-Wl,\"--wrap pthread_create\" -Wl,\"--wrap pthread_join\" "
+	       "-Wl,\"--wrap pthread_sigmask\" -lpthread\n");
+#     else
+	printf("-lpthread\n");
+#     endif
+#   endif
+#   if defined(IRIX_THREADS)
 	printf("-lpthread\n");
 #   endif
 #   if defined(HPUX_THREADS)

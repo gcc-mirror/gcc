@@ -37,13 +37,10 @@ a thread stack.  If you know that you will only be running Solaris2.5
 or later, it should be possible to fix this by compiling the collector
 with -DSOLARIS23_MPROTECT_BUG_FIXED.
 
-Jeremy Fitzhardinge points out that there is a problem with the dlopen
-replacement, in that startup code in the library is run while the allocation
-lock is held.  This appears to be difficult to fix, since the collector does
-look at data structures maintained by dlopen, and hence some locking is needed
-around the dlopen call.  Defining USE_PROC_FOR_LIBRARIES will get address
-space layout information from /proc avoiding the dlopen lock.  But this has
-other disadvanatages, e.g. mmapped files may be scanned.
+Since 5.0 alpha5, dlopen disables collection temporarily,
+unless USE_PROC_FOR_LIBRARIES is defined.  In some unlikely cases, this
+can result in unpleasant heap growth.  But it seems better than the
+race/deadlock issues we had before.
 
 If solaris_threads are used on an X86 processor with malloc redirected to
 GC_malloc, it is necessary to call GC_thr_init explicitly before forking the

@@ -412,9 +412,8 @@ ptr_t cold_gc_frame;
 	if (0 == cold_gc_frame) return;
 #       ifdef STACK_GROWS_DOWN
     	  GC_push_all_eager(GC_approx_sp(), cold_gc_frame);
-#	  ifdef IA64
-	    --> fix this
-#	  endif
+	  /* For IA64, the register stack backing store is handled 	*/
+	  /* in the thread-specific code.				*/
 #       else
 	  GC_push_all_eager( cold_gc_frame, GC_approx_sp() );
 #       endif
@@ -505,6 +504,9 @@ ptr_t cold_gc_frame;
 	/* In the USE_GENERIC_PUSH_REGS case, this is done inside	*/
 	/* GC_push_regs, so that we catch callee-save registers saved	*/
 	/* inside the GC_push_regs frame.				*/
+	/* In the case of linux threads on Ia64, the hot section of	*/
+	/* the main stack is marked here, but the register stack	*/
+	/* backing store is handled in the threads-specific code.	*/
 #   endif
     if (GC_push_other_roots != 0) (*GC_push_other_roots)();
     	/* In the threads case, this also pushes thread stacks.	*/

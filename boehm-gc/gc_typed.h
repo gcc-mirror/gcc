@@ -61,6 +61,7 @@ GC_API GC_PTR GC_malloc_explicitly_typed
 			GC_PROTO((size_t size_in_bytes, GC_descr d));
 		/* Allocate an object whose layout is described by d.	*/
 		/* The resulting object MAY NOT BE PASSED TO REALLOC.	*/
+		/* The returned object is cleared.			*/
 
 GC_API GC_PTR GC_malloc_explicitly_typed_ignore_off_page
                         GC_PROTO((size_t size_in_bytes, GC_descr d));
@@ -75,6 +76,7 @@ GC_API GC_PTR GC_calloc_explicitly_typed
   	/* alignment required for pointers.  E.g. on a 32-bit	*/
   	/* machine with 16-bit aligned pointers, size_in_bytes	*/
   	/* must be a multiple of 2.				*/
+	/* Returned object is cleared.				*/
 
 #ifdef GC_DEBUG
 #   define GC_MALLOC_EXPLICTLY_TYPED(bytes, d) GC_MALLOC(bytes)

@@ -1,7 +1,8 @@
 /* 
  * Copyright 1988, 1989 Hans-J. Boehm, Alan J. Demers
  * Copyright (c) 1991-1995 by Xerox Corporation.  All rights reserved.
- * Copyright 1996 by Silicon Graphics.  All rights reserved.
+ * Copyright 1996-1999 by Silicon Graphics.  All rights reserved.
+ * Copyright 1999 by Hewlett-Packard Company.  All rights reserved.
  *
  * THIS MATERIAL IS PROVIDED AS IS, WITH ABSOLUTELY NO WARRANTY EXPRESSED
  * OR IMPLIED.  ANY USE IS AT YOUR OWN RISK.
@@ -33,6 +34,14 @@
 
 #if defined(__CYGWIN32__) && defined(GC_USE_DLL)
 #include "libgc_globals.h"
+#endif
+
+#if defined(__MINGW32__) && defined(WIN32_THREADS)
+# ifdef GC_BUILD
+#   define GC_API __declspec(dllexport)
+# else
+#   define GC_API __declspec(dllimport)
+# endif
 #endif
 
 #if defined(_MSC_VER) && defined(_DLL)
@@ -129,6 +138,17 @@ GC_API int GC_dont_gc;	/* Dont collect unless explicitly requested, e.g. */
 GC_API int GC_dont_expand;
 			/* Dont expand heap unless explicitly requested */
 			/* or forced to.				*/
+
+GC_API int GC_use_entire_heap;
+		/* Causes the nonincremental collector to use the	*/
+		/* entire heap before collecting.  This was the only 	*/
+		/* option for GC versions < 5.0.  This sometimes	*/
+		/* results in more large block fragmentation, since	*/
+		/* very larg blocks will tend to get broken up		*/
+		/* during each GC cycle.  It is likely to result in a	*/
+		/* larger working set, but lower collection		*/
+		/* frequencies, and hence fewer instructions executed	*/
+		/* in the collector.					*/
 
 GC_API int GC_full_freq;    /* Number of partial collections between	*/
 			    /* full collections.  Matters only if	*/
@@ -352,11 +372,11 @@ GC_API GC_PTR GC_malloc_atomic_ignore_off_page GC_PROTO((size_t lb));
 
 #ifdef GC_ADD_CALLER
 #  define GC_EXTRAS GC_RETURN_ADDR, __FILE__, __LINE__
-#  define GC_EXTRA_PARAMS GC_word ra, GC_CONST char * descr_string,
-		          int descr_int
+#  define GC_EXTRA_PARAMS GC_word ra, GC_CONST char * s,
+		          int i
 #else
 #  define GC_EXTRAS __FILE__, __LINE__
-#  define GC_EXTRA_PARAMS GC_CONST char * descr_string, int descr_int
+#  define GC_EXTRA_PARAMS GC_CONST char * s, int i
 #endif
 
 /* Debugging (annotated) allocation.  GC_gcollect will check 		*/
@@ -494,6 +514,7 @@ GC_API void GC_debug_register_finalizer_no_order
 	GC_PROTO((GC_PTR obj, GC_finalization_proc fn, GC_PTR cd,
 		  GC_finalization_proc *ofn, GC_PTR *ocd));
 
+
 /* The following routine may be used to break cycles between	*/
 /* finalizable objects, thus causing cyclic finalizable		*/
 /* objects to be finalized in the correct order.  Standard	*/
@@ -549,6 +570,9 @@ GC_API int GC_unregister_disappearing_link GC_PROTO((GC_PTR * /* link */));
 /* pointers introduced by the debugging allocators.			*/
 GC_API GC_PTR GC_make_closure GC_PROTO((GC_finalization_proc fn, GC_PTR data));
 GC_API void GC_debug_invoke_finalizer GC_PROTO((GC_PTR obj, GC_PTR data));
+
+/* Returns !=0  if GC_invoke_finalizers has something to do. 		*/
+GC_API int GC_should_invoke_finalizers GC_PROTO((void));
 
 GC_API int GC_invoke_finalizers GC_PROTO((void));
 	/* Run finalizers for all objects that are ready to	*/
@@ -712,12 +736,9 @@ GC_API void (*GC_is_visible_print_proc)
 
 # endif /* SOLARIS_THREADS */
 
-#if defined(LINUX_THREADS)
-  void * GC_dlopen(const char *path, int mode);
-# define dlopen GC_dlopen
-#endif
 
-#if defined(IRIX_THREADS) || defined(LINUX_THREADS) || defined(HPUX_THREADS)
+#if !defined(USE_LD_WRAP) && \
+    (defined(IRIX_THREADS) || defined(LINUX_THREADS) || defined(HPUX_THREADS))
 /* We treat these similarly. */
 # include <pthread.h>
 # include <signal.h>
@@ -731,8 +752,9 @@ GC_API void (*GC_is_visible_print_proc)
 # define pthread_create GC_pthread_create
 # define pthread_sigmask GC_pthread_sigmask
 # define pthread_join GC_pthread_join
+# define dlopen GC_dlopen
 
-#endif /* IRIX_THREADS || LINUX_THREADS */
+#endif /* xxxxx_THREADS */
 
 # if defined(PCR) || defined(SOLARIS_THREADS) || defined(WIN32_THREADS) || \
 	defined(IRIX_THREADS) || defined(LINUX_THREADS) || \

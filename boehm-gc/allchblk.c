@@ -19,6 +19,7 @@
 #include <stdio.h>
 #include "gc_priv.h"
 
+GC_bool GC_use_entire_heap = 0;
 
 /*
  * Free heap blocks are kept on one of several free lists,
@@ -229,11 +230,15 @@ int n;
 	GC_ASSERT(HDR(GC_hblkfreelist[index]) == hhdr);
 	GC_hblkfreelist[index] = hhdr -> hb_next;
     } else {
-	PHDR(hhdr) -> hb_next = hhdr -> hb_next;
+	hdr *phdr;
+	GET_HDR(hhdr -> hb_prev, phdr);
+	phdr -> hb_next = hhdr -> hb_next;
     }
     if (0 != hhdr -> hb_next) {
+	hdr * nhdr;
 	GC_ASSERT(!IS_FORWARDING_ADDR_OR_NIL(NHDR(hhdr)));
-	NHDR(hhdr) -> hb_prev = hhdr -> hb_prev;
+	GET_HDR(hhdr -> hb_next, nhdr);
+	nhdr -> hb_prev = hhdr -> hb_prev;
     }
 }
 
@@ -244,13 +249,20 @@ struct hblk * GC_free_block_ending_at(h)
 struct hblk *h;
 {
     struct hblk * p = h - 1;
-    hdr * phdr = HDR(p);
+    hdr * phdr;
 
+    GET_HDR(p, phdr);
     while (0 != phdr && IS_FORWARDING_ADDR_OR_NIL(phdr)) {
 	p = FORWARDED_ADDR(p,phdr);
 	phdr = HDR(p);
     }
-    if (0 != phdr && HBLK_IS_FREE(phdr)) return p;
+    if (0 != phdr) {
+        if(HBLK_IS_FREE(phdr)) {
+	    return p;
+	} else {
+	    return 0;
+	}
+    }
     p = GC_prev_block(h - 1);
     if (0 != p) {
       phdr = HDR(p);
@@ -271,6 +283,7 @@ hdr * hhdr;
 {
     int index = GC_hblk_fl_from_blocks(divHBLKSZ(hhdr -> hb_sz));
     struct hblk *second = GC_hblkfreelist[index];
+    hdr * second_hdr;
 #   ifdef GC_ASSERTIONS
       struct hblk *next = (struct hblk *)((word)h + hhdr -> hb_sz);
       hdr * nexthdr = HDR(next);
@@ -283,7 +296,10 @@ hdr * hhdr;
     GC_hblkfreelist[index] = h;
     hhdr -> hb_next = second;
     hhdr -> hb_prev = 0;
-    if (0 != second) HDR(second) -> hb_prev = h;
+    if (0 != second) {
+      GET_HDR(second, second_hdr);
+      second_hdr -> hb_prev = h;
+    }
     GC_invalidate_map(hhdr);
 }
 
@@ -330,10 +346,10 @@ void GC_merge_unmapped(void)
     for (i = 0; i <= N_HBLK_FLS; ++i) {
       h = GC_hblkfreelist[i];
       while (h != 0) {
-	hhdr = HDR(h);
+	GET_HDR(h, hhdr);
 	size = hhdr->hb_sz;
 	next = (struct hblk *)((word)h + size);
-	nexthdr = HDR(next);
+	GET_HDR(next, nexthdr);
 	/* Coalesce with successor, if possible */
 	  if (0 != nexthdr && HBLK_IS_FREE(nexthdr)) {
 	    nextsize = nexthdr -> hb_sz;
@@ -398,8 +414,8 @@ int index;
     GC_remove_from_fl(hhdr, index);
     if (total_size == bytes) return h;
     rest = (struct hblk *)((word)h + bytes);
-    if (!GC_install_header(rest)) return(0);
-    rest_hdr = HDR(rest);
+    rest_hdr = GC_install_header(rest);
+    if (0 == rest_hdr) return(0);
     rest_hdr -> hb_sz = total_size - bytes;
     rest_hdr -> hb_flags = 0;
 #   ifdef GC_ASSERTIONS
@@ -506,16 +522,17 @@ int n;
 
     /* search for a big enough block in free list */
 	hbp = GC_hblkfreelist[n];
-	hhdr = HDR(hbp);
-	for(; 0 != hbp; hbp = hhdr -> hb_next, hhdr = HDR(hbp)) {
+	for(; 0 != hbp; hbp = hhdr -> hb_next) {
+	    GET_HDR(hbp, hhdr);
 	    size_avail = hhdr->hb_sz;
 	    if (size_avail < size_needed) continue;
-#	    ifdef PRESERVE_LAST
+	    if (!GC_use_entire_heap) {
 		if (size_avail != size_needed
+		    && USED_HEAP_SIZE >= GC_requested_heapsize
 		    && !GC_incremental && GC_should_collect()) {
 		    continue;
 		} 
-#	    endif
+	    }
 	    /* If the next heap block is obviously better, go on.	*/
 	    /* This prevents us from disassembling a single large block */
 	    /* to get tiny blocks.					*/
@@ -524,7 +541,7 @@ int n;
 	      
 	      thishbp = hhdr -> hb_next;
 	      if (thishbp != 0) {
-	        thishdr = HDR(thishbp);
+		GET_HDR(thishbp, thishdr);
 	        next_size = (signed_word)(thishdr -> hb_sz);
 	        if (next_size < size_avail
 	          && next_size >= size_needed
@@ -551,7 +568,8 @@ int n;
 	      size_avail -= (ptr_t)lasthbp - (ptr_t)hbp;
 	      thishbp = lasthbp;
 	      if (size_avail >= size_needed) {
-	        if (thishbp != hbp && GC_install_header(thishbp)) {
+	        if (thishbp != hbp &&
+		    0 != (thishdr = GC_install_header(thishbp))) {
 		  /* Make sure it's mapped before we mangle it. */
 #		    ifdef USE_MUNMAP
 		      if (!IS_MAPPED(hhdr)) {
@@ -560,7 +578,6 @@ int n;
 		      }
 #		    endif
 	          /* Split the block at thishbp */
-	              thishdr = HDR(thishbp);
 		      GC_split_block(hbp, hhdr, thishbp, thishdr, n);
 		  /* Advance to thishbp */
 		      hbp = thishbp;
@@ -598,8 +615,7 @@ int n;
 		      GC_large_free_bytes -= total_size;
 		      GC_remove_from_fl(hhdr, n);
 	              for (h = hbp; h < limit; h++) {
-	                if (h == hbp || GC_install_header(h)) {
-	                  hhdr = HDR(h);
+	                if (h == hbp || 0 != (hhdr = GC_install_header(h))) {
 	                  (void) setup_header(
 	                	  hhdr,
 	              		  BYTES_TO_WORDS(HBLKSIZE - HDR_BYTES),
@@ -686,7 +702,7 @@ hdr *hhdr, *prevhdr, *nexthdr;
 signed_word size;
 
 
-    hhdr = HDR(hbp);
+    GET_HDR(hbp, hhdr);
     size = hhdr->hb_sz;
     size = HBLKSIZE * OBJ_SZ_TO_BLOCKS(size);
     GC_remove_counts(hbp, (word)size);
@@ -701,7 +717,7 @@ signed_word size;
     GC_ASSERT(IS_MAPPED(hhdr));
     GC_invalidate_map(hhdr);
     next = (struct hblk *)((word)hbp + size);
-    nexthdr = HDR(next);
+    GET_HDR(next, nexthdr);
     prev = GC_free_block_ending_at(hbp);
     /* Coalesce with successor, if possible */
       if(0 != nexthdr && HBLK_IS_FREE(nexthdr) && IS_MAPPED(nexthdr)) {
