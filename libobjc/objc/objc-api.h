@@ -414,6 +414,13 @@ extern void *(*_objc_realloc)(void *, size_t);
 extern void *(*_objc_calloc)(size_t, size_t);
 extern void (*_objc_free)(void *);
 
+/*
+**  Hook for method forwarding. This makes it easy to substitute a
+**  library, such as ffcall, that implements closures, thereby avoiding
+**  gcc's __builtin_apply problems.
+*/
+extern IMP (*__objc_msg_forward)(SEL);
+
 Method_t class_get_class_method(MetaClass class, SEL aSel);
 
 Method_t class_get_instance_method(Class class, SEL aSel);
