@@ -1,6 +1,6 @@
 /* Support for GCC on simulated PowerPC systems targeted to embedded ELF
    systems.
-   Copyright (C) 1995 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996 Free Software Foundation, Inc.
    Contributed by Cygnus Support.
 
 This file is part of GNU CC.
@@ -31,7 +31,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Use the simulator crt0 or mvme and libgloss/newlib libraries if desired */
 #undef  STARTFILE_SPEC
-#define	STARTFILE_SPEC "\
+#define	STARTFILE_SPEC "crti.o \
 %{mmvme: mvme-crt0.o%s} \
 %{!mmvme: sim-crt0.o%s}"
 
@@ -44,4 +44,4 @@ Boston, MA 02111-1307, USA.  */
 #define	LIBGCC_SPEC "libgcc.a%s"
 
 #undef	ENDFILE_SPEC
-#define	ENDFILE_SPEC ""
+#define	ENDFILE_SPEC "crtn.o"
