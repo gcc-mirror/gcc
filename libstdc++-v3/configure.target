@@ -160,6 +160,9 @@ case "${target}" in
    m68k-*-* | m680[246]0-*-*)
      CPULIMITSH=config/cpu/m68k
      ;;
+   mmix-*-*)
+     CPULIMITSH=config/cpu/mmix
+     ;;
    powerpc-*-*)
      CPULIMITSH=config/cpu/powerpc
      ;;
