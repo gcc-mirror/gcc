@@ -903,8 +903,7 @@ extern int rs6000_default_long_calls;
    : SPE_SIMD_REGNO_P (REGNO) && TARGET_SPE && SPE_VECTOR_MODE (MODE) ? 1 \
    : CR_REGNO_P (REGNO) ? GET_MODE_CLASS (MODE) == MODE_CC		\
    : XER_REGNO_P (REGNO) ? (MODE) == PSImode				\
-   : ! INT_REGNO_P (REGNO) ? (GET_MODE_CLASS (MODE) == MODE_INT		\
-			      && GET_MODE_SIZE (MODE) <= UNITS_PER_WORD) \
+   : ! INT_REGNO_P (REGNO) ? GET_MODE_SIZE (MODE) <= UNITS_PER_WORD	\
    : 1)
 
 /* Value is 1 if it is a good idea to tie two pseudo registers
