@@ -54,6 +54,9 @@ static void do_cmp_and_jump (rtx, rtx, enum rtx_code, enum machine_mode, rtx);
 static rtx expand_smod_pow2 (enum machine_mode, rtx, HOST_WIDE_INT);
 static rtx expand_sdiv_pow2 (enum machine_mode, rtx, HOST_WIDE_INT);
 
+/* Test whether a value is zero of a power of two.  */
+#define EXACT_POWER_OF_2_OR_ZERO_P(x) (((x) & ((x) - 1)) == 0)
+
 /* Nonzero means divides or modulus operations are relatively cheap for
    powers of two, so don't use branches; emit the operation instead.
    Usually, this will mean that the MD file will emit non-branch
@@ -3024,11 +3027,25 @@ expand_mult (enum machine_mode mode, rtx op0, rtx op1, rtx target,
   if (const_op1 && GET_CODE (const_op1) == CONST_INT
       && (unsignedp || !flag_trapv))
     {
-      int mult_cost = rtx_cost (gen_rtx_MULT (mode, op0, op1), SET);
+      HOST_WIDE_INT coeff = INTVAL (const_op1);
+      int mult_cost;
 
-      if (choose_mult_variant (mode, INTVAL (const_op1), &algorithm, &variant,
+      /* Special case powers of two.  */
+      if (EXACT_POWER_OF_2_OR_ZERO_P (coeff))
+	{
+	  if (coeff == 0)
+	    return const0_rtx;
+	  if (coeff == 1)
+	    return op0;
+	  return expand_shift (LSHIFT_EXPR, mode, op0,
+			       build_int_cst (NULL_TREE, floor_log2 (coeff)),
+			       target, unsignedp);
+	}
+
+      mult_cost = rtx_cost (gen_rtx_MULT (mode, op0, op1), SET);
+      if (choose_mult_variant (mode, coeff, &algorithm, &variant,
 			       mult_cost))
-	return expand_mult_const (mode, op0, INTVAL (const_op1), target,
+	return expand_mult_const (mode, op0, coeff, target,
 				  &algorithm, variant);
     }
 
@@ -3626,8 +3643,6 @@ expand_sdiv_pow2 (enum machine_mode mode, rtx op0, HOST_WIDE_INT d)
    E.g. if x is an unsigned 32 bit number:
    (x mod 12) == (((x & 1023) + ((x >> 8) & ~3)) * 0x15555558 >> 2 * 3) >> 28
    */
-
-#define EXACT_POWER_OF_2_OR_ZERO_P(x) (((x) & ((x) - 1)) == 0)
 
 rtx
 expand_divmod (int rem_flag, enum tree_code code, enum machine_mode mode,

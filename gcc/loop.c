@@ -9202,7 +9202,9 @@ product_cheap_p (rtx a, rtx b)
   end_sequence ();
 
   win = 1;
-  if (INSN_P (tmp))
+  if (tmp == NULL_RTX)
+    ;
+  else if (INSN_P (tmp))
     {
       n_insns = 0;
       while (tmp != NULL_RTX)

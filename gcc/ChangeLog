@@ -1,3 +1,11 @@
+2004-12-07  Roger Sayle  <roger@eyesopen.com>
+
+	PR middle-end/18293
+	* expmed.c (EXACT_POWER_OF_2_OR_ZERO_P): Move definition earlier.
+	(expand_mult): Special case powers of two to avoid synth_mult.
+	* loop.c (product_cheap_p): Handle case where expand_mult does
+	require/generate any instructions (i.e. multiplication by zero).
+
 2004-12-07  Richard Henderson  <rth@redhat.com>
 
 	* tree-pretty-print.c (dump_array_domain): Split out from
