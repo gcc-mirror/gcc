@@ -1,3 +1,8 @@
+2000-12-09  Nick Clifton  <nickc@redhat.com>
+
+	* config/arm/arm.c (arm_expand_prologue): Mark the generated
+	insn not the set as being DWARF2_FRAME_RELATED_P.
+
 2000-12-09  Laurynas Biveinis  <lauras@softhome.net>
 
 	* Makefile.in: use $(build_exeext) for all build
