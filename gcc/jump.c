@@ -3496,13 +3496,35 @@ delete_computation (insn)
 
   for (note = REG_NOTES (insn); note; note = next)
     {
-      rtx our_prev;
+      rtx our_prev, our_next;
+      int fail = 0;
 
       next = XEXP (note, 1);
 
       if (REG_NOTE_KIND (note) != REG_DEAD
 	  /* Verify that the REG_NOTE is legitimate.  */
 	  || GET_CODE (XEXP (note, 0)) != REG)
+	continue;
+
+      /* We can't trust REG_DEAD notes until the next label since both
+	 the second sched pass and reload don't bother trying to keep
+	 them accurate.  So scan ahead until we set the register or
+	 we reach a label.  If we have no use before that, we're OK.  */
+      for (our_next = next_nonnote_insn (insn);
+	   ! fail && our_next && GET_CODE (our_next) != CODE_LABEL;
+	   our_next = next_nonnote_insn (our_next))
+	{
+	  if (GET_RTX_CLASS (GET_CODE (our_next)) == 'i'
+	      && reg_set_p (XEXP (note, 0), our_next)
+	      && ! reg_referenced_p (XEXP (note, 0), PATTERN (our_next)))
+	    break;
+
+	  if (GET_RTX_CLASS (GET_CODE (our_next)) == 'i'
+	      && reg_referenced_p (XEXP (note, 0), PATTERN (our_next)))
+	    fail = 1;
+	}
+
+      if (fail)
 	continue;
 
       for (our_prev = prev_nonnote_insn (insn);
