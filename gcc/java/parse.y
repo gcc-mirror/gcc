@@ -9997,7 +9997,33 @@ patch_method_invocation (patch, primary, where, is_static, ret_decl)
 
       /* Secretly pass the current_this/primary as a second argument */
       if (primary || current_this)
-	args = tree_cons (NULL_TREE, (primary ? primary : current_this), args);
+	{
+	  tree extra_arg;
+	  tree this_type = (current_this ?
+			    TREE_TYPE (TREE_TYPE (current_this)) : NULL_TREE);
+	  /* Method's (list) enclosing context */
+	  tree mec = DECL_CONTEXT (TYPE_NAME (DECL_CONTEXT (list)));
+	  /* If we have a primary, use it. */
+	  if (primary)
+	    extra_arg = primary;
+	  /* The current `this' is an inner class but isn't a direct
+	     enclosing context for the inner class we're trying to
+	     create. Build an access to the proper enclosing context
+	     and use it. */
+	  else if (current_this && PURE_INNER_CLASS_TYPE_P (this_type)
+		   && this_type != TREE_TYPE (mec))
+	    {
+
+	      extra_arg = build_access_to_thisn (current_class,
+						 TREE_TYPE (mec), 0);
+	      extra_arg = java_complete_tree (extra_arg);
+	    }
+	  /* Otherwise, just use the current `this' as an enclosing
+             context. */
+	  else
+	    extra_arg = current_this;
+	  args = tree_cons (NULL_TREE, extra_arg, args);
+	}
       else
 	args = tree_cons (NULL_TREE, integer_zero_node, args);
     }

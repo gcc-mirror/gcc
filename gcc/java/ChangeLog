@@ -1,3 +1,9 @@
+2000-12-04  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.y (patch_method_invocation): Pick the correct enclosing
+	context when creating inner class instances.
+	Fixes gcj/332.
+
 2000-11-26  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* gjavah.c (version), jcf-dump.c (version), jv-scan.c (version):
