@@ -1598,7 +1598,7 @@ allocation.
 @findex AVOID_CCMODE_COPIES
 @item AVOID_CCMODE_COPIES
 Define this macro if the compiler should avoid copies to/from @code{CCmode}
-registers.  You should only define this macro if support fo copying to/from
+registers.  You should only define this macro if support for copying to/from
 @code{CCmode} is incomplete.
 @end table
 
@@ -7751,12 +7751,11 @@ any hard regs the port wishes to automatically clobber for all asms.
 @findex ISSUE_RATE
 @item ISSUE_RATE
 A C expression that returns how many instructions can be issued at the
-same time if the machine is a superscalar machine.  This is only used by
-the @samp{Haifa} scheduler, and not the traditional scheduler.
+same time if the machine is a superscalar machine.
 
 @findex MD_SCHED_INIT
 @item MD_SCHED_INIT (@var{file}, @var{verbose})
-A C statement which is executed by the @samp{Haifa} scheduler at the
+A C statement which is executed by the scheduler at the
 beginning of each block of instructions that are to be scheduled.
 @var{file} is either a null pointer, or a stdio stream to write any
 debug output to.  @var{verbose} is the verbose level provided by
@@ -7764,7 +7763,7 @@ debug output to.  @var{verbose} is the verbose level provided by
 
 @findex MD_SCHED_REORDER
 @item MD_SCHED_REORDER (@var{file}, @var{verbose}, @var{ready}, @var{n_ready}, @var{clock}, @var{can_issue_more})
-A C statement which is executed by the @samp{Haifa} scheduler after it
+A C statement which is executed by the scheduler after it
 has scheduled the ready list to allow the machine description to reorder
 it (for example to combine two small instructions together on
 @samp{VLIW} machines).  @var{file} is either a null pointer, or a stdio
@@ -7780,7 +7779,7 @@ normally this is just @code{issue_rate}.
 
 @findex MD_SCHED_VARIABLE_ISSUE
 @item MD_SCHED_VARIABLE_ISSUE (@var{file}, @var{verbose}, @var{insn}, @var{more})
-A C statement which is executed by the @samp{Haifa} scheduler after it
+A C statement which is executed by the scheduler after it
 has scheduled an insn from the ready list.  @var{file} is either a null
 pointer, or a stdio stream to write any debug output to.  @var{verbose}
 is the verbose level provided by @samp{-fsched-verbose-}@var{n}.

@@ -1,3 +1,8 @@
+Fri Feb  4 20:25:42 2000  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* tm.texi (Values in Registers): Fix typo: "fo" "for".
+	(Misc): Say the scheduler, not the Haifa scheduler.
+
 2000-02-04  Clinton Popetz  <cpopetz@cygnus.com>
 
 	* jump.c (mark_jump_label): Add in_mem param, check SYMBOL_REFs
