@@ -69,7 +69,7 @@ namespace std
       bool __testpos = _M_in_cur && _M_in_beg < _M_in_cur;
       bool __testne = _M_in_cur && !traits_type::eq(__c, this->gptr()[-1]);
       if (!__testpos || __testne)
-	__ret = pbackfail(traits_type::to_int_type(__c));
+	__ret = this->pbackfail(traits_type::to_int_type(__c));
       else 
 	{
 	  _M_in_cur_move(-1);
