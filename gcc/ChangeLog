@@ -1,3 +1,9 @@
+Thu Jun  3 01:19:03 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* gcse.c (insert_insn_end_bb): Correct placement of insns when the
+	current block starts with a CODE_LABEL and ends with a CALL and
+	we can not find all the argument setup instructions for the CALL.
+
 Wed Jun  2 15:44:15 1999  Mark Mitchell <mark@codesourcery.com>
 
         Revert this change:
