@@ -1,3 +1,12 @@
+2003-09-06  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/11687
+	* call.c (standard_conversion): Improve comments.
+	(perform_direct_initialization): Make sure we return an expression
+	of the correct type.
+	* typeck.c (build_static_cast): Check for ambiguity and
+	accessibility when performing conversions.
+
 2003-09-06  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* cp-tree.h (add_binding): Remove declaration.

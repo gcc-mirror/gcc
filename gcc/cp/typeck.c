@@ -4427,12 +4427,13 @@ build_static_cast (tree type, tree expr)
 					  (TREE_TYPE (type))))
       && at_least_as_qualified_p (TREE_TYPE (type), intype))
     {
-      /* At this point we have checked all of the conditions except
-	 that B is not a virtual base class of D.  That will be
-	 checked by build_base_path.  */
-      tree base = lookup_base (TREE_TYPE (type), intype, ba_any, NULL);
+      /* There is a standard conversion from "D*" to "B*" even if "B"
+	 is ambiguous or inaccessible.  Therefore, we ask lookup_base
+	 to check these conditions.  */
+      tree base = lookup_base (TREE_TYPE (type), intype, ba_check, NULL);
 
-      /* Convert from B* to D*.  */
+      /* Convert from "B*" to "D*".  This function will check that "B"
+	 is not a virtual base of "D".  */
       expr = build_base_path (MINUS_EXPR, build_address (expr), 
 			      base, /*nonnull=*/false);
       /* Convert the pointer to a reference -- but then remember that
@@ -4491,8 +4492,8 @@ build_static_cast (tree type, tree expr)
       tree base;
 
       check_for_casting_away_constness (intype, type, "static_cast");
-      base = lookup_base (TREE_TYPE (type), TREE_TYPE (intype), 
-			  ba_check | ba_quiet, NULL);
+      base = lookup_base (TREE_TYPE (type), TREE_TYPE (intype), ba_check, 
+			  NULL);
       return build_base_path (MINUS_EXPR, expr, base, /*nonnull=*/false);
     }
   
