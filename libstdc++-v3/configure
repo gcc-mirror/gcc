@@ -22445,7 +22445,7 @@ echo "${ECHO_T}$glibcxx_cv_func___builtin_abs_link" >&6
     if test x$glibcxx_cv_func___builtin_abs_link = x"yes"; then
       ac_tr_func=HAVE_`echo __builtin_abs | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
 
-cat >>confdefs.h <<\_ACEOF
+cat >>confdefs.h <<_ACEOF
 #define ${ac_tr_func} 1
 _ACEOF
 
@@ -22574,7 +22574,7 @@ echo "${ECHO_T}$glibcxx_cv_func___builtin_fabsf_link" >&6
     if test x$glibcxx_cv_func___builtin_fabsf_link = x"yes"; then
       ac_tr_func=HAVE_`echo __builtin_fabsf | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
 
-cat >>confdefs.h <<\_ACEOF
+cat >>confdefs.h <<_ACEOF
 #define ${ac_tr_func} 1
 _ACEOF
 
@@ -22703,7 +22703,7 @@ echo "${ECHO_T}$glibcxx_cv_func___builtin_fabs_link" >&6
     if test x$glibcxx_cv_func___builtin_fabs_link = x"yes"; then
       ac_tr_func=HAVE_`echo __builtin_fabs | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
 
-cat >>confdefs.h <<\_ACEOF
+cat >>confdefs.h <<_ACEOF
 #define ${ac_tr_func} 1
 _ACEOF
 
@@ -22832,7 +22832,7 @@ echo "${ECHO_T}$glibcxx_cv_func___builtin_fabsl_link" >&6
     if test x$glibcxx_cv_func___builtin_fabsl_link = x"yes"; then
       ac_tr_func=HAVE_`echo __builtin_fabsl | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
 
-cat >>confdefs.h <<\_ACEOF
+cat >>confdefs.h <<_ACEOF
 #define ${ac_tr_func} 1
 _ACEOF
 
@@ -22961,7 +22961,7 @@ echo "${ECHO_T}$glibcxx_cv_func___builtin_labs_link" >&6
     if test x$glibcxx_cv_func___builtin_labs_link = x"yes"; then
       ac_tr_func=HAVE_`echo __builtin_labs | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
 
-cat >>confdefs.h <<\_ACEOF
+cat >>confdefs.h <<_ACEOF
 #define ${ac_tr_func} 1
 _ACEOF
 
@@ -23091,7 +23091,7 @@ echo "${ECHO_T}$glibcxx_cv_func___builtin_sqrtf_link" >&6
     if test x$glibcxx_cv_func___builtin_sqrtf_link = x"yes"; then
       ac_tr_func=HAVE_`echo __builtin_sqrtf | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
 
-cat >>confdefs.h <<\_ACEOF
+cat >>confdefs.h <<_ACEOF
 #define ${ac_tr_func} 1
 _ACEOF
 
@@ -23220,7 +23220,7 @@ echo "${ECHO_T}$glibcxx_cv_func___builtin_sqrt_link" >&6
     if test x$glibcxx_cv_func___builtin_sqrt_link = x"yes"; then
       ac_tr_func=HAVE_`echo __builtin_sqrt | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
 
-cat >>confdefs.h <<\_ACEOF
+cat >>confdefs.h <<_ACEOF
 #define ${ac_tr_func} 1
 _ACEOF
 
@@ -23349,7 +23349,7 @@ echo "${ECHO_T}$glibcxx_cv_func___builtin_sqrtl_link" >&6
     if test x$glibcxx_cv_func___builtin_sqrtl_link = x"yes"; then
       ac_tr_func=HAVE_`echo __builtin_sqrtl | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
 
-cat >>confdefs.h <<\_ACEOF
+cat >>confdefs.h <<_ACEOF
 #define ${ac_tr_func} 1
 _ACEOF
 
@@ -23479,7 +23479,7 @@ echo "${ECHO_T}$glibcxx_cv_func___builtin_sinf_link" >&6
     if test x$glibcxx_cv_func___builtin_sinf_link = x"yes"; then
       ac_tr_func=HAVE_`echo __builtin_sinf | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
 
-cat >>confdefs.h <<\_ACEOF
+cat >>confdefs.h <<_ACEOF
 #define ${ac_tr_func} 1
 _ACEOF
 
@@ -23608,7 +23608,7 @@ echo "${ECHO_T}$glibcxx_cv_func___builtin_sin_link" >&6
     if test x$glibcxx_cv_func___builtin_sin_link = x"yes"; then
       ac_tr_func=HAVE_`echo __builtin_sin | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
 
-cat >>confdefs.h <<\_ACEOF
+cat >>confdefs.h <<_ACEOF
 #define ${ac_tr_func} 1
 _ACEOF
 
@@ -23737,7 +23737,7 @@ echo "${ECHO_T}$glibcxx_cv_func___builtin_sinl_link" >&6
     if test x$glibcxx_cv_func___builtin_sinl_link = x"yes"; then
       ac_tr_func=HAVE_`echo __builtin_sinl | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
 
-cat >>confdefs.h <<\_ACEOF
+cat >>confdefs.h <<_ACEOF
 #define ${ac_tr_func} 1
 _ACEOF
 
@@ -23867,7 +23867,7 @@ echo "${ECHO_T}$glibcxx_cv_func___builtin_cosf_link" >&6
     if test x$glibcxx_cv_func___builtin_cosf_link = x"yes"; then
       ac_tr_func=HAVE_`echo __builtin_cosf | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
 
-cat >>confdefs.h <<\_ACEOF
+cat >>confdefs.h <<_ACEOF
 #define ${ac_tr_func} 1
 _ACEOF
 
@@ -23996,7 +23996,7 @@ echo "${ECHO_T}$glibcxx_cv_func___builtin_cos_link" >&6
     if test x$glibcxx_cv_func___builtin_cos_link = x"yes"; then
       ac_tr_func=HAVE_`echo __builtin_cos | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
 
-cat >>confdefs.h <<\_ACEOF
+cat >>confdefs.h <<_ACEOF
 #define ${ac_tr_func} 1
 _ACEOF
 
@@ -24125,7 +24125,7 @@ echo "${ECHO_T}$glibcxx_cv_func___builtin_cosl_link" >&6
     if test x$glibcxx_cv_func___builtin_cosl_link = x"yes"; then
       ac_tr_func=HAVE_`echo __builtin_cosl | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
 
-cat >>confdefs.h <<\_ACEOF
+cat >>confdefs.h <<_ACEOF
 #define ${ac_tr_func} 1
 _ACEOF
 
@@ -42423,7 +42423,7 @@ echo "${ECHO_T}$glibcxx_cv_func___builtin_abs_link" >&6
     if test x$glibcxx_cv_func___builtin_abs_link = x"yes"; then
       ac_tr_func=HAVE_`echo __builtin_abs | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
 
-cat >>confdefs.h <<\_ACEOF
+cat >>confdefs.h <<_ACEOF
 #define ${ac_tr_func} 1
 _ACEOF
 
@@ -42552,7 +42552,7 @@ echo "${ECHO_T}$glibcxx_cv_func___builtin_fabsf_link" >&6
     if test x$glibcxx_cv_func___builtin_fabsf_link = x"yes"; then
       ac_tr_func=HAVE_`echo __builtin_fabsf | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
 
-cat >>confdefs.h <<\_ACEOF
+cat >>confdefs.h <<_ACEOF
 #define ${ac_tr_func} 1
 _ACEOF
 
@@ -42681,7 +42681,7 @@ echo "${ECHO_T}$glibcxx_cv_func___builtin_fabs_link" >&6
     if test x$glibcxx_cv_func___builtin_fabs_link = x"yes"; then
       ac_tr_func=HAVE_`echo __builtin_fabs | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
 
-cat >>confdefs.h <<\_ACEOF
+cat >>confdefs.h <<_ACEOF
 #define ${ac_tr_func} 1
 _ACEOF
 
@@ -42810,7 +42810,7 @@ echo "${ECHO_T}$glibcxx_cv_func___builtin_fabsl_link" >&6
     if test x$glibcxx_cv_func___builtin_fabsl_link = x"yes"; then
       ac_tr_func=HAVE_`echo __builtin_fabsl | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
 
-cat >>confdefs.h <<\_ACEOF
+cat >>confdefs.h <<_ACEOF
 #define ${ac_tr_func} 1
 _ACEOF
 
@@ -42939,7 +42939,7 @@ echo "${ECHO_T}$glibcxx_cv_func___builtin_labs_link" >&6
     if test x$glibcxx_cv_func___builtin_labs_link = x"yes"; then
       ac_tr_func=HAVE_`echo __builtin_labs | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
 
-cat >>confdefs.h <<\_ACEOF
+cat >>confdefs.h <<_ACEOF
 #define ${ac_tr_func} 1
 _ACEOF
 
@@ -43069,7 +43069,7 @@ echo "${ECHO_T}$glibcxx_cv_func___builtin_sqrtf_link" >&6
     if test x$glibcxx_cv_func___builtin_sqrtf_link = x"yes"; then
       ac_tr_func=HAVE_`echo __builtin_sqrtf | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
 
-cat >>confdefs.h <<\_ACEOF
+cat >>confdefs.h <<_ACEOF
 #define ${ac_tr_func} 1
 _ACEOF
 
@@ -43198,7 +43198,7 @@ echo "${ECHO_T}$glibcxx_cv_func___builtin_sqrt_link" >&6
     if test x$glibcxx_cv_func___builtin_sqrt_link = x"yes"; then
       ac_tr_func=HAVE_`echo __builtin_sqrt | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
 
-cat >>confdefs.h <<\_ACEOF
+cat >>confdefs.h <<_ACEOF
 #define ${ac_tr_func} 1
 _ACEOF
 
@@ -43327,7 +43327,7 @@ echo "${ECHO_T}$glibcxx_cv_func___builtin_sqrtl_link" >&6
     if test x$glibcxx_cv_func___builtin_sqrtl_link = x"yes"; then
       ac_tr_func=HAVE_`echo __builtin_sqrtl | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
 
-cat >>confdefs.h <<\_ACEOF
+cat >>confdefs.h <<_ACEOF
 #define ${ac_tr_func} 1
 _ACEOF
 
@@ -43457,7 +43457,7 @@ echo "${ECHO_T}$glibcxx_cv_func___builtin_sinf_link" >&6
     if test x$glibcxx_cv_func___builtin_sinf_link = x"yes"; then
       ac_tr_func=HAVE_`echo __builtin_sinf | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
 
-cat >>confdefs.h <<\_ACEOF
+cat >>confdefs.h <<_ACEOF
 #define ${ac_tr_func} 1
 _ACEOF
 
@@ -43586,7 +43586,7 @@ echo "${ECHO_T}$glibcxx_cv_func___builtin_sin_link" >&6
     if test x$glibcxx_cv_func___builtin_sin_link = x"yes"; then
       ac_tr_func=HAVE_`echo __builtin_sin | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
 
-cat >>confdefs.h <<\_ACEOF
+cat >>confdefs.h <<_ACEOF
 #define ${ac_tr_func} 1
 _ACEOF
 
@@ -43715,7 +43715,7 @@ echo "${ECHO_T}$glibcxx_cv_func___builtin_sinl_link" >&6
     if test x$glibcxx_cv_func___builtin_sinl_link = x"yes"; then
       ac_tr_func=HAVE_`echo __builtin_sinl | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
 
-cat >>confdefs.h <<\_ACEOF
+cat >>confdefs.h <<_ACEOF
 #define ${ac_tr_func} 1
 _ACEOF
 
@@ -43845,7 +43845,7 @@ echo "${ECHO_T}$glibcxx_cv_func___builtin_cosf_link" >&6
     if test x$glibcxx_cv_func___builtin_cosf_link = x"yes"; then
       ac_tr_func=HAVE_`echo __builtin_cosf | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
 
-cat >>confdefs.h <<\_ACEOF
+cat >>confdefs.h <<_ACEOF
 #define ${ac_tr_func} 1
 _ACEOF
 
@@ -43974,7 +43974,7 @@ echo "${ECHO_T}$glibcxx_cv_func___builtin_cos_link" >&6
     if test x$glibcxx_cv_func___builtin_cos_link = x"yes"; then
       ac_tr_func=HAVE_`echo __builtin_cos | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
 
-cat >>confdefs.h <<\_ACEOF
+cat >>confdefs.h <<_ACEOF
 #define ${ac_tr_func} 1
 _ACEOF
 
@@ -44103,7 +44103,7 @@ echo "${ECHO_T}$glibcxx_cv_func___builtin_cosl_link" >&6
     if test x$glibcxx_cv_func___builtin_cosl_link = x"yes"; then
       ac_tr_func=HAVE_`echo __builtin_cosl | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
 
-cat >>confdefs.h <<\_ACEOF
+cat >>confdefs.h <<_ACEOF
 #define ${ac_tr_func} 1
 _ACEOF
 
