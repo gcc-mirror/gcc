@@ -1935,6 +1935,8 @@ do {							\
 #define ALL_COP_REG_P(REGNO) \
   ((unsigned int) ((int) (REGNO) - COP0_REG_FIRST) < ALL_COP_REG_NUM)
 
+#define FP_REG_RTX_P(X) (GET_CODE (X) == REG && FP_REG_P (REGNO (X)))
+
 /* Return coprocessor number from register number.  */
 
 #define COPNUM_AS_CHAR_FROM_REGNUM(REGNO) 				\

@@ -27,7 +27,10 @@
 ;; Must include new entries for fmadd in addition to existing entries.
 
 (define_constants
-  [(UNSPEC_GET_FNADDR		 4)
+  [(UNSPEC_LOAD_DF_LOW		 0)
+   (UNSPEC_LOAD_DF_HIGH		 1)
+   (UNSPEC_STORE_DF_HIGH	 2)
+   (UNSPEC_GET_FNADDR		 4)
    (UNSPEC_HILO_DELAY		 5)
    (UNSPEC_BLOCKAGE		 6)
    (UNSPEC_LOADGP		 7)
@@ -1920,20 +1923,10 @@
    (clobber (match_scratch:SI 4 "=l"))
    (clobber (match_scratch:SI 5 "=a"))]
   "TARGET_MIPS4000 && !TARGET_MIPS16"
-  "*
-{
-  rtx xoperands[10];
-
-  xoperands[0] = operands[0];
-  xoperands[1] = gen_rtx_REG (SImode, LO_REGNUM);
-
-  output_asm_insn (\"mult\\t%1,%2\", operands);
-  output_asm_insn (mips_move_1word (xoperands, insn, FALSE), xoperands);
-  return \"\";
-}"
+  "mult\t%1,%2\;mflo\t%0"
   [(set_attr "type"	"imul")
    (set_attr "mode"	"SI")
-   (set_attr "length"   "12")])		;; mult + mflo + delay
+   (set_attr "length"   "8")])
 
 ;; Multiply-accumulate patterns
 
@@ -2307,28 +2300,18 @@
    (clobber (match_scratch:DI 4 "=l"))
    (clobber (match_scratch:DI 5 "=a"))]
   "TARGET_64BIT && (GENERATE_MULT3_DI || TARGET_MIPS4000 || TARGET_MIPS16)"
-  "*
-{
-  if (GENERATE_MULT3_DI)
-    output_asm_insn (\"dmult\\t%0,%1,%2\", operands);
-  else
-    {
-      rtx xoperands[10];
-
-      xoperands[0] = operands[0];
-      xoperands[1] = gen_rtx_REG (DImode, LO_REGNUM);
-
-      output_asm_insn (\"dmult\\t%1,%2\", operands);
-      output_asm_insn (mips_move_1word (xoperands, insn, FALSE), xoperands);
-    }
-  return \"\";
-}"
+  {
+    if (GENERATE_MULT3_DI)
+      return "dmult\t%0,%1,%2";
+    else
+      return "dmult\t%1,%2\n\tmflo\t%0";
+  }
   [(set_attr "type"	"imul")
    (set_attr "mode"	"DI")
    (set (attr "length")
 	(if_then_else (ne (symbol_ref "GENERATE_MULT3_DI") (const_int 0))
-		       (const_int 4)
-		       (const_int 12)))]) 	;; mult + mflo + delay
+		      (const_int 4)
+		      (const_int 8)))])
 
 ;; ??? We could define a mulditi3 pattern when TARGET_64BIT.
 
@@ -4300,23 +4283,6 @@ move\\t%0,%z4\\n\\
    (set_attr "mode"     "DI")
    (set_attr "length"   "4,*")])
 
-;; These can be created when a paradoxical subreg operand with an implicit
-;; sign_extend operator is reloaded.  Because of the subreg, this is really
-;; a zero extend.
-;; ??? It might be possible to eliminate the need for these patterns by adding
-;; more support to reload for implicit sign_extend operators.
-(define_insn "*paradoxical_extendhidi2"
-  [(set (match_operand:DI 0 "register_operand" "=d")
-	(sign_extend:DI
-	 (subreg:SI (match_operand:HI 1 "memory_operand" "m") 0)))]
-  "TARGET_64BIT"
-  "*
-{
-  return mips_move_1word (operands, insn, TRUE);
-}"
-  [(set_attr "type"	"load")
-   (set_attr "mode"	"DI")])
-
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=d")
 	(zero_extend:DI (match_operand:QI 1 "memory_operand" "m")))]
@@ -5114,11 +5080,7 @@ move\\t%0,%z4\\n\\
   [(set (match_operand:DI 0 "memory_operand" "=m")
 	(reg:DI 31))]
   "TARGET_MIPS16 && TARGET_64BIT"
-  "*
-{
-  operands[1] = gen_rtx (REG, DImode, 31);
-  return mips_move_2words (operands, insn);
-}"
+  "sd\t$31,%0"
   [(set_attr "type"	"store")
    (set_attr "mode"	"DI")])
 
@@ -5130,7 +5092,7 @@ move\\t%0,%z4\\n\\
        || register_operand (operands[1], DImode)
        || (GET_CODE (operands[1]) == CONST_INT && INTVAL (operands[1]) == 0)
        || operands[1] == CONST0_RTX (DImode))"
-  "* return mips_move_2words (operands, insn); "
+  { return mips_output_move (operands[0], operands[1]); }
   [(set_attr "type"	"move,arith,load,store,hilo,hilo,hilo,xfer,load,xfer,store")
    (set_attr "mode"	"DI")
    (set_attr "length"   "8,16,*,*,8,8,8,8,*,8,*")])
@@ -5141,22 +5103,10 @@ move\\t%0,%z4\\n\\
   "!TARGET_64BIT && TARGET_MIPS16
    && (register_operand (operands[0], DImode)
        || register_operand (operands[1], DImode))"
-  "* return mips_move_2words (operands, insn);"
+  { return mips_output_move (operands[0], operands[1]); }
   [(set_attr "type"	"move,move,move,arith,arith,load,store,hilo")
    (set_attr "mode"	"DI")
    (set_attr "length"	"8,8,8,8,12,*,*,8")])
-
-(define_split
-  [(set (match_operand:DI 0 "register_operand" "")
-	(match_operand:DI 1 "register_operand" ""))]
-  "reload_completed && !TARGET_64BIT
-   && !TARGET_DEBUG_D_MODE && !TARGET_DEBUG_G_MODE
-   && GET_CODE (operands[0]) == REG && GP_REG_P (REGNO (operands[0]))
-   && GET_CODE (operands[1]) == REG && GP_REG_P (REGNO (operands[1]))"
-
-  [(set (subreg:SI (match_dup 0) 0) (subreg:SI (match_dup 1) 0))
-   (set (subreg:SI (match_dup 0) 4) (subreg:SI (match_dup 1) 4))]
-  "")
 
 (define_insn "movdi_internal2"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=d,d,e,d,m,*f,*f,*f,*d,*m,*x,*d,*x,*a,*B*C*D,*B*C*D,*d,*m")
@@ -5166,23 +5116,10 @@ move\\t%0,%z4\\n\\
        || register_operand (operands[1], DImode)
        || (GET_CODE (operands[1]) == CONST_INT && INTVAL (operands[1]) == 0)
        || operands[1] == CONST0_RTX (DImode))"
-  "* return mips_move_2words (operands, insn); "
+  { return mips_output_move (operands[0], operands[1]); }
   [(set_attr "type"	"move,const,const,load,store,move,xfer,load,xfer,store,hilo,hilo,hilo,hilo,xfer,load,xfer,store")
    (set_attr "mode"	"DI")
    (set_attr "length"	"4,*,*,*,*,4,4,*,4,*,4,4,4,8,8,*,8,*")])
-
-;; Sign-extended operands are reloaded using this instruction, so the
-;; constraints must handle every SImode source operand X and destination
-;; register R for which:
-;;
-;;     mips_secondary_reload_class (CLASS_OF (R), DImode, true,
-;;				    gen_rtx_SIGN_EXTEND (DImode, X))
-;;
-;; returns NO_REGS.  Also handle memory destinations, where allowed.
-;;
-;; This pattern is essentially a trimmed-down version of movdi_internal2.
-;; The main difference is that dJ -> f and f -> d are the only constraints
-;; involving float registers.  See mips_secondary_reload_class for details.
 
 (define_insn "*movdi_internal2_mips16"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=d,y,d,d,d,d,d,m,*d")
@@ -5190,7 +5127,7 @@ move\\t%0,%z4\\n\\
   "TARGET_64BIT && TARGET_MIPS16
    && (register_operand (operands[0], DImode)
        || register_operand (operands[1], DImode))"
-  "* return mips_move_2words (operands, insn);"
+  { return mips_output_move (operands[0], operands[1]); }
   [(set_attr "type"	"move,move,move,arith,arith,const,load,store,hilo")
    (set_attr "mode"	"DI")
    (set_attr_alternative "length"
@@ -5478,7 +5415,7 @@ move\\t%0,%z4\\n\\
    && (register_operand (operands[0], SImode)
        || register_operand (operands[1], SImode)
        || (GET_CODE (operands[1]) == CONST_INT && INTVAL (operands[1]) == 0))"
-  "* return mips_move_1word (operands, insn, FALSE);"
+  { return mips_output_move (operands[0], operands[1]); }
   [(set_attr "type"	"move,const,const,load,store,move,xfer,load,xfer,store,xfer,xfer,hilo,hilo,hilo,hilo,xfer,load,xfer,store")
    (set_attr "mode"	"SI")
    (set_attr "length"	"4,*,*,*,*,4,4,*,4,*,4,4,4,4,4,4,4,*,4,*")])
@@ -5489,7 +5426,7 @@ move\\t%0,%z4\\n\\
   "TARGET_MIPS16
    && (register_operand (operands[0], SImode)
        || register_operand (operands[1], SImode))"
-  "* return mips_move_1word (operands, insn, FALSE);"
+  { return mips_output_move (operands[0], operands[1]); }
   [(set_attr "type"	"move,move,move,arith,arith,const,load,store,hilo,hilo")
    (set_attr "mode"	"SI")
    (set_attr_alternative "length"
@@ -5575,7 +5512,7 @@ move\\t%0,%z4\\n\\
 }")
 
 ;; On the mips16, we can split a load of a negative constant into a
-;; load and a neg.  That's what mips_move_1word will generate anyhow.
+;; load and a neg.  That's what mips_output_move will generate anyhow.
 
 (define_split
   [(set (match_operand:SI 0 "register_operand" "")
@@ -5753,7 +5690,7 @@ move\\t%0,%z4\\n\\
   [(set (match_operand:CC 0 "nonimmediate_operand" "=d,*d,*d,*m,*d,*f,*f,*f,*m")
 	(match_operand:CC 1 "general_operand" "z,*d,*m,*d,*f,*d,*f,*m,*f"))]
   "ISA_HAS_8CC && TARGET_HARD_FLOAT"
-  "* return mips_move_1word (operands, insn, FALSE);"
+  { return mips_output_move (operands[0], operands[1]); }
   [(set_attr "type"	"move,move,load,store,xfer,xfer,move,load,store")
    (set_attr "mode"	"SI")
    (set_attr "length"	"8,4,*,*,4,4,4,*,*")])
@@ -5917,13 +5854,22 @@ move\\t%0,%z4\\n\\
 ;; in FP registers (off by default, use -mdebugh to enable).
 
 (define_insn "movhi_internal"
-  [(set (match_operand:HI 0 "nonimmediate_operand" "=d,d,d,m,*d,*f*z,*f,*x,*d")
-	(match_operand:HI 1 "general_operand"       "d,IK,m,dJ,*f*z,*d,*f,*d,*x"))]
+  [(set (match_operand:HI 0 "nonimmediate_operand" "=d,d,d,m,*d,*f,*f,*x,*d")
+	(match_operand:HI 1 "general_operand"       "d,IK,m,dJ,*f,*d,*f,*d,*x"))]
   "!TARGET_MIPS16
    && (register_operand (operands[0], HImode)
        || register_operand (operands[1], HImode)
        || (GET_CODE (operands[1]) == CONST_INT && INTVAL (operands[1]) == 0))"
-  "* return mips_move_1word (operands, insn, TRUE);"
+  "@
+    move\t%0,%1
+    li\t%0,%1
+    lhu\t%0,%1
+    sh\t%z1,%0
+    mfc1\t%0,%1
+    mtc1\t%1,%0
+    mov.s\t%0,%1
+    mt%0\t%1
+    mf%1\t%0"
   [(set_attr "type"	"move,arith,load,store,xfer,xfer,move,hilo,hilo")
    (set_attr "mode"	"HI")
    (set_attr "length"	"4,4,*,*,4,4,4,4,4")])
@@ -5934,7 +5880,15 @@ move\\t%0,%z4\\n\\
   "TARGET_MIPS16
    && (register_operand (operands[0], HImode)
        || register_operand (operands[1], HImode))"
-  "* return mips_move_1word (operands, insn, TRUE);"
+  "@
+    move\t%0,%1
+    move\t%0,%1
+    move\t%0,%1
+    li\t%0,%1
+    li\t%0,%n1\;neg\t%0
+    lhu\t%0,%1
+    sh\t%1,%0
+    mf%1\t%0"
   [(set_attr "type"	"move,move,move,arith,arith,load,store,hilo")
    (set_attr "mode"	"HI")
    (set_attr_alternative "length"
@@ -6025,13 +5979,22 @@ move\\t%0,%z4\\n\\
 ;; in FP registers (off by default, use -mdebugh to enable).
 
 (define_insn "movqi_internal"
-  [(set (match_operand:QI 0 "nonimmediate_operand" "=d,d,d,m,*d,*f*z,*f,*x,*d")
-	(match_operand:QI 1 "general_operand"       "d,IK,m,dJ,*f*z,*d,*f,*d,*x"))]
+  [(set (match_operand:QI 0 "nonimmediate_operand" "=d,d,d,m,*d,*f,*f,*x,*d")
+	(match_operand:QI 1 "general_operand"       "d,IK,m,dJ,*f,*d,*f,*d,*x"))]
   "!TARGET_MIPS16
    && (register_operand (operands[0], QImode)
        || register_operand (operands[1], QImode)
        || (GET_CODE (operands[1]) == CONST_INT && INTVAL (operands[1]) == 0))"
-  "* return mips_move_1word (operands, insn, TRUE);"
+  "@
+    move\t%0,%1
+    li\t%0,%1
+    lbu\t%0,%1
+    sb\t%z1,%0
+    mfc1\t%0,%1
+    mtc1\t%1,%0
+    mov.s\t%0,%1
+    mt%0\t%1
+    mf%1\t%0"
   [(set_attr "type"	"move,arith,load,store,xfer,xfer,move,hilo,hilo")
    (set_attr "mode"	"QI")
    (set_attr "length"	"4,4,*,*,4,4,4,4,4")])
@@ -6042,23 +6005,18 @@ move\\t%0,%z4\\n\\
   "TARGET_MIPS16
    && (register_operand (operands[0], QImode)
        || register_operand (operands[1], QImode))"
-  "* return mips_move_1word (operands, insn, TRUE);"
+  "@
+    move\t%0,%1
+    move\t%0,%1
+    move\t%0,%1
+    li\t%0,%1
+    li\t%0,%n1\;neg\t%0
+    lbu\t%0,%1
+    sb\t%1,%0
+    mf%1\t%0"
   [(set_attr "type"	"move,move,move,arith,arith,load,store,hilo")
    (set_attr "mode"	"QI")
-   (set_attr_alternative "length"
-		[(const_int 4)
-		 (const_int 4)
-		 (const_int 4)
-		 (if_then_else (match_operand:VOID 1 "m16_uimm8_1" "")
-			       (const_int 4)
-			       (const_int 8))
-		 (if_then_else (match_operand:VOID 1 "m16_nuimm8_1" "")
-			       (const_int 8)
-			       (const_int 12))
-		 (const_string "*")
-		 (const_string "*")
-		 (const_int 4)])])
-
+   (set_attr "length"	"4,4,4,4,8,*,*,4")])
 
 ;; On the mips16, we can split lb $r,N($r) into an add and a load,
 ;; when the original load is a 4 byte instruction but the add and the
@@ -6111,7 +6069,7 @@ move\\t%0,%z4\\n\\
   "TARGET_HARD_FLOAT
    && (register_operand (operands[0], SFmode)
        || nonmemory_operand (operands[1], SFmode))"
-  "* return mips_move_1word (operands, insn, FALSE);"
+  { return mips_output_move (operands[0], operands[1]); }
   [(set_attr "type"	"move,xfer,load,store,xfer,xfer,move,load,store")
    (set_attr "mode"	"SF")
    (set_attr "length"	"4,4,*,*,4,4,4,*,*")])
@@ -6122,7 +6080,7 @@ move\\t%0,%z4\\n\\
   "TARGET_SOFT_FLOAT && !TARGET_MIPS16
    && (register_operand (operands[0], SFmode)
        || nonmemory_operand (operands[1], SFmode))"
-  "* return mips_move_1word (operands, insn, FALSE);"
+  { return mips_output_move (operands[0], operands[1]); }
   [(set_attr "type"	"move,load,store")
    (set_attr "mode"	"SF")
    (set_attr "length"	"4,*,*")])
@@ -6133,7 +6091,7 @@ move\\t%0,%z4\\n\\
   "TARGET_MIPS16
    && (register_operand (operands[0], SFmode)
        || register_operand (operands[1], SFmode))"
-  "* return mips_move_1word (operands, insn, FALSE);"
+  { return mips_output_move (operands[0], operands[1]); }
   [(set_attr "type"	"move,move,move,load,store")
    (set_attr "mode"	"SF")
    (set_attr "length"	"4,4,4,*,*")])
@@ -6159,10 +6117,10 @@ move\\t%0,%z4\\n\\
   "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT && TARGET_64BIT
    && (register_operand (operands[0], DFmode)
        || nonmemory_operand (operands[1], DFmode))"
-  "* return mips_move_2words (operands, insn); "
-  [(set_attr "type"	"move,move,load,store,xfer,xfer,move,load,store")
+  { return mips_output_move (operands[0], operands[1]); }
+  [(set_attr "type"	"move,xfer,load,store,xfer,xfer,move,load,store")
    (set_attr "mode"	"DF")
-   (set_attr "length"	"4,8,*,*,4,4,4,*,*")])
+   (set_attr "length"	"4,4,*,*,4,4,4,*,*")])
 
 (define_insn "movdf_internal1b"
   [(set (match_operand:DF 0 "nonimmediate_operand" "=f,f,f,m,*f,*d,*d,*d,*m")
@@ -6170,21 +6128,21 @@ move\\t%0,%z4\\n\\
   "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT && !TARGET_64BIT
    && (register_operand (operands[0], DFmode)
        || nonmemory_operand (operands[1], DFmode))"
-  "* return mips_move_2words (operands, insn); "
-  [(set_attr "type"	"move,move,load,store,xfer,xfer,move,load,store")
+  { return mips_output_move (operands[0], operands[1]); }
+  [(set_attr "type"	"move,xfer,load,store,xfer,xfer,move,load,store")
    (set_attr "mode"	"DF")
    (set_attr "length"	"4,8,*,*,8,8,8,*,*")])
 
 (define_insn "movdf_internal2"
   [(set (match_operand:DF 0 "nonimmediate_operand" "=d,d,m,d,f,f")
-	(match_operand:DF 1 "general_operand" "dG,m,d,f,d,f"))]
+	(match_operand:DF 1 "general_operand" "dG,m,dG,f,d,f"))]
   "(TARGET_SOFT_FLOAT || TARGET_SINGLE_FLOAT) && !TARGET_MIPS16
    && (register_operand (operands[0], DFmode)
        || nonmemory_operand (operands[1], DFmode))"
-  "* return mips_move_2words (operands, insn); "
+  { return mips_output_move (operands[0], operands[1]); }
   [(set_attr "type"	"move,load,store,xfer,xfer,move")
    (set_attr "mode"	"DF")
-   (set_attr "length"	"8,*,*,8,8,4")])
+   (set_attr "length"	"8,*,*,4,4,4")])
 
 (define_insn ""
   [(set (match_operand:DF 0 "nonimmediate_operand" "=d,y,d,d,m")
@@ -6192,21 +6150,81 @@ move\\t%0,%z4\\n\\
   "TARGET_MIPS16
    && (register_operand (operands[0], DFmode)
        || register_operand (operands[1], DFmode))"
-  "* return mips_move_2words (operands, insn);"
+  { return mips_output_move (operands[0], operands[1]); }
   [(set_attr "type"	"move,move,move,load,store")
    (set_attr "mode"	"DF")
    (set_attr "length"	"8,8,8,*,*")])
 
 (define_split
-  [(set (match_operand:DF 0 "register_operand" "")
-	(match_operand:DF 1 "register_operand" ""))]
+  [(set (match_operand:DI 0 "nonimmediate_operand" "")
+	(match_operand:DI 1 "general_operand" ""))]
   "reload_completed && !TARGET_64BIT
-   && !TARGET_DEBUG_D_MODE && !TARGET_DEBUG_G_MODE
-   && GET_CODE (operands[0]) == REG && GP_REG_P (REGNO (operands[0]))
-   && GET_CODE (operands[1]) == REG && GP_REG_P (REGNO (operands[1]))"
-  [(set (subreg:SI (match_dup 0) 0) (subreg:SI (match_dup 1) 0))
-   (set (subreg:SI (match_dup 0) 4) (subreg:SI (match_dup 1) 4))]
-  "")
+   && mips_split_64bit_move_p (operands[0], operands[1])"
+  [(const_int 0)]
+  {
+    mips_split_64bit_move (operands[0], operands[1]);
+    DONE;
+  })
+
+(define_split
+  [(set (match_operand:DF 0 "nonimmediate_operand" "")
+	(match_operand:DF 1 "general_operand" ""))]
+  "reload_completed && !TARGET_64BIT
+   && mips_split_64bit_move_p (operands[0], operands[1])"
+  [(const_int 0)]
+  {
+    mips_split_64bit_move (operands[0], operands[1]);
+    DONE;
+  })
+
+;; Patterns for loading or storing part of a paired floating point
+;; register.  We need them because odd-numbered floating-point registers
+;; are not fully independent: see mips_split_64bit_move.
+
+;; Load the low word of operand 0 with operand 1.
+(define_insn "load_df_low"
+  [(set (match_operand:DF 0 "register_operand" "=f,f")
+	(unspec:DF [(match_operand:SI 1 "general_operand" "dJ,m")]
+		   UNSPEC_LOAD_DF_LOW))]
+  "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT && !TARGET_64BIT"
+  {
+    operands[0] = mips_subword (operands[0], 0);
+    return mips_output_move (operands[0], operands[1]);
+  }
+  [(set_attr "type"	"xfer,load")
+   (set_attr "mode"	"SF")
+   (set_attr "length"	"4")])
+
+;; Load the high word of operand 0 from operand 1, preserving the value
+;; in the low word.
+(define_insn "load_df_high"
+  [(set (match_operand:DF 0 "register_operand" "=f,f")
+	(unspec:DF [(match_operand:SI 1 "general_operand" "dJ,m")
+		    (match_operand:DF 2 "register_operand" "0,0")]
+		   UNSPEC_LOAD_DF_HIGH))]
+  "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT && !TARGET_64BIT"
+  {
+    operands[0] = mips_subword (operands[0], 1);
+    return mips_output_move (operands[0], operands[1]);
+  }
+  [(set_attr "type"	"xfer,load")
+   (set_attr "mode"	"SF")
+   (set_attr "length"	"4")])
+
+;; Store the high word of operand 1 in operand 0.  The corresponding
+;; low-word move is done in the normal way.
+(define_insn "store_df_high"
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=d,m")
+	(unspec:SI [(match_operand:DF 1 "register_operand" "f,f")]
+		   UNSPEC_STORE_DF_HIGH))]
+  "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT && !TARGET_64BIT"
+  {
+    operands[1] = mips_subword (operands[1], 1);
+    return mips_output_move (operands[0], operands[1]);
+  }
+  [(set_attr "type"	"xfer,store")
+   (set_attr "mode"	"SF")
+   (set_attr "length"	"4")])
 
 ;; Instructions to load the global pointer register.
 ;; This is volatile to make sure that the scheduler won't move any symbol_ref
@@ -9808,7 +9826,7 @@ ld\\t%2,%1-%S1(%2)\;daddu\\t%2,%2,$31\\n\\t%*j\\t%2"
 (define_insn "exception_receiver"
   [(unspec_volatile [(const_int 0)] UNSPEC_EH_RECEIVER)]
   "TARGET_ABICALLS && (mips_abi == ABI_32 || mips_abi == ABI_O64)"
-  "* return mips_restore_gp (operands, insn);"
+  { return mips_restore_gp (operands); }
   [(set_attr "type"   "load")
    (set_attr "length" "8")])
 

@@ -100,10 +100,12 @@ extern HOST_WIDE_INT	mips_debugger_offset PARAMS ((rtx, HOST_WIDE_INT));
 extern const char      *mips_fill_delay_slot PARAMS ((const char *,
 						      enum delay_type, rtx *,
 						      rtx));
-extern const char      *mips_move_1word PARAMS ((rtx *, rtx, int));
-extern const char      *mips_move_2words PARAMS ((rtx *, rtx));
+extern rtx		mips_subword PARAMS ((rtx, int));
+extern bool		mips_split_64bit_move_p PARAMS ((rtx, rtx));
+extern void		mips_split_64bit_move PARAMS ((rtx, rtx));
+extern const char      *mips_output_move PARAMS ((rtx, rtx));
 extern const char      *mips_emit_prefetch PARAMS ((rtx *));
-extern const char      *mips_restore_gp PARAMS ((rtx *, rtx));
+extern const char      *mips_restore_gp PARAMS ((rtx *));
 extern const char      *output_block_move PARAMS ((rtx, rtx *, int,
 						   enum block_move_type));
 extern void		override_options PARAMS ((void));

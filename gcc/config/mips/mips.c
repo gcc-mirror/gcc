@@ -233,9 +233,8 @@ static void mips_arg_info		PARAMS ((const CUMULATIVE_ARGS *,
 static bool mips_get_unaligned_mem		PARAMS ((rtx *, unsigned int,
 							 int, rtx *, rtx *));
 static rtx mips_add_large_offset_to_sp		PARAMS ((HOST_WIDE_INT));
-static void mips_annotate_frame_insn		PARAMS ((rtx, rtx));
-static rtx mips_frame_set			PARAMS ((enum machine_mode,
-							 int, int));
+static void mips_set_frame_expr			PARAMS ((rtx));
+static rtx mips_frame_set			PARAMS ((rtx, int));
 static void mips_emit_frame_related_store	PARAMS ((rtx, rtx,
 							 HOST_WIDE_INT));
 static void save_restore_insns			PARAMS ((int, rtx, long));
@@ -592,10 +591,6 @@ char mips_print_operand_punct[256];
 
 /* Map GCC register number to debugger register number.  */
 int mips_dbx_regno[FIRST_PSEUDO_REGISTER];
-
-/* Buffer to use to enclose a load/store operation with %{ %} to
-   turn on .set volatile.  */
-static char volatile_buffer[60];
 
 /* An alias set for the GOT.  */
 static int mips_got_alias_set;
@@ -1324,7 +1319,7 @@ mips_const_insns (x)
 
 	case CONSTANT_RELOC:
 	  /* When generating mips16 code, we need to set the destination to
-	     $0 and then add in the signed offset.  See mips_move_1word.  */
+	     $0 and then add in the signed offset.  See mips_output_move.  */
 	  return (TARGET_MIPS16 ? 3 : 1);
 
 	case CONSTANT_SYMBOLIC:
@@ -2962,391 +2957,252 @@ embedded_pic_offset (x)
 		   gen_rtx_MINUS (Pmode, x,
 				  XEXP (DECL_RTL (current_function_decl), 0)));
 }
+
+/* Return one word of double-word value OP, taking into account the fixed
+   endianness of certain registers.  HIGH_P is true to select the high part,
+   false to select the low part.  */
 
-/* Return the appropriate instructions to move one operand to another.  */
+rtx
+mips_subword (op, high_p)
+     rtx op;
+     int high_p;
+{
+  unsigned int byte;
+  enum machine_mode mode;
+
+  mode = GET_MODE (op);
+  if (mode == VOIDmode)
+    mode = DImode;
+
+  if (TARGET_BIG_ENDIAN ? !high_p : high_p)
+    byte = UNITS_PER_WORD;
+  else
+    byte = 0;
+
+  if (GET_CODE (op) == REG)
+    {
+      if (FP_REG_P (REGNO (op)))
+	return gen_rtx_REG (word_mode, high_p ? REGNO (op) + 1 : REGNO (op));
+      if (REGNO (op) == HI_REGNUM)
+	return gen_rtx_REG (word_mode, high_p ? HI_REGNUM : LO_REGNUM);
+    }
+
+  if (GET_CODE (op) == MEM)
+    return adjust_address (op, word_mode, byte);
+
+  return simplify_gen_subreg (word_mode, op, mode, byte);
+}
+
+
+/* Return true if a 64-bit move from SRC to DEST should be split into two.  */
+
+bool
+mips_split_64bit_move_p (dest, src)
+     rtx dest, src;
+{
+  if (TARGET_64BIT)
+    return false;
+
+  /* FP->FP moves can be done in a single instruction.  */
+  if (FP_REG_RTX_P (src) && FP_REG_RTX_P (dest))
+    return false;
+
+  /* Check for floating-point loads and stores.  They can be done using
+     ldc1 and sdc1 on MIPS II and above.  */
+  if (mips_isa > 1)
+    {
+      if (FP_REG_RTX_P (dest) && GET_CODE (src) == MEM)
+	return false;
+      if (FP_REG_RTX_P (src) && GET_CODE (dest) == MEM)
+	return false;
+    }
+  return true;
+}
+
+
+/* Split a 64-bit move from SRC to DEST assuming that
+   mips_split_64bit_move_p holds.
+
+   Moves into and out of FPRs cause some difficulty here.  Such moves
+   will always be DFmode, since paired FPRs are not allowed to store
+   DImode values.  The most natural representation would be two separate
+   32-bit moves, such as:
+
+	(set (reg:SI $f0) (mem:SI ...))
+	(set (reg:SI $f1) (mem:SI ...))
+
+   However, the second insn is invalid because odd-numbered FPRs are
+   not allowed to store independent values.  Use the patterns load_df_low,
+   load_df_high and store_df_high instead.  */
+
+void
+mips_split_64bit_move (dest, src)
+     rtx dest, src;
+{
+  if (FP_REG_RTX_P (dest))
+    {
+      /* Loading an FPR from memory or from GPRs.  */
+      emit_insn (gen_load_df_low (copy_rtx (dest), mips_subword (src, 0)));
+      emit_insn (gen_load_df_high (dest, mips_subword (src, 1),
+				   copy_rtx (dest)));
+    }
+  else if (FP_REG_RTX_P (src))
+    {
+      /* Storing an FPR into memory or GPRs.  */
+      emit_move_insn (mips_subword (dest, 0), mips_subword (src, 0));
+      emit_insn (gen_store_df_high (mips_subword (dest, 1), src));
+    }
+  else
+    {
+      /* The operation can be split into two normal moves.  Decide in
+	 which order to do them.  */
+      rtx low_dest;
+
+      low_dest = mips_subword (dest, 0);
+      if (GET_CODE (low_dest) == REG
+	  && reg_overlap_mentioned_p (low_dest, src))
+	{
+	  emit_move_insn (mips_subword (dest, 1), mips_subword (src, 1));
+	  emit_move_insn (low_dest, mips_subword (src, 0));
+	}
+      else
+	{
+	  emit_move_insn (low_dest, mips_subword (src, 0));
+	  emit_move_insn (mips_subword (dest, 1), mips_subword (src, 1));
+	}
+    }
+}
+
+/* Return the appropriate instructions to move SRC into DEST.  Assume
+   that SRC is operand 1 and DEST is operand 0.  */
 
 const char *
-mips_move_1word (operands, insn, unsignedp)
-     rtx operands[];
-     rtx insn;
-     int unsignedp;
+mips_output_move (dest, src)
+     rtx dest, src;
 {
-  const char *ret = 0;
-  rtx op0 = operands[0];
-  rtx op1 = operands[1];
-  enum rtx_code code0 = GET_CODE (op0);
-  enum rtx_code code1 = GET_CODE (op1);
-  enum machine_mode mode = GET_MODE (op0);
-  int subreg_offset0 = 0;
-  int subreg_offset1 = 0;
-  enum delay_type delay = DELAY_NONE;
+  enum rtx_code dest_code, src_code;
   struct mips_constant_info c;
+  bool dbl_p;
 
-  while (code0 == SUBREG)
+  dest_code = GET_CODE (dest);
+  src_code = GET_CODE (src);
+  dbl_p = (GET_MODE_SIZE (GET_MODE (dest)) == 8);
+
+  if (dbl_p && mips_split_64bit_move_p (dest, src))
+    return "#";
+
+  if ((src_code == REG && GP_REG_P (REGNO (src)))
+      || (!TARGET_MIPS16 && src == CONST0_RTX (GET_MODE (dest))))
     {
-      subreg_offset0 += subreg_regno_offset (REGNO (SUBREG_REG (op0)),
-					     GET_MODE (SUBREG_REG (op0)),
-					     SUBREG_BYTE (op0),
-					     GET_MODE (op0));
-      op0 = SUBREG_REG (op0);
-      code0 = GET_CODE (op0);
+      if (dest_code == REG)
+	{
+	  if (GP_REG_P (REGNO (dest)))
+	    return "move\t%0,%z1";
+
+	  if (MD_REG_P (REGNO (dest)))
+	    return "mt%0\t%z1";
+
+	  if (FP_REG_P (REGNO (dest)))
+	    return (dbl_p ? "dmtc1\t%z1,%0" : "mtc1\t%z1,%0");
+
+	  if (ALL_COP_REG_P (REGNO (dest)))
+	    {
+	      static char retval[] = "dmtc_\t%z1,%0";
+
+	      retval[4] = COPNUM_AS_CHAR_FROM_REGNUM (REGNO (dest));
+	      return (dbl_p ? retval : retval + 1);
+	    }
+	}
+      if (dest_code == MEM)
+	return (dbl_p ? "sd\t%z1,%0" : "sw\t%z1,%0");
     }
-
-  while (code1 == SUBREG)
+  if (dest_code == REG && GP_REG_P (REGNO (dest)))
     {
-      subreg_offset1 += subreg_regno_offset (REGNO (SUBREG_REG (op1)),
-					     GET_MODE (SUBREG_REG (op1)),
-					     SUBREG_BYTE (op1),
-					     GET_MODE (op1));
-      op1 = SUBREG_REG (op1);
-      code1 = GET_CODE (op1);
-    }
-
-  /* For our purposes, a condition code mode is the same as SImode.  */
-  if (mode == CCmode)
-    mode = SImode;
-
-  if (code0 == REG)
-    {
-      int regno0 = REGNO (op0) + subreg_offset0;
-
-      if (code1 == REG)
+      if (src_code == REG)
 	{
-	  int regno1 = REGNO (op1) + subreg_offset1;
+	  if (MD_REG_P (REGNO (src)))
+	    return "mf%1\t%0";
 
-	  /* Just in case, don't do anything for assigning a register
-	     to itself, unless we are filling a delay slot.  */
-	  if (regno0 == regno1 && set_nomacro == 0)
-	    ret = "";
+	  if (ST_REG_P (REGNO (src)) && ISA_HAS_8CC)
+	    return "lui\t%0,0x3f80\n\tmovf\t%0,%.,%1";
 
-	  else if (GP_REG_P (regno0))
+	  if (FP_REG_P (REGNO (src)))
+	    return (dbl_p ? "dmfc1\t%0,%1" : "mfc1\t%0,%1");
+
+	  if (ALL_COP_REG_P (REGNO (src)))
 	    {
-	      if (GP_REG_P (regno1))
-		ret = "move\t%0,%1";
+	      static char retval[] = "dmfc_\t%0,%1";
 
-	      else if (MD_REG_P (regno1))
-		{
-		  delay = DELAY_HILO;
-		  if (regno1 != HILO_REGNUM)
-		    ret = "mf%1\t%0";
-		  else
-		    ret = "mflo\t%0";
-		}
-
-	      else if (ST_REG_P (regno1) && ISA_HAS_8CC)
-		ret = "li\t%0,1\n\tmovf\t%0,%.,%1";
-
-	      else
-		{
-		  delay = DELAY_LOAD;
-		  if (FP_REG_P (regno1))
-		    ret = "mfc1\t%0,%1";
-		  else if (ALL_COP_REG_P (regno1))
-		    {
-		      static char retval[] = "mfc_\t%0,%1";
-
-		      retval[3] = COPNUM_AS_CHAR_FROM_REGNUM (regno1);
-		      ret = retval;
-		    }
-		  else if (regno1 == FPSW_REGNUM && ! ISA_HAS_8CC)
-		    ret = "cfc1\t%0,$31";
-		}
-	    }
-
-	  else if (FP_REG_P (regno0))
-	    {
-	      if (GP_REG_P (regno1))
-		{
-		  delay = DELAY_LOAD;
-		  ret = "mtc1\t%1,%0";
-		}
-
-	      if (FP_REG_P (regno1))
-		ret = "mov.s\t%0,%1";
-	    }
-
-	  else if (MD_REG_P (regno0))
-	    {
-	      if (GP_REG_P (regno1))
-		{
-		  delay = DELAY_HILO;
-		  if (regno0 != HILO_REGNUM && ! TARGET_MIPS16)
-		    ret = "mt%0\t%1";
-		}
-	    }
-
-	  else if (regno0 == FPSW_REGNUM && ! ISA_HAS_8CC)
-	    {
-	      if (GP_REG_P (regno1))
-		{
-		  delay = DELAY_LOAD;
-		  ret = "ctc1\t%0,$31";
-		}
-	    }
-	  else if (ALL_COP_REG_P (regno0))
-	    {
-	      if (GP_REG_P (regno1))
-		{
-		  static char retval[] = "mtc_\t%1,%0";
-		  char cop = COPNUM_AS_CHAR_FROM_REGNUM (regno0);
-
-		  if (cop == '0')
-		    abort_with_insn (insn,
-				     "mtc0 not supported; it disturbs virtual address translation");
-		  delay = DELAY_LOAD;
-		  retval[3] = cop;
-		  ret = retval;
-		}
+	      retval[4] = COPNUM_AS_CHAR_FROM_REGNUM (REGNO (src));
+	      return (dbl_p ? retval : retval + 1);
 	    }
 	}
 
-      else if (code1 == MEM)
+      if (src_code == MEM)
+	return (dbl_p ? "ld\t%0,%1" : "lw\t%0,%1");
+
+      if (src_code == CONST_INT)
 	{
-	  delay = DELAY_LOAD;
+	  /* Don't use the X format, because that will give out of
+	     range numbers for 64 bit hosts and 32 bit targets.  */
+	  if (!TARGET_MIPS16)
+	    return "li\t%0,%1\t\t\t# %X1";
 
-	  if (TARGET_STATS)
-	    mips_count_memory_refs (op1, 1);
+	  if (INTVAL (src) >= 0 && INTVAL (src) <= 0xffff)
+	    return "li\t%0,%1";
 
-	  if (GP_REG_P (regno0))
-	    {
-	      /* For loads, use the mode of the memory item, instead of the
-		 target, so zero/sign extend can use this code as well.  */
-	      switch (GET_MODE (op1))
-		{
-		default:
-		  break;
-		case SFmode:
-		  ret = "lw\t%0,%1";
-		  break;
-		case SImode:
-		case CCmode:
-		  ret = ((unsignedp && TARGET_64BIT)
-			 ? "lwu\t%0,%1"
-			 : "lw\t%0,%1");
-		  break;
-		case HImode:
-		  ret = (unsignedp) ? "lhu\t%0,%1" : "lh\t%0,%1";
-		  break;
-		case QImode:
-		  ret = (unsignedp) ? "lbu\t%0,%1" : "lb\t%0,%1";
-		  break;
-		}
-	    }
-
-	  else if (FP_REG_P (regno0) && (mode == SImode || mode == SFmode))
-	    ret = "lwc1\t%0,%1";
-
-	  else if (ALL_COP_REG_P (regno0))
-	    {
-	      static char retval[] = "lwc_\t%0,%1";
-	      char cop = COPNUM_AS_CHAR_FROM_REGNUM (regno0);
-
-	      if (cop == '0')
-		abort_with_insn (insn,
-				 "loads from memory to COP0 are illegal");
-	      delay = DELAY_LOAD;
-	      retval[3] = cop;
-	      ret = retval;
-	    }
-
-	  if (ret != (char *)0 && MEM_VOLATILE_P (op1))
-	    {
-	      size_t i = strlen (ret);
-	      if (i > sizeof (volatile_buffer) - sizeof ("%{%}"))
-		abort ();
-
-	      sprintf (volatile_buffer, "%%{%s%%}", ret);
-	      ret = volatile_buffer;
-	    }
+	  if (INTVAL (src) < 0 && INTVAL (src) >= -0xffff)
+	    return "li\t%0,%n1\n\tneg\t%0";
 	}
 
-      else if (code1 == CONST_INT
-	       || (code1 == CONST_DOUBLE
-		   && GET_MODE (op1) == VOIDmode))
+      if (src_code == HIGH)
+	return "lui\t%0,%h1";
+
+      switch (mips_classify_constant (&c, src))
 	{
-	  if (code1 == CONST_DOUBLE)
-	    {
-	      /* This can happen when storing constants into long long
-                 bitfields.  Just store the least significant word of
-                 the value.  */
-	      operands[1] = op1 = GEN_INT (CONST_DOUBLE_LOW (op1));
-	    }
+	case CONSTANT_NONE:
+	  break;
 
-	  if (INTVAL (op1) == 0 && ! TARGET_MIPS16)
-	    {
-	      if (GP_REG_P (regno0))
-		ret = "move\t%0,%z1";
+	case CONSTANT_GP:
+	  return "move\t%0,%1";
 
-	      else if (FP_REG_P (regno0))
-		{
-		  delay = DELAY_LOAD;
-		  ret = "mtc1\t%z1,%0";
-		}
+	case CONSTANT_RELOC:
+	  return (TARGET_MIPS16 ? "li\t%0,0\n\taddiu\t%0,%1" : "li\t%0,%1");
 
-	      else if (MD_REG_P (regno0))
-		{
-		  delay = DELAY_HILO;
-		  ret = "mt%0\t%.";
-		}
-	    }
-
-	  else if (GP_REG_P (regno0))
-	    {
-	      /* Don't use X format, because that will give out of
-		 range numbers for 64 bit host and 32 bit target.  */
-	      if (! TARGET_MIPS16)
-		ret = "li\t%0,%1\t\t\t# %X1";
-	      else
-		{
-		  if (INTVAL (op1) >= 0 && INTVAL (op1) <= 0xffff)
-		    ret = "li\t%0,%1";
-		  else if (INTVAL (op1) < 0 && INTVAL (op1) >= -0xffff)
-		    ret = "li\t%0,%n1\n\tneg\t%0";
-		}
-	    }
-	}
-
-      else if (code1 == CONST_DOUBLE && mode == SFmode)
-	{
-	  if (op1 == CONST0_RTX (SFmode))
-	    {
-	      if (GP_REG_P (regno0))
-		ret = "move\t%0,%.";
-
-	      else if (FP_REG_P (regno0))
-		{
-		  delay = DELAY_LOAD;
-		  ret = "mtc1\t%.,%0";
-		}
-	    }
-
-	  else
-	    {
-	      delay = DELAY_LOAD;
-	      ret = "li.s\t%0,%1";
-	    }
-	}
-
-      else if (code1 == PLUS)
-	{
-	  rtx add_op0 = XEXP (op1, 0);
-	  rtx add_op1 = XEXP (op1, 1);
-
-	  if (GET_CODE (XEXP (op1, 1)) == REG
-	      && GET_CODE (XEXP (op1, 0)) == CONST_INT)
-	    add_op0 = XEXP (op1, 1), add_op1 = XEXP (op1, 0);
-
-	  operands[2] = add_op0;
-	  operands[3] = add_op1;
-	  ret = "add%:\t%0,%2,%3";
-	}
-
-      else if (code1 == HIGH)
-	{
-	  operands[1] = XEXP (op1, 0);
-	  ret = "lui\t%0,%%hi(%1)";
-	}
-
-      else
-	switch (mips_classify_constant (&c, op1))
-	  {
-	  case CONSTANT_NONE:
-	    break;
-
-	  case CONSTANT_GP:
-	    ret = "move\t%0,%1";
-	    break;
-
-	  case CONSTANT_RELOC:
-	    ret = (TARGET_MIPS16 ? "li\t%0,0\n\taddiu\t%0,%1" : "li\t%0,%1");
-	    break;
-
-	  case CONSTANT_SYMBOLIC:
-	    if (TARGET_STATS)
-	      mips_count_memory_refs (op1, 1);
-	    ret = "la\t%0,%a1";
-	    break;
-	  }
-    }
-
-  else if (code0 == MEM)
-    {
-      if (TARGET_STATS)
-	mips_count_memory_refs (op0, 1);
-
-      if (code1 == REG)
-	{
-	  int regno1 = REGNO (op1) + subreg_offset1;
-
-	  if (GP_REG_P (regno1))
-	    {
-	      switch (mode)
-		{
-		case SFmode: ret = "sw\t%1,%0"; break;
-		case SImode: ret = "sw\t%1,%0"; break;
-		case HImode: ret = "sh\t%1,%0"; break;
-		case QImode: ret = "sb\t%1,%0"; break;
-		default: break;
-		}
-	    }
-
-	  else if (FP_REG_P (regno1) && (mode == SImode || mode == SFmode))
-	    ret = "swc1\t%1,%0";
-	  else if (ALL_COP_REG_P (regno1))
-	    {
-	      static char retval[] = "swc_\t%1,%0";
-
-	      retval[3] = COPNUM_AS_CHAR_FROM_REGNUM (regno1);
-	      ret = retval;
-	    }
-	}
-
-      else if (code1 == CONST_INT && INTVAL (op1) == 0)
-	{
-	  switch (mode)
-	    {
-	    case SFmode: ret = "sw\t%z1,%0"; break;
-	    case SImode: ret = "sw\t%z1,%0"; break;
-	    case HImode: ret = "sh\t%z1,%0"; break;
-	    case QImode: ret = "sb\t%z1,%0"; break;
-	    default: break;
-	    }
-	}
-
-      else if (code1 == CONST_DOUBLE && op1 == CONST0_RTX (mode))
-	{
-	  switch (mode)
-	    {
-	    case SFmode: ret = "sw\t%.,%0"; break;
-	    case SImode: ret = "sw\t%.,%0"; break;
-	    case HImode: ret = "sh\t%.,%0"; break;
-	    case QImode: ret = "sb\t%.,%0"; break;
-	    default: break;
-	    }
-	}
-
-      if (ret != 0 && MEM_VOLATILE_P (op0))
-	{
-	  size_t i = strlen (ret);
-
-	  if (i > sizeof (volatile_buffer) - sizeof ("%{%}"))
-	    abort ();
-
-	  sprintf (volatile_buffer, "%%{%s%%}", ret);
-	  ret = volatile_buffer;
+	case CONSTANT_SYMBOLIC:
+	  return (dbl_p ? "dla\t%0,%a1" : "la\t%0,%a1");
 	}
     }
-
-  if (ret == 0)
+  if (src_code == REG && FP_REG_P (REGNO (src)))
     {
-      abort_with_insn (insn, "bad move");
-      return 0;
+      if (dest_code == REG && FP_REG_P (REGNO (dest)))
+	return (dbl_p ? "mov.d\t%0,%1" : "mov.s\t%0,%1");
+
+      if (dest_code == MEM)
+	return (dbl_p ? "sdc1\t%1,%0" : "swc1\t%1,%0");
     }
+  if (dest_code == REG && FP_REG_P (REGNO (dest)))
+    {
+      if (src_code == MEM)
+	return (dbl_p ? "ldc1\t%0,%1" : "lwc1\t%0,%1");
+    }
+  if (dest_code == REG && ALL_COP_REG_P (REGNO (dest)) && src_code == MEM)
+    {
+      static char retval[] = "l_c_\t%0,%1";
 
-  if (delay != DELAY_NONE)
-    return mips_fill_delay_slot (ret, delay, operands, insn);
+      retval[1] = (dbl_p ? 'd' : 'w');
+      retval[3] = COPNUM_AS_CHAR_FROM_REGNUM (REGNO (dest));
+      return retval;
+    }
+  if (dest_code == MEM && src_code == REG && ALL_COP_REG_P (REGNO (src)))
+    {
+      static char retval[] = "s_c_\t%1,%0";
 
-  return ret;
+      retval[1] = (dbl_p ? 'd' : 'w');
+      retval[3] = COPNUM_AS_CHAR_FROM_REGNUM (REGNO (src));
+      return retval;
+    }
+  abort ();
 }
 
 /* Return instructions to restore the global pointer from the stack,
@@ -3354,11 +3210,11 @@ mips_move_1word (operands, insn, unsignedp)
    the GP for exception handlers.
 
    OPERANDS is an array of operands whose contents are undefined
-   on entry.  INSN is the exception_handler instruction.  */
+   on entry.  */
 
 const char *
-mips_restore_gp (operands, insn)
-     rtx *operands, insn;
+mips_restore_gp (operands)
+     rtx *operands;
 {
   rtx loc;
 
@@ -3370,464 +3226,9 @@ mips_restore_gp (operands, insn)
   loc = plus_constant (loc, cfun->machine->frame.args_size);
   operands[1] = gen_rtx_MEM (ptr_mode, loc);
 
-  return mips_move_1word (operands, insn, 0);
+  return mips_output_move (operands[0], operands[1]);
 }
 
-/* Return the appropriate instructions to move 2 words */
-
-const char *
-mips_move_2words (operands, insn)
-     rtx operands[];
-     rtx insn;
-{
-  const char *ret = 0;
-  rtx op0 = operands[0];
-  rtx op1 = operands[1];
-  enum rtx_code code0 = GET_CODE (operands[0]);
-  enum rtx_code code1 = GET_CODE (operands[1]);
-  int subreg_offset0 = 0;
-  int subreg_offset1 = 0;
-  enum delay_type delay = DELAY_NONE;
-  struct mips_constant_info c;
-
-  while (code0 == SUBREG)
-    {
-      subreg_offset0 += subreg_regno_offset (REGNO (SUBREG_REG (op0)),
-					     GET_MODE (SUBREG_REG (op0)),
-					     SUBREG_BYTE (op0),
-					     GET_MODE (op0));
-      op0 = SUBREG_REG (op0);
-      code0 = GET_CODE (op0);
-    }
-
-  while (code1 == SUBREG)
-    {
-      subreg_offset1 += subreg_regno_offset (REGNO (SUBREG_REG (op1)),
-					     GET_MODE (SUBREG_REG (op1)),
-					     SUBREG_BYTE (op1),
-					     GET_MODE (op1));
-      op1 = SUBREG_REG (op1);
-      code1 = GET_CODE (op1);
-    }
-
-  if (code0 == REG)
-    {
-      int regno0 = REGNO (op0) + subreg_offset0;
-
-      if (code1 == REG)
-	{
-	  int regno1 = REGNO (op1) + subreg_offset1;
-
-	  /* Just in case, don't do anything for assigning a register
-	     to itself, unless we are filling a delay slot.  */
-	  if (regno0 == regno1 && set_nomacro == 0)
-	    ret = "";
-
-	  else if (FP_REG_P (regno0))
-	    {
-	      if (FP_REG_P (regno1))
-		ret = "mov.d\t%0,%1";
-
-	      else
-		{
-		  delay = DELAY_LOAD;
-		  if (TARGET_FLOAT64)
-		    {
-		      if (!TARGET_64BIT)
-			abort_with_insn (insn, "bad move");
-
-#ifdef TARGET_FP_CALL_32
-		      if (FP_CALL_GP_REG_P (regno1))
-			ret = "dsll\t%1,32\n\tor\t%1,%D1\n\tdmtc1\t%1,%0";
-		      else
-#endif
-			ret = "dmtc1\t%1,%0";
-		    }
-		  else
-		    ret = "mtc1\t%L1,%0\n\tmtc1\t%M1,%D0";
-		}
-	    }
-
-	  else if (FP_REG_P (regno1))
-	    {
-	      delay = DELAY_LOAD;
-	      if (TARGET_FLOAT64)
-		{
-		  if (!TARGET_64BIT)
-		    abort_with_insn (insn, "bad move");
-
-#ifdef TARGET_FP_CALL_32
-		  if (FP_CALL_GP_REG_P (regno0))
-		    ret = "dmfc1\t%0,%1\n\tmfc1\t%D0,%1\n\tdsrl\t%0,32";
-		  else
-#endif
-		    ret = "dmfc1\t%0,%1";
-		}
-	      else
-		ret = "mfc1\t%L0,%1\n\tmfc1\t%M0,%D1";
-	    }
-
-	  else if (MD_REG_P (regno0) && GP_REG_P (regno1) && !TARGET_MIPS16)
-	    {
-	      delay = DELAY_HILO;
-	      if (TARGET_64BIT)
-		{
-		  if (regno0 != HILO_REGNUM)
-		    ret = "mt%0\t%1";
-		  else if (regno1 == 0)
-		    ret = "mtlo\t%.\n\tmthi\t%.";
-		}
-	      else
-		ret = "mthi\t%M1\n\tmtlo\t%L1";
-	    }
-
-	  else if (GP_REG_P (regno0) && MD_REG_P (regno1))
-	    {
-	      delay = DELAY_HILO;
-	      if (TARGET_64BIT)
-		{
-		  if (regno1 != HILO_REGNUM)
-		    ret = "mf%1\t%0";
-		}
-	      else
-		ret = "mfhi\t%M0\n\tmflo\t%L0";
-	    }
-	  else if (GP_REG_P (regno0) && ALL_COP_REG_P (regno1)
-		   && TARGET_64BIT)
-	    {
-	      static char retval[] = "dmfc_\t%0,%1";
-
-	      delay = DELAY_LOAD;
-	      retval[4] = COPNUM_AS_CHAR_FROM_REGNUM (regno1);
-	      ret = retval;
-	    }
-	  else if (ALL_COP_REG_P (regno0) && GP_REG_P (regno1)
-		   && TARGET_64BIT)
-	    {
-	      static char retval[] = "dmtc_\t%1,%0";
-	      char cop = COPNUM_AS_CHAR_FROM_REGNUM (regno0);
-
-	      if (cop == '0')
-		abort_with_insn (insn,
-				 "dmtc0 not supported; it disturbs virtual address translation");
-	      delay = DELAY_LOAD;
-	      retval[4] = cop;
-	      ret = retval;
-	    }
-	  else if (TARGET_64BIT)
-	    ret = "move\t%0,%1";
-
-	  else if (regno0 != (regno1+1))
-	    ret = "move\t%0,%1\n\tmove\t%D0,%D1";
-
-	  else
-	    ret = "move\t%D0,%D1\n\tmove\t%0,%1";
-	}
-
-      else if (code1 == CONST_DOUBLE)
-	{
-	  /* Move zero from $0 unless !TARGET_64BIT and recipient
-	     is 64-bit fp reg, in which case generate a constant.  */
-	  if (op1 != CONST0_RTX (GET_MODE (op1))
-	      || (TARGET_FLOAT64 && !TARGET_64BIT && FP_REG_P (regno0)))
-	    {
-	      if (GET_MODE (op1) == DFmode)
-		{
-		  delay = DELAY_LOAD;
-
-#ifdef TARGET_FP_CALL_32
-		  if (FP_CALL_GP_REG_P (regno0))
-		    {
-		      if (TARGET_FLOAT64 && !TARGET_64BIT)
-			{
-			  split_double (op1, operands + 2, operands + 3);
-			  ret = "li\t%0,%2\n\tli\t%D0,%3";
-			}
-		      else
-			ret = "li.d\t%0,%1\n\tdsll\t%D0,%0,32\n\tdsrl\t%D0,32\n\tdsrl\t%0,32";
-		    }
-		  else
-#endif
-		    /* GNU as emits 64-bit code for li.d if the ISA is 3
-		       or higher.  For !TARGET_64BIT && gp registers we
-		       need to avoid this by using two li instructions
-		       instead.  */
-		    if (ISA_HAS_64BIT_REGS
-			&& ! TARGET_64BIT
-			&& ! FP_REG_P (regno0))
-		      {
-			split_double (op1, operands + 2, operands + 3);
-			ret = "li\t%0,%2\n\tli\t%D0,%3";
-		      }
-		    else
-		      ret = "li.d\t%0,%1";
-		}
-
-	      else if (TARGET_64BIT)
-		{
-		  if (! TARGET_MIPS16)
-		    ret = "dli\t%0,%1";
-		}
-
-	      else
-		{
-		  split_double (op1, operands + 2, operands + 3);
-		  ret = "li\t%0,%2\n\tli\t%D0,%3";
-		}
-	    }
-
-	  else
-	    {
-	      if (GP_REG_P (regno0))
-		ret = (TARGET_64BIT
-#ifdef TARGET_FP_CALL_32
-		       && ! FP_CALL_GP_REG_P (regno0)
-#endif
-		       ? "move\t%0,%."
-		       : "move\t%0,%.\n\tmove\t%D0,%.");
-
-	      else if (FP_REG_P (regno0))
-		{
-		  delay = DELAY_LOAD;
-		  ret = (TARGET_64BIT
-			 ? "dmtc1\t%.,%0"
-			 : "mtc1\t%.,%0\n\tmtc1\t%.,%D0");
-		}
-	    }
-	}
-
-      else if (code1 == CONST_INT && INTVAL (op1) == 0 && ! TARGET_MIPS16)
-	{
-	  if (GP_REG_P (regno0))
-	    ret = (TARGET_64BIT
-		   ? "move\t%0,%."
-		   : "move\t%0,%.\n\tmove\t%D0,%.");
-
-	  else if (FP_REG_P (regno0))
-	    {
-	      delay = DELAY_LOAD;
-	      ret = (TARGET_64BIT
-		     ? "dmtc1\t%.,%0"
-		     : (TARGET_FLOAT64
-			? "li.d\t%0,%1"
-			: "mtc1\t%.,%0\n\tmtc1\t%.,%D0"));
-	    }
-	  else if (MD_REG_P (regno0))
-	    {
-	      delay = DELAY_HILO;
-	      ret =  (regno0 == HILO_REGNUM
-		      ? "mtlo\t%.\n\tmthi\t%."
-		      : "mt%0\t%.\n");
-	    }
-	}
-
-      else if (code1 == CONST_INT && GET_MODE (op0) == DImode
-	       && GP_REG_P (regno0))
-	{
-	  if (TARGET_64BIT)
-	    {
-	      if (TARGET_MIPS16)
-		{
-		  if (INTVAL (op1) >= 0 && INTVAL (op1) <= 0xffff)
-		    ret = "li\t%0,%1";
-		  else if (INTVAL (op1) < 0 && INTVAL (op1) >= -0xffff)
-		    ret = "li\t%0,%n1\n\tneg\t%0";
-		}
-	      else if (GET_CODE (operands[1]) == SIGN_EXTEND)
-		ret = "li\t%0,%1\t\t# %X1";
-	      else if (HOST_BITS_PER_WIDE_INT < 64)
-		/* We can't use 'X' for negative numbers, because then we won't
-		   get the right value for the upper 32 bits.  */
-		ret = (INTVAL (op1) < 0
-		       ? "dli\t%0,%1\t\t\t# %X1"
-		       : "dli\t%0,%X1\t\t# %1");
-	      else
-		/* We must use 'X', because otherwise LONG_MIN will print as
-		   a number that the assembler won't accept.  */
-		ret = "dli\t%0,%X1\t\t# %1";
-	    }
-	  else if (HOST_BITS_PER_WIDE_INT < 64)
-	    {
-	      operands[2] = GEN_INT (INTVAL (operands[1]) >= 0 ? 0 : -1);
-	      if (TARGET_MIPS16)
-		{
-		  if (INTVAL (op1) >= 0 && INTVAL (op1) <= 0xffff)
-		    ret = "li\t%M0,%2\n\tli\t%L0,%1";
-		  else if (INTVAL (op1) < 0 && INTVAL (op1) >= -0xffff)
-		    {
-		      operands[2] = GEN_INT (1);
-		      ret = "li\t%M0,%2\n\tneg\t%M0\n\tli\t%L0,%n1\n\tneg\t%L0";
-		    }
-		}
-	      else
-		ret = "li\t%M0,%2\n\tli\t%L0,%1";
-	    }
-	  else
-	    {
-	      /* We use multiple shifts here, to avoid warnings about out
-		 of range shifts on 32 bit hosts.  */
-	      operands[2] = GEN_INT (INTVAL (operands[1]) >> 16 >> 16);
-	      operands[1]
-		= GEN_INT (INTVAL (operands[1]) << 16 << 16 >> 16 >> 16);
-	      if (TARGET_MIPS16)
-		{
-		  if (INTVAL (op1) >= 0 && INTVAL (op1) <= 0xffff)
-		    ret = "li\t%M0,%2\n\tli\t%L0,%1";
-		  else if (INTVAL (op1) < 0 && INTVAL (op1) >= -0xffff)
-		    {
-		      operands[2] = GEN_INT (1);
-		      ret = "li\t%M0,%2\n\tneg\t%M0\n\tli\t%L0,%n1\n\tneg\t%L0";
-		    }
-		}
-	      else
-		ret = "li\t%M0,%2\n\tli\t%L0,%1";
-	    }
-	}
-
-      else if (code1 == MEM)
-	{
-	  delay = DELAY_LOAD;
-
-	  if (TARGET_STATS)
-	    mips_count_memory_refs (op1, 2);
-
-	  if (FP_REG_P (regno0))
-	    ret = (TARGET_64BIT ? "ldc1\t%0,%1" : "l.d\t%0,%1");
-
-	  else if (ALL_COP_REG_P (regno0) && TARGET_64BIT)
-	    {
-	      static char retval[] = "ldc_\t%0,%1";
-	      char cop = COPNUM_AS_CHAR_FROM_REGNUM (regno0);
-
-	      if (cop == '0')
-		abort_with_insn (insn,
-				 "loads from memory to COP0 are illegal");
-	      delay = DELAY_LOAD;
-	      retval[3] = cop;
-	      ret = retval;
-	    }
-
-	  else if (TARGET_64BIT)
-	    {
-
-#ifdef TARGET_FP_CALL_32
-	      if (FP_CALL_GP_REG_P (regno0))
-		ret = "lwu\t%0,%1\n\tlwu\t%D0,4+%1";
-	      else
-#endif
-		ret = "ld\t%0,%1";
-	    }
-
-	  else
-	    ret = (reg_mentioned_p (op0, op1)
-		   ? "lw\t%D0,%D1\n\tlw\t%0,%1"
-		   : "lw\t%0,%1\n\tlw\t%D0,%D1");
-
-	  if (ret != 0 && MEM_VOLATILE_P (op1))
-	    {
-	      size_t i = strlen (ret);
-
-	      if (i > sizeof (volatile_buffer) - sizeof ("%{%}"))
-		abort ();
-
-	      sprintf (volatile_buffer, "%%{%s%%}", ret);
-	      ret = volatile_buffer;
-	    }
-	}
-      else if (code1 == HIGH)
-	{
-	  operands[1] = XEXP (op1, 0);
-	  ret = "lui\t%0,%%hi(%1)";
-	}
-      else
-	switch (mips_classify_constant (&c, op1))
-	  {
-	  case CONSTANT_NONE:
-	    break;
-
-	  case CONSTANT_GP:
-	    ret = "move\t%0,%1";
-	    break;
-
-	  case CONSTANT_RELOC:
-	    ret = (TARGET_MIPS16 ? "li\t%0,0\n\taddiu\t%0,%1" : "li\t%0,%1");
-	    break;
-
-	  case CONSTANT_SYMBOLIC:
-	    if (TARGET_STATS)
-	      mips_count_memory_refs (op1, 2);
-	    ret = "dla\t%0,%a1";
-	    break;
-	  }
-    }
-
-  else if (code0 == MEM)
-    {
-      if (code1 == REG)
-	{
-	  int regno1 = REGNO (op1) + subreg_offset1;
-
-	  if (FP_REG_P (regno1))
-	    ret = (TARGET_64BIT ? "sdc1\t%1,%0" : "s.d\t%1,%0");
-
-	  else if (ALL_COP_REG_P (regno1) && TARGET_64BIT)
-	    {
-	      static char retval[] = "sdc_\t%1,%0";
-
-	      retval[3] = COPNUM_AS_CHAR_FROM_REGNUM (regno1);
-	      ret = retval;
-	    }
-	  else if (TARGET_64BIT)
-	    {
-
-#ifdef TARGET_FP_CALL_32
-	      if (FP_CALL_GP_REG_P (regno1))
-		ret = "dsll\t%1,32\n\tor\t%1,%D1\n\tsd\t%1,%0";
-	      else
-#endif
-		ret = "sd\t%1,%0";
-	    }
-
-	  else
-	    ret = "sw\t%1,%0\n\tsw\t%D1,%D0";
-	}
-
-      else if (((code1 == CONST_INT && INTVAL (op1) == 0)
-		|| (code1 == CONST_DOUBLE
-		    && op1 == CONST0_RTX (GET_MODE (op1)))))
-	{
-	  if (TARGET_64BIT)
-	    ret = "sd\t%.,%0";
-	  else
-	    ret = "sw\t%.,%0\n\tsw\t%.,%D0";
-	}
-
-      if (TARGET_STATS)
-	mips_count_memory_refs (op0, 2);
-
-      if (ret != 0 && MEM_VOLATILE_P (op0))
-	{
-	  size_t i = strlen (ret);
-
-	  if (i > sizeof (volatile_buffer) - sizeof ("%{%}"))
-	    abort ();
-
-	  sprintf (volatile_buffer, "%%{%s%%}", ret);
-	  ret = volatile_buffer;
-	}
-    }
-
-  if (ret == 0)
-    {
-      abort_with_insn (insn, "bad move");
-      return 0;
-    }
-
-  if (delay != DELAY_NONE)
-    return mips_fill_delay_slot (ret, delay, operands, insn);
-
-  return ret;
-}
 
 /* Make normal rtx_code into something we can index from an array */
 
@@ -6622,6 +6023,7 @@ mips_debugger_offset (addr, offset)
 
    'X'  X is CONST_INT, prints 32 bits in hexadecimal format = "0x%08x",
    'x'  X is CONST_INT, prints 16 bits in hexadecimal format = "0x%04x",
+   'h'  X is HIGH, prints %hi(X),
    'd'  output integer constant in decimal,
    'z'	if the operand is 0, use $0 instead of normal operand.
    'D'  print second part of double-word register or memory operand.
@@ -6814,6 +6216,15 @@ print_operand (file, op, letter)
       fputc (')', file);
     }
 
+  else if (letter == 'h')
+    {
+      if (GET_CODE (op) != HIGH)
+	abort ();
+      fputs ("%hi(", file);
+      output_addr_const (file, XEXP (op, 0));
+      fputc (')', file);
+    }
+
   else if (letter == 'C')
     switch (code)
       {
@@ -6914,15 +6325,6 @@ print_operand (file, op, letter)
 	output_address (XEXP (op, 0));
     }
 
-  else if (code == CONST_DOUBLE
-	   && GET_MODE_CLASS (GET_MODE (op)) == MODE_FLOAT)
-    {
-      char s[60];
-
-      real_to_decimal (s, CONST_DOUBLE_REAL_VALUE (op), sizeof (s), 0, 1);
-      fputs (s, file);
-    }
-
   else if (letter == 'x' && GET_CODE (op) == CONST_INT)
     fprintf (file, HOST_WIDE_INT_PRINT_HEX, 0xffff & INTVAL(op));
 
@@ -6932,7 +6334,7 @@ print_operand (file, op, letter)
   else if (letter == 'd' && GET_CODE(op) == CONST_INT)
     fprintf (file, HOST_WIDE_INT_PRINT_DEC, (INTVAL(op)));
 
-  else if (letter == 'z' && GET_CODE (op) == CONST_INT && INTVAL (op) == 0)
+  else if (letter == 'z' && op == CONST0_RTX (GET_MODE (op)))
     fputs (reg_names[GP_REG_FIRST], file);
 
   else if (letter == 'd' || letter == 'x' || letter == 'X')
@@ -7815,32 +7217,32 @@ mips_add_large_offset_to_sp (offset)
   return reg;
 }
 
-/* Make INSN frame related and note that it performs the frame-related
-   operation DWARF_PATTERN.  */
+/* Make the last instruction frame related and note that it performs
+   the operation described by FRAME_PATTERN.  */
 
 static void
-mips_annotate_frame_insn (insn, dwarf_pattern)
-     rtx insn, dwarf_pattern;
+mips_set_frame_expr (frame_pattern)
+     rtx frame_pattern;
 {
+  rtx insn;
+
+  insn = get_last_insn ();
   RTX_FRAME_RELATED_P (insn) = 1;
   REG_NOTES (insn) = alloc_EXPR_LIST (REG_FRAME_RELATED_EXPR,
-				      dwarf_pattern,
+				      frame_pattern,
 				      REG_NOTES (insn));
 }
 
-/* Return a frame-related rtx that stores register REGNO at (SP + OFFSET).
-   The expression should only be used to store single registers.  */
+/* Return a frame-related rtx that stores REG at (SP + OFFSET).
+   REG must be a single register.  */
 
 static rtx
-mips_frame_set (mode, regno, offset)
-     enum machine_mode mode;
-     int regno;
+mips_frame_set (reg, offset)
+     rtx reg;
      int offset;
 {
   rtx address = plus_constant (stack_pointer_rtx, offset);
-  rtx set = gen_rtx_SET (mode,
-			 gen_rtx_MEM (mode, address),
-			 gen_rtx_REG (mode, regno));
+  rtx set = gen_rtx_SET (VOIDmode, gen_rtx_MEM (GET_MODE (reg), address), reg);
   RTX_FRAME_RELATED_P (set) = 1;
   return set;
 }
@@ -7856,24 +7258,24 @@ mips_emit_frame_related_store (mem, reg, offset)
      rtx reg;
      HOST_WIDE_INT offset;
 {
-  rtx dwarf_expr;
+  if (GET_MODE (reg) == DFmode && mips_split_64bit_move_p (mem, reg))
+    mips_split_64bit_move (mem, reg);
+  else
+    emit_move_insn (mem, reg);
 
-  if (GET_MODE (reg) == DFmode && ! TARGET_FLOAT64)
+  if (GET_MODE (reg) == DFmode && !TARGET_FLOAT64)
     {
+      rtx x1, x2;
+
       /* Two registers are being stored, so the frame-related expression
-	 must be a PARALLEL rtx with one SET for each register.  The
-	 higher numbered register is stored in the lower address on
-	 big-endian targets.  */
-      int regno1 = TARGET_BIG_ENDIAN ? REGNO (reg) + 1 : REGNO (reg);
-      int regno2 = TARGET_BIG_ENDIAN ? REGNO (reg) : REGNO (reg) + 1;
-      rtx set1 = mips_frame_set (SFmode, regno1, offset);
-      rtx set2 = mips_frame_set (SFmode, regno2, offset + UNITS_PER_FPREG);
-      dwarf_expr = gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, set1, set2));
+	 must be a PARALLEL rtx with one SET for each register.  */
+      x1 = mips_frame_set (mips_subword (reg, TARGET_BIG_ENDIAN), offset);
+      x2 = mips_frame_set (mips_subword (reg, !TARGET_BIG_ENDIAN),
+			   offset + UNITS_PER_FPREG);
+      mips_set_frame_expr (gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, x1, x2)));
     }
   else
-    dwarf_expr = mips_frame_set (GET_MODE (reg), REGNO (reg), offset);
-
-  mips_annotate_frame_insn (emit_move_insn (mem, reg), dwarf_expr);
+    mips_set_frame_expr (mips_frame_set (reg, offset));
 }
 
 static void
@@ -8549,7 +7951,7 @@ mips_expand_prologue ()
       if ((!TARGET_ABICALLS || (mips_abi != ABI_32 && mips_abi != ABI_O64))
 	  && (!TARGET_MIPS16 || tsize <= 32767))
 	{
-	  rtx adjustment_rtx, insn, dwarf_pattern;
+	  rtx adjustment_rtx;
 
 	  if (tsize > 32767)
 	    {
@@ -8560,17 +7962,15 @@ mips_expand_prologue ()
 	    adjustment_rtx = tsize_rtx;
 
 	  if (Pmode == DImode)
-	    insn = emit_insn (gen_subdi3 (stack_pointer_rtx, stack_pointer_rtx,
-					  adjustment_rtx));
+	    emit_insn (gen_subdi3 (stack_pointer_rtx, stack_pointer_rtx,
+				   adjustment_rtx));
 	  else
-	    insn = emit_insn (gen_subsi3 (stack_pointer_rtx, stack_pointer_rtx,
-					  adjustment_rtx));
+	    emit_insn (gen_subsi3 (stack_pointer_rtx, stack_pointer_rtx,
+				   adjustment_rtx));
 
-	  dwarf_pattern = gen_rtx_SET (Pmode, stack_pointer_rtx,
-				       plus_constant (stack_pointer_rtx,
-						      -tsize));
-
-	  mips_annotate_frame_insn (insn, dwarf_pattern);
+	  mips_set_frame_expr
+	    (gen_rtx_SET (VOIDmode, stack_pointer_rtx,
+			  plus_constant (stack_pointer_rtx, -tsize)));
 	}
 
       if (! mips_entry)
