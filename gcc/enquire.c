@@ -900,7 +900,7 @@ int exponent(x, fract, exp) Long_double x; double *fract; int *exp; {
 
 /* Print a value of type TYPE with value VAL,
    assuming that sprintf can't handle this type properly (without truncation).
-   We create an expession that uses type casting to create the value from
+   We create an expression that uses type casting to create the value from
    a bit pattern.  */
 
 char *fake_f_rep(type, val) char *type; Long_double val; {
