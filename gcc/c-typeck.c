@@ -59,6 +59,7 @@ enum lvalue_use {
    diagnostic messages in convert_for_assignment.  */
 enum impl_conv {
   ic_argpass,
+  ic_argpass_nonproto,
   ic_assign,
   ic_init,
   ic_return
@@ -3435,7 +3436,7 @@ convert_for_assignment (tree type, tree rhs, enum impl_conv errtype,
   enum tree_code coder;
   tree rname = NULL_TREE;
 
-  if (errtype == ic_argpass)
+  if (errtype == ic_argpass || errtype == ic_argpass_nonproto)
     {
       tree selector;
       /* Change pointer to function to the function itself for
@@ -3463,6 +3464,9 @@ convert_for_assignment (tree type, tree rhs, enum impl_conv errtype,
       {						\
       case ic_argpass:				\
 	pedwarn (AR, parmnum, rname);		\
+	break;					\
+      case ic_argpass_nonproto:			\
+	warning (AR, parmnum, rname);		\
 	break;					\
       case ic_assign:				\
 	pedwarn (AS);				\
@@ -3509,6 +3513,11 @@ convert_for_assignment (tree type, tree rhs, enum impl_conv errtype,
 
   if (coder == VOID_TYPE)
     {
+      /* Except for passing an argument to an unprototyped function,
+	 this is a constraint violation.  When passing an argument to
+	 an unprototyped function, it is compile-time undefined;
+	 making it a constraint in that case was rejected in
+	 DR#252.  */
       error ("void value not ignored as it ought to be");
       return error_mark_node;
     }
@@ -3554,7 +3563,7 @@ convert_for_assignment (tree type, tree rhs, enum impl_conv errtype,
   /* Conversion to a transparent union from its member types.
      This applies only to function arguments.  */
   else if (codel == UNION_TYPE && TYPE_TRANSPARENT_UNION (type)
-	   && errtype == ic_argpass)
+	   && (errtype == ic_argpass || errtype == ic_argpass_nonproto))
     {
       tree memb_types;
       tree marginal_memb_type = 0;
@@ -3760,6 +3769,8 @@ convert_for_assignment (tree type, tree rhs, enum impl_conv errtype,
     }
   else if (codel == POINTER_TYPE && coder == ARRAY_TYPE)
     {
+      /* ??? This should not be an error when inlining calls to
+	 unprototyped functions.  */
       error ("invalid use of non-lvalue array");
       return error_mark_node;
     }
@@ -3803,6 +3814,9 @@ convert_for_assignment (tree type, tree rhs, enum impl_conv errtype,
   switch (errtype)
     {
     case ic_argpass:
+    case ic_argpass_nonproto:
+      /* ??? This should not be an error when inlining calls to
+	 unprototyped functions.  */
       error ("incompatible type for argument %d of %qE", parmnum, rname);
       break;
     case ic_assign:
@@ -3837,7 +3851,7 @@ c_convert_parm_for_inlining (tree parm, tree value, tree fn, int argnum)
 
   type = TREE_TYPE (parm);
   ret = convert_for_assignment (type, value,
-				ic_argpass, fn,
+				ic_argpass_nonproto, fn,
 				fn, argnum);
   if (targetm.calls.promote_prototypes (TREE_TYPE (fn))
       && INTEGRAL_TYPE_P (type)

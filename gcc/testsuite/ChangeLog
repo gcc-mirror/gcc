@@ -1,3 +1,7 @@
+2004-10-08  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* gcc.dg/assign-warn-3.c: New test.
+
 2004-10-08  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR c/16999
