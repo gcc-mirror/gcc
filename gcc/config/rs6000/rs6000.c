@@ -2838,7 +2838,7 @@ print_operand (file, x, code)
 	{
 	  val = (GET_CODE (x) == CONST_INT ? INTVAL (x) : CONST_DOUBLE_HIGH (x));
 
-	  if (val == (-1 << (HOST_BITS_PER_WIDE_INT-1)))
+	  if (val == ((HOST_WIDE_INT)-1 << (HOST_BITS_PER_WIDE_INT-1)))
 	    i = 0;
 	  else
 	    for (i = 1; i < HOST_BITS_PER_WIDE_INT; i++)
@@ -2852,7 +2852,7 @@ print_operand (file, x, code)
 
 	    if (val == 0)
 	      --i;
-	    else if (val == (-1 << (HOST_BITS_PER_WIDE_INT-1)))
+	    else if (val == ((HOST_WIDE_INT)-1 << (HOST_BITS_PER_WIDE_INT-1)))
 	      ;
 	    else
 	      for (i = 33; i < 64; i++)
@@ -3305,7 +3305,7 @@ rs6000_stack_info ()
 #endif
     {
       if (0 == strcmp (IDENTIFIER_POINTER (DECL_NAME (current_function_decl)),
-		       "main"))
+		       "main")
 	  && DECL_CONTEXT (current_function_decl) == NULL_TREE)
 	{
 	  info_ptr->main_p = 1;
