@@ -3,15 +3,6 @@
 	* doc/extend.texi (Vector Extensions): Document that bitwise
 	operations also work on vectors.
 
-2003-12-09  Robert Schiele  <rschiele@uni-mannheim.de>
-
-	PR other/10819
-	* lib/gcc.exp (default_gcc_version): Do not match NL/CR characters
-	to fix Bug 10819.
-	* lib/g++.exp (g++_version): Likewise.
-	* lib/g77.exp (g77_version): Likewise.
-	* lib/objc.exp (default_objc_version): Likewise.
-
 2003-12-10  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.md: New split patterns for optimizing bitfield accesses.

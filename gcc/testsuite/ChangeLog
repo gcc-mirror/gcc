@@ -1,6 +1,16 @@
-2003-12-10  Richard Henderson  <rth@redhat.com>
+2003-12-10  Robert Schiele  <rschiele@uni-mannheim.de>
+
+	PR other/10819
+	* lib/gcc.exp (default_gcc_version): Do not match NL/CR characters
+	to fix Bug 10819.
+	* lib/g++.exp (g++_version): Likewise.
+	* lib/g77.exp (g77_version): Likewise.
+	* lib/objc.exp (default_objc_version): Likewise.
+
 
 	* gcc.c-torture/execute/wchar_t-1.c: Convert to utf-8.
+
+2003-12-10  Richard Henderson  <rth@redhat.com>
 
 	* gcc.dg/intermod-1.c: Adjust assembler scan pattern for alpha.
 
