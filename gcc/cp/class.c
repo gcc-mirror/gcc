@@ -5287,11 +5287,12 @@ fixed_type_or_null (instance, nonnull, cdtorp)
   switch (TREE_CODE (instance))
     {
     case INDIRECT_REF:
-      /* Check that we are not going through a cast of some sort.  */
-      if (TREE_TYPE (instance)
-	  == TREE_TYPE (TREE_TYPE (TREE_OPERAND (instance, 0))))
-	instance = TREE_OPERAND (instance, 0);
-      /* fall through...  */
+      if (POINTER_TYPE_P (instance))
+	return NULL_TREE;
+      else
+	return fixed_type_or_null (TREE_OPERAND (instance, 0),
+				   nonnull, cdtorp);
+
     case CALL_EXPR:
       /* This is a call to a constructor, hence it's never zero.  */
       if (TREE_HAS_CONSTRUCTOR (instance))

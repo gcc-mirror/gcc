@@ -1,3 +1,29 @@
+2001-12-12  Jason Merrill  <jason@redhat.com>
+
+	* decl.c (store_parm_decls): Remove parms_have_cleanups cruft.
+	* semantics.c (genrtl_start_function): Don't pass
+	parms_have_cleanups or push an extra binding level.
+	(genrtl_finish_function): Lose cleanup_label cruft.
+
+	* cp-tree.h (struct cp_language_function): Remove x_ctor_label.
+	(ctor_label): Remove.
+	* semantics.c (finish_return_stmt): Lose ctor_label support.
+	* decl.c (finish_constructor_body, mark_lang_function): Likewise.
+	* typeck.c (check_return_expr): Check DECL_DESTRUCTOR_P, not 
+	dtor_label.
+
+	* call.c (build_new_method_call): Let resolves_to_fixed_type_p
+	check for [cd]tors.
+	* class.c (fixed_type_or_null, case INDIRECT_REF): Fix.
+
+	* decl.c (finish_function): Check VMS_TARGET, not VMS.
+
+	* decl.c (start_cleanup_fn): Remove redundant pushlevel.
+	(end_cleanup_fn): And poplevel.
+
+	* semantics.c (setup_vtbl_ptr): Always build a CTOR_INITIALIZER
+	if we're in a template.
+
 2001-12-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* cp-tree.h (DESTRUCTOR_DECL_PREFIX, DESTRUCTOR_NAME_P,

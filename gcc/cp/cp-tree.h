@@ -801,7 +801,6 @@ struct cp_language_function
 {
   struct language_function base;
 
-  tree x_ctor_label;
   tree x_dtor_label;
   tree x_current_class_ptr;
   tree x_current_class_ref;
@@ -835,11 +834,6 @@ struct cp_language_function
    has been done, just before any base class destroying will be done.  */
 
 #define dtor_label cp_function_chain->x_dtor_label
-
-/* In a constructor, the point at which we are ready to return
-   the pointer to the initialized object.  */
-
-#define ctor_label cp_function_chain->x_ctor_label
 
 /* When we're processing a member function, current_class_ptr is the
    PARM_DECL for the `this' pointer.  The current_class_ref is an
