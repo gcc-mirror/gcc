@@ -1,3 +1,15 @@
+Thu Dec 11 23:33:48 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* except.c (call_get_eh_context): Don't take a parm.
+	Put the call at the top of the function.
+	(emit_eh_context): Adjust.
+	(get_eh_context): Replace with former use_eh_context.
+	(get_eh_context_once, get_saved_pc_ref): Remove.
+	(start_eh_unwinder, end_eh_unwinder, emit_unwinder): Remove.
+	* except.h: Adjust.
+	* integrate.c (expand_inline_function): Adjust.
+	* toplev.c (rest_of_compilation): Don't call emit_unwinder.
+
 Fri Oct 10 17:58:31 CEST 1997  Marc Lehmann <pcg@goof.com>
 
 	* i386/xm-go32.h (EXECUTABLE_SUFFIX): Define.

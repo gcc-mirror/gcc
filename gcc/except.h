@@ -250,13 +250,7 @@ extern rtx exception_handler_labels;
 
 extern void exception_optimize			PROTO((void));
 
-/* Use EH context once per fn.  */
-extern rtx use_eh_context			PROTO((void));
-
-/* Get the EH contex only once per fn.  */
-extern rtx get_eh_context_once			PROTO((void));
-
-/* Get the EH contex.  */
+/* Return EH context (and set it up once per fn).  */
 extern rtx get_eh_context			PROTO((void));
 
 /* Get the dynamic handler chain.  */
@@ -264,9 +258,6 @@ extern rtx get_dynamic_handler_chain		PROTO((void));
 
 /* Get the dynamic cleanup chain.  */
 extern rtx get_dynamic_cleanup_chain		PROTO((void));
-
-/* Get the saved PC variable. */
-extern rtx get_saved_pc_ref			PROTO((void));
 
 /* Throw an exception.  */
 

@@ -3205,10 +3205,6 @@ rest_of_compilation (decl)
   /* Emit code to get eh context, if needed. */
   emit_eh_context ();
 
-  /* Add an unwinder for exception handling, if needed.
-     This must be done before we finalize PIC code.  */
-  emit_unwinder ();
-
 #ifdef FINALIZE_PIC
   /* If we are doing position-independent code generation, now
      is the time to output special prologues and epilogues.
