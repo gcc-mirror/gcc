@@ -124,13 +124,14 @@ feed_input (str, len, file, line)
 
 #if USE_CPPLIB
   if (yy_lim > yy_cur)
-    /* If we've started reading the next token, we're hosed.  */
+    /* If we've started reading the next token, we're hosed.  The
+       token_getch stuff is supposed to prevent this from happening.  */
     my_friendly_abort (990710);
   cpp_push_buffer (&parse_in, str, len);
   CPP_BUFFER (&parse_in)->manual_pop = 1;
   CPP_BUFFER (&parse_in)->nominal_fname
     = CPP_BUFFER (&parse_in)->fname = file;
-  CPP_BUFFER (&parse_in)->lineno = line;
+  CPP_BUFFER (&parse_in)->lineno = parse_in.lineno = line;
 #else
   inp->str = str;
   inp->length = len;
@@ -141,12 +142,12 @@ feed_input (str, len, file, line)
   putback.buffer = NULL;
   putback.buffer_size = 0;
   putback.index = -1;
-  lineno = line;
-  input_filename = file;
 #endif
   inp->next = input;
   inp->input = save_pending_input ();
   input = inp;
+  lineno = line;
+  input_filename = file;
 }
 
 extern int end_of_file;
