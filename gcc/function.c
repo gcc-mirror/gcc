@@ -3631,9 +3631,10 @@ assign_parms (fndecl, second_time)
 	      rtx tempreg = gen_reg_rtx (GET_MODE (entry_parm));
 
 	      emit_move_insn (tempreg, validize_mem (entry_parm));
-	      tempreg = convert_to_mode (nominal_mode, tempreg, unsignedp);
 
 	      push_to_sequence (conversion_insns);
+	      tempreg = convert_to_mode (nominal_mode, tempreg, unsignedp);
+
 	      expand_assignment (parm,
 				 make_tree (nominal_type, tempreg), 0, 0);
 	      conversion_insns = get_insns ();
