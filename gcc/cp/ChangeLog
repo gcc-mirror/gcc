@@ -1,3 +1,8 @@
+2002-12-04  Geoffrey Keating  <geoffk@apple.com>
+
+	* class.c (finish_struct_1): Correct comment.
+	* cp-tree.c (DECL_SORTED_FIELDS): Likewise.
+
 2002-12-04  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	PR C++/8799

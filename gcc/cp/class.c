@@ -5280,8 +5280,7 @@ finish_struct_1 (t)
   /* Done with FIELDS...now decide whether to sort these for
      faster lookups later.
 
-     The C front-end only does this when n_fields > 15.  We use
-     a smaller number because most searches fail (succeeding
+     We use a small number because most searches fail (succeeding
      ultimately as the search bores through the inheritance
      hierarchy), and we want this failure to occur quickly.  */
 
