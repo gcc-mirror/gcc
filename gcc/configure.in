@@ -2584,6 +2584,37 @@ for machine in $build $host $target; do
 			fi
 		fi
 		;;
+	arm*-*-*)
+		case "x$with_cpu" in
+			x)
+				# The most generic
+				target_cpu_default2="TARGET_CPU_generic"
+				;;
+
+			# Distinguish cores, and major variants
+			# arm7m doesn't exist, but D & I don't affect code
+			xarm[23678] | xarm250 | xarm[67][01]0 \
+			| xarm7m | xarm7dm | xarm7dmi | xarm7tdmi \
+			| xarm7100 | xarm7500 | xarm7500fe | xarm810 \
+			| xstrongarm | xstrongarm110)
+				target_cpu_default2="TARGET_CPU_$with_cpu"
+				;;
+
+			xyes | xno)
+				echo "--with-cpu must be passed a value" 1>&2
+				exit 1
+				;;
+
+			*)
+				if [[ x$pass2done = xyes ]]
+				then
+					echo "Unknown cpu used with --with-cpu=$with_cpu" 1>&2
+					exit 1
+				fi
+				;;
+		esac
+		;;
+
 	mips*-*-ecoff* | mips*-*-elf*)
 		if [[ x$gas = xyes ]]
 		then
