@@ -1,27 +1,52 @@
-/* Copyright (C) 2000  Free Software Foundation
+/* AWTException.java -- Generic AWT exception
+   Copyright (C) 1999 Free Software Foundation, Inc.
 
-   This file is part of libgcj.
+This file is part of GNU Classpath.
 
-This software is copyrighted work licensed under the terms of the
-Libgcj License.  Please consult the file "LIBGCJ_LICENSE" for
-details.  */
- 
+GNU Classpath is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2, or (at your option)
+any later version.
+
+GNU Classpath is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Classpath; see the file COPYING.  If not, write to the
+Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+02111-1307 USA.
+
+As a special exception, if you link this library with other files to
+produce an executable, this library does not by itself cause the
+resulting executable to be covered by the GNU General Public License.
+This exception does not however invalidate any other reasons why the
+executable file might be covered by the GNU General Public License. */
+
+
 package java.awt;
 
 /**
- * @author Tom Tromey <tromey@cygnus.com>
- * @date Tue Apr  4 2000
- */
-/* Written using "Java Class Libraries", 2nd edition, ISBN 0-201-31002-3
- * "The Java Language Specification", ISBN 0-201-63451-1
- * plus online API docs for JDK 1.2 beta from http://www.javasoft.com.
- * Status:  Believed complete and correct.
- */
- 
+  * This is a generic exception that indicates an error occurred in the
+  * AWT system.
+  *
+  * @author Aaron M. Renn (arenn@urbanophile.com)
+  */
 public class AWTException extends Exception
 {
-  public AWTException (String message)
-  {
-    super (message);
-  }
+
+/**
+  * Initializes a new instance of <code>AWTException</code> with the
+  * specified detailed error message.
+  *
+  * @param message The detailed error message.
+  */
+public
+AWTException(String message)
+{
+  super(message);
 }
+
+} // class AWTException 
+
