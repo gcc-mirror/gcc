@@ -1,3 +1,8 @@
+2003-03-24  Bud Davis  <bdavis9659@comcast.net>
+
+	PR fortran/10197
+	* g77.f-torture/execute/10197.f: New test.
+
 2003-03-24  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.dg/ultrasp5.c: Fix comment.

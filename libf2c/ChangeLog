@@ -1,3 +1,9 @@
+2003-03-24  Bud Davis  <bdavis9659@comcast.net>
+
+	PR fortran/10197
+	* libI77/open.c (f_open): A DIRECT ACCESS file is
+	UNFORMATTED by default.
+
 2003-02-20  Alexandre Oliva  <aoliva@redhat.com>
 
 	* configure.in: Propagate ORIGINAL_LD_FOR_MULTILIBS to
