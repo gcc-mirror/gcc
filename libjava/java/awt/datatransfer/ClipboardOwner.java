@@ -39,22 +39,20 @@ exception statement from your version. */
 package java.awt.datatransfer;
 
 /**
-  * This interface is for classes that will own a clipboard object.
-  *
-  * @author Aaron M. Renn (arenn@urbanophile.com)
-  */
+ * This interface is for classes that will own a clipboard object.
+ *
+ * @author Aaron M. Renn (arenn@urbanophile.com)
+ */
 public interface ClipboardOwner
 {
-
-/**
-  * This method is called to notify this object that it no longer
-  * has ownership of the specified <code>Clipboard</code>.
-  *
-  * @param clipboard The clipboard for which ownership was lost.
-  * @param contents The contents of the clipboard which are no longer owned.
-  */
-public abstract void
-lostOwnership(Clipboard clipboard, Transferable contents); 
+  /**
+   * This method is called to notify this object that it no longer
+   * has ownership of the specified <code>Clipboard</code>.
+   *
+   * @param clipboard The clipboard for which ownership was lost.
+   * @param contents The contents of the clipboard which are no longer owned.
+   */
+  void lostOwnership (Clipboard clipboard, Transferable contents); 
 
 } // interface ClipboardOwner
 

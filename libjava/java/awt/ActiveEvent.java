@@ -57,5 +57,5 @@ public interface ActiveEvent
    * Dispatch the event, according to what the event needs done. Invoked
    * automatically if this is placed on the <code>EventDispatchQueue</code>.
    */
-  public void dispatch();
+  void dispatch();
 } // interface ActiveEvent

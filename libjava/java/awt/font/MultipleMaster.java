@@ -45,17 +45,17 @@ import java.awt.Font;
  */
 public interface MultipleMaster
 {
-  public Font deriveMMFont (float[] axes);
+  Font deriveMMFont (float[] axes);
   
-  public Font deriveMMFont (float[] glyphWidths, float avgStemWidth,
-                            float typicalCapHeight, float typicalXHeight,
-                            float italicAngle);
+  Font deriveMMFont (float[] glyphWidths, float avgStemWidth,
+                     float typicalCapHeight, float typicalXHeight,
+                     float italicAngle);
   
-  public float[] getDesignAxisDefaults ();
+  float[] getDesignAxisDefaults();
   
-  public String[] getDesignAxisNames ();
+  String[] getDesignAxisNames();
   
-  public float[] getDesignAxisRanges ();
+  float[] getDesignAxisRanges();
   
-  public int getNumDesignAxes ();
+  int getNumDesignAxes();
 }

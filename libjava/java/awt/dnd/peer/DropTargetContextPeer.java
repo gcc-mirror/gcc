@@ -53,15 +53,15 @@ import java.awt.dnd.InvalidDnDOperationException;
  */
 public interface DropTargetContextPeer
 {
-  public void setTargetActions(int actions);
-  public int getTargetActions();
-  public DropTarget getDropTarget();
-  public DataFlavor[] getTransferDataFlavors();
-  public Transferable getTransferable() throws InvalidDnDOperationException;
-  public boolean isTransferableJVMLocal();
-  public void acceptDrag(int dragAction);
-  public void rejectDrag();
-  public void acceptDrop(int dropAction);
-  public void rejectDrop();
-  public void dropComplete(boolean success);
+  void setTargetActions(int actions);
+  int getTargetActions();
+  DropTarget getDropTarget();
+  DataFlavor[] getTransferDataFlavors();
+  Transferable getTransferable() throws InvalidDnDOperationException;
+  boolean isTransferableJVMLocal();
+  void acceptDrag(int dragAction);
+  void rejectDrag();
+  void acceptDrop(int dropAction);
+  void rejectDrop();
+  void dropComplete(boolean success);
 }

@@ -55,7 +55,7 @@ public interface Autoscroll
    * This method returns the Insets describing the autoscrolling region or
    * border relative to the geometry of the implementing Component
    */
-  public Insets getAutoscrollInsets ();
+  Insets getAutoscrollInsets ();
 
   /**
    * Notify the Component to autoscroll
@@ -63,5 +63,7 @@ public interface Autoscroll
    * @param location A Point indicating the location of the cursor that
    * triggered this operation
    */
-  public void autoscroll (Point location);
+  void autoscroll (Point location);
+
 } // interface Autoscroll
+
