@@ -78,6 +78,9 @@ namespace std
       // MT lock inherited from libio or other low-level io library.
       __c_lock          	_M_lock;
 
+      // Set iff _M_buf is allocated memory from _M_allocate_internal_buffer..
+      bool			_M_buf_allocated;
+
       // XXX Needed? 
       bool			_M_last_overflowed;  
   
@@ -107,13 +110,18 @@ namespace std
       close(void);
 
     protected:
-      // Allocate up pback and internal buffers.
       void 
-      _M_allocate_buffers();
+      _M_allocate_internal_buffer();
+
+      void 
+      _M_destroy_internal_buffer();
+
+      void 
+      _M_allocate_pback_buffer();
 
       // Create __file_type object and initialize it properly.
       void
-      _M_filebuf_init();
+      _M_allocate_file();
 
       // Overridden virtual functions:
       virtual streamsize 
@@ -151,16 +159,7 @@ namespace std
       _M_really_overflow(int_type __c = _Traits::eof());
     
       virtual __streambuf_type* 
-      setbuf(char_type* __s, streamsize __n)
-      {
-	if (!this->is_open() && __s == 0 && __n == 0)
-	  {
-	    _M_buf_size = 0;
-	    _M_buf_size_opt = 0;
-	  }
-	_M_last_overflowed = false;	
-	return this; 
-      }
+      setbuf(char_type* __s, streamsize __n);
     
       virtual pos_type 
       seekoff(off_type __off, ios_base::seekdir __way,
