@@ -1,3 +1,13 @@
+2004-11-11  Janis Johnson  <janis187@us.ibm.com>
+	    Richard Sandiford  <rsandifo@redhat.com>
+
+	* lib/target-supports.exp (get-compiler_messages): New.
+	(check_named_sections_available): Use it.
+	(check_effective_target_ilp32): New.
+	(check_effective_target_lp64): New.
+	(is-effective-target): New.
+	* lib/gcc-dg.exp (dg-require-effective-target): New.
+
 2004-11-11  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/precedence-1.c: New test.

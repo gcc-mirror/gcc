@@ -19,6 +19,29 @@
 
 # This file defines procs for determining features supported by the target.
 
+# Try to compile some code and return the messages printed by the compiler.
+#
+# BASENAME is a basename to use for temporary files.
+# TYPE is the type of compilation to perform (see target_compile).
+# CONTENTS gives the contents of the input file.
+proc get_compiler_messages {basename type contents} {
+    global tool
+
+    set src ${basename}[pid].c
+    switch $type {
+	assembly { set output ${basename}[pid].s }
+	object { set output ${basename}[pid].o }
+    }
+    set f [open $src "w"]
+    puts $f $contents
+    close $f
+    set lines [${tool}_target_compile $src $output $type ""]
+    file delete $src
+    remote_file build delete $output
+
+    return $lines
+}
+
 ###############################
 # proc check_weak_available { }
 ###############################
@@ -280,22 +303,11 @@ proc check_iconv_available { test_what } {
 # when cycling over subtarget options (e.g. irix o32/n32/n64) in
 # the same test run.
 proc check_named_sections_available { } {
-    global tool
-
-    set src named[pid].c
-    set obj named[pid].o
-    verbose "check_named_sections_available compiling testfile $src" 2
-    set f [open $src "w"]
-    # Compile a small test program.
-    puts $f "int __attribute__ ((section(\"whatever\"))) foo;"
-    close $f
-    set lines [${tool}_target_compile $src $obj object ""]
-    file delete $src
-    remote_file build delete $obj
-
-    # If we got no error messages, everything is OK.
-    set answer [string match "" $lines]
-    verbose "check_named_sections_available  returning $answer" 2
+    verbose "check_named_sections_available: compiling source" 2
+    set answer [string match "" [get_compiler_messages named object {
+	int __attribute__ ((section("whatever"))) foo;
+    }]]
+    verbose "check_named_sections_available: returning $answer" 2
     return $answer
 }
 
@@ -354,4 +366,47 @@ proc check_vmx_hw_available { } {
     }
 
     return $vmx_hw_available_saved
+}
+
+# Return 1 if we're generating 32-bit code using default options, 0
+# otherwise.
+
+proc check_effective_target_ilp32 { } {
+    verbose "check_effective_target_ilp32: compiling source" 2
+    set answer [string match "" [get_compiler_messages ilp32 object {
+	int dummy[(sizeof (int) == 4 && sizeof (void *) == 4 && sizeof (long) == 4 ) ? 1 : -1];
+    }]]
+    verbose "check_effective_target_ilp32: returning $answer" 2
+    return $answer
+}
+
+# Return 1 if we're generating 64-bit code using default options, 0
+# otherwise.
+
+proc check_effective_target_lp64 { } {
+    verbose "check_effective_target_lp64: compiling source" 2
+    set answer [string match "" [get_compiler_messages lp64 object {
+	int dummy[(sizeof (int) == 4 && sizeof (void *) == 8 && sizeof (long) == 8 ) ? 1 : -1];
+    }]]
+    verbose "check_effective_target_lp64: returning $answer" 2
+    return $answer
+}
+
+# Return 1 if the target matches the effective target 'arg', 0 otherwise.
+# This can be used with any check_* proc that takes no argument and
+# returns only 1 or 0.  It could be used with check_* procs that take
+# arguments with keywords that pass particular arguments.
+
+proc is-effective-target { arg } {
+    set selected 0
+    switch $arg {
+	"ilp32"  { set selected [check_effective_target_ilp32] }
+	"lp64"   { set selected [check_effective_target_lp64] }
+	"vmx_hw" { set selected [check_vmx_hw_available] }
+	"named_sections" { set selected [check_named_sections_available] }
+	"gc_sections" { set selected [check_gc_sections_available] }
+	default  { error "unknown effective target selector `$arg'" }
+    }
+    verbose "is-effective-target: $arg $selected" 2
+    return $selected
 }
