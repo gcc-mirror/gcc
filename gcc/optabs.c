@@ -964,13 +964,16 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 
       if (i == GET_MODE_BITSIZE (mode) / BITS_PER_WORD)
 	{
-	  rtx temp = emit_move_insn (target, target);
+	  if (mov_optab->handlers[(int) mode].insn_code != CODE_FOR_nothing)
+	    {
+	      rtx temp = emit_move_insn (target, target);
 
-	  REG_NOTES (temp) = gen_rtx (EXPR_LIST, REG_EQUAL,
-				      gen_rtx (binoptab->code, mode,
-					       copy_rtx (xop0),
-					       copy_rtx (xop1)),
-				      REG_NOTES (temp));
+	      REG_NOTES (temp) = gen_rtx (EXPR_LIST, REG_EQUAL,
+					  gen_rtx (binoptab->code, mode,
+						   copy_rtx (xop0),
+						   copy_rtx (xop1)),
+					  REG_NOTES (temp));
+	    }
 	  return target;
 	}
       else
@@ -1144,12 +1147,15 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 
 	  if (temp != 0)
 	    {
-	      temp = emit_move_insn (product, product);
-	      REG_NOTES (temp) = gen_rtx (EXPR_LIST, REG_EQUAL,
-					  gen_rtx (MULT, mode, copy_rtx (op0),
-						   copy_rtx (op1)),
-					  REG_NOTES (temp));
-
+	      if (mov_optab->handlers[(int) mode].insn_code != CODE_FOR_nothing)
+		{
+		  temp = emit_move_insn (product, product);
+		  REG_NOTES (temp) = gen_rtx (EXPR_LIST, REG_EQUAL,
+					      gen_rtx (MULT, mode,
+						       copy_rtx (op0),
+						       copy_rtx (op1)),
+					      REG_NOTES (temp));
+		}
 	      return product;
 	    }
 	}
@@ -2613,8 +2619,10 @@ emit_libcall_block (insns, target, result, equiv)
     }
 
   last = emit_move_insn (target, result);
-  REG_NOTES (last) = gen_rtx (EXPR_LIST,
-			      REG_EQUAL, copy_rtx (equiv), REG_NOTES (last));
+  if (mov_optab->handlers[(int) GET_MODE (target)].insn_code
+      != CODE_FOR_nothing)
+    REG_NOTES (last) = gen_rtx (EXPR_LIST,
+				REG_EQUAL, copy_rtx (equiv), REG_NOTES (last));
 
   if (prev == 0)
     first = get_insns ();
@@ -3823,13 +3831,16 @@ expand_fix (to, from, unsignedp)
 
 	  emit_label (lab2);
 
-	  /* Make a place for a REG_NOTE and add it.  */
-	  insn = emit_move_insn (to, to);
-	  REG_NOTES (insn) = gen_rtx (EXPR_LIST, REG_EQUAL,
-				      gen_rtx (UNSIGNED_FIX, GET_MODE (to),
-					       copy_rtx (from)),
-				      REG_NOTES (insn));
-
+	  if (mov_optab->handlers[(int) GET_MODE (to)].insn_code
+	      != CODE_FOR_nothing)
+	    {
+	      /* Make a place for a REG_NOTE and add it.  */
+	      insn = emit_move_insn (to, to);
+	      REG_NOTES (insn) = gen_rtx (EXPR_LIST, REG_EQUAL,
+					  gen_rtx (UNSIGNED_FIX, GET_MODE (to),
+						   copy_rtx (from)),
+					  REG_NOTES (insn));
+	    }
 	  return;
 	}
 #endif
