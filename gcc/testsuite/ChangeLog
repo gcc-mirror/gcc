@@ -1,3 +1,7 @@
+2002-12-02  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* gcc.dg/20020210-1.c: Fix a comment typo.
+
 2002-12-02  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.dg/template/varmod1.C: Fix typo.
