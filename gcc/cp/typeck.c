@@ -4886,8 +4886,7 @@ mark_addressable (exp)
       case PARM_DECL:
 	if (x == current_class_ptr)
 	  {
-	    if (! flag_this_is_variable)
-	      error ("cannot take the address of `this', which is an ravlue expression");
+            error ("cannot take the address of `this', which is an rvalue expression");
 	    TREE_ADDRESSABLE (x) = 1; /* so compiler doesn't die later */
 	    return 1;
 	  }

@@ -1,5 +1,17 @@
 2001-02-14  Nathan Sidwell  <nathan@codesourcery.com>
 
+	Kill remnants of this is variable.
+	* cp-tree.h (flag_this_is_variable): Remove.
+	* decl2.c (flag_this_is_variable): Remove.
+	* class.c (fixed_type_or_null): Add cdtor parm. Adjust.
+	(build_vbase_path): The path is non-static, even in a cdtor.
+	(resolves_to_fixed_type_p): Add additional return value.
+	* search.c (init_vbase_pointers): Adjust.
+	* tree.c (lvalue_p_1): Adjust.
+	* typeck.c (mark_addressable): Adjust.
+
+2001-02-14  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* pt.c (unify): Don't check cv quals of array types.
 
 2001-02-14  Nathan Sidwell  <nathan@codesourcery.com>

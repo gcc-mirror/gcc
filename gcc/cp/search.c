@@ -2388,9 +2388,7 @@ init_vbase_pointers (type, decl_ptr)
   if (TYPE_USES_VIRTUAL_BASECLASSES (type))
     {
       struct vbase_info vi;
-      int old_flag = flag_this_is_variable;
       tree binfo = TYPE_BINFO (type);
-      flag_this_is_variable = -2;
 
       /* Find all the virtual base classes, marking them for later
 	 initialization.  */
@@ -2408,7 +2406,6 @@ init_vbase_pointers (type, decl_ptr)
 		marked_vtable_pathp,
 		NULL);
 
-      flag_this_is_variable = old_flag;
       return vi.inits;
     }
 

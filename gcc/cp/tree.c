@@ -65,7 +65,7 @@ lvalue_p_1 (ref, treat_class_rvalues_as_lvalues)
   if (TREE_CODE (TREE_TYPE (ref)) == REFERENCE_TYPE)
     return clk_ordinary;
 
-  if (ref == current_class_ptr && flag_this_is_variable <= 0)
+  if (ref == current_class_ptr)
     return clk_none;
 
   switch (TREE_CODE (ref))

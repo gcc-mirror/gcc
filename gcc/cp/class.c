@@ -131,7 +131,7 @@ static void maybe_warn_about_overly_private_class PARAMS ((tree));
 static int field_decl_cmp PARAMS ((const tree *, const tree *));
 static int method_name_cmp PARAMS ((const tree *, const tree *));
 static tree add_implicitly_declared_members PARAMS ((tree, int, int, int));
-static tree fixed_type_or_null PARAMS ((tree, int *));
+static tree fixed_type_or_null PARAMS ((tree, int *, int *));
 static tree resolve_address_of_overloaded_function PARAMS ((tree, tree, int,
 							  int, int, tree));
 static void build_vtable_entry_ref PARAMS ((tree, tree, tree));
@@ -381,6 +381,9 @@ build_vbase_path (code, type, expr, path, nonnull)
      convert back to the type we want.  Until that is done, we only optimize
      if the complete type is the same type as expr has.  */
   fixed_type_p = resolves_to_fixed_type_p (expr, &nonnull);
+  if (fixed_type_p < 0)
+    /* Virtual base layout is not fixed, even in ctors and dtors. */
+    fixed_type_p = 0;
 
   if (!fixed_type_p && TREE_SIDE_EFFECTS (expr))
     expr = save_expr (expr);
@@ -5370,9 +5373,10 @@ finish_struct (t, attributes)
    before this function is called.  */
 
 static tree
-fixed_type_or_null (instance, nonnull)
+fixed_type_or_null (instance, nonnull, cdtorp)
      tree instance;
      int *nonnull;
+     int *cdtorp;
 {
   switch (TREE_CODE (instance))
     {
@@ -5400,31 +5404,31 @@ fixed_type_or_null (instance, nonnull)
 	    *nonnull = 1;
 	  return TREE_TYPE (instance);
 	}
-      return fixed_type_or_null (TREE_OPERAND (instance, 0), nonnull);
+      return fixed_type_or_null (TREE_OPERAND (instance, 0), nonnull, cdtorp);
 
     case RTL_EXPR:
       return NULL_TREE;
 
     case PLUS_EXPR:
     case MINUS_EXPR:
+      if (TREE_CODE (TREE_OPERAND (instance, 0)) == ADDR_EXPR)
+	return fixed_type_or_null (TREE_OPERAND (instance, 0), nonnull, cdtorp);
       if (TREE_CODE (TREE_OPERAND (instance, 1)) == INTEGER_CST)
 	/* Propagate nonnull.  */
-	fixed_type_or_null (TREE_OPERAND (instance, 0), nonnull);
-      if (TREE_CODE (TREE_OPERAND (instance, 0)) == ADDR_EXPR)
-	return fixed_type_or_null (TREE_OPERAND (instance, 0), nonnull);
+	fixed_type_or_null (TREE_OPERAND (instance, 0), nonnull, cdtorp);
       return NULL_TREE;
 
     case NOP_EXPR:
     case CONVERT_EXPR:
-      return fixed_type_or_null (TREE_OPERAND (instance, 0), nonnull);
+      return fixed_type_or_null (TREE_OPERAND (instance, 0), nonnull, cdtorp);
 
     case ADDR_EXPR:
       if (nonnull)
 	*nonnull = 1;
-      return fixed_type_or_null (TREE_OPERAND (instance, 0), nonnull);
+      return fixed_type_or_null (TREE_OPERAND (instance, 0), nonnull, cdtorp);
 
     case COMPONENT_REF:
-      return fixed_type_or_null (TREE_OPERAND (instance, 1), nonnull);
+      return fixed_type_or_null (TREE_OPERAND (instance, 1), nonnull, cdtorp);
 
     case VAR_DECL:
     case FIELD_DECL:
@@ -5444,21 +5448,25 @@ fixed_type_or_null (instance, nonnull)
 	    *nonnull = 1;
 	  return TREE_TYPE (instance);
 	}
-      else if (nonnull)
-	{
-	  if (instance == current_class_ptr
-	      && flag_this_is_variable <= 0)
-	    {
-	      /* Normally, 'this' must be non-null.  */
-	      if (flag_this_is_variable == 0)
-		*nonnull = 1;
-
-	      /* <0 means we're in a constructor and we know our type.  */
-	      if (flag_this_is_variable < 0)
-		return TREE_TYPE (TREE_TYPE (instance));
-	    }
-	  else if (TREE_CODE (TREE_TYPE (instance)) == REFERENCE_TYPE)
-	    /* Reference variables should be references to objects.  */
+      else if (instance == current_class_ptr)
+        {
+          if (nonnull)
+            *nonnull = 1;
+        
+          /* if we're in a ctor or dtor, we know our type. */
+          if (DECL_LANG_SPECIFIC (current_function_decl)
+              && (DECL_CONSTRUCTOR_P (current_function_decl)
+                  || DECL_DESTRUCTOR_P (current_function_decl)))
+            {
+              if (cdtorp)
+                *cdtorp = 1;
+              return TREE_TYPE (TREE_TYPE (instance));
+            }
+        }
+      else if (TREE_CODE (TREE_TYPE (instance)) == REFERENCE_TYPE)
+        {
+          /* Reference variables should be references to objects.  */
+          if (nonnull)
 	    *nonnull = 1;
 	}
       return NULL_TREE;
@@ -5470,7 +5478,9 @@ fixed_type_or_null (instance, nonnull)
 
 /* Return non-zero if the dynamic type of INSTANCE is known, and equivalent
    to the static type.  We also handle the case where INSTANCE is really
-   a pointer.
+   a pointer. Return negative if this is a ctor/dtor. There the dynamic type
+   is known, but this might not be the most derived base of the original object,
+   and hence virtual bases may not be layed out according to this type.
 
    Used to determine whether the virtual function table is needed
    or not.
@@ -5485,12 +5495,16 @@ resolves_to_fixed_type_p (instance, nonnull)
      int *nonnull;
 {
   tree t = TREE_TYPE (instance);
-  tree fixed = fixed_type_or_null (instance, nonnull);
+  int cdtorp = 0;
+  
+  tree fixed = fixed_type_or_null (instance, nonnull, &cdtorp);
   if (fixed == NULL_TREE)
     return 0;
   if (POINTER_TYPE_P (t))
     t = TREE_TYPE (t);
-  return same_type_ignoring_top_level_qualifiers_p (t, fixed);
+  if (!same_type_ignoring_top_level_qualifiers_p (t, fixed))
+    return 0;
+  return cdtorp ? -1 : 1;
 }
 
 
