@@ -406,7 +406,7 @@ AC_FUNC_VFORK
 
 GCC_NEED_DECLARATIONS(malloc realloc calloc free bcopy bzero bcmp \
 	index rindex getenv atol sbrk abort atof strerror getcwd getwd \
-	strsignal putc_unlocked fputs_unlocked)
+	strsignal putc_unlocked fputs_unlocked strstr)
 
 GCC_NEED_DECLARATIONS(getrlimit setrlimit, [
 #include <sys/types.h>
