@@ -598,7 +598,7 @@ BC_ALL = bc-arity.h bc-opcode.h bc-opname.h
 # Language-independent object files.
 OBJS = toplev.o version.o tree.o print-tree.o stor-layout.o fold-const.o \
  function.o stmt.o except.o expr.o calls.o expmed.o explow.o optabs.o \
- intl.o varasm.o rtl.o print-rtl.o rtlanal.o emit-rtl.o real.o \
+ intl.o varasm.o genrtl.o rtl.o print-rtl.o rtlanal.o emit-rtl.o real.o \
  dbxout.o sdbout.o dwarfout.o dwarf2out.o xcoffout.o bitmap.o \
  integrate.o jump.o cse.o loop.o unroll.o flow.o stupid.o combine.o \
  regclass.o regmove.o local-alloc.o global.o reload.o reload1.o caller-save.o \
@@ -610,7 +610,7 @@ OBJS = toplev.o version.o tree.o print-tree.o stor-layout.o fold-const.o \
 #  makes for cc1 or cc1plus.  Otherwise sequent parallel make attempts to load
 #  them before rtl.o is compiled.
 GEN= genemit genoutput genrecog genextract genflags gencodes genconfig \
- genpeep gencheck
+ genpeep gengenrtl gencheck
 
 CCCP=cccp
 # Uncomment this line if you want to use cppmain (w/cpplib) as cpp.
@@ -620,12 +620,13 @@ CCCP=cccp
 STAGESTUFF = *$(objext) insn-flags.h insn-config.h insn-codes.h \
  insn-output.c insn-recog.c insn-emit.c insn-extract.c insn-peep.c \
  insn-attr.h insn-attrtab.c insn-opinit.c tree-check.h \
- s-flags s-config s-codes s-mlib s-under\
+ s-flags s-config s-codes s-mlib s-unders s-genrtl \
  s-output s-recog s-emit s-extract s-peep s-check \
  s-attr s-attrtab s-opinit s-proto s-crt s-crtS s-crt0 \
  genemit$(exeext) genoutput$(exeext) genrecog$(exeext) genextract$(exeext) \
  genflags$(exeext) gencodes$(exeext) genconfig$(exeext) genpeep$(exeext) \
- genattrtab$(exeext) genattr$(exeext) genopinit$(exeext) gencheck$(exeext) \
+ genattrtab$(exeext) genattr$(exeext) genopinit$(exeext) gengenrtl$(exeext) \
+ gencheck$(exeext) \
  $(BC_ALL) \
  s-bcarity s-bcopcode s-bcopname \
  bi-arity$(exeext) bi-opcode$(exeext) bi-opname$(exeext) \
@@ -668,7 +669,8 @@ LIB2FUNCS = _muldi3 _divdi3 _moddi3 _udivdi3 _umoddi3 _negdi2 \
 # If it is, rm *.o is an easy way to do it.
 # CONFIG_H = $(host_xm_file) $(tm_file)
 CONFIG_H =
-RTL_H = rtl.h rtl.def gansidecl.h machmode.h machmode.def
+RTL_BASE_H = rtl.h rtl.def gansidecl.h machmode.h machmode.def
+RTL_H = $(RTL_BASE_H) genrtl.h
 TREE_H = tree.h real.h tree.def gansidecl.h machmode.h machmode.def tree-check.h
 BYTECODE_H = bytecode.h bc-emit.h bc-optab.h
 BASIC_BLOCK_H = basic-block.h bitmap.h
@@ -1582,6 +1584,16 @@ s-output : $(md_file) genoutput $(srcdir)/move-if-change
 	./genoutput $(md_file) > tmp-output.c
 	$(srcdir)/move-if-change tmp-output.c insn-output.c
 	touch s-output
+genrtl.o : genrtl.c $(CONFIG_H) $(RTL_H) system.h
+genrtl.c genrtl.h : s-genrtl
+	@true	# force gnu make to recheck modification times.
+
+s-genrtl: gengenrtl $(srcdir)/move-if-change $(RTL_BASE_H)
+	./gengenrtl -h >tmp-genrtl.h
+	$(srcdir)/move-if-change tmp-genrtl.h genrtl.h
+	./gengenrtl >tmp-genrtl.c
+	$(srcdir)/move-if-change tmp-genrtl.c genrtl.c
+	touch s-genrtl
 #
 # Compile the programs that generate insn-* from the machine description.
 # They are compiled with $(HOST_CC), and associated libraries,
@@ -1675,6 +1687,13 @@ genoutput : genoutput.o $(HOST_RTL) $(HOST_LIBDEPS)
 
 genoutput.o : genoutput.c $(RTL_H) $(build_xm_file)
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/genoutput.c
+
+gengenrtl : gengenrtl.o $(HOST_LIBDEPS)
+	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o $@ \
+	 gengenrtl.o $(HOST_LIBS)
+
+gengenrtl.o : gengenrtl.c $(RTL_BASE_H) system.h
+	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/gengenrtl.c
 #
 # Compile the libraries to be used by gen*.
 # If we are not cross-building, gen* use the same .o's that cc1 will use,
