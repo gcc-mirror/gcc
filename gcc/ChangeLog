@@ -1,3 +1,9 @@
+2005-02-26  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR tree-opt/20188
+	* tree-ssa-alias.c (count_uses_and_derefs): If we have TREE_LIST
+	for the lhs, also walk over the tree.  Likewise for rhs.
+
 2005-02-26  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* doc/invoke.texi, doc/standards.texi: Refer to
