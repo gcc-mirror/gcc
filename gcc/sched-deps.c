@@ -864,12 +864,14 @@ sched_analyze_insn (struct deps *deps, rtx x, rtx insn, rtx loop_notes)
       else
 	{
 	  rtx pending, pending_mem;
-	  regset_head tmp;
-	  INIT_REG_SET (&tmp);
+	  regset_head tmp_uses, tmp_sets;
+	  INIT_REG_SET (&tmp_uses);
+	  INIT_REG_SET (&tmp_sets);
 
-	  (*current_sched_info->compute_jump_reg_dependencies) (insn, &tmp);
+	  (*current_sched_info->compute_jump_reg_dependencies)
+	    (insn, &deps->reg_conditional_sets, &tmp_uses, &tmp_sets);
 	  /* Make latency of jump equal to 0 by using anti-dependence.  */
-	  EXECUTE_IF_SET_IN_REG_SET (&tmp, 0, i,
+	  EXECUTE_IF_SET_IN_REG_SET (&tmp_uses, 0, i,
 	    {
 	      struct deps_reg *reg_last = &deps->reg_last[i];
 	      add_dependence_list (insn, reg_last->sets, REG_DEP_ANTI);
@@ -877,7 +879,10 @@ sched_analyze_insn (struct deps *deps, rtx x, rtx insn, rtx loop_notes)
 	      reg_last->uses_length++;
 	      reg_last->uses = alloc_INSN_LIST (insn, reg_last->uses);
 	    });
-	  CLEAR_REG_SET (&tmp);
+	  IOR_REG_SET (reg_pending_sets, &tmp_sets);
+
+	  CLEAR_REG_SET (&tmp_uses);
+	  CLEAR_REG_SET (&tmp_sets);
 
 	  /* All memory writes and volatile reads must happen before the
 	     jump.  Non-volatile reads must happen before the jump iff
@@ -984,6 +989,7 @@ sched_analyze_insn (struct deps *deps, rtx x, rtx insn, rtx loop_notes)
 	}
 
       flush_pending_lists (deps, insn, true, true);
+      CLEAR_REG_SET (&deps->reg_conditional_sets);
       reg_pending_barrier = NOT_A_BARRIER;
     }
   else
@@ -1015,6 +1021,7 @@ sched_analyze_insn (struct deps *deps, rtx x, rtx insn, rtx loop_notes)
 	      add_dependence_list (insn, reg_last->clobbers, REG_DEP_OUTPUT);
 	      add_dependence_list (insn, reg_last->uses, REG_DEP_ANTI);
 	      reg_last->sets = alloc_INSN_LIST (insn, reg_last->sets);
+	      SET_REGNO_REG_SET (&deps->reg_conditional_sets, i);
 	    });
 	}
       else
@@ -1063,6 +1070,7 @@ sched_analyze_insn (struct deps *deps, rtx x, rtx insn, rtx loop_notes)
 	      reg_last->sets = alloc_INSN_LIST (insn, reg_last->sets);
 	      reg_last->uses_length = 0;
 	      reg_last->clobbers_length = 0;
+	      CLEAR_REGNO_REG_SET (&deps->reg_conditional_sets, i);
 	    });
 	}
 
@@ -1385,6 +1393,7 @@ init_deps (struct deps *deps)
   deps->reg_last = (struct deps_reg *)
     xcalloc (max_reg, sizeof (struct deps_reg));
   INIT_REG_SET (&deps->reg_last_in_use);
+  INIT_REG_SET (&deps->reg_conditional_sets);
 
   deps->pending_read_insns = 0;
   deps->pending_read_mems = 0;
@@ -1426,6 +1435,7 @@ free_deps (struct deps *deps)
 	free_INSN_LIST_list (&reg_last->clobbers);
     });
   CLEAR_REG_SET (&deps->reg_last_in_use);
+  CLEAR_REG_SET (&deps->reg_conditional_sets);
 
   free (deps->reg_last);
 }

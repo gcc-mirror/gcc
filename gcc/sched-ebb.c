@@ -55,7 +55,7 @@ static int schedule_more_p (void);
 static const char *ebb_print_insn (rtx, int);
 static int rank (rtx, rtx);
 static int contributes_to_priority (rtx, rtx);
-static void compute_jump_reg_dependencies (rtx, regset);
+static void compute_jump_reg_dependencies (rtx, regset, regset, regset);
 static basic_block earliest_block_with_similiar_load (basic_block, rtx);
 static void add_deps_for_risky_insns (rtx, rtx);
 static basic_block schedule_ebb (rtx, rtx);
@@ -163,20 +163,29 @@ contributes_to_priority (rtx next ATTRIBUTE_UNUSED,
   return 1;
 }
 
-/* INSN is a JUMP_INSN.  Store the set of registers that must be considered
-   to be set by this jump in SET.  */
+ /* INSN is a JUMP_INSN, COND_SET is the set of registers that are
+    conditionally set before INSN.  Store the set of registers that
+    must be considered as used by this jump in USED and that of
+    registers that must be considered as set in SET.  */
 
 static void
-compute_jump_reg_dependencies (rtx insn, regset set)
+compute_jump_reg_dependencies (rtx insn, regset cond_set, regset used,
+			       regset set)
 {
   basic_block b = BLOCK_FOR_INSN (insn);
   edge e;
   for (e = b->succ; e; e = e->succ_next)
-    if ((e->flags & EDGE_FALLTHRU) == 0)
-      {
-	bitmap_operation (set, set, e->dest->global_live_at_start,
-			  BITMAP_IOR);
-      }
+    if (e->flags & EDGE_FALLTHRU)
+      /* The jump may be a by-product of a branch that has been merged
+	 in the main codepath after being conditionalized.  Therefore
+	 it may guard the fallthrough block from using a value that has
+	 conditionally overwritten that of the main codepath.  So we
+	 consider that it restores the value of the main codepath.  */
+      bitmap_operation (set, e->dest->global_live_at_start, cond_set,
+			BITMAP_AND);
+    else
+      bitmap_operation (used, used, e->dest->global_live_at_start,
+			BITMAP_IOR);
 }
 
 /* Used in schedule_insns to initialize current_sched_info for scheduling

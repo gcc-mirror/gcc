@@ -112,6 +112,9 @@ struct deps
   /* Element N is set for each register that has any nonzero element
      in reg_last[N].{uses,sets,clobbers}.  */
   regset_head reg_last_in_use;
+
+  /* Element N is set for each register that is conditionally set.  */
+  regset_head reg_conditional_sets;
 };
 
 /* This structure holds some state of the current scheduling pass, and
@@ -148,7 +151,7 @@ struct sched_info
   /* Called when computing dependencies for a JUMP_INSN.  This function
      should store the set of registers that must be considered as set by
      the jump in the regset.  */
-  void (*compute_jump_reg_dependencies) (rtx, regset);
+  void (*compute_jump_reg_dependencies) (rtx, regset, regset, regset);
 
   /* The boundaries of the set of insns to be scheduled.  */
   rtx prev_head, next_tail;
