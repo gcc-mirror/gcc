@@ -2035,7 +2035,7 @@ mn10300_wide_const_load_uses_clr (rtx operands[2])
    may access it using GOTOFF instead of GOT.  */
 
 static void
-mn10300_encode_section_info (tree decl, rtx rtl, int first)
+mn10300_encode_section_info (tree decl, rtx rtl, int first ATTRIBUTE_UNUSED)
 {
   rtx symbol;
 
