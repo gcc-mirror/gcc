@@ -1,3 +1,12 @@
+Fri Jul 24 11:17:04 1998  Nick Clifton  <nickc@cygnus.com>
+
+	* config/arm/thumb.c (thumb_print_operand): Decode %_ in asm
+	strings as the insertion of USER_LABEL_PREFIX.
+	* config/arm/thumb.h (PRINT_OPERAND_PUNCT_VALID_P): Accept _ as a
+	valid code.
+	* config/arm/thumb.md: Use %_ as a prefix to gcc library function
+	calls. 
+
 Thu Jul 23 18:53:20 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* dbxout.c (dbxout_range_type): Only call dbxout_type_index for

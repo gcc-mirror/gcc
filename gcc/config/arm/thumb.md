@@ -990,7 +990,7 @@
   [(call (mem:SI (match_operand:SI 0 "register_operand" "l*r"))
 	 (match_operand 1 "" ""))]
   "! TARGET_CALLER_INTERWORKING"
-  "bl\\t__call_via_%0"
+  "bl\\t%__call_via_%0"
 [(set_attr "length" "4")])
 ;; The non THUMB_INTERWORK, non TARGET_CALLER_INTERWORKING version
 ;; used to be: "mov\\tlr,pc\;bx\\t%0", but the mov does not set
@@ -1001,7 +1001,7 @@
   [(call (mem:SI (match_operand:SI 0 "register_operand" "l*r"))
 	 (match_operand 1 "" ""))]
   "TARGET_CALLER_INTERWORKING"
-  "bl\\t__interwork_call_via_%0"
+  "bl\\t%__interwork_call_via_%0"
 [(set_attr "length" "4")])
 
 (define_expand "call_value"
@@ -1016,7 +1016,7 @@
 	(call (mem:SI (match_operand:SI 1 "register_operand" "l*r"))
 	      (match_operand 2 "" "")))]
   "! TARGET_CALLER_INTERWORKING"
-  "bl\\t__call_via_%1"
+  "bl\\t%__call_via_%1"
 [(set_attr "length" "4")])
 ;; See comment for call_indirect pattern
 
@@ -1025,7 +1025,7 @@
 	(call (mem:SI (match_operand:SI 1 "register_operand" "l*r"))
 	      (match_operand 2 "" "")))]
   "TARGET_CALLER_INTERWORKING"
-  "bl\\t__interwork_call_via_%1"
+  "bl\\t%__interwork_call_via_%1"
 [(set_attr "length" "4")])
 
 
