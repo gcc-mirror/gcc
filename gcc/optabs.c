@@ -4654,68 +4654,7 @@ rtx
 gen_move_insn (x, y)
      rtx x, y;
 {
-  enum machine_mode mode = GET_MODE (x);
-  enum insn_code insn_code;
   rtx seq;
-
-  if (mode == VOIDmode)
-    mode = GET_MODE (y); 
-
-  insn_code = mov_optab->handlers[(int) mode].insn_code;
-
-  /* Handle MODE_CC modes:  If we don't have a special move insn for this mode,
-     find a mode to do it in.  If we have a movcc, use it.  Otherwise,
-     find the MODE_INT mode of the same width.  */
-
-  if (GET_MODE_CLASS (mode) == MODE_CC && insn_code == CODE_FOR_nothing)
-    {
-      enum machine_mode tmode = VOIDmode;
-      rtx x1 = x, y1 = y;
-
-      if (mode != CCmode
-	  && mov_optab->handlers[(int) CCmode].insn_code != CODE_FOR_nothing)
-	tmode = CCmode;
-      else
-	for (tmode = QImode; tmode != VOIDmode;
-	     tmode = GET_MODE_WIDER_MODE (tmode))
-	  if (GET_MODE_SIZE (tmode) == GET_MODE_SIZE (mode))
-	    break;
-
-      if (tmode == VOIDmode)
-	abort ();
-
-      /* Get X and Y in TMODE.  We can't use gen_lowpart here because it
-	 may call change_address which is not appropriate if we were
-	 called when a reload was in progress.  We don't have to worry
-	 about changing the address since the size in bytes is supposed to
-	 be the same.  Copy the MEM to change the mode and move any
-	 substitutions from the old MEM to the new one.  */
-
-      if (reload_in_progress)
-	{
-	  x = gen_lowpart_common (tmode, x1);
-	  if (x == 0 && GET_CODE (x1) == MEM)
-	    {
-	      x = adjust_address_nv (x1, tmode, 0);
-	      copy_replacements (x1, x);
-	    }
-
-	  y = gen_lowpart_common (tmode, y1);
-	  if (y == 0 && GET_CODE (y1) == MEM)
-	    {
-	      y = adjust_address_nv (y1, tmode, 0);
-	      copy_replacements (y1, y);
-	    }
-	}
-      else
-	{
-	  x = gen_lowpart (tmode, x);
-	  y = gen_lowpart (tmode, y);
-	}
-	  
-      insn_code = mov_optab->handlers[(int) tmode].insn_code;
-      return (GEN_FCN (insn_code) (x, y));
-    }
 
   start_sequence ();
   emit_move_insn_1 (x, y);
