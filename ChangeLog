@@ -1,3 +1,16 @@
+Mon May 11 23:55:56 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* mpw-* Delete.  Not used.
+
+Fri May  8 01:30:20 1998  Ian Lance Taylor  <ian@cygnus.com>
+
+	* ltconfig, ltmain.sh: Update to libtool 1.2a.
+
+Thu May  7 17:27:35 1998  Ian Lance Taylor  <ian@cygnus.com>
+
+	* ltconfig, ltmain.sh: Avoid producing a version number if
+	-version-info was not used.
+
 Tue Apr 28 07:35:02 1998  Michael Meissner  <meissner@cygnus.com>
 
 	* configure.in (--enable-target-optspace): Remove debug echo.
@@ -6,6 +19,10 @@ Thu Apr 23 21:31:16 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* configure: Set CXXFLAGS from CXXFLAGS, not CFLAGS.
 
+Thu Apr 23 12:26:38 1998  Ian Lance Taylor  <ian@cygnus.com>
+
+	* ltconfig: Update cygwin32 support.
+
 Wed Apr 22 12:30:10 1998  Michael Meissner  <meissner@cygnus.com>
 
 	* configure.in (target_makefile_frag): If --enable-target-optspace,
@@ -13,10 +30,18 @@ Wed Apr 22 12:30:10 1998  Michael Meissner  <meissner@cygnus.com>
 	using -Os for m32r if --{enable,disable}-target-optspace is not
 	used.
 
+Fri Apr 17 16:20:42 1998  Ian Lance Taylor  <ian@cygnus.com>
+
+	* ltconfig, ltmain.sh: Bring in newer cygwin32 support.
+
 Tue Apr 14 11:33:51 1998  Krister Walfridsson <cato@df.lth.se>
 
 	* configure: Define DEFAULT_M4 by searching PATH.
 	* Makfile.in: Use DEFAULT_M4.
+
+Mon Apr 13 15:37:24 1998  Ian Lance Taylor  <ian@cygnus.com>
+
+	* ltconfig: Add cygwin32 support.
 
 Sun Apr 12 20:58:46 1998  Jeffrey A Law  (law@cygnus.com)
 
@@ -26,6 +51,21 @@ Wed Mar 25 10:04:18 1998  Nick Clifton  <nickc@cygnus.com>
 
 	* configure.in: Add thumb-coff target.
 	* config.sub: Add thumb-coff target.
+
+Tue Mar 24 11:37:45 1998  Ian Lance Taylor  <ian@cygnus.com>
+
+	* Makefile.in (CC_FOR_TARGET): Use $(TARGET_SUBDIR) when passing -B
+	for newlib directory.                                          
+	(CXX_FOR_TARGET): Likewise.
+
+Mon Mar 23 11:30:21 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* ltconfig: Update after libtool/ltconfig.in change for
+	hpux11.
+
+Fri Mar 20 18:51:43 1998  Ian Lance Taylor  <ian@cygnus.com>
+
+	* ltconfig, ltmain.sh: Update to libtool 1.2.
 
 Fri Mar 20 09:32:14 1998  Manfred Hollstein  <manfred@s-direktnet.de>
 
@@ -70,6 +110,10 @@ Mon Feb 16 12:23:53 1998  Manfred Hollstein  <Manfred.Hollstein@ks.sel.alcatel.d
 	* Makefile.in (BASE_FLAGS_TO_PASS, EXTRA_TARGET_FLAGS): Really add
 	this change to sync Makefile.in with its ChangeLog entries.
 
+Sat Feb  7 15:19:18 1998  Ian Lance Taylor  <ian@cygnus.com>
+
+	* ltconfig, ltmain.sh: Update from libtool 1.0i.
+
 Fri Feb  6 01:33:52 1998  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* Makefile.in (BASE_FLAGS_TO_PASS): Don't pass PICFLAG and
@@ -83,6 +127,10 @@ Fri Feb  6 01:33:52 1998  Manfred Hollstein  <manfred@s-direktnet.de>
 	to current multilib configuration.
 	* config/mt-sparcpic (PICFLAG_FOR_TARGET): Define to properly
 	according to current multilib configuration.
+
+Wed Feb  4 18:56:13 1998  Ian Lance Taylor  <ian@cygnus.com>
+
+	* ltconfig, ltmain.sh: Update from libtool 1.0h.
 
 Sun Feb  1 02:40:41 1998  Richard Henderson  <rth@cygnus.com>
 
@@ -276,6 +324,11 @@ Fri Sep  5 12:27:17 1997  Jeffrey A Law  (law@cygnus.com)
 Wed Sep  3 22:01:58 1997  Fred Fish  <fnf@ninemoons.com>
 
 	* .cvsignore (*-install): Remove.
+
+Wed Sep  3 12:15:24 1997  Chris Provenzano  <proven@cygnus.com>
+
+	* ltconfig: Set CONFIG_SHELL in libtool.
+	* ltmain.sh: Use CONFIG_SHELL instead of /bin/sh
 
 Mon Sep  1 16:45:44 1997  Jim Wilson  <wilson@cygnus.com>
 
