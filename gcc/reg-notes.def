@@ -21,7 +21,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 /* This file defines all the codes that may appear on individual
    EXPR_LIST rtxes in the REG_NOTES chain of an insn.  The codes are
    stored in the mode field of the EXPR_LIST.  Source files define
-   DEF_INSN_NOTE appropriately before including this file.  */
+   DEF_REG_NOTE appropriately before including this file.  */
 
 /* Shorthand.  */
 #define REG_NOTE(NAME) DEF_REG_NOTE (REG_##NAME)

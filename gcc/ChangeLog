@@ -1,3 +1,8 @@
+2004-08-23  James E Wilson  <wilson@specifixinc.com>
+
+	* reg-notes.def (REG_NOTE): In comment, change DEF_INSN_NOTE to
+	DEF_REG_NOTE.
+
 2004-08-23  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c/14492
