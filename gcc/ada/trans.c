@@ -273,7 +273,7 @@ gnat_to_gnu (Node_Id gnat_node)
 {
   tree gnu_root;
   bool made_sequence = false;
-    
+
   /* We support the use of this on statements now as a transition
      to full function-at-a-time processing.  So we need to see if anything
      we do generates RTL and returns error_mark_node.  */
@@ -517,14 +517,32 @@ tree_transform (Node_Id gnat_node)
 		  && DECL_BY_COMPONENT_PTR_P (gnu_result))))
 	{
 	  int ro = DECL_POINTS_TO_READONLY_P (gnu_result);
+	  tree initial;
 
 	  if (TREE_CODE (gnu_result) == PARM_DECL
 	      && DECL_BY_COMPONENT_PTR_P (gnu_result))
 	    gnu_result = convert (build_pointer_type (gnu_result_type),
 				  gnu_result);
 
-	  gnu_result = build_unary_op (INDIRECT_REF, NULL_TREE,
-				       fold (gnu_result));
+	  /* If the object is constant, we try to do the dereference directly
+	     through the DECL_INITIAL.  This is actually required in order to
+	     get correct aliasing information for renamed objects that are
+	     components of non-aliased aggregates, because the type of
+	     the renamed object and that of the aggregate don't alias.  */
+	  if (TREE_READONLY (gnu_result)
+	      && DECL_INITIAL (gnu_result)
+	      /* Strip possible conversion to reference type.  */
+	      && (initial = TREE_CODE (DECL_INITIAL (gnu_result)) == NOP_EXPR
+			    ? TREE_OPERAND (DECL_INITIAL (gnu_result), 0)
+			    : DECL_INITIAL (gnu_result), 1)
+	      && TREE_CODE (initial) == ADDR_EXPR
+	      && (TREE_CODE (TREE_OPERAND (initial, 0)) == ARRAY_REF
+		  || TREE_CODE (TREE_OPERAND (initial, 0)) == COMPONENT_REF))
+	    gnu_result = TREE_OPERAND (initial, 0);
+	  else
+	    gnu_result = build_unary_op (INDIRECT_REF, NULL_TREE,
+				 	 fold (gnu_result));
+
 	  TREE_READONLY (gnu_result) = TREE_STATIC (gnu_result) = ro;
 	}
 
@@ -4373,7 +4391,7 @@ end_block_stmt ()
 
   return gnu_retval;
 }
-   
+
 /* Build a BLOCK_STMT from GNAT_LIST, a possibly-empty list of statements.  */
 
 static tree
@@ -4394,7 +4412,7 @@ build_block_stmt (List_Id gnat_list)
 
   gnu_result = end_block_stmt ();
   return TREE_CODE (gnu_result) == NULL_STMT ? NULL_TREE : gnu_result;
-} 
+}
 
 /* Build an EXPR_STMT to evaluate INSNS.  Use Sloc from GNAT_NODE.   */
 
@@ -4523,7 +4541,7 @@ gnat_expand_stmt (tree gnu_stmt)
 	  }
       break;
 
-    default: 
+    default:
      abort ();
     }
 }

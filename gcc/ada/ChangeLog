@@ -1,3 +1,99 @@
+2004-05-24  Geert Bosch  <bosch@gnat.com>
+
+	* a-numaux-x86.adb (Reduce): Reimplement using an approximation of Pi
+	with 192 bits of precision, sufficient to reduce a double-extended
+	arguments X with a maximum relative error of T'Machine_Epsilon, for X
+	in -2.0**32 .. 2.0**32.
+	(Cos, Sin):  Always reduce arguments of 1/4 Pi or larger, to prevent
+	reduction by the processor, which only uses a 68-bit approximation of
+	Pi.
+	(Tan): Always reduce arguments and compute function either using
+	the processor's fptan instruction, or by dividing sin and cos as needed.
+
+2004-05-24  Doug Rupp  <rupp@gnat.com>
+
+	* adaint.c (__gnat_readdir): Cast CRTL function retun value to avoid
+	gcc error on 32/64 bit VMS.
+
+2004-05-24  Olivier Hainque  <hainque@act-europe.fr>
+
+	* init.c (__gnat_error_handler): Handle EEXIST as EACCES for SIGSEGVs,
+	since this is what we get for stack overflows although not documented
+	as such.
+	Document the issues which may require adjustments to our signal
+	handlers.
+
+2004-05-24  Ed Schonberg  <schonberg@gnat.com>
+
+	* inline.adb (Add_Scope_To_Clean): Do not add cleanup actions to the
+	enclosing dynamic scope if the instantiation is within a generic unit.
+
+2004-05-24  Arnaud Charlet  <charlet@act-europe.fr>
+
+	* exp_dbug.ads: Fix typo.
+
+	* Makefile.in: s-osinte-linux-ia64.ads was misnamed.
+	Rename it to its proper name: system-linux-ia64.ads
+	(stamp-gnatlib1): Remove extra target specific run time files when
+	setting up the rts directory.
+
+2004-05-24  Javier Miranda  <miranda@gnat.com>
+
+	* einfo.ads, einfo.adb (Limited_Views): Removed.
+	(Limited_View): New attribute that replaces the previous one. It is
+	now a bona fide package with the limited-view list through the
+	first_entity and first_private attributes.
+
+	* sem_ch10.adb (Install_Private_With_Clauses): Give support to
+	limited-private-with clause.
+	(Install_Limited_Withed_Unit): Install the private declarations of a
+	limited-private-withed package. Update the installation of the shadow
+	entities according to the new structure (see Build_Limited_Views)
+	(Build_Limited_Views): Replace the previous implementation of the
+	limited view by a package entity that references the first shadow
+	entity plus the first shadow private entity (required for limited-
+	private-with clause)
+	(New_Internal_Shadow_Entity): Code cleanup.
+	(Remove_Limited_With_Clause): Update the implementation to undo the
+	new work carried out by Build_Limited_Views.
+	(Build_Chain): Complete documentation.
+	Replace Ada0Y by Ada 0Y in comments
+	Minor reformating
+
+	* sem_ch3.adb (Array_Type_Declaration): In case of anonymous access
+	types the level of accessibility depends on the enclosing type
+	declaration.
+
+	* sem_ch8.adb (Find_Expanded_Name): Fix condition to detect shadow
+	entities. Complete documentation of previous change.
+
+2004-05-24  Robert Dewar  <dewar@gnat.com>
+
+	* namet.adb: Minor reformatting
+	Avoid use of name I (replace by J)
+	Minor code restructuring
+
+	* sem_ch6.adb: Minor reformatting
+
+	* lib-writ.adb: Do not set restriction as active if this is a
+	Restriction_Warning case.
+
+	* sem_prag.adb: Reset restriction warning flag if real pragma
+	restriction encountered.
+
+	* s-htable.adb: Minor reformatting
+	Change rotate count to 3 in Hash (improves hash for small strings)
+
+	* 5qsystem.ads: Add comments for type Address (no literals allowed).
+
+	* gnat_ugn.texi: Add new section of documentation "Code Generation
+	Control", which describes the use of -m switches.
+
+2004-05-24  Eric Botcazou  <ebotcazou@act-europe.fr>
+
+	(tree_transform) <N_Identifier>: Do the dereference directly through
+	the DECL_INITIAL for renamed variables.
+
 2004-05-24  Arnaud Charlet  <charlet@act-europe.fr>
 
 	* s-osinte-linux-ia64.ads: Renamed system-linux-ia64.ads

@@ -262,6 +262,51 @@ __gnat_set_globals (int main_priority,
    at all; the intention is that this be replaced by system specific
    code where initialization is required. */
 
+/* Notes on the Zero Cost Exceptions scheme and its impact on the signal
+   handlers implemented below :
+
+   What we call Zero Cost Exceptions is implemented using the GCC eh
+   circuitry, even if the underlying implementation is setjmp/longjmp
+   based. In any case ...
+
+   The GCC unwinder expects to be dealing with call return addresses, since
+   this is the "nominal" case of what we retrieve while unwinding a regular
+   call chain. To evaluate if a handler applies at some point in this chain,
+   the propagation engine needs to determine what region the corresponding
+   call instruction pertains to. The return address may not be attached to the
+   same region as the call, so the unwinder unconditionally substracts "some"
+   amount to the return addresses it gets to search the region tables. The
+   exact amount is computed to ensure that the resulting address is inside the
+   call instruction, and is thus target dependant (think about delay slots for
+   instance).
+
+   When we raise an exception from a signal handler, e.g. to transform a
+   SIGSEGV into Storage_Error, things need to appear as if the signal handler
+   had been "called" by the instruction which triggered the signal, so that
+   exception handlers that apply there are considered. What the unwinder will
+   retrieve as the return address from the signal handler is what it will find
+   as the faulting instruction address in the corresponding signal context
+   pushed by the kernel. Leaving this address untouched may loose, because if
+   the triggering instruction happens to be the very first of a region, the
+   later adjustements performed by the unwinder would yield an address outside
+   that region. We need to compensate for those adjustments at some point,
+   which we currently do in the GCC unwinding fallback macro.
+
+   The thread at http://gcc.gnu.org/ml/gcc-patches/2004-05/msg00343.html
+   describes a couple of issues with our current approach. Basically: on some
+   targets the adjustment to apply depends on the triggering signal, which is
+   not easily accessible from the macro, and we actually do not tackle this as
+   of today. Besides, other languages, e.g. Java, deal with this by performing
+   the adjustment in the signal handler before the raise, so our adjustments
+   may break those front-ends.
+
+   To have it all right, we should either find a way to deal with the signal
+   variants from the macro and convert Java on all targets (ugh), or remove
+   our macro adjustments and update our signal handlers a-la-java way.  The
+   latter option appears the simplest, although some targets have their share
+   of subtleties to account for.  See for instance the syscall(SYS_sigaction)
+   story in libjava/include/i386-signal.h.  */
+
 /***********************************/
 /* __gnat_initialize (AIX Version) */
 /***********************************/
@@ -1051,6 +1096,18 @@ struct Machine_State
 
 static void __gnat_error_handler (int, int, sigcontext_t *);
 
+/* We are not setting the SA_SIGINFO bit in the sigaction flags when
+   connecting that handler, with the effects described in the sigaction
+   man page:
+
+          SA_SIGINFO [...]
+          If cleared and the signal is caught, the first argument is
+          also the signal number but the second argument is the signal
+          code identifying the cause of the signal. The third argument
+          points to a sigcontext_t structure containing the receiving
+	  process's context when the signal was delivered.
+*/
+
 static void
 __gnat_error_handler (int sig, int code, sigcontext_t *sc)
 {
@@ -1076,8 +1133,13 @@ __gnat_error_handler (int sig, int code, sigcontext_t *sc)
 	  exception = &program_error; /* ??? storage_error ??? */
 	  msg = "SIGSEGV: (Autogrow for file failed)";
 	}
-      else if (code == EACCES)
+      else if (code == EACCES || code == EEXIST)
 	{
+	  /* ??? We handle stack overflows here, some of which do trigger
+	         SIGSEGV + EEXIST on Irix 6.5 although EEXIST is not part of
+	         the documented valid codes for SEGV in the signal(5) man
+	         page.  */
+
 	  /* ??? Re-add smarts to further verify that we launched
 		 the stack into a guard page, not an attempt to
 		 write to .text or something */

@@ -64,6 +64,14 @@ pragma Pure (System);
 
    type Address is new Long_Integer;
    Null_Address : constant Address;
+   --  Although this is declared as an integer type, no arithmetic operations
+   --  are available (see abstract declarations below), and furthermore there
+   --  is special processing in the compiler that prevents the use of integer
+   --  literals with this type (use To_Address to convert integer literals).
+   --
+   --  Conversion to and from Short_Address is however freely permitted, and
+   --  is indeed the reason that Address is declared as an integer type. See
+   --
 
    Storage_Unit : constant := 8;
    Word_Size    : constant := 64;

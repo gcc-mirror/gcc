@@ -205,7 +205,7 @@ package body Einfo is
    --    Inner_Instances                 Elist23
    --    Enum_Pos_To_Rep                 Node23
    --    Packed_Array_Type               Node23
-   --    Limited_Views                   Elist23
+   --    Limited_View                    Node23
    --    Privals_Chain                   Elist23
    --    Protected_Operation             Node23
 
@@ -1708,11 +1708,11 @@ package body Einfo is
       return Node20 (Id);
    end Last_Entity;
 
-   function Limited_Views (Id : E) return L is
+   function Limited_View (Id : E) return E is
    begin
       pragma Assert (Ekind (Id) = E_Package);
-      return Elist23 (Id);
-   end Limited_Views;
+      return Node23 (Id);
+   end Limited_View;
 
    function Lit_Indexes (Id : E) return E is
    begin
@@ -3666,11 +3666,11 @@ package body Einfo is
       Set_Node20 (Id, V);
    end Set_Last_Entity;
 
-   procedure Set_Limited_Views (Id : E; V : L) is
+   procedure Set_Limited_View (Id : E; V : E) is
    begin
       pragma Assert (Ekind (Id) = E_Package);
-      Set_Elist23 (Id, V);
-   end Set_Limited_Views;
+      Set_Node23 (Id, V);
+   end Set_Limited_View;
 
    procedure Set_Lit_Indexes (Id : E; V : E) is
    begin

@@ -944,7 +944,9 @@ package body Lib.Writ is
       --  First the information for the boolean restrictions
 
       for R in All_Boolean_Restrictions loop
-         if Main_Restrictions.Set (R) then
+         if Main_Restrictions.Set (R)
+           and then not Restriction_Warnings (R)
+         then
             Write_Info_Char ('r');
          elsif Main_Restrictions.Violated (R) then
             Write_Info_Char ('v');

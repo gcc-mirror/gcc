@@ -696,8 +696,10 @@ package body Sem_Ch8 is
 
          Analyze_And_Resolve (Nam, T);
 
-         --  Ada 0Y (AI-230): Renaming of anonymous access-to-constant types
-         --  allowed if and only if the renamed object is access-to-constant
+         --  Ada 0Y (AI-231): "In the case where the type is defined by an
+         --  access_definition, the renamed entity shall be of an access-to-
+         --  constant type if and only if the access_definition defines an
+         --  access-to-constant type" ARM 8.5.1(4)
 
          if Constant_Present (Access_Definition (N))
            and then not Is_Access_Constant (Etype (Nam))
@@ -3525,7 +3527,8 @@ package body Sem_Ch8 is
         and then From_With_Type (P_Name)
       then
          if From_With_Type (Id)
-           or else (Ekind (Id) = E_Package and then From_With_Type (Id))
+           or else Is_Type (Id)
+           or else Ekind (Id) = E_Package
          then
             null;
          else

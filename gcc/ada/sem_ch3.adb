@@ -2980,7 +2980,7 @@ package body Sem_Ch3 is
          --  types the level of accessibility depends on the enclosing type
          --  declaration
 
-         Set_Scope (Element_Type, T); --  Ada 0Y (AI-230)
+         Set_Scope (Element_Type, Current_Scope); --  Ada 0Y (AI-230)
 
          --  Ada 0Y (AI-254)
 

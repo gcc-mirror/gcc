@@ -1268,7 +1268,7 @@ ifeq ($(strip $(filter-out %ia64 linux%,$(arch) $(osys))),)
   s-taprop.adb<s-taprop-linux.adb \
   s-tpopsp.adb<s-tpopsp-posix-foreign.adb \
   s-taspri.ads<s-taspri-linux.ads \
-  system.ads<s-osinte-linux-ia64.ads
+  system.ads<system-linux-ia64.ads
 
   TOOLS_TARGET_PAIRS=mlib-tgt.adb<mlib-tgt-linux.adb
   MISCLIB=
@@ -1663,6 +1663,7 @@ install-gnatlib: ../stamp-gnatlib
 # Remove files to be replaced by target dependent sources
 	$(RM) $(foreach PAIR,$(LIBGNAT_TARGET_PAIRS), \
 	                rts/$(word 1,$(subst <, ,$(PAIR))))
+	$(RM) rts/*-*-*.ads rts/*-*-*.adb
 # Copy new target dependent sources
 	$(foreach PAIR,$(LIBGNAT_TARGET_PAIRS), \
 	          $(LN_S) $(fsrcpfx)$(word 2,$(subst <, ,$(PAIR))) \
