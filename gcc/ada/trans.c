@@ -2299,24 +2299,22 @@ Exception_Handler_to_gnu_zcx (Node_Id gnat_node)
      handler can catch, with special cases for others and all others cases.
 
      Each exception type is actually identified by a pointer to the exception
-     id, with special value zero for "others" and one for "all others". Beware
-     that these special values are known and used by the personality routine to
-     identify the corresponding specific kinds of handlers.
+     id, or to a dummy object for "others" and "all others".
 
-     ??? For initial time frame reasons, the others and all_others cases have
-     been handled using specific type trees, but this somehow hides information
-     from the back-end, which expects NULL to be passed for catch all and
-     end_cleanup to be used for cleanups.
-
-     Care should be taken to ensure that the control flow impact of such
-     clauses is rendered in some way. lang_eh_type_covers is doing the trick
+     Care should be taken to ensure that the control flow impact of "others"
+     and "all others" is known to GCC. lang_eh_type_covers is doing the trick
      currently.  */
   for (gnat_temp = First (Exception_Choices (gnat_node));
        gnat_temp; gnat_temp = Next (gnat_temp))
     {
       if (Nkind (gnat_temp) == N_Others_Choice)
-	gnu_etype = (All_Others (gnat_temp) ? integer_one_node
-		     : integer_zero_node);
+	{
+	  tree gnu_expr
+	    = All_Others (gnat_temp) ? all_others_decl : others_decl;
+
+	  gnu_etype
+	    = build_unary_op (ADDR_EXPR, NULL_TREE, gnu_expr);
+	}
       else if (Nkind (gnat_temp) == N_Identifier
 	       || Nkind (gnat_temp) == N_Expanded_Name)
 	{

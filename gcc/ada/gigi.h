@@ -297,7 +297,7 @@ struct attrib
   struct attrib *next;
   enum attr_type type;
   tree name;
-  tree arg;
+  tree args;
   Node_Id error_point;
 };
 
@@ -340,6 +340,8 @@ enum standard_datatypes
   ADT_raise_nodefer_decl,
   ADT_begin_handler_decl,
   ADT_end_handler_decl,
+  ADT_others_decl,
+  ADT_all_others_decl,
   ADT_LAST};
 
 extern GTY(()) tree gnat_std_decls[(int) ADT_LAST];
@@ -363,6 +365,8 @@ extern GTY(()) tree gnat_raise_decls[(int) LAST_REASON_CODE + 1];
 #define update_setjmp_buf_decl gnat_std_decls[(int) ADT_update_setjmp_buf_decl]
 #define raise_nodefer_decl gnat_std_decls[(int) ADT_raise_nodefer_decl]
 #define begin_handler_decl gnat_std_decls[(int) ADT_begin_handler_decl]
+#define others_decl gnat_std_decls[(int) ADT_others_decl]
+#define all_others_decl gnat_std_decls[(int) ADT_all_others_decl]
 #define end_handler_decl gnat_std_decls[(int) ADT_end_handler_decl]
 
 /* Routines expected by the gcc back-end. They must have exactly the same

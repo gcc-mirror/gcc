@@ -480,11 +480,13 @@ typedef struct
 } _GNAT_Exception;
 
 /* The two constants below are specific ttype identifiers for special
-   exception ids. Their value is currently hardcoded at the gigi level
-   (see N_Exception_Handler).  */
+   exception ids.  Their type should match what a-exexpr exports.  */
 
-#define GNAT_OTHERS      ((_Unwind_Ptr) 0x0)
-#define GNAT_ALL_OTHERS  ((_Unwind_Ptr) 0x1)
+extern const int __gnat_others_value;
+#define GNAT_OTHERS      ((_Unwind_Ptr) &__gnat_others_value)
+
+extern const int __gnat_all_others_value;
+#define GNAT_ALL_OTHERS  ((_Unwind_Ptr) &__gnat_all_others_value)
 
 /* Describe the useful region data associated with an unwind context.  */
 
