@@ -2553,6 +2553,10 @@ finish_id_expression (tree id_expression,
 	{
 	  decl = (adjust_result_of_qualified_name_lookup 
 		  (decl, scope, current_class_type));
+
+	  if (TREE_CODE (decl) == FUNCTION_DECL)
+	    mark_used (decl);
+
 	  if (TREE_CODE (decl) == FIELD_DECL || BASELINK_P (decl))
 	    *qualifying_class = scope;
 	  else if (!processing_template_decl)
