@@ -1697,6 +1697,8 @@ do {									\
   int mi_delta = (DELTA);						\
   char *mi_op = mi_delta < 0 ? "sub" : "add";				\
   int shift = 0;							\
+  int this_regno = (aggregate_value_p (TREE_TYPE (TREE_TYPE (FUNCTION))) \
+		    ? 1 : 0);						\
   if (mi_delta < 0) mi_delta = -mi_delta;				\
   while (mi_delta != 0)							\
     {									\
@@ -1705,8 +1707,8 @@ do {									\
       else								\
 	{								\
 	  fprintf (FILE, "\t%s\t%s%s, %s%s, #%d\n",			\
-		   mi_op, REGISTER_PREFIX, reg_names[0],		\
-		   REGISTER_PREFIX, reg_names[0],			\
+		   mi_op, REGISTER_PREFIX, reg_names[this_regno],	\
+		   REGISTER_PREFIX, reg_names[this_regno],		\
 		   mi_delta & (0xff << shift));				\
 	  arm_increase_location (4);					\
 	  mi_delta &= ~(0xff << shift);					\
