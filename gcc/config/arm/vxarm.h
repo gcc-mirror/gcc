@@ -37,8 +37,10 @@ Boston, MA 02111-1307, USA.  */
   %{!mcpu*:%{!march=*:-DCPU=ARM710A}}	\
 "
 
-#undef  CPP_PREDEFINES
-#define CPP_PREDEFINES  "-D__vxworks -Acpu=arm -Amachine=arm"
+#define TARGET_OS_CPP_BUILTINS()		\
+    do {					\
+	builtin_define ("__vxworks");		\
+    } while (0)
 
 /* VxWorks does all the library stuff itself.  */
 #undef  LIB_SPEC

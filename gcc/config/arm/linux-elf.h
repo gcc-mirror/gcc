@@ -89,10 +89,15 @@ Boston, MA 02111-1307, USA.  */
    %{mbig-endian:-EB}" \
    SUBTARGET_EXTRA_LINK_SPEC
 
-#undef  CPP_PREDEFINES
-#define CPP_PREDEFINES \
-"-Dunix -D__gnu_linux__ -Dlinux -D__ELF__ \
--Asystem=unix -Asystem=posix"
+#define TARGET_OS_CPP_BUILTINS()		\
+    do {					\
+	builtin_define_std ("unix");		\
+	builtin_define_std ("linux");		\
+	builtin_define ("__gnu_linux__");	\
+	builtin_define ("__ELF__");		\
+	builtin_assert ("system=unix");		\
+	builtin_assert ("system=posix");	\
+    } while (0)
 
 /* Allow #sccs in preprocessor.  */
 #define SCCS_DIRECTIVE

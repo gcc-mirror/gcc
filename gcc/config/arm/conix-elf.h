@@ -39,6 +39,8 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 #define SUBTARGET_CPU_DEFAULT 		TARGET_CPU_arm7tdmi
 #endif
      
-#undef  CPP_PREDEFINES
-#define CPP_PREDEFINES \
-  "-D__arm__ -D__CONIX__ -D__ELF__"
+#define TARGET_OS_CPP_BUILTINS()		\
+    do {					\
+	builtin_define ("__CONIX__");		\
+	builtin_define ("__ELF__");		\
+    } while (0)

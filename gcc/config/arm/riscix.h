@@ -47,11 +47,13 @@ Boston, MA 02111-1307, USA.  */
 #define LINK_SPEC "-X"
 #endif
 
-#ifndef CPP_PREDEFINES
-#define CPP_PREDEFINES  \
-    "-Darm -Driscix -Dunix -Asystem=unix"
-#endif
-
+#define TARGET_OS_CPP_BUILTINS()		\
+    do {					\
+	builtin_define_std ("arm");		\
+	builtin_define_std ("unix");		\
+	builtin_define_std ("riscix");		\
+	builtin_assert ("system=unix");		\
+    } while (0)
 
 /* RISCiX has some weird symbol name munging, that is done to the object module
    after assembly, which enables multiple libraries to be supported within
