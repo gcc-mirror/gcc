@@ -264,9 +264,8 @@ stack_include_file (pfile, inc)
     read_include_file (pfile, inc);
 
   /* Push a null buffer.  */
-  fp = cpp_push_buffer (pfile, NULL, 0);
+  fp = cpp_push_buffer (pfile, NULL, 0, BUF_FILE, inc->name);
   fp->inc = inc;
-  fp->nominal_fname = inc->name;
   fp->buf = inc->buffer;
   fp->rlimit = fp->buf;
   if (! DO_NOT_REREAD (inc))
@@ -287,7 +286,6 @@ stack_include_file (pfile, inc)
   pfile->mi_state = MI_OUTSIDE;
   pfile->mi_cmacro = 0;
   pfile->include_depth++;
-  pfile->input_stack_listing_current = 0;
 
   _cpp_do_file_change (pfile, FC_ENTER, filename, lineno);
 
@@ -775,7 +773,6 @@ _cpp_pop_file_buffer (pfile, buf)
     pfile->system_include_depth--;
   if (pfile->include_depth)
     pfile->include_depth--;
-  pfile->input_stack_listing_current = 0;
 
   /* Record the inclusion-preventing macro and its definedness.  */
   if (pfile->mi_state == MI_OUTSIDE && inc->cmacro != NEVER_REREAD)

@@ -606,10 +606,6 @@ struct cpp_reader
      preprocessor.  */
   struct spec_nodes spec_nodes;
 
-  /* Nonzero means we have printed (while error reporting) a list of
-     containing files that matches the current status.  */
-  unsigned char input_stack_listing_current;
-
   /* We're printed a warning recommending against using #import.  */
   unsigned char import_warning;
 
@@ -633,6 +629,10 @@ struct cpp_reader
 
 /* Name under which this program was invoked.  */
 extern const char *progname;
+
+/* Where does this buffer come from?  A file, a builtin macro, a
+   command-line option, or a _Pragma operator.  */
+enum cpp_buffer_type {BUF_FILE, BUF_BUILTIN, BUF_CL_OPTION, BUF_PRAGMA};
 
 /* The structure of a node in the hash table.  The hash table has
    entries for all identifiers: either macros defined by #define
@@ -729,7 +729,9 @@ extern void cpp_undef  PARAMS ((cpp_reader *, const char *));
 extern void cpp_unassert PARAMS ((cpp_reader *, const char *));
 
 extern cpp_buffer *cpp_push_buffer PARAMS ((cpp_reader *,
-					    const unsigned char *, size_t));
+					    const unsigned char *, size_t,
+					    enum cpp_buffer_type,
+					    const char *));
 extern cpp_buffer *cpp_pop_buffer PARAMS ((cpp_reader *));
 extern int cpp_defined PARAMS ((cpp_reader *, const unsigned char *, int));
 

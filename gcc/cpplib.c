@@ -84,8 +84,8 @@ static void check_eol		PARAMS ((cpp_reader *));
 static void start_directive	PARAMS ((cpp_reader *));
 static void end_directive	PARAMS ((cpp_reader *, int));
 static void run_directive	PARAMS ((cpp_reader *, int,
-					 const char *, size_t,
-					 const char *));
+					 enum cpp_buffer_type,
+					 const char *, size_t));
 static int glue_header_name	PARAMS ((cpp_reader *, cpp_token *));
 static int  parse_include	PARAMS ((cpp_reader *, cpp_token *));
 static void push_conditional	PARAMS ((cpp_reader *, int, int,
@@ -299,8 +299,7 @@ _cpp_handle_directive (pfile, indented)
 	  dir = &dtable[T_LINE];
 	  pfile->state.line_extension = 1;
 	  _cpp_push_token (pfile, &dname, &pfile->directive_pos);
-	  if (CPP_PEDANTIC (pfile) && buffer->inc
-	      && ! CPP_OPTION (pfile, preprocessed))
+	  if (CPP_PEDANTIC (pfile) && ! CPP_OPTION (pfile, preprocessed))
 	    cpp_pedwarn (pfile, "# followed by integer");
 	}
     }
@@ -374,47 +373,34 @@ _cpp_handle_directive (pfile, indented)
 /* Directive handler wrapper used by the command line option
    processor.  */
 static void
-run_directive (pfile, dir_no, buf, count, name)
+run_directive (pfile, dir_no, type, buf, count)
      cpp_reader *pfile;
      int dir_no;
+     enum cpp_buffer_type type;
      const char *buf;
      size_t count;
-     const char *name;
 {
   unsigned int output_line = pfile->lexer_pos.output_line;
-  cpp_buffer *buffer = cpp_push_buffer (pfile, (const U_CHAR *) buf, count);
+  cpp_buffer *buffer;
 
-  if (buffer)
+  buffer = cpp_push_buffer (pfile, (const U_CHAR *) buf, count, type, 0);
+
+  if (dir_no == T_PRAGMA)
     {
-      const struct directive *dir = &dtable[dir_no];
-
-      if (name)
-	buffer->nominal_fname = name;
-      else
-	buffer->nominal_fname = _("<command line>");
-
-      /* For _Pragma, the text is passed through preprocessing stage 3
-	 only, i.e. no trigraphs, no escaped newline removal, and no
-	 macro expansion.  Do the same for command-line directives.  */
-      buffer->from_stage3 = 1;
-
-      if (dir_no == T_PRAGMA)
-	{
-	  /* A kludge to avoid line markers for _Pragma.  */
-	  pfile->lexer_pos.output_line = output_line;
-	  /* Avoid interpretation of directives in a _Pragma string.  */
-	  pfile->state.next_bol = 0;
-	}
-
-      start_directive (pfile);
-      pfile->state.prevent_expansion++;
-      (void) (*dir->handler) (pfile);
-      pfile->state.prevent_expansion--;
-      check_eol (pfile);
-      end_directive (pfile, 1);
-
-      cpp_pop_buffer (pfile);
+      /* A kludge to avoid line markers for _Pragma.  */
+      pfile->lexer_pos.output_line = output_line;
+      /* Avoid interpretation of directives in a _Pragma string.  */
+      pfile->state.next_bol = 0;
     }
+
+  start_directive (pfile);
+  pfile->state.prevent_expansion++;
+  (void) (*dtable[dir_no].handler) (pfile);
+  pfile->state.prevent_expansion--;
+  check_eol (pfile);
+  end_directive (pfile, 1);
+
+  cpp_pop_buffer (pfile);
 }
 
 /* Checks for validity the macro name in #define, #undef, #ifdef and
@@ -1165,7 +1151,7 @@ _cpp_do__Pragma (pfile)
     }
 
   buffer = destringize (&string.val.str, &len);
-  run_directive (pfile, T_PRAGMA, (char *) buffer, len, _("<_Pragma>"));
+  run_directive (pfile, T_PRAGMA, BUF_PRAGMA, (char *) buffer, len);
   free ((PTR) buffer);
 }
 
@@ -1633,7 +1619,7 @@ cpp_define (pfile, str)
       buf[count++] = '1';
     }
 
-  run_directive (pfile, T_DEFINE, buf, count, 0);
+  run_directive (pfile, T_DEFINE, BUF_CL_OPTION, buf, count);
 }
 
 /* Slight variant of the above for use by initialize_builtins, which (a)
@@ -1644,7 +1630,7 @@ _cpp_define_builtin (pfile, str)
      cpp_reader *pfile;
      const char *str;
 {
-  run_directive (pfile, T_DEFINE, str, strlen (str), _("<builtin>"));
+  run_directive (pfile, T_DEFINE, BUF_BUILTIN, str, strlen (str));
 }
 
 /* Process MACRO as if it appeared as the body of an #undef.  */
@@ -1653,7 +1639,7 @@ cpp_undef (pfile, macro)
      cpp_reader *pfile;
      const char *macro;
 {
-  run_directive (pfile, T_UNDEF, macro, strlen (macro), 0);
+  run_directive (pfile, T_UNDEF, BUF_CL_OPTION, macro, strlen (macro));
 }
 
 /* Process the string STR as if it appeared as the body of a #assert. */
@@ -1696,37 +1682,51 @@ handle_assertion (pfile, str, type)
       str = buf;
     }
 
-  run_directive (pfile, type, str, count, 0);
+  run_directive (pfile, type, BUF_CL_OPTION, str, count);
 }
 
 /* Push a new buffer on the buffer stack.  Buffer can be NULL, but
    then LEN should be 0.  Returns the new buffer; it doesn't fail.  */
 
 cpp_buffer *
-cpp_push_buffer (pfile, buffer, len)
+cpp_push_buffer (pfile, buffer, len, type, filename)
      cpp_reader *pfile;
      const U_CHAR *buffer;
      size_t len;
+     enum cpp_buffer_type type;
+     const char *filename;
 {
   cpp_buffer *new = xobnew (pfile->buffer_ob, cpp_buffer);
 
   /* Clears, amongst other things, if_stack and mi_cmacro.  */
   memset (new, 0, sizeof (cpp_buffer));
+
+  switch (type)
+    {
+    case BUF_FILE:	new->nominal_fname = filename; break;
+    case BUF_BUILTIN:	new->nominal_fname = _("<builtin>"); break;
+    case BUF_CL_OPTION:	new->nominal_fname = _("<command line>"); break;
+    case BUF_PRAGMA:	new->nominal_fname = _("<_Pragma>"); break;
+    }
+  new->type = type;
   new->line_base = new->buf = new->cur = buffer;
   new->rlimit = buffer + len;
   new->prev = pfile->buffer;
   new->pfile = pfile;
-  /* Preprocessed files don't do trigraph and escaped newline processing.  */
-  new->from_stage3 = CPP_OPTION (pfile, preprocessed);
+
   /* No read ahead or extra char initially.  */
   new->read_ahead = EOF;
   new->extra_char = EOF;
 
+  /* Preprocessed files, builtins, _Pragma and command line options
+     don't do trigraph and escaped newline processing.  */
+  new->from_stage3 = type != BUF_FILE || CPP_OPTION (pfile, preprocessed);
+
   pfile->state.next_bol = 1;
   pfile->buffer_stack_depth++;
   pfile->lexer_pos.output_line = 1;
-
   pfile->buffer = new;
+
   return new;
 }
 
@@ -1738,7 +1738,7 @@ cpp_pop_buffer (pfile)
   const char *filename = buffer->nominal_fname;
   unsigned int lineno = buffer->lineno;
   struct if_stack *ifs = buffer->if_stack;
-  int wfb = (buffer->inc != 0);
+  int file_buffer_p = buffer->type == BUF_FILE;
 
   /* Walk back up the conditional stack till we reach its level at
      entry to this file, issuing error messages.  */
@@ -1746,15 +1746,18 @@ cpp_pop_buffer (pfile)
     cpp_error_with_line (pfile, ifs->pos.line, ifs->pos.col,
 			 "unterminated #%s", dtable[ifs->type].name);
 
-  if (wfb)
+  if (file_buffer_p)
     _cpp_pop_file_buffer (pfile, buffer);
 
   pfile->buffer = buffer->prev;
   obstack_free (pfile->buffer_ob, buffer);
   pfile->buffer_stack_depth--;
 
-  if (pfile->buffer && wfb)
-    _cpp_do_file_change (pfile, FC_LEAVE, filename, lineno);
+  if (pfile->buffer && file_buffer_p)
+    {
+      _cpp_do_file_change (pfile, FC_LEAVE, filename, lineno);
+      pfile->buffer->include_stack_listed = 0;
+    }
   
   return pfile->buffer;
 }

@@ -148,28 +148,22 @@ builtin_macro (pfile, token)
 {
   unsigned char flags = token->flags & PREV_WHITE;
   cpp_hashnode *node = token->val.node;
-  cpp_buffer *ip;
 
   switch (node->value.builtin)
     {
     case BT_FILE:
     case BT_BASE_FILE:
       {
-	const char *file;
+	const char *name;
+	cpp_buffer *buffer = pfile->buffer;
 
-	ip = CPP_BUFFER (pfile);
-	if (ip == 0)
-	  file = "";
-	else
-	  {
-	    if (node->value.builtin == BT_BASE_FILE)
-	      while (CPP_PREV_BUFFER (ip) != NULL)
-		ip = CPP_PREV_BUFFER (ip);
+	if (node->value.builtin == BT_BASE_FILE)
+	  while (buffer->prev)
+	    buffer = buffer->prev;
 
-	    file = ip->nominal_fname;
-	  }
+	name = buffer->nominal_fname;
 	make_string_token (pfile->string_pool, token,
-			   (const U_CHAR *) file, strlen (file));
+			   (const unsigned char *) name, strlen (name));
       }
       break;
 	
