@@ -156,6 +156,7 @@ static int diagnostic_lock;
 
 /* Return truthvalue if current input file is different from the most recent
    file involved in a diagnostic message.  */
+
 int
 error_module_changed ()
 {
@@ -164,6 +165,7 @@ error_module_changed ()
 
 /* Remember current file as being the most recent file involved in a
    diagnostic message.  */
+
 void
 record_last_error_module ()
 {
@@ -171,6 +173,7 @@ record_last_error_module ()
 }
 
 /* Same as error_module_changed, but for function.  */
+
 int
 error_function_changed ()
 {
@@ -178,6 +181,7 @@ error_function_changed ()
 }
 
 /* Same as record_last_error_module, but for function.  */
+
 void
 record_last_error_function ()
 {
@@ -345,6 +349,7 @@ init_output_buffer (buffer, prefix, maximum_length)
 
 /* Initialize BUFFER with a NULL prefix and current diagnostic message
    length cutoff.  */
+
 void
 default_initialize_buffer (buffer)
      output_buffer *buffer;
@@ -365,6 +370,7 @@ reshape_diagnostic_buffer ()
 }
 
 /* Reinitialize BUFFER.  */
+
 void
 output_clear (buffer)
      output_buffer *buffer;
@@ -623,6 +629,7 @@ wrap_text (buffer, start, end)
 }
 
 /* Same as wrap_text but wrap text only when in line-wrapping mode.  */
+
 static void
 maybe_wrap_text (buffer, start, end)
      output_buffer *buffer;
@@ -828,6 +835,7 @@ build_message_string VPARAMS ((const char *msgid, ...))
 
 /* Return a malloc'd string describing a location.  The caller is
    responsible for freeing the memory.  */
+
 char *
 context_as_prefix (file, line, warn)
      const char *file;
@@ -851,6 +859,7 @@ context_as_prefix (file, line, warn)
 }
 
 /* Same as context_as_prefix, but only the source FILE is given.  */
+
 char *
 file_name_as_prefix (f)
      const char *f;
@@ -1409,6 +1418,12 @@ fatal VPARAMS ((const char *msgid, ...))
   msgid = va_arg (ap, const char *);
 #endif
 
+  if (errorcount > 1 || sorrycount > 0)
+    {
+      fprintf (stderr, "confused by earlier errors, bailing out\n");
+      exit (FATAL_EXIT_CODE);
+    }
+
   if (fatal_function != 0)
     (*fatal_function) (_(msgid), &ap);
   
@@ -1416,6 +1431,10 @@ fatal VPARAMS ((const char *msgid, ...))
     (&dc, msgid, &ap, input_filename, lineno, /* warn = */0);
   report_diagnostic (&dc);
   va_end (ap);
+
+  fprintf
+    (stderr, "Please submit a full bug report.\n See %s for instructions.\n",
+     GCCBUGURL);
   exit (FATAL_EXIT_CODE);
 }
 
@@ -1533,6 +1552,7 @@ warning VPARAMS ((const char *msgid, ...))
 }
 
 /* Flush diagnostic_buffer content on stderr.  */
+
 static void
 finish_diagnostic ()
 {
@@ -1544,6 +1564,7 @@ finish_diagnostic ()
 
 /* Helper subroutine of output_verbatim and verbatim. Do the approriate
    settings needed by BUFFER for a verbatim formatting.  */
+
 static void
 output_do_verbatim (buffer, msg, args_ptr)
      output_buffer *buffer;
@@ -1563,6 +1584,7 @@ output_do_verbatim (buffer, msg, args_ptr)
 }
 
 /* Output MESSAGE verbatim into BUFFER.  */
+
 void
 output_verbatim VPARAMS ((output_buffer *buffer, const char *msg, ...))
 {
@@ -1582,6 +1604,7 @@ output_verbatim VPARAMS ((output_buffer *buffer, const char *msg, ...))
 }
 
 /* Same as above but use diagnostic_buffer.  */
+
 void
 verbatim VPARAMS ((const char *msg, ...))
 {
@@ -1604,6 +1627,7 @@ verbatim VPARAMS ((const char *msg, ...))
    should implement their specific diagnostic handling modules.  The
    front-end independent format specifiers are exactly those described
    in the documentation of output_format.  */
+
 void
 report_diagnostic (dc)
      diagnostic_context *dc;
@@ -1631,21 +1655,21 @@ report_diagnostic (dc)
 /* Inform the user that an error occurred while trying to report some
    other error.  This indicates catastrophic internal inconsistencies,
    so give up now.  But do try to flush out the previous error.  */
+
 static void
 error_recursion ()
 {
   if (diagnostic_lock < 3)
     finish_diagnostic ();
 
-  fputs (_("Internal compiler error: Error reporting routines re-entered.\n"),
-	 stderr);
-  finish_abort ();
+  fatal ("Internal compiler error: Error reporting routines re-entered.");
 }
 
 /* Given a partial pathname as input, return another pathname that
    shares no directory elements with the pathname of __FILE__.  This
    is used by fancy_abort() to print `Internal compiler error in expr.c'
    instead of `Internal compiler error in ../../GCC/gcc/expr.c'.  */
+
 static const char *
 trim_filename (name)
      const char *name;
@@ -1653,7 +1677,29 @@ trim_filename (name)
   static const char this_file[] = __FILE__;
   const char *p = name, *q = this_file;
 
-  while (*p == *q && *p != 0 && *q != 0) p++, q++;
+  /* First skip any "../" in each filename.  This allows us to give a proper
+     reference to a file in a subdirectory.  */
+  while (p[0] == '.' && p[1] == '.'
+	 && (p[2] == DIR_SEPARATOR
+#ifdef DIR_SEPARATOR_2
+	     || p[2] == DIR_SEPARATOR_2
+#endif
+	     ))
+    p += 3;
+
+  while (q[0] == '.' && q[1] == '.'
+	 && (q[2] == DIR_SEPARATOR
+#ifdef DIR_SEPARATOR_2
+	     || p[2] == DIR_SEPARATOR_2
+#endif
+	     ))
+    q += 3;
+
+  /* Now skip any parts the two filenames have in common.  */
+  while (*p == *q && *p != 0 && *q != 0)
+    p++, q++;
+
+  /* Now go backwards until the previous directory separator.  */
   while (p > name && p[-1] != DIR_SEPARATOR
 #ifdef DIR_SEPARATOR_2
 	 && p[-1] != DIR_SEPARATOR_2
@@ -1673,32 +1719,14 @@ fancy_abort (file, line, function)
      int line;
      const char *function;
 {
-  error ("Internal compiler error in %s, at %s:%d",
+  fatal ("Internal compiler error in %s, at %s:%d",
 	 function, trim_filename (file), line);
-  finish_abort ();
-}
-
-/* Finish reporting an internal compiler error.  If the only error we've
-   seen is the current one, encourage the user to file a bug report;
-   otherwise, fixing their code will probably avoid the crash.  */
-
-void
-finish_abort ()
-{
-  if (errorcount > 1 || sorrycount > 0)
-    fprintf (stderr, "confused by earlier errors, bailing out\n");
-  else
-    fprintf (stderr, "\
-Please submit a full bug report.\n\
-See %s for instructions.\n",
-	   GCCBUGURL);
-
-  exit (FATAL_EXIT_CODE);
 }
 
 /* Setup DC for reporting a diagnostic MESSAGE (an error or a WARNING),
    using arguments pointed to by ARGS_PTR, issued at a location specified
    by FILE and LINE.  */
+
 void
 set_diagnostic_context (dc, message, args_ptr, file, line, warn)
      diagnostic_context *dc;
