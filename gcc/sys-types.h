@@ -83,7 +83,7 @@ struct ypall_callback;
 union wait;
 
 /* Get size_t and wchar_t.  */
-#include "gstddef.h"
+#include <stddef.h>
 
 /* #include "sys/types.h" */
 
