@@ -99,6 +99,7 @@ static tree remap_decl PARAMS ((tree, inline_data *));
 static void remap_block PARAMS ((tree, tree, inline_data *));
 static void copy_scope_stmt PARAMS ((tree *, int *, inline_data *));
 static tree calls_setjmp_r PARAMS ((tree *, int *, void *));
+static void update_cloned_parm PARAMS ((tree, tree));
 
 /* The approximate number of instructions per statement.  This number
    need not be particularly accurate; it is used only to make
@@ -1009,6 +1010,25 @@ calls_setjmp_p (fn)
 				       NULL) != NULL_TREE;
 }
 
+/* CLONED_PARM is a copy of CLONE, generated for a cloned constructor
+   or destructor.  Update it to ensure that the source-position for
+   the cloned parameter matches that for the original, and that the
+   debugging generation code will be able to find the original PARM.  */
+
+static void
+update_cloned_parm (parm, cloned_parm)
+     tree parm;
+     tree cloned_parm;
+{
+  DECL_ABSTRACT_ORIGIN (cloned_parm) = parm;
+  
+  /* The name may have changed from the declaration. */
+  DECL_NAME (cloned_parm) = DECL_NAME (parm);
+  DECL_SOURCE_FILE (cloned_parm) = DECL_SOURCE_FILE (parm);
+  DECL_SOURCE_LINE (cloned_parm) = DECL_SOURCE_LINE (parm);
+  
+}
+
 /* FN is a function that has a complete body.  Clone the body as
    necessary.  Returns non-zero if there's no longer any need to
    process the main body.  */
@@ -1057,6 +1077,10 @@ maybe_clone_body (fn)
       /* Adjust the parameter names and locations. */
       parm = DECL_ARGUMENTS (fn);
       clone_parm = DECL_ARGUMENTS (clone);
+      /* Update the `this' parameter, which is always first.
+	 Sometimes, we end update the `this' parameter twice because
+	 we process it again in the loop below.  That is harmless.  */
+      update_cloned_parm (parm, clone_parm);
       if (DECL_HAS_IN_CHARGE_PARM_P (fn))
 	parm = TREE_CHAIN (parm);
       if (DECL_HAS_VTT_PARM_P (fn))
@@ -1066,13 +1090,8 @@ maybe_clone_body (fn)
       for (; parm;
 	   parm = TREE_CHAIN (parm), clone_parm = TREE_CHAIN (clone_parm))
 	{
-	  DECL_ABSTRACT_ORIGIN (clone_parm) = parm;
-
-	  /* The name may have changed from the declaration. */
-	  DECL_NAME (clone_parm) = DECL_NAME (parm);
-	  DECL_SOURCE_FILE (clone_parm) = DECL_SOURCE_FILE (parm);
-	  DECL_SOURCE_LINE (clone_parm) = DECL_SOURCE_LINE (parm);
- 
+	  /* Update this paramter.  */
+	  update_cloned_parm (parm, clone_parm);
 	  /* We should only give unused information for one clone. */
 	  if (!first)
 	    TREE_USED (clone_parm) = 1;

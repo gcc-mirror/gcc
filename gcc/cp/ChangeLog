@@ -1,3 +1,8 @@
+2001-04-30  Mark Mitchell  <mark@codesourcery.com>
+
+	* optimize.c (update_cloned_parm): New function.
+	(maybe_clone_body): Use it.  Update the `this' parameter too.
+
 2001-04-29  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* decl2.c (unsupported_options): Add new-abi.
