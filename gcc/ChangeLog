@@ -1,3 +1,11 @@
+Thu Nov 23 04:10:30 2000  Alexandre Oliva  <aoliva@redhat.com>
+
+	* config/sh/sh.md (mova_const): New pattern.
+	(GOTaddr2picreg): Use it.
+	* config/sh/sh.c (broken_move): Match it.
+	(mova_p): Don't match it.
+	(machine_dependent_reorg): Adjust it.
+
 Thu Nov 23 02:09:09 2000  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config/sh/sh.h (FIRST_GENERAL_REG, LAST_GENERAL_REG): New.

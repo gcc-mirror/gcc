@@ -2071,7 +2071,11 @@ broken_move (insn)
 	  /* We can load any 8 bit value if we don't care what the high
 	     order bits end up as.  */
 	  && GET_MODE (SET_DEST (pat)) != QImode
-	  && CONSTANT_P (SET_SRC (pat))
+	  && (CONSTANT_P (SET_SRC (pat))
+	      /* Match mova_const.  */
+	      || (GET_CODE (SET_SRC (pat)) == UNSPEC
+		  && XINT (SET_SRC (pat), 1) == UNSPEC_MOVA
+		  && GET_CODE (XVECEXP (SET_SRC (pat), 0, 0)) == CONST))
 	  && ! (TARGET_SH3E
 		&& GET_CODE (SET_SRC (pat)) == CONST_DOUBLE
 		&& (fp_zero_operand (SET_SRC (pat))
@@ -2097,7 +2101,9 @@ mova_p (insn)
   return (GET_CODE (insn) == INSN
 	  && GET_CODE (PATTERN (insn)) == SET
 	  && GET_CODE (SET_SRC (PATTERN (insn))) == UNSPEC
-	  && XINT (SET_SRC (PATTERN (insn)), 1) == UNSPEC_MOVA);
+	  && XINT (SET_SRC (PATTERN (insn)), 1) == UNSPEC_MOVA
+	  /* Don't match mova_const.  */
+	  && XVECEXP (SET_SRC (PATTERN (insn)), 0, 0) == LABEL_REF);
 }
 
 /* Find the last barrier from insn FROM which is close enough to hold the
@@ -3280,14 +3286,11 @@ machine_dependent_reorg (first)
 		      XEXP (clobber, 0) = gen_rtx_SCRATCH (Pmode);
 		    }
 		  /* This is a mova needing a label.  Create it.  */
-		  else if (GET_CODE (src) == CONST
-			   && GET_CODE (XEXP (src, 0)) == UNSPEC
-			   && XINT (XEXP (src, 0), 1) == UNSPEC_MOVA
-			   && GET_CODE (XVECEXP (XEXP (src, 0),
-						 0, 0)) == CONST)
+		  else if (GET_CODE (src) == UNSPEC
+			   && XINT (src, 1) == UNSPEC_MOVA
+			   && GET_CODE (XVECEXP (src, 0, 0)) == CONST)
 		    {
-		      lab = add_constant (XVECEXP (XEXP (src, 0),
-						   0, 0), mode, 0);
+		      lab = add_constant (XVECEXP (src, 0, 0), mode, 0);
 		      newsrc = gen_rtx_LABEL_REF (VOIDmode, lab);
 		      newsrc = gen_rtx_UNSPEC (VOIDmode,
 					       gen_rtvec (1, newsrc),

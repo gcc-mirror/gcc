@@ -3570,10 +3570,19 @@
   [(set_attr "in_delay_slot" "no")
    (set_attr "type" "arith")])
 
+;; machine_dependent_reorg() will make this a `mova'.
+(define_insn "mova_const"
+  [(set (reg:SI R0_REG)
+	(unspec [(match_operand 0 "immediate_operand" "i")] 1))]
+  ""
+  "#"
+  [(set_attr "in_delay_slot" "no")
+   (set_attr "type" "arith")])
+
 (define_expand "GOTaddr2picreg"
   [(set (reg:SI R0_REG)
-	(const (unspec [(const (unspec [(match_dup 1)] UNSPEC_PIC))]
-		       UNSPEC_MOVA)))
+	(unspec [(const (unspec [(match_dup 1)] UNSPEC_PIC))]
+		UNSPEC_MOVA))
    (set (match_dup 0) (const (unspec [(match_dup 1)] UNSPEC_PIC)))
    (set (match_dup 0) (plus:SI (match_dup 0) (reg:SI R0_REG)))]
   "" "
