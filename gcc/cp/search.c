@@ -1,6 +1,6 @@
 /* Breadth-first and depth-first routines for
    searching multiple-inheritance lattice for GNU C++.
-   Copyright (C) 1987, 1989, 1992, 1993, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1987, 89, 92, 93, 94, 1995 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -381,6 +381,53 @@ pop_memoized_context (use_old)
     type_stack = (struct type_level *)type_stack->base.prev;
 }
 
+/* Get a virtual binfo that is found inside BINFO's hierarchy that is
+   the same type as the type given in PARENT.  To be optimal, we want
+   the first one that is found by going through the least number of
+   virtual bases.  DEPTH should be NULL_PTR.  */
+static tree
+get_vbase (parent, binfo, depth)
+     tree parent, binfo;
+     unsigned int *depth;
+{
+  tree binfos;
+  int i, n_baselinks;
+  tree rval = NULL_TREE;
+
+  if (depth == 0)
+    {
+      unsigned int d = (unsigned int)-1;
+      return get_vbase (parent, binfo, &d);
+    }
+
+  if (BINFO_TYPE (binfo) == parent && TREE_VIA_VIRTUAL (binfo))
+    {
+      *depth = 0;
+      return binfo;
+    }
+
+  *depth = *depth - 1;
+
+  binfos = BINFO_BASETYPES (binfo);
+  n_baselinks = binfos ? TREE_VEC_LENGTH (binfos) : 0;
+
+  /* Process base types.  */
+  for (i = 0; i < n_baselinks; i++)
+    {
+      tree base_binfo = TREE_VEC_ELT (binfos, i);
+      tree nrval;
+
+      if (*depth == 0)
+	break;
+
+      nrval = get_vbase (parent, base_binfo, depth);
+      if (nrval)
+	rval = nrval;
+    }
+  *depth = *depth+1;
+  return rval;
+}
+
 /* This is the newer recursive depth first search routine. */
 #if 0				/* unused */
 /* Return non-zero if PARENT is directly derived from TYPE.  By directly
@@ -2783,6 +2830,11 @@ expand_indirect_vtbls_init (binfo, true_exp, decl_ptr, use_computed_offsets)
 	    addr = (tree)CLASSTYPE_SEARCH_SLOT (BINFO_TYPE (vbases));
 	  else
 	    {
+#if 1
+	      tree vb = get_vbase (TREE_TYPE (vbases), TYPE_BINFO (TREE_TYPE (vbase_decl)),
+				   NULL_PTR);
+	      addr = convert_pointer_to_real (vb, vbase_decl_ptr);
+#else
 	      tree vbinfo = get_binfo (TREE_TYPE (vbases),
 				       TREE_TYPE (vbase_decl),
 				       0);
@@ -2805,6 +2857,7 @@ expand_indirect_vtbls_init (binfo, true_exp, decl_ptr, use_computed_offsets)
 		  if (addr == error_mark_node)
 		    continue;
 		}
+#endif
 	    }
 
 	  /* Do all vtables from this virtual base. */
