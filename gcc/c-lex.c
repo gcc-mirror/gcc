@@ -1313,8 +1313,7 @@ yylex ()
 	if (floatflag != NOT_FLOAT)
 	  {
 	    tree type = double_type_node;
-	    char f_seen = 0;
-	    char l_seen = 0;
+	    int garbage_chars = 0, exceeds_double = 0;
 	    REAL_VALUE_TYPE value;
 	    jmp_buf handler;
 
@@ -1378,53 +1377,40 @@ yylex ()
 		/* ERANGE is also reported for underflow,
 		   so test the value to distinguish overflow from that.  */
 		if (*p1 != 0 && (value > 1.0 || value < -1.0))
-		  pedwarn ("floating point number exceeds range of `double'");
+		  {
+		    pedwarn ("floating point number exceeds range of `double'");
+		    exceeds_double = 1;
+		  }
 	      }
 #endif
 
 	    /* Read the suffixes to choose a data type.  */
-	    while (1)
+	    switch (c)
 	      {
-		if (c == 'f' || c == 'F')
-		  {
-		    if (f_seen)
-		      error ("two `f's in floating constant");
-		    else
-		      {
-			f_seen = 1;
-			type = float_type_node;
-			value = real_value_truncate (TYPE_MODE (type), value);
-			if (REAL_VALUE_ISINF (value) && pedantic)
-			  pedwarn ("floating point number exceeds range of `float'");
-		      }
-		  }
-		else if (c == 'l' || c == 'L')
-		  {
-		    if (l_seen)
-		      error ("two `l's in floating constant");
-		    l_seen = 1;
-		    type = long_double_type_node;
-		  }
-		else
-		  {
-		    if (isalnum (c))
-		      {
-			error ("garbage at end of number");
-			while (isalnum (c))
-			  {
-			    if (p >= token_buffer + maxtoken - 3)
-			      p = extend_token_buffer (p);
-			    *p++ = c;
-			    c = getc (finput);
-			  }
-		      }
-		    break;
-		  }
+	      case 'f': case 'F':
+		type = float_type_node;
+		value = REAL_VALUE_TRUNCATE (TYPE_MODE (type), value);
+		if (REAL_VALUE_ISINF (value) && ! exceeds_double && pedantic)
+		  pedwarn ("floating point number exceeds range of `float'");
+		garbage_chars = -1;
+		break;
+
+	      case 'l': case 'L':
+		type = long_double_type_node;
+		garbage_chars = -1;
+		break;
+	      }
+	    /* Note: garbage_chars is -1 if first char is *not* garbage.  */
+	    while (isalnum (c))
+	      {
 		if (p >= token_buffer + maxtoken - 3)
 		  p = extend_token_buffer (p);
 		*p++ = c;
 		c = getc (finput);
+		garbage_chars++;
 	      }
+	    if (garbage_chars > 0)
+	      error ("garbage at end of number");
 
 	    /* Create a node with determined type and value.  */
 	    yylval.ttype = build_real (type, value);
