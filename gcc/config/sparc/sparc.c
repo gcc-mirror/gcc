@@ -4822,33 +4822,46 @@ sparc_emit_float_lib_cmp (x, y, comparison)
      rtx x, y;
      enum rtx_code comparison;
 {
-  const char *qpfunc;
-  rtx slot0, slot1, result;
+  char *qpfunc;
+  rtx cmp = const0_rtx;
+  rtx slot0, slot1, result, tem, tem2;
+  enum machine_mode mode;
 
   switch (comparison)
     {
     case EQ:
-      qpfunc = "_Qp_feq";
+      qpfunc = (TARGET_ARCH64) ? "_Qp_feq" : "_Q_feq";
       break;
 
     case NE:
-      qpfunc = "_Qp_fne";
+      qpfunc = (TARGET_ARCH64) ? "_Qp_fne" : "_Q_fne";
       break;
 
     case GT:
-      qpfunc = "_Qp_fgt";
+      qpfunc = (TARGET_ARCH64) ? "_Qp_fgt" : "_Q_fgt";
       break;
 
     case GE:
-      qpfunc = "_Qp_fge";
+      qpfunc = (TARGET_ARCH64) ? "_Qp_fge" : "_Q_fge";
       break;
 
     case LT:
-      qpfunc = "_Qp_flt";
+      qpfunc = (TARGET_ARCH64) ? "_Qp_flt" : "_Q_flt";
       break;
 
     case LE:
-      qpfunc = "_Qp_fle";
+      qpfunc = (TARGET_ARCH64) ? "_Qp_fle" : "_Q_fle";
+      break;
+
+    case ORDERED:
+    case UNORDERED:
+    case UNGT:
+    case UNLT:
+    case UNEQ:
+    case UNGE:
+    case UNLE:
+    case LTGT:
+      qpfunc = (TARGET_ARCH64) ? "_Qp_cmp" : "_Q_cmp";
       break;
 
     default:
@@ -4856,33 +4869,97 @@ sparc_emit_float_lib_cmp (x, y, comparison)
       break;
     }
 
-  if (GET_CODE (x) != MEM)
+  if (TARGET_ARCH64)
     {
-      slot0 = assign_stack_temp (TFmode, GET_MODE_SIZE(TFmode), 0);
-      emit_insn (gen_rtx_SET (VOIDmode, slot0, x));
+      if (GET_CODE (x) != MEM)
+	{
+	  slot0 = assign_stack_temp (TFmode, GET_MODE_SIZE(TFmode), 0);
+	  emit_insn (gen_rtx_SET (VOIDmode, slot0, x));
+	}
+      else
+	slot0 = x;
+
+      if (GET_CODE (y) != MEM)
+	{
+	  slot1 = assign_stack_temp (TFmode, GET_MODE_SIZE(TFmode), 0);
+	  emit_insn (gen_rtx_SET (VOIDmode, slot1, y));
+	}
+      else
+	slot1 = y;
+
+      emit_library_call (gen_rtx_SYMBOL_REF (Pmode, qpfunc), 1,
+			 DImode, 2,
+			 XEXP (slot0, 0), Pmode,
+			 XEXP (slot1, 0), Pmode);
+
+      mode = DImode;
+    }
+  else
+    {
+      emit_library_call (gen_rtx_SYMBOL_REF (Pmode, qpfunc), 1,
+			 SImode, 2,
+			 x, TFmode, y, TFmode);
+
+      mode = SImode;
     }
 
-  if (GET_CODE (y) != MEM)
-    {
-      slot1 = assign_stack_temp (TFmode, GET_MODE_SIZE(TFmode), 0);
-      emit_insn (gen_rtx_SET (VOIDmode, slot1, y));
-    }
-
-  emit_library_call (gen_rtx (SYMBOL_REF, Pmode, qpfunc), 1,
-                     DImode, 2,
-                     XEXP (slot0, 0), Pmode,
-                     XEXP (slot1, 0), Pmode);
 
   /* Immediately move the result of the libcall into a pseudo
      register so reload doesn't clobber the value if it needs
      the return register for a spill reg.  */
-  result = gen_reg_rtx (DImode);
-  emit_move_insn (result, hard_libcall_value (DImode));
+  result = gen_reg_rtx (mode);
+  emit_move_insn (result, hard_libcall_value (mode));
 
-  emit_cmp_insn (result, const0_rtx, comparison,
-                 NULL_RTX, DImode, 0, 0);
+  switch (comparison)
+    {
+    default:
+      emit_cmp_insn (result, const0_rtx, NE,
+		     NULL_RTX, mode, 0, 0);
+      break;
+    case ORDERED:
+    case UNORDERED:
+      emit_cmp_insn (result, GEN_INT(3),
+		     (comparison == UNORDERED) ? EQ : NE,
+		     NULL_RTX, mode, 0, 0);
+      break;
+    case UNGT:
+    case UNGE:
+      emit_cmp_insn (result, const1_rtx,
+		     (comparison == UNGT) ? GT : NE,
+		     NULL_RTX, mode, 0, 0);
+      break;
+    case UNLE:
+      emit_cmp_insn (result, const2_rtx, NE,
+		     NULL_RTX, mode, 0, 0);
+      break;
+    case UNLT:
+      tem = gen_reg_rtx (mode);
+      if (TARGET_ARCH32)
+	emit_insn (gen_andsi3 (tem, result, const1_rtx));
+      else
+	emit_insn (gen_anddi3 (tem, result, const1_rtx));
+      emit_cmp_insn (tem, const0_rtx, NE,
+		     NULL_RTX, mode, 0, 0);
+      break;
+    case UNEQ:
+    case LTGT:
+      tem = gen_reg_rtx (mode);
+      if (TARGET_ARCH32)
+	emit_insn (gen_addsi3 (tem, result, const1_rtx));
+      else
+	emit_insn (gen_adddi3 (tem, result, const1_rtx));
+      tem2 = gen_reg_rtx (mode);
+      if (TARGET_ARCH32)
+	emit_insn (gen_andsi3 (tem2, tem, const2_rtx));
+      else
+	emit_insn (gen_anddi3 (tem2, tem, const2_rtx));
+      emit_cmp_insn (tem2, const0_rtx,
+		     (comparison == UNEQ) ? EQ : NE,
+		     NULL_RTX, mode, 0, 0);
+      break;
+    }
 }
-          
+
 /* Return the string to output a conditional branch to LABEL, testing
    register REG.  LABEL is the operand number of the label; REG is the
    operand number of the reg.  OP is the conditional expression.  The mode
@@ -5449,9 +5526,16 @@ print_operand (file, x, code)
     case 'c' :
     case 'C':
       {
-	enum rtx_code rc = (code == 'c'
-			    ? reverse_condition (GET_CODE (x))
-			    : GET_CODE (x));
+	enum rtx_code rc = GET_CODE (x);
+	
+	if (code == 'c')
+	  {
+	    enum machine_mode mode = GET_MODE (XEXP (x, 0));
+	    if (mode == CCFPmode || mode == CCFPEmode)
+	      rc = reverse_condition_maybe_unordered (GET_CODE (x));
+	    else
+	      rc = reverse_condition (GET_CODE (x));
+	  }
 	switch (rc)
 	  {
 	  case NE: fputs ("ne", file); break;
@@ -5464,6 +5548,14 @@ print_operand (file, x, code)
 	  case GTU: fputs ("gu", file); break;
 	  case LEU: fputs ("leu", file); break;
 	  case LTU: fputs ("lu", file); break;
+	  case LTGT: fputs ("lg", file); break;
+	  case UNORDERED: fputs ("u", file); break;
+	  case ORDERED: fputs ("o", file); break;
+	  case UNLT: fputs ("ul", file); break;
+	  case UNLE: fputs ("ule", file); break;
+	  case UNGT: fputs ("ug", file); break;
+	  case UNGE: fputs ("uge", file); break;
+	  case UNEQ: fputs ("ue", file); break;
 	  default: output_operand_lossage (code == 'c'
 					   ? "Invalid %%c operand"
 					   : "Invalid %%C operand");

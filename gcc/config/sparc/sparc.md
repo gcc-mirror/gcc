@@ -627,7 +627,7 @@
   [(set (reg:CCFP 96)
 	(compare:CCFP (match_operand:TF 0 "register_operand" "")
 		      (match_operand:TF 1 "register_operand" "")))]
-  "TARGET_FPU && (TARGET_HARD_QUAD || TARGET_ARCH64)"
+  "TARGET_FPU"
   "
 {
   sparc_compare_op0 = operands[0];
@@ -855,7 +855,7 @@
       emit_insn (pat);
       DONE;
     }
-  else if (GET_MODE (sparc_compare_op0) == TFmode && TARGET_ARCH64 && ! TARGET_HARD_QUAD)
+  else if (GET_MODE (sparc_compare_op0) == TFmode && ! TARGET_HARD_QUAD)
     {
       sparc_emit_float_lib_cmp (sparc_compare_op0, sparc_compare_op1, EQ);
       emit_jump_insn (gen_sne (operands[0]));
@@ -908,7 +908,7 @@
       emit_insn (pat);
       DONE;
     }
-  else if (GET_MODE (sparc_compare_op0) == TFmode && TARGET_ARCH64 && ! TARGET_HARD_QUAD)
+  else if (GET_MODE (sparc_compare_op0) == TFmode && ! TARGET_HARD_QUAD)
     {
       sparc_emit_float_lib_cmp (sparc_compare_op0, sparc_compare_op1, NE);
       emit_jump_insn (gen_sne (operands[0]));
@@ -929,7 +929,7 @@
   "! TARGET_LIVE_G0"
   "
 {
-  if (GET_MODE (sparc_compare_op0) == TFmode && TARGET_ARCH64 && ! TARGET_HARD_QUAD)
+  if (GET_MODE (sparc_compare_op0) == TFmode && ! TARGET_HARD_QUAD)
     {
       sparc_emit_float_lib_cmp (sparc_compare_op0, sparc_compare_op1, GT);
       emit_jump_insn (gen_sne (operands[0]));
@@ -950,7 +950,7 @@
   "! TARGET_LIVE_G0"
   "
 {
-  if (GET_MODE (sparc_compare_op0) == TFmode && TARGET_ARCH64 && ! TARGET_HARD_QUAD)
+  if (GET_MODE (sparc_compare_op0) == TFmode && ! TARGET_HARD_QUAD)
     {
       sparc_emit_float_lib_cmp (sparc_compare_op0, sparc_compare_op1, LT);
       emit_jump_insn (gen_sne (operands[0]));
@@ -971,7 +971,7 @@
   "! TARGET_LIVE_G0"
   "
 {
-  if (GET_MODE (sparc_compare_op0) == TFmode && TARGET_ARCH64 && ! TARGET_HARD_QUAD)
+  if (GET_MODE (sparc_compare_op0) == TFmode && ! TARGET_HARD_QUAD)
     {
       sparc_emit_float_lib_cmp (sparc_compare_op0, sparc_compare_op1, GE);
       emit_jump_insn (gen_sne (operands[0]));
@@ -992,7 +992,7 @@
   "! TARGET_LIVE_G0"
   "
 {
-  if (GET_MODE (sparc_compare_op0) == TFmode && TARGET_ARCH64 && ! TARGET_HARD_QUAD)
+  if (GET_MODE (sparc_compare_op0) == TFmode && ! TARGET_HARD_QUAD)
     {
       sparc_emit_float_lib_cmp (sparc_compare_op0, sparc_compare_op1, LE);
       emit_jump_insn (gen_sne (operands[0]));
@@ -1626,7 +1626,7 @@
       emit_v9_brxx_insn (EQ, sparc_compare_op0, operands[0]);
       DONE;
     }
-  else if (GET_MODE (sparc_compare_op0) == TFmode && TARGET_ARCH64 && ! TARGET_HARD_QUAD)
+  else if (GET_MODE (sparc_compare_op0) == TFmode && ! TARGET_HARD_QUAD)
     {
       sparc_emit_float_lib_cmp (sparc_compare_op0, sparc_compare_op1, EQ);
       emit_jump_insn (gen_bne (operands[0]));
@@ -1650,7 +1650,7 @@
       emit_v9_brxx_insn (NE, sparc_compare_op0, operands[0]);
       DONE;
     }
-  else if (GET_MODE (sparc_compare_op0) == TFmode && TARGET_ARCH64 && ! TARGET_HARD_QUAD)
+  else if (GET_MODE (sparc_compare_op0) == TFmode && ! TARGET_HARD_QUAD)
     {
       sparc_emit_float_lib_cmp (sparc_compare_op0, sparc_compare_op1, NE);
       emit_jump_insn (gen_bne (operands[0]));
@@ -1674,7 +1674,7 @@
       emit_v9_brxx_insn (GT, sparc_compare_op0, operands[0]);
       DONE;
     }
-  else if (GET_MODE (sparc_compare_op0) == TFmode && TARGET_ARCH64 && ! TARGET_HARD_QUAD)
+  else if (GET_MODE (sparc_compare_op0) == TFmode && ! TARGET_HARD_QUAD)
     {
       sparc_emit_float_lib_cmp (sparc_compare_op0, sparc_compare_op1, GT);
       emit_jump_insn (gen_bne (operands[0]));
@@ -1708,7 +1708,7 @@
       emit_v9_brxx_insn (LT, sparc_compare_op0, operands[0]);
       DONE;
     }
-  else if (GET_MODE (sparc_compare_op0) == TFmode && TARGET_ARCH64 && ! TARGET_HARD_QUAD)
+  else if (GET_MODE (sparc_compare_op0) == TFmode && ! TARGET_HARD_QUAD)
     {
       sparc_emit_float_lib_cmp (sparc_compare_op0, sparc_compare_op1, LT);
       emit_jump_insn (gen_bne (operands[0]));
@@ -1742,7 +1742,7 @@
       emit_v9_brxx_insn (GE, sparc_compare_op0, operands[0]);
       DONE;
     }
-  else if (GET_MODE (sparc_compare_op0) == TFmode && TARGET_ARCH64 && ! TARGET_HARD_QUAD)
+  else if (GET_MODE (sparc_compare_op0) == TFmode && ! TARGET_HARD_QUAD)
     {
       sparc_emit_float_lib_cmp (sparc_compare_op0, sparc_compare_op1, GE);
       emit_jump_insn (gen_bne (operands[0]));
@@ -1776,7 +1776,7 @@
       emit_v9_brxx_insn (LE, sparc_compare_op0, operands[0]);
       DONE;
     }
-  else if (GET_MODE (sparc_compare_op0) == TFmode && TARGET_ARCH64 && ! TARGET_HARD_QUAD)
+  else if (GET_MODE (sparc_compare_op0) == TFmode && ! TARGET_HARD_QUAD)
     {
       sparc_emit_float_lib_cmp (sparc_compare_op0, sparc_compare_op1, LE);
       emit_jump_insn (gen_bne (operands[0]));
@@ -1803,12 +1803,11 @@
   ""
   "
 {
-  if (GET_MODE (sparc_compare_op0) == TFmode
-      && TARGET_ARCH64 && ! TARGET_HARD_QUAD)
+  if (GET_MODE (sparc_compare_op0) == TFmode && ! TARGET_HARD_QUAD)
     {
       sparc_emit_float_lib_cmp (sparc_compare_op0, sparc_compare_op1,
 				UNORDERED);
-      emit_jump_insn (gen_bne (operands[0]));
+      emit_jump_insn (gen_beq (operands[0]));
       DONE;
     }
   operands[1] = gen_compare_reg (UNORDERED, sparc_compare_op0,
@@ -1823,8 +1822,7 @@
   ""
   "
 {
-  if (GET_MODE (sparc_compare_op0) == TFmode
-      && TARGET_ARCH64 && ! TARGET_HARD_QUAD)
+  if (GET_MODE (sparc_compare_op0) == TFmode && ! TARGET_HARD_QUAD)
     {
       sparc_emit_float_lib_cmp (sparc_compare_op0, sparc_compare_op1, ORDERED);
       emit_jump_insn (gen_bne (operands[0]));
@@ -1842,11 +1840,10 @@
   ""
   "
 {
-  if (GET_MODE (sparc_compare_op0) == TFmode
-      && TARGET_ARCH64 && ! TARGET_HARD_QUAD)
+  if (GET_MODE (sparc_compare_op0) == TFmode && ! TARGET_HARD_QUAD)
     {
       sparc_emit_float_lib_cmp (sparc_compare_op0, sparc_compare_op1, UNGT);
-      emit_jump_insn (gen_bne (operands[0]));
+      emit_jump_insn (gen_bgt (operands[0]));
       DONE;
     }
   operands[1] = gen_compare_reg (UNGT, sparc_compare_op0, sparc_compare_op1);
@@ -1860,8 +1857,7 @@
   ""
   "
 {
-  if (GET_MODE (sparc_compare_op0) == TFmode
-      && TARGET_ARCH64 && ! TARGET_HARD_QUAD)
+  if (GET_MODE (sparc_compare_op0) == TFmode && ! TARGET_HARD_QUAD)
     {
       sparc_emit_float_lib_cmp (sparc_compare_op0, sparc_compare_op1, UNLT);
       emit_jump_insn (gen_bne (operands[0]));
@@ -1878,11 +1874,10 @@
   ""
   "
 {
-  if (GET_MODE (sparc_compare_op0) == TFmode
-      && TARGET_ARCH64 && ! TARGET_HARD_QUAD)
+  if (GET_MODE (sparc_compare_op0) == TFmode && ! TARGET_HARD_QUAD)
     {
       sparc_emit_float_lib_cmp (sparc_compare_op0, sparc_compare_op1, UNEQ);
-      emit_jump_insn (gen_bne (operands[0]));
+      emit_jump_insn (gen_beq (operands[0]));
       DONE;
     }
   operands[1] = gen_compare_reg (UNEQ, sparc_compare_op0, sparc_compare_op1);
@@ -1896,8 +1891,7 @@
   ""
   "
 {
-  if (GET_MODE (sparc_compare_op0) == TFmode
-      && TARGET_ARCH64 && ! TARGET_HARD_QUAD)
+  if (GET_MODE (sparc_compare_op0) == TFmode && ! TARGET_HARD_QUAD)
     {
       sparc_emit_float_lib_cmp (sparc_compare_op0, sparc_compare_op1, UNGE);
       emit_jump_insn (gen_bne (operands[0]));
@@ -1914,8 +1908,7 @@
   ""
   "
 {
-  if (GET_MODE (sparc_compare_op0) == TFmode
-      && TARGET_ARCH64 && ! TARGET_HARD_QUAD)
+  if (GET_MODE (sparc_compare_op0) == TFmode && ! TARGET_HARD_QUAD)
     {
       sparc_emit_float_lib_cmp (sparc_compare_op0, sparc_compare_op1, UNLE);
       emit_jump_insn (gen_bne (operands[0]));
@@ -1932,8 +1925,7 @@
   ""
   "
 {
-  if (GET_MODE (sparc_compare_op0) == TFmode
-      && TARGET_ARCH64 && ! TARGET_HARD_QUAD)
+  if (GET_MODE (sparc_compare_op0) == TFmode && ! TARGET_HARD_QUAD)
     {
       sparc_emit_float_lib_cmp (sparc_compare_op0, sparc_compare_op1, LTGT);
       emit_jump_insn (gen_bne (operands[0]));
