@@ -114,7 +114,11 @@ choose_temp_base ()
  
   /* If all else fails, use the current directory!  */
   if (base == 0)
+#ifdef VMS
+    base = "[";
+#else
     base = ".";
+#endif
 
 #else /* MPW */
   base = ":";
