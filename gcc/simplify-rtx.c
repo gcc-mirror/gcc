@@ -763,13 +763,13 @@ simplify_binary_real (p)
   f0 = real_value_truncate (args->mode, f0);
   f1 = real_value_truncate (args->mode, f1);
 
-#ifndef REAL_INFINITY
-  if (args->code == DIV && REAL_VALUES_EQUAL (f1, dconst0))
+  if (args->code == DIV
+      && !MODE_HAS_INFINITIES (args->mode)
+      && REAL_VALUES_EQUAL (f1, dconst0))
     {
       args->result = 0;
       return;
     }
-#endif
   REAL_ARITHMETIC (value, rtx_to_tree_code (args->code), f0, f1);
 
   value = real_value_truncate (args->mode, value);

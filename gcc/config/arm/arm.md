@@ -9079,9 +9079,9 @@
       {
       case MODE_FLOAT:
       {
-        union real_extract u;
-        memcpy (&u, &CONST_DOUBLE_LOW (operands[0]), sizeof u);
-        assemble_real (u.d, GET_MODE (operands[0]), BITS_PER_WORD);
+        REAL_VALUE_TYPE r;
+        REAL_VALUE_FROM_CONST_DOUBLE (r, operands[0]);
+        assemble_real (r, GET_MODE (operands[0]), BITS_PER_WORD);
         break;
       }
       default:
@@ -9103,9 +9103,9 @@
       {
        case MODE_FLOAT:
         {
-          union real_extract u;
-          memcpy (&u, &CONST_DOUBLE_LOW (operands[0]), sizeof u);
-          assemble_real (u.d, GET_MODE (operands[0]), BITS_PER_WORD);
+          REAL_VALUE_TYPE r;
+          REAL_VALUE_FROM_CONST_DOUBLE (r, operands[0]);
+          assemble_real (r, GET_MODE (operands[0]), BITS_PER_WORD);
           break;
         }
       default:

@@ -64,8 +64,8 @@ Boston, MA 02111-1307, USA.  */
 
 #ifdef UTEK_ASM
 #undef PRINT_OPERAND
-#define PRINT_OPERAND(FILE, X, CODE)  \
-{ if (CODE == '$') putc('$', FILE);					\
+#define PRINT_OPERAND(FILE, X, CODE) do {				\
+  if (CODE == '$') putc('$', FILE);					\
   else if (CODE == '?');						\
   else if (GET_CODE (X) == CONST_INT)					\
     fprintf(FILE, "$%d", INTVAL(X));					\
@@ -116,14 +116,20 @@ Boston, MA 02111-1307, USA.  */
 	}								\
     }									\
   else if (GET_CODE (X) == CONST_DOUBLE && GET_MODE (X) != VOIDmode)	\
-    if (GET_MODE (X) == DFmode)						\
-      { union { double d; int i[2]; } u;				\
-	u.i[0] = CONST_DOUBLE_LOW (X); u.i[1] = CONST_DOUBLE_HIGH (X);	\
-	fprintf (FILE, "$0d%.20e", u.d); }				\
-    else { union { double d; int i[2]; } u;				\
-	   u.i[0] = CONST_DOUBLE_LOW (X); u.i[1] = CONST_DOUBLE_HIGH (X); \
-	   fprintf (FILE, "$0f%.20e", u.d); }				\
-  else output_addr_const (FILE, X); }
+    {									\
+      char buf[50];							\
+      REAL_VALUE_TYPE rval;						\
+      REAL_VALUE_FROM_CONST_DOUBLE(rval, XV);				\
+      REAL_VALUE_TO_DECIMAL (rval, "%.20e", buf);			\
+      if (GET_MODE (XV) == SFmode)					\
+	fprintf (FILE, "$0e%s", buf);					\
+      else if (GET_MODE (XV) == DFmode)					\
+	fprintf (FILE, "$0d%s", buf);					\
+      else								\
+	abort();							\
+    }									\
+  else output_addr_const (FILE, X);					\
+} while (0)
 
 #endif /* UTEK_ASM */
 

@@ -2078,7 +2078,7 @@ xtensa_output_literal (file, x, mode, labelno)
      int labelno;
 {
   long value_long[2];
-  union real_extract u;
+  REAL_VALUE_TYPE r;
   int size;
 
   fprintf (file, "\t.literal .LC%u, ", (unsigned) labelno);
@@ -2089,18 +2089,18 @@ xtensa_output_literal (file, x, mode, labelno)
       if (GET_CODE (x) != CONST_DOUBLE)
 	abort ();
 
-      memcpy ((char *) &u, (char *) &CONST_DOUBLE_LOW (x), sizeof u);
+      REAL_VALUE_FROM_CONST_DOUBLE (r, x);
       switch (mode)
 	{
 	case SFmode:
-	  REAL_VALUE_TO_TARGET_SINGLE (u.d, value_long[0]);
-	  fprintf (file, "0x%08lx\t\t# %.12g (float)\n", value_long[0], u.d);
+	  REAL_VALUE_TO_TARGET_SINGLE (r, value_long[0]);
+	  fprintf (file, "0x%08lx\n", value_long[0]);
 	  break;
 
 	case DFmode:
-	  REAL_VALUE_TO_TARGET_DOUBLE (u.d, value_long);
-	  fprintf (file, "0x%08lx, 0x%08lx # %.20g (double)\n",
-		   value_long[0], value_long[1], u.d);
+	  REAL_VALUE_TO_TARGET_DOUBLE (r, value_long);
+	  fprintf (file, "0x%08lx, 0x%08lx\n",
+		   value_long[0], value_long[1]);
 	  break;
 
 	default:

@@ -1549,17 +1549,14 @@ sfmode_constant_to_ulong (x)
      rtx x;
 {
   REAL_VALUE_TYPE d;
-  union { float f; unsigned long i; } u2;
+  unsigned long l;
 
   if (GET_CODE (x) != CONST_DOUBLE || GET_MODE (x) != SFmode)
     abort ();
 
-#if TARGET_FLOAT_FORMAT != HOST_FLOAT_FORMAT
- error IEEE emulation needed
-#endif
   REAL_VALUE_FROM_CONST_DOUBLE (d, x);
-  u2.f = d;
-  return u2.i;
+  REAL_VALUE_TO_TARGET_SINGLE (d, l);
+  return l;
 }
 
 /* This function generates the assembly code for function entry.

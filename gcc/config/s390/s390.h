@@ -1386,8 +1386,8 @@ extern int s390_nr_constants;
       if (GET_CODE (EXP) != CONST_DOUBLE)				    \
 	abort ();							    \
 									    \
-      memcpy ((char *) &u, (char *) &CONST_DOUBLE_LOW (EXP), sizeof u);	    \
-      assemble_real (u.d, MODE, ALIGN);					    \
+      REAL_VALUE_FROM_CONST_DOUBLE (r, EXP);				    \
+      assemble_real (r, MODE, ALIGN);					    \
       break;								    \
 									    \
     case MODE_INT:							    \

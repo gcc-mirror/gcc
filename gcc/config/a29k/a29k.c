@@ -1143,10 +1143,13 @@ print_operand (file, x, code)
     case 'L':
       if (GET_CODE (x) == CONST_DOUBLE && GET_MODE (x) == DFmode)
 	{
-	  union real_extract u;
+	  REAL_VALUE_TYPE r;
+	  char s[30];
 
-	  memcpy ((char *) &u, (char *) &CONST_DOUBLE_LOW (x), sizeof u);
-	  fprintf (file, "$double1(%.20e)", u.d);
+	  REAL_VALUE_FROM_CONST_DOUBLE (r, x);
+	  REAL_VALUE_TO_DECIMAL (r, "%.20e", s);
+
+	  fprintf (file, "$double1(%s)", s);
 	}
       else if (GET_CODE (x) == REG)
 	fprintf (file, "%s", reg_names[REGNO (x) + 1]);
@@ -1204,26 +1207,30 @@ print_operand (file, x, code)
   else if (GET_CODE (x) == CONST && GET_CODE (XEXP (x, 0)) == SUBREG
 	   && GET_CODE (SUBREG_REG (XEXP (x, 0))) == CONST_DOUBLE)
     {
-      union real_extract u;
+      REAL_VALUE_TYPE r;
+      char s[30];
 
       if (GET_MODE (SUBREG_REG (XEXP (x, 0))) == SFmode)
 	fprintf (file, "$float");
       else
 	fprintf (file, "$double%d", 
-		 (SUBREG_BYTE (XEXP (x, 0)) / GET_MODE_SIZE (GET_MODE (x))));      
-      memcpy ((char *) &u,
-	      (char *) &CONST_DOUBLE_LOW (SUBREG_REG (XEXP (x, 0))), sizeof u);
-      fprintf (file, "(%.20e)", u.d);
+		 (SUBREG_BYTE (XEXP (x, 0)) / GET_MODE_SIZE (GET_MODE (x))));
+
+      REAL_VALUE_FROM_CONST_DOUBLE (r, x);
+      REAL_VALUE_TO_DECIMAL (r, "%.20e", s);
+      fprintf (file, "(%s)", s);
     }
 
   else if (GET_CODE (x) == CONST_DOUBLE
 	   && GET_MODE_CLASS (GET_MODE (x)) == MODE_FLOAT)
     {
-      union real_extract u;
+      REAL_VALUE_TYPE r;
+      char s[30];
 
-      memcpy ((char *) &u, (char *) &CONST_DOUBLE_LOW (x), sizeof u);
-      fprintf (file, "$%s(%.20e)",
-	       GET_MODE (x) == SFmode ? "float" : "double0", u.d);
+      REAL_VALUE_FROM_CONST_DOUBLE (r, x);
+      REAL_VALUE_TO_DECIMAL (r, "%.20e", s);
+      fprintf (file, "$%s(%s)",
+	       GET_MODE (x) == SFmode ? "float" : "double0", s);
     }
 
   else

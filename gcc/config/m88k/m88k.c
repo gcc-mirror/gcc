@@ -1123,9 +1123,9 @@ real_power_of_2_operand (op, mode)
      rtx op;
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {
+  REAL_VALUE_TYPE d;
   union {
-    REAL_VALUE_TYPE d;
-    int i[sizeof (REAL_VALUE_TYPE) / sizeof (int)];
+    long l[2];
     struct {				/* IEEE double precision format */
       unsigned sign	 :  1;
       unsigned exponent  : 11;
@@ -1147,8 +1147,8 @@ real_power_of_2_operand (op, mode)
   if (GET_CODE (op) != CONST_DOUBLE)
     return 0;
 
-  u.i[0] = CONST_DOUBLE_LOW  (op);
-  u.i[1] = CONST_DOUBLE_HIGH (op);
+  REAL_VALUE_FROM_CONST_DOUBLE (d, op);
+  REAL_VALUE_TO_TARGET_DOUBLE (d, u.l);
 
   if (u.s.mantissa1 != 0 || u.s.mantissa2 != 0	/* not a power of two */
       || u.s.exponent == 0			/* constant 0.0 */
@@ -1169,8 +1169,9 @@ legitimize_operand (op, mode)
      enum machine_mode mode;
 {
   rtx temp;
+  REAL_VALUE_TYPE r;
   union {
-    union real_extract r;
+    long l[2];
     struct {				/* IEEE double precision format */
       unsigned sign	 :  1;
       unsigned exponent  : 11;
@@ -1191,7 +1192,8 @@ legitimize_operand (op, mode)
 
   if (GET_CODE (op) == CONST_DOUBLE)
     {
-      memcpy (&u.r, &CONST_DOUBLE_LOW (op), sizeof u);
+      REAL_VALUE_FROM_CONST_DOUBLE (r, op);
+      REAL_VALUE_TO_TARGET_DOUBLE (r, u.l);
       if (u.d.exponent != 0x7ff /* NaN */
 	  && u.d.mantissa2 == 0 /* Mantissa fits */
 	  && (u.s.exponent1 == 0x8 || u.s.exponent1 == 0x7) /* Exponent fits */

@@ -502,13 +502,19 @@ print_rtx (in_rtx)
       fputc (']', outfile);
       break;
 
-#if HOST_FLOAT_FORMAT == TARGET_FLOAT_FORMAT && MAX_LONG_DOUBLE_TYPE_SIZE == 64
+#if 0
+    /* It would be nice to do this, but it would require real.o to
+       be linked into the MD-generator programs.  Maybe we should
+       do that.  -zw 2002-03-03  */
     case CONST_DOUBLE:
       if (FLOAT_MODE_P (GET_MODE (in_rtx)))
 	{
-	  double val;
+	  REAL_VALUE_TYPE val;
+	  char s[30];
+
 	  REAL_VALUE_FROM_CONST_DOUBLE (val, in_rtx);
-	  fprintf (outfile, " [%.16g]", val);
+	  REAL_VALUE_TO_DECIMAL (val, "%.16g", s);
+	  fprintf (outfile, " [%s]", s);
 	}
       break;
 #endif

@@ -374,10 +374,8 @@ vax_float_literal(c)
     register rtx c;
 {
   register enum machine_mode mode;
-#if HOST_FLOAT_FORMAT == VAX_FLOAT_FORMAT
+  REAL_VALUE_TYPE r, s;
   int i;
-  union {double d; int i[2];} val;
-#endif
 
   if (GET_CODE (c) != CONST_DOUBLE)
     return 0;
@@ -389,15 +387,20 @@ vax_float_literal(c)
       || c == const_tiny_rtx[(int) mode][2])
     return 1;
 
-#if HOST_FLOAT_FORMAT == VAX_FLOAT_FORMAT
+  REAL_VALUE_FROM_CONST_DOUBLE (r, c);
 
-  val.i[0] = CONST_DOUBLE_LOW (c);
-  val.i[1] = CONST_DOUBLE_HIGH (c);
+  for (i = 0; i < 7; i++)
+    {
+      int x = 1 << i;
+      REAL_VALUE_FROM_INT (s, x, 0, mode);
 
-  for (i = 0; i < 7; i ++)
-    if (val.d == 1 << i || val.d == 1 / (1 << i))
-      return 1;
-#endif
+      if (REAL_VALUES_EQUAL (r, s))
+	return 1;
+      if (!exact_real_inverse (mode, &s))
+	abort ();
+      if (REAL_VALUES_EQUAL (r, s))
+	return 1;
+    }
   return 0;
 }
 

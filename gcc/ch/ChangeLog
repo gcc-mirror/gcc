@@ -1,3 +1,8 @@
+2002-03-22  Zack Weinberg  <zack@codesourcery.com>
+
+	* grant.c: Always use REAL_VALUE_TO_DECIMAL; don't test
+	REAL_IS_NOT_DOUBLE.
+
 2002-03-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* decl.c (chill_tree_code_type, chill_tree_code_length,
