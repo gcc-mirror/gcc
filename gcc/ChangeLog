@@ -1,5 +1,8 @@
 Tue Dec 11 07:08:57 2001  Douglas B. Rupp  <rupp@gnat.com>
 
+	* config/alpha/vms.h (LIB_SPEC): Define.
+	* config/alpha/xm-vms.h (INCLUDE_DEFAULTS): Don't set component field.
+
 	* libgcc2.c (_bb): Remove ctime declaration.
 
 	* Makefile.in (stage[1234]-start): $(LN_S) utilities in a manner

@@ -453,6 +453,9 @@ do {									\
 #define STARTFILE_SPEC "%{!shared:%{mvms-return-codes:vcrt0.o%s} \
 %{!mvms-return-codes:pcrt0.o%s}}"
 
+#undef LIB_SPEC
+#define LIB_SPEC "-lc"
+
 /* Define the names of the division and modulus functions.  */
 #define DIVSI3_LIBCALL "OTS$DIV_I"
 #define DIVDI3_LIBCALL "OTS$DIV_L"
