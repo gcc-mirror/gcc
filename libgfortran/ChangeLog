@@ -1,3 +1,8 @@
+2004-11-27  Bud Davis  <bdavis9659@comcast.net>
+
+	PR fortran/18364
+	*  io/endfile.c (st_endfile): flush the stream before truncating.
+
 2004-11-25  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* configure: Regenerate for libtool reversion.

@@ -1,3 +1,8 @@
+2004-11-27  Bud Davis  <bdavis9659@comcast.net>
+
+	PR fortran/18364
+	* gfortran.dg/endfile.f90: New test.
+
 2004-11-27  Falk Hueffner  <falk@debian.org>
 
 	* gcc.dg/loop-6.c: New test.

@@ -38,6 +38,7 @@ st_endfile (void)
       if (u->current_record)
 	next_record (1);
 
+      flush(u->s);
       struncate (u->s);
       u->endfile = AFTER_ENDFILE;
     }
