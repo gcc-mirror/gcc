@@ -20,9 +20,6 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#include "i386/i386.h"	/* Base i386 target definitions */
-#include "i386/att.h"	/* Use AT&T i386 assembler syntax */
-
 #undef TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (i386, SCO OpenServer 5 Syntax)");
 

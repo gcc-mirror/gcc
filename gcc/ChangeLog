@@ -1,3 +1,7 @@
+2002-04-24  Robert Lipe  <robertlipe@usa.net>
+
+	* config/i386/sco5.h(i386.h, att.h): Eliminate double inclusion.
+
 2002-04-24  David S. Miller  <davem@redhat.com>
 
 	* config/sparc/sparc.h (FUNCTION_OK_FOR_SIBCALL): Return false if
