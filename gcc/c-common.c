@@ -347,7 +347,11 @@ constant_expression_warning (value)
 {
   if (TREE_CODE (value) == INTEGER_CST && TREE_CONSTANT_OVERFLOW (value))
     {
-      pedwarn ("overflow in constant expression");
+      /* ??? This is a warning, not a pedwarn, in 2.4,
+	 because it happens in contexts that are not
+	 "constant expressions" in ANSI C.
+	 Fix the problem differently in 2.5.  */
+      warning ("overflow in constant expression");
       /* Suppress duplicate warnings.  */
       TREE_CONSTANT_OVERFLOW (value) = 0;
     }
@@ -366,7 +370,11 @@ overflow_warning (value)
 {
   if (TREE_CODE (value) == INTEGER_CST && TREE_CONSTANT_OVERFLOW (value))
     {
-      pedwarn ("integer overflow in expression");
+      /* ??? This is a warning, not a pedwarn, in 2.4,
+	 because it happens in contexts that are not
+	 "constant expressions" in ANSI C.
+	 Fix the problem differently in 2.5.  */
+      warning ("integer overflow in expression");
       TREE_CONSTANT_OVERFLOW (value) = 0;
     }
 }
@@ -412,7 +420,11 @@ convert_and_check (type, expr)
 	TREE_CONSTANT_OVERFLOW (t) = 0;
       else if (TREE_CONSTANT_OVERFLOW (t))
 	{
-	  pedwarn ("overflow in implicit constant conversion");
+	  /* ??? This is a warning, not a pedwarn, in 2.4,
+	     because it happens in contexts that are not
+	     "constant expressions" in ANSI C.
+	     Fix the problem differently in 2.5.  */
+	  warning ("overflow in implicit constant conversion");
 	  TREE_CONSTANT_OVERFLOW (t) = 0;
 	}
       else
