@@ -71,7 +71,7 @@ import java.util.Enumeration;
 public abstract class IdentityScope extends Identity
 {
   private static final long serialVersionUID = -2337346281189773310L;
-  private static IdentityScope systemScope = null;
+  private static IdentityScope systemScope;
 
   /**
    * This constructor is used for serialization only and should not be used by

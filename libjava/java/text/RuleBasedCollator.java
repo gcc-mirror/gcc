@@ -35,11 +35,11 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package java.text;
 
-import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /* Written using "Java Class Libraries", 2nd edition, plus online
  * API docs for JDK 1.2 from http://www.javasoft.com.

@@ -39,6 +39,9 @@ exception statement from your version. */
 
 package gnu.java.net.protocol.http;
 
+import gnu.java.net.HeaderFieldHelper;
+import gnu.java.security.action.GetPropertyAction;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
@@ -52,14 +55,11 @@ import java.net.HttpURLConnection;
 import java.net.ProtocolException;
 import java.net.Socket;
 import java.net.URL;
-import java.net.URLConnection;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import gnu.java.net.HeaderFieldHelper;
-import gnu.java.security.action.GetPropertyAction;
 
 /**
  * This subclass of java.net.URLConnection models a URLConnection via

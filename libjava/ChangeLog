@@ -1,5 +1,20 @@
 2004-10-18  Michael Koch  <konqueror@gmx.de>
 
+	* gnu/java/net/protocol/http/Connection.java,
+	java/nio/MappedByteBufferImpl.java,
+	java/text/RuleBasedCollator.java,
+	java/util/ResourceBundle.java:
+	Reworked import statements.
+
+2004-10-18  Jeroen Frijters  <jeroen@frijters.net>
+
+	* java/security/IdentityScope.java
+	(systemScope): Removed useless initializer.
+	* java/security/Policy.java
+	(currentPolicy): Likewise.
+
+2004-10-18  Michael Koch  <konqueror@gmx.de>
+
 	* java/lang/System.java: Revert accidential change.
 
 2004-10-18  Michael Koch  <konqueror@gmx.de>

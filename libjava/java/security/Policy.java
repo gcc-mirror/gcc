@@ -95,7 +95,7 @@ import java.util.Map;
  */
 public abstract class Policy
 {
-  static private Policy currentPolicy = null;
+  static private Policy currentPolicy;
 
   /** Map of ProtectionDomains to PermissionCollections for this instance. */
   private Map pd2pc = null;
