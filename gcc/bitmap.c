@@ -29,16 +29,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "ggc.h"
 #include "bitmap.h"
 
-/* Obstack to allocate bitmap elements from.  */
-
-#ifndef INLINE
-#ifndef __GNUC__
-#define INLINE
-#else
-#define INLINE __inline__
-#endif
-#endif
-
 /* Global data */
 bitmap_element bitmap_zero_bits;  /* An element of all zero bits.  */
 bitmap_obstack bitmap_default_obstack;    /* The default bitmap obstack.  */
@@ -56,7 +46,7 @@ static bitmap_element *bitmap_find_bit (bitmap, unsigned int);
 
 
 /* Add ELEM to the appropriate freelist.  */
-static INLINE void
+static inline void
 bitmap_elem_to_freelist (bitmap head, bitmap_element *elt)
 {
   bitmap_obstack *bit_obstack = head->obstack;
@@ -76,7 +66,7 @@ bitmap_elem_to_freelist (bitmap head, bitmap_element *elt)
 /* Free a bitmap element.  Since these are allocated off the
    bitmap_obstack, "free" actually means "put onto the freelist".  */
 
-static INLINE void
+static inline void
 bitmap_element_free (bitmap head, bitmap_element *elt)
 {
   bitmap_element *next = elt->next;
@@ -104,7 +94,7 @@ bitmap_element_free (bitmap head, bitmap_element *elt)
 
 /* Allocate a bitmap element.  The bits are cleared, but nothing else is.  */
 
-static INLINE bitmap_element *
+static inline bitmap_element *
 bitmap_element_allocate (bitmap head)
 {
   bitmap_element *element;
@@ -150,7 +140,7 @@ bitmap_elt_clear_from (bitmap head, bitmap_element *elt)
 
 /* Clear a bitmap by freeing the linked list.  */
 
-INLINE void
+inline void
 bitmap_clear (bitmap head)
 {
   bitmap_element *element, *next;
@@ -268,7 +258,7 @@ bitmap_malloc_free (bitmap map)
 
 /* Return nonzero if all bits in an element are zero.  */
 
-static INLINE int
+static inline int
 bitmap_element_zerop (bitmap_element *element)
 {
 #if BITMAP_ELEMENT_WORDS == 2
@@ -286,7 +276,7 @@ bitmap_element_zerop (bitmap_element *element)
 
 /* Link the bitmap element into the current bitmap linked list.  */
 
-static INLINE void
+static inline void
 bitmap_element_link (bitmap head, bitmap_element *element)
 {
   unsigned int indx = element->indx;
@@ -421,7 +411,7 @@ bitmap_copy (bitmap to, bitmap from)
    would hold the bitmap's bit to make eventual allocation
    faster.  */
 
-static INLINE bitmap_element *
+static inline bitmap_element *
 bitmap_find_bit (bitmap head, unsigned int bit)
 {
   bitmap_element *element;
