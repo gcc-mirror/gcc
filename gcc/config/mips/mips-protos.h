@@ -128,7 +128,6 @@ extern enum reg_class mips_secondary_reload_class (enum reg_class,
 						   rtx, int);
 extern int mips_class_max_nregs (enum reg_class, enum machine_mode);
 extern bool mips_valid_pointer_mode (enum machine_mode);
-extern struct rtx_def *mips16_gp_pseudo_reg (void);
 extern int build_mips16_call_stub (rtx, rtx, rtx, int);
 extern int mips_register_move_cost (enum machine_mode, enum reg_class,
 				    enum reg_class);
