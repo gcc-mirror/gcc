@@ -1,3 +1,13 @@
+2002-05-03  Aldy Hernandez  <aldyh@redhat.com>
+
+        * config/rs6000/rs6000.c (altivec_expand_binop_builtin): Error out
+        when we get an out of range literal.
+        (altivec_expand_ternop_builtin): Same.
+        (altivec_expand_unop_builtin): Same.
+        (altivec_expand_builtin): Same, for dss.
+        (altivec_expand_builtin): Use trees instead of rtl when
+        determining literal argument validity.
+
 2002-05-03  David S. Miller  <davem@redhat.com>
 
 	Delete cycle display scheduling hook.

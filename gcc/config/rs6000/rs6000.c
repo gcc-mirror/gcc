@@ -3551,6 +3551,22 @@ altivec_expand_unop_builtin (icode, arglist, target)
   if (arg0 == error_mark_node)
     return NULL_RTX;
 
+  switch (icode)
+    {
+      /* Only allow 5-bit *signed* literals.  */
+    case CODE_FOR_altivec_vspltisb:
+    case CODE_FOR_altivec_vspltish:
+    case CODE_FOR_altivec_vspltisw:
+      if (GET_CODE (op0) != CONST_INT
+	  || INTVAL (op0) > 0x1f
+	  || INTVAL (op0) < -0x1f)
+	{
+	  error ("argument 1 must be a 5-bit signed literal");
+	  return NULL_RTX;
+	}
+      break;
+    }
+
   if (target == 0
       || GET_MODE (target) != tmode
       || ! (*insn_data[icode].operand[0].predicate) (target, tmode))
@@ -3620,6 +3636,25 @@ altivec_expand_binop_builtin (icode, arglist, target)
   /* If we got invalid arguments bail out before generating bad rtl.  */
   if (arg0 == error_mark_node || arg1 == error_mark_node)
     return NULL_RTX;
+
+  switch (icode)
+    {
+      /* Only allow 5-bit unsigned literals.  */
+    case CODE_FOR_altivec_vcfux:
+    case CODE_FOR_altivec_vcfsx:
+    case CODE_FOR_altivec_vctsxs:
+    case CODE_FOR_altivec_vctuxs:
+    case CODE_FOR_altivec_vspltb:
+    case CODE_FOR_altivec_vsplth:
+    case CODE_FOR_altivec_vspltw:
+      if (TREE_CODE (arg1) != INTEGER_CST
+	  || TREE_INT_CST_LOW (arg1) & ~0x1f)
+	{
+	  error ("argument 2 must be a 5-bit unsigned literal");
+	  return NULL_RTX;
+	}
+      break;
+    }
 
   if (target == 0
       || GET_MODE (target) != tmode
@@ -3778,6 +3813,22 @@ altivec_expand_ternop_builtin (icode, arglist, target)
       || arg1 == error_mark_node
       || arg2 == error_mark_node)
     return NULL_RTX;
+
+  switch (icode)
+    {
+      /* Only allow 4-bit unsigned literals.  */
+    case CODE_FOR_altivec_vsldoi_4sf:
+    case CODE_FOR_altivec_vsldoi_4si:
+    case CODE_FOR_altivec_vsldoi_8hi:
+    case CODE_FOR_altivec_vsldoi_16qi:
+      if (TREE_CODE (arg2) != INTEGER_CST
+	  || TREE_INT_CST_LOW (arg2) & ~0xf)
+	{
+	  error ("argument 3 must be a 4-bit unsigned literal");
+	  return NULL_RTX;
+	}
+      break;
+    }
 
   if (target == 0
       || GET_MODE (target) != tmode
@@ -4034,6 +4085,13 @@ altivec_expand_builtin (exp, target)
       if (arg0 == error_mark_node)
 	return NULL_RTX;
 
+      if (TREE_CODE (arg0) != INTEGER_CST
+	  || TREE_INT_CST_LOW (arg0) & ~0x3)
+	{
+	  error ("argument to dss must be a 2-bit unsigned literal");
+	  return NULL_RTX;
+	}
+
       if (! (*insn_data[icode].operand[0].predicate) (op0, mode0))
 	op0 = copy_to_mode_reg (mode0, op0);
 
@@ -4062,16 +4120,17 @@ altivec_expand_builtin (exp, target)
 	    || arg2 == error_mark_node)
 	  return NULL_RTX;
 
+      if (TREE_CODE (arg2) != INTEGER_CST
+	  || TREE_INT_CST_LOW (arg2) & ~0x3)
+	{
+	  error ("argument to `%s' must be a 2-bit unsigned literal", d->name);
+	  return NULL_RTX;
+	}
+
 	if (! (*insn_data[d->icode].operand[0].predicate) (op0, mode0))
 	  op0 = copy_to_mode_reg (mode0, op0);
 	if (! (*insn_data[d->icode].operand[1].predicate) (op1, mode1))
 	  op1 = copy_to_mode_reg (mode1, op1);
-
-	if (GET_CODE (op2) != CONST_INT || INTVAL (op2) > 3)
-	  {
-	    error ("argument 3 of `%s' must be a 2-bit literal", d->name);
-	    return NULL_RTX;
-	  }
 
 	pat = GEN_FCN (d->icode) (op0, op1, op2);
 	if (pat != 0)
