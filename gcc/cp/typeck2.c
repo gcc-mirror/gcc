@@ -1093,6 +1093,9 @@ build_m_component_ref (datum, component)
     return build_min_nt (DOTSTAR_EXPR, datum, component);
 
   datum = decay_conversion (datum);
+  if (datum == error_mark_node || component == error_mark_node)
+    return error_mark_node;
+
   objtype = TYPE_MAIN_VARIANT (TREE_TYPE (datum));  
 
   if (TYPE_PTRMEMFUNC_P (TREE_TYPE (component)))
@@ -1100,18 +1103,18 @@ build_m_component_ref (datum, component)
       type = TREE_TYPE (TYPE_PTRMEMFUNC_FN_TYPE (TREE_TYPE (component)));
       field_type = type;
     }
-  else
+  else if (TYPE_PTRMEM_P (TREE_TYPE (component)))
     {
       type = TREE_TYPE (TREE_TYPE (component));
       field_type = TREE_TYPE (type);
     }
-
-  if (datum == error_mark_node || component == error_mark_node)
-    return error_mark_node;
+  else
+    type = error_mark_node;
 
   if (TREE_CODE (type) != OFFSET_TYPE && TREE_CODE (type) != METHOD_TYPE)
     {
-      cp_error ("`%E' cannot be used as a member pointer, since it is of type `%T'", component, type);
+      cp_error ("`%E' cannot be used as a member pointer, since it is of type `%T'", 
+		component, TREE_TYPE (component));
       return error_mark_node;
     }
 
