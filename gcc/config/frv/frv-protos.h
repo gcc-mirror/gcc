@@ -93,7 +93,6 @@ extern int frv_function_arg_callee_copies	(CUMULATIVE_ARGS *,
 						 tree, int);
 
 extern void frv_expand_builtin_va_start		(tree, rtx);
-extern rtx frv_expand_builtin_va_arg		(tree, tree);
 #endif /* TREE_CODE */
 
 extern int frv_expand_block_move		(rtx *);

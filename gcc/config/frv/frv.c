@@ -286,6 +286,7 @@ static void frv_output_const_unspec		(FILE *,
 						 const struct frv_unspec *);
 static bool frv_function_ok_for_sibcall		(tree, tree);
 static rtx frv_struct_value_rtx			(tree, int);
+static tree frv_gimplify_va_arg_expr		(tree, tree, tree *, tree *);
 
 /* Initialize the GCC target structure.  */
 #undef  TARGET_ASM_FUNCTION_PROLOGUE
@@ -331,6 +332,8 @@ static rtx frv_struct_value_rtx			(tree, int);
 #define TARGET_EXPAND_BUILTIN_SAVEREGS frv_expand_builtin_saveregs
 #undef TARGET_SETUP_INCOMING_VARARGS
 #define TARGET_SETUP_INCOMING_VARARGS frv_setup_incoming_varargs
+#undef TARGET_GIMPLIFY_VA_ARG_EXPR
+#define TARGET_GIMPLIFY_VA_ARG_EXPR frv_gimplify_va_arg_expr
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -2081,30 +2084,13 @@ frv_expand_builtin_va_start (tree valist, rtx nextarg)
 
 /* Expand __builtin_va_arg to do the va_arg macro.  */
 
-rtx
-frv_expand_builtin_va_arg (tree valist, tree type)
+static tree
+frv_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p, tree *post_p)
 {
-  rtx addr;
-  rtx mem;
-  rtx reg;
-
-  if (TARGET_DEBUG_ARG)
-    {
-      fprintf (stderr, "va_arg:\n");
-      debug_tree (type);
-    }
-
-  if (! AGGREGATE_TYPE_P (type))
-    return std_expand_builtin_va_arg (valist, type);
-
-  addr = std_expand_builtin_va_arg (valist, ptr_type_node);
-  mem  = gen_rtx_MEM (Pmode, addr);
-  reg  = gen_reg_rtx (Pmode);
-
-  set_mem_alias_set (mem, get_varargs_alias_set ());
-  emit_move_insn (reg, mem);
-
-  return reg;
+  if (AGGREGATE_TYPE_P (type))
+    return ind_gimplify_va_arg_expr (valist, type, pre_p, post_p);
+  else
+    return std_gimplify_va_arg_expr (valist, type, pre_p, post_p);
 }
 
 
