@@ -2958,7 +2958,8 @@ do {									\
   ASM_OUTPUT_ALIGN (FILE, sparc_align_jumps)
 
 #define ASM_OUTPUT_LOOP_ALIGN(FILE) \
-  fprintf ((FILE), "\t.align %d, 0x01000000\n", 1 << sparc_align_loops)
+  if (sparc_align_loops >= 2)	    \
+    fprintf ((FILE), "\t.align %d, 0x01000000\n", 1 << sparc_align_loops)
 
 #define ASM_OUTPUT_SKIP(FILE,SIZE)  \
   fprintf (FILE, "\t.skip %u\n", (SIZE))
