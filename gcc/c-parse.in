@@ -2478,24 +2478,16 @@ asm_clobbers:
 parmlist:
 	  maybe_attribute
 		{ pushlevel (0);
-		  clear_parm_order ();
 		  declare_parm_level (); }
 	  parmlist_1
 		{ $$ = $3;
-		  parmlist_tags_warning ();
 		  poplevel (0, 0, 0); }
 	;
 
 parmlist_1:
 	  parmlist_2 ')'
 	| parms ';'
-		{ tree parm;
-		  if (pedantic)
-		    pedwarn ("ISO C forbids forward parameter declarations");
-		  /* Mark the forward decls as such.  */
-		  for (parm = getdecls (); parm; parm = TREE_CHAIN (parm))
-		    TREE_ASM_WRITTEN (parm) = 1;
-		  clear_parm_order (); }
+		{ mark_forward_parm_decls (); }
 	  maybe_attribute
 		{ /* Dummy action so attributes are in known place
 		     on parser stack.  */ }
@@ -2600,11 +2592,9 @@ setspecs_fp:
 parmlist_or_identifiers:
 	  maybe_attribute
 		{ pushlevel (0);
-		  clear_parm_order ();
 		  declare_parm_level (); }
 	  parmlist_or_identifiers_1
 		{ $$ = $3;
-		  parmlist_tags_warning ();
 		  poplevel (0, 0, 0); }
 	;
 

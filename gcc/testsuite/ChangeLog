@@ -1,3 +1,7 @@
+2003-07-29  Zack Weinberg  <zack@codesourcery.com>
+
+	* gcc.dg/struct-in-proto-1.c: New test.
+
 2003-07-29  Neil Booth  <neil@daikokuya.co.uk>
 
 	* gcc.dg/cpp/include2.c: Only expect one message.
@@ -25,7 +29,7 @@
 	PR c++/11667
 	* g++.dg/init/enum2.C: New test.
 	* g++.dg/template/overload1.C: Add "-w" option.
-	
+
 2003-07-28    <hp@bitrange.com>
 
 	* gcc.dg/Wdeclaration-after-statement-1.c,
@@ -85,7 +89,7 @@
 
 	PR c++/11517
 	* g++.dg/expr/cond2.C: New test.
-	
+
 	PR optimization/10679
 	* g++.dg/opt/inline4.C: New test.
 
@@ -96,7 +100,7 @@
 2003-07-22  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.dg/ext/flexary1.C: New test.
-	
+
 2003-07-22  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/10793
@@ -166,7 +170,7 @@
 
 2003-07-21  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
-        PR optimization/11536
+	PR optimization/11536
 	* gcc.dg/20030721-1.c: New test.
 
 2003-07-19  Mark Mitchell  <mark@codesourcery.com>

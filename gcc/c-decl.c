@@ -93,6 +93,11 @@ static tree last_function_parms;
 
 static tree last_function_parm_tags;
 
+/* ... and a chain of all non-parameter declarations (such as
+   CONST_DECLs from enumerations) here.  */
+
+static tree last_function_parm_vars;
+
 /* After parsing the declarator that starts a function definition,
    `start_function' puts the list of parameter names or chain of decls here
    for `store_parm_decls' to find.  */
@@ -102,6 +107,10 @@ static tree current_function_parms;
 /* Similar, for last_function_parm_tags.  */
 
 static tree current_function_parm_tags;
+
+/* And for last_function_parm_vars.  */
+
+static tree current_function_parm_vars;
 
 /* Similar, for the file and line that the prototype came from if this is
    an old-style definition.  */
@@ -177,6 +186,10 @@ struct c_scope GTY(())
      They are in the reverse of the order supplied.  */
   tree names;
 
+  /* All parameter declarations.  Used only in the outermost scope of
+     a function.  Again, in the reverse of the order supplied.  */
+  tree parms;
+
   /* All structure, union, and enum type tags.  */
   tree tags;
 
@@ -199,14 +212,14 @@ struct c_scope GTY(())
   /* Variable declarations with incomplete type in this scope.  */
   tree incomplete_list;
 
-  /* A list of decls giving the (reversed) specified order of parms,
-     not including any forward-decls in the parmlist.
-     This is so we can put the parms in proper order for assign_parms.  */
-  tree parm_order;
-
   /* True if we are currently filling this scope with parameter
      declarations.  */
   bool parm_flag : 1;
+
+  /* True if we already complained about forward parameter decls
+     in this scope.  This prevents double warnings on
+     foo (int a; int b; ...)  */
+  bool warned_forward_parm_decls : 1;
 
   /* True if this is the outermost block scope of a function body.
      This scope contains the parameters, the local variables declared
@@ -261,8 +274,6 @@ static int redeclaration_error_message (tree, tree);
 static tree make_label (tree, location_t);
 static void bind_label (tree, tree, struct c_scope *);
 static void implicit_decl_warning (tree);
-static void storedecls (tree);
-static void storetags (tree);
 static tree lookup_tag (enum tree_code, tree, int);
 static tree lookup_name_current_level (tree);
 static tree grokdeclarator (tree, tree, enum decl_context, int);
@@ -524,6 +535,12 @@ poplevel (int keep, int reverse, int functionbody)
 	  && DECL_ABSTRACT_ORIGIN (link) != link)
 	TREE_ADDRESSABLE (DECL_ABSTRACT_ORIGIN (link)) = 1;
     }
+
+  /* Clear out the parameter bindings declared in this scope.
+     Unused-parameter warnings are handled by function.c.  */
+  for (link = current_scope->parms; link; link = TREE_CHAIN (link))
+    if (DECL_NAME (link))
+      IDENTIFIER_SYMBOL_VALUE (DECL_NAME (link)) = 0;
 
   /* Clear out the tag-meanings declared in this scope.  */
   for (link = tags; link; link = TREE_CHAIN (link))
@@ -1657,7 +1674,24 @@ pushdecl (tree x)
 
       old = lookup_name_current_level (name);
       if (old && duplicate_decls (x, old, 0, false))
-	return old;
+	{
+	  /* For PARM_DECLs, old may be a forward declaration.
+	     If so, we want to remove it from its old location
+	     (in the variables chain) and rechain it in the
+	     location given by the new declaration.  */
+	  if (TREE_CODE (x) == PARM_DECL)
+	    {
+	      tree *p;
+	      for (p = &scope->names; *p; p = &TREE_CHAIN (*p))
+		if (*p == old)
+		  {
+		    *p = TREE_CHAIN (old);
+		    TREE_CHAIN (old) = scope->parms;
+		    scope->parms = old;
+		  }
+	    }
+	  return old;
+	}
       if (DECL_EXTERNAL (x) || scope == global_scope)
 	{
 	  /* Find and check against a previous, not-in-scope, external
@@ -1720,8 +1754,16 @@ pushdecl (tree x)
 
   /* Put decls on list in reverse order.
      We will reverse them later if necessary.  */
-  TREE_CHAIN (x) = scope->names;
-  scope->names = x;
+  if (TREE_CODE (x) == PARM_DECL)
+    {
+      TREE_CHAIN (x) = scope->parms;
+      scope->parms = x;
+    }
+  else
+    {
+      TREE_CHAIN (x) = scope->names;
+      scope->names = x;
+    }
 
   return x;
 }
@@ -2125,24 +2167,6 @@ gettags (void)
 {
   return current_scope->tags;
 }
-
-/* Store the list of declarations of the current scope.
-   This is done for the parameter declarations of a function being defined,
-   after they are modified in the light of any missing parameters.  */
-
-static void
-storedecls (tree decls)
-{
-  current_scope->names = decls;
-}
-
-/* Similarly, store the list of tags of the current scope.  */
-
-static void
-storetags (tree tags)
-{
-  current_scope->tags = tags;
-}
 
 /* Given NAME, an IDENTIFIER_NODE,
    return the structure (or union or enum) definition for that name.
@@ -2233,7 +2257,12 @@ lookup_name_current_level (tree name)
   if (current_scope == global_scope)
     return decl;
 
-  /* Scan the current scope for a decl with name NAME.  */
+  /* Scan the current scope for a decl with name NAME.
+     For PARM_DECLs, we have to look at both ->parms and ->names, since
+     forward parameter declarations wind up on the ->names list.  */
+  if (TREE_CODE (decl) == PARM_DECL
+      && chain_member (decl, current_scope->parms))
+    return decl;
   if (chain_member (decl, current_scope->names))
     return decl;
 
@@ -2987,10 +3016,8 @@ finish_decl (tree decl, tree init, tree asmspec_tree)
     }
 }
 
-/* Given a parsed parameter declaration,
-   decode it into a PARM_DECL and push that on the current scope.
-   Also, for the sake of forward parm decls,
-   record the given order of parms in `parm_order'.  */
+/* Given a parsed parameter declaration, decode it into a PARM_DECL
+   and push that on the current scope.  */
 
 void
 push_parm_decl (tree parm)
@@ -3008,22 +3035,34 @@ push_parm_decl (tree parm)
 
   decl = pushdecl (decl);
 
-  current_scope->parm_order
-    = tree_cons (NULL_TREE, decl, current_scope->parm_order);
-
   finish_decl (decl, NULL_TREE, NULL_TREE);
 
   immediate_size_expand = save_immediate_size_expand;
 }
 
-/* Clear the given order of parms in `parm_order'.
-   Used at start of parm list,
-   and also at semicolon terminating forward decls.  */
+/* Shift all the existing parameter decls to the variables list,
+   and reset the parameters list.  Used when a ; terminating
+   forward parameter decls is encountered.  */
 
 void
-clear_parm_order (void)
+mark_forward_parm_decls (void)
 {
-  current_scope->parm_order = NULL_TREE;
+  tree parm, last;
+
+  if (pedantic && !current_scope->warned_forward_parm_decls)
+    {
+      pedwarn ("ISO C forbids forward parameter declarations");
+      current_scope->warned_forward_parm_decls = true;
+    }
+
+  for (last = 0, parm = current_scope->parms;
+       parm;
+       last = parm, parm = TREE_CHAIN (parm))
+    TREE_ASM_WRITTEN (parm) = 1;
+
+  TREE_CHAIN (last)    = current_scope->names;
+  current_scope->names = current_scope->parms;
+  current_scope->parms = 0;
 }
 
 static GTY(()) int compound_literal_number;
@@ -4476,6 +4515,7 @@ grokparms (tree parms_info, int funcdef_flag)
 
   last_function_parms = TREE_PURPOSE (parms_info);
   last_function_parm_tags = TREE_VALUE (parms_info);
+  last_function_parm_vars = TREE_TYPE (parms_info);
 
   if (warn_strict_prototypes && first_parm == 0 && !funcdef_flag
       && !in_system_header)
@@ -4534,6 +4574,8 @@ grokparms (tree parms_info, int funcdef_flag)
    The TREE_PURPOSE is a list of decls of those parms.
    The TREE_VALUE is a list of structure, union and enum tags defined.
    The TREE_CHAIN is a list of argument types to go in the FUNCTION_TYPE.
+   The TREE_TYPE is a list of non-parameter decls which appeared with the
+   parameters.
    This tree_list node is later fed to `grokparms'.
 
    VOID_AT_END nonzero means append `void' to the end of the type-list.
@@ -4542,144 +4584,124 @@ grokparms (tree parms_info, int funcdef_flag)
 tree
 get_parm_info (int void_at_end)
 {
-  tree decl, t;
+  tree decl, type, list;
   tree types = 0;
-  int erred = 0;
-  tree tags = gettags ();
-  tree parms = getdecls ();
-  tree new_parms = 0;
-  tree order = current_scope->parm_order;
+  tree *last_type = &types;
+  tree tags = current_scope->tags;
+  tree parms = current_scope->parms;
+  tree others = current_scope->names;
+  static bool explained_incomplete_types = false;
+  bool gave_void_only_once_err = false;
 
-  /* Just `void' (and no ellipsis) is special.  There are really no parms.
-     But if the `void' is qualified (by `const' or `volatile') or has a
-     storage class specifier (`register'), then the behavior is undefined;
-     by not counting it as the special case of `void' we will cause an
-     error later.  Typedefs for `void' are OK (see DR#157).  */
+  /* Just "void" (and no ellipsis) is special.  There are really no parms.
+     But if the "void" is qualified (by "const" or "volatile"), or has a
+     storage class specifier ("register"), then the behavior is undefined;
+     issue an error.  Typedefs for "void" are OK (see DR#157).  */
   if (void_at_end && parms != 0
       && TREE_CHAIN (parms) == 0
       && VOID_TYPE_P (TREE_TYPE (parms))
-      && ! TREE_THIS_VOLATILE (parms)
-      && ! TREE_READONLY (parms)
-      && ! DECL_REGISTER (parms)
-      && DECL_NAME (parms) == 0)
+      && !DECL_NAME (parms))
     {
-      parms = NULL_TREE;
-      storedecls (NULL_TREE);
-      return tree_cons (NULL_TREE, NULL_TREE,
-			tree_cons (NULL_TREE, void_type_node, NULL_TREE));
+      if (TREE_THIS_VOLATILE (parms)
+	  || TREE_READONLY (parms)
+	  || DECL_REGISTER (parms))
+	error ("\"void\" as only parameter may not be qualified");
+
+      return tree_cons (0, 0, tree_cons (0, void_type_node, 0));
     }
 
-  /* Extract enumerator values and other non-parms declared with the parms.
-     Likewise any forward parm decls that didn't have real parm decls.  */
-  for (decl = parms; decl;)
-    {
-      tree next = TREE_CHAIN (decl);
+  if (parms)
+    current_scope->parms = parms = nreverse (parms);
 
+  /* Sanity check all of the parameter declarations.  */
+  for (decl = parms; decl; decl = TREE_CHAIN (decl))
+    {
       if (TREE_CODE (decl) != PARM_DECL)
+	abort ();
+      if (TREE_ASM_WRITTEN (decl))
+	abort ();
+
+      /* Since there is a prototype, args are passed in their
+	 declared types.  The back end may override this.  */
+      type = TREE_TYPE (decl);
+      DECL_ARG_TYPE (decl) = type;
+      if (PROMOTE_PROTOTYPES
+	  && INTEGRAL_TYPE_P (type)
+	  && TYPE_PRECISION (type) < TYPE_PRECISION (integer_type_node))
+	DECL_ARG_TYPE (decl) = integer_type_node;
+
+      /* Check for (..., void, ...) and issue an error.  */
+      if (VOID_TYPE_P (type) && !DECL_NAME (decl) && !gave_void_only_once_err)
 	{
-	  TREE_CHAIN (decl) = new_parms;
-	  new_parms = decl;
+	  error ("\"void\" must be the only parameter");
+	  gave_void_only_once_err = true;
 	}
-      else if (TREE_ASM_WRITTEN (decl))
-	{
-	  error ("%Hparameter '%D' has just a forward declaration",
-                 &DECL_SOURCE_LOCATION (decl), decl);
-	  TREE_CHAIN (decl) = new_parms;
-	  new_parms = decl;
-	}
-      decl = next;
+
+      type = build_tree_list (0, type);
+      *last_type = type;
+      last_type = &TREE_CHAIN (type);
     }
 
-  /* Put the parm decls back in the order they were in in the parm list.  */
-  for (t = order; t; t = TREE_CHAIN (t))
-    {
-      if (TREE_CHAIN (t))
-	TREE_CHAIN (TREE_VALUE (t)) = TREE_VALUE (TREE_CHAIN (t));
-      else
-	TREE_CHAIN (TREE_VALUE (t)) = 0;
-    }
-
-  new_parms = chainon (order ? nreverse (TREE_VALUE (order)) : 0,
-		       new_parms);
-
-  /* Store the parmlist in the scope structure since the old one
-     is no longer a valid list.  (We have changed the chain pointers.)  */
-  storedecls (new_parms);
-
-  for (decl = new_parms; decl; decl = TREE_CHAIN (decl))
-    /* There may also be declarations for enumerators if an enumeration
-       type is declared among the parms.  Ignore them here.  */
+  /* Check the list of non-parameter decls for any forward parm decls
+     that never got real decls.  */
+  for (decl = others; decl; decl = TREE_CHAIN (decl))
     if (TREE_CODE (decl) == PARM_DECL)
       {
-	/* Since there is a prototype,
-	   args are passed in their declared types.  */
-	tree type = TREE_TYPE (decl);
-	DECL_ARG_TYPE (decl) = type;
-	if (PROMOTE_PROTOTYPES
-	    && INTEGRAL_TYPE_P (type)
-	    && TYPE_PRECISION (type) < TYPE_PRECISION (integer_type_node))
-	  DECL_ARG_TYPE (decl) = integer_type_node;
+	if (!TREE_ASM_WRITTEN (decl))
+	  abort ();
 
-	types = tree_cons (NULL_TREE, TREE_TYPE (decl), types);
-	if (VOID_TYPE_P (TREE_VALUE (types)) && ! erred
-	    && DECL_NAME (decl) == 0)
-	  {
-	    error ("`void' in parameter list must be the entire list");
-	    erred = 1;
-	  }
+	  error ("%Hparameter \"%D\" has just a forward declaration",
+		 &DECL_SOURCE_LOCATION (decl), decl);
       }
 
-  if (void_at_end)
-    return tree_cons (new_parms, tags,
-		      nreverse (tree_cons (NULL_TREE, void_type_node, types)));
-
-  return tree_cons (new_parms, tags, nreverse (types));
-}
-
-/* At end of parameter list, warn about any struct, union or enum tags
-   defined within.  Do so because these types cannot ever become complete.  */
-
-void
-parmlist_tags_warning (void)
-{
-  tree elt;
-  static int already;
-
-  for (elt = current_scope->tags; elt; elt = TREE_CHAIN (elt))
+  /* Warn about any struct, union or enum tags defined within this
+     list.  The scope of such types is limited to this declaration,
+     which is rarely if ever desirable (it's impossible to call such
+     a function with type-correct arguments).  */
+  for (decl = tags; decl; decl = TREE_CHAIN (decl))
     {
-      enum tree_code code = TREE_CODE (TREE_VALUE (elt));
+      enum tree_code code = TREE_CODE (TREE_VALUE (decl));
+      const char *keyword;
       /* An anonymous union parm type is meaningful as a GNU extension.
 	 So don't warn for that.  */
-      if (code == UNION_TYPE && TREE_PURPOSE (elt) == 0 && !pedantic)
+      if (code == UNION_TYPE && TREE_PURPOSE (decl) == 0 && !pedantic)
 	continue;
-      if (TREE_PURPOSE (elt) != 0)
-        {
-          if (code == RECORD_TYPE)
-            warning ("`struct %s' declared inside parameter list",
-                     IDENTIFIER_POINTER (TREE_PURPOSE (elt)));
-          else if (code == UNION_TYPE)
-            warning ("`union %s' declared inside parameter list",
-                     IDENTIFIER_POINTER (TREE_PURPOSE (elt)));
-          else
-            warning ("`enum %s' declared inside parameter list",
-                     IDENTIFIER_POINTER (TREE_PURPOSE (elt)));
-        }
-      else
+
+      /* The keyword should not be translated.  */
+      switch (code)
 	{
-	  /* For translation these need to be separate warnings */
-	  if (code == RECORD_TYPE)
-	    warning ("anonymous struct declared inside parameter list");
-	  else if (code == UNION_TYPE)
-	    warning ("anonymous union declared inside parameter list");
-	  else
-	    warning ("anonymous enum declared inside parameter list");
+	case RECORD_TYPE:   keyword = "struct"; break;
+	case UNION_TYPE:    keyword = "union";  break;
+	case ENUMERAL_TYPE: keyword = "enum";   break;
+	default: abort ();
 	}
-      if (! already)
+
+      if (TREE_PURPOSE (decl)) 
+	/* The first %s will be one of 'struct', 'union', or 'enum'.  */
+	warning ("\"%s %s\" declared inside parameter list",
+		 keyword, IDENTIFIER_POINTER (TREE_PURPOSE (decl)));
+      else
+	/* The %s will be one of 'struct', 'union', or 'enum'.  */
+	warning ("anonymous %s declared inside parameter list", keyword);
+
+      if (! explained_incomplete_types)
 	{
-	  warning ("its scope is only this definition or declaration, which is probably not what you want");
-	  already = 1;
+	  warning ("its scope is only this definition or declaration,"
+		   " which is probably not what you want");
+	  explained_incomplete_types = true;
 	}
     }
+
+
+  if (void_at_end)
+    {
+      type = build_tree_list (0, void_type_node);
+      *last_type = type;
+    }
+
+  list = tree_cons (parms, tags, types);
+  TREE_TYPE (list) = others;
+  return list;
 }
 
 /* Get the struct, enum or union (CODE says which) with tag NAME.
@@ -5544,6 +5566,7 @@ start_function (tree declspecs, tree declarator, tree attributes)
      where store_parm_decls will find them.  */
   current_function_parms = last_function_parms;
   current_function_parm_tags = last_function_parm_tags;
+  current_function_parm_vars = last_function_parm_vars;
 
   /* Make the init_value nonzero so pushdecl knows this is not tentative.
      error_mark_node is replaced below (in poplevel) with the BLOCK.  */
@@ -5725,16 +5748,13 @@ start_function (tree declspecs, tree declarator, tree attributes)
 static void
 store_parm_decls_newstyle (void)
 {
-  tree decl, next;
+  tree decl;
   tree fndecl = current_function_decl;
   tree parms = current_function_parms;
   tree tags = current_function_parm_tags;
+  tree vars = current_function_parm_vars;
 
-  /* This is anything which appeared in current_function_parms that
-     wasn't a PARM_DECL.  */
-  tree nonparms = 0;
-
-  if (current_scope->names || current_scope->tags)
+  if (current_scope->parms || current_scope->names || current_scope->tags)
     {
       error ("%Hold-style parameter declarations in prototyped "
 	     "function definition", &DECL_SOURCE_LOCATION (fndecl));
@@ -5744,37 +5764,58 @@ store_parm_decls_newstyle (void)
       pushlevel (0);
     }
 
-  /* Now make all the parameter declarations visible in the function body.  */
-  parms = nreverse (parms);
-  for (decl = parms; decl; decl = next)
+  /* Now make all the parameter declarations visible in the function body.
+     We can bypass most of the grunt work of pushdecl.  */
+  for (decl = parms; decl; decl = TREE_CHAIN (decl))
     {
-      next = TREE_CHAIN (decl);
-      if (TREE_CODE (decl) != PARM_DECL)
-	{
-	  /* If we find an enum constant or a type tag,
-	     put it aside for the moment.  */
-	  TREE_CHAIN (decl) = 0;
-	  nonparms = chainon (nonparms, decl);
-	  continue;
-	}
+      DECL_CONTEXT (decl) = current_function_decl;
 
       if (DECL_NAME (decl) == 0)
 	error ("%Hparameter name omitted", &DECL_SOURCE_LOCATION (decl));
       else
-	pushdecl (decl);
+	{
+	  if (IDENTIFIER_SYMBOL_VALUE (DECL_NAME (decl)))
+	    current_scope->shadowed
+	      = tree_cons (DECL_NAME (decl),
+			   IDENTIFIER_SYMBOL_VALUE (DECL_NAME (decl)),
+			   current_scope->shadowed);
+	  IDENTIFIER_SYMBOL_VALUE (DECL_NAME (decl)) = decl;
+	}
     }
+  current_scope->parms = parms;
 
   /* Record the parameter list in the function declaration.  */
-  DECL_ARGUMENTS (fndecl) = getdecls ();
+  DECL_ARGUMENTS (fndecl) = parms;
 
   /* Now make all the ancillary declarations visible, likewise.  */
-  for (decl = nonparms; decl; decl = TREE_CHAIN (decl))
-    if (DECL_NAME (decl) != 0
-	&& TYPE_MAIN_VARIANT (TREE_TYPE (decl)) != void_type_node)
-      pushdecl (decl);
+  for (decl = vars; decl; decl = TREE_CHAIN (decl))
+    {
+      DECL_CONTEXT (decl) = current_function_decl;
+      if (DECL_NAME (decl)
+	  && TYPE_MAIN_VARIANT (TREE_TYPE (decl)) != void_type_node)
+	{
+	  if (IDENTIFIER_SYMBOL_VALUE (DECL_NAME (decl)))
+	    current_scope->shadowed
+	      = tree_cons (DECL_NAME (decl),
+			   IDENTIFIER_SYMBOL_VALUE (DECL_NAME (decl)),
+			   current_scope->shadowed);
+	  IDENTIFIER_SYMBOL_VALUE (DECL_NAME (decl)) = decl;
+	}
+    }
+  current_scope->names = vars;
 
   /* And all the tag declarations.  */
-  storetags (tags);
+  for (decl = tags; decl; decl = TREE_CHAIN (decl))
+    if (TREE_PURPOSE (decl))
+      {
+	if (IDENTIFIER_TAG_VALUE (TREE_PURPOSE (decl)))
+	  current_scope->shadowed_tags
+	    = tree_cons (TREE_PURPOSE (decl),
+			 IDENTIFIER_SYMBOL_VALUE (TREE_PURPOSE (decl)),
+			 current_scope->shadowed_tags);
+	IDENTIFIER_TAG_VALUE (TREE_PURPOSE (decl)) = TREE_VALUE (decl);
+      }
+  current_scope->tags = tags;
 }
 
 /* Subroutine of store_parm_decls which handles old-style function
@@ -5783,19 +5824,15 @@ store_parm_decls_newstyle (void)
 static void
 store_parm_decls_oldstyle (void)
 {
-  tree parm, decl, next;
+  tree parm, decl, last;
   tree fndecl = current_function_decl;
 
   /* This is the identifier list from the function declarator.  */
   tree parmids = current_function_parms;
 
-  /* This is anything which appeared in current_scope->names that
-     wasn't a PARM_DECL.  */
-  tree nonparms;
-  
   /* We use DECL_WEAK as a flag to show which parameters have been
      seen already, since it is not used on PARM_DECL or CONST_DECL.  */
-  for (parm = current_scope->names; parm; parm = TREE_CHAIN (parm))
+  for (parm = current_scope->parms; parm; parm = TREE_CHAIN (parm))
     DECL_WEAK (parm) = 0;
 
   /* Match each formal parameter name with its declaration.  Save each
@@ -5854,24 +5891,12 @@ store_parm_decls_oldstyle (void)
       DECL_WEAK (decl) = 1;
     }
 
-  /* Put anything which is in current_scope->names and which is
-     not a PARM_DECL onto the list NONPARMS.  (The types of
-     non-parm things which might appear on the list include
-     enumerators and NULL-named TYPE_DECL nodes.) Complain about
-     any actual PARM_DECLs not matched with any names.  */
+  /* Now examine the parms chain for incomplete declarations
+     and declarations with no corresponding names.  */
 
-  nonparms = 0;
-  for (parm = current_scope->names; parm; parm = next)
+  for (parm = current_scope->parms; parm; parm = TREE_CHAIN (parm))
     {
       const location_t *locus = &DECL_SOURCE_LOCATION (parm);
-      next = TREE_CHAIN (parm);
-      TREE_CHAIN (parm) = 0;
-
-      if (TREE_CODE (parm) != PARM_DECL)
-	{
-	  nonparms = chainon (nonparms, parm);
-	  continue;
-	}
 
       if (!COMPLETE_TYPE_P (TREE_TYPE (parm)))
 	{
@@ -5893,29 +5918,28 @@ store_parm_decls_oldstyle (void)
 
   /* Chain the declarations together in the order of the list of
      names.  Store that chain in the function decl, replacing the
-     list of names.  */
+     list of names.  Update the current scope to match.  */
   DECL_ARGUMENTS (fndecl) = 0;
-  {
-    tree last;
-    for (parm = parmids; parm; parm = TREE_CHAIN (parm))
-      if (TREE_PURPOSE (parm))
-	break;
-    if (parm && TREE_PURPOSE (parm))
-      {
-	last = TREE_PURPOSE (parm);
-	DECL_ARGUMENTS (fndecl) = last;
-	DECL_WEAK (last) = 0;
 
-	for (parm = TREE_CHAIN (parm); parm; parm = TREE_CHAIN (parm))
-	  if (TREE_PURPOSE (parm))
-	    {
-	      TREE_CHAIN (last) = TREE_PURPOSE (parm);
-	      last = TREE_PURPOSE (parm);
-	      DECL_WEAK (last) = 0;
-	    }
-	TREE_CHAIN (last) = 0;
-      }
-  }
+  for (parm = parmids; parm; parm = TREE_CHAIN (parm))
+    if (TREE_PURPOSE (parm))
+      break;
+  if (parm && TREE_PURPOSE (parm))
+    {
+      last = TREE_PURPOSE (parm);
+      DECL_ARGUMENTS (fndecl) = last;
+      current_scope->parms = last;
+      DECL_WEAK (last) = 0;
+
+      for (parm = TREE_CHAIN (parm); parm; parm = TREE_CHAIN (parm))
+	if (TREE_PURPOSE (parm))
+	  {
+	    TREE_CHAIN (last) = TREE_PURPOSE (parm);
+	    last = TREE_PURPOSE (parm);
+	    DECL_WEAK (last) = 0;
+	  }
+      TREE_CHAIN (last) = 0;
+    }
 
   /* If there was a previous prototype,
      set the DECL_ARG_TYPE of each argument according to
@@ -6013,13 +6037,6 @@ store_parm_decls_oldstyle (void)
 
       TYPE_ACTUAL_ARG_TYPES (TREE_TYPE (fndecl)) = actual;
     }
-
-  /* Now store the final chain of decls for the arguments
-     as the decl-chain of the current lexical scope.
-     Put the enumerators in as well, at the front so that
-     DECL_ARGUMENTS is not modified.  */
-
-  storedecls (chainon (nonparms, DECL_ARGUMENTS (fndecl)));
 }
 
 /* Store the parameter declarations into the current function declaration.
@@ -6040,10 +6057,6 @@ store_parm_decls (void)
   /* True if this definition is written with a prototype.  */
   bool prototype = (current_function_parms
 		    && TREE_CODE (current_function_parms) != TREE_LIST);
-
-  /* Don't re-emit shadow warnings.  */
-  bool saved_warn_shadow = warn_shadow;
-  warn_shadow = false;
 
   if (prototype)
     store_parm_decls_newstyle ();
@@ -6089,8 +6102,6 @@ store_parm_decls (void)
      not safe to try to expand expressions involving them.  */
   immediate_size_expand = 0;
   cfun->x_dont_save_pending_sizes_p = 1;
-
-  warn_shadow = saved_warn_shadow;
 }
 
 /* Finish up a function declaration and compile that function
