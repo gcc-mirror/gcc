@@ -26,6 +26,14 @@ Sun May 13 07:26:34 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* cpplex.c (_cpp_lex_token): Ensure we warn at most once
 	about files not ending in newlines.
 
+2001-05-12  Neil Booth  <neil@cat.daikokuya.demon.co.uk>
+
+	* dwarfout.c (dwarfout_init): Add cast.
+	* sched-deps.c (sched_analyze_insn): Remove unused vars.
+	* unwind-dw2-fde.c (_Unwind_Find_FDE): Flag unused parameter so.
+cp:
+	* method.c (build_mangled_C99_name): Remove unused prototype.
+
 2001-05-12  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config/arm/arm.h (TARGET_PTRMEMFUNC_VBIT_LOCATION): Use delta.
