@@ -2000,7 +2000,7 @@ invert_truthvalue (arg)
 	  && code != NE_EXPR && code != EQ_EXPR)
 	return build1 (TRUTH_NOT_EXPR, type, arg);
       else
-	return build (invert_tree_comparison (code),
+	return build (invert_tree_comparison (code), type,
 		      TREE_OPERAND (arg, 0), TREE_OPERAND (arg, 1));
     }
 
