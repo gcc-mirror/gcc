@@ -1,5 +1,6 @@
 2004-05-19  Andrew Pinski  <pinskia@physics.uc.edu>
 
+	PR c/14171
 	* reg-stack.c (nan): Rename to ...
 	(not_a_num): Here.
 	(reg_to_stack): Rename nan to not_a_num.
