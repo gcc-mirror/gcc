@@ -3,7 +3,7 @@
    Test case by Jason R. Thorpe <thorpej@zembu.com>.  */
 
 /* { dg-do compile } */
-/* { dg-options "-traditional" } */
+/* { dg-options "-traditional-cpp" } */
 
 #define A(name) X/**/name
 
