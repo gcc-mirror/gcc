@@ -2977,7 +2977,7 @@ instantiate_virtual_regs_1 (loc, object, extra_insns)
   rtx x;
   RTX_CODE code;
   rtx new = 0;
-  int offset;
+  int offset = 0;
   rtx temp;
   rtx seq;
   int i, j;
@@ -4037,7 +4037,7 @@ assign_parms (fndecl, second_time)
 	     may need to do it in a wider mode.  */
 
 	  register rtx parmreg;
-	  int regno, regnoi, regnor;
+	  int regno, regnoi = 0, regnor = 0;
 
 	  unsignedp = TREE_UNSIGNED (TREE_TYPE (parm));
 
@@ -5336,7 +5336,7 @@ expand_function_start (subr, parms_have_cleanups)
 {
   register int i;
   tree tem;
-  rtx last_ptr;
+  rtx last_ptr = NULL_RTX;
 
   /* Make sure volatile mem refs aren't considered
      valid operands of arithmetic insns.  */

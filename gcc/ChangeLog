@@ -1,5 +1,19 @@
 Wed Apr  1 22:26:22 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* fold-const.c optimze_bit_field_compare): Initialize rnbitpos,
+	rnbitsize, rnmode and rinner.
+	(make_range): Initialize type.
+	(fold): Initialize arg0, arg1 and varop.
+
+	* function.c (instantiate_virtual_regs_1): Initialize offset, regnoi
+	and regnor.
+	(expand_function_start): Initialize last_ptr.
+
+	* stor-layout.c (layout_record): Initialize desired_align.
+	(get_best_mode): Initialize unit.
+
+	* tree.c (copy_node): Initialize length.
+
 	* c-lex.c (yylex): Initialize traditional_type, ansi_type and type.
 
 	* caller-save.c (insert_save_restore): Initialize pat, code and
