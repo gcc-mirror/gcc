@@ -1,5 +1,9 @@
 2005-01-08  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
 
+	* trans-const.c: Don't include unused math.h.
+
+2005-01-08  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
+
 	* gfortran.h: Remove outdated comment.  Don't include stdio.h
 	explicitly.
 

@@ -1,5 +1,5 @@
 /* Translation of constants
-   Copyright (C) 2002, 2003, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
    Contributed by Paul Brook
 
 This file is part of GCC.
@@ -28,7 +28,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "ggc.h"
 #include "toplev.h"
 #include "real.h"
-#include <math.h>
 #include "gfortran.h"
 #include "trans.h"
 #include "trans-const.h"
