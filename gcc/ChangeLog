@@ -1,3 +1,7 @@
+Sun Nov 29 21:02:34 1998  Paul Eggert  <eggert@twinsun.com>
+
+	* po/POTFILES.in: Add gengenrtl.c, system.h.
+
 Sun Nov 29 16:36:59 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* expmed.c (emit_store_flag): Don't try to negate STORE_FLAG_VALUE.
