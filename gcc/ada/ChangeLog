@@ -1,3 +1,7 @@
+2003-05-22   Geert Bosch <bosch@gnat.com>
+
+	* gnat_rm.texi : Remove reference to Ada Core Technologies.
+
 2003-05-03  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* trans.c (tree_transform): Use location_t and input_location
