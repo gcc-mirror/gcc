@@ -64,3 +64,8 @@ Boston, MA 02111-1307, USA.  */
    structure return convention.  */
 #undef DRAFT_V4_STRUCT_RET
 #define DRAFT_V4_STRUCT_RET 1
+
+/* Use STABS debugging information by default.  DWARF2 makes a mess of
+   the 1.5.2 linker.  */
+#undef  PREFERRED_DEBUGGING_TYPE
+#define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
