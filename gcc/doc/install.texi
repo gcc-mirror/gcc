@@ -43,7 +43,7 @@
 @end ifset
 
 @c Copyright (C) 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-@c 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+@c 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 @c *** Converted to texinfo by Dean Wakerley, dean@wakerley.com
 
 @c Include everything if we're not making html
@@ -1346,6 +1346,49 @@ Build runtime libraries using the compiler from the previous step.
 @end itemize
 
 Note that if an error occurs in any step the make process will exit.
+
+If you are not building GNU binutils in the same source tree as GCC,
+you will need a cross-assembler and cross-linker installed before
+configuring GCC@.  Put them in the directory
+@file{@var{prefix}/@var{target}/bin}.  Here is a table of the tools
+you should put in this directory:
+
+@table @file
+@item as
+This should be the cross-assembler.
+
+@item ld
+This should be the cross-linker.
+
+@item ar
+This should be the cross-archiver: a program which can manipulate
+archive files (linker libraries) in the target machine's format.
+
+@item ranlib
+This should be a program to construct a symbol table in an archive file.
+@end table
+
+The installation of GCC will find these programs in that directory,
+and copy or link them to the proper place to for the cross-compiler to
+find them when run later.
+
+The easiest way to provide these files is to build the Binutils package.
+Configure it with the same @option{--host} and @option{--target}
+options that you use for configuring GCC, then build and install
+them.  They install their executables automatically into the proper
+directory.  Alas, they do not support all the targets that GCC
+supports.
+
+If you are not building a C library in the same source tree as GCC,
+you should also provide the target libraries and headers before
+configuring GCC, specifying the directories with
+@option{--with-sysroot} or @option{--with-headers} and
+@option{--with-libs}.  Many targets also require ``start files'' such
+as @file{crt0.o} and
+@file{crtn.o} which are linked into each executable.  There may be several
+alternatives for @file{crt0.o}, for use with profiling or other
+compilation options.  Check your target's definition of
+@code{STARTFILE_SPEC} to find out what start files it uses.
 
 @section Building in parallel
 
@@ -2951,6 +2994,12 @@ make @samp{mips*-*-*} use the generic implementation instead.  You can also
 configure for @samp{mipsel-elf} as a workaround.  The
 @samp{mips*-*-linux*} target continues to use the MIPS II routines.  More
 work on this is expected in future releases.
+
+Cross-compilers for the Mips as target using the Mips assembler
+currently do not work, because the auxiliary programs
+@file{mips-tdump.c} and @file{mips-tfile.c} can't be compiled on
+anything but a Mips.  It does work to cross compile for a Mips
+if you use the GNU assembler and linker.
 
 @html
 <hr />
