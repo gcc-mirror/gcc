@@ -804,8 +804,11 @@ update_equiv_regs ()
   rtx insn;
   int block;
   int loop_depth;
+  regset_head cleared_regs;
+  int clear_regnos = 0;
 
   reg_equiv = (struct equivalence *) xcalloc (max_regno, sizeof *reg_equiv);
+  INIT_REG_SET (&cleared_regs);
 
   init_alias_analysis ();
 
@@ -1135,7 +1138,6 @@ update_equiv_regs ()
 		 INSN.  Update the flow information.  */
 	      else if (PREV_INSN (insn) != equiv_insn)
 		{
-		  int l;
 		  rtx new_insn;
 
 		  new_insn = emit_insn_before (copy_rtx (PATTERN (equiv_insn)),
@@ -1156,22 +1158,43 @@ update_equiv_regs ()
 		  if (block >= 0 && insn == BLOCK_HEAD (block))
 		    BLOCK_HEAD (block) = PREV_INSN (insn);
 
-		  for (l = 0; l < n_basic_blocks; l++)
-		    {
-		      CLEAR_REGNO_REG_SET (
-					BASIC_BLOCK (l)->global_live_at_start,
-					   regno);
-		      CLEAR_REGNO_REG_SET (
-					BASIC_BLOCK (l)->global_live_at_end,
-					   regno);
-		    }
+		  /* Remember to clear REGNO from all basic block's live
+		     info.  */
+		  SET_REGNO_REG_SET (&cleared_regs, regno);
+		  clear_regnos++;
 		}
 	    }
 	}
     }
 
+  /* Clear all dead REGNOs from all basic block's live info.  */
+  if (clear_regnos)
+    {
+      int j, l;
+      if (clear_regnos > 8)
+        {
+	  for (l = 0; l < n_basic_blocks; l++)
+	    {
+	      AND_COMPL_REG_SET (BASIC_BLOCK (l)->global_live_at_start,
+	                         &cleared_regs);
+	      AND_COMPL_REG_SET (BASIC_BLOCK (l)->global_live_at_end,
+	                         &cleared_regs);
+	    }
+	}
+      else
+        EXECUTE_IF_SET_IN_REG_SET (&cleared_regs, 0, j,
+          {
+	    for (l = 0; l < n_basic_blocks; l++)
+	      {
+	        CLEAR_REGNO_REG_SET (BASIC_BLOCK (l)->global_live_at_start, j);
+	        CLEAR_REGNO_REG_SET (BASIC_BLOCK (l)->global_live_at_end, j);
+	      }
+	  });
+    }
+
   /* Clean up.  */
   end_alias_analysis ();
+  CLEAR_REG_SET (&cleared_regs);
   free (reg_equiv);
 }
 

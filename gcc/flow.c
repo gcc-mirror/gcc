@@ -1262,13 +1262,27 @@ make_edge (edge_cache, src, dst, flags)
 		    && dst != EXIT_BLOCK_PTR);
 
   /* Make sure we don't add duplicate edges.  */
-  if (! use_edge_cache || TEST_BIT (edge_cache[src->index], dst->index))
-    for (e = src->succ; e; e = e->succ_next)
-      if (e->dest == dst)
-	{
-	  e->flags |= flags;
-	  return;
-	}
+  switch (use_edge_cache)
+    {
+    default:
+      /* Quick test for non-existance of the edge.  */
+      if (! TEST_BIT (edge_cache[src->index], dst->index))
+	break;
+
+      /* The edge exists; early exit if no work to do.  */
+      if (flags == 0)
+	return;
+
+      /* FALLTHRU */
+    case 0:
+      for (e = src->succ; e; e = e->succ_next)
+	if (e->dest == dst)
+	  {
+	    e->flags |= flags;
+	    return;
+	  }
+      break;
+    }
 
   e = (edge) xcalloc (1, sizeof (*e));
   n_edges++;
@@ -3306,15 +3320,15 @@ calculate_global_regs_live (blocks_in, blocks_out, flags)
   qtail = queue;
   qhead = qend = queue + n_basic_blocks + 2;
 
-  /* Clear out the garbage that might be hanging out in bb->aux.  */
-  for (i = n_basic_blocks - 1; i >= 0; --i)
-    BASIC_BLOCK (i)->aux = NULL;
-
   /* Queue the blocks set in the initial mask.  Do this in reverse block
      number order so that we are more likely for the first round to do
      useful work.  We use AUX non-null to flag that the block is queued.  */
   if (blocks_in)
     {
+      /* Clear out the garbage that might be hanging out in bb->aux.  */
+      for (i = n_basic_blocks - 1; i >= 0; --i)
+	BASIC_BLOCK (i)->aux = NULL;
+
       EXECUTE_IF_SET_IN_SBITMAP (blocks_in, 0, i,
 	{
 	  basic_block bb = BASIC_BLOCK (i);
