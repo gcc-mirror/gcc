@@ -876,6 +876,12 @@ precompute_register_parameters (num_actuals, args, reg_parm_seen)
 	    emit_queue ();
 	  }
 
+	/* If the value is a non-legitimate constant, force it into a
+	   pseudo now.  TLS symbols sometimes need a call to resolve.  */
+	if (CONSTANT_P (args[i].value)
+	    && !LEGITIMATE_CONSTANT_P (args[i].value))
+	  args[i].value = force_reg (args[i].mode, args[i].value);
+
 	/* If we are to promote the function arg to a wider mode,
 	   do it now.  */
 

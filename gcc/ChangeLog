@@ -1,3 +1,8 @@
+2002-10-01  Richard Henderson  <rth@redhat.com>
+
+	* calls.c (precompute_register_parameters): Force non-legitimate
+	constants into pseudos.
+
 2002-10-01  Nick Clifton  <nickc@redhat.com>
 
 	* config/rs6000/spe.md (spe_evrlwi): Add missing third operand
