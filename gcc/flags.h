@@ -301,6 +301,13 @@ extern int flag_no_common;
    needed for crtstuff.c on other systems.  */
 extern int flag_inhibit_size_directive;
 
+/* -fverbose-asm causes extra commentary information to be produced in
+   the generated assembly code (to make it more readable).  This option
+   is generally only of use to those who actually need to read the
+   generated assembly code (perhaps while debugging the compiler itself).  */
+
+extern int flag_verbose_asm;
+
 /* -fgnu-linker specifies use of the GNU linker for initializations.
    -fno-gnu-linker says that collect will be used.  */
 extern int flag_gnu_linker;

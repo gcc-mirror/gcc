@@ -165,8 +165,7 @@ decl_attributes (decl, attributes)
 	  if (!strcmp (specified_name, GET_MODE_NAME (i)))
 	    {
 	      tree type
-		= type_for_size (GET_MODE_BITSIZE (i),
-				 TREE_UNSIGNED (TREE_TYPE (decl)));
+		= type_for_mode (i, TREE_UNSIGNED (TREE_TYPE (decl)));
 	      if (type != 0)
 		{
 		  TREE_TYPE (decl) = type;
@@ -175,6 +174,7 @@ decl_attributes (decl, attributes)
 		}
 	      else
 		error ("no data type for mode `%s'", specified_name);
+	      break;
 	    }
 	if (i == NUM_MACHINE_MODES)
 	  error ("unknown machine mode `%s'", specified_name);
@@ -187,12 +187,12 @@ decl_attributes (decl, attributes)
 		    * BITS_PER_UNIT;
 	
 	if (exact_log2 (align) == -1)
-	  warning_with_decl (decl,
-			"requested alignment of `%s' is not a power of 2");
+	  error_with_decl (decl,
+			   "requested alignment of `%s' is not a power of 2");
 	else if (TREE_CODE (decl) != VAR_DECL
 		 && TREE_CODE (decl) != FIELD_DECL)
-	  warning_with_decl (decl,
-		"alignment specified for `%s' which is not a variable");
+	  error_with_decl (decl,
+			   "alignment specified for `%s', not a variable");
 	else
 	  DECL_ALIGN (decl) = align;
       }
@@ -208,8 +208,8 @@ decl_attributes (decl, attributes)
 	
 	if (TREE_CODE (decl) != FUNCTION_DECL)
 	  {
-	    warning_with_decl (decl,
-		"argument format specified for non-function `%s'");
+	    error_with_decl (decl,
+			     "argument format specified for non-function `%s'");
 	    return;
 	  }
 	
@@ -219,13 +219,13 @@ decl_attributes (decl, attributes)
 	  is_scan = 1;
 	else
 	  {
-	    warning_with_decl (decl,"unrecognized format specifier for `%s'");
+	    error_with_decl (decl, "unrecognized format specifier for `%s'");
 	    return;
 	  }
 	
 	if (first_arg_num != 0 && first_arg_num <= format_num)
 	  {
-	    warning_with_decl (decl,
+	    error_with_decl (decl,
 		"format string arg follows the args to be formatted, for `%s'");
 	    return;
 	  }
