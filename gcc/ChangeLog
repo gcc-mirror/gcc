@@ -1,3 +1,10 @@
+2004-07-06  Richard Henderson  <rth@redhat.com>
+
+	* config/i386/i386.c (legitimize_pic_address): Make static.
+	(legitimize_address): Handle CONST with TLS operand.
+	(ix86_expand_move): Don't call legitimize_pic_address directly.
+	* config/i386/i386-protos.h (legitimize_pic_address): Remove.
+
 2004-07-06  Roger Sayle  <roger@eyesopen.com>
 
 	* ifcvt.c (struct noce_if_info): Add a Boolean b_unconditional field.

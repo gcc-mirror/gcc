@@ -6291,7 +6291,7 @@ ix86_GOT_alias_set (void)
    GO_IF_LEGITIMATE_ADDRESS rejects symbolic references unless the PIC
    reg also appears in the address.  */
 
-rtx
+static rtx
 legitimize_pic_address (rtx orig, rtx reg)
 {
   rtx addr = orig;
@@ -6621,6 +6621,13 @@ legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED, enum machine_mode mode)
   log = tls_symbolic_operand (x, mode);
   if (log)
     return legitimize_tls_address (x, log, false);
+  if (GET_CODE (x) == CONST
+      && GET_CODE (XEXP (x, 0)) == PLUS
+      && (log = tls_symbolic_operand (XEXP (XEXP (x, 0), 0), Pmode)))
+    {
+      rtx t = legitimize_tls_address (XEXP (XEXP (x, 0), 0), log, false);
+      return gen_rtx_PLUS (Pmode, t, XEXP (XEXP (x, 0), 1));
+    }
 
   if (flag_pic && SYMBOLIC_CONST (x))
     return legitimize_pic_address (x, 0);
@@ -8414,15 +8421,7 @@ ix86_expand_move (enum machine_mode mode, rtx operands[])
       if (GET_CODE (op0) == MEM)
 	op1 = force_reg (Pmode, op1);
       else
-	{
-	  rtx temp = op0;
-	  if (GET_CODE (temp) != REG)
-	    temp = gen_reg_rtx (Pmode);
-	  temp = legitimize_pic_address (op1, temp);
-	  if (temp == op0)
-	    return;
-	  op1 = temp;
-	}
+	op1 = legitimize_address (op1, op1, Pmode);
 #endif /* TARGET_MACHO */
     }
   else
