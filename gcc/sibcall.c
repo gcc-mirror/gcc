@@ -36,6 +36,7 @@ static int identify_call_return_value	PARAMS ((rtx, rtx *, rtx *));
 static rtx skip_copy_to_return_value	PARAMS ((rtx, rtx, rtx));
 static rtx skip_use_of_return_value	PARAMS ((rtx, enum rtx_code));
 static rtx skip_stack_adjustment	PARAMS ((rtx));
+static rtx skip_pic_restore		PARAMS ((rtx));
 static rtx skip_jump_insn		PARAMS ((rtx));
 static int uses_addressof		PARAMS ((rtx));
 static int sequence_uses_addressof	PARAMS ((rtx));
@@ -79,6 +80,11 @@ identify_call_return_value (cp, p_hard_return, p_soft_return)
     
   /* Stack adjustment done after call may appear here.  */
   insn = skip_stack_adjustment (insn);
+  if (! insn)
+    return 0;
+
+  /* Restore of GP register may appear here.  */
+  insn = skip_pic_restore (insn);
   if (! insn)
     return 0;
 
@@ -199,10 +205,6 @@ skip_stack_adjustment (orig_insn)
   if (insn)
     set = single_set (insn);
 
-  /* The source must be the same as the current function's return value to
-     ensure that any return value is put in the same place by the current
-     function and the function we're calling.   The destination register
-     must be a pseudo.  */
   if (insn
       && set
       && GET_CODE (SET_SRC (set)) == PLUS
@@ -211,8 +213,26 @@ skip_stack_adjustment (orig_insn)
       && SET_DEST (set) == stack_pointer_rtx)
     return insn;
 
-  /* It did not look like a copy of the return value, so return the
-     same insn we were passed.  */
+  return orig_insn;
+}
+
+/* If the first real insn after ORIG_INSN sets the pic register,
+   return it.  Otherwise return ORIG_INSN.  */
+
+static rtx
+skip_pic_restore (orig_insn)
+     rtx orig_insn;
+{
+  rtx insn, set = NULL_RTX;
+
+  insn = next_nonnote_insn (orig_insn);
+
+  if (insn)
+    set = single_set (insn);
+
+  if (insn && set && SET_DEST (set) == pic_offset_table_rtx)
+    return insn;
+
   return orig_insn;
 }
 
