@@ -3207,9 +3207,7 @@ vect_transform_loop (loop_vec_info loop_vinfo,
   block_stmt_iterator si;
   int i;
   tree ratio = NULL;
-#ifdef ENABLE_CHECKING
   int vectorization_factor = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
-#endif
 
   if (vect_debug_details (NULL))
     fprintf (dump_file, "\n<<vec_transform_loop>>\n");
