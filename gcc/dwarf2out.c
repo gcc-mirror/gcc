@@ -57,6 +57,9 @@ int
 dwarf2out_do_frame ()
 {
   return (write_symbols == DWARF2_DEBUG
+#ifdef DWARF2_FRAME_INFO
+          || DWARF2_FRAME_INFO
+#endif
 #ifdef DWARF2_UNWIND_INFO
 	  || (flag_exceptions && ! exceptions_via_longjmp)
 #endif
