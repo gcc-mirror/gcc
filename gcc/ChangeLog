@@ -1905,6 +1905,7 @@
 	num_sign_bit_copies, cached_num_sign_bit_copies,
 	num_sign_bit_copies1): New, from combine.c.
 	* rtlhooks.c: New file.
+	* rtlhooks-def.h: New file.
 
 2004-05-25  Svein E. Seldal  <Svein.Seldal@solidas.com>
 
