@@ -3186,7 +3186,7 @@ extern void declare_function_name               PARAMS ((void));
 extern void decl_attributes                     PARAMS ((tree, tree, tree));
 extern void init_function_format_info		PARAMS ((void));
 extern void record_function_format		PARAMS ((tree, tree, int, int, int));
-extern void check_function_format		PARAMS ((tree, tree, tree));
+extern void check_function_format		PARAMS ((int *, tree, tree, tree));
 /* Print an error message for invalid operands to arith operation CODE.
    NOP_EXPR is used as a special case (see truthvalue_conversion).  */
 extern void binary_op_error                     PARAMS ((enum tree_code));

@@ -1,3 +1,9 @@
+2000-09-18  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* cp-tree.h (check_function_format): Accept a `status' parameter.
+	
+	* call.c, typeck.c: Updates calls to `check_function_format'.
+
 2000-09-17  Geoffrey Keating  <geoffk@cygnus.com>
 
 	* decl2.c (handle_class_head): Always push some scope even

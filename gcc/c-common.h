@@ -396,7 +396,7 @@ extern tree (*make_fname_decl)                  PARAMS ((tree, const char *, int
 extern void declare_function_name		PARAMS ((void));
 extern void decl_attributes			PARAMS ((tree, tree, tree));
 extern void init_function_format_info		PARAMS ((void));
-extern void check_function_format		PARAMS ((tree, tree, tree));
+extern void check_function_format		PARAMS ((int *, tree, tree, tree));
 extern void c_apply_type_quals_to_decl		PARAMS ((int, tree));
 /* Print an error message for invalid operands to arith operation CODE.
    NOP_EXPR is used as a special case (see truthvalue_conversion).  */
