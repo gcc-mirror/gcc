@@ -1,3 +1,8 @@
+2001-12-09  Edward E. Meyer  <edward.e.meyer@boeing.com>
+
+	PR libstdc++/4622 (copy from trunk 2001-10-31)
+	* include/bits/std_complex.h (complex::operator/=): Correct sign.
+
 2001-11-21  Paolo Carlini  <pcarlini@unitus.it>
 
 	PR libstdc++/4548
