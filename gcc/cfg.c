@@ -555,7 +555,7 @@ dump_flow_info (file)
 	fprintf (file, ", maybe hot");
       if (probably_never_executed_bb_p (bb))
 	fprintf (file, ", probably never executed");
-      fprintf (file, ".\n", bb->frequency);
+      fprintf (file, ".\n");
 
       fprintf (file, "Predecessors: ");
       for (e = bb->pred; e; e = e->pred_next)

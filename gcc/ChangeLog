@@ -1,3 +1,7 @@
+2002-05-26  Andreas Jaeger  <aj@suse.de>
+
+	* cfg.c (dump_flow_info): Remove extra argument to fprintf.
+
 2002-05-26  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* cppexp.c (possible_sum_sign, integer_overflow, left_shift,
