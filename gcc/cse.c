@@ -483,19 +483,7 @@ struct table_elt
    ? (CHEAP_REG (X) ? 0							\
       : REGNO (X) >= FIRST_PSEUDO_REGISTER ? 1				\
       : 2)								\
-   : ((GET_CODE (X) == SUBREG						\
-       && GET_CODE (SUBREG_REG (X)) == REG				\
-       && GET_MODE_CLASS (GET_MODE (X)) == MODE_INT			\
-       && GET_MODE_CLASS (GET_MODE (SUBREG_REG (X))) == MODE_INT	\
-       && (GET_MODE_SIZE (GET_MODE (X))					\
-	   < GET_MODE_SIZE (GET_MODE (SUBREG_REG (X))))			\
-       && subreg_lowpart_p (X)						\
-       && TRULY_NOOP_TRUNCATION (GET_MODE_BITSIZE (GET_MODE (X)),	\
-				 GET_MODE_BITSIZE (GET_MODE (SUBREG_REG (X))))) \
-      ? (CHEAP_REG (SUBREG_REG (X)) ? 0					\
-	 : REGNO (SUBREG_REG (X)) >= FIRST_PSEUDO_REGISTER ? 1		\
-	 : 2)								\
-      : rtx_cost (X, SET) * 2))
+   : notreg_cost(X))
 
 /* Determine if the quantity number for register X represents a valid index
    into the `qty_...' variables.  */
@@ -620,6 +608,7 @@ struct cse_basic_block_data {
 	   || XEXP (X, 0) == virtual_stack_dynamic_rtx		\
 	   || XEXP (X, 0) == virtual_outgoing_args_rtx)))
 
+static int notreg_cost		PROTO((rtx));
 static void new_basic_block	PROTO((void));
 static void make_new_qty	PROTO((int));
 static void make_regs_eqv	PROTO((int, int));
@@ -684,6 +673,28 @@ extern int rtx_equal_function_value_matters;
    One use is in cse, to decide which expression to keep in the hash table.
    Another is in rtl generation, to pick the cheapest way to multiply.
    Other uses like the latter are expected in the future.  */
+
+/* Internal function, to compute cost when X is not a register; called
+   from COST macro to keep it simple.  */
+
+static int
+notreg_cost (x)
+     rtx x;
+{
+  return ((GET_CODE (x) == SUBREG
+	   && GET_CODE (SUBREG_REG (x)) == REG
+	   && GET_MODE_CLASS (GET_MODE (x)) == MODE_INT
+	   && GET_MODE_CLASS (GET_MODE (SUBREG_REG (x))) == MODE_INT
+	   && (GET_MODE_SIZE (GET_MODE (x))
+	       < GET_MODE_SIZE (GET_MODE (SUBREG_REG (x))))
+	   && subreg_lowpart_p (x)
+	   && TRULY_NOOP_TRUNCATION (GET_MODE_BITSIZE (GET_MODE (x)),
+				     GET_MODE_BITSIZE (GET_MODE (SUBREG_REG (x)))))
+	  ? (CHEAP_REG (SUBREG_REG (x)) ? 0
+	     : (REGNO (SUBREG_REG (x)) >= FIRST_PSEUDO_REGISTER ? 1
+		: 2))
+	  : rtx_cost (x, SET) * 2);
+}
 
 /* Return the right cost to give to an operation
    to make the cost of the corresponding register-to-register instruction
