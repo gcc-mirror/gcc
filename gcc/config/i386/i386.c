@@ -1466,7 +1466,9 @@ override_options (void)
     }
 
   /* Keep nonleaf frame pointers.  */
-  if (TARGET_OMIT_LEAF_FRAME_POINTER)
+  if (flag_omit_frame_pointer)
+    target_flags &= ~MASK_OMIT_LEAF_FRAME_POINTER;
+  else if (TARGET_OMIT_LEAF_FRAME_POINTER)
     flag_omit_frame_pointer = 1;
 
   /* If we're doing fast math, we don't care about comparison order
