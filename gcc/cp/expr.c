@@ -132,8 +132,6 @@ cplus_expand_expr (exp, target, tmode, modifier)
 	  }
 	if (call_target)
 	  {
-	    preserve_temp_slots (call_target);
-
 	    /* Make this a valid memory address now.  The code below assumes
 	       that it can compare rtx and make assumptions based on the
 	       result.  The assumptions are true only if the address was
@@ -141,11 +139,9 @@ cplus_expand_expr (exp, target, tmode, modifier)
 	    call_target = validize_mem (call_target);
 	  }
 
-	preserve_temp_slots (DECL_RTL (slot));
 	call_exp = build (CALL_EXPR, type, func, args, 0);
 	TREE_SIDE_EFFECTS (call_exp) = 1;
 	return_target = expand_call (call_exp, call_target, ignore);
-	free_temp_slots ();
 	if (call_target == 0)
 	  {
 	    if (pcc_struct_return)
