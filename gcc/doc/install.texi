@@ -446,7 +446,7 @@ Check the
 directory, where @var{exec_prefix} defaults to @var{prefix} which
 defaults to @file{/usr/local} unless overridden by the
 @option{--prefix=@var{pathname}} switch described above. @var{target} is the
-target system triple, such as @var{sparc-sun-solaris2.7}, and
+target system triple, such as @samp{sparc-sun-solaris2.7}, and
 @var{version} denotes the GCC version, such as 3.0.
 @item
 Check operating system specific directories (e.g.@: @file{/usr/ccs/bin} on
@@ -1336,11 +1336,11 @@ GNU Compiler Collection on your machine.
 @item
 @uref{#mips-mips-riscos*,,mips-mips-riscos*}
 @item
-@uref{#mips*-sgi-irix4,,mips*-sgi-irix4}
+@uref{#mips-sgi-irix4,,mips-sgi-irix4}
 @item
-@uref{#mips*-sgi-irix5,,mips*-sgi-irix5}
+@uref{#mips-sgi-irix5,,mips-sgi-irix5}
 @item
-@uref{#mips*-sgi-irix6,,mips*-sgi-irix6}
+@uref{#mips-sgi-irix6,,mips-sgi-irix6}
 @item
 @uref{#mips-sony-sysv,,mips-sony-sysv}
 @item
@@ -1511,6 +1511,15 @@ or you can use a copy of GCC 2.95.3 or higher built on Tru64 UNIX V4.0:
 @example
    % CC=gcc -Wa,-oldas @var{srcdir}/configure [@var{options}] [@var{target}]
 @end example
+
+As of GNU binutils 2.11.2, neither GNU @command{as} nor GNU @command{ld}
+are supported on Tru64 UNIX, so you must not configure GCC with
+@option{--with-gnu-as} or @option{--with-gnu-ld}.
+
+The @option{--enable-threads} options isn't supported yet.  A patch is
+in preparation for a future release.  The Java runtime library has been
+reported to work on Tru64 UNIX V4.0F, V5.0, and V5.1, so you may try
+@option{--enable-libgcj} and report your results.
 
 GCC writes a @samp{.verstamp} directive to the assembler output file
 unless it is built as a cross-compiler.  It gets the version to use from
@@ -1982,7 +1991,7 @@ engineering and will hopefully be addressed in later releases.
 This target emulates the SCO Universal Development Kit and requires that
 package be installed.  (If it is installed, you will have a
 @file{/udk/usr/ccs/bin/cc} file present.)  It's very much like the
-@code{i?86-*-unixware7*} target
+@samp{i?86-*-unixware7*} target
 but is meant to be used when hosting on a system where UDK isn't the
 default compiler such as OpenServer 5 or Unixware 2.  This target will
 generate binaries that will run on OpenServer, Unixware 2, or Unixware 7,
@@ -2638,7 +2647,7 @@ avoiding a linker bug.
 </p>
 <hr>
 @end html
-@heading @anchor{mips*-sgi-irix4*}mips*-sgi-irix4*
+@heading @anchor{mips-sgi-irix4}mips-sgi-irix4
 
 In order to compile GCC on an SGI running IRIX 4, the ``c.hdr.lib''
 option must be installed from the CD-ROM supplied from Silicon Graphics.
@@ -2670,7 +2679,10 @@ ignored.
 </p>
 <hr>
 @end html
-@heading @anchor{mips*-sgi-irix5*}mips*-sgi-irix5*
+@heading @anchor{mips-sgi-irix5}mips-sgi-irix5
+
+This configuration has considerable problems, which will be fixed in a
+future release.
 
 In order to compile GCC on an SGI running IRIX 5, the ``compiler_dev.hdr''
 subsystem must be installed from the IDO CD-ROM supplied by Silicon
@@ -2693,27 +2705,13 @@ to increase its table size for switch statements with the
 @option{-Wf,-XNg1500} option.  If you use the @option{-O2}
 optimization option, you also need to use @option{-Olimit 3000}.
 
-To enable debugging under IRIX 5, you must use GNU @command{as} 2.5 or later,
+To enable debugging under IRIX 5, you must use GNU @command{as} 2.11.2
+or later, 
 and use the @option{--with-gnu-as} configure option when configuring GCC.
 GNU @command{as} is distributed as part of the binutils package.
-
-You must use GNU @command{as} on these platforms, as the native
-assembler can not handle the code for exception handling support. Either
-of these messages indicates that you are using the MIPS assembler when
-instead you should be using GNU @command{as}:
-
-@example
-  as0: Error: ./libgcc2.c, line 1:Badly delimited numeric literal
-  .4byte $LECIE1-$LSCIE1
-  as0: Error: ./libgcc2.c, line 1:malformed statement
-@end example
-
-or:
-
-@example
-  as0: Error: ./libgcc2.c, line 1:undefined symbol in expression
-  .word $LECIE1-$LSCIE1
-@end example
+When using release 2.11.2, you need to apply a patch 
+@uref{http://sources.redhat.com/ml/binutils/2001-07/msg00352.html,,http://sources.redhat.com/ml/binutils/2001-07/msg00352.html}
+which will be included in the next release of binutils.
 
 When building GCC, the build process loops rebuilding @command{cc1} over
 and over again.  This happens on @samp{mips-sgi-irix5.2}, and possibly
@@ -2727,7 +2725,7 @@ not have GNU @command{make} available.
 </p>
 <hr>
 @end html
-@heading @anchor{mips*-sgi-irix6}mips*-sgi-irix6
+@heading @anchor{mips-sgi-irix6}mips-sgi-irix6
 
 If you are using IRIX @command{cc} as your bootstrap compiler, you must
 ensure that the N32 ABI is in use.  To test this, compile a simple C
@@ -2764,10 +2762,23 @@ You must @emph{not} use GNU @command{as} (which isn't built anyway as of
 binutils 2.11.2) on IRIX 6 platforms; doing so will only cause problems.
 
 GCC does not currently support generating O32 ABI binaries in the
-@samp{mips-sgi-irix6} configurations.  It used to be possible to create a GCC
+@samp{mips-sgi-irix6} configurations.  It is possible to create a GCC
 with O32 ABI only support by configuring it for the @samp{mips-sgi-irix5}
-target, which doesn't currently (2001-06-13) work itself.  It is
+target and using a patched GNU @command{as} 2.11.2 as documented in the
+@uref{#mips-sgi-irix5,,@samp{mips-sgi-irix5}} section above.  Using the
+native assembler requires patches to GCC which will be included in a
+future release.  It is
 expected that O32 ABI support will be available again in a future release.
+
+The @option{--enable-threads} option doesn't currently work, a patch is
+in preparation for a future release.  The @option{--enable-libgcj}
+option is disabled by default: IRIX 6 uses a very low default limit
+(20480) for the command line length.  Although libtool contains a
+workaround for this problem, at least the N64 @samp{libgcj} is known not
+to build despite this, running into an internal error of the native
+@command{ld}.  A sure fix is to increase this limit (@samp{ncargs}) to
+its maximum of 262144 bytes.  If you have root access, you can use the
+@command{systune} command to do this.
 
 GCC does not correctly pass/return structures which are
 smaller than 16 bytes and which are not 8 bytes.  The problem is very

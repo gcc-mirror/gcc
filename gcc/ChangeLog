@@ -1,3 +1,17 @@
+2001-08-03  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* doc/install.texi (Configuration): Fix markup.
+	(Specific, i?86-*-udk): Likewise.
+	(Specific, alpha*-dec-osf*): Warn against --with-gnu-as,
+	--with-gnu-ld. 
+	Document --enable-threads and --enable-libgcj status.
+	(Specific, mips-sgi-irix*): Canonicalize triples.
+	(Specific, mips-sgi-irix5): Warn about problems with this config.
+	Mention required GNU as patch.
+	Native assembler problems are fixed.
+	(Specific, mips-sgi-irix6): Update O32 ABI support status.
+	Document --enable-threads and --enable-libgcj status.
+
 2001-08-02  David Edelsohn  <edelsohn@gnu.org>
 
 	* doc/install.texi (Install GCC: Binaries): Update Bull info.
