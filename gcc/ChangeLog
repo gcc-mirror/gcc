@@ -5,6 +5,11 @@
 
 	* config/vax/vax.md (indirect_jump): Use register_operand.
 
+	* config/vax/vax.h (RETURN_POPS_ARGS): Max at 255 arguments.
+	* config/vax/vax.md (call_pop): Turn into an expander.
+	(call_value_pop): Likewise.
+	(call, call_value): New.
+
 2001-01-14  Andreas Jaeger  <aj@suse.de>
 
 	* config/i386/i386.c (ix86_split_fp_branch): Remove unused

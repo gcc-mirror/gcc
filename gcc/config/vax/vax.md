@@ -1823,63 +1823,66 @@
 ;; It is used in the call instruction as a byte, but in the addl2 as
 ;; a word.  Since the only time we actually use it in the call instruction
 ;; is when it is a constant, SImode (for addl2) is the proper mode.
-(define_insn "call_pop"
+(define_expand "call_pop"
+  [(parallel [(call (match_operand:QI 0 "memory_operand" "")
+		    (match_operand:SI 1 "const_int_operand" ""))
+	      (set (reg:SI 14)
+		   (plus:SI (reg:SI 14)
+			    (match_operand:SI 3 "immediate_operand" "")))])]
+  ""
+  "
+{
+  if (INTVAL (operands[1]) > 255 * 4)
+    abort ();
+  operands[1] = GEN_INT ((INTVAL (operands[1]) + 3)/ 4);
+}")
+
+(define_insn "*call_pop"
   [(call (match_operand:QI 0 "memory_operand" "m")
 	 (match_operand:SI 1 "const_int_operand" "n"))
+   (set (reg:SI 14) (plus:SI (reg:SI 14)
+			     (match_operand:SI 2 "immediate_operand" "i")))]
+  ""
+  "calls %1,%0")
+
+(define_expand "call_value_pop"
+  [(parallel [(set (match_operand 0 "" "")
+		   (call (match_operand:QI 1 "memory_operand" "")
+			 (match_operand:SI 2 "const_int_operand" "")))
+	      (set (reg:SI 14)
+		   (plus:SI (reg:SI 14)
+			    (match_operand:SI 4 "immediate_operand" "")))])]
+  ""
+  "
+{
+  if (INTVAL (operands[2]) > 255 * 4)
+    abort ();      
+  operands[2] = GEN_INT ((INTVAL (operands[2]) + 3)/ 4);
+}")
+
+(define_insn "*call_value_pop"
+  [(set (match_operand 0 "" "")
+	(call (match_operand:QI 1 "memory_operand" "m")
+	      (match_operand:SI 2 "const_int_operand" "n")))
    (set (reg:SI 14) (plus:SI (reg:SI 14)
 			     (match_operand:SI 3 "immediate_operand" "i")))]
   ""
-  "*
-  if (INTVAL (operands[1]) > 255 * 4)
-    /* Vax `calls' really uses only one byte of #args, so pop explicitly.  */
-    return \"calls $0,%0\;addl2 %1,sp\";
-  operands[1] = GEN_INT ((INTVAL (operands[1]) + 3)/ 4);
-  return \"calls %1,%0\";
-")
+  "calls %2,%1")
 
-(define_insn "call_value_pop"
-  [(set (match_operand 0 "" "=g")
-	(call (match_operand:QI 1 "memory_operand" "m")
-	      (match_operand:SI 2 "const_int_operand" "n")))
-   (set (reg:SI 14) (plus:SI (reg:SI 14)
-			     (match_operand:SI 4 "immediate_operand" "i")))]
-  ""
-  "*
-  if (INTVAL (operands[2]) > 255 * 4)
-    /* Vax `calls' really uses only one byte of #args, so pop explicitly.  */
-    return \"calls $0,%1\;addl2 %2,sp\";
-  operands[2] = GEN_INT ((INTVAL (operands[2]) + 3)/ 4);
-  return \"calls %2,%1\";
-")
-
-;; Define another set of these for the case of functions with no
-;; operands.  In that case, combine may simplify the adjustment of sp.
-(define_insn ""
+;; Define another set of these for the case of functions with no operands.
+;; These will allow the optimizers to do a slightly better job.
+(define_insn "call"
   [(call (match_operand:QI 0 "memory_operand" "m")
-	 (match_operand:SI 1 "const_int_operand" "n"))
-   (set (reg:SI 14) (reg:SI 14))]
+	 (const_int 0))]
   ""
-  "*
-  if (INTVAL (operands[1]) > 255 * 4)
-    /* Vax `calls' really uses only one byte of #args, so pop explicitly.  */
-    return \"calls $0,%0\;addl2 %1,sp\";
-  operands[1] = GEN_INT ((INTVAL (operands[1]) + 3)/ 4);
-  return \"calls %1,%0\";
-")
+  "calls $0,%0")
 
-(define_insn ""
-  [(set (match_operand 0 "" "=g")
+(define_insn "call_value"
+  [(set (match_operand 0 "" "")
 	(call (match_operand:QI 1 "memory_operand" "m")
-	      (match_operand:SI 2 "const_int_operand" "n")))
-   (set (reg:SI 14) (reg:SI 14))]
+	      (const_int 0)))]
   ""
-  "*
-  if (INTVAL (operands[2]) > 255 * 4)
-    /* Vax `calls' really uses only one byte of #args, so pop explicitly.  */
-    return \"calls $0,%1\;addl2 %2,sp\";
-  operands[2] = GEN_INT ((INTVAL (operands[2]) + 3)/ 4);
-  return \"calls %2,%1\";
-")
+  "calls $0,%1")
 
 ;; Call subroutine returning any type.
 

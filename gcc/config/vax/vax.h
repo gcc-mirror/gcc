@@ -369,9 +369,10 @@ enum reg_class { NO_REGS, ALL_REGS, LIM_REG_CLASSES };
    or for a library call it is an identifier node for the subroutine name.
    SIZE is the number of bytes of arguments passed on the stack.
 
-   On the Vax, the RET insn always pops all the args for any function.  */
+   On the Vax, the RET insn pops a maximum of 255 args for any function.  */
 
-#define RETURN_POPS_ARGS(FUNDECL,FUNTYPE,SIZE) (SIZE)
+#define RETURN_POPS_ARGS(FUNDECL,FUNTYPE,SIZE) \
+  ((SIZE) > 255*4 ? 0 : (SIZE))
 
 /* Define how to find the value returned by a function.
    VALTYPE is the data type of the value (as a tree).
