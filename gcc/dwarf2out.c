@@ -1534,6 +1534,7 @@ output_call_frame_info (for_eh)
       tree label = get_file_function_name ('F');
 
       data_section ();
+      ASM_OUTPUT_ALIGN (asm_out_file, floor_log2 (PTR_SIZE));
       ASM_GLOBALIZE_LABEL (asm_out_file, IDENTIFIER_POINTER (label));
       ASM_OUTPUT_LABEL (asm_out_file, IDENTIFIER_POINTER (label));
 #endif
