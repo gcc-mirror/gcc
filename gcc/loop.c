@@ -3850,9 +3850,23 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 	     unchanged (recompute it from the biv each time it is used).
 	     This decision can be made independently for each giv.  */
 
-	  /* ??? Perhaps attempt to guess whether autoincrement will handle
-	     some of the new add insns; if so, can increase BENEFIT
-	     (undo the subtraction of add_cost that was done above).  */
+#ifdef AUTO_INC_DEC
+	  /* Attempt to guess whether autoincrement will handle some of the
+	     new add insns; if so, increase BENEFIT (undo the subtraction of
+	     add_cost that was done above).  */
+	  if (v->giv_type == DEST_ADDR
+	      && GET_CODE (v->mult_val) == CONST_INT)
+	    {
+#if defined (HAVE_POST_INCREMENT) || defined (HAVE_PRE_INCREMENT)
+	      if (INTVAL (v->mult_val) == GET_MODE_SIZE (v->mem_mode))
+		benefit += add_cost * bl->biv_count;
+#endif
+#if defined (HAVE_POST_DECREMENT) || defined (HAVE_PRE_DECREMENT)
+	      if (-INTVAL (v->mult_val) == GET_MODE_SIZE (v->mem_mode))
+		benefit += add_cost * bl->biv_count;
+#endif
+	    }
+#endif
 
 	  /* If an insn is not to be strength reduced, then set its ignore
 	     flag, and clear all_reduced.  */
