@@ -3063,7 +3063,6 @@ rest_of_compilation (decl)
 	}
 
       if (! current_function_contains_functions
-	  && ! decl_function_context (decl)
 	  && (DECL_DEFER_OUTPUT (decl)
 	      || (DECL_INLINE (decl)
 		  && ((! TREE_PUBLIC (decl) && ! TREE_ADDRESSABLE (decl)

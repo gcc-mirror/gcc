@@ -1,3 +1,7 @@
+Wed Jun 24 01:32:12 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
+
+	* toplev.c (rest_of_compilation): Revert May 15 change.
+
 Tue Jun 23 21:27:27 1998  Ken Raeburn  <raeburn@cygnus.com>
 
 	* reload.c (find_reloads): Fix check for failure to match any
