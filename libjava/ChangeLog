@@ -1,3 +1,8 @@
+2001-10-17  Anthony Green  <green@redhat.com>
+
+	* java/security/Security.java (loadProviders): Fix bug in how
+	providers are loaded.
+
 2001-10-16  Tom Tromey  <tromey@redhat.com>
 
 	* gcj/javaprims.h: Updated class list.
