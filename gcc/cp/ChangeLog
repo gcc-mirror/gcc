@@ -1,3 +1,8 @@
+2003-12-16  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/12696
+	* decl.c (reshape_init): Recover quickly from errors.
+
 2003-12-16  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/9043
@@ -8,6 +13,9 @@
 	expression indices on abi-1
 
 2003-12-16  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/12696
+	* decl.c (reshape_init): Recover quickly from errors.
 
 	PR c++/13275
 	* lex.c (reswords): Add "__offsetof" and "__offsetof__".
