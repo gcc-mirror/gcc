@@ -100,6 +100,7 @@ int count_instrumented_edges;
 
 static int total_num_blocks;
 static int total_num_edges;
+static int total_num_edges_ignored;
 static int total_num_edges_instrumented;
 static int total_num_blocks_created;
 static int total_num_passes;
@@ -539,7 +540,7 @@ void
 branch_prob ()
 {
   int i;
-  int num_edges;
+  int num_edges, ignored_edges;
   struct edge_info *edge_infos;
   struct edge_list *el;
 
@@ -626,6 +627,7 @@ branch_prob ()
   edge_infos = (struct edge_info *)
     xcalloc (num_edges, sizeof (struct edge_info));
 
+  ignored_edges = 0;
   for (i = 0 ; i < num_edges ; i++)
     {
       edge e = INDEX_EDGE (el, i);
@@ -635,16 +637,11 @@ branch_prob ()
       /* Mark edges we've replaced by fake edges above as ignored.  */
       if ((e->flags & (EDGE_ABNORMAL | EDGE_ABNORMAL_CALL))
 	  && e->src != ENTRY_BLOCK_PTR && e->dest != EXIT_BLOCK_PTR)
-	EDGE_INFO (e)->ignore = 1;
+        {
+	  EDGE_INFO (e)->ignore = 1;
+	  ignored_edges++;
+        }
     }
-
-  total_num_blocks += n_basic_blocks + 2;
-  if (rtl_dump_file)
-    fprintf (rtl_dump_file, "%d basic blocks\n", n_basic_blocks);
-
-  total_num_edges += num_edges;
-  if (rtl_dump_file)
-    fprintf (rtl_dump_file, "%d edges\n", num_edges);
 
 #ifdef ENABLE_CHECKING
   verify_flow_info ();
@@ -722,6 +719,31 @@ branch_prob ()
 
   find_spanning_tree (el);
 
+  /* Fake edges that are not on the tree will not be instrumented, so
+     mark them ignored. */
+  for (i = 0; i < num_edges; i++)
+    {
+      edge e = INDEX_EDGE (el, i);
+      struct edge_info *inf = EDGE_INFO (e);
+      if ((e->flags & EDGE_FAKE) && !inf->ignore && !inf->on_tree)
+        {
+          inf->ignore = 1;
+          ignored_edges++;
+        }
+    }
+
+  total_num_blocks += n_basic_blocks + 2;
+  if (rtl_dump_file)
+    fprintf (rtl_dump_file, "%d basic blocks\n", n_basic_blocks);
+
+  total_num_edges += num_edges;
+  if (rtl_dump_file)
+    fprintf (rtl_dump_file, "%d edges\n", num_edges);
+
+  total_num_edges_ignored += ignored_edges;
+  if (rtl_dump_file)
+    fprintf (rtl_dump_file, "%d ignored edges\n", ignored_edges);
+
   /* Create a .bbg file from which gcov can reconstruct the basic block
      graph.  First output the number of basic blocks, and then for every
      edge output the source and target basic block numbers.
@@ -733,7 +755,7 @@ branch_prob ()
 
       /* The plus 2 stands for entry and exit block.  */
       __write_long (n_basic_blocks + 2, bbg_file, 4);
-      __write_long (num_edges + 1, bbg_file, 4);
+      __write_long (num_edges - ignored_edges + 1, bbg_file, 4);
 
       for (i = 0; i < n_basic_blocks + 1; i++)
 	{
@@ -754,7 +776,7 @@ branch_prob ()
 		  flag_bits = 0;
 		  if (i->on_tree)
 		    flag_bits |= 0x1;
-		  if (e->flags & EDGE_ABNORMAL)
+		  if (e->flags & EDGE_FAKE)
 		    flag_bits |= 0x2;
 		  if (e->flags & EDGE_FALLTHRU)
 		    flag_bits |= 0x4;
@@ -950,6 +972,7 @@ init_branch_prob (filename)
 
   total_num_blocks = 0;
   total_num_edges = 0;
+  total_num_edges_ignored = 0;
   total_num_edges_instrumented = 0;
   total_num_blocks_created = 0;
   total_num_passes = 0;
@@ -995,6 +1018,8 @@ end_branch_prob ()
       fprintf (rtl_dump_file, "Total number of blocks: %d\n",
 	       total_num_blocks);
       fprintf (rtl_dump_file, "Total number of edges: %d\n", total_num_edges);
+      fprintf (rtl_dump_file, "Total number of ignored edges: %d\n",
+	       total_num_edges_ignored);
       fprintf (rtl_dump_file, "Total number of instrumented edges: %d\n",
 	       total_num_edges_instrumented);
       fprintf (rtl_dump_file, "Total number of blocks created: %d\n",
