@@ -76,9 +76,9 @@ extern void print_operand_address PROTO((FILE*, rtx));
 
 extern void split_di PROTO((rtx[], int, rtx[], rtx[]));
 
-extern char *output_387_binary_op PROTO((rtx, rtx*));
-extern char *output_fix_trunc PROTO((rtx, rtx*));
-extern char *output_fp_compare PROTO((rtx, rtx*, int, int));
+extern const char *output_387_binary_op PROTO((rtx, rtx*));
+extern const char *output_fix_trunc PROTO((rtx, rtx*));
+extern const char *output_fp_compare PROTO((rtx, rtx*, int, int));
 
 extern void ix86_expand_move PROTO((enum machine_mode, rtx[]));
 extern void ix86_expand_binary_operator PROTO((enum rtx_code,

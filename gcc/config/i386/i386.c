@@ -315,6 +315,8 @@ static rtx * ix86_pent_find_pair PROTO ((rtx *, rtx *, enum attr_pent_pair,
 					 rtx));
 static void ix86_init_machine_status PROTO ((struct function *));
 static void ix86_mark_machine_status PROTO ((struct function *));
+static void ix86_split_to_parts PROTO ((rtx, rtx *, enum machine_mode));
+static int ix86_safe_length_prefix PROTO ((rtx));
 
 struct ix86_address
 {
@@ -361,7 +363,7 @@ override_options ()
 
   static struct pta
     {
-      char *name;		/* processor name or nickname. */
+      const char *name;		/* processor name or nickname. */
       enum processor_type processor;
     }
   const processor_alias_table[] = 
@@ -718,7 +720,7 @@ ix86_comp_type_attributes (type1, type2)
      tree type2;
 {
   /* Check for mismatch of non-default calling convention. */
-  char *rtdstr = TARGET_RTD ? "cdecl" : "stdcall";
+  const char *rtdstr = TARGET_RTD ? "cdecl" : "stdcall";
 
   if (TREE_CODE (type1) != FUNCTION_TYPE)
     return 1;
@@ -2830,7 +2832,7 @@ print_operand (file, x, code)
       /* No `byte ptr' prefix for call instructions.  */
       if (ASSEMBLER_DIALECT != 0 && code != 'X' && code != 'P')
 	{
-	  char * size;
+	  const char * size;
 	  switch (GET_MODE_SIZE (GET_MODE (x)))
 	    {
 	    case 1: size = "BYTE"; break;
@@ -3073,14 +3075,14 @@ split_di (operands, num, lo_half, hi_half)
    There is no guarantee that the operands are the same mode, as they
    might be within FLOAT or FLOAT_EXTEND expressions. */
 
-char *
+const char *
 output_387_binary_op (insn, operands)
      rtx insn;
      rtx *operands;
 {
   static char buf[100];
   rtx temp;
-  char *p;
+  const char *p;
 
   switch (GET_CODE (operands[3]))
     {
@@ -3218,7 +3220,7 @@ output_387_binary_op (insn, operands)
    are the insn operands.  The output may be [SD]Imode and the input
    operand may be [SDX]Fmode.  */
 
-char *
+const char *
 output_fix_trunc (insn, operands)
      rtx insn;
      rtx *operands;
@@ -3277,7 +3279,7 @@ output_fix_trunc (insn, operands)
    should be used and 2 when fnstsw should be used.  UNORDERED_P is true
    when fucom should be used.  */
 
-char *
+const char *
 output_fp_compare (insn, operands, eflags_p, unordered_p)
      rtx insn;
      rtx *operands;
@@ -3339,7 +3341,7 @@ output_fp_compare (insn, operands, eflags_p, unordered_p)
     {
       /* Encoded here as eflags_p | intmode | unordered_p | stack_top_dies.  */
 
-      static char * const alt[24] = 
+      static const char * const alt[24] = 
       {
 	"fcom%z1\t%y1",
 	"fcomp%z1\t%y1",
@@ -3373,7 +3375,7 @@ output_fp_compare (insn, operands, eflags_p, unordered_p)
       };
 
       int mask;
-      char *ret;
+      const char *ret;
 
       mask  = eflags_p << 3;
       mask |= (GET_MODE_CLASS (GET_MODE (operands[1])) == MODE_INT) << 2;
@@ -5869,7 +5871,7 @@ ix86_sched_reorder (dump, sched_verbose, ready, n_ready, clock_var)
      FILE *dump ATTRIBUTE_UNUSED;
      int sched_verbose ATTRIBUTE_UNUSED;
      rtx *ready;
-     int n_ready, clock_var;
+     int n_ready, clock_var ATTRIBUTE_UNUSED;
 {
   rtx *e_ready = ready + n_ready - 1;
   rtx *insnp;
