@@ -4344,15 +4344,17 @@ cxx_mark_addressable (tree exp)
       case RESULT_DECL:
 	if (DECL_REGISTER (x) && !TREE_ADDRESSABLE (x)
 	    && !DECL_ARTIFICIAL (x))
-	  if (DECL_HARD_REGISTER (x) != 0)
-	    {
-	      error
-		("address of explicit register variable %qD requested", x);
-	      return false;
-	    }
-	  else if (extra_warnings)
-	    warning
-	      ("address requested for %qD, which is declared %<register%>", x);
+	  {
+	    if (DECL_HARD_REGISTER (x) != 0)
+	      {
+		error
+		  ("address of explicit register variable %qD requested", x);
+		return false;
+	      }
+	    else if (extra_warnings)
+	      warning
+		("address requested for %qD, which is declared %<register%>", x);
+	  }
 	TREE_ADDRESSABLE (x) = 1;
 	return true;
 
