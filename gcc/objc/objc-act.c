@@ -55,15 +55,19 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #endif
 
 /* This is the default way of generating a method name.  */
+/* I am not sure it is really correct.
+   Perhaps there's a danger that it will make name conflicts
+   if method names contain underscores. -- rms.  */
 #ifndef OBJC_GEN_METHOD_LABEL
 #define OBJC_GEN_METHOD_LABEL(BUF, IS_INST, CLASS_NAME, CAT_NAME, SEL_NAME, NUM)	\
   do {					\
-    char *cat_name = (CAT_NAME);	\
-    if (cat_name == 0) cat_name = "";	\
-    sprintf ((BUF), "_%s_%s_%s_%s_%d",	\
+    char *temp;				\
+    sprintf ((BUF), "_%s_%s_%s",	\
 	     ((IS_INST) ? "i" : "c"),	\
-	     (CLASS_NAME), cat_name,	\
-	     (SEL_NAME), (NUM));	\
+	     (CLASS_NAME),		\
+	     (SEL_NAME));		\
+    for (temp = (BUF); *temp; temp++)	\
+      if (*temp == ':') *temp = '_';	\
   } while (0)
 #endif
 
