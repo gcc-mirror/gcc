@@ -1,3 +1,7 @@
+2004-11-28  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* expr.c (categorize_ctor_elements_1, case STRING_CST): New case.
+
 2004-11-28  Matt Kraai  <kraai@alumni.cmu.edu>
 
 	PR diagnostic/17594

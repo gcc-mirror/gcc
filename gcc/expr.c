@@ -4152,12 +4152,18 @@ categorize_ctor_elements_1 (tree ctor, HOST_WIDE_INT *p_nz_elts,
 	  if (!initializer_zerop (value))
 	    nz_elts += mult;
 	  break;
+
+	case STRING_CST:
+	  nz_elts += mult * TREE_STRING_LENGTH (value);
+	  break;
+
 	case COMPLEX_CST:
 	  if (!initializer_zerop (TREE_REALPART (value)))
 	    nz_elts += mult;
 	  if (!initializer_zerop (TREE_IMAGPART (value)))
 	    nz_elts += mult;
 	  break;
+
 	case VECTOR_CST:
 	  {
 	    tree v;
