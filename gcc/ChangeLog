@@ -1,3 +1,17 @@
+Thu Sep  6 11:16:35 2001  Jeffrey A Law  (law@cygnus.com)
+			  Joern Rennecke (amylaar@cygnus.com)
+
+	* h8300-protos.h (h8300_return_addr_rtx): New prototype.
+	* h8300.c (initial_offset): Handle offset between RP and FP.
+	(h8300_return_addr_rtx): New function.
+	* h8300.h (FIRST_PSEUDO_REGISTER): Bump now that we have a
+	return register.
+	(FIXED_REGISTERS, CALL_USED_REGISTERS): Corresponding changes.
+	(REG_ALLOC_ORDER, RETURN_ADDRESS_POINTER_REGNUM): Likewise.
+	(REG_CLASS_CONTENTS, ELIMINABLE_REGS): Likewise.
+	(CAN_ELIMINATE, REGISTER_NAMES):
+	(RETURN_ADDR_RTX): Call h8300_return_addr_rtx.
+
 2001-09-06  Nathan Sidwell  <nathan@codesourcery.com>
 
 	Remove TYPE_NONCOPIED_PARTS.

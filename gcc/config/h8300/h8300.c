@@ -1516,6 +1516,8 @@ initial_offset (from, to)
 
   if (from == ARG_POINTER_REGNUM && to == FRAME_POINTER_REGNUM)
     offset = UNITS_PER_WORD + frame_pointer_needed * UNITS_PER_WORD;
+  else if (from == RETURN_ADDRESS_POINTER_REGNUM && to == FRAME_POINTER_REGNUM)
+    offset = frame_pointer_needed * UNITS_PER_WORD;
   else
     {
       int regno;
@@ -1534,6 +1536,26 @@ initial_offset (from, to)
 	offset += UNITS_PER_WORD;	/* Skip saved PC */
     }
   return offset;
+}
+
+rtx
+h8300_return_addr_rtx (count, frame)
+     int count;
+     rtx frame;
+{
+  rtx ret;
+
+  if (count == 0)
+    ret = gen_rtx_MEM (Pmode,
+		       gen_rtx_REG (Pmode, RETURN_ADDRESS_POINTER_REGNUM));
+  else if (flag_omit_frame_pointer)
+    return (rtx) 0;
+  else
+    ret = gen_rtx_MEM (Pmode,
+		       memory_address (Pmode,
+				       plus_constant (frame, UNITS_PER_WORD)));
+  set_mem_alias_set (ret, get_frame_alias_set ());
+  return ret;
 }
 
 /* Update the condition code from the insn.  */
