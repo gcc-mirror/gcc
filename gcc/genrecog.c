@@ -1432,7 +1432,7 @@ merge_trees (oldh, addh)
 	     how expensive/important the test is.  Given that the tests
 	     are also ordered within the list, examining the first is
 	     sufficient.  */
-	  if (add->tests->type < old->tests->type)
+	  if ((int) add->tests->type < (int) old->tests->type)
 	    insert_before = old;
 	}
 

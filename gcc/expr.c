@@ -2766,7 +2766,7 @@ emit_move_insn_1 (x, y)
   enum mode_class class = GET_MODE_CLASS (mode);
   unsigned int i;
 
-  if (mode >= MAX_MACHINE_MODE)
+  if ((unsigned int) mode >= (unsigned int) MAX_MACHINE_MODE)
     abort ();
 
   if (mov_optab->handlers[(int) mode].insn_code != CODE_FOR_nothing)
@@ -5766,7 +5766,8 @@ safe_from_p (x, exp, top_p)
 
       /* If this is a language-specific tree code, it may require
 	 special handling.  */
-      if (TREE_CODE (exp) >= LAST_AND_UNUSED_TREE_CODE
+      if ((unsigned int) TREE_CODE (exp)
+	  >= (unsigned int) LAST_AND_UNUSED_TREE_CODE
 	  && lang_safe_from_p
 	  && !(*lang_safe_from_p) (x, exp))
 	return 0;
