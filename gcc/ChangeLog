@@ -1,3 +1,7 @@
+Mon Oct 26 00:36:58 PST 1998 Jeff Law  (law@cygnus.com)
+
+	* version.c: Bump for snapshot.
+
 Sun Oct 25 23:36:52 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* stmt.c (expand_fixup): Set fixup->before_jump to a
