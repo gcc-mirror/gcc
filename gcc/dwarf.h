@@ -3,7 +3,7 @@
 
    Written by Ron Guilmette (rfg@netcom.com)
 
-Copyright (C) 1992 Free Software Foundation, Inc.
+Copyright (C) 1992, 2004 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
