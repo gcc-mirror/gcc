@@ -1,5 +1,13 @@
 2004-08-29  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config/mips/mips.md (divide_condition): New mode attribute.
+	(div[sd]f3, *div[sd]f3): Use it.  Redefine using :SCALARF.
+	(sqrt[sd]f3): Redefine using SCALARF.
+	(*recip[sd]f3, *rsqrt<mode>[ab]): Likewise.  Name formerly unnamed
+	patterns.
+
+2004-08-29  Richard Sandiford  <rsandifo@redhat.com>
+
 	* config/mips/mips.md (ANYF, SCALARF): New mode macros.
 	(loadx, storex, fmt, UNITMODE): New mode attributes.
 	(add{sf,df,v2sf}3, sub{sf,df,v2sf}3): Redefine using :ANYF.
