@@ -492,7 +492,9 @@ in the following sections.
 -msingle-float  -mdouble-float  -mint64  -mlong64  -mlong32 @gol
 -G@var{num}  -membedded-data  -mno-embedded-data @gol
 -muninit-const-in-rodata  -mno-uninit-const-in-rodata @gol
--msplit-addresses  -mno-split-addresses  -mrnames  -mno-rnames @gol
+-msplit-addresses  -mno-split-addresses  @gol
+-mexplicit-relocs  -mno-explicit-relocs  @gol
+-mrnames  -mno-rnames @gol
 -mcheck-zero-division  -mno-check-zero-division @gol
 -mmemcpy  -mno-memcpy  -mlong-calls  -mno-long-calls @gol
 -mmad  -mno-mad  -mfused-madd  -mno-fused-madd  -nocpp @gol
@@ -8275,7 +8277,35 @@ This option is only meaningful in conjunction with @option{-membedded-data}.
 @opindex msplit-addresses
 @opindex mno-split-addresses
 Enable (disable) use of the @code{%hi()} and @code{%lo()} assembler
-relocation operators.
+relocation operators.  This option has been superceded by
+@option{-mexplicit-relocs} but is retained for backwards compatibility.
+
+@item -mexplicit-relocs
+@itemx -mno-explicit-relocs
+@opindex mexplicit-relocs
+@opindex mno-explicit-relocs
+Use (do not use) assembler relocation operators when dealing with symbolic
+addresses.  The alternative, selected by @option{-mno-explicit-relocs},
+is to use assembler macros instead.
+
+@option{-mexplicit-relocs} is usually the default if GCC was
+configured to use an assembler that supports relocation operators.
+However, there are two exceptions:
+
+@itemize @bullet
+@item
+GCC is not yet able to generate explicit relocations for the combination
+of @option{-mabi=64} and @option{-mno-abicalls}.  This will be addressed
+in a future release.
+
+@item
+The combination of @option{-mabicalls} and @option{-fno-unit-at-a-time}
+implies @option{-mno-explicit-relocs} unless explicitly overridden.
+This is because, when generating abicalls, the choice of relocation
+depends on whether a symbol is local or global.  In some rare cases,
+GCC will not be able to decide this until the whole compilation unit
+has been read.
+@end itemize
 
 @item -mrnames
 @itemx -mno-rnames

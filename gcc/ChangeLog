@@ -1,5 +1,10 @@
 2004-01-05  Richard Sandiford  <rsandifo@redhat.com>
 
+	* doc/invoke.texi: Add documentation for the MIPS -mexplicit-relocs
+	option.
+
+2004-01-05  Richard Sandiford  <rsandifo@redhat.com>
+
 	PR target/12945
 	* coverage.c (coverage_counter_alloc): Set SYMBOL_FLAG_LOCAL for
 	for counter labels.
