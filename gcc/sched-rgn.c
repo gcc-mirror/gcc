@@ -60,6 +60,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "except.h"
 #include "toplev.h"
 #include "recog.h"
+#include "cfglayout.h"
 #include "sched-int.h"
 
 /* Define when we want to do count REG_DEAD notes before and after scheduling
@@ -2896,9 +2897,7 @@ schedule_insns (dump_file)
   if (n_basic_blocks == 0)
     return;
 
-  /* Remove lexical block notes for empty regions.  These get shuffled
-     about during scheduling and confuse the debugging issue.  */
-  remove_unnecessary_notes ();
+  scope_to_insns_initialize ();
 
   nr_inter = 0;
   nr_spec = 0;
@@ -2985,6 +2984,8 @@ schedule_insns (dump_file)
   /* Delete redundant line notes.  */
   if (write_symbols != NO_DEBUG)
     rm_redundant_line_notes ();
+
+  scope_to_insns_finalize ();
 
   if (sched_verbose)
     {
