@@ -1,3 +1,11 @@
+2004-08-25  Adam Nemet  <anemet@lnxw.com>
+
+	* tlink.c (initial_cwd): New variable.
+	(tlink_init): Initialize it.
+	(recompile_files): Use tlink_execute() instead of system().  Don't
+	duplicate verbose output of collect_execute.  Restore initial_cwd.
+	Update comment before the function.
+
 2004-08-25  Ziemowit Laski  <zlaski@apple.com>
 
 	* c-typeck.c (build_c_cast): In ObjC, always preserve (and silently
