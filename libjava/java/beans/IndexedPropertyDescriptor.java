@@ -38,8 +38,8 @@ exception statement from your version. */
 
 package java.beans;
 
-import java.util.*;
-import java.lang.reflect.*;
+import java.lang.reflect.Array;
+import java.lang.reflect.Method;
 
 /**
  ** IndexedPropertyDescriptor describes information about a JavaBean

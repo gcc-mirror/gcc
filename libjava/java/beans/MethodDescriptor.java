@@ -38,7 +38,7 @@ exception statement from your version. */
 
 package java.beans;
 
-import java.lang.reflect.*;
+import java.lang.reflect.Method;
 
 /** MethodDescriptor describes information about a JavaBeans method.
  ** It's a fairly straightforward class (at least something in this

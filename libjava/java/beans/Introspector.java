@@ -38,10 +38,12 @@ exception statement from your version. */
 
 package java.beans;
 
-import gnu.java.beans.*;
-import java.util.*;
-import java.lang.reflect.*;
-import gnu.java.lang.*;
+import gnu.java.beans.BeanInfoEmbryo;
+import gnu.java.beans.ExplicitBeanInfo;
+import gnu.java.beans.IntrospectionIncubator;
+import java.util.Hashtable;
+import java.util.Vector;
+import gnu.java.lang.ClassHelper;
 
 /**
  * Introspector is the class that does the bulk of the

@@ -38,9 +38,10 @@ exception statement from your version. */
 
 package java.beans;
 
-import java.util.*;
-import java.lang.reflect.*;
-import gnu.java.lang.*;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.Vector;
+import gnu.java.lang.ClassHelper;
 
 /**
  ** EventSetDescriptor describes the hookup between an event source

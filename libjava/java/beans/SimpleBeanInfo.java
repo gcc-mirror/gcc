@@ -38,7 +38,8 @@ exception statement from your version. */
 
 package java.beans;
 
-import java.awt.*;
+import java.awt.Image;
+import java.awt.Toolkit;
 
 /**
  ** SimpleBeanInfo is a class you may extend to more easily
