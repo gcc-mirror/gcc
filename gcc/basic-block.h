@@ -294,7 +294,7 @@ extern int flow_depth_first_order_compute	PARAMS ((int *, int *));
 extern void dump_edge_info		PARAMS ((FILE *, edge, int));
 extern void clear_edges			PARAMS ((void));
 extern void mark_critical_edges		PARAMS ((void));
-
+extern rtx first_insn_after_basic_block_note	PARAMS ((basic_block));
 
 /* Structure to hold information for each natural loop.  */
 struct loop

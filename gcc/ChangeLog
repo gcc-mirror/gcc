@@ -1,3 +1,16 @@
+Fri Jul  6 11:47:59 2001  Jeffrey A Law  (law@cygnus.com)
+
+	* basic-block.h (first_insn_after_basic_block_note): Declare.
+	* flow.c (first_insn_after_basic_block_note): Define.  Moved
+	from...
+	* ssa.c (first_insn_after_basic_block_note): Remove.
+	* ssa-dce.c (find_inherently_necessary): Consider BARRIERs
+	necessary.
+	(ssa_eliminate_dead_code): Properly update the CFG and PHI
+	nodes when we find a dead conditional branch.  Insert BARRIERs
+	after any blocks with no successors, but which do not have
+	any BARRIERs.
+
 2001-07-06  Zack Weinberg  <zackw@stanford.edu>
 
 	* varray.c (varray_check_failed): Use internal_error.

@@ -1088,6 +1088,28 @@ create_basic_block (index, head, end, bb_note)
   bb->aux = bb;
 }
 
+/* Return the INSN immediately following the NOTE_INSN_BASIC_BLOCK
+   note associated with the BLOCK.  */
+
+rtx
+first_insn_after_basic_block_note (block)
+     basic_block block;
+{
+  rtx insn;
+
+  /* Get the first instruction in the block.  */
+  insn = block->head;
+
+  if (insn == NULL_RTX)
+    return NULL_RTX;
+  if (GET_CODE (insn) == CODE_LABEL)
+    insn = NEXT_INSN (insn);
+  if (!NOTE_INSN_BASIC_BLOCK_P (insn))
+    abort ();
+
+  return NEXT_INSN (insn);
+}
+
 /* Records the basic block struct in BB_FOR_INSN, for every instruction
    indexed by INSN_UID.  MAX is the size of the array.  */
 

@@ -162,8 +162,6 @@ struct rename_context;
 
 static inline rtx * phi_alternative
   PARAMS ((rtx, int));
-static rtx first_insn_after_basic_block_note
-  PARAMS ((basic_block));
 static void compute_dominance_frontiers_1
   PARAMS ((sbitmap *frontiers, int *idom, int bb, sbitmap done));
 static void find_evaluations_1
@@ -631,28 +629,6 @@ compute_iterated_dominance_frontiers (idfs, frontiers, evals, nregs)
 	      "Iterated dominance frontier: %d passes on %d regs.\n",
 	      passes, nregs);
     }
-}
-
-/* Return the INSN immediately following the NOTE_INSN_BASIC_BLOCK
-   note associated with the BLOCK.  */
-
-static rtx
-first_insn_after_basic_block_note (block)
-     basic_block block;
-{
-  rtx insn;
-
-  /* Get the first instruction in the block.  */
-  insn = block->head;
-
-  if (insn == NULL_RTX)
-    return NULL_RTX;
-  if (GET_CODE (insn) == CODE_LABEL)
-    insn = NEXT_INSN (insn);
-  if (!NOTE_INSN_BASIC_BLOCK_P (insn))
-    abort ();
-
-  return NEXT_INSN (insn);
 }
 
 /* Insert the phi nodes.  */
