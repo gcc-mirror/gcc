@@ -944,6 +944,7 @@ ep_memory_operand (op, mode, unsigned_load)
       op1 = XEXP (addr, 1);
       if (GET_CODE (op1) == CONST_INT
 	  && INTVAL (op1) < max_offset
+	  && INTVAL (op1) >= 0
 	  && (INTVAL (op1) & mask) == 0)
 	{
 	  if (GET_CODE (op0) == REG && REGNO (op0) == EP_REGNUM)
@@ -1149,7 +1150,8 @@ Saved %d bytes (%d uses of register %s) in function %s, starting as insn %d, end
 			   && GET_CODE (XEXP (addr, 1)) == CONST_INT
 			   && ((INTVAL (XEXP (addr, 1)))
 			       < ep_memory_offset (GET_MODE (*p_mem),
-						   unsignedp)))
+						   unsignedp))
+			   && ((INTVAL (XEXP (addr, 1))) >= 0))
 		    *p_mem = change_address (*p_mem, VOIDmode,
 					     gen_rtx (PLUS, Pmode,
 						      *p_ep, XEXP (addr, 1)));
@@ -1300,7 +1302,8 @@ void v850_reorg (start_insn)
 			   && GET_CODE (XEXP (addr, 0)) == REG
 			   && GET_CODE (XEXP (addr, 1)) == CONST_INT
 			   && ((INTVAL (XEXP (addr, 1)))
-			       < ep_memory_offset (GET_MODE (mem), unsignedp)))
+			       < ep_memory_offset (GET_MODE (mem), unsignedp))
+			   && ((INTVAL (XEXP (addr, 1))) >= 0))
 		    {
 		      short_p = TRUE;
 		      regno = REGNO (XEXP (addr, 0));
