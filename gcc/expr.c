@@ -1043,8 +1043,10 @@ convert_move (to, from, unsignedp)
 	  /* Search for a mode to convert via.  */
 	  for (intermediate = from_mode; intermediate != VOIDmode;
 	       intermediate = GET_MODE_WIDER_MODE (intermediate))
-	    if ((can_extend_p (to_mode, intermediate, unsignedp)
-		 != CODE_FOR_nothing)
+	    if (((can_extend_p (to_mode, intermediate, unsignedp)
+		  != CODE_FOR_nothing)
+		 || (GET_MODE_SIZE (to_mode) < GET_MODE_SIZE (intermediate)
+		     && TRULY_NOOP_TRUNCATION (to_mode, intermediate)))
 		&& (can_extend_p (intermediate, from_mode, unsignedp)
 		    != CODE_FOR_nothing))
 	      {
