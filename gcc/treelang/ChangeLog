@@ -1,3 +1,7 @@
+2003-06-12  Andreas Jaeger  <aj@suse.de>
+
+	* treetree.c: Remove cl_options-count and cl_options.
+
 2003-06-11  Neil Booth  <neil@daikokuya.co.uk>
 
 	* Make-lang.in: Update for option handling.
