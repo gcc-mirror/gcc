@@ -1,3 +1,11 @@
+2002-04-20  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/6360
+	* include/bits/istream.tcc (istream::ignore): Streamline, use
+	delimiter as is.
+	* include/bits/streambuf.tcc: Use this->gptr.
+	* testsuite/27_io/istream_unformatted.cc (test08): Add test.
+	
 2002-04-18  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/bits/localefwd.h (locale::id::_M_id): Do this correctly,

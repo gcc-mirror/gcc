@@ -1,6 +1,6 @@
 // 1999-08-11 bkoz
 
-// Copyright (C) 1999, 2000, 2001 Free Software Foundation
+// Copyright (C) 1999, 2000, 2001, 2002 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -463,7 +463,7 @@ test06()
 
 // bug reported by bgarcia@laurelnetworks.com
 // http://gcc.gnu.org/ml/libstdc++-prs/2000-q3/msg00041.html
-int
+void
 test07()
 {
   bool test = true;
@@ -481,9 +481,25 @@ test07()
       line = line_ss.str();
       VERIFY( line == "1234567890" || line == "" );
     }
-  return 0;
 }
- 
+
+// 2002-04-19 PR libstdc++ 6360
+void
+test08()
+{
+  using namespace std;
+  bool test = true;
+
+  stringstream ss("abcd" "\xFF" "1234ina donna coolbrith");  
+  char c;
+  ss >> c;
+  VERIFY( c == 'a' );
+  ss.ignore(8);
+  ss >> c;
+  VERIFY( c == 'i' );
+}
+    
+
 int 
 main()
 {
@@ -494,6 +510,7 @@ main()
   test05();
   test06();
   test07();
+  test08();
 
   return 0;
 }
