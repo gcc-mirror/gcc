@@ -4880,7 +4880,11 @@
   "
 {
   /* We can do 8, 16, 32 and 64 bit fields, if aligned on byte boundaries.  */
-  if (INTVAL (operands[2]) % 8 != 0 || INTVAL (operands[3]) % 8 != 0)
+  if (INTVAL (operands[3]) % 8 != 0
+      || (INTVAL (operands[2]) != 8
+	  && INTVAL (operands[2]) != 16
+	  && INTVAL (operands[2]) != 32
+	  && INTVAL (operands[2]) != 64))
     FAIL;
 
   if (GET_CODE (operands[1]) == MEM)
