@@ -22,7 +22,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "config.h"
 #include "system.h"
 #include "tree.h"
-#include "c-tree.h"
 #include "splay-tree.h"
 #include "diagnostic.h"
 #include "toplev.h"
@@ -223,26 +222,6 @@ dump_string_field (di, field, string)
     di->column += 6 + strlen (string) + 1;
   else
     di->column += 14;
-}
-
-/* Dump information common to statements from STMT.  */
-
-void
-dump_stmt (di, t)
-     dump_info_p di;
-     tree t;
-{
-  dump_int (di, "line", STMT_LINENO (t));
-}
-
-/* Dump the next statement after STMT.  */
-
-void
-dump_next_stmt (di, t)
-     dump_info_p di;
-     tree t;
-{
-  dump_child ("next", TREE_CHAIN (t));
 }
 
 /* Dump the next node in the queue.  */
@@ -497,8 +476,6 @@ dequeue_and_dump (di)
 
       if (TREE_CODE (t) == FIELD_DECL)
 	{
-	  if (DECL_C_BIT_FIELD (t))
-	    dump_string (di, "bitfield");
 	  if (DECL_FIELD_OFFSET (t))
 	    dump_child ("bpos", bit_position (t));
 	}
@@ -521,125 +498,6 @@ dequeue_and_dump (di)
 	dump_string (di, "static");
       if (DECL_LANG_SPECIFIC (t) && !dump_flag (di, TDF_SLIM, t))
 	dump_child ("body", DECL_SAVED_TREE (t));
-      break;
-
-    case ASM_STMT:
-      dump_stmt (di, t);
-      if (ASM_VOLATILE_P (t))
-	dump_string (di, "volatile");
-      dump_child ("strg", ASM_STRING (t));
-      dump_child ("outs", ASM_OUTPUTS (t));
-      dump_child ("ins", ASM_INPUTS (t));
-      dump_child ("clbr", ASM_CLOBBERS (t));
-      dump_next_stmt (di, t);
-      break;
-
-    case BREAK_STMT:
-    case CONTINUE_STMT:
-      dump_stmt (di, t);
-      dump_next_stmt (di, t);
-      break;
-
-    case CASE_LABEL:
-      /* Note that a case label is not like other statements; there is
-	 no way to get the line-number of a case label.  */
-      dump_child ("low", CASE_LOW (t));
-      dump_child ("high", CASE_HIGH (t));
-      dump_next_stmt (di, t);
-      break;
-
-    case CLEANUP_STMT:
-      dump_stmt (di, t);
-      dump_child ("decl", CLEANUP_DECL (t));
-      dump_child ("expr", CLEANUP_EXPR (t));
-      dump_next_stmt (di, t);
-      break;
-
-    case COMPOUND_STMT:
-      dump_stmt (di, t);
-      dump_child ("body", COMPOUND_BODY (t));
-      dump_next_stmt (di, t);
-      break;
-
-    case DECL_STMT:
-      dump_stmt (di, t);
-      dump_child ("decl", DECL_STMT_DECL (t));
-      dump_next_stmt (di, t);
-      break;
-
-    case DO_STMT:
-      dump_stmt (di, t);
-      dump_child ("body", DO_BODY (t));
-      dump_child ("cond", DO_COND (t));
-      dump_next_stmt (di, t);
-      break;
-
-    case EXPR_STMT:
-      dump_stmt (di, t);
-      dump_child ("expr", EXPR_STMT_EXPR (t));
-      dump_next_stmt (di, t);
-      break;
-
-    case FOR_STMT:
-      dump_stmt (di, t);
-      dump_child ("init", FOR_INIT_STMT (t));
-      dump_child ("cond", FOR_COND (t));
-      dump_child ("expr", FOR_EXPR (t));
-      dump_child ("body", FOR_BODY (t));
-      dump_next_stmt (di, t);
-      break;
-
-    case GOTO_STMT:
-      dump_stmt (di, t);
-      dump_child ("dest", GOTO_DESTINATION (t));
-      dump_next_stmt (di, t);
-      break;
-
-    case IF_STMT:
-      dump_stmt (di, t);
-      dump_child ("cond", IF_COND (t));
-      dump_child ("then", THEN_CLAUSE (t));
-      dump_child ("else", ELSE_CLAUSE (t));
-      dump_next_stmt (di, t);
-      break;
-
-    case LABEL_STMT:
-      dump_stmt (di, t);
-      dump_child ("labl", LABEL_STMT_LABEL (t));
-      dump_next_stmt (di, t);
-      break;
-
-    case RETURN_STMT:
-      dump_stmt (di, t);
-      dump_child ("expr", RETURN_EXPR (t));
-      dump_next_stmt (di, t);
-      break;
-
-    case SWITCH_STMT:
-      dump_stmt (di, t);
-      dump_child ("cond", SWITCH_COND (t));
-      dump_child ("body", SWITCH_BODY (t));
-      dump_next_stmt (di, t);
-      break;
-
-    case WHILE_STMT:
-      dump_stmt (di, t);
-      dump_child ("cond", WHILE_COND (t));
-      dump_child ("body", WHILE_BODY (t));
-      dump_next_stmt (di, t);
-      break;
-
-    case SCOPE_STMT:
-      dump_stmt (di, t);
-      if (SCOPE_BEGIN_P (t))
-	dump_string (di, "begn");
-      else
-	dump_string (di, "end");
-      if (SCOPE_NULLIFIED_P (t))
-	dump_string (di, "null");
-      if (!SCOPE_NO_CLEANUPS_P (t))
-	dump_string (di, "clnp");
-      dump_next_stmt (di, t);
       break;
 
     case INTEGER_CST:
@@ -691,10 +549,6 @@ dequeue_and_dump (di)
 
     case CONSTRUCTOR:
       dump_child ("elts", TREE_OPERAND (t, 1));
-      break;
-
-    case STMT_EXPR:
-      dump_child ("stmt", STMT_EXPR_STMT (t));
       break;
 
     case BIND_EXPR:

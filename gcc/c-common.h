@@ -912,4 +912,6 @@ struct c_fileinfo
 struct c_fileinfo *get_fileinfo			PARAMS ((const char *));
 extern void dump_time_statistics		PARAMS ((void));
 
+extern int c_dump_tree				PARAMS ((void *, tree));
+
 #endif /* ! GCC_C_COMMON_H */

@@ -48,8 +48,7 @@ dump_access (di, t)
 }
 
 /* Dump a representation of the specific operator for an overloaded
-   operator associated with node t.
-*/
+   operator associated with node t.  */
 
 static void
 dump_op (di, t)
@@ -413,6 +412,5 @@ cp_dump_tree (dump_info, t)
       break;
     }
 
-  return 0;
+  return c_dump_tree (di, t);
 }
-
