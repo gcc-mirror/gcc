@@ -105,7 +105,8 @@ extern enum insn_code reload_in_optab[];
 extern enum insn_code reload_out_optab[];
 #endif
 
-void init_reload ();
-void find_reloads ();
-void subst_reloads ();
-rtx eliminate_regs ();
+extern void init_reload ();
+extern void find_reloads ();
+extern void subst_reloads ();
+extern rtx eliminate_regs ();
+extern rtx gen_input_reload ();
