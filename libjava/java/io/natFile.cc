@@ -39,7 +39,7 @@ details.  */
 jboolean
 java::io::File::_access (jint query)
 {
-  char *buf = (char *) _Jv_AllocBytes (JvGetStringUTFLength (path) + 1);
+  char *buf = (char *) __builtin_alloca (JvGetStringUTFLength (path) + 1);
   jsize total = JvGetStringUTFRegion (path, 0, path->length(), buf);
   buf[total] = '\0';
   JvAssert (query == READ || query == WRITE || query == EXISTS);
@@ -60,7 +60,7 @@ java::io::File::_access (jint query)
 jboolean
 java::io::File::_stat (jint query)
 {
-  char *buf = (char *) _Jv_AllocBytes (JvGetStringUTFLength (path) + 1);
+  char *buf = (char *) __builtin_alloca (JvGetStringUTFLength (path) + 1);
   jsize total = JvGetStringUTFRegion (path, 0, path->length(), buf);
   buf[total] = '\0';
 
@@ -83,7 +83,7 @@ java::io::File::_stat (jint query)
 jlong
 java::io::File::attr (jint query)
 {
-  char *buf = (char *) _Jv_AllocBytes (JvGetStringUTFLength (path) + 1);
+  char *buf = (char *) __builtin_alloca (JvGetStringUTFLength (path) + 1);
   jsize total = JvGetStringUTFRegion (path, 0, path->length(), buf);
   buf[total] = '\0';
 
@@ -104,7 +104,7 @@ java::io::File::attr (jint query)
 jstring
 java::io::File::getCanonicalPath (void)
 {
-  char *buf = (char *) _Jv_AllocBytes (JvGetStringUTFLength (path) + 1);
+  char *buf = (char *) __builtin_alloca (JvGetStringUTFLength (path) + 1);
   char buf2[MAXPATHLEN];
   jsize total = JvGetStringUTFRegion (path, 0, path->length(), buf);
   buf[total] = '\0';
@@ -135,7 +135,7 @@ java::io::File::performList (java::io::FilenameFilter *filter,
   /* Some systems have dirent.h, but no directory reading functions like
      opendir.  */
 #if defined(HAVE_DIRENT_H) && defined(HAVE_OPENDIR)
-  char *buf = (char *) _Jv_AllocBytes (JvGetStringUTFLength (path) + 1);
+  char *buf = (char *) __builtin_alloca (JvGetStringUTFLength (path) + 1);
   jsize total = JvGetStringUTFRegion (path, 0, path->length(), buf);
   buf[total] = '\0';
 
@@ -188,7 +188,7 @@ java::io::File::performList (java::io::FilenameFilter *filter,
 jboolean
 java::io::File::performMkdir (void)
 {
-  char *buf = (char *) _Jv_AllocBytes (JvGetStringUTFLength (path) + 1);
+  char *buf = (char *) __builtin_alloca (JvGetStringUTFLength (path) + 1);
   jsize total = JvGetStringUTFRegion (path, 0, path->length(), buf);
   buf[total] = '\0';
 
@@ -202,7 +202,7 @@ java::io::File::performMkdir (void)
 jboolean
 java::io::File::performSetReadOnly (void)
 {
-  char *buf = (char *) _Jv_AllocBytes (JvGetStringUTFLength (path) + 1);
+  char *buf = (char *) __builtin_alloca (JvGetStringUTFLength (path) + 1);
   jsize total = JvGetStringUTFRegion (path, 0, path->length(), buf);
   buf[total] = '\0';
 
@@ -233,10 +233,11 @@ java::io::File::performListRoots ()
 jboolean
 java::io::File::performRenameTo (File *dest)
 {
-  char *buf = (char *) _Jv_AllocBytes (JvGetStringUTFLength (path) + 1);
+  char *buf = (char *) __builtin_alloca (JvGetStringUTFLength (path) + 1);
   jsize total = JvGetStringUTFRegion (path, 0, path->length(), buf);
   buf[total] = '\0';
-  char *buf2 = (char *) _Jv_AllocBytes (JvGetStringUTFLength (dest->path) + 1);
+  char *buf2
+    = (char *) __builtin_alloca (JvGetStringUTFLength (dest->path) + 1);
   total = JvGetStringUTFRegion (dest->path, 0, dest->path->length(), buf2);
   buf2[total] = '\0';
 
@@ -253,7 +254,7 @@ java::io::File::performSetLastModified (jlong time)
 #ifdef HAVE_UTIME
   utimbuf tb;
 
-  char *buf = (char *) _Jv_AllocBytes (JvGetStringUTFLength (path) + 1);
+  char *buf = (char *) __builtin_alloca (JvGetStringUTFLength (path) + 1);
   jsize total = JvGetStringUTFRegion (path, 0, path->length(), buf);
   buf[total] = '\0';
   
@@ -268,7 +269,7 @@ java::io::File::performSetLastModified (jlong time)
 jboolean
 java::io::File::performCreate (void)
 {
-  char *buf = (char *) _Jv_AllocBytes (JvGetStringUTFLength (path) + 1);
+  char *buf = (char *) __builtin_alloca (JvGetStringUTFLength (path) + 1);
   jsize total = JvGetStringUTFRegion (path, 0, path->length(), buf);
   buf[total] = '\0';
 
@@ -290,7 +291,7 @@ java::io::File::performCreate (void)
 jboolean
 java::io::File::performDelete (void)
 {
-  char *buf = (char *) _Jv_AllocBytes (JvGetStringUTFLength (path) + 1);
+  char *buf = (char *) __builtin_alloca (JvGetStringUTFLength (path) + 1);
   jsize total = JvGetStringUTFRegion (path, 0, path->length(), buf);
   buf[total] = '\0';
 
