@@ -1,7 +1,3 @@
-1999-08-08  Jason Merrill  <jason@yorick.cygnus.com>
-
-	* typeck.c (common_type): Use same_type_p.
-
 1999-08-06  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* pt.c (maybe_get_template_decl_from_type_decl): Make sure that
