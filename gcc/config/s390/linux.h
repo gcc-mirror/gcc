@@ -288,4 +288,82 @@ do {                                                                          \
     }                                                                         \
 } while (0)
 
+/* Do code reading to identify a signal frame, and set the frame
+   state data appropriately.  See unwind-dw2.c for the structs.  */
+
+#define MD_FALLBACK_FRAME_STATE_FOR(CONTEXT, FS, SUCCESS)		\
+  do {									\
+    unsigned char *pc_ = (CONTEXT)->ra;					\
+    long new_cfa_;							\
+    int i_;								\
+									\
+    typedef struct 							\
+      {									\
+        unsigned long psw_mask;						\
+        unsigned long psw_addr;						\
+        unsigned long gprs[16];						\
+        unsigned int  acrs[16];						\
+        unsigned int  fpc;						\
+        unsigned int  __pad;						\
+        double        fprs[16];						\
+      } __attribute__ ((__aligned__ (8))) sigregs_;			\
+									\
+    sigregs_ *regs_;							\
+									\
+    /* svc $__NR_sigreturn or svc $__NR_rt_sigreturn  */		\
+    if (pc_[0] != 0x0a || (pc_[1] != 119 && pc_[1] != 173))		\
+      break;								\
+									\
+    /* New-style RT frame:  						\
+	retcode + alignment (8 bytes)					\
+	siginfo (128 bytes)						\
+	ucontext (contains sigregs)  */					\
+    if ((CONTEXT)->ra == (CONTEXT)->cfa)				\
+      {									\
+	struct ucontext_						\
+	  {								\
+	    unsigned long     uc_flags;					\
+	    struct ucontext_ *uc_link;					\
+	    unsigned long     uc_stack[3];				\
+	    sigregs_          uc_mcontext;				\
+	  } *uc_ = (CONTEXT)->cfa + 8 + 128;				\
+									\
+	regs_ = &uc_->uc_mcontext;					\
+      }									\
+									\
+    /* Old-style RT frame and all non-RT frames:			\
+	old signal mask (8 bytes)					\
+	pointer to sigregs  */						\
+    else								\
+      {									\
+	regs_ = *(sigregs_ **)((CONTEXT)->cfa + 8);			\
+      }									\
+      									\
+    new_cfa_ = regs_->gprs[15] + 16*sizeof(long) + 32;			\
+    (FS)->cfa_how = CFA_REG_OFFSET;					\
+    (FS)->cfa_reg = 15;							\
+    (FS)->cfa_offset = 							\
+      new_cfa_ - (long) (CONTEXT)->cfa + 16*sizeof(long) + 32;		\
+									\
+    for (i_ = 0; i_ < 16; i_++)						\
+      {									\
+	(FS)->regs.reg[i_].how = REG_SAVED_OFFSET;			\
+	(FS)->regs.reg[i_].loc.offset = 				\
+	  (long)&regs_->gprs[i_] - new_cfa_;				\
+      }									\
+    for (i_ = 0; i_ < 16; i_++)						\
+      {									\
+	(FS)->regs.reg[16+i_].how = REG_SAVED_OFFSET;			\
+	(FS)->regs.reg[16+i_].loc.offset = 				\
+	  (long)&regs_->fprs[i_] - new_cfa_;				\
+      }									\
+									\
+    /* Load return addr from PSW into dummy register 32.  */		\
+    (FS)->regs.reg[32].how = REG_SAVED_OFFSET;				\
+    (FS)->regs.reg[32].loc.offset = (long)&regs_->psw_addr - new_cfa_;	\
+    (FS)->retaddr_column = 32;						\
+									\
+    goto SUCCESS;							\
+  } while (0)
+
 #endif
