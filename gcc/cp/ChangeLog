@@ -1,7 +1,13 @@
+2003-03-24  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/10026
+	* decl2.c (arg_assoc_type) [ERROR_MARK]: Don't die.
+
 2003-03-23  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/7086
-	* typeck.c (cxx_mark_addressable): Likewise.
+	* typeck.c (cxx_mark_addressable):  Adjust call to
+	gen_mem_addressof or put_var_into_stack.
 
 2003-03-22  Nathan Sidwell  <nathan@codesourcery.com>
 
@@ -647,10 +653,10 @@
 
 2003-02-26  Devang Patel  <dpatel@apple.com>
 
-	* decl.c (finish_enum): Merge two 'for' loops. Copy value node if required.
-	Postpone enum setting for template decls.
-	(build_enumerator): Delay copying value node until finish_enum (). Remove
-	#if 0'ed code.
+	* decl.c (finish_enum): Merge two 'for' loops. Copy value node if
+	required.  Postpone enum setting for template decls.
+	(build_enumerator): Delay copying value node until finish_enum
+	(). Remove #if 0'ed code.
 	* pt.c (tsubst_enum): Set TREE_TYPE and copy value node.
 	(tsubst_copy): Add check for enum type.
 

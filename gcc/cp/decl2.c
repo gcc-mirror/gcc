@@ -3986,6 +3986,8 @@ arg_assoc_type (struct arg_lookup *k, tree type)
 {
   switch (TREE_CODE (type))
     {
+    case ERROR_MARK:
+      return false;
     case VOID_TYPE:
     case INTEGER_TYPE:
     case REAL_TYPE:
