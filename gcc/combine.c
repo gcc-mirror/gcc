@@ -813,9 +813,6 @@ setup_incoming_promotions (void)
 
   if (targetm.calls.promote_function_args (TREE_TYPE (cfun->decl)))
     {
-#ifndef OUTGOING_REGNO
-#define OUTGOING_REGNO(N) N
-#endif
       for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
 	/* Check whether this register can hold an incoming pointer
 	   argument.  FUNCTION_ARG_REGNO_P tests outgoing register

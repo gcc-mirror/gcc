@@ -2661,9 +2661,6 @@ init_alias_once (void)
 {
   int i;
 
-#ifndef OUTGOING_REGNO
-#define OUTGOING_REGNO(N) N
-#endif
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     /* Check whether this register can hold an incoming pointer
        argument.  FUNCTION_ARG_REGNO_P tests outgoing register
