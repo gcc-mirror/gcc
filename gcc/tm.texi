@@ -4512,13 +4512,25 @@ allow reload to verify that the constraints are met.  You should do this
 if the @samp{mov@var{m}} pattern's constraints do not allow such copying.
 
 @findex MEMORY_MOVE_COST
-@item MEMORY_MOVE_COST (@var{m})
-A C expression for the cost of moving data of mode @var{m} between a
-register and memory.  A value of 4 is the default; this cost is relative
-to those in @code{REGISTER_MOVE_COST}.
+@item MEMORY_MOVE_COST (@var{mode}, @var{class}, @var{in})
+A C expression for the cost of moving data of mode @var{mode} between a
+register of class @var{class} and memory; @var{in} is zero if the value
+is to be written to memory, non-zero if it is to be read in.  If this
+macro is not defined, the default cost is assumed to be 4, plus any costs
+that would be incurred copying via a secondary reload register, if
+needed.  This cost is relative to those in @code{REGISTER_MOVE_COST}.
 
 If moving between registers and memory is more expensive than between
 two registers, you should define this macro to express the relative cost.
+
+If a secondary reload register would be required for @var{class}, but the
+reload mechanism is more complex than copying via an intermediate, this
+macro should be defined to reflect the actual cost of the move.
+
+The function @code{memory_move_secondary_cost}, which is defined if
+secondary reloads are needed, will compute the costs due to copying; you
+can use this function if you need to take other factors into account as
+well, or if the default base value of 4 is not correct for your machine.
 
 @findex BRANCH_COST
 @item BRANCH_COST
