@@ -1,3 +1,16 @@
+2005-03-07  Per Bothner  <per@bothner.com>
+
+	Various fixes to allow us to again build if --enable-mapped-location:
+	* c-decl.c (finish_function): Use SET_EXPR_LOCATION instead of
+	unavailable annotate_with_file_line, if USE_MAPPED_LOCATION.
+	* tree-cfg.c (remove_bb): If USE_MAPPED_LOCATION, change type of
+	local variable loc. Change logic appropriately.
+	* tree-vect-transform.c (vect_finish_stmt_generation): Use
+	EXPR_LOCATION rather than EXPR_LOCUS if USE_MAPPED_LOCATION.	
+	* c-parser.c (c_parser_for_statement): Initialize loc variable.
+	* tree.h (DECL_IS_BUILTIN): Temporarily revert definition of
+	DECL_IS_BUILTIN in the USE_MAPPED_LOCATION because of jc1 issues.
+
 2005-03-07  Richard Sandiford  <rsandifo@redhat.com>
 
 	PR rtl-optimization/19683

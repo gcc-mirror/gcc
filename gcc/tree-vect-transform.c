@@ -661,7 +661,7 @@ vect_finish_stmt_generation (tree stmt, tree vec_stmt, block_stmt_iterator *bsi)
 #endif
 
 #ifdef USE_MAPPED_LOCATION
-  SET_EXPR_LOCATION (vec_stmt, EXPR_LOCUS (stmt));
+  SET_EXPR_LOCATION (vec_stmt, EXPR_LOCATION (stmt));
 #else
   SET_EXPR_LOCUS (vec_stmt, EXPR_LOCUS (stmt));
 #endif
