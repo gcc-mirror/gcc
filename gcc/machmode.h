@@ -23,34 +23,26 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define HAVE_MACHINE_MODES
 
 /* Make an enum class that gives all the machine modes.  */
-
-#define DEF_MACHMODE(SYM, NAME, TYPE, BITSIZE, SIZE, UNIT, WIDER, INNER)  SYM,
-
-enum machine_mode {
-#include "machmode.def"
-MAX_MACHINE_MODE };
-
-#undef DEF_MACHMODE
-
-#ifndef NUM_MACHINE_MODES
-#define NUM_MACHINE_MODES (int) MAX_MACHINE_MODE
-#endif
+#include "insn-modes.h"
 
 /* Get the name of mode MODE as a string.  */
 
 extern const char * const mode_name[NUM_MACHINE_MODES];
-#define GET_MODE_NAME(MODE)		(mode_name[(int) (MODE)])
+#define GET_MODE_NAME(MODE)  mode_name[MODE]
 
-enum mode_class { MODE_RANDOM, MODE_INT, MODE_FLOAT, MODE_PARTIAL_INT, MODE_CC,
-		  MODE_COMPLEX_INT, MODE_COMPLEX_FLOAT,
-		  MODE_VECTOR_INT, MODE_VECTOR_FLOAT,
-		  MAX_MODE_CLASS};
+/* Mode classes.  */
+
+#include "mode-classes.def"
+#define DEF_MODE_CLASS(M) M
+enum mode_class { MODE_CLASSES, MAX_MODE_CLASS };
+#undef DEF_MODE_CLASS
+#undef MODE_CLASSES
 
 /* Get the general kind of object that mode MODE represents
    (integer, floating, complex, etc.)  */
 
-extern const enum mode_class mode_class[NUM_MACHINE_MODES];
-#define GET_MODE_CLASS(MODE)		(mode_class[(int) (MODE)])
+extern const unsigned char mode_class[NUM_MACHINE_MODES];
+#define GET_MODE_CLASS(MODE)  mode_class[MODE]
 
 /* Nonzero if MODE is an integral mode.  */
 #define INTEGRAL_MODE_P(MODE)			\
@@ -87,12 +79,12 @@ extern const enum mode_class mode_class[NUM_MACHINE_MODES];
 /* Get the size in bytes of an object of mode MODE.  */
 
 extern const unsigned char mode_size[NUM_MACHINE_MODES];
-#define GET_MODE_SIZE(MODE)		(mode_size[(int) (MODE)])
+#define GET_MODE_SIZE(MODE)   mode_size[MODE]
 
 /* Get the size in bytes of the basic parts of an object of mode MODE.  */
 
 extern const unsigned char mode_unit_size[NUM_MACHINE_MODES];
-#define GET_MODE_UNIT_SIZE(MODE)	(mode_unit_size[(int) (MODE)])
+#define GET_MODE_UNIT_SIZE(MODE)  mode_unit_size[MODE]
 
 /* Get the number of units in the object.  */
 
@@ -103,7 +95,7 @@ extern const unsigned char mode_unit_size[NUM_MACHINE_MODES];
 /* Get the size in bits of an object of mode MODE.  */
 
 extern const unsigned short mode_bitsize[NUM_MACHINE_MODES];
-#define GET_MODE_BITSIZE(MODE)  (mode_bitsize[(int) (MODE)])
+#define GET_MODE_BITSIZE(MODE)  mode_bitsize[MODE]
 
 #endif /* not HAVE_MACHINE_MODES */
 
@@ -114,13 +106,13 @@ extern const unsigned short mode_bitsize[NUM_MACHINE_MODES];
 
 extern const unsigned HOST_WIDE_INT mode_mask_array[NUM_MACHINE_MODES];
 
-#define GET_MODE_MASK(MODE) mode_mask_array[(int) (MODE)]
+#define GET_MODE_MASK(MODE) mode_mask_array[MODE]
 
-extern const enum machine_mode inner_mode_array[NUM_MACHINE_MODES];
+extern const unsigned char mode_inner[NUM_MACHINE_MODES];
 
 /* Return the mode of the inner elements in a vector.  */
 
-#define GET_MODE_INNER(MODE) inner_mode_array[(int) (MODE)]
+#define GET_MODE_INNER(MODE) mode_inner[MODE]
 
 #endif /* defined (HOST_WIDE_INT) && ! defined GET_MODE_MASK */
 
@@ -129,8 +121,8 @@ extern const enum machine_mode inner_mode_array[NUM_MACHINE_MODES];
 
 /* Get the next wider natural mode (eg, QI -> HI -> SI -> DI -> TI).  */
 
-extern const unsigned char mode_wider_mode[NUM_MACHINE_MODES];
-#define GET_MODE_WIDER_MODE(MODE)	((enum machine_mode)mode_wider_mode[(int) (MODE)])
+extern const unsigned char mode_wider[NUM_MACHINE_MODES];
+#define GET_MODE_WIDER_MODE(MODE) mode_wider[MODE]
 
 /* Return the mode for data of a given size SIZE and mode class CLASS.
    If LIMIT is nonzero, then don't use modes bigger than MAX_FIXED_MODE_SIZE.
@@ -156,14 +148,16 @@ extern enum machine_mode get_best_mode (int, int, unsigned int,
 
 /* Determine alignment, 1<=result<=BIGGEST_ALIGNMENT.  */
 
+extern const unsigned char mode_base_align[NUM_MACHINE_MODES];
+
 extern unsigned get_mode_alignment (enum machine_mode);
 
 #define GET_MODE_ALIGNMENT(MODE) get_mode_alignment (MODE)
 
 /* For each class, get the narrowest mode in that class.  */
 
-extern const enum machine_mode class_narrowest_mode[(int) MAX_MODE_CLASS];
-#define GET_CLASS_NARROWEST_MODE(CLASS) class_narrowest_mode[(int) (CLASS)]
+extern const unsigned char class_narrowest_mode[MAX_MODE_CLASS];
+#define GET_CLASS_NARROWEST_MODE(CLASS) class_narrowest_mode[CLASS]
 
 /* Define the integer modes whose sizes are BITS_PER_UNIT and BITS_PER_WORD
    and the mode whose class is Pmode and whose size is POINTER_SIZE.  */

@@ -143,9 +143,10 @@ struct real_format
 
 /* The target format used for each floating floating point mode.
    Indexed by MODE - QFmode.  */
-extern const struct real_format *real_format_for_mode[TFmode - QFmode + 1];
+extern const struct real_format *
+  real_format_for_mode[MAX_MODE_FLOAT - MIN_MODE_FLOAT + 1];
 
-#define REAL_MODE_FORMAT(MODE) (real_format_for_mode[(MODE) - QFmode])
+#define REAL_MODE_FORMAT(MODE) (real_format_for_mode[(MODE) - MIN_MODE_FLOAT])
 
 /* Declare functions in real.c.  */
 
