@@ -1,3 +1,8 @@
+Tue Oct 23 23:52:18 2001  Anthony Green  <green@redhat.com>
+
+	* gnu/gcj/runtime/natSharedLibLoader.cc: Only include dlfcn.h when
+	HAVE_DLOPEN.
+
 2001-10-23  Tom Tromey  <tromey@redhat.com>
 
 	* java/lang/reflect/Field.java (Field): New constructor.
