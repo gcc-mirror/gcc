@@ -3079,8 +3079,7 @@ c_init_decl_processing ()
   boolean_true_node = integer_one_node;
   boolean_false_node = integer_zero_node;
 
-  /* With GCC, C99's _Bool is always of size 1.  */
-  c_bool_type_node = make_unsigned_type (CHAR_TYPE_SIZE);
+  c_bool_type_node = make_unsigned_type (BOOL_TYPE_SIZE);
   TREE_SET_CODE (c_bool_type_node, BOOLEAN_TYPE);
   TYPE_MAX_VALUE (c_bool_type_node) = build_int_2 (1, 0);
   TREE_TYPE (TYPE_MAX_VALUE (c_bool_type_node)) = c_bool_type_node;

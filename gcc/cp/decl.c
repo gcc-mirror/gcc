@@ -51,11 +51,6 @@ Boston, MA 02111-1307, USA.  */
 
 extern const struct attribute_spec *lang_attribute_table;
 
-#ifndef BOOL_TYPE_SIZE
-/* `bool' has size and alignment `1', on all platforms.  */
-#define BOOL_TYPE_SIZE CHAR_TYPE_SIZE
-#endif
-
 static tree grokparms				PARAMS ((tree));
 static const char *redeclaration_error_message	PARAMS ((tree, tree));
 
