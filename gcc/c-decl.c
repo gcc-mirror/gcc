@@ -2870,7 +2870,7 @@ finish_decl (tree decl, tree init, tree asmspec_tree)
 #endif
 	}
       SET_DECL_RTL (decl, NULL_RTX);
-      SET_DECL_ASSEMBLER_NAME (decl, get_identifier (starred));
+      change_decl_assembler_name (decl, get_identifier (starred));
     }
 
   /* If #pragma weak was used, mark the decl weak now.  */
@@ -2920,7 +2920,7 @@ finish_decl (tree decl, tree init, tree asmspec_tree)
 		warning ("%Jignoring asm-specifier for non-static local "
                          "variable '%D'", decl, decl);
 	      else
-		SET_DECL_ASSEMBLER_NAME (decl, get_identifier (asmspec));
+		change_decl_assembler_name (decl, get_identifier (asmspec));
 	    }
 
 	  if (TREE_CODE (decl) != FUNCTION_DECL)

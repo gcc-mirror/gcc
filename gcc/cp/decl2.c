@@ -1000,7 +1000,7 @@ grokfield (tree declarator, tree declspecs, tree init, tree asmspec_tree,
 	  /* This must override the asm specifier which was placed
 	     by grokclassfn.  Lay this out fresh.  */
 	  SET_DECL_RTL (value, NULL_RTX);
-	  SET_DECL_ASSEMBLER_NAME (value, get_identifier (asmspec));
+	  change_decl_assembler_name (value, get_identifier (asmspec));
 	}
       if (!DECL_FRIEND_P (value))
 	grok_special_member_properties (value);

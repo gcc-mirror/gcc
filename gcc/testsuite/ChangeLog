@@ -1,3 +1,7 @@
+2003-11-13  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.c-torture/compile/20031112-1.c: New test.
+
 2003-11-12  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.dg/parse/crash10.C: Remove bogus error marker.

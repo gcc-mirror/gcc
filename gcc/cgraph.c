@@ -428,8 +428,6 @@ cgraph_varpool_node (tree decl)
   if (!cgraph_varpool_hash)
     cgraph_varpool_hash = htab_create_ggc (10, cgraph_varpool_hash_node,
 				           eq_cgraph_varpool_node, NULL);
-
-
   slot = (struct cgraph_varpool_node **)
     htab_find_slot_with_hash (cgraph_varpool_hash, DECL_ASSEMBLER_NAME (decl),
 			      IDENTIFIER_HASH_VALUE (DECL_ASSEMBLER_NAME (decl)),
@@ -442,6 +440,84 @@ cgraph_varpool_node (tree decl)
   cgraph_varpool_nodes = node;
   *slot = node;
   return node;
+}
+
+/* Set the DECL_ASSEMBLER_NAME and update cgraph hashtables.  */
+void
+change_decl_assembler_name (tree decl, tree name)
+{
+  struct cgraph_node *node = NULL;
+  struct cgraph_varpool_node *vnode = NULL;
+  void **slot;
+
+  if (!DECL_ASSEMBLER_NAME_SET_P (decl))
+    {
+      SET_DECL_ASSEMBLER_NAME (decl, name);
+      return;
+    }
+  if (name == DECL_ASSEMBLER_NAME (decl))
+    return;
+
+  if (TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl)))
+    warning ("%D renamed after being referenced in assembly", decl);
+
+  if (TREE_CODE (decl) == FUNCTION_DECL && cgraph_hash)
+    {
+      /* Take a look whether declaration is in the cgraph structure.  */
+      slot = 
+	htab_find_slot_with_hash (cgraph_hash, DECL_ASSEMBLER_NAME (decl),
+				   IDENTIFIER_HASH_VALUE (DECL_ASSEMBLER_NAME
+							  (decl)), NO_INSERT);
+      if (slot)
+	node = *slot;
+
+      /* It is, verify that we are the canonical node for this decl.  */
+      if (node && node->decl == decl)
+	{
+	  node = *slot;
+	  htab_clear_slot (cgraph_hash, slot);
+      	 }
+       else
+	 node = NULL;
+    }
+  if (TREE_CODE (decl) == VAR_DECL && TREE_STATIC (decl) && cgraph_varpool_hash)
+    {
+      /* Take a look whether declaration is in the cgraph structure.  */
+      slot = 
+	htab_find_slot_with_hash (cgraph_varpool_hash, DECL_ASSEMBLER_NAME (decl),
+				   IDENTIFIER_HASH_VALUE (DECL_ASSEMBLER_NAME
+							  (decl)), NO_INSERT);
+      if (slot)
+	vnode = *slot;
+
+      /* It is, verify that we are the canonical vnode for this decl.  */
+      if (vnode && vnode->decl == decl)
+	{
+	  vnode = *slot;
+	  htab_clear_slot (cgraph_varpool_hash, slot);
+      	 }
+       else
+	 vnode = NULL;
+    }
+  SET_DECL_ASSEMBLER_NAME (decl, name);
+  if (node)
+    {
+      slot = 
+	htab_find_slot_with_hash (cgraph_hash, name,
+				  IDENTIFIER_HASH_VALUE (name), INSERT);
+      if (*slot)
+	abort ();
+      *slot = node;
+    }
+  if (vnode)
+    {
+      slot = 
+	htab_find_slot_with_hash (cgraph_varpool_hash, name,
+				  IDENTIFIER_HASH_VALUE (name), INSERT);
+      if (*slot)
+	abort ();
+      *slot = vnode;
+    }
 }
 
 /* Try to find existing function for identifier ID.  */
