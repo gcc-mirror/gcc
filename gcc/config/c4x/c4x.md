@@ -4929,11 +4929,8 @@
 
 ; This pattern needs to be emitted at the start of the loop to
 ; say that RS and RE are loaded.
-(define_insn "*rptb_init"
+(define_insn "rptb_init"
   [(unspec[(match_operand:QI 0 "register_operand" "va")] 22)
-   (use (match_operand:QI 1 "const_int_operand" ""))
-   (use (match_operand:QI 2 "const_int_operand" ""))
-   (use (match_operand:QI 3 "const_int_operand" ""))
    (clobber (reg:QI 25))
    (clobber (reg:QI 26))]
   ""
@@ -4941,16 +4938,21 @@
   [(set_attr "type" "repeat")])
 
 
+; operand 0 is the loop count pseudo register
+; operand 1 is the number of loop iterations or 0 if it is unknown
+; operand 2 is the maximum number of loop iterations
+; operand 3 is the number of levels of enclosed loops
 (define_expand "doloop_begin"
-  [(parallel [(unspec[(match_operand:QI 0 "register_operand" "va")] 22)
-              (use (match_operand:QI 1 "const_int_operand" ""))
-              (use (match_operand:QI 2 "const_int_operand" ""))
-              (use (match_operand:QI 3 "const_int_operand" ""))
-              (clobber (reg:QI 25))
-              (clobber (reg:QI 26))])]
+  [(use (match_operand 0 "register_operand" ""))
+   (use (match_operand:QI 1 "const_int_operand" ""))
+   (use (match_operand:QI 2 "const_int_operand" ""))
+   (use (match_operand:QI 3 "const_int_operand" ""))]
   ""
   "if (INTVAL (operands[3]) > 1 || ! TARGET_RPTB)
-     FAIL;")
+     FAIL;
+   emit_jump_insn (gen_rptb_init (operands[0]));
+   DONE;
+  ")
 
 
 ; The RS (25) and RE (26) registers must be unviolate from the top of the loop
@@ -4964,9 +4966,6 @@
    (set (match_dup 0)
         (plus:QI (match_dup 0)
                  (const_int -1)))
-   (use (match_operand:QI 2 "const_int_operand" ""))
-   (use (match_operand:QI 3 "const_int_operand" ""))
-   (use (match_operand:QI 4 "const_int_operand" ""))
    (use (reg:QI 25))
    (use (reg:QI 26))
    (clobber (reg:CC_NOOV 21))]
@@ -4985,39 +4984,33 @@
   "
   [(set_attr "type" "repeat,db,jmpc,jmpc,jmpc")])
 
-; operand 0 is the loop count register
-; operand 1 is the label to jump to at the top of the loop
-; operand 2 is the number of loop iterations or 0 if it is unknown
-; operand 3 is the maximum number of loop iterations
-; operand 4 is the number of levels of enclosed loops
+; operand 0 is the loop count pseudo register
+; operand 1 is the number of loop iterations or 0 if it is unknown
+; operand 2 is the maximum number of loop iterations
+; operand 3 is the number of levels of enclosed loops
+; operand 4 is the label to jump to at the top of the loop
 (define_expand "doloop_end"
-  [(parallel [(set (pc)
-                   (if_then_else (ge (match_operand:QI 0 "register_operand" "")
-                                     (const_int 0))
-                                 (label_ref (match_operand 1 "" ""))
-                                 (pc)))
-              (set (match_dup 0)
-		   (plus:QI (match_dup 0)
-			    (const_int -1)))
-              (use (match_operand:QI 2 "const_int_operand" ""))
-              (use (match_operand:QI 3 "const_int_operand" ""))
-              (use (match_operand:QI 4 "const_int_operand" ""))
-              (use (reg:QI 25))
-              (use (reg:QI 26))
-              (clobber (reg:CC_NOOV 21))])]
+  [(use (match_operand 0 "register_operand" ""))
+   (use (match_operand:QI 1 "const_int_operand" ""))
+   (use (match_operand:QI 2 "const_int_operand" ""))
+   (use (match_operand:QI 3 "const_int_operand" ""))
+   (use (label_ref (match_operand 4 "" "")))]
   ""
   "if (! TARGET_LOOP_UNSIGNED 
-       && (unsigned HOST_WIDE_INT) INTVAL (operands[3]) > (1U << 31))
+       && (unsigned HOST_WIDE_INT) INTVAL (operands[2]) > (1U << 31))
      FAIL;
-   if (INTVAL (operands[4]) > 1 || ! TARGET_RPTB)
+   if (INTVAL (operands[3]) > 1 || ! TARGET_RPTB)
      {
         /* The C30 maximum iteration count for DB is 2^24.  */
 	if (! TARGET_DB)
           FAIL;
-        emit_insn (gen_decrement_and_branch_until_zero (operands[0],
-                                                        operands[1]));
+        emit_jump_insn (gen_decrement_and_branch_until_zero (operands[0],
+                                                             operands[4]));
 	DONE;
-     }")
+     }
+    emit_jump_insn (gen_rptb_end (operands[0], operands[4]));
+    DONE;
+  ")
 
 ; The current low overhead looping code is naff and is not failsafe
 ; If you want RTPB instructions to be generated, apply the patches
