@@ -610,6 +610,10 @@ emit_call_1 (funexp, fndecl, funtype, stack_size, rounded_stack_size,
     REG_NOTES (call_insn) = gen_rtx_EXPR_LIST (REG_NORETURN, const0_rtx,
 					       REG_NOTES (call_insn));
 
+  if (ecf_flags & ECF_RETURNS_TWICE)
+    REG_NOTES (call_insn) = gen_rtx_EXPR_LIST (REG_SETJMP, const0_rtx,
+					       REG_NOTES (call_insn));
+
   SIBLING_CALL_P (call_insn) = ((ecf_flags & ECF_SIBCALL) != 0);
 
   /* Restore this now, so that we do defer pops for this call's args
@@ -3152,9 +3156,9 @@ expand_call (exp, target, ignore)
 	 if nonvolatile values are live.  For functions that cannot return,
 	 inform flow that control does not fall through.  */
 
-      if ((flags & (ECF_RETURNS_TWICE | ECF_NORETURN | ECF_LONGJMP)) || pass == 0)
+      if ((flags & (ECF_NORETURN | ECF_LONGJMP)) || pass == 0)
 	{
-	  /* The barrier or NOTE_INSN_SETJMP note must be emitted
+	  /* The barrier must be emitted
 	     immediately after the CALL_INSN.  Some ports emit more
 	     than just a CALL_INSN above, so we must search for it here.  */
 
@@ -3167,13 +3171,7 @@ expand_call (exp, target, ignore)
 		abort ();
 	    }
 
-	  if (flags & ECF_RETURNS_TWICE)
-	    {
-	      emit_note_after (NOTE_INSN_SETJMP, last);
-	      current_function_calls_setjmp = 1;
-	    }
-	  else
-	    emit_barrier_after (last);
+	  emit_barrier_after (last);
 	}
 
       if (flags & ECF_LONGJMP)
@@ -4086,9 +4084,9 @@ emit_library_call_value_1 (retval, orgfun, value, fn_type, outmode, nargs, p)
      if nonvolatile values are live.  For functions that cannot return,
      inform flow that control does not fall through.  */
 
-  if (flags & (ECF_RETURNS_TWICE | ECF_NORETURN | ECF_LONGJMP))
+  if (flags & (ECF_NORETURN | ECF_LONGJMP))
     {
-      /* The barrier or NOTE_INSN_SETJMP note must be emitted
+      /* The barrier note must be emitted
 	 immediately after the CALL_INSN.  Some ports emit more than
 	 just a CALL_INSN above, so we must search for it here.  */
 
@@ -4101,13 +4099,7 @@ emit_library_call_value_1 (retval, orgfun, value, fn_type, outmode, nargs, p)
 	    abort ();
 	}
 
-      if (flags & ECF_RETURNS_TWICE)
-	{
-	  emit_note_after (NOTE_INSN_SETJMP, last);
-	  current_function_calls_setjmp = 1;
-	}
-      else
-	emit_barrier_after (last);
+      emit_barrier_after (last);
     }
 
   /* Now restore inhibit_defer_pop to its actual original value.  */

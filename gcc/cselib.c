@@ -1254,8 +1254,8 @@ cselib_process_insn (insn)
 
   /* Forget everything at a CODE_LABEL, a volatile asm, or a setjmp.  */
   if (GET_CODE (insn) == CODE_LABEL
-      || (GET_CODE (insn) == NOTE
-	  && NOTE_LINE_NUMBER (insn) == NOTE_INSN_SETJMP)
+      || (GET_CODE (insn) == CALL
+	  && find_reg_note (insn, REG_SETJMP, NULL))
       || (GET_CODE (insn) == INSN
 	  && GET_CODE (PATTERN (insn)) == ASM_OPERANDS
 	  && MEM_VOLATILE_P (PATTERN (insn))))

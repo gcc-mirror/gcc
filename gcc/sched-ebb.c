@@ -236,10 +236,7 @@ schedule_ebb (head, tail)
      or after the last real insn of the block.  So if the first insn
      has a REG_SAVE_NOTE which would otherwise be emitted before the
      insn, it is redundant with the note before the start of the
-     block, and so we have to take it out.
-
-     FIXME: Probably the same thing should be done with REG_SAVE_NOTEs
-     referencing NOTE_INSN_SETJMP at the end of the block.  */
+     block, and so we have to take it out.  */
   if (INSN_P (head))
     {
       rtx note;
@@ -247,14 +244,9 @@ schedule_ebb (head, tail)
       for (note = REG_NOTES (head); note; note = XEXP (note, 1))
 	if (REG_NOTE_KIND (note) == REG_SAVE_NOTE)
 	  {
-	    if (INTVAL (XEXP (note, 0)) != NOTE_INSN_SETJMP)
-	      {
-		remove_note (head, note);
-		note = XEXP (note, 1);
-		remove_note (head, note);
-	      }
-	    else
-	      note = XEXP (note, 1);
+	    remove_note (head, note);
+	    note = XEXP (note, 1);
+	    remove_note (head, note);
 	  }
     }
 

@@ -544,7 +544,36 @@ branch_prob ()
       int need_exit_edge = 0, need_entry_edge = 0;
       int have_exit_edge = 0, have_entry_edge = 0;
       basic_block bb = BASIC_BLOCK (i);
+      rtx insn;
       edge e;
+
+      /* Add fake edges from entry block to the call insns that may return
+	 twice.  The CFG is not quite correct then, as call insn plays more
+	 role of CODE_LABEL, but for our purposes, everything should be OK,
+	 as we never insert code to the beggining of basic block.  */
+      for (insn = bb->head; insn != NEXT_INSN (bb->end);
+	   insn = NEXT_INSN (insn))
+	{
+	  if (GET_CODE (insn) == CALL_INSN
+	      && find_reg_note (insn, REG_SETJMP, NULL))
+	    {
+	      if (GET_CODE (bb->head) == CODE_LABEL
+		  || insn != NEXT_INSN (bb->head))
+		{
+		  e = split_block (bb, PREV_INSN (insn));
+		  make_edge (NULL, ENTRY_BLOCK_PTR, e->dest, EDGE_FAKE);
+		  break;
+		}
+	      else
+		{
+		  /* We should not get abort here, as call to setjmp should not
+		     be the very first instruction of function.  */
+		  if (!i)
+		    abort ();
+		  make_edge (NULL, ENTRY_BLOCK_PTR, bb, EDGE_FAKE);
+		}
+	    }
+	}
 
       for (e = bb->succ; e; e = e->succ_next)
 	{
