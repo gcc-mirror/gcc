@@ -2709,8 +2709,7 @@ extern int flag_new_for_scope;
    hashed POINTER_TYPE, and can only be used on the POINTER_TYPE.  */
 #define TYPE_GET_PTRMEMFUNC_TYPE(NODE) ((tree)TYPE_LANG_SPECIFIC(NODE))
 #define TYPE_SET_PTRMEMFUNC_TYPE(NODE, VALUE) (TYPE_LANG_SPECIFIC(NODE) = ((struct lang_type *)(void*)(VALUE)))
-/* These are to get the delta2 and pfn fields from a TYPE_PTRMEMFUNC_P.  */
-#define DELTA2_FROM_PTRMEMFUNC(NODE) delta2_from_ptrmemfunc ((NODE))
+/* Returns the pfn field from a TYPE_PTRMEMFUNC_P.  */
 #define PFN_FROM_PTRMEMFUNC(NODE) pfn_from_ptrmemfunc ((NODE))
 
 /* For a pointer-to-member type of the form `T X::*', this is `X'.  */
@@ -4499,8 +4498,7 @@ extern int cp_has_mutable_p                     PARAMS ((tree));
 extern int at_least_as_qualified_p              PARAMS ((tree, tree));
 extern int more_qualified_p                     PARAMS ((tree, tree));
 extern tree build_ptrmemfunc1                   PARAMS ((tree, tree, tree));
-extern void expand_ptrmemfunc_cst               PARAMS ((tree, tree *, tree *, tree *, tree *));
-extern tree delta2_from_ptrmemfunc              PARAMS ((tree));
+extern void expand_ptrmemfunc_cst               PARAMS ((tree, tree *, tree *));
 extern tree pfn_from_ptrmemfunc                 PARAMS ((tree));
 extern tree type_after_usual_arithmetic_conversions PARAMS ((tree, tree));
 extern tree composite_pointer_type              PARAMS ((tree, tree, tree, tree,
