@@ -1,5 +1,10 @@
 Sun Apr  4 13:55:20 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* c-tree.h (initializer_constant_valid_p): Delete decl from here.
+	* output.h (initializer_constant_valid_p): Move decl to here.
+	* c-typeck.c (initializer_constant_valid_p): Delete function from here.
+	* varasm.c (initializer_constant_valid_p): Move function to here.
+
 	* i386.md ({add,sub}qi3): Operand 0 should be nonimmediate_operand.
 
 	* jump.c (delete_computation): Can trust REG_DEAD if same register
