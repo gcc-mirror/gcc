@@ -184,7 +184,7 @@ extern bool warn_deprecated_decl;
 /* Nonzero means warn about constructs which might not be strict
    aliasing safe.  */
 
-extern bool warn_strict_aliasing;
+extern int warn_strict_aliasing;
 
 /* Nonzero if generating code to do profiling.  */
 

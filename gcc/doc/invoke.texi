@@ -226,7 +226,7 @@ in the following sections.
 -Wno-multichar  -Wnonnull  -Wpacked  -Wpadded @gol
 -Wparentheses  -Wpointer-arith  -Wredundant-decls @gol
 -Wreturn-type  -Wsequence-point  -Wshadow @gol
--Wsign-compare  -Wstrict-aliasing @gol
+-Wsign-compare  -Wstrict-aliasing -Wstrict-aliasing=2 @gol
 -Wswitch  -Wswitch-default  -Wswitch-enum @gol
 -Wsystem-headers  -Wtrigraphs  -Wundef  -Wuninitialized @gol
 -Wunknown-pragmas  -Wunreachable-code @gol
@@ -2448,6 +2448,13 @@ It warns about code which might break the strict aliasing rules that the
 compiler is using for optimization. The warning does not catch all
 cases, but does attempt to catch the more common pitfalls. It is
 included in @option{-Wall}.
+
+@item -Wstrict-aliasing=2
+@opindex Wstrict-aliasing=2
+This option is only active when @option{-fstrict-aliasing} is active.
+It warns about all code which might break the strict aliasing rules that the
+compiler is using for optimization.  This warning catches all cases, but
+it will also give a warning for some ambiguous cases that are safe.
 
 @item -Wall
 @opindex Wall

@@ -1,3 +1,14 @@
+2004-03-09  James E Wilson  <wilson@specifixinc.com>
+
+	* alias.c (alias_sets_might_conflict_p): New.
+	* c-typeck.c (build_c_cast): Call it if warn_strict_aliasing > 1.
+	* common.opt (Wstrict-aliasing=): New.
+	* flags.h (warn_strict_aliasing): Change type to int.
+	* opts.c (warn_strict_aliasing): Change type to int.
+	(common_handle_option): Handle OPT_Wstrict_aliasing_.
+	* tree.h (alias_sets_might_conflict_p): Declare it.
+	* doc/invoke.tex (-Wstrict-aliasing=2): Document it.
+
 2004-03-10  Roman Zippel  <zippel@linux-m68k.org>
 
 	PR bootstrap/12371

@@ -290,6 +290,19 @@ alias_sets_conflict_p (HOST_WIDE_INT set1, HOST_WIDE_INT set2)
      child of the other.  Therefore, they cannot alias.  */
   return 0;
 }
+
+/* Return 1 if the two specified alias sets might conflict, or if any subtype
+   of these alias sets might conflict.  */
+
+int
+alias_sets_might_conflict_p (HOST_WIDE_INT set1, HOST_WIDE_INT set2)
+{
+  if (set1 == 0 || set2 == 0 || set1 == set2)
+    return 1;
+
+  return 0;
+}
+
 
 /* Return 1 if TYPE is a RECORD_TYPE, UNION_TYPE, or QUAL_UNION_TYPE and has
    has any readonly fields.  If any of the fields have types that

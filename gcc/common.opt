@@ -104,6 +104,10 @@ Wstrict-aliasing
 Common
 Warn about code which might break strict aliasing rules
 
+Wstrict-aliasing=
+Common Joined UInteger
+Warn about code which might break strict aliasing rules
+
 Wswitch
 Common
 Warn about enumerated switches, with no default, missing a case
