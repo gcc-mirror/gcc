@@ -440,7 +440,8 @@ layout_record (rec)
 
 	  /* A bit field may not span more units of alignment of its type
 	     than its type itself.  Advance to next boundary if necessary.  */
-	  if (((const_size + field_size) / type_align - const_size / type_align)
+	  if (((const_size + field_size + type_align - 1) / type_align
+	       - const_size / type_align)
 	      > TREE_INT_CST_LOW (TYPE_SIZE (TREE_TYPE (field))) / type_align)
 	    const_size = CEIL (const_size, type_align) * type_align;
 	}
