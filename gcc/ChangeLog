@@ -1,5 +1,8 @@
 Thu Sep 14 12:10:16 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* expr.c (expand_expr, case COMPONENT_EXPR): Copy memory attributes
+	when making new MEM.
+
 	* Makefile.in (LN): Remove duplicate definition.
 
 2000-09-12  Bernd Schmidt  <bernds@redhat.co.uk>

@@ -6939,8 +6939,14 @@ expand_expr (exp, target, tmode, modifier)
 	/* Get a reference to just this component.  */
 	if (modifier == EXPAND_CONST_ADDRESS
 	    || modifier == EXPAND_SUM || modifier == EXPAND_INITIALIZER)
-	  op0 = gen_rtx_MEM (mode1, plus_constant (XEXP (op0, 0),
-						   (bitpos / BITS_PER_UNIT)));
+	  {
+	    rtx new = gen_rtx_MEM (mode1,
+				   plus_constant (XEXP (op0, 0),
+						  (bitpos / BITS_PER_UNIT)));
+
+	    MEM_COPY_ATTRIBUTES (new, op0);
+	    op0 = new;
+	  }
 	else
 	  op0 = change_address (op0, mode1,
 				plus_constant (XEXP (op0, 0),
