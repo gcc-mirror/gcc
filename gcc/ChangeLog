@@ -1,3 +1,8 @@
+2000-02-06  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cpplib.c (copy_rest_of_line): Revert previous change: don't
+	bail out early if we hit a line comment.
+
 2000-02-06  Richard Henderson  <rth@cygnus.com>
 
 	* flow.c (flow_delete_insn, make_edge, remove_edge): Export.
