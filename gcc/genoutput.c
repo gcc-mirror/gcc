@@ -497,6 +497,7 @@ scan_operands (part, this_address_p, this_strict_low)
 
     case MATCH_DUP:
     case MATCH_OP_DUP:
+    case MATCH_PAR_DUP:
       ++num_dups;
       return;
 
