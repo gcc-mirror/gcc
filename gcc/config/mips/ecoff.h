@@ -29,3 +29,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* US Software GOFAST library support.  */
 #include "gofast.h"
 #define INIT_TARGET_OPTABS INIT_GOFAST_OPTABS
+
+/* Don't assume anything about startfiles.  The linker script will load the
+   appropriate startfiles.  */
+#define STARTFILE_SPEC ""
