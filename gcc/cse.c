@@ -343,6 +343,11 @@ static int max_uid;
 
 static int cse_jumps_altered;
 
+/* Nonzero if we put a LABEL_REF into the hash table.  Since we may have put
+   it into an INSN without a REG_LABEL, we have to rerun jump after CSE
+   to put in the note.  */
+static int recorded_label_ref;
+
 /* canon_hash stores 1 in do_not_record
    if it notices a reference to CC0, PC, or some other volatile
    subexpression.  */
@@ -1287,14 +1292,11 @@ insert (x, classp, hash, mode)
 	    SET_HARD_REG_BIT (hard_regs_in_table, i);
     }
 
-  /* If X is a label, show we are altering jumps.  We don't KNOW
-     we are, but we might be putting it into a insn which would
-     then need a new REG_LABEL note.  Be conservative and say
-     we alter jumps here; we usually will in this case anyway.  */
+  /* If X is a label, show we recorded it.  */
   if (GET_CODE (x) == LABEL_REF
       || (GET_CODE (x) == CONST && GET_CODE (XEXP (x, 0)) == PLUS
 	  && GET_CODE (XEXP (XEXP (x, 0), 0)) == LABEL_REF))
-    cse_jumps_altered = 1;
+    recorded_label_ref = 1;
 
   /* Put an element for X into the right hash bucket.  */
 
@@ -8215,6 +8217,7 @@ cse_main (f, nregs, after_loop, file)
   register int i;
 
   cse_jumps_altered = 0;
+  recorded_label_ref = 0;
   constant_pool_entries_cost = 0;
   val.path_size = 0;
 
@@ -8370,7 +8373,7 @@ cse_main (f, nregs, after_loop, file)
   if (max_elements_made < n_elements_made)
     max_elements_made = n_elements_made;
 
-  return cse_jumps_altered;
+  return cse_jumps_altered || recorded_label_ref;
 }
 
 /* Process a single basic block.  FROM and TO and the limits of the basic
