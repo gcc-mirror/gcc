@@ -1,3 +1,7 @@
+Sat Dec 27 22:43:12 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* cse.c (rtx_cost): Remove conflicting default case.
+
 Sat Dec 27 21:20:02 1997  Richard Henderson  <rth@cygnus.com>
 
 	* configure.in: Move default enabling of Haifa out of for loop.
