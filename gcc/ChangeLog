@@ -34,7 +34,7 @@
 	* simplify-rtx.c (simplify_immed_subreg): Correctly extract the
 	high word of an integral CONST_DOUBLE.
 
-2004-01-09  Paul Brook  <paul@codesourcery.com>
+2004-01-12  Paul Brook  <paul@codesourcery.com>
 
 	* simplify-rtx.c (simplify_plus_minus): Always generate canonical form.
 
