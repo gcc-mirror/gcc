@@ -6013,150 +6013,82 @@ fold (expr)
 	    return fold (build (code, type, TREE_OPERAND (arg0, 0), tem));
 	}
 
-      /* Convert foo++ == CONST into ++foo == CONST + INCR.
-	 First, see if one arg is constant; find the constant arg
-	 and the other one.  */
-      {
-	tree constop = 0, varop = NULL_TREE;
-	int constopnum = -1;
 
-	if (TREE_CONSTANT (arg1))
-	  constopnum = 1, constop = arg1, varop = arg0;
-	if (TREE_CONSTANT (arg0))
-	  constopnum = 0, constop = arg0, varop = arg1;
+      /* Convert foo++ == CONST into ++foo == CONST + INCR.  */
+      if (TREE_CONSTANT (arg1)
+	  && (TREE_CODE (arg0) == POSTINCREMENT_EXPR
+	      || TREE_CODE (arg0) == POSTDECREMENT_EXPR)
+	  /* This optimization is invalid for ordered comparisons
+	     if CONST+INCR overflows or if foo+incr might overflow.
+	     This optimization is invalid for floating point due to rounding.
+	     For pointer types we assume overflow doesn't happen.  */
+	  && (POINTER_TYPE_P (TREE_TYPE (arg0))
+	      || (INTEGRAL_TYPE_P (TREE_TYPE (arg0))
+		  && (code == EQ_EXPR || code == NE_EXPR))))
+	{
+	  tree varop, newconst;
 
-	if (constop && TREE_CODE (varop) == POSTINCREMENT_EXPR)
-	  {
-	    /* This optimization is invalid for ordered comparisons
-	       if CONST+INCR overflows or if foo+incr might overflow.
-	       This optimization is invalid for floating point due to rounding.
-	       For pointer types we assume overflow doesn't happen.  */
-	    if (POINTER_TYPE_P (TREE_TYPE (varop))
-		|| (! FLOAT_TYPE_P (TREE_TYPE (varop))
-		    && (code == EQ_EXPR || code == NE_EXPR)))
-	      {
-		tree newconst
-		  = fold (build (PLUS_EXPR, TREE_TYPE (varop),
-				 constop, TREE_OPERAND (varop, 1)));
+	  if (TREE_CODE (arg0) == POSTINCREMENT_EXPR)
+	    {
+	      newconst = fold (build (PLUS_EXPR, TREE_TYPE (arg0),
+				      arg1, TREE_OPERAND (arg0, 1)));
+	      varop = build (PREINCREMENT_EXPR, TREE_TYPE (arg0),
+			     TREE_OPERAND (arg0, 0),
+			     TREE_OPERAND (arg0, 1));
+	    }
+	  else
+	    {
+	      newconst = fold (build (MINUS_EXPR, TREE_TYPE (arg0),
+				      arg1, TREE_OPERAND (arg0, 1)));
+	      varop = build (PREDECREMENT_EXPR, TREE_TYPE (arg0),
+			     TREE_OPERAND (arg0, 0),
+			     TREE_OPERAND (arg0, 1));
+	    }
 
-		/* Do not overwrite the current varop to be a preincrement,
-		   create a new node so that we won't confuse our caller who
-		   might create trees and throw them away, reusing the
-		   arguments that they passed to build.  This shows up in
-		   the THEN or ELSE parts of ?: being postincrements.  */
-		varop = build (PREINCREMENT_EXPR, TREE_TYPE (varop),
-			       TREE_OPERAND (varop, 0),
-			       TREE_OPERAND (varop, 1));
 
-		/* If VAROP is a reference to a bitfield, we must mask
-		   the constant by the width of the field.  */
-		if (TREE_CODE (TREE_OPERAND (varop, 0)) == COMPONENT_REF
-		    && DECL_BIT_FIELD(TREE_OPERAND
-				      (TREE_OPERAND (varop, 0), 1)))
-		  {
-		    int size
-		      = TREE_INT_CST_LOW (DECL_SIZE
-					  (TREE_OPERAND
-					   (TREE_OPERAND (varop, 0), 1)));
-		    tree mask, unsigned_type;
-		    unsigned int precision;
-		    tree folded_compare;
+	  /* If VAROP is a reference to a bitfield, we must mask
+	     the constant by the width of the field.  */
+	  if (TREE_CODE (TREE_OPERAND (varop, 0)) == COMPONENT_REF
+	      && DECL_BIT_FIELD(TREE_OPERAND (TREE_OPERAND (varop, 0), 1)))
+	    {
+	      tree fielddecl = TREE_OPERAND (TREE_OPERAND (varop, 0), 1);
+	      int size = TREE_INT_CST_LOW (DECL_SIZE (fielddecl));
+	      tree folded_compare;
+	      tree mask = 0;
 
-		    /* First check whether the comparison would come out
-		       always the same.  If we don't do that we would
-		       change the meaning with the masking.  */
-		    if (constopnum == 0)
-		      folded_compare = fold (build (code, type, constop,
-						    TREE_OPERAND (varop, 0)));
-		    else
-		      folded_compare = fold (build (code, type,
-						    TREE_OPERAND (varop, 0),
-						    constop));
-		    if (integer_zerop (folded_compare)
-			|| integer_onep (folded_compare))
-		      return omit_one_operand (type, folded_compare, varop);
+	      /* First check whether the comparison would come out
+		 always the same.  If we don't do that we would
+		 change the meaning with the masking.  */
+	      folded_compare = fold (build (code, type,
+					    TREE_OPERAND (varop, 0),
+					    arg1));
+	      if (integer_zerop (folded_compare)
+		  || integer_onep (folded_compare))
+		return omit_one_operand (type, folded_compare, varop);
 
-		    unsigned_type = (*lang_hooks.types.type_for_size)(size, 1);
-		    precision = TYPE_PRECISION (unsigned_type);
-		    mask = build_int_2 (~0, ~0);
-		    TREE_TYPE (mask) = unsigned_type;
-		    force_fit_type (mask, 0);
-		    mask = const_binop (RSHIFT_EXPR, mask,
-					size_int (precision - size), 0);
-		    newconst = fold (build (BIT_AND_EXPR,
-					    TREE_TYPE (varop), newconst,
-					    convert (TREE_TYPE (varop),
-						     mask)));
-		  }
+	      if (size < HOST_BITS_PER_WIDE_INT)
+		{
+		  unsigned HOST_WIDE_INT lo = ((unsigned HOST_WIDE_INT) 1
+					       << size) - 1;
+		  mask = build_int_2 (lo, 0);
+		}
+	      else if (size < 2 * HOST_BITS_PER_WIDE_INT)
+		{
+		  HOST_WIDE_INT hi = ((HOST_WIDE_INT) 1
+				      << (size - HOST_BITS_PER_WIDE_INT)) - 1;
+		  mask = build_int_2 (~0, hi);
+		}
+		   
+	      if (mask)
+		{
+		  mask = convert (TREE_TYPE (varop), mask);
+		  newconst = fold (build (BIT_AND_EXPR, TREE_TYPE (varop),
+					  newconst, mask));
+		}
+	    }
 
-		t = build (code, type,
-			   (constopnum == 0) ? newconst : varop,
-			   (constopnum == 1) ? newconst : varop);
-		return t;
-	      }
-	  }
-	else if (constop && TREE_CODE (varop) == POSTDECREMENT_EXPR)
-	  {
-	    if (POINTER_TYPE_P (TREE_TYPE (varop))
-		|| (! FLOAT_TYPE_P (TREE_TYPE (varop))
-		    && (code == EQ_EXPR || code == NE_EXPR)))
-	      {
-		tree newconst
-		  = fold (build (MINUS_EXPR, TREE_TYPE (varop),
-				 constop, TREE_OPERAND (varop, 1)));
-
-		/* Do not overwrite the current varop to be a predecrement,
-		   create a new node so that we won't confuse our caller who
-		   might create trees and throw them away, reusing the
-		   arguments that they passed to build.  This shows up in
-		   the THEN or ELSE parts of ?: being postdecrements.  */
-		varop = build (PREDECREMENT_EXPR, TREE_TYPE (varop),
-			       TREE_OPERAND (varop, 0),
-			       TREE_OPERAND (varop, 1));
-
-		if (TREE_CODE (TREE_OPERAND (varop, 0)) == COMPONENT_REF
-		    && DECL_BIT_FIELD(TREE_OPERAND
-				      (TREE_OPERAND (varop, 0), 1)))
-		  {
-		    int size
-		      = TREE_INT_CST_LOW (DECL_SIZE
-					  (TREE_OPERAND
-					   (TREE_OPERAND (varop, 0), 1)));
-		    tree mask, unsigned_type;
-		    unsigned int precision;
-		    tree folded_compare;
-
-		    if (constopnum == 0)
-		      folded_compare = fold (build (code, type, constop,
-						    TREE_OPERAND (varop, 0)));
-		    else
-		      folded_compare = fold (build (code, type,
-						    TREE_OPERAND (varop, 0),
-						    constop));
-		    if (integer_zerop (folded_compare)
-			|| integer_onep (folded_compare))
-		      return omit_one_operand (type, folded_compare, varop);
-
-		    unsigned_type = (*lang_hooks.types.type_for_size)(size, 1);
-		    precision = TYPE_PRECISION (unsigned_type);
-		    mask = build_int_2 (~0, ~0);
-		    TREE_TYPE (mask) = TREE_TYPE (varop);
-		    force_fit_type (mask, 0);
-		    mask = const_binop (RSHIFT_EXPR, mask,
-					size_int (precision - size), 0);
-		    newconst = fold (build (BIT_AND_EXPR,
-					    TREE_TYPE (varop), newconst,
-					    convert (TREE_TYPE (varop),
-						     mask)));
-		  }
-
-		t = build (code, type,
-			   (constopnum == 0) ? newconst : varop,
-			   (constopnum == 1) ? newconst : varop);
-		return t;
-	      }
-	  }
-      }
+	  return fold (build (code, type, varop, newconst));
+	}
 
       /* Change X >= C to X > (C - 1) and X < C to X <= (C - 1) if C > 0.
 	 This transformation affects the cases which are handled in later

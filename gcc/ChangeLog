@@ -1,5 +1,10 @@
 2004-03-21  Roger Sayle  <roger@eyesopen.com>
 
+	* fold-const.c (fold) <EQ_EXPR>: Rewrite optimization to transform
+	"foo++ == const" into "++foo == const+incr".
+
+2004-03-21  Roger Sayle  <roger@eyesopen.com>
+
 	PR target/13889
 	* cse.c (fold_rtx): Avoid substituting constants into unary
 	conversion operations.
