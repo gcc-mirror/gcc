@@ -1,3 +1,8 @@
+Fri Apr  2 17:23:58 1999  Nick Clifton  <nickc@cygnus.com>
+
+	* print-rtl.c (print_rtx): Use both HOST_WIDE_INT_PRINT_DEC
+	and HOST_WIDE_INT_PRINT_HEX to display constants.
+
 1999-04-02 20:16 -0500  Zack Weinberg  <zack@rabi.columbia.edu>
 
 	* config/i386/i386.h: Document all TARGET_SWITCHES or add
