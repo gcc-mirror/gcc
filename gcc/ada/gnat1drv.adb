@@ -573,12 +573,16 @@ begin
       --  We don't call for annotations on a subunit, because to process those
       --  the back-end requires that the parent(s) be properly compiled.
 
+      --  Annotation is suppressed for targets where front-end layout is
+      --  enabled, because the front end determines representations.
+
       --  Annotation is also suppressed in the case of compiling for
       --  the Java VM, since representations are largely symbolic there.
 
       if Back_End_Mode = Declarations_Only
         and then (not (Back_Annotate_Rep_Info or Debug_Flag_AA)
                    or else Main_Kind = N_Subunit
+                   or else Targparm.Frontend_Layout_On_Target
                    or else Hostparm.Java_VM)
       then
          Sem_Ch13.Validate_Unchecked_Conversions;
