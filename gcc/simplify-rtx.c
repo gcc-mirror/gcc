@@ -808,6 +808,7 @@ simplify_unary_operation (enum rtx_code code, enum machine_mode mode,
 
 	  /* (not (eq X Y)) == (ne X Y), etc.  */
 	  if (GET_RTX_CLASS (GET_CODE (op)) == '<'
+	      && (mode == BImode || STORE_FLAG_VALUE == -1)
 	      && ((reversed = reversed_comparison_code (op, NULL_RTX))
 		  != UNKNOWN))
 	    return simplify_gen_relational (reversed, mode, VOIDmode,
