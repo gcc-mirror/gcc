@@ -1,3 +1,9 @@
+2001-01-10  Thomas Pfaff <tpfaff@gmx.net>
+
+	* gthr-win32.h (__gthread_objc_thread_get_data): Save and restore Win32
+	LastError.
+	(__gthread_getspecific): Ditto.
+
 Fri Jan 12 00:04:00 MET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (ix86_comparison_operator, fcmov_comparison_operator,

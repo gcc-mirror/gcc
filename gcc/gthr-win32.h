@@ -204,7 +204,16 @@ __gthread_objc_thread_set_data(void *value)
 void *
 __gthread_objc_thread_get_data(void)
 {
-  return TlsGetValue(__gthread_objc_data_tls);          /* Return thread data.      */
+  DWORD lasterror;
+  void *ptr;
+
+  lasterror = GetLastError();
+
+  ptr = TlsGetValue(__gthread_objc_data_tls);          /* Return thread data.      */
+
+  SetLastError( lasterror );
+
+  return ptr;
 }
 
 /* Backend mutex functions */
@@ -413,7 +422,16 @@ __gthread_key_delete (__gthread_key_t key)
 static inline void *
 __gthread_getspecific (__gthread_key_t key)
 {
-  return TlsGetValue (key);
+  DWORD lasterror;
+  void *ptr;
+
+  lasterror = GetLastError();
+
+  ptr = TlsGetValue(key);
+
+  SetLastError( lasterror );
+
+  return ptr;
 }
 
 static inline int
