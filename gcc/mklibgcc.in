@@ -9,8 +9,6 @@
 #
 # objext
 # LIB1ASMFUNCS
-# LIB2FUNCS_1
-# LIB2FUNCS_2
 # LIB2FUNCS_ST
 # LIBGCOV
 # LIB2ADD
@@ -44,6 +42,16 @@ echo 'EQ = ='
 echo
 echo 'force:'
 echo
+
+# Library members defined in libgcc2.c.
+lib2funcs='_muldi3 _negdi2 _lshrdi3 _ashldi3 _ashrdi3 _ffsdi2 _clz
+	_cmpdi2 _ucmpdi2 _floatdidf _floatdisf _fixunsdfsi _fixunssfsi
+	_fixunsdfdi _fixdfdi _fixunssfdi _fixsfdi _fixxfdi _fixunsxfdi
+	_floatdixf _fixunsxfsi _fixtfdi _fixunstfdi _floatditf _clear_cache
+	_trampoline __main _exit _absvsi2 _absvdi2 _addvsi3 _addvdi3
+	_subvsi3 _subvdi3 _mulvsi3 _mulvdi3 _negvsi2 _negvdi2 _ctors
+	_clzsi2 _clzdi2 _ctzsi2 _ctzdi2 _popcount_tab _popcountsi2
+	_popcountdi2 _paritysi2 _paritydi2'
 
 # Disable SHLIB_LINK if shared libgcc not enabled.
 if [ "@enable_shared@" = "no" ]; then
@@ -88,14 +96,11 @@ for name in $LIB1ASMFUNCS; do
     echo "	$gcc_compile" $flags -DL$name -xassembler-with-cpp \
 	  -c '$(srcdir)/config/$(LIB1ASMSRC)' -o $out
 
-    # Remove any objects from LIB2FUNCS and LIB2_DIVMOD_FUNCS that are
+    # Remove any objects from lib2funcs and LIB2_DIVMOD_FUNCS that are
     # defined as optimized assembly code in LIB1ASMFUNCS.
-    LIB2FUNCS_1=`echo $LIB2FUNCS_1 | sed -e 's/^'$name' //' \
-				         -e 's/ '$name' / /' \
-				         -e 's/ '$name'$//'`
-    LIB2FUNCS_2=`echo $LIB2FUNCS_2 | sed -e 's/^'$name' //' \
-				         -e 's/ '$name' / /' \
-				         -e 's/ '$name'$//'`
+    lib2funcs=`echo $lib2funcs | sed -e 's/^'$name' //' \
+				     -e 's/ '$name' / /' \
+				     -e 's/ '$name'$//'`
     LIB2_DIVMOD_FUNCS=`echo $LIB2_DIVMOD_FUNCS | sed -e 's/^'$name' //' \
 				                     -e 's/ '$name' / /' \
 				                     -e 's/ '$name'$//'`
@@ -111,7 +116,7 @@ libgcc2_objs=""
 libgcc2_st_objs=""
 libgcc2_eh_objs=""
 
-for name in $LIB2FUNCS_1 $LIB2FUNCS_2; do
+for name in $lib2funcs; do
   for ml in $MULTILIBS; do
     dir=`echo ${ml} | sed -e 's/;.*$//' -e 's/=/$(EQ)/g'`
     flags=`echo ${ml} | sed -e 's/^[^;]*;//' -e 's/@/ -/g'`;

@@ -322,6 +322,65 @@ DEF_EXT_LIB_BUILTIN(BUILT_IN_FFS,
 		    "__builtin_ffs",
 		    BT_FN_INT_INT,
 		    ATTR_CONST_NOTHROW_LIST)
+DEF_GCC_BUILTIN(BUILT_IN_CLZ,
+		    "__builtin_clz",
+		    BT_FN_INT_INT,
+		    ATTR_CONST_NOTHROW_LIST)
+DEF_GCC_BUILTIN(BUILT_IN_CTZ,
+		    "__builtin_ctz",
+		    BT_FN_INT_INT,
+		    ATTR_CONST_NOTHROW_LIST)
+DEF_GCC_BUILTIN(BUILT_IN_POPCOUNT,
+		    "__builtin_popcount",
+		    BT_FN_INT_INT,
+		    ATTR_CONST_NOTHROW_LIST)
+DEF_GCC_BUILTIN(BUILT_IN_PARITY,
+		    "__builtin_parity",
+		    BT_FN_INT_INT,
+		    ATTR_CONST_NOTHROW_LIST)
+
+DEF_GCC_BUILTIN(BUILT_IN_FFSL,
+		    "__builtin_ffsl",
+		    BT_FN_INT_LONG,
+		    ATTR_CONST_NOTHROW_LIST)
+DEF_GCC_BUILTIN(BUILT_IN_CLZL,
+		    "__builtin_clzl",
+		    BT_FN_INT_LONG,
+		    ATTR_CONST_NOTHROW_LIST)
+DEF_GCC_BUILTIN(BUILT_IN_CTZL,
+		    "__builtin_ctzl",
+		    BT_FN_INT_LONG,
+		    ATTR_CONST_NOTHROW_LIST)
+DEF_GCC_BUILTIN(BUILT_IN_POPCOUNTL,
+		    "__builtin_popcountl",
+		    BT_FN_INT_LONG,
+		    ATTR_CONST_NOTHROW_LIST)
+DEF_GCC_BUILTIN(BUILT_IN_PARITYL,
+		    "__builtin_parityl",
+		    BT_FN_INT_LONG,
+		    ATTR_CONST_NOTHROW_LIST)
+
+DEF_EXT_LIB_BUILTIN(BUILT_IN_FFSLL,
+		    "__builtin_ffsll",
+		    BT_FN_INT_LONGLONG,
+		    ATTR_CONST_NOTHROW_LIST)
+DEF_GCC_BUILTIN(BUILT_IN_CLZLL,
+		    "__builtin_clzll",
+		    BT_FN_INT_LONGLONG,
+		    ATTR_CONST_NOTHROW_LIST)
+DEF_GCC_BUILTIN(BUILT_IN_CTZLL,
+		    "__builtin_ctzll",
+		    BT_FN_INT_LONGLONG,
+		    ATTR_CONST_NOTHROW_LIST)
+DEF_GCC_BUILTIN(BUILT_IN_POPCOUNTLL,
+		    "__builtin_popcountll",
+		    BT_FN_INT_LONGLONG,
+		    ATTR_CONST_NOTHROW_LIST)
+DEF_GCC_BUILTIN(BUILT_IN_PARITYLL,
+		    "__builtin_parityll",
+		    BT_FN_INT_LONGLONG,
+		    ATTR_CONST_NOTHROW_LIST)
+
 DEF_EXT_LIB_BUILTIN(BUILT_IN_INDEX,
 		    "__builtin_index",
 		    BT_FN_STRING_CONST_STRING_INT,

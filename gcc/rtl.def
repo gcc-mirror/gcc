@@ -1070,6 +1070,18 @@ DEF_RTL_EXPR(SQRT, "sqrt", "e", '1')
    or 0 if arg is 0.  */
 DEF_RTL_EXPR(FFS, "ffs", "e", '1')
 
+/* Count leading zeros.  */
+DEF_RTL_EXPR(CLZ, "clz", "e", '1')
+
+/* Count trailing zeros.  */
+DEF_RTL_EXPR(CTZ, "ctz", "e", '1')
+
+/* Population count (number of 1 bits).  */
+DEF_RTL_EXPR(POPCOUNT, "popcount", "e", '1')
+
+/* Population parity (number of 1 bits modulo 2).  */
+DEF_RTL_EXPR(PARITY, "parity", "e", '1')
+
 /* Reference to a signed bit-field of specified size and position.
    Operand 0 is the memory unit (usually SImode or QImode) which
    contains the field's first bit.  Operand 1 is the width, in bits.

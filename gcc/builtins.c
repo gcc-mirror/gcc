@@ -147,7 +147,7 @@ static rtx expand_builtin_strchr	PARAMS ((tree, rtx,
 static rtx expand_builtin_strrchr	PARAMS ((tree, rtx,
 						 enum machine_mode));
 static rtx expand_builtin_alloca	PARAMS ((tree, rtx));
-static rtx expand_builtin_ffs		PARAMS ((tree, rtx, rtx));
+static rtx expand_builtin_unop		PARAMS ((tree, rtx, rtx, optab));
 static rtx expand_builtin_frame_address	PARAMS ((tree));
 static rtx expand_builtin_fputs		PARAMS ((tree, int, int));
 static tree stabilize_va_list		PARAMS ((tree, int));
@@ -3581,15 +3581,16 @@ expand_builtin_alloca (arglist, target)
   return result;
 }
 
-/* Expand a call to the ffs builtin.  The arguments are in ARGLIST.
+/* Expand a call to a unary builtin.  The arguments are in ARGLIST.
    Return 0 if a normal call should be emitted rather than expanding the
    function in-line.  If convenient, the result should be placed in TARGET.
    SUBTARGET may be used as the target for computing one of EXP's operands.  */
 
 static rtx
-expand_builtin_ffs (arglist, target, subtarget)
+expand_builtin_unop (arglist, target, subtarget, op_optab)
      tree arglist;
      rtx target, subtarget;
+     optab op_optab;
 {
   rtx op0;
   if (!validate_arglist (arglist, INTEGER_TYPE, VOID_TYPE))
@@ -3597,10 +3598,10 @@ expand_builtin_ffs (arglist, target, subtarget)
 
   /* Compute the argument.  */
   op0 = expand_expr (TREE_VALUE (arglist), subtarget, VOIDmode, 0);
-  /* Compute ffs, into TARGET if possible.
+  /* Compute op, into TARGET if possible.
      Set TARGET to wherever the result comes back.  */
   target = expand_unop (TYPE_MODE (TREE_TYPE (TREE_VALUE (arglist))),
-			ffs_optab, op0, target, 1);
+			op_optab, op0, target, 1);
   if (target == 0)
     abort ();
   return target;
@@ -4099,7 +4100,42 @@ expand_builtin (exp, target, subtarget, mode, ignore)
       break;
 
     case BUILT_IN_FFS:
-      target = expand_builtin_ffs (arglist, target, subtarget);
+    case BUILT_IN_FFSL:
+    case BUILT_IN_FFSLL:
+      target = expand_builtin_unop (arglist, target, subtarget, ffs_optab);
+      if (target)
+	return target;
+      break;
+
+    case BUILT_IN_CLZ:
+    case BUILT_IN_CLZL:
+    case BUILT_IN_CLZLL:
+      target = expand_builtin_unop (arglist, target, subtarget, clz_optab);
+      if (target)
+	return target;
+      break;
+
+    case BUILT_IN_CTZ:
+    case BUILT_IN_CTZL:
+    case BUILT_IN_CTZLL:
+      target = expand_builtin_unop (arglist, target, subtarget, ctz_optab);
+      if (target)
+	return target;
+      break;
+
+    case BUILT_IN_POPCOUNT:
+    case BUILT_IN_POPCOUNTL:
+    case BUILT_IN_POPCOUNTLL:
+      target = expand_builtin_unop (arglist, target, subtarget,
+				    popcount_optab);
+      if (target)
+	return target;
+      break;
+
+    case BUILT_IN_PARITY:
+    case BUILT_IN_PARITYL:
+    case BUILT_IN_PARITYLL:
+      target = expand_builtin_unop (arglist, target, subtarget, parity_optab);
       if (target)
 	return target;
       break;

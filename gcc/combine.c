@@ -4634,6 +4634,13 @@ combine_simplify_rtx (x, op0_mode, last, in_dest)
 	SUBST (XEXP (x, 0), XEXP (XEXP (x, 0), 0));
       break;
 
+    case POPCOUNT:
+    case PARITY:
+      /* (pop* (zero_extend <X>)) = (pop* <X>) */
+      if (GET_CODE (XEXP (x, 0)) == ZERO_EXTEND)
+	SUBST (XEXP (x, 0), XEXP (XEXP (x, 0), 0));
+      break;
+
     case FLOAT:
       /* (float (sign_extend <X>)) = (float <X>).  */
       if (GET_CODE (XEXP (x, 0)) == SIGN_EXTEND)
@@ -8540,8 +8547,15 @@ nonzero_bits (x, mode)
       break;
 
     case FFS:
+    case CLZ:
+    case CTZ:
+    case POPCOUNT:
       /* This is at most the number of bits in the mode.  */
       nonzero = ((HOST_WIDE_INT) 1 << (floor_log2 (mode_width) + 1)) - 1;
+      break;
+
+    case PARITY:
+      nonzero = 1;
       break;
 
     case IF_THEN_ELSE:

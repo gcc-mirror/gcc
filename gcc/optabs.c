@@ -126,6 +126,8 @@ static rtx expand_vector_binop PARAMS ((enum machine_mode, optab,
 					enum optab_methods));
 static rtx expand_vector_unop PARAMS ((enum machine_mode, optab, rtx, rtx,
 				       int));
+static rtx widen_clz PARAMS ((enum machine_mode, rtx, rtx));
+static rtx expand_parity PARAMS ((enum machine_mode, rtx, rtx));
 
 /* Add a REG_EQUAL note to the last insn in INSNS.  TARGET is being set to
    the result of operation CODE applied to OP0 (and OP1 if it is a binary
@@ -2325,6 +2327,89 @@ expand_simple_unop (mode, code, op0, target, unsignedp)
   return expand_unop (mode, unop, op0, target, unsignedp);
 }
 
+/* Try calculating
+	(clz:narrow x)
+   as
+	(clz:wide (zero_extend:wide x)) - ((width wide) - (width narrow)).  */
+static rtx
+widen_clz (mode, op0, target)
+     enum machine_mode mode;
+     rtx op0;
+     rtx target;
+{
+  enum mode_class class = GET_MODE_CLASS (mode);
+  if (class == MODE_INT || class == MODE_FLOAT || class == MODE_COMPLEX_FLOAT)
+    {
+      enum machine_mode wider_mode;
+      for (wider_mode = GET_MODE_WIDER_MODE (mode); wider_mode != VOIDmode;
+	   wider_mode = GET_MODE_WIDER_MODE (wider_mode))
+	{
+	  if (clz_optab->handlers[(int) wider_mode].insn_code
+	      != CODE_FOR_nothing)
+	    {
+	      rtx xop0, temp, last;
+
+	      last = get_last_insn ();
+
+	      if (target == 0)
+		target = gen_reg_rtx (mode);
+	      xop0 = widen_operand (op0, wider_mode, mode, true, false);
+	      temp = expand_unop (wider_mode, clz_optab, xop0, NULL_RTX, true);
+	      if (temp != 0)
+		temp = expand_binop (wider_mode, sub_optab, temp,
+				     GEN_INT (GET_MODE_BITSIZE (wider_mode)
+					      - GET_MODE_BITSIZE (mode)),
+				     target, true, OPTAB_DIRECT);
+	      if (temp == 0)
+		delete_insns_since (last);
+
+	      return temp;
+	    }
+	}
+    }
+  return 0;
+}
+
+/* Try calculating (parity x) as (and (popcount x) 1), where
+   popcount can also be done in a wider mode.  */
+static rtx
+expand_parity (mode, op0, target)
+     enum machine_mode mode;
+     rtx op0;
+     rtx target;
+{
+  enum mode_class class = GET_MODE_CLASS (mode);
+  if (class == MODE_INT || class == MODE_FLOAT || class == MODE_COMPLEX_FLOAT)
+    {
+      enum machine_mode wider_mode;
+      for (wider_mode = mode; wider_mode != VOIDmode;
+	   wider_mode = GET_MODE_WIDER_MODE (wider_mode))
+	{
+	  if (popcount_optab->handlers[(int) wider_mode].insn_code
+	      != CODE_FOR_nothing)
+	    {
+	      rtx xop0, temp, last;
+
+	      last = get_last_insn ();
+
+	      if (target == 0)
+		target = gen_reg_rtx (mode);
+	      xop0 = widen_operand (op0, wider_mode, mode, true, false);
+	      temp = expand_unop (wider_mode, popcount_optab, xop0, NULL_RTX,
+				  true);
+	      if (temp != 0)
+		temp = expand_binop (wider_mode, and_optab, temp, GEN_INT (1),
+				     target, true, OPTAB_DIRECT);
+	      if (temp == 0)
+		delete_insns_since (last);
+
+	      return temp;
+	    }
+	}
+    }
+  return 0;
+}
+
 /* Generate code to perform an operation specified by UNOPTAB
    on operand OP0, with result having machine-mode MODE.
 
@@ -2404,6 +2489,16 @@ expand_unop (mode, unoptab, op0, target, unsignedp)
     }
 
   /* It can't be done in this mode.  Can we open-code it in a wider mode?  */
+
+  /* Widening clz needs special treatment.  */
+  if (unoptab == clz_optab)
+    {
+      temp = widen_clz (mode, op0, target);
+      if (temp)
+	return temp;
+      else
+	goto try_libcall;
+    }
 
   if (class == MODE_INT || class == MODE_FLOAT || class == MODE_COMPLEX_FLOAT)
     for (wider_mode = GET_MODE_WIDER_MODE (mode); wider_mode != VOIDmode;
@@ -2560,22 +2655,39 @@ expand_unop (mode, unoptab, op0, target, unsignedp)
         }
     }
 
+  /* Try calculating parity (x) as popcount (x) % 2.  */
+  if (unoptab == parity_optab)
+    {
+      temp = expand_parity (mode, op0, target);
+      if (temp)
+	return temp;
+    }
+
+ try_libcall:
   /* Now try a library call in this mode.  */
   if (unoptab->handlers[(int) mode].libfunc)
     {
       rtx insns;
       rtx value;
+      enum machine_mode outmode = mode;
+
+      /* All of these functions return small values.  Thus we choose to
+	 have them return something that isn't a double-word.  */
+      if (unoptab == ffs_optab || unoptab == clz_optab || unoptab == ctz_optab
+	  || unoptab == popcount_optab || unoptab == parity_optab)
+	outmode = word_mode;
 
       start_sequence ();
 
       /* Pass 1 for NO_QUEUE so we don't lose any increments
 	 if the libcall is cse'd or moved.  */
       value = emit_library_call_value (unoptab->handlers[(int) mode].libfunc,
-				       NULL_RTX, LCT_CONST, mode, 1, op0, mode);
+				       NULL_RTX, LCT_CONST, outmode,
+				       1, op0, mode);
       insns = get_insns ();
       end_sequence ();
 
-      target = gen_reg_rtx (mode);
+      target = gen_reg_rtx (outmode);
       emit_libcall_block (insns, target, value,
 			  gen_rtx_fmt_e (unoptab->code, mode, op0));
 
@@ -5395,6 +5507,10 @@ init_optabs ()
   addcc_optab = init_optab (UNKNOWN);
   one_cmpl_optab = init_optab (NOT);
   ffs_optab = init_optab (FFS);
+  clz_optab = init_optab (CLZ);
+  ctz_optab = init_optab (CTZ);
+  popcount_optab = init_optab (POPCOUNT);
+  parity_optab = init_optab (PARITY);
   sqrt_optab = init_optab (SQRT);
   floor_optab = init_optab (UNKNOWN);
   ceil_optab = init_optab (UNKNOWN);
@@ -5472,6 +5588,10 @@ init_optabs ()
   init_floating_libfuncs (negv_optab, "neg", '2');
   init_integral_libfuncs (one_cmpl_optab, "one_cmpl", '2');
   init_integral_libfuncs (ffs_optab, "ffs", '2');
+  init_integral_libfuncs (clz_optab, "clz", '2');
+  init_integral_libfuncs (ctz_optab, "ctz", '2');
+  init_integral_libfuncs (popcount_optab, "popcount", '2');
+  init_integral_libfuncs (parity_optab, "parity", '2');
 
   /* Comparison libcalls for integers MUST come in pairs, signed/unsigned.  */
   init_integral_libfuncs (cmp_optab, "cmp", '2');
@@ -5531,6 +5651,17 @@ init_optabs ()
   /* The ffs function operates on `int'.  */
   ffs_optab->handlers[(int) mode_for_size (INT_TYPE_SIZE, MODE_INT, 0)].libfunc
     = init_one_libfunc ("ffs");
+  ffs_optab->handlers[(int) DImode].libfunc = init_one_libfunc ("__ffsdi2");
+  clz_optab->handlers[(int) SImode].libfunc = init_one_libfunc ("__clzsi2");
+  clz_optab->handlers[(int) DImode].libfunc = init_one_libfunc ("__clzdi2");
+  ctz_optab->handlers[(int) SImode].libfunc = init_one_libfunc ("__ctzsi2");
+  ctz_optab->handlers[(int) DImode].libfunc = init_one_libfunc ("__ctzdi2");
+  popcount_optab->handlers[(int) SImode].libfunc
+      = init_one_libfunc ("__popcountsi2");
+  popcount_optab->handlers[(int) DImode].libfunc
+      = init_one_libfunc ("__popcountdi2");
+  parity_optab->handlers[(int) SImode].libfunc = init_one_libfunc ("__paritysi2");
+  parity_optab->handlers[(int) DImode].libfunc = init_one_libfunc ("__paritydi2");
 
   extendsfdf2_libfunc = init_one_libfunc ("__extendsfdf2");
   extendsfxf2_libfunc = init_one_libfunc ("__extendsfxf2");

@@ -4004,6 +4004,8 @@ instantiate_virtual_regs_1 (loc, object, extra_insns)
     case ABS:
     case SQRT:
     case FFS:
+    case CLZ:          case CTZ:
+    case POPCOUNT:     case PARITY:
       /* These case either have just one operand or we know that we need not
 	 check the rest of the operands.  */
       loc = &XEXP (x, 0);

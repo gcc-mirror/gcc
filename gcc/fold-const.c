@@ -7436,6 +7436,10 @@ tree_expr_nonnegative_p (t)
     {
     case ABS_EXPR:
     case FFS_EXPR:
+    case CLZ_EXPR:
+    case CTZ_EXPR:
+    case POPCOUNT_EXPR:
+    case PARITY_EXPR:
       return 1;
     case INTEGER_CST:
       return tree_int_cst_sgn (t) >= 0;

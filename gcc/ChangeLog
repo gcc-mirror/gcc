@@ -1,3 +1,61 @@
+2003-02-01  Richard Henderson  <rth@redhat.com>
+
+	* optabs.c (expand_unop): Use word_mode for outmode of bit scaners.
+	* libgcc2.c (__ffsdi2, __clzsi2, __clzdi2, __ctzsi2, __ctzdi2,
+	__popcountsi2, __popcountdi2, __paritysi2 __paritydi2): Change
+	return type to Wtype.
+
+	* libgcc-std.ver (GCC_3.4): Fix inheritance.
+
+	* config/i386/i386.md (ffssi2): Use nonimmediate_operand for
+	expander input constraint.
+
+2003-02-01  Falk Hueffner  <falk.hueffner@student.uni-tuebingen.de>
+
+        * optabs.h (optab_index): Add OTI_clz, OTI_ctz, OTI_popcount and
+        OTI_parity.
+        (clz_optab, ctz_optab, popcount_optab, parity_optab): New.
+        * optabs.c (widen_clz, expand_parity): New.
+        (expand_unop): Handle clz and parity.  Hardcode SImode as outmode
+        for libcalls to clz, ctz, popcount, and parity.
+        (init_optabs): Init clz_optab, ctz_optab, popcount_optab and
+        parity_optab, and set up libfunc handlers.
+        * libgcc2.c (__clzsi2, __clzdi2, __ctzsi2, __ctzdi2,
+        __popcountsi2, __popcountdi2, __paritysi2 __paritydi2,
+        __popcount_tab): New.
+        * libgcc2.h: Declare them.
+        * libgcc-std.ver (GCC_3.4): Add new functions from libgcc2.c.
+        * genopinit.c (optabs): Add clz_optab, ctz_optab, popcount_optab
+        and parity_optab.
+        * builtin-types.def (BT_FN_INT_LONG, BT_FN_INT_LONGLONG): New.
+        * builtins.def (BUILT_IN_CLZ, BUILT_IN_CTZ, BUILT_IN_POPCOUNT,
+        BUILT_IN_PARITY, BUILT_IN_FFSL, BUILT_IN_CLZL, BUILT_IN_CTZL,
+        BUILT_IN_POPCOUNTL, BUILT_IN_PARITYL, BUILT_IN_FFSLL,
+        BUILT_IN_CLZLL, BUILT_IN_CTZLL, BUILT_IN_POPCOUNTLL,
+        BUILT_IN_PARITYLL): New.
+        * builtins.c (expand_builtin_unop): Rename from expand_builtin_ffs
+        and add optab argument.
+        (expand_builtin): Expand BUILT_IN_{FFS,CLZ,POPCOUNT,PARITY}*.
+        * tree.def (CLZ_EXPR, CTZ_EXPR, POPCOUNT_EXPR, PARITY_EXPR): New.
+        * expr.c (expand_expr): Handle them.
+        * fold-const.c (tree_expr_nonnegative_p): Likewise.
+        * rtl.def (CLZ, CTZ, POPCOUNT, PARITY): New.
+        * reload1.c (eliminate_regs): Handle them.
+        (elimination_effects): Likewise.
+        * function.c (instantiate_virtual_regs_1): Likewise
+        * genattrtab.c (check_attr_value): Likewise.
+        * simplify-rtx.c (simplify_unary_operation): Likewise.
+        * c-common.c (c_common_truthvalue_conversion): Handle POPCOUNT_EXPR.
+        * combine.c (combine_simplify_rtx): Handle POPCOUNT and PARITY.
+        (nonzero_bits): Handle CLZ, CTZ, POPCOUNT and PARITY.
+        * config/alpha/alpha.md (clzdi2, ctzdi2, popcountdi2): New.
+        * config/arm/arm.c (arm_init_builtins): Rename __builtin_clz to
+        __builtin_arm_clz.
+        * Makefile.in (LIB2FUNCS_1, LIB2FUNCS_2): Move...
+        * mklibgcc.in (lib2funcs): ...here and merge.  Add new members.
+        * doc/extend.texi (Other Builtins): Add new builtins.
+        * doc/md.texi (Standard Names): Add new patterns.
+
 2003-02-01  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* reload.c: Revert 2003-01-31 change.

@@ -10004,7 +10004,7 @@ arm_init_builtins ()
 
   /* Initialize arm V5 builtins.  */
   if (arm_arch5)
-    def_builtin ("__builtin_clz", int_ftype_int, ARM_BUILTIN_CLZ);
+    def_builtin ("__builtin_arm_clz", int_ftype_int, ARM_BUILTIN_CLZ);
 }
 
 /* Expand an expression EXP that calls a built-in function,

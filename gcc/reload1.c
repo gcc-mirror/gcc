@@ -2545,6 +2545,10 @@ eliminate_regs (x, mem_mode, insn)
     case ABS:
     case SQRT:
     case FFS:
+    case CLZ:
+    case CTZ:
+    case POPCOUNT:
+    case PARITY:
       new = eliminate_regs (XEXP (x, 0), mem_mode, insn);
       if (new != XEXP (x, 0))
 	return gen_rtx_fmt_e (code, GET_MODE (x), new);
@@ -2776,6 +2780,10 @@ elimination_effects (x, mem_mode)
     case ABS:
     case SQRT:
     case FFS:
+    case CLZ:
+    case CTZ:
+    case POPCOUNT:
+    case PARITY:
       elimination_effects (XEXP (x, 0), mem_mode);
       return;
 

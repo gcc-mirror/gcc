@@ -423,6 +423,33 @@ simplify_unary_operation (code, mode, op, op_mode)
 	  val = exact_log2 (arg0 & (- arg0)) + 1;
 	  break;
 
+	case CLZ:
+	  arg0 &= GET_MODE_MASK (mode);
+	  val = GET_MODE_BITSIZE (mode) - floor_log2 (arg0) - 1;
+	  break;
+
+	case CTZ:
+	  arg0 &= GET_MODE_MASK (mode);
+	  val = arg0 == 0
+	      ? GET_MODE_BITSIZE (mode)
+	      : exact_log2 (arg0 & -arg0);
+	  break;
+
+	case POPCOUNT:
+	  arg0 &= GET_MODE_MASK (mode);
+	  val = 0;
+	  while (arg0)
+	    val++, arg0 &= arg0 - 1;
+	  break;
+
+	case PARITY:
+	  arg0 &= GET_MODE_MASK (mode);
+	  val = 0;
+	  while (arg0)
+	    val++, arg0 &= arg0 - 1;
+	  val &= 1;
+	  break;
+
 	case TRUNCATE:
 	  val = arg0;
 	  break;
@@ -523,9 +550,55 @@ simplify_unary_operation (code, mode, op, op_mode)
 	case FFS:
 	  hv = 0;
 	  if (l1 == 0)
-	    lv = HOST_BITS_PER_WIDE_INT + exact_log2 (h1 & (-h1)) + 1;
+	    {
+	      if (h1 == 0)
+		lv = 0;
+	      else
+		lv = HOST_BITS_PER_WIDE_INT + exact_log2 (h1 & -h1) + 1;
+	    }
 	  else
-	    lv = exact_log2 (l1 & (-l1)) + 1;
+	    lv = exact_log2 (l1 & -l1) + 1;
+	  break;
+
+	case CLZ:
+	  hv = 0;
+	  if (h1 == 0)
+	    lv = GET_MODE_BITSIZE (mode) - floor_log2 (l1) - 1;
+	  else
+	    lv = GET_MODE_BITSIZE (mode) - floor_log2 (h1) - 1
+	      - HOST_BITS_PER_WIDE_INT;
+	  break;
+
+	case CTZ:
+	  hv = 0;
+	  if (l1 == 0)
+	    {
+	      if (h1 == 0)
+		lv = GET_MODE_BITSIZE (mode);
+	      else
+		lv = HOST_BITS_PER_WIDE_INT + exact_log2 (h1 & -h1);
+	    }
+	  else
+	    lv = exact_log2 (l1 & -l1);
+	  break;
+
+	case POPCOUNT:
+	  hv = 0;
+	  lv = 0;
+	  while (l1)
+	    lv++, l1 &= l1 - 1;
+	  while (h1)
+	    lv++, h1 &= h1 - 1;
+	  break;
+
+	case PARITY:
+	  hv = 0;
+	  lv = 0;
+	  while (l1)
+	    lv++, l1 &= l1 - 1;
+	  while (h1)
+	    lv++, h1 &= h1 - 1;
+	  lv &= 1;
 	  break;
 
 	case TRUNCATE:

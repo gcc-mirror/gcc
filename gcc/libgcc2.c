@@ -331,7 +331,7 @@ __ashrdi3 (DWtype u, word_type b)
 #endif
 
 #ifdef L_ffsdi2
-DWtype
+Wtype
 __ffsdi2 (DWtype u)
 {
   DWunion uu;
@@ -495,6 +495,11 @@ __udiv_w_sdiv (UWtype *rp __attribute__ ((__unused__)),
 #define L_udivmoddi4
 #endif
 
+#if (defined (L_clzsi2) || defined (L_clzdi2) || \
+     defined (L_ctzsi2) || defined (L_ctzdi2))
+extern const UQItype __clz_tab[];
+#endif
+
 #ifdef L_clz
 const UQItype __clz_tab[] =
 {
@@ -507,6 +512,151 @@ const UQItype __clz_tab[] =
   8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,
   8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,
 };
+#endif
+
+#ifdef L_clzsi2
+Wtype
+__clzsi2 (USItype x)
+{
+  Wtype a;
+
+  /* Note that we've already verified that BITS_PER_UNIT == 8, and
+     thus SItype is 32 bits wide.  */
+  if (x < (1 << 2 * 8))
+    if (x < (1 << 1 * 8))
+      a = 0 * 8;
+    else
+      a = 1 * 8;
+  else
+    if (x < (1 << 3 * 8))
+      a = 2 * 8;
+    else
+      a = 3 * 8;
+
+  return 32 - (__clz_tab[x >> a] + a);
+}
+#endif
+
+#ifdef L_clzdi2
+Wtype
+__clzdi2 (UDItype x)
+{
+  Wtype a;
+
+  /* Note that we've already verified that BITS_PER_UNIT == 8, and
+     thus DItype is 64 bits wide.  */
+  for (a = 64 - 8; a > 0; a -= 8)
+    if (((x >> a) & 0xff) != 0)
+      break;
+
+  return 64 - (__clz_tab[x >> a] + a);
+}
+#endif
+
+#ifdef L_ctzsi2
+Wtype
+__ctzsi2 (USItype x)
+{
+  Wtype a;
+
+  x = x & -x;
+
+  /* Note that we've already verified that BITS_PER_UNIT == 8, and
+     thus SItype is 32 bits wide.  */
+  if (x < (1 << 2 * 8))
+    if (x < (1 << 1 * 8))
+      a = 0 * 8;
+    else
+      a = 1 * 8;
+  else
+    if (x < (1 << 3 * 8))
+      a = 2 * 8;
+    else
+      a = 3 * 8;
+
+  return __clz_tab[x >> a] + a - 1;
+}
+#endif
+
+#ifdef L_ctzdi2
+Wtype
+__ctzdi2 (UDItype x)
+{
+  Wtype a;
+
+  x = x & -x;
+  for (a = 64 - 8; a > 0; a -= 8)
+    if (((x >> a) & 0xff) != 0)
+      break;
+
+  return __clz_tab[x >> a] + a - 1;
+}
+#endif
+
+#if (defined (L_popcountsi2) || defined (L_popcountdi2) || \
+     defined (L_paritysi2) || defined (L_paritydi2))
+extern const UQItype __popcount_tab[];
+#endif
+
+#ifdef L_popcount_tab
+const UQItype __popcount_tab[] =
+{
+    0,1,1,2,1,2,2,3,1,2,2,3,2,3,3,4,1,2,2,3,2,3,3,4,2,3,3,4,3,4,4,5,
+    1,2,2,3,2,3,3,4,2,3,3,4,3,4,4,5,2,3,3,4,3,4,4,5,3,4,4,5,4,5,5,6,
+    1,2,2,3,2,3,3,4,2,3,3,4,3,4,4,5,2,3,3,4,3,4,4,5,3,4,4,5,4,5,5,6,
+    2,3,3,4,3,4,4,5,3,4,4,5,4,5,5,6,3,4,4,5,4,5,5,6,4,5,5,6,5,6,6,7,
+    1,2,2,3,2,3,3,4,2,3,3,4,3,4,4,5,2,3,3,4,3,4,4,5,3,4,4,5,4,5,5,6,
+    2,3,3,4,3,4,4,5,3,4,4,5,4,5,5,6,3,4,4,5,4,5,5,6,4,5,5,6,5,6,6,7,
+    2,3,3,4,3,4,4,5,3,4,4,5,4,5,5,6,3,4,4,5,4,5,5,6,4,5,5,6,5,6,6,7,
+    3,4,4,5,4,5,5,6,4,5,5,6,5,6,6,7,4,5,5,6,5,6,6,7,5,6,6,7,6,7,7,8,
+};
+#endif
+
+#ifdef L_popcountsi2
+Wtype
+__popcountsi2 (USItype x)
+{
+  return __popcount_tab[(x >>  0) & 0xff]
+       + __popcount_tab[(x >>  8) & 0xff]
+       + __popcount_tab[(x >> 16) & 0xff]
+       + __popcount_tab[(x >> 24) & 0xff];
+}
+#endif
+
+#ifdef L_popcountdi2
+Wtype
+__popcountdi2 (UDItype x)
+{
+  return __popcount_tab[(x >>  0) & 0xff]
+       + __popcount_tab[(x >>  8) & 0xff]
+       + __popcount_tab[(x >> 16) & 0xff]
+       + __popcount_tab[(x >> 24) & 0xff]
+       + __popcount_tab[(x >> 32) & 0xff]
+       + __popcount_tab[(x >> 40) & 0xff]
+       + __popcount_tab[(x >> 48) & 0xff]
+       + __popcount_tab[(x >> 56) & 0xff];
+}
+#endif
+
+#ifdef L_paritysi2
+Wtype
+__paritysi2 (USItype x)
+{
+  x ^= x >> 16;
+  x ^= x >> 8;
+  return __popcount_tab[x & 0xff] & 1;
+}
+#endif
+
+#ifdef L_paritydi2
+Wtype
+__paritydi2 (UDItype x)
+{
+  Wtype nx = x ^ (x >> 32);
+  nx ^= nx >> 16;
+  nx ^= nx >> 8;
+  return __popcount_tab[nx & 0xff] & 1;
+}
 #endif
 
 #ifdef L_udivmoddi4

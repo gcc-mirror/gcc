@@ -1845,6 +1845,33 @@ Represents one plus the index of the least significant 1-bit in
 zero if @var{x} is zero.)  The mode of @var{x} need not be @var{m};
 depending on the target machine, various mode combinations may be
 valid.
+
+@findex clz
+@item (clz:@var{m} @var{x})
+Represents the number of leading 0-bits in @var{x}, represented as an
+integer of mode @var{m}, starting at the most significant bit position.
+If @var{x} is zero, the value is undefined.  Note that this is one of
+the few expressions that is not invariant under widening.  The mode of
+@var{x} will usually be an integer mode.
+
+@findex ctz
+@item (ctz:@var{m} @var{x})
+Represents the number of trailing 0-bits in @var{x}, represented as an
+integer of mode @var{m}, starting at the least significant bit position.
+If @var{x} is zero, the value is undefined.  Except for this case,
+@code{ctz(x)} is equivalent to @code{ffs(@var{x}) - 1}.  The mode of
+@var{x} will usually be an integer mode.
+
+@findex popcount
+@item (popcount:@var{m} @var{x})
+Represents the number of 1-bits in @var{x}, represented as an integer of
+mode @var{m}.  The mode of @var{x} will usually be an integer mode.
+
+@findex parity
+@item (parity:@var{m} @var{x})
+Represents the number of 1-bits modulo 2 in @var{x}, represented as an
+integer of mode @var{m}.  The mode of @var{x} will usually be an integer
+mode.
 @end table
 
 @node Comparisons

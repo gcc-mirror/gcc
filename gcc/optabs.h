@@ -123,8 +123,12 @@ enum optab_index
   OTI_absv,
   /* Bitwise not */
   OTI_one_cmpl,
-  /* Find first bit set */
+  /* Bit scanning and counting */
   OTI_ffs,
+  OTI_clz,
+  OTI_ctz,
+  OTI_popcount,
+  OTI_parity,
   /* Square root */
   OTI_sqrt,
   /* Sine */
@@ -208,6 +212,10 @@ extern GTY(()) optab optab_table[OTI_MAX];
 #define absv_optab (optab_table[OTI_absv])
 #define one_cmpl_optab (optab_table[OTI_one_cmpl])
 #define ffs_optab (optab_table[OTI_ffs])
+#define clz_optab (optab_table[OTI_clz])
+#define ctz_optab (optab_table[OTI_ctz])
+#define popcount_optab (optab_table[OTI_popcount])
+#define parity_optab (optab_table[OTI_parity])
 #define sqrt_optab (optab_table[OTI_sqrt])
 #define sin_optab (optab_table[OTI_sin])
 #define cos_optab (optab_table[OTI_cos])
