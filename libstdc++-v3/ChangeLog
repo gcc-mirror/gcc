@@ -1,5 +1,28 @@
 2004-03-20  Paolo Carlini  <pcarlini@suse.de>
 
+	* testsuite/27_io/basic_istream/extractors_arithmetic/char/2.cc:
+	Remove junk.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/char/3.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/char/6.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/char/7.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/char/8.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/char/9.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/char/10.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/char/11.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/char/12.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/char/13.cc:
+	Likewise.	
+
+2004-03-20  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/std/std_valarray.h: Document DR389 [Ready].
 	* docs/html/ext/howto.html: Add an entry for DR389.
 

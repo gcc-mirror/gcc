@@ -25,22 +25,6 @@
 #include <locale>
 #include <testsuite_hooks.h>
 
-std::string str_01;
-std::string str_02("true false 0 1 110001");
-std::string str_03("-19999999 777777 -234234 233 -234 33 1 66300.25 .315 1.5");
-std::string str_04("0123");
-
-std::stringbuf isbuf_01(std::ios_base::in);
-std::stringbuf isbuf_02(str_02, std::ios_base::in);
-std::stringbuf isbuf_03(str_03, std::ios_base::in);
-std::stringbuf isbuf_04(str_04, std::ios_base::in);
-
-std::istream is_01(NULL);
-std::istream is_02(&isbuf_02);
-std::istream is_03(&isbuf_03);
-std::istream is_04(&isbuf_04);
-std::stringstream ss_01(str_01);
- 
 namespace std {
   class test_numpunct2 : public numpunct<char>
   {
@@ -57,7 +41,6 @@ void test08()
   bool test __attribute__((unused)) = true;
   unsigned int h4 = 0, h3 = 0, h2 = 0;
   const std::string s1("1,22 205,19 22,123,22");
-  const std::string s2("1,220 2050,19 202,123,22");
 
   std::istringstream is(s1);
   is.imbue(std::locale(std::locale(), new std::test_numpunct2));  
