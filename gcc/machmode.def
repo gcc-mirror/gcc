@@ -154,7 +154,14 @@ EXTRA_CC_MODES
 #undef CC
 
 /* The symbol Pmode stands for one of the above machine modes (usually SImode).
-   The tm file specifies which one.  It is not a distinct mode.  */
+   The tm file specifies which one.  It is not a distinct mode.  Nevertheless,
+   while processing the md file, we wish to treat as a distinct mode so that 
+   it is preserved intact through to the insn-foo.c files.  This eliminates a
+   lot of redundancy in ports that support both 32-bit and 64-bit targets.  */
+#ifdef GENERATOR_FILE
+#undef Pmode
+DEF_MACHMODE (Pmode, "P", MODE_RANDOM, 0, 0, 0, VOIDmode)
+#endif
 
 /*
 Local variables:
