@@ -267,8 +267,6 @@ GLIBCXX_ENABLE_SYMVERS([yes])
 GLIBCXX_CONFIGURE_TESTSUITE
 
 # Propagate the target-specific source directories through the build chain.
-# (Nothing currently uses cpu_include_dir directly; only atomicity_include_dir 
-# uses it, and it only gets used in this file.)
 ATOMICITY_SRCDIR=config/${atomicity_dir}
 ATOMIC_WORD_SRCDIR=config/${atomic_word_dir}
 OS_INC_SRCDIR=config/${os_include_dir}
