@@ -401,12 +401,12 @@ struct cpp_file_change
 struct cpp_callbacks
 {
     void (*file_change) PARAMS ((cpp_reader *, const cpp_file_change *));
-    void (*include) PARAMS ((cpp_reader *, const unsigned char *,
-			     const cpp_token *));
-    void (*define) PARAMS ((cpp_reader *, cpp_hashnode *));
-    void (*undef) PARAMS ((cpp_reader *, cpp_hashnode *));
-    void (*ident) PARAMS ((cpp_reader *, const cpp_string *));
-    void (*def_pragma) PARAMS ((cpp_reader *));
+    void (*include) PARAMS ((cpp_reader *, unsigned int,
+			     const unsigned char *, const cpp_token *));
+    void (*define) PARAMS ((cpp_reader *, unsigned int, cpp_hashnode *));
+    void (*undef) PARAMS ((cpp_reader *, unsigned int, cpp_hashnode *));
+    void (*ident) PARAMS ((cpp_reader *, unsigned int, const cpp_string *));
+    void (*def_pragma) PARAMS ((cpp_reader *, unsigned int));
 };
 
 #define CPP_FATAL_LIMIT 1000

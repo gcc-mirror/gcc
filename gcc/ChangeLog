@@ -1,3 +1,15 @@
+2001-08-04  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cpphash.h (struct cpp_reader): New member directive_line.
+	* cpplib.h (struct cpp_callbacks): Update prototypes of callbacks.
+	* cpplib.c (do_define, do_undef, do_ident, do_include_common,
+	do_pragma): Pass line to callbacks.
+	(start_directive): Record line of directive.
+	* cppmain.c (cb_ident, cb_define, cb_undef, cb_def_pragma,
+	cb_include): Similarly.
+	* c-lex.c (cb_ident, cb_define, cb_undef, cb_def_pragma):
+	Similarly.
+
 2001-08-04  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* config/d30v/d30v.h: Fix typo in start of UNIQUE_SECTION

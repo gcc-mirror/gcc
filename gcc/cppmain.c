@@ -54,13 +54,14 @@ static void maybe_print_line PARAMS ((unsigned int));
 
 /* Callback routines for the parser.   Most of these are active only
    in specific modes.  */
-static void cb_define	PARAMS ((cpp_reader *, cpp_hashnode *));
-static void cb_undef	PARAMS ((cpp_reader *, cpp_hashnode *));
-static void cb_include	PARAMS ((cpp_reader *, const unsigned char *,
-				 const cpp_token *));
-static void cb_ident	  PARAMS ((cpp_reader *, const cpp_string *));
+static void cb_define	PARAMS ((cpp_reader *, unsigned int, cpp_hashnode *));
+static void cb_undef	PARAMS ((cpp_reader *, unsigned int, cpp_hashnode *));
+static void cb_include	PARAMS ((cpp_reader *, unsigned int,
+				 const unsigned char *, const cpp_token *));
+static void cb_ident	  PARAMS ((cpp_reader *, unsigned int,
+				   const cpp_string *));
 static void cb_file_change PARAMS ((cpp_reader *, const cpp_file_change *));
-static void cb_def_pragma PARAMS ((cpp_reader *));
+static void cb_def_pragma PARAMS ((cpp_reader *, unsigned int));
 
 const char *progname;		/* Needs to be global.  */
 static cpp_reader *pfile;	/* An opaque handle.  */
@@ -345,8 +346,9 @@ print_line (special_flags)
 /* Callbacks.  */
 
 static void
-cb_ident (pfile, str)
+cb_ident (pfile, line, str)
      cpp_reader *pfile ATTRIBUTE_UNUSED;
+     unsigned int line ATTRIBUTE_UNUSED;
      const cpp_string * str;
 {
   maybe_print_line (cpp_get_line (pfile)->output_line);
@@ -355,8 +357,9 @@ cb_ident (pfile, str)
 }
 
 static void
-cb_define (pfile, node)
+cb_define (pfile, line, node)
      cpp_reader *pfile;
+     unsigned int line ATTRIBUTE_UNUSED;
      cpp_hashnode *node;
 {
   maybe_print_line (cpp_get_line (pfile)->output_line);
@@ -373,8 +376,9 @@ cb_define (pfile, node)
 }
 
 static void
-cb_undef (pfile, node)
+cb_undef (pfile, line, node)
      cpp_reader *pfile;
+     unsigned int line ATTRIBUTE_UNUSED;
      cpp_hashnode *node;
 {
   maybe_print_line (cpp_get_line (pfile)->output_line);
@@ -383,8 +387,9 @@ cb_undef (pfile, node)
 }
 
 static void
-cb_include (pfile, dir, header)
+cb_include (pfile, line, dir, header)
      cpp_reader *pfile ATTRIBUTE_UNUSED;
+     unsigned int line ATTRIBUTE_UNUSED;
      const unsigned char *dir;
      const cpp_token *header;
 {
@@ -429,8 +434,9 @@ cb_file_change (pfile, fc)
 /* Copy a #pragma directive to the preprocessed output.  LINE is the
    line of the current source file, not the logical line.  */
 static void
-cb_def_pragma (pfile)
+cb_def_pragma (pfile, line)
      cpp_reader *pfile;
+     unsigned int line ATTRIBUTE_UNUSED;
 {
   maybe_print_line (cpp_get_line (pfile)->output_line);
   fputs ("#pragma ", print.outf);

@@ -86,11 +86,14 @@ static tree lex_string		PARAMS ((const char *, unsigned int, int));
 static tree lex_charconst	PARAMS ((const cpp_token *));
 static void update_header_times	PARAMS ((const char *));
 static int dump_one_header	PARAMS ((splay_tree_node, void *));
-static void cb_ident		PARAMS ((cpp_reader *, const cpp_string *));
+static void cb_ident		PARAMS ((cpp_reader *, unsigned int,
+					 const cpp_string *));
 static void cb_file_change    PARAMS ((cpp_reader *, const cpp_file_change *));
-static void cb_def_pragma	PARAMS ((cpp_reader *));
-static void cb_define		PARAMS ((cpp_reader *, cpp_hashnode *));
-static void cb_undef		PARAMS ((cpp_reader *, cpp_hashnode *));
+static void cb_def_pragma	PARAMS ((cpp_reader *, unsigned int));
+static void cb_define		PARAMS ((cpp_reader *, unsigned int,
+					 cpp_hashnode *));
+static void cb_undef		PARAMS ((cpp_reader *, unsigned int,
+					 cpp_hashnode *));
 
 const char *
 init_c_lex (filename)
@@ -222,8 +225,9 @@ dump_time_statistics ()
    No need to deal with linemarkers under normal conditions.  */
 
 static void
-cb_ident (pfile, str)
+cb_ident (pfile, line, str)
      cpp_reader *pfile ATTRIBUTE_UNUSED;
+     unsigned int line ATTRIBUTE_UNUSED;
      const cpp_string *str ATTRIBUTE_UNUSED;
 {
 #ifdef ASM_OUTPUT_IDENT
@@ -306,8 +310,9 @@ cb_file_change (pfile, fc)
 }
 
 static void
-cb_def_pragma (pfile)
+cb_def_pragma (pfile, line)
      cpp_reader *pfile;
+     unsigned int line ATTRIBUTE_UNUSED;
 {
   /* Issue a warning message if we have been asked to do so.  Ignore
      unknown pragmas in system headers unless an explicit
@@ -333,8 +338,9 @@ cb_def_pragma (pfile)
 
 /* #define callback for DWARF and DWARF2 debug info.  */
 static void
-cb_define (pfile, node)
+cb_define (pfile, line, node)
      cpp_reader *pfile;
+     unsigned int line ATTRIBUTE_UNUSED;
      cpp_hashnode *node;
 {
   (*debug_hooks->define) (cpp_get_line (pfile)->line,
@@ -343,8 +349,9 @@ cb_define (pfile, node)
 
 /* #undef callback for DWARF and DWARF2 debug info.  */
 static void
-cb_undef (pfile, node)
+cb_undef (pfile, line, node)
      cpp_reader *pfile;
+     unsigned int line ATTRIBUTE_UNUSED;
      cpp_hashnode *node;
 {
   (*debug_hooks->undef) (cpp_get_line (pfile)->line,
