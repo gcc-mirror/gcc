@@ -40,17 +40,12 @@
 # Actual names to use when installing a native compiler.
 CXX_INSTALL_NAME = `echo c++|sed '$(program_transform_name)'`
 GXX_INSTALL_NAME = `echo g++|sed '$(program_transform_name)'`
-DEMANGLER_INSTALL_NAME = `echo c++filt|sed '$(program_transform_name)'`
 CXX_TARGET_INSTALL_NAME = $(target_alias)-`echo c++|sed '$(program_transform_name)'`
 GXX_TARGET_INSTALL_NAME = $(target_alias)-`echo g++|sed '$(program_transform_name)'`
 
 # Actual names to use when installing a cross-compiler.
 CXX_CROSS_NAME = `echo c++|sed '$(program_transform_cross_name)'`
 GXX_CROSS_NAME = `echo g++|sed '$(program_transform_cross_name)'`
-DEMANGLER_CROSS_NAME = `echo c++filt|sed '$(program_transform_cross_name)'`
-
-# The name to use for the demangler program.
-DEMANGLER_PROG = c++filt$(exeext)
 
 #
 # Define the names for selecting c++ in LANGUAGES.
@@ -80,14 +75,6 @@ g++$(exeext): $(GXX_OBJS) $(EXTRA_GCC_OBJS) $(LIBDEPS)
 g++-cross$(exeext): g++$(exeext)
 	-rm -f g++-cross$(exeext)
 	cp g++$(exeext) g++-cross$(exeext)
-
-# The demangler.
-cp/cxxfilt.o: cp/cxxfilt.c $(DEMANGLE_H) $(CONFIG_H) $(SYSTEM_H) version.h
-
-# Apparently OpenVM needs the -o to be at the beginning of the link line.
-$(DEMANGLER_PROG): cp/cxxfilt.o version.o $(LIBDEPS)
-	$(CC) -o $@ $(ALL_CFLAGS) $(LDFLAGS) \
-	  cp/cxxfilt.o version.o $(LIBS)
 
 # The compiler itself.
 # Shared with C front end:
@@ -135,9 +122,9 @@ gt-cp-tree.h : s-gtype; @true
 # Build hooks:
 
 c++.all.build: g++$(exeext)
-c++.all.cross: g++-cross$(exeext) $(DEMANGLER_PROG)
+c++.all.cross: g++-cross$(exeext)
 c++.start.encap: g++$(exeext)
-c++.rest.encap: $(DEMANGLER_PROG)
+c++.rest.encap:
 
 c++.info: 
 c++.dvi:
@@ -177,17 +164,6 @@ c++.install-common: installdirs
 	    rm -f $(bindir)/$(CXX_TARGET_INSTALL_NAME)$(exeext); \
 	    $(LN) $(bindir)/$(CXX_INSTALL_NAME)$(exeext) $(bindir)/$(CXX_TARGET_INSTALL_NAME)$(exeext); \
 	  fi ; \
-	  if [ x$(DEMANGLER_PROG) != x ] && [ -x "$(DEMANGLER_PROG)" ]; then \
-	    if [ -f g++-cross$(exeext) ] ; then \
-	      rm -f $(bindir)/$(DEMANGLER_CROSS_NAME)$(exeext); \
-	      $(INSTALL_PROGRAM) $(DEMANGLER_PROG) $(bindir)/$(DEMANGLER_CROSS_NAME)$(exeext); \
-	      chmod a+x $(bindir)/$(DEMANGLER_CROSS_NAME)$(exeext); \
-	    else \
-	      rm -f $(bindir)/$(DEMANGLER_INSTALL_NAME)$(exeext); \
-	      $(INSTALL_PROGRAM) $(DEMANGLER_PROG) $(bindir)/$(DEMANGLER_INSTALL_NAME)$(exeext); \
-	      chmod a+x $(bindir)/$(DEMANGLER_INSTALL_NAME)$(exeext); \
-	    fi ; \
-	  fi ; \
 	fi
 
 c++.install-info: 
@@ -210,8 +186,6 @@ c++.uninstall:
 	-rm -rf $(bindir)/$(CXX_CROSS_NAME)$(exeext)
 	-rm -rf $(bindir)/$(GXX_INSTALL_NAME)$(exeext)
 	-rm -rf $(bindir)/$(GXX_CROSS_NAME)$(exeext)
-	-rm -rf $(bindir)/$(DEMANGLER_INSTALL_NAME)$(exeext)
-	-rm -rf $(bindir)/$(DEMANGLER_CROSS_NAME)$(exeext)
 	-rm -rf $(man1dir)/$(GXX_INSTALL_NAME)$(man1ext)
 	-rm -rf $(man1dir)/$(GXX_CROSS_NAME)$(man1ext)
 #
@@ -220,7 +194,7 @@ c++.uninstall:
 # We just have to delete files specific to us.
 
 c++.mostlyclean:
-	-rm -f cp/*$(objext) $(DEMANGLER_PROG)
+	-rm -f cp/*$(objext)
 	-rm -f cp/*$(coverageexts)
 c++.clean:
 c++.distclean:
