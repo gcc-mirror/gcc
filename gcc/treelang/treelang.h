@@ -30,6 +30,8 @@
 
 */
 
+#include "input.h"
+
 /* Parse structure type.  */
 enum category_enum 
 { /* These values less likely to be there by chance unlike 0/1,
@@ -39,8 +41,7 @@ enum category_enum
   parameter_category = 333
 };
 
-/* Input file name and FILE.  */
-extern const char* in_fname;
+/* Input file FILE.  */
 extern FILE* yyin;
 
 /* Forward references to satisfy mutually recursive definitions.  */
@@ -53,7 +54,7 @@ typedef struct GTY(()) prod_token_parm_item item;
 
 struct token_part GTY(())
 {
-  unsigned int lineno;
+  location_t location;
   unsigned int charno;
   unsigned int length; /* The value.  */
   unsigned char* chars;

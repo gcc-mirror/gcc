@@ -203,8 +203,9 @@ storage typename NAME init_opt SEMICOLON {
         abort ();
     if (STORAGE_CLASS (prod) == EXTERNAL_REFERENCE_STORAGE)
       {
-        fprintf (stderr, "%s:%i:%i: External reference variables may not have initial value\n", in_fname, 
-                tok->tp.tok.lineno, tok->tp.tok.charno);
+        fprintf (stderr, "%s:%i:%i: External reference variables may not have initial value\n",
+		 tok->tp.tok.location.file,
+		 tok->tp.tok.location.line, tok->tp.tok.charno);
         print_token (stderr, 0, tok);
         errorcount++;
         YYERROR;
@@ -216,8 +217,7 @@ storage typename NAME init_opt SEMICOLON {
      ((struct prod_token_parm_item*)SYMBOL_TABLE_NAME (prod))->tp.tok.length,
      NUMERIC_TYPE (prod),
      VAR_INIT (prod)? ((struct prod_token_parm_item*)VAR_INIT (prod))->tp.pro.code:NULL,
-     in_fname,
-     tok->tp.tok.lineno);
+     tok->tp.tok.location);
   if (!prod->tp.pro.code) 
     abort ();
 }
@@ -277,8 +277,9 @@ storage typename NAME LEFT_PARENTHESIS parameters RIGHT_PARENTHESIS SEMICOLON {
       break;
       
     case AUTOMATIC_STORAGE:
-      fprintf (stderr, "%s:%i:%i: A function cannot be automatic\n", in_fname, 
-              tok->tp.tok.lineno, tok->tp.tok.charno);
+      fprintf (stderr, "%s:%i:%i: A function cannot be automatic\n",
+	       tok->tp.tok.location.file,
+	       tok->tp.tok.location.line, tok->tp.tok.charno);
       print_token (stderr, 0, tok);
       errorcount++;
       YYERROR;
@@ -323,8 +324,7 @@ storage typename NAME LEFT_PARENTHESIS parameters RIGHT_PARENTHESIS SEMICOLON {
 
   prod->tp.pro.code = tree_code_create_function_prototype
     (tok->tp.tok.chars, STORAGE_CLASS (prod), NUMERIC_TYPE (type),
-     first_parms, in_fname, tok->tp.tok.lineno);
-
+     first_parms, tok->tp.tok.location);
 }
 ;
 
@@ -340,8 +340,9 @@ NAME LEFT_BRACE {
   current_function = proto = lookup_tree_name (&search_prod);
   if (!proto)
     {
-      fprintf (stderr, "%s:%i:%i: Function prototype not found\n", in_fname, 
-              tok->tp.tok.lineno, tok->tp.tok.charno);
+      fprintf (stderr, "%s:%i:%i: Function prototype not found\n",
+	       tok->tp.tok.location.file,
+	       tok->tp.tok.location.line, tok->tp.tok.charno);
       print_token (stderr, 0, tok);
       errorcount++;
       YYERROR;
@@ -349,7 +350,7 @@ NAME LEFT_BRACE {
   if (!proto->tp.pro.code)
     abort ();
   tree_code_create_function_initial
-    (proto->tp.pro.code, in_fname, tok->tp.tok.lineno,
+    (proto->tp.pro.code, tok->tp.tok.location,
      FIRST_PARMS (current_function));
 
   /* Check all the parameters have code.  */
@@ -366,7 +367,7 @@ NAME LEFT_BRACE {
 variable_defs_opt statements_opt RIGHT_BRACE {
   struct prod_token_parm_item* tok;
   tok = $1;
-  tree_code_create_function_wrapup (in_fname, tok->tp.tok.lineno);
+  tree_code_create_function_wrapup (tok->tp.tok.location);
   current_function = NULL;
 }
 ;
@@ -472,7 +473,8 @@ statement:
 expression SEMICOLON {
   struct prod_token_parm_item *exp;
   exp = $1;
-  tree_code_output_expression_statement (exp->tp.pro.code, in_fname, exp->tp.pro.main_token->tp.tok.lineno);
+  tree_code_output_expression_statement (exp->tp.pro.code,
+					 exp->tp.pro.main_token->tp.tok.location);
 }
 |return SEMICOLON {
   /* Nothing to do.  */
@@ -489,7 +491,7 @@ IF LEFT_PARENTHESIS expression RIGHT_PARENTHESIS {
   tok = $1;
   exp = $3;
   ensure_not_void (NUMERIC_TYPE (exp), exp->tp.pro.main_token);
-  tree_code_if_start (exp->tp.pro.code, in_fname, tok->tp.tok.lineno);
+  tree_code_if_start (exp->tp.pro.code, tok->tp.tok.location);
 }
 LEFT_BRACE statements_opt RIGHT_BRACE {
   /* Just let the statements flow.  */
@@ -497,12 +499,12 @@ LEFT_BRACE statements_opt RIGHT_BRACE {
 ELSE {
   struct prod_token_parm_item* tok;
   tok = $1;
-  tree_code_if_else (in_fname, tok->tp.tok.lineno);
+  tree_code_if_else (tok->tp.tok.location);
 }
 LEFT_BRACE statements_opt RIGHT_BRACE {
   struct prod_token_parm_item* tok;
   tok = $12;
-  tree_code_if_end (in_fname, tok->tp.tok.lineno);
+  tree_code_if_end (tok->tp.tok.location);
 }
 ;
 
@@ -518,8 +520,9 @@ tl_RETURN expression_opt {
       tree_code_generate_return (type_prod->tp.pro.code, NULL);
     else
       {
-        fprintf (stderr, "%s:%i:%i: Redundant expression in return\n", in_fname, 
-                ret_tok->tp.tok.lineno, ret_tok->tp.tok.charno);
+        fprintf (stderr, "%s:%i:%i: Redundant expression in return\n",
+		 ret_tok->tp.tok.location.file,
+		 ret_tok->tp.tok.location.line, ret_tok->tp.tok.charno);
         print_token (stderr, 0, ret_tok);
         errorcount++;
         tree_code_generate_return (type_prod->tp.pro.code, NULL);
@@ -527,8 +530,9 @@ tl_RETURN expression_opt {
   else
     if ($2 == NULL)
       {
-        fprintf (stderr, "%s:%i:%i: Expression missing in return\n", in_fname, 
-                ret_tok->tp.tok.lineno, ret_tok->tp.tok.charno); 
+        fprintf (stderr, "%s:%i:%i: Expression missing in return\n",
+		 ret_tok->tp.tok.location.file,
+		 ret_tok->tp.tok.location.line, ret_tok->tp.tok.charno); 
         print_token (stderr, 0, ret_tok);
         errorcount++;
       }
@@ -636,8 +640,9 @@ NAME LEFT_PARENTHESIS expressions_with_commas RIGHT_PARENTHESIS {
   proto = lookup_tree_name (&search_prod);
   if (!proto)
     {
-      fprintf (stderr, "%s:%i:%i: Function prototype not found\n", in_fname, 
-              tok->tp.tok.lineno, tok->tp.tok.charno);
+      fprintf (stderr, "%s:%i:%i: Function prototype not found\n",
+	       tok->tp.tok.location.file,
+	       tok->tp.tok.location.line, tok->tp.tok.charno);
       print_token (stderr, 0, tok);
       errorcount++;
       YYERROR;
@@ -654,8 +659,9 @@ NAME LEFT_PARENTHESIS expressions_with_commas RIGHT_PARENTHESIS {
 
   if (exp_count !=  exp_proto_count)
     {
-      fprintf (stderr, "%s:%i:%i: expression count mismatch with prototype\n", in_fname, 
-              tok->tp.tok.lineno, tok->tp.tok.charno);
+      fprintf (stderr, "%s:%i:%i: expression count mismatch with prototype\n",
+	       tok->tp.tok.location.file,
+	       tok->tp.tok.location.line, tok->tp.tok.charno);
       print_token (stderr, 0, tok);
       errorcount++;
       YYERROR;
@@ -715,8 +721,9 @@ NAME {
   symbol_table_entry = lookup_tree_name (&search_prod);
   if (!symbol_table_entry)
     {
-      fprintf (stderr, "%s:%i:%i: Variable referred to but not defined\n", in_fname, 
-              tok->tp.tok.lineno, tok->tp.tok.charno);
+      fprintf (stderr, "%s:%i:%i: Variable referred to but not defined\n",
+              tok->tp.tok.location.file,
+              tok->tp.tok.location.line, tok->tp.tok.charno);
       print_token (stderr, 0, tok);
       errorcount++;
       YYERROR;
@@ -766,7 +773,7 @@ print_token (FILE * file, unsigned int type ATTRIBUTE_UNUSED, YYSTYPE value)
   unsigned int  ix;
 
   tok  =  value;
-  fprintf (file, "%d \"", tok->tp.tok.lineno);
+  fprintf (file, "%d \"", tok->tp.tok.location.line);
   for (ix  =  0; ix < tok->tp.tok.length; ix++)
     fprintf (file, "%c", tok->tp.tok.chars[ix]);
   fprintf (file, "\"");
@@ -781,7 +788,8 @@ yyerror (const char *error_message)
   tok = yylval;
   if (tok)
     {
-      fprintf (stderr, "%s:%i:%i: %s\n", in_fname, tok->tp.tok.lineno, tok->tp.tok.charno, error_message);
+      fprintf (stderr, "%s:%i:%i: %s\n", tok->tp.tok.location.file,
+	       tok->tp.tok.location.line, tok->tp.tok.charno, error_message);
       print_token (stderr, 0, tok);
     }
   else
@@ -823,8 +831,9 @@ ensure_not_void (unsigned int type, struct prod_token_parm_item* name)
 {
   if (type == VOID)
     {
-      fprintf (stderr, "%s:%i:%i: Type must not be void in this context\n", in_fname, 
-              name->tp.tok.lineno, name->tp.tok.charno);
+      fprintf (stderr, "%s:%i:%i: Type must not be void in this context\n",
+	       name->tp.tok.location.file,
+	       name->tp.tok.location.line, name->tp.tok.charno);
       print_token (stderr, 0, name);
       errorcount++;
     }

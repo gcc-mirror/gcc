@@ -1,3 +1,35 @@
+2003-05-06  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* Make-lang.in (treelang/tree1.o): Depends on input.h
+	(treelang/treetree.o, treelang/parse.o, treelang/lex.o): Likewise.
+	* treelang.h: #include input.h.
+	(in_fname): Remove.
+	(struct token_part): Remove lineno, add location.
+	* lex.l (next_tree_lineno): Remove.
+	(update_lineno_charno): Adjust.
+	(dump_lex_value): Adjust.
+	* parse.y (variable_def, function_prototype, function, statement,
+	if_statement, return, function_invocation, variable_ref): Adjust.
+	(print_token, yyerror, ensure_not_void): Adjust.
+	tree1.c (in_fname): Remove.
+	(treelang_init): Setup input_location.
+	(lookup_tree_name): Adjust.
+	(insert_tree_name): Adjust.
+	* treetree.c (tree_code_if_start): Replace filename and lineno
+	parms with loc. Adjust.
+	(tree_code_if_else, tree_code_if_end,
+	tree_code_create_function_prototype,
+	tree_code_create_function_initial,
+	tree_code_create_function_wrapup, tree_code_create_variable,
+	tree_code_output_expression_statement): Likewise.
+	* treetree.h (tree_code_if_start): Replace filename and lineno
+	parms with loc.
+	(tree_code_if_else, tree_code_if_end,
+	tree_code_create_function_prototype,
+	tree_code_create_function_initial,
+	tree_code_create_function_wrapup, tree_code_create_variable,
+	tree_code_output_expression_statement): Likewise.
+
 2003-05-01  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* tree1.c (treelang_init): Rename lineno to input_line.
