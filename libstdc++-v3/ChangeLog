@@ -1,5 +1,10 @@
 2003-04-21  Paolo Carlini  <pcarlini@unitus.it>
 
+	* include/bits/sstream.tcc (pbackfail, overflow):
+	Formatting fixes.
+
+2003-04-21  Paolo Carlini  <pcarlini@unitus.it>
+
 	* include/std/std_streambuf.h (uflow()): It's used only by
 	basic_stringbuf (i.e., basic_filebuf provide its own uflow()),
 	therefore do not consider the _M_buf_unified == true case.
