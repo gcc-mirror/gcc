@@ -2655,13 +2655,8 @@ build_unary_op (enum tree_code code, tree xarg, int flag)
       if (!c_mark_addressable (arg))
 	return error_mark_node;
 
-      if (TREE_CODE (arg) == COMPONENT_REF
-	  && DECL_C_BIT_FIELD (TREE_OPERAND (arg, 1)))
-	{
-	  error ("attempt to take address of bit-field structure member %qD",
-		 TREE_OPERAND (arg, 1));
-	  return error_mark_node;
-	}
+      gcc_assert (TREE_CODE (arg) != COMPONENT_REF
+		  || !DECL_C_BIT_FIELD (TREE_OPERAND (arg, 1)));
 
       argtype = build_pointer_type (argtype);
 
