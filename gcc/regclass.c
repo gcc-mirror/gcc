@@ -794,10 +794,9 @@ static struct reg_pref *reg_pref;
 
 static struct reg_pref *reg_pref_buffer;
 
-/* Account for the fact that insns within a loop are executed very commonly,
-   but don't keep doing this as loops go too deep.  */
+/* Frequency of executions of current insn.  */
 
-static int loop_cost;
+static int frequency;
 
 static rtx scan_one_insn	PARAMS ((rtx, int));
 static void record_operand_costs PARAMS ((rtx, struct costs *, struct reg_pref *));
@@ -928,10 +927,10 @@ record_operand_costs (insn, op_costs, reg_pref)
 
       if (GET_CODE (recog_data.operand[i]) == MEM)
 	record_address_regs (XEXP (recog_data.operand[i], 0),
-			     BASE_REG_CLASS, loop_cost * 2);
+			     BASE_REG_CLASS, frequency * 2);
       else if (constraints[i][0] == 'p')
 	record_address_regs (recog_data.operand[i],
-			     BASE_REG_CLASS, loop_cost * 2);
+			     BASE_REG_CLASS, frequency * 2);
     }
 
   /* Check for commutative in a separate loop so everything will
@@ -1007,9 +1006,9 @@ scan_one_insn (insn, pass)
       costs[REGNO (SET_DEST (set))].mem_cost
 	-= (MEMORY_MOVE_COST (GET_MODE (SET_DEST (set)),
 			      GENERAL_REGS, 1)
-	    * loop_cost);
+	    * frequency);
       record_address_regs (XEXP (SET_SRC (set), 0),
-			   BASE_REG_CLASS, loop_cost * 2);
+			   BASE_REG_CLASS, frequency * 2);
       return insn;
     }
 
@@ -1059,17 +1058,17 @@ scan_one_insn (insn, pass)
       /* This makes one more setting of new insns's dest.  */
       REG_N_SETS (REGNO (recog_data.operand[0]))++;
       REG_N_REFS (REGNO (recog_data.operand[0]))++;
-      REG_FREQ (REGNO (recog_data.operand[0])) += loop_cost;
+      REG_FREQ (REGNO (recog_data.operand[0])) += frequency;
 
       *recog_data.operand_loc[1] = recog_data.operand[0];
       REG_N_REFS (REGNO (recog_data.operand[0]))++;
-      REG_FREQ (REGNO (recog_data.operand[0])) += loop_cost;
+      REG_FREQ (REGNO (recog_data.operand[0])) += frequency;
       for (i = recog_data.n_dups - 1; i >= 0; i--)
 	if (recog_data.dup_num[i] == 1)
 	  {
 	    *recog_data.dup_loc[i] = recog_data.operand[0];
 	    REG_N_REFS (REGNO (recog_data.operand[0]))++;
-	    REG_FREQ (REGNO (recog_data.operand[0])) += loop_cost;
+	    REG_FREQ (REGNO (recog_data.operand[0])) += frequency;
 	  }
 
       return PREV_INSN (newinsn);
@@ -1087,9 +1086,9 @@ scan_one_insn (insn, pass)
 	int regno = REGNO (recog_data.operand[i]);
 	struct costs *p = &costs[regno], *q = &op_costs[i];
 
-	p->mem_cost += q->mem_cost * loop_cost;
+	p->mem_cost += q->mem_cost * frequency;
 	for (j = 0; j < N_REG_CLASSES; j++)
-	  p->cost[j] += q->cost[j] * loop_cost;
+	  p->cost[j] += q->cost[j] * frequency;
       }
 
   return insn;
@@ -1195,7 +1194,7 @@ regclass (f, nregs, dump)
 
       if (!optimize)
 	{
-	  loop_cost = 1;
+	  frequency = 1;
 	  for (insn = f; insn; insn = NEXT_INSN (insn))
 	    insn = scan_one_insn (insn, pass);
 	}
@@ -1209,9 +1208,9 @@ regclass (f, nregs, dump)
 	       aggressive than the assumptions made elsewhere and is being
 	       tried as an experiment.  */
 	    if (optimize_size)
-	      loop_cost = 1;
+	      frequency = 1;
 	    else
-	      loop_cost = 1 << (2 * MIN (bb->loop_depth, 5));
+	      frequency = bb->frequency ? bb->frequency : 1;
 	    for (insn = bb->head; ; insn = NEXT_INSN (insn))
 	      {
 		insn = scan_one_insn (insn, pass);
