@@ -33,7 +33,7 @@ struct s1 { int i; } __attribute__((format_arg(1))); /* { dg-error "does not app
 union u1 { int i; } __attribute__((format_arg(1))); /* { dg-error "does not apply|only applies" "format_arg on union" } */
 enum e1 { E1V0 } __attribute__((format_arg(1))); /* { dg-error "does not apply|only applies" "format_arg on enum" } */
 
-/* The format type must be an identifier, one of those recognised.  */
+/* The format type must be an identifier, one of those recognized.  */
 extern void fe0 (const char *, ...) __attribute__((format(12345, 1, 2))); /* { dg-error "format specifier" "non-id format" } */
 extern void fe1 (const char *, ...) __attribute__((format(nosuch, 1, 2))); /* { dg-warning "format function type" "unknown format" } */
 

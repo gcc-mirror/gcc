@@ -10,6 +10,6 @@
    -fpreprocessed on raw source.  Nevertheless, we should not
    segfault.  This is a test that we don't back up two tokens in
    cpplib.c - one to back up over the number, and one when we
-   recognise that it's not a valid directive in preprocessed input.  */
+   recognize that it's not a valid directive in preprocessed input.  */
 
  # 1 "foo.c"

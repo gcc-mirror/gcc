@@ -10,7 +10,7 @@
 void
 foo (char **sp, wchar_t **lsp)
 {
-  /* %a formats for allocation, only recognised in C90 mode, are a
+  /* %a formats for allocation, only recognized in C90 mode, are a
      GNU extension.
   */
   scanf ("%as", sp); /* { dg-warning "C" "%as" } */

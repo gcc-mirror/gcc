@@ -1,4 +1,4 @@
-/* Test for recognition of digraphs: should be recognised in C94 and C99
+/* Test for recognition of digraphs: should be recognized in C94 and C99
    mode, but not in C90 mode.  Also check correct stringizing.
 */
 /* Origin: Joseph Myers <jsm28@cam.ac.uk> */
