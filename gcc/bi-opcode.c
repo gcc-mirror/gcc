@@ -77,3 +77,13 @@ xmalloc (nbytes)
 
   return tmp;
 }
+
+/* More 'friendly' abort that prints the line and file.
+   config.h can #define abort fancy_abort if you like that sort of thing.  */
+
+void
+fancy_abort ()
+{
+  fprintf (stderr, "Internal gcc abort.\n");
+  exit (FATAL_EXIT_CODE);
+}
