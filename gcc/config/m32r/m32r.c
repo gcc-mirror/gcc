@@ -99,6 +99,7 @@ static void m32r_setup_incoming_varargs (CUMULATIVE_ARGS *, enum machine_mode,
 					 tree, int *, int);
 static void init_idents (void);
 static bool m32r_rtx_costs (rtx, int, int, int *);
+static tree m32r_gimplify_va_arg_expr (tree, tree, tree *, tree *);
 
 /* Initialize the GCC target structure.  */
 #undef  TARGET_ATTRIBUTE_TABLE
@@ -142,6 +143,8 @@ static bool m32r_rtx_costs (rtx, int, int, int *);
 
 #undef  TARGET_SETUP_INCOMING_VARARGS
 #define TARGET_SETUP_INCOMING_VARARGS m32r_setup_incoming_varargs
+#undef  TARGET_GIMPLIFY_VA_ARG_EXPR
+#define TARGET_GIMPLIFY_VA_ARG_EXPR m32r_gimplify_va_arg_expr
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -1394,61 +1397,13 @@ m32r_setup_incoming_varargs (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 
 /* Implement `va_arg'.  */
 
-rtx
-m32r_va_arg (tree valist, tree type)
+static tree
+m32r_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p, tree *post_p)
 {
-  HOST_WIDE_INT size, rsize;
-  tree t;
-  rtx addr_rtx;
-
-  size = int_size_in_bytes (type);
-  rsize = (size + UNITS_PER_WORD - 1) & -UNITS_PER_WORD;
-
   if (m32r_pass_by_reference (type))
-    {
-      tree type_ptr, type_ptr_ptr;
-
-      /* Pass by reference.  */
-      type_ptr = build_pointer_type (type);
-      type_ptr_ptr = build_pointer_type (type_ptr);
-
-      t = build (POSTINCREMENT_EXPR, va_list_type_node, valist, 
-		 build_int_2 (UNITS_PER_WORD, 0));
-      TREE_SIDE_EFFECTS (t) = 1;
-      t = build1 (NOP_EXPR, type_ptr_ptr, t);
-      TREE_SIDE_EFFECTS (t) = 1;
-      t = build1 (INDIRECT_REF, type_ptr, t);
-
-      addr_rtx = expand_expr (t, NULL_RTX, Pmode, EXPAND_NORMAL);
-    }
+    return ind_gimplify_va_arg_expr (valist, type, pre_p, post_p);
   else
-    {
-      /* Pass by value.  */
-      if (size < UNITS_PER_WORD)
-	{
-	  /* Care for bigendian correction on the aligned address.  */
-	  t = build (PLUS_EXPR, ptr_type_node, valist,
-		     build_int_2 (rsize - size, 0));
-	  addr_rtx = expand_expr (t, NULL_RTX, Pmode, EXPAND_NORMAL);
-	  addr_rtx = copy_to_reg (addr_rtx);
-
-	  /* Increment AP.  */
-	  t = build (PLUS_EXPR, va_list_type_node, valist,
-		     build_int_2 (rsize, 0));
-	  t = build (MODIFY_EXPR, va_list_type_node, valist, t);
-	  TREE_SIDE_EFFECTS (t) = 1;
-	  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
-	}
-      else
-	{
-	  t = build (POSTINCREMENT_EXPR, va_list_type_node, valist, 
-		     build_int_2 (rsize, 0));
-	  TREE_SIDE_EFFECTS (t) = 1;
-	  addr_rtx = expand_expr (t, NULL_RTX, Pmode, EXPAND_NORMAL);
-	}
-    }
-
-  return addr_rtx;
+    return std_gimplify_va_arg_expr (valist, type, pre_p, post_p);
 }
 
 /* Return true if INSN is real instruction bearing insn.  */
