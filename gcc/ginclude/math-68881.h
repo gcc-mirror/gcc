@@ -1,6 +1,6 @@
 /******************************************************************\
 *								   *
-*  <math-68881.h>		last modified: 18 May 1989.	   *
+*  <math-68881.h>		last modified: 23 May 1992.	   *
 *								   *
 *  Copyright (C) 1989 by Matthew Self.				   *
 *  You may freely distribute verbatim copies of this software	   *
@@ -19,9 +19,13 @@
 *								   *
 \******************************************************************/
 
+/* If you find this in GCC,
+   please send bug reports to bug-gcc@prep.ai.mit.edu.  */
+
 /* Changed by Richard Stallman: % inserted before a #.
    New function `hypot' added.
    Nans written in hex to avoid 0rnan.
+   May 1992, use %! for fpcr register.  Break lines before function names.
    December 1989, add parens around `&' in pow.
    November 1990, added alternate definition of HUGE_VAL for Sun.  */
 
@@ -48,7 +52,8 @@
 #endif
 #endif
 
-__inline static const double sin (double x)
+__inline static const double
+sin (double x)
 {
   double value;
 
@@ -58,7 +63,8 @@ __inline static const double sin (double x)
   return value;
 }
 
-__inline static const double cos (double x)
+__inline static const double
+cos (double x)
 {
   double value;
 
@@ -68,7 +74,8 @@ __inline static const double cos (double x)
   return value;
 }
 
-__inline static const double tan (double x)
+__inline static const double
+tan (double x)
 {
   double value;
 
@@ -78,7 +85,8 @@ __inline static const double tan (double x)
   return value;
 }
 
-__inline static const double asin (double x)
+__inline static const double
+asin (double x)
 {
   double value;
 
@@ -88,7 +96,8 @@ __inline static const double asin (double x)
   return value;
 }
 
-__inline static const double acos (double x)
+__inline static const double
+acos (double x)
 {
   double value;
 
@@ -98,7 +107,8 @@ __inline static const double acos (double x)
   return value;
 }
 
-__inline static const double atan (double x)
+__inline static const double
+atan (double x)
 {
   double value;
 
@@ -108,7 +118,8 @@ __inline static const double atan (double x)
   return value;
 }
 
-__inline static const double atan2 (double y, double x)
+__inline static const double
+atan2 (double y, double x)
 {
   double pi, pi_over_2;
 
@@ -164,7 +175,8 @@ __inline static const double atan2 (double y, double x)
     }
 }
 
-__inline static const double sinh (double x)
+__inline static const double
+sinh (double x)
 {
   double value;
 
@@ -174,7 +186,8 @@ __inline static const double sinh (double x)
   return value;
 }
 
-__inline static const double cosh (double x)
+__inline static const double
+cosh (double x)
 {
   double value;
 
@@ -184,7 +197,8 @@ __inline static const double cosh (double x)
   return value;
 }
 
-__inline static const double tanh (double x)
+__inline static const double
+tanh (double x)
 {
   double value;
 
@@ -194,7 +208,8 @@ __inline static const double tanh (double x)
   return value;
 }
 
-__inline static const double atanh (double x)
+__inline static const double
+atanh (double x)
 {
   double value;
 
@@ -204,7 +219,8 @@ __inline static const double atanh (double x)
   return value;
 }
 
-__inline static const double exp (double x)
+__inline static const double
+exp (double x)
 {
   double value;
 
@@ -214,7 +230,8 @@ __inline static const double exp (double x)
   return value;
 }
 
-__inline static const double expm1 (double x)
+__inline static const double
+expm1 (double x)
 {
   double value;
 
@@ -224,7 +241,8 @@ __inline static const double expm1 (double x)
   return value;
 }
 
-__inline static const double log (double x)
+__inline static const double
+log (double x)
 {
   double value;
 
@@ -234,7 +252,8 @@ __inline static const double log (double x)
   return value;
 }
 
-__inline static const double log1p (double x)
+__inline static const double
+log1p (double x)
 {
   double value;
 
@@ -244,7 +263,8 @@ __inline static const double log1p (double x)
   return value;
 }
 
-__inline static const double log10 (double x)
+__inline static const double
+log10 (double x)
 {
   double value;
 
@@ -254,7 +274,8 @@ __inline static const double log10 (double x)
   return value;
 }
 
-__inline static const double sqrt (double x)
+__inline static const double
+sqrt (double x)
 {
   double value;
 
@@ -264,12 +285,14 @@ __inline static const double sqrt (double x)
   return value;
 }
 
-__inline static const double hypot (const double x, const double y)
+__inline static const double
+hypot (const double x, const double y)
 {
   return sqrt (x*x + y*y);
 }
 
-__inline static const double pow (const double x, const double y)
+__inline static const double
+pow (const double x, const double y)
 {
   if (x > 0)
     return exp (y * log (x));
@@ -317,7 +340,8 @@ __inline static const double pow (const double x, const double y)
     }
 }
 
-__inline static const double fabs (double x)
+__inline static const double
+fabs (double x)
 {
   double value;
 
@@ -327,71 +351,75 @@ __inline static const double fabs (double x)
   return value;
 }
 
-__inline static const double ceil (double x)
+__inline static const double
+ceil (double x)
 {
   int rounding_mode, round_up;
   double value;
 
-  __asm volatile ("fmove%.l fpcr,%0"
+  __asm volatile ("fmove%.l %!,%0"
 		  : "=dm" (rounding_mode)
 		  : /* no inputs */ );
   round_up = rounding_mode | 0x30;
-  __asm volatile ("fmove%.l %0,fpcr"
+  __asm volatile ("fmove%.l %0,%!"
 		  : /* no outputs */
 		  : "dmi" (round_up));
   __asm volatile ("fint%.x %1,%0"
 		  : "=f" (value)
 		  : "f" (x));
-  __asm volatile ("fmove%.l %0,fpcr"
+  __asm volatile ("fmove%.l %0,%!"
 		  : /* no outputs */
 		  : "dmi" (rounding_mode));
   return value;
 }
 
-__inline static const double floor (double x)
+__inline static const double
+floor (double x)
 {
   int rounding_mode, round_down;
   double value;
 
-  __asm volatile ("fmove%.l fpcr,%0"
+  __asm volatile ("fmove%.l %!,%0"
 		  : "=dm" (rounding_mode)
 		  : /* no inputs */ );
   round_down = (rounding_mode & ~0x10)
 		| 0x20;
-  __asm volatile ("fmove%.l %0,fpcr"
+  __asm volatile ("fmove%.l %0,%!"
 		  : /* no outputs */
 		  : "dmi" (round_down));
   __asm volatile ("fint%.x %1,%0"
 		  : "=f" (value)
 		  : "f" (x));
-  __asm volatile ("fmove%.l %0,fpcr"
+  __asm volatile ("fmove%.l %0,%!"
 		  : /* no outputs */
 		  : "dmi" (rounding_mode));
   return value;
 }
 
-__inline static const double rint (double x)
+__inline static const double
+rint (double x)
 {
   int rounding_mode, round_nearest;
   double value;
 
-  __asm volatile ("fmove%.l fpcr,%0"
+  __asm volatile ("fmove%.l %!,%0"
 		  : "=dm" (rounding_mode)
 		  : /* no inputs */ );
   round_nearest = rounding_mode & ~0x30;
-  __asm volatile ("fmove%.l %0,fpcr"
+  __asm volatile ("fmove%.l %0,%!"
 		  : /* no outputs */
 		  : "dmi" (round_nearest));
   __asm volatile ("fint%.x %1,%0"
 		  : "=f" (value)
 		  : "f" (x));
-  __asm volatile ("fmove%.l %0,fpcr"
+  __asm volatile ("fmove%.l %0,%!"
 		  : /* no outputs */
 		  : "dmi" (rounding_mode));
   return value;
 }
 
-__inline static const double fmod (double x, double y)
+__inline static const double
+fmod (double x, double y)
 {
   double value;
 
@@ -402,7 +430,8 @@ __inline static const double fmod (double x, double y)
   return value;
 }
 
-__inline static const double drem (double x, double y)
+__inline static const double
+drem (double x, double y)
 {
   double value;
 
@@ -413,7 +442,8 @@ __inline static const double drem (double x, double y)
   return value;
 }
 
-__inline static const double scalb (double x, int n)
+__inline static const double
+scalb (double x, int n)
 {
   double value;
 
@@ -424,7 +454,8 @@ __inline static const double scalb (double x, int n)
   return value;
 }
 
-__inline static double logb (double x)
+__inline static double
+logb (double x)
 {
   double exponent;
 
@@ -434,7 +465,8 @@ __inline static double logb (double x)
   return exponent;
 }
 
-__inline static const double ldexp (double x, int n)
+__inline static const double
+ldexp (double x, int n)
 {
   double value;
 
@@ -445,7 +477,8 @@ __inline static const double ldexp (double x, int n)
   return value;
 }
 
-__inline static double frexp (double x, int *exp)
+__inline static double
+frexp (double x, int *exp)
 {
   double float_exponent;
   int int_exponent;
@@ -469,7 +502,8 @@ __inline static double frexp (double x, int *exp)
   return mantissa;
 }
 
-__inline static double modf (double x, double *ip)
+__inline static double
+modf (double x, double *ip)
 {
   double temp;
 
