@@ -97,7 +97,14 @@ java::net::InetAddress::lookup (jstring host, java::net::InetAddress* iaddr,
   struct hostent *hptr = NULL;
 #if defined (HAVE_GETHOSTBYNAME_R) || defined (HAVE_GETHOSTBYADDR_R)
   struct hostent hent_r;
+#if defined (__GLIBC__) && __GLIBC__ == 2 && __GLIBC_MINOR__ == 0
+  // glibc 2.0.7 has a bug where gethostbyname_r won't return an error
+  // if the buffer is too small.  So in this case we size the buffer
+  // the same way that glibc does.  This is fixed in glibc 2.1.
+  char fixed_buffer[1024];
+#else
   char fixed_buffer[200];
+#endif
   char *buffer_r = fixed_buffer;
   int size_r = sizeof (fixed_buffer);
 #endif
