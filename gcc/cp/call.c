@@ -3242,18 +3242,24 @@ build_conditional_expr (arg1, arg2, arg3)
 	   type of the other and is an rvalue.
 
 	 --Both the second and the third operands have type void; the
-	   result is of type void and is an rvalue.  */
+	   result is of type void and is an rvalue.  
+
+         We must avoid calling force_rvalue for expressions of type
+	 "void" because it will complain that their value is being
+	 used.   */
       if (TREE_CODE (arg2) == THROW_EXPR 
 	  && TREE_CODE (arg3) != THROW_EXPR)
 	{
-	  arg3 = force_rvalue (arg3);
+	  if (!VOID_TYPE_P (arg3_type))
+	    arg3 = force_rvalue (arg3);
 	  arg3_type = TREE_TYPE (arg3);
 	  result_type = arg3_type;
 	}
       else if (TREE_CODE (arg2) != THROW_EXPR 
 	       && TREE_CODE (arg3) == THROW_EXPR)
 	{
-	  arg2 = force_rvalue (arg2);
+	  if (!VOID_TYPE_P (arg2_type))
+	    arg2 = force_rvalue (arg2);
 	  arg2_type = TREE_TYPE (arg2);
 	  result_type = arg2_type;
 	}

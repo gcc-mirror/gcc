@@ -1,3 +1,11 @@
+2004-05-16  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	Backport from mainline:
+	2004-03-18  Mark Mitchell  <mark@codesourcery.com>
+	* call.c (build_conditional_expr): Do not call force_rvalue for
+	operands of void_type when the conditional expression itself has
+	void type.
+
 2004-05-08  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Make-lang.in (cp/init.o): Depend on diagnostic.h.
