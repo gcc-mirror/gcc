@@ -1,3 +1,7 @@
+Wed Feb 21 12:38:22 2001  Ovidiu Predescu  <ovidiu@cup.hp.com>
+
+	* objc/execute/nested-1.m: Added (contributed by Nicola Pero).
+
 2001-02-21  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
 
         * g++.old-deja/g++.other/lookup22.C: New test.
