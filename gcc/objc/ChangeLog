@@ -1,3 +1,10 @@
+2005-01-26  Alexander Malmberg  <alexander@malmberg.org>
+
+	PR objc/18862
+	* objc-act.c (build_selector_translation_table): Use
+	input_location in the diagnostic for the GNU runtime or if
+	TREE_PURPOSE (chain) is NULL.
+
 2005-01-25  Alexander Malmberg  <alexander@malmberg.org>
 
 	PR objc/18408
