@@ -261,7 +261,7 @@ static void expand_preferences	PROTO((void));
 static void prune_preferences	PROTO((void));
 static void find_reg		PROTO((int, HARD_REG_SET, int, int, int));
 static void record_one_conflict PROTO((int));
-static void record_conflicts	PROTO((short *, int));
+static void record_conflicts	PROTO((int *, int));
 static void mark_reg_store	PROTO((rtx, rtx));
 static void mark_reg_clobber	PROTO((rtx, rtx));
 static void mark_reg_conflicts	PROTO((rtx));
@@ -623,12 +623,12 @@ global_conflicts ()
 {
   register int b, i;
   register rtx insn;
-  short *block_start_allocnos;
+  int *block_start_allocnos;
 
   /* Make a vector that mark_reg_{store,clobber} will store in.  */
   regs_set = (rtx *) alloca (max_parallel * sizeof (rtx) * 2);
 
-  block_start_allocnos = (short *) alloca (max_allocno * sizeof (short));
+  block_start_allocnos = (int *) alloca (max_allocno * sizeof (int));
 
   for (b = 0; b < n_basic_blocks; b++)
     {
@@ -1291,7 +1291,7 @@ record_one_conflict (regno)
 
 static void
 record_conflicts (allocno_vec, len)
-     register short *allocno_vec;
+     register int *allocno_vec;
      register int len;
 {
   register int allocno;
