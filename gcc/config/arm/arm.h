@@ -2059,6 +2059,8 @@ do {									\
     }									\
   fputs ("\tb\t", FILE);						\
   assemble_name (FILE, XSTR (XEXP (DECL_RTL (FUNCTION), 0), 0));	\
+  if (NEED_PLT_GOT)							\
+    fputs ("(PLT)", FILE);						\
   fputc ('\n', FILE);							\
 } while (0)
 
