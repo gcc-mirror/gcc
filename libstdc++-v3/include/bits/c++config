@@ -87,6 +87,13 @@
 #error __USE_MALLOC should never be defined.  Read the release notes.
 #endif
 
+// Create a boolean flag to be used to determine if --fast-math is set.
+#ifdef __FAST_MATH__
+#define _GLIBCPP_FAST_MATH 1
+#else
+#define _GLIBCPP_FAST_MATH 0
+#endif
+
 // The remainder of the prewritten config is mostly automatic; all the
 // user hooks are listed above.
 
