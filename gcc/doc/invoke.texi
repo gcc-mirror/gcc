@@ -6876,6 +6876,11 @@ operating system.
 On System V.4 and embedded PowerPC systems compile code for the
 Linux-based GNU system.
 
+@item -mcall-gnu
+@opindex mcall-gnu
+On System V.4 and embedded PowerPC systems compile code for the
+Hurd-based GNU system.
+
 @item -mcall-netbsd
 @opindex mcall-netbsd
 On System V.4 and embedded PowerPC systems compile code for the
