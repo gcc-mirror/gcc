@@ -1,3 +1,29 @@
+2000-10-02  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* prims.cc (_Jv_argv, _Jv_argc): New fields.
+	(JvRunMain): Set _Jv_argv and _Jv_argc.
+	* java/awt/Component.java: Minor fixes.
+	* java/awt/Image.java (UndefinedProperty): Initialize final field.
+	* java/awt/Toolkit.java (systemEventQueue): Removed.
+	(getDefaultToolkit): Default to "gnu.awt.gtk.GtkToolkit".
+	* java/awt/Window.java (getToolkit): Don't call super.
+	* java/awt/image/BufferedImage.java: Fix definate assignment errors.
+	* java/awt/peer/ContainerPeer.java (insets): Remove unused method.
+	* gnu/awt/gtk/GtkComponentPeer.java: New file.
+	* gnu/awt/gtk/GtkContainerPeer.java: New file.
+	* gnu/awt/gtk/GtkFramePeer.java: New file.
+	* gnu/awt/gtk/GtkMainThread.java: New file.
+	* gnu/awt/gtk/GtkToolkit.java: New file.
+	* gnu/awt/gtk/GtkWindowPeer.java: New file.
+	* gnu/awt/gtk/gtkcommon.cc: New file.
+	* gnu/awt/gtk/gtkcommon.h: New file.
+	* gnu/awt/gtk/natGtkComponentPeer.cc: New file.
+	* gnu/awt/gtk/natGtkContainerPeer.cc: New file.
+	* gnu/awt/gtk/natGtkFramePeer.cc: New file.
+	* gnu/awt/gtk/natGtkMainThread.cc: New file.
+	* gnu/awt/gtk/natGtkToolkit.cc: New file.
+	* gnu/awt/gtk/natGtkWindowPeer.cc: New file.
+
 2000-09-30  Tom Tromey  <tromey@cygnus.com>
 
         * posix-threads.cc (_Jv_CondWait): Check to see if we are
