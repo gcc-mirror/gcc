@@ -223,6 +223,7 @@ pwait (pid, status, flags)
 #if defined (_WIN32)
 
 #include <process.h>
+#include <signal.h>
 extern int _spawnv ();
 extern int _spawnvp ();
 
