@@ -1,3 +1,8 @@
+2000-10-16  Mark Mitchell  <mark@codesourcery.com>
+
+	* typeck.c (qualify_type): Remove.
+	(composite_pointer_type): Fix handling of conversions to `cv void*'.
+
 2000-10-14  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.in (parse.c, parse.h): Fix think-o in last patch.
