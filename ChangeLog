@@ -1,3 +1,7 @@
+2001-12-11  Matthias Klose  <doko@debian.org>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
 2001-12-09  Zack Weinberg  <zack@codesourcery.com>
 
 	* MAINTAINERS: Update my email address.
