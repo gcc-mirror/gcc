@@ -37,6 +37,7 @@ exception statement from your version. */
 
 
 package java.security.cert;
+
 import java.math.BigInteger;
 import java.security.Principal;
 import java.security.PublicKey;
@@ -126,8 +127,8 @@ public abstract class X509CRL extends CRL implements X509Extension
 	if( getEncoded().length != x.getEncoded().length )
 	  return false;
 
-	byte b1[] = getEncoded();
-	byte b2[] = x.getEncoded();
+	byte[] b1 = getEncoded();
+	byte[] b2 = x.getEncoded();
 
 	for( int i = 0; i < b1.length; i++ )
 	  if( b1[i] != b2[i] )

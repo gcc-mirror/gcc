@@ -136,12 +136,16 @@ public class AlgorithmParameters
     throws NoSuchAlgorithmException
   {
     Provider[] p = Security.getProviders();
+
     for (int i = 0; i < p.length; i++)
       try
         {
           return getInstance(algorithm, p[i]);
         }
-      catch (NoSuchAlgorithmException ignored) {}
+      catch (NoSuchAlgorithmException e)
+	{
+	  // Ignore this.
+	}
 
     throw new NoSuchAlgorithmException(algorithm);
   }

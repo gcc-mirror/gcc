@@ -146,8 +146,9 @@ public class CertStore
           {
             return getInstance(type, params, p[i]);
           }
-        catch (NoSuchAlgorithmException ignored)
+        catch (NoSuchAlgorithmException e)
           {
+	    // Ignored.
           }
       }
 

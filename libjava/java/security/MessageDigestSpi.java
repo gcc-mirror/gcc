@@ -126,7 +126,7 @@ public abstract class MessageDigestSpi
     if (engineGetDigestLength() > len)
       throw new DigestException("Buffer is too small.");
 
-    byte tmp[] = engineDigest();
+    byte[] tmp = engineDigest();
     if (tmp.length > len)
       throw new DigestException("Buffer is too small");
 

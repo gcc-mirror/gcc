@@ -39,7 +39,6 @@ package java.security;
 
 import java.security.spec.KeySpec;
 import java.security.spec.InvalidKeySpecException;
-import java.security.NoSuchAlgorithmException;
 
 import gnu.java.security.Engine;
 
@@ -132,7 +131,10 @@ public class KeyFactory
         {
           return getInstance(algorithm, p[i]);
         }
-      catch (NoSuchAlgorithmException ignored) {}
+      catch (NoSuchAlgorithmException e)
+	{
+	  // Ignore.
+	}
 
     throw new NoSuchAlgorithmException(algorithm);
   }

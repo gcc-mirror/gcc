@@ -110,8 +110,9 @@ public class CertificateFactory
           {
             return getInstance(type, p[i]);
           }
-        catch (CertificateException ignored)
+        catch (CertificateException e)
           {
+	    // Ignored.
           }
       }
 

@@ -36,7 +36,7 @@ obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
 package java.security;
-//import java.security.MessageDigest;
+
 import java.io.InputStream;
 import java.io.FilterInputStream;
 import java.io.IOException;

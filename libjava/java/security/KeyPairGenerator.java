@@ -173,7 +173,10 @@ public abstract class KeyPairGenerator extends KeyPairGeneratorSpi
           {
             return getInstance(algorithm, p[i]);
 	  }
-        catch (NoSuchAlgorithmException ignored) {}
+	catch (NoSuchAlgorithmException e)
+	  {
+	    // Ignored.
+	  }
       }
 
     throw new NoSuchAlgorithmException(algorithm);
