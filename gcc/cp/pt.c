@@ -8052,7 +8052,7 @@ tsubst_copy_and_build (tree t,
 	tree decl;
 	cp_id_kind idk;
 	tree qualifying_class;
-	bool non_constant_expression_p;
+	bool non_integral_constant_expression_p;
 	const char *error_msg;
 
 	if (IDENTIFIER_TYPENAME_P (t))
@@ -8072,9 +8072,9 @@ tsubst_copy_and_build (tree t,
 	decl = finish_id_expression (t, decl, NULL_TREE,
 				     &idk,
 				     &qualifying_class,
-				     /*constant_expression_p=*/false,
-				     /*allow_non_constant_expression_p=*/false,
-				     &non_constant_expression_p,
+				     /*integral_constant_expression_p=*/false,
+				     /*allow_non_integral_constant_expression_p=*/false,
+				     &non_integral_constant_expression_p,
 				     &error_msg);
 	if (error_msg)
 	  error (error_msg);
