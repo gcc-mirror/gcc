@@ -1,3 +1,9 @@
+2005-02-07  Roger Sayle  <roger@eyesopen.com>
+
+	* simplify-rtx.c (simplify_relational_operation_1): Avoid creating
+	zero extensions of BImode operands.  Call lowpart_subreg instead
+	of gen_lowpart_common and gen_lowpart_SUBREG.
+
 2005-02-07  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	PR ada/19489
