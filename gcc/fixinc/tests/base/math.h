@@ -99,6 +99,13 @@ extern int class();
 #endif  /* RS6000_DOUBLE_CHECK */
 
 
+#if defined( STRICT_ANSI_NOT_CTD_CHECK )
+#if 1||  !defined(__STRICT_ANSI__) /* not std C */
+int foo;
+#endif
+#endif  /* STRICT_ANSI_NOT_CTD_CHECK */
+
+
 #if defined( SUNOS_MATHERR_DECL_CHECK )
 extern int matherr();
 #endif  /* SUNOS_MATHERR_DECL_CHECK */
