@@ -1,3 +1,17 @@
+1999-02-25 17:14 -0500  Zack Weinberg  <zack@rabi.columbia.edu>
+
+	* cpphash.c (install): Rename to cpp_install, add cpp_reader*
+	first argument.  All callers changed.
+	(hashtab): Removed.
+	(cpp_lookup, cpp_install): Change all refs to hashtab to
+	pfile->hashtab.
+	(cpp_hash_cleanup): Removed.
+	* cpphash.h: Adjust prototypes.
+	* cpplib.h (struct cpp_reader): Add hashtab pointer.
+	* cppinit.c (cpp_reader_init): Also allocate space for the
+	hashtab.
+	(cpp_cleanup): Delete all macros and free the hashtab.
+
 Thu Feb 25 21:52:54 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* sh.h (PASS_IN_REG_P):  For TARGET_HITACHI, don't pass structures

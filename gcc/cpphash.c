@@ -27,8 +27,6 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #include "cpplib.h"
 #include "cpphash.h"
 
-static HASHNODE *hashtab[HASHSIZE];
-
 static int comp_def_part	 PARAMS ((int, U_CHAR *, int, U_CHAR *,
 					  int, int));
 static int change_newlines	 PARAMS ((U_CHAR *, int));
@@ -104,7 +102,7 @@ hashf (name, len, hashsize)
 }
 
 /* Find the most recent hash node for name "name" (ending with first
-   non-identifier char) installed by install
+   non-identifier char) installed by cpp_install
 
    If LEN is >= 0, it is the length of the name.
    Otherwise, compute the length by scanning the entire name.
@@ -131,7 +129,7 @@ cpp_lookup (pfile, name, len, hash)
   if (hash < 0)
     hash = hashf (name, len, HASHSIZE);
 
-  bucket = hashtab[hash];
+  bucket = pfile->hashtab[hash];
   while (bucket)
     {
       if (bucket->length == len && strncmp (bucket->name, name, len) == 0)
@@ -191,7 +189,7 @@ delete_macro (hp)
 /* Install a name in the main hash table, even if it is already there.
    Name stops with first non alphanumeric, except leading '#'.
    Caller must check against redefinition if that is desired.
-   delete_macro () removes things installed by install () in fifo order.
+   delete_macro () removes things installed by cpp_install () in fifo order.
    this is important because of the `defined' special symbol used
    in #if, and also if pushdef/popdef directives are ever implemented.
 
@@ -202,7 +200,8 @@ delete_macro (hp)
    Otherwise, compute the hash code.  */
 
 HASHNODE *
-install (name, len, type, value, hash)
+cpp_install (pfile, name, len, type, value, hash)
+     cpp_reader *pfile;
      U_CHAR *name;
      int len;
      enum node_type type;
@@ -227,9 +226,9 @@ install (name, len, type, value, hash)
   i = sizeof (HASHNODE) + len + 1;
   hp = (HASHNODE *) xmalloc (i);
   bucket = hash;
-  hp->bucket_hdr = &hashtab[bucket];
-  hp->next = hashtab[bucket];
-  hashtab[bucket] = hp;
+  hp->bucket_hdr = &pfile->hashtab[bucket];
+  hp->next = pfile->hashtab[bucket];
+  pfile->hashtab[bucket] = hp;
   hp->prev = NULL;
   if (hp->next != NULL)
     hp->next->prev = hp;
@@ -240,18 +239,6 @@ install (name, len, type, value, hash)
   bcopy (name, hp->name, len);
   hp->name[len] = 0;
   return hp;
-}
-
-void
-cpp_hash_cleanup (pfile)
-     cpp_reader *pfile ATTRIBUTE_UNUSED;
-{
-  register int i;
-  for (i = HASHSIZE; --i >= 0;)
-    {
-      while (hashtab[i])
-	delete_macro (hashtab[i]);
-    }
 }
 
 static int
