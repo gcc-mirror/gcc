@@ -891,7 +891,7 @@ mark_target_live_regs (insns, target, res)
      struct resources *res;
 {
   int b = -1;
-  int i;
+  unsigned int i;
   struct target_info *tinfo = NULL;
   rtx insn;
   rtx jump_insn = 0;
@@ -949,7 +949,8 @@ mark_target_live_regs (insns, target, res)
 	  tinfo = (struct target_info *) xmalloc (sizeof (struct target_info));
 	  tinfo->uid = INSN_UID (target);
 	  tinfo->block = b;
-	  tinfo->next = target_hash_table[INSN_UID (target) % TARGET_HASH_PRIME];
+	  tinfo->next
+	    = target_hash_table[INSN_UID (target) % TARGET_HASH_PRIME];
 	  target_hash_table[INSN_UID (target) % TARGET_HASH_PRIME] = tinfo;
 	}
     }
@@ -1061,8 +1062,8 @@ mark_target_live_regs (insns, target, res)
 		    && GET_CODE (XEXP (link, 0)) == REG
 		    && REGNO (XEXP (link, 0)) < FIRST_PSEUDO_REGISTER)
 		  {
-		    int first_regno = REGNO (XEXP (link, 0));
-		    int last_regno
+		    unsigned int first_regno = REGNO (XEXP (link, 0));
+		    unsigned int last_regno
 		      = (first_regno
 			 + HARD_REGNO_NREGS (first_regno,
 					     GET_MODE (XEXP (link, 0))));
@@ -1080,8 +1081,8 @@ mark_target_live_regs (insns, target, res)
 		    && GET_CODE (XEXP (link, 0)) == REG
 		    && REGNO (XEXP (link, 0)) < FIRST_PSEUDO_REGISTER)
 		  {
-		    int first_regno = REGNO (XEXP (link, 0));
-		    int last_regno
+		    unsigned int first_regno = REGNO (XEXP (link, 0));
+		    unsigned int last_regno
 		      = (first_regno
 			 + HARD_REGNO_NREGS (first_regno,
 					     GET_MODE (XEXP (link, 0))));

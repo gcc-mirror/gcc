@@ -3599,7 +3599,7 @@ alpha_expand_block_move (operands)
 	  if (mode == TImode)
 	    {
 	      data_regs[nregs] = gen_lowpart (DImode, tmp);
-	      data_regs[nregs+1] = gen_highpart (DImode, tmp);
+	      data_regs[nregs + 1] = gen_highpart (DImode, tmp);
 	      nregs += 2;
 	    }
 	  else
@@ -3620,7 +3620,7 @@ alpha_expand_block_move (operands)
       words = bytes / 8;
 
       for (i = 0; i < words; ++i)
-	data_regs[nregs + i] = gen_reg_rtx(DImode);
+	data_regs[nregs + i] = gen_reg_rtx (DImode);
 
       for (i = 0; i < words; ++i)
 	emit_move_insn (data_regs[nregs + i],
@@ -3636,7 +3636,7 @@ alpha_expand_block_move (operands)
       words = bytes / 4;
 
       for (i = 0; i < words; ++i)
-	data_regs[nregs + i] = gen_reg_rtx(SImode);
+	data_regs[nregs + i] = gen_reg_rtx (SImode);
 
       for (i = 0; i < words; ++i)
 	emit_move_insn (data_regs[nregs + i],
@@ -3652,7 +3652,7 @@ alpha_expand_block_move (operands)
       words = bytes / 8;
 
       for (i = 0; i < words+1; ++i)
-	data_regs[nregs + i] = gen_reg_rtx(DImode);
+	data_regs[nregs + i] = gen_reg_rtx (DImode);
 
       alpha_expand_unaligned_load_words (data_regs + nregs, orig_src,
 					 words, ofs);

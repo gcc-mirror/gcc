@@ -793,7 +793,7 @@ expensive_function_p (threshold)
 {
   unsigned int sum = 0;
   int i;
-  int limit;
+  unsigned int limit;
 
   /* We can not compute accurately for large thresholds due to scaled
      frequencies.  */

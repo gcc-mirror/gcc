@@ -966,12 +966,11 @@ record_base_value (regno, val, invariant)
    changes the offset.  */
 
 void
-clear_reg_alias_info (rtx reg)
+clear_reg_alias_info (reg)
+     rtx reg;
 {
-  int regno = REGNO (reg);
-
-  if (regno < reg_known_value_size)
-    reg_known_value[regno] = reg;
+  if (REGNO (reg) < reg_known_value_size)
+    reg_known_value[REGNO (reg)] = reg;
 }
 
 /* Returns a canonical version of X, from the point of view alias

@@ -94,10 +94,10 @@ extern tree current_function_decl;
 
 static void sdbout_init			PARAMS ((const char *));
 static void sdbout_finish		PARAMS ((const char *));
-static void sdbout_start_source_file	PARAMS ((unsigned, const char *));
-static void sdbout_end_source_file	PARAMS ((unsigned));
-static void sdbout_begin_block		PARAMS ((unsigned, unsigned));
-static void sdbout_end_block		PARAMS ((unsigned, unsigned));
+static void sdbout_start_source_file	PARAMS ((unsigned int, const char *));
+static void sdbout_end_source_file	PARAMS ((unsigned int));
+static void sdbout_begin_block		PARAMS ((unsigned int, unsigned int));
+static void sdbout_end_block		PARAMS ((unsigned int, unsigned int));
 static void sdbout_source_line		PARAMS ((unsigned int, const char *));
 static void sdbout_end_epilogue		PARAMS ((void));
 static void sdbout_global_decl		PARAMS ((tree));
@@ -263,7 +263,8 @@ do { fprintf (asm_out_file, "\t.tag\t");	\
 
 /* Ensure we don't output a negative line number.  */
 #define MAKE_LINE_SAFE(line)  \
-  if (line <= sdb_begin_function_line) line = sdb_begin_function_line + 1
+  if ((int) line <= sdb_begin_function_line) \
+    line = sdb_begin_function_line + 1
 
 /* Perform linker optimization of merging header file definitions together
    for targets with MIPS_DEBUGGING_INFO defined.  This won't work without a
@@ -439,7 +440,7 @@ static void
 sdbout_record_type_name (type)
      tree type;
 {
-  const char *name = 0;
+  char *name = 0;
   int no_name;
 
   if (KNOWN_TYPE_TAG (type))
@@ -1606,7 +1607,7 @@ sdbout_source_line (line, filename)
      const char *filename ATTRIBUTE_UNUSED;
 {
   /* COFF relative line numbers must be positive.  */
-  if (line > sdb_begin_function_line)
+  if ((int) line > sdb_begin_function_line)
     {
 #ifdef ASM_OUTPUT_SOURCE_LINE
       ASM_OUTPUT_SOURCE_LINE (asm_out_file, line);
