@@ -72,6 +72,63 @@ extern char *strdup ();		/* Duplicate a string */
 
 NAME
 
+	dupargv -- duplicate an argument vector
+
+SYNOPSIS
+
+	char **dupargv (vector)
+	char **vector;
+
+DESCRIPTION
+
+	Duplicate an argument vector.  Simply scans through the
+	vector, duplicating each argument argument until the
+	terminating NULL is found.
+
+RETURNS
+
+	Returns a pointer to the argument vector if
+	successful. Returns NULL if there is insufficient memory to
+	complete building the argument vector.
+
+*/
+
+char **
+dupargv (argv)
+     char **argv;
+{
+  int argc;
+  char **copy;
+  
+  if (argv == NULL)
+    return NULL;
+  
+  /* the vector */
+  for (argc = 0; argv[argc] != NULL; argc++);
+  copy = (char **) malloc ((argc + 1) * sizeof (char *));
+  if (copy == NULL)
+    return NULL;
+  
+  /* the strings */
+  for (argc = 0; argv[argc] != NULL; argc++)
+    {
+      int len = strlen (argv[argc]);
+      copy[argc] = malloc (sizeof (char *) * (len + 1));
+      if (copy[argc] == NULL)
+	{
+	  freeargv (copy);
+	  return NULL;
+	}
+      strcpy (copy[argc], argv[argc]);
+    }
+  copy[argc] = NULL;
+  return copy;
+}
+
+/*
+
+NAME
+
 	freeargv -- free an argument vector
 
 SYNOPSIS

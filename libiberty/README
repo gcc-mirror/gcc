@@ -11,10 +11,9 @@ Current members include:
 We expect many of the GNU subroutines that are floating around to
 eventually arrive here.
 
-To build the library, do:
-
-	./configure HOSTTYPE
-	make
+The library must be configured from the top source directory.  Don't
+try to run configure in this directory.  Follow the configuration
+instructions in ../README.
 
 Please report bugs and fixes to "bug-gnu-utils@prep.ai.mit.edu".  Thank you.
 

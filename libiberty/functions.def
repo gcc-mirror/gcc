@@ -9,6 +9,7 @@
  * the corresponding function in libc.
  */
 
+DEF(asprintf, int, (), NOTHING)
 DEF(atexit, int, (f), void (*f)())
 DEF(bcmp, int, (s1, s2, length), char *s1 AND char *s2 AND int length )
 DEF(bcopy, void, (s1, s2, length), char *s1 AND char *s2 AND int length )
