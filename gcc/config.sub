@@ -565,6 +565,9 @@ case $os in
 	-solaris)
 		os=-solaris2
 		;;
+	-gnu/linux*)
+		os=`echo $os | sed -e 's|gnu/linux|linux|'`
+		;;
 	# First accept the basic system types.
 	# The portable systems comes first.
 	# Each alternative must end in a *, to match a version number.
