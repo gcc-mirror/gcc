@@ -1,3 +1,8 @@
+2002-05-04  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* dwarf2out.c: Fix formatting.
+	* varasm.c: Likewise.
+
 2002-05-04  David Edelsohn  <edelsohn@gnu.org>
 
 	PR c/6543
