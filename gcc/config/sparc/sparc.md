@@ -4489,12 +4489,33 @@
   [(set_attr "type" "compare")
    (set_attr "length" "1")])
 
+(define_insn "*cmp_zero_qi"
+  [(set (reg:CC 100)
+	(compare:CC (match_operand:QI 0 "register_operand" "r")
+		    (const_int 0)))]
+  "! TARGET_LIVE_G0"
+  "andcc\\t%0, 0xff, %%g0"
+  [(set_attr "type" "compare")
+   (set_attr "length" "1")])
+
 (define_insn "*cmp_zero_extendqisi2_set"
   [(set (reg:CC 100)
 	(compare:CC (zero_extend:SI (match_operand:QI 1 "register_operand" "r"))
 		    (const_int 0)))
    (set (match_operand:SI 0 "register_operand" "=r")
 	(zero_extend:SI (match_dup 1)))]
+  ""
+  "andcc\\t%1, 0xff, %0"
+  [(set_attr "type" "compare")
+   (set_attr "length" "1")])
+
+(define_insn "*cmp_zero_extendqisi2_andcc_set"
+  [(set (reg:CC 100)
+	(compare:CC (and:SI (match_operand:SI 1 "register_operand" "r")
+			    (const_int 255))
+		    (const_int 0)))
+   (set (match_operand:SI 0 "register_operand" "=r")
+	(zero_extend:SI (subreg:QI (match_dup 1) 0)))]
   ""
   "andcc\\t%1, 0xff, %0"
   [(set_attr "type" "compare")
@@ -4509,12 +4530,33 @@
   [(set_attr "type" "compare")
    (set_attr "length" "1")])
 
+(define_insn "*cmp_zero_qi_sp64"
+  [(set (reg:CCX 100)
+	(compare:CCX (match_operand:QI 0 "register_operand" "r")
+		     (const_int 0)))]
+  "TARGET_ARCH64"
+  "andcc\\t%0, 0xff, %%g0"
+  [(set_attr "type" "compare")
+   (set_attr "length" "1")])
+
 (define_insn "*cmp_zero_extendqidi2_set"
   [(set (reg:CCX 100)
 	(compare:CCX (zero_extend:DI (match_operand:QI 1 "register_operand" "r"))
 		     (const_int 0)))
    (set (match_operand:DI 0 "register_operand" "=r")
 	(zero_extend:DI (match_dup 1)))]
+  "TARGET_ARCH64"
+  "andcc\\t%1, 0xff, %0"
+  [(set_attr "type" "compare")
+   (set_attr "length" "1")])
+
+(define_insn "*cmp_zero_extendqidi2_andcc_set"
+  [(set (reg:CCX 100)
+	(compare:CCX (and:DI (match_operand:DI 1 "register_operand" "r")
+			     (const_int 255))
+		     (const_int 0)))
+   (set (match_operand:DI 0 "register_operand" "=r")
+	(zero_extend:DI (subreg:QI (match_dup 1) 0)))]
   "TARGET_ARCH64"
   "andcc\\t%1, 0xff, %0"
   [(set_attr "type" "compare")

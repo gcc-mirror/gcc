@@ -1,3 +1,9 @@
+1999-12-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/sparc/sparc.md (cmp_zero_qi,
+	cmp_zero_extendqisi2_andcc_set, cmp_zero_qi_sp64,
+	cmp_zero_extendqidi2_andcc_set): New patterns.
+
 1999-12-28  Manfred Hollstein  <mhollstein@cygnus.com>
 
 	* m68k/t-mot3300-gald (CROSS_LIBGCC1): Define to libgcc1-asm.a.
