@@ -278,6 +278,11 @@ while (0)
 
 /* ??? If no mabi=X option give, but a mipsX option is, then should depend
    on the mipsX option.  */
+/* ??? We use the -woff 84 option to disable the warning about linking
+   with libraries that are unnecessary.  This message is currently more of
+   a hassle than a benefit, because we get two warnings for libgcc.a everytime
+   we link.  If we added the proper -dont_warn_unused/-warn_unused options
+   around libgcc.a, then we can take out the -woff 84 option.  */
 #undef LINK_SPEC
 #define LINK_SPEC "\
 %{G*} %{EB} %{EL} %{mips1} %{mips2} %{mips3} %{mips4} \
@@ -285,7 +290,7 @@ while (0)
 %{call_shared} %{no_archive} %{exact_version} \
 %{!shared: %{!non_shared: %{!call_shared: -call_shared -no_unresolved}}} \
 %{rpath} \
--_SYSTYPE_SVR4 \
+-_SYSTYPE_SVR4 -woff 84 \
 %{mabi=32: -32}%{mabi=n32: -n32}%{mabi=64: -64} \
 %{!mabi=32:%{!mabi=n32:%{!mabi=64: -n32}}}"
 
