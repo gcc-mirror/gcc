@@ -485,7 +485,7 @@ java::lang::Class::getInterfaces (void)
 }
 
 java::lang::reflect::Method *
-java::lang::Class::getMethod (jstring name, JArray<jclass> *param_types)
+java::lang::Class::_getMethod (jstring name, JArray<jclass> *param_types)
 {
   jstring partial_sig = getSignature (param_types, false);
   jint p_len = partial_sig->length();
@@ -514,7 +514,21 @@ java::lang::Class::getMethod (jstring name, JArray<jclass> *param_types)
 	    }
 	}
     }
-  throw new java::lang::NoSuchMethodException;
+
+  // If we haven't found a match, and this class is an interface, then
+  // check all the superinterfaces.
+  if (isInterface())
+    {
+      for (int i = 0; i < interface_count; ++i)
+	{
+	  using namespace java::lang::reflect;
+	  Method *rmethod = interfaces[i]->_getMethod (name, param_types);
+	  if (rmethod != NULL)
+	    return rmethod;
+	}
+    }
+
+  return NULL;
 }
 
 // This is a very slow implementation, since it re-scans all the

@@ -166,7 +166,7 @@ public:
 
   void getSignature (java::lang::StringBuffer *buffer);
   static jstring getSignature (JArray<jclass> *, jboolean is_constructor);
-  java::lang::reflect::Method *getMethod (jstring, JArray<jclass> *);
+  java::lang::reflect::Method *_getMethod (jstring, JArray<jclass> *);
   JArray<java::lang::reflect::Method *> *getMethods (void);
 
   inline jint getModifiers (void)

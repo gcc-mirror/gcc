@@ -1,3 +1,14 @@
+2002-07-04  Tom Tromey  <tromey@redhat.com>
+            Jeff Sturm  <jsturm@one-point.com>
+
+	Fix for PR libgcj/7060:
+	* java/lang/Class.h (_getMethod): Renamed from getMethod.
+	* java/lang/natClass.cc (_getMethod): Renamed from getMethod.
+	Recurse into superinterfaces.  Don't throw NoSuchMethodException.
+	* java/lang/Class.java (getMethod): New Java implementation;
+	complies with spec.
+	(_getMethod): New native method.
+
 2002-07-02  Tom Tromey  <tromey@redhat.com>
             David Hovemeyer  <daveho@cs.umd.edu>
 
