@@ -1,3 +1,8 @@
+Thu Sep  3 00:23:21 1998  Richard Henderson  <rth@cygnus.com>
+
+	* ginclude/va-alpha.h: Protect entire second portion of the
+	file against double inclusion.
+
 Thu Sep  3 00:37:55 1998  Ovidiu Predescu  <ovidiu@aracnet.com>
 
 	Added support for the Boehm's garbage collector.
