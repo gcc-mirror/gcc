@@ -352,7 +352,7 @@ gfc_copy_shape_excluding (mpz_t * shape, int rank, gfc_expr * dim)
 
   n = mpz_get_si (dim->value.integer);
   n--; /* Convert to zero based index */
-  if (n < 0 && n >= rank)
+  if (n < 0 || n >= rank)
     return NULL;
 
   s = new_shape = gfc_get_shape (rank-1);
