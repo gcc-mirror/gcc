@@ -2253,7 +2253,7 @@
    (set_attr "mode"	"DI")
    (set_attr "length"	"8")])		;; various tests for dividing by 0 and such
 
-(define_insn "divsi3"
+(define_expand "divsi3"
   [(set (match_operand:SI 0 "register_operand" "=d")
 	(div:SI (match_operand:SI 1 "register_operand" "d")
 		(match_operand:SI 2 "nonmemory_operand" "di")))
@@ -2261,12 +2261,24 @@
    (clobber (match_scratch:SI 4 "=h"))
    (clobber (match_scratch:SI 6 "=a"))]
   "!optimize"
+  "
+{
+  /* MIPS16 needs div/rem ops in registers. */
+  if (TARGET_MIPS16)
+    operands[2] = force_reg (SImode, operands[2]);
+}")
+
+(define_insn "divsi3_internal"
+  [(set (match_operand:SI 0 "register_operand" "=d")
+	(div:SI (match_operand:SI 1 "register_operand" "d")
+		(match_operand:SI 2 "nonmemory_operand" "di")))]
+  "!optimize"
   "div\\t%0,%1,%2"
   [(set_attr "type"	"idiv")
    (set_attr "mode"	"SI")
-   (set_attr "length"	"13")])		;; various tests for dividing by 0 and such
+   (set_attr "length"	"13")])	;; various tests for dividing by 0 and such
 
-(define_insn "divdi3"
+(define_expand "divdi3"
   [(set (match_operand:DI 0 "register_operand" "=d")
 	(div:DI (match_operand:DI 1 "se_register_operand" "d")
 		(match_operand:DI 2 "se_nonmemory_operand" "di")))
@@ -2274,12 +2286,24 @@
    (clobber (match_scratch:DI 4 "=h"))
    (clobber (match_scratch:DI 6 "=a"))]
   "TARGET_64BIT && !optimize"
+  "
+{
+  /* MIPS16 needs div/rem ops in registers. */
+  if (TARGET_MIPS16)
+    operands[2] = force_reg (DImode, operands[2]);
+}")
+
+(define_insn "divdi3_internal"
+  [(set (match_operand:DI 0 "register_operand" "=d")
+	(div:DI (match_operand:DI 1 "se_register_operand" "d")
+		(match_operand:DI 2 "se_nonmemory_operand" "di")))]
+  "TARGET_64BIT && !optimize"
   "ddiv\\t%0,%1,%2"
   [(set_attr "type"	"idiv")
    (set_attr "mode"	"DI")
-   (set_attr "length"	"14")])		;; various tests for dividing by 0 and such
+   (set_attr "length"	"14")])	;; various tests for dividing by 0 and such
 
-(define_insn "modsi3"
+(define_expand "modsi3"
   [(set (match_operand:SI 0 "register_operand" "=d")
 	(mod:SI (match_operand:SI 1 "register_operand" "d")
 		(match_operand:SI 2 "nonmemory_operand" "di")))
@@ -2287,12 +2311,24 @@
    (clobber (match_scratch:SI 4 "=h"))
    (clobber (match_scratch:SI 6 "=a"))]
   "!optimize"
+  "
+{
+  /* MIPS16 needs div/rem ops in registers. */
+  if (TARGET_MIPS16)
+    operands[2] = force_reg (SImode, operands[2]);
+}")
+
+(define_insn "modsi3_internal"
+  [(set (match_operand:SI 0 "register_operand" "=d")
+	(mod:SI (match_operand:SI 1 "register_operand" "d")
+		(match_operand:SI 2 "nonmemory_operand" "di")))]
+  "!optimize"
   "rem\\t%0,%1,%2"
   [(set_attr "type"	"idiv")
    (set_attr "mode"	"SI")
-   (set_attr "length"	"13")])		;; various tests for dividing by 0 and such
+   (set_attr "length"	"13")])	;; various tests for dividing by 0 and such
 
-(define_insn "moddi3"
+(define_expand "moddi3"
   [(set (match_operand:DI 0 "register_operand" "=d")
 	(mod:DI (match_operand:DI 1 "se_register_operand" "d")
 		(match_operand:DI 2 "se_nonmemory_operand" "di")))
@@ -2300,12 +2336,24 @@
    (clobber (match_scratch:DI 4 "=h"))
    (clobber (match_scratch:DI 6 "=a"))]
   "TARGET_64BIT && !optimize"
+  "
+{
+  /* MIPS16 needs div/rem ops in registers. */
+  if (TARGET_MIPS16)
+    operands[2] = force_reg (DImode, operands[2]);
+}")
+
+(define_insn "moddi3_internal"
+  [(set (match_operand:DI 0 "register_operand" "=d")
+	(mod:DI (match_operand:DI 1 "se_register_operand" "d")
+		(match_operand:DI 2 "se_nonmemory_operand" "di")))]
+  "TARGET_64BIT && !optimize"
   "drem\\t%0,%1,%2"
   [(set_attr "type"	"idiv")
    (set_attr "mode"	"DI")
-   (set_attr "length"	"14")])		;; various tests for dividing by 0 and such
+   (set_attr "length"	"14")])	;; various tests for dividing by 0 and such
 
-(define_insn "udivsi3"
+(define_expand "udivsi3"
   [(set (match_operand:SI 0 "register_operand" "=d")
 	(udiv:SI (match_operand:SI 1 "register_operand" "d")
 		 (match_operand:SI 2 "nonmemory_operand" "di")))
@@ -2313,12 +2361,24 @@
    (clobber (match_scratch:SI 4 "=h"))
    (clobber (match_scratch:SI 6 "=a"))]
   "!optimize"
+  "
+{
+  /* MIPS16 needs div/rem ops in registers. */
+  if (TARGET_MIPS16)
+    operands[2] = force_reg (SImode, operands[2]);
+}")
+
+(define_insn "udivsi3_internal"
+  [(set (match_operand:SI 0 "register_operand" "=d")
+	(udiv:SI (match_operand:SI 1 "register_operand" "d")
+		 (match_operand:SI 2 "nonmemory_operand" "di")))]
+  "!optimize"
   "divu\\t%0,%1,%2"
   [(set_attr "type"	"idiv")
    (set_attr "mode"	"SI")
-   (set_attr "length"	"7")])		;; various tests for dividing by 0 and such
+   (set_attr "length"	"7")])	;; various tests for dividing by 0 and such
 
-(define_insn "udivdi3"
+(define_expand "udivdi3"
   [(set (match_operand:DI 0 "register_operand" "=d")
 	(udiv:DI (match_operand:DI 1 "se_register_operand" "d")
 		 (match_operand:DI 2 "se_nonmemory_operand" "di")))
@@ -2326,12 +2386,24 @@
    (clobber (match_scratch:DI 4 "=h"))
    (clobber (match_scratch:DI 6 "=a"))]
   "TARGET_64BIT && !optimize"
+  "
+{
+  /* MIPS16 needs div/rem ops in registers. */
+  if (TARGET_MIPS16)
+    operands[2] = force_reg (DImode, operands[2]);
+}")
+
+(define_insn "udivdi3_internal"
+  [(set (match_operand:DI 0 "register_operand" "=d")
+	(udiv:DI (match_operand:DI 1 "se_register_operand" "d")
+		 (match_operand:DI 2 "se_nonmemory_operand" "di")))]
+  "TARGET_64BIT && !optimize"
   "ddivu\\t%0,%1,%2"
   [(set_attr "type"	"idiv")
    (set_attr "mode"	"DI")
-   (set_attr "length"	"7")])		;; various tests for dividing by 0 and such
+   (set_attr "length"	"7")])	;; various tests for dividing by 0 and such
 
-(define_insn "umodsi3"
+(define_expand "umodsi3"
   [(set (match_operand:SI 0 "register_operand" "=d")
 	(umod:SI (match_operand:SI 1 "register_operand" "d")
 		 (match_operand:SI 2 "nonmemory_operand" "di")))
@@ -2339,12 +2411,24 @@
    (clobber (match_scratch:SI 4 "=h"))
    (clobber (match_scratch:SI 6 "=a"))]
   "!optimize"
+  "
+{
+  /* MIPS16 needs div/rem ops in registers. */
+  if (TARGET_MIPS16)
+    operands[2] = force_reg (SImode, operands[2]);
+}")
+
+(define_insn "umodsi3_internal"
+  [(set (match_operand:SI 0 "register_operand" "=d")
+	(umod:SI (match_operand:SI 1 "register_operand" "d")
+		 (match_operand:SI 2 "nonmemory_operand" "di")))]
+  "!optimize"
   "remu\\t%0,%1,%2"
   [(set_attr "type"	"idiv")
    (set_attr "mode"	"SI")
-   (set_attr "length"	"7")])		;; various tests for dividing by 0 and such
+   (set_attr "length"	"7")])	;; various tests for dividing by 0 and such
 
-(define_insn "umoddi3"
+(define_expand "umoddi3"
   [(set (match_operand:DI 0 "register_operand" "=d")
 	(umod:DI (match_operand:DI 1 "se_register_operand" "d")
 		 (match_operand:DI 2 "se_nonmemory_operand" "di")))
@@ -2352,10 +2436,22 @@
    (clobber (match_scratch:DI 4 "=h"))
    (clobber (match_scratch:DI 6 "=a"))]
   "TARGET_64BIT && !optimize"
+  "
+{
+  /* MIPS16 needs div/rem ops in registers. */
+  if (TARGET_MIPS16)
+    operands[2] = force_reg (DImode, operands[2]);
+}")
+
+(define_insn "umoddi3_internal"
+  [(set (match_operand:DI 0 "register_operand" "=d")
+	(umod:DI (match_operand:DI 1 "se_register_operand" "d")
+		 (match_operand:DI 2 "se_nonmemory_operand" "di")))]
+  "TARGET_64BIT && !optimize"
   "dremu\\t%0,%1,%2"
   [(set_attr "type"	"idiv")
    (set_attr "mode"	"DI")
-   (set_attr "length"	"7")])		;; various tests for dividing by 0 and such
+   (set_attr "length"	"7")])	;; various tests for dividing by 0 and such
 
 
 ;;

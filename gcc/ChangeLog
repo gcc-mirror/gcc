@@ -1,3 +1,8 @@
+Tue Jan 20 09:02:31 1998  Gavin Koch  (gavin@cygnus.com)
+
+	* mips/mips.md (divsi3,divdi3,modsi3,moddi3,udivsi3,udivdi3,
+	umodsi3,umoddi3): Handle mips16 div/mod by a constant.
+
 Mon Jan 19 21:57:00 1998  Richard Henderson  <rth@cygnus.com>
 
 	* i386.md (push): Prohibit symbolic constants if flag_pic.
