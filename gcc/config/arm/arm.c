@@ -7325,6 +7325,8 @@ output_return_instruction (operand, really_return, reverse)
 	  /* Generate the load multiple instruction to restore the registers.  */
 	  if (frame_pointer_needed)
 	    sprintf (instr, "ldm%sea\t%%|fp, {", conditional);
+	  else if (live_regs_mask & (1 << SP_REGNUM))
+	    sprintf (instr, "ldm%sfd\t%%|sp, {", conditional);
 	  else
 	    sprintf (instr, "ldm%sfd\t%%|sp!, {", conditional);
 
@@ -7736,7 +7738,16 @@ arm_output_epilogue (really_return)
 	    asm_fprintf (f, "\tldr\t%r, [%r], #4\n", LR_REGNUM, SP_REGNUM);
 	}
       else if (saved_regs_mask)
-	print_multi_reg (f, "ldmfd\t%r!", SP_REGNUM, saved_regs_mask);
+	{
+	  if (saved_regs_mask & (1 << SP_REGNUM))
+	    /* Note - write back to the stack register is not enabled
+	       (ie "ldmfd sp!...").  We know that the stack pointer is
+	       in the list of registers and if we add writeback the
+	       instruction becomes UNPREDICTABLE.  */
+	    print_multi_reg (f, "ldmfd\t%r", SP_REGNUM, saved_regs_mask);
+	  else
+	    print_multi_reg (f, "ldmfd\t%r!", SP_REGNUM, saved_regs_mask);
+	}
 
       if (current_function_pretend_args_size)
 	{
