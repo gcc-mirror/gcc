@@ -2,6 +2,14 @@
 
 	* java/lang/natClass.cc (_Jv_IsAssignableFrom): Handle the case of
 	an uninitialized target class.
+	
+	* gnu/gcj/protocol/file/Connection.java (connect): Throw 
+	FileNotFoundException if appropriate.
+	* gnu/gcj/protocol/file/Handler.java (openConnection): Throw an 
+	IOException if we got a file: url with a hostname. Comment out protocol
+	switch to ftp for now.
+	* java/net/URL.java (URL): Include protocol name in exception message
+	when handler can't be found.
 
 2001-09-28  Per Bothner  <per@bothner.com>
 

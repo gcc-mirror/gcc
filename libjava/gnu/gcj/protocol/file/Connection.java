@@ -48,7 +48,11 @@ class Connection extends URLConnection
 
     // If not connected, then file needs to be openned.
     fileIn = new File(url.getFile());
-    connected = true;
+    
+    if (fileIn.exists())
+      connected = true;
+    else
+      throw new FileNotFoundException("No such file or directory");
   }
 
   public InputStream getInputStream() throws IOException
