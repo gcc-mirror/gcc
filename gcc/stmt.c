@@ -3351,8 +3351,18 @@ tail_recursion_args (actuals, formals)
       if (GET_MODE (DECL_RTL (f)) == GET_MODE (argvec[i]))
 	emit_move_insn (DECL_RTL (f), argvec[i]);
       else
-	convert_move (DECL_RTL (f), argvec[i],
-		      TREE_UNSIGNED (TREE_TYPE (TREE_VALUE (a))));
+	{
+	  rtx tmp = argvec[i];
+
+	  if (DECL_MODE (f) != GET_MODE (DECL_RTL (f)))
+	    {
+	      tmp = gen_reg_rtx (DECL_MODE (f));
+	      convert_move (tmp, argvec[i],
+			    TREE_UNSIGNED (TREE_TYPE (TREE_VALUE (a))));
+	    }
+	  convert_move (DECL_RTL (f), tmp,
+			TREE_UNSIGNED (TREE_TYPE (TREE_VALUE (a))));
+	}
     }
 
   free_temp_slots ();
