@@ -1,5 +1,19 @@
 2003-05-24  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* libsupc++/Makefile.am, libsupc++/cxxabi.h, libsupc++/del_op.cc,
+	libsupc++/del_opnt.cc, libsupc++/del_opv.cc, libsupc++/del_opvnt.cc,
+	libsupc++/eh_alloc.cc, libsupc++/eh_aux_runtime.cc,
+	libsupc++/eh_catch.cc, libsupc++/eh_exception.cc,
+	libsupc++/eh_globals.cc, libsupc++/eh_personality.cc,
+	libsupc++/eh_term_handler.cc, libsupc++/eh_terminate.cc,
+	libsupc++/eh_throw.cc, libsupc++/eh_type.cc,
+	libsupc++/eh_unex_handler.cc, libsupc++/exception,
+	libsupc++/new, libsupc++/new_handler.cc, libsupc++/new_op.cc,
+	libsupc++/new_opnt.cc, libsupc++/new_opv.cc, libsupc++/new_opvnt.cc,
+	libsupc++/pure.cc, libsupc++/tinfo.cc, libsupc++/tinfo2.cc,
+	libsupc++/typeinfo, libsupc++/unwind-cxx.h, libsupc++/vec.cc:
+	Replace "GNU CC" with "GCC".
+
 	* include/backward/new.h: Replace "GNU CC" with "GCC".
 
 2003-05-22  Benjamin Kosnik  <bkoz@redhat.com>
