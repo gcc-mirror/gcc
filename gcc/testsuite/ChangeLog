@@ -1,3 +1,8 @@
+2001-06-10  Alexandre Oliva  <aoliva@redhat.com>
+
+	* g++.old-deja/g++.abi/ptrmem.C: Take into account different
+	representation on MN10300 and ARM/Thumb.
+
 2001-06-09  David Billinghurst  <David.Billinghurst@riotinto.com>
 
 	* g++.dg/mangle1.C: Change regex to allow USER_LABEL_PREFIX == "_"

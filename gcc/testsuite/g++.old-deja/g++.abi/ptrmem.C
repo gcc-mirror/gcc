@@ -1,6 +1,19 @@
 // Special g++ Options: -fno-strict-aliasing
 // Origin: Mark Mitchell <mark@codesourcery.com>
 
+/* Generally, the lowest bit of the ptr is used to indicate whether a
+   ptr-to-mem-func points to a virtual or a non-virtual member
+   function.  However, some platforms use all bits to encode a
+   function pointer.  Such platforms use the lowest bit of the delta,
+   that is shifted left by one bit.  */
+#if defined __MN10300__ || defined __arm__ || defined __thumb__
+#define ADJUST_PTRFN(func, virt) ((void (*)())(func))
+#define ADJUST_DELTA(delta, virt) (((delta) << 1) + !!(virt))
+#else
+#define ADJUST_PTRFN(func, virt) ((void (*)())((ptrdiff_t)(func) + !!(virt)))
+#define ADJUST_DELTA(delta, virt) (delta)
+#endif
+
 #if defined (__GXX_ABI_VERSION) && __GXX_ABI_VERSION >= 100
 
 // Check that pointers-to-member functions are represented correctly.
@@ -72,28 +85,28 @@ main ()
   // There should be no adjustment for the `T' version, and an
   // appropriate adjustment for the `S' version.
   y = &T::f;
-  if (yp->ptr != &_ZN1T1fEv)
+  if (yp->ptr != ADJUST_PTRFN (&_ZN1T1fEv, 0))
     return 5;
-  if (yp->adj != 0)
+  if (yp->adj != ADJUST_DELTA (0, 0))
     return 6;
   x = (sp) y;
-  if (xp->ptr != &_ZN1T1fEv)
+  if (xp->ptr != ADJUST_PTRFN (&_ZN1T1fEv, 0))
     return 7;
-  if (xp->adj != delta)
+  if (xp->adj != ADJUST_DELTA (delta, 0))
     return 8;
 
   // For a virtual function, we should see the vtable offset, plus
   // one.  `T::h' is in the second slot: the vtable pointer points to
   // the first virtual function.
   y = &T::h;
-  if ((ptrdiff_t) yp->ptr != sizeof (void *) + 1)
+  if (yp->ptr != ADJUST_PTRFN (sizeof (void *), 1))
     return 9;
-  if (yp->adj != 0)
+  if (yp->adj != ADJUST_DELTA (0, 1))
     return 10;
   x = (sp) y;
-  if ((ptrdiff_t) xp->ptr != sizeof (void *) + 1)
+  if (xp->ptr != ADJUST_PTRFN (sizeof (void *), 1))
     return 11;
-  if (xp->adj != delta)
+  if (xp->adj != ADJUST_DELTA (delta, 1))
     return 12;
 
   // Pointers-to-data-members should have the same size and alignment
