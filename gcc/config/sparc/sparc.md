@@ -1048,8 +1048,8 @@
 }")
 
 (define_insn ""
-  [(set (mem:BLK (match_operand:SI 0 "register_operand" "r"))
-	(mem:BLK (match_operand:SI 1 "register_operand" "r")))
+  [(set (mem:BLK (match_operand:SI 0 "register_operand" "+r"))
+	(mem:BLK (match_operand:SI 1 "register_operand" "+r")))
    (use (match_operand:SI 2 "nonmemory_operand" "rn"))
    (use (match_operand:SI 3 "immediate_operand" "i"))
    (clobber (match_dup 0))
