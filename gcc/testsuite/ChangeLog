@@ -1,3 +1,9 @@
+2003-12-05  Stuart Menefy <stuart.menefy@st.com>
+            J"orn Rennecke <joern.rennecke@superh.com>
+
+	PR target/13302
+	* g++.dg/other/struct-va_list.C: New test.
+
 2003-12-05  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/13166
