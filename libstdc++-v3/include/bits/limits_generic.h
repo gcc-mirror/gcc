@@ -469,8 +469,13 @@ namespace std {
         static int max() throw()
         { return INT_MAX; }
 
+#if INT_MAX > 32767
         static const int digits = 31;
         static const int digits10 = 9;
+#else
+        static const int digits = 15;
+        static const int digits10 = 4;
+#endif
         static const bool is_signed = true;
         static const bool is_integer = true;
         static const bool is_exact = true;
@@ -517,8 +522,13 @@ namespace std {
         static unsigned int max() throw()
         { return UINT_MAX; }
 
+#if INT_MAX > 32767
         static const int digits = 32;
         static const int digits10 = 9;
+#else
+        static const int digits = 16;
+        static const int digits10 = 4;
+#endif
         static const bool is_signed = false;
         static const bool is_integer = true;
         static const bool is_exact = true;
@@ -565,8 +575,16 @@ namespace std {
         static long max() throw()
         { return LONG_MAX; }
 
+#if LONG_MAX > 2147483647
+        static const int digits = 63;
+        static const int digits10 = 18;
+#elif LONG_MAX > 32767
         static const int digits = 31;
         static const int digits10 = 9;
+#else
+        static const int digits = 15;
+        static const int digits10 = 4;
+#endif
         static const bool is_signed = true;
         static const bool is_integer = true;
         static const bool is_exact = true;
@@ -613,8 +631,16 @@ namespace std {
         static unsigned long max() throw()
         { return ULONG_MAX; }
 
+#if LONG_MAX > 2147483647
+        static const int digits = 64;
+        static const int digits10 = 19;
+#elif LONG_MAX > 32767
         static const int digits = 32;
         static const int digits10 = 9;
+#else
+        static const int digits = 16;
+        static const int digits10 = 4;
+#endif
         static const bool is_signed = false;
         static const bool is_integer = true;
         static const bool is_exact = true;
