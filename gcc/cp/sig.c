@@ -199,6 +199,9 @@ build_signature_pointer_or_reference_type (to_type, constp, volatilep, refp)
     CLASSTYPE_VFIELD (t) = vptr;
     DECL_FCONTEXT (CLASSTYPE_VFIELD (t)) = t;
     TYPE_ALIGN (t) = TYPE_ALIGN (optr_type);
+
+    /* A signature pointer/reference isn't a `real' class.  */
+    IS_AGGR_TYPE (t) = 0;
   }
 
   {

@@ -1729,7 +1729,10 @@ build_method_call (instance, name, parms, basetype_path, flags)
 	}
       else
 	{
-	  if (! IS_AGGR_TYPE (basetype))
+	  if (! IS_AGGR_TYPE (basetype)
+	      && ! (TYPE_LANG_SPECIFIC (basetype)
+		    && (IS_SIGNATURE_POINTER (basetype)
+			|| IS_SIGNATURE_REFERENCE (basetype))))
 	    goto non_aggr_error;
 
 	  /* If `instance' is a signature pointer/reference and `name' is
