@@ -7386,7 +7386,7 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	    if (arg != last_parm)
 	      warning ("second parameter of `va_start' not last named argument");
 	  }
-	else
+	else if (! current_function_varargs)
 	  /* Evidently an out of date version of <stdarg.h>; can't validate
 	     va_start's second argument, but can still work as intended.  */
 	  warning ("`__builtin_next_arg' called without an argument");
