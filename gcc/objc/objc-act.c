@@ -52,6 +52,18 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    so it can store the operation numbers in them.  */
 #ifndef NEXT_OBJC_RUNTIME
 #define OBJC_SELECTORS_WITHOUT_LABELS
+
+/* This is the default way of generating a method name.  */
+#ifndef OBJC_GEN_METHOD_LABEL
+#define OBJC_GEN_METHOD_LABEL(BUF, IS_INST, CLASS_NAME, CAT_NAME, SEL_NAME, NUM)	\
+  do {					\
+    char *cat_name = (CAT_NAME);	\
+    if (cat_name == 0) cat_name = "";	\
+    sprintf ((BUF), "_%s_%s_%s_%s_%d",	\
+	     ((IS_INST) ? "i" : "c"),	\
+	     (CLASS_NAME), cat_name,	\
+	     (SEL_NAME), (NUM));	\
+  } while (0)
 #endif
 
 /* Define the special tree codes that we use.  */
@@ -4160,16 +4172,12 @@ really_start_method (method, parmlist)
       buf = (char *) alloca (50
 			     + strlen (IDENTIFIER_POINTER (METHOD_SEL_NAME (method)))
 			     + strlen (IDENTIFIER_POINTER (CLASS_NAME (implementation_context))));
-#ifdef OBJC_GEN_METHOD_LABEL
       OBJC_GEN_METHOD_LABEL (buf,
 			     TREE_CODE (method) == INSTANCE_METHOD_DECL,
 			     IDENTIFIER_POINTER (CLASS_NAME (implementation_context)),
 			     NULL,
-			     IDENTIFIER_POINTER (METHOD_SEL_NAME (method)));
-#else
-      sprintf (buf, "_%d_%s", ++method_slot,
-	       IDENTIFIER_POINTER (CLASS_NAME (implementation_context)));
-#endif
+			     IDENTIFIER_POINTER (METHOD_SEL_NAME (method)),
+			     ++method_slot);
     }
   else				/* we have a category */
     {
@@ -4178,17 +4186,12 @@ really_start_method (method, parmlist)
 			     + strlen (IDENTIFIER_POINTER (METHOD_SEL_NAME (method)))
 			     + strlen (IDENTIFIER_POINTER (CLASS_SUPER_NAME (implementation_context)))
 			     + strlen (IDENTIFIER_POINTER (CLASS_NAME (implementation_context))));
-#ifdef OBJC_GEN_METHOD_LABEL
-      OBJC_GEN_METHOD_LABEL (buf,
+ OBJC_GEN_METHOD_LABEL (buf,
 			     TREE_CODE (method) == INSTANCE_METHOD_DECL,
 			     IDENTIFIER_POINTER (CLASS_NAME (implementation_context)),
 			     IDENTIFIER_POINTER (CLASS_SUPER_NAME (implementation_context)),
-			     IDENTIFIER_POINTER (METHOD_SEL_NAME (method)));
-#else
-      sprintf (buf, "_%d_%s_%s", ++method_slot,
-	       IDENTIFIER_POINTER (CLASS_NAME (implementation_context)),
-	       IDENTIFIER_POINTER (CLASS_SUPER_NAME (implementation_context)));
-#endif
+			     IDENTIFIER_POINTER (METHOD_SEL_NAME (method)),
+			     ++method_slot);
     }
 
   method_id = get_identifier (buf);
