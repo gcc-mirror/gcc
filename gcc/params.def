@@ -44,7 +44,7 @@ Boston, MA 02111-1307, USA.
 DEFPARAM (PARAM_MAX_INLINE_INSNS,
 	  "max-inline-insns",
 	  "The maximum number of instructions in a function that is eligible for inlining",
-	  10000)
+	  100)
 
 /* The maximum number of instructions to consider when looking for an
    instruction to fill a delay slot.  If more than this arbitrary
