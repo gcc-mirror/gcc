@@ -579,8 +579,7 @@ scan_out_logical_line (pfile, macro)
 	      if (node->type == NT_MACRO
 		  /* Should we expand for ls_answer?  */
 		  && (lex_state == ls_none || lex_state == ls_fun_open)
-		  && !pfile->state.prevent_expansion
-		  && !recursive_macro (pfile, node))
+		  && !pfile->state.prevent_expansion)
 		{
 		  /* Macros invalidate MI optimization.  */
 		  pfile->mi_valid = false;
@@ -592,7 +591,7 @@ scan_out_logical_line (pfile, macro)
 		      fmacro.line = pfile->line;
 		      continue;
 		    }
-		  else
+		  else if (!recursive_macro (pfile, node))
 		    {
 		      /* Remove the object-like macro's name from the
 			 output, and push its replacement text.  */
@@ -630,10 +629,15 @@ scan_out_logical_line (pfile, macro)
 	      paren_depth++;
 	      if (lex_state == ls_fun_open)
 		{
-		  lex_state = ls_fun_close;
-		  paren_depth = 1;
-		  out = pfile->out.base + fmacro.offset;
-		  fmacro.args[0] = fmacro.offset;
+		  if (recursive_macro (pfile, fmacro.node))
+		    lex_state = ls_none;
+		  else
+		    {
+		      lex_state = ls_fun_close;
+		      paren_depth = 1;
+		      out = pfile->out.base + fmacro.offset;
+		      fmacro.args[0] = fmacro.offset;
+		    }
 		}
 	      else if (lex_state == ls_predicate)
 		lex_state = ls_answer;
@@ -681,15 +685,43 @@ scan_out_logical_line (pfile, macro)
 	  break;
 
 	case '#':
-	  /* At start of a line it's a directive.  */
 	  if (out - 1 == pfile->out.base && !pfile->state.in_directive)
 	    {
-	      /* This is a kludge.  We want to have the ISO
-		 preprocessor lex the next token.  */
-	      pfile->buffer->cur = cur;
-	      if (_cpp_handle_directive (pfile, false /* indented */))
-		goto start_logical_line;
+	      /* A directive.  With the way _cpp_handle_directive
+		 currently works, we only want to call it if either we
+		 know the directive is OK, or we want it to fail and
+		 be removed from the output.  If we want it to be
+		 passed through (the assembler case) then we must not
+		 call _cpp_handle_directive.  */
+	      pfile->out.cur = out;
+	      cur = skip_whitespace (pfile, cur, true /* skip_comments */);
+	      out = pfile->out.cur;
+
+	      if (is_vspace (*cur))
+		/* Null directive ignored.  */
+		out = pfile->out.base;
+	      else
+		{
+		  bool do_it = false;
+
+		  if (is_numstart (*cur))
+		    do_it = true;
+		  else if (is_idstart (*cur))
+		    /* Check whether we know this directive, but don't
+		       advance.  */
+		    do_it = lex_identifier (pfile, cur)->directive_index != 0;
+
+		  if (do_it || CPP_OPTION (pfile, lang) != CLK_ASM)
+		    {
+		      /* This is a kludge.  We want to have the ISO
+			 preprocessor lex the next token.  */
+		      pfile->buffer->cur = cur;
+		      _cpp_handle_directive (pfile, false /* indented */);
+		      goto start_logical_line;
+		    }
+		}
 	    }
+
 	  if (pfile->state.in_expression)
 	    {
 	      lex_state = ls_hash;

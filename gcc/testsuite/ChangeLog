@@ -1,3 +1,12 @@
+2002-06-24  Neil Booth  <neil@daikokuya.co.uk>
+
+	* gcc.dg/cpp/trad/argcout.c, gcc.dg/cpp/trad/assembler.S,
+	gcc.dg/cpp/trad/argcout.c, gcc.dg/cpp/trad/funlike-4.c,
+	gcc.dg/cpp/trad/null-drctv.c, gcc.dg/cpp/trad/recurse-1.c,
+	gcc.dg/cpp/trad/recurse-2.c, gcc.dg/cpp/trad/recurse-3.c:
+	New tests.
+	* gcc.dg/cpp/trad/directive.c: Update.
+
 2002-06-23  Andreas Jaeger  <aj@suse.de>
 
 	* gcc.c-torture/execute/complex-6.c: New.
