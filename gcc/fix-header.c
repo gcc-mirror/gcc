@@ -1323,12 +1323,12 @@ fatal VPARAMS ((const char *str, ...))
 #endif
   va_list ap;
   
-  VA_START(ap, str);
+  VA_START (ap, str);
 
 #ifndef ANSI_PROTOTYPES
   str = va_arg (ap, const char *);
 #endif
 
-  v_fatal(str, ap);
-  va_end(ap);
+  v_fatal (str, ap);
+  va_end (ap);
 }
