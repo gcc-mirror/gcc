@@ -35,18 +35,22 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package javax.swing.border;
 
-import java.io.*;
-import java.awt.*; 
+import java.awt.Component;
+import java.awt.Graphics;
+import java.awt.Insets;
+import java.awt.Rectangle;
+import java.io.Serializable;
 
 public abstract class AbstractBorder implements Border, Serializable
 {
   static final long serialVersionUID = -545885975315191844L;
 
-    AbstractBorder()
-    {
-    }
+  public AbstractBorder ()
+  {
+  }
 
     public void paintBorder(Component c,
 			    Graphics g,

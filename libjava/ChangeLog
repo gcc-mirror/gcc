@@ -1,5 +1,17 @@
 2003-06-05  Michael Koch  <konqueror@gmx.de>
 
+	* javax/swing/border/AbstractBorder.java,
+	javax/swing/border/BevelBorder.java,
+	javax/swing/border/CompoundBorder.java,
+	javax/swing/border/EmptyBorder.java,
+	javax/swing/border/EtchedBorder.java,
+	javax/swing/border/LineBorder.java,
+	javax/swing/border/MatteBorder.java,
+	javax/swing/border/TitledBorder.java:
+	New versions from Classpath.
+
+2003-06-05  Michael Koch  <konqueror@gmx.de>
+
 	* java/awt/Button.java,
 	java/awt/Checkbox.java,
 	java/awt/CheckboxMenuItem.java,

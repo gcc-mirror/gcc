@@ -35,18 +35,43 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package javax.swing.border;
 
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Graphics;
 
-public class EtchedBorder extends EmptyBorder
+public class EtchedBorder extends AbstractBorder
 {
-    Color c;
+  public static final int LOWERED = 1;
+  public static final int RAISED = 0;
+    
+  protected int etchType;
+  protected Color highlight;
+  protected Color shadow;
 
-    public EtchedBorder()
-    {
-    }
+  public EtchedBorder ()
+  {
+    this (LOWERED, null, null);
+  }
 
+  public EtchedBorder (Color highlight, Color shadow)
+  {
+    this (LOWERED, highlight, shadow);
+  }
+
+  public EtchedBorder (int etchType)
+  {
+    this (etchType, null, null);
+  }
+
+  public EtchedBorder (int etchType, Color highlight, Color shadow)
+  {
+    this.etchType = etchType;
+    this.highlight = highlight;
+    this.shadow = shadow;
+  }
     
     public EtchedBorder(int top,
 		int left,

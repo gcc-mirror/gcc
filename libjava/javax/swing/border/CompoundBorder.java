@@ -35,12 +35,28 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package javax.swing.border;
 
-import java.awt.*;
+import java.awt.Component;
+import java.awt.Graphics;
+import java.awt.Insets;
 
 public class CompoundBorder extends AbstractBorder
 {
+  protected Border insideBorder;
+  protected Border outsideBorder;
+
+  public CompoundBorder ()
+  {
+    this (null, null);
+  }
+
+  public CompoundBorder (Border outsideBorder, Border insideBorder)
+  {
+    this.outsideBorder = outsideBorder;
+    this.insideBorder = insideBorder;
+  }
     
     public Insets getBorderInsets(Component  c,
 				  Insets s)

@@ -35,12 +35,89 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package javax.swing.border;
 
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Insets;
 
 public class TitledBorder extends AbstractBorder
 {
+  public static final int ABOVE_BOTTOM = 4;
+  public static final int ABOVE_TOP = 1;
+  public static final int BELOW_BOTTOM = 6;
+  public static final int BELOW_TOP = 3;
+  public static final int BOTTOM = 5;
+  public static final int CENTER = 2;
+  public static final int DEFAULT_JUSTIFICATION = 0;
+  public static final int DEFAULT_POSITION = 0;
+  public static final int LEADING = 4;
+  public static final int LEFT = 1;
+  public static final int RIGHT = 3;
+  public static final int TOP = 2;
+  public static final int TRAILING = 5;
+
+  protected static final int EDGE_SPACING = 2;
+  protected static final int TEXT_INSET_H = 5;
+  protected static final int TEXT_SPACING = 2;
+
+  protected Border border;
+  protected String title;
+  protected Color titleColor;
+  protected Font titleFont;
+  protected int titleJustification;
+  protected int titlePosition;
+
+  private static Border defaultBorder = new BorderUIRessource ();
+  private static Font defaultFont = new FontUIRessource ("Dialog", BOLD, 12);
+  private static Color defaultColor = new ColorUIRessource (Color.black);
+  
+  public TitledBorder (String title)
+  {
+    this (defaultBorder, title, DEFAULT_JUSTIFICATION, DEFAULT_POSITION,
+	  defaultFont, defaultColor);
+  }
+
+  public TitledBorder (Border border)
+  {
+    this (border, "", DEFAULT_JUSTIFICATION, DEFAULT_POSITION, defaultFont,
+	  defaultColor);
+  }
+  
+  public TitledBorder (Border border, String title)
+  {
+    this (border, title, DEFAULT_JUSTIFICATION, DEFAULT_POSITION, defaultFont,
+	  defaultColor);
+  }
+  
+  public TitledBorder (Border border, String title, int titleJustification,
+                       int titlePosition)
+  {
+    this (border, title, titleJustification, titlePosition, defaultFont,
+	  defaultColor);
+  }
+  
+  public TitledBorder (Border border, String title, int titleJustification,
+                       int titlePosition, Font titleFont)
+  {
+    this (border, title, titleJustification, titlePosition, titleFont,
+	  defaultColor);
+  }
+  
+  public TitledBorder (Border border, String title, int titleJustification,
+                       int titlePosition, Font titleFont, Color titleColor)
+  {
+    this.border = border;
+    this.title = title;
+    this.titleJustification = titleJustification;
+    this.titlePosition = titlePosition;
+    this.titleFont = titleFont;
+    this.titleColor = titleColor;
+  }
     
     public Insets getBorderInsets(Component  c,
 				  Insets s)
