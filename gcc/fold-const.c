@@ -3496,6 +3496,28 @@ fold (expr)
       t1 = distribute_bit_expr (code, type, arg0, arg1);
       if (t1 != NULL_TREE)
 	return t1;
+
+      /* (a << C1) | (a >> C2) if A is unsigned and C1+C2 is the size of A
+	 is a rotate of A by C1 bits.  */
+
+      if ((TREE_CODE (arg0) == RSHIFT_EXPR
+	   || TREE_CODE (arg0) == LSHIFT_EXPR)
+	  && (TREE_CODE (arg1) == RSHIFT_EXPR
+	      || TREE_CODE (arg1) == LSHIFT_EXPR)
+	  && TREE_CODE (arg0) != TREE_CODE (arg1)
+	  && operand_equal_p (TREE_OPERAND (arg0, 0), TREE_OPERAND (arg1,0), 0)
+	  && TREE_UNSIGNED (TREE_TYPE (TREE_OPERAND (arg0, 0)))
+	  && TREE_CODE (TREE_OPERAND (arg0, 1)) == INTEGER_CST
+	  && TREE_CODE (TREE_OPERAND (arg1, 1)) == INTEGER_CST
+	  && TREE_INT_CST_HIGH (TREE_OPERAND (arg0, 1)) == 0
+	  && TREE_INT_CST_HIGH (TREE_OPERAND (arg1, 1)) == 0
+	  && ((TREE_INT_CST_LOW (TREE_OPERAND (arg0, 1))
+	       + TREE_INT_CST_LOW (TREE_OPERAND (arg1, 1)))
+	      == TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (arg0, 0)))))
+	return build (LROTATE_EXPR, type, TREE_OPERAND (arg0, 0),
+		      TREE_CODE (arg0) == LSHIFT_EXPR
+		      ? TREE_OPERAND (arg0, 1) : TREE_OPERAND (arg1, 1));
+
       goto associate;
 
     case BIT_XOR_EXPR:
