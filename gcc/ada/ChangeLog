@@ -1,5 +1,10 @@
 2001-12-03  Robert Dewar <dewar@gnat.com>
 
+	* sinfo.ads: Minor reformatting. N_Freeze_Entity node does not 
+        have Associated_Node.
+
+2001-12-03  Robert Dewar <dewar@gnat.com>
+
 	* prj-proc.adb: Minor reformatting
 	
 	* make.adb: Minor reformatting

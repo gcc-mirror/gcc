@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.3 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
 --                                                                          --
@@ -570,13 +570,14 @@ package Sinfo is
 
    --  Associated_Node (Node4-Sem)
    --    Present in nodes that can denote an entity: identifiers, character
-   --    literals and expanded names, operator nodes that carry an entity
-   --    reference,  and also in N_Aggregate, N_Selected_Component, and
-   --    N_Extension_Aggregate nodes.  This field is used during generic
+   --    literals, operator symbols, expanded names, operator nodes and
+   --    attribute reference nodes (all these nodes have an Entity field).
+   --    This field is also present in N_Aggregate, N_Selected_Component,
+   --    and N_Extension_Aggregate nodes. This field is used during generic
    --    processing to relate nodes in the original template to nodes in the
    --    generic copy. It overlaps the Entity field, and is used to capture
    --    global references in the analyzed copy and place them in the template.
-   --    see description in Sem_Ch12 for further details on this usage.
+   --    See description in Sem_Ch12 for further details on this usage.
 
    --  At_End_Proc (Node1)
    --    This field is present in an N_Handled_Sequence_Of_Statements node.
@@ -5963,7 +5964,6 @@ package Sinfo is
       --  N_Freeze_Entity
       --  Sloc points near freeze point (see above special note)
       --  Entity (Node4-Sem)
-      --  Associated_Node (Node4-Sem)
       --  Access_Types_To_Process (Elist2-Sem) (set to No_Elist if none)
       --  TSS_Elist (Elist3-Sem) (set to No_Elist if no associated TSS's)
       --  Actions (List1) (set to No_List if no freeze actions)
