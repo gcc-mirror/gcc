@@ -90,6 +90,7 @@ typedef struct JCF {
   unsigned char *read_end;
   int java_source : 1;
   int right_zip : 1;
+  int finished : 1;
   jcf_filbuf_t filbuf;
   void *read_state;
   const char *filename;
@@ -144,7 +145,8 @@ typedef struct JCF {
   CPOOL_FINISH(&(JCF)->cpool); \
   if ((JCF)->buffer) FREE ((JCF)->buffer); \
   if ((JCF)->filename) FREE ((char *) (JCF)->filename); \
-  if ((JCF)->classname) FREE ((char *) (JCF)->classname); }
+  if ((JCF)->classname) FREE ((char *) (JCF)->classname); \
+  (JCF)->finished = 1; }
   
 #define CPOOL_INIT(CPOOL) \
   ((CPOOL)->capacity = 0, (CPOOL)->count = 0, (CPOOL)->tags = 0, (CPOOL)->data = 0)
@@ -154,7 +156,8 @@ typedef struct JCF {
 #define JCF_ZERO(JCF)  \
   ((JCF)->buffer = (JCF)->buffer_end = (JCF)->read_ptr = (JCF)->read_end = 0,\
    (JCF)->read_state = 0, (JCF)->filename = (JCF)->classname = 0, \
-   CPOOL_INIT(&(JCF)->cpool), (JCF)->java_source = 0, (JCF)->zipd = 0)
+   CPOOL_INIT(&(JCF)->cpool), (JCF)->java_source = 0, (JCF)->zipd = 0, \
+   (JCF)->finished = 0)
 
 /* Given that PTR points to a 2-byte unsigned integer in network
    (big-endian) byte-order, return that integer. */

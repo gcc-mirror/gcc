@@ -924,8 +924,11 @@ class_body_declaration:
 |	constructor_declaration
 |	block			/* Added, JDK1.1, instance initializer */
 		{
-		  TREE_CHAIN ($1) = CPC_INSTANCE_INITIALIZER_STMT (ctxp);
-		  SET_CPC_INSTANCE_INITIALIZER_STMT (ctxp, $1);
+		  if ($1 != empty_stmt_node)
+		    {
+		      TREE_CHAIN ($1) = CPC_INSTANCE_INITIALIZER_STMT (ctxp);
+		      SET_CPC_INSTANCE_INITIALIZER_STMT (ctxp, $1);
+		    }
 		}
 ;
 
@@ -8952,8 +8955,15 @@ resolve_expression_name (id, orig)
     }
 
   /* We've got an error here */
-  parse_error_context (id, "Undefined variable `%s'", 
-		       IDENTIFIER_POINTER (name));
+  if (INNER_CLASS_TYPE_P (current_class))
+    parse_error_context (id, 
+			 "Local variable `%s' can't be accessed from within the inner class `%s' unless it is declared final",
+			 IDENTIFIER_POINTER (name),
+			 IDENTIFIER_POINTER (DECL_NAME
+					     (TYPE_NAME (current_class))));
+  else
+    parse_error_context (id, "Undefined variable `%s'", 
+			 IDENTIFIER_POINTER (name));
 
   return error_mark_node;
 }
