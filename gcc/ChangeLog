@@ -1,5 +1,10 @@
 2000-11-30  Bernd Schmidt  <bernds@redhat.co.uk>
 
+	Tue Oct 26 00:41:54 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
+	* reload1.c (reload_reg_free_for_value_p): Show
+	RELOAD_FOR_OTHER_ADDRESS reloads can conflict with RELOAD_OTHER
+        reloads.
+
 	2000-02-26  Geoff Keating  <geoffk@cygnus.com>
 	* reload1.c (do_output_reload): Check reg_reloaded_valid before
 	looking at reg_reloaded_contents.
