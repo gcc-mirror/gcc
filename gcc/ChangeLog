@@ -1,3 +1,10 @@
+2002-06-10  Zack Weinberg  <zack@codesourcery.com>
+
+	* config/m32r/m32r.h: Don't define SELECT_CC_MODE.
+	* config/m32r/m32r-protos.h: Don't prototype m32r_select_cc_mode.
+	* config/m32r/m32r.c: Don't define m32r_select_cc_mode.
+	(gen_compare): Use CCmode unconditionally.
+
 2002-06-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR optimization/6759

@@ -1421,11 +1421,6 @@ do {									\
 
 /* Condition code usage.  */
 
-/* Given a comparison code (EQ, NE, etc.) and the first operand of a COMPARE,
-   return the mode to be used for the comparison.  */
-#define SELECT_CC_MODE(OP, X, Y) \
-((enum machine_mode)m32r_select_cc_mode ((int)OP, X, Y))
-
 /* Return non-zero if SELECT_CC_MODE will never return MODE for a
    floating point inequality comparison.  */
 #define REVERSIBLE_CC_MODE(MODE) 1 /*???*/
