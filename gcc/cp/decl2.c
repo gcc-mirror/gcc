@@ -368,10 +368,6 @@ int flag_operator_names = 1;
 
 int flag_check_new;
 
-/* Nonnull if we want to dump class heirarchies.  */
-
-const char *flag_dump_class_layout;
-
 /* Nonzero if we want the new ISO rules for pushing a new scope for `for'
    initialization variables.
    0: Old rules, set by -fno-for-scope.
@@ -590,24 +586,8 @@ cxx_decode_option (argc, argv)
 	  warning ("-fname-mangling-version is no longer supported");
 	  return 1;
 	}
-      else if ((option_value
-                = skip_leading_substring (p, "dump-translation-unit=")))
-	{
-	  if (!*option_value)
-	    error ("no file specified with -fdump-translation-unit");
-	  else
-	    flag_dump_translation_unit = option_value;
-	}
-      else if ((option_value
-                = skip_leading_substring (p, "dump-class-layout=")))
-	{
-	  if (!*option_value)
-	    error ("no file specified with -fdump-class-layout");
-	  else
-	    flag_dump_class_layout = option_value;
-	}
-      else if (!strcmp (p, "dump-class-layout"))
-	flag_dump_class_layout = ""; /* empty string for stderr */
+      else if (dump_switch_p (p))
+	;
       else 
 	{
 	  int found = 0;
@@ -3715,9 +3695,17 @@ finish_file ()
 
   /* The entire file is now complete.  If requested, dump everything
      to a file.   */
-  if (flag_dump_translation_unit)
-    dump_node_to_file (global_namespace, flag_dump_translation_unit);
+  {
+    int flags;
+    FILE *stream = dump_begin (TDI_all, &flags);
 
+    if (stream)
+      {
+	dump_node (global_namespace, flags & ~TDF_SLIM, stream);
+	dump_end (TDI_all, stream);
+      }
+  }
+  
   /* If there's some tool that wants to examine the entire translation
      unit, let it do so now.  */
   if (back_end_hook)

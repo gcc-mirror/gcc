@@ -137,6 +137,7 @@ extern int warningcount;
 extern int sorrycount;
 
 extern const char *progname;
+extern const char *dump_base_name;
 
 /* Language-specific hooks.  Can be NULL unless otherwise specified.  */
 struct lang_hooks

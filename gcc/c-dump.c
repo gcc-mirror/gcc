@@ -40,7 +40,6 @@ static void dequeue_and_dump PARAMS ((dump_info_p));
 static void dump_new_line PARAMS ((dump_info_p));
 static void dump_maybe_newline PARAMS ((dump_info_p));
 static void dump_string_field PARAMS ((dump_info_p, const char *, const char *));
-static void dump_node PARAMS ((tree, FILE *));
 
 /* Add T to the end of the queue of nodes to dump.  Returns the index
    assigned to T.  */
@@ -139,6 +138,11 @@ queue_and_dump_type (di, t)
   queue_and_dump_index (di, "type", TREE_TYPE (t), DUMP_NONE);
 }
 
+/* Dump column control */
+#define SOL_COLUMN 25		/* Start of line column. */
+#define EOL_COLUMN 55		/* End of line column. */
+#define COLUMN_ALIGNMENT 15	/* Alignment. */
+
 /* Insert a new line in the dump output, and indent to an appropriate
    place to start printing more fields.  */
 
@@ -146,8 +150,8 @@ static void
 dump_new_line (di)
      dump_info_p di;
 {
-  fprintf (di->stream, "\n%25s", "");
-  di->column = 25;
+  fprintf (di->stream, "\n%*s", SOL_COLUMN, "");
+  di->column = SOL_COLUMN;
 }
 
 /* If necessary, insert a new line.  */
@@ -156,18 +160,33 @@ static void
 dump_maybe_newline (di)
      dump_info_p di;
 {
+  int extra;
+  
   /* See if we need a new line.  */
-  if (di->column > 53)
+  if (di->column > EOL_COLUMN)
     dump_new_line (di);
   /* See if we need any padding.  */
-  else if ((di->column - 25) % 14 != 0)
+  else if ((extra = (di->column - SOL_COLUMN) % COLUMN_ALIGNMENT) != 0)
     {
-      fprintf (di->stream, "%*s", 14 - ((di->column - 25) % 14), "");
-      di->column += 14 - (di->column - 25) % 14;
+      fprintf (di->stream, "%*s", COLUMN_ALIGNMENT - extra, "");
+      di->column += COLUMN_ALIGNMENT - extra;
     }
 }
 
-/* Dump I using FIELD to identity it.  */
+/* Dump pointer PTR using FIELD to identify it.  */
+
+void
+dump_pointer (di, field, ptr)
+     dump_info_p di;
+     const char *field;
+     void *ptr;
+{
+  dump_maybe_newline (di);
+  fprintf (di->stream, "%-4s: %-8lx ", field, (long) ptr);
+  di->column += 15;
+}
+
+/* Dump integer I using FIELD to identify it.  */
 
 void
 dump_int (di, field, i)
@@ -349,7 +368,7 @@ dequeue_and_dump (di)
       /* And any declaration can be compiler-generated.  */
       if (DECL_ARTIFICIAL (t))
 	dump_string (di, "artificial");
-      if (TREE_CHAIN (t))
+      if (TREE_CHAIN (t) && !dump_flag (di, TDF_SLIM, NULL))
 	dump_child ("chan", TREE_CHAIN (t));
     }
   else if (code_class == 't')
@@ -504,7 +523,7 @@ dequeue_and_dump (di)
 	dump_string (di, "extern");
       else
 	dump_string (di, "static");
-      if (DECL_LANG_SPECIFIC (t))
+      if (DECL_LANG_SPECIFIC (t) && !dump_flag (di, TDF_SLIM, t))
 	dump_child ("body", DECL_SAVED_TREE (t));
       break;
 
@@ -709,15 +728,30 @@ dequeue_and_dump (di)
     }
 
  done:
+  if (dump_flag (di, TDF_ADDRESS, NULL))
+    dump_pointer (di, "addr", (void *)t);
+  
   /* Terminate the line.  */
   fprintf (di->stream, "\n");
 }
 
+/* Return non-zero if FLAG has been specified for the dump, and NODE
+   is not the root node of the dump. */
+
+int dump_flag (di, flag, node)
+     dump_info_p di;
+     int flag;
+     tree node;
+{
+  return (di->flags & flag) && (node != di->node);
+}
+
 /* Dump T, and all its children, on STREAM.  */
 
-static void
-dump_node (t, stream)
+void
+dump_node (t, flags, stream)
      tree t;
+     int flags;
      FILE *stream;
 {
   struct dump_info di;
@@ -731,6 +765,8 @@ dump_node (t, stream)
   di.queue = 0;
   di.queue_end = 0;
   di.free_list = 0;
+  di.flags = flags;
+  di.node = t;
   di.nodes = splay_tree_new (splay_tree_compare_pointers, 0, 
 			     (splay_tree_delete_value_fn) &free);
 
@@ -750,21 +786,92 @@ dump_node (t, stream)
   splay_tree_delete (di.nodes);
 }
 
-/* Dump T, and all its children, to FILE.  */
-
-void
-dump_node_to_file (t, file)
-     tree t;
-     const char *file;
+/* Define a tree dump switch. */
+struct dump_file_info
 {
-  FILE *f;
+  const char *suffix;		/* suffix to give output file. */
+  const char *swtch;		/* command line switch */
+  int flags;			/* user flags */
+  int state;			/* state of play */
+};
 
-  f = fopen (file, "w");
-  if (!f)
-    error ("could not open dump file `%s'", file);
+/* Table of tree dump switches. */
+static struct dump_file_info dump_files[TDI_end] =
+{
+  {".tu", "dump-translation-unit", 0, 0},
+  {".original", "dump-ast-original", 0, 0},
+  {".optimized", "dump-ast-optimized", 0, 0},
+  {".class", "dump-class-hierarchy", 0, 0},
+};
+
+/* Begin a tree dump for PHASE. Stores any user supplied flag in
+   *FLAG_PTR and returns a stream to write to. If the dump is not
+   enabled, returns NULL.
+   Multiple calls will reopen and append to the dump file. */
+
+FILE *
+dump_begin (phase, flag_ptr)
+     enum tree_dump_index phase;
+     int *flag_ptr;
+{
+  FILE *stream;
+  char *name;
+  
+  if (!dump_files[phase].state)
+    return NULL;
+  
+  name = concat (dump_base_name, dump_files[phase].suffix, NULL);
+  stream = fopen (name, dump_files[phase].state < 0 ? "w" : "a");
+  if (!stream)
+    error ("could not open dump file `%s'", name);
   else
-    {
-      dump_node (t, f);
-      fclose (f);
-    }
+    dump_files[phase].state = 1;
+  free (name);
+  if (flag_ptr)
+    *flag_ptr = dump_files[phase].flags;
+  
+  return stream;
+}
+
+/* Returns non-zero if tree dump PHASE is enabled. */
+
+int dump_enabled_p (phase)
+     enum tree_dump_index phase;
+{
+  return dump_files[phase].state;
+}
+
+/* Finish a tree dump for PHASE. STREAM is the stream created by
+   dump_begin. */
+
+void dump_end (phase, stream)
+     enum tree_dump_index phase ATTRIBUTE_UNUSED;
+     FILE *stream;
+{
+  fclose (stream);
+}
+
+/* Parse ARG as a dump switch. Return non-zero if it is, and store the
+   relevant details in the dump_files array. */
+
+int dump_switch_p (arg)
+     const char *arg;
+{
+  unsigned ix;
+  const char *option_value;
+  
+  for (ix = 0; ix != TDI_end; ix++)
+    if ((option_value = skip_leading_substring (arg, dump_files[ix].swtch)))
+      {
+	dump_files[ix].state = -1;
+	if (*option_value == '-')
+	  dump_files[ix].flags
+	    = read_integral_parameter (option_value + 1, arg, 0);
+	else if (*option_value)
+	  warning ("ignoring `%s' at end of `-f%s'",
+		   option_value, dump_files[ix].swtch);
+	
+	return 1;
+      }
+  return 0;
 }

@@ -171,8 +171,12 @@ static void layout_vtable_decl PARAMS ((tree, int));
 static tree dfs_find_final_overrider PARAMS ((tree, void *));
 static tree find_final_overrider PARAMS ((tree, tree, tree));
 static int make_new_vtable PARAMS ((tree, tree));
-static void dump_class_hierarchy_r PARAMS ((FILE *, tree, tree, int));
-extern void dump_class_hierarchy PARAMS ((const char *, tree));
+static int maybe_indent_hierarchy PARAMS ((FILE *, int, int));
+static void dump_class_hierarchy_r PARAMS ((FILE *, int, tree, tree, int));
+static void dump_class_hierarchy PARAMS ((tree));
+static void dump_array PARAMS ((FILE *, tree));
+static void dump_vtable PARAMS ((tree, tree, tree));
+static void dump_vtt PARAMS ((tree, tree));
 static tree build_vtable PARAMS ((tree, tree, tree));
 static void initialize_vtable PARAMS ((tree, tree));
 static void initialize_array PARAMS ((tree, tree));
@@ -5308,11 +5312,6 @@ finish_struct_1 (t)
   layout_class_type (t, &empty, &vfuns,
 		     &new_virtuals, &overridden_virtuals);
 
-  if (flag_dump_class_layout)
-    dump_class_hierarchy (*flag_dump_class_layout
-                          ? flag_dump_class_layout : NULL,
-                          t);
-  
   /* Set up the DECL_FIELD_BITPOS of the vfield if we need to, as we
      might need to know it for setting up the offsets in the vtable
      (or in thunks) below.  */
@@ -5468,6 +5467,8 @@ finish_struct_1 (t)
 
   maybe_suppress_debug_info (t);
 
+  dump_class_hierarchy (t);
+  
   /* Finish debugging output for this type.  */
   rest_of_type_compilation (t, ! LOCAL_CLASS_P (t));
 }
@@ -6805,22 +6806,38 @@ get_primary_binfo (binfo)
   return result;
 }
 
+/* If INDENTED_P is zero, indent to INDENT. Return non-zero. */
+
+static int
+maybe_indent_hierarchy (stream, indent, indented_p)
+     FILE *stream;
+     int indent;
+     int indented_p;
+{
+  if (!indented_p)
+    fprintf (stream, "%*s", indent, "");
+  return 1;
+}
+
 /* Dump the offsets of all the bases rooted at BINFO (in the hierarchy
    dominated by T) to stderr.  INDENT should be zero when called from
    the top level; it is incremented recursively.  */
 
 static void
-dump_class_hierarchy_r (stream, t, binfo, indent)
+dump_class_hierarchy_r (stream, flags, t, binfo, indent)
      FILE *stream;
+     int flags;
      tree t;
      tree binfo;
      int indent;
 {
   int i;
-
-  fprintf (stream, "%*s0x%lx (%s) ", indent, "",
-	   (unsigned long) binfo,
-	   type_as_string (binfo, TFF_PLAIN_IDENTIFIER));
+  int indented = 0;
+  
+  indented = maybe_indent_hierarchy (stream, indent, 0);
+  fprintf (stream, "%s (0x%lx) ",
+	   type_as_string (binfo, TFF_PLAIN_IDENTIFIER),
+	   (unsigned long) binfo);
   fprintf (stream, HOST_WIDE_INT_PRINT_DEC,
 	   tree_low_cst (BINFO_OFFSET (binfo), 0));
   if (is_empty_class (BINFO_TYPE (binfo)))
@@ -6830,51 +6847,174 @@ dump_class_hierarchy_r (stream, t, binfo, indent)
   if (TREE_VIA_VIRTUAL (binfo))
     {
       tree canonical = binfo_for_vbase (BINFO_TYPE (binfo), t);
-      
+
+      fprintf (stream, " virtual");
       if (canonical == binfo)
-        fprintf (stream, " virtual-canonical");
+        fprintf (stream, " canonical");
       else
-        fprintf (stream, " virtual-non-canonical");
+        fprintf (stream, " non-canonical");
     }
-  if (BINFO_PRIMARY_P (binfo))
-    fprintf (stream, " primary-for 0x%lx (%s)",
-             (unsigned long)BINFO_PRIMARY_BASE_OF (binfo),
-             type_as_string (BINFO_PRIMARY_BASE_OF (binfo), TFF_PLAIN_IDENTIFIER));
-  if (BINFO_LOST_PRIMARY_P (binfo))
-    fprintf (stream, " lost-primary");
   fprintf (stream, "\n");
 
+  indented = 0;
+  if (BINFO_PRIMARY_BASE_OF (binfo))
+    {
+      indented = maybe_indent_hierarchy (stream, indent + 3, indented);
+      fprintf (stream, " primary-for %s (0x%lx)",
+	       type_as_string (BINFO_PRIMARY_BASE_OF (binfo),
+			       TFF_PLAIN_IDENTIFIER),
+	       (unsigned long)BINFO_PRIMARY_BASE_OF (binfo));
+    }
+  if (BINFO_LOST_PRIMARY_P (binfo))
+    {
+      indented = maybe_indent_hierarchy (stream, indent + 3, indented);
+      fprintf (stream, " lost-primary");
+    }
+  if (indented)
+    fprintf (stream, "\n");
+
+  if (!(flags & TDF_SLIM))
+    {
+      int indented = 0;
+      
+      if (BINFO_SUBVTT_INDEX (binfo))
+	{
+	  indented = maybe_indent_hierarchy (stream, indent + 3, indented);
+	  fprintf (stream, " subvttidx=%s",
+		   expr_as_string (BINFO_SUBVTT_INDEX (binfo),
+				   TFF_PLAIN_IDENTIFIER));
+	}
+      if (BINFO_VPTR_INDEX (binfo))
+	{
+	  indented = maybe_indent_hierarchy (stream, indent + 3, indented);
+	  fprintf (stream, " vptridx=%s",
+		   expr_as_string (BINFO_VPTR_INDEX (binfo),
+				   TFF_PLAIN_IDENTIFIER));
+	}
+      if (BINFO_VPTR_FIELD (binfo))
+	{
+	  indented = maybe_indent_hierarchy (stream, indent + 3, indented);
+	  fprintf (stream, " vbaseoffset=%s",
+		   expr_as_string (BINFO_VPTR_FIELD (binfo),
+				   TFF_PLAIN_IDENTIFIER));
+	}
+      if (BINFO_VTABLE (binfo))
+	{
+	  indented = maybe_indent_hierarchy (stream, indent + 3, indented);
+	  fprintf (stream, " vptr=%s",
+		   expr_as_string (BINFO_VTABLE (binfo),
+				   TFF_PLAIN_IDENTIFIER));
+	}
+      
+      if (indented)
+	fprintf (stream, "\n");
+    }
+  
+
   for (i = 0; i < BINFO_N_BASETYPES (binfo); ++i)
-    dump_class_hierarchy_r (stream, t, BINFO_BASETYPE (binfo, i), indent + 2);
+    dump_class_hierarchy_r (stream, flags,
+			    t, BINFO_BASETYPE (binfo, i),
+			    indent + 2);
 }
 
 /* Dump the BINFO hierarchy for T.  */
 
-void
-dump_class_hierarchy (name, t)
-     const char *name;
+static void
+dump_class_hierarchy (t)
      tree t;
 {
-  FILE *stream = stderr;
+  int flags;
+  FILE *stream = dump_begin (TDI_class, &flags);
+
+  if (!stream)
+    return;
   
-  if (name)
-    {
-      static int append = 0;
-      
-      stream = fopen (name, append++ ? "a" : "w");
-      if (!stream)
-        error ("could not open dump file `%s'", name);
-      return;
-    }
-  fprintf (stream, "%s size=", type_as_string (t, TFF_PLAIN_IDENTIFIER));
-  fprintf (stream, HOST_WIDE_INT_PRINT_DEC,
-	   tree_low_cst (TYPE_SIZE (t), 0) / BITS_PER_UNIT);
-  fprintf (stream, " align=%lu\n",
+  fprintf (stream, "Class %s\n", type_as_string (t, TFF_PLAIN_IDENTIFIER));
+  fprintf (stream, "   size=%lu align=%lu\n",
+	   (unsigned long)(tree_low_cst (TYPE_SIZE (t), 0) / BITS_PER_UNIT),
 	   (unsigned long)(TYPE_ALIGN (t) / BITS_PER_UNIT));
-  dump_class_hierarchy_r (stream, t, TYPE_BINFO (t), 0);
+  dump_class_hierarchy_r (stream, flags, t, TYPE_BINFO (t), 0);
   fprintf (stream, "\n");
-  if (name)
-    fclose (stream);
+  dump_end (TDI_class, stream);
+}
+
+static void
+dump_array (stream, decl)
+     FILE *stream;
+     tree decl;
+{
+  tree inits;
+  int ix;
+  HOST_WIDE_INT elt;
+  tree size = TYPE_MAX_VALUE (TYPE_DOMAIN (TREE_TYPE (decl)));
+
+  elt = (tree_low_cst (TYPE_SIZE (TREE_TYPE (TREE_TYPE (decl))), 0)
+	 / BITS_PER_UNIT);
+  fprintf (stream, "%s:", decl_as_string (decl, TFF_PLAIN_IDENTIFIER));
+  fprintf (stream, " %s entries",
+	   expr_as_string (size_binop (PLUS_EXPR, size, size_one_node),
+			   TFF_PLAIN_IDENTIFIER));
+  fprintf (stream, "\n");
+
+  for (ix = 0, inits = TREE_OPERAND (DECL_INITIAL (decl), 1);
+       inits; ix++, inits = TREE_CHAIN (inits))
+    fprintf (stream, "%-4d  %s\n", ix * elt,
+	     expr_as_string (TREE_VALUE (inits), TFF_PLAIN_IDENTIFIER));
+}
+
+static void
+dump_vtable (t, binfo, vtable)
+     tree t;
+     tree binfo;
+     tree vtable;
+{
+  int flags;
+  FILE *stream = dump_begin (TDI_class, &flags);
+
+  if (!stream)
+    return;
+
+  if (!(flags & TDF_SLIM))
+    {
+      int ctor_vtbl_p = TYPE_BINFO (t) != binfo;
+      
+      fprintf (stream, "%s for %s",
+	       ctor_vtbl_p ? "Construction vtable" : "Vtable",
+	       type_as_string (binfo, TFF_PLAIN_IDENTIFIER));
+      if (ctor_vtbl_p)
+	{
+	  if (!TREE_VIA_VIRTUAL (binfo))
+	    fprintf (stream, " (0x%lx instance)", (unsigned long)binfo);
+	  fprintf (stream, " in %s", type_as_string (t, TFF_PLAIN_IDENTIFIER));
+	}
+      fprintf (stream, "\n");
+      dump_array (stream, vtable);
+      fprintf (stream, "\n");
+    }
+  
+  dump_end (TDI_class, stream);
+}
+
+static void
+dump_vtt (t, vtt)
+     tree t;
+     tree vtt;
+{
+  int flags;
+  FILE *stream = dump_begin (TDI_class, &flags);
+
+  if (!stream)
+    return;
+
+  if (!(flags & TDF_SLIM))
+    {
+      fprintf (stream, "VTT for %s\n",
+	       type_as_string (t, TFF_PLAIN_IDENTIFIER));
+      dump_array (stream, vtt);
+      fprintf (stream, "\n");
+    }
+  
+  dump_end (TDI_class, stream);
 }
 
 /* Virtual function table initialization.  */
@@ -6957,6 +7097,7 @@ initialize_vtable (binfo, inits)
   layout_vtable_decl (binfo, list_length (inits));
   decl = get_vtbl_decl_for_binfo (binfo);
   initialize_array (decl, inits);
+  dump_vtable (BINFO_TYPE (binfo), binfo, decl);
 }
 
 /* Initialize DECL (a declaration for a namespace-scope array) with
@@ -7015,6 +7156,8 @@ build_vtt (t)
   vtt = build_vtable (t, get_vtt_name (t), type);
   pushdecl_top_level (vtt);
   initialize_array (vtt, inits);
+
+  dump_vtt (t, vtt);
 }
 
 /* The type corresponding to BASE_BINFO is a base of the type of BINFO, but
@@ -7332,6 +7475,7 @@ build_ctor_vtbl_group (binfo, t)
   /* Initialize the construction vtable.  */
   pushdecl_top_level (vtbl);
   initialize_array (vtbl, inits);
+  dump_vtable (t, binfo, vtbl);
 }
 
 /* Add the vtbl initializers for BINFO (and its bases other than

@@ -427,11 +427,6 @@ extern int flag_no_builtin;
 
 extern int flag_no_nonansi_builtin;
 
-/* If non-NULL, dump the tree structure for the entire translation
-   unit to this file.  */
-
-extern const char *flag_dump_translation_unit;
-
 /* Nonzero means warn about suggesting putting in ()'s.  */
 
 extern int warn_parentheses;
@@ -811,6 +806,20 @@ extern int c_unsafe_for_reeval			PARAMS ((tree));
 
 /* In dump.c */
 
+/* Different tree dump places. */
+enum tree_dump_index
+{
+  TDI_all,			/* dump the whole translation unit */
+  TDI_original,			/* dump each function before optimizing it */
+  TDI_optimized,			/* dump each function after optimizing it */
+  TDI_class,			/* dump class heirarchy */
+  TDI_end
+};
+
+/* Bit masks to control tree dumping. */
+#define TDF_ADDRESS	(1 << 0)	/* dump node addresses */
+#define TDF_SLIM	(1 << 1)	/* don't go wild following links */
+
 typedef struct dump_info *dump_info_p;
 
 /* A callback function used dump language-specific parts of tree
@@ -821,7 +830,12 @@ typedef int (*dump_tree_fn) PARAMS ((dump_info_p, tree));
 
 extern dump_tree_fn lang_dump_tree;
 
-extern void dump_node_to_file                   PARAMS ((tree, const char *));
+extern int dump_flag			PARAMS ((dump_info_p, int, tree));
+extern int dump_enabled_p		PARAMS ((enum tree_dump_index));
+extern FILE *dump_begin			PARAMS ((enum tree_dump_index, int *));
+extern void dump_end			PARAMS ((enum tree_dump_index, FILE *));
+extern void dump_node			PARAMS ((tree, int, FILE *));
+extern int dump_switch_p                PARAMS ((const char *));
 
 /* Information recorded about each file examined during compilation.  */
 

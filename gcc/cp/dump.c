@@ -101,19 +101,20 @@ cp_dump_tree (di, t)
 	}
 
       dump_child ("vfld", TYPE_VFIELD (t));
-	
-      {
-	int i;
 
-	for (i = 0; i < CLASSTYPE_N_BASECLASSES (t); ++i)
-	  {
-	    tree base_binfo = BINFO_BASETYPE (TYPE_BINFO (t), i);
-	    dump_child ("base", BINFO_TYPE (base_binfo));
-	    if (TREE_VIA_VIRTUAL (base_binfo)) 
-	      dump_string (di, "virtual");
-	    dump_access (di, base_binfo);
-	  }
-      }
+      if (!dump_flag (di, TDF_SLIM, t))
+	{
+	  int i;
+	  
+	  for (i = 0; i < CLASSTYPE_N_BASECLASSES (t); ++i)
+	    {
+	      tree base_binfo = BINFO_BASETYPE (TYPE_BINFO (t), i);
+	      dump_child ("base", BINFO_TYPE (base_binfo));
+	      if (TREE_VIA_VIRTUAL (base_binfo)) 
+		dump_string (di, "virtual");
+	      dump_access (di, base_binfo);
+	    }
+	}
       break;
 
     case FIELD_DECL:
@@ -163,7 +164,7 @@ cp_dump_tree (di, t)
 	break;
       if (DECL_NAMESPACE_ALIAS (t))
 	dump_child ("alis", DECL_NAMESPACE_ALIAS (t));
-      else
+      else if (!dump_flag (di, TDF_SLIM, t))
 	dump_child ("dcls", cp_namespace_decls (t));
       break;
 
