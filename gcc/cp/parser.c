@@ -952,7 +952,7 @@ cp_lexer_rollback_tokens (lexer)
   lexer->next_token = cp_lexer_advance_token (lexer,
 					      lexer->first_token, 
 					      delta);
-  /* It might be the case that there wer no tokens when we started
+  /* It might be the case that there were no tokens when we started
      saving tokens, but that there are some tokens now.  */
   if (!lexer->next_token && lexer->first_token)
     lexer->next_token = lexer->first_token;
@@ -3109,7 +3109,7 @@ cp_parser_primary_expression (cp_parser *parser,
    If CHECK_DEPENDENCY_P is false, then names are looked up inside
    uninstantiated templates.  
 
-   If *TEMPLATE_KEYWORD_P is non-NULL, it is set to true iff the
+   If *TEMPLATE_P is non-NULL, it is set to true iff the
    `template' keyword is used to explicitly indicate that the entity
    named is a template.  */
 
