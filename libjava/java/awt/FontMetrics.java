@@ -292,8 +292,7 @@ charsWidth(char buf[], int offset, int len)
 {
   int total_width = 0;
   for (int i = offset; i < len; i++)
-    total_width = charWidth(buf[i]);
-
+    total_width += charWidth(buf[i]);
   return(total_width);
 }
 
@@ -328,7 +327,12 @@ bytesWidth(byte buf[], int offset, int len)
 public int[]
 getWidths()
 {
-  return(new int[256]);
+  int [] result = new int[256];
+  for(char i = 0; i < 256; i++)
+  {
+    result[i]= charWidth(i);
+  }
+  return(result);
 }
 
 /*************************************************************************/
@@ -346,4 +350,5 @@ toString()
 }
 
 } // class FontMetrics 
+
 

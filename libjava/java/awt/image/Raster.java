@@ -452,4 +452,25 @@ public class Raster
 				  y-sampleModelTranslateY,
 				  w, h, b, dArray, dataBuffer);
   }
+  
+  /**
+   * Create a String representing the stat of this Raster.
+   * @return A String representing the stat of this Raster.
+   * @see java.lang.Object#toString()
+   */
+  public String toString()
+  {
+    StringBuffer result = new StringBuffer();
+    
+    result.append(getClass().getName());
+    result.append("[(");
+    result.append(minX).append(",").append(minY).append("), ");
+    result.append(width).append(" x ").append(height).append(",");
+    result.append(sampleModel).append(",");
+    result.append(dataBuffer);
+    result.append("]");
+    
+    return result.toString();
+  }
+  
 }
