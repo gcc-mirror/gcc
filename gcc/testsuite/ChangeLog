@@ -1,3 +1,7 @@
+2005-03-29  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gcc.dg/sparc-reg-1.c: New test.
+
 2005-03-28  Steve Ellcey  <sje@cup.hp.com>
 
 	PR target/19890
