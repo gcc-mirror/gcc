@@ -1,7 +1,8 @@
 2003-09-25  Brad Spencer  <spencer@infointeractive.com>
 
 	PR libstdc++/6072
-	* acinclude.m4: 
+	* acinclude.m4: Split out checks for vfwscanf, vswscanf, vwscanf,
+	wcstof, iswblank.	
 	* aclocal.m4: Regenerate.
 	* config.h.in: Regenerate.
 	* configure: Regenerate.
@@ -13,6 +14,7 @@
 	
 2003-09-25  Benjamin Kosnik  <bkoz@redhat.com>
 
+	PR libstdc++/11065
 	* config/locale/gnu/ctype_members.cc (ctype<wchar_t>::do_is): Fix.
 	* config/locale/generic/ctype_members.cc: Same.
 	* testsuite/22_locale/ctype/is/char/1.cc: Initialize mask.
