@@ -201,7 +201,7 @@ fi
 
 # We always want to use the same name for this directory, so that dejagnu
 # can reliably find it.
-target_subdir=${target}
+target_subdir=${target_alias}
 
 if test ! -d ${target_subdir} ; then
   if mkdir ${target_subdir} ; then true
@@ -211,7 +211,8 @@ if test ! -d ${target_subdir} ; then
   fi
 fi
 
-build_subdir=build-${build}
+build_prefix=build-
+build_subdir=${build_prefix}${build_alias}
 
 if test x"${build_alias}" != x"${host}" ; then
   if test ! -d ${build_subdir} ; then
