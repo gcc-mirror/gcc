@@ -219,7 +219,7 @@ Version 0.6 should solve most or all remaining problems
 @cindex COMPLEX support
 @cindex support, COMPLEX
 @item
-Maintainers of gcc report that the back end definitely has ``broken''
+Maintainers of @code{gcc} report that the back end definitely has ``broken''
 support for @code{COMPLEX} types.
 Based on their input, it seems many of
 the problems affect only the more-general facilities for gcc's
@@ -242,7 +242,7 @@ by versions of @code{g77} prior to 0.5.20.
 when using the @samp{-fPIC} option (such as compiling for ELF targets)
 on the Intel x86 architecture target.
 The symptom is that the assembler complains about invalid opcodes.
-This bug is in the gcc back end.
+This bug is in the @code{gcc} back end.
 
 Fixed in @code{egcs} version 1.0.2.
 
