@@ -339,6 +339,10 @@ const_iteration_count (rtx count_reg, basic_block pre_header,
 {
   rtx insn;
   rtx head, tail;
+
+  if (! pre_header)
+    return NULL_RTX;
+
   get_block_head_tail (pre_header->index, &head, &tail);
 
   for (insn = tail; insn != PREV_INSN (head); insn = PREV_INSN (insn))
@@ -401,6 +405,8 @@ print_node_sched_params (FILE * dump_file, int num_nodes)
 {
   int i;
 
+  if (! dump_file)
+    return;
   for (i = 0; i < num_nodes; i++)
     {
       node_sched_params_ptr nsp = &node_sched_params[i];
@@ -443,14 +449,17 @@ calculate_maxii (ddg_ptr g)
   return maxii;
 }
 
-
-/* Given the partial schedule, generate register moves when the length
-   of the register live range is more than ii; the number of moves is
-   determined according to the following equation:
-		SCHED_TIME (use) - SCHED_TIME (def)   { 1 broken loop-carried
-   nreg_moves = ----------------------------------- - {   dependence.
-			      ii		      { 0 if not.
-   This handles the modulo-variable-expansions (mve's) needed for the ps.  */
+/*
+   Breaking intra-loop register anti-dependences:
+   Each intra-loop register anti-dependence implies a cross-iteration true
+   dependence of distance 1. Therefore, we can remove such false dependencies
+   and figure out if the partial schedule broke them by checking if (for a
+   true-dependence of distance 1): SCHED_TIME (def) < SCHED_TIME (use) and
+   if so generate a register move.   The number of such moves is equal to:
+              SCHED_TIME (use) - SCHED_TIME (def)       { 0 broken
+   nreg_moves = ----------------------------------- + 1 - {   dependecnce.
+                            ii                          { 1 if not.
+*/
 static void
 generate_reg_moves (partial_schedule_ptr ps)
 {
@@ -474,6 +483,9 @@ generate_reg_moves (partial_schedule_ptr ps)
 	  {
 	    int nreg_moves4e = (SCHED_TIME (e->dest) - SCHED_TIME (e->src)) / ii;
 
+            if (e->distance == 1)
+              nreg_moves4e = (SCHED_TIME (e->dest) - SCHED_TIME (e->src) + ii) / ii;
+
 	    /* If dest precedes src in the schedule of the kernel, then dest
 	       will read before src writes and we can save one reg_copy.  */
 	    if (SCHED_ROW (e->dest) == SCHED_ROW (e->src)
@@ -496,6 +508,9 @@ generate_reg_moves (partial_schedule_ptr ps)
 	if (e->type == TRUE_DEP && e->dest != e->src)
 	  {
 	    int dest_copy = (SCHED_TIME (e->dest) - SCHED_TIME (e->src)) / ii;
+
+	    if (e->distance == 1)
+	      dest_copy = (SCHED_TIME (e->dest) - SCHED_TIME (e->src) + ii) / ii;
 
 	    if (SCHED_ROW (e->dest) == SCHED_ROW (e->src)
 		&& SCHED_COLUMN (e->dest) < SCHED_COLUMN (e->src))
@@ -540,7 +555,8 @@ normalize_sched_times (partial_schedule_ptr ps)
   int amount = PS_MIN_CYCLE (ps);
   int ii = ps->ii;
 
-  for (i = 0; i < g->num_nodes; i++)
+  /* Don't include the closing branch assuming that it is the last node.  */
+  for (i = 0; i < g->num_nodes - 1; i++)
     {
       ddg_node_ptr u = &g->nodes[i];
       int normalized_time = SCHED_TIME (u) - amount;
@@ -609,7 +625,7 @@ duplicate_insns_of_cycles (partial_schedule_ptr ps, int from_stage,
 	    /* SCHED_STAGE (u_node) >= from_stage == 0.  Generate increasing
 	       number of reg_moves starting with the second occurrence of
 	       u_node, which is generated if its SCHED_STAGE <= to_stage.  */
-	    i_reg_moves = to_stage - SCHED_STAGE (u_node);
+	    i_reg_moves = to_stage - SCHED_STAGE (u_node) + 1;
 	    i_reg_moves = MAX (i_reg_moves, 0);
 	    i_reg_moves = MIN (i_reg_moves, SCHED_NREG_MOVES (u_node));
 
@@ -1109,6 +1125,8 @@ sms_schedule (FILE *dump_file)
 	     scheduling passes doesn't touch it.  */
 	  if (! flag_resched_modulo_sched)
 	    g->bb->flags |= BB_DISABLE_SCHEDULE;
+	  /* The life-info is not valid any more.  */
+	  g->bb->flags |= BB_DIRTY;
 
 	  generate_reg_moves (ps);
 	  if (dump_file)

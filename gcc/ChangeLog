@@ -1,3 +1,18 @@
+2005-03-30 Mostafa Hagog <mustafa@il.ibm.com>
+
+	PR middle-end/20177
+	* ddg.c (create_ddg_dependence): Ignore reg-anti dependency.
+	* modulo-sched.c (const_iteration_count): Return on NULL
+	pre-header.
+	(print_node_sched_params): Return on NULL dump_file.
+	(generate_reg_moves): Handle reg-anti dependencies and disregard
+	closing branch when generating register moves.
+	(sms_schedule): Mark the SMSed block dirty.
+	* passes.c (rest_of_handle_sms): Call update_life_info for all
+	basic-blocks.
+	* testsuite/gcc.dg/20050321-1.c: New test.
+	* testsuite/gcc.dg/20050330-1.c: New test.
+
 2005-03-30  Sebastian Pop  <pop@cri.ensmp.fr>
 
 	* tree-scalar-evolution.c (instantiate_parameters_1): Return 
