@@ -217,14 +217,6 @@ elif test x$withval != xno; then
   cpp_install_dir=$withval
 fi])
 
-# Use cpplib+cppmain for the preprocessor, but don't link it with the compiler.
-cpp_main=cppmain
-AC_ARG_ENABLE(cpplib,
-[  --disable-cpplib        use the old isolated C preprocessor.],
-if test x$enable_cpplib = xno; then
-  cpp_main=cccp
-fi)
-
 dnl Disable this for the moment; the library interface is changing.
 dnl # Link cpplib into the compiler proper, for C/C++/ObjC.
 dnl AC_ARG_ENABLE(c-cpplib,
@@ -234,7 +226,6 @@ dnl if test x$enable_c_cpplib != xno; then
 dnl  extra_c_objs="${extra_c_objs} libcpp.a"
 dnl  extra_cxx_objs="${extra_cxx_objs} ../libcpp.a"
 dnl  extra_c_flags="${extra_c_flags} -DUSE_CPPLIB=1"
-dnl  cpp_main=cppmain
 dnl fi)
 
 # Enable Multibyte Characters for C/C++
@@ -4811,7 +4802,6 @@ AC_SUBST(build_xm_file_list)
 AC_SUBST(cc_set_by_configure)
 AC_SUBST(quoted_cc_set_by_configure)
 AC_SUBST(cpp_install_dir)
-AC_SUBST(cpp_main)
 AC_SUBST(dep_host_xmake_file)
 AC_SUBST(dep_tmake_file)
 AC_SUBST(extra_c_flags)

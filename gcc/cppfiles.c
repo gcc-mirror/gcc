@@ -1097,7 +1097,7 @@ hack_vms_include_specification (fullname)
 	/* The VMS part ends in a `]', and the preceding character is not a `.'.
 	   -> PATH]:/name (basename = '/name', unixname = 'name')
 	   We strip the `]', and then splice the two parts of the name in the
-	   usual way.  Given the default locations for include files in cccp.c,
+	   usual way.  Given the default locations for include files,
 	   we will only use this code if the user specifies alternate locations
 	   with the /include (-I) switch on the command line.  */
 

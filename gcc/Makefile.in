@@ -692,8 +692,6 @@ OBJS = diagnostic.o \
 GEN= genemit genoutput genrecog genextract genflags gencodes genconfig \
  genpeep gengenrtl gencheck
 
-CCCP=@cpp_main@
-
 # Files to be copied away after each stage in building.
 STAGESTUFF = *$(objext) insn-flags.h insn-config.h insn-codes.h \
  insn-output.c insn-recog.c insn-emit.c insn-extract.c insn-peep.c \
@@ -707,9 +705,8 @@ STAGESTUFF = *$(objext) insn-flags.h insn-config.h insn-codes.h \
  genattr$(build_exeext) genopinit$(build_exeext) gengenrtl$(build_exeext) \
  gencheck$(build_exeext) \
  xgcc$(exeext) xcpp$(exeext) cc1$(exeext) cpp$(exeext) $(EXTRA_PASSES) \
- $(EXTRA_PARTS) $(EXTRA_PROGRAMS) gcc-cross$(exeext) \
- $(CCCP)$(exeext) cc1obj$(exeext) enquire$(exeext) \
- protoize$(exeext) unprotoize$(exeext) \
+ $(EXTRA_PARTS) $(EXTRA_PROGRAMS) gcc-cross$(exeext) cc1obj$(exeext) \
+ enquire$(exeext) protoize$(exeext) unprotoize$(exeext) \
  specs collect2$(exeext) $(USE_COLLECT2) underscore.c \
  gcov$(exeext) *.[0-9][0-9].* *.[si] libcpp.a \
  $(LANG_STAGESTUFF)
@@ -2013,7 +2010,7 @@ $(top_builddir)/intl/libintl.a:
 
 # Make sure all the headers are there for xgettext to scan.
 $(INTL_TARGETS): $(srcdir)/c-gperf.h \
-    $(srcdir)/c-parse.c $(srcdir)/c-parse.h $(srcdir)/cexp.c
+    $(srcdir)/c-parse.c $(srcdir)/c-parse.h
 
 intl.all intl.install intl.uninstall intl.distdir \
   intl.mostlyclean intl.clean intl.distclean intl.maintainer-clean:
@@ -2032,37 +2029,18 @@ intl.distdir-fixup:
 #
 # Remake cpp and protoize.
 
-# Making the preprocessor
-cpp$(exeext): $(CCCP)$(exeext)
-	-rm -f cpp$(exeext)
-	$(LN) $(CCCP)$(exeext) cpp$(exeext)
-CCCP_OBJS = cccp.o cexp.o intl.o prefix.o version.o @extra_cpp_objs@ mbchar.o
-cccp$(exeext): $(CCCP_OBJS) $(LIBDEPS)
-	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ $(CCCP_OBJS) $(LIBS)
-cexp.o: $(srcdir)/cexp.c $(CONFIG_H) system.h mbchar.h
-	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c $(srcdir)/cexp.c
-$(srcdir)/cexp.c: $(srcdir)/cexp.y
-	cd $(srcdir); $(BISON) -o cexp.c cexp.y
-
 PREPROCESSOR_DEFINES = \
   -DGCC_INCLUDE_DIR=\"$(libsubdir)/include\" \
   -DGPLUSPLUS_INCLUDE_DIR=\"$(gcc_gxx_include_dir)\" \
   -DLOCAL_INCLUDE_DIR=\"$(includedir)\" \
   -DCROSS_INCLUDE_DIR=\"$(gcc_tooldir)/sys-include\" \
   -DTOOL_INCLUDE_DIR=\"$(gcc_tooldir)/include\"
-# We use $(libsubdir)/$(unlibsubdir) to match the
-# -iprefix argument which gcc will pass if GCC_EXEC_PREFIX is used.
-cccp.o: cccp.c $(CONFIG_H) intl.h pcp.h version.c config.status system.h \
-           mbchar.h prefix.h Makefile.in version.h
-	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
-	  $(PREPROCESSOR_DEFINES) \
-	  -c `echo $(srcdir)/cccp.c | sed 's,^\./,,'`
 
 LIBCPP_OBJS =	cpplib.o cpphash.o cpperror.o cppexp.o cppfiles.o \
 		cppinit.o cppulp.o cpplex.o mkdeps.o \
 		prefix.o version.o mbchar.o @extra_cpp_objs@
 
-LIBCPP_DEPS = cpplib.h cpphash.h intl.h system.h
+LIBCPP_DEPS =	cpplib.h cpphash.h intl.h system.h
 
 # All the other archives built/used by this makefile are for targets.  This
 # one is strictly for the host.
@@ -2072,8 +2050,8 @@ libcpp.a: $(LIBCPP_OBJS)
 	$(AR) $(AR_FLAGS) libcpp.a $(LIBCPP_OBJS)
 	if $(RANLIB_TEST) ; then $(RANLIB) libcpp.a ; else true ; fi
 
-cppmain$(exeext): cppmain.o intl.o libcpp.a $(LIBDEPS)
-	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o cppmain$(exeext) cppmain.o \
+cpp$(exeext): cppmain.o intl.o libcpp.a $(LIBDEPS)
+	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o cpp$(exeext) cppmain.o \
 	intl.o libcpp.a $(LIBS)
 
 cppmain.o:  cppmain.c  $(CONFIG_H) cpplib.h intl.h system.h
@@ -2361,7 +2339,7 @@ cpp.dvi: $(srcdir)/cpp.texi
 
 INSTALL: $(srcdir)/install1.texi $(srcdir)/install.texi
 	cd $(srcdir); $(MAKEINFO) -D INSTALLONLY \
-		--no-split -o INSTALL install1.texi
+		--no-split --no-headers -o INSTALL install1.texi
 #
 # Deletion of files made during compilation.
 # There are four levels of this:
@@ -2476,8 +2454,7 @@ maintainer-clean:
 	$(MAKE) INTL_DISTCLEAN= INTL_CLEAN= INTL_MOSTLYCLEAN= \
 		intl.maintainer-clean lang.maintainer-clean distclean
 	-rm -f c-parse.y c-gperf.h
-	-rm -f c-parse.c c-parse.h c-parse.output
-	-rm -f cexp.c cexp.output TAGS
+	-rm -f c-parse.c c-parse.h c-parse.output TAGS
 	-rm -f cpp.info* cpp.??s cpp.*aux
 	-rm -f gcc.info* gcc.??s gcc.*aux
 #
@@ -2661,7 +2638,7 @@ install-info: doc installdirs lang.install-info
 	-chmod a-x $(infodir)/cpp.info* $(infodir)/gcc.info*
 
 # Install the man pages.
-install-man: installdirs $(srcdir)/gcc.1 $(srcdir)/cccp.1 lang.install-man
+install-man: installdirs $(srcdir)/gcc.1 $(srcdir)/cpp.1 lang.install-man
 	-if [ -f gcc-cross$(exeext) ] ; then \
 	  rm -f $(man1dir)/$(GCC_CROSS_NAME)$(manext); \
 	  $(INSTALL_DATA) $(srcdir)/gcc.1 $(man1dir)/$(GCC_CROSS_NAME)$(manext); \
@@ -2671,9 +2648,9 @@ install-man: installdirs $(srcdir)/gcc.1 $(srcdir)/cccp.1 lang.install-man
 	  $(INSTALL_DATA) $(srcdir)/gcc.1 $(man1dir)/$(GCC_INSTALL_NAME)$(manext); \
 	  chmod a-x $(man1dir)/$(GCC_INSTALL_NAME)$(manext); \
 	fi
-	-rm -f $(man1dir)/cccp$(manext)
-	-$(INSTALL_DATA) $(srcdir)/cccp.1 $(man1dir)/cccp$(manext)
-	-chmod a-x $(man1dir)/cccp$(manext)
+	-rm -f $(man1dir)/cpp$(manext)
+	-$(INSTALL_DATA) $(srcdir)/cpp.1 $(man1dir)/cpp$(manext)
+	-chmod a-x $(man1dir)/cpp$(manext)
 
 # Install the library.
 install-libgcc: libgcc.a installdirs
@@ -2782,7 +2759,7 @@ uninstall: intl.uninstall lang.uninstall $(UNINSTALL_CPP)
 	-rm -rf $(bindir)/$(GCOV_INSTALL_NAME)$(exeext)
 	-rm -rf $(man1dir)/$(GCC_INSTALL_NAME)$(manext)
 	-rm -rf $(man1dir)/$(GCC_CROSS_NAME)$(manext)
-	-rm -rf $(man1dir)/cccp$(manext)
+	-rm -rf $(man1dir)/cpp$(manext)
 	-rm -rf $(man1dir)/protoize$(manext)
 	-rm -rf $(man1dir)/unprotoize$(manext)
 	-rm -f $(infodir)/cpp.info* $(infodir)/gcc.info*
@@ -2898,7 +2875,7 @@ check-objc: testsuite/site.exp
 TAGS: force
 	cd $(srcdir);							\
 	mkdir tmp-tags;							\
-	mv -f c-parse.[ch] cexp.c =*.[chy] tmp-tags;			\
+	mv -f c-parse.[ch] =*.[chy] tmp-tags;				\
 	etags *.y *.h *.c;						\
 	mv tmp-tags/* .;						\
 	rmdir tmp-tags
@@ -2918,8 +2895,7 @@ distdir-cvs: force
 # This target exists to do the initial work before the language specific
 # stuff gets done.
 distdir-start: doc $(srcdir)/INSTALL $(srcdir)/c-parse.y $(srcdir)/c-gperf.h \
-  $(srcdir)/c-parse.c $(srcdir)/cexp.c $(srcdir)/config.in \
-  $(srcdir)/version.c TAGS
+  $(srcdir)/c-parse.c $(srcdir)/config.in $(srcdir)/version.c TAGS
 	@case '$(USE_NLS)' in \
 	yes) ;; \
 	*) echo "configure with --enable-nls before making a distribution"; \
@@ -2948,7 +2924,7 @@ distdir-start: doc $(srcdir)/INSTALL $(srcdir)/c-parse.y $(srcdir)/c-gperf.h \
 	  test -f $(srcdir)/$$file && $(LN_S) $(srcdir)/$$file tmp; \
 	done
 	if test "$(srcdir)" != "." ; then \
-	  for file in c-parse.c cexp.c ; do \
+	  for file in c-parse.c ; do \
 	    test -f ./$$file && $(LN_S) ../$$file tmp; \
 	  done; \
 	fi
@@ -2998,8 +2974,7 @@ distdir: distdir-cvs distdir-start intl.distdir intl.distdir-fixup \
 # The -P option assumes this is GNU diff.
 diff:
 	diff -rc2P -x c-parse.y -x c-parse.c -x c-parse.h -x c-gperf.h \
-	  -x cexp.c -x -x TAGS -x INSTALL \
-	  -x configure -x config.in \
+	   -x TAGS -x INSTALL -x configure -x config.in \
 	  -x "gcc.??" -x "gcc.??s" -x gcc.aux -x "gcc.info*" \
 	  -x "cpp.??" -x "cpp.??s" -x cpp.aux -x "cpp.info*" \
 	  $(LANG_DIFF_EXCLUDES) \

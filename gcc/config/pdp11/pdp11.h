@@ -147,11 +147,6 @@ extern int target_flags;
 
 /* machine types from ansi */
 #define SIZE_TYPE "unsigned int" 	/* definition of size_t */
-
-/* is used in cexp.y - we don't have target_flags there, 
-   so just give default definition 
-
-   hope it does not come back to haunt us! */
 #define WCHAR_TYPE "int" 		/* or long int???? */
 #define WCHAR_TYPE_SIZE 16
 

@@ -1,3 +1,7 @@
+2000-04-18  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* gcc_update: Remove references to cexp.c/cexp.y.
+
 1999-12-18  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* newcvsroot: Add check on the number of command-line arguments.

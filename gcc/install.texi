@@ -53,10 +53,9 @@ On a System V release 4 system, make sure @file{/usr/bin} precedes
 @cindex Bison parser generator
 @cindex parser generator, Bison
 @item
-Make sure the Bison parser generator is installed.  (This is
-unnecessary if the Bison output files @file{c-parse.c} and
-@file{cexp.c} are more recent than @file{c-parse.y} and @file{cexp.y}
-and you do not plan to change the @samp{.y} files.)
+Make sure the Bison parser generator is installed.  (This is unnecessary
+if the Bison output file @file{c-parse.c} is more recent than
+@file{c-parse.y},and you do not plan to change the @samp{.y} file.)
 
 Bison versions older than Sept 8, 1988 will produce incorrect output
 for @file{c-parse.c}.
@@ -396,9 +395,8 @@ Ignore any warnings you may see about ``statement not reached'' in
 escape sequence'' are normal in @file{genopinit.c} and perhaps some
 other files.  Likewise, you should ignore warnings about ``constant is
 so large that it is unsigned'' in @file{insn-emit.c} and
-@file{insn-recog.c}, a warning about a comparison always being zero
-in @file{enquire.o}, and warnings about shift counts exceeding type
-widths in @file{cexp.y}.  Any other compilation errors may represent bugs in
+@file{insn-recog.c}, and a warning about a comparison always being zero
+in @file{enquire.o}.  Any other compilation errors may represent bugs in
 the port to your machine or operating system, and
 @ifclear INSTALLONLY
 should be investigated and reported (@pxref{Bugs}).
@@ -1260,47 +1258,11 @@ You will also a patched version of @file{/bin/ld} there that
 raises some of the arbitrary limits found in the original.
 
 @item m68k-att-sysv
-AT&T 3b1, a.k.a. 7300 PC.  Special procedures are needed to compile GNU
-CC with this machine's standard C compiler, due to bugs in that
-compiler.  You can bootstrap it more easily with
-previous versions of GNU CC if you have them.
-
-Installing GNU CC on the 3b1 is difficult if you do not already have
-GNU CC running, due to bugs in the installed C compiler.  However,
-the following procedure might work.  We are unable to test it.
-
-@enumerate
-@item
-Comment out the @samp{#include "config.h"} line near the start of
-@file{cccp.c} and do @samp{make cpp}.  This makes a preliminary version
-of GNU cpp.
-
-@item
-Save the old @file{/lib/cpp} and copy the preliminary GNU cpp to that
-file name.
-
-@item
-Undo your change in @file{cccp.c}, or reinstall the original version,
-and do @samp{make cpp} again.
-
-@item
-Copy this final version of GNU cpp into @file{/lib/cpp}.
-
-@findex obstack_free
-@item
-Replace every occurrence of @code{obstack_free} in the file
-@file{tree.c} with @code{_obstack_free}.
-
-@item
-Run @code{make} to get the first-stage GNU CC.
-
-@item
-Reinstall the original version of @file{/lib/cpp}.
-
-@item
-Now you can compile GNU CC with itself and install it in the normal
-fashion.
-@end enumerate
+AT&T 3b1, a.k.a. 7300 PC.  This version of GNU CC cannot
+be compiled with the system C compiler, which is too buggy.
+You will need to get a previous version of GCC and use it to
+bootstrap.  Binaries are available from the OSU-CIS archive, at
+@url{ftp://archive.cis.ohio-state.edu/pub/att7300/}.
 
 @item m68k-bull-sysv
 Bull DPX/2 series 200 and 300 with BOS-2.00.45 up to BOS-2.01. GNU CC works

@@ -939,7 +939,7 @@ jump_optimize_1 (f, cross_jump, noop_moves, after_regscan,
 	  /* ??? This is disabled in genconfig, as this simple-minded
 	     transformation can incredibly lengthen register lifetimes.
 
-	     Consider this example from cexp.c's yyparse:
+	     Consider this example:
 
 		234 (set (pc)
 		      (if_then_else (ne (reg:DI 149) (const_int 0 [0x0]))

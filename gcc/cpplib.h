@@ -135,7 +135,7 @@ struct htab;
 /* Values for opts.dump_macros.
   dump_only means inhibit output of the preprocessed text
              and instead output the definitions of all user-defined
-             macros in a form suitable for use as input to cccp.
+             macros in a form suitable for use as input to cpp.
    dump_names means pass #define and the macro name through to output.
    dump_definitions means pass the whole definition (plus #define) through
 */

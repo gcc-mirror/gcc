@@ -67,7 +67,6 @@ gcc/c-parse.y: gcc/c-parse.in
 gcc/c-parse.c: gcc/c-parse.y
 gcc/c-parse.h: gcc/c-parse.c
 gcc/c-gperf.h: gcc/c-parse.gperf
-gcc/cexp.c: gcc/cexp.y
 gcc/fixinc/fixincl.x: gcc/fixinc/fixincl.tpl gcc/fixinc/inclhack.def
 gcc/fixinc/inclhack.sh: gcc/fixinc/inclhack.def gcc/fixinc/inclhack.tpl gcc/fixinc/hackshell.tpl
 gcc/fixinc/fixincl.sh: gcc/fixinc/inclhack.def gcc/fixinc/inclhack.tpl
