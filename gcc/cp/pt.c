@@ -10809,6 +10809,10 @@ instantiate_decl (d, defer_ok)
 
   timevar_push (TV_PARSE);
 
+  /* We may be in the middle of deferred access check.  Disable
+     it now.  */
+  push_deferring_access_checks (dk_no_deferred);
+
   /* Set TD to the template whose DECL_TEMPLATE_RESULT is the pattern
      for the instantiation.  */
   td = template_for_substitution (d);
@@ -11050,6 +11054,7 @@ instantiate_decl (d, defer_ok)
 
 out:
   input_location = saved_loc;
+  pop_deferring_access_checks ();
   pop_tinst_level ();
 
   timevar_pop (TV_PARSE);
