@@ -1,3 +1,10 @@
+2002-01-29  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* gcc.c-torture/compile/20000224-1.c: Update.
+	* gcc.c-torture/execute/bitfld-1.c: New tests.
+	* gcc.dg/bitfld-1.c, bitfld-2.c: Diagnostic tests.
+	* gcc.dg/uninit-A.c: Update.
+
 2002-01-29  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.dg/template/ctor1.C: Add instantiation.
