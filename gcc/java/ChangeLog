@@ -1,3 +1,7 @@
+2001-12-10  Tom Tromey  <tromey@redhat.com>
+
+	* check-init.c (check_init) [SWITCH_EXPR]: Use SWITCH_HAS_DEFAULT.
+
 Mon Dec 10 06:09:57 2001  Douglas B. Rupp  <rupp@gnat.com>
 
 	* Make-lang.in (jvspec.o): Add $(OUTPUT_OPTION).
