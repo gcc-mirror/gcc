@@ -1610,7 +1610,7 @@ output_func_start_profiler ()
 
   fndecl = build_decl (FUNCTION_DECL, fnname,
 		       build_function_type (void_type_node, NULL_TREE));
-  DECL_EXTERNAL (fndecl) = 1;
+  DECL_EXTERNAL (fndecl) = 0;
   TREE_PUBLIC (fndecl) = 1;
   DECL_ASSEMBLER_NAME (fndecl) = fnname;
   DECL_RESULT (fndecl) = build_decl (RESULT_DECL, NULL_TREE, void_type_node);

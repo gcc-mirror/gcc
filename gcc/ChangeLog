@@ -1,3 +1,7 @@
+Fri Sep  5 16:54:55 1997  Jim Wilson  <wilson@cygnus.com>
+
+	* profile.c (output_func_start_profiler): Set DECL_EXTERNAL to zero.
+
 Fri Sep  5 16:16:44 1997  Christian Kuehnke  <Christian.Kuehnke@arbi.Informatik.Uni-Oldenburg.DE>
 
 	* sparc/sparc.md: Add ultrasparc scheduling support.
