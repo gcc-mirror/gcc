@@ -1,3 +1,8 @@
+2003-02-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* acconfig.h: New file.  Add uintptr_t.
+	* config.in: Regenerated.
+
 2003-02-04  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* libiberty.texi: Update to GFDL 1.2.

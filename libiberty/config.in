@@ -1,4 +1,4 @@
-/* config.in.  Generated automatically from configure.in by autoheader 2.13.  */
+/* config.in.  Generated automatically from configure.in by autoheader.  */
 
 /* Define to empty if the keyword does not work.  */
 #undef const
@@ -15,6 +15,9 @@
 /* Define as __inline if that's what the C compiler calls it.  */
 #undef inline
 
+/* Define if your C compiler doesn't accept -c and -o together.  */
+#undef NO_MINUS_C_MINUS_O
+
 /* Define to `int' if <sys/types.h> doesn't define.  */
 #undef pid_t
 
@@ -29,6 +32,9 @@
 
 /* Define vfork as fork if vfork does not work.  */
 #undef vfork
+
+/* Define to `unsigned long' if <sys/types.h> doesn't define.  */
+#undef uintptr_t
 
 /* Define if you have the _doprnt function.  */
 #undef HAVE__DOPRNT
