@@ -534,6 +534,9 @@ case $os in
 	-svr4)
 		os=-sysv4
 		;;
+	-sysvr4)
+		os=-sysv4
+		;;
 	-svr3)
 		os=-sysv3
 		;;
