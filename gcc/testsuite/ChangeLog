@@ -1,3 +1,7 @@
+2000-07-26  Alexandre Oliva  <aoliva@redhat.com>
+
+	* gcc.c-torture/execute/enum-2.c: New test.
+
 2000-07-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.dg/cpp/tr-warn3.c: New test.
