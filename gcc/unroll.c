@@ -1135,19 +1135,6 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
      not taken.  */
   if (exit_label)
     emit_label_after (exit_label, loop_end);
-
-  /* If debugging, we must replicate the tree nodes corresponding to the blocks
-     inside the loop, so that the original one to one mapping will remain.  */
-
-  if (write_symbols != NO_DEBUG)
-    {
-      int copies = unroll_number;
-
-      if (loop_preconditioned)
-	copies += unroll_number - 1;
-
-      unroll_block_trees (uid_loop_num[INSN_UID (loop_start)], copies);
-    }
 }
 
 /* Return true if the loop can be safely, and profitably, preconditioned
