@@ -1,3 +1,10 @@
+Thu Jun 17 15:07 1999  Bruce Korb <ddsinc09@ix.netcom.com>
+
+	* fixincludes: ISCNTL patch
+	* fixinc/inclhack.def (ioctl_fix_ctrl): Fix the definition of [_]*ISCTRL().
+	(dgux_int_varargs): new for DG/UX
+	* fixinc/{fixincl.x,inclhack.sh}: Regenerated.
+
 Thu Jun 17 21:34:24 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* loop.c (strength_reduce): When doing biv->giv conversion, update

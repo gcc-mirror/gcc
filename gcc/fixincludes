@@ -338,6 +338,7 @@ while [ $# != 0 ]; do
 	  /#[ 	]*define[ 	]*[ 	]CTRL/		s/'\''\([cgx]\)'\''/\1/g
 	  /#[ 	]*define[ 	]*[ 	]_CTRL/		s/'\''\([cgx]\)'\''/\1/g
 	  /#[ 	]*define.BSD43_CTRL/		s/'\''\([cgx]\)'\''/\1/g
+	  /#[ 	]*define[ 	]*[ 	][_]*ISCTRL/		s/'\''\([cgx]\)'\''/\1/g
 	  /#[	 ]*[el]*if/{
 		s/[a-zA-Z0-9_][a-zA-Z0-9_]*/ & /g
 

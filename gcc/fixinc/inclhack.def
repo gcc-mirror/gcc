@@ -262,54 +262,79 @@ fix = {
 };
 
 
-#ifdef no_more
 /*
- *  And also with the HP-UX 10 and HP-UX 11 sys/pci.h file
+ *  Completely replace &lt;_int_varargs.h&gt; with a file that includes gcc's
+ *  stdarg.h or varargs.h files as appropriate on DG/UX
  */
 fix = {
-    hackname = cxx_cmnt_hpux;
-    files    = sys/pci.h;
-    select   = "System Private Structures";
-    sed      = "s|//.*$||g";
-};
+    hackname = dgux_int_varargs;
+    files    = _int_varargs.h;
+    shell    = "cat > /dev/null\ncat << '_EOF_'
+\#ifndef __INT_VARARGS_H
+\#define __INT_VARARGS_H
 
-
-/*
- *  Turning // comments into normal comments trashes this IRIX 4.0.1
- *  header file, which embeds // comments inside multi-line
- *  comments.  If this looks like the IRIX header file, we refix it by
- *  just throwing away the // comments.
- */
-fix = {
-    hackname = cxx_cmnt_irix;
-    files    = fam.h;
-    select   = indigo.esd;
-    sed      = "s|//.*$||g";
-};
-
+/************************************************************************/
+/* _INT_VARARGS.H - Define the common stuff for varargs/stdarg/stdio.   */
+/************************************************************************/
 
 /*
- *  Same problem with a file from SunOS 4.1.3 : a header file containing
- *  the string "//" embedded in "/ * * /"
- */
-fix = {
-    hackname = cxx_cmnt_sunos;
-    files    = sbusdev/audiovar.h;
-    files    = sys/audiovar.h;
-    sed      = "s|//.*$||g";
+** This file is a DG internal header.  Never include this
+** file directly.
+*/
+
+\#ifndef ___int_features_h
+\#include &lt;sys/_int_features.h&gt;
+\#endif
+
+\#if !(defined(_VA_LIST) || defined(_VA_LIST_))
+\#define _VA_LIST
+\#define _VA_LIST_
+
+\#ifdef __LINT__
+
+\#ifdef __STDC__
+typedef void * va_list;
+\#else
+typedef char * va_list;
+\#endif
+
+\#else
+\#if _M88K_ANY
+
+\#if defined(__DCC__)
+
+typedef struct {
+      int     next_arg;
+      int     *mem_ptr;
+      int     *reg_ptr;
+} va_list;
+
+\#else  /* ! defined(__DCC__) */
+
+typedef struct {
+      int  __va_arg;       /* argument number */
+      int *__va_stk;       /* start of args passed on stack */
+      int *__va_reg;       /* start of args passed in regs */
+} va_list;
+
+\#endif  /* ! defined(__DCC__) */
+
+\#elif _IX86_ANY
+
+\#if defined(__GNUC__) || defined(__STDC__)
+typedef void * va_list;
+\#else
+typedef char * va_list;
+\#endif
+
+\#endif  /*  _IX86_ANY */
+
+\#endif /* __LINT__ */
+\#endif /*  !(defined(_VA_LIST) || defined(_VA_LIST_)) */
+\#endif /*  #ifndef __INT_VARARGS_H  */
+_EOF_";
 };
 
-
-/*
- *  There is a similar problem with the VxWorks drv/netif/if_med.h file.
- */
-fix = {
-    hackname = cxx_cmnt_vxworks;
-    files    = drv/netif/if_med.h;
-    select   = "Wind River";
-    sed      = "s|//.*$||g";
-};
-#endif
 
 /*
  *  Remove the double-slash comments
@@ -334,7 +359,7 @@ fix = {
  *  Now that we delete the // comments instead of converting them to / * * /,
  *  traditional hacks like irix_bogus_cxx_cmnt, no longer work (which
  *  strangely enough was also used on alpha-dec-osf4.0d).  If we skip the
- *  hack whenever we see ``"//"'', then the need for the secondary hack
+ *  hack whenever we see ``"//"' ', then the need for the secondary hack
  *  disappears.  Note: it is painful to ensure that the first quote
  *  exists, so we just check for the trailing quote directly abutting
  *  the //.  Note: We should never touch a line that has // completely
@@ -600,7 +625,7 @@ fix = {
  * ANSI macro substitution rules prohibit looking inside quoted strings
  * for the substitution names.  A side effect is that the quotes are
  * inserted in the definitions of those macros as well.  So, the last
- * three sed expressions are supposed to clean up the definitions, as
+ * several sed expressions are supposed to clean up the definitions, as
  * long as those definitions are using "c", "g" or "x" as the macro
  * argument :).  Yuck.
  */
@@ -621,6 +646,9 @@ fix = {
               "s/'\\([cgx]\\)'/\\1/g";
 
     sed = "/#[ \t]*define[ \t]*[ \t]BSD43_CTRL/"
+              "s/'\\([cgx]\\)'/\\1/g";
+
+    sed = "/#[ \t]*define[ \t]*[ \t][_]*ISCTRL/"
               "s/'\\([cgx]\\)'/\\1/g";
 };
 
@@ -2449,6 +2477,5 @@ fix = {
          "rm -f ${DESTDIR}/$file ${DESTDIR}/fixinc.tmp\n"
          "cat > /dev/null";
 };
-
 
 /*EOF*/
