@@ -1,3 +1,8 @@
+Fri Jun 19 02:00:19 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* reload1.c (reload_cse_regno_equal_p): If -ffloat-store, don't
+	consider a MEM in FP mode as equal.
+
 Fri Jun 19 01:02:17 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* c-decl.c (duplicate_decls): Avoid setting TREE_ASM_WRITTEN for
