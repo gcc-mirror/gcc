@@ -1,3 +1,8 @@
+Thu Oct 14 02:57:05 1999  Richard Henderson  <rth@cygnus.com>
+
+	* genrecog.c (validate_pattern): Typo last change.  Verify
+	that output operands have output reloads.
+
 Thu Oct 14 01:49:54 1999  Richard Henderson  <rth@cygnus.com>
 
 	* genrecog.c (special_mode_pred_table): New.
