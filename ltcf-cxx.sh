@@ -478,6 +478,10 @@ case $host_os in
       cxx)
         allow_undefined_flag=' -expect_unresolved \*'
         archive_cmds='$CC -shared${allow_undefined_flag} $predep_objects $libobjs $deplibs $postdep_objects $compiler_flags -msym -soname $soname `test -n "$verstring" && echo -set_version $verstring` -update_registry ${objdir}/so_locations -o $lib'
+	archive_expsym_cmds='for i in `cat $export_symbols`; do printf "-exported_symbol " >> $lib.exp; echo "\$i" >> $lib.exp; done~
+	  echo "-hidden">> $lib.exp~
+	  $CC -shared$allow_undefined_flag $predep_objects $libobjs $deplibs $postdep_objects $compiler_flags -msym -soname $soname -Wl,-input -Wl,$lib.exp  `test -n "$verstring" && echo -set_version	$verstring` -update_registry $objdir/so_locations -o $lib~
+	  $rm $lib.exp'
 
         hardcode_libdir_flag_spec='-rpath $libdir'
         hardcode_libdir_separator=:
@@ -536,7 +540,7 @@ case $host_os in
     case $cc_basename in
       CC)
 	# Sun C++ 4.2, 5.x and Centerline C++
-        no_undefined_flag=' -ztext'
+        no_undefined_flag=' -zdefs'
         archive_cmds='$CC -G${allow_undefined_flag} -nolib -h$soname -o $lib $predep_objects $libobjs $deplibs $postdep_objects $compiler_flags'
         archive_expsym_cmds='$echo "{ global:" > $lib.exp~cat $export_symbols | sed -e "s/\(.*\)/\1;/" >> $lib.exp~$echo "local: *; };" >> $lib.exp~
         $CC -G${allow_undefined_flag} -nolib ${wl}-M ${wl}$lib.exp -h$soname -o $lib $predep_objects $libobjs $deplibs $postdep_objects $compiler_flags~$rm $lib.exp'
@@ -581,6 +585,7 @@ case $host_os in
       *)
         # GNU C++ compiler with Solaris linker
         if test "$with_gcc" = yes && test "$with_gnu_ld" = no; then
+	  no_undefined_flag=' ${wl}-z ${wl}defs'
           if $CC --version | egrep -v '^2\.7' > /dev/null; then
             archive_cmds='$CC -shared -nostdlib $LDFLAGS $predep_objects $libobjs $deplibs $postdep_objects $linker_flags ${wl}-h $wl$soname -o $lib'
             archive_expsym_cmds='$echo "{ global:" > $lib.exp~cat $export_symbols | sed -e "s/\(.*\)/\1;/" >> $lib.exp~$echo "local: *; };" >> $lib.exp~
@@ -655,9 +660,6 @@ if test "$with_gcc" = yes; then
   ac_cv_prog_cc_static='-static'
 
   case $host_os in
-  beos* | irix5* | irix6* | osf3* | osf4* | osf5*)
-    # PIC is the default for these OSes.
-    ;;
   aix*)
     # All AIX code is PIC.
     if test "$host_cpu" = ia64; then
@@ -667,20 +669,28 @@ if test "$with_gcc" = yes; then
       lt_cv_prog_cc_static='-bnso -bI:/lib/syscalls.exp'
     fi
     ;;
-  *djgpp*)
-    # DJGPP does not support shared libraries at all
-    ac_cv_prog_cc_pic=
+  amigaos*)
+    # FIXME: we need at least 68020 code to build shared libraries, but
+    # adding the `-m68020' flag to GCC prevents building anything better,
+    # like `-m68040'.
+    ac_cv_prog_cc_pic='-m68020 -resident32 -malways-restore-a4'
+    ;;
+  beos* | irix5* | irix6* | osf3* | osf4* | osf5*)
+    # PIC is the default for these OSes.
     ;;
   cygwin* | mingw* | os2*)
     # This hack is so that the source file can tell whether it is being
     # built for inclusion in a dll (and should export symbols for example).
     ac_cv_prog_cc_pic='-DDLL_EXPORT'
     ;;
-  amigaos*)
-    # FIXME: we need at least 68020 code to build shared libraries, but
-    # adding the `-m68020' flag to GCC prevents building anything better,
-    # like `-m68040'.
-    ac_cv_prog_cc_pic='-m68020 -resident32 -malways-restore-a4'
+  darwin* | rhapsody*)
+    # PIC is the default on this platform
+    # Common symbols not allowed in MH_DYLIB files
+    lt_cv_prog_cc_pic='-fno-common'
+    ;;
+  *djgpp*)
+    # DJGPP does not support shared libraries at all
+    ac_cv_prog_cc_pic=
     ;;
   sysv4*MP*)
     if test -d /usr/nec; then
