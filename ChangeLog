@@ -1,3 +1,9 @@
+Thu Sep 18 21:43:23 1997  Alexandre Oliva  <oliva@dcc.unicamp.br>
+			  Jeff Law	   <law@cygnus.com>
+
+	* Makefile.in (bootstrap2, bootstrap3): New targets.
+	(all-bootstrap): Remove outdated and confusing target.
+
 1997-09-15 02:37  Ulrich Drepper  <drepper@cygnus.com>
 
 	* config/mt-linux: Define CXXFLAGS to make sure -fvtable-thunks is
