@@ -1,3 +1,7 @@
+2005-01-02  Chris Jefferson  <chris@bubblescope.net>
+
+	* include/bits/stl_algobase.h (mismatch): Correct concept check.
+
 2005-01-01  Paolo Carlini  <pcarlini@suse.de>
 
 	* testsuite/ext/enc_filebuf/char/13189.cc: Fix, first include
