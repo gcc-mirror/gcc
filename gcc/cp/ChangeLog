@@ -1,3 +1,9 @@
+2001-02-14  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* pt.c (maybe_adjust_types_for_deduction, DEDUCE_ORDER case):
+	Remove spurious information in comment. Allow further
+	adjustments of REFERENCE_TYPE args.
+
 2001-02-13  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (CLASSTYPE_DESTRUCTORS): Fix typo in comment.
