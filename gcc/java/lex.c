@@ -834,7 +834,7 @@ java_parse_escape_sequence ()
 }
 
 #ifndef JC1_LITE
-#define IS_ZERO(X) (ereal_cmp (X, dconst0) == 0)
+#define IS_ZERO(X) REAL_VALUES_EQUAL (X, dconst0)
 
 /* Subroutine of java_lex: converts floating-point literals to tree
    nodes.  LITERAL_TOKEN is the input literal, JAVA_LVAL is where to

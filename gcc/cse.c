@@ -3147,13 +3147,17 @@ find_comparison_args (code, parg1, parg2, pmode1, pmode2)
 
       else if (GET_RTX_CLASS (GET_CODE (arg1)) == '<')
 	{
+#ifdef FLOAT_STORE_FLAG_VALUE
+	  REAL_VALUE_TYPE fsfv;
+#endif
+
 	  if (code == NE
 	      || (GET_MODE_CLASS (GET_MODE (arg1)) == MODE_INT
 		  && code == LT && STORE_FLAG_VALUE == -1)
 #ifdef FLOAT_STORE_FLAG_VALUE
 	      || (GET_MODE_CLASS (GET_MODE (arg1)) == MODE_FLOAT
-		  && (REAL_VALUE_NEGATIVE
-		      (FLOAT_STORE_FLAG_VALUE (GET_MODE (arg1)))))
+		  && (fsfv = FLOAT_STORE_FLAG_VALUE (GET_MODE (arg1)),
+		      REAL_VALUE_NEGATIVE (fsfv)))
 #endif
 	      )
 	    x = arg1;
@@ -3162,8 +3166,8 @@ find_comparison_args (code, parg1, parg2, pmode1, pmode2)
 		       && code == GE && STORE_FLAG_VALUE == -1)
 #ifdef FLOAT_STORE_FLAG_VALUE
 		   || (GET_MODE_CLASS (GET_MODE (arg1)) == MODE_FLOAT
-		       && (REAL_VALUE_NEGATIVE
-			   (FLOAT_STORE_FLAG_VALUE (GET_MODE (arg1)))))
+		       && (fsfv = FLOAT_STORE_FLAG_VALUE (GET_MODE (arg1)),
+			   REAL_VALUE_NEGATIVE (fsfv)))
 #endif
 		   )
 	    x = arg1, reverse_code = 1;
@@ -3199,6 +3203,9 @@ find_comparison_args (code, parg1, parg2, pmode1, pmode2)
       for (; p; p = p->next_same_value)
 	{
 	  enum machine_mode inner_mode = GET_MODE (p->exp);
+#ifdef FLOAT_STORE_FLAG_VALUE
+	  REAL_VALUE_TYPE fsfv;
+#endif
 
 	  /* If the entry isn't valid, skip it.  */
 	  if (! exp_equiv_p (p->exp, p->exp, 1, 0))
@@ -3223,8 +3230,8 @@ find_comparison_args (code, parg1, parg2, pmode1, pmode2)
 #ifdef FLOAT_STORE_FLAG_VALUE
 		   || (code == LT
 		       && GET_MODE_CLASS (inner_mode) == MODE_FLOAT
-		       && (REAL_VALUE_NEGATIVE
-			   (FLOAT_STORE_FLAG_VALUE (GET_MODE (arg1)))))
+		       && (fsfv = FLOAT_STORE_FLAG_VALUE (GET_MODE (arg1)),
+			   REAL_VALUE_NEGATIVE (fsfv)))
 #endif
 		   )
 		  && GET_RTX_CLASS (GET_CODE (p->exp)) == '<'))
@@ -3243,8 +3250,8 @@ find_comparison_args (code, parg1, parg2, pmode1, pmode2)
 #ifdef FLOAT_STORE_FLAG_VALUE
 		    || (code == GE
 			&& GET_MODE_CLASS (inner_mode) == MODE_FLOAT
-			&& (REAL_VALUE_NEGATIVE
-			    (FLOAT_STORE_FLAG_VALUE (GET_MODE (arg1)))))
+			&& (fsfv = FLOAT_STORE_FLAG_VALUE (GET_MODE (arg1)),
+			    REAL_VALUE_NEGATIVE (fsfv)))
 #endif
 		    )
 		   && GET_RTX_CLASS (GET_CODE (p->exp)) == '<')

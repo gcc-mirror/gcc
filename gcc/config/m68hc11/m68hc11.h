@@ -303,11 +303,6 @@ extern const struct processor_costs *m68hc11_cost;
    this size or smaller can be used for structures and unions with the
    appropriate sizes.  */
 #define MAX_FIXED_MODE_SIZE	64
-
-/* Floats are checked in a generic way.  */
-/* #define CHECK_FLOAT_VALUE(MODE, D, OVERFLOW) */
-
-
 
 /* target machine storage layout */
 

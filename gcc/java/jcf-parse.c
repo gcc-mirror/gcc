@@ -290,47 +290,44 @@ get_constant (jcf, index)
 	force_fit_type (value, 0);
 	break;
       }
-#if TARGET_FLOAT_FORMAT == IEEE_FLOAT_FORMAT
+
     case CONSTANT_Float:
-      {
-	jint num = JPOOL_INT(jcf, index);
-	REAL_VALUE_TYPE d;
-	d = REAL_VALUE_FROM_TARGET_SINGLE (num);
-	value = build_real (float_type_node, d);
-	break;
-      }
+      /* ??? Even more ideal would be to import the number using the
+	 IEEE decode routines, then use whatever format the target
+	 actually uses.  This would enable Java on VAX to kind work.  */
+      if (TARGET_FLOAT_FORMAT == IEEE_FLOAT_FORMAT)
+	{
+	  jint num = JPOOL_INT(jcf, index);
+	  long buf = num;
+	  REAL_VALUE_TYPE d;
+	  real_from_target (&d, &buf, SFmode);
+	  value = build_real (float_type_node, d);
+	  break;
+	}
+      else
+	goto bad;
+
     case CONSTANT_Double:
-      {
-	HOST_WIDE_INT num[2];
-	REAL_VALUE_TYPE d;
-	HOST_WIDE_INT lo, hi;
-	num[0] = JPOOL_UINT (jcf, index);
-	lshift_double (num[0], 0, 32, 64, &lo, &hi, 0);
-	num[0] = JPOOL_UINT (jcf, index+1);
-	add_double (lo, hi, num[0], 0, &lo, &hi);
+      if (TARGET_FLOAT_FORMAT == IEEE_FLOAT_FORMAT)
+	{
+	  long buf[2], lo, hi;
+	  REAL_VALUE_TYPE d;
 
-	/* Since ereal_from_double expects an array of HOST_WIDE_INT
-	   in the target's format, we swap the elements for big endian
-	   targets, unless HOST_WIDE_INT is sufficiently large to
-	   contain a target double, in which case the 2nd element
-	   is ignored.
+	  hi = JPOOL_UINT (jcf, index);
+	  lo = JPOOL_UINT (jcf, index+1);
 
-	   FIXME: Is this always right for cross targets? */
-	if (FLOAT_WORDS_BIG_ENDIAN && sizeof(num[0]) < 8)
-	  {
-	    num[0] = hi;
-	    num[1] = lo;
-	  }
-	else
-	  {
-	    num[0] = lo;
-	    num[1] = hi;
-	  }
-	d = REAL_VALUE_FROM_TARGET_DOUBLE (num);
-	value = build_real (double_type_node, d);
-	break;
-      }
-#endif /* TARGET_FLOAT_FORMAT == IEEE_FLOAT_FORMAT */
+	  if (FLOAT_WORDS_BIG_ENDIAN)
+	    buf[0] = hi, buf[1] = lo;
+	  else
+	    buf[0] = lo, buf[1] = hi;
+
+	  real_from_target (&d, buf, DFmode);
+	  value = build_real (double_type_node, d);
+	  break;
+	}
+      else
+	goto bad;
+
     case CONSTANT_String:
       {
 	tree name = get_name_constant (jcf, JPOOL_USHORT1 (jcf, index));

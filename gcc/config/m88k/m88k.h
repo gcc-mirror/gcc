@@ -389,14 +389,6 @@ extern int flag_pic;				/* -fpic */
 /* Maximum size (in bits) to use for the largest integral type that
    replaces a BLKmode type. */
 /* #define MAX_FIXED_MODE_SIZE 0 */
-
-/* Check a `double' value for validity for a particular machine mode.
-   This is defined to avoid crashes outputting certain constants.
-   Since we output the number in hex, the assembler won't choke on it.  */
-/* #define CHECK_FLOAT_VALUE(MODE,VALUE) */
-
-/* A code distinguishing the floating point format of the target machine.  */
-/* #define TARGET_FLOAT_FORMAT IEEE_FLOAT_FORMAT */
 
 /*** Register Usage ***/
 

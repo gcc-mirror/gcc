@@ -8880,83 +8880,6 @@ alpha_reorg (insns)
     }
 }
 
-/* Check a floating-point value for validity for a particular machine mode.  */
-
-static const char * const float_strings[] =
-{
-  /* These are for FLOAT_VAX.  */
-   "1.70141173319264430e+38", /* 2^127 (2^24 - 1) / 2^24 */
-  "-1.70141173319264430e+38",
-   "2.93873587705571877e-39", /* 2^-128 */
-  "-2.93873587705571877e-39",
-  /* These are for the default broken IEEE mode, which traps
-     on infinity or denormal numbers.  */
-   "3.402823466385288598117e+38", /* 2^128 (1 - 2^-24) */
-  "-3.402823466385288598117e+38",
-   "1.1754943508222875079687e-38", /* 2^-126 */
-  "-1.1754943508222875079687e-38",
-};
-
-static REAL_VALUE_TYPE float_values[8];
-static int inited_float_values = 0;
-
-int
-check_float_value (mode, d, overflow)
-     enum machine_mode mode;
-     REAL_VALUE_TYPE *d;
-     int overflow ATTRIBUTE_UNUSED;
-{
-
-  if (TARGET_IEEE || TARGET_IEEE_CONFORMANT || TARGET_IEEE_WITH_INEXACT)
-    return 0;
-
-  if (inited_float_values == 0)
-    {
-      int i;
-      for (i = 0; i < 8; i++)
-	float_values[i] = REAL_VALUE_ATOF (float_strings[i], DFmode);
-
-      inited_float_values = 1;
-    }
-
-  if (mode == SFmode)
-    {
-      REAL_VALUE_TYPE r;
-      REAL_VALUE_TYPE *fvptr;
-
-      if (TARGET_FLOAT_VAX)
-	fvptr = &float_values[0];
-      else
-	fvptr = &float_values[4];
-
-      memcpy (&r, d, sizeof (REAL_VALUE_TYPE));
-      if (REAL_VALUES_LESS (fvptr[0], r))
-	{
-	  memcpy (d, &fvptr[0], sizeof (REAL_VALUE_TYPE));
-	  return 1;
-	}
-      else if (REAL_VALUES_LESS (r, fvptr[1]))
-	{
-	  memcpy (d, &fvptr[1], sizeof (REAL_VALUE_TYPE));
-	  return 1;
-	}
-      else if (REAL_VALUES_LESS (dconst0, r)
-		&& REAL_VALUES_LESS (r, fvptr[2]))
-	{
-	  memcpy (d, &dconst0, sizeof (REAL_VALUE_TYPE));
-	  return 1;
-	}
-      else if (REAL_VALUES_LESS (r, dconst0)
-		&& REAL_VALUES_LESS (fvptr[3], r))
-	{
-	  memcpy (d, &dconst0, sizeof (REAL_VALUE_TYPE));
-	  return 1;
-	}
-    }
-
-  return 0;
-}
-
 #ifdef OBJECT_FORMAT_ELF
 
 /* Switch to the section to which we should output X.  The only thing
