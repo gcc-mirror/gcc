@@ -2164,6 +2164,20 @@ dbxout_symbol_location (decl, type, suffix, home)
 	    current_sym_code = DBX_STATIC_CONST_VAR_CODE;
 	  else
 	    {
+	      /* Some ports can transform a symbol ref into a label ref,
+		 because the symbol ref is too far away and has to be
+		 dumped into a constant pool.  Alternatively, the symbol
+		 in the constant pool might be referenced by a different
+		 symbol.  */
+	      if (GET_CODE (current_sym_addr) == SYMBOL_REF
+		  && CONSTANT_POOL_ADDRESS_P (current_sym_addr))
+		{
+		  rtx tmp = get_pool_constant (current_sym_addr);
+
+		  if (GET_CODE (tmp) == SYMBOL_REF)
+		    current_sym_addr = tmp;
+		}
+  
 	      /* Ultrix `as' seems to need this.  */
 #ifdef DBX_STATIC_STAB_DATA_SECTION
 	      data_section ();
