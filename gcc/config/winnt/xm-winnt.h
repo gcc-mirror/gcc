@@ -32,6 +32,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define rindex strrchr
 #define kill(a,b) raise(b)
 
+#define OBJECT_SUFFIX ".obj"
 #define EXECUTABLE_SUFFIX ".exe"
 #define PATH_SEPARATOR ';'
 #define DIR_SEPARATOR '\\'
