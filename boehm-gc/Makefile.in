@@ -91,6 +91,7 @@ THREADLIBS = @THREADLIBS@
 VERSION = @VERSION@
 addobjs = @addobjs@
 boehm_gc_basedir = @boehm_gc_basedir@
+mkinstalldirs = @mkinstalldirs@
 target_all = @target_all@
 
 AUTOMAKE_OPTIONS = cygnus
@@ -195,7 +196,6 @@ CONFIG_STATUS_DEPENDENCIES = $(srcdir)/configure.host
 
 MAKEOVERRIDES = 
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-mkinstalldirs = $(SHELL) $(top_srcdir)/../mkinstalldirs
 CONFIG_CLEAN_FILES = 
 LTLIBRARIES =  $(toolexeclib_LTLIBRARIES)
 
