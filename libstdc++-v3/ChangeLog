@@ -1,3 +1,7 @@
+2003-06-19  Paolo Carlini  <pcarlini@unitus.it>
+
+	* include/std/std_sstream.h (_M_sync): Make non virtual.
+
 2003-06-18  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/testsuite_performance.h (time_counter): New.

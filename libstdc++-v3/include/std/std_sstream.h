@@ -245,7 +245,7 @@ namespace std
        *  @doctodo
        *  @endif
       */
-      virtual void
+      void
       _M_sync(char_type* __base, __size_type __i, __size_type __o)
       {
 	const bool __testin = this->_M_mode & ios_base::in;
