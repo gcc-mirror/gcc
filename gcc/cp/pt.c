@@ -756,6 +756,9 @@ determine_specialization (template_id, decl, targs_out,
 
   *targs_out = NULL_TREE;
 
+  if (fns == error_mark_node)
+    return error_mark_node;
+
   /* Check for baselinks. */
   if (TREE_CODE (fns) == TREE_LIST)
     fns = TREE_VALUE (fns);
@@ -823,9 +826,11 @@ determine_specialization (template_id, decl, targs_out,
     {
     no_match:
       if (complain)
-	cp_error ("`%D' does not match any template declaration",
-		  template_id);
-      
+	{
+	  cp_error_at ("template-id `%D' for `%+D' does not match any template declaration",
+		       template_id, decl);
+	  return error_mark_node;
+	}
       return NULL_TREE;
     }
   else if (TREE_CHAIN (templates) != NULL_TREE) 
@@ -833,9 +838,10 @@ determine_specialization (template_id, decl, targs_out,
     ambiguous:
       if (complain)
 	{
-	  cp_error ("ambiguous template specialization `%D'",
-		    template_id);
+	  cp_error_at ("ambiguous template specialization `%D' for `%+D'",
+		       template_id, decl);
 	  print_candidates (templates);
+	  return error_mark_node;
 	}
       return NULL_TREE;
     }
@@ -3313,24 +3319,46 @@ uses_template_parms (t)
   return for_each_template_parm (t, 0, 0);
 }
 
-static struct tinst_level *current_tinst_level = 0;
-static struct tinst_level *free_tinst_level = 0;
-static int tinst_depth = 0;
+static struct tinst_level *current_tinst_level;
+static struct tinst_level *free_tinst_level;
+static int tinst_depth;
 extern int max_tinst_depth;
 #ifdef GATHER_STATISTICS
-int depth_reached = 0;
+int depth_reached;
 #endif
+int tinst_level_tick;
+int last_template_error_tick;
 
 /* Print out all the template instantiations that we are currently
-   working on.  */
+   working on.  If ERR, we are being called from cp_thing, so do
+   the right thing for an error message.  */
 
-void
-print_template_context ()
+static void
+print_template_context (err)
+     int err;
 {
   struct tinst_level *p = current_tinst_level;
   int line = lineno;
   char *file = input_filename;
 
+  if (err)
+    {
+      if (current_function_decl == p->decl)
+	/* Avoid redundancy with the the "In function" line.  */;
+      else if (current_function_decl == NULL_TREE)
+	cp_error ("In instantiation of `%D':", p->decl);
+      else
+	my_friendly_abort (980521);
+
+      if (p)
+	{
+	  lineno = p->line;
+	  input_filename = p->file;
+	  p = p->next;
+	}
+    }
+
+ next:
   for (; p; p = p->next)
     {
       cp_error ("  instantiated from `%D'", p->decl);
@@ -3341,6 +3369,19 @@ print_template_context ()
 
   lineno = line;
   input_filename = file;
+}
+
+/* Called from cp_thing to print the template context for an error.  */
+
+void
+maybe_print_template_context ()
+{
+  if (last_template_error_tick == tinst_level_tick
+      || current_tinst_level == 0)
+    return;
+
+  last_template_error_tick = tinst_level_tick;
+  print_template_context (1);
 }
 
 static int
@@ -3362,7 +3403,7 @@ push_tinst_level (d)
       error (" (use -ftemplate-depth-NN to increase the maximum)");
       cp_error ("  instantiating `%D'", d);
 
-      print_template_context ();
+      print_template_context (0);
 
       return 0;
     }
@@ -3387,6 +3428,7 @@ push_tinst_level (d)
     depth_reached = tinst_depth;
 #endif
 
+  ++tinst_level_tick;
   return 1;
 }
 
@@ -3399,6 +3441,7 @@ pop_tinst_level ()
   old->next = free_tinst_level;
   free_tinst_level = old;
   --tinst_depth;
+  ++tinst_level_tick;
 }
 
 struct tinst_level *
@@ -3423,7 +3466,12 @@ tsubst_friend_function (decl, args)
      tree args;
 {
   tree new_friend;
-  
+  int line = lineno;
+  char *file = input_filename;
+
+  lineno = DECL_SOURCE_LINE (decl);
+  input_filename = DECL_SOURCE_FILE (decl);
+
   if (TREE_CODE (decl) == FUNCTION_DECL 
       && DECL_TEMPLATE_INSTANTIATION (decl)
       && TREE_CODE (DECL_TI_TEMPLATE (decl)) != TEMPLATE_DECL)
@@ -3458,10 +3506,11 @@ tsubst_friend_function (decl, args)
 				       new_friend,
 				       &new_args,
 				       0, 1);
-      return instantiate_template (tmpl, new_args);
+      new_friend = instantiate_template (tmpl, new_args);
+      goto done;
     }
-    else
-      new_friend = tsubst (decl, args, NULL_TREE);
+  else
+    new_friend = tsubst (decl, args, NULL_TREE);
 	
   /* The new_friend will look like an instantiation, to the
      compiler, but is not an instantiation from the point of view of
@@ -3497,6 +3546,9 @@ tsubst_friend_function (decl, args)
 	new_friend = fn;
     }
 
+ done:
+  lineno = line;
+  input_filename = file;
   return new_friend;
 }
 
@@ -5515,6 +5567,9 @@ instantiate_template (tmpl, targ_ptr)
   int i, len;
   struct obstack *old_fmp_obstack;
   extern struct obstack *function_maybepermanent_obstack;
+
+  if (tmpl == error_mark_node)
+    return error_mark_node;
 
   my_friendly_assert (TREE_CODE (tmpl) == TEMPLATE_DECL, 283);
 
