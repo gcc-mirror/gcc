@@ -22,6 +22,8 @@ Boston, MA 02111-1307, USA.  */
 #ifndef GCC_LANG_HOOKS_DEF_H
 #define GCC_LANG_HOOKS_DEF_H
 
+#include "hooks.h"
+
 struct diagnostic_context;
 
 /* Provide a hook routine for alias sets that always returns 1.  This is
@@ -86,7 +88,7 @@ tree lhd_tree_inlining_convert_parm_for_inlining PARAMS ((tree, tree, tree));
 #define LANG_HOOKS_CLEAR_BINDING_STACK	lhd_clear_binding_stack
 #define LANG_HOOKS_INIT_OPTIONS		lhd_do_nothing
 #define LANG_HOOKS_DECODE_OPTION	lhd_decode_option
-#define LANG_HOOKS_POST_OPTIONS		lhd_do_nothing
+#define LANG_HOOKS_POST_OPTIONS		hook_void_void
 #define LANG_HOOKS_GET_ALIAS_SET	lhd_get_alias_set
 #define LANG_HOOKS_EXPAND_CONSTANT	lhd_return_tree
 #define LANG_HOOKS_EXPAND_EXPR		lhd_expand_expr

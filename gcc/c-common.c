@@ -4319,6 +4319,10 @@ c_common_post_options ()
     warning ("-Wformat-security ignored without -Wformat");
   if (warn_missing_format_attribute && !warn_format)
     warning ("-Wmissing-format-attribute ignored without -Wformat");
+
+  /* If an error has occurred in cpplib, note it so we fail
+     immediately.  */
+  errorcount += cpp_errors (parse_in);
 }
 
 /* Hook that registers front end and target-specific built-ins.  */
