@@ -1,3 +1,20 @@
+2000-10-30  Mark Mitchell  <mark@codesourcery.com>
+
+        * acinclude.m4 (GLIBCPP_CHECK_COMPLEX_MATH_SUPPORT): Check 
+        for cabs, cabsf, and cabsl, too.
+        * aclocal.m4: Regenerated.
+        * config.h.in: Likewise.
+        * configure: Likewise.
+        * libmath/Makefile.am (libmath_la_SOURCES): Remove cabs.c and
+        cabsf.c.
+        * libmath/Makefile.in: Regenerated.
+        * libmath/complex-stub.h (cabs): Don't declare if the system
+        already provides this function.
+        (cabsf): Likewise.
+        (cabsl): Likewise.
+        * src/complex.cc (abs): Directly use `hypot' since we can't call
+        cabs on IRIX.
+
 2000-10-30  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* acinclude.m4: Update URL on egcs.cygnus.com to point to
