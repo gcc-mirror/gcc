@@ -1,3 +1,7 @@
+2003-03-23  Zack Weinberg  <zack@codesourcery.com>
+
+	* Make-lang.in: Link jcf-dump against $(LDEXP_LIB).
+
 2003-03-21  Zack Weinberg  <zack@codesourcery.com>
 
 	* javaop.h (jfloat, jdouble): Make them structures mirroring
@@ -1507,7 +1511,7 @@
 	(read_class): Call it.
 	(java_parse_file): Likewise.
 
-Thu Mar 28 13:22:22 CET 2002  Jan Hubicka  <jh@suse.cz>
+2002-03-28  Jan Hubicka  <jh@suse.cz>
 
 	* java/lang.c (java_init_options): Set flag_trapping_math to 0.
 
@@ -2221,7 +2225,7 @@ Thu Mar 28 13:22:22 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 	* check-init.c (check_init) [SWITCH_EXPR]: Use SWITCH_HAS_DEFAULT.
 
-Mon Dec 10 06:09:57 2001  Douglas B. Rupp  <rupp@gnat.com>
+2001-12-10  Douglas B. Rupp  <rupp@gnat.com>
 
 	* Make-lang.in (jvspec.o): Add $(OUTPUT_OPTION).
 
@@ -2542,7 +2546,7 @@ Mon Dec 10 06:09:57 2001  Douglas B. Rupp  <rupp@gnat.com>
 	into for loop, restore TREE_CHAIN on local `tem' before the next
 	iteration.
 
-Tue Oct 23 14:02:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+2001-10-23  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* lang.c (lang_get_alias_set): Deleted.
 
@@ -3924,7 +3928,7 @@ Tue Oct 23 14:02:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	instead of parse_ctxt fields - the lists are global.
 	(init_src_parse):  New function.
 
-Fri Feb 23 15:28:39 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+2001-02-23  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* decl.c (set_block): Set NAMES and BLOCKS from BLOCK.
 
@@ -4105,7 +4109,7 @@ Fri Feb 23 15:28:39 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* jvspec.c (lang_specific_driver): Link with the shared
 	libgcc by default.
 
-Sun Feb  4 15:52:44 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+2001-02-04  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* check-init.c (check_init): Call internal_error instead of fatal.
 	* expr.c (java_lang_expand_expr): Likewise.
@@ -4658,7 +4662,7 @@ Sun Feb  4 15:52:44 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	necessary.
 	Fixes gcj/367.
 
-Thu Nov 23 02:19:14 2000  J"orn Rennecke <amylaar@redhat.com>
+2000-11-23  J"orn Rennecke <amylaar@redhat.com>
 
 	* Make-lang.in (jvspec.o): Depend on $(CONFIG_H).
 
@@ -5156,12 +5160,12 @@ Thu Nov 23 02:19:14 2000  J"orn Rennecke <amylaar@redhat.com>
 	`class$'.
 	(mangle_static_field): Use mangle_field.
 
-Tue Oct  3 13:44:37 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+2000-10-03  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* decl.c (find_local_variable): Removed uncessary type check and
 	fixed range check typo. From Corey Minyard.
 
-Wed Sep 13 16:06:52 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+2000-09-13  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* decl.c (give_name_to_locals): New local `code_offset'. Call
 	`maybe_adjust_start_pc'.
@@ -5173,7 +5177,7 @@ Wed Sep 13 16:06:52 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	(note_instructions): Likewise.
 	* jcf-parse.c (parse_class_file): Call `note_instructions'.
 
-Wed Sep 13 11:50:35 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+2000-09-13  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (field_access:): Fixed indentation.
 	(qualify_ambiguous_name): Properly qualify `this.a[b].c'.
@@ -5479,7 +5483,7 @@ Wed Sep 13 11:50:35 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	* ChangeLog: Fixed typo in some jcf-write.c entries mentioning
 	generate_bytecode_{conditional,insns}.
 
-Sun Aug 13 09:41:49 2000  Anthony Green  <green@redhat.com>
+2000-08-13  Anthony Green  <green@redhat.com>
 
 	* check-init.c (check_init): Add case for BIT_FIELD_REF (required
 	for -pg builds).
@@ -5537,7 +5541,7 @@ Sun Aug 13 09:41:49 2000  Anthony Green  <green@redhat.com>
 	(patch_incomplete_class_ref): `build_dot_class_method_invocation'
 	to use `ref_type' directly.
 
-Sun Aug  6 00:47:24 2000  Ovidiu Predescu  <ovidiu@cup.hp.com>
+2000-08-06  Ovidiu Predescu  <ovidiu@cup.hp.com>
 
 	* lang-options.h: Added a comma after the last element to avoid
 	syntax errors when other languages define additional options.
@@ -5979,7 +5983,7 @@ Sun Aug  6 00:47:24 2000  Ovidiu Predescu  <ovidiu@cup.hp.com>
 	(find_most_specific_methods_list): New local variables `abstract'
 	and `candidates'. Use them to pick the right method.
 
-Tue Jun  6 11:39:05 2000  Tom Tromey  <tromey@ferrule.cygnus.com>
+2000-06-06  Tom Tromey  <tromey@ferrule.cygnus.com>
 
 	* parse.y (check_modifiers_consistency): Don't subtract out
 	`PUBLIC_TK' from argument to THIS_MODIFIER_ONLY.
@@ -5990,7 +5994,7 @@ Tue Jun  6 11:39:05 2000  Tom Tromey  <tromey@ferrule.cygnus.com>
 	(LIBS): Add above.
 	(DEPLIBS): Ditto.
 
-Fri Jun  2 16:48:55 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+2000-06-02  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* class.c (get_dispatch_table): Build the vtable dummy entry list
 	element with a null purpose. Fixed leading comment.
@@ -6054,12 +6058,12 @@ Fri Jun  2 16:48:55 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	one.)
 	(resolve_qualified_expression_name): Fixed comment.
 
-Thu Apr 27 17:47:34 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+2000-04-27  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* jcf-parse.c (jcf_parse_source): Reset current_class and
 	current_function_decl to NULL before parsing a new file.
 
-Thu Apr 27 17:25:33 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+2000-04-27  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (block_end:): If the collected block doesn't feature a
 	statement, insert an empty statement.
@@ -6098,7 +6102,7 @@ Thu Apr 27 17:25:33 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	* jcf-write.c (generate_classfile): Scan the source_file for
 	slashes with the right pointer variable.
 
-Wed May 17 17:27:44 2000  Andrew Cagney  <cagney@b1.cygnus.com>
+2000-05-17  Andrew Cagney  <cagney@b1.cygnus.com>
 
 	* lang.c (lang_decode_option): Update -Wunused flags by calling
 	set_Wunused.
@@ -6205,7 +6209,7 @@ Wed May 17 17:27:44 2000  Andrew Cagney  <cagney@b1.cygnus.com>
 	or `private' methods.
 	(patch_invoke): Handle INVOKE_NONVIRTUAL case.
 
-Wed Apr 26 14:29:33 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+2000-04-26  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* decl.c (complete_start_java_method): Don't call _Jv_InitClass
 	from <clinit>
@@ -6231,7 +6235,7 @@ Wed Apr 26 14:29:33 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	(patch_method_invocation): Insert proper context as second
 	parameter to pure inner class constructor super invocations.
 
-Mon Apr 24 14:59:36 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+2000-04-24  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (end_class_declaration): Reset the interface number
 	counter.
@@ -6259,7 +6263,7 @@ Mon Apr 24 14:59:36 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	* boehm.c (mark_reference_fields): Added `last_view_index'
 	argument.  Use DECL_FIELD_OFFSET to determine field's offset.
 
-Thu Apr 20 17:41:28 2000  Mo DeJong  <mdejong@cygnus.com>
+2000-04-20  Mo DeJong  <mdejong@cygnus.com>
 
 	* parse.h (INTERFACE_INNER_MODIFIERS): New macro.
 	* parse.y (check_class_interface_creation): Fixed comments. Select
@@ -6279,7 +6283,7 @@ Thu Apr 20 17:41:28 2000  Mo DeJong  <mdejong@cygnus.com>
 	class, when doing inheritance check for protected reference.
 	Fixes PR gcj/124.
 
-Thu Apr 20 18:20:58 2000  Jason Schroeder  <shrode@subnature.com>
+2000-04-20  Jason Schroeder  <shrode@subnature.com>
 
 	* jcf-dump.c (SPECIAL_IINC): Fixed typo printing iinc instruction.
 
@@ -6401,7 +6405,7 @@ Thu Apr 20 18:20:58 2000  Jason Schroeder  <shrode@subnature.com>
 
 	* parse.y (create_new_parser_context): Likewise.
 
-Thu Mar 30 15:26:56 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+2000-03-30  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* expr.c (java_lang_expand_expr): Added Anthony's Thu Jan 6 2000
 	patch missing hunk. Fixed indentation.
@@ -6437,13 +6441,13 @@ Thu Mar 30 15:26:56 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	* jvspec.c (jvgenmain_spec): Add `%{<...}' construct for each
 	Java-specific `-f' option.
 
-Sun Mar 26 11:37:55 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+2000-03-26  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* decl.c (init_decl_processing): Only call initialize_sizetypes once.
 	Adjust order of making types.
 	Make bitsize_*_node values.
 
-Sat Mar 25 09:12:10 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+2000-03-25  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* class.c (make_field_value): Use byte_position.
 	* expr.c (JAVA_ARRAY_LENGTH_OFFSET): Use byte_position.
@@ -6466,7 +6470,7 @@ Sat Mar 25 09:12:10 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	(find_most_specific_methods_list): Pick the closest candidate when
 	they're all abstract.
 
-Mon Mar 20 08:58:51 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+2000-03-20  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* jcf-write.c (generate_bytecode_insns): TRY_FINALLY_EXPR:
 	properly initialize `finished_label'. Don't emit gotos for empty
@@ -6501,7 +6505,7 @@ Mon Mar 20 08:58:51 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	(patch_incomplete_class_ref): Invoke synthetic method if necessary.
 	(build_try_statement): Fixed leading comment.
 
-Fri Mar 17 08:09:14 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+2000-03-17  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* class.c (make_field_value): Properly handle sizes.
 	(get_dispatch_vector): Use tree_low_cst and host_integerp.
@@ -6559,7 +6563,7 @@ Fri Mar 17 08:09:14 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	mark_reference_fields.
 	(mark_reference_fields): New function.
 
-Tue Mar 14 17:15:41 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+2000-03-14  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (register_incomplete_type): Fixed initialization of
 	JDEP_ENCLOSING.
@@ -6591,7 +6595,7 @@ Tue Mar 14 17:15:41 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	Section dealing with qualified expression rewritten to use
 	resolve_field_access.
 
-Mon Mar 13 12:21:13 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+2000-03-13  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.h (PUSH_CPC): Fixed indentation.
 	(DEBUG_CPC): New macro.
@@ -6614,7 +6618,7 @@ Mon Mar 13 12:21:13 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	(resolve_qualified_expression_name): Handle situation where `this'
 	is implied.
 
-Mon Mar 13 11:36:51 2000  Hans Boehm <boehm@acm.org>
+2000-03-13  Hans Boehm <boehm@acm.org>
 
 	* typeck.c (build_prim_array_type): Correctly set the high word too.
 
@@ -6645,7 +6649,7 @@ Mon Mar 13 11:36:51 2000  Hans Boehm <boehm@acm.org>
 	* expr.c (force_evaluation_order): Call force_evaluation_order on
 	function's arguments too.
 
-Mon Mar  6 18:07:07 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+2000-03-06  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* decl.c (emit_init_test_initialization): Mark KEY as unused.
 	* expr.c (build_newarray): Cast TREE_INT_CST_LOW to HOST_WIDE_INT.
@@ -6693,7 +6697,7 @@ Mon Mar  6 18:07:07 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	(lookup_java_method): Re-written by calling lookup_do.
 	(lookup_do): New function.
 
-Thu Mar  2 15:18:33 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+2000-03-02  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* check-init.c (check_init): Removed dead code. Handle (blank)
 	final variables.
@@ -6754,13 +6758,13 @@ Thu Mar  2 15:18:33 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* decl.c (current_function_decl): Move to toplev.c.
 
-Mon Feb 28 08:20:42 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+2000-02-28  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* java-tree.h (LABEL_PC): Relect name changes in ../tree.h.
 	(DECL_BIT_INDEX): Use underlying representation.
 	* parse.h (DECL_INHERITED_SOURCE_LINE): Likewise.
 
-Sun Feb 27 16:40:33 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+2000-02-27  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* expr.c (build_java_ret): Pass proper type to size_binop.
 
@@ -6787,25 +6791,25 @@ Sun Feb 27 16:40:33 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	(struct lang_decl): Add init_test_table field.
 	(init_test_hash_entry): Define.
 
-Fri Feb 25 18:41:31 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+2000-02-25  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* gjavah.c (main): Avoid using `argi' to report unimplemented
 	options.
 
-Fri Feb 25 18:47:25 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+2000-02-25  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* jcf-write.c (generate_bytecode_insns): TRY_FINALLY_EXPR:
 	initialize locals to avoid warnings. Local `exception_type' moved
 	into if statement.
 
-Fri Feb 25 18:00:37 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+2000-02-25  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (resolve_expression_name): Use `orig' as a second
 	argument to resolve_field_access.
 	(resolve_field_access): Removed unnecessary code when dealing with
 	static fields.
 
-Wed Feb 23 17:41:50 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+2000-02-23  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* class.c (push_super_field): Don't push the field twice.
 	* jcf-parse.c (parse_source_file): Call java_reorder_fields.
@@ -6823,7 +6827,7 @@ Wed Feb 23 17:41:50 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	* parse.y (init_decl_processing): `_Jv_IsInstanceOf' returned
 	value type set to `boolean_type_node'.
 
-Mon Jan 18 14:30:09 2000  Joerg Brunsmann  <joerg.brunsmann@fernuni-hagen.de>
+2000-01-18  Joerg Brunsmann  <joerg.brunsmann@fernuni-hagen.de>
 
 	* jcf-dump.c (main): Test for correct condition after
 	output file creation.
@@ -6832,7 +6836,7 @@ Mon Jan 18 14:30:09 2000  Joerg Brunsmann  <joerg.brunsmann@fernuni-hagen.de>
 
 	* jcf-depend.c (add_entry): Fix test for first list entry.
 
-Sat Feb 19 18:43:13 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+2000-02-19  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* class.c (build_class_ref, push_super_field): Set DECL_SIZE_UNIT.
 	* constants.c (build_constants_constructor): Likewise.
@@ -6841,7 +6845,7 @@ Sat Feb 19 18:43:13 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* jcf-depend.c (add_entry): Add entries to the end of the list.
 
-Wed Nov 03 02:16:00 PST 1999  Pekka Nikander  <pekka.nikander@hut.fi>
+1999-11-03  Pekka Nikander  <pekka.nikander@hut.fi>
 
 	* decl.c (INT_TYPE_SIZE): Define if necessary.
 	(expand_java_return): Handle the case of a native integer smaller
@@ -6853,12 +6857,12 @@ Wed Nov 03 02:16:00 PST 1999  Pekka Nikander  <pekka.nikander@hut.fi>
 	* jv-scan.c (help): Likewise.
 	* jcf-dump.c (help): Likewise.
 
-Thu Feb 17 14:30:37 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+2000-02-17  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* jcf-write.c (generate_bytecode_insns): Don't generate empty
 	`finally' clauses.
 
-Thu Feb 17 13:20:58 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+2000-02-17  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* jcf-parse.c (load_class): Call `fatal' if no file containing
 	the target class are found.
@@ -6905,7 +6909,7 @@ Thu Feb 17 13:20:58 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* jv-scan.c: Likewise.
 
-Sat Feb 12 04:34:04 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+2000-02-12  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (outer_field_access_fix): First parameter now a tree
 	node. Check for assignement to final. First argument to
@@ -6919,7 +6923,7 @@ Sat Feb 12 04:34:04 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	(patch_unaryop): Use node instead of its line/column value when
 	calling outer_field_access_fix.
 
-Fri Feb 11 17:38:26 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+2000-02-11  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (interface_declaration:): No longer tagged
 	<node>. Re-installed default action.
@@ -6931,24 +6935,24 @@ Fri Feb 11 17:38:26 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	(register_fields): Inner class static field limitations not to
 	apply to inner interfaces.
 
-Thu Feb 10 22:07:35 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+2000-02-10  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* jcf-parse.c (load_class): Update `java_error_count' when a
 	class' file can't be found.
 	(parse.y): Avoid (byte)code generation when errors seen.
 
-Thu Feb 10 20:10:43 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+2000-02-10  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (java_complete_lhs): Handle TRUNC_DIV_EXPR. Ensure `fatal'
 	decodes a valid node.
 	(patch_binop): Handle TRUNC_DIV_EXPR.
 
-Thu Feb 10 16:04:26 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+2000-02-10  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (resolve_package): New local `acc'. Try to progressively
 	build and guess a package and type name.
 
-Thu Feb 10 12:52:09 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+2000-02-10  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (find_applicable_accessible_methods_list): Load and
 	layout the search class if necessary.
@@ -7011,7 +7015,7 @@ Thu Feb 10 12:52:09 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	(patch_unaryop): Handle outer field access when generating
 	bytecode.
 
-Thu Feb  3 20:23:19 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+2000-02-03  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* java-tree.h (FIELD_THISN): New macro.
 	* jcf-write.c (append_synthetic_attribute): New function.
@@ -7078,7 +7082,7 @@ Thu Feb  3 20:23:19 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	assemble doubles correctly when HOST_FLOAT_WORDS_BIG_ENDIAN is
 	defined to be 1.
 
-Wed Feb  2 18:43:37 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+2000-02-02  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* java-tree.def (INSTANCE_INITIALIZERS_EXPR): New tree code.
 	* java-tree.h (TYPE_II_STMT_LIST): New macro.
@@ -7171,7 +7175,7 @@ Wed Feb  2 18:43:37 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	(main): Use getopt_long_only to parse command line.
 	(usage): Changed message.
 
-Tue Feb  1 22:23:41 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+2000-02-01  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* java-tree.def (NEW_ANONYMOUS_ARRAY_EXPR): New tree code.
 	* parse.h (ANONYMOUS_ARRAY_BASE_TYPE, ANONYMOUS_ARRAY_DIMS_SIG,
@@ -7182,7 +7186,7 @@ Tue Feb  1 22:23:41 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	(qualify_ambiguous_name): Likewise.
 	(java_complete_expand_class): Likewise.
 
-Tue Feb  1 14:59:35 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+2000-02-01  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* java-tree.def (SYNCHRONIZED_EXPR): Fixed typo.
 	* parse.h (MANGLE_ALIAS_INITIALIZER_PARAMETER_NAME_ID): New macro.
@@ -7228,7 +7232,7 @@ Tue Feb  1 14:59:35 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	error handling/recovery.
 	* java-tree.h (SYNCHRONIZED_EXPR): Fixed typo in comment.
 
-Fri Jan 28 20:10:57 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+2000-01-28  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* java-tree.h (ARG_FINAL_P, FIELD_LOCAL_ALIAS,
 	FIELD_LOCAL_ALIAS_USED): New macros.
@@ -7405,7 +7409,7 @@ Fri Jan 28 20:10:57 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	MAYBE_CREATE_TYPE_TYPE_LANG_SPECIFIC.
 	(set_java_signature): Likewise.
 
-Mon Jan 18 14:30:09 2000  Joerg Brunsmann  <joerg.brunsmann@fernuni-hagen.de>
+2000-01-18  Joerg Brunsmann  <joerg.brunsmann@fernuni-hagen.de>
 
 	* gjavah.c: Delete ACC_VISIBILITY define.
 	* jcf.h: Add ACC_VISIBILITY define.
@@ -7414,7 +7418,7 @@ Mon Jan 18 14:30:09 2000  Joerg Brunsmann  <joerg.brunsmann@fernuni-hagen.de>
 	default package access check.
 	(local_variable_declaration_statement): Use final: rule.
 
-Mon Jan 17 11:58:17 2000  Joerg Brunsmann  <joerg.brunsmann@fernuni-hagen.de>
+2000-01-17  Joerg Brunsmann  <joerg.brunsmann@fernuni-hagen.de>
 
 	* parse.y (format_parameter:): Use final: rule instead of modifiers:.
 	(final:): New rule.
@@ -7423,7 +7427,7 @@ Mon Jan 17 11:58:17 2000  Joerg Brunsmann  <joerg.brunsmann@fernuni-hagen.de>
 
 	* gjavah.c (print_field_info): Allow non-static final fields.
 
-Fri Jan 14 18:03:41 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+2000-01-14  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.h (enum jdep_code): New entry `JDEP_ANONYMOUS'.
 	* parse.y (patch_anonymous_class): New function.
@@ -7432,7 +7436,7 @@ Fri Jan 14 18:03:41 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	(parser_check_super_interface): Simplify argument to CLASS_INTERFACE.
 	(verify_constructor_super): Tuned error message.
 
-Fri Jan 14 00:14:24 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+2000-01-14  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* java-tree.h (FOR_LOOP_P): Replaces IS_FOR_LOOP_P.
 	(ANONYMOUS_CLASS_P): New macro.
@@ -7476,7 +7480,7 @@ Fri Jan 14 00:14:24 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	(search_loop): Use FOR_LOOP_P.
 	(labeled_block_contains_loop_p): Likewise.
 
-Wed Jan 12 00:38:47 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+2000-01-12  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* class.c (set_super_info): Set CLASS_STATIC when appropriate.
 	(enclosing_context_p): New function.
@@ -7657,7 +7661,7 @@ Wed Jan 12 00:38:47 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	* parse.y (build_string_concatenation): Only use
 	StringBuffer(String) shortcut if String arg is constant.
 
-Wed Jan 12 20:20:11 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+2000-01-12  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* jcf-write.c (generate_bytecode_insns): binop: Change the type of
 	the shift value to int. Fixed typo in comment.
@@ -7678,12 +7682,12 @@ Wed Jan 12 20:20:11 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* Makefile.in (jcf-dump, gcjh): Move ../errors.o before $(LIBS).
 
-Thu Jan  6 16:31:28 2000  Anthony Green  <green@cygnus.com>
+2000-01-06  Anthony Green  <green@cygnus.com>
 
 	* expr.c (java_lang_expand_expr): Switch to permanent obstack
 	before building constant array decl.
 
-Thu Jan  6 00:54:10 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+2000-01-06  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* jcf-write.c (generate_bytecode_conditional): Fixed indentation in
 	method invocation and typo in conditional expression.
@@ -7742,7 +7746,7 @@ Thu Jan  6 00:54:10 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	patch_throw_statement, check_thrown_exceptions,
 	patch_conditional_expr): Likewise.
 
-Fri Dec 24 00:25:29 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1999-12-24  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* Makefile.in (LIBDEPS): Added gcc's errors.o
 	(../jcf-dump$(exeext):): Link with gcc's errors.o
@@ -7781,7 +7785,7 @@ Fri Dec 24 00:25:29 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	fixes PR gcj/119.
 	(process_file): Use `\n\' at end of each line in string.
 
-Thu Dec 16 00:09:45 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1999-12-16  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* expr.c (expand_invoke): Layout the loaded class before
 	attempting to use it.
@@ -7814,7 +7818,7 @@ Thu Dec 16 00:09:45 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	* typeck.c (lookup_java_method): Take WFLs in method names into
 	account.
 
-Tue Dec 14 14:20:16 1999  Per Bothner  <per@bothner.com>
+1999-12-14  Per Bothner  <per@bothner.com>
 
 	* class.c (make_class_data): flag_keep_inline_functions to keep
 	private methods in the method array.
@@ -7824,12 +7828,12 @@ Tue Dec 14 14:20:16 1999  Per Bothner  <per@bothner.com>
 	* check-init.c (check_init): Take into account both types of
 	`throw's when checking for uninitialized variables.
 
-Fri Dec 10 21:53:45 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1999-12-10  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (java_complete_lhs): Force convertion of array
 	dimensions to int_type_node, that's what runtime's ABI expects.
 
-Fri Dec 10 16:13:48 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1999-12-10  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.h (EXPR_WFL_QUALIFICATION): Temporary uses the third
 	operand of a WFL, until the Java front-end gets fixed with regard
@@ -7843,7 +7847,7 @@ Fri Dec 10 16:13:48 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	java-tree.h: Ditto.
 	jcf-write.c: Ditto.
 
-Wed Dec  8 15:33:26 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1999-12-08  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* expr.c (java_lang_expand_expr): Switch to permanent obstack
 	before calling expand_eh_region_start and expand_start_all_catch.
@@ -7859,18 +7863,18 @@ Wed Dec  8 15:33:26 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	(init_decl_processing): Mark all memory allocating DECLs with
 	DECL_IS_MALLOC.
 
-Wed Dec  1 04:25:06 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1999-12-01  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* except.c (expand_end_java_handler): Call
 	expand_resume_after_catch and end_catch_handler.
 
-Tue Nov 30 12:36:15 1999  Anthony Green  <green@cygnus.com>
+1999-11-30  Anthony Green  <green@cygnus.com>
 
 	* verify.c (verify_jvm_instructions): Create new return label
 	chain if non existent (don't rely on the verified state of the jsr
 	target.)
 
-Tue Nov 30 12:28:34 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1999-11-30  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* jcf-write.c (generate_bytecode_insns): Fixed indentation for
 	COMPOUND_EXPR and FIX_TRUNC_EXPR cases.
@@ -7885,7 +7889,7 @@ Tue Nov 30 12:28:34 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	* decl.c (find_local_variable): Reuse single slot decls when
 	  appropriate.
 
-Wed Nov 24 17:33:26 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1999-11-24  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* jcf-parse.c (saw_java_source): Global variable removed.
 	(read_class): Don't use `saw_java_source'. Added extra braces.
@@ -7895,12 +7899,12 @@ Wed Nov 24 17:33:26 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* except.c (emit_handlers): Zero catch_clauses after emitting them.
 
-Tue Nov 23 17:29:40 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1999-11-23  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* verify.c (merge_type_state): Non verified subroutines being
 	considered more than once to trigger passive type merge.
 
-Tue Nov 23 10:55:18 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1999-11-23  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (catch_clause_parameter:): Still set `$$' to NULL_TREE
 	in case of error. Error message tuned.
@@ -7924,12 +7928,12 @@ Tue Nov 23 10:55:18 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* lang.c (lang_decode_option): Parse new options.
 
-Wed Nov 17 21:09:28 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1999-11-17  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* class.c (layout_class): Always convert TYPE_SIZE_UNIT to
 	int_type_node: that's what `_Jv_AllocObject' expects.
 
-Thu Nov 11 01:57:14 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1999-11-11  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (lookup_method_invoke): Use lang_printable_name to
 	reliably build the type name during error report. Fixes PR gcj/97.
@@ -7940,7 +7944,7 @@ Thu Nov 11 01:57:14 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	(jcf_path_init): Search for libjava.zip.  Fixes PR gcj/84.
 	(DIR_UP): New macro.
 
-Tue Nov  9 12:12:38 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1999-11-09  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (source_end_java_method): Resume permanent allocation,
 	reversing Apr 27 1998 patch.
@@ -7952,39 +7956,39 @@ Tue Nov  9 12:12:38 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	* class.c (finish_class): Emit inlined methods if any native
 	methods exist in the class.  Fixes PR gcj/85.
 
-Thu Nov  4 16:27:01 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1999-11-04  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (resolve_qualified_expression_name): Handle PLUS_EXPR.
 	(qualify_ambiguous_name): Likewise.
 
-Wed Nov  3 15:20:02 MST 1999  Godmar Back <gback@cs.utah.edu>
+1999-11-03  Godmar Back <gback@cs.utah.edu>
 
 	* typeck.c: (lookup_java_method):  search all inherited
 	interfaces when looking up interface method.
 
-Mon Nov  1 23:42:00 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1999-11-01  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (method_header:): Issue error message for rule `type
 	error'.
 	(synchronized:): Error report when not using synchronized.
 
-Mon Nov  1 01:32:48 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1999-11-01  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (resolve_qualified_expression_name): Prevent `this' from
 	being used before the superclass constructor has been called.
 	(complete_function_arguments): Use CALL_EXPLICIT_CONSTRUCTOR_P
 	instead of `CALL_THIS_CONSTRUCTOR_P'.
 
-Sat Oct 30 21:35:13 1999  Todd T. Fries <todd@lighthouse.fries.net>
+1999-10-30  Todd T. Fries <todd@lighthouse.fries.net>
 
 	* check-init.c: Fix typo in comment.
 
-Fri Oct 29 14:35:18 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1999-10-29  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* class.c (add_method_1): Set DECL_INLINE to 1 for private, static
 	and final method.
 
-Fri Oct 29 14:23:32 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1999-10-29  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (expression_statement:): Call function to report
 	improper invocation of a constructor.
@@ -8000,12 +8004,12 @@ Fri Oct 29 14:23:32 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	* jvgenmain.c (main): _Jv_Compiler_Properties now an extern; set
 	in generated `main'.
 
-Thu Oct 21 01:27:31 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1999-10-21  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (resolve_qualified_expression_name): Handle MODIFY_EXPR.
 	(qualify_ambiguous_name): Likewise.
 
-Wed Oct 20 01:41:47 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1999-10-20  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (java_complete_tree): fold_constant_for_init to work on
 	permanent_obstack.
@@ -8050,7 +8054,7 @@ Wed Oct 20 01:41:47 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* verify.c (verify_jvm_instructions): Likewise.
 
-Tue Oct 12 22:28:10 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1999-10-12  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* jcf-write.c (RELOCATION_VALUE_1): Fixed integer value from 0 to 1.
 
@@ -8068,11 +8072,11 @@ Tue Oct 12 22:28:10 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	well.  Fixes Java PR gcj/59.
 	* parse-scan.y (yyerror): Report errors.
 
-Fri Sep 24 12:23:05 1999  Glenn Chambers  <GChambers@provsol.com>
+1999-09-24  Glenn Chambers  <GChambers@provsol.com>
 
 	* decl.c (insert_block): Remove unconditional `abort'.
 
-Fri Sep 24 10:48:10 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
+1999-09-24  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* decl.c (builtin_function): No longer static.  New arg CLASS.  Arg
 	FUNCTION_CODE now of type int.  All callers changed.
@@ -8091,7 +8095,7 @@ Fri Sep 24 10:48:10 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 	(WORDS_TO_LONG): Likewise.
 	(WORDS_TO_DOUBLE): Likewise.
 
-Tue Sep 14 16:24:19 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1999-09-14  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* jcf-write.c (RELOCATION_VALUE_0): New macro.
 	(RELOCATION_VALUE_1): Likewise.
@@ -8120,7 +8124,7 @@ Tue Sep 14 16:24:19 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* lang.c (lang_decode_option): Extend comment.
 
-Thu Sep 16 15:42:39 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1999-09-16  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (java_method_add_stmt): Test against GET_CURRENT_BLOCK
 	instead of fndecl.
@@ -8165,7 +8169,7 @@ Thu Sep 16 15:42:39 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* zextract.c (ALLOC): Use xmalloc, not malloc.
 
-Sun Sep 12 23:30:09 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+1999-09-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Make-lang.in (jvspec.o): Depend on system.h and gcc.h.
 
@@ -8177,12 +8181,12 @@ Sun Sep 12 23:30:09 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 	(lang_specific_driver): All calls to the function pointer
 	parameter now explicitly call `fatal'.
 
-Sat Sep 11 16:46:44 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1999-09-11  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (find_applicable_accessible_methods_list): Search
 	abstract classes as interfaces.
 
-Thu Sep  9 17:33:28 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1999-09-09  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* class.c (finish_class): We're now outside a valid method
 	declaration. Tell the rest of gcc so.
@@ -8198,7 +8202,7 @@ Thu Sep  9 17:33:28 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	(decode_signature_piece): Don't emit "::" in JArray<>.
 	(print_namelet): Only print trailing `;' when printing a class.
 
-Fri Sep 10 10:32:32 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
+1999-09-10  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* java-tree.h: Delete declarations for all tree nodes now moved to
 	global_trees.
@@ -8258,7 +8262,7 @@ Fri Sep 10 10:32:32 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* Make-lang.in: Likewise.
 
-Mon Aug 30 16:41:41 1999  Hans-Peter Nilsson  <hp@axis.se>
+1999-08-30  Hans-Peter Nilsson  <hp@axis.se>
 
 	* Makefile.in (xref.o): Depend on xref.c explicitly.
 
@@ -8268,7 +8272,7 @@ Mon Aug 30 16:41:41 1999  Hans-Peter Nilsson  <hp@axis.se>
 
 	* lang.c (lang_printable_name): Likewise.
 
-Fri Aug 27 23:31:57 1999  Jeffrey A Law  (law@cygnus.com)
+1999-08-27  Jeffrey A Law  (law@cygnus.com)
 
 	* gjavah.c, jcf-write.c, verify.c: Do not use C++ style
 	comments in C code.
@@ -8278,13 +8282,13 @@ Fri Aug 27 23:31:57 1999  Jeffrey A Law  (law@cygnus.com)
 	* gjavah.c (print_cxx_classname): Print "::" before qualified
 	name.
 
-Thu Aug 26 09:10:58 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1999-08-26  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (lookup_cl): Changed leading comment. Now does its best
 	to set the column number.
 	(qualify_ambiguous_name): Take WFL wrappers into account.
 
-Wed Aug 25 15:37:15 1999  Gregg Townsend  <gmt@cs.arizona.edu>
+1999-08-25  Gregg Townsend  <gmt@cs.arizona.edu>
 
 	* verify.c (verify_jvm_instructions): Don't check instruction
 	validity beyond end of method.
@@ -8347,7 +8351,7 @@ Wed Aug 25 15:37:15 1999  Gregg Townsend  <gmt@cs.arizona.edu>
 
 	* verify.c (start_pc_cmp): Don't needlessly cast away const.
 
-Sun Aug 22 11:07:41 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1999-08-22  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (check_method_redefinition): Changed leading comment.
 	(check_abstract_method_definitions): New function.
@@ -8356,7 +8360,7 @@ Sun Aug 22 11:07:41 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	(verify_constructor_super): Fixed indentation.
 	(lookup_method_invoke): Likewise.
 
-Thu Aug 19 10:26:18 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1999-08-19  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (method_header): Return a null pointer if the current
 	class node is null.
@@ -8365,18 +8369,18 @@ Thu Aug 19 10:26:18 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	(source_start_java_method): Likewise.
 	(java_method_add_stmt): Likewise.
 
-Wed Aug 18 13:17:15 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1999-08-18  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* class.c (emit_register_class): Removed unnecessary call to
 	start_sequence.
 	* parse.y (labeled_block_contains_loop_p): Removed unused local
 	variable.
 
-Tue Aug 17 22:51:44 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1999-08-17  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (java_refold): Added prototype.
 
-Tue Aug 17 21:48:41 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1999-08-17  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (BINOP_COMPOUND_CANDIDATES): New macro.
 	(java_stabilize_reference): Removed unnecessary `else'.
@@ -8398,7 +8402,7 @@ Tue Aug 17 21:48:41 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	* expr.c (java_lang_expand_expr): Mark static array data as
 	referenced.
 
-Tue Aug	10 00:28:31 1999  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+1999-08-10  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* jvgenmain.c (main): NUL-terminate name_obstack.
 
@@ -8550,7 +8554,7 @@ Tue Aug	10 00:28:31 1999  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 	(java_complete_expand_methods, java_expand_finals): Make static.
 	(convert_narrow): Remove static prototype.
 
-Tue Aug  3 20:21:20 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
+1999-08-03  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* Makefile.in (decl.o): Depends on $(srcdir)/../defaults.h.
 
@@ -8622,7 +8626,7 @@ Tue Aug  3 20:21:20 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 	(print_full_cxx_name): New function.
 	(print_c_decl): Use print_full_cxx_name.
 
-Thu Jul 22 12:41:12 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1999-07-22  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* check-init.c (check_init): Handle MAX_EXPR.
 
@@ -8652,7 +8656,7 @@ Thu Jul 22 12:41:12 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	* lang-options.h (DEFINE_LANG_NAME ("Java")): Add
 	-fuse-divide-subroutine
 
-Tue Jul 20 13:20:05 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1999-07-20  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (resolve_and_layout): Check methods only once.
 	(resolve_qualified_expression_name): Verify thrown exceptions
@@ -8665,17 +8669,17 @@ Tue Jul 20 13:20:05 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	* expr.c (expand_expr): Do not return the last statement in a
 	block as the block's value.
 
-Sat Jul  3 22:26:32 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1999-07-03  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* expr.c (force_evaluation_order): Save the COMPOUND_EXPR'ed
 	CALL_EXPR, to avoid order of evaluation changes.
 
-Fri Jul  2 17:44:08 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1999-07-02  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (qualify_ambiguous_name): Do not use
 	IDENTIFIER_LOCAL_VALUE when name is a STRING_CST.
 
-Thu Jul  1 23:31:16 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1999-07-01  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* check-init.c (check_init): Handle MAX_EXPR.
 	* expr.c (force_evaluation_order): Force method call arguments to
@@ -8683,7 +8687,7 @@ Thu Jul  1 23:31:16 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	* parse.y (qualify_ambiguous_name): Loop again to qualify
 	NEW_ARRAY_EXPR properly.
 
-Wed Jun 30 17:27:58 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1999-06-30  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (patch_invoke): Resolve unresolved invoked method
 	returned type.
@@ -8700,7 +8704,7 @@ Wed Jun 30 17:27:58 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* jvspec.c (lang_specific_driver): Recognize --help.
 
-Fri Jun 25 13:35:19 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1999-06-25  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (resolve_package): Fixed bogus return statement.
 	(patch_method_invocation): Resolve method invocation beginning with
@@ -8713,19 +8717,19 @@ Fri Jun 25 13:35:19 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	(java.stage3): Likewise for stage3-start.
 	(java.stage4): Likewise for stage4-start.
 
-Thu Jun 24 13:12:15 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1999-06-24  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (java_complete_lhs): When doing cross referencing, don't
 	try to keep file location on a WFL expanded as a CALL_EXPR.
 
-Wed Jun 23 14:37:15 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1999-06-23  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (finish_method_declaration): Insert a RETURN_EXPR when
 	compiling to class file a void method with an empty method body.
 	As a side effect, the bytecode backend will generate the
 	appropriate `return' instruction.
 
-Tue Jun 22 20:43:49 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1999-06-22  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (lookup_package_type_and_set_next): New function prototype.
 	(resolve_package): Search current and imported packages.
@@ -8750,22 +8754,22 @@ Tue Jun 22 20:43:49 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	instruction.  With some control flows it is possible that the last
 	block ends with an `athrow'.
 
-Mon Jun 14 13:13:39 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1999-06-14  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (qualify_ambiguous_name): Reorganized the post
 	evaluation of non WFL leading expression nodes.
 
-Fri Jun 11 21:37:18 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1999-06-11  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (qualify_ambiguous_name): Handle ARRAY_REF after
 	CONVERT_EXPR.
 
-Thu Jun 10 22:26:17 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1999-06-10  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (qualify_ambiguous_name): Handle qualified expression
 	beginning with a STRING_CST.
 
-Thu Jun 10 20:27:25 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1999-06-10  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (register_fields): Set DECL_INITIAL on both
 	pre-initialized static and public fields.
@@ -8778,12 +8782,12 @@ Thu Jun 10 20:27:25 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	(fold_constant_for_init): Pre-initialized field decl constant to
 	be folded.
 
-Mon Jun  7 16:09:51 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1999-06-07  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (note_possible_classname): Mark returned node with
 	QUALIFIED_P only if the original class name contained a '/'.
 
-Sat Jun  5 11:46:59 1999  Anthony Green  <green@cygnus.com>
+1999-06-05  Anthony Green  <green@cygnus.com>
 
 	* Make-lang.in (gcjh): More parallel build fixes.
 
@@ -8791,38 +8795,38 @@ Sat Jun  5 11:46:59 1999  Anthony Green  <green@cygnus.com>
 
 	* Make-lang.in (JCF_DUMP_SOURCES, jvgenmain): Fix parallel builds.
 
-Wed Jun  2 10:44:38 1999  Anthony Green  <green@cygnus.com>
+1999-06-02  Anthony Green  <green@cygnus.com>
 
 	* except.c (link_handler): Chain exception handlers in order.
 
-Wed Jun  2 10:41:24 1999  Anthony Green  <green@cygnus.com>
+1999-06-02  Anthony Green  <green@cygnus.com>
 
 	* expr.c (expand_byte_code): Fill unreachable bytecode regions
 	with nops and process as usual in order to always set correct EH
 	ranges.  Emit detailed warnings about unreachable bytecodes.
 
-Wed Jun  2 10:35:13 1999  Anthony Green  <green@cygnus.com>
+1999-06-02  Anthony Green  <green@cygnus.com>
 
 	* class.c (build_utf8_ref): Mark cinit and utf8 tree nodes as
 	constant.
 
-Fri May 28 18:22:45 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1999-05-28  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (lookup_field_wrapper): Unified returned value to NULL
 	  or the searched field decl.
 
-Fri May 28 11:34:05 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1999-05-28  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (fold_constant_for_init): Convert numerical constant
 	values to the type of the assigned field.
 
-Thu May 27 19:57:40 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1999-05-27  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* expr.c (lookup_field): Relaxed the test on class loading error
 	detection.
 	* parse.y (fold_constant_for_init): Enabeled old code.
 
-Wed May 26 18:06:02 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1999-05-26  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (valid_ref_assignconv_cast_p): Let `_Jv_CheckCast'
 	decide the validity of the cast of a java.lang.Cloneable reference
@@ -8830,32 +8834,32 @@ Wed May 26 18:06:02 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	(patch_conditional_expr): Fixed first argument passed to
 	binary_numeric_promotion.
 
-Wed May 26 15:33:06 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1999-05-26  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (qualify_ambiguous_name): Take into account that a
 	CONVERT_EXPR might specify a type as a WFL.
 
-Tue May 25 15:06:13 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1999-05-25  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (patch_assignment): Save the rhs before using it as an
 	argument to _Jv_CheckArrayStore.
 
-Tue May 25 11:23:59 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1999-05-25  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* lex.c (java_parse_doc_section): Fixed `tag' buffer size.
 
-Mon May 24 13:26:00 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1999-05-24  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* lex.c (java_lex): Accepts `+' or `-' after the beginning of a
 	floating point litteral only when the exponent indicator has been
 	parsed.
 
-Sat May 22 13:54:41 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1999-05-22  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (formal_parameter:): Construct argument tree list
 	element even if a yet unsupported final parameter was encountered.
 
-Tue May 18 00:28:58 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1999-05-18  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (finish_method_declaration): Issue errors for native or
 	abstract methods declared with a method body, as well as for non
@@ -8901,29 +8905,29 @@ Tue May 18 00:28:58 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	(link_handler): Changed interface to allow merging of eh_ranges.
 	Split overlapping ranges.  Return `void'.
 
-Mon May 17 19:20:24 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1999-05-17  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (constructor_block_end:): New rule, tagged <node>.
 	(constructor_body:): Use `constructor_block_end' instead of
 	`block_end'.
 
-Mon May 17 18:01:40 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1999-05-17  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (statement_nsi:): Pop `for' statement block.
 	(java_complete_lhs): Labeled blocks containing no statement are
 	marked as completing normally.
 
-Fri May 14 12:31:08 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1999-05-14  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* xref.c (xref_set_current_fp): New function, defined.
 	* xref.h (xref_set_current_fp): New function, prototyped.
 
-Fri May 14 11:57:54 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1999-05-14  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* check-init.c (check_init): Take into account that
 	LABELED_BLOCK_STMT can be empty.
 
-Thu May 13 18:30:48 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1999-05-13  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (java_check_regular_methods): Warning check on not
 	overriding methods with default access in other packages does not
@@ -8932,7 +8936,7 @@ Thu May 13 18:30:48 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	it by NULL_TREE. This prevents gcc from generating an irrelevant
 	warning.
 
-Thu May 13 13:23:38 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1999-05-13  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* check-init.c (check_init): Removed code accepting to see things
 	falling through default:, when doing xrefs.
@@ -9003,7 +9007,7 @@ Thu May 13 13:23:38 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	(find_spec_file): New function.
 	(SPEC_FILE): New define.
 
-Tue May 11 11:46:36 1999  Dave Brolley  <brolley@cygnus.com>
+1999-05-11  Dave Brolley  <brolley@cygnus.com>
 
 	* lang-options.h: -MD, -MMD, -M and -MM not needed here for
 	cpplib-enabled build.
@@ -9044,7 +9048,7 @@ Tue May 11 11:46:36 1999  Dave Brolley  <brolley@cygnus.com>
 
 	* Makefile.in: Remove -v from bison command lines.
 
-Fri Apr 30 17:54:40 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1999-04-30  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* check-init.c (check_init): Exclude a case of error when doing
 	xrefs.
@@ -9093,7 +9097,7 @@ Fri Apr 30 17:54:40 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	create internal labels.
 	(lookup_label): Ditto.
 
-Sat Apr 24 16:50:19 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1999-04-24  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* class.c (layout_class_method): Generate <clinit>'s rtl for
 	interfaces.
@@ -9126,7 +9130,7 @@ Sat Apr 24 16:50:19 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* Make-lang.in (JAVA_SRCS): Added check-init.c.
 
-Wed Apr 21 11:13:36 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1999-04-21  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* decl.c (predef_filenames, predef_filenames_size): New globals
 	(init_decl_processing): predef_filenames and predef_filenames_size
@@ -9143,7 +9147,7 @@ Wed Apr 21 11:13:36 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	(java_complete_lhs): If the cross reference flag is set, wrap
 	field DECL node around a WFL when resolving expression name.
 
-Mon Apr 19 14:44:48 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1999-04-19  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* lang.c (lang_decode_option): Fixed returned value when parsing
 	`-fxref=...' and `-Wall'.
@@ -9172,22 +9176,22 @@ Mon Apr 19 14:44:48 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	* parse.y (resolve_qualified_expression_name): Added missing
 	`break'.
 
-Thu Apr 15 13:08:03 1999  Anthony Green  <green@cygnus.com>
+1999-04-15  Anthony Green  <green@cygnus.com>
 
 	* gjavah.c: New prototypes for java_float_finite and
 	java_double_finite.
 
-Mon Apr 12 18:27:32 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1999-04-12  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (patch_unaryop): Fixed ++/-- operator check on array
 	references.
 
-Tue Apr  6 23:15:52 1999  Jeffrey A Law  (law@cygnus.com)
+1999-04-06  Jeffrey A Law  (law@cygnus.com)
 
 	* Makefile.in (TREE_H): Add tree-check.h.
 	(RTL_H): Add genrtl.h.
 
-Tue Apr  6 15:15:51 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1999-04-06  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (patch_assignment): Added ArrayStoreException runtime
 	check.
@@ -9202,7 +9206,7 @@ Tue Apr  6 15:15:51 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	* parse.y (patch_binop):  Don't fold if non-constant and emiting
 	class files.
 
-Mon Apr  5 16:06:09 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+1999-04-05  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.in (gjavah.o): Depend on $(JAVA_TREE_H).
 
@@ -9216,7 +9220,7 @@ Mon Apr  5 16:06:09 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* lang.c (main_jcf): Don't define.
 
-Mon Apr  5 15:43:51 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+1999-04-05  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* class.c (add_method_1): Cast the argument of `bzero' to PTR.
 
@@ -9239,7 +9243,7 @@ Mon Apr  5 15:43:51 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* xref.c: Don't include <stdio.h>.
 
-Mon Apr  5 11:24:19 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1999-04-05  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (struct parser_ctxt *ctxp): Now global.
 	(declare_local_variables): Use WFL compound value for the
@@ -9257,24 +9261,24 @@ Mon Apr  5 11:24:19 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	(get_field_name): New function.
 	(print_field_info): Use get_field_name and print_field_name.
 
-Wed Mar 31 11:00:32 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+1999-03-31  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.in (keyword.h): Generate using gperf language 'C', not
 	'KR-C', so gperf uses the `const' keyword on strings.
 
 	* keyword.gperf (java_keyword): Const-ify a char*.
 
-Tue Mar 30 11:31:53 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1999-03-30  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (patch_bc_statement): Fixed identation and a bogus
 	`printf' format.
 
-Tue Mar 30 11:29:29 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1999-03-30  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (patch_assignment): Allow static variables in other
 	classes to be assigned.
 
-Sun Mar 28 22:12:10 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+1999-03-28  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* class.c (maybe_add_interface): Remove unused variable
 	`interface_binfo'.
@@ -9286,7 +9290,7 @@ Sun Mar 28 22:12:10 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 	* verify.c (verify_jvm_instructions): Remove unused variable
 	`self_type'.
 
-Sat Mar 27 15:49:18 1999  Per Bothner  <bothner@cygnus.com>
+1999-03-27  Per Bothner  <bothner@cygnus.com>
 
 	* parse.y (complete_loop_body):  Rename to finish_loop_body.
 	(complete_labeled_statement):  Rename to finish_labeled_statement.
@@ -9303,7 +9307,7 @@ Sat Mar 27 15:49:18 1999  Per Bothner  <bothner@cygnus.com>
 	(patch_loop_statement):  Re-organize.
 	(patch_bc_statement):  Re-write.
 
-Sat Mar 27 15:13:21 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1999-03-27  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.h (EXPR_WFL_GET_LINECOL): Set a line and column count
 	using a WFL compound value.
@@ -9317,7 +9321,7 @@ Sat Mar 27 15:13:21 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	* xref.c (system.h, jcf.h, parse.h, obstack.h): Include.
 	* xref.h (expand_xref): Prototype renamed from xref_generate.
 
-Sat Mar 27 14:16:32 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1999-03-27  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.h (BLOCK_CHAIN_DECL): New use GET_CURRENT_BLOCK.
 	(GET_CURRENT_BLOCK): New macro.
@@ -9344,13 +9348,13 @@ Sat Mar 27 14:16:32 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	* java/Make-lang.in: Remove all references to gcj.o/gcj.c.
 	Link gcj from gcc.o.
 
-Tue Mar 23 10:48:24 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1999-03-23  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (find_applicable_accessible_methods_list): When dealing
 	with interface: ensure that a given interface or java.lang.Object
 	are searched only once.
 
-Tue Mar 23 10:05:27 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+1999-03-23  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gjavah.c (print_c_decl): Remove unused argument `flags'.
 
@@ -9368,7 +9372,7 @@ Tue Mar 23 10:05:27 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 	(create_class): Remove unused variable `super_decl'.
 	(get_printable_method_name): Initialize variable `name'.
 
-Mon Mar 22 20:14:26 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1999-03-22  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* Changelog: Fixed 1999-03-22 typos.
 	* lang.c (lang_decode_option): Fixed typo in error string in the
@@ -9390,7 +9394,7 @@ Mon Mar 22 20:14:26 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	* Make-lang.in ($(GCJ)$(exeext)): Add intl.o to list of files to be
 	linked with.
 
-Sun Mar 21 08:30:30 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+1999-03-21  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.in (jcf-dump.o): Depend on $(CONFIG_H)
 	$(srcdir)/../system.h and $(JAVA_TREE_H).
@@ -9510,7 +9514,7 @@ Sun Mar 21 08:30:30 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 	* class.c (unmangle_classname): Implemented stricter testing
 	before setting the QUALIFIED_P flag on an identifier.
 
-Tue Mar 16 15:15:41 1999  Per Bothner  <bothner@cygnus.com>
+1999-03-16  Per Bothner  <bothner@cygnus.com>
 
 	* parse.y (java_complete_lhs):  Call force_evaluation_order
 	after patch_newarray.
@@ -9524,7 +9528,7 @@ Tue Mar 16 15:15:41 1999  Per Bothner  <bothner@cygnus.com>
 	operator (if necessary) and complete the RHS after having built
 	the cast.
 
-Mon Mar 15 12:18:29 1999  Per Bothner  <bothner@cygnus.com>
+1999-03-15  Per Bothner  <bothner@cygnus.com>
 
 	* class.c (make_class):  Don't set CLASS_P here (because
 	this function is also called by build_java_array_type).
@@ -9541,7 +9545,7 @@ Mon Mar 15 12:18:29 1999  Per Bothner  <bothner@cygnus.com>
 	* parse.y (method_header):  For interfaces, set ACC_ABSTRACT (to
 	match what JDK 1.2 does), but don't set ACC_PUBLIC.
 
-Sat Mar 13 18:16:34 1999  Per Bothner  <bothner@cygnus.com>
+1999-03-13  Per Bothner  <bothner@cygnus.com>
 
 	* lex.c (java_read_char):  UNGET invalid non-initial utf8 character.
 	* lex.h (UNGETC):  Change misleading macro.
@@ -9573,7 +9577,7 @@ Sat Mar 13 18:16:34 1999  Per Bothner  <bothner@cygnus.com>
 	cast. If not processing `+' fix string constants before processing
 	binop.
 
-Fri Mar 12 19:42:55 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+1999-03-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* constants.c (find_class_or_string_constant): Cast variable `j'
 	to a `jword' when comparing against one.
@@ -9608,7 +9612,7 @@ Fri Mar 12 19:42:55 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 	* jcf-path.c (add_entry): alloca len+2 rather than len+1 bytes;
 	we'll need a directory separator and a null character.
 
-Wed Mar 10 23:20:11 1999  Per Bothner  <bothner@cygnus.com>
+1999-03-10  Per Bothner  <bothner@cygnus.com>
 
 	* jcf-write.c (generate_bytecode_insns):  Handle __builtin_fmod, for %.
 
@@ -9617,7 +9621,7 @@ Wed Mar 10 23:20:11 1999  Per Bothner  <bothner@cygnus.com>
 	* parse.y (method_header): Don't set ACC_ABSTRACT flags on
 	interfaces.
 
-Fri Mar  5 15:17:29 1999  Per Bothner  <bothner@cygnus.com>
+1999-03-05  Per Bothner  <bothner@cygnus.com>
 
 	* lex.c (java_parse_end_comment):  Take extra parameter (next char).
 
@@ -9637,7 +9641,7 @@ Fri Mar  5 15:17:29 1999  Per Bothner  <bothner@cygnus.com>
 	* parse.y (java_complete_lhs):  Don't call patch_assignment if rhs is
 	error_mark (it might catch more errors, but it is more likely to lose).
 
-Sat Mar  6 11:17:16 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+1999-03-06  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.in (jcf-parse.o): Depend on $(PARSE_H).
 	(parse-scan.o): Depend on toplev.h.
@@ -9687,16 +9691,16 @@ Sat Mar  6 11:17:16 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 	* typeck.c (convert_ieee_real_to_integer): Remove unused variable
 	`node'.
 
-Wed Feb 24 16:13:59 1999  Per Bothner  <bothner@deneb.cygnus.com>
+1999-02-24  Per Bothner  <bothner@deneb.cygnus.com>
 
 	*  check-init.c (check_init):  COPYN takes word count, not bit count.
 
-Fri Feb 26 14:06:21 1999  Per Bothner  <bothner@cygnus.com>
+1999-02-26  Per Bothner  <bothner@cygnus.com>
 
 	* typeck.c (convert_ieee_real_to_integer):  Use save_expr instead of
 	explicit build_decl.  (Avoids crash in reload when optimizing.)
 
-Thu Feb 25 21:05:04 1999  Per Bothner  <bothner@cygnus.com>
+1999-02-25  Per Bothner  <bothner@cygnus.com>
 
 	* decl.c (complete_start_java_method):  Handle synchronized method
 	even when compiling from bytecode.
@@ -9760,7 +9764,7 @@ Thu Feb 25 21:05:04 1999  Per Bothner  <bothner@cygnus.com>
 	* jcf.h (UTF8_GET): Mask first byte of 3-byte encoding with 0x0f,
 	not 0x1f.
 
-Sun Feb 21 14:56:11 1999  Per Bothner  <bothner@cygnus.com>
+1999-02-21  Per Bothner  <bothner@cygnus.com>
 
 	* decl.c (build_result_decl), java-tree.h:  New method.
 	(complete_start_java_method):  Handle synchronized methods.
@@ -9779,7 +9783,7 @@ Sun Feb 21 14:56:11 1999  Per Bothner  <bothner@cygnus.com>
 
 	* jcf-write.c (generate_classfile):  Emit "Exceptions" attribute.
 
-Fri Feb 19 15:35:01 1999  Per Bothner  <bothner@cygnus.com>
+1999-02-19  Per Bothner  <bothner@cygnus.com>
 
 	Force left-to-right evaluation of binary operations etc.
 	* expr.c (force_evaluation_order), java-tree.h:  New function.
@@ -9797,7 +9801,7 @@ Fri Feb 19 15:35:01 1999  Per Bothner  <bothner@cygnus.com>
 	* parse.y (java_complete_lhs):  Ignore an empty statement in a
 	COMPOUND_EXPR.  Don't complain about empty statement after return.
 
-Fri Feb 19 13:00:56 1999  Per Bothner  <bothner@cygnus.com>
+1999-02-19  Per Bothner  <bothner@cygnus.com>
 
 	* parse.y (obtain_incomplete_type):  Don't wrap unknown types
 	in TREE_LIST - just chain the POINTER_TYPEs together.
@@ -9811,7 +9815,7 @@ Fri Feb 19 13:00:56 1999  Per Bothner  <bothner@cygnus.com>
 	JDEP_RESOLVED_P):  Redefined for new TREE_LIST-less convention.
 	* typeck.c (build_java_array_type):  Don't call layout_class.
 
-Wed Feb 17 15:47:20 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1999-02-17  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (check_pkg_class_access): Allow private class access
 	within the same package.
@@ -9819,7 +9823,7 @@ Wed Feb 17 15:47:20 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	(patch_unaryop): Call strip_out_static_field_access_decl on ++/--
 	operator argument before testing its nature.
 
-Wed Feb  3 12:38:43 1999  Per Bothner  <bothner@cygnus.com>
+1999-02-03  Per Bothner  <bothner@cygnus.com>
 
 	* java-tree.def (FINALLY_EXPR):  Removed.  (Now uses TRY_FINALLY_EXPR.)
 	(TRY_EXPR):  Simplify - it no longer has a finally clause.
@@ -9854,12 +9858,12 @@ Wed Feb  3 12:38:43 1999  Per Bothner  <bothner@cygnus.com>
 	* constants.c (alloc_class_constant): Likewise.
 	* expr.c (build_invokeinterface): Likewise.
 
-Thu Feb 11 21:25:51 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1999-02-11  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (valid_builtin_assignconv_identity_widening_p): Got rid
 	of an ancient workaround.
 
-Wed Feb 10 23:27:33 1999  Jeffrey A Law  (law@cygnus.com)
+1999-02-10  Jeffrey A Law  (law@cygnus.com)
 
 	* jvspec.c (xmalloc): Kill the prototype.  It does not belong
 	here anymore.
@@ -9880,7 +9884,7 @@ Wed Feb 10 23:27:33 1999  Jeffrey A Law  (law@cygnus.com)
 	* jvspec.c (THREAD_NAME): Renamed -lqthreads to -lgcjcoop.
 	(GC_NAME): Renamed -lgc to -lgcjgc.
 
-Tue Feb  9 19:31:09 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1999-02-09  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* lex.c (java_lang_cloneable): Initialize.
 	* parse.y (java_lang_cloneable): New static variable.
@@ -9891,7 +9895,7 @@ Tue Feb  9 19:31:09 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	(patch_cast): Swapped two first arguments to first call to
 	valid_ref_assignconv_cast_p.
 
-Mon Feb  8 11:50:50 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1999-02-08  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.h: DECL_P renamed JDECL_P.
 	* parse.y: DECL_P replaced by JDECL_P.
@@ -9913,21 +9917,21 @@ Mon Feb  8 11:50:50 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	separator, rather than '/'.
 	(make_class_data): Likewise.
 
-Wed Feb  3 22:50:17 1999  Marc Espie <Marc.Espie@liafa.jussieu.fr>
+1999-02-03  Marc Espie <Marc.Espie@liafa.jussieu.fr>
 
 	* Make-lang.in ($(GCJ)(exeext)): Remove choose-temp.o, pexecute.o and
 	mkstemp.o.  Get them from libiberty now.
 
-Tue Feb  2 19:49:12 1999  Jeffrey A Law  (law@cygnus.com)
+1999-02-02  Jeffrey A Law  (law@cygnus.com)
 
 	* jcf-io.c: Do not include sys/stat.h or sys/wait.h
 
-Tue Feb  2 20:04:50 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+1999-02-02  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* jvspec.c (xmalloc): Fix the prototype to match the one obtained
 	from libiberty.h
 
-Tue Feb  2 10:39:47 1999  Per Bothner  <bothner@cygnus.com>
+1999-02-02  Per Bothner  <bothner@cygnus.com>
 
 	Optimize: `return (a ? b : c)' as: `if (a) return b; else return c;'.
 	* jcf-write.c (generate_bytecode_return):  New function.
@@ -9941,7 +9945,7 @@ Tue Feb  2 10:39:47 1999  Per Bothner  <bothner@cygnus.com>
 	* verify.c (verify_jvm_instructions):  Do INVALIDATE_PC after
 	handling OPCODE_lookupswitch or OPCODE_tableswitch.
 
-Mon Feb  1 20:44:47 1999  Per Bothner  <bothner@cygnus.com>
+1999-02-01  Per Bothner  <bothner@cygnus.com>
 
 	* parse.y (patch_method_invocation):  Handle calling static methods,
 	even in the form EXPR.METHOD(ARGS), not just TYPE.METHOD(ARGS).
@@ -9949,7 +9953,7 @@ Mon Feb  1 20:44:47 1999  Per Bothner  <bothner@cygnus.com>
 	* parse.y (java_complete_lhs):  Don't complain about unreachable
 	exit condition in a do-while statement.
 
-Fri Jan 29 18:19:02 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1999-01-29  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* lex.c (java_read_char): Fixed utf8 decoding.
 	(java_unicode_2_utf8): Fixed utf8 encoding in the 0x800-0xffff
@@ -9963,7 +9967,7 @@ Fri Jan 29 18:19:02 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	(build_string_concatenation): Optimize out left or right empty
 	string constants.
 
-Thu Jan 28 18:51:26 1999  Per Bothner  <bothner@cygnus.com>
+1999-01-28  Per Bothner  <bothner@cygnus.com>
 
 	* jcf-write.c (localvar_alloc):  Only emit entry for
 	LocalVariableTable if debug_info_level > DINFO_LEVEL_TERSE.
@@ -9972,12 +9976,12 @@ Thu Jan 28 18:51:26 1999  Per Bothner  <bothner@cygnus.com>
 	* jvspec.c (lang_specific_driver):  If no -O* or -g* option
 	is specified, add -g1 (for compatibility wih javac).
 
-Thu Jan 28 09:17:51 1999  Hans-Peter Nilsson  <hp@axis.se>
+1999-01-28  Hans-Peter Nilsson  <hp@axis.se>
 
 	* java/Makefile.in: Add missing dependencies for jcf-dump.o,
 	gjavah.o, check-init.o, jv-scan.o
 
-Mon Feb  1 09:50:48 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+1999-02-01  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.in (gjavah.o): Depend on $(CONFIG_H) and system.h.
 
@@ -9991,11 +9995,11 @@ Mon Feb  1 09:50:48 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* lex.c (inline): Likewise.
 
-Sun Jan 31 20:34:29 1999  Zack Weinberg  <zack@rabi.columbia.edu>
+1999-01-31  Zack Weinberg  <zack@rabi.columbia.edu>
 
 	* lang-specs.h: Map -Qn to -fno-ident.
 
-Fri Jan 29 16:51:56 1999  Richard Henderson  <rth@cygnus.com>
+1999-01-29  Richard Henderson  <rth@cygnus.com>
 
 	* check-init.c (check_init): Fix CLEANUP_POINT_EXPR typo.
 
@@ -10004,19 +10008,19 @@ Fri Jan 29 16:51:56 1999  Richard Henderson  <rth@cygnus.com>
 	* parse.h (BUILD_APPEND): If ARG is a non-String object reference,
 	then cast it to Object before calling `append' method.
 
-Thu Jan 28 14:45:39 1999  Per Bothner  <bothner@cygnus.com>
+1999-01-28  Per Bothner  <bothner@cygnus.com>
 
 	* check-init.c (check_bool2_init, check_bool_init, check_init):
 	Handle TRUTH_AND_EXPR, TRUTH_OR_EXPR, and TRUTH_XOR_EXPR.
 	* jcf-write.c (generate_bytecode_insns):  Likewise.
 
-Thu Jan 28 11:50:11 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1999-01-28  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* jcf-parse.c (jcf_parse): Don't parse the same class file twice.
 	* parse.y (patch_cast): Allow a boolean to be cast into a
 	boolean.
 
-Wed Jan 27 10:19:29 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1999-01-27  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y: (class_declaration:): Fixed indentation.
 	(class_member_declaration:): Extra `;' after field declaration now
@@ -10026,14 +10030,14 @@ Wed Jan 27 10:19:29 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	node's COMPOUND_ASSIGN_P flag value.
 	(patch_cast): Fix cast from char to floating point.
 
-Mon Jan 25 17:39:19 1999  Andrew Haley  <aph@cygnus.com>
+1999-01-25  Andrew Haley  <aph@cygnus.com>
 
 	* except.c, java-except.h (expand_resume_after_catch): new
 	function.
 	* expr.c (java_lang_expand_expr): call expand_resume_after_catch
 	to branch back to main flow of control after a catch block.
 
-Sat Jan 23 23:02:43 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+1999-01-23  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.in (parse.o): Depend on $(CONFIG_H) and
 	$(srcdir)/../system.h.
@@ -10141,12 +10145,12 @@ Sat Jan 23 23:02:43 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* zipfile.h: Prototype `read_zip_archive'.
 
-Thu Jan 21 16:00:06 1999  Andrew Haley  <aph@cygnus.com>
+1999-01-21  Andrew Haley  <aph@cygnus.com>
 
 	* typeck.c (convert): Allow conversions to void type: some
 	optimizations in gcc do this.
 
-Thu Jan 21 15:21:49 1999  Andrew Haley  <aph@cygnus.com>
+1999-01-21  Andrew Haley  <aph@cygnus.com>
 
 	* typeck.c (convert_ieee_real_to_integer): New function.
 	(convert): When not using fast-math and using hardware fp, convert
@@ -10157,7 +10161,7 @@ Thu Jan 21 15:21:49 1999  Andrew Haley  <aph@cygnus.com>
 	* parse.y (patch_binop): Do a type conversion from signed to
 	unsigned and then back to signed when a ">>>" is found.
 
-Sun Jan 17 22:34:22 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1999-01-17  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* java-tree.h: (check_for_initialization): Added prototype.
 	* lex.c (java_parse_doc_section): `\n' breaks the `*/' string.
@@ -10168,13 +10172,13 @@ Sun Jan 17 22:34:22 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	(qualify_ambiguous_name): Likewise.
 	(patch_synchronized_statement): Removed unused local.
 
-Sun Jan 17 21:55:42 1999  Jeffrey A Law  (law@cygnus.com)
+1999-01-17  Jeffrey A Law  (law@cygnus.com)
 
 	* Makefile.in (zextract.o): Add dependencies.
 
 	* Makefile.in: Do not put ^Ls at the start of a line.
 
-Fri Jan 15 20:16:20 1999  Per Bothner  <bothner@cygnus.com>
+1999-01-15  Per Bothner  <bothner@cygnus.com>
 
 	* expr.c (process_jvm_instruction):  Coerce to correct Throwable
 	sub-type the result of the call that gets the exception value.
@@ -10201,7 +10205,7 @@ Fri Jan 15 20:16:20 1999  Per Bothner  <bothner@cygnus.com>
 	generated at all and the synchronized statement will read an
 	uninitialized variable.
 
-Wed Jan 13 01:24:54 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1999-01-13  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* class.c (maybe_layout_super_class): Fixed returned value.
 	* lex.c: Added 1999 to the copyright.
@@ -10223,12 +10227,12 @@ Wed Jan 13 01:24:54 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	(java_check_regular_methods): Set saved found wfl to NULL after
 	having reinstalled it in the previously found DECL_NAME.
 
-Sun Jan 10 13:36:14 1999  Richard Henderson  <rth@cygnus.com>
+1999-01-10  Richard Henderson  <rth@cygnus.com>
 
 	* gjavah.c (java_float_finite): Use a union to do type punning.
 	(java_double_finite): Likewise.
 
-Sat Jan  9 11:25:00 1999  Per Bothner  <bothner@cygnus.com>
+1999-01-09  Per Bothner  <bothner@cygnus.com>
 
 	* parse.y (build_new_array_init):  Don't set EXPR_WFL_LINECOL
 	on CONSTRUCTOR (since that trashes TREE_CST_RTL).
@@ -10237,7 +10241,7 @@ Sat Jan  9 11:25:00 1999  Per Bothner  <bothner@cygnus.com>
 	CONSTRUCTOR (which causes expand_expr to call output_constant_def).
 	* expr.c (java_lang_expand_expr):  Check TREE_STATIC of NEW_ARRAY_INIT.
 
-Fri Jan  8 15:48:03 1999  Per Bothner  <bothner@cygnus.com>
+1999-01-08  Per Bothner  <bothner@cygnus.com>
 
 	* check-init.c (check_init):  If compiling to native, we don't
 	see THROW_EXPR.  Instead, look for a call to throw_node (_Jv_Throw).
@@ -10255,7 +10259,7 @@ Fri Jan  8 15:48:03 1999  Per Bothner  <bothner@cygnus.com>
 	* jcf-parse.c (yyparse): variable len changed from a char to an
 	int to prevent overflow.
 
-Wed Jan  6 17:19:46 1999  Per Bothner  <bothner@cygnus.com>
+1999-01-06  Per Bothner  <bothner@cygnus.com>
 
 	* java-tree.h:  Declare read_class.
 	* jcf-parse.c (read_class):  New function.
@@ -10278,23 +10282,23 @@ Wed Jan  6 17:19:46 1999  Per Bothner  <bothner@cygnus.com>
 	* parse.y (java_complete_expand_method): Call check_for_initialization.
 	* parse.h (BLOCK_EXPR_DECLS, BLOCK_EXPR_BODY):  Moved to java-tree.h.
 
-Wed Jan  6 14:53:10 1999  Graham <grahams@rcp.co.uk>
+1999-01-06  Graham <grahams@rcp.co.uk>
 
 	* parse.y : include system.h instead of including
 	standard headers directly with the exception of <dirent.h>.
 
-Wed Jan  6 16:20:06 1999  Per Bothner  <bothner@cygnus.com>
+1999-01-06  Per Bothner  <bothner@cygnus.com>
 
 	* lex.h:  Moved static function declarations to lex.c,
 	to shut up some -Wall warnings.
 	* lex.c:  Static function declarations moved here.
 	* jcf-dump.c:  Small fixes to shut up -Wall warnings.
 
-Tue Jan  5 22:15:40 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+1999-01-05  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Make-lang.in ($(GCJ).o): Depend on prefix.h.
 
-Tue Dec 22 11:25:19 1998  Per Bothner  <bothner@cygnus.com>
+1998-12-22  Per Bothner  <bothner@cygnus.com>
 
 	* expr.c (process_jvm_instruction):  Do load_type_state after JSR.
 	* verify.c (verify_jvm_instructions):  Fix off-by-one error.
@@ -10316,7 +10320,7 @@ Tue Dec 22 11:25:19 1998  Per Bothner  <bothner@cygnus.com>
 	(patch_synchronized_statement): Re-write suing CLEANUP_POINT_EXPR and
 	WITH_CLEANUP_EXPR instead of TRY_EXPR.
 
-Sun Dec 20 16:15:44 1998  John F. Carr  <jfc@mit.edu>
+1998-12-20  John F. Carr  <jfc@mit.edu>
 
 	* Make-lang.in: Comment out control-Ls; they upset some makes.
 
@@ -10333,11 +10337,11 @@ Sun Dec 20 16:15:44 1998  John F. Carr  <jfc@mit.edu>
 	* parse-scan.y (report_main_declaration): Recognize
 	`java.lang.String' in argument to main.
 
-Wed Dec 16 16:18:59 1998  Per Bothner  <bothner@cygnus.com>
+1998-12-16  Per Bothner  <bothner@cygnus.com>
 
 	* parse.y (create_interface):  Remove bogus test.
 
-Wed Dec 16 14:42:19 1998  Per Bothner  <bothner@cygnus.com>
+1998-12-16  Per Bothner  <bothner@cygnus.com>
 
 	* jcf-parse.c (get_constant):  Set TREE_TYPE for string constants.
 	(HANDLE_CONSTANTVALUE):  If flag_emit_class_files, call get_constant.
@@ -10351,7 +10355,7 @@ Wed Dec 16 14:42:19 1998  Per Bothner  <bothner@cygnus.com>
 	* gjavah.c (print_field_info): Changed how most negative number is
 	printed.
 
-Mon Dec 14 18:49:29 1998  Per Bothner  <bothner@cygnus.com>
+1998-12-14  Per Bothner  <bothner@cygnus.com>
 
 	* parse.y (fold_constant_for_init):  New function.
 	(resolve_expression_name):  Don't replace static final
@@ -10386,7 +10390,7 @@ Mon Dec 14 18:49:29 1998  Per Bothner  <bothner@cygnus.com>
 	(HANDLE_CODE_ATTRIBUTE): Only print it method_declared set.
 	(print_method_info): Handle abstract methods.
 
-Sun Dec 13 17:31:40 1998  Per Bothner  <bothner@cygnus.com>
+1998-12-13  Per Bothner  <bothner@cygnus.com>
 
 	* parse.y (patch_method_invocation):  If class_decl is null
 	(e.g. an array type), use original type.
@@ -10413,7 +10417,7 @@ Sun Dec 13 17:31:40 1998  Per Bothner  <bothner@cygnus.com>
 	Include java-opcodes.h.
 	(decompiled): New global.
 
-Sat Dec 12 20:13:19 1998  Per Bothner  <bothner@cygnus.com>
+1998-12-12  Per Bothner  <bothner@cygnus.com>
 
 	* class.c (build_class_ref):  Handle PRIMTYPE.class if
 	flag_emit_class_files.
@@ -10460,7 +10464,7 @@ Sat Dec 12 20:13:19 1998  Per Bothner  <bothner@cygnus.com>
 	* parse.y (java_complete_expand_methods):  Call write_classfile
 	here, and not in java_expand_classes (which only gets first class).
 
-Sat Dec 12 19:46:04 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1998-12-12  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (<type_declaration>):  Do maybe_generate_clinit last.
 	(register_fields):  If a static fields has an initializer, just
@@ -10471,7 +10475,7 @@ Sat Dec 12 19:46:04 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	(patch_initialized_static_field):  New function.
 	(java_complete_field):  Call it.
 
-Sat Dec 12 19:21:11 1998  Per Bothner  <bothner@cygnus.com>
+1998-12-12  Per Bothner  <bothner@cygnus.com>
 
 	* expr.c (encode_newarray_type, build_new_array):  New functions.
 	* java-tree.h:  Declare build_new_array.
@@ -10497,7 +10501,7 @@ Sat Dec 12 19:21:11 1998  Per Bothner  <bothner@cygnus.com>
 	* class.c (make_class_data): Renamed dtable -> vtable, and
 	dtable_method_count -> vtable_method_count.
 
-Thu Dec 10 20:00:54 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1998-12-10  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* decl.c (long_zero_node, float_zero_node, double_zero_node): New
 	global variables, initialized.
@@ -10516,7 +10520,7 @@ Thu Dec 10 20:00:54 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	increment/decrement node into its original type after binary
 	numeric promotion on its operands.
 
-Thu Dec 10 11:02:49 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1998-12-10  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (array_initializer:): Array init operand is NULL_TREE
 	instead of a TREE_LIST of NULL_TREEs when parsing `{}'. `{,}' is
@@ -10526,7 +10530,7 @@ Thu Dec 10 11:02:49 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	(array_constructor_check_entry): Removed check on null wfl_value.
 	Return an error if wfl_value's walk returns an error.
 
-Wed Dec  9 15:37:05 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1998-12-09  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* java-tree.def (NEW_ARRAY_INIT): New Java tree code.
 	* lex.c (java_lex): Remember column position before advancing one
@@ -10550,7 +10554,7 @@ Wed Dec  9 15:37:05 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	patch_new_array_init, patch_array_constructor,
 	array_constructor_check_entry): New functions.
 
-Mon Dec  7 15:13:52 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1998-12-07  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (array_initializer): Tagged <node>.
 	(variable_initializer:): Use default rule.
@@ -10565,7 +10569,7 @@ Mon Dec  7 15:13:52 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	(patch_conditional_expr): Patch results of string concatenation
 	operations.
 
-Sun Dec  6 13:45:00 1998  Per Bothner  <bothner@cygnus.com>
+1998-12-06  Per Bothner  <bothner@cygnus.com>
 
 	* constants.c (find_methodref_index):  When the class is an interface,
 	generate CONSTANT_InterfaceMethodref instead of a CONSTANT_MethodRef.
@@ -10599,11 +10603,11 @@ Sun Dec  6 13:45:00 1998  Per Bothner  <bothner@cygnus.com>
 
 	* jcf-write.c (generate_classfile):  Emit ConstantValue attributes.
 
-Sun Dec  6 13:21:18 1998  Per Bothner  <bothner@cygnus.com>
+1998-12-06  Per Bothner  <bothner@cygnus.com>
 
 	* jcf-dump.c (INVOKE):  If invokeinterface, print number of args.
 
-Thu Dec  3 17:11:12 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1998-12-03  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* java-tree.h (java_layout_seen_class_methods): New function
 	prototype.
@@ -10623,16 +10627,16 @@ Thu Dec  3 17:11:12 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	(java_layout_seen_class_methods): New function.
 	(java_layout_classes): Call java_layout_seen_class_methods.
 
-Thu Dec  3 15:56:50 1998  Per Bothner  <bothner@cygnus.com>
+1998-12-03  Per Bothner  <bothner@cygnus.com>
 
 	* parse,y (patch_synchronized_statement):  Set CAN_COMPLETE_NORMALLY.
 
-Thu Dec  3 15:08:30 1998  Per Bothner  <bothner@cygnus.com>
+1998-12-03  Per Bothner  <bothner@cygnus.com>
 
 	* jcf-dump.c (main):  Fix error message.
 	* jcf-path.c (add_entry):  Style fix.
 
-Wed Dec  2 15:52:25 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1998-12-02  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* class.c (layout_class_method): Call build_java_argument_signature
 	on constructors too.
@@ -10641,7 +10645,7 @@ Wed Dec  2 15:52:25 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	expression name. Augmented comment on code checking illegal `this'
 	usage. Loosened it test by accepting NEW_CLASS_EXPR.
 
-Tue Dec  1 13:53:24 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1998-12-01  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* class.c (layout_class_method): Don't report error on non-static
 	overriding static if the method is private.
@@ -10665,7 +10669,7 @@ Tue Dec  1 13:53:24 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	(+tmake_file): Likewise.
 	(.NOEXPORT): Removed duplicate.
 
-Fri Nov 27 13:20:51 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+1998-11-27  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.in (jc1, jv-scan): Link with $(SUBDIR_OBSTACK).
 
@@ -10680,12 +10684,12 @@ Fri Nov 27 13:20:51 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 	OS headers or gansidecl.h.  Don't prototype xmalloc/xstrdup.
 	Provide an xstrdup definition.
 
-Thu Nov 26 22:03:58 1998  Alexandre Oliva  <oliva@dcc.unicamp.br>
+1998-11-26  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* jcf-path.c (add_entry): Recognize ".jar" too.
 	* lang-specs.h: Likewise.
 
-Thu Nov 26 12:44:07 1998  Per Bothner  <bothner@cygnus.com>
+1998-11-26  Per Bothner  <bothner@cygnus.com>
 
 	* jcf-write.c (generate_bytecode_insns):  In Call_EXPR, handle
 	soft_monitorenter_node, soft_monitorexit_node, throw_node.
@@ -10696,7 +10700,7 @@ Thu Nov 26 12:44:07 1998  Per Bothner  <bothner@cygnus.com>
 	* jcf-write.c (generate_bytecode_insns):
 	Handle missing exception handler (finally for synchronized).
 
-Wed Nov 25 09:47:15 1998  Per Bothner  <bothner@cygnus.com>
+1998-11-25  Per Bothner  <bothner@cygnus.com>
 
 	* java-tree.h (end_params_node):  Declare global.
 	* decl.c (end_params_node):  New global.
@@ -10728,16 +10732,16 @@ Wed Nov 25 09:47:15 1998  Per Bothner  <bothner@cygnus.com>
 
 	* expr.c (CHECK_PC_IN_RANGE):  Add void cast to kill warnings.
 
-Wed Nov 25 00:50:58 1998  Marc Espie <espie@quatramaran.ens.fr>
+1998-11-25  Marc Espie <espie@quatramaran.ens.fr>
 
 	* jcf-write.c (generate_bytecode_conditional): Fix typo.
 
-Tue Nov 24 17:06:38 1998  Per Bothner  <bothner@cygnus.com>
+1998-11-24  Per Bothner  <bothner@cygnus.com>
 
 	* (generate_classfile): Always write class access flag with
 	ACC_SUPER set.
 
-Tue Nov 24 16:34:33 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1998-11-24  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* class.c (maybe_layout_super_class): New function.
 	(layout_class): Reorganized. Loop on class methods dispatched into
@@ -10801,7 +10805,7 @@ Tue Nov 24 16:34:33 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	(patch_method_invocation): Class to search is resolved and laid
 	out.
 
-Tue Nov 24 12:57:13 1998  Per Bothner  <bothner@cygnus.com>
+1998-11-24  Per Bothner  <bothner@cygnus.com>
 
 	* expr.c (java_lang_expand_expr):  Add missing emit_queue.
 
@@ -10817,7 +10821,7 @@ Tue Nov 24 12:57:13 1998  Per Bothner  <bothner@cygnus.com>
 	* parse.y (java_complete_tree):  For CASE_EXPR and DEFAULT_EXPR,
 	set TREE_SIDE_EFFECTS (otherwise expand_expr may skip them).
 
-Thu Nov 19 11:16:55 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1998-11-19  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* jcf-parse.c (jcf_parse_source): Function returned type is
 	void. Added prototype.
@@ -10826,7 +10830,7 @@ Thu Nov 19 11:16:55 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* java-tree.h (jcf_parse): Changed jcf_parse prototype.
 
-Wed Nov 18 23:54:53 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1998-11-18  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* class.c (unmangle_classname): Set QUALIFIED_P when appropriate.
 	(layout_class): Cope with methods featuring WFL in decl names.
@@ -10943,23 +10947,23 @@ Wed Nov 18 23:54:53 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	(purge_unchecked_exceptions): Use IS_UNCHECKED_EXCEPTION_P instead
 	of IS_UNCHECKED_EXPRESSION_P.
 
-Wed Nov 18 14:21:48 1998  Anthony Green  <green@cygnus.com>
+1998-11-18  Anthony Green  <green@cygnus.com>
 
 	* jcf-parse.c (yyparse): Open class file in binary mode.
 
-Sun Nov 15 17:14:17 1998  Per Bothner  <bothner@cygnus.com>
+1998-11-15  Per Bothner  <bothner@cygnus.com>
 
 	* jvgenmain.c:  Need to #include "gansidecl.h" (to get PROTO).
 
 	* jcf-write.c (perform_relocations):  Move check out one loop.
 
-Sun Nov 15 15:09:56 1998  Anthony Green  <green@hoser.cygnus.com>
+1998-11-15  Anthony Green  <green@hoser.cygnus.com>
 
 	* Make-lang.in: Fix reference to srcdir.
 	* jv-scan.c: Add missing xmalloc prototype.
 	* jvgenmain.c: Ditto.
 
-Sun Nov 15 14:36:29 1998  Per Bothner  <bothner@cygnus.com>
+1998-11-15  Per Bothner  <bothner@cygnus.com>
 
 	* decl.c (error_mark_node), java-tree.h:  New global.
 	* parse.y:  Use empty_stmt_node instead of size_zero_node.
@@ -10983,7 +10987,7 @@ Sun Nov 15 14:36:29 1998  Per Bothner  <bothner@cygnus.com>
 	(- case PREDECREMENT_EXPR etc):  Remove redundant NOTE_PUSH.
 	(generate_classfile):  More robust for abstract methods.
 
-Sun Nov 15 13:52:39 1998  Anthony Green  <green@cygnus.com>
+1998-11-15  Anthony Green  <green@cygnus.com>
 
 	* Makefile.in: jv-scan and jvgenmain all require libiberty.
 	* Make-lang.in: Ditto.
@@ -10991,13 +10995,13 @@ Sun Nov 15 13:52:39 1998  Anthony Green  <green@cygnus.com>
 	* jv-scan.c: Remove xmalloc and xstrdup definitions.
 	* jvgenmain: Ditto.
 
-Sun Nov 15 14:10:56 1998  Per Bothner  <bothner@cygnus.com>
+1998-11-15  Per Bothner  <bothner@cygnus.com>
 
 	* jcf-parse.c (HANDLE_EXCEPTIONS_ATTRIBUTE):  New macro.
 
 	* jcf-io.c (find_class):  Simpler/cleaner structure fixes a bug.
 
-Sat Nov 14 17:19:18 1998  Per Bothner  <bothner@cygnus.com>
+1998-11-14  Per Bothner  <bothner@cygnus.com>
 
 	Allow uses of interface types to verify.  This is not really
 	type-safe, but it matches what Sun does, and is OK as long as
@@ -11025,7 +11029,7 @@ Sat Nov 14 17:19:18 1998  Per Bothner  <bothner@cygnus.com>
 
 	* Makefile.in (prefix): New macro.
 
-Thu Nov 12 14:15:07 1998  Per Bothner  <bothner@cygnus.com>
+1998-11-12  Per Bothner  <bothner@cygnus.com>
 
 	* parse.y (patch_invoke):  Do less if flag_emit_class_files.
 	* expr.c (build_known_method_ref):  Don't check flag_emit_class_files
@@ -11097,7 +11101,7 @@ Thu Nov 12 14:15:07 1998  Per Bothner  <bothner@cygnus.com>
 	if required.
 	* Make-lang.in (jvspec.o): Define WITH_GC_<name>.
 
-Wed Nov 11 19:08:52 1998  Per Bothner  <bothner@cygnus.com>
+1998-11-11  Per Bothner  <bothner@cygnus.com>
 
 	* jcf-dump.c (TABLE_SWITCH):  Fix typos.
 
@@ -11105,7 +11109,7 @@ Wed Nov 11 19:08:52 1998  Per Bothner  <bothner@cygnus.com>
 
 	* jcf-dump.c (main): Correctly recognize `--'-style long options.
 
-Tue Nov 10 12:34:03 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1998-11-10  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* class.c (is_compiled_class): Call safe_layout_class for class
 	compiled from source.
@@ -11287,7 +11291,7 @@ Tue Nov 10 12:34:03 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	`state' field to 0.
 	* decl.c (init_decl_processing): Likewise.
 
-Wed Oct 28 08:03:31 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1998-10-28  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* class.c (layout_class): Don't mangle <finit>, produce
 	__finit<class> instead. Don't verify artificial methods.
@@ -11430,7 +11434,7 @@ Wed Oct 28 08:03:31 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	(patch_conditional_expr): New function.
 	* typeck.c (build_java_signature): Removed unnecessary empty line.
 
-Wed Oct 28 00:46:15 1998  Jeffrey A Law  (law@cygnus.com)
+1998-10-28  Jeffrey A Law  (law@cygnus.com)
 
 	* Makefile.in (jcf-dump, gcjh): Link in $(LIBS) too.
 
@@ -11445,17 +11449,17 @@ Wed Oct 28 00:46:15 1998  Jeffrey A Law  (law@cygnus.com)
 	* decl.c (init_decl_processing): Removed subclass_head and
 	subclass_next fields.
 
-Wed Oct 28 00:46:15 1998  Jeffrey A Law  (law@cygnus.com)
+1998-10-28  Jeffrey A Law  (law@cygnus.com)
 
 	* jcf-write.c (emit_load_or_store): Avoid implicit int arguments.
 	* mangle.c (emit_unicode_mangled_name): Similarly.
 
-Mon Oct 26 12:17:23 1998  Nick Clifton  <nickc@cygnus.com>
+1998-10-26  Nick Clifton  <nickc@cygnus.com>
 
 	* jcf-parse.c (get_constant): Place braces around code to compute
 	'd' when REAL_ARITHMETIC is not defined.
 
-Sun Oct 25 14:58:05 1998  H.J. Lu  (hjl@gnu.org)
+1998-10-25  H.J. Lu  (hjl@gnu.org)
 
 	* Make-lang.in (jv-scan$(exeext)): Add stamp-objlist to
 	dependency.
@@ -11464,7 +11468,7 @@ Sun Oct 25 14:58:05 1998  H.J. Lu  (hjl@gnu.org)
 
 	* lang-specs.h: `.zip' files are input to jc1.
 
-Thu Oct 22 23:01:54 1998  Per Bothner  <bothner@cygnus.com>
+1998-10-22  Per Bothner  <bothner@cygnus.com>
 
 	* jvspecs.c:  Add (but don't enable) support for combining multiple
 	.class and .java input filenames to a single jc1 invocation.
@@ -11490,7 +11494,7 @@ Thu Oct 22 23:01:54 1998  Per Bothner  <bothner@cygnus.com>
 
 	* config-lang.in (stagestuff): Added jcf-dump and jv-scan.
 
-Sun Oct 11 10:31:52 1998  Anthony Green  <green@cygnus.com>
+1998-10-11  Anthony Green  <green@cygnus.com>
 
 	* Make-lang.in (java): Depend on jcf-dump and jv-scan.
 	(JV_SCAN_SOURCES): New macro.
@@ -11560,7 +11564,7 @@ Sun Oct 11 10:31:52 1998  Anthony Green  <green@cygnus.com>
 	* lang.c (OBJECT_SUFFIX): Define if not already defined.
 	(init_parse): Use OBJECT_SUFFIX, not ".o".
 
-Wed Oct 21 07:54:11 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1998-10-21  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* class.c (emit_register_classes): Renamed from
 	emit_register_class.
@@ -11570,7 +11574,7 @@ Wed Oct 21 07:54:11 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	returning.
 	* parse.y (java_expand_classes): No longer register classes.
 
-Tue Oct 20 09:15:38 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1998-10-20  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* class.c (is_compiled_class): New local variable
 	seen_in_zip. Identify classes found in currently compiled source
@@ -11598,11 +11602,11 @@ Tue Oct 20 09:15:38 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	(java_complete_expand_methods): Fixed indentation.
 	(java_expand_classes): New function.
 
-Sat Oct 17 11:25:21 1998  Per Bothner  <bothner@cygnus.com>
+1998-10-17  Per Bothner  <bothner@cygnus.com>
 
 	* Makefile.in:  Link with libiberty.a instead of memmove.o.
 
-Fri Oct 16 10:59:01 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1998-10-16  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* lex.c (setjmp.h): No longer included.
 	* lex.h (setjmp.h): Included.
@@ -11631,7 +11635,7 @@ Fri Oct 16 10:59:01 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	(qualify_ambiguous_name): Sweep through all successive array
 	dimensions.
 
-Wed Oct 14 18:21:29 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1998-10-14  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* java-tree.h (pop_labeled_block, lang_printable_name,
 	maybe_add_interface, set_super_info, get_access_flags_from_decl,
@@ -11778,7 +11782,7 @@ Wed Oct 14 18:21:29 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	(HANDLE_METHOD): Likewise.
 	* jcf-depend.c: New file.
 
-Tue Oct 13 23:34:12 1998  Jeffrey A Law  (law@cygnus.com)
+1998-10-13  Jeffrey A Law  (law@cygnus.com)
 
 	* java-tree.def: Add missing newline at EOF.
 
@@ -11791,7 +11795,7 @@ Tue Oct 13 23:34:12 1998  Jeffrey A Law  (law@cygnus.com)
 	(disassemble_method): Undefine RET to avoid clash with
 	config/i386/i386.h.
 
-Tue Oct 13 03:50:28 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1998-10-13  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* decl.c (runtime_exception_type_node, error_exception_type_node):
 	New global variables.
@@ -11885,16 +11889,16 @@ Tue Oct 13 03:50:28 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	(field_pass): New global.
 	(HANDLE_END_FIELD): Take field_pass into account.
 
-Wed Oct  7 12:10:48 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+1998-10-07  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.in (keyword.h): Add -L KR-C -F ', 0' flags to gperf.
 	(keyword.h): Regenerate using gperf 2.7.1 (19981006 egcs).
 
-Sat Oct  3 13:29:46 1998  Anthony Green  <green@cygnus.com>
+1998-10-03  Anthony Green  <green@cygnus.com>
 
 	* jvspec.c: Fix bug in jvgenmain_spec patch.
 
-Fri Oct  2 17:22:52 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1998-10-02  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* Makefile.in (lang.o:): Install dependency on java-tree.def.
 	* decl.c (soft_exceptioninfo_call_node): New global variable.
@@ -11991,16 +11995,16 @@ Fri Oct  2 17:22:52 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	patch_try_statement): New functions.
 	* typeck.c (match_java_method): Function deleted.
 
-Fri Oct  2 13:48:36 1998  Anthony Green  <green@cygnus.com>
+1998-10-02  Anthony Green  <green@cygnus.com>
 
 	* jvspec.c: jvgenmain_spec uses different temporary file names.
 
-Fri Oct  2 12:50:19 1998  Anthony Green  <green@cygnus.com>
+1998-10-02  Anthony Green  <green@cygnus.com>
 
 	* jvspec.c (lang_specific_driver): Fail if user specifies
 	--main= when not linking.
 
-Mon Sep 28 13:48:33 1998  Tom Tromey  <tromey@cygnus.com>
+1998-09-28  Tom Tromey  <tromey@cygnus.com>
 
 	* class.c (make_class_data): Push value for `thread' field.
 	* decl.c (init_decl_processing): Added `thread' field to class.
@@ -12008,20 +12012,20 @@ Mon Sep 28 13:48:33 1998  Tom Tromey  <tromey@cygnus.com>
 	* class.c (add_field): Always make static fields externally
 	visible.
 
-Sat Sep 26 08:22:47 1998  Anthony Green  <green@cygnus.com>
+1998-09-26  Anthony Green  <green@cygnus.com>
 
 	* expr.c (build_java_athrow,
 	build_java_throw_out_of_bounds_exception, expand_invoke,
 	build_newarray, expand_java_multianewarray, build_java_monitor):
 	Update comments to reflect _Jv_* function names.
 
-Fri Sep 25 16:03:02 1998  Per Bothner  <bothner@cygnus.com>
+1998-09-25  Per Bothner  <bothner@cygnus.com>
 
 	* decl.c (complete_start_java_method):  DECL_RESULT is always promoted.
 	* decl.c (start_java_method):  Handle PROMOTE_PROTOTYPES target macro.
 	* parse.y (expand_start_java_method):  Likewise.
 
-Thu Sep 24 12:20:35 1998  Per Bothner  <bothner@cygnus.com>
+1998-09-24  Per Bothner  <bothner@cygnus.com>
 
 	* expr.c (pop_arguments):  Handle PROMOTE_PROTOTYPES target macro.
 
@@ -12037,12 +12041,12 @@ Thu Sep 24 12:20:35 1998  Per Bothner  <bothner@cygnus.com>
 
 	* lex.c (java_lex):  Fix (from Alex) for JC1_LITE problem.
 
-Wed Sep 23 14:49:35 1998  Tom Tromey  <tromey@cygnus.com>
+1998-09-23  Tom Tromey  <tromey@cygnus.com>
 
 	* class.c (init_class_processing): libjava function renamed to
 	_Jv_RegisterClass.
 
-Tue Sep 22 12:00:02 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1998-09-22  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* expr.c (java_lang_expand_expr): New case for SWITCH_EXPR.
 	* java-tree.def: Fixed DEFTREECODE third argument.
@@ -12124,7 +12128,7 @@ Tue Sep 22 12:00:02 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	(patch_switch_statement, case_identity, java_expand_switch): New
 	functions.
 
-Mon Sep 21 13:21:35 1998  Per Bothner  <bothner@cygnus.com>
+1998-09-21  Per Bothner  <bothner@cygnus.com>
 
 	* buffer.h (BUFFER_INIT):  New macro.
 	* jcf-write.c (struct jcf_partial):  New type.  Put global stuff here.
@@ -12132,11 +12136,11 @@ Mon Sep 21 13:21:35 1998  Per Bothner  <bothner@cygnus.com>
 	(jcf_block, jcf_relocation):  New types.
 	Support labels, branches, conditionals, loops.
 
-Mon Sep 21 15:08:48 1998  Tom Tromey  <tromey@cygnus.com>
+1998-09-21  Tom Tromey  <tromey@cygnus.com>
 
 	* decl.c (INT_TYPE_SIZE): Define as BITS_PER_WORD if not defined.
 
-Mon Sep 21 13:21:35 1998  Per Bothner  <bothner@cygnus.com>
+1998-09-21  Per Bothner  <bothner@cygnus.com>
 
 	* decl.c (integer_type_node):  Make it have INT_TYPE_SIZE.
 	* verify.c (verify_jvm_instructions):  Use int_type_not (32 bits),
@@ -12149,30 +12153,30 @@ Mon Sep 21 13:21:35 1998  Per Bothner  <bothner@cygnus.com>
 	(disassemble_method):  Better handling of wide instructions.
 	Make more robust for bad input.
 
-Wed Sep 30 20:53:51 1998  Jeffrey A Law  (law@cygnus.com)
+1998-09-30  Jeffrey A Law  (law@cygnus.com)
 
 	* jcf-write.c (OP2, OP4): Use "_i", not "_I" to avoid problems on
 	FreeBSD.
 
-Thu Sep 17 19:45:01 1998  Jeffrey A Law  (law@cygnus.com)
+1998-09-17  Jeffrey A Law  (law@cygnus.com)
 
 	* Makefile.in (jcf-dump, jvgenmain): Link in memmove.o too.
 
-Thu Sep 17 16:21:52 1998  Tom Tromey  <tromey@cygnus.com>
+1998-09-17  Tom Tromey  <tromey@cygnus.com>
 
 	* Makefile.in ($(PARSE_H)): Removed target.
 
-Thu Sep 17 01:57:07 1998  Jeffrey A Law  (law@cygnus.com)
+1998-09-17  Jeffrey A Law  (law@cygnus.com)
 
 	* Makefile.in (JAVA_OBJS): Add memmove.o
 	(memmove.o): New target & rules.
 
-Tue Sep 15 23:21:55 1998  Tom Tromey  <tromey@cygnus.com>
+1998-09-15  Tom Tromey  <tromey@cygnus.com>
 
 	* expr.c (expand_invoke): Don't generate a call to the class init
 	code.
 
-Mon Sep 14 10:14:47 1998  Jeffrey A Law  (law@cygnus.com)
+1998-09-14  Jeffrey A Law  (law@cygnus.com)
 
 	* Makefile.in: Add many missing dependencies.
 	* buffer.c, class.c, constants.c, decl.c: Use system.h and toplev.h
@@ -12180,7 +12184,7 @@ Mon Sep 14 10:14:47 1998  Jeffrey A Law  (law@cygnus.com)
 	* except.c, expr.c, jcf-io.c jcf-parse.c, jcf-write.c: Likewise.
 	* jvgenmain.c lang.c mangle.c typeck.c verify.c: Likewise.
 
-Fri Sep 11 14:05:21 1998  Per Bothner  <bothner@cygnus.com>
+1998-09-11  Per Bothner  <bothner@cygnus.com>
 
 	* decl.c (complete_start_java_method):  If method is static (and
 	not private) call _Jv_InitClass.
@@ -12188,31 +12192,31 @@ Fri Sep 11 14:05:21 1998  Per Bothner  <bothner@cygnus.com>
 
 	* jvspec.c (jvgenmain_spec):  Fix spec for generated .o file.
 
-Thu Sep 10 10:33:31 1998  Jeffrey A Law  (law@cygnus.com)
+1998-09-10  Jeffrey A Law  (law@cygnus.com)
 
 	* Make-lang.in (GCJ): Define before using.
 
-Wed Sep  9 21:23:10 1998  Jeffrey A Law  (law@cygnus.com)
+1998-09-09  Jeffrey A Law  (law@cygnus.com)
 
 	* gjavah.c (java_no_argument): Renamed from no_argument to avoid
 	losing due to namespace pollution in GNU getopt.h
 
-Wed Sep  9 13:33:39 1998  Tom Tromey  <tromey@cygnus.com>
+1998-09-09  Tom Tromey  <tromey@cygnus.com>
 
 	* Make-lang.in (java.all.build): Don't mention jvgenmain or gcjh.
 	(java.all.cross): Likewise.
 	(java.rest.encap): Likewise.
 
-Tue Sep  8 10:34:05 1998  Jeffrey A Law  (law@cygnus.com)
+1998-09-08  Jeffrey A Law  (law@cygnus.com)
 
 	* gjavah.c (print_class_decls): Fix thinko in arglist
 	* jcv-io.c (find_classfile): Similarly.
 
-Mon Sep  7 13:59:49 1998  Jeffrey A Law  (law@cygnus.com)
+1998-09-07  Jeffrey A Law  (law@cygnus.com)
 
 	* Makefile.in (INCLUDES): Update for recent toplevel gcc changes.
 
-Sat Sep  5 16:08:01 1998  Tom Tromey  <tromey@cygnus.com>
+1998-09-05  Tom Tromey  <tromey@cygnus.com>
 
 	* Make-lang.in (java.maintainer-clean): Don't remove parse.h.
 	(java.mostlyclean): Remove parse.c and parse-scan.c, not parse.h.
@@ -12224,7 +12228,7 @@ Sat Sep  5 16:08:01 1998  Tom Tromey  <tromey@cygnus.com>
 	(clean): Remove parse-scan.c as well.
 	(parse.o): Depend on $(PARSE_C).
 
-Sat Sep  5 08:48:40 1998  Anthony Green  <green@cygnus.com>
+1998-09-05  Anthony Green  <green@cygnus.com>
 
 	* README, license.terms: Removed.
 
@@ -12237,18 +12241,18 @@ Sat Sep  5 08:48:40 1998  Anthony Green  <green@cygnus.com>
 	verify.c, zextract.c, zipfile.h: Fixed copyright assignment,
 	and Java trademark attribution.
 
-Fri Sep  4 10:42:05 1998  Tom Tromey  <tromey@cygnus.com>
+1998-09-04  Tom Tromey  <tromey@cygnus.com>
 
 	* Makefile.in: Use gcjh, not gjavah.
 	* config-lang.in (stagestuff): Use gcjh, not gjavah.
 	* Make-lang.in: Changed gjavah to gcjh everywhere.
 
-Thu Sep  3 18:04:09 1998  Per Bothner  <bothner@cygnus.com>
+1998-09-03  Per Bothner  <bothner@cygnus.com>
 
 	* gjavah.c:  Support new -prepend -add -append flags.
 	(print_method_info):  Method is not virtual if class is final.
 
-Thu Sep  3 12:03:53 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1998-09-03  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* jv-scan.c: Fixed copyright assignment.
 	* keyword.gperf: Likewise.
@@ -12273,7 +12277,7 @@ Thu Sep  3 12:03:53 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	(complete_loop_body): New function.
 	(patch_exit_expr): Fixed condition inversion.
 
-Wed Sep  2 11:53:58 1998  Tom Tromey  <tromey@cygnus.com>
+1998-09-02  Tom Tromey  <tromey@cygnus.com>
 
 	* Make-lang.in (jvspec.o): Use GCC_THREAD_FILE to compute correct
 	name of thread define.
@@ -12284,17 +12288,17 @@ Wed Sep  2 11:53:58 1998  Tom Tromey  <tromey@cygnus.com>
 	library or gc library.  Recognize -ljava on command line so it
 	isn't linked against more than once.
 
-Wed Sep  2 11:28:35 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1998-09-02  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse-scan.y (report_main_declaration): Name of the class
 	containing `main' can be a qualified name.
 
-Mon Aug 31 13:25:58 1998  Tom Tromey  <tromey@cygnus.com>
+1998-08-31  Tom Tromey  <tromey@cygnus.com>
 
 	* config-lang.in: Changed gjavac to gjc everywhere.
 	* Make-lang.in: Changed gjavac to gjc everywhere.
 
-Thu Aug 27 02:28:27 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1998-08-27  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* Make-lang.in (JAVA_TARGET_INDEPENDENT_BIN_TOOLS): New variable.
 	(java.install-common:): Loop over JAVA_TARGET_INDEPENDENT_BIN_TOOLS
@@ -12348,7 +12352,7 @@ Thu Aug 27 02:28:27 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	* parse-scan.y: New file.
 	* jv-scan.c: New file.
 
-Tue Aug 25 10:17:54 1998  Tom Tromey  <tromey@cygnus.com>
+1998-08-25  Tom Tromey  <tromey@cygnus.com>
 
 	* gjavah.c (main): Handle -friend option.
 	(friend_specs): New global.
@@ -12359,18 +12363,18 @@ Tue Aug 25 10:17:54 1998  Tom Tromey  <tromey@cygnus.com>
 	(print_cxx_classname): Added `prefix' argument.  Ignore arrays.
 	Changed all callers.
 
-Mon Aug 24 20:19:27 1998  Per Bothner  <bothner@cygnus.com>
+1998-08-24  Per Bothner  <bothner@cygnus.com>
 
 	* jcf-dump.c (process_class):  Move JCF_FINISH use to main,
 	(main):  Handle processing all the entries of a named .zip archive.
 	* jcf-io.c (jcf_trim_old_input):  New function.
 	* jcf.h (GET_u2_le,GET_u4_le,JCF_readu2_le,JCF_readu4_le):  New macros.
 
-Mon Aug 24 07:35:13 1998  Per Bothner  <bothner@cygnus.com>
+1998-08-24  Per Bothner  <bothner@cygnus.com>
 
 	* lang.c (flag_assume_compiled):  Make default be on.
 
-Fri Aug 21 17:29:04 1998  Per Bothner  <bothner@cygnus.com>
+1998-08-21  Per Bothner  <bothner@cygnus.com>
 
 	* jcf-dump.c:  Add bunches of flags to control output more.
 	(process_class):  New function;  support printing more than one class.
@@ -12378,21 +12382,21 @@ Fri Aug 21 17:29:04 1998  Per Bothner  <bothner@cygnus.com>
 	* jcf-reader.c (IGNORE_ATTRIBUTE):  New hook.
 	* jcf.h (CPOOL_INDEX_IN_RANGE):  New macro.
 
-Thu Aug 20 14:24:47 1998  Per Bothner  <bothner@cygnus.com>
+1998-08-20  Per Bothner  <bothner@cygnus.com>
 
 	Change mangling of dispatch table to match C++ vtable (w/thunks).
 	* class.c (build_dtable_decl), java-tree.h:  New function.
 	(make_class_data):  Call it.
 	* decl.c (init_decl_processing):  Likewise.
 
-Wed Aug 19 17:57:07 1998  Warren Levy  <warrenl@cygnus.com>
+1998-08-19  Warren Levy  <warrenl@cygnus.com>
 
 	* decl.c (init_decl_processing): Use _Jv_NewObjectArray, not
 	soft_anewarray; adjust args passed.
 	* expr.c (build_anewarray): Adjust args for soft_anewarray_node to
 	match _Jv_NewObjectArray.
 
-Wed Aug 19 09:33:23 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1998-08-19  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* decl.c (push_labeled_block, pop_labeled_block): New functions.
 	* expr.c (loopup_label): Call create_label_decl.
@@ -12469,17 +12473,17 @@ Wed Aug 19 09:33:23 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	* typeck.c (build_java_signature): Build argument signature before
 	enclosing it in between parenthesis.
 
-Mon Aug 17 17:44:24 1998  Warren Levy  <warrenl@cygnus.com>
+1998-08-17  Warren Levy  <warrenl@cygnus.com>
 
 	* Make-lang.in (JAVA_SRCS): Created for dependencies * Makefile.in
 	(JAVA_OBJS): Added reminder comment
 
-Thu Aug 13 10:01:45 1998  Nick Clifton  <nickc@cygnus.com>
+1998-08-13  Nick Clifton  <nickc@cygnus.com>
 
 	* gjavah.c (D_NAN_MASK): Append LL to the constant to force it to
 	be interpreted as a long long.
 
-Thu Aug 13 14:34:07 1998  Warren Levy  <warrenl@cygnus.com>
+1998-08-13  Warren Levy  <warrenl@cygnus.com>
 
 	* decl.c (init_decl_processing): Use _Jv_InitClass, not
 	soft_initialise_class.  Use _Jv_NewMultiArray, not
@@ -12488,7 +12492,7 @@ Thu Aug 13 14:34:07 1998  Warren Levy  <warrenl@cygnus.com>
 	_Jv_CheckArrayStore, not soft_checkarraystore.  Use
 	_Jv_LookupInterfaceMethod, not soft_lookupinterfacemethod.
 
-Wed Aug 12 14:23:13 1998  Per Bothner  <bothner@cygnus.com>
+1998-08-12  Per Bothner  <bothner@cygnus.com>
 
 	* decl.c, java-tree.h (this_identifier_node, super_identifier_node,
 	length_identifier_node):  New global tree node constants.
@@ -12502,7 +12506,7 @@ Wed Aug 12 14:23:13 1998  Per Bothner  <bothner@cygnus.com>
 	* jcf-write.c (generate_bytecode_insns):  Handle ARRAY_REF opcode
 	and ARRAY.length.
 
-Tue Aug 11 11:31:55 1998  Per Bothner  <bothner@cygnus.com>
+1998-08-11  Per Bothner  <bothner@cygnus.com>
 
 	* decl.c (init_decl_processing): Remove unused method_type_node fields.
 	* class.c (make_method_value):  Remove init for removed fields.
@@ -12523,7 +12527,7 @@ Tue Aug 11 11:31:55 1998  Per Bothner  <bothner@cygnus.com>
 	* jcf-write.c (generate_bytecode_insns):  Handle RETURN_EXPR,
 	MINUS_EXPR, MULT_EXPR, TRUNC_DIV_EXPR, and RDIV_EXPR.
 
-Mon Aug 10 09:57:15 1998  Tom Tromey  <tromey@cygnus.com>
+1998-08-10  Tom Tromey  <tromey@cygnus.com>
 
 	* Make-lang.in (jc1$(exeext)): Don't depend on c-common.o or
 	c-pragma.o.
@@ -12534,7 +12538,7 @@ Mon Aug 10 09:57:15 1998  Tom Tromey  <tromey@cygnus.com>
 	(last_access_generated): Removed.
 	(process_file): Only make a single pass over the .class file.
 
-Wed Jul 29 17:50:23 1998  Per Bothner  <bothner@cygnus.com>
+1998-07-29  Per Bothner  <bothner@cygnus.com>
 
 	* class.c (get_dispatch_table):  Add extra dummy vtable entry,
 	for compatibility for G++ (with -fvtable-thunks).
@@ -12542,7 +12546,7 @@ Wed Jul 29 17:50:23 1998  Per Bothner  <bothner@cygnus.com>
 
 	* gjavah.c (process_file):  Use public inheritance for super-class.
 
-Wed Jul 29 13:19:03 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1998-07-29  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* lex.c (java_init_lex): Initialize ctxp->package.
 	* parse.h (struct parser_ctxt): package and package_len replaced
@@ -12590,11 +12594,11 @@ Wed Jul 29 13:19:03 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	(java_complete_class): Sanity check on stabilize_ref gone.
 	* zextract.c (read_zip_archive): Cast lseek second argument to long.
 
-Tue Jul 28 21:39:22 1998  Per Bothner  <bothner@cygnus.com>
+1998-07-28  Per Bothner  <bothner@cygnus.com>
 
 	* class.c (hashUtf8String):  Fix - use new JavaSoft specification.
 
-Fri Jul 24 10:43:25 1998  Tom Tromey  <tromey@cygnus.com>
+1998-07-24  Tom Tromey  <tromey@cygnus.com>
 
 	* gjavah.c (F_NAN): Removed.
 	(F_NAN_MASK): New macro.
@@ -12609,7 +12613,7 @@ Fri Jul 24 10:43:25 1998  Tom Tromey  <tromey@cygnus.com>
 	* jcf-dump.c (print_constant): [CONSTANT_Double, CONSTANT_Float]
 	If verbose, print underlying representation of value in hex.
 
-Fri Jul 24 14:14:32 1998  Per Bothner  <bothner@cygnus.com>
+1998-07-24  Per Bothner  <bothner@cygnus.com>
 
 	* buffer.h, buffer.c:  New files.
 	* Makefile.in (JAVA_OBJS):  Add buffer.o.
@@ -12623,12 +12627,12 @@ Fri Jul 24 14:14:32 1998  Per Bothner  <bothner@cygnus.com>
 	(generate_bytecode_insns):  Handle local variables.
 	(generate_classfile):  Write LocalVariableTable attribute.
 
-Fri Jul 24 13:46:59 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1998-07-24  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* jcf-io.c (open_in_zip): Check the zipfile magic number.
 	* zipfile.h (ZIPMAGIC): New macro.
 
-Fri Jul 24 10:43:25 1998  Tom Tromey  <tromey@cygnus.com>
+1998-07-24  Tom Tromey  <tromey@cygnus.com>
 
 	* Makefile.in (gjavah.o): Updated dependencies.
 	(jcf-dump.o): Likewise.
@@ -12644,7 +12648,7 @@ Fri Jul 24 10:43:25 1998  Tom Tromey  <tromey@cygnus.com>
 	(java.rest.encap): Likewise.
 	* config-lang.in (compilers, stagestuff): Added gjavah.
 
-Thu Jul 23 18:33:56 1998  Tom Tromey  <tromey@cygnus.com>
+1998-07-23  Tom Tromey  <tromey@cygnus.com>
 
 	* gjavah.c (java_float_finite): New function.
 	(java_double_finite): Likewise.
@@ -12656,18 +12660,18 @@ Thu Jul 23 18:33:56 1998  Tom Tromey  <tromey@cygnus.com>
 	(D_NAN): Likewise.
 	(print_field_info): Use java_float_finite and java_double_finite.
 
-Thu Jul 23 15:28:24 1998  Per Bothner  <bothner@cygnus.com>
+1998-07-23  Per Bothner  <bothner@cygnus.com>
 
 	* parse.y (method_header):  Name "this" implicit argument.
 
-Wed Jul 22 15:47:30 1998  Per Bothner  <bothner@cygnus.com>
+1998-07-22  Per Bothner  <bothner@cygnus.com>
 
 	* jcf-write.c:  Write out LineNumberTable attribute in .class file.
 	(linenumber_buffer, linenumber_ptr, linenumber_limit):  New statics.
 	(put_linenumber):  New function.
 	(generate_bytecode_insns, generate_classfile):  Write line numbers.
 
-Wed Jul 22 14:39:00 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1998-07-22  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* java-tree.h (CALL_EXPR_FROM_PRIMARY_P): Changed in PRIMARY_P.
 	(lookup_name, build_known_method_ref, build_class_init,
@@ -12756,7 +12760,7 @@ Wed Jul 22 14:39:00 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	(build_return, patch_return): New functions.
 	* typeck.c (lookup_java_constructor): Fixed typo in comment.
 
-Tue Jul 21 12:10:04 1998  Per Bothner  <bothner@cygnus.com>
+1998-07-21  Per Bothner  <bothner@cygnus.com>
 
 	* constants.c (find_name_and_type_constant, find_fieldref_index,
 	find_methodref_index):  New methods.
@@ -12781,7 +12785,7 @@ Tue Jul 21 12:10:04 1998  Per Bothner  <bothner@cygnus.com>
 	* parse.y:  Use build_java_argument_signature instead of fiddling
 	with signature_include_return.
 
-Fri Jul 17 09:48:51 1998  Tom Tromey  <tromey@cygnus.com>
+1998-07-17  Tom Tromey  <tromey@cygnus.com>
 
 	* gjavah.c (print_c_decl): Always generate JArray<>* for array
 	types.
@@ -12790,7 +12794,7 @@ Fri Jul 17 09:48:51 1998  Tom Tromey  <tromey@cygnus.com>
 	(gjavah$(exeext)): Added $(exeext).
 	(clean): Likewise.
 
-Thu Jul 16 15:29:20 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1998-07-16  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* class.c (layout_class): Call to java_layout_parsed_class replace
 	by safe_layout_class.
@@ -12909,7 +12913,7 @@ Thu Jul 16 15:29:20 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	builtin types.
 	(build_newarray_node, patch_newarray, build_this): New functions.
 
-Thu Jul 16 10:46:47 1998  Tom Tromey  <tromey@cygnus.com>
+1998-07-16  Tom Tromey  <tromey@cygnus.com>
 
 	* gjavah.c (print_c_decl): UTF8_GET increments pointer; don't
 	increment it in `for' statement.
@@ -12928,7 +12932,7 @@ Thu Jul 16 10:46:47 1998  Tom Tromey  <tromey@cygnus.com>
 	(generate_access): Set found_error.
 	(print_c_decl): Likewise.
 
-Wed Jul 15 10:36:27 1998  Tom Tromey  <tromey@cygnus.com>
+1998-07-15  Tom Tromey  <tromey@cygnus.com>
 
 	* gjavah.c (print_c_decl): Don't print "," when examining field.
 	Skip type name when looking at "[L" types.
@@ -12949,7 +12953,7 @@ Wed Jul 15 10:36:27 1998  Tom Tromey  <tromey@cygnus.com>
 	(process_file): Use it.
 	(utf8_cmp): New function.
 
-Mon Jul 13 14:21:47 1998  Nick Clifton  <nickc@cygnus.com>
+1998-07-13  Nick Clifton  <nickc@cygnus.com>
 
 	* lang-options.h: Format changed to match changes in gcc/toplev.c
 	to implement a --help option.
@@ -12958,7 +12962,7 @@ Mon Jul 13 14:21:47 1998  Nick Clifton  <nickc@cygnus.com>
 
 	* decl.c (init_decl_processing): Revert change to dtable_type.
 
-Thu Jul  9 18:22:12 1998  Per Bothner  <bothner@cygnus.com>
+1998-07-09  Per Bothner  <bothner@cygnus.com>
 
 	* java-tree.h (CLASS_P):  Changed DECL_LANG_FLAG_7 -> TYPE_LANG_FLAG_4.
 
@@ -12969,14 +12973,14 @@ Thu Jul  9 18:22:12 1998  Per Bothner  <bothner@cygnus.com>
 	* lang.c (lang_init): Default flag_exceptions to 1, without
 	checking to see if it's 2 first.
 
-Wed Jul  8 03:01:32 1998  Jeffrey A Law  (law@cygnus.com)
+1998-07-08  Jeffrey A Law  (law@cygnus.com)
 
 	* constants.c: Include "system.h".
 	* decl.c: Likewise.
 	* lang.c (flag_new_exceptions): Get via extern now.
 	(lang_init_options): New functions.  Turn on flag_new_exceptions.
 
-Tue Jul  7 12:56:48 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1998-07-07  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* lex.c (java_lex): Return 0 when we see an invalid character in
 	the input.
@@ -12998,7 +13002,7 @@ Tue Jul  7 12:56:48 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	* jcf-io.c (find_class): Zero out BUFFER before we use it, since
 	we don't explicitly put a null pointer when we're copying it.
 
-Tue Jul  7 09:38:38 1998  Tom Tromey  <tromey@cygnus.com>
+1998-07-07  Tom Tromey  <tromey@cygnus.com>
 
 	* gjavah.c (print_cxx_classname): New function.
 	(super_class_name): Likewise.
@@ -13023,7 +13027,7 @@ Tue Jul  7 09:38:38 1998  Tom Tromey  <tromey@cygnus.com>
 	(print_c_decl): Return void.
 	(print_field_info): Return void.
 
-Thu Jul  2 16:53:16 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1998-07-02  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* Makefile.in (JAVABISONFLAGS): Specific flag for bison when
 	processing the jc1 grammar file. Prefix bison functions and
@@ -13158,26 +13162,26 @@ Thu Jul  2 16:53:16 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	(patch_unary_op): Extract location information from the node.
 	(build_array_ref, patch_array_ref): New functions.
 
-Wed Jul  1 13:11:36 1998  Tom Tromey  <tromey@cygnus.com>
+1998-07-01  Tom Tromey  <tromey@cygnus.com>
 
 	* expr.c (expand_java_INSTANCEOF): Changed calling convention to
 	match _Jv_IsInstanceOf.
 	* decl.c (init_decl_processing): Use _Jv_NewArray, not
 	soft_newarray.  Use _Jv_IsInstanceOf, not soft_instanceof.
 
-Tue Jun 30 14:12:54 1998  Tom Tromey  <tromey@cygnus.com>
+1998-06-30  Tom Tromey  <tromey@cygnus.com>
 
 	* decl.c (init_decl_processing): Functions are now named
 	_Jv_MonitorEnter and _Jv_MonitorExit, and return jint.
 
-Mon Jun 29 14:47:10 1998  Per Bothner  <bothner@cygnus.com>
+1998-06-29  Per Bothner  <bothner@cygnus.com>
 
 	* java-tree.h (load_class):  Add prototype.
 	* class.c (is_compiled_class):  Add missing arg to load_class.
 	* expr.c (expand_java_NEW):  Call load_class.
 	* parse.y (process_import):  Removed bogus use of void return value.
 
-Thu Jun 25 11:50:48 1998  Per Bothner  <bothner@cygnus.com>
+1998-06-25  Per Bothner  <bothner@cygnus.com>
 
 	* decl.c, java-tree.h (soft_athrow_node):  Renamed to soft_node.
 	Function name is "_Jv_Throw" instead of "soft_athrow".
@@ -13186,18 +13190,18 @@ Thu Jun 25 11:50:48 1998  Per Bothner  <bothner@cygnus.com>
 	Takes an extra parameter (object size).
 	* expr.c:  Update calls.
 
-Wed Jun 24 13:59:02 1998  Per Bothner  <bothner@cygnus.com>
+1998-06-24  Per Bothner  <bothner@cygnus.com>
 
 	* lex.c (java_get_line_col):  Handle end-of-file.
 	* except.c (expand_end_java_handler):  Handle null type (i.e. finally).
 
-Wed Jun 24 09:22:34 EDT 1998  Andrew MacLeod  <amacleod@cygnus.com>
+1998-06-24  Andrew MacLeod  <amacleod@cygnus.com>
 
 	* lang.c (lang_init): Make -fexceptions the default.
 	* except.c (maybe_start_try, maybe_end_try): Don't do anything if
 	exception handling is not turned on.
 
-Tue Jun 23 10:17:09 EDT 1998  Andrew MacLeod  <amacleod@cygnus.com>
+1998-06-23  Andrew MacLeod  <amacleod@cygnus.com>
 
 	* lang.c (flag_new_exceptions): Make this this default.
 	* decl.c (end_java_method): Call emit_handlers.
@@ -13208,7 +13212,7 @@ Tue Jun 23 10:17:09 EDT 1998  Andrew MacLeod  <amacleod@cygnus.com>
 	(emit_handlers): New routine to generate the saved handlers.
 	* java-except.h (emit_handlers): Add prototype.
 
-Fri Jun 12 11:31:24 1998  Per Bothner  <bothner@cygnus.com>
+1998-06-12  Per Bothner  <bothner@cygnus.com>
 
 	We used to have three different representations of the constant pool:
 	the CPool structure, the tree_constant_pool, and the constructures
@@ -13267,7 +13271,7 @@ Fri Jun 12 11:31:24 1998  Per Bothner  <bothner@cygnus.com>
 
 	* expr.c (expand_invoke):  Re-arrange error checks to make more robust.
 
-Wed Jun 10 17:34:42 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1998-06-10  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.h: New comment on the handling of unresolved type
 	identifiers. JDEPs are now part of the jdep_code enum.
@@ -13275,7 +13279,7 @@ Wed Jun 10 17:34:42 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	availability. Both are narrowed down to an 8 bits bitfield.
 	(CALL_EXPR_PRIMARY): Fixed comment.
 
-Wed Jun 10 10:54:39 1998  Tom Tromey  <tromey@cygnus.com>
+1998-06-10  Tom Tromey  <tromey@cygnus.com>
 
 	* Make-lang.in (java): Added gjavac and jvgenmain.
 	(java.start.encap): Depend on gjavac.
@@ -13290,11 +13294,11 @@ Wed Jun 10 10:54:39 1998  Tom Tromey  <tromey@cygnus.com>
 	* config-lang.in (compilers, stagestuff): Added gjavac and
 	jvgenmain.
 
-Wed Jun 10 12:19:04 1998  Dave Brolley  <brolley@cygnus.com>
+1998-06-10  Dave Brolley  <brolley@cygnus.com>
 
 	* lang.c (lang_decode_option): New argc/argv interface.
 
-Tue Jun  9 18:12:46 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1998-06-09  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* ChangeLog: Fixed entries not compliant with the Gnu Coding Standard.
 	* decl.c (build_decl_no_layout): New function.
@@ -13367,34 +13371,34 @@ Tue Jun  9 18:12:46 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	(build_unaryop, build_incdec, build_cast, patch_unaryop,
 	patch_cast): New functions.
 
-Fri Jun  5 18:03:07 1998  Per Bothner  <bothner@cygnus.com>
+1998-06-05  Per Bothner  <bothner@cygnus.com>
 
 	* jvspec.c:  New file.
 	* Make-lang.in:  New rules to build gjavac from jvspec.c and ../gcc.c.
 
 	* java-tree.h (identifier_subst):  Add declaration.
 
-Thu Jun  4 13:44:23 1998  Tom Tromey  <tromey@cygnus.com>
+1998-06-04  Tom Tromey  <tromey@cygnus.com>
 
 	* jvgenmain.c (main): Generate call to JvRunMain.
 
 	* class.c (make_class_data): Push value for "sync_info" field.
 	* decl.c (init_decl_processing): Push "sync_info" field.
 
-Wed Jun  3 20:39:14 1998  Per Bothner  <bothner@cygnus.com>
+1998-06-03  Per Bothner  <bothner@cygnus.com>
 
 	* typeck.c (build_java_array_type):  Set TYPE_NAME to actual
 	Java (source) name, not signature.
 	Set TYPE_ALIGN to (at least) that of element_type.
 
-Tue Jun  2 15:19:19 1998  Per Bothner  <bothner@cygnus.com>
+1998-06-02  Per Bothner  <bothner@cygnus.com>
 
 	* class.c:  Moved classname-mangling-rekated code to ...
 	* mangle.c:  ... this new file.
 	* jvgenmain.c:  New program (needs mangle.c) to generate main program.
 	* Makefile.in:  Update for above changes.
 
-Mon Jun  1 09:58:36 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1998-06-01  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* expr.c (truthvalue_conversion): Convert integer and floating
 	point value to their truth value.
@@ -13425,7 +13429,7 @@ Mon Jun  1 09:58:36 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	different. Force fixed type into node. Handle all binary
 	operators.
 
-Wed May 27 10:30:31 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1998-05-27  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* java-tree.h (COMPOUND_ASSIGN_P, INITIALIZED_P): New macros.
 	* lex.c (java_lex): Use BUILD_OPERATOR and BUILD_OPERATOR2 to
@@ -13483,7 +13487,7 @@ Wed May 27 10:30:31 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	build_binop, operator_string, patch_binop): New functions.
 	* typeck.c (binary_numeric_promotion): New function.
 
-Thu May 21 12:01:04 1998  Per Bothner  <bothner@cygnus.com>
+1998-05-21  Per Bothner  <bothner@cygnus.com>
 
 	* class.c (identifier_subst):  New convenience wrapper for ident_subst.
 	Replace most uses of ident_subst by identifier_subst.
@@ -13497,14 +13501,14 @@ Thu May 21 12:01:04 1998  Per Bothner  <bothner@cygnus.com>
 	Do nreverse 0 times (instead of twice) for Object and Class.
 	* parse.y (java_layout_parsed_class): No push_class_static_dummy_field.
 
-Wed May 20 16:35:04 1998  Per Bothner  <bothner@cygnus.com>
+1998-05-20  Per Bothner  <bothner@cygnus.com>
 
 	* jcf-parse.c (parse_class-file):  Set lino to smallest line number,
 	while initializing linenumber_count and linenumber_table.
 	Do it before init_function_start (which calls emit_line_note).
 	* expr.c (expand_byte_code):  Don't need to clear lineno here.
 
-Mon May 18 16:23:32 1998  Tom Tromey  <tromey@cygnus.com>
+1998-05-18  Tom Tromey  <tromey@cygnus.com>
 
 	* class.c (append_gpp_mangled_type): If `qualifications' is >=9,
 	then mangle number as _N_.
@@ -13514,13 +13518,13 @@ Mon May 18 16:23:32 1998  Tom Tromey  <tromey@cygnus.com>
 	mangle_class_field.
 	(push_class_static_dummy_field): Likewise.
 
-Sun May 17 12:52:35 1998  Michael Tiemann <tiemann@cygnus.com>
+1998-05-17  Michael Tiemann <tiemann@cygnus.com>
 
 	* parse.y (source_start_java_method): Use TREE_SET_CODE instead
 	of assigning to TREE_CODE.  The latter method exploits a feature
 	of GCC that is not ANSI compliant.
 
-Thu May 12 13:44:27 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1998-05-12  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* decl.c (pushdecl_force_head): New function.
 	(pushlevel): Removed conditional printf.
@@ -13633,7 +13637,7 @@ Thu May 12 13:44:27 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	(build_expr_block, enter_block, exit_block, lookup_name_in_blocks,
 	maybe_absorb_scoping_blocks): New functions.
 
-Mon Apr 27 10:50:05 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1998-04-27  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* jcf-io.c (find_class): Reset jcf->java_source after JCF_ZERO, if
 	previously set.
@@ -13770,7 +13774,7 @@ Mon Apr 27 10:50:05 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	tree argument.
 	(patch_argument, java_complete_tree): New functions.
 
-Mon Apr 20 18:26:57 1998  Per Bothner  <bothner@cygnus.com>
+1998-04-20  Per Bothner  <bothner@cygnus.com>
 
 	Recover from missing fields and methods (i.e. error instead of fatal).
 	* decl.c, java-tree.h (TYPE_identifier_node):  New global constant.
@@ -13790,7 +13794,7 @@ Mon Apr 20 18:26:57 1998  Per Bothner  <bothner@cygnus.com>
 
 	* jcf-parse.c (set_source_filename): Use TYPE_NAME, not DECL_NAME.
 
-Tue Apr 14 15:59:54 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1998-04-14  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* jcf-parse.c (load_class): Don't change input_filename before
 	calling jcf_parse_source (but still do it before calling
@@ -13900,11 +13904,11 @@ Tue Apr 14 15:59:54 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	(lookup_method_invoke): cl is now a WFL node. Added missing
 	IDENTIFIER_POINTER to class type decl name.
 
-Tue Apr 14 15:23:29 1998  Dave Brolley  <brolley@cygnus.com>
+1998-04-14  Dave Brolley  <brolley@cygnus.com>
 
 	* lang.c (init_parse): Now returns char* containing the filename.
 
-Fri Apr 10 11:36:04 1998  Per Bothner  <bothner@cygnus.com>
+1998-04-10  Per Bothner  <bothner@cygnus.com>
 
 	* class.c (layout_class):  Mangle repeated arg types to match cc1plus.
 
@@ -13913,7 +13917,7 @@ Fri Apr 10 11:36:04 1998  Per Bothner  <bothner@cygnus.com>
 	state is CSTATE_PREPARED; make superclass and interfaces direct
 	references, rather than constant pool indexes.
 
-Thu Apr  9 16:10:56 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1998-04-09  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parser.y: Include flags.h. Removed debug variable pl.
 	(method_declaration:): Uses ctxp->parser_ccb_indent instead of pl.
@@ -13946,11 +13950,11 @@ Thu Apr  9 16:10:56 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	* lang.c (init_parse): Expose for non USE_CPPLIB builds.
 	(finish_parse): Expose for non USE_CPPLIB builds.
 
-Wed Apr  8 13:06:23 1998  Jeffrey A Law  (law@cygnus.com)
+1998-04-08  Jeffrey A Law  (law@cygnus.com)
 
 	* lang.c (lang_print_xnode): New function.
 
-Fri Apr  3 13:22:41 1998  Per Bothner  <bothner@cygnus.com>
+1998-04-03  Per Bothner  <bothner@cygnus.com>
 
 	* decl.c (class_dtable_decl), java-tree.h:  New tree node.
 	* class.c (get_dispatch_vector, get_dispatch_table):  New functions
@@ -13971,12 +13975,12 @@ Fri Apr  3 13:22:41 1998  Per Bothner  <bothner@cygnus.com>
 
 	* Makefile.in, Make-lang.in:  Add missing $(exeext)s.
 
-Thu Mar 19 16:59:16 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1998-03-19  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (build_method_invocation_stmt): Removed extra argument
 	to build_invoke.
 
-Mon Mar 16 17:25:19 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1998-03-16  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* expr.c (dtable_indent): Now static global.
 	(expand_invoke): Now call invoke_build_dtable and
@@ -14051,11 +14055,11 @@ Mon Mar 16 17:25:19 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	if return type skipped.
 	(match_java_method): New function.
 
-Mon Mar 16 10:40:47 1998  Per Bothner  <bothner@cygnus.com>
+1998-03-16  Per Bothner  <bothner@cygnus.com>
 
 	* jcf-io.c (find_classfile):  If USE_JCF_STDIO, fopen in binary mode.
 
-Wed Feb 25 08:55:49 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1998-02-25  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* expr.c (build_invoke_non_interface): New function.
 	(methods_ident, ncode_ident): Now static globals.
@@ -14103,7 +14107,7 @@ Wed Feb 25 08:55:49 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	(java_layout_parsed_class, java_register_parsed_class): New functions.
 	(resolve_expression_name): New function.
 
-Thu Feb 12 11:54:28 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1998-02-12  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* jcf-parse.c: (parse_source_file): Check on errors after init lex.
 	* lex.c: (java_init_lex): Defer ctxp->java_pass initialization
@@ -14130,7 +14134,7 @@ Thu Feb 12 11:54:28 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	* lang.c (lang_f_options): Add the flag.
 	(flag_assume_compiled): Add decl, default to 0.
 
-Wed Feb 11 11:27:59 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1998-02-11  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* class.c (class_depth): Call to load_class uses extra VERBOSE arg.
 	(is_compiled_class): Likewise.
@@ -14259,7 +14263,7 @@ Wed Feb 11 11:27:59 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* jcf-io.c (open_in_zip): Use strncmp and LEN.
 
-Thu Jan 29 16:12:13 1998  Dave Brolley  <brolley@cygnus.com>
+1998-01-29  Dave Brolley  <brolley@cygnus.com>
 
 	* Make-lang.in (java.info): Added.
 	(java.install-info): Added
@@ -14280,12 +14284,12 @@ Thu Jan 29 16:12:13 1998  Dave Brolley  <brolley@cygnus.com>
 	of a static macro value.
 	(JAVA_ARRAY_EXCEPTION): Delete macro.
 
-Fri Jan 23 14:19:47 1998  Per Bothner  <bothner@cygnus.com>
+1998-01-23  Per Bothner  <bothner@cygnus.com>
 
 	* typeck.c (build_java_array_type):  Fix two bugs in previous change.
 	* expr.c (build_anewarray):  Add missing promote_type.
 
-Thu Jan 22 17:43:45 1998  Per Bothner  <bothner@cygnus.com>
+1998-01-22  Per Bothner  <bothner@cygnus.com>
 
 	Add array types with known length to optimize bounds checking.
 	* typeck.c (build_java_array_type):  Take length parameter.
@@ -14305,12 +14309,12 @@ Thu Jan 22 17:43:45 1998  Per Bothner  <bothner@cygnus.com>
 	(ARRAY_NEW_NUM, ARRAY_NEW_PTR):  Use build_{a,}newarray.
 	* verify.c (merge_types):  Handle known-lengh array types.
 
-Mon Jan 19 13:09:25 1998  Per Bothner  <bothner@cygnus.com>
+1998-01-19  Per Bothner  <bothner@cygnus.com>
 
 	* expr.c (expand_byte_code):  Fix performace bug, which caused
 	searching linenumber_table to be linear rather than constant.
 
-Fri Dec 12 19:18:42 1997  Per Bothner  <bothner@cygnus.com>
+1997-12-12  Per Bothner  <bothner@cygnus.com>
 
 	* Makefile.in (BISON, BISONFLAGS):  Add missing macros.
 
@@ -14319,7 +14323,7 @@ Fri Dec 12 19:18:42 1997  Per Bothner  <bothner@cygnus.com>
 	* expr.c (build_java_binop):  Implement TRUNC_MOD_EXPR for REAL_TYPE
 	using __builtin_fmod.
 
-Thu Dec  4 13:22:59 1997  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1997-12-04  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* keyword.h: New file, output of keyword.gperf as processed by
 	gperf.
@@ -14334,7 +14338,7 @@ Thu Dec  4 13:22:59 1997  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* Makefile.in (parse.c): Use $(srcdir) for parse.y.
 
-Wed Dec  3 18:37:42 1997  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1997-12-03  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* Makefile.in: (JAVA_OBJS): New object jcf-parse.o.
 	(parse.c, lex.c, keyword.h): New rules for Java source code
@@ -14347,7 +14351,7 @@ Wed Dec  3 18:37:42 1997  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	* lex.c: New file, Java language lexer.
 	* lex.h: New file, Java language lexer definitions.
 
-Wed Dec  3 17:00:17 1997  Per Bothner  <bothner@cygnus.com>
+1997-12-03  Per Bothner  <bothner@cygnus.com>
 
 	* decl.c (clinit_identifier_node), java-tree.h:  New global.
 	* java-tree.h (IS_METHOD_INIT_P, IS_METHOD_CLINIT_P):  Removed.
@@ -14357,13 +14361,13 @@ Wed Dec  3 17:00:17 1997  Per Bothner  <bothner@cygnus.com>
 
 	* jcf-reader.c (get_attribute):  Test for wrong attribute length.
 
-Mon Oct 27 17:46:36 1997  Per Bothner  <bothner@cygnus.com>
+1997-10-27  Per Bothner  <bothner@cygnus.com>
 
 	* verify.c (verify_jvm_instructions):  When processing a handler,
 	attempt to set the current_subr to the right value.
 	(More complicated code combines Sep 17 and Oct 22 versions.)
 
-Fri Oct 24 11:36:54 1997  Per Bothner  <bothner@cygnus.com>
+1997-10-24  Per Bothner  <bothner@cygnus.com>
 
 	* class.c (push_class):  Figure out (guess) name of source file.
 	* parse.c  (set_source_filename):  Set DECL_SOURCE_FILE of class decl.
@@ -14374,19 +14378,19 @@ Fri Oct 24 11:36:54 1997  Per Bothner  <bothner@cygnus.com>
 	* expr.c (build_java_binop):  Fix masking 2nd operand.
 	* decl.c (init_decl_processing):  Set sizetype first.
 
-Wed Oct 22 19:39:05 1997  Per Bothner  <bothner@cygnus.com>
+1997-10-22  Per Bothner  <bothner@cygnus.com>
 
 	* verify.c (verify_jvm_instructions):  Don't set current_subr to NULL.
 	(Revert Sep 17 change.)
 
-Tue Oct 21 15:09:02 1997  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1997-10-21  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.c (process_zip_dir): Skip ZIP entries not bearing the
 	.class extension in their name and fix thing so we don't process
 	them parse_zip_file_entries().
 	(parse_zip_file_entries): Cleaned unused local variables.
 
-Mon Oct 20 14:52:42 1997  Per Bothner  <bothner@cygnus.com>
+1997-10-20  Per Bothner  <bothner@cygnus.com>
 
 	* expr.c (can_widen_reference_to):  Allows equal array element types.
 	(expand_byte_code):  PRE_RET must expand OPERAND_VALUE (to get index).
@@ -14395,7 +14399,7 @@ Mon Oct 20 14:52:42 1997  Per Bothner  <bothner@cygnus.com>
 	* verify.c (verify_jvm_instructions case OPCODE_anewarray):
 	Promote element type to POINTER_TYPE.
 
-Mon Oct 20 13:40:41 1997  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1997-10-20  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* jcf-reader.c, parse.c: (parse_zip_file, process_zip_dir,
 	find_in_current_zip, jcf_figure_file_type): Moved from
@@ -14403,13 +14407,13 @@ Mon Oct 20 13:40:41 1997  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	* zextract.c: (read_zip_archive): takes file_comment_length possible
 	field into account.
 
-Mon Oct 20 11:45:06 1997  Per Bothner  <bothner@cygnus.com>
+1997-10-20  Per Bothner  <bothner@cygnus.com>
 
 	* verify.c (verify_jvm_instructions):  Var can also be promoted to int.
 
 	* verify.c (merge_types):  Handle array types even better ...
 
-Fri Oct 17 15:56:37 1997  Per Bothner  <bothner@cygnus.com>
+1997-10-17  Per Bothner  <bothner@cygnus.com>
 
 	* expr.c (java_stack_pop):  Fix use of NULL_TREE for TYPE_SECOND.
 
@@ -14420,7 +14424,7 @@ Fri Oct 17 15:56:37 1997  Per Bothner  <bothner@cygnus.com>
 	* expr.c (java_stack_swap):  Update stack_type_map.
 	* verify.c (merge_types):  Handle array types better.
 
-Wed Oct 15 18:09:45 1997  Per Bothner  <bothner@cygnus.com>
+1997-10-15  Per Bothner  <bothner@cygnus.com>
 
 	* class.c (add_field):  Don't promote short integral fields to
 	int any more (unless JAVA_PROMOTE_TO_INT), since Kaffe doesn't.
@@ -14429,12 +14433,12 @@ Wed Oct 15 18:09:45 1997  Per Bothner  <bothner@cygnus.com>
 	* decl.c, java-tree.h (integer_two_node):  New constant node.
 	* verify.c (merge_types):  Check for TYPE_RETURN_ADDR.
 
-Wed Oct 15 17:04:50 1997  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1997-10-15  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* class.c (append_gpp_mangled_type): Use function argument
 	unpromoted type to generate mangled name.
 
-Mon Oct 13 16:52:55 1997  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1997-10-13  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* constants.c (build_constant_data_ref): Now uses current_class
 	instead of main_class.
@@ -14502,7 +14506,7 @@ Mon Oct 13 16:52:55 1997  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	main_class
 	(is_compiled_class): Now take into account class seen in the archive.
 
-Mon Oct  6 12:03:23 1997  Per Bothner  <bothner@cygnus.com>
+1997-10-06  Per Bothner  <bothner@cygnus.com>
 
 	* except.h:  Renamed to: java-except.h.
 	* parse.c, except.c, expr.c, verify.c:  Update #include accordingly.
@@ -14514,20 +14518,20 @@ Mon Oct  6 12:03:23 1997  Per Bothner  <bothner@cygnus.com>
 
 	* jcf-io.c (find_class):  Don't look first in ".".
 
-Wed Oct  1 11:26:10 1997  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1997-10-01  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* zextract.c (read_zip_archive): Now takes into account the
 	extra_field field.
 	* expr.c (can_widen_reference_to): Modified to handle sub-interfaces.
 
-Sat Sep 20 12:44:28 1997  Per Bothner  <bothner@cygnus.com>
+1997-09-20  Per Bothner  <bothner@cygnus.com>
 
 	* constants.c, java-tree.h (build_internal_class_name):  New function.
 	(alloc_class_constant):  Re-implement using build_internal_class_name.
 	* class.c (make_class_data):  Likewise.
 	* class.c (hashUtf8String):  Make hash algorithm match String.hashCode.
 
-Wed Sep 17 13:15:23 1997  Per Bothner  <bothner@cygnus.com>
+1997-09-17  Per Bothner  <bothner@cygnus.com>
 
 	* verify.c (verify_jvm_instructions):  Temporarily set current_subr
 	to NULL before pushing an exception handler target.
@@ -14537,7 +14541,7 @@ Wed Sep 17 13:15:23 1997  Per Bothner  <bothner@cygnus.com>
 	clobbering registers.
 	(build_class_init):  New function.
 
-Wed Sep 17 11:02:41 1997  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1997-09-17  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* typeck.c (build_java_array_type): Temporary use
 	permanent_obstack to create the array 'length' field.
@@ -14545,7 +14549,7 @@ Wed Sep 17 11:02:41 1997  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	label if not found.
 	* class.c (push_super_field): Tempory use permanent_obstack.
 
-Mon Sep 15 11:33:31 1997  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1997-09-15  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* typeck.c (type_for_mode): Now handles double_type_node and
 	float_type_node.
@@ -14553,7 +14557,7 @@ Mon Sep 15 11:33:31 1997  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	the wide bytecode is checked. OPCODE_ret added to the list of
 	wide.
 
-Thu Sep 11 19:45:18 1997  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1997-09-11  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* class.c (make_class): Temporary use permanent_obstack. Set the
 	class CLASS_P field to 1.
@@ -14598,7 +14602,7 @@ Thu Sep 11 19:45:18 1997  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	(FIELD_VOLATILE, FIELD_TRANSIENT): Defined.
 	(CLASS_P): Defined
 
-Thu Sep 11 11:57:32 1997  Per Bothner  <bothner@cygnus.com>
+1997-09-11  Per Bothner  <bothner@cygnus.com>
 
 	* class.c (append_gpp_mangled_type):  Fix typo.
 	(emit_register_class):  Use main_class to get class object, rather
@@ -14606,7 +14610,7 @@ Thu Sep 11 11:57:32 1997  Per Bothner  <bothner@cygnus.com>
 	* typeck.c (parse_signature_type):  Promote array element type
 	if it is a RECORD_TYPE.
 
-Wed Sep 10 16:09:23 1997  Per Bothner  <bothner@cygnus.com>
+1997-09-10  Per Bothner  <bothner@cygnus.com>
 
 	* class.c (push_class_static_dummy_field):  New function.
 	(mangle_static_field):  New. Do G++-style mangling of static fields.
@@ -14630,7 +14634,7 @@ Wed Sep 10 16:09:23 1997  Per Bothner  <bothner@cygnus.com>
 
 	* class.c: Include stdio.h.
 
-Thu Sep  4 21:30:55 1997  Per Bothner  <bothner@cygnus.com>
+1997-09-04  Per Bothner  <bothner@cygnus.com>
 
 	* expr.c (expand_invoke):  Use COMPOUND_EXPR (and TREE_SIDE_EFFECTS)
 	to make sure class is initialized before static/special invoke.
@@ -14639,7 +14643,7 @@ Thu Sep  4 21:30:55 1997  Per Bothner  <bothner@cygnus.com>
 	call find_local_variable to force pre-allocation of decl and rtx.
 	* decl.c (push_jvm_slot):  Set DECL_REGISTER on stack slots.
 
-Wed Sep  3 16:13:23 1997  Per Bothner  <bothner@cygnus.com>
+1997-09-03  Per Bothner  <bothner@cygnus.com>
 
 	* class.c (build_class_ref):   Strip off "promoted_" if need be.
 	(make_field_value): Call build_java_signature when needed.
@@ -14656,11 +14660,11 @@ Wed Sep  3 16:13:23 1997  Per Bothner  <bothner@cygnus.com>
 	* javaop.def (lload):  Fix typo.
 	* jcf-dump.c (main):  Clear filename to prevent possibly-bad free.
 
-Tue Sep  2 17:37:25 1997  Brendan Kehoe  <brendan@lisa.cygnus.com>
+1997-09-02  Brendan Kehoe  <brendan@lisa.cygnus.com>
 
 	* parse.c: Don't include function.h.
 
-Wed Aug 27 18:33:04 1997  Per Bothner  <bothner@cygnus.com>
+1997-08-27  Per Bothner  <bothner@cygnus.com>
 
 	* except.[ch]:  New files.
 	* Makefile.in (JAVA_OBJS):  Add except.o
@@ -14669,7 +14673,7 @@ Wed Aug 27 18:33:04 1997  Per Bothner  <bothner@cygnus.com>
 
 	* jcf-dump.c (disassemble_method):  Print exception table.
 
-Wed Aug 27 13:26:58 1997  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1997-08-27  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* expr.c (verify_jvm_instructions): Started a thorough
 	verification of invoke* bytecodes.
@@ -14691,7 +14695,7 @@ Wed Aug 27 13:26:58 1997  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	access_flags.
 	(get_access_flags_from_decl): Handles all class flags.
 
-Tue Aug 26 18:54:34 1997  Per Bothner  <bothner@cygnus.com>
+1997-08-26  Per Bothner  <bothner@cygnus.com>
 
 	* class.c (add_method):  Zero out newly-allocated DECL_LANG_SPECIFIC.
 	* parse.c (yyparse):  Check for abstract method, and missing code.
@@ -14701,7 +14705,7 @@ Tue Aug 26 18:54:34 1997  Per Bothner  <bothner@cygnus.com>
 	Partial support for scanning exception table.
 	For load instructions, handle promoted integral types.
 
-Thu Aug 21 13:48:01 1997  Per Bothner  <bothner@cygnus.com>
+1997-08-21  Per Bothner  <bothner@cygnus.com>
 
 	* verify.c:  New file, with contents moved from expr.c.
 	* expr.c:  Bunch of stuff (mostly verification) moved to verify.c.
@@ -14709,7 +14713,7 @@ Thu Aug 21 13:48:01 1997  Per Bothner  <bothner@cygnus.com>
 	* java-tree.h:  Add some now-needed function declarations.
 	* Makefile.in (JAVA_OBJS): Added verify.o.
 
-Wed Aug 20 14:34:34 1997  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1997-08-20  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* class.c (add_method): Sets the METHOD_SYNCHRONIZED flag, sets the
 	METHOD_ABSTRACT flag.
@@ -14733,7 +14737,7 @@ Wed Aug 20 14:34:34 1997  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	(verify_jvm_instructions): Started a thorough verification of
 	invoke* bytecodes.
 
-Tue Aug 19 13:35:49 1997  Per Bothner  <bothner@cygnus.com>
+1997-08-19  Per Bothner  <bothner@cygnus.com>
 
 	Support verification of jsr/ret subroutines (used for try/finally).
 	* decl.c (return_address_type_node):  New type node.
@@ -14756,16 +14760,16 @@ Tue Aug 19 13:35:49 1997  Per Bothner  <bothner@cygnus.com>
 	(verify_jvm_instructions):  Handle errors from push_poending_block.
 	Support jsr and ret instructions.
 
-Tue Aug 19 13:33:36 1997  Per Bothner  <bothner@cygnus.com>
+1997-08-19  Per Bothner  <bothner@cygnus.com>
 
 	* jcf-io.c (find_classfile):  Fix thinko.
 	* jcf-dump.c:  Add CONVERT2 (to match changed javaop.def).
 
-Tue Aug 12 20:14:45 1997  Jason Merrill  <jason@yorick.cygnus.com>
+1997-08-12  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* Makefile.in (BISON): Remove.
 
-Thu Aug  7 23:08:24 1997  Per Bothner  <bothner@cygnus.com>
+1997-08-07  Per Bothner  <bothner@cygnus.com>
 
 	* Makefile.in:  Convert to autoconf.
 	* config-lang.in (outputs):  Added java/Makefile.
@@ -14803,7 +14807,7 @@ Thu Aug  7 23:08:24 1997  Per Bothner  <bothner@cygnus.com>
 	Improve newarray, anewarray, ?aload, athrow,
 	* java-tree.h (LABEL_CHANGED):  New macro.
 
-Tue Aug  5 12:21:27 1997  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1997-08-05  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* decl.c (soft_athrow_node): New global variable initialized.
 	* javaop.def (i2b, i2c, i2s): Invoke CONVERT2
@@ -14826,7 +14830,7 @@ Tue Aug  5 12:21:27 1997  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	OPCODE_ifnonnull): Now supported.
 	(build_java_athrow): New function.
 
-Mon Aug  4 15:46:45 1997  Per Bothner  <bothner@cygnus.com>
+1997-08-04  Per Bothner  <bothner@cygnus.com>
 
 	Rename method name <init> to match G++ (and fix mangling).
 	* class.c (layout_class):  Replace method name of <init> by class name.
@@ -14838,7 +14842,7 @@ Mon Aug  4 15:46:45 1997  Per Bothner  <bothner@cygnus.com>
 
 	* parse.c (get_constant):  Handle CONSTANT_Float and CONSTANT_Double.
 
-Fri Aug  1 11:37:09 1997  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+1997-08-01  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.c (get_class_constant): Modified to handle array "classes"
 	* typeck.c (set_local_type): Bug fixed when filling type_map[] with
@@ -14866,14 +14870,14 @@ Fri Aug  1 11:37:09 1997  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	(CONVERT): Modified to invoke convert().
 	(case OPCODE_aload2): Fixed index typo from 2 to 1.
 
-Thu Jul 31 12:48:18 1997  Per Bothner  <bothner@cygnus.com>
+1997-07-31  Per Bothner  <bothner@cygnus.com>
 
 	* class.c (push_class):  Set DECL_ARTIFICIAL (for dbxout.c).
 	(build_class_ref, is_compiled_class):  Handle pointer-to-record types.
 	(make_class_data):  Field name needs '/' as package prefix.
 	* expr.c (type_stack_dup, java_stack_dup):  Fix fencepost errors.
 
-Fri Jul 25 11:44:21 1997  Per Bothner  <bothner@cygnus.com>
+1997-07-25  Per Bothner  <bothner@cygnus.com>
 
 	Implement debug information for local variables.
 	* java-tree.h (DECL_CODE_LENGTH, DECL_ARG_SLOT_COUNT,
@@ -14895,7 +14899,7 @@ Fri Jul 25 11:44:21 1997  Per Bothner  <bothner@cygnus.com>
 	* class.c (make_method_value, make_class_data):  Update
 	initializations to match.
 
-Wed Jul 16 17:17:50 1997  Per Bothner  <bothner@cygnus.com>
+1997-07-16  Per Bothner  <bothner@cygnus.com>
 
 	* class.c (unicode_mangling_length, emit_unicode_mangled_name,
 	append_gpp_mangled_name, append_gpp_mangled_type):  New functions.
@@ -14912,7 +14916,7 @@ Wed Jul 16 17:17:50 1997  Per Bothner  <bothner@cygnus.com>
 	* parse.c (yyparse):  Don't call layout_class here.
 	* typeck.c (build_java_array_type):  Set TYPE_ARRAY_ELEMENT.
 
-Sat Jun 14 12:06:57 1997  Per Bothner  <bothner@cygnus.com>
+1997-06-14  Per Bothner  <bothner@cygnus.com>
 
 	* decl.c, class.c:  Update method type to match latest Kaffe snapshot.
 	* constants.c (lookup_name_constant):  Renamed to alloc_name_constant.
@@ -14921,7 +14925,7 @@ Sat Jun 14 12:06:57 1997  Per Bothner  <bothner@cygnus.com>
 	* class.c (interits_from_p, emit_register_class):  New functions.
 	* parse.c (yyparse):  Call emit_register_class.
 
-Mon Jun  9 18:08:06 1997  Per Bothner  <bothner@cygnus.com>
+1997-06-09  Per Bothner  <bothner@cygnus.com>
 
 	* constants.c:  New file, to handle constant pool.
 	* Makefile.in (JAVA_OBJS):  Add constants.o.
@@ -14932,7 +14936,7 @@ Mon Jun  9 18:08:06 1997  Per Bothner  <bothner@cygnus.com>
 	* class.c (build_class_ref):  Make work fully
 	(make_class_data):  Emit super-class, constant pool, interface vector.
 
-Tue Jun  3 10:14:31 1997  Per Bothner  <bothner@cygnus.com>
+1997-06-03  Per Bothner  <bothner@cygnus.com>
 
 	java-tree.h (DECL_SIGNATURE, BCODE_EMITTED):  Remove.
 	(LABEL_VERIFIED, BCODE_EXCEPTION_TARGET, TYPE_ARRAY_P):  New.
@@ -14955,7 +14959,7 @@ Tue Jun  3 10:14:31 1997  Per Bothner  <bothner@cygnus.com>
 	(set_java_signature):  New function - cache signature with type.
 	(lookup_java_method):  New function.
 
-Tue May  6 22:08:24 1997  Per Bothner  <bothner@deneb.cygnus.com>
+1997-05-06  Per Bothner  <bothner@deneb.cygnus.com>
 
 	* class.c (ident_subst):  Take extra SUFFIX parameter.
 	(add_field):  Set DECL_ASSEMBLER_NAME of static fields;  more.
@@ -14976,18 +14980,18 @@ Tue May  6 22:08:24 1997  Per Bothner  <bothner@deneb.cygnus.com>
 	* parse.c:  Add support for ConstantValue attribute.
 	Handle nested loading of a class.  (JPOOL_UTF):  New.
 
-Tue Mar 11 20:11:05 1997  Per Bothner  <bothner@deneb.cygnus.com>
+1997-03-11  Per Bothner  <bothner@deneb.cygnus.com>
 
 	* expr.c (expand_java_pushc):  Support #ifndef REAL_ARITHMETIC case.
 
-Thu Feb 27 14:24:29 1997  Per Bothner  <bothner@deneb.cygnus.com>
+1997-02-27  Per Bothner  <bothner@deneb.cygnus.com>
 
 	* Make-lang.in (java.install-man):  New empty rule.
 	* typeck.c (set_local_type):  New function.
 	* expr.c (STORE_INTERNAL):  Call find_local_variable,
 	not find_stack_slot.  Call set_local_type.
 
-Wed Feb 12 16:11:05 1997  Per Bothner  <bothner@kalessin.cygnus.com>
+1997-02-12  Per Bothner  <bothner@kalessin.cygnus.com>
 
 	* java-tree.h:  Various new macros for constructing RECORD_TYPEs,
 	and building RECORD_TYPE CONSTRUCTORs.
@@ -15005,7 +15009,7 @@ Wed Feb 12 16:11:05 1997  Per Bothner  <bothner@kalessin.cygnus.com>
 	* jcf-dump.c:  Support reading classfile from explicitly-named
 	class file (without CLASSPATH searching).
 
-Thu Oct 24 14:10:16 1996  Per Bothner  <bothner@deneb.cygnus.com>
+1996-10-24  Per Bothner  <bothner@deneb.cygnus.com>
 
 	* jcf-reader.c:  Add parameter list to HANDLE_CONSTANT_Utf8.
 	* parse.c (JPOOL_UTF_LENGTH, JPOOL_UTF_DATA, HANDLE_CONSTANT_Utf8):
@@ -15015,6 +15019,6 @@ Thu Oct 24 14:10:16 1996  Per Bothner  <bothner@deneb.cygnus.com>
 	* jcf.h:  Make NEW_CPOOL the default.
 	* jcf.h, jcf-reader.c, parse.c:  Remove support for !NEW_CPOOL.
 
-Thu Oct 24 13:52:45 1996  Per Bothner  <bothner@deneb.cygnus.com>
+1996-10-24  Per Bothner  <bothner@deneb.cygnus.com>
 
 	New directory.
