@@ -638,12 +638,7 @@ store_bit_field (str_rtx, bitsize, bitnum, fieldmode, value, align, total_size)
 		 if we must narrow it, be sure we do it correctly.  */
 
 	      if (GET_MODE_SIZE (GET_MODE (value)) < GET_MODE_SIZE (maxmode))
-		{
-		  /* Avoid making subreg of a subreg, or of a mem.  */
-		  if (GET_CODE (value1) != REG)
-		    value1 = copy_to_reg (value1);
-		  value1 = gen_rtx_SUBREG (maxmode, value1, 0);
-		}
+		value1 = simplify_gen_subreg (maxmode, value1, GET_MODE (value1), 0);
 	      else
 		value1 = gen_lowpart (maxmode, value1);
 	    }
