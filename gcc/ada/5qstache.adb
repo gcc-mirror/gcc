@@ -7,7 +7,6 @@
 --                                  B o d y                                 --
 --                              (Dummy version)                             --
 --                                                                          --
---                                                                          --
 --               Copyright (C) 2000 Ada Core Technologies, Inc.             --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --

@@ -6,8 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---                                                                          --
---            Copyright (C) 1991-2001 Florida State University              --
+--            Copyright (C) 1991-2002 Florida State University              --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -59,9 +58,9 @@ package body System.Interrupts is
    --------------------
 
    procedure Attach_Handler
-     (New_Handler : in Parameterless_Handler;
-      Interrupt   : in Interrupt_ID;
-      Static      : in Boolean := False)
+     (New_Handler : Parameterless_Handler;
+      Interrupt   : Interrupt_ID;
+      Static      : Boolean := False)
    is
    begin
       Unimplemented;
@@ -107,8 +106,8 @@ package body System.Interrupts is
    --------------------
 
    procedure Detach_Handler
-     (Interrupt : in Interrupt_ID;
-      Static    : in Boolean := False)
+     (Interrupt : Interrupt_ID;
+      Static    : Boolean := False)
    is
    begin
       Unimplemented;
@@ -129,9 +128,9 @@ package body System.Interrupts is
 
    procedure Exchange_Handler
      (Old_Handler : out Parameterless_Handler;
-      New_Handler : in Parameterless_Handler;
-      Interrupt   : in Interrupt_ID;
-      Static      : in Boolean := False)
+      New_Handler : Parameterless_Handler;
+      Interrupt   : Interrupt_ID;
+      Static      : Boolean := False)
    is
    begin
       Old_Handler := null;
@@ -155,6 +154,8 @@ package body System.Interrupts is
      (Object : access Dynamic_Interrupt_Protection)
       return   Boolean
    is
+      pragma Warnings (Off, Object);
+
    begin
       Unimplemented;
       return True;
@@ -164,6 +165,8 @@ package body System.Interrupts is
      (Object : access Static_Interrupt_Protection)
       return   Boolean
    is
+      pragma Warnings (Off, Object);
+
    begin
       Unimplemented;
       return True;
@@ -184,7 +187,7 @@ package body System.Interrupts is
 
    procedure Install_Handlers
      (Object       : access Static_Interrupt_Protection;
-      New_Handlers : in New_Handler_Array)
+      New_Handlers : New_Handler_Array)
    is
    begin
       Unimplemented;

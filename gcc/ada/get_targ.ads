@@ -6,8 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                                                                          --
---          Copyright (C) 1992-2000 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,10 +25,11 @@
 ------------------------------------------------------------------------------
 
 --  This package provides an Import to the C functions which provide
---  values related to types on the target system.  It is only needed for
+--  values related to types on the target system. It is only needed for
 --  exp_dbug and the elaboration of ttypes.
 
---  NOTE:  Any changes in this package must be reflected in jgettarg.ads!
+--  NOTE:  Any changes in this package must be reflected in jgettarg.ads
+--  and aa_getta.ads!
 
 --  Note that all these values return sizes of C types with corresponding
 --  names. This allows GNAT to define the corresponding Ada types to have
@@ -98,6 +98,10 @@ pragma Preelaborate (Get_Targ);
 
    function Get_Strict_Alignment return Nat;
    pragma Import (C, Get_Strict_Alignment, "get_strict_alignment");
+
+   function Get_Max_Unaligned_Field return Pos;
+   --  Returns the maximum supported size in bits for a field that is
+   --  not aligned on a storage unit boundary.
 
    function Width_From_Size  (Size : Pos) return Pos;
    function Digits_From_Size (Size : Pos) return Pos;

@@ -6,7 +6,6 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                                                                          --
 -- This specification is adapted from the Ada Reference Manual for use with --
 -- GNAT  Hi Integrity Edition.  In accordance  with the  copyright of  that --
 -- document,  you can  freely copy and modify this specification,  provided --

@@ -6,8 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---                                                                          --
---           Copyright (C) 1991-2001, Florida State University              --
+--         Copyright (C) 1992-2002, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -28,8 +27,7 @@
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
 -- GNARL was developed by the GNARL team at Florida State University. It is --
--- now maintained by Ada Core Technologies Inc. in cooperation with Florida --
--- State University (http://www.gnat.com).                                  --
+-- now maintained by Ada Core Technologies, Inc. (http://www.gnat.com).     --
 --                                                                          --
 ------------------------------------------------------------------------------
 
@@ -55,6 +53,7 @@ package body System.Interrupt_Management is
 
    procedure Initialize_Interrupts is
       Status : Cond_Value_Type;
+
    begin
       Sys_Crembx
         (Status => Status,
@@ -74,11 +73,11 @@ package body System.Interrupt_Management is
          Flags  => AGN_M_WRITEONLY);
 
       pragma Assert ((Status and 1) = 1);
-
    end Initialize_Interrupts;
 
 begin
    --  Unused
+
    Abort_Task_Interrupt := Interrupt_ID_0;
 
    Reserve := Reserve or Keep_Unmasked or Keep_Masked;
@@ -86,5 +85,4 @@ begin
    Reserve (Interrupt_ID_0) := True;
 
    Initialize_Interrupts;
-
 end System.Interrupt_Management;

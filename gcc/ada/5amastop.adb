@@ -7,8 +7,7 @@
 --                                 B o d y                                  --
 --                         (Version for Alpha/Dec Unix)                     --
 --                                                                          --
---                                                                          --
---           Copyright (C) 1999-2001 Ada Core Technologies, Inc.            --
+--           Copyright (C) 1999-2002 Ada Core Technologies, Inc.            --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,7 +28,7 @@
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
 -- GNAT was originally developed  by the GNAT team at  New York University. --
--- It is now maintained by Ada Core Technologies Inc (http://www.gnat.com). --
+-- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
 
@@ -106,8 +105,13 @@ package body System.Machine_State_Operations is
       --  asm instruction takes 4 bytes. So we must remove this value from
       --  c_get_code_loc to have the call point.
 
+      Loc : Code_Loc := c_get_code_loc (M);
    begin
-      return c_get_code_loc (M) - Asm_Call_Size;
+      if Loc = 0 then
+         return 0;
+      else
+         return Loc - Asm_Call_Size;
+      end if;
    end Get_Code_Loc;
 
    --------------------------
@@ -134,6 +138,8 @@ package body System.Machine_State_Operations is
      (M    : Machine_State;
       Info : Subprogram_Info_Type)
    is
+      pragma Warnings (Off, Info);
+
       procedure exc_virtual_unwind
         (Fcn  : System.Address;
          M    : Machine_State);
@@ -162,7 +168,11 @@ package body System.Machine_State_Operations is
 
    procedure Set_Signal_Machine_State
      (M       : Machine_State;
-      Context : System.Address) is
+      Context : System.Address)
+   is
+      pragma Warnings (Off, M);
+      pragma Warnings (Off, Context);
+
    begin
       null;
    end Set_Signal_Machine_State;

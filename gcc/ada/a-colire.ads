@@ -6,7 +6,6 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                                                                          --
 --        Copyright (C) 1999 Free Software Foundation, Inc.                 --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --

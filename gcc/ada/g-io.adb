@@ -6,8 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                                                                          --
---           Copyright (C) 1995-2001 Ada Core Technologies, Inc.            --
+--           Copyright (C) 1995-2002 Ada Core Technologies, Inc.            --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -63,7 +62,7 @@ package body GNAT.IO is
    -- Get_Line --
    --------------
 
-   procedure Get_Line (Item : in out String; Last : out Natural) is
+   procedure Get_Line (Item : out String; Last : out Natural) is
       C : Character;
 
    begin

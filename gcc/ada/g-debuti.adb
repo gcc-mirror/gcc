@@ -6,8 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                                                                          --
---           Copyright (C) 1997-1998 Ada Core Technologies, Inc.            --
+--           Copyright (C) 1997-2002 Ada Core Technologies, Inc.            --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -46,7 +45,8 @@ package body GNAT.Debug_Utilities is
       N : Integer_Address := To_Integer (A);
       U : Natural := 0;
 
-      H : array (Integer range 0 .. 15) of Character := "0123456789ABCDEF";
+      H : constant array (Integer range 0 .. 15) of Character :=
+            "0123456789ABCDEF";
 
    begin
       S (S'Last) := '#';

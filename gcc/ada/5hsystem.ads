@@ -7,8 +7,7 @@
 --                                 S p e c                                  --
 --                             (HP-UX Version)                              --
 --                                                                          --
---                                                                          --
---          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -59,7 +58,7 @@ pragma Pure (System);
    Max_Mantissa          : constant := 63;
    Fine_Delta            : constant := 2.0 ** (-Max_Mantissa);
 
-   Tick                  : constant := 1.0;
+   Tick                  : constant := 0.01;
 
    --  Storage-related Declarations
 
@@ -102,6 +101,9 @@ pragma Pure (System);
 
 private
 
+   pragma Linker_Options ("-lpthread");
+   --  To ease supporting --enable-threads=posix at configure-time.
+
    type Address is mod Memory_Size;
    Null_Address : constant Address := 0;
 
@@ -119,7 +121,8 @@ private
    Backend_Divide_Checks     : constant Boolean := False;
    Backend_Overflow_Checks   : constant Boolean := False;
    Command_Line_Args         : constant Boolean := True;
-   Denorm                    : constant Boolean := False;
+   Denorm                    : constant Boolean := True;
+   Exit_Status_Supported     : constant Boolean := True;
    Fractional_Fixed_Ops      : constant Boolean := False;
    Frontend_Layout           : constant Boolean := False;
    Functions_Return_By_DSP   : constant Boolean := False;
@@ -132,8 +135,8 @@ private
    Stack_Check_Default       : constant Boolean := False;
    Stack_Check_Probes        : constant Boolean := False;
    Use_Ada_Main_Program_Name : constant Boolean := False;
-   ZCX_By_Default            : constant Boolean := False;
-   GCC_ZCX_Support           : constant Boolean := False;
+   ZCX_By_Default            : constant Boolean := True;
+   GCC_ZCX_Support           : constant Boolean := True;
    Front_End_ZCX_Support     : constant Boolean := False;
 
    --------------------------

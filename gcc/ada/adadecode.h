@@ -4,7 +4,6 @@
  *                                                                          *
  *                             G N A T D E C O                              *
  *                                                                          *
- *                                                                          *
  *                              C Header File                               *
  *                                                                          *
  *           Copyright (C) 2001-2002, Free Software Foundation, Inc.        *

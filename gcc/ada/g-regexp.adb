@@ -6,8 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                                                                          --
---            Copyright (C) 1999-2001 Ada Core Technologies, Inc.           --
+--            Copyright (C) 1999-2002 Ada Core Technologies, Inc.           --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -534,7 +533,7 @@ package body GNAT.Regexp is
                case S (J) is
                   when Open_Paren =>
                      declare
-                        J_Start    : Integer := J + 1;
+                        J_Start    : constant Integer := J + 1;
                         Next_Start : State_Index;
                         Next_End   : State_Index;
 
@@ -568,11 +567,11 @@ package body GNAT.Regexp is
 
                   when '|' =>
                      declare
-                        Start_Prev : State_Index := Start_State;
-                        End_Prev   : State_Index := End_State;
+                        Start_Prev : constant State_Index := Start_State;
+                        End_Prev   : constant State_Index := End_State;
+                        Start_J    : constant Integer     := J + 1;
                         Start_Next : State_Index := 0;
                         End_Next   : State_Index := 0;
-                        Start_J    : Integer := J + 1;
 
                      begin
                         J := Next_Sub_Expression (J, End_Index);
@@ -1235,6 +1234,19 @@ package body GNAT.Regexp is
    --  Start of processing for Compile
 
    begin
+      --  Special case for the empty string: it always matches, and the
+      --  following processing would fail on it.
+      if S = "" then
+         return (Ada.Finalization.Controlled with
+                 R => new Regexp_Value'
+                      (Alphabet_Size => 0,
+                       Num_States    => 1,
+                       Map           => (others => 0),
+                       States        => (others => (others => 1)),
+                       Is_Final      => (others => True),
+                       Case_Sensitive => True));
+      end if;
+
       if not Case_Sensitive then
          GNAT.Case_Util.To_Lower (S);
       end if;

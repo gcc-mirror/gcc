@@ -6,8 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---                                                                          --
---         Copyright (C) 1992-2001, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2003, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -339,10 +338,12 @@ package body System.Task_Primitives.Operations is
    -- Stack_Guard --
    -----------------
 
-   --  The underlying thread system extends the memory (up to 2MB) when
-   --  needed.
+   --  The underlying thread system extends the memory (up to 2MB) when needed
 
    procedure Stack_Guard (T : ST.Task_ID; On : Boolean) is
+      pragma Unreferenced (T);
+      pragma Unreferenced (On);
+
    begin
       null;
    end Stack_Guard;
@@ -367,17 +368,18 @@ package body System.Task_Primitives.Operations is
    ---------------------
 
    --  Note: mutexes and cond_variables needed per-task basis are
-   --        initialized in Initialize_TCB and the Storage_Error is
-   --        handled. Other mutexes (such as RTS_Lock, Memory_Lock...)
-   --        used in RTS is initialized before any status change of RTS.
-   --        Therefore rasing Storage_Error in the following routines
-   --        should be able to be handled safely.
+   --  initialized in Initialize_TCB and the Storage_Error is
+   --  handled. Other mutexes (such as RTS_Lock, Memory_Lock...)
+   --  used in RTS is initialized before any status change of RTS.
+   --  Therefore rasing Storage_Error in the following routines
+   --  should be able to be handled safely.
 
    procedure Initialize_Lock
      (Prio : System.Any_Priority;
       L    : access Lock)
    is
       Result : Interfaces.C.int;
+
    begin
       if Priority_Ceiling_Emulation then
          L.Ceiling := Prio;
@@ -394,6 +396,8 @@ package body System.Task_Primitives.Operations is
    end Initialize_Lock;
 
    procedure Initialize_Lock (L : access RTS_Lock; Level : Lock_Level) is
+      pragma Unreferenced (Level);
+
       Result : Interfaces.C.int;
 
    begin
@@ -432,35 +436,45 @@ package body System.Task_Primitives.Operations is
 
    procedure Write_Lock (L : access Lock; Ceiling_Violation : out Boolean) is
       Result : Interfaces.C.int;
+
    begin
       if Priority_Ceiling_Emulation then
          declare
             Self_ID : constant Task_ID := Self;
+
          begin
             if Self_ID.Common.LL.Active_Priority > L.Ceiling then
                Ceiling_Violation := True;
                return;
             end if;
+
             L.Saved_Priority := Self_ID.Common.LL.Active_Priority;
+
             if Self_ID.Common.LL.Active_Priority < L.Ceiling then
                Self_ID.Common.LL.Active_Priority := L.Ceiling;
             end if;
+
             Result := pthread_mutex_lock (L.L'Access);
             pragma Assert (Result = 0);
             Ceiling_Violation := False;
          end;
+
       else
          Result := pthread_mutex_lock (L.L'Access);
          Ceiling_Violation := Result = EINVAL;
-         --  assumes the cause of EINVAL is a priority ceiling violation
+
+         --  Assume the cause of EINVAL is a priority ceiling violation
+
          pragma Assert (Result = 0 or else Result = EINVAL);
       end if;
    end Write_Lock;
 
    procedure Write_Lock
-     (L : access RTS_Lock; Global_Lock : Boolean := False)
+     (L           : access RTS_Lock;
+      Global_Lock : Boolean := False)
    is
       Result : Interfaces.C.int;
+
    begin
       if not Single_Lock or else Global_Lock then
          Result := pthread_mutex_lock (L);
@@ -470,6 +484,7 @@ package body System.Task_Primitives.Operations is
 
    procedure Write_Lock (T : Task_ID) is
       Result : Interfaces.C.int;
+
    begin
       if not Single_Lock then
          Result := pthread_mutex_lock (T.Common.LL.L'Access);
@@ -492,17 +507,21 @@ package body System.Task_Primitives.Operations is
 
    procedure Unlock (L : access Lock) is
       Result : Interfaces.C.int;
+
    begin
       if Priority_Ceiling_Emulation then
          declare
             Self_ID : constant Task_ID := Self;
+
          begin
             Result := pthread_mutex_unlock (L.L'Access);
             pragma Assert (Result = 0);
+
             if Self_ID.Common.LL.Active_Priority > L.Saved_Priority then
                Self_ID.Common.LL.Active_Priority := L.Saved_Priority;
             end if;
          end;
+
       else
          Result := pthread_mutex_unlock (L.L'Access);
          pragma Assert (Result = 0);
@@ -511,6 +530,7 @@ package body System.Task_Primitives.Operations is
 
    procedure Unlock (L : access RTS_Lock; Global_Lock : Boolean := False) is
       Result : Interfaces.C.int;
+
    begin
       if not Single_Lock or else Global_Lock then
          Result := pthread_mutex_unlock (L);
@@ -520,6 +540,7 @@ package body System.Task_Primitives.Operations is
 
    procedure Unlock (T : Task_ID) is
       Result : Interfaces.C.int;
+
    begin
       if not Single_Lock then
          Result := pthread_mutex_unlock (T.Common.LL.L'Access);
@@ -532,10 +553,13 @@ package body System.Task_Primitives.Operations is
    -----------
 
    procedure Sleep
-     (Self_ID : Task_ID;
+     (Self_ID  : Task_ID;
       Reason   : System.Tasking.Task_States)
    is
+      pragma Unreferenced (Reason);
+
       Result : Interfaces.C.int;
+
    begin
       pragma Assert (Self_ID = Self);
 
@@ -567,10 +591,13 @@ package body System.Task_Primitives.Operations is
       Timedout : out Boolean;
       Yielded  : out Boolean)
    is
+      pragma Unreferenced (Reason);
+
       Check_Time : constant Duration := Monotonic_Clock;
       Abs_Time   : Duration;
       Request    : aliased timespec;
       Result     : Interfaces.C.int;
+
    begin
       Timedout := True;
       Yielded := False;
@@ -718,6 +745,8 @@ package body System.Task_Primitives.Operations is
    ------------
 
    procedure Wakeup (T : Task_ID; Reason : System.Tasking.Task_States) is
+      pragma Unreferenced (Reason);
+
       Result : Interfaces.C.int;
 
    begin
@@ -743,10 +772,12 @@ package body System.Task_Primitives.Operations is
    ------------------
 
    procedure Set_Priority
-     (T : Task_ID;
-      Prio : System.Any_Priority;
+     (T                   : Task_ID;
+      Prio                : System.Any_Priority;
       Loss_Of_Inheritance : Boolean := False)
    is
+      pragma Unreferenced (Loss_Of_Inheritance);
+
       Result : Interfaces.C.int;
       Param  : aliased struct_sched_param;
 
@@ -967,10 +998,11 @@ package body System.Task_Primitives.Operations is
    -- Check_Exit --
    ----------------
 
-   --  Dummy versions.  The only currently working versions is for solaris
-   --  (native).
+   --  Dummy version
 
    function Check_Exit (Self_ID : ST.Task_ID) return Boolean is
+      pragma Unreferenced (Self_ID);
+
    begin
       return True;
    end Check_Exit;
@@ -980,6 +1012,8 @@ package body System.Task_Primitives.Operations is
    --------------------
 
    function Check_No_Locks (Self_ID : ST.Task_ID) return Boolean is
+      pragma Unreferenced (Self_ID);
+
    begin
       return True;
    end Check_No_Locks;
@@ -999,7 +1033,9 @@ package body System.Task_Primitives.Operations is
 
    function Suspend_Task
      (T           : ST.Task_ID;
-      Thread_Self : Thread_Id) return Boolean is
+      Thread_Self : Thread_Id)
+      return        Boolean
+   is
    begin
       if T.Common.LL.Thread /= Thread_Self then
          return pthread_kill (T.Common.LL.Thread, SIGSTOP) = 0;
@@ -1014,7 +1050,9 @@ package body System.Task_Primitives.Operations is
 
    function Resume_Task
      (T           : ST.Task_ID;
-      Thread_Self : Thread_Id) return Boolean is
+      Thread_Self : Thread_Id)
+      return        Boolean
+   is
    begin
       if T.Common.LL.Thread /= Thread_Self then
          return pthread_kill (T.Common.LL.Thread, SIGCONT) = 0;
@@ -1043,6 +1081,7 @@ package body System.Task_Primitives.Operations is
       pragma Assert (Result = 0 or else Result = ENOMEM);
 
       Initialize_Lock (Single_RTS_Lock'Access, RTS_Lock_Level);
+
       --  Initialize the global RTS lock
 
       Specific.Initialize (Environment_Task);
@@ -1069,6 +1108,7 @@ package body System.Task_Primitives.Operations is
 begin
    declare
       Result : Interfaces.C.int;
+
    begin
       --  Mask Environment task for all signals. The original mask of the
       --  Environment task will be recovered by Interrupt_Server task

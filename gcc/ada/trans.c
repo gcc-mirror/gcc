@@ -435,11 +435,13 @@ tree_transform (gnat_node)
 	 here since GNU_RESULT may be a CONST_DECL.  */
       if (DECL_P (gnu_result)
 	  && (DECL_BY_REF_P (gnu_result)
-	      || DECL_BY_COMPONENT_PTR_P (gnu_result)))
+	      || (TREE_CODE (gnu_result) == PARM_DECL
+		  && DECL_BY_COMPONENT_PTR_P (gnu_result))))
 	{
 	  int ro = DECL_POINTS_TO_READONLY_P (gnu_result);
 
-	  if (DECL_BY_COMPONENT_PTR_P (gnu_result))
+	  if (TREE_CODE (gnu_result) == PARM_DECL
+	      && DECL_BY_COMPONENT_PTR_P (gnu_result))
 	    gnu_result = convert (build_pointer_type (gnu_result_type),
 				  gnu_result);
 

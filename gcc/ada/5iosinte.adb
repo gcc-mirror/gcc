@@ -6,8 +6,7 @@
 --                                                                          --
 --                                   B o d y                                --
 --                                                                          --
---                                                                          --
---             Copyright (C) 1991-2001 Florida State University             --
+--             Copyright (C) 1991-2002 Florida State University             --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -51,6 +50,8 @@ package body System.OS_Interface is
    --------------------
 
    function Get_Stack_Base (thread : pthread_t) return Address is
+      pragma Warnings (Off, thread);
+
    begin
       return Null_Address;
    end Get_Stack_Base;
@@ -98,8 +99,8 @@ package body System.OS_Interface is
          F := F + 1.0;
       end if;
 
-      return timespec'
-        (tv_sec => S, tv_nsec => long (Long_Long_Integer (F * 10#1#E9)));
+      return timespec'(tv_sec => S,
+                       tv_nsec => long (Long_Long_Integer (F * 10#1#E9)));
    end To_Timespec;
 
    ----------------
@@ -122,8 +123,10 @@ package body System.OS_Interface is
          F := F + 1.0;
       end if;
 
-      return struct_timeval'
-        (tv_sec => S, tv_usec => time_t (Long_Long_Integer (F * 10#1#E6)));
+      return
+        struct_timeval'
+          (tv_sec  => S,
+           tv_usec => time_t (Long_Long_Integer (F * 10#1#E6)));
    end To_Timeval;
 
 end System.OS_Interface;

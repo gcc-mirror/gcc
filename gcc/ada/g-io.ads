@@ -6,8 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                                                                          --
---           Copyright (C) 1995-2001 Ada Core Technologies, Inc.            --
+--           Copyright (C) 1995-2002 Ada Core Technologies, Inc.            --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -54,7 +53,7 @@ pragma Preelaborate (IO);
 
    procedure Get (X : out Integer);
    procedure Get (C : out Character);
-   procedure Get_Line (Item : in out String; Last : out Natural);
+   procedure Get_Line (Item : out String; Last : out Natural);
    --  These routines always read from Standard_Input
 
    procedure Put (File : File_Type; X : Integer);

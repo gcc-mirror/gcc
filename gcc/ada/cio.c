@@ -6,8 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *                                                                          *
- *          Copyright (C) 1992-2001 Free Software Foundation, Inc.          *
+ *          Copyright (C) 1992-2003 Free Software Foundation, Inc.          *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -41,40 +40,6 @@
 #endif
 
 #include "adaint.h"
-
-#ifdef __RT__
-
-/* Linux kernel modules don't have inputs, so don't define get_int.
-   Simple output can be done via printk. */
-
-void
-put_char (c)
-     int c;
-{
-  printk ("%c", c);
-}
-
-void
-put_char_stderr (c)
-     int c;
-{
-  put_char (c);
-}
-
-void
-put_int (x)
-     int x;
-{
-  printk ("%d", x);
-}
-
-void
-put_int_stderr (int x)
-{
-  put_int (x);
-}
-
-#else
 
 /* Don't use macros on GNU/Linux since they cause incompatible changes between
    glibc 2.0 and 2.1 */
@@ -131,7 +96,6 @@ put_char_stderr (c)
 {
   fputc (c, stderr);
 }
-#endif
 
 #ifdef __vxworks
 

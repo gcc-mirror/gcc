@@ -6,7 +6,6 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                                                                          --
 --           Copyright (C) 1995-1999 Ada Core Technologies, Inc.            --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --

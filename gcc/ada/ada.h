@@ -6,8 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *                                                                          *
- *          Copyright (C) 1992-2002 Free Software Foundation, Inc.          *
+ *          Copyright (C) 1992-2003 Free Software Foundation, Inc.          *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -75,7 +74,7 @@
    SUBTYPE macro defined above.  */
 
 #define IN(VALUE,SUBTYPE) \
-  (((VALUE) >= (SUBTYPE) CAT (SUBTYPE,__First)) && \
-   ((VALUE) <= (SUBTYPE) CAT (SUBTYPE,__Last)))
+  (((VALUE) >= (SUBTYPE) CAT (SUBTYPE,__First)) \
+   && ((VALUE) <= (SUBTYPE) CAT (SUBTYPE,__Last)))
 
 #endif

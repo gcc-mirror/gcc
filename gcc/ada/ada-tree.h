@@ -6,8 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *                                                                          *
- *          Copyright (C) 1992-2001 Free Software Foundation, Inc.          *
+ *          Copyright (C) 1992-2003 Free Software Foundation, Inc.          *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -234,7 +233,7 @@ struct lang_type GTY(())
 
 /* Nonzero if this decl is a PARM_DECL for an Ada array being passed to a
    foreign convention subprogram.  */
-#define DECL_BY_COMPONENT_PTR_P(NODE) DECL_LANG_FLAG_2 (NODE)
+#define DECL_BY_COMPONENT_PTR_P(NODE) DECL_LANG_FLAG_2 (PARM_DECL_CHECK (NODE))
 
 /* Nonzero in a FIELD_DECL that is a dummy built for some internal reason.  */
 #define DECL_INTERNAL_P(NODE) DECL_LANG_FLAG_3 (FIELD_DECL_CHECK (NODE))

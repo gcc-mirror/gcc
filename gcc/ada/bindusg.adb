@@ -6,8 +6,7 @@
 --                                                                          --
 --                                B o d y                                   --
 --                                                                          --
---                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -195,7 +194,7 @@ begin
 
    --  Line for -T switch
 
-   Write_Str ("  -Tn       Set time slice value to n microseconds (n >= 0)");
+   Write_Str ("  -Tn       Set time slice value to n milliseconds (n >= 0)");
    Write_Eol;
 
    --  Line for -v switch

@@ -6,8 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -241,9 +240,9 @@ package body Back_End is
       while Next_Arg < save_argc loop
 
          Look_At_Arg : declare
-            Argv_Ptr  : constant BSP := save_argv (Next_Arg);
-            Argv_Len  : constant Nat := Len_Arg (Next_Arg);
-            Argv      : String := Argv_Ptr (1 .. Natural (Argv_Len));
+            Argv_Ptr  : constant BSP    := save_argv (Next_Arg);
+            Argv_Len  : constant Nat    := Len_Arg (Next_Arg);
+            Argv      : constant String := Argv_Ptr (1 .. Natural (Argv_Len));
 
          begin
             --  If the previous switch has set the Output_File_Name_Present

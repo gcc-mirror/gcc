@@ -6,7 +6,6 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---                                                                          --
 --            Copyright (C) 1991-2002 Florida State University              --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
@@ -111,8 +110,8 @@ package body System.OS_Interface is
       Tick_Count    : aliased QWORD;
 
    begin
-
       --  Read nr of clock ticks since boot time
+
       Must_Not_Fail (DosTmrQueryTime (Tick_Count'Access));
 
       return Tick_Count * Tick_Duration;

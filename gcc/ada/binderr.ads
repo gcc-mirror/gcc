@@ -6,8 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                                                                          --
---          Copyright (C) 1992-2000 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -66,6 +65,12 @@ package Binderr is
    --      which case it is similarly replaced by the name which is specified
    --      by the Name_Id value stored in Error_Msg_Name_2.
 
+   --    Insertion character # (Pound: insert non-negative number in decimal)
+   --      The character # is replaced by the contents of Error_Msg_Nat_1
+   --      converted into an unsigned decimal string. A second # may appear
+   --      in a single message, in which case it is similarly replaced by
+   --      the value stored in Error_Msg_Nat_2.
+
    --    Insertion character ? (Question mark: warning message)
    --      The character ?, which must be the first character in the message
    --      string, signals a warning message instead of an error message.
@@ -83,6 +88,10 @@ package Binderr is
    Error_Msg_Name_1 : Name_Id;
    Error_Msg_Name_2 : Name_Id;
    --  Name_Id values for % insertion characters in message
+
+   Error_Msg_Nat_1 : Nat;
+   Error_Msg_Nat_2 : Nat;
+   --  Integer values for # insertion characters in message
 
    ------------------------------
    -- Error Output Subprograms --

@@ -6,8 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                                                                          --
---              Copyright (C) 1998 Ada Core Technologies, Inc.              --
+--            Copyright (C) 1998-2002 Ada Core Technologies, Inc.           --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -144,9 +143,9 @@ package body GNAT.Spitbol is
    --------------------
 
    function Reverse_String (Str : VString) return VString is
-      Len    : constant Natural := Length (Str);
+      Len    : constant Natural       := Length (Str);
+      Chars  : constant String_Access := Get_String (Str);
       Result : String (1 .. Len);
-      Chars  : String_Access := Get_String (Str);
 
    begin
       for J in 1 .. Len loop

@@ -6,8 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---                                                                          --
---           Copyright (C) 1998-2001 Free Software Foundation, Inc.         --
+--           Copyright (C) 1998-2002 Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -437,7 +436,7 @@ package System.OS_Interface is
    pragma Import (C, pthread_exit, "__pthread_exit");
 
    function pthread_self return pthread_t;
-   pragma Import (C, pthread_self, "__pthread_self");
+   pragma Inline (pthread_self);
 
    --------------------------
    -- POSIX.1c  Section 17 --

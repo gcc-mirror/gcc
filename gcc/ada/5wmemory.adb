@@ -6,8 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                                                                          --
---             Copyright (C) 2001 Free Software Foundation, Inc.            --
+--          Copyright (C) 2001-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -192,7 +191,7 @@ package body System.Memory is
       return System.Address
    is
       Result      : System.Address;
-      Actual_Size : size_t := Size;
+      Actual_Size : constant size_t := Size;
       Old_Size    : size_t;
 
    begin

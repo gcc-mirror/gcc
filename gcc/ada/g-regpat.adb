@@ -6,7 +6,6 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                                                                          --
 --               Copyright (C) 1986 by University of Toronto.               --
 --           Copyright (C) 1996-2002 Ada Core Technologies, Inc.            --
 --                                                                          --

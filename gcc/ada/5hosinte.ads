@@ -6,7 +6,6 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---                                                                          --
 --             Copyright (C) 1997-2001, Florida State University            --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
