@@ -4229,17 +4229,8 @@
    (clobber (reg 24))]
   ""
   "*
-  if (GET_CODE (operands[1]) == LT)
-    {
-      if (operands[3] == const0_rtx)
-	return arm_output_asm_insn (\"mov\\t%0, %2, lsr #31\", operands);
-      if (GET_CODE (operands[3]) == CONST_INT
-	  && !const_ok_for_arm (INTVAL (operands[3])))
-	arm_output_asm_insn (\"add\\t%0, %2, #%n3\", operands);
-      else
-        arm_output_asm_insn (\"sub\\t%0, %2, %3\", operands);
-      return arm_output_asm_insn (\"mov\\t%0, %0, lsr #31\", operands);
-    }
+  if (GET_CODE (operands[1]) == LT && operands[3] == const0_rtx)
+    return arm_output_asm_insn (\"mov\\t%0, %2, lsr #31\", operands);
   if (GET_CODE (operands[1]) == GE && operands[3] == const0_rtx)
     {
       arm_output_asm_insn (\"mvn\\t%0, %2\", operands);
@@ -4647,13 +4638,8 @@
    (clobber (reg 24))]
   ""
   "*
-  if (GET_CODE (operands[3]) == LT)
-    {
-      if (operands[3] == const0_rtx)
-	return arm_output_asm_insn (\"mov\\t%0, %1, asr #31\", operands);
-      arm_output_asm_insn (\"sub\\t%0, %1, %2\", operands);
-      return arm_output_asm_insn (\"mov\\t%0, %0, asr #31\", operands);
-    }
+  if (GET_CODE (operands[3]) == LT && operands[3] == const0_rtx)
+    return arm_output_asm_insn (\"mov\\t%0, %1, asr #31\", operands);
   if (GET_CODE (operands[3]) == NE)
     {
       arm_output_asm_insn (\"subs\\t%0, %1, %2\", operands);
