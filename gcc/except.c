@@ -1652,6 +1652,14 @@ end_eh_unwinder ()
   expand_leftover_cleanups ();
 
   emit_label (end);
+
+#ifdef HAVE_return
+  if (HAVE_return)
+    {
+      emit_jump_insn (gen_return ());
+      emit_barrier ();
+    }
+#endif
 }
 
 /* If necessary, emit insns for the per function unwinder for the
