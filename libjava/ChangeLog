@@ -1,3 +1,9 @@
+2003-06-14  Michael Koch  <konqueror@gmx.de>
+
+	* java/io/BufferedReader.java,
+	java/io/FileOutputStream.java:
+	New versions from classpath.
+
 2003-06-12  Andrew Haley  <aph@redhat.com>
 
 	* prims.cc (catch_segv): Create exception in handler.

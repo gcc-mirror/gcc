@@ -164,6 +164,9 @@ public class BufferedReader extends Reader
    */
   public void mark(int readLimit) throws IOException
   {
+    if (readLimit < 0)
+      throw new IllegalArgumentException();
+
     synchronized (lock)
       {
 	checkStatus();

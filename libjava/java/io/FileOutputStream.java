@@ -85,7 +85,8 @@ public class FileOutputStream extends OutputStream
     if (s != null)
       s.checkWrite(path);
     fd = new FileDescriptor (path, (append
-				    ? FileDescriptor.APPEND
+				    ? FileDescriptor.WRITE
+				      | FileDescriptor.APPEND
 				    : FileDescriptor.WRITE));
   }
 
