@@ -19,20 +19,18 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-extern char *low_reg_names[];
-extern char *text_seg_name;
-extern char *rsect_text;
-extern char *data_seg_name;
-extern char *rsect_data;
-extern char *bss_seg_name;
-extern char *rsect_bss;
-extern char *const_seg_name;
-extern char *rsect_const;
-extern char *chip_name;
-extern char *save_chip_name;
+extern const char *low_reg_names[];
+extern const char *text_seg_name;
+extern const char *rsect_text;
+extern const char *data_seg_name;
+extern const char *rsect_data;
+extern const char *bss_seg_name;
+extern const char *rsect_bss;
+extern const char *const_seg_name;
+extern const char *rsect_const;
+extern const char *chip_name;
+extern const char *save_chip_name;
 extern struct rtx_def *dsp16xx_compare_op0, *dsp16xx_compare_op1;
-extern struct rtx_def *(*dsp16xx_compare_gen)();
-extern struct rtx_def *gen_compare_reg();
 extern struct rtx_def *dsp16xx_addhf3_libcall;
 extern struct rtx_def *dsp16xx_subhf3_libcall;
 extern struct rtx_def *dsp16xx_mulhf3_libcall;
@@ -55,29 +53,6 @@ extern struct rtx_def *dsp16xx_umodhi3_libcall;
 extern struct rtx_def *dsp16xx_ashrhi3_libcall;
 extern struct rtx_def *dsp16xx_ashlhi3_libcall;
 extern struct rtx_def *dsp16xx_lshrhi3_libcall;
-
-
-extern int hard_regno_mode_ok ();
-extern enum reg_class dsp16xx_reg_class_from_letter ();
-extern enum reg_class dsp16xx_limit_reload_class ();
-extern int hard_regno_nregs ();
-extern int regno_reg_class ();
-extern int move_operand ();
-extern int symbolic_address_p ();
-extern int Y_address ();
-extern int call_address_operand ();
-extern void notice_update_cc();
-extern void function_prologue ();
-extern void function_epilogue ();
-extern int  dsp1600_comparison_reverse ();
-extern void double_reg_from_memory ();
-extern void double_reg_to_memory ();
-extern struct rtx_def *dsp16xx_function_arg ();
-extern void dsp16xx_function_arg_advance ();
-extern enum rtx_code next_cc_user_code ();
-extern int next_cc_user_unsigned ();
-extern struct rtx_def *gen_tst_reg ();
-extern char *output_block_move();
 
 /* RUN-TIME TARGET SPECIFICATION */
 #define DSP16XX   1
@@ -1671,11 +1646,11 @@ const_section ()                                                   \
 #define ASM_OUTPUT_ASCII(MYFILE, MYSTRING, MYLENGTH) \
   do {									      \
     FILE *_hide_asm_out_file = (MYFILE);				      \
-    unsigned char *_hide_p = (unsigned char *) (MYSTRING);		      \
+    const unsigned char *_hide_p = (const unsigned char *) (MYSTRING);	      \
     int _hide_thissize = (MYLENGTH);					      \
     {									      \
       FILE *asm_out_file = _hide_asm_out_file;				      \
-      unsigned char *p = _hide_p;					      \
+      const unsigned char *p = _hide_p;					      \
       int thissize = _hide_thissize;					      \
       int i;								      \
 									      \
@@ -1970,4 +1945,3 @@ const_section ()                                                   \
    are not currently supporting c++. */
 #define INIT_SECTION_ASM_OP  1
 
-void dsp16xx_invalid_register_for_compare ();

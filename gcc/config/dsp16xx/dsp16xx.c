@@ -36,18 +36,21 @@ Boston, MA 02111-1307, USA.  */
 #include "function.h"
 #include "flags.h"
 #include "ggc.h"
+#include "toplev.h"
+#include "recog.h"
+#include "tm_p.h"
 
-char *text_seg_name;
-char *rsect_text;
-char *data_seg_name;
-char *rsect_data;
-char *bss_seg_name;
-char *rsect_bss;
-char *const_seg_name;
-char *rsect_const;
+const char *text_seg_name;
+const char *rsect_text;
+const char *data_seg_name;
+const char *rsect_data;
+const char *bss_seg_name;
+const char *rsect_bss;
+const char *const_seg_name;
+const char *rsect_const;
 
-char *chip_name;
-char *save_chip_name;
+const char *chip_name;
+const char *save_chip_name;
 
 /* Save the operands of a compare. The 16xx has not lt or gt, so
    in these cases we swap the operands and reverse the condition */
@@ -56,10 +59,10 @@ rtx dsp16xx_compare_op0;
 rtx dsp16xx_compare_op1;
 struct rtx_def *(*dsp16xx_compare_gen)();
 
-static char *fp;
-static char *sp;
-static char *rr;
-static char *a1h;
+static const char *fp;
+static const char *sp;
+static const char *rr;
+static const char *a1h;
 
 struct dsp16xx_frame_info current_frame_info;
 struct dsp16xx_frame_info zero_frame_info;
@@ -87,14 +90,14 @@ rtx dsp16xx_ashlhi3_libcall = (rtx) 0;
 rtx dsp16xx_ucmphi2_libcall = (rtx) 0;
 rtx dsp16xx_lshrhi3_libcall = (rtx) 0;
 
-char *himode_reg_name[] = HIMODE_REGISTER_NAMES;
+static const char *const himode_reg_name[] = HIMODE_REGISTER_NAMES;
 
 #define SHIFT_INDEX_1   0
 #define SHIFT_INDEX_4   1
 #define SHIFT_INDEX_8   2
 #define SHIFT_INDEX_16  3
 
-static char *ashift_right_asm[] = 
+static const char *const ashift_right_asm[] = 
 {
   "%0=%0>>1",
   "%0=%0>>4",
@@ -102,7 +105,7 @@ static char *ashift_right_asm[] =
   "%0=%0>>16"
 };
 
-static char *ashift_right_asm_first[] = 
+static const char *const ashift_right_asm_first[] = 
 {
   "%0=%1>>1",
   "%0=%1>>4",
@@ -110,7 +113,7 @@ static char *ashift_right_asm_first[] =
   "%0=%1>>16"
 };
 
-static char *ashift_left_asm[] = 
+static const char *const ashift_left_asm[] = 
 {
   "%0=%0<<1",
   "%0=%0<<4",
@@ -118,7 +121,7 @@ static char *ashift_left_asm[] =
   "%0=%0<<16"
 };
 
-static char *ashift_left_asm_first[] = 
+static const char *const ashift_left_asm_first[] = 
 {
   "%0=%1<<1",
   "%0=%1<<4",
@@ -126,7 +129,7 @@ static char *ashift_left_asm_first[] =
   "%0=%1<<16"
 };
 
-static char *lshift_right_asm[] = 
+static const char *const lshift_right_asm[] = 
 {
   "%0=%0>>1\n\t%0=%b0&0x7fff",
   "%0=%0>>4\n\t%0=%b0&0x0fff",
@@ -134,7 +137,7 @@ static char *lshift_right_asm[] =
   "%0=%0>>16\n\t%0=%b0&0x0000"
 };
 
-static char *lshift_right_asm_first[] = 
+static const char *const lshift_right_asm_first[] = 
 {
   "%0=%1>>1\n\t%0=%b0&0x7fff",
   "%0=%1>>4\n\t%0=%b0&0x0fff",
@@ -142,10 +145,12 @@ static char *lshift_right_asm_first[] =
   "%0=%1>>16\n\t%0=%b0&0x0000"
 };
 
+static int reg_save_size PARAMS ((void));
+
 int 
 hard_regno_mode_ok (regno, mode)
-int regno;
-enum machine_mode mode;
+     int regno;
+     enum machine_mode mode;
 {
   switch ((int) mode)
     {
@@ -186,7 +191,7 @@ enum machine_mode mode;
 
 enum reg_class
 dsp16xx_reg_class_from_letter (c)
-int c;
+     int c;
 {
   switch (c)
     {
@@ -272,7 +277,7 @@ int c;
 
 int 
 regno_reg_class(regno)
-int regno;
+     int regno;
 {
   switch (regno)
     {
@@ -345,16 +350,16 @@ int regno;
 
 int
 class_max_nregs(class, mode)
-enum reg_class class;
-enum machine_mode mode;
+     enum reg_class class ATTRIBUTE_UNUSED;
+     enum machine_mode mode;
 {
     return (GET_MODE_SIZE(mode));
 }
 
 enum reg_class
 limit_reload_class (mode, class)
-enum machine_mode mode;
-enum reg_class class;
+     enum machine_mode mode;
+     enum reg_class class;
 {
   switch ((int) class)
     {
@@ -551,7 +556,7 @@ enum reg_class class;
 
 int
 dsp16xx_register_move_cost (from, to)
-enum reg_class from, to;
+     enum reg_class from, to;
 {
 #if 0
   if (from == NO_REGS || to == NO_REGS || (from == to))
@@ -870,15 +875,15 @@ secondary_reload_class (class, mode, in)
 
 int
 symbolic_address_operand (op, mode)
-rtx op;
-enum machine_mode mode;
+     rtx op;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
-    return (symbolic_address_p (op));
-
+  return (symbolic_address_p (op));
 }
 
-int symbolic_address_p (op)
-rtx op;
+int
+symbolic_address_p (op)
+     rtx op;
 {
   switch (GET_CODE (op))
     {
@@ -904,16 +909,16 @@ rtx op;
 
 int
 Y_address_operand (op, mode)
-rtx op;
-enum machine_mode mode;
+     rtx op;
+     enum machine_mode mode;
 {
-   return (memory_address_p (mode, op) && !symbolic_address_p (op));
+  return (memory_address_p (mode, op) && !symbolic_address_p (op));
 }	     
 
 int
 sp_operand (op, mode)
-rtx op;
-enum machine_mode mode;
+     rtx op;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
     return (GET_CODE (op) == PLUS
 	    && (XEXP (op, 0) == stack_pointer_rtx
@@ -923,8 +928,8 @@ enum machine_mode mode;
 
 int
 sp_operand2 (op, mode)
-rtx op;
-enum machine_mode mode;
+     rtx op;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   if ((GET_CODE (op) == PLUS 
        && (XEXP (op, 0) == stack_pointer_rtx
@@ -944,16 +949,16 @@ enum machine_mode mode;
 
 int
 nonmemory_arith_operand (op, mode)
-rtx op;
-enum machine_mode mode;
+     rtx op;
+     enum machine_mode mode;
 {
   return (immediate_operand (op, mode) || arith_reg_operand (op, mode));
 }
 
 int
 arith_reg_operand (op, mode)
-rtx op;
-enum machine_mode mode;
+     rtx op;
+     enum machine_mode mode;
 {
   return (register_operand (op, mode)
 	  && (GET_CODE (op) != REG
@@ -964,8 +969,8 @@ enum machine_mode mode;
 
 int
 call_address_operand (op, mode)
-rtx op;
-enum machine_mode mode;
+     rtx op;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
     if (symbolic_address_p (op) || REG_P(op))
     {
@@ -988,7 +993,7 @@ dsp16xx_comparison_operator (op, mode)
 
 void
 notice_update_cc(exp)
-rtx exp;
+     rtx exp;
 {
     if (GET_CODE (exp) == SET)
     {
@@ -1104,8 +1109,9 @@ dsp16xx_makes_calls ()
   return 0;
 }
 
-long compute_frame_size (size)
-int size;
+long
+compute_frame_size (size)
+     int size;
 {
   long total_size;
   long var_size;
@@ -1144,7 +1150,7 @@ int size;
 
 int
 dsp16xx_call_saved_register (regno)
-int regno;
+     int regno;
 {
   return (regs_ever_live[regno] && !call_used_regs[regno] &&
 	  !IS_YBASE_REGISTER_WINDOW(regno));
@@ -1169,8 +1175,8 @@ ybase_regs_ever_used ()
 
 void 
 function_prologue (file, size)
-FILE *file;
-int  size;
+     FILE *file;
+     int  size;
 {
   int regno;
   long total_size;
@@ -1182,14 +1188,14 @@ int  size;
   total_size = compute_frame_size (size);
   
   fprintf( file, "\t/* FUNCTION PROLOGUE: */\n" );
-  fprintf (file, "\t/* total=%d, vars= %d, regs= %d, args=%d, extra= %d */\n",
+  fprintf (file, "\t/* total=%ld, vars= %ld, regs= %d, args=%d, extra= %ld */\n",
 	   current_frame_info.total_size,
 	   current_frame_info.var_size,
 	   current_frame_info.reg_size,
 	   current_function_outgoing_args_size,
 	   current_frame_info.extra_size);
   
-  fprintf (file, "\t/* fp save offset= %d, sp save_offset= %d */\n\n",
+  fprintf (file, "\t/* fp save offset= %ld, sp save_offset= %ld */\n\n",
 	   current_frame_info.fp_save_offset,
 	   current_frame_info.sp_save_offset);
   /* Set up the 'ybase' register window. */
@@ -1217,7 +1223,7 @@ int  size;
       else
         {
 	  if(SMALL_INTVAL(current_frame_info.var_size) && ((current_frame_info.var_size & 0x8000) == 0))
-	    fprintf (file, "\t%s=%d\n\t*%s++%s\n", reg_names[REG_J], current_frame_info.var_size, sp, reg_names[REG_J]);
+	    fprintf (file, "\t%s=%ld\n\t*%s++%s\n", reg_names[REG_J], current_frame_info.var_size, sp, reg_names[REG_J]);
 	  else
 	    fatal ("Stack size > 32k");
 	}
@@ -1244,7 +1250,7 @@ int  size;
       else
         {
 	  if(SMALL_INTVAL(current_frame_info.args_size) && ((current_frame_info.args_size & 0x8000) == 0))
-	    fprintf (file, "\t%s=%d\n\t*%s++%s\n", reg_names[REG_J], current_frame_info.args_size, sp, reg_names[REG_J]);
+	    fprintf (file, "\t%s=%ld\n\t*%s++%s\n", reg_names[REG_J], current_frame_info.args_size, sp, reg_names[REG_J]);
 	  else
 	    fatal ("Stack size > 32k");
 	}
@@ -1254,7 +1260,7 @@ int  size;
     {
       fprintf( file, "\t%s=%s\n", a1h, sp );
       fprintf( file, "\t%s=%s\n", fp, a1h );  /* Establish new base frame */
-      fprintf( file, "\t%s=%d\n", reg_names[REG_J], -total_size);
+      fprintf( file, "\t%s=%ld\n", reg_names[REG_J], -total_size);
       fprintf( file, "\t*%s++%s\n", fp, reg_names[REG_J]);
     }
   
@@ -1290,11 +1296,13 @@ init_emulation_routines ()
 }
 void
 function_epilogue (file, size)
-FILE *file;
-int   size;
+     FILE *file;
+     int size ATTRIBUTE_UNUSED;
 {
   int regno;
+#if OLD_REGISTER_SAVE  
   int initial_stack_dec = 0;
+#endif
   
   fp = reg_names[FRAME_POINTER_REGNUM];
   sp = reg_names[STACK_POINTER_REGNUM];
@@ -1309,7 +1317,7 @@ int   size;
 	fprintf (file, "\t*%s--\n", sp);
       else
 	{
-	  fprintf (file, "\t%s=%d\n\t*%s++%s\n", 
+	  fprintf (file, "\t%s=%ld\n\t*%s++%s\n", 
 		   reg_names[REG_J], -current_frame_info.args_size, sp, reg_names[REG_J]);
 	}
     }
@@ -1356,7 +1364,7 @@ int   size;
 	fprintf (file, "\t*%s--\n", sp);
       else
 	{
-	  fprintf (file, "\t%s=%d\n\t*%s++%s\n", 
+	  fprintf (file, "\t%s=%ld\n\t*%s++%s\n", 
 		   reg_names[REG_J], -current_frame_info.var_size, sp, reg_names[REG_J]);
 	}
     }
@@ -1391,7 +1399,7 @@ emit_move_sequence (operands, mode)
 
 void
 double_reg_from_memory (operands)
-rtx operands[];
+     rtx operands[];
 {
     rtx xoperands[4];
 
@@ -1412,7 +1420,6 @@ rtx operands[];
     else if (GET_CODE(XEXP(operands[1],0)) == PLUS)
     {
       rtx addr;
-      rtx base;
       int offset;
 
       output_asm_insn ("%u0=%1", operands);
@@ -1440,7 +1447,7 @@ rtx operands[];
 
 void
 double_reg_to_memory (operands)
-rtx operands[];
+     rtx operands[];
 {
     rtx xoperands[4];
 
@@ -1491,6 +1498,8 @@ rtx operands[];
 void
 override_options ()
 {
+  char *tmp;
+
   if (chip_name == (char *) 0)
     chip_name = DEFAULT_CHIP_NAME;
 
@@ -1508,19 +1517,21 @@ override_options ()
   
   save_chip_name = xstrdup (chip_name);
 
-  rsect_text = (char *) xmalloc (strlen(".rsect ") + 
-				 strlen(text_seg_name) + 3);
-  rsect_data = (char *) xmalloc (strlen(".rsect ") + 
-				 strlen(data_seg_name) + 3);
-  rsect_bss = (char *) xmalloc (strlen(".rsect ") + 
-				strlen(bss_seg_name) + 3);
-  rsect_const = (char *) xmalloc (strlen(".rsect ") + 
-				  strlen(const_seg_name) + 3);
-  
-  sprintf (rsect_text, ".rsect \"%s\"", text_seg_name);
-  sprintf (rsect_data, ".rsect \"%s\"", data_seg_name);
-  sprintf (rsect_bss,  ".rsect \"%s\"", bss_seg_name);
-  sprintf (rsect_const, ".rsect \"%s\"", const_seg_name);
+  rsect_text = tmp = (char *) xmalloc (strlen(".rsect ") + 
+				       strlen(text_seg_name) + 3);
+  sprintf (tmp, ".rsect \"%s\"", text_seg_name);
+
+  rsect_data = tmp = (char *) xmalloc (strlen(".rsect ") + 
+				       strlen(data_seg_name) + 3);
+  sprintf (tmp, ".rsect \"%s\"", data_seg_name);
+
+  rsect_bss = tmp = (char *) xmalloc (strlen(".rsect ") + 
+				      strlen(bss_seg_name) + 3);
+  sprintf (tmp,  ".rsect \"%s\"", bss_seg_name);
+
+  rsect_const = tmp = (char *) xmalloc (strlen(".rsect ") + 
+					strlen(const_seg_name) + 3);
+  sprintf (tmp, ".rsect \"%s\"", const_seg_name);
   
   if (optimize)
     {
@@ -1558,7 +1569,7 @@ override_options ()
 
 enum rtx_code
 next_cc_user_code (insn)
-rtx insn;
+     rtx insn;
 {
   if ( !(insn = next_cc0_user (insn)))
     abort ();
@@ -1592,9 +1603,9 @@ next_cc_user_unsigned (insn)
 
 void
 print_operand(file, op, letter)
-FILE *file;
-rtx op;
-int letter;
+     FILE *file;
+     rtx op;
+     int letter;
 {
     enum rtx_code code;
 
@@ -1688,8 +1699,8 @@ int letter;
 
 void
 print_operand_address(file, addr)
-FILE *file;
-rtx addr;
+     FILE *file;
+     rtx addr;
 {
   rtx base;
   int offset;
@@ -1733,9 +1744,8 @@ rtx addr;
 
 void
 output_dsp16xx_float_const(operands)
-rtx *operands;
+     rtx *operands;
 {
-  rtx dst = operands[0];
   rtx src = operands[1];
   
 #if HOST_FLOAT_FORMAT == TARGET_FLOAT_FORMAT
@@ -1752,7 +1762,7 @@ rtx *operands;
 #endif
 }
 
-int
+static int
 reg_save_size ()
 {
   int reg_save_size = 0;
@@ -1785,8 +1795,6 @@ dsp16xx_starting_frame_offset()
 int
 initial_frame_pointer_offset()
 {
-  int frame_size;
-  int regno;
   int offset = 0;
   
   offset = compute_frame_size (get_frame_size());
@@ -1804,10 +1812,10 @@ initial_frame_pointer_offset()
 #if 0
 void
 emit_1600_core_shift (shift_op, operands, shift_amount, mode)
-enum rtx_code shift_op;
-rtx *operands;
-int shift_amount;
-enum machine_mode mode;
+     enum rtx_code shift_op;
+     rtx *operands;
+     int shift_amount;
+     enum machine_mode mode;
 {
   int quotient;
   int i;
@@ -1868,15 +1876,15 @@ enum machine_mode mode;
 #else
 void
 emit_1600_core_shift (shift_op, operands, shift_amount)
-enum rtx_code shift_op;
-rtx *operands;
-int shift_amount;
+     enum rtx_code shift_op;
+     rtx *operands;
+     int shift_amount;
 {
   int quotient;
   int i;
   int first_shift_emitted = 0;
-  char **shift_asm_ptr;
-  char **shift_asm_ptr_first;
+  const char * const *shift_asm_ptr;
+  const char * const *shift_asm_ptr_first;
 
   if (shift_op == ASHIFT)
     {
@@ -1938,11 +1946,11 @@ int shift_amount;
 }
 #endif
 void
-  asm_output_common(file, name, size, rounded)
-FILE *file;
-char *name;
-int size;
-int rounded;
+asm_output_common(file, name, size, rounded)
+     FILE *file;
+     const char *name;
+     int size ATTRIBUTE_UNUSED;
+     int rounded;
 {
     bss_section ();
     ASM_GLOBALIZE_LABEL (file, name);
@@ -1956,10 +1964,10 @@ int rounded;
 
 void
 asm_output_local(file, name, size, rounded)
-FILE *file;
-char *name;
-int size;
-int rounded;
+     FILE *file;
+     const char *name;
+     int size ATTRIBUTE_UNUSED;
+     int rounded;
 {
     bss_section ();
     assemble_name (file, name);
@@ -1972,8 +1980,8 @@ int rounded;
 
 void
 asm_output_float (file, fp_const)
-FILE *file;
-double fp_const;
+     FILE *file;
+     double fp_const;
 {
 #if HOST_FLOAT_FORMAT == TARGET_FLOAT_FORMAT
       REAL_VALUE_TYPE d = fp_const;
@@ -1982,9 +1990,9 @@ double fp_const;
       REAL_VALUE_TO_TARGET_SINGLE (d, value);
       fputs ("\tint ", file);
 #ifdef WORDS_BIG_ENDIAN
-      fprintf (file, "0x%-4.4x, 0x%-4.4x", (value >> 16) & 0xffff, (value & 0xffff));
+      fprintf (file, "0x%-4.4lx, 0x%-4.4lx", (value >> 16) & 0xffff, (value & 0xffff));
 #else
-      fprintf (file, "0x%-4.4x, 0x%-4.4x", (value & 0xffff), (value >> 16) & 0xffff);
+      fprintf (file, "0x%-4.4lx, 0x%-4.4lx", (value & 0xffff), (value >> 16) & 0xffff);
 #endif
       fputs ("\n", file);
 #else
@@ -1994,21 +2002,21 @@ double fp_const;
 
 void
 asm_output_long (file, value)
-FILE *file;
-long value;
+     FILE *file;
+     long value;
 {
       fputs ("\tint ", file);
 #ifdef WORDS_BIG_ENDIAN
-      fprintf (file, "0x%-4.4x, 0x%-4.4x", (value >> 16) & 0xffff, (value & 0xffff));
+      fprintf (file, "0x%-4.4lx, 0x%-4.4lx", (value >> 16) & 0xffff, (value & 0xffff));
 #else
-      fprintf (file, "0x%-4.4x, 0x%-4.4x", (value & 0xffff), (value >> 16) & 0xffff);
+      fprintf (file, "0x%-4.4lx, 0x%-4.4lx", (value & 0xffff), (value >> 16) & 0xffff);
 #endif
       fputs ("\n", file);
 }
 
 int
 dsp16xx_address_cost (addr)
-rtx addr;
+     rtx addr;
 {
     switch (GET_CODE (addr))
     {
@@ -2129,7 +2137,7 @@ dsp16xx_function_arg_advance (cum, mode, type, named)
      CUMULATIVE_ARGS *cum;	/* current arg information */
      enum machine_mode mode;	/* current arg mode */
      tree type;			/* type of the argument or 0 if lib support */
-     int named;			/* whether or not the argument was named */
+     int named ATTRIBUTE_UNUSED;/* whether or not the argument was named */
 {
   if (TARGET_REGPARM)
     {
@@ -2259,7 +2267,7 @@ gen_compare_reg (code, x, y)
   return cc0_rtx;
 }
 
-char *
+const char *
 output_block_move (operands)
      rtx operands[];
 {
