@@ -1,3 +1,8 @@
+Mon Jan 24 16:56:10 2000  Jim Wilson  <wilson@cygnus.com>
+
+	* dwarf2out.c (gen_struct_or_union_type_die): Set complete if
+	TYPE_STUB_DECL is NULL.
+
 2000-01-24  Richard Henderson  <rth@cygnus.com>
 
 	* builtins.c (expand_tree_builtin): Move ...
