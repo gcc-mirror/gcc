@@ -86,8 +86,6 @@
 #  extra_headers	List of used header files from the directory
 #			config/${cpu_type}.
 #
-#  host_xmake_file	List of host-specific makefile-fragments.
-#
 #  extra_passes		List of extra executables compiled for this target
 #			machine, used for compiling from source to object.
 #
@@ -96,14 +94,6 @@
 #
 #  extra_programs	Like extra_passes, but these are used when linking.
 #
-#  host_extra_objs	List of extra host-dependent objects that should
-#			be linked into the compiler proper.
-#
-#  host_extra_gcc_objs	List of extra host-dependent objects that should
-#			be linked into the gcc driver.
-#
-#  out_host_hook_obj	An object file that provides the host hooks.
-#
 #  c_target_objs	List of extra target-dependent objects that be
 #			linked into the C compiler only.
 #
@@ -111,12 +101,6 @@
 #			linked into the C++ compiler only.
 #
 #  target_gtfiles       List of extra source files with type information.
-#
-#  host_xm_defines	List of macros to define when compiling for the
-#			host machine.
-#
-#  host_xm_file		List of files to include when compiling for the
-#			host machine.
 #
 #  xm_defines		List of macros to define when compiling for the
 #			target machine.
@@ -132,9 +116,6 @@
 #  gdb_needs_out_file_path
 #			Set to yes if gdb needs a dir command with
 #			`dirname $out_file`.
-#
-#  host_exeext		Set to the suffix, if the host machine requires
-#			executables to have a file name suffix.
 #
 #  thread_file		Set to control which thread package to use.
 #
@@ -155,33 +136,19 @@
 # The following variables are used in each case-construct to build up the
 # outgoing variables:
 #
-#  xmake_file		Makefile-fragment when this system is as a host,
-#			for host_xmake_file.
-#
-#  extra_host_objs	List of extra objects that should be linked into
-#			the compiler proper when this system is a host,
-#			for host_extra_objs.
-#
-#  host_hook_obj	An object file that provides the host hooks.
-#
-#  exeext		The suffix for executables on this system.
-#
 #  gnu_ld		Set to yes or no depending on whether the target
 #			system normally uses GNU ld.
 
 out_file=
-xmake_file=
 tmake_file=
 extra_headers=
 extra_passes=
 extra_parts=
 extra_programs=
 extra_objs=
-extra_host_objs=
 extra_gcc_objs=
 c_target_objs=
 cxx_target_objs=
-host_hook_obj=host-default.o
 tm_defines=
 xm_defines=
 # Set this to force installation and use of collect2.
@@ -190,9 +157,6 @@ use_collect2=
 target_cpu_default=
 # Set this if gdb needs a dir command with `dirname $out_file`
 gdb_needs_out_file_path=
-# Set this if the build machine requires executables to have a
-# file name suffix.
-exeext=
 # Set this to control which thread package will be used.
 thread_file=
 # Reinitialize these from the flag values every loop pass, since some
@@ -474,7 +438,6 @@ case $machine in
 	*) echo 'Please update *-*-freebsd* in gcc/config.gcc'; exit 1;;
 	esac
 	tmake_file="t-slibgcc-elf-ver t-freebsd"
-	xmake_file=none
 	case x${enable_threads} in
 	xno) fbsd_tm_file="${fbsd_tm_file} freebsd-nthr.h";;
 	x | xyes | xpthreads | xposix)
@@ -520,9 +483,6 @@ case $machine in
 	tm_file=${cpu_type}/$rest.h
 	if test -f $srcdir/config/${cpu_type}/xm-$rest.h
 	then xm_file=${cpu_type}/xm-$rest.h
-	fi
-	if test -f $srcdir/config/${cpu_type}/x-$rest
-	then xmake_file=${cpu_type}/x-$rest
 	fi
 	if test -f $srcdir/config/${cpu_type}/t-$rest
 	then tmake_file=${cpu_type}/t-$rest
@@ -602,8 +562,6 @@ alpha64-dec-*vms*)
 	tm_file="${tm_file} alpha/vms.h alpha/vms64.h"
 	xm_file="alpha/xm-vms.h"
 	tmake_file="alpha/t-alpha alpha/t-vms alpha/t-vms64 alpha/t-ieee"
-	xmake_file=alpha/x-vms
-	exeext=.exe
 	# This removes the cpu type and manufacturer components and
 	#  replaces "." with "_" in the operating system version.
 	case $host in *-*-*vms*)
@@ -618,8 +576,6 @@ alpha*-dec-*vms*)
 	tm_file="${tm_file} alpha/vms.h"
 	xm_file=alpha/xm-vms.h
 	tmake_file="alpha/t-alpha alpha/t-vms alpha/t-ieee"
-	xmake_file=alpha/x-vms
-	exeext=.exe
 	# This removes the cpu type and manufacturer components and
 	#  replaces "." with "_" in the operating system version.
 	case $host in *-*-*vms*)
@@ -782,20 +738,17 @@ hppa1.1-*-pro*)
 	target_cpu_default="(MASK_JUMP_IN_DELAY | MASK_PORTABLE_RUNTIME | MASK_GAS | MASK_NO_SPACE_REGS | MASK_SOFT_FLOAT)"
 	tm_file="${tm_file} pa/pa32-regs.h dbxelf.h elfos.h pa/elf.h pa/pa-pro-end.h libgloss.h"
 	tmake_file="pa/t-bsd pa/t-pro"
-	xmake_file="pa/x-ada"
 	;;
 hppa1.1-*-osf*)
 	target_cpu_default="MASK_PA_11"
 	tm_file="${tm_file} pa/pa32-regs.h dbxelf.h pa/som.h pa/pa-osf.h"
 	tmake_file="pa/t-bsd pa/t-pa"
-	xmake_file="pa/x-ada"
 	use_collect2=yes
 	;;
 hppa1.1-*-rtems*)
 	target_cpu_default="(MASK_JUMP_IN_DELAY | MASK_PORTABLE_RUNTIME | MASK_GAS | MASK_NO_SPACE_REGS | MASK_SOFT_FLOAT)"
 	tm_file="${tm_file} pa/pa32-regs.h dbxelf.h elfos.h pa/elf.h pa/pa-pro-end.h libgloss.h pa/rtems.h rtems.h"
 	tmake_file="pa/t-bsd pa/t-pro t-rtems"
-	xmake_file="pa/x-ada"
 	if test x$enable_threads = xyes; then
 	  thread_file='rtems'
 	fi
@@ -804,14 +757,12 @@ hppa1.1-*-bsd*)
 	tm_file="${tm_file} pa/pa32-regs.h dbxelf.h pa/som.h"
 	target_cpu_default="MASK_PA_11"
 	tmake_file="pa/t-bsd pa/t-pa"
-	xmake_file="pa/x-ada"
 	use_collect2=yes
 	;;
 hppa1.1-*-hpux10* | hppa2*-*-hpux10*)
 	target_cpu_default="MASK_PA_11"
 	tm_file="${tm_file} pa/pa32-regs.h pa/long_double.h dbxelf.h pa/som.h pa/pa-hpux.h pa/pa-hpux10.h"
 	tmake_file="pa/t-pa pa/t-pa-hpux pa/t-hpux-shlib"
-	xmake_file="pa/x-ada"
 	if test x$enable_threads = x; then
 	    enable_threads=$have_pthread_h
 	fi
@@ -825,7 +776,6 @@ hppa1.1-*-hpux10* | hppa2*-*-hpux10*)
 hppa1.0-*-hpux10*)
 	tm_file="${tm_file} pa/pa32-regs.h pa/long_double.h dbxelf.h pa/som.h pa/pa-hpux.h pa/pa-hpux10.h"
 	tmake_file="pa/t-pa pa/t-pa-hpux pa/t-hpux-shlib"
-	xmake_file="pa/x-ada"
 	if test x$enable_threads = x; then
 	    enable_threads=$have_pthread_h
 	fi
@@ -849,7 +799,6 @@ hppa*64*-*-hpux11*)
 	fi
 	need_64bit_hwint=yes
 	tmake_file="pa/t-pa64 pa/t-pa-hpux"
-	xmake_file="pa/x-ada"
 	target_cpu_default="(MASK_PA_11|MASK_PA_20|MASK_GAS)"
 	extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o crtbeginT.o"
 	if test x$gnu_ld = xyes
@@ -866,7 +815,6 @@ hppa1.1-*-hpux11* | hppa2*-*-hpux11*)
 	target_cpu_default="MASK_PA_11"
 	tm_file="${tm_file} pa/pa32-regs.h pa/long_double.h dbxelf.h pa/som.h pa/pa-hpux.h pa/pa-hpux11.h"
 	tmake_file="pa/t-pa pa/t-pa-hpux pa/t-hpux-shlib"
-	xmake_file="pa/x-ada"
 	case x${enable_threads} in
 	xyes | xposix )
 		thread_file=posix 
@@ -877,7 +825,6 @@ hppa1.1-*-hpux11* | hppa2*-*-hpux11*)
 hppa1.0-*-hpux11*)
 	tm_file="${tm_file} pa/pa32-regs.h pa/long_double.h dbxelf.h pa/som.h pa/pa-hpux.h pa/pa-hpux11.h"
 	tmake_file="pa/t-pa pa/t-pa-hpux pa/t-hpux-shlib"
-	xmake_file="pa/x-ada"
 	case x${enable_threads} in
 	xyes | xposix )
 		thread_file=posix 
@@ -1008,7 +955,6 @@ i[34567]86-pc-msdosdjgpp*)
 	tmake_file=i386/t-djgpp
 	gnu_ld=yes
 	gas=yes
-	exeext=.exe
 	case $host in *pc-msdosdjgpp*)
 		target_alias=djgpp
 		;;
@@ -1141,18 +1087,15 @@ i[34567]86-*-pe | i[34567]86-*-cygwin*)
 	if test x$enable_threads = xyes; then
 		thread_file='posix'
 	fi
-	exeext=.exe
 	;;
 i[34567]86-*-mingw32*)
 	tm_file="${tm_file} i386/unix.h i386/bsd.h i386/gas.h dbxcoff.h i386/cygming.h i386/mingw32.h"
 	xm_file=i386/xm-mingw32.h
 	tmake_file="i386/t-cygming i386/t-mingw32"
-	xmake_file=i386/x-mingw32
 	extra_objs=winnt.o
 	if test x$enable_threads = xyes; then
 		thread_file='win32'
 	fi
-	exeext=.exe
 	case $machine in
 		*mingw32crt*)
 			tm_file="${tm_file} i386/crtdll.h"
@@ -1168,13 +1111,11 @@ i[34567]86-*-uwin*)
 	if test x$enable_threads = xyes; then
 		thread_file='win32'
 	fi
-	exeext=.exe
 	;;
 i[34567]86-*-interix3*)
 	tm_file="${tm_file} i386/unix.h i386/bsd.h i386/gas.h i386/i386-interix.h i386/i386-interix3.h interix.h interix3.h"
 	tmake_file="t-interix i386/t-interix"
 	extra_objs=winnt.o
-	xmake_file="x-interix"
 	if test x$enable_threads = xyes ; then
 		thread_file='posix'
 	fi
@@ -1199,7 +1140,6 @@ i[34567]86-*-kaos*)
 	;;
 i860-*-sysv4*)
         tm_file="${tm_file} elfos.h svr4.h i860/sysv4.h"
-        xmake_file=i860/x-sysv4
         tmake_file="i860/t-i860 i860/t-svr4"
         extra_parts="crtbegin.o crtend.o"
         ;;
@@ -1623,9 +1563,6 @@ powerpc-*-darwin*)
 	extra_headers=altivec.h
 	# override ppc default
 	need_64bit_hwint=
-	# powerpc-darwin host support.
-	host_hook_obj=host-darwin.o
-	xmake_file=rs6000/x-darwin
 	;;
 powerpc*-*-freebsd*)
 	tm_file="${tm_file} dbxelf.h elfos.h ${fbsd_tm_file} rs6000/sysv4.h rs6000/freebsd.h"
@@ -2031,7 +1968,6 @@ sparc64-*-elf*)
 sparc64-*-freebsd*|ultrasparc-*-freebsd*)
 	tm_file="${tm_file} ${fbsd_tm_file} dbxelf.h elfos.h sparc/sysv4.h sparc/freebsd.h"
 	tmake_file="${tmake_file} sparc/t-crtfm"
-	xmake_file=none
 	case "x$with_cpu" in
 		xultrasparc) ;;
 		x) with_cpu=ultrasparc ;;
