@@ -1,31 +1,37 @@
+2003-03-10  Zack Weinberg  <zack@codesourcery.com>
+
+	* c-opts.c (add_prefixed_path): Don't use concat.  When
+	prefixing with cpp_GCC_INCLUDE_DIR, copy only the first
+	cpp_GCC_INCLUDE_DIR_len characters.
+
 2003-03-10  Segher Boessenkool  <segher@koffie.nl>
 
-        * testsuite/gcc.dg/altivec-9.c: New file.
+	* testsuite/gcc.dg/altivec-9.c: New file.
 
-        * config/rs6000/rs6000.c (altivec_frame_fixup): Remove.
-        (rs6000_emit_prologue): Use rs6000_frame_related instead.
-
-2003-03-10  Aldy Hernandez  <aldyh@redhat.com>
-
-        * config/rs6000/spe.h: Define __ev64_*64__ to use single element
-        vectors.
-        (__ev_convert_u64): Remove macro.  Define as inline.
-        (__ev_convert_s64): Same.
+	* config/rs6000/rs6000.c (altivec_frame_fixup): Remove.
+	(rs6000_emit_prologue): Use rs6000_frame_related instead.
 
 2003-03-10  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/rs6000/rs6000.h (DWARF_FRAME_REGISTERS): Define.
-        (rs6000_stack_t): Add spe_64bit_regs_used.
+	* config/rs6000/spe.h: Define __ev64_*64__ to use single element
+	vectors.
+	(__ev_convert_u64): Remove macro.  Define as inline.
+	(__ev_convert_s64): Same.
 
-        * config/rs6000/rs6000.c (rs6000_stack_info): Calculate
-        spe_64bit_regs_used, and use it to determine the size of the
-        frame.
-        (spe_func_has_64bit_regs_p): New.
-        (spe_synthesize_frame_save): New.
-        (rs6000_frame_related): Handle SPE synthetic registers.
-        (rs6000_emit_prologue): Only save in 64-bits if the function used
-        any registers in 64-bit mode.
-        (rs6000_emit_epilogue): Same, but for restore.
+2003-03-10  Aldy Hernandez  <aldyh@redhat.com>
+
+	* config/rs6000/rs6000.h (DWARF_FRAME_REGISTERS): Define.
+	(rs6000_stack_t): Add spe_64bit_regs_used.
+
+	* config/rs6000/rs6000.c (rs6000_stack_info): Calculate
+	spe_64bit_regs_used, and use it to determine the size of the
+	frame.
+	(spe_func_has_64bit_regs_p): New.
+	(spe_synthesize_frame_save): New.
+	(rs6000_frame_related): Handle SPE synthetic registers.
+	(rs6000_emit_prologue): Only save in 64-bits if the function used
+	any registers in 64-bit mode.
+	(rs6000_emit_epilogue): Same, but for restore.
 
 2003-03-10  Richard Earnshaw  <rearnsha@arm.com>
 
@@ -41,17 +47,17 @@
 
 2003-03-10  Josef Zlomek  <zlomekj@suse.cz>
 
-	* cfgcleanup.c (outgoing_edges_match): Compare the jump tables. 
+	* cfgcleanup.c (outgoing_edges_match): Compare the jump tables.
 	(try_crossjump_to_edge): Replace refereces to one jump table by
 	references to identical jump table.
 	* loop.c (load_mems): Moved setting the JUMP_LABEL to replace_label.
 	(replace_label): Moved to rtlanal.c.
 	(struct rtx_pair): Moved to rtl.h.
-	* rtl.h (struct rtx_pair): Moved from loop.c.  
+	* rtl.h (struct rtx_pair): Moved from loop.c.
 	(replace_label): New extern function.
 	(subrtx_p): New extern function.
 	(tablejump_p): New extern function.
-	* rtlanal.c (replace_label): Moved from loop.c.  
+	* rtlanal.c (replace_label): Moved from loop.c.
 	(subrtx_p_1): New static function.
 	(subrtx_p): New function.
 	(tablejump_p): New function.
@@ -282,7 +288,7 @@ Sat Mar  8 14:13:35 CET 2003  Jan Hubicka  <jh@suse.cz>
 	(cgraph_finalize_compilation_unit):  Actually remove the reclaimed nodes.
 	(cgraph_mark_functions_to_output):  Use new inlining heuristics flags.
 	(cgraph_expand_function): Likewise.
-	* cgraph.c 
+	* cgraph.c
 	(cgraph_node): Put nodes into doubly linked chain.
 	(cgraph_remove_node): New function.
 	* flags.h (flag_inline_functions_called_once): Declare.
@@ -451,7 +457,7 @@ Sat Mar  8 14:13:35 CET 2003  Jan Hubicka  <jh@suse.cz>
 	* config/stormy16/stormy16.c (xs_hi_general_operand):
 	added predicate to detect and error-out on out-of-range
 	const_ints for movhi.
-	* config/stormy16/stormy16.md (movhi): use 
+	* config/stormy16/stormy16.md (movhi): use
 	xs_hi_general_operand.
 
 	* config/stormy16/stormy16.c (xstormy16_expand_prologue):
@@ -459,7 +465,7 @@ Sat Mar  8 14:13:35 CET 2003  Jan Hubicka  <jh@suse.cz>
 	* config/stormy16/stormy16.c (xs_hi_nonmemory_operand):
 	added predicate to detect and error-out on out-of-range
 	const_ints for addhi and subhi.
-	* config/stormy16/stormy16.md (addhi3, addchi4, addchi5, 
+	* config/stormy16/stormy16.md (addhi3, addchi4, addchi5,
 	subhi3, subchi4, subchi5): used xs_hi_nonmemory_operand.
 
 	* config/stormy16/stormy16.c (xstormy16_legitimate_address_p):
@@ -525,23 +531,23 @@ Wed Mar  5 18:55:02 2003  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2003-03-05  Aldy Hernandez  <aldyh@redhat.com>
 
-        * doc/tm.texi: Document TARGET_DWARF_REGISTER_SPAN.
+	* doc/tm.texi: Document TARGET_DWARF_REGISTER_SPAN.
 
-        * config/rs6000/rs6000.c (rs6000_dwarf_register_span): New.
+	* config/rs6000/rs6000.c (rs6000_dwarf_register_span): New.
 
-        * hooks.c (hook_rtx_rtx_null): New.
+	* hooks.c (hook_rtx_rtx_null): New.
 
-        * hooks.h (hook_rtx_rtx_null): Protoize.
+	* hooks.h (hook_rtx_rtx_null): Protoize.
 
-        * target-def.h (TARGET_DWARF_REGISTER_SPAN): New macro.
-        (TARGET_INITIALIZER): Add TARGET_DWARF_REGISTER_SPAN.
+	* target-def.h (TARGET_DWARF_REGISTER_SPAN): New macro.
+	(TARGET_INITIALIZER): Add TARGET_DWARF_REGISTER_SPAN.
 
-        * target.h (struct gcc_target): Add dwarf_register_span.
+	* target.h (struct gcc_target): Add dwarf_register_span.
 
-        * dwarf2out.c (multiple_reg_loc_descriptor): New.
-        (one_reg_loc_descriptor): New.
-        (reg_loc_descriptor): Add support for values that span more than
-        one register.
+	* dwarf2out.c (multiple_reg_loc_descriptor): New.
+	(one_reg_loc_descriptor): New.
+	(reg_loc_descriptor): Add support for values that span more than
+	one register.
 
 Wed Mar  5 23:16:57 CET 2003  Jan Hubicka  <jh@suse.cz>
 
@@ -700,7 +706,7 @@ Wed Mar  5 02:04:04 CET 2003  Jan Hubicka  <jh@suse.cz>
 2003-03-04  Andreas Jaeger  <aj@suse.de>
 
 	* configure.in: Check for <memcheck.h>.
-        * configure: Regenerated.
+	* configure: Regenerated.
 
 	* config.in: Define HAVE_MEMCHECK_H.
 
@@ -1158,7 +1164,7 @@ Mon Mar  3 19:07:21 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-02-28  Aldy Hernandez  <aldyh@redhat.com>
 
-        * floatlib.c: Remove.
+	* floatlib.c: Remove.
 
 2003-02-28  Jason Merrill  <jason@redhat.com>
 
@@ -1177,9 +1183,9 @@ Mon Mar  3 19:07:21 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-02-28  Dale Johannesen <dalej@apple.com>
 
-        * loop.c (struct movable): Add insert_temp, shrink savemode.
+	* loop.c (struct movable): Add insert_temp, shrink savemode.
 	(scan_loop): Accept invariants that require copying; mark as
-        insert_temp.
+	insert_temp.
 	(combine_movables): Don't combine insert_temp movables.
 	(move_movables): Insert copies for insert_temp movables.
 	Don't record the info based on regno for insert_temp's.
@@ -1349,27 +1355,27 @@ Wed Feb 26 19:46:25 CET 2003  Jan Hubicka  <jh@suse.cz>
 2003-02-26  Nick Clifton  <nickc@redhat.com>
 
 	* config/arm/arm.c (is_load_address): Rename to...
-        (arm_memory_load_p) ... this and make it check for SUBREGs and
-        constant loads that will be converted into loads from the
-        minipool.
-        (is_cirrus_insn): Rename to ...
-        (arm_cirrus_insn_p): ... this, for consistency.  Replace test
-        of CIRRUS_NO with CIRRUS_NOT.
-        (cirrus_reorg): Use renamed functions.
-        (note_invalid_constants): Change from a void function to bool.
-        Add an extra parameter, saying whether the fixups should be
-        pushed.  Return true if fixups are needed.
-        (arm_reorg): Use renamed functions.  Use INSN_P.  Replace test
-        of CIRRUS_NO with CIRRUS_NOT.
-        * config/arm/arm.h (FLOAT_WORDS_BIG_ENDIAN): Mention that
-        other floating point co-processors can also affect this.
-        * config/arm/arm.md ("type" attribute): Add mav_farith and
-        mav_dmult.  Replace references to "cirrus_type" attribute with
-        "type".
-        * config/arm/cirrus.md ("cirrus_fpu" attribute): Delete.
-        ("cirrus_type" attribute): Delete - use "type" instead.
-        ("cirrus" attribute): Replace 'no' with 'not' and 'yes' with
-        'normal'.
+	(arm_memory_load_p) ... this and make it check for SUBREGs and
+	constant loads that will be converted into loads from the
+	minipool.
+	(is_cirrus_insn): Rename to ...
+	(arm_cirrus_insn_p): ... this, for consistency.  Replace test
+	of CIRRUS_NO with CIRRUS_NOT.
+	(cirrus_reorg): Use renamed functions.
+	(note_invalid_constants): Change from a void function to bool.
+	Add an extra parameter, saying whether the fixups should be
+	pushed.  Return true if fixups are needed.
+	(arm_reorg): Use renamed functions.  Use INSN_P.  Replace test
+	of CIRRUS_NO with CIRRUS_NOT.
+	* config/arm/arm.h (FLOAT_WORDS_BIG_ENDIAN): Mention that
+	other floating point co-processors can also affect this.
+	* config/arm/arm.md ("type" attribute): Add mav_farith and
+	mav_dmult.  Replace references to "cirrus_type" attribute with
+	"type".
+	* config/arm/cirrus.md ("cirrus_fpu" attribute): Delete.
+	("cirrus_type" attribute): Delete - use "type" instead.
+	("cirrus" attribute): Replace 'no' with 'not' and 'yes' with
+	'normal'.
 
 Tue Feb 25 22:46:27 CET 2003  Jan Hubicka  <jh@suse.cz>
 
@@ -1491,13 +1497,13 @@ Tue Feb 25 22:46:27 CET 2003  Jan Hubicka  <jh@suse.cz>
 	* gcse.c (cprop_jump): Revert the 2003-02-23 change.
 
 2003-02-25  Vladimir Makarov  <vmakarov@toke.toronto.redhat.com>
-            Richard Henderson  <rth@redhat.com>
+	    Richard Henderson  <rth@redhat.com>
 
 	* sched-ebb.c (add_deps_for_risky_insns): Add the dependence when
 	there is no similar load.
 
 2003-02-25  Vladimir Makarov  <vmakarov@redhat.com>
-            Richard Henderson  <rth@redhat.com>
+	    Richard Henderson  <rth@redhat.com>
 
 	* sched-int.h (INSN_TRAP_CLASS, WORST_CLASS): Move them from
 	sched-rgn.c.
@@ -1522,37 +1528,37 @@ Tue Feb 25 22:46:27 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-02-20  Aldy Hernandez  <aldyh@redhat.com>
 
-        * doc/tm.texi: Document Rename TARGET_VECTOR_TYPES_COMPATIBLE to
-        TARGET_VECTOR_OPAQUE_P.  Document accordingly.
+	* doc/tm.texi: Document Rename TARGET_VECTOR_TYPES_COMPATIBLE to
+	TARGET_VECTOR_OPAQUE_P.  Document accordingly.
 
-        * testsuite/gcc.dg/20030218-1.c: Check that initialization of
-        opaque types fail.
+	* testsuite/gcc.dg/20030218-1.c: Check that initialization of
+	opaque types fail.
 
-        * c-typeck.c (comptypes): Change call to vector_types_compatible
-        to vector_opaque_p.
-        (convert_for_assignment): Call vector_opaque_p instead of
-        vector_types_compatible.
-        (really_start_incremental_init): Disallow initialization of opaque
-        types.
+	* c-typeck.c (comptypes): Change call to vector_types_compatible
+	to vector_opaque_p.
+	(convert_for_assignment): Call vector_opaque_p instead of
+	vector_types_compatible.
+	(really_start_incremental_init): Disallow initialization of opaque
+	types.
 
-        * target-def.h: Remove TARGET_VECTOR_TYPES_COMPATIBLE.
-        Define TARGET_VECTOR_OPAQUE_P.
-        (TARGET_INITIALIZER): Same.
+	* target-def.h: Remove TARGET_VECTOR_TYPES_COMPATIBLE.
+	Define TARGET_VECTOR_OPAQUE_P.
+	(TARGET_INITIALIZER): Same.
 
-        * target.h (struct gcc_target): Remove vector_types_compatible.
-        Add vector_opaque_p.
+	* target.h (struct gcc_target): Remove vector_types_compatible.
+	Add vector_opaque_p.
 
-        * config/rs6000/rs6000.c (rs6000_spe_vector_types_compatible):
-        Remove.
-        (is_ev64_opaque_type): Check for TARGET_SPE and make sure type is
-        a vector type.  Change return type to bool.
-        (TARGET_VECTOR_TYPES_COMPATIBLE): Remove.
-        (TARGET_VECTOR_OPAQUE_P): Define.
+	* config/rs6000/rs6000.c (rs6000_spe_vector_types_compatible):
+	Remove.
+	(is_ev64_opaque_type): Check for TARGET_SPE and make sure type is
+	a vector type.  Change return type to bool.
+	(TARGET_VECTOR_TYPES_COMPATIBLE): Remove.
+	(TARGET_VECTOR_OPAQUE_P): Define.
 
-        * cp/parser.c (cp_parser_init_declarator): Call vector_opaque_p
-        target hook.
-        Include target.h.
-        (cp_parser_init_declarator): Fix typo in function comments.
+	* cp/parser.c (cp_parser_init_declarator): Call vector_opaque_p
+	target hook.
+	Include target.h.
+	(cp_parser_init_declarator): Fix typo in function comments.
 
 Tue Feb 25 12:35:34 CET 2003  Jan Hubicka  <jh@suse.cz>
 
@@ -1623,7 +1629,7 @@ Mon Feb 24 22:08:22 CET 2003  Jan Hubicka  <jh@suse.cz>
 	("load_gbr"): New insn.
 
 	* configure.in (HAVE_AS_TLS): Add sh-*-* and sh[34]*-*-* cases.
-        * configure: Regenerate.
+	* configure: Regenerate.
 
 2003-02-24  Alan Modra  <amodra@bigpond.net.au>
 
@@ -1658,16 +1664,16 @@ Mon Feb 24 22:08:22 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-02-22  Kelley Cook <kelley@dwhoops.info>
 
-        * i386.h, i386.c, i386.md (ix86_tune): Rename from ix86_cpu.
+	* i386.h, i386.c, i386.md (ix86_tune): Rename from ix86_cpu.
 	(ix86_tune_string): Rename from ix86_cpu_string.
 
 2003-02-22  Kelley Cook <kelleycook@comcast.net>
 
-        * config/i386/i386.c: Replace "mcpu" with "mtune".
-        * config/i386/i386.h (TARGET_OPTIONS): Likewise.
-        (CC1_CPU_SPEC): Likewise. New warning for "-mcpu".
-        * doc/invoke.texi (i386 and x86-64 Options): Replace "mcpu"
-        with "mtune".  Note that "mcpu" is a deprecated synonym for "mtune".
+	* config/i386/i386.c: Replace "mcpu" with "mtune".
+	* config/i386/i386.h (TARGET_OPTIONS): Likewise.
+	(CC1_CPU_SPEC): Likewise. New warning for "-mcpu".
+	* doc/invoke.texi (i386 and x86-64 Options): Replace "mcpu"
+	with "mtune".  Note that "mcpu" is a deprecated synonym for "mtune".
 
 2003-02-23  Andreas Schwab  <schwab@suse.de>
 
