@@ -1,3 +1,8 @@
+2004-02-09  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.c (rs6000_emit_move): Remove splitting slow
+	unaligned loads and stores.
+
 2004-02-09  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* config/mips/iris5.h (BSS_SECTION_ASM_OP): Define.
