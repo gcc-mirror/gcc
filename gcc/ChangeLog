@@ -1,3 +1,9 @@
+2000-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* loop.c (load_mems): Avoid using next_label to find end_label. If
+	jumping outside of the loop (other than loop end), don't hoist MEMs
+	out of loop.
+
 2000-11-28  Jan Hubicka  <jh@suse.cz>
 
 	* calls.c (expand_call): Don't disable tail recursion based
