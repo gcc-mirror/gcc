@@ -2104,6 +2104,8 @@ emit_library_call (va_alist)
   args_size.constant = 0;
   args_size.var = 0;
 
+  push_temp_slots ();
+
   for (count = 0; count < nargs; count++)
     {
       rtx val = va_arg (p, rtx);
@@ -2130,13 +2132,18 @@ emit_library_call (va_alist)
 	  && ! (CONSTANT_P (val) && LEGITIMATE_CONSTANT_P (val)))
 	val = force_operand (val, NULL_RTX);
 
-      argvec[count].value = val;
-      argvec[count].mode = mode;
-
 #ifdef FUNCTION_ARG_PASS_BY_REFERENCE
       if (FUNCTION_ARG_PASS_BY_REFERENCE (args_so_far, mode, NULL_TREE, 1))
-	abort ();
+	{
+	  rtx slot = assign_stack_temp (mode, GET_MODE_SIZE (mode), 0);
+	  emit_move_insn (slot, val);
+	  val = XEXP (slot, 0);
+	  mode = SImode;
+	}
 #endif
+
+      argvec[count].value = val;
+      argvec[count].mode = mode;
 
       argvec[count].reg = FUNCTION_ARG (args_so_far, mode, NULL_TREE, 1);
       if (argvec[count].reg && GET_CODE (argvec[count].reg) == EXPR_LIST)
@@ -2303,6 +2310,8 @@ emit_library_call (va_alist)
 	       outmode != VOIDmode ? hard_libcall_value (outmode) : NULL_RTX,
 	       old_inhibit_defer_pop + 1, use_insns, no_queue);
 
+  pop_temp_slots ();
+
   /* Now restore inhibit_defer_pop to its actual original value.  */
   OK_DEFER_POP;
 }
@@ -2390,6 +2399,8 @@ emit_library_call_value (va_alist)
 
   count = 0;
 
+  push_temp_slots ();
+
   /* If there's a structure value address to be passed,
      either pass it in the special place, or pass it as an extra argument.  */
   if (mem_value && struct_value_rtx == 0 && ! pcc_struct_value)
@@ -2456,13 +2467,18 @@ emit_library_call_value (va_alist)
 	  && ! (CONSTANT_P (val) && LEGITIMATE_CONSTANT_P (val)))
 	val = force_operand (val, NULL_RTX);
 
-      argvec[count].value = val;
-      argvec[count].mode = mode;
-
 #ifdef FUNCTION_ARG_PASS_BY_REFERENCE
       if (FUNCTION_ARG_PASS_BY_REFERENCE (args_so_far, mode, NULL_TREE, 1))
-	abort ();
+	{
+	  rtx slot = assign_stack_temp (mode, GET_MODE_SIZE (mode), 0);
+	  emit_move_insn (slot, val);
+	  val = XEXP (slot, 0);
+	  mode = Pmode;
+	}
 #endif
+
+      argvec[count].value = val;
+      argvec[count].mode = mode;
 
       argvec[count].reg = FUNCTION_ARG (args_so_far, mode, NULL_TREE, 1);
       if (argvec[count].reg && GET_CODE (argvec[count].reg) == EXPR_LIST)
@@ -2650,6 +2666,8 @@ emit_library_call_value (va_alist)
 
   /* Now restore inhibit_defer_pop to its actual original value.  */
   OK_DEFER_POP;
+
+  pop_temp_slots ();
 
   /* Copy the value to the right place.  */
   if (outmode != VOIDmode)
