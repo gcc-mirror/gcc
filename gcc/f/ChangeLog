@@ -1,3 +1,9 @@
+Mon May 25 03:34:42 1998  Craig Burley  <burley@gnu.org>
+
+	* com.c (ffecom_expr_): Fix D**I and Z**I cases to
+	not convert (DOUBLE PRECISION) D and (DOUBLE COMPLEX) Z
+	to INTEGER.  (This is dead code here anyway.)
+
 Sat May 23 06:32:52 1998  Craig Burley  <burley@gnu.org>
 
 	* com.c (ffecom_finish_symbol_transform_): Don't transform
@@ -25,14 +31,6 @@ Tue May 19 12:56:54 1998  Craig Burley  <burley@gnu.org>
 	* com.c (ffecom_init_0): Rename xargc to f__xargc,
 	in accord with same-dated change to f/runtime.
 
-Wed May 13 13:05:34 1998  Craig Burley  <burley@gnu.org>
-
-	* Make-lang.in (G77STAGESTUFF): Add g77.o, g77spec.o,
-	and g77version.o.
-	(f77.clean): Add removal of g77.c, g77.o, g77spec.o,
-	and g77version.o.
-	(f77.distclean): Delete removal of g77.c.
-
 Fri May 15 10:52:49 1998  Craig Burley  <burley@gnu.org>
 
 	* com.c (ffecom_convert_narrow_, ffecom_convert_widen_):
@@ -56,7 +54,14 @@ Thu May 14 13:30:59 1998  Craig Burley  <burley@gnu.org>
 
 	* com.c (ffecom_expr_): Add ltkt variable for clarity.
 
-  
+Wed May 13 13:05:34 1998  Craig Burley  <burley@gnu.org>
+
+	* Make-lang.in (G77STAGESTUFF): Add g77.o, g77spec.o,
+	and g77version.o.
+	(f77.clean): Add removal of g77.c, g77.o, g77spec.o,
+	and g77version.o.
+	(f77.distclean): Delete removal of g77.c.
+
 Tue Apr 28 09:23:10 1998  Craig Burley  <burley@gnu.org>
 
 	Fix 980427-0.f:
