@@ -1,3 +1,17 @@
+2002-03-30  Richard Henderson  <rth@redhat.com>
+
+	PR target/6032
+	* config/sparc/sparc.h (OVERRIDE_OPTIONS): Don't override -fpic
+	or -fomit-frame-pointer with profiling.
+	(SUBTARGET_OVERRIDE_OPTIONS): Remove.
+	(FUNCTION_PROFILER): Do nothing.
+	(PROFILE_HOOK): New.
+	* config/sparc/sparc.c (sparc_override_options): Don't check
+	code models for profiling.
+	(sparc_function_profiler): Remove.
+	(sparc_profile_hook): New.
+	* config/sparc/sparc-protos.h: Update.
+
 2002-03-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR optimization/6086

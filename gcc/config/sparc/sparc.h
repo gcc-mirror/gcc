@@ -373,29 +373,7 @@ Unrecognized value in TARGET_CPU_DEFAULT.
 /* Show we can debug even without a frame pointer.  */
 #define CAN_DEBUG_WITHOUT_FP
 
-/* To make profiling work with -f{pic,PIC}, we need to emit the profiling
-   code into the rtl.  Also, if we are profiling, we cannot eliminate
-   the frame pointer (because the return address will get smashed).  */
-
-#define OVERRIDE_OPTIONS \
-  do {									\
-    if (profile_flag || profile_arc_flag)				\
-      {									\
-	if (flag_pic)							\
-	  {								\
-	    const char *const pic_string = (flag_pic == 1) ? "-fpic" : "-fPIC";\
-	    warning ("%s and profiling conflict: disabling %s",		\
-		     pic_string, pic_string);				\
-	    flag_pic = 0;						\
-	  }								\
-	flag_omit_frame_pointer = 0;					\
-      }									\
-    sparc_override_options ();						\
-    SUBTARGET_OVERRIDE_OPTIONS;						\
-  } while (0)
-
-/* This is meant to be redefined in the host dependent files.  */
-#define SUBTARGET_OVERRIDE_OPTIONS
+#define OVERRIDE_OPTIONS  sparc_override_options ()
 
 /* Generate DBX debugging information.  */
 
@@ -1866,14 +1844,13 @@ do {									\
 #endif
 
 
-/* Output assembler code to FILE to increment profiler label # LABELNO
-   for profiling a function entry.  */
+/* Emit rtl for profiling.  */
+#define PROFILE_HOOK(LABEL)   sparc_profile_hook (LABEL)
 
-#define FUNCTION_PROFILER(FILE, LABELNO) \
-  sparc_function_profiler(FILE, LABELNO)
+/* All the work done in PROFILE_HOOK, but still required.  */
+#define FUNCTION_PROFILER(FILE, LABELNO) do { } while (0)
 
 /* Set the name of the mcount function for the system.  */
-
 #define MCOUNT_FUNCTION "*mcount"
 
 /* EXIT_IGNORE_STACK should be nonzero if, when returning from a function,

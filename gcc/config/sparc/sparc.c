@@ -432,12 +432,6 @@ sparc_override_options ()
   /* Do various machine dependent initializations.  */
   sparc_init_modes ();
 
-  if ((profile_flag)
-      && sparc_cmodel != CM_32 && sparc_cmodel != CM_MEDLOW)
-    {
-      error ("profiling does not support code models other than medlow");
-    }
-
   /* Register global variables with the garbage collector.  */
   sparc_add_gc_roots ();
 }
@@ -8621,42 +8615,23 @@ sparc_return_peephole_ok (dest, src)
   return IN_OR_GLOBAL_P (dest);
 }
 
-/* Output assembler code to FILE to increment profiler label # LABELNO
-   for profiling a function entry.
-
-   32 bit sparc uses %g2 as the STATIC_CHAIN_REGNUM which gets clobbered
-   during profiling so we need to save/restore it around the call to mcount.
-   We're guaranteed that a save has just been done, and we use the space
-   allocated for intreg/fpreg value passing.  */
+/* Output rtl to increment the profiler label LABELNO
+   for profiling a function entry.  */
 
 void
-sparc_function_profiler (file, labelno)
-     FILE *file;
+sparc_profile_hook (labelno)
      int labelno;
 {
   char buf[32];
+  rtx lab, fun;
+
   ASM_GENERATE_INTERNAL_LABEL (buf, "LP", labelno);
+  lab = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (buf));
+  fun = gen_rtx_SYMBOL_REF (Pmode, MCOUNT_FUNCTION);
 
-  if (! TARGET_ARCH64)
-    fputs ("\tst\t%g2, [%fp-4]\n", file);
-
-  fputs ("\tsethi\t%hi(", file);
-  assemble_name (file, buf);
-  fputs ("), %o0\n", file);
-
-  fputs ("\tcall\t", file);
-  assemble_name (file, MCOUNT_FUNCTION);
-  putc ('\n', file);
-
-  fputs ("\t or\t%o0, %lo(", file);
-  assemble_name (file, buf);
-  fputs ("), %o0\n", file);
-
-  if (! TARGET_ARCH64)
-    fputs ("\tld\t[%fp-4], %g2\n", file);
+  emit_library_call (fun, 0, VOIDmode, 1, lab, Pmode);
 }
-
-
+
 /* Mark ARG, which is really a struct ultrasparc_pipline_state *, for
    GC.  */
 
