@@ -1,3 +1,7 @@
+Tue Jan 19 15:00:10 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* Makefile.in (protoize.o, unprotoize.o): Depend on Makefile.
+
 1999-01-19  Vladimir N. Makarov  <vmakarov@cygnus.com>
 
 	* invoke.texi (-mlong-double-64): New option description.
