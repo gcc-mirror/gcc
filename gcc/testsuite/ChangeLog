@@ -1,3 +1,7 @@
+2004-12-13  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* gcc.target/xstormy16/below100.S: Remove DOS line endings.
+
 2004-12-13  Roger Sayle  <roger@eyesopen.com>
 
 	PR rtl-optimization/18928
