@@ -3,11 +3,11 @@ This file documents the installation of the GNU compiler.  Copyright
 may copy, distribute, and modify it freely as long as you preserve this
 copyright notice and permission notice.
 
-Note most of this information is out of date and superceded by the EGCS
-install procedures.  It is provided for historical reference only.
-
 Installing GNU CC
 *****************
+
+   Note most of this information is out of date and superceded by the
+EGCS install procedures.  It is provided for historical reference only.
 
    Here is the procedure for installing GNU CC on a Unix system.  See
 *Note VMS Install::, for VMS systems.  In this section we assume you
@@ -122,9 +122,7 @@ and includes all the necessary compilation tools and libraries.
 
           This option does not cause the GNU linker to be installed; it
           just modifies the behavior of GNU CC to work with the GNU
-          linker.  Specifically, it inhibits the installation of
-          `collect2', a program which otherwise serves as a front-end
-          for the system's linker on most configurations.
+          linker.
 
     `--with-stabs'
           On MIPS based systems and on Alphas, you must specify whether
@@ -163,6 +161,16 @@ and includes all the necessary compilation tools and libraries.
           `m68k-sun-sunosN' and `m68k-isi-bsd'.  On any other system,
           `--nfp' currently has no effect, though perhaps there are
           other systems where it could usefully make a difference.
+
+    `--enable-haifa'
+
+    `--disable-haifa'
+          Use `--enable-haifa' to enable use of an experimental
+          instruction scheduler (from IBM Haifa).  This may or may not
+          produce better code.  Some targets on which it is known to be
+          a win enable it by default; use `--disable-haifa' to disable
+          it in these cases.  `configure' will print out whether the
+          Haifa scheduler is enabled when it is run.
 
     `--enable-threads=TYPE'
           Certain systems, notably Linux-based GNU systems, can't be
@@ -1972,10 +1980,8 @@ VAX C, to avoid a problem in case `gcclib.olb' is not yet available.
 `collect2'
 ==========
 
-   Many target systems do not have support in the assembler and linker
-for "constructors"--initialization functions to be called before the
-official "start" of `main'.  On such systems, GNU CC uses a utility
-called `collect2' to arrange to call these functions at start time.
+   GNU CC uses a utility called `collect2' on nearly all systems to
+arrange to call various initialization functions at start time.
 
    The program `collect2' works by linking the program once and looking
 through the linker output file for symbols with particular names
