@@ -862,21 +862,21 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 
       start_sequence ();
 
-      realr = gen_lowpart  (submode, target);
-      imagr = gen_highpart (submode, target);
+      realr = gen_realpart  (submode, target);
+      imagr = gen_imagpart (submode, target);
 
       if (GET_MODE (op0) == mode)
 	{
-	  real0 = gen_lowpart  (submode, op0);
-	  imag0 = gen_highpart (submode, op0);
+	  real0 = gen_realpart  (submode, op0);
+	  imag0 = gen_imagpart (submode, op0);
 	}
       else
 	real0 = op0;
 
       if (GET_MODE (op1) == mode)
 	{
-	  real1 = gen_lowpart  (submode, op1);
-	  imag1 = gen_highpart (submode, op1);
+	  real1 = gen_realpart  (submode, op1);
+	  imag1 = gen_imagpart (submode, op1);
 	}
       else
 	real1 = op1;
@@ -1537,16 +1537,16 @@ expand_unop (mode, unoptab, op0, target, unsignedp)
       
       start_sequence ();
 
-      target_piece = gen_highpart (submode, target);
+      target_piece = gen_imagpart (submode, target);
       x = expand_unop (submode, unoptab,
-		       gen_highpart (submode, op0),
+		       gen_imagpart (submode, op0),
 		       target_piece, unsignedp);
       if (target_piece != x)
 	emit_move_insn (target_piece, x);
 
-      target_piece = gen_lowpart (submode, target);
+      target_piece = gen_realpart (submode, target);
       x = expand_unop (submode, unoptab,
-		       gen_lowpart (submode, op0),
+		       gen_realpart (submode, op0),
 		       target_piece, unsignedp);
       if (target_piece != x)
 	emit_move_insn (target_piece, x);
@@ -1557,41 +1557,6 @@ expand_unop (mode, unoptab, op0, target, unsignedp)
       emit_no_conflict_block (seq, target, op0, 0,
 			      gen_rtx (unoptab->code, mode, op0));
       return target;
-    }
-
-  /* Open-code the complex absolute-value operation
-     if we can open-code sqrt.  Otherwise it's not worth while.  */
-  else if (unoptab == abs_optab
-	   && (class == MODE_COMPLEX_FLOAT || class == MODE_COMPLEX_INT))
-    {
-      /* Find the correct mode for the real and imaginary parts */
-      enum machine_mode submode
-	= mode_for_size (GET_MODE_UNIT_SIZE (mode) * BITS_PER_UNIT,
-			 class == MODE_COMPLEX_INT ? MODE_INT : MODE_FLOAT,
-			 0);
-
-      if (submode == BLKmode)
-	abort ();
-
-      if (sqrt_optab->handlers[(int) submode].insn_code != CODE_FOR_nothing)
-	{
-	  rtx real, imag, total;
-
-	  real = gen_highpart (submode, op0);
-	  imag = gen_lowpart (submode, op0);
-	  /* Square both parts.  */
-	  real = expand_mult (mode, real, real, NULL_RTX, 0);
-	  imag = expand_mult (mode, imag, imag, NULL_RTX, 0);
-	  /* Sum the parts.  */
-	  total = expand_binop (submode, add_optab, real, imag, 0,
-				0, OPTAB_LIB_WIDEN);
-	  /* Get sqrt in TARGET.  Set TARGET to where the result is.  */
-	  target = expand_unop (submode, sqrt_optab, total, target, 0);
-	  if (target == 0)
-	    delete_insns_since (last);
-	  else
-	    return target;
-	}
     }
 
   /* Now try a library call in this mode.  */
@@ -1660,6 +1625,196 @@ expand_unop (mode, unoptab, op0, target, unsignedp)
 	      else
 		delete_insns_since (last);
 	    }
+	}
+    }
+
+  return 0;
+}
+
+/* Emit code to compute the absolute value of OP0, with result to
+   TARGET if convenient.  (TARGET may be 0.)  The return value says
+   where the result actually is to be found.
+
+   MODE is the mode of the operand; the mode of the result is
+   different but can be deduced from MODE.
+
+   UNSIGNEDP is relevant for complex integer modes.  */
+
+rtx
+expand_complex_abs (mode, op0, target, unsignedp)
+     enum machine_mode mode;
+     rtx op0;
+     rtx target;
+     int unsignedp;
+{
+  enum mode_class class = GET_MODE_CLASS (mode);
+  enum machine_mode wider_mode;
+  register rtx temp;
+  rtx last = get_last_insn ();
+  rtx pat;
+
+  /* Find the correct mode for the real and imaginary parts.  */
+  enum machine_mode submode
+    = mode_for_size (GET_MODE_UNIT_SIZE (mode) * BITS_PER_UNIT,
+		     class == MODE_COMPLEX_INT ? MODE_INT : MODE_FLOAT,
+		     0);
+
+  if (submode == BLKmode)
+    abort ();
+
+  op0 = protect_from_queue (op0, 0);
+
+  if (flag_force_mem)
+    {
+      op0 = force_not_mem (op0);
+    }
+
+  if (target)
+    target = protect_from_queue (target, 1);
+
+  if (abs_optab->handlers[(int) mode].insn_code != CODE_FOR_nothing)
+    {
+      int icode = (int) abs_optab->handlers[(int) mode].insn_code;
+      enum machine_mode mode0 = insn_operand_mode[icode][1];
+      rtx xop0 = op0;
+
+      if (target)
+	temp = target;
+      else
+	temp = gen_reg_rtx (submode);
+
+      if (GET_MODE (xop0) != VOIDmode
+	  && GET_MODE (xop0) != mode0)
+	xop0 = convert_to_mode (mode0, xop0, unsignedp);
+
+      /* Now, if insn doesn't accept our operand, put it into a pseudo.  */
+
+      if (! (*insn_operand_predicate[icode][1]) (xop0, mode0))
+	xop0 = copy_to_mode_reg (mode0, xop0);
+
+      if (! (*insn_operand_predicate[icode][0]) (temp, submode))
+	temp = gen_reg_rtx (submode);
+
+      pat = GEN_FCN (icode) (temp, xop0);
+      if (pat)
+	{
+	  if (GET_CODE (pat) == SEQUENCE
+	      && ! add_equal_note (pat, temp, abs_optab->code, xop0, NULL_RTX))
+	    {
+	      delete_insns_since (last);
+	      return expand_unop (mode, abs_optab, op0, NULL_RTX, unsignedp);
+	    }
+
+	  emit_insn (pat);
+	  
+	  return temp;
+	}
+      else
+	delete_insns_since (last);
+    }
+
+  /* It can't be done in this mode.  Can we open-code it in a wider mode?  */
+
+  for (wider_mode = GET_MODE_WIDER_MODE (mode); wider_mode != VOIDmode;
+       wider_mode = GET_MODE_WIDER_MODE (wider_mode))
+    {
+      if (abs_optab->handlers[(int) wider_mode].insn_code != CODE_FOR_nothing)
+	{
+	  rtx xop0 = op0;
+
+	  xop0 = convert_to_mode (wider_mode, xop0, unsignedp);
+	  temp = expand_complex_abs (wider_mode, xop0, NULL_RTX, unsignedp);
+
+	  if (temp)
+	    {
+	      if (class != MODE_COMPLEX_INT)
+		{
+		  if (target == 0)
+		    target = gen_reg_rtx (submode);
+		  convert_move (target, temp, 0);
+		  return target;
+		}
+	      else
+		return gen_lowpart (submode, temp);
+	    }
+	  else
+	    delete_insns_since (last);
+	}
+    }
+
+  /* Open-code the complex absolute-value operation
+     if we can open-code sqrt.  Otherwise it's not worth while.  */
+  if (sqrt_optab->handlers[(int) submode].insn_code != CODE_FOR_nothing)
+    {
+      rtx real, imag, total;
+
+      real = gen_realpart (submode, op0);
+      imag = gen_imagpart (submode, op0);
+      /* Square both parts.  */
+      real = expand_mult (mode, real, real, NULL_RTX, 0);
+      imag = expand_mult (mode, imag, imag, NULL_RTX, 0);
+      /* Sum the parts.  */
+      total = expand_binop (submode, add_optab, real, imag, 0,
+			    0, OPTAB_LIB_WIDEN);
+      /* Get sqrt in TARGET.  Set TARGET to where the result is.  */
+      target = expand_unop (submode, sqrt_optab, total, target, 0);
+      if (target == 0)
+	delete_insns_since (last);
+      else
+	return target;
+    }
+
+  /* Now try a library call in this mode.  */
+  if (abs_optab->handlers[(int) mode].libfunc)
+    {
+      rtx insns;
+      rtx funexp = abs_optab->handlers[(int) mode].libfunc;
+
+      start_sequence ();
+
+      /* Pass 1 for NO_QUEUE so we don't lose any increments
+	 if the libcall is cse'd or moved.  */
+      emit_library_call (abs_optab->handlers[(int) mode].libfunc,
+			 1, mode, 1, op0, mode);
+      insns = get_insns ();
+      end_sequence ();
+
+      target = gen_reg_rtx (submode);
+      emit_libcall_block (insns, target, hard_libcall_value (submode),
+			  gen_rtx (abs_optab->code, mode, op0));
+
+      return target;
+    }
+
+  /* It can't be done in this mode.  Can we do it in a wider mode?  */
+
+  for (wider_mode = GET_MODE_WIDER_MODE (mode); wider_mode != VOIDmode;
+       wider_mode = GET_MODE_WIDER_MODE (wider_mode))
+    {
+      if ((abs_optab->handlers[(int) wider_mode].insn_code
+	   != CODE_FOR_nothing)
+	  || abs_optab->handlers[(int) wider_mode].libfunc)
+	{
+	  rtx xop0 = op0;
+
+	  xop0 = convert_to_mode (wider_mode, xop0, unsignedp);
+
+	  temp = expand_complex_abs (wider_mode, xop0, NULL_RTX, unsignedp);
+
+	  if (temp)
+	    {
+	      if (class != MODE_COMPLEX_INT)
+		{
+		  if (target == 0)
+		    target = gen_reg_rtx (submode);
+		  convert_move (target, temp, 0);
+		  return target;
+		}
+	      else
+		return gen_lowpart (submode, temp);
+	    }
+	  else
+	    delete_insns_since (last);
 	}
     }
 
@@ -4559,9 +4714,11 @@ init_optabs ()
   if (HAVE_abstf2)
     abs_optab->handlers[(int) TFmode].insn_code = CODE_FOR_abstf2;
 #endif
-  /* No library calls here for real types.  If there is no abs instruction,
-     expand_expr will generate a conditional negation.  */
-  init_complex_libfuncs (abs_optab, "abs", '2');
+
+  /* Use cabs for DC complex abs, since systems generally have cabs.
+     Don't define any libcall for SCmode, so that cabs will be used.  */
+  abs_optab->handlers[(int) DCmode].libfunc
+    = gen_rtx (SYMBOL_REF, Pmode, "cabs");
 
 #ifdef HAVE_sqrtqi2
   if (HAVE_sqrtqi2)
