@@ -1,3 +1,12 @@
+2004-07-14  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* testsuite/libjava.jacks/jacks.exp (gcj_jacks_write): Add deprecation
+	flag to the gcj_setup.
+	(gcj_jacks_run): Check tclsh version and launch jacks directly with
+	the tclsh.
+	* testsuite/libjava.jacks/jacks.xfail: Update fails to reflect the
+	deprecation flag change. 58 XFAILS removed.
+
 2004-07-14  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* configure.host (DIVIDESPEC) [s390*-*-*]: Set to 

@@ -35,6 +35,7 @@ proc gcj_jacks_write {filename} {
   puts $fd "set JAVA_FLAGS \"-mx=64m\""
 
   puts $fd "set JAVAC_ENCODING_FLAG --encoding="
+  puts $fd "set JAVAC_DEPRECATION_FLAG -Wdeprecated"
   puts $fd "set tcltest::testConstraints(encoding) 1"
   puts $fd "set tcltest::testConstraints(gcj) 1"
   puts $fd "set tcltest::testConstraints(assert) 1"
@@ -97,9 +98,20 @@ proc gcj_jacks_run {} {
   verbose "Running Jacks..."
   # Just ignore error exits from the jacks program.
   # It will always error exit for us, since don't completely pass.
-  catch {exec ./jacks gcj} msg
-
-  gcj_jacks_parse logging/gcj.log
+  # At the moment jacks has a hardcoded call to tclsh8.3. To override this,
+  # we check here on the version and launch the script directly with the
+  # tclsh$tcl_ver.
+  set tcl_ver [info tclversion]
+  if {[package vcompare  $tcl_ver 8.3] >= 0 } {
+    if {[catch {exec tclsh$tcl_ver jacks gcj} msg]} {
+	send_log "Couldn't run jacks: $msg\n"
+	return
+    }
+    gcj_jacks_parse logging/gcj.log
+  } else {
+      send_log "No suitable tclsh found, you need at least version 8.3 or up.\n"
+      return
+  }
 
   cd $here
 }
