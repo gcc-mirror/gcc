@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -220,7 +220,7 @@ package body System.Task_Info is
       NDPRI           : Non_Degrading_Priority := NDP_NONE)
       return            sproc_t
    is
-      Attr : Sproc_Attributes :=
+      Attr : constant Sproc_Attributes :=
         (Sproc_Resources, CPU, Resident, NDPRI);
 
    begin
@@ -267,7 +267,7 @@ package body System.Task_Info is
       NDPRI            : Non_Degrading_Priority := NDP_NONE)
       return             Thread_Attributes
    is
-      Sproc : sproc_t := New_Sproc
+      Sproc : constant sproc_t := New_Sproc
         (Sproc_Resources, CPU, Resident, NDPRI);
 
    begin
@@ -316,7 +316,7 @@ package body System.Task_Info is
       NDPRI            : Non_Degrading_Priority := NDP_NONE)
       return             Task_Info_Type
    is
-      Sproc : sproc_t := New_Sproc
+      Sproc : constant sproc_t := New_Sproc
         (Sproc_Resources, CPU, Resident, NDPRI);
 
    begin
