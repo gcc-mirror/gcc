@@ -3182,49 +3182,6 @@ subst (x, from, to, in_dest, unique_copy)
       /* Convert this into a field assignment operation, if possible.  */
       x = make_field_assignment (x);
 
-      /* If we have (set x (subreg:m1 (op:m2 ...) 0)) with OP being some
-	 operation, and X being a REG or (subreg (reg)), we may be able to
-	 convert this to (set (subreg:m2 x) (op)).
-
-	 We can always do this if M1 is narrower than M2 because that
-	 means that we only care about the low bits of the result.
-
-	 However, on most machines (those with BYTE_LOADS_ZERO_EXTEND
-	 not defined), we cannot perform a narrower operation that
-	 requested since the high-order bits will be undefined.  On
-	 machine where BYTE_LOADS_ZERO_EXTEND are defined, however, this
-	 transformation is safe as long as M1 and M2 have the same number
-	 of words.  */
- 
-      if (GET_CODE (SET_SRC (x)) == SUBREG
-	  && subreg_lowpart_p (SET_SRC (x))
-	  && GET_RTX_CLASS (GET_CODE (SUBREG_REG (SET_SRC (x)))) != 'o'
-	  && (((GET_MODE_SIZE (GET_MODE (SET_SRC (x))) + (UNITS_PER_WORD - 1))
-	       / UNITS_PER_WORD)
-	      == ((GET_MODE_SIZE (GET_MODE (SUBREG_REG (SET_SRC (x))))
-		   + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD))
-#ifndef BYTE_LOADS_ZERO_EXTEND
-	  && (GET_MODE_SIZE (GET_MODE (SET_SRC (x)))
-	      < GET_MODE_SIZE (GET_MODE (SUBREG_REG (SET_SRC (x)))))
-#endif
-	  && (GET_CODE (SET_DEST (x)) == REG
-	      || (GET_CODE (SET_DEST (x)) == SUBREG
-		  && GET_CODE (SUBREG_REG (SET_DEST (x))) == REG)))
-	{
-	  /* Get the object that will be the SUBREG_REG of the
-	     SUBREG we are making.  Note that SUBREG_WORD will always
-	     be zero because this will either be a paradoxical SUBREG
-	     or a SUBREG with the same number of words on the outside and
-	     inside.  */
-	  rtx object = (GET_CODE (SET_DEST (x)) == REG ? SET_DEST (x)
-			: SUBREG_REG (SET_DEST (x)));
-
-	  SUBST (SET_DEST (x),
-		 gen_rtx (SUBREG, GET_MODE (SUBREG_REG (SET_SRC (x))),
-			  object, 0));
-	  SUBST (SET_SRC (x), SUBREG_REG (SET_SRC (x)));
-	}
-
       /* If we are setting CC0 or if the source is a COMPARE, look for the
 	 use of the comparison result and try to simplify it unless we already
 	 have used undobuf.other_insn.  */
@@ -3354,6 +3311,49 @@ subst (x, from, to, in_dest, unique_copy)
 	     compound expressions.  Then do the checks below.  */
 	  temp = make_compound_operation (SET_SRC (x), SET);
 	  SUBST (SET_SRC (x), temp);
+	}
+
+      /* If we have (set x (subreg:m1 (op:m2 ...) 0)) with OP being some
+	 operation, and X being a REG or (subreg (reg)), we may be able to
+	 convert this to (set (subreg:m2 x) (op)).
+
+	 We can always do this if M1 is narrower than M2 because that
+	 means that we only care about the low bits of the result.
+
+	 However, on most machines (those with BYTE_LOADS_ZERO_EXTEND
+	 not defined), we cannot perform a narrower operation that
+	 requested since the high-order bits will be undefined.  On
+	 machine where BYTE_LOADS_ZERO_EXTEND are defined, however, this
+	 transformation is safe as long as M1 and M2 have the same number
+	 of words.  */
+ 
+      if (GET_CODE (SET_SRC (x)) == SUBREG
+	  && subreg_lowpart_p (SET_SRC (x))
+	  && GET_RTX_CLASS (GET_CODE (SUBREG_REG (SET_SRC (x)))) != 'o'
+	  && (((GET_MODE_SIZE (GET_MODE (SET_SRC (x))) + (UNITS_PER_WORD - 1))
+	       / UNITS_PER_WORD)
+	      == ((GET_MODE_SIZE (GET_MODE (SUBREG_REG (SET_SRC (x))))
+		   + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD))
+#ifndef BYTE_LOADS_ZERO_EXTEND
+	  && (GET_MODE_SIZE (GET_MODE (SET_SRC (x)))
+	      < GET_MODE_SIZE (GET_MODE (SUBREG_REG (SET_SRC (x)))))
+#endif
+	  && (GET_CODE (SET_DEST (x)) == REG
+	      || (GET_CODE (SET_DEST (x)) == SUBREG
+		  && GET_CODE (SUBREG_REG (SET_DEST (x))) == REG)))
+	{
+	  /* Get the object that will be the SUBREG_REG of the
+	     SUBREG we are making.  Note that SUBREG_WORD will always
+	     be zero because this will either be a paradoxical SUBREG
+	     or a SUBREG with the same number of words on the outside and
+	     inside.  */
+	  rtx object = (GET_CODE (SET_DEST (x)) == REG ? SET_DEST (x)
+			: SUBREG_REG (SET_DEST (x)));
+
+	  SUBST (SET_DEST (x),
+		 gen_rtx (SUBREG, GET_MODE (SUBREG_REG (SET_SRC (x))),
+			  object, 0));
+	  SUBST (SET_SRC (x), SUBREG_REG (SET_SRC (x)));
 	}
 
 #ifdef BYTE_LOADS_ZERO_EXTEND
@@ -4029,10 +4029,11 @@ make_extraction (mode, inner, pos, pos_rtx, len,
 
   if (tmode != BLKmode
       && ! (spans_byte && inner_mode != tmode)
-      && ((pos == 0 && GET_CODE (inner) == REG
+      && ((pos == 0 && GET_CODE (inner) != MEM
 	   && (! in_dest
-	       || (movstrict_optab->handlers[(int) tmode].insn_code
-		   != CODE_FOR_nothing)))
+	       || (GET_CODE (inner) == REG
+		   && (movstrict_optab->handlers[(int) tmode].insn_code
+		       != CODE_FOR_nothing))))
 	  || (GET_CODE (inner) == MEM && pos >= 0
 	      && (pos
 		  % (STRICT_ALIGNMENT ? GET_MODE_ALIGNMENT (tmode)
@@ -4051,7 +4052,7 @@ make_extraction (mode, inner, pos, pos_rtx, len,
 	 adjust the offset.  Otherwise, we do if bytes big endian.  
 
 	 If INNER is not a MEM, get a piece consisting of the just the field
-	 of interest (in this case INNER must be a REG and POS must be 0).  */
+	 of interest (in this case POS must be 0).  */
 
       if (GET_CODE (inner) == MEM)
 	{
@@ -4066,7 +4067,7 @@ make_extraction (mode, inner, pos, pos_rtx, len,
 	  MEM_VOLATILE_P (new) = MEM_VOLATILE_P (inner);
 	  MEM_IN_STRUCT_P (new) = MEM_IN_STRUCT_P (inner);
 	}
-      else if (GET_MODE (inner) == REG)
+      else if (GET_CODE (inner) == REG)
 	/* We can't call gen_lowpart_for_combine here since we always want
 	   a SUBREG and it would sometimes return a new hard register.  */
 	new = gen_rtx (SUBREG, tmode, inner,
@@ -4417,7 +4418,7 @@ make_compound_operation (x, in_code)
 
   if (new)
     {
-      x = new;
+      x = gen_lowpart_for_combine (mode, new);
       code = GET_CODE (x);
     }
 
