@@ -64,30 +64,18 @@
 //         double						(1)
 //         long double						(1)
 //
-// GNU C++ undertstands (where supported by the host C-library) 
+// GNU C++ undertstands (where supported by the host C-library)
 //   * integer
 //         long long, unsigned long long			(2)
 //
 // which brings us to 15 fundamental arithmetic data types in GNU C++.
 //
-// 
+//
 // Since a numeric_limits<> is a bit tricky to get right, we rely on
 // an interface composed of macros which should be defined in config/os
 // or config/cpu when they differ from the generic (read arbitrary)
 // definitions given here.
 //
-
-#ifdef __CHAR_UNSIGNED__
-#  define __glibcpp_plain_char_is_signed false
-#else
-#  define __glibcpp_plain_char_is_signed true
-#endif
-
-#ifndef __WCHAR_UNSIGNED__
-#  define __glibcpp_wchar_t_is_signed false
-#else
-#  define __glibcpp_wchar_t_is_signed true
-#endif
 
 // These values can be overridden in the target configuration file.
 // The default values are appropriate for many 32-bit targets.
@@ -99,326 +87,6 @@
 # define __glibcpp_integral_traps true
 #endif
 
-// You should not need to define any macros below this point, unless
-// you have a machine with non-standard bit-widths.
-
-// These values are the minimums and maximums for standard data types
-// of common widths.
-
-#define __glibcpp_s8_max 127
-#define __glibcpp_s8_min (-__glibcpp_s8_max - 1)
-#define __glibcpp_s8_digits 7
-#define __glibcpp_s8_digits10 2
-#define __glibcpp_u8_min 0U
-#define __glibcpp_u8_max (__glibcpp_s8_max * 2 + 1)
-#define __glibcpp_u8_digits 8
-#define __glibcpp_u8_digits10 2
-#define __glibcpp_s16_max 32767
-#define __glibcpp_s16_min (-__glibcpp_s16_max - 1)
-#define __glibcpp_s16_digits 15
-#define __glibcpp_s16_digits10 4
-#define __glibcpp_u16_min 0U
-#define __glibcpp_u16_max (__glibcpp_s16_max * 2 + 1)
-#define __glibcpp_u16_digits 16
-#define __glibcpp_u16_digits10 4
-#define __glibcpp_s32_max 2147483647L
-#define __glibcpp_s32_min (-__glibcpp_s32_max - 1)
-#define __glibcpp_s32_digits 31
-#define __glibcpp_s32_digits10 9
-#define __glibcpp_u32_min 0UL
-#define __glibcpp_u32_max (__glibcpp_s32_max * 2U + 1)
-#define __glibcpp_u32_digits 32
-#define __glibcpp_u32_digits10 9
-#define __glibcpp_s64_max 9223372036854775807LL
-#define __glibcpp_s64_min (-__glibcpp_s64_max - 1)
-#define __glibcpp_s64_digits 63
-#define __glibcpp_s64_digits10 18
-#define __glibcpp_u64_min 0ULL
-#define __glibcpp_u64_max (__glibcpp_s64_max * 2ULL + 1)
-#define __glibcpp_u64_digits 64
-#define __glibcpp_u64_digits10 19
-
-// bool-specific hooks:
-//     __glibcpp_bool_digits
-
-#ifndef __glibcpp_bool_digits
-#  define __glibcpp_bool_digits 1
-#endif
-
-// char.
-
-#if __CHAR_BIT__ == 8
-#  define __glibcpp_signed_char_min __glibcpp_s8_min
-#  define __glibcpp_signed_char_max __glibcpp_s8_max
-#  define __glibcpp_signed_char_digits __glibcpp_s8_digits
-#  define __glibcpp_signed_char_digits10 __glibcpp_s8_digits10
-#  define __glibcpp_unsigned_char_min __glibcpp_u8_min
-#  define __glibcpp_unsigned_char_max __glibcpp_u8_max
-#  define __glibcpp_unsigned_char_digits __glibcpp_u8_digits
-#  define __glibcpp_unsigned_char_digits10 __glibcpp_u8_digits10
-#elif __CHAR_BIT__ == 16
-#  define __glibcpp_signed_char_min __glibcpp_s16_min
-#  define __glibcpp_signed_char_max __glibcpp_s16_max
-#  define __glibcpp_signed_char_digits __glibcpp_s16_digits
-#  define __glibcpp_signed_char_digits10 __glibcpp_s16_digits10
-#  define __glibcpp_unsigned_char_min __glibcpp_u16_min
-#  define __glibcpp_unsigned_char_max __glibcpp_u16_max
-#  define __glibcpp_unsigned_char_digits __glibcpp_u16_digits
-#  define __glibcpp_unsigned_char_digits10 __glibcpp_u16_digits10
-#elif __CHAR_BIT__ == 32
-#  define __glibcpp_signed_char_min (signed char)__glibcpp_s32_min
-#  define __glibcpp_signed_char_max (signed char)__glibcpp_s32_max
-#  define __glibcpp_signed_char_digits __glibcpp_s32_digits
-#  define __glibcpp_signed_char_digits10 __glibcpp_s32_digits10
-#  define __glibcpp_unsigned_char_min (unsigned char)__glibcpp_u32_min
-#  define __glibcpp_unsigned_char_max (unsigned char)__glibcpp_u32_max
-#  define __glibcpp_unsigned_char_digits __glibcpp_u32_digits
-#  define __glibcpp_unsigned_char_digits10 __glibcpp_u32_digits10
-#elif __CHAR_BIT__ == 64
-#  define __glibcpp_signed_char_min (signed char)__glibcpp_s64_min
-#  define __glibcpp_signed_char_max (signed char)__glibcpp_s64_max
-#  define __glibcpp_signed_char_digits __glibcpp_s64_digits
-#  define __glibcpp_signed_char_digits10 __glibcpp_s64_digits10
-#  define __glibcpp_unsigned_char_min (unsigned char)__glibcpp_u64_min
-#  define __glibcpp_unsigned_char_max (unsigned char)__glibcpp_u64_max
-#  define __glibcpp_unsigned_char_digits __glibcpp_u64_digits
-#  define __glibcpp_unsigned_char_digits10 __glibcpp_u64_digits10
-#else
-// You must define these macros in the configuration file.
-#endif
-
-#if __glibcpp_plain_char_is_signed
-#  define __glibcpp_char_min (char)__glibcpp_signed_char_min
-#  define __glibcpp_char_max (char)__glibcpp_signed_char_max
-#  define __glibcpp_char_digits __glibcpp_signed_char_digits
-#  define __glibcpp_char_digits10 __glibcpp_signed_char_digits
-#else
-#  define __glibcpp_char_min (char)__glibcpp_unsigned_char_min
-#  define __glibcpp_char_max (char)__glibcpp_unsigned_char_max
-#  define __glibcpp_char_digits __glibcpp_unsigned_char_digits
-#  define __glibcpp_char_digits10 __glibcpp_unsigned_char_digits
-#endif
-
-// short
-
-#if __SHRT_BIT__ == 8
-#  define __glibcpp_signed_short_min __glibcpp_s8_min
-#  define __glibcpp_signed_short_max __glibcpp_s8_max
-#  define __glibcpp_signed_short_digits __glibcpp_s8_digits
-#  define __glibcpp_signed_short_digits10 __glibcpp_s8_digits10
-#  define __glibcpp_unsigned_short_min __glibcpp_u8_min
-#  define __glibcpp_unsigned_short_max __glibcpp_u8_max
-#  define __glibcpp_unsigned_short_digits __glibcpp_u8_digits
-#  define __glibcpp_unsigned_short_digits10 __glibcpp_u8_digits10
-#elif __SHRT_BIT__ == 16
-#  define __glibcpp_signed_short_min __glibcpp_s16_min
-#  define __glibcpp_signed_short_max __glibcpp_s16_max
-#  define __glibcpp_signed_short_digits __glibcpp_s16_digits
-#  define __glibcpp_signed_short_digits10 __glibcpp_s16_digits10
-#  define __glibcpp_unsigned_short_min __glibcpp_u16_min
-#  define __glibcpp_unsigned_short_max __glibcpp_u16_max
-#  define __glibcpp_unsigned_short_digits __glibcpp_u16_digits
-#  define __glibcpp_unsigned_short_digits10 __glibcpp_u16_digits10
-#elif __SHRT_BIT__ == 32
-#  define __glibcpp_signed_short_min (short)__glibcpp_s32_min
-#  define __glibcpp_signed_short_max (short)__glibcpp_s32_max
-#  define __glibcpp_signed_short_digits __glibcpp_s32_digits
-#  define __glibcpp_signed_short_digits10 __glibcpp_s32_digits10
-#  define __glibcpp_unsigned_short_min (unsigned short)__glibcpp_u32_min
-#  define __glibcpp_unsigned_short_max (unsigned short)__glibcpp_u32_max
-#  define __glibcpp_unsigned_short_digits __glibcpp_u32_digits
-#  define __glibcpp_unsigned_short_digits10 __glibcpp_u32_digits10
-#elif __SHRT_BIT__ == 64
-#  define __glibcpp_signed_short_min (short)__glibcpp_s64_min
-#  define __glibcpp_signed_short_max (short)__glibcpp_s64_max
-#  define __glibcpp_signed_short_digits __glibcpp_s64_digits
-#  define __glibcpp_signed_short_digits10 __glibcpp_s64_digits10
-#  define __glibcpp_unsigned_short_min (unsigned short)__glibcpp_u64_min
-#  define __glibcpp_unsigned_short_max (unsigned short)__glibcpp_u64_max
-#  define __glibcpp_unsigned_short_digits __glibcpp_u64_digits
-#  define __glibcpp_unsigned_short_digits10 __glibcpp_u64_digits10
-#else
-// You must define these macros in the configuration file.
-#endif
-
-// int
-
-#if __INT_BIT__ == 8
-#  define __glibcpp_signed_int_min __glibcpp_s8_min
-#  define __glibcpp_signed_int_max __glibcpp_s8_max
-#  define __glibcpp_signed_int_digits __glibcpp_s8_digits
-#  define __glibcpp_signed_int_digits10 __glibcpp_s8_digits10
-#  define __glibcpp_unsigned_int_min __glibcpp_u8_min
-#  define __glibcpp_unsigned_int_max __glibcpp_u8_max
-#  define __glibcpp_unsigned_int_digits __glibcpp_u8_digits
-#  define __glibcpp_unsigned_int_digits10 __glibcpp_u8_digits10
-#elif __INT_BIT__ == 16
-#  define __glibcpp_signed_int_min __glibcpp_s16_min
-#  define __glibcpp_signed_int_max __glibcpp_s16_max
-#  define __glibcpp_signed_int_digits __glibcpp_s16_digits
-#  define __glibcpp_signed_int_digits10 __glibcpp_s16_digits10
-#  define __glibcpp_unsigned_int_min __glibcpp_u16_min
-#  define __glibcpp_unsigned_int_max __glibcpp_u16_max
-#  define __glibcpp_unsigned_int_digits __glibcpp_u16_digits
-#  define __glibcpp_unsigned_int_digits10 __glibcpp_u16_digits10
-#elif __INT_BIT__ == 32
-#  define __glibcpp_signed_int_min (int)__glibcpp_s32_min
-#  define __glibcpp_signed_int_max (int)__glibcpp_s32_max
-#  define __glibcpp_signed_int_digits __glibcpp_s32_digits
-#  define __glibcpp_signed_int_digits10 __glibcpp_s32_digits10
-#  define __glibcpp_unsigned_int_min (unsigned)__glibcpp_u32_min
-#  define __glibcpp_unsigned_int_max (unsigned)__glibcpp_u32_max
-#  define __glibcpp_unsigned_int_digits __glibcpp_u32_digits
-#  define __glibcpp_unsigned_int_digits10 __glibcpp_u32_digits10
-#elif __INT_BIT__ == 64
-#  define __glibcpp_signed_int_min (int)__glibcpp_s64_min
-#  define __glibcpp_signed_int_max (int)__glibcpp_s64_max
-#  define __glibcpp_signed_int_digits __glibcpp_s64_digits
-#  define __glibcpp_signed_int_digits10 __glibcpp_s64_digits10
-#  define __glibcpp_unsigned_int_min (unsigned)__glibcpp_u64_min
-#  define __glibcpp_unsigned_int_max (unsigned)__glibcpp_u64_max
-#  define __glibcpp_unsigned_int_digits __glibcpp_u64_digits
-#  define __glibcpp_unsigned_int_digits10 __glibcpp_u64_digits10
-#else
-// You must define these macros in the configuration file.
-#endif
-
-// long
-
-#if __LONG_BIT__ == 8
-#  define __glibcpp_signed_long_min __glibcpp_s8_min
-#  define __glibcpp_signed_long_max __glibcpp_s8_max
-#  define __glibcpp_signed_long_digits __glibcpp_s8_digits
-#  define __glibcpp_signed_long_digits10 __glibcpp_s8_digits10
-#  define __glibcpp_unsigned_long_min __glibcpp_u8_min
-#  define __glibcpp_unsigned_long_max __glibcpp_u8_max
-#  define __glibcpp_unsigned_long_digits __glibcpp_u8_digits
-#  define __glibcpp_unsigned_long_digits10 __glibcpp_u8_digits10
-#elif __LONG_BIT__ == 16
-#  define __glibcpp_signed_long_min __glibcpp_s16_min
-#  define __glibcpp_signed_long_max __glibcpp_s16_max
-#  define __glibcpp_signed_long_digits __glibcpp_s16_digits
-#  define __glibcpp_signed_long_digits10 __glibcpp_s16_digits10
-#  define __glibcpp_unsigned_long_min __glibcpp_u16_min
-#  define __glibcpp_unsigned_long_max __glibcpp_u16_max
-#  define __glibcpp_unsigned_long_digits __glibcpp_u16_digits
-#  define __glibcpp_unsigned_long_digits10 __glibcpp_u16_digits10
-#elif __LONG_BIT__ == 32
-#  define __glibcpp_signed_long_min __glibcpp_s32_min
-#  define __glibcpp_signed_long_max __glibcpp_s32_max
-#  define __glibcpp_signed_long_digits __glibcpp_s32_digits
-#  define __glibcpp_signed_long_digits10 __glibcpp_s32_digits10
-#  define __glibcpp_unsigned_long_min __glibcpp_u32_min
-#  define __glibcpp_unsigned_long_max __glibcpp_u32_max
-#  define __glibcpp_unsigned_long_digits __glibcpp_u32_digits
-#  define __glibcpp_unsigned_long_digits10 __glibcpp_u32_digits10
-#elif __LONG_BIT__ == 64
-#  define __glibcpp_signed_long_min (long)__glibcpp_s64_min
-#  define __glibcpp_signed_long_max (long)__glibcpp_s64_max
-#  define __glibcpp_signed_long_digits __glibcpp_s64_digits
-#  define __glibcpp_signed_long_digits10 __glibcpp_s64_digits10
-#  define __glibcpp_unsigned_long_min (unsigned long)__glibcpp_u64_min
-#  define __glibcpp_unsigned_long_max (unsigned long)__glibcpp_u64_max
-#  define __glibcpp_unsigned_long_digits __glibcpp_u64_digits
-#  define __glibcpp_unsigned_long_digits10 __glibcpp_u64_digits10
-#else
-// You must define these macros in the configuration file.
-#endif
-
-// long long
-
-#if __LONG_LONG_BIT__ == 8
-#  define __glibcpp_signed_long_long_min __glibcpp_s8_min
-#  define __glibcpp_signed_long_long_max __glibcpp_s8_max
-#  define __glibcpp_signed_long_long_digits __glibcpp_s8_digits
-#  define __glibcpp_signed_long_long_digits10 __glibcpp_s8_digits10
-#  define __glibcpp_unsigned_long_long_min __glibcpp_u8_min
-#  define __glibcpp_unsigned_long_long_max __glibcpp_u8_max
-#  define __glibcpp_unsigned_long_long_digits __glibcpp_u8_digits
-#  define __glibcpp_unsigned_long_long_digits10 __glibcpp_u8_digits10
-#elif __LONG_LONG_BIT__ == 16
-#  define __glibcpp_signed_long_long_min __glibcpp_s16_min
-#  define __glibcpp_signed_long_long_max __glibcpp_s16_max
-#  define __glibcpp_signed_long_long_digits __glibcpp_s16_digits
-#  define __glibcpp_signed_long_long_digits10 __glibcpp_s16_digits10
-#  define __glibcpp_unsigned_long_long_min __glibcpp_u16_min
-#  define __glibcpp_unsigned_long_long_max __glibcpp_u16_max
-#  define __glibcpp_unsigned_long_long_digits __glibcpp_u16_digits
-#  define __glibcpp_unsigned_long_long_digits10 __glibcpp_u16_digits10
-#elif __LONG_LONG_BIT__ == 32
-#  define __glibcpp_signed_long_long_min __glibcpp_s32_min
-#  define __glibcpp_signed_long_long_max __glibcpp_s32_max
-#  define __glibcpp_signed_long_long_digits __glibcpp_s32_digits
-#  define __glibcpp_signed_long_long_digits10 __glibcpp_s32_digits10
-#  define __glibcpp_unsigned_long_long_min __glibcpp_u32_min
-#  define __glibcpp_unsigned_long_long_max __glibcpp_u32_max
-#  define __glibcpp_unsigned_long_long_digits __glibcpp_u32_digits
-#  define __glibcpp_unsigned_long_long_digits10 __glibcpp_u32_digits10
-#elif __LONG_LONG_BIT__ == 64
-#  define __glibcpp_signed_long_long_min __glibcpp_s64_min
-#  define __glibcpp_signed_long_long_max __glibcpp_s64_max
-#  define __glibcpp_signed_long_long_digits __glibcpp_s64_digits
-#  define __glibcpp_signed_long_long_digits10 __glibcpp_s64_digits10
-#  define __glibcpp_unsigned_long_long_min __glibcpp_u64_min
-#  define __glibcpp_unsigned_long_long_max __glibcpp_u64_max
-#  define __glibcpp_unsigned_long_long_digits __glibcpp_u64_digits
-#  define __glibcpp_unsigned_long_long_digits10 __glibcpp_u64_digits10
-#else
-// You must define these macros in the configuration file.
-#endif
-
-// wchar_t
-
-#if __glibcpp_wchar_t_is_signed
-#  if __WCHAR_BIT__ == 8
-#    define __glibcpp_wchar_t_min __glibcpp_s8_min
-#    define __glibcpp_wchar_t_max __glibcpp_s8_max
-#    define __glibcpp_wchar_t_digits __glibcpp_s8_digits
-#    define __glibcpp_wchar_t_digits10 __glibcpp_s8_digits10
-#  elif __WCHAR_BIT__ == 16
-#    define __glibcpp_wchar_t_min __glibcpp_s16_min
-#    define __glibcpp_wchar_t_max __glibcpp_s16_max
-#    define __glibcpp_wchar_t_digits __glibcpp_s16_digits
-#    define __glibcpp_wchar_t_digits10 __glibcpp_s16_digits10
-#  elif __WCHAR_BIT__ == 32
-#    define __glibcpp_wchar_t_min (wchar_t)__glibcpp_s32_min
-#    define __glibcpp_wchar_t_max (wchar_t)__glibcpp_s32_max
-#    define __glibcpp_wchar_t_digits __glibcpp_s32_digits
-#    define __glibcpp_wchar_t_digits10 __glibcpp_s32_digits10
-#  elif __WCHAR_BIT__ == 64
-#    define __glibcpp_wchar_t_min (wchar_t)__glibcpp_s64_min
-#    define __glibcpp_wchar_t_max (wchar_t)__glibcpp_s64_max
-#    define __glibcpp_wchar_t_digits __glibcpp_s64_digits
-#    define __glibcpp_wchar_t_digits10 __glibcpp_s64_digits10
-#  else
-// You must define these macros in the configuration file.
-#  endif
-#else
-#  if __WCHAR_BIT__ == 8
-#    define __glibcpp_wchar_t_min __glibcpp_u8_min
-#    define __glibcpp_wchar_t_max __glibcpp_u8_max
-#    define __glibcpp_wchar_t_digits __glibcpp_u8_digits
-#    define __glibcpp_wchar_t_digits10 __glibcpp_u8_digits10
-#  elif __WCHAR_BIT__ == 16
-#    define __glibcpp_wchar_t_min __glibcpp_u16_min
-#    define __glibcpp_wchar_t_max __glibcpp_u16_max
-#    define __glibcpp_wchar_t_digits __glibcpp_u16_digits
-#    define __glibcpp_wchar_t_digits10 __glibcpp_u16_digits10
-#  elif __WCHAR_BIT__ == 32
-#    define __glibcpp_wchar_t_min (wchar_t)__glibcpp_u32_min
-#    define __glibcpp_wchar_t_max (wchar_t)__glibcpp_u32_max
-#    define __glibcpp_wchar_t_digits __glibcpp_u32_digits
-#    define __glibcpp_wchar_t_digits10 __glibcpp_u32_digits10
-#  elif __WCHAR_BIT__ == 64
-#    define __glibcpp_wchar_t_min (wchar_t)__glibcpp_u64_min
-#    define __glibcpp_wchar_t_max (wchar_t)__glibcpp_u64_max
-#    define __glibcpp_wchar_t_digits __glibcpp_u64_digits
-#    define __glibcpp_wchar_t_digits10 __glibcpp_u64_digits10
-#  else
-// You must define these macros in the configuration file.
-#  endif
-#endif
-
 // float
 //
 
@@ -427,15 +95,9 @@
 #ifndef __glibcpp_float_has_denorm_loss
 #  define __glibcpp_float_has_denorm_loss false
 #endif
-
-#ifndef __glibcpp_float_is_modulo
-#  define __glibcpp_float_is_modulo false
-#endif
-
 #ifndef __glibcpp_float_traps
 #  define __glibcpp_float_traps false
 #endif
-
 #ifndef __glibcpp_float_tinyness_before
 #  define __glibcpp_float_tinyness_before false
 #endif
@@ -447,15 +109,9 @@
 #ifndef __glibcpp_double_has_denorm_loss
 #  define __glibcpp_double_has_denorm_loss false
 #endif
-
-#ifndef __glibcpp_double_is_modulo
-#  define __glibcpp_double_is_modulo false
-#endif
-
 #ifndef __glibcpp_double_traps
 #  define __glibcpp_double_traps false
 #endif
-
 #ifndef __glibcpp_double_tinyness_before
 #  define __glibcpp_double_tinyness_before false
 #endif
@@ -467,65 +123,34 @@
 #ifndef __glibcpp_long_double_has_denorm_loss
 #  define __glibcpp_long_double_has_denorm_loss false
 #endif
-
-#ifndef __glibcpp_long_double_is_modulo
-#  define __glibcpp_long_double_is_modulo false
-#endif
-
 #ifndef __glibcpp_long_double_traps
 #  define __glibcpp_long_double_traps false
 #endif
-
 #ifndef __glibcpp_long_double_tinyness_before
 #  define __glibcpp_long_double_tinyness_before false
 #endif
 
+// You should not need to define any macros below this point.
+
+#define __glibcpp_signed(T)	((T)(-1) < 0)
+
+#define __glibcpp_min(T) \
+  (__glibcpp_signed (T) ? (T)1 << __glibcpp_digits (T) : (T)0)
+
+#define __glibcpp_max(T) \
+  (__glibcpp_signed (T) ? ((T)1 << __glibcpp_digits (T)) - 1 : ~(T)0)
+
+#define __glibcpp_digits(T) \
+  (sizeof(T) * __CHAR_BIT__ - __glibcpp_signed (T))
+
+// The fraction 643/2136 approximates log10(2) to 7 significant digits.
+#define __glibcpp_digits10(T) \
+  (__glibcpp_digits (T) * 643 / 2136)
+
 
 namespace std
 {
-  // This is better handled by the compiler, but we do it here for the
-  // time being.  (We're just second-guessing something the compiler
-  // knows about better than we do.) -- Gaby
-  typedef unsigned char __glibcpp_byte;
-#define __glibcpp_word_bits 32
-#if __CHAR_BIT__ == __glibcpp_word_bits
-#  define __glibcpp_word unsigned char
-#elif __SHRT_BIT__ == __glibcpp_word_bits
-#  define __glibcpp_word unsigned short  
-#elif __INT_BIT__ == __glibcpp_word_bits
-#  define __glibcpp_word unsigned int
-#elif __LONG_BIT__ == __glibcpp_word_bits
-#  define __glibcpp_word unsigned long
-#endif  
-
-  // Define storage types for the single, double and extended floating
-  // point data types.  Maybe we could avoid the conditional #defines by
-  // using the aligned_storage<> extension.  -- Gaby
-  typedef const
-#if __FLOAT_BIT__ % __glibcpp_word_bits == 0
-    __glibcpp_word __float_storage[sizeof (float) / sizeof (__glibcpp_word)]
-#else
-    __glibcpp_byte __float_storage[sizeof (float)]
-#endif  
-    __attribute__((__aligned__(__alignof__(float))));
-
-  typedef const
-#if __DOUBLE_BIT__ % __glibcpp_word_bits == 0
-    __glibcpp_word __double_storage[sizeof (double) / sizeof (__glibcpp_word)]
-#else
-    __glibcpp_byte __double_storage[sizeof (double)]
-#endif  
-    __attribute__((__aligned__(__alignof__(double))));
-
-  typedef const
-#if __LONG_DOUBLE_BIT__ % __glibcpp_word_bits == 0
-    __glibcpp_word __long_double_storage[sizeof (long double) / sizeof (__glibcpp_word)]
-#else
-    __glibcpp_byte __long_double_storage[sizeof (long double)]
-#endif  
-    __attribute__((__aligned__(__alignof__(long double))));
-
-  enum float_round_style 
+  enum float_round_style
   {
     round_indeterminate       = -1,
     round_toward_zero         = 0,
@@ -534,7 +159,7 @@ namespace std
     round_toward_neg_infinity = 3
   };
 
-  enum float_denorm_style 
+  enum float_denorm_style
   {
     denorm_indeterminate = -1,
     denorm_absent        = 0,
@@ -559,7 +184,7 @@ namespace std
     static const int min_exponent10 = 0;
     static const int max_exponent = 0;
     static const int max_exponent10 = 0;
-    
+
     static const bool has_infinity = false;
     static const bool has_quiet_NaN = false;
     static const bool has_signaling_NaN = false;
@@ -575,8 +200,8 @@ namespace std
     static const float_round_style round_style = round_toward_zero;
   };
 
-  template<typename _Tp> 
-    struct numeric_limits : public __numeric_limits_base 
+  template<typename _Tp>
+    struct numeric_limits : public __numeric_limits_base
     {
       static _Tp min() throw() { return static_cast<_Tp>(0); }
       static _Tp max() throw() { return static_cast<_Tp>(0); }
@@ -589,7 +214,7 @@ namespace std
     };
 
   // Now there follow 15 explicit specializations.  Yes, 15.  Make sure
-  // you get the count right.  
+  // you get the count right.
   template<>
     struct numeric_limits<bool>
     {
@@ -597,11 +222,10 @@ namespace std
 
       static bool min() throw()
       { return false; }
-
       static bool max() throw()
       { return true; }
 
-      static const int digits = __glibcpp_bool_digits;
+      static const int digits = 1;
       static const int digits10 = 0;
       static const bool is_signed = false;
       static const bool is_integer = true;
@@ -644,21 +268,19 @@ namespace std
       static const float_round_style round_style = round_toward_zero;
     };
 
-#undef __glibcpp_bool_digits  
-  
   template<>
     struct numeric_limits<char>
     {
       static const bool is_specialized = true;
 
       static char min() throw()
-      { return __glibcpp_char_min; }
+      { return __glibcpp_min(char); }
       static char max() throw()
-      { return __glibcpp_char_max; }
+      { return __glibcpp_max(char); }
 
-      static const int digits = __glibcpp_char_digits;
-      static const int digits10 = __glibcpp_char_digits10;
-      static const bool is_signed = __glibcpp_plain_char_is_signed;
+      static const int digits = __glibcpp_digits (char);
+      static const int digits10 = __glibcpp_digits10 (char);
+      static const bool is_signed = __glibcpp_signed (char);
       static const bool is_integer = true;
       static const bool is_exact = true;
       static const int radix = 2;
@@ -696,26 +318,18 @@ namespace std
       static const float_round_style round_style = round_toward_zero;
     };
 
-#undef __glibcpp_char_min
-#undef __glibcpp_char_max  
-#undef __glibcpp_char_digits
-#undef __glibcpp_char_digits10
-#undef __glibcpp_char_is_signed
-
-
-
   template<>
     struct numeric_limits<signed char>
     {
       static const bool is_specialized = true;
 
       static signed char min() throw()
-      { return __glibcpp_signed_char_min; }
+      { return -__SCHAR_MAX__ - 1; }
       static signed char max() throw()
-      { return __glibcpp_signed_char_max; }
+      { return __SCHAR_MAX__; }
 
-      static const int digits = __glibcpp_signed_char_digits;
-      static const int digits10 = __glibcpp_signed_char_digits10;
+      static const int digits = __glibcpp_digits (signed char);
+      static const int digits10 = __glibcpp_digits10 (signed char);
       static const bool is_signed = true;
       static const bool is_integer = true;
       static const bool is_exact = true;
@@ -754,11 +368,6 @@ namespace std
       static const float_round_style round_style = round_toward_zero;
     };
 
-#undef __glibcpp_signed_char_min
-#undef __glibcpp_signed_char_max
-#undef __glibcpp_signed_char_digits
-#undef __glibcpp_signed_char_digits10
-
   template<>
     struct numeric_limits<unsigned char>
     {
@@ -767,10 +376,10 @@ namespace std
       static unsigned char min() throw()
       { return 0; }
       static unsigned char max() throw()
-      { return __glibcpp_unsigned_char_max; }
+      { return __SCHAR_MAX__ * 2U + 1; }
 
-      static const int digits = __glibcpp_unsigned_char_digits;
-      static const int digits10 = __glibcpp_unsigned_char_digits10;
+      static const int digits = __glibcpp_digits10 (unsigned char);
+      static const int digits10 = __glibcpp_digits10 (unsigned char);
       static const bool is_signed = false;
       static const bool is_integer = true;
       static const bool is_exact = true;
@@ -809,23 +418,19 @@ namespace std
       static const float_round_style round_style = round_toward_zero;
     };
 
-#undef __glibcpp_unsigned_char_max
-#undef __glibcpp_unsigned_char_digits
-#undef __glibcpp_unsigned_char_digits10
-
   template<>
     struct numeric_limits<wchar_t>
     {
       static const bool is_specialized = true;
 
       static wchar_t min() throw()
-      { return __glibcpp_wchar_t_min; }
+      { return __glibcpp_min (wchar_t); }
       static wchar_t max() throw()
-      { return __glibcpp_wchar_t_max; }
+      { return __glibcpp_max (wchar_t); }
 
-      static const int digits = __glibcpp_wchar_t_digits;
-      static const int digits10 = __glibcpp_wchar_t_digits10;
-      static const bool is_signed = __glibcpp_wchar_t_is_signed;
+      static const int digits = __glibcpp_digits (wchar_t);
+      static const int digits10 = __glibcpp_digits10 (wchar_t);
+      static const bool is_signed = __glibcpp_signed (wchar_t);
       static const bool is_integer = true;
       static const bool is_exact = true;
       static const int radix = 2;
@@ -863,24 +468,18 @@ namespace std
       static const float_round_style round_style = round_toward_zero;
     };
 
-#undef __glibcpp_wchar_t_min
-#undef __glibcpp_wchar_t_max
-#undef __glibcpp_wchar_t_digits
-#undef __glibcpp_wchar_t_digits10  
-#undef __glibcpp_wchar_t_is_signed
-  
   template<>
     struct numeric_limits<short>
     {
       static const bool is_specialized = true;
 
       static short min() throw()
-      { return __glibcpp_signed_short_min; }
+      { return -__SHRT_MAX__ - 1; }
       static short max() throw()
-      { return __glibcpp_signed_short_max; }
+      { return __SHRT_MAX__; }
 
-      static const int digits = __glibcpp_signed_short_digits;
-      static const int digits10 = __glibcpp_signed_short_digits10;
+      static const int digits = __glibcpp_digits (short);
+      static const int digits10 = __glibcpp_digits10 (short);
       static const bool is_signed = true;
       static const bool is_integer = true;
       static const bool is_exact = true;
@@ -919,11 +518,6 @@ namespace std
       static const float_round_style round_style = round_toward_zero;
     };
 
-#undef __glibcpp_signed_short_min
-#undef __glibcpp_signed_short_max
-#undef __glibcpp_signed_short_digits
-#undef __glibcpp_signed_short_digits10
-  
   template<>
     struct numeric_limits<unsigned short>
     {
@@ -932,10 +526,10 @@ namespace std
       static unsigned short min() throw()
       { return 0; }
       static unsigned short max() throw()
-      { return __glibcpp_unsigned_short_max; }
+      { return __SHRT_MAX__ * 2U + 1; }
 
-      static const int digits = __glibcpp_unsigned_short_digits;
-      static const int digits10 = __glibcpp_unsigned_short_digits10;
+      static const int digits = __glibcpp_digits (unsigned short);
+      static const int digits10 = __glibcpp_digits10 (unsigned short);
       static const bool is_signed = false;
       static const bool is_integer = true;
       static const bool is_exact = true;
@@ -974,22 +568,18 @@ namespace std
       static const float_round_style round_style = round_toward_zero;
     };
 
-#undef __glibcpp_unsigned_short_max
-#undef __glibcpp_unsigned_short_digits
-#undef __glibcpp_unsigned_short_digits10
-  
   template<>
     struct numeric_limits<int>
     {
       static const bool is_specialized = true;
 
       static int min() throw()
-      { return __glibcpp_signed_int_min; }
+      { return -__INT_MAX__ - 1; }
       static int max() throw()
-      { return __glibcpp_signed_int_max; }
+      { return __INT_MAX__; }
 
-      static const int digits = __glibcpp_signed_int_digits;
-      static const int digits10 = __glibcpp_signed_int_digits10;
+      static const int digits = __glibcpp_digits (int);
+      static const int digits10 = __glibcpp_digits10 (int);
       static const bool is_signed = true;
       static const bool is_integer = true;
       static const bool is_exact = true;
@@ -1028,11 +618,6 @@ namespace std
       static const float_round_style round_style = round_toward_zero;
     };
 
-#undef __glibcpp_signed_int_min
-#undef __glibcpp_signed_int_max
-#undef __glibcpp_signed_int_digits
-#undef __glibcpp_signed_int_digits10
-  
   template<>
     struct numeric_limits<unsigned int>
     {
@@ -1040,11 +625,11 @@ namespace std
 
       static unsigned int min() throw()
       { return 0; }
-          static unsigned int max() throw()
-      { return __glibcpp_unsigned_int_max; }
+      static unsigned int max() throw()
+      { return __INT_MAX__ * 2U + 1; }
 
-      static const int digits = __glibcpp_unsigned_int_digits;
-      static const int digits10 = __glibcpp_unsigned_int_digits10;
+      static const int digits = __glibcpp_digits (unsigned int);
+      static const int digits10 = __glibcpp_digits10 (unsigned int);
       static const bool is_signed = false;
       static const bool is_integer = true;
       static const bool is_exact = true;
@@ -1083,22 +668,18 @@ namespace std
       static const float_round_style round_style = round_toward_zero;
     };
 
-#undef __glibcpp_unsigned_int_max
-#undef __glibcpp_unsigned_int_digits
-#undef __glibcpp_unsigned_int_digits10
-
   template<>
     struct numeric_limits<long>
     {
       static const bool is_specialized = true;
 
       static long min() throw()
-      { return __glibcpp_signed_long_min; }
+      { return -__LONG_MAX__ - 1; }
       static long max() throw()
-      { return __glibcpp_signed_long_max; }
+      { return __LONG_MAX__; }
 
-      static const int digits = __glibcpp_signed_long_digits;
-      static const int digits10 = __glibcpp_signed_long_digits10;
+      static const int digits = __glibcpp_digits (long);
+      static const int digits10 = __glibcpp_digits10 (long);
       static const bool is_signed = true;
       static const bool is_integer = true;
       static const bool is_exact = true;
@@ -1137,11 +718,6 @@ namespace std
       static const float_round_style round_style = round_toward_zero;
     };
 
-#undef __glibcpp_signed_long_min
-#undef __glibcpp_signed_long_max
-#undef __glibcpp_signed_long_digits
-#undef __glibcpp_signed_long_digits10
-  
   template<>
     struct numeric_limits<unsigned long>
     {
@@ -1150,10 +726,10 @@ namespace std
       static unsigned long min() throw()
       { return 0; }
       static unsigned long max() throw()
-      { return __glibcpp_unsigned_long_max; }
+      { return __LONG_MAX__ * 2UL + 1; }
 
-      static const int digits = __glibcpp_unsigned_long_digits;
-      static const int digits10 = __glibcpp_unsigned_long_digits10;
+      static const int digits = __glibcpp_digits (unsigned long);
+      static const int digits10 = __glibcpp_digits10 (unsigned long);
       static const bool is_signed = false;
       static const bool is_integer = true;
       static const bool is_exact = true;
@@ -1192,22 +768,18 @@ namespace std
       static const float_round_style round_style = round_toward_zero;
     };
 
-#undef __glibcpp_unsigned_long_max
-#undef __glibcpp_unsigned_long_digits
-#undef __glibcpp_unsigned_long_digits10
-
   template<>
     struct numeric_limits<long long>
     {
       static const bool is_specialized = true;
-      
+
       static long long min() throw()
-      { return __glibcpp_signed_long_long_min; }
+      { return -__LONG_LONG_MAX__ - 1; }
       static long long max() throw()
-      { return __glibcpp_signed_long_long_max; }
-      
-      static const int digits = __glibcpp_signed_long_long_digits;
-      static const int digits10 = __glibcpp_signed_long_long_digits10;
+      { return __LONG_LONG_MAX__; }
+
+      static const int digits = __glibcpp_digits (long long);
+      static const int digits10 = __glibcpp_digits10 (long long);
       static const bool is_signed = true;
       static const bool is_integer = true;
       static const bool is_exact = true;
@@ -1216,18 +788,18 @@ namespace std
       { return 0; }
       static long long round_error() throw()
       { return 0; }
-      
+
       static const int min_exponent = 0;
       static const int min_exponent10 = 0;
       static const int max_exponent = 0;
       static const int max_exponent10 = 0;
-      
+
       static const bool has_infinity = false;
       static const bool has_quiet_NaN = false;
       static const bool has_signaling_NaN = false;
       static const float_denorm_style has_denorm = denorm_absent;
       static const bool has_denorm_loss = false;
-      
+
       static long long infinity() throw()
       { return static_cast<long long>(0); }
       static long long quiet_NaN() throw()
@@ -1236,7 +808,7 @@ namespace std
       { return static_cast<long long>(0); }
       static long long denorm_min() throw()
       { return static_cast<long long>(0); }
-      
+
       static const bool is_iec559 = true;
       static const bool is_bounded = true;
       static const bool is_modulo = true;
@@ -1246,11 +818,6 @@ namespace std
       static const float_round_style round_style = round_toward_zero;
     };
 
-#undef __glibcpp_signed_long_long_min
-#undef __glibcpp_signed_long_long_max
-#undef __glibcpp_signed_long_long_digits
-#undef __glibcpp_signed_long_long_digits10
-  
   template<>
     struct numeric_limits<unsigned long long>
     {
@@ -1259,10 +826,10 @@ namespace std
       static unsigned long long min() throw()
       { return 0; }
       static unsigned long long max() throw()
-      { return __glibcpp_unsigned_long_long_max; }
+      { return __LONG_LONG_MAX__ * 2ULL + 1; }
 
-      static const int digits = __glibcpp_unsigned_long_long_digits;
-      static const int digits10 = __glibcpp_unsigned_long_long_digits10;
+      static const int digits = __glibcpp_digits (unsigned long long);
+      static const int digits10 = __glibcpp_digits10 (unsigned long long);
       static const bool is_signed = false;
       static const bool is_integer = true;
       static const bool is_exact = true;
@@ -1300,10 +867,6 @@ namespace std
       static const bool tinyness_before = false;
       static const float_round_style round_style = round_toward_zero;
     };
-
-#undef __glibcpp_unsigned_long_long_max
-#undef __glibcpp_unsigned_long_long_digits
-#undef __glibcpp_unsigned_long_long_digits10
 
   template<>
     struct numeric_limits<float>
@@ -1351,7 +914,7 @@ namespace std
 
       static const bool is_iec559 = has_infinity && has_quiet_NaN;
       static const bool is_bounded = true;
-      static const bool is_modulo = __glibcpp_float_is_modulo;
+      static const bool is_modulo = false;
 
       static const bool traps = __glibcpp_float_traps;
       static const bool tinyness_before = __glibcpp_float_tinyness_before;
@@ -1359,7 +922,6 @@ namespace std
     };
 
 #undef __glibcpp_float_has_denorm_loss
-#undef __glibcpp_float_is_modulo
 #undef __glibcpp_float_traps
 #undef __glibcpp_float_tinyness_before
 
@@ -1409,7 +971,7 @@ namespace std
 
       static const bool is_iec559 = has_infinity && has_quiet_NaN;
       static const bool is_bounded = true;
-      static const bool is_modulo = __glibcpp_double_is_modulo;
+      static const bool is_modulo = false;
 
       static const bool traps = __glibcpp_double_traps;
       static const bool tinyness_before = __glibcpp_double_tinyness_before;
@@ -1417,11 +979,9 @@ namespace std
     };
 
 #undef __glibcpp_double_has_denorm_loss
-#undef __glibcpp_double_is_modulo
 #undef __glibcpp_double_traps
 #undef __glibcpp_double_tinyness_before
-  
-  
+
   template<>
     struct numeric_limits<long double>
     {
@@ -1459,7 +1019,7 @@ namespace std
 	= __glibcpp_long_double_has_denorm_loss;
 
       static long double infinity() throw()
-      { return __builtin_huge_vall (); } 
+      { return __builtin_huge_vall (); }
       static long double quiet_NaN() throw()
       { return __builtin_nanl (""); }
       static long double signaling_NaN() throw()
@@ -1469,18 +1029,23 @@ namespace std
 
       static const bool is_iec559 = has_infinity && has_quiet_NaN;
       static const bool is_bounded = true;
-      static const bool is_modulo = __glibcpp_long_double_is_modulo;
+      static const bool is_modulo = false;
 
-      static const bool traps = __glibcpp_long_double_traps; 
+      static const bool traps = __glibcpp_long_double_traps;
       static const bool tinyness_before = __glibcpp_long_double_tinyness_before;
       static const float_round_style round_style = round_to_nearest;
     };
 
 #undef __glibcpp_long_double_has_denorm_loss
-#undef __glibcpp_long_double_is_modulo
 #undef __glibcpp_long_double_traps
 #undef __glibcpp_long_double_tinyness_before
 
 } // namespace std
+
+#undef __glibcpp_signed
+#undef __glibcpp_min
+#undef __glibcpp_max
+#undef __glibcpp_digits
+#undef __glibcpp_digits10
 
 #endif // _CPP_NUMERIC_LIMITS
