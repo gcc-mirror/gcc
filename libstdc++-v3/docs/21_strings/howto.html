@@ -9,7 +9,7 @@
    <TITLE>libstdc++-v3 HOWTO:  Chapter 21</TITLE>
 <LINK REL="home" HREF="http://sources.redhat.com/libstdc++/docs/21_strings/">
 <LINK REL=StyleSheet HREF="../lib3styles.css">
-<!-- $Id: howto.html,v 1.2 2000/07/07 21:13:28 pme Exp $ -->
+<!-- $Id: howto.html,v 1.3 2000/07/11 21:45:07 pme Exp $ -->
 </HEAD>
 <BODY>
 
@@ -42,7 +42,7 @@
       are relying on special functons offered by the CString class.
    </P>
    <P>Things are not as bad as they seem.  In
-      <A HREF="http://egcs.cygnus.com/ml/egcs/1999-04/msg00233.html">this
+      <A HREF="http://gcc.gnu.org/ml/egcs/1999-04/msg00233.html">this
       message</A>, Joe Buck points out a few very important things:
       <UL>
          <LI>The Standard <TT>string</TT> supports all the operations
@@ -66,7 +66,7 @@
    #include &lt;string&gt;
    #include &lt;sstream&gt;
 
-   string f (string& incoming)     // incoming is something like "foo  N"
+   string f (string&amp; incoming)     // incoming is "foo  N"
    {
        istringstream   incoming_stream(incoming);
        string          the_word;
@@ -88,7 +88,7 @@
    CString suffers from a common programming error that results in
    poor performance.  Consider the following code:
    
-   CString n_copies_of (const CString& foo, unsigned n)
+   CString n_copies_of (const CString&amp; foo, unsigned n)
    {
            CString tmp;
            for (unsigned i = 0; i &lt; n; i++)
@@ -158,8 +158,10 @@
    </P>
 
    <P>The solution is surprisingly easy.  The original answer pages
-      on the GotW website have been removed into cold storage, in
-      preparation for a published book of GotW notes.  Before being
+      on the GotW website were removed into cold storage, in
+      preparation for
+      <A HREF="http://cseng.aw.com/bookpage.taf?ISBN=0-201-61562-2">a
+      published book of GotW notes</A>.  Before being
       put on the web, of course, it was posted on Usenet, and that
       posting containing the answer is <A HREF="gotw29a.txt">available
       here</A>.
@@ -170,13 +172,18 @@
       on why case-insensitive comparisons are not as easy as they seem,
       and why creating a class is the <EM>wrong</EM> way to go about it in
       production code.  (The GotW answer mentions one of the principle
-      difficulties; this article mentions more.)
+      difficulties; his article mentions more.)
    </P>
    <P>Basically, this is &quot;easy&quot; only if you ignore some things,
       things which may be too important to your program to ignore.  (I chose
       to ignore them when originally writing this entry, and am surprised
       that nobody ever called me on it...)  The GotW question and answer
       remain useful instructional tools, however.
+   </P>
+   <P><B>Added September 2000:</B>  James Kanze provided a link to a
+      <A HREF="http://www.unicode.org/unicode/reports/tr21/">Unicode
+      Technical Report discussing case handling</A>, which provides some
+      very good information.
    </P>
    <P>Return <A HREF="#top">to top of page</A> or
       <A HREF="../faq/index.html">to the FAQ</A>.
@@ -204,9 +211,9 @@
       a more general (but less readable) form of it for parsing command
       strings and the like.  If you compiled and ran this code using it:
       <PRE>
-   std::list&lt;string>  ls;
+   std::list&lt;string&gt;  ls;
    stringtok (ls, " this  \t is\t\n  a test  ");
-   for (std::list&lt;string>::const_iterator i = ls.begin();
+   for (std::list&lt;string&gt;const_iterator i = ls.begin();
         i != ls.end(); ++i)
    {
        std::cerr &lt;&lt; ':' &lt;&lt; (*i) &lt;&lt; ":\n";
@@ -226,8 +233,9 @@
       <A HREF="stringtok_std_h.txt">Another version of stringtok is given
       here</A>, suggested by Chris King and tweaked by Petr Prikryl,
       and this one uses the
-      transformation functions given below.  If you are comfortable with
-      reading the new function names, this version is recommended as an example.
+      transformation functions mentioned below.  If you are comfortable
+      with reading the new function names, this version is recommended
+      as an example.
    </P>
    <P>Return <A HREF="#top">to top of page</A> or
       <A HREF="../faq/index.html">to the FAQ</A>.
@@ -240,30 +248,45 @@
       to all upper case.&quot;  The word transformations is especially
       apt, because the standard template function
       <TT>transform&lt;&gt;</TT> is used.
+   </P>
+   <P>This code will go through some iterations (no pun).  Here's the
+      simplistic version usually seen on Usenet:
       <PRE>
-      #include &lt;string&gt;
-      #include &lt;algorithm&gt;
-      #include &lt;cctype&gt;      // old &lt;ctype.h&gt;
-      std::string  s ("Some Kind Of Initial Input Goes Here");
-   
-      // Change everything into upper case
-      std::transform (s.begin(), s.end(), s.begin(), toupper);
-   
-      // Change everything into lower case
-      std::transform (s.begin(), s.end(), s.begin(), tolower);
-   
-      // Change everything back into upper case, but store the
-      // result in a different string
-      std::string  capital_s;
-      capital_s.reserve(s.size());
-      std::transform (s.begin(), s.end(), capital_s.begin(), tolower); </PRE>
+   #include &lt;string&gt;
+   #include &lt;algorithm&gt;
+   #include &lt;cctype&gt;      // old &lt;ctype.h&gt;
+
+   std::string  s ("Some Kind Of Initial Input Goes Here");
+
+   // Change everything into upper case
+   std::transform (s.begin(), s.end(), s.begin(), toupper);
+
+   // Change everything into lower case
+   std::transform (s.begin(), s.end(), s.begin(), tolower);
+
+   // Change everything back into upper case, but store the
+   // result in a different string
+   std::string  capital_s;
+   capital_s.reserve(s.size());
+   std::transform (s.begin(), s.end(), capital_s.begin(), tolower); </PRE>
       <SPAN CLASS="larger"><B>Note</B></SPAN> that these calls all involve
       the global C locale through the use of the C functions
       <TT>toupper/tolower</TT>.  This is absolutely guaranteed to work --
-      but only if you're using English text (bummer).  A much better and
-      more portable solution is to use a facet for a particular locale
-      and call its conversion functions.  (These are discussed more in
-      Chapter 22.)
+      but <EM>only</EM> if the string contains <EM>only</EM> characters
+      from the basic source character set, and there are <EM>only</EM>
+      96 of those.  Which means that not even all English text can be
+      represented (certain British spellings, proper names, and so forth).
+      So, if all your input forevermore consists of only those 96
+      characters (hahahahahaha), then you're done.
+   </P>
+   <P>At minimum, you can write 
+   </P>
+   <P>The correct method is to use a facet for a particular locale
+      and call its conversion functions.  These are discussed more in
+      Chapter 22; the specific part is
+      <A HREF="../22_locale/howto.html#5">here</A>, which shows the
+      final version of this code.  (Thanks to James Kanze for assistance
+      and suggestions on all of this.)
    </P>
    <P>Another common operation is trimming off excess whitespace.  Much
       like transformations, this task is trivial with the use of string's
@@ -297,7 +320,7 @@
 Comments and suggestions are welcome, and may be sent to
 <A HREF="mailto:pme@sources.redhat.com">Phil Edwards</A> or
 <A HREF="mailto:gdr@egcs.cygnus.com">Gabriel Dos Reis</A>.
-<BR> $Id: howto.html,v 1.2 2000/07/07 21:13:28 pme Exp $
+<BR> $Id: howto.html,v 1.3 2000/07/11 21:45:07 pme Exp $
 </EM></P>
 
 

@@ -1,3 +1,11 @@
+2000-09-19  Phil Edwards  <pme@sources.redhat.com>
+
+	* docs/thanks.html:  More thanks.
+	* docs/18_support/howto.html:  Fix thinko.
+	* docs/21_strings/howto.html:  Minor tweaks and updates to URLs.
+	  Redo the string transformation notes and link to...
+	* docs/22_locale/howto.html:  ...here.
+
 2000-09-18  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
 
 	* src/locale-inst.cc: Add time_put_byname and

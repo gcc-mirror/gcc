@@ -9,7 +9,7 @@
    <TITLE>libstdc++-v3 HOWTO:  Chapter 18</TITLE>
 <LINK REL="home" HREF="http://sources.redhat.com/libstdc++/docs/18_support/">
 <LINK REL=StyleSheet HREF="../lib3styles.css">
-<!-- $Id: howto.html,v 1.3 2000/07/11 21:45:07 pme Exp $ -->
+<!-- $Id: howto.html,v 1.4 2000/07/19 20:20:51 pme Exp $ -->
 </HEAD>
 <BODY>
 
@@ -228,7 +228,7 @@
 
    void my_new_handler ()
    {
-       delete safety;
+       delete[] safety;
        popup_window ("Dude, you are running low on heap memory.  You
                       should, like, close some windows, or something.
                       The next time you run out, we're gonna burn!");
@@ -262,7 +262,7 @@
 Comments and suggestions are welcome, and may be sent to
 <A HREF="mailto:pme@sources.redhat.com">Phil Edwards</A> or
 <A HREF="mailto:gdr@egcs.cygnus.com">Gabriel Dos Reis</A>.
-<BR> $Id: howto.html,v 1.3 2000/07/11 21:45:07 pme Exp $
+<BR> $Id: howto.html,v 1.4 2000/07/19 20:20:51 pme Exp $
 </EM></P>
 
 
