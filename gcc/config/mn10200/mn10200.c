@@ -1471,7 +1471,7 @@ mn10200_va_arg (valist, type)
     }
 
   /* Calculate!  */
-  return expand_expr (t, NULL_RTX, Pmode, EXPAND_NORMAL);
+  return force_reg (Pmode, expand_expr (t, NULL_RTX, Pmode, EXPAND_NORMAL));
 }
 
 char *
