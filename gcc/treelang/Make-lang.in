@@ -169,10 +169,10 @@ treelang.install.common.done:  installdirs treelang.done
 	do \
 	   if [ -f $$name ] ; then \
 	    name2="`echo \`basename $$name\` | sed -e '$(program_transform_name)' `"; \
-	    rm -f $(bindir)/$$name2$(exeext); \
-	    echo $(INSTALL_PROGRAM) $$name$(exeext) $(bindir)/$$name2$(exeext); \
-	    $(INSTALL_PROGRAM) $$name$(exeext) $(bindir)/$$name2$(exeext); \
-	    chmod a+x $(bindir)/$$name2$(exeext); \
+	    rm -f $(DESTDIR)$(bindir)/$$name2$(exeext); \
+	    echo $(INSTALL_PROGRAM) $$name$(exeext) $(DESTDIR)$(bindir)/$$name2$(exeext); \
+	    $(INSTALL_PROGRAM) $$name$(exeext) $(DESTDIR)$(bindir)/$$name2$(exeext); \
+	    chmod a+x $(DESTDIR)$(bindir)/$$name2$(exeext); \
 	  fi ; \
 	done
 	$(STAMP) treelang.install.common.done
@@ -182,9 +182,9 @@ treelang.install-info: $(srcdir)/treelang/treelang.info
 	do \
 	   if [ -f $$name ] ; then \
 	    name2="`echo \`basename $$name\` | sed -e '$(program_transform_name)' `"; \
-	    rm -f $(libsubdir)/$$name2$(exeext); \
-	    $(INSTALL_PROGRAM) $$name$(exeext) $(libsubdir)/$$name2$(exeext); \
-	    chmod a+x $(libsubdir)/$$name2$(exeext); \
+	    rm -f $(DESTDIR)$(libsubdir)/$$name2$(exeext); \
+	    $(INSTALL_PROGRAM) $$name$(exeext) $(DESTDIR)$(libsubdir)/$$name2$(exeext); \
+	    chmod a+x $(DESTDIR)$(libsubdir)/$$name2$(exeext); \
 	  fi ; \
 	done
 
@@ -196,8 +196,8 @@ treelang.uninstall:
 	  echo $$name; \
 	  name2="`echo $$name | sed -e '$(program_transform_name)' `"; \
 	  echo becomes $$name2; \
-	  echo -rm -rf $(bindir)/$$name2$(exeext); \
-	  rm -rf $(bindir)/$$name2$(exeext); \
+	  echo -rm -rf $(DESTDIR)$(bindir)/$$name2$(exeext); \
+	  rm -rf $(DESTDIR)$(bindir)/$$name2$(exeext); \
 	done
 	-rm treelang.install.common.done
 

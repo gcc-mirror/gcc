@@ -1,3 +1,10 @@
+2003-01-26  Christian Cornelssen  <ccorn@cs.tu-berlin.de>
+
+	* Make-lang.in (treelang.install.common.done)
+	(treelang.install-info, treelang.uninstall): Prepend
+	$(DESTDIR) to destination paths in all (un)installation
+	commands.
+
 2002-12-28  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* treelang.texi: Use @copying.
