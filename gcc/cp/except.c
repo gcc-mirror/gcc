@@ -692,17 +692,7 @@ expand_end_catch_block ()
   do_pending_stack_adjust ();
   start_sequence_for_rtl_expr (t);
 
-  if (exceptions_via_longjmp)
-    {
-      /* If we are doing setjmp/longjmp EH, we need to skip through
-	 the EH object cleanup region.  This isn't quite right, as we
-	 really need to clean the object up, but we cannot do that
-	 until we track multiple EH objects.  */
-
-      emit_library_call (sjpopnthrow_libfunc, 0, VOIDmode, 0);
-      emit_barrier ();
-    }
-  else
+  if (! exceptions_via_longjmp)
     {
       /* If we are not doing setjmp/longjmp EH, we need an extra
 	 region around the whole catch block to skip through the
