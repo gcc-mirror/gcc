@@ -4,6 +4,9 @@
 	simplify-rtx.c, tree-ssa-live.h: Fix comment typos.  Follow
 	spelling conventions.
 
+	* passes.c (rest_of_handle_gcse): Don't run cse_main and
+	delete_trivially_dead_insns too many times.
+
 2005-02-12  Ira Rosen  <irar@il.ibm.com>
 
 	* tree-vectorizer.c (vect_get_base_and_offset): Remove.

@@ -1049,23 +1049,13 @@ rest_of_handle_gcse (void)
 
   /* If gcse or cse altered any jumps, rerun jump optimizations to clean
      things up.  Then possibly re-run CSE again.  */
-  while (tem || tem2)
+  if (tem || tem2)
     {
       tem = tem2 = 0;
       timevar_push (TV_JUMP);
       rebuild_jump_labels (get_insns ());
       cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_PRE_LOOP);
       timevar_pop (TV_JUMP);
-
-      if (flag_expensive_optimizations)
-	{
-	  timevar_push (TV_CSE);
-	  reg_scan (get_insns (), max_reg_num ());
-	  tem2 = cse_main (get_insns (), max_reg_num (), dump_file);
-	  purge_all_dead_edges (0);
-	  delete_trivially_dead_insns (get_insns (), max_reg_num ());
-	  timevar_pop (TV_CSE);
-	}
     }
 
   close_dump_file (DFI_gcse, print_rtl_with_bb, get_insns ());
