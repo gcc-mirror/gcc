@@ -1,3 +1,8 @@
+2004-11-14  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/i386/i386.c (override_options): Move loop to set default
+	tuning to correct place.
+
 2004-11-13  Zak Kipling  <zak@transversal.com>
 
 	PR target/18300
