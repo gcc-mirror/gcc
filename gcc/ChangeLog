@@ -1,3 +1,16 @@
+2003-10-15  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR target/12598
+	* config/cris/cris.md (define_split "*mov_sidesi_biap_mem"+1)
+	(define_splits "*mov_sidesi_mem"+1, "casesi"+9, +10, +11, +12):
+	Use cris_mem_op and replace_equiv_address, not gen_rtx_MEM.
+	("call", "call_value", define_split "*mov_sidesi_mem"+19, +20)
+	(define_split "*mov_sidesi_mem"+21, +22, +23, +24, +25, +26, +27)
+	(define_split "*mov_sidesi_mem"+28, +29, +30): Use
+	replace_equiv_address, not gen_rtx_MEM.
+	* config/cris/cris.c (cris_mem_op): New match_operator function.
+	* config/cris/cris.h (PREDICATE_CODES): Add cris_mem_op.
+
 2003-10-15  Bernardo Innocenti <bernie@develer.com>
 
 	* config/m68k/m68k.h (MASK_SEP_DATA, TARGET_SEP_DATA,

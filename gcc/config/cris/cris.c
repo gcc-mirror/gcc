@@ -374,6 +374,19 @@ cris_plus_or_bound_operator (rtx x, enum machine_mode mode)
     (GET_MODE (x) == mode && (code == UMIN || code == PLUS));
 }
 
+/* Used as an operator to get a handle on a already-known-valid MEM rtx:es
+   (no need to validate the address), where some address expression parts
+   have their own match_operand.  */
+
+int
+cris_mem_op (rtx x, enum machine_mode mode)
+{
+  if (mode == VOIDmode)
+    mode = GET_MODE (x);
+
+  return GET_MODE (x) == mode && GET_CODE (x) == MEM;
+}
+
 /* Since with -fPIC, not all symbols are valid PIC symbols or indeed
    general_operands, we have to have a predicate that matches it for the
    "movsi" expander.  */
@@ -1962,8 +1975,8 @@ cris_notice_update_cc (rtx exp, rtx insn)
 		     value1=rz and value2=[rx] */
 		  cc_status.value1 = XEXP (XVECEXP (exp, 0, 0), 0);
 		  cc_status.value2
-		    = gen_rtx_MEM (GET_MODE (XEXP (XVECEXP (exp, 0, 0), 0)),
-				   XEXP (XVECEXP (exp, 0, 1), 0));
+		    = replace_equiv_address (XEXP (XVECEXP (exp, 0, 0), 1),
+					     XEXP (XVECEXP (exp, 0, 1), 0));
 		  cc_status.flags = 0;
 
 		  /* Huh?  A side-effect cannot change the destination
