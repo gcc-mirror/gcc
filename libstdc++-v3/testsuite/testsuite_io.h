@@ -104,10 +104,15 @@ namespace __gnu_test
 
   struct fail_streambuf : std::streambuf
   {
+  private:
+    char p[2];
+
+  public:
     fail_streambuf()
     {
-      static char p[] = "s";
-      setg(p, p, p + 1);
+      p[0] = 's';
+      p[1] = char();
+      setg(p, p, p + 1); 
     }
 
     virtual int_type underflow() 

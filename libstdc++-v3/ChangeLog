@@ -1,5 +1,15 @@
 2003-12-01  Benjamin Kosnik  <bkoz@redhat.com>
 
+	* include/bits/basic_ios.h (basic_ios::setstate): Revert.
+	* include/bits/istream.tcc: Only call setstate if __err != goodbit.
+	* include/bits/ostream.tcc: Same.
+	* testsuite/27_io/basic_ios/exceptions/char/2.cc: New.
+	
+	* testsuite/testsuite_io.h (__gnu_test::fail_streambuf): Make
+	internal buffer non-static.
+
+2003-12-01  Benjamin Kosnik  <bkoz@redhat.com>
+
 	* docs/html/17_intro/C++STYLE: Add exception bits.
 	* include/bits/fstream.tcc: Add location info to exception strings.
 

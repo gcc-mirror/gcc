@@ -111,7 +111,8 @@ namespace std
 	    }
 	  catch(...)
 	    { this->_M_setstate(ios_base::badbit); }
-	  this->setstate(__err);
+	  if (__err)
+	    this->setstate(__err);
 	}
       return *this;
     }
@@ -143,7 +144,8 @@ namespace std
 	    }
 	  catch(...)
 	    { this->_M_setstate(ios_base::badbit); }
-	  this->setstate(__err);
+	  if (__err)
+	    this->setstate(__err);
 	}
       return *this;
     }
@@ -165,7 +167,8 @@ namespace std
 	    }
 	  catch(...)
 	    { this->_M_setstate(ios_base::badbit); }
-	  this->setstate(__err);
+	  if (__err)
+	    this->setstate(__err);
 	}
       return *this;
     }
@@ -199,7 +202,8 @@ namespace std
 	    }
 	  catch(...)
 	    { this->_M_setstate(ios_base::badbit); }
-	  this->setstate(__err);
+	  if (__err)
+	    this->setstate(__err);
 	}
       return *this;
     }
@@ -221,7 +225,8 @@ namespace std
 	    }
 	  catch(...)
 	    { this->_M_setstate(ios_base::badbit); }
-	  this->setstate(__err);
+	  if (__err)
+	    this->setstate(__err);
 	}
       return *this;
     }
@@ -244,7 +249,8 @@ namespace std
 	    }
 	  catch(...)
 	    { this->_M_setstate(ios_base::badbit); }
-	  this->setstate(__err);
+	  if (__err)
+	    this->setstate(__err);
 	}
       return *this;
     }
@@ -266,7 +272,8 @@ namespace std
 	    }
 	  catch(...)
 	    { this->_M_setstate(ios_base::badbit); }
-	  this->setstate(__err);
+	  if (__err)
+	    this->setstate(__err);
 	}
       return *this;
     }
@@ -288,7 +295,8 @@ namespace std
 	    }
 	  catch(...)
 	    { this->_M_setstate(ios_base::badbit); }
-	  this->setstate(__err);
+	  if (__err)
+	    this->setstate(__err);
 	}
       return *this;
     }
@@ -312,7 +320,8 @@ namespace std
 	}
       else if (!__sbin)
 	__err |= ios_base::badbit;
-      this->setstate(__err);
+      if (__err)
+	this->setstate(__err);
       return *this;
     }
 
@@ -339,7 +348,8 @@ namespace std
 	    }
 	  catch (...)
 	    { this->_M_setstate(ios_base::badbit); }
-	  this->setstate(__err);
+	  if (__err)
+	    this->setstate(__err);
 	}
       return *this;  
     }
@@ -383,7 +393,8 @@ namespace std
 	}
       catch(...)
 	{ this->_M_setstate(ios_base::badbit); }
-      this->setstate(__err);
+      if (__err)
+	this->setstate(__err);
       return *this;
     }
   
@@ -424,7 +435,8 @@ namespace std
 	}
       catch(...)
 	{ this->_M_setstate(ios_base::badbit); }
-      this->setstate(__err);
+      if (__err)
+	this->setstate(__err);
       return *this;
     }
 
@@ -450,7 +462,8 @@ namespace std
 	}
       catch(...)
 	{ this->_M_setstate(ios_base::badbit); }
-      this->setstate(__err);
+      if (__err)
+	this->setstate(__err);
       return *this;
     }
 
