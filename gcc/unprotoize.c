@@ -1,2 +1,2 @@
-#include "protoize.c"
 #define UNPROTOIZE
+#include "protoize.c"
