@@ -726,18 +726,32 @@ namespace std
 							    * __len * 2));
       __ctype.widen(__cs, __cs + __len, __ws);
 
-      // Add grouping, if necessary.
+      // Add grouping, if necessary. 
       const numpunct<_CharT>& __np = use_facet<numpunct<_CharT> >(__loc);
       const string __grouping = __np.grouping();
-      ios_base::fmtflags __basefield = __io.flags() & ios_base::basefield;
-      bool __dec = __basefield != ios_base::oct 
-	           && __basefield != ios_base::hex;
-      if (__grouping.size() && __dec)
+      const ios_base::fmtflags __basefield = __io.flags() & ios_base::basefield;
+      if (__grouping.size())
 	{
+	  // By itself __add_grouping cannot deal correctly with __ws when
+	  // ios::showbase is set and ios_base::oct || ios_base::hex.
+	  // Therefore we take care "by hand" of the initial 0, 0x or 0X.
+	  streamsize __off = 0;
+	  if (__io.flags() & ios_base::showbase)
+	    if (__basefield == ios_base::oct)
+	      {
+		__off = 1;
+		*__ws2 = *__ws;
+	      }
+	    else if (__basefield == ios_base::hex)
+	      {
+		__off = 2;
+		*__ws2 = *__ws;
+		*(__ws2 + 1) = *(__ws + 1);
+	      }
 	  _CharT* __p;
-	  __p = __add_grouping(__ws2, __np.thousands_sep(), __grouping.c_str(),
+	  __p = __add_grouping(__ws2 + __off, __np.thousands_sep(), __grouping.c_str(),
 			       __grouping.c_str() + __grouping.size(),
-			       __ws, __ws + __len);
+			       __ws + __off, __ws + __len);
 	  __len = __p - __ws2;
 	  // Switch strings.
 	  __ws = __ws2;
