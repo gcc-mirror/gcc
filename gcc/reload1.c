@@ -1,5 +1,5 @@
 /* Reload pseudo regs into hard regs for insns that require hard regs.
-   Copyright (C) 1987, 88, 89, 92-5, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 92-6, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -3237,12 +3237,29 @@ eliminate_regs_in_insn (insn, replace)
 	      {
 		rtx src = SET_SRC (old_set);
 		int offset, ok = 0;
+		rtx prev_insn, prev_set;
 
 		if (src == ep->to_rtx)
 		  offset = 0, ok = 1;
 		else if (GET_CODE (src) == PLUS
 			 && GET_CODE (XEXP (src, 0)) == CONST_INT)
 		  offset = INTVAL (XEXP (src, 0)), ok = 1;
+		else if ((prev_insn = prev_nonnote_insn (insn)) != 0
+			 && (prev_set = single_set (prev_insn)) != 0
+			 && rtx_equal_p (SET_DEST (prev_set), src))
+		  {
+		    src = SET_SRC (prev_set);
+		    if (src == ep->to_rtx)
+		      offset = 0, ok = 1;
+		    else if (GET_CODE (src) == PLUS
+			     && GET_CODE (XEXP (src, 0)) == CONST_INT
+			     && XEXP (src, 1) == ep->to_rtx)
+		      offset = INTVAL (XEXP (src, 0)), ok = 1;
+		    else if (GET_CODE (src) == PLUS
+			     && GET_CODE (XEXP (src, 1)) == CONST_INT
+			     && XEXP (src, 0) == ep->to_rtx)
+		      offset = INTVAL (XEXP (src, 1)), ok = 1;
+		  }
 
 		if (ok)
 		  {
