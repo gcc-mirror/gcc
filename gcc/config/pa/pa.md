@@ -1356,7 +1356,7 @@
 ;; Use move in the last type..  This case happens often with xmpyu
 ;; and in nearly all cases we only access the data from the first 
 ;; of the two loads generated, and that can't stall on a data conflict
-;; be cause of the second load.
+;; because of the second load.
   [(set_attr "type" "move,store,load,misc,fpload,fpalu,move")
    (set_attr "length" "2,3,3,3,3,1,3")])
 
