@@ -1669,7 +1669,7 @@ now in existence use constraints.
 Here is a table of the instruction names that are meaningful in the RTL
 generation pass of the compiler.  Giving one of these names to an
 instruction pattern tells the RTL generation pass that it can use the
-pattern in to accomplish a certain task.
+pattern to accomplish a certain task.
 
 @table @asis
 @cindex @code{mov@var{m}} instruction pattern
