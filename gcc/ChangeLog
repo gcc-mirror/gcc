@@ -1,3 +1,39 @@
+2000-01-04  David Edelsohn  <edelsohn@gnu.org>
+
+	* expmed.c (SLOW_UNALIGNED_ACCESS): Add mode and align parameters
+	to default definition.
+	(store_bit_field): Call SLOW_UNALIGNED_ACCESS with mode and alignment.
+	(store_fixed_bit_field): Call macro with word_mode and alignment.
+	(extract_bit_field): Call macro with relevant mode and alignment.
+	* expr.c (SLOW_UNALIGNED_ACCESS): Add mode and align parameters
+	to default definition.
+	(move_by_pieces): Call SLOW_UNALIGNED_ACCESS with word_mode
+	and alignment.
+	(move_by_pieces_ninsns): Likewise.
+	(clear_by_pieces): Likewise.
+	(emit_push_insn): Likewise.
+	(store_field): Call macro with relevant mode and alignment.
+	(expand_expr): Likewise.
+	(expand_expr_unaligned): Likewise.
+
+	* rs6000.h (HANDLE_PRAGMA_PACK): Define.
+	(SLOW_UNALIGNED_ACCESS): Define.
+	(CASE_VECTOR_MODE): Always use 32-bit offsets.
+	(ASM_FILE_END): Generate 64-bit symbol in 64-bit mode.
+	(EXTRA_SECTOIN_FUNCTIONS): Indent .csect pseudo-op.
+	(toc_section): Likewise and .toc pseudo-op.
+	(ASM_DECLARE_FUNCTION): Likewise.  Align text more strictly in
+	64-bit mode.
+	(TEXT_SECTION_ASM_OP): Likewise.
+	(ASM_OUTPUT_ADD_VEC_ELT, ASM_OUTPUT_ADDR_DIFF_ELT): Always use
+	32-bit offsets.
+
+	* a29k.h (SLOW_UNALIGNED_ACCESS): Add MODE and ALIGN parameters.
+	* alpha.h (SLOW_UNALIGNED_ACCESS): Likewise.
+	* arm/thumb.h (SLOW_UNALIGNED_ACCESS): Likewise.
+	* gmicro.h (SLOW_UNALIGNED_ACCESS): Likewise.
+	* fr30.h (SLOW_UNALIGNED_ACCESS): Likewise.
+
 Tue Jan  4 11:44:13 2000  Jeffrey A Law  (law@cygnus.com)
 
 	* regclass.c: Revert my Jan 4 change to loop cost computation.

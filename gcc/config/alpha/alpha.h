@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for DEC Alpha.
-   Copyright (C) 1992, 93-98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1992, 93-99, 2000 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
 This file is part of GNU CC.
@@ -537,7 +537,7 @@ extern const char *alpha_mlat_string;	/* For -mmemory-latency= */
 
    On the Alpha, they trap.  */
 
-#define SLOW_UNALIGNED_ACCESS 1
+#define SLOW_UNALIGNED_ACCESS(MODE, ALIGN) 1
 
 /* Standard register usage.  */
 

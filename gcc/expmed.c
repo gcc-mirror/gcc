@@ -54,7 +54,7 @@ static void do_cmp_and_jump		PROTO((rtx, rtx, enum rtx_code,
 static int sdiv_pow2_cheap, smod_pow2_cheap;
 
 #ifndef SLOW_UNALIGNED_ACCESS
-#define SLOW_UNALIGNED_ACCESS STRICT_ALIGNMENT
+#define SLOW_UNALIGNED_ACCESS(MODE, ALIGN) STRICT_ALIGNMENT
 #endif
 
 /* For compilers that support multiple targets with different word sizes,
@@ -295,7 +295,7 @@ store_bit_field (str_rtx, bitsize, bitnum, fieldmode, value, align, total_size)
      BITPOS is 0 in a REG bigger than a word.  */
   if (GET_MODE_SIZE (fieldmode) >= UNITS_PER_WORD
       && (GET_CODE (op0) != MEM
-	  || ! SLOW_UNALIGNED_ACCESS
+	  || ! SLOW_UNALIGNED_ACCESS (fieldmode, align)
 	  || (offset * BITS_PER_UNIT % bitsize == 0
 	      && align % GET_MODE_SIZE (fieldmode) == 0))
       && bitpos == 0 && bitsize == GET_MODE_BITSIZE (fieldmode))
@@ -509,7 +509,8 @@ store_bit_field (str_rtx, bitsize, bitnum, fieldmode, value, align, total_size)
 	    bestmode = GET_MODE (op0);
 
 	  if (bestmode == VOIDmode
-	      || (SLOW_UNALIGNED_ACCESS && GET_MODE_SIZE (bestmode) > align))
+	      || (SLOW_UNALIGNED_ACCESS (bestmode, align)
+		  && GET_MODE_SIZE (bestmode) > align))
 	    goto insv_loses;
 
 	  /* Adjust address to point to the containing unit of that mode.  */
@@ -632,7 +633,7 @@ store_fixed_bit_field (op0, offset, bitsize, bitpos, value, struct_align)
   int all_zero = 0;
   int all_one = 0;
 
-  if (! SLOW_UNALIGNED_ACCESS)
+  if (! SLOW_UNALIGNED_ACCESS (word_mode, struct_align))
     struct_align = BIGGEST_ALIGNMENT / BITS_PER_UNIT;
     
   /* There is a case not handled here:
@@ -1052,7 +1053,7 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
 	&& TRULY_NOOP_TRUNCATION (GET_MODE_BITSIZE (mode),
 				  GET_MODE_BITSIZE (GET_MODE (op0))))
        || (GET_CODE (op0) == MEM
-	   && (! SLOW_UNALIGNED_ACCESS
+	   && (! SLOW_UNALIGNED_ACCESS (mode, align)
 	       || (offset * BITS_PER_UNIT % bitsize == 0
 		   && align * BITS_PER_UNIT % bitsize == 0))))
       && ((bitsize >= BITS_PER_WORD && bitsize == GET_MODE_BITSIZE (mode)
@@ -1253,7 +1254,8 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
 		    bestmode = GET_MODE (xop0);
 
 		  if (bestmode == VOIDmode
-		      || (SLOW_UNALIGNED_ACCESS && GET_MODE_SIZE (bestmode) > align))
+		      || (SLOW_UNALIGNED_ACCESS (bestmode, align)
+			  && GET_MODE_SIZE (bestmode) > align))
 		    goto extzv_loses;
 
 		  /* Compute offset as multiple of this unit,
@@ -1390,7 +1392,8 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
 		    bestmode = GET_MODE (xop0);
 
 		  if (bestmode == VOIDmode
-		      || (SLOW_UNALIGNED_ACCESS && GET_MODE_SIZE (bestmode) > align))
+		      || (SLOW_UNALIGNED_ACCESS (bestmode, align)
+			  && GET_MODE_SIZE (bestmode) > align))
 		    goto extv_loses;
 
 		  /* Compute offset as multiple of this unit,

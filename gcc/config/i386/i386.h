@@ -2079,7 +2079,7 @@ while (0)
 
    If the value of this macro is always zero, it need not be defined.  */
 
-/* #define SLOW_UNALIGNED_ACCESS 0 */
+/* #define SLOW_UNALIGNED_ACCESS(MODE, ALIGN) 0 */
 
 /* Define this macro to inhibit strength reduction of memory
    addresses.  (On some machines, such strength reduction seems to do

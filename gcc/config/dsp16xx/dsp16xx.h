@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  AT&T DSP1600.
-   Copyright (C) 1994, 1995, 1996, 1997, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1994, 95-98, 2000 Free Software Foundation, Inc.
    Contributed by Michael Collison (collison@world.std.com).
 
 This file is part of GNU CC.
@@ -1571,7 +1571,7 @@ extern struct dsp16xx_frame_info current_frame_info;
 
 /* Define this macro if unaligned accesses have a cost many times greater than
    aligned accesses, for example if they are emulated in a trap handler */
-/* define SLOW_UNALIGNED_ACCESS */
+/* define SLOW_UNALIGNED_ACCESS(MODE, ALIGN) */
 
 /* Define this macro to inhibit strength reduction of memory addresses */
 /* #define DONT_REDUCE_ADDR */

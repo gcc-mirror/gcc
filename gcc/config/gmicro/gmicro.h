@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  Gmicro (TRON) version.
-   Copyright (C) 1987, 88, 89, 95-98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 95-99, 2000 Free Software Foundation, Inc.
    Contributed by Masanobu Yuhara, Fujitsu Laboratories LTD.
    (yuhara@flab.fujitsu.co.jp)
 
@@ -168,7 +168,7 @@ extern int target_flags;
    Unaligned data is allowed on Gmicro, though the access is slow. */
 
 #define STRICT_ALIGNMENT 1
-#define SLOW_UNALIGNED_ACCESS 1
+#define SLOW_UNALIGNED_ACCESS(MODE, ALIGN) 1
 
 /* Make strings word-aligned so strcpy from constants will be faster.  */
 #define CONSTANT_ALIGNMENT(EXP, ALIGN)  \
