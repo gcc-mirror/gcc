@@ -338,7 +338,8 @@ init_lex ()
     {
       UNSET_RESERVED_WORD ("asm");
       UNSET_RESERVED_WORD ("typeof");
-      UNSET_RESERVED_WORD ("inline");
+      if (! flag_isoc99)
+	UNSET_RESERVED_WORD ("inline");
       UNSET_RESERVED_WORD ("iterator");
       UNSET_RESERVED_WORD ("complex");
     }
@@ -1402,7 +1403,7 @@ yylex ()
 	    /* Even if we decided to recognize asm, still perhaps warn.  */
 	    if (pedantic
 		&& (value == ASM_KEYWORD || value == TYPEOF
-		    || ptr->rid == RID_INLINE)
+		    || (ptr->rid == RID_INLINE && ! flag_isoc99))
 		&& token_buffer[0] != '_')
 	      pedwarn ("ANSI does not permit the keyword `%s'",
 		       token_buffer);
