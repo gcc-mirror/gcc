@@ -1,3 +1,40 @@
+1999-04-26  Tom Tromey  <tromey@cygnus.com>
+
+	* configure, Makefile.in: Rebuilt.
+	* configure.in: Added AM_PROG_LIBTOOL.
+	(GCOBJS): Use `.lo' form of files.
+	(THREADOBJS): Likewise.
+	(GCDEPS): Use `.la' form of library.
+	(GCLIBS): Set to be the same as GCDEPS.
+	(THREADDEPS): Use `.la' form of library.
+	(THREADLIBS): Set to be the same as THREADDEPS.
+	* Makefile.am (toolexeclib_LTLIBRARIES): Renamed from
+	toolexeclib_LIBRARIES.
+	(libgcj_la_SOURCES): Renamed for libtoolization.
+	(EXTRA_libgcj_la_SOURCES): Likewise.
+	(libgcj_la_DEPENDENCIES): Likewise.
+	(libgcj_la_LIBADD): Likewise.
+	($(nat_files)): Use LTCXXCOMPILE.
+	($(c_files)): Use LTCOMPILE.
+	(GCJCOMPILE): New macro.
+	(.class.o): Use it.
+	(.java.o): Likewise.
+	($(javao_files)): Likewise.
+	(jv_convert_LINK): Use LIBTOOL.
+	(nat_files): Use `.lo' files.
+	(c_files): Likewise.
+	(javao_files): Likewise.
+	(.class.lo): Renamed.
+	(.java.lo): Likewise.
+	($(nat_files)): Depend on %.lo.
+	($(c_files)): Likewise.
+	($(javao_files)): Likewise.
+	(jv_convert_LDADD): Link against .lo files.
+	(jv_convert_DEPENDENCIES): Depend on .lo files.
+	(maintainer-check): Depend on libgcj.la, but examine .a file.
+	(jv_convert_DEPENDENCIES): Depend on libgcj.la.
+	(libgcj_la_LDFLAGS): New macro.
+
 1999-04-23  Warren Levy  <warrenl@cygnus.com>
 
 	* Makefile.am: Added URLDecoder and URLEncoder.

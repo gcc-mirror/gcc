@@ -16,6 +16,8 @@ LIBGCJ_CONFIGURE(.)
 
 AM_CONFIG_HEADER(include/config.h)
 
+AM_PROG_LIBTOOL
+
 if test -z "$with_target_subdir" || test "$with_target_subdir" = "."; then
    COMPPATH=.
 else
@@ -89,20 +91,20 @@ GCOBJS=
 case "$GC" in
  boehm)
     AC_MSG_RESULT(boehm)
-    GCLIBS='-L$(top_builddir)/../boehm-gc -lgcjgc'
-    GCDEPS='$(top_builddir)/../boehm-gc/libgcjgc.a'
+    GCDEPS='$(top_builddir)/../boehm-gc/libgcjgc.la'
+    GCLIBS="$GCDEPS"
     GCINCS='-I$(top_srcdir)/../boehm-gc -I$(top_builddir)/../boehm-gc'
     dnl We also want to pick up some cpp flags required when including
     dnl boehm-config.h.  Yuck.
     GCINCS="$GCINCS `cat ../boehm-gc/boehm-cflags`"
-    GCOBJS=boehm.o
+    GCOBJS=boehm.lo
     GCHDR=boehm-gc.h
     dnl The POSIX thread support needs to know this.
     AC_DEFINE(HAVE_BOEHM_GC)
     ;;
  no)
     AC_MSG_RESULT(none)
-    GCOBJS=nogc.o
+    GCOBJS=nogc.lo
     GCHDR=no-gc.h
     ;;
  *)
@@ -183,7 +185,7 @@ THREADH=
 case "$THREADS" in
  posix)
     THREADLIBS=-lpthread
-    THREADOBJS=posix-threads.o
+    THREADOBJS=posix-threads.lo
     THREADH=posix-threads.h
     # MIT pthreads doesn't seem to have the mutexattr functions.
     # But for now we don't check for it.  We just assume you aren't
@@ -192,15 +194,15 @@ case "$THREADS" in
     ;;
 
  qt)
-    THREADLIBS='-L$(top_builddir)/../qthreads -lgcjcoop'
-    THREADOBJS=quick-threads.o
+    THREADDEPS='$(top_builddir)/../qthreads/libgcjcoop.la'
+    THREADLIBS="$THREADDEPS"
+    THREADOBJS=quick-threads.lo
     THREADINCS='-I$(top_srcdir)/../qthreads'
     THREADH=quick-threads.h
-    THREADDEPS='$(top_builddir)/../qthreads/libgcjcoop.a'
     ;;
 
  none)
-    THREADOBJS=no-threads.o
+    THREADOBJS=no-threads.lo
     THREADH=no-threads.h
     ;;
 esac
