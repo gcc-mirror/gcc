@@ -159,20 +159,20 @@ namespace __gnu_test
       virtual int_type underflow() 
       {
 	throw underflow_error();
-	return -1;
+	return int_type();
       }
       
       virtual int_type uflow() 
       {
 	throw underflow_error();
-	return -1;
+	return int_type();
       }
       
       virtual int_type
       overflow(int_type)
       {
 	throw overflow_error();
-	return -1;
+	return int_type();
       }
       
       virtual pos_type 

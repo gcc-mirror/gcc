@@ -1,3 +1,73 @@
+2004-12-19  Paolo Carlini  <pcarlini@suse.de>
+
+	* testsuite/27_io/basic_istream/exceptions/wchar_t/9561.cc: New.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/wchar_t/
+	01.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/wchar_t/
+	02.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/wchar_t/
+	03.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/wchar_t/
+	06.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/wchar_t/
+	07.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/wchar_t/
+	08.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/wchar_t/
+	09.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/wchar_t/
+	10.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/wchar_t/
+	11.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/wchar_t/
+	12.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/wchar_t/
+	13.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/wchar_t/
+	9555-ia.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/wchar_t/
+	exceptions_badbit_throw.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/wchar_t/
+	exceptions_failbit.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/wchar_t/
+	exceptions_failbit_throw.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_character/wchar_t/
+	1.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_character/wchar_t/
+	11095-i.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_character/wchar_t/
+	2.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_character/wchar_t/
+	3.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_character/wchar_t/
+	9555-ic.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_other/wchar_t/
+	1.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_other/wchar_t/
+	2.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_other/wchar_t/
+	3.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_other/wchar_t/
+	9318-in.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_other/wchar_t/
+	9424-in.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_other/wchar_t/
+	9555-io.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_other/wchar_t/
+	error_failbit.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_other/wchar_t/
+	exceptions_badbit_throw.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_other/wchar_t/
+	exceptions_failbit_throw.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_other/wchar_t/
+	exceptions_null.cc: Likewise.
+
+	* testsuite/27_io/basic_istream/extractors_other/char/2.cc: Minor
+	tweaks.
+
+	* testsuite/testsuite_io.h (struct fail_buf): Fix type of
+	dummy return values.
+
 2004-12-19  Dhruv Matani  <dhruvbird@gmx.net>
 	
 	* include/ext/bitmap_allocator.h: Make doxygen style comments for

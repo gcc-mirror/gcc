@@ -1,6 +1,4 @@
-// 1999-07-28 bkoz
-
-// Copyright (C) 1999, 2001, 2003, 2004 Free Software Foundation
+// Copyright (C) 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,42 +16,51 @@
 // Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 // USA.
 
-// 27.6.1.2.3 basic_istream::operator>>
-// @require@ %-*.tst %-*.txt
-// @diff@ %-*.tst %-*.txt
+// 27.6.1.2.2 arithmetic extractors
 
 #include <istream>
-#include <fstream>
+#include <sstream>
+#include <locale>
 #include <testsuite_hooks.h>
 
-// filebufs.
-void test02() 
+namespace std {
+  class test_numpunct2 : public numpunct<wchar_t>
+  {
+  protected:
+    string
+    do_grouping() const 
+    { return string("\002\003"); }
+  };
+} // namespace std
+
+void test08()
 {
+  // manufactured locale, grouping is turned on
   bool test __attribute__((unused)) = true;
-  const char name_01[] = "istream_extractor_other-1.txt"; //read 
-  const char name_02[] = "istream_extractor_other-2.txt"; //write
+  unsigned int h4 = 0, h3 = 0, h2 = 0;
+  const std::wstring s1(L"1,22 205,19 22,123,22");
 
-  std::filebuf fbin, fbout;
-  fbin.open(name_01, std::ios_base::in);
-  fbout.open(name_02, std::ios_base::out | std::ios_base::trunc);
-  VERIFY( fbin.is_open() );
-  VERIFY( fbout.is_open() );
+  std::wistringstream is(s1);
+  is.imbue(std::locale(std::locale(), new std::test_numpunct2));  
 
-  if (test)
-    {
-      std::istream is(&fbin);
-      is.unsetf(std::ios_base::skipws);
-      is >> &fbout;
-    }
+  // Basic operation.
+  is >> h4; 
+  VERIFY( h4 == 122 );
+  VERIFY( is.good() );
 
-  fbout.close();
-  fbin.close();
-  VERIFY( !fbin.is_open() );
-  VERIFY( !fbout.is_open() );
+  is.clear();
+  is >> h3; 
+  VERIFY( h3 == 20519 );
+  VERIFY( is.good() );
+
+  is.clear();
+  is >> h2; 
+  VERIFY( h2 == 2212322 );
+  VERIFY( static_cast<bool>(is.rdstate() & std::ios_base::eofbit) );
 }
 
 int main()
 {
-  test02();
+  test08();
   return 0;
 }

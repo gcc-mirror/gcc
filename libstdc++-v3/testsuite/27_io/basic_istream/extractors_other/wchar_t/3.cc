@@ -1,6 +1,4 @@
-// 1999-07-28 bkoz
-
-// Copyright (C) 1999, 2001, 2003, 2004 Free Software Foundation
+// Copyright (C) 2004 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -19,41 +17,34 @@
 // USA.
 
 // 27.6.1.2.3 basic_istream::operator>>
-// @require@ %-*.tst %-*.txt
-// @diff@ %-*.tst %-*.txt
 
 #include <istream>
-#include <fstream>
+#include <sstream>
 #include <testsuite_hooks.h>
 
-// filebufs.
-void test02() 
+void test03() 
 {
+  using namespace std;  
   bool test __attribute__((unused)) = true;
-  const char name_01[] = "istream_extractor_other-1.txt"; //read 
-  const char name_02[] = "istream_extractor_other-2.txt"; //write
 
-  std::filebuf fbin, fbout;
-  fbin.open(name_01, std::ios_base::in);
-  fbout.open(name_02, std::ios_base::out | std::ios_base::trunc);
-  VERIFY( fbin.is_open() );
-  VERIFY( fbout.is_open() );
+  // template<_CharT, _Traits>
+  //  basic_istream& operator>>(ios_base& (*pf) (ios_base&))
+  {
+    int i = 0;
+    std::wistringstream iss(L" 43");
+    iss >> std::noskipws >> i;
+    VERIFY ( !iss ); //should set failbit
+  }
 
-  if (test)
-    {
-      std::istream is(&fbin);
-      is.unsetf(std::ios_base::skipws);
-      is >> &fbout;
-    }
+  // template<_CharT, _Traits>
+  //  basic_istream& operator>>(basic_ios& (*pf) (basic_ios&))
 
-  fbout.close();
-  fbin.close();
-  VERIFY( !fbin.is_open() );
-  VERIFY( !fbout.is_open() );
+  // template<_CharT, _Traits>
+  //  basic_istream& operator>>(basic_istream& (*pf) (basic_istream&))
 }
 
 int main()
 {
-  test02();
+  test03();
   return 0;
 }

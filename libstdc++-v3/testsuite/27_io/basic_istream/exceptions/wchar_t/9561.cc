@@ -1,6 +1,4 @@
-// 1999-07-28 bkoz
-
-// Copyright (C) 1999, 2001, 2003, 2004 Free Software Foundation
+// Copyright (C) 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,42 +16,44 @@
 // Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 // USA.
 
-// 27.6.1.2.3 basic_istream::operator>>
-// @require@ %-*.tst %-*.txt
-// @diff@ %-*.tst %-*.txt
-
 #include <istream>
-#include <fstream>
+#include <streambuf>
 #include <testsuite_hooks.h>
+#include <testsuite_io.h>
 
-// filebufs.
-void test02() 
+// libstdc++/9561
+void test01()
 {
+  using namespace std;
   bool test __attribute__((unused)) = true;
-  const char name_01[] = "istream_extractor_other-1.txt"; //read 
-  const char name_02[] = "istream_extractor_other-2.txt"; //write
 
-  std::filebuf fbin, fbout;
-  fbin.open(name_01, std::ios_base::in);
-  fbout.open(name_02, std::ios_base::out | std::ios_base::trunc);
-  VERIFY( fbin.is_open() );
-  VERIFY( fbout.is_open() );
+  __gnu_test::fail_wstreambuf b;
+  std::wistream strm (&b);
+  strm.exceptions (std::wios::badbit);
+  wchar_t i = 0;
 
-  if (test)
+  try 
     {
-      std::istream is(&fbin);
-      is.unsetf(std::ios_base::skipws);
-      is >> &fbout;
+      i = strm.get();
+      i = strm.get();
+      i = strm.get();
+    }
+  catch (__gnu_test::underflow_error&) 
+    {
+      // strm should throw facet_error and not do anything else
+      VERIFY(strm.bad());
+    }
+  catch (...) 
+    {
+      VERIFY( false );
     }
 
-  fbout.close();
-  fbin.close();
-  VERIFY( !fbin.is_open() );
-  VERIFY( !fbout.is_open() );
+  VERIFY( i == L's' );
 }
+
 
 int main()
 {
-  test02();
+  test01();
   return 0;
 }
