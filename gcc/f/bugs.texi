@@ -1,11 +1,11 @@
-@c Copyright (C) 1995-1997 Free Software Foundation, Inc.
+@c Copyright (C) 1995-1998 Free Software Foundation, Inc.
 @c This is part of the G77 manual.
 @c For copying conditions, see the file g77.texi.
 
 @c The text of this file appears in the file BUGS
 @c in the G77 distribution, as well as in the G77 manual.
 
-@c 1996-09-09
+@c 1998-03-15
 
 @ifclear BUGSONLY
 @node Actual Bugs
@@ -39,45 +39,6 @@ It also manifests itself as a failure to compile
 in this case, @samp{R} might be initialized to @samp{4.0}.
 
 Until this bug is fixed, use only @samp{-O1} or no optimization.
-
-@cindex DNRM2
-@cindex stack, 387 coprocessor
-@cindex ix86
-@cindex -O2
-@item
-A code-generation bug afflicts
-Intel x86 targets when @samp{-O2} is specified
-compiling, for example, an old version of
-the @samp{DNRM2} routine.
-The x87 coprocessor stack is being somewhat
-mismanaged in cases where assigned @code{GOTO}
-and @code{ASSIGN} are involved.
-
-Version 0.5.21 of @code{g77} contains an initial
-effort to fix the problem, but this effort is
-incomplete, and a more complete fix is planned
-for the next release.
-
-@cindex SIGNAL() intrinsic
-@cindex intrinsics, SIGNAL()
-@item
-Work is needed on the @code{SIGNAL()} intrinsic to ensure
-that pointers and integers are properly handled on all
-targets, including 64-bit machines.
-
-@cindex -fugly-comma option
-@cindex options, -fugly-comma
-@item
-When using @samp{-fugly-comma}, @code{g77} assumes an extra
-@samp{%VAL(0)} argument is to be passed to intrinsics
-taking no arguments, such as @code{IARGC()}, which in
-turn reject such a call.
-Although this has been worked around for 0.5.18 due
-to changes in the handling of intrinsics,
-@code{g77} needs to do the ugly-argument-appending trick
-only for external-function invocation, as this would
-probably be more consistent with compilers that default
-to using that trick.
 
 @item
 Something about @code{g77}'s straightforward handling of
@@ -225,42 +186,6 @@ is the potential, with the current setup, for interface differences
 in the way such areas are laid out between @code{g77} and other
 compilers.
 
-@item
-Some crashes occur when compiling under Solaris on x86
-machines.
-
-Nothing has been heard about any such problems for some time,
-so this is considering a closed item as of 0.5.20.
-Please submit any bug reports pertinent to @code{g77}'s support
-for Solaris/x86 systems.
-
-@cindex RS/6000 support
-@cindex support, RS/6000
-@item
-RS/6000 support is not complete as of the gcc 2.6.3 back end.
-The 2.7.0 back end appears to fix this problem, or at least mitigate
-it significantly, but there is at least one known problem that is
-likely to be a code-generation bug in @file{gcc-2.7.0} plus
-@file{g77-0.5.16}.
-This problem shows up only when compiling the Fortran program with @samp{-O}.
-
-Nothing has been heard about any RS/6000 problems for some time,
-so this is considering a closed item as of 0.5.20.
-Please submit any bug reports pertinent to @code{g77}'s support
-for RS/6000 systems.
-
-@cindex SGI support
-@cindex support, SGI
-@item
-SGI support is known to be a bit buggy.
-The known problem shows up only when compiling the Fortran program with
-@samp{-O}.
-
-It is possible these problems have all been fixed in 0.5.20 by
-emulating complex arithmetic in the front end.
-Please submit any bug reports pertinent to @code{g77}'s support
-for SGI systems.
-
 @cindex Alpha, support
 @cindex support, Alpha
 @item
@@ -312,9 +237,8 @@ general expressions (other than simple variables/arrays), to procedures
 when compiling on some systems (such as i386) with @samp{-fPIC}, as in
 when compiling for ELF targets.
 The symptom is that the assembler complains about invalid opcodes.
-More investigation is needed, but the problem is almost certainly
-in the gcc back end, and it apparently occurs only when
+This bug is in the gcc back end,
+and it apparently occurs only when
 compiling sufficiently complicated functions @emph{without} the
 @samp{-O} option.
 @end itemize
-

@@ -1,5 +1,5 @@
 /* intrin.c -- Recognize references to intrinsics
-   Copyright (C) 1995-1997 Free Software Foundation, Inc.
+   Copyright (C) 1995-1998 Free Software Foundation, Inc.
    Contributed by James Craig Burley (burley@gnu.ai.mit.edu).
 
 This file is part of GNU Fortran.

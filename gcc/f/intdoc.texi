@@ -150,7 +150,7 @@
 @end ifset
 @ifset familyF90
 * Count Intrinsic::     (Reserved for future use.)
-* Cpu_Time Intrinsic::  Get current CPU time.
+* CPU_Time Intrinsic::  Get current CPU time.
 * CShift Intrinsic::    (Reserved for future use.)
 @end ifset
 @ifset familyF77
@@ -2229,6 +2229,10 @@ If the @var{Status} argument is supplied, it contains 0
 on success or a non-zero error code otherwise upon return.
 See @code{chdir(3)}.
 
+@emph{Caution:} Using this routine during I/O to a unit connected with a
+non-absolute file name can cause subsequent I/O on such a unit to fail
+because the I/O library may reopen files by name.
+
 Some non-GNU implementations of Fortran provide this intrinsic as
 only a function, not as a subroutine, or do not support the
 (optional) @var{Status} argument.
@@ -2263,6 +2267,10 @@ Description:
 Sets the current working directory to be @var{Dir}.
 Returns 0 on success or a non-zero error code.
 See @code{chdir(3)}.
+
+@emph{Caution:} Using this routine during I/O to a unit connected with a
+non-absolute file name can cause subsequent I/O on such a unit to fail
+because the I/O library may reopen files by name.
 
 Due to the side effects performed by this intrinsic, the function
 form is not recommended.
@@ -2595,18 +2603,18 @@ The name is, however, reserved as an intrinsic.
 Use @samp{EXTERNAL Count} to use this name for an
 external procedure.
 
-@node Cpu_Time Intrinsic
-@subsubsection Cpu_Time Intrinsic
-@cindex Cpu_Time intrinsic
-@cindex intrinsics, Cpu_Time
+@node CPU_Time Intrinsic
+@subsubsection CPU_Time Intrinsic
+@cindex CPU_Time intrinsic
+@cindex intrinsics, CPU_Time
 
 @noindent
 @example
-CALL Cpu_Time(@var{Seconds})
+CALL CPU_Time(@var{Seconds})
 @end example
 
 @noindent
-@var{Seconds}: @code{REAL(KIND=1)}; scalar; INTENT(OUT).
+@var{Seconds}: @code{REAL}; scalar; INTENT(OUT).
 
 @noindent
 Intrinsic groups: @code{f90}.
@@ -5269,6 +5277,12 @@ Intrinsic groups: @code{unix}.
 Description:
 
 Returns the login name for the process in @var{Login}.
+
+@emph{Caution:} On some systems, the @code{getlogin(3)}
+function, which this intrinsic calls at run time,
+is either not implemented or returns a null pointer.
+In the latter case, this intrinsic returns blanks
+in @var{Login}.
 
 @node GetPId Intrinsic
 @subsubsection GetPId Intrinsic
@@ -9093,8 +9107,6 @@ Description:
 Returns the process's runtime in seconds---the same value as the
 UNIX function @code{etime} returns.
 
-This routine is known from Cray Fortran.
-
 For information on other intrinsics with the same name:
 @xref{Second Intrinsic (subroutine)}.
 
@@ -9109,7 +9121,7 @@ CALL Second(@var{Seconds})
 @end example
 
 @noindent
-@var{Seconds}: @code{REAL(KIND=1)}; scalar; INTENT(OUT).
+@var{Seconds}: @code{REAL}; scalar; INTENT(OUT).
 
 @noindent
 Intrinsic groups: @code{unix}.
@@ -9120,7 +9132,7 @@ Description:
 Returns the process's runtime in seconds in @var{Seconds}---the same value
 as the UNIX function @code{etime} returns.
 
-This routine is known from Cray Fortran.  @xref{Cpu_Time Intrinsic}
+This routine is known from Cray Fortran.  @xref{CPU_Time Intrinsic}
 for a standard equivalent.
 
 For information on other intrinsics with the same name:

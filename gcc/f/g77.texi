@@ -102,7 +102,7 @@ was contributed to Craig by David Ronis (@email{ronis@@onsager.chem.mcgill.ca}).
 @sp 2
 @center James Craig Burley
 @sp 3
-@center Last updated 1997-09-09
+@center Last updated 1998-01-11
 @sp 1
 @c The version number appears some more times in this file.
 
@@ -12317,7 +12317,7 @@ or @url{ftp://ftp.dsm.fordham.edu}.
 @cindex Makefile example
 Here are some sample @file{Makefile} rules using @code{ftnchek}
 ``project'' files to do cross-file checking and @code{sfmakedepend}
-(from @url{ftp://ahab.rutgers.edu/pub/perl/sfmakedepend})
+(from @uref{ftp://ahab.rutgers.edu/pub/perl/sfmakedepend})
 to maintain dependencies automatically.
 These assume the use of GNU @code{make}.
 

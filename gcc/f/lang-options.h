@@ -1,5 +1,5 @@
 /* lang-options.h file for Fortran
-   Copyright (C) 1995-1998 Free Software Foundation, Inc.
+   Copyright (C) 1995-1997 Free Software Foundation, Inc.
    Contributed by James Craig Burley (burley@gnu.ai.mit.edu).
 
 This file is part of GNU Fortran.
@@ -103,6 +103,10 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
   "-fcase-upper",
   "-fcase-lower",
   "-fcase-preserve",
+  "-fbadu77-intrinsics-delete",
+  "-fbadu77-intrinsics-hide",
+  "-fbadu77-intrinsics-disable",
+  "-fbadu77-intrinsics-enable",
   "-fdcp-intrinsics-delete",
   "-fdcp-intrinsics-hide",
   "-fdcp-intrinsics-disable",
@@ -111,18 +115,14 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
   "-ff2c-intrinsics-hide",
   "-ff2c-intrinsics-disable",
   "-ff2c-intrinsics-enable",
-  "-fgnu-intrinsics-delete",
-  "-fgnu-intrinsics-hide",
-  "-fgnu-intrinsics-disable",
-  "-fgnu-intrinsics-enable",
-  "-fbadu77-intrinsics-delete",
-  "-fbadu77-intrinsics-hide",
-  "-fbadu77-intrinsics-disable",
-  "-fbadu77-intrinsics-enable",
   "-ff90-intrinsics-delete",
   "-ff90-intrinsics-hide",
   "-ff90-intrinsics-disable",
   "-ff90-intrinsics-enable",
+  "-fgnu-intrinsics-delete",
+  "-fgnu-intrinsics-hide",
+  "-fgnu-intrinsics-disable",
+  "-fgnu-intrinsics-enable",
   "-fmil-intrinsics-delete",
   "-fmil-intrinsics-hide",
   "-fmil-intrinsics-disable",
