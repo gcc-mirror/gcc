@@ -2561,12 +2561,12 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	}
       else if (code == MEM)
 	{
-	  if (find_reloads_address (GET_MODE (recog_operand[i]),
+	  address_reloaded[i]
+	    = find_reloads_address (GET_MODE (recog_operand[i]),
 				    recog_operand_loc[i],
 				    XEXP (recog_operand[i], 0),
 				    &XEXP (recog_operand[i], 0),
-				    i, address_type[i], ind_levels, insn))
-	    address_reloaded[i] = 1;
+				    i, address_type[i], ind_levels, insn);
 	  substed_operand[i] = recog_operand[i] = *recog_operand_loc[i];
 	}
       else if (code == SUBREG)
@@ -2970,24 +2970,11 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 		     /* If IND_LEVELS, find_reloads_address won't reload a
 			pseudo that didn't get a hard reg, so we have to
 			reject that case.  */
-		     && (ind_levels ? offsettable_memref_p (operand)
-			 : offsettable_nonstrict_memref_p (operand)))
-		    /* A reloaded auto-increment address is offsettable,
-		       because it is now just a simple register indirect.  */
-		    || (GET_CODE (operand) == MEM
-			&& address_reloaded[i]
-			&& (GET_CODE (XEXP (operand, 0)) == PRE_INC
-			    || GET_CODE (XEXP (operand, 0)) == PRE_DEC
-			    || GET_CODE (XEXP (operand, 0)) == POST_INC
-			    || GET_CODE (XEXP (operand, 0)) == POST_DEC))
-		    /* Certain mem addresses will become offsettable
-		       after they themselves are reloaded.  This is important;
-		       we don't want our own handling of unoffsettables
-		       to override the handling of reg_equiv_address.  */
-		    || (GET_CODE (operand) == MEM
-			&& GET_CODE (XEXP (operand, 0)) == REG
-			&& (ind_levels == 0
-			    || reg_equiv_address[REGNO (XEXP (operand, 0))] != 0))
+		     && ((ind_levels ? offsettable_memref_p (operand)
+			  : offsettable_nonstrict_memref_p (operand))
+			 /* A reloaded address is offsettable because it is now
+			    just a simple register indirect.  */
+			 || address_reloaded[i]))
 		    || (GET_CODE (operand) == REG
 			&& REGNO (operand) >= FIRST_PSEUDO_REGISTER
 			&& reg_renumber[REGNO (operand)] < 0
@@ -4383,7 +4370,7 @@ find_reloads_address (mode, memrefloc, ad, loc, opnum, type, ind_levels, insn)
 	  && strict_memory_address_p (mode, reg_equiv_constant[regno]))
 	{
 	  *loc = ad = reg_equiv_constant[regno];
-	  return 1;
+	  return 0;
 	}
 
       else if (reg_equiv_address[regno] != 0)
