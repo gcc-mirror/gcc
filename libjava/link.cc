@@ -100,6 +100,7 @@ _Jv_Linker::resolve_field (_Jv_Field *field, java::lang::ClassLoader *loader)
 // superclasses and interfaces.
 _Jv_Field *
 _Jv_Linker::find_field_helper (jclass search, _Jv_Utf8Const *name,
+			       _Jv_Utf8Const *type_name,
 			       jclass *declarer)
 {
   while (search)
@@ -108,7 +109,21 @@ _Jv_Linker::find_field_helper (jclass search, _Jv_Utf8Const *name,
       for (int i = 0; i < search->field_count; ++i)
 	{
 	  _Jv_Field *field = &search->fields[i];
-	  if (_Jv_equalUtf8Consts (field->name, name))
+	  if (! _Jv_equalUtf8Consts (field->name, name))
+	    continue;
+
+	  if (! field->isResolved ())
+	    resolve_field (field, search->loader);
+
+	  // Note that we compare type names and not types.  This is
+	  // bizarre, but we do it because we want to find a field
+	  // (and terminate the search) if it has the correct
+	  // descriptor -- but then later reject it if the class
+	  // loader check results in different classes.  We can't just
+	  // pass in the descriptor and check that way, because when
+	  // the field is already resolved there is no easy way to
+	  // find its descriptor again.
+	  if (_Jv_equalUtf8Consts (type_name, field->type->name))
 	    {
 	      *declarer = search;
 	      return field;
@@ -119,7 +134,7 @@ _Jv_Linker::find_field_helper (jclass search, _Jv_Utf8Const *name,
       for (int i = 0; i < search->interface_count; ++i)
 	{
 	  _Jv_Field *result = find_field_helper (search->interfaces[i], name,
-						 declarer);
+						 type_name, declarer);
 	  if (result)
 	    return result;
 	}
@@ -155,23 +170,14 @@ _Jv_Linker::find_field (jclass klass, jclass owner,
 			_Jv_Utf8Const *field_name,
 			_Jv_Utf8Const *field_type_name)
 {
-  jclass field_type = 0;
-
-  if (owner->loader != klass->loader)
-    {
-      // FIXME: The implementation of this function
-      // (_Jv_FindClassFromSignature) will generate an instance of
-      // _Jv_Utf8Const for each call if the field type is a class name
-      // (Lxx.yy.Z;).  This may be too expensive to do for each and
-      // every fieldref being resolved.  For now, we fix the problem
-      // by only doing it when we have a loader different from the
-      // class declaring the field.
-      field_type = _Jv_FindClassFromSignature (field_type_name->chars(),
-					       klass->loader);
-    }
+  // FIXME: this allocates a _Jv_Utf8Const each time.  We should make
+  // it cheaper.
+  jclass field_type = _Jv_FindClassFromSignature (field_type_name->chars(),
+						  klass->loader);
 
   jclass found_class = 0;
-  _Jv_Field *the_field = find_field_helper (owner, field_name, &found_class);
+  _Jv_Field *the_field = find_field_helper (owner, field_name,
+					    field_type->name, &found_class);
 
   if (the_field == 0)
     {
@@ -186,12 +192,11 @@ _Jv_Linker::find_field (jclass klass, jclass owner,
 
   if (_Jv_CheckAccess (klass, found_class, the_field->flags))
     {
-      // Resolve the field using the class' own loader if necessary.
-
-      if (!the_field->isResolved ())
-	resolve_field (the_field, found_class->loader);
-
-      if (field_type != 0 && the_field->type != field_type)
+      // Note that the field returned by find_field_helper is always
+      // resolved.  There's no point checking class loaders here,
+      // since we already did the work to look up all the types.
+      // FIXME: being lazy here would be nice.
+      if (the_field->type != field_type)
 	throw new java::lang::LinkageError
 	  (JvNewStringLatin1 
 	   ("field type mismatch with different loaders"));
