@@ -181,71 +181,77 @@ trigraph_ok (pfile, from_char)
 
 /* Skips any escaped newlines introduced by NEXT, which is either a
    '?' or a '\\'.  Returns the next character, which will also have
-   been placed in buffer->read_ahead.  */
+   been placed in buffer->read_ahead.  This routine performs
+   preprocessing stages 1 and 2 of the ISO C standard.  */
 static cppchar_t
 skip_escaped_newlines (buffer, next)
      cpp_buffer *buffer;
      cppchar_t next;
 {
-  cppchar_t next1;
-  const unsigned char *saved_cur;
-  int space;
-
-  do
+  /* Only do this if we apply stages 1 and 2.  */
+  if (!buffer->from_stage3)
     {
-      if (buffer->cur == buffer->rlimit)
-	break;
-      
-      SAVE_STATE ();
-      if (next == '?')
-	{
-	  next1 = *buffer->cur++;
-	  if (next1 != '?' || buffer->cur == buffer->rlimit)
-	    {
-	      RESTORE_STATE ();
-	      break;
-	    }
+      cppchar_t next1;
+      const unsigned char *saved_cur;
+      int space;
 
-	  next1 = *buffer->cur++;
-	  if (!_cpp_trigraph_map[next1] || !trigraph_ok (buffer->pfile, next1))
-	    {
-	      RESTORE_STATE ();
-	      break;
-	    }
-
-	  /* We have a full trigraph here.  */
-	  next = _cpp_trigraph_map[next1];
-	  if (next != '\\' || buffer->cur == buffer->rlimit)
-	    break;
-	  SAVE_STATE ();
-	}
-
-      /* We have a backslash, and room for at least one more character.  */
-      space = 0;
       do
 	{
-	  next1 = *buffer->cur++;
-	  if (!is_nvspace (next1))
+	  if (buffer->cur == buffer->rlimit)
 	    break;
-	  space = 1;
+      
+	  SAVE_STATE ();
+	  if (next == '?')
+	    {
+	      next1 = *buffer->cur++;
+	      if (next1 != '?' || buffer->cur == buffer->rlimit)
+		{
+		  RESTORE_STATE ();
+		  break;
+		}
+
+	      next1 = *buffer->cur++;
+	      if (!_cpp_trigraph_map[next1]
+		  || !trigraph_ok (buffer->pfile, next1))
+		{
+		  RESTORE_STATE ();
+		  break;
+		}
+
+	      /* We have a full trigraph here.  */
+	      next = _cpp_trigraph_map[next1];
+	      if (next != '\\' || buffer->cur == buffer->rlimit)
+		break;
+	      SAVE_STATE ();
+	    }
+
+	  /* We have a backslash, and room for at least one more character.  */
+	  space = 0;
+	  do
+	    {
+	      next1 = *buffer->cur++;
+	      if (!is_nvspace (next1))
+		break;
+	      space = 1;
+	    }
+	  while (buffer->cur < buffer->rlimit);
+
+	  if (!is_vspace (next1))
+	    {
+	      RESTORE_STATE ();
+	      break;
+	    }
+
+	  if (space)
+	    cpp_warning (buffer->pfile,
+			 "backslash and newline separated by space");
+
+	  next = handle_newline (buffer, next1);
+	  if (next == EOF)
+	    cpp_pedwarn (buffer->pfile, "backslash-newline at end of file");
 	}
-      while (buffer->cur < buffer->rlimit);
-
-      if (!is_vspace (next1))
-	{
-	  RESTORE_STATE ();
-	  break;
-	}
-
-      if (space)
-	cpp_warning (buffer->pfile,
-		     "backslash and newline separated by space");
-
-      next = handle_newline (buffer, next1);
-      if (next == EOF)
-	cpp_pedwarn (buffer->pfile, "backslash-newline at end of file");
+      while (next == '\\' || next == '?');
     }
-  while (next == '\\' || next == '?');
 
   buffer->read_ahead = next;
   return next;
@@ -863,8 +869,8 @@ _cpp_lex_token (pfile, result)
     {
     case EOF:
       /* Non-empty files should end in a newline.  Ignore for command
-	 line - we get e.g. -A options with no trailing \n.  */
-      if (pfile->lexer_pos.col != 0 && pfile->done_initializing)
+	 line and _Pragma buffers.  */
+      if (pfile->lexer_pos.col != 0 && !buffer->from_stage3)
 	cpp_pedwarn (pfile, "no newline at end of file");
       pfile->state.skip_newlines = 1;
       result->type = CPP_EOF;

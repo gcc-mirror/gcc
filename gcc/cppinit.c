@@ -487,6 +487,7 @@ cpp_reader_init (pfile)
   s = &pfile->spec_nodes;
   s->n_L                = cpp_lookup (pfile, DSC("L"));
   s->n_defined		= cpp_lookup (pfile, DSC("defined"));
+  s->n__Pragma		= cpp_lookup (pfile, DSC("_Pragma"));
   s->n__STRICT_ANSI__   = cpp_lookup (pfile, DSC("__STRICT_ANSI__"));
   s->n__CHAR_UNSIGNED__ = cpp_lookup (pfile, DSC("__CHAR_UNSIGNED__"));
   s->n__VA_ARGS__       = cpp_lookup (pfile, DSC("__VA_ARGS__"));

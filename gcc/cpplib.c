@@ -99,6 +99,9 @@ static void do_pragma_once	PARAMS ((cpp_reader *));
 static void do_pragma_poison	PARAMS ((cpp_reader *));
 static void do_pragma_system_header	PARAMS ((cpp_reader *));
 static void do_pragma_dependency	PARAMS ((cpp_reader *));
+static int get__Pragma_string	PARAMS ((cpp_reader *, cpp_token *));
+static unsigned char *destringize	PARAMS ((const cpp_string *,
+						 unsigned int *));
 static int parse_answer PARAMS ((cpp_reader *, struct answer **, int));
 static cpp_hashnode *parse_assertion PARAMS ((cpp_reader *, struct answer **,
 					      int));
@@ -345,7 +348,7 @@ run_directive (pfile, dir_no, buf, count, name)
      size_t count;
      const char *name;
 {
-  if (cpp_push_buffer (pfile, (const U_CHAR *)buf, count) != NULL)
+  if (cpp_push_buffer (pfile, (const U_CHAR *) buf, count) != NULL)
     {
       const struct directive *dir = &dtable[dir_no];
 
@@ -353,15 +356,27 @@ run_directive (pfile, dir_no, buf, count, name)
 	CPP_BUFFER (pfile)->nominal_fname = name;
       else
 	CPP_BUFFER (pfile)->nominal_fname = _("<command line>");
-      CPP_BUFFER (pfile)->lineno = (unsigned int)-1;
 
+      /* A kludge to avoid line markers for _Pragma.  */
+      if (dir_no == T_PRAGMA)
+	pfile->lexer_pos.output_line = CPP_BUFFER (pfile)->prev->lineno;
+
+      /* For _Pragma, the text is passed through preprocessing stage 3
+	 only, i.e. no trigraphs, no escaped newline removal, and no
+	 macro expansion.  Do the same for command-line directives.  */
+      pfile->buffer->from_stage3 = 1;
       pfile->state.in_directive = 1;
       pfile->directive = dir;
+      pfile->state.prevent_expansion++;
       (void) (*dir->handler) (pfile);
+      pfile->state.prevent_expansion--;
       pfile->directive = 0;
       pfile->state.in_directive = 0;
 
       skip_rest_of_line (pfile);
+      if (pfile->buffer->cur != pfile->buffer->rlimit)
+	cpp_error (pfile, "extra text after end of #%s directive",
+		   dtable[dir_no].name);
       cpp_pop_buffer (pfile);
     }
 }
@@ -1069,6 +1084,68 @@ do_pragma_dependency (pfile)
     }
 }
 
+/* Check syntax is "(string-literal)".  Returns 0 on success.  */
+static int
+get__Pragma_string (pfile, string)
+     cpp_reader *pfile;
+     cpp_token *string;
+{
+  cpp_token paren;
+
+  cpp_get_token (pfile, &paren);
+  if (paren.type != CPP_OPEN_PAREN)
+    return 1;
+
+  cpp_get_token (pfile, string);
+  if (string->type != CPP_STRING && string->type != CPP_WSTRING)
+    return 1;
+
+  cpp_get_token (pfile, &paren);
+  return paren.type != CPP_CLOSE_PAREN;
+}
+
+/* Returns a malloced buffer containing a destringized cpp_string by
+   removing the first \ of \" and \\ sequences.  */
+static unsigned char *
+destringize (in, len)
+     const cpp_string *in;
+     unsigned int *len;
+{
+  const unsigned char *src, *limit;
+  unsigned char *dest, *result;
+
+  dest = result = (unsigned char *) xmalloc (in->len);
+  for (src = in->text, limit = src + in->len; src < limit;)
+    {
+      /* We know there is a character following the backslash.  */
+      if (*src == '\\' && (src[1] == '\\' || src[1] == '"'))
+	src++;
+      *dest++ = *src++;
+    }
+
+  *len = dest - result;
+  return result;
+}
+
+void
+_cpp_do__Pragma (pfile)
+     cpp_reader *pfile;
+{
+  cpp_token string;
+  unsigned char *buffer;
+  unsigned int len;
+
+  if (get__Pragma_string (pfile, &string))
+    {
+      cpp_error (pfile, "_Pragma takes a parenthesized string literal");
+      return;
+    }
+
+  buffer = destringize (&string.val.str, &len);
+  run_directive (pfile, T_PRAGMA, (char *) buffer, len, _("<_Pragma>"));
+  free ((PTR) buffer);
+}
+
 /* Just ignore #sccs, on systems where we define it at all.  */
 #ifdef SCCS_DIRECTIVE
 static void
@@ -1626,12 +1703,6 @@ cpp_push_buffer (pfile, buffer, length)
       return NULL;
     }
 
-  if (pfile->context->prev)
-    {
-      cpp_ice (pfile, "buffer pushed with contexts stacked");
-      skip_rest_of_line (pfile);
-    }
-
   new = xobnew (pfile->buffer_ob, cpp_buffer);
   /* Clears, amongst other things, if_stack and mi_cmacro.  */
   memset (new, 0, sizeof (cpp_buffer));
@@ -1641,6 +1712,8 @@ cpp_push_buffer (pfile, buffer, length)
   new->rlimit = buffer + length;
   new->prev = buf;
   new->pfile = pfile;
+  /* Preprocessed files don't do trigraph and escaped newline processing.  */
+  new->from_stage3 = CPP_OPTION (pfile, preprocessed);
   /* No read ahead or extra char initially.  */
   new->read_ahead = EOF;
   new->extra_char = EOF;
