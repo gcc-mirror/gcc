@@ -1682,8 +1682,7 @@ expand_shift (code, mode, shifted, amount, target, unsignedp)
 	    continue;
 	  else if (methods == OPTAB_LIB_WIDEN)
 	    {
-	      /* If we are rotating by a constant that is valid and
-		 we have been unable to open-code this by a rotation,
+	      /* If we have been unable to open-code this by a rotation,
 		 do it as the IOR of two shifts.  I.e., to rotate A
 		 by N bits, compute (A << N) | ((unsigned) A >> (C - N))
 		 where C is the bitsize of A.
@@ -1695,25 +1694,25 @@ expand_shift (code, mode, shifted, amount, target, unsignedp)
 		 this extremely unlikely lossage to avoid complicating the
 		 code below.  */
 
-	      if (GET_CODE (op1) == CONST_INT && INTVAL (op1) > 0
-		  && INTVAL (op1) < GET_MODE_BITSIZE (mode))
-		{
-		  rtx subtarget = target == shifted ? 0 : target;
-		  rtx temp1;
-		  tree other_amount
-		    = build_int_2 (GET_MODE_BITSIZE (mode) - INTVAL (op1), 0);
+	      rtx subtarget = target == shifted ? 0 : target;
+	      rtx temp1;
+	      tree type = TREE_TYPE (amount);
+	      tree new_amount = make_tree (type, op1);
+	      tree other_amount
+		= fold (build (MINUS_EXPR, type,
+			       convert (type,
+					build_int_2 (GET_MODE_BITSIZE (mode),
+						     0)),
+			       amount));
 
-		  shifted = force_reg (mode, shifted);
+	      shifted = force_reg (mode, shifted);
 
-		  temp = expand_shift (left ? LSHIFT_EXPR : RSHIFT_EXPR,
-				       mode, shifted, amount, subtarget, 1);
-		  temp1 = expand_shift (left ? RSHIFT_EXPR : LSHIFT_EXPR,
-					mode, shifted, other_amount, 0, 1);
-		  return expand_binop (mode, ior_optab, temp, temp1, target,
-				       unsignedp, methods);
-		}
-	      else
-		methods = OPTAB_LIB;
+	      temp = expand_shift (left ? LSHIFT_EXPR : RSHIFT_EXPR,
+				   mode, shifted, new_amount, subtarget, 1);
+	      temp1 = expand_shift (left ? RSHIFT_EXPR : LSHIFT_EXPR,
+				    mode, shifted, other_amount, 0, 1);
+	      return expand_binop (mode, ior_optab, temp, temp1, target,
+				   unsignedp, methods);
 	    }
 
 	  temp = expand_binop (mode,
