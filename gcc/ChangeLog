@@ -1,3 +1,10 @@
+2002-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR optimization/6086
+	* combine.c (combine_simplify_rtx): If simplify_rtx failed because
+	of SUBREG of volatile MEM or because the MEM was mode dependent,
+	return CLOBBER instead of unmodified SUBREG.
+
 Sat Mar 30 14:08:55 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 	* local-alloc.c (local_alloc): Avoid call of update_equiv_regs when not optimizing.
