@@ -220,8 +220,6 @@ extern void c_initialize_diagnostics (diagnostic_context *);
 			  ((CONST_P) ? TYPE_QUAL_CONST : 0) |	  \
 			  ((VOLATILE_P) ? TYPE_QUAL_VOLATILE : 0))
 
-#define c_sizeof_nowarn(T)  c_sizeof_or_alignof_type (T, SIZEOF_EXPR, 0)
-
 /* in c-typeck.c */
 extern struct c_switch *c_switch_stack;
 
