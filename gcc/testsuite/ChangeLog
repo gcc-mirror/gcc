@@ -1,5 +1,7 @@
 2002-03-26  Richard Henderson  <rth@redhat.com>
 
+	* gcc.dg/pragma-re-2.c: Avoid empty source file warning.
+
 	* gcc.dg/20020312-2.c: Don't test epilogue vs global register
 	on sparc.
 
