@@ -1,3 +1,7 @@
+2005-03-29  Devang Patel  <dpatel@apple.com>
+
+	* tree-sra.c (decide_block_copy): Disable scalarization of sub-elements.
+	
 2005-03-30  Stuart Hastings  <stuart@apple.com>
 	    Dale Johannesen  <dalej@apple.com>
 
