@@ -1,5 +1,10 @@
 2002-12-12  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/h8300/h8300.md (a peephole2): Accept a constant
+	that's accepted by CONST_OK_FOR_J.
+
+2002-12-12  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/h8300/h8300.h (CONST_OK_FOR_J): New.
 	(CONST_OK_FOR_LETTER_P): Use CONST_OK_FOR_J.
 	* config/h8300/h8300.md (*addhi_h8300): Add a new alternative.
