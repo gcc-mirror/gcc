@@ -54,7 +54,7 @@ void va_end (__gnuc_va_list);		/* Defined in libgcc.a */
 /* We cast to void * and then to TYPE * because this avoids
    a warning about increasing the alignment requirement.  */
 #define va_arg(__AP, __type)						    \
-  ((__type *) (void *) (__AP = (char *) ((__alignof(__type) > 4		    \
+  ((__type *) (void *) (__AP = (char *) ((__alignof__(__type) > 4	    \
 					  ? ((int)__AP + 8 - 1) & -8	    \
 					  : ((int)__AP + 4 - 1) & -4)	    \
 					 + __va_rounded_size(__type))))[-1]
