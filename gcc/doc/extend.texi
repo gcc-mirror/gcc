@@ -35,6 +35,8 @@ along with the section number from the ISO/IEC 9899:1999 standard.
 @item
 @cite{How a diagnostic is identified (3.10, 5.1.1.3).}
 
+Diagnostics consist of all the output sent to stderr by GCC.
+
 @item
 @cite{Whether each nonempty sequence of white-space characters other than
 new-line is retained or replaced by one space character in translation
@@ -58,6 +60,11 @@ and their correspondence to universal character names (6.4.2).}
 @item
 @cite{The number of significant initial characters in an identifier
 (5.2.4.1, 6.4.2).}
+
+For internal names, all characters are significant.  For external names,
+the number of significant characters are defined by the linker; for
+almost all targets, all characters are significant.
+
 @end itemize
 
 @node Characters implementation
@@ -122,6 +129,9 @@ sequence not represented in the execution character set (6.4.5).}
 @cite{Whether signed integer types are represented using sign and magnitude,
 two's complement, or one's complement, and whether the extraordinary value
 is a trap representation or an ordinary value (6.2.6.2).}
+
+GCC supports only two's complement integer types, and all bit patterns
+are ordinary values.
 
 @item
 @cite{The rank of any extended integer type relative to another extended
@@ -242,6 +252,11 @@ storage-class specifier are effective (6.7.1).}
 @cite{The extent to which suggestions made by using the inline function
 specifier are effective (6.7.4).}
 
+GCC will not inline any functions if the @option{-fno-inline} option is
+used or if @option{-O0} is used.  Otherwise, GCC may still be unable to
+inline a function for many reasons; the @option{-Winline} option may be
+used to determine if a function has not been inlined and why not.
+
 @end itemize
 
 @node Structures unions enumerations and bit-fields implementation
@@ -315,6 +330,8 @@ name (6.10.2).}
 @item
 @cite{The nesting limit for @code{#include} processing (6.10.2).}
 
+GCC imposes a limit of 200 nested @code{#include}s.
+
 @item
 @cite{Whether the @samp{#} operator inserts a @samp{\} character before
 the @samp{\} character that begins a universal character name in a
@@ -327,6 +344,8 @@ directive (6.10.6).}
 @item
 @cite{The definitions for @code{__DATE__} and @code{__TIME__} when
 respectively, the date and time of translation are not available (6.10.8).}
+
+GCC assumes that the date and time is always available.
 
 @end itemize
 
