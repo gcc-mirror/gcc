@@ -5266,7 +5266,7 @@ instantiate_class_template (type)
       TYPE_FIELDS (type) = TYPE_FIELDS (pattern);
       TYPE_METHODS (type) = TYPE_METHODS (pattern);
       CLASSTYPE_DECL_LIST (type) = CLASSTYPE_DECL_LIST (pattern);
-      CLASSTYPE_TAGS (type) = CLASSTYPE_TAGS (pattern);
+      CLASSTYPE_NESTED_UDTS (type) = CLASSTYPE_NESTED_UDTS (pattern);
       CLASSTYPE_VBASECLASSES (type) = CLASSTYPE_VBASECLASSES (pattern);
       
       /* Pretend that the type is complete, so that we will look
@@ -5432,7 +5432,7 @@ instantiate_class_template (type)
 	{
 	  if (TYPE_P (t))
 	    {
-	      /* Build new CLASSTYPE_TAGS.  */
+	      /* Build new CLASSTYPE_NESTED_UDTS.  */
 
 	      tree tag = t;
 	      tree name = TYPE_IDENTIFIER (tag);
@@ -5525,7 +5525,7 @@ instantiate_class_template (type)
 		  /* If it is a TYPE_DECL for a class-scoped ENUMERAL_TYPE,
 		     such a thing will already have been added to the field
 		     list by tsubst_enum in finish_member_declaration in the
-		     CLASSTYPE_TAGS case above.  */
+		     CLASSTYPE_NESTED_UDTS case above.  */
 		  if (!(TREE_CODE (r) == TYPE_DECL
 			&& TREE_CODE (TREE_TYPE (r)) == ENUMERAL_TYPE
 			&& TYPE_CONTEXT (TREE_TYPE (r)) == type))
@@ -9891,6 +9891,18 @@ mark_class_instantiated (t, extern_p)
     }
 }     
 
+/* Called from do_type_instantiation through binding_table_foreach to
+   do recursive instantiation for the type bound in ENTRY.   */
+static void
+bt_instantiate_type_proc (binding_entry entry, void *data)
+{
+  tree storage = *(tree *) data;
+
+  if (IS_AGGR_TYPE (entry->type)
+      && !uses_template_parms (CLASSTYPE_TI_ARGS (entry->type)))
+    do_type_instantiation (TYPE_MAIN_DECL (entry->type), storage, 0);
+}
+
 /* Perform an explicit instantiation of template class T.  STORAGE, if
    non-null, is the RID for extern, inline or static.  COMPLAIN is
    nonzero if this is called from the parser, zero if called recursively,
@@ -10031,10 +10043,9 @@ do_type_instantiation (t, storage, complain)
 	    instantiate_decl (tmp, /*defer_ok=*/1);
 	}
 
-    for (tmp = CLASSTYPE_TAGS (t); tmp; tmp = TREE_CHAIN (tmp))
-      if (IS_AGGR_TYPE (TREE_VALUE (tmp))
-	  && !uses_template_parms (CLASSTYPE_TI_ARGS (TREE_VALUE (tmp))))
-	do_type_instantiation (TYPE_MAIN_DECL (TREE_VALUE (tmp)), storage, 0);
+    if (CLASSTYPE_NESTED_UDTS (t))
+      binding_table_foreach (CLASSTYPE_NESTED_UDTS (t),
+                             bt_instantiate_type_proc, &storage);
   }
 }
 

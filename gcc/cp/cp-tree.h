@@ -249,6 +249,24 @@ struct cxx_binding GTY(())
   unsigned is_local : 1;
 };
 
+/* The type of dictionary used to map names to types declared at
+   a given scope.  */
+typedef struct binding_table_s *binding_table;
+typedef struct binding_entry_s *binding_entry;
+
+/* The type of a routine repeatedly called by binding_table_foreach.  */
+typedef void (*bt_foreach_proc) (binding_entry, void *);
+
+struct binding_entry_s GTY(())
+{
+  binding_entry chain;
+  tree name;
+  tree type;
+};
+
+extern void binding_table_foreach (binding_table, bt_foreach_proc, void *);
+extern binding_entry binding_table_find (binding_table, tree);
+extern void cxx_remember_type_decls (binding_table);
 
 /* Language-dependent contents of an identifier.  */
 
@@ -1186,7 +1204,7 @@ struct lang_type_class GTY(())
   tree vtables;
   tree typeinfo_var;
   tree vbases;
-  tree tags;
+  binding_table nested_udts;
   tree as_base;
   tree pure_virtuals;
   tree friend_classes;
@@ -1398,11 +1416,12 @@ struct lang_type GTY(())
 #define SET_CLASSTYPE_MARKED6(NODE)   SET_CLASSTYPE_MARKED_N (NODE, 5)
 #define CLEAR_CLASSTYPE_MARKED6(NODE) CLEAR_CLASSTYPE_MARKED_N (NODE, 5)
 
-/* A list of the nested tag-types (class, struct, union, or enum)
-   found within this class.  The TREE_PURPOSE of each node is the name
-   of the type; the TREE_VALUE is the type itself.  This list includes
+/* A binding_table of the nested tag-types (class, struct, union, or enum)
+   found within this class.  The ENTRY->name of each node is the name
+   of the type; the ENTRY->type is the type itself.  This table includes
    nested member class templates.  */
-#define CLASSTYPE_TAGS(NODE)		(LANG_TYPE_CLASS_CHECK (NODE)->tags)
+#define CLASSTYPE_NESTED_UDTS(NODE)    \
+   (LANG_TYPE_CLASS_CHECK (NODE)->nested_udts)
 
 /* Nonzero if NODE has a primary base class, i.e., a base class with
    which it shares the virtual function table pointer.  */

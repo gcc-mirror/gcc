@@ -1,3 +1,64 @@
+2003-05-19  Gabriel Dos Reis <gdr@integrable-solutions.net>
+
+	* cp-tree.h (struct binding_entry_s): New datatype.
+	(binding_table): Declare.
+	(binding_entry): Likewise.
+	(bt_foreach_proc): Likewise.
+	(binding_table_foreach): Likewise.
+	(binding_table_find): Likewise.
+	(cxx_remember_type_decls): Likewise.
+	(CLASSTYPE_TAGS): Remove.
+	(CLASSTYPE_NESTED_UDTS): New macro.
+	(struct lang_type_class):  Remove tags field.  Add nested_types.
+	* decl.c (ENTRY_INDEX): New macro.
+	(free_binding_entry):  New free list.
+	(binding_entry_make): New function.
+	(binding_entry_free): Likewise.
+	(struct binding_table_s): New datatype.
+	(SCOPE_DEFAULT_HT_SIZE): New macro.
+	(CLASS_SCOPE_HT_SIZE): Likewise.
+	(NAMESPACE_ORDINARY_HT_SIZE): Likewise.
+	(NAMESPACE_STD_HT_SIZE): Likewise.
+	(GLOBAL_SCOPE_HT_SIZE): Likewise.
+	(binding_table_construct): New function.
+	(binding_table_free): Likewise.
+	(binding_table_new): Likewise.
+	(binding_table_expand): Likewise.
+	(binding_table_insert): Likewise.
+	(binding_table_find): Likewise.
+	(binding_table_find_anon_type): Likewise.
+	(binding_table_reverse_maybe_remap): Likewise.
+	(binding_table_remove_anonymous_types): Likewise.
+	(binding_table_foreach): Likewise.
+	(struct cp_binding_level): Remove tags field.  Add type_decls.
+	(pop_binding_level): Free binding_entries if possible.
+	(kept_level_p): Tidy.
+	(poplevel): Remove unused variable tags.
+	(bt_print_entry): New function.
+	(print_binding_level): Use it.
+	(push_namespace): Construct binding table.
+	(maybe_process_template_type_declaration): Tidy.
+	(pushtag): Likewise.
+	(clear_anon_tags): Likewise.
+	(cxx_remember_type_decls): New function.
+	(lookup_tag): Tidy. 
+	(lookup_tag_reverse): Likewise.
+	(cxx_init_decl_processing): Construct binding_table for the global
+	scope.
+	(store_parm_decls): Remove pointless code.
+	(gettags): Remove.
+	(storetags): Likewise.
+	* class.c (unreverse_member_declarations): Don't touch
+	CLASSTYPE_TAGS. 
+	(pushclass): Remember CLASSTYPE_NESTED_UTDS.
+	* pt.c (instantiate_class_template): Remove reference to
+	CLASSTYPE_TAGS. Remeber CLASSTYPE_NESTED_UTDS.
+	(bt_instantiate_type_proc): New function.
+	(do_type_instantiation): Use it.
+	* search.c (lookup_field_r): Use binding_table_find.
+	* semantics.c (begin_class_definition): Remove reference to
+	CLASSTYPE_TAGS.  Nullify CLASSTYPE_NESTED_UTDS.
+
 2003-05-15  Jason Merrill  <jason@redhat.com>
 
 	PR c++/5388

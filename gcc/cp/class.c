@@ -5418,7 +5418,6 @@ unreverse_member_declarations (t)
   /* The following lists are all in reverse order.  Put them in
      declaration order now.  */
   TYPE_METHODS (t) = nreverse (TYPE_METHODS (t));
-  CLASSTYPE_TAGS (t) = nreverse (CLASSTYPE_TAGS (t));
   CLASSTYPE_DECL_LIST (t) = nreverse (CLASSTYPE_DECL_LIST (t));
 
   /* Actually, for the TYPE_FIELDS, only the non TYPE_DECLs are in
@@ -5780,7 +5779,7 @@ pushclass (type, modify)
 	  unuse_fields (type);
 	}
 
-      storetags (CLASSTYPE_TAGS (type));
+      cxx_remember_type_decls (CLASSTYPE_NESTED_UDTS (type));
     }
 }
 

@@ -141,7 +141,8 @@ ht_lookup (table, str, len, insert)
       if (node == NULL)
 	break;
 
-      if (HT_LEN (node) == len && !memcmp (HT_STR (node), str, len))
+      if (node->hash_value == hash && HT_LEN (node) == len
+          && !memcmp (HT_STR (node), str, len))
 	{
 	  if (insert == HT_ALLOCED)
 	    /* The string we search for was placed at the end of the
@@ -161,6 +162,7 @@ ht_lookup (table, str, len, insert)
   table->entries[index] = node;
 
   HT_LEN (node) = len;
+  node->hash_value = hash;
   if (insert == HT_ALLOC)
     HT_STR (node) = obstack_copy0 (&table->stack, str, len);
   else
@@ -193,7 +195,7 @@ ht_expand (table)
       {
 	unsigned int index, hash, hash2;
 
-	hash = calc_hash (HT_STR (*p), HT_LEN (*p));
+	hash = (*p)->hash_value;
 	hash2 = ((hash * 17) & sizemask) | 1;
 	index = hash & sizemask;
 

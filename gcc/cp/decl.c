@@ -291,6 +291,248 @@ int adding_implicit_members = 0;
 bool have_extern_spec;
 
 
+/* Compute the chain index of a binding_entry given the HASH value of its
+   name and the total COUNT of chains.  COUNT is assumed to be a power
+   of 2.  */
+#define ENTRY_INDEX(HASH, COUNT) (((HASH) >> 3) & ((COUNT) - 1))
+
+/* A free list of "binding_entry"s awaiting for re-use.  */
+static binding_entry GTY((deletable(""))) free_binding_entry;
+
+/* Create a binding_entry object for (NAME, TYPE).  */
+static inline binding_entry
+binding_entry_make (tree name, tree type)
+{
+  binding_entry entry;
+
+  if (free_binding_entry)
+    {
+      entry = free_binding_entry;
+      free_binding_entry = entry->chain;
+    }
+  else
+    entry = ggc_alloc (sizeof (struct binding_entry_s));
+
+  entry->name = name;
+  entry->type = type;
+
+  return entry;
+}
+
+/* Put ENTRY back on the free list.  */
+static inline void
+binding_entry_free (binding_entry entry)
+{
+  entry->chain = free_binding_entry;
+  free_binding_entry = entry;
+}
+
+/* The datatype used to implement the mapping from names to types at
+   a given scope.  */
+struct binding_table_s GTY(())
+{
+  /* Array of chains of "binding_entry"s  */
+  binding_entry * GTY((length ("%h.chain_count"))) chain;
+
+  /* The number of chains in this table.  This is the length of the
+     the member "chaiin" considered as an array.  */
+  size_t chain_count;
+
+  /* Number of "binding_entry"s in this table.  */
+  size_t entry_count;
+};
+
+/* These macros indicate the initial chains count for binding_table.  */
+#define SCOPE_DEFAULT_HT_SIZE                        (1 << 3)
+#define CLASS_SCOPE_HT_SIZE                          (1 << 3)
+#define NAMESPACE_ORDINARY_HT_SIZE                   (1 << 5)
+#define NAMESPACE_STD_HT_SIZE                        (1 << 8)
+#define GLOBAL_SCOPE_HT_SIZE                         (1 << 8)
+
+/* Construct TABLE with an initial CHAIN_COUNT.  */
+static inline void
+binding_table_construct (binding_table table, size_t chain_count)
+{
+  table->chain_count = chain_count;
+  table->entry_count = 0;
+  table->chain = ggc_alloc_cleared
+    (table->chain_count * sizeof (binding_entry));
+}
+
+/* Free TABLE by making its entries ready for reuse. */
+static inline void
+binding_table_free (binding_table table)
+{
+  size_t i;
+  if (table == NULL)
+    return;
+  
+  for (i = 0; i < table->chain_count; ++i)
+    {
+      while (table->chain[i] != NULL)
+        {
+          binding_entry entry = table->chain[i];
+          table->chain[i] = entry->chain;
+          binding_entry_free (entry);
+        }
+    }
+  table->entry_count = 0;
+}
+
+/* Allocate a table with CHAIN_COUNT, assumed to be a power of two.  */
+static inline binding_table
+binding_table_new (size_t chain_count)
+{
+  binding_table table = ggc_alloc (sizeof (struct binding_table_s));
+  binding_table_construct (table, chain_count);
+  return table;
+}
+
+/* Expand TABLE to twice its current chain_count.  */
+static void
+binding_table_expand (binding_table table)
+{
+  const size_t old_chain_count = table->chain_count;
+  const size_t old_entry_count = table->entry_count;
+  const size_t new_chain_count = 2 * old_chain_count;
+  binding_entry *old_chains = table->chain;
+  size_t i;
+  
+  binding_table_construct (table, new_chain_count);
+  for (i = 0; i < old_chain_count; ++i)
+    {
+      binding_entry entry = old_chains[i];
+      for (; entry != NULL; entry = old_chains[i])
+        {
+          const unsigned int hash = IDENTIFIER_HASH_VALUE (entry->name);
+          const size_t j = ENTRY_INDEX (hash, new_chain_count);
+
+          old_chains[i] = entry->chain;
+          entry->chain = table->chain[j];
+          table->chain[j] = entry;
+        }
+    }
+  table->entry_count = old_entry_count;
+}
+
+/* Insert a binding for NAME to TYPe into TABLE.  */
+static inline void
+binding_table_insert (binding_table table, tree name, tree type)
+{
+  const unsigned int hash = IDENTIFIER_HASH_VALUE (name);
+  const size_t i = ENTRY_INDEX (hash, table->chain_count);
+  binding_entry entry = binding_entry_make (name, type);
+  
+  entry->chain = table->chain[i];
+  table->chain[i] = entry;
+  ++table->entry_count;
+
+  if (3 * table->chain_count < 5 * table->entry_count)
+    binding_table_expand (table);
+}
+
+/* Return the binding_entry, if any, that maps NAME.  */
+binding_entry
+binding_table_find (binding_table table, tree name)
+{
+  const unsigned int hash = IDENTIFIER_HASH_VALUE (name);
+  binding_entry entry = table->chain[ENTRY_INDEX (hash, table->chain_count)];
+  
+  while (entry != NULL && entry->name != name)
+    entry = entry->chain;
+
+  return entry;
+}
+
+/* Return the binding_entry, if any, that maps name to an anonymous type.  */
+static inline tree
+binding_table_find_anon_type (binding_table table, tree name)
+{
+  const unsigned int hash = IDENTIFIER_HASH_VALUE (name);
+  binding_entry entry = table->chain[ENTRY_INDEX (hash, table->chain_count)];
+
+  while (entry != NULL && TYPE_IDENTIFIER (entry->type) != name)
+    entry = entry->chain;
+
+  return entry ? entry->type : NULL;
+}
+
+/* Return the binding_entry, if any, that has TYPE as target.  If NAME
+   is non-null, then set the domain and rehash that entry.  */
+static inline binding_entry
+binding_table_reverse_maybe_remap (binding_table table, tree type, tree name)
+{
+  const size_t chain_count = table->chain_count;
+  binding_entry entry = NULL;
+  binding_entry *p;
+  size_t i;
+
+  for (i = 0; i < chain_count && entry == NULL; ++i)
+    {
+      p = &table->chain[i];
+      while (*p != NULL && entry == NULL)
+        if ((*p)->type == type)
+          entry = *p;
+        else
+          p = &(*p)->chain;
+    }
+  
+  if (entry != NULL && name != NULL && entry->name != name)
+    {
+      /* Remove the bucket from the previous chain.  */
+      *p = (*p)->chain;
+
+      /* Remap the name type to type.  */
+      i = ENTRY_INDEX (IDENTIFIER_HASH_VALUE (name), chain_count);
+      entry->chain = table->chain[i];
+      entry->name = name;
+      table->chain[i] = entry;
+    }
+
+  return entry;
+}
+
+/* Remove from TABLE all entries that map to anonymous enums or
+   class-types.  */
+static void
+binding_table_remove_anonymous_types (binding_table table)
+{
+  const size_t chain_count = table->chain_count;
+  size_t i;
+
+  for (i = 0; i < chain_count; ++i)
+    {
+      binding_entry *p = &table->chain[i];
+
+      while (*p != NULL)
+        if (ANON_AGGRNAME_P ((*p)->name))
+          {
+            binding_entry e = *p;
+            *p = (*p)->chain;
+            --table->entry_count;
+            binding_entry_free (e);
+          }
+        else
+          p = &(*p)->chain;
+    }
+}
+
+/* Apply PROC -- with DATA -- to all entries in TABLE.  */
+void
+binding_table_foreach (binding_table table, bt_foreach_proc proc, void *data)
+{
+  const size_t chain_count = table->chain_count;
+  size_t i;
+  
+  for (i = 0; i < chain_count; ++i)
+    {
+      binding_entry entry = table->chain[i];
+      for (; entry != NULL; entry = entry->chain)
+        proc (entry, data);
+    }
+}
+
+
 /* For each binding contour we allocate a binding_level structure
    which records the names defined in that contour.
    Contours include:
@@ -335,15 +577,8 @@ struct cp_binding_level GTY(())
     /* A chain of VTABLE_DECL nodes.  */
     tree vtables; 
 
-    /* A list of structure, union and enum definitions, for looking up
-       tag names.
-       It is a chain of TREE_LIST nodes, each of whose TREE_PURPOSE is a name,
-       or NULL_TREE; and whose TREE_VALUE is a RECORD_TYPE, UNION_TYPE,
-       or ENUMERAL_TYPE node.
-
-       C++: the TREE_VALUE nodes can be simple types for
-       component_bindings.  */
-    tree tags;
+    /* A dictionary for looking up enums or class-types names.  */
+    binding_table type_decls;
 
     /* A list of USING_DECL nodes.  */
     tree usings;
@@ -548,6 +783,10 @@ pop_binding_level ()
     register struct cp_binding_level *level = current_binding_level;
     current_binding_level = current_binding_level->level_chain;
     level->level_chain = free_binding_level;
+    if (level->parm_flag != 2)
+      binding_table_free (level->type_decls);
+    else
+      level->type_decls = NULL;
 #if 0 /* defined(DEBUG_BINDING_LEVELS) */
     if (level->binding_depth != binding_depth)
       abort ();
@@ -684,7 +923,7 @@ kept_level_p ()
   return (current_binding_level->blocks != NULL_TREE
 	  || current_binding_level->keep
 	  || current_binding_level->names != NULL_TREE
-	  || (current_binding_level->tags != NULL_TREE
+	  || (current_binding_level->type_decls != NULL
 	      && !current_binding_level->tag_transparent));
 }
 
@@ -1281,7 +1520,6 @@ poplevel (keep, reverse, functionbody)
   tree decls;
   int tmp = functionbody;
   int real_functionbody;
-  tree tags;
   tree subblocks;
   tree block = NULL_TREE;
   tree decl;
@@ -1297,7 +1535,6 @@ poplevel (keep, reverse, functionbody)
 
   real_functionbody = (current_binding_level->keep == 2
 		       ? ((functionbody = 0), tmp) : functionbody);
-  tags = functionbody >= 0 ? current_binding_level->tags : 0;
   subblocks = functionbody >= 0 ? current_binding_level->blocks : 0;
 
   my_friendly_assert (!current_binding_level->class_shadowed,
@@ -1948,6 +2185,44 @@ wrapup_globals_for_namespace (namespace, data)
 static int no_print_functions = 0;
 static int no_print_builtins = 0;
 
+/* Called from print_binding_level through binding_table_foreach to
+   print the content of binding ENTRY.  DATA is a pointer to line offset
+   marker.  */
+static void
+bt_print_entry (binding_entry entry, void *data)
+{
+  int *p = (int *) data;
+  int len;
+
+  if (entry->name == NULL)
+    len = 3;
+  else if (entry->name == TYPE_IDENTIFIER (entry->type))
+    len = 2;
+  else
+    len = 4;
+
+  *p += len;
+
+  if (*p > 5)
+    {
+      fprintf (stderr, "\n\t");
+      *p = len;
+    }
+  if (entry->name == NULL)
+    {
+      print_node_brief (stderr, "<unnamed-typedef", entry->type, 0);
+      fprintf (stderr, ">");
+    }
+  else if (entry->name == TYPE_IDENTIFIER (entry->type))
+    print_node_brief (stderr, "", entry->type, 0);
+  else
+    {
+      print_node_brief (stderr, "<typedef", entry->name, 0);
+      print_node_brief (stderr, "", entry->type, 0);
+      fprintf (stderr, ">");
+    }
+}
+
 void
 print_binding_level (lvl)
      struct cp_binding_level *lvl;
@@ -1994,38 +2269,11 @@ print_binding_level (lvl)
       if (i)
         fprintf (stderr, "\n");
     }
-  if (lvl->tags)
+  if (lvl->type_decls)
     {
       fprintf (stderr, " tags:\t");
       i = 0;
-      for (t = lvl->tags; t; t = TREE_CHAIN (t))
-	{
-	  if (TREE_PURPOSE (t) == NULL_TREE)
-	    len = 3;
-	  else if (TREE_PURPOSE (t) == TYPE_IDENTIFIER (TREE_VALUE (t)))
-	    len = 2;
-	  else
-	    len = 4;
-	  i += len;
-	  if (i > 5)
-	    {
-	      fprintf (stderr, "\n\t");
-	      i = len;
-	    }
-	  if (TREE_PURPOSE (t) == NULL_TREE)
-	    {
-	      print_node_brief (stderr, "<unnamed-typedef", TREE_VALUE (t), 0);
-	      fprintf (stderr, ">");
-	    }
-	  else if (TREE_PURPOSE (t) == TYPE_IDENTIFIER (TREE_VALUE (t)))
-	    print_node_brief (stderr, "", TREE_VALUE (t), 0);
-	  else
-	    {
-	      print_node_brief (stderr, "<typedef", TREE_PURPOSE (t), 0);
-	      print_node_brief (stderr, "", TREE_VALUE (t), 0);
-	      fprintf (stderr, ">");
-	    }
-	}
+      binding_table_foreach (lvl->type_decls, bt_print_entry, &i);
       if (i)
 	fprintf (stderr, "\n");
     }
@@ -2257,6 +2505,10 @@ push_namespace (name)
 	  pushlevel (0);
 	  declare_namespace_level ();
 	  NAMESPACE_LEVEL (d) = current_binding_level;
+          current_binding_level->type_decls =
+            binding_table_new (name == std_identifier
+                               ? NAMESPACE_STD_HT_SIZE
+                               : NAMESPACE_ORDINARY_HT_SIZE);
 	  VARRAY_TREE_INIT (current_binding_level->static_decls,
 			    name != std_identifier ? 10 : 200,
 			    "Static declarations");
@@ -2638,13 +2890,16 @@ maybe_process_template_type_declaration (type, globalize, b)
 	      /* Put this tag on the list of tags for the class, since
 		 that won't happen below because B is not the class
 		 binding level, but is instead the pseudo-global level.  */
-	      b->level_chain->tags =
-		tree_cons (name, type, b->level_chain->tags);
+              if (b->level_chain->type_decls == NULL)
+                b->level_chain->type_decls =
+                  binding_table_new (SCOPE_DEFAULT_HT_SIZE);
+              binding_table_insert (b->level_chain->type_decls, name, type);
 	      if (!COMPLETE_TYPE_P (current_class_type))
 		{
 		  maybe_add_class_template_decl_list (current_class_type,
 						      type, /*friend_p=*/0);
-		  CLASSTYPE_TAGS (current_class_type) = b->level_chain->tags;
+		  CLASSTYPE_NESTED_UDTS (current_class_type) =
+                    b->level_chain->type_decls;
 		}
 	    }
 	}
@@ -2740,7 +2995,9 @@ pushtag (name, type, globalize)
 		 || COMPLETE_TYPE_P (b->this_class))))
     b = b->level_chain;
 
-  b->tags = tree_cons (name, type, b->tags);
+  if (b->type_decls == NULL)
+    b->type_decls = binding_table_new (SCOPE_DEFAULT_HT_SIZE);
+  binding_table_insert (b->type_decls, name, type);
 
   if (name)
     {
@@ -2817,7 +3074,7 @@ pushtag (name, type, globalize)
 	    {
 	      maybe_add_class_template_decl_list (current_class_type,
 						  type, /*friend_p=*/0);
-	      CLASSTYPE_TAGS (current_class_type) = b->tags;
+	      CLASSTYPE_NESTED_UDTS (current_class_type) = b->type_decls;
 	    }
 	}
     }
@@ -2865,7 +3122,6 @@ void
 clear_anon_tags ()
 {
   register struct cp_binding_level *b;
-  register tree tags;
   static int last_cnt = 0;
 
   /* Fast out if no new anon names were declared.  */
@@ -2875,17 +3131,8 @@ clear_anon_tags ()
   b = current_binding_level;
   while (b->tag_transparent)
     b = b->level_chain;
-  tags = b->tags;
-  while (tags)
-    {
-      /* A NULL purpose means we have already processed all tags
-	 from here to the end of the list.  */
-      if (TREE_PURPOSE (tags) == NULL_TREE)
-	break;
-      if (ANON_AGGRNAME_P (TREE_PURPOSE (tags)))
-	TREE_PURPOSE (tags) = NULL_TREE;
-      tags = TREE_CHAIN (tags);
-    }
+  if (b->type_decls != NULL)
+    binding_table_remove_anonymous_types (b->type_decls);
   last_cnt = anon_cnt;
 }
 
@@ -5283,14 +5530,6 @@ getdecls ()
   return current_binding_level->names;
 }
 
-/* Return the list of type-tags (for structs, etc) of the current level.  */
-
-tree
-gettags ()
-{
-  return current_binding_level->tags;
-}
-
 /* Store the list of declarations of the current level.
    This is done for the parameter declarations of a function being defined,
    after they are modified in the light of any missing parameters.  */
@@ -5302,14 +5541,15 @@ storedecls (decls)
   current_binding_level->names = decls;
 }
 
-/* Similarly, store the list of tags of the current level.  */
-
+/* Set the current binding TABLE for type declarations..  This is a
+   temporary workaround of the fact that the data structure classtypes
+   does not currently carry its allocated cxx_scope structure.  */
 void
-storetags (tags)
-     tree tags;
+cxx_remember_type_decls (binding_table table)
 {
-  current_binding_level->tags = tags;
+  current_binding_level->type_decls = table;
 }
+
 
 /* Return the type that should be used when TYPE's name is preceded
    by a tag such as 'struct' or 'union', or null if the name cannot
@@ -5374,20 +5614,21 @@ lookup_tag (form, name, binding_level, thislevel_only)
   /* Nonzero if, we should look past a template parameter level, even
      if THISLEVEL_ONLY.  */
   int allow_template_parms_p = 1;
+  bool type_is_anonymous = ANON_AGGRNAME_P (name);
 
   timevar_push (TV_NAME_LOOKUP);
 
   for (level = binding_level; level; level = level->level_chain)
     {
       register tree tail;
-      if (ANON_AGGRNAME_P (name))
-	for (tail = level->tags; tail; tail = TREE_CHAIN (tail))
-	  {
-	    /* There's no need for error checking here, because
-	       anon names are unique throughout the compilation.  */
-	    if (TYPE_IDENTIFIER (TREE_VALUE (tail)) == name)
-	      POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, TREE_VALUE (tail));
-	  }
+      if (type_is_anonymous && level->type_decls != NULL)
+        {
+          tree type = binding_table_find_anon_type (level->type_decls, name);
+          /* There's no need for error checking here, because
+             anon names are unique throughout the compilation.  */
+          if (type != NULL)
+            POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, type);
+        }
       else if (level->namespace_p)
 	/* Do namespace lookup.  */
 	for (tail = current_namespace; 1; tail = CP_DECL_CONTEXT (tail))
@@ -5429,23 +5670,23 @@ lookup_tag (form, name, binding_level, thislevel_only)
 	    if (thislevel_only || tail == global_namespace)
 	      POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, NULL_TREE);
 	  }
-      else
-	for (tail = level->tags; tail; tail = TREE_CHAIN (tail))
-	  {
-	    if (TREE_PURPOSE (tail) == name)
-	      {
-		enum tree_code code = TREE_CODE (TREE_VALUE (tail));
-		
-		if (code != form
-		    && (form == ENUMERAL_TYPE || code == ENUMERAL_TYPE))
-		  {
-		    /* Definition isn't the kind we were looking for.  */
-		    error ("`%#D' redeclared as %C", TREE_VALUE (tail), form);
-		    POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, NULL_TREE);
-		  }
-		POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, TREE_VALUE (tail));
-	      }
-	  }
+      else if (level->type_decls != NULL)
+        {
+          binding_entry entry = binding_table_find (level->type_decls, name);
+          if (entry != NULL)
+            {
+              enum tree_code code = TREE_CODE (entry->type);
+
+              if (code != form
+                  && (form == ENUMERAL_TYPE || code == ENUMERAL_TYPE))
+                {
+                  /* Definition isn't the kind we were looking for.  */
+                  error ("`%#D' redeclared as %C", entry->type, form);
+                  POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, NULL_TREE);
+                }
+              POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, entry->type);
+            }
+        }
       if (thislevel_only && ! level->tag_transparent)
 	{
 	  if (level->template_parms_p && allow_template_parms_p)
@@ -5498,16 +5739,11 @@ lookup_tag_reverse (type, name)
 
   for (level = current_binding_level; level; level = level->level_chain)
     {
-      register tree tail;
-      for (tail = level->tags; tail; tail = TREE_CHAIN (tail))
-	{
-	  if (TREE_VALUE (tail) == type)
-	    {
-	      if (name)
-		TREE_PURPOSE (tail) = name;
-	      POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, TREE_PURPOSE (tail));
-	    }
-	}
+      binding_entry entry = level->type_decls == NULL
+        ? NULL
+        : binding_table_reverse_maybe_remap (level->type_decls, type, name);
+      if (entry)
+        POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, entry->name);
     }
   POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, NULL_TREE);
 }
@@ -6649,6 +6885,7 @@ cxx_init_decl_processing ()
   /* Make the binding_level structure for global names.  */
   pushlevel (0);
   global_binding_level = current_binding_level;
+  global_binding_level->type_decls = binding_table_new (GLOBAL_SCOPE_HT_SIZE);
   /* The global level is the namespace level of ::.  */
   NAMESPACE_LEVEL (global_namespace) = global_binding_level;
   declare_namespace_level ();
@@ -14328,7 +14565,6 @@ store_parm_decls (current_function_parms)
 	 function.  This is all and only the PARM_DECLs that were
 	 pushed into scope by the loop above.  */
       DECL_ARGUMENTS (fndecl) = getdecls ();
-      storetags (gettags ());
     }
   else
     DECL_ARGUMENTS (fndecl) = NULL_TREE;
