@@ -41,11 +41,7 @@ Boston, MA 02111-1307, USA.  */
 #define CPP_SPEC "%{posix: -D_POSIX_SOURCE}\
    %{ansi: -D_ANSI_C_SOURCE}\
    %{mpe: -I/usr/lpp/ppe.poe/include}\
-   %{pthread: -D_THREAD_SAFE}\
-   %(cpp_cpu)"
-
-#undef	CPP_DEFAULT_SPEC
-#define CPP_DEFAULT_SPEC "-D_ARCH_COM"
+   %{pthread: -D_THREAD_SAFE}"
 
 #undef TARGET_DEFAULT
 #define TARGET_DEFAULT MASK_NEW_MNEMONICS

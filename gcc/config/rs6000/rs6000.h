@@ -46,48 +46,6 @@ Boston, MA 02111-1307, USA.  */
 #define TARGET_CPU_DEFAULT ((char *)0)
 #endif
 
-/* Common CPP definitions used by CPP_SPEC among the various targets
-   for handling -mcpu=xxx switches.  */
-#define CPP_CPU_SPEC \
-"%{!mcpu*: \
-  %{mpower: %{!mpower2: -D_ARCH_PWR}} \
-  %{mpower2: -D_ARCH_PWR2} \
-  %{mpowerpc*: -D_ARCH_PPC} \
-  %{mno-power: %{!mpowerpc*: -D_ARCH_COM}} \
-  %{!mno-power: %{!mpower2: %(cpp_default)}}} \
-%{mcpu=common: -D_ARCH_COM} \
-%{mcpu=power: -D_ARCH_PWR} \
-%{mcpu=power2: -D_ARCH_PWR2} \
-%{mcpu=power3: -D_ARCH_PPC} \
-%{mcpu=power4: -D_ARCH_PPC} \
-%{mcpu=powerpc: -D_ARCH_PPC} \
-%{mcpu=rios: -D_ARCH_PWR} \
-%{mcpu=rios1: -D_ARCH_PWR} \
-%{mcpu=rios2: -D_ARCH_PWR2} \
-%{mcpu=rsc: -D_ARCH_PWR} \
-%{mcpu=rsc1: -D_ARCH_PWR} \
-%{mcpu=401: -D_ARCH_PPC} \
-%{mcpu=403: -D_ARCH_PPC} \
-%{mcpu=405: -D_ARCH_PPC} \
-%{mcpu=505: -D_ARCH_PPC} \
-%{mcpu=601: -D_ARCH_PPC -D_ARCH_PWR} \
-%{mcpu=602: -D_ARCH_PPC} \
-%{mcpu=603: -D_ARCH_PPC} \
-%{mcpu=603e: -D_ARCH_PPC} \
-%{mcpu=ec603e: -D_ARCH_PPC} \
-%{mcpu=604: -D_ARCH_PPC} \
-%{mcpu=604e: -D_ARCH_PPC} \
-%{mcpu=620: -D_ARCH_PPC} \
-%{mcpu=740: -D_ARCH_PPC} \
-%{mcpu=7400: -D_ARCH_PPC} \
-%{mcpu=7450: -D_ARCH_PPC} \
-%{mcpu=750: -D_ARCH_PPC} \
-%{mcpu=801: -D_ARCH_PPC} \
-%{mcpu=821: -D_ARCH_PPC} \
-%{mcpu=823: -D_ARCH_PPC} \
-%{mcpu=860: -D_ARCH_PPC} \
-%{maltivec: -D__ALTIVEC__}"
-
 /* Common ASM definitions used by ASM_SPEC among the various targets
    for handling -mcpu=xxx switches.  */
 #define ASM_CPU_SPEC \
@@ -148,7 +106,6 @@ Boston, MA 02111-1307, USA.  */
 #define SUBTARGET_EXTRA_SPECS
 
 #define EXTRA_SPECS							\
-  { "cpp_cpu",			CPP_CPU_SPEC },				\
   { "cpp_default",		CPP_DEFAULT_SPEC },			\
   { "asm_cpu",			ASM_CPU_SPEC },				\
   { "asm_default",		ASM_DEFAULT_SPEC },			\
@@ -494,15 +451,19 @@ extern int rs6000_default_long_calls;
 /* Define this to change the optimizations performed by default.  */
 #define OPTIMIZATION_OPTIONS(LEVEL,SIZE) optimization_options(LEVEL,SIZE)
 
+/* Show we can debug even without a frame pointer.  */
+#define CAN_DEBUG_WITHOUT_FP
+
 /* Target pragma.  */
 #define REGISTER_TARGET_PRAGMAS(PFILE) do { \
   cpp_register_pragma (PFILE, 0, "longcall", rs6000_pragma_longcall); \
 } while (0)
 
-/* Show we can debug even without a frame pointer.  */
-#define CAN_DEBUG_WITHOUT_FP
+/* Target #defines.  */
+#define TARGET_CPU_CPP_BUILTINS() \
+  rs6000_cpu_cpp_builtins (pfile)
 
-/* target machine storage layout */
+/* Target machine storage layout.  */
 
 /* Define this macro if it is advisable to hold scalars in registers
    in a wider mode than that declared by the program.  In such cases,

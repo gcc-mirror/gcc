@@ -48,11 +48,7 @@ Boston, MA 02111-1307, USA.  */
    target switches.  */
 
 #define CPP_SPEC "%{posix: -D_POSIX_SOURCE}\
-   %{ansi: -D_ANSI_C_SOURCE}\
-   %(cpp_cpu)"
-
-#undef CPP_DEFAULT_SPEC
-#define CPP_DEFAULT_SPEC "-D_ARCH_PWR"
+   %{ansi: -D_ANSI_C_SOURCE}"
 
 #undef ASM_DEFAULT_SPEC
 #define ASM_DEFAULT_SPEC ""

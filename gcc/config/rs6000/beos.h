@@ -43,10 +43,7 @@ Boston, MA 02111-1307, USA.  */
 #define CPP_PREDEFINES "-D__BEOS__ -D__POWERPC__ -Asystem=beos -Acpu=powerpc -Amachine=powerpc"
 
 #undef CPP_SPEC
-#define CPP_SPEC "%{posix: -D_POSIX_SOURCE} %(cpp_cpu)"
-
-#undef	CPP_DEFAULT_SPEC
-#define CPP_DEFAULT_SPEC "-D_ARCH_PPC"
+#define CPP_SPEC "%{posix: -D_POSIX_SOURCE}"
 
 /* This is the easiest way to disable use of gcc's builtin alloca,
    which in the current BeOS release (DR9) is a problem because of the

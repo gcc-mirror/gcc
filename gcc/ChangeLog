@@ -1,5 +1,49 @@
 2002-06-11  Geoffrey Keating  <geoffk@redhat.com>
 
+	* config.gcc (powerpc*-*-*, rs6000-*-*-*): Don't bother including
+	softfloat.h.
+	* config/rs6000/vxppc.h (CPP_ENDIAN_BIG_SPEC): Delete.
+	(CPP_ENDIAN_LITTLE_SPEC): Delete.
+	* config/rs6000/sysv4le.h (CPP_ENDIAN_DEFAULT_SPEC): Delete.
+	* config/rs6000/sysv4.h (CPP_SYSV_SPEC): Delete _SOFT_FLOAT setting,
+	__LONG_DOUBLE_128__ setting, _CALL_* setting.
+	(CPP_DEFAULT_SPEC): Delete.
+	(CPP_FLOAT_DEFAULT_SPEC): Delete.
+	(CPP_LONGDOUBLE_DEFAULT_SPEC): Delete.
+	(CPP_SYSV_DEFAULT_SPEC): Delete.
+	(CPP_ENDIAN_BIG_SPEC): Delete.
+	(CPP_ENDIAN_LITTLE_SPEC): Delete.
+	(CPP_ENDIAN_SPEC): Delete.
+	(CPP_SPEC): Don't include cpp_endian, cpp_cpu.
+	(SUBTARGET_EXTRA_SPECS): Delete cpp_sysv_default, cpp_endian_default,
+	cpp_endian, cpp_endian_big, cpp_endian_little, cpp_float_default,
+	cpp_longdouble_default.
+	* config/rs6000/softfloat.h: Delete.
+	* config/rs6000/rs6000.h (CPP_CPU_SPEC): Delete.
+	(EXTRA_SPECS): Delete cpp_cpu.
+	(TARGET_CPU_CPP_BUILTINS): New.
+	* config/rs6000/rs6000-protos.h (rs6000_cpu_cpp_builtins): New
+	prototype.
+	* config/rs6000/rs6000-c.c (rs6000_cpu_cpp_builtins): New.
+	* config/rs6000/linux64.h (CPP_PREDEFINES): Remove endianness defines.
+	(CPP_DEFAULT_SPEC): Delete.
+	* config/rs6000/eabiaix.h (CPP_SYSV_DEFAULT_SPEC): Delete.
+	* config/rs6000/darwin.h (CPP_PREDEFINES): Don't define __BIG_ENDIAN__.
+	* config/rs6000/beos.h (CPP_SPEC): Remove cpp_cpu.
+	(CPP_DEFAULT_SPEC): Delete.
+	* config/rs6000/aix51.h (CPP_SPEC): Remove cpp_cpu, -D_ARCH_PPC.
+	(CPLUSPLUS_CPP_SPEC): Likewise.
+	(CPP_CPU_SPEC): Delete.
+	(CPP_DEFAULT_SPEC): Delete.
+	* config/rs6000/aix43.h (CPP_SPEC): Remove cpp_cpu, -D_ARCH_PPC.
+	(CPLUSPLUS_CPP_SPEC): Likewise.
+	(CPP_CPU_SPEC): Delete.
+	(CPP_DEFAULT_SPEC): Delete.
+	* config/rs6000/aix41.h (CPP_SPEC): Remove cpp_cpu.
+	(CPP_DEFAULT_SPEC): Delete.
+	* config/rs6000/aix.h (CPP_SPEC): Remove cpp_cpu.
+	(CPP_DEFAULT_SPEC): Delete.
+
 	* doc/gty.texi: Small updates.
 
 2002-06-12  Gabriel Dos Reis  <gdr@codesourcery.com>
