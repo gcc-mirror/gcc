@@ -1,3 +1,7 @@
+Sat Dec 18 18:30:20 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* unroll.c (copy_loop_body): Don't treat a REG like a PLUS.
+
 1999-12-18 10:42 -0800  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* objc/objc-parse.c: Regenerate.  This file must be rebuilt

@@ -1812,11 +1812,14 @@ copy_loop_body (copy_start, copy_end, map, exit_label, last_iteration,
 			    value = plus_constant (tv->dest_reg,
 						   tv->const_adjust);
 
-			    /* The constant could be too large for an add
-			       immediate, so can't directly emit an insn
-			       here.  */
-			    emit_unrolled_add (dest_reg, XEXP (value, 0),
-					       XEXP (value, 1));
+			    if (GET_CODE (value) == PLUS)
+			      {
+				/* The constant could be too large for an add
+				   immediate, so can't directly emit an insn
+				   here.  */
+				emit_unrolled_add (dest_reg, XEXP (value, 0),
+						   XEXP (value, 1));
+			      }
 			  }
 
 			/* Reset the giv to be just the register again, in case
