@@ -1,5 +1,7 @@
 2002-05-19  Mark Mitchell  <mitchell@doubledemon.codesourcery.com>
 
+	* README.QMTEST: New file.
+
 	* g++.dg/warn/Wshadow-1.C: Remove unncessary dg-error line.
 
 2002-05-19  Andreas Jaeger  <aj@suse.de>
