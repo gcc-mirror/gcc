@@ -1566,6 +1566,7 @@ alpha_encode_section_info (decl)
 	 don't know that they exist in this unit of translation.  */
       if (TREE_PUBLIC (decl))
 	return;
+
       /* Do not mark functions that are not in .text; otherwise we
 	 don't know that they are near enough for a direct branch.  */
       if (! decl_in_text_section (decl))
@@ -1589,11 +1590,16 @@ alpha_encode_section_info (decl)
 
   /* A variable is considered "local" if it is defined in this module.  */
 
-  if (DECL_EXTERNAL (decl))
+  /* Local binding occurs for any non-default visibility.  */
+  if (MODULE_LOCAL_P (decl))
+    is_local = true;
+  /* Otherwise, variables defined outside this object may not be local.  */
+  else if (DECL_EXTERNAL (decl))
     is_local = false;
   /* Linkonce and weak data is never local.  */
   else if (DECL_ONE_ONLY (decl) || DECL_WEAK (decl))
     is_local = false;
+  /* Static variables are always local.  */
   else if (! TREE_PUBLIC (decl))
     is_local = true;
   /* If PIC, then assume that any global name can be overridden by
