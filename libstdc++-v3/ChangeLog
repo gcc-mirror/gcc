@@ -1,6 +1,7 @@
 2002-01-17  Nick Clifton  <nickc@cambridge.redhat.com>
 
-	* testsuite/testsuite_hooks.h: Fix typo in comment.
+	* testsuite/testsuite_hooks.h: Fix comment typo.  Memory
+	limiting is only attempted if _GLIBCPP_MEM_LIMIT is defined.
 
 2002-01-17  Peter Schmid  <schmid@snake.iap.physik.tu-darmstadt.de>
 	
