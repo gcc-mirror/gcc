@@ -615,7 +615,7 @@ push_reload (in, out, inloc, outloc, class,
     }
 
   /* If we are reloading a (SUBREG constant ...), really reload just the
-     inside expression in its own mode.
+     inside expression in its own mode.  Similarly for (SUBREG (PLUS ...)).
      If we have (SUBREG:M1 (MEM:M2 ...) ...) (or an inner REG that is still
      a pseudo and hence will become a MEM) with M1 wider than M2 and the
      register is a pseudo, also reload the inside expression.
@@ -639,6 +639,7 @@ push_reload (in, out, inloc, outloc, class,
 
   if (in != 0 && GET_CODE (in) == SUBREG
       && (CONSTANT_P (SUBREG_REG (in))
+	  || GET_CODE (SUBREG_REG (in)) == PLUS
 	  || strict_low
 	  || (((GET_CODE (SUBREG_REG (in)) == REG
 		&& REGNO (SUBREG_REG (in)) >= FIRST_PSEUDO_REGISTER)
@@ -2599,9 +2600,10 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	    {
 	      offset += SUBREG_WORD (operand);
 	      operand = SUBREG_REG (operand);
-	      /* Force reload if this is a constant or if there may may
+	      /* Force reload if this is a constant or PLUS or if there may may
 		 be a problem accessing OPERAND in the outer mode.  */
 	      if (CONSTANT_P (operand)
+		  || GET_CODE (operand) == PLUS
 #ifdef LOAD_EXTEND_OP
 		  /* If we have a SUBREG where both the inner and outer
 		     modes are different size but no wider than a word,
