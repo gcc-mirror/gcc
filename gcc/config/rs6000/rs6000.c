@@ -880,7 +880,8 @@ num_insns_constant (op, mode)
   if (GET_CODE (op) == CONST_INT)
     {
 #if HOST_BITS_PER_WIDE_INT == 64
-      if (mask64_operand (op, mode))
+      if ((INTVAL (op) >> 31) != 0 && (INTVAL (op) >> 31) != -1
+	  && mask64_operand (op, mode))
 	    return 2;
       else
 #endif
