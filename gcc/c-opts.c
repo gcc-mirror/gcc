@@ -100,7 +100,7 @@ static size_t deferred_count, deferred_size;
 /* Number of deferred options scanned for -include.  */
 static size_t include_cursor;
 
-static void missing_arg (enum opt_code);
+void missing_arg (enum opt_code);
 static void set_Wimplicit (int);
 static void print_help (void);
 static void handle_OPT_d (const char *);
@@ -130,7 +130,7 @@ static struct deferred_opt
 
 /* Complain that switch OPT_INDEX expects an argument but none was
    provided.  */
-static void
+void
 missing_arg (enum opt_code code)
 {
   const char *opt_text = cl_options[code].opt_text;
@@ -254,12 +254,6 @@ c_common_handle_option (size_t scode, const char *arg, int value)
       else
 	  error ("too many filenames given.  Type %s --help for usage",
 		 progname);
-      return 1;
-    }
-
-  if (arg == NULL && (option->flags & (CL_JOINED | CL_SEPARATE)))
-    {
-      missing_arg (code);
       return 1;
     }
 

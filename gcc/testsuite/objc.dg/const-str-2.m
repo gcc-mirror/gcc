@@ -2,6 +2,6 @@
 /* { dg-do compile } */
 /* { dg-options "-fconstant-string-class=" } */
 
-{ dg-error "no class name specified" "" { target *-*-* } 0 }
+{ dg-error "no class name specified|missing argument" "" { target *-*-* } 0 }
 
 void foo () {}

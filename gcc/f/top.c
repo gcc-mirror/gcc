@@ -175,18 +175,11 @@ ffe_init_options ()
 int
 ffe_handle_option (size_t scode, const char *arg, int value)
 {
-  const struct cl_option *option = &cl_options[scode];
   enum opt_code code = (enum opt_code) scode;
 
   /* Ignore file names.  */
   if (code == N_OPTS)
     return 1;
-
-  if (arg == NULL && (option->flags & (CL_JOINED | CL_SEPARATE)))
-    {
-      error ("missing argument to \"-%s\"", option->opt_text);
-      return 1;
-    }
 
   switch (code)
     {
