@@ -1,3 +1,9 @@
+2002-11-15  Geoffrey Keating  <geoffk@apple.com>
+
+	* params.def (GGC_MIN_HEAPSIZE): Fix GGC_ALWAYS_COLLECT problem.
+	* doc/invoke.texi: Correct description of what needs to be done to
+	force collection at every ggc_collect call.
+
 2002-11-15  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.c (optimization_options): Set 

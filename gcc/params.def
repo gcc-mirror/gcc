@@ -1,5 +1,5 @@
 /* params.def - Run-time parameters.
-   Copyright (C) 2001 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002 Free Software Foundation, Inc.
    Written by Mark Mitchell <mark@codesourcery.com>.
 
 This file is part of GCC.
@@ -193,8 +193,10 @@ this threshold (in percents). Used when profile feedback is not available",
 
 #ifdef ENABLE_GC_ALWAYS_COLLECT
 # define GGC_MIN_EXPAND_DEFAULT 0
+# define GGC_MIN_HEAPSIZE_DEFAULT 0
 #else
 # define GGC_MIN_EXPAND_DEFAULT 30
+# define GGC_MIN_HEAPSIZE_DEFAULT 4096
 #endif
 
 DEFPARAM(GGC_MIN_EXPAND,
@@ -203,12 +205,13 @@ DEFPARAM(GGC_MIN_EXPAND,
 a percentage of the total size of the heap.",
 	 GGC_MIN_EXPAND_DEFAULT)
 
-#undef GGC_MIN_EXPAND_DEFAULT
-
 DEFPARAM(GGC_MIN_HEAPSIZE,
 	 "ggc-min-heapsize",
 	 "Minimum heap size before we start collecting garbage, in kilobytes.",
-	 4096)
+	 GGC_MIN_HEAPSIZE_DEFAULT)
+
+#undef GGC_MIN_EXPAND_DEFAULT
+#undef GGC_MIN_HEAPSIZE_DEFAULT
 
 /*
 Local variables:
