@@ -1,3 +1,8 @@
+Tue Dec 16 23:45:40 1997  Richard Henderson  <rth@cygnus.com>
+
+	* sparc.c (DF_MODES): Or the mask not the bit number.
+	(function_arg) [ARCH64]: Send unprototyped arg to fp reg first.
+
 Wed Dec 17 00:13:48 1997  Christian Iseli  <Christian.Iseli@lslsun.epfl.ch>
 
 	* combine.c (force_to_mode): return immediately if operand is a CLOBBER.

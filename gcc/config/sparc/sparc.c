@@ -2914,7 +2914,7 @@ enum sparc_mode_class {
 #define DF_MODES (S_MODES | D_MODES)
 
 /* ??? Sparc64 fp regs cannot hold DImode values.  */
-#define DF_MODES64 (SF_MODES | DF_MODE /* | D_MODE*/)
+#define DF_MODES64 (SF_MODES | (1 << (int) DF_MODE) /* | (1 << (int) D_MODE)*/)
 
 /* Modes for double-float only quantities.  */
 /* ??? Sparc64 fp regs cannot hold DImode values.
@@ -3852,10 +3852,10 @@ function_arg (cum, mode, type, named, incoming_p)
 	      return gen_rtx (PARALLEL, mode,
 			      gen_rtvec (2,
 					 gen_rtx (EXPR_LIST, VOIDmode,
-						  gen_rtx (REG, mode, intreg),
-						  const0_rtx),
+						  reg, const0_rtx),
 					 gen_rtx (EXPR_LIST, VOIDmode,
-						  reg, const0_rtx)));
+						  gen_rtx (REG, mode, intreg),
+						  const0_rtx)));
 	    }
 	  else
 	    return gen_rtx (PARALLEL, mode,
