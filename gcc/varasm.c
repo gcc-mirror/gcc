@@ -2150,7 +2150,11 @@ struct rtx_const GTY(())
   ENUM_BITFIELD(machine_mode) mode : 16;
   union rtx_const_un {
     REAL_VALUE_TYPE du;
-    struct addr_const GTY ((tag ("1"))) addr;
+    struct rtx_const_u_addr {
+      rtx base;
+      const char *symbol;
+      HOST_WIDE_INT offset;
+    } GTY ((tag ("1"))) addr;
     struct rtx_const_u_di {
       HOST_WIDE_INT high;
       HOST_WIDE_INT low;
@@ -3080,13 +3084,12 @@ decode_rtx_const (mode, x, value)
   if (value->kind >= RTX_INT && value->un.addr.base != 0)
     switch (GET_CODE (value->un.addr.base))
       {
-#if 0
       case SYMBOL_REF:
 	/* Use the string's address, not the SYMBOL_REF's address,
 	   for the sake of addresses of library routines.  */
-	value->un.addr.base = (rtx) XSTR (value->un.addr.base, 0);
+	value->un.addr.symbol = XSTR (value->un.addr.base, 0);
+	value->un.addr.base = NULL_RTX;
 	break;
-#endif
 
       case LABEL_REF:
 	/* For a LABEL_REF, compare labels.  */
@@ -3111,7 +3114,8 @@ simplify_subtraction (x)
 
   if (val0.kind >= RTX_INT
       && val0.kind == val1.kind
-      && val0.un.addr.base == val1.un.addr.base)
+      && val0.un.addr.base == val1.un.addr.base
+      && val0.un.addr.symbol == val1.un.addr.symbol)
     return GEN_INT (val0.un.addr.offset - val1.un.addr.offset);
 
   return x;
