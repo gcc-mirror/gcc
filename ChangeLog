@@ -1,3 +1,7 @@
+2004-10-06  Josef Zlomek  <josef.zlomek@email.cz>
+
+	* MAINTAINERS: Update my e-mail address.
+
 2004-09-24  Michael Roth  <mroth@nessie.de>
 
 	* configure.in (--without-headers): Add missing double quotes.
