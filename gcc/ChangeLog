@@ -1,5 +1,13 @@
 2002-06-14  Eric Botcazou  <ebotcazou@multimania.com>
 
+	* loop.c (check_final_value): Use v->always_executed
+	instead of v->always_computable.
+	* unroll.c (final_giv_value): Don't calculate the final
+	value as a function of the biv if the giv is not computed
+	for every loop iteration.
+
+2002-06-14  Eric Botcazou  <ebotcazou@multimania.com>
+
 	PR c/6677
 	* convert.c (convert_to_integer) [LSHIFT_EXPR]: Don't pass
 	the truncation down when the target type is signed.
