@@ -135,11 +135,6 @@ do {									\
   emit_safe_across_calls (STREAM);					\
 } while (0)
 
-/* Case label alignment is handled by ADDR_VEC_ALIGN now.  */
-
-#undef ASM_OUTPUT_BEFORE_CASE_LABEL
-#define ASM_OUTPUT_BEFORE_CASE_LABEL(FILE,PREFIX,NUM,TABLE)
-
 /* We override svr4.h so that we can support the sdata section.  */
 
 #undef SELECT_SECTION

@@ -1933,19 +1933,6 @@ do {									\
 
 #define BSS_SECTION_ASM_OP "\t.bss"
 
-/* Define this macro if jump tables (for `tablejump' insns) should be output in
-   the text section, along with the assembler instructions.  */
-
-/* ??? It is probably better for the jump tables to be in the rodata section,
-   which is where they go by default.  Unfortunately, that currently does not
-   work, because of some problem with pcrelative relocations not getting
-   resolved correctly.  */
-/* ??? FIXME ??? rth says that we should use @gprel to solve this problem.  */
-/* ??? If jump tables are in the text section, then we can use 4 byte
-   entries instead of 8 byte entries.  */
-
-#define JUMP_TABLES_IN_TEXT_SECTION 1
-
 /* Define this macro if references to a symbol must be treated differently
    depending on something about the variable or function named by the symbol
    (such as what section it is in).  */
@@ -2437,18 +2424,12 @@ do {									\
 /* ??? Depends on the pointer size.  */
 
 #define ASM_OUTPUT_ADDR_DIFF_ELT(STREAM, BODY, VALUE, REL) \
-  fprintf (STREAM, "\tdata8 .L%d-.L%d\n", VALUE, REL)
+  fprintf (STREAM, "\tdata8 @pcrel(.L%d)\n", VALUE)
 
 /* This is how to output an element of a case-vector that is absolute.
    (Ia64 does not use such vectors, but we must define this macro anyway.)  */
 
 #define ASM_OUTPUT_ADDR_VEC_ELT(STREAM, VALUE) abort ()
-
-/* Define this if something special must be output at the end of a jump-table.
-   We need to align back to a 16 byte boundary because offsets are smaller than
-   instructions.  */
-
-#define ASM_OUTPUT_CASE_END(STREAM, NUM, TABLE) ASM_OUTPUT_ALIGN (STREAM, 4)
 
 /* Jump tables only need 8 byte alignment.  */
 
@@ -2488,21 +2469,16 @@ do {									\
 
 /* Assembler Commands for Alignment.  */
 
-/* The alignment (log base 2) to put in front of LABEL, which follows
-   a BARRIER.  */
-
 /* ??? Investigate.  */
 
-/* ??? Emitting align directives increases the size of the line number debug
-   info, because each .align forces use of an extended opcode.  Perhaps try
-   to fix this in the assembler?  */
+/* The alignment (log base 2) to put in front of LABEL, which follows
+   a BARRIER.  */
 
 /* #define LABEL_ALIGN_AFTER_BARRIER(LABEL) */
 
 /* The desired alignment for the location counter at the beginning
    of a loop.  */
 
-/* ??? Investigate.  */
 /* #define LOOP_ALIGN(LABEL) */
 
 /* Define this macro if `ASM_OUTPUT_SKIP' should not be used in the text
