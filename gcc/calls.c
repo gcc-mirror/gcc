@@ -851,7 +851,7 @@ store_unaligned_arguments_into_pseudos (struct arg_data *args, int num_actuals)
 
 	    args[i].aligned_regs[j] = reg;
 	    word = extract_bit_field (word, bitsize, 0, 1, NULL_RTX,
-				      word_mode, word_mode, BITS_PER_WORD);
+				      word_mode, word_mode);
 
 	    /* There is no need to restrict this code to loading items
 	       in TYPE_ALIGN sized hunks.  The bitfield instructions can
@@ -868,7 +868,7 @@ store_unaligned_arguments_into_pseudos (struct arg_data *args, int num_actuals)
 
 	    bytes -= bitsize / BITS_PER_UNIT;
 	    store_bit_field (reg, bitsize, endian_correction, word_mode,
-			     word, BITS_PER_WORD);
+			     word);
 	  }
       }
 }

@@ -791,12 +791,10 @@ extern enum machine_mode
 mode_for_extraction (enum extraction_pattern, int);
 
 extern rtx store_bit_field (rtx, unsigned HOST_WIDE_INT,
-			    unsigned HOST_WIDE_INT, enum machine_mode, rtx,
-			    HOST_WIDE_INT);
+			    unsigned HOST_WIDE_INT, enum machine_mode, rtx);
 extern rtx extract_bit_field (rtx, unsigned HOST_WIDE_INT,
 			      unsigned HOST_WIDE_INT, int, rtx,
-			      enum machine_mode, enum machine_mode,
-			      HOST_WIDE_INT);
+			      enum machine_mode, enum machine_mode);
 extern rtx expand_mult (enum machine_mode, rtx, rtx, rtx, int);
 extern bool const_mult_add_overflow_p (rtx, rtx, rtx, enum machine_mode, int);
 extern rtx expand_mult_add (rtx, rtx, rtx, rtx,enum machine_mode, int);

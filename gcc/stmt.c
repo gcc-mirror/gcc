@@ -2115,9 +2115,7 @@ expand_return (tree retval)
 	  store_bit_field (dst, bitsize, xbitpos % BITS_PER_WORD, word_mode,
 			   extract_bit_field (src, bitsize,
 					      bitpos % BITS_PER_WORD, 1,
-					      NULL_RTX, word_mode, word_mode,
-					      BITS_PER_WORD),
-			   BITS_PER_WORD);
+					      NULL_RTX, word_mode, word_mode));
 	}
 
       tmpmode = GET_MODE (result_rtl);

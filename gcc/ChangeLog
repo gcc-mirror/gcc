@@ -1,3 +1,16 @@
+2004-07-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* expr.h (store_bit_field, extract_bit_field): Remove last argument.
+	* expmed.c (store_bit_field, extract_bit_field): Remove last
+	argument.
+	* builtins.c (expand_builtin_signbit): Adjust callers.
+	* optabs.c (expand_vector_binop, expand_vector_unop): Likewise.
+	* calls.c (store_unaligned_arguments_into_pseudos): Likewise.
+	* ifcvt.c (noce_emit_move_insn): Likewise.
+	* stmt.c (expand_return): Likewise.
+	* expr.c (emit_group_load, emit_group_store, copy_blkmode_from_reg,
+	store_field, expand_expr_real_1): Likewise.
+
 2004-07-10  Richard Henderson  <rth@redhat.com>
 
 	* builtins.c (std_gimplify_va_arg_expr): Fix borked BIT_AND_EXPR.
