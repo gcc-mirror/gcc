@@ -54,7 +54,6 @@ static int comp_ptr_ttypes_const (tree, tree);
 static bool comp_except_types (tree, tree, bool);
 static bool comp_array_types (tree, tree, bool);
 static tree common_base_type (tree, tree);
-static tree lookup_anon_field (tree, tree);
 static tree pointer_diff (tree, tree, tree);
 static tree get_delta_difference (tree, tree, int);
 static void casts_away_constness_r (tree *, tree *);
@@ -1510,7 +1509,7 @@ rationalize_conditional_expr (enum tree_code code, tree t)
    anonymous unions can nest, we must also search all anonymous unions
    that are directly reachable.  */
 
-static tree
+tree
 lookup_anon_field (tree t, tree type)
 {
   tree field;
