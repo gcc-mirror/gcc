@@ -2849,6 +2849,8 @@ extern void dump_tree_statistics (void);
 extern void expand_function_end (void);
 extern void expand_function_start (tree, int);
 extern void expand_pending_sizes (tree);
+extern tree make_vector (enum machine_mode, tree, int);
+extern tree reconstruct_complex_type (tree, tree);
 
 extern int real_onep (tree);
 extern int real_twop (tree);

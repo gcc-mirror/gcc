@@ -1,3 +1,22 @@
+2004-08-23  Janis Johnson  <janis187@us.ibm.com>
+
+	Backports from mainline, from several contributors.
+	* lib/target-supports.exp (check_vmx_hw_available): New.
+	* g++.dg/ext/altivec-1.C: XFAIL powerpc-ibm-aix. Correct dg syntax.
+	* gcc.dg/altivec-1.c: XFAIL powerpc-ibm-aix, powerpc-eabispe.
+	* gcc.dg/altivec-2.c: Generalize target.
+	* gcc.dg/altivec-3.c: XFAIL powerpc-ibm-aix, powerpc-eabispe.
+	Use vector_size attribute.  Do runtime check for VMX hardware.
+	* gcc.dg/altivec-4.c: XFAIL powerpc-ibm-aix, powerpc-eabispe.
+	Use vector size attribute.
+	* gcc.dg/altivec-5.c: Generalize target.
+	* gcc.dg/altivec-7.c: XFAIL powerpc-ibm-aix.  Replace long* with int*.
+	* gcc.dg/altivec-8.c: XFAIL powerpc-ibm-aix.
+	* gcc.dg/altivec-9.c: Generalize target.
+	* gcc.dg/altivec-10.c: XFAIL powerpc-ibm-aix and powerpc-eabispe.
+	* gcc.dg/altivec-11.c: Ditto.
+	* gcc.dg/altivec-varargs-1.c: Ditto.
+
 2004-08-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/16195

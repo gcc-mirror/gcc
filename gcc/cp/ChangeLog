@@ -1,3 +1,15 @@
+2004-08-23  Janis Johnson  <janis187@us.ibm.com>
+
+	Backports from mainline:
+
+	2004-02-27  Ziemowit Laski  <zlaski@apple.com>
+	2004-03-24  Ziemowit Laski  <zlaski@apple.com>
+
+	* Make-lang.in (cp/mangle.o): Depend on $(TARGET_H).
+        * mangle.c (write_type): Add call to 'mangle_fundamental_type'
+        target hook.
+	* tree.c (pod_type_p): Treat VECTOR_TYPEs as PODs.
+
 2004-08-19  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/15890

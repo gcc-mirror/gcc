@@ -227,3 +227,10 @@ hook_bool_voidp_size_t_false (void * a ATTRIBUTE_UNUSED,
 {
   return false;
 }
+
+/* Generic hook that takes a tree and returns a NULL string.  */
+const char *
+hook_constcharptr_tree_null (tree t ATTRIBUTE_UNUSED)
+{
+  return NULL;
+}

@@ -1,14 +1,11 @@
 /* { dg-do compile { target powerpc*-*-* } } */
+/* { dg-xfail-if "" { "powerpc-ibm-aix*" } { "-maltivec" } { "" } } */
 /* { dg-options "-maltivec -mabi=altivec -fno-inline" } */
 
 #include <altivec.h>
 #include <signal.h>
 
-void 
-sig_ill_handler (int sig)
-{
-    exit(0);
-}
+#include "altivec_check.h"
 
 typedef union
 {
@@ -62,7 +59,7 @@ check_cmple()
 {
   vector float a = {1.0, 2.0, 3.0, 4.0};
   vector float b = {1.0, 3.0, 2.0, 5.0};
-  vector signed int aux;
+  vector bool int aux;
   vector signed int le = {-1, -1, 0, -1};
 
   aux = vec_cmple (a, b);
@@ -75,10 +72,7 @@ check_cmple()
 int 
 main()
 {
-  /* Exit on systems without altivec.  */
-  signal (SIGILL, sig_ill_handler);
-  asm volatile ("vor 0,0,0");
-  signal (SIGILL, SIG_DFL);
+  altivec_check ();
 
   check_cmple ();
   check_vec_all_num ();

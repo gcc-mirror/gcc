@@ -1,9 +1,11 @@
-/* { dg-do run { target powerpc-*-*altivec powerpc-*-*-*altivec } } */
+/* { dg-do run { target powerpc*-*-* } } */
+/* { dg-xfail-if "" { "powerpc-*-eabispe*" "powerpc-ibm-aix*" } { "-maltivec" } { "" } } */
 /* { dg-options "-maltivec" } */
 
 /* Program to test PowerPC AltiVec instructions.  */
 
 #include <altivec.h>
+#include "altivec_check.h"
 
 extern void abort (void);
 
@@ -22,6 +24,8 @@ vector float f, g, h;
 
 int main ()
 {
+  altivec_check();  /* Exits if AltiVec not supported */
+
   k = vec_add (a1, a2);
   if (!vec_all_eq (addi, k))
     abort ();

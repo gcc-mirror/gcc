@@ -1,4 +1,4 @@
-/* { dg-do compile { target powerpc-*-* } } */
+/* { dg-do compile { target powerpc*-*-* } } */
 /* { dg-options "-maltivec -mabi=altivec -g" } */
 
 /* PR9564 */

@@ -1,8 +1,11 @@
-/* { dg-do run { target powerpc-*-*altivec powerpc-*-*-*altivec } } */
+/* { dg-do run { target powerpc*-*-* } } */
+/* { dg-xfail-if "" { "powerpc-*-eabispe*" "powerpc-ibm-aix*" } { "-maltivec" } { "" } } */
 /* { dg-options "-maltivec" } */
 
-typedef int int4 __attribute__ ((mode(V4SI)));
-typedef float float4 __attribute__ ((mode(V4SF)));
+#include "altivec_check.h"
+
+typedef int int4 __attribute__ ((vector_size (16)));
+typedef float float4 __attribute__ ((vector_size (16)));
 
 int4 a1 = (int4) { 100, 200, 300, 400 };
 int4 a2 = (int4) { 500, 600, 700, 800 };
@@ -46,7 +49,8 @@ compare_float4 (float *a, float *b)
       abort ();
 }
 
-main ()
+void
+main1 ()
 {
   int loc1 = 600, loc2 = 800;
   int4 a3 = (int4) { loc1, loc2, 1000, 1200 };
@@ -64,6 +68,12 @@ main ()
   ftmp = vec_add_float4 (f1, f2);
   vec_store (h3, ftmp);
   compare_float4 (g3, h3);
+}
 
+int
+main ()
+{
+  altivec_check ();
+  main1 ();
   exit (0);
 }

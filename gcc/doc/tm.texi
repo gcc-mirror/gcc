@@ -1502,6 +1502,34 @@ precedence for that field, but the alignment of the rest of the structure
 may affect its placement.
 @end deftypefn
 
+@deftypefn {Target Hook} {const char *} TARGET_MANGLE_FUNDAMENTAL_TYPE (tree @var{type})
+If your target defines any fundamental types, define this hook to
+return the appropriate encoding for these types as part of a C++
+mangled name.  The @var{type} argument is the tree structure
+representing the type to be mangled.  The hook may be applied to trees
+which are not target-specific fundamental types; it should return
+@code{NULL} for all such types, as well as arguments it does not
+recognize.  If the return value is not @code{NULL}, it must point to
+a statically-allocated string constant.
+
+Target-specific fundamental types might be new fundamental types or
+qualified versions of ordinary fundamental types.  Encode new
+fundamental types as @samp{@w{u @var{n} @var{name}}}, where @var{name}
+is the name used for the type in source code, and @var{n} is the
+length of @var{name} in decimal.  Encode qualified versions of
+ordinary types as @samp{@w{U @var{n} @var{name} @var{code}}}, where
+@var{name} is the name used for the type qualifier in source code,
+@var{n} is the length of @var{name} as above, and @var{code} is the
+code used to represent the unqualified version of this type.  (See
+@code{write_builtin_type} in @file{cp/mangle.c} for the list of
+codes.)  In both cases the spaces are for clarity; do not include any
+spaces in your string.
+
+The default version of this hook always returns @code{NULL}, which is
+appropriate for a target that does not define any new fundamental
+types.
+@end deftypefn
+
 @node Type Layout
 @section Layout of Source Language Data Types
 

@@ -1,10 +1,13 @@
-/* { dg-do run { target powerpc*-*-darwin* powerpc*-*-*altivec* powerpc*-*-linux*} } */
+/* { dg-do run { target powerpc*-*-* } } */
+/* { dg-xfail-if "" { "powerpc-*-eabispe*" "powerpc-ibm-aix*" } { "-maltivec" } { "" } } */
 /* { dg-options "-maltivec -mabi=altivec -fno-inline" } */
 
 #include <stdarg.h>
 #include <signal.h>
 
-#define vector __attribute__((mode(V4SI)))
+#include "altivec_check.h"
+
+#define vector __attribute__((vector_size (16)))
 
 const vector unsigned int v1 = {10,11,12,13};
 const vector unsigned int v2 = {20,21,22,23};
@@ -72,19 +75,10 @@ int main1(void)
   return 0;
 }
 
-void 
-sig_ill_handler (int sig)
-{
-    exit(0);
-}
-
 int main (void)
 {
-  /* Exit on systems without altivec.  */
-  signal (SIGILL, sig_ill_handler);
-  /* Altivec instruction, 'vor %v0,%v0,%v0'.  */
-  asm volatile (".long 0x10000484");
-  signal (SIGILL, SIG_DFL);
+  /* Exit on systems without AltiVec.  */
+  altivec_check ();
 
   return main1 ();
 }

@@ -1,3 +1,95 @@
+2004-08-23  Janis Johnson  <janis187@us.ibm.com>
+
+	Backports from mainline:
+
+	2004-02-11  Ziemowit Laski  <zlaski@apple.com>
+	2004-02-21  Ziemowit Laski  <zlaski@apple.com>
+	2004-02-27  Ziemowit Laski  <zlaski@apple.com>
+	2004-03-04  Ziemowit Laski  <zlaski@apple.com>
+	2004-03-20  Ziemowit Laski  <zlaski@apple.com>
+	2004-03-24  Ziemowit Laski  <zlaski@apple.com>
+	2004-05-11  Fariborz Jahanian <fjahanian@apple.com>
+ 	2004-07-23  Janis Johnson  <janis187@us.ibm.com>
+ 	2004-08-12  Janis Johnson  <janis187@us.ibm.com>
+	2004-08-12  Ben Elliston <bje@au.ibm.com>
+ 	2004-08-16  Janis Johnson  <janis187@us.ibm.com>
+
+	* c-common.c (vector_size_helper): Remove; call
+	reconstruct_complex_type() instead.
+	* hooks.c (hook_constcharptr_tree_null): New hook.
+        * hooks.h (hook_constcharptr_tree_null): New prototype.
+        * target-def.h (TARGET_MANGLE_FUNDAMENTAL_TYPE): New target hook.
+        * target.h (mangle_fundamental_type): New target hook.
+	* tree.c (reconstruct_complex_type): New function
+	(formerly vector_size_helper() in c-common.c).
+	(make_vector): Make externally visible.
+	* tree.h (reconstruct_complex_type, make_vector): Add prototypes.
+	* doc/extend.texi (AltiVec builtins): Document additional differences
+	from the Motorola AltiVec PIM.
+	* doc/tm.texi (TARGET_MANGLE_FUNDAMENTAL_TYPE): Document.
+	* config/darwin.h (TARGET_OPTION_TRANSLATE_TABLE): Refer to
+	SUBTARGET_OPTION_TRANSLATE_TABLE for architecture-specific options.
+	* config/i386/darwin.h (SUBTARGET_OPTION_TRANSLATE_TABLE): Define it.
+	* config/rs6000/altivec.h: #error out if '-maltivec' not specified.
+	(vector, pixel, bool): #define to __vector, __pixel and __bool.
+	Change vector to __vector (except for the `vector' macro itself).
+	(__un_args_eq, __bin_args_eq, __tern_args_eq): Move to C-specific
+	portion of header.
+	(__altivec_link_error_invalid_argument): Remove prototype; will use
+	__builtin_altivec_compiletime_error("vec_*") instead.
+	(vec_*): Fix/complete set of available operation overloads given the
+	existence of distinct 'vector bool ...' and 'vector pixel' types;
+	tighten cv-correctness of pointer arguments; in C, always check for
+	correct argument types before macro expansion.
+	(vec_splat_s8, vec_splat_s16, vec_splat_s32, vec_splat_u8,
+	vec_splat_u16, vec_splat_u32): Change C++ definitions to accept a
+	'const int' argument; the prototypes already do.
+	(vec_dst, vec_dstst, vec_dststt, vec_dstt, vec_sld, vec_splat): Add
+	prototypes, marked with always_inline attribute.
+	* config/rs6000/darwin.h (SUBTARGET_OPTION_TRANSLATE_TABLE): New macro
+	defining Darwin/PowerPC-specific '-f[no-]altivec' and
+	'-W[no-]altivec-long-deprecated' switches.
+	* config/rs6000/rs6000-c.c (rs6000_cpu_cpp_builtins): Pre-define
+	'__vector', '__pixel' and '__bool' macros using
+	'__attribute__((altivec(...)))' types.
+	* config/rs6000/rs6000.c (bool_char_type_node, bool_short_type_node,
+	bool_int_type_node, pixel_type_node, bool_V16QI_type_node,
+	bool_V8HI_type_node, bool_V4SI_type_node, pixel_V8HI_type_node):
+	New type nodes.
+	(rs6000_warn_altivec_long, rs6000_warn_altivec_long_switch): New, for
+	handling '-W[no-]altivec-long-deprecated'.
+	(rs6000_override_options): Handle '-W[no-]altivec-long-deprecated'.
+	(rs6000_expand_binop_builtin, rs6000_expand_ternop_builtin,
+	altivec_expand_dst_builtin): Remove casts from integer literals.
+	(altivec_expand_builtin): Likewise; handle expansion of new
+	'__builtin_altivec_compiletime_error' function.
+	(rs6000_init_builtins): Initialize 'vector bool ...' and 'vector pixel'
+	types, and make them distinct from other vector types; register
+	'__builtin_altivec_compiletime_error' function.
+	(print_operand): For 'P', print a full target register name instead of
+	merely its number.
+	(rs6000_attribute_table): Add "altivec" attribute.
+	(rs6000_handle_altivec_attribute): New function.
+	(rs6000_common_init_builtins): Rename v4si_ftype_char, v8hi_ftype_char,
+	v16qi_ftype_char, v4sf_ftype_v4si_char, v4si_ftype_v4sf_char,
+	v4si_ftype_v4si_char, v8hi_ftype_v8hi_char, v16qi_ftype_v16qi_char,
+        v16qi_ftype_v16qi_v16qi_char, v8hi_ftype_v8hi_v8hi_char,
+        v4si_ftype_v4si_v4si_char and v4sf_ftype_v4sf_v4sf_char to
+        end in ..._int; change them to accept an int instead of a char
+        as the last parameter.
+	(altivec_expand_dst_builtin): Treat expansion as completed even if
+	literal argument is invalid (so that other expansions are not tried
+	in vain).
+	(TARGET_MANGLE_FUNDAMENTAL_TYPE): Point target hook at
+	rs6000_mangle_fundamental_type.
+        (rs6000_mangle_fundamental_type): New function.
+	* config/rs6000/rs6000.h (TARGET_OPTIONS): Describe
+	'-m[no-]-warn-altivec-long' (which '-W[no-]altivec-long-deprecated'
+	maps to).
+	(rs6000_warn_altivec_long, rs6000_warn_altivec_long_switch): Forward
+	declare.
+	(ALTIVEC_BUILTIN_COMPILETIME_ERROR): New built-in enumeration.
+
 2004-08-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/16195

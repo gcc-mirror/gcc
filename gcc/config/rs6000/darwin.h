@@ -111,6 +111,13 @@ do {									\
 #define SUBTARGET_EXTRA_SPECS			\
   { "darwin_arch", "ppc" },
 
+/* The "-faltivec" option should have been called "-maltivec" all along.  */
+#define SUBTARGET_OPTION_TRANSLATE_TABLE                               \
+  { "-faltivec", "-maltivec -include altivec.h" },     \
+  { "-fno-altivec", "-mno-altivec" },  \
+  { "-Waltivec-long-deprecated",       "-mwarn-altivec-long" }, \
+  { "-Wno-altivec-long-deprecated", "-mno-warn-altivec-long" }
+
 /* Make both r2 and r3 available for allocation.  */
 #define FIXED_R2 0
 #define FIXED_R13 0

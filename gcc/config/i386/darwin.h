@@ -41,6 +41,10 @@ Boston, MA 02111-1307, USA.  */
 #undef CC1_SPEC
 #define CC1_SPEC "%{!static:-fPIC}"
 
+/* Use the following macro for any Darwin/x86-specific command-line option
+   translation.  */
+#define SUBTARGET_OPTION_TRANSLATE_TABLE
+
 #define ASM_SPEC "-arch i386 \
   %{Zforce_cpusubtype_ALL:-force_cpusubtype_ALL} \
   %{!Zforce_cpusubtype_ALL:%{mmmx:-force_cpusubtype_ALL}\
