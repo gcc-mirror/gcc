@@ -1,3 +1,8 @@
+2002-03-27  Richard Henderson  <rth@redhat.com>
+
+	* os_dep.c (GC_init_linux_data_start): Fix references to
+	__data_start and _end.
+
 2002-03-25  Loren J. Rittle  <ljrittle@acm.org>
 
 	* include/private/gcconfig.h: Change all likely references
