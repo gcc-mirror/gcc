@@ -1,3 +1,7 @@
+2001-10-05  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* gccbug.in (CATEGORIES): Add ada.
+
 2001-10-05  Catherine Moore  <clm@redhat.com>
 
         * config/stormy16/stormy-abi:  Document abi changes.
