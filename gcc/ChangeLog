@@ -1,3 +1,8 @@
+2003-01-25  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* Makefile.in (cfgloop.o, cfgloopanal.o, cfgloopmanip.o): Add
+	dependencies on coretypes.h and $(TM_H).
+
 Sat Jan 25 11:10:03 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* builtins.c (fold_trunc_transparent_mathfn):  Undo accidental commit.
