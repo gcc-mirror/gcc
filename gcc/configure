@@ -4562,11 +4562,11 @@ for machine in $build $host $target; do
 #		use_collect2=yes
 		;;
 	i[34567]86-*-freebsd[12] | i[34567]86-*-freebsd[12].* | i[34567]86-*-freebsd*aout*)
-		tm_file="i386/freebsd.h i386/perform.h"
+		tm_file="i386/freebsd-aout.h i386/perform.h"
 		tmake_file=t-freebsd
 		;;
 	i[34567]86-*-freebsd*)
-		tm_file="i386/i386.h i386/att.h svr4.h freebsd.h i386/freebsd-elf.h i386/perform.h"
+		tm_file="i386/i386.h i386/att.h svr4.h freebsd.h i386/freebsd.h i386/perform.h"
 		extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
 		tmake_file=t-freebsd
 		gas=yes
