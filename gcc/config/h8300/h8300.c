@@ -133,7 +133,12 @@ dosize (file, op, size, fped)
   switch (size)
     {
     case 4:
-      /* ??? TARGET_H8300H can do this in one insn.  */
+      if (TARGET_H8300H)
+	{
+	  fprintf (file, "\t%ss\t#%d,sp\n", op, 4);
+	  size = 0;
+	  break;
+	}
     case 3:
       fprintf (file, "\t%ss\t#%d,sp\n", op, 2);
       size -= 2;
