@@ -8,16 +8,15 @@ details.  */
 
 #include <config.h>
 
-#ifdef USE_WINSOCK
-#include <windows.h>
-#include <winsock.h>
+#include<platform.h>
+
+make #ifdef WIN32
 #include <errno.h>
 #include <string.h>
 #ifndef ENOPROTOOPT
 #define ENOPROTOOPT 109
 #endif
-#else /* USE_WINSOCK */
-#include "posix.h"
+#else /* WIN32 */
 #ifdef HAVE_SYS_SOCKET_H
 #include <sys/socket.h>
 #endif
@@ -29,7 +28,7 @@ details.  */
 #endif
 #include <errno.h>
 #include <string.h>
-#endif /* USE_WINSOCK */
+#endif /* WIN32 */
 
 #if HAVE_BSTRING_H
 // Needed for bzero, implicitly used by FD_ZERO on IRIX 5.2 
@@ -328,6 +327,8 @@ java::net::PlainDatagramSocketImpl::receive (java::net::DatagramPacket *p)
   jbyte *dbytes = elements (p->getData());
   ssize_t retlen = 0;
 
+// FIXME: implement timeout support for Win32
+#ifndef WIN32
   // Do timeouts via select since SO_RCVTIMEO is not always available.
   if (timeout > 0)
     {
@@ -343,6 +344,7 @@ java::net::PlainDatagramSocketImpl::receive (java::net::DatagramPacket *p)
       else if (retval == 0)
 	throw new java::io::InterruptedIOException ();
     }
+#endif /* WIN32 */
 
   retlen =
     ::recvfrom (fnum, (char *) dbytes, p->getLength(), 0, (sockaddr*) &u,
