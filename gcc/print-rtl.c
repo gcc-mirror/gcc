@@ -384,10 +384,8 @@ print_rtx (rtx in_rtx)
 
 #ifndef GENERATOR_FILE
 	    if (GET_CODE (in_rtx) == REG && value < FIRST_PSEUDO_REGISTER)
-	      {
-		fputc (' ', outfile);
-		PRINT_REG (in_rtx, -1, outfile);
-	      }
+	      fprintf (outfile, " %d %s", REGNO (in_rtx),
+		       reg_names[REGNO (in_rtx)]);
 	    else if (GET_CODE (in_rtx) == REG
 		     && value <= LAST_VIRTUAL_REGISTER)
 	      {

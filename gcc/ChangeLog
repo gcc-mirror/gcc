@@ -1,3 +1,13 @@
+2003-12-31  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* print-rtl.c (print_rtx): For hard register, write out register
+	number and register name instead of calling PRINT_REG.
+	* defaults.h (PRINT_REG): Deleted.
+	* config/i386/i386.c (print_reg): Remove handling of CODE of -1.
+	Move comments here from i386.h.
+	(print_operand, print_operand_address): Call print_reg directly.
+	* config/i386/i386.h (PRINT_REG): Deleted.
+
 2003-12-31  Roger Sayle  <roger@eyesopen.com>
 
 	* config/ia64/hpux.h (TARGET_OS_CPP_BUILTINS): Define

@@ -2720,7 +2720,7 @@ do {							\
    For non floating point regs, the following are the HImode names.
 
    For float regs, the stack top is sometimes referred to as "%st(0)"
-   instead of just "%st".  PRINT_REG handles this with the "y" code.  */
+   instead of just "%st".  PRINT_OPERAND handles this with the "y" code.  */
 
 #define HI_REGISTER_NAMES						\
 {"ax","dx","cx","bx","si","di","bp","sp",				\
@@ -2870,18 +2870,6 @@ do {									\
 
 #define PRINT_OPERAND_PUNCT_VALID_P(CODE) \
   ((CODE) == '*' || (CODE) == '+' || (CODE) == '&')
-
-/* Print the name of a register based on its machine mode and number.
-   If CODE is 'w', pretend the mode is HImode.
-   If CODE is 'b', pretend the mode is QImode.
-   If CODE is 'k', pretend the mode is SImode.
-   If CODE is 'q', pretend the mode is DImode.
-   If CODE is 'h', pretend the reg is the `high' byte register.
-   If CODE is 'y', print "st(0)" instead of "st", if the reg is stack op.
-   If CODE is -1, it is not an error for X to be a virtual register.  */
-
-#define PRINT_REG(X, CODE, FILE)  \
-  print_reg ((X), (CODE), (FILE))
 
 #define PRINT_OPERAND(FILE, X, CODE)  \
   print_operand ((FILE), (X), (CODE))
