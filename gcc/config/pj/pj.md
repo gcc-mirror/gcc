@@ -895,24 +895,13 @@
    (match_operand:SI 3 "" "")]
   ""
   "{ 
-     rtx addr;
-     rtx temp;
+     operands[2] = force_reg (Pmode, XEXP (operands[2], 0));
      emit_move_insn (hard_frame_pointer_rtx, operands[0]);
-
-     temp = copy_to_reg (replace_rtx (operands[1], 
-	                              virtual_stack_vars_rtx,
-         		  	      hard_frame_pointer_rtx));
-	  
-     addr = replace_rtx (copy_rtx (operands[2]),
-  	 		 virtual_stack_vars_rtx,
- 		 	 hard_frame_pointer_rtx);
-
      emit_insn (gen_rtx_USE (VOIDmode, stack_pointer_rtx));
-     emit_insn (gen_nonlocal_goto_helper (force_reg (Pmode, XEXP (addr, 0)),
-		                          temp));
+     emit_insn (gen_nonlocal_goto_helper (operands[2], operands[1]));
      emit_barrier ();
      DONE;
-    }")
+   }")
 
 ;; Function overhead.
 
