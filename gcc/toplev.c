@@ -2218,6 +2218,12 @@ rest_of_decl_compilation (decl, asmspec, top_level, at_end)
 {
   /* Declarations of variables, and of functions defined elsewhere.  */
 
+/* The most obvious approach, to put an #ifndef around where
+   this macro is used, doesn't work since it's inside a macro call.  */
+#ifndef ASM_FINISH_DECLARE_OBJECT
+#define ASM_FINISH_DECLARE_OBJECT(FILE, DECL, TOP, END)
+#endif
+
   /* Forward declarations for nested functions are not "external",
      but we need to treat them as if they were.  */
   if (TREE_STATIC (decl) || DECL_EXTERNAL (decl)
@@ -2239,10 +2245,8 @@ rest_of_decl_compilation (decl, asmspec, top_level, at_end)
 			&& (DECL_INITIAL (decl) == 0
 			    || DECL_INITIAL (decl) == error_mark_node)))
 		   assemble_variable (decl, top_level, at_end, 0);
-#ifdef ASM_FINISH_DECLARE_OBJECT
 	       ASM_FINISH_DECLARE_OBJECT (asm_out_file, decl,
 					  top_level, at_end);
-#endif
 	     });
   else if (DECL_REGISTER (decl) && asmspec != 0)
     {
