@@ -1,3 +1,7 @@
+2002-06-20  Steve Ellcey  <sje@cup.hp.com>
+	* gcc/config.gcc (ia64*-*-hpux*): Set use_collect2 to no.
+	Set float_format to i128.
+
 2002-06-24  David S. Miller  <davem@redhat.com>
 
 	* config/sparc/sparc.c (INIT_TARGET_OPTABS): If ARCH64, set the
