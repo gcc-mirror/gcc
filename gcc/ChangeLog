@@ -1,3 +1,11 @@
+Thu Sep  9 14:23:02 1999  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* defaults.h (EH_FRAME_SECTION, EH_FRAME_SECTION_ASM_OP): Define here.
+	* crtstuff.c: Not here.
+	* dwarf2out.c: Or here.
+	* libgcc2.c (__do_global_ctors, __do_global_dtors): Handle EH frame
+	info.
+
 Thu Sep  9 09:40:58 1999  Mark Mitchell  <mark@codesourcery.com>
 
 	* function.h (free_after_compilation): Remove decl parameter.

@@ -1,7 +1,7 @@
 /* Definitions of various defaults for how to do assembler output
    (most of which are designed to be appropriate for GAS or for
    some BSD assembler).
-   Copyright (C) 1992, 1996, 1997, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1996-1999 Free Software Foundation, Inc.
    Contributed by Ron Guilmette (rfg@monkeys.com)
 
 This file is part of GNU CC.
@@ -153,6 +153,19 @@ do { fprintf (FILE, "\t%s\t", ASM_LONG);				\
    the rest of the DWARF 2 frame unwind support is also provided.  */
 #if !defined (DWARF2_UNWIND_INFO) && defined (INCOMING_RETURN_ADDR_RTX)
 #define DWARF2_UNWIND_INFO 1
+#endif
+
+#if defined (DWARF2_UNWIND_INFO) && !defined (EH_FRAME_SECTION)
+# if defined (EH_FRAME_SECTION_ASM_OP)
+#  define EH_FRAME_SECTION() eh_frame_section();
+# else
+   /* If we aren't using crtstuff to run ctors, don't use it for EH.  */
+#  if defined (ASM_OUTPUT_SECTION_NAME) && defined (ASM_OUTPUT_CONSTRUCTOR)
+#   define EH_FRAME_SECTION_ASM_OP	".section\t.eh_frame,\"aw\""
+#   define EH_FRAME_SECTION() \
+     do { named_section (NULL_TREE, ".eh_frame", 0); } while (0)
+#  endif
+# endif
 #endif
 
 /* By default, we generate a label at the beginning and end of the
