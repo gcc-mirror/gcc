@@ -75,12 +75,13 @@ SUBDIRS = libI77 libF77 libU77
 
 F2CEXT = abort derf derfc ef1asc ef1cmc erf erfc exit getarg getenv iargc \
 	signal system flush ftell fseek access besj0 besj1 besjn besy0 besy1 \
-	besyn chdir chmod ctime date dbesj0 dbesj1 dbesjn dbesy0 dbesy1 dbesyn \
+	besyn chdir chmod ctime dbesj0 dbesj1 dbesjn dbesy0 dbesy1 dbesyn \
 	dtime etime fdate fgetc fget flush1 fnum fputc fput fstat gerror \
 	getcwd getgid getlog getpid getuid gmtime hostnm idate ierrno irand \
 	isatty itime kill link lnblnk lstat ltime mclock perror rand rename \
 	secnds second sleep srand stat symlnk time ttynam umask unlink \
-	vxtidt vxttim alarm
+	vxttim alarm \
+	date_y2kbuggy date_y2kbug vxtidt_y2kbuggy vxtidt_y2kbug
 
 .SUFFIXES:
 

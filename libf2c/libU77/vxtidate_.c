@@ -38,10 +38,10 @@ Boston, MA 02111-1307, USA.  */
 
 /* Subroutine */
 #ifdef KR_headers
-int G77_vxtidate_0 (m, d, y)
+int G77_vxtidate_y2kbug_0 (m, d, y)
      integer *y, *m, *d;
 #else
-int G77_vxtidate_0 (integer *m, integer *d, integer *y)
+int G77_vxtidate_y2kbug_0 (integer *m, integer *d, integer *y)
 #endif
 {
   struct tm *lt;

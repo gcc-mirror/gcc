@@ -14,7 +14,7 @@
 @c %**start of header
 @setfilename g77.info
 
-@set last-up-date 1999-03-03
+@set last-up-date 1999-03-06
 @set version-g77 0.5.24
 @set email-general egcs@@egcs.cygnus.com
 @set email-bugs egcs-bugs@@egcs.cygnus.com
@@ -8145,6 +8145,119 @@ on at least some systems:
 @ref{Date Intrinsic},
 @ref{IDate Intrinsic (VXT)}.
 
+@cindex y2kbuggy
+@cindex date_y2kbuggy_0
+@cindex vxtidate_y2kbuggy_0
+@cindex G77_date_y2kbuggy_0
+@cindex G77_vxtidate_y2kbuggy_0
+The @code{libg2c} library
+shipped with any @code{g77} that warns
+about invocation of a non-Y2K-compliant intrinsic
+has renamed the @samp{EXTERNAL} procedure names
+of those intrinsics.
+This is done so that
+the @code{libg2c} implementations of these intrinsics
+cannot be directly linked to
+as @samp{EXTERNAL} names
+(which normally would avoid the non-Y2K-intrinsic warning).
+
+The renamed forms of the @samp{EXTERNAL} names
+of these renamed procedures
+may be linked to
+by appending the string @samp{_y2kbug}
+to the name of the procedure
+in the source code.
+For example:
+
+@smallexample
+CHARACTER*20 STR
+INTEGER YY, MM, DD
+EXTERNAL DATE_Y2KBUG, VXTIDATE_Y2KBUG
+CALL DATE_Y2KBUG (STR)
+CALL VXTIDATE_Y2KBUG (MM, DD, YY)
+@end smallexample
+
+(Note that the @samp{EXTERNAL} statement
+is not actually required,
+since the modified names are not recognized as intrinsics
+by the current version of @code{g77}.
+But it is shown in this specific case,
+for purposes of illustration.)
+
+The renaming of @samp{EXTERNAL} procedure names of these intrinsics
+causes unresolved references at link time.
+For example, @samp{EXTERNAL DATE; CALL DATE(STR)}
+is normally compiled by @code{g77}
+as, in C, @samp{date_(&str, 20);}.
+This, in turn, links to the @samp{date_} procedure
+in the @samp{libE77} portion of @code{libg2c},
+which purposely calls a nonexistent procedure
+named @samp{G77_date_y2kbuggy_0}.
+The resulting link-time error is designed, via this name,
+to encourage the programmer to look up the
+index entries to this portion of the @code{g77} documentation.
+
+Generally, we recommend that the @samp{EXTERNAL} method
+of invoking procedures in @code{libg2c}
+@emph{not} be used.
+When used, some of the correctness checking
+normally performed by @code{g77}
+is skipped.
+
+In particular, it is probably better to use the
+@samp{INTRINSIC} method of invoking
+non-Y2K-compliant procedures,
+so anyone compiling the code
+can quickly notice the potential Y2K problems
+(via the warnings printing by @code{g77})
+without having to even look at the code itself.
+
+If there are problems linking @code{libg2c}
+to code compiled by @code{g77}
+that involve the string @samp{y2kbug},
+and these are not explained above,
+that probably indicates
+that a version of @code{libg2c}
+older than @code{g77}
+is being linked to,
+or that the new library is being linked
+to code compiled by an older version of @code{g77}.
+
+That's because, as of the version that warns about
+non-Y2K-compliant intrinsic invocation,
+@code{g77} references the @code{libg2c} implementations
+of those intrinsics
+using new names, containing the string @samp{y2kbug}.
+
+So, linking newly-compiled code
+(invoking one of the intrinsics in question)
+to an old library
+might yield an unresolved reference
+to @samp{G77_date_y2kbug_0}.
+(The old library calls it @samp{G77_date_0}.)
+
+Similarly, linking previously-compiled code
+to a new library
+might yield an unresolved reference
+to @samp{G77_vxtidate_0}.
+(The new library calls it @samp{G77_vxtidate_y2kbug_0}.)
+
+The proper fix for the above problems
+is to obtain the latest release of @code{g77}
+and related products
+(including @code{libg2c})
+and install them on all systems,
+then recompile, relink, and install
+(as appropriate)
+all existing Fortran programs.
+
+(Normally, this sort of renaming is steadfastly avoided.
+In this case, however, it seems more important to highlight
+potential Y2K problems
+than to ease the transition
+of potentially non-Y2K-compliant code
+to new versions of @code{g77} and @code{libg2c}.)
+
 @node Array Size
 @subsection Array Size
 @cindex limits, array size
@@ -14756,6 +14869,7 @@ as the above is just a sample, no such section exists.
 * LEX::         Various lexer messages
 * GLOBALS::     Disagreements about globals.
 * LINKFAIL::    When linking @samp{f771} fails.
+* Y2KBAD::      Use of non-Y2K-compliant intrinsic.
 @end menu
 
 @node CMPAMBIG
@@ -15327,6 +15441,24 @@ might solve this problem, e.g.@: by adding
 BOOT_CFLAGS='-mminimal-toc -O2 -g'
 @end smallexample
 to the @code{make bootstrap} command line.
+
+@node Y2KBAD
+@section @code{Y2KBAD}
+@cindex Y2K compliance
+@cindex Year 2000 compliance
+
+@noindent
+@smallexample
+Intrinsic `@var{name}', invoked at (^), known to be non-Y2K-compliant@dots{}
+@end smallexample
+
+This diagnostic indicates that
+the specific intrinsic invoked by the name @var{name}
+is known to have an interface
+that is not Year-2000 (Y2K) compliant.
+
+@xref{Year 2000 (Y2K) Problems}.
+
 @end ifset
 
 @node Index

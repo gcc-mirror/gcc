@@ -124,11 +124,13 @@ static struct _ffeintrin_name_ names[] = {
 #define DEFGEN(CODE,NAME,SPEC1,SPEC2)
 #define DEFSPEC(CODE,NAME,CALLABLE,FAMILY,IMP)
 #define DEFIMP(CODE,NAME,GFRTDIRECT,GFRTF2C,GFRTGNU,CONTROL)
+#define DEFIMPY(CODE,NAME,GFRTDIRECT,GFRTF2C,GFRTGNU,CONTROL,Y2KBAD)
 #include "intrin.def"
 #undef DEFNAME
 #undef DEFGEN
 #undef DEFSPEC
 #undef DEFIMP
+#undef DEFIMPY
 };
 
 static struct _ffeintrin_gen_ gens[] = {
@@ -137,11 +139,13 @@ static struct _ffeintrin_gen_ gens[] = {
   { NAME, { SPEC1, SPEC2, }, },
 #define DEFSPEC(CODE,NAME,CALLABLE,FAMILY,IMP)
 #define DEFIMP(CODE,NAME,GFRTDIRECT,GFRTF2C,GFRTGNU,CONTROL)
+#define DEFIMPY(CODE,NAME,GFRTDIRECT,GFRTF2C,GFRTGNU,CONTROL,Y2KBAD)
 #include "intrin.def"
 #undef DEFNAME
 #undef DEFGEN
 #undef DEFSPEC
 #undef DEFIMP
+#undef DEFIMPY
 };
 
 static struct _ffeintrin_imp_ imps[] = {
@@ -151,8 +155,12 @@ static struct _ffeintrin_imp_ imps[] = {
 #if 0	/* FFECOM_targetCURRENT == FFECOM_targetGCC */
 #define DEFIMP(CODE,NAME,GFRTDIRECT,GFRTF2C,GFRTGNU,CONTROL) \
   { NAME, FFECOM_gfrt ## GFRT, CONTROL },
+#define DEFIMPY(CODE,NAME,GFRTDIRECT,GFRTF2C,GFRTGNU,CONTROL,Y2KBAD) \
+  { NAME, FFECOM_gfrt ## GFRT, CONTROL },
 #elif 1	/* FFECOM_targetCURRENT == FFECOM_targetFFE */
 #define DEFIMP(CODE,NAME,GFRTDIRECT,GFRTF2C,GFRTGNU,CONTROL) \
+  { NAME, CONTROL },
+#define DEFIMPY(CODE,NAME,GFRTDIRECT,GFRTF2C,GFRTGNU,CONTROL,Y2KBAD) \
   { NAME, CONTROL },
 #else
 #error
@@ -162,6 +170,7 @@ static struct _ffeintrin_imp_ imps[] = {
 #undef DEFGEN
 #undef DEFSPEC
 #undef DEFIMP
+#undef DEFIMPY
 };
 
 static struct _ffeintrin_spec_ specs[] = {
@@ -170,10 +179,12 @@ static struct _ffeintrin_spec_ specs[] = {
 #define DEFSPEC(CODE,NAME,CALLABLE,FAMILY,IMP) \
   { NAME, CALLABLE, FAMILY, IMP, },
 #define DEFIMP(CODE,NAME,GFRTDIRECT,GFRTF2C,GFRTGNU,CONTROL)
+#define DEFIMPY(CODE,NAME,GFRTDIRECT,GFRTF2C,GFRTGNU,CONTROL,Y2KBAD)
 #include "intrin.def"
 #undef DEFGEN
 #undef DEFSPEC
 #undef DEFIMP
+#undef DEFIMPY
 };
 
 struct cc_pair { ffeintrinImp imp; char *text; };
