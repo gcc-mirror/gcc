@@ -2,7 +2,7 @@
 
 struct F {
   bool b1 : 1;
-  bool b2 : 7;  // WARNING - 
+  bool b2 : 7;
 };
 
 main()
