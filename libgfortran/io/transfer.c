@@ -177,7 +177,7 @@ read_sf (int *length)
 	  return NULL;
 	}
 
-      if (readlen < 1 || *q == '\n')
+      if (readlen < 1 || *q == '\n' || *q == '\r')
 	{
 	  /* ??? What is this for?  */
           if (current_unit->unit_number == options.stdin_unit)

@@ -66,12 +66,13 @@ static char value[20];
 #define CASE_DIGITS   case '0': case '1': case '2': case '3': case '4': \
                       case '5': case '6': case '7': case '8': case '9'
 
-#define CASE_SEPARATORS  case ' ': case ',': case '/': case '\n': case '\t'
+#define CASE_SEPARATORS  case ' ': case ',': case '/': case '\n': case '\t': \
+                         case '\r'
 
 /* This macro assumes that we're operating on a variable.  */
 
 #define is_separator(c) (c == '/' ||  c == ',' || c == '\n' || c == ' ' \
-                         || c == '\t')
+                         || c == '\t' || c == '\r')
 
 /* Maximum repeat count.  Less than ten times the maximum signed int32.  */
 
@@ -163,7 +164,7 @@ next_char (void)
     c = *p;
 
 done:
-  at_eol = (c == '\n');
+  at_eol = (c == '\n' || c == '\r');
   return c;
 }
 
@@ -230,6 +231,7 @@ eat_separator (void)
       break;
 
     case '\n':
+    case '\r':
       break;
 
     case '!':
@@ -284,6 +286,7 @@ finish_separator (void)
       break;
 
     case '\n':
+    case '\r':
       goto restart;
 
     case '!':
@@ -1052,6 +1055,8 @@ read_real (int length)
 	  goto got_repeat;
 
 	CASE_SEPARATORS:
+          if (c != '\n' &&  c != ',' && c != '\r')
+            unget_char (c);
 	  goto done;
 
 	default:
@@ -1483,6 +1488,7 @@ namelist_read (void)
           return;
         case ' ':
         case '\n':
+       case '\r':
         case '\t':
           break;
         case ',':
