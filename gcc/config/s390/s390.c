@@ -377,8 +377,9 @@ s390_select_ccmode (code, op0, op1)
 	if (GET_CODE (op0) == PLUS && GET_CODE (XEXP (op0, 1)) == CONST_INT
 	    && CONST_OK_FOR_LETTER_P (INTVAL (XEXP (op0, 1)), 'K'))
 	  return CCAPmode;
-	if (GET_CODE (op0) == PLUS || GET_CODE (op0) == MINUS
-	    || GET_CODE (op1) == NEG)
+	if ((GET_CODE (op0) == PLUS || GET_CODE (op0) == MINUS
+	     || GET_CODE (op1) == NEG)
+	    && GET_MODE_CLASS (GET_MODE (op0)) == MODE_INT)
 	  return CCLmode;
 
 	if (GET_CODE (op0) == AND)
@@ -432,7 +433,8 @@ s390_select_ccmode (code, op0, op1)
 
       case LTU:
       case GEU:
-	if (GET_CODE (op0) == PLUS)
+	if (GET_CODE (op0) == PLUS
+	    && GET_MODE_CLASS (GET_MODE (op0)) == MODE_INT)
 	  return CCL1mode;
 
 	if ((GET_CODE (op0) == SIGN_EXTEND || GET_CODE (op0) == ZERO_EXTEND)
@@ -442,7 +444,8 @@ s390_select_ccmode (code, op0, op1)
 
       case LEU:
       case GTU:
-	if (GET_CODE (op0) == MINUS)
+	if (GET_CODE (op0) == MINUS
+	    && GET_MODE_CLASS (GET_MODE (op0)) == MODE_INT)
 	  return CCL2mode;
 
 	if ((GET_CODE (op0) == SIGN_EXTEND || GET_CODE (op0) == ZERO_EXTEND)

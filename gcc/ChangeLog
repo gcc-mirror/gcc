@@ -1,3 +1,13 @@
+2003-08-01  Andreas Krebbel <krebbel1@de.ibm.com>
+
+	* config/s390/s390.c (s390_select_ccmode): Do not attempt to use CCL,
+	CCL1, or CCL2 modes with floating point operations.
+
+	* config/s390/s390.md ("*addsf3_cc", "*addsf3_cconly", "*adddf3_cc",
+	"*adddf3_cconly", "*subsf3_cc", "*subsf3_cconly", "*subdf3_cc",
+	"*subdf3_cconly"): New insns.
+	("*negabssi2", "*negabsdi2", "*negabsdf2", "*negabssf2"): Likewise.
+
 2003-08-01  Neil Booth  <neil@daikokuya.co.uk>
 
 	* Makefile.in: Refine dependencies.
