@@ -602,10 +602,12 @@ expand_start_all_catch (void)
   emit_jump (region->u.try.continue_label);
 }
 
-/* Begin a catch clause.  TYPE is the type caught, a list of such types, or
-   null if this is a catch-all clause. Providing a type list enables to
-   associate the catch region with potentially several exception types, which
-   is useful e.g. for Ada.  */
+/* Begin a catch clause.  TYPE is the type caught, a list of such
+   types, (in the case of Java) an ADDR_EXPR which points to the
+   runtime type to match, or null if this is a catch-all
+   clause. Providing a type list enables to associate the catch region
+   with potentially several exception types, which is useful e.g. for
+   Ada.  */
 
 void
 expand_start_catch (tree type_or_list)
