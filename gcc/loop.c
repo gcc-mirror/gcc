@@ -1,5 +1,5 @@
 /* Move constant computations out of loops.
-   Copyright (C) 1987, 88, 89, 91, 92, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 91, 92, 93, 1994 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -624,7 +624,7 @@ scan_loop (loop_start, end, nregs)
       if (p == end)
 	{
 	  if (loop_top != 0)
-	    p = NEXT_INSN (loop_top);
+	    p = loop_top;
 	  else
 	    break;
 	  if (p == scan_start)
@@ -3198,7 +3198,7 @@ strength_reduce (scan_start, end, loop_top, insn_count,
       if (p == end)
 	{
 	  if (loop_top != 0)
-	    p = NEXT_INSN (loop_top);
+	    p = loop_top;
 	  else
 	    break;
 	  if (p == scan_start)
@@ -3251,7 +3251,7 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 	      if (insn == end)
 		{
 		  if (loop_top != 0)
-		    insn = NEXT_INSN (loop_top);
+		    insn = loop_top;
 		  else
 		    break;
 		  if (insn == scan_start)
@@ -3455,7 +3455,7 @@ strength_reduce (scan_start, end, loop_top, insn_count,
       if (p == end)
 	{
 	  if (loop_top != 0)
-	    p = NEXT_INSN (loop_top);
+	    p = loop_top;
 	  else
 	    break;
 	  if (p == scan_start)
