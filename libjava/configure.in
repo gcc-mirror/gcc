@@ -450,6 +450,7 @@ else
      AC_DEFINE(HAVE_PROC_SELF_EXE)])
 
    AM_ICONV
+   AM_LC_MESSAGES
    AC_STRUCT_TIMEZONE
 
    AC_CHECK_FUNCS(gethostbyname_r, [
