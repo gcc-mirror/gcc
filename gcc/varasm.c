@@ -3124,9 +3124,6 @@ output_constant_pool (const char *fnname ATTRIBUTE_UNUSED,
 #ifdef ASM_OUTPUT_POOL_EPILOGUE
   ASM_OUTPUT_POOL_EPILOGUE (asm_out_file, fnname, fndecl, pool->offset);
 #endif
-
-  /* Done with this pool.  */
-  cfun->varasm->pool = NULL;
 }
 
 /* Determine what kind of relocations EXP may need.  */
