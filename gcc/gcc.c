@@ -565,11 +565,19 @@ static int n_default_compilers
 
 /* Here is the spec for running the linker, after compiling all files.  */
 
-#ifdef LINK_LIBGCC_SPECIAL
-/* Have gcc do the search for libgcc.a.  */
 /* -u* was put back because both BSD and SysV seem to support it.  */
 /* %{static:} simply prevents an error message if the target machine
    doesn't handle -static.  */
+#ifdef LINK_LIBGCC_SPECIAL_1
+/* Have gcc do the search for libgcc.a, but generate -L options as usual.  */
+static char *link_command_spec = "\
+%{!c:%{!M:%{!MM:%{!E:%{!S:ld %l %X %{o*} %{A} %{d} %{e*} %{m} %{N} %{n} \
+			%{r} %{s} %{T*} %{t} %{u*} %{x} %{z}\
+			%{!A:%{!nostdlib:%S}} %{static:}\
+			%{L*} %D %o %{!nostdlib:libgcc.a%s %L libgcc.a%s %{!A:%E}}\n }}}}}";
+#else
+#ifdef LINK_LIBGCC_SPECIAL
+/* Have gcc do the search for libgcc.a, and don't generate -L options.  */
 static char *link_command_spec = "\
 %{!c:%{!M:%{!MM:%{!E:%{!S:ld %l %X %{o*} %{A} %{d} %{e*} %{m} %{N} %{n} \
 			%{r} %{s} %{T*} %{t} %{u*} %{x} %{z}\
@@ -582,6 +590,7 @@ static char *link_command_spec = "\
 			%{r} %{s} %{T*} %{t} %{u*} %{x} %{z}\
 			%{!A:%{!nostdlib:%S}} %{static:}\
 			%{L*} %D %o %{!nostdlib:-lgcc %L -lgcc %{!A:%E}}\n }}}}}";
+#endif
 #endif
 
 /* A vector of options to give to the linker.
