@@ -8568,13 +8568,17 @@ patch_assignment (node, wfl_op1, wfl_op2)
   /* Otherwise, we might want to try to write into an optimized static
      final, this is an of a different nature, reported further on. */
   else if (TREE_CODE (wfl_op1) == EXPR_WITH_FILE_LOCATION
-	   && resolve_expression_name (wfl_op1, &llvalue)
-	   && check_final_assignment (llvalue, wfl_op1))
+	   && resolve_expression_name (wfl_op1, &llvalue))
     {
-      error_found = 1;
-      /* What we should do instead is resetting the all the flags
-         previously set, exchange lvalue for llvalue and continue. */
-      return error_mark_node;
+      if (check_final_assignment (llvalue, wfl_op1))
+	{
+	  /* What we should do instead is resetting the all the flags
+	     previously set, exchange lvalue for llvalue and continue. */
+	  error_found = 1;
+	  return error_mark_node;
+	}
+      else 
+	lhs_type = TREE_TYPE (lvalue);
     }
   else 
     {
@@ -10670,9 +10674,9 @@ patch_bc_statement (node)
 		parse_error_context (wfl_operator,
 				     "`continue' must be in loop");
 	      else
-		parse_error_context (wfl_operator,
-				     "continue label `%d' does not name a loop",
-				     IDENTIFIER_POINTER (bc_label));
+		parse_error_context 
+		  (wfl_operator, "continue label `%s' does not name a loop",
+		   IDENTIFIER_POINTER (bc_label));
 	      return error_mark_node;
 	    }
 	  if ((DECL_NAME (LABELED_BLOCK_LABEL (labeled_block))
