@@ -1400,6 +1400,20 @@ duplicate_decls (newdecl, olddecl, different_binding_level)
 	}
       error_with_decl (olddecl, "previous declaration of `%s'");
     }
+  /* TLS cannot follow non-TLS declaration.  */
+  else if (TREE_CODE (olddecl) == VAR_DECL && TREE_CODE (newdecl) == VAR_DECL
+	   && !DECL_THREAD_LOCAL (olddecl) && DECL_THREAD_LOCAL (newdecl))
+    {
+      error_with_decl (newdecl, "thread-local declaration of `%s' follows non thread-local declaration");
+      error_with_decl (olddecl, "previous declaration of `%s'");
+    }
+  /* non-TLS declaration cannot follow TLS declaration.  */
+  else if (TREE_CODE (olddecl) == VAR_DECL && TREE_CODE (newdecl) == VAR_DECL
+	   && DECL_THREAD_LOCAL (olddecl) && !DECL_THREAD_LOCAL (newdecl))
+    {
+      error_with_decl (newdecl, "non thread-local declaration of `%s' follows thread-local declaration");
+      error_with_decl (olddecl, "previous declaration of `%s'");
+    }
   else
     {
       errmsg = redeclaration_error_message (newdecl, olddecl);

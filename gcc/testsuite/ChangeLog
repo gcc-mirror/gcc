@@ -1,3 +1,7 @@
+2002-08-06  Aldy Hernandez  <aldyh@redhat.com>
+
+        * testsuite/gcc.dg/tls/diag-3.c: New.
+
 2002-08-07  Gabriel Dos Reis  <gdr@nerim.net>
 
 	* g++.dg/README (Subdirectories): Document new subdir expr.
