@@ -337,6 +337,7 @@ FUNC_START(_savef31)	stfd	31,-8(1)
 			.long .LTfsav-.fsav
 			.short 4
 			.ascii "fsav"
+			.align 2
 FUNC_END(_savef31)
 FUNC_END(_savef30)
 FUNC_END(_savef29)
@@ -385,6 +386,7 @@ FUNC_START(_restf31)	lfd	31,-8(1)
 			.long .LTfres-.fres
 			.short 4
 			.ascii "fres"
+			.align 2
 FUNC_END(_restf31)
 FUNC_END(_restf30)
 FUNC_END(_restf29)
