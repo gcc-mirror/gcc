@@ -5227,8 +5227,7 @@ define_case_label ()
       warning ("where case label appears here");
       if (!explained)
 	{
-	  warning ("(enclose actions of previous case statements requiring");
-	  warning ("destructors in their own binding contours.)");
+	  warning ("(enclose actions of previous case statements requiring destructors in their own scope.)");
 	  explained = 1;
 	}
     }
