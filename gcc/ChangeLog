@@ -1,3 +1,28 @@
+2001-03-15  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cpp.texi: Update documentation for -include and -imacros.
+	* cppfiles.c (struct include_file): Remove "defined" memeber.
+	(find_or_create_entry): Make a copy of the file name, and
+	simplify it.
+	(open_file): Update to ensure we use the simplified filename.
+	(stack_include_file): Don't set search_from.
+	(cpp_included): Don't simplify the path name here.
+	(find_include_file): New prototype.  Call search_from to
+	get the start of the "" include chain.  Don't simplify the
+	filenames here.
+	(_cpp_execute_include): New prototype.  Move diagnostics to
+	do_include_common.  Update.
+	(_cpp_pop_file_buffer): Don't set defined.
+	(search_from): New prototype.  Use the preprocessor's cwd
+	for files included from the command line.
+	(read_name_map): Don't simplify the pathname here.
+	* cpphash.h (enum include_type): New.
+	(struct buffer): Delete search from.  New search_cached.
+	(_cpp_execute_include): Update prototype.
+	* cppinit.c (do_includes): Use _cpp_execute_include.
+	* cpplib.c (do_include_common): New function.
+	(do_include, do_include_next, do_import): Use it.
+
 2001-03-14  Mark Mitchell  <mark@codesourcery.com>
 
 	* varasm.c (assemble_alias): Use DECL_ASSEMBLER_NAME, not the

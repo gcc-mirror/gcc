@@ -96,6 +96,9 @@ struct search_path
 enum mi_state {MI_FAILED = 0, MI_OUTSIDE};
 enum mi_ind {MI_IND_NONE = 0, MI_IND_NOT};
 
+/* #include types.  */
+enum include_type {IT_INCLUDE, IT_INCLUDE_NEXT, IT_IMPORT, IT_CMDLINE};
+
 typedef struct toklist toklist;
 struct toklist
 {
@@ -222,17 +225,16 @@ struct cpp_buffer
      containing files that matches the current status.  */
   unsigned char include_stack_listed;
 
+  /* Nonzero means that the directory to start searching for ""
+     include files has been calculated and stored in "dir" below.  */
+  unsigned char search_cached;
+
   /* Buffer type.  */
   ENUM_BITFIELD (cpp_buffer_type) type : 8;
 
   /* The directory of the this buffer's file.  Its NAME member is not
      allocated, so we don't need to worry about freeing it.  */
   struct search_path dir;
-
-  /* The directory to start searching for "" include files.  Is either
-     "dir" above, or options.quote_include, depending upon whether -I-
-     was on the command line.  */
-  struct search_path *search_from;
 };
 
 /* A cpp_reader encapsulates the "state" of a pre-processor run.
@@ -411,8 +413,9 @@ extern void _cpp_fake_include		PARAMS ((cpp_reader *, const char *));
 extern void _cpp_never_reread		PARAMS ((struct include_file *));
 extern char *_cpp_simplify_pathname	PARAMS ((char *));
 extern int _cpp_read_file		PARAMS ((cpp_reader *, const char *));
-extern void _cpp_execute_include	PARAMS ((cpp_reader *,
-						 const cpp_token *, int, int));
+extern int _cpp_execute_include		PARAMS ((cpp_reader *,
+						 const cpp_token *,
+						 enum include_type));
 extern int _cpp_compare_file_date       PARAMS ((cpp_reader *,
 						 const cpp_token *));
 extern void _cpp_report_missing_guards	PARAMS ((cpp_reader *));
