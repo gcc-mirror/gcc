@@ -3667,7 +3667,7 @@
   [(set (match_operand:SI 2 "" "=&r")
 	(match_operand:QI 1 "inqhi_operand" ""))
    (set (match_operand:QI 0 "arith_reg_operand" "=r")
-	(truncate:HI (match_dup 3)))]
+	(truncate:QI (match_dup 3)))]
   "TARGET_SHMEDIA"
   "
 {
