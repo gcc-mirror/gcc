@@ -1310,8 +1310,10 @@ mips_move_2words (operands, insn)
 	      else
 		{
 		  delay = DELAY_LOAD;
-		  if (TARGET_64BIT)
+		  if (TARGET_FLOAT64)
 		    {
+		      if (!TARGET_64BIT)
+			abort_with_insn (insn, "Bad move");
 #ifdef TARGET_FP_CALL_32
 		      if (FP_CALL_GP_REG_P (regno1))
 			ret = "dsll\t%1,32\n\tor\t%1,%D1\n\tdmtc1\t%1,%0";
@@ -1327,8 +1329,10 @@ mips_move_2words (operands, insn)
 	  else if (FP_REG_P (regno1))
 	    {
 	      delay = DELAY_LOAD;
-	      if (TARGET_64BIT)
+	      if (TARGET_FLOAT64)
 		{
+		  if (!TARGET_64BIT)
+		    abort_with_insn (insn, "Bad move");
 #ifdef TARGET_FP_CALL_32
 		  if (FP_CALL_GP_REG_P (regno0))
 		    ret = "dmfc1\t%0,%1\n\tmfc1\t%D0,%1\n\tdsrl\t%0,32";
@@ -1370,20 +1374,32 @@ mips_move_2words (operands, insn)
 
       else if (code1 == CONST_DOUBLE)
 	{
-	  if (op1 != CONST0_RTX (GET_MODE (op1)))
+	  /* Move zero from $0 unless !TARGET_64BIT and recipient
+	     is 64-bit fp reg, in which case generate a constant.  */
+	  if (op1 != CONST0_RTX (GET_MODE (op1))
+	      || (TARGET_FLOAT64 && !TARGET_64BIT && FP_REG_P (regno0)))
 	    {
 	      if (GET_MODE (op1) == DFmode)
 		{
 		  delay = DELAY_LOAD;
 #ifdef TARGET_FP_CALL_32
 		  if (FP_CALL_GP_REG_P (regno0))
-		    ret = "li.d\t%0,%1\n\tdsll\t%D0,%0,32\n\tdsrl\t%D0,32\n\tdsrl\t%0,32";
+		    {
+		      if (TARGET_FLOAT64 && !TARGET_64BIT)
+			{
+			  operands[2] = GEN_INT (CONST_DOUBLE_LOW (op1));
+			  operands[3] = GEN_INT (CONST_DOUBLE_HIGH (op1));
+			  ret = "li\t%M0,%3\n\tli\t%L0,%2";
+			}
+		      else
+			ret = "li.d\t%0,%1\n\tdsll\t%D0,%0,32\n\tdsrl\t%D0,32\n\tdsrl\t%0,32";
+		    }
 		  else
 #endif
 		    ret = "li.d\t%0,%1";
 		}
 
-	      else if (TARGET_64BIT)
+	      else if (TARGET_FLOAT64)
 		ret = "li\t%0,%1";
 
 	      else
@@ -1427,7 +1443,9 @@ mips_move_2words (operands, insn)
 	      delay = DELAY_LOAD;
 	      ret = (TARGET_64BIT)
 				? "dmtc1\t%.,%0"
-				: "mtc1\t%.,%0\n\tmtc1\t%.,%D0";
+				: (TARGET_FLOAT64
+				   ? "li.d\t%0,%1"
+				   : "mtc1\t%.,%0\n\tmtc1\t%.,%D0");
 	    }
 	}
 	
@@ -3213,11 +3231,12 @@ override_options ()
 
       else if (TARGET_FLOAT64)
 	fatal ("Only MIPS-III CPUs can support 64 bit fp registers");
+
+      else if (TARGET_64BIT)
+	fatal ("Only MIPS-III CPUs can support 64 bit gp registers");
     }
   else
     {
-      target_flags |= MASK_64BIT;
-
       if (TARGET_LLONG128)
 	fatal ("128 bit long longs are not supported");
     }
