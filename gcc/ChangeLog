@@ -1,3 +1,21 @@
+2002-07-24  Frank van der Linden  <fvdl@wasabisystems.com>
+
+	PR optimization/7291
+	* config/i386/i386.c (ix86_expand_clrstr): Fix bzero alignment
+	problem on x86_64.
+
+2002-05-16  Jason Merrill  <jason@redhat.com>
+
+	* config/mips/mips.c (mips_output_external): Don't do sdata
+	optimization for a variable with DECL_COMDAT set.
+
+2002-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-decl.c (build_compound_literal): Set decl TREE_READONLY from TYPE.
+
+	* c-decl.c (build_compound_literal): Defer compound literal decls
+	until until file end to emit them only if they are actually used.
+
 2002-07-25  Release Manager
 
 	* GCC 3.1.1 Released.

@@ -629,10 +629,6 @@ namespace __gnu_cxx
       operator-(const difference_type& __n) const
       { return __normal_iterator(_M_current - __n); }
       
-      difference_type
-      operator-(const __normal_iterator& __i) const
-      { return _M_current - __i._M_current; }
-      
       const _Iterator& 
       base() const { return _M_current; }
     };
@@ -718,6 +714,16 @@ namespace __gnu_cxx
   operator>=(const __normal_iterator<_Iterator, _Container>& __lhs,
 	     const __normal_iterator<_Iterator, _Container>& __rhs)
   { return __lhs.base() >= __rhs.base(); }
+
+  // _GLIBCPP_RESOLVE_LIB_DEFECTS
+  // According to the resolution of DR179 not only the various comparison
+  // operators but also operator- must accept mixed iterator/const_iterator
+  // parameters.
+  template<typename _IteratorL, typename _IteratorR, typename _Container>
+  inline typename __normal_iterator<_IteratorL, _Container>::difference_type
+  operator-(const __normal_iterator<_IteratorL, _Container>& __lhs,
+	     const __normal_iterator<_IteratorR, _Container>& __rhs)
+  { return __lhs.base() - __rhs.base(); }
 
   template<typename _Iterator, typename _Container>
   inline __normal_iterator<_Iterator, _Container>

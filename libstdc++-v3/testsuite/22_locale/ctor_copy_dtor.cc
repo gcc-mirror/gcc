@@ -25,7 +25,6 @@
 #include <stdexcept>
 #include <testsuite_hooks.h>
 
-
 void test00()
 {
   // Should be able to do this as the first thing that happens in a
@@ -238,13 +237,29 @@ void test01()
 }
 #endif // _GLIBCPP_USE___ENC_TRAITS
 
-int main ()
+// libstdc++/7222
+void test02()
+{
+  bool test = true;
+  std::locale loc_c1("C");
+  std::locale loc_c2 ("C");
+  
+  std::locale loc_1("");
+  std::locale loc_2("");
+
+  VERIFY( loc_c1 == loc_c2 );
+  VERIFY( loc_1 == loc_2 );
+}
+
+int main()
 {
   test00();
 
 #if _GLIBCPP_USE___ENC_TRAITS
   test01();
 #endif 
+
+  test02();
 
   return 0;
 }

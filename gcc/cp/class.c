@@ -3830,6 +3830,8 @@ build_base_field (rli, binfo, empty_p, offsets, t)
   DECL_SIZE_UNIT (decl) = CLASSTYPE_SIZE_UNIT (basetype);
   DECL_ALIGN (decl) = CLASSTYPE_ALIGN (basetype);
   DECL_USER_ALIGN (decl) = CLASSTYPE_USER_ALIGN (basetype);
+  /* Tell the backend not to round up to TYPE_ALIGN.  */
+  DECL_PACKED (decl) = 1;
   
   if (!integer_zerop (DECL_SIZE (decl)))
     {
@@ -4970,6 +4972,12 @@ layout_class_type (t, empty_p, vfuns_p,
     {
       CLASSTYPE_SIZE (t) = bitsize_zero_node;
       CLASSTYPE_SIZE_UNIT (t) = size_zero_node;
+    }
+  /* If this is a POD, we can't reuse its tail padding.  */
+  else if (!CLASSTYPE_NON_POD_P (t))
+    {
+      CLASSTYPE_SIZE (t) = TYPE_SIZE (t);
+      CLASSTYPE_SIZE_UNIT (t) = TYPE_SIZE_UNIT (t);
     }
   else
     {

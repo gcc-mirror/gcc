@@ -982,8 +982,17 @@ write_unqualified_name (decl)
     {
       /* Conversion operator. Handle it right here.  
            <operator> ::= cv <type>  */
+      tree type;
+      if (decl_is_template_id (decl, NULL))
+	{
+	  tree fn_type = get_mostly_instantiated_function_type (decl, NULL,
+								NULL);
+	  type = TREE_TYPE (fn_type);
+	}
+      else
+	type = TREE_TYPE (DECL_NAME (decl));
       write_string ("cv");
-      write_type (TREE_TYPE (DECL_NAME (decl)));
+      write_type (type);
     }
   else if (DECL_OVERLOADED_OPERATOR_P (decl))
     {

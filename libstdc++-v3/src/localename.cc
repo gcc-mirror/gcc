@@ -132,8 +132,8 @@ namespace std
     _M_init_facet(new num_get<char>);
     _M_init_facet(new num_put<char>);
     _M_init_facet(new std::collate<char>(__cloc));
-    _M_init_facet(new moneypunct<char, false>(__cloc));
-    _M_init_facet(new moneypunct<char, true>(__cloc));
+    _M_init_facet(new moneypunct<char, false>(__cloc, __s));
+    _M_init_facet(new moneypunct<char, true>(__cloc, __s));
     _M_init_facet(new money_get<char>);
     _M_init_facet(new money_put<char>);
     _M_init_facet(new __timepunct<char>(__cloc, __s));
@@ -148,8 +148,8 @@ namespace std
     _M_init_facet(new num_get<wchar_t>);
     _M_init_facet(new num_put<wchar_t>);
     _M_init_facet(new std::collate<wchar_t>(__cloc));
-    _M_init_facet(new moneypunct<wchar_t, false>(__cloc));
-    _M_init_facet(new moneypunct<wchar_t, true>(__cloc));
+    _M_init_facet(new moneypunct<wchar_t, false>(__cloc, __s));
+    _M_init_facet(new moneypunct<wchar_t, true>(__cloc, __s));
     _M_init_facet(new money_get<wchar_t>);
     _M_init_facet(new money_put<wchar_t>);
     _M_init_facet(new __timepunct<wchar_t>(__cloc, __s));

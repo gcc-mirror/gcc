@@ -45,7 +45,7 @@ namespace std
 
   template<> 
     void
-    moneypunct<char, true>::_M_initialize_moneypunct(__c_locale)
+    moneypunct<char, true>::_M_initialize_moneypunct(__c_locale, const char*)
     {
       // "C" locale
       _M_decimal_point = '.';
@@ -61,7 +61,7 @@ namespace std
 
   template<> 
     void
-    moneypunct<char, false>::_M_initialize_moneypunct(__c_locale)
+    moneypunct<char, false>::_M_initialize_moneypunct(__c_locale, const char*)
     {
       // "C" locale
       _M_decimal_point = '.';
@@ -86,7 +86,8 @@ namespace std
 #ifdef _GLIBCPP_USE_WCHAR_T
   template<> 
     void
-    moneypunct<wchar_t, true>::_M_initialize_moneypunct(__c_locale)
+    moneypunct<wchar_t, true>::_M_initialize_moneypunct(__c_locale, 
+							const char*)
     {
       // "C" locale
       _M_decimal_point = L'.';
@@ -102,7 +103,8 @@ namespace std
 
   template<> 
     void
-    moneypunct<wchar_t, false>::_M_initialize_moneypunct(__c_locale)
+    moneypunct<wchar_t, false>::_M_initialize_moneypunct(__c_locale, 
+							 const char*)
     {
       // "C" locale
       _M_decimal_point = L'.';

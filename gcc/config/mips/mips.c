@@ -5854,6 +5854,7 @@ mips_output_external (file, decl, name)
 
   if (TARGET_GP_OPT
       && TREE_CODE (decl) != FUNCTION_DECL
+      && !DECL_COMDAT (decl)
       && (len = int_size_in_bytes (TREE_TYPE (decl))) > 0
       && ((section_name = DECL_SECTION_NAME (decl)) == NULL
 	  || strcmp (TREE_STRING_POINTER (section_name), ".sbss") == 0

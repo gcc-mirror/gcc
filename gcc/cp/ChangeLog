@@ -1,3 +1,72 @@
+2002-07-17  Scott Snyder <snyder@fnal.gov>
+
+	PR c++/7320
+	* rtti.c (get_tinfo_decl): Set DECL_COMDAT.
+
+2002-07-05  Nathan Sidwell  <nathan@codesourcery.com>
+
+	Repair damage on weak-impared targets caused by my previous patch.
+	* cp-tree.h (import_export_tinfo): Add parameter.
+	* decl2.c (import_export_tinfo): Add parameter, post adjust
+	DECL_COMDAT.
+	* rtti.c (emit_tinfo_decl): DECL_COMDAT is (nearly) always setup by
+	import_export_tinfo.
+
+2002-06-30  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* cp-tree.h (CPTI_TINFO_DECL_TYPE): Replace with ...
+	(CPTI_TYPE_INFO_PTR_TYPE): ... this.
+	(tinfo_decl_type): Replace with ...
+	(type_info_ptr_type): ... this.
+	(import_export_tinfo): Declare.
+	(tinfo_decl_p): Rename to ...
+	(unemitted_tinfo_decl_p): ... this.
+	* decl2.c (import_export_decl): Break out tinfo handling into ...
+	(import_export_tinfo): ... here. New function.
+	(finish_file): Adjust.
+	* rtti.c (TINFO_REAL_NAME): New macro.
+	(init_rtti_processing): Create the tinfo types.
+	(get_tinfo_decl_dynamic): Use type_info_ptr_type, get_tinfo_ptr.
+	(get_tinfo_decl): Adjust.
+	(get_tinfo_ptr): New function.
+	(get_type_id): Use it.
+	(tinfo_base_init): Create vtable decl here, if it doesn't exist.
+	(ptr_initializer): Use get_tinfo_ptr.
+	(ptm_initializer): Likewise.
+	(synthesize_tinfo_var): Break into ...
+	(get_pseudo_ti_init): ... this. Just create the initializer.
+	(get_pseudo_ti_desc): .. and this.
+	(create_real_tinfo_var): Remove.
+	(create_pseudo_type_info): Don't create the vtable decl here.
+	(get_vmi_pseudo_type_info): Remove.
+	(create_tinfo_types): Adjust.
+	(tinfo_decl_p): Rename to ...
+	(unemitted_tinfo_decl_p): ... here. Adjust.
+	(emit_tinfo_decl): Adjust. Create the initializer.
+
+2002-06-14  Jason Merrill  <jason@redhat.com>
+
+	C++ ABI changes.
+	* class.c (build_base_field): Set DECL_PACKED.
+	(layout_class_type): Don't use tail padding of PODs.
+	* mangle.c (write_unqualified_name): Fix template conversion op
+	mangling.
+
+2002-05-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/6611
+	* decl2.c (import_export_decl): If we clear
+	DECL_NOT_REALLY_EXTERN, make sure DECL_EXTERNAL is set.
+
+2002-05-14  Jason Merrill  <jason@redhat.com>
+
+	* rtti.c (get_tinfo_decl): Don't call comdat_linkage.
+	Do set DECL_COMDAT.
+	(synthesize_tinfo_var): Take the public decl.
+	(create_real_tinfo_var): Likewise.  Check DECL_COMDAT.
+	(emit_tinfo_decl): Adjust.  Call import_export_decl.
+	* decl2.c (import_export_decl): Simplify tinfo decl handling.
+
 2002-07-25  Release Manager
 
 	* GCC 3.1.1 Released.

@@ -1,3 +1,21 @@
+2002-07-24  Roger Sayle  <roger@eyesopen.com>
+
+	* gcc.c-torture/execute/memset-3.c: New testcase.
+
+2002-06-14  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/abi/layout1.C: New test.
+	* g++.dg/abi/layout2.C: New test.
+	* g++.dg/abi/mangle8.C: New test.
+
+2002-05-14  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/abi/rtti1.C: New test.
+
+2002-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/gnu89-init-2.c: New test.
+
 2002-07-25  Release Manager
 
 	* GCC 3.1.1 Released.
