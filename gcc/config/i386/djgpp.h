@@ -90,12 +90,21 @@ Boston, MA 02111-1307, USA.  */
 #undef UNALIGNED_SHORT_ASM_OP
 #define UNALIGNED_SHORT_ASM_OP "\t.short\t"
 
-/* Tell GCC where our standard include directory is.  */
+/* Define standard DJGPP installation paths.                             */
+/* We override default /usr or /usr/local part with /dev/env/DJDIR which */
+/* points to actual DJGPP instalation directory.                         */
+
+/* Standard include directory */
 #undef STANDARD_INCLUDE_DIR
 #define STANDARD_INCLUDE_DIR "/dev/env/DJDIR/include/"
 
 /* Search for as.exe and ld.exe in DJGPP's binary directory. */ 
+#undef MD_EXEC_PREFIX
 #define MD_EXEC_PREFIX "/dev/env/DJDIR/bin/"
+
+/* Standard DJGPP library and startup files */
+#undef MD_STARTFILE_PREFIX
+#define MD_STARTFILE_PREFIX "/dev/env/DJDIR/lib/"
 
 /* Correctly handle absolute filename detection in cp/xref.c */
 #define FILE_NAME_ABSOLUTE_P(NAME) \
