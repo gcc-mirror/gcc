@@ -1,5 +1,8 @@
 1998-08-25  Mark Mitchell  <mark@markmitchell.com>
 
+	* search.c (dependent_base_p): Don't compare a binfo to
+	current_class_type; use the TREE_TYPE of the binfo instead.
+
 	* cp-tree.h (CLASS_TYPE_P): Revise definition.
 
 1998-08-25  Jason Merrill  <jason@yorick.cygnus.com>
