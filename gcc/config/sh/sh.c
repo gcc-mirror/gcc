@@ -2999,7 +2999,7 @@ find_barrier (int num_mova, rtx mova, rtx from)
 		 the limit is the same, but the alignment requirements
 		 are higher.  We may waste up to 4 additional bytes
 		 for alignment, and the DF/DI constant may have
-		 another SF/SI constant placed before it. */
+		 another SF/SI constant placed before it.  */
 	      if (TARGET_SHCOMPACT
 		  && ! found_di
 		  && (mode == DFmode || mode == DImode))
@@ -4731,7 +4731,7 @@ shmedia_target_regs_stack_space (HARD_REG_SET *live_regs_mask)
     if ((! call_used_regs[reg] || interrupt_handler)
         && ! TEST_HARD_REG_BIT (*live_regs_mask, reg))
       /* Leave space to save this target register on the stack,
-	 in case target register allocation wants to use it. */
+	 in case target register allocation wants to use it.  */
       stack_space += GET_MODE_SIZE (REGISTER_NATURAL_MODE (reg));
   return stack_space;
 }
@@ -6390,7 +6390,7 @@ sh_function_arg_advance (CUMULATIVE_ARGS *ca, enum machine_mode mode,
 	     ca->call_cookie
 	       |= CALL_COOKIE_INT_REG (ca->arg_count[(int) SH_ARG_INT]
 				       - numregs, 1);
-	     /* N.B. We want this also for outgoing.   */
+	     /* N.B. We want this also for outgoing.  */
 	     ca->stack_regs += numregs;
 	   }
 	 else if (ca->byref)
@@ -8100,7 +8100,7 @@ sh_adjust_cost (rtx insn, rtx link ATTRIBUTE_UNUSED, rtx dep_insn, int cost)
   if (TARGET_SHMEDIA)
     {
       /* On SHmedia, if the dependence is an anti-dependence or
-         output-dependence, there is no cost. */              
+         output-dependence, there is no cost.  */
       if (REG_NOTE_KIND (link) != 0)
         cost = 0;
 
@@ -8519,10 +8519,10 @@ static const char signature_args[][4] =
 #define SH_BLTIN_PV 20
   { 0, 8 },
 };
-/* mcmv: operands considered unsigned. */
+/* mcmv: operands considered unsigned.  */
 /* mmulsum_wq, msad_ubq: result considered unsigned long long.  */
-/* mperm: control value considered unsigned int. */
-/* mshalds, mshard, mshards, mshlld, mshlrd: shift count is unsigned int. */
+/* mperm: control value considered unsigned int.  */
+/* mshalds, mshard, mshards, mshlld, mshlrd: shift count is unsigned int.  */
 /* mshards_q: returns signed short.  */
 /* nsb: takes long long arg, returns unsigned char.  */
 static const struct builtin_description bdesc[] =

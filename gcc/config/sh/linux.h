@@ -27,7 +27,7 @@ Boston, MA 02111-1307, USA.  */
 #undef MD_EXEC_PREFIX
 #undef MD_STARTFILE_PREFIX
 
-/* This was defined in linux.h.  Define it here also. */
+/* This was defined in linux.h.  Define it here also.  */
 #define HANDLE_PRAGMA_PACK_PUSH_POP
 
 /* Don't assume anything about the header files.  */

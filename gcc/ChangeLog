@@ -1,5 +1,13 @@
 2004-01-05  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/sh/linux.h: Fix comment formatting.
+	* config/sh/netbsd-elf.h: Likewise.
+	* config/sh/sh.c: Likewise.
+	* config/sh/sh.h: Likewise.
+	* config/sh/vxworks.h: Likewise.
+
+2004-01-05  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* system.h (ASM_OUTPUT_MAIN_SOURCE_FILENAME): Poison.
 	* toplev.c (output_file_directive): Don't use
 	ASM_OUTPUT_MAIN_SOURCE_FILENAME.
