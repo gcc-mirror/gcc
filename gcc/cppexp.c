@@ -254,10 +254,10 @@ parse_charconst (pfile, start, end)
 
   /* FIXME: Should use reentrant multibyte functions.  */
 #ifdef MULTIBYTE_CHARS
-  wchar_t c;
+  wchar_t c = (wchar_t)-1;
   (void) mbtowc (NULL_PTR, NULL_PTR, 0);
 #else
-  int c;
+  int c = -1;
 #endif
 
   if (*ptr == 'L')
@@ -701,7 +701,7 @@ cpp_parse_expr (pfile)
   struct operation *stack = init_stack;
   struct operation *limit = stack + INIT_STACK_SIZE;
   register struct operation *top = stack;
-  int lprio, rprio;
+  int lprio, rprio = 0;
   int skip_evaluation = 0;
 
   top->rprio = 0;

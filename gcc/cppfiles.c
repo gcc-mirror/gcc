@@ -112,7 +112,7 @@ merge_include_chains (opts)
      Note that this algorithm is quadratic in the number of -I switches,
      which is acceptable since there aren't usually that many of them.  */
 
-  for (cur = quote; cur; cur = cur->next)
+  for (cur = quote, prev = NULL; cur; cur = cur->next)
     {
       for (other = quote; other != cur; other = other->next)
         if (INO_T_EQ (cur->ino, other->ino)
@@ -680,6 +680,7 @@ finclude (pfile, fd, ihash)
       fp->system_header_p = ihash->foundhere->sysp;
   fp->lineno = 1;
   fp->colno = 1;
+  fp->line_base = fp->buf;
   fp->cleanup = file_cleanup;
 
   /* The ->actual_dir field is only used when ignore_srcdir is not in effect;
