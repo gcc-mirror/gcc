@@ -51,5 +51,5 @@ Boston, MA 02111-1307, USA.  */
   {".ii", "@c++-cpp-output"},
   {"@c++-cpp-output",
    "%{!M:%{!MM:%{!E:\
-    cc1plus -fpreprocessed %{!pipe:%g.ii} %(cc1_options) %{+e*}\
+    cc1plus -fpreprocessed %i %(cc1_options) %{+e*}\
     %{!S:-o %{|!pipe:%g.s} |\n as %(asm_options) %{!pipe:%g.s} %A }}}}"},

@@ -1,3 +1,7 @@
+2000-07-28  Jason Merrill  <jason@redhat.com>
+
+	* lang-specs.h: Use %i in rule for .ii files.
+
 2000-07-31  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* lang-specs.h: Rename cpp to cpp0 and/or tradcpp to tradcpp0.
