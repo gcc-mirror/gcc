@@ -1,3 +1,7 @@
+2002-06-11  Andreas Schwab  <schwab@suse.de>
+
+	* config/m68k/m68k.h (PREDICATE_CODES): Define.
+
 2002-07-15  Alan Modra  <amodra@bigpond.net.au>
 
 	PR target/7282

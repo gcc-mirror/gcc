@@ -1971,6 +1971,21 @@ extern int m68k_align_funcs;
 extern int m68k_last_compare_had_fp_operands;
 
 
+/* Define the codes that are matched by predicates in m68k.c.  */
+
+#define PREDICATE_CODES							\
+  {"general_src_operand", {CONST_INT, CONST_DOUBLE, CONST, SYMBOL_REF,	\
+			   LABEL_REF, SUBREG, REG, MEM}},		\
+  {"nonimmediate_src_operand", {SUBREG, REG, MEM}},			\
+  {"memory_src_operand", {SUBREG, MEM}},				\
+  {"not_sp_operand", {SUBREG, REG, MEM}},				\
+  {"pcrel_address", {SYMBOL_REF, LABEL_REF, CONST}},			\
+  {"const_uint32_operand", {CONST_INT, CONST_DOUBLE}},			\
+  {"const_sint32_operand", {CONST_INT}},				\
+  {"valid_dbcc_comparison_p", {EQ, NE, GTU, LTU, GEU, LEU,		\
+			       GT, LT, GE, LE}},			\
+  {"extend_operator", {SIGN_EXTEND, ZERO_EXTEND}},
+
 /*
 Local variables:
 version-control: t
