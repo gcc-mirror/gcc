@@ -1,3 +1,9 @@
+Tue Aug 10 10:39:31 EDT 1999  Andrew MacLeod  <amacleod@cygnus.com>
+
+	* flow.c (split_edge): Set JUMP_LABEL field.
+	(commit_one_edge_insertion): Set head correctly for insert_before.
+	When inserting insns, update insn block numbers if allocated.
+
 Tue Aug 10 09:26:07 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* dwarf2out.c (dwarf2out_frame_debug_expr, add_incomplete_type,
