@@ -7580,8 +7580,11 @@ nonzero_bits (x, mode)
 
       if (reg_last_set_value[REGNO (x)] != 0
 	  && reg_last_set_mode[REGNO (x)] == mode
-	  && (REG_N_SETS (REGNO (x)) == 1
-	      || reg_last_set_label[REGNO (x)] == label_tick)
+	  && (reg_last_set_label[REGNO (x)] == label_tick
+	      || (REGNO (x) >= FIRST_PSEUDO_REGISTER
+		  && REG_N_SETS (REGNO (x)) == 1
+		  && ! REGNO_REG_SET_P (BASIC_BLOCK (0)->global_live_at_start, 
+					REGNO (x))))
 	  && INSN_CUID (reg_last_set[REGNO (x)]) < subst_low_cuid)
 	return reg_last_set_nonzero_bits[REGNO (x)];
 
@@ -7970,8 +7973,11 @@ num_sign_bit_copies (x, mode)
 
       if (reg_last_set_value[REGNO (x)] != 0
 	  && reg_last_set_mode[REGNO (x)] == mode
-	  && (REG_N_SETS (REGNO (x)) == 1
-	      || reg_last_set_label[REGNO (x)] == label_tick)
+	  && (reg_last_set_label[REGNO (x)] == label_tick
+	      || (REGNO (x) >= FIRST_PSEUDO_REGISTER
+		  && REG_N_SETS (REGNO (x)) == 1
+		  && ! REGNO_REG_SET_P (BASIC_BLOCK (0)->global_live_at_start,
+					REGNO (x))))
 	  && INSN_CUID (reg_last_set[REGNO (x)]) < subst_low_cuid)
 	return reg_last_set_sign_bit_copies[REGNO (x)];
 
@@ -10819,9 +10825,11 @@ get_last_value_validate (loc, insn, tick, replace)
 
       for (j = regno; j < endregno; j++)
 	if (reg_last_set_invalid[j]
-	    /* If this is a pseudo-register that was only set once, it is
-	       always valid.  */
-	    || (! (regno >= FIRST_PSEUDO_REGISTER && REG_N_SETS (regno) == 1)
+	    /* If this is a pseudo-register that was only set once and not
+	       live at the beginning of the function, it is always valid.  */
+	    || (! (regno >= FIRST_PSEUDO_REGISTER 
+		   && REG_N_SETS (regno) == 1
+		   && ! REGNO_REG_SET_P (BASIC_BLOCK (0)->global_live_at_start, regno))
 		&& reg_last_set_label[j] > tick))
 	  {
 	    if (replace)
@@ -10880,12 +10888,21 @@ get_last_value (x)
   regno = REGNO (x);
   value = reg_last_set_value[regno];
 
-  /* If we don't have a value or if it isn't for this basic block,
-     return 0.  */
+  /* If we don't have a value, or if it isn't for this basic block and
+     it's either a hard register, set more than once, or it's a live
+     at the beginning of the function, return 0.  
+
+     Because if it's not live at the beginnning of the function then the reg 
+     is always set before being used (is never used without being set).
+     And, if it's set only once, and it's always set before use, then all
+     uses must have the same last value, even if it's not from this basic
+     block.  */
 
   if (value == 0
-      || (REG_N_SETS (regno) != 1
-	  && reg_last_set_label[regno] != label_tick))
+      || (reg_last_set_label[regno] != label_tick
+	  && (regno < FIRST_PSEUDO_REGISTER
+	      || REG_N_SETS (regno) != 1
+	      || REGNO_REG_SET_P (BASIC_BLOCK (0)->global_live_at_start, regno))))
     return 0;
 
   /* If the value was set in a later insn than the ones we are processing,

@@ -13,6 +13,14 @@
 	* arm/linux-elf.h (MAKE_DECL_ONE_ONLY, UNIQUE_SECTION_P): Define.
 	(UNIQUE_SECTION): Define.                                  
 
+	Wed Aug 25 15:27:22 1999  Gavin Romig-Koch  <gavin@cygnus.com>
+	* combine.c (nonzero_bits) : Allow single-ly set registers to be
+	anywere in the function only if they are pseudos and set before
+	being used (not live at the start of the function).
+	(num_sign_bit_copies) : Same.
+	(get_last_value_validate) : Same.
+	(get_last_value) : Same.
+
 2001-03-30  Bernd Schmidt  <bernds@redhat.com>
 
 	* jump.c (delete_barrier_successors): Fix error in last change.
