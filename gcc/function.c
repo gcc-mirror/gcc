@@ -3452,7 +3452,7 @@ assign_parms (fndecl, second_time)
 	     may need to do it in a wider mode.  */
 
 	  register rtx parmreg;
-	  int regno;
+	  int regno, regnoi, regnor;
 
 	  unsignedp = TREE_UNSIGNED (TREE_TYPE (parm));
 	  nominal_mode = promote_mode (TREE_TYPE (parm), nominal_mode,
@@ -3590,19 +3590,20 @@ assign_parms (fndecl, second_time)
 	    {
 	      enum machine_mode submode = GET_MODE (XEXP (parmreg, 0));
 
+	      regnor = REGNO (gen_realpart (submode, parmreg));
+	      regnoi = REGNO (gen_imagpart (submode, parmreg));
+
 	      if (stack_parm != 0)
 		{
-		  parm_reg_stack_loc[REGNO (gen_realpart (submode, parmreg))]
+		  parm_reg_stack_loc[regnor]
 		    = gen_realpart (submode, stack_parm);
-		  parm_reg_stack_loc[REGNO (gen_imagpart (submode, parmreg))]
+		  parm_reg_stack_loc[regnoi]
 		    = gen_imagpart (submode, stack_parm);
 		}
 	      else
 		{
-		  parm_reg_stack_loc[REGNO (gen_realpart (submode, parmreg))]
-		    = 0;
-		  parm_reg_stack_loc[REGNO (gen_imagpart (submode, parmreg))]
-		    = 0;
+		  parm_reg_stack_loc[regnor] = 0;
+		  parm_reg_stack_loc[regnoi] = 0;
 		}
 	    }
 	  else
@@ -3615,14 +3616,38 @@ assign_parms (fndecl, second_time)
 	     an invalid address, such memory-equivalences
 	     as we make here would screw up life analysis for it.  */
 	  if (nominal_mode == passed_mode
+	      && ! conversion_insns
 	      && GET_CODE (entry_parm) == MEM
 	      && entry_parm == stack_parm
 	      && stack_offset.var == 0
 	      && reg_mentioned_p (virtual_incoming_args_rtx,
 				  XEXP (entry_parm, 0)))
-	    REG_NOTES (get_last_insn ())
-	      = gen_rtx (EXPR_LIST, REG_EQUIV,
-			 entry_parm, REG_NOTES (get_last_insn ()));
+	    {
+	      rtx linsn = get_last_insn ();
+
+	      /* Mark complex types separately.  */
+	      if (GET_CODE (parmreg) == CONCAT)
+	        {
+	          REG_NOTES (linsn)
+	              = gen_rtx (EXPR_LIST, REG_EQUIV,
+				 parm_reg_stack_loc[regnoi], REG_NOTES (linsn));
+
+		  /* Now search backward for where we set the real part.  */
+		  for (; linsn != 0
+		       && ! reg_referenced_p (parm_reg_stack_loc[regnor],
+					      PATTERN (linsn));
+		       linsn = prev_nonnote_insn (linsn))
+		    ;
+
+	          REG_NOTES (linsn)
+	              = gen_rtx (EXPR_LIST, REG_EQUIV,
+				 parm_reg_stack_loc[regnor], REG_NOTES (linsn));
+		}
+	      else
+	        REG_NOTES (linsn)
+	         = gen_rtx (EXPR_LIST, REG_EQUIV,
+			    entry_parm, REG_NOTES (linsn));
+	    }
 
 	  /* For pointer data type, suggest pointer register.  */
 	  if (TREE_CODE (TREE_TYPE (parm)) == POINTER_TYPE)
