@@ -1,3 +1,21 @@
+2003-06-02  Paolo Carlini  <pcarlini@unitus.it>
+
+	* include/std/std_fstream.h (_M_destroy_pback): Use _M_in_beg
+	instead of unnecessarily taking the address of _M_pback.
+	(xsgetn): Simplify slightly for a single char pback buffer.
+
+2003-06-02  Paolo Carlini  <pcarlini@unitus.it>
+
+	* include/bits/sstream.tcc (seekoff): Remove four unnecessary
+	variables and two 'if', clean up.
+
+2003-06-02  Paolo Carlini  <pcarlini@unitus.it>
+
+	* include/bits/sstream.tcc (seekpos): Test against _M_out_lim
+	not _M_out_end, since the former actually points to the string
+	end (vs buffer end).
+	* testsuite/27_io/basic_stringbuf/seekpos/char/3.cc: New.
+
 2003-05-30  Phil Edwards  <pme@gcc.gnu.org>
 
 	* docs/doxygen/filter:  New file.
