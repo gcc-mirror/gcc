@@ -1,3 +1,7 @@
+Thu Nov 27 09:34:58 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* except.c (expand_start_all_catch): One more do_pending_stack_adjust.
+
 Thu Nov 27 09:32:39 1997  Richard Earnshaw  (rearnsha@arm.com)
 
 	* arm.md (movsfcc): If not TARGET_HARD_FLOAT, ensure operand[3] 
