@@ -5320,12 +5320,21 @@ finish_struct (t, fieldlist, attributes)
 	  && TYPE_MAX_VALUE (TYPE_DOMAIN (TREE_TYPE (x))) == NULL_TREE)
 	{
 	  if (TREE_CODE (t) == UNION_TYPE)
-	    error_with_decl (x, "flexible array member in union");
+	    {
+	      error_with_decl (x, "flexible array member in union");
+	      TREE_TYPE (x) = error_mark_node;
+	    }
 	  else if (TREE_CHAIN (x) != NULL_TREE)
-	    error_with_decl (x, "flexible array member not at end of struct");
+	    {
+	      error_with_decl (x, "flexible array member not at end of struct");
+	      TREE_TYPE (x) = error_mark_node;
+	    }
 	  else if (! saw_named_field)
-	    error_with_decl (x, "flexible array member in otherwise empty struct");
-	}
+	    {
+	      error_with_decl (x, "flexible array member in otherwise empty struct");
+	      TREE_TYPE (x) = error_mark_node;
+	    }
+  	}
 
       if (pedantic && TREE_CODE (t) == RECORD_TYPE
 	  && flexible_array_type_p (TREE_TYPE (x)))
