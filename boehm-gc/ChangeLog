@@ -1,3 +1,8 @@
+2004-08-16  Bryce McKinlay  <mckinlay@redhat.com>
+
+	* specific.c: Check GC_LINUX_THREADS before including 
+	private/specific.h. From Richard Earnshaw.
+
 2004-08-16  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* aclocal.m4: Remove obsolete construct for old automake.
