@@ -719,7 +719,7 @@ cleanup_tree_cfg (void)
   retval = cleanup_control_flow ();
   retval |= delete_unreachable_blocks ();
 
-  /* thread_jumps() sometimes leaves further transformation
+  /* thread_jumps sometimes leaves further transformation
      opportunities for itself, so iterate on it until nothing
      changes.  */
   while (thread_jumps ())

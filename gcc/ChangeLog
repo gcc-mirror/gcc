@@ -1,5 +1,10 @@
 2004-10-05  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* tree-cfg.c (cleanup_tree_cfg): Remove extra parentheses in
+	comments.
+
+2004-10-05  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* tree-cfg.c (thread_jumps): Remove a duplicate check for
 	an infinite loop.
 
