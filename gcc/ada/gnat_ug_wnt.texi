@@ -57,7 +57,7 @@
 @settitle GNAT User's Guide for Windows NT
 @dircategory GNU Ada tools
 @direntry
-* GNAT User's Guide (gnat_ug_vms).   GNAT User's Guide for Windows NT.
+* GNAT User's Guide (gnat_ug_wnt).   GNAT User's Guide for Windows NT.
 @end direntry
 
 
