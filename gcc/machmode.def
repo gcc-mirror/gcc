@@ -113,11 +113,10 @@ DEF_MACHMODE (CTImode, "CTI", MODE_COMPLEX_INT, BITS_PER_UNIT*32, 32, 16, COImod
 DEF_MACHMODE (COImode, "COI", MODE_COMPLEX_INT, BITS_PER_UNIT*64, 64, 32, VOIDmode, OImode)
 
 /* Vector modes.  */
-/* There are no V1xx vector modes.  These are equivalent to normal
-   scalar modes.  */
 /* The wider mode field for vectors follows in order of increasing bit
    size with QI coming before HI, HI before SI, and SI before DI
    within same bit sizes.  */
+DEF_MACHMODE (V1DImode, "V1DI", MODE_VECTOR_INT, BITS_PER_UNIT*8, 8, 8, V2QImode, DImode)
 DEF_MACHMODE (V2QImode, "V2QI", MODE_VECTOR_INT, BITS_PER_UNIT*2, 2, 1, V4QImode, QImode)
 DEF_MACHMODE (V2HImode, "V2HI", MODE_VECTOR_INT, BITS_PER_UNIT*4, 4, 2, V8QImode, HImode)
 DEF_MACHMODE (V2SImode, "V2SI", MODE_VECTOR_INT, BITS_PER_UNIT*8, 8, 4, V16QImode, SImode)
