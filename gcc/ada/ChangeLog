@@ -1,3 +1,14 @@
+2003-01-29	Joel Sherrill <joel@OARcorp.com>
+
+	* 5rosinte.ads: Add SIGXCPU.
+	* 5rtpopsp.adb: New file.
+	* Make-lang.in: Do not build gnatpsta and gnatpsys when cross.
+	* Makefile.in: Recognize more RTEMS targets and add the RTEMS
+	specific file 5rtpopsp.adb.
+	* adaint.h: Add include of <stdio.h> when target is RTEMS.  This
+	is likely needed for all newlib targets.
+	* init.c: Add RTEMS specific version of __gnat_initialize().
+
 2003-01-28  Christian Cornelssen <ccorn@cs.tu-berlin.de>
 
 	* Make-lang.in (ada.install-info): Let $(DESTDIR)$(infodir)

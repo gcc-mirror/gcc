@@ -1635,6 +1635,22 @@ __gnat_initialize ()
 #endif
 }
 
+/***************************************/
+/* __gnat_initialize (RTEMS version) */
+/***************************************/
+
+#elif defined(__rtems__)
+
+extern void __gnat_install_handler ();
+
+/* For RTEMS, each bsp will provide a custom __gnat_install_handler (). */
+
+void
+__gnat_initialize ()
+{
+   __gnat_install_handler ();
+}
+
 #else
 
 /* For all other versions of GNAT, the initialize routine and handler
