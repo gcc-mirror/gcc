@@ -3,14 +3,29 @@
 #undef TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (i386 GNU)");
 
-#undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-D__ELF__ -DMACH -Asystem=mach \
-  -Dunix -Asystem=unix -Asystem=posix -D__gnu_hurd__ -D__GNU__ -Asystem=gnu"
+#undef TARGET_OS_CPP_BUILTINS /* config.gcc includes i386/linux.h.  */
+#define TARGET_OS_CPP_BUILTINS()		\
+  do						\
+    {						\
+	builtin_define_std ("MACH");		\
+	builtin_define_std ("unix");		\
+	builtin_define ("__ELF__");		\
+	builtin_define ("__GNU__");		\
+	builtin_define ("__gnu_hurd__");	\
+	builtin_assert ("system=gnu");		\
+	builtin_assert ("system=mach");		\
+	builtin_assert ("system=posix");	\
+	builtin_assert ("system=unix");		\
+	if (flag_pic)				\
+	  {					\
+	    builtin_define ("__PIC__");		\
+	    builtin_define ("__pic__");		\
+	  }					\
+    }						\
+  while (0)
 
 #undef CPP_SPEC
-#define CPP_SPEC "\
-  %{fPIC:-D__PIC__ -D__pic__} %{fpic:-D__PIC__ -D__pic__} \
-  %{posix:-D_POSIX_SOURCE} %{bsd:-D_BSD_SOURCE}"
+#define CPP_SPEC "%{posix:-D_POSIX_SOURCE} %{bsd:-D_BSD_SOURCE}"
 
 #undef CC1_SPEC
 #define CC1_SPEC "%(cc1_cpu)"

@@ -37,9 +37,16 @@ Boston, MA 02111-1307, USA.  */
    defaults.h works.  */
 #undef ASM_PREFERRED_EH_DATA_FORMAT
 
-#undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-Dunix -D__FreeBSD__\
- -Asystem=unix -Asystem=bsd -Asystem=FreeBSD"
+#define TARGET_OS_CPP_BUILTINS()		\
+  do						\
+    {						\
+	builtin_define_std ("unix");		\
+	builtin_define ("__FreeBSD__");		\
+	builtin_assert ("system=unix");		\
+	builtin_assert ("system=bsd");		\
+	builtin_assert ("system=FreeBSD");	\
+    }						\
+  while (0)
 
 /* Like the default, except no -lg.  */
 #define LIB_SPEC "%{!shared:%{!pg:-lc}%{pg:-lc_p}}"
