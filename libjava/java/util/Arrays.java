@@ -1079,16 +1079,11 @@ public class Arrays
     qsort(a, fromIndex, toIndex);
   }
 
-  private static short cmp(byte i, byte j)
-  {
-    return (short) (i - j);
-  }
-
   private static int med3(int a, int b, int c, byte[]d)
   {
-    return cmp(d[a], d[b]) < 0 ?
-      (cmp(d[b], d[c]) < 0 ? b : cmp(d[a], d[c]) < 0 ? c : a)
-      : (cmp(d[b], d[c]) > 0 ? b : cmp(d[a], d[c]) > 0 ? c : a);
+    return d[a] < d[b] ? 
+               (d[b] < d[c] ? b : d[a] < d[c] ? c : a)
+	     : (d[b] > d[c] ? b : d[a] > d[c] ? c : a);
   }
 
   private static void swap(int i, int j, byte[]a)
@@ -1101,10 +1096,10 @@ public class Arrays
   private static void qsort(byte[]a, int start, int n)
   {
     // use an insertion sort on small arrays
-    if (n < 7)
+    if (n <= 7)
       {
 	for (int i = start + 1; i < start + n; i++)
-	  for (int j = i; j > 0 && cmp(a[j - 1], a[j]) > 0; j--)
+	  for (int j = i; j > 0 && a[j - 1] > a[j]; j--)
 	    swap(j, j - 1, a);
 	return;
       }
@@ -1126,7 +1121,7 @@ public class Arrays
       }
 
     int pa, pb, pc, pd, pv;
-    short r;
+    int r;
 
     pv = start;
     swap(pv, pm, a);
@@ -1135,7 +1130,7 @@ public class Arrays
 
     for (;;)
       {
-	while (pb <= pc && (r = cmp(a[pb], a[pv])) <= 0)
+	while (pb <= pc && (r = a[pb] - a[pv]) <= 0)
 	  {
 	    if (r == 0)
 	      {
@@ -1144,7 +1139,7 @@ public class Arrays
 	      }
 	    pb++;
 	  }
-	while (pc >= pb && (r = cmp(a[pc], a[pv])) >= 0)
+	while (pc >= pb && (r = a[pc] - a[pv]) >= 0)
 	  {
 	    if (r == 0)
 	      {
@@ -1197,16 +1192,11 @@ public class Arrays
     qsort(a, fromIndex, toIndex);
   }
 
-  private static int cmp(char i, char j)
-  {
-    return i - j;
-  }
-
   private static int med3(int a, int b, int c, char[]d)
   {
-    return cmp(d[a], d[b]) < 0 ?
-      (cmp(d[b], d[c]) < 0 ? b : cmp(d[a], d[c]) < 0 ? c : a)
-      : (cmp(d[b], d[c]) > 0 ? b : cmp(d[a], d[c]) > 0 ? c : a);
+    return d[a] < d[b] ? 
+               (d[b] < d[c] ? b : d[a] < d[c] ? c : a)
+	     : (d[b] > d[c] ? b : d[a] > d[c] ? c : a);
   }
 
   private static void swap(int i, int j, char[]a)
@@ -1219,10 +1209,10 @@ public class Arrays
   private static void qsort(char[]a, int start, int n)
   {
     // use an insertion sort on small arrays
-    if (n < 7)
+    if (n <= 7)
       {
 	for (int i = start + 1; i < start + n; i++)
-	  for (int j = i; j > 0 && cmp(a[j - 1], a[j]) > 0; j--)
+	  for (int j = i; j > 0 && a[j - 1] > a[j]; j--)
 	    swap(j, j - 1, a);
 	return;
       }
@@ -1253,7 +1243,7 @@ public class Arrays
 
     for (;;)
       {
-	while (pb <= pc && (r = cmp(a[pb], a[pv])) <= 0)
+	while (pb <= pc && (r = a[pb] - a[pv]) <= 0)
 	  {
 	    if (r == 0)
 	      {
@@ -1262,7 +1252,7 @@ public class Arrays
 	      }
 	    pb++;
 	  }
-	while (pc >= pb && (r = cmp(a[pc], a[pv])) >= 0)
+	while (pc >= pb && (r = a[pc] - a[pv]) >= 0)
 	  {
 	    if (r == 0)
 	      {
@@ -1316,16 +1306,11 @@ public class Arrays
     qsort(a, fromIndex, toIndex);
   }
 
-  private static double cmp(double i, double j)
-  {
-    return i - j;
-  }
-
   private static int med3(int a, int b, int c, double[]d)
   {
-    return cmp(d[a], d[b]) < 0 ?
-      (cmp(d[b], d[c]) < 0 ? b : cmp(d[a], d[c]) < 0 ? c : a)
-      : (cmp(d[b], d[c]) > 0 ? b : cmp(d[a], d[c]) > 0 ? c : a);
+    return d[a] < d[b] ? 
+               (d[b] < d[c] ? b : d[a] < d[c] ? c : a)
+	     : (d[b] > d[c] ? b : d[a] > d[c] ? c : a);
   }
 
   private static void swap(int i, int j, double[]a)
@@ -1338,10 +1323,10 @@ public class Arrays
   private static void qsort(double[]a, int start, int n)
   {
     // use an insertion sort on small arrays
-    if (n < 7)
+    if (n <= 7)
       {
 	for (int i = start + 1; i < start + n; i++)
-	  for (int j = i; j > 0 && cmp(a[j - 1], a[j]) > 0; j--)
+	  for (int j = i; j > 0 && a[j - 1] > a[j]; j--)
 	    swap(j, j - 1, a);
 	return;
       }
@@ -1372,7 +1357,7 @@ public class Arrays
 
     for (;;)
       {
-	while (pb <= pc && (r = cmp(a[pb], a[pv])) <= 0)
+	while (pb <= pc && (r = a[pb] - a[pv]) <= 0)
 	  {
 	    if (r == 0)
 	      {
@@ -1381,7 +1366,7 @@ public class Arrays
 	      }
 	    pb++;
 	  }
-	while (pc >= pb && (r = cmp(a[pc], a[pv])) >= 0)
+	while (pc >= pb && (r = a[pc] - a[pv]) >= 0)
 	  {
 	    if (r == 0)
 	      {
@@ -1435,16 +1420,11 @@ public class Arrays
     qsort(a, fromIndex, toIndex);
   }
 
-  private static float cmp(float i, float j)
-  {
-    return i - j;
-  }
-
   private static int med3(int a, int b, int c, float[]d)
   {
-    return cmp(d[a], d[b]) < 0 ?
-      (cmp(d[b], d[c]) < 0 ? b : cmp(d[a], d[c]) < 0 ? c : a)
-      : (cmp(d[b], d[c]) > 0 ? b : cmp(d[a], d[c]) > 0 ? c : a);
+    return d[a] < d[b] ? 
+               (d[b] < d[c] ? b : d[a] < d[c] ? c : a)
+	     : (d[b] > d[c] ? b : d[a] > d[c] ? c : a);
   }
 
   private static void swap(int i, int j, float[]a)
@@ -1457,10 +1437,10 @@ public class Arrays
   private static void qsort(float[]a, int start, int n)
   {
     // use an insertion sort on small arrays
-    if (n < 7)
+    if (n <= 7)
       {
 	for (int i = start + 1; i < start + n; i++)
-	  for (int j = i; j > 0 && cmp(a[j - 1], a[j]) > 0; j--)
+	  for (int j = i; j > 0 && a[j - 1] > a[j]; j--)
 	    swap(j, j - 1, a);
 	return;
       }
@@ -1491,7 +1471,7 @@ public class Arrays
 
     for (;;)
       {
-	while (pb <= pc && (r = cmp(a[pb], a[pv])) <= 0)
+	while (pb <= pc && (r = a[pb] - a[pv]) <= 0)
 	  {
 	    if (r == 0)
 	      {
@@ -1500,7 +1480,7 @@ public class Arrays
 	      }
 	    pb++;
 	  }
-	while (pc >= pb && (r = cmp(a[pc], a[pv])) >= 0)
+	while (pc >= pb && (r = a[pc] - a[pv]) >= 0)
 	  {
 	    if (r == 0)
 	      {
@@ -1553,16 +1533,11 @@ public class Arrays
     qsort(a, fromIndex, toIndex);
   }
 
-  private static long cmp(int i, int j)
-  {
-    return (long) i - (long) j;
-  }
-
   private static int med3(int a, int b, int c, int[]d)
   {
-    return cmp(d[a], d[b]) < 0 ?
-      (cmp(d[b], d[c]) < 0 ? b : cmp(d[a], d[c]) < 0 ? c : a)
-      : (cmp(d[b], d[c]) > 0 ? b : cmp(d[a], d[c]) > 0 ? c : a);
+    return d[a] < d[b] ? 
+               (d[b] < d[c] ? b : d[a] < d[c] ? c : a)
+	     : (d[b] > d[c] ? b : d[a] > d[c] ? c : a);
   }
 
   private static void swap(int i, int j, int[]a)
@@ -1575,10 +1550,10 @@ public class Arrays
   private static void qsort(int[]a, int start, int n)
   {
     // use an insertion sort on small arrays
-    if (n < 7)
+    if (n <= 7)
       {
 	for (int i = start + 1; i < start + n; i++)
-	  for (int j = i; j > 0 && cmp(a[j - 1], a[j]) > 0; j--)
+	  for (int j = i; j > 0 && a[j - 1] > a[j]; j--)
 	    swap(j, j - 1, a);
 	return;
       }
@@ -1600,7 +1575,7 @@ public class Arrays
       }
 
     int pa, pb, pc, pd, pv;
-    long r;
+    int r;
 
     pv = start;
     swap(pv, pm, a);
@@ -1609,7 +1584,7 @@ public class Arrays
 
     for (;;)
       {
-	while (pb <= pc && (r = cmp(a[pb], a[pv])) <= 0)
+	while (pb <= pc && (r = a[pb] - a[pv]) <= 0)
 	  {
 	    if (r == 0)
 	      {
@@ -1618,7 +1593,7 @@ public class Arrays
 	      }
 	    pb++;
 	  }
-	while (pc >= pb && (r = cmp(a[pc], a[pv])) >= 0)
+	while (pc >= pb && (r = a[pc] - a[pv]) >= 0)
 	  {
 	    if (r == 0)
 	      {
@@ -1671,16 +1646,11 @@ public class Arrays
     qsort(a, fromIndex, toIndex);
   }
 
-  // The "cmp" method has been removed from here and replaced with direct
-  // compares in situ, to avoid problems with overflow if the difference
-  // between two numbers is bigger than a long will hold.
-  // One particular change as a result is the use of r1 and r2 in qsort
-
   private static int med3(int a, int b, int c, long[]d)
   {
-    return d[a] < d[b] ?
-      (d[b] < d[c] ? b : d[a] < d[c] ? c : a)
-      : (d[b] > d[c] ? b : d[a] > d[c] ? c : a);
+    return d[a] < d[b] ? 
+               (d[b] < d[c] ? b : d[a] < d[c] ? c : a)
+	     : (d[b] > d[c] ? b : d[a] > d[c] ? c : a);
   }
 
   private static void swap(int i, int j, long[]a)
@@ -1693,7 +1663,7 @@ public class Arrays
   private static void qsort(long[]a, int start, int n)
   {
     // use an insertion sort on small arrays
-    if (n < 7)
+    if (n <= 7)
       {
 	for (int i = start + 1; i < start + n; i++)
 	  for (int j = i; j > 0 && a[j - 1] > a[j]; j--)
@@ -1718,7 +1688,7 @@ public class Arrays
       }
 
     int pa, pb, pc, pd, pv;
-    long r1, r2;
+    long r;
 
     pv = start;
     swap(pv, pm, a);
@@ -1727,18 +1697,18 @@ public class Arrays
 
     for (;;)
       {
-	while (pb <= pc && (r1 = a[pb]) <= (r2 = a[pv]))
+	while (pb <= pc && (r = a[pb] - a[pv]) <= 0)
 	  {
-	    if (r1 == r2)
+	    if (r == 0)
 	      {
 		swap(pa, pb, a);
 		pa++;
 	      }
 	    pb++;
 	  }
-	while (pc >= pb && (r1 = a[pc]) >= (r2 = a[pv]))
+	while (pc >= pb && (r = a[pc] - a[pv]) >= 0)
 	  {
-	    if (r1 == r2)
+	    if (r == 0)
 	      {
 		swap(pc, pd, a);
 		pd--;
@@ -1789,16 +1759,11 @@ public class Arrays
     qsort(a, fromIndex, toIndex);
   }
 
-  private static int cmp(short i, short j)
-  {
-    return i - j;
-  }
-
   private static int med3(int a, int b, int c, short[]d)
   {
-    return cmp(d[a], d[b]) < 0 ?
-      (cmp(d[b], d[c]) < 0 ? b : cmp(d[a], d[c]) < 0 ? c : a)
-      : (cmp(d[b], d[c]) > 0 ? b : cmp(d[a], d[c]) > 0 ? c : a);
+    return d[a] < d[b] ? 
+               (d[b] < d[c] ? b : d[a] < d[c] ? c : a)
+	     : (d[b] > d[c] ? b : d[a] > d[c] ? c : a);
   }
 
   private static void swap(int i, int j, short[]a)
@@ -1811,10 +1776,10 @@ public class Arrays
   private static void qsort(short[]a, int start, int n)
   {
     // use an insertion sort on small arrays
-    if (n < 7)
+    if (n <= 7)
       {
 	for (int i = start + 1; i < start + n; i++)
-	  for (int j = i; j > 0 && cmp(a[j - 1], a[j]) > 0; j--)
+	  for (int j = i; j > 0 && a[j - 1] > a[j]; j--)
 	    swap(j, j - 1, a);
 	return;
       }
@@ -1845,7 +1810,7 @@ public class Arrays
 
     for (;;)
       {
-	while (pb <= pc && (r = cmp(a[pb], a[pv])) <= 0)
+	while (pb <= pc && (r = a[pb] - a[pv]) <= 0)
 	  {
 	    if (r == 0)
 	      {
@@ -1854,7 +1819,7 @@ public class Arrays
 	      }
 	    pb++;
 	  }
-	while (pc >= pb && (r = cmp(a[pc], a[pv])) >= 0)
+	while (pc >= pb && (r = a[pc] - a[pv]) >= 0)
 	  {
 	    if (r == 0)
 	      {
