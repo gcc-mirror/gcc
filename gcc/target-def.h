@@ -221,11 +221,6 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #define TARGET_MERGE_DECL_ATTRIBUTES merge_decl_attributes
 #define TARGET_MERGE_TYPE_ATTRIBUTES merge_type_attributes
 #define TARGET_ATTRIBUTE_TABLE NULL
-#define TARGET_COMP_TYPE_ATTRIBUTES default_comp_type_attributes
-#define TARGET_SET_DEFAULT_TYPE_ATTRIBUTES default_set_default_type_attributes
-#define TARGET_INSERT_ATTRIBUTES default_insert_attributes
-#define TARGET_FUNCTION_ATTRIBUTE_INLINABLE_P default_function_attribute_inlinable_p
-#define TARGET_MS_BITFIELD_LAYOUT_P default_ms_bitfield_layout_p
 
 /* In builtins.c.  */
 #define TARGET_INIT_BUILTINS default_init_builtins
@@ -245,14 +240,19 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #endif
 
 /* In hook.c.  */
-#define TARGET_CANNOT_MODIFY_JUMPS_P hook_void_bool_false
+#define TARGET_CANNOT_MODIFY_JUMPS_P hook_bool_void_false
+#define TARGET_COMP_TYPE_ATTRIBUTES hook_int_tree_tree_1
+#define TARGET_SET_DEFAULT_TYPE_ATTRIBUTES hook_void_tree
+#define TARGET_INSERT_ATTRIBUTES hook_void_tree_treeptr
+#define TARGET_FUNCTION_ATTRIBUTE_INLINABLE_P hook_bool_tree_false
+#define TARGET_MS_BITFIELD_LAYOUT_P hook_bool_tree_false
 
 #ifndef TARGET_IN_SMALL_DATA_P
-#define TARGET_IN_SMALL_DATA_P hook_tree_bool_false
+#define TARGET_IN_SMALL_DATA_P hook_bool_tree_false
 #endif
 
 #ifndef TARGET_ENCODE_SECTION_INFO
-#define TARGET_ENCODE_SECTION_INFO hook_tree_int_void
+#define TARGET_ENCODE_SECTION_INFO hook_void_tree_int
 #endif
 
 /* The whole shebang.  */

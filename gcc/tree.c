@@ -2552,53 +2552,6 @@ build_type_attribute_variant (ttype, attribute)
   return ttype;
 }
 
-/* Default value of targetm.comp_type_attributes that always returns 1.  */
-
-int
-default_comp_type_attributes (type1, type2)
-     tree type1 ATTRIBUTE_UNUSED;
-     tree type2 ATTRIBUTE_UNUSED;
-{
-  return 1;
-}
-
-/* Default version of targetm.set_default_type_attributes that always does
-   nothing.  */
-
-void
-default_set_default_type_attributes (type)
-     tree type ATTRIBUTE_UNUSED;
-{
-}
-
-/* Default version of targetm.insert_attributes that always does nothing.  */
-void
-default_insert_attributes (decl, attr_ptr)
-     tree decl ATTRIBUTE_UNUSED;
-     tree *attr_ptr ATTRIBUTE_UNUSED;
-{
-}
-
-/* Default value of targetm.function_attribute_inlinable_p that always
-   returns false.  */
-bool
-default_function_attribute_inlinable_p (fndecl)
-     tree fndecl ATTRIBUTE_UNUSED;
-{
-  /* By default, functions with machine attributes cannot be inlined.  */
-  return false;
-}
-
-/* Default value of targetm.ms_bitfield_layout_p that always returns
-   false.  */
-bool
-default_ms_bitfield_layout_p (record)
-     tree record ATTRIBUTE_UNUSED;
-{
-  /* By default, GCC does not use the MS VC++ bitfield layout rules.  */
-  return false;
-}
-
 /* Return nonzero if IDENT is a valid name for attribute ATTR,
    or zero if not.
 
