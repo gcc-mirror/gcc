@@ -104,7 +104,7 @@ _Jv_CondWait (_Jv_ConditionVariable_t *cv, _Jv_Mutex_t *mu,
 
 	  r = pthread_cond_timedwait (cv, pmu, &ts);
 
-	  if (r && errno == EINTR)
+	  if (r == EINTR)
 	    {
 	      /* We were interrupted by a signal.  Either this is
 		 because we were interrupted intentionally (i.e. by
@@ -127,7 +127,7 @@ _Jv_CondWait (_Jv_ConditionVariable_t *cv, _Jv_Mutex_t *mu,
 		    }
 		}
 	    }
-	  else if (r && errno == ETIMEDOUT)
+	  else if (r == ETIMEDOUT)
 	    {
 	      /* A timeout is a normal result.  */
 	      r = 0;
@@ -139,7 +139,7 @@ _Jv_CondWait (_Jv_ConditionVariable_t *cv, _Jv_Mutex_t *mu,
       while (! done_sleeping);
     }
 
-  return r;
+  return r != 0;
 }
 
 #ifndef RECURSIVE_MUTEX_IS_DEFAULT

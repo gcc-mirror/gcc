@@ -1,5 +1,8 @@
 1999-09-07  Tom Tromey  <tromey@cygnus.com>
 
+	* posix-threads.cc (_Jv_CondWait): pthread_ calls return error
+	code and don't set errno.
+
 	* posix-threads.cc (_Jv_CondWait): Check `errno' against EINTR,
 	not `r'.  Changed `done_sleeping' to a `bool'.
 
