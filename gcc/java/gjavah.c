@@ -1,7 +1,7 @@
 /* Program to write C++-suitable header files from a Java(TM) .class
    file.  This is similar to SUN's javah.
 
-Copyright (C) 1996, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+Copyright (C) 1996, 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -1969,10 +1969,18 @@ DEFUN(process_file, (jcf, out),
 	{
 	  /* Strip off the ".class" portion of the name when printing
 	     the include file name.  */
-	  int len = strlen (jcf->classname);
+	  char *name;
+	  int i, len = strlen (jcf->classname);
 	  if (len > 6 && ! strcmp (&jcf->classname[len - 6], ".class"))
 	    len -= 6;
-	  print_include (out, jcf->classname, len);
+	  /* Turn the class name into a file name.  */
+	  name = xmalloc (len + 1);
+	  for (i = 0; i < len; ++i)
+	    name[i] = jcf->classname[i] == '.' ? '/' : jcf->classname[i];
+	  name[i] = '\0';
+	  print_include (out, name, len);
+	  free (name);
+
 	  if (! flag_jni)
 	    print_include (out, "gcj/cni", -1);
 	}
