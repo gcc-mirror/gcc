@@ -5385,7 +5385,8 @@ function_arg (cum, mode, type, named)
 #if HOST_BITS_PER_WIDE_INT == 32
 	  hi = (cum.num_args << 20) | cum.num_arg_words;
 #else
-	  lo = lo | (cum.num_args << 52) | (cum.num_arg_words << 32);
+	  lo = lo | ((HOST_WIDE_INT) cum.num_args << 52)
+	    | ((HOST_WIDE_INT) cum.num_arg_words << 32);
 	  hi = 0;
 #endif
 	  ciw = immed_double_const (lo, hi, DImode);
