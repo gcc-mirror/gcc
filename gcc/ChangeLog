@@ -1,3 +1,8 @@
+2003-07-06  Art Haas  <ahaas@airmail.net>
+
+	* f/global.c (ffeglobal_type_string_): Fix obsolete GCC array
+	initializer syntax.
+
 2003-07-06  James E Wilson  <wilson@tuliptree.org>
 
 	PR optimization/9812
