@@ -4357,6 +4357,11 @@ main (argc, argv)
   obstack_grow (&collect_obstack, argv[0], strlen (argv[0])+1);
   putenv (obstack_finish (&collect_obstack));
 
+#ifdef INIT_ENVIRONMENT
+  /* Set up any other necessary machine specific environment variables.  */
+  putenv (INIT_ENVIRONMENT);
+#endif
+
   /* Choose directory for temp files.  */
 
   choose_temp_base ();
