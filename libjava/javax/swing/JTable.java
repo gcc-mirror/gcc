@@ -62,6 +62,7 @@ public class JTable extends JComponent
   public static final int AUTO_RESIZE_NEXT_COLUMN = 1;
   public static final int AUTO_RESIZE_OFF = 0;
   public static final int AUTO_RESIZE_SUBSEQUENT_COLUMNS = 2;
+  
   public JTable ()
   {
     throw new Error ("Not implemented");

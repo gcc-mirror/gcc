@@ -56,7 +56,7 @@ public class DefaultEditorKit extends EditorKit
   public static final String downAction = "caret-down";
   public static final String endAction = "caret-end";
   public static final String endLineAction = "caret-end-line";
-  public static final String EndOfLineStringProperty = "__EndOfLine__";
+  public static final String endOfLineStringProperty = "__EndOfLine__";
   public static final String endParagraphAction = "caret-end-paragraph";
   public static final String endWordAction = "caret-end-word";
   public static final String forwardAction = "caret-forward";
