@@ -1,3 +1,9 @@
+Fri May  7 19:10:15 1999  Vladimir Makarov  <vmakarov@tofu.to.cygnus.com>
+
+	* sparc.h (GO_IF_LEGITIMATE_ADDRESS): Prohibit REG+REG addressing
+ 	for TFmode when there are no instructions which accept REG+REG
+ 	instructions.
+
 Fri May  7 12:38:54 1999  Jim Wilson  <wilson@cygnus.com>
 
 	* mips/elf64.h (MAKE_DECL_ONE_ONLY, UNIQUE_SECTION_P): Define.
