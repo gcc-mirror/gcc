@@ -2972,13 +2972,7 @@ purge_addressof_1 (loc, insn, force, store, ht)
 
 		  /* Make sure to unshare any shared rtl that store_bit_field
 		     might have created.  */
-		  for (p = get_insns(); p; p = NEXT_INSN (p))
-		    {
-		      reset_used_flags (PATTERN (p));
-		      reset_used_flags (REG_NOTES (p));
-		      reset_used_flags (LOG_LINKS (p));
-		    }
-		  unshare_all_rtl (get_insns ());
+		  unshare_all_rtl_again (get_insns ());
 
 		  seq = gen_sequence ();
 		  end_sequence ();

@@ -1445,7 +1445,7 @@ extern void reverse_comparison			PARAMS ((rtx));
 extern void set_new_first_and_last_insn		PARAMS ((rtx, rtx));
 extern void set_new_first_and_last_label_num	PARAMS ((int, int));
 extern void set_new_last_label_num		PARAMS ((int));
-extern void unshare_all_rtl			PARAMS ((rtx));
+extern void unshare_all_rtl_again		PARAMS ((rtx));
 extern void set_last_insn			PARAMS ((rtx));
 extern void link_cc0_insns			PARAMS ((rtx));
 extern void add_insn				PARAMS ((rtx));

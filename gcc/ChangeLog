@@ -1,4 +1,19 @@
-2000-01-24  Geoffrey Keating  <geoffk@cygnus.com>
+2000-01-27  Geoffrey Keating  <geoffk@cygnus.com>
+
+	* emit-rtl.c (unshare_all_rtl): Unshare virtual parameters too.
+	Use unshare_all_rtl_1.
+	(unshare_all_rtl_again): New function.
+	(unshare_all_rtl_1): New function split out of unshare_all_rtl.
+
+	* function.c (purge_addressof_1): Use unshare_all_rtl_again
+	rather than resetting the 'used' flags ourself.
+
+	* toplev.c (rest_of_compilation): Add current_function_decl
+	to the unshare_all_rtl call.
+	* tree.h: Prototype unshare_all_rtl.
+	* rtl.h: Prototype unshare_all_rtl_again here.
+
+2000-01-27  Geoffrey Keating  <geoffk@cygnus.com>
 
 	* genoutput.c (output_prologue): Include ggc.h in generated
 	files.
