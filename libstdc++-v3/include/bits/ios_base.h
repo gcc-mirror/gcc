@@ -371,7 +371,10 @@ namespace std
 
     // Callbacks;
     /**
-     *  @doctodo
+     *  @brief  The set of events that may be passed to an event callback.
+     *
+     *  erase_event is used during ~ios() and copyfmt().  imbue_event is used
+     *  during imbue().  copyfmt_event is used during copyfmt().
     */
     enum event
     {
@@ -381,12 +384,26 @@ namespace std
     };
 
     /**
-     *  @doctodo
+     *  @brief  The type of an event callback function.
+     *  @param  event  One of the members of the event enum.
+     *  @param  ios_base  Reference to the ios_base object.
+     *  @param  int  The integer provided when the callback was registered.
+     *
+     *  Event callbacks are user defined functions that get called during
+     *  several ios_base and basic_ios functions, specifically imbue(),
+     *  copyfmt(), and ~ios().
     */
     typedef void (*event_callback) (event, ios_base&, int);
 
     /**
-     *  @doctodo
+     *  @brief  Add the callback __fn with parameter __index.
+     *  @param  __fn  The function to add.
+     *  @param  __index  The integer to pass to the function when invoked.
+     *
+     *  Registers a function as an event callback with an integer parameter to
+     *  be passed to the function when invoked.  Multiple copies of the
+     *  function are allowed.  If there are multiple callbacks, they are
+     *  invoked in the order they were registered.
     */
     void 
     register_callback(event_callback __fn, int __index);
@@ -621,8 +638,8 @@ namespace std
      *  @param  loc  The new locale.
      *  @return  The previous locale.
      *
-     *  Sets the new locale for this stream, and
-     *  [XXX does something with callbacks].
+     *  Sets the new locale for this stream, and then invokes each callback
+     *  with imbue_event.
     */
     locale 
     imbue(const locale& __loc);
@@ -650,13 +667,34 @@ namespace std
 
     // [27.4.2.5] ios_base storage functions
     /**
-     *  @doctodo
+     *  @brief  Access to unique indices.
+     *  @return  An integer different from all previous calls.
+     *
+     *  This function returns a unique integer every time it is called.  It
+     *  can be used for any purpose, but is primarily intended to be a unique
+     *  index for the iword and pword functions.  The expectation is that an
+     *  application calls xalloc in order to obtain an index in the iword and
+     *  pword arrays that can be used without fear of conflict.
+     *
+     *  The implementation maintains a static variable that is incremented and
+     *  returned on each invocation.  xalloc is guaranteed to return an index
+     *  that is safe to use in the iword and pword arrays.
     */
     static int 
     xalloc() throw();
 
     /**
-     *  @doctodo
+     *  @brief  Access to integer array.
+     *  @param  __ix  Index into the array.
+     *  @return  A reference to an integer associated with the index.
+     *
+     *  The iword function provides access to an array of integers that can be
+     *  used for any purpose.  The array grows as required to hold the
+     *  supplied index.  All integers in the array are initialized to 0.
+     *
+     *  The implementation reserves several indices.  You should use xalloc to
+     *  obtain an index that is safe to use.  Also note that since the array
+     *  can grow dynamically, it is not safe to hold onto the reference.
     */
     inline long& 
     iword(int __ix)
@@ -667,7 +705,17 @@ namespace std
     }
 
     /**
-     *  @doctodo
+     *  @brief  Access to void pointer array.
+     *  @param  __ix  Index into the array.
+     *  @return  A reference to a void* associated with the index.
+     *
+     *  The pword function provides access to an array of pointers that can be
+     *  used for any purpose.  The array grows as required to hold the
+     *  supplied index.  All pointers in the array are initialized to 0.
+     *
+     *  The implementation reserves several indices.  You should use xalloc to
+     *  obtain an index that is safe to use.  Also note that since the array
+     *  can grow dynamically, it is not safe to hold onto the reference.
     */
     inline void*& 
     pword(int __ix)
@@ -679,8 +727,12 @@ namespace std
 
     // Destructor
     /**
-     *  Destroys local storage and
-     *  [XXX does something with callbacks].
+     *  Invokes each callback with erase_event.  Destroys local storage.
+     *
+     *  Note that the ios_base object for the standard streams never gets
+     *  destroyed.  As a result, any callbacks registered with the standard
+     *  streams will not get invoked with erase_event (unless copyfmt is
+     *  used).
     */
     virtual ~ios_base();
 

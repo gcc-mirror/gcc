@@ -319,7 +319,15 @@ namespace std
       rdbuf(basic_streambuf<_CharT, _Traits>* __sb);
 
       /**
-       *  @doctodo
+       *  @brief  Copies fields of __rhs into this.
+       *  @param  __rhs  The source values for the copies.
+       *  @return  Reference to this object.
+       *
+       *  All fields of __rhs are copied into this object except that rdbuf()
+       *  and rdstate() remain unchanged.  All values in the pword and iword
+       *  arrays are copied.  Before copying, each callback is invoked with
+       *  erase_event.  After copying, each (new) callback is invoked with
+       *  copyfmt_event.  The final step is to copy exceptions().
       */
       basic_ios&
       copyfmt(const basic_ios& __rhs);
