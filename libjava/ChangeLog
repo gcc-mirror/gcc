@@ -1,3 +1,33 @@
+1999-08-20  Kresten Krab Thorup  <krab@samam.daimi.au.dk>
+
+	* interpret.cc (continue1): Implement explicit dispatch table.
+	insn_target: Explicit interpreter switch table.  
+	SAVE_PC: New macro, moves pc saving code into instructions that
+	require so.
+	NEXT_INSN: New macro, replaces `goto next_insn' in all insns.
+	PC_REGISTER_ASM: New macro.
+	INLINE_SWITCH: New macro.  Constrols dispatching strategy.
+	opcode: Remove local variable.
+	{i,l,f,d}{load,store}_{0,1,2,3}: Expand definitions.
+	(POKEI): Use _Jv_word.
+	(iinc): Use _Jv_word.
+	(dupx): Change reference argument (sp) to pointer.  
+	(jvdump): Remove
+	
+	* interpret.cc: Remove instruction timing instrumentation.  
+
+	* java/lang/natClassLoader.cc (_Jv_PrepareCompiledClass): Changed
+	comment.  Don't use _Jv_ClassNameSamePackage. 
+
+	* gnu/gcj/util/path/{SearchPath,ZipFileEntry,DirectoryPathEntry,
+	URLPathEntry, CacheEntry}: Removed.
+	
+	* Makefile.am (ordinary_java_source_files): Remove gnu/gcj/util/path
+	package.
+	(.java.lo): Rule removed.
+
+	* Makefile.in: Rebuilt.
+
 1999-08-19  Tom Tromey  <tromey@cygnus.com>
 
 	* java/lang/natThread.cc (class locker): New class.

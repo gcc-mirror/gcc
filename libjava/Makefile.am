@@ -161,9 +161,6 @@ SUFFIXES = .class .java .h
 .class.lo:
 	$(GCJCOMPILE) -o $@ $<
 
-.java.lo:
-	$(GCJCOMPILE) -o $@ $<
-
 ## This is GNU make specific.  For the .o files in subdirs, use a
 ## special rule.  The standard automake rule can't be overridden (this
 ## is a bug in automake), and it also won't put the .o files into
@@ -484,12 +481,6 @@ built_java_source_files = java/lang/ConcreteProcess.java
 ordinary_java_source_files =  $(convert_source_files) \
 gnu/gcj/runtime/MethodInvocation.java \
 gnu/gcj/runtime/VMClassLoader.java \
-gnu/gcj/util/path/SearchPath.java \
-gnu/gcj/util/path/PathEntry.java \
-gnu/gcj/util/path/DirectoryPathEntry.java \
-gnu/gcj/util/path/ZipPathEntry.java \
-gnu/gcj/util/path/URLPathEntry.java \
-gnu/gcj/util/path/CacheEntry.java \
 gnu/gcj/text/BaseBreakIterator.java \
 gnu/gcj/text/CharacterBreakIterator.java \
 gnu/gcj/text/LineBreakIterator.java \
