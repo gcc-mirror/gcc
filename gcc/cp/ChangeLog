@@ -1,3 +1,8 @@
+2003-12-23  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/13387
+	* cp-lang.c (cxx_get_alias_set): Correct logic for a base type.
+
 2003-12-22  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl.c (start_function): Do not check
