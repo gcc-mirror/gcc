@@ -152,7 +152,10 @@ static void initialize_argument_information	PROTO ((int,
 							CUMULATIVE_ARGS *,
 							int, rtx *, int *,
 							int *, int *));
-
+static void compute_argument_addresses		PROTO ((struct arg_data *,
+							rtx, int));
+static rtx rtx_for_function_call		PROTO ((tree, tree));
+							
 #if defined(ACCUMULATE_OUTGOING_ARGS) && defined(REG_PARM_STACK_SPACE)
 static rtx save_fixed_argument_area	PROTO ((int, rtx, int *, int *));
 static void restore_fixed_argument_area	PROTO ((rtx, rtx, int, int));
@@ -1313,6 +1316,106 @@ finalize_must_preallocate (must_preallocate, num_actuals, args, args_size)
   return must_preallocate;
 }
 
+/* If we preallocated stack space, compute the address of each argument
+   and store it into the ARGS array.
+
+   We need not ensure it is a valid memory address here; it will be 
+   validized when it is used.
+
+   ARGBLOCK is an rtx for the address of the outgoing arguments.  */
+
+static void
+compute_argument_addresses (args, argblock, num_actuals)
+     struct arg_data *args;
+     rtx argblock;
+     int num_actuals;
+{
+  if (argblock)
+    {
+      rtx arg_reg = argblock;
+      int i, arg_offset = 0;
+
+      if (GET_CODE (argblock) == PLUS)
+	arg_reg = XEXP (argblock, 0), arg_offset = INTVAL (XEXP (argblock, 1));
+
+      for (i = 0; i < num_actuals; i++)
+	{
+	  rtx offset = ARGS_SIZE_RTX (args[i].offset);
+	  rtx slot_offset = ARGS_SIZE_RTX (args[i].slot_offset);
+	  rtx addr;
+
+	  /* Skip this parm if it will not be passed on the stack.  */
+	  if (! args[i].pass_on_stack && args[i].reg != 0)
+	    continue;
+
+	  if (GET_CODE (offset) == CONST_INT)
+	    addr = plus_constant (arg_reg, INTVAL (offset));
+	  else
+	    addr = gen_rtx_PLUS (Pmode, arg_reg, offset);
+
+	  addr = plus_constant (addr, arg_offset);
+	  args[i].stack = gen_rtx_MEM (args[i].mode, addr);
+	  MEM_SET_IN_STRUCT_P 
+	    (args[i].stack,
+	     AGGREGATE_TYPE_P (TREE_TYPE (args[i].tree_value)));
+
+	  if (GET_CODE (slot_offset) == CONST_INT)
+	    addr = plus_constant (arg_reg, INTVAL (slot_offset));
+	  else
+	    addr = gen_rtx_PLUS (Pmode, arg_reg, slot_offset);
+
+	  addr = plus_constant (addr, arg_offset);
+	  args[i].stack_slot = gen_rtx_MEM (args[i].mode, addr);
+	}
+    }
+}
+					       
+/* Given a FNDECL and EXP, return an rtx suitable for use as a target address
+   in a call instruction.
+
+   FNDECL is the tree node for the target function.  For an indirect call
+   FNDECL will be NULL_TREE.
+
+   EXP is the CALL_EXPR for this call.  */
+
+static rtx
+rtx_for_function_call (fndecl, exp)
+     tree fndecl;
+     tree exp;
+{
+  rtx funexp;
+
+  /* Get the function to call, in the form of RTL.  */
+  if (fndecl)
+    {
+      /* If this is the first use of the function, see if we need to
+	 make an external definition for it.  */
+      if (! TREE_USED (fndecl))
+	{
+	  assemble_external (fndecl);
+	  TREE_USED (fndecl) = 1;
+	}
+
+      /* Get a SYMBOL_REF rtx for the function address.  */
+      funexp = XEXP (DECL_RTL (fndecl), 0);
+    }
+  else
+    /* Generate an rtx (probably a pseudo-register) for the address.  */
+    {
+      push_temp_slots ();
+      funexp = expand_expr (TREE_OPERAND (exp, 0), NULL_RTX, VOIDmode, 0);
+      pop_temp_slots ();	/* FUNEXP can't be BLKmode */
+
+      /* Check the function is executable.  */
+      if (current_function_check_memory_usage)
+	emit_library_call (chkr_check_exec_libfunc, 1,
+			   VOIDmode, 1,
+			   funexp, ptr_mode);
+      emit_queue ();
+    }
+  return funexp;
+}
+
 /* Generate all the code for a function call
    and return an rtx for its value.
    Store the value in TARGET (specified as an rtx) if convenient.
@@ -1971,49 +2074,8 @@ expand_call (exp, target, ignore)
       }
 #endif
 
+  compute_argument_addresses (args, argblock, num_actuals);
 
-  /* If we preallocated stack space, compute the address of each argument.
-     We need not ensure it is a valid memory address here; it will be 
-     validized when it is used.  */
-  if (argblock)
-    {
-      rtx arg_reg = argblock;
-      int arg_offset = 0;
-
-      if (GET_CODE (argblock) == PLUS)
-	arg_reg = XEXP (argblock, 0), arg_offset = INTVAL (XEXP (argblock, 1));
-
-      for (i = 0; i < num_actuals; i++)
-	{
-	  rtx offset = ARGS_SIZE_RTX (args[i].offset);
-	  rtx slot_offset = ARGS_SIZE_RTX (args[i].slot_offset);
-	  rtx addr;
-
-	  /* Skip this parm if it will not be passed on the stack.  */
-	  if (! args[i].pass_on_stack && args[i].reg != 0)
-	    continue;
-
-	  if (GET_CODE (offset) == CONST_INT)
-	    addr = plus_constant (arg_reg, INTVAL (offset));
-	  else
-	    addr = gen_rtx_PLUS (Pmode, arg_reg, offset);
-
-	  addr = plus_constant (addr, arg_offset);
-	  args[i].stack = gen_rtx_MEM (args[i].mode, addr);
-	  MEM_SET_IN_STRUCT_P 
-	    (args[i].stack,
-	     AGGREGATE_TYPE_P (TREE_TYPE (args[i].tree_value)));
-
-	  if (GET_CODE (slot_offset) == CONST_INT)
-	    addr = plus_constant (arg_reg, INTVAL (slot_offset));
-	  else
-	    addr = gen_rtx_PLUS (Pmode, arg_reg, slot_offset);
-
-	  addr = plus_constant (addr, arg_offset);
-	  args[i].stack_slot = gen_rtx_MEM (args[i].mode, addr);
-	}
-    }
-					       
 #ifdef PUSH_ARGS_REVERSED
 #ifdef PREFERRED_STACK_BOUNDARY
   /* If we push args individually in reverse order, perform stack alignment
@@ -2028,34 +2090,7 @@ expand_call (exp, target, ignore)
   if (argblock)
     NO_DEFER_POP;
 
-  /* Get the function to call, in the form of RTL.  */
-  if (fndecl)
-    {
-      /* If this is the first use of the function, see if we need to
-	 make an external definition for it.  */
-      if (! TREE_USED (fndecl))
-	{
-	  assemble_external (fndecl);
-	  TREE_USED (fndecl) = 1;
-	}
-
-      /* Get a SYMBOL_REF rtx for the function address.  */
-      funexp = XEXP (DECL_RTL (fndecl), 0);
-    }
-  else
-    /* Generate an rtx (probably a pseudo-register) for the address.  */
-    {
-      push_temp_slots ();
-      funexp = expand_expr (TREE_OPERAND (exp, 0), NULL_RTX, VOIDmode, 0);
-      pop_temp_slots ();	/* FUNEXP can't be BLKmode */
-
-      /* Check the function is executable.  */
-      if (current_function_check_memory_usage)
-	emit_library_call (chkr_check_exec_libfunc, 1,
-			   VOIDmode, 1,
-			   funexp, ptr_mode);
-      emit_queue ();
-    }
+  funexp = rtx_for_function_call (fndecl, exp);
 
   /* Figure out the register where the value, if any, will come back.  */
   valreg = 0;
