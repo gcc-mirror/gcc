@@ -1,3 +1,10 @@
+Sun Apr 11 23:20:59 1999  Mumit Khan  <khan@xraylith.wisc.edu>
+
+	* pexecute.c: Change all references to __UWIN__ to _UWIN.
+	* xmalloc.c: Likewise.
+	(xcalloc): UWIN has sbrk.
+	(xrealloc): Fix guard macro.
+
 1999-04-11  Mark Mitchell  <mark@codesourcery.com>
 
 	* cplus-dem.c (demangle_template_value_parm): Handle

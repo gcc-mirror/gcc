@@ -230,7 +230,7 @@ pwait (pid, status, flags)
 
 #endif /* MSDOS */
 
-#if defined (_WIN32) && ! defined (__UWIN__)
+#if defined (_WIN32) && ! defined (_UWIN)
 
 #include <process.h>
 
@@ -419,7 +419,7 @@ pwait (pid, status, flags)
 #endif /* __CYGWIN__ */
 }
 
-#endif /* _WIN32 && ! __UWIN__ */
+#endif /* _WIN32 && ! _UWIN */
 
 #ifdef OS2
 
@@ -602,7 +602,7 @@ pfinish ()
 
 /* include for Unix-like environments but not for Dos-like environments */
 #if ! defined (__MSDOS__) && ! defined (OS2) && ! defined (MPW) \
-    && ! (defined (_WIN32) && ! defined (__UWIN__))
+    && ! (defined (_WIN32) && ! defined (_UWIN))
 
 extern int execv ();
 extern int execvp ();
@@ -731,4 +731,4 @@ pwait (pid, status, flags)
   return pid;
 }
 
-#endif /* ! __MSDOS__ && ! OS2 && ! MPW && ! (_WIN32 && ! __UWIN__) */
+#endif /* ! __MSDOS__ && ! OS2 && ! MPW && ! (_WIN32 && ! _UWIN) */
