@@ -1,4 +1,4 @@
-@c Copyright (C) 1988,1989,1992,1993,1994,1996,1998,1999,2000,2001,2002 Free Software Foundation, Inc.
+@c Copyright (C) 1988,1989,1992,1993,1994,1996,1998,1999,2000,2001,2002,2003 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -2317,7 +2317,7 @@ See the ELF gABI for complete details, but the short story is
 @table @dfn
 @item default
 Default visibility is the normal case for ELF.  This value is 
-available for the visibiliy attribute to override other options
+available for the visibility attribute to override other options
 that may change the assumed visibility of symbols.
 
 @item hidden

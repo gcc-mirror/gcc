@@ -9,7 +9,7 @@
 @copying
 @c man begin COPYRIGHT
 Copyright @copyright{} 1987, 1989, 1991, 1992, 1993, 1994, 1995, 1996,
-1997, 1998, 1999, 2000, 2001, 2002
+1997, 1998, 1999, 2000, 2001, 2002, 2003
 Free Software Foundation, Inc.
 
 Permission is granted to copy, distribute and/or modify this document
@@ -3974,7 +3974,7 @@ GCC 3.0 evaluates @samp{#} and @samp{##} at the same time and strictly
 left to right.  Older versions evaluated all @samp{#} operators first,
 then all @samp{##} operators, in an unreliable order.
 
-@item The form of whitespace betwen tokens in preprocessor output
+@item The form of whitespace between tokens in preprocessor output
 
 @xref{Preprocessor Output}, for the current textual format.  This is
 also the format used by stringification.  Normally, the preprocessor

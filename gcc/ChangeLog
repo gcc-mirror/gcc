@@ -1,3 +1,12 @@
+2003-01-26  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* doc/cpp.texi: Fix typos.
+	* doc/extend.texi: Likewise.
+	* doc/gty.texi: Likewise.
+	* doc/install.texi: Likewise.
+	* doc/passes.texi: Likewise.
+	* doc/rtl.texi: Likewise.
+
 2003-01-26  Christian Cornelssen  <ccorn@cs.tu-berlin.de>
 
 	* Makefile.in (ORDINARY_FLAGS_TO_PASS): Also pass DESTDIR.

@@ -1,4 +1,4 @@
-@c Copyright (C) 1988, 1989, 1992, 1994, 1997, 1998, 1999, 2000, 2001, 2002
+@c Copyright (C) 1988, 1989, 1992, 1994, 1997, 1998, 1999, 2000, 2001, 2002, 2003
 @c Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
@@ -244,7 +244,7 @@ from an @samp{md} file, the vector value of this operand may be omitted.
 An omitted vector is effectively the same as a vector of no elements.
 
 @item B
-@samp{B} indicates a pointer to basic block strucure.
+@samp{B} indicates a pointer to basic block structure.
 
 @item 0
 @samp{0} means a slot whose contents do not fit any normal category.
