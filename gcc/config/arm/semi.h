@@ -48,4 +48,8 @@ Boston, MA 02111-1307, USA.  */
 
 #define TARGET_DEFAULT ARM_FLAG_APCS_32
 
+#ifndef PROCESSOR_DEFAULT
+#define PROCESSOR_DEFAULT PROCESSOR_ARM6
+#endif
+
 #include "arm/aout.h"
