@@ -64,6 +64,7 @@ mn10200 port		Jeff Law		law@redhat.com
 mn10300 port		Jeff Law		law@redhat.com
 mn10300 port		Alexandre Oliva		aoliva@redhat.com
 ns32k port		Ian Dall		ian@beware.dropbear.id.au
+pdp11 port		Paul Koning		ni1d@arrl.net
 rs6000 port		Geoff Keating		geoffk@geoffk.org
 rs6000 port		David Edelsohn		dje@watson.ibm.com
 rs6000 vector extns	Aldy Hernandez		aldyh@redhat.com
@@ -210,7 +211,6 @@ Brendan Kehoe					brendan@zen.org
 Mumit Khan					khan@xraylith.wisc.edu
 Matthias Klose					doko@debian.org
 Jeff Knaggs					jknaggs@redhat.com
-Paul Koning					ni1d@arrl.net
 Matt Kraai					kraai@alumni.cmu.edu
 Marc Lehmann					pcg@goof.com
 Alan Lehotsky					apl@alum.mit.edu
