@@ -1,3 +1,9 @@
+2001-06-26  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* doc/c-tree.texi, doc/cpp.texi, doc/extend.texi, doc/gcc.texi,
+	doc/install.texi, doc/invoke.texi, doc/objc.texi, doc/rtl.texi,
+	doc/tm.texi: Use two spaces after ends of sentences.
+
 2001-06-26  Daniel Berlin  <dan@cgsoftware.com>
 
 	* toplev.c (display_help): Fix param thinko.

@@ -2951,7 +2951,7 @@ header files, it defaults to 0.
 
 @findex PUSH_ARGS
 @item PUSH_ARGS
-A C expression. If nonzero, push insns will be used to pass
+A C expression.  If nonzero, push insns will be used to pass
 outgoing arguments.
 If the target machine does not have a push instruction, set it to zero.
 That directs GCC to use an alternate strategy: to
@@ -2982,7 +2982,7 @@ alignment.  Then the definition should be
 @findex ACCUMULATE_OUTGOING_ARGS
 @findex current_function_outgoing_args_size
 @item ACCUMULATE_OUTGOING_ARGS
-A C expression. If nonzero, the maximum amount of space required for outgoing arguments
+A C expression.  If nonzero, the maximum amount of space required for outgoing arguments
 will be computed and placed into the variable
 @code{current_function_outgoing_args_size}.  No space will be pushed
 onto the stack for each call; instead, the function prologue should
@@ -4122,7 +4122,7 @@ values accessed by @code{__builtin_args_info}.
 @item __builtin_next_arg (@var{lastarg})
 This is the equivalent of @code{__builtin_args_info}, for stack
 arguments.  It returns the address of the first anonymous stack
-argument, as type @code{void *}. If @code{ARGS_GROW_DOWNWARD}, it
+argument, as type @code{void *}.  If @code{ARGS_GROW_DOWNWARD}, it
 returns the address of the location above the first anonymous stack
 argument.  Use it in @code{va_start} to initialize the pointer for
 fetching arguments from the stack.  Also use it in @code{va_start} to
@@ -4466,7 +4466,7 @@ not define this macro, the default name is used, which is
 @findex INIT_TARGET_OPTABS
 @item INIT_TARGET_OPTABS
 Define this macro as a C statement that declares additional library
-routines renames existing ones. @code{init_optabs} calls this macro after
+routines renames existing ones.  @code{init_optabs} calls this macro after
 initializing all the normal library routines.
 
 @findex FLOAT_LIB_COMPARE_RETURNS_BOOL (@var{mode}, @var{comparison})
@@ -5413,7 +5413,7 @@ If defined, a C statement that calls the function named as the sole
 argument of this macro.  This is used in @file{crtstuff.c} if
 @code{INIT_SECTION_ASM_OP} or @code{FINI_SECTION_ASM_OP} to calls to
 initialization and finalization functions from the init and fini
-sections. By default, this macro is a simple function call.  Some
+sections.  By default, this macro is a simple function call.  Some
 ports need hand-crafted assembly code to avoid dependencies on
 registers initialized in the function prologue or to ensure that
 constant pools don't end up too far way in the text section.
@@ -8546,7 +8546,7 @@ Expand a call to a machine specific built-in function that was set up by
 @samp{MD_INIT_BUILTINS}.  @var{exp} is the expression for the function call;
 the result should go to @var{target} if that is convenient, and have mode
 @var{mode} if that is convenient.  @var{subtarget} may be used as the target
-for computing one of @var{exp}'s operands. @var{ignore} is nonzero if the value
+for computing one of @var{exp}'s operands.  @var{ignore} is nonzero if the value
 is to be ignored.
 This macro should return the result of the call to the built-in function.
 
