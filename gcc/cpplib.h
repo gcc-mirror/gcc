@@ -393,6 +393,9 @@ struct cpp_options
   /* True for traditional preprocessing.  */
   unsigned char traditional;
 
+  /* True if only preprocessing and not compiling.  */
+  unsigned char preprocess_only;
+
   /* Target-specific features set by the front end or client.  */
 
   /* Precision for target CPP arithmetic, target characters, target

@@ -80,7 +80,6 @@ static cpp_hashnode *lex_identifier PARAMS ((cpp_reader *, const uchar *));
 static const uchar *skip_comment PARAMS ((cpp_reader *, const uchar *));
 static void scan_out_logical_line PARAMS ((cpp_reader *pfile, cpp_macro *));
 static void check_output_buffer PARAMS ((cpp_reader *, size_t));
-static void restore_buff PARAMS ((cpp_reader *));
 static void push_replacement_text PARAMS ((cpp_reader *, cpp_hashnode *));
 static bool scan_parameters PARAMS ((cpp_reader *, cpp_macro *));
 static void save_replacement_text PARAMS ((cpp_reader *, cpp_macro *,
@@ -99,15 +98,15 @@ check_output_buffer (pfile, n)
      cpp_reader *pfile;
      size_t n;
 {
-  if (n > (size_t) (pfile->trad_out_limit - pfile->trad_out_cur))
+  if (n > (size_t) (pfile->out.limit - pfile->out.cur))
     {
-      size_t size = pfile->trad_out_cur - pfile->trad_out_base;
+      size_t size = pfile->out.cur - pfile->out.base;
       size_t new_size = (size + n) * 3 / 2;
 
-      pfile->trad_out_base
-	= (uchar *) xrealloc (pfile->trad_out_base, new_size);
-      pfile->trad_out_limit = pfile->trad_out_base + new_size;
-      pfile->trad_out_cur = pfile->trad_out_base + size;
+      pfile->out.base
+	= (uchar *) xrealloc (pfile->out.base, new_size);
+      pfile->out.limit = pfile->out.base + new_size;
+      pfile->out.cur = pfile->out.base + size;
     }
 }
 
@@ -219,14 +218,14 @@ skip_whitespace (pfile, cur)
 
 /* Lexes and outputs an identifier starting at CUR, which is assumed
    to point to a valid first character of an identifier.  Returns
-   the hashnode, and updates trad_out_cur.  */
+   the hashnode, and updates out.cur.  */
 static cpp_hashnode *
 lex_identifier (pfile, cur)
      cpp_reader *pfile;
      const uchar *cur;
 {
   size_t len;
-  uchar *out = pfile->trad_out_cur;
+  uchar *out = pfile->out.cur;
   cpp_hashnode *result;
 
   do
@@ -239,10 +238,10 @@ lex_identifier (pfile, cur)
   while (is_numchar (*cur));
 
   CUR (pfile->context) = cur;
-  len = out - pfile->trad_out_cur;
-  result = (cpp_hashnode *) ht_lookup (pfile->hash_table, pfile->trad_out_cur,
+  len = out - pfile->out.cur;
+  result = (cpp_hashnode *) ht_lookup (pfile->hash_table, pfile->out.cur,
 				       len, HT_ALLOC);
-  pfile->trad_out_cur = out;
+  pfile->out.cur = out;
   return result;
 }
 
@@ -281,11 +280,13 @@ _cpp_overlay_buffer (pfile, start, len)
   buffer->cur = start;
   buffer->line_base = start;
   buffer->rlimit = start + len;
+
+  pfile->saved_line = pfile->line;
 }
 
 /* Restores a buffer overlaid by _cpp_overlay_buffer().  */
-static void
-restore_buff (pfile)
+void
+_cpp_remove_overlay (pfile)
      cpp_reader *pfile;
 {
   cpp_buffer *buffer = pfile->buffer;
@@ -293,23 +294,17 @@ restore_buff (pfile)
   buffer->cur = buffer->saved_cur;
   buffer->rlimit = buffer->saved_rlimit;
   buffer->line_base = buffer->saved_line_base;
+
+  pfile->line = pfile->saved_line;
 }
 
 /* Reads a logical line into the output buffer.  Returns TRUE if there
    is more text left in the buffer.  */
 bool
-_cpp_read_logical_line_trad (pfile, overlay)
+_cpp_read_logical_line_trad (pfile)
      cpp_reader *pfile;
-     int overlay;
 {
   cpp_buffer *buffer;
-  unsigned int first_line = 0;
-
-  if (overlay)
-    {
-      restore_buff (pfile);
-      first_line = pfile->line = pfile->trad_line;
-    }
 
   buffer = pfile->buffer;
   if (buffer->cur == buffer->rlimit)
@@ -329,17 +324,10 @@ _cpp_read_logical_line_trad (pfile, overlay)
 
   CUR (pfile->context) = buffer->cur;
   RLIMIT (pfile->context) = buffer->rlimit;
-  pfile->trad_out_cur = pfile->trad_out_base;
+  pfile->out.cur = pfile->out.base;
+  pfile->out.first_line = pfile->line;
   scan_out_logical_line (pfile, NULL);
   buffer->cur = CUR (pfile->context);
-
-  if (overlay)
-    {
-      pfile->trad_line = pfile->line;
-      pfile->line = first_line;
-      _cpp_overlay_buffer (pfile, pfile->trad_out_base,
-			   pfile->trad_out_cur - pfile->trad_out_base);
-    }
 
   return true;
 }
@@ -360,7 +348,7 @@ maybe_start_funlike (pfile, node, start, macro)
   macro->buff = _cpp_get_buff (pfile, n * sizeof (size_t));
   macro->args = (size_t *) BUFF_FRONT (macro->buff);
   macro->node = node;
-  macro->offset = start - pfile->trad_out_base;
+  macro->offset = start - pfile->out.base;
   macro->argc = 0;
 
   pfile->state.parsing_args = 1;
@@ -400,7 +388,7 @@ scan_out_logical_line (pfile, macro)
   context = pfile->context;
   cur = CUR (context);
   check_output_buffer (pfile, RLIMIT (context) - cur);
-  out = pfile->trad_out_cur;
+  out = pfile->out.cur;
 
   for (;;)
     {
@@ -418,7 +406,7 @@ scan_out_logical_line (pfile, macro)
 	  /* If this is a macro's expansion, pop it.  */
 	  if (context->prev)
 	    {
-	      pfile->trad_out_cur = out - 1;
+	      pfile->out.cur = out - 1;
 	      _cpp_pop_context (pfile);
 	      goto new_context;
 	    }
@@ -491,7 +479,7 @@ scan_out_logical_line (pfile, macro)
 	    {
 	      cpp_hashnode *node;
 
-	      pfile->trad_out_cur = --out;
+	      pfile->out.cur = --out;
 	      node = lex_identifier (pfile, cur - 1);
 
 	      if (node->type == NT_MACRO
@@ -504,7 +492,7 @@ scan_out_logical_line (pfile, macro)
 		    {
 		      /* Remove the object-like macro's name from the
 			 output, and push its replacement text.  */
-		      pfile->trad_out_cur = out;
+		      pfile->out.cur = out;
 		      push_replacement_text (pfile, node);
 		      goto new_context;
 		    }
@@ -513,11 +501,11 @@ scan_out_logical_line (pfile, macro)
 		{
 		  /* Found a parameter in the replacement text of a
 		     #define.  Remove its name from the output.  */
-		  pfile->trad_out_cur = out;
+		  pfile->out.cur = out;
 		  save_replacement_text (pfile, macro, node->arg_index);
 		}
 
-	      out = pfile->trad_out_cur;
+	      out = pfile->out.cur;
 	      cur = CUR (context);
 	    }
 	  break;
@@ -528,7 +516,7 @@ scan_out_logical_line (pfile, macro)
 	      paren_depth++;
 	      if (pfile->state.parsing_args == 1)
 		{
-		  const uchar *p = pfile->trad_out_base + fmacro.offset;
+		  const uchar *p = pfile->out.base + fmacro.offset;
 
 		  /* Invoke a prior function-like macro if there is only
 		     white space in-between.  */
@@ -541,7 +529,7 @@ scan_out_logical_line (pfile, macro)
 		    {
 		      pfile->state.parsing_args = 2;
 		      paren_depth = 1;
-		      out = pfile->trad_out_base + fmacro.offset;
+		      out = pfile->out.base + fmacro.offset;
 		      fmacro.args[0] = fmacro.offset;
 		    }
 		  else
@@ -552,7 +540,7 @@ scan_out_logical_line (pfile, macro)
 
 	case ',':
 	  if (quote == 0 && pfile->state.parsing_args == 2 && paren_depth == 1)
-	    save_argument (&fmacro, out - pfile->trad_out_base);
+	    save_argument (&fmacro, out - pfile->out.base);
 	  break;
 
 	case ')':
@@ -564,24 +552,39 @@ scan_out_logical_line (pfile, macro)
 		  cpp_macro *m = fmacro.node->value.macro;
 
 		  pfile->state.parsing_args = 0;
-		  save_argument (&fmacro, out - pfile->trad_out_base);
+		  save_argument (&fmacro, out - pfile->out.base);
 
 		  /* A single zero-length argument is no argument.  */
 		  if (fmacro.argc == 1
 		      && m->paramc == 0
-		      && out == pfile->trad_out_base + 1)
+		      && out == pfile->out.base + 1)
 		    fmacro.argc = 0;
 
 		  if (_cpp_arguments_ok (pfile, m, fmacro.node, fmacro.argc))
 		    {
 		      /* Remove the macro's invocation from the
 			 output, and push its replacement text.  */
-		      pfile->trad_out_cur = (pfile->trad_out_base
+		      pfile->out.cur = (pfile->out.base
 					     + fmacro.offset);
 		      CUR (context) = cur;
 		      replace_args_and_push (pfile, &fmacro);
 		      goto new_context;
 		    }
+		}
+	    }
+	  break;
+
+	case '#':
+	  /* At start of a line it's a directive.  */
+	  if (out - 1 == pfile->out.base && !pfile->state.in_directive)
+	    {
+	      /* This is a kludge.  We want to have the ISO
+		 preprocessor lex the next token.  */
+	      pfile->buffer->cur = cur;
+	      if (_cpp_handle_directive (pfile, false /* indented */))
+		{
+		  cur = CUR (context);
+		  goto done;
 		}
 	    }
 	  break;
@@ -594,7 +597,7 @@ scan_out_logical_line (pfile, macro)
  done:
   out[-1] = '\0';
   CUR (context) = cur;
-  pfile->trad_out_cur = out - 1;
+  pfile->out.cur = out - 1;
   if (fmacro.buff)
     _cpp_release_buff (pfile, fmacro.buff);
 }
@@ -660,7 +663,7 @@ replace_args_and_push (pfile, fmacro)
 	    break;
 	  arglen = (fmacro->args[b->arg_index]
 		    - fmacro->args[b->arg_index - 1] - 1);
-	  memcpy (p, pfile->trad_out_base + fmacro->args[b->arg_index - 1],
+	  memcpy (p, pfile->out.base + fmacro->args[b->arg_index - 1],
 		  arglen);
 	  p += arglen;
 	  exp += BLOCK_LEN (b->text_len);
@@ -676,7 +679,7 @@ replace_args_and_push (pfile, fmacro)
 }
 
 /* Read and record the parameters, if any, of a function-like macro
-   definition.  Destroys pfile->trad_out_cur.
+   definition.  Destroys pfile->out.cur.
 
    Returns true on success, false on failure (syntax error or a
    duplicate parameter).  On success, CUR (pfile->context) is just
@@ -717,7 +720,7 @@ scan_parameters (pfile, macro)
   return ok;
 }
 
-/* Save the text from pfile->trad_out_base to pfile->trad_out_cur as
+/* Save the text from pfile->out.base to pfile->out.cur as
    the replacement text for the current macro, followed by argument
    ARG_INDEX, with zero indicating the end of the replacement
    text.  */
@@ -727,7 +730,7 @@ save_replacement_text (pfile, macro, arg_index)
      cpp_macro *macro;
      unsigned int arg_index;
 {
-  size_t len = pfile->trad_out_cur - pfile->trad_out_base;
+  size_t len = pfile->out.cur - pfile->out.base;
   uchar *exp;
 
   if (macro->paramc == 0)
@@ -735,7 +738,7 @@ save_replacement_text (pfile, macro, arg_index)
       /* Object-like and function-like macros without parameters
 	 simply store their NUL-terminated replacement text.  */
       exp = _cpp_unaligned_alloc (pfile, len + 1);
-      memcpy (exp, pfile->trad_out_base, len);
+      memcpy (exp, pfile->out.base, len);
       exp[len] = '\0';
       macro->exp.text = exp;
       macro->count = len;
@@ -757,10 +760,10 @@ save_replacement_text (pfile, macro, arg_index)
       /* Write out the block information.  */
       block->text_len = len;
       block->arg_index = arg_index;
-      memcpy (block->text, pfile->trad_out_base, len);
+      memcpy (block->text, pfile->out.base, len);
 
       /* Lex the rest into the start of the output buffer.  */
-      pfile->trad_out_cur = pfile->trad_out_base;
+      pfile->out.cur = pfile->out.base;
 
       macro->count += blen;
 
@@ -779,6 +782,8 @@ _cpp_create_trad_definition (pfile, macro)
 {
   const uchar *cur;
   uchar *limit;
+
+  CUR (pfile->context) = pfile->buffer->cur;
 
   /* Is this a function-like macro?  */
   if (* CUR (pfile->context) == '(')
@@ -799,7 +804,7 @@ _cpp_create_trad_definition (pfile, macro)
   /* Skip leading whitespace in the replacement text.  */
   CUR (pfile->context) = skip_whitespace (pfile, CUR (pfile->context));
 
-  pfile->trad_out_cur = pfile->trad_out_base;
+  pfile->out.cur = pfile->out.base;
   pfile->state.prevent_expansion++;
   scan_out_logical_line (pfile, macro);
   pfile->state.prevent_expansion--;
@@ -808,11 +813,11 @@ _cpp_create_trad_definition (pfile, macro)
     return false;
 
   /* Skip trailing white space.  */
-  cur = pfile->trad_out_base;
-  limit = pfile->trad_out_cur;
+  cur = pfile->out.base;
+  limit = pfile->out.cur;
   while (limit > cur && is_space (limit[-1]))
     limit--;
-  pfile->trad_out_cur = limit;
+  pfile->out.cur = limit;
   save_replacement_text (pfile, macro, 0);
 
   return true;
@@ -918,7 +923,7 @@ _cpp_set_trad_context (pfile)
   if (pfile->context->prev)
     abort ();
 
-  pfile->trad_out_cur = pfile->trad_out_base;
+  pfile->out.cur = pfile->out.base;
   CUR (context) = buffer->cur;
   RLIMIT (context) = buffer->rlimit;
   check_output_buffer (pfile, RLIMIT (context) - CUR (context));
