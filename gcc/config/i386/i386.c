@@ -4184,13 +4184,7 @@ ix86_expand_prologue ()
 #endif
 
   if (pic_reg_used)
-    {
-      tree vis = lookup_attribute ("visibility", DECL_ATTRIBUTES (cfun->decl));
-      if (!vis
-	  || strcmp ("internal",
-		     TREE_STRING_POINTER (TREE_VALUE (TREE_VALUE (vis)))))
-        load_pic_register ();
-    }
+    load_pic_register ();
 
   /* If we are profiling, make sure no instructions are scheduled before
      the call to mcount.  However, if -fpic, the above call will have
