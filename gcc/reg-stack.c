@@ -442,8 +442,7 @@ get_true_reg (pat)
   while (GET_CODE (*pat) == SUBREG
 	 || GET_CODE (*pat) == FLOAT
 	 || GET_CODE (*pat) == FIX
-	 || GET_CODE (*pat) == FLOAT_EXTEND
-	 || GET_CODE (*pat) == FLOAT_TRUNCATE)
+	 || GET_CODE (*pat) == FLOAT_EXTEND)
     pat = & XEXP (*pat, 0);
 
   return pat;
@@ -1786,6 +1785,7 @@ compare_for_stack_reg (insn, regstack, pat)
 
       swap_rtx_condition (PATTERN (next));
       INSN_CODE (next) = -1;
+      INSN_CODE (insn) = -1;
     }
 
   /* We will fix any death note later. */
@@ -1896,6 +1896,7 @@ subst_stack_regs_pat (insn, regstack, pat)
 
 	/* Fall through. */
 
+      case FLOAT_TRUNCATE:
       case SQRT:
       case ABS:
       case NEG:
