@@ -1,3 +1,8 @@
+2002-12-18  Benjamin Kosnik  <bkoz@redhat.com>
+
+ 	* docs/html/documentation.html: Add link for debug.html.
+	* docs/html/debug.html: New.
+	
 2002-12-18  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* testsuite/23_containers/vector_capacity.cc (test03): Move ...
@@ -189,14 +194,17 @@
 	const unsigned char*)): Fully qualify min() with std::.
 	* include/bits/stl_bvector.h (_M_insert_range(iterator,
 	_ForwardIterator, _ForwardIterator, forward_iterator_tag),
-	_M_assign_aux(_ForwardIterator, _ForwardIterator, forward_iterator_tag),
+	_M_assign_aux(_ForwardIterator, _ForwardIterator,
+	forward_iterator_tag),
 	_M_initialize_range(_ForwardIterator, _ForwardIterator,
 	forward_iterator_tag), _M_fill_insert(iterator, size_type, bool)):
 	Fully qualify distance() and max() with std::.
-	* include/bits/stl_deque.h (_Deque_base::_M_initialize_map(size_t),
-	_M_assign_aux(_ForwardIterator, _ForwardIterator, forward_iterator_tag)):
-	Ditto.
-	* include/bits/stl_list.h (size()): Fully qualify distance() with std::.
+	* include/bits/stl_deque.h
+	(_Deque_base::_M_initialize_map(size_t),
+	_M_assign_aux(_ForwardIterator, _ForwardIterator,
+	forward_iterator_tag)):
+	Ditto.  * include/bits/stl_list.h (size()): Fully qualify
+	distance() with std::.
 	* include/bits/stl_tempbuf.h (_Temporary_buffer::_Temporary_buffer
 	(_ForwardIterator, _ForwardIterator)): Ditto.
 	* include/bits/stl_tree.h (_Rb_tree::erase(const _Key&),
