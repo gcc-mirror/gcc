@@ -804,7 +804,7 @@ collect_params (pfile, list, arglist)
 	argv[a].len = len;
 	argv[a].name = p;
 	argv[a].rest_arg = 0;
-	p += len;
+	p += len + 1;
 	a++;
 	break;
 
@@ -1934,7 +1934,8 @@ dump_hash_helper (h, p)
   HASHNODE *hp = (HASHNODE *)*h;
   cpp_reader *pfile = (cpp_reader *)p;
 
-  if (hp->type == T_MACRO)
+  if (hp->type == T_MACRO || hp->type == T_FMACRO
+      || hp->type == T_IDENTITY || hp->type == T_EMPTY)
     _cpp_dump_definition (pfile, hp);
   return 1;
 }

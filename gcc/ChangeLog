@@ -1,3 +1,8 @@
+2000-05-02  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cpphash.c (collect_params): Fix off-by-one error.
+	(dump_hash_helper): Dump all four macro nodetypes.
+
 2000-05-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* cpphash.c (trad_stringify): Adjust p after stringification as
