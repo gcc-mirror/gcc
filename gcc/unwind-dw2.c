@@ -705,7 +705,14 @@ execute_cfa_program (const unsigned char *insn_ptr,
   /* Don't allow remember/restore between CIE and FDE programs.  */
   fs->regs.prev = NULL;
 
-  while (insn_ptr < insn_end && fs->pc <= context->ra)
+  /* The comparison with the return address uses < rather than <= because
+     we are only interested in the effects of code before the call; for a
+     noreturn function, the return address may point to unrelated code with
+     a different stack configuration that we are not interested in.  We
+     assume that the call itself is unwind info-neutral; if not, or if
+     there are delay instructions that adjust the stack, these must be
+     reflected at the point immediately before the call insn.  */
+  while (insn_ptr < insn_end && fs->pc < context->ra)
     {
       unsigned char insn = *insn_ptr++;
       _Unwind_Word reg, utmp;
