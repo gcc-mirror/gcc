@@ -3810,7 +3810,7 @@ expand_assignment (to, from, want_value, suggest_reg)
 	  unsigned int from_align;
 	  rtx from_rtx = expand_expr_unaligned (from, &from_align);
 	  rtx inner_to_rtx
-	    = change_address (to_rtx, VOIDmode,
+	    = change_address (to_rtx, BLKmode,
 			      plus_constant (XEXP (to_rtx, 0),
 					     bitpos / BITS_PER_UNIT));
 
@@ -7039,7 +7039,10 @@ expand_expr (exp, target, tmode, modifier)
 		/* If the operand is a SAVE_EXPR, we can deal with this by
 		   forcing the SAVE_EXPR into memory.  */
 		if (TREE_CODE (TREE_OPERAND (exp, 0)) == SAVE_EXPR)
-		  put_var_into_stack (TREE_OPERAND (exp, 0));
+		  {
+		    put_var_into_stack (TREE_OPERAND (exp, 0));
+		    op0 = SAVE_EXPR_RTL (TREE_OPERAND (exp, 0));
+		  }
 		else
 		  {
 		    tree nt
