@@ -92,6 +92,20 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    Use gen_lowpart_for_combine instead.  See comments there.  */
 #define gen_lowpart dont_use_gen_lowpart_you_dummy
 
+/* If byte loads either zero- or sign- extend, define BYTE_LOADS_EXTEND
+   for cases when we don't care which is true.  Define LOAD_EXTEND to
+   be ZERO_EXTEND or SIGN_EXTEND, depending on which was defined.  */
+
+#ifdef BYTE_LOADS_ZERO_EXTEND
+#define BYTE_LOADS_EXTEND
+#define LOAD_EXTEND ZERO_EXTEND
+#endif
+
+#ifdef BYTE_LOAD_SIGN_EXTEND
+#define BYTE_LOADS_EXTEND
+#define LOAD_EXTEND SIGN_EXTEND
+#endif
+
 /* Number of attempts to combine instructions in this function.  */
 
 static int combine_attempts;
@@ -3822,8 +3836,8 @@ subst (x, from, to, in_dest, unique_copy)
 	 We can always do this if M1 is narrower than M2 because that
 	 means that we only care about the low bits of the result.
 
-	 However, on most machines (those with BYTE_LOADS_ZERO_EXTEND
-	 and BYTES_LOADS_SIGN_EXTEND not defined), we cannot perform a
+	 However, on most machines (those with neither BYTE_LOADS_ZERO_EXTEND
+	 nor BYTES_LOADS_SIGN_EXTEND defined), we cannot perform a
 	 narrower operation that requested since the high-order bits will
 	 be undefined.  On machine where BYTE_LOADS_*_EXTEND is defined,
 	 however, this transformation is safe as long as M1 and M2 have
@@ -3836,7 +3850,7 @@ subst (x, from, to, in_dest, unique_copy)
 	       / UNITS_PER_WORD)
 	      == ((GET_MODE_SIZE (GET_MODE (SUBREG_REG (SET_SRC (x))))
 		   + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD))
-#if ! defined(BYTE_LOADS_ZERO_EXTEND) && ! defined (BYTE_LOADS_SIGN_EXTEND)
+#ifndef BYTE_LOADS_EXTEND
 	  && (GET_MODE_SIZE (GET_MODE (SET_SRC (x)))
 	      < GET_MODE_SIZE (GET_MODE (SUBREG_REG (SET_SRC (x)))))
 #endif
@@ -3850,18 +3864,19 @@ subst (x, from, to, in_dest, unique_copy)
 	  SUBST (SET_SRC (x), SUBREG_REG (SET_SRC (x)));
 	}
 
-#ifdef BYTE_LOADS_ZERO_EXTEND
+#ifdef BYTE_LOADS_EXTEND
       /* If we have (set FOO (subreg:M (mem:N BAR) 0)) with
 	 M wider than N, this would require a paradoxical subreg.
 	 Replace the subreg with a zero_extend to avoid the reload that
 	 would otherwise be required. */
+
       if (GET_CODE (SET_SRC (x)) == SUBREG
 	  && subreg_lowpart_p (SET_SRC (x))
 	  && SUBREG_WORD (SET_SRC (x)) == 0
 	  && (GET_MODE_SIZE (GET_MODE (SET_SRC (x)))
 	      > GET_MODE_SIZE (GET_MODE (SUBREG_REG (SET_SRC (x)))))
 	  && GET_CODE (SUBREG_REG (SET_SRC (x))) == MEM)
-	SUBST (SET_SRC (x), gen_rtx_combine (ZERO_EXTEND,
+	SUBST (SET_SRC (x), gen_rtx_combine (LOAD_EXTEND,
 					     GET_MODE (SET_SRC (x)),
 					     XEXP (SET_SRC (x), 0)));
 #endif
@@ -5675,7 +5690,7 @@ simplify_and_const_int (x, mode, varop, constop)
 		 constant masks to zero all the bits the mode doesn't have.  */
 	      && ((GET_MODE_SIZE (GET_MODE (varop))
 		   < GET_MODE_SIZE (GET_MODE (SUBREG_REG (varop))))
-#if defined(BYTE_LOADS_ZERO_EXTEND) || defined(BYTE_LOADS_SIGN_EXTEND)
+#ifdef BYTE_LOADS_EXTEND
 		  || (0 == (constop
 			    & GET_MODE_MASK (GET_MODE (varop))
 			    & ~ GET_MODE_MASK (GET_MODE (SUBREG_REG (varop)))))
@@ -6144,7 +6159,7 @@ nonzero_bits (x, mode)
 	      <= HOST_BITS_PER_WIDE_INT))
 	{
 	  nonzero &= nonzero_bits (SUBREG_REG (x), mode);
-#if ! defined(BYTE_LOADS_ZERO_EXTEND) && ! defined(BYTE_LOADS_SIGN_EXTEND)
+#ifndef BYTE_LOADS_EXTEND
 	  /* On many CISC machines, accessing an object in a wider mode
 	     causes the high-order bits to become undefined.  So they are
 	     not known to be zero.  */
@@ -6290,7 +6305,7 @@ num_sign_bit_copies (x, mode)
 			     - bitwidth)));
 	}
 
-#if defined(BYTE_LOADS_ZERO_EXTEND) || defined(BYTE_LOADS_SIGN_EXTEND)
+#ifdef BYTE_LOADS_EXTEND
       /* For paradoxical SUBREGs, just look inside since, on machines with
 	 one of these defined, we assume that operations are actually 
 	 performed on the full register.  Note that we are passing MODE
