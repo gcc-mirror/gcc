@@ -1200,6 +1200,9 @@ record_reg_classes (n_alts, n_ops, ops, modes, constraints, insn)
 	  int win = 0;
 	  unsigned char c;
 
+	  /* Initially show we know nothing about the register class.  */
+	  classes[i] = NO_REGS;
+
 	  /* If this operand has no constraints at all, we can conclude 
 	     nothing about it since anything is valid.  */
 
@@ -1211,8 +1214,11 @@ record_reg_classes (n_alts, n_ops, ops, modes, constraints, insn)
 	      continue;
 	    }
 
-	  /* Ascertain modifiers for line and skip any modifiers that might
-	     occur before first constraint.  */
+	  /* If this alternative is only relevant when this operand
+	     matches a previous operand, we do different things depending
+	     on whether this operand is a pseudo-reg or not.  We must process
+	     any modifiers for the operand before we can make this test.  */
+
 	  while (*p == '%' || *p == '=' || *p == '+' || *p == '&')
 	    {
 	      if (*p == '=')
@@ -1222,12 +1228,6 @@ record_reg_classes (n_alts, n_ops, ops, modes, constraints, insn)
 
 	      p++;
 	    }
-
-	  classes[i] = NO_REGS;
-
-	  /* If this alternative is only relevant when this operand
-	     matches a previous operand, we do different things depending
-	     on whether this operand is a pseudo-reg or not.  */
 
 	  if (p[0] >= '0' && p[0] <= '0' + i && (p[1] == ',' || p[1] == 0))
 	    {
