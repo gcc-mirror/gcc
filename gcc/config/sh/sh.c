@@ -2507,9 +2507,16 @@ broken_move (insn)
 		&& GET_CODE (SET_SRC (pat)) == CONST_DOUBLE
 		&& (fp_zero_operand (SET_SRC (pat))
 		    || fp_one_operand (SET_SRC (pat)))
-		/* ??? If this is a -m4 or -m4-single compilation, we don't
-		   know the current setting of fpscr, so disable fldi.  */
-		&& (! TARGET_SH4 || TARGET_FMOVD)
+		/* ??? If this is a -m4 or -m4-single compilation, in general
+		   we don't know the current setting of fpscr, so disable fldi.
+		   There is an exception if this was a register-register move
+		   before reload - and hence it was ascertained that we have
+		   single precision setting - and in a post-reload optimization
+		   we changed this to do a constant load.  In that case
+		   we don't have an r0 clobber, hence we must use fldi.  */
+		&& (! TARGET_SH4 || TARGET_FMOVD
+		    || (GET_CODE (XEXP (XVECEXP (PATTERN (insn), 0, 2), 0))
+			== SCRATCH))
 		&& GET_CODE (SET_DEST (pat)) == REG
 		&& FP_REGISTER_P (REGNO (SET_DEST (pat))))
 	  && (GET_CODE (SET_SRC (pat)) != CONST_INT

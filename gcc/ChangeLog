@@ -1,3 +1,8 @@
+Fri Apr 12 10:51:38 2002  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* sh.c (broken_move): Constant 0. / 1. load is OK if there is
+	no r0 clobber.
+
 2002-04-12  Andreas Schwab  <schwab@suse.de>
 
 	* config/ia64/ia64.h (EXTRA_SPECS): Fix missing backslash.
