@@ -390,6 +390,14 @@
 	* typeck.c: Likewise.
 	* typeck2.c: Likewise.
 
+2002-09-13  Matt Austern  <austern@apple.com>
+
+        PR C++/7828 
+	* cp/cp-tree.h, cp/tree.c: New function non_cast_lvalue_p.
+	* cp/call.c: Change call-by-const-reference mechanism to use
+	non_cast_lvalue_p when deciding whether the create a temporary.
+	We need a temporary when passing, e.g. (long) x by const ref.
+
 2002-09-13  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* pt.c (unify, ARRAY_TYPE): Element type can be more qualified.
