@@ -1565,7 +1565,7 @@ search_tree (t, func)
      tree t;
      tree (*func) PROTO((tree));
 {
-#define TRY(ARG) if (tmp = walk_tree (ARG, func), tmp != NULL_TREE) return tmp
+#define TRY(ARG) if (tmp=search_tree (ARG, func), tmp != NULL_TREE) return tmp
 
   tree tmp;
 
