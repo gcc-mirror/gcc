@@ -1,3 +1,9 @@
+2001-01-15  DJ Delorie  <dj@redhat.com>
+
+	* Makefile.in (gcov.1): Protect against texi2pod/pod2man failing.
+	(cpp.1): Ditto.
+	(gcc.1): Ditto.
+
 Tue Jan 16 17:20:43 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* flow.c (propagate_on_insn): Make trying to delete a prologue
