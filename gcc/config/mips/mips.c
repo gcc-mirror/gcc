@@ -1970,7 +1970,7 @@ embedded_pic_fnaddr_reg ()
       start_sequence ();
       emit_insn (gen_get_fnaddr (cfun->machine->embedded_pic_fnaddr_rtx,
 				 XEXP (DECL_RTL (current_function_decl), 0)));
-      seq = get_insn ();
+      seq = get_insns ();
       end_sequence ();
       push_topmost_sequence ();
       emit_insn_after (seq, get_insns ());
