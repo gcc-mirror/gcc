@@ -1,3 +1,9 @@
+Mon Oct 19 10:28:15 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* sched.c (update_flow_info): Handle death notes made invalid by
+	instruction splitting.  Partially reverts Oct 15, 1998 patch.
+	* haifa-sched.c (update_flow_info): Likewise.
+
 Sun Oct 18 17:31:26 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* function.c (uninitialized_vars_warning): Do not warn for a VAR_DECL
