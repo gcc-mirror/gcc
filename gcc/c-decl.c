@@ -5072,8 +5072,7 @@ get_parm_info (void_at_end)
 	tree type = TREE_TYPE (decl);
 	DECL_ARG_TYPE (decl) = type;
 	if (PROMOTE_PROTOTYPES
-	    && (TREE_CODE (type) == INTEGER_TYPE
-		|| TREE_CODE (type) == ENUMERAL_TYPE)
+	    && INTEGRAL_TYPE_P (type)
 	    && TYPE_PRECISION (type) < TYPE_PRECISION (integer_type_node))
 	  DECL_ARG_TYPE (decl) = integer_type_node;
 
@@ -6358,8 +6357,7 @@ store_parm_decls ()
 		      DECL_ARG_TYPE (parm) = TREE_TYPE (parm);
 
 		      if (PROMOTE_PROTOTYPES
-			  && (TREE_CODE (TREE_TYPE (parm)) == INTEGER_TYPE
-			      || TREE_CODE (TREE_TYPE (parm)) == ENUMERAL_TYPE)
+			  && INTEGRAL_TYPE_P (TREE_TYPE (parm))
 			  && TYPE_PRECISION (TREE_TYPE (parm))
 			  < TYPE_PRECISION (integer_type_node))
 			DECL_ARG_TYPE (parm) = integer_type_node;

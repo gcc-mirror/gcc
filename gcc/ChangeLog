@@ -1,3 +1,9 @@
+2001-06-04  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* c-decl.c (get_parm_info): Use INTEGRAL_TYPE_P.
+	(store_parm_decls): Likewise.
+	* c-typeck.c (convert_arguments): Likewise.
+
 2001-06-03  kaz Kojima  <kkojima@rr.iij4u.or.jp>
 
 	* gcc/config/sh/sh.c (print_operand_address, print_operand): Call
