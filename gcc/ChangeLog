@@ -1,3 +1,7 @@
+2004-08-03  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config.gcc (strongarm-*, xscale-*): Add t-arm to tmake_files.
+
 2004-08-03  Pat Haugen  <pthaugen@us.ibm.com>
 
 	* ra-build.c (conflicts_between_webs): For webs that cross a call add
