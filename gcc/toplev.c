@@ -1248,23 +1248,6 @@ read_integral_parameter (const char *p, const char *pname, const int  defval)
   return atoi (p);
 }
 
-/* Return the logarithm of X, base 2, considering X unsigned,
-   if X is a power of 2.  Otherwise, returns -1.
-
-   This should be used via the `exact_log2' macro.  */
-
-int
-exact_log2_wide (unsigned HOST_WIDE_INT x)
-{
-  int log = 0;
-  /* Test for 0 or a power of 2.  */
-  if (x == 0 || x != (x & -x))
-    return -1;
-  while ((x >>= 1) != 0)
-    log++;
-  return log;
-}
-
 /* Given X, an unsigned number, return the largest int Y such that 2**Y <= X.
    If X is 0, return -1.
 
@@ -1273,11 +1256,40 @@ exact_log2_wide (unsigned HOST_WIDE_INT x)
 int
 floor_log2_wide (unsigned HOST_WIDE_INT x)
 {
-  int log = -1;
-  while (x != 0)
-    log++,
-    x >>= 1;
-  return log;
+  int t=0;
+  if (x == 0)
+    return -1;
+  if (sizeof (HOST_WIDE_INT)*8 > 64)
+    if (x >= (unsigned HOST_WIDE_INT)(1 << (t+64)))
+      t += 64;
+  if (sizeof (HOST_WIDE_INT)*8 > 32)
+    if (x >= (unsigned HOST_WIDE_INT)(1 << (t+32)))
+      t += 32;
+  if (x >= (unsigned HOST_WIDE_INT)(1 << (t+16)))
+    t += 16;
+  if (x >= (unsigned HOST_WIDE_INT)(1 << (t+8)))
+    t += 8;
+  if (x >= (unsigned HOST_WIDE_INT)(1 << (t+4)))
+    t += 4;
+  if (x >= (unsigned HOST_WIDE_INT)(1 << (t+2)))
+    t += 2;
+  if (x >= (unsigned HOST_WIDE_INT)(1 << (t+1)))
+    t += 1;
+  return t;
+}
+
+/* Return the logarithm of X, base 2, considering X unsigned,
+   if X is a power of 2.  Otherwise, returns -1.
+
+   This should be used via the `exact_log2' macro.  */
+
+int
+exact_log2_wide (unsigned HOST_WIDE_INT x)
+{
+  /* Test for 0 or a power of 2.  */
+  if (x == 0 || x != (x & -x))
+    return -1;
+  return floor_log2_wide (x);
 }
 
 /* Handler for fatal signals, such as SIGSEGV.  These are transformed
