@@ -87,6 +87,7 @@ const char *xtensa_st_opcodes[(int) MAX_MACHINE_MODE];
 struct machine_function
 {
   int accesses_prev_frame;
+  bool incoming_a7_copied;
 };
 
 /* Vector, indexed by hard register number, which contains 1 for a
@@ -1262,45 +1263,8 @@ xtensa_emit_move_sequence (operands, mode)
       if (!xtensa_valid_move (mode, operands))
 	operands[1] = force_reg (mode, operands[1]);
 
-      /* Check if this move is copying an incoming argument in a7.  If
-	 so, emit the move, followed by the special "set_frame_ptr"
-	 unspec_volatile insn, at the very beginning of the function.
-	 This is necessary because the register allocator will ignore
-	 conflicts with a7 and may assign some other pseudo to a7.  If
-	 that pseudo was assigned prior to this move, it would clobber
-	 the incoming argument in a7.  By copying the argument out of
-	 a7 as the very first thing, and then immediately following
-	 that with an unspec_volatile to keep the scheduler away, we
-	 should avoid any problems.  */
-
-      if (a7_overlap_mentioned_p (operands[1]))
-	{
-	  rtx mov;
-	  switch (mode)
-	    {
-	    case SImode:
-	      mov = gen_movsi_internal (operands[0], operands[1]);
-	      break;
-	    case HImode:
-	      mov = gen_movhi_internal (operands[0], operands[1]);
-	      break;
-	    case QImode:
-	      mov = gen_movqi_internal (operands[0], operands[1]);
-	      break;
-	    default:
-	      abort ();
-	    }
-
-	  /* Insert the instructions before any other argument copies.
-	     (The set_frame_ptr insn comes _after_ the move, so push it
-	     out first.)  */
-	  push_topmost_sequence ();
-	  emit_insn_after (gen_set_frame_ptr (), get_insns ());
-	  emit_insn_after (mov, get_insns ());
-	  pop_topmost_sequence ();
-
-	  return 1;
-	}
+      if (xtensa_copy_incoming_a7 (operands, mode))
+	return 1;
     }
 
   /* During reload we don't want to emit (subreg:X (mem:Y)) since that
@@ -1329,6 +1293,74 @@ fixup_subreg_mem (x)
       x = alter_subreg (&temp);
     }
   return x;
+}
+
+
+/* Check if this move is copying an incoming argument in a7.  If so,
+   emit the move, followed by the special "set_frame_ptr"
+   unspec_volatile insn, at the very beginning of the function.  This
+   is necessary because the register allocator will ignore conflicts
+   with a7 and may assign some other pseudo to a7.  If that pseudo was
+   assigned prior to this move, it would clobber the incoming argument
+   in a7.  By copying the argument out of a7 as the very first thing,
+   and then immediately following that with an unspec_volatile to keep
+   the scheduler away, we should avoid any problems.  */
+
+bool
+xtensa_copy_incoming_a7 (operands, mode)
+     rtx *operands;
+     enum machine_mode mode;
+{
+  if (a7_overlap_mentioned_p (operands[1])
+      && !cfun->machine->incoming_a7_copied)
+    {
+      rtx mov;
+      switch (mode)
+	{
+	case DFmode:
+	  mov = gen_movdf_internal (operands[0], operands[1]);
+	  break;
+	case SFmode:
+	  mov = gen_movsf_internal (operands[0], operands[1]);
+	  break;
+	case DImode:
+	  mov = gen_movdi_internal (operands[0], operands[1]);
+	  break;
+	case SImode:
+	  mov = gen_movsi_internal (operands[0], operands[1]);
+	  break;
+	case HImode:
+	  mov = gen_movhi_internal (operands[0], operands[1]);
+	  break;
+	case QImode:
+	  mov = gen_movqi_internal (operands[0], operands[1]);
+	  break;
+	default:
+	  abort ();
+	}
+
+      /* Insert the instructions before any other argument copies.
+	 (The set_frame_ptr insn comes _after_ the move, so push it
+	 out first.)  */
+      push_topmost_sequence ();
+      emit_insn_after (gen_set_frame_ptr (), get_insns ());
+      emit_insn_after (mov, get_insns ());
+      pop_topmost_sequence ();
+
+      /* Ideally the incoming argument in a7 would only be copied
+	 once, since propagating a7 into the body of a function
+	 will almost certainly lead to errors.  However, there is
+	 at least one harmless case (in GCSE) where the original
+	 copy from a7 is changed to copy into a new pseudo.  Thus,
+	 we use a flag to only do this special treatment for the
+	 first copy of a7.  */
+
+      cfun->machine->incoming_a7_copied = true;
+
+      return 1;
+    }
+
+  return 0;
 }
 
 
