@@ -1,3 +1,7 @@
+Mon Aug 10 00:15:47 1998  HJ Lu (hjl@gnu.org)
+
+	* mt-linux (CXXFLAGS_FOR_TARGET): Add -D_GNU_SOURCE.
+
 Wed Apr 22 12:24:28 1998  Michael Meissner  <meissner@cygnus.com>
 
 	* mt-ospace: New file, support using -Os instead of -O2 to compile
