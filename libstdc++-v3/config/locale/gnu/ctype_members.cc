@@ -190,12 +190,23 @@ namespace std
   do_narrow(const wchar_t* __lo, const wchar_t* __hi, char __dfault, 
 	    char* __dest) const
   {
-    mbstate_t __state;
-    memset(static_cast<void*>(&__state), 0, sizeof(mbstate_t));
-    size_t __len = __hi - __lo;
-    size_t __conv = wcsrtombs(__dest, &__lo, __len, &__state);
-    if (__conv == __len)
-      *__dest = __dfault;
+    size_t __offset = 0;
+    while (true)
+      {
+	const wchar_t* __start = __lo + __offset;        
+	size_t __len = __hi - __start;
+	
+	mbstate_t __state;
+	memset(static_cast<void*>(&__state), 0, sizeof(mbstate_t));
+	size_t __con = wcsrtombs(__dest + __offset, &__start, __len, &__state);
+	if (__con != __len && __start != 0)
+	  {
+	    __offset = __start - __lo;          
+	    __dest[__offset++] = __dfault;
+	  }
+	else
+	  break;
+      }
     return __hi;
   }
 #endif //  _GLIBCPP_USE_WCHAR_T

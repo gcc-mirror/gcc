@@ -1,6 +1,6 @@
-// 2000-09-01 Benjamin Kosnik <bkoz@redhat.com>
+// 2002-05-24 bkoz
 
-// Copyright (C) 2000, 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 2002 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -30,20 +30,38 @@
 // 22.2.1.3.2 ctype<char> members
 
 #include <locale>
+#include <vector>
 #include <testsuite_hooks.h>
 
-#if _GLIBCPP_USE_WCHAR_T
 void test01()
 {
-  // Nothing, right now.  
+  using namespace std;
+  typedef char wide_type;
+
+  bool test = true;
+  const char dfault = '?';
+  const locale loc_c = locale::classic();
+  const ctype<wide_type>& ctype_c = use_facet<ctype<wide_type> >(loc_c); 
+
+  basic_string<wide_type> 	wide("drusilla, louvinia, bayard");
+  basic_string<char> 		narrow("drusilla, louvinia, bayard");
+  vector<wide_type> 		wide_chars(narrow.length() + 1);
+  
+  // widen(char c) const
+  for (int i = 0; i < narrow.length(); ++i)
+    {
+      char c = ctype_c.widen(narrow[i]);
+      VERIFY( c == wide[i] );
+    }
+
+  // widen(const char* low, const char* high, charT* dest) const
+  ctype_c.widen(&narrow[0], &narrow[narrow.length()], &wide_chars[0]);  
+  for (int i = 0; i < narrow.length(); ++i)
+    VERIFY( wide_chars[i] == wide[i] );
 }
-#endif /* !defined(_GLIBCPP_USE_WCHAR_T) */
 
 int main() 
 {
-#if _GLIBCPP_USE_WCHAR_T
   test01();
-#endif 
-
   return 0;
 }
