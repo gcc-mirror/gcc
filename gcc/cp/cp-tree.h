@@ -127,7 +127,7 @@ struct diagnostic_context;
 
      The BV_DELTA of each node gives the amount by which to adjust the
      `this' pointer when calling the function.  If the method is an
-     overriden version of a base class method, then it is assumed
+     overridden version of a base class method, then it is assumed
      that, prior to adjustment, the this pointer points to an object
      of the base class.
 
@@ -149,7 +149,7 @@ struct diagnostic_context;
      function, it is eventually set to an INTEGER_CST indicating the
      index in the vtable at which this function can be found.  When
      a virtual function is declared, but before it is known what
-     function is overriden, this field is the error_mark_node.
+     function is overridden, this field is the error_mark_node.
 
      Temporarily, it may be set to a TREE_LIST whose TREE_VALUE is
      the virtual function this one overrides, and whose TREE_CHAIN is
