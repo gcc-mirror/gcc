@@ -1,3 +1,10 @@
+2004-04-15  James E Wilson  <wilson@specifixinc.com>
+
+	* Makefile.tpl (configure-[+module+], configure-gcc,
+	configure-stage1-gcc, configure-stage2-gcc, configure-stage3-gcc):
+	Set and export LDFLAGS.
+	* Makefile.in: Regenerate.
+
 2004-04-12  Michael Chastain  <mec.gnu@mindspring.com>
 
         * MAINTAINERS: Add myself to write-after-approval.
