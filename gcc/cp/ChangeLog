@@ -4,6 +4,10 @@ Sun Nov  9 01:29:55 1997  Jim Wilson  (wilson@cygnus.com)
 	* init.c (build_vec_delete_1): Delete build_block and
 	add_block_current_level calls.
 
+Tue Nov 11 12:02:12 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* except.c (expand_end_catch_block): Lose call to __sjpopnthrow.
+
 Tue Nov 11 02:53:44 1997  Jason Merrill  <jason@lasher.cygnus.com>
 
 	* except.c (do_pop_exception): Return a value.
