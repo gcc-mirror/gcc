@@ -1151,7 +1151,7 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 				     NULL_RTX, unsignedp, next_methods);
 	  into_temp2 = expand_binop (word_mode, reverse_unsigned_shift,
 				     into_input, second_shift_count,
-				     into_target, unsignedp, next_methods);
+				     NULL_RTX, unsignedp, next_methods);
 
 	  if (into_temp1 != 0 && into_temp2 != 0)
 	    inter = expand_binop (word_mode, ior_optab, into_temp1, into_temp2,
@@ -1167,7 +1167,7 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 				      NULL_RTX, unsignedp, next_methods);
 	  outof_temp2 = expand_binop (word_mode, reverse_unsigned_shift,
 				      outof_input, second_shift_count,
-				      outof_target, unsignedp, next_methods);
+				      NULL_RTX, unsignedp, next_methods);
 
 	  if (inter != 0 && outof_temp1 != 0 && outof_temp2 != 0)
 	    inter = expand_binop (word_mode, ior_optab,
