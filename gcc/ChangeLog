@@ -1,5 +1,10 @@
+2004-04-05  David Edelsohn
+
+	* config/rs6000/rs6000.c (VTABLE_NAME_P): Add _ZTI to special
+	symbol handling.
+
 2004-04-05  Jakub Jelinek  <jakub@redhat.com>
-	  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+	    John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR optimization/13424 (hppa), bootstrap/14462, c/14828
 	* pa.md: Use replace_equiv_address to retain the attributes of the
