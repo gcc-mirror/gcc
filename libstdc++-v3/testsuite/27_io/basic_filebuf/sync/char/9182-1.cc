@@ -22,6 +22,7 @@
 
 #include <fstream>
 #include <locale>
+#include <testsuite_hooks.h>
 
 const char name_07[] = "filebuf_virtuals-7.txt"; // empty file, need to create
 
@@ -62,7 +63,7 @@ void test13()
     {  
       fbuf1.sputn("ison", 4); 
       fbuf1.pubsync();
-      fbuf1.close();
+      VERIFY( false );
     }
   catch (exception&)
     {

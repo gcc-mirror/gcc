@@ -20,6 +20,7 @@
 
 #include <locale>
 #include <fstream>
+#include <testsuite_hooks.h>
 
 void test01()
 {
@@ -36,6 +37,7 @@ void test01()
   try
     {
       fb.pubseekpos(pos);
+      VERIFY( false );
     }
   catch (exception&)
     {
