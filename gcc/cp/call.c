@@ -356,6 +356,7 @@ build_call (function, parms)
   tree tmp;
   tree decl;
   tree result_type;
+  tree fntype;
 
   function = build_addr_func (function);
 
@@ -365,7 +366,8 @@ build_call (function, parms)
       return error_mark_node;
     }
 
-  result_type = TREE_TYPE (TREE_TYPE (TREE_TYPE (function)));
+  fntype = TREE_TYPE (TREE_TYPE (function));
+  result_type = TREE_TYPE (fntype);
 
   if (TREE_CODE (function) == ADDR_EXPR
       && TREE_CODE (TREE_OPERAND (function, 0)) == FUNCTION_DECL)
@@ -383,6 +385,7 @@ build_call (function, parms)
 
   if (decl && TREE_DEPRECATED (decl))
     warn_deprecated_use (decl);
+  require_complete_eh_spec_types (fntype, decl);
 
   if (decl && DECL_CONSTRUCTOR_P (decl))
     is_constructor = 1;

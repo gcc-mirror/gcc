@@ -1198,7 +1198,8 @@ get_pseudo_ti_desc (type)
 	return ptm_desc_type_node;
       else if (!COMPLETE_TYPE_P (type))
 	{
-	  my_friendly_assert (at_eof, 20020609);
+	  if (!at_eof)
+	    cxx_incomplete_type_error (NULL_TREE, type);
 	  return class_desc_type_node;
 	}
       else if (!CLASSTYPE_N_BASECLASSES (type))

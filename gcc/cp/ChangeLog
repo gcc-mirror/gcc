@@ -1,3 +1,14 @@
+2002-09-05  Jason Merrill  <jason@redhat.com>
+
+	* typeck2.c (add_exception_specifier): Only pedwarn for an
+	incomplete type.
+	(require_complete_eh_spec_types): New fn.
+	(cxx_incomplete_type_diagnostic): Also support pedwarning.
+	* typeck.c (complete_type_or_diagnostic): Likewise.
+	* call.c (build_call): Call require_complete_eh_spec_types.
+	* rtti.c (get_pseudo_ti_desc): Give an error rather than aborting
+	on an incomplete type.
+
 2002-09-04  Jakub Jelinek  <jakub@redhat.com>
 
 	* decl.c (start_cleanup_fn): Clear interface_only before
