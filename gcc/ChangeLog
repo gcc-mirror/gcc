@@ -1,10 +1,10 @@
 Mon Apr 20 22:37:50 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
-        * final.c (shorten_branches, init_insn_lengths): Move code
-        to free label_align, uid_shuid, insn_lengths, insn_addresses
-        and uid_align from the former function into the latter one;
-        Add code to clear these variables.
-        * sh.h (label_align): Remove declaration.
+	* final.c (shorten_branches, init_insn_lengths): Move code
+	to free label_align, uid_shuid, insn_lengths, insn_addresses
+	and uid_align from the former function into the latter one;
+	Add code to clear these variables.
+	* sh.h (label_align): Remove declaration.
 
 Mon Apr 20 14:48:29 1998  Michael Meissner  <meissner@cygnus.com>
 
