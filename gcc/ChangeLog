@@ -1,3 +1,9 @@
+Thu Oct 14 17:21:26 1999  Richard Henderson  <rth@cygnus.com>
+
+	* rs6000.md (call_value_indirect_aix32): Use wildcard match_operand
+	for call return value.
+	(call_value_indirect_aix64, call_value_indirect_nt): Likewise.
+
 Thu Oct 14 13:54:25 1999  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* toplev.c (main): Only warn about options for other languages.
