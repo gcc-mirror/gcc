@@ -1,5 +1,7 @@
 Thu Sep  4 11:51:43 1997  Jim Wilson  <wilson@cygnus.com>
 
+	* toplev.c (main): Change #elif to #else/#ifdef
+
 	* tlink.c: Include ctype.h.
 	* ginclude/va-mips.h: Add _VA_MIPS_H_ENUM ifdef/define/endif.
 
