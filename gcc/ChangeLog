@@ -1,3 +1,15 @@
+2000-07-12  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cppexp.c (LOGICAL): Delete macro.
+	(_cpp_parse_expr): Do not use UNARY for unary +.  Implement ||
+	and && directly.
+
+	* cpphash.c (HASHSIZE): Increase to 4096.
+	(struct hashdummy): Add hash field.
+	(eq_HASHNODE): Compare unreduced hashes, then lengths, then
+	the string values using memcmp.
+	(cpp_lookup): Set dummy.hash.
+
 Wed Jul 12 13:15:16 2000  Marc Espie <espie@openbsd.org>
 
 	* configure.in (m88k-openbsd): Express configuration using new fragment

@@ -706,10 +706,6 @@ op_to_prio[] =
   top->value = OP v2; \
   top->unsignedp = unsigned2; \
   top->flags |= HAVE_VALUE;
-#define LOGICAL(OP, NEG) \
-  top->value = v1 OP v2; \
-  top->unsignedp = 0; \
-  if (NEG v1) skip_evaluation--;
 #define SHIFT(PSH, MSH) \
   if (skip_evaluation)  \
     break;		\
@@ -834,15 +830,18 @@ _cpp_parse_expr (pfile)
 	    case CPP_AND:	 BITWISE(&);	break;
 	    case CPP_XOR:	 BITWISE(^);	break;
 	    case CPP_OR:	 BITWISE(|);	break;
-	    case CPP_AND_AND:	 LOGICAL(&&,!); break;
-	    case CPP_OR_OR:	 LOGICAL(||,);	break;
 	    case CPP_LSHIFT:	 SHIFT(left_shift, right_shift); break;
 	    case CPP_RSHIFT:	 SHIFT(right_shift, left_shift); break;
 
 	    case CPP_PLUS:
 	      if (!(top->flags & HAVE_VALUE))
 		{
-		  UNARY(/* + */);	/* K+R C doesn't like unary + */
+		  /* Can't use UNARY(+) because K+R C did not have unary
+		     plus.  Can't use UNARY() because some compilers object
+		     to the empty argument.  */
+		  top->value = v2;
+		  top->unsignedp = unsigned2;
+		  top->flags |= HAVE_VALUE;
 		}
 	      else
 		{
@@ -908,6 +907,16 @@ _cpp_parse_expr (pfile)
 		}
 	      break;
 
+	    case CPP_OR_OR:
+	      top->value = v1 || v2;
+	      top->unsignedp = 0;
+	      if (v1) skip_evaluation--;
+	      break;
+	    case CPP_AND_AND:
+	      top->value = v1 && v2;
+	      top->unsignedp = 0;
+	      if (!v1) skip_evaluation--;
+	      break;
 	    case CPP_COMMA:
 	      if (CPP_PEDANTIC (pfile))
 		cpp_pedwarn (pfile, "comma operator in operand of #if");

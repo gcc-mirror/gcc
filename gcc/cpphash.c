@@ -37,6 +37,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 struct hashdummy
 {
   const U_CHAR *name;
+  unsigned int hash;
   unsigned short length;
 };
 
@@ -49,7 +50,7 @@ struct macro_info
 };
 
 /* Initial hash table size.  (It can grow if necessary - see hashtab.c.)  */
-#define HASHSIZE 500
+#define HASHSIZE 4096
 
 static unsigned int hash_HASHNODE PARAMS ((const void *));
 static int eq_HASHNODE		  PARAMS ((const void *, const void *));
@@ -104,7 +105,7 @@ hash_HASHNODE (x)
    rule that the existing entry is the first argument, the potential
    entry the second.  It also relies on the comparison function never
    being called except as a direct consequence of a call to
-   htab_find(_slot)_with_hash.  */
+   the htab_find routines.  */
 static int
 eq_HASHNODE (x, y)
      const void *x;
@@ -113,8 +114,9 @@ eq_HASHNODE (x, y)
   const cpp_hashnode *a = (const cpp_hashnode *)x;
   const struct hashdummy *b = (const struct hashdummy *)y;
 
-  return (a->length == b->length
-	  && !ustrncmp (a->name, b->name, a->length));
+  return (a->hash == b->hash
+	  && a->length == b->length
+	  && !memcmp (a->name, b->name, a->length));
 }
 
 /* Find the hash node for name "name", of length LEN.  */
@@ -132,7 +134,7 @@ cpp_lookup (pfile, name, len)
 
   dummy.name = name;
   dummy.length = len;
-  hash = _cpp_calc_hash (name, len);
+  dummy.hash = hash = _cpp_calc_hash (name, len);
 
   slot = (cpp_hashnode **)
     htab_find_slot_with_hash (pfile->hashtab, (void *)&dummy, hash, INSERT);
