@@ -1,3 +1,15 @@
+2001-10-09  John Hornkvist  <john@toastedmarshmallow.com>
+
+	Implement Darwin PowerPC ABI.
+	* configure.in: Handle powerpc-*-darwin*.
+	* Makefile.am: Set source files for POWERPC_DARWIN.
+	* configure: Rebuilt.
+	* Makefile.in: Rebuilt.
+	* include/ffi.h.in: Define FFI_DARWIN and FFI_DEFAULT_ABI for
+	POWERPC_DARWIN.
+	* src/powerpc/darwin.S: New file.
+	* src/powerpc/ffi_darwin.c: New file.
+
 2001-10-07  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* src/x86/ffi.c: Fix spelling error of "separate" as "seperate".
