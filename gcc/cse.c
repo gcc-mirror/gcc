@@ -5283,13 +5283,21 @@ fold_rtx (x, insn)
 		break;
 
 	      /* If we are associating shift operations, don't let this
-		 produce a shift of larger than the object.  This could
-		 occur when we following a sign-extend by a right shift on
-		 a machine that does a sign-extend as a pair of shifts.  */
+		 produce a shift of the size of the object or larger.
+		 This could occur when we follow a sign-extend by a right
+		 shift on a machine that does a sign-extend as a pair
+		 of shifts.  */
 
 	      if (is_shift && GET_CODE (new_const) == CONST_INT
-		  && INTVAL (new_const) > GET_MODE_BITSIZE (mode))
-		break;
+		  && INTVAL (new_const) >= GET_MODE_BITSIZE (mode))
+		{
+		  /* As an exception, we can turn an ASHIFTRT of this
+		     form into a shift of the number of bits - 1.  */
+		  if (code == ASHIFTRT)
+		    new_const = GEN_INT (GET_MODE_BITSIZE (mode) - 1);
+		  else
+		    break;
+		}
 
 	      y = copy_rtx (XEXP (y, 0));
 
