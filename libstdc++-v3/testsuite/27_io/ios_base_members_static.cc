@@ -1,7 +1,8 @@
 // 1999-05-21 bkoz
-// 2000-05-21 bkoz
+// 2000-05-21 Benjamin Kosnik  <bkoz@redhat.com>
+// 2001-01-17 Loren J. Rittle  <ljrittle@acm.org>
 
-// Copyright (C) 1999, 2000 Free Software Foundation
+// Copyright (C) 1999, 2000, 2001 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -21,6 +22,7 @@
 
 // 27.4.2.4 ios_base static members
 
+#include <cstdio>
 #include <sstream>
 #include <iostream>
 
@@ -51,11 +53,34 @@ bool test01()
   return test;
 }
 
+void
+test02()
+{
+  std::ios_base::sync_with_stdio();
+ 
+  std::freopen("testsuite/ios_base_members_static-1.txt", "w", stdout);
+ 
+  for (int i = 0; i < 2; i++)
+    {
+      std::printf("1");
+      std::cout << "2";
+      std::putc('3', stdout); // std::stdout doesn't work here
+      std::cout << '4';
+      std::fputs("5", stdout);
+      std::cout << 6;
+      std::putchar('7');
+      std::cout << 8 << '9';
+      if (i)
+	std::printf ("0\n");
+      else
+	std::cout << "0" << std::endl;
+    }
+}
 
 int main(void)
 {
   test01();
-
+  test02();
   return 0;
 }
 
