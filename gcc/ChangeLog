@@ -9,6 +9,16 @@
 	* fixinc/inclhack.def: more testing
 	* fixinc/fixincl.x:  regenerated
 
+	* fixinc/inclhack.def: added several "test_text" attributes
+	changed several fixes to use `c_fix = format'
+	re-alphabetized the fixes
+
+	* fixinc/check.diff: regenerate
+	* fixinc/fixincl.x: regenerate
+	* fixinc/check.tpl: added `sparc' and `netinet' to the list
+	of created dirs
+
+
 2000-05-16  Alexandre Oliva  <aoliva@cygnus.com>
 
 	* config/mn10300/mn10300.h (ASM_OUTPUT_DWARF2_ADDR_CONST): Remove.
