@@ -1,3 +1,16 @@
+Fri Sep  5 10:08:44 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* v850: New directory for v850 port.
+	* v850/lib1funcs.asm: New file.
+	* t-v850, v850.c, v850.h, v850.md, xm-v850.h: New files.
+	* ginclude/va-v850.h: New file.
+	* ginclude/varargs.h, ginclude/stdarg.h: Include va-mn10200.h.
+	* configure.in (mn10200-*-*): New target.
+	* configure: Rebuilt.
+	* config.sub: Handle v850-elf.
+	* Makefile.in (USER_H): Add va-mn10200.h. 
+	* invoke.texi: Document v850 stuff.
+
 Fri Sep  5 09:37:50 1997  Jim Wilson  (wilson@cygnus.com)
 
 	* m68k/m68k.h (MACHINE_STATE_SAVE, MACHINE_STATE_RESTORE): Add

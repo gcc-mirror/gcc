@@ -155,7 +155,7 @@ case $basic_machine in
 		| alpha | alphaev5 | alphaev56 | we32k | ns16k | clipper \
 		| i370 | sh | powerpc | powerpcle | 1750a | dsp16xx | pdp11 \
 		| mips64 | mipsel | mips64el | mips64orion | mips64orionel \
-		| sparc | sparclet | sparclite | sparc64)
+		| sparc | sparclet | sparclite | sparc64 | v850)
 		basic_machine=$basic_machine-unknown
 		;;
 	# We use `pc' rather than `unknown'
