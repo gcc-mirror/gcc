@@ -518,6 +518,18 @@ optimize_reg_copy_3 (insn, dest, src)
   rtx p, set, subreg;
   enum machine_mode old_mode;
 
+  /* This code has been disabled on the egcs-1.1 release branch due to
+     a potentially serious bug.
+
+     In a nutshell, if we perform a series of substitutions, then have a
+     later substitution fail we will not be able to undo the previous
+     substitutions, leaving bogus RTL.
+
+     A fix for this can be found in the mainline sources, but it did not
+     seem worth the trouble and potential problems to migrate the real
+     fix to the egcs-1.1 branch.  */
+  return;
+     
   if (src_no < FIRST_PSEUDO_REGISTER
       || dst_no < FIRST_PSEUDO_REGISTER
       || ! find_reg_note (insn, REG_DEAD, src_reg)

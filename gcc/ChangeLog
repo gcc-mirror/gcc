@@ -1,3 +1,7 @@
+Sun Aug 23 00:47:52 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* regmove.c (optimize_reg_copy_3): Disable for egcs-1.1.
+
 Thu Aug 20 13:56:53 1998  Michael Meissner  <meissner@cygnus.com>
 
 	* config/i386/winnt.c: Include system.h, not stdio.h to get
