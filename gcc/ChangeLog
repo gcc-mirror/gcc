@@ -1,3 +1,8 @@
+2005-01-11  Stan Shebs  <shebs@apple.com>
+
+	* config/rs6000/rs6000.c (machopic_output_stub): Issue
+	ldu instead of lwzu if 64-bit -mdynamic-no-pic.
+
 2005-01-11  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR target/18761

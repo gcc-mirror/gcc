@@ -17610,7 +17610,9 @@ machopic_output_stub (FILE *file, const char *symb, const char *stub)
       fprintf (file, "\t.indirect_symbol %s\n", symbol_name);
 
       fprintf (file, "\tlis r11,ha16(%s)\n", lazy_ptr_name);
-      fprintf (file, "\tlwzu r12,lo16(%s)(r11)\n", lazy_ptr_name);
+      fprintf (file, "\t%s r12,lo16(%s)(r11)\n",
+	       (TARGET_64BIT ? "ldu" : "lwzu"),
+	       lazy_ptr_name);
       fprintf (file, "\tmtctr r12\n");
       fprintf (file, "\tbctr\n");
     }
