@@ -101,13 +101,17 @@ struct dom_info
      is true for every basic block bb, but not the opposite.  */
   basic_block *dfs_to_bb;
 
-  /* This is the next free DFS number when creating the DFS tree or forest.  */
+  /* This is the next free DFS number when creating the DFS tree.  */
   unsigned int dfsnum;
   /* The number of nodes in the DFS tree (==dfsnum-1).  */
   unsigned int nodes;
+
+  /* Blocks with bits set here have a fake edge to EXIT.  These are used
+     to turn a DFS forest into a proper tree.  */
+  bitmap fake_exit_edge;
 };
 
-static void init_dom_info (struct dom_info *);
+static void init_dom_info (struct dom_info *, enum cdi_direction);
 static void free_dom_info (struct dom_info *);
 static void calc_dfs_tree_nonrec (struct dom_info *, basic_block,
 				  enum cdi_direction);
@@ -142,7 +146,7 @@ static unsigned n_bbs_in_dom_tree[2];
    This initializes the contents of DI, which already must be allocated.  */
 
 static void
-init_dom_info (struct dom_info *di)
+init_dom_info (struct dom_info *di, enum cdi_direction dir)
 {
   /* We need memory for n_basic_blocks nodes and the ENTRY_BLOCK or
      EXIT_BLOCK.  */
@@ -164,6 +168,8 @@ init_dom_info (struct dom_info *di)
 
   di->dfsnum = 1;
   di->nodes = 0;
+
+  di->fake_exit_edge = dir ? BITMAP_XMALLOC () : NULL;
 }
 
 #undef init_ar
@@ -184,6 +190,7 @@ free_dom_info (struct dom_info *di)
   free (di->set_child);
   free (di->dfs_order);
   free (di->dfs_to_bb);
+  BITMAP_XFREE (di->fake_exit_edge);
 }
 
 /* The nonrecursive variant of creating a DFS tree.  DI is our working
@@ -193,9 +200,9 @@ free_dom_info (struct dom_info *di)
    assigned their dfs number and are linked together to form a tree.  */
 
 static void
-calc_dfs_tree_nonrec (struct dom_info *di, basic_block bb, enum cdi_direction reverse)
+calc_dfs_tree_nonrec (struct dom_info *di, basic_block bb,
+		      enum cdi_direction reverse)
 {
-  /* We never call this with bb==EXIT_BLOCK_PTR (ENTRY_BLOCK_PTR if REVERSE).  */
   /* We call this _only_ if bb is not already visited.  */
   edge e;
   TBB child_i, my_i = 0;
@@ -322,17 +329,46 @@ calc_dfs_tree (struct dom_info *di, enum cdi_direction reverse)
     {
       /* In the post-dom case we may have nodes without a path to EXIT_BLOCK.
          They are reverse-unreachable.  In the dom-case we disallow such
-         nodes, but in post-dom we have to deal with them, so we simply
-         include them in the DFS tree which actually becomes a forest.  */
+         nodes, but in post-dom we have to deal with them.
+
+	 There are two situations in which this occurs.  First, noreturn
+	 functions.  Second, infinite loops.  In the first case we need to
+	 pretend that there is an edge to the exit block.  In the second
+	 case, we wind up with a forest.  We need to process all noreturn
+	 blocks before we know if we've got any infinite loops.  */
+
       basic_block b;
+      bool saw_unconnected = false;
+
       FOR_EACH_BB_REVERSE (b)
 	{
-	  if (di->dfs_order[b->index])
-	    continue;
+	  if (b->succ)
+	    {
+	      if (di->dfs_order[b->index] == 0)
+		saw_unconnected = true;
+	      continue;
+	    }
+	  bitmap_set_bit (di->fake_exit_edge, b->index);
 	  di->dfs_order[b->index] = di->dfsnum;
 	  di->dfs_to_bb[di->dfsnum] = b;
+	  di->dfs_parent[di->dfsnum] = di->dfs_order[last_basic_block];
 	  di->dfsnum++;
 	  calc_dfs_tree_nonrec (di, b, reverse);
+	}
+
+      if (saw_unconnected)
+	{
+	  FOR_EACH_BB_REVERSE (b)
+	    {
+	      if (di->dfs_order[b->index])
+		continue;
+	      bitmap_set_bit (di->fake_exit_edge, b->index);
+	      di->dfs_order[b->index] = di->dfsnum;
+	      di->dfs_to_bb[di->dfsnum] = b;
+	      di->dfs_parent[di->dfsnum] = di->dfs_order[last_basic_block];
+	      di->dfsnum++;
+	      calc_dfs_tree_nonrec (di, b, reverse);
+	    }
 	}
     }
 
@@ -459,7 +495,16 @@ calc_idoms (struct dom_info *di, enum cdi_direction reverse)
       par = di->dfs_parent[v];
       k = v;
       if (reverse)
-	e = bb->succ;
+	{
+	  e = bb->succ;
+
+	  /* If this block has a fake edge to exit, process that first.  */
+	  if (bitmap_bit_p (di->fake_exit_edge, bb->index))
+	    {
+	      e_next = e;
+	      goto do_fake_exit_edge;
+	    }
+	}
       else
 	e = bb->pred;
 
@@ -467,7 +512,7 @@ calc_idoms (struct dom_info *di, enum cdi_direction reverse)
          to them.  That way we have the smallest node with also a path to
          us only over nodes behind us.  In effect we search for our
          semidominator.  */
-      for (; e; e = e_next)
+      for (; e ; e = e_next)
 	{
 	  TBB k1;
 	  basic_block b;
@@ -483,7 +528,10 @@ calc_idoms (struct dom_info *di, enum cdi_direction reverse)
 	      e_next = e->pred_next;
 	    }
 	  if (b == en_block)
-	    k1 = di->dfs_order[last_basic_block];
+	    {
+	    do_fake_exit_edge:
+	      k1 = di->dfs_order[last_basic_block];
+	    }
 	  else
 	    k1 = di->dfs_order[b->index];
 
@@ -590,7 +638,7 @@ calculate_dominance_info (enum cdi_direction dir)
 	}
       n_bbs_in_dom_tree[dir] = n_basic_blocks + 2;
 
-      init_dom_info (&di);
+      init_dom_info (&di, dir);
       calc_dfs_tree (&di, dir);
       calc_idoms (&di, dir);
 
