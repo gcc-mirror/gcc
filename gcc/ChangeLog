@@ -1,3 +1,8 @@
+Fri Jun 19 02:31:16 1998  Klaus Kaempf (kkaempf@progis.de)
+
+	* cccp.c (hack_vms_include_specification): rewrite to handle
+	'#include <dir/file.h>' correctly.
+
 Fri Jun 19 02:24:11 1998  H.J. Lu  (hjl@gnu.org)
 
 	* config/i386/linux.h (ASM_OUTPUT_MAX_SKIP_ALIGN): Defined.
