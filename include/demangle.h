@@ -20,9 +20,7 @@
 #if !defined (DEMANGLE_H)
 #define DEMANGLE_H
 
-#ifndef IN_GCC
 #include <ansidecl.h>
-#endif /* ! IN_GCC */
 
 /* Options passed to cplus_demangle (in 2nd parameter). */
 
