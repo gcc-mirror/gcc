@@ -1,3 +1,15 @@
+1999-08-02  Richard Henderson  <rth@cygnus.com>
+
+	* m32r.c (m32r_setup_incoming_varargs): Use get_varargs_alias_set
+	for the register spill block.
+	(m32r_va_arg): New.
+	* m32r.h (EXPAND_BUILTIN_VA_ARG): New.
+	(EXPAND_BUILTIN_SAVEREGS): Delete #if 0 code.
+
+	* m32r.h (INT8_P): Don't short-cut test with (unsigned).
+	(INT16_P, CMP_INT16_P, UINT16_P): Likewise.
+	(UPPER16_P, UINT24_P, INT32_P, UINT5_P): Likewise.
+
 1999-08-02  Jakub Jelinek  <jj@ultra.linux.cz>
 
 	* config/sparc/linux.h: Define WCHAR_TYPE as "int" and undef
