@@ -1552,9 +1552,21 @@ lwa_operand (op, mode)
 	    || INTVAL (XEXP (XEXP (inner, 0), 1)) % 4 == 0));
 }
 
+/* Return 1 if the operand, used inside a MEM, is a SYMBOL_REF.  */
+
+int
+symbol_ref_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  if (mode != VOIDmode && GET_MODE (op) != mode)
+    return 0;
+
+  return (GET_CODE (op) == SYMBOL_REF);
+}
+
 /* Return 1 if the operand, used inside a MEM, is a valid first argument
-   to CALL.  This is a SYMBOL_REF or a pseudo-register, which will be
-   forced to lr.  */
+   to CALL.  This is a SYMBOL_REF, a pseudo-register, LR or CTR.  */
 
 int
 call_operand (op, mode)
@@ -1565,7 +1577,10 @@ call_operand (op, mode)
     return 0;
 
   return (GET_CODE (op) == SYMBOL_REF
-	  || (GET_CODE (op) == REG && REGNO (op) >= FIRST_PSEUDO_REGISTER));
+	  || (GET_CODE (op) == REG
+	      && (REGNO (op) == LINK_REGISTER_REGNUM
+		  || REGNO (op) == COUNT_REGISTER_REGNUM
+		  || REGNO (op) >= FIRST_PSEUDO_REGISTER)));
 }
 
 /* Return 1 if the operand is a SYMBOL_REF for a function known to be in
