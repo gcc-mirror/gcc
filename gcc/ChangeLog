@@ -1,3 +1,10 @@
+2001-05-29  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* configure.in (gcc_version): Remove unrequired \ on ". (Solaris
+	/bin/sed fails on [^\"]).
+	(configargs.h): Likewise.
+	* configure: Rebuilt.
+
 2001-05-28  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* c-tree.texi, contrib.texi, cpp.texi, extend.texi, gcc.texi,
