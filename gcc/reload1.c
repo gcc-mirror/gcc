@@ -747,11 +747,6 @@ reload (first, global, dumpfile)
   for (i = LAST_VIRTUAL_REGISTER + 1; i < max_regno; i++)
     alter_reg (i, -1);
 
-  /* Round size of stack frame to BIGGEST_ALIGNMENT.  This must be done here
-     because the stack size may be a part of the offset computation for
-     register elimination.   */
-  assign_stack_local (BLKmode, 0, 0);
-
   /* If we have some registers we think can be eliminated, scan all insns to
      see if there is an insn that sets one of these registers to something
      other than itself plus a constant.  If so, the register cannot be
@@ -861,7 +856,7 @@ reload (first, global, dumpfile)
       rtx max_groups_insn[N_REG_CLASSES];
       rtx max_nongroups_insn[N_REG_CLASSES];
       rtx x;
-      HOST_WIDE_INT starting_frame_size = get_frame_size ();
+      HOST_WIDE_INT starting_frame_size;
       int previous_frame_pointer_needed = frame_pointer_needed;
       static char *reg_class_names[] = REG_CLASS_NAMES;
 
@@ -882,6 +877,14 @@ reload (first, global, dumpfile)
       /* Remember whether any element of basic_block_needs
 	 changes from 0 to 1 in this pass.  */
       new_basic_block_needs = 0;
+
+      /* Round size of stack frame to BIGGEST_ALIGNMENT.  This must be done
+	 here because the stack size may be a part of the offset computation
+	 for register elimination, and there might have been new stack slots
+	 created in the last iteration of this loop.   */
+      assign_stack_local (BLKmode, 0, 0);
+
+      starting_frame_size = get_frame_size ();
 
       /* Reset all offsets on eliminable registers to their initial values.  */
 #ifdef ELIMINABLE_REGS
