@@ -1,3 +1,7 @@
+2004-07-22  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* g++.dg/template/crash20.c: New.
+
 2004-07-22  David Billinghurst (David.Billinghurst@riotinto.com)
 
 	* gfortran.dg/g77/970625-2.f Copy from g77.f-torture/execute. 
