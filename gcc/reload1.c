@@ -9274,7 +9274,7 @@ reload_combine ()
 
 	 First, check that we have (set (REGX) (PLUS (REGX) (REGY)))
 	 and that we know all uses of REGX before it dies.  */
-      if (set
+      if ((set = single_set (insn)) != NULL_RTX
 	  && GET_CODE (SET_DEST (set)) == REG
 	  && (HARD_REGNO_NREGS (REGNO (SET_DEST (set)),
 				GET_MODE (SET_DEST (set)))
