@@ -52,6 +52,9 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_DATA = @INSTALL_DATA@
 mkinstalldirs = $(SHELL) $(srcdir)/../mkinstalldirs
 
+# Some compilers can't handle cc -c blah.c -o foo/blah.o.
+OUTPUT_OPTION = @OUTPUT_OPTION@
+
 AR = @AR@
 AR_FLAGS = rc
 
@@ -117,7 +120,7 @@ COMPILE.c = $(CC) -c @DEFS@ $(LIBCFLAGS) -I. -I$(INCDIR) $(HDEFINES) @ac_libiber
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $< -o pic/$@; \
 	else true; fi
-	$(COMPILE.c) $<
+	$(COMPILE.c) $< $(OUTPUT_OPTION)
 
 # NOTE: If you add new files to the library, add them to this list
 # (alphabetical), and add them to REQUIRED_OFILES, or
