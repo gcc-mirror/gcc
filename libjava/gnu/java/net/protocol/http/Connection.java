@@ -168,7 +168,6 @@ public final class Connection extends HttpURLConnection
     inputStream =
       new DataInputStream(new BufferedInputStream(socket.getInputStream()));
     outputStream = new BufferedOutputStream (socket.getOutputStream());
-    bufferedOutputStream = new ByteArrayOutputStream (256); //default is too small
 
     sendRequest();
     receiveReply();
@@ -226,7 +225,8 @@ public final class Connection extends HttpURLConnection
       setRequestProperty ("Content-type", "application/x-www-form-urlencoded");
 
     // Set correct content length.
-    setRequestProperty ("Content-length", String.valueOf (bufferedOutputStream.size()));
+    if (bufferedOutputStream != null)
+      setRequestProperty ("Content-length", String.valueOf (bufferedOutputStream.size()));
 
     // Write all req_props name-value pairs to the output writer.
     Iterator itr = getRequestProperties().entrySet().iterator();
@@ -242,8 +242,11 @@ public final class Connection extends HttpURLConnection
     outputWriter.flush();
 
     // Write content
-    bufferedOutputStream.writeTo (outputStream);
-    outputStream.flush();
+    if (bufferedOutputStream != null)
+      {
+	bufferedOutputStream.writeTo (outputStream);
+	outputStream.flush();
+      }
   }
 
   /**
@@ -382,12 +385,16 @@ public final class Connection extends HttpURLConnection
    */
   public OutputStream getOutputStream() throws IOException
   {
+    if (connected)
+      throw new ProtocolException
+	("You cannot get an output stream for an existing http connection");
+
     if (!doOutput)
       throw new ProtocolException
         ("Want output stream while haven't setDoOutput(true)");
     
-    if (!connected)
-      connect();
+    if (bufferedOutputStream == null)
+      bufferedOutputStream = new ByteArrayOutputStream (256); //default is too small
     
     return bufferedOutputStream;
   }

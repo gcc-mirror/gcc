@@ -1,5 +1,14 @@
 2004-01-24  Michael Koch  <konqueror@gmx.de>
 
+	* gnu/java/net/protocol/http/Connection.java
+	(connect): Don't initialize bufferedOutputStream if not needed.
+	(sendRequest): Set property for content length if content is present.
+	Write content only if present.
+	(getOutputStream): Check if already connected, dont connect,
+	initalize bufferedOutputStream if needed.
+
+2004-01-24  Michael Koch  <konqueror@gmx.de>
+
 	* Makefile.am: Added library version to gtk peer lib.
 	* Makefile.in: Regenerated.
 
