@@ -99,13 +99,13 @@ extern clock_t clock PARAMS ((void));
    precompute them.  Whose wonderful idea was it to make all those
    _constants_ variable at run time, anyway?  */
 #ifdef USE_TIMES
-static int ticks_to_msec;
-#define TICKS_TO_MSEC (1000 / TICKS_PER_SECOND)
+static float ticks_to_msec;
+#define TICKS_TO_MSEC (1 / (float)TICKS_PER_SECOND)
 #endif
 
 #ifdef USE_CLOCK
-static int clocks_to_msec;
-#define CLOCKS_TO_MSEC (1000 / CLOCKS_PER_SEC)
+static float clocks_to_msec;
+#define CLOCKS_TO_MSEC (1 / (float)CLOCKS_PER_SEC)
 #endif
 
 #include "flags.h"
@@ -198,8 +198,8 @@ get_time (now)
 #ifdef USE_GETRUSAGE
     struct rusage rusage;
     getrusage (RUSAGE_SELF, &rusage);
-    now->user = rusage.ru_utime.tv_sec * 1000 + rusage.ru_utime.tv_usec / 1000;
-    now->sys  = rusage.ru_stime.tv_sec * 1000 + rusage.ru_stime.tv_usec / 1000;
+    now->user = rusage.ru_utime.tv_sec + rusage.ru_utime.tv_usec * 1e-6;
+    now->sys  = rusage.ru_stime.tv_sec + rusage.ru_stime.tv_usec * 1e-6;
 #endif
 #ifdef USE_CLOCK
     now->user = clock () * clocks_to_msec;
@@ -448,6 +448,7 @@ timevar_print (fp)
   for (id = 0; id < (unsigned int) TIMEVAR_LAST; ++id)
     {
       struct timevar_def *tv = &timevars[(timevar_id_t) id];
+      const float tiny = 5e-3;
 
       /* Don't print the total execution time here; that goes at the
 	 end.  */
@@ -460,8 +461,9 @@ timevar_print (fp)
 
       /* Don't print timing variables if we're going to get a row of
          zeroes.  */
-      if (tv->elapsed.user < 10 && tv->elapsed.sys < 10
-	  && tv->elapsed.wall < 10)
+      if (tv->elapsed.user < tiny
+	  && tv->elapsed.sys < tiny
+	  && tv->elapsed.wall < tiny)
 	continue;
 
       /* The timing variable name.  */
@@ -469,26 +471,23 @@ timevar_print (fp)
 
 #ifdef HAVE_USER_TIME
       /* Print user-mode time for this process.  */
-      fprintf (fp, "%4ld.%02ld (%2.0f%%) usr", 
-	       tv->elapsed.user / 1000, (tv->elapsed.user % 1000) / 10,
-	       (total->user == 0) ? 0.0
-	       : (100.0 * tv->elapsed.user / (double) total->user));
+      fprintf (fp, "%7.2f (%2.0f%%) usr", 
+	       tv->elapsed.user,
+	       (total->user == 0 ? 0 : tv->elapsed.user / total->user) * 100);
 #endif /* HAVE_USER_TIME */
 
 #ifdef HAVE_SYS_TIME
       /* Print system-mode time for this process.  */
-      fprintf (fp, "%4ld.%02ld (%2.0f%%) sys", 
-	       tv->elapsed.sys / 1000, (tv->elapsed.sys % 1000) / 10,
-	       (total->sys == 0) ? 0.0
-	       : (100.0 * tv->elapsed.sys / (double) total->sys));
+      fprintf (fp, "%7.2f (%2.0f%%) sys", 
+	       tv->elapsed.sys,
+	       (total->sys == 0 ? 0 : tv->elapsed.sys / total->sys) * 100);
 #endif /* HAVE_SYS_TIME */
 
 #ifdef HAVE_WALL_TIME
       /* Print wall clock time elapsed.  */
-      fprintf (fp, "%4ld.%02ld (%2.0f%%) wall", 
-	       tv->elapsed.wall / 1000, (tv->elapsed.wall % 1000) / 10,
-	       (total->wall == 0) ? 0.0
-	       : (100.0 * tv->elapsed.wall / (double) total->wall));
+      fprintf (fp, "%7.2f (%2.0f%%) wall", 
+	       tv->elapsed.wall,
+	       (total->wall == 0 ? 0 : tv->elapsed.wall / total->wall) * 100);
 #endif /* HAVE_WALL_TIME */
 
       putc ('\n', fp);
@@ -497,16 +496,13 @@ timevar_print (fp)
   /* Print total time.  */
   fputs (_(" TOTAL                 :"), fp);
 #ifdef HAVE_USER_TIME
-  fprintf (fp, "%4ld.%02ld          ", 
-	   total->user / 1000, (total->user % 1000) / 10);
+  fprintf (fp, "%7.2f          ", total->user);
 #endif 
 #ifdef HAVE_SYS_TIME
-  fprintf (fp, "%4ld.%02ld          ", 
-	   total->sys  / 1000, (total->sys  % 1000) / 10);
+  fprintf (fp, "%7.2f          ", total->sys);
 #endif
 #ifdef HAVE_WALL_TIME
-  fprintf (fp, "%4ld.%02ld\n",
-	   total->wall / 1000, (total->wall % 1000) / 10);
+  fprintf (fp, "%7.2f\n", total->wall);
 #endif
   
 #endif /* defined (HAVE_USER_TIME) || defined (HAVE_SYS_TIME) 
