@@ -1,5 +1,8 @@
 2004-07-23  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* tree.def (VIEW_CONVERT_EXPR): Change to class 'r'.
+	* tree-ssa-operands.c (get_expr_operands, case VIEW_CONVERT_EXPR): New.
+
 	* gimplify.c (gimplify_compound_lval): Check for no handled
 	operations, rather than checking for explicit list of nodes.
 	(is_gimple_addr_expr_arg_or_indirect): New function.

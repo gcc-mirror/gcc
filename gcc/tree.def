@@ -709,7 +709,7 @@ DEFTREECODE (NON_LVALUE_EXPR, "non_lvalue_expr", '1', 1)
    case no actual data motion may occur.  TREE_ADDRESSABLE will be set in
    this case and GCC must abort if it could not do the operation without
    generating insns.  */
-DEFTREECODE (VIEW_CONVERT_EXPR, "view_convert_expr", '1', 1)
+DEFTREECODE (VIEW_CONVERT_EXPR, "view_convert_expr", 'r', 1)
 
 /* Represents something we computed once and will use multiple times.
    First operand is that expression.  After it is evaluated once, it
