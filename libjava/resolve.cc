@@ -459,16 +459,36 @@ _Jv_PrepareClass(jclass klass)
 
   /************ PART ONE: OBJECT LAYOUT ***************/
 
+  // Compute the alignment for this type by searching through the
+  // superclasses and finding the maximum required alignment.  We
+  // could consider caching this in the Class.
+  int max_align = __alignof__ (java::lang::Object);
+  jclass super = clz->superclass;
+  while (super != NULL)
+    {
+      int num = JvNumInstanceFields (super);
+      _Jv_Field *field = JvGetFirstInstanceField (super);
+      while (num > 0)
+	{
+	  int field_align = get_alignment_from_class (field->type);
+	  if (field_align > max_align)
+	    max_align = field_align;
+	  ++field;
+	  --num;
+	}
+      super = super->superclass;
+    }
+
   int instance_size;
-  int static_size;
+  int static_size = 0;
 
   // Although java.lang.Object is never interpreted, an interface can
-  // have a null superclass.
+  // have a null superclass.  Note that we have to lay out an
+  // interface because it might have static fields.
   if (clz->superclass)
     instance_size = clz->superclass->size();
   else
     instance_size = java::lang::Object::class$.size();
-  static_size   = 0;
 
   for (int i = 0; i < clz->field_count; i++)
     {
@@ -510,13 +530,15 @@ _Jv_PrepareClass(jclass klass)
 	  instance_size      = ROUND (instance_size, field_align);
 	  field->u.boffset   = instance_size;
 	  instance_size     += field_size;
+	  if (field_align > max_align)
+	    max_align = field_align;
 	}
     }
 
   // Set the instance size for the class.  Note that first we round it
-  // to the alignment required for Object; this keeps us in sync with
-  // our current ABI.
-  instance_size = ROUND (instance_size, __alignof__ (java::lang::Object));
+  // to the alignment required for this object; this keeps us in sync
+  // with our current ABI.
+  instance_size = ROUND (instance_size, max_align);
   clz->size_in_bytes = instance_size;
 
   // allocate static memory
@@ -709,27 +731,39 @@ _Jv_InitField (jobject obj, jclass klass, int index)
     }
 }
 
+template<typename T>
+struct aligner
+{
+  T field;
+};
+
+#define ALIGNOF(TYPE) (__alignof__ (((aligner<TYPE> *) 0)->field))
+
+// This returns the alignment of a type as it would appear in a
+// structure.  This can be different from the alignment of the type
+// itself.  For instance on x86 double is 8-aligned but struct{double}
+// is 4-aligned.
 static int
 get_alignment_from_class (jclass klass)
 {
   if (klass == JvPrimClass (byte))
-    return  __alignof__ (jbyte);
+    return ALIGNOF (jbyte);
   else if (klass == JvPrimClass (short))
-    return  __alignof__ (jshort);
+    return ALIGNOF (jshort);
   else if (klass == JvPrimClass (int)) 
-    return  __alignof__ (jint);
+    return ALIGNOF (jint);
   else if (klass == JvPrimClass (long))
-    return  __alignof__ (jlong);
+    return ALIGNOF (jlong);
   else if (klass == JvPrimClass (boolean))
-    return  __alignof__ (jboolean);
+    return ALIGNOF (jboolean);
   else if (klass == JvPrimClass (char))
-    return  __alignof__ (jchar);
+    return ALIGNOF (jchar);
   else if (klass == JvPrimClass (float))
-    return  __alignof__ (jfloat);
+    return ALIGNOF (jfloat);
   else if (klass == JvPrimClass (double))
-    return  __alignof__ (jdouble);
+    return ALIGNOF (jdouble);
   else
-    return __alignof__ (jobject);
+    return ALIGNOF (jobject);
 }
 
 
