@@ -1,3 +1,10 @@
+2002-10-14  Mark Mitchell  <mark@codesourcery.com>
+
+	PR optimization/6631
+	* alias.c (objects_must_conflict_p): Check honor_readonly when
+	examining TYPE_READONLY.
+	* function.c (assign_stack_temp_for_type): Likewise.
+
 2002-10-14  Falk Hueffner  <falk.hueffner@student.uni-tuebingen.de>
 
 	* config/alpha/alpha.md (extendsidi2_nofix, extendsidi2_fix):
