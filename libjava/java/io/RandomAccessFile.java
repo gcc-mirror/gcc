@@ -525,100 +525,391 @@ public class RandomAccessFile implements DataOutput, DataInput
     return in.readLong();
   }
 
+  /**
+   * This method reads a signed 16-bit value into a Java in from the stream.
+   * It operates by reading two bytes from the stream and converting them to 
+   * a single 16-bit Java <code>short</code>  The two bytes are stored most
+   * significant byte first (i.e., "big endian") regardless of the native
+   * host byte ordering. 
+   * <p>
+   * As an example, if <code>byte1</code> and code{byte2</code> 
+   * represent the first
+   * and second byte read from the stream respectively, they will be
+   * transformed to a <code>short</code> in the following manner:
+   * <p>
+   * <code>(short)(((byte1 & 0xFF) << 8) | (byte2 & 0xFF)</code>
+   * <p>
+   * The value returned is in the range of -32768 to 32767.
+   * <p>
+   * This method can read a <code>short</code> written by an object 
+   * implementing the
+   * <code>writeShort()</code> method in the <code>DataOutput</code> interface.
+   *
+   * @return The <code>short</code> value read
+   *
+   * @exception EOFException If end of file is reached before reading the value
+   * @exception IOException If any other error occurs
+   *
+   * @see DataOutput
+   */
   public final short readShort () throws IOException
   {
     return in.readShort();
   }
 
+  /**
+   * This method reads 8 unsigned bits into a Java <code>int</code> value 
+   * from the 
+   * stream. The value returned is in the range of 0 to 255.
+   * <p>
+   * This method can read an unsigned byte written by an object implementing 
+   * the <code>writeUnsignedByte()</code> method in the 
+   * <code>DataOutput</code> interface.
+   *
+   * @return The unsigned bytes value read as a Java <code>int</code>
+   *
+   * @exception EOFException If end of file is reached before reading the value
+   * @exception IOException If any other error occurs
+   *
+   * @see DataOutput
+   */
   public final int readUnsignedByte () throws IOException
   {
     return in.readUnsignedByte();
   }
 
+  /**
+   * This method reads 16 unsigned bits into a Java int value from the stream.
+   * It operates by reading two bytes from the stream and converting them to 
+   * a single Java <code>int</code>  The two bytes are stored most
+   * significant byte first (i.e., "big endian") regardless of the native
+   * host byte ordering. 
+   * <p>
+   * As an example, if <code>byte1</code> and <code>byte2</code> 
+   * represent the first
+   * and second byte read from the stream respectively, they will be
+   * transformed to an <code>int</code> in the following manner:
+   * <p>
+   * <code>(int)(((byte1 & 0xFF) << 8) + (byte2 & 0xFF))</code>
+   * <p>
+   * The value returned is in the range of 0 to 65535.
+   * <p>
+   * This method can read an unsigned short written by an object implementing
+   * the <code>writeUnsignedShort()</code> method in the 
+   * <code>DataOutput</code> interface.
+   *
+   * @return The unsigned short value read as a Java <code>int</code>
+   *
+   * @exception EOFException If end of file is reached before reading the value
+   * @exception IOException If any other error occurs
+   */
   public final int readUnsignedShort () throws IOException
   {
     return in.readUnsignedShort();
   }
 
+  /**
+   * This method reads a <code>String</code> from an input stream that 
+   * is encoded in
+   * a modified UTF-8 format.  This format has a leading two byte sequence
+   * that contains the remaining number of bytes to read.  This two byte
+   * sequence is read using the <code>readUnsignedShort()</code> method of this
+   * interface.
+   * <p>
+   * After the number of remaining bytes have been determined, these bytes
+   * are read an transformed into <code>char</code> values.  
+   * These <code>char</code> values
+   * are encoded in the stream using either a one, two, or three byte format.
+   * The particular format in use can be determined by examining the first
+   * byte read.  
+   * <p>
+   * If the first byte has a high order bit of 0 then
+   * that character consists on only one byte.  This character value consists
+   * of seven bits that are at positions 0 through 6 of the byte.  As an
+   * example, if <code>byte1</code> is the byte read from the stream, it would
+   * be converted to a <code>char</code> like so:
+   * <p>
+   * <code>(char)byte1</code>
+   * <p>
+   * If the first byte has <code>110</code> as its high order bits, then the 
+   * character consists of two bytes.  The bits that make up the character
+   * value are in positions 0 through 4 of the first byte and bit positions
+   * 0 through 5 of the second byte.  (The second byte should have 
+   * 10 as its high order bits).  These values are in most significant
+   * byte first (i.e., "big endian") order.
+   * <p>
+   * As an example, if <code>byte1</code> and <code>byte2</code> 
+   * are the first two bytes
+   * read respectively, and the high order bits of them match the patterns
+   * which indicate a two byte character encoding, then they would be
+   * converted to a Java <code>char</code> like so:
+   * <p>
+   * <code>(char)(((byte1 & 0x1F) << 6) | (byte2 & 0x3F))</code>
+   * <p>
+   * If the first byte has a <code>1110</code> as its high order bits, then the
+   * character consists of three bytes.  The bits that make up the character
+   * value are in positions 0 through 3 of the first byte and bit positions
+   * 0 through 5 of the other two bytes.  (The second and third bytes should
+   * have <code>10</code> as their high order bits).  These values are in most
+   * significant byte first (i.e., "big endian") order.
+   * <p>
+   * As an example, if <code>byte1</code> <code>byte2</code> 
+   * and <code>byte3</code> are the
+   * three bytes read, and the high order bits of them match the patterns
+   * which indicate a three byte character encoding, then they would be
+   * converted to a Java <code>char</code> like so:
+   * <p>
+   * <code>(char)(((byte1 & 0x0F) << 12) | ((byte2 & 0x3F) << 6) | 
+   * (byte3 & 0x3F))</code>
+   * <p>
+   * Note that all characters are encoded in the method that requires the
+   * fewest number of bytes with the exception of the character with the
+   * value of <code>&#92;u0000</code> which is encoded as two bytes.  This is 
+   * a  modification of the UTF standard used to prevent C language style
+   * <code>NUL</code> values from appearing in the byte stream.
+   * <p>
+   * This method can read data that was written by an object implementing the
+   * <code>writeUTF()</code> method in <code>DataOutput</code>
+   * 
+   * @return The <code>String</code> read
+   *
+   * @exception EOFException If end of file is reached before reading the 
+   * String
+   * @exception UTFDataFormatException If the data is not in UTF-8 format
+   * @exception IOException If any other error occurs
+   *
+   * @see DataOutput
+   */
   public final String readUTF () throws IOException
   {
     return in.readUTF();
   }
 
+  /**
+   * This method sets the current file position to the specified offset 
+   * from the beginning of the file.  Note that some operating systems will
+   * allow the file pointer to be set past the current end of the file.
+   *
+   * @param pos The offset from the beginning of the file at which to set 
+   * the file pointer
+   *
+   * @exception IOException If an error occurs
+   */
   public void seek (long pos) throws IOException
   {
-    fd.seek(pos, FileDescriptor.SET, false);
+    fd.seek (pos, FileDescriptor.SET, false);
   }
 
-  public int skipBytes (int count) throws IOException
+  /**
+   * This method attempts to skip and discard the specified number of bytes 
+   * in the input stream.  It may actually skip fewer bytes than requested. 
+   * The actual number of bytes skipped is returned.  This method will not
+   * skip any bytes if passed a negative number of bytes to skip.
+   *
+   * @param numBytes The requested number of bytes to skip.
+   *
+   * @return The number of bytes actually skipped.
+   *
+   * @exception IOException If an error occurs.
+   */
+  public int skipBytes (int numBytes) throws IOException
   {
-    if (count <= 0)
+    if (numBytes < 0)
+      throw new IllegalArgumentException ("Can't skip negative bytes: " +
+                                          numBytes);
+    
+    if (numBytes == 0)
       return 0;
-    long startPos = fd.getFilePointer();
-    long endPos = fd.seek(count, FileDescriptor.CUR, true);
-    return (int) (endPos - startPos);
+    
+    long curPos = fd.getFilePointer ();
+    long newPos = fd.seek (numBytes, FileDescriptor.CUR, true);
+    
+    return (int) (newPos - curPos);
   }
 
+  /**
+   * This method writes a single byte of data to the file. The file must
+   * be open for read-write in order for this operation to succeed.
+   *
+   * @param The byte of data to write, passed as an int.
+   *
+   * @exception IOException If an error occurs
+   */
   public void write (int oneByte) throws IOException
   {
     out.write(oneByte);
   }
 
+  /**
+   * This method writes all the bytes in the specified array to the file.
+   * The file must be open read-write in order for this operation to succeed.
+   *
+   * @param buf The array of bytes to write to the file
+   */
   public void write (byte[] buffer) throws IOException
   {
     out.write(buffer);
   }
 
-  public void write (byte[] buffer, int offset, int count) throws IOException
+  /**
+   * This method writes <code>len</code> bytes to the file from the specified
+   * array starting at index <code>offset</code> into the array.
+   *
+   * @param buf The array of bytes to write to the file
+   * @param offset The index into the array to start writing file
+   * @param len The number of bytes to write
+   *
+   * @exception IOException If an error occurs
+   */
+  public void write (byte[] buffer, int offset, int len) throws IOException
   {
-    out.write(buffer, offset, count);
+    out.write (buffer, offset, len);
   }
 
+  /**
+   * This method writes a Java <code>boolean</code> to the underlying output 
+   * stream. For a value of <code>true</code>, 1 is written to the stream.
+   * For a value of <code>false</code>, 0 is written.
+   *
+   * @param b The <code>boolean</code> value to write to the stream
+   *
+   * @exception IOException If an error occurs
+   */
   public final void writeBoolean (boolean val) throws IOException
   {
     out.writeBoolean(val);
   }
 
+  /**
+   * This method writes a Java <code>byte</code> value to the underlying
+   * output stream.
+   *
+   * @param b The <code>byte</code> to write to the stream, passed 
+   * as an <code>int</code>.
+   *
+   * @exception IOException If an error occurs
+   */
   public final void writeByte (int v) throws IOException
   {
     out.writeByte(v);
   }
 
+  /**
+   * This method writes a Java <code>short</code> to the stream, high byte
+   * first.  This method requires two bytes to encode the value.
+   *
+   * @param s The <code>short</code> value to write to the stream, 
+   * passed as an <code>int</code>.
+   *
+   * @exception IOException If an error occurs
+   */
   public final void writeShort (int v) throws IOException
   {
     out.writeShort(v);
   }
 
+  /**
+   * This method writes a single <code>char</code> value to the stream,
+   * high byte first.
+   *
+   * @param v The <code>char</code> value to write, passed as 
+   * an <code>int</code>.
+   *
+   * @exception IOException If an error occurs
+   */
   public final void writeChar (int v) throws IOException
   {
     out.writeChar(v);
   }
 
+  /**
+   * This method writes a Java <code>int</code> to the stream, high bytes
+   * first.  This method requires four bytes to encode the value.
+   *
+   * @param v The <code>int</code> value to write to the stream.
+   *
+   * @exception IOException If an error occurs
+   */
   public final void writeInt (int v) throws IOException
   {
     out.writeInt(v);
   }
 
+  /**
+   * This method writes a Java <code>long</code> to the stream, high bytes
+   * first.  This method requires eight bytes to encode the value.
+   *
+   * @param v The <code>long</code> value to write to the stream.
+   *
+   * @exception IOException If an error occurs
+   */
   public final void writeLong (long v) throws IOException
   {
     out.writeLong(v);
   }
 
+  /**
+   * This method writes a Java <code>float</code> value to the stream.  This
+   * value is written by first calling the method 
+   * <code>Float.floatToIntBits</code>
+   * to retrieve an <code>int</code> representing the floating point number,
+   * then writing this <code>int</code> value to the stream exactly the same
+   * as the <code>writeInt()</code> method does.
+   *
+   * @param v The floating point number to write to the stream.
+   *
+   * @exception IOException If an error occurs
+   *
+   * @see #writeInt(int)
+   */
   public final void writeFloat (float v) throws IOException
   {
     out.writeFloat(v);
   }
 
+  /**
+   * This method writes a Java <code>double</code> value to the stream.  This
+   * value is written by first calling the method 
+   * <code>Double.doubleToLongBits</code>
+   * to retrieve an <code>long</code> representing the floating point number,
+   * then writing this <code>long</code> value to the stream exactly the same
+   * as the <code>writeLong()</code> method does.
+   *
+   * @param v The double precision floating point number to write to the 
+   * stream.
+   *
+   * @exception IOException If an error occurs
+   *
+   * @see #writeLong(long)
+   */
   public final void writeDouble (double v) throws IOException
   {
     out.writeDouble(v);
   }
 
+  /**
+   * This method writes all the bytes in a <code>String</code> out to the
+   * stream.  One byte is written for each character in the <code>String</code>.
+   * The high eight bits of each character are discarded.
+   *
+   * @param s The <code>String</code> to write to the stream
+   *
+   * @exception IOException If an error occurs
+   */
   public final void writeBytes (String s) throws IOException
   {
     out.writeBytes(s);
   }
-
+  
+  /**
+   * This method writes all the characters in a <code>String</code> to the
+   * stream.  There will be two bytes for each character value.  The high
+   * byte of the character will be written first.
+   *
+   * @param s The <code>String</code> to write to the stream.
+   *
+   * @exception IOException If an error occurs
+   */
   public final void writeChars (String s) throws IOException
   {
     out.writeChars(s);
@@ -653,7 +944,7 @@ public class RandomAccessFile implements DataOutput, DataInput
    *
    * @exception IOException If an error occurs
    */
-  public final void writeUTF(String s) throws IOException
+  public final void writeUTF (String s) throws IOException
   {
     out.writeUTF(s);
   }
@@ -664,7 +955,7 @@ public class RandomAccessFile implements DataOutput, DataInput
    * A file channel must be created by first creating an instance of
    * Input/Output/RandomAccessFile and invoking the getChannel() method on it.
    */
-  public synchronized FileChannel getChannel() 
+  public synchronized FileChannel getChannel ()
   {
     if (ch == null)
       ch = new FileChannelImpl (fd, true, this);
