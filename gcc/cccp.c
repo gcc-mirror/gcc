@@ -47,6 +47,12 @@ typedef unsigned char U_CHAR;
 #define LOCAL_INCLUDE_DIR "/usr/local/include"
 #endif
 
+#ifdef __STDC__
+#define PTR_INT_TYPE ptrdiff_t
+#else
+#define PTR_INT_TYPE long
+#endif
+
 #include "pcp.h"
 
 #ifndef STDC_VALUE
@@ -137,7 +143,7 @@ typedef struct { unsigned :16, :16, :16; } vms_ino_t;
 #define INCLUDE_LEN_FUDGE 0
 #endif
 
-/* Exported declarations.  */
+/* Forward declarations.  */
 
 char *xmalloc ();
 void error ();
@@ -149,6 +155,7 @@ extern char *getenv ();
 extern FILE *fdopen ();
 extern char *version_string;
 extern struct tm *localtime ();
+extern char *malloc (), *realloc ();
 extern int sys_nerr;
 extern char *sys_errlist[];
 
@@ -4355,8 +4362,9 @@ pcfinclude (buf, limit, name, op)
     /* by the text of the string (string_start) */
 
     /* First skip to a longword boundary */
-    if ((int)cp & 3)
-      cp += 4 - ((int)cp & 3);
+    /* ??? Why a 4-byte boundary?  On all machines? */
+    if ((PTR_INT_TYPE) cp & 3)
+      cp += 4 - ((PTR_INT_TYPE) cp & 3);
     
     /* Now get the string. */
     str = (STRINGDEF *) cp;
