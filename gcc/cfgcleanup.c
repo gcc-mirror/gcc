@@ -1507,7 +1507,13 @@ try_crossjump_to_edge (int mode, edge e1, edge e2)
 
   /* ... and part the second.  */
   nmatch = flow_find_cross_jump (mode, src1, src2, &newpos1, &newpos2);
-  if (!nmatch)
+
+  /* Don't proceed with the crossjump unless we found a sufficient number
+     of matching instructions or the 'from' block was totally matched
+     (such that its predecessors will hopefully be redirected and the
+     block removed).  */
+  if ((nmatch < PARAM_VALUE (PARAM_MIN_CROSSJUMP_INSNS))
+      && (newpos1 != BB_HEAD (src1)))
     return false;
 
 #ifndef CASE_DROPS_THROUGH

@@ -5094,6 +5094,12 @@ the number of edges incoming to each block.  Increasing values mean
 more aggressive optimization, making the compile time increase with
 probably small improvement in executable size.
 
+@item min-crossjump-insns
+The minimum number of instructions which must be matched at the end
+of two blocks before crossjumping will be performed on them.  This
+value is ignored in the case where all instructions in the block being
+crossjumped from are matched.  The default value is 5.
+
 @item max-delay-slot-insn-search
 The maximum number of instructions to consider when looking for an
 instruction to fill a delay slot.  If more than this arbitrary number of
