@@ -927,11 +927,11 @@ cplus_demangle (mangled, options)
    ELEMENT_SIZE, grow it to contain at least MIN_SIZE objects,
    updating *OLD_VECT and *SIZE as necessary. */
 static void
-DEFUN (grow_vect, (old_vect, size, min_size, element_size),
-       void** old_vect
-       AND size_t* size
-       AND size_t min_size
-       AND int element_size)
+grow_vect (old_vect, size, min_size, element_size)
+     void** old_vect;
+     size_t* size;
+     size_t min_size;
+     int element_size;
 {
   if (*size < min_size) {
     *size *= 2;
@@ -951,9 +951,9 @@ DEFUN (grow_vect, (old_vect, size, min_size, element_size),
    The resulting string is valid until the next call of ada_demangle.
 */
 static char *
-DEFUN (ada_demangle, (mangled, style, option),
-       const char* mangled
-       AND int option ATTRIBUTE_UNUSED)
+ada_demangle (mangled, option)
+     const char* mangled;
+     int option;
 {
   int i, j;
   int len0;

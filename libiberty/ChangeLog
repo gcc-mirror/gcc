@@ -1,5 +1,10 @@
 2000-11-15  Kenneth Block  <kenneth.block@compaq.com>
 
+	* cplus_dem.c: Eliminate use of DEFUN, it is obsolete and cannot
+	be used in GCC.
+
+2000-11-15  Kenneth Block  <kenneth.block@compaq.com>
+
 	* cplus_dem.c: Add gnat demangler.  Add java to demangle style
 	list.
 
