@@ -1,3 +1,7 @@
+2002-08-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* varasm.c (assemble_visibility): Strip name encoding.
+
 2002-08-01  Ian Dall  <ian@sibyl.beware.dropbear.id.au>
 
 	* config/ns32k/ns32k.h (TARGET_IEEE_COMPARE): Correct earlier patch.

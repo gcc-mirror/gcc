@@ -4618,7 +4618,8 @@ assemble_visibility (decl, visibility_type)
 {
   const char *name;
 
-  name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
+  name = (* targetm.strip_name_encoding)
+	 (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)));
 
 #ifdef HAVE_GAS_HIDDEN
   fprintf (asm_out_file, "\t.%s\t%s\n", visibility_type, name);
