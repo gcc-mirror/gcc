@@ -1,6 +1,6 @@
 Mon Mar 22 14:55:58 1999  Jim Wilson  <wilson@cygnus.com>
 
-	* bf-sign-2.c (main): Replace struct sizeof test with 4.
+	* execute/bf-sign-2.c (main): Replace struct sizeof test with 4.
 
 Wed Mar 17 12:22:39 1999  Richard Henderson  <rth@cygnus.com>
 
