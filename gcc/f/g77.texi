@@ -2,7 +2,7 @@
 @c %**start of header
 @setfilename g77.info
 
-@set last-update 1999-05-06
+@set last-update 1999-05-10
 @set copyrights-g77 1995-1999
 
 @include root.texi
@@ -855,7 +855,7 @@ continuing operation of the FSF offices, their workstations, their
 network connections, and so on, which are invaluable to volunteers.
 (Similarly, hiring Cygnus Support can help a project like GNU
 Fortran---Cygnus has been a long-time donor of equipment usage to the author
-of GNU Fortran, and this too has been invaluable---@xref{Contributors}.)
+of GNU Fortran, and this too has been invaluable---see @ref{Contributors}.)
 
 Currently, the only way to directly fund the author of GNU Fortran
 in his work on that project is to hire him for the work you want
@@ -4477,8 +4477,9 @@ This permits long names to be used for @var{filename}.
 @cindex #
 @cindex preprocessor
 
-@code{cpp} output-style @code{#} directives @xref{C Preprocessor
-Output,,, cpp, The C Preprocessor}, are recognized by the compiler even
+@code{cpp} output-style @code{#} directives
+(@pxref{C Preprocessor Output,,, cpp, The C Preprocessor})
+are recognized by the compiler even
 when the preprocessor isn't run on the input (as it is when compiling
 @samp{.F} files).  (Note the distinction between these @code{cpp}
 @code{#} @emph{output} directives and @code{#line} @emph{input}
@@ -6050,13 +6051,7 @@ specifier is supported.
 For convenience this section collects a list (probably incomplete) of
 the Fortran 90 features supported by the GNU Fortran language, even if
 they are documented elsewhere.
-@c makeinfo 1.68 objects to the nested parens
-@ifnotinfo
-@xref{Characters Lines Sequence,,{Characters, Lines, and Execution Sequence}},
-@end ifnotinfo
-@ifinfo
-@xref{Characters Lines Sequence},
-@end ifinfo
+@xref{Characters Lines Sequence,,@asis{Characters, Lines, and Execution Sequence}},
 for information on additional fixed source form lexical issues.
 @cindex @samp{-ffree-form}
 Further, the free source form is supported through the
@@ -6079,12 +6074,11 @@ Strings may have zero length and substrings of character constants are
 permitted.  Character constants may be enclosed in double quotes
 (@code{"}) as well as single quotes.  @xref{Character Type}.
 @item Construct names
-(Symbolic tags on blocks.)  @xref{Construct Names }.
+(Symbolic tags on blocks.)  @xref{Construct Names}.
 @item @code{CYCLE} and @code{EXIT}
 @xref{CYCLE and EXIT,,The @code{CYCLE} and @code{EXIT} Statements}.
 @item @code{DOUBLE COMPLEX}
-@xref{DOUBLE COMPLEX,,@code{DOUBLE COMPLEX} Statement
-}.
+@xref{DOUBLE COMPLEX,,@code{DOUBLE COMPLEX} Statement}.
 @item @code{DO WHILE}
 @xref{DO WHILE}.
 @item @code{END} decoration
@@ -6116,8 +6110,8 @@ The operators @code{<}, @code{<=}, @code{==}, @code{/=}, @code{>} and
 @code{>=} may be used instead of @code{.LT.}, @code{.LE.}, @code{.EQ.},
 @code{.NE.}, @code{.GT.} and @code{.GE.} respectively.
 @item @code{SELECT CASE}
-Not fully implemented.  @xref{SELECT CASE on CHARACTER Type,,
-@code{SELECT CASE} on @code{CHARACTER} Type}.
+Not fully implemented.
+@xref{SELECT CASE on CHARACTER Type,, @code{SELECT CASE} on @code{CHARACTER} Type}.
 @item Specification statements
 A limited subset of the Fortran 90 syntax and semantics for variable
 declarations is supported, including @code{KIND}.  @xref{Kind Notation}.
@@ -10449,13 +10443,15 @@ in your system's documentation.
 If your program depends on exact IEEE 754 floating-point handling it may
 help on some systems---specifically x86 or m68k hardware---to use
 the @samp{-ffloat-store} option or to reset the precision flag on the
-floating-point unit @xref{Optimize Options}.
+floating-point unit.
+@xref{Optimize Options}.
 
 However, it might be better simply to put the FPU into double precision
 mode and not take the performance hit of @samp{-ffloat-store}.  On x86
 and m68k GNU systems you can do this with a technique similar to that
-for turning on floating-point exceptions @xref{Floating-point Exception
-Handling}.  The control word could be set to double precision by
+for turning on floating-point exceptions
+(@pxref{Floating-point Exception Handling}).
+The control word could be set to double precision by
 replacing the @code{__setfpucw} call with one like this:
 @smallexample
   __setfpucw ((_FPU_DEFAULT & ~_FPU_EXTENDED) | _FPU_DOUBLE);
@@ -10464,8 +10460,8 @@ replacing the @code{__setfpucw} call with one like this:
 maths library, but we have no evidence of it causing trouble.)
 
 Some targets (such as the Alpha) may need special options for full IEEE
-conformance @xref{Submodel Options,,Hardware Models and
-Configurations,gcc,Using and Porting GNU CC}.
+conformance.
+@xref{Submodel Options,,Hardware Models and Configurations,gcc,Using and Porting GNU CC}.
 
 @node Inconsistent Calling Sequences
 @subsection Inconsistent Calling Sequences
@@ -10475,16 +10471,11 @@ Configurations,gcc,Using and Porting GNU CC}.
 @cindex ix86 FPU stack
 @cindex x86 FPU stack
 Code containing inconsistent calling sequences in the same file is
-normally rejected @xref{GLOBALS}.  (Use, say, @code{ftnchek} to ensure
-consistency across source files
-@c makeinfo 1.68 objects to the nested parens
-@ifinfo
-@xref{f2c Skeletons and Prototypes}.)
-@end ifinfo
-@ifnotinfo
+normally rejected---see @ref{GLOBALS}.
+(Use, say, @code{ftnchek} to ensure
+consistency across source files.
 @xref{f2c Skeletons and Prototypes,,
-{Generating Skeletons and Prototypes with @code{f2c}}}.)
-@end ifnotinfo
+Generating Skeletons and Prototypes with @code{f2c}}.)
 
 Mysterious errors, which may appear to be code generation problems, can
 appear specifically on the x86 architecture with some such
@@ -10821,8 +10812,8 @@ possible workarounds for them, see
 directly from the @code{gcc} manual, with minor modifications
 to tailor it to users of @code{g77}.
 Anytime a bug seems to have more to do with the @code{gcc}
-portion of @code{g77},
-@xref{Trouble,,Known Causes of Trouble with GNU CC,
+portion of @code{g77}, see
+@ref{Trouble,,Known Causes of Trouble with GNU CC,
 gcc,Using and Porting GNU CC}.)
 
 @menu
