@@ -484,6 +484,11 @@ int warn_strict_prototypes;
 
 int warn_missing_prototypes;
 
+/* Nonzero means warn for any global function def
+   without separate previous decl.  */
+
+int warn_missing_declarations;
+
 /* Nonzero means warn about multiple (redundant) decls for the same single
    variable or function.  */
 
@@ -627,6 +632,10 @@ c_decode_option (p)
     warn_missing_prototypes = 1;
   else if (!strcmp (p, "-Wno-missing-prototypes"))
     warn_missing_prototypes = 0;
+  else if (!strcmp (p, "-Wmissing-declarations"))
+    warn_missing_declarations = 1;
+  else if (!strcmp (p, "-Wno-missing-declarations"))
+    warn_missing_declarations = 0;
   else if (!strcmp (p, "-Wredundant-decls"))
     warn_redundant_decls = 1;
   else if (!strcmp (p, "-Wno-redundant-decls"))
@@ -5832,7 +5841,20 @@ start_function (declspecs, declarator, nested)
   else if (warn_missing_prototypes
 	   && old_decl != 0 && TREE_USED (old_decl)
 	   && !(old_decl != 0 && TYPE_ARG_TYPES (TREE_TYPE (old_decl)) != 0))
-    warning_with_decl (decl1, "`%s' was used with no prototype before its definition");
+    warning_with_decl (decl1,
+		      "`%s' was used with no prototype before its definition");
+  /* Optionally warn of any global def with no previous declaration.  */
+  else if (warn_missing_declarations
+	   && TREE_PUBLIC (decl1)
+	   && old_decl == 0
+	   && strcmp ("main", IDENTIFIER_POINTER (DECL_NAME (decl1))))
+    warning_with_decl (decl1, "no previous declaration for `%s'");
+  /* Optionally warn of any def with no previous declaration
+     if the function has already been used.  */
+  else if (warn_missing_declarations
+	   && old_decl != 0 && TREE_USED (old_decl))
+    warning_with_decl (decl1,
+		    "`%s' was used with no declaration before its definition");
 
   /* This is a definition, not a reference.
      So normally clear DECL_EXTERNAL.
