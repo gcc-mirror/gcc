@@ -1,5 +1,10 @@
 2004-07-23  Mark Wielaard  <mark@klomp.org>
 
+	* gnu/java/net/DefaultContentHandlerFactory.java: Check in real file
+	missed in last commit.
+
+2004-07-23  Mark Wielaard  <mark@klomp.org>
+
 	* java/lang/System.java (static): Set http.agent system property when
 	not yet set.
 	* gnu/java/net/protocol/http/Connection.java (static): Get httpAgent
