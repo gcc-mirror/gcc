@@ -1270,44 +1270,6 @@ namespace std
 		}
 	}
 
-      const char_type __zero = __ctype.widen('0');
-
-      // Strip leading zeros.
-      if (__tmp_units.size() > 1)
-	{
-	  const size_type __first = __tmp_units.find_first_not_of(__zero);
-	  const bool __only_zeros = __first == string_type::npos;
-	  if (__first)
-	    __tmp_units.erase(0, __only_zeros  ? __tmp_units.size() - 1
-			                       : __first);
-	}
-
-      if (__tmp_units.size())
-	{
-	  // 22.2.6.1.2, p4
-	  if (__sign.size() && __sign == __neg_sign
-	      && __tmp_units[0] != __zero)
-	    __tmp_units.insert(__tmp_units.begin(), __ctype.widen('-'));      
-
-	  // Test for grouping fidelity.
-	  if (__grouping.size() && __grouping_tmp.size())
-	    {
-	      if (!std::__verify_grouping(__grouping, __grouping_tmp))
-		__testvalid = false;
-	    }
-
-	  // Iff not enough digits were supplied after the decimal-point.
-	  if (__testdecfound)
-	    {
-	      const int __frac = __intl ? __mpt.frac_digits() 
-		                        : __mpf.frac_digits();
-	      if (__frac > 0 && __sep_pos != __frac)
-		__testvalid = false;
-	    }
-	}
-      else
-	__testvalid = false;
-
       // Need to get the rest of the sign characters, if they exist.
       const char_type __eof = static_cast<char_type>(char_traits<char_type>::eof());
       if (__sign.size() > 1)
@@ -1319,6 +1281,47 @@ namespace std
 	      __c = *(++__beg);
 	  
 	  if (__i != __len)
+	    __testvalid = false;
+	}
+
+      if (__testvalid)
+	{
+	  const char_type __zero = __ctype.widen('0');
+
+	  // Strip leading zeros.
+	  if (__tmp_units.size() > 1)
+	    {
+	      const size_type __first = __tmp_units.find_first_not_of(__zero);
+	      const bool __only_zeros = __first == string_type::npos;
+	      if (__first)
+		__tmp_units.erase(0, __only_zeros ? __tmp_units.size() - 1
+				                  : __first);
+	    }
+
+	  if (__tmp_units.size())
+	    {
+	      // 22.2.6.1.2, p4
+	      if (__sign.size() && __sign == __neg_sign
+		  && __tmp_units[0] != __zero)
+		__tmp_units.insert(__tmp_units.begin(), __ctype.widen('-'));      
+	      
+	      // Test for grouping fidelity.
+	      if (__grouping.size() && __grouping_tmp.size())
+		{
+		  if (!std::__verify_grouping(__grouping, __grouping_tmp))
+		    __testvalid = false;
+		}
+
+	      // Iff not enough digits were supplied after the decimal-point.
+	      if (__testdecfound)
+		{
+		  const int __frac = __intl ? __mpt.frac_digits() 
+		                            : __mpf.frac_digits();
+		  if (__frac > 0 && __sep_pos != __frac)
+		    __testvalid = false;
+		}
+	    }
+	  else
 	    __testvalid = false;
 	}
 
