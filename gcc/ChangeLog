@@ -1,3 +1,7 @@
+2000-01-08  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* config/c4x/c4x.h (CALLER_SAVE_PROFITABLE): Define as 0.
+
 2000-01-07  David Edelsohn  <edelsohn@gnu.org>
 
 	* rs6000.c (processor_target_table): Add power3 as alias for 630.

@@ -1077,7 +1077,7 @@ CUMULATIVE_ARGS;
    other targets such as m68k).  Since we must use stf/sti,
    the profitability is marginal anyway.  */
 
-/* #define CALLER_SAVE_PROFITABLE(REFS,CALLS) 0 */
+#define CALLER_SAVE_PROFITABLE(REFS,CALLS) 0
 
 /* Never pass data by reference.  */
 
