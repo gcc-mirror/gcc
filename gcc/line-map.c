@@ -32,12 +32,13 @@ static void trace_include (const struct line_maps *, const struct line_map *);
 void
 linemap_init (struct line_maps *set)
 {
-  set->maps = 0;
+  set->maps = NULL;
   set->allocated = 0;
   set->used = 0;
   set->last_listed = -1;
   set->trace_includes = false;
   set->depth = 0;
+  set->cache = 0;
 }
 
 /* Free a line map set.  */
@@ -89,7 +90,7 @@ linemap_add (struct line_maps *set, enum lc_reason reason,
       set->maps = xrealloc (set->maps, set->allocated * sizeof (struct line_map));
     }
 
-  map = &set->maps[set->used++];
+  map = &set->maps[set->used];
 
   if (to_file && *to_file == '\0')
     to_file = "<stdin>";
@@ -108,7 +109,6 @@ linemap_add (struct line_maps *set, enum lc_reason reason,
 	  if (to_file == NULL)
 	    {
 	      set->depth--;
-	      set->used--;
 	      return NULL;
 	    }
 	  error = true;
@@ -141,6 +141,7 @@ linemap_add (struct line_maps *set, enum lc_reason reason,
   map->from_line = from_line;
   map->to_file = to_file;
   map->to_line = to_line;
+  set->cache = set->used++;
 
   if (reason == LC_ENTER)
     {
@@ -168,10 +169,24 @@ linemap_add (struct line_maps *set, enum lc_reason reason,
 const struct line_map *
 linemap_lookup (struct line_maps *set, source_location line)
 {
-  unsigned int md, mn = 0, mx = set->used;
+  unsigned int md, mn, mx;
+  const struct line_map *cached;
 
-  if (mx == 0)
-    abort ();
+  mn = set->cache;
+  mx = set->used;
+  
+  cached = &set->maps[mn];
+  /* We should get a segfault if no line_maps have been added yet. */
+  if (line >= cached->from_line)
+    {
+      if (mn + 1 == mx || line < cached[1].from_line)
+	return cached;
+    }
+  else
+    {
+      mx = mn;
+      mn = 0;
+    }
 
   while (mx - mn > 1)
     {
@@ -182,6 +197,7 @@ linemap_lookup (struct line_maps *set, source_location line)
 	mn = md;
     }
 
+  set->cache = mn;
   return &set->maps[mn];
 }
 
