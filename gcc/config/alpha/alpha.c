@@ -106,17 +106,20 @@ static int alpha_function_needs_gp;
 
 /* The alias set for prologue/epilogue register save/restore.  */
 
-static int alpha_sr_alias_set;
+static GTY(()) int alpha_sr_alias_set;
 
 /* The assembler name of the current function.  */
 
 static const char *alpha_fnname;
 
 /* The next explicit relocation sequence number.  */
+extern GTY(()) int alpha_next_sequence_number;
 int alpha_next_sequence_number = 1;
 
 /* The literal and gpdisp sequence numbers for this insn, as printed
    by %# and %* respectively.  */
+extern GTY(()) int alpha_this_literal_sequence_number;
+extern GTY(()) int alpha_this_gpdisp_sequence_number;
 int alpha_this_literal_sequence_number;
 int alpha_this_gpdisp_sequence_number;
 
@@ -198,6 +201,8 @@ static void alpha_elf_select_rtx_section
 #if TARGET_ABI_OPEN_VMS
 static bool alpha_linkage_symbol_p
   PARAMS ((const char *symname));
+static int alpha_write_one_linkage
+  PARAMS ((splay_tree_node, void *));
 static void alpha_write_linkage
   PARAMS ((FILE *, const char *, tree));
 #endif
@@ -7859,39 +7864,6 @@ alpha_expand_epilogue ()
     }
 }
 
-#if TARGET_ABI_OPEN_VMS
-#include <splay-tree.h>
-
-/* Structure to collect function names for final output
-   in link section.  */
-
-enum links_kind {KIND_UNUSED, KIND_LOCAL, KIND_EXTERN};
-enum reloc_kind {KIND_LINKAGE, KIND_CODEADDR};
-
-struct alpha_funcs
-{
-  int num;
-  splay_tree links;
-};
-
-struct alpha_links
-{
-  int num;
-  rtx linkage;
-  enum links_kind lkind;
-  enum reloc_kind rkind;
-};
-
-static splay_tree alpha_funcs_tree;
-static splay_tree alpha_links_tree;
-
-static int mark_alpha_links_node	PARAMS ((splay_tree_node, void *));
-static void mark_alpha_links		PARAMS ((void *));
-static int alpha_write_one_linkage	PARAMS ((splay_tree_node, void *));
-
-static int alpha_funcs_num;
-#endif
-
 /* Output the rest of the textual info surrounding the epilogue.  */
 
 void
@@ -9027,19 +8999,33 @@ alpha_elf_select_rtx_section (mode, x, align)
 
 #endif /* OBJECT_FORMAT_ELF */
 
-/* Structure to collect function names for final output
-   in link section.  */
+/* Structure to collect function names for final output in link section.  */
+/* Note that items marked with GTY can't be ifdef'ed out.  */
 
 enum links_kind {KIND_UNUSED, KIND_LOCAL, KIND_EXTERN};
+enum reloc_kind {KIND_LINKAGE, KIND_CODEADDR};
 
 struct alpha_links GTY(())
 {
+  int num;
   rtx linkage;
-  enum links_kind kind;
+  enum links_kind lkind;
+  enum reloc_kind rkind;
+};
+
+struct alpha_funcs GTY(())
+{
+  int num;
+  splay_tree GTY ((param1_is (char *), param2_is (struct alpha_links *)))
+    links;
 };
 
 static GTY ((param1_is (char *), param2_is (struct alpha_links *)))
-  splay_tree alpha_links;
+  splay_tree alpha_links_tree;
+static GTY ((param1_is (tree), param2_is (struct alpha_funcs *)))
+  splay_tree alpha_funcs_tree;
+
+static GTY(()) int alpha_funcs_num;
 
 #if TARGET_ABI_OPEN_VMS
 
@@ -9089,19 +9075,19 @@ alpha_need_linkage (name, is_local)
 {
   splay_tree_node node;
   struct alpha_links *al;
-  struct alpha_funcs *cfaf;
 
   if (name[0] == '*')
     name++;
 
   if (is_local)
     {
-      alpha_funcs_tree = splay_tree_new
-	((splay_tree_compare_fn) splay_tree_compare_pointers, 
-	 (splay_tree_delete_key_fn) free,
-	 (splay_tree_delete_key_fn) free);
+      struct alpha_funcs *cfaf;
+
+      if (!alpha_funcs_tree)
+        alpha_funcs_tree = splay_tree_new_ggc ((splay_tree_compare_fn)
+					       splay_tree_compare_pointers);
     
-      cfaf = (struct alpha_funcs *) xmalloc (sizeof (struct alpha_funcs));
+      cfaf = (struct alpha_funcs *) ggc_alloc (sizeof (struct alpha_funcs));
 
       cfaf->links = 0;
       cfaf->num = ++alpha_funcs_num;
@@ -9109,7 +9095,6 @@ alpha_need_linkage (name, is_local)
       splay_tree_insert (alpha_funcs_tree,
 			 (splay_tree_key) current_function_decl,
 			 (splay_tree_value) cfaf);
-    
     }
 
   if (alpha_links_tree)
@@ -9136,9 +9121,7 @@ alpha_need_linkage (name, is_local)
 	}
     }
   else
-    {
-      alpha_links = splay_tree_new_ggc ((splay_tree_compare_fn) strcmp);
-    }
+    alpha_links = splay_tree_new_ggc ((splay_tree_compare_fn) strcmp);
 
   al = (struct alpha_links *) ggc_alloc (sizeof (struct alpha_links));
   name = ggc_strdup (name);
@@ -9195,13 +9178,7 @@ alpha_use_linkage (linkage, cfundecl, lflag, rflag)
 	al = (struct alpha_links *) lnode->value;
     }
   else
-    {
-      cfaf->links = splay_tree_new
-	((splay_tree_compare_fn) strcmp,
-	 (splay_tree_delete_key_fn) free,
-	 (splay_tree_delete_key_fn) free);
-      ggc_add_root (&cfaf->links, 1, 1, mark_alpha_links);
-    }
+    cfaf->links = splay_tree_new_ggc ((splay_tree_compare_fn) strcmp);
 
   if (!al)
     {
@@ -9217,7 +9194,7 @@ alpha_use_linkage (linkage, cfundecl, lflag, rflag)
 
       name_len = strlen (name);
 
-      al = (struct alpha_links *) xmalloc (sizeof (struct alpha_links));
+      al = (struct alpha_links *) ggc_alloc (sizeof (struct alpha_links));
       al->num = cfaf->num;
 
       node = splay_tree_lookup (alpha_links_tree, (splay_tree_key) name);
@@ -9997,6 +9974,7 @@ unicosmk_data_section ()
 
 /* List of identifiers for which an extern declaration might have to be
    emitted.  */
+/* FIXME: needs to use GC, so it can be saved and restored for PCH.  */
 
 struct unicosmk_extern_list
 {
@@ -10079,6 +10057,7 @@ unicosmk_add_extern (name)
 
 /* Structure to collect identifiers which have been replaced by DEX
    expressions.  */
+/* FIXME: needs to use GC, so it can be saved and restored for PCH.  */
 
 struct unicosmk_dex {
   struct unicosmk_dex *next;
