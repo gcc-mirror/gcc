@@ -1678,8 +1678,10 @@ dbxout_type (tree type, int full)
 	    if (use_gnu_debug_info_extensions)
 	      {
 		have_used_extensions = 1;
-		putc (TREE_VIA_VIRTUAL (child) ? '1' : '0', asmfile);
-		putc (access == access_public_node ? '2' : '0', asmfile);
+                putc (TREE_VIA_VIRTUAL (child) ? '1' : '0', asmfile);
+                putc (access == access_public_node ? '2' :
+                      (access == access_protected_node ? '1' :'0'),
+                      asmfile);
 		CHARS (2);
 		if (TREE_VIA_VIRTUAL (child)
 		    && strcmp (lang_hooks.name, "GNU C++") == 0)
