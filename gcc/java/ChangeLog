@@ -10,6 +10,14 @@
 	* Makefile.in: Delete.
 	* config-lang.in: Delete outputs= line.
 
+2000-10-25  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.y (patch_method_invocation): NULLify this_arg when already
+	inserted.
+	(maybe_use_access_method): Handle call to methods unrelated to the
+	current class. Fixed comment.
+	Fixes gcj/361.
+
 2000-10-24  Tom Tromey  <tromey@cygnus.com>
 
 	* lex.c (java_new_lexer): Initialize new fields.  Work around

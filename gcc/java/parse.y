@@ -9930,7 +9930,10 @@ patch_method_invocation (patch, primary, where, is_static, ret_decl)
 	     argument list. In the meantime, the selected function
 	     might have be replaced by a generated stub. */
 	  if (maybe_use_access_method (is_super_init, &list, &this_arg))
-	    args = tree_cons (NULL_TREE, this_arg, args);
+	    {
+	      args = tree_cons (NULL_TREE, this_arg, args);
+	      this_arg = NULL_TREE; /* So it doesn't get chained twice */
+	    }
 	}
     }
 
@@ -10086,9 +10089,10 @@ maybe_use_access_method (is_super_init, mdecl, this_arg)
   
   /* If we're calling a method found in an enclosing class, generate
      what it takes to retrieve the right this. Don't do that if we're
-     invoking a static method. */
+     invoking a static method. Note that if MD's type is unrelated to
+     CURRENT_CLASS, then the current this can be used. */
 
-  if (non_static_context)
+  if (non_static_context && DECL_CONTEXT (md) != object_type_node)
     {
       ctx = TREE_TYPE (DECL_CONTEXT (TYPE_NAME (current_class)));
       if (inherits_from_p (ctx, DECL_CONTEXT (md)))
