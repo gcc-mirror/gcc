@@ -83,8 +83,7 @@ struct vbase_info
 
 static tree dfs_check_overlap (tree, void *);
 static tree dfs_no_overlap_yet (tree, int, void *);
-static base_kind lookup_base_r (tree, tree, base_access,
-				bool, bool, bool, tree *);
+static base_kind lookup_base_r (tree, tree, base_access, bool, tree *);
 static int dynamic_cast_base_recurse (tree, tree, bool, tree *);
 static tree marked_pushdecls_p (tree, int, void *);
 static tree unmarked_pushdecls_p (tree, int, void *);
@@ -147,12 +146,8 @@ static int n_contexts_saved;
 
 /* Worker for lookup_base.  BINFO is the binfo we are searching at,
    BASE is the RECORD_TYPE we are searching for.  ACCESS is the
-   required access checks.  WITHIN_CURRENT_SCOPE, IS_NON_PUBLIC and
-   IS_VIRTUAL indicate how BINFO was reached from the start of the
-   search.  WITHIN_CURRENT_SCOPE is true if we met the current scope,
-   or friend thereof (this allows us to determine whether a protected
-   base is accessible or not).  IS_NON_PUBLIC indicates whether BINFO
-   is accessible and IS_VIRTUAL indicates if it is morally virtual.
+   required access checks.  IS_VIRTUAL indicates if BINFO is morally
+   virtual.
 
    If BINFO is of the required type, then *BINFO_PTR is examined to
    compare with any other instance of BASE we might have already
@@ -163,23 +158,12 @@ static int n_contexts_saved;
 
 static base_kind
 lookup_base_r (tree binfo, tree base, base_access access,
-	       bool within_current_scope,
-	       bool is_non_public,		/* inside a non-public part */
 	       bool is_virtual,			/* inside a virtual part */
 	       tree *binfo_ptr)
 {
   int i;
   tree bases, accesses;
   base_kind found = bk_not_base;
-  
-  if (access == ba_check
-      && !within_current_scope
-      && is_friend (BINFO_TYPE (binfo), current_scope ()))
-    {
-      /* Do not clear is_non_public here.  If A is a private base of B, A
-	 is not allowed to convert a B* to an A*.  */
-      within_current_scope = 1;
-    }
   
   if (same_type_p (BINFO_TYPE (binfo), base))
     {
@@ -214,29 +198,11 @@ lookup_base_r (tree binfo, tree base, base_access access,
       tree base_binfo = TREE_VEC_ELT (bases, i);
       tree base_access = TREE_VEC_ELT (accesses, i);
       
-      int this_non_public = is_non_public;
-      int this_virtual = is_virtual;
       base_kind bk;
 
-      if (access <= ba_ignore)
-	; /* no change */
-      else if (base_access == access_public_node)
-	; /* no change */
-      else if (access == ba_not_special)
-	this_non_public = 1;
-      else if (base_access == access_protected_node && within_current_scope)
-	; /* no change */
-      else if (is_friend (BINFO_TYPE (binfo), current_scope ()))
-	; /* no change */
-      else
-	this_non_public = 1;
-      
-      if (TREE_VIA_VIRTUAL (base_binfo))
-	this_virtual = 1;
-      
       bk = lookup_base_r (base_binfo, base,
-		    	  access, within_current_scope,
-			  this_non_public, this_virtual,
+		    	  access,
+			  is_virtual || TREE_VIA_VIRTUAL (base_binfo),
 			  binfo_ptr);
 
       switch (bk)
@@ -245,14 +211,6 @@ lookup_base_r (tree binfo, tree base, base_access access,
 	  if (access != ba_any)
 	    return bk;
 	  found = bk;
-	  break;
-	  
-	case bk_inaccessible:
-	  if (found == bk_not_base)
-	    found = bk;
-	  my_friendly_assert (found == bk_via_virtual
-			      || found == bk_inaccessible, 20010723);
-	  
 	  break;
 	  
 	case bk_same_type:
@@ -270,6 +228,9 @@ lookup_base_r (tree binfo, tree base, base_access access,
 	  
 	case bk_not_base:
 	  break;
+
+	default:
+	  abort ();
 	}
     }
   return found;
@@ -312,8 +273,7 @@ lookup_base (tree t, tree base, base_access access, base_kind *kind_ptr)
   t = complete_type (TYPE_MAIN_VARIANT (t));
   base = complete_type (TYPE_MAIN_VARIANT (base));
   
-  bk = lookup_base_r (t_binfo, base, access & ~ba_quiet,
-		      0, 0, 0, &binfo);
+  bk = lookup_base_r (t_binfo, base, access, 0, &binfo);
 
   /* Check that the base is unambiguous and accessible.  */
   if (access != ba_any)
@@ -1530,10 +1490,11 @@ adjust_result_of_qualified_name_lookup (tree decl,
 
       my_friendly_assert (CLASS_TYPE_P (context_class), 20020808);
 
-      /* Look for the QUALIFYING_SCOPE as a base of the
-	 CONTEXT_CLASS.  If QUALIFYING_SCOPE is ambiguous, we cannot
-	 be sure yet than an error has occurred; perhaps the function
-	 chosen by overload resolution will be static.  */
+      /* Look for the QUALIFYING_SCOPE as a base of the CONTEXT_CLASS.
+	 Because we do not yet know which function will be chosen by
+	 overload resolution, we cannot yet check either accessibility
+	 or ambiguity -- in either case, the choice of a static member
+	 function might make the usage valid.  */
       base = lookup_base (context_class, qualifying_scope,
 			  ba_ignore | ba_quiet, NULL);
       if (base)
