@@ -72,7 +72,32 @@ Boston, MA 02111-1307, USA.  */
 
 /* This can become more refined as we have more powerpc options. */
 #undef ASM_SPEC
-#define ASM_SPEC "-u %{m601:-m601} %{power*:-m601}"
+#define ASM_SPEC "\
+-u \
+%{!mcpu*: \
+  %{mpower2: -mpwrx} \
+  %{mpowerpc*: %{!mpower: -mppc}} \
+  %{mno-powerpc: %{!mpower: %{!mpower2: -mcom}}} \
+  %{mno-powerpc: %{mpower: %{!mpower2: -mpwr}}} \
+  %{!mno-powerpc: %{mpower: -m601}} \
+  %{!mno-powerpc: %{!mpower: -mppc}}} \
+%{mcpu=common: -mcom} \
+%{mcpu=rs6000: -mpwr} \
+%{mcpu=power: -mpwr} \
+%{mcpu=power2: -mpwrx} \
+%{mcpu=powerpc: -mppc} \
+%{mcpu=rios: -mpwr} \
+%{mcpu=rios1: -mpwr} \
+%{mcpu=rios2: -mpwrx} \
+%{mcpu=rsc: -mpwr} \
+%{mcpu=rsc1: -mpwr} \
+%{mcpu=403: -mppc} \
+%{mcpu=601: -m601} \
+%{mcpu=602: -mppc} \
+%{mcpu=603: -mppc} \
+%{mcpu=603e: -mppc} \
+%{mcpu=604: -mppc} \
+%{mcpu=620: -mppc}"
 
 #undef SUBTARGET_SWITCHES
 #define SUBTARGET_SWITCHES \

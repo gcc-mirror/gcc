@@ -26,14 +26,15 @@ Boston, MA 02111-1307, USA.  */
 #undef ASM_SPEC
 #define ASM_SPEC "-u \
 %{!mcpu*: \
-  %{mpower: %{!mpowerpc*: %{!mpower2: -mpwr}}} \
   %{mpower2: -mpwrx} \
-  %{mno-power: %{mpowerpc*: -mppc}} \
-  %{mno-power: %{!mpowerpc*: -mcom}} \
-  %{!mno-power: %{mpowerpc*: -m601}} \
-  %{!mno-power: %{!mpowerpc*: %{!mpower2: -mpwr}}}} \
+  %{mpowerpc*: %{!mpower: -mppc}} \
+  %{mpower: %{!mpower2: -mpwr}} \
+  %{mpowerpc*: %{mpower: -m601}} \
+  %{!mpowerpc*: %{!mpower*: -mcom}}} \
 %{mcpu=common: -mcom} \
+%{mcpu=rs6000: -mpwr} \
 %{mcpu=power: -mpwr} \
+%{mcpu=power2: -mpwrx} \
 %{mcpu=powerpc: -mppc} \
 %{mcpu=rios: -mpwr} \
 %{mcpu=rios1: -mpwr} \
@@ -42,9 +43,55 @@ Boston, MA 02111-1307, USA.  */
 %{mcpu=rsc1: -mpwr} \
 %{mcpu=403: -mppc} \
 %{mcpu=601: -m601} \
+%{mcpu=602: -mppc} \
 %{mcpu=603: -mppc} \
 %{mcpu=603e: -mppc} \
-%{mcpu=604: -mppc}"
+%{mcpu=604: -mppc} \
+%{mcpu=620: -mppc}"
+
+#undef CPP_PREDEFINES
+#define CPP_PREDEFINES "-D_IBMR2 -D_POWER -D_AIX -D_AIX32 \
+-Asystem(unix) -Asystem(aix)"
+
+#undef CPP_SPEC
+#define CPP_SPEC "\
+%{posix: -D_POSIX_SOURCE} \
+%{!mcpu*: \
+  %{mpower: %{!mpower2: -D_ARCH_PWR}} \
+  %{mpower2: -D_ARCH_PWR2} \
+  %{mpowerpc*: -D_ARCH_PPC} \
+  %{!mpower*: -D_ARCH_COM}} \
+%{mcpu=common: -D_ARCH_COM} \
+%{mcpu=rs6000: -D_ARCH_PWR} \
+%{mcpu=power: -D_ARCH_PWR} \
+%{mcpu=power2: -D_ARCH_PWR2} \
+%{mcpu=powerpc: -D_ARCH_PPC} \
+%{mcpu=rios: -D_ARCH_PWR} \
+%{mcpu=rios1: -D_ARCH_PWR} \
+%{mcpu=rios2: -D_ARCH_PWR2} \
+%{mcpu=rsc: -D_ARCH_PWR} \
+%{mcpu=rsc1: -D_ARCH_PWR} \
+%{mcpu=403: -D_ARCH_PPC} \
+%{mcpu=601: -D_ARCH_PPC -D_ARCH_PWR} \
+%{mcpu=6*: -D_ARCH_PPC}"
+
+#undef TARGET_DEFAULT
+#define TARGET_DEFAULT MASK_NEW_MNEMONICS
+
+#undef PROCESSOR_DEFAULT
+#define PROCESSOR_DEFAULT PROCESSOR_PPC601
+
+/* Define this macro as a C expression for the initializer of an
+   array of string to tell the driver program which options are
+   defaults for this target and thus do not need to be handled
+   specially when using `MULTILIB_OPTIONS'.
+
+   Do not define this macro if `MULTILIB_OPTIONS' is not defined in
+   the target makefile fragment or if none of the options listed in
+   `MULTILIB_OPTIONS' are set by default.  *Note Target Fragment::.  */
+
+#undef	MULTILIB_DEFAULTS
+#define	MULTILIB_DEFAULTS { "mcpu=common" }
 
 /* These are not necessary when we pass -u to the assembler, and undefining
    them saves a great deal of space in object files.  */

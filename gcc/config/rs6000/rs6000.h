@@ -32,6 +32,11 @@ Boston, MA 02111-1307, USA.  */
 /* Print subsidiary information on the compiler version in use.  */
 #define TARGET_VERSION ;
 
+/* Default string to use for cpu if not specified.  */
+#ifndef TARGET_CPU_DEFAULT
+#define TARGET_CPU_DEFAULT ((char *)0)
+#endif
+
 /* Tell the assembler to assume that all undefined names are external.
 
    Don't do this until the fixed IBM assembler is more generally available.
@@ -54,7 +59,9 @@ Boston, MA 02111-1307, USA.  */
   %{mno-power: %{!mpowerpc*: -D_ARCH_COM}} \
   %{!mno-power: %{!mpower2: -D_ARCH_PWR}}} \
 %{mcpu=common: -D_ARCH_COM} \
+%{mcpu=rs6000: -D_ARCH_PWR} \
 %{mcpu=power: -D_ARCH_PWR} \
+%{mcpu=power2: -D_ARCH_PWR2} \
 %{mcpu=powerpc: -D_ARCH_PPC} \
 %{mcpu=rios: -D_ARCH_PWR} \
 %{mcpu=rios1: -D_ARCH_PWR} \
@@ -63,11 +70,11 @@ Boston, MA 02111-1307, USA.  */
 %{mcpu=rsc1: -D_ARCH_PWR} \
 %{mcpu=403: -D_ARCH_PPC} \
 %{mcpu=601: -D_ARCH_PPC -D_ARCH_PWR} \
-%{mcpu=602: -D_ARCH_PPC} \
-%{mcpu=603: -D_ARCH_PPC} \
-%{mcpu=603e: -D_ARCH_PPC} \
-%{mcpu=604: -D_ARCH_PPC} \
-%{mcpu=620: -D_ARCH_PPC}"
+%{mcpu=602: -mppc} \
+%{mcpu=603: -mppc} \
+%{mcpu=603e: -mppc} \
+%{mcpu=604: -mppc} \
+%{mcpu=620: -mppc}"
 
 /* Define the options for the binder: Start text at 512, align all segments
    to 512 bytes, and warn if there is text relocation.
@@ -285,9 +292,9 @@ extern enum processor_type rs6000_cpu;
 #define rs6000_cpu_attr ((enum attr_cpu)rs6000_cpu)
 
 /* Define generic processor types based upon current deployment.  */
-#define PROCESSOR_COMMON  PROCESSOR_PPC604
+#define PROCESSOR_COMMON  PROCESSOR_PPC601
 #define PROCESSOR_POWER   PROCESSOR_RIOS1
-#define PROCESSOR_POWERPC PROCESSOR_PPC601
+#define PROCESSOR_POWERPC PROCESSOR_PPC604
 
 /* Define the default processor.  This is overridden by other tm.h files.  */
 #define PROCESSOR_DEFAULT PROCESSOR_RIOS1
@@ -318,13 +325,23 @@ extern enum processor_type rs6000_cpu;
 #define	SUBTARGET_OPTIONS
 #endif
 
-#define TARGET_OPTIONS			\
-{					\
-   {"cpu=", &rs6000_cpu_string}		\
-   SUBTARGET_OPTIONS			\
+#define TARGET_OPTIONS				\
+{						\
+   {"cpu=",  &rs6000_select[1].string},		\
+   {"tune=", &rs6000_select[2].string},		\
+   SUBTARGET_OPTIONS				\
 }
 
-extern char *rs6000_cpu_string;
+/* rs6000_select[0] is reserved for the default cpu defined via --enable-cpu */
+struct rs6000_cpu_select
+{
+  char *string;
+  char *name;
+  int set_tune_p;
+  int set_arch_p;
+};
+
+extern struct rs6000_cpu_select rs6000_select[];
 
 /* Sometimes certain combinations of command options do not make sense
    on a particular target machine.  You can define a macro
@@ -334,7 +351,7 @@ extern char *rs6000_cpu_string;
 
    On the RS/6000 this is used to define the target cpu type.  */
 
-#define OVERRIDE_OPTIONS rs6000_override_options ()
+#define OVERRIDE_OPTIONS rs6000_override_options (TARGET_CPU_DEFAULT)
 
 /* Show we can debug even without a frame pointer.  */
 #define CAN_DEBUG_WITHOUT_FP

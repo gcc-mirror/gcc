@@ -46,7 +46,13 @@ extern int profile_block_flag;
 /* Target cpu type */
 
 enum processor_type rs6000_cpu;
-char *rs6000_cpu_string;
+struct rs6000_cpu_select rs6000_select[3] =
+{
+  /* switch	name,			tune	arch */
+  { (char *)0,	"--enbable-cpu=",	1,	0 },
+  { (char *)0,	"-mcpu=",		1,	1 },
+  { (char *)0,	"-mtune=",		1,	0 },
+};
 
 /* Set to non-zero by "fix" operation to indicate that itrunc and
    uitrunc must be defined.  */
@@ -171,8 +177,9 @@ output_options (file, f_options, f_len, W_options, W_len)
 	}
     }
 
-  if (rs6000_cpu_string != (char *)0)
-    pos = output_option (file, "-mcpu=", rs6000_cpu_string, pos);
+  for (j = 0; j < sizeof (rs6000_select) / sizeof(rs6000_select[0]); j++)
+    if (rs6000_select[j].string != (char *)0)
+      pos = output_option (file, rs6000_select[j].name, rs6000_select[j].string, pos);
 
   fputs ("\n\n", file);
 }
@@ -182,9 +189,11 @@ output_options (file, f_options, f_len, W_options, W_len)
    type and sometimes adjust other TARGET_ options.  */
 
 void
-rs6000_override_options ()
+rs6000_override_options (default_cpu)
+     char *default_cpu;
 {
-  int i;
+  int i, j;
+  struct rs6000_cpu_select *ptr;
 
   /* Simplify the entries below by making a mask for any POWER
      variant and any PowerPC variant.  */
@@ -202,9 +211,15 @@ rs6000_override_options ()
       int target_disable;	/* Target flags to disable.  */
     } processor_target_table[]
       = {{"common", PROCESSOR_COMMON, 0, POWER_MASKS | POWERPC_MASKS},
+	 {"rs6000", PROCESSOR_POWER,
+	    MASK_POWER | MASK_MULTIPLE | MASK_STRING,
+	    MASK_POWER2 | POWERPC_MASKS | MASK_NEW_MNEMONICS},
 	 {"power", PROCESSOR_POWER,
 	    MASK_POWER | MASK_MULTIPLE | MASK_STRING,
 	    MASK_POWER2 | POWERPC_MASKS | MASK_NEW_MNEMONICS},
+	 {"power2", PROCESSOR_POWER,
+	    MASK_POWER | MASK_POWER2 | MASK_MULTIPLE | MASK_STRING,
+	    POWERPC_MASKS | MASK_NEW_MNEMONICS},
 	 {"powerpc", PROCESSOR_POWERPC,
 	    MASK_POWERPC | MASK_NEW_MNEMONICS,
 	    POWER_MASKS | POWERPC_OPT_MASKS | MASK_POWERPC64},
@@ -253,24 +268,32 @@ rs6000_override_options ()
   profile_block_flag = 0;
 
   /* Identify the processor type */
-  if (rs6000_cpu_string == 0)
-    rs6000_cpu = PROCESSOR_DEFAULT;
-  else
-    {
-      for (i = 0; i < ptt_size; i++)
-	if (! strcmp (rs6000_cpu_string, processor_target_table[i].name))
-	  {
-	    rs6000_cpu = processor_target_table[i].processor;
-	    target_flags |= processor_target_table[i].target_enable;
-	    target_flags &= ~processor_target_table[i].target_disable;
-	    break;
-	  }
+  rs6000_select[0].string = default_cpu;
+  rs6000_cpu = PROCESSOR_DEFAULT;
+  if (rs6000_cpu == PROCESSOR_PPC403)
+    target_flags |= MASK_SOFT_FLOAT;
 
-      if (i == ptt_size)
+  for (i = 0; i < sizeof (rs6000_select) / sizeof (rs6000_select[0]); i++)
+    {
+      ptr = &rs6000_select[i];
+      if (ptr->string != (char *)0 && ptr->string[0] != '\0')
 	{
-	  error ("bad value (%s) for -mcpu= switch", rs6000_cpu_string);
-	  rs6000_cpu_string = "default";
-	  rs6000_cpu = PROCESSOR_DEFAULT;
+	  for (j = 0; j < ptt_size; j++)
+	    if (! strcmp (ptr->string, processor_target_table[j].name))
+	      {
+		if (ptr->set_tune_p)
+		  rs6000_cpu = processor_target_table[j].processor;
+
+		if (ptr->set_arch_p)
+		  {
+		    target_flags |= processor_target_table[j].target_enable;
+		    target_flags &= ~processor_target_table[j].target_disable;
+		  }
+		break;
+	      }
+
+	  if (i == ptt_size)
+	    error ("bad value (%s) for %s switch", ptr->string, ptr->name);
 	}
     }
 

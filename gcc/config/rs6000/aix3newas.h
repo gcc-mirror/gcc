@@ -35,7 +35,9 @@ Boston, MA 02111-1307, USA.  */
   %{!mno-power: %{mpowerpc*: -m601}} \
   %{!mno-power: %{!mpowerpc*: %{!mpower2: -mpwr}}}} \
 %{mcpu=common: -mcom} \
+%{mcpu=rs6000: -mpwr} \
 %{mcpu=power: -mpwr} \
+%{mcpu=power2: -mpwrx} \
 %{mcpu=powerpc: -mppc} \
 %{mcpu=rios: -mpwr} \
 %{mcpu=rios1: -mpwr} \
@@ -44,9 +46,11 @@ Boston, MA 02111-1307, USA.  */
 %{mcpu=rsc1: -mpwr} \
 %{mcpu=403: -mppc} \
 %{mcpu=601: -m601} \
+%{mcpu=602: -mppc} \
 %{mcpu=603: -mppc} \
 %{mcpu=603e: -mppc} \
-%{mcpu=604: -mppc}"
+%{mcpu=604: -mppc} \
+%{mcpu=620: -mppc}"
 
 /* Define the options for the binder: Start text at 512, align all segments
    to 512 bytes, and warn if there is text relocation.
