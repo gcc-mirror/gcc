@@ -65,6 +65,11 @@ static int *uid_suid;
 
 static int last_call_suid;
 
+/* Record the suid of the last NOTE_INSN_SETJMP
+   so we can tell whether a pseudo reg crosses any setjmp.  */
+
+static int last_setjmp_suid;
+
 /* Element N is suid of insn where life span of pseudo reg N ends.
    Element is  0 if register N has not been seen yet on backward scan.  */
 
@@ -87,6 +92,10 @@ static char *regs_live;
    its size.  */
 
 static char *regs_change_size;
+
+/* Indexed by reg number, nonzero if reg crosses a setjmp.  */
+
+static char *regs_crosses_setjmp;
 
 /* Indexed by insn's suid, the set of hard regs live after that insn.  */
 
@@ -148,6 +157,7 @@ stupid_life_analysis (f, nregs, file)
     }
 
   last_call_suid = i + 1;
+  last_setjmp_suid = i + 1;
   max_suid = i + 1;
 
   max_regno = nregs;
@@ -165,6 +175,9 @@ stupid_life_analysis (f, nregs, file)
 
   regs_change_size = (char *) alloca (nregs * sizeof (char));
   bzero ((char *) regs_change_size, nregs * sizeof (char));
+
+  regs_crosses_setjmp = (char *) alloca (nregs * sizeof (char));
+  bzero ((char *) regs_crosses_setjmp, nregs * sizeof (char));
 
   reg_renumber = (short *) oballoc (nregs * sizeof (short));
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
@@ -215,6 +228,10 @@ stupid_life_analysis (f, nregs, file)
       if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
 	stupid_mark_refs (PATTERN (insn), insn);
 
+      if (GET_CODE (insn) == NOTE
+	  && NOTE_LINE_NUMBER (insn) == NOTE_INSN_SETJMP)
+	last_setjmp_suid = INSN_SUID (insn);
+
       /* Mark all call-clobbered regs as live after each call insn
 	 so that a pseudo whose life span includes this insn
 	 will not go in one of them.
@@ -253,8 +270,9 @@ stupid_life_analysis (f, nregs, file)
     {
       register int r = reg_order[i];
 
-      /* Some regnos disappear from the rtl.  Ignore them to avoid crash.  */
-      if (regno_reg_rtx[r] == 0)
+      /* Some regnos disappear from the rtl.  Ignore them to avoid crash. 
+	 Also don't allocate registers that cross a setjmp.  */
+      if (regno_reg_rtx[r] == 0 || regs_crosses_setjmp[r])
 	continue;
 
       /* Now find the best hard-register class for this pseudo register */
@@ -494,6 +512,9 @@ stupid_mark_refs (x, insn)
 
 	      if (last_call_suid < reg_where_dead[regno])
 		reg_n_calls_crossed[regno] += 1;
+
+	      if (last_setjmp_suid < reg_where_dead[regno])
+		regs_crosses_setjmp[regno] = 1;
 	    }
 	}
 
