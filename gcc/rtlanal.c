@@ -315,7 +315,10 @@ reg_used_between_p (reg, from_insn, to_insn)
 
   for (insn = NEXT_INSN (from_insn); insn != to_insn; insn = NEXT_INSN (insn))
     if (GET_RTX_CLASS (GET_CODE (insn)) == 'i'
-	&& reg_overlap_mentioned_p (reg, PATTERN (insn)))
+	&& (reg_overlap_mentioned_p (reg, PATTERN (insn))
+	   || (GET_CODE (insn) == CALL_INSN
+	      && (find_reg_fusage (insn, USE, reg)
+		  || find_reg_fusage (insn, CLOBBER, reg)))))
       return 1;
   return 0;
 }
@@ -393,7 +396,9 @@ reg_referenced_between_p (reg, from_insn, to_insn)
 
   for (insn = NEXT_INSN (from_insn); insn != to_insn; insn = NEXT_INSN (insn))
     if (GET_RTX_CLASS (GET_CODE (insn)) == 'i'
-	&& reg_referenced_p (reg, PATTERN (insn)))
+	&& (reg_referenced_p (reg, PATTERN (insn))
+	   || (GET_CODE (insn) == CALL_INSN
+	      && find_reg_fusage (insn, USE, reg))))
       return 1;
   return 0;
 }
@@ -448,10 +453,14 @@ reg_set_p (reg, insn)
 	  || (GET_CODE (insn) == CALL_INSN
 	      /* We'd like to test call_used_regs here, but rtlanal.c can't
 		 reference that variable due to its use in genattrtab.  So
-		 we'll just be more conservative.  */
+		 we'll just be more conservative.
+
+		 ??? Unless we could ensure that the CALL_INSN_FUNCTION_USAGE
+		 information holds all clobbered registers.  */
 	      && ((GET_CODE (reg) == REG
 		   && REGNO (reg) < FIRST_PSEUDO_REGISTER)
-		  || GET_CODE (reg) == MEM)))
+		  || GET_CODE (reg) == MEM
+		  || find_reg_fusage (insn, CLOBBER, reg))))
 	return 1;
 
       body = PATTERN (insn);
@@ -1130,6 +1139,10 @@ dead_or_set_regno_p (insn, test_regno)
 	return 1;
     }
 
+  if (GET_CODE (insn) == CALL_INSN
+      && find_regno_fusage (insn, CLOBBER, test_regno))
+    return 1;
+
   if (GET_CODE (PATTERN (insn)) == SET)
     {
       rtx dest = SET_DEST (PATTERN (insn));
@@ -1231,6 +1244,90 @@ find_regno_note (insn, kind, regno)
 				    GET_MODE (XEXP (link, 0)))))
 	    > regno))
       return link;
+  return 0;
+}
+
+/* Return true if DATUM, or any overlap of DATUM, of kind CODE is found
+   in the CALL_INSN_FUNCTION_USAGE information of INSN.  */
+
+int
+find_reg_fusage (insn, code, datum)
+     rtx insn;
+     enum rtx_code code;
+     rtx datum;
+{
+  /* If it's not a CALL_INSN, it can't possibly have a
+     CALL_INSN_FUNCTION_USAGE field, so don't bother checking.  */
+  if (GET_CODE (insn) != CALL_INSN)
+    return 0;
+
+  if (! datum)
+    abort();
+
+  if (GET_CODE (datum) != REG)
+    {
+      register rtx link;
+
+      for (link = CALL_INSN_FUNCTION_USAGE (insn);
+           link;
+	   link = XEXP (link, 1))
+        if (GET_CODE (XEXP (link, 0)) == code
+	    && rtx_equal_p (datum, SET_DEST (XEXP (link, 0))))
+          return 1;
+    }
+  else
+    {
+      register int regno = REGNO (datum);
+
+      /* CALL_INSN_FUNCTION_USAGE information cannot contain references
+	 to pseudo registers, so don't bother checking.  */
+
+      if (regno < FIRST_PSEUDO_REGISTER)
+        {
+	  int end_regno = regno + HARD_REGNO_NREGS (regno, GET_MODE (datum));
+	  int i;
+
+	  for (i = regno; i < end_regno; i++)
+	    if (find_regno_fusage (insn, code, i))
+	      return 1;
+        }
+    }
+
+  return 0;
+}
+
+/* Return true if REGNO, or any overlap of REGNO, of kind CODE is found
+   in the CALL_INSN_FUNCTION_USAGE information of INSN.  */
+
+int
+find_regno_fusage (insn, code, regno)
+     rtx insn;
+     enum rtx_code code;
+     int regno;
+{
+  register rtx link;
+
+  /* CALL_INSN_FUNCTION_USAGE information cannot contain references
+     to pseudo registers, so don't bother checking.  */
+
+  if (regno >= FIRST_PSEUDO_REGISTER
+      || GET_CODE (insn) != CALL_INSN )
+    return 0;
+
+  for (link = CALL_INSN_FUNCTION_USAGE (insn); link; link = XEXP (link, 1))
+   {
+    register int regnote;
+    register rtx op;
+
+    if (GET_CODE (op = XEXP (link, 0)) == code
+	&& GET_CODE (SET_DEST (op)) == REG
+	&& (regnote = REGNO (SET_DEST (op))) <= regno
+	&& regnote
+		+ HARD_REGNO_NREGS (regnote, GET_MODE (SET_DEST (op)))
+	    > regno)
+      return 1;
+   }
+
   return 0;
 }
 
