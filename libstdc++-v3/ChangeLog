@@ -1,3 +1,8 @@
+2001-04-14  Martin Reinecke <martin@MPA-Garching.MPG.DE>
+
+	* include/bits/boost_concept_check.h(_Mutable_ContainerConcept):
+	Properly uglify member.
+
 2001-04-13  Phil Edwards  <pme@sources.redhat.com>
 
 	* include/bits/stl_algobase.h (equal):  Use EqualOpConcept instead
