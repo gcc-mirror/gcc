@@ -34,6 +34,7 @@
   
 // Information as gleaned from /usr/include/ctype.h
   
+  /// @brief  Base class for ctype.
   struct ctype_base
   {
     // Non-standard typedefs.

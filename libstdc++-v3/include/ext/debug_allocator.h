@@ -58,8 +58,6 @@ namespace __gnu_cxx
    *  This is precisely the allocator defined in the C++ Standard. 
    *    - all allocation calls operator new
    *    - all deallocation calls operator delete
-   *
-   *  (See @link Allocators allocators info @endlink for more.)
    */
   template<typename _Alloc>
     class debug_allocator

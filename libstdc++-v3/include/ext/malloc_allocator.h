@@ -41,8 +41,6 @@ namespace __gnu_cxx
    *  This is precisely the allocator defined in the C++ Standard. 
    *    - all allocation calls malloc
    *    - all deallocation calls free
-   *
-   *  (See @link Allocators allocators info @endlink for more.)
    */
   template<typename _Tp>
     class malloc_allocator

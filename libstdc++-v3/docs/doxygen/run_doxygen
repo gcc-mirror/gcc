@@ -279,14 +279,17 @@ for f in __gnu_cxx_*; do
     newname=`echo $f | sed 's/^__gnu_cxx_/__gnu_cxx::/'`
     mv $f $newname
 done
-for f in __gnu_debug_*; do
-    newname=`echo $f | sed 's/^__gnu_debug_/__gnu_debug::/'`
-    mv $f $newname
+
+# Generic reoval bits, where there are things in the generated man
+# pages that need to be killed.
+for f in *_libstdc__-v3_*; do
+    rm $f 
 done
-for f in GLIBCXXSTD_*; do
-    newname=`echo $f | sed 's/^GLIBCXXSTD_/std::/'`
-    mv $f $newname
+
+for f in *_src_*; do
+    rm $f 
 done
+
 
 # Also, for some reason, typedefs don't get their own man pages.  Sigh.
 for f in ios streambuf istream ostream iostream stringbuf \

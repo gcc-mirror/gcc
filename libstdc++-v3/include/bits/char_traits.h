@@ -51,7 +51,6 @@ namespace __gnu_cxx
   /**
    *  @brief  Mapping from character type to associated types.
    *
-   *
    *  @note This is an implementation class for the generic version
    *  of char_traits.  It defines int_type, off_type, pos_type, and
    *  state_type.  By default these are unsigned long, streamoff,
@@ -82,7 +81,8 @@ namespace __gnu_cxx
    *
    *  See http://gcc.gnu.org/onlinedocs/libstdc++/21_strings/howto.html#5
    *  for advice on how to make use of this class for "unusual" character
-   *  types. Also, check out include/ext/pod_char_traits.h.  */
+   *  types. Also, check out include/ext/pod_char_traits.h.  
+   */
   template<typename _CharT>
     struct char_traits
     {
@@ -222,12 +222,11 @@ namespace std
    *  types. Also, check out include/ext/pod_char_traits.h.
   */
   template<class _CharT>
-    struct char_traits
-    : public __gnu_cxx::char_traits<_CharT>
+    struct char_traits : public __gnu_cxx::char_traits<_CharT>
     { };
 
 
-  /// 21.1.3.1  char_traits specializations
+  /// @brief  21.1.3.1  char_traits specializations
   template<>
     struct char_traits<char>
     {
@@ -297,7 +296,7 @@ namespace std
 
 
 #ifdef _GLIBCXX_USE_WCHAR_T
-  /// 21.1.3.2  char_traits specializations
+  /// @brief  21.1.3.2  char_traits specializations
   template<>
     struct char_traits<wchar_t>
     {

@@ -37,6 +37,7 @@
 
 namespace __gnu_cxx
 {
+  /// @brief  Base class.
  template<typename _Tp>
     class array_allocator_base
     {
@@ -78,8 +79,6 @@ namespace __gnu_cxx
   /**
    *  @brief  An allocator that uses previously allocated memory.
    *  This memory can be externally, globally, or otherwise allocated.
-   *
-   *  (See @link Allocators allocators info @endlink for more.)
    */
   template<typename _Tp, typename _Array = std::tr1::array<_Tp> >
     class array_allocator : public array_allocator_base<_Tp>

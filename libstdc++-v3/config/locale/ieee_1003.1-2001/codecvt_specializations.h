@@ -39,8 +39,8 @@
   // Define this here so codecvt.cc can have _S_max_size definition.
 #define _GLIBCXX_USE___ENC_TRAITS 1
 
-  // Extension to use icov for dealing with character encodings,
-  // including conversions and comparisons between various character
+  /// @brief  Extension to use icov for dealing with character encodings.
+  // This includes conversions and comparisons between various character
   // sets.  This object encapsulates data that may need to be shared between
   // char_traits, codecvt and ctype.
   class __enc_traits
@@ -192,7 +192,7 @@
     { return _M_ext_enc; }    
   };
 
-  // Partial specialization
+  /// Partial specialization.
   // This specialization takes advantage of iconv to provide code
   // conversions between a large number of character encodings.
   template<typename _InternT, typename _ExternT>

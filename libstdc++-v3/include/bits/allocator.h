@@ -71,11 +71,7 @@ namespace std
         { typedef allocator<_Tp1> other; };
     };
 
-  /**
-   *  @brief  The "standard" allocator, as per [20.4].
-   *
-   *  (See @link Allocators allocators info @endlink for more.)
-   */
+  /// @brief  The "standard" allocator, as per [20.4].
   template<typename _Tp>
     class allocator: public ___glibcxx_base_allocator<_Tp>
     {
