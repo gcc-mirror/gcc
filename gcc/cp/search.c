@@ -104,8 +104,6 @@ static void expand_upcast_fixups
 static void fixup_virtual_upcast_offsets
 	PARAMS ((tree, tree, int, int, tree, tree, tree, tree,
 	       tree *));
-static tree marked_new_vtablep PARAMS ((tree, void *));
-static tree unmarked_new_vtablep PARAMS ((tree, void *));
 static tree marked_pushdecls_p PARAMS ((tree, void *));
 static tree unmarked_pushdecls_p PARAMS ((tree, void *));
 static tree dfs_debug_unmarkedp PARAMS ((tree, void *));
@@ -2442,26 +2440,6 @@ unmarked_vtable_pathp (binfo, data)
   return !BINFO_VTABLE_PATH_MARKED (binfo) ? binfo : NULL_TREE; 
 }
 
-static tree 
-marked_new_vtablep (binfo, data) 
-     tree binfo;
-     void *data;
-{
-  struct vbase_info *vi = (struct vbase_info *) data;
-
-  return BINFO_NEW_VTABLE_MARKED (binfo, vi->type) ? binfo : NULL_TREE; 
-}
-
-static tree
-unmarked_new_vtablep (binfo, data) 
-     tree binfo;
-     void *data;
-{ 
-  struct vbase_info *vi = (struct vbase_info *) data;
-
-  return !BINFO_NEW_VTABLE_MARKED (binfo, vi->type) ? binfo : NULL_TREE; 
-}
-
 static tree
 marked_pushdecls_p (binfo, data) 
      tree binfo;
@@ -2480,20 +2458,9 @@ unmarked_pushdecls_p (binfo, data)
 	  && !BINFO_PUSHDECLS_MARKED (binfo)) ? binfo : NULL_TREE;
 }
 
-#if 0
-static int dfs_search_slot_nonempty_p (binfo) tree binfo;
-{ return CLASSTYPE_SEARCH_SLOT (BINFO_TYPE (binfo)) != 0; }
-#endif
-
 /* The worker functions for `dfs_walk'.  These do not need to
    test anything (vis a vis marking) if they are paired with
    a predicate function (above).  */
-
-#if 0
-static void
-dfs_mark (binfo) tree binfo;
-{ SET_BINFO_MARKED (binfo); }
-#endif
 
 tree
 dfs_unmark (binfo, data) 
@@ -2501,17 +2468,6 @@ dfs_unmark (binfo, data)
      void *data ATTRIBUTE_UNUSED;
 { 
   CLEAR_BINFO_MARKED (binfo); 
-  return NULL_TREE;
-}
-
-/* Clear BINFO_VTABLE_PATH_MARKED.  */
-
-tree
-dfs_vtable_path_unmark (binfo, data)
-     tree binfo;
-     void *data ATTRIBUTE_UNUSED;
-{ 
-  CLEAR_BINFO_VTABLE_PATH_MARKED (binfo); 
   return NULL_TREE;
 }
 
@@ -2545,7 +2501,6 @@ dfs_find_vbases (binfo, data)
 	}
     }
   SET_BINFO_VTABLE_PATH_MARKED (binfo);
-  SET_BINFO_NEW_VTABLE_MARKED (binfo, vi->type);
 
   return NULL_TREE;
 }
@@ -2559,8 +2514,6 @@ dfs_init_vbase_pointers (binfo, data)
   tree type = BINFO_TYPE (binfo);
   tree fields;
   tree this_vbase_ptr;
-
-  CLEAR_BINFO_VTABLE_PATH_MARKED (binfo);
 
   if (BINFO_INHERITANCE_CHAIN (binfo))
     {
@@ -2578,10 +2531,6 @@ dfs_init_vbase_pointers (binfo, data)
   /* We're going to iterate through all the pointers to virtual
      base-classes.  They come at the beginning of the class.  */
   fields = TYPE_FIELDS (type);
-  if (fields == TYPE_VFIELD (type))
-    /* If the first field is the vtbl pointer (as happens in the new
-       ABI), skip it.  */
-    fields = TREE_CHAIN (fields);
 
   if (fields == NULL_TREE
       || DECL_NAME (fields) == NULL_TREE
@@ -2614,14 +2563,12 @@ dfs_init_vbase_pointers (binfo, data)
 static tree
 dfs_clear_vbase_slots (binfo, data)
      tree binfo;
-     void *data;
+     void *data ATTRIBUTE_UNUSED;
 {
   tree type = BINFO_TYPE (binfo);
-  struct vbase_info *vi = (struct vbase_info *) data;
 
   CLASSTYPE_SEARCH_SLOT (type) = 0;
   CLEAR_BINFO_VTABLE_PATH_MARKED (binfo);
-  CLEAR_BINFO_NEW_VTABLE_MARKED (binfo, vi->type);
   return NULL_TREE;
 }
 
@@ -2630,6 +2577,8 @@ init_vbase_pointers (type, decl_ptr)
      tree type;
      tree decl_ptr;
 {
+  my_friendly_assert (!vbase_offsets_in_vtable_p (), 20000516);
+
   if (TYPE_USES_VIRTUAL_BASECLASSES (type))
     {
       struct vbase_info vi;
@@ -2653,7 +2602,7 @@ init_vbase_pointers (type, decl_ptr)
 		     marked_vtable_pathp,
 		     &vi);
 
-      dfs_walk (binfo, dfs_clear_vbase_slots, marked_new_vtablep, &vi);
+      dfs_walk (binfo, dfs_clear_vbase_slots, marked_vtable_pathp, NULL);
       flag_this_is_variable = old_flag;
       return vi.inits;
     }
@@ -2950,7 +2899,9 @@ expand_indirect_vtbls_init (binfo, decl_ptr)
      tree binfo;
      tree decl_ptr;
 {
-  tree type = BINFO_TYPE (binfo);
+  tree type;
+
+  type = BINFO_TYPE (binfo);
 
   /* This function executes during the finish_function() segment,
      AFTER the auto variables and temporary stack space has been marked
@@ -2971,9 +2922,9 @@ expand_indirect_vtbls_init (binfo, decl_ptr)
       vi.decl_ptr = decl_ptr;
       vi.vbase_types = vbases;
 
-      dfs_walk (binfo, dfs_find_vbases, unmarked_new_vtablep, &vi);
+      dfs_walk (binfo, dfs_find_vbases, NULL, &vi);
       fixup_all_virtual_upcast_offsets (type, vi.decl_ptr);
-      dfs_walk (binfo, dfs_clear_vbase_slots, marked_new_vtablep, &vi);
+      dfs_walk (binfo, dfs_clear_vbase_slots, marked_vtable_pathp, &vi);
     }
 }
 

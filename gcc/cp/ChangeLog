@@ -1,5 +1,19 @@
 2000-05-16  Mark Mitchell  <mark@codesourcery.com>
 
+	* cp-treeh (BINFO_NEW_VTABLE_MARKED): Update documentation.
+	* init.c (dfs_vtable_path_unmark): Remove.
+	* search.c (marked_new_vtable_p): Likewise.
+	(unmarked_new_vtable_p): Likewise.
+	(dfs_search_slot_nonempty_p): Likewise.
+	(dfs_mark): Likewise.
+	(dfs_vtable_path_unmark): Likewise.
+	(dfs_find_vbases): Don't set BINFO_NEW_VTABLE_MARKED.
+	(dfs_int_vbase_pointers): Don't clear BINFO_VTABLE_PATH_MARKED.
+	(dfs_init_vbase_pointers): Remove special-case new ABI code.
+	(dfs_clear_vbase_slots): Don't clear BINFO_NEW_VTABLE_MARKED.
+	(init_vbase_pointers): Simplify.
+	(expand_indirect_vtbls_init): Likewise.
+
 	* class.c (copy_virtuals): New function.
 	(build_primary_table): Use it.
 	(build_secondary_vtable): Likewise.
