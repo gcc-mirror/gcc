@@ -350,7 +350,7 @@ in the following sections.
 -mapp-regs  -mbroken-saverestore  -mcypress @gol
 -mfaster-structs  -mflat @gol
 -mfpu  -mhard-float  -mhard-quad-float @gol
--mimpure-text  -mlive-g0  -mno-app-regs @gol
+-mimpure-text  -mlittle-endian  -mlive-g0  -mno-app-regs @gol
 -mno-faster-structs  -mno-flat  -mno-fpu @gol
 -mno-impure-text  -mno-stack-bias  -mno-unaligned-doubles @gol
 -msoft-float  -msoft-quad-float  -msparclite  -mstack-bias @gol
@@ -6022,22 +6022,6 @@ this to work.
 Generate output containing quad-word (long double) floating point
 instructions.
 
-@item -mimpure-text
-@opindex mimpure-text
-@option{-mimpure-text}, used in addition to @option{-shared}, tells
-the compiler to not pass @option{-z text} to the linker when linking a
-shared object.  Using this option, you can link position-dependent
-code into a shared object.  
-
-@option{-mimpure-text} suppresses the ``relocations remain against
-allocatable but non-writable sections'' linker error message.
-However, the necessary relocations will trigger copy-on-write, and the
-shared object is not actually shared across processes.  Instead of
-using @option{-mimpure-text}, you should compile all source code with
-@option{-fpic} or @option{-fPIC}.
-
-This option is only available on SunOS and Solaris.
-
 @item -msoft-quad-float
 @opindex msoft-quad-float
 Generate output containing library calls for quad-word (long double)
@@ -6090,6 +6074,22 @@ However, the use of this changed alignment directly violates the SPARC
 ABI@.  Thus, it's intended only for use on targets where the developer
 acknowledges that their resulting code will not be directly in line with
 the rules of the ABI@.
+
+@item -mimpure-text
+@opindex mimpure-text
+@option{-mimpure-text}, used in addition to @option{-shared}, tells
+the compiler to not pass @option{-z text} to the linker when linking a
+shared object.  Using this option, you can link position-dependent
+code into a shared object.  
+
+@option{-mimpure-text} suppresses the ``relocations remain against
+allocatable but non-writable sections'' linker error message.
+However, the necessary relocations will trigger copy-on-write, and the
+shared object is not actually shared across processes.  Instead of
+using @option{-mimpure-text}, you should compile all source code with
+@option{-fpic} or @option{-fPIC}.
+
+This option is only available on SunOS and Solaris.
 
 @item -mv8
 @itemx -msparclite
@@ -6199,7 +6199,8 @@ on SPARC V9 processors in 64-bit environments.
 @table @gcctabopt
 @item -mlittle-endian
 @opindex mlittle-endian
-Generate code for a processor running in little-endian mode.
+Generate code for a processor running in little-endian mode. It is only
+available for a few configurations and most notably not on Solaris.
 
 @item -m32
 @itemx -m64

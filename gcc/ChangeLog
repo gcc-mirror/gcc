@@ -1,3 +1,10 @@
+2003-07-17  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR other/11466
+	* doc/invoke.texi (SPARC Options): Document "-mlittle-endian"
+	and its restrictions for the SPARC64 port.
+	Move the entry of "-mimpure-text" before that of "-mv8".
+
 2003-07-17  Eric Botcazou <ebotcazou@libertysurf.fr>
             Phil Edwards <phil@jaj.com>
 
