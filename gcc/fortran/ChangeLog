@@ -1,3 +1,8 @@
+2004-08-06  Feng Wang  <fengwang@nudt.edu.cn>
+
+	* f95-lang.c (gfc_init_builtin_functions): Fix the number of
+	__builtin_pow[f] arguments.
+
 2004-08-06  Steven G. Kargl  <kargls@comcast.net>
 
 	* arith.c: Add #define for model numbers.  Remove global GMP variables.
