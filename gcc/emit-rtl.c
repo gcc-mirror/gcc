@@ -2161,7 +2161,10 @@ add_insn_after (insn, after)
       /* Scan all pending sequences too.  */
       for (; stack; stack = stack->next)
 	if (after == stack->last)
-	  stack->last = insn;
+	  {
+	    stack->last = insn;
+	    break;
+	  }
 
       if (stack == 0)
 	abort ();
@@ -2209,7 +2212,10 @@ add_insn_before (insn, before)
       /* Scan all pending sequences too.  */
       for (; stack; stack = stack->next)
 	if (before == stack->first)
-	  stack->first = insn;
+	  {
+	    stack->first = insn;
+	    break;
+	  }
 
       if (stack == 0)
 	abort ();
