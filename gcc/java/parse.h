@@ -603,10 +603,6 @@ typedef struct _jdeplist {
 #define GET_CURRENT_BLOCK(F) ((F) ? DECL_FUNCTION_BODY ((F)) :	\
 			     current_static_block)
 
-/* For an artificial BLOCK (created to house a local variable declaration not
-   at the start of an existing block), the parent block;  otherwise NULL. */
-#define BLOCK_EXPR_ORIGIN(NODE) BLOCK_ABSTRACT_ORIGIN(NODE)
-
 /* Merge an other line to the source line number of a decl. Used to
    remember function's end. */
 #define DECL_SOURCE_LINE_MERGE(DECL,NO) DECL_SOURCE_LINE(DECL) |= (NO << 16)

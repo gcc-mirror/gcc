@@ -48,6 +48,7 @@ struct JCF;
       IS_A_CLASSFILE_NAME (in IDENTIFIER_NODE)
       COMPOUND_ASSIGN_P (in EXPR (binop_*))
       LOCAL_CLASS_P (in RECORD_TYPE)
+      BLOCK_IS_IMPLICIT (in BLOCK)
    2: RETURN_MAP_ADJUSTED (in TREE_VEC).
       QUALIFIED_P (in IDENTIFIER_NODE)
       PRIMARY_P (in EXPR_WITH_FILE_LOCATION)
@@ -1501,6 +1502,8 @@ extern tree *type_map;
 
 #define BLOCK_EXPR_DECLS(NODE)  BLOCK_VARS(NODE)
 #define BLOCK_EXPR_BODY(NODE)   BLOCK_SUBBLOCKS(NODE)
+/* True for an implicit block surrounding declaration not at start of {...}. */
+#define BLOCK_IS_IMPLICIT(NODE) TREE_LANG_FLAG_1 (NODE)
 
 #define BUILD_MONITOR_ENTER(WHERE, ARG)				\
   {								\

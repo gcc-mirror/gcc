@@ -6909,12 +6909,11 @@ declare_local_variables (modifier, type, vlist)
   int final_p = 0;
 
   /* Push a new block if statements were seen between the last time we
-     pushed a block and now. Keep a cound of block to close */
+     pushed a block and now. Keep a count of blocks to close */
   if (BLOCK_EXPR_BODY (GET_CURRENT_BLOCK (current_function_decl)))
     {
-      tree body = GET_CURRENT_BLOCK (current_function_decl);
       tree b = enter_block ();
-      BLOCK_EXPR_ORIGIN (b) = body;
+      BLOCK_IS_IMPLICIT (b) = 1;
     }
 
   if (modifier)
@@ -11962,7 +11961,7 @@ lookup_name_in_blocks (name)
 static void
 maybe_absorb_scoping_blocks ()
 {
-  while (BLOCK_EXPR_ORIGIN (GET_CURRENT_BLOCK (current_function_decl)))
+  while (BLOCK_IS_IMPLICIT (GET_CURRENT_BLOCK (current_function_decl)))
     {
       tree b = exit_block ();
       java_method_add_stmt (current_function_decl, b);
