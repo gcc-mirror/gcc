@@ -65,29 +65,32 @@ void test01()
   iterator_type is_it02(iss);
   tm time02;
   errorstate = good;
-  tim_get.get_year(is_it02, end, iss, errorstate, &time02);
+  iterator_type ret02 = tim_get.get_year(is_it02, end, iss, errorstate,
+					 &time02);
   VERIFY( time02.tm_year == time_bday.tm_year );
   VERIFY( errorstate == good );
-  VERIFY( *is_it02 == ' ');
+  VERIFY( *ret02 == ' ' );
 
   iss.str("197d1 ");
   iterator_type is_it03(iss);
   tm time03;
   time03.tm_year = 3;
   errorstate = good;
-  tim_get.get_year(is_it03, end, iss, errorstate, &time03);
+  iterator_type ret03 = tim_get.get_year(is_it03, end, iss, errorstate,
+					 &time03);
   VERIFY( time03.tm_year == 3 );
   VERIFY( errorstate == ios_base::failbit );
-  VERIFY( *is_it03 == 'd');
+  VERIFY( *ret03 == 'd' );
 
   iss.str("71d71");
   iterator_type is_it04(iss);
   tm time04;
   errorstate = good;
-  tim_get.get_year(is_it04, end, iss, errorstate, &time04);
+  iterator_type ret04 = tim_get.get_year(is_it04, end, iss, errorstate,
+					 &time04);
   VERIFY( time04.tm_year == time_bday.tm_year );
   VERIFY( errorstate == good );
-  VERIFY( *is_it03 == 'd');
+  VERIFY( *ret04 == 'd' );
 
   iss.str("71");
   iterator_type is_it05(iss);

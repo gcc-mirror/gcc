@@ -1,6 +1,6 @@
 // 2003-12-03  Paolo Carlini  <pcarlini@suse.de>
 
-// Copyright (C) 2003 Free Software Foundation
+// Copyright (C) 2003, 2004 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -36,7 +36,8 @@ void test01()
   iterator_type end;
 
   wistringstream iss;
-  const time_get<wchar_t>& tim_get = use_facet<time_get<wchar_t> >(iss.getloc()); 
+  const time_get<wchar_t>& tim_get =
+    use_facet<time_get<wchar_t> >(iss.getloc()); 
 
   const ios_base::iostate good = ios_base::goodbit;
   ios_base::iostate errorstate = good;
@@ -45,17 +46,19 @@ void test01()
   iterator_type is_it01(iss);
   tm time01;
   errorstate = good;
-  tim_get.get_date(is_it01, end, iss, errorstate, &time01);
+  iterator_type ret01 = tim_get.get_date(is_it01, end, iss, errorstate,
+					 &time01);
   VERIFY( errorstate == ios_base::failbit );
-  VERIFY( *is_it01 == L'6' );
+  VERIFY( *ret01 == L'6' );
 
   iss.str(L"04/38/71");
   iterator_type is_it02(iss);
   tm time02;
   errorstate = good;
-  tim_get.get_date(is_it02, end, iss, errorstate, &time02);
+  iterator_type ret02 = tim_get.get_date(is_it02, end, iss, errorstate,
+					 &time02);
   VERIFY( errorstate == ios_base::failbit );
-  VERIFY( *is_it02 == L'8' );
+  VERIFY( *ret02 == L'8' );
 }
 
 int main()
