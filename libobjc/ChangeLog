@@ -1,3 +1,7 @@
+Thu Oct 22 14:34:06 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* configure.in: Use AC_CONFIG_AUX_DIR($topsrcdir).
+
 Sat Oct 17 05:21:31 1998  Ovidiu Predescu  <ovidiu@slip.net>
 
 	* objc-features.texi (Top): Changed the email address.
