@@ -1,6 +1,4 @@
-// 2000-01-10 bkoz
-
-// Copyright (C) 2000, 2001, 2003, 2004 Free Software Foundation, Inc.
+// Copyright (C) 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,7 +16,7 @@
 // Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 // USA.
 
-// 27.7.2.2 member functions (istringstream_members)
+// 27.7.3.2 member functions (ostringstream_members)
 
 #include <sstream>
 #include <testsuite_hooks.h>
@@ -26,48 +24,23 @@
 void test01()
 {
   bool test __attribute__((unused)) = true;
-  std::istringstream is01;
-  const std::string str00; 
-  const std::string str01 = "123";
-  std::string str02;
-  const int i01 = 123;
-  int a,b;
+  std::wostringstream os01;
+  const std::wstring str00; 
+  const std::wstring str01 = L"123";
+  std::wstring str02;
 
-  std::ios_base::iostate state1, state2, statefail, stateeof;
+  std::ios_base::iostate statefail, stateeof;
   statefail = std::ios_base::failbit;
   stateeof = std::ios_base::eofbit;
 
   // string str() const
-  str02 = is01.str();
+  str02 = os01.str();
   VERIFY( str00 == str02 );
 
   // void str(const basic_string&)
-  is01.str(str01);
-  str02 = is01.str();
+  os01.str(str01);
+  str02 = os01.str();
   VERIFY( str01 == str02 );
-  state1 = is01.rdstate();
-  is01 >> a;
-  state2 = is01.rdstate();
-  VERIFY( a == i01 );
-  // 22.2.2.1.2 num_get virtual functions
-  // p 13
-  // in any case, if stage 2 processing was terminated by the test for
-  // in == end then err != ios_base::eofbit is performed.
-  VERIFY( state1 != state2 );
-  VERIFY( state2 == stateeof ); 
-
-  is01.str(str01);
-  is01 >> b;
-  VERIFY( b != a ); 
-  // as is01.good() is false, istream::sentry blocks extraction.
-
-  is01.clear();
-  state1 = is01.rdstate();
-  is01 >> b;
-  state2 = is01.rdstate();
-  VERIFY( b == a ); 
-  VERIFY( state1 != state2 );
-  VERIFY( state2 == stateeof ); 
 }
 
 int main()
