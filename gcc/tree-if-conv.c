@@ -187,9 +187,9 @@ tree_if_conversion (struct loop *loop, bool for_vectorizer)
 
       /* If current bb has only one successor, then consider it as an
 	 unconditional goto.  */
-      if (EDGE_COUNT (bb->succs) == 1)
+      if (single_succ_p (bb))
 	{
-	  basic_block bb_n = EDGE_SUCC (bb, 0)->dest;
+	  basic_block bb_n = single_succ (bb);
 	  if (cond != NULL_TREE)
 	    add_to_predicate_list (bb_n, cond);
 	  cond = NULL_TREE;

@@ -501,7 +501,7 @@ slpeel_update_phi_nodes_for_guard (edge guard_edge,
   tree orig_phi, new_phi, update_phi;
   tree guard_arg, loop_arg;
   basic_block new_merge_bb = guard_edge->dest;
-  edge e = EDGE_SUCC (new_merge_bb, 0);
+  edge e = single_succ_edge (new_merge_bb);
   basic_block update_bb = e->dest;
   basic_block orig_bb = (entry_phis ? loop->header : update_bb);
 
@@ -742,7 +742,7 @@ slpeel_add_loop_guard (basic_block guard_bb, tree cond, basic_block exit_bb,
   edge new_e, enter_e;
   tree cond_stmt, then_label, else_label;
 
-  enter_e = EDGE_SUCC (guard_bb, 0);
+  enter_e = single_succ_edge (guard_bb);
   enter_e->flags &= ~EDGE_FALLTHRU;
   enter_e->flags |= EDGE_FALSE_VALUE;
   bsi = bsi_last (guard_bb);

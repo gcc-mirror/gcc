@@ -407,18 +407,18 @@ split_edge (edge e)
   ret = cfg_hooks->split_edge (e);
   ret->count = count;
   ret->frequency = freq;
-  EDGE_SUCC (ret, 0)->probability = REG_BR_PROB_BASE;
-  EDGE_SUCC (ret, 0)->count = count;
+  single_succ_edge (ret)->probability = REG_BR_PROB_BASE;
+  single_succ_edge (ret)->count = count;
 
   if (irr)
     {
       ret->flags |= BB_IRREDUCIBLE_LOOP;
-      EDGE_PRED (ret, 0)->flags |= EDGE_IRREDUCIBLE_LOOP;
-      EDGE_SUCC (ret, 0)->flags |= EDGE_IRREDUCIBLE_LOOP;
+      single_pred_edge (ret)->flags |= EDGE_IRREDUCIBLE_LOOP;
+      single_succ_edge (ret)->flags |= EDGE_IRREDUCIBLE_LOOP;
     }
 
   if (dom_computed[CDI_DOMINATORS])
-    set_immediate_dominator (CDI_DOMINATORS, ret, EDGE_PRED (ret, 0)->src);
+    set_immediate_dominator (CDI_DOMINATORS, ret, single_pred (ret));
 
   if (dom_computed[CDI_DOMINATORS] >= DOM_NO_FAST_QUERY)
     {
@@ -431,22 +431,22 @@ split_edge (edge e)
 	 ret, provided that all other predecessors of e->dest are
 	 dominated by e->dest.  */
 
-      if (get_immediate_dominator (CDI_DOMINATORS, EDGE_SUCC (ret, 0)->dest)
-	  == EDGE_PRED (ret, 0)->src)
+      if (get_immediate_dominator (CDI_DOMINATORS, single_succ (ret))
+	  == single_pred (ret))
 	{
 	  edge_iterator ei;
-	  FOR_EACH_EDGE (f, ei, EDGE_SUCC (ret, 0)->dest->preds)
+	  FOR_EACH_EDGE (f, ei, single_succ (ret)->preds)
 	    {
-	      if (f == EDGE_SUCC (ret, 0))
+	      if (f == single_succ_edge (ret))
 		continue;
 
 	      if (!dominated_by_p (CDI_DOMINATORS, f->src,
-				   EDGE_SUCC (ret, 0)->dest))
+				   single_succ (ret)))
 		break;
 	    }
 
 	  if (!f)
-	    set_immediate_dominator (CDI_DOMINATORS, EDGE_SUCC (ret, 0)->dest, ret);
+	    set_immediate_dominator (CDI_DOMINATORS, single_succ (ret), ret);
 	}
     };
 
@@ -657,9 +657,9 @@ tidy_fallthru_edges (void)
 	 merge the flags for the duplicate edges.  So we do not want to
 	 check that the edge is not a FALLTHRU edge.  */
 
-      if (EDGE_COUNT (b->succs) == 1)
+      if (single_succ_p (b))
 	{
-	  s = EDGE_SUCC (b, 0);
+	  s = single_succ_edge (b);
 	  if (! (s->flags & EDGE_COMPLEX)
 	      && s->dest == c
 	      && !find_reg_note (BB_END (b), REG_CROSSING_JUMP, NULL_RTX))

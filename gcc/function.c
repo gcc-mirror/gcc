@@ -5130,9 +5130,9 @@ thread_prologue_and_epilogue_insns (rtx f ATTRIBUTE_UNUSED)
       /* Can't deal with multiple successors of the entry block
          at the moment.  Function should always have at least one
          entry point.  */
-      gcc_assert (EDGE_COUNT (ENTRY_BLOCK_PTR->succs) == 1);
+      gcc_assert (single_succ_p (ENTRY_BLOCK_PTR));
 
-      insert_insn_on_edge (seq, EDGE_SUCC (ENTRY_BLOCK_PTR, 0));
+      insert_insn_on_edge (seq, single_succ_edge (ENTRY_BLOCK_PTR));
       inserted = 1;
     }
 #endif
@@ -5228,7 +5228,7 @@ thread_prologue_and_epilogue_insns (rtx f ATTRIBUTE_UNUSED)
 		  /* If this block has only one successor, it both jumps
 		     and falls through to the fallthru block, so we can't
 		     delete the edge.  */
-		  if (EDGE_COUNT (bb->succs) == 1)
+		  if (single_succ_p (bb))
 		    {
 		      ei_next (&ei2);
 		      continue;
@@ -5250,7 +5250,7 @@ thread_prologue_and_epilogue_insns (rtx f ATTRIBUTE_UNUSED)
 	  emit_barrier_after (BB_END (last));
 	  emit_return_into_block (last, epilogue_line_note);
 	  epilogue_end = BB_END (last);
-	  EDGE_SUCC (last, 0)->flags &= ~EDGE_FALLTHRU;
+	  single_succ_edge (last)->flags &= ~EDGE_FALLTHRU;
 	  goto epilogue_done;
 	}
     }

@@ -757,7 +757,7 @@ remove_dead_stmt (block_stmt_iterator *i, basic_block bb)
 	EDGE_SUCC (bb, 0)->flags &= ~EDGE_FALLTHRU;
 
       /* Remove the remaining the outgoing edges.  */
-      while (EDGE_COUNT (bb->succs) != 1)
+      while (!single_succ_p (bb))
         remove_edge (EDGE_SUCC (bb, 1));
     }
   

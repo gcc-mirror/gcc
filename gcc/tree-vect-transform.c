@@ -1322,7 +1322,7 @@ vect_update_ivs_after_vectorizer (loop_vec_info loop_vinfo, tree niters,
   /* gcc_assert (vect_can_advance_ivs_p (loop_vinfo)); */
 
   /* Make sure there exists a single-predecessor exit bb:  */
-  gcc_assert (EDGE_COUNT (exit_bb->preds) == 1);
+  gcc_assert (single_pred_p (exit_bb));
 
   for (phi = phi_nodes (loop->header), phi1 = phi_nodes (update_bb); 
        phi && phi1; 
@@ -1373,7 +1373,7 @@ vect_update_ivs_after_vectorizer (loop_vec_info loop_vinfo, tree niters,
 
       /* Fix phi expressions in the successor bb.  */
       gcc_assert (PHI_ARG_DEF_FROM_EDGE (phi1, update_e) ==
-                  PHI_ARG_DEF_FROM_EDGE (phi, EDGE_SUCC (loop->latch, 0)));
+                  PHI_ARG_DEF_FROM_EDGE (phi, single_succ_edge (loop->latch)));
       SET_PHI_ARG_DEF (phi1, update_e->dest_idx, ni_name);
     }
 }

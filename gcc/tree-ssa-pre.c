@@ -1143,10 +1143,10 @@ compute_antic_aux (basic_block block, bool block_has_abnormal_pred_edge)
     ;
   /* If we have one successor, we could have some phi nodes to
      translate through.  */
-  else if (EDGE_COUNT (block->succs) == 1)
+  else if (single_succ_p (block))
     {
-      phi_translate_set (ANTIC_OUT, ANTIC_IN(EDGE_SUCC (block, 0)->dest),
-			 block, EDGE_SUCC (block, 0)->dest);
+      phi_translate_set (ANTIC_OUT, ANTIC_IN(single_succ (block)),
+			 block, single_succ (block));
     }
   /* If we have multiple successors, we take the intersection of all of
      them.  */
@@ -1554,7 +1554,7 @@ insert_aux (basic_block block)
 		  bitmap_value_replace_in_set (AVAIL_OUT (block), ssa_name (i));
 		}
 	    }
-	  if (EDGE_COUNT (block->preds) > 1)
+	  if (!single_pred_p (block))
 	    {
 	      value_set_node_t node;
 	      for (node = ANTIC_IN (block)->head;
@@ -2138,9 +2138,9 @@ init_pre (bool do_fre)
      ENTRY_BLOCK_PTR (FIXME, if ENTRY_BLOCK_PTR had an index number
      different than -1 we wouldn't have to hack this.  tree-ssa-dce.c
      needs a similar change).  */
-  if (EDGE_COUNT (EDGE_SUCC (ENTRY_BLOCK_PTR, 0)->dest->preds) > 1)
-    if (!(EDGE_SUCC (ENTRY_BLOCK_PTR, 0)->flags & EDGE_ABNORMAL))
-      split_edge (EDGE_SUCC (ENTRY_BLOCK_PTR, 0));
+  if (!single_pred_p (single_succ (ENTRY_BLOCK_PTR)))
+    if (!(single_succ_edge (ENTRY_BLOCK_PTR)->flags & EDGE_ABNORMAL))
+      split_edge (single_succ_edge (ENTRY_BLOCK_PTR));
 
   FOR_ALL_BB (bb)
     bb->aux = xcalloc (1, sizeof (struct bb_value_sets));

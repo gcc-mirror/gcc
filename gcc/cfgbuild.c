@@ -708,9 +708,9 @@ compute_outgoing_frequencies (basic_block b)
 	}
     }
 
-  if (EDGE_COUNT (b->succs) == 1)
+  if (single_succ_p (b))
     {
-      e = EDGE_SUCC (b, 0);
+      e = single_succ_edge (b);
       e->probability = REG_BR_PROB_BASE;
       e->count = b->count;
       return;

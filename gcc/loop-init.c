@@ -49,7 +49,7 @@ loop_optimizer_init (FILE *dumpfile)
      block.  */
 
   for (ei = ei_start (EXIT_BLOCK_PTR->preds); (e = ei_safe_edge (ei)); )
-    if ((e->flags & EDGE_FALLTHRU) && EDGE_COUNT (e->src->succs) > 1)
+    if ((e->flags & EDGE_FALLTHRU) && !single_succ_p (e->src))
       split_edge (e);
     else
       ei_next (&ei);

@@ -331,8 +331,8 @@ remove_path (struct loops *loops, edge e)
      e, but we only have basic block dominators.  This is easy to
      fix -- when e->dest has exactly one predecessor, this corresponds
      to blocks dominated by e->dest, if not, split the edge.  */
-  if (EDGE_COUNT (e->dest->preds) > 1)
-    e = EDGE_PRED (loop_split_edge_with (e, NULL_RTX), 0);
+  if (!single_pred_p (e->dest))
+    e = single_pred_edge (loop_split_edge_with (e, NULL_RTX));
 
   /* It may happen that by removing path we remove one or more loops
      we belong to.  In this case first unloop the loops, then proceed
@@ -623,7 +623,7 @@ unloop (struct loops *loops, struct loop *loop)
   loops->parray[loop->num] = NULL;
   flow_loop_free (loop);
 
-  remove_edge (EDGE_SUCC (latch, 0));
+  remove_edge (single_succ_edge (latch));
   fix_bb_placements (loops, latch);
 
   /* If the loop was inside an irreducible region, we would have to somehow
@@ -802,8 +802,8 @@ loop_delete_branch_edge (edge e, int really_delete)
 
   if (!redirect_edge_and_branch (e, newdest))
     return false;
-  EDGE_SUCC (src, 0)->flags &= ~EDGE_IRREDUCIBLE_LOOP;
-  EDGE_SUCC (src, 0)->flags |= irr;
+  single_succ_edge (src)->flags &= ~EDGE_IRREDUCIBLE_LOOP;
+  single_succ_edge (src)->flags |= irr;
   
   return true;
 }
@@ -1121,10 +1121,10 @@ mfb_keep_just (edge e)
 static void
 mfb_update_loops (basic_block jump)
 {
-  struct loop *loop = EDGE_SUCC (jump, 0)->dest->loop_father;
+  struct loop *loop = single_succ (jump)->loop_father;
 
   if (dom_computed[CDI_DOMINATORS])
-    set_immediate_dominator (CDI_DOMINATORS, jump, EDGE_PRED (jump, 0)->src);
+    set_immediate_dominator (CDI_DOMINATORS, jump, single_pred (jump));
   add_bb_to_loop (jump, loop);
   loop->latch = jump;
 }
@@ -1154,7 +1154,7 @@ create_preheader (struct loop *loop, int flags)
 	continue;
       irred |= (e->flags & EDGE_IRREDUCIBLE_LOOP) != 0;
       nentry++;
-      if (EDGE_COUNT (e->src->succs) == 1)
+      if (single_succ_p (e->src))
 	one_succ_pred = e;
     }
   gcc_assert (nentry);
@@ -1165,7 +1165,7 @@ create_preheader (struct loop *loop, int flags)
       e = EDGE_PRED (loop->header,
 		     EDGE_PRED (loop->header, 0)->src == loop->latch);
 
-      if (!(flags & CP_SIMPLE_PREHEADERS) || EDGE_COUNT (e->src->succs) == 1)
+      if (!(flags & CP_SIMPLE_PREHEADERS) || single_succ_p (e->src))
 	return NULL;
     }
 
@@ -1206,7 +1206,7 @@ create_preheader (struct loop *loop, int flags)
   if (irred)
     {
       dummy->flags |= BB_IRREDUCIBLE_LOOP;
-      EDGE_SUCC (dummy, 0)->flags |= EDGE_IRREDUCIBLE_LOOP;
+      single_succ_edge (dummy)->flags |= EDGE_IRREDUCIBLE_LOOP;
     }
 
   if (dump_file)
@@ -1239,7 +1239,7 @@ force_single_succ_latches (struct loops *loops)
   for (i = 1; i < loops->num; i++)
     {
       loop = loops->parray[i];
-      if (loop->latch != loop->header && EDGE_COUNT (loop->latch->succs) == 1)
+      if (loop->latch != loop->header && single_succ_p (loop->latch))
 	continue;
 
       e = find_edge (loop->latch, loop->header);
@@ -1341,9 +1341,9 @@ create_loop_notes (void)
 		      && onlyjump_p (insn))
 		    {
 		      pbb = BLOCK_FOR_INSN (insn);
-		      gcc_assert (pbb && EDGE_COUNT (pbb->succs) == 1);
+		      gcc_assert (pbb && single_succ_p (pbb));
 
-		      if (!flow_bb_inside_loop_p (loop, EDGE_SUCC (pbb, 0)->dest))
+		      if (!flow_bb_inside_loop_p (loop, single_succ (pbb)))
 			insn = BB_HEAD (first[loop->num]);
 		    }
 		  else

@@ -2309,7 +2309,7 @@ vect_analyze_loop_form (struct loop *loop)
     }
 
   /* Make sure there exists a single-predecessor exit bb:  */
-  if (EDGE_COUNT (loop->single_exit->dest->preds) != 1)
+  if (!single_pred_p (loop->single_exit->dest))
     {
       edge e = loop->single_exit;
       if (!(e->flags & EDGE_ABNORMAL))

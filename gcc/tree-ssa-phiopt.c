@@ -138,9 +138,9 @@ tree_ssa_phiopt (void)
        continue;
 
       /* If either bb1's succ or bb2 or bb2's succ is non NULL.  */
-      if (EDGE_COUNT (bb1->succs) < 1
+      if (EDGE_COUNT (bb1->succs) == 0
           || bb2 == NULL
-	  || EDGE_COUNT (bb2->succs) < 1)
+	  || EDGE_COUNT (bb2->succs) == 0)
         continue;
 
       /* Find the bb which is the fall through to the other.  */
@@ -161,13 +161,13 @@ tree_ssa_phiopt (void)
       e1 = EDGE_SUCC (bb1, 0);
 
       /* Make sure that bb1 is just a fall through.  */
-      if (EDGE_COUNT (bb1->succs) > 1
+      if (!single_succ_p (bb1) > 1
 	  || (e1->flags & EDGE_FALLTHRU) == 0)
         continue;
 
       /* Also make that bb1 only have one pred and it is bb.  */
-      if (EDGE_COUNT (bb1->preds) > 1
-          || EDGE_PRED (bb1, 0)->src != bb)
+      if (!single_pred_p (bb1)
+          || single_pred (bb1) != bb)
 	continue;
 
       phi = phi_nodes (bb2);
@@ -471,7 +471,7 @@ value_replacement (basic_block cond_bb, basic_block middle_bb,
 	 edge from OTHER_BLOCK which reaches BB and represents the desired
 	 path from COND_BLOCK.  */
       if (e->dest == middle_bb)
-	e = EDGE_SUCC (e->dest, 0);
+	e = single_succ_edge (e->dest);
 
       /* Now we know the incoming edge to BB that has the argument for the
 	 RHS of our new assignment statement.  */

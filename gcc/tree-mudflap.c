@@ -545,7 +545,7 @@ mf_build_check_statement_for (tree base, tree limit,
 
   /* We expect that the conditional jump we will construct will not
      be taken very often as it basically is an exception condition.  */
-  predict_edge_def (EDGE_PRED (then_bb, 0), PRED_MUDFLAP, NOT_TAKEN);
+  predict_edge_def (single_pred_edge (then_bb), PRED_MUDFLAP, NOT_TAKEN);
 
   /* Mark the pseudo-fallthrough edge from cond_bb to join_bb.  */
   e = find_edge (cond_bb, join_bb);

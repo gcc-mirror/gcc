@@ -1766,11 +1766,11 @@ copyprop_hardreg_forward (void)
 	 processed, begin with the value data that was live at
 	 the end of the predecessor block.  */
       /* ??? Ought to use more intelligent queuing of blocks.  */
-      if (EDGE_COUNT (bb->preds) == 1
+      if (single_pred_p (bb)
 	  && TEST_BIT (visited,
-		       EDGE_PRED (bb, 0)->src->index - (INVALID_BLOCK + 1))
-	  && ! (EDGE_PRED (bb, 0)->flags & (EDGE_ABNORMAL_CALL | EDGE_EH)))
-	all_vd[bb->index] = all_vd[EDGE_PRED (bb, 0)->src->index];
+		       single_pred (bb)->index - (INVALID_BLOCK + 1))
+	  && ! (single_pred_edge (bb)->flags & (EDGE_ABNORMAL_CALL | EDGE_EH)))
+	all_vd[bb->index] = all_vd[single_pred (bb)->index];
       else
 	init_value_data (all_vd + bb->index);
 

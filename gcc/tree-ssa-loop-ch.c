@@ -60,7 +60,7 @@ should_duplicate_loop_header_p (basic_block header, struct loop *loop,
     return false;
 
   gcc_assert (EDGE_COUNT (header->succs) > 0);
-  if (EDGE_COUNT (header->succs) == 1)
+  if (single_succ_p (header))
     return false;
   if (flow_bb_inside_loop_p (loop, EDGE_SUCC (header, 0)->dest)
       && flow_bb_inside_loop_p (loop, EDGE_SUCC (header, 1)->dest))
@@ -68,7 +68,7 @@ should_duplicate_loop_header_p (basic_block header, struct loop *loop,
 
   /* If this is not the original loop header, we want it to have just
      one predecessor in order to match the && pattern.  */
-  if (header != loop->header && EDGE_COUNT (header->preds) >= 2)
+  if (header != loop->header && !single_pred_p (header))
     return false;
 
   last = last_stmt (header);
@@ -193,8 +193,8 @@ copy_loop_headers (void)
 
       /* Ensure that the header will have just the latch as a predecessor
 	 inside the loop.  */
-      if (EDGE_COUNT (exit->dest->preds) > 1)
-	exit = EDGE_SUCC (loop_split_edge_with (exit, NULL), 0);
+      if (!single_pred_p (exit->dest))
+	exit = single_succ_edge (loop_split_edge_with (exit, NULL));
 
       if (!tree_duplicate_sese_region (loop_preheader_edge (loop), exit,
 				       bbs, n_bbs, NULL))

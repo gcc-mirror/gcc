@@ -1260,16 +1260,16 @@ tree_can_merge_blocks_p (basic_block a, basic_block b)
   tree stmt;
   block_stmt_iterator bsi;
 
-  if (EDGE_COUNT (a->succs) != 1)
+  if (!single_succ_p (a))
     return false;
 
-  if (EDGE_SUCC (a, 0)->flags & EDGE_ABNORMAL)
+  if (single_succ_edge (a)->flags & EDGE_ABNORMAL)
     return false;
 
-  if (EDGE_SUCC (a, 0)->dest != b)
+  if (single_succ (a) != b)
     return false;
 
-  if (EDGE_COUNT (b->preds) > 1)
+  if (!single_pred_p (b))
     return false;
 
   if (b == EXIT_BLOCK_PTR)
@@ -1324,7 +1324,7 @@ tree_merge_blocks (basic_block a, basic_block b)
   /* Ensure that B follows A.  */
   move_block_after (b, a);
 
-  gcc_assert (EDGE_SUCC (a, 0)->flags & EDGE_FALLTHRU);
+  gcc_assert (single_succ_edge (a)->flags & EDGE_FALLTHRU);
   gcc_assert (!last_stmt (a) || !stmt_ends_bb_p (last_stmt (a)));
 
   /* Remove labels from B and set bb_for_stmt to A for other statements.  */
@@ -1922,16 +1922,17 @@ cfg_remove_useless_stmts_bb (basic_block bb)
 
   /* Check whether we come here from a condition, and if so, get the
      condition.  */
-  if (EDGE_COUNT (bb->preds) != 1
-      || !(EDGE_PRED (bb, 0)->flags & (EDGE_TRUE_VALUE | EDGE_FALSE_VALUE)))
+  if (!single_pred_p (bb)
+      || !(single_pred_edge (bb)->flags
+	   & (EDGE_TRUE_VALUE | EDGE_FALSE_VALUE)))
     return;
 
-  cond = COND_EXPR_COND (last_stmt (EDGE_PRED (bb, 0)->src));
+  cond = COND_EXPR_COND (last_stmt (single_pred (bb)));
 
   if (TREE_CODE (cond) == VAR_DECL || TREE_CODE (cond) == PARM_DECL)
     {
       var = cond;
-      val = (EDGE_PRED (bb, 0)->flags & EDGE_FALSE_VALUE
+      val = (single_pred_edge (bb)->flags & EDGE_FALSE_VALUE
 	     ? boolean_false_node : boolean_true_node);
     }
   else if (TREE_CODE (cond) == TRUTH_NOT_EXPR
@@ -1939,12 +1940,12 @@ cfg_remove_useless_stmts_bb (basic_block bb)
 	       || TREE_CODE (TREE_OPERAND (cond, 0)) == PARM_DECL))
     {
       var = TREE_OPERAND (cond, 0);
-      val = (EDGE_PRED (bb, 0)->flags & EDGE_FALSE_VALUE
+      val = (single_pred_edge (bb)->flags & EDGE_FALSE_VALUE
 	     ? boolean_true_node : boolean_false_node);
     }
   else
     {
-      if (EDGE_PRED (bb, 0)->flags & EDGE_FALSE_VALUE)
+      if (single_pred_edge (bb)->flags & EDGE_FALSE_VALUE)
 	cond = invert_truthvalue (cond);
       if (TREE_CODE (cond) == EQ_EXPR
 	  && (TREE_CODE (TREE_OPERAND (cond, 0)) == VAR_DECL
@@ -2208,10 +2209,10 @@ cleanup_control_flow (void)
 	      else
 	        {
 		  /* Turn off the EDGE_ABNORMAL flag.  */
-		  EDGE_SUCC (bb, 0)->flags &= ~EDGE_ABNORMAL;
+		  e->flags &= ~EDGE_ABNORMAL;
 
 		  /* And set EDGE_FALLTHRU.  */
-		  EDGE_SUCC (bb, 0)->flags |= EDGE_FALLTHRU;
+		  e->flags |= EDGE_FALLTHRU;
 		  ei_next (&ei);
 		}
 	    }
@@ -2249,7 +2250,7 @@ cleanup_control_expr_graph (basic_block bb, block_stmt_iterator bsi)
   bool retval = false;
   tree expr = bsi_stmt (bsi), val;
 
-  if (EDGE_COUNT (bb->succs) > 1)
+  if (!single_succ_p (bb))
     {
       edge e;
       edge_iterator ei;
@@ -2291,7 +2292,7 @@ cleanup_control_expr_graph (basic_block bb, block_stmt_iterator bsi)
 	taken_edge->probability = REG_BR_PROB_BASE;
     }
   else
-    taken_edge = EDGE_SUCC (bb, 0);
+    taken_edge = single_succ_edge (bb);
 
   bsi_remove (&bsi);
   taken_edge->flags = EDGE_FALLTHRU;
@@ -2862,14 +2863,14 @@ disband_implicit_edges (void)
 	{
 	  /* Remove the RETURN_EXPR if we may fall though to the exit
 	     instead.  */
-	  gcc_assert (EDGE_COUNT (bb->succs) == 1);
-	  gcc_assert (EDGE_SUCC (bb, 0)->dest == EXIT_BLOCK_PTR);
+	  gcc_assert (single_succ_p (bb));
+	  gcc_assert (single_succ (bb) == EXIT_BLOCK_PTR);
 
 	  if (bb->next_bb == EXIT_BLOCK_PTR
 	      && !TREE_OPERAND (stmt, 0))
 	    {
 	      bsi_remove (&last);
-	      EDGE_SUCC (bb, 0)->flags |= EDGE_FALLTHRU;
+	      single_succ_edge (bb)->flags |= EDGE_FALLTHRU;
 	    }
 	  continue;
 	}
@@ -3164,7 +3165,7 @@ tree_find_edge_insert_loc (edge e, block_stmt_iterator *bsi,
      would have to examine the PHIs to prove that none of them used
      the value set by the statement we want to insert on E.  That
      hardly seems worth the effort.  */
-  if (EDGE_COUNT (dest->preds) == 1
+  if (single_pred_p (dest)
       && ! phi_nodes (dest)
       && dest != EXIT_BLOCK_PTR)
     {
@@ -3196,7 +3197,7 @@ tree_find_edge_insert_loc (edge e, block_stmt_iterator *bsi,
      Except for the entry block.  */
   src = e->src;
   if ((e->flags & EDGE_ABNORMAL) == 0
-      && EDGE_COUNT (src->succs) == 1
+      && single_succ_p (src)
       && src != ENTRY_BLOCK_PTR)
     {
       *bsi = bsi_last (src);
@@ -3227,7 +3228,7 @@ tree_find_edge_insert_loc (edge e, block_stmt_iterator *bsi,
   dest = split_edge (e);
   if (new_bb)
     *new_bb = dest;
-  e = EDGE_PRED (dest, 0);
+  e = single_pred_edge (dest);
   goto restart;
 }
 
@@ -3242,7 +3243,7 @@ bsi_commit_edge_inserts (void)
   edge e;
   edge_iterator ei;
 
-  bsi_commit_one_edge_insert (EDGE_SUCC (ENTRY_BLOCK_PTR, 0), NULL);
+  bsi_commit_one_edge_insert (single_succ_edge (ENTRY_BLOCK_PTR), NULL);
 
   FOR_EACH_BB (bb)
     FOR_EACH_EDGE (e, ei, bb->succs)
@@ -3940,14 +3941,15 @@ tree_verify_flow_info (void)
 	  break;
 
 	case RETURN_EXPR:
-	  if (EDGE_COUNT (bb->succs) != 1
-	      || (EDGE_SUCC (bb, 0)->flags & (EDGE_FALLTHRU | EDGE_ABNORMAL
-		  		     | EDGE_TRUE_VALUE | EDGE_FALSE_VALUE)))
+	  if (!single_succ_p (bb)
+	      || (single_succ_edge (bb)->flags
+		  & (EDGE_FALLTHRU | EDGE_ABNORMAL
+		     | EDGE_TRUE_VALUE | EDGE_FALSE_VALUE)))
 	    {
 	      error ("Wrong outgoing edge flags at end of bb %d\n", bb->index);
 	      err = 1;
 	    }
-	  if (EDGE_SUCC (bb, 0)->dest != EXIT_BLOCK_PTR)
+	  if (single_succ (bb) != EXIT_BLOCK_PTR)
 	    {
 	      error ("Return edge does not point to exit in bb %d\n",
 		     bb->index);
@@ -4064,7 +4066,7 @@ tree_make_forwarder_block (edge fallthru)
   dummy = fallthru->src;
   bb = fallthru->dest;
 
-  if (EDGE_COUNT (bb->preds) == 1)
+  if (single_pred_p (bb))
     return;
 
   /* If we redirected a branch we must create new phi nodes at the
@@ -4105,16 +4107,16 @@ tree_forwarder_block_p (basic_block bb, bool phi_wanted)
   block_stmt_iterator bsi;
 
   /* BB must have a single outgoing edge.  */
-  if (EDGE_COUNT (bb->succs) != 1
+  if (single_succ_p (bb) != 1
       /* If PHI_WANTED is false, BB must not have any PHI nodes.
 	 Otherwise, BB must have PHI nodes.  */
       || (phi_nodes (bb) != NULL_TREE) != phi_wanted
       /* BB may not be a predecessor of EXIT_BLOCK_PTR.  */
-      || EDGE_SUCC (bb, 0)->dest == EXIT_BLOCK_PTR
+      || single_succ (bb) == EXIT_BLOCK_PTR
       /* Nor should this be an infinite loop.  */
-      || EDGE_SUCC (bb, 0)->dest == bb
+      || single_succ (bb) == bb
       /* BB may not have an abnormal outgoing edge.  */
-      || (EDGE_SUCC (bb, 0)->flags & EDGE_ABNORMAL))
+      || (single_succ_edge (bb)->flags & EDGE_ABNORMAL))
     return false; 
 
 #if ENABLE_CHECKING
@@ -4179,7 +4181,7 @@ has_abnormal_incoming_edge_p (basic_block bb)
 static bool
 remove_forwarder_block (basic_block bb, basic_block **worklist)
 {
-  edge succ = EDGE_SUCC (bb, 0), e, s;
+  edge succ = single_succ_edge (bb), e, s;
   basic_block dest = succ->dest;
   tree label;
   tree phi;
@@ -4338,7 +4340,7 @@ cleanup_forwarder_blocks (void)
 static void
 remove_forwarder_block_with_phi (basic_block bb)
 {
-  edge succ = EDGE_SUCC (bb, 0);
+  edge succ = single_succ_edge (bb);
   basic_block dest = succ->dest;
   tree label;
   basic_block dombb, domdest, dom;
@@ -4379,7 +4381,7 @@ remove_forwarder_block_with_phi (basic_block bb)
 	  /* PHI arguments are different.  Create a forwarder block by
 	     splitting E so that we can merge PHI arguments on E to
 	     DEST.  */
-	  e = EDGE_SUCC (split_edge (e), 0);
+	  e = single_succ_edge (split_edge (e));
 	}
 
       s = redirect_edge_and_branch (e, dest);
@@ -4481,7 +4483,7 @@ merge_phi_nodes (void)
       if (!tree_forwarder_block_p (bb, true))
 	continue;
 
-      dest = EDGE_SUCC (bb, 0)->dest;
+      dest = single_succ (bb);
 
       /* We have to feed into another basic block with PHI
 	 nodes.  */

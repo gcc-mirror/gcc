@@ -995,13 +995,13 @@ dom_opt_finalize_block (struct dom_walk_data *walk_data, basic_block bb)
      the edge from BB through its successor.
 
      Do this before we remove entries from our equivalence tables.  */
-  if (EDGE_COUNT (bb->succs) == 1
-      && (EDGE_SUCC (bb, 0)->flags & EDGE_ABNORMAL) == 0
-      && (get_immediate_dominator (CDI_DOMINATORS, EDGE_SUCC (bb, 0)->dest) != bb
-	  || phi_nodes (EDGE_SUCC (bb, 0)->dest)))
+  if (single_succ_p (bb)
+      && (single_succ_edge (bb)->flags & EDGE_ABNORMAL) == 0
+      && (get_immediate_dominator (CDI_DOMINATORS, single_succ (bb)) != bb
+	  || phi_nodes (single_succ (bb))))
 	
     {
-      thread_across_edge (walk_data, EDGE_SUCC (bb, 0));
+      thread_across_edge (walk_data, single_succ_edge (bb));
     }
   else if ((last = last_stmt (bb))
 	   && TREE_CODE (last) == GOTO_EXPR

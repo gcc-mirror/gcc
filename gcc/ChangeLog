@@ -1,3 +1,77 @@
+2005-03-11  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	* basic-block.h (single_succ_p, single_pred_p, single_succ_edge,
+	single_pred_edge, single_succ, single_pred): New inline functions.
+	* bb-reorder.c (rotate_loop, find_traces_1_round,
+	add_labels_and_missing_jumps, fix_up_fall_thru_edges,
+	duplicate_computed_gotos): Use the single_succ/pred functions.
+	* cfganal.c (forwarder_block_p): Ditto.
+	* cfgbuild.c (compute_outgoing_frequencies): Ditto.
+	* cfgcleanup.c (try_simplify_condjump, try_forward_edges,
+	outgoing_edges_match, try_crossjump_to_edge, try_optimize_cfg,
+	merge_seq_blocks): Ditto.
+	* cfghooks.c (split_edge, tidy_fallthru_edges): Ditto.
+	* cfglayout.c (fixup_reorder_chain): Ditto.
+	* cfgloop.c (mark_single_exit_loops, update_latch_info,
+	canonicalize_loop_headers, verify_loop_structure): Ditto.
+	* cfgloopmanip.c (remove_path, unloop, loop_delete_branch_edge,
+	mfb_update_loops, create_preheader, force_single_succ_latches,
+	create_loop_notes): Ditto.
+	* cfgrtl.c (rtl_can_merge_blocks, try_redirect_by_replacing_jump,
+	force_nonfallthru_and_redirect, rtl_tidy_fallthru_edge,
+	commit_one_edge_insertion, purge_dead_edges,
+	cfg_layout_can_merge_blocks_p): Ditto.
+	* except.c (sjlj_emit_function_enter): Ditto.
+	* flow.c (init_propagate_block_info): Ditto.
+	* function.c (thread_prologue_and_epilogue_insns): Ditto.
+	* gcse.c (find_implicit_sets, bypass_conditional_jumps,
+	insert_insn_end_bb): Ditto.
+	* ifcvt.c (merge_if_block, find_if_block, find_if_case_1,
+	find_if_case_2): Ditto.
+	* lambda-code.c (perfect_nestify): Ditto.
+	* lcm.c (optimize_mode_switching): Ditto.
+	* loop-doloop.c (doloop_modify): Ditto.
+	* loop-init.c (loop_optimizer_init): Ditto.
+	* loop-iv.c (simplify_using_initial_values): Ditto.
+	* loop-unroll.c (unroll_loop_runtime_iterations): Ditto.
+	* loop-unswitch.c (unswitch_loop): Ditto.
+	* modulo-sched.c (generate_prolog_epilog): Ditto.
+	* predict.c (combine_predictions_for_insn, estimate_probability,
+	tree_estimate_probability, last_basic_block_p,
+	estimate_bb_frequencies): Ditto.
+	* profile.c (branch_prob): Ditto.
+	* regrename.c (copyprop_hardreg_forward): Ditto.
+	* sched-rgn.c (is_cfg_nonregular, find_rgns, update_live): Ditto.
+	* tracer.c (layout_superblocks): Ditto.
+	* tree-cfg.c (tree_can_merge_blocks_p, tree_merge_blocks,
+	cfg_remove_useless_stmts_bb, cleanup_control_flow,
+	cleanup_control_expr_graph, disband_implicit_edges,
+	tree_find_edge_insert_loc, bsi_commit_edge_inserts,
+	tree_verify_flow_info, tree_make_forwarder_block,
+	tree_forwarder_block_p, remove_forwarder_block,
+	remove_forwarder_block_with_phi, merge_phi_nodes): Ditto.
+	* tree-if-conv.c (tree_if_conversion): Ditto.
+	* tree-mudflap.c (mf_build_check_statement_for): Ditto.
+	* tree-ssa-dce.c (remove_dead_stmt): Ditto.
+	* tree-ssa-dom.c (dom_opt_finalize_block): Ditto.
+	* tree-ssa-loop-ch.c (should_duplicate_loop_header_p,
+	copy_loop_headers): Ditto.
+	* tree-ssa-loop-im.c (loop_commit_inserts): Ditto.
+	* tree-ssa-loop-ivopts.c (compute_phi_arg_on_exit): Ditto.
+	* tree-ssa-loop-manip.c (split_loop_exit_edge, ip_normal_pos,
+	lv_adjust_loop_entry_edge, tree_ssa_loop_version): Ditto.
+	* tree-ssa-loop-niter.c (simplify_using_initial_conditions): Ditto.
+	* tree-ssa-loop-unswitch.c (simplify_using_entry_checks): Ditto.
+	* tree-ssa-phiopt.c (tree_ssa_phiopt, value_replacement): Ditto.
+	* tree-ssa-pre.c (compute_antic_aux, insert_aux, init_pre): Ditto.
+	* tree-ssa-threadupdate.c (redirect_edges): Ditto.
+	* tree-tailcall.c (independent_of_stmt_p, find_tail_calls,
+	eliminate_tail_call, tree_optimize_tail_calls_1): Ditto.
+	* tree-vect-analyze.c (vect_analyze_loop_form): Ditto.
+	* tree-vect-transform.c (vect_update_ivs_after_vectorizer): Ditto.
+	* tree-vectorizer.c (slpeel_update_phi_nodes_for_guard,
+	slpeel_add_loop_guard): Ditto.
+
 2005-03-11  James A. Morrison  <phython@gcc.gnu.org>
 
         PR tree-optimization/15784

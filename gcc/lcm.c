@@ -1194,7 +1194,7 @@ optimize_mode_switching (FILE *file)
 #if defined (MODE_ENTRY) && defined (MODE_EXIT)
   /* Split the edge from the entry block, so that we can note that
      there NORMAL_MODE is supplied.  */
-  post_entry = split_edge (EDGE_SUCC (ENTRY_BLOCK_PTR, 0));
+  post_entry = split_edge (single_succ_edge (ENTRY_BLOCK_PTR));
   pre_exit = create_pre_exit (n_entities, entity_map, num_modes);
 #endif
 

@@ -1962,7 +1962,7 @@ init_propagate_block_info (basic_block bb, regset live, regset local_set,
 
       /* Identify the successor blocks.  */
       bb_true = EDGE_SUCC (bb, 0)->dest;
-      if (EDGE_COUNT (bb->succs) > 1)
+      if (!single_succ_p (bb))
 	{
 	  bb_false = EDGE_SUCC (bb, 1)->dest;
 
@@ -2059,8 +2059,8 @@ init_propagate_block_info (basic_block bb, regset live, regset local_set,
 		(TREE_TYPE (current_function_decl))))
       && (flags & PROP_SCAN_DEAD_STORES)
       && (EDGE_COUNT (bb->succs) == 0
-	  || (EDGE_COUNT (bb->succs) == 1
-	      && EDGE_SUCC (bb, 0)->dest == EXIT_BLOCK_PTR
+	  || (single_succ_p (bb)
+	      && single_succ (bb) == EXIT_BLOCK_PTR
 	      && ! current_function_calls_eh_return)))
     {
       rtx insn, set;

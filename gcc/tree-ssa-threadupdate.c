@@ -616,9 +616,9 @@ redirect_edges (void **slot, void *data)
 					      rd->outgoing_edge->dest);
 
 	  /* And fixup the flags on the single remaining edge.  */
-	  EDGE_SUCC (local_info->bb, 0)->flags
+	  single_succ_edge (local_info->bb)->flags
 	    &= ~(EDGE_TRUE_VALUE | EDGE_FALSE_VALUE | EDGE_ABNORMAL);
-	  EDGE_SUCC (local_info->bb, 0)->flags |= EDGE_FALLTHRU;
+	  single_succ_edge (local_info->bb)->flags |= EDGE_FALLTHRU;
 	}
     }
 

@@ -776,11 +776,11 @@ fixup_reorder_chain (void)
 	  /* Make sure new bb is tagged for correct section (same as
 	     fall-thru source, since you cannot fall-throu across
 	     section boundaries).  */
-	  BB_COPY_PARTITION (e_fall->src, EDGE_PRED (bb, 0)->src);
+	  BB_COPY_PARTITION (e_fall->src, single_pred (bb));
 	  if (flag_reorder_blocks_and_partition
 	      && targetm.have_named_sections)
 	    {
-	      if (BB_PARTITION (EDGE_PRED (bb, 0)->src) == BB_COLD_PARTITION)
+	      if (BB_PARTITION (single_pred (bb)) == BB_COLD_PARTITION)
 		{
 		  rtx new_note;
 		  rtx note = BB_HEAD (e_fall->src);
@@ -796,7 +796,7 @@ fixup_reorder_chain (void)
 		}
 	      if (JUMP_P (BB_END (bb))
 		  && !any_condjump_p (BB_END (bb))
-  		  && (EDGE_SUCC (bb, 0)->flags & EDGE_CROSSING))
+  		  && (single_succ_edge (bb)->flags & EDGE_CROSSING))
 		REG_NOTES (BB_END (bb)) = gen_rtx_EXPR_LIST 
 		  (REG_CROSSING_JUMP, NULL_RTX, REG_NOTES (BB_END (bb)));
 	    }
