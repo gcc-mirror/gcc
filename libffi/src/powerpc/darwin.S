@@ -3,8 +3,6 @@
    
    PowerPC Assembly glue.
 
-   $Id: darwin.S,v 1.2 2002/01/18 16:22:34 dje Exp $
-
    Permission is hereby granted, free of charge, to any person obtaining
    a copy of this software and associated documentation files (the
    ``Software''), to deal in the Software without restriction, including
@@ -190,6 +188,7 @@ LASFDE1:
 	.long	LFB0-.	; FDE initial location
 	.set	L$set$3,LFE1-LFB0
 	.long	L$set$3	; FDE address range
+	.byte   0x0     ; uleb128 0x0; Augmentation size
 	.byte	0x4	; DW_CFA_advance_loc4
 	.set	L$set$4,LCFI0-LFB1
 	.long	L$set$4
