@@ -3901,6 +3901,36 @@
   [(set_attr "type" "shift")
    (set_attr "length" "4")])
 
+(define_expand "rotlsi3"
+  [(set (match_operand:SI 0 "register_operand" "")
+        (rotate:SI (match_operand:SI 1 "register_operand" "")
+                   (match_operand:SI 2 "arith32_operand" "")))]
+  ""
+  "
+{
+  if (GET_CODE (operands[2]) != CONST_INT)
+    {
+      rtx temp = gen_reg_rtx (SImode);
+      emit_insn (gen_subsi3 (temp, GEN_INT (32), operands[2]));
+      emit_insn (gen_rotrsi3 (operands[0], operands[1], temp));
+      DONE;
+    }
+  /* Else expand normally.  */
+}")
+
+(define_insn ""
+  [(set (match_operand:SI 0 "register_operand" "=r")
+        (rotate:SI (match_operand:SI 1 "register_operand" "r")
+                   (match_operand:SI 2 "const_int_operand" "n")))]
+  ""
+  "*
+{
+  operands[2] = GEN_INT ((32 - INTVAL (operands[2])) & 31);
+  return \"shd %1,%1,%2,%0\";
+}"
+  [(set_attr "type" "shift")
+   (set_attr "length" "4")])
+
 (define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(match_operator:SI 5 "plus_xor_ior_operator"
