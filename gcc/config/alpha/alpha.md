@@ -87,7 +87,7 @@
 
 (define_insn "addsi3"
   [(set (match_operand:SI 0 "register_operand" "=r,r,r,r")
-	(plus:SI (match_operand:SI 1 "reg_or_0_operand" "%rJ,%rJ,%rJ,%rJ")
+	(plus:SI (match_operand:SI 1 "reg_or_0_operand" "%rJ,rJ,rJ,rJ")
 		 (match_operand:SI 2 "add_operand" "rI,O,K,L")))]
   ""
   "@
@@ -151,7 +151,7 @@
 
 (define_insn "adddi3"
   [(set (match_operand:DI 0 "register_operand" "=r,r,r,r")
-	(plus:DI (match_operand:DI 1 "reg_or_0_operand" "%rJ,%rJ,%rJ,%rJ")
+	(plus:DI (match_operand:DI 1 "reg_or_0_operand" "%rJ,rJ,rJ,rJ")
 		 (match_operand:DI 2 "add_operand" "rI,O,K,L")))]
   ""
   "@
@@ -633,7 +633,7 @@
 
 (define_insn "xordi3"
   [(set (match_operand:DI 0 "register_operand" "=r")
-	(xor:DI (match_operand:DI 1 "reg_or_0_operand" "rJ")
+	(xor:DI (match_operand:DI 1 "reg_or_0_operand" "%rJ")
 		(match_operand:DI 2 "reg_or_8bit_operand" "rI")))]
   ""
   "xor %r1,%2,%0"
@@ -641,7 +641,7 @@
 
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=r")
-	(not:DI (xor:DI (match_operand:DI 1 "reg_or_0_operand" "rJ")
+	(not:DI (xor:DI (match_operand:DI 1 "reg_or_0_operand" "%rJ")
 			(match_operand:DI 2 "reg_or_8bit_operand" "rI"))))]
   ""
   "eqv %r1,%2,%0"
@@ -971,7 +971,7 @@
 (define_insn ""
   [(set (match_operand:DF 0 "register_operand" "=f")
 	(plus:DF (float_extend:DF
-		  (match_operand:SF 1 "reg_or_fp0_operand" "%fG"))
+		  (match_operand:SF 1 "reg_or_fp0_operand" "fG"))
 		 (match_operand:DF 2 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP"
   "addt %R1,%R2,%0"
@@ -1075,7 +1075,7 @@
 
 (define_insn "mulsf3"
   [(set (match_operand:SF 0 "register_operand" "=f")
-	(mult:SF (match_operand:SF 1 "reg_or_fp0_operand" "fG")
+	(mult:SF (match_operand:SF 1 "reg_or_fp0_operand" "%fG")
 		 (match_operand:SF 2 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP"
   "muls %R1,%R2,%0"
@@ -1083,7 +1083,7 @@
 
 (define_insn "muldf3"
   [(set (match_operand:DF 0 "register_operand" "=f")
-	(mult:DF (match_operand:DF 1 "reg_or_fp0_operand" "fG")
+	(mult:DF (match_operand:DF 1 "reg_or_fp0_operand" "%fG")
 		 (match_operand:DF 2 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP"
   "mult %R1,%R2,%0"
@@ -1101,7 +1101,7 @@
 (define_insn ""
   [(set (match_operand:DF 0 "register_operand" "=f")
 	(mult:DF (float_extend:DF
-		  (match_operand:SF 1 "reg_or_fp0_operand" "fG"))
+		  (match_operand:SF 1 "reg_or_fp0_operand" "%fG"))
 		 (float_extend:DF
 		  (match_operand:SF 2 "reg_or_fp0_operand" "fG"))))]
   "TARGET_FP"
@@ -1110,7 +1110,7 @@
 
 (define_insn "subsf3"
   [(set (match_operand:SF 0 "register_operand" "=f")
-	(minus:SF (match_operand:SF 1 "reg_or_fp0_operand" "%fG")
+	(minus:SF (match_operand:SF 1 "reg_or_fp0_operand" "fG")
 		  (match_operand:SF 2 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP"
   "subs %R1,%R2,%0"
@@ -1118,7 +1118,7 @@
 
 (define_insn "subdf3"
   [(set (match_operand:DF 0 "register_operand" "=f")
-	(minus:DF (match_operand:DF 1 "reg_or_fp0_operand" "%fG")
+	(minus:DF (match_operand:DF 1 "reg_or_fp0_operand" "fG")
 		  (match_operand:DF 2 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP"
   "subt %R1,%R2,%0"
@@ -1127,7 +1127,7 @@
 (define_insn ""
   [(set (match_operand:DF 0 "register_operand" "=f")
 	(minus:DF (float_extend:DF
-		   (match_operand:SF 1 "reg_or_fp0_operand" "%fG"))
+		   (match_operand:SF 1 "reg_or_fp0_operand" "fG"))
 		  (match_operand:DF 2 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP"
   "subt %R1,%R2,%0"
@@ -1135,7 +1135,7 @@
 
 (define_insn ""
   [(set (match_operand:DF 0 "register_operand" "=f")
-	(minus:DF (match_operand:DF 1 "reg_or_fp0_operand" "%fG")
+	(minus:DF (match_operand:DF 1 "reg_or_fp0_operand" "fG")
 		  (float_extend:DF
 		   (match_operand:SF 2 "reg_or_fp0_operand" "fG"))))]
   "TARGET_FP"
@@ -1145,7 +1145,7 @@
 (define_insn ""
   [(set (match_operand:DF 0 "register_operand" "=f")
 	(minus:DF (float_extend:DF
-		   (match_operand:SF 1 "reg_or_fp0_operand" "%fG"))
+		   (match_operand:SF 1 "reg_or_fp0_operand" "fG"))
 		  (float_extend:DF
 		   (match_operand:SF 2 "reg_or_fp0_operand" "fG"))))]
   "TARGET_FP"
