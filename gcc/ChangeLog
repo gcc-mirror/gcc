@@ -1,3 +1,8 @@
+2003-02-12  Ranjit Mathew  <rmathew@hotmail.com>
+
+	* doc/tm.texi (MODIFY_JNI_METHOD_CALL): Document.
+	* config/i386/cygwin.h (MODIFY_JNI_METHOD_CALL): New macro.
+
 2003-02-11  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* doc/install.texi (Specific): Update AVR- and Darwin-related URLs.

@@ -1,4 +1,4 @@
-@c Copyright (C) 1988,1989,1992,1993,1994,1995,1996,1997,1998,1999,2000,2001,2002
+@c Copyright (C) 1988,1989,1992,1993,1994,1995,1996,1997,1998,1999,2000,2001,2002,2003
 @c Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
@@ -9130,6 +9130,22 @@ specified on its command line and create an export list for the linker.
 Define this macro for systems like AIX, where the linker discards
 object files that are not referenced from @code{main} and uses export
 lists.
+
+@findex MODIFY_JNI_METHOD_CALL
+@item MODIFY_JNI_METHOD_CALL (@var{mdecl})
+Define this macro to a C expression representing a variant of the
+method call @var{mdecl}, if Java Native Interface (JNI) methods
+must be invoked differently from other methods on your target.
+For example, on 32-bit Windows, JNI methods must be invoked using
+the @code{stdcall} calling convention and this macro is then
+defined as this expression:
+
+@smallexample
+build_type_attribute_variant (@var{mdecl},
+                              build_tree_list
+                              (get_identifier ("stdcall"),
+                               NULL))
+@end smallexample
 
 @end table
 
