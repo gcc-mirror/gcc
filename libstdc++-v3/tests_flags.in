@@ -21,8 +21,8 @@
 #     
 #      Returns a colon-separated list of space-separated list of flags,
 #      needed to run library specific tests,
-#      BUILD_DIR:SRC_DIR:PREFIX_DIR:LTCXX:LIBS:LTEXE the meaning of which
-#      is as follows:
+#      BUILD_DIR:SRC_DIR:PREFIX_DIR:LTCXX:LIBS:LTEXE:CXX:CXXFLAGS 
+#      the meaning of which is as follows:
 #        BUILD_DIR   build-dir
 #        SRC_DIR     src-dir
 #        PREFIX_DIR  install-dir (meaningful only with --installed-library)

@@ -1,3 +1,8 @@
+2000-11-27  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* tests_flags.in: Update documentation to reflect the change
+	below.
+
 2000-11-26  Benjamin Kosnik  <bkoz@fillmore.constant.com>
 
 	* tests_flags.in: Export CXX, CXXFLAGS.
