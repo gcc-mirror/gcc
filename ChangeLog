@@ -1,3 +1,7 @@
+2001-03-22  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* MAINTAINERS: Add myself as "documentation co-maintainer".
+
 2001-03-22  Alexandre Oliva  <aoliva@redhat.com>
 
 	* ltconfig, ltmain.sh, libtool.m4, ltcf-c.sh, ltcf-cxx.sh,
