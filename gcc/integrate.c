@@ -698,7 +698,7 @@ expand_inline_function (fndecl, parms, target, ignore, type,
       enum machine_mode mode;
 
       if (actual == 0)
-	return (rtx) (HOST_WIDE_INT) -1;
+	return (rtx) (size_t) -1;
 
       arg = TREE_VALUE (actual);
       mode = TYPE_MODE (DECL_ARG_TYPE (formal));
@@ -711,7 +711,7 @@ expand_inline_function (fndecl, parms, target, ignore, type,
 	  || (mode == BLKmode
 	      && (TYPE_MAIN_VARIANT (TREE_TYPE (arg))
 		  != TYPE_MAIN_VARIANT (TREE_TYPE (formal)))))
-	return (rtx) (HOST_WIDE_INT) -1;
+	return (rtx) (size_t) -1;
     }
 
   /* Extra arguments are valid, but will be ignored below, so we must

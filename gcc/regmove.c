@@ -111,7 +111,7 @@ try_auto_increment (insn, inc_insn, inc_insn_set, reg, increment, pre)
       /* Can't use the size of SET_SRC, we might have something like
 	 (sign_extend:SI (mem:QI ...  */
       rtx use = find_use_as_address (pset, reg, 0);
-      if (use != 0 && use != (rtx) 1)
+      if (use != 0 && use != (rtx) (size_t) 1)
 	{
 	  int size = GET_MODE_SIZE (GET_MODE (use));
 	  if (0
