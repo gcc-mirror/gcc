@@ -405,6 +405,10 @@
 	java/awt/image/renderable/RenderedImageFactory.java: New files from
 	classpath.
 
+	* gnu/java/awt/EventModifier.java,
+	gnu/java/awt/image/ImageDecoder.java,
+	gnu/java/awt/image/XBMDecoder.java: New files from GNU Classpath.
+
 	* Makefile.am: Add new files.
 	* Makefile.in: Rebuilt.
 
