@@ -38,8 +38,6 @@ exception statement from your version. */
 
 package java.nio;
 
-import gnu.classpath.Configuration;
-
 /**
  * @author Michael Koch
  * @since 1.4

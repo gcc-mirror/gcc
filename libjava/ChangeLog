@@ -1,5 +1,17 @@
 2004-10-16  Michael Koch  <konqueror@gmx.de>
 
+	* libjava/gnu/java/nio/charset/UTF_16.java,
+	libjava/gnu/java/nio/charset/UTF_16BE.java,
+	libjava/gnu/java/nio/charset/UTF_16LE.java,
+	libjava/java/nio/ByteOrder.java,
+	libjava/java/nio/MappedByteBuffer.java,
+	libjava/java/nio/channels/Channels.java,
+	libjava/java/nio/channels/spi/SelectorProvider.java,
+	libjava/java/nio/charset/Charset.java:
+	Cleanup.
+
+2004-10-16  Michael Koch  <konqueror@gmx.de>
+
 	* gnu/java/nio/charset/UTF_16Encoder.java
 	(UTF_16Encoder): Fixed maxBytesPerChar handling.
 
