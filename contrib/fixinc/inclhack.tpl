@@ -1,10 +1,10 @@
 [= autogen template -*- Mode: shell-script -*-
 sh
 #
-#  $Id: inclhack.tpl,v 1.1 1998/03/20 16:19:41 korbb Exp $
+#  $Id: inclhack.tpl,v 1.2 1998/09/22 07:21:14 korbb Exp $
 #
 =]
-#!/bin/sh -p
+#!/bin/sh
 #
 [= _EVAL "## " _DNE =]
 #
