@@ -155,6 +155,8 @@ md_file= ... `configure' substitutes actual md file name here.
 tm_file= ... `configure' substitutes actual tm file name here.
 build_xm_file= ... `configure' substitutes actual build xm- file name here.
 host_xm_file= ... `configure' substitutes actual host xm- file name here.
+lang_specs_files= ... `configure' substitutes actual lang spec file names here.
+lang_options_files= ... `configure' puts actual lang options file names here.
 version=`sed -e 's/.*\"\([^ \"]*\)[ \"].*/\1/' < $(srcdir)/version.c`
 mainversion=`sed -e 's/.*\"\([0-9]*\.[0-9]*\).*/\1/' < $(srcdir)/version.c`
 
@@ -1087,7 +1089,7 @@ c-common.o : c-common.c $(CONFIG_H) $(TREE_H) c-tree.h c-lex.h flags.h
 
 # Language-independent files.
 
-gcc.o: gcc.c $(CONFIG_H) multilib.h config.status
+gcc.o: gcc.c $(CONFIG_H) multilib.h config.status $(lang_specs_files)
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
   -DSTANDARD_STARTFILE_PREFIX=\"$(libdir)/\" \
   -DSTANDARD_EXEC_PREFIX=\"$(libdir)/gcc-lib/\" \
@@ -1108,8 +1110,9 @@ tree.o : tree.c $(CONFIG_H) $(TREE_H) flags.h function.h
 print-tree.o : print-tree.c $(CONFIG_H) $(TREE_H)
 stor-layout.o : stor-layout.c $(CONFIG_H) $(TREE_H) flags.h function.h
 fold-const.o : fold-const.c $(CONFIG_H) $(TREE_H) flags.h 
-toplev.o : toplev.c $(CONFIG_H) $(TREE_H) $(RTL_H) flags.h input.h \
-   insn-attr.h xcoffout.h defaults.h output.h
+toplev.o : toplev.c $(CONFIG_H) $(TREE_H) $(RTL_H) bytecode.h bc-emit.h \
+   flags.h input.h insn-attr.h xcoffout.h defaults.h output.h \
+   $(lang_options_files)
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	  $(MAYBE_TARGET_DEFAULT) $(MAYBE_USE_COLLECT2) \
 	  -c `echo $(srcdir)/toplev.c | sed 's,^\./,,'`
@@ -1119,7 +1122,6 @@ rtl.o : rtl.c $(CONFIG_H) $(RTL_H)
 print-rtl.o : print-rtl.c $(CONFIG_H) $(RTL_H)
 rtlanal.o : rtlanal.c $(CONFIG_H) $(RTL_H)
 
-toplev.o: bytecode.h bc-emit.h
 varasm.o : varasm.c $(CONFIG_H) $(TREE_H) $(RTL_H) flags.h function.h \
    defaults.h insn-codes.h expr.h hard-reg-set.h regs.h xcoffout.h \
    output.h bytecode.h c-pragma.h
@@ -1926,10 +1928,9 @@ clean: mostlyclean bytecode.clean lang.clean
 # Delete all files that users would normally create
 # while building and installing GCC.
 distclean: clean bytecode.distclean lang.distclean
-	-rm -f tm.h config.h tconfig.h hconfig.h
+	-rm -f tm.h config.h tconfig.h hconfig.h md
 	-rm -f config.status config.run
-	-rm -f md
-	-rm -f Makefile *.oaux
+	-rm -f Makefile specs.h options.h *.oaux
 	-rm -fr stage1 stage2 stage3 stage4
 	-rm -f */stage1 */stage2 */stage3 */stage4 */include
 	-rm -f objc-parse.output
