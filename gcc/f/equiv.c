@@ -1,5 +1,6 @@
 /* equiv.c -- Implementation File (module.c template V1.0)
-   Copyright (C) 1995, 1996, 1997, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996, 1997, 1998, 2003
+   Free Software Foundation, Inc.
    Contributed by James Craig Burley.
 
 This file is part of GNU Fortran.
@@ -918,7 +919,7 @@ ffeequiv_add (ffeequiv eq, ffebld list, ffelexToken t)
    ffeequiv_exec_transition();	*/
 
 void
-ffeequiv_exec_transition ()
+ffeequiv_exec_transition (void)
 {
   while (ffeequiv_list_.first != (ffeequiv) &ffeequiv_list_.first)
     ffeequiv_layout_local_ (ffeequiv_list_.first);
@@ -931,7 +932,7 @@ ffeequiv_exec_transition ()
    Initializes the list of equivalences.  */
 
 void
-ffeequiv_init_2 ()
+ffeequiv_init_2 (void)
 {
   ffeequiv_list_.first = (ffeequiv) &ffeequiv_list_.first;
   ffeequiv_list_.last = (ffeequiv) &ffeequiv_list_.first;
@@ -1312,7 +1313,7 @@ ffeequiv_merge (ffeequiv eq1, ffeequiv eq2, ffelexToken t)
    objects.  */
 
 ffeequiv
-ffeequiv_new ()
+ffeequiv_new (void)
 {
   ffeequiv eq;
 

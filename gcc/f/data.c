@@ -314,7 +314,7 @@ ffedata_value (ffetargetIntegerDefault rpt, ffebld value, ffelexToken token)
    CHARTYPE is CHARACTER*3, for example.  */
 
 static bool
-ffedata_advance_ ()
+ffedata_advance_ (void)
 {
   ffebld next;
 
@@ -1457,7 +1457,7 @@ ffedata_gather_ (ffestorag mst, ffestorag st)
    ffedata_pop_();  */
 
 static void
-ffedata_pop_ ()
+ffedata_pop_ (void)
 {
   ffedataImpdo_ victim = ffedata_stack_;
 
@@ -1473,7 +1473,7 @@ ffedata_pop_ ()
    ffedata_push_();  */
 
 static void
-ffedata_push_ ()
+ffedata_push_ (void)
 {
   ffedataImpdo_ baby;
 

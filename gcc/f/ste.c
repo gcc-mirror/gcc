@@ -335,7 +335,7 @@ static void ffeste_subr_beru_ (ffestpBeruStmt *info, ffecomGfrt rt);
       tree exq = (Exp);							      \
       tree lenexq = (Lenexp);						      \
       int need_exq = (! exq);						      \
-      int need_lenexq = (! lenexq); 					      \
+      int need_lenexq = (! lenexq);					      \
       if (need_exq || need_lenexq)					      \
 	{								      \
 	  exq = ffecom_arg_ptr_to_expr ((Spec)->u.expr, &lenexq);	      \
@@ -2368,7 +2368,7 @@ ffeste_do (ffestw block)
    Applies to *only* logical IF, not to IF-THEN.  */
 
 void
-ffeste_end_R807 ()
+ffeste_end_R807 (void)
 {
   ffeste_emit_line_note_ ();
 
@@ -2824,7 +2824,7 @@ ffeste_R819B (ffestw block, ffelab label UNUSED, ffebld expr)
    ending an iterative DO statement, even one that ends at a label.  */
 
 void
-ffeste_R825 ()
+ffeste_R825 (void)
 {
   ffeste_check_simple_ ();
 
@@ -3097,7 +3097,7 @@ ffeste_R840 (ffebld expr, ffelab neg, ffelab zero, ffelab pos)
 /* CONTINUE statement.  */
 
 void
-ffeste_R841 ()
+ffeste_R841 (void)
 {
   ffeste_check_simple_ ();
 
@@ -3638,7 +3638,7 @@ ffeste_R909_item (ffebld expr, ffelexToken expr_token)
 /* READ statement -- end.  */
 
 void
-ffeste_R909_finish ()
+ffeste_R909_finish (void)
 {
   ffeste_check_finish_ ();
 
@@ -3869,7 +3869,7 @@ ffeste_R910_item (ffebld expr, ffelexToken expr_token)
 /* WRITE statement -- end.  */
 
 void
-ffeste_R910_finish ()
+ffeste_R910_finish (void)
 {
   ffeste_check_finish_ ();
 
@@ -3996,7 +3996,7 @@ ffeste_R911_item (ffebld expr, ffelexToken expr_token)
 /* PRINT statement -- end.  */
 
 void
-ffeste_R911_finish ()
+ffeste_R911_finish (void)
 {
   ffeste_check_finish_ ();
 
@@ -4167,7 +4167,7 @@ ffeste_R923B_item (ffebld expr UNUSED)
 /* INQUIRE(IOLENGTH=expr) statement -- end.  */
 
 void
-ffeste_R923B_finish ()
+ffeste_R923B_finish (void)
 {
   ffeste_check_finish_ ();
 }
@@ -4227,14 +4227,14 @@ ffeste_R1001 (ffests s)
 /* END PROGRAM.  */
 
 void
-ffeste_R1103 ()
+ffeste_R1103 (void)
 {
 }
 
 /* END BLOCK DATA.  */
 
 void
-ffeste_R1112 ()
+ffeste_R1112 (void)
 {
 }
 
@@ -4363,14 +4363,14 @@ ffeste_R1212 (ffebld expr)
 /* END FUNCTION.  */
 
 void
-ffeste_R1221 ()
+ffeste_R1221 (void)
 {
 }
 
 /* END SUBROUTINE.  */
 
 void
-ffeste_R1225 ()
+ffeste_R1225 (void)
 {
 }
 
@@ -4456,7 +4456,7 @@ ffeste_V020_item (ffebld expr UNUSED)
 /* TYPE statement -- end.  */
 
 void
-ffeste_V020_finish ()
+ffeste_V020_finish (void)
 {
   ffeste_check_finish_ ();
 }

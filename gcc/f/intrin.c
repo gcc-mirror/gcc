@@ -1589,7 +1589,7 @@ ffeintrin_gfrt_indirect (ffeintrinImp imp)
 }
 
 void
-ffeintrin_init_0 ()
+ffeintrin_init_0 (void)
 {
   int i;
   const char *p1;

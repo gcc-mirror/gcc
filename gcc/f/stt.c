@@ -1,5 +1,5 @@
 /* stt.c -- Implementation File (module.c template V1.0)
-   Copyright (C) 1995, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1997, 2003 Free Software Foundation, Inc.
    Contributed by James Craig Burley.
 
 This file is part of GNU Fortran.
@@ -99,7 +99,7 @@ ffestt_caselist_append (ffesttCaseList list, bool range, ffebld case1,
    The list is allocated out of the scratch pool.  */
 
 ffesttCaseList
-ffestt_caselist_create ()
+ffestt_caselist_create (void)
 {
   ffesttCaseList new;
 
@@ -396,7 +396,7 @@ ffestt_dimlist_as_expr (ffesttDimList list, ffeinfoRank *rank,
    The list is allocated out of the scratch pool.  */
 
 ffesttDimList
-ffestt_dimlist_create ()
+ffestt_dimlist_create (void)
 {
   ffesttDimList new;
 
@@ -521,7 +521,7 @@ ffestt_exprlist_append (ffesttExprList list, ffebld expr, ffelexToken t)
    The list is allocated out of the scratch pool.  */
 
 ffesttExprList
-ffestt_exprlist_create ()
+ffestt_exprlist_create (void)
 {
   ffesttExprList new;
 
@@ -738,7 +738,7 @@ ffestt_implist_append (ffesttImpList list, ffelexToken first, ffelexToken last)
    The list is allocated out of the scratch pool.  */
 
 ffesttImpList
-ffestt_implist_create ()
+ffestt_implist_create (void)
 {
   ffesttImpList new;
 
@@ -825,7 +825,7 @@ ffestt_tokenlist_append (ffesttTokenList tl, ffelexToken t)
    The list is allocated out of the scratch pool.  */
 
 ffesttTokenList
-ffestt_tokenlist_create ()
+ffestt_tokenlist_create (void)
 {
   ffesttTokenList tl;
 

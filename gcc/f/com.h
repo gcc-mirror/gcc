@@ -152,13 +152,13 @@ struct _ffecom_symbol_
 #include "storag.h"
 #include "symbol.h"
 
-extern int global_bindings_p			PARAMS ((void));
-extern tree getdecls				PARAMS ((void));
-extern void pushlevel				PARAMS ((int));
-extern tree poplevel				PARAMS ((int,int, int));
-extern void insert_block			PARAMS ((tree));
-extern void set_block				PARAMS ((tree));
-extern tree pushdecl				PARAMS ((tree));
+extern int global_bindings_p (void);
+extern tree getdecls (void);
+extern void pushlevel (int);
+extern tree poplevel (int,int, int);
+extern void insert_block (tree);
+extern void set_block (tree);
+extern tree pushdecl (tree);
 
 /* Global objects accessed by users of this module. */
 

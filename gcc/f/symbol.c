@@ -178,7 +178,7 @@ ffesymbol_check_token_ (ffelexToken t, char *c)
 /* Kill manifest (g77-picked) names.  */
 
 static void
-ffesymbol_kill_manifest_ ()
+ffesymbol_kill_manifest_ (void)
 {
   if (ffesymbol_token_blank_common_ != NULL)
     ffelex_token_kill (ffesymbol_token_blank_common_);
@@ -822,7 +822,7 @@ ffesymbol_error (ffesymbol s, ffelexToken t)
 }
 
 void
-ffesymbol_init_0 ()
+ffesymbol_init_0 (void)
 {
   ffesymbolAttrs attrs = FFESYMBOL_attrsetNONE;
 
@@ -834,7 +834,7 @@ ffesymbol_init_0 ()
 }
 
 void
-ffesymbol_init_1 ()
+ffesymbol_init_1 (void)
 {
 #if FFESYMBOL_globalCURRENT_ == FFESYMBOL_globalFILE_
   ffesymbol_global_ = ffename_space_new (ffe_pool_file ());
@@ -842,12 +842,12 @@ ffesymbol_init_1 ()
 }
 
 void
-ffesymbol_init_2 ()
+ffesymbol_init_2 (void)
 {
 }
 
 void
-ffesymbol_init_3 ()
+ffesymbol_init_3 (void)
 {
 #if FFESYMBOL_globalCURRENT_ == FFESYMBOL_globalPROGUNIT_
   ffesymbol_global_ = ffename_space_new (ffe_pool_program_unit ());
@@ -856,7 +856,7 @@ ffesymbol_init_3 ()
 }
 
 void
-ffesymbol_init_4 ()
+ffesymbol_init_4 (void)
 {
   ffesymbol_sfunc_ = ffename_space_new (ffe_pool_program_unit ());
 }
@@ -1060,7 +1060,7 @@ ffesymbol_retract (bool retract)
 /* Return retractable flag.  */
 
 bool
-ffesymbol_retractable ()
+ffesymbol_retractable (void)
 {
   return ffesymbol_retractable_;
 }
@@ -1134,12 +1134,12 @@ ffesymbol_state_string (ffesymbolState state)
 }
 
 void
-ffesymbol_terminate_0 ()
+ffesymbol_terminate_0 (void)
 {
 }
 
 void
-ffesymbol_terminate_1 ()
+ffesymbol_terminate_1 (void)
 {
 #if FFESYMBOL_globalCURRENT_ == FFESYMBOL_globalFILE_
   ffename_space_drive_symbol (ffesymbol_global_, ffesymbol_unhook_);
@@ -1151,7 +1151,7 @@ ffesymbol_terminate_1 ()
 }
 
 void
-ffesymbol_terminate_2 ()
+ffesymbol_terminate_2 (void)
 {
 #if FFESYMBOL_globalCURRENT_ == FFESYMBOL_globalPROGUNIT_
   ffesymbol_kill_manifest_ ();
@@ -1159,7 +1159,7 @@ ffesymbol_terminate_2 ()
 }
 
 void
-ffesymbol_terminate_3 ()
+ffesymbol_terminate_3 (void)
 {
 #if FFESYMBOL_globalCURRENT_ == FFESYMBOL_globalPROGUNIT_
   ffename_space_drive_symbol (ffesymbol_global_, ffesymbol_unhook_);
@@ -1174,7 +1174,7 @@ ffesymbol_terminate_3 ()
 }
 
 void
-ffesymbol_terminate_4 ()
+ffesymbol_terminate_4 (void)
 {
   ffename_space_drive_symbol (ffesymbol_sfunc_, ffesymbol_unhook_);
   ffename_space_kill (ffesymbol_sfunc_);

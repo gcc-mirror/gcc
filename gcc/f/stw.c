@@ -1,5 +1,5 @@
 /* stw.c -- Implementation File (module.c template V1.0)
-   Copyright (C) 1995 Free Software Foundation, Inc.
+   Copyright (C) 1995, 2003 Free Software Foundation, Inc.
    Contributed by James Craig Burley.
 
 This file is part of GNU Fortran.
@@ -278,7 +278,7 @@ ffestw_display_state (void)
    ffestw_init_0();  */
 
 void
-ffestw_init_0 ()
+ffestw_init_0 (void)
 {
   ffestw b;
 
