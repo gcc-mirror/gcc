@@ -73,7 +73,8 @@ gnu::java::nio::FileChannelImpl::implTruncate (jlong size)
 }
 
 gnu::gcj::RawData*
-gnu::java::nio::FileChannelImpl::nio_mmap_file (jlong pos, jlong size, jint /*mode*/)
+gnu::java::nio::FileChannelImpl::nio_mmap_file (jlong pos, jlong size,
+                                                jint /*mode*/)
 {
   throw new ::java::io::IOException (JvNewStringUTF ("mmap not implemented"));
 }

@@ -35,11 +35,13 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package gnu.java.nio;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
+import java.net.Socket;
 import java.net.SocketAddress;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
@@ -48,26 +50,14 @@ import java.nio.channels.spi.SelectorProvider;
 class ServerSocketChannelImpl extends ServerSocketChannel
 {
   ServerSocket serverSocket;
-  int fd;
-//   int local_port;
   boolean blocking = true;
   boolean connected = false;
-//   InetSocketAddress sa;
 
   protected ServerSocketChannelImpl (SelectorProvider provider)
     throws IOException
   {
     super (provider);
-    fd = SocketChannelImpl.SocketCreate ();
-
-    try
-      {
-        serverSocket = new ServerSocket ();
-      }
-    catch (IOException e)
-      {
-        System.err.println ("ServerSocket could not be created.");
-      }
+    serverSocket = new ServerSocket ();
   }
  
   public void finalizer()
@@ -87,20 +77,19 @@ class ServerSocketChannelImpl extends ServerSocketChannel
   protected void implCloseSelectableChannel () throws IOException
   {
     connected = false;
-    SocketChannelImpl.SocketClose (fd);
-    fd = SocketChannelImpl.SocketCreate ();
+    serverSocket.close();
   }
 
   protected void implConfigureBlocking (boolean blocking) throws IOException
   {
-    this.blocking = blocking;
+    this.blocking = blocking; // FIXME
   }
 
   public SocketChannel accept () throws IOException
   {
     SocketChannelImpl result = new SocketChannelImpl (provider ());
-    result.sa = new InetSocketAddress (0);
-    //int res = SocketAccept (this,result);
+    Socket socket = serverSocket.accept();
+    //socket.setChannel (result); // FIXME
     return result;
   }
 

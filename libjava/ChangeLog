@@ -1,5 +1,44 @@
 2003-06-18  Michael Koch  <konqueror@gmx.de>
 
+	* gnu/java/nio/SelectorImpl.java
+	(register): Use fd with value 0 for now, will be fixed later.
+	* gnu/java/nio/ServerSocketChannelImpl.java
+	(fd): Removed.
+	(local_port): Removed.
+	(InetSocketAddress): Removed.
+	(ServerSocketChannelImpl): Just initialize internal socket object.
+	(implCloseSelectableChannel): Close internal socket object.
+	(implConfigureBlocking): Added comment.
+	(accept): Use jaba.net stuff to accept socket.
+	* gnu/java/nio/SocketChannelImpl.java
+	(fd): Removed.
+	(local_port): Removed.
+	(InetSocketAddress): Removed.
+	(SocketCreate): Removed.
+	(SocketConnect): Removed.
+	(SocketBind): Removed.
+	(SocketListen): Removed.
+	(SocketAvailable): Removed.
+	(SocketClose): Removed.
+	(SocketRead): Removed.
+	(SocketWrite): Removed.
+	(SocketChannelImpl): Just initialize internal socket object.
+	(implCloseSelectableChannel): Close internal socket object.
+	(implConfigureBlocking): Fixed implementation, added comment.
+	(connect): Use internal socket object to connect.
+	(socket): No need for sanity checks.
+	(read): Comment out some stuff, this will be reimplemented in the next
+	commit.
+	(write): Likewise.
+	* gnu/java/nio/natFileChannelImpl.cc
+	(nio_mmap_file): Line wrapped.
+	* gnu/java/nio/natSocketChannelImpl.cc: Removed.
+	* Makefile.am
+	(nat_source_files): Removeded gnu/java/nio/natSocketChannelImpl.cc.
+	* Makefile.in: Regenerated.
+
+2003-06-18  Michael Koch  <konqueror@gmx.de>
+
 	* java/util/Locale.java
 	(equals): Merged from classpath.
 
