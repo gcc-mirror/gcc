@@ -1,3 +1,8 @@
+2001-06-19  Richard Sandiford  <rsandifo@redhat.com>
+
+	* except.c (initialize_handler_parm): Expect __cxa_begin_catch to
+	return pointers to data members by reference rather than by value.
+
 2001-06-18  Jason Merrill  <jason_merrill@redhat.com>
 
 	Implement the Named Return Value optimization.
