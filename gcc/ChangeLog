@@ -1,3 +1,8 @@
+2000-11-08  Mark Mitchell  <mark@codesourcery.com>
+
+	* c-tree.texi (FUNCTION_TYPE): Clarify TYPE_ARG_TYPES for
+	unprototyped C functions with no parameters.
+
 2000-11-08  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/sparc/sparc.h (ASM_OUTPUT_MI_THUNK): Cast DELTA to int

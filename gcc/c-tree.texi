@@ -543,6 +543,10 @@ is the @code{void_type_node}), then functions of this type do not take
 variable arguments.  Otherwise, they do take a variable number of
 arguments.
 
+Note that in C (but not in C++) a function declared like @code{void f()}
+is an unprototyped function taking a variable number of arguments; the
+@code{TYPE_ARG_TYPES} of such a function will be NULL.
+
 @item METHOD_TYPE
 Used to represent the type of a non-static member function.  Like a
 @code{FUNCTION_TYPE}, the return type is given by the @code{TREE_TYPE}.
