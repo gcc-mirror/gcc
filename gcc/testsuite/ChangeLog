@@ -1,5 +1,8 @@
 2004-06-29  Jakub Jelinek  <jakub@redhat.com>
 
+	* gcc.dg/compat/vector-defs.h: Use vector_size attribute
+	only for GCC 3.5+, for GCC up to 3.4 mode(V*) attribute instead.
+
 	PR target/16195
 	* gcc.dg/20040625-1.c: New test.
 
