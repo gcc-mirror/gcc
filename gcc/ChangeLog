@@ -1,3 +1,9 @@
+Wed Oct 18 11:16:40 2000  Donald Lindsay  <dlindsay@cygnus.com>
+
+	* gcc/configure.in: m68k-coff tm_file should not have libgloss.h,
+	since this (only) drags in a crt0.o reference that the .ld files
+	also introduce.
+
 2000-10-23  Geoff Keating  <geoffk@cygnus.com>
 
 	* reload1.c (reload_reg_reaches_end_p): A RELOAD_OTHER can
