@@ -1,5 +1,5 @@
 /* Virtual array support.
-   Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
    Contributed by Cygnus Solutions.
 
    This file is part of GNU CC.
@@ -20,6 +20,7 @@
    Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
+#include "errors.h"
 #include "system.h"
 #include "rtl.h"
 #include "tree.h"

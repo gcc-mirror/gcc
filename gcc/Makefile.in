@@ -1484,7 +1484,8 @@ bitmap.o : bitmap.c $(GCONFIG_H) $(SYSTEM_H) $(RTL_H) flags.h $(BASIC_BLOCK_H) \
 global.o : global.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) flags.h reload.h function.h \
    $(BASIC_BLOCK_H) $(REGS_H) hard-reg-set.h insn-config.h output.h toplev.h \
    $(TM_P_H)
-varray.o : varray.c $(CONFIG_H) $(SYSTEM_H) varray.h $(RTL_H) $(TREE_H) bitmap.h
+varray.o : varray.c $(CONFIG_H) $(SYSTEM_H) varray.h $(RTL_H) $(TREE_H) bitmap.h \
+   errors.h
 reload.o : reload.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) flags.h output.h $(EXPR_H) \
    reload.h $(RECOG_H) hard-reg-set.h insn-config.h $(REGS_H) \
    function.h real.h toplev.h $(TM_P_H)
