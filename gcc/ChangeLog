@@ -1,3 +1,9 @@
+2004-12-16  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR middle-end/18590
+	* function.c (fixup_var_refs_insns_with_hash): Do not invoke
+	fixup_var_refs_insn on insns marked as deleted.
+
 2004-12-15  Richard Henderson  <rth@redhat.com>
 
         PR target/19005
