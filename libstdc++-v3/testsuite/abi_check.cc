@@ -244,7 +244,7 @@ int main(int argc, char** argv)
       << bslash << "n" << quote << ", $4, $8; else if ($4 == " 
       << quote << "OBJECT" << quote << ") printf " << quote
       << "%s:%s:%s" << bslash << "n" << quote << ", $4, $3, $8;}' | "
-      << "sort >& " << test_file;
+      << "sort > " << test_file << " 2>&1";
   if (system(cmd.str().c_str()) != 0)
     {
       cerr << "Unable to generate the list of exported symbols." << endl;
