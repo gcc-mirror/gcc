@@ -1,3 +1,7 @@
+Sun Jan 24 01:15:05 PST 1999 Jeff Law  (law@cygnus.com)
+
+	* version.c: Bump for snapshot.
+
 Sat Jan 23 22:34:57 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* final.c (bb_str): Qualify a char* with the keyword `const'.
