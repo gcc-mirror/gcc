@@ -1,3 +1,7 @@
+Mon Sep 15 00:36:53 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* lib/g++.exp (g++_init): Look for xgcc in $basedir too.
+	
 Thu Sep 11 13:52:01 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* g++.old-deja/g++.brendan/scope4.C: No longer expected to fail.
