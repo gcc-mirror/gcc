@@ -1,3 +1,7 @@
+2000-06-01  Richard Henderson  <rth@cygnus.com>
+
+        * c-decl.c (init_decl_processing): Set lang_get_alias_set first thing.
+
 2000-05-31  Richard Henderson  <rth@cygnus.com>
 
 	* config/ia64/ia64.c (sdata_symbolic_operand): Consider small
