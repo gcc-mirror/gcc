@@ -13,7 +13,7 @@
 
 #ifndef __GNUC_VA_LIST
 #define __GNUC_VA_LIST
-#if defined (__mips_eabi) && ! defined (__mips_soft_float)
+#if defined (__mips_eabi) && ! defined (__mips_soft_float) && ! defined (__mips_single_float)
 
 typedef struct {
   /* Pointer to FP regs.  */
@@ -24,11 +24,11 @@ typedef struct {
   char *__gp_regs;
 } __gnuc_va_list;
 
-#else /* ! (defined (__mips_eabi) && ! defined (__mips_soft_float)) */
+#else /* ! (defined (__mips_eabi) && ! defined (__mips_soft_float) && ! defined (__mips_single_float)) */
 
 typedef char * __gnuc_va_list;
 
-#endif /* ! (defined (__mips_eabi) && ! defined (__mips_soft_float)) */
+#endif /* ! (defined (__mips_eabi) && ! defined (__mips_soft_float) && ! defined (__mips_single_float)) */
 #endif /* not __GNUC_VA_LIST */
 
 /* If this is for internal libc use, don't define anything but
@@ -88,7 +88,7 @@ enum {
 
 #ifdef _STDARG_H
 #if defined (__mips_eabi)
-#ifndef __mips_soft_float
+#if ! defined (__mips_soft_float) && ! defined (__mips_single_float)
 #ifdef __mips64
 #define va_start(__AP, __LASTARG)					\
   (__AP.__gp_regs = ((char *) __builtin_next_arg (__LASTARG)		\
@@ -107,16 +107,16 @@ enum {
    __AP.__fp_regs = __AP.__gp_regs - __AP.__fp_left * 8,		\
    __AP.__fp_regs = (char *) ((int) __AP.__fp_regs & -8))
 #endif /* ! defined (__mips64) */
-#else /* defined (__mips_soft_float) */
+#else /* ! (! defined (__mips_soft_float) && ! defined (__mips_single_float) ) */
 #define va_start(__AP, __LASTARG)					\
   (__AP = ((__gnuc_va_list) __builtin_next_arg (__LASTARG)		\
 	   - (__builtin_args_info (2) >= 8 ? 0				\
 	      : (8 - __builtin_args_info (2)) * __va_reg_size)))
-#endif /* defined (__mips_soft_float) */
+#endif /* ! (! defined (__mips_soft_float) && ! defined (__mips_single_float) ) */
 #else /* ! defined (__mips_eabi) */
 #define va_start(__AP, __LASTARG) \
   (__AP = (__gnuc_va_list) __builtin_next_arg (__LASTARG))
-#endif /* ! (defined (__mips_eabi) && ! defined (__mips_soft_float)) */
+#endif /* ! (defined (__mips_eabi) && ! defined (__mips_soft_float) && ! defined (__mips_single_float)) */
 #else /* ! _STDARG_H */
 #define va_alist  __builtin_va_alist
 #ifdef __mips64
@@ -126,7 +126,7 @@ enum {
 #define va_dcl    int __builtin_va_alist; __va_ellipsis
 #endif
 #if defined (__mips_eabi)
-#ifndef __mips_soft_float
+#if ! defined (__mips_soft_float) && ! defined (__mips_single_float)
 #ifdef __mips64
 #define va_start(__AP)							\
   (__AP.__gp_regs = ((char *) __builtin_next_arg ()			\
@@ -145,12 +145,12 @@ enum {
    __AP.__fp_regs = __AP.__gp_regs - __AP.__fp_left * 8,		\
    __AP.__fp_regs = (char *) ((int) __AP.__fp_regs & -8))
 #endif /* ! defined (__mips64) */
-#else /* defined (__mips_soft_float) */
+#else /* ! (! defined (__mips_soft_float) && ! defined (__mips_single_float)) */
 #define va_start(__AP)							\
   (__AP = ((__gnuc_va_list) __builtin_next_arg ()			\
 	   - (__builtin_args_info (2) >= 8 ? __va_reg_size		\
 	      : (8 - __builtin_args_info (2)) * __va_reg_size)))
-#endif /* defined (__mips_soft_float) */
+#endif /* ! (! defined (__mips_soft_float) && ! defined (__mips_single_float)) */
 /* Need alternate code for _MIPS_SIM_ABI64.  */
 #elif defined(_MIPS_SIM) && (_MIPS_SIM == _MIPS_SIM_ABI64 || _MIPS_SIM == _MIPS_SIM_NABI32)
 #define va_start(__AP)							\
@@ -168,7 +168,7 @@ void va_end (__gnuc_va_list);		/* Defined in libgcc.a */
 
 #if defined (__mips_eabi)
 
-#ifndef __mips_soft_float
+#if ! defined (__mips_soft_float) && ! defined (__mips_single_float)
 #ifdef __mips64
 #define __va_next_addr(__AP, __type)					\
   ((__builtin_classify_type (*(__type *) 0) == __real_type_class	\
@@ -189,7 +189,7 @@ void va_end (__gnuc_va_list);		/* Defined in libgcc.a */
        : ((__AP.__gp_regs += __va_rounded_size (__type))		\
 	  - __va_rounded_size (__type)))))
 #endif
-#else /* defined (__mips_soft_float) */
+#else /* ! (! defined (__mips_soft_float) && ! defined (__mips_single_float)) */
 #ifdef __mips64
 #define __va_next_addr(__AP, __type)					\
   ((__AP += __va_reg_size) - __va_reg_size)
@@ -204,7 +204,7 @@ void va_end (__gnuc_va_list);		/* Defined in libgcc.a */
     : ((__AP += __va_rounded_size (__type))				\
        - __va_rounded_size (__type))))
 #endif
-#endif /* defined (__mips_soft_float) */
+#endif /* ! (! defined (__mips_soft_float) && ! defined (__mips_single_float)) */
 
 #ifdef __MIPSEB__
 #define va_arg(__AP, __type)						\
