@@ -1,3 +1,11 @@
+Thu Nov 12 14:15:07 1998  Per Bothner  <bothner@cygnus.com>
+
+	* class.c:  Remove some unused variables.
+	* constants.c (find_string_constant):  New function.
+	(count_constant_pool_bytes):  Fix to correctly handle wide constants.
+	* decl.c (complete_start_java_method):  Don't _Jv_InitClass
+	if flag_emit_class_files.
+	
 1998-11-12  Tom Tromey  <tromey@cygnus.com>
 
 	* jcf-io.c (find_class): Added explanatory comment.
