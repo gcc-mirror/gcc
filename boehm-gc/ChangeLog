@@ -1,3 +1,7 @@
+1999-04-30  Tom Tromey  <tromey@cygnus.com>
+
+	* linux_threads.c: Don't reference __pthread_initial_thread_bos.
+
 1999-04-26  Tom Tromey  <tromey@cygnus.com>
 
 	* dyn_load.c (GC_FirstDLOpenedLinkMap): Declare _DYNAMIC as
