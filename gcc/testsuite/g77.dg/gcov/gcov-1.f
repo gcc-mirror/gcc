@@ -424,4 +424,4 @@ C Test nested IF statements and IF with compound expressions.
       end if
       end
 C
-C { dg-final { run-gcov -b gcov-1.f } }
+C { dg-final { run-gcov branches calls { -b gcov-1.f } } }

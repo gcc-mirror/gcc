@@ -217,37 +217,40 @@ proc verify-calls { testcase file } {
 
 # Called by dg-final to run gcov and analyze the results.
 #
-# ARGS is the options to pass to gcov followed by the name of the
-# test source file.
+# ARGS consists of the optional strings "branches" and/or "calls",
+# (indicating that these things should be verified) followed by a 
+# list of arguments to provide to gcov, including the name of the
+# source file.
 
 proc run-gcov { args } {
     global GCOV
     global srcdir subdir
 
-    # Extract the test name from the arguments.
-    set testcase [lindex $args end]
+    set gcov_args [lindex $args end]
 
-    # Get special options for this test from the .x script, if present.
-    # This can include:
-    #   gcov_execute_xfail     string to pass to setup_xfail
-    #   gcov_verify_xfail      string to pass to setup_xfail
-    #   gcov_verify_branches   if defined, check branch percentages
-    #   gcov_verify_calls      if defined, check call return percentages
-    if [file exists [file rootname $srcdir/$subdir/$testcase].x] {
-	set done_p 0
-	catch "set done_p \[source [file rootname $srcdir/$subdir/$testcase].x\]"
-	if { $done_p } {
-	    return
+    set gcov_verify_calls 0
+    set gcov_verify_branches 0
+    set gcov_execute_xfail ""
+    set gcov_verify_xfail ""
+
+    foreach a $args {
+	if { $a == "calls" } {
+	  set gcov_verify_calls 1
+	} elseif { $a == "branches" } {
+	  set gcov_verify_branches 1
 	}
     }
 
-    if [info exists gcov_execute_xfail] {
+    # Extract the test name from the arguments.
+    set testcase [lindex $gcov_args end]
+
+    if { $gcov_execute_xfail != "" } {
 	eval setup_xfail [split $gcov_execute_xfail]
     }
 
     verbose "Running $GCOV $testcase" 2
     set testcase [remote_download host $testcase];
-    set result [remote_exec host $GCOV $args];
+    set result [remote_exec host $GCOV $gcov_args];
     if { [lindex $result 0] != 0 } {
 	fail "$subdir/$testcase gcov failed: [lindex $result 1]"
 	clean-gcov $testcase
@@ -263,7 +266,7 @@ proc run-gcov { args } {
     }
     remote_upload host $testcase.gcov $testcase.gcov;
 
-    if [info exists gcov_verify_xfail] {
+    if { $gcov_verify_xfail != "" } {
 	eval setup_xfail [split $gcov_verify_xfail]
     }
 
@@ -272,12 +275,12 @@ proc run-gcov { args } {
 
     # If requested via the .x file, check that branch and call information
     # is correct.
-    if [info exists gcov_verify_branches] {
+    if { $gcov_verify_branches } {
 	set bfailed [verify-branches $testcase $testcase.gcov]
     } else {
 	set bfailed 0
     }
-    if [info exists gcov_verify_calls] {
+    if { $gcov_verify_calls } {
 	set cfailed [verify-calls $testcase $testcase.gcov]
     } else {
 	set cfailed 0
