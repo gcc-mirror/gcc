@@ -1,3 +1,9 @@
+2001-05-31  Jeff Sturm  <jsturm@one-point.com>
+
+	* natFile.cc (get_entry): Removed functions.
+	(performList): Call readdir or readdir_r if HAVE_READDIR_R defined.
+	Allocate enough storage for d_name if using readdir_r.
+
 2001-05-30  Tom Tromey  <tromey@redhat.com>
 
 	* Makefile.in: Rebuilt.
