@@ -1,3 +1,7 @@
+Wed Nov 25 01:00:07 1998  Marc Espie <espie@quatramaran.ens.fr>
+
+	* Makefile.in (just-check): Ignore errors.
+
 Sun Jun 28 00:00:10 1998   Carlo Wood  <carlo@runaway.xs4all.nl>
 
         * lib/libstdc++.exp: Use global variable ld_library_path (not local)
