@@ -1,3 +1,12 @@
+2001-12-17  Dale Johannesen  <dalej@apple.com>
+
+         * config/rs6000/rs6000.h:  CPP_CPU_SPEC: add mcpu=7400.
+         ASM_CPU_SPEC: Ditto.
+         RTX_COSTS: Fix timing info for 7450 multiply.
+         * config/rs6000/rs6000.md:  Fix timing info for 7450 imul.
+         Allow floats to be kept in int regs in movsf_low,
+         movsf_low_st (Darwin only)
+
 2001-12-17  Aldy Hernandez  <aldyh@redhat.com>
 
 	* config/rs6000/rs6000.c (vrsave_operation): Recognize SETs in
