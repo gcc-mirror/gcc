@@ -2788,7 +2788,7 @@ expand_builtin_strcpy (tree arglist, rtx target, enum machine_mode mode)
 
   src = TREE_VALUE (TREE_CHAIN (arglist));
   len = c_strlen (src);
-  if (len == 0)
+  if (len == 0 || TREE_SIDE_EFFECTS (len))
     return 0;
 
   dst = TREE_VALUE (arglist);
