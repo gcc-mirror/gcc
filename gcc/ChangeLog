@@ -1,3 +1,14 @@
+Thu Jun 28 10:31:06 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* i386.md (cmp?i): Simplify; refuse immediate operand
+	in alternative 0
+	* i386.c (cmpsi_operand): Refuse constants.
+
+	* i386.md (movsi_insv_1, movsi_insv_1_rex64): Allow immediate operand.
+
+	* flow.c (block_label, redirect_edge_and_branch): Split out from ....
+	(split_edge) .... here;
+
 2001-06-28  Neil Booth  <neil@cat.daikokuya.demon.co.uk>
 
 	* i386/i386.c (ix86_valid_type_attribute_p): Give external

@@ -471,6 +471,8 @@ static int flow_loop_level_compute	PARAMS ((struct loop *, int));
 static int flow_loops_level_compute	PARAMS ((struct loops *));
 static void allocate_bb_life_data	PARAMS ((void));
 static void find_sub_basic_blocks	PARAMS ((basic_block));
+static int redirect_edge_and_branch 	PARAMS ((edge, basic_block));
+static rtx block_label			PARAMS ((basic_block));
 
 /* Find basic blocks of the current function.
    F is the first insn of the function and NREGS the number of register
@@ -1574,6 +1576,92 @@ split_block (bb, insn)
   return new_edge;
 }
 
+/* Return label in the head of basic block.  Create one if it doesn't exist.  */
+static rtx
+block_label (block)
+     basic_block block;
+{
+  if (GET_CODE (block->head) != CODE_LABEL)
+    block->head = emit_label_before (gen_label_rtx (), block->head);
+  return block->head;
+}
+
+/* Attempt to change code to redirect edge E to TARGET.
+   Don't do that on expense of adding new instructions or reordering
+   basic blocks.  */
+static int
+redirect_edge_and_branch (e, target)
+     edge e;
+     basic_block target;
+{
+  rtx insn = e->src->end;
+  rtx tmp;
+  rtx old_label = e->dest->head;
+  if (e->flags & EDGE_FALLTHRU)
+    return 0;
+
+  if (GET_CODE (insn) != JUMP_INSN)
+    abort ();
+
+  /* Recognize a tablejump and adjust all matching cases.  */
+  if ((tmp = JUMP_LABEL (insn)) != NULL_RTX
+      && (tmp = NEXT_INSN (tmp)) != NULL_RTX
+      && GET_CODE (tmp) == JUMP_INSN
+      && (GET_CODE (PATTERN (tmp)) == ADDR_VEC
+	  || GET_CODE (PATTERN (tmp)) == ADDR_DIFF_VEC))
+    {
+      rtvec vec;
+      int j;
+      rtx new_label = block_label (target);
+
+      if (GET_CODE (PATTERN (tmp)) == ADDR_VEC)
+	vec = XVEC (PATTERN (tmp), 0);
+      else
+	vec = XVEC (PATTERN (tmp), 1);
+
+      for (j = GET_NUM_ELEM (vec) - 1; j >= 0; --j)
+	if (XEXP (RTVEC_ELT (vec, j), 0) == old_label)
+	  {
+	    RTVEC_ELT (vec, j) = gen_rtx_LABEL_REF (VOIDmode, new_label);
+	    --LABEL_NUSES (old_label);
+	    ++LABEL_NUSES (new_label);
+	  }
+
+      /* Handle casesi dispatch insns */
+      if ((tmp = single_set (insn)) != NULL
+	  && SET_DEST (tmp) == pc_rtx
+	  && GET_CODE (SET_SRC (tmp)) == IF_THEN_ELSE
+	  && GET_CODE (XEXP (SET_SRC (tmp), 2)) == LABEL_REF
+	  && XEXP (XEXP (SET_SRC (tmp), 2), 0) == old_label)
+	{
+	  XEXP (SET_SRC (tmp), 2) = gen_rtx_LABEL_REF (VOIDmode,
+						       new_label);
+	  --LABEL_NUSES (old_label);
+	  ++LABEL_NUSES (new_label);
+	}
+    }
+  else
+    {
+      /* ?? We may play the games with moving the named labels from
+	 one basic block to the other in case only one computed_jump is
+	 available.  */
+      if (computed_jump_p (insn))
+	return 0;
+
+      /* A return instruction can't be redirected.  */
+      if (returnjump_p (insn))
+	return 0;
+
+      /* If the insn doesn't go where we think, we're confused.  */
+      if (JUMP_LABEL (insn) != old_label)
+	abort ();
+      redirect_jump (insn, block_label (target), 0);
+    }
+
+  redirect_edge_succ (e, target);
+  return 1;
+}
+
 
 /* Split a (typically critical) edge.  Return the new block.
    Abort on abnormal edges.
@@ -1598,15 +1686,6 @@ split_edge (edge_in)
   old_pred = edge_in->src;
   old_succ = edge_in->dest;
 
-  /* Remove the existing edge from the destination's pred list.  */
-  {
-    edge *pp;
-    for (pp = &old_succ->pred; *pp != edge_in; pp = &(*pp)->pred_next)
-      continue;
-    *pp = edge_in->pred_next;
-    edge_in->pred_next = NULL;
-  }
-
   /* Create the new structures.  */
   bb = (basic_block) obstack_alloc (&flow_obstack, sizeof (*bb));
   edge_out = (edge) xcalloc (1, sizeof (*edge_out));
@@ -1624,13 +1703,11 @@ split_edge (edge_in)
     }
 
   /* Wire them up.  */
-  bb->pred = edge_in;
   bb->succ = edge_out;
   bb->count = edge_in->count;
   bb->frequency = (edge_in->probability * edge_in->src->frequency
 		   / REG_BR_PROB_BASE);
 
-  edge_in->dest = bb;
   edge_in->flags &= ~EDGE_CRITICAL;
 
   edge_out->pred_next = old_succ->pred;
@@ -1743,73 +1820,15 @@ split_edge (edge_in)
   NOTE_BASIC_BLOCK (bb_note) = bb;
   bb->head = bb->end = bb_note;
 
-  /* Not quite simple -- for non-fallthru edges, we must adjust the
-     predecessor's jump instruction to target our new block.  */
+  /* For non-fallthry edges, we must adjust the predecessor's
+     jump instruction to target our new block.  */
   if ((edge_in->flags & EDGE_FALLTHRU) == 0)
     {
-      rtx tmp, insn = old_pred->end;
-      rtx old_label = old_succ->head;
-      rtx new_label = gen_label_rtx ();
-
-      if (GET_CODE (insn) != JUMP_INSN)
+      if (!redirect_edge_and_branch (edge_in, bb))
 	abort ();
-
-      /* ??? Recognize a tablejump and adjust all matching cases.  */
-      if ((tmp = JUMP_LABEL (insn)) != NULL_RTX
-	  && (tmp = NEXT_INSN (tmp)) != NULL_RTX
-	  && GET_CODE (tmp) == JUMP_INSN
-	  && (GET_CODE (PATTERN (tmp)) == ADDR_VEC
-	      || GET_CODE (PATTERN (tmp)) == ADDR_DIFF_VEC))
-	{
-	  rtvec vec;
-	  int j;
-
-	  if (GET_CODE (PATTERN (tmp)) == ADDR_VEC)
-	    vec = XVEC (PATTERN (tmp), 0);
-	  else
-	    vec = XVEC (PATTERN (tmp), 1);
-
-	  for (j = GET_NUM_ELEM (vec) - 1; j >= 0; --j)
-	    if (XEXP (RTVEC_ELT (vec, j), 0) == old_label)
-	      {
-		RTVEC_ELT (vec, j) = gen_rtx_LABEL_REF (VOIDmode, new_label);
-		--LABEL_NUSES (old_label);
-		++LABEL_NUSES (new_label);
-	      }
-
-	  /* Handle casesi dispatch insns */
-	  if ((tmp = single_set (insn)) != NULL
-	      && SET_DEST (tmp) == pc_rtx
-	      && GET_CODE (SET_SRC (tmp)) == IF_THEN_ELSE
-	      && GET_CODE (XEXP (SET_SRC (tmp), 2)) == LABEL_REF
-	      && XEXP (XEXP (SET_SRC (tmp), 2), 0) == old_label)
-	    {
-	      XEXP (SET_SRC (tmp), 2) = gen_rtx_LABEL_REF (VOIDmode,
-							   new_label);
-	      --LABEL_NUSES (old_label);
-	      ++LABEL_NUSES (new_label);
-	    }
-	}
-      else
-	{
-	  /* This would have indicated an abnormal edge.  */
-	  if (computed_jump_p (insn))
-	    abort ();
-
-	  /* A return instruction can't be redirected.  */
-	  if (returnjump_p (insn))
-	    abort ();
-
-	  /* If the insn doesn't go where we think, we're confused.  */
-	  if (JUMP_LABEL (insn) != old_label)
-	    abort ();
-
-	  redirect_jump (insn, new_label, 0);
-	}
-
-      emit_label_before (new_label, bb_note);
-      bb->head = new_label;
     }
+  else
+    redirect_edge_succ (edge_in, bb);
 
   return bb;
 }
