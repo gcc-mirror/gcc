@@ -3295,11 +3295,6 @@ extern int real_zerop (tree);
 
 extern int pedantic_lvalues;
 
-/* Nonzero means can safely call expand_expr now;
-   otherwise layout_type puts variable sizes onto `pending_sizes' instead.  */
-
-extern int immediate_size_expand;
-
 /* Points to the FUNCTION_DECL of the function whose body we are reading.  */
 
 extern GTY(()) tree current_function_decl;

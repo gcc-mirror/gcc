@@ -6288,9 +6288,6 @@ init_function_start (tree subr)
 {
   prepare_function_start (subr);
 
-  /* Within function body, compute a type's size as soon it is laid out.  */
-  immediate_size_expand++;
-
   /* Prevent ever trying to delete the first instruction of a
      function.  Also tell final how to output a linenum before the
      function prologue.  Note linenums could be missing, e.g. when
@@ -6708,10 +6705,6 @@ expand_function_end (void)
   /* End any sequences that failed to be closed due to syntax errors.  */
   while (in_sequence_p ())
     end_sequence ();
-
-  /* Outside function body, can't compute type's actual size
-     until next function's body starts.  */
-  immediate_size_expand--;
 
   clear_pending_stack_adjust ();
   do_pending_stack_adjust ();

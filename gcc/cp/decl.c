@@ -9733,7 +9733,6 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
      call expand_expr to calculate the size of a variable-sized array.
      We haven't necessarily assigned RTL to all variables yet, so it's
      not safe to try to expand expressions involving them.  */
-  immediate_size_expand = 0;
   cfun->x_dont_save_pending_sizes_p = 1;
 
   /* Start the statement-tree, start the tree now.  */

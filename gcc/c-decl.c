@@ -3028,11 +3028,6 @@ push_parm_decl (tree parm)
 {
   tree decl;
 
-  /* Don't attempt to expand sizes while parsing this decl.
-     (We can get here with i_s_e 1 somehow from Objective-C.)  */
-  int save_immediate_size_expand = immediate_size_expand;
-  immediate_size_expand = 0;
-
   decl = grokdeclarator (TREE_VALUE (TREE_PURPOSE (parm)),
 			 TREE_PURPOSE (TREE_PURPOSE (parm)),
 			 PARM, 0, NULL);
@@ -3041,8 +3036,6 @@ push_parm_decl (tree parm)
   decl = pushdecl (decl);
 
   finish_decl (decl, NULL_TREE, NULL_TREE);
-
-  immediate_size_expand = save_immediate_size_expand;
 }
 
 /* Mark all the parameter declarations to date as forward decls.
@@ -5589,7 +5582,6 @@ start_function (tree declspecs, tree declarator, tree attributes)
 {
   tree decl1, old_decl;
   tree restype;
-  int old_immediate_size_expand = immediate_size_expand;
 
   current_function_returns_value = 0;  /* Assume, until we see it does.  */
   current_function_returns_null = 0;
@@ -5603,18 +5595,12 @@ start_function (tree declspecs, tree declarator, tree attributes)
      error message in c_finish_bc_stmt.  */
   c_break_label = c_cont_label = size_zero_node;
 
-  /* Don't expand any sizes in the return type of the function.  */
-  immediate_size_expand = 0;
-
   decl1 = grokdeclarator (declarator, declspecs, FUNCDEF, 1, NULL);
 
   /* If the declarator is not suitable for a function definition,
      cause a syntax error.  */
   if (decl1 == 0)
-    {
-      immediate_size_expand = old_immediate_size_expand;
-      return 0;
-    }
+    return 0;
 
   decl_attributes (&decl1, attributes, 0);
 
@@ -5792,8 +5778,6 @@ start_function (tree declspecs, tree declarator, tree attributes)
     }
   DECL_RESULT (current_function_decl)
     = build_decl (RESULT_DECL, NULL_TREE, restype);
-
-  immediate_size_expand = old_immediate_size_expand;
 
   start_fname_decls ();
 
@@ -6174,7 +6158,6 @@ store_parm_decls (void)
      call expand_expr to calculate the size of a variable-sized array.
      We haven't necessarily assigned RTL to all variables yet, so it's
      not safe to try to expand expressions involving them.  */
-  immediate_size_expand = 0;
   cfun->x_dont_save_pending_sizes_p = 1;
 }
 
