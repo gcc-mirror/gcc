@@ -1,3 +1,8 @@
+2004-04-09  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* gcc_update (files_and_dependencies): libobjc/configure now
+	depends on configure.ac, not configure.in.
+
 2004-04-01  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* gcc_update (files_and_dependencies): Remove gcc/ada/*.texi.
