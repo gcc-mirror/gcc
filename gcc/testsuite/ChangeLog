@@ -1,3 +1,7 @@
+2000-12-21  Bernd Schmidt  <bernds@redhat.com>
+
+	* gcc.c-torture/compile/20001221-1.c: New test.
+
 2000-12-20  Richard Henderson  <rth@redhat.com>
 
 	* g++.old-deja/g++.pt/crash36.C: Update error lines.
