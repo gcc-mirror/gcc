@@ -1,5 +1,9 @@
 2004-01-20  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
+	* gnu/java/awt/peer/gtk/GtkComponentPeer.java (setBounds):
+	Calculate proper offsets for heavyweight components packed in
+	lightweight containers.
+
 	* gnu/java/awt/peer/gtk/GtkTextFieldPeer.java,
 	jni/gtk-peer/gnu_java_awt_peer_gtk_GtkTextFieldPeer.c
 	(native create): Add width parameter.
