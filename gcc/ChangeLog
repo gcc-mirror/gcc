@@ -1,3 +1,8 @@
+2004-08-19  Caroline Tice  <ctice@apple.com>
+
+       * config/i386/cygming.h (switch_to_section):  Fix typo (change
+       in_unlikely_text_section to in_unlikely_executed_text).
+ 
 2004-08-19  Daniel Berlin  <dberlin@dberlin.org>
 
 	* vec.h (VEC_lower_bound): New macro.
@@ -2599,7 +2604,7 @@
 	* config/i386/xmmintrin.h: Include <mm_malloc.h>.
 
 2004-08-03  H.J. Lu  <hongjiu.lu@intel.com>
-	    Tanguy FautrÃ  <tfautre@pandora.be>
+	    Tanguy FautrÃ  <tfautre@pandora.be>
 
 	* config/i386/pmm_malloc.h: New file.
 
