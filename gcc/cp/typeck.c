@@ -2114,7 +2114,7 @@ build_component_ref (datum, component, basetype_path, protect)
     TREE_READONLY (ref) = 1;
   if (TREE_THIS_VOLATILE (datum) || TREE_THIS_VOLATILE (field))
     TREE_THIS_VOLATILE (ref) = 1;
-  if (DECL_MUTABLE_P (field))
+  if (DECL_LANG_SPECIFIC (field) && DECL_MUTABLE_P (field))
     TREE_READONLY (ref) = 0;
 
   return ref;
