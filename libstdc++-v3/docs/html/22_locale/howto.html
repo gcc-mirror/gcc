@@ -1,4 +1,4 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <html>
 <head>
    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
@@ -49,6 +49,7 @@
    </p>
 
    <p>The following is the abstract from the implementation notes:
+   </p>
    <blockquote>
    The standard class codecvt attempts to address conversions between
    different character encoding schemes. In particular, the standard
@@ -64,7 +65,6 @@
    the required specializations for wide and narrow characters and the
    implementation-provided extended functionality are given.
    </blockquote>
-   </p>
 
 <hr>
 <h2><a name="3">class ctype</a></h2>
@@ -88,13 +88,13 @@
       description of locales and how to use them.
    </p>
    <p>He also writes:
+   </p>
       <blockquote><em>
       Please note that I still consider this detailed description of
       locales beyond the needs of most C++ programmers.  It is written
       with experienced programmers in mind and novices will do best to
       avoid it.
       </em></blockquote>
-   </p>
 
 <hr>
 <h2><a name="6">Nathan Myers on Locales</a></h2>
@@ -131,6 +131,7 @@
       is created.  Then member functions of that locale are called to
       perform minor tasks.  Continuing the example from Chapter 21, we wish
       to use the following convenience functions:
+   </p>
    <pre>
    namespace std {
      template &lt;class charT&gt;
@@ -140,6 +141,7 @@
        charT
        tolower (charT c, const locale&amp; loc) const;
    }</pre>
+   <p>
       This function extracts the appropriate &quot;facet&quot; from the
       locale <em>loc</em> and calls the appropriate member function of that
       facet, passing <em>c</em> as its argument.  The resulting character
@@ -154,6 +156,7 @@
       parameter.  So we write simple wrapper structs to handle that.
    </p>
    <p>The next-to-final version of the code started in Chapter 21 looks like:
+   </p>
       <pre>
    #include &lt;iterator&gt;    // for back_inserter
    #include &lt;locale&gt;
@@ -195,7 +198,6 @@
       std::string  capital_s;
       std::transform(s.begin(), s.end(), std::back_inserter(capital_s), up);
    }</pre>
-   </p>
    <p>The final version of the code uses <code>bind2nd</code> to eliminate
       the wrapper structs, but the resulting code is tricky.  I have not
       shown it here because no compilers currently available to me will
