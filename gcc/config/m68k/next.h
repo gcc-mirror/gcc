@@ -95,7 +95,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* Machine dependent ccp options.  */
 
-#define CPP_SPEC "%{bsd:-D__STRICT_BSD__}"
+/* This option used to be called -bsd, but that conflicts with the
+   general -b option.  */
+#define CPP_SPEC "%{strict-bsd:-D__STRICT_BSD__}"
 
 /* Machine dependent ld options.  */
 
