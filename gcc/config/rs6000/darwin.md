@@ -1,0 +1,392 @@
+/* Machine description patterns for PowerPC running Darwin (Mac OS X).
+   Copyright (C) 2004 Free Software Foundation, Inc.
+   Contributed by Apple Computer Inc.
+
+This file is part of GNU CC.
+
+GNU CC is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2, or (at your option)
+any later version.
+
+GNU CC is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU CC; see the file COPYING.  If not, write to
+the Free Software Foundation, 59 Temple Place - Suite 330,
+Boston, MA 02111-1307, USA.  */
+
+(define_insn "adddi3_high"
+  [(set (match_operand:DI 0 "gpc_reg_operand" "=b")
+        (plus:DI (match_operand:DI 1 "gpc_reg_operand" "b")
+                 (high:DI (match_operand 2 "" ""))))]
+  "TARGET_MACHO && TARGET_64BIT"
+  "{cau|addis} %0,%1,ha16(%2)"
+  [(set_attr "length" "4")])
+
+(define_insn "movdf_low_di"
+  [(set (match_operand:DF 0 "gpc_reg_operand" "=f,!r")
+        (mem:DF (lo_sum:DI (match_operand:DI 1 "gpc_reg_operand" "b,b")
+                           (match_operand 2 "" ""))))]
+  "TARGET_MACHO && TARGET_HARD_FLOAT && TARGET_FPRS && TARGET_64BIT"
+  "*
+{
+  switch (which_alternative)
+    {
+      case 0:
+	return \"lfd %0,lo16(%2)(%1)\";
+      case 1:
+	{
+	  rtx operands2[4];
+	  operands2[0] = operands[0];
+	  operands2[1] = operands[1];
+	  operands2[2] = operands[2];
+	  if (TARGET_POWERPC64 && TARGET_32BIT)
+	    /* Note, old assemblers didn't support relocation here. */
+	    return \"ld %0,lo16(%2)(%1)\";
+	  else
+	  {
+	    operands2[3] = gen_rtx_REG (SImode, RS6000_PIC_OFFSET_TABLE_REGNUM);
+	    output_asm_insn (\"{l|ld} %0,lo16(%2)(%1)\", operands);
+#if TARGET_MACHO
+	    if (MACHO_DYNAMIC_NO_PIC_P)
+	      output_asm_insn (\"{liu|lis} %L0,ha16(%2+4)\", operands);
+	    else
+	    /* We cannot rely on ha16(low half)==ha16(high half), alas,
+	       although in practice it almost always is.  */
+	    output_asm_insn (\"{cau|addis} %L0,%3,ha16(%2+4)\", operands2);
+#endif
+	    return (\"{l|lwz} %L0,lo16(%2+4)(%L0)\");
+	  }
+	}
+      default:
+	abort();
+    }
+}"
+  [(set_attr "type" "load")
+   (set_attr "length" "4,12")])
+
+(define_insn "movdf_low_st_di"
+  [(set (mem:DF (lo_sum:DI (match_operand:DI 1 "gpc_reg_operand" "b")
+                           (match_operand 2 "" "")))
+	(match_operand:DF 0 "gpc_reg_operand" "f"))]
+  "TARGET_MACHO && TARGET_HARD_FLOAT && TARGET_FPRS && TARGET_64BIT"
+  "stfd %0,lo16(%2)(%1)"
+  [(set_attr "type" "store")
+   (set_attr "length" "4")])
+
+(define_insn "movsf_low_di"
+  [(set (match_operand:SF 0 "gpc_reg_operand" "=f,!r")
+        (mem:SF (lo_sum:DI (match_operand:DI 1 "gpc_reg_operand" "b,b")
+                           (match_operand 2 "" ""))))]
+  "TARGET_MACHO && TARGET_HARD_FLOAT && TARGET_FPRS && TARGET_64BIT"
+  "@
+   lfs %0,lo16(%2)(%1)
+   {l|ld} %0,lo16(%2)(%1)"
+  [(set_attr "type" "load")
+   (set_attr "length" "4")])
+
+(define_insn "movsf_low_st_di"
+  [(set (mem:SF (lo_sum:DI (match_operand:DI 1 "gpc_reg_operand" "b,b")
+                           (match_operand 2 "" "")))
+	(match_operand:SF 0 "gpc_reg_operand" "f,!r"))]
+  "TARGET_MACHO && TARGET_HARD_FLOAT && TARGET_FPRS && TARGET_64BIT"
+  "@
+   stfs %0,lo16(%2)(%1)
+   {st|stw} %0,lo16(%2)(%1)"
+  [(set_attr "type" "store")
+   (set_attr "length" "4")])
+
+;; 64-bit MachO load/store support
+(define_insn "movdi_low"
+  [(set (match_operand:DI 0 "gpc_reg_operand" "=r")
+        (mem:DI (lo_sum:DI (match_operand:DI 1 "gpc_reg_operand" "b")
+                           (match_operand 2 "" ""))))]
+  "TARGET_MACHO && TARGET_64BIT"
+  "{l|ld} %0,lo16(%2)(%1)"
+  [(set_attr "type" "load")
+   (set_attr "length" "4")])
+
+(define_insn "movdi_low_st"
+  [(set (mem:DI (lo_sum:DI (match_operand:DI 1 "gpc_reg_operand" "b")
+                           (match_operand 2 "" "")))
+	(match_operand:DI 0 "gpc_reg_operand" "r"))]
+  "TARGET_MACHO && TARGET_64BIT"
+  "{st|std} %0,lo16(%2)(%1)"
+  [(set_attr "type" "store")
+   (set_attr "length" "4")])
+
+(define_insn "macho_high_di"
+  [(set (match_operand:DI 0 "gpc_reg_operand" "=b*r")
+	(high:DI (match_operand 1 "" "")))]
+  "TARGET_MACHO && TARGET_64BIT"
+  "{liu|lis} %0,ha16(%1)")
+
+(define_insn "macho_low_di"
+  [(set (match_operand:DI 0 "gpc_reg_operand" "=r,r")
+	(lo_sum:DI (match_operand:DI 1 "gpc_reg_operand" "b,!*r")
+		   (match_operand 2 "" "")))]
+   "TARGET_MACHO && TARGET_64BIT"
+   "@
+    {cal %0,%a2@l(%1)|la %0,lo16(%2)(%1)}
+    {cal %0,%a2@l(%1)|addic %0,%1,lo16(%2)}")
+
+(define_split
+  [(set (mem:V4SI (plus:DI (match_operand:DI 0 "gpc_reg_operand" "")
+			 (match_operand:DI 1 "short_cint_operand" "")))
+	(match_operand:V4SI 2 "register_operand" ""))
+   (clobber (match_operand:DI 3 "gpc_reg_operand" ""))]
+  "TARGET_MACHO && TARGET_64BIT"
+  [(set (match_dup 3) (plus:DI (match_dup 0) (match_dup 1)))
+   (set (mem:V4SI (match_dup 3))
+	(match_dup 2))]
+  "")
+
+(define_insn ""
+  [(set (mem:V4SI (plus:DI (match_operand:DI 0 "gpc_reg_operand" "b,r")
+			 (match_operand:DI 1 "gpc_reg_operand" "r,b")))
+	(match_operand:V4SI 2 "register_operand" "v,v"))]
+  "TARGET_MACHO && TARGET_64BIT"
+  "@
+   stvx %2,%0,%1
+   stvx %2,%1,%0"
+  [(set_attr "type" "vecstore")])
+
+(define_insn ""
+  [(set (mem:V4SI (match_operand:DI 0 "gpc_reg_operand" "r"))
+	(match_operand:V4SI 1 "register_operand" "v"))]
+  "TARGET_MACHO && TARGET_64BIT"
+  "stvx %1,0,%0"
+  [(set_attr "type" "vecstore")])
+
+(define_split
+  [(set (match_operand:V4SI 0 "register_operand" "")
+	(mem:V4SI (plus:DI (match_operand:DI 1 "gpc_reg_operand" "")
+			 (match_operand:DI 2 "short_cint_operand" ""))))
+   (clobber (match_operand:DI 3 "gpc_reg_operand" ""))]
+  "TARGET_MACHO && TARGET_64BIT"
+  [(set (match_dup 3) (plus:DI (match_dup 1) (match_dup 2)))
+   (set (match_dup 0)
+	(mem:V4SI (match_dup 3)))]
+  "")
+
+(define_insn ""
+  [(set (match_operand:V4SI 0 "register_operand" "=v,v")
+	(mem:V4SI (plus:DI (match_operand:DI 1 "gpc_reg_operand" "b,r")
+			 (match_operand:DI 2 "gpc_reg_operand" "r,b"))))]
+  "TARGET_MACHO && TARGET_64BIT"
+  "@
+   lvx %0,%1,%2
+   lvx %0,%2,%1"
+  [(set_attr "type" "vecload")])
+
+(define_insn ""
+  [(set (match_operand:V4SI 0 "register_operand" "=v")
+        (mem:V4SI (match_operand:DI 1 "gpc_reg_operand" "r")))]
+  "TARGET_MACHO && TARGET_64BIT"
+  "lvx %0,0,%1"
+  [(set_attr "type" "vecload")])
+
+(define_insn "load_macho_picbase_di"
+  [(set (match_operand:DI 0 "register_operand" "=l")
+	(unspec:DI [(match_operand:DI 1 "immediate_operand" "s")] 15))]
+  "(DEFAULT_ABI == ABI_DARWIN) && flag_pic"
+  "bcl 20,31,%1\\n%1:"
+  [(set_attr "type" "branch")
+   (set_attr "length" "4")])
+
+(define_insn "macho_correct_pic_di"
+  [(set (match_operand:DI 0 "gpc_reg_operand" "=r")
+	(plus:DI (match_operand:DI 1 "gpc_reg_operand" "r")
+		 (unspec:DI [(match_operand:DI 2 "immediate_operand" "s")
+			     (match_operand:DI 3 "immediate_operand" "s")]
+			    16)))]
+  "DEFAULT_ABI == ABI_DARWIN"
+  "addis %0,%1,ha16(%2-%3)\n\taddi %0,%0,lo16(%2-%3)"
+  [(set_attr "length" "8")])
+
+(define_insn "*call_indirect_nonlocal_darwin64"
+  [(call (mem:SI (match_operand:DI 0 "register_operand" "c,*l,c,*l"))
+	 (match_operand 1 "" "g,g,g,g"))
+   (use (match_operand:SI 2 "immediate_operand" "O,O,n,n"))
+   (clobber (match_scratch:SI 3 "=l,l,l,l"))]
+  "DEFAULT_ABI == ABI_DARWIN"
+{
+  return "b%T0l";
+}
+  [(set_attr "type" "jmpreg,jmpreg,jmpreg,jmpreg")
+   (set_attr "length" "4,4,8,8")])
+
+(define_insn "*call_nonlocal_darwin64"
+  [(call (mem:SI (match_operand:DI 0 "symbol_ref_operand" "s,s"))
+	 (match_operand 1 "" "g,g"))
+   (use (match_operand:SI 2 "immediate_operand" "O,n"))
+   (clobber (match_scratch:SI 3 "=l,l"))]
+  "(DEFAULT_ABI == ABI_DARWIN)
+   && (INTVAL (operands[2]) & CALL_LONG) == 0"
+{
+#if TARGET_MACHO
+  return output_call(insn, operands, 0, 2);
+#endif
+}
+  [(set_attr "type" "branch,branch")
+   (set_attr "length" "4,8")])
+
+(define_insn "*call_value_indirect_nonlocal_darwin64"
+  [(set (match_operand 0 "" "")
+	(call (mem:SI (match_operand:DI 1 "register_operand" "c,*l,c,*l"))
+	      (match_operand 2 "" "g,g,g,g")))
+   (use (match_operand:SI 3 "immediate_operand" "O,O,n,n"))
+   (clobber (match_scratch:SI 4 "=l,l,l,l"))]
+  "DEFAULT_ABI == ABI_DARWIN"
+{
+  return "b%T1l";
+}
+  [(set_attr "type" "jmpreg,jmpreg,jmpreg,jmpreg")
+   (set_attr "length" "4,4,8,8")])
+
+(define_insn "*call_value_nonlocal_darwin64"
+  [(set (match_operand 0 "" "")
+	(call (mem:SI (match_operand:DI 1 "symbol_ref_operand" "s,s"))
+	      (match_operand 2 "" "g,g")))
+   (use (match_operand:SI 3 "immediate_operand" "O,n"))
+   (clobber (match_scratch:SI 4 "=l,l"))]
+  "(DEFAULT_ABI == ABI_DARWIN)
+   && (INTVAL (operands[3]) & CALL_LONG) == 0"
+{
+#if TARGET_MACHO
+  return output_call(insn, operands, 1, 3);
+#endif     
+}
+  [(set_attr "type" "branch,branch")
+   (set_attr "length" "4,8")])
+
+(define_insn "*sibcall_nonlocal_darwin64"
+  [(call (mem:SI (match_operand:DI 0 "symbol_ref_operand" "s,s"))
+	 (match_operand 1 "" ""))
+   (use (match_operand 2 "immediate_operand" "O,n"))
+   (use (match_operand:SI 3 "register_operand" "l,l"))
+   (return)]
+  "(DEFAULT_ABI == ABI_DARWIN)
+   && (INTVAL (operands[2]) & CALL_LONG) == 0"
+{
+  return "b %z0";
+}
+  [(set_attr "type" "branch,branch")
+   (set_attr "length" "4,8")])
+
+(define_insn "*sibcall_value_nonlocal_darwin64"
+  [(set (match_operand 0 "" "")
+	(call (mem:SI (match_operand:DI 1 "symbol_ref_operand" "s,s"))
+	      (match_operand 2 "" "")))
+   (use (match_operand:SI 3 "immediate_operand" "O,n"))
+   (use (match_operand:SI 4 "register_operand" "l,l"))
+   (return)]
+  "(DEFAULT_ABI == ABI_DARWIN)
+   && (INTVAL (operands[3]) & CALL_LONG) == 0"
+  "*
+{
+  return \"b %z1\";
+}"
+  [(set_attr "type" "branch,branch")
+   (set_attr "length" "4,8")])
+
+
+(define_insn "*sibcall_symbolic_64"
+  [(call (mem:SI (match_operand:DI 0 "call_operand" "s,c")) ; 64
+	 (match_operand 1 "" ""))
+   (use (match_operand 2 "" ""))
+   (use (match_operand:SI 3 "register_operand" "l,l"))
+   (return)]
+  "TARGET_64BIT && DEFAULT_ABI == ABI_DARWIN"
+  "*
+{
+  switch (which_alternative)
+    {
+      case 0:  return \"b %z0\";
+      case 1:  return \"b%T0\";
+      default:  abort();
+    }
+}"
+  [(set_attr "type" "branch")
+   (set_attr "length" "4")])
+
+(define_insn "*sibcall_value_symbolic_64"
+  [(set (match_operand 0 "" "")
+	(call (mem:SI (match_operand:DI 1 "call_operand" "s,c"))
+	      (match_operand 2 "" "")))
+   (use (match_operand:SI 3 "" ""))
+   (use (match_operand:SI 4 "register_operand" "l,l"))
+   (return)]
+  "TARGET_64BIT && DEFAULT_ABI == ABI_DARWIN"
+  "*
+{
+  switch (which_alternative)
+    {
+      case 0:  return \"b %z1\";
+      case 1:  return \"b%T1\";
+      default:  abort();
+    }
+}"
+  [(set_attr "type" "branch")
+   (set_attr "length" "4")])
+
+(define_insn "*save_fpregs_with_label_di"
+ [(match_parallel 0 "any_operand"
+                  [(clobber (match_operand:DI 1 "register_operand" "=l"))
+		   (use (match_operand:DI 2 "call_operand" "s"))
+		   (use (match_operand:DI 3 "" ""))
+		   (set (match_operand:DF 4 "memory_operand" "=m")
+			(match_operand:DF 5 "gpc_reg_operand" "f"))])]
+ "TARGET_64BIT"
+ "*
+#if TARGET_MACHO
+  const char *picbase = machopic_function_base_name ();
+  operands[3] = gen_rtx_SYMBOL_REF (Pmode, ggc_alloc_string (picbase, -1));
+#endif
+  return \"bl %z2\\n%3:\";
+"
+  [(set_attr "type" "branch")
+   (set_attr "length" "4")])
+
+(define_insn "*save_vregs_di"
+ [(match_parallel 0 "any_operand"
+                  [(clobber (match_operand:DI 1 "register_operand" "=l"))
+		   (use (match_operand:DI 2 "call_operand" "s"))
+		   (set (match_operand:V4SI 3 "any_operand" "=m")
+			(match_operand:V4SI 4 "register_operand" "v"))])]
+ "TARGET_64BIT"
+ "bl %z2"
+  [(set_attr "type" "branch")
+   (set_attr "length" "4")])
+
+(define_insn "*restore_vregs_di"
+ [(match_parallel 0 "any_operand"
+                  [(clobber (match_operand:DI 1 "register_operand" "=l"))
+		   (use (match_operand:DI 2 "call_operand" "s"))
+		   (clobber (match_operand:DI 3 "gpc_reg_operand" "=r"))
+		   (set (match_operand:V4SI 4 "register_operand" "=v")
+			(match_operand:V4SI 5 "any_operand" "m"))])]
+ "TARGET_64BIT"
+ "bl %z2")
+
+(define_insn "*save_vregs_with_label_di"
+ [(match_parallel 0 "any_operand"
+                  [(clobber (match_operand:DI 1 "register_operand" "=l"))
+		   (use (match_operand:DI 2 "call_operand" "s"))
+		   (use (match_operand:DI 3 "" ""))
+		   (set (match_operand:V4SI 4 "any_operand" "=m")
+			(match_operand:V4SI 5 "register_operand" "v"))])]
+ "TARGET_64BIT"
+ "*
+#if TARGET_MACHO
+  const char *picbase = machopic_function_base_name ();
+  operands[3] = gen_rtx_SYMBOL_REF (Pmode, ggc_alloc_string (picbase, -1));
+#endif
+  return \"bl %z2\\n%3:\";
+"
+  [(set_attr "type" "branch")
+   (set_attr "length" "4")])

@@ -9974,6 +9974,17 @@ This switch enables or disables the generation of floating point
 operations on the general purpose registers for architectures that
 support it.  This option is currently only available on the MPC8540.
 
+@item -m32
+@itemx -m64
+@opindex m32
+@opindex m64
+Generate code for 32-bit or 64-bit environments of Darwin and SVR4
+targets (including GNU/Linux).  The 32-bit environment sets int, long
+and pointer to 32 bits and generates code that runs on any PowerPC
+variant.  The 64-bit environment sets int to 32 bits and long and
+pointer to 64 bits, and generates code for PowerPC64, as for
+@option{-mpowerpc64}.
+
 @item -mfull-toc
 @itemx -mno-fp-in-toc
 @itemx -mno-sum-in-toc

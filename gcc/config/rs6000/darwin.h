@@ -35,6 +35,10 @@
 #define TARGET_TOC 0
 #define TARGET_NO_TOC 1
 
+/* Override the default rs6000 definition.  */
+#undef  PTRDIFF_TYPE
+#define PTRDIFF_TYPE (TARGET_64BIT ? "long int" : "int")
+
 /* Darwin switches.  */
 /* Use dynamic-no-pic codegen (no picbase reg; not suitable for shlibs.)  */
 #define MASK_MACHO_DYNAMIC_NO_PIC 0x00800000
@@ -48,7 +52,8 @@
 #define TARGET_OS_CPP_BUILTINS()                \
   do                                            \
     {                                           \
-      builtin_define ("__ppc__");               \
+      if (!TARGET_64BIT) builtin_define ("__ppc__");   \
+      if (TARGET_64BIT) builtin_define ("__ppc64__");  \
       builtin_define ("__POWERPC__");           \
       builtin_define ("__NATURAL_ALIGNMENT__"); \
       builtin_define ("__MACH__");              \
@@ -60,6 +65,10 @@
 /*  */
 #undef	SUBTARGET_SWITCHES
 #define SUBTARGET_SWITCHES						\
+  { "64",     MASK_64BIT | MASK_POWERPC64, \
+        N_("Generate 64-bit code") }, \
+  { "32",     - (MASK_64BIT | MASK_POWERPC64), \
+        N_("Generate 32-bit code") }, \
   {"dynamic-no-pic",	MASK_MACHO_DYNAMIC_NO_PIC,			\
       N_("Generate code suitable for executables (NOT shared libs)")},	\
   {"no-dynamic-no-pic",	-MASK_MACHO_DYNAMIC_NO_PIC, ""},
@@ -87,6 +96,11 @@ do {									\
         flag_pic = 2;							\
       }									\
   }									\
+  if (TARGET_64BIT && ! TARGET_POWERPC64)				\
+    {									\
+      target_flags |= MASK_POWERPC64;					\
+      warning ("-m64 requires PowerPC64 architecture, enabling");	\
+    }									\
 } while(0)
 
 /* Darwin has 128-bit long double support in libc in 10.4 and later.
@@ -252,10 +266,12 @@ do {									\
 
 #define RS6000_MCOUNT "*mcount"
 
-/* Default processor: a G4.  */
+/* Default processor: G4, and G5 for 64-bit.  */
 
 #undef PROCESSOR_DEFAULT
 #define PROCESSOR_DEFAULT  PROCESSOR_PPC7400
+#undef PROCESSOR_DEFAULT64
+#define PROCESSOR_DEFAULT64  PROCESSOR_POWER4
 
 /* Default target flag settings.  Despite the fact that STMW/LMW
    serializes, it's still a big code size win to use them.  Use FSEL by
