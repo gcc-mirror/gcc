@@ -1,5 +1,8 @@
 2000-05-27  Richard Henderson  <rth@cygnus.com>
 
+	* gensupport.c (collect_insn_data): Record the maximum number
+	of alternatives, not the last seen.
+
 	* genoutput.c: Don't include errors.h.
 	(struct data): Add lineno member.
 	(have_error): New.
