@@ -386,7 +386,11 @@ static int *uid_cuid;
 static int max_uid;
 
 /* Get the cuid of an insn.  */
+#ifdef ENABLE_CHECKING
+#define INSN_CUID(INSN) (INSN_UID (INSN) > max_uid ? (abort (), 0) : uid_cuid[INSN_UID (INSN)])
+#else
 #define INSN_CUID(INSN) (uid_cuid[INSN_UID (INSN)])
+#endif
 
 /* Number of cuids.  */
 static int max_cuid;
@@ -896,9 +900,9 @@ alloc_gcse_mem (f)
   for (insn = f, i = 0; insn; insn = NEXT_INSN (insn))
     {
       if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
-	INSN_CUID (insn) = i++;
+	uid_cuid[INSN_UID (insn)] = i++;
       else
-	INSN_CUID (insn) = i;
+	uid_cuid[INSN_UID (insn)] = i;
     }
 
   /* Create a table mapping cuids to insns.  */
