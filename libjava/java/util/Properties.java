@@ -188,13 +188,17 @@ label   = Name:\\u0020</pre>
       {
         char c = 0;
         int pos = 0;
+        // If empty line or begins with a comment character, skip this line.
+        if (line.length() == 0
+	    || line.charAt(0) == '#' || line.charAt(0) == '!')
+          continue;
+
         while (pos < line.length()
                && Character.isWhitespace(c = line.charAt(pos)))
           pos++;
 
-        // If line is empty or begins with a comment character,
-        // skip this line.
-        if (pos == line.length() || c == '#' || c == '!')
+        // If line is empty skip this line.
+        if (pos == line.length())
           continue;
 
         // The characters up to the next Whitespace, ':', or '='
