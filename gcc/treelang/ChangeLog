@@ -1,3 +1,8 @@
+2003-03-21  Andreas Jaeger  <aj@suse.de>
+
+	* treetree.c (cpp_create_reader): Follow prototype change in
+	cpplib.h.
+
 2003-03-17  Andreas Jaeger  <aj@suse.de>
 
 	* Make-lang.in (treelang.tags): Remove duplicate entry.

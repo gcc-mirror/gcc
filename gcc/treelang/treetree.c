@@ -925,7 +925,8 @@ expand_stmt (tree t ATTRIBUTE_UNUSED)
 /* Should not be called for treelang.   */
 
 cpp_reader *
-cpp_create_reader (enum c_lang lang ATTRIBUTE_UNUSED)
+cpp_create_reader (enum c_lang lang ATTRIBUTE_UNUSED,
+		   struct ht *table ATTRIBUTE_UNUSED)
 {
   abort ();
 }
