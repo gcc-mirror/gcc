@@ -4480,10 +4480,9 @@ mips_debugger_offset (rtx addr, HOST_WIDE_INT offset)
    'F'  print part of opcode for a floating-point branch condition.
    'N'  print part of opcode for a branch condition, inverted.
    'W'  print part of opcode for a floating-point branch condition, inverted.
-   'B'  print 'z' for EQ, 'n' for NE
-   'b'  print 'n' for EQ, 'z' for NE
-   'T'  print 'f' for EQ, 't' for NE
-   't'  print 't' for EQ, 'f' for NE
+   'T'  print 'f' for (eq:CC ...), 't' for (ne:CC ...),
+	      'z' for (eq:?I ...), 'n' for (ne:?I ...).
+   't'  like 'T', but with the EQ/NE cases reversed
    'Z'  print register and a comma, but print nothing for $fcc0
    'R'  print the reloc associated with LO_SUM
 
@@ -4772,14 +4771,11 @@ print_operand (FILE *file, rtx op, int letter)
   else if (letter == 'd' || letter == 'x' || letter == 'X')
     output_operand_lossage ("invalid use of %%d, %%x, or %%X");
 
-  else if (letter == 'B')
-    fputs (code == EQ ? "z" : "n", file);
-  else if (letter == 'b')
-    fputs (code == EQ ? "n" : "z", file);
-  else if (letter == 'T')
-    fputs (code == EQ ? "f" : "t", file);
-  else if (letter == 't')
-    fputs (code == EQ ? "t" : "f", file);
+  else if (letter == 'T' || letter == 't')
+    {
+      int truth = (code == NE) == (letter == 'T');
+      fputc ("zfnt"[truth * 2 + (GET_MODE (op) == CCmode)], file);
+    }
 
   else if (CONST_GP_P (op))
     fputs (reg_names[GLOBAL_POINTER_REGNUM], file);

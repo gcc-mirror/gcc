@@ -1,5 +1,16 @@
 2004-08-24  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config/mips/mips.h (ISA_HAS_INT_CONDMOVE): Delete.
+	* config/mips/mips.c (print_operand): Fold %B/%b handling into %T/%t,
+	using the mode of the operand to decide between them.
+	* config/mips/mips.md (MOVECC): New mode macro.
+	(ccreg): New mode attribute.
+	(*mov{si,di,sf,df}_on_{cc,si,di}): Name formerly unnamed patterns.
+	Redefine using :GPR and :MOVECC.  Use %T and %t for the condition.
+	(mov[sd]icc): Redefine using :GPR.
+
+2004-08-24  Richard Sandiford  <rsandifo@redhat.com>
+
 	* config/mips/mips-protos.h (mips_emit_prefetch): Delete.
 	(mips_prefetch_cookie): New function.
 	* config/mips/mips.c (print_operand_address): Fix handling of
