@@ -1427,18 +1427,18 @@ dumpvers: dumpvers.c
 
 version.o: version.c
 
-ggc-common.o: ggc-common.c $(CONFIG_H) $(RTL_BASE_H) $(TREE_H) \
+ggc-common.o: ggc-common.c $(CONFIG_H) $(RTL_H) $(TREE_H) \
 	flags.h ggc.h varray.h hash.h
 
-ggc-simple.o: ggc-simple.c $(CONFIG_H) $(RTL_BASE_H) $(TREE_H) flags.h \
+ggc-simple.o: ggc-simple.c $(CONFIG_H) $(RTL_H) $(TREE_H) flags.h \
 	ggc.h varray.h hash.h
 
-ggc-page.o: ggc-page.c $(CONFIG_H) $(RTL_BASE_H) $(TREE_H) flags.h \
+ggc-page.o: ggc-page.c $(CONFIG_H) $(RTL_H) $(TREE_H) flags.h \
 	ggc.h varray.h hash.h
 
-ggc-none.o: ggc-none.c $(CONFIG_H) $(RTL_BASE_H) ggc.h
+ggc-none.o: ggc-none.c $(CONFIG_H) $(RTL_H) ggc.h
 
-ggc-callbacks.o: ggc-callbacks.c $(CONFIG_H) $(RTL_BASE_H) $(TREE_H) ggc.h
+ggc-callbacks.o: ggc-callbacks.c $(CONFIG_H) $(RTL_H) $(TREE_H) ggc.h
 
 obstack.o: $(srcdir)/../libiberty/obstack.c $(CONFIG_H)
 	rm -f obstack.c
