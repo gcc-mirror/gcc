@@ -4128,7 +4128,7 @@ c_expand_expr (tree exp, rtx target, enum machine_mode tmode,
 	expand_stmt (STMT_EXPR_STMT (exp));
 	expand_end_stmt_expr (rtl_expr);
 
-	result = expand_expr (rtl_expr, target, tmode, modifier);
+	result = expand_expr_real (rtl_expr, target, tmode, modifier, alt_rtl);
 	if (preserve_result && GET_CODE (result) == MEM)
 	  {
 	    if (GET_MODE (result) != BLKmode)
