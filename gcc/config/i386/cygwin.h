@@ -64,24 +64,27 @@ Boston, MA 02111-1307, USA. */
 #define CPP_PREDEFINES "-D_X86_=1 -Asystem=winnt"
 
 #ifdef CROSS_COMPILE
-#define CYGWIN_INCLUDES "-idirafter " CYGWIN_CROSS_DIR "/include"
-#define W32API_INC "-idirafter " CYGWIN_CROSS_DIR "/include/w32api"
+#define CYGWIN_INCLUDES "%{!nostdinc:-idirafter " CYGWIN_CROSS_DIR "/include}"
+#define W32API_INC "%{!nostdinc:-idirafter " CYGWIN_CROSS_DIR "/include/w32api}"
 #define W32API_LIB "-L" CYGWIN_CROSS_DIR "/lib/w32api/"
 #define CYGWIN_LIB CYGWIN_CROSS_DIR "/lib"
 #define MINGW_LIBS "-L" CYGWIN_CROSS_DIR "/lib/mingw"
-#define MINGW_INCLUDES "-isystem " CYGWIN_CROSS_DIR "/include/mingw/g++-3 "\
+#define MINGW_INCLUDES "%{!nostdinc:-isystem " CYGWIN_CROSS_DIR "/include/mingw/g++-3 "\
 		       "-isystem " CYGWIN_CROSS_DIR "/include/mingw/g++ "\
-		       "-idirafter " CYGWIN_CROSS_DIR "/include/mingw"
+		       "-idirafter " CYGWIN_CROSS_DIR "/include/mingw}"
 #else
-#define CYGWIN_INCLUDES "-isystem /usr/local/include -idirafter /usr/include"
-#define W32API_INC "-idirafter /usr/include/w32api"
+#define CYGWIN_INCLUDES "%{!nostdinc:-isystem /usr/local/include "\
+		           "-idirafter " CYGWIN_CROSS_DIR "/include "\
+		           "-idirafter /usr/include}"
+#define W32API_INC "%{!nostdinc:-idirafter /usr/include/w32api}"
 #define W32API_LIB "-L/usr/lib/w32api/"
 #define CYGWIN_LIB "/usr/lib"
 #define MINGW_LIBS "-L/usr/local/lib/mingw -L/usr/lib/mingw"
-#define MINGW_INCLUDES "-isystem /usr/include/mingw/g++-3 "\
+#define MINGW_INCLUDES "%{!nostdinc:-isystem /usr/include/mingw/g++-3 "\
 		       "-isystem /usr/include/mingw/g++ "\
-		       "-isystem /usr/local/include/mingw " \
-		       "-idirafter /usr/include/mingw"
+		       "-isystem /usr/local/include/mingw "\
+		       "-idirafter " CYGWIN_CROSS_DIR "/include/mingw "\
+		       "-idirafter /usr/include/mingw}"
 #endif
 
 /* Support the __declspec keyword by turning them into attributes.
@@ -111,8 +114,8 @@ Boston, MA 02111-1307, USA. */
 
 #undef STARTFILE_SPEC
 #define STARTFILE_SPEC "\
-  %{shared|mdll: %{mno-cygwin:" MINGW_LIBS " mingw/dllcrt2%O%s}}\
-  %{!shared: %{!mdll: %{!mno-cygwin:crt0%O%s} %{mno-cygwin:" MINGW_LIBS " mingw/crt2%O%s}\
+  %{shared|mdll: %{mno-cygwin:" MINGW_LIBS " dllcrt2%O%s}}\
+  %{!shared: %{!mdll: %{!mno-cygwin:crt0%O%s} %{mno-cygwin:" MINGW_LIBS " crt2%O%s}\
   %{pg:gcrt0%O%s}}}\
 "
 

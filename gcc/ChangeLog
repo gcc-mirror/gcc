@@ -1,3 +1,13 @@
+2001-10-26  Christopher Faylor  <cgf@redhat.com>
+
+        * config/i386/cygwin.h: Search target specfic include directory, if
+        appropriate.
+
+2001-10-24  Christopher Faylor  <cgf@redhat.com>
+
+        * config/i386/cygwin.h: Use proper path for mingw crt files when
+        -mno-cygwin.
+
 2001-10-23  Release Manager
 
 	* GCC 3.0.2 Released.
