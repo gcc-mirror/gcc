@@ -2494,15 +2494,16 @@ generate_ctor_or_dtor_function (bool constructor_p, int priority)
 
   /* Call the static storage duration function with appropriate
      arguments.  */
-  for (i = 0; i < ssdf_decls->elements_used; ++i) 
-    {
-      arguments = tree_cons (NULL_TREE, build_int_2 (priority, 0), 
-			     NULL_TREE);
-      arguments = tree_cons (NULL_TREE, build_int_2 (constructor_p, 0),
-			     arguments);
-      finish_expr_stmt (build_function_call (VARRAY_TREE (ssdf_decls, i),
-					     arguments));
-    }
+  if (ssdf_decls)
+    for (i = 0; i < ssdf_decls->elements_used; ++i) 
+      {
+	arguments = tree_cons (NULL_TREE, build_int_2 (priority, 0), 
+			       NULL_TREE);
+	arguments = tree_cons (NULL_TREE, build_int_2 (constructor_p, 0),
+			       arguments);
+	finish_expr_stmt (build_function_call (VARRAY_TREE (ssdf_decls, i),
+					       arguments));
+      }
 
   /* If we're generating code for the DEFAULT_INIT_PRIORITY, throw in
      calls to any functions marked with attributes indicating that
@@ -2510,7 +2511,7 @@ generate_ctor_or_dtor_function (bool constructor_p, int priority)
   if (priority == DEFAULT_INIT_PRIORITY)
     {
       tree fns;
-      
+
       for (fns = constructor_p ? static_ctors : static_dtors; 
 	   fns;
 	   fns = TREE_CHAIN (fns))
@@ -2838,6 +2839,15 @@ finish_file ()
     splay_tree_foreach (priority_info_map, 
 			generate_ctor_and_dtor_functions_for_priority,
 			/*data=*/0);
+  else
+    {
+      if (static_ctors)
+	generate_ctor_or_dtor_function (/*constructor_p=*/true,
+					DEFAULT_INIT_PRIORITY);
+      if (static_dtors)
+	generate_ctor_or_dtor_function (/*constructor_p=*/false,
+					DEFAULT_INIT_PRIORITY);
+    }
 
   /* We're done with the splay-tree now.  */
   if (priority_info_map)

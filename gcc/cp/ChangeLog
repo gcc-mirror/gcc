@@ -1,3 +1,11 @@
+2003-03-28  Mark Mitchell  <mark@codesourcery.com>
+
+	* decl2.c (generate_ctor_or_dtor_function): Tolerate a
+	non-existant ssdf_decls array.
+	(finish_file): Call generator_ctor_or_dtor_function when there are
+	static constructors or destructors and no other static
+	initializations.
+
 2003-03-28  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/10047
