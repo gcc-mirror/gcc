@@ -1,6 +1,6 @@
 /* SimpleDateFormat.java -- A class for parsing/formating simple 
    date constructs
-   Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -182,6 +182,7 @@ public class SimpleDateFormat extends DateFormat
     compileFormat(pattern);
     numberFormat = NumberFormat.getInstance(locale);
     numberFormat.setGroupingUsed (false);
+    numberFormat.setParseIntegerOnly (true);
   }
   
   /**
@@ -208,6 +209,7 @@ public class SimpleDateFormat extends DateFormat
     this.pattern = pattern;
     numberFormat = NumberFormat.getInstance(locale);
     numberFormat.setGroupingUsed (false);
+    numberFormat.setParseIntegerOnly (true);
   }
 
   /**
@@ -225,6 +227,7 @@ public class SimpleDateFormat extends DateFormat
     this.pattern = pattern;
     numberFormat = NumberFormat.getInstance();
     numberFormat.setGroupingUsed (false);
+    numberFormat.setParseIntegerOnly (true);
   }
 
   // What is the difference between localized and unlocalized?  The
