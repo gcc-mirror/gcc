@@ -1,3 +1,16 @@
+2004-07-04  Richard Henderson  <rth@redhat.com>
+
+	* function.c (struct assign_parm_data_all): New.
+	(struct assign_parm_data_one): New.
+	(assign_parms_initialize_all, assign_parms_augmented_arg_list,
+	assign_parm_find_data_types, assign_parms_setup_varargs,
+	assign_parm_find_entry_rtl, assign_parm_is_stack_parm, 
+	assign_parm_find_stack_rtl, assign_parm_adjust_entry_rtl,
+	assign_parm_adjust_stack_rtl, assign_parm_setup_block_p,
+	assign_parm_setup_block, assign_parm_setup_reg,
+	assign_parm_setup_stack, assign_parms_unsplit_complex): Split from ...
+	(assign_parms): ... here.
+
 2004-07-04  Daniel Berlin  <dberlin@dberlin.org>
 
 	* tree-ssa-pre.c (bb_value_sets): phi_gen, tmp_gen, new_sets
