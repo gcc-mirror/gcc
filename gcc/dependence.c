@@ -474,10 +474,10 @@ find_induction_variable (init_node, cond_node, incr_node, loop_def)
   cond_node = TREE_VALUE (cond_node);
   incr = cond_node;
 
-#define INDEX_LIMIT_CHECK(node) \
-      (TREE_CODE_CLASS (TREE_CODE (node)) == '<') \
-	&& (TREE_CODE (TREE_OPERAND (node, 0)) == VAR_DECL \
-	    && (IDENTIFIER_POINTER (DECL_NAME (TREE_OPERAND (node, 0))) \
+#define INDEX_LIMIT_CHECK(NODE) \
+      (TREE_CODE_CLASS (TREE_CODE (NODE)) == '<') \
+	&& (TREE_CODE (TREE_OPERAND (NODE, 0)) == VAR_DECL \
+	    && (IDENTIFIER_POINTER (DECL_NAME (TREE_OPERAND (NODE, 0))) \
 		== IDENTIFIER_POINTER (DECL_NAME (TREE_OPERAND (incr_node, 0))))) \
       ? 1 : 0
 
@@ -1146,7 +1146,7 @@ check_subscript_induction (icoefficient, ocoefficient, loop_ptr)
     return 0;
 }
 
-#define abs(n) (n < 0 ? -n : n)
+#define abs(N) ((N) < 0 ? -(N) : (N))
 
 /* Determine the DIRECTION and DISTANCE dependency for subscript SUB of
    inputs ICOEFFICIENTS and outputs OCOEFFICIENTS of loop LOOP_PTR using
@@ -1418,7 +1418,7 @@ remember_dest_for_dependence (node)
 }
 
 #ifndef MEM_DEPENDENCY
-#define MEM_DEPENDENCY(RTX) XCWINT(RTX, 2, MEM)
+#define MEM_DEPENDENCY(RTX) XCWINT (RTX, 2, MEM)
 #endif
 
 /* Return 1 along with the dependence DIRECTION and DISTANCE if there is a 
