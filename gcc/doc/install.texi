@@ -3450,7 +3450,7 @@ without modification.
 @heading @anchor{os2}OS/2
 
 GCC does not currently support OS/2.  However, Andrew Zabolotny has been
-working on a generic OS/2 port with pgcc.  The current code code can be found
+working on a generic OS/2 port with pgcc.  The current code can be found
 at @uref{http://www.goof.com/pcg/os2/,,http://www.goof.com/pcg/os2/}.
 
 An older copy of GCC 2.8.1 is included with the EMX tools available at
