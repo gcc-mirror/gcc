@@ -1,3 +1,10 @@
+2002-05-08  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cpplex.c (cpp_interpret_charconst): Truncate as well as
+	sign-extend.
+doc:
+	* cpp.texi: Clarify multichar charconst valuation.
+
 2002-05-08  Mark Mitchell  <mark@codesourcery.com>
 
 	* doc/invoke.texi: Document -mwindiss option.
