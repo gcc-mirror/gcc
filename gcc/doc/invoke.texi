@@ -208,19 +208,18 @@ in the following sections.
 -w  -Wextra  -Wall  -Waggregate-return @gol
 -Wcast-align  -Wcast-qual  -Wchar-subscripts  -Wcomment @gol
 -Wconversion  -Wno-deprecated-declarations @gol
--Wdisabled-optimization  -Wno-div-by-zero  -Werror @gol
+-Wdisabled-optimization  -Wno-div-by-zero  -Wendif-labels @gol
+-Werror  -Werror-implicit-function-declaration @gol
 -Wfloat-equal  -Wformat  -Wformat=2 @gol
--Wformat-nonliteral  -Wformat-security @gol
--Wimplicit  -Wimplicit-int  @gol
--Wimplicit-function-declaration @gol
--Werror-implicit-function-declaration @gol
--Winit-self Wimport  -Winline  -Winvalid-pch  -Wno-endif-labels @gol
--Wno-invalid-offsetof @gol
+-Wno-format-extra-args -Wformat-nonliteral @gol
+-Wformat-security  -Wno-format-y2k @gol
+-Wimplicit  -Wimplicit-function-declaration  -Wimplicit-int @gol
+-Wimport  -Wno-import  -Winit-self  -Winline @gol
+-Wno-invalid-offsetof  -Winvalid-pch @gol
 -Wlarger-than-@var{len}  -Wlong-long @gol
 -Wmain  -Wmissing-braces @gol
 -Wmissing-format-attribute  -Wmissing-noreturn @gol
--Wno-multichar  -Wno-format-extra-args  -Wno-format-y2k @gol
--Wno-import  -Wnonnull -Wold-style-definition -Wpacked  -Wpadded @gol
+-Wno-multichar  -Wnonnull  -Wpacked  -Wpadded @gol
 -Wparentheses  -Wpointer-arith  -Wredundant-decls @gol
 -Wreturn-type  -Wsequence-point  -Wshadow @gol
 -Wsign-compare  -Wstrict-aliasing @gol
@@ -232,7 +231,7 @@ in the following sections.
 
 @item C-only Warning Options
 @gccoptlist{-Wbad-function-cast  -Wmissing-declarations @gol
--Wmissing-prototypes  -Wnested-externs @gol
+-Wmissing-prototypes  -Wnested-externs  -Wold-style-definition @gol
 -Wstrict-prototypes  -Wtraditional @gol
 -Wdeclaration-after-statement}
 

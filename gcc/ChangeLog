@@ -1,3 +1,10 @@
+2003-09-16  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+        
+        * doc/invoke.texi (Warning Options): Add missing hyphen before
+        "Wimport".  Change "-Wno-endif-labels" to "-Wendif-labels".
+        Move "-Wold-style-definition" to the C-only section.
+        Fix the ordering of the warning options.
+
 2003-09-15  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 	    Jeff Law  <law@redhat.com>
 
