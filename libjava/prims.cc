@@ -153,7 +153,7 @@ static java::lang::NullPointerException *nullp;
 
 SIGNAL_HANDLER (catch_segv)
 {
-  unblock_signal (SIGFPE);
+  unblock_signal (SIGSEGV);
   MAKE_THROW_FRAME (nullp);
   _Jv_ThrowSignal (nullp);
 }
@@ -164,7 +164,7 @@ static java::lang::ArithmeticException *arithexception;
 #ifdef HANDLE_FPE
 SIGNAL_HANDLER (catch_fpe)
 {
-  unblock_signal (SIGSEGV);
+  unblock_signal (SIGFPE);
 #ifdef HANDLE_DIVIDE_OVERFLOW
   HANDLE_DIVIDE_OVERFLOW;
 #else
