@@ -958,25 +958,11 @@ get_static_reference (tree interface, tree protocols)
 
   if (protocols)
     {
-      tree t, m = TYPE_MAIN_VARIANT (type);
-
-      t = copy_node (type);
-
-      /* Add this type to the chain of variants of TYPE.  */
-      TYPE_NEXT_VARIANT (t) = TYPE_NEXT_VARIANT (m);
-      TYPE_NEXT_VARIANT (m) = t;
-
+      type = build_variant_type_copy (type);
+      
       /* Look up protocols and install in lang specific list.  Note
 	 that the protocol list can have a different lifetime than T!  */
-      SET_TYPE_PROTOCOL_LIST (t, lookup_and_install_protocols (protocols));
-
-      /* This forces a new pointer type to be created later
-	 (in build_pointer_type)...so that the new template
-	 we just created will actually be used...what a hack!  */
-      if (TYPE_POINTER_TO (t))
-	TYPE_POINTER_TO (t) = NULL_TREE;
-
-      type = t;
+      SET_TYPE_PROTOCOL_LIST (type, lookup_and_install_protocols (protocols));
     }
 
   return type;
@@ -1008,24 +994,10 @@ get_protocol_reference (tree protocols)
 
   if (protocols)
     {
-      tree t, m = TYPE_MAIN_VARIANT (type);
-
-      t = copy_node (type);
-
-      /* Add this type to the chain of variants of TYPE.  */
-      TYPE_NEXT_VARIANT (t) = TYPE_NEXT_VARIANT (m);
-      TYPE_NEXT_VARIANT (m) = t;
+      type = build_variant_type_copy (type);
 
       /* Look up protocols...and install in lang specific list */
-      SET_TYPE_PROTOCOL_LIST (t, lookup_and_install_protocols (protocols));
-
-      /* This forces a new pointer type to be created later
-	 (in build_pointer_type)...so that the new template
-	 we just created will actually be used...what a hack!  */
-      if (TYPE_POINTER_TO (t))
-	TYPE_POINTER_TO (t) = NULL_TREE;
-
-      type = t;
+      SET_TYPE_PROTOCOL_LIST (type, lookup_and_install_protocols (protocols));
     }
   return type;
 }

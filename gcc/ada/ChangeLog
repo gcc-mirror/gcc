@@ -1,3 +1,8 @@
+2004-08-24  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* ada/utils.c (gnat_init_decl_processing): Adjust
+	build_common_tree_nodes call.
+
 2004-08-20  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* utils2.c (build_allocator): Use build_int_cst for negative

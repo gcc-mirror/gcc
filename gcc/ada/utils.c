@@ -381,7 +381,7 @@ gnat_init_decl_processing (void)
   free_binding_level = 0;
   gnat_pushlevel ();
 
-  build_common_tree_nodes (0);
+  build_common_tree_nodes (false, false);
 
   /* In Ada, we use a signed type for SIZETYPE.  Use the signed type
      corresponding to the size of Pmode.  In most cases when ptr_mode and

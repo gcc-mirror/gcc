@@ -125,7 +125,7 @@ tree build_encode_expr (tree);
 
 /* Set by `continue_class' and checked by `objc_is_public'.  */
 
-#define TREE_STATIC_TEMPLATE(record_type) (TREE_PUBLIC (record_type))
+#define TREE_STATIC_TEMPLATE(record_type) (TREE_PRIVATE (record_type))
 #define TYPED_OBJECT(type) \
        (TREE_CODE (type) == RECORD_TYPE && TREE_STATIC_TEMPLATE (type))
 #define OBJC_TYPE_NAME(type) TYPE_NAME(type)

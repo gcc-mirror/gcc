@@ -392,6 +392,13 @@ copy_node_stat (tree node MEM_STAT_DECL)
 	 but the optimizer should catch that.  */
       TYPE_SYMTAB_POINTER (t) = 0;
       TYPE_SYMTAB_ADDRESS (t) = 0;
+      
+      /* Do not copy the values cache.  */
+      if (TYPE_CACHED_VALUES_P(t))
+	{
+	  TYPE_CACHED_VALUES_P (t) = 0;
+	  TYPE_CACHED_VALUES (t) = NULL_TREE;
+	}
     }
 
   return t;
@@ -3141,15 +3148,6 @@ build_distinct_type_copy (tree type)
 {
   tree t = copy_node (type);
   
-  if (TYPE_CACHED_VALUES_P(t))
-    {
-      /* Do not copy the values cache.  */
-      if (TREE_CODE (t) == INTEGER_TYPE && TYPE_IS_SIZETYPE (t))
-	abort ();
-      TYPE_CACHED_VALUES_P (t) = 0;
-      TYPE_CACHED_VALUES (t) = NULL_TREE;
-    }
-
   TYPE_POINTER_TO (t) = 0;
   TYPE_REFERENCE_TO (t) = 0;
 
@@ -5374,12 +5372,12 @@ make_or_reuse_type (unsigned size, int unsignedp)
    this function to select one of the types as sizetype.  */
 
 void
-build_common_tree_nodes (int signed_char)
+build_common_tree_nodes (bool signed_char, bool signed_sizetype)
 {
   error_mark_node = make_node (ERROR_MARK);
   TREE_TYPE (error_mark_node) = error_mark_node;
 
-  initialize_sizetypes ();
+  initialize_sizetypes (signed_sizetype);
 
   /* Define both `signed char' and `unsigned char'.  */
   signed_char_type_node = make_signed_type (CHAR_TYPE_SIZE);

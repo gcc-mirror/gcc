@@ -1,3 +1,8 @@
+2004-08-24  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* treelang/treetree.c (treelang_init_decl_processing): Adjust
+	build_common_tree_nodes call.
+
 2004-08-14  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* treetree.c (tree_code_get_integer_value): Use build_int_cst.

@@ -1179,7 +1179,7 @@ treelang_init_decl_processing (void)
   pushlevel (0);	/* make the binding_level structure for global names */
   global_binding_level = current_binding_level;
 
-  build_common_tree_nodes (flag_signed_char);
+  build_common_tree_nodes (flag_signed_char, false);
 
   /* set standard type names */
 
