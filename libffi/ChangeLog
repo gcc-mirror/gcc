@@ -1,3 +1,7 @@
+2005-02-08  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* src/frv/ffitarget.h: Remove PPC stuff which does not belong to frv.
+
 2005-01-12  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* testsuite/libffi.special/special.exp (cxx_options): Add

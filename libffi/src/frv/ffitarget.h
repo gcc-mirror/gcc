@@ -28,10 +28,6 @@
 
 /* ---- System specific configurations ----------------------------------- */
 
-#if defined (POWERPC) && defined (__powerpc64__)
-#define POWERPC64
-#endif
-
 #ifndef LIBFFI_ASM
 typedef unsigned long          ffi_arg;
 typedef signed long            ffi_sarg;
@@ -42,29 +38,6 @@ typedef enum ffi_abi {
 #ifdef FRV
   FFI_EABI,
   FFI_DEFAULT_ABI = FFI_EABI,
-#endif
-
-#ifdef POWERPC
-  FFI_SYSV,
-  FFI_GCC_SYSV,
-  FFI_LINUX64,
-# ifdef POWERPC64
-  FFI_DEFAULT_ABI = FFI_LINUX64,
-# else
-  FFI_DEFAULT_ABI = FFI_GCC_SYSV,
-# endif
-#endif
-
-#ifdef POWERPC_AIX
-  FFI_AIX,
-  FFI_DARWIN,
-  FFI_DEFAULT_ABI = FFI_AIX,
-#endif
-
-#ifdef POWERPC_DARWIN
-  FFI_AIX,
-  FFI_DARWIN,
-  FFI_DEFAULT_ABI = FFI_DARWIN,
 #endif
 
   FFI_LAST_ABI = FFI_DEFAULT_ABI + 1
@@ -78,11 +51,10 @@ typedef enum ffi_abi {
 
 #ifdef __FRV_FDPIC__
 /* Trampolines are 8 4-byte instructions long.  */
-#define FFI_TRAMPOLINE_SIZE (8*4) 
+#define FFI_TRAMPOLINE_SIZE (8*4)
 #else
 /* Trampolines are 5 4-byte instructions long.  */
-#define FFI_TRAMPOLINE_SIZE (5*4) 
+#define FFI_TRAMPOLINE_SIZE (5*4)
 #endif
 
 #endif
-
