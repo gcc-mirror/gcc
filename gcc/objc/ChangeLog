@@ -1,3 +1,46 @@
+2004-12-15  Ziemowit Laski  <zlaski@apple.com>
+
+	* objc-act.c (build_private_template): Change to return 'void'; do
+	not set ivar_context, uprivate_record or objc_instance_type.
+	(objc_comptypes, gen_type_name_0): For types 'id' and 'Class',
+	retrieve protocol list from the pointee rather than the pointer itself;
+	check TYPE_HAS_OBJC_INFO(...) precondition before accessing
+	TYPE_OBJC_PROTOCOL_LIST.
+	(objc_get_protocol_qualified_type): For types 'id' and 'Class',
+	construct a variant of the pointee as well as the pointer, and
+	store protocol information in the former.  When creating variants
+	of RECORD_TYPEs, clone their TYPE_LANG_SPECIFIC fields and propagate
+	TYPE_OBJC_INTERFACE information.
+	(objc_declare_class): If a TYPE_DECL is looked up, retrieve the
+	underlying RECORD_TYPE to check for presence of TYPE_OBJC_INTERFACE;
+	for newly-created RECORD_TYPEs, create a tentative TYPE_OBJC_INTERFACE
+	holding an IDENTIFIER_NODE.
+	(objc_finish_message_expr): Check TYPE_HAS_OBJC_INFO(...) before
+	accessing TYPE_OBJC_PROTOCOL_LIST; Use TYPE_OBJC_INTERFACE instead
+	of calling lookup_interface(); allow for TYPE_OBJC_INTERFACE holding
+	an IDENTIFIER_NODE (meaning a @class forward-declaration only).
+	(objc_is_public): Check TYPE_OBJC_INTERFACE instead of calling
+	lookup_interface().
+	(continue_class): For @implementations, set ivar_context,
+	uprivate_record and objc_instance_type, for @interfaces, call
+	build_private_template().
+	(encode_pointer): Check TYPE_HAS_OBJC_INFO(...) before accessing
+	TYPE_OBJC_INTERFACE.
+	(objc_types_are_equivalent): Check TYPE_HAS_OBJC_INFO(...) before
+	accessing TYPE_OBJC_PROTOCOL_LIST.
+	* objc-act.h (OBJC_INFO_SLOT_ELTS, TYPE_OBJC_INFO, INIT_TYPE_OBJC_INFO,
+	DUP_TYPE_OBJC_INFO, ALLOC_OBJC_TYPE_LANG_SPECIFIC, 
+	SIZEOF_OBJC_TYPE_LANG_SPECIFIC): New macros.
+	(TYPE_OBJC_INTERFACE): Replaces TREE_STATIC_INSTANCE and now points
+	to an actual @interface; stored in TYPE_LANG_SPECIFIC(...).
+	(TYPE_OBJC_PROTOCOL_LIST): Replaces TYPE_PROTOCOL_LIST; stored in
+	TYPE_LANG_SPECIFIC(...).
+	(TREE_STATIC_INSTANCE, TYPE_PROTOCOL_LIST): Delete.
+	(IS_ID, IS_CLASS, IS_PROTOCOL_QUALIFIED_UNTYPED, IS_SUPER,
+	TYPED_OBJECT): Check for POINTER_TYPE rather than POINTER_TYPE_P;
+	adjust for use of TYPE_OBJC_INTERFACE and TYPE_OBJC_PROTOCOL_LIST
+	instead of TREE_STATIC_INSTANCE and TYPE_PROTOCOL_LIST.
+
 2004-11-29  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/7544

@@ -36,6 +36,7 @@ tree objc_fold_obj_type_ref (tree, tree);
 
 #define CLASS_LANG_SLOT_ELTS		5
 #define PROTOCOL_LANG_SLOT_ELTS		2
+#define OBJC_INFO_SLOT_ELTS		2
 
 /* KEYWORD_DECL */
 #define KEYWORD_KEY_NAME(DECL) ((DECL)->decl.name)
@@ -67,19 +68,51 @@ tree objc_fold_obj_type_ref (tree, tree);
 #define PROTOCOL_FORWARD_DECL(CLASS) TREE_VEC_ELT (TYPE_LANG_SLOT_1 (CLASS), 1)
 #define PROTOCOL_DEFINED(CLASS) TREE_USED (CLASS)
 
-/* We need to distinguish TYPE_PROTOCOL_LISTs from TYPE_CONTEXTs, both of which
-   are stored in the same accessor slot.  */
-#define TYPE_PROTOCOL_LIST(TYPE)				\
-	((TYPE_CHECK (TYPE)->type.context			\
-	  && TREE_CODE ((TYPE)->type.context) == TREE_LIST)	\
-	 ? (TYPE)->type.context : NULL_TREE)
-#define SET_TYPE_PROTOCOL_LIST(TYPE, P) (TYPE_CHECK (TYPE)->type.context = (P))
+/* ObjC-specific information pertaining to RECORD_TYPEs are stored in
+   the LANG_SPECIFIC structures, which may itself need allocating first.  */
+#define TYPE_OBJC_INFO(TYPE) TYPE_LANG_SPECIFIC (TYPE)->objc_info
+#define TYPE_HAS_OBJC_INFO(TYPE)				\
+	(TYPE_LANG_SPECIFIC (TYPE)				\
+	 && TYPE_LANG_SPECIFIC (TYPE)->objc_info)
+#define TYPE_OBJC_INTERFACE(TYPE) TREE_VEC_ELT (TYPE_OBJC_INFO (TYPE), 0)
+#define TYPE_OBJC_PROTOCOL_LIST(TYPE) TREE_VEC_ELT (TYPE_OBJC_INFO (TYPE), 1)
 
-#define TREE_STATIC_TEMPLATE(record_type) (TREE_PUBLIC (record_type))
-#define TYPED_OBJECT(type) \
-       (TREE_CODE (type) == RECORD_TYPE && TREE_STATIC_TEMPLATE (type))
-#define OBJC_TYPE_NAME(type) TYPE_NAME(type)
-#define OBJC_SET_TYPE_NAME(type, name) (TYPE_NAME (type) = name)
+#define INIT_TYPE_OBJC_INFO(TYPE)				\
+	do							\
+	  {							\
+	    if (!TYPE_LANG_SPECIFIC (TYPE))			\
+	      TYPE_LANG_SPECIFIC (TYPE)				\
+		= ALLOC_OBJC_TYPE_LANG_SPECIFIC;			\
+	    if (!TYPE_LANG_SPECIFIC (TYPE)->objc_info)		\
+	      TYPE_LANG_SPECIFIC (TYPE)->objc_info		\
+		= make_tree_vec (OBJC_INFO_SLOT_ELTS);		\
+	  }							\
+	while (0)
+#define DUP_TYPE_OBJC_INFO(DST, SRC)				\
+	do							\
+	  {							\
+	    TYPE_LANG_SPECIFIC (DST)				\
+	      = ALLOC_OBJC_TYPE_LANG_SPECIFIC;			\
+	    if (TYPE_LANG_SPECIFIC (SRC))			\
+	      memcpy (TYPE_LANG_SPECIFIC (DST),			\
+		      TYPE_LANG_SPECIFIC (SRC),			\
+		      SIZEOF_OBJC_TYPE_LANG_SPECIFIC);		\
+	    TYPE_LANG_SPECIFIC (DST)->objc_info			\
+	      = make_tree_vec (OBJC_INFO_SLOT_ELTS);		\
+	  }							\
+	while (0)
+
+/* The following two macros must be overridden (in objcp/objcp-decl.h)
+   for Objective-C++.  */
+#define ALLOC_OBJC_TYPE_LANG_SPECIFIC	GGC_CNEW (struct lang_type)
+#define SIZEOF_OBJC_TYPE_LANG_SPECIFIC	sizeof (struct lang_type)
+
+#define TYPED_OBJECT(TYPE)					\
+	(TREE_CODE (TYPE) == RECORD_TYPE			\
+	 && TYPE_HAS_OBJC_INFO (TYPE)				\
+	 && TYPE_OBJC_INTERFACE (TYPE))
+#define OBJC_TYPE_NAME(TYPE) TYPE_NAME(TYPE)
+#define OBJC_SET_TYPE_NAME(TYPE, NAME) (TYPE_NAME (TYPE) = NAME)
 
 /* Define the Objective-C or Objective-C++ language-specific tree codes.  */
 
@@ -273,14 +306,21 @@ extern GTY(()) tree objc_global_trees[OCTI_MAX];
 
 /* Type checking macros.  */
 
-#define IS_ID(TYPE) \
-  (POINTER_TYPE_P (TYPE) && TREE_TYPE (TYPE) == TREE_TYPE (objc_object_type))
-#define IS_CLASS(TYPE) \
-  (POINTER_TYPE_P (TYPE) && TREE_TYPE (TYPE) == TREE_TYPE (objc_class_type))
-#define IS_PROTOCOL_QUALIFIED_UNTYPED(TYPE) \
-  ((IS_ID (TYPE) || IS_CLASS (TYPE)) && TYPE_PROTOCOL_LIST (TYPE))
-#define IS_SUPER(TYPE) \
-  (POINTER_TYPE_P (TYPE) && TREE_TYPE (TYPE) == objc_super_template)
+#define IS_ID(TYPE)							\
+	(TREE_CODE (TYPE) == POINTER_TYPE				\
+	 && (TYPE_MAIN_VARIANT (TREE_TYPE (TYPE))			\
+	     == TREE_TYPE (objc_object_type)))
+#define IS_CLASS(TYPE)							\
+	(TREE_CODE (TYPE) == POINTER_TYPE				\
+	 && (TYPE_MAIN_VARIANT (TREE_TYPE (TYPE))			\
+	     == TREE_TYPE (objc_class_type)))
+#define IS_PROTOCOL_QUALIFIED_UNTYPED(TYPE)				\
+	((IS_ID (TYPE) || IS_CLASS (TYPE))				\
+	 && TYPE_HAS_OBJC_INFO (TREE_TYPE (TYPE))			\
+	 && TYPE_OBJC_PROTOCOL_LIST (TREE_TYPE (TYPE)))
+#define IS_SUPER(TYPE)							\
+	(TREE_CODE (TYPE) == POINTER_TYPE				\
+	 && TREE_TYPE (TYPE) == objc_super_template)
 
 #define class_chain		objc_global_trees[OCTI_CLS_CHAIN]
 #define alias_chain		objc_global_trees[OCTI_ALIAS_CHAIN]
