@@ -1598,7 +1598,7 @@ install-fixincludes: install-headers
 	rm -rf *
 # Install fixed copies of system files.
 	for dir in /usr/include $(OTHER_FIXINCLUDES_DIRS); do \
-	  $(srcdir)/$(FIXINCLUDES) $(libsubdir)/include $(dir) $(srcdir); \
+	  $(srcdir)/$(FIXINCLUDES) $(libsubdir)/include $$dir $(srcdir); \
 	done
 	-cd $(libsubdir)/include; \
 	if [ -f limits.h ]; then \
