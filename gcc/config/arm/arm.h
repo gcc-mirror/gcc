@@ -457,11 +457,11 @@ Unrecognized value in TARGET_CPU_DEFAULT.
   {"callee-super-interworking",	    THUMB_FLAG_CALLEE_SUPER_INTERWORKING, \
      "Thumb: Assume non-static functions may be called from ARM code" },  \
   {"no-callee-super-interworking", -THUMB_FLAG_CALLEE_SUPER_INTERWORKING, \
-   ""},									  \
+     "" },								  \
   {"caller-super-interworking",	    THUMB_FLAG_CALLER_SUPER_INTERWORKING, \
      "Thumb: Assume function pointers may go to non-Thumb aware code" },  \
   {"no-caller-super-interworking", -THUMB_FLAG_CALLER_SUPER_INTERWORKING, \
-   "" },								  \
+     "" },								  \
   SUBTARGET_SWITCHES							  \
   {"",				TARGET_DEFAULT, "" }			  \
 }
@@ -1217,9 +1217,9 @@ enum reg_class
 	  else								   \
 	    break;							   \
 									   \
-	  high = ((((val - low) & (unsigned long)0xffffffff)		   \
-		   ^ (unsigned long)0x80000000)				   \
-		  - (unsigned long)0x80000000);				   \
+	  high = ((((val - low) & HOST_UINT (0xffffffff))		   \
+		   ^ HOST_UINT (0x80000000))				   \
+		  - HOST_UINT (0x80000000));				   \
 	  /* Check for overflow or zero */				   \
 	  if (low == 0 || high == 0 || (high + low != val))		   \
 	    break;							   \
@@ -1840,11 +1840,13 @@ typedef struct
 
 /* This has to be handled by a function because more than part of the
    ARM backend uses funciton name prefixes to encode attributes.  */
+#undef  STRIP_NAME_ENCODING
 #define STRIP_NAME_ENCODING(VAR, SYMBOL_NAME)	\
   (VAR) = arm_strip_name_encoding (SYMBOL_NAME)
 
 /* This is how to output a reference to a user-level label named NAME.
    `assemble_name' uses this.  */
+#undef  ASM_OUTPUT_LABELREF
 #define ASM_OUTPUT_LABELREF(FILE, NAME)		\
   fprintf (FILE, "%s%s", USER_LABEL_PREFIX, arm_strip_name_encoding (NAME))
 
@@ -2628,17 +2630,26 @@ extern int making_const_table;
    || (TARGET_ARM   && (CODE == '?'))		\
    || (TARGET_THUMB && (CODE == '_')))
 
-     
 /* Output an operand of an instruction.  */
 #define PRINT_OPERAND(STREAM, X, CODE)  \
   arm_print_operand (STREAM, X, CODE)
 
-#define ARM_SIGN_EXTEND(x)  ((HOST_WIDE_INT)		\
-  (HOST_BITS_PER_WIDE_INT <= 32 ? (x)			\
-   : (((x) & (unsigned HOST_WIDE_INT) 0xffffffff) |	\
-      (((x) & (unsigned HOST_WIDE_INT) 0x80000000)	\
-       ? ((~ (HOST_WIDE_INT) 0)				\
-	  & ~ (unsigned HOST_WIDE_INT) 0xffffffff)	\
+/* Create an [unsigned] host sized integer declaration that
+   avoids compiler warnings.  */
+#ifdef __STDC__
+#define HOST_INT(x)  ((signed HOST_WIDE_INT) x##UL)
+#define HOST_UINT(x) ((unsigned HOST_WIDE_INT) x##UL)
+#else
+#define HOST_INT(x)  ((HOST_WIDE_INT) x)
+#define HOST_UINT(x) ((unsigned HOST_WIDE_INT) x)
+#endif
+
+#define ARM_SIGN_EXTEND(x)  ((HOST_WIDE_INT)	\
+  (HOST_BITS_PER_WIDE_INT <= 32 ? (x)		\
+   : (((x) & HOST_UINT (0xffffffff)) |		\
+      (((x) & HOST_UINT (0x80000000))		\
+       ? ((~ HOST_INT (0))			\
+	  & ~ HOST_UINT(0xffffffff))		\
        : 0))))
 
 /* Output the address of an operand.  */
@@ -2814,12 +2825,13 @@ extern int making_const_table;
    when running in 26-bit mode.  */
 #define RETURN_ADDR_MASK26 (0x03fffffc)
 
+#ifdef DWARF2_DEBUGGING_INFO
 /* Pick up the return address upon entry to a procedure. Used for
    dwarf2 unwind information.  This also enables the table driven
    mechanism.  */
-
 #define INCOMING_RETURN_ADDR_RTX	gen_rtx_REG (Pmode, LR_REGNUM)
 #define DWARF_FRAME_RETURN_COLUMN	DWARF_FRAME_REGNUM (LR_REGNUM)
+#endif
 
 /* Used to mask out junk bits from the return address, such as
    processor state, interrupt status, condition codes and the like.  */

@@ -722,14 +722,14 @@ int
 const_ok_for_arm (i)
      HOST_WIDE_INT i;
 {
-  unsigned HOST_WIDE_INT mask = ~(unsigned HOST_WIDE_INT)0xFF;
+  unsigned HOST_WIDE_INT mask = ~ HOST_UINT (0xFF);
 
   /* For machines with >32 bit HOST_WIDE_INT, the bits above bit 31 must 
      be all zero, or all one.  */
-  if ((i & ~(unsigned HOST_WIDE_INT) 0xffffffff) != 0
-      && ((i & ~(unsigned HOST_WIDE_INT) 0xffffffff) 
-	  != ((~(unsigned HOST_WIDE_INT) 0)
-	      & ~(unsigned HOST_WIDE_INT) 0xffffffff)))
+  if ((i & ~ HOST_UINT (0xffffffff)) != 0
+      && ((i & ~ HOST_UINT (0xffffffff)) 
+	  != ((~ HOST_UINT (0))
+	      & ~ HOST_UINT (0xffffffff))))
     return FALSE;
   
   /* Fast return for 0 and powers of 2 */
@@ -738,12 +738,12 @@ const_ok_for_arm (i)
 
   do
     {
-      if ((i & mask & (unsigned HOST_WIDE_INT) 0xffffffff) == 0)
+      if ((i & mask & HOST_UINT (0xffffffff)) == 0)
         return TRUE;
       mask =
-	  (mask << 2) | ((mask & (unsigned HOST_WIDE_INT) 0xffffffff)
-			 >> (32 - 2)) | ~((unsigned HOST_WIDE_INT) 0xffffffff);
-    } while (mask != ~(unsigned HOST_WIDE_INT) 0xFF);
+	  (mask << 2) | ((mask & HOST_UINT (0xffffffff))
+			 >> (32 - 2)) | ~(HOST_UINT (0xffffffff));
+    } while (mask != ~ HOST_UINT (0xFF));
 
   return FALSE;
 }
@@ -863,7 +863,7 @@ arm_gen_constant (code, mode, val, target, source, subtargets, generate)
   int set_zero_bit_copies = 0;
   int insns = 0;
   unsigned HOST_WIDE_INT temp1, temp2;
-  unsigned HOST_WIDE_INT remainder = val & (unsigned HOST_WIDE_INT)0xffffffff;
+  unsigned HOST_WIDE_INT remainder = val & HOST_UINT (0xffffffff);
 
   /* Find out which operations are safe for a given CODE.  Also do a quick
      check for degenerate cases; these can occur when DImode operations
@@ -882,7 +882,7 @@ arm_gen_constant (code, mode, val, target, source, subtargets, generate)
       break;
 
     case IOR:
-      if (remainder == (unsigned HOST_WIDE_INT)0xffffffff)
+      if (remainder == HOST_UINT (0xffffffff))
 	{
 	  if (generate)
 	    emit_insn (gen_rtx_SET (VOIDmode, target,
@@ -906,7 +906,7 @@ arm_gen_constant (code, mode, val, target, source, subtargets, generate)
 	    emit_insn (gen_rtx_SET (VOIDmode, target, const0_rtx));
 	  return 1;
 	}
-      if (remainder == (unsigned HOST_WIDE_INT)0xffffffff)
+      if (remainder == HOST_UINT (0xffffffff))
 	{
 	  if (reload_completed && rtx_equal_p (target, source))
 	    return 0;
@@ -926,7 +926,7 @@ arm_gen_constant (code, mode, val, target, source, subtargets, generate)
 	    emit_insn (gen_rtx_SET (VOIDmode, target, source));
 	  return 1;
 	}
-      if (remainder == (unsigned HOST_WIDE_INT)0xffffffff)
+      if (remainder == HOST_UINT (0xffffffff))
 	{
 	  if (generate)
 	    emit_insn (gen_rtx_SET (VOIDmode, target,
@@ -1054,16 +1054,16 @@ arm_gen_constant (code, mode, val, target, source, subtargets, generate)
 	 word.  We only look for the simplest cases, to do more would cost
 	 too much.  Be careful, however, not to generate this when the
 	 alternative would take fewer insns.  */
-      if (val & (unsigned HOST_WIDE_INT)0xffff0000)
+      if (val & HOST_UINT (0xffff0000))
 	{
-	  temp1 = remainder & (unsigned HOST_WIDE_INT)0xffff0000;
+	  temp1 = remainder & HOST_UINT (0xffff0000);
 	  temp2 = remainder & 0x0000ffff;
 
 	  /* Overlaps outside this range are best done using other methods.  */
 	  for (i = 9; i < 24; i++)
 	    {
 	      if ((((temp2 | (temp2 << i))
-		    & (unsigned HOST_WIDE_INT)0xffffffff) == remainder)
+		    & HOST_UINT (0xffffffff)) == remainder)
 		  && ! const_ok_for_arm (temp2))
 		{
 		  rtx new_src = (subtargets
@@ -1201,11 +1201,11 @@ arm_gen_constant (code, mode, val, target, source, subtargets, generate)
       /* See if two shifts will do 2 or more insn's worth of work.  */
       if (clear_sign_bit_copies >= 16 && clear_sign_bit_copies < 24)
 	{
-	  HOST_WIDE_INT shift_mask = ((((unsigned HOST_WIDE_INT)0xffffffff)
+	  HOST_WIDE_INT shift_mask = (((HOST_UINT (0xffffffff))
 				       << (32 - clear_sign_bit_copies))
-				      & (unsigned HOST_WIDE_INT)0xffffffff);
+				      & HOST_UINT (0xffffffff));
 
-	  if ((remainder | shift_mask) != (unsigned HOST_WIDE_INT)0xffffffff)
+	  if ((remainder | shift_mask) != HOST_UINT (0xffffffff))
 	    {
 	      if (generate)
 		{
@@ -1238,7 +1238,7 @@ arm_gen_constant (code, mode, val, target, source, subtargets, generate)
 	{
 	  HOST_WIDE_INT shift_mask = (1 << clear_zero_bit_copies) - 1;
 	  
-	  if ((remainder | shift_mask) != (unsigned HOST_WIDE_INT)0xffffffff)
+	  if ((remainder | shift_mask) != HOST_UINT (0xffffffff))
 	    {
 	      if (generate)
 		{
@@ -1280,9 +1280,9 @@ arm_gen_constant (code, mode, val, target, source, subtargets, generate)
       num_bits_set++;
 
   if (code == AND || (can_invert && num_bits_set > 16))
-    remainder = (~remainder) & (unsigned HOST_WIDE_INT)0xffffffff;
+    remainder = (~remainder) & HOST_UINT (0xffffffff);
   else if (code == PLUS && num_bits_set > 16)
-    remainder = (-remainder) & (unsigned HOST_WIDE_INT)0xffffffff;
+    remainder = (-remainder) & HOST_UINT (0xffffffff);
   else
     {
       can_invert = 0;
@@ -1406,7 +1406,7 @@ arm_canonicalize_comparison (code, op1)
 
     case GT:
     case LE:
-      if (i != ((((unsigned HOST_WIDE_INT) 1) << (HOST_BITS_PER_WIDE_INT - 1))
+      if (i != (((HOST_UINT (1)) << (HOST_BITS_PER_WIDE_INT - 1))
 		- 1)
 	  && (const_ok_for_arm (i+1) || const_ok_for_arm (- (i+1))))
 	{
@@ -1417,7 +1417,7 @@ arm_canonicalize_comparison (code, op1)
 
     case GE:
     case LT:
-      if (i != (((unsigned HOST_WIDE_INT) 1) << (HOST_BITS_PER_WIDE_INT - 1))
+      if (i != ((HOST_UINT (1)) << (HOST_BITS_PER_WIDE_INT - 1))
 	  && (const_ok_for_arm (i-1) || const_ok_for_arm (- (i-1))))
 	{
 	  *op1 = GEN_INT (i-1);
@@ -1427,7 +1427,7 @@ arm_canonicalize_comparison (code, op1)
 
     case GTU:
     case LEU:
-      if (i != ~((unsigned HOST_WIDE_INT) 0)
+      if (i != ~ (HOST_UINT (0))
 	  && (const_ok_for_arm (i+1) || const_ok_for_arm (- (i+1))))
 	{
 	  *op1 = GEN_INT (i + 1);
@@ -2306,7 +2306,7 @@ arm_rtx_costs (x, code, outer)
       if (GET_CODE (XEXP (x, 1)) == CONST_INT)
 	{
 	  unsigned HOST_WIDE_INT i = (INTVAL (XEXP (x, 1))
-				      & (unsigned HOST_WIDE_INT) 0xffffffff);
+				      & HOST_UINT (0xffffffff));
 	  int add_cost = const_ok_for_arm (i) ? 4 : 8;
 	  int j;
 	  
@@ -4360,9 +4360,9 @@ arm_reload_in_hi (operands)
       if (lo == 4095)
 	lo &= 0x7ff;
 
-      hi = ((((offset - lo) & (HOST_WIDE_INT) 0xffffffff)
-	     ^ (HOST_WIDE_INT) 0x80000000)
-	    - (HOST_WIDE_INT) 0x80000000);
+      hi = ((((offset - lo) & HOST_INT (0xffffffff))
+	     ^ HOST_INT (0x80000000))
+	    -  HOST_INT (0x80000000));
 
       if (hi + lo != offset)
 	abort ();
@@ -4506,9 +4506,9 @@ arm_reload_out_hi (operands)
       if (lo == 4095)
 	lo &= 0x7ff;
 
-      hi = ((((offset - lo) & (HOST_WIDE_INT) 0xffffffff)
-	     ^ (HOST_WIDE_INT) 0x80000000)
-	    - (HOST_WIDE_INT) 0x80000000);
+      hi = ((((offset - lo) & HOST_INT (0xffffffff))
+	     ^ HOST_INT (0x80000000))
+	    -  HOST_INT (0x80000000));
 
       if (hi + lo != offset)
 	abort ();
@@ -6179,8 +6179,7 @@ output_mov_immediate (operands)
       n_ones++;
 
   if (n_ones > 16)  /* Shorter to use MVN with BIC in this case.  */
-    output_multi_immediate (operands, "mvn%?\t%0, %1", "bic%?\t%0, %0, %1", 1,
-			    ~n);
+    output_multi_immediate (operands, "mvn%?\t%0, %1", "bic%?\t%0, %0, %1", 1, ~n);
   else
     output_multi_immediate (operands, "mov%?\t%0, %1", "orr%?\t%0, %0, %1", 1, n);
 
@@ -6227,7 +6226,7 @@ output_multi_immediate (operands, instr1, instr2, immed_op, n)
      HOST_WIDE_INT n;
 {
 #if HOST_BITS_PER_WIDE_INT > 32
-  n &= (unsigned HOST_WIDE_INT)0xffffffff;
+  n &= HOST_UINT (0xffffffff);
 #endif
 
   if (n == 0)
@@ -6375,7 +6374,7 @@ int_log2 (power)
 {
   HOST_WIDE_INT shift = 0;
 
-  while (((((HOST_WIDE_INT) 1) << shift) & power) == 0)
+  while ((((HOST_INT (1)) << shift) & power) == 0)
     {
       if (shift > 31)
 	abort ();
@@ -6823,7 +6822,7 @@ arm_poke_function_name (stream, name)
   
   ASM_OUTPUT_ASCII (stream, name, length);
   ASM_OUTPUT_ALIGN (stream, 2);
-  x = GEN_INT (((unsigned HOST_WIDE_INT)0xff000000) + alignlength);
+  x = GEN_INT (HOST_UINT(0xff000000) + alignlength);
   ASM_OUTPUT_INT (stream, x);
 }
 
@@ -6925,8 +6924,7 @@ arm_output_epilogue ()
   int frame_size = get_frame_size ();
   rtx eh_ofs = cfun->machine->eh_epilogue_sp_ofs;
   FILE * f = asm_out_file;
-  int volatile_func = (optimize > 0
-		       && TREE_THIS_VOLATILE (current_function_decl));
+  int volatile_func = arm_volatile_func ();
   int return_regnum;
 
   if (use_return_insn (FALSE) && return_used_this_function)
@@ -7493,7 +7491,6 @@ arm_expand_prologue ()
   if (profile_flag || profile_block_flag || TARGET_NO_SCHED_PRO)
     emit_insn (gen_blockage ());
 }
-  
 
 /* If CODE is 'd', then the X is a condition operand and the instruction
    should only be executed if the condition is true.
@@ -9210,7 +9207,7 @@ output_thumb_prologue (f)
       asm_fprintf (f, "\t.code\t16\n");
 #ifdef ARM_PE
       if (arm_dllexport_name_p (name))
-        name = ARM_STRIP_NAME_ENCODING (name);
+        name = arm_strip_name_encoding (name);
 #endif        
       asm_fprintf (f, "\t.globl %s%U%s\n", STUB_NAME, name);
       asm_fprintf (f, "\t.thumb_func\n");
