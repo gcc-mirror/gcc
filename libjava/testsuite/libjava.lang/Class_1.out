@@ -7,7 +7,7 @@ true
 true
 false
 true
-printIsAssignableFrom(C[].class, C[][].class, false); case uncompilable due to known compiler limitation.
+false
 true
 true
 false
