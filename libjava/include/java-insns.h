@@ -1,6 +1,6 @@
 // java-insns.h - Instruction encodings. This is -*- c++ -*-
 
-/* Copyright (C) 1999  Free Software Foundation
+/* Copyright (C) 1999, 2001  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -11,7 +11,7 @@ details.  */
 #ifndef __JAVA_INSNS_H__
 #define __JAVA_INSNS_H__
 
-enum
+enum java_opcode
 {
   op_nop = 0x00,
   op_aconst_null = 0x01,
