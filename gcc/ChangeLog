@@ -1,3 +1,9 @@
+2002-07-15  Eric Botcazou  <ebotcazou@multimania.com>
+
+	PR optimization/7153
+	* regmove.c (optimize_reg_copy_3): Don't optimize if the register
+	dies in more than one insn.
+
 2002-07-15  Jason Thorpe  <thorpej@wasabisystems.com>
 
 	* config/sparc/netbsd-elf.h (TRANSFER_FROM_TRAMPOLINE): Remove.
