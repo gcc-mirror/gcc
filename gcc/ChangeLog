@@ -1,3 +1,8 @@
+2003-05-07  Alan Modra  <amodra@bigpond.net.au>
+
+	* function.c (assign_parms): Correct reversed reg_parm_stack_space
+	test.  Add partial in-regs size to stack_args_size.
+
 2003-05-07  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* doc/invoke.texi (Warning Options): Mark -Wmissing-declarations

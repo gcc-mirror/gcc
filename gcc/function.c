@@ -4644,7 +4644,7 @@ assign_parms (fndecl)
 	  /* When REG_PARM_STACK_SPACE is nonzero, stack space for
 	     split parameters was allocated by our caller, so we
 	     won't be pushing it in the prolog.  */
-	  if (reg_parm_stack_space)
+	  if (reg_parm_stack_space == 0)
 #endif
 	  current_function_pretend_args_size
 	    = (((partial * UNITS_PER_WORD) + (PARM_BOUNDARY / BITS_PER_UNIT) - 1)
@@ -4694,6 +4694,9 @@ assign_parms (fndecl)
 	  )
 	{
 	  stack_args_size.constant += locate.size.constant;
+	  /* locate.size doesn't include the part in regs.  */
+	  if (partial)
+	    stack_args_size.constant += current_function_pretend_args_size;
 	  if (locate.size.var)
 	    ADD_PARM_SIZE (stack_args_size, locate.size.var);
 	}
