@@ -1098,7 +1098,7 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 		    if (line_note_exists[num])
 		      break;
 
-		  if (num == NOTE_LINE_NUMBER (note))
+		  if (num >= NOTE_LINE_NUMBER (note))
 		    note_after = 1;
 		  break;
 		}
