@@ -1,4 +1,4 @@
-;;- Machine description Acorn RISC Machine for GNU compiler
+;;- Machine description for Advanced RISC Machines' ARM for GNU compiler
 ;;  Copyright (C) 1991, 1993, 1994 Free Software Foundation, Inc.
 ;;  Contributed by Pieter `Tiggr' Schoenmakers (rcpieter@win.tue.nl)
 ;;             and Martin Simmons (@harleqn.co.uk).
@@ -23,7 +23,7 @@
 ;;- See file "rtl.def" for documentation on define_insn, match_*, et. al.
 
 ;; There are patterns in this file to support XFmode arithmetic.
-;; Unfortunately RISCiX doesn't work well with these so they are disabled.
+;; Unfortunately RISC iX doesn't work well with these so they are disabled.
 ;; (See arm.h)
 
 ;; UNSPEC Usage:
@@ -66,6 +66,12 @@
 
 (define_attr "cpu" "arm2,arm3,arm6" (const (symbol_ref "arm_cpu_attr")))
 
+; Floating Point Unit.  If we only have floating point emulation, then there
+; is no point in scheduling the floating point insns.  (Well, for best
+; performance we should try and group them together).
+
+(define_attr "fpu" "fpa,fpe" (const (symbol_ref "arm_fpu_attr")))
+
 ; LENGTH of an instruction (in bytes)
 (define_attr "length" "" (const_int 4))
 
@@ -83,7 +89,15 @@
 ; normal	any data instruction that doesn't hit memory or fp regs
 ; block		blockage insn, this blocks all functional units
 ; float		a floating point arithmetic operation (subject to expansion)
+; fdivx		XFmode floating point division
+; fdivd		DFmode floating point division
+; fdivs		SFmode floating point division
+; fmul		Floating point multiply
+; ffmul		Fast floating point multiply
+; farith	Floating point arithmetic (4 cycle)
+; ffarith	Fast floating point arithmetic (2 cycle)
 ; float_em	a floating point arithmetic operation that is normally emulated
+;		even on a machine with an fpa.
 ; f_load	a floating point load from memory
 ; f_store	a floating point store to memory
 ; f_mem_r	a transfer of a floating point register to a real reg via mem
@@ -98,7 +112,7 @@
 ; store4	store 4 words
 ;
 (define_attr "type"
-	"normal,block,float,float_em,f_load,f_store,f_mem_r,r_mem_f,f_2_r,r_2_f,call,load,store1,store2,store3,store4" 
+	"normal,block,float,fdivx,fdivd,fdivs,fmul,ffmul,farith,ffarith,float_em,f_load,f_store,f_mem_r,r_mem_f,f_2_r,r_2_f,call,load,store1,store2,store3,store4" 
 	(const_string "normal"))
 
 (define_attr "write_conflict" "no,yes"
@@ -119,8 +133,40 @@
 
 ;; (define_function_unit {name} {num-units} {n-users} {test}
 ;;                       {ready-delay} {issue-delay} [{conflict-list}])
-;; This is not well tuned, but I don't have all the details.
-(define_function_unit "fpa" 1 1 (eq_attr "type" "float") 5 0)
+(define_function_unit "fpa" 1 0 (and (eq_attr "fpu" "fpa")
+				     (eq_attr "type" "fdivx")) 71 69)
+
+(define_function_unit "fpa" 1 0 (and (eq_attr "fpu" "fpa")
+				     (eq_attr "type" "fdivd")) 59 57)
+
+(define_function_unit "fpa" 1 0 (and (eq_attr "fpu" "fpa")
+				     (eq_attr "type" "fdivs")) 31 29)
+
+(define_function_unit "fpa" 1 0 (and (eq_attr "fpu" "fpa")
+				     (eq_attr "type" "fmul")) 9 7)
+
+(define_function_unit "fpa" 1 0 (and (eq_attr "fpu" "fpa")
+				     (eq_attr "type" "ffmul")) 6 4)
+
+(define_function_unit "fpa" 1 0 (and (eq_attr "fpu" "fpa")
+				     (eq_attr "type" "farith")) 4 2)
+
+(define_function_unit "fpa" 1 0 (and (eq_attr "fpu" "fpa")
+				     (eq_attr "type" "ffarith")) 2 2)
+
+(define_function_unit "fpa" 1 0 (and (eq_attr "fpu" "fpa")
+				     (eq_attr "type" "r_2_f")) 5 3)
+
+(define_function_unit "fpa" 1 0 (and (eq_attr "fpu" "fpa")
+				     (eq_attr "type" "f_2_r")) 1 2)
+
+;; The fpa10 doesn't really have a memory read unit, but it can start to
+;; speculatively execute the instruction in the pipeline, provided the data
+;; is already loaded, so pretend reads have a delay of 2 (and that the
+;; pipeline is infinite.
+
+(define_function_unit "fpa_mem" 1 0 (and (eq_attr "fpu" "fpa")
+					 (eq_attr "type" "f_load")) 3 1)
 
 (define_function_unit "write_buf" 1 2 (eq_attr "type" "store1") 3 3
 	[(eq_attr "write_conflict" "yes")])
@@ -313,7 +359,7 @@
   "@
    adf%?s\\t%0, %1, %2
    suf%?s\\t%0, %1, #%N2"
-[(set_attr "type" "float")])
+[(set_attr "type" "farith")])
 
 (define_insn "adddf3"
   [(set (match_operand:DF 0 "s_register_operand" "=f,f")
@@ -323,7 +369,7 @@
   "@
    adf%?d\\t%0, %1, %2
    suf%?d\\t%0, %1, #%N2"
-[(set_attr "type" "float")])
+[(set_attr "type" "farith")])
 
 (define_insn ""
   [(set (match_operand:DF 0 "s_register_operand" "=f,f")
@@ -334,7 +380,7 @@
   "@
    adf%?d\\t%0, %1, %2
    suf%?d\\t%0, %1, #%N2"
-[(set_attr "type" "float")])
+[(set_attr "type" "farith")])
 
 (define_insn ""
   [(set (match_operand:DF 0 "s_register_operand" "=f")
@@ -343,7 +389,7 @@
 		  (match_operand:SF 2 "s_register_operand" "f"))))]
   ""
   "adf%?d\\t%0, %1, %2"
-[(set_attr "type" "float")])
+[(set_attr "type" "farith")])
 
 (define_insn ""
   [(set (match_operand:DF 0 "s_register_operand" "=f")
@@ -353,7 +399,7 @@
 		  (match_operand:SF 2 "s_register_operand" "f"))))]
   ""
   "adf%?d\\t%0, %1, %2"
-[(set_attr "type" "float")])
+[(set_attr "type" "farith")])
 
 (define_insn "addxf3"
   [(set (match_operand:XF 0 "s_register_operand" "=f,f")
@@ -363,7 +409,7 @@
   "@
    adf%?e\\t%0, %1, %2
    suf%?e\\t%0, %1, #%N2"
-[(set_attr "type" "float")])
+[(set_attr "type" "farith")])
 
 (define_insn "subdi3"
   [(set (match_operand:DI 0 "s_register_operand" "=&r,&r,&r")
@@ -502,7 +548,7 @@
   "@
    suf%?s\\t%0, %1, %2
    rsf%?s\\t%0, %2, %1"
-[(set_attr "type" "float")])
+[(set_attr "type" "farith")])
 
 (define_insn "subdf3"
   [(set (match_operand:DF 0 "s_register_operand" "=f,f")
@@ -512,7 +558,7 @@
   "@
    suf%?d\\t%0, %1, %2
    rsf%?d\\t%0, %2, %1"
-[(set_attr "type" "float")])
+[(set_attr "type" "farith")])
 
 (define_insn ""
   [(set (match_operand:DF 0 "s_register_operand" "=f")
@@ -521,7 +567,7 @@
 		  (match_operand:DF 2 "fpu_rhs_operand" "fG")))]
   ""
   "suf%?d\\t%0, %1, %2"
-[(set_attr "type" "float")])
+[(set_attr "type" "farith")])
 
 (define_insn ""
   [(set (match_operand:DF 0 "s_register_operand" "=f,f")
@@ -532,7 +578,7 @@
   "@
    suf%?d\\t%0, %1, %2
    rsf%?d\\t%0, %2, %1"
-[(set_attr "type" "float")])
+[(set_attr "type" "farith")])
 
 (define_insn ""
   [(set (match_operand:DF 0 "s_register_operand" "=f")
@@ -542,7 +588,7 @@
 		   (match_operand:SF 2 "s_register_operand" "f"))))]
   ""
   "suf%?d\\t%0, %1, %2"
-[(set_attr "type" "float")])
+[(set_attr "type" "farith")])
 
 (define_insn "subxf3"
   [(set (match_operand:XF 0 "s_register_operand" "=f,f")
@@ -552,7 +598,7 @@
   "@
    suf%?e\\t%0, %1, %2
    rsf%?e\\t%0, %2, %1"
-[(set_attr "type" "float")])
+[(set_attr "type" "farith")])
 
 ;; Multiplication insns
 
@@ -632,7 +678,7 @@
 		 (match_operand:SF 2 "fpu_rhs_operand" "fG")))]
   ""
   "fml%?s\\t%0, %1, %2"
-[(set_attr "type" "float")])
+[(set_attr "type" "ffmul")])
 
 (define_insn "muldf3"
   [(set (match_operand:DF 0 "s_register_operand" "=f")
@@ -640,7 +686,7 @@
 		 (match_operand:DF 2 "fpu_rhs_operand" "fG")))]
   ""
   "muf%?d\\t%0, %1, %2"
-[(set_attr "type" "float")])
+[(set_attr "type" "fmul")])
 
 (define_insn ""
   [(set (match_operand:DF 0 "s_register_operand" "=f")
@@ -649,7 +695,7 @@
 		 (match_operand:DF 2 "fpu_rhs_operand" "fG")))]
   ""
   "muf%?d\\t%0, %1, %2"
-[(set_attr "type" "float")])
+[(set_attr "type" "fmul")])
 
 (define_insn ""
   [(set (match_operand:DF 0 "s_register_operand" "=f")
@@ -658,7 +704,7 @@
 		  (match_operand:SF 2 "s_register_operand" "f"))))]
   ""
   "muf%?d\\t%0, %1, %2"
-[(set_attr "type" "float")])
+[(set_attr "type" "fmul")])
 
 (define_insn ""
   [(set (match_operand:DF 0 "s_register_operand" "=f")
@@ -668,7 +714,7 @@
 		  (match_operand:SF 2 "s_register_operand" "f"))))]
   ""
   "muf%?d\\t%0, %1, %2"
-[(set_attr "type" "float")])
+[(set_attr "type" "fmul")])
 
 (define_insn "mulxf3"
   [(set (match_operand:XF 0 "s_register_operand" "=f")
@@ -676,7 +722,7 @@
 		 (match_operand:XF 2 "fpu_rhs_operand" "fG")))]
   "ENABLE_XF_PATTERNS"
   "muf%?e\\t%0, %1, %2"
-[(set_attr "type" "float")])
+[(set_attr "type" "fmul")])
 
 ;; Division insns
 
@@ -688,7 +734,7 @@
   "@
    fdv%?s\\t%0, %1, %2
    frd%?s\\t%0, %2, %1"
-[(set_attr "type" "float")])
+[(set_attr "type" "fdivs")])
 
 (define_insn "divdf3"
   [(set (match_operand:DF 0 "s_register_operand" "=f,f")
@@ -698,7 +744,7 @@
   "@
    dvf%?d\\t%0, %1, %2
    rdf%?d\\t%0, %2, %1"
-[(set_attr "type" "float")])
+[(set_attr "type" "fdivd")])
 
 (define_insn ""
   [(set (match_operand:DF 0 "s_register_operand" "=f")
@@ -707,7 +753,7 @@
 		(match_operand:DF 2 "fpu_rhs_operand" "fG")))]
   ""
   "dvf%?d\\t%0, %1, %2"
-[(set_attr "type" "float")])
+[(set_attr "type" "fdivd")])
 
 (define_insn ""
   [(set (match_operand:DF 0 "s_register_operand" "=f")
@@ -716,7 +762,7 @@
 		 (match_operand:SF 2 "s_register_operand" "f"))))]
   ""
   "rdf%?d\\t%0, %2, %1"
-[(set_attr "type" "float")])
+[(set_attr "type" "fdivd")])
 
 (define_insn ""
   [(set (match_operand:DF 0 "s_register_operand" "=f")
@@ -726,7 +772,7 @@
 		 (match_operand:SF 2 "s_register_operand" "f"))))]
   ""
   "dvf%?d\\t%0, %1, %2"
-[(set_attr "type" "float")])
+[(set_attr "type" "fdivd")])
 
 (define_insn "divxf3"
   [(set (match_operand:XF 0 "s_register_operand" "=f,f")
@@ -736,7 +782,7 @@
   "@
    dvf%?e\\t%0, %1, %2
    rdf%?e\\t%0, %2, %1"
-[(set_attr "type" "float")])
+[(set_attr "type" "fdivx")])
 
 ;; Modulo insns
 
@@ -746,7 +792,7 @@
 		(match_operand:SF 2 "fpu_rhs_operand" "fG")))]
   ""
   "rmf%?s\\t%0, %1, %2"
-[(set_attr "type" "float")])
+[(set_attr "type" "fdivs")])
 
 (define_insn "moddf3"
   [(set (match_operand:DF 0 "s_register_operand" "=f")
@@ -754,7 +800,7 @@
 		(match_operand:DF 2 "fpu_rhs_operand" "fG")))]
   ""
   "rmf%?d\\t%0, %1, %2"
-[(set_attr "type" "float")])
+[(set_attr "type" "fdivd")])
 
 (define_insn ""
   [(set (match_operand:DF 0 "s_register_operand" "=f")
@@ -763,7 +809,7 @@
 		(match_operand:DF 2 "fpu_rhs_operand" "fG")))]
   ""
   "rmf%?d\\t%0, %1, %2"
-[(set_attr "type" "float")])
+[(set_attr "type" "fdivd")])
 
 (define_insn ""
   [(set (match_operand:DF 0 "s_register_operand" "=f")
@@ -772,7 +818,7 @@
 		 (match_operand:SF 2 "s_register_operand" "f"))))]
   ""
   "rmf%?d\\t%0, %1, %2"
-[(set_attr "type" "float")])
+[(set_attr "type" "fdivd")])
 
 (define_insn ""
   [(set (match_operand:DF 0 "s_register_operand" "=f")
@@ -782,7 +828,7 @@
 		 (match_operand:SF 2 "s_register_operand" "f"))))]
   ""
   "rmf%?d\\t%0, %1, %2"
-[(set_attr "type" "float")])
+[(set_attr "type" "fdivd")])
 
 (define_insn "modxf3"
   [(set (match_operand:XF 0 "s_register_operand" "=f")
@@ -790,7 +836,7 @@
 		(match_operand:XF 2 "fpu_rhs_operand" "fG")))]
   "ENABLE_XF_PATTERNS"
   "rmf%?e\\t%0, %1, %2"
-[(set_attr "type" "float")])
+[(set_attr "type" "fdivx")])
 
 ;; Boolean and,ior,xor insns
 
@@ -1419,14 +1465,14 @@
 	(neg:SF (match_operand:SF 1 "s_register_operand" "f")))]
   ""
   "mnf%?s\\t%0, %1"
-[(set_attr "type" "float")])
+[(set_attr "type" "ffarith")])
 
 (define_insn "negdf2"
   [(set (match_operand:DF 0 "s_register_operand" "=f")
 	(neg:DF (match_operand:DF 1 "s_register_operand" "f")))]
   ""
   "mnf%?d\\t%0, %1"
-[(set_attr "type" "float")])
+[(set_attr "type" "ffarith")])
 
 (define_insn ""
   [(set (match_operand:DF 0 "s_register_operand" "=f")
@@ -1434,14 +1480,14 @@
 		 (match_operand:SF 1 "s_register_operand" "f"))))]
   ""
   "mnf%?d\\t%0, %1"
-[(set_attr "type" "float")])
+[(set_attr "type" "ffarith")])
 
 (define_insn "negxf2"
   [(set (match_operand:XF 0 "s_register_operand" "=f")
 	(neg:XF (match_operand:XF 1 "s_register_operand" "f")))]
   "ENABLE_XF_PATTERNS"
   "mnf%?e\\t%0, %1"
-[(set_attr "type" "float")])
+[(set_attr "type" "ffarith")])
 
 ;; abssi2 doesn't really clobber the condition codes if a different register
 ;; is being set.  To keep things simple, assume during rtl manipulations that
@@ -1475,14 +1521,14 @@
 	 (abs:SF (match_operand:SF 1 "s_register_operand" "f")))]
   ""
   "abs%?s\\t%0, %1"
-[(set_attr "type" "float")])
+[(set_attr "type" "ffarith")])
 
 (define_insn "absdf2"
   [(set (match_operand:DF 0 "s_register_operand" "=f")
 	(abs:DF (match_operand:DF 1 "s_register_operand" "f")))]
   ""
   "abs%?d\\t%0, %1"
-[(set_attr "type" "float")])
+[(set_attr "type" "ffarith")])
 
 (define_insn ""
   [(set (match_operand:DF 0 "s_register_operand" "=f")
@@ -1490,14 +1536,14 @@
 		 (match_operand:SF 1 "s_register_operand" "f"))))]
   ""
   "abs%?d\\t%0, %1"
-[(set_attr "type" "float")])
+[(set_attr "type" "ffarith")])
 
 (define_insn "absxf2"
   [(set (match_operand:XF 0 "s_register_operand" "=f")
 	(abs:XF (match_operand:XF 1 "s_register_operand" "f")))]
   "ENABLE_XF_PATTERNS"
   "abs%?e\\t%0, %1"
-[(set_attr "type" "float")])
+[(set_attr "type" "ffarith")])
 
 (define_insn "sqrtsf2"
   [(set (match_operand:SF 0 "s_register_operand" "=f")
@@ -1670,7 +1716,7 @@
 	 (match_operand:DF 1 "s_register_operand" "f")))]
   ""
   "mvf%?s\\t%0, %1"
-[(set_attr "type" "float")])
+[(set_attr "type" "ffarith")])
 
 (define_insn "truncxfsf2"
   [(set (match_operand:SF 0 "s_register_operand" "=f")
@@ -1678,7 +1724,7 @@
 	 (match_operand:XF 1 "s_register_operand" "f")))]
   "ENABLE_XF_PATTERNS"
   "mvf%?s\\t%0, %1"
-[(set_attr "type" "float")])
+[(set_attr "type" "ffarith")])
 
 (define_insn "truncxfdf2"
   [(set (match_operand:DF 0 "s_register_operand" "=f")
@@ -1686,7 +1732,7 @@
 	 (match_operand:XF 1 "s_register_operand" "f")))]
   "ENABLE_XF_PATTERNS"
   "mvf%?d\\t%0, %1"
-[(set_attr "type" "float")])
+[(set_attr "type" "ffarith")])
 
 ;; Zero and sign extension instructions.
 
@@ -1813,20 +1859,21 @@
 	(float_extend:DF (match_operand:SF 1 "s_register_operand" "f")))]
   ""
   "mvf%?d\\t%0, %1"
-[(set_attr "type" "float")])
+[(set_attr "type" "ffarith")])
 
 (define_insn "extendsfxf2"
   [(set (match_operand:XF 0 "s_register_operand" "=f")
 	(float_extend:XF (match_operand:SF 1 "s_register_operand" "f")))]
   "ENABLE_XF_PATTERNS"
-  "mvf%?e\\t%0, %1")
+  "mvf%?e\\t%0, %1"
+[(set_attr "type" "ffarith")])
 
 (define_insn "extenddfxf2"
   [(set (match_operand:XF 0 "s_register_operand" "=f")
 	(float_extend:XF (match_operand:DF 1 "s_register_operand" "f")))]
   "ENABLE_XF_PATTERNS"
   "mvf%?e\\t%0, %1"
-[(set_attr "type" "float")])
+[(set_attr "type" "ffarith")])
 
 
 ;; Move insns (including loads and stores)
@@ -2301,7 +2348,8 @@
    ldr%?\\t%0, %1\\t%@ float
    str%?\\t%1, %0\\t%@ float"
 [(set_attr "length" "4,4,4,4,8,8,4,4,4")
- (set_attr "type" "float,float,f_load,f_store,r_mem_f,f_mem_r,*,load,store1")])
+ (set_attr "type"
+	 "ffarith,ffarith,f_load,f_store,r_mem_f,f_mem_r,*,load,store1")])
 
 (define_expand "movdf"
   [(set (match_operand:DF 0 "general_operand" "")
@@ -2387,7 +2435,7 @@
 "
 [(set_attr "length" "4,4,8,4,4,4,4,4,8,8,8")
  (set_attr "type" 
-"load,store2,load,float,float,float,f_load,f_store,r_mem_f,f_mem_r,*")])
+"load,store2,load,ffarith,ffarith,ffarith,f_load,f_store,r_mem_f,f_mem_r,*")])
 
 (define_expand "movxf"
   [(set (match_operand:XF 0 "general_operand" "")
@@ -2415,7 +2463,7 @@
     }
 "
 [(set_attr "length" "4,4,4,4,8,8,12")
- (set_attr "type" "float,float,f_load,f_store,r_mem_f,f_mem_r,*")])
+ (set_attr "type" "ffarith,ffarith,f_load,f_store,r_mem_f,f_mem_r,*")])
 
 
 ;; load- and store-multiple insns
