@@ -194,6 +194,7 @@ or with constant text in a single argument.
 	once per compilation.  Different temporary file names are made by
 	concatenation of constant strings on the end, as in `%g.s'.
 	%g also has the same effect of %d.
+ %u	like %g, but make the temporary file name unique.
  %d	marks the argument containing or following the %d as a
 	temporary file name, so that that file will be deleted if CC exits
 	successfully.  Unlike %g, this contributes no text to the argument.
@@ -428,7 +429,7 @@ static struct compiler default_compilers[] =
 		   %{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
 		   %{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%g.s}} |\n\
               %{!S:as %{R} %{j} %{J} %{h} %{d2} %a %Y\
-		      %{c:%W{o*}%{!o*:-o %w%b.o}}%{!c:-o %d%w%g.o}\
+		      %{c:%W{o*}%{!o*:-o %w%b.o}}%{!c:-o %d%w%u.o}\
                       %{!pipe:%g.s} %A\n }}}}"},
   {"-",
    "%{E:cpp -lang-c %{nostdinc*} %{C} %{v} %{A*} %{D*} %{U*} %{I*} %{i*} %{P} %I\
@@ -461,7 +462,7 @@ static struct compiler default_compilers[] =
 		   %{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
 		   %{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%g.s}} |\n\
               %{!S:as %{R} %{j} %{J} %{h} %{d2} %a %Y\
-		      %{c:%W{o*}%{!o*:-o %w%b.o}}%{!c:-o %d%w%g.o}\
+		      %{c:%W{o*}%{!o*:-o %w%b.o}}%{!c:-o %d%w%u.o}\
                       %{!pipe:%g.s} %A\n }}}}"},
   {".h", "@c-header"},
   {"@c-header",
@@ -496,7 +497,7 @@ static struct compiler default_compilers[] =
 		   %{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
 		   %{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%g.s}} |\n\
               %{!S:as %{R} %{j} %{J} %{h} %{d2} %a %Y\
-		      %{c:%W{o*}%{!o*:-o %w%b.o}}%{!c:-o %d%w%g.o}\
+		      %{c:%W{o*}%{!o*:-o %w%b.o}}%{!c:-o %d%w%u.o}\
                       %{!pipe:%g.s} %A\n }}}}"},
   {".i", "@cpp-output"},
   {"@cpp-output",
@@ -507,7 +508,7 @@ static struct compiler default_compilers[] =
 	%{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
 	%{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%g.s}} |\n\
     %{!S:as %{R} %{j} %{J} %{h} %{d2} %a %Y\
-            %{c:%W{o*}%{!o*:-o %w%b.o}}%{!c:-o %d%w%g.o} %{!pipe:%g.s} %A\n }"},
+            %{c:%W{o*}%{!o*:-o %w%b.o}}%{!c:-o %d%w%u.o} %{!pipe:%g.s} %A\n }"},
   {".ii", "@c++-cpp-output"},
   {"@c++-cpp-output",
    "cc1plus %i %1 %2 %{!Q:-quiet} %{d*} %{m*} %{a}\
@@ -517,12 +518,12 @@ static struct compiler default_compilers[] =
 	    %{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
 	    %{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%g.s}} |\n\
        %{!S:as %{R} %{j} %{J} %{h} %{d2} %a %Y\
-	       %{c:%W{o*}%{!o*:-o %w%b.o}}%{!c:-o %d%w%g.o}\
+	       %{c:%W{o*}%{!o*:-o %w%b.o}}%{!c:-o %d%w%u.o}\
 	       %{!pipe:%g.s} %A\n }"},
   {".s", "@assembler"},
   {"@assembler",
    "%{!S:as %{R} %{j} %{J} %{h} %{d2} %a %Y\
-            %{c:%W{o*}%{!o*:-o %w%b.o}}%{!c:-o %d%w%g.o} %i %A\n }"},
+            %{c:%W{o*}%{!o*:-o %w%b.o}}%{!c:-o %d%w%u.o} %i %A\n }"},
   {".S", "@assembler-with-cpp"},
   {"@assembler-with-cpp",
    "cpp -lang-asm %{nostdinc*} %{C} %{v} %{A*} %{D*} %{U*} %{I*} %{i*} %{P} %I\
@@ -534,7 +535,7 @@ static struct compiler default_compilers[] =
 	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C\
         %i %{!M:%{!MM:%{!E:%{!pipe:%g.s}}}}%{E:%W{o*}}%{M:%W{o*}}%{MM:%W{o*}} |\n\
     %{!M:%{!MM:%{!E:%{!S:as %{R} %{j} %{J} %{h} %{d2} %a %Y\
-                    %{c:%W{o*}%{!o*:-o %w%b.o}}%{!c:-o %d%w%g.o}\
+                    %{c:%W{o*}%{!o*:-o %w%b.o}}%{!c:-o %d%w%u.o}\
 		    %{!pipe:%g.s} %A\n }}}}"},
   /* Mark end of table */
   {0, 0}
@@ -2477,11 +2478,19 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 	    break;
 
 	  case 'g':
+	  case 'u':
 	    if (save_temps_flag)
 	      obstack_grow (&obstack, input_basename, basename_length);
 	    else
 	      {
 		obstack_grow (&obstack, temp_filename, temp_filename_length);
+		if (c == 'u')
+		  {
+		    static int unique;
+		    char buff[9];
+		    sprintf (buff, "%d", ++unique);
+		    obstack_grow (&obstack, buff, strlen (buff));
+		  }
 		delete_this_arg = 1;
 	      }
 	    arg_going = 1;
