@@ -1,3 +1,45 @@
+2004-05-25  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/istream.tcc (ignore): Correctly deal with
+	n == numeric_limits<streamsize>::max().
+	* testsuite/27_io/basic_istream/ignore/char/2.cc: New.
+
+	* include/bits/istream.tcc (basic_istream<>::getline): Prefer
+	'_M_gcount + 1 < __n' to '--__n; _M_gcount < __n', just in case
+	__n == numeric_limits<>::min().
+
+	* include/bits/istream.tcc: Minor tweaks.
+
+	* testsuite/21_strings/basic_string/inserters_extractors/char/10.cc:
+	Tighten.
+	* testsuite/21_strings/basic_string/inserters_extractors/char/11.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/inserters_extractors/wchar_t/10.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/inserters_extractors/wchar_t/11.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/getline/char/5.cc: Likewise.
+
+2004-05-25  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/istream.tcc (ignore): Remove redundant line.
+	(readsome): Tidy, closely following 27.6.1.3, p30.
+
+2004-05-25  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/istream.tcc (operator>>(basic_istream<>&,
+	basic_string<>&)): Use a temporary buffer, thus avoiding
+	reallocation for common case.
+	* testsuite/21_strings/basic_string/inserters_extractors/char/11.cc:
+	New.
+	* testsuite/21_strings/basic_string/inserters_extractors/wchar_t/11.cc:
+	Likewise.
+
+	* include/bits/istream.tcc: Const-ification of a few variables.
+
+	* include/bits/ostream.tcc: Trivial formatting fixes and
+	const-ification of some variables.
+
 2004-05-25  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/15489

@@ -38,12 +38,13 @@ string prepare(string::size_type len, unsigned nchunks, char delim)
   return ret;
 }
 
-void check(istream& stream, const string& str, char delim)
+void check(istream& stream, const string& str, unsigned nchunks, char delim)
 {
   bool test __attribute__((unused)) = true;
 
   char buf[1000000];
   string::size_type index = 0, index_new = 0;
+  unsigned n = 0;
 
   while (stream.getline(buf, sizeof(buf), delim))
     {
@@ -51,9 +52,11 @@ void check(istream& stream, const string& str, char delim)
       VERIFY( stream.gcount() == index_new - index + 1 );
       VERIFY( !str.compare(index, index_new - index, buf) );
       index = index_new + 1;
+      ++n;
     }
   VERIFY( stream.gcount() == 0 );
   VERIFY( stream.eof() );
+  VERIFY( n == nchunks );
 }
 
 void test01()
@@ -61,7 +64,8 @@ void test01()
   const char filename[] = "istream_getline.txt";
 
   const char delim = '|';
-  const string data = prepare(777, 10, delim);
+  const unsigned nchunks = 10;
+  const string data = prepare(777, nchunks, delim);
 
   ofstream ofstrm;
   ofstrm.open(filename);
@@ -70,7 +74,7 @@ void test01()
 
   ifstream ifstrm;
   ifstrm.open(filename);
-  check(ifstrm, data, delim);
+  check(ifstrm, data, nchunks, delim);
   ifstrm.close();
 }
 

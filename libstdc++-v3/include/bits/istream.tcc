@@ -477,7 +477,7 @@ namespace std
 	{
 	  try
 	    {
-	      int_type __cb = this->rdbuf()->sbumpc();
+	      const int_type __cb = this->rdbuf()->sbumpc();
 	      // 27.6.1.1 paragraph 3
 	      if (!traits_type::eq_int_type(__cb, traits_type::eof()))
 		{
@@ -519,8 +519,8 @@ namespace std
 		     && !traits_type::eq_int_type(__c, __idelim))
 		{
 		  *__s++ = traits_type::to_char_type(__c);
-		  __c = __sb->snextc();
 		  ++_M_gcount;
+		  __c = __sb->snextc();
 		}
 	      if (traits_type::eq_int_type(__c, __eof))
 		__err |= ios_base::eofbit;
@@ -591,15 +591,14 @@ namespace std
 	      const int_type __eof = traits_type::eof();
 	      __streambuf_type* __sb = this->rdbuf();
 	      int_type __c = __sb->sgetc();
-	      --__n;
 	      
-	      while (_M_gcount < __n
+	      while (_M_gcount + 1 < __n
 		     && !traits_type::eq_int_type(__c, __eof)
 		     && !traits_type::eq_int_type(__c, __idelim))
 		{
 		  streamsize __size = std::min(streamsize(__sb->egptr()
 							  - __sb->gptr()),
-					       __n - _M_gcount);
+					       __n - _M_gcount - 1);
 		  if (__size > 1)
 		    {
 		      const char_type* __p = traits_type::find(__sb->gptr(),
@@ -616,8 +615,8 @@ namespace std
 		  else
 		    {
 		      *__s++ = traits_type::to_char_type(__c);
-		      __c = __sb->snextc();
 		      ++_M_gcount;
+		      __c = __sb->snextc();
 		    }
 		}
 
@@ -625,8 +624,8 @@ namespace std
 		__err |= ios_base::eofbit;
 	      else if (traits_type::eq_int_type(__c, __idelim))
 		{
+		  ++_M_gcount;		  
 		  __sb->sbumpc();
-		  ++_M_gcount;
 		}
 	      else
 		__err |= ios_base::failbit;
@@ -658,8 +657,9 @@ namespace std
 	      __streambuf_type* __sb = this->rdbuf();
 	      int_type __c;
 
-	      __n = std::min(__n, numeric_limits<streamsize>::max());
-	      while (_M_gcount < __n
+	      if (__n != numeric_limits<streamsize>::max())
+		--__n;
+	      while (_M_gcount <= __n
 		     && !traits_type::eq_int_type(__c = __sb->sbumpc(), __eof))
 		{
 		  ++_M_gcount;
@@ -739,14 +739,10 @@ namespace std
 	  try
 	    {
 	      // Cannot compare int_type with streamsize generically.
-	      streamsize __num = this->rdbuf()->in_avail();
-	      if (__num >= 0)
-		{
-		  __num = std::min(__num, __n);
-		  if (__num)
-		    _M_gcount = this->rdbuf()->sgetn(__s, __num);
-		}
-	      else
+	      const streamsize __num = this->rdbuf()->in_avail();
+	      if (__num > 0)
+		_M_gcount = this->rdbuf()->sgetn(__s, std::min(__num, __n));
+	      else if (__num == -1)
 		__err |= ios_base::eofbit;
 	    }
 	  catch(...)
@@ -875,7 +871,8 @@ namespace std
 	  if (!this->fail())
 	    {
 	      // 136.  seekp, seekg setting wrong streams?
-	      pos_type __p = this->rdbuf()->pubseekpos(__pos, ios_base::in);
+	      const pos_type __p = this->rdbuf()->pubseekpos(__pos,
+							     ios_base::in);
 
 	      // 129. Need error indication from seekp() and seekg()
 	      if (__p == pos_type(off_type(-1)))
@@ -902,8 +899,8 @@ namespace std
 	  if (!this->fail())
 	    {
 	      // 136.  seekp, seekg setting wrong streams?
-	      pos_type __p = this->rdbuf()->pubseekoff(__off, __dir,
-						       ios_base::in);
+	      const pos_type __p = this->rdbuf()->pubseekoff(__off, __dir,
+							     ios_base::in);
 
 	      // 129. Need error indication from seekp() and seekg()
 	      if (__p == pos_type(off_type(-1)))
@@ -923,13 +920,15 @@ namespace std
     operator>>(basic_istream<_CharT, _Traits>& __in, _CharT& __c)
     {
       typedef basic_istream<_CharT, _Traits>		__istream_type;
+      typedef typename __istream_type::int_type         __int_type;
+
       typename __istream_type::sentry __cerb(__in, false);
       if (__cerb)
 	{
 	  ios_base::iostate __err = ios_base::iostate(ios_base::goodbit);
 	  try
 	    {
-	      typename __istream_type::int_type __cb = __in.rdbuf()->sbumpc();
+	      const __int_type __cb = __in.rdbuf()->sbumpc();
 	      if (!_Traits::eq_int_type(__cb, _Traits::eof()))
 		__c = _Traits::to_char_type(__cb);
 	      else
@@ -1042,11 +1041,13 @@ namespace std
 	{
 	  try
 	    {
+	      // Avoid reallocation for common case.
 	      __str.erase();
-	      streamsize __w = __in.width();
-	      __size_type __n;
-	      __n = __w > 0 ? static_cast<__size_type>(__w) : __str.max_size();
-
+	      _CharT __buf[128];
+	      __size_type __len = 0;	      
+	      const streamsize __w = __in.width();
+	      const __size_type __n = __w > 0 ? static_cast<__size_type>(__w)
+		                              : __str.max_size();
 	      const __ctype_type& __ct = use_facet<__ctype_type>(__in.getloc());
 	      const __int_type __eof = _Traits::eof();
 	      __streambuf_type* __sb = __in.rdbuf();
@@ -1056,10 +1057,17 @@ namespace std
 		     && !_Traits::eq_int_type(__c, __eof)
 		     && !__ct.is(ctype_base::space, _Traits::to_char_type(__c)))
 		{
-		  __str += _Traits::to_char_type(__c);
+		  if (__len == sizeof(__buf) / sizeof(_CharT))
+		    {
+		      __str.append(__buf, sizeof(__buf) / sizeof(_CharT));
+		      __len = 0;
+		    }
+		  __buf[__len++] = _Traits::to_char_type(__c);
 		  ++__extracted;
 		  __c = __sb->snextc();
 		}
+	      __str.append(__buf, __len);
+
 	      if (_Traits::eq_int_type(__c, __eof))
 		__err |= ios_base::eofbit;
 	      __in.width(0);
@@ -1094,14 +1102,13 @@ namespace std
 
       __size_type __extracted = 0;
       const __size_type __n = __str.max_size();
-      bool __testdelim = false;
       ios_base::iostate __err = ios_base::iostate(ios_base::goodbit);
       typename __istream_type::sentry __cerb(__in, true);
       if (__cerb)
 	{
 	  try
 	    {
-	      // Avoid reallocation for common case.	      
+	      // Avoid reallocation for common case.
 	      __str.erase();
 	      _CharT __buf[128];
 	      __size_type __len = 0;
@@ -1129,8 +1136,8 @@ namespace std
 		__err |= ios_base::eofbit;
 	      else if (_Traits::eq_int_type(__c, __idelim))
 		{
+		  ++__extracted;		  
 		  __sb->sbumpc();
-		  ++__extracted;
 		}
 	      else
 		__err |= ios_base::failbit;

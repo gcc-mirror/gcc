@@ -1,6 +1,6 @@
 // ostream classes -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -126,12 +126,13 @@ namespace std
 	  try
 	    {
 	      bool __b = false;
-	      char_type __c = this->fill();
-	      ios_base::fmtflags __fmt = this->flags() & ios_base::basefield;
+	      const char_type __c = this->fill();
+	      const ios_base::fmtflags __fmt = (this->flags()
+						& ios_base::basefield);
 	      const __num_put_type& __np = __check_facet(this->_M_num_put);
 	      if ((__fmt & ios_base::oct) || (__fmt & ios_base::hex))
 		{
-		  unsigned long __l = static_cast<unsigned long>(__n);
+		  const unsigned long __l = static_cast<unsigned long>(__n);
 		  __b = __np.put(*this, *this, __c, __l).failed();
 		}
 	      else
@@ -183,13 +184,14 @@ namespace std
 	  try
 	    {
 	      bool __b = false;
-	      char_type __c = this->fill();
-	      ios_base::fmtflags __fmt = this->flags() & ios_base::basefield;
+	      const char_type __c = this->fill();
+	      const ios_base::fmtflags __fmt = (this->flags()
+						& ios_base::basefield);
 	      const __num_put_type& __np = __check_facet(this->_M_num_put);
 	      if ((__fmt & ios_base::oct) || (__fmt & ios_base::hex))
 		{
-		  unsigned long long __l;
-		  __l = static_cast<unsigned long long>(__n);
+		  const unsigned long long __l = (static_cast<
+						  unsigned long long>(__n));
 		  __b = __np.put(*this, *this, __c, __l).failed();
 		}
 	      else
@@ -339,7 +341,7 @@ namespace std
 	  ios_base::iostate __err = ios_base::iostate(ios_base::goodbit);
 	  try
 	    {
-	      int_type __put = this->rdbuf()->sputc(__c);
+	      const int_type __put = this->rdbuf()->sputc(__c);
 	      if (traits_type::eq_int_type(__put, traits_type::eof()))
 		__err |= ios_base::badbit;
 	    }
@@ -423,7 +425,8 @@ namespace std
 	    {
 	      // _GLIBCXX_RESOLVE_LIB_DEFECTS
 	      // 136.  seekp, seekg setting wrong streams?
-	      pos_type __p = this->rdbuf()->pubseekpos(__pos, ios_base::out);
+	      const pos_type __p = this->rdbuf()->pubseekpos(__pos,
+							     ios_base::out);
 
 	      // 129. Need error indication from seekp() and seekg()
 	      if (__p == pos_type(off_type(-1)))
@@ -449,8 +452,8 @@ namespace std
 	    {
 	      // _GLIBCXX_RESOLVE_LIB_DEFECTS
 	      // 136.  seekp, seekg setting wrong streams?
-	      pos_type __p = this->rdbuf()->pubseekoff(__off, __dir,
-						       ios_base::out);
+	      const pos_type __p = this->rdbuf()->pubseekoff(__off, __dir,
+							     ios_base::out);
 
 	      // 129. Need error indication from seekp() and seekg()
 	      if (__p == pos_type(off_type(-1)))
@@ -539,8 +542,9 @@ namespace std
 	      streamsize __len = static_cast<streamsize>(_Traits::length(__s));
 	      if (__w > __len)
 		{
-		  _CharT* __cs = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT)
-								       * __w));
+		  _CharT* __cs = (static_cast<
+				  _CharT*>(__builtin_alloca(sizeof(_CharT)
+							    * __w)));
 		  __pad<_CharT, _Traits>::_S_pad(__out, __out.fill(), __cs,
 						 __s, __w, __len, false);
 		  __s = __cs;
@@ -582,8 +586,9 @@ namespace std
 	      streamsize __len = static_cast<streamsize>(__clen);
 	      if (__w > __len)
 		{
-		  _CharT* __cs = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT)
-								       * __w));
+		  _CharT* __cs = (static_cast<
+				  _CharT*>(__builtin_alloca(sizeof(_CharT)
+							    * __w)));
 		  __pad<_CharT, _Traits>::_S_pad(__out, __out.fill(), __cs,
 						 __ws, __w, __len, false);
 		  __str = __cs;
@@ -650,7 +655,8 @@ namespace std
 	  // 25. String operator<< uses width() value wrong
 	  if (__w > __len)
 	    {
-	      _CharT* __cs = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT) * __w));
+	      _CharT* __cs = (static_cast<
+			      _CharT*>(__builtin_alloca(sizeof(_CharT) * __w)));
 	      __pad<_CharT, _Traits>::_S_pad(__out, __out.fill(), __cs, __s,
 					     __w, __len, false);
 	      __s = __cs;
