@@ -558,7 +558,7 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 	  if (TYPE_METHODS (TREE_TYPE (node)))
 	    {
 	      /* The type is a c++ class: all structures have at least
-		 4 methods. */
+		 4 methods.  */
 	      pp_string (buffer, "class ");
 	      dump_generic_node (buffer, TREE_TYPE (node), spc, flags, false);
 	    }

@@ -1950,7 +1950,7 @@ output_call_frame_info (int for_eh)
      having an FDE kept around when the function it refers to is
      discarded. (Example where this matters: a primary function
      template in C++ requires EH information, but an explicit
-     specialization doesn't. */
+     specialization doesn't.  */
   if (TARGET_USES_WEAK_UNWIND_INFO
       && ! flag_asynchronous_unwind_tables
       && for_eh)

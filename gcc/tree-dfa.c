@@ -950,7 +950,7 @@ get_virtual_var (tree var)
 
 
 /* Mark variables in BLOCK that have hidden uses.  A hidden use can
-   occur due to VLA declarations or nested functions.   */
+   occur due to VLA declarations or nested functions.  */
 
 static void
 find_hidden_use_vars (tree block)
@@ -976,7 +976,7 @@ find_hidden_use_vars (tree block)
      VLA parameter and that declaration is not seen by the SSA code. 
 
      Note get_pending_sizes clears the PENDING_SIZES chain, so we
-     must restore it. */
+     must restore it.  */
   tem = get_pending_sizes ();
   put_pending_sizes (tem);
   for (; tem; tem = TREE_CHAIN (tem))

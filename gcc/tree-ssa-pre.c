@@ -272,7 +272,7 @@ static int class_count = 0;
 /* Iterated dominance frontiers cache.  */
 static bitmap *idfs_cache;
 
-/* Partial redundancies statistics. */
+/* Partial redundancies statistics.  */
 static struct pre_stats_d
 {
   int reloads;
@@ -298,21 +298,21 @@ struct expr_info
 {
   /* The actual expression.  */
   tree expr;
-  /* The occurrences. */
+  /* The occurrences.  */
   varray_type occurs;
-  /* The kills. */
+  /* The kills.  */
   varray_type kills;
-  /* The left occurrences. */
+  /* The left occurrences.  */
   varray_type lefts;
-  /* An array of real occurrences. */
+  /* An array of real occurrences.  */
   varray_type reals;
-  /* True if it's a strength reduction candidate. */
+  /* True if it's a strength reduction candidate.  */
   bool strred_cand;
-  /* True if it's a load PRE candidate. */
+  /* True if it's a load PRE candidate.  */
   bool loadpre_cand;
-  /* The euses/ephis in preorder dt order. */
+  /* The euses/ephis in preorder dt order.  */
   varray_type euses_dt_order;
-  /* The name of the temporary for this expression. */
+  /* The name of the temporary for this expression.  */
   tree temp;
 };
 
@@ -530,11 +530,11 @@ okay_injuring_def (tree inj, tree var)
 static bool
 is_injuring_def (struct expr_info *ei, tree inj)
 {
-  /* Things that are never injuring definitions. */
+  /* Things that are never injuring definitions.  */
   if (!inj || IS_EMPTY_STMT (inj) || TREE_CODE (inj) == PHI_NODE)
     return false;
 
-  /* Things we can't handle. */
+  /* Things we can't handle.  */
   if (TREE_CODE (TREE_OPERAND (inj, 1)) != PLUS_EXPR
       && TREE_CODE (TREE_OPERAND (inj, 1)) != MINUS_EXPR)
     return false;
@@ -558,7 +558,7 @@ is_injuring_def (struct expr_info *ei, tree inj)
      for an expression like "a * 5".
 
      This limitation only exists because we don't know how to repair
-     other forms of increments/decrements. */
+     other forms of increments/decrements.  */
   if (!names_match_p (TREE_OPERAND (inj, 0), TREE_OPERAND (ei->expr, 0))
       || !TREE_OPERAND (TREE_OPERAND (inj, 1), 0)
       || !names_match_p (TREE_OPERAND (TREE_OPERAND (inj, 1), 0),
@@ -568,7 +568,7 @@ is_injuring_def (struct expr_info *ei, tree inj)
   /* If we are strength reducing a multiply, we have the additional
      constraints that
      1. {expr} is 1
-     2. {expr} and the RHS of the expression are constants. */
+     2. {expr} and the RHS of the expression are constants.  */
   if (TREE_CODE (ei->expr) == MULT_EXPR)
     {
       tree irhs1;
@@ -594,7 +594,7 @@ is_injuring_def (struct expr_info *ei, tree inj)
 }
 
 /* Find the statement defining VAR, ignoring injuries we can repair.
-   START is the first potential injuring def. */
+   START is the first potential injuring def.  */
 
 static tree
 factor_through_injuries (struct expr_info *ei, tree start, tree var,
@@ -705,14 +705,14 @@ static bitmap varphis;
    alteration reaches that merge point).
 
    We do this recursively, because we have to figure out
-   EPHI's for the variables in the PHI as well. */
+   EPHI's for the variables in the PHI as well.  */
 
 static void
 set_var_phis (struct expr_info *ei, tree phi)
 {
   basic_block bb = bb_for_stmt (phi);
   /* If we've already got an EPHI set to be placed in PHI's BB, we
-     don't need to do this again. */
+     don't need to do this again.  */
   if (!bitmap_bit_p (varphis, bb->index)
 	&& !bitmap_bit_p (dfphis, bb->index))
     {
@@ -725,7 +725,7 @@ set_var_phis (struct expr_info *ei, tree phi)
         {
           phi_operand = PHI_ARG_DEF (phi, curr_phi_operand);
 	  /* For strength reduction, factor through injuries we can
-	     repair. */
+	     repair.  */
 	  if (ei->strred_cand && TREE_CODE (phi_operand) != PHI_NODE)
 	    {
 	      phi_operand = factor_through_injuries (ei, phi_operand,
@@ -742,7 +742,7 @@ set_var_phis (struct expr_info *ei, tree phi)
 
 	  /* If our phi operand is defined by a phi, we need to
 	     record where the phi operands alter the expression as
-	     well, and place EPHI's at each point. */
+	     well, and place EPHI's at each point.  */
           if (TREE_CODE (phi_operand) == PHI_NODE)
             set_var_phis (ei, phi_operand);
         }
@@ -840,10 +840,10 @@ expr_phi_insertion (bitmap *dfs, struct expr_info *ei)
 	}
     }
   /* Union the results of the dfphis and the varphis to get the
-     answer to everywhere we need EPHIS. */
+     answer to everywhere we need EPHIS.  */
   bitmap_a_or_b (dfphis, dfphis, varphis);
 
-  /* Now create the EPHI's in each of these blocks. */
+  /* Now create the EPHI's in each of these blocks.  */
   EXECUTE_IF_SET_IN_BITMAP(dfphis, 0, i,
   {
     tree ref = create_expr_ref (ei, ei->expr, EPHI_NODE, BASIC_BLOCK (i),
@@ -970,7 +970,7 @@ create_and_insert_occ_in_preorder_dt_order (struct expr_info *ei)
   {
     tree ephi = ephi_at_block (block);
     /* The ordering for a given BB is EPHI's, real/left/kill
-       occurrences, phi preds, exit occurrences.   */
+       occurrences, phi preds, exit occurrences.  */
     if (ephi != NULL_TREE)
       VARRAY_PUSH_TREE (ei->euses_dt_order, ephi);
   }
@@ -1061,7 +1061,7 @@ create_and_insert_occ_in_preorder_dt_order (struct expr_info *ei)
 	else if (succ->dest == EXIT_BLOCK_PTR && !(succ->flags & EDGE_FAKE))
 	  {
 	    /* No point in inserting exit blocks into heap first, since
-	       they'll never be anything on the stack. */
+	       they'll never be anything on the stack.  */
 	    tree newref;
 	    newref = create_expr_ref (ei, ei->expr, EEXIT_NODE, 
 				      block,
@@ -1268,7 +1268,7 @@ generate_vops_as_of_bb (tree expr, basic_block pred, basic_block bb)
 }
 
 /* Make a copy of Z as it would look in basic block PRED, using the PHIs
-   in BB. */
+   in BB.  */
 
 static tree
 subst_phis (struct expr_info *ei, tree Z, basic_block pred, basic_block bb)
@@ -1276,7 +1276,7 @@ subst_phis (struct expr_info *ei, tree Z, basic_block pred, basic_block bb)
   tree stmt_copy;
   size_t i;
 
-  /* Return the cached version, if we have one. */
+  /* Return the cached version, if we have one.  */
   if (pred->index < n_phi_preds 
       && phi_pred_cache[pred->index] != NULL_TREE)
     return phi_pred_cache[pred->index];
@@ -1356,7 +1356,7 @@ injured_real_occ_phi_opnd (struct expr_info *ei ATTRIBUTE_UNUSED,
 				basic_block use_bb ATTRIBUTE_UNUSED, 
 				int opnd_num ATTRIBUTE_UNUSED)
 {
-  /* XXX: Implement. */
+  /* XXX: Implement.  */
   return false;
 }
 
@@ -1603,7 +1603,7 @@ process_delayed_rename (struct expr_info *ei, tree use, tree real_occ)
 
    Renaming is done like Open64 does it.  Basically as the paper says, 
    except that we try to use earlier defined occurrences if they are
-   available in order to keep the number of saves down. */
+   available in order to keep the number of saves down.  */
 
 static void
 rename_1 (struct expr_info *ei)
@@ -1659,7 +1659,7 @@ rename_1 (struct expr_info *ei)
 		     anything).  
 		     Otherwise, we have to assign a new version.
 		     lvalue occurrences always need a new version,
-		     since they are definitions. */
+		     since they are definitions.  */
 		  if (!EUSE_LVAL (occur) 
 		      && same_e_version_real_occ_real_occ (ei, tos, occur))
 		    {
@@ -1685,7 +1685,7 @@ rename_1 (struct expr_info *ei)
 		     must change in between the ephi result and the next
 		     occurrence), and we need a new version for the real
 		     occurrence.
-		     lvalues always need a new version. */
+		     lvalues always need a new version.  */
 		  if (!EUSE_LVAL (occur)
 		      && same_e_version_phi_result (ei, tos, EREF_STMT (occur),
 						    occur))
@@ -1703,7 +1703,7 @@ rename_1 (struct expr_info *ei)
 		    }
 		}
 	    }
-	  /* EPHI occurrences always get new versions. */
+	  /* EPHI occurrences always get new versions.  */
 	  else if (TREE_CODE (occur) == EPHI_NODE)
 	    {	      
 	      assign_new_class (occur, &stack, NULL);
@@ -1790,7 +1790,7 @@ rename_1 (struct expr_info *ei)
 
 /* Determine if the EPHI has an argument we could never insert
    or extend the lifetime of, such as an argument occurring on 
-   an abnormal edge. */
+   an abnormal edge.  */
 
 static bool
 ephi_has_unsafe_arg (tree ephi)
@@ -2031,7 +2031,7 @@ reaching_def (tree var, tree currstmt, basic_block bb, tree ignore)
   basic_block dom;
   tree phi;
 
-  /* Check phis first. */
+  /* Check phis first.  */
   for (phi = phi_nodes (bb); phi; phi = TREE_CHAIN (phi))
     {
       if (phi == currstmt)
@@ -2043,7 +2043,7 @@ reaching_def (tree var, tree currstmt, basic_block bb, tree ignore)
     }
 
   /* We can't walk BB's backwards right now, so we have to walk *all*
-     the statements, and choose the last name we find. */
+     the statements, and choose the last name we find.  */
   for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
     {
       tree stmt = bsi_stmt (bsi);
@@ -2095,7 +2095,7 @@ insert_one_operand (struct expr_info *ei, tree ephi, int opnd_indx,
   tree newtemp;
   basic_block bb = bb_for_stmt (x);
 
-  /* Insert definition of expr at end of BB containing x. */
+  /* Insert definition of expr at end of BB containing x.  */
   copy = TREE_OPERAND (EREF_STMT (ephi), 1);
   copy = unshare_expr (copy);
   expr = build (MODIFY_EXPR, TREE_TYPE (ei->expr),
@@ -2568,7 +2568,7 @@ finalize_2 (struct expr_info *ei)
   do_ephi_df_search (ei, replacing_search);
 }
 
-/* Perform a DFS on EPHI using the functions in SEARCH. */
+/* Perform a DFS on EPHI using the functions in SEARCH.  */
 
 static void
 do_ephi_df_search_1 (struct ephi_df_search search, tree ephi)
@@ -2611,7 +2611,7 @@ do_ephi_df_search (struct expr_info *ei, struct ephi_df_search search)
 }
 
 #if 0
-/* Calculate the increment necessary due to EXPR for the temporary. */
+/* Calculate the increment necessary due to EXPR for the temporary.  */
 static tree
 calculate_increment (struct expr_info *ei, tree expr)
 {
@@ -2723,7 +2723,7 @@ code_motion (struct expr_info *ei)
   basic_block bb;
 
   /* First, add the phi node temporaries so the reaching defs are
-     always right. */
+     always right.  */
   for (euse_iter = 0;
        euse_iter < VARRAY_ACTIVE_SIZE (ei->euses_dt_order);
        euse_iter++)
@@ -2747,7 +2747,7 @@ code_motion (struct expr_info *ei)
 	    }
 	}
     }
-  /* Now do the actual saves and reloads, plus repairs. */
+  /* Now do the actual saves and reloads, plus repairs.  */
   for (euse_iter = 0;
        euse_iter < VARRAY_ACTIVE_SIZE (ei->euses_dt_order);
        euse_iter++)
@@ -2827,7 +2827,7 @@ code_motion (struct expr_info *ei)
 	}
     }
   
-  /* Now do the phi nodes. */
+  /* Now do the phi nodes.  */
   for (euse_iter = 0;
        euse_iter < VARRAY_ACTIVE_SIZE (ei->euses_dt_order);
        euse_iter++)
@@ -2942,7 +2942,7 @@ compute_idfs (bitmap * dfs, tree stmt)
 
 }
 
-/* Return true if EXPR is a strength reduction candidate. */
+/* Return true if EXPR is a strength reduction candidate.  */
 static bool
 is_strred_cand (const tree expr ATTRIBUTE_UNUSED)
 {
@@ -2959,7 +2959,7 @@ is_strred_cand (const tree expr ATTRIBUTE_UNUSED)
 
 
 
-/* Determine if two expressions are lexically equivalent. */
+/* Determine if two expressions are lexically equivalent.  */
 
 static inline bool
 expr_lexically_eq (const tree v1, const tree v2)
@@ -3306,7 +3306,7 @@ execute_pre (void)
   /* Compute immediate dominators.  */
   calculate_dominance_info (CDI_DOMINATORS);
 
-  /* DCE screws the dom_children up, without bothering to fix it. So fix it. */
+  /* DCE screws the dom_children up, without bothering to fix it. So fix it.  */
   currbbs = n_basic_blocks;
   dfn = xcalloc (last_basic_block + 1, sizeof (int));
   build_dfn_array (ENTRY_BLOCK_PTR, 0);

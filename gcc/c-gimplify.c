@@ -722,7 +722,7 @@ gimplify_for_stmt (tree *stmt_p, tree *next_p)
     {
       /* Reorganize the statements so that we do the right thing with a
 	 CLEANUP_STMT.  We want the FOR_STMT and nothing else to be in the
-	 scope of the cleanup, so play with pointers to accomplish that. */
+	 scope of the cleanup, so play with pointers to accomplish that.  */
       FOR_INIT_STMT (stmt) = NULL_TREE;
       chainon (init, stmt);
       *stmt_p = init;

@@ -76,7 +76,7 @@ typedef struct _elim_graph {
   /* List of nodes in the elimination graph.  */
   varray_type nodes;
 
-  /*  The predecessor and successor edge list. */
+  /*  The predecessor and successor edge list.  */
   varray_type edge_list;
 
   /* Visited vector.  */
@@ -763,7 +763,7 @@ coalesce_ssa_name (var_map map, int flags)
   root_var_decompact (rv);
 
   /* First, coalesce all live on entry variables to their root variable. 
-     This will ensure the first use is coming from the correct location. */
+     This will ensure the first use is coming from the correct location.  */
 
   live = sbitmap_alloc (num_var_partitions (map));
   sbitmap_zero (live);

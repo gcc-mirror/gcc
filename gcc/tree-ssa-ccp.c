@@ -461,7 +461,7 @@ visit_phi_node (tree phi)
   else
     for (i = 0; i < PHI_NUM_ARGS (phi); i++)
       {
-	/* Compute the meet operator over all the PHI arguments. */
+	/* Compute the meet operator over all the PHI arguments.  */
 	edge e = PHI_ARG_EDGE (phi, i);
 
 	if (dump_file && (dump_flags & TDF_DETAILS))
@@ -883,7 +883,7 @@ ccp_fold (tree stmt)
     }
 
   /* We may be able to fold away calls to builtin functions if their
-     arguments are constants. */
+     arguments are constants.  */
   else if (code == CALL_EXPR
 	   && TREE_CODE (TREE_OPERAND (rhs, 0)) == ADDR_EXPR
 	   && (TREE_CODE (TREE_OPERAND (TREE_OPERAND (rhs, 0), 0))
@@ -1430,7 +1430,7 @@ likely_value (tree stmt)
 
 /* A subroutine of fold_stmt_r.  Attempts to fold *(A+O) to A[X].
    BASE is an array type.  OFFSET is a byte displacement.  ORIG_TYPE
-   is the desired result type.   */
+   is the desired result type.  */
 
 static tree
 maybe_fold_offset_to_array_ref (tree base, tree offset, tree orig_type)
@@ -1884,7 +1884,7 @@ fold_stmt_r (tree *expr_p, int *walk_subtrees, void *data)
                   break;
                 }
             }
-        /* Fall through is an error; it will be detected in tree-sra. */
+        /* Fall through is an error; it will be detected in tree-sra.  */
         }
       break;
 

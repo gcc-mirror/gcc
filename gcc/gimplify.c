@@ -2220,7 +2220,7 @@ shortcut_cond_expr (tree expr)
       else_ = build_empty_stmt ();
     }
 
-  /* If we aren't hijacking a label for the 'then' branch, it falls through. */
+  /* If we aren't hijacking a label for the 'then' branch, it falls through.  */
   if (true_label)
     true_label_p = &true_label;
   else

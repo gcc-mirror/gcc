@@ -1991,7 +1991,7 @@ dump_global_regs (FILE *file)
    conflicts and as a consequence worse register allocation.  The
    typical example where the information can be different is a
    register initialized in the loop at the basic block preceding the
-   loop in CFG. */
+   loop in CFG.  */
 
 /* The following structure contains basic block data flow information
    used to calculate partial availability of registers.  */
@@ -2211,7 +2211,7 @@ calculate_reg_pav (void)
    blocks.  After the function call a register lives at a program
    point only if it is initialized on a path from CFG entry to the
    program point.  The standard GCC life analysis permits registers to
-   live uninitialized. */
+   live uninitialized.  */
 
 static void
 make_accurate_live_analysis (void)

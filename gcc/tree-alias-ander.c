@@ -147,7 +147,7 @@ static struct tree_alias_ops andersen_ops = {
   andersen_empty_points_to_set,
   0, /* data */
   0, /* Currently non-interprocedural */
-  1  /* Can do IP on all statics without help. */
+  1  /* Can do IP on all statics without help.  */
 };
 struct tree_alias_ops *andersen_alias_ops = &andersen_ops;
 
@@ -427,14 +427,14 @@ pta_pr_ptset (contents_type t)
   deleteregion (scratch_rgn);
 }
 
-/* Initialize Andersen alias analysis. */
+/* Initialize Andersen alias analysis.  */
 static int initted = 0;
 
 static void
 andersen_init (struct tree_alias_ops *ops ATTRIBUTE_UNUSED)
 {
 #if 0
-  /* Don't claim we can do ip partial unless we have unit_at_a_time on. */
+  /* Don't claim we can do ip partial unless we have unit_at_a_time on.  */
   if (!flag_unit_at_a_time)   
 #endif
     andersen_ops.ip_partial = 0;
@@ -658,7 +658,7 @@ andersen_op_assign (struct tree_alias_ops *ops ATTRIBUTE_UNUSED,
   
       
   /* Pointer destroying operations do not give us the same valid pointer
-     back, and thus, are assignment to pta_bottom. */
+     back, and thus, are assignment to pta_bottom.  */
   if (pointer_destroying_op (operation))
     {
       pta_assignment (ALIAS_VAR_ATERM (lhs), pta_rvalue (pta_bottom ()));
@@ -761,7 +761,7 @@ andersen_function_def (struct tree_alias_ops *ops ATTRIBUTE_UNUSED,
   size_t l = VARRAY_ACTIVE_SIZE (params);
   size_t i;
 
-  /* Set up the arguments for the new function type. */
+  /* Set up the arguments for the new function type.  */
   for (i = 0; i < l; i++)
     {
       alias_var tv = VARRAY_GENERIC_PTR (params, i);
@@ -814,7 +814,7 @@ andersen_function_call (struct tree_alias_ops *ops,
 
   /* We can handle functions we've got trees for. non-statics will
      just have incoming parameters assigned to global_var if
-     necessary. */
+     necessary.  */
   if (TREE_CODE (decl) == FUNCTION_DECL
       && DECL_PTA_ALIASVAR (decl)
       && ops->ip_partial
@@ -835,7 +835,7 @@ simple_cmp (const aterm a, const aterm b)
 }
 
 
-/* Get the points-to set for TV, caching if it we had to compute it. */
+/* Get the points-to set for TV, caching if it we had to compute it.  */
    
 static aterm_list 
 get_ptset (alias_var tv)
@@ -850,7 +850,7 @@ get_ptset (alias_var tv)
 }
   
   
-/* Determine if two aterm's have the same points-to set. */
+/* Determine if two aterm's have the same points-to set.  */
 
 static bool
 andersen_same_points_to_set (struct tree_alias_ops *ops ATTRIBUTE_UNUSED,

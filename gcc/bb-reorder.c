@@ -1331,7 +1331,7 @@ mark_bb_for_unlikely_executed_section (basic_block bb)
 
 /* If any destination of a crossing edge does not have a label, add label;
    Convert any fall-through crossing edges (for blocks that do not contain
-   a jump) to unconditional jumps.   */
+   a jump) to unconditional jumps.  */
 
 static void 
 add_labels_and_missing_jumps (edge *crossing_edges, int n_crossing_edges)
@@ -1472,7 +1472,7 @@ fix_up_fall_thru_edges (void)
 		      && cur_bb->rbi->next == cond_jump->dest)
  		    {
  		      /* Find label in fall_thru block. We've already added
- 		         any missing labels, so there must be one. */
+ 		         any missing labels, so there must be one.  */
  		      
  		      fall_thru_label = block_label (fall_thru->dest);
 
@@ -1554,7 +1554,7 @@ find_jump_block (basic_block jump_dest)
 	
 	/* Check each predecessor to see if it has a label, and contains
 	   only one executable instruction, which is an unconditional jump.
-	   If so, we can use it.   */
+	   If so, we can use it.  */
 	
 	if (GET_CODE (BB_HEAD (src)) == CODE_LABEL)
 	  for (insn = BB_HEAD (src); 

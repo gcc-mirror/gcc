@@ -74,7 +74,7 @@ extern bool value_profile_transformations (void);
 
 /* External declarations for edge-based profiling.  */
 struct profile_hooks {
-  /* Insert code to increment an edge count. */
+  /* Insert code to increment an edge count.  */
   void (*gen_edge_profiler) (int, edge);
 
   /* Insert code to increment the interval histogram counter.  */
@@ -83,7 +83,7 @@ struct profile_hooks {
   /* Insert code to increment the power of two histogram counter.  */
   void (*gen_pow2_profiler) (struct histogram_value *, unsigned, unsigned);
 
-  /* Insert code to find the most common value. */
+  /* Insert code to find the most common value.  */
   void (*gen_one_value_profiler) (struct histogram_value *, unsigned, unsigned);
 
   /* Insert code to find the most common value of a difference between two

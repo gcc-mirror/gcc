@@ -209,7 +209,7 @@ static GTY (()) tree mf_cache_shift_decl;
 /* extern const uintptr_t __mf_lc_mask; */
 static GTY (()) tree mf_cache_mask_decl;
 
-/* Their function-scope local shadows, used in single-threaded mode only. */
+/* Their function-scope local shadows, used in single-threaded mode only.  */
 
 /* auto const unsigned char __mf_lc_shift_l; */
 static GTY (()) tree mf_cache_shift_decl_l;
@@ -253,7 +253,7 @@ mf_init_extern_trees (void)
 
 /* Create and initialize local shadow variables for the lookup cache
    globals.  Put their decls in the *_l globals for use by
-   mf_build_check_statement_for. */
+   mf_build_check_statement_for.  */
 
 static void
 mf_decl_cache_locals (tree* body)
@@ -287,7 +287,7 @@ mf_decl_cache_locals (tree* body)
 static void
 mf_decl_clear_locals (void)
 {
-  /* Unset local shadows. */
+  /* Unset local shadows.  */
   mf_cache_shift_decl_l = NULL_TREE;
   mf_cache_mask_decl_l = NULL_TREE;
 }
@@ -316,7 +316,7 @@ mf_varname_tree (tree decl)
     }
   pp_clear_output_area (buf);
 
-  /* Add FILENAME[:LINENUMBER]. */
+  /* Add FILENAME[:LINENUMBER].  */
   {
     const char *sourcefile;
     unsigned sourceline;
@@ -721,7 +721,7 @@ mf_xform_derefs (tree fnbody)
 
 /* This struct is passed between mf_xform_decls to store state needed
    during the traversal searching for objects that have their
-   addresses taken. */
+   addresses taken.  */
 struct mf_xform_decls_data
 {
   tree param_decls;
@@ -763,7 +763,7 @@ mx_register_decls (tree decl, tree *stmt_list)
                  method by which VLA declarations turn into calls to
                  BUILT_IN_STACK_ALLOC.  We assume that multiple
                  VLAs declared later in the same block get allocation 
-                 code later than the others. */
+                 code later than the others.  */
               tree stack_alloc_call = NULL_TREE;
 
               while(! tsi_end_p (initially_stmts))
@@ -801,7 +801,7 @@ mx_register_decls (tree decl, tree *stmt_list)
                               /* Got it! */
                               size = stack_alloc_op2;
                               stack_alloc_call = call;
-                              /* Advance iterator to point past this allocation call. */
+                              /* Advance iterator to point past this allocation call.  */
                               tsi_next (&initially_stmts);
                               break;
                             }
@@ -865,7 +865,7 @@ mx_register_decls (tree decl, tree *stmt_list)
             internal_error ("mudflap ran off end of BIND_EXPR body");
           tsi_link_before (&initially_stmts, register_fncall, TSI_SAME_STMT);
 
-          /* Accumulate the FINALLY piece. */
+          /* Accumulate the FINALLY piece.  */
           append_to_statement_list (unregister_fncall, &finally_stmts);
 
           mf_mark (decl);

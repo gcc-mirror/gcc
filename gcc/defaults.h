@@ -240,7 +240,7 @@ do { fputs (integer_asm_op (POINTER_SIZE / BITS_PER_UNIT, TRUE), FILE); \
 
 /* Determines whether explicit template instantiations should
    be given link-once semantics. The C++ ABI requires this 
-   macro to be nonzero; see the documentation. */
+   macro to be nonzero; see the documentation.  */
 #ifndef TARGET_EXPLICIT_INSTANTIATIONS_ONE_ONLY
 # define TARGET_EXPLICIT_INSTANTIATIONS_ONE_ONLY 1
 #endif
@@ -273,7 +273,7 @@ do { fputs (integer_asm_op (POINTER_SIZE / BITS_PER_UNIT, TRUE), FILE); \
 
 /* This determines whether this target supports hidden visibility.
    This is a weaker condition than HAVE_GAS_HIDDEN, which probes for
-   specific assembler syntax. */
+   specific assembler syntax.  */
 #ifndef TARGET_SUPPORTS_HIDDEN
 # ifdef HAVE_GAS_HIDDEN
 #  define TARGET_SUPPORTS_HIDDEN 1
@@ -283,7 +283,7 @@ do { fputs (integer_asm_op (POINTER_SIZE / BITS_PER_UNIT, TRUE), FILE); \
 #endif
 
 /* Determines whether we may use common symbols to represent one-only
-   semantics (a.k.a. "vague linkage"). */
+   semantics (a.k.a. "vague linkage").  */
 #ifndef USE_COMMON_FOR_ONE_ONLY
 # define USE_COMMON_FOR_ONE_ONLY 1
 #endif

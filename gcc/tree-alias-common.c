@@ -26,7 +26,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include "tree-alias-type.h"
 #include "bitmap.h"
 #include "tree-alias-common.h"
-/* If we have andersen's points-to analysis, include it. */
+/* If we have andersen's points-to analysis, include it.  */
 #ifdef HAVE_BANSHEE
 #include "tree-alias-ander.h"
 #endif
@@ -150,7 +150,7 @@ get_alias_var_decl (tree decl)
     {
       newvar = create_alias_var (decl);
       /* Assign globals to global var for purposes of intraprocedural
-	 analysis. */
+	 analysis.  */
       if ((DECL_CONTEXT (decl) == NULL 
 	   || TREE_PUBLIC (decl)
 	   || TREE_STATIC (decl)
@@ -161,7 +161,7 @@ get_alias_var_decl (tree decl)
 					  get_alias_var (pta_global_var), 
 					  newvar);
 	  /* If the global has some DECL_INITIAL, we need to process
-	     it here. */
+	     it here.  */
 	  if (DECL_INITIAL (decl))
 	    find_func_aliases (decl);
 	}
@@ -190,7 +190,7 @@ get_alias_var (tree expr)
   /* If it's a decl, get the alias var of the decl. We farm this off
      to get_alias_var_decl so it can abort if the alias var doesn't
      exist, and in case something else *knows* it has a decl, and
-     wants the alias var. */
+     wants the alias var.  */
 
   if (DECL_P (expr))
     return get_alias_var_decl (expr);
@@ -240,7 +240,7 @@ get_alias_var (tree expr)
 	    return get_alias_var (TREE_OPERAND (expr, 1));
 	  }
 #else
-        /* Find the first non-component ref, and return its alias variable. */
+        /* Find the first non-component ref, and return its alias variable.  */
 	tree p;
 	for (p = expr; TREE_CODE (p) == COMPONENT_REF;
 	     p = TREE_OPERAND (p, 0));
@@ -260,7 +260,7 @@ get_alias_var (tree expr)
     case INDIRECT_REF:
     case BIT_FIELD_REF:
       /* If it's a ref or cast or conversion of something, get the
-         alias var of the something. */
+         alias var of the something.  */
       return get_alias_var (TREE_OPERAND (expr, 0));
       break;
 
@@ -280,7 +280,7 @@ intra_function_call (varray_type args)
   size_t i;
   alias_var av = get_alias_var (pta_global_var);
 
-  /* We assume assignments among the actual parameters. */
+  /* We assume assignments among the actual parameters.  */
   for (i = 0; i < l; i++)
     {
       alias_var argi = VARRAY_GENERIC_PTR (args, i);
@@ -292,26 +292,26 @@ intra_function_call (varray_type args)
 	    continue;
 	  argj = VARRAY_GENERIC_PTR (args, j);
 	  /* Restricted pointers can't be aliased with other
-	     restricted pointers. */
+	     restricted pointers.  */
 	  if (!TYPE_RESTRICT (TREE_TYPE (ALIAS_VAR_DECL (argi)))
 	      || !TYPE_RESTRICT (TREE_TYPE (ALIAS_VAR_DECL (argj))))
-	    /* Do a bit of TBAA to avoid pointless assignments. */
+	    /* Do a bit of TBAA to avoid pointless assignments.  */
 	    if (alias_sets_conflict_p (get_alias_set (ALIAS_VAR_DECL (argi)),
 				       get_alias_set (ALIAS_VAR_DECL (argj))))	      
 	      current_alias_ops->simple_assign (current_alias_ops, argi, argj);
 	}
     }
-  /* We assume that an actual parameter can point to any global. */
+  /* We assume that an actual parameter can point to any global.  */
   for (i = 0; i < l; i++)
     {
       alias_var argav = VARRAY_GENERIC_PTR (args, i);
       /* Restricted pointers can't be aliased with other
-	 restricted pointers. */
+	 restricted pointers.  */
       if (!TYPE_RESTRICT (TREE_TYPE (ALIAS_VAR_DECL (argav)))
 	  || !TYPE_RESTRICT (TREE_TYPE (ALIAS_VAR_DECL (av))))
 	{
 	  /* Arguments can alias globals, and whatever they point to
-	     can point to a global as well. */
+	     can point to a global as well.  */
 	  current_alias_ops->simple_assign (current_alias_ops, argav, av);
 	}
     }
@@ -460,7 +460,7 @@ find_func_aliases (tree stp)
 	  op1 = TREE_OPERAND (op1, 0);
 	}
       /* Take care of fact that we may have multi-level component
-	 refs. */ 
+	 refs.  */ 
       if (TREE_CODE (op1) == COMPONENT_REF)
 	op1 = find_op_of_decl (op1);
 #endif
@@ -468,11 +468,11 @@ find_func_aliases (tree stp)
       /* You would think we could test rhsAV at the top, rather than
 	 50 separate times, but we can't, because it can be NULL for
 	 operator assignments, where we'd still collect the individual
-	 alias vars for the operator. */
+	 alias vars for the operator.  */
 
       /* Note that structures are treated as a single alias
 	 variable, since we can disambiguate based on TBAA first,
-	 and fall back on points-to. */
+	 and fall back on points-to.  */
       /* x = <something> */
       if (is_gimple_variable (op0))
 	{
@@ -527,13 +527,13 @@ find_func_aliases (tree stp)
 	  else if (TREE_CODE (op1) == CALL_EXPR)
 	    {
 	      /* Heap assignment. These are __attribute__ malloc or
-		 something, i'll deal with it later. */
+		 something, i'll deal with it later.  */
 	      if (0)
 		{}
 	      else
 		{
 		  
-		  /* NORETURN functions have no effect on aliasing. */
+		  /* NORETURN functions have no effect on aliasing.  */
 		  if (call_may_return (op1))
 		    {		      
 		      varray_type args;
@@ -656,7 +656,7 @@ find_func_aliases (tree stp)
 		    || TREE_CODE (op0) == ARRAY_REF)
 		   && TREE_CODE (op1) == ADDR_EXPR)
 	    {
-	      /* This becomes temp = &y and *x = temp . */
+	      /* This becomes temp = &y and *x = temp .  */
 	      alias_var tempvar;
 	      tree temp = create_tmp_var_raw (void_type_node, "aliastmp");
 	      tempvar = current_alias_ops->add_var (current_alias_ops, temp);
@@ -672,7 +672,7 @@ find_func_aliases (tree stp)
 		   && (TREE_CODE (op1) == INDIRECT_REF
 		       || TREE_CODE (op1) == ARRAY_REF))
 	    {
-	      /* This becomes temp = *y and *x = temp . */
+	      /* This becomes temp = *y and *x = temp .  */
 	      alias_var tempvar;
 	      tree temp;
 	      temp = create_tmp_var_raw (void_type_node, "aliastmp");
@@ -690,7 +690,7 @@ find_func_aliases (tree stp)
 	    {
 	      if (rhsAV != NULL)
 		{
-		  /* This becomes temp = (cast) y and  *x = temp. */
+		  /* This becomes temp = (cast) y and  *x = temp.  */
 		  alias_var tempvar;
 		  tree temp;
 		  temp = create_tmp_var_raw (void_type_node, "aliastmp");
@@ -711,7 +711,7 @@ find_func_aliases (tree stp)
 	    }
 	}
     }
-  /* Calls without return values. */
+  /* Calls without return values.  */
   else if (TREE_CODE (stp) == CALL_EXPR)
     {
       alias_var callvar;
@@ -787,10 +787,10 @@ create_fun_alias_var (tree decl, int force)
 	  /* Incoming pointers can point to pta_global_var, unless
 	     either we are interprocedural, or we can do ip on all
 	     statics + this function has been defined + it's not an
-	     external function. */
+	     external function.  */
 	  if (POINTER_TYPE_P (TREE_TYPE (arg))
 	      && !current_alias_ops->ip
-	      /* FIXME: Need to let analyzer decide in partial case. */
+	      /* FIXME: Need to let analyzer decide in partial case.  */
 	      && (!current_alias_ops->ip_partial
 		  || !cgraph_local_info (decl)->local))
 	    current_alias_ops->simple_assign (current_alias_ops, var,
@@ -814,10 +814,10 @@ create_fun_alias_var (tree decl, int force)
 	  /* Incoming pointers can point to pta_global_var, unless
 	     either we are interprocedural, or we can do ip on all
 	     statics + this function has been defined + it's not an
-	     external function. */
+	     external function.  */
 	  if (POINTER_TYPE_P (TREE_TYPE (fakedecl))
 	      && !current_alias_ops->ip
-	      /* FIXME: need to let analyzer decide in partial case. */
+	      /* FIXME: need to let analyzer decide in partial case.  */
 	      && (!current_alias_ops->ip_partial
 		  || !TREE_STATIC (decl)
 		  || TREE_PUBLIC (decl)))
@@ -860,7 +860,7 @@ create_fun_alias_var (tree decl, int force)
   DECL_PTA_ALIASVAR (decl) = avar;
 
   /* FIXME: Also, if this is a defining declaration then add the annotation
-     to all extern definitions of the function. */
+     to all extern definitions of the function.  */
   return avar;
 }
 
@@ -1252,7 +1252,7 @@ alias_get_name (tree t)
       /* 2 = UF
 	 4 = the masked pointer
 	 2 = the <> around it
-	 1 = the terminator. */
+	 1 = the terminator.  */
       namep = ggc_alloc (2 + 4 + 2 + 1);
       sprintf (namep, "<UV%x>", MASK_POINTER (t));
       return namep;

@@ -531,7 +531,7 @@ verify_norecord_switch_expr (struct leh_state *state, tree switch_expr)
 /* Redirect a RETURN_EXPR pointed to by STMT_P to FINLAB.  Place in CONT_P
    whatever is needed to finish the return.  If MOD is non-null, insert it
    before the new branch.  RETURN_VALUE_P is a cache containing a temporary
-   variable to be used in manipulating the value returned from the function. */
+   variable to be used in manipulating the value returned from the function.  */
 
 static void
 do_return_redirection (struct goto_queue_node *q, tree finlab, tree mod,

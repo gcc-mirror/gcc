@@ -890,7 +890,7 @@ group_aliases_into (tree tag, sbitmap tag_aliases, struct alias_info *ai)
 
       /* Note that VAR and TAG may be the same if the function has no
 	 addressable variables (see the discussion at the end of
-	 setup_pointers_and_addressables). */
+	 setup_pointers_and_addressables).  */
       if (var != tag)
 	add_may_alias (var, tag);
 

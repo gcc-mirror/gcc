@@ -264,7 +264,7 @@ int flag_branch_probabilities = 0;
 int flag_reorder_blocks = 0;
 
 /* Nonzero if blocks should be partitioned into hot and cold sections in
-   addition to being reordered. */
+   addition to being reordered.  */
 
 int flag_reorder_blocks_and_partition = 0;
 
@@ -707,7 +707,7 @@ int flag_schedule_speculative_load_dangerous = 0;
 int flag_sched_stalled_insns = 0;
 int flag_sched_stalled_insns_dep = 1;
 
-/* The following flag controls the module scheduling activation. */
+/* The following flag controls the module scheduling activation.  */
 int flag_modulo_sched = 0;
 
 int flag_single_precision_constant;
@@ -825,7 +825,7 @@ int flag_tree_gvn = 0;
 /* Enable the SSA-PRE tree optimization.  */
 int flag_tree_pre = 0;
 
-/* Enable points-to analysis on trees. */
+/* Enable points-to analysis on trees.  */
 enum pta_type flag_tree_points_to = PTA_NONE;
 
 /* Enable SSA-CCP on trees.  */

@@ -2418,7 +2418,7 @@ build_constant_desc (tree exp)
   desc = ggc_alloc (sizeof (*desc));
   desc->value = copy_constant (exp);
 
-  /* Propagate marked-ness to copied constant. */
+  /* Propagate marked-ness to copied constant.  */
   if (flag_mudflap && mf_marked_p (exp))
     mf_mark (desc->value);
 
@@ -4996,7 +4996,7 @@ default_globalize_label (FILE * stream, const char *name)
 
 /* Default function to output a label for unwind information.  The
    default is to do nothing.  A target that needs nonlocal labels for
-   unwind information must provide its own function to do this. */
+   unwind information must provide its own function to do this.  */
 void
 default_emit_unwind_label (FILE * stream ATTRIBUTE_UNUSED,
 			   tree decl ATTRIBUTE_UNUSED,

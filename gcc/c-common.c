@@ -2820,7 +2820,7 @@ c_apply_type_quals_to_decl (int type_quals, tree decl)
 /* Hash function for the problem of multiple type definitions in
    different files.  This must hash all types that will compare
    equal via comptypes to the same value.  In practice it hashes
-   on some of the simple stuff and leaves the details to comptypes. */
+   on some of the simple stuff and leaves the details to comptypes.  */
 
 static hashval_t
 c_type_hash (const void *p)
@@ -2831,7 +2831,7 @@ c_type_hash (const void *p)
   tree t2;
   switch (TREE_CODE (t))
     {
-      /* For pointers, hash on pointee type plus some swizzling. */
+      /* For pointers, hash on pointee type plus some swizzling.  */
       case POINTER_TYPE:
   return c_type_hash (TREE_TYPE (t)) ^ 0x3003003;
       /* Hash on number of elements and total size.  */
@@ -2951,7 +2951,7 @@ c_common_get_alias_set (tree t)
   if (c_language != clk_c || flag_isoc99)
     return -1;
 
-  /* Save time if there's only one input file. */
+  /* Save time if there's only one input file.  */
   if (!current_file_decl || TREE_CHAIN (current_file_decl) == NULL_TREE)
     return -1;
 
