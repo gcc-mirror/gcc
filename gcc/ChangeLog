@@ -1,3 +1,7 @@
+2002-10-13  Richard Henderson  <rth@redhat.com>
+
+	* rtl.c (shallow_copy_rtx): Use memcpy for the entire node.
+
 2002-10-12  Neil Booth  <neil@daikokuya.co.uk>
 
 	PR preprocessor/7862
