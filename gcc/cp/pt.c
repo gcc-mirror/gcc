@@ -149,7 +149,7 @@ static tree most_specialized_class PARAMS ((tree, tree));
 static void set_mangled_name_for_template_decl PARAMS ((tree));
 static int template_class_depth_real PARAMS ((tree, int));
 static tree tsubst_aggr_type PARAMS ((tree, tree, int, tree, int));
-static tree tsubst_decl PARAMS ((tree, tree, tree, tree));
+static tree tsubst_decl PARAMS ((tree, tree, tree));
 static tree tsubst_arg_types PARAMS ((tree, tree, int, tree));
 static tree tsubst_function_type PARAMS ((tree, tree, int, tree));
 static void check_specialization_scope PARAMS ((void));
@@ -5558,19 +5558,18 @@ tsubst_default_arguments (fn)
 
 /* Substitute the ARGS into the T, which is a _DECL.  TYPE is the
    (already computed) substitution of ARGS into TREE_TYPE (T), if
-   appropriate.  Return the result of the substitution.  IN_DECL is as
-   for tsubst.  */
+   appropriate.  Return the result of the substitution.  */
 
 static tree
-tsubst_decl (t, args, type, in_decl)
+tsubst_decl (t, args, type)
      tree t;
      tree args;
      tree type;
-     tree in_decl;
 {
   int saved_lineno;
   const char *saved_filename;
   tree r = NULL_TREE;
+  tree in_decl = t;
 
   /* Set the filename and linenumber to improve error-reporting.  */
   saved_lineno = lineno;
@@ -6122,6 +6121,16 @@ tsubst_arg_types (arg_types, args, complain, in_decl)
   type = tsubst (TREE_VALUE (arg_types), args, complain, in_decl);
   if (type == error_mark_node)
     return error_mark_node;
+  if (VOID_TYPE_P (type))
+    {
+      if (complain)
+        {
+          cp_error ("invalid parameter type `%T'", type);
+          if (in_decl)
+            cp_error_at ("in declaration `%D'", in_decl);
+        }
+      return error_mark_node;
+    }
 
   /* Do array-to-pointer, function-to-pointer conversion, and ignore
      top-level qualifiers as required.  */
@@ -6293,7 +6302,7 @@ tsubst (t, args, complain, in_decl)
     return error_mark_node;
 
   if (DECL_P (t))
-    return tsubst_decl (t, args, type, in_decl);
+    return tsubst_decl (t, args, type);
 
   switch (TREE_CODE (t))
     {

@@ -1,5 +1,11 @@
 2001-01-24  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* pt.c (tsubst_decl): Remove IN_DECL parameter.
+	(tsubst_arg_types): Check parameter is not void.
+	(tsubst): Adjust tsubst_decl call.
+
+2001-01-24  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* call.c (add_builtin_candidate): Quote std properly, from
 	previous change.
 
