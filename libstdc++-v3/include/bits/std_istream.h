@@ -41,7 +41,6 @@
 
 namespace std
 {
-
   // 27.6.1.1 Template class basic_istream
   template<typename _CharT, typename _Traits>
     class basic_istream : virtual public basic_ios<_CharT, _Traits>
@@ -59,7 +58,7 @@ namespace std
       typedef basic_streambuf<_CharT, _Traits> 		__streambuf_type;
       typedef basic_ios<_CharT, _Traits>		__ios_type;
       typedef basic_istream<_CharT, _Traits>		__istream_type;
-      typedef istreambuf_iterator<_CharT>		__istreambuf_iter;
+      typedef istreambuf_iterator<_CharT, _Traits>	__istreambuf_iter;
       typedef num_get<_CharT, __istreambuf_iter>        __numget_type;
       typedef ctype<_CharT>           			__ctype_type;
 
@@ -78,10 +77,7 @@ namespace std
 
       virtual 
       ~basic_istream() 
-      {
-	_M_gcount = streamsize(0);
-	_M_fnumget = NULL; 
-      }
+      { _M_gcount = streamsize(0); }
 
       // 27.6.1.1.2 Prefix/suffix:
       class sentry;
@@ -289,7 +285,6 @@ namespace std
   template<typename _CharT, typename _Traits>
     basic_istream<_CharT, _Traits>& 
     ws(basic_istream<_CharT, _Traits>& __is);
-
 } // namespace std
 
 #ifdef _GLIBCPP_NO_TEMPLATE_EXPORT

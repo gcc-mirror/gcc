@@ -1,6 +1,6 @@
 // The template and inlines for the -*- C++ -*- complex number classes.
 
-// Copyright (C) 2000 Free Software Foundation, Inc.
+// Copyright (C) 2000, 2001 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -28,66 +28,9 @@
 // the GNU General Public License.
 
 #include <bits/std_complex.h>
-#include <bits/std_istream.h>
-#include <bits/std_ostream.h>
-#include <bits/std_sstream.h>
 
 namespace std
 {
-    
-  template<typename _Tp, typename _CharT, class _Traits>
-    basic_istream <_CharT, _Traits> &
-    operator>>(basic_istream<_CharT, _Traits>& __is, complex<_Tp>& __x)
-    {
-#if !defined(_GLIBCPP_BUGGY_FLOAT_COMPLEX) && !defined(_GLIBCPP_BUGGY_COMPLEX)
-      _Tp __re_x, __im_x;
-      _CharT __ch;
-      __is >> __ch;
-      if (__ch == '(') 
-	{
-	  __is >> __re_x >> __ch;
-	  if (__ch == ',') 
-	    {
-	      __is >> __im_x >> __ch;
-	      if (__ch == ')') 
-		{
-		  __x = complex<_Tp>(__re_x, __im_x);
-		  return __is;
-		}
-	    }
-	  else if (__ch == ')') 
-	    {
-	      __x = complex<_Tp>(__re_x, _Tp(0));
-	      return __is;
-	    }
-	}
-      else 
-	{
-	  __is.putback(__ch);
-	  __is >> __re_x;
-	  __x = complex<_Tp>(__re_x, _Tp(0));
-	  return __is;
-	}
-      __is.setstate(ios_base::failbit);
-#else
-      __x = complex<_Tp>(_Tp(0), _Tp(0));
-#endif
-      return __is;
-    }
-
-  template<typename _Tp, typename _CharT, class _Traits>
-    basic_ostream<_CharT, _Traits>&
-    operator<<(basic_ostream<_CharT, _Traits>& __os, const complex<_Tp>& __x)
-    {
-      basic_ostringstream<_CharT, _Traits> __s;
-      __s.flags(__os.flags());
-      __s.imbue(__os.getloc());
-      __s.precision (__os.precision());
-      __s << '(' << __x.real() << "," << __x.imag() << ')' << ends;
-      return __os << __s.str();
-    }
-
-
   template
     basic_istream<char, char_traits<char> >&
     operator>>(basic_istream<char, char_traits<char> >&, complex<float>&);
@@ -148,4 +91,6 @@ namespace std
                const complex<long double>&);
 #endif //_GLIBCPP_USE_WCHAR_T
 } // namespace std
+
+
 

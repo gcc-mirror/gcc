@@ -170,11 +170,30 @@ namespace std
   // has_facet
   template 
     bool
-    has_facet<numpunct<char> >(const locale &);
+    has_facet<numpunct<char> >(const locale&);
+  template 
+    bool
+    has_facet<num_put<char> >(const locale&);
+  template 
+    bool
+    has_facet<num_get<char> >(const locale&);
+  template 
+    bool
+    has_facet<ctype<char> >(const locale&);
+
 #ifdef _GLIBCPP_USE_WCHAR_T
   template 
     bool
-    has_facet<numpunct<wchar_t> >(const locale &);
+    has_facet<numpunct<wchar_t> >(const locale&);
+  template 
+    bool
+    has_facet<num_put<wchar_t> >(const locale&);
+  template 
+    bool
+    has_facet<num_get<wchar_t> >(const locale&);
+  template 
+    bool
+    has_facet<ctype<wchar_t> >(const locale&);
 #endif
 
   //

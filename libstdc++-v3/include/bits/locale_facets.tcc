@@ -964,7 +964,7 @@ namespace std
 #endif
 
   // Generic helper function
-  template<typename _CharT, typename _OutIter>
+  template<typename _CharT, typename _Traits, typename _OutIter>
     _OutIter
     __output_float(_OutIter __s, ios_base& __io, _CharT __fill,
                     const char* __sptr, size_t __slen)
@@ -974,10 +974,10 @@ namespace std
     }
 
   // Partial specialization for ostreambuf_iterator.
-  template<typename _CharT>
-    ostreambuf_iterator<_CharT>
-    __output_float(ostreambuf_iterator<_CharT> __s, ios_base& __io, 
-		    _CharT __fill, const char* __sptr, size_t __slen)
+  template<typename _CharT, typename _Traits>
+    ostreambuf_iterator<_CharT, _Traits>
+    __output_float(ostreambuf_iterator<_CharT, _Traits> __s, ios_base& __io, 
+		   _CharT __fill, const char* __sptr, size_t __slen)
     {
       size_t __padding = __io.width() > streamsize(__slen) ?
                          __io.width() -__slen : 0;
@@ -1037,7 +1037,7 @@ namespace std
       if (__prec > __max_prec)
         __prec = __max_prec;
       // The *2 provides for signs, exp, 'E', and pad.
-      char __sbuf[__max_prec*2];
+      char __sbuf[__max_prec * 2];
       size_t __slen;
       // Long enough for the max format spec.
       char __fbuf[16];
@@ -1061,7 +1061,7 @@ namespace std
       if (__prec > __max_prec)
         __prec = __max_prec;
       // The *2 provides for signs, exp, 'E', and pad.
-      char __sbuf[__max_prec*2];
+      char __sbuf[__max_prec * 2];
       size_t __slen;
       // Long enough for the max format spec.
       char __fbuf[16];
