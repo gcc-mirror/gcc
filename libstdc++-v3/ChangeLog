@@ -1,3 +1,13 @@
+2002-01-11  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/bits/locale_facets.tcc (money_get::do_get(string)):
+	Check for zero-length negative sign before adding it to output
+	string.
+	(money_get::do_get(long double)): Return beg.
+	* testsuite/22_locale/money_get_members_char.cc (test02): Add
+	iterator checks.
+	* testsuite/22_locale/money_get_members_wchar_t.cc: Same.
+	
 2002-01-10  David Seymour  <seymour_dj@yahoo.com>
 
 	libstdc++/5331

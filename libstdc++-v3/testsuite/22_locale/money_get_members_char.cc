@@ -1,6 +1,6 @@
 // 2001-09-12 Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2001 Free Software Foundation
+// Copyright (C) 2001-2002 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -172,7 +172,7 @@ void test01()
   VERIFY( err11 == ios_base::goodbit );
 }
 
-// test double/string versions
+// test double version
 void test02()
 {
   using namespace std;
@@ -249,9 +249,50 @@ void test02()
   VERIFY( err03 == ios_base::goodbit );
 }
 
+void test03()
+{
+  using namespace std;
+  bool test = true;
+
+  // Check money_get works with other iterators besides streambuf
+  // output iterators.
+  typedef string::const_iterator iter_type;
+  typedef money_get<char, iter_type> mon_get_type;
+  const ios_base::iostate goodbit = ios_base::goodbit;
+  const ios_base::iostate eofbit = ios_base::eofbit;
+  ios_base::iostate err = goodbit;
+  const locale loc_c = locale::classic();
+  const string str = "0.01Eleanor Roosevelt";
+
+  istringstream iss; 
+  iss.imbue(locale(loc_c, new mon_get_type));
+
+  // Iterator advanced, state, output.
+  const mon_get_type& mg = use_facet<mon_get_type>(iss.getloc());
+
+  // 01 string
+  string res1;
+  iter_type end1 = mg.get(str.begin(), str.end(), false, iss, err, res1);
+  string rem1(end1, str.end());
+  VERIFY( err == goodbit );
+  VERIFY( res1 == "1" );
+  VERIFY( rem1 == "Eleanor Roosevelt" );
+
+  // 02 long double
+  iss.clear();
+  err = goodbit;
+  long double res2;
+  iter_type end2 = mg.get(str.begin(), str.end(), false, iss, err, res2);
+  string rem2(end2, str.end());
+  VERIFY( err == goodbit );
+  VERIFY( res2 == 1 );
+  VERIFY( rem2 == "Eleanor Roosevelt" );
+}
+
 int main()
 {
   test01();
   test02();
+  test03();
   return 0;
 }
