@@ -6602,7 +6602,7 @@ make_field_assignment (x)
       return x;
     }
 
-  /* If SRC is (ior (ashift (const_int 1) POS DEST)), this is a set of a
+  /* If SRC is (ior (ashift (const_int 1) POS) DEST), this is a set of a
      one-bit field.  */
   else if (GET_CODE (src) == IOR && GET_CODE (XEXP (src, 0)) == ASHIFT
 	   && XEXP (XEXP (src, 0), 0) == const1_rtx
@@ -6616,14 +6616,14 @@ make_field_assignment (x)
     }
 
   /* The other case we handle is assignments into a constant-position
-     field.  They look like (ior (and DEST C1) OTHER).  If C1 represents
+     field.  They look like (ior/xor (and DEST C1) OTHER).  If C1 represents
      a mask that has all one bits except for a group of zero bits and
      OTHER is known to have zeros where C1 has ones, this is such an
      assignment.  Compute the position and length from C1.  Shift OTHER
      to the appropriate position, force it to the required mode, and
      make the extraction.  Check for the AND in both operands.  */
 
-  if (GET_CODE (src) != IOR)
+  if (GET_CODE (src) != IOR && GET_CODE (src) != XOR)
     return x;
 
   rhs = expand_compound_operation (XEXP (src, 0));
