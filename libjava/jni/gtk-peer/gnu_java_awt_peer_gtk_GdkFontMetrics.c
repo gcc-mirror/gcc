@@ -51,49 +51,74 @@ JNIEXPORT jintArray JNICALL Java_gnu_java_awt_peer_gtk_GdkFontMetrics_initState
 {
   jintArray array;
   jint *metrics;
-  const char *cfname;
-  char *xlfd;
-  GdkFont *font;
-  XFontStruct *xfont;
-
-  cfname = (*env)->GetStringUTFChars (env, fname, NULL);
-  xlfd = g_strdup_printf (cfname, (size * 10));
-  (*env)->ReleaseStringUTFChars (env, fname, cfname);
+  const char *font_name;
+  PangoFontDescription *font_desc;
+  PangoContext *context;
+  PangoFontMetrics *pango_metrics;
 
   array = (*env)->NewIntArray (env, NUM_METRICS);
+
   metrics = (*env)->GetIntArrayElements (env, array, NULL);
+  font_name = (*env)->GetStringUTFChars (env, fname, NULL);
 
   gdk_threads_enter ();
-  font = gdk_font_load (xlfd);
-  xfont = GDK_FONT_XFONT (font);
 
-  metrics[ASCENT]      = font->ascent;
-  metrics[MAX_ASCENT]  = xfont->max_bounds.ascent;
-  metrics[DESCENT]     = font->descent;
-  metrics[MAX_DESCENT] = xfont->max_bounds.descent;
-  metrics[MAX_ADVANCE] = xfont->max_bounds.width;
+  font_desc = pango_font_description_from_string (font_name);
+  pango_font_description_set_size (font_desc, size * PANGO_SCALE);
+
+  context = gdk_pango_context_get();
+  pango_context_set_font_description (context, font_desc);
+
+  pango_metrics = pango_context_get_metrics (context, font_desc, NULL);
+
+  metrics[ASCENT] =
+    pango_font_metrics_get_ascent (pango_metrics) / PANGO_SCALE;
+  metrics[MAX_ASCENT]  = metrics[ASCENT];
+  metrics[DESCENT] =
+    pango_font_metrics_get_descent (pango_metrics) / PANGO_SCALE;
+  metrics[MAX_DESCENT] = metrics[DESCENT];
+  metrics[MAX_ADVANCE] =
+    pango_font_metrics_get_approximate_char_width (pango_metrics) / PANGO_SCALE;
+
+  pango_font_metrics_unref (pango_metrics);
+
+  pango_font_description_free (font_desc);
+
   gdk_threads_leave ();
 
-  g_free (xlfd);
+  (*env)->ReleaseStringUTFChars (env, fname, font_name);
   (*env)->ReleaseIntArrayElements (env, array, metrics, 0);
-
-  NSA_SET_PTR (env, obj, font);
 
   return array;
 }
 
 JNIEXPORT jint JNICALL Java_gnu_java_awt_peer_gtk_GdkFontMetrics_stringWidth
-  (JNIEnv *env, jobject obj, jstring str)
+  (JNIEnv *env, jobject obj, jstring fname, jint size, jstring str)
 {
-  GdkFont *font;
+  PangoFontDescription *font_desc;
+  PangoContext *context;
+  PangoLayout *layout;
+  int width = 0;
   const char *cstr;
-  jint width;
+  const char *font_name;
 
-  font = (GdkFont *) NSA_GET_PTR (env, obj);
   cstr = (*env)->GetStringUTFChars (env, str, NULL);
 
   gdk_threads_enter ();
-  width = gdk_string_width (font, cstr);
+
+  font_desc = pango_font_description_from_string (font_name);
+  pango_font_description_set_size (font_desc, size * PANGO_SCALE);
+
+  context = gdk_pango_context_get();
+  pango_context_set_font_description (context, font_desc);
+
+  layout = pango_layout_new (context);
+
+  pango_layout_set_text (layout, cstr, -1);
+  pango_layout_get_pixel_size (layout, &width, NULL);
+
+  pango_font_description_free (font_desc);
+
   gdk_threads_leave ();
 
   (*env)->ReleaseStringUTFChars (env, str, cstr);
