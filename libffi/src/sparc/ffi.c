@@ -1,7 +1,7 @@
 /* -----------------------------------------------------------------------
-   ffi.c - Copyright (c) 1996, 2003 Red Hat, Inc.
+   ffi.c - Copyright (c) 1996, 2003, 2004 Red Hat, Inc.
    
-   Sparc Foreign Function Interface 
+   SPARC Foreign Function Interface 
 
    Permission is hereby granted, free of charge, to any person obtaining
    a copy of this software and associated documentation files (the
@@ -28,11 +28,6 @@
 
 #include <stdlib.h>
 
-#ifdef SPARC64
-extern void ffi_closure_v9(void);
-#else
-extern void ffi_closure_v8(void);
-#endif
 
 /* ffi_prep_args is called by the assembly routine once stack space
    has been allocated for the function's arguments */
@@ -154,6 +149,7 @@ int ffi_prep_args_v9(char *stack, extended_cif *ecif)
       ecif->cif->rtype->size > 32)
     {
       *(unsigned long long *) argp = (unsigned long)ecif->rvalue;
+      argp += sizeof(long long);
       tmp = 1;
     }
 
@@ -326,7 +322,7 @@ ffi_status ffi_prep_cif_machdep(ffi_cif *cif)
   return FFI_OK;
 }
 
-int ffi_V9_return_struct(ffi_type *arg, int off, char *ret, char *intg, char *flt)
+int ffi_v9_layout_struct(ffi_type *arg, int off, char *ret, char *intg, char *flt)
 {
   ffi_type **ptr = &arg->elements[0];
 
@@ -338,18 +334,19 @@ int ffi_V9_return_struct(ffi_type *arg, int off, char *ret, char *intg, char *fl
       switch ((*ptr)->type)
 	{
 	case FFI_TYPE_STRUCT:
-	  off = ffi_V9_return_struct(*ptr, off, ret, intg, flt);
+	  off = ffi_v9_layout_struct(*ptr, off, ret, intg, flt);
+	  off = ALIGN(off, FFI_SIZEOF_ARG);
 	  break;
 	case FFI_TYPE_FLOAT:
 	case FFI_TYPE_DOUBLE:
 #if FFI_TYPE_LONGDOUBLE != FFI_TYPE_DOUBLE
 	case FFI_TYPE_LONGDOUBLE:
 #endif
-	  memcpy(ret + off, flt + off, (*ptr)->size);
+	  memmove(ret + off, flt + off, (*ptr)->size);
 	  off += (*ptr)->size;
 	  break;
 	default:
-	  memcpy(ret + off, intg + off, (*ptr)->size);
+	  memmove(ret + off, intg + off, (*ptr)->size);
 	  off += (*ptr)->size;
 	  break;
 	}
@@ -358,10 +355,14 @@ int ffi_V9_return_struct(ffi_type *arg, int off, char *ret, char *intg, char *fl
   return off;
 }
 
-extern int ffi_call_V8(void *, extended_cif *, unsigned, 
+
+#ifdef SPARC64
+extern int ffi_call_v9(void *, extended_cif *, unsigned, 
 		       unsigned, unsigned *, void (*fn)());
-extern int ffi_call_V9(void *, extended_cif *, unsigned, 
+#else
+extern int ffi_call_v8(void *, extended_cif *, unsigned, 
 		       unsigned, unsigned *, void (*fn)());
+#endif
 
 void ffi_call(ffi_cif *cif, void (*fn)(), void *rvalue, void **avalue)
 {
@@ -394,16 +395,16 @@ void ffi_call(ffi_cif *cif, void (*fn)(), void *rvalue, void **avalue)
       /* We don't yet support calling 32bit code from 64bit */
       FFI_ASSERT(0);
 #else
-      ffi_call_V8(ffi_prep_args_v8, &ecif, cif->bytes, 
+      ffi_call_v8(ffi_prep_args_v8, &ecif, cif->bytes, 
 		  cif->flags, rvalue, fn);
 #endif
       break;
     case FFI_V9:
 #ifdef SPARC64
-      ffi_call_V9(ffi_prep_args_v9, &ecif, cif->bytes,
+      ffi_call_v9(ffi_prep_args_v9, &ecif, cif->bytes,
 		  cif->flags, rval, fn);
       if (rvalue && rval && cif->rtype->type == FFI_TYPE_STRUCT)
-	ffi_V9_return_struct(cif->rtype, 0, (char *)rvalue, (char *)rval, ((char *)rval)+32);
+	ffi_v9_layout_struct(cif->rtype, 0, (char *)rvalue, (char *)rval, ((char *)rval)+32);
 #else
       /* And vice versa */
       FFI_ASSERT(0);
@@ -416,6 +417,13 @@ void ffi_call(ffi_cif *cif, void (*fn)(), void *rvalue, void **avalue)
 
 }
 
+
+#ifdef SPARC64
+extern void ffi_closure_v9(void);
+#else
+extern void ffi_closure_v8(void);
+#endif
+
 ffi_status
 ffi_prep_closure (ffi_closure* closure,
 		  ffi_cif* cif,
@@ -424,8 +432,6 @@ ffi_prep_closure (ffi_closure* closure,
 {
   unsigned int *tramp = (unsigned int *) &closure->tramp[0];
   unsigned long fn;
-  unsigned long ctx = (unsigned long) closure;
-
 #ifdef SPARC64
   /* Trampoline address is equal to the closure address.  We take advantage
      of that to reduce the trampoline size by 8 bytes. */
@@ -437,6 +443,7 @@ ffi_prep_closure (ffi_closure* closure,
   tramp[3] = 0x01000000;	/* nop			*/
   *((unsigned long *) &tramp[4]) = fn;
 #else
+  unsigned long ctx = (unsigned long) closure;
   FFI_ASSERT (cif->abi == FFI_V8);
   fn = (unsigned long) ffi_closure_v8;
   tramp[0] = 0x03000000 | fn >> 10;	/* sethi %hi(fn), %g1	*/
@@ -462,49 +469,122 @@ ffi_prep_closure (ffi_closure* closure,
 }
 
 int
-ffi_closure_sparc_inner(ffi_closure *closure,
+ffi_closure_sparc_inner_v8(ffi_closure *closure,
+  void *rvalue, unsigned long *gpr)
+{
+  ffi_cif *cif;
+  ffi_type **arg_types;
+  void **avalue;
+  int i, argn;
+
+  cif = closure->cif;
+  arg_types = cif->arg_types;
+  avalue = alloca(cif->nargs * sizeof(void *));
+
+  /* Copy the caller's structure return address so that the closure
+     returns the data directly to the caller.  */
+  if (cif->flags == FFI_TYPE_STRUCT
+#if FFI_TYPE_LONGDOUBLE != FFI_TYPE_DOUBLE  
+      || cif->flags == FFI_TYPE_LONGDOUBLE
+#endif
+     )
+    rvalue = (void *) gpr[0];
+
+  /* Always skip the structure return address.  */
+  argn = 1;
+
+  /* Grab the addresses of the arguments from the stack frame.  */
+  for (i = 0; i < cif->nargs; i++)
+    {
+      if (arg_types[i]->type == FFI_TYPE_STRUCT
+#if FFI_TYPE_LONGDOUBLE != FFI_TYPE_DOUBLE
+	  || arg_types[i]->type == FFI_TYPE_LONGDOUBLE
+#endif
+         )
+	{
+	  /* Straight copy of invisible reference.  */
+	  avalue[i] = (void *)gpr[argn++];
+	}
+      else
+	{
+	  /* Always right-justify.  */
+	  argn += ALIGN(arg_types[i]->size, FFI_SIZEOF_ARG) / FFI_SIZEOF_ARG;
+	  avalue[i] = ((char *) &gpr[argn]) - arg_types[i]->size;
+	}
+    }
+
+  /* Invoke the closure.  */
+  (closure->fun) (cif, rvalue, avalue, closure->user_data);
+
+  /* Tell ffi_closure_sparc how to perform return type promotions.  */
+  return cif->rtype->type;
+}
+
+int
+ffi_closure_sparc_inner_v9(ffi_closure *closure,
   void *rvalue, unsigned long *gpr, double *fpr)
 {
   ffi_cif *cif;
-  void **avalue;
   ffi_type **arg_types;
-  int i, avn, argn;
+  void **avalue;
+  int i, argn, fp_slot_max;
 
   cif = closure->cif;
+  arg_types = cif->arg_types;
   avalue = alloca(cif->nargs * sizeof(void *));
 
-  argn = 0;
-
-  /* Copy the caller's structure return address to that the closure
+  /* Copy the caller's structure return address so that the closure
      returns the data directly to the caller.  */
-  if (cif->flags == FFI_TYPE_STRUCT)
+  if (cif->flags == FFI_TYPE_VOID
+      && cif->rtype->type == FFI_TYPE_STRUCT)
     {
       rvalue = (void *) gpr[0];
+      /* Skip the structure return address.  */
       argn = 1;
     }
+  else
+    argn = 0;
 
-  i = 0;
-  avn = cif->nargs;
-  arg_types = cif->arg_types;
-  
+  fp_slot_max = 16 - argn;
+
   /* Grab the addresses of the arguments from the stack frame.  */
-  while (i < avn)
+  for (i = 0; i < cif->nargs; i++)
     {
-      /* Assume big-endian.  FIXME */
-      argn += ALIGN(arg_types[i]->size, FFI_SIZEOF_ARG) / FFI_SIZEOF_ARG;
-
-#ifdef SPARC64
-      if (i < 16 && (arg_types[i]->type == FFI_TYPE_FLOAT
-		 || arg_types[i]->type == FFI_TYPE_DOUBLE
-#if FFI_TYPE_LONGDOUBLE != FFI_TYPE_DOUBLE
-		 || arg_types[i]->type == FFI_TYPE_LONGDOUBLE
-#endif
-		))
-        avalue[i] = ((char *) &fpr[argn]) - arg_types[i]->size;
+      if (arg_types[i]->type == FFI_TYPE_STRUCT)
+	{
+	  if (arg_types[i]->size > 16)
+	    {
+	      /* Straight copy of invisible reference.  */
+	      avalue[i] = (void *)gpr[argn++];
+	    }
+	  else
+	    {
+	      /* Left-justify.  */
+	      ffi_v9_layout_struct(arg_types[i],
+				   0,
+				   (char *) &gpr[argn],
+				   (char *) &gpr[argn],
+				   (char *) &fpr[argn]);
+	      avalue[i] = &gpr[argn];
+	      argn += ALIGN(arg_types[i]->size, FFI_SIZEOF_ARG) / FFI_SIZEOF_ARG;
+	    }
+	}
       else
+	{
+	  /* Right-justify.  */
+	  argn += ALIGN(arg_types[i]->size, FFI_SIZEOF_ARG) / FFI_SIZEOF_ARG;
+
+	  if (i < fp_slot_max
+	      && (arg_types[i]->type == FFI_TYPE_FLOAT
+		  || arg_types[i]->type == FFI_TYPE_DOUBLE
+#if FFI_TYPE_LONGDOUBLE != FFI_TYPE_DOUBLE
+		  || arg_types[i]->type == FFI_TYPE_LONGDOUBLE
 #endif
-        avalue[i] = ((char *) &gpr[argn]) - arg_types[i]->size;
-      i++;
+		  ))
+	    avalue[i] = ((char *) &fpr[argn]) - arg_types[i]->size;
+	  else
+	    avalue[i] = ((char *) &gpr[argn]) - arg_types[i]->size;
+	}
     }
 
   /* Invoke the closure.  */

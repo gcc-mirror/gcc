@@ -1,7 +1,7 @@
 /* -----------------------------------------------------------------------
-   v8.S - Copyright (c) 1996, 1997, 2003 Red Hat, Inc.
+   v8.S - Copyright (c) 1996, 1997, 2003, 2004 Red Hat, Inc.
    
-   Sparc Foreign Function Interface 
+   SPARC Foreign Function Interface 
 
    Permission is hereby granted, free of charge, to any person obtaining
    a copy of this software and associated documentation files (the
@@ -32,11 +32,11 @@
 
 .text
         .align 8
-.globl ffi_call_V8
-.globl _ffi_call_V8
+.globl ffi_call_v8
+.globl _ffi_call_v8
 
-ffi_call_V8:
-_ffi_call_V8:
+ffi_call_v8:
+_ffi_call_v8:
 .LLFB1:
 	save	%sp, -STACKFRAME, %sp
 .LLCFI0:
@@ -92,10 +92,11 @@ longlong:
 	restore
 .LLFE1:
 
-.ffi_call_V8_end:
-	.size	ffi_call_V8,.ffi_call_V8_end-ffi_call_V8
+.ffi_call_v8_end:
+	.size	ffi_call_v8,.ffi_call_v8_end-ffi_call_v8
 
 
+#undef STACKFRAME
 #define	STACKFRAME	104	/* 16*4 register window +
 				   1*4 struct return +	
 				   6*4 args backing store +
@@ -128,13 +129,16 @@ ffi_closure_v8:
 	! Call ffi_closure_sparc_inner to do the bulk of the work.
 	mov	%g2, %o0
 	add	%fp, -8, %o1
-	add	%fp,  68, %o2
-	call	ffi_closure_sparc_inner
-	 mov	0, %o3
+	call	ffi_closure_sparc_inner_v8
+	 add	%fp,  64, %o2
 
 	! Load up the return value in the proper type.
+	! See ffi_prep_cif_machdep for the list of cases.
 	cmp	%o0, FFI_TYPE_VOID
 	be	done1
+
+	cmp	%o0, FFI_TYPE_INT
+	be	integer
 
 	cmp	%o0, FFI_TYPE_FLOAT
 	be,a	done1
@@ -144,19 +148,26 @@ ffi_closure_v8:
 	be,a	done1
 	 ldd	[%fp-8], %f0
 
-	cmp	%o0, FFI_TYPE_SINT64
-	be,a	integer
-	 ld	[%fp-4], %i1
+#if FFI_TYPE_LONGDOUBLE != FFI_TYPE_DOUBLE
+	cmp	%o0, FFI_TYPE_LONGDOUBLE
+	be	done2
+#endif
 
-	cmp	%o0, FFI_TYPE_UINT64
-	be,a	integer
-	 ld	[%fp-4], %i1
+	cmp	%o0, FFI_TYPE_STRUCT
+	be	done2
+
+	! FFI_TYPE_SINT64
+	ld	[%fp-4], %i1
 
 integer:
 	ld	[%fp-8], %i0
 
 done1:
-	ret
+	jmp	%i7+8
+	 restore
+done2:
+	! Skip 'unimp'.
+	jmp	%i7+12
 	 restore
 .LLFE2:
 
