@@ -62,6 +62,7 @@ int div_and_round_double	PROTO((enum tree_code, int, HOST_WIDE_INT,
 				       HOST_WIDE_INT *));
 static int split_tree		PROTO((tree, enum tree_code, tree *,
 				       tree *, int *));
+static tree int_const_binop	PROTO((enum tree_code, tree, tree, int, int));
 static tree const_binop		PROTO((enum tree_code, tree, tree, int));
 static tree fold_convert	PROTO((tree, tree));
 static enum tree_code invert_tree_comparison PROTO((enum tree_code));
@@ -1051,6 +1052,197 @@ split_tree (in, code, varp, conp, varsignp)
   return 0;
 }
 
+/* Combine two integer constants ARG1 and ARG2 under operation CODE
+   to produce a new constant.
+
+   If NOTRUNC is nonzero, do not truncate the result to fit the data type.
+   If FORSIZE is nonzero, compute overflow for unsigned types.  */
+
+static tree
+int_const_binop (code, arg1, arg2, notrunc, forsize)
+     enum tree_code code;
+     register tree arg1, arg2;
+     int notrunc, forsize;
+{
+  HOST_WIDE_INT int1l, int1h, int2l, int2h;
+  HOST_WIDE_INT low, hi;
+  HOST_WIDE_INT garbagel, garbageh;
+  register tree t;
+  int uns = TREE_UNSIGNED (TREE_TYPE (arg1));
+  int overflow = 0;
+  int no_overflow = 0;
+
+  int1l = TREE_INT_CST_LOW (arg1);
+  int1h = TREE_INT_CST_HIGH (arg1);
+  int2l = TREE_INT_CST_LOW (arg2);
+  int2h = TREE_INT_CST_HIGH (arg2);
+
+  switch (code)
+    {
+    case BIT_IOR_EXPR:
+      low = int1l | int2l, hi = int1h | int2h;
+      break;
+
+    case BIT_XOR_EXPR:
+      low = int1l ^ int2l, hi = int1h ^ int2h;
+      break;
+
+    case BIT_AND_EXPR:
+      low = int1l & int2l, hi = int1h & int2h;
+      break;
+
+    case BIT_ANDTC_EXPR:
+      low = int1l & ~int2l, hi = int1h & ~int2h;
+      break;
+
+    case RSHIFT_EXPR:
+      int2l = - int2l;
+    case LSHIFT_EXPR:
+      /* It's unclear from the C standard whether shifts can overflow.
+	 The following code ignores overflow; perhaps a C standard
+	 interpretation ruling is needed.  */
+      lshift_double (int1l, int1h, int2l,
+		     TYPE_PRECISION (TREE_TYPE (arg1)),
+		     &low, &hi,
+		     !uns);
+      no_overflow = 1;
+      break;
+
+    case RROTATE_EXPR:
+      int2l = - int2l;
+    case LROTATE_EXPR:
+      lrotate_double (int1l, int1h, int2l,
+		      TYPE_PRECISION (TREE_TYPE (arg1)),
+		      &low, &hi);
+      break;
+
+    case PLUS_EXPR:
+      overflow = add_double (int1l, int1h, int2l, int2h, &low, &hi);
+      break;
+
+    case MINUS_EXPR:
+      neg_double (int2l, int2h, &low, &hi);
+      add_double (int1l, int1h, low, hi, &low, &hi);
+      overflow = overflow_sum_sign (hi, int2h, int1h);
+      break;
+
+    case MULT_EXPR:
+      overflow = mul_double (int1l, int1h, int2l, int2h, &low, &hi);
+      break;
+
+    case TRUNC_DIV_EXPR:
+    case FLOOR_DIV_EXPR: case CEIL_DIV_EXPR:
+    case EXACT_DIV_EXPR:
+      /* This is a shortcut for a common special case.  */
+      if (int2h == 0 && int2l > 0
+	  && ! TREE_CONSTANT_OVERFLOW (arg1)
+	  && ! TREE_CONSTANT_OVERFLOW (arg2)
+	  && int1h == 0 && int1l >= 0)
+	{
+	  if (code == CEIL_DIV_EXPR)
+	    int1l += int2l - 1;
+	  low = int1l / int2l, hi = 0;
+	  break;
+	}
+
+      /* ... fall through ... */
+
+    case ROUND_DIV_EXPR: 
+      if (int2h == 0 && int2l == 1)
+	{
+	  low = int1l, hi = int1h;
+	  break;
+	}
+      if (int1l == int2l && int1h == int2h
+	  && ! (int1l == 0 && int1h == 0))
+	{
+	  low = 1, hi = 0;
+	  break;
+	}
+      overflow = div_and_round_double (code, uns,
+				       int1l, int1h, int2l, int2h,
+				       &low, &hi, &garbagel, &garbageh);
+      break;
+
+    case TRUNC_MOD_EXPR:
+    case FLOOR_MOD_EXPR: case CEIL_MOD_EXPR:
+      /* This is a shortcut for a common special case.  */
+      if (int2h == 0 && int2l > 0
+	  && ! TREE_CONSTANT_OVERFLOW (arg1)
+	  && ! TREE_CONSTANT_OVERFLOW (arg2)
+	  && int1h == 0 && int1l >= 0)
+	{
+	  if (code == CEIL_MOD_EXPR)
+	    int1l += int2l - 1;
+	  low = int1l % int2l, hi = 0;
+	  break;
+	}
+
+      /* ... fall through ... */
+
+    case ROUND_MOD_EXPR: 
+      overflow = div_and_round_double (code, uns,
+				       int1l, int1h, int2l, int2h,
+				       &garbagel, &garbageh, &low, &hi);
+      break;
+
+    case MIN_EXPR:
+    case MAX_EXPR:
+      if (uns)
+	{
+	  low = (((unsigned HOST_WIDE_INT) int1h
+		  < (unsigned HOST_WIDE_INT) int2h)
+		 || (((unsigned HOST_WIDE_INT) int1h
+		      == (unsigned HOST_WIDE_INT) int2h)
+		     && ((unsigned HOST_WIDE_INT) int1l
+			 < (unsigned HOST_WIDE_INT) int2l)));
+	}
+      else
+	{
+	  low = ((int1h < int2h)
+		 || ((int1h == int2h)
+		     && ((unsigned HOST_WIDE_INT) int1l
+			 < (unsigned HOST_WIDE_INT) int2l)));
+	}
+      if (low == (code == MIN_EXPR))
+	low = int1l, hi = int1h;
+      else
+	low = int2l, hi = int2h;
+      break;
+
+    default:
+      abort ();
+    }
+
+  if (TREE_TYPE (arg1) == sizetype && hi == 0
+      && low >= 0 && low <= TREE_INT_CST_LOW (TYPE_MAX_VALUE (sizetype))
+      && ! overflow
+      && ! TREE_OVERFLOW (arg1) && ! TREE_OVERFLOW (arg2))
+    t = size_int (low);
+  else
+    {
+      t = build_int_2 (low, hi);
+      TREE_TYPE (t) = TREE_TYPE (arg1);
+    }
+
+  TREE_OVERFLOW (t)
+    = ((notrunc ? (!uns || forsize) && overflow
+	: force_fit_type (t, (!uns || forsize) && overflow) && ! no_overflow)
+       | TREE_OVERFLOW (arg1)
+       | TREE_OVERFLOW (arg2));
+  /* If we're doing a size calculation, unsigned arithmetic does overflow.
+     So check if force_fit_type truncated the value.  */
+  if (forsize
+      && ! TREE_OVERFLOW (t)
+      && (TREE_INT_CST_HIGH (t) != hi
+	  || TREE_INT_CST_LOW (t) != low))
+    TREE_OVERFLOW (t) = 1;
+  TREE_CONSTANT_OVERFLOW (t) = (TREE_OVERFLOW (t)
+				| TREE_CONSTANT_OVERFLOW (arg1)
+				| TREE_CONSTANT_OVERFLOW (arg2));
+  return t;
+}
+
 /* Combine two constants ARG1 and ARG2 under operation CODE
    to produce a new constant.
    We assume ARG1 and ARG2 have the same data type,
@@ -1067,176 +1259,8 @@ const_binop (code, arg1, arg2, notrunc)
   STRIP_NOPS (arg1); STRIP_NOPS (arg2);
 
   if (TREE_CODE (arg1) == INTEGER_CST)
-    {
-      register HOST_WIDE_INT int1l = TREE_INT_CST_LOW (arg1);
-      register HOST_WIDE_INT int1h = TREE_INT_CST_HIGH (arg1);
-      HOST_WIDE_INT int2l = TREE_INT_CST_LOW (arg2);
-      HOST_WIDE_INT int2h = TREE_INT_CST_HIGH (arg2);
-      HOST_WIDE_INT low, hi;
-      HOST_WIDE_INT garbagel, garbageh;
-      register tree t;
-      int uns = TREE_UNSIGNED (TREE_TYPE (arg1));
-      int overflow = 0;
-      int no_overflow = 0;
+    return int_const_binop (code, arg1, arg2, notrunc, 0);
 
-      switch (code)
-	{
-	case BIT_IOR_EXPR:
-	  low = int1l | int2l, hi = int1h | int2h;
-	  break;
-
-	case BIT_XOR_EXPR:
-	  low = int1l ^ int2l, hi = int1h ^ int2h;
-	  break;
-
-	case BIT_AND_EXPR:
-	  low = int1l & int2l, hi = int1h & int2h;
-	  break;
-
-	case BIT_ANDTC_EXPR:
-	  low = int1l & ~int2l, hi = int1h & ~int2h;
-	  break;
-
-	case RSHIFT_EXPR:
-	  int2l = - int2l;
-	case LSHIFT_EXPR:
-	  /* It's unclear from the C standard whether shifts can overflow.
-	     The following code ignores overflow; perhaps a C standard
-	     interpretation ruling is needed.  */
-	  lshift_double (int1l, int1h, int2l,
-			 TYPE_PRECISION (TREE_TYPE (arg1)),
-			 &low, &hi,
-			 !uns);
-	  no_overflow = 1;
-	  break;
-
-	case RROTATE_EXPR:
-	  int2l = - int2l;
-	case LROTATE_EXPR:
-	  lrotate_double (int1l, int1h, int2l,
-			  TYPE_PRECISION (TREE_TYPE (arg1)),
-			  &low, &hi);
-	  break;
-
-	case PLUS_EXPR:
-	  overflow = add_double (int1l, int1h, int2l, int2h, &low, &hi);
-	  break;
-
-	case MINUS_EXPR:
-	  neg_double (int2l, int2h, &low, &hi);
-	  add_double (int1l, int1h, low, hi, &low, &hi);
-	  overflow = overflow_sum_sign (hi, int2h, int1h);
-	  break;
-
-	case MULT_EXPR:
-	  overflow = mul_double (int1l, int1h, int2l, int2h, &low, &hi);
-	  break;
-
-	case TRUNC_DIV_EXPR:
-	case FLOOR_DIV_EXPR: case CEIL_DIV_EXPR:
-	case EXACT_DIV_EXPR:
-	  /* This is a shortcut for a common special case.  */
-	  if (int2h == 0 && int2l > 0
-	      && ! TREE_CONSTANT_OVERFLOW (arg1)
-	      && ! TREE_CONSTANT_OVERFLOW (arg2)
-	      && int1h == 0 && int1l >= 0)
-	    {
-	      if (code == CEIL_DIV_EXPR)
-		int1l += int2l - 1;
-	      low = int1l / int2l, hi = 0;
-	      break;
-	    }
-
-	  /* ... fall through ... */
-
-	case ROUND_DIV_EXPR: 
-	  if (int2h == 0 && int2l == 1)
-	    {
-	      low = int1l, hi = int1h;
-	      break;
-	    }
-	  if (int1l == int2l && int1h == int2h
-	      && ! (int1l == 0 && int1h == 0))
-	    {
-	      low = 1, hi = 0;
-	      break;
-	    }
-	  overflow = div_and_round_double (code, uns,
-					   int1l, int1h, int2l, int2h,
-					   &low, &hi, &garbagel, &garbageh);
-	  break;
-
-	case TRUNC_MOD_EXPR:
-	case FLOOR_MOD_EXPR: case CEIL_MOD_EXPR:
-	  /* This is a shortcut for a common special case.  */
-	  if (int2h == 0 && int2l > 0
-	      && ! TREE_CONSTANT_OVERFLOW (arg1)
-	      && ! TREE_CONSTANT_OVERFLOW (arg2)
-	      && int1h == 0 && int1l >= 0)
-	    {
-	      if (code == CEIL_MOD_EXPR)
-		int1l += int2l - 1;
-	      low = int1l % int2l, hi = 0;
-	      break;
-	    }
-
-	  /* ... fall through ... */
-
-	case ROUND_MOD_EXPR: 
-	  overflow = div_and_round_double (code, uns,
-					   int1l, int1h, int2l, int2h,
-					   &garbagel, &garbageh, &low, &hi);
-	  break;
-
-	case MIN_EXPR:
-	case MAX_EXPR:
-	  if (uns)
-	    {
-	      low = (((unsigned HOST_WIDE_INT) int1h
-		      < (unsigned HOST_WIDE_INT) int2h)
-		     || (((unsigned HOST_WIDE_INT) int1h
-			  == (unsigned HOST_WIDE_INT) int2h)
-			 && ((unsigned HOST_WIDE_INT) int1l
-			     < (unsigned HOST_WIDE_INT) int2l)));
-	    }
-	  else
-	    {
-	      low = ((int1h < int2h)
-		     || ((int1h == int2h)
-			 && ((unsigned HOST_WIDE_INT) int1l
-			     < (unsigned HOST_WIDE_INT) int2l)));
-	    }
-	  if (low == (code == MIN_EXPR))
-	    low = int1l, hi = int1h;
-	  else
-	    low = int2l, hi = int2h;
-	  break;
-
-	default:
-	  abort ();
-	}
-    got_it:
-      if (TREE_TYPE (arg1) == sizetype && hi == 0
-	  && low >= 0 && low <= TREE_INT_CST_LOW (TYPE_MAX_VALUE (sizetype))
-	  && ! overflow
-	  && ! TREE_OVERFLOW (arg1) && ! TREE_OVERFLOW (arg2))
-	t = size_int (low);
-      else
-	{
-	  t = build_int_2 (low, hi);
-	  TREE_TYPE (t) = TREE_TYPE (arg1);
-	}
-
-      TREE_OVERFLOW (t)
-	= ((notrunc ? !uns && overflow
-	    : force_fit_type (t, overflow && !uns) && ! no_overflow)
-	   | TREE_OVERFLOW (arg1)
-	   | TREE_OVERFLOW (arg2));
-      TREE_CONSTANT_OVERFLOW (t) = (TREE_OVERFLOW (t)
-				    | TREE_CONSTANT_OVERFLOW (arg1)
-				    | TREE_CONSTANT_OVERFLOW (arg2));
-      return t;
-    }
 #if ! defined (REAL_IS_NOT_DOUBLE) || defined (REAL_ARITHMETIC)
   if (TREE_CODE (arg1) == REAL_CST)
     {
@@ -1450,7 +1474,7 @@ size_binop (code, arg0, arg1)
 	return arg1;
 
       /* Handle general case of two integer constants.  */
-      return const_binop (code, arg0, arg1, 0);
+      return int_const_binop (code, arg0, arg1, 0, 1);
     }
 
   if (arg0 == error_mark_node || arg1 == error_mark_node)

@@ -2,6 +2,11 @@ Wed Aug 27 01:56:18 1997  Doug Evans  <dje@seba.cygnus.com>
 
 	* loop.c (combine_movables): Earlier insns don't match later ones.
 
+	* c-decl.c (grokdeclarator): If array index or size calculations
+	overflow, issue an error.
+	* fold-const.c (int_const_binop): New static function.
+	(const_binop, size_binop): Call it.
+
 Wed Aug 27 01:24:25 1997  H.J. Lu   (hjl@gnu.ai.mit.edu)
 
 	* config/linux.h (CC1_SPEC): Define it only if not defined.
