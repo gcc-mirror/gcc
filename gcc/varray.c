@@ -33,7 +33,7 @@
 
 #ifdef GATHER_STATISTICS
 
-/* Store infromation about each particular varray.  */
+/* Store information about each particular varray.  */
 struct varray_descriptor
 {
   const char *name;

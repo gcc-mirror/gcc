@@ -410,7 +410,7 @@ reload_cse_simplify_operands (rtx insn, rtx testreg)
 	{
 	  rtx set = single_set (insn);
 
-	  /* We might have multiple sets, some of which do implict
+	  /* We might have multiple sets, some of which do implicit
 	     extension.  Punt on this for now.  */
 	  if (! set)
 	    continue;

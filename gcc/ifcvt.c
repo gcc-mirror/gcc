@@ -1964,7 +1964,7 @@ noce_process_if_block (struct ce_if_block * ce_info)
     }
 
   /* Disallow the "if (...) x = a;" form (with an implicit "else x = x;")
-     for most optimizations if writing to x may trap, i.e. its a memory
+     for most optimizations if writing to x may trap, i.e. it's a memory
      other than a static var or a stack slot.  */
   if (! set_b
       && GET_CODE (orig_x) == MEM

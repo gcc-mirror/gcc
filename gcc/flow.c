@@ -468,7 +468,7 @@ life_analysis (rtx f, FILE *file, int flags)
 
   free_basic_block_vars (1);
 
-  /* Removing dead insns should've made jumptables really dead.  */
+  /* Removing dead insns should have made jumptables really dead.  */
   delete_dead_jumptables ();
 }
 

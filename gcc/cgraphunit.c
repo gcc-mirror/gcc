@@ -844,7 +844,7 @@ cgraph_remove_unreachable_nodes (void)
   /* Remove unreachable nodes.  Extern inline functions need special care;
      Unreachable extern inline functions shall be removed.
      Reachable extern inline functions we never inlined shall get their bodies
-     elliminated
+     eliminated.
      Reachable extern inline functions we sometimes inlined will be turned into
      unanalyzed nodes so they look like for true extern functions to the rest
      of code.  */

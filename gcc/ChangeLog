@@ -1,5 +1,20 @@
 2004-01-24  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* c-common.h: Fix comment typos.
+	* c-decl.c: Likewise.
+	* cgraphunit.c: Likewise.
+	* combine.c: Likewise.
+	* et-forest.c: Likewise.
+	* flow.c: Likewise.
+	* function.c: Likewise.
+	* ifcvt.c: Likewise.
+	* integrate.c: Likewise.
+	* jump.c: Likewise.
+	* postreload.c: Likewise.
+	* varray.c: Likewise.
+
+2004-01-24  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* doc/frontends.texi: Update copyright.
 	* doc/gcov.texi: Likewise.
 	* doc/gty.texi: Likewise.

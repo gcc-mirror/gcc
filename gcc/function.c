@@ -269,7 +269,7 @@ static tree blocks_nreverse (tree);
 static int all_blocks (tree, tree *);
 static tree *get_block_vector (tree, int *);
 extern tree debug_find_var_in_block_tree (tree, tree);
-/* We always define `record_insns' even if its not used so that we
+/* We always define `record_insns' even if it's not used so that we
    can always export `prologue_epilogue_contains'.  */
 static void record_insns (rtx, varray_type *) ATTRIBUTE_UNUSED;
 static int contains (rtx, varray_type);
