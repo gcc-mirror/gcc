@@ -1,3 +1,15 @@
+2002-02-13  Stan Shebs  <shebs@apple.com>
+
+        * c-typeck.c (digest_init): Handle vectors.
+        (really_start_incremental_init): Same.
+        (pop_init_level): Same.
+        (process_init_element): Same.
+
+        * varasm.c (output_constant): Same.
+
+        * expr.c (clear_storage): Same.
+        (store_constructor): Same.
+
 2002-02-12  Eric Christopher  <echristo@redhat.com>
 
 	* explow.c (hard_function_value): Add comment explaining

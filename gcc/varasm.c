@@ -4519,6 +4519,7 @@ output_constant (exp, size, align)
       break;
 
     case ARRAY_TYPE:
+    case VECTOR_TYPE:
       if (TREE_CODE (exp) == CONSTRUCTOR)
 	{
 	  output_constructor (exp, size, align);

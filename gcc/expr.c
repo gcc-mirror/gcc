@@ -2562,7 +2562,8 @@ clear_storage (object, size)
 
   /* If OBJECT is not BLKmode and SIZE is the same size as its mode,
      just move a zero.  Otherwise, do this a piece at a time.  */
-  if (GET_MODE (object) != BLKmode
+  if ((GET_MODE (object) != BLKmode
+       && !VECTOR_MODE_P (GET_MODE (object)))
       && GET_CODE (size) == CONST_INT
       && GET_MODE_SIZE (GET_MODE (object)) == (unsigned int) INTVAL (size))
     emit_move_insn (object, CONST0_RTX (GET_MODE (object)));
@@ -4528,19 +4529,33 @@ store_constructor (exp, target, cleared, size)
 				   get_alias_set (TREE_TYPE (field)));
 	}
     }
-  else if (TREE_CODE (type) == ARRAY_TYPE)
+  else if (TREE_CODE (type) == ARRAY_TYPE
+	   || TREE_CODE (type) == VECTOR_TYPE)
     {
       tree elt;
       int i;
       int need_to_clear;
       tree domain = TYPE_DOMAIN (type);
       tree elttype = TREE_TYPE (type);
-      int const_bounds_p = (TYPE_MIN_VALUE (domain)
-			    && TYPE_MAX_VALUE (domain)
-			    && host_integerp (TYPE_MIN_VALUE (domain), 0)
-			    && host_integerp (TYPE_MAX_VALUE (domain), 0));
+      int const_bounds_p;
       HOST_WIDE_INT minelt = 0;
       HOST_WIDE_INT maxelt = 0;
+
+      /* Vectors are like arrays, but the domain is stored via an array
+	 type indirectly.  */
+      if (TREE_CODE (type) == VECTOR_TYPE)
+	{
+	  /* Note that although TYPE_DEBUG_REPRESENTATION_TYPE uses
+	     the same field as TYPE_DOMAIN, we are not guaranteed that
+	     it always will.  */
+	  domain = TYPE_DEBUG_REPRESENTATION_TYPE (type);
+	  domain = TYPE_DOMAIN (TREE_TYPE (TYPE_FIELDS (domain)));
+	}
+
+      const_bounds_p = (TYPE_MIN_VALUE (domain)
+			&& TYPE_MAX_VALUE (domain)
+			&& host_integerp (TYPE_MIN_VALUE (domain), 0)
+			&& host_integerp (TYPE_MAX_VALUE (domain), 0));
 
       /* If we have constant bounds for the range of the type, get them.  */
       if (const_bounds_p)
@@ -4665,6 +4680,7 @@ store_constructor (exp, target, cleared, size)
 
 		      if (GET_CODE (target) == MEM
 			  && !MEM_KEEP_ALIAS_SET_P (target)
+			  && TREE_CODE (type) == ARRAY_TYPE
 			  && TYPE_NONALIASED_COMPONENT (type))
 			{
 			  target = copy_rtx (target);
@@ -4762,6 +4778,7 @@ store_constructor (exp, target, cleared, size)
 		bitpos = (i * tree_low_cst (TYPE_SIZE (elttype), 1));
 
 	      if (GET_CODE (target) == MEM && !MEM_KEEP_ALIAS_SET_P (target)
+		  && TREE_CODE (type) == ARRAY_TYPE
 		  && TYPE_NONALIASED_COMPONENT (type))
 		{
 		  target = copy_rtx (target);
