@@ -1,4 +1,4 @@
 #include "gansidecl.h"
 #include "version.h"
 
-const char *const version_string = "2.96 20000709 (experimental)";
+const char *const version_string = "2.96 20000710 (experimental)";
