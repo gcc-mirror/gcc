@@ -447,6 +447,11 @@ dump_type (t, flags)
       dump_type (TREE_TYPE (t), flags);
       break;
 
+    case VECTOR_TYPE:
+      OB_PUTS ("vector ");
+      dump_type (TREE_TYPE (t), flags);
+      break;
+
     case INTEGER_TYPE:
       if (!TREE_UNSIGNED (TYPE_MAIN_VARIANT (t)) && TREE_UNSIGNED (t))
 	output_add_string (scratch_buffer, "unsigned ");
@@ -503,7 +508,6 @@ dump_type (t, flags)
 	 reduces code size.  */
     case ARRAY_TYPE:
     case POINTER_TYPE:
-    case VECTOR_TYPE:
     case REFERENCE_TYPE:
     case OFFSET_TYPE:
     offset_type:
@@ -662,15 +666,6 @@ dump_type_prefix (t, flags)
 
   switch (TREE_CODE (t))
     {
-    case VECTOR_TYPE:
-      padding = dump_type_prefix (TREE_TYPE (t), flags);
-      if (padding != none)
-	output_add_space (scratch_buffer);
-      output_add_string (scratch_buffer, "vector");
-      dump_qualifiers (t, before);
-      padding = before;
-      break;
-
     case POINTER_TYPE:
     case REFERENCE_TYPE:
       {
@@ -748,6 +743,7 @@ dump_type_prefix (t, flags)
     case VOID_TYPE:
     case TYPENAME_TYPE:
     case COMPLEX_TYPE:
+    case VECTOR_TYPE:
       dump_type (t, flags);
       padding = before;
       break;
@@ -778,7 +774,6 @@ dump_type_suffix (t, flags)
     case POINTER_TYPE:
     case REFERENCE_TYPE:
     case OFFSET_TYPE:
-    case VECTOR_TYPE:
       if (TREE_CODE (TREE_TYPE (t)) == ARRAY_TYPE)
 	print_right_paren (scratch_buffer);
       dump_type_suffix (TREE_TYPE (t), flags);
@@ -844,6 +839,7 @@ dump_type_suffix (t, flags)
     case VOID_TYPE:
     case TYPENAME_TYPE:
     case COMPLEX_TYPE:
+    case VECTOR_TYPE:
       break;
 
     default:

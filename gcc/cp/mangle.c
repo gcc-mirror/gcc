@@ -1236,10 +1236,9 @@ write_local_name (function, local_entity, entity)
             ::= <CV-qualifier>
             ::= P <type>    # pointer-to
             ::= R <type>    # reference-to
-            ::= C <type>    # complex pair (C 2000)  [not supported]
+            ::= C <type>    # complex pair (C 2000)
             ::= G <type>    # imaginary (C 2000)     [not supported]
             ::= U <source-name> <type>   # vendor extended type qualifier 
-                                                     [not supported]
 
    TYPE is a type node.  */
 
@@ -1349,6 +1348,11 @@ write_type (type)
 	  write_pointer_to_member_type (build_pointer_type (type));
 	  break;
 
+	case VECTOR_TYPE:
+	  write_string ("U8__vector");
+	  write_type (TREE_TYPE (type));
+	  break;
+
 	default:
 	  my_friendly_abort (20000409);
 	}
@@ -1416,7 +1420,8 @@ write_CV_qualifiers_for_type (type)
                     ::= f   # float
                     ::= d   # double
                     ::= e   # long double, __float80 
-                    ::= g   # __float128          [not supported]  */
+                    ::= g   # __float128          [not supported]
+                    ::= u <source-name>  # vendor extended type */
 
 static void 
 write_builtin_type (type)
@@ -1446,6 +1451,7 @@ write_builtin_type (type)
 	  size_t itk;
 	  /* Assume TYPE is one of the shared integer type nodes.  Find
 	     it in the array of these nodes.  */
+	iagain:
 	  for (itk = 0; itk < itk_none; ++itk)
 	    if (type == integer_types[itk])
 	      {
@@ -1455,8 +1461,14 @@ write_builtin_type (type)
 	      }
 	  
 	  if (itk == itk_none)
-	    /* Couldn't find this type.  */
-	    my_friendly_abort (20000408);
+	    {
+	      tree t = type_for_mode (TYPE_MODE (type), TREE_UNSIGNED (type));
+	      if (type == t)
+		/* Couldn't find this type.  */
+		my_friendly_abort (20000408);
+	      type = t;
+	      goto iagain;
+	    }
 	}
       break;
 

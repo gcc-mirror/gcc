@@ -1769,6 +1769,12 @@ followed by the type index of the repeated type. Due to a bug in
 g++ 2.7.2, this is only generated if index is 0. Superceded by
 @samp{n} when squangling.
 
+@item O
+Pointer-to-member type.
+
+@item o
+vector type.
+
 @item P
 Indicates a pointer type.  Followed by the type pointed to.
 

@@ -4878,6 +4878,7 @@ arg_assoc_type (k, type)
     case INTEGER_TYPE:
     case REAL_TYPE:
     case COMPLEX_TYPE:
+    case VECTOR_TYPE:
     case CHAR_TYPE:
     case BOOLEAN_TYPE:
       return 0;
@@ -4888,7 +4889,6 @@ arg_assoc_type (k, type)
     case POINTER_TYPE:
     case REFERENCE_TYPE:
     case ARRAY_TYPE:
-    case VECTOR_TYPE:
       return arg_assoc_type (k, TREE_TYPE (type));
     case UNION_TYPE:
     case ENUMERAL_TYPE:

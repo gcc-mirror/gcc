@@ -1319,6 +1319,7 @@ walk_tree (tp, func, data, htab)
     case TEMPLATE_TYPE_PARM:
     case REAL_TYPE:
     case COMPLEX_TYPE:
+    case VECTOR_TYPE:
     case VOID_TYPE:
     case BOOLEAN_TYPE:
     case TYPENAME_TYPE:
@@ -1336,7 +1337,6 @@ walk_tree (tp, func, data, htab)
 
     case POINTER_TYPE:
     case REFERENCE_TYPE:
-    case VECTOR_TYPE:
       WALK_SUBTREE (TREE_TYPE (*tp));
       break;
 

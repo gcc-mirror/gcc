@@ -1313,6 +1313,8 @@ process_overload_item (parmtype, extra_Gcode)
   tree parmtype;
   int extra_Gcode;
 {
+  tree tmp;
+
   numeric_output_need_bar = 0;
 
   /* Our caller should have already handed any qualifiers, so pull out the
@@ -1421,6 +1423,7 @@ process_overload_item (parmtype, extra_Gcode)
       }
 
     case INTEGER_TYPE:
+    iagain:
       if (parmtype == integer_type_node
           || parmtype == unsigned_type_node
 	  || parmtype == java_int_type_node)
@@ -1450,6 +1453,14 @@ process_overload_item (parmtype, extra_Gcode)
         OB_PUTC ('x');
       else if (parmtype == java_boolean_type_node)
 	OB_PUTC ('b');
+      /* Handle intSI_type_node and such like their C++ equivalents.  */
+      else if (tmp = type_for_mode (TYPE_MODE (parmtype),
+				    TREE_UNSIGNED (parmtype)),
+	       parmtype != tmp)
+	{
+	  parmtype = tmp;
+	  goto iagain;
+	}
 #if HOST_BITS_PER_WIDE_INT >= 64
       else
 	{
@@ -1480,6 +1491,11 @@ process_overload_item (parmtype, extra_Gcode)
 
     case COMPLEX_TYPE:
       OB_PUTC ('J');
+      build_mangled_name_for_type (TREE_TYPE (parmtype));
+      break;
+
+    case VECTOR_TYPE:
+      OB_PUTC ('o');
       build_mangled_name_for_type (TREE_TYPE (parmtype));
       break;
 

@@ -1,4 +1,4 @@
-# Top level makefile fragment for GNU C++.
+# Top level -*- makefile -*- fragment for GNU C++.
 #   Copyright (C) 1994, 1995, 1997, 1998, 1999, 2000
 #   Free Software Foundation, Inc.
 
@@ -273,3 +273,15 @@ cp/parse.o: cp/parse.c $(CXX_TREE_H) flags.h cp/lex.h except.h output.h \
 	system.h toplev.h $(GGC_H)
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(BIG_SWITCHFLAG) \
 		$(srcdir)/cp/parse.c $(OUTPUT_OPTION)
+#
+# These exist for maintenance purposes.
+
+# Update the tags table.
+cp/TAGS: force
+	cd $(srcdir)/cp ;			\
+	etags *.c *.h ;				\
+	echo 'l' | tr 'l' '\f' >> TAGS ;	\
+	echo 'parse.y,0' >> TAGS ; 		\
+	etags -a ../*.h ../*.c;
+
+.PHONY: cp/TAGS
