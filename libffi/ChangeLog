@@ -1,3 +1,17 @@
+2004-08-14  Casey Marshall <csm@gnu.org>
+
+	* src/mips/ffi.c (ffi_pref_cif_machdep): set `cif->flags' to
+	contain `FFI_TYPE_UINT64' as return type for any 64-bit
+	integer (O32 ABI only).
+	(ffi_prep_closure): new function.
+	(ffi_closure_mips_inner_O32): new function.
+	* src/mips/ffitarget.h: Define `FFI_CLOSURES' and 
+	`FFI_TRAMPOLINE_SIZE' appropriately if the ABI is o32.
+	* src/mips/o32.S (ffi_call_O32): add labels for .eh_frame. Return
+	64 bit integers correctly.
+	(ffi_closure_O32): new function.
+	Added DWARF-2 unwind info for both functions.
+
 2004-08-10  Andrew Haley  <aph@redhat.com>
 
 	* src/x86/ffi64.c (ffi_prep_args ): 8-align all stack arguments.

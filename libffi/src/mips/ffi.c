@@ -27,6 +27,7 @@
 #include <ffi_common.h>
 
 #include <stdlib.h>
+#include <sys/cachectl.h>
 
 #if _MIPS_SIM == _ABIN32
 #define FIX_ARGP \
@@ -314,6 +315,11 @@ ffi_status ffi_prep_cif_machdep(ffi_cif *cif)
     case FFI_TYPE_DOUBLE:
       cif->flags += cif->rtype->type << (FFI_FLAG_BITS * 2);
       break;
+
+    case FFI_TYPE_SINT64:
+    case FFI_TYPE_UINT64:
+      cif->flags += FFI_TYPE_UINT64 << (FFI_FLAG_BITS * 2);
+      break;
       
     default:
       cif->flags += FFI_TYPE_INT << (FFI_FLAG_BITS * 2);
@@ -459,3 +465,117 @@ void ffi_call(ffi_cif *cif, void (*fn)(), void *rvalue, void **avalue)
       break;
     }
 }
+
+#if FFI_CLOSURES  /* N32 not implemented yet, FFI_CLOSURES not defined */
+#if defined(FFI_MIPS_O32)
+extern void ffi_closure_O32(void);
+#endif /* FFI_MIPS_O32 */
+
+ffi_status
+ffi_prep_closure (ffi_closure *closure,
+		  ffi_cif *cif,
+		  void (*fun)(ffi_cif*,void*,void**,void*),
+		  void *user_data)
+{
+  unsigned int *tramp = (unsigned int *) &closure->tramp[0];
+  unsigned int fn;
+  unsigned int ctx = (unsigned int) closure;
+
+#if defined(FFI_MIPS_O32)
+  FFI_ASSERT(cif->abi == FFI_O32);
+  fn = (unsigned int) ffi_closure_O32;
+#else /* FFI_MIPS_N32 */
+  FFI_ASSERT(cif->abi == FFI_N32);
+  FFI_ASSERT(!"not implemented");
+#endif /* FFI_MIPS_O32 */
+
+  tramp[0] = 0x3c190000 | (fn >> 16);     /* lui  $25,high(fn) */
+  tramp[1] = 0x3c080000 | (ctx >> 16);    /* lui  $8,high(ctx) */
+  tramp[2] = 0x37390000 | (fn & 0xffff);  /* ori  $25,low(fn)  */
+  tramp[3] = 0x03200008;                  /* jr   $25          */
+  tramp[4] = 0x35080000 | (ctx & 0xffff); /* ori  $8,low(ctx)  */
+
+  closure->cif = cif;
+  closure->fun = fun;
+  closure->user_data = user_data;
+
+  /* XXX this is available on Linux, but anything else? */
+  cacheflush (tramp, FFI_TRAMPOLINE_SIZE, ICACHE);
+
+  return FFI_OK;
+}
+
+/*
+ * Decodes the arguments to a function, which will be stored on the
+ * stack. AR is the pointer to the beginning of the integer arguments
+ * (and, depending upon the arguments, some floating-point arguments
+ * as well). FPR is a pointer to the area where floating point
+ * registers have been saved, if any.
+ *
+ * RVALUE is the location where the function return value will be
+ * stored. CLOSURE is the prepared closure to invoke.
+ *
+ * This function should only be called from assembly, which is in
+ * turn called from a trampoline.
+ *
+ * Returns the function return type.
+ *
+ * Based on the similar routine for sparc.
+ */
+int
+ffi_closure_mips_inner_O32 (ffi_closure *closure,
+			    void *rvalue, unsigned long *ar,
+			    double *fpr)
+{
+  ffi_cif *cif;
+  void **avalue;
+  ffi_type **arg_types;
+  int i, avn, argn, seen_int;
+
+  cif = closure->cif;
+  avalue = alloca (cif->nargs * sizeof (void *));
+
+  seen_int = 0;
+  argn = 0;
+
+  if (cif->flags == FFI_TYPE_STRUCT)
+    {
+      rvalue = (void *) ar[0];
+      argn = 1;
+    }
+
+  i = 0;
+  avn = cif->nargs;
+  arg_types = cif->arg_types;
+
+  while (i < avn)
+    {
+      if (i < 2 && !seen_int &&
+	  (arg_types[i]->type == FFI_TYPE_FLOAT ||
+	   arg_types[i]->type == FFI_TYPE_DOUBLE))
+	{
+	  avalue[i] = ((char *) &fpr[i]);
+	}
+      else
+	{
+	  /* 8-byte arguments are always 8-byte aligned. */
+	  if (arg_types[i]->size == 8 && (argn & 0x1))
+	    argn++;
+	  /* Float arguments take up two register slots. The float word
+	     is the upper one. */
+	  if (argn == 2 && arg_types[i]->type == FFI_TYPE_FLOAT)
+	    argn++;
+	  avalue[i] = ((char *) &ar[argn]);
+	  seen_int = 1;
+	}
+      argn += ALIGN(arg_types[i]->size, FFI_SIZEOF_ARG) / FFI_SIZEOF_ARG;
+      i++;
+    }
+
+  /* Invoke the closure. */
+  (closure->fun) (cif, rvalue, avalue, closure->user_data);
+
+  return cif->rtype->type;
+}
+
+#endif /* FFI_CLOSURES */

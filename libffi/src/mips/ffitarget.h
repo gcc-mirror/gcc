@@ -153,7 +153,13 @@ typedef enum ffi_abi {
 
 /* ---- Definitions for closures ----------------------------------------- */
 
+#if defined(FFI_MIPS_O32)
+#define FFI_CLOSURES 1
+#define FFI_TRAMPOLINE_SIZE 20
+#else
+/* N32/N64 not implemented yet. */
 #define FFI_CLOSURES 0
+#endif /* FFI_MIPS_O32 */
 #define FFI_NATIVE_RAW_API 0
 
 #endif
