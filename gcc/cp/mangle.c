@@ -1834,6 +1834,12 @@ write_expression (expr)
       write_mangled_name (expr);
       write_char ('E');
     }
+  else if (TREE_CODE (expr) == SIZEOF_EXPR 
+	   && TYPE_P (TREE_OPERAND (expr, 0)))
+    {
+      write_string ("st");
+      write_type (TREE_OPERAND (expr, 0));
+    }
   else
     {
       int i;
@@ -1872,6 +1878,7 @@ write_expression (expr)
 	  write_expression (TREE_OPERAND (expr, 0));
 	  break;
 
+	  
 	/* Handle pointers-to-members specially.  */
 	case SCOPE_REF:
 	  write_type (TREE_OPERAND (expr, 0));
