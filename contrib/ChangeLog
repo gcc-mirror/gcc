@@ -1,3 +1,8 @@
+2003-03-03  H.J. Lu <hjl@gnu.org>
+
+	* gcc_build: Use $GCC_CVS/$CVS instead of cvs.
+	* gcc_update: Likewise.
+
 2003-01-19  Alexandre Oliva  <aoliva@redhat.com>
 
 	* test_summary (configflags): Only use the first match.  Remove
