@@ -293,7 +293,6 @@ static void add_to_list		PROTO((struct head *, char *));
 static void write_list		PROTO((FILE *, char *, struct id *));
 static void dump_list		PROTO((FILE *, char *, struct id *));
 static void dump_prefix_list	PROTO((FILE *, char *, struct prefix_list *));
-static int is_in_list		PROTO((char *, struct id *));
 static void write_list_with_asm PROTO((FILE *, char *, struct id *));
 static void write_c_file	PROTO((FILE *, char *));
 static void scan_prog_file	PROTO((char *, enum pass));
@@ -301,6 +300,7 @@ static void scan_prog_file	PROTO((char *, enum pass));
 static void scan_libraries	PROTO((char *));
 #endif
 #ifdef COLLECT_EXPORT_LIST
+static int is_in_list		PROTO((char *, struct id *));
 static void write_export_file	PROTO((FILE *));
 static void write_import_file	PROTO((FILE *));
 static char *resolve_lib_name	PROTO((char *));
@@ -1871,6 +1871,7 @@ write_list (stream, prefix, list)
     }
 }
 
+#ifdef COLLECT_EXPORT_LIST
 /* This function is really used only on AIX, but may be useful.  */
 static int
 is_in_list (prefix, list)
@@ -1884,6 +1885,7 @@ is_in_list (prefix, list)
     }
     return 0;
 }
+#endif
 
 /* Added for debugging purpose.  */
 static void
