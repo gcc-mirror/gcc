@@ -689,9 +689,10 @@ do_jump_by_parts_equality_rtx (rtx op0, rtx if_false_label, rtx if_true_label)
 }
 
 /* Generate code for a comparison of OP0 and OP1 with rtx code CODE.
-   (including code to compute the values to be compared)
-   and set (CC0) according to the result.
-   The decision as to signed or unsigned comparison must be made by the caller.
+   MODE is the machine mode of the comparison, not of the result.
+   (including code to compute the values to be compared) and set CC0
+   according to the result.  The decision as to signed or unsigned
+   comparison must be made by the caller.
 
    We force a stack adjustment unless there are currently
    things pushed on the stack that aren't yet used.
@@ -725,17 +726,21 @@ compare_from_rtx (rtx op0, rtx op1, enum rtx_code code, int unsignedp,
   do_pending_stack_adjust ();
 
   code = unsignedp ? unsigned_condition (code) : code;
-  if (0 != (tem = simplify_relational_operation (code, mode, VOIDmode,
-						 op0, op1)))
+  tem = simplify_relational_operation (code, VOIDmode, mode, op0, op1);
+  if (tem)
     {
       if (CONSTANT_P (tem))
 	return tem;
 
-      code = GET_CODE (tem);
-      mode = GET_MODE (tem);
-      op0 = XEXP (tem, 0);
-      op1 = XEXP (tem, 1);
-      unsignedp = (code == GTU || code == LTU || code == GEU || code == LEU);
+      if (COMPARISON_P (tem))
+	{
+	  code = GET_CODE (tem);
+	  op0 = XEXP (tem, 0);
+	  op1 = XEXP (tem, 1);
+	  mode = GET_MODE (op0);
+	  unsignedp = (code == GTU || code == LTU
+		       || code == GEU || code == LEU);
+	}
     }
 
   emit_cmp_insn (op0, op1, code, size, mode, unsignedp);
