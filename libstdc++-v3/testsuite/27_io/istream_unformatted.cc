@@ -452,7 +452,28 @@ test06()
   return 0;
 }
 
-
+// bug reported by bgarcia@laurelnetworks.com
+// http://sources.redhat.com/ml/libstdc++-prs/2000-q3/msg00041.html
+int
+test07()
+{
+  const char* tfn = "testsuite/istream_unformatted-3.txt";
+  std::ifstream infile;
+  infile.open(tfn);
+  VERIFY( infile );
+  while (infile)
+    {
+      std::string line;
+      std::ostringstream line_ss;
+      while (infile.peek() == '\n')
+	infile.get();
+      infile.get(*(line_ss.rdbuf()));
+      line = line_ss.str();
+      VERIFY( line == "1234567890" || line == "" );
+    }
+  return 0;
+}
+ 
 int 
 main()
 {
@@ -462,7 +483,8 @@ main()
   test04();
   test05();
   test06();
-  
+  test07();
+
   return 0;
 }
 
