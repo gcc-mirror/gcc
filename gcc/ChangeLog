@@ -1,4 +1,8 @@
-Tue Jul 23 20:56:03 2002  J"orn Rennecke <joern.rennecke@superh.com>
+Tue Jul 23 21:02:16 2002  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* reload.c (find_reloads_toplev): Use simplify_gen_subreg.
+	* simplify-rtx.c (simplify_subreg): When converting to a non-int
+	mode, try to convert to an integer mode of matching size first.
 
 	* simplify-rtx.x (simplify_subreg): When constructing a CONST_VECTOR
 	from individual subregs, check that each subreg has been generated

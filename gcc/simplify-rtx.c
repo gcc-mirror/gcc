@@ -2347,8 +2347,7 @@ simplify_subreg (outermode, op, innermode, byte)
 	      return NULL_RTX;
 	  return simplify_subreg (outermode, op, new_mode, subbyte);
 	}
-      else if (GET_MODE_CLASS (outermode) != MODE_VECTOR_INT
-	       && GET_MODE_CLASS (outermode) != MODE_VECTOR_FLOAT)
+      else if (GET_MODE_CLASS (outermode) == MODE_INT)
         /* This shouldn't happen, but let's not do anything stupid.  */
 	return NULL_RTX;
     }
@@ -2387,7 +2386,8 @@ simplify_subreg (outermode, op, innermode, byte)
 	 Later it we should move all simplification code here and rewrite
 	 GEN_LOWPART_IF_POSSIBLE, GEN_HIGHPART, OPERAND_SUBWORD and friends
 	 using SIMPLIFY_SUBREG.  */
-      if (subreg_lowpart_offset (outermode, innermode) == byte)
+      if (subreg_lowpart_offset (outermode, innermode) == byte
+	  && GET_CODE (op) != CONST_VECTOR)
 	{
 	  rtx new = gen_lowpart_if_possible (outermode, op);
 	  if (new)
@@ -2404,6 +2404,19 @@ simplify_subreg (outermode, op, innermode, byte)
 				      innermode);
 	  if (new)
 	    return new;
+	}
+
+      if (GET_MODE_CLASS (outermode) != MODE_INT)
+	{
+	  enum machine_mode new_mode = int_mode_for_mode (outermode);
+
+	  if (new_mode != innermode || byte != 0)
+	    {
+	      op = simplify_subreg (new_mode, op, innermode, byte);
+	      if (! op)
+		return NULL_RTX;
+	      return simplify_subreg (outermode, op, new_mode, 0);
+	    }
 	}
 
       offset = byte * BITS_PER_UNIT;
