@@ -1,3 +1,8 @@
+2003-01-14  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* timevar.def: define TV_NAME_LOOKUP.
+	* timevar.c (timevar_pop): Be verbose when aborting.
+
 2003-01-13  Andreas Schwab  <schwab@suse.de>
 
 	* Makefile.in ($(parsedir)/gengtype-lex.c): Don't change to
