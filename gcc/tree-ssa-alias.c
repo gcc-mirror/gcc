@@ -236,15 +236,14 @@ tree global_var;
 
 	    foo (int i)
 	    {
-	      int *p, *q, a, b;
+	      int *p, a, b;
 	    
 	      if (i > 10)
 	        p = &a;
 	      else
-	        q = &b;
+	        p = &b;
 	    
 	      *p = 3;
-	      *q = 5;
 	      a = b + 2;
 	      return *p;
 	    }

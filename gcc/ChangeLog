@@ -1,3 +1,7 @@
+2004-11-19  Adam Nemet  <anemet@lnxw.com>
+
+	* tree-ssa-alias.c: Fix comment.
+
 2004-11-19  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree-outof-ssa.c: Fix a comment typo.
