@@ -1868,7 +1868,11 @@ extern struct rtx_def *sparc_builtin_saveregs ();
       register rtx op0 = XEXP (X, 0);			\
       register rtx op1 = XEXP (X, 1);			\
       if (RTX_OK_FOR_BASE_P (op0)			\
-	  && CONSTANT_P (op1))				\
+	  && CONSTANT_P (op1)				\
+	  /* We can't allow TFmode, because an offset	\
+	     greater than or equal to the alignment (8)	\
+	     may cause the LO_SUM to overflow.  */	\
+	  && MODE != TFmode)				\
 	goto ADDR;					\
     }							\
   else if (GET_CODE (X) == CONST_INT && SMALL_INT (X))	\
