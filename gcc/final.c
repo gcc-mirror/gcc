@@ -2859,11 +2859,17 @@ split_double (value, first, second)
   else
     {
 #ifdef REAL_ARITHMETIC
-      REAL_VALUE_TYPE r; HOST_WIDE_INT l[2];
+      REAL_VALUE_TYPE r; long l[2];
       REAL_VALUE_FROM_CONST_DOUBLE (r, value);
+
+      /* Note, this converts the REAL_VALUE_TYPE to the target's
+	 format, splits up the floating point double and outputs
+	 exactly 32 bits of it into each of l[0] and l[1] --
+	 not necessarily BITS_PER_WORD bits. */
       REAL_VALUE_TO_TARGET_DOUBLE (r, l);
-      *first = GEN_INT (l[0]);
-      *second = GEN_INT (l[1]);
+
+      *first = GEN_INT ((HOST_WIDE_INT) l[0]);
+      *second = GEN_INT ((HOST_WIDE_INT) l[1]);
 #else
       if ((HOST_FLOAT_FORMAT != TARGET_FLOAT_FORMAT
 	   || HOST_BITS_PER_WIDE_INT != BITS_PER_WORD)
