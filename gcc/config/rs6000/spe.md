@@ -483,7 +483,7 @@
         (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
 		      (match_operand:QI 2 "immediate_operand" "i")] 519))]
   "TARGET_SPE"
-  "evrlwi %0,%1"
+  "evrlwi %0,%1,%2"
   [(set_attr "type" "vecsimple")
    (set_attr  "length" "4")])
 
