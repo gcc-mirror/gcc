@@ -1,3 +1,11 @@
+2000-12-11  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* Makefile.am (gctest_LDADD): Added EXTRA_TEST_LIBS.
+	* configure.in (EXTRA_TEST_LIBS): Check for `dlopen' in -ldl and
+	set accordingly.
+	* Makefile.in: Rebuilt.
+	* configure: Likewise.
+
 2000-12-10  Geoffrey Keating  <geoffk@redhat.com>
 
 	* gcconfig.h: Add new case for powerpc EABI.
