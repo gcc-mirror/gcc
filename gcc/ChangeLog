@@ -1,3 +1,10 @@
+2003-07-14  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* fixinc/inclhack.def (avoid_bool_define, avoid_bool_type): Bypass
+	with __cplusplus, not "we must use the C++ compiler's type"
+	* fixinc/inclhack.def (void_null): Note that Interix needs this.
+	* fixinc/fixincl.x: Regenerate.
+
 2003-07-14  Geoffrey Keating  <geoffk@apple.com>
 
 	* unwind-dw2-fde-darwin.c (live_image_destructor): Get seen_objects

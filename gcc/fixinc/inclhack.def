@@ -604,7 +604,7 @@ fix = {
     files     = tinfo.h;
 
     select    = "#[ \t]*define[ \t]+bool[ \t]";
-    bypass    = "we must use the C\\+\\+ compiler's type";
+    bypass    = "__cplusplus";
 
     c_fix     = format;
     c_fix_arg = "#ifndef __cplusplus\n%0\n#endif";
@@ -622,7 +622,7 @@ fix = {
     files    = tinfo.h;
 
     select    = "^[ \t]*typedef[ \t].*[ \t]bool[ \t]*;";
-    bypass    = "we must use the C\\+\\+ compiler's type";
+    bypass    = "__cplusplus";
 
     c_fix     = format;
     c_fix_arg = "#ifndef __cplusplus\n%0\n#endif";
@@ -3362,7 +3362,7 @@ fix = {
 
 
 /*
- *  AIX headers define NULL to be cast to a void pointer,
+ *  AIX and Interix headers define NULL to be cast to a void pointer,
  *  which is illegal in ANSI C++.
  */
 fix = {
