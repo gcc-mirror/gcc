@@ -1,5 +1,5 @@
 /* Expands front end tree to back end RTL for GNU C-Compiler
-   Copyright (C) 1987, 88, 89, 91-95, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 91-96, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -518,6 +518,7 @@ push_function_context_to (context)
   p->temp_slot_level = temp_slot_level;
   p->fixup_var_refs_queue = 0;
   p->epilogue_delay_list = current_function_epilogue_delay_list;
+  p->args_info = current_function_args_info;
 
   save_tree_status (p, context);
   save_storage_status (p);
@@ -596,6 +597,7 @@ pop_function_context_from (context)
   temp_slot_level = p->temp_slot_level;
   current_function_epilogue_delay_list = p->epilogue_delay_list;
   reg_renumber = 0;
+  current_function_args_info = p->args_info;
 
   restore_tree_status (p);
   restore_storage_status (p);
