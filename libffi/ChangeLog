@@ -1,5 +1,10 @@
 2001-07-16  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
+	* src/x86/sysv.S: Avoid gas-only .balign directive.
+	Use C style comments.
+
+2001-07-16  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
 	* src/alpha/ffi.c (ffi_prep_closure): Avoid gas-only mnemonic.
 	Fixes PR bootstrap/3563.
 

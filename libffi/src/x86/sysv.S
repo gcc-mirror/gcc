@@ -1,5 +1,5 @@
 /* -----------------------------------------------------------------------
-   sysv.S - Copyright (c) 1996, 1998  Cygnus Solutions
+   sysv.S - Copyright (c) 1996, 1998, 2001  Cygnus Solutions
    
    X86 Foreign Function Interface 
 
@@ -30,8 +30,7 @@
 
 .globl ffi_prep_args
 
-	# This assumes we are using gas.
-        .balign 16
+	.align 4
 .globl ffi_call_SYSV
         .type    ffi_call_SYSV,@function
 
@@ -41,35 +40,35 @@ ffi_call_SYSV:
 .LCFI0:
         movl  %esp,%ebp
 .LCFI1:
-	# Make room for all of the new args.
+	/* Make room for all of the new args.  */
 	movl  16(%ebp),%ecx
 	subl  %ecx,%esp
 
 	movl  %esp,%eax
 
-	# Place all of the ffi_prep_args in position
+	/* Place all of the ffi_prep_args in position  */
 	pushl 12(%ebp)
 	pushl %eax
 	call  *8(%ebp)
 
-	# Return stack to previous state and call the function
+	/* Return stack to previous state and call the function  */
 	addl  $8,%esp	
 
 	call  *28(%ebp)
 
-	# Remove the space we pushed for the args
+	/* Remove the space we pushed for the args  */
 	movl  16(%ebp),%ecx
 	addl  %ecx,%esp
 
-	# Load %ecx with the return type code 
+	/* Load %ecx with the return type code  */
 	movl  20(%ebp),%ecx	
 
-	# If the return value pointer is NULL, assume no return value.
+	/* If the return value pointer is NULL, assume no return value.  */
 	cmpl  $0,24(%ebp)
 	jne   retint
 
-	# Even if there is no space for the return value, we are 
-	# obliged to handle floating-point values.
+	/* Even if there is no space for the return value, we are 
+	   obliged to handle floating-point values.  */
 	cmpl  $FFI_TYPE_FLOAT,%ecx
 	jne   noretval
 	fstp  %st(0)
@@ -79,7 +78,7 @@ ffi_call_SYSV:
 retint:
 	cmpl  $FFI_TYPE_INT,%ecx
 	jne   retfloat
-	# Load %ecx with the pointer to storage for the return value
+	/* Load %ecx with the pointer to storage for the return value  */
 	movl  24(%ebp),%ecx	
 	movl  %eax,0(%ecx)
 	jmp   epilogue
@@ -87,7 +86,7 @@ retint:
 retfloat:
 	cmpl  $FFI_TYPE_FLOAT,%ecx
 	jne   retdouble
-	# Load %ecx with the pointer to storage for the return value
+	/* Load %ecx with the pointer to storage for the return value  */
 	movl  24(%ebp),%ecx	
 	fstps (%ecx)
 	jmp   epilogue
@@ -95,7 +94,7 @@ retfloat:
 retdouble:
 	cmpl  $FFI_TYPE_DOUBLE,%ecx
 	jne   retlongdouble
-	# Load %ecx with the pointer to storage for the return value
+	/* Load %ecx with the pointer to storage for the return value  */
 	movl  24(%ebp),%ecx	
 	fstpl (%ecx)
 	jmp   epilogue
@@ -103,7 +102,7 @@ retdouble:
 retlongdouble:
 	cmpl  $FFI_TYPE_LONGDOUBLE,%ecx
 	jne   retint64
-	# Load %ecx with the pointer to storage for the return value
+	/* Load %ecx with the pointer to storage for the return value  */
 	movl  24(%ebp),%ecx	
 	fstpt (%ecx)
 	jmp   epilogue
@@ -111,13 +110,13 @@ retlongdouble:
 retint64:	
 	cmpl  $FFI_TYPE_SINT64,%ecx
         jne   retstruct
-	# Load %ecx with the pointer to storage for the return value
+	/* Load %ecx with the pointer to storage for the return value  */
 	movl  24(%ebp),%ecx	
 	movl  %eax,0(%ecx)
 	movl  %edx,4(%ecx)
 	
 retstruct:
-	# Nothing to do!
+	/* Nothing to do!  */
 
 noretval:
 epilogue:
