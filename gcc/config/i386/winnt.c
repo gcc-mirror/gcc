@@ -488,16 +488,16 @@ i386_pe_encode_section_info (tree decl, rtx rtl, int first)
 {
   default_encode_section_info (decl, rtl, first);
 
-  if (TREE_CODE (decl) == FUNCTION_DECL)
+  if (first && TREE_CODE (decl) == FUNCTION_DECL)
     {
-      if (lookup_attribute ("stdcall",
-			    TYPE_ATTRIBUTES (TREE_TYPE (decl))))
-        XEXP (DECL_RTL (decl), 0) =
-	  gen_rtx_SYMBOL_REF (Pmode, gen_stdcall_suffix (decl));
-      else if (lookup_attribute ("fastcall",
-				 TYPE_ATTRIBUTES (TREE_TYPE (decl))))
-        XEXP (DECL_RTL (decl), 0) =
-	  gen_rtx_SYMBOL_REF (Pmode, gen_fastcall_suffix (decl));
+      tree type_attributes = TYPE_ATTRIBUTES (TREE_TYPE (decl));
+      rtx rtlname = XEXP (rtl, 0);
+      if (GET_CODE (rtlname) == MEM)
+	rtlname = XEXP (rtlname, 0);
+      if (lookup_attribute ("stdcall", type_attributes))
+	XSTR (rtlname, 0) = gen_stdcall_suffix (decl);
+      else if (lookup_attribute ("fastcall", type_attributes))
+	XSTR (rtlname, 0) = gen_fastcall_suffix (decl);
     }
 
   /* Mark the decl so we can tell from the rtl whether the object is
