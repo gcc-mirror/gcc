@@ -126,6 +126,7 @@ static void set_mangled_name_for_template_decl PROTO((tree));
 static int template_class_depth_real PROTO((tree, int));
 static tree tsubst_aggr_type PROTO((tree, tree, tree, int));
 static tree tsubst_decl PROTO((tree, tree, tree, tree));
+static tree tsubst_arg_types PROTO((tree, tree, tree));
 
 /* We use TREE_VECs to hold template arguments.  If there is only one
    level of template arguments, then the TREE_VEC contains the
@@ -2802,7 +2803,10 @@ convert_template_argument (parm, arg, args, complain, i, in_decl)
    If REQUIRE_ALL_ARGUMENTS is non-zero, all arguments must be
    provided in ARGLIST, or else trailing parameters must have default
    values.  If REQUIRE_ALL_ARGUMENTS is zero, we will attempt argument
-   deduction for any unspecified trailing arguments.  */
+   deduction for any unspecified trailing arguments.  
+
+   The resulting TREE_VEC is allocated on a temporary obstack, and
+   must be explicitly copied if it will be permanent.  */
    
 static tree
 coerce_template_parms (parms, args, in_decl,
@@ -2839,7 +2843,7 @@ coerce_template_parms (parms, args, in_decl,
       return error_mark_node;
     }
 
-  new_inner_args = make_tree_vec (nparms);
+  new_inner_args = make_temp_vec (nparms);
   new_args = add_outermost_template_args (args, new_inner_args);
   for (i = 0; i < nparms; i++)
     {
@@ -3300,7 +3304,7 @@ lookup_template_class (d1, arglist, in_decl, context, entering_scope)
 	  int i;
 	  int saved_depth = TMPL_ARGS_DEPTH (arglist);
 
-	  tree bound_args = make_tree_vec (parm_depth);
+	  tree bound_args = make_temp_vec (parm_depth);
 	  
 	  for (i = saved_depth,
 		 t = DECL_TEMPLATE_PARMS (template); 
@@ -5191,6 +5195,38 @@ tsubst_decl (t, args, type, in_decl)
 }
 
 
+/* Substitue into the ARG_TYPES of a function type.  */
+
+tree
+tsubst_arg_types (arg_types, args, in_decl)
+     tree arg_types;
+     tree args;
+     tree in_decl;
+{
+  tree remaining_arg_types;
+  tree result;
+  tree type;
+
+  if (!arg_types || arg_types == void_list_node)
+    return arg_types;
+  
+  remaining_arg_types = tsubst_arg_types (TREE_CHAIN (arg_types),
+					  args, in_decl);
+
+  /* We use TYPE_MAIN_VARIANT is because top-level qualifiers don't
+     matter on function types.  */
+  type = TYPE_MAIN_VARIANT (type_decays_to 
+			    (tsubst (TREE_VALUE (arg_types),
+				     args, in_decl)));
+
+  /* Note that we do not substitute into default arguments here.  The
+     standard mandates that they be instantiated only when needed,
+     which is done in build_over_call.  */
+  return hash_tree_cons_simple (TREE_PURPOSE (arg_types), type,
+				remaining_arg_types);
+			 
+}
+
 /* Take the tree structure T and replace template parameters used therein
    with the argument vector ARGS.  IN_DECL is an associated decl for
    diagnostics.
@@ -5495,83 +5531,31 @@ tsubst (t, args, in_decl)
     case FUNCTION_TYPE:
     case METHOD_TYPE:
       {
-	tree values = TYPE_ARG_TYPES (t);
-	tree context = TYPE_CONTEXT (t);
-	tree raises = TYPE_RAISES_EXCEPTIONS (t);
+	tree arg_types;
+	tree raises;
 	tree fntype;
 
-	/* Don't bother recursing if we know it won't change anything.	*/
-	if (values != void_list_node)
-	  {
-	    /* This should probably be rewritten to use hash_tree_cons for
-               the memory savings.  */
-	    tree first = NULL_TREE;
-	    tree last = NULL_TREE;
-
-	    for (; values && values != void_list_node;
-		 values = TREE_CHAIN (values))
-	      {
-		tree value = TYPE_MAIN_VARIANT (type_decays_to
-		  (tsubst (TREE_VALUE (values), args, in_decl)));
-		/* Don't instantiate default args unless they are used.
-		   Handle it in build_over_call instead.  */
-		tree purpose = TREE_PURPOSE (values);
-		tree x = build_tree_list (purpose, value);
-
-		if (first)
-		  TREE_CHAIN (last) = x;
-		else
-		  first = x;
-		last = x;
-	      }
-
-	    if (values == void_list_node)
-	      TREE_CHAIN (last) = void_list_node;
-
-	    values = first;
-	  }
-	if (context)
-	  context = tsubst (context, args, in_decl);
-	/* Could also optimize cases where return value and
-	   values have common elements (e.g., T min(const &T, const T&).  */
-
-	/* If the above parameters haven't changed, just return the type.  */
-	if (type == TREE_TYPE (t)
-	    && values == TYPE_VALUES (t)
-	    && context == TYPE_CONTEXT (t))
-	  return t;
+	/* The TYPE_CONTEXT is not used for function/method types.  */
+	my_friendly_assert (TYPE_CONTEXT (t) == NULL_TREE, 0);
+	
+	/* Substitue the argument types.  */
+	arg_types = tsubst_arg_types (TYPE_ARG_TYPES (t), args, in_decl);
 
 	/* Construct a new type node and return it.  */
-	if (TREE_CODE (t) == FUNCTION_TYPE
-	    && context == NULL_TREE)
-	  {
-	    fntype = build_function_type (type, values);
-	  }
-	else if (context == NULL_TREE)
-	  {
-	    tree base = tsubst (TREE_TYPE (TREE_VALUE (TYPE_ARG_TYPES (t))),
-				args, in_decl);
-	    fntype = build_cplus_method_type (base, type,
-					      TREE_CHAIN (values));
-	  }
-	else
-	  {
-	    fntype = make_node (TREE_CODE (t));
-	    TREE_TYPE (fntype) = type;
-	    TYPE_CONTEXT (fntype) = FROB_CONTEXT (context);
-	    TYPE_VALUES (fntype) = values;
-	    TYPE_SIZE (fntype) = TYPE_SIZE (t);
-	    TYPE_ALIGN (fntype) = TYPE_ALIGN (t);
-	    TYPE_MODE (fntype) = TYPE_MODE (t);
-	    if (TYPE_METHOD_BASETYPE (t))
-	      TYPE_METHOD_BASETYPE (fntype) = tsubst (TYPE_METHOD_BASETYPE (t),
-						      args, in_decl);
-	    /* Need to generate hash value.  */
-	    my_friendly_abort (84);
-	  }
+	if (TREE_CODE (t) == FUNCTION_TYPE)
+	  fntype = build_function_type (type, arg_types);
+	else 
+	  fntype 
+	    = build_cplus_method_type (TREE_TYPE (TREE_VALUE (arg_types)),
+				       type,
+				       TREE_CHAIN (arg_types));
+
 	fntype = build_type_variant (fntype,
 				     TYPE_READONLY (t),
 				     TYPE_VOLATILE (t));
+
+	/* Substitue the exception specification. */
+	raises = TYPE_RAISES_EXCEPTIONS (t);
 	if (raises)
 	  {
 	    raises = tsubst (raises, args, in_decl);

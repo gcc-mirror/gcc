@@ -3040,6 +3040,8 @@ extern void push_expression_obstack		PROTO((void));
 #define build_scratch_list build_expr_list
 #define make_scratch_vec make_temp_vec
 #define push_scratch_obstack push_expression_obstack
+#define hash_tree_cons_simple(PURPOSE, VALUE, CHAIN) \
+  hash_tree_cons (0, 0, 0, (PURPOSE), (VALUE), (CHAIN))
 
 /* in typeck.c */
 extern tree condition_conversion		PROTO((tree));

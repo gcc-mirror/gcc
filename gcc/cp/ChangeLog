@@ -1,3 +1,14 @@
+1998-09-04  Mark Mitchell  <mark@markmitchell.com>
+
+	* cp-tree.h (hash_tree_cons_simple): New macro.
+	* pt.c (tsubst_arg_types): New function.  Use hash_tree_cons.
+	(coerce_template_parms): Use make_temp_vec, instead of
+	make_tree_vec.  Document this behavior.
+	(lookup_template_class): Likewise.
+	(tsubst, cases METHOD_TYPE, FUNCTION_TYPE): Use tsubst_arg_types.  
+	Remove dead code (and add ssertion to check its deadness).  Fix
+	bug w.r.t. exception specifications.
+
 1998-09-03  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl2.c (import_export_vtable): Always make artificials comdat.
