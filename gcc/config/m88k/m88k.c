@@ -2,7 +2,7 @@
    Copyright (C) 1988, 1989, 1990, 1991 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@mcc.com)
    Enhanced by Michael Meissner (meissner@osf.org)
-   Currently supported by Tom Wood (wood@dg-rtp.dg.com)
+   Version 2 port by Tom Wood (Tom_Wood@NeXT.com)
 
 This file is part of GNU CC.
 
@@ -47,7 +47,7 @@ extern char *ctime ();
 extern int flag_traditional;
 extern FILE *asm_out_file;
 
-static char out_sccs_id[] = "@(#)m88k.c	2.2.14.4 10/29/92 05:37:46";
+static char out_sccs_id[] = "@(#)m88k.c	2.3.3.2 12/16/92 08:26:06";
 static char tm_sccs_id [] = TM_SCCS_ID;
 
 char *m88k_pound_sign = "";	/* Either # for SVR4 or empty for SVR3 */
@@ -584,18 +584,18 @@ block_move_loop (dest, dest_mem, src, src_mem, size, align)
   offset_rtx = gen_rtx (CONST_INT, VOIDmode,
 			MOVSTR_LOOP + (1 - units) * align);
 
-  value_rtx = gen_rtx (MEM, mode,
+  value_rtx = gen_rtx (MEM, MEM_IN_STRUCT_P (src_mem) ? mode : BLKmode,
 		       gen_rtx (PLUS, Pmode,
 				gen_rtx (REG, Pmode, 3),
 				offset_rtx));
   RTX_UNCHANGING_P (value_rtx) = RTX_UNCHANGING_P (src_mem);
   MEM_VOLATILE_P (value_rtx) = MEM_VOLATILE_P (src_mem);
-  MEM_IN_STRUCT_P (value_rtx) = MEM_IN_STRUCT_P (src_mem);
+  MEM_IN_STRUCT_P (value_rtx) = 1;
 
   emit_insn (gen_call_movstrsi_loop
 	     (gen_rtx (SYMBOL_REF, Pmode, IDENTIFIER_POINTER (entry_name)),
 	      dest, src, offset_rtx, value_rtx,
-	      gen_rtx (REG, GET_MODE (value_rtx), ((units & 1) ? 4 : 5)),
+	      gen_rtx (REG, mode, ((units & 1) ? 4 : 5)),
 	      gen_rtx (CONST_INT, VOIDmode, count)));
 
   if (remainder)
@@ -641,13 +641,13 @@ block_move_no_loop (dest, dest_mem, src, src_mem, size, align)
 
   offset_rtx = gen_rtx (CONST_INT, VOIDmode, most - (size - remainder));
 
-  value_rtx = gen_rtx (MEM, mode,
+  value_rtx = gen_rtx (MEM, MEM_IN_STRUCT_P (src_mem) ? mode : BLKmode,
 		       gen_rtx (PLUS, Pmode,
 				gen_rtx (REG, Pmode, 3),
 				offset_rtx));
   RTX_UNCHANGING_P (value_rtx) = RTX_UNCHANGING_P (src_mem);
   MEM_VOLATILE_P (value_rtx) = MEM_VOLATILE_P (src_mem);
-  MEM_IN_STRUCT_P (value_rtx) = MEM_IN_STRUCT_P (src_mem);
+  MEM_IN_STRUCT_P (value_rtx) = 1;
 
   value_reg = ((((most - (size - remainder)) / align) & 1) == 0
 	       ? (align == 8 ? 6 : 5) : 4);
@@ -655,7 +655,7 @@ block_move_no_loop (dest, dest_mem, src, src_mem, size, align)
   emit_insn (gen_call_block_move
 	     (gen_rtx (SYMBOL_REF, Pmode, IDENTIFIER_POINTER (entry_name)),
 	      dest, src, offset_rtx, value_rtx,
-	      gen_rtx (REG, GET_MODE (value_rtx), value_reg)));
+	      gen_rtx (REG, mode, value_reg)));
 
   if (remainder)
     block_move_sequence (gen_rtx (REG, Pmode, 2), dest_mem,
@@ -714,13 +714,14 @@ block_move_sequence (dest, dest_mem, src, src_mem, size, align, offset)
 	      temp[next] = gen_reg_rtx (mode[next]);
 	    }
 	  size -= amount[next];
-	  srcp = gen_rtx (MEM, mode[next],
+	  srcp = gen_rtx (MEM,
+			  MEM_IN_STRUCT_P (src_mem) ? mode[next] : BLKmode,
 			  gen_rtx (PLUS, Pmode, src,
 				   gen_rtx (CONST_INT, SImode, offset_ld)));
 	  RTX_UNCHANGING_P (srcp) = RTX_UNCHANGING_P (src_mem);
 	  MEM_VOLATILE_P (srcp) = MEM_VOLATILE_P (src_mem);
-	  MEM_IN_STRUCT_P (srcp) = MEM_IN_STRUCT_P (src_mem);
-	  emit_move_insn (temp[next], srcp);
+	  MEM_IN_STRUCT_P (srcp) = 1;
+	  emit_insn (gen_rtx (SET, VOIDmode, temp[next], srcp));
 	  offset_ld += amount[next];
 	  active[next] = TRUE;
 	}
@@ -728,13 +729,14 @@ block_move_sequence (dest, dest_mem, src, src_mem, size, align, offset)
       if (active[phase])
 	{
 	  active[phase] = FALSE;
-	  dstp = gen_rtx (MEM, mode[phase],
+	  dstp = gen_rtx (MEM,
+			  MEM_IN_STRUCT_P (dest_mem) ? mode[phase] : BLKmode,
 			  gen_rtx (PLUS, Pmode, dest,
 				   gen_rtx (CONST_INT, SImode, offset_st)));
 	  RTX_UNCHANGING_P (dstp) = RTX_UNCHANGING_P (dest_mem);
 	  MEM_VOLATILE_P (dstp) = MEM_VOLATILE_P (dest_mem);
-	  MEM_IN_STRUCT_P (dstp) = MEM_IN_STRUCT_P (dest_mem);
-	  emit_move_insn (dstp, temp[phase]);
+	  MEM_IN_STRUCT_P (dstp) = 1;
+	  emit_insn (gen_rtx (SET, VOIDmode, dstp, temp[phase]));
 	  offset_st += amount[phase];
 	}
     }
@@ -1491,6 +1493,9 @@ output_file_start (file, f_options, f_len, W_options, W_len)
   register int pos;
 
   ASM_FIRST_LINE (file);
+  if (TARGET_88110
+      && m88k_version != 0 && strcmp (m88k_version, "04.00") >= 0)
+    fprintf (file, "\t%s\n", REQUIRES_88110_ASM_OP);
   output_file_directive (file, main_input_filename);
   /* Switch to the data section so that the coffsem symbol and the
      gcc2_compiled. symbol aren't in the text section.  */
