@@ -629,27 +629,80 @@ initial_offset (from, to)
 rtx
 mn10300_builtin_saveregs ()
 {
-  rtx offset;
+  rtx offset, mem;
   tree fntype = TREE_TYPE (current_function_decl);
   int argadj = ((!(TYPE_ARG_TYPES (fntype) != 0
                    && (TREE_VALUE (tree_last (TYPE_ARG_TYPES (fntype)))
                        != void_type_node)))
                 ? UNITS_PER_WORD : 0);
+  int set = get_varargs_alias_set ();
 
   if (argadj)
     offset = plus_constant (current_function_arg_offset_rtx, argadj);
   else
     offset = current_function_arg_offset_rtx;
 
-  emit_move_insn (gen_rtx (MEM, SImode, current_function_internal_arg_pointer),
-		  gen_rtx (REG, SImode, 0));
-  emit_move_insn (gen_rtx (MEM, SImode,
-			   plus_constant
-			     (current_function_internal_arg_pointer, 4)),
-		  gen_rtx (REG, SImode, 1));
+  mem = gen_rtx_MEM (SImode, current_function_internal_arg_pointer);
+  MEM_ALIAS_SET (mem) = set;
+  emit_move_insn (mem, gen_rtx_REG (SImode, 0));
+
+  mem = gen_rtx_MEM (SImode,
+		     plus_constant (current_function_internal_arg_pointer, 4));
+  MEM_ALIAS_SET (mem) = set;
+  emit_move_insn (mem, gen_rtx_REG (SImode, 1));
+
   return copy_to_reg (expand_binop (Pmode, add_optab,
 				    current_function_internal_arg_pointer,
 				    offset, 0, 0, OPTAB_LIB_WIDEN));
+}
+
+void
+mn10300_va_start (stdarg_p, valist, nextarg)
+     int stdarg_p;
+     tree valist;
+     rtx nextarg;
+{
+  if (stdarg_p)
+    nextarg = expand_builtin_saveregs ();
+
+  std_expand_builtin_va_start (stdarg_p, valist, nextarg);
+}
+
+rtx
+mn10300_va_arg (valist, type)
+     tree valist, type;
+{
+  HOST_WIDE_INT align, rsize;
+  tree t, ptr, pptr;
+
+  /* Compute the rounded size of the type.  */
+  align = PARM_BOUNDARY / BITS_PER_UNIT;
+  rsize = (((int_size_in_bytes (type) + align - 1) / align) * align);
+
+  t = build (POSTINCREMENT_EXPR, TREE_TYPE (valist), valist, 
+	     build_int_2 ((rsize > 8 ? 4 : rsize), 0));
+  TREE_SIDE_EFFECTS (t) = 1;
+
+  ptr = build_pointer_type (type);
+
+  /* "Large" types are passed by reference.  */
+  if (rsize > 8)
+    {
+      pptr = build_pointer_type (ptr);
+      t = build1 (NOP_EXPR, pptr, t);
+      TREE_SIDE_EFFECTS (t) = 1;
+
+      t = build1 (INDIRECT_REF, ptr, t);
+      TREE_SIDE_EFFECTS (t) = 1;
+    }
+  else
+    {
+      t = build1 (NOP_EXPR, ptr, t);
+      TREE_SIDE_EFFECTS (t) = 1;
+    }
+
+  /* Calculate!  */
+  return expand_expr (t, NULL_RTX, Pmode, EXPAND_NORMAL);
 }
 
 /* Return an RTX to represent where a value with mode MODE will be returned
