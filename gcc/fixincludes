@@ -2916,10 +2916,10 @@ else
 fi
 if [ \! -z "$file_to_fix" ]; then
   echo Checking $file_to_fix
-  sed -e '/[  ]MAXINT[        ]/i\
+  sed -e '/^#[ 	]*define[ 	]*MAXINT[ 	]/i\
 #ifndef MAXINT
 '\
-      -e '/[  ]MAXINT[        ]/a\
+      -e '/^#[ 	]*define[ 	]*MAXINT[ 	]/a\
 #endif
 ' $file_to_fix > /tmp/$base
   if cmp $file_to_fix /tmp/$base >/dev/null 2>&1; then \
