@@ -1,3 +1,15 @@
+2000-08-22  Nick Clifton  <nickc@redhat.com>
+
+	* config/arm/lib1funcs.asm (ARM_DIV_MOD_BODY): New macro.
+	Common code for ARM divide and modulus functions.
+	(THUMB_DIV_MOD_BODY): New macro. Thumb equivalent of
+	ARM_DIV_MOD_BODY.
+	(FUNC_END): New macro: Common code at the end of the division and
+	modulo functions.
+	(THUMB_FUNCTION_START): New macro:  Common code at the start of
+	Thumb functions.
+	(__divsi3, __udivsi3, __modsi3, __umodsi3): Use new macros.
+	
 Tue Aug 22 20:34:52 2000  Kaz Kojima <kkojima@rr.iij4u.or.jp>
 
 	* config/sh/sh.md (cmpeqdi_t splitter): Fix a reverse testing.
