@@ -559,6 +559,10 @@ extern tree previous_class_values;
    node, but signed.  */
 tree signed_size_zero_node;
 
+/* The name of the anonymous namespace, throughout this translation
+   unit.  */
+tree anonymous_namespace_name;
+
 
 /* Allocate a level of searching.  */
 
@@ -1783,10 +1787,9 @@ push_namespace (name)
     {
       /* The name of anonymous namespace is unique for the translation
          unit.  */
-      static tree anon_name = NULL_TREE;
-      if (!anon_name)
-        anon_name = get_file_function_name ('N');
-      name = anon_name;
+      if (!anonymous_namespace_name)
+        anonymous_namespace_name = get_file_function_name ('N');
+      name = anonymous_namespace_name;
       d = IDENTIFIER_NAMESPACE_VALUE (name);
       if (d)
         /* Reopening anonymous namespace.  */

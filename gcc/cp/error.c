@@ -733,7 +733,10 @@ dump_decl (t, v)
 	  dump_decl (DECL_CONTEXT (t), v);
 	  OB_PUTC2 (':',':');
 	}
-      OB_PUTID (DECL_NAME (t));
+      if (DECL_NAME (t) == anonymous_namespace_name)
+	OB_PUTS ("{anonymous}");
+      else
+	OB_PUTID (DECL_NAME (t));
       break;
 
     case SCOPE_REF:
