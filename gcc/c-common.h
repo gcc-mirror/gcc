@@ -1340,5 +1340,6 @@ extern void objc_mark_locals_volatile (void *);
 extern void init_pp_output (FILE *);
 extern void preprocess_file (cpp_reader *);
 extern void pp_file_change (const struct line_map *);
+extern void pp_dir_change (cpp_reader *, const char *);
 
 #endif /* ! GCC_C_COMMON_H */

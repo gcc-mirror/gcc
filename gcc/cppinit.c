@@ -451,9 +451,10 @@ cpp_post_options (cpp_reader *pfile)
 }
 
 /* Setup for processing input from the file named FNAME, or stdin if
-   it is the empty string.  Returns true if the file was found.  */
-bool
-cpp_find_main_file (cpp_reader *pfile, const char *fname)
+   it is the empty string.  Return the original filename
+   on success (e.g. foo.i->foo.c), or NULL on failure.  */
+const char *
+cpp_read_main_file (cpp_reader *pfile, const char *fname)
 {
   if (CPP_OPTION (pfile, deps.style) != DEPS_NONE)
     {
@@ -469,26 +470,6 @@ cpp_find_main_file (cpp_reader *pfile, const char *fname)
   if (_cpp_find_failed (pfile->main_file))
     return false;
 
-  if (CPP_OPTION (pfile, working_directory))
-    {
-      const char *dir = getpwd ();
-      char *dir_with_slashes = alloca (strlen (dir) + 3);
-
-      memcpy (dir_with_slashes, dir, strlen (dir));
-      memcpy (dir_with_slashes + strlen (dir), "//", 3);
-
-      if (pfile->cb.dir_change)
-	pfile->cb.dir_change (pfile, dir);
-    }
-  return true;
-}
-
-/* This function reads the file, but does not start preprocessing.
-   This will generate at least one file change callback, and possibly
-   a line change callback.  */
-void
-cpp_push_main_file (cpp_reader *pfile)
-{
   _cpp_stack_file (pfile, pfile->main_file, false);
 
   /* For foo.i, read the original filename foo.c now, for the benefit
@@ -496,10 +477,7 @@ cpp_push_main_file (cpp_reader *pfile)
   if (CPP_OPTION (pfile, preprocessed))
     read_original_filename (pfile);
 
-  /* Set this here so the client can change the option if it wishes,
-     and after stacking the main file so we don't trace the main
-     file.  */
-  pfile->line_maps.trace_includes = CPP_OPTION (pfile, print_include_names);
+  return fname;
 }
 
 /* For preprocessed files, if the first tokens are of the form # NUM.
@@ -577,13 +555,7 @@ read_original_directory (cpp_reader *pfile)
       debugdir[token->val.str.len - 4] = '\0';
 
       pfile->cb.dir_change (pfile, debugdir);
-    }
-
-  /* We want to process the fake line changes as regular changes, to
-     get them output.  */
-  _cpp_backup_tokens (pfile, 3);
-
-  CPP_OPTION (pfile, working_directory) = false;
+    }      
 }
 
 /* This is called at the end of preprocessing.  It pops the last

@@ -1,3 +1,36 @@
+2004-02-04  Per Bothner  <per@bothner.com>
+
+	Partially revert/redo 2003-10-01 change; fix -fworking-directory.
+	* c-ppoutput.c (pp_dir_change):  New function.
+	* c-common.h (pp_dir_change):  New declaration.
+	* cpplib.h (struct cpp_options):  Remove working_directory field.
+	* cppinit.c (cpp_find_main_file, cpp_push_main_file):  Merge back to
+	(cpp_read_main_file):  as before 10-01.  Call _cpp_stack_file.
+	Don't handle -fworking_directory here, but in c_common_post_options.
+	(read_original_directory): Don't back up when done.
+	Don't clear no-longer used working_directory flag.
+	* cpplib.h:  Update declarations to match.
+	* c-lex.c (cb_dir_change):  Move to c-opts.c.
+	(init_c_lex):  Don't set dir_change callback here, since we want
+	to set it even if flag_preprocess_only.
+	* c-opts.c (cb_dir_change):  Function moved from c-lex.c.
+	(c_common_post_options):  Set dir_change callback.
+	Call pp_dir_change if approporiate.
+	(finish_options):  Don't call cpp_find_main_file here.	Hence remove
+	unneeded parameter and result. Do LC_RENAME for <built-in>.
+	(c_common_post_options):  Call cpp_read_main_file here instead.
+	(c_common_init):  Update accordingly.
+	(push_command_line_include):  Don't cpp_push_main_file.
+	Do LC_RENAME rather than LC_LEASE to get back to main file.
+	Compared to pre-10-01 version, inline cpp_rename_to_main_file.
+	(c_common_parse_file):  Call cpp_read_main_file for subsequent main
+	files, but call finish_options for all files.
+	* c-opts.c (sanitize_cpp_opts):  Don't set cpp_opts->working_directory.
+	* fix-header.c (read_scan_file):  Call cpp_read_main_file instead of
+	cpp_find_main_file + cpp_push_main_file.
+	* c-lex.c (fe_file_change):  Don't set main_input_filename here.
+	* opts.c (handle_options):  Only set main_input_filename first time.
+
 2004-02-04  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* Makefile.in: Move target, host overrides after per-language
