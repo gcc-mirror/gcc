@@ -1008,7 +1008,8 @@ expand_call (exp, target, ignore)
 	      += int_size_in_bytes (TREE_TYPE (args[i].tree_value));
 	}
 
-      if (copy_to_evaluate_size * 2 >= args_size.constant)
+      if (copy_to_evaluate_size * 2 >= args_size.constant
+	  && args_size.constant > 0)
 	must_preallocate = 1;
     }
 
