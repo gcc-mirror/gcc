@@ -1,3 +1,9 @@
+2004-04-02  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/ext/mt_allocator.h (__mt_alloc<>::deallocate):
+	Rearrange arithmetic to avoid computing two divisions at
+	each deallocation.
+
 2004-04-01  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/ext/mt_allocator.h (__mt_alloc<>::_S_initialize):
