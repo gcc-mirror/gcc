@@ -285,6 +285,14 @@ sdbout_init (asm_file, input_file_name, syms)
      char *input_file_name;
      tree syms;
 {
+#ifdef RMS_QUICK_HACK_1
+  tree t;
+  for (t = syms; t; t = TREE_CHAIN (t))
+    if (DECL_NAME (t) && IDENTIFIER_POINTER (DECL_NAME (t)) != 0
+	&& !strcmp (IDENTIFIER_POINTER (DECL_NAME (t)), "__vtbl_ptr_type"))
+      sdbout_symbol (t, 0);
+#endif  
+
 #if 0 /* Nothing need be output for the predefined types.  */
   /* Get all permanent types that have typedef names,
      and output them all, except for those already output.  */
