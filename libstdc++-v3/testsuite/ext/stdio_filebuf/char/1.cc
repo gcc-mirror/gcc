@@ -1,6 +1,6 @@
 // 2003-02-11  Paolo Carlini  <pcarlini@unitus.it>
 
-// Copyright (C) 2003 Free Software Foundation, Inc.
+// Copyright (C) 2003, 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -26,11 +26,9 @@
 // { dg-do compile }
 
 // libstdc++/9320
-namespace test 
+namespace __gnu_cxx
 {
-  using namespace std;
-  using __gnu_test::pod_char;
   typedef short type_t;
-  template class __gnu_cxx::stdio_filebuf<type_t, char_traits<type_t> >;
-  template class __gnu_cxx::stdio_filebuf<pod_char, char_traits<pod_char> >;
-} // test
+  template class stdio_filebuf<type_t, std::char_traits<type_t> >;
+  template class stdio_filebuf<__gnu_test::pod_char, std::char_traits<__gnu_test::pod_char> >;
+} // __gnu_cxx

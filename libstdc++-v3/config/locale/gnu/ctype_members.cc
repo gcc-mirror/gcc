@@ -1,6 +1,6 @@
 // std::ctype implementation details, GNU version -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -46,11 +46,11 @@ namespace std
     { 		
       if (std::strcmp(__s, "C") != 0 && std::strcmp(__s, "POSIX") != 0)
 	{
-	  _S_destroy_c_locale(_M_c_locale_ctype);
-	  _S_create_c_locale(_M_c_locale_ctype, __s); 
-	  _M_toupper = _M_c_locale_ctype->__ctype_toupper;
-	  _M_tolower = _M_c_locale_ctype->__ctype_tolower;
-	  _M_table = _M_c_locale_ctype->__ctype_b;
+	  this->_S_destroy_c_locale(this->_M_c_locale_ctype);
+	  this->_S_create_c_locale(this->_M_c_locale_ctype, __s); 
+	  this->_M_toupper = this->_M_c_locale_ctype->__ctype_toupper;
+	  this->_M_tolower = this->_M_c_locale_ctype->__ctype_tolower;
+	  this->_M_table = this->_M_c_locale_ctype->__ctype_b;
 	}
     }
 

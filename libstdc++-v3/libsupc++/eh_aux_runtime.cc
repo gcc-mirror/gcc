@@ -34,7 +34,6 @@
 #include "unwind-cxx.h"
 #include "exception_defines.h"
 
-
 extern "C" void
 __cxa_bad_cast ()
 {

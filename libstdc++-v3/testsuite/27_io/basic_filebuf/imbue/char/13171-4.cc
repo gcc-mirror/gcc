@@ -33,7 +33,7 @@ protected:
 };
 
 // libstdc++/13171
-int test01()
+void test01()
 {
   bool test __attribute__((unused)) = true;
   using namespace std;
@@ -51,4 +51,5 @@ int test01()
 int main()
 {
   test01();
+  return 0;
 }

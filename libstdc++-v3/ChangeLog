@@ -1,3 +1,89 @@
+2004-04-29  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/27_io/basic_istream/extractors_character/char/9555-ic.cc: 
+	Clarify assertion, set test variable to false before assert.
+	* testsuite/27_io/basic_istringstream/str/char/1.cc: Same.
+	* testsuite/27_io/basic_stringstream/str/char/1.cc: Same.
+	* testsuite/27_io/ios_base/storage/2.cc: Same.
+	
+	* testsuite/27_io/basic_filebuf/imbue/char/13171-4.cc: Fix
+	function returns.
+	* testsuite/27_io/basic_filebuf/imbue/wchar_t/13582-3.cc: Same.
+	* testsuite/27_io/fpos/14320-3.cc: Same.
+	
+	* testsuite/27_io/basic_filebuf/2.cc: Instantiate in namespace std.
+	* testsuite/27_io/fpos/1.cc: Same.
+	* testsuite/27_io/basic_stringstream/2.cc: Same.
+	* testsuite/27_io/basic_stringbuf/4.cc: Same.
+	* testsuite/27_io/basic_stringbuf/1.cc: Same.
+	* testsuite/27_io/basic_stringbuf/2.cc: Same.
+	* testsuite/27_io/basic_streambuf/2.cc: Same.
+	* testsuite/27_io/basic_ostringstream/2.cc: Same.
+	* testsuite/27_io/basic_ostream/2.cc: Same.
+	* testsuite/27_io/basic_ofstream/2.cc: Same.
+	* testsuite/27_io/basic_istringstream/2.cc: Same.
+	* testsuite/27_io/basic_istream/2.cc: Same.
+	* testsuite/27_io/basic_iostream/2.cc: Same.
+	* testsuite/27_io/basic_ios/2.cc: Same.
+	* testsuite/27_io/basic_ifstream/2.cc: Same.
+	* testsuite/27_io/basic_fstream/2.cc: Same.
+	* testsuite/ext/stdio_filebuf/char/1.cc: Same, in namespace __gnu_cxx.
+
+	* testsuite/21_strings/basic_string/capacity/1.cc: Don't compare
+	unsigned against zero.
+	* testsuite/21_strings/basic_string/capacity/wchar_t/1.cc: Same.
+	* testsuite/21_strings/basic_string/capacity/char/1.cc: Same.
+
+	* testsuite/18_support/new_delete_placement.cc: Initialize
+	variables before first use.
+	* testsuite/21_strings/char_traits/requirements/wchar_t/1.cc: Same.
+	* testsuite/21_strings/char_traits/requirements/char/1.cc: Same.
+	* testsuite/21_strings/char_traits/requirements/short/1.cc: Same.
+	* testsuite/27_io/basic_istream/seekg/char/exceptions_badbit_throw.cc: 
+	Same.
+	* testsuite/27_io/basic_ostream/inserters_arithmetic/char/exceptions_badbit_throw.cc: Same.
+	* testsuite/27_io/basic_ostream/seekp/char/exceptions_badbit_throw.cc: 
+	Same.
+	* testsuite/27_io/basic_ostream/inserters_arithmetic/char/exceptions_failbit_throw.cc: Same.
+	* testsuite/27_io/types/2.cc: Same.
+
+	* testsuite/ext/stdio_sync_filebuf/wchar_t/12077.cc: Fix temporary
+	file name.	
+
+2004-04-29  Benjamin Kosnik  <bkoz@redhat.com>
+
+	Fixups for EDG front end.
+	* include/ext/rope: Instead of non-existent function
+	_Data_allocate, use allocator's allocate. Use this.
+	(namespace _Rope_constants): Move _S_max_rope_depth, and _Tag
+	enumerations from _Rope_RopeRep here.
+	* include/ext/ropeimpl.h: Same.
+	* src/ext-inst.cc (_S_min_len): Fix up definition.
+	
+	* config/locale/gnu/ctype_members.cc: Qualify base class members
+	with this.
+	* config/locale/generic/ctype_members.cc: Same.
+	* config/locale/gnu/messages_members.h: Same.
+	* config/locale/generic/messages_members.h: Same.
+	* src/ctype.cc: Same.
+	* include/bits/codecvt.h: Same.
+	
+	* include/bits/boost_concept_check.h: Declare.
+	(__error_type_must_be_an_unsigned_integer_type): Remove this.
+	(__error_type_must_be_an_integer_type): Remove this.
+	(__error_type_must_be_a_signed_integer_type): Remove this.	
+
+	* config/io/basic_file_stdio.cc (__basic_file::sys_open): Remove cast.
+
+	* libsupc++/eh_alloc.cc (__cxa_free_exception): Add exception
+	specification to definition.
+	(__cxa_allocate_exception): Same.
+	* libsupc++/eh_catch.cc (__cxa_begin_catch): Same.
+	* libsupc++/eh_globals.cc (__cxa_get_globals_fast): Same.
+	(__cxa_get_globals): Same.	
+	
+	* libsupc++/del_op.cc: Add comment about freestanding.
+
 2004-04-29  Dhruv Matani  <dhruvbird@gmx.net>
 
 	* include/ext/malloc_allocator.h: Fixed the construct function to

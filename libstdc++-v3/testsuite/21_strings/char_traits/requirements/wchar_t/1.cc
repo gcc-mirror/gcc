@@ -1,6 +1,6 @@
 // 1999-06-03 bkoz
 
-// Copyright (C) 1999, 2000, 2001, 2003 Free Software Foundation, Inc.
+// Copyright (C) 1999, 2000, 2001, 2003, 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -56,6 +56,7 @@ void test02(void)
   const wchar_t str_lit1[] = L"montara and ocean beach";
   int len = sizeof(str_lit1) + sizeof(array1) - 1; // two terminating chars
   wchar_t array2[len];
+  std::char_traits<wchar_t>::copy(array2, L"boracay, philippines", len);
 
   VERIFY( str_lit1[0] == 'm' );
   c1 = array2[0];

@@ -234,7 +234,7 @@ class _Rope_char_consumer {
 // First a lot of forward declarations.  The standard seems to require
 // much stricter "declaration before use" than many of the implementations
 // that preceded it.
-template<class _CharT, class _Alloc=allocator<_CharT> > class rope;
+template<class _CharT, class _Alloc = allocator<_CharT> > class rope;
 template<class _CharT, class _Alloc> struct _Rope_RopeConcatenation;
 template<class _CharT, class _Alloc> struct _Rope_RopeLeaf;
 template<class _CharT, class _Alloc> struct _Rope_RopeFunction;
@@ -459,6 +459,11 @@ struct _Rope_rep_base
 # undef __ROPE_DEFINE_ALLOC
 };
 
+namespace _Rope_constants
+{
+  enum { _S_max_rope_depth = 45 };
+  enum _Tag {_S_leaf, _S_concat, _S_substringfn, _S_function};
+}
 
 template<class _CharT, class _Alloc>
 struct _Rope_RopeRep : public _Rope_rep_base<_CharT,_Alloc>
@@ -467,9 +472,7 @@ struct _Rope_RopeRep : public _Rope_rep_base<_CharT,_Alloc>
 # endif
 {
     public:
-    enum { _S_max_rope_depth = 45 };
-    enum _Tag {_S_leaf, _S_concat, _S_substringfn, _S_function};
-    _Tag _M_tag:8;
+    _Rope_constants::_Tag _M_tag:8;
     bool _M_is_balanced:8;
     unsigned char _M_depth;
     __GC_CONST _CharT* _M_c_string;
@@ -483,7 +486,7 @@ struct _Rope_RopeRep : public _Rope_rep_base<_CharT,_Alloc>
     typedef typename _Rope_rep_base<_CharT,_Alloc>::allocator_type
                         allocator_type;
     using _Rope_rep_base<_CharT,_Alloc>::get_allocator;
-    _Rope_RopeRep(_Tag __t, int __d, bool __b, size_t __size,
+    _Rope_RopeRep(_Rope_constants::_Tag __t, int __d, bool __b, size_t __size,
                   allocator_type __a)
         : _Rope_rep_base<_CharT,_Alloc>(__size, __a),
 #         ifndef __GC
@@ -579,9 +582,7 @@ struct _Rope_RopeLeaf : public _Rope_RopeRep<_CharT,_Alloc> {
     typedef typename _Rope_rep_base<_CharT,_Alloc>::allocator_type
                         allocator_type;
     _Rope_RopeLeaf(__GC_CONST _CharT* __d, size_t __size, allocator_type __a)
-        : _Rope_RopeRep<_CharT,_Alloc>(_Rope_RopeRep<_CharT,_Alloc>::_S_leaf,
-				       0, true, __size, __a),
-          _M_data(__d)
+        : _Rope_RopeRep<_CharT,_Alloc>(_Rope_constants::_S_leaf, 0, true, __size, __a), _M_data(__d)
         {
         if (_S_is_basic_char_type((_CharT *)0)) {
             // already eos terminated.
@@ -612,7 +613,7 @@ struct _Rope_RopeConcatenation : public _Rope_RopeRep<_CharT,_Alloc> {
                              _Rope_RopeRep<_CharT,_Alloc>* __r,
                              allocator_type __a)
 
-      : _Rope_RopeRep<_CharT,_Alloc>(_Rope_RopeRep<_CharT,_Alloc>::_S_concat,
+      : _Rope_RopeRep<_CharT,_Alloc>(_Rope_constants::_S_concat,
                                      std::max(__l->_M_depth, __r->_M_depth) + 1,
                                      false,
                                      __l->_M_size + __r->_M_size, __a),
@@ -650,7 +651,7 @@ struct _Rope_RopeFunction : public _Rope_RopeRep<_CharT,_Alloc> {
                                         allocator_type;
     _Rope_RopeFunction(char_producer<_CharT>* __f, size_t __size,
                         bool __d, allocator_type __a)
-      : _Rope_RopeRep<_CharT,_Alloc>(_Rope_RopeRep<_CharT,_Alloc>::_S_function,
+      : _Rope_RopeRep<_CharT,_Alloc>(_Rope_constants::_S_function,
 				     0, true, __size, __a)
       , _M_fn(__f)
 #       ifndef __GC
@@ -690,15 +691,15 @@ struct _Rope_RopeSubstring : public _Rope_RopeFunction<_CharT,_Alloc>,
     virtual void operator()(size_t __start_pos, size_t __req_len,
                             _CharT* __buffer) {
         switch(_M_base->_M_tag) {
-            case _Rope_RopeFunction<_CharT,_Alloc>::_S_function:
-            case _Rope_RopeFunction<_CharT,_Alloc>::_S_substringfn:
+            case _Rope_constants::_S_function:
+            case _Rope_constants::_S_substringfn:
               {
                 char_producer<_CharT>* __fn =
                         ((_Rope_RopeFunction<_CharT,_Alloc>*)_M_base)->_M_fn;
                 (*__fn)(__start_pos + _M_start, __req_len, __buffer);
               }
               break;
-            case _Rope_RopeFunction<_CharT,_Alloc>::_S_leaf:
+            case _Rope_constants::_S_leaf:
               {
                 __GC_CONST _CharT* __s =
                         ((_Rope_RopeLeaf<_CharT,_Alloc>*)_M_base)->_M_data;
@@ -722,7 +723,7 @@ struct _Rope_RopeSubstring : public _Rope_RopeFunction<_CharT,_Alloc>,
 #       ifndef __GC
             _M_base->_M_ref_nonnil();
 #       endif
-        this->_M_tag = _Rope_RopeFunction<_CharT,_Alloc>::_S_substringfn;
+        this->_M_tag = _Rope_constants::_S_substringfn;
     }
     virtual ~_Rope_RopeSubstring()
       {
@@ -1426,7 +1427,7 @@ class rope : public _Rope_base<_CharT,_Alloc> {
                                   _CharT* __buffer);
 
         static const unsigned long
-          _S_min_len[_RopeRep::_S_max_rope_depth + 1];
+          _S_min_len[_Rope_constants::_S_max_rope_depth + 1];
 
         static bool _S_is_balanced(_RopeRep* __r)
                 { return (__r->_M_size >= _S_min_len[__r->_M_depth]); }
@@ -1511,7 +1512,7 @@ class rope : public _Rope_base<_CharT,_Alloc> {
         rope(_CharT __c, const allocator_type& __a = allocator_type())
         : _Base(__a)
         {
-            _CharT* __buf = _Data_allocate(_S_rounded_up_size(1));
+            _CharT* __buf = __a.allocate(_S_rounded_up_size(1));
 
             std::_Construct(__buf, __c);
             try {
@@ -1664,7 +1665,7 @@ class rope : public _Rope_base<_CharT,_Alloc> {
         // is safe for multiple threads.
         void delete_c_str () {
             if (0 == this->_M_tree_ptr) return;
-            if (_RopeRep::_S_leaf == this->_M_tree_ptr->_M_tag &&
+            if (_Rope_constants::_S_leaf == this->_M_tree_ptr->_M_tag &&
                 ((_RopeLeaf*)this->_M_tree_ptr)->_M_data ==
                       this->_M_tree_ptr->_M_c_string) {
                 // Representation shared
@@ -1711,7 +1712,7 @@ class rope : public _Rope_base<_CharT,_Alloc> {
         }
 
         size_type max_size() const {
-            return _S_min_len[_RopeRep::_S_max_rope_depth-1] - 1;
+            return _S_min_len[_Rope_constants::_S_max_rope_depth - 1] - 1;
             //  Guarantees that the result can be sufficirntly
             //  balanced.  Longer ropes will probably still work,
             //  but it's harder to make guarantees.

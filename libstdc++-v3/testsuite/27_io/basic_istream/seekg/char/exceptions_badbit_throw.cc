@@ -1,4 +1,4 @@
-// Copyright (C) 2003 Free Software Foundation, Inc.
+// Copyright (C) 2003, 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -67,7 +67,7 @@ void test02()
   istream stream(&bib);
   stream.exceptions(ios_base::badbit);
 
-  istream::off_type off;
+  istream::off_type off(5);
 
   try
     {

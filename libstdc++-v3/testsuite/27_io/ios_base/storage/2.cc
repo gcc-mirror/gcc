@@ -58,7 +58,8 @@ void test02()
     }
   catch(...)
     {
-      VERIFY( test = false );
+      test = false;
+      VERIFY( test );
     }
   VERIFY( v == 0 );
 
@@ -77,7 +78,8 @@ void test02()
     }
   catch(...)
     {
-      VERIFY( test = false );
+      test = false;
+      VERIFY( test );
     }
   VERIFY( v == &test );
 
@@ -96,7 +98,8 @@ void test02()
     }
   catch(...)
     {
-      VERIFY( test = false );
+      test = false;
+      VERIFY( test );
     }
   VERIFY( l == 0 );
 
@@ -115,7 +118,8 @@ void test02()
     }
   catch(...)
     {
-      VERIFY( test = false );
+      test = false;
+      VERIFY( test );
     }
   VERIFY( l == 1 );
 

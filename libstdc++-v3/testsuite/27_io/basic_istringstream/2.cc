@@ -1,6 +1,6 @@
 // 2002-07-25 Benjamin Kosnik <bkoz@redhat.com>
 
-// Copyright (C) 2002 Free Software Foundation, Inc.
+// Copyright (C) 2002, 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -34,9 +34,8 @@
 
 // { dg-do compile }
 
-namespace test 
+namespace std
 {
-  using namespace std;
   typedef short type_t;
   template class basic_istringstream<type_t, char_traits<type_t> >;
 } // test
