@@ -1,3 +1,8 @@
+Thu May  6 08:23:52 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* bugs.texi, news.texi: Automatic arrays reportedly working
+	on HP-UX systems.
+
 Thu May  6 08:19:31 1999  Craig Burley  <craig@jcb-sc.com>
 
 	* g77.texi (Advantages Over f2c): Expand on this topic.

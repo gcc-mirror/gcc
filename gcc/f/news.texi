@@ -9,7 +9,7 @@
 @c in the standalone derivations of this file (e.g. NEWS).
 @set copyrights-news 1995-1999
 
-@set last-update-news 1999-05-03
+@set last-update-news 1999-05-06
 
 @include root.texi
 
@@ -173,6 +173,12 @@ of the same assignment
 (a very rare construction).
 It now assigns through a temporary,
 in cases where such partial overlap is deemed possible.
+@end ifclear
+
+@ifclear USERVISONLY
+@item
+@c Tim Prince reported this, regarding the TEST_FPU benchmark.
+Automatic arrays now seem to be working on HP-UX systems.
 @end ifclear
 
 @ifclear USERVISONLY
