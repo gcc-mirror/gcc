@@ -3326,15 +3326,10 @@ only if @samp{-trigraphs} was also specified, but now works
 independently.  Warnings are not given for trigraphs within comments, as
 we feel this is obnoxious.
 
-@item -Wwhite-space
-@findex -Wwhite-space
-Warn about possible white space confusion, e.g. white space between a
-backslash and a newline.
-
 @item -Wall
 @findex -Wall
-Requests @samp{-Wcomment}, @samp{-Wtrigraphs}, and @samp{-Wwhite-space}
-(but not @samp{-Wtraditional} or @samp{-Wundef}).
+Requests @samp{-Wcomment} and @samp{-Wtrigraphs} (but not
+@samp{-Wtraditional} or @samp{-Wundef}).
 
 @item -Wtraditional
 @findex -Wtraditional

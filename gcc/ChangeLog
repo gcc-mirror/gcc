@@ -1,3 +1,8 @@
+2001-04-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* cpp.texi (-Wwhite-space): Remove.
+	(-Wall): -Wall does not imply -Wwhite-space.
+
 2001-04-17  Zack Weinberg  <zackw@stanford.edu>
 
 	* dbxout.c (dbxout_init): If DBX_OUTPUT_GCC_MARKER is defined,
