@@ -6784,7 +6784,7 @@ output_line_command (ip, op, conditional, file_change)
      enum file_change_code file_change;
 {
   int len;
-  char line_cmd_buf[500];
+  char *line_cmd_buf;
 
   if (no_line_commands
       || ip->fname == NULL
@@ -6816,6 +6816,7 @@ output_line_command (ip, op, conditional, file_change)
     ip->bufp++;
   }
 
+  line_cmd_buf = (char *) alloca (strlen (ip->nominal_fname) + 100);
 #ifdef OUTPUT_LINE_COMMANDS
   sprintf (line_cmd_buf, "#line %d \"%s\"", ip->lineno, ip->nominal_fname);
 #else
