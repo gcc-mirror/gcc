@@ -316,77 +316,83 @@
 /* Define if read-only mmap of a plain file works. */
 #undef HAVE_MMAP_FILE
 
-/* Define if you need to provide a declaration for this function. */
-#undef NEED_DECLARATION_BCOPY
+/* Define to 1 if we found this declaration otherwise define to 0. */
+#undef HAVE_DECL_BCOPY
 
-/* Define if you need to provide a declaration for this function. */
-#undef NEED_DECLARATION_BZERO
+/* Define to 1 if we found this declaration otherwise define to 0. */
+#undef HAVE_DECL_BZERO
 
-/* Define if you need to provide a declaration for this function. */
-#undef NEED_DECLARATION_BCMP
+/* Define to 1 if we found this declaration otherwise define to 0. */
+#undef HAVE_DECL_BCMP
 
-/* Define if you need to provide a declaration for this function. */
-#undef NEED_DECLARATION_INDEX
+/* Define to 1 if we found this declaration otherwise define to 0. */
+#undef HAVE_DECL_INDEX
 
-/* Define if you need to provide a declaration for this function. */
-#undef NEED_DECLARATION_RINDEX
+/* Define to 1 if we found this declaration otherwise define to 0. */
+#undef HAVE_DECL_RINDEX
 
-/* Define if you need to provide a declaration for this function. */
-#undef NEED_DECLARATION_GETENV
+/* Define to 1 if we found this declaration otherwise define to 0. */
+#undef HAVE_DECL_GETENV
 
-/* Define if you need to provide a declaration for this function. */
-#undef NEED_DECLARATION_ATOL
+/* Define to 1 if we found this declaration otherwise define to 0. */
+#undef HAVE_DECL_ATOL
 
-/* Define if you need to provide a declaration for this function. */
-#undef NEED_DECLARATION_SBRK
+/* Define to 1 if we found this declaration otherwise define to 0. */
+#undef HAVE_DECL_SBRK
 
-/* Define if you need to provide a declaration for this function. */
-#undef NEED_DECLARATION_ABORT
+/* Define to 1 if we found this declaration otherwise define to 0. */
+#undef HAVE_DECL_ABORT
 
-/* Define if you need to provide a declaration for this function. */
-#undef NEED_DECLARATION_ATOF
+/* Define to 1 if we found this declaration otherwise define to 0. */
+#undef HAVE_DECL_ATOF
 
-/* Define if you need to provide a declaration for this function. */
-#undef NEED_DECLARATION_GETCWD
+/* Define to 1 if we found this declaration otherwise define to 0. */
+#undef HAVE_DECL_GETCWD
 
-/* Define if you need to provide a declaration for this function. */
-#undef NEED_DECLARATION_GETWD
+/* Define to 1 if we found this declaration otherwise define to 0. */
+#undef HAVE_DECL_GETWD
 
-/* Define if you need to provide a declaration for this function. */
-#undef NEED_DECLARATION_STRSIGNAL
+/* Define to 1 if we found this declaration otherwise define to 0. */
+#undef HAVE_DECL_STRSIGNAL
 
-/* Define if you need to provide a declaration for this function. */
-#undef NEED_DECLARATION_PUTC_UNLOCKED
+/* Define to 1 if we found this declaration otherwise define to 0. */
+#undef HAVE_DECL_PUTC_UNLOCKED
 
-/* Define if you need to provide a declaration for this function. */
-#undef NEED_DECLARATION_FPUTS_UNLOCKED
+/* Define to 1 if we found this declaration otherwise define to 0. */
+#undef HAVE_DECL_FPUTS_UNLOCKED
 
-/* Define if you need to provide a declaration for this function. */
-#undef NEED_DECLARATION_STRSTR
+/* Define to 1 if we found this declaration otherwise define to 0. */
+#undef HAVE_DECL_STRSTR
 
-/* Define if you need to provide a declaration for this function. */
-#undef NEED_DECLARATION_ENVIRON
+/* Define to 1 if we found this declaration otherwise define to 0. */
+#undef HAVE_DECL_ENVIRON
 
-/* Define if you need to provide a declaration for this function. */
-#undef NEED_DECLARATION_MALLOC
+/* Define to 1 if we found this declaration otherwise define to 0. */
+#undef HAVE_DECL_MALLOC
 
-/* Define if you need to provide a declaration for this function. */
-#undef NEED_DECLARATION_REALLOC
+/* Define to 1 if we found this declaration otherwise define to 0. */
+#undef HAVE_DECL_REALLOC
 
-/* Define if you need to provide a declaration for this function. */
-#undef NEED_DECLARATION_CALLOC
+/* Define to 1 if we found this declaration otherwise define to 0. */
+#undef HAVE_DECL_CALLOC
 
-/* Define if you need to provide a declaration for this function. */
-#undef NEED_DECLARATION_FREE
+/* Define to 1 if we found this declaration otherwise define to 0. */
+#undef HAVE_DECL_FREE
 
-/* Define if you need to provide a declaration for this function. */
-#undef NEED_DECLARATION_GETRLIMIT
+/* Define to 1 if we found this declaration otherwise define to 0. */
+#undef HAVE_DECL_BASENAME
 
-/* Define if you need to provide a declaration for this function. */
-#undef NEED_DECLARATION_SETRLIMIT
+/* Define to 1 if we found this declaration otherwise define to 0. */
+#undef HAVE_DECL_GETOPT
 
-/* Define if you need to provide a declaration for this function. */
-#undef NEED_DECLARATION_GETRUSAGE
+/* Define to 1 if we found this declaration otherwise define to 0. */
+#undef HAVE_DECL_GETRLIMIT
+
+/* Define to 1 if we found this declaration otherwise define to 0. */
+#undef HAVE_DECL_SETRLIMIT
+
+/* Define to 1 if we found this declaration otherwise define to 0. */
+#undef HAVE_DECL_GETRUSAGE
 
 /* Define if host mkdir takes a single argument. */
 #undef MKDIR_TAKES_ONE_ARG

@@ -53,24 +53,24 @@ Boston, MA 02111-1307, USA.  */
 /* The compiler is not a multi-threaded application and therefore we
    do not have to use the locking functions.
 
-   NEED_DECLARATION_PUTC_UNLOCKED actually indicates whether or not
-   the IO code is multi-thread safe by default.  If it is not declared,
-   then do not worry about using the _unlocked functions.
+   HAVE_DECL_PUTC_UNLOCKED actually indicates whether or not the IO
+   code is multi-thread safe by default.  If it is set to 0, then do
+   not worry about using the _unlocked functions.
    
    fputs_unlocked is an extension and needs to be prototyped specially.  */
 
-#if defined HAVE_PUTC_UNLOCKED && !defined NEED_DECLARATION_PUTC_UNLOCKED
+#if defined HAVE_PUTC_UNLOCKED && (defined (HAVE_DECL_PUTC_UNLOCKED) && HAVE_DECL_PUTC_UNLOCKED)
 # undef putc
 # define putc(C, Stream) putc_unlocked (C, Stream)
 #endif
-#if defined HAVE_FPUTC_UNLOCKED && !defined NEED_DECLARATION_PUTC_UNLOCKED
+#if defined HAVE_FPUTC_UNLOCKED && (defined (HAVE_DECL_PUTC_UNLOCKED) && HAVE_DECL_PUTC_UNLOCKED)
 # undef fputc
 # define fputc(C, Stream) fputc_unlocked (C, Stream)
 #endif
-#if defined HAVE_FPUTS_UNLOCKED && !defined NEED_DECLARATION_PUTC_UNLOCKED
+#if defined HAVE_FPUTS_UNLOCKED && (defined (HAVE_DECL_PUTC_UNLOCKED) && HAVE_DECL_PUTC_UNLOCKED)
 # undef fputs
 # define fputs(String, Stream) fputs_unlocked (String, Stream)
-# ifdef NEED_DECLARATION_FPUTS_UNLOCKED
+# if defined (HAVE_DECL_FPUTS_UNLOCKED) && !HAVE_DECL_FPUTS_UNLOCKED
 extern int fputs_unlocked PARAMS ((const char *, FILE *));
 # endif
 #endif
@@ -305,11 +305,14 @@ extern int errno;
 #define WSTOPSIG WEXITSTATUS
 #endif
 
-
+/* The HAVE_DECL_* macros are three-state, undefined, 0 or 1.  If they
+   are defined to 0 then we must provide the relevant declaration
+   here.  These checks will be in the undefined state while configure
+   is running so be careful to test "defined (HAVE_DECL_*)".  */
 
 #ifndef bcopy
 # ifdef HAVE_BCOPY
-#  ifdef NEED_DECLARATION_BCOPY
+#  if defined (HAVE_DECL_BCOPY) && !HAVE_DECL_BCOPY
 extern void bcopy PARAMS ((const PTR, PTR, size_t));
 #  endif
 # else /* ! HAVE_BCOPY */
@@ -319,7 +322,7 @@ extern void bcopy PARAMS ((const PTR, PTR, size_t));
 
 #ifndef bcmp
 # ifdef HAVE_BCMP
-#  ifdef NEED_DECLARATION_BCMP
+#  if defined (HAVE_DECL_BCMP) && !HAVE_DECL_BCMP
 extern int bcmp PARAMS ((const PTR, const PTR, size_t));
 #  endif
 # else /* ! HAVE_BCMP */
@@ -329,7 +332,7 @@ extern int bcmp PARAMS ((const PTR, const PTR, size_t));
 
 #ifndef bzero
 # ifdef HAVE_BZERO
-#  ifdef NEED_DECLARATION_BZERO
+#  if defined (HAVE_DECL_BZERO) && !HAVE_DECL_BZERO
 extern void bzero PARAMS ((PTR, size_t));
 #  endif
 # else /* ! HAVE_BZERO */
@@ -339,7 +342,7 @@ extern void bzero PARAMS ((PTR, size_t));
 
 #ifndef index
 # ifdef HAVE_INDEX
-#  ifdef NEED_DECLARATION_INDEX
+#  if defined (HAVE_DECL_INDEX) && !HAVE_DECL_INDEX
 extern char *index PARAMS ((const char *, int));
 #  endif
 # else /* ! HAVE_INDEX */
@@ -349,7 +352,7 @@ extern char *index PARAMS ((const char *, int));
 
 #ifndef rindex
 # ifdef HAVE_RINDEX
-#  ifdef NEED_DECLARATION_RINDEX
+#  if defined (HAVE_DECL_RINDEX) && !HAVE_DECL_RINDEX
 extern char *rindex PARAMS ((const char *, int));
 #  endif
 # else /* ! HAVE_RINDEX */
@@ -357,35 +360,35 @@ extern char *rindex PARAMS ((const char *, int));
 # endif
 #endif
 
-#ifdef NEED_DECLARATION_ATOF
+#if defined (HAVE_DECL_ATOF) && !HAVE_DECL_ATOF
 extern double atof PARAMS ((const char *));
 #endif
 
-#ifdef NEED_DECLARATION_ATOL
+#if defined (HAVE_DECL_ATOL) && !HAVE_DECL_ATOL
 extern long atol PARAMS ((const char *));
 #endif
 
-#ifdef NEED_DECLARATION_FREE
+#if defined (HAVE_DECL_FREE) && !HAVE_DECL_FREE
 extern void free PARAMS ((PTR));
 #endif
 
-#ifdef NEED_DECLARATION_GETCWD
+#if defined (HAVE_DECL_GETCWD) && !HAVE_DECL_GETCWD
 extern char *getcwd PARAMS ((char *, size_t));
 #endif
 
-#ifdef NEED_DECLARATION_GETENV
+#if defined (HAVE_DECL_GETENV) && !HAVE_DECL_GETENV
 extern char *getenv PARAMS ((const char *));
 #endif
 
-#ifdef NEED_DECLARATION_GETWD
+#if defined (HAVE_DECL_GETWD) && !HAVE_DECL_GETWD
 extern char *getwd PARAMS ((char *));
 #endif
 
-#ifdef NEED_DECLARATION_SBRK
+#if defined (HAVE_DECL_SBRK) && !HAVE_DECL_SBRK
 extern PTR sbrk PARAMS ((int));
 #endif
 
-#ifdef NEED_DECLARATION_STRSTR
+#if defined (HAVE_DECL_STRSTR) && !HAVE_DECL_STRSTR
 extern char *strstr PARAMS ((const char *, const char *));
 #endif
 
@@ -393,28 +396,28 @@ extern char *strstr PARAMS ((const char *, const char *));
 #include <malloc.h>
 #endif
 
-#ifdef NEED_DECLARATION_MALLOC
+#if defined (HAVE_DECL_MALLOC) && !HAVE_DECL_MALLOC
 extern PTR malloc PARAMS ((size_t));
 #endif
 
-#ifdef NEED_DECLARATION_CALLOC
+#if defined (HAVE_DECL_CALLOC) && !HAVE_DECL_CALLOC
 extern PTR calloc PARAMS ((size_t, size_t));
 #endif
 
-#ifdef NEED_DECLARATION_REALLOC
+#if defined (HAVE_DECL_REALLOC) && !HAVE_DECL_REALLOC
 extern PTR realloc PARAMS ((PTR, size_t));
 #endif
 
 /* If the system doesn't provide strsignal, we get it defined in
    libiberty but no declaration is supplied. */
-#ifdef NEED_DECLARATION_STRSIGNAL
+#if defined (HAVE_DECL_STRSIGNAL) && !HAVE_DECL_STRSIGNAL
 # ifndef strsignal
 extern const char *strsignal PARAMS ((int));
 # endif
 #endif
 
 #ifdef HAVE_GETRLIMIT
-# ifdef NEED_DECLARATION_GETRLIMIT
+# if defined (HAVE_DECL_GETRLIMIT) && !HAVE_DECL_GETRLIMIT
 #  ifndef getrlimit
 #   ifdef ANSI_PROTOTYPES
 struct rlimit;
@@ -425,7 +428,7 @@ extern int getrlimit PARAMS ((int, struct rlimit *));
 #endif
 
 #ifdef HAVE_SETRLIMIT
-# ifdef NEED_DECLARATION_SETRLIMIT
+# if defined (HAVE_DECL_SETRLIMIT) && !HAVE_DECL_SETRLIMIT
 #  ifndef setrlimit
 #   ifdef ANSI_PROTOTYPES
 struct rlimit;
@@ -441,7 +444,7 @@ extern int setrlimit PARAMS ((int, const struct rlimit *));
 #define volatile
 #endif
 
-#ifdef NEED_DECLARATION_ABORT
+#if defined (HAVE_DECL_ABORT) && !HAVE_DECL_ABORT
 extern void abort PARAMS ((void));
 #endif
 

@@ -37,12 +37,6 @@ Boston, MA 02111-1307, USA.  */
 #include "toplev.h"
 #include "tm_p.h"
 
-#if defined(DWARF_TIMESTAMPS)
-#if !defined(POSIX)
-extern time_t time PARAMS ((time_t *)); /* FIXME: use NEED_DECLARATION_TIME */
-#endif /* !defined(POSIX) */
-#endif /* defined(DWARF_TIMESTAMPS) */
-
 /* We cannot use <assert.h> in GCC source, since that would include
    GCC's assert.h, which may not be compatible with the host compiler.  */
 #undef assert
