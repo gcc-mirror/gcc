@@ -100,6 +100,10 @@ Boston, MA 02111-1307, USA.  */
 #undef	BIGGEST_ALIGNMENT
 #define BIGGEST_ALIGNMENT 128
 
+/* NT aligns internal doubles in structures on dword boundaries.  */
+#undef	BIGGEST_FIELD_ALIGNMENT
+#define BIGGEST_FIELD_ALIGNMENT 64
+
 #undef TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (PowerPC PE)");
 
