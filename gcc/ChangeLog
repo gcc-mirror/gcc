@@ -1,3 +1,19 @@
+Thu Oct  1 19:20:09 1998  John Carr  <jfc@mit.edu>
+
+	* dwarf2out.c (expand_builtin_dwarf_reg_size): Fix to work
+	with more than three size ranges.
+
+	* flow.c (sbitmap_copy): Use bcopy to copy bitmap.
+
+	* rtl.c (mode_name): Add a null string at the end of the array.
+	(mode_wider_mode): Change type to unsigned char.
+	(mode_mask_array): New variable.
+ 	(init_rtl): Update for mode_wider_mode type change.
+
+	* rtl.h (mode_wider_mode): Change type to unsigned char.
+	(mode_mask_array): Declare.
+	(GET_MODE_MASK): Use mode_mask_array.
+
 Thu Oct  1 15:56:01 1998  Gavin Romig-Koch  <gavin@cygnus.com>
 
 	* calls.c (expand_call) : Encapsulate code into 
