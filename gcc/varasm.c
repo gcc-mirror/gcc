@@ -4378,17 +4378,22 @@ find_decl_and_mark_needed (tree decl, tree target)
   struct cgraph_node *fnode = NULL;
   struct cgraph_varpool_node *vnode = NULL;
 
-  if (TREE_CODE (decl) == FUNCTION_DECL)
+  /* C++ thunk emitting code produces aliases late in the game.
+     Avoid confusing cgraph code in that case.  */
+  if (!cgraph_global_info_ready)
     {
-      fnode = cgraph_node_for_asm (target);
-      if (fnode == NULL)
-	vnode = cgraph_varpool_node_for_asm (target);
-    }
-  else
-    {
-      vnode = cgraph_varpool_node_for_asm (target);
-      if (vnode == NULL)
-	fnode = cgraph_node_for_asm (target);
+      if (TREE_CODE (decl) == FUNCTION_DECL)
+	{
+	  fnode = cgraph_node_for_asm (target);
+	  if (fnode == NULL)
+	    vnode = cgraph_varpool_node_for_asm (target);
+	}
+      else
+	{
+	  vnode = cgraph_varpool_node_for_asm (target);
+	  if (vnode == NULL)
+	    fnode = cgraph_node_for_asm (target);
+	}
     }
 
   if (fnode)

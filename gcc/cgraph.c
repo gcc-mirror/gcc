@@ -474,6 +474,7 @@ cgraph_mark_reachable_node (struct cgraph_node *node)
     {
       notice_global_symbol (node->decl);
       node->reachable = 1;
+      gcc_assert (!cgraph_global_info_ready);
 
       node->next_needed = cgraph_nodes_queue;
       cgraph_nodes_queue = node;
