@@ -1,3 +1,11 @@
+2004-04-08  Geoffrey Keating  <geoffk@apple.com>
+
+	* gcc.dg/pch/valid-1.c, gcc.dg/pch/valid-2.c, gcc.dg/pch/valid-3.c,
+	gcc.dg/pch/valid-4.c, gcc.dg/pch/valid-5.c, gcc.dg/pch/valid-6.c,
+	gcc.dg/pch/valid-1.hs, gcc.dg/pch/valid-2.hs, gcc.dg/pch/valid-3.hs,
+	gcc.dg/pch/valid-4.hs, gcc.dg/pch/valid-5.hs, gcc.dg/pch/valid-6.hs:
+	New tests.
+
 2004-04-08  Paul Brook  <paul@codesourcery.com>
 
 	* gcc.dg/spill-1.c: New test.

@@ -1,5 +1,18 @@
 2004-04-08  Geoffrey Keating  <geoffk@apple.com>
 
+	PR pch/13419
+	PR pch/14137
+	Radar #: 3315288
+	* doc/invoke.texi (Precompiled Headers): Suggest -o
+	to put an output file in a particular place.  Be more detailed
+	about which options affect PCH validity and which options
+	might not work.
+	* c-pch.c (pch_matching): New.
+	(MATCH_SIZE): New.
+	(struct c_pch_validity): New field 'match'.
+	(pch_init): Handle pch_matching.
+	(c_common_valid_pch): Check pch_matching.
+
 	* explow.c: Fix typo defining default of PROMOTE_FUNCTION_MODE.
 
 2004-04-08  Mark Mitchell  <mark@codesourcery.com>
