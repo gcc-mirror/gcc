@@ -159,7 +159,7 @@ manext = .1
 mandir = $(prefix)/man/man1
 # Directory in which to find other cross-compilation tools and headers.
 # Used in install-cross.
-tooldir = $(prefix)/$(target)
+tooldir = $(exec_prefix)/$(target)
 # Dir for temp files.
 tmpdir = /tmp
 
@@ -836,7 +836,7 @@ gcc.o: gcc.c $(CONFIG_H) gvarargs.h config.status
   -DSTANDARD_STARTFILE_PREFIX=\"$(libdir)/\" \
   -DSTANDARD_EXEC_PREFIX=\"$(libdir)/gcc-lib/\" \
   -DDEFAULT_TARGET_MACHINE=\"$(target)\" \
-  -DTOOLDIR_BASE_PREFIX=\"$(prefix)/\" \
+  -DTOOLDIR_BASE_PREFIX=\"$(exec_prefix)/\" \
   -DTOOLDIR=\"$(tooldir)/\" \
   $(MAYBE_TARGET_DEFAULT) \
   -c `echo $(srcdir)/gcc.c | sed 's,^\./,,'`
@@ -1495,7 +1495,7 @@ realclean: distclean
 install: $(INSTALL_TARGET) ; @true
 
 # Copy the compiler files into directories where they will be run.
-install-normal: install-common install-libgcc $(INSTALL_HEADERS) install-man
+install-normal: install-common $(INSTALL_HEADERS) install-libgcc install-man
 
 # Do nothing while making gcc with a cross-compiler. The person who
 # makes gcc for the target machine has to know how to put a complete
