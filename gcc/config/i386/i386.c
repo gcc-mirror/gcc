@@ -5823,7 +5823,8 @@ legitimate_constant_p (rtx x)
 	  && tls_symbolic_operand (XEXP (inner, 0), Pmode))
 	return false;
 
-      if (GET_CODE (inner) == PLUS)
+      if (GET_CODE (inner) == PLUS
+	  || GET_CODE (inner) == MINUS)
 	{
 	  if (GET_CODE (XEXP (inner, 1)) != CONST_INT)
 	    return false;
