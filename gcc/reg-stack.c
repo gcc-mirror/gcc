@@ -1260,7 +1260,7 @@ swap_rtx_condition (insn)
 
   if (GET_CODE (pat) == SET
       && GET_CODE (SET_SRC (pat)) == UNSPEC
-      && XINT (SET_SRC (pat), 1) == 9)
+      && XINT (SET_SRC (pat), 1) == UNSPEC_FNSTSW)
     {
       rtx dest = SET_DEST (pat);
 
@@ -1281,7 +1281,7 @@ swap_rtx_condition (insn)
       pat = PATTERN (insn);
       if (GET_CODE (pat) != SET
 	  || GET_CODE (SET_SRC (pat)) != UNSPEC
-	  || XINT (SET_SRC (pat), 1) != 10
+	  || XINT (SET_SRC (pat), 1) != UNSPEC_SAHF
 	  || ! dead_or_set_p (insn, dest))
 	return 0;
 
@@ -1705,8 +1705,8 @@ subst_stack_regs_pat (insn, regstack, pat)
 	  case UNSPEC:
 	    switch (XINT (pat_src, 1))
 	      {
-	      case 1: /* sin */
-	      case 2: /* cos */
+	      case UNSPEC_SIN:
+	      case UNSPEC_COS:
 		/* These insns only operate on the top of the stack.  */
 
 		src1 = get_true_reg (&XVECEXP (pat_src, 0, 0));
@@ -1728,19 +1728,17 @@ subst_stack_regs_pat (insn, regstack, pat)
 		replace_reg (src1, FIRST_STACK_REG);
 		break;
 
-	      case 10:
-		/* (unspec [(unspec [(compare ..)] 9)] 10)
-		   Unspec 9 is fnstsw; unspec 10 is sahf.  The combination
-		   matches the PPRO fcomi instruction.  */
+	      case UNSPEC_SAHF:
+		/* (unspec [(unspec [(compare)] UNSPEC_FNSTSW)] UNSPEC_SAHF)
+		   The combination matches the PPRO fcomi instruction.  */
 
 		pat_src = XVECEXP (pat_src, 0, 0);
 		if (GET_CODE (pat_src) != UNSPEC
-		    || XINT (pat_src, 1) != 9)
+		    || XINT (pat_src, 1) != UNSPEC_FNSTSW)
 		  abort ();
 		/* FALLTHRU */
 
-	      case 9:
-		/* (unspec [(compare ..)] 9) */
+	      case UNSPEC_FNSTSW:
 		/* Combined fcomp+fnstsw generated for doing well with
 		   CSE.  When optimizing this would have been broken
 		   up before now.  */
@@ -1775,8 +1773,8 @@ subst_stack_regs_pat (insn, regstack, pat)
 		&& REGNO (*dest) != regstack->reg[regstack->top])
 	      {
 		/* In case one of operands is the top of stack and the operands
-		   dies, it is safe to make it the destination operand by reversing
-		   the direction of cmove and avoid fxch.  */
+		   dies, it is safe to make it the destination operand by
+		   reversing the direction of cmove and avoid fxch.  */
 		if ((REGNO (*src1) == regstack->reg[regstack->top]
 		     && src1_note)
 		    || (REGNO (*src2) == regstack->reg[regstack->top]

@@ -1,3 +1,8 @@
+2002-05-21  Richard Henderson  <rth@redhat.com>
+
+	* reg-stack.c (swap_rtx_condition, subst_stack_regs_pat): Use
+	unspec names, not numbers.
+
 2002-05-21  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* doc/sourcebuild.texi: Mention snapshot-README and
