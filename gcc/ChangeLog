@@ -1,3 +1,10 @@
+2000-01-11  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>, Richard Henderson  <rth@cygnus.com>
+
+	* resource.c (mark_referenced_resources): Mark a set strict_low_part
+	as used.
+	* config/i386/i386.c (ix86_expand_setcc): Re-enable clear + set
+	strict_low_part when possible.
+
 2000-01-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* alias.c: PROTO -> PARAMS.

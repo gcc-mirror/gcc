@@ -4341,8 +4341,6 @@ ix86_expand_setcc (code, unordered, dest)
   */
 
   type = 0;
-  /* %%% reload problems with in-out.  Revisit.  */
-  type = 1;
 
   if (GET_MODE (dest) == QImode)
     type = 2;
