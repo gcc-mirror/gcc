@@ -124,6 +124,12 @@ struct rs6000_cpu_select rs6000_select[3] =
   { (const char *)0,	"-mtune=",		1,	0 },
 };
 
+/* Always emit branch hint bits.  */
+static GTY(()) bool rs6000_always_hint;
+
+/* Schedule instructions for group formation.  */
+static GTY(()) bool rs6000_sched_groups;
+
 /* Support adjust_priority scheduler hook 
    and -mprioritize-restricted-insns= option.  */
 const char *rs6000_sched_restricted_insns_priority_str;
@@ -714,6 +720,8 @@ rs6000_override_options (const char *default_cpu)
 	  POWERPC_BASE_MASK | MASK_PPC_GFXOPT | MASK_POWERPC64},
 	 {"power4", PROCESSOR_POWER4,
 	  POWERPC_BASE_MASK | MASK_PPC_GFXOPT | MASK_POWERPC64},
+	 {"power5", PROCESSOR_POWER5,
+	  POWERPC_BASE_MASK | MASK_PPC_GFXOPT | MASK_POWERPC64},
 	 {"powerpc", PROCESSOR_POWERPC, POWERPC_BASE_MASK},
 	 {"powerpc64", PROCESSOR_POWERPC64,
 	  POWERPC_BASE_MASK | MASK_POWERPC64},
@@ -914,6 +922,11 @@ rs6000_override_options (const char *default_cpu)
 	rs6000_long_double_type_size = 64;
     }
 
+  rs6000_always_hint = (rs6000_cpu != PROCESSOR_POWER4
+			&& rs6000_cpu != PROCESSOR_POWER5);
+  rs6000_sched_groups = (rs6000_cpu == PROCESSOR_POWER4
+			 || rs6000_cpu == PROCESSOR_POWER5);
+
   /* Handle -m(no-)longcall option.  This is a bit of a cheap hack,
      using TARGET_OPTIONS to handle a toggle switch, but we're out of
      bits in target_flags so TARGET_SWITCHES cannot be used.
@@ -942,13 +955,15 @@ rs6000_override_options (const char *default_cpu)
     }
 
   /* Handle -mprioritize-restricted-insns option.  */
-  rs6000_sched_restricted_insns_priority = DEFAULT_RESTRICTED_INSNS_PRIORITY;
+  rs6000_sched_restricted_insns_priority
+    = (rs6000_sched_groups ? 1 : 0);
   if (rs6000_sched_restricted_insns_priority_str)
     rs6000_sched_restricted_insns_priority =
       atoi (rs6000_sched_restricted_insns_priority_str);
 
   /* Handle -msched-costly-dep option.  */
-  rs6000_sched_costly_dep = DEFAULT_SCHED_COSTLY_DEP;
+  rs6000_sched_costly_dep
+    = (rs6000_sched_groups ? store_to_load_dep_costly : no_dep_costly);
   if (rs6000_sched_costly_dep_str)
     {
       if (! strcmp (rs6000_sched_costly_dep_str, "no"))  
@@ -964,7 +979,8 @@ rs6000_override_options (const char *default_cpu)
     }
 
   /* Handle -minsert-sched-nops option.  */
-  rs6000_sched_insert_nops = DEFAULT_SCHED_FINISH_NOP_INSERTION_SCHEME;
+  rs6000_sched_insert_nops
+    = (rs6000_sched_groups ? sched_finish_regroup_exact : sched_finish_none);
   if (rs6000_sched_insert_nops_str)
     {
       if (! strcmp (rs6000_sched_insert_nops_str, "no"))
@@ -10066,7 +10082,6 @@ output_cbranch (rtx op, const char *label, int reversed, rtx insn)
     {
       /* PROB is the difference from 50%.  */
       int prob = INTVAL (XEXP (note, 0)) - REG_BR_PROB_BASE / 2;
-      bool always_hint = rs6000_cpu != PROCESSOR_POWER4;
 
       /* Only hint for highly probable/improbable branches on newer
 	 cpus as static prediction overrides processor dynamic
@@ -10074,7 +10089,7 @@ output_cbranch (rtx op, const char *label, int reversed, rtx insn)
 	 assume not taken for branches that are very close to 50% as a
 	 mispredicted taken branch is more expensive than a
 	 mispredicted not-taken branch.  */ 
-      if (always_hint
+      if (rs6000_always_hint
 	  || abs (prob) > REG_BR_PROB_BASE / 100 * 48)
 	{
 	  if (abs (prob) > REG_BR_PROB_BASE / 20
@@ -13885,7 +13900,7 @@ rs6000_variable_issue (FILE *stream ATTRIBUTE_UNUSED,
       || GET_CODE (PATTERN (insn)) == CLOBBER)
     return more;
 
-  if (rs6000_cpu == PROCESSOR_POWER4)
+  if (rs6000_sched_groups)
     {
       if (is_microcoded_insn (insn))
         return 0;
@@ -13933,7 +13948,8 @@ rs6000_adjust_cost (rtx insn, rtx link, rtx dep_insn ATTRIBUTE_UNUSED,
 	       || rs6000_cpu_attr == CPU_PPC750
 	       || rs6000_cpu_attr == CPU_PPC7400
 	       || rs6000_cpu_attr == CPU_PPC7450
-	       || rs6000_cpu_attr == CPU_POWER4)
+	       || rs6000_cpu_attr == CPU_POWER4
+	       || rs6000_cpu_attr == CPU_POWER5)
 	      && recog_memoized (dep_insn)
 	      && (INSN_CODE (dep_insn) >= 0)
 	      && (get_attr_type (dep_insn) == TYPE_CMP
@@ -13965,7 +13981,7 @@ is_microcoded_insn (rtx insn)
       || GET_CODE (PATTERN (insn)) == CLOBBER)
     return false;
 
-  if (rs6000_cpu == PROCESSOR_POWER4)
+  if (rs6000_sched_groups)
     {
       enum attr_type type = get_attr_type (insn);
       if (type == TYPE_LOAD_EXT_U
@@ -13990,7 +14006,7 @@ is_dispatch_slot_restricted (rtx insn)
 {
   enum attr_type type;
 
-  if (rs6000_cpu != PROCESSOR_POWER4)
+  if (!rs6000_sched_groups)
     return 0;
 
   if (!insn
@@ -14002,21 +14018,25 @@ is_dispatch_slot_restricted (rtx insn)
 
   type = get_attr_type (insn);
 
-  switch (type){
-  case TYPE_MFCR:
-  case TYPE_MFCRF:
-  case TYPE_MTCR:
-  case TYPE_DELAYED_CR:
-  case TYPE_CR_LOGICAL:
-  case TYPE_MTJMPR:
-  case TYPE_MFJMPR:
-    return 1;
-  case TYPE_IDIV:
-  case TYPE_LDIV:
-    return 2;
-  default:
-    return 0;
-  }
+  switch (type)
+    {
+    case TYPE_MFCR:
+    case TYPE_MFCRF:
+    case TYPE_MTCR:
+    case TYPE_DELAYED_CR:
+    case TYPE_CR_LOGICAL:
+    case TYPE_MTJMPR:
+    case TYPE_MFJMPR:
+      return 1;
+    case TYPE_IDIV:
+    case TYPE_LDIV:
+      return 2;
+    default:
+      if (rs6000_cpu == PROCESSOR_POWER5
+	  && is_cracked_insn (insn))
+	return 2;
+      return 0;
+    }
 }
 
 /* The function returns true if INSN is cracked into 2 instructions
@@ -14030,7 +14050,7 @@ is_cracked_insn (rtx insn)
       || GET_CODE (PATTERN (insn)) == CLOBBER)
     return false;
 
-  if (rs6000_cpu == PROCESSOR_POWER4)
+  if (rs6000_sched_groups)
     {
       enum attr_type type = get_attr_type (insn);
       if (type == TYPE_LOAD_U || type == TYPE_STORE_U
@@ -14058,7 +14078,7 @@ is_branch_slot_insn (rtx insn)
       || GET_CODE (PATTERN (insn)) == CLOBBER)
     return false;
 
-  if (rs6000_cpu == PROCESSOR_POWER4)
+  if (rs6000_sched_groups)
     {
       enum attr_type type = get_attr_type (insn);
       if (type == TYPE_BRANCH || type == TYPE_JMPREG)
@@ -14158,6 +14178,7 @@ rs6000_issue_rate (void)
   case CPU_PPC630:
     return 4;
   case CPU_POWER4:
+  case CPU_POWER5:
     return 5;
   default:
     return 1;
@@ -14711,7 +14732,7 @@ rs6000_sched_finish (FILE *dump, int sched_verbose)
   if (sched_verbose)
     fprintf (dump, "=== Finishing schedule.\n");
 
-  if (reload_completed && rs6000_cpu == PROCESSOR_POWER4)
+  if (reload_completed && rs6000_sched_groups)
     {
       if (rs6000_sched_insert_nops == sched_finish_none)
         return;
@@ -15905,6 +15926,7 @@ rs6000_rtx_costs (rtx x, int code, int outer_code ATTRIBUTE_UNUSED,
 	  return true;
 
 	case PROCESSOR_POWER4:
+	case PROCESSOR_POWER5:
 	  *total = (GET_CODE (XEXP (x, 1)) != CONST_INT
 		    ? GET_MODE (XEXP (x, 1)) != DImode
 		    ? COSTS_N_INSNS (3) : COSTS_N_INSNS (4)
@@ -15990,6 +16012,7 @@ rs6000_rtx_costs (rtx x, int code, int outer_code ATTRIBUTE_UNUSED,
 	  return true;
 
 	case PROCESSOR_POWER4:
+	case PROCESSOR_POWER5:
 	  *total = (GET_MODE (XEXP (x, 1)) != DImode
 		    ? COSTS_N_INSNS (18)
 		    : COSTS_N_INSNS (34));
