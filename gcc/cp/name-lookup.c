@@ -2064,10 +2064,16 @@ do_nonmember_using_decl (tree scope, tree name, tree oldval, tree oldtype,
 	             are the same extern "C" functions, that's ok.  */
                   if (decls_match (new_fn, old_fn))
 		    {
-		      /* If the OLD_FN was a builtin, there is now a
-			 real declaration.  */
+		      /* If the OLD_FN was a builtin, we've seen a real 
+			 declaration in another namespace.  Use it instead.
+			 Set tmp1 to NULL so we can use the existing
+			 OVERLOAD logic at the end of this inner loop.
+		      */
 		      if (DECL_ANTICIPATED (old_fn))
-			DECL_ANTICIPATED (old_fn) = 0;
+			{
+			  gcc_assert (! DECL_ANTICIPATED (new_fn));
+			  tmp1 = NULL;
+			}
 		      break;
 		    }
 		  else if (!DECL_ANTICIPATED (old_fn))
