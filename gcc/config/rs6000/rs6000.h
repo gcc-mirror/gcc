@@ -568,6 +568,8 @@ extern const char *rs6000_warn_altivec_long_switch;
 #define TARGET_E500 0
 #define TARGET_ISEL 0
 #define TARGET_FPRS 1
+#define TARGET_E500_SINGLE 0
+#define TARGET_E500_DOUBLE 0
 
 /* Sometimes certain combinations of command options do not make sense
    on a particular target machine.  You can define a macro

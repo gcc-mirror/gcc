@@ -21,7 +21,15 @@
 
 (define_constants
   [(SPE_ACC_REGNO	111)
-   (SPEFSCR_REGNO	112)])
+   (SPEFSCR_REGNO	112)
+
+   (CMPDFEQ_GPR		1006)
+   (TSTDFEQ_GPR		1007)
+   (CMPDFGT_GPR		1008)
+   (TSTDFGT_GPR		1009)
+   (CMPDFLT_GPR		1010)
+   (TSTDFLT_GPR		1011)
+   ])
 
 (define_insn "*negsf2_gpr"
   [(set (match_operand:SF 0 "gpc_reg_operand" "=r")
@@ -2531,4 +2539,66 @@
 	 1005))]
   "TARGET_HARD_FLOAT && !TARGET_FPRS && flag_unsafe_math_optimizations"
   "efststlt %0,%1,%2"
+  [(set_attr "type" "veccmpsimple")])
+
+;; Same thing, but for double-precision.
+
+(define_insn "cmpdfeq_gpr"
+  [(set (match_operand:CCFP 0 "cc_reg_operand" "=y")
+	(unspec:CCFP
+	 [(compare:CCFP (match_operand:DF 1 "gpc_reg_operand" "r")
+			(match_operand:DF 2 "gpc_reg_operand" "r"))]
+	 CMPDFEQ_GPR))]
+  "TARGET_HARD_FLOAT && TARGET_E500_DOUBLE && !flag_unsafe_math_optimizations"
+  "efdcmpeq %0,%1,%2"
+  [(set_attr "type" "veccmp")])
+
+(define_insn "tstdfeq_gpr"
+  [(set (match_operand:CCFP 0 "cc_reg_operand" "=y")
+	(unspec:CCFP
+	 [(compare:CCFP (match_operand:DF 1 "gpc_reg_operand" "r")
+			(match_operand:DF 2 "gpc_reg_operand" "r"))]
+	 TSTDFEQ_GPR))]
+  "TARGET_HARD_FLOAT && TARGET_E500_DOUBLE && flag_unsafe_math_optimizations"
+  "efdtsteq %0,%1,%2"
+  [(set_attr "type" "veccmpsimple")])
+
+(define_insn "cmpdfgt_gpr"
+  [(set (match_operand:CCFP 0 "cc_reg_operand" "=y")
+	(unspec:CCFP
+	 [(compare:CCFP (match_operand:DF 1 "gpc_reg_operand" "r")
+			(match_operand:DF 2 "gpc_reg_operand" "r"))]
+	 CMPDFGT_GPR))]
+  "TARGET_HARD_FLOAT && TARGET_E500_DOUBLE && !flag_unsafe_math_optimizations"
+  "efdcmpgt %0,%1,%2"
+  [(set_attr "type" "veccmp")])
+
+(define_insn "tstdfgt_gpr"
+  [(set (match_operand:CCFP 0 "cc_reg_operand" "=y")
+	(unspec:CCFP
+	 [(compare:CCFP (match_operand:DF 1 "gpc_reg_operand" "r")
+			(match_operand:DF 2 "gpc_reg_operand" "r"))]
+	 TSTDFGT_GPR))]
+  "TARGET_HARD_FLOAT && TARGET_E500_DOUBLE && flag_unsafe_math_optimizations"
+  "efdtstgt %0,%1,%2"
+  [(set_attr "type" "veccmpsimple")])
+
+(define_insn "cmpdflt_gpr"
+  [(set (match_operand:CCFP 0 "cc_reg_operand" "=y")
+	(unspec:CCFP
+	 [(compare:CCFP (match_operand:DF 1 "gpc_reg_operand" "r")
+			(match_operand:DF 2 "gpc_reg_operand" "r"))]
+	 CMPDFLT_GPR))]
+  "TARGET_HARD_FLOAT && TARGET_E500_DOUBLE && !flag_unsafe_math_optimizations"
+  "efdcmplt %0,%1,%2"
+  [(set_attr "type" "veccmp")])
+
+(define_insn "tstdflt_gpr"
+  [(set (match_operand:CCFP 0 "cc_reg_operand" "=y")
+	(unspec:CCFP
+	 [(compare:CCFP (match_operand:DF 1 "gpc_reg_operand" "r")
+			(match_operand:DF 2 "gpc_reg_operand" "r"))]
+	 TSTDFLT_GPR))]
+  "TARGET_HARD_FLOAT && TARGET_E500_DOUBLE && flag_unsafe_math_optimizations"
+  "efdtstlt %0,%1,%2"
   [(set_attr "type" "veccmpsimple")])
