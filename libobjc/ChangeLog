@@ -1,3 +1,11 @@
+2004-03-05  Ziemowit Laski  <zlaski@apple.com>
+
+	* objc/hash.h (hash_string, compare_strings):
+	Add type-casts to make Objective-C++ happy.
+	* objc/typedstream.h (objc_get_stream_class_version):
+	Rename parameter from 'class' to 'class_name' to make
+	Objective-C++ happy.
+
 2004-03-01  Michael Matz  <matz@suse.de>
 
 	* Makefile.in (ALL_CFLAGS): Add -fno-strict-aliasing.

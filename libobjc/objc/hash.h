@@ -172,7 +172,7 @@ hash_string (cache_ptr cache, const void *key)
 {
   unsigned int ret = 0;
   unsigned int ctr = 0;
-  const char *ckey = key;
+  const char *ckey = (const char *) key;
         
   while (*ckey) {
     ret ^= *ckey++ << ctr;
@@ -200,7 +200,7 @@ compare_strings (const void *k1, const void *k2)
   else if (k1 == 0 || k2 == 0)
     return 0;
   else
-    return ! strcmp (k1, k2);
+    return ! strcmp ((const char *) k1, (const char *) k2);
 }
 
 
