@@ -121,8 +121,8 @@ static tree optimize_minmax_comparison (tree);
 static tree extract_muldiv (tree, tree, enum tree_code, tree);
 static tree extract_muldiv_1 (tree, tree, enum tree_code, tree);
 static int multiple_of_p (tree, tree, tree);
-static tree fold_binary_op_with_conditional_arg (enum tree_code, tree, tree,
-						 tree, int);
+static tree fold_binary_op_with_conditional_arg (tree, enum tree_code, 
+						 tree, tree, int);
 static bool fold_real_zero_addition_p (tree, tree, int);
 static tree fold_mathfn_compare (enum built_in_function, enum tree_code,
 				 tree, tree, tree);
@@ -5435,9 +5435,14 @@ extract_array_ref (tree expr, tree *base, tree *offset)
    possible.  */
 
 static tree
-fold_binary_op_with_conditional_arg (enum tree_code code, tree type,
-				     tree cond, tree arg, int cond_first_p)
+fold_binary_op_with_conditional_arg (tree t, enum tree_code code, tree cond,
+				     tree arg, int cond_first_p)
 {
+  const tree type = TREE_TYPE (t);
+  tree cond_type = cond_first_p ? TREE_TYPE (TREE_OPERAND (t, 0)) 
+				: TREE_TYPE (TREE_OPERAND (t, 1));
+  tree arg_type = cond_first_p ? TREE_TYPE (TREE_OPERAND (t, 1)) 
+			       : TREE_TYPE (TREE_OPERAND (t, 0));
   tree test, true_value, false_value;
   tree lhs = NULL_TREE;
   tree rhs = NULL_TREE;
@@ -5469,12 +5474,19 @@ fold_binary_op_with_conditional_arg (enum tree_code code, tree type,
       false_value = constant_boolean_node (false, testtype);
     }
 
+  arg = fold_convert (arg_type, arg);
   if (lhs == 0)
-    lhs = fold (cond_first_p ? build2 (code, type, true_value, arg)
+    {
+      true_value = fold_convert (cond_type, true_value);
+      lhs = fold (cond_first_p ? build2 (code, type, true_value, arg)
 			     : build2 (code, type, arg, true_value));
+    }
   if (rhs == 0)
-    rhs = fold (cond_first_p ? build2 (code, type, false_value, arg)
+    {
+      false_value = fold_convert (cond_type, false_value);
+      rhs = fold (cond_first_p ? build2 (code, type, false_value, arg)
 			     : build2 (code, type, arg, false_value));
+    }
 
   test = fold (build3 (COND_EXPR, type, test, lhs, rhs));
   return fold_convert (type, test);
@@ -6516,7 +6528,7 @@ fold (tree expr)
 
       if (TREE_CODE (arg0) == COND_EXPR || COMPARISON_CLASS_P (arg0))
 	{
-	  tem = fold_binary_op_with_conditional_arg (code, type, arg0, arg1,
+	  tem = fold_binary_op_with_conditional_arg (t, code, arg0, arg1, 
 						     /*cond_first_p=*/1);
 	  if (tem != NULL_TREE)
 	    return tem;
@@ -6524,8 +6536,8 @@ fold (tree expr)
 
       if (TREE_CODE (arg1) == COND_EXPR || COMPARISON_CLASS_P (arg1))
 	{
-	  tem = fold_binary_op_with_conditional_arg (code, type, arg1, arg0,
-						     /*cond_first_p=*/0);
+	  tem = fold_binary_op_with_conditional_arg (t, code, arg1, arg0, 
+					             /*cond_first_p=*/0);
 	  if (tem != NULL_TREE)
 	    return tem;
 	}
