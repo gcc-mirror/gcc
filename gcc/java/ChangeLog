@@ -1,3 +1,10 @@
+2003-11-02  Jeff Sturm  <jsturm@one-point.com>
+
+	Fixes PR java/12866.
+	* parse.y (resolve_qualified_expression_name): Move test
+	for outer field access methods from here...
+	(check_thrown_exceptions) ...to here.
+
 2003-11-01  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* .cvsignore: Delete.
