@@ -2267,7 +2267,7 @@ extern struct rtx_def *return_addr_rtx ();
 #define MASK_RETURN_ADDR						\
   /* The privilege level is in the two low order bits, mask em out	\
      of the return address.  */						\
-  (GEN_INT (0xfffffffc))
+  (GEN_INT (-4))
 
 /* The number of Pmode words for the setjmp buffer.  */
 #define JMP_BUF_SIZE 50
