@@ -7990,7 +7990,7 @@ output_max_insn_queue_index_def ()
    function *output_automata_list_code.  */
 static void
 output_insn_code_cases (output_automata_list_code)
-     void (*output_automata_list_code) (automata_list_el_t);
+     void (*output_automata_list_code) PARAMS ((automata_list_el_t));
 {
   decl_t decl, decl2;
   int i, j;
