@@ -1,3 +1,8 @@
+2002-11-14  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/natRuntime.cc (insertSystemProperties): Set
+	gnu.classpath.home.
+
 2002-11-13  Michael Koch <konqueror@gmx.de>
 
 	* java/nio/ByteBuffer.java
