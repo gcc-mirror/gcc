@@ -907,6 +907,15 @@ _cpp_valid_ucn (cpp_reader *pfile, const uchar **pstr,
 		 (int) (str - base), base);
       result = 1;
     }
+  else if (identifier_pos && result == 0x24 
+	   && CPP_OPTION (pfile, dollars_in_ident))
+    {
+      if (CPP_OPTION (pfile, warn_dollars) && !pfile->state.skipping)
+	{
+	  CPP_OPTION (pfile, warn_dollars) = 0;
+	  cpp_error (pfile, CPP_DL_PEDWARN, "'$' in identifier or number");
+	}
+    }
   else if (identifier_pos)
     {
       int validity = ucn_valid_in_identifier (pfile, result);
@@ -1414,7 +1423,60 @@ cpp_interpret_charconst (cpp_reader *pfile, const cpp_token *token,
 
   return result;
 }
+
+/* Convert an identifier denoted by ID and LEN, which might contain
+   UCN escapes, to the source character set, either UTF-8 or
+   UTF-EBCDIC.  Assumes that the identifier is actually a valid identifier.  */
+cpp_hashnode *
+_cpp_interpret_identifier (cpp_reader *pfile, const uchar *id, size_t len)
+{
+  /* It turns out that a UCN escape always turns into fewer characters
+     than the escape itself, so we can allocate a temporary in advance.  */
+  uchar * buf = alloca (len + 1);
+  uchar * bufp = buf;
+  size_t idp;
+  
+  for (idp = 0; idp < len; idp++)
+    if (id[idp] != '\\')
+      *bufp++ = id[idp];
+    else
+      {
+	unsigned length = id[idp+1] == 'u' ? 4 : 8;
+	cppchar_t value = 0;
+	size_t bufleft = len - (bufp - buf);
+	int rval;
 
+	idp += 2;
+	while (length && idp < len && ISXDIGIT (id[idp]))
+	  {
+	    value = (value << 4) + hex_value (id[idp]);
+	    idp++;
+	    length--;
+	  }
+	idp--;
+
+	/* Special case for EBCDIC: if the identifier contains
+	   a '$' specified using a UCN, translate it to EBCDIC.  */
+	if (value == 0x24)
+	  {
+	    *bufp++ = '$';
+	    continue;
+	  }
+
+	rval = one_cppchar_to_utf8 (value, &bufp, &bufleft);
+	if (rval)
+	  {
+	    errno = rval;
+	    cpp_errno (pfile, CPP_DL_ERROR,
+		       "converting UCN to source character set");
+	    break;
+	  }
+      }
+
+  return CPP_HASHNODE (ht_lookup (pfile->hash_table, 
+				  buf, bufp - buf, HT_ALLOC));
+}
+
 /* Convert an input buffer (containing the complete contents of one
    source file) from INPUT_CHARSET to the source character set.  INPUT
    points to the input buffer, SIZE is its allocated size, and LEN is

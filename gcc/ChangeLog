@@ -1,3 +1,8 @@
+2005-03-12  Geoffrey Keating  <geoffk@apple.com>
+
+	* c-lex.c (c_lex_with_flags): Add parameter to call to 
+	cpp_spell_token.
+
 2005-03-11  Per Bothner  <per@bothner.com>
 
 	* c-tree.h (struct c_declarator): New id_loc field.

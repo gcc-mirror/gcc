@@ -608,7 +608,8 @@ glue_header_name (cpp_reader *pfile)
       if (token->flags & PREV_WHITE)
 	buffer[total_len++] = ' ';
 
-      total_len = (cpp_spell_token (pfile, token, (uchar *) &buffer[total_len])
+      total_len = (cpp_spell_token (pfile, token, (uchar *) &buffer[total_len],
+				    true)
 		   - (uchar *) buffer);
     }
 

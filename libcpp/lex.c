@@ -53,7 +53,7 @@ static const struct token_spelling token_spellings[N_TTYPES] = { TTYPE_TABLE };
 static void add_line_note (cpp_buffer *, const uchar *, unsigned int);
 static int skip_line_comment (cpp_reader *);
 static void skip_whitespace (cpp_reader *, cppchar_t);
-static cpp_hashnode *lex_identifier (cpp_reader *, const uchar *);
+static cpp_hashnode *lex_identifier (cpp_reader *, const uchar *, bool);
 static void lex_number (cpp_reader *, cpp_string *);
 static bool forms_identifier_p (cpp_reader *, int);
 static void lex_string (cpp_reader *, cpp_token *, const uchar *);
@@ -453,7 +453,7 @@ forms_identifier_p (cpp_reader *pfile, int first)
     }
 
   /* Is this a syntactically valid UCN?  */
-  if (0 && *buffer->cur == '\\'
+  if (*buffer->cur == '\\'
       && (buffer->cur[1] == 'u' || buffer->cur[1] == 'U'))
     {
       buffer->cur += 2;
@@ -467,39 +467,39 @@ forms_identifier_p (cpp_reader *pfile, int first)
 
 /* Lex an identifier starting at BUFFER->CUR - 1.  */
 static cpp_hashnode *
-lex_identifier (cpp_reader *pfile, const uchar *base)
+lex_identifier (cpp_reader *pfile, const uchar *base, bool starts_ucn)
 {
   cpp_hashnode *result;
-  const uchar *cur, *limit;
+  const uchar *cur;
   unsigned int len;
   unsigned int hash = HT_HASHSTEP (0, *base);
 
   cur = pfile->buffer->cur;
-  for (;;)
+  if (! starts_ucn)
+    while (ISIDNUM (*cur))
+      {
+	hash = HT_HASHSTEP (hash, *cur);
+	cur++;
+      }
+  pfile->buffer->cur = cur;
+  if (starts_ucn || forms_identifier_p (pfile, false))
     {
-      /* N.B. ISIDNUM does not include $.  */
-      while (ISIDNUM (*cur))
-	{
-	  hash = HT_HASHSTEP (hash, *cur);
-	  cur++;
-	}
-
-      pfile->buffer->cur = cur;
-      if (!forms_identifier_p (pfile, false))
-	break;
-
-      limit = pfile->buffer->cur;
-      while (cur < limit)
-	{
-	  hash = HT_HASHSTEP (hash, *cur);
-	  cur++;
-	}
+      /* Slower version for identifiers containing UCNs (or $).  */
+      do {
+	while (ISIDNUM (*pfile->buffer->cur))
+	  pfile->buffer->cur++;
+      } while (forms_identifier_p (pfile, false));
+      result = _cpp_interpret_identifier (pfile, base,
+					  pfile->buffer->cur - base);
     }
-  len = cur - base;
-  hash = HT_HASHFINISH (hash, len);
+  else
+    {
+      len = cur - base;
+      hash = HT_HASHFINISH (hash, len);
 
-  result = (cpp_hashnode *)
-    ht_lookup_with_hash (pfile->hash_table, base, len, hash, HT_ALLOC);
+      result = (cpp_hashnode *)
+	ht_lookup_with_hash (pfile->hash_table, base, len, hash, HT_ALLOC);
+    }
 
   /* Rarely, identifiers require diagnostics when lexed.  */
   if (__builtin_expect ((result->flags & NODE_DIAGNOSTIC)
@@ -922,7 +922,7 @@ _cpp_lex_direct (cpp_reader *pfile)
     case 'S': case 'T': case 'U': case 'V': case 'W': case 'X':
     case 'Y': case 'Z':
       result->type = CPP_NAME;
-      result->val.node = lex_identifier (pfile, buffer->cur - 1);
+      result->val.node = lex_identifier (pfile, buffer->cur - 1, false);
 
       /* Convert named operators to their proper types.  */
       if (result->val.node->flags & NODE_OPERATOR)
@@ -1155,7 +1155,7 @@ _cpp_lex_direct (cpp_reader *pfile)
 	if (forms_identifier_p (pfile, true))
 	  {
 	    result->type = CPP_NAME;
-	    result->val.node = lex_identifier (pfile, base);
+	    result->val.node = lex_identifier (pfile, base, true);
 	    break;
 	  }
 	buffer->cur++;
@@ -1180,19 +1180,56 @@ cpp_token_len (const cpp_token *token)
     {
     default:		len = 4;				break;
     case SPELL_LITERAL:	len = token->val.str.len;		break;
-    case SPELL_IDENT:	len = NODE_LEN (token->val.node);	break;
+    case SPELL_IDENT:	len = NODE_LEN (token->val.node) * 10;	break;
     }
 
   return len;
 }
 
+/* Parse UTF-8 out of NAMEP and place a \U escape in BUFFER.
+   Return the number of bytes read out of NAME.  (There are always
+   10 bytes written to BUFFER.)  */
+
+static size_t
+utf8_to_ucn (unsigned char *buffer, const unsigned char *name)
+{
+  int j;
+  int ucn_len = 0;
+  int ucn_len_c;
+  unsigned t;
+  unsigned long utf32;
+  
+  /* Compute the length of the UTF-8 sequence.  */
+  for (t = *name; t & 0x80; t <<= 1)
+    ucn_len++;
+  
+  utf32 = *name & (0x7F >> ucn_len);
+  for (ucn_len_c = 1; ucn_len_c < ucn_len; ucn_len_c++)
+    {
+      utf32 = (utf32 << 6) | (*++name & 0x3F);
+      
+      /* Ill-formed UTF-8.  */
+      if ((*name & ~0x3F) != 0x80)
+	abort ();
+    }
+  
+  *buffer++ = '\\';
+  *buffer++ = 'U';
+  for (j = 7; j >= 0; j--)
+    *buffer++ = "0123456789abcdef"[(utf32 >> (4 * j)) & 0xF];
+  return ucn_len;
+}
+
+
 /* Write the spelling of a token TOKEN to BUFFER.  The buffer must
    already contain the enough space to hold the token's spelling.
    Returns a pointer to the character after the last character written.
+   FORSTRING is true if this is to be the spelling after translation
+   phase 1 (this is different for UCNs).
    FIXME: Would be nice if we didn't need the PFILE argument.  */
 unsigned char *
 cpp_spell_token (cpp_reader *pfile, const cpp_token *token,
-		 unsigned char *buffer)
+		 unsigned char *buffer, bool forstring)
 {
   switch (TOKEN_SPELL (token))
     {
@@ -1216,8 +1253,26 @@ cpp_spell_token (cpp_reader *pfile, const cpp_token *token,
 
     spell_ident:
     case SPELL_IDENT:
-      memcpy (buffer, NODE_NAME (token->val.node), NODE_LEN (token->val.node));
-      buffer += NODE_LEN (token->val.node);
+      if (forstring)
+	{
+	  memcpy (buffer, NODE_NAME (token->val.node),
+		  NODE_LEN (token->val.node));
+	  buffer += NODE_LEN (token->val.node);
+	}
+      else
+	{
+	  size_t i;
+	  const unsigned char * name = NODE_NAME (token->val.node);
+	  
+	  for (i = 0; i < NODE_LEN (token->val.node); i++)
+	    if (name[i] & ~0x7F)
+	      {
+		i += utf8_to_ucn (buffer, name + i) - 1;
+		buffer += 10;
+	      }
+	    else
+	      *buffer++ = NODE_NAME (token->val.node)[i];
+	}
       break;
 
     case SPELL_LITERAL:
@@ -1242,7 +1297,7 @@ cpp_token_as_text (cpp_reader *pfile, const cpp_token *token)
   unsigned int len = cpp_token_len (token) + 1;
   unsigned char *start = _cpp_unaligned_alloc (pfile, len), *end;
 
-  end = cpp_spell_token (pfile, token, start);
+  end = cpp_spell_token (pfile, token, start, false);
   end[0] = '\0';
 
   return start;
@@ -1286,8 +1341,21 @@ cpp_output_token (const cpp_token *token, FILE *fp)
 
     spell_ident:
     case SPELL_IDENT:
-      fwrite (NODE_NAME (token->val.node), 1, NODE_LEN (token->val.node), fp);
-    break;
+      {
+	size_t i;
+	const unsigned char * name = NODE_NAME (token->val.node);
+	
+	for (i = 0; i < NODE_LEN (token->val.node); i++)
+	  if (name[i] & ~0x7F)
+	    {
+	      unsigned char buffer[10];
+	      i += utf8_to_ucn (buffer, name + i) - 1;
+	      fwrite (buffer, 1, 10, fp);
+	    }
+	  else
+	    fputc (NODE_NAME (token->val.node)[i], fp);
+      }
+      break;
 
     case SPELL_LITERAL:
       fwrite (token->val.str.text, 1, token->val.str.len, fp);

@@ -571,6 +571,9 @@ extern unsigned char *_cpp_convert_input (cpp_reader *, const char *,
 					  unsigned char *, size_t, size_t,
 					  off_t *);
 extern const char *_cpp_default_encoding (void);
+extern cpp_hashnode * _cpp_interpret_identifier (cpp_reader *pfile,
+						 const unsigned char *id,
+						 size_t len);
 
 /* Utility routines and macros.  */
 #define DSC(str) (const unsigned char *)str, sizeof str - 1
