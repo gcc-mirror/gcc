@@ -1021,6 +1021,10 @@ dbxout_type (type, full, show_arg_types)
       break;
 
     case CHAR_TYPE:
+      if (use_gnu_debug_info_extensions)
+	fprintf (asmfile, "@s%d;-20;",
+		 BITS_PER_UNIT * int_size_in_bytes (type));
+      else
 	/* Output the type `char' as a subrange of itself.
 	   That is what pcc seems to do.  */
       fprintf (asmfile, "r%d;0;%d;", TYPE_SYMTAB_ADDRESS (char_type_node),
@@ -1028,8 +1032,12 @@ dbxout_type (type, full, show_arg_types)
       CHARS (9);
       break;
 
-    case BOOLEAN_TYPE:	/* Define as enumeral type (False, True) */
-      fprintf (asmfile, "eFalse:0,True:1,;");
+    case BOOLEAN_TYPE:
+      if (use_gnu_debug_info_extensions)
+	fprintf (asmfile, "@s%d;-16;",
+		 BITS_PER_UNIT * int_size_in_bytes (type));
+      else /* Define as enumeral type (False, True) */
+	fprintf (asmfile, "eFalse:0,True:1,;");
       CHARS (17);
       break;
 
