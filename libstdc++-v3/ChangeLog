@@ -1,5 +1,24 @@
 2004-01-24  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/bits/basic_string.tcc (rfind(_CharT, size_type)):
+	Revert last change to use std::min: machine language is worse.
+	(find_last_of(const _CharT*, size_type, size_type)): Ditto.
+	(find_last_not_of(const _CharT*, size_type, size_type)): Ditto.
+	(find_last_not_of(_CharT, size_type)): Ditto.
+
+	* include/bits/basic_string.tcc (insert(size_type, const _CharT*,
+	size_type)): Discard the value returned by _M_check.
+	(replace(size_type, size_type, const _CharT*, size_type)): Ditto.
+	(append(const basic_string&, size_type, size_type)): Ditto.
+	(copy(_CharT*, size_type, size_type)): Ditto.
+	(compare(size_type, size_type, const basic_string&)): Ditto.
+	(compare(size_type, size_type, const basic_string&,
+	size_type, size_type)): Ditto.
+	(compare(size_type, size_type, const _CharT*)): Ditto.
+	(compare(size_type, size_type, const _CharT*, size_type)): Ditto.
+
+2004-01-24  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/bits/basic_string.h (insert(size_type,
 	const basic_string&, size_type, size_type)): Define inline here.
 	* include/bits/basic_string.tcc (insert(size_type,
