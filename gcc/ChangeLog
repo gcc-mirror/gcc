@@ -1,3 +1,12 @@
+2004-10-11  Roger Sayle  <roger@eyesopen.com>
+
+	PR other/17361
+	* c-opts.c (permit_fortran_options): Delete/obsolete global variable.
+	(c_common_init_options): Remove #ifdef CL_F77 code.  Scan command
+	line options for "-lang-asm" and if found allow any of the C-family
+	front-end options.
+	(c_common_handle_option): Remove last use of permit_fortran_options.
+
 2004-10-11  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.c (print_operand): Support 'S' format flag.
