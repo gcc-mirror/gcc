@@ -27,6 +27,13 @@
 # include <sys/times.h>
 #endif
 
+#ifdef HAVE_SYS_RESOURCE_H
+#include <sys/resource.h>
+#endif
+#ifdef NEED_DECLARATION_GETRUSAGE
+extern int getrusage PARAMS ((int, struct rusage *));
+#endif
+
 #include "flags.h"
 #include "timevar.h"
 
