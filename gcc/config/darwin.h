@@ -326,8 +326,8 @@ do { text_section ();							\
 
 /* Don't output a .file directive.  That is only used by the assembler for
    error reporting.  */
-#undef	ASM_FILE_START_FILE_DIRECTIVE
-#define ASM_FILE_START_FILE_DIRECTIVE false
+#undef	TARGET_ASM_FILE_START_FILE_DIRECTIVE
+#define TARGET_ASM_FILE_START_FILE_DIRECTIVE false
 
 #undef  TARGET_ASM_FILE_END
 #define TARGET_ASM_FILE_END darwin_file_end

@@ -33,7 +33,7 @@ Boston, MA 02111-1307, USA.  */
 #undef LIB_SPEC
 
 /* Emit a .file directive.  */
-#define ASM_FILE_START_FILE_DIRECTIVE true
+#define TARGET_ASM_FILE_START_FILE_DIRECTIVE true
 
 /* Support the ctors and dtors sections for g++.  */
 

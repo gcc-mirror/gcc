@@ -98,7 +98,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Most svr4 assemblers want a .file directive at the beginning of
    their input file.  */
-#define ASM_FILE_START_FILE_DIRECTIVE true
+#define TARGET_ASM_FILE_START_FILE_DIRECTIVE true
 
 /* This is how to allocate empty space in some section.  The .zero
    pseudo-op is used for this on most svr4 assemblers.  */
