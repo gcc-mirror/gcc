@@ -1,3 +1,9 @@
+2001-07-18  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* java/net/natPlainDatagramSocketImpl.cc (mcastGrp): Use new RFC
+	2533 socket options IPV6_JOIN_GROUP, IPV6_LEAVE_GROUP, falling
+	back to old RFC 2133 variants if missing.
+
 2001-07-18  Tom Tromey  <tromey@redhat.com>
 
 	* java/io/natFileWin32.cc (_access): Renamed.
