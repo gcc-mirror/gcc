@@ -4,6 +4,6 @@
 x()
 {
   foo (i);
-  /* { dg-error "undeclared" "undeclared-variable message" { target native } { 6 } } */
-  /* { dg-error "function it appears in" "reminder message" { target native } { 6 } } */ 
+  /* { dg-error "undeclared" "undeclared-variable message" { target *-*-* } { 6 } } */
+  /* { dg-error "function it appears in" "reminder message" { target *-*-* } { 6 } } */ 
 }

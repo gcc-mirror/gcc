@@ -1,3 +1,8 @@
+1999-11-05  Nick Clifton  <nickc@cygnus.com>
+
+	* gcc.dg/990506-0.c: Expect error messages from cross
+	targets as well as native targets.
+
 1999-11-02  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
 
 	* gcc.dg/ultrasp1.c: Removed xfail.
