@@ -1,6 +1,6 @@
 /* Medium-level subroutines: convert bit-field store and extract
    and shifts, multiplies and divides to rtl instructions.
-   Copyright (C) 1987, 88, 89, 92, 93, 94, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 92-5, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -875,9 +875,6 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
   register rtx op0 = str_rtx;
   rtx spec_target = target;
   rtx spec_target_subreg = 0;
-
-  if (GET_CODE (str_rtx) == MEM && ! MEM_IN_STRUCT_P (str_rtx))
-    abort ();
 
   /* Discount the part of the structure before the desired byte.
      We need to know how many bytes are safe to reference after it.  */
