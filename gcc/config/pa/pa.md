@@ -2908,15 +2908,15 @@
           output_asm_insn (\"ldw %0,%4\;ldo %1(%4),%4\;stw %4,%0\", operands);
 	  /* Short branch.  Normal handling of nullification.  */
           if (get_attr_length (insn) == 4)
-	    return \"comb,%B2,n 0,%4,%3\";
+	    return \"comb,%S2,n 0,%4,%3\";
 	  /* Long Conditional branch forward with delay slot nullified if
 	     branch is taken.  */
           else if (get_attr_length (insn) == 5)
-	    return \"comclr,%S2 0,%4,0\;bl,n %3,0\";
+	    return \"comclr,%B2 0,%4,0\;bl,n %3,0\";
 	  else 
 	  /* Long Conditional branch backwards with delay slot nullified
 	     if branch is not taken.  */
-	    return \"comb,%S2 0,%4,.+16\;nop\;bl %3,0\";
+	    return \"comb,%B2 0,%4,.+16\;nop\;bl %3,0\";
         }
     }
   else
@@ -2935,10 +2935,10 @@
           output_asm_insn (\"ldw %0,%4\;ldo %1(%4),%4\;stw %4,%0\", operands);
 	  /* Short form.  */
           if (get_attr_length (insn) == 4)
-	    return \"comb,%B2 0,%4,%3%#\";
+	    return \"comb,%S2 0,%4,%3%#\";
 	  /* Long form.  */
           else
-	    return \"comclr,%S2 0,%4,0\;bl%* %3,0\";
+	    return \"comclr,%B2 0,%4,0\;bl%* %3,0\";
         }
     }
 }"
