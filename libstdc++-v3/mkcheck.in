@@ -133,6 +133,8 @@ rm -rf ./*core
 # Copy over the data files for filebufs in read-only mode
 cp $SRC_DIR/testsuite/27_io/*.txt $TEST_DIR
 cp $SRC_DIR/testsuite/27_io/*.tst $TEST_DIR
+chmod u+w $TEST_DIR/*.txt
+chmod u+w $TEST_DIR/*.tst
 
 # Emit useful info about compiler and platform
 echo "host: $(uname -mrsv)" >> $RESULTS_FILE

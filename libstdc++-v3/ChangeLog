@@ -1,3 +1,8 @@
+2000-06-26  Branko Cibej  <branko.cibej@hermes.si>
+
+	* mkcheck.in:  Make the *.txt and *.tst files writable
+	  after copying them to $TEST_DIR.
+
 2000-06-23  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
 
 	* bits/fstream.tcc (basic_filebuf::basic_filebuf(fd)): Use it.
