@@ -1578,27 +1578,30 @@ do {								\
    On i386, if using PIC, mark a SYMBOL_REF for a non-global symbol
    so that we may access it directly in the GOT.  */
 
-#define ENCODE_SECTION_INFO(DECL) \
-do									\
-  {									\
-    if (flag_pic)							\
-      {									\
-	rtx rtl = (TREE_CODE_CLASS (TREE_CODE (DECL)) != 'd'		\
-		   ? TREE_CST_RTL (DECL) : DECL_RTL (DECL));		\
-									\
-	if (TARGET_DEBUG_ADDR						\
-	    && TREE_CODE_CLASS (TREE_CODE (DECL)) == 'd')		\
-	  {								\
-	    fprintf (stderr, "Encode %s, public = %d\n",		\
-		     IDENTIFIER_POINTER (DECL_NAME (DECL)),		\
-		     TREE_PUBLIC (DECL));				\
-	  }								\
-									\
-	SYMBOL_REF_FLAG (XEXP (rtl, 0))					\
-	  = (TREE_CODE_CLASS (TREE_CODE (DECL)) != 'd'			\
-	     || ! TREE_PUBLIC (DECL));					\
-      }									\
-  }									\
+#define ENCODE_SECTION_INFO(DECL)				\
+do								\
+  {								\
+    if (flag_pic)						\
+      {								\
+	rtx rtl = (TREE_CODE_CLASS (TREE_CODE (DECL)) != 'd'	\
+		   ? TREE_CST_RTL (DECL) : DECL_RTL (DECL));	\
+								\
+	if (GET_CODE (rtl) == MEM)				\
+	  {							\
+	    if (TARGET_DEBUG_ADDR				\
+		&& TREE_CODE_CLASS (TREE_CODE (DECL)) == 'd')	\
+	      {							\
+		fprintf (stderr, "Encode %s, public = %d\n",	\
+			 IDENTIFIER_POINTER (DECL_NAME (DECL)),	\
+			 TREE_PUBLIC (DECL));			\
+	      }							\
+	    							\
+	    SYMBOL_REF_FLAG (XEXP (rtl, 0))			\
+	      = (TREE_CODE_CLASS (TREE_CODE (DECL)) != 'd'	\
+		 || ! TREE_PUBLIC (DECL));			\
+	  }							\
+      }								\
+  }								\
 while (0)
 
 /* The `FINALIZE_PIC' macro serves as a hook to emit these special
