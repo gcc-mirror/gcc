@@ -186,6 +186,39 @@ if test -n "$with_cross_host" || test x"$build" != x"$host"; then
         AC_DEFINE(HAVE_ISNANL)
       fi
       ;;
+    *-freebsd*)
+      # Check for available headers.
+      AC_CHECK_HEADERS([nan.h ieeefp.h endian.h sys/isa_defs.h \
+        machine/endian.h machine/param.h sys/machine.h sys/types.h \
+        fp.h locale.h float.h inttypes.h sys/resource.h sys/stat.h \
+        sys/time.h unistd.h])
+      SECTION_FLAGS='-ffunction-sections -fdata-sections'
+      AC_SUBST(SECTION_FLAGS) 
+      GLIBCPP_CHECK_LINKER_FEATURES
+      GLIBCPP_CHECK_COMPLEX_MATH_SUPPORT
+      GLIBCPP_CHECK_WCHAR_T_SUPPORT
+      os_include_dir="os/bsd/freebsd"
+      AC_DEFINE(HAVE_LC_MESSAGES)
+      AC_DEFINE(HAVE_DRAND48)
+      AC_DEFINE(HAVE_GETPAGESIZE)
+      AC_DEFINE(HAVE_SETENV)
+      AC_DEFINE(HAVE_SIGSETJMP)
+      AC_DEFINE(HAVE_COPYSIGN)
+      AC_DEFINE(HAVE_COPYSIGNF)
+      AC_DEFINE(HAVE_FINITEF)
+      AC_DEFINE(HAVE_FINITE)
+      AC_DEFINE(HAVE_FREXPF)
+      AC_DEFINE(HAVE_HYPOT)
+      AC_DEFINE(HAVE_HYPOTF)
+      AC_DEFINE(HAVE_ISINF)
+      AC_DEFINE(HAVE_ISNAN)
+      AC_DEFINE(HAVE_ISNANF)
+      if test x"long_double_math_on_this_cpu" = x"yes"; then
+        AC_DEFINE(HAVE_FINITEL)
+        AC_DEFINE(HAVE_ISINFL)
+        AC_DEFINE(HAVE_ISNANL)
+      fi
+      ;;
     *-mingw32*)
       AC_CHECK_HEADERS([sys/types.h locale.h float.h])
       GLIBCPP_CHECK_LINKER_FEATURES
@@ -228,6 +261,34 @@ changequote([,])dnl
     *-mingw32*)
       ;;
     *-windiss*)
+      AC_DEFINE(HAVE_ACOSF)
+      AC_DEFINE(HAVE_ASINF)
+      AC_DEFINE(HAVE_ATAN2F)
+      AC_DEFINE(HAVE_ATANF)
+      AC_DEFINE(HAVE_CEILF)
+      AC_DEFINE(HAVE_COPYSIGN)
+      AC_DEFINE(HAVE_COPYSIGNF)
+      AC_DEFINE(HAVE_COSF)
+      AC_DEFINE(HAVE_COSHF)
+      AC_DEFINE(HAVE_EXPF)
+      AC_DEFINE(HAVE_FABSF)
+      AC_DEFINE(HAVE_FLOORF)
+      AC_DEFINE(HAVE_FMODF)
+      AC_DEFINE(HAVE_FREXPF)
+      AC_DEFINE(HAVE_LDEXPF)
+      AC_DEFINE(HAVE_LOG10F)
+      AC_DEFINE(HAVE_LOGF)
+      AC_DEFINE(HAVE_MODFF)
+      AC_DEFINE(HAVE_POWF)
+      AC_DEFINE(HAVE_SINF)
+      AC_DEFINE(HAVE_SINHF)
+      AC_DEFINE(HAVE_SQRTF)
+      AC_DEFINE(HAVE_TANF)
+      AC_DEFINE(HAVE_TANHF)
+      ;;
+    *-freebsd*)
+      # Must replicate generic section since we don't have strtof or strtold.
+      AC_DEFINE(HAVE_MMAP)
       AC_DEFINE(HAVE_ACOSF)
       AC_DEFINE(HAVE_ASINF)
       AC_DEFINE(HAVE_ATAN2F)
