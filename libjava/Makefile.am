@@ -488,7 +488,8 @@ lib_gnu_java_awt_peer_gtk_la_LINK = $(LIBLINK)
 
 libjawt_la_SOURCES = jawt.c
 libjawt_la_CFLAGS = -I$(srcdir)/jni/classpath $(PEDANTIC_CFLAGS) $(X_CFLAGS)
-libjawt_la_LIBADD = lib-gnu-java-awt-peer-gtk.la
+## See jv_convert_LDADD.
+libjawt_la_LIBADD = -L$(here)/.libs lib-gnu-java-awt-peer-gtk.la
 libjawt_la_LDFLAGS = \
 	-version-info `grep -v '^\#' $(srcdir)/libtool-version` \
 	$(LIBGCJ_LD_SYMBOLIC)

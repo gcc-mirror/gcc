@@ -1,3 +1,9 @@
+2005-03-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgcj/20251
+	* Makefile.am (libjawt_la_LIBADD): Add -L$(here)/.libs.
+	* Makefile.in: Rebuilt.
+
 2005-03-15  David Daney  <ddaney@avtrex.com>
 
 	* gnu/java/net/natPlainSocketImplPosix.cc (read_helper): Handle
