@@ -1,3 +1,13 @@
+2001-06-10  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* g77install.texi: Remove.
+	* Make-lang.in: Remove all mention of g77install.texi.
+	* g77.texi: Add documentation on how to get output always
+	flushed and how to increase the maximum unit number.
+	Remove all mention of g77install.texi.
+	* bugs.texi: Add documentation on how to change the threshold
+	for putting local arrays on the stack.
+
 2001-06-03  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	* root.texi: Fix typo in patches e-mail address.
