@@ -4121,53 +4121,61 @@ fold (expr)
 	return omit_one_operand (type, arg1, arg0);
 
     truth_andor:
+      /* We only do these simplifications if we are optimizing.  */
+      if (!optimize)
+	return t;
+
+      /* Check for things like (A || B) && (A || C).  We can convert this
+	 to A || (B && C).  Note that either operator can be any of the four
+	 truth and/or operations and the transformation will still be
+	 valid.   Also note that we only care about order for the
+	 ANDIF and ORIF operators.  */
+      if (TREE_CODE (arg0) == TREE_CODE (arg1)
+	  && (TREE_CODE (arg0) == TRUTH_ANDIF_EXPR
+	      || TREE_CODE (arg0) == TRUTH_ORIF_EXPR
+	      || TREE_CODE (arg0) == TRUTH_AND_EXPR
+	      || TREE_CODE (arg0) == TRUTH_OR_EXPR))
+	{
+	  tree a00 = TREE_OPERAND (arg0, 0);
+	  tree a01 = TREE_OPERAND (arg0, 1);
+	  tree a10 = TREE_OPERAND (arg1, 0);
+	  tree a11 = TREE_OPERAND (arg1, 1);
+	  int commutative = ((TREE_CODE (arg0) == TRUTH_OR_EXPR
+			      || TREE_CODE (arg0) == TRUTH_AND_EXPR)
+			     && (code == TRUTH_AND_EXPR
+				 || code == TRUTH_OR_EXPR));
+
+	  if (operand_equal_p (a00, a10, 0))
+	    return fold (build (TREE_CODE (arg0), type, a00,
+				fold (build (code, type, a01, a11))));
+	  else if (commutative && operand_equal_p (a00, a11, 0))
+	    return fold (build (TREE_CODE (arg0), type, a00,
+				fold (build (code, type, a01, a10))));
+	  else if (commutative && operand_equal_p (a01, a10, 0))
+	    return fold (build (TREE_CODE (arg0), type, a01,
+				fold (build (code, type, a00, a11))));
+
+	  /* This case if tricky because we must either have commutative
+	     operators or else A10 must not have side-effects.  */
+
+	  else if ((commutative || ! TREE_SIDE_EFFECTS (a10))
+		   && operand_equal_p (a01, a11, 0))
+	    return fold (build (TREE_CODE (arg0), type,
+				fold (build (code, type, a00, a10)),
+				a01));
+	}
+
       /* Check for the possibility of merging component references.  If our
 	 lhs is another similar operation, try to merge its rhs with our
 	 rhs.  Then try to merge our lhs and rhs.  */
-      if (optimize)
-	{
-	  if (TREE_CODE (arg0) == code)
-	    {
-	      tem = fold_truthop (code, type,
-				  TREE_OPERAND (arg0, 1), arg1);
-	      if (tem)
-		return fold (build (code, type, TREE_OPERAND (arg0, 0), tem));
-	    }
+      if (TREE_CODE (arg0) == code
+	  && 0 != (tem = fold_truthop (code, type,
+				       TREE_OPERAND (arg0, 1), arg1)))
+	return fold (build (code, type, TREE_OPERAND (arg0, 0), tem));
 
-	  /* Check for things like (A || B) && (A || C).  We can convert
-	     this to A || (B && C).  Note that either operator can be any of
-	     the four truth and/or operations and the transformation will
-	     still be valid.  */
-	  if (TREE_CODE (arg0) == TREE_CODE (arg1)
-	      && (TREE_CODE (arg0) == TRUTH_ANDIF_EXPR
-		  || TREE_CODE (arg0) == TRUTH_ORIF_EXPR
-		  || TREE_CODE (arg0) == TRUTH_AND_EXPR
-		  || TREE_CODE (arg0) == TRUTH_OR_EXPR))
-	    {
-	      tree a00 = TREE_OPERAND (arg0, 0);
-	      tree a01 = TREE_OPERAND (arg0, 1);
-	      tree a10 = TREE_OPERAND (arg1, 0);
-	      tree a11 = TREE_OPERAND (arg1, 1);
-	      tree common = 0, op0, op1;
+      if ((tem = fold_truthop (code, type, arg0, arg1)) != 0)
+	return tem;
 
-	      if (operand_equal_p (a00, a10, 0))
-		common = a00, op0 = a01, op1 = a11;
-	      else if (operand_equal_p (a00, a11, 0))
-		common = a00, op0 = a01, op1 = a10;
-	      else if (operand_equal_p (a01, a10, 0))
-		common = a01, op0 = a00, op1 = a11;
-	      else if (operand_equal_p (a01, a11, 0))
-		common = a01, op0 = a00, op1 = a10;
-
-	      if (common)
-		return fold (build (TREE_CODE (arg0), type, common,
-				    fold (build (code, type, op0, op1))));
-	    }
-
-	  tem = fold_truthop (code, type, arg0, arg1);
-	  if (tem)
-	    return tem;
-	}
       return t;
 
     case TRUTH_ORIF_EXPR:
