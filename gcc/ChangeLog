@@ -1,3 +1,8 @@
+2003-08-01  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* builtins.def (ATTR_MATHFN_ERRNO, ATTR_MATHFN_FPROUNDING,
+	ATTR_MATHFN_FPROUNDING_ERRNO): New macros.  Use throughout.
+
 2003-08-01  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* config/s390/s390.c (s390_select_ccmode): Do not attempt to use CCL,
