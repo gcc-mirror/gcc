@@ -194,6 +194,8 @@ const struct attribute_spec rs6000_attribute_table[];
 static void rs6000_set_default_type_attributes PARAMS ((tree));
 static void rs6000_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
 static void rs6000_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
+static void rs6000_output_mi_thunk PARAMS ((FILE *, tree, HOST_WIDE_INT,
+					    HOST_WIDE_INT, tree));
 static rtx rs6000_emit_set_long_const PARAMS ((rtx,
   HOST_WIDE_INT, HOST_WIDE_INT));
 #if TARGET_ELF
@@ -311,6 +313,9 @@ static const char alt_reg_names[][8] =
 #ifndef MASK_STRICT_ALIGN
 #define MASK_STRICT_ALIGN 0
 #endif
+
+/* The VRSAVE bitmask puts bit %v0 as the most significant bit.  */
+#define ALTIVEC_REG_BIT(REGNO) (0x80000000 >> ((REGNO) - FIRST_ALTIVEC_REGNO))
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ATTRIBUTE_TABLE
@@ -373,8 +378,15 @@ static const char alt_reg_names[][8] =
 #undef TARGET_BINDS_LOCAL_P
 #define TARGET_BINDS_LOCAL_P rs6000_binds_local_p
 
-/* The VRSAVE bitmask puts bit %v0 as the most significant bit.  */
-#define ALTIVEC_REG_BIT(REGNO) (0x80000000 >> ((REGNO) - FIRST_ALTIVEC_REGNO))
+#undef TARGET_ASM_OUTPUT_MI_THUNK
+#define TARGET_ASM_OUTPUT_MI_THUNK rs6000_output_mi_thunk
+
+/* ??? Should work everywhere, but ask dje@watson.ibm.com before
+   enabling for AIX.  */
+#if TARGET_OBJECT_FORMAT != OBJECT_XCOFF
+#undef TARGET_ASM_CAN_OUTPUT_MI_THUNK
+#define TARGET_ASM_CAN_OUTPUT_MI_THUNK default_can_output_mi_thunk_no_vcall
+#endif
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -9463,7 +9475,11 @@ rs6000_ra_ever_killed ()
   rtx reg;
   rtx insn;
 
-  if (targetm.asm_out.output_mi_thunk && current_function_is_thunk)
+  /* Irritatingly, there are two kinds of thunks -- those created with
+     TARGET_ASM_OUTPUT_MI_THUNK and those with DECL_THUNK_P that go
+     through the regular part of the compiler.  This is a very hacky
+     way to tell them apart.  */
+  if (current_function_is_thunk && !no_new_pseudos)
     return 0;
 
   /* regs_ever_live has LR marked as used if any sibcalls are present,
@@ -11238,11 +11254,12 @@ rs6000_output_function_epilogue (file, size)
    calls FUNCTION instead of jumping to it.  The generic approach does
    not support varargs.  */
 
-void
-output_mi_thunk (file, thunk_fndecl, delta, function)
+static void
+rs6000_output_mi_thunk (file, thunk_fndecl, delta, vcall_offset, function)
      FILE *file;
      tree thunk_fndecl ATTRIBUTE_UNUSED;
      HOST_WIDE_INT delta;
+     HOST_WIDE_INT vcall_offset ATTRIBUTE_UNUSED;
      tree function;
 {
   const char *this_reg =
@@ -11348,10 +11365,7 @@ output_mi_thunk (file, thunk_fndecl, delta, function)
 	    }
 	  assemble_name (file, fname);
 	  putc ('\n', file);
-	  if (TARGET_ELF)
-	    function_section (current_function_decl);
-	  else
-	    text_section ();
+	  function_section (current_function_decl);
 	  if (TARGET_MINIMAL_TOC)
 	    asm_fprintf (file, (TARGET_32BIT)
 			 ? "\t{l|lwz} %s,%s(%s)\n" : "\tld %s,%s(%s)\n", r12,
@@ -11398,7 +11412,6 @@ output_mi_thunk (file, thunk_fndecl, delta, function)
 	}
     }
 }
-
 
 /* A quick summary of the various types of 'constant-pool tables'
    under PowerPC:

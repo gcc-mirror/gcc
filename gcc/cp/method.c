@@ -361,7 +361,7 @@ use_thunk (thunk_fndecl, emit_p)
   tree fnaddr;
   tree function;
   tree vcall_offset;
-  HOST_WIDE_INT delta;
+  HOST_WIDE_INT delta, vcall_value;
 
   if (TREE_ASM_WRITTEN (thunk_fndecl))
     return;
@@ -387,6 +387,17 @@ use_thunk (thunk_fndecl, emit_p)
   delta = THUNK_DELTA (thunk_fndecl);
   vcall_offset = THUNK_VCALL_OFFSET (thunk_fndecl);
 
+  if (vcall_offset)
+    {
+      vcall_value = tree_low_cst (vcall_offset, /*pos=*/0);
+
+      /* It is expected that a value of zero means no vcall.  */
+      if (!vcall_value)
+	abort ();
+    }
+  else
+    vcall_value = 0;
+
   /* And, if we need to emit the thunk, it's used.  */
   mark_used (thunk_fndecl);
   /* This thunk is actually defined.  */
@@ -409,8 +420,8 @@ use_thunk (thunk_fndecl, emit_p)
   BLOCK_VARS (DECL_INITIAL (thunk_fndecl)) 
     = DECL_ARGUMENTS (thunk_fndecl);
 
-  if (targetm.asm_out.output_mi_vcall_thunk
-      || (targetm.asm_out.output_mi_thunk && !vcall_offset))
+  if (targetm.asm_out.can_output_mi_thunk (thunk_fndecl, delta,
+					   vcall_value, function))
     {
       const char *fnname;
       current_function_decl = thunk_fndecl;
@@ -420,22 +431,10 @@ use_thunk (thunk_fndecl, emit_p)
       init_function_start (thunk_fndecl, input_filename, lineno);
       current_function_is_thunk = 1;
       assemble_start_function (thunk_fndecl, fnname);
-      if (targetm.asm_out.output_mi_vcall_thunk)
-	{
-	  HOST_WIDE_INT vcall_value;
 
-	  if (vcall_offset)
-	    vcall_value = tree_low_cst (vcall_offset, /*pos=*/0);
-	  else
-	    vcall_value = 0;
-	  targetm.asm_out.output_mi_vcall_thunk (asm_out_file, 
-						 thunk_fndecl, delta, 
-						 vcall_value,
-						 function);
-	}
-      else
-	targetm.asm_out.output_mi_thunk (asm_out_file, thunk_fndecl, 
-					 delta, function);
+      targetm.asm_out.output_mi_thunk (asm_out_file, thunk_fndecl, delta,
+				       vcall_value, function);
+
       assemble_end_function (thunk_fndecl, fnname);
       current_function_decl = 0;
       cfun = 0;

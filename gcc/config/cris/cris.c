@@ -102,7 +102,7 @@ static void cris_encode_section_info PARAMS ((tree, int));
 static void cris_operand_lossage PARAMS ((const char *, rtx));
 
 static void cris_asm_output_mi_thunk
-  PARAMS ((FILE *, tree, HOST_WIDE_INT, tree));
+  PARAMS ((FILE *, tree, HOST_WIDE_INT, HOST_WIDE_INT, tree));
 
 
 /* The function cris_target_asm_function_epilogue puts the last insn to
@@ -159,6 +159,8 @@ int cris_cpu_version = CRIS_DEFAULT_CPU_VERSION;
 
 #undef TARGET_ASM_OUTPUT_MI_THUNK
 #define TARGET_ASM_OUTPUT_MI_THUNK cris_asm_output_mi_thunk
+#undef TARGET_ASM_CAN_OUTPUT_MI_THUNK
+#define TARGET_ASM_CAN_OUTPUT_MI_THUNK default_can_output_mi_thunk_no_vcall
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -2580,10 +2582,11 @@ cris_override_options ()
 /* The TARGET_ASM_OUTPUT_MI_THUNK worker.  */
 
 static void
-cris_asm_output_mi_thunk (stream, thunkdecl, delta, funcdecl)
+cris_asm_output_mi_thunk (stream, thunkdecl, delta, vcall_offset, funcdecl)
      FILE *stream;
      tree thunkdecl ATTRIBUTE_UNUSED;
      HOST_WIDE_INT delta;
+     HOST_WIDE_INT vcall_offset ATTRIBUTE_UNUSED;
      tree funcdecl;
 {
   if (delta > 0)

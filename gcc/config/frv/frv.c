@@ -279,7 +279,8 @@ static void frv_encode_section_info		PARAMS ((tree, int));
 static void frv_init_builtins			PARAMS ((void));
 static rtx frv_expand_builtin			PARAMS ((tree, rtx, rtx, enum machine_mode, int));
 static bool frv_in_small_data_p			PARAMS ((tree));
-static void frv_asm_output_mi_thunk		PARAMS ((FILE *, tree, HOST_WIDE_INT, tree));
+static void frv_asm_output_mi_thunk
+  PARAMS ((FILE *, tree, HOST_WIDE_INT, HOST_WIDE_INT, tree));
 
 /* Initialize the GCC target structure.  */
 #undef  TARGET_ASM_FUNCTION_PROLOGUE
@@ -301,6 +302,8 @@ static void frv_asm_output_mi_thunk		PARAMS ((FILE *, tree, HOST_WIDE_INT, tree)
 
 #undef TARGET_ASM_OUTPUT_MI_THUNK
 #define TARGET_ASM_OUTPUT_MI_THUNK frv_asm_output_mi_thunk
+#undef TARGET_ASM_CAN_OUTPUT_MI_THUNK
+#define TARGET_ASM_CAN_OUTPUT_MI_THUNK default_can_output_mi_thunk_no_vcall
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -1871,10 +1874,11 @@ frv_expand_epilogue (sibcall_p)
    varargs.  */
 
 static void
-frv_asm_output_mi_thunk (file, thunk_fndecl, delta, function)
+frv_asm_output_mi_thunk (file, thunk_fndecl, delta, vcall_offset, function)
      FILE *file;
      tree thunk_fndecl ATTRIBUTE_UNUSED;
      HOST_WIDE_INT delta;
+     HOST_WIDE_INT vcall_offset ATTRIBUTE_UNUSED;
      tree function;
 {
   const char *name_func = XSTR (XEXP (DECL_RTL (function), 0), 0);

@@ -127,6 +127,7 @@ static void	 arm_encode_section_info	PARAMS ((tree, int));
 static void	 aof_globalize_label		PARAMS ((FILE *, const char *));
 #endif
 static void arm_output_mi_thunk			PARAMS ((FILE *, tree,
+							 HOST_WIDE_INT,
 							 HOST_WIDE_INT, tree));
 
 #undef Hint
@@ -192,6 +193,8 @@ static void arm_output_mi_thunk			PARAMS ((FILE *, tree,
 
 #undef TARGET_ASM_OUTPUT_MI_THUNK
 #define TARGET_ASM_OUTPUT_MI_THUNK arm_output_mi_thunk
+#undef TARGET_ASM_CAN_OUTPUT_MI_THUNK
+#define TARGET_ASM_CAN_OUTPUT_MI_THUNK default_can_output_mi_thunk_no_vcall
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -11154,10 +11157,11 @@ arm_encode_section_info (decl, first)
    to FUNCTION.  Used for C++ multiple inheritance.  */
 
 static void
-arm_output_mi_thunk (file, thunk, delta, function)
+arm_output_mi_thunk (file, thunk, delta, vcall_offset, function)
      FILE *file;
      tree thunk ATTRIBUTE_UNUSED;
      HOST_WIDE_INT delta;
+     HOST_WIDE_INT vcall_offset ATTRIBUTE_UNUSED;
      tree function;
 {
   int mi_delta = delta;

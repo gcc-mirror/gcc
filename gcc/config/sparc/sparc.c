@@ -176,7 +176,8 @@ static void emit_soft_tfmode_cvt PARAMS ((enum rtx_code, rtx *));
 static void emit_hard_tfmode_operation PARAMS ((enum rtx_code, rtx *));
 
 static void sparc_encode_section_info PARAMS ((tree, int));
-static void sparc_output_mi_thunk PARAMS ((FILE *, tree, HOST_WIDE_INT, tree));
+static void sparc_output_mi_thunk PARAMS ((FILE *, tree, HOST_WIDE_INT,
+					   HOST_WIDE_INT, tree));
 
 /* Option handling.  */
 
@@ -242,6 +243,8 @@ enum processor_type sparc_cpu;
 
 #undef TARGET_ASM_OUTPUT_MI_THUNK
 #define TARGET_ASM_OUTPUT_MI_THUNK sparc_output_mi_thunk
+#undef TARGET_ASM_CAN_OUTPUT_MI_THUNK
+#define TARGET_ASM_CAN_OUTPUT_MI_THUNK default_can_output_mi_thunk_no_vcall
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -8453,10 +8456,11 @@ sparc_encode_section_info (decl, first)
    Used for C++ multiple inheritance.  */
 
 static void
-sparc_output_mi_thunk (file, thunk_fndecl, delta, function)
+sparc_output_mi_thunk (file, thunk_fndecl, delta, vcall_offset, function)
      FILE *file;
      tree thunk_fndecl ATTRIBUTE_UNUSED;
      HOST_WIDE_INT delta;
+     HOST_WIDE_INT vcall_offset ATTRIBUTE_UNUSED;
      tree function;
 {
   rtx this, insn, funexp, delta_rtx, tmp;

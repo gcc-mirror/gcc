@@ -1,3 +1,54 @@
+2002-10-22  Richard Henderson  <rth@redhat.com>
+
+	* target.h (gcc_target.asm_out): Merge output_mi_thunk and
+	output_mi_vcall_thunk into a single hook.  Add can_output_mi_thunk.
+	* target-def.h (TARGET_ASM_OUTPUT_MI_THUNK): Don't conditionalize.
+	(TARGET_ASM_OUTPUT_MI_VCALL_THUNK): Remove.
+	(TARGET_ASM_CAN_OUTPUT_MI_THUNK): New.
+	(TARGET_ASM_OUT): Update.
+	* hooks.c (hook_bool_tree_hwi_hwi_tree_false): New.
+	(hook_bool_tree_hwi_hwi_tree_true): New.
+	(default_can_output_mi_thunk_no_vcall): New.
+	* hooks.h: Declare them.
+	* system.h (ASM_OUTPUT_MI_THUNK): Poison.
+
+	* config/alpha/alpha.c (TARGET_ASM_CAN_OUTPUT_MI_THUNK): New.
+	(alpha_output_mi_thunk_osf): Add VCALL_OFFSET parameter.
+	* config/arm/arm.c, config/cris/cris.c, config/frv/frv.c,
+	config/i960/i960.c, config/ia64/ia64.c, config/m68k/m68k.c,
+	config/mmix/mmix.c, config/pa/pa.c, config/sparc/sparc.c,
+	config/stormy16/stormy16.c: Similarly.
+
+	* config/i386/i386.c (x86_output_mi_thunk): Merge vcall_offset code.
+	Handle 64-bit properly.  Streamline.
+	(x86_output_mi_vcall_thunk): Remove.
+	(x86_this_parameter): Rename from ia32_this_parameter; handle 64-bit.
+	(x86_can_output_mi_thunk): New.
+	(TARGET_ASM_OUTPUT_MI_VCALL_THUNK): Remove.
+	(TARGET_ASM_CAN_OUTPUT_MI_THUNK): New.
+	(override_options): Don't zap targetm.asm_out.output_mi_vcall_thunk.
+
+	* config/rs6000/rs6000.c (rs6000_output_mi_thunk): Rename from
+	output_mi_thunk; make static; always use function_section.
+	(TARGET_ASM_OUTPUT_MI_THUNK): New.
+	(TARGET_ASM_CAN_OUTPUT_MI_THUNK): New.
+	(rs6000_ra_ever_killed): Test no_new_pseudos not
+	targetm.asm_out.output_mi_thunk in conjunction with thunks.
+	* config/rs6000/rs6000-protos.h: Update.
+	* config/rs6000/sysv4.h (TARGET_ASM_OUTPUT_MI_THUNK): Remove.
+	* config/rs6000/xcoff.h (ASM_DECLARE_FUNCTION_NAME): Don't call
+	xcoffout_declare_function when using rs6000_output_mi_thunk.
+
+	* config/s390/s390.c (s390_output_mi_thunk): Rename from 
+	s390_output_mi_vcall_thunk.
+	(TARGET_ASM_OUTPUT_MI_THUNK): Remove.
+	(TARGET_ASM_CAN_OUTPUT_MI_THUNK): New.
+
+	* config/vax/vax.c (vax_output_mi_thunk): Static; add vcall_offset.
+	(TARGET_ASM_OUTPUT_MI_THUNK, TARGET_ASM_CAN_OUTPUT_MI_THUNK): New.
+	* config/vax/vax-protos.h: Update.
+	* config/vax/vax.h (ASM_OUTPUT_MI_THUNK): Remove.
+
 Wed Oct 23 00:33:11 CEST 2002  Jan Hubicka  <jh@suse,cz>
 
 	* i386.c (standard_sse_constant_p): Accept vector and integer zeros too.

@@ -750,10 +750,11 @@ static int ix86_variable_issue PARAMS ((FILE *, int, rtx, int));
 static int ia32_use_dfa_pipeline_interface PARAMS ((void));
 static int ia32_multipass_dfa_lookahead PARAMS ((void));
 static void ix86_init_mmx_sse_builtins PARAMS ((void));
-static rtx ia32_this_parameter PARAMS ((tree));
-static void x86_output_mi_thunk PARAMS ((FILE *, tree, HOST_WIDE_INT, tree));
-static void x86_output_mi_vcall_thunk PARAMS ((FILE *, tree, HOST_WIDE_INT,
-					       HOST_WIDE_INT, tree));
+static rtx x86_this_parameter PARAMS ((tree));
+static void x86_output_mi_thunk PARAMS ((FILE *, tree, HOST_WIDE_INT,
+					 HOST_WIDE_INT, tree));
+static bool x86_can_output_mi_thunk PARAMS ((tree, HOST_WIDE_INT,
+					     HOST_WIDE_INT, tree));
 
 struct ix86_address
 {
@@ -902,8 +903,8 @@ static enum x86_64_reg_class merge_classes PARAMS ((enum x86_64_reg_class,
 
 #undef TARGET_ASM_OUTPUT_MI_THUNK
 #define TARGET_ASM_OUTPUT_MI_THUNK x86_output_mi_thunk
-#undef TARGET_ASM_OUTPUT_MI_VCALL_THUNK
-#define TARGET_ASM_OUTPUT_MI_VCALL_THUNK x86_output_mi_vcall_thunk
+#undef TARGET_ASM_CAN_OUTPUT_MI_THUNK
+#define TARGET_ASM_CAN_OUTPUT_MI_THUNK x86_can_output_mi_thunk
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -1305,10 +1306,6 @@ override_options ()
     internal_label_prefix_len = p - internal_label_prefix;
     *p = '\0';
   }
-
-  /* In 64-bit mode, we do not have support for vcall thunks.  */
-  if (TARGET_64BIT)
-    targetm.asm_out.output_mi_vcall_thunk = NULL;
 }
 
 void
@@ -14076,10 +14073,16 @@ x86_order_regs_for_local_alloc ()
    located on entry to the FUNCTION.  */
 
 static rtx
-ia32_this_parameter (function)
+x86_this_parameter (function)
      tree function;
 {
   tree type = TREE_TYPE (function);
+
+  if (TARGET_64BIT)
+    {
+      int n = aggregate_value_p (TREE_TYPE (type)) != 0;
+      return gen_rtx_REG (DImode, x86_64_int_parameter_registers[n]);
+    }
 
   if (ix86_fntype_regparm (type) > 0)
     {
@@ -14088,7 +14091,7 @@ ia32_this_parameter (function)
       parm = TYPE_ARG_TYPES (type);
       /* Figure out whether or not the function has a variable number of
 	 arguments.  */
-      for (; parm; parm = TREE_CHAIN (parm))\
+      for (; parm; parm = TREE_CHAIN (parm))
 	if (TREE_VALUE (parm) == void_type_node)
 	  break;
       /* If not, the this parameter is in %eax.  */
@@ -14102,120 +14105,150 @@ ia32_this_parameter (function)
     return gen_rtx_MEM (SImode, plus_constant (stack_pointer_rtx, 4));
 }
 
+/* Determine whether x86_output_mi_thunk can succeed.  */
+
+static bool
+x86_can_output_mi_thunk (thunk, delta, vcall_offset, function)
+     tree thunk ATTRIBUTE_UNUSED;
+     HOST_WIDE_INT delta ATTRIBUTE_UNUSED;
+     HOST_WIDE_INT vcall_offset;
+     tree function;
+{
+  /* 64-bit can handle anything.  */
+  if (TARGET_64BIT)
+    return true;
+
+  /* For 32-bit, everything's fine if we have one free register.  */
+  if (ix86_fntype_regparm (TREE_TYPE (function)) < 3)
+    return true;
+
+  /* Need a free register for vcall_offset.  */
+  if (vcall_offset)
+    return false;
+
+  /* Need a free register for GOT references.  */
+  if (flag_pic && !(*targetm.binds_local_p) (function))
+    return false;
+
+  /* Otherwise ok.  */
+  return true;
+}
+
+/* Output the assembler code for a thunk function.  THUNK_DECL is the
+   declaration for the thunk function itself, FUNCTION is the decl for
+   the target function.  DELTA is an immediate constant offset to be
+   added to THIS.  If VCALL_OFFSET is non-zero, the word at
+   *(*this + vcall_offset) should be added to THIS.  */
 
 static void
-x86_output_mi_vcall_thunk (file, thunk, delta, vcall_index, function)
-     FILE *file;
+x86_output_mi_thunk (file, thunk, delta, vcall_offset, function)
+     FILE *file ATTRIBUTE_UNUSED;
      tree thunk ATTRIBUTE_UNUSED;
      HOST_WIDE_INT delta;
-     HOST_WIDE_INT vcall_index;
+     HOST_WIDE_INT vcall_offset;
      tree function;
 {
   rtx xops[3];
+  rtx this = x86_this_parameter (function);
+  rtx this_reg, tmp;
 
-  if (TARGET_64BIT)
+  /* If VCALL_OFFSET, we'll need THIS in a register.  Might as well
+     pull it in now and let DELTA benefit.  */
+  if (REG_P (this))
+    this_reg = this;
+  else if (vcall_offset)
     {
-      int n = aggregate_value_p (TREE_TYPE (TREE_TYPE (function))) != 0;
+      /* Put the this parameter into %eax.  */
+      xops[0] = this;
+      xops[1] = this_reg = gen_rtx_REG (Pmode, 0);
+      output_asm_insn ("mov{l}\t{%0, %1|%1, %0}", xops);
+    }
+  else
+    this_reg = NULL_RTX;
+
+  /* Adjust the this parameter by a fixed constant.  */
+  if (delta)
+    {
       xops[0] = GEN_INT (delta);
-      xops[1] = gen_rtx_REG (DImode, x86_64_int_parameter_registers[n]);
-      output_asm_insn ("add{q} {%0, %1|%1, %0}", xops);
-      if (flag_pic)
+      xops[1] = this_reg ? this_reg : this;
+      if (TARGET_64BIT)
 	{
-	  fprintf (file, "\tjmp *");
-	  assemble_name (file, XSTR (XEXP (DECL_RTL (function), 0), 0));
-	  fprintf (file, "@GOTPCREL(%%rip)\n");
+	  if (!x86_64_general_operand (xops[0], DImode))
+	    {
+	      tmp = gen_rtx_REG (DImode, FIRST_REX_INT_REG + 2 /* R10 */);
+	      xops[1] = tmp;
+	      output_asm_insn ("mov{q}\t{%1, %0|%0, %1}", xops);
+	      xops[0] = tmp;
+	      xops[1] = this;
+	    }
+	  output_asm_insn ("add{q}\t{%0, %1|%1, %0}", xops);
 	}
       else
+	output_asm_insn ("add{l}\t{%0, %1|%1, %0}", xops);
+    }
+
+  /* Adjust the this parameter by a value stored in the vtable.  */
+  if (vcall_offset)
+    {
+      if (TARGET_64BIT)
+	tmp = gen_rtx_REG (DImode, FIRST_REX_INT_REG + 2 /* R10 */);
+      else
+	tmp = gen_rtx_REG (SImode, 2 /* ECX */);
+
+      xops[0] = gen_rtx_MEM (Pmode, this_reg);
+      xops[1] = tmp;
+      if (TARGET_64BIT)
+	output_asm_insn ("mov{q}\t{%0, %1|%1, %0}", xops);
+      else
+	output_asm_insn ("mov{l}\t{%0, %1|%1, %0}", xops);
+
+      /* Adjust the this parameter.  */
+      xops[0] = gen_rtx_MEM (Pmode, plus_constant (tmp, vcall_offset));
+      if (TARGET_64BIT && !memory_operand (xops[0], Pmode))
 	{
-	  fprintf (file, "\tjmp ");
-	  assemble_name (file, XSTR (XEXP (DECL_RTL (function), 0), 0));
-	  fprintf (file, "\n");
+	  rtx tmp2 = gen_rtx_REG (DImode, FIRST_REX_INT_REG + 3 /* R11 */);
+	  xops[0] = GEN_INT (vcall_offset);
+	  xops[1] = tmp2;
+	  output_asm_insn ("mov{q}\t{%0, %1|%1, %0}", xops);
+	  xops[0] = gen_rtx_MEM (Pmode, gen_rtx_PLUS (Pmode, tmp, tmp2));
 	}
+      xops[1] = this_reg;
+      if (TARGET_64BIT)
+	output_asm_insn ("add{q}\t{%0, %1|%1, %0}", xops);
+      else
+	output_asm_insn ("add{l}\t{%0, %1|%1, %0}", xops);
+    }
+
+  /* If necessary, drop THIS back to its stack slot.  */
+  if (this_reg && this_reg != this)
+    {
+      xops[0] = this_reg;
+      xops[1] = this;
+      output_asm_insn ("mov{l}\t{%0, %1|%1, %0}", xops);
+    }
+
+  xops[0] = DECL_RTL (function);
+  if (TARGET_64BIT)
+    {
+      if (!flag_pic || (*targetm.binds_local_p) (function))
+	output_asm_insn ("jmp\t%P0", xops);
+      else
+	output_asm_insn ("jmp\t*%P0@GOTPCREL(%%rip)", xops);
     }
   else
     {
-      /* Adjust the this parameter by a fixed constant.  */
-      if (delta)
-	{
-	  xops[0] = GEN_INT (delta);
-	  xops[1] = ia32_this_parameter (function);
-	  output_asm_insn ("add{l}\t{%0, %1|%1, %0}", xops);
-	}
-
-      /* Adjust the this parameter by a value stored in the vtable.  */
-      if (vcall_index)
-	{
-	  rtx this_parm;
-
-	  /* Put the this parameter into %eax.  */
-	  this_parm = ia32_this_parameter (function);
-	  if (!REG_P (this_parm))
-	    {
-	      xops[0] = this_parm;
-	      xops[1] = gen_rtx_REG (Pmode, 0);
-	      output_asm_insn ("mov{l}\t{%0, %1|%1, %0}", xops);
-	    }
-	  /* Load the virtual table pointer into %edx.  */
-	  if (ix86_fntype_regparm (TREE_TYPE (function)) > 2)
-	    error ("virtual function `%D' cannot have more than two register parameters",
-		   function);
-	  xops[0] = gen_rtx_MEM (Pmode, 
-				 gen_rtx_REG (Pmode, 0));
-	  xops[1] = gen_rtx_REG (Pmode, 1);
-	  output_asm_insn ("mov{l}\t{%0, %1|%1, %0}", xops);
-	  /* Adjust the this parameter.  */
-	  xops[0] = gen_rtx_MEM (SImode, 
-				 plus_constant (gen_rtx_REG (Pmode, 1), 
-						vcall_index));
-	  xops[1] = gen_rtx_REG (Pmode, 0);
-	  output_asm_insn ("add{l}\t{%0, %1|%1, %0}", xops);
-	  /* Put the this parameter back where it came from.  */
-	  if (!REG_P (this_parm))
-	    {
-	      xops[0] = gen_rtx_REG (Pmode, 0);
-	      xops[1] = ia32_this_parameter (function);
-	      output_asm_insn ("mov{l}\t{%0, %1|%1, %0}", xops);
-	    }
-	}
-
-      if (flag_pic)
-	{
-	  xops[0] = pic_offset_table_rtx;
-	  xops[1] = gen_label_rtx ();
-	  xops[2] = gen_rtx_SYMBOL_REF (Pmode, GOT_SYMBOL_NAME);
-
-	  if (ix86_regparm > 2)
-	    abort ();
-	  output_asm_insn ("push{l}\t%0", xops);
-	  output_asm_insn ("call\t%P1", xops);
-	  ASM_OUTPUT_INTERNAL_LABEL (file, "L", CODE_LABEL_NUMBER (xops[1]));
-	  output_asm_insn ("pop{l}\t%0", xops);
-	  output_asm_insn
-	    ("add{l}\t{%2+[.-%P1], %0|%0, OFFSET FLAT: %2+[.-%P1]}", xops);
-	  xops[0] = gen_rtx_MEM (SImode, XEXP (DECL_RTL (function), 0));
-	  output_asm_insn
-	    ("mov{l}\t{%0@GOT(%%ebx), %%ecx|%%ecx, %0@GOT[%%ebx]}", xops);
-	  asm_fprintf (file, "\tpop{l\t%%ebx|\t%%ebx}\n");
-	  asm_fprintf (file, "\tjmp\t{*%%ecx|%%ecx}\n");
-	}
+      if (!flag_pic || (*targetm.binds_local_p) (function))
+	output_asm_insn ("jmp\t%P0", xops);
       else
 	{
-	  fprintf (file, "\tjmp\t");
-	  assemble_name (file, XSTR (XEXP (DECL_RTL (function), 0), 0));
-	  fprintf (file, "\n");
+	  tmp = gen_rtx_REG (SImode, 2 /* ECX */);
+	  output_set_got (tmp);
+
+	  xops[1] = tmp;
+	  output_asm_insn ("mov{l}\t{%0@GOT(%1), %1|%1, %0@GOT[%1]}", xops);
+	  output_asm_insn ("jmp\t{*}%1", xops);
 	}
     }
-}
-
-static void
-x86_output_mi_thunk (file, thunk, delta, function)
-     FILE *file;
-     tree thunk;
-     HOST_WIDE_INT delta;
-     tree function;
-{
-  x86_output_mi_vcall_thunk (file, thunk, delta, /*vcall_index=*/0, 
-			     function);
 }
 
 int
