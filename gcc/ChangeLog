@@ -1,3 +1,7 @@
+Wed Oct  7 21:40:24 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
+
+	* config/sparc/sol2-sld-64.h (ASM_CPU_SPEC): Fix typo.
+
 Wed Oct  7 21:19:46 1998  Ken Raeburn  <raeburn@cygnus.com>
 
 	* config/mips/mips.md (tablejump_internal3, tablejump_internal4
