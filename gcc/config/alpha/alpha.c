@@ -768,7 +768,7 @@ some_operand (op, mode)
   switch (GET_CODE (op))
     {
     case REG:  case MEM:  case CONST_DOUBLE:  case CONST_INT:  case LABEL_REF:
-    case SYMBOL_REF:  case CONST:
+    case SYMBOL_REF:  case CONST:  case HIGH:
       return 1;
 
     case SUBREG:
@@ -816,10 +816,21 @@ input_operand (op, mode)
     case SYMBOL_REF:
     case CONST:
       if (TARGET_EXPLICIT_RELOCS)
-	return 0;
+	{
+	  /* We don't split symbolic operands into something unintelligable
+	     until after reload, but we do not wish non-small, non-global
+	     symbolic operands to be reconstructed from their high/lo_sum
+	     form.  */
+	  return (small_symbolic_operand (op, mode)
+		  || global_symbolic_operand (op, mode));
+	}
 
       /* This handles both the Windows/NT and OSF cases.  */
       return mode == ptr_mode || mode == DImode;
+
+    case HIGH:
+      return (TARGET_EXPLICIT_RELOCS
+	      && local_symbolic_operand (XEXP (op, 0), mode));
 
     case REG:
     case ADDRESSOF:
@@ -1354,6 +1365,100 @@ addition_operation (op, mode)
   return 0;
 }
 
+/* Implements CONST_OK_FOR_LETTER_P.  Return true if the value matches
+   the range defined for C in [I-P].  */
+
+bool
+alpha_const_ok_for_letter_p (value, c)
+     HOST_WIDE_INT value;
+     int c;
+{
+  switch (c)
+    {
+    case 'I':
+      /* An unsigned 8 bit constant.  */
+      return (unsigned HOST_WIDE_INT) value < 0x100;
+    case 'J':
+      /* The constant zero.  */
+      return value == 0;
+    case 'K':
+      /* A signed 16 bit constant.  */
+      return (unsigned HOST_WIDE_INT) (value + 0x8000) < 0x10000;
+    case 'L':
+      /* A shifted signed 16 bit constant appropriate for LDAH.  */
+      return ((value & 0xffff) == 0
+              && ((value) >> 31 == -1 || value >> 31 == 0));
+    case 'M':
+      /* A constant that can be AND'ed with using a ZAP insn.  */
+      return zap_mask (value);
+    case 'N':
+      /* A complemented unsigned 8 bit constant.  */
+      return (unsigned HOST_WIDE_INT) (~ value) < 0x100;
+    case 'O':
+      /* A negated unsigned 8 bit constant.  */
+      return (unsigned HOST_WIDE_INT) (- value) < 0x100;
+    case 'P':
+      /* The constant 1, 2 or 3.  */
+      return value == 1 || value == 2 || value == 3;
+
+    default:
+      return false;
+    }
+}
+
+/* Implements CONST_DOUBLE_OK_FOR_LETTER_P.  Return true if VALUE
+   matches for C in [GH].  */
+
+bool
+alpha_const_double_ok_for_letter_p (value, c)
+     rtx value;
+     int c;
+{
+  switch (c)
+    {
+    case 'G':
+      /* The floating point zero constant.  */
+      return (GET_MODE_CLASS (GET_MODE (value)) == MODE_FLOAT
+	      && value == CONST0_RTX (GET_MODE (value)));
+
+    case 'H':
+      /* A valid operand of a ZAP insn.  */
+      return (GET_MODE (value) == VOIDmode
+	      && zap_mask (CONST_DOUBLE_LOW (value))
+	      && zap_mask (CONST_DOUBLE_HIGH (value)));
+
+    default:
+      return false;
+    }
+}
+
+/* Implements CONST_DOUBLE_OK_FOR_LETTER_P.  Return true if VALUE
+   matches for C.  */
+
+bool
+alpha_extra_constraint (value, c)
+     rtx value;
+     int c;
+{
+  switch (c)
+    {
+    case 'Q':
+      return normal_memory_operand (value, VOIDmode);
+    case 'R':
+      return direct_call_operand (value, Pmode);
+    case 'S':
+      return (GET_CODE (value) == CONST_INT
+	      && (unsigned HOST_WIDE_INT) INTVAL (value) < 64);
+    case 'T':
+      return GET_CODE (value) == HIGH;
+    case 'U':
+      return TARGET_ABI_UNICOSMK && symbolic_operand (value, VOIDmode);
+
+    default:
+      return false;
+    }
+}
+
 /* Return 1 if this function can directly return via $26.  */
 
 int
@@ -1628,28 +1733,35 @@ alpha_legitimate_address_p (mode, x, strict)
 	return true;
     }
 
-  /* If we're managing explicit relocations, LO_SUM is valid.  */
-  else if (TARGET_EXPLICIT_RELOCS && GET_CODE (x) == LO_SUM)
+  /* If we're managing explicit relocations, LO_SUM is valid, as
+     are small data symbols.  */
+  else if (TARGET_EXPLICIT_RELOCS)
     {
-      rtx ofs = XEXP (x, 1);
-      x = XEXP (x, 0);
-
-      /* Discard non-paradoxical subregs.  */
-      if (GET_CODE (x) == SUBREG
-          && (GET_MODE_SIZE (GET_MODE (x))
-	      < GET_MODE_SIZE (GET_MODE (SUBREG_REG (x)))))
-	x = SUBREG_REG (x);
-
-      /* Must have a valid base register.  */
-      if (! (REG_P (x)
-	     && (strict
-		 ? STRICT_REG_OK_FOR_BASE_P (x)
-		 : NONSTRICT_REG_OK_FOR_BASE_P (x))))
-	return false;
-
-      /* The symbol must be local.  */
-      if (local_symbolic_operand (ofs, Pmode))
+      if (small_symbolic_operand (x, Pmode))
 	return true;
+
+      if (GET_CODE (x) == LO_SUM)
+	{
+	  rtx ofs = XEXP (x, 1);
+	  x = XEXP (x, 0);
+
+	  /* Discard non-paradoxical subregs.  */
+	  if (GET_CODE (x) == SUBREG
+	      && (GET_MODE_SIZE (GET_MODE (x))
+		  < GET_MODE_SIZE (GET_MODE (SUBREG_REG (x)))))
+	    x = SUBREG_REG (x);
+
+	  /* Must have a valid base register.  */
+	  if (! (REG_P (x)
+		 && (strict
+		     ? STRICT_REG_OK_FOR_BASE_P (x)
+		     : NONSTRICT_REG_OK_FOR_BASE_P (x))))
+	    return false;
+
+	  /* The symbol must be local.  */
+	  if (local_symbolic_operand (ofs, Pmode))
+	    return true;
+	}
     }
 
   return false;
@@ -1659,9 +1771,9 @@ alpha_legitimate_address_p (mode, x, strict)
    to be legitimate.  If we find one, return the new, valid address.  */
 
 rtx
-alpha_legitimize_address (x, oldx, mode)
+alpha_legitimize_address (x, scratch, mode)
      rtx x;
-     rtx oldx ATTRIBUTE_UNUSED;
+     rtx scratch;
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   HOST_WIDE_INT addend;
@@ -1683,7 +1795,8 @@ alpha_legitimize_address (x, oldx, mode)
      part of the CONST_INT.  Then load FOO plus any high-order part of the
      CONST_INT into a register.  Our address is (plus reg low-part-const).
      This is done to reduce the number of GOT entries.  */
-  if (GET_CODE (x) == CONST
+  if (!no_new_pseudos
+      && GET_CODE (x) == CONST
       && GET_CODE (XEXP (x, 0)) == PLUS
       && GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT)
     {
@@ -1695,7 +1808,8 @@ alpha_legitimize_address (x, oldx, mode)
   /* If we have a (plus reg const), emit the load as in (2), then add
      the two registers, and finally generate (plus reg low-part-const) as
      our address.  */
-  if (GET_CODE (x) == PLUS
+  if (!no_new_pseudos
+      && GET_CODE (x) == PLUS
       && GET_CODE (XEXP (x, 0)) == REG
       && GET_CODE (XEXP (x, 1)) == CONST
       && GET_CODE (XEXP (XEXP (x, 1), 0)) == PLUS
@@ -1711,33 +1825,18 @@ alpha_legitimize_address (x, oldx, mode)
   /* If this is a local symbol, split the address into HIGH/LO_SUM parts.  */
   if (TARGET_EXPLICIT_RELOCS && symbolic_operand (x, Pmode))
     {
-      rtx scratch;
       if (local_symbolic_operand (x, Pmode))
 	{
 	  if (small_symbolic_operand (x, Pmode))
-	    scratch = pic_offset_table_rtx;
+	    return x;
 	  else
 	    {
-	      rtx insn, tmp;
-
-	      scratch = gen_reg_rtx (Pmode);
-
-	      tmp = gen_rtx_HIGH (Pmode, x);
-	      tmp = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, tmp);
-              insn = emit_insn (gen_rtx_SET (VOIDmode, scratch, tmp));
-	      REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_EQUAL, tmp,
-						    REG_NOTES (insn));
+	      if (!no_new_pseudos)
+	        scratch = gen_reg_rtx (Pmode);
+	      emit_insn (gen_rtx_SET (VOIDmode, scratch,
+				      gen_rtx_HIGH (Pmode, x)));
+	      return gen_rtx_LO_SUM (Pmode, scratch, x);
 	    }
-
-	  return gen_rtx_LO_SUM (Pmode, scratch, x);
-	}
-      else
-	{
-	  scratch = gen_reg_rtx (Pmode);
-	  emit_insn (gen_movdi_er_high_g (scratch, pic_offset_table_rtx,
-					  x, const0_rtx));
-	  /* ??? FIXME: Tag the use of scratch with a lituse.  */
-	  return scratch;
 	}
     }
 
@@ -1745,12 +1844,63 @@ alpha_legitimize_address (x, oldx, mode)
 
  split_addend:
   {
-    HOST_WIDE_INT lowpart = (addend & 0xffff) - 2 * (addend & 0x8000);
-    HOST_WIDE_INT highpart = addend - lowpart;
-    x = expand_simple_binop (Pmode, PLUS, x, GEN_INT (highpart),
-			     NULL_RTX, 1, OPTAB_LIB_WIDEN);
-    return plus_constant (x, lowpart);
+    HOST_WIDE_INT low, high;
+
+    low = ((addend & 0xffff) ^ 0x8000) - 0x8000;
+    addend -= low;
+    high = ((addend & 0xffffffff) ^ 0x80000000) - 0x80000000;
+    addend -= high;
+
+    if (addend)
+      x = expand_simple_binop (Pmode, PLUS, x, GEN_INT (addend),
+			       (no_new_pseudos ? scratch : NULL_RTX),
+			       1, OPTAB_LIB_WIDEN);
+    if (high)
+      x = expand_simple_binop (Pmode, PLUS, x, GEN_INT (high),
+			       (no_new_pseudos ? scratch : NULL_RTX),
+			       1, OPTAB_LIB_WIDEN);
+
+    return plus_constant (x, low);
   }
+}
+
+/* For TARGET_EXPLICIT_RELOCS, we don't obfuscate a SYMBOL_REF to a
+   small symbolic operand until after reload.  At which point we need
+   to replace (mem (symbol_ref)) with (mem (lo_sum $29 symbol_ref))
+   so that sched2 has the proper dependency information.  */
+
+int
+some_small_symbolic_mem_operand (x, mode)
+     rtx x;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
+{
+  /* Get rid of SIGN_EXTEND, etc.  */
+  while (GET_RTX_CLASS (GET_CODE (x)) == '1')
+    x = XEXP (x, 0);
+
+  return (GET_CODE (x) == MEM
+	  && small_symbolic_operand (XEXP (x, 0), Pmode));
+}
+
+rtx
+split_small_symbolic_mem_operand (x)
+     rtx x;
+{
+  rtx *p;
+
+  if (GET_CODE (x) == MEM)
+    {
+      rtx tmp = gen_rtx_LO_SUM (DImode, pic_offset_table_rtx, XEXP (x, 0));
+      return replace_equiv_address (x, tmp);
+    }
+
+  x = copy_rtx (x);
+  p = &x;
+  while (GET_RTX_CLASS (GET_CODE (*p)) == '1')
+    p = &XEXP (*p, 0);
+
+  *p = split_small_symbolic_mem_operand (*p);
+  return x;
 }
 
 /* Try a machine-dependent way of reloading an illegitimate address
@@ -1884,6 +2034,39 @@ get_unaligned_address (ref, extra_offset)
     offset += INTVAL (XEXP (base, 1)), base = XEXP (base, 0);
 
   return plus_constant (base, offset + extra_offset);
+}
+
+/* On the Alpha, all (non-symbolic) constants except zero go into
+   a floating-point register via memory.  Note that we cannot 
+   return anything that is not a subset of CLASS, and that some
+   symbolic constants cannot be dropped to memory.  */
+
+enum reg_class
+alpha_preferred_reload_class(x, class)
+     rtx x;
+     enum reg_class class;
+{
+  /* Zero is present in any register class.  */
+  if (x == CONST0_RTX (GET_MODE (x)))
+    return class;
+
+  /* These sorts of constants we can easily drop to memory.  */
+  if (GET_CODE (x) == CONST_INT || GET_CODE (x) == CONST_DOUBLE)
+    {
+      if (class == FLOAT_REGS)
+	return NO_REGS;
+      if (class == ALL_REGS)
+	return GENERAL_REGS;
+      return class;
+    }
+
+  /* All other kinds of constants should not (and in the case of HIGH
+     cannot) be dropped to memory -- instead we use a GENERAL_REGS
+     secondary reload.  */
+  if (CONSTANT_P (x))
+    return (class == ALL_REGS ? GENERAL_REGS : class);
+
+  return class;
 }
 
 /* Loading and storing HImode or QImode values to and from memory
@@ -2294,35 +2477,14 @@ alpha_expand_mov (mode, operands)
       && ! reg_or_0_operand (operands[1], mode))
     operands[1] = force_reg (mode, operands[1]);
 
-  if (TARGET_EXPLICIT_RELOCS && symbolic_operand (operands[1], mode))
+  /* Allow legitimize_address to perform some simplifications.  */
+  if (symbolic_operand (operands[1], mode))
     {
-      if (local_symbolic_operand (operands[1], mode))
+      rtx tmp = alpha_legitimize_address (operands[1], operands[0], mode);
+      if (tmp)
 	{
-	  rtx scratch;
-
-	  if (small_symbolic_operand (operands[1], Pmode))
-	    scratch = pic_offset_table_rtx;
-	  else
-	    {
-	      rtx insn, tmp;
-
-	      scratch = no_new_pseudos ? operands[0] : gen_reg_rtx (Pmode);
-
-	      tmp = gen_rtx_HIGH (Pmode, operands[1]);
-	      tmp = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, tmp);
-              insn = emit_insn (gen_rtx_SET (VOIDmode, scratch, tmp));
-	      REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_EQUAL, tmp,
-						    REG_NOTES (insn));
-	    }
-
-          operands[1] = gen_rtx_LO_SUM (Pmode, scratch, operands[1]);
+	  operands[1] = tmp;
 	  return false;
-	}
-      else
-	{
-	  emit_insn (gen_movdi_er_high_g (operands[0], pic_offset_table_rtx,
-					  operands[1], const0_rtx));
-	  return true;
 	}
     }
 

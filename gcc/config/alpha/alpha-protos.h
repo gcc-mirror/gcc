@@ -59,6 +59,7 @@ extern int current_file_function_operand PARAMS ((rtx, enum machine_mode));
 extern int direct_call_operand PARAMS ((rtx, enum machine_mode));
 extern int local_symbolic_operand PARAMS ((rtx, enum machine_mode));
 extern int small_symbolic_operand PARAMS ((rtx, enum machine_mode));
+extern int some_small_symbolic_mem_operand PARAMS ((rtx, enum machine_mode));
 extern int global_symbolic_operand PARAMS ((rtx, enum machine_mode));
 extern int call_operand PARAMS ((rtx, enum machine_mode));
 extern int symbolic_operand PARAMS ((rtx, enum machine_mode));
@@ -77,6 +78,10 @@ extern int normal_memory_operand PARAMS ((rtx, enum machine_mode));
 extern int reg_no_subreg_operand PARAMS ((rtx, enum machine_mode));
 extern int addition_operation PARAMS ((rtx, enum machine_mode));
 
+extern bool alpha_const_ok_for_letter_p PARAMS ((HOST_WIDE_INT, int));
+extern bool alpha_const_double_ok_for_letter_p PARAMS ((rtx, int));
+extern bool alpha_extra_constraint PARAMS ((rtx, int));
+
 extern rtx alpha_tablejump_addr_vec PARAMS ((rtx));
 extern rtx alpha_tablejump_best_label PARAMS ((rtx));
 
@@ -85,11 +90,16 @@ extern rtx alpha_legitimize_address PARAMS ((rtx, rtx, enum machine_mode));
 extern rtx alpha_legitimize_reload_address PARAMS ((rtx, enum machine_mode,
 						    int, int, int));
 
+extern rtx split_small_symbolic_mem_operand PARAMS ((rtx));
+
 extern void get_aligned_mem PARAMS ((rtx, rtx *, rtx *));
 extern rtx get_unaligned_address PARAMS ((rtx, int));
+extern enum reg_class alpha_preferred_reload_class PARAMS ((rtx, 
+							    enum reg_class));
 extern enum reg_class secondary_reload_class PARAMS ((enum reg_class,
 						     enum machine_mode, 
 						     rtx, int));
+
 extern void alpha_set_memflags PARAMS ((rtx, rtx));
 extern rtx alpha_emit_set_const PARAMS ((rtx, enum machine_mode,
 					HOST_WIDE_INT, int));

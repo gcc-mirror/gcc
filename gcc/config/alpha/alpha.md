@@ -649,6 +649,14 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
   "TARGET_EXPLICIT_RELOCS"
   "ldah %0,%2(%1)\t\t!gprelhigh")
 
+(define_split
+  [(set (match_operand:DI 0 "register_operand" "")
+        (high:DI (match_operand:DI 1 "local_symbolic_operand" "")))]
+  "TARGET_EXPLICIT_RELOCS && reload_completed"
+  [(set (match_dup 0)
+	(plus:DI (match_dup 2) (high:DI (match_dup 1))))]
+  "operands[2] = pic_offset_table_rtx;")
+
 ;; We used to expend quite a lot of effort choosing addq/subq/lda.
 ;; With complications like
 ;;
@@ -1225,9 +1233,7 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
     default:
       abort ();
     }
-  emit_insn (gen_movdi_er_high_g (operands[0], pic_offset_table_rtx,
-				  gen_rtx_SYMBOL_REF (DImode, str),
-				  const0_rtx));
+  emit_move_insn (operands[0], gen_rtx_SYMBOL_REF (DImode, str));
 }
   [(set_attr "type" "jsr")
    (set_attr "length" "8")])
@@ -1290,9 +1296,7 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
     default:
       abort ();
     }
-  emit_insn (gen_movdi_er_high_g (operands[0], pic_offset_table_rtx,
-				  gen_rtx_SYMBOL_REF (DImode, str),
-				  const0_rtx));
+  emit_move_insn (operands[0], gen_rtx_SYMBOL_REF (DImode, str));
 }
   [(set_attr "type" "jsr")
    (set_attr "length" "8")])
@@ -5459,7 +5463,39 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
     return "lda %0,%2(%1)\t\t!gprellow";
 })
 
-(define_insn "movdi_er_high_g"
+(define_split
+  [(set (match_operand:DI 0 "register_operand" "")
+	(match_operand:DI 1 "small_symbolic_operand" ""))]
+  "TARGET_EXPLICIT_RELOCS && reload_completed"
+  [(set (match_dup 0)
+	(lo_sum:DI (match_dup 2) (match_dup 1)))]
+  "operands[2] = pic_offset_table_rtx;")
+
+(define_split
+  [(set (match_operand:DI 0 "register_operand" "")
+	(match_operand:DI 1 "local_symbolic_operand" ""))]
+  "TARGET_EXPLICIT_RELOCS && reload_completed"
+  [(set (match_dup 0)
+	(plus:DI (match_dup 2) (high:DI (match_dup 1))))
+   (set (match_dup 0)
+	(lo_sum:DI (match_dup 0) (match_dup 1)))]
+  "operands[2] = pic_offset_table_rtx;")
+
+(define_split
+  [(set (match_operand 0 "some_small_symbolic_mem_operand" "")
+	(match_operand 1 "" ""))]
+  "TARGET_EXPLICIT_RELOCS && reload_completed"
+  [(set (match_dup 0) (match_dup 1))]
+  "operands[0] = split_small_symbolic_mem_operand (operands[0]);")
+
+(define_split
+  [(set (match_operand 0 "" "")
+	(match_operand 1 "some_small_symbolic_mem_operand" ""))]
+  "TARGET_EXPLICIT_RELOCS && reload_completed"
+  [(set (match_dup 0) (match_dup 1))]
+  "operands[1] = split_small_symbolic_mem_operand (operands[1]);")
+
+(define_insn "*movdi_er_high_g"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(unspec:DI [(match_operand:DI 1 "register_operand" "r")
 		    (match_operand:DI 2 "global_symbolic_operand" "")
@@ -5469,9 +5505,19 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
   "ldq %0,%2(%1)\t\t!literal"
   [(set_attr "type" "ldsym")])
 
+(define_split
+  [(set (match_operand:DI 0 "register_operand" "")
+	(match_operand:DI 1 "global_symbolic_operand" ""))]
+  "TARGET_EXPLICIT_RELOCS && reload_completed"
+  [(set (match_dup 0)
+	(unspec:DI [(match_dup 2)
+		    (match_dup 1)
+		    (const_int 0)] UNSPEC_LITERAL))]
+  "operands[2] = pic_offset_table_rtx;")
+
 (define_insn "*movdi_er_nofix"
-  [(set (match_operand:DI 0 "nonimmediate_operand" "=r,r,r,r,r,m,*f,*f,Q")
-	(match_operand:DI 1 "input_operand" "rJ,K,L,T,m,rJ,*fJ,Q,*f"))]
+  [(set (match_operand:DI 0 "nonimmediate_operand" "=r,r,r,r,r,r,m,*f,*f,Q")
+	(match_operand:DI 1 "input_operand" "rJ,K,L,T,s,m,rJ,*fJ,Q,*f"))]
   "TARGET_EXPLICIT_RELOCS && ! TARGET_FIX
    && (register_operand (operands[0], DImode)
        || reg_or_0_operand (operands[1], DImode))"
@@ -5479,13 +5525,14 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
    mov %r1,%0
    lda %0,%1($31)
    ldah %0,%h1($31)
-   ldah %0,%H1
+   #
+   #
    ldq%A1 %0,%1
    stq%A0 %r1,%0
    fmov %R1,%0
    ldt %0,%1
    stt %R1,%0"
-  [(set_attr "type" "ilog,iadd,iadd,iadd,ild,ist,fcpys,fld,fst")])
+  [(set_attr "type" "ilog,iadd,iadd,iadd,ldsym,ild,ist,fcpys,fld,fst")])
 
 ;; The 'U' constraint matches symbolic operands on Unicos/Mk. Those should
 ;; have been split up by the rules above but we shouldn't reject the
@@ -5512,8 +5559,10 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
    (set_attr "length" "*,*,*,16,*,*,*,*,*,*")])
 
 (define_insn "*movdi_er_fix"
-  [(set (match_operand:DI 0 "nonimmediate_operand" "=r,r,r,r,r,m,*f,*f,Q,r,*f")
-	(match_operand:DI 1 "input_operand" "rJ,K,L,T,m,rJ,*fJ,Q,*f,*f,r"))]
+  [(set (match_operand:DI 0 "nonimmediate_operand"
+				"=r,r,r,r,r,r, m, *f,*f, Q, r,*f")
+	(match_operand:DI 1 "input_operand"
+				"rJ,K,L,T,s,m,rJ,*fJ, Q,*f,*f, r"))]
   "TARGET_EXPLICIT_RELOCS && TARGET_FIX
    && (register_operand (operands[0], DImode)
        || reg_or_0_operand (operands[1], DImode))"
@@ -5521,7 +5570,8 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
    mov %r1,%0
    lda %0,%1($31)
    ldah %0,%h1($31)
-   ldah %0,%H1
+   #
+   #
    ldq%A1 %0,%1
    stq%A0 %r1,%0
    fmov %R1,%0
@@ -5529,7 +5579,7 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
    stt %R1,%0
    ftoit %1,%0
    itoft %1,%0"
-  [(set_attr "type" "ilog,iadd,iadd,iadd,ild,ist,fcpys,fld,fst,ftoi,itof")])
+  [(set_attr "type" "ilog,iadd,iadd,iadd,ldsym,ild,ist,fcpys,fld,fst,ftoi,itof")])
 
 (define_insn "*movdi_fix"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=r,r,r,r,r,m,*f,*f,Q,r,*f")
