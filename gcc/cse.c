@@ -4843,7 +4843,7 @@ fold_rtx (x, insn)
 	  rtx true = const_true_rtx, false = const0_rtx;
 
 #ifdef FLOAT_STORE_FLAG_VALUE
-	  if (GET_MODE_CLASS (mode))
+	  if (GET_MODE_CLASS (mode) == MODE_FLOAT)
 	    {
 	      true = immed_real_const_1 (FLOAT_STORE_FLAG_VALUE, mode);
 	      false = CONST0_RTX (mode);
@@ -4961,7 +4961,7 @@ fold_rtx (x, insn)
 	      rtx true = const_true_rtx, false = const0_rtx;
 
 #ifdef FLOAT_STORE_FLAG_VALUE
-	      if (GET_MODE_CLASS (mode))
+	      if (GET_MODE_CLASS (mode) == MODE_FLOAT)
 		{
 		  true = immed_real_const_1 (FLOAT_STORE_FLAG_VALUE, mode);
 		  false = CONST0_RTX (mode);
