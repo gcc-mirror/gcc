@@ -44,6 +44,7 @@ extern tree ctor_label, dtor_label;
    between an expected and the given type.  */
 
 static struct harshness_code convert_harshness PROTO((register tree, register tree, tree));
+static tree build_new_method_call		PROTO((tree, tree, tree, tree, int));
 
 #define EVIL_RETURN(ARG)	((ARG).code = EVIL_CODE, (ARG))
 #define STD_RETURN(ARG)		((ARG).code = STD_CODE, (ARG))
@@ -1175,6 +1176,9 @@ build_field_call (basetype_path, instance_ptr, name, parms)
 {
   tree field, instance;
 
+  if (name == ctor_identifier || name == dtor_identifier)
+    return NULL_TREE;
+
   if (instance_ptr == current_class_ptr)
     {
       /* Check to see if we really have a reference to an instance variable
@@ -1266,7 +1270,7 @@ build_field_call (basetype_path, instance_ptr, name, parms)
   return NULL_TREE;
 }
 
-tree
+static tree
 find_scoped_type (type, inner_name, inner_types)
      tree type, inner_name, inner_types;
 {
@@ -1424,6 +1428,14 @@ build_scoped_method_call (exp, basetype, name, parms)
   if (TREE_CODE (type) == REFERENCE_TYPE)
     type = TREE_TYPE (type);
 
+  if (TREE_CODE (basetype) == TREE_VEC)
+    {
+      binfo = basetype;
+      basetype = BINFO_TYPE (binfo);
+    }
+  else
+    binfo = NULL_TREE;
+
   /* Destructors can be "called" for simple types; see 5.2.4 and 12.4 Note
      that explicit ~int is caught in the parser; this deals with typedefs
      and template parms.  */
@@ -1449,13 +1461,21 @@ build_scoped_method_call (exp, basetype, name, parms)
       return error_mark_node;
     }
 
-  if ((binfo = binfo_or_else (basetype, type)))
+  if (! binfo)
     {
+      binfo = get_binfo (basetype, type, 1);
       if (binfo == error_mark_node)
 	return error_mark_node;
+      if (! binfo)
+	error_not_base_type (basetype, type);
+    }
+
+  if (binfo)
+    {
       if (TREE_CODE (exp) == INDIRECT_REF)
-	decl = build_indirect_ref (convert_pointer_to (binfo,
-						       build_unary_op (ADDR_EXPR, exp, 0)), NULL_PTR);
+	decl = build_indirect_ref
+	  (convert_pointer_to_real
+	   (binfo, build_unary_op (ADDR_EXPR, exp, 0)), NULL_PTR);
       else
 	decl = build_scoped_ref (exp, basetype);
 
@@ -1820,7 +1840,7 @@ build_method_call (instance, name, parms, basetype_path, flags)
       if (! IS_AGGR_TYPE (basetype))
 	{
 	non_aggr_error:
-	  if ((flags & LOOKUP_COMPLAIN) && TREE_CODE (basetype) != ERROR_MARK)
+	  if ((flags & LOOKUP_COMPLAIN) && basetype != error_mark_node)
 	    cp_error ("request for member `%D' in `%E', which is of non-aggregate type `%T'",
 		      name, instance, basetype);
 
@@ -2568,7 +2588,7 @@ build_method_call (instance, name, parms, basetype_path, flags)
 		   && TREE_OPERAND (TREE_OPERAND (instance_ptr, 0), 0) == instance)
 	    ;
 	  /* The call to `convert_pointer_to' may return error_mark_node.  */
-	  else if (TREE_CODE (instance_ptr) == ERROR_MARK)
+	  else if (instance_ptr == error_mark_node)
 	    return instance_ptr;
 	  else if (instance == NULL_TREE
 		   || TREE_CODE (instance) != INDIRECT_REF
@@ -4074,7 +4094,7 @@ add_template_candidate (candidates, tmpl, arglist, flags)
   int ntparms = TREE_VEC_LENGTH (DECL_TEMPLATE_PARMS (tmpl));
   tree *targs = (tree *) alloca (sizeof (tree) * ntparms);
   struct z_candidate *cand;
-  int i, dummy; 
+  int i, dummy = 0;
   tree fn;
 
   i = type_unification (DECL_TEMPLATE_PARMS (tmpl), targs,
@@ -4356,7 +4376,7 @@ build_new_function_call (fn, args, obj)
   return build_function_call (fn, args);
 }
 
-tree
+static tree
 build_object_call (obj, args)
      tree obj, args;
 {
@@ -5092,10 +5112,6 @@ build_over_call (fn, convs, args, flags)
 
   converted_args = nreverse (converted_args);
 
-  /* [class.copy]: the copy constructor is implicitly defined even if the
-     implementation  elided  its  use.  */
-  mark_used (fn);
-
   /* Avoid actually calling copy constructors and copy assignment operators,
      if possible.  */
   if (DECL_CONSTRUCTOR_P (fn)
@@ -5118,6 +5134,11 @@ build_over_call (fn, convs, args, flags)
 	arg = targ;
       else
 	arg = build_indirect_ref (arg, 0);
+
+      /* [class.copy]: the copy constructor is implicitly defined even if
+	 the implementation elided its use.  */
+      if (TYPE_HAS_COMPLEX_INIT_REF (DECL_CONTEXT (fn)))
+	mark_used (fn);
 
       /* If we're creating a temp and we already have one, don't create a
          new one.  If we're not creating a temp but we get one, use
@@ -5159,6 +5180,8 @@ build_over_call (fn, convs, args, flags)
       return val;
     }
 
+  mark_used (fn);
+
   if (DECL_CONTEXT (fn) && IS_SIGNATURE (DECL_CONTEXT (fn)))
     return build_signature_method_call (fn, converted_args);
   else if (DECL_VINDEX (fn) && (flags & LOOKUP_NONVIRTUAL) == 0)
@@ -5186,7 +5209,7 @@ build_over_call (fn, convs, args, flags)
   return convert_from_reference (require_complete_type (fn));
 }
 
-tree
+static tree
 build_new_method_call (instance, name, args, basetype_path, flags)
      tree instance, name, args, basetype_path;
      int flags;

@@ -121,7 +121,7 @@ int n_inner_fields_searched = 0;
 
 /* Virtual baseclass things.  */
 
-tree
+static tree
 build_vbase_pointer (exp, type)
      tree exp, type;
 {
@@ -135,7 +135,7 @@ build_vbase_pointer (exp, type)
 /* Is the type of the EXPR, the complete type of the object?
    If we are going to be wrong, we must be conservative, and return 0.  */
 
-int
+static int
 complete_type_p (expr)
      tree expr;
 {
@@ -372,11 +372,10 @@ static tree pending_hard_virtuals;
    Note that the index (DELTA2) in the virtual function table
    is always 0.  */
 
-tree
+static tree
 build_vtable_entry (delta, pfn)
      tree delta, pfn;
 {
-
   if (flag_vtable_thunks)
     {
       HOST_WIDE_INT idelta = TREE_INT_CST_LOW (delta);
@@ -2755,7 +2754,7 @@ get_basefndecls (fndecl, t)
    Since we start out with all functions already marked with a hider,
    no need to mark functions that are just hidden.  */
 
-void
+static void
 mark_overriders (fndecl, base_fndecls)
      tree fndecl, base_fndecls;
 {
@@ -2772,7 +2771,7 @@ mark_overriders (fndecl, base_fndecls)
    a method declared virtual in the base class, then
    mark this field as being virtual as well.  */
 
-void
+static void
 check_for_override (decl, ctype)
      tree decl, ctype;
 {
@@ -4820,12 +4819,6 @@ pop_lang_context ()
     strict_prototype = strict_prototypes_lang_cplusplus;
   else if (current_lang_name == lang_name_c)
     strict_prototype = strict_prototypes_lang_c;
-}
-
-int
-root_lang_context_p ()
-{
-  return current_lang_stack == current_lang_base;
 }
 
 /* Type instantiation routines.  */

@@ -261,28 +261,67 @@ __inline
 #endif
 void
 icat (i)
-     int i;
+     HOST_WIDE_INT i;
 {
+  unsigned HOST_WIDE_INT ui;
+
   /* Handle this case first, to go really quickly.  For many common values,
-     the result of i/10 below is 1.  */
+     the result of ui/10 below is 1.  */
   if (i == 1)
     {
       OB_PUTC ('1');
       return;
     }
 
-  if (i < 0)
-    {
-      OB_PUTC ('m');
-      i = -i;
-    }
-  if (i < 10)
-    OB_PUTC ('0' + i);
+  if (i >= 0)
+    ui = i;
   else
     {
-      icat (i / 10);
-      OB_PUTC ('0' + (i % 10));
+      OB_PUTC ('m');
+      ui = -i;
     }
+
+  if (ui >= 10)
+    icat (ui / 10);
+
+  OB_PUTC ('0' + (ui % 10));
+}
+
+static void
+dicat (lo, hi)
+     HOST_WIDE_INT lo, hi;
+{
+  unsigned HOST_WIDE_INT ulo, uhi, qlo, qhi;
+
+  if (hi >= 0)
+    {
+      uhi = hi;
+      ulo = lo;
+    }
+  else
+    {
+      uhi = (lo == 0 ? -hi : -hi-1);
+      ulo = -lo;
+    }
+  if (uhi == 0
+      && ulo < ((unsigned HOST_WIDE_INT)1 << (HOST_BITS_PER_WIDE_INT - 1)))
+    {
+      icat (ulo);
+      return;
+    }
+  /* Divide 2^HOST_WIDE_INT*uhi+ulo by 10. */
+  qhi = uhi / 10;
+  uhi = uhi % 10;
+  qlo = uhi * (((unsigned HOST_WIDE_INT)1 << (HOST_BITS_PER_WIDE_INT - 1)) / 5);
+  qlo += ulo / 10;
+  ulo = ulo % 10;
+  ulo += uhi * (((unsigned HOST_WIDE_INT)1 << (HOST_BITS_PER_WIDE_INT - 1)) % 5)
+	 * 2;
+  qlo += ulo / 10;
+  ulo = ulo % 10;
+  /* Quotient is 2^HOST_WIDE_INT*qhi+qlo, remainder is ulo. */
+  dicat (qlo, qhi);
+  OB_PUTC ('0' + ulo);
 }
 
 static
@@ -380,17 +419,12 @@ build_overload_int (value)
   my_friendly_assert (TREE_CODE (value) == INTEGER_CST, 243);
   if (TYPE_PRECISION (TREE_TYPE (value)) == 2 * HOST_BITS_PER_WIDE_INT)
     {
-      if (tree_int_cst_lt (value, integer_zero_node))
-	{
-	  OB_PUTC ('m');
-	  value = build_int_2 (~ TREE_INT_CST_LOW (value),
-			       - TREE_INT_CST_HIGH (value));
-	}
       if (TREE_INT_CST_HIGH (value)
 	  != (TREE_INT_CST_LOW (value) >> (HOST_BITS_PER_WIDE_INT - 1)))
 	{
 	  /* need to print a DImode value in decimal */
-	  sorry ("conversion of long long as PT parameter");
+	  dicat (TREE_INT_CST_LOW (value), TREE_INT_CST_HIGH (value));
+	  return;
 	}
       /* else fall through to print in smaller mode */
     }
@@ -440,54 +474,73 @@ build_overload_value (type, value)
 	numeric_output_need_bar = 1;
 	return;
       }
-#ifndef REAL_IS_NOT_DOUBLE
     case REAL_TYPE:
       {
 	REAL_VALUE_TYPE val;
 	char *bufp = digit_buffer;
 	extern char *index ();
 
+	pedwarn ("ANSI C++ forbids floating-point template arguments");
+
 	my_friendly_assert (TREE_CODE (value) == REAL_CST, 244);
 	val = TREE_REAL_CST (value);
-	if (val < 0)
+	if (REAL_VALUE_ISNAN (val))
 	  {
-	    val = -val;
-	    *bufp++ = 'm';
+	    sprintf (bufp, "NaN");
 	  }
-	sprintf (bufp, "%e", val);
-	bufp = (char *) index (bufp, 'e');
-	if (!bufp)
-	  strcat (digit_buffer, "e0");
 	else
 	  {
-	    char *p;
-	    bufp++;
-	    if (*bufp == '-')
+	    if (REAL_VALUE_NEGATIVE (val))
 	      {
+		val = REAL_VALUE_NEGATE (val);
 		*bufp++ = 'm';
 	      }
-	    p = bufp;
-	    if (*p == '+')
-	      p++;
-	    while (*p == '0')
-	      p++;
-	    if (*p == 0)
+	    if (REAL_VALUE_ISINF (val))
 	      {
-		*bufp++ = '0';
-		*bufp = 0;
+		sprintf (bufp, "Infinity");
 	      }
-	    else if (p != bufp)
+	    else
 	      {
-		while (*p)
-		  *bufp++ = *p++;
-		*bufp = 0;
+		ereal_to_decimal (val, bufp);
+		bufp = (char *) index (bufp, 'e');
+		if (!bufp)
+		  strcat (digit_buffer, "e0");
+		else
+		  {
+		    char *p;
+		    bufp++;
+		    if (*bufp == '-')
+		      {
+			*bufp++ = 'm';
+		      }
+		    p = bufp;
+		    if (*p == '+')
+		      p++;
+		    while (*p == '0')
+		      p++;
+		    if (*p == 0)
+		      {
+			*bufp++ = '0';
+			*bufp = 0;
+		      }
+		    else if (p != bufp)
+		      {
+			while (*p)
+			  *bufp++ = *p++;
+			*bufp = 0;
+		      }
+		  }
+#ifdef NO_DOT_IN_LABEL
+		bufp = (char *) index (bufp, '.');
+		if (bufp)
+		  *bufp = '_';
+#endif
 	      }
 	  }
 	OB_PUTCP (digit_buffer);
 	numeric_output_need_bar = 1;
 	return;
       }
-#endif
     case POINTER_TYPE:
       if (TREE_CODE (TREE_TYPE (type)) == METHOD_TYPE
 	  && TREE_CODE (value) != ADDR_EXPR)
@@ -1151,8 +1204,8 @@ build_opfncall (code, flags, xarg1, xarg2, arg3)
 
   if (code == COND_EXPR)
     {
-      if (TREE_CODE (xarg2) == ERROR_MARK
-	  || TREE_CODE (arg3) == ERROR_MARK)
+      if (xarg2 == error_mark_node
+	  || arg3 == error_mark_node)
 	return error_mark_node;
     }
   if (code == COMPONENT_REF)
@@ -1468,7 +1521,7 @@ hack_identifier (value, name)
 {
   tree type;
 
-  if (TREE_CODE (value) == ERROR_MARK)
+  if (value == error_mark_node)
     {
       if (current_class_name)
 	{

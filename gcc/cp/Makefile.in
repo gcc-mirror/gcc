@@ -160,7 +160,7 @@ INCLUDES = -I. -I.. -I$(srcdir) -I$(srcdir)/.. -I$(srcdir)/../config
 
 CXX_OBJS = call.o decl.o errfn.o expr.o pt.o sig.o typeck2.o \
  class.o decl2.o error.o lex.o parse.o ptree.o rtti.o spew.o typeck.o cvt.o \
- except.o init.o method.o search.o tree.o xref.o repo.o
+ except.o friend.o init.o method.o search.o tree.o xref.o repo.o
 
 # Language-independent object files.
 OBJS = `cat ../stamp-objlist` ../c-common.o ../c-pragma.o
@@ -231,6 +231,7 @@ typeck2.o : typeck2.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h
 typeck.o : typeck.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h $(RTL_H)
 class.o : class.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h
 call.o : call.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h class.h
+friend.o : friend.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h $(RTL_H)
 init.o : init.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h $(RTL_H)
 method.o : method.c $(CONFIG_H) $(CXX_TREE_H) class.h
 cvt.o : cvt.c $(CONFIG_H) $(CXX_TREE_H) class.h

@@ -1,3 +1,194 @@
+Wed Mar 19 14:14:45 1997  Mike Stump  <mrs@cygnus.com>
+
+	* parse.y (left_curly): Avoid trying to use any fields of
+ 	error_mark_node, as there aren't any.
+
+Thu Mar 13 16:33:22 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* lex.c (do_identifier): Avoid breaking on overloaded methods
+	as default arguments.
+
+Wed Mar 12 13:55:10 1997  Hans-Peter Nilsson  <Hans-Peter.Nilsson@axis.se>
+
+        * call.c (add_template_candidate): Initialize the variable "dummy".
+
+Mon Mar 10 15:13:14 1997  Brendan Kehoe  <brendan@canuck.cygnus.com>
+
+	* decl.c (start_decl): Make sure TYPE isn't an error_mark_node
+	before we try to use TYPE_SIZE and TREE_CONSTANT on it.
+
+Fri Mar  7 13:19:36 1997  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+	* cp-tree.h (comp_ptr_ttypes, more_specialized): Add decl.
+	(debug_binfo): Delete decl, not needed.
+
+	* tree.c (fnaddr_from_vtable_entry, function_arg_chain,
+	promotes_to_aggr_type): Delete fns.
+	* cp-tree.h (FNADDR_FROM_VTABLE_ENTRY,
+	SET_FNADDR_FROM_VTABLE_ENTRY, FUNCTION_ARG_CHAIN,
+	PROMOTES_TO_AGGR_TYPE): Delete alternates to #if 1.
+
+	* decl.c (pending_invalid_xref{,_file,_line}): Delete unused vars.
+
+	* friend.c (is_friend_type): Delete fn.
+	* cp-tree.h (is_friend_type): Delete decl.
+
+	* decl.c (original_result_rtx, double_ftype_double,
+	double_ftype_double_double, int_ftype_int, long_ftype_long,
+	float_ftype_float, ldouble_ftype_ldouble, last_dtor_insn): Make static.
+	* typeck.c (original_result_rtx, warn_synth): Delete extern decls.
+
+	* decl.c (push_overloaded_decl{,_top_level}): Make static, adding
+	fwd decls.
+	* cp-tree.h (push_overloaded_decl{,_top_level}): Delete decls.
+
+	* decl.c (pushdecl_nonclass_level): #if 0, unused.
+	* cp-tree.h (pushdecl_nonclass_level): #if 0 decl.
+
+	* lex.c (reinit_lang_specific): #if 0, unused.
+	* cp-tree.h (reinit_lang_specific): #if 0 decl.
+
+	* decl.c (revert_static_member_fn): Make static, adding fwd decl.
+	* cp-tree.h (revert_static_member_fn): Delete decl.
+
+	* class.c (root_lang_context_p): Delete fn.
+	* cp-tree.h (root_lang_context_p): Delete decl.
+
+	* decl.c (set_current_level_tags_transparency): #if 0, unused.
+	* cp-tree.h (set_current_level_tags_transparency): #if 0 decl.
+
+	* lex.c (set_vardecl_interface_info): Make static.
+	* cp-tree.h (set_vardecl_interface_info): Delete decl.
+
+	* call.c (find_scoped_type): Make static.
+	* cp-tree.h (find_scoped_type): Delete decl.
+
+	* search.c (convert_pointer_to_vbase): Make static.
+	* cp-tree.h (convert_pointer_to_vbase): Delete decl.
+
+	* decl.c (const_ptr_type_node): Likewise.
+	* cp-tree.h (const_ptr_type_node): Delete decl.
+
+	* typeck.c (common_base_type): Make static.
+	* cp-tree.h (common_base_types): Delete erroneous decl.
+
+	* pt.c (classtype_mangled_name): Make static.
+	* cp-tree.h (classtype_mangled_name): Delete decl.
+
+	* lex.c (check_newline): Make static.
+	* cp-tree.h (check_newline): Delete decl.
+
+	* typeck.c (build_x_array_ref): Delete fn, same idea as
+	grok_array_decl.
+	* cp-tree.h (build_x_array_ref): Delete decl.
+
+	* lex.c (copy_decl_lang_specific): Delete fn, same idea as
+	copy_lang_decl.
+	* cp-tree.h (copy_decl_lang_specific): #if 0 decl.
+
+	* class.c (build_vtable_entry): Make static.
+	* cp-tree.h (build_vtable_entry): Delete decl.
+
+	* class.c (build_vbase_pointer): Make static.
+	* cp-tree.h (build_vbase_pointer): Delete decl.
+
+	* sig.c (build_sptr_ref): Add forward decl and make static.
+	* cp-tree.h (build_sptr_ref): Delete decl.
+
+	* call.c (build_new_method_call): Add forward decl and make static.
+	* cp-tree.h (build_new_method_call): Delete decl.
+
+	* call.c (build_object_call): Make static.
+	* class.c (check_for_override, complete_type_p, mark_overriders):
+	Likewise.
+	* decl.c (cp_function_chain): Likewise.
+	* lex.c (set_typedecl_interface_info, reinit_parse_for_block):
+	Likewise.
+	* pt.c (comp_template_args, get_class_bindings, push_tinst_level):
+	Likewise.
+	* tree.c (build_cplus_array_type_1): Likewise.
+	* typeck.c (comp_ptr_ttypes_{const,real,reinterpret}): Likewise.
+	(comp_target_parms): Likewise.
+
+	* init.c (build_builtin_call): Make static.
+	* cp-tree.h (build_builtin_call): Delete decl.
+
+	* typeck.c (binary_op_error): Delete decl.
+	* cp-tree.h (binary_op_error): Likewise.
+
+Thu Mar  6 16:13:52 1997  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+	* call.c (build_method_call): Compare against error_mark_node
+	directly, rather than the ERROR_MARK tree code.
+	* cvt.c (cp_convert): Likewise.
+	* decl.c (print_binding_level): Likewise.
+	(duplicate_decls): Likewise.
+	(grokdeclarator): Likewise.
+	(grokdeclarator): Likewise.
+	* init.c (expand_aggr_init_1): Likewise.
+	(decl_constant_value): Likewise.
+	* method.c (build_opfncall): Likewise.
+	(hack_identifier): Likewise.
+	* typeck.c (build_modify_expr): Likewise.
+
+	* typeck.c (build_c_cast): Don't decl TYPE as register tree.
+
+Sun Mar  2 02:54:36 1997  Bruno Haible  <bruno@linuix.mathematik.uni-karlsruhe.de>
+
+	* pt.c (unify): Strip NOP_EXPR wrappers before unifying integer values.
+
+	* pt.c (coerce_template_parms): Add new error message.
+
+	* method.c (build_overload_value): Implement name mangling for
+	floating-point template arguments.
+
+	* method.c (build_overload_int, icat, dicat): Fix mangling of template
+	arguments whose absolute value doesn't fit in a signed word.
+
+Mon Mar  3 12:14:54 1997  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+	* friend.c: New file; put all of the friend stuff in here.
+	* init.c: Instead of here.
+	* Makefile.in (CXX_OBJS): Add friend.o.
+	(friend.o): Add dependencies.
+	* Make-lang.in (CXX_SRCS): Add $(srcdir)/cp/friend.c.
+
+Sun Mar  2 11:04:43 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* call.c (build_scoped_method_call): Complain if the scope isn't a
+ 	base.
+
+Wed Feb 26 11:31:06 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* parse.y (left_curly): Don't crash on erroneous type.
+
+	* init.c (build_delete): Fix type of ref.
+
+Tue Feb 25 12:41:48 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* search.c (get_vbase_1): Renamed from get_vbase.
+	(get_vbase): Wrapper, now non-static.
+	(convert_pointer_to_vbase): Now static.
+
+	* call.c (build_scoped_method_call): Accept a binfo for BASETYPE.
+	* init.c (build_delete): Pass one.
+	(build_partial_cleanup_for): Use build_scoped_method_call.
+	* decl.c (finish_function): Pass a binfo.
+
+Mon Feb 24 15:00:12 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* call.c (build_over_call): Only synthesize non-trivial copy ctors.
+
+	* typeck.c (build_c_cast): Lose other reference to flag.
+
+	* call.c (build_field_call): Don't look for [cd]tor_identifier.
+	* decl2.c (delete_sanity): Remove meaningless use of
+ 	LOOKUP_HAS_IN_CHARGE.
+	* decl.c (finish_function): Use build_scoped_method_call instead
+ 	of build_delete for running vbase dtors.
+	* init.c (build_delete): Call overload resolution code instead of
+ 	duplicating it badly.
+
 Thu Feb 20 15:12:15 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* call.c (build_over_call): Call mark_used before trying to elide

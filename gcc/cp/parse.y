@@ -2478,10 +2478,11 @@ left_curly:
 		  push_obstacks_nochange ();
 		  end_temporary_allocation ();
 
-		  if (! IS_AGGR_TYPE (t))
+		  if (t == error_mark_node
+		      || ! IS_AGGR_TYPE (t))
 		    {
 		      t = $<ttype>0 = make_lang_type (RECORD_TYPE);
-		      TYPE_NAME (t) = get_identifier ("erroneous type");
+		      pushtag (make_anon_name (), t, 0);
 		    }
 		  if (TYPE_SIZE (t))
 		    duplicate_tag_error (t);

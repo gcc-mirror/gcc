@@ -1245,8 +1245,7 @@ delete_sanity (exp, size, doing_vec, use_global_delete)
 	}
 
       return build_delete (type, t, integer_three_node,
-			   LOOKUP_NORMAL|LOOKUP_HAS_IN_CHARGE,
-			   use_global_delete);
+			   LOOKUP_NORMAL, use_global_delete);
     }
 }
 
