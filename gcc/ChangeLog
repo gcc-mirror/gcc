@@ -1,3 +1,8 @@
+2002-01-08  Richard Henderson  <rth@redhat.com>
+
+	* Makefile.in (toplev.o): Depend on options.h.
+	(gcc.o): Depend on specs.h.
+
 2002-01-08  Jakub Jelinek  <jakub@redhat.com>
 
 	* expr.c (store_expr): Convert VOIDmode constants back to target's
