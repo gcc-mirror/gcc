@@ -1,3 +1,23 @@
+2003-04-19  Tom Tromey  <tromey@redhat.com>
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (ordinary_java_source_files): Added new files.
+	* java/security/AlgorithmParameterGenerator.java,
+	java/security/AlgorithmParameters.java, java/security/Engine.java,
+	java/security/Identity.java, java/security/IdentityScope.java,
+	java/security/KeyFactory.java,
+	java/security/KeyPairGenerator.java, java/security/KeyStore.java,
+	java/security/MessageDigest.java, java/security/Policy.java,
+	java/security/ProtectionDomain.java,
+	java/security/SecureRandom.java, java/security/Security.java,
+	java/security/Signature.java, java/security/SignatureSpi.java,
+	java/security/SignedObject.java, java/security/Signer.java,
+	java/security/interfaces/RSAMultiPrimePrivateCrtKey.java,
+	java/security/spec/PSSParameterSpec.java,
+	java/security/spec/RSAMultiPrimePrivateCrtKeySpec.java,
+	java/security/spec/RSAOtherPrimeInfo.java: New versions from
+	Classpath.
+
 2003-04-19  Scott Gilbertson  <scottg@mantatest.com>
 
 	* gnu/awt/xlib/XGraphics.java (XGraphics): Use new GC.create.
