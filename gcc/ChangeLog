@@ -1,3 +1,31 @@
+2004-09-02  Jan Hubicka  <jh@suse.cz>
+
+	* gimplify.c (gimplify_compound_lval): Move "stack" varray out of
+	GGC.
+
+	* ggc-page.c: include tree-flow.h.
+	(extra_order_size_table): Add stmt_ann_d.
+	(STAT_LABEL): Rename from ....
+	(LABEL): ... this one.
+	* Makefile.in (ggc-page.o): Add dependency.
+
+	* ggc-common.c (ggc_force_collect): New global variable.
+	(loc_description): Add fields "freed", "collected"
+	(ptr_hash): New static hash
+	(ptr_hash_entry): New structure.
+	(hash_ptr,eq_ptr,ggc_prune_ptr): New static functions.
+	(ggc_record_overhead): Take ptr argument, record it
+	(ggc_prune_overhead_list, ggc_free_overhead): New functions.
+	(cmp_statistics): Imrove sorting.
+	(dump_ggc_loc_statistics): Output newly collected statistics
+	* ggc-page.c (ggc_alloc): Update call of ggc_record_overhead
+	(ggc_free): Call ggc_free_overhead.
+	(ggc_collect): Force collection when asked to be forced.
+	(ggc_collect): Call ggc_prune_overhead_list.
+	* ggc.h (ggc_force_collect): Declare
+	(ggc_record_overhead): Update prototype.
+	(ggc_free_overhead, ggc_prune_overhead_list): Declare.
+
 2004-09-02  James E Wilson  <wilson@specifixinc.com>
 
 	* common.opt (ftrapping-math): Default to on.

@@ -31,6 +31,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "ggc.h"
 #include "timevar.h"
 #include "params.h"
+#include "tree-flow.h"
 #ifdef ENABLE_VALGRIND_CHECKING
 # ifdef HAVE_VALGRIND_MEMCHECK_H
 #  include <valgrind/memcheck.h>
@@ -184,6 +185,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    thing you need to do to add a new special allocation size.  */
 
 static const size_t extra_order_size_table[] = {
+  sizeof (struct stmt_ann_d),
   sizeof (struct tree_decl),
   sizeof (struct tree_list),
   TREE_EXP_SIZE (2),
@@ -1173,12 +1175,13 @@ ggc_alloc_stat (size_t size MEM_STAT_DECL)
       G.page_tails[order]->next = entry;
       G.page_tails[order] = entry;
     }
-#ifdef GATHER_STATISTICS
-  ggc_record_overhead (OBJECT_SIZE (order), OBJECT_SIZE (order) - size PASS_MEM_STAT);
-#endif
 
   /* Calculate the object's address.  */
   result = entry->page + object_offset;
+#ifdef GATHER_STATISTICS
+  ggc_record_overhead (OBJECT_SIZE (order), OBJECT_SIZE (order) - size,
+		       result PASS_MEM_STAT);
+#endif
 
 #ifdef ENABLE_GC_CHECKING
   /* Keep poisoning-by-writing-0xaf the object, in an attempt to keep the
@@ -1326,6 +1329,10 @@ ggc_free (void *p)
   page_entry *pe = lookup_page_table_entry (p);
   size_t order = pe->order;
   size_t size = OBJECT_SIZE (order);
+
+#ifdef GATHER_STATISTICS
+  ggc_free_overhead (p);
+#endif
 
   if (GGC_DEBUG_LEVEL >= 3)
     fprintf (G.debug_file,
@@ -1971,7 +1978,7 @@ ggc_collect (void)
 
   float min_expand = allocated_last_gc * PARAM_VALUE (GGC_MIN_EXPAND) / 100;
 
-  if (G.allocated < allocated_last_gc + min_expand)
+  if (G.allocated < allocated_last_gc + min_expand && !ggc_force_collect)
     return;
 
   timevar_push (TV_GC);
@@ -1993,6 +2000,9 @@ ggc_collect (void)
 
   clear_marks ();
   ggc_mark_roots ();
+#ifdef GATHER_STATISTICS
+  ggc_prune_overhead_list ();
+#endif
   poison_pages ();
   validate_free_objects ();
   sweep_pages ();
@@ -2013,7 +2023,7 @@ ggc_collect (void)
 		  : ((x) < 1024*1024*10 \
 		     ? (x) / 1024 \
 		     : (x) / (1024*1024))))
-#define LABEL(x) ((x) < 1024*10 ? ' ' : ((x) < 1024*1024*10 ? 'k' : 'M'))
+#define STAT_LABEL(x) ((x) < 1024*10 ? ' ' : ((x) < 1024*1024*10 ? 'k' : 'M'))
 
 void
 ggc_print_statistics (void)
@@ -2068,15 +2078,15 @@ ggc_print_statistics (void)
 	}
       fprintf (stderr, "%-5lu %10lu%c %10lu%c %10lu%c\n",
 	       (unsigned long) OBJECT_SIZE (i),
-	       SCALE (allocated), LABEL (allocated),
-	       SCALE (in_use), LABEL (in_use),
-	       SCALE (overhead), LABEL (overhead));
+	       SCALE (allocated), STAT_LABEL (allocated),
+	       SCALE (in_use), STAT_LABEL (in_use),
+	       SCALE (overhead), STAT_LABEL (overhead));
       total_overhead += overhead;
     }
   fprintf (stderr, "%-5s %10lu%c %10lu%c %10lu%c\n", "Total",
-	   SCALE (G.bytes_mapped), LABEL (G.bytes_mapped),
-	   SCALE (G.allocated), LABEL(G.allocated),
-	   SCALE (total_overhead), LABEL (total_overhead));
+	   SCALE (G.bytes_mapped), STAT_LABEL (G.bytes_mapped),
+	   SCALE (G.allocated), STAT_LABEL(G.allocated),
+	   SCALE (total_overhead), STAT_LABEL (total_overhead));
 
 #ifdef GATHER_STATISTICS  
   {

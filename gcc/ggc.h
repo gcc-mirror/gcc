@@ -209,6 +209,8 @@ extern struct alloc_zone *garbage_zone;
 extern struct alloc_zone *rtl_zone;
 /* For regular tree allocations.  */
 extern struct alloc_zone *tree_zone;
+/* When set, ggc_collect will do collection.  */
+extern bool ggc_force_collect;
 
 /* The internal primitive.  */
 extern void *ggc_alloc_stat (size_t MEM_STAT_DECL);
@@ -233,7 +235,9 @@ extern void *ggc_calloc (size_t, size_t);
 /* Free a block.  To be used when known for certain it's not reachable.  */
 extern void ggc_free (void *);
  
-extern void ggc_record_overhead (size_t, size_t MEM_STAT_DECL);
+extern void ggc_record_overhead (size_t, size_t, void * MEM_STAT_DECL);
+extern void ggc_free_overhead (void *);
+extern void ggc_prune_overhead_list (void);
 
 extern void dump_ggc_loc_statistics (void);
 
