@@ -1467,22 +1467,6 @@
   ;; is not an "arith_operand".
   [(set_attr "length" "1")])
 
-(define_insn "*sethi_si"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(high:SI (match_operand 1 "" "")))]
-  "check_pic (1)"
-  "sethi %%hi(%a1),%0"
-  [(set_attr "type" "move")
-   (set_attr "length" "1")])
-
-(define_insn "*sethi_hi"
-  [(set (match_operand:HI 0 "register_operand" "=r")
-	(high:HI (match_operand 1 "" "")))]
-  "check_pic (1)"
-  "sethi %%hi(%a1),%0"
-  [(set_attr "type" "move")
-   (set_attr "length" "1")])
-
 ;; For PIC, symbol_refs are put inside unspec so that the optimizer will not
 ;; confuse them with real addresses.
 (define_insn "pic_lo_sum_si"
@@ -1497,12 +1481,30 @@
   ;; is not an "arith_operand".
   [(set_attr "length" "1")])
 
+;; The PIC version of sethi must appear before the non-pic case so that
+;; the unspec will not be matched as part of the operand.
 ;; For PIC, symbol_refs are put inside unspec so that the optimizer will not
 ;; confuse them with real addresses.
 (define_insn "pic_sethi_si"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(high:SI (unspec:SI [(match_operand 1 "" "")] 0)))]
   "flag_pic && check_pic (1)"
+  "sethi %%hi(%a1),%0"
+  [(set_attr "type" "move")
+   (set_attr "length" "1")])
+
+(define_insn "*sethi_si"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(high:SI (match_operand 1 "" "")))]
+  "check_pic (1)"
+  "sethi %%hi(%a1),%0"
+  [(set_attr "type" "move")
+   (set_attr "length" "1")])
+
+(define_insn "*sethi_hi"
+  [(set (match_operand:HI 0 "register_operand" "=r")
+	(high:HI (match_operand 1 "" "")))]
+  "check_pic (1)"
   "sethi %%hi(%a1),%0"
   [(set_attr "type" "move")
    (set_attr "length" "1")])
