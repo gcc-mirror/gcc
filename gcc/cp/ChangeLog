@@ -1,3 +1,8 @@
+Wed Sep 13 16:52:06 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* decl.c (duplicate_decls): Turn off whining about virtual functions
+	redeclared inline for now.
+
 Tue Sep 12 17:31:33 1995  Douglas Rupp  (drupp@cs.washington.edu)
 
 	* Make-lang.in (cc1plus) : Removed unnecessary $(exeext).
