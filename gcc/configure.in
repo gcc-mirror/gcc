@@ -2202,7 +2202,7 @@ case "$target" in
     ;;
 esac
 
-if test "$prefix" != "/usr" && test "$prefix" != "/usr/local" ; then
+if test "$prefix" != "/usr" && test "x$prefix" != "x$local_prefix" ; then
   AC_DEFINE_UNQUOTED(PREFIX_INCLUDE_DIR, "$prefix/include")
 fi
 
