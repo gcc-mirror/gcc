@@ -167,8 +167,7 @@ static void sparc_nonflat_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT,
 						     int));
 static void sparc_nonflat_function_prologue PARAMS ((FILE *, HOST_WIDE_INT,
 						     int));
-static void sparc_elf_asm_named_section PARAMS ((const char *, unsigned int,
-						 unsigned int));
+static void sparc_elf_asm_named_section PARAMS ((const char *, unsigned int));
 
 /* Option handling.  */
 
@@ -8695,10 +8694,9 @@ sparc_add_gc_roots ()
 }
 
 static void
-sparc_elf_asm_named_section (name, flags, align)
+sparc_elf_asm_named_section (name, flags)
      const char *name;
      unsigned int flags;
-     unsigned int align ATTRIBUTE_UNUSED;
 {
   fprintf (asm_out_file, "\t.section\t\"%s\"", name);
 

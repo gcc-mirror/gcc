@@ -61,8 +61,7 @@ static rtx find_addr_reg PARAMS ((rtx));
 static const char *singlemove_string PARAMS ((rtx *));
 static void m68k_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
 static void m68k_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
-static void m68k_coff_asm_named_section PARAMS ((const char *, unsigned int,
-						 unsigned int));
+static void m68k_coff_asm_named_section PARAMS ((const char *, unsigned int));
 #ifdef CTOR_LIST_BEGIN
 static void m68k_svr3_asm_out_constructor PARAMS ((rtx, int));
 #endif
@@ -4218,10 +4217,9 @@ output_xorsi3 (operands)
 /* Output assembly to switch to section NAME with attribute FLAGS.  */
 
 static void
-m68k_coff_asm_named_section (name, flags, align)
+m68k_coff_asm_named_section (name, flags)
      const char *name;
      unsigned int flags;
-     unsigned int align ATTRIBUTE_UNUSED;
 {
   char flagchar;
 

@@ -48,8 +48,7 @@ static void compute_regstack_size PARAMS ((void));
 static void check_epilogue_internal_label PARAMS ((FILE *));
 static void output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
 static void output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
-static void a29k_asm_named_section PARAMS ((const char *, unsigned int,
-					    unsigned int));
+static void a29k_asm_named_section PARAMS ((const char *, unsigned int));
 
 #define min(A,B)	((A) < (B) ? (A) : (B))
 
@@ -1572,10 +1571,9 @@ output_function_epilogue (file, size)
 }
 
 static void
-a29k_asm_named_section (name, flags, align)
+a29k_asm_named_section (name, flags)
      const char *name;
      unsigned int flags ATTRIBUTE_UNUSED;
-     unsigned int align ATTRIBUTE_UNUSED;
 {
   /* ??? Is it really correct to mark all sections as "bss"?  */
   fprintf (asm_out_file, "\t.sect %s, bss\n\t.use %s\n", name, name);

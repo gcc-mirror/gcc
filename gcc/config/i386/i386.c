@@ -612,8 +612,7 @@ static int ix86_comp_type_attributes PARAMS ((tree, tree));
 static void ix86_svr3_asm_out_constructor PARAMS ((rtx, int));
 #endif
 #if defined(TARGET_ELF) && defined(TARGET_COFF)
-static void sco_asm_named_section PARAMS ((const char *, unsigned int,
-					   unsigned int));
+static void sco_asm_named_section PARAMS ((const char *, unsigned int));
 static void sco_asm_out_constructor PARAMS ((rtx, int));
 #endif
 
@@ -2342,7 +2341,7 @@ ix86_asm_file_end (file)
 			      error_mark_node);
       DECL_ONE_ONLY (decl) = 1;
       UNIQUE_SECTION (decl, 0);
-      named_section (decl, NULL, 0);
+      named_section (decl, NULL);
     }
   else
 #else
@@ -10839,15 +10838,14 @@ ix86_svr3_asm_out_constructor (symbol, priority)
 
 #if defined(TARGET_ELF) && defined(TARGET_COFF)
 static void
-sco_asm_named_section (name, flags, align)
+sco_asm_named_section (name, flags)
      const char *name;
      unsigned int flags;
-     unsigned int align;
 {
   if (TARGET_ELF)
-    default_elf_asm_named_section (name, flags, align);
+    default_elf_asm_named_section (name, flags);
   else
-    default_coff_asm_named_section (name, flags, align);
+    default_coff_asm_named_section (name, flags);
 }
 
 static void

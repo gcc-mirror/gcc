@@ -116,7 +116,6 @@ static void	 thumb_output_function_prologue PARAMS ((FILE *,
 static int	 arm_comp_type_attributes	PARAMS ((tree, tree));
 static void	 arm_set_default_type_attributes	PARAMS ((tree));
 static void	 arm_elf_asm_named_section	PARAMS ((const char *,
-							 unsigned int,
 							 unsigned int));
 #undef Hint
 #undef Mmode
@@ -10829,10 +10828,9 @@ aof_dump_imports (f)
    used before the section type.  */
 
 static void
-arm_elf_asm_named_section (name, flags, align)
+arm_elf_asm_named_section (name, flags)
      const char *name;
      unsigned int flags;
-     unsigned int align ATTRIBUTE_UNUSED;
 {
   char flagchars[8], *f = flagchars;
   const char *type;
