@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.12 $
+--                            $Revision$
 --                                                                          --
---           Copyright (C) 1999-2000 Ada Core Technologies, Inc.            --
+--           Copyright (C) 1999-2001 Ada Core Technologies, Inc.            --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -35,7 +35,7 @@
 --  Run-time symbolic traceback support
 
 --  Note: this is only available on selected targets. Currently it is
---  supported on Sparc/Solaris, Linux, Windows NT, HP-UX, IRIX and Tru64.
+--  supported on Sparc/Solaris, GNU/Linux, Windows NT, HP-UX, IRIX and Tru64.
 
 --  The routines provided in this package assume that your application has
 --  been compiled with debugging information turned on, since this information

@@ -4,7 +4,7 @@
  *                                                                          *
  *                               A D A I N T                                *
  *                                                                          *
- *                            $Revision: 1.2 $
+ *                            $Revision$
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
@@ -1987,7 +1987,7 @@ int _flush_cache()
       && ! (defined (__alpha__)  && defined (__osf__)) \
       && ! defined (__MINGW32__))
 /* Dummy function to satisfy g-trasym.o.
-   Currently Solaris sparc, HP/UX, IRIX, Linux, Tru64 & Windows provide a
+   Currently Solaris sparc, HP/UX, IRIX, GNU/Linux, Tru64 & Windows provide a
    non-dummy version of this procedure in libaddr2line.a */
 
 void

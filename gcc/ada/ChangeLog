@@ -1,3 +1,66 @@
+2001-10-04  Geert Bosch  <bosch@gnat.com>
+
+	* 3lsoccon.ads: Added file, missed with initial check ins.
+  
+	* 4lintnam.ads: Fix header format.
+	Change Linux to GNU/Linux.
+  
+	* 5iosinte.adb: Change Linux to GNU/Linux.
+
+	* 5iosinte.ads: Change Linux to GNU/Linux.
+  
+	* 5itaprop.adb: Change Linux to GNU/Linux.
+  
+	* 5itaspri.ads: Change Linux to GNU/Linux.
+	Update copyright notice.
+  
+	* 5lintman.adb: Change Linux to GNU/Linux.
+  
+	* 5lml-tgt.adb: Change Linux to GNU/Linux.
+  
+	* 5losinte.ads: Change Linux to GNU/Linux.
+  
+	* 5lsystem.ads: Change Linux to GNU/Linux.
+  
+	* 5qosinte.adb: Change Linux to GNU/Linux.
+  
+	* 5qosinte.ads: Change Linux to GNU/Linux.
+  
+	* 5qparame.ads: Change Linux to GNU/Linux.
+  
+	* 5qtaprop.adb: Change Linux to GNU/Linux.
+  
+	* 5qtaspri.ads: Change Linux to GNU/Linux.
+	Add 2001 to copyright notice.
+  
+	* 5vintman.ads: Change Linux to GNU/Linux.
+	Fix header format.  Add 2001 to copyright notice.
+  
+	* g-soccon.ads: Change Linux to GNU/Linux.
+  
+	* g-trasym.ads: Change Linux to GNU/Linux.
+	Add 2001 to copyright notice.
+  
+	* memtrack.adb: Change Linux to GNU/Linux.
+  
+	* s-intman.ads: Change Linux to GNU/Linux.
+	Add 2001 to copyright notice.  Fix header format.
+  
+	* s-stache.adb: Change Linux to GNU/Linux.
+  
+	* adaint.c: Change Linux to GNU/Linux.
+  
+	* cio.c: Change Linux to GNU/Linux.
+  
+	* cstreams.c: Change Linux to GNU/Linux.
+  
+	* init.c: Change Linux to GNU/Linux.
+  
+	* gmem.c: Change Linux to GNU/Linux.
+  
+	* tracebak.c: Change Linux to GNU/Linux.
+
+
 2001-10-02  Geert Bosch  <bosch@gnat.com>
 
 	* misc.c (insert_default_attributes): Add dummy version.

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---                             $Revision: 1.10 $
+--                             $Revision$
 --                                                                          --
 --             Copyright (C) 1991-2001, Florida State University            --
 --                                                                          --
@@ -34,7 +34,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  RT Linux version
+--  RT GNU/Linux version
 
 --  ???? Later, look at what we might want to provide for interrupt
 --  management.
@@ -74,11 +74,11 @@ package body System.Task_Primitives.Operations is
        System.Tasking,
        System.Storage_Elements;
 
-   ----------------------------
-   -- RT Linux specific Data --
-   ----------------------------
+   --------------------------------
+   -- RT GNU/Linux specific Data --
+   --------------------------------
 
-   --  Define two important parameters necessary for a Linux kernel module.
+   --  Define two important parameters necessary for a GNU/Linux kernel module.
    --  Any module that is going to be loaded into the kernel space needs these
    --  parameters.
 
@@ -93,8 +93,8 @@ package body System.Task_Primitives.Operations is
    pragma Export (C, Kernel_Version, "kernel_version");
    --  So that insmod can find the version number.
 
-   --  The following procedures have their name specified by the linux module
-   --  loader. Note that they simply correspond to adainit/adafinal.
+   --  The following procedures have their name specified by the GNU/Linux
+   --  module loader. Note that they simply correspond to adainit/adafinal.
 
    function Init_Module return Integer;
    pragma Export (C, Init_Module, "init_module");
@@ -183,7 +183,7 @@ package body System.Task_Primitives.Operations is
    --  A variable to hold Task_ID for the environment task.
    --  Once initialized, this behaves as a constant.
    --  In the current implementation, this is the task assigned permanently
-   --  as the regular Linux kernel.
+   --  as the regular GNU/Linux kernel.
 
    All_Tasks_L : aliased RTS_Lock;
    --  See comments on locking rules in System.Tasking (spec).
@@ -194,7 +194,8 @@ package body System.Task_Primitives.Operations is
    --  We start at 100, to reserve some special values for
    --  using in error checking.
 
-   Linux_Irq_State : Integer := 0;
+   GNU_Linux_Irq_State : Integer := 0;
+   --  This needs comments ???
 
    type Duration_As_Integer is delta 1.0
       range -2.0**(Duration'Size - 1) .. 2.0**(Duration'Size - 1) - 1.0;
@@ -517,21 +518,21 @@ package body System.Task_Primitives.Operations is
          pragma Debug (Printk
            ("Rt_Schedule: Top_Task = Environment_Task" & LF));
          --  If there are no RT tasks ready, we execute the regular
-         --  Linux kernel, and allow the regular Linux interrupt
+         --  GNU/Linux kernel, and allow the regular GNU/Linux interrupt
          --  handlers to preempt the current task again.
 
          if not In_Elab_Code then
-            SFIF := Linux_Irq_State;
+            SFIF := GNU_Linux_Irq_State;
          end if;
 
       elsif Current_Task = Environment_Task_ID then
          pragma Debug (Printk
            ("Rt_Schedule: Current_Task = Environment_Task" & LF));
-         --  We are going to preempt the regular Linux kernel to
-         --  execute an RT task, so don't allow the regular Linux
+         --  We are going to preempt the regular GNU/Linux kernel to
+         --  execute an RT task, so don't allow the regular GNU/Linux
          --  interrupt handlers to preempt the current task any more.
 
-         Linux_Irq_State := SFIF;
+         GNU_Linux_Irq_State := SFIF;
          SFIF := 0;
       end if;
 
@@ -1713,7 +1714,7 @@ package body System.Task_Primitives.Operations is
    --  initialize the target-dependent data.  We do that in this procedure.
 
    --  In the present implementation, Environment_Task is set to be the
-   --  regular Linux kernel task.
+   --  regular GNU/Linux kernel task.
 
    procedure Initialize (Environment_Task : Task_ID) is
    begin
@@ -1743,7 +1744,7 @@ package body System.Task_Primitives.Operations is
       Idle_Task.Common.LL.Succ := Idle_Task'Address;
       Idle_Task.Common.LL.Pred := Idle_Task'Address;
 
-      --  Initialize the regular Linux kernel task.
+      --  Initialize the regular GNU/Linux kernel task.
 
       Environment_Task.Common.LL.Magic := RT_TASK_MAGIC;
       Environment_Task.Common.LL.State := RT_TASK_READY;
@@ -1758,7 +1759,7 @@ package body System.Task_Primitives.Operations is
       Timer_Queue.Common.LL.Pred        := Timer_Queue'Address;
       Timer_Queue.Common.LL.Resume_Time := Max_Sensible_Delay;
 
-      --  Set the current task to regular Linux kernel task
+      --  Set the current task to regular GNU/Linux kernel task
 
       Current_Task := Environment_Task;
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---                             $Revision: 1.27 $
+--                             $Revision$
 --                                                                          --
 --          Copyright (C) 1991-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -34,7 +34,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is a Linux (FSU THREADS) version of this package.
+--  This is a GNU/Linux (FSU THREADS) version of this package.
 
 --  This package encapsulates all direct interfaces to OS services
 --  that are needed by children of System.
@@ -114,8 +114,8 @@ package System.OS_Interface is
    SIGPROF    : constant := 27; --  profiling timer expired
    SIGXCPU    : constant := 24; --  CPU time limit exceeded
    SIGXFSZ    : constant := 25; --  filesize limit exceeded
-   SIGUNUSED  : constant := 31;  --  unused signal (Linux)
-   SIGSTKFLT  : constant := 16;  --  coprocessor stack fault (Linux)
+   SIGUNUSED  : constant := 31; --  unused signal (GNU/Linux)
+   SIGSTKFLT  : constant := 16; --  coprocessor stack fault (GNU/Linux)
 
    SIGADAABORT : constant := SIGABRT;
    --  Change this if you want to use another signal for task abort.

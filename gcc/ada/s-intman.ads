@@ -6,9 +6,9 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---                             $Revision: 1.4 $                             --
+--                             $Revision$
 --                                                                          --
---          Copyright (C) 1991-1998 Free Software Foundation, Inc.          --
+--          Copyright (C) 1991-2001 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -117,9 +117,9 @@ package System.Interrupt_Management is
 
    procedure Initialize_Interrupts;
    --  On systems where there is no signal inheritance between tasks (e.g
-   --  VxWorks, LinuxThreads), this procedure is used to initialize interrupts
-   --  handling in each task. Otherwise this function should only be called by
-   --  initialize in this package body.
+   --  VxWorks, GNU/LinuxThreads), this procedure is used to initialize
+   --  interrupts handling in each task. Otherwise this function should
+   --  only be called by initialize in this package body.
 
 private
    type Interrupt_Mask is new System.OS_Interface.sigset_t;

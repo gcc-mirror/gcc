@@ -3,11 +3,11 @@
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
 --                             M L I B . T G T                              --
---                             (Linux Version)                              --
+--                           (GNU/Linux Version)                            --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.2 $
+--                            $Revision$
 --                                                                          --
 --              Copyright (C) 2001, Ada Core Technologies, Inc.             --
 --                                                                          --
@@ -30,7 +30,7 @@
 --  This package provides a set of target dependent routines to build
 --  static, dynamic and shared libraries.
 
---  This is the Linux version of the body.
+--  This is the GNU/Linux version of the body.
 
 with Ada.Characters.Handling;   use Ada.Characters.Handling;
 with GNAT.Directory_Operations; use GNAT.Directory_Operations;

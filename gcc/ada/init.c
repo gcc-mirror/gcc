@@ -4,7 +4,7 @@
  *                                                                          *
  *                                 I N I T                                  *
  *                                                                          *
- *                            $Revision: 1.1 $
+ *                            $Revision$
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
@@ -525,7 +525,7 @@ __gnat_initialize ()
 
 
 /*************************************/
-/* __gnat_initialize (Linux version) */
+/* __gnat_initialize (GNU/Linux version) */
 /*************************************/
 
 #elif defined (linux) && defined (i386) && !defined (__RT__)
@@ -533,7 +533,8 @@ __gnat_initialize ()
 #include <signal.h>
 #include <asm/sigcontext.h>
 
-/* Linux with GNU libc does not define NULL in included header files */
+/* GNU/Linux, which uses glibc, does not define NULL in included
+   header files */
 
 #if !defined (NULL)
 #define NULL ((void *) 0)
@@ -561,10 +562,11 @@ __gnat_error_handler (sig)
 
   struct sigcontext *info
     = (struct sigcontext *) (((char *) &sig) + sizeof (int));
-  /* Linux does not document how to get the machine state in a signal handler,
-     but in fact the necessary data is in a sigcontext_struct value that is
-     on the stack immediately above the signal number parameter, and the
-     above messing accesses this value on the stack. */
+
+  /* The Linux kernel does not document how to get the machine state in a
+     signal handler, but in fact the necessary data is in a sigcontext_struct
+     value that is on the stack immediately above the signal number
+     parameter, and the above messing accesses this value on the stack. */
 
   struct Machine_State *mstate;
 

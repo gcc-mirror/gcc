@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---                              $Revision: 1.27 $
+--                              $Revision$
 --                                                                          --
 --          Copyright (C) 1991-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -34,7 +34,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is a Linux (LinuxThreads) version of this package.
+--  This is a GNU/Linux (GNU/LinuxThreads) version of this package.
 
 --  This package encapsulates all direct interfaces to OS services
 --  that are needed by children of System.
@@ -115,11 +115,11 @@ package System.OS_Interface is
    SIGPROF    : constant := 27; --  profiling timer expired
    SIGXCPU    : constant := 24; --  CPU time limit exceeded
    SIGXFSZ    : constant := 25; --  filesize limit exceeded
-   SIGUNUSED  : constant := 31;  --  unused signal (Linux)
-   SIGSTKFLT  : constant := 16;  --  coprocessor stack fault (Linux)
-   SIGLTHRRES : constant := 32;  --  LinuxThreads restart signal
-   SIGLTHRCAN : constant := 33;  --  LinuxThreads cancel signal
-   SIGLTHRDBG : constant := 34;  --  LinuxThreads debugger signal
+   SIGUNUSED  : constant := 31; --  unused signal (GNU/Linux)
+   SIGSTKFLT  : constant := 16; --  coprocessor stack fault (Linux)
+   SIGLTHRRES : constant := 32; --  GNU/LinuxThreads restart signal
+   SIGLTHRCAN : constant := 33; --  GNU/LinuxThreads cancel signal
+   SIGLTHRDBG : constant := 34; --  GNU/LinuxThreads debugger signal
 
    SIGADAABORT : constant := SIGABRT;
    --  Change this if you want to use another signal for task abort.
@@ -146,12 +146,12 @@ package System.OS_Interface is
       --  POSIX simply won't allow it.
 
       SIGLTHRRES, SIGLTHRCAN, SIGLTHRDBG);
-      --  These three signals are used by LinuxThreads starting from
+      --  These three signals are used by GNU/LinuxThreads starting from
       --  glibc 2.1 (future 2.2).
 
    Reserved    : constant Signal_Set :=
    --  I am not sure why the following two signals are reserved.
-   --  I guess they are not supported by this version of Linux.
+   --  I guess they are not supported by this version of GNU/Linux.
      (SIGVTALRM, SIGUNUSED);
 
    type sigset_t is private;

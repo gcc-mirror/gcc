@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---                             $Revision: 1.18 $
+--                             $Revision$
 --                                                                          --
 --             Copyright (C) 1991-2001 Florida State University             --
 --                                                                          --
@@ -34,7 +34,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is the Linux version of this package
+--  This is the GNU/Linux version of this package
 
 --  This file performs the system-dependent translation between machine
 --  exceptions and the Ada exceptions, if any, that should be raised when they

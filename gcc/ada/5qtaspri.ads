@@ -6,9 +6,9 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---                             $Revision: 1.3 $
+--                             $Revision$
 --                                                                          --
---            Copyright (C) 1991-2000, Florida State University             --
+--            Copyright (C) 1991-2001, Florida State University             --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,7 +33,8 @@
 -- State University (http://www.gnat.com).                                  --
 --                                                                          --
 ------------------------------------------------------------------------------
---  RT_Linux version.
+
+--  RT_GNU/Linux version
 
 pragma Polling (Off);
 --  Turn off polling, we do not want ATC polling to take place during
@@ -65,7 +66,7 @@ package System.Task_Primitives is
 
 private
 
-   type RT_Linux_Lock is record
+   type RT_GNU_Linux_Lock is record
       Ceiling_Priority     : System.Any_Priority;
       Pre_Locking_Priority : System.Any_Priority;
       --  Used to store the task's active priority before it
@@ -77,8 +78,8 @@ private
       --  the current package -- a circularity.
    end record;
 
-   type Lock is new RT_Linux_Lock;
-   type RTS_Lock is new RT_Linux_Lock;
+   type Lock is new RT_GNU_Linux_Lock;
+   type RTS_Lock is new RT_GNU_Linux_Lock;
 
    type RTS_Lock_Ptr is access all RTS_Lock;
    type Lock_Ptr is access all Lock;

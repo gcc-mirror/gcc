@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *                            $Revision: 1.1 $
+ *                            $Revision$
  *                                                                          *
  *           Copyright (C) 2000-2001 Ada Core Technologies, Inc.            *
  *                                                                          *
@@ -39,7 +39,7 @@
    PowerPC/AiX
    PowerPC/VxWorks
    Sparc/Solaris
-   i386/Linux
+   i386/GNU/Linux
    i386/Solaris
    i386/NT
    i386/OS2

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.1 $
+--                            $Revision$
 --                                                                          --
 --             Copyright (C) 2001 Free Software Foundation, Inc.            --
 --                                                                          --
@@ -62,7 +62,7 @@
 --  NOTE: This capability is currently supported on the following targets:
 --
 --    Windows
---    Linux
+--    GNU/Linux
 --    HP-UX
 --    Irix
 --    Solaris
