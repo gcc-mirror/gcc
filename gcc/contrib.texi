@@ -426,12 +426,6 @@ Paul Rubin wrote most of the preprocessor.
 Andreas Schwab for his work on the m68k port.
 
 @item
-Jeffrey Siegal for helping RMS with the original design of GCC, some
-code which handles the parse tree and RTL data structures, constant
-folding and help with the original VAX & m68k ports.
-
-of the parsing code
-@item
 Graham Stott. for various infrastructure improvements.
 
 @item
@@ -460,6 +454,11 @@ contributions and RTEMS testing.
 
 @item
 Nathan Sidwell for many C++ fixes/improvements.
+
+@item
+Jeffrey Siegal for helping RMS with the original design of GCC, some
+code which handles the parse tree and RTL data structures, constant
+folding and help with the original VAX & m68k ports.
 
 @item
 Andrey Slepuhin for assorted AIX hacking.
