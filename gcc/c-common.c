@@ -27,6 +27,14 @@ Boston, MA 02111-1307, USA.  */
 #include <stdio.h>
 #include <ctype.h>
 
+#ifndef WCHAR_TYPE_SIZE
+#ifdef INT_TYPE_SIZE
+#define WCHAR_TYPE_SIZE INT_TYPE_SIZE
+#else
+#define WCHAR_TYPE_SIZE	BITS_PER_WORD
+#endif
+#endif
+
 extern struct obstack permanent_obstack;
 
 enum attrs {A_PACKED, A_NOCOMMON, A_NORETURN, A_CONST, A_T_UNION,
