@@ -127,10 +127,10 @@ gcjh$(exeext): $(GCJH_SOURCES)
 
 # Build hooks:
 
-java.all.build: $(GCJ)$(exeext) jvgenmain$(exeext) gcjh$(exeext)
-java.all.cross: $(GCJ)-cross$(exeext) jvgenmain$(exeext) gcjh$(exeext)
+java.all.build: $(GCJ)$(exeext)
+java.all.cross: $(GCJ)-cross$(exeext)
 java.start.encap: $(GCJ)$(exeext)
-java.rest.encap: jvgenmain$(exeext) gcjh$(exeext)
+java.rest.encap:
 
 java.info:
 
