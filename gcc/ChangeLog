@@ -1,3 +1,11 @@
+Tue Mar  3 14:27:23 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* sparc.c (ultrasparc_adjust_cost): Add default case in
+	enumeration switch.
+	 
+	 * sparc.h: Add prototypes for extern functions defined in
+	sparc.c.
+
 Tue Mar  3 10:00:11 1998  Nick Clifton  <nickc@cygnus.com>
 
 	* toplev.c: Only generate <name>.dbr file when dumping RTL if

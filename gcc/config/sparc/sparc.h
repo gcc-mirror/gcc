@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for Sun SPARC.
-   Copyright (C) 1987, 88, 89, 92, 94-6, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 92, 94-7, 1998 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com).
    64 bit SPARC V9 support by Michael Tiemann, Jim Wilson, and Doug Evans,
    at Cygnus Support.
@@ -3182,17 +3182,76 @@ do {									\
 
 /* Declare functions defined in sparc.c and used in templates.  */
 
-extern char *singlemove_string ();
 extern char *doublemove_string ();
-extern char *output_move_double ();
-extern char *output_move_quad ();
+extern char *output_block_move ();
+extern char *output_cbranch ();
 extern char *output_fp_move_double ();
 extern char *output_fp_move_quad ();
-extern char *output_block_move ();
-extern char *output_scc_insn ();
-extern char *output_cbranch ();
-extern char *output_v9branch ();
+extern char *output_move_double ();
+extern char *output_move_quad ();
 extern char *output_return ();
+extern char *output_scc_insn ();
+extern char *output_v9branch ();
+extern char *singlemove_string ();
+
+extern void emit_v9_brxx_insn ();
+extern void finalize_pic ();
+extern void output_double_int ();
+extern void output_function_epilogue ();
+extern void output_function_prologue ();
+extern void print_operand ();
+extern void sparc_flat_output_function_epilogue ();
+extern void sparc_flat_output_function_prologue ();
+
+extern int addrs_ok_for_ldd_peep ();
+extern int arith10_double_operand ();
+extern int arith10_operand ();
+extern int arith11_double_operand ();
+extern int arith11_operand ();
+extern int arith_double_operand ();
+extern int arith_operand ();
+extern int call_operand_address ();
+extern int cc_arithop ();
+extern int cc_arithopn ();
+extern int check_pic ();
+extern int compute_frame_size ();
+extern int data_segment_operand ();
+extern int eligible_for_epilogue_delay ();
+extern int emit_move_sequence ();
+extern int extend_op ();
+extern int fcc_reg_operand ();
+extern int fp_zero_operand ();
+extern int icc_or_fcc_reg_operand ();
+extern int label_ref_operand ();
+extern int mem_aligned_8 ();
+extern int move_operand ();
+extern int noov_compare_op ();
+extern int pic_address_needs_scratch ();
+extern int reg_or_0_operand ();
+extern int reg_or_nonsymb_mem_operand ();
+extern int reg_unused_after ();
+extern int register_ok_for_ldd ();
+extern int registers_ok_for_ldd_peep ();
+extern int restore_operand ();
+extern int short_branch ();
+extern int small_int ();
+extern int sp64_medium_pic_operand ();
+extern int sparc_flat_eligible_for_epilogue_delay ();
+extern int sparc_flat_epilogue_delay_slots ();
+extern int sparc_operand ();
+extern int splittable_immediate_memory_operand ();
+extern int splittable_symbolic_memory_operand ();
+extern int supersparc_adjust_cost ();
+extern int symbolic_memory_operand ();
+extern int symbolic_operand ();
+extern int text_segment_operand ();
+extern int ultrasparc_adjust_cost ();
+extern int uns_small_int ();
+extern int v9_regcmp_op ();
+extern int v9_regcmp_p ();
+
+extern unsigned long sparc_flat_compute_frame_size ();
+extern unsigned long sparc_type_code ();
 
 /* Defined in flags.h, but insn-emit.c does not include flags.h.  */
 
