@@ -1,3 +1,10 @@
+2000-12-17  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+        * cppmain.c (check_multiline_token): New function.
+        (scan_buffer): Use it.
+        (cb_change_file): Restructure to avoid warning.
+        * cpperror.c (print_location): Initialize col.
+
 2000-12-14  Philipp Thomas  <pthomas@suse.de>
 	* protoize.c (main): Correctly set locale categories.
 	* gcc.c (main): Likewise.
