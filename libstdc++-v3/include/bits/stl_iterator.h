@@ -106,9 +106,12 @@ namespace std
 
     public:
       /**
-       *  The default constructor gives an undefined state to this %iterator.
+       *  The default constructor default-initializes member @p current.
+       *  If it is a pointer, that means it is zero-initialized.
       */
-      reverse_iterator() { }
+      // _GLIBCPP_RESOLVE_LIB_DEFECTS
+      // 235 No specification of default ctor for reverse_iterator
+      reverse_iterator() : current() { }
 
       /**
        *  This %iterator will move in the opposite direction that @p x does.
