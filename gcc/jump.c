@@ -995,7 +995,6 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 	      && GET_CODE (SET_SRC (temp1)) != REG
 	      && GET_CODE (SET_SRC (temp1)) != SUBREG
 	      && GET_CODE (SET_SRC (temp1)) != CONST_INT
-	      && ! modified_in_p (PATTERN (insn), temp)
 	      && ! side_effects_p (SET_SRC (temp1))
 	      && ! may_trap_p (SET_SRC (temp1))
 	      && rtx_cost (SET_SRC (temp1), SET) < 10)
@@ -1035,13 +1034,11 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 	      && GET_MODE_CLASS (GET_MODE (temp2)) == MODE_INT
 	      && (! SMALL_REGISTER_CLASSES
 		  || REGNO (temp2) >= FIRST_PSEUDO_REGISTER)
-	      && ! modified_in_p (PATTERN (insn), temp)
 	      && ! side_effects_p (SET_SRC (temp1))
 	      && ! may_trap_p (SET_SRC (temp1))
 	      && rtx_cost (SET_SRC (temp1), SET) < 10
 	      && (temp4 = single_set (temp3)) != 0
 	      && rtx_equal_p (SET_DEST (temp4), temp2)
-	      && ! modified_in_p (PATTERN (insn), temp3)
 	      && ! side_effects_p (SET_SRC (temp4))
 	      && ! may_trap_p (SET_SRC (temp4))
 	      && rtx_cost (SET_SRC (temp4), SET) < 10)
@@ -1094,7 +1091,6 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 	      && REGNO (temp5) >= FIRST_PSEUDO_REGISTER
 	      && REGNO_FIRST_UID (REGNO (temp5)) == INSN_UID (temp)
 	      && REGNO_LAST_UID (REGNO (temp5)) == INSN_UID (temp3)
-	      && ! modified_in_p (PATTERN (insn), temp)
 	      && ! side_effects_p (SET_SRC (temp1))
 	      && ! may_trap_p (SET_SRC (temp1))
 	      && rtx_cost (SET_SRC (temp1), SET) < 10
@@ -1104,7 +1100,6 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 	      && (! SMALL_REGISTER_CLASSES
 		  || REGNO (temp2) >= FIRST_PSEUDO_REGISTER)
 	      && rtx_equal_p (SET_DEST (temp4), temp2)
-	      && ! modified_in_p (PATTERN (insn), temp3)
 	      && ! side_effects_p (SET_SRC (temp4))
 	      && ! may_trap_p (SET_SRC (temp4))
 	      && rtx_cost (SET_SRC (temp4), SET) < 10)
