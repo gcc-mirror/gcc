@@ -2197,7 +2197,6 @@ stmp-fixinc: fixinc.sh gsyslimits.h
 	  if [ -d $(libdir)/gcc-lib/$(target_alias) ] ; then true ; else mkdir $(libdir)/gcc-lib/$(target_alias) ; fi; \
 	  if [ -d $(libdir)/gcc-lib/$(target_alias)/$(version) ] ; then true ; else mkdir $(libdir)/gcc-lib/$(target_alias)/$(version) ; fi; \
 	else true; fi
-	exit 1
 	touch stmp-fixinc
 
 # Files related to the fixproto script.
