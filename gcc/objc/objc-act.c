@@ -5363,9 +5363,11 @@ check_methods_accessible (chain, context, mtype)
 {
   int first = 1;
   tree list;
+  tree base_context = context;
 
   while (chain)
     {
+      context = base_context;
       while (context)
 	{
 	  if (mtype == '+')
