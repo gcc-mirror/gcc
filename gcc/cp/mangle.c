@@ -1245,6 +1245,9 @@ write_type (type)
 
   MANGLE_TRACE_TREE ("type", type);
 
+  if (type == error_mark_node)
+    return;
+
   if (find_substitution (type))
     return;
   
