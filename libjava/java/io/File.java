@@ -96,9 +96,13 @@ public class File implements Serializable, Comparable
 
     if (dupIndex == -1)
       {
-        // Ignore trailing separator.
-        if (plen > 1 && p.charAt(plen - 1) == separatorChar)
-	  return p.substring(0, plen - 1);
+        // Ignore trailing separator (though on Windows "a:\", for
+        // example, is a valid and minimal path).
+        if (plen > 1 && p.charAt (plen - 1) == separatorChar)
+	  {
+	    if (! (separatorChar == '\\' && plen == 3 && p.charAt (1) == ':'))
+	      return p.substring (0, plen - 1);
+	  }
 	else
 	  return p;
       }
@@ -120,10 +124,16 @@ public class File implements Serializable, Comparable
 	dupIndex = p.indexOf(dupSeparator, last);
       }
     
-    // Again, ignore possible trailing separator.
+    // Again, ignore possible trailing separator (except special cases
+    // like "a:\" on Windows).
     int end;
-    if (plen > 1 && p.charAt(plen - 1) == separatorChar)
-      end = plen - 1;
+    if (plen > 1 && p.charAt (plen - 1) == separatorChar)
+    {
+      if (separatorChar == '\\' && plen == 3 && p.charAt (1) == ':')
+        end = plen;
+      else
+        end = plen - 1;
+    }
     else
       end = plen;
     newpath.append(p.substring(last, end));
