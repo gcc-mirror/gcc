@@ -1,3 +1,9 @@
+2002-02-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/5503:
+	* c-decl.c (duplicate_decls): If builtin type has TYPE_ARG_TYPES NULL,
+	use arguments from newtype.
+
 2002-02-13  Eric Christopher  <echristo@redhat.com>
 
 	* config/mips/mips.c (override_options): Add check for march/mipsX
@@ -21,7 +27,7 @@
         * config/rs6000/rs6000.c (rs6000_legitimize_reload_address): Do
         not push_reload for altivec modes.
 
-2002-02-13	Joel Sherrill <joel@OARcorp.com>
+2002-02-13  Joel Sherrill  <joel@OARcorp.com>
 
 	* config.gcc (a29k-*-rtems), config/a29k/rtems.h: General cleanup across
 	all RTEMS targets including removal of #includes from config/*/rtems*.h
