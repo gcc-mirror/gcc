@@ -1057,7 +1057,7 @@ extern union tree_node *current_function_decl;
 
 #define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT) \
 {									\
-  rtx start_addr, end_addr, masked_start_addr;				\
+  rtx start_addr, end_addr;						\
 									\
   start_addr = memory_address (Pmode, plus_constant ((TRAMP), 36));	\
   emit_move_insn (gen_rtx (MEM, Pmode, start_addr), (FNADDR));		\
@@ -1068,11 +1068,8 @@ extern union tree_node *current_function_decl;
   start_addr = force_reg (SImode, (TRAMP));				\
   end_addr = force_reg (SImode, plus_constant ((TRAMP), 32));		\
   emit_insn (gen_dcacheflush (start_addr, end_addr));			\
-  masked_start_addr = gen_reg_rtx (SImode);				\
-  emit_insn (gen_andsi3 (masked_start_addr, start_addr,			\
-			 GEN_INT (0x3fffffff)));			\
-  end_addr = force_reg (SImode, plus_constant (masked_start_addr, 32));	\
-  emit_insn (gen_icacheflush (masked_start_addr, end_addr, start_addr,	\
+  end_addr = force_reg (SImode, plus_constant (start_addr, 32));	\
+  emit_insn (gen_icacheflush (start_addr, end_addr, start_addr,		\
 			      gen_reg_rtx (SImode), gen_reg_rtx (SImode)));\
 }
 
