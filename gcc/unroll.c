@@ -790,6 +790,14 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
        since it will also be used outside the loop.  */
     if (GET_CODE (copy_end) == JUMP_INSN)
       copy_end_luid--;
+
+    /* If we have a target that uses cc0, then we also must not duplicate
+       the insn that sets cc0 before the jump insn.  */
+#ifdef HAVE_cc0
+    if (GET_CODE (copy_end) == JUMP_INSN)
+      copy_end_luid--;
+#endif
+
     /* If copy_start points to the NOTE that starts the loop, then we must
        use the next luid, because invariant pseudo-regs moved out of the loop
        have their lifetimes modified to start here, but they are not safe

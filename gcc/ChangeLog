@@ -13,6 +13,12 @@ Tue Apr  6 17:49:49 1999  Philip Blundell  <pb@nexus.co.uk>
 
 Wed Apr  7 14:07:34 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* h8300.c (h8300_adjust_insn_length): Avoid trying to recognize
+	USE, CLOBBER or SEQUENCE insns.
+
+	* unroll.c (unroll_loop): For HAVE_cc0 machines, adjust copy_end_luid
+	to account for the uncopied insn that sets cc0 at the end of the loop.
+
 	* unroll.c (copy_loop_body): Always ensure at least two insns
 	are in the copied loop.
 
