@@ -236,9 +236,6 @@ char * temporary_firstobj;
 /* Holds the return value of pexecute.  */
 int pexecute_pid;
 
-/* Defined in the automatically-generated underscore.c.  */
-extern int prepends_underscore;
-
 /* Structure to hold all the directories in which to search for files to
    execute.  */
 
@@ -515,8 +512,8 @@ dump_file (name)
 	  if (*word == '.')
 	    ++word, putc ('.', stderr);
 	  p = word;
-	  if (*p == '_' && prepends_underscore)
-	    ++p;
+	  if (!strncmp (p, USER_LABEL_PREFIX, strlen (USER_LABEL_PREFIX)))
+	    p += strlen (USER_LABEL_PREFIX);
 
 	  if (no_demangle)
 	    result = 0;

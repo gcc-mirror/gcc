@@ -82,16 +82,12 @@ g++-cross$(exeext): g++$(exeext)
 	cp g++$(exeext) g++-cross$(exeext)
 
 # The demangler.
-cxxmain.o: $(srcdir)/../libiberty/cplus-dem.c $(DEMANGLE_H) $(CONFIG_H)
-	rm -f cxxmain.c
-	$(LN_S) $(srcdir)/../libiberty/cplus-dem.c cxxmain.c
-	$(CC) -c -DMAIN $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
-	  -DVERSION=\"$(version)\" cxxmain.c
+cp/cxxfilt.o: cp/cxxfilt.c $(DEMANGLE_H) $(CONFIG_H) $(SYSTEM_H) version.h
 
 # Apparently OpenVM needs the -o to be at the beginning of the link line.
-$(DEMANGLER_PROG): cxxmain.o underscore.o $(LIBDEPS)
+$(DEMANGLER_PROG): cp/cxxfilt.o version.o $(LIBDEPS)
 	$(CC) -o $@ $(ALL_CFLAGS) $(LDFLAGS) \
-	  cxxmain.o underscore.o $(LIBS)
+	  cp/cxxfilt.o version.o $(LIBS)
 
 # The compiler itself.
 # Shared with C front end:

@@ -1,6 +1,6 @@
 #
 # Makefile
-#   Copyright (C) 1999
+#   Copyright (C) 1999, 2002
 #   Free Software Foundation
 #
 # This file is part of the libiberty library.
@@ -45,30 +45,24 @@ all:
 check: @CHECK@
 
 # Run some tests of the demangler.
-check-cplus-dem: test-filter $(srcdir)/demangle-expected
-	$(SHELL) $(srcdir)/regress-demangle $(srcdir)/demangle-expected
+check-cplus-dem: test-demangle $(srcdir)/demangle-expected
+	./test-demangle < $(srcdir)/demangle-expected
 
-# Note that we just hard-code prepends_underscore to 0.  This doesn't
-# matter since any particular test can override the default if need
-# be.
 TEST_COMPILE = $(CC) @DEFS@ $(LIBCFLAGS) -I.. -I$(INCDIR) $(HDEFINES)
-test-filter: $(srcdir)/../cplus-dem.c
-	echo 'int prepends_underscore = 0;' > test-us.c
-	$(TEST_COMPILE) -o test-filter -DMAIN -DVERSION='"none"' @DEFS@ \
-		$(srcdir)/../cplus-dem.c test-us.c -L.. -liberty
-
+test-demangle: $(srcdir)/test-demangle.c
+	$(TEST_COMPILE) -o test-demangle \
+		$(srcdir)/test-demangle.c ../libiberty.a
 
 # Standard (either GNU or Cygnus) rules we don't use.
 info install-info clean-info dvi install etags tags installcheck:
 
 # The standard clean rules.
 mostlyclean:
-	rm -f test-us.c test-filter
+	rm -f test-demangle
 clean: mostlyclean
 distclean: clean
 	rm -f Makefile
 maintainer-clean realclean: distclean
-
 
 Makefile: $(srcdir)/Makefile.in ../config.status
 	CONFIG_FILES=testsuite/Makefile CONFIG_HEADERS= \

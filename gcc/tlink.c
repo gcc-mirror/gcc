@@ -595,8 +595,8 @@ scan_linker_output (fname)
       /* Try the first word on the line.  */
       if (*p == '.')
 	++p;
-      if (*p == '_' && prepends_underscore)
-	++p;
+      if (!strncmp (p, USER_LABEL_PREFIX, strlen (USER_LABEL_PREFIX)))
+	p += strlen (USER_LABEL_PREFIX);
 
       end = ! *q;
       *q = 0;
@@ -611,8 +611,8 @@ scan_linker_output (fname)
 	  p++;
 	  if (*p == '.')
 	    p++;
-	  if (*p == '_' && prepends_underscore)
-	    p++;
+	  if (!strncmp (p, USER_LABEL_PREFIX, strlen (USER_LABEL_PREFIX)))
+	    p += strlen (USER_LABEL_PREFIX);
 	  sym = symbol_hash_lookup (p, false);
 	}
 
@@ -649,8 +649,9 @@ scan_linker_output (fname)
 		sym = symbol_hash_lookup (dem->mangled, false);
 	      else
 		{
-		  if (*p == '_' && prepends_underscore)
-		    ++p;
+		  if (!strncmp (p, USER_LABEL_PREFIX,
+				strlen (USER_LABEL_PREFIX)))
+		    p += strlen (USER_LABEL_PREFIX);
 		  sym = symbol_hash_lookup (p, false);
 		}
 	    }
