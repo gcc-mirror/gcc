@@ -85,21 +85,31 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    to a multiple of 2**LOG bytes.  */
 
 #define ASM_OUTPUT_ALIGN(FILE,LOG)	\
-     if ((LOG)!=0) fprintf ((FILE), "\t.align %d\n", (LOG))
+  if ((LOG)!=0) fprintf ((FILE), "\t.align %d\n", (LOG))
 
 /* This is how to store into the string BUF
    the symbol_ref name of an internal numbered label where
    PREFIX is the class of label and NUM is the number within the class.
    This is suitable for output with `assemble_name'.  */
 
+#ifdef NO_UNDERSCORES
+#define ASM_GENERATE_INTERNAL_LABEL(BUF,PREFIX,NUMBER)	\
+    sprintf ((BUF), "*.%s%d", (PREFIX), (NUMBER))
+#else
 #define ASM_GENERATE_INTERNAL_LABEL(BUF,PREFIX,NUMBER)	\
     sprintf ((BUF), "*%s%d", (PREFIX), (NUMBER))
+#endif
 
 /* This is how to output an internal numbered label where
    PREFIX is the class of label and NUM is the number within the class.  */
 
+#ifdef NO_UNDERSCORES
+#define ASM_OUTPUT_INTERNAL_LABEL(FILE,PREFIX,NUM)	\
+  fprintf (FILE, ".%s%d:\n", PREFIX, NUM)
+#else
 #define ASM_OUTPUT_INTERNAL_LABEL(FILE,PREFIX,NUM)	\
   fprintf (FILE, "%s%d:\n", PREFIX, NUM)
+#endif
 
 /* This is how to output a reference to a user-level label named NAME.  */
 
