@@ -43,4 +43,4 @@
 #define JUMP_TABLES_IN_TEXT_SECTION (flag_pic)
 
 #undef LINK_SPEC
-#define LINK_SPEC "%{mh:-m h8300helf} %{ms:-m h8300self}"
+#define LINK_SPEC "%{mh:%{mn:-m h8300hnelf}} %{mh:%{!mn:-m h8300helf}} %{ms:%{mn:-m h8300snelf}} %{ms:%{!mn:-m h8300self}}"

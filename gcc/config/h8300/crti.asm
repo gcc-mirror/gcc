@@ -38,11 +38,19 @@ Boston, MA 02111-1307, USA.  */
    such object files.  */
 
 #ifdef __H8300H__
+#ifdef __NORMAL_MODE__
+	.h8300hn
+#else
 	.h8300h
+#endif
 #endif
 
 #ifdef __H8300S__
+#ifdef __NORMAL_MODE__
+	.h8300sn
+#else
 	.h8300s
+#endif
 #endif
 
 	.section .init

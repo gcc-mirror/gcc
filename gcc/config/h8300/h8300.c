@@ -699,9 +699,15 @@ asm_file_start (file)
   else if (optimize)
     fprintf (file, "; -O%d\n", optimize);
   if (TARGET_H8300H)
-    fprintf (file, "\n\t.h8300h\n");
+    if (TARGET_NORMAL_MODE)
+      fprintf (file, "\n\t.h8300hn\n");
+    else
+      fprintf (file, "\n\t.h8300h\n");
   else if (TARGET_H8300S)
-    fprintf (file, "\n\t.h8300s\n");
+    if (TARGET_NORMAL_MODE)
+      fprintf (file, "\n\t.h8300sn\n");
+    else
+      fprintf (file, "\n\t.h8300s\n");
   else
     fprintf (file, "\n\n");
   output_file_directive (file, main_input_filename);
