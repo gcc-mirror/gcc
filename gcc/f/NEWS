@@ -66,7 +66,7 @@ about previous `g77' versions up-to-date.
 the mainline, development version of `g77' within `egcs') is available
 at `http://egcs.cygnus.com/onlinedocs/g77_news.html'.
 
-   The following information was last updated on 1999-04-02:
+   The following information was last updated on 1999-04-03:
 
 In `egcs' 1.2 (versus 1.1.2):
 =============================
@@ -98,6 +98,10 @@ In `egcs' 1.2 (versus 1.1.2):
   4. `g77' now warns about a reference to a function when the
      corresponding *subsequent* function program unit disagrees with
      the reference concerning the type of the function.
+
+   * `-fno-emulate-complex' is now the default option.  This should
+     result in improved performance of code that uses the `COMPLEX'
+     data type.
 
    * The `-malign-double' option now reliably aligns *all*
      double-precision variables and arrays on Intel x86 targets.
