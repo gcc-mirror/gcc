@@ -1,3 +1,18 @@
+Sat Jun  3 19:05:30 2000  Michael Meissner  <meissner@redhat.com>
+
+	* ifcvt (process_insns): If IFCVT_MODIFY_INSN is defined, call it
+	with the pattern to do machine dependent work.
+	(cond_exec_process_if_block): If IFCVT_MODIFY_TESTS is defined,
+	use it to modify the true/false tests used in conditional
+	execution.  If IFCVT_MODIFY_FINAL and IFCVT_MODIFY_CANCEL are
+	defined, invoke them if the conversion to conditional execution
+	was successful or not.
+
+	* tm.texi (IFCVT_MODIFY_TESTS): Document.
+	(IFCVT_MODIFY_INSN): Ditto.
+	(IFCVT_MODIFY_FINAL): Ditto.
+	(IFCVT_MODIFY_CANCEL): Ditto.
+
 Sat Jun  3 15:26:13 2000  Matt Kraai <kraai@alumni.carnegiemellon.edu>
 
 	* toplev.c (main): Fix misspellings of possibility and language.
