@@ -4,6 +4,7 @@
 /* { dg-options "-mieee -O2" } */
 
 extern void abort(void);
+extern int printf(const char *, ...);
 
 typedef int int32_t __attribute__ ((__mode__ (  __SI__ ))) ;
 typedef union
