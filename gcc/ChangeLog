@@ -1,3 +1,15 @@
+2001-07-13  Hartmut Penner  <hpenner@de.ibm.com>
+
+        * config.gcc: Add configuration for s/390. 
+        * config/s390/s390.c: New. Subroutines for code generation.
+	* config/s390/s390.h: New. Definitions for s/390.
+	* config/s390/s390-protos.h: New. Prototypes.
+	* config/s390/linux.h: New. Definitions for linux for s/390.
+	* config/s390/linux64.h: New. Definitions for linux for zSeries.
+        * config/s390/t-linux: New. Makefile fragment.
+        * config/s390/s390.md: New. Machine description for s/390 and zSeries.
+	* config/s390/fixdfdi.h: New. Fix L_fix*di.
+	
 Fri Jul 13 14:46:21 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* emit-rtl.c (try_split): Update mark_jump_label call.
