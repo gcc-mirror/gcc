@@ -177,7 +177,7 @@ while [ $# -gt 0 ]; do
 done
 
 # spam does not need to be listed here
-CATEGORIES="c++ c debug fortran gc host java libf2c libgcc libobjc libstdc++ middle-end objc optimization other profiling target"
+CATEGORIES="c++ c debug fortran gc host java libf2c libgcc libobjc libstdc++ middle-end objc optimization other profiling target web"
 
 case "$FORMAT" in
   lisp) echo "$CATEGORIES" | \
@@ -206,11 +206,11 @@ if [ -z "$SEVERITY_C" ]; then
 fi
 PRIORITY_C='<[ low | medium | high ] (one line)>'
 CATEGORY_C='<choose from the list of categories above (one line)>'
-CLASS_C='<[ sw-bug | doc-bug | change-request | support ] (one line)>'
+CLASS_C='<[ doc-bug | accepts-illegal | rejects-legal | wrong-code | ice-on-legal-code| ice-on-illegal-code | pessimizes-code | sw-bug | change-request | support ] (one line)>'
 RELEASE_C='<release number or tag (one line)>'
 ENVIRONMENT_C='<machine, os, target, libraries (multiple lines)>'
 DESCRIPTION_C='<precise description of the problem (multiple lines)>'
-HOW_TO_REPEAT_C='<code/input/activities to reproduce the problem (multiple lines)>'
+HOW_TO_REPEAT_C='<When reporting a compiler error, preprocessor output must be included>'
 FIX_C='<how to correct or work around the problem, if known (multiple lines)>'
 
 # Catch some signals. ($xs kludge needed by Sun /bin/sh)
