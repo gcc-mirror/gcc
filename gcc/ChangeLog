@@ -1,3 +1,7 @@
+2004-06-23  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.h (DEFAULT_MAIN_RETURN): Remove.
+
 2004-06-23  Roger Sayle  <roger@eyesopen.com>
 
 	* convert.c (strip_float_extension): Skip both NOP_EXPR and

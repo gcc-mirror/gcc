@@ -1015,7 +1015,4 @@ do {									\
    indexing purposes) so give the MEM rtx a byte's mode.  */
 #define FUNCTION_MODE QImode
 
-/* This macro definition sets up a default value for `main' to return.  */
-#define DEFAULT_MAIN_RETURN  c_expand_return (integer_zero_node)
-
 #endif
