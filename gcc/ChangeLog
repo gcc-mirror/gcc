@@ -1,3 +1,9 @@
+2003-02-21  Ben Elliston  <bje@redhat.com>
+
+	PR other/5634
+	* doc/install.texi (Configuration): Explain using $HOME instead of
+	the ~ metacharacter when referring to home directories.
+
 2003-02-20  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.c (arm_reload_in_hi): Ensure that the scratch register does
