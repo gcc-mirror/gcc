@@ -2505,7 +2505,8 @@ emit_library_call VPROTO((rtx orgfun, int no_queue, enum machine_mode outmode,
 
   emit_call_1 (fun, 
                get_identifier (XSTR (orgfun, 0)), 
-	       build_function_type (type_for_mode (outmode, 0), NULL_TREE),
+	       build_function_type (outmode == VOIDmode ? void_type_node
+				    : type_for_mode (outmode, 0), NULL_TREE),
                args_size.constant, 0,
 	       FUNCTION_ARG (args_so_far, VOIDmode, void_type_node, 1),
 	       outmode != VOIDmode ? hard_libcall_value (outmode) : NULL_RTX,
