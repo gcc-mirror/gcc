@@ -445,6 +445,31 @@ size_of_sleb128 (value)
   return size;
 }
 
+/* Given an encoding, return the number of bytes the format occupies.
+   This is only defined for fixed-size encodings, and so does not 
+   include leb128.  */
+
+int
+size_of_encoded_value (encoding)
+     int encoding;
+{
+  if (encoding == DW_EH_PE_omit)
+    return 0;
+
+  switch (encoding & 0x07)
+    {
+    case DW_EH_PE_absptr:
+      return POINTER_SIZE / BITS_PER_UNIT;
+    case DW_EH_PE_udata2:
+      return 2;
+    case DW_EH_PE_udata4:
+      return 4;
+    case DW_EH_PE_udata8:
+      return 8;
+    }
+  abort ();
+}
+
 /* Output an unsigned LEB128 quantity.  */
 
 void
