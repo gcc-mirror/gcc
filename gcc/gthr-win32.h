@@ -65,6 +65,10 @@ Boston, MA 02111-1307, USA.  */
 #define __GTHREADS 1
 
 #include <windows.h>
+#include <errno.h>
+#ifdef __MINGW32__
+#include <_mingw.h>
+#endif
 
 #ifdef _LIBOBJC
 

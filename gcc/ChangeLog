@@ -1,3 +1,8 @@
+2001-01-22  Thomas Pfaff  <tpfaff@gmx.net>
+
+	* gthr-win32.h: Include errno.h to get a declaration for
+	EINVAL and _mingw.h if the target is mingw32.
+
 2001-01-22  Andres Felipe Vargas <avargas@teletulua.com.co>
 
 	* cpp.texi: Correct typos.
