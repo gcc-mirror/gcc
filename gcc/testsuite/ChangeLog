@@ -1,3 +1,22 @@
+2002-10-21  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* lib/profopt.exp (profopt-cleanup): New argument TESTCASE.
+	Remove only files with the same base name as the test case.
+	(profopt-perf-value): Pass TESTCASE to profopt-cleanup.
+	(profopt-execute): Likewise.  Also, remove old profiling
+	and performance data files before running the tests.
+
+	* gcc.misc-tests/bprob.exp: Remove profopt-cleanup calls.
+	* g++.dg/bprob/bprob.exp: Likewise.
+	* g77.dg/bprob/bprob.exp: Likewise.  Also, relax regexp
+	to allow more general test case names.
+
+	* g++.dg/bprob/bprob-1.C: Rename to ...
+	* g++.dg/bprob/g++-bprob-1.C: ... this.
+
+	* g77.dg/bprob/bprob-1.f: Rename to ...
+	* g77.dg/bprob/g77-bprob-1.f: ... this.
+
 2002-10-21  Zack Weinberg  <zack@codesourcery.com>
 
 	* gcc.dg/noncompile/920923-1.c: Prevent spurious regressions with

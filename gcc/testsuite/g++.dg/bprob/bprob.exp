@@ -51,9 +51,6 @@ if $tracelevel then {
 # Load support procs.
 load_lib profopt.exp
 
-# Clean up existing .da files.
-profopt-cleanup da
-
 # Main loop.
 foreach src [lsort [glob -nocomplain $srcdir/$subdir/*.C]] {
     # If we're only testing specific files and this isn't one of them, skip it.
