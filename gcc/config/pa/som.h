@@ -206,83 +206,14 @@ do {								\
 
 #define TARGET_ASM_FILE_START pa_som_file_start
 
-/* Select and return a TEXT_SECTION_ASM_OP string.  */
+/* String to output before text.  */
 #define TEXT_SECTION_ASM_OP som_text_section_asm_op ()
 
-/* Output before code in the default text section.  */
-#define DEFAULT_TEXT_SECTION_ASM_OP "\t.SPACE $TEXT$\n\t.SUBSPA $CODE$"
-
-/* Output before text in a new subspace.  This allows the linker to
-   place stubs between functions.  */
-#define NEW_TEXT_SECTION_ASM_OP "\t.SPACE $TEXT$\n\t.NSUBSPA $CODE$"
-    
-/* Output before text in a new one-only subspace.  */
-#define ONE_ONLY_TEXT_SECTION_ASM_OP "\t.SPACE $TEXT$\n\
-\t.NSUBSPA $CODE$,QUAD=0,ALIGN=8,ACCESS=44,SORT=24,COMDAT"
-
-/* Output before read-only data.  */
-#define READONLY_DATA_ASM_OP "\t.SPACE $TEXT$\n\t.SUBSPA $LIT$\n"
-
-/* Output before one-only readonly data.  We make readonly data one only
-   by creating a new $LIT$ subspace in $TEXT$ with the comdat flag.  */
-#define ONE_ONLY_READONLY_DATA_SECTION_ASM_OP "\t.SPACE $TEXT$\n\
-\t.NSUBSPA $LIT$,QUAD=0,ALIGN=8,ACCESS=0x2c,SORT=16,COMDAT\n"
-
-/* Output before writable data.  */
+/* String to output before writable data.  */
 #define DATA_SECTION_ASM_OP "\t.SPACE $PRIVATE$\n\t.SUBSPA $DATA$\n"
 
-/* Output before one-only data.  We make data one only by creating
-   a new $DATA$ subspace in $PRIVATE$ with the comdat flag.  */
-#define ONE_ONLY_DATA_SECTION_ASM_OP "\t.SPACE $PRIVATE$\n\
-\t.NSUBSPA $DATA$,QUAD=1,ALIGN=8,ACCESS=31,SORT=24,COMDAT\n"
-
-/* Output before uninitialized data.  */
+/* String to output before uninitialized data.  */
 #define BSS_SECTION_ASM_OP "\t.SPACE $PRIVATE$\n\t.SUBSPA $BSS$\n"
-
-#define EXTRA_SECTIONS							\
-  in_readonly_data,							\
-  in_one_only_readonly_data,						\
-  in_one_only_data
-
-#define EXTRA_SECTION_FUNCTIONS						\
-  READONLY_DATA_FUNCTION						\
-  ONE_ONLY_READONLY_DATA_SECTION_FUNCTION				\
-  ONE_ONLY_DATA_SECTION_FUNCTION					\
-  FORGET_SECTION_FUNCTION
-
-#define READONLY_DATA_FUNCTION						\
-void									\
-readonly_data (void)							\
-{									\
-  if (in_section != in_readonly_data)					\
-    {									\
-      in_section = in_readonly_data;					\
-      fputs (READONLY_DATA_ASM_OP, asm_out_file);			\
-    }									\
-}									\
-
-#define ONE_ONLY_READONLY_DATA_SECTION_FUNCTION				\
-void									\
-one_only_readonly_data_section (void)					\
-{									\
-  in_section = in_one_only_readonly_data;				\
-  fputs (ONE_ONLY_READONLY_DATA_SECTION_ASM_OP, asm_out_file);		\
-}									\
-
-#define ONE_ONLY_DATA_SECTION_FUNCTION					\
-void									\
-one_only_data_section (void)						\
-{									\
-  in_section = in_one_only_data;					\
-  fputs (ONE_ONLY_DATA_SECTION_ASM_OP, asm_out_file);			\
-}
-
-#define FORGET_SECTION_FUNCTION						\
-void									\
-forget_section (void)							\
-{									\
-  in_section = no_section;						\
-}									\
 
 /* FIXME: HPUX ld generates incorrect GOT entries for "T" fixups
    which reference data within the $TEXT$ space (for example constant
@@ -296,7 +227,8 @@ forget_section (void)							\
    $TEXT$ space during PIC generation.  Instead place all constant
    data into the $PRIVATE$ subspace (this reduces sharing, but it
    works correctly).  */
-#define READONLY_DATA_SECTION (flag_pic ? data_section : readonly_data)
+#define READONLY_DATA_SECTION \
+  (flag_pic ? data_section : som_readonly_data_section)
 
 /* We must not have a reference to an external symbol defined in a
    shared library in a readonly section, else the SOM linker will

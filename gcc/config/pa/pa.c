@@ -9236,27 +9236,18 @@ cmpib_comparison_operator (rtx op, enum machine_mode mode)
 	      || GET_CODE (op) == LEU));
 }
 
-#ifndef ONE_ONLY_TEXT_SECTION_ASM_OP
-#define ONE_ONLY_TEXT_SECTION_ASM_OP ""
-#endif
-
-#ifndef NEW_TEXT_SECTION_ASM_OP
-#define NEW_TEXT_SECTION_ASM_OP ""
-#endif
-
-#ifndef DEFAULT_TEXT_SECTION_ASM_OP
-#define DEFAULT_TEXT_SECTION_ASM_OP ""
-#endif
-
-/* Select and return a TEXT_SECTION_ASM_OP for the current function.
+/* Return a string to output before text in the current function.
 
    This function is only used with SOM.  Because we don't support
    named subspaces, we can only create a new subspace or switch back
-   into the default text subspace.  */
+   to the default text subspace.  */
 const char *
 som_text_section_asm_op (void)
 {
-  if (TARGET_SOM && TARGET_GAS)
+  if (!TARGET_SOM)
+    return "";
+
+  if (TARGET_GAS)
     {
       if (cfun && !cfun->machine->in_nsubspa)
 	{
@@ -9269,9 +9260,10 @@ som_text_section_asm_op (void)
 	  if (cfun->decl
 	      && DECL_ONE_ONLY (cfun->decl)
 	      && !DECL_WEAK (cfun->decl))
-	    return ONE_ONLY_TEXT_SECTION_ASM_OP;
+	    return
+ "\t.SPACE $TEXT$\n\t.NSUBSPA $CODE$,QUAD=0,ALIGN=8,ACCESS=44,SORT=24,COMDAT";
 
-	  return NEW_TEXT_SECTION_ASM_OP;
+	  return "\t.SPACE $TEXT$\n\t.NSUBSPA $CODE$";
 	}
       else
 	{
@@ -9279,13 +9271,13 @@ som_text_section_asm_op (void)
 	     function has been completed.  So, we are changing to the
 	     text section to output debugging information.  Do this in
 	     the default text section.  We need to forget that we are
-	     in the text section so that text_section will call us the
-	     next time around.  */
+	     in the text section so that the function text_section in
+	     varasm.c will call us the next time around.  */
 	  forget_section ();
 	}
     }
 
-  return DEFAULT_TEXT_SECTION_ASM_OP;
+  return "\t.SPACE $TEXT$\n\t.SUBSPA $CODE$";
 }
 
 /* On hpux10, the linker will give an error if we have a reference
@@ -9308,7 +9300,7 @@ pa_select_section (tree exp, int reloc,
       if (TARGET_SOM
 	  && DECL_ONE_ONLY (exp)
 	  && !DECL_WEAK (exp))
-	one_only_readonly_data_section ();
+	som_one_only_readonly_data_section ();
       else
 	readonly_data_section ();
     }
@@ -9320,7 +9312,7 @@ pa_select_section (tree exp, int reloc,
 	   && DECL_ONE_ONLY (exp)
 	   && !DECL_WEAK (exp)
 	   && DECL_INITIAL (exp))
-    one_only_data_section ();
+    som_one_only_data_section ();
   else
     data_section ();
 }
