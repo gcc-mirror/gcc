@@ -78,4 +78,8 @@ extern void partition_print             PARAMS((partition,
 #define partition_find(partition__, element__) \
     ((partition__)->elements[(element__)].class_element)
 
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
+
 #endif /* _PARTITION_H */
