@@ -1,5 +1,13 @@
 1999-02-19  Craig Burley  <craig@jcb-sc.com>
 
+	* bugs0.texi, bugs.texi, install0.texi, g77install.texi,
+	news0.texi, news.texi: Update copyright dates.
+	Clarify which files are source, which are derived,
+	and remind maintainers where copyright dates are sourced.
+	* BUGS, INSTALL, NEWS: Regenerated.
+
+1999-02-19  Craig Burley  <craig@jcb-sc.com>
+
 	* global.c (ffeglobal_ref_progunit_): Warn about a function
 	definition that disagrees with the type of a previous reference.
 	Improve commentary.  Fix a couple of minor bugs.  Clean up

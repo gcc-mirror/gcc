@@ -1,6 +1,10 @@
-@c Copyright (C) 1995-1997 Free Software Foundation, Inc.
+@c Copyright (C) 1995-1999 Free Software Foundation, Inc.
 @c This is part of the G77 manual.
 @c For copying conditions, see the file g77.texi.
+
+@c When changing the above copyright notice, be sure to
+@c change the one in `news0.texi' accordingly, to effect
+@c the change in the derived file `NEWS'.
 
 @c The text of this file appears in the file BUGS
 @c in the G77 distribution, as well as in the G77 manual.
