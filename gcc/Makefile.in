@@ -351,7 +351,7 @@ C_OBJS = c-parse.o c-lang.o c-lex.o \
    c-decl.o c-typeck.o c-convert.o c-aux-info.o c-common.o c-pragma.o
 
 # Language-specific object files for Objectionable C.
-OBJC_OBJS = objc-parse.o objc-actions.o \
+OBJC_OBJS = objc-parse.o objc-act.o \
    c-lex.o c-decl.o c-typeck.o c-convert.o c-aux-info.o c-common.o c-pragma.o
 
 # Language-specific object files for C++.
@@ -794,15 +794,15 @@ collect2.o : collect2.c $(CONFIG_H) gstab.h
 # Objectionable C language specific files.
 
 objc-parse.o : $(srcdir)/objc-parse.c $(CONFIG_H) $(TREE_H) c-lex.h \
-   c-tree.h input.h flags.h objc-actions.h
+   c-tree.h input.h flags.h objc-act.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c $(srcdir)/objc-parse.c
 $(srcdir)/objc-parse.c : $(srcdir)/objc-parse.y
 	cd $(srcdir); $(BISON) $(BISONFLAGS) objc-parse.y -o objc-parse.c
 $(srcdir)/objc-parse.y: $(srcdir)/c-parse.in $(srcdir)/cond.awk
 	cd $(srcdir); awk -f cond.awk objc=1 c-parse.in > objc-parse.y
 
-objc-actions.o : objc-actions.c $(CONFIG_H) $(TREE_H) c-tree.h c-lex.h \
-   flags.h objc-actions.h
+objc-act.o : objc-act.c $(CONFIG_H) $(TREE_H) c-tree.h c-lex.h \
+   flags.h objc-act.h
 
 # A file used by all variants of C.
 
