@@ -5,8 +5,8 @@
 #include <alloca.h>
 #endif
 
-/* We do have _sys_siglist, but the declaration in <signal.h> conflicts with
-   the declarations in collect2.c and mips-tfile.c, so just pretend that we
-   don't have it.  */
+/* We have _sys_siglist, but the declaration in <signal.h> conflicts with
+   the declarations in collect2.c and mips-tfile.c, so disable the declarations
+   in those files.  */
 
-#define NO_SYS_SIGLIST
+#define DONT_DECLARE_SYS_SIGLIST
