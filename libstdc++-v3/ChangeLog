@@ -1,6 +1,7 @@
-2002-05-14  Release Manager
+2002-05-16  Phil Edwards  <pme@gcc.gnu.org>
 
-	* GCC 3.1 Released.
+	* docs/html/faq/index.html:  Update not-a-bug list with basic_file.h.
+	* docs/html/faq/index.txt:  Regenerate.
 
 2002-05-14  Release Manager
 

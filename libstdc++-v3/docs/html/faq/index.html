@@ -77,7 +77,7 @@
            <li><a href="#4_4_interface">The g++-3 headers are
                                <strong>not ours</strong></a>
            <li><a href="#4_4_glibc">compilation errors from streambuf.h</a>
-           <li><a href="#4_4_checks">errors about <em>*Cconcept</em> and
+           <li><a href="#4_4_checks">errors about <em>*Concept</em> and
                                <em>constraints</em> in the STL...</a>
            <li><a href="#4_4_dlsym">program crashes when using library code
                                in a dynamically-loaded library</a>
@@ -487,9 +487,7 @@ which is no longer available, thanks deja...-->
 
    <p>For 3.0.1, the most common &quot;bug&quot; is an apparently missing
       &quot;<code>../</code>&quot; in include/Makefile, resulting in files
-      like gthr.h and gthr-single.h not being found.
-   </p>
-   <p>Please read
+      like gthr.h and gthr-single.h not being found.  Please read
       <a href="http://gcc.gnu.org/install/configure.html">the configuration
       instructions for GCC</a>,
       specifically the part about configuring in a separate build directory,
@@ -497,6 +495,18 @@ which is no longer available, thanks deja...-->
       is fragile, is rarely tested, and tends to break, as in this case.
       This was fixed for 3.0.2.
    </p>
+
+   <p>For 3.1, the most common &quot;bug&quot; is a parse error when using
+      <code>&lt;fstream&gt;</code>, ending with a message,
+      &quot;<code>bits/basic_file.h:52: parse error before `{'
+      token</code>.&quot;  Please read
+      <a href="http://gcc.gnu.org/install/">the installation instructions for
+      GCC</a>, specifically the part about not installing newer versions on
+      top of older versions.  If you install 3.1 over a 3.0.x release, then
+      the wrong basic_file.h header will be found (its location changed
+      between releases).
+   </p>
+
    <p><strong>Please do not report these as bugs.  We know about them.</strong>
       Reporting this -- or any other problem that's already been fixed --
       hinders the development of GCC, because we have to take time to
