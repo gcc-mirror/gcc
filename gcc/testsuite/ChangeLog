@@ -1,3 +1,8 @@
+2002-02-02  Richard Henderson  <rth@redhat.com>
+
+	* gcc.c-torture/execute/991118-1.c: Revert 2002-01-29 change.
+	* gcc.c-torture/execute/bf64-1.c: Likewise.
+
 2002-02-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/20020201-2.c: New test.
