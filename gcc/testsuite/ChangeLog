@@ -1,3 +1,7 @@
+Tue Feb 18 23:28:53 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/funcorder.c: New test.
+
 2003-02-18  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* gcc.c-torture/execute/20030218-1.c: New.

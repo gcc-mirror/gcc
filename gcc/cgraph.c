@@ -420,11 +420,6 @@ cgraph_finalize_compilation_unit ()
   ggc_collect ();
 }
 
-/* Expand all functions that must be output.  */
-
-#define NPREDECESORS(node) ((size_t) (node)->aux)
-#define SET_NPREDECESORS(node, n) ((node)->aux = (void *) (size_t) (n))
-
 /* Figure out what functions we want to assemble.  */
 
 static void
@@ -476,56 +471,75 @@ cgraph_expand_function (node)
 static void
 cgraph_expand_functions ()
 {
-  struct cgraph_node *node;
+  struct cgraph_node *node, *node2;
   struct cgraph_node **stack =
     xcalloc (sizeof (struct cgraph_node *), cgraph_n_nodes);
+  struct cgraph_node **order =
+    xcalloc (sizeof (struct cgraph_node *), cgraph_n_nodes);
   int stack_size = 0;
-  struct cgraph_edge *edge;
+  int order_pos = 0;
+  struct cgraph_edge *edge, last;
+  int i;
 
   cgraph_mark_functions_to_output ();
 
+  /*  We have to deal with cycles nicely, so use depth first traversal
+      algorithm.  Ignore the fact that some functions won't need to be output
+      and put them into order as well, so we get dependencies right trought inlined
+      functions.  */
   for (node = cgraph_nodes; node; node = node->next)
-    if (node->output)
+    node->aux = NULL;
+  for (node = cgraph_nodes; node; node = node->next)
+    if (node->output && !node->aux)
       {
-	int n = 0;
-	for (edge = node->callees; edge; edge = edge->next_callee)
-	  if (edge->callee->output)
-	    n++;
-	SET_NPREDECESORS (node, n);
-	if (n == 0)
-	  stack[stack_size++] = node;
-      }
-  while (1)
-    {
-      struct cgraph_node *minnode;
-      while (stack_size)
-	{
-	  node = stack[--stack_size];
-	  node->output = 0;
-
-	  for (edge = node->callers; edge; edge = edge->next_caller)
-	    if (edge->caller->output)
+	node2 = node;
+	if (!node->callers)
+	  node->aux = &last;
+	else
+	  node->aux = node->callers;
+	while (node2)
+	  {
+	    while (node2->aux != &last)
 	      {
-	        SET_NPREDECESORS (edge->caller,
-		    		  NPREDECESORS (edge->caller) - 1);
-		if (!NPREDECESORS (edge->caller))
-		  stack[stack_size++] = edge->caller;
+		edge = node2->aux;
+		if (edge->next_caller)
+		  node2->aux = edge->next_caller;
+		else
+		  node2->aux = &last;
+		if (!edge->caller->aux)
+		  {
+		    if (!edge->caller->callers)
+		      edge->caller->aux = &last;
+		    else
+		      edge->caller->aux = edge->caller->callers;
+		    stack[stack_size++] = node2;
+		    node2 = edge->caller;
+		    break;
+		  }
 	      }
+	    if (node2->aux == &last)
+	      {
+		order[order_pos++] = node2;
+		if (stack_size)
+		  node2 = stack[--stack_size];
+		else
+		  node2 = NULL;
+	      }
+	  }
+      }
+  for (i = order_pos - 1; i >=0; i--)
+    {
+      node = order[i];
+      if (node->output)
+	{
 	  if (!node->reachable)
 	    abort ();
+	  node->output = 0;
 	  cgraph_expand_function (node);
 	}
-      minnode = NULL;
-      /* We found cycle.  Break it and try again.  */
-      for (node = cgraph_nodes; node; node = node->next)
-	if (node->output
-	    && (!minnode
-	        || NPREDECESORS (minnode) > NPREDECESORS (node)))
-	  minnode = node;
-      if (!minnode)
-	return;
-      stack[stack_size++] = minnode;
     }
+  free (stack);
+  free (order);
 }
 
 /* Perform simple optimizations based on callgraph.  */
