@@ -60,6 +60,7 @@ chill			Per Bothner		per@bothner.com
 java			Per Bothner		per@bothner.com
 java			Alexandre Petit-Bianco	apbianco@redhat.com
 mercury			Fergus Henderson	fjh@cs.mu.oz.au
+objective-c		Stan Shebs		shebs@apple.com
 objective-c		Ovidiu Predescu		ovidiu@cup.hp.com
 cpplib			Dave Brolley		brolley@redhat.com
 cpplib			Per Bothner		per@bothner.com
