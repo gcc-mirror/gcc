@@ -291,6 +291,7 @@ __muldi3 (u, v)
 #endif
 
 #ifdef L_udiv_w_sdiv
+#if defined (sdiv_qrnnd)
 USItype
 __udiv_w_sdiv (rp, a1, a0, d)
      USItype *rp, a1, a0, d;
@@ -388,6 +389,13 @@ __udiv_w_sdiv (rp, a1, a0, d)
   *rp = r;
   return q;
 }
+#else
+/* If sdiv_qrnnd doesn't exist, define dummy __udiv_w_sdiv.  */
+USItype
+__udiv_w_sdiv (rp, a1, a0, d)
+     USItype *rp, a1, a0, d;
+{}
+#endif
 #endif
 
 #if (defined (L_udivdi3) || defined (L_divdi3) || \
