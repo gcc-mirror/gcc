@@ -283,19 +283,23 @@ typedef struct fde_accumulator
   fde_vector erratic;
 } fde_accumulator;
 
-static inline void
+static inline int
 start_fde_sort (fde_accumulator *accu, size_t count)
 {
   accu->linear.array = (fde **) malloc (sizeof (fde *) * count);
-  accu->erratic.array = (fde **) malloc (sizeof (fde *) * count);
+  accu->erratic.array = accu->linear.array ?
+      (fde **) malloc (sizeof (fde *) * count) : NULL;
   accu->linear.count = 0;
   accu->erratic.count = 0;
+  
+  return accu->linear.array != NULL;
 }
 
 static inline void
 fde_insert (fde_accumulator *accu, fde *this_fde)
 {
-  accu->linear.array[accu->linear.count++] = this_fde;
+  if (accu->linear.array)
+    accu->linear.array[accu->linear.count++] = this_fde;
 }
 
 /* Split LINEAR into a linear sequence with low values and an erratic
@@ -443,14 +447,25 @@ fde_merge (fde_vector *v1, const fde_vector *v2)
 static fde **
 end_fde_sort (fde_accumulator *accu, size_t count)
 {
-  if (accu->linear.count != count)
+  if (accu->linear.array && accu->linear.count != count)
     abort ();
-  fde_split (&accu->linear, &accu->erratic);
-  if (accu->linear.count + accu->erratic.count != count)
-    abort ();
-  frame_heapsort (&accu->erratic);
-  fde_merge (&accu->linear, &accu->erratic);
-  free (accu->erratic.array);
+  
+  if (accu->erratic.array)
+    {
+      fde_split (&accu->linear, &accu->erratic);
+      if (accu->linear.count + accu->erratic.count != count)
+	abort ();
+      frame_heapsort (&accu->erratic);
+      fde_merge (&accu->linear, &accu->erratic);
+      if (accu->erratic.array)
+        free (accu->erratic.array);
+    }
+  else
+    {
+      /* We've not managed to malloc an erratic array, so heap sort in the
+         linear one.  */
+      frame_heapsort (&accu->linear);
+    }
   return accu->linear.array;
 }
 
@@ -495,9 +510,26 @@ add_fdes (fde *this_fde, fde_accumulator *accu, void **beg_ptr, void **end_ptr)
   *end_ptr = pc_end;
 }
 
+/* search this fde table for the one containing the pc */
+static fde *
+search_fdes (fde *this_fde, void *pc)
+{
+  for (; this_fde->length != 0; this_fde = next_fde (this_fde))
+    {
+      /* Skip CIEs and linked once FDE entries.  */
+      if (this_fde->CIE_delta == 0 || this_fde->pc_begin == 0)
+	continue;
+
+      if ((uaddr)((char *)pc - (char *)this_fde->pc_begin) < this_fde->pc_range)
+	return this_fde;
+    }
+  return NULL;
+}
+
 /* Set up a sorted array of pointers to FDEs for a loaded object.  We
    count up the entries before allocating the array because it's likely to
-   be faster.  */
+   be faster.  We can be called multiple times, should we have failed to
+   allocate a sorted fde array on a previous occasion.  */
 
 static void
 frame_init (struct object* ob)
@@ -505,8 +537,11 @@ frame_init (struct object* ob)
   size_t count;
   fde_accumulator accu;
   void *pc_begin, *pc_end;
+  fde **array;
 
-  if (ob->fde_array)
+  if (ob->pc_begin)
+    count = ob->count;
+  else if (ob->fde_array)
     {
       fde **p = ob->fde_array;
       for (count = 0; *p; ++p)
@@ -514,10 +549,11 @@ frame_init (struct object* ob)
     }
   else
     count = count_fdes (ob->fde_begin);
-
   ob->count = count;
 
-  start_fde_sort (&accu, count);
+  if (!start_fde_sort (&accu, count) && ob->pc_begin)
+    return;
+
   pc_begin = (void*)(uaddr)-1;
   pc_end = 0;
 
@@ -530,7 +566,9 @@ frame_init (struct object* ob)
   else
     add_fdes (ob->fde_begin, &accu, &pc_begin, &pc_end);
 
-  ob->fde_array = end_fde_sort (&accu, count);
+  array = end_fde_sort (&accu, count);
+  if (array)
+    ob->fde_array = array;
   ob->pc_begin = pc_begin;
   ob->pc_end = pc_end;
 }
@@ -546,6 +584,7 @@ find_fde (void *pc)
   init_object_mutex_once ();
   __gthread_mutex_lock (&object_mutex);
 
+  /* Linear search through the objects, to find the one containing the pc. */
   for (ob = objects; ob; ob = ob->next)
     {
       if (ob->pc_begin == 0)
@@ -554,25 +593,54 @@ find_fde (void *pc)
 	break;
     }
 
-  __gthread_mutex_unlock (&object_mutex);
-
   if (ob == 0)
-    return 0;
-
-  /* Standard binary search algorithm.  */
-  for (lo = 0, hi = ob->count; lo < hi; )
     {
-      size_t i = (lo + hi) / 2;
-      fde *f = ob->fde_array[i];
-
-      if (pc < f->pc_begin)
-	hi = i;
-      else if (pc >= f->pc_begin + f->pc_range)
-	lo = i + 1;
-      else
-	return f;
+      __gthread_mutex_unlock (&object_mutex);
+      return 0;
     }
 
+  if (!ob->fde_array || (void *)ob->fde_array == (void *)ob->fde_begin)
+    frame_init (ob);
+
+  if (ob->fde_array && (void *)ob->fde_array != (void *)ob->fde_begin)
+    {
+      __gthread_mutex_unlock (&object_mutex);
+      
+      /* Standard binary search algorithm.  */
+      for (lo = 0, hi = ob->count; lo < hi; )
+	{
+	  size_t i = (lo + hi) / 2;
+	  fde *f = ob->fde_array[i];
+
+	  if (pc < f->pc_begin)
+	    hi = i;
+	  else if (pc >= f->pc_begin + f->pc_range)
+	    lo = i + 1;
+	  else
+	    return f;
+	}
+    }
+  else
+    {
+      /* Long slow labourious linear search, cos we've no memory. */
+      fde *f;
+      
+      if (ob->fde_array)
+	{
+	  fde **p = ob->fde_array;
+	  
+	  for (; *p; ++p)
+	    {
+	      f = search_fdes (*p, pc);
+	      if (f)
+		break;
+	    }
+	}
+      else
+	f = search_fdes (ob->fde_begin, pc);
+      __gthread_mutex_unlock (&object_mutex);
+      return f;
+    }
   return 0;
 }
 
@@ -825,7 +893,7 @@ __deregister_frame_info (void *begin)
 	  *p = (*p)->next;
 
 	  /* If we've run init_frame for this object, free the FDE array.  */
-	  if (ob->pc_begin)
+	  if (ob->fde_array && ob->fde_array != begin)
 	    free (ob->fde_array);
 
 	  __gthread_mutex_unlock (&object_mutex);

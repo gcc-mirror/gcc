@@ -1,3 +1,18 @@
+1999-12-06  Nathan Sidwell  <nathan@acm.org>
+
+	* frame.c (start_fde_sort): Only allocate erratic array, if
+	linear one was allocated. Return allocated flag.
+	(fde_insert): Only insert, if there's a valid array.
+	(fde_end_sort): Split, sort and merge if linear and erratic
+	arrays exist, else just sort linear one.
+	(search_fdes): New function. Linear search through original fde
+	structure.
+	(frame_init): Permit multiple initializations. Cope with
+	memory shortages.
+	(find_fde): Fallback on linear search, if failed to sort array.
+	(__deregister_frame_info): Only free sorted array, if we
+	allocated it.
+
 1999-12-06  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/sparc/sparc.h (MUST_PASS_IN_STACK): New macro.
