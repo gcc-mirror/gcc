@@ -41,7 +41,9 @@
 
 ffi_call_V9:
 _ffi_call_V9:
+.LLFB1:
 	save	%sp, -STACKFRAME, %sp
+.LLCFI0:
 	
 	sub	%sp, %i2, %sp	! alloca() space in stack for frame to set up
 	add	%sp, STACKFRAME+STACK_BIAS, %l0	! %l0 has start of 
@@ -118,8 +120,45 @@ dostruct:
 	std	%f6, [%i4+56]
 	ret
 	 restore
+.LLFE1:
 
 .ffi_call_V9_end:
-        .size    ffi_call_V9,.ffi_call_V9_end-ffi_call_V9
+	.size	ffi_call_V9,.ffi_call_V9_end-ffi_call_V9
+
+	.section	".eh_frame",#alloc,#write
+.LLframe1:
+	.uaword	.LLECIE1-.LLSCIE1	! Length of Common Information Entry
+.LLSCIE1:
+	.uaword	0x0	! CIE Identifier Tag
+	.byte	0x1	! CIE Version
+	.ascii "zR\0"	! CIE Augmentation
+	.byte	0x1	! uleb128 0x1; CIE Code Alignment Factor
+	.byte	0x78	! sleb128 -8; CIE Data Alignment Factor
+	.byte	0xf	! CIE RA Column
+	.byte	0x1	! uleb128 0x1; Augmentation size
+	.byte	0x50	! FDE Encoding (aligned absolute)
+	.byte	0xc	! DW_CFA_def_cfa
+	.byte	0xe	! uleb128 0xe
+	.byte	0xff,0xf	! uleb128 0x7ff
+	.align 8
+.LLECIE1:
+.LLSFDE1:
+	.uaword	.LLEFDE1-.LLASFDE1	! FDE Length
+.LLASFDE1:
+	.uaword	.LLASFDE1-.LLframe1	! FDE CIE offset
+	.align 8
+	.xword	.LLFB1
+	.uaxword	.LLFE1-.LLFB1	! FDE address range
+	.byte	0x0	! uleb128 0x0; Augmentation size
+	.byte	0x4	! DW_CFA_advance_loc4
+	.uaword	.LLCFI0-.LLFB1
+	.byte	0xd	! DW_CFA_def_cfa_register
+	.byte	0x1e	! uleb128 0x1e
+	.byte	0x2d	! DW_CFA_GNU_window_save
+	.byte	0x9	! DW_CFA_register
+	.byte	0xf	! uleb128 0xf
+	.byte	0x1f	! uleb128 0x1f
+	.align 8
+.LLEFDE1:
 
 #endif
