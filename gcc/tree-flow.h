@@ -325,7 +325,6 @@ static inline tree immediate_use (dataflow_t, int);
 static inline dataflow_t get_immediate_uses (tree);
 static inline void set_default_def (tree, tree);
 static inline tree default_def (tree);
-static inline bool may_be_aliased (tree);
 
 /*---------------------------------------------------------------------------
                   Structure representing predictions in tree level.
@@ -554,6 +553,7 @@ extern void dump_points_to_info (FILE *);
 extern void debug_points_to_info (void);
 extern void dump_points_to_info_for (FILE *, tree);
 extern void debug_points_to_info_for (tree);
+extern bool may_be_aliased (tree);
 
 /* Call-back function for walk_use_def_chains().  At each reaching
    definition, a function with this prototype is called.  */

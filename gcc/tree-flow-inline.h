@@ -635,14 +635,6 @@ loop_containing_stmt (tree stmt)
   return bb->loop_father;
 }
 
-/* Return true if VAR may be aliased.  */
-static inline bool
-may_be_aliased (tree var)
-{
-  return (TREE_ADDRESSABLE (var)
-          || decl_function_context (var) != current_function_decl);
-}
-
 /* Return true if VAR is a clobbered by function calls.  */
 static inline bool
 is_call_clobbered (tree var)

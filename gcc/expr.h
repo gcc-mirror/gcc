@@ -556,10 +556,6 @@ extern rtx expr_size (tree);
    if the size can vary or is larger than an integer.  */
 extern HOST_WIDE_INT int_expr_size (tree);
 
-/* Convert a stack slot address ADDR valid in function FNDECL
-   into an address valid in this function (using a static chain).  */
-extern rtx fix_lexical_addr (rtx, tree);
-
 /* Return the address of the trampoline for entering nested fn FUNCTION.  */
 extern rtx trampoline_address (tree);
 

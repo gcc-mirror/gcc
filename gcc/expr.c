@@ -6368,33 +6368,15 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
       /* Show we haven't gotten RTL for this yet.  */
       temp = 0;
 
-      /* Handle variables inherited from containing functions.  */
+      /* Variables inherited from containing functions should have
+	 been lowered by this point.  */
       context = decl_function_context (exp);
-
-      if (context != 0 && context != current_function_decl
-	  /* If var is static, we don't need a static chain to access it.  */
-	  && ! (MEM_P (DECL_RTL (exp))
-		&& CONSTANT_P (XEXP (DECL_RTL (exp), 0))))
-	{
-	  rtx addr;
-
-	  /* Mark as non-local and addressable.  */
-	  DECL_NONLOCAL (exp) = 1;
-	  if (DECL_NO_STATIC_CHAIN (current_function_decl))
-	    abort ();
-	  lang_hooks.mark_addressable (exp);
-	  if (!MEM_P (DECL_RTL (exp)))
-	    abort ();
-	  addr = XEXP (DECL_RTL (exp), 0);
-	  if (MEM_P (addr))
-	    addr
-	      = replace_equiv_address (addr,
-				       fix_lexical_addr (XEXP (addr, 0), exp));
-	  else
-	    addr = fix_lexical_addr (addr, exp);
-
-	  temp = replace_equiv_address (DECL_RTL (exp), addr);
-	}
+      if (context != 0
+	  && context != current_function_decl
+	  && !TREE_STATIC (exp)
+	  /* ??? C++ creates functions that are not TREE_STATIC.  */
+	  && TREE_CODE (exp) != FUNCTION_DECL)
+	abort ();
 
       /* This is the case of an array whose size is to be determined
 	 from its initializer, while the initializer is still being parsed.

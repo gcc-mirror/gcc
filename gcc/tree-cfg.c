@@ -459,16 +459,11 @@ static void
 make_ctrl_stmt_edges (basic_block bb)
 {
   tree last = last_stmt (bb);
-  tree first = first_stmt (bb);
 
 #if defined ENABLE_CHECKING
   if (last == NULL_TREE)
     abort();
 #endif
-
-  if (TREE_CODE (first) == LABEL_EXPR
-      && DECL_NONLOCAL (LABEL_EXPR_LABEL (first)))
-    make_edge (ENTRY_BLOCK_PTR, bb, EDGE_ABNORMAL);
 
   switch (TREE_CODE (last))
     {
@@ -2541,10 +2536,8 @@ computed_goto_p (tree t)
 bool
 simple_goto_p (tree expr)
 {
-  return  (TREE_CODE (expr) == GOTO_EXPR
-	   && TREE_CODE (GOTO_DESTINATION (expr)) == LABEL_DECL
-	   && (decl_function_context (GOTO_DESTINATION (expr))
-	       == current_function_decl));
+  return (TREE_CODE (expr) == GOTO_EXPR
+	  && TREE_CODE (GOTO_DESTINATION (expr)) == LABEL_DECL);
 }
 
 
