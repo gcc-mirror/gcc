@@ -64,6 +64,8 @@ extern int bit_operand PARAMS ((rtx, enum machine_mode));
 extern int bit_memory_operand PARAMS ((rtx, enum machine_mode));
 extern int const_le_2_operand PARAMS ((rtx, enum machine_mode));
 extern int const_le_6_operand PARAMS ((rtx, enum machine_mode));
+extern int const_int_qi_operand PARAMS ((rtx, enum machine_mode));
+extern int const_int_hi_operand PARAMS ((rtx, enum machine_mode));
 extern int incdec_operand PARAMS ((rtx, enum machine_mode));
 extern int bit_operator PARAMS ((rtx, enum machine_mode));
 extern int nshift_operator PARAMS ((rtx, enum machine_mode));

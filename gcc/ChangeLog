@@ -1,3 +1,11 @@
+2002-12-29  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300-protos.h: Add prototypes for
+	const_int_qi_operand and const_int_hi_operand.
+	* config/h8300/h8300.c (const_int_qi_operand): New.
+	(const_int_hi_operand): Likewise.
+	* config/h8300/h8300.md (three peepholes): New.
+
 2002-12-28  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* doc/cpp.texi, doc/gcc.texi, doc/gccint.texi, doc/install.texi:
