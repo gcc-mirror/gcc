@@ -2263,7 +2263,7 @@ can_store_by_pieces (len, constfun, constfundata, align)
      PTR constfundata;
      unsigned int align;
 {
-  unsigned HOST_WIDE_INT max_size = MOVE_MAX_PIECES + 1, l;
+  unsigned HOST_WIDE_INT max_size, l;
   HOST_WIDE_INT offset = 0;
   enum machine_mode mode, tmode;
   enum insn_code icode;
@@ -2286,6 +2286,7 @@ can_store_by_pieces (len, constfun, constfundata, align)
     {
       l = len;
       mode = VOIDmode;
+      max_size = MOVE_MAX_PIECES + 1;
       while (max_size > 1)
 	{
 	  for (tmode = GET_CLASS_NARROWEST_MODE (MODE_INT);
