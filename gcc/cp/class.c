@@ -48,31 +48,6 @@ static tree *current_class_base, *current_class_stack;
 static int current_class_stacksize;
 int current_class_depth;
 
-struct class_level
-{
-  /* The previous class level.  */
-  struct class_level *level_chain;
-
-  /* The class instance variable, as a PARM_DECL.  */
-  tree decl;
-  /* The class instance variable, as an object.  */
-  tree object;
-  /* The virtual function table pointer
-     for the class instance variable.  */
-  tree vtable_decl;
-
-  /* Name of the current class.  */
-  tree name;
-  /* Type of the current class.  */
-  tree type;
-
-  /* Flags for this class level.  */
-  int this_is_variable;
-  int memoized_lookups;
-  int save_memoized;
-  int unused;
-};
-
 /* The current_class_ptr is the pointer to the current class.
    current_class_ref is the actual current class.  */
 tree current_class_ptr, current_class_ref;
@@ -4627,7 +4602,6 @@ pushclass (type, modify)
      int modify;
 {
   type = TYPE_MAIN_VARIANT (type);
-  push_memoized_context (type, modify);
 
   current_class_depth++;
   *current_class_stack++ = current_class_name;
@@ -4775,8 +4749,6 @@ popclass (modify)
   current_class_depth--;
   current_class_type = *--current_class_stack;
   current_class_name = *--current_class_stack;
-
-  pop_memoized_context (modify);
 
  ret:
   ;

@@ -12478,8 +12478,6 @@ start_function (declspecs, declarator, attrs, pre_parsed_p)
     }
   else
     {
-      if (!DECL_STATIC_FUNCTION_P (decl1))
-	push_memoized_context (NULL_TREE, 1);
       current_class_ptr = current_class_ref = NULL_TREE;
     }
 
@@ -13225,8 +13223,6 @@ finish_function (lineno, call_poplevel, nested)
       ctype = current_class_type;
       pop_nested_class (1);
     }
-  else
-    pop_memoized_context (1);
 
   /* Must mark the RESULT_DECL as being in this function.  */
   DECL_CONTEXT (DECL_RESULT (fndecl)) = fndecl;

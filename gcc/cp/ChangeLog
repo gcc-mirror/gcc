@@ -1,5 +1,15 @@
 1998-08-27  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* search.c: Tear out all mi_matrix and memoize code.
+	(lookup_field, lookup_fnfields): Use scratch_tree_cons.
+	* lang-options.h: Remove documentation for -fhandle-exceptions,
+	-fmemoize-lookups and -fsave-memoized.
+	* cp-tree.h: Lose mi_matrix and memoize support.
+	* decl2.c: Ignore -fmemoize-lookups and -fsave-memoized.
+	* class.c: Lose struct class_level.
+	(pushclass, popclass): Lose memoize support.
+	* init.c (build_offset_ref): Likewise.
+
 	Never change BINFO_INHERITANCE_CHAIN.
 	* init.c (emit_base_init): Change modification of
 	BINFO_INHERITANCE_CHAIN to an assert.

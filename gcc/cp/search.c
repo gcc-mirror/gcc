@@ -76,8 +76,6 @@ pop_stack_level (stack)
 #define search_level stack_level
 static struct search_level *search_stack;
 
-static void clear_memoized_cache PROTO((void));
-static tree make_memoized_table_entry PROTO((tree, tree, int));
 static tree get_abstract_virtuals_1 PROTO((tree, int, tree));
 static tree get_vbase_1 PROTO((tree, tree, unsigned int *));
 static tree convert_pointer_to_vbase PROTO((tree, tree));
@@ -104,20 +102,11 @@ static void fixup_virtual_upcast_offsets
 	       tree *));
 static int markedp PROTO((tree));
 static int unmarkedp PROTO((tree));
-#ifdef MI_MATRIX
-static int numberedp PROTO((tree));
-static int unnumberedp PROTO((tree));
-#endif
 static int marked_vtable_pathp PROTO((tree));
 static int unmarked_vtable_pathp PROTO((tree));
 static int marked_new_vtablep PROTO((tree));
 static int unmarked_new_vtablep PROTO((tree));
 static int dfs_debug_unmarkedp PROTO((tree));
-#ifdef MI_MATRIX
-static void dfs_number PROTO((tree));
-static void dfs_unnumber PROTO((tree));
-static void dfs_record_inheritance PROTO((tree));
-#endif
 static void dfs_debug_mark PROTO((tree));
 static void dfs_find_vbases PROTO((tree));
 static void dfs_clear_vbase_slots PROTO((tree));
@@ -136,14 +125,6 @@ static struct search_level *push_search_level
 	PROTO((struct stack_level *, struct obstack *));
 static struct search_level *pop_search_level
 	PROTO((struct stack_level *));
-static struct type_level *push_type_level
-	PROTO((struct stack_level *, struct obstack *));
-static struct type_level *pop_type_level
-	PROTO((struct type_level *));
-static tree my_tree_cons PROTO((tree, tree, tree));
-static tree my_build_string PROTO((char *));
-static struct memoized_entry * my_new_memoized_entry
-	PROTO((struct memoized_entry *));
 static HOST_WIDE_INT breadth_first_search
 	PROTO((tree, int (*) (tree, int), int (*) (tree, int)));
 
@@ -175,39 +156,11 @@ pop_search_level (obstack)
   return stack;
 }
 
-/* Search memoization.  */
-
-struct type_level
-{
-  struct stack_level base;
-
-  /* First object allocated in obstack of entries.  */
-  char *entries;
-
-  /* Number of types memoized in this context.  */
-  int len;
-
-  /* Type being memoized; save this if we are saving
-     memoized contexts.  */
-  tree type;
-};
-
 /* Obstack used for memoizing member and member function lookup.  */
 
-static struct obstack type_obstack, type_obstack_entries;
-static struct type_level *type_stack;
 static tree _vptr_name;
 
-/* Make things that look like tree nodes, but allocate them
-   on type_obstack_entries.  */
-static int my_tree_node_counter;
-
-extern int flag_memoize_lookups, flag_save_memoized_contexts;
-
 /* Variables for gathering statistics.  */
-static int my_memoized_entry_counter;
-static int memoized_fast_finds[2], memoized_adds[2], memoized_fast_rejects[2];
-static int memoized_fields_searched[2];
 #ifdef GATHER_STATISTICS
 static int n_fields_searched;
 static int n_calls_lookup_field, n_calls_lookup_field_1;
@@ -217,259 +170,9 @@ static int n_outer_fields_searched;
 static int n_contexts_saved;
 #endif /* GATHER_STATISTICS */
 
-/* Local variables to help save memoization contexts.  */
-static tree prev_type_memoized;
-static struct type_level *prev_type_stack;
-
 /* This list is used by push_class_decls to know what decls need to
    be pushed into class scope.  */
 static tree closed_envelopes = NULL_TREE;
-
-/* Allocate a level of type memoization context.  */
-
-static struct type_level *
-push_type_level (stack, obstack)
-     struct stack_level *stack;
-     struct obstack *obstack;
-{
-  struct type_level tem;
-
-  tem.base.prev = stack;
-
-  obstack_finish (&type_obstack_entries);
-  tem.entries = (char *) obstack_base (&type_obstack_entries);
-  tem.len = 0;
-  tem.type = NULL_TREE;
-
-  return (struct type_level *)push_stack_level (obstack, (char *)&tem, sizeof (tem));
-}
-
-/* Discard a level of type memoization context.  */
-
-static struct type_level *
-pop_type_level (stack)
-     struct type_level *stack;
-{
-  obstack_free (&type_obstack_entries, stack->entries);
-  return (struct type_level *)pop_stack_level ((struct stack_level *)stack);
-}
-
-/* Make something that looks like a TREE_LIST, but
-   do it on the type_obstack_entries obstack.  */
-
-static tree
-my_tree_cons (purpose, value, chain)
-     tree purpose, value, chain;
-{
-  tree p;
-  struct obstack *ambient_obstack = current_obstack;
-  current_obstack = &type_obstack_entries;
-  p = tree_cons (purpose, value, chain);
-  current_obstack = ambient_obstack;
-  ++my_tree_node_counter;
-  return p;
-}
-
-static tree
-my_build_string (str)
-     char *str;
-{
-  tree p = (tree)obstack_alloc (&type_obstack_entries, sizeof (struct tree_string));
-  ++my_tree_node_counter;
-  TREE_TYPE (p) = 0;
-  ((int *)p)[3] = 0;
-  TREE_SET_CODE (p, STRING_CST);
-  TREE_STRING_POINTER (p) = str;
-  TREE_STRING_LENGTH (p) = strlen (str);
-  return p;
-}
-
-/* Memoizing machinery to make searches for multiple inheritance
-   reasonably efficient.  */
-
-#define MEMOIZE_HASHSIZE 8
-typedef struct memoized_entry
-{
-  struct memoized_entry *chain;
-  int uid;
-  tree data_members[MEMOIZE_HASHSIZE];
-  tree function_members[MEMOIZE_HASHSIZE];
-} *ME;
-
-#define MEMOIZED_CHAIN(ENTRY) (((ME)ENTRY)->chain)
-#define MEMOIZED_UID(ENTRY) (((ME)ENTRY)->uid)
-#define MEMOIZED_FIELDS(ENTRY,INDEX) (((ME)ENTRY)->data_members[INDEX])
-#define MEMOIZED_FNFIELDS(ENTRY,INDEX) (((ME)ENTRY)->function_members[INDEX])
-/* The following is probably a lousy hash function.  */
-#define MEMOIZED_HASH_FN(NODE) (((long)(NODE)>>4)&(MEMOIZE_HASHSIZE - 1))
-
-static struct memoized_entry *
-my_new_memoized_entry (chain)
-     struct memoized_entry *chain;
-{
-  struct memoized_entry *p
-    = (struct memoized_entry *)obstack_alloc (&type_obstack_entries,
-					      sizeof (struct memoized_entry));
-  bzero ((char *) p, sizeof (struct memoized_entry));
-  MEMOIZED_CHAIN (p) = chain;
-  MEMOIZED_UID (p) = ++my_memoized_entry_counter;
-  return p;
-}
-
-/* Clears the deferred pop from pop_memoized_context, if any.  */
-
-static void
-clear_memoized_cache ()
-{
-  if (prev_type_stack)
-    {
-      type_stack = pop_type_level (prev_type_stack);
-      prev_type_memoized = 0;
-      prev_type_stack = 0;
-    }
-}
-
-/* Make an entry in the memoized table for type TYPE
-   that the entry for NAME is FIELD.  */
-
-static tree
-make_memoized_table_entry (type, name, function_p)
-     tree type, name;
-     int function_p;
-{
-  int idx = MEMOIZED_HASH_FN (name);
-  tree entry, *prev_entry;
-
-  /* Since we allocate from the type_obstack, we must pop any deferred
-     levels.  */
-   clear_memoized_cache ();
-
-  memoized_adds[function_p] += 1;
-  if (CLASSTYPE_MTABLE_ENTRY (type) == 0)
-    {
-      obstack_ptr_grow (&type_obstack, type);
-      obstack_blank (&type_obstack, sizeof (struct memoized_entry *));
-      CLASSTYPE_MTABLE_ENTRY (type) = (char *)my_new_memoized_entry ((struct memoized_entry *)0);
-      type_stack->len++;
-      if (type_stack->len * 2 >= type_stack->base.limit)
-	my_friendly_abort (88);
-    }
-  if (function_p)
-    prev_entry = &MEMOIZED_FNFIELDS (CLASSTYPE_MTABLE_ENTRY (type), idx);
-  else
-    prev_entry = &MEMOIZED_FIELDS (CLASSTYPE_MTABLE_ENTRY (type), idx);
-
-  entry = my_tree_cons (name, NULL_TREE, *prev_entry);
-  *prev_entry = entry;
-
-  /* Don't know the error message to give yet.  */
-  TREE_TYPE (entry) = error_mark_node;
-
-  return entry;
-}
-
-/* When a new function or class context is entered, we build
-   a table of types which have been searched for members.
-   The table is an array (obstack) of types.  When a type is
-   entered into the obstack, its CLASSTYPE_MTABLE_ENTRY
-   field is set to point to a new record, of type struct memoized_entry.
-
-   A non-NULL TREE_TYPE of the entry contains an access control error message.
-
-   The slots for the data members are arrays of tree nodes.
-   These tree nodes are lists, with the TREE_PURPOSE
-   of this list the known member name, and the TREE_VALUE
-   as the FIELD_DECL for the member.
-
-   For member functions, the TREE_PURPOSE is again the
-   name of the member functions for that class,
-   and the TREE_VALUE of the list is a pairs
-   whose TREE_PURPOSE is a member functions of this name,
-   and whose TREE_VALUE is a list of known argument lists this
-   member function has been called with.  The TREE_TYPE of the pair,
-   if non-NULL, is an error message to print.  */
-
-/* Tell search machinery that we are entering a new context, and
-   to update tables appropriately.
-
-   TYPE is the type of the context we are entering, which can
-   be NULL_TREE if we are not in a class's scope.
-
-   USE_OLD, if nonzero tries to use previous context.  */
-
-void
-push_memoized_context (type, use_old)
-     tree type;
-     int use_old;
-{
-  int len;
-  tree *tem;
-
-  if (prev_type_stack)
-    {
-      if (use_old && prev_type_memoized == type)
-	{
-#ifdef GATHER_STATISTICS
-	  n_contexts_saved++;
-#endif /* GATHER_STATISTICS */
-	  type_stack = prev_type_stack;
-	  prev_type_stack = 0;
-
-	  tem = &type_stack->base.first[0];
-	  len = type_stack->len;
-	  while (len--)
-	    CLASSTYPE_MTABLE_ENTRY (tem[len*2]) = (char *)tem[len*2+1];
-	  return;
-	}
-      /* Otherwise, need to pop old stack here.  */
-      clear_memoized_cache ();
-    }
-
-  type_stack = push_type_level ((struct stack_level *)type_stack,
-				&type_obstack);
-  type_stack->type = type;
-}
-
-/* Tell search machinery that we have left a context.
-   We do not currently save these contexts for later use.
-   If we wanted to, we could not use pop_search_level, since
-   poping that level allows the data we have collected to
-   be clobbered; a stack of obstacks would be needed.  */
-
-void
-pop_memoized_context (use_old)
-     int use_old;
-{
-  int len;
-  tree *tem = &type_stack->base.first[0];
-
-  if (! flag_save_memoized_contexts)
-    use_old = 0;
-  else if (use_old)
-    {
-      len = type_stack->len;
-      while (len--)
-	tem[len*2+1] = (tree)CLASSTYPE_MTABLE_ENTRY (tem[len*2]);
-
-      /* If there was a deferred pop, we need to pop it now.  */
-      clear_memoized_cache ();
-
-      prev_type_stack = type_stack;
-      prev_type_memoized = type_stack->type;
-    }
-
-  if (flag_memoize_lookups)
-    {
-      len = type_stack->len;
-      while (len--)
-	CLASSTYPE_MTABLE_ENTRY (tem[len*2])
-	  = (char *)MEMOIZED_CHAIN (CLASSTYPE_MTABLE_ENTRY (tem[len*2]));
-    }
-  if (! use_old)
-    type_stack = pop_type_level (type_stack);
-  else
-    type_stack = (struct type_level *)type_stack->base.prev;
-}
 
 /* Get a virtual binfo that is found inside BINFO's hierarchy that is
    the same type as the type given in PARENT.  To be optimal, we want
@@ -1193,10 +896,6 @@ lookup_field (xbasetype, name, protect, want_type)
 
   char *errstr = 0;
 
-  /* Set this to nonzero if we don't know how to compute
-     accurate error messages for access control.  */
-  int idx = MEMOIZED_HASH_FN (name);
-
 #if 0
   /* We cannot search for constructor/destructor names like this.  */
   /* This can't go here, but where should it go?  */
@@ -1232,47 +931,14 @@ lookup_field (xbasetype, name, protect, want_type)
 
   complete_type (type);
 
-  if (CLASSTYPE_MTABLE_ENTRY (type))
-    {
-      tree tem = MEMOIZED_FIELDS (CLASSTYPE_MTABLE_ENTRY (type), idx);
-
-      while (tem && TREE_PURPOSE (tem) != name)
-	{
-	  memoized_fields_searched[0]++;
-	  tem = TREE_CHAIN (tem);
-	}
-      if (tem)
-	{
-	  if (protect && TREE_TYPE (tem))
-	    {
-	      error (TREE_STRING_POINTER (TREE_TYPE (tem)),
-		     IDENTIFIER_POINTER (name),
-		     TYPE_NAME_STRING (DECL_FIELD_CONTEXT (TREE_VALUE (tem))));
-	      return error_mark_node;
-	    }
-	  if (TREE_VALUE (tem) == NULL_TREE)
-	    memoized_fast_rejects[0] += 1;
-	  else
-	    memoized_fast_finds[0] += 1;
-	  return TREE_VALUE (tem);
-	}
-    }
-
 #ifdef GATHER_STATISTICS
   n_calls_lookup_field++;
 #endif /* GATHER_STATISTICS */
-  if (protect && flag_memoize_lookups && ! toplevel_bindings_p ())
-    entry = make_memoized_table_entry (type, name, 0);
-  else
-    entry = 0;
 
   rval = lookup_field_1 (type, name);
 
   if (rval || lookup_fnfields_here (type, name) >= 0)
     {
-      if (entry)
-	TREE_VALUE (entry) = rval;
-
       if (rval)
 	{
 	  if (want_type)
@@ -1339,13 +1005,13 @@ lookup_field (xbasetype, name, protect, want_type)
 	      tree btypes;
 
 	      SET_BINFO_FIELDS_MARKED (base_binfo);
-	      btypes = my_tree_cons (NULL_TREE, base_binfo, basetype_chain);
+	      btypes = scratch_tree_cons (NULL_TREE, base_binfo, basetype_chain);
 	      if (TREE_VIA_VIRTUAL (base_binfo))
-		btypes = my_tree_cons (NULL_TREE,
+		btypes = scratch_tree_cons (NULL_TREE,
 				    TYPE_BINFO (BINFO_TYPE (TREE_VEC_ELT (BINFO_BASETYPES (binfo_h), i))),
 				    btypes);
 	      else
-		btypes = my_tree_cons (NULL_TREE,
+		btypes = scratch_tree_cons (NULL_TREE,
 				    TREE_VEC_ELT (BINFO_BASETYPES (binfo_h), i),
 				    btypes);
 	      obstack_ptr_grow (&search_obstack, btypes);
@@ -1398,7 +1064,7 @@ lookup_field (xbasetype, name, protect, want_type)
 	      if (nval)
 		{
 		  rval = nval;
-		  if (entry || protect)
+		  if (protect)
 		    this_v = compute_access (basetype_path, rval);
 		  /* These may look ambiguous, but they really are not.  */
 		  if (vbase_name_p)
@@ -1424,9 +1090,6 @@ lookup_field (xbasetype, name, protect, want_type)
   {
     tree *tp = search_stack->first;
     tree *search_tail = tp + tail;
-
-    if (entry)
-      TREE_VALUE (entry) = rval;
 
     if (rval_binfo)
       {
@@ -1457,7 +1120,7 @@ lookup_field (xbasetype, name, protect, want_type)
 
     /* If this FIELD_DECL defines its own access level, deal with that.  */
     if (rval && errstr == 0
-	&& ((protect&1) || entry)
+	&& (protect & 1)
 	&& DECL_LANG_SPECIFIC (rval)
 	&& DECL_ACCESS (rval))
       {
@@ -1508,21 +1171,6 @@ lookup_field (xbasetype, name, protect, want_type)
     }
 
  out:
-  if (entry)
-    {
-      if (errstr)
-	{
-	  tree error_string = my_build_string (errstr);
-	  /* Save error message with entry.  */
-	  TREE_TYPE (entry) = error_string;
-	}
-      else
-	{
-	  /* Mark entry as having no error string.  */
-	  TREE_TYPE (entry) = NULL_TREE;
-	}
-    }
-
   if (protect == 2)
     {
       /* If we are not interested in ambiguities, don't report them,
@@ -1707,8 +1355,8 @@ lookup_fnfields (basetype_path, name, complain)
 {
   int head = 0, tail = 0;
   tree type, rval, rval_binfo = NULL_TREE, rvals = NULL_TREE;
-  tree rval_binfo_h = NULL_TREE, entry, binfo, basetype_chain, binfo_h;
-  int find_all = 0;
+  tree rval_binfo_h = NULL_TREE, binfo, basetype_chain, binfo_h;
+  int idx, find_all = 0;
 
   /* rval_binfo is the binfo associated with the found member, note,
      this can be set with useful information, even when rval is not
@@ -1729,10 +1377,6 @@ lookup_fnfields (basetype_path, name, complain)
 
   char *errstr = 0;
 
-  /* Set this to nonzero if we don't know how to compute
-     accurate error messages for access control.  */
-  int idx = MEMOIZED_HASH_FN (name);
-
   if (complain == -1)
     {
       find_all = 1;
@@ -1752,65 +1396,9 @@ lookup_fnfields (basetype_path, name, complain)
   binfo_h = binfo;
   type = complete_type (BINFO_TYPE (basetype_path));
 
-  /* The memoization code is in need of maintenance.  */
-  if (!find_all && CLASSTYPE_MTABLE_ENTRY (type))
-    {
-      tree tem = MEMOIZED_FNFIELDS (CLASSTYPE_MTABLE_ENTRY (type), idx);
-
-      while (tem && TREE_PURPOSE (tem) != name)
-	{
-	  memoized_fields_searched[1]++;
-	  tem = TREE_CHAIN (tem);
-	}
-      if (tem)
-	{
-	  if (protect && TREE_TYPE (tem))
-	    {
-	      error (TREE_STRING_POINTER (TREE_TYPE (tem)),
-		     IDENTIFIER_POINTER (name),
-		     TYPE_NAME_STRING (DECL_CLASS_CONTEXT (TREE_VALUE (TREE_VALUE (tem)))));
-	      return error_mark_node;
-	    }
-	  if (TREE_VALUE (tem) == NULL_TREE)
-	    {
-	      memoized_fast_rejects[1] += 1;
-	      return NULL_TREE;
-	    }
-	  else
-	    {
-	      /* Want to return this, but we must make sure
-		 that access information is consistent.  */
-	      tree baselink = TREE_VALUE (tem);
-	      tree memoized_basetypes = TREE_PURPOSE (baselink);
-	      tree these_basetypes = basetype_path;
-	      while (memoized_basetypes && these_basetypes)
-		{
-		  memoized_fields_searched[1]++;
-		  if (TREE_VALUE (memoized_basetypes) != these_basetypes)
-		    break;
-		  memoized_basetypes = TREE_CHAIN (memoized_basetypes);
-		  these_basetypes = BINFO_INHERITANCE_CHAIN (these_basetypes);
-		}
-	      /* The following statement is true only when both are NULL.  */
-	      if (memoized_basetypes == these_basetypes)
-		{
-		  memoized_fast_finds[1] += 1;
-		  return TREE_VALUE (tem);
-		}
-	      /* else, we must re-find this field by hand.  */
-	      baselink = tree_cons (basetype_path, TREE_VALUE (baselink), TREE_CHAIN (baselink));
-	      return baselink;
-	    }
-	}
-    }
-
 #ifdef GATHER_STATISTICS
   n_calls_lookup_fnfields++;
 #endif /* GATHER_STATISTICS */
-  if (protect && flag_memoize_lookups && ! toplevel_bindings_p ())
-    entry = make_memoized_table_entry (type, name, 1);
-  else
-    entry = 0;
 
   idx = lookup_fnfields_here (type, name);
   if (idx >= 0 || lookup_field_1 (type, name))
@@ -1822,15 +1410,9 @@ lookup_fnfields (basetype_path, name, complain)
   if (idx >= 0)
     {
       rval = TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (type), idx);
-      rvals = my_tree_cons (basetype_path, rval, rvals);
+      rvals = scratch_tree_cons (basetype_path, rval, rvals);
       if (BINFO_BASETYPES (binfo) && CLASSTYPE_BASELINK_VEC (type))
 	TREE_TYPE (rvals) = TREE_VEC_ELT (CLASSTYPE_BASELINK_VEC (type), idx);
-
-      if (entry)
-	{
-	  TREE_VALUE (entry) = rvals;
-	  TREE_TYPE (entry) = NULL_TREE;
-	}
 
       return rvals;
     }
@@ -1840,9 +1422,6 @@ lookup_fnfields (basetype_path, name, complain)
     {
       /* Don't allow lookups of constructors and destructors to go
  	 deeper than the first place we look.  */
-      if (entry)
- 	TREE_TYPE (entry) = TREE_VALUE (entry) = NULL_TREE;
-
       return NULL_TREE;
     }
 
@@ -1876,13 +1455,13 @@ lookup_fnfields (basetype_path, name, complain)
 	      tree btypes;
 
 	      SET_BINFO_FIELDS_MARKED (base_binfo);
-	      btypes = my_tree_cons (NULL_TREE, base_binfo, basetype_chain);
+	      btypes = scratch_tree_cons (NULL_TREE, base_binfo, basetype_chain);
 	      if (TREE_VIA_VIRTUAL (base_binfo))
-		btypes = my_tree_cons (NULL_TREE,
+		btypes = scratch_tree_cons (NULL_TREE,
 				    TYPE_BINFO (BINFO_TYPE (TREE_VEC_ELT (BINFO_BASETYPES (binfo_h), i))),
 				    btypes);
 	      else
-		btypes = my_tree_cons (NULL_TREE,
+		btypes = scratch_tree_cons (NULL_TREE,
 				    TREE_VEC_ELT (BINFO_BASETYPES (binfo_h), i),
 				    btypes);
 	      obstack_ptr_grow (&search_obstack, btypes);
@@ -1933,7 +1512,7 @@ lookup_fnfields (basetype_path, name, complain)
 		  rval = TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (type), idx);
 		  /* Note, rvals can only be previously set if find_all is
 		     true.  */
-		  rvals = my_tree_cons (basetype_path, rval, rvals);
+		  rvals = scratch_tree_cons (basetype_path, rval, rvals);
 		  if (TYPE_BINFO_BASETYPES (type)
 		      && CLASSTYPE_BASELINK_VEC (type))
 		    TREE_TYPE (rvals) = TREE_VEC_ELT (CLASSTYPE_BASELINK_VEC (type), idx);
@@ -1967,22 +1546,6 @@ lookup_fnfields (basetype_path, name, complain)
       }
   }
   search_stack = pop_search_level (search_stack);
-
-  if (entry)
-    {
-      if (errstr)
-	{
-	  tree error_string = my_build_string (errstr);
-	  /* Save error message with entry.  */
-	  TREE_TYPE (entry) = error_string;
-	}
-      else
-	{
-	  /* Mark entry as having no error string.  */
-	  TREE_TYPE (entry) = NULL_TREE;
-	  TREE_VALUE (entry) = rvals;
-	}
-    }
 
   if (errstr && protect)
     {
@@ -2492,33 +2055,6 @@ next_baselink (baselink)
 
 /* DEPTH-FIRST SEARCH ROUTINES.  */
 
-#ifdef MI_MATRIX
-/* Assign unique numbers to _CLASSTYPE members of the lattice
-   specified by TYPE.  The root nodes are marked first; the nodes
-   are marked depth-fisrt, left-right.  */
-
-static int cid;
-
-/* Matrix implementing a relation from CLASSTYPE X CLASSTYPE => INT.
-   Relation yields 1 if C1 <= C2, 0 otherwise.  */
-typedef char mi_boolean;
-static mi_boolean *mi_matrix;
-
-/* Type for which this matrix is defined.  */
-static tree mi_type;
-
-/* Size of the matrix for indexing purposes.  */
-static int mi_size;
-
-/* Return nonzero if class C2 derives from class C1.  */
-#define BINFO_DERIVES_FROM(C1, C2)	\
-  ((mi_matrix+mi_size*(BINFO_CID (C1)-1))[BINFO_CID (C2)-1])
-#define TYPE_DERIVES_FROM(C1, C2)	\
-  ((mi_matrix+mi_size*(CLASSTYPE_CID (C1)-1))[CLASSTYPE_CID (C2)-1])
-#define BINFO_DERIVES_FROM_STAR(C)	\
-  (mi_matrix+(BINFO_CID (C)-1))
-#endif
-
 /* This routine converts a pointer to be a pointer of an immediate
    base class.  The normal convert_pointer_to routine would diagnose
    the conversion as ambiguous, under MI code that has the base class
@@ -2611,14 +2147,6 @@ dfs_walk (binfo, fn, qfn)
   fn (binfo);
 }
 
-#ifdef MI_MATRIX
-/* Predicate functions which serve for dfs_walk.  */
-static int numberedp (binfo) tree binfo;
-{ return BINFO_CID (binfo); }
-static int unnumberedp (binfo) tree binfo;
-{ return BINFO_CID (binfo) == 0; }
-#endif
-
 static int markedp (binfo) tree binfo;
 { return BINFO_MARKED (binfo); }
 static int unmarkedp (binfo) tree binfo;
@@ -2663,25 +2191,6 @@ static int dfs_debug_unmarkedp (binfo) tree binfo;
 /* The worker functions for `dfs_walk'.  These do not need to
    test anything (vis a vis marking) if they are paired with
    a predicate function (above).  */
-
-#ifdef MI_MATRIX
-/* Assign each type within the lattice a number which is unique
-   in the lattice.  The first number assigned is 1.  */
-
-static void
-dfs_number (binfo)
-     tree binfo;
-{
-  BINFO_CID (binfo) = ++cid;
-}
-
-static void
-dfs_unnumber (binfo)
-     tree binfo;
-{
-  BINFO_CID (binfo) = 0;
-}
-#endif
 
 #if 0
 static void
@@ -3229,95 +2738,6 @@ get_vbase_types (type)
   return vbase_types;
 }
 
-#ifdef MI_MATRIX
-static void
-dfs_record_inheritance (binfo)
-     tree binfo;
-{
-  tree binfos = BINFO_BASETYPES (binfo);
-  int i, n_baselinks = binfos ? TREE_VEC_LENGTH (binfos) : 0;
-  mi_boolean *derived_row = BINFO_DERIVES_FROM_STAR (binfo);
-
-  for (i = n_baselinks-1; i >= 0; i--)
-    {
-      int j;
-      tree base_binfo = TREE_VEC_ELT (binfos, i);
-      tree baseclass = BINFO_TYPE (base_binfo);
-      mi_boolean *base_row = BINFO_DERIVES_FROM_STAR (base_binfo);
-
-      if (TREE_CODE (baseclass) == TEMPLATE_TYPE_PARM
-          || TREE_CODE (baseclass) == TEMPLATE_TEMPLATE_PARM)
-	continue;
-      my_friendly_assert (CLASSTYPE_CID (baseclass) != 0, 2365);
-
-      /* Don't search if there's nothing there!  MI_SIZE can be
-	 zero as a result of parse errors.  */
-      if (TYPE_BINFO_BASETYPES (baseclass) && mi_size > 0)
-	for (j = mi_size*(CLASSTYPE_CID (baseclass)-1); j >= 0; j -= mi_size)
-	  derived_row[j] |= base_row[j];
-      TYPE_DERIVES_FROM (baseclass, BINFO_TYPE (binfo)) = 1;
-    }
-
-  SET_BINFO_MARKED (binfo);
-}
-
-/* Given a _CLASSTYPE node in a multiple inheritance lattice,
-   convert the lattice into a simple relation such that,
-   given to CIDs, C1 and C2, one can determine if C1 <= C2
-   or C2 <= C1 or C1 <> C2.
-
-   Once constructed, we walk the lattice depth fisrt,
-   applying various functions to elements as they are encountered.
-
-   We use xmalloc here, in case we want to randomly free these tables.  */
-
-#define SAVE_MI_MATRIX
-
-void
-build_mi_matrix (type)
-     tree type;
-{
-  tree binfo = TYPE_BINFO (type);
-  cid = 0;
-
-#ifdef SAVE_MI_MATRIX
-  if (CLASSTYPE_MI_MATRIX (type))
-    {
-      mi_size = CLASSTYPE_N_SUPERCLASSES (type) + CLASSTYPE_N_VBASECLASSES (type);
-      mi_matrix = CLASSTYPE_MI_MATRIX (type);
-      mi_type = type;
-      dfs_walk (binfo, dfs_number, unnumberedp);
-      return;
-    }
-#endif
-
-  dfs_walk (binfo, dfs_number, unnumberedp);
-
-  mi_size = CLASSTYPE_N_SUPERCLASSES (type) + CLASSTYPE_N_VBASECLASSES (type);
-  if (mi_size < (cid-1))
-    mi_size = cid-1;
-  mi_matrix = (char *)xmalloc ((mi_size + 1) * (mi_size + 1));
-  mi_type = type;
-  bzero (mi_matrix, (mi_size + 1) * (mi_size + 1));
-  dfs_walk (binfo, dfs_record_inheritance, unmarkedp);
-  dfs_walk (binfo, dfs_unmark, markedp);
-}
-
-void
-free_mi_matrix ()
-{
-  dfs_walk (TYPE_BINFO (mi_type), dfs_unnumber, numberedp);
-
-#ifdef SAVE_MI_MATRIX
-  CLASSTYPE_MI_MATRIX (mi_type) = mi_matrix;
-#else
-  free (mi_matrix);
-  mi_size = 0;
-  cid = 0;
-#endif
-}
-#endif
-
 /* If we want debug info for a type TYPE, make sure all its base types
    are also marked as being potentially interesting.  This avoids
    the problem of not writing any debug info for intermediate basetypes
@@ -3404,16 +2824,7 @@ envelope_add_decl (type, decl, values)
 	    dont_add = 1;
 	}
       else if (type == current_class_type
-#ifdef MI_MATRIX
-	       /* If we don't check CLASSTYPE_CID on CONTEXT right now,
-		  we'll end up subtracting from the address of MI_MATRIX,
-		  putting us off in la la land.  */
-	       || (CLASSTYPE_CID (type)
-		   && TYPE_DERIVES_FROM (context, type))
-#else
-	       || DERIVED_FROM_P (context, type)
-#endif
-	       )
+	       || DERIVED_FROM_P (context, type))
 	{
 	  /* Don't add in *values to list */
 	  *values = NULL_TREE;
@@ -3432,16 +2843,7 @@ envelope_add_decl (type, decl, values)
 	    : DECL_CONTEXT (value);
 
 	if (type == current_class_type
-#ifdef MI_MATRIX
-	    /* If we don't check CLASSTYPE_CID on CONTEXT right now,
-	       we'll end up subtracting from the address of MI_MATRIX,
-	       putting us off in la la land.  */
-	    || (CLASSTYPE_CID (type)
-		&& TYPE_DERIVES_FROM (context, type))
-#else
-	    || DERIVED_FROM_P (context, type)
-#endif
-	    )
+	    || DERIVED_FROM_P (context, type))
 	  {
 	    /* remove *tmp from list */
 	    *tmp = TREE_CHAIN (*tmp);
@@ -3781,23 +3183,6 @@ void
 print_search_statistics ()
 {
 #ifdef GATHER_STATISTICS
-  if (flag_memoize_lookups)
-    {
-      fprintf (stderr, "%d memoized contexts saved\n",
-	       n_contexts_saved);
-      fprintf (stderr, "%d local tree nodes made\n", my_tree_node_counter);
-      fprintf (stderr, "%d local hash nodes made\n", my_memoized_entry_counter);
-      fprintf (stderr, "fields statistics:\n");
-      fprintf (stderr, "  memoized finds = %d; rejects = %d; (searches = %d)\n",
-	       memoized_fast_finds[0], memoized_fast_rejects[0],
-	       memoized_fields_searched[0]);
-      fprintf (stderr, "  memoized_adds = %d\n", memoized_adds[0]);
-      fprintf (stderr, "fnfields statistics:\n");
-      fprintf (stderr, "  memoized finds = %d; rejects = %d; (searches = %d)\n",
-	       memoized_fast_finds[1], memoized_fast_rejects[1],
-	       memoized_fields_searched[1]);
-      fprintf (stderr, "  memoized_adds = %d\n", memoized_adds[1]);
-    }
   fprintf (stderr, "%d fields searched in %d[%d] calls to lookup_field[_1]\n",
 	   n_fields_searched, n_calls_lookup_field, n_calls_lookup_field_1);
   fprintf (stderr, "%d fnfields searched in %d calls to lookup_fnfields\n",
@@ -3812,27 +3197,12 @@ void
 init_search_processing ()
 {
   gcc_obstack_init (&search_obstack);
-  gcc_obstack_init (&type_obstack);
-  gcc_obstack_init (&type_obstack_entries);
-
-  /* This gives us room to build our chains of basetypes,
-     whether or not we decide to memoize them.  */
-  type_stack = push_type_level ((struct stack_level *)0, &type_obstack);
   _vptr_name = get_identifier ("_vptr");
 }
 
 void
 reinit_search_statistics ()
 {
-  my_memoized_entry_counter = 0;
-  memoized_fast_finds[0] = 0;
-  memoized_fast_finds[1] = 0;
-  memoized_adds[0] = 0;
-  memoized_adds[1] = 0;
-  memoized_fast_rejects[0] = 0;
-  memoized_fast_rejects[1] = 0;
-  memoized_fields_searched[0] = 0;
-  memoized_fields_searched[1] = 0;
 #ifdef GATHER_STATISTICS
   n_fields_searched = 0;
   n_calls_lookup_field = 0, n_calls_lookup_field_1 = 0;

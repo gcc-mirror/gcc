@@ -1614,8 +1614,6 @@ build_offset_ref (type, name)
      lookup_fnfield.  */
   if (fnfields)
     {
-      extern int flag_save_memoized_contexts;
-
       /* Go from the TREE_BASELINK to the member function info.  */
       t = TREE_VALUE (fnfields);
 
@@ -1670,15 +1668,13 @@ build_offset_ref (type, name)
 
       /* FNFIELDS is most likely allocated on the search_obstack,
 	 which will go away after this class scope.  If we need
-	 to save this value for later (either for memoization
-	 or for use as an initializer for a static variable), then
-	 do so here.
+	 to save this value for later (i.e. for use as an initializer
+	 for a static variable), then do so here.
 
 	 ??? The smart thing to do for the case of saving initializers
 	 is to resolve them before we're done with this scope.  */
       if (!TREE_PERMANENT (fnfields)
-	  && ((flag_save_memoized_contexts && toplevel_bindings_p ())
-	      || ! allocation_temporary_p ()))
+	  && ! allocation_temporary_p ())
 	fnfields = copy_list (fnfields);
 
       t = build_tree_list (error_mark_node, fnfields);

@@ -621,9 +621,6 @@ struct lang_type
       unsigned dummy : 11;
     } type_flags;
 
-#ifdef MI_MATRIX
-  int cid;
-#endif
   int n_ancestors;
   int n_vancestors;
   int vsize;
@@ -635,7 +632,6 @@ struct lang_type
   union tree_node *vbases;
 
   union tree_node *tags;
-  char *memoized_table_entry;
 
   union tree_node *search_slot;
 
@@ -650,10 +646,6 @@ struct lang_type
   union tree_node *id_as_list;
   union tree_node *binfo_as_list;
   union tree_node *friend_classes;
-
-#ifdef MI_MATRIX
-  char *mi_matrix;
-#endif
 
   union tree_node *rtti;
 
@@ -867,11 +859,6 @@ struct lang_type
    which uses this must define what exactly this slot is used for.  */
 #define CLASSTYPE_SEARCH_SLOT(NODE) (TYPE_LANG_SPECIFIC(NODE)->search_slot)
 
-/* Entry for keeping memoization tables for this type to
-   hopefully speed up search routines.  Since it is a pointer,
-   it can mean almost anything.  */
-#define CLASSTYPE_MTABLE_ENTRY(NODE) (TYPE_LANG_SPECIFIC(NODE)->memoized_table_entry)
-
 /* These are the size, mode and alignment of the type without its
    virtual base classes, for when we use this type as a base itself.  */
 #define CLASSTYPE_SIZE(NODE) (TYPE_LANG_SPECIFIC(NODE)->size)
@@ -935,12 +922,6 @@ struct lang_type
    case of a template friend.  */
 #define CLASSTYPE_FRIEND_CLASSES(NODE) (TYPE_LANG_SPECIFIC(NODE)->friend_classes)
 
-#ifdef MI_MATRIX
-/* Keep an inheritance lattice around so we can quickly tell whether
-   a type is derived from another or not.  */
-#define CLASSTYPE_MI_MATRIX(NODE) (TYPE_LANG_SPECIFIC(NODE)->mi_matrix)
-#endif
-
 /* Say whether this node was declared as a "class" or a "struct".  */
 #define CLASSTYPE_DECLARED_CLASS(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.declared_class)
 
@@ -975,14 +956,6 @@ struct lang_type
    After a call to get_vbase_types, the vbases are chained together in
    depth-first order via TREE_CHAIN.  Other than that, TREE_CHAIN is
    unused.  */
-
-#ifdef MI_MATRIX
-/* When building a matrix to determine by a single lookup
-   whether one class is derived from another or not,
-   this field is the index of the class in the table.  */
-#define CLASSTYPE_CID(NODE) (TYPE_LANG_SPECIFIC(NODE)->cid)
-#define BINFO_CID(NODE) CLASSTYPE_CID(BINFO_TYPE(NODE))
-#endif
 
 /* Nonzero means marked by DFS or BFS search, including searches
    by `get_binfo' and `get_base_distance'.  */
@@ -2876,8 +2849,6 @@ extern void synthesize_tinfo_fn			PROTO((tree));
 
 /* in search.c */
 extern int types_overlap_p			PROTO((tree, tree));
-extern void push_memoized_context		PROTO((tree, int));
-extern void pop_memoized_context		PROTO((int));
 extern tree get_vbase				PROTO((tree, tree));
 extern tree get_binfo				PROTO((tree, tree, int));
 extern int get_base_distance			PROTO((tree, tree, int, tree *));
@@ -2895,16 +2866,10 @@ extern tree init_vbase_pointers			PROTO((tree, tree));
 extern void expand_indirect_vtbls_init		PROTO((tree, tree, tree));
 extern void clear_search_slots			PROTO((tree));
 extern tree get_vbase_types			PROTO((tree));
-extern void build_mi_matrix			PROTO((tree));
-extern void free_mi_matrix			PROTO((void));
-extern void build_mi_virtuals			PROTO((int, int));
-extern void add_mi_virtuals			PROTO((int, tree));
-extern void report_ambiguous_mi_virtuals	PROTO((int, tree));
 extern void note_debug_info_needed		PROTO((tree));
 extern void push_class_decls			PROTO((tree));
 extern void pop_class_decls			PROTO((void));
 extern void unuse_fields			PROTO((tree));
-extern void unmark_finished_struct		PROTO((tree));
 extern void print_search_statistics		PROTO((void));
 extern void init_search_processing		PROTO((void));
 extern void reinit_search_statistics		PROTO((void));
