@@ -506,6 +506,7 @@ EOF
 		ret \$31,(\$26),1
 		.end main
 EOF
+		LIBC=""
 		${CC-cc} dummy.s -o dummy 2>/dev/null
 		if test "$?" = 0 ; then
 			./dummy
@@ -516,10 +517,16 @@ EOF
 			2)	
 					UNAME_MACHINE="alphaev56"
 				;;	
-		esac	
-	  fi	
-	  rm -f dummy.s dummy
-	  echo ${UNAME_MACHINE}-unknown-linux-gnu ; exit 0
+			esac	
+
+			objdump --private-headers dummy | \
+			  grep ld.so.1 > /dev/null
+			if test "$?" = 0 ; then
+				LIBC="libc1"
+			fi
+		fi	
+		rm -f dummy.s dummy
+		echo ${UNAME_MACHINE}-unknown-linux-gnu${LIBC} ; exit 0
 	elif test "${UNAME_MACHINE}" = "mips" ; then
 	  cat >dummy.c <<EOF
 main(argc, argv)
