@@ -1,3 +1,11 @@
+2003-06-23  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* configure.in (noconfigdirs) <cris-*-*>: Disable target-newlib
+	and target-libgloss.
+	<d30v-*-*, fr30-*-*, i960-*-*, m32r-*-*>: Disable gdb.
+	<h8300*-*-*>: Disable libf2c and ${libgcj}.
+	* configure: Regenerate.
+
 2003-06-17  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* configure.in: Update testsuite_flags to new location.
