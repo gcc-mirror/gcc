@@ -1828,10 +1828,14 @@ gnat_type_for_mode (enum machine_mode mode, int unsignedp)
     return NULL_TREE;
   else if (mode == VOIDmode)
     return void_type_node;
-  else if (GET_MODE_CLASS (mode) == MODE_FLOAT)
+  else if (COMPLEX_MODE_P (mode))
+    return NULL_TREE;
+  else if (SCALAR_FLOAT_MODE_P (mode))
     return float_type_for_precision (GET_MODE_PRECISION (mode), mode);
-  else
+  else if (SCALAR_INT_MODE_P (mode))
     return gnat_type_for_size (GET_MODE_BITSIZE (mode), unsignedp);
+  else
+    gcc_unreachable ();
 }
 
 /* Return the unsigned version of a TYPE_NODE, a scalar type.  */
