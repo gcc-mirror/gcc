@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 
 static int w[2];
 static char * bytes;
