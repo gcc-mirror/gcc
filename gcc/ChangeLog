@@ -1,3 +1,8 @@
+2003-08-13  Dale Johannesen  <dalej@apple.com>
+
+	* config/rs6000/rs6000.md (ctrsi, ctrdi):  Reenable
+	handling of decrement-and-branch farther than 32 bits.
+
 2003-08-12  Kelley Cook  <kelleycook@wideopenwest.com>
 
 	* configure.in (make_compare_target): Move test to ...
