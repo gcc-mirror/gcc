@@ -1,3 +1,11 @@
+Tue Jan 22 06:26:33 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* dwarf2out.c (equate_decl_number_to_die): Add "int" to decls.
+	(loc_descriptor_from_tree, case CALL_EXPR, case ADDR_EXPR): New.
+	(add_bound_info, default): If can't find a context, make a
+	SAVE_EXPR.
+	(dwarf2out_finish): Check for SAVE_EXPR in node->created_for.
+
 2002-01-22  Hans-Peter Nilsson  <hp@axis.com>
 
 	* c-typeck.c (parser_build_binary_op): If result from

@@ -5116,8 +5116,8 @@ equate_decl_number_to_die (decl, decl_die)
      tree decl;
      dw_die_ref decl_die;
 {
-  unsigned decl_id = DECL_UID (decl);
-  unsigned num_allocated;
+  unsigned int decl_id = DECL_UID (decl);
+  unsigned int num_allocated;
 
   if (decl_id >= decl_die_table_allocated)
     {
@@ -7973,6 +7973,24 @@ loc_descriptor_from_tree (loc, addressp)
 	 the names of types.  */
       return 0;
 
+    case CALL_EXPR:
+      return 0;
+
+    case ADDR_EXPR:
+      /* We can support this only if we can look through conversions and
+	 find an INDIRECT_EXPR.  */
+      for (loc = TREE_OPERAND (loc, 0);
+	   TREE_CODE (loc) == CONVERT_EXPR || TREE_CODE (loc) == NOP_EXPR
+	   || TREE_CODE (loc) == NON_LVALUE_EXPR
+	   || TREE_CODE (loc) == VIEW_CONVERT_EXPR
+	   || TREE_CODE (loc) == SAVE_EXPR;
+	   loc = TREE_OPERAND (loc, 0))
+	;
+
+       return (TREE_CODE (loc) == INDIRECT_REF
+	       ? loc_descriptor_from_tree (TREE_OPERAND (loc, 0), addressp)
+	       : 0);
+
     case VAR_DECL:
     case PARM_DECL:
       {
@@ -9076,6 +9094,15 @@ add_bound_info (subrange_die, bound_attr, bound)
 	  ctx = comp_unit_die;
 	else
 	  ctx = lookup_decl_die (current_function_decl);
+
+	/* If we weren't able to find a context, it's most likely the case
+	   that we are processing the return type of the function.  So
+	   make a SAVE_EXPR to point to it and have the limbo DIE code
+	   find the proper die.  The save_expr function doesn't always
+	   make a SAVE_EXPR, so do it ourselves.  */
+	if (ctx == 0)
+	  bound = build (SAVE_EXPR, TREE_TYPE (bound), bound,
+			 current_function_decl, NULL_TREE);
 
 	decl_die = new_die (DW_TAG_variable, ctx, bound);
 	add_AT_flag (decl_die, DW_AT_artificial, 1);
@@ -12013,6 +12040,15 @@ dwarf2out_finish (input_filename)
 	    add_child_die (origin->die_parent, die);
 	  else if (die == comp_unit_die)
 	    ;
+	  /* If this was an expression for a bound involved in a function
+	     return type, it may be a SAVE_EXPR for which we weren't able
+	     to find a DIE previously.  So try now.  */
+	  else if (node->created_for
+		   && TREE_CODE (node->created_for) == SAVE_EXPR
+		   && 0 != (origin = (lookup_decl_die
+				      (SAVE_EXPR_CONTEXT
+				       (node->created_for)))))
+	    add_child_die (origin, die);
 	  else if (node->created_for
 		   && ((DECL_P (node->created_for)
 		        && (context = DECL_CONTEXT (node->created_for)))
