@@ -386,6 +386,10 @@ can_widen_reference_to (source_type, target_type)
 	  int source_depth = class_depth (source_type);
 	  int target_depth = class_depth (target_type);
 
+	  /* class_depth can return a negative depth if an error occurred */
+	  if (source_depth < 0 || target_depth < 0)
+	    return 0;
+
 	  if (CLASS_INTERFACE (TYPE_NAME (target_type)))
 	    {
 	      /* target_type is OK if source_type or source_type ancestors

@@ -403,6 +403,8 @@ class_depth (clas)
   int depth = 0;
   if (! CLASS_LOADED_P (clas))
     load_class (clas, 1);
+  if (TYPE_SIZE (clas) == error_mark_node)
+    return -1;
   while (clas != object_type_node)
     {
       depth++;

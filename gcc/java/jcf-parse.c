@@ -756,6 +756,8 @@ parse_source_file (file)
   java_parse_abort_on_error ();
   java_check_circular_reference (); /* Check on circular references */
   java_parse_abort_on_error ();
+  java_fix_constructors ();	    /* Fix the constructors */
+  java_parse_abort_on_error ();
 }
 
 static int

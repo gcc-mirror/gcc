@@ -662,6 +662,7 @@ struct parser_ctxt {
 void safe_layout_class PROTO ((tree));
 void java_complete_class PROTO ((void));
 void java_check_circular_reference PROTO ((void));
+void java_fix_constructors PROTO ((void));
 void java_check_final PROTO ((void));
 void java_layout_classes PROTO ((void));
 tree java_method_add_stmt PROTO ((tree, tree));

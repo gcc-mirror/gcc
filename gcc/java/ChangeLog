@@ -1,3 +1,28 @@
+1999-12-14  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* class.c (class_depth): Return -1 if the class doesn't load
+	properly.
+	* expr.c (can_widen_reference_to): Check for errors during depth
+	computation and return 0 accordingly.
+	* jcf-parse.c (parse_source_file): Call java_fix_constructors to
+	create default constructors and add an other error check.
+	* parse.h (java_fix_constructors): Prototyped.
+	* parse.y (java_pre_expand_clinit): Likewise.
+	(build_super_invocation): Re-prototyped to feature one argument.
+	(java_check_circular_reference): Directly use `current'.
+	(java_fix_constructors): New function.
+	(java_check_regular_methods): Don't create default constructors
+	here, but abort if none were found.
+	(java_complete_expand_methods): Pre-process <clinit> calling
+	java_pre_expand_clinit.
+	(java_pre_expand_clinit): New function.
+	(fix_constructors): build_super_invocation invoked with the
+	current method declaration as an argument.
+	(build_super_invocation): Use the context of the processed method
+	decl argument instead of current_class.
+	* typeck.c (lookup_java_method): Take WFLs in method names into
+	account.
+	
 1999-12-17  Tom Tromey  <tromey@cygnus.com>
 
 	* gjavah.c (decode_signature_piece): Print "::" in JArray<>.  This
