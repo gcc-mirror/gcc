@@ -147,6 +147,7 @@ do {								\
 	       {							\
 		 fputs ("\t.PARAM ", FILE);				\
 		 assemble_name (FILE, NAME);				\
+		 fputs (",PRIV_LEV=3", FILE);				\
 	       }							\
 	     for (parm = DECL_ARGUMENTS (DECL), i = 0; parm && i < 4;	\
 		  parm = TREE_CHAIN (parm))				\
