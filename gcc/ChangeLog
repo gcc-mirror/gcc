@@ -1,3 +1,8 @@
+Fri Aug 21 23:07:46 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
+
+	* config/sparc/sparc.md (TFmode splits): Handle destination
+	registers being referenced in the address correctly.
+
 Fri Aug 21 19:31:31 1998  Alexandre Petit-Bianco <apbianco@cygnus.com>
 
 	* tree.def (LABELED_BLOCK_EXPR, EXIT_BLOCK_EXPR): New tree nodes.
