@@ -223,7 +223,7 @@ namespace std
   using ::wcsstr;
 
   inline wchar_t*
-  wcsstr(wchar_t* __s1, wchar_t* __s2)
+  wcsstr(wchar_t* __s1, const wchar_t* __s2)
   { return wcsstr(const_cast<const wchar_t*>(__s1), __s2); }
 
   using ::wmemchr;
