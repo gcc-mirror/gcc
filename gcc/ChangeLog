@@ -1,5 +1,8 @@
 Thu Apr  1 01:09:27 1999  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
+	* fixinc/hackshell.tpl: Complete transition to fixinc.tmp.
+	* fixinc/inclhack.sh: Rebuilt.
+
 	* fixinc/inclhack.def: Fix typos in c_asm.h fix.
 	* fixinc/fixincl.x, fixinc/inclhack.sh, fixinc/fixinc.sh: Rebuilt.
 
