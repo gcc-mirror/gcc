@@ -455,7 +455,8 @@ proc check_effective_target_vect_int { } {
 	      || [istarget powerpc*-*-*]
 	      || [istarget x86_64-*-*]
 	      || [istarget sparc*-*-*]
-	      || [istarget alpha*-*-*] } {
+	      || [istarget alpha*-*-*]
+	      || [istarget ia64-*-*] } {
 	   set et_vect_int_saved 1
 	}
     }
@@ -496,7 +497,8 @@ proc check_effective_target_vect_float { } {
 	if { [istarget i?86-*-*]
 	      || [istarget powerpc*-*-*]
 	      || [istarget mipsisa64*-*-*]
-	      || [istarget x86_64-*-*] } {
+	      || [istarget x86_64-*-*]
+	      || [istarget ia64-*-*] } {
 	   set et_vect_float_saved 1
 	}
     }
@@ -583,7 +585,8 @@ proc check_effective_target_vect_no_align { } {
     } else {
 	set et_vect_no_align_saved 0
 	if { [istarget mipsisa64*-*-*]
-	     || [istarget sparc*-*-*] } {
+	     || [istarget sparc*-*-*]
+	     || [istarget ia64-*-*] } {
 	    set et_vect_no_align_saved 1
 	}
     }

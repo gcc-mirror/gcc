@@ -786,6 +786,10 @@
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "ilog"))
        (eq (symbol_ref "bundling_p") (const_int 0))) "2_A")
+(define_insn_reservation "2_mmalua"  2
+  (and (and (eq_attr "cpu" "itanium2")
+            (eq_attr "itanium_class" "mmalua"))
+       (eq (symbol_ref "bundling_p") (const_int 0))) "2_A")
 ;; Latency time ???
 (define_insn_reservation "2_ishf"    1
   (and (and (eq_attr "cpu" "itanium2")
@@ -1016,23 +1020,24 @@
 (define_bypass  0 "2_tbit" "2_br,2_scall")
 (define_bypass  2 "2_ld" "2_ld"  "ia64_ld_address_bypass_p")
 (define_bypass  2 "2_ld" "2_st"  "ia64_st_address_bypass_p")
-(define_bypass  2 "2_ld" "2_mmmul,2_mmshf")
-(define_bypass  3 "2_ilog" "2_mmmul,2_mmshf")
-(define_bypass  3 "2_ialu" "2_mmmul,2_mmshf")
-(define_bypass  3 "2_mmmul,2_mmshf" "2_ialu,2_ilog,2_ishf,2_st,2_ld")
+(define_bypass  2 "2_ld" "2_mmalua,2_mmmul,2_mmshf")
+(define_bypass  3 "2_ilog" "2_mmalua,2_mmmul,2_mmshf")
+(define_bypass  3 "2_ialu" "2_mmalua,2_mmmul,2_mmshf")
+(define_bypass  3 "2_mmalua,2_mmmul,2_mmshf" "2_ialu,2_ilog,2_ishf,2_st,2_ld")
 (define_bypass  6 "2_tofr"  "2_frfr,2_stf")
 (define_bypass  7 "2_fmac"  "2_frfr,2_stf")
 
 ;; We don't use here fcmp because scall may be predicated.
 (define_bypass  0 "2_fcvtfx,2_fld,2_fmac,2_fmisc,2_frar_i,2_frar_m,\
                    2_frbr,2_frfr,2_frpr,2_ialu,2_ilog,2_ishf,2_ld,2_long_i,\
-                   2_mmmul,2_mmshf,2_mmshfi,2_toar_m,2_tofr,2_xmpy,2_xtd"
+                   2_mmalua,2_mmmul,2_mmshf,2_mmshfi,2_toar_m,2_tofr,\
+		   2_xmpy,2_xtd"
                   "2_scall")
 
 (define_bypass  0 "2_unknown,2_ignore,2_stop_bit,2_br,2_fcmp,2_fcvtfx,2_fld,\
                    2_fmac,2_fmisc,2_frar_i,2_frar_m,2_frbr,2_frfr,2_frpr,\
-                   2_ialu,2_icmp,2_ilog,2_ishf,2_ld,2_chk_s,\
-                   2_long_i,2_mmmul,2_mmshf,2_mmshfi,2_nop,2_nop_b,2_nop_f,\
+                   2_ialu,2_icmp,2_ilog,2_ishf,2_ld,2_chk_s,2_long_i,\
+		   2_mmalua,2_mmmul,2_mmshf,2_mmshfi,2_nop,2_nop_b,2_nop_f,\
                    2_nop_i,2_nop_m,2_nop_x,2_rse_m,2_scall,2_sem,2_stf,2_st,\
                    2_syst_m0,2_syst_m,2_tbit,2_toar_i,2_toar_m,2_tobr,2_tofr,\
                    2_topr,2_xmpy,2_xtd,2_lfetch" "2_ignore")
@@ -1585,6 +1590,10 @@
 (define_insn_reservation "2b_ilog"    1
   (and (and (eq_attr "cpu" "itanium2")
             (eq_attr "itanium_class" "ilog"))
+       (ne (symbol_ref "bundling_p") (const_int 0))) "2b_A")
+(define_insn_reservation "2b_mmalua"  2
+  (and (and (eq_attr "cpu" "itanium2")
+            (eq_attr "itanium_class" "mmalua"))
        (ne (symbol_ref "bundling_p") (const_int 0))) "2b_A")
 ;; Latency time ???
 (define_insn_reservation "2b_ishf"    1

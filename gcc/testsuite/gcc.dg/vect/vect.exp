@@ -65,6 +65,8 @@ if [istarget "powerpc*-*-*"] {
     } else {
 	set dg-do-what-default compile
     }
+} elseif [istarget "ia64-*-*"] {
+    set dg-do-what-default run
 } else {
     return
 }

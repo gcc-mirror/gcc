@@ -1,4 +1,14 @@
+2005-01-03  Richard Henderson  <rth@redhat.com>
+
+	* gcc.dg/vect/vect.exp: Enable for ia64.
+	* lib/target-supports.exp (check_effective_target_vect_int): Likewise.
+	(check_effective_target_vect_float): Likewise.
+	(check_effective_target_vect_no_align): Likewise.
+	* gcc.dg/vect/vect-30.c: XFAIL for vect_no_align.
+	* gcc.dg/vect/vect-8.c: Likewise.
+
 2005-01-03  Uros Bizjak <uros@kss-loka.si>
+
 	PR target/19235
 	* gcc.dg/pr19236-1.c: New test case.
 
