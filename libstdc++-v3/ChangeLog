@@ -1,3 +1,8 @@
+2000-06-19  Russell Davidson  <russell@ehess.cnrs-mrs.fr>
+
+	* testsuite/27_io/istream_extractor_arith.cc: Patch.
+	* bits/locale_factets.tcc: Tweak.
+	
 2000-06-19  Raja R Harinath  <harinath@cs.umn.edu>
 	
 	* src/Makefile.am: change @WERROR@ to $(WERROR) so that this can

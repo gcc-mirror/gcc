@@ -905,9 +905,9 @@ AC_DEFUN(GLIBCPP_CHECK_MATH_SUPPORT, [
   dnl in libstdc++, which we are building right now.
   dnl Yet, we need to use the c++ compiler so that __cplusplus is defined.
   dnl So, use this.
-  ac_test_CFLAGS="${CFLAGS+set}"
-  ac_save_CFLAGS="$CFLAGS"
-  CFLAGS='-x c++'
+#  ac_test_CFLAGS="${CFLAGS+set}"
+#  ac_save_CFLAGS="$CFLAGS"
+#  CFLAGS='-x c++'
 
   dnl Check libm
   AC_CHECK_LIB(m, sin, libm="-lm")
@@ -937,7 +937,7 @@ AC_DEFUN(GLIBCPP_CHECK_MATH_SUPPORT, [
   _sincosl _finite _finitef _finitel _fqfinite _fpclass _qfpclass)
 
   LIBS="$save_LIBS"
-  CFLAGS="$ac_save_CFLAGS"
+#  CFLAGS="$ac_save_CFLAGS"
 ])
 
 
