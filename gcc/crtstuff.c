@@ -373,6 +373,7 @@ __do_global_ctors_aux ()	/* prologue goes in .text section */
 #ifdef FORCE_INIT_SECTION_ALIGN
   FORCE_INIT_SECTION_ALIGN;
 #endif
+  asm (TEXT_SECTION_ASM_OP);
 }				/* epilogue and body go in .init section */
 
 #endif /* OBJECT_FORMAT_ELF */
