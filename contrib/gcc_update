@@ -56,16 +56,6 @@ self=$0
 # colon is stripped from the output.
 files_and_dependencies () {
     sed -e 's/ *#.*//' -e '/^$/d' -e 's/://' <<\EOF
-# All automake dependencies within texinfo
-# In fact, not all, since we do not care about sub-directories that
-# we do not build.  In particular, *.po and *.gmo are not touched.
-texinfo/aclocal.m4: texinfo/configure.in texinfo/acinclude.m4
-texinfo/Makefile.in: texinfo/Makefile.am texinfo/configure.in texinfo/aclocal.m4
-texinfo/configure: texinfo/configure.in texinfo/aclocal.m4
-texinfo/stamp-h.in: texinfo/configure.in texinfo/aclocal.m4 texinfo/acconfig.h
-texinfo/lib/Makefile.in: texinfo/lib/Makefile.am texinfo/configure.in texinfo/aclocal.m4
-texinfo/makeinfo/Makefile.in: texinfo/makeinfo/Makefile.am texinfo/configure.in texinfo/aclocal.m4
-texinfo/util/Makefile.in: texinfo/util/Makefile.am texinfo/configure.in texinfo/aclocal.m4
 # intl library
 intl/plural.c: intl/plural.y
 intl/configure: intl/configure.in intl/aclocal.m4
@@ -99,7 +89,6 @@ libobjc/configure: libobjc/configure.in
 fastjar/aclocal.m4: fastjar/configure.in
 fastjar/Makefile.in: fastjar/Makefile.am fastjar/configure.in fastjar/aclocal.m4
 fastjar/configure: fastjar/configure.in fastjar/aclocal.m4
-fastjar/stamp-h.in: fastjar/configure.in fastjar/aclocal.m4
 boehm-gc/aclocal.m4: boehm-gc/configure.in boehm-gc/acinclude.m4
 boehm-gc/Makefile.in: boehm-gc/Makefile.am boehm-gc/configure.in boehm-gc/aclocal.m4
 boehm-gc/configure: boehm-gc/configure.in boehm-gc/aclocal.m4
