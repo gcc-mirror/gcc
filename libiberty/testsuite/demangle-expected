@@ -3681,6 +3681,24 @@ _ZNK5boost6spirit5matchI13rcs_deltatextEcvMNS0_4impl5dummyEFvvEEv
 boost::spirit::match<rcs_deltatext>::operator void (boost::spirit::impl::dummy::*)()() const
 boost::spirit::match<rcs_deltatext>::operator void (boost::spirit::impl::dummy::*)()
 #
+# Multi-dimensional arrays with qualifiers on the inner dimensions.
+--format=gnu-v3 --no-params
+_Z3fooIA6_KiEvA9_KT_rVPrS4_
+void foo<int const [6]>(int const [9][6], int restrict const (* volatile restrict) [9][6])
+foo<int const [6]>
+#
+# From PR libstdc++/12736
+--format=gnu-v3 --no-params
+_Z3fooIA3_iEvRKT_
+void foo<int [3]>(int const (&) [3])
+foo<int [3]>
+#
+# Related to PR libstdc++/12736
+--format=gnu-v3 --no-params
+_Z3fooIPA3_iEvRKT_
+void foo<int (*) [3]>(int (* const&) [3])
+foo<int (*) [3]>
+#
 # Test GNU V3 constructor and destructor identification.
 # 0 means it is not a constructor/destructor.
 # Other integers correspond to enum gnu_v3_{c,d}tor_kinds in demangle.h.
