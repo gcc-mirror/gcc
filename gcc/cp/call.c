@@ -2087,19 +2087,16 @@ build_user_type_conversion_1 (totype, expr, flags)
 	ics = implicit_conversion
 	  (totype, TREE_TYPE (TREE_TYPE (fn)), 0, convflags);
       else
-	/* Here, the template conversion operator result must
-	   precisely match the TOTYPE.  (FIXME: Actually, we're
-	   supposed to do some simple conversions here; see
-	   [temp.deduct.conv].).  If the result of the conversion
-	   operator is not actually TOTYPE, then
-	   add_template_candidate will fail below.  */
-	ics = implicit_conversion (totype, totype, 0, convflags);
+	/* We can't compute this yet.  */
+	ics = error_mark_node;
 
       if (TREE_CODE (totype) == REFERENCE_TYPE && ics && ICS_BAD_FLAG (ics))
 	/* ignore the near match.  */;
       else if (ics)
 	for (; fn; fn = DECL_CHAIN (fn))
 	  {
+	    struct z_candidate *old_candidates = candidates;
+
 	    if (TREE_CODE (fn) == TEMPLATE_DECL)
 	      {
 		templates = scratch_tree_cons (NULL_TREE, fn, templates);
@@ -2111,11 +2108,19 @@ build_user_type_conversion_1 (totype, expr, flags)
 	      candidates = add_function_candidate (candidates, fn,
 						   args, flags); 
 
-	    if (candidates) 
+	    if (candidates != old_candidates)
 	      {
+		if (TREE_CODE (fn) == TEMPLATE_DECL)
+		  ics = implicit_conversion
+		    (totype, TREE_TYPE (TREE_TYPE (candidates->fn)),
+		     0, convflags);
+
 		candidates->second_conv = ics;
 		candidates->basetype_path = TREE_PURPOSE (convs);
-		if (candidates->viable == 1 && ICS_BAD_FLAG (ics))
+
+		if (ics == NULL_TREE)
+		  candidates->viable = 0;
+		else if (candidates->viable == 1 && ICS_BAD_FLAG (ics))
 		  candidates->viable = -1;
 	      }
 	  }

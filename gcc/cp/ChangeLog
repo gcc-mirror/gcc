@@ -1,3 +1,8 @@
+Fri May  8 00:43:50 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* call.c (build_user_type_conversion_1): Handle second_conv 
+	properly for templates.
+
 Thu May  7 17:09:25 EDT 1998  Andrew MacLeod  <amacleod@cygnus.com>
 
 	* method.c (build_decl_overload_real): Set TREE_USED flag to
