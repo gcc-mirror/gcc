@@ -1,3 +1,7 @@
+1998-11-13  Tom Tromey  <tromey@cygnus.com>
+
+	* Makefile.in (prefix): New macro.
+
 Thu Nov 12 14:15:07 1998  Per Bothner  <bothner@cygnus.com>
 
 	* parse.y (patch_invoke):  Do less if flag_emit_class_files.
