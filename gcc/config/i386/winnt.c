@@ -420,7 +420,10 @@ gen_fastcall_suffix (tree decl)
       {
 	tree formal_type = TYPE_ARG_TYPES (TREE_TYPE (decl));
 
-	while (TREE_VALUE (formal_type) != void_type_node)
+	/* Quit if we hit an incomplete type.  Error is reported
+	   by convert_arguments in c-typeck.c or cp/typeck.c.  */
+	while (TREE_VALUE (formal_type) != void_type_node
+	       && COMPLETE_TYPE_P (TREE_VALUE (formal_type)))	
 	  {
 	    int parm_size
 	      = TREE_INT_CST_LOW (TYPE_SIZE (TREE_VALUE (formal_type)));
@@ -458,7 +461,10 @@ gen_stdcall_suffix (tree decl)
       {
 	tree formal_type = TYPE_ARG_TYPES (TREE_TYPE (decl));
 
-	while (TREE_VALUE (formal_type) != void_type_node)
+	/* Quit if we hit an incomplete type.  Error is reported
+	   by convert_arguments in c-typeck.c or cp/typeck.c.  */
+	while (TREE_VALUE (formal_type) != void_type_node
+	       && COMPLETE_TYPE_P (TREE_VALUE (formal_type)))	
 	  {
 	    int parm_size
 	      = TREE_INT_CST_LOW (TYPE_SIZE (TREE_VALUE (formal_type)));
