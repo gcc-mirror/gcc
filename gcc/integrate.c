@@ -1555,6 +1555,14 @@ copy_insn_list (insns, map, static_chain_value)
 	  break;
 
 	case NOTE:
+	  if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_DELETED_LABEL)
+	    {
+	      copy = emit_label (get_label_from_map (map,
+						    CODE_LABEL_NUMBER (insn)));
+	      map->const_age++;
+	      break;
+	    }
+
 	  /* NOTE_INSN_FUNCTION_END and NOTE_INSN_FUNCTION_BEG are
 	     discarded because it is important to have only one of
 	     each in the current function.
@@ -1992,17 +2000,17 @@ copy_rtx_and_substitute (orig, map, for_lhs)
 	copy = SUBREG_REG (copy);
       return gen_rtx_fmt_e (code, VOIDmode, copy);
 
+    /* We need to handle "deleted" labels that appear in the DECL_RTL
+       of a LABEL_DECL.  */
+    case NOTE:
+      if (NOTE_LINE_NUMBER (orig) != NOTE_INSN_DELETED_LABEL)
+	break;
+
+      /* ... FALLTHRU ... */
     case CODE_LABEL:
       LABEL_PRESERVE_P (get_label_from_map (map, CODE_LABEL_NUMBER (orig)))
 	= LABEL_PRESERVE_P (orig);
       return get_label_from_map (map, CODE_LABEL_NUMBER (orig));
-
-    /* We need to handle "deleted" labels that appear in the DECL_RTL
-       of a LABEL_DECL.  */
-    case NOTE:
-      if (NOTE_LINE_NUMBER (orig) == NOTE_INSN_DELETED_LABEL)
-	return map->insn_map[INSN_UID (orig)];
-      break;
 
     case LABEL_REF:
       copy

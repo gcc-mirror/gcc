@@ -5866,6 +5866,23 @@ fold (expr)
 		}
 	    }
 	}
+      /* Convert A/B/C to A/(B*C).  */
+      if (flag_unsafe_math_optimizations
+	  && TREE_CODE (arg0) == RDIV_EXPR)
+	{
+	  return fold (build (RDIV_EXPR, type, TREE_OPERAND (arg0, 0),
+			      build (MULT_EXPR, type, TREE_OPERAND (arg0, 1),
+				     arg1)));
+	}
+      /* Convert A/(B/C) to (A/B)*C.  */
+      if (flag_unsafe_math_optimizations
+	  && TREE_CODE (arg1) == RDIV_EXPR)
+	{
+	  return fold (build (MULT_EXPR, type,
+			      build (RDIV_EXPR, type, arg0,
+			     	     TREE_OPERAND (arg1, 0)),
+	 		      TREE_OPERAND (arg1, 1)));
+	}
       goto binary;
 
     case TRUNC_DIV_EXPR:
