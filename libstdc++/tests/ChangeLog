@@ -1,3 +1,7 @@
+1998-07-12  Bob Sidebotham <rns@fore.com>
+
+	* tstring.cc (findtest): New fn.
+
 1998-06-01  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* tlist.cc, tvector.cc, tmap.cc: Remove explicit instantiations.
