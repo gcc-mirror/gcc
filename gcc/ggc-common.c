@@ -457,7 +457,7 @@ gt_pch_save (FILE *f)
   mmi.preferred_base = mmap (NULL, mmi.size,
 			     PROT_READ | PROT_WRITE, MAP_PRIVATE,
 			     fileno (state.f), 0);
-  if (mmi.preferred_base == MAP_FAILED)
+  if (mmi.preferred_base == (void *) MAP_FAILED)
     mmi.preferred_base = NULL;
   else
     munmap (mmi.preferred_base, mmi.size);
@@ -582,7 +582,7 @@ gt_pch_restore (FILE *f)
       size_t page_size = getpagesize();
       char one_byte;
 
-      if (addr != MAP_FAILED)
+      if (addr != (void *) MAP_FAILED)
 	munmap (addr, mmi.size);
 
       /* We really want to be mapped at mmi.preferred_base
@@ -609,7 +609,7 @@ gt_pch_restore (FILE *f)
 #else /* HAVE_MMAP_FILE */
   addr = MAP_FAILED;
 #endif /* HAVE_MMAP_FILE */
-  if (addr == MAP_FAILED)
+  if (addr == (void *) MAP_FAILED)
     {
       addr = xmalloc (mmi.size);
       if (fseek (f, mmi.offset, SEEK_SET) != 0
