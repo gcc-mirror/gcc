@@ -62,6 +62,9 @@ struct ptr_info_def GTY(())
   /* Nonzero if this pointer is dereferenced.  */
   unsigned int is_dereferenced : 1;
 
+  /* Nonzero if this pointer points to a global variable.  */
+  unsigned int pt_global_mem : 1;
+
   /* Set of variables that this pointer may point to.  */
   bitmap pt_vars;
 

@@ -1,3 +1,40 @@
+2004-08-18  Diego Novillo  <dnovillo@redhat.com>
+
+	* tree-dfa.c (add_referenced_var): Only global variables are
+	call-clobbered.
+	* tree-flow.h (struct ptr_info_def): Add field pt_global_mem.
+	* tree-ssa-alias.c (compute_points_to_and_addr_escape): Mark
+	all pointers dereferenced if the statement dereferences them.
+	(create_name_tags): Do not create memory tags for pointers
+	that have PT_ANYTHING set.
+	Also check if PT_VARS is not empty before creating a name tag.
+	(compute_flow_sensitive_aliasing): Don't mark call-clobbered
+	variables that share the same alias set with a pointer that
+	may point anywhere.
+	(add_may_alias): Add FIXME comment to remove clobbering
+	aliased variables and tags.
+	(replace_may_alias): Likewise.
+	(set_pt_anything): Do not clear PT_VARS nor IS_DEREFERENCED.
+	(merge_pointed_to_info): If the original variable has not
+	points-to information, call set_pt_anything.
+	(add_pointed_to_var): Do not prevent adding a pointed-to
+	variable if the pointers is PT_ANYTHING.
+	If the variable is a global, set PT_GLOBAL_MEM.
+	(collect_points_to_info_r): Don't assume that PLUS_EXPRs of
+	pointer type only come in PTR+OFFSET flavours.
+	Always call merge_pointed_to_info on PHI arguments that are
+	SSA_NAMEs.
+	(get_nmt_for): Mark call-clobbered tags whose pointer points
+	to global memory.
+	* tree-ssa-operands.c (opf_kill_def, opf_no_vops): Switch
+	values.
+	(get_indirect_ref_operands): Always clear OPF_KILL_DEF from
+	FLAGS.
+	(add_stmt_operand): Abort if the caller tried to add a killing
+	definition for a memory tag.
+	* tree-ssa.c (verify_flow_sensitive_alias_info): Remove
+	unnecessary checks.
+
 2004-08-18  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* sh.h (CONDITIONAL_REGISTER_USAGE): Don't exclude fixed registers

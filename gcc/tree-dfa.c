@@ -903,10 +903,8 @@ add_referenced_var (tree var, struct walk_state *walk_state)
       v_ann->uid = num_referenced_vars;
       VARRAY_PUSH_TREE (referenced_vars, var);
 
-      /* Initially assume that all memory variables are
-	 call-clobbered.  This will be refined later by the alias
-	 analyzer.  */
-      if (needs_to_live_in_memory (var))
+      /* Global variables are always call-clobbered.  */
+      if (is_global_var (var))
 	mark_call_clobbered (var);
 
       /* If an initialized global variable then register the initializer

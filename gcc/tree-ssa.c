@@ -433,18 +433,6 @@ verify_flow_sensitive_alias_info (void)
 	  goto err;
 	}
 
-      if (pi->pt_anything && (pi->pt_malloc || pi->pt_vars))
-	{
-	  error ("Pointers that point to anything should not point to malloc or other vars");
-	  goto err;
-	}
-      
-      if (pi->pt_malloc && pi->pt_vars)
-	{
-	  error ("Pointers pointing to malloc get a unique tag and cannot point to other vars");
-	  goto err;
-	}
-
       if (pi->name_mem_tag
 	  && !pi->pt_malloc
 	  && (pi->pt_vars == NULL
