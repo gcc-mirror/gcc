@@ -1872,7 +1872,7 @@ elif test -f $gcc_cv_ld_gld_srcdir/configure.in \
 	for f in $gcc_cv_ld_bfd_srcdir/configure $gcc_cv_ld_gld_srcdir/configure $gcc_cv_ld_gld_srcdir/configure.in $gcc_cv_ld_gld_srcdir/Makefile.in
 	do
 changequote(,)dnl
-		gcc_cv_gld_version=`grep '^VERSION=[0-9]*\.[0-9]*' $f`
+		gcc_cv_gld_version=`sed -n -e 's/^[ 	]*\(VERSION=[0-9]*\.[0-9]*.*\)/\1/p' < $f`
 changequote([,])dnl
 		if test x$gcc_cv_gld_version != x; then
 			break
