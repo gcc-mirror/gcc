@@ -1,3 +1,11 @@
+2004-09-01  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	PR fortran/16400
+	PR fortran/16404
+	(port from g95)
+	* resolve.c (resolve_transfer): New function.
+	(resolve_code): Call resolve_transfer in case of EXEC_TRANSFER.
+
 2004-08-31  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/16579
