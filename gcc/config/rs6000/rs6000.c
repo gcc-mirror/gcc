@@ -12562,10 +12562,14 @@ rs6000_elf_encode_section_info (decl, first)
 	   && DEFAULT_ABI == ABI_V4
 	   && TREE_CODE (decl) == VAR_DECL)
     {
+      rtx sym_ref = XEXP (DECL_RTL (decl), 0);
       int size = int_size_in_bytes (TREE_TYPE (decl));
       tree section_name = DECL_SECTION_NAME (decl);
       const char *name = (char *)0;
       int len = 0;
+
+      if ((*targetm.binds_local_p) (decl))
+	SYMBOL_REF_FLAG (sym_ref) = 1;
 
       if (section_name)
 	{
@@ -12593,7 +12597,6 @@ rs6000_elf_encode_section_info (decl, first)
 		  || (len == sizeof (".PPC.EMB.sbss0") - 1
 		      && strcmp (name, ".PPC.EMB.sbss0") == 0))))
 	{
-	  rtx sym_ref = XEXP (DECL_RTL (decl), 0);
 	  size_t len = strlen (XSTR (sym_ref, 0));
 	  char *str = alloca (len + 2);
 
