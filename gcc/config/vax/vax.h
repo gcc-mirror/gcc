@@ -1188,6 +1188,7 @@ VAX operand formatting codes:
 
  letter	   print
    C	reverse branch condition
+   D	64-bit immediate operand
    B	the low 8 bits of the complement of a constant operand
    H	the low 16 bits of the complement of a constant operand
    M	a mask for the N highest bits of a word
@@ -1198,6 +1199,10 @@ VAX operand formatting codes:
    h	the low 16 bits of a negated constant operand
    #	'd' or 'g' depending on whether dfloat or gfloat is used  */
 
+/* The purpose of D is to get around a quirk or bug in vax assembler
+   whereby -1 in a 64-bit immediate operand means 0x00000000ffffffff,
+   which is not a 64-bit minus one.  */
+
 #define PRINT_OPERAND_PUNCT_VALID_P(CODE)				\
   ((CODE) == '#')
 
@@ -1206,6 +1211,8 @@ VAX operand formatting codes:
   if (CODE == '#') fputc (ASM_DOUBLE_CHAR, FILE);			\
   else if (CODE == 'C')							\
     fputs (rev_cond_name (X), FILE);					\
+  else if (CODE == 'D' && GET_CODE (X) == CONST_INT && INTVAL (X) < 0)	\
+    fprintf (FILE, "0xffffffff%08x", INTVAL (X));			\
   else if (CODE == 'P' && GET_CODE (X) == CONST_INT)			\
     fprintf (FILE, "$%d", INTVAL (X) + 1);				\
   else if (CODE == 'N' && GET_CODE (X) == CONST_INT)			\
