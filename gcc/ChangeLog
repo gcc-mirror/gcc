@@ -1,3 +1,10 @@
+2004-09-03  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/15832
+	* global.c (modify_reg_pav): New function.
+	(make_accurate_live_analysis): Call the new function.  Move pavin
+	modification by earlyclobber set into the new function.
+
 2004-09-03  Andreas Schwab  <schwab@suse.de>
 
 	* config/m68k/m68k.c (output_andsi3): Use -1 instead of
