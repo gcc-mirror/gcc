@@ -1,3 +1,8 @@
+Mon Feb  2 01:22:46 1998  Hans-Peter Nilsson  <hp@axis.se>
+
+	* expr.c (emit_push_insn): Use same max-move-amount for movstrhi
+	and movstrqi as in emit_block_move ().
+
 Mon Feb  2 00:09:52 1998  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	* config/m68k/x-next: Remove /NextDeveloper/Headers from
