@@ -1,3 +1,7 @@
+2001-09-01  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* mips.h (INITIAL_ELIMINATION_OFFSET): Add missing `else abort'.
+
 2001-09-01  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* cppinit.c (cpp_start_read): Free the imacros list as we
