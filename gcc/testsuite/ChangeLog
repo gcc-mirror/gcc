@@ -1,5 +1,8 @@
 1998-10-31  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
+	* g++.old-deja/g++.pt/sizeof2.C: incorrect specialization of base
+	template is selected
+
 	* g++.old-deja/g++.ext/arrnew2.C: if new T[n](i) is accepted for
 	classes, it should be accepted for all types.
 
