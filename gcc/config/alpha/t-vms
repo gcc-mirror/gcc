@@ -1,0 +1,6 @@
+# Do not build libgcc1.
+LIBGCC1 = 
+CROSS_LIBGCC1 =
+
+LIB2FUNCS_EXTRA = tramp.s
+
