@@ -423,7 +423,10 @@ enum reg_class {
 /* We use d0/d1 for passing parameters, so allocate 8 bytes of space
    for a register flushback area.  */
 #define REG_PARM_STACK_SPACE(DECL) 8
-#define OUTGOING_REG_PARM_STACK_SPACE
+
+/* So we can allocate space for return pointers once for the function
+   instead of around every call.  */
+#define STACK_POINTER_OFFSET 4
 
 /* 1 if N is a possible register number for function argument passing.
    On the MN10300, no registers are used in this way.  */
