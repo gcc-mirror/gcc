@@ -1,3 +1,8 @@
+Sun Oct 26 09:15:15 1997  Richard Henderson  <rth@cygnus.com>
+
+	* expr.c (get_inner_reference): Remove the array bias after 
+	converting the index to Pmode.
+
 Sat Oct 25 12:20:58 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* mn10300.h (TARGET_SWITCHES): Add -mmult-bug and -mno-mult-bug.

@@ -4345,15 +4345,15 @@ get_inner_reference (exp, pbitsize, pbitpos, poffset, pmode,
 	    = domain ? TYPE_MIN_VALUE (domain) : integer_zero_node;
 	  tree index_type = TREE_TYPE (index);
 
-	  if (! integer_zerop (low_bound))
-	    index = fold (build (MINUS_EXPR, index_type, index, low_bound));
-
 	  if (TYPE_PRECISION (index_type) != TYPE_PRECISION (sizetype))
 	    {
 	      index = convert (type_for_size (TYPE_PRECISION (sizetype), 0),
 			       index);
 	      index_type = TREE_TYPE (index);
 	    }
+
+	  if (! integer_zerop (low_bound))
+	    index = fold (build (MINUS_EXPR, index_type, index, low_bound));
 
 	  index = fold (build (MULT_EXPR, index_type, index,
 			       convert (index_type,
