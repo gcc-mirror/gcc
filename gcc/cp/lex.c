@@ -266,6 +266,8 @@ static const struct resword reswords[] =
   { "__inline__",	RID_INLINE,	0 },
   { "__label__",	RID_LABEL,	0 },
   { "__null",		RID_NULL,	0 },
+  { "__offsetof",       RID_OFFSETOF,   0 },
+  { "__offsetof__",     RID_OFFSETOF,   0 },
   { "__real",		RID_REALPART,	0 },
   { "__real__",		RID_REALPART,	0 },
   { "__restrict",	RID_RESTRICT,	0 },

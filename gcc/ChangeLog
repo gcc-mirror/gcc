@@ -1,3 +1,12 @@
+2003-12-16  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/13275
+	* c-common.h (enum rid): Add RID_OFFSETOF.
+	* c-parser.in (rid_to_yy): Ignore RID_OFFSETOF.
+	* ginclude/stddef.h (offsetof): Reimplement for C++, using
+	__offsetof__.
+	* doc/extend.texi: Document __offsetof__.
+	
 2003-12-16  Stan Cox  <scox@redhat.com>
 
 	* config/iq2000/iq2000.h: Formatting.

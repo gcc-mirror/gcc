@@ -7656,6 +7656,7 @@ Predefined Macros,cpp,The GNU C Preprocessor}).
                         method denoted by a @samp{->*} or @samp{.*} expression.
 * C++ Attributes::      Variable, function, and type attributes for C++ only.
 * Strong Using::      Strong using-directives for namespace composition.
+* Offsetof::            Special syntax for implementing @code{offsetof}.
 * Java Exceptions::     Tweaking exception handling to work with Java.
 * Deprecated Features:: Things will disappear from g++.
 * Backwards Compatibility:: Compatibilities with earlier definitions of C++.
@@ -8294,6 +8295,25 @@ int main()
   f (std::A<int>());
 @}
 @end smallexample
+
+@node Offsetof
+@section Offsetof
+
+G++ uses a syntactic extension to implement the @code{offsetof} macro.
+
+In particular:
+
+@smallexample
+  __offsetof__ (expression)
+@end smallexample
+
+is equivalent to the parenthesized expression, except that the
+expression is considered an integral constant expression even if it
+contains certain operators that are not normally permitted in an
+integral constant expression.  Users should never use
+@code{__offsetof__} directly; the only valid use of
+@code{__offsetof__} is to implement the @code{offsetof} macro in
+@code{<stddef.h>}.
 
 @node Java Exceptions
 @section Java Exceptions

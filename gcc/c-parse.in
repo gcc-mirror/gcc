@@ -3484,6 +3484,7 @@ static const short rid_to_yy[RID_MAX] =
   /* RID_FALSE */	0,
   /* RID_NAMESPACE */	0,
   /* RID_NEW */		0,
+  /* RID_OFFSETOF */    0,
   /* RID_OPERATOR */	0,
   /* RID_THIS */	0,
   /* RID_THROW */	0,
