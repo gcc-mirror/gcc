@@ -789,11 +789,50 @@ do_ident (pfile)
 
 /* Sub-handlers for the pragmas needing treatment here.
    They return 1 if the token buffer is to be popped, 0 if not. */
+struct pragma_entry
+{
+  char const *name;
+  int (*handler) PARAMS ((cpp_reader *));
+};
+
+static int pragma_dispatch             
+    PARAMS ((cpp_reader *, const struct pragma_entry *, U_CHAR *, size_t));
 static int do_pragma_once		PARAMS ((cpp_reader *));
 static int do_pragma_implementation	PARAMS ((cpp_reader *));
 static int do_pragma_poison		PARAMS ((cpp_reader *));
 static int do_pragma_system_header	PARAMS ((cpp_reader *));
 static int do_pragma_default		PARAMS ((cpp_reader *));
+static int do_pragma_gcc                PARAMS ((cpp_reader *));
+
+static const struct pragma_entry top_pragmas[] =
+{
+  {"once", do_pragma_once},
+  {"implementation", do_pragma_implementation},
+  {"poison", do_pragma_poison},
+  {"system_header", do_pragma_system_header},
+  {"GCC", do_pragma_gcc},
+  {NULL, do_pragma_default}
+};
+
+static const struct pragma_entry gcc_pragmas[] =
+{
+  {"implementation", do_pragma_implementation},
+  {"poison", do_pragma_poison},
+  {"system_header", do_pragma_system_header},
+  {NULL, do_pragma_default}
+};
+
+static int pragma_dispatch (pfile, table, p, len)
+     cpp_reader *pfile;
+     const struct pragma_entry *table;
+     U_CHAR *p;
+     size_t len;
+{
+  for (; table->name; table++)
+    if (strlen (table->name) == len && !memcmp (p, table->name, len))
+      return (*table->handler) (pfile);
+  return (*table->handler) (pfile);
+}
 
 static int
 do_pragma (pfile)
@@ -803,6 +842,7 @@ do_pragma (pfile)
   U_CHAR *buf;
   int pop;
   enum cpp_ttype token;
+  size_t  len;
 
   here = CPP_WRITTEN (pfile);
   CPP_PUTS (pfile, "#pragma ", 8);
@@ -819,20 +859,10 @@ do_pragma (pfile)
     }
 
   buf = pfile->token_buffer + key;
+  len = CPP_WRITTEN (pfile) - key;
   CPP_PUTC (pfile, ' ');
 
-#define tokis(x) !strncmp((char *) buf, x, sizeof(x) - 1)
-  if (tokis ("once"))
-    pop = do_pragma_once (pfile);
-  else if (tokis ("implementation"))
-    pop = do_pragma_implementation (pfile);
-  else if (tokis ("poison"))
-    pop = do_pragma_poison (pfile);
-  else if (tokis ("system_header"))
-    pop = do_pragma_system_header (pfile);
-  else
-    pop = do_pragma_default (pfile);
-#undef tokis
+  pop = pragma_dispatch (pfile, top_pragmas, buf, len);
 
   if (_cpp_get_directive_token (pfile) != CPP_VSPACE)
     goto skip;
@@ -858,6 +888,27 @@ do_pragma_default (pfile)
   while (_cpp_get_directive_token (pfile) != CPP_VSPACE)
     CPP_PUTC (pfile, ' ');
   return 0;
+}
+
+static int
+do_pragma_gcc (pfile)
+     cpp_reader *pfile;
+{
+  long key;
+  enum cpp_ttype token;
+  U_CHAR *buf;
+  size_t  len;
+  
+  key = CPP_WRITTEN (pfile);
+  token = _cpp_get_directive_token (pfile);
+  if (token != CPP_NAME)
+    return token == CPP_VSPACE;
+
+  buf = pfile->token_buffer + key;
+  len = CPP_WRITTEN (pfile) - key;
+  CPP_PUTC (pfile, ' ');
+  
+  return pragma_dispatch (pfile, gcc_pragmas, buf, len);
 }
 
 static int
