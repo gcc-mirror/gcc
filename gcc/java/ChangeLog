@@ -8,6 +8,12 @@
 	* zipfile.h (ZipDirectory): Declare size, uncompressed_size,
 	filestart and filename_length as int values.
 
+2000-12-07  Mo DeJong  <mdejong@redhat.com>
+
+	* jcf-io.c (find_class): Correct the logic that tests to see if a
+	.java file is newer than its .class file. The compiler was
+	incorrectly printing a warning when file mod times were equal.
+
 2000-12-07  Zack Weinberg  <zack@wolery.stanford.edu>
 
 	* jvgenmain.c: Use ISPRINT not isascii.

@@ -394,7 +394,7 @@ DEFUN(find_class, (classname, classname_length, jcf, source_ok),
      source file instead.
      There should be a flag to allow people have the class file picked
      up no matter what. FIXME. */
-  if (! java && ! class && java_buf.st_mtime >= class_buf.st_mtime)
+  if (! java && ! class && java_buf.st_mtime > class_buf.st_mtime)
     {
       char *stripped_class_name = xstrdup (classname);
       int i = strlen (stripped_class_name);
