@@ -59,7 +59,7 @@
 
 static void combine_predictions_for_insn PARAMS ((rtx, basic_block));
 static void dump_prediction		 PARAMS ((enum br_predictor, int,
-						  basic_block));
+						  basic_block, bool));
 static void estimate_loops_at_level	 PARAMS ((struct loop *loop));
 static void propagate_freq		 PARAMS ((basic_block));
 static void estimate_bb_frequencies	 PARAMS ((struct loops *));
@@ -178,10 +178,11 @@ invert_br_probabilities (insn)
 
 /* Dump information about the branch prediction to the output file.  */
 static void
-dump_prediction (predictor, probability, bb)
+dump_prediction (predictor, probability, bb, used)
      enum br_predictor predictor;
      int probability;
      basic_block bb;
+     bool used;
 {
   edge e = bb->succ;
 
@@ -191,8 +192,9 @@ dump_prediction (predictor, probability, bb)
   while (e->flags & EDGE_FALLTHRU)
     e = e->succ_next;
 
-  fprintf (rtl_dump_file, "  %s heuristics: %.1f%%",
+  fprintf (rtl_dump_file, "  %s heuristics%s: %.1f%%",
 	   predictor_info[predictor].name,
+	   used ? "" : " (ignored)",
 	   probability * 100.0 / REG_BR_PROB_BASE);
 
   if (bb->count)
@@ -218,10 +220,13 @@ combine_predictions_for_insn (insn, bb)
 {
   rtx prob_note = find_reg_note (insn, REG_BR_PROB, 0);
   rtx *pnote = &REG_NOTES (insn);
+  rtx note = REG_NOTES (insn);
   int best_probability = PROB_EVEN;
   int best_predictor = END_PREDICTORS;
   int combined_probability = REG_BR_PROB_BASE / 2;
   int d;
+  bool first_match = false;
+  bool found = false;
 
   if (rtl_dump_file)
     fprintf (rtl_dump_file, "Predictions for insn %i bb %i\n", INSN_UID (insn),
@@ -230,17 +235,16 @@ combine_predictions_for_insn (insn, bb)
   /* We implement "first match" heuristics and use probability guessed
      by predictor with smallest index.  In the future we will use better
      probability combination techniques.  */
-  while (*pnote)
+  while (note)
     {
-      if (REG_NOTE_KIND (*pnote) == REG_BR_PRED)
+      if (REG_NOTE_KIND (note) == REG_BR_PRED)
 	{
-	  int predictor = INTVAL (XEXP (XEXP (*pnote, 0), 0));
-	  int probability = INTVAL (XEXP (XEXP (*pnote, 0), 1));
+	  int predictor = INTVAL (XEXP (XEXP (note, 0), 0));
+	  int probability = INTVAL (XEXP (XEXP (note, 0), 1));
 
-	  dump_prediction (predictor, probability, bb);
+	  found = true;
 	  if (best_predictor > predictor)
 	    best_probability = probability, best_predictor = predictor;
-	  *pnote = XEXP (*pnote, 1);
 
 	  d = (combined_probability * probability
 	       + (REG_BR_PROB_BASE - combined_probability)
@@ -249,13 +253,43 @@ combine_predictions_for_insn (insn, bb)
 	  combined_probability = (((double)combined_probability) * probability
 				  * REG_BR_PROB_BASE / d + 0.5);
 	}
+      note = XEXP (note, 1);
+    }
+
+  /* Decide heuristic to use.  In case we didn't match anything, use
+     no_prediction heuristic, in case we did match, use either
+     first match or Dempster-Shaffer theory depending on the flags.  */
+
+  if (predictor_info [best_predictor].flags & PRED_FLAG_FIRST_MATCH)
+    first_match = true;
+
+  if (!found)
+    dump_prediction (PRED_NO_PREDICTION, combined_probability, bb, true);
+  else
+    {
+      dump_prediction (PRED_DS_THEORY, combined_probability, bb,
+		       !first_match);
+      dump_prediction (PRED_FIRST_MATCH, best_probability, bb, first_match);
+    }
+
+  if (first_match)
+    combined_probability = best_probability;
+  dump_prediction (PRED_COMBINED, combined_probability, bb, true);
+
+  while (*pnote)
+    {
+      if (REG_NOTE_KIND (*pnote) == REG_BR_PRED)
+	{
+	  int predictor = INTVAL (XEXP (XEXP (*pnote, 0), 0));
+	  int probability = INTVAL (XEXP (XEXP (*pnote, 0), 1));
+
+	  dump_prediction (predictor, probability, bb,
+			   !first_match || best_predictor == predictor);
+          *pnote = XEXP (*pnote, 1);
+	}
       else
         pnote = &XEXP (*pnote, 1);
     }
-  if (predictor_info [best_predictor].flags & PRED_FLAG_FIRST_MATCH)
-    combined_probability = best_probability;
-  dump_prediction (PRED_FIRST_MATCH, best_probability, bb);
-  dump_prediction (PRED_COMBINED, combined_probability, bb);
   if (!prob_note)
     {
       REG_NOTES (insn)

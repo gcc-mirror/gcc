@@ -1,3 +1,10 @@
+Mon Aug 13 02:27:39 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* predict.c (dump_prediction): New argument "USED".
+	(combine_predictions_for_insn): Determine the used heuristics,
+	output the case no heuristic applied.
+	* predict.def (PRED_DS_THEORY, PRED_NO_HEURISTIC): New.
+
 2001-08-13  Andreas Jaeger  <aj@suse.de>
 
 	* config/i386/unix.h (ASM_OUTPUT_MI_THUNK): Don't capitalize
