@@ -1,7 +1,8 @@
 # Do not build libgcc1.
-LIBGCC = stmp-crt
-INSTALL_LIBGCC = install-crt
+LIBGCC1 = 
 CROSS_LIBGCC1 =
+
+EXTRA_PARTS = crti.o crtn.o
 
 EXTRA_HEADERS = $(srcdir)/ginclude/ppc-asm.h
 
@@ -29,28 +30,8 @@ crti.s: $(srcdir)/config/rs6000/nt-ci.asm
 crtn.s: $(srcdir)/config/rs6000/nt-cn.asm
 	cat $(srcdir)/config/rs6000/nt-cn.asm >crtn.s
 
-# Build multiple copies of crt{i,n}.o, one for each target switch.
-stmp-crt: crti.s crtn.s $(GCC_PASSES) stmp-multilib config.status
-	for i in `$(GCC_FOR_TARGET) --print-multi-lib`; do \
-	  dir=`echo $$i | sed -e 's/;.*$$//'`; \
-	  flags=`echo $$i | sed -e 's/^[^;]*;//' -e 's/@/ -/g'`; \
-	  $(MAKE) GCC_FOR_TARGET="$(GCC_FOR_TARGET)" \
-	    LIBGCC2_CFLAGS="$(LIBGCC2_CFLAGS) $${flags}" \
-	    dir="$${dir}" stmp-crt-sub; \
-	  if [ $$? -eq 0 ] ; then true; else exit 1; fi; \
-	done
-	touch stmp-crt
-
-# Subroutine of stmp-crt so make -n works.
-stmp-crt-sub:
-	$(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) -c -o $(dir)/crti.o crti.s
-	$(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) -c -o $(dir)/crtn.o crtn.s
-
-# Install multiple versions of crt[in].o
-install-crt: stmp-crt install-dir install-multilib
-	for i in `$(GCC_FOR_TARGET) --print-multi-lib`; do \
-	  dir=`echo $$i | sed -e 's/;.*$$//'`; \
-	  rm -f $(libsubdir)/$${dir}/crt[in].o; \
-	  $(INSTALL_DATA) $${dir}/crti.o $(libsubdir)/$${dir}/crti.o; \
-	  $(INSTALL_DATA) $${dir}/crtn.o $(libsubdir)/$${dir}/crtn.o; \
-	done
+crti.o: crti.s
+	$(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) -c -o crti.o crti.s
+	
+crtn.o: crtn.s
+	$(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) -c -o crtn.o crtn.s
