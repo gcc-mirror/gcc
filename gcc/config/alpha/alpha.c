@@ -1137,7 +1137,7 @@ alpha_swapped_comparison_operator (rtx op, enum machine_mode mode)
   enum rtx_code code;
 
   if ((mode != GET_MODE (op) && mode != VOIDmode)
-      || COMPARISON_P (op));
+      || !COMPARISON_P (op))
     return 0;
 
   code = swap_condition (GET_CODE (op));
