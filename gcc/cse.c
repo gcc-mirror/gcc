@@ -7802,7 +7802,11 @@ cse_insn (insn, libcall_insn)
      then be used in the sequel and we may be changing a two-operand insn
      into a three-operand insn.
 
-     Also do not do this if we are operating on a copy of INSN.  */
+     Also do not do this if we are operating on a copy of INSN.
+
+     Also don't do this if INSN ends a libcall; this would cause an unrelated
+     register to be set in the middle of a libcall, and we then get bad code
+     if the libcall is deleted.  */
 
   if (n_sets == 1 && sets[0].rtl && GET_CODE (SET_DEST (sets[0].rtl)) == REG
       && NEXT_INSN (PREV_INSN (insn)) == insn
@@ -7810,7 +7814,8 @@ cse_insn (insn, libcall_insn)
       && REGNO (SET_SRC (sets[0].rtl)) >= FIRST_PSEUDO_REGISTER
       && REGNO_QTY_VALID_P (REGNO (SET_SRC (sets[0].rtl)))
       && (qty_first_reg[reg_qty[REGNO (SET_SRC (sets[0].rtl))]]
-	  == REGNO (SET_DEST (sets[0].rtl))))
+	  == REGNO (SET_DEST (sets[0].rtl)))
+      && ! find_reg_note (insn, REG_RETVAL, NULL_RTX))
     {
       rtx prev = PREV_INSN (insn);
       while (prev && GET_CODE (prev) == NOTE)
