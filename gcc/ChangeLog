@@ -1,3 +1,9 @@
+2004-01-20  Bruce Korb  <bkorb@gnu.org>
+
+	* fixinc/inclhack.def(math_exception): bypass only for glibc.
+	(matherr_decl): rename & relocate as exception_structure.
+	This fix must precede the math_exception fix.
+
 2004-01-20  Roger Sayle  <roger@eyesopen.com>
 
 	* fold-const.c (fold_convert): Rename to fold_convert_const.
