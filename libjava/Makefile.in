@@ -1179,7 +1179,7 @@ libgcj.zip: $(java_source_files)
 	  $$javac $(JCFLAGS) -classpath $(here):`/bin/pwd` -d $(here) \
 	    $(subst $(srcdir)/,,$?)
 	-@rm -f libgcj.zip
-	$(ZIP) -r libgcj java -n .class -i '*.class' -i '*/'
+	$(ZIP) -r libgcj java gnu -n .class -i '*.class' -i '*/'
 
 .class.o:
 	CLASSPATH=$(here) $(CC) -fassume-compiled $(JC1FLAGS) -c -o $@ $<
