@@ -1,4 +1,4 @@
-/* Definitions of target machine for GNU compiler, for SPARClet w/o FPU.
+/* Definitions of target machine for GNU compiler, for SPARClet.
    Copyright (C) 1996 Free Software Foundation, Inc.
    Contributed by Doug Evans (dje@cygnus.com).
 
@@ -21,14 +21,16 @@ Boston, MA 02111-1307, USA.  */
 
 #include "sparc/aout.h"
 
-/* The sparclet doesn't have an fpu.  */
 #undef TARGET_DEFAULT
 #define TARGET_DEFAULT (MASK_APP_REGS + MASK_EPILOGUE)
 
 /* -mlive-g0 is only supported on the sparclet.  */
 #undef SUBTARGET_SWITCHES
 #define SUBTARGET_SWITCHES \
-{"live-g0", MASK_LIVE_G0},
+{"live-g0", MASK_LIVE_G0},			\
+{"no-live-g0", -MASK_LIVE_G0},			\
+{"broken-saverestore", MASK_BROKEN_SAVERESTORE},	\
+{"no-broken-saverestore", -MASK_BROKEN_SAVERESTORE},
 
 /* Require the user to supply crt0.o.  */
 #undef STARTFILE_SPEC
