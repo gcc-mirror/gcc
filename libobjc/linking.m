@@ -38,3 +38,9 @@ void __objc_linking (void)
   [NXConstantString name];
 }
 
+#ifdef __APPLE__
+void _objcInit(void)
+{
+}
+#endif
+
