@@ -1630,7 +1630,7 @@ else
   if { (eval echo configure:1631: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; }; then
     for file in conftest.*; do
       case $file in
-      *.$ac_ext | *.c | *.o | *.obj) ;;
+      *.c | *.o | *.obj) ;;
       *) ac_cv_exeext=`echo $file | sed -e s/conftest//` ;;
       esac
     done
@@ -9038,7 +9038,7 @@ fi; done
 EOF
 
 cat >> $CONFIG_STATUS <<EOF
-ac_sources="include/$PLATFORMH java/io/natFile${FILE-${PLATFORM}}.cc java/lang/${PLATFORM}Process.java java/lang/nat${PLATFORM}Process.cc java/net/natInetAddress${PLATFORMNET}.cc java/net/natNetworkInterface${PLATFORMNET}.cc gnu/java/net/natPlainSocketImpl${PLATFORMNET}.cc gnu/java/net/natPlainDatagramSocketImpl${PLATFORMNET}.cc gnu/java/nio/natPipeImpl${PLATFORM}.cc gnu/java/nio/natSelectorImpl${PLATFORM}.cc gnu/java/nio/channels/natFileChannel${PLATFORM}.cc include/$GCHDR include/$THREADH sysdep/$sysdeps_dir/locks.h $SIGNAL_HANDLER $SIGNAL_HANDLER_AUX"
+ac_sources="include/$PLATFORMH java/io/natFile${FILE-${PLATFORM}}.cc java/lang/${PLATFORM}Process.java java/lang/nat${PLATFORM}Process.cc java/net/natInetAddress${PLATFORMNET}.cc java/net/natNetworkInterface${PLATFORMNET}.cc gnu/java/net/natPlainSocketImpl${PLATFORMNET}.cc gnu/java/net/natPlainDatagramSocketImpl${PLATFORMNET}.cc gnu/java/nio/natPipeImpl${PLATFORM}.cc gnu/java/nio/natSelectorImpl${PLATFORM}.cc gnu/java/nio/channels/natFileChannel${FILE-${PLATFORM}}.cc include/$GCHDR include/$THREADH sysdep/$sysdeps_dir/locks.h $SIGNAL_HANDLER $SIGNAL_HANDLER_AUX"
 ac_dests="include/platform.h java/io/natFile.cc java/lang/ConcreteProcess.java java/lang/natConcreteProcess.cc java/net/natInetAddress.cc java/net/natNetworkInterface.cc gnu/java/net/natPlainSocketImpl.cc gnu/java/net/natPlainDatagramSocketImpl.cc gnu/java/nio/natPipeImpl.cc gnu/java/nio/natSelectorImpl.cc gnu/java/nio/channels/natFileChannelImpl.cc include/java-gc.h include/java-threads.h sysdep/locks.h include/java-signal.h include/java-signal-aux.h"
 EOF
 

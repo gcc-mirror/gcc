@@ -330,7 +330,7 @@ test -d gnu/java/nio || mkdir gnu/java/nio
 AC_LINK_FILES(gnu/java/nio/natPipeImpl${PLATFORM}.cc, gnu/java/nio/natPipeImpl.cc)
 AC_LINK_FILES(gnu/java/nio/natSelectorImpl${PLATFORM}.cc, gnu/java/nio/natSelectorImpl.cc)
 test -d gnu/java/nio/channels || mkdir gnu/java/nio/channels
-AC_LINK_FILES(gnu/java/nio/channels/natFileChannel${PLATFORM}.cc, gnu/java/nio/channels/natFileChannelImpl.cc)
+AC_LINK_FILES(gnu/java/nio/channels/natFileChannel${FILE-${PLATFORM}}.cc, gnu/java/nio/channels/natFileChannelImpl.cc)
 
 case "${host}" in
     *mingw*)
