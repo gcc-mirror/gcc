@@ -127,6 +127,8 @@ static tree grokparms				PROTO((tree, int));
 static tree lookup_nested_type			PROTO((tree, tree));
 static char *redeclaration_error_message	PROTO((tree, tree));
 static void grok_op_properties			PROTO((tree, int, int));
+extern void* push_eh_context		 	PROTO(());
+extern void pop_eh_context		 	PROTO((void *));
 
 tree define_function		
 	PROTO((char *, tree, enum built_in_function, void (*)(), char *));
@@ -12807,7 +12809,10 @@ struct cp_function
   rtx result_rtx;
   struct cp_function *next;
   struct binding_level *binding_level;
+  void* eh_context;
 };
+
+
 
 struct cp_function *cp_function_chain;
 
@@ -12848,6 +12853,8 @@ push_cp_function_context (context)
   p->member_init_list = current_member_init_list;
   p->class_decl = current_class_decl;
   p->C_C_D = C_C_D;
+
+  p->eh_context = push_eh_context ();
 }
 
 /* Restore the variables used during compilation of a C++ function.  */
@@ -12900,6 +12907,8 @@ pop_cp_function_context (context)
   current_member_init_list = p->member_init_list;
   current_class_decl = p->class_decl;
   C_C_D = p->C_C_D;
+
+  pop_eh_context (p->eh_context);
 
   free (p);
 }

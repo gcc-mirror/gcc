@@ -31,6 +31,7 @@ Boston, MA 02111-1307, USA.  */
 #include "flags.h"
 #include "obstack.h"
 #include "expr.h"
+#include "output.h"
 
 tree protect_list;
 
@@ -330,7 +331,6 @@ tree saved_cleanup;
 int throw_used;
 
 static rtx catch_clauses;
-static first_catch_label;
 
 static struct ehStack ehstack;
 static struct ehQueue ehqueue;
@@ -350,6 +350,58 @@ static void push_label_entry		PROTO((struct labelNode **labelstack, rtx rlabel, 
 static rtx pop_label_entry		PROTO((struct labelNode **labelstack));
 static tree top_label_entry		PROTO((struct labelNode **labelstack));
 static struct ehEntry *copy_eh_entry	PROTO((struct ehEntry *entry));
+
+
+/* Routines to save and restore eh context information.  */
+struct eh_context {
+  struct ehStack ehstack;
+  struct ehQueue ehqueue;
+  rtx catch_clauses;
+  struct labelNode *false_label_stack;
+  struct labelNode *caught_return_label_stack;
+  tree protect_list;
+};
+
+/* Save the context and push into a new one.  */
+void*
+push_eh_context ()
+{
+  struct eh_context *p
+    = (struct eh_context*)xmalloc (sizeof (struct eh_context));
+
+  p->ehstack = ehstack;
+  p->ehqueue = ehqueue;
+  p->catch_clauses = catch_clauses;
+  p->false_label_stack = false_label_stack;
+  p->caught_return_label_stack = caught_return_label_stack;
+  p->protect_list = protect_list;
+
+  new_eh_stack (&ehstack);
+  new_eh_queue (&ehqueue);
+  catch_clauses = NULL_RTX;
+  false_label_stack = NULL;
+  caught_return_label_stack = NULL;
+  protect_list = NULL_TREE;
+  
+  return p;
+}
+
+/* Pop and restore the context.  */
+void
+pop_eh_context (vp)
+     void *vp;
+{
+  struct eh_context *p = (struct eh_context *)vp;
+
+  protect_list = p->protect_list;
+  caught_return_label_stack = p->caught_return_label_stack;
+  false_label_stack = p->false_label_stack;
+  catch_clauses	= p->catch_clauses;
+  ehqueue = p->ehqueue;
+  ehstack = p->ehstack;
+
+  free (p);
+}
 
 
 
@@ -1323,8 +1375,8 @@ expand_builtin_throw ()
 
     /* Set it up so that we continue inside, at the top of the loop.  */
     emit_move_insn (ret_val, gen_rtx (LABEL_REF, Pmode, top_of_loop));
-#ifdef NORMAL_RETURN_ADDR_OFFSET
-  return_val_rtx = plus_constant (ret_val, -NORMAL_RETURN_ADDR_OFFSET);
+#ifdef RETURN_ADDR_OFFSET
+  return_val_rtx = plus_constant (ret_val, -RETURN_ADDR_OFFSET);
     if (return_val_rtx != ret_val)
       emit_move_insn (ret_val, return_val_rtx);
 #endif
@@ -1434,7 +1486,7 @@ expand_end_eh_spec (raises)
 void
 expand_exception_blocks ()
 {
-  static rtx funcend;
+  rtx funcend;
   rtx insns;
 
   start_sequence ();
@@ -1771,8 +1823,8 @@ end_eh_unwinder (end)
   ret_val = expand_builtin_return_addr (BUILT_IN_RETURN_ADDRESS,
 					0, hard_frame_pointer_rtx);
   return_val_rtx = copy_to_reg (ret_val);
-#ifdef NORMAL_RETURN_ADDR_OFFSET
-  return_val_rtx = plus_constant (return_val_rtx, NORMAL_RETURN_ADDR_OFFSET-1);
+#ifdef RETURN_ADDR_OFFSET
+  return_val_rtx = plus_constant (return_val_rtx, RETURN_ADDR_OFFSET-1);
 #else
   return_val_rtx = plus_constant (return_val_rtx, -1);
 #endif
@@ -1785,8 +1837,8 @@ end_eh_unwinder (end)
   emit_move_insn (ret_val, gen_rtx (LABEL_REF, Pmode, label));
 #endif
 
-#ifdef NORMAL_RETURN_ADDR_OFFSET
-  return_val_rtx = plus_constant (ret_val, -NORMAL_RETURN_ADDR_OFFSET);
+#ifdef RETURN_ADDR_OFFSET
+  return_val_rtx = plus_constant (ret_val, -RETURN_ADDR_OFFSET);
   if (return_val_rtx != ret_val)
     emit_move_insn (ret_val, return_val_rtx);
 #endif

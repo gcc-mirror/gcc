@@ -1,3 +1,39 @@
+Thu Dec 28 11:13:15 1995  Mike Stump  <mrs@cygnus.com>
+
+	* except.c (expand_builtin_throw): Use RETURN_ADDR_OFFSET instead of
+	NORMAL_RETURN_ADDR_OFFSET.
+	(end_eh_unwinder): Ditto.
+
+Wed Dec 27 22:18:16 1995  Mike Stump  <mrs@cygnus.com>
+
+	* gc.c (build_dynamic_cast): Make sure we don't cast away const
+	when dealing with references, and make sure we handle dynamic
+	casting to a cv qualified reference.
+
+Thu Dec 21 23:50:35 1995  Mike Stump  <mrs@cygnus.com>
+
+	* except.c (struct eh_context): New structure top hold eh context
+	information.
+	(push_eh_context): New routine.
+	(pop_eh_context): Ditto.
+	* decl.c (push_cp_function_context): Use them.
+	(pop_cp_function_context): Ditto.
+
+Wed Dec 20 12:42:51 1995  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl2.c (finish_file): Also prune uninteresting functions in the
+	inline emission loop.
+
+Wed Dec 20 02:32:07 1995  Jeffrey A Law  (law@cygnus.com)
+
+	* sig.c (build_signature_table_constructor): Mark functions
+	in the signature as referenced.
+
+Tue Dec 19 22:36:56 1995  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl2.c (finish_file): Do all the vtable/synthesis stuff before
+	the inline emission stuff.
+
 Mon Dec 18 15:51:33 1995  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* cp-tree.h, decl2.c (flag_weak): New flag to control the use of
@@ -331,7 +367,7 @@ Wed Oct 11 16:30:34 1995  Brendan Kehoe  <brendan@lisa.cygnus.com>
 	* parse.y (fn.def1): Call split_specs_attrs in
 	declmods notype_declarator case.
 
-Mon Nov 20 14:06:28 1995  Mike Stump  <mrs@cygnus.com>
+Sun Nov 26 14:47:42 1995  Richard Kenner  <kenner@mole.gnu.ai.mit.edu>
 
 	* Version 2.7.2 released.
 
@@ -344,7 +380,7 @@ Thu Oct 26 13:59:54 1995  Mike Stump  <mrs@cygnus.com>
 	* init.c (expand_aggr_init): Handle cv qualifiers on the object's
 	type.
 
-Sun Nov 12 18:09:35 1995  Mike Stump  <mrs@cygnus.com>
+Sat Nov 11 08:25:55 1995  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* Version 2.7.1 released.
 
