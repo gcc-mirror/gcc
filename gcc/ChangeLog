@@ -1,3 +1,7 @@
+2004-02-20  James E Wilson  <wilson@specifixinc.com>
+
+	* toplev.c (dump_file_index, dump_file): Put ce3 before rnreg.
+
 2004-02-20  Josef Zlomek  <zlomekj@suse.cz>
 
 	* tree-inline.c (copy_body_r): Do not replace ret_label.
