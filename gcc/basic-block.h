@@ -649,9 +649,11 @@ extern void flow_edge_list_print	PARAMS ((const char *, const edge *,
 						 int, FILE *));
 extern void alloc_aux_for_block		PARAMS ((basic_block, int));
 extern void alloc_aux_for_blocks	PARAMS ((int));
+extern void clear_aux_for_blocks	PARAMS ((void));
 extern void free_aux_for_blocks		PARAMS ((void));
 extern void alloc_aux_for_edge		PARAMS ((edge, int));
 extern void alloc_aux_for_edges		PARAMS ((int));
+extern void clear_aux_for_edges		PARAMS ((void));
 extern void free_aux_for_edges		PARAMS ((void));
 
 /* This function is always defined so it can be called from the

@@ -177,6 +177,8 @@ compute_antinout_edge (antloc, transp, antin, antout)
 	    }
     }
 
+  clear_aux_for_edges ();
+  clear_aux_for_blocks ();
   free (worklist);
 }
 
@@ -354,6 +356,7 @@ compute_laterin (edge_list, earliest, antloc, later, laterin)
 		     laterin[n_basic_blocks],
 		     later[(size_t) e->aux]);
 
+  clear_aux_for_edges ();
   free (worklist);
 }
 
@@ -565,6 +568,8 @@ compute_available (avloc, kill, avout, avin)
 	    }
     }
 
+  clear_aux_for_edges ();
+  clear_aux_for_blocks ();
   free (worklist);
 }
 
@@ -695,6 +700,7 @@ compute_nearerout (edge_list, farthest, st_avloc, nearer, nearerout)
 		     nearerout[n_basic_blocks],
 		     nearer[(size_t) e->aux]);
 
+  clear_aux_for_edges ();
   free (tos);
 }
 
@@ -1273,6 +1279,7 @@ optimize_mode_switching (file)
 	      }
 	}
 
+      clear_aux_for_edges ();
       free_edge_list (edge_list);
     }
 
