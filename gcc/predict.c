@@ -53,7 +53,7 @@
    ??? In the next revision there will be a number of other predictors added
    from the above references. Further, each heuristic will be factored out
    into its own function for clarity (and to facilitate the combination of
-   predictions). */
+   predictions).  */
 
 void
 estimate_probability (loops_info)
@@ -61,13 +61,14 @@ estimate_probability (loops_info)
 {
   int i;
 
-  /* Try to predict out blocks in a loop that are not part of a natural loop */
+  /* Try to predict out blocks in a loop that are not part of a
+     natural loop.  */
   for (i = 0; i < loops_info->num; i++)
     {
       int j;
 
-      for (j = loops_info->array[i].header->index;
-	   j <= loops_info->array[i].latch->index;
+      for (j = loops_info->array[i].first->index;
+	   j <= loops_info->array[i].last->index;
 	   ++j)
 	{
 	  edge e;
@@ -83,17 +84,18 @@ estimate_probability (loops_info)
 		      || ! condjump_p (last_insn) || simplejump_p (last_insn))
 		    continue;
 		  cond = get_condition (last_insn, &earliest);
-		  if (!cond)
+		  if (! cond)
 		    continue;
 		  if (! find_reg_note (last_insn, REG_BR_PROB, 0))
 		    REG_NOTES (last_insn)
-		      = gen_rtx_EXPR_LIST (REG_BR_PROB, GEN_INT (REG_BR_PROB_BASE),
+		      = gen_rtx_EXPR_LIST (REG_BR_PROB,
+					   GEN_INT (REG_BR_PROB_BASE),
 					   REG_NOTES (last_insn));
 		}
 	}
     }
 
-  /* Try to predict condjumps using same algorithm as mostly_true_jump */
+  /* Try to predict condjumps using same algorithm as mostly_true_jump.  */
   for (i = 0; i < n_basic_blocks - 1; i++)
     {
       rtx last_insn = BLOCK_END (i);
@@ -114,10 +116,13 @@ estimate_probability (loops_info)
 	case CONST_INT:
 	  /* Unconditional branch.  */
 	  prob = REG_BR_PROB_BASE / 2;
+	  break;
 	case EQ:
 	  prob = REG_BR_PROB_BASE / 10;
+	  break;
 	case NE:
 	  prob = REG_BR_PROB_BASE / 2;
+	  break;
 	case LE:
 	case LT:
 	  if (XEXP (cond, 1) == const0_rtx)

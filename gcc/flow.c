@@ -6465,16 +6465,16 @@ flow_loops_dump (loops, file, verbose)
 	{
 	  /* Print diagnostics to compare our concept of a loop with
 	     what the loop notes say.  */
-	  if (GET_CODE (PREV_INSN (loop->header->head)) != NOTE
-	      || NOTE_LINE_NUMBER (PREV_INSN (loop->header->head))
+	  if (GET_CODE (PREV_INSN (loop->first->head)) != NOTE
+	      || NOTE_LINE_NUMBER (PREV_INSN (loop->first->head))
 	      != NOTE_INSN_LOOP_BEG)
 	    fprintf (file, ";; No NOTE_INSN_LOOP_BEG at %d\n", 
-		     INSN_UID (PREV_INSN (loop->header->head)));
-	  if (GET_CODE (NEXT_INSN (loop->latch->end)) != NOTE
-	      || NOTE_LINE_NUMBER (NEXT_INSN (loop->latch->end))
+		     INSN_UID (PREV_INSN (loop->first->head)));
+	  if (GET_CODE (NEXT_INSN (loop->last->end)) != NOTE
+	      || NOTE_LINE_NUMBER (NEXT_INSN (loop->last->end))
 	      != NOTE_INSN_LOOP_END)
 	    fprintf (file, ";; No NOTE_INSN_LOOP_END at %d\n",
-		     INSN_UID (NEXT_INSN (loop->latch->end)));
+		     INSN_UID (NEXT_INSN (loop->last->end)));
 	}
     }
 
@@ -6975,7 +6975,16 @@ flow_loops_find (loops)
 		  loop->nodes = sbitmap_alloc (n_basic_blocks);
 		  loop->num_nodes
 		    = flow_loop_nodes_find (header, latch, loop->nodes);
-		  
+
+		  /* Compute first and last blocks within the loop.
+		     These are often the same as the loop header and
+		     loop latch respectively, but this is not always
+		     the case.  */
+		  loop->first
+		    = BASIC_BLOCK (sbitmap_first_set_bit (loop->nodes));
+		  loop->last
+		    = BASIC_BLOCK (sbitmap_last_set_bit (loop->nodes));	
+	  
 		  /* Find edges which exit the loop.  Note that a node
 		     may have several exit edges.  */
 		  loop->num_exits

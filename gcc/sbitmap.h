@@ -114,6 +114,9 @@ extern int sbitmap_a_and_b PARAMS ((sbitmap, sbitmap, sbitmap));
 extern int sbitmap_a_or_b PARAMS ((sbitmap, sbitmap, sbitmap));
 extern int sbitmap_a_subset_b_p PARAMS ((sbitmap, sbitmap));
 
+extern int sbitmap_first_set_bit PROTO ((sbitmap));
+extern int sbitmap_last_set_bit PROTO ((sbitmap));
+
 struct int_list;
 extern void sbitmap_intersect_of_predsucc PARAMS ((sbitmap, sbitmap *,
 						  int, struct int_list **));
