@@ -1,5 +1,11 @@
 1999-01-26  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* pt.c (instantiate_class_template): Set up the DECL_INITIAL of
+	member constants.
+
+	* init.c (expand_member_init): Pull out TYPE_MAIN_VARIANT in
+	a ctor initializer.
+
 	* tree.c (equal_functions): Fix name in prototype.
 
 	* decl.c (push_local_binding): Add FLAGS argument.
