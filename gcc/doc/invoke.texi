@@ -433,7 +433,7 @@ in the following sections.
 -mpowerpc-gfxopt  -mno-powerpc-gfxopt @gol
 -mnew-mnemonics  -mold-mnemonics @gol
 -mfull-toc   -mminimal-toc  -mno-fop-in-toc  -mno-sum-in-toc @gol
--m64  -m32  -mxl-call  -mno-xl-call  -mthreads  -mpe @gol
+-m64  -m32  -mxl-call  -mno-xl-call  -mpe @gol
 -msoft-float  -mhard-float  -mmultiple  -mno-multiple @gol
 -mstring  -mno-string  -mupdate  -mno-update @gol
 -mfused-madd  -mno-fused-madd  -mbit-align  -mno-bit-align @gol
@@ -445,7 +445,7 @@ in the following sections.
 -mabi=altivec @gol
 -mprototype  -mno-prototype @gol
 -msim  -mmvme  -mads  -myellowknife  -memb -msdata @gol
--msdata=@var{opt}  -mvxworks -G @var{num}}
+-msdata=@var{opt}  -mvxworks -G @var{num} -pthread}
 
 @emph{RT Options}
 @gccoptlist{
@@ -6717,12 +6717,6 @@ stack is inefficient and rarely needed, this option is not enabled by
 default and only is necessary when calling subroutines compiled by AIX
 XL compilers without optimization.
 
-@item -mthreads
-@opindex mthreads
-Support @dfn{AIX Threads}.  Link an application written to use
-@dfn{pthreads} with special libraries and startup code to enable the
-application to run.
-
 @item -mpe
 @opindex mpe
 Support @dfn{IBM RS/6000 SP} @dfn{Parallel Environment} (PE)@.  Link an
@@ -6731,7 +6725,7 @@ enable the application to run.  The system must have PE installed in the
 standard location (@file{/usr/lpp/ppe.poe/}), or the @file{specs} file
 must be overridden with the @option{-specs=} option to specify the
 appropriate directory location.  The Parallel Environment does not
-support threads, so the @option{-mpe} option and the @option{-mthreads}
+support threads, so the @option{-mpe} option and the @option{-pthread}
 option are incompatible.
 
 @item -msoft-float
@@ -7028,6 +7022,11 @@ All modules should be compiled with the same @option{-G @var{num}} value.
 @opindex mno-regnames
 On System V.4 and embedded PowerPC systems do (do not) emit register
 names in the assembly language output using symbolic forms.
+
+@item -pthread
+@opindex pthread
+Adds support for multithreading with the @dfn{pthreads} library.
+This option sets flags for both the preprocessor and linker.
 
 @end table
 
