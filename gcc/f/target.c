@@ -2190,7 +2190,7 @@ ffetarget_print_hex (FILE *f, ffetargetTypeless value)
 {
   char *p;
   char digits[sizeof (value) * CHAR_BIT / 4 + 1];
-  static char hexdigits[16] = "0123456789ABCDEF";
+  static const char hexdigits[16] = "0123456789ABCDEF";
 
   if (f == NULL)
     f = dmpout;
