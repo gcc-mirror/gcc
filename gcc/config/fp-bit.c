@@ -243,7 +243,11 @@ typedef union
   FLO_type value;
   fractype value_raw;
 
-#ifdef FLOAT_WORD_ORDER_MISMATCH
+#ifndef FLOAT
+  halffractype words[2];
+#endif
+
+#ifdef FLOAT_BIT_ORDER_MISMATCH
   struct
     {
       fractype fraction:FRACBITS __attribute__ ((packed));
@@ -254,8 +258,6 @@ typedef union
 #endif
 
 #ifdef _DEBUG_BITFLOAT
-  halffractype l[2];
-
   struct
     {
       unsigned int sign:1 __attribute__ ((packed));
@@ -414,7 +416,7 @@ pack_d ( fp_number_type *  src)
   /* We previously used bitfields to store the number, but this doesn't
      handle little/big endian systems conviently, so use shifts and
      masks */
-#ifdef FLOAT_WORD_ORDER_MISMATCH
+#ifdef FLOAT_BIT_ORDER_MISMATCH
   dst.bits.fraction = fraction;
   dst.bits.exp = exp;
   dst.bits.sign = sign;
@@ -422,6 +424,14 @@ pack_d ( fp_number_type *  src)
   dst.value_raw = fraction & ((((fractype)1) << FRACBITS) - (fractype)1);
   dst.value_raw |= ((fractype) (exp & ((1 << EXPBITS) - 1))) << FRACBITS;
   dst.value_raw |= ((fractype) (sign & 1)) << (FRACBITS | EXPBITS);
+#endif
+
+#if defined(FLOAT_WORD_ORDER_MISMATCH) && !defined(FLOAT)
+  {
+    halffractype tmp = dst.words[0];
+    dst.words[0] = dst.words[1];
+    dst.words[1] = tmp;
+  }
 #endif
 
   return dst.value;
@@ -437,7 +447,15 @@ unpack_d (FLO_union_type * src, fp_number_type * dst)
   int exp;
   int sign;
 
-#ifdef FLOAT_WORD_ORDER_MISMATCH
+#if defined(FLOAT_WORD_ORDER_MISMATCH) && !defined(FLOAT)
+  FLO_union_type swapped;
+
+  swapped.words[0] = src->words[1];
+  swapped.words[1] = src->words[0];
+  src = &swapped;
+#endif
+  
+#ifdef FLOAT_BIT_ORDER_MISMATCH
   fraction = src->bits.fraction;
   exp = src->bits.exp;
   sign = src->bits.sign;
