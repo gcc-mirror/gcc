@@ -1025,7 +1025,7 @@ build_x_arrow (tree expr)
       if (processing_template_decl)
 	{
 	  expr = build_min_non_dep (ARROW_EXPR, last_rval, orig_expr);
-	  /* It will be dereferenced. */
+	  /* It will be dereferenced.  */
 	  TREE_TYPE (expr) = TREE_TYPE (TREE_TYPE (last_rval));
 	  return expr;
 	}

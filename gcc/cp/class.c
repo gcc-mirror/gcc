@@ -6051,7 +6051,7 @@ instantiate_type (tree lhstype, tree rhs, tsubst_flags_t flags)
 
 	if (addr != error_mark_node
 	    && TREE_SIDE_EFFECTS (TREE_OPERAND (rhs, 0)))
-	  /* Do not lose object's side effects. */
+	  /* Do not lose object's side effects.  */
 	  addr = build (COMPOUND_EXPR, TREE_TYPE (addr),
 			TREE_OPERAND (rhs, 0), addr);
 	return addr;

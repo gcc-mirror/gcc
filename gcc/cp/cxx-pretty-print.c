@@ -91,7 +91,7 @@ pp_cxx_colon_colon (cxx_pretty_printer *pp)
 }
 
 
-/* Expressions. */
+/* Expressions.  */
 
 static inline bool
 is_destructor_name (tree name)
@@ -1584,7 +1584,7 @@ pp_cxx_canonical_template_parameter (cxx_pretty_printer *pp, tree parm)
 {
   const enum tree_code code = TREE_CODE (parm);
 
-  /* Brings type template parameters to the canonical forms  */
+  /* Brings type template parameters to the canonical forms.  */
   if (code == TEMPLATE_TYPE_PARM || code == TEMPLATE_TEMPLATE_PARM
       || code == BOUND_TEMPLATE_TEMPLATE_PARM)
     parm = TEMPLATE_TYPE_PARM_INDEX (parm);

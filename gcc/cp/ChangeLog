@@ -1,3 +1,16 @@
+2003-10-22  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* call.c: Fix comment formatting.
+	* class.c: Likewise.
+	* cxx-pretty-print.c: Likewise.
+	* init.c: Likewise.
+	* parser.c: Likewise.
+	* pt.c: Likewise.
+	* semantics.c: Likewise.
+	* tree.c: Likewise.
+	* typeck.c: Likewise.
+	* typeck2.c: Likewise.
+
 2003-10-21  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/11962

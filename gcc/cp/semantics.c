@@ -1009,7 +1009,7 @@ begin_compound_stmt (bool has_no_scope)
   return r;
 }
 
-/* Finish a compound-statement, which is given by COMPOUND_STMT. */
+/* Finish a compound-statement, which is given by COMPOUND_STMT.  */
 
 tree
 finish_compound_stmt (tree compound_stmt)
