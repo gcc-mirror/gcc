@@ -3931,10 +3931,20 @@ package body Make is
                         All_Projects => Unique_Compile_All_Projects,
                         Into_Q       => False);
 
-                     --  If there are no sources to compile, we fail
+                     --  If no sources to compile, then there is nothing to do
 
                      if Osint.Number_Of_Files = 0 then
-                        Make_Failed ("no sources to compile");
+                        if not Debug.Debug_Flag_N then
+                           Delete_Mapping_Files;
+                           Prj.Env.Delete_All_Path_Files (Project_Tree);
+                        end if;
+
+                        if not Quiet_Output then
+                           Osint.Write_Program_Name;
+                           Write_Line (": no sources to compile");
+                        end if;
+
+                        Exit_Program (E_Success);
                      end if;
                   end if;
 
