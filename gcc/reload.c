@@ -2431,7 +2431,10 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	   : modified[i] == RELOAD_WRITE ? RELOAD_FOR_OUTPUT_ADDRESS
 	   : RELOAD_OTHER);
 
-      if (constraints[i][0] == 'p')
+      if (*constraints[i] == 0)
+	/* Ignore things like match_operator operands.  */
+	;
+      else if (constraints[i][0] == 'p')
 	{
 	  find_reloads_address (VOIDmode, NULL_PTR,
 				recog_operand[i], recog_operand_loc[i],
