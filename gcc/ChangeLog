@@ -5,6 +5,8 @@ Sun Jun 21 17:05:34 1998  Dave Love  <d.love@dl.ac.uk>
 
 Sun Jun 21 18:56:44 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* invoke.texi: Document -mrelax for the mn10300 and mn10200.
+
 	* basic-block.h (init_regset_vector): Delete declaration.
 	* flow.c (init_regset_vector): Make it static and add a prototype.
 

@@ -265,9 +265,13 @@ in the following sections.
 -mthumb-interwork -mno-thumb-interwork
 -mstructure-size-boundary=
 
+@emph{MN10200 Options}
+-mrelax
+
 @emph{MN10300 Options}
 -mmult-bug
 -mno-mult-bug
+-mrelax
 
 @emph{M32R/D Options}
 -mcode-model=@var{model type}  -msdata=@var{sdata type}
@@ -2948,6 +2952,7 @@ that macro, which enables you to change the defaults.
 * AMD29K Options::
 * ARM Options::
 * Thumb Options::
+* MN10200 Options::
 * MN10300 Options::
 * M32R/D Options::
 * M88K Options::
@@ -3773,6 +3778,19 @@ value as future versions of the toolchain may default to this value.
 
 @end table
 
+@node MN10200 Options
+@subsection MN10200 Options
+@cindex MN10200 options
+These @samp{-m} options are defined for Matsushita MN10200 architectures:
+@table @code
+
+@item -mrelax
+Indicate to the linker that it should perform a relaxation optimization pass
+to shorten branches, calls and absolute memory addresses.  This option only
+has an effect when used on the command line for the final link step.
+
+This option makes symbolic debugging impossible. 
+@end table
 
 @node MN10300 Options
 @subsection MN10300 Options
@@ -3787,7 +3805,15 @@ processors.  This is the default.
 @item -mno-mult-bug
 Do not generate code to avoid bugs in the multiply instructions for the
 MN10300 processors.
+
+@item -mrelax
+Indicate to the linker that it should perform a relaxation optimization pass
+to shorten branches, calls and absolute memory addresses.  This option only
+has an effect when used on the command line for the final link step.
+
+This option makes symbolic debugging impossible. 
 @end table
+
 
 @node M32R/D Options
 @subsection M32R/D Options
