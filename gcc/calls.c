@@ -1239,8 +1239,8 @@ expand_call (exp, target, ignore)
 	  args_size.var
 	    = size_binop (MINUS_EXPR, args_size.var,
 			  size_int (reg_parm_stack_space));
-	}
 #endif
+	}
     }
   else
     {
