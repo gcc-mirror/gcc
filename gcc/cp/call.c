@@ -38,8 +38,6 @@ Boston, MA 02111-1307, USA.  */
 #include "diagnostic.h"
 #include "intl.h"
 
-extern int inhibit_warnings;
-
 static tree build_field_call (tree, tree, tree);
 static struct z_candidate * tourney (struct z_candidate *);
 static int equal_functions (tree, tree);
