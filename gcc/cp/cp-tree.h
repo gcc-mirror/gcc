@@ -2358,6 +2358,7 @@ extern void push_to_top_level			PROTO((void));
 extern void pop_from_top_level			PROTO((void));
 extern tree identifier_type_value		PROTO((tree));
 extern void set_identifier_type_value		PROTO((tree, tree));
+extern void set_identifier_local_value		PROTO((tree, tree));
 extern void pop_everything			PROTO((void));
 extern void pushtag				PROTO((tree, tree, int));
 extern tree make_anon_name			PROTO((void));

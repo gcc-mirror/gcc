@@ -168,6 +168,8 @@ static tree lookup_tag PROTO((enum tree_code, tree,
 			      struct binding_level *, int));
 static void set_identifier_type_value_with_scope
 	PROTO((tree, tree, struct binding_level *));
+static void set_identifier_local_value_with_scope
+	PROTO((tree, tree, struct binding_level *));
 static void record_builtin_type PROTO((enum rid, char *, tree));
 static void record_unknown_type PROTO((tree, char *));
 static int member_function_or_else PROTO((tree, tree, char *));
@@ -2159,7 +2161,7 @@ set_identifier_type_value (id, type)
   set_identifier_type_value_with_scope (id, type, inner_binding_level);
 }
 
-void
+static void
 set_identifier_local_value_with_scope (id, val, b)
      tree id, val;
      struct binding_level *b;
@@ -5083,7 +5085,8 @@ lookup_name_real (name, prefer_type, nonclass, namespaces_only)
 			  TREE_TYPE (val));
 	    }
 
-	  val = from_obj;
+	  /* We don't change val to from_obj here because that breaks
+	     implicit typename for destructor calls.  */
 	}
 
       if ((TREE_CODE (val) == TEMPLATE_DECL && looking_for_template)
