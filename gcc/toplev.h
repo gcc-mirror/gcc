@@ -113,11 +113,13 @@ extern const char *dump_base_name;
 /* The hashtable, so that the C front ends can pass it to cpplib.  */
 extern struct ht *ident_hash;
 
-/* These functions can be used by targets to set the flags originally
-   implied by -ffast-math and -fno-fast-math.  */
+/* This function can be used by targets to set the flags originally
+    implied by -ffast-math and -fno-fast-math.  */
+ 
+extern void set_fast_math_flags         PARAMS ((int));
 
-extern void set_fast_math_flags         PARAMS ((void));
-extern void set_no_fast_math_flags      PARAMS ((void));
+/* Return true iff flags are set as if -ffast-math.  */
+extern bool fast_math_flags_set_p	PARAMS ((void));
 
 /* The following functions accept a wide integer argument.  Rather
    than having to cast on every function call, we use a macro instead.  */

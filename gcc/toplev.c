@@ -1540,19 +1540,20 @@ set_Wunused (setting)
    -ffast-math and -fno-fast-math imply.  */
 
 void
-set_fast_math_flags ()
+set_fast_math_flags (int set)
 {
-  flag_trapping_math = 0;
-  flag_unsafe_math_optimizations = 1;
-  flag_errno_math = 0;
+  flag_trapping_math = !set;
+  flag_unsafe_math_optimizations = set;
+  flag_errno_math = !set;
 }
 
-void
-set_no_fast_math_flags ()
+/* Return true iff flags are set as if -ffast-math.  */
+bool
+fast_math_flags_set_p ()
 {
-  flag_trapping_math = 1;
-  flag_unsafe_math_optimizations = 0;
-  flag_errno_math = 1;
+  return (!flag_trapping_math
+	  && flag_unsafe_math_optimizations
+	  && !flag_errno_math);
 }
 
 
@@ -3819,9 +3820,9 @@ decode_f_option (arg)
     }
 
   if (!strcmp (arg, "fast-math"))
-    set_fast_math_flags ();
+    set_fast_math_flags (1);
   else if (!strcmp (arg, "no-fast-math"))
-    set_no_fast_math_flags ();
+    set_fast_math_flags (0);
   else if ((option_value = skip_leading_substring (arg, "inline-limit-"))
 	   || (option_value = skip_leading_substring (arg, "inline-limit=")))
     {

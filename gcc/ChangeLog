@@ -1,3 +1,19 @@
+2002-05-16  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* c-common.c (cb_register_builtins): Handle more built-ins
+	here rather than in gcc.c specs.
+	* gcc.c (cpp_unique_options): Move many built-ins to c-common.c.
+	(cpp_options): Pass -O flags even when only preprocessing.
+	* toplev.c (set_fast_math_flags): New prototype.
+	(fast_math_flags_set_p): New.
+	(set_no_fast_math_flags): Remove.
+	(decode_f_option): Update.
+	* toplev.h (set_fast_math_flags): Update.
+	(fast_math_flags_set_p): New.
+	(set_no_fast_math_flags): Remove.
+config:
+	* c4x/c4x.c (c4x_override_options): Update.
+
 2002-05-16  Zack Weinberg  <zack@codesourcery.com>
 
 	* c-common.c (STDC_0_IN_SYSTEM_HEADERS, REGISTER_PREFIX):

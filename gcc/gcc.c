@@ -682,18 +682,14 @@ static const char *cpp_unique_options =
  %{!E:%{!M:%{!MM:%{MD|MMD:%{o*:-MQ %*}}}}}\
  %{!no-gcc:-D__GNUC__=%v1 -D__GNUC_MINOR__=%v2 -D__GNUC_PATCHLEVEL__=%v3}\
  %{!undef:%{!ansi:%{!std=*:%p}%{std=gnu*:%p}} %P} %{trigraphs}\
- %{Os:-D__OPTIMIZE_SIZE__} %{O*:%{!O0:-D__OPTIMIZE__}}\
- %{fno-inline|O0|!O*:-D__NO_INLINE__} %{ffast-math:-D__FAST_MATH__}\
- %{ffreestanding:-D__STDC_HOSTED__=0} %{fno-hosted:-D__STDC_HOSTED__=0}\
- %{!ffreestanding:%{!fno-hosted:-D__STDC_HOSTED__=1}} %{remap}\
- %{g3:-dD} %{H} %C %{D*&U*&A*} %{i*} %Z %i\
+ %{remap} %{g3:-dD} %{H} %C %{D*&U*&A*} %{i*} %Z %i\
  %{E|M|MM:%W{o*}}";
 
 /* This contains cpp options which are common with cc1_options and are passed
    only when preprocessing only to avoid duplication.  */
 static const char *cpp_options =
 "%(cpp_unique_options) %{std*} %{d*} %{W*&pedantic*} %{w} %{m*} %{f*}\
- %{undef}";
+ %{O*} %{undef}";
 
 /* NB: This is shared amongst all front-ends.  */
 static const char *cc1_options =
