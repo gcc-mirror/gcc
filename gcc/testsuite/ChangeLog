@@ -1,5 +1,9 @@
 2004-11-14  Dorit Naishlos  <dorit@il.ibm.com>
 
+	* gcc.dg/vect/vect-78.c: Now vectorized on powerpc*.
+
+2004-11-14  Dorit Naishlos  <dorit@il.ibm.com>
+
 	PR tree-opt/18400
 	* gcc.dg/vect/pr18400.c: New test.
 
