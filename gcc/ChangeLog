@@ -1,3 +1,14 @@
+2005-01-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/17297
+	* c-typeck.c (digest_init): Only call build_vector if all constructor
+	elements are *_CST nodes.
+	* gimplify.c (gimplify_init_constructor): Likewise.
+
+	PR middle-end/19164
+	* c-typeck.c (digest_init): Only call build_vector if inside_init
+	is a CONSTRUCTOR.
+
 2005-01-18  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* toplev.c (init_asm_output): Remove dead #ifdef.
