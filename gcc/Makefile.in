@@ -2441,7 +2441,7 @@ distdir-start: doc $(srcdir)/INSTALL $(srcdir)/c-parse.y $(srcdir)/c-gperf.h \
 	done
 	cd config; \
 	for file in *[0-9a-zA-Z+]; do \
-	  if test -d $$file && test "$$file" != RCS && test "$$FILE" != CVS; then \
+	  if test -d $$file && test "$$file" != RCS && test "$$file" != CVS; then \
 	    mkdir ../tmp/config/$$file; \
 	    cd $$file; \
 	    for subfile in *[0-9a-zA-Z+]; do \
