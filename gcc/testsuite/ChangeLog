@@ -1,3 +1,8 @@
+2000-06-22  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* g++.old-deja/g++.pt/vaarg2.C: New test.
+	* g++.old-deja/g++.pt/vaarg3.C: New test.
+
 2000-06-20  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.old-deja/g++.other/dyncast6.C: New test.
