@@ -1,5 +1,19 @@
 2001-02-23  Per Bothner  <per@bothner.com>
 
+	Change to sometimes include class name in ClassFormatError message.
+	* defineclass.cc (_Jv_VerifyFieldSignature, _Jv_VerifyMethodSignature,
+	_Jv_VerifyIdentifier, _Jv_VerifyClassName (two overlods)):  Return
+	boolean instead of throwing ClassFormatError on failure.
+	(throw_class_format_error):  Change static function to method.
+	(_Jv_ClassReader):  New inline methods verify_identifier,
+	two overloads of verify_classname, verify_field_signature, and
+	verify_method_signature
+	* include/java-interp.h:  Update declarations to return bool.
+	* java/lang/natClassLoader.cc (defineClass0):  Explicitly throw
+	ClassFormatError since _Jv_VerifyClassName now returns bool.
+
+2001-02-23  Per Bothner  <per@bothner.com>
+
 	* java/lang/Throwable.java (CPlusPlusDemangler):  Pass -s java to
 	c++filt to select java-style output.
 

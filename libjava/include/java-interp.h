@@ -33,11 +33,11 @@ _Jv_IsInterpretedClass (jclass c)
 
 struct _Jv_ResolvedMethod;
 
-void _Jv_VerifyFieldSignature (_Jv_Utf8Const*sig);
-void _Jv_VerifyMethodSignature (_Jv_Utf8Const*sig);
-void _Jv_VerifyClassName (unsigned char* ptr, _Jv_ushort length);
-void _Jv_VerifyClassName (_Jv_Utf8Const *name);
-void _Jv_VerifyIdentifier (_Jv_Utf8Const *);
+bool _Jv_VerifyFieldSignature (_Jv_Utf8Const*sig);
+bool _Jv_VerifyMethodSignature (_Jv_Utf8Const*sig);
+bool _Jv_VerifyClassName (unsigned char* ptr, _Jv_ushort length);
+bool _Jv_VerifyClassName (_Jv_Utf8Const *name);
+bool _Jv_VerifyIdentifier (_Jv_Utf8Const *);
 bool _Jv_ClassNameSamePackage (_Jv_Utf8Const *name1, _Jv_Utf8Const *name2);
 void _Jv_DefineClass (jclass, jbyteArray, jint, jint);
 void _Jv_ResolveField (_Jv_Field *, java::lang::ClassLoader*);
