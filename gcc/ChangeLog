@@ -1,3 +1,7 @@
+2002-02-23  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* doc/cpp.texi, doc/invoke.texi: Update documentation for -MM.
+
 2002-02-23  Kazu Hirata  <kazu@hxi.com>
 
 	* config/h8300/h8300.c (output_simode_bld): Handle H8/300 and
