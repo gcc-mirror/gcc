@@ -19,12 +19,6 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-/* This is a v9 only compiler.  -mcpu=v8 is not expected to work.  If you want
-   a v8/v9 compiler, this isn't the place to do it.  */
-
-#define SPARC_V9 1	/* See sparc.h.  */
-#define SPARC_ARCH64 1
-
 /* ??? We're taking the scheme of including another file and then overriding
    the values we don't like a bit too far here.  The alternative is to more or
    less duplicate all of svr4.h, sparc/sysv4.h, and sparc/sol2.h here
@@ -35,30 +29,22 @@ Boston, MA 02111-1307, USA.  */
 #undef TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (sparc64-elf)")
 
-/* A v9 compiler without stack-bias, lp64 sizes,
+/* A 64 bit v9 compiler without stack-bias,
    in a Medium/Anywhere code model environment.
    There is no stack bias as this configuration is intended for
    embedded systems.  */
 
 #undef TARGET_DEFAULT
 #define TARGET_DEFAULT \
-  (MASK_V9 + MASK_ARCH64 + MASK_PTR64 + MASK_LONG64 + MASK_HARD_QUAD \
-   MASK_MEDANY + MASK_APP_REGS + MASK_EPILOGUE + MASK_FPU)
+(MASK_V9 + MASK_PTR64 + MASK_64BIT + MASK_HARD_QUAD \
+ + MASK_APP_REGS + MASK_EPILOGUE + MASK_FPU)
 
-/* __svr4__ is used by the C library */
-/* ??? __arch64__ is subject to change.  */
-#undef CPP_PREDEFINES
-#define CPP_PREDEFINES "\
--D__sparc__ -D__sparc_v9__ -D__arch64__ -D__svr4__ \
--Acpu(sparc64) -Amachine(sparc64) \
-"
+#undef SPARC_DEFAULT_CMODEL
+#define SPARC_DEFAULT_CMODEL CM_EMBMEDANY
 
-#undef CPP_SPEC
-#define CPP_SPEC "\
-%{mint64:-D__INT_MAX__=9223372036854775807LL -D__LONG_MAX__=9223372036854775807LL} \
-%{mlong64:-D__LONG_MAX__=9223372036854775807LL} \
-%{mlittle-endian:-D__LITTLE_ENDIAN__} \
-"
+/* __svr4__ is used by the C library (FIXME) */
+#undef CPP_SUBTARGET_SPEC
+#define CPP_SUBTARGET_SPEC "-D__svr4__"
 
 #undef MD_EXEC_PREFIX
 #undef MD_STARTFILE_PREFIX
@@ -67,6 +53,7 @@ Boston, MA 02111-1307, USA.  */
 #define ASM_SPEC "\
 %{v:-V} -s %{fpic:-K PIC} %{fPIC:-K PIC} \
 %{mlittle-endian:-EL} \
+%(asm_cpu) %(asm_arch) \
 "
 
 /* This is taken from sol2.h.  */
@@ -102,22 +89,20 @@ crtbegin.o%s \
 #undef WORDS_BIG_ENDIAN
 #define WORDS_BIG_ENDIAN (! TARGET_LITTLE_ENDIAN)
 
-/* Unfortunately, svr4.h redefines these so we have to restore them to
-   their original values in sparc.h.  */
-/* ??? It might be possible to eventually get svr4.h to do the right thing.  */
-
-#undef PTRDIFF_TYPE
-#define PTRDIFF_TYPE "long long int"
-
-#undef SIZE_TYPE
-#define SIZE_TYPE "long long unsigned int"
-
 /* ??? This should be 32 bits for v9 but what can we do?  */
 #undef WCHAR_TYPE
 #define WCHAR_TYPE "short unsigned int"
 
 #undef WCHAR_TYPE_SIZE
 #define WCHAR_TYPE_SIZE 16
+
+#undef LONG_DOUBLE_TYPE_SIZE
+#define LONG_DOUBLE_TYPE_SIZE 128
+
+#undef PTRDIFF_TYPE
+#define PTRDIFF_TYPE "long long int"
+#undef SIZE_TYPE
+#define SIZE_TYPE "long long unsigned int"
 
 /* The medium/anywhere code model practically requires us to put jump tables
    in the text section as gcc is unable to distinguish LABEL_REF's of jump
@@ -131,6 +116,7 @@ crtbegin.o%s \
    anyway so it is the default.  */
 
 #define DWARF_DEBUGGING_INFO
+#define DWARF2_DEBUGGING_INFO
 #define DBX_DEBUGGING_INFO
 
 #undef PREFERRED_DEBUGGING_TYPE
