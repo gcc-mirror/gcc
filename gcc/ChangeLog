@@ -1,3 +1,9 @@
+2004-10-26  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* stmt.c (expand_case): Put an assertion that index_expr is
+	never INTEGER_CST.  Don't special case for constant
+	index_expr.
+
 2004-10-26  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR 18162
