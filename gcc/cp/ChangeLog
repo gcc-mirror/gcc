@@ -1,3 +1,67 @@
+1999-09-20  Mark Mitchell  <mark@codesourcery.com>
+
+	Remove support for assigning to `this'.
+	* NEWS: Note that fact.
+	* class.c (build_vbase_path): Don't check flag_this_is_variable.
+	* cp-tree.h (EXPR_STMT_ASSIGNS_THIS): Remove.
+	(language_function): Remove assigns_this, just_assigned_this, and
+	x_base_init_expr.  Add x_vcalls_possible_p.  Add vtbls_set_up_p.
+	(base_init_expr): Remove.
+	(current_vcalls_possible_p): New macro.
+	(vtbls_set_up_p): Likewise.
+	(emit_base_init): Change prototype.
+	* decl.c (finish_destructor_body): New function, split out from
+	finish_function.
+	(current_function_assigns_this): Remove.
+	(current_function_just_assigned_this): Likewise.
+	(start_function): Don't set them.
+	(finish_function): Don't check them.  Don't emit
+	base-initialization code here.  Generate code for destructors when
+	doing semantic analysis.
+	(finish_stmt): Don't check current_function_just_assigned_this.
+	* decl2.c (lang_f_options): Remove this-is-variable.
+	(lang_decode_option): Likewise.
+	(grokclassfn): Don't check flag_this_is_variable.
+	* init.c (emit_base_init): Return the expression generated.
+	(construct_virtual_bases): Don't push/pop obstacks.  Fix
+	typo.
+	(build_new_1): Don't check flag_this_is_variable.
+	(get_temp_regvar): Don't set DECL_REGISTER.
+	(build_vec_init): Don't call use_variable.
+	* lang-options.h: Remove "-fthis-is-variable" and
+	"-fno-this-is-variable".
+	* pt.c (tsubst_expr): Don't check EXPR_STMT_ASSIGNS_THIS.
+	* search.c (expand_upcast_fixups): Use finish_expr_stmt, not
+	expand_expr_stmt.
+	* semantics.c (finish_expr_stmt_real): Rename to ...
+	(finish_expr_stmt): This.  Remove assigned_this parameter.
+	(begin_if_stmt): Call do_pushlevel before starting the statement.
+	(begin_compound_stmt): Don't declare __FUNCTION__ in scope-less
+	blocks.
+	(setup_vtbl_ptr): Emit initialization code for bases and members
+	at semantic-analysis time.  Emit code to initialize vtables in
+	destructors here.
+	(expand_stmt): Use finish_expr_stmt, not finish_expr_stmt_real.
+	Don't handle CTOR_INITIALIZER any more.
+	* typeck.c (build_modify_expr): Don't check for assignments to
+	this.
+	(c_expand_return): Don't suggest assigning to `this'.
+	
+	* Makefile.in (decl.o): Depend on RTL_H.
+	(decl2.o): Likewise.
+	(class.o): Likewise.
+	(call.o): Likewise.
+	(method.o): Likewise.
+	(search.o): Likewise.
+	(tree.o): Likewise.
+	(pt.o): Likewise.
+
+	* decl.c (duplicate_decls): When a builtin function is redeclared
+	as static, make sure it is mangled correctly.
+
+	* ir.texi (CTOR_INITIALIZER): Remove mention.  Fix typo.  Add
+	detail about the statement-tree.
+	
 1999-09-20  Nathan Sidwell  <nathan@acm.org>
 
 	* parse.y (primary): Use build_functional_cast for CV_QUALIFIER.

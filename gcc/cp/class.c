@@ -224,11 +224,6 @@ build_vbase_path (code, type, expr, path, nonnull)
   if (BINFO_INHERITANCE_CHAIN (path) == NULL_TREE)
     return build1 (NOP_EXPR, type, expr);
 
-  /* If -fthis-is-variable, we might have set nonnull incorrectly.  We
-     don't care enough to get this right, so just clear it.  */
-  if (flag_this_is_variable > 0)
-    nonnull = 0;
-
   /* We could do better if we had additional logic to convert back to the
      unconverted type (the static type of the complete object), and then
      convert back to the type we want.  Until that is done, we only optimize

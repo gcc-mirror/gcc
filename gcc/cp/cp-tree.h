@@ -29,7 +29,6 @@ Boston, MA 02111-1307, USA.  */
 /* Usage of TREE_LANG_FLAG_?:
    0: BINFO_MARKED (BINFO nodes).
       COMPOUND_STMT_NO_SCOPE (in COMPOUND_STMT).
-      EXPR_STMT_ASSIGNS_THIS (in EXPR_STMT).
       NEW_EXPR_USE_GLOBAL (in NEW_EXPR).
       DELETE_EXPR_USE_GLOBAL (in DELETE_EXPR).
       LOOKUP_EXPR_GLOBAL (in LOOKUP_EXPR).
@@ -618,7 +617,6 @@ struct language_function
   tree x_dtor_label;
   tree x_base_init_list;
   tree x_member_init_list;
-  tree x_base_init_expr;
   tree x_current_class_ptr;
   tree x_current_class_ref;
   tree x_last_tree;
@@ -627,14 +625,14 @@ struct language_function
   tree x_scope_stmt_stack;
   tree x_in_charge_parm;
 
+  tree *x_vcalls_possible_p;
+
   struct rtx_def *x_last_dtor_insn;
   struct rtx_def *x_last_parm_cleanup_insn;
   struct rtx_def *x_result_rtx;
 
   int returns_value;
   int returns_null;
-  int assigns_this;
-  int just_assigned_this;
   int parms_stored;
   int temp_name_counter;
   int static_labelno;
@@ -642,6 +640,7 @@ struct language_function
   int x_expanding_p;
   int stmts_are_full_exprs_p; 
   int name_declared;
+  int vtbls_set_up_p;
 
   struct named_label_list *x_named_label_uses;
   struct binding_level *bindings;
@@ -673,10 +672,6 @@ struct language_function
 
 #define current_base_init_list cp_function_chain->x_base_init_list
 #define current_member_init_list cp_function_chain->x_member_init_list
-
-/* Sequence of insns which represents base initialization.  */
-
-#define base_init_expr cp_function_chain->x_base_init_expr
 
 /* When we're processing a member function, current_class_ptr is the
    PARM_DECL for the `this' pointer.  The current_class_ref is an
@@ -712,6 +707,12 @@ struct language_function
 
 #define current_in_charge_parm cp_function_chain->x_in_charge_parm
 
+/* In destructors, this is a pointer to a condition in an
+   if-statement.  If the pointed-to value is boolean_true_node, then
+   there may be virtual function calls in this destructor.  */
+
+#define current_vcalls_possible_p cp_function_chain->x_vcalls_possible_p
+
 /* Set to 0 at beginning of a function definition, set to 1 if
    a return statement that specifies a return value is seen.  */
 
@@ -733,6 +734,11 @@ struct language_function
 
 #define current_function_name_declared \
   cp_function_chain->name_declared
+
+/* Nonzero if we have already generated code to initialize virtual
+   function tables in this function.  */
+
+#define vtbls_set_up_p cp_function_chain->vtbls_set_up_p
 
 /* Used to help generate temporary names which are unique within
    a function.  Reset to 0 by start_function.  */
@@ -1868,12 +1874,6 @@ struct lang_decl
    constructor call, rather than an ordinary function call.  */
 #define AGGR_INIT_VIA_CTOR_P(NODE) TREE_LANG_FLAG_0 (NODE)
 
-/* Nonzero if this statement contained the first assigned to `this' in
-   the current function.  (Of course, one cannot assign to `this' in
-   ANSI/ISO C++, but we still support assignments to this with
-   -fthis-is-variable.)  */
-#define EXPR_STMT_ASSIGNS_THIS(NODE) TREE_LANG_FLAG_0 ((NODE))
-
 /* Nonzero if this statement should be considered a full-expression.  */
 #define STMT_IS_FULL_EXPR_P(NODE) TREE_LANG_FLAG_1 ((NODE))
 
@@ -2857,8 +2857,7 @@ struct pending_inline
 /* in method.c */
 extern struct pending_inline *pending_inlines;
 
-/* Positive values means that we cannot make optimizing assumptions about
-   `this'.  Negative values means we know `this' to be of static type.  */
+/* Negative values means we know `this' to be of static type.  */
 
 extern int flag_this_is_variable;
 
@@ -3420,7 +3419,7 @@ extern tree do_friend				PROTO((tree, tree, tree, tree, tree, enum overload_flag
 /* in init.c */
 extern void init_init_processing		PROTO((void));
 extern void expand_direct_vtbls_init		PROTO((tree, tree, int, int, tree));
-extern void emit_base_init			PROTO((tree));
+extern tree emit_base_init			PROTO((tree));
 extern void check_base_init			PROTO((tree));
 extern void expand_member_init			PROTO((tree, tree, tree));
 extern tree build_aggr_init			PROTO((tree, tree, int));

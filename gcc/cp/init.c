@@ -483,7 +483,7 @@ sort_base_init (t, rbase_ptr, vbase_ptr)
    Note that emit_base_init does *not* initialize virtual base
    classes.  That is done specially, elsewhere.  */
 
-void
+tree
 emit_base_init (t)
      tree t;
 {
@@ -623,10 +623,9 @@ emit_base_init (t)
       mem_init_list = TREE_CHAIN (mem_init_list);
     }
 
-  base_init_expr = finish_init_stmts (stmt_expr, compound_stmt);
-
   /* All the implicit try blocks we built up will be zapped
      when we come to a real binding contour boundary.  */
+  return finish_init_stmts (stmt_expr, compound_stmt);
 }
 
 /* Check that all fields are properly initialized after
@@ -747,10 +746,6 @@ construct_virtual_bases (type, this_ref, this_ptr, init_list, flag)
   if_stmt = begin_if_stmt ();
   finish_if_stmt_cond (flag, if_stmt);
   result = init_vbase_pointers (type, this_ptr);
-  /* The RESULT will contain entries on the momentary obstack.  They
-     must live until the end of this function; we use them in the loop
-     below.  */
-  push_momentary ();
   if (result)
     finish_expr_stmt (build_compound_expr (result));
   finish_then_clause (if_stmt);
@@ -785,14 +780,11 @@ construct_virtual_bases (type, this_ref, this_ptr, init_list, flag)
 				TREE_OPERAND (TREE_VALUE (tmp), 0),
 				init_list);
       finish_compound_stmt (/*has_no_scope=*/1, compound_stmt);
-      finish_then_clause (if_stmt);
+      finish_then_clause (inner_if_stmt);
       finish_if_stmt ();
       
       expand_cleanup_for_base (vbases, flag);
     }
-
-  /* Undo the call to push_momentary above.  */
-  pop_momentary ();
 }
 
 /* Find the context in which this FIELD can be initialized.  */
@@ -2214,18 +2206,7 @@ build_new_1 (exp)
 
   /* Allocate the object.  */
   
-  if (! has_array && ! placement && flag_this_is_variable > 0
-      && TYPE_NEEDS_CONSTRUCTING (true_type) && init != void_type_node)
-    {
-      if (init == NULL_TREE || TREE_CODE (init) == TREE_LIST)
-	rval = NULL_TREE;
-      else
-	{
-	  error ("constructors take parameter lists");
-	  return error_mark_node;
-	}
-    }
-  else if (! placement && TYPE_FOR_JAVA (true_type))
+  if (! placement && TYPE_FOR_JAVA (true_type))
     {
       tree class_addr, alloc_decl;
       tree class_decl = build_java_class_ref (true_type);
@@ -2677,7 +2658,6 @@ get_temp_regvar (type, init)
   decl = create_temporary_var (type);
   if (building_stmt_tree ())
     add_decl_stmt (decl);
-  DECL_REGISTER (decl) = 1;
   if (!building_stmt_tree ())
     DECL_RTL (decl) = assign_temp (type, 2, 0, 1);
   finish_expr_stmt (build_modify_expr (decl, INIT_EXPR, init));
@@ -2827,9 +2807,6 @@ build_vec_init (decl, base, maxindex, init, from_array)
 
       /* Clear out INIT so that we don't get confused below.  */
       init = NULL_TREE;
-
-      if (obey_regdecls && !building_stmt_tree ())
-	use_variable (DECL_RTL (base));
     }
   else if (from_array)
     {
@@ -2958,13 +2935,6 @@ build_vec_init (decl, base, maxindex, init, from_array)
 			   build (PLUS_EXPR, build_pointer_type (type), 
 				  base2, size)));
 
-      if (obey_regdecls && !building_stmt_tree ())
-	{
-	  use_variable (DECL_RTL (base));
-	  if (base2)
-	    use_variable (DECL_RTL (base2));
-	}
-
       finish_compound_stmt (/*has_no_scope=*/1, do_body);
       finish_do_body (do_stmt);
       finish_do_stmt (build (NE_EXPR, boolean_type_node,
@@ -2994,12 +2964,6 @@ build_vec_init (decl, base, maxindex, init, from_array)
 			      /*auto_delete=*/integer_zero_node,
 			      /*use_global_delete=*/0);
       finish_cleanup (e, try_block);
-    }
-
-  if (obey_regdecls && !building_stmt_tree ())
-    {
-      use_variable (DECL_RTL (iterator));
-      use_variable (DECL_RTL (rval));
     }
 
   /* The value of the array initialization is the address of the

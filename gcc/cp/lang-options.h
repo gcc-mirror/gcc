@@ -96,8 +96,6 @@ DEFINE_LANG_NAME ("C++")
   { "-fstrict-prototype", "" },
   { "-fno-strict-prototype", "Do not assume that empty prototype means no args" },
   { "-ftemplate-depth-", "Specify maximum template instantiation depth"},
-  { "-fthis-is-variable", "Make 'this' not be type '* const'"  },
-  { "-fno-this-is-variable", "" },
   { "-fvtable-gc", "Discard unused virtual functions" },
   { "-fno-vtable-gc", "" },
   { "-fvtable-thunks", "Implement vtables using thunks" },
