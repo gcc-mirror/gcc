@@ -1127,10 +1127,7 @@ xstormy16_expand_prologue ()
   /* It's just possible that the SP here might be what we need for
      the new FP...  */
   if (frame_pointer_needed && layout.sp_minus_fp == layout.locals_size)
-    {
-      insn = emit_move_insn (hard_frame_pointer_rtx, stack_pointer_rtx);
-      RTX_FRAME_RELATED_P (insn) = 1;
-    }
+    emit_move_insn (hard_frame_pointer_rtx, stack_pointer_rtx);
 
   /* Allocate space for local variables.  */
   if (layout.locals_size)
@@ -1144,14 +1141,11 @@ xstormy16_expand_prologue ()
   if (frame_pointer_needed && layout.sp_minus_fp != layout.locals_size)
     {
       insn = emit_move_insn (hard_frame_pointer_rtx, stack_pointer_rtx);
-      RTX_FRAME_RELATED_P (insn) = 1;
+
       if (layout.sp_minus_fp)
-	{
-	  insn = emit_addhi3_postreload (hard_frame_pointer_rtx,
-					 hard_frame_pointer_rtx,
-					 GEN_INT (-layout.sp_minus_fp));
-	  RTX_FRAME_RELATED_P (insn) = 1;
-	}
+	emit_addhi3_postreload (hard_frame_pointer_rtx,
+				hard_frame_pointer_rtx,
+				GEN_INT (-layout.sp_minus_fp));
     }
 }
 
@@ -1175,7 +1169,7 @@ void
 xstormy16_expand_epilogue ()
 {
   struct xstormy16_stack_layout layout;
-  rtx mem_pop_rtx;
+  rtx mem_pop_rtx, insn;
   int regno;
   const int ifun = xstormy16_interrupt_function_p ();
   
@@ -1190,19 +1184,36 @@ xstormy16_expand_epilogue ()
       if (frame_pointer_needed && layout.sp_minus_fp == layout.locals_size)
 	emit_move_insn (stack_pointer_rtx, hard_frame_pointer_rtx);
       else
-	emit_addhi3_postreload (stack_pointer_rtx, stack_pointer_rtx,
-				GEN_INT (- layout.locals_size));
+        {
+	  insn = emit_addhi3_postreload (stack_pointer_rtx, stack_pointer_rtx,
+					 GEN_INT (- layout.locals_size));
+	  RTX_FRAME_RELATED_P (insn) = 1;
+	}
     }
 
   /* Restore any call-saved registers.  */
   for (regno = FIRST_PSEUDO_REGISTER - 1; regno >= 0; regno--)
     if (REG_NEEDS_SAVE (regno, ifun))
-      emit_move_insn (gen_rtx_REG (HImode, regno), mem_pop_rtx);
+      {
+        rtx dwarf;
+
+	insn = emit_move_insn (gen_rtx_REG (HImode, regno), mem_pop_rtx);
+	RTX_FRAME_RELATED_P (insn) = 1;
+	dwarf = gen_rtx_SET (Pmode, stack_pointer_rtx,
+			     plus_constant (stack_pointer_rtx,
+					    -GET_MODE_SIZE (Pmode)));
+	REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_FRAME_RELATED_EXPR,
+					      dwarf,
+					      REG_NOTES (insn));
+      }
   
   /* Pop the stack for the stdarg save area.  */
   if (layout.stdarg_save_size)
-    emit_addhi3_postreload (stack_pointer_rtx, stack_pointer_rtx,
-			    GEN_INT (- layout.stdarg_save_size));
+    {
+      insn = emit_addhi3_postreload (stack_pointer_rtx, stack_pointer_rtx,
+				     GEN_INT (- layout.stdarg_save_size));
+      RTX_FRAME_RELATED_P (insn) = 1;
+    }
 
   /* Return.  */
   if (ifun)
@@ -1557,9 +1568,9 @@ xstormy16_asm_output_mi_thunk (file, thunk_fndecl, delta,
 
 /* Output constructors and destructors.  Just like 
    default_named_section_asm_out_* but don't set the sections writable.  */
-#undef TARGET_ASM_CONSTRUCTOR
+#undef  TARGET_ASM_CONSTRUCTOR
 #define TARGET_ASM_CONSTRUCTOR xstormy16_asm_out_constructor
-#undef TARGET_ASM_DESTRUCTOR
+#undef  TARGET_ASM_DESTRUCTOR
 #define TARGET_ASM_DESTRUCTOR xstormy16_asm_out_destructor
 
 static void
