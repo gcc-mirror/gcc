@@ -80,7 +80,7 @@ public interface StateEditable
    * Sun&#x2019;s reference implementation, GNU Classpath also has to
    * provide this field. However, we do not try to match its value.
    */
-  static final String RCSID = "";
+  String RCSID = "";
 
 
   /**
