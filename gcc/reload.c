@@ -583,6 +583,17 @@ push_secondary_reload (in_p, x, opnum, optional, reload_class, reload_mode,
 
   if (s_reload == n_reloads)
     {
+#ifdef SECONDARY_MEMORY_NEEDED
+      /* If we need a memory location to copy between the two reload regs,
+	 set it up now.  Note that we do the input case before making
+	 the reload and the output case after.  This is due to the 
+	 way reloads are output.  */
+
+      if (in_p && icode == CODE_FOR_nothing
+	  && SECONDARY_MEMORY_NEEDED (class, reload_class, mode))
+	get_secondary_mem (x, reload_mode, opnum, type);
+#endif
+
       /* We need to make a new secondary reload for this register class.  */
       reload_in[s_reload] = reload_out[s_reload] = 0;
       reload_reg_class[s_reload] = class;
@@ -607,13 +618,6 @@ push_secondary_reload (in_p, x, opnum, optional, reload_class, reload_mode,
       n_reloads++;
 
 #ifdef SECONDARY_MEMORY_NEEDED
-      /* If we need a memory location to copy between the two reload regs,
-	 set it up now.  */
-
-      if (in_p && icode == CODE_FOR_nothing
-	  && SECONDARY_MEMORY_NEEDED (class, reload_class, mode))
-	get_secondary_mem (x, mode, opnum, type);
-
       if (! in_p && icode == CODE_FOR_nothing
 	  && SECONDARY_MEMORY_NEEDED (reload_class, class, mode))
 	get_secondary_mem (x, mode, opnum, type);
@@ -1250,6 +1254,15 @@ push_reload (in, out, inloc, outloc, class,
       /* We found no existing reload suitable for re-use.
 	 So add an additional reload.  */
 
+#ifdef SECONDARY_MEMORY_NEEDED
+      /* If a memory location is needed for the copy, make one.  */
+      if (in != 0 && GET_CODE (in) == REG
+	  && REGNO (in) < FIRST_PSEUDO_REGISTER
+	  && SECONDARY_MEMORY_NEEDED (REGNO_REG_CLASS (REGNO (in)),
+				     class, inmode))
+	get_secondary_mem (in, inmode, opnum, type);
+#endif
+
       i = n_reloads;
       reload_in[i] = in;
       reload_out[i] = out;
@@ -1272,13 +1285,6 @@ push_reload (in, out, inloc, outloc, class,
       n_reloads++;
 
 #ifdef SECONDARY_MEMORY_NEEDED
-      /* If a memory location is needed for the copy, make one.  */
-      if (in != 0 && GET_CODE (in) == REG
-	  && REGNO (in) < FIRST_PSEUDO_REGISTER
-	  && SECONDARY_MEMORY_NEEDED (REGNO_REG_CLASS (REGNO (in)),
-				     class, inmode))
-	get_secondary_mem (in, inmode, opnum, type);
-
       if (out != 0 && GET_CODE (out) == REG
 	  && REGNO (out) < FIRST_PSEUDO_REGISTER
 	  && SECONDARY_MEMORY_NEEDED (class, REGNO_REG_CLASS (REGNO (out)),
