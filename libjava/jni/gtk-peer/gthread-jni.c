@@ -91,28 +91,40 @@ JavaVM *gdk_vm;
 static void maybe_rethrow(JNIEnv *gdk_env, char *message, char *file, int line) {
   jthrowable cause;
 
-  /* rethrow if an exception happened */
-  if ((cause = (*gdk_env)->ExceptionOccurred(gdk_env)) != NULL) {
     jstring jmessage;
-  jclass obj_class;
+    jclass obj_class;
     jobject obj;
     jmethodID ctor;
+    int len;
+    char *buf;
 
-    /* allocate local message in Java */
-    int len = strlen(message) + strlen(file) + 25;
-    char buf[ len ];
-    bzero(buf, len);
-    sprintf(buf, "%s (at %s:%d)", message, file, line);
-    jmessage = (*gdk_env)->NewStringUTF(gdk_env, buf);
+    /* rethrow if an exception happened */
+    if ((cause = (*gdk_env)->ExceptionOccurred(gdk_env)) != NULL)
+      {
+
+	/* allocate local message in Java */
+	len = strlen(message) + strlen(file) + 25;
+	buf = (char *) malloc(len);
+	if (buf != NULL)
+	  {
+	    bzero(buf, len);
+	    sprintf(buf, "%s (at %s:%d)", message, file, line);
+	    jmessage = (*gdk_env)->NewStringUTF(gdk_env, buf);
+	    free(buf);
+	  }
+	else
+	  jmessage = NULL;
     
-    /* create RuntimeException wrapper object */
-    obj_class = (*gdk_env)->FindClass (gdk_env, "java/lang/RuntimeException");
-    ctor = (*gdk_env)->GetMethodID(gdk_env, obj_class, "<init>", "(Ljava/langString;Ljava/lang/Throwable)V");
-    obj = (*gdk_env)->NewObject (gdk_env, obj_class, ctor, jmessage, cause);
+	/* create RuntimeException wrapper object */
+	obj_class = (*gdk_env)->FindClass (gdk_env,
+			"java/lang/RuntimeException");
+	ctor = (*gdk_env)->GetMethodID(gdk_env, obj_class, "<init>",
+	"(Ljava/langString;Ljava/lang/Throwable)V");
+	obj = (*gdk_env)->NewObject (gdk_env, obj_class, ctor, jmessage, cause);
 
-    /* throw it */
-    (*gdk_env)->Throw(gdk_env, (jthrowable)obj);
-    }
+	/* throw it */
+	(*gdk_env)->Throw(gdk_env, (jthrowable)obj);
+      }
 }
 
 /* This macro is used to include a source location in the exception message */
