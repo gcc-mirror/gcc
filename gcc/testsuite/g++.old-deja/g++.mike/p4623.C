@@ -26,7 +26,7 @@ class base3: public base {};
 class derived: public base3, public base1, public base2 {
 public:
   int d_data;
-  derived( int i ) { d_data = i; base3::b_data++; }
+  derived( int i ) { d_data = i; ((base3 *)this)->b_data++; }
   void d_print() { }
 };
 
