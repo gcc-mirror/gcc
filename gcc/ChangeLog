@@ -1,5 +1,8 @@
 Thu Mar 30 06:32:51 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* expr.c (store_constructor): Properly compute displacement and
+	alignment when offset is variable.
+
 	* expmed.c (store_bit_field, store_fixed_bit_field): Fix more
 	cases of alignment in bytes.
 

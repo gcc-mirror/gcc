@@ -4244,11 +4244,8 @@ store_constructor (exp, target, align, cleared, size)
 	      rtx offset_rtx;
 
 	      if (contains_placeholder_p (offset))
-		offset = build (WITH_RECORD_EXPR, bitsizetype,
+		offset = build (WITH_RECORD_EXPR, sizetype,
 				offset, make_tree (TREE_TYPE (exp), target));
-
-	      offset = size_binop (EXACT_DIV_EXPR, offset, bitsize_unit_node);
-	      offset = convert (sizetype, offset);
 
 	      offset_rtx = expand_expr (offset, NULL_RTX, VOIDmode, 0);
 	      if (GET_CODE (to_rtx) != MEM)
@@ -4268,6 +4265,7 @@ store_constructor (exp, target, align, cleared, size)
 				  gen_rtx_PLUS (ptr_mode, XEXP (to_rtx, 0),
 						force_reg (ptr_mode,
 							   offset_rtx)));
+	      align = DECL_OFFSET_ALIGN (field);
 	    }
 
 	  if (TREE_READONLY (field))
@@ -4306,10 +4304,7 @@ store_constructor (exp, target, align, cleared, size)
 	    }
 #endif
 	  store_constructor_field (to_rtx, bitsize, bitpos, mode,
-				   TREE_VALUE (elt), type, 
-				   MIN (align,
-					DECL_ALIGN (TREE_PURPOSE (elt))),
-				   cleared);
+				   TREE_VALUE (elt), type, align, cleared);
 	}
     }
   else if (TREE_CODE (type) == ARRAY_TYPE)
