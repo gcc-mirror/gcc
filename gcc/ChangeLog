@@ -1,3 +1,22 @@
+2001-11-11  Alexandre Oliva  <aoliva@redhat.com>
+
+	* Makefile.in (c-lang.o): Depend on $(VARRAY_H).
+	* c-decl.c (c_expand_body): Take argument can_defer_p.  Use it
+	to decide whether to defer a function.
+	(finish_function): Adjust.
+	(c_expand_deferred_function): New function.
+	* c-lang.c (deferred_fns): New variable.
+	(c_init): Initialize it, and mark it as a root.
+	(defer_fn): New function.
+	(finish_file): Expand all deferred functions.
+	* c-tree.h (defer_fn): Declare.
+	(c_expand_deferred_function): Likewise.
+	* objc/Make-lang.in (objc-act.o): Depend on $(VARRAY_H).
+	* objc-act.c (deferred_fns): New variable.
+	(objc_init): Initialize it, and mark it as a root.
+	(defer_fn): New function.
+	(finish_file): Expand all deferred functions.
+
 2001-11-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* alpha.c (unicosmk_special_name): Prototype.

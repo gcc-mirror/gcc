@@ -279,7 +279,7 @@ static tree grokdeclarator		PARAMS ((tree, tree, enum decl_context,
 static tree grokparms			PARAMS ((tree, int));
 static void layout_array_type		PARAMS ((tree));
 static tree c_make_fname_decl           PARAMS ((tree, int));
-static void c_expand_body               PARAMS ((tree, int));
+static void c_expand_body               PARAMS ((tree, int, int));
 
 /* C-specific option variables.  */
 
@@ -6748,7 +6748,7 @@ finish_function (nested)
   if (! nested)
     {
       /* Generate RTL for the body of this function.  */
-      c_expand_body (fndecl, nested);
+      c_expand_body (fndecl, nested, 1);
       /* Let the error reporting routines know that we're outside a
 	 function.  For a nested function, this value is used in
 	 pop_c_function_context and then reset via pop_function_context.  */
@@ -6756,14 +6756,25 @@ finish_function (nested)
     }
 }
 
+/* Generate the RTL for a deferred function FNDECL.  */
+
+void
+c_expand_deferred_function (fndecl)
+     tree fndecl;
+{
+  c_expand_body (fndecl, 0, 0);
+  current_function_decl = NULL;
+}
+
 /* Generate the RTL for the body of FNDECL.  If NESTED_P is non-zero,
    then we are already in the process of generating RTL for another
-   function.  */
+   function.  If can_defer_p is zero, we won't attempt to defer the
+   generation of RTL.  */
 
 static void
-c_expand_body (fndecl, nested_p)
+c_expand_body (fndecl, nested_p, can_defer_p)
      tree fndecl;
-     int nested_p;
+     int nested_p, can_defer_p;
 {
   int uninlinable = 1;
 
@@ -6780,6 +6791,17 @@ c_expand_body (fndecl, nested_p)
          predicates depend on cfun and current_function_decl to
          function completely.  */
       uninlinable = ! tree_inlinable_function_p (fndecl);
+      
+      if (! uninlinable && can_defer_p
+	  /* Save function tree for inlining.  Should return 0 if the
+             language does not support function deferring or the
+             function could not be deferred.  */
+	  && defer_fn (fndecl))
+	{
+	  /* Let the back-end know that this funtion exists.  */
+	  (*debug_hooks->deferred_inline_function) (fndecl);
+	  return;
+	}
       
       /* Then, inline any functions called in it.  */
       optimize_inline_calls (fndecl);
@@ -7202,7 +7224,7 @@ c_expand_decl_stmt (t)
   if (TREE_CODE (decl) == FUNCTION_DECL
       && DECL_CONTEXT (decl) == current_function_decl
       && DECL_SAVED_TREE (decl))
-    c_expand_body (decl, /*nested_p=*/1);
+    c_expand_body (decl, /*nested_p=*/1, /*can_defer_p=*/0);
 }
 
 /* Return the IDENTIFIER_GLOBAL_VALUE of T, for use in common code, since
