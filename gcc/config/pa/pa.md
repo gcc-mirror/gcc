@@ -762,6 +762,29 @@
  (set_attr "length" "8,8")])
 ;;; Experimental conditional move patterns
 
+(define_expand "movsicc"
+  [(set (match_operand:SI 0 "register_operand" "")
+	(if_then_else:SI
+	 (match_operator 1 "comparison_operator"
+	    [(match_operand:SI 4 "register_operand" "")
+	     (match_operand:SI 5 "arith11_operand" "")])
+	 (match_operand:SI 2 "reg_or_cint_move_operand" "")
+	 (match_operand:SI 3 "reg_or_cint_move_operand" "")))]
+  ""
+  "
+{
+  enum rtx_code code = GET_CODE (operands[1]);
+
+  if (hppa_branch_type != CMP_SI)
+    FAIL;
+
+  /* operands[1] is currently the result of compare_from_rtx.  We want to
+     emit a compare of the original operands.  */
+  operands[1] = gen_rtx (code, SImode, hppa_compare_op0, hppa_compare_op1);
+  operands[4] = hppa_compare_op0;
+  operands[5] = hppa_compare_op1;
+}")
+
 ; We need the first constraint alternative in order to avoid
 ; earlyclobbers on all other alternatives.
 (define_insn ""
