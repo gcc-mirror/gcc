@@ -1,3 +1,17 @@
+2001-11-14  Alan Matsuoka  <alanm@redhat.com>
+
+	* rtl.def (INCLUDE) : Define.  
+	* gensupport.c  (init_include_reader, process_include,
+	save_string) :  New functions to implement an include facility
+	in .md files.
+	* gensupport.h : Add prototype for init_md_reader_args.  
+	* genattr.c genattrtab.c gencodes.c genconfig.c genemit.c
+	genextract.c genflags.c genopinit.c genoutput.c
+	genpeep.c genrecog.c: Change call to init_md_reader to
+	init_md_reader_args.
+	* md.texi: Document (include "path") and -I directives for RTL
+	generation tools.
+
 2001-11-14  DJ Delorie  <dj@redhat.com>
 
 	* integrate.c (get_hard_reg_initial_reg): New.
