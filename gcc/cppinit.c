@@ -547,7 +547,6 @@ cpp_create_reader (table, lang)
   s->n_defined		= cpp_lookup (pfile, DSC("defined"));
   s->n_true		= cpp_lookup (pfile, DSC("true"));
   s->n_false		= cpp_lookup (pfile, DSC("false"));
-  s->n__Pragma		= cpp_lookup (pfile, DSC("_Pragma"));
   s->n__STRICT_ANSI__   = cpp_lookup (pfile, DSC("__STRICT_ANSI__"));
   s->n__CHAR_UNSIGNED__ = cpp_lookup (pfile, DSC("__CHAR_UNSIGNED__"));
   s->n__VA_ARGS__       = cpp_lookup (pfile, DSC("__VA_ARGS__"));
@@ -658,6 +657,7 @@ static const struct builtin builtin_array[] =
   B("__BASE_FILE__",	 BT_BASE_FILE),
   B("__LINE__",		 BT_SPECLINE),
   B("__INCLUDE_LEVEL__", BT_INCLUDE_LEVEL),
+  B("_Pragma",		 BT_PRAGMA),
 
   X("__VERSION__",		VERS),
   X("__USER_LABEL_PREFIX__",	ULP),

@@ -1,3 +1,27 @@
+2001-10-02  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cpphash.h: Update comments.
+	(cpp_context): Update.
+	(spec_nodes): Remove n__Pragma.
+	* cppinit.c (cpp_create_reader): Update.
+	(builtin_array): Add _Pragma.
+	* cpplib.h: Update comments.
+	(NODE_DISABLED, BT_PRAGMA): New.
+	(cpp_start_lookahead, cpp_stop_lookahead): Remove prototypes.
+	* cppmacro.c (struct cpp_macro): Remove disabled.
+	(builtin_macro): Return int, handle _Pragma, push the new token
+	on the context stack.
+	(funlike_invocation_p): Unconstify, update.
+	(enter_macro_context): Handle builtins here.
+	(replace_args, push_token_context, push_ptoken_context):
+	Update for prototype changes.
+	(_cpp_pop_context): Update.
+	(cpp_get_token): Don't handle buitins, nor _Pragma here.
+	(cpp_sys_macro_p): Update.
+	(_cpp_free_definition): Clear disabled flag.
+	(_cpp_create_definition): Upate.
+	* cppmain.c: Update comments.
+
 Tue Oct  2 12:46:01 CEST 2001  Bo Thorsen     <bo@suse.co.uk>,
 			       Andreas Jaeger <aj@suse.de>,
 			       Jan Hubicka    <jh@suse.cz>

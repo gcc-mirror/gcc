@@ -38,7 +38,6 @@ struct cpp_macro
   unsigned short paramc;	/* Number of parameters.  */
   unsigned int fun_like : 1;	/* If a function-like macro.  */
   unsigned int variadic : 1;	/* If a variadic macro.  */
-  unsigned int disabled : 1;	/* If macro is disabled.  */
   unsigned int syshdr   : 1;	/* If macro defined in system header.  */
 };
 
@@ -55,11 +54,11 @@ struct macro_arg
 /* Macro expansion.  */
 
 static int enter_macro_context PARAMS ((cpp_reader *, cpp_hashnode *));
-static const cpp_token *builtin_macro PARAMS ((cpp_reader *, cpp_hashnode *));
+static int builtin_macro PARAMS ((cpp_reader *, cpp_hashnode *));
 static void push_token_context
-  PARAMS ((cpp_reader *, cpp_macro *, const cpp_token *, unsigned int));
+  PARAMS ((cpp_reader *, cpp_hashnode *, const cpp_token *, unsigned int));
 static void push_ptoken_context
-  PARAMS ((cpp_reader *, cpp_macro *, _cpp_buff *,
+  PARAMS ((cpp_reader *, cpp_hashnode *, _cpp_buff *,
 	   const cpp_token **, unsigned int));
 static _cpp_buff *collect_args PARAMS ((cpp_reader *, const cpp_hashnode *));
 static cpp_context *next_context PARAMS ((cpp_reader *));
@@ -76,8 +75,8 @@ static const cpp_token *stringify_arg PARAMS ((cpp_reader *, macro_arg *));
 static void paste_all_tokens PARAMS ((cpp_reader *, const cpp_token *));
 static bool paste_tokens PARAMS ((cpp_reader *, const cpp_token **,
 				  const cpp_token *));
-static int funlike_invocation_p PARAMS ((cpp_reader *, const cpp_hashnode *));
-static void replace_args PARAMS ((cpp_reader *, cpp_macro *, macro_arg *));
+static int funlike_invocation_p PARAMS ((cpp_reader *, cpp_hashnode *));
+static void replace_args PARAMS ((cpp_reader *, cpp_hashnode *, macro_arg *));
 
 /* #define directive parsing and handling.  */
 
@@ -132,17 +131,22 @@ static const char * const monthnames[] =
   "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
 };
 
-/* Handle builtin macros like __FILE__.  */
-static const cpp_token *
+/* Handle builtin macros like __FILE__, and push the resulting token
+   on the context stack.  Also handles _Pragma, for which no new token
+   is created.  Returns 1 on success, 0 to return the token to the
+   caller.  */
+static int
 builtin_macro (pfile, node)
      cpp_reader *pfile;
      cpp_hashnode *node;
 {
+  const cpp_token *result;
+
   switch (node->value.builtin)
     {
     default:
       cpp_ice (pfile, "invalid builtin macro \"%s\"", NODE_NAME (node));
-      return new_number_token (pfile, 1);
+      return 0;
 
     case BT_FILE:
     case BT_BASE_FILE:
@@ -161,28 +165,33 @@ builtin_macro (pfile, node)
 	buf = _cpp_unaligned_alloc (pfile, len * 4 + 1);
 	len = quote_string (buf, (const unsigned char *) name, len) - buf;
 
-	return new_string_token (pfile, buf, len);
+	result = new_string_token (pfile, buf, len);
       }
-	
+      break;
+
     case BT_INCLUDE_LEVEL:
       /* The line map depth counts the primary source as level 1, but
 	 historically __INCLUDE_DEPTH__ has called the primary source
 	 level 0.  */
-      return new_number_token (pfile, pfile->line_maps.depth - 1);
+      result = new_number_token (pfile, pfile->line_maps.depth - 1);
+      break;
 
     case BT_SPECLINE:
       /* If __LINE__ is embedded in a macro, it must expand to the
 	 line of the macro's invocation, not its definition.
 	 Otherwise things like assert() will not work properly.  */
-      return new_number_token (pfile, SOURCE_LINE (pfile->map,
-						   pfile->cur_token[-1].line));
+      result = new_number_token (pfile,
+				 SOURCE_LINE (pfile->map,
+					      pfile->cur_token[-1].line));
+      break;
 
     case BT_STDC:
       {
 	int stdc = (!CPP_IN_SYSTEM_HEADER (pfile)
 		    || pfile->spec_nodes.n__STRICT_ANSI__->type != NT_VOID);
-	return new_number_token (pfile, stdc);
+	result = new_number_token (pfile, stdc);
       }
+      break;
 
     case BT_DATE:
     case BT_TIME:
@@ -212,8 +221,24 @@ builtin_macro (pfile, node)
 		   tb->tm_hour, tb->tm_min, tb->tm_sec);
 	}
 
-      return node->value.builtin == BT_DATE ? &pfile->date: &pfile->time;
+      if (node->value.builtin == BT_DATE)
+	result = &pfile->date;
+      else
+	result = &pfile->time;
+      break;
+
+    case BT_PRAGMA:
+      /* Don't interpret _Pragma within directives.  The standard is
+         not clear on this, but to me this makes most sense.  */
+      if (pfile->state.in_directive)
+	return 0;
+
+      _cpp_do__Pragma (pfile);
+      return 1;
     }
+
+  push_token_context (pfile, NULL, result, 1);
+  return 1;
 }
 
 /* Adds backslashes before all backslashes and double quotes appearing
@@ -594,7 +619,7 @@ collect_args (pfile, node)
 static int
 funlike_invocation_p (pfile, node)
      cpp_reader *pfile;
-     const cpp_hashnode *node;
+     cpp_hashnode *node;
 {
   const cpp_token *maybe_paren;
   _cpp_buff *buff = NULL;
@@ -626,7 +651,7 @@ funlike_invocation_p (pfile, node)
   if (buff)
     {
       if (node->value.macro->paramc > 0)
-	replace_args (pfile, node->value.macro, (macro_arg *) buff->base);
+	replace_args (pfile, node, (macro_arg *) buff->base);
       _cpp_release_buff (pfile, buff);
     }
 
@@ -642,9 +667,11 @@ enter_macro_context (pfile, node)
      cpp_reader *pfile;
      cpp_hashnode *node;
 {
-  if (node->flags & NODE_BUILTIN)
-    push_token_context (pfile, NULL, builtin_macro (pfile, node), 1);
-  else
+  /* Macros invalidate controlling macros.  */
+  pfile->mi_valid = false;
+
+  /* Handle macros and the _Pragma operator.  */
+  if (! (node->flags & NODE_BUILTIN))
     {
       cpp_macro *macro = node->value.macro;
 
@@ -652,22 +679,24 @@ enter_macro_context (pfile, node)
 	return 0;
 
       /* Disable the macro within its expansion.  */
-      macro->disabled = 1;
+      node->flags |= NODE_DISABLED;
 
       if (macro->paramc == 0)
-	push_token_context (pfile, macro, macro->expansion, macro->count);
+	push_token_context (pfile, node, macro->expansion, macro->count);
+
+      return 1;
     }
- 
-  return 1;
+
+  return builtin_macro (pfile, node);
 }
 
 /* Take the expansion of a function-like MACRO, replacing parameters
    with the actual arguments.  Each argument is macro-expanded before
    replacement, unless operated upon by the # or ## operators.  */
 static void
-replace_args (pfile, macro, args)
+replace_args (pfile, node, args)
      cpp_reader *pfile;
-     cpp_macro *macro;
+     cpp_hashnode *node;
      macro_arg *args;
 {
   unsigned int i, total;
@@ -675,11 +704,13 @@ replace_args (pfile, macro, args)
   const cpp_token **dest, **first;
   macro_arg *arg;
   _cpp_buff *buff;
+  cpp_macro *macro;
 
   /* First, fully macro-expand arguments, calculating the number of
      tokens in the final expansion as we go.  The ordering of the if
      statements below is subtle; we must handle stringification before
      pasting.  */
+  macro = node->value.macro;
   total = macro->count;
   limit = macro->expansion + macro->count;
 
@@ -797,7 +828,7 @@ replace_args (pfile, macro, args)
     if (args[i].expanded)
       free (args[i].expanded);
 
-  push_ptoken_context (pfile, macro, buff, first, dest - first);
+  push_ptoken_context (pfile, node, buff, first, dest - first);
 }
 
 /* Return a special padding token, with padding inherited from SOURCE.  */
@@ -837,7 +868,7 @@ next_context (pfile)
 static void
 push_ptoken_context (pfile, macro, buff, first, count)
      cpp_reader *pfile;
-     cpp_macro *macro;
+     cpp_hashnode *macro;
      _cpp_buff *buff;
      const cpp_token **first;
      unsigned int count;
@@ -855,7 +886,7 @@ push_ptoken_context (pfile, macro, buff, first, count)
 static void
 push_token_context (pfile, macro, first, count)
      cpp_reader *pfile;
-     cpp_macro *macro;
+     cpp_hashnode *macro;
      const cpp_token *first;
      unsigned int count;
 {
@@ -914,7 +945,7 @@ _cpp_pop_context (pfile)
 
   /* Re-enable a macro when leaving its expansion.  */
   if (context->macro)
-    context->macro->disabled = 0;
+    context->macro->flags &= ~NODE_DISABLED;
 
   if (context->buff)
     _cpp_release_buff (pfile, context->buff);
@@ -975,39 +1006,30 @@ cpp_get_token (pfile)
 
       node = result->val.node;
 
-      /* Handle macros and the _Pragma operator.  */
-      if (node->type == NT_MACRO && !(result->flags & NO_EXPAND))
+      if (node->type != NT_MACRO || (result->flags & NO_EXPAND))
+	break;
+      
+      if (!(node->flags & NODE_DISABLED))
 	{
-	  /* Macros invalidate controlling macros.  */
-	  pfile->mi_valid = false;
-
-	  if (!(node->flags & NODE_BUILTIN) && node->value.macro->disabled)
-	    {
-	      /* Flag this token as always unexpandable.  */
-	      cpp_token *t = _cpp_temp_token (pfile);
-	      t->type = result->type;
-	      t->flags = result->flags | NO_EXPAND;
-	      t->val.str = result->val.str;
-	      result = t;
-	    }
-	  else if (!pfile->state.prevent_expansion
-		   && enter_macro_context (pfile, node))
+	  if (!pfile->state.prevent_expansion
+	      && enter_macro_context (pfile, node))
 	    {
 	      if (pfile->state.in_directive)
 		continue;
 	      return padding_token (pfile, result);
 	    }
 	}
+      else
+	{
+	  /* Flag this token as always unexpandable.  */
+	  cpp_token *t = _cpp_temp_token (pfile);
+	  t->type = result->type;
+	  t->flags = result->flags | NO_EXPAND;
+	  t->val.str = result->val.str;
+	  result = t;
+	}
 
-      /* Don't interpret _Pragma within directives.  The standard is
-         not clear on this, but to me this makes most sense.  */
-      if (node != pfile->spec_nodes.n__Pragma
-	  || pfile->state.in_directive)
-	break;
-
-      /* Handle it, and loop back for another token.  MI is cleared
-         since this token came from either the lexer or a macro.  */
-      _cpp_do__Pragma (pfile);
+      break;
     }
 
   return result;
@@ -1020,9 +1042,9 @@ int
 cpp_sys_macro_p (pfile)
      cpp_reader *pfile;
 {
-  cpp_macro *macro = pfile->context->macro;
+  cpp_hashnode *node = pfile->context->macro;
 
-  return macro && macro->syshdr;
+  return node && node->value.macro && node->value.macro->syshdr;
 }
 
 /* Read each token in, until EOF.  Directives are transparently
@@ -1118,7 +1140,7 @@ _cpp_free_definition (h)
   /* Macros and assertions no longer have anything to free.  */
   h->type = NT_VOID;
   /* Clear builtin flag in case of redefinition.  */
-  h->flags &= ~NODE_BUILTIN;
+  h->flags &= ~(NODE_BUILTIN | NODE_DISABLED);
 }
 
 /* Save parameter NODE to the parameter list of macro MACRO.  Returns
@@ -1360,9 +1382,10 @@ _cpp_create_definition (pfile, node)
   BUFF_FRONT (pfile->a_buff) = (U_CHAR *) &macro->expansion[macro->count];
 
   /* Implement the macro-defined-to-itself optimisation.  */
-  macro->disabled = (macro->count == 1 && !macro->fun_like
-		     && macro->expansion[0].type == CPP_NAME
-		     && macro->expansion[0].val.node == node);
+  if (macro->count == 1 && !macro->fun_like
+      && macro->expansion[0].type == CPP_NAME
+      && macro->expansion[0].val.node == node)
+    node->flags |= NODE_DISABLED;
 
   /* To suppress some diagnostics.  */
   macro->syshdr = pfile->map->sysp != 0;

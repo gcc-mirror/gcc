@@ -168,7 +168,7 @@ struct cpp_string
 #define BOL		(1 << 6) /* Token at beginning of line.  */
 
 /* A preprocessing token.  This has been carefully packed and should
-   occupy 12 bytes on 32-bit hosts and 16 bytes on 64-bit hosts.  */
+   occupy 16 bytes on 32-bit hosts and 24 bytes on 64-bit hosts.  */
 struct cpp_token
 {
   unsigned int line;		/* Logical line of first char of token.  */
@@ -353,7 +353,7 @@ struct cpp_options
   /* Print column number in error messages.  */
   unsigned char show_column;
 
-  /* Treat C++ alternate operator names special.  */
+  /* Nonzero means handle C++ alternate operator names.  */
   unsigned char operator_names;
 
   /* True if --help, --version or --target-help appeared in the
@@ -400,6 +400,7 @@ extern const char *progname;
 #define NODE_BUILTIN	(1 << 2)	/* Builtin macro.  */
 #define NODE_DIAGNOSTIC (1 << 3)	/* Possible diagnostic when lexed.  */
 #define NODE_WARN	(1 << 4)	/* Warn if redefined or undefined.  */
+#define NODE_DISABLED	(1 << 5)	/* A disabled macro.  */
 
 /* Different flavors of hash node.  */
 enum node_type
@@ -409,7 +410,8 @@ enum node_type
   NT_ASSERTION	   /* Predicate for #assert.  */
 };
 
-/* Different flavors of builtin macro.  */
+/* Different flavors of builtin macro.  _Pragma is an operator, but we
+   handle it with the builtin code for efficiency reasons.  */
 enum builtin_type
 {
   BT_SPECLINE = 0,		/* `__LINE__' */
@@ -418,7 +420,8 @@ enum builtin_type
   BT_BASE_FILE,			/* `__BASE_FILE__' */
   BT_INCLUDE_LEVEL,		/* `__INCLUDE_LEVEL__' */
   BT_TIME,			/* `__TIME__' */
-  BT_STDC			/* `__STDC__' */
+  BT_STDC,			/* `__STDC__' */
+  BT_PRAGMA			/* `_Pragma' operator */
 };
 
 #define CPP_HASHNODE(HNODE)	((cpp_hashnode *) (HNODE))
@@ -568,8 +571,6 @@ extern void cpp_forall_identifiers	PARAMS ((cpp_reader *,
 
 /* In cppmacro.c */
 extern void cpp_scan_nooutput		PARAMS ((cpp_reader *));
-extern void cpp_start_lookahead		PARAMS ((cpp_reader *));
-extern void cpp_stop_lookahead		PARAMS ((cpp_reader *, int));
 extern int  cpp_sys_macro_p		PARAMS ((cpp_reader *));
 
 /* In cppfiles.c */
