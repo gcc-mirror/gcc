@@ -1940,8 +1940,8 @@ wrapup_global_declarations (vec, len)
 	     defined in a main file, as opposed to an include file.  */
 
 	  if (TREE_CODE (decl) == VAR_DECL && TREE_STATIC (decl)
-	      && (! TREE_READONLY (decl)
-		  || TREE_PUBLIC (decl)
+	      && (((! TREE_READONLY (decl) || TREE_PUBLIC (decl))
+		   && !DECL_COMDAT (decl))
 		  || (!optimize
 		      && flag_keep_static_consts
 		      && !DECL_ARTIFICIAL (decl))
@@ -2562,20 +2562,11 @@ rest_of_decl_compilation (decl, asmspec, top_level, at_end)
     {
       timevar_push (TV_VARCONST);
       make_decl_rtl (decl, asmspec);
-      /* Initialized extern variable exists to be replaced
-	 with its value, or represents something that will be
-	 output in another file.  */
-      if (! (TREE_CODE (decl) == VAR_DECL
-	     && DECL_EXTERNAL (decl) && TREE_READONLY (decl)
-	     && DECL_INITIAL (decl) != 0
-	     && DECL_INITIAL (decl) != error_mark_node))
-	/* Don't output anything
-	     when a tentative file-scope definition is seen.
-	     But at end of compilation, do output code for them.  */
-	if (! (! at_end && top_level
-	       && (DECL_INITIAL (decl) == 0
-		   || DECL_INITIAL (decl) == error_mark_node)))
-	  assemble_variable (decl, top_level, at_end, 0);
+      /* Don't output anything
+	 when a tentative file-scope definition is seen.
+	 But at end of compilation, do output code for them.  */
+      if (at_end || !DECL_DEFER_OUTPUT (decl))
+	assemble_variable (decl, top_level, at_end, 0);
       if (decl == last_assemble_variable_decl)
 	{
 	  ASM_FINISH_DECLARE_OBJECT (asm_out_file, decl,
