@@ -1,3 +1,8 @@
+2003-08-11  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* dwarf2asm.c (dw2_output_indirect_constant_1): Take user_label_prefix
+	into account.
+
 2003-08-10  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* builtins.c (expand_builtin_strcat): Optimize constant strings.
