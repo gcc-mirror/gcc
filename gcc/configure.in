@@ -4663,7 +4663,7 @@ all_boot_languages=
 all_compilers=
 all_stagestuff=
 all_diff_excludes=
-all_outputs='Makefile intl/Makefile po/Makefile.in fixinc/Makefile'
+all_outputs='Makefile intl/Makefile po/Makefile.in fixinc/Makefile gccbug'
 # List of language makefile fragments.
 all_lang_makefiles=
 all_headers=

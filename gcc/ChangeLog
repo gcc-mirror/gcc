@@ -1,3 +1,11 @@
+2000-03-14  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
+
+	* gccbug.in: New file.
+	* configure.in (all_outputs): Add gccbug.
+	* Makefile.in (install-common): Install gccbug.
+	(GCCBUG_INSTALL_NAME): New variable.
+	* configure: Rebuilt.
+	
 2000-03-13  Jason Merrill  <jason@casey.cygnus.com>
 
 	* function.c (put_var_into_stack): Use type_for_mode to calculate
