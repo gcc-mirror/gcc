@@ -1,3 +1,14 @@
+2004-07-19  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/16623
+	* cp-tree.h (lang_type_class): Add lazy_assignment_op.
+	(CLASSTYPE_LAZY_ASSIGNMENT_OP): New macro.
+	* class.c (add_implicitly_declared_members): Use
+	CLASSTYPE_LAZY_ASSIGNMENT_OP.
+	* method.c (lazily_declare_fn): Clear
+	CLASSTYPE_LAZY_ASSIGNMENT_OP.
+	* search.c (lookup_fnfields_1): Check it.
+
 2004-07-19  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* class.c (add_method): Delay adding the slot until the end.
