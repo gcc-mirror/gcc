@@ -18,7 +18,7 @@
 #ifdef HAVE_LONG_LONG
 # define HOST_BITS_PER_LONGLONG (CHAR_BIT * SIZEOF_LONG_LONG)
 #else
-#ifdef HAVE__INT64
+#ifdef HAVE___INT64
 # define HOST_BITS_PER_LONGLONG (CHAR_BIT * SIZEOF___INT64)
 #else
 /* If we're here and we're GCC, assume this is stage 2+ of a bootstrap
