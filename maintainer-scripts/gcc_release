@@ -188,9 +188,11 @@ EOF
     error "Cannot specify -r and -D at the same time"
   fi
 
-  # Run gcc_update on them to set up the timestamps nicely.
+  # Run gcc_update on them to set up the timestamps nicely, and (re)write
+  # the LAST_UPDATED file containing the CVS tag/date used.
   changedir "gcc-${RELEASE}"
   contrib/gcc_update --touch
+  echo "Obtained from CVS: ${EXPORTTAG} ${EXPORTDATE}" > LAST_UPDATED
 
   # Obtain some documentation files from the wwwdocs module.
   inform "Retrieving HTML documentation"
