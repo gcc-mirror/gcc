@@ -1,3 +1,16 @@
+2001-02-23  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
+
+	* diagnostic.c (output_to_stream): Rename to
+	output_buffer_to_stream. Loses the stream parameter.
+	(init_output_buffer): Set diagnosic_buffer's stream.
+	(flush_diagnostic_buffer): Adjust.
+	(default_print_error_function): Likewise.
+	(finish_diagnostic): Likewise.
+	(verbatim): Likewise.
+
+	* diagnostic.h (struct output_buffer): Add `stream' field.
+	(output_buffer_attached_stream): New macro.
+
 2001-02-23  Jakub Jelinek  <jakub@redhat.com>
 
 	* fold-const.c (extract_muldiv) [case PLUS_EXPR]: If not MULT_EXPR,
