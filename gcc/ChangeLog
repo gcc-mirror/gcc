@@ -1,3 +1,8 @@
+2003-12-08  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* doc/install.texi: Revert change of Dec 7; gcc is still a 2.13
+	directory.
+
 2003-12-08  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config/frv/frv.md (subdi2): Merge with _internal insn_and_split,
