@@ -1,3 +1,8 @@
+2001-04-26  Mark Mitchell  <mark@codesourcery.com>
+
+	* docs/html/17_intro/BADNAMES: Remove EGCS reference.
+	Indicate obsolete nature of thelist for G++ 3.0.
+
 2001-04-26  Alexandre Oliva  <aoliva@redhat.com>
 
 	* acinclude.m4 (GLIBCPP_ENABLE_THREADS): Obtain
