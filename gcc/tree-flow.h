@@ -479,12 +479,12 @@ extern basic_block label_to_block (tree);
 extern void tree_optimize_tail_calls (bool, enum tree_dump_index);
 extern void bsi_insert_on_edge (edge, tree);
 extern basic_block bsi_insert_on_edge_immediate (edge, tree);
-extern void bsi_commit_one_edge_insert (edge e, basic_block *);
+extern void bsi_commit_one_edge_insert (edge, basic_block *);
 extern void bsi_commit_edge_inserts (int *);
 extern void notice_special_calls (tree);
 extern void clear_special_calls (void);
 extern void verify_stmts (void);
-extern tree tree_block_label (basic_block bb);
+extern tree tree_block_label (basic_block);
 extern void extract_true_false_edges_from_block (basic_block, edge *, edge *);
 extern bool tree_duplicate_sese_region (edge, edge, basic_block *, unsigned,
 					basic_block *);
@@ -539,8 +539,8 @@ extern void redirect_immediate_uses (tree, tree);
 extern tree make_rename_temp (tree, const char *);
 
 /* Flags used when computing reaching definitions and reached uses.  */
-#define TDFA_USE_OPS		1 << 0
-#define TDFA_USE_VOPS		1 << 1
+#define TDFA_USE_OPS		(1 << 0)
+#define TDFA_USE_VOPS		(1 << 1)
 
 /* In gimple-low.c  */
 struct lower_data;
@@ -575,7 +575,7 @@ extern void dump_tree_ssa_stats (FILE *);
 extern void debug_tree_ssa_stats (void);
 extern void ssa_remove_edge (edge);
 extern edge ssa_redirect_edge (edge, basic_block);
-extern void flush_pending_stmts (edge e);
+extern void flush_pending_stmts (edge);
 extern bool tree_ssa_useless_type_conversion (tree);
 extern bool tree_ssa_useless_type_conversion_1 (tree, tree);
 extern void verify_ssa (void);
@@ -728,13 +728,13 @@ void vn_delete (void);
 
 
 /* In tree-sra.c  */
-void insert_edge_copies (tree stmt, basic_block bb);
+void insert_edge_copies (tree, basic_block);
 
 /* In tree-loop-linear.c  */
 extern void linear_transform_loops (struct loops *);
 
 /* In tree-ssa-loop-ivopts.c  */
-extern bool expr_invariant_in_loop_p (struct loop *loop, tree expr);
+extern bool expr_invariant_in_loop_p (struct loop *, tree);
 /* In gimplify.c  */
 
 tree force_gimple_operand (tree, tree *, bool, tree);

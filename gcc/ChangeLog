@@ -1,3 +1,13 @@
+2004-11-13  Dale Johannesen  <dalej@apple.com>
+
+	* tree-flow.h (bsi_commit_one_edge_insert):  Remove name from prototype.
+	(tree_block_label):  Ditto.
+	(flush_pending_stmts):  Ditto.
+	(insert_edge_copies):  Ditto.
+	(expr_invariant_in_loop_p):  Ditto.
+	(TDF_USE_OPS):  Parenthesize definition.
+	(TDF_USE_VOPS):  Ditto.
+
 2004-11-13  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/aix51.h (ASM_CPU_SPEC): Add 970 and G5.
