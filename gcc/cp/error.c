@@ -1817,6 +1817,10 @@ dump_expr (t, flags)
       dump_expr (TREE_OPERAND (t, 0), flags);
       break;
 
+    case EXPR_WITH_FILE_LOCATION:
+      dump_expr (EXPR_WFL_NODE (t), flags);
+      break;
+
     case CONSTRUCTOR:
       if (TREE_TYPE (t) && TYPE_PTRMEMFUNC_P (TREE_TYPE (t)))
 	{

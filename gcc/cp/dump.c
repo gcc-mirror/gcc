@@ -600,7 +600,10 @@ dequeue_and_dump (di)
 	 and therefore many other macros do not work on it.  */
       if (t == std_node)
 	break;
-      dump_child ("dcls", cp_namespace_decls (t));
+      if (DECL_NAMESPACE_ALIAS (t))
+	dump_child ("alis", DECL_NAMESPACE_ALIAS (t));
+      else
+	dump_child ("dcls", cp_namespace_decls (t));
       break;
 
     case TEMPLATE_DECL:

@@ -617,6 +617,17 @@ same name.
 This macro returns the enclosing namespace.  The @code{DECL_CONTEXT} for
 the @code{global_namespace} is @code{NULL_TREE}.
 
+@item DECL_NAMESPACE_ALIAS
+
+If this declaration is for a namespace alias, then
+@code{DECL_NAMESPACE_ALIAS} is the namespace for which this one is an
+alias.  
+
+Do not attempt to use @code{cp_namespace_decls} for a namespace which is
+an alias.  Instead, follow @code{DECL_NAMESPACE_ALIAS} links until you
+reach an ordinary, non-alias, namespace, and call
+@code{cp_namespace_decls} there.
+
 @item cp_namespace_decls
 This function will return the declarations contained in the namespace,
 including types, overloaded functions, other namespaces, and so forth.
@@ -636,6 +647,9 @@ For more information on the kinds of declarations that can occur on this
 list, @xref{Declarations}.  Some declarations will not appear on this
 list.  In particular, no @code{FIELD_DECL}, @code{LABEL_DECL}, or
 @code{PARM_DECL} nodes will appear here.
+
+This function cannot be used with namespaces that have
+@code{DECL_NAMESPACE_ALIAS} set.
 
 @end ftable
 

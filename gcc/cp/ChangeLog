@@ -1,3 +1,10 @@
+1999-12-14  Mark Mitchell  <mark@codesourcery.com>
+
+	* dump.c (dequeue_and_dump): Dump DECL_NAMESPACE_ALIAS.
+	* ir.texi (DECL_NAMESPACE_ALIAS): Document it.
+
+	* error.c (dump_expr): Handle EXPR_WITH_FILE_LOCATION.
+
 1999-12-14  Mumit Khan  <khan@xraylith.wisc.edu>
 
 	* class.c (finish_base_struct): Allow multiple COM base classes
