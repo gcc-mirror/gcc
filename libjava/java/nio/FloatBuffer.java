@@ -53,13 +53,6 @@ public abstract class FloatBuffer extends Buffer
     array_offset = 0;
   }
 
-  FloatBuffer (float[] buffer, int offset, int capacity, int limit, int position, int mark)
-  {
-    super (capacity, limit, position, mark);
-    this.backing_buffer = buffer;
-    this.array_offset = offset;
-  }
-
   /**
    * Allocates a new <code>FloatBuffer</code> object with a given capacity.
    */
