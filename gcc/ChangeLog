@@ -1,3 +1,8 @@
+2003-05-13  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.md ("*iordi3_oi"): Do not mark commutative.
+	("*iorsi3_oi"): Likewise.
+
 2003-05-13  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.md (compare_scc): Use shorter sequence for EQ case.
