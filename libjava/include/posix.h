@@ -1,6 +1,6 @@
 // posix.h -- Helper functions for POSIX-flavored OSs.
 
-/* Copyright (C) 2000  Free Software Foundation
+/* Copyright (C) 2000, 2002  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -29,4 +29,5 @@ details.  */
 #endif
 
 extern int _Jv_select (int n, fd_set *, fd_set *, fd_set *, struct timeval *);
-extern void _Jv_gettimeofday (struct timeval *);
+extern void _Jv_platform_gettimeofday (struct timeval *);
+extern void _Jv_platform_initialize (void);

@@ -17,6 +17,6 @@ details.  */
 #undef __INSIDE_CYGWIN__
 #include <winsock.h>
 
-LONG CALLBACK win32_exception_handler (LPEXCEPTION_POINTERS e);
+extern void _Jv_platform_initialize (void);
 
 #endif /* __JV_WIN32_H__ */
