@@ -1939,11 +1939,11 @@ pushdecl (x)
 					  IDENTIFIER_POINTER (name));
 	    }
 
-	  /* If this is a global decl, and there exists a conflicting local
-	     decl in a parent block, then we can't return as yet, because we
-	     need to register this decl in the current binding block.  */
-	  if (! DECL_EXTERNAL (x) || ! TREE_PUBLIC (x)
-	      || lookup_name (name) == t)
+	  /* If this is a global decl, then we can't return as yet, because we
+	     need to register this decl in the current binding block.  This
+	     ensures that we get an error message if it is redeclared as a
+	     local variable later in the same block.  */
+	  if (! DECL_EXTERNAL (x) || ! TREE_PUBLIC (x))
 	    return t;
 	}
 
@@ -2422,7 +2422,7 @@ redeclaration_error_message (newdecl, olddecl)
 	 external reference.  Otherwise, it is OK, because newdecl must
 	 be an extern reference to olddecl.  */
       if (!(DECL_EXTERNAL (newdecl) && DECL_EXTERNAL (olddecl))
-	  && DECL_CONTEXT (newdecl) == DECL_CONTEXT (olddecl))
+	  && lookup_name_current_level (DECL_NAME (newdecl)) == olddecl)
 	return "redeclaration of `%s'";
       return 0;
     }
