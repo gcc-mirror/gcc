@@ -29,7 +29,7 @@ public:
         float f;
         };
 
-class some_derived::func(derived_func_args &a)
+class some_derived::func(derived_func_args &a)  // ERROR - illegal member syntax
         {
         cout << a.i << ' ' << a.f << endl;
         }
@@ -37,12 +37,12 @@ class some_derived::func(derived_func_args &a)
 int
 main()
         {
-        some_derived d;
-        some_derived::derived_func_args dfa;
+	some_derived d;                     // ERROR - abstract class
+        some_derived::derived_func_args dfa; // ERROR - incomplete class
         some_base *b = &d;
 
         dfa.i = 10;
         dfa.f = 20;
-        b->func(dfs);
+        b->func(dfs);                       // ERROR - dfs not declared
         return 0;
         }
