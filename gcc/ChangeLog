@@ -1,3 +1,14 @@
+2001-04-04  Bernd Schmidt  <bernds@redhat.com>
+
+	Fri Nov  5 10:07:25 1999  Nick Clifton  <nickc@cygnus.com>
+	* function.c (is_addressof): New function.  Returns true if
+	the given piece of RTL is an ADDRESSOF.
+	(purge_addressof_1): Make boolean.  Return false if the
+	ADDRESSOFs could not be purged.
+	(purge_addressof): If ADDRESSOFs could not be purged from the
+	notes attached to an insn, remove the offending note(s),
+	unless they are attached to a libcall.
+
 2001-04-03  Bernd Schmidt  <bernds@redhat.com>
 
 	2001-03-16  Jakub Jelinek  <jakub@redhat.com>
