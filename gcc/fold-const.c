@@ -114,6 +114,7 @@ static tree fold_binary_op_with_conditional_arg
 static bool fold_real_zero_addition_p	PARAMS ((tree, tree, int));
 static tree fold_mathfn_compare	PARAMS ((enum built_in_function,
 					 enum tree_code, tree, tree, tree));
+static tree fold_inf_compare	PARAMS ((enum tree_code, tree, tree, tree));
 
 /* The following constants represent a bit based encoding of GCC's
    comparison operators.  This encoding simplifies transformations
@@ -4798,6 +4799,62 @@ fold_mathfn_compare (fcode, code, type, arg0, arg1)
   return NULL_TREE;
 }
 
+/* Subroutine of fold() that optimizes comparisons against Infinities,
+   either +Inf or -Inf.
+
+   CODE is the comparison operator: EQ_EXPR, NE_EXPR, GT_EXPR, LT_EXPR,
+   GE_EXPR or LE_EXPR.  TYPE is the type of the result and ARG0 and ARG1
+   are the operands of the comparison.  ARG1 must be a TREE_REAL_CST.
+
+   The function returns the constant folded tree if a simplification
+   can be made, and NULL_TREE otherwise.  */
+
+static tree
+fold_inf_compare (code, type, arg0, arg1)
+     enum tree_code code;
+     tree type, arg0, arg1;
+{
+  /* For negative infinity swap the sense of the comparison.  */
+  if (REAL_VALUE_NEGATIVE (TREE_REAL_CST (arg1)))
+    code = swap_tree_comparison (code);
+
+  switch (code)
+    {
+    case GT_EXPR:
+      /* x > +Inf is always false, if with ignore sNANs.  */
+      if (HONOR_SNANS (TYPE_MODE (TREE_TYPE (arg0))))
+        return NULL_TREE;
+      return omit_one_operand (type,
+			       convert (type, integer_zero_node),
+			       arg0);
+
+    case LE_EXPR:
+      /* x <= +Inf is always true, if we don't case about NaNs.  */
+      if (! HONOR_NANS (TYPE_MODE (TREE_TYPE (arg0))))
+	return omit_one_operand (type,
+				 convert (type, integer_one_node),
+				 arg0);
+
+      /* x <= +Inf is the same as x == x, i.e. isfinite(x).  */
+      if ((*lang_hooks.decls.global_bindings_p) () == 0
+	  && ! contains_placeholder_p (arg0))
+	{
+	  arg0 = save_expr (arg0);
+	  return fold (build (EQ_EXPR, type, arg0, arg0));
+	}
+      break;
+
+    case EQ_EXPR:  /* ??? x == +Inf is x > DBL_MAX  */
+    case GE_EXPR:  /* ??? x >= +Inf is x > DBL_MAX  */
+    case LT_EXPR:  /* ??? x < +Inf is x <= DBL_MAX  */
+    case NE_EXPR:  /* ??? x != +Inf is !(x > DBL_MAX)  */
+
+    default:
+      break;
+    }
+
+  return NULL_TREE;
+}
 
 /* Perform constant folding and related simplification of EXPR.
    The related simplifications include x*1 => x, x*0 => 0, etc.,
@@ -6317,20 +6374,42 @@ fold (expr)
 	      && TREE_CODE (arg1) == NEGATE_EXPR)
 	    return fold (build (code, type, TREE_OPERAND (arg1, 0),
 				TREE_OPERAND (arg0, 0)));
-	  /* (-a) CMP CST -> a swap(CMP) (-CST)  */
-	  if (TREE_CODE (arg0) == NEGATE_EXPR && TREE_CODE (arg1) == REAL_CST)
-	    return
-	      fold (build
-		    (swap_tree_comparison (code), type,
-		     TREE_OPERAND (arg0, 0),
-		     build_real (TREE_TYPE (arg1),
-				 REAL_VALUE_NEGATE (TREE_REAL_CST (arg1)))));
-	  /* IEEE doesn't distinguish +0 and -0 in comparisons.  */
-	  /* a CMP (-0) -> a CMP 0  */
-	  if (TREE_CODE (arg1) == REAL_CST
-	      && REAL_VALUE_MINUS_ZERO (TREE_REAL_CST (arg1)))
-	    return fold (build (code, type, arg0,
-				build_real (TREE_TYPE (arg1), dconst0)));
+
+	  if (TREE_CODE (arg1) == REAL_CST)
+	  {
+	    REAL_VALUE_TYPE cst;
+	    cst = TREE_REAL_CST (arg1);
+
+	    /* (-a) CMP CST -> a swap(CMP) (-CST)  */
+	    if (TREE_CODE (arg0) == NEGATE_EXPR)
+	      return
+		fold (build (swap_tree_comparison (code), type,
+			     TREE_OPERAND (arg0, 0),
+			     build_real (TREE_TYPE (arg1),
+					 REAL_VALUE_NEGATE (cst))));
+
+	    /* IEEE doesn't distinguish +0 and -0 in comparisons.  */
+	    /* a CMP (-0) -> a CMP 0  */
+	    if (REAL_VALUE_MINUS_ZERO (cst))
+	      return fold (build (code, type, arg0,
+				  build_real (TREE_TYPE (arg1), dconst0)));
+
+	    /* x != NaN is always true, other ops are always false.  */
+	    if (REAL_VALUE_ISNAN (cst)
+		&& ! HONOR_SNANS (TYPE_MODE (TREE_TYPE (arg1))))
+	      {
+		t = (code == NE_EXPR) ? integer_one_node : integer_zero_node;
+		return omit_one_operand (type, convert (type, t), arg0);
+	      }
+
+	    /* Fold comparisons against infinity.  */
+	    if (REAL_VALUE_ISINF (cst))
+	      {
+		tem = fold_inf_compare (code, type, arg0, arg1);
+		if (tem != NULL_TREE)
+		  return tem;
+	      }
+	  }
 
 	  /* If this is a comparison of a real constant with a PLUS_EXPR
 	     or a MINUS_EXPR of a real constant, we can convert it into a

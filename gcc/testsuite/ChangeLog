@@ -1,3 +1,8 @@
+2003-03-27  Roger Sayle  <roger@eyesopen.com>
+
+	* gcc.c-torture/execute/ieee/fp-cmp-6.c: New test case.
+	* gcc.c-torture/execute/ieee/fp-cmp-7.c: New test case.
+
 2003-03-27  Mark Mitchell  <mark@codesourcery.com>
 
 	* lib/gcov.exp (run-gcov): Add branches and calls options, rather
