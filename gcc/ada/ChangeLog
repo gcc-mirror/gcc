@@ -1,3 +1,7 @@
+2001-12-04  Robert Dewar <dewar@gnat.com>
+
+	* einfo.ads: Minor reformatting
+
 2001-12-04  Ed Schonberg <schonber@gnat.com>
 
 	* einfo.ads: Block_Node points to the identifier of the block, not to 
