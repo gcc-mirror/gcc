@@ -148,6 +148,8 @@
 
 ;; On the SH and SH2, the rte instruction reads the return pc from the stack,
 ;; and thus we can't put a pop instruction in its delay slot.
+;; ??? On the SH3, the rte instruction does not use the stack, so a pop
+;; instruction can go in the delay slot.
 
 (define_delay
   (eq_attr "type" "return")
@@ -618,6 +620,12 @@
 ;;
 ;; shift left
 
+(define_insn "ashlsi3_d"
+  [(set (match_operand:SI 0 "arith_reg_operand" "=r")
+	(ashift:SI (match_operand:SI 1 "arith_reg_operand" "0")
+		   (match_operand:SI 2 "arith_reg_operand" "r")))]
+  "TARGET_SH3"
+  "shld	%2,%0")
 
 (define_insn "ashlsi3_k"
   [(set (match_operand:SI 0 "arith_reg_operand" "=r,r")
@@ -666,6 +674,11 @@
   ""
   "
 {
+  if (TARGET_SH3 && arith_reg_operand (operands[2], GET_MODE (operands[2])))
+    {
+      emit_insn (gen_ashlsi3_d (operands[0], operands[1], operands[2]));
+      DONE;
+    }
   if (! immediate_operand (operands[2], GET_MODE (operands[2])))
     FAIL;
 }")
@@ -692,16 +705,21 @@
   [(set_attr "length" "4")])
 
 (define_insn "ashrsi2_31"
-  [(set (match_operand:SI 0 "arith_reg_operand" "=r,r")
-        (ashiftrt:SI (match_operand:SI 1 "arith_reg_operand" "0,!r")
+  [(set (match_operand:SI 0 "arith_reg_operand" "=r")
+        (ashiftrt:SI (match_operand:SI 1 "arith_reg_operand" "0")
                      (const_int 31)))
    (clobber (reg:SI 18))]
   ""
   "@
-   shll	%0\;subc	%0,%0
-   mov	%1,%0\;shll	%0\;subc	%0,%0"
-  [(set_attr "length" "4,6")])
+   shll	%0\;subc	%0,%0"
+  [(set_attr "length" "4")])
 
+(define_insn "ashrsi3_d"
+  [(set (match_operand:SI 0 "arith_reg_operand" "=r")
+	(ashiftrt:SI (match_operand:SI 1 "arith_reg_operand" "0")
+		     (neg:SI (match_operand:SI 2 "arith_reg_operand" "r"))))]
+  "TARGET_SH3"
+  "shad	%2,%1")
 
 (define_insn "ashrsi3_n"
   [(set (reg:SI 4)
@@ -725,6 +743,12 @@
 
 ;; logical shift right
 
+(define_insn "lshrsi3_d"
+  [(set (match_operand:SI 0 "arith_reg_operand" "=r")
+	(lshiftrt:SI (match_operand:SI 1 "arith_reg_operand" "0")
+		     (neg:SI (match_operand:SI 2 "arith_reg_operand" "r"))))]
+  "TARGET_SH3"
+  "shld	%2,%0")
 
 ;; ??? Only the single bit shift clobbers the T bit.
 
@@ -782,6 +806,13 @@
   ""
   "
 {
+  if (TARGET_SH3 && arith_reg_operand (operands[2], GET_MODE (operands[2])))
+    {
+      rtx count = copy_to_mode_reg (SImode, operands[2]);
+      emit_insn (gen_negsi2 (count, count));
+      emit_insn (gen_ashlsi3_d (operands[0], operands[1], count));
+      DONE;
+    }
   if (! immediate_operand (operands[2], GET_MODE (operands[2])))
     FAIL;
 }")
