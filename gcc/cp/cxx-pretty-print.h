@@ -41,6 +41,9 @@ typedef struct
   tree enclosing_scope;
 } cxx_pretty_printer;
 
+#define pp_cxx_cv_qualifier_seq(PP, T)   \
+   pp_c_type_qualifier_list (pp_c_base (PP), T)
+
 void pp_cxx_pretty_printer_init (cxx_pretty_printer *);
 
 void pp_cxx_declaration (cxx_pretty_printer *, tree);

@@ -1,3 +1,21 @@
+2004-03-21  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* error.c (enum pad): Remove.
+	(dump_qualifiers): Likewise.
+	(dump_type): Replace dump_qualifiers with pp_cxx_cv_qualifier_seq.
+	(dump_aggr_type): Likewise.
+	(dump_type_suffix): Likewise.
+	(dump_simple_decl): Likewise.
+	(dump_function_decl): Likewise.
+	(cv_to_string): Likewise.
+	(dump_type_prefix): Likewise.  Adjust return void.  
+	* cxx-pretty-print.c (pp_cxx_cv_qualifier_seq): Move to
+	cxx_pretty_print.h.
+	(pp_cxx_template_keyword_if_needed): Document.
+	(pp_cxx_qualified_id): Document case FUNCTION_DECL.  Tidy.
+	(pp_cxx_expression): Handle NON_DEPENDENT_EXPR and
+	MUST_NOT_THROW_EXPR.  
+
 2004-03-21  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/14616

@@ -70,8 +70,6 @@ pp_cxx_nonconsecutive_character (cxx_pretty_printer *pp, int c)
 #define pp_cxx_identifier(PP, ID) pp_c_identifier (pp_c_base (PP), ID)
 #define pp_cxx_tree_identifier(PP, T) pp_c_tree_identifier (pp_c_base (PP), T)
 
-#define pp_cxx_cv_qualifier_seq(PP, T)   \
-   pp_c_type_qualifier_list (pp_c_base (PP), T)
 #define pp_cxx_storage_class_specifier(PP, T) \
    pp_c_storage_class_specifier (pp_c_base (PP), T)
 #define pp_cxx_expression_list(PP, T)    \
@@ -109,6 +107,7 @@ is_destructor_name (tree name)
 
    conversion-declarator:
       ptr-operator conversion-declarator(opt)  */
+
 static inline void
 pp_cxx_conversion_function_id (cxx_pretty_printer *pp, tree t)
 {
@@ -131,6 +130,7 @@ pp_cxx_template_id (cxx_pretty_printer *pp, tree t)
      conversion-function-id
      ~ class-name
      template-id  */
+
 static void
 pp_cxx_unqualified_id (cxx_pretty_printer *pp, tree t)
 {
@@ -195,6 +195,11 @@ pp_cxx_unqualified_id (cxx_pretty_printer *pp, tree t)
     }
 }
 
+/* Pretty-print out the token sequence ":: template" in template codes
+   where it is needed to "inline declare" the (following) member as
+   a template.  This situtation arises when SCOPE of T is dependent
+   on template parameters.  */
+
 static inline void
 pp_cxx_template_keyword_if_needed (cxx_pretty_printer *pp, tree scope, tree t)
 {
@@ -206,6 +211,7 @@ pp_cxx_template_keyword_if_needed (cxx_pretty_printer *pp, tree scope, tree t)
 /* nested-name-specifier:
       class-or-namespace-name :: nested-name-specifier(opt)
       class-or-namespace-name :: template nested-name-specifier   */
+
 static void
 pp_cxx_nested_name_specifier (cxx_pretty_printer *pp, tree t)
 {
@@ -221,16 +227,26 @@ pp_cxx_nested_name_specifier (cxx_pretty_printer *pp, tree t)
 
 /* qualified-id:
       nested-name-specifier template(opt) unqualified-id  */
+
 static void
 pp_cxx_qualified_id (cxx_pretty_printer *pp, tree t)
 {
   switch (TREE_CODE (t))
     {
+      /* A pointer-to-member is always qualified.  */
     case PTRMEM_CST:
       pp_cxx_nested_name_specifier (pp, PTRMEM_CST_CLASS (t));
       pp_cxx_unqualified_id (pp, PTRMEM_CST_MEMBER (t));
       break;
 
+      /* In Standard C++, functions cannot possibly be used as
+         nested-name-specifiers.  However, there are situations where
+         is "makes sense" to output the surrouding function name for the
+         purpose of emphasizing on the scope kind.  Just printing the
+         function name might not be sufficient as it may be overloaded; so,
+         we decorate the function with its signature too.
+         FIXME:  This is probably the wrong pretty-printing for conversion
+         functions and some function templates.  */
     case OVERLOAD:
       t = OVL_CURRENT (t);
     case FUNCTION_DECL:
@@ -238,6 +254,7 @@ pp_cxx_qualified_id (cxx_pretty_printer *pp, tree t)
         pp_cxx_nested_name_specifier (pp, DECL_CONTEXT (t));
       pp_cxx_unqualified_id
         (pp, DECL_CONSTRUCTOR_P (t) ? DECL_CONTEXT (t) : t);
+      pp_cxx_parameter_declaration_clause (pp, TREE_TYPE (t));
       break;
 
     case OFFSET_REF:
@@ -263,6 +280,7 @@ pp_cxx_qualified_id (cxx_pretty_printer *pp, tree t)
 /* id-expression:
       unqualified-id
       qualified-id   */
+
 static inline void
 pp_cxx_id_expression (cxx_pretty_printer *pp, tree t)
 {
@@ -282,6 +300,7 @@ pp_cxx_id_expression (cxx_pretty_printer *pp, tree t)
      :: qualifier-id
      ( expression )
      id-expression   */
+
 static void
 pp_cxx_primary_expression (cxx_pretty_printer *pp, tree t)
 {
@@ -482,6 +501,7 @@ pp_cxx_postfix_expression (cxx_pretty_printer *pp, tree t)
 
    new-initializer:
       ( expression-list(opt) )  */
+
 static void
 pp_cxx_new_expression (cxx_pretty_printer *pp, tree t)
 {
@@ -522,6 +542,7 @@ pp_cxx_new_expression (cxx_pretty_printer *pp, tree t)
 /* delete-expression:
       ::(opt) delete cast-expression
       ::(opt) delete [ ] cast-expression   */
+
 static void
 pp_cxx_delete_expression (cxx_pretty_printer *pp, tree t)
 {
@@ -562,6 +583,7 @@ pp_cxx_delete_expression (cxx_pretty_printer *pp, tree t)
    GNU extensions:
       __alignof__ unary-expression
       __alignof__ ( type-id )  */
+
 static void
 pp_cxx_unary_expression (cxx_pretty_printer *pp, tree t)
 {
@@ -587,6 +609,7 @@ pp_cxx_unary_expression (cxx_pretty_printer *pp, tree t)
 /* cast-expression:
       unary-expression
       ( type-id ) cast-expression  */
+
 static void
 pp_cxx_cast_expression (cxx_pretty_printer *pp, tree t)
 {
@@ -607,6 +630,7 @@ pp_cxx_cast_expression (cxx_pretty_printer *pp, tree t)
       cast-expression
       pm-expression .* cast-expression
       pm-expression ->* cast-expression  */
+
 static void
 pp_cxx_pm_expression (cxx_pretty_printer *pp, tree t)
 {
@@ -640,6 +664,7 @@ pp_cxx_pm_expression (cxx_pretty_printer *pp, tree t)
       multiplicative-expression * pm-expression
       multiplicative-expression / pm-expression
       multiplicative-expression % pm-expression  */
+
 static void
 pp_cxx_multiplicative_expression (cxx_pretty_printer *pp, tree e)
 {
@@ -670,6 +695,7 @@ pp_cxx_multiplicative_expression (cxx_pretty_printer *pp, tree e)
 /* conditional-expression:
       logical-or-expression
       logical-or-expression ?  expression  : assignment-expression  */
+
 static void
 pp_cxx_conditional_expression (cxx_pretty_printer *pp, tree e)
 {
@@ -686,6 +712,8 @@ pp_cxx_conditional_expression (cxx_pretty_printer *pp, tree e)
   else
     pp_c_logical_or_expression (pp_c_base (pp), e);
 }
+
+/* Pretty-print a compound assignment operator token as indicated by T.  */
 
 static void
 pp_cxx_assignment_operator (cxx_pretty_printer *pp, tree t)
@@ -733,6 +761,7 @@ pp_cxx_assignment_operator (cxx_pretty_printer *pp, tree t)
 
    assignment-operator: one of
       =    *=    /=    %=    +=    -=    >>=    <<=    &=    ^=    |=  */
+
 static void
 pp_cxx_assignment_expression (cxx_pretty_printer *pp, tree e)
 {
@@ -854,6 +883,11 @@ pp_cxx_expression (cxx_pretty_printer *pp, tree t)
       pp_cxx_assignment_expression (pp, t);
       break;
 
+    case NON_DEPENDENT_EXPR:
+    case MUST_NOT_THROW_EXPR:
+      pp_cxx_expression (pp, t);
+      break;
+
     default:
       pp_c_expression (pp_c_base (pp), t);
       break;      
@@ -867,6 +901,7 @@ pp_cxx_expression (cxx_pretty_printer *pp, tree t)
       inline
       virtual
       explicit   */
+
 static void
 pp_cxx_function_specifier (cxx_pretty_printer *pp, tree t)
 {
@@ -894,6 +929,7 @@ pp_cxx_function_specifier (cxx_pretty_printer *pp, tree t)
       function-specifier
       friend
       typedef  */
+
 static void
 pp_cxx_decl_specifier_seq (cxx_pretty_printer *pp, tree t)
 {
@@ -950,6 +986,7 @@ pp_cxx_decl_specifier_seq (cxx_pretty_printer *pp, tree t)
       float
       double
       void  */
+
 static void
 pp_cxx_simple_type_specifier (cxx_pretty_printer *pp, tree t)
 {
@@ -1075,6 +1112,7 @@ pp_cxx_implicit_parameter_type (tree mf)
       decl-specifier-seq declarator = assignment-expression
       decl-specifier-seq abstract-declarator(opt)
       decl-specifier-seq abstract-declarator(opt) assignment-expression  */
+
 static inline void
 pp_cxx_parameter_declaration (cxx_pretty_printer *pp, tree t)
 {
@@ -1092,6 +1130,7 @@ pp_cxx_parameter_declaration (cxx_pretty_printer *pp, tree t)
    parameter-declaration-list:
       parameter-declaration
       parameter-declaration-list , parameter-declaration  */
+
 static void
 pp_cxx_parameter_declaration_clause (cxx_pretty_printer *pp, tree t)
 {
@@ -1129,6 +1168,7 @@ pp_cxx_parameter_declaration_clause (cxx_pretty_printer *pp, tree t)
    type-id-list
       type-id
       type-id-list , type-id   */
+
 static void
 pp_cxx_exception_specification (cxx_pretty_printer *pp, tree t)
 {
@@ -1153,6 +1193,7 @@ pp_cxx_exception_specification (cxx_pretty_printer *pp, tree t)
                                             exception-specification(opt)
       direct-declaration [ constant-expression(opt) ]
       ( declarator )  */
+
 static void
 pp_cxx_direct_declarator (cxx_pretty_printer *pp, tree t)
 {
@@ -1199,6 +1240,7 @@ pp_cxx_direct_declarator (cxx_pretty_printer *pp, tree t)
 /* declarator:
    direct-declarator
    ptr-operator declarator  */
+
 static void
 pp_cxx_declarator (cxx_pretty_printer *pp, tree t)
 {
@@ -1218,6 +1260,7 @@ pp_cxx_declarator (cxx_pretty_printer *pp, tree t)
    mem-initializer-id:
       ::(opt) nested-name-specifier(opt) class-name
       identifier   */
+
 static void
 pp_cxx_ctor_initializer (cxx_pretty_printer *pp, tree t)
 {
@@ -1270,6 +1313,7 @@ pp_cxx_function_definition (cxx_pretty_printer *pp, tree t)
 /* abstract-declarator:
       ptr-operator abstract-declarator(opt)
       direct-abstract-declarator  */
+
 static void
 pp_cxx_abstract_declarator (cxx_pretty_printer *pp, tree t)
 {
@@ -1290,6 +1334,7 @@ pp_cxx_abstract_declarator (cxx_pretty_printer *pp, tree t)
                            cv-qualifier-seq(opt) exception-specification(opt)
       direct-abstract-declarator(opt) [ constant-expression(opt) ]
       ( abstract-declarator )  */
+
 static void
 pp_cxx_direct_abstract_declarator (cxx_pretty_printer *pp, tree t)
 {
@@ -1332,6 +1377,7 @@ pp_cxx_direct_abstract_declarator (cxx_pretty_printer *pp, tree t)
 
 /* type-id:
      type-specifier-seq abstract-declarator(opt) */
+
 static void
 pp_cxx_type_id (cxx_pretty_printer *pp, tree t)
 {
@@ -1374,6 +1420,7 @@ pp_cxx_type_id (cxx_pretty_printer *pp, tree t)
       assignment-expression
       type-id
       template-name   */
+
 static void
 pp_cxx_template_argument_list (cxx_pretty_printer *pp, tree t)
 {
@@ -1511,6 +1558,7 @@ pp_cxx_namespace_alias_definition (cxx_pretty_printer *pp, tree t)
 
 /* simple-declaration:
       decl-specifier-seq(opt) init-declarator-list(opt)  */
+
 static void
 pp_cxx_simple_declaration (cxx_pretty_printer *pp, tree t)
 {
@@ -1550,6 +1598,7 @@ pp_cxx_template_parameter_list (cxx_pretty_printer *pp, tree t)
      template < template-parameter-list > class identifier(opt)
      template < template-parameter-list > class identifier(opt) = template-name
 */
+
 static void
 pp_cxx_template_parameter (cxx_pretty_printer *pp, tree t)
 {
@@ -1600,6 +1649,7 @@ pp_cxx_canonical_template_parameter (cxx_pretty_printer *pp, tree parm)
 /*
   template-declaration:
      export(opt) template < template-parameter-list > declaration   */
+
 static void
 pp_cxx_template_declaration (cxx_pretty_printer *pp, tree t)
 {
@@ -1703,6 +1753,8 @@ pp_cxx_declaration (cxx_pretty_printer *pp, tree t)
 
 
 typedef c_pretty_print_fn pp_fun;
+
+/* Initialization of a C++ pretty-printer object.  */
 
 void
 pp_cxx_pretty_printer_init (cxx_pretty_printer *pp)

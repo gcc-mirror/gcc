@@ -205,6 +205,7 @@ struct pretty_print_info
   } while (0)
 #define pp_maybe_newline_and_indent(PP, N) \
   if (pp_needs_newline (PP)) pp_newline_and_indent (PP, N)
+#define pp_maybe_space(PP)   pp_base_maybe_space (pp_base (PP))
 #define pp_separate_with(PP, C)     \
    do {                             \
      pp_character (PP, C);          \
@@ -257,5 +258,6 @@ extern void pp_base_indent (pretty_printer *);
 extern void pp_base_newline (pretty_printer *);
 extern void pp_base_character (pretty_printer *, int);
 extern void pp_base_string (pretty_printer *, const char *);
+extern void pp_base_maybe_space (pretty_printer *);
 
 #endif /* GCC_PRETTY_PRINT_H */
