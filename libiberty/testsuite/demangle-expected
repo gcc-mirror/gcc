@@ -2858,6 +2858,27 @@ global constructors keyed to _Z2fnv
 --format=gnu-v3
 _Z1rM1GFivEMS_KFivES_M1HFivES1_4whatIKS_E5what2IS8_ES3_
 r(int (G::*)(), int (G::*)() const, G, int (H::*)(), int (G::*)(), what<G const>, what2<G const>, int (G::*)() const)
+#
+# This is from the gdb testsuite gdb.cp/cplusfuncs.exp.
+--format=gnu-v3
+_Z10hairyfunc5PFPFilEPcE
+hairyfunc5(int (*(*)(char*))(long))
+#
+# This is from gcc PR 8861
+--format=gnu-v3
+_Z1fILi1ELc120EEv1AIXplT_cviLd810000000000000000703DAD7A370C5EEE
+void f<1, 120>(A<(1) + (((int)((double)810000000000000000703DAD7A370C5)))>)
+#
+# This is also from gcc PR 8861
+--format=gnu-v3
+_Z1fILi1EEv1AIXplT_cvingLf3f800000EEE
+void f<1>(A<(1) + (((int)(-((float)3f800000))))>)
+#
+# This is from a libstdc++ debug mode patch.
+--format=gnu-v3
+_ZNK11__gnu_debug16_Error_formatter14_M_format_wordImEEvPciPKcT_
+void __gnu_debug::_Error_formatter::_M_format_word<unsigned long>(char*, int, char const*, unsigned long) const
+#
 # 
 # This caused an infinite loop.
 # We still don't demangle this correctly, but at least we don't hang.

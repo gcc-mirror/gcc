@@ -908,6 +908,11 @@ has_return_type (dc)
       return 0;
     case D_COMP_TEMPLATE:
       return ! is_ctor_dtor_or_conversion (d_left (dc));
+    case D_COMP_RESTRICT:
+    case D_COMP_VOLATILE:
+    case D_COMP_CONST:
+    case D_COMP_VENDOR_TYPE_QUAL:
+      return has_return_type (d_left (dc));
     }
 }
 
