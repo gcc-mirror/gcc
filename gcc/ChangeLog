@@ -12,7 +12,7 @@ Fri Nov 15 14:54:19 CET 2002  Jan Hubicka  <jh@suse.cz>
 	* i386-protos.h (x86_function_profiler): New function
 	* i386.h (MCOUNT_NAME): New.
 	(PROFILE_COUNT_REGISTER): New.
-	(OUTPUT_FUNCTION_PROFILER): Move offline to ...
+	(FUNCTION_PROFILER): Move offline to ...
 	* i386.c (x86_function_profiler) ... here; fix 64bit support
 	* beos-elf.h (FUNCTION_PROFILER): Kill.
 	(MCOUNT_NAME): New.
@@ -4754,7 +4754,7 @@ Tue Sep 17 13:40:13 2002  Nicola Pero  <n.pero@mi.flashnet.it>
 	* emit-rtl.c (set_mem_attributes_minus_bitpos): Fix array_ref
 	handling.
 
-	* loop.c (loop_gics_reduce):  Emit addition after.
+	* loop.c (loop_givs_reduce):  Emit addition after.
 
 2002-09-08  Alan Modra  <amodra@bigpond.net.au>
 
