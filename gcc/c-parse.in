@@ -30,7 +30,7 @@ ifobjc
 %expect 35
 end ifobjc
 ifc
-%expect 23
+%expect 27
 
 /* These are the 23 conflicts you should get in parse.output;
    the state numbers may vary if minor changes in the grammar are made.
@@ -1090,24 +1090,22 @@ attribute:
 
 attribute_list:
       attrib
-		{ $$ = build_tree_list (NULL_TREE, $1); }
+		{ $$ = $1; }
 	| attribute_list ',' attrib
-		{ $$ = chainon ($1, build_tree_list (NULL_TREE, $3)); }
+		{ $$ = chainon ($1, $3); }
 	;
  
 attrib:
     /* empty */
 		{ $$ = NULL_TREE; }
 	| any_word
-		{ $$ = $1; }
+		{ $$ = build_tree_list ($1, NULL_TREE); }
 	| any_word '(' IDENTIFIER ')'
-		{ $$ = tree_cons ($1, NULL_TREE,
-				  build_tree_list (NULL_TREE, $3)); }
+		{ $$ = build_tree_list ($1, build_tree_list (NULL_TREE, $3)); }
 	| any_word '(' IDENTIFIER ',' nonnull_exprlist ')'
-		{ $$ = tree_cons ($1, NULL_TREE,
-				  tree_cons (NULL_TREE, $3, $5)); }
+		{ $$ = build_tree_list ($1, tree_cons (NULL_TREE, $3, $5)); }
 	| any_word '(' nonnull_exprlist ')'
-		{ $$ = tree_cons ($1, NULL_TREE, $3); }
+		{ $$ = build_tree_list ($1, $3); }
 	;
 
 /* This still leaves out most reserved keywords,
@@ -1311,19 +1309,24 @@ structsp:
 		{ $$ = start_struct (RECORD_TYPE, $2);
 		  /* Start scope of tag before parsing components.  */
 		}
-	  component_decl_list '}'
+	  component_decl_list '}' maybe_attribute 
 		{ $$ = finish_struct ($<ttype>4, $5);
+		  decl_attributes ($$, $7, NULL_TREE);
 		  /* Really define the structure.  */
 		}
-	| STRUCT '{' component_decl_list '}'
+	| STRUCT '{' component_decl_list '}' maybe_attribute
 		{ $$ = finish_struct (start_struct (RECORD_TYPE, NULL_TREE),
-				      $3); }
+				      $3);
+		  decl_attributes ($$, $5, NULL_TREE);
+		}
 	| STRUCT identifier
 		{ $$ = xref_tag (RECORD_TYPE, $2); }
 	| UNION identifier '{'
 		{ $$ = start_struct (UNION_TYPE, $2); }
-	  component_decl_list '}'
-		{ $$ = finish_struct ($<ttype>4, $5); }
+	  component_decl_list '}' maybe_attribute
+		{ $$ = finish_struct ($<ttype>4, $5);
+		  decl_attributes ($$, $5, NULL_TREE);
+		}
 	| UNION '{' component_decl_list '}'
 		{ $$ = finish_struct (start_struct (UNION_TYPE, NULL_TREE),
 				      $3); }
