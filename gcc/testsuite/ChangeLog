@@ -1,3 +1,9 @@
+ 2004-06-30  David Billinghurst (David.Billinghurst@riotinto.com)
+
+ 	PR fortran/16289
+ 	* gfortran.fortran-torture/execute/intrinsic_nearest.f90
+ 	Use tiny() intrinsic to find smallest non-negative real
+
 2004-06-30  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/compat/struct-by-value-22_main.c: New test.

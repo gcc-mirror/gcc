@@ -2,11 +2,10 @@
 
 program test_nearest
   real s, r, x, y, inf, max, min
-  integer i, infi, maxi, mini
+  integer i, infi, maxi
   equivalence (s,i)
   equivalence (inf,infi)
   equivalence (max,maxi)
-  equivalence (min,mini)
 
   r = 2.0
   s = 3.0
@@ -28,7 +27,7 @@ program test_nearest
 
   infi = z'7f800000'
   maxi = z'7f7fffff'
-  mini = 1
+  min = tiny(1.0)
 
   call test_up(max, inf)
   call test_up(-inf, -max)
