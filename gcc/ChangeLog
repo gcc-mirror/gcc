@@ -1,3 +1,15 @@
+2004-12-17  Uros Bizjak  <uros@kss-loka.si>
+
+	* config/i386/i386.md (extendsfdf2, *extendsfdf2_1,
+	*extendsfdf2_1_sse_only): Unify enable constraint with
+	respect to TARGET_SSE2, TARGET_80387, TARGET_SSE_MATH
+	and TARGET_MIX_SSE_I387.
+	(*extendsfdf2_i387): New insn pattern.
+	(*extendsfdf2_1): Rename to *extendsfdf2_mixed. Fix
+	register constraint for operand 0.
+	(*extendsfdf2_1_sse_only): Rename to *extendsfdf2_sse.
+	(*extend{s,d}fxf2_1): Rename to *extend{s,d}fxf2_i387.
+
 2004-12-16  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR target/19041
