@@ -273,8 +273,11 @@ package System.OS_Interface is
    function Thread_Body_Access is new
      Unchecked_Conversion (System.Address, Thread_Body);
 
-   type pthread_t           is private;
+   type pthread_t is new unsigned_long;
    subtype Thread_Id        is pthread_t;
+
+   function To_pthread_t is new Unchecked_Conversion
+     (unsigned_long, pthread_t);
 
    type pthread_mutex_t     is limited private;
    type pthread_cond_t      is limited private;
@@ -497,8 +500,6 @@ private
       mutexkind : int;
    end record;
    pragma Convention (C, pthread_mutexattr_t);
-
-   type pthread_t is new unsigned_long;
 
    type struct_pthread_fast_lock is record
       status   : long;

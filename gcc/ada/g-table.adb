@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 1998-2003 Ada Core Technologies, Inc.           --
+--            Copyright (C) 1998-2004 Ada Core Technologies, Inc.           --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -60,8 +60,15 @@ package body GNAT.Table is
    --  in Max. Works correctly to do an initial allocation if the table
    --  is currently null.
 
+   pragma Warnings (Off);
+   --  Turn off warnings. The following unchecked conversions are only used
+   --  internally in this package, and cannot never result in any instances
+   --  of improperly aliased pointers for the client of the package.
+
    function To_Address is new Unchecked_Conversion (Table_Ptr, Address);
    function To_Pointer is new Unchecked_Conversion (Address, Table_Ptr);
+
+   pragma Warnings (On);
 
    --------------
    -- Allocate --

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -55,7 +55,7 @@ package body Interfaces.C.Pointers is
    -- "+" --
    ---------
 
-   function "+" (Left : in Pointer;   Right : in ptrdiff_t) return Pointer is
+   function "+" (Left : Pointer; Right : ptrdiff_t) return Pointer is
    begin
       if Left = null then
          raise Pointer_Error;
@@ -64,7 +64,7 @@ package body Interfaces.C.Pointers is
       return To_Pointer (To_Addr (Left) + To_Addr (Elmt_Size * Right));
    end "+";
 
-   function "+" (Left : in ptrdiff_t; Right : in Pointer) return Pointer is
+   function "+" (Left : ptrdiff_t; Right : Pointer) return Pointer is
    begin
       if Right = null then
          raise Pointer_Error;
@@ -77,7 +77,7 @@ package body Interfaces.C.Pointers is
    -- "-" --
    ---------
 
-   function "-" (Left : in Pointer; Right : in ptrdiff_t) return Pointer is
+   function "-" (Left : Pointer; Right : ptrdiff_t) return Pointer is
    begin
       if Left = null then
          raise Pointer_Error;
@@ -86,7 +86,7 @@ package body Interfaces.C.Pointers is
       return To_Pointer (To_Addr (Left) - To_Addr (Right * Elmt_Size));
    end "-";
 
-   function "-" (Left : in Pointer; Right : in Pointer) return ptrdiff_t is
+   function "-" (Left : Pointer; Right : Pointer) return ptrdiff_t is
    begin
       if Left = null or else Right = null then
          raise Pointer_Error;
@@ -100,9 +100,9 @@ package body Interfaces.C.Pointers is
    ----------------
 
    procedure Copy_Array
-     (Source  : in Pointer;
-      Target  : in Pointer;
-      Length  : in ptrdiff_t)
+     (Source  : Pointer;
+      Target  : Pointer;
+      Length  : ptrdiff_t)
    is
       T : Pointer := Target;
       S : Pointer := Source;
@@ -125,10 +125,10 @@ package body Interfaces.C.Pointers is
    ---------------------------
 
    procedure Copy_Terminated_Array
-     (Source     : in Pointer;
-      Target     : in Pointer;
-      Limit      : in ptrdiff_t := ptrdiff_t'Last;
-      Terminator : in Element := Default_Terminator)
+     (Source     : Pointer;
+      Target     : Pointer;
+      Limit      : ptrdiff_t := ptrdiff_t'Last;
+      Terminator : Element := Default_Terminator)
    is
       S : Pointer   := Source;
       T : Pointer   := Target;
@@ -172,9 +172,8 @@ package body Interfaces.C.Pointers is
    -----------
 
    function Value
-     (Ref        : in Pointer;
-      Terminator : in Element := Default_Terminator)
-      return       Element_Array
+     (Ref        : Pointer;
+      Terminator : Element := Default_Terminator) return Element_Array
    is
       P : Pointer;
       L : constant Index_Base := Index'First;
@@ -207,9 +206,8 @@ package body Interfaces.C.Pointers is
    end Value;
 
    function Value
-     (Ref    : in Pointer;
-      Length : in ptrdiff_t)
-      return   Element_Array
+     (Ref    : Pointer;
+      Length : ptrdiff_t) return Element_Array
    is
       L : Index_Base;
       H : Index_Base;
@@ -255,9 +253,8 @@ package body Interfaces.C.Pointers is
    --------------------
 
    function Virtual_Length
-     (Ref        : in Pointer;
-      Terminator : in Element := Default_Terminator)
-      return       ptrdiff_t
+     (Ref        : Pointer;
+      Terminator : Element := Default_Terminator) return ptrdiff_t
    is
       P : Pointer;
       C : ptrdiff_t;

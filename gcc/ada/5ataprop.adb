@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2003, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2004, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -82,7 +82,6 @@ with System.Soft_Links;
 with System.OS_Primitives;
 --  used for Delay_Modes
 
-with Unchecked_Conversion;
 with Unchecked_Deallocation;
 
 package body System.Task_Primitives.Operations is
@@ -177,8 +176,6 @@ package body System.Task_Primitives.Operations is
 
    procedure Abort_Handler (Sig : Signal);
    --  Signal handler used to implement asynchronous abortion.
-
-   function To_Address is new Unchecked_Conversion (Task_ID, System.Address);
 
    -------------------
    -- Abort_Handler --
@@ -806,9 +803,6 @@ package body System.Task_Primitives.Operations is
       Adjusted_Stack_Size : Interfaces.C.size_t;
       Result              : Interfaces.C.int;
       Param               : aliased System.OS_Interface.struct_sched_param;
-
-      function Thread_Body_Access is new
-        Unchecked_Conversion (System.Address, Thread_Body);
 
       use System.Task_Info;
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -37,6 +37,12 @@ with System.Storage_Elements; use System.Storage_Elements;
 with Unchecked_Conversion;
 
 package body Interfaces.C.Strings is
+
+   --  Note that the type chars_ptr has a pragma No_Strict_Aliasing in
+   --  the spec, to prevent any assumptions about aliasing for values
+   --  of this type, since arbitrary addresses can be converted, and it
+   --  is quite likely that this type will in fact be used for aliasing
+   --  values of other types.
 
    function To_chars_ptr is
       new Unchecked_Conversion (Address, chars_ptr);
@@ -99,7 +105,7 @@ package body Interfaces.C.Strings is
    -- New_Char_Array --
    --------------------
 
-   function New_Char_Array (Chars : in char_array) return chars_ptr is
+   function New_Char_Array (Chars : char_array) return chars_ptr is
       Index   : size_t;
       Pointer : chars_ptr;
 
@@ -135,7 +141,7 @@ package body Interfaces.C.Strings is
    -- New_String --
    ----------------
 
-   function New_String (Str : in String) return chars_ptr is
+   function New_String (Str : String) return chars_ptr is
    begin
       return New_Char_Array (To_C (Str));
    end New_String;
@@ -177,7 +183,7 @@ package body Interfaces.C.Strings is
    -- Strlen --
    ------------
 
-   function Strlen (Item : in chars_ptr) return size_t is
+   function Strlen (Item : chars_ptr) return size_t is
       Item_Index : size_t := 0;
 
    begin
@@ -199,9 +205,8 @@ package body Interfaces.C.Strings is
    ------------------
 
    function To_Chars_Ptr
-     (Item      : in char_array_access;
-      Nul_Check : in Boolean := False)
-      return      chars_ptr
+     (Item      : char_array_access;
+      Nul_Check : Boolean := False) return chars_ptr
    is
    begin
       if Item = null then
@@ -212,7 +217,6 @@ package body Interfaces.C.Strings is
          raise Terminator_Error;
       else
          return To_chars_ptr (Item (Item'First)'Address);
-
       end if;
    end To_Chars_Ptr;
 
@@ -221,9 +225,9 @@ package body Interfaces.C.Strings is
    ------------
 
    procedure Update
-     (Item   : in chars_ptr;
-      Offset : in size_t;
-      Chars  : in char_array;
+     (Item   : chars_ptr;
+      Offset : size_t;
+      Chars  : char_array;
       Check  : Boolean := True)
    is
       Index : chars_ptr := Item + Offset;
@@ -240,10 +244,10 @@ package body Interfaces.C.Strings is
    end Update;
 
    procedure Update
-     (Item   : in chars_ptr;
-      Offset : in size_t;
-      Str    : in String;
-      Check  : in Boolean := True)
+     (Item   : chars_ptr;
+      Offset : size_t;
+      Str    : String;
+      Check  : Boolean := True)
    is
    begin
       Update (Item, Offset, To_C (Str), Check);
@@ -253,7 +257,7 @@ package body Interfaces.C.Strings is
    -- Value --
    -----------
 
-   function Value (Item : in chars_ptr) return char_array is
+   function Value (Item : chars_ptr) return char_array is
       Result : char_array (0 .. Strlen (Item));
 
    begin
@@ -271,9 +275,8 @@ package body Interfaces.C.Strings is
    end Value;
 
    function Value
-     (Item   : in chars_ptr;
-      Length : in size_t)
-      return   char_array
+     (Item   : chars_ptr;
+      Length : size_t) return char_array
    is
    begin
       if Item = Null_Ptr then
@@ -304,18 +307,18 @@ package body Interfaces.C.Strings is
       end;
    end Value;
 
-   function Value (Item : in chars_ptr) return String is
+   function Value (Item : chars_ptr) return String is
    begin
       return To_Ada (Value (Item));
    end Value;
 
-   --  As per AI-00177, this is equivalent to
-   --          To_Ada (Value (Item, Length) & nul);
-
-   function Value (Item : in chars_ptr; Length : in size_t) return String is
+   function Value (Item : chars_ptr; Length : size_t) return String is
       Result : char_array (0 .. Length);
 
    begin
+      --  As per AI-00177, this is equivalent to
+      --          To_Ada (Value (Item, Length) & nul);
+
       if Item = Null_Ptr then
          raise Dereference_Error;
       end if;

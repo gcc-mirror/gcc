@@ -139,10 +139,12 @@ extern void Get_External_Name_With_Suffix (Entity_Id, Fat_Pointer);
 #define Cunit 				lib__cunit
 #define Ident_String			lib__ident_string
 #define In_Extended_Main_Code_Unit	lib__in_extended_main_code_unit
+#define In_Same_Source_Unit             lib__in_same_source_unit
 
 extern Node_Id Cunit				(Unit_Number_Type);
 extern Node_Id Ident_String			(Unit_Number_Type);
 extern Boolean In_Extended_Main_Code_Unit	(Entity_Id);
+extern Boolean In_Same_Source_Unit              (Node_Id, Node_Id);
 
 /* opt: */
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -66,8 +66,15 @@ package body Table is
       --  Return Null_Address if the table length is zero,
       --  Table (First)'Address if not.
 
+      pragma Warnings (Off);
+      --  Turn off warnings. The following unchecked conversions are only used
+      --  internally in this package, and cannot never result in any instances
+      --  of improperly aliased pointers for the client of the package.
+
       function To_Address is new Unchecked_Conversion (Table_Ptr, Address);
       function To_Pointer is new Unchecked_Conversion (Address, Table_Ptr);
+
+      pragma Warnings (On);
 
       ------------
       -- Append --

@@ -2,11 +2,11 @@
 --                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
---                             S I N P U T . P                              --
+--                             S I N P U T . C                              --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -129,8 +129,14 @@ package body Sinput.C is
          declare
             pragma Suppress (All_Checks);
 
+            pragma Warnings (Off);
+            --  The following unchecked conversion is aliased safe, since it
+            --  is not used to create improperly aliased pointer values.
+
             function To_Source_Buffer_Ptr is new
               Ada.Unchecked_Conversion (Address, Source_Buffer_Ptr);
+
+            pragma Warnings (On);
 
          begin
             Src := To_Source_Buffer_Ptr (Actual_Ptr (0)'Address);

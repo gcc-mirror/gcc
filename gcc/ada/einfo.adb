@@ -367,6 +367,7 @@ package body Einfo is
    --    Is_VMS_Exception               Flag133
    --    Is_Optional_Parameter          Flag134
    --    Has_Aliased_Components         Flag135
+   --    No_Strict_Aliasing             Flag136
    --    Is_Machine_Code_Subprogram     Flag137
    --    Is_Packed_Array_Type           Flag138
    --    Has_Biased_Representation      Flag139
@@ -421,7 +422,6 @@ package body Einfo is
 
    --  Remaining flags are currently unused and available
 
-   --    (unused)                       Flag136
    --    (unused)                       Flag183
 
    --------------------------------
@@ -1792,6 +1792,12 @@ package body Einfo is
           or else Ekind (Id) = E_Generic_Procedure);
       return Flag113 (Id);
    end No_Return;
+
+   function No_Strict_Aliasing (Id : E) return B is
+   begin
+      pragma Assert (Is_Access_Type (Id));
+      return Flag136 (Base_Type (Id));
+   end No_Strict_Aliasing;
 
    function Non_Binary_Modulus (Id : E) return B is
    begin
@@ -3734,6 +3740,13 @@ package body Einfo is
         (Ekind (Id) = E_Procedure or else Ekind (Id) = E_Generic_Procedure);
       Set_Flag113 (Id, V);
    end Set_No_Return;
+
+   procedure Set_No_Strict_Aliasing (Id : E; V : B := True) is
+   begin
+      pragma Assert (Is_Access_Type (Id) and then Base_Type (Id) = Id);
+      Set_Flag136 (Id, V);
+   end Set_No_Strict_Aliasing;
+
 
    procedure Set_Non_Binary_Modulus (Id : E; V : B := True) is
    begin
@@ -6226,6 +6239,7 @@ package body Einfo is
       W ("Never_Set_In_Source",           Flag115 (Id));
       W ("No_Pool_Assigned",              Flag131 (Id));
       W ("No_Return",                     Flag113 (Id));
+      W ("No_Strict_Aliasing",            Flag136 (Id));
       W ("Non_Binary_Modulus",            Flag58  (Id));
       W ("Nonzero_Is_True",               Flag162 (Id));
       W ("Reachable",                     Flag49  (Id));

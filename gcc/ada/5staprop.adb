@@ -86,7 +86,6 @@ with System.Soft_Links;
 with System.OS_Primitives;
 --  used for Delay_Modes
 
-with Unchecked_Conversion;
 with Unchecked_Deallocation;
 
 package body System.Task_Primitives.Operations is
@@ -173,14 +172,14 @@ package body System.Task_Primitives.Operations is
    -- Local Subprograms --
    -----------------------
 
-   function sysconf (name : System.OS_Interface.int)
-     return processorid_t;
+   function sysconf (name : System.OS_Interface.int) return processorid_t;
    pragma Import (C, sysconf, "sysconf");
 
    SC_NPROCESSORS_CONF : constant System.OS_Interface.int := 14;
 
-   function Num_Procs (name : System.OS_Interface.int := SC_NPROCESSORS_CONF)
-     return processorid_t renames sysconf;
+   function Num_Procs
+     (name : System.OS_Interface.int := SC_NPROCESSORS_CONF)
+      return processorid_t renames sysconf;
 
    procedure Abort_Handler
      (Sig     : Signal;
@@ -190,22 +189,13 @@ package body System.Task_Primitives.Operations is
    --  the raising of the Abort_Signal exception.
    --  See also comments in 7staprop.adb
 
-   function To_thread_t is new Unchecked_Conversion
-     (Integer, System.OS_Interface.thread_t);
-
-   function To_Task_ID is new Unchecked_Conversion (System.Address, Task_ID);
-
-   function To_Address is new Unchecked_Conversion (Task_ID, System.Address);
-
-   function Thread_Body_Access is
-     new Unchecked_Conversion (System.Address, Thread_Body);
-
    ------------
    -- Checks --
    ------------
 
-   function Check_Initialize_Lock (L : Lock_Ptr; Level : Lock_Level)
-     return Boolean;
+   function Check_Initialize_Lock
+     (L     : Lock_Ptr;
+      Level : Lock_Level) return Boolean;
    pragma Inline (Check_Initialize_Lock);
 
    function Check_Lock (L : Lock_Ptr) return Boolean;
@@ -218,12 +208,12 @@ package body System.Task_Primitives.Operations is
    pragma Inline (Check_Sleep);
 
    function Record_Wakeup
-     (L : Lock_Ptr;
+     (L      : Lock_Ptr;
       Reason : Task_States) return Boolean;
    pragma Inline (Record_Wakeup);
 
    function Check_Wakeup
-     (T : Task_ID;
+     (T      : Task_ID;
       Reason : Task_States) return Boolean;
    pragma Inline (Check_Wakeup);
 
@@ -277,11 +267,6 @@ package body System.Task_Primitives.Operations is
    Check_Count  : Integer := 0;
    Lock_Count   : Integer := 0;
    Unlock_Count : Integer := 0;
-
-   function To_Lock_Ptr is
-     new Unchecked_Conversion (RTS_Lock_Ptr, Lock_Ptr);
-   function To_Owner_ID is
-     new Unchecked_Conversion (Task_ID, Owner_ID);
 
    -------------------
    -- Abort_Handler --
@@ -1365,8 +1350,7 @@ package body System.Task_Primitives.Operations is
 
    function Check_Initialize_Lock
      (L     : Lock_Ptr;
-      Level : Lock_Level)
-      return  Boolean
+      Level : Lock_Level) return Boolean
    is
       Self_ID : constant Task_ID := Self;
 
@@ -1416,7 +1400,7 @@ package body System.Task_Primitives.Operations is
 
       --  Check that caller is not holding this lock already
 
-      if L.Owner = To_Owner_ID (Self_ID) then
+      if L.Owner = To_Owner_ID (To_Address (Self_ID)) then
          return False;
       end if;
 
@@ -1457,7 +1441,7 @@ package body System.Task_Primitives.Operations is
 
       --  Record new owner
 
-      L.Owner := To_Owner_ID (Self_ID);
+      L.Owner := To_Owner_ID (To_Address (Self_ID));
 
       if Single_Lock then
          return True;
@@ -1524,8 +1508,7 @@ package body System.Task_Primitives.Operations is
 
    function Record_Wakeup
      (L      : Lock_Ptr;
-      Reason : Task_States)
-      return   Boolean
+      Reason : Task_States) return Boolean
    is
       pragma Unreferenced (Reason);
 
@@ -1535,7 +1518,7 @@ package body System.Task_Primitives.Operations is
    begin
       --  Record new owner
 
-      L.Owner := To_Owner_ID (Self_ID);
+      L.Owner := To_Owner_ID (To_Address (Self_ID));
 
       if Single_Lock then
          return True;
@@ -1560,15 +1543,14 @@ package body System.Task_Primitives.Operations is
 
    function Check_Wakeup
      (T      : Task_ID;
-      Reason : Task_States)
-      return   Boolean
+      Reason : Task_States) return Boolean
    is
       Self_ID : constant Task_ID := Self;
 
    begin
       --  Is caller holding T's lock?
 
-      if T.Common.LL.L.Owner /= To_Owner_ID (Self_ID) then
+      if T.Common.LL.L.Owner /= To_Owner_ID (To_Address (Self_ID)) then
          return False;
       end if;
 
@@ -1727,8 +1709,7 @@ package body System.Task_Primitives.Operations is
 
    function Suspend_Task
      (T           : ST.Task_ID;
-      Thread_Self : Thread_Id)
-      return        Boolean
+      Thread_Self : Thread_Id) return Boolean
    is
    begin
       if T.Common.LL.Thread /= Thread_Self then
@@ -1744,8 +1725,7 @@ package body System.Task_Primitives.Operations is
 
    function Resume_Task
      (T           : ST.Task_ID;
-      Thread_Self : Thread_Id)
-      return        Boolean
+      Thread_Self : Thread_Id) return Boolean
    is
    begin
       if T.Common.LL.Thread /= Thread_Self then

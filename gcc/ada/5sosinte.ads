@@ -308,8 +308,11 @@ package System.OS_Interface is
    THR_NEW_LWP   : constant := 2;
    USYNC_THREAD  : constant := 0;
 
-   type thread_t is private;
+   type thread_t is new unsigned;
    subtype Thread_Id is thread_t;
+   --  These types should be commented ???
+
+   function To_thread_t is new Unchecked_Conversion (Integer, thread_t);
 
    type mutex_t is limited private;
 
@@ -539,8 +542,6 @@ private
       tv_usec : long;
    end record;
    pragma Convention (C, struct_timeval);
-
-   type thread_t is new unsigned;
 
    type array_type_9 is array (0 .. 3) of unsigned_char;
    type record_type_3 is record

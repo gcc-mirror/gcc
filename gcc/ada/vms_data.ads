@@ -1543,6 +1543,8 @@ package VMS_Data is
                                                "-O1,!-O0,!-O2,!-O3 "       &
                                             "UNROLL_LOOPS "                &
                                                "-funroll-loops "           &
+                                            "NO_STRICT_ALIASING "          &
+                                               "-fno-strict-aliasing "     &
                                             "INLINING "                    &
                                                "-O3,!-O0,!-O1,!-O2";
    --        /NOOPTIMIZE (D)
@@ -1554,20 +1556,31 @@ package VMS_Data is
    --      ALL (D)       Perform most optimizations, including those that
    --                    may be expensive.
    --
-   --      NONE          Do not do any optimizations.  Same as /NOOPTIMIZE.
+   --      NONE          Do not do any optimizations. Same as /NOOPTIMIZE.
    --
    --      SOME          Perform some optimizations, but omit ones that
-   --                    are costly.
+   --                    are costly in compilation time.
    --
    --      DEVELOPMENT   Same as SOME.
    --
    --      INLINING      Full optimization, and also attempt automatic inlining
    --                    of small subprograms within a unit
    --
-   --      UNROLL_LOOPS  Try to unroll loops.  This keyword may be specified
-   --                    with any keyword above other than NONE.  Loop
+   --      UNROLL_LOOPS  Try to unroll loops. This keyword may be specified
+   --                    with any keyword above other than NONE. Loop
    --                    unrolling usually, but not always, improves the
    --                    performance of programs.
+   --
+   --      NO_STRICT_ALIASING
+   --                    Suppress aliasing analysis. When optimization is
+   --                    enabled (ALL or SOME above), the compiler assumes
+   --                    that pointers do in fact point to legitimate values
+   --                    of the pointer type (allocated from the proper pool).
+   --                    If this assumption is violated, e.g. by the use of
+   --                    unchecked conversion, then it may be necessary to
+   --                    suppress this assumption using this keyword (which
+   --                    may be specified only in conjunction with any
+   --                    keyword above, other than NONE).
 
    S_GCC_OptX    : aliased constant S := "/NOOPTIMIZE "                    &
                                             "-O0,!-O1,!-O2,!-O3";
@@ -4460,6 +4473,12 @@ package VMS_Data is
    --   source. This qualifier /NO_MISSED_LABELS suppresses this insertion,
    --   so that the formatted source reflects the original.
 
+   S_Pretty_Notabs    : aliased constant S := "/NOTABS "                   &
+                                                 "-notabs";
+   --        /NOTABS
+   --
+   --   Replace all tabulations in comments with spaces.
+
    S_Pretty_Output    : aliased constant S := "/OUTPUT=@"                  &
                                               "-o@";
    --        /OUTPUT=file
@@ -4507,6 +4526,12 @@ package VMS_Data is
    --   Replace the argument source with the pretty-printed source and copy the
    --   argument source into filename.NPP. If filename.NPP already exists,
    --   report an error and exit.
+
+   S_Pretty_RTS       : aliased constant S := "/RUNTIME_SYSTEM=|"          &
+                                               "--RTS=|";
+   --        /RUNTIME_SYSTEM=xxx
+   --
+   --    Compile against an alternate runtime system named xxx or RTS-xxx.
 
    S_Pretty_Search    : aliased constant S := "/SEARCH=*"                  &
                                               "-I*";
@@ -4565,11 +4590,13 @@ package VMS_Data is
       S_Pretty_Mess      'Access,
       S_Pretty_Names     'Access,
       S_Pretty_No_Labels 'Access,
+      S_Pretty_Notabs    'Access,
       S_Pretty_Output    'Access,
       S_Pretty_Override  'Access,
       S_Pretty_Pragma    'Access,
       S_Pretty_Replace   'Access,
       S_Pretty_Project   'Access,
+      S_Pretty_RTS       'Access,
       S_Pretty_Search    'Access,
       S_Pretty_Specific  'Access,
       S_Pretty_Standard  'Access,

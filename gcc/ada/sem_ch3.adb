@@ -959,9 +959,16 @@ package body Sem_Ch3 is
       --  and thus unconstrained. Regular components must be constrained.
 
       if Is_Indefinite_Subtype (T) and then Chars (Id) /= Name_uParent then
-         Error_Msg_N
-           ("unconstrained subtype in component declaration",
-            Subtype_Indication (Component_Definition (N)));
+         if Is_Class_Wide_Type (T) then
+            Error_Msg_N
+               ("class-wide subtype with unknown discriminants" &
+                 " in component declaration",
+                 Subtype_Indication (Component_Definition (N)));
+         else
+            Error_Msg_N
+              ("unconstrained subtype in component declaration",
+               Subtype_Indication (Component_Definition (N)));
+         end if;
 
       --  Components cannot be abstract, except for the special case of
       --  the _Parent field (case of extending an abstract tagged type)
@@ -2618,6 +2625,12 @@ package body Sem_Ch3 is
                  and then Is_Remote_Access_To_Class_Wide_Type (Def_Id)
                then
                   Add_RACW_Features (Def_Id);
+               end if;
+
+               --  Set no strict aliasing flag if config pragma seen
+
+               if Opt.No_Strict_Aliasing then
+                  Set_No_Strict_Aliasing (Base_Type (Def_Id));
                end if;
 
             when N_Array_Type_Definition =>
@@ -4672,8 +4685,16 @@ package body Sem_Ch3 is
       Indic := Subtype_Indication (Type_Def);
       Constraint_Present := (Nkind (Indic) = N_Subtype_Indication);
 
+      --  Check that the type has visible discriminants. The type may be
+      --  a private type with unknown discriminants whose full view has
+      --  discriminants which are invisible.
+
       if Constraint_Present then
-         if not Has_Discriminants (Parent_Base) then
+         if not Has_Discriminants (Parent_Base)
+           or else
+             (Has_Unknown_Discriminants (Parent_Base)
+                and then Is_Private_Type (Parent_Base))
+         then
             Error_Msg_N
               ("invalid constraint: type has no discriminant",
                  Constraint (Indic));
@@ -5002,9 +5023,17 @@ package body Sem_Ch3 is
             Set_Has_Unknown_Discriminants
               (Derived_Type, Has_Unknown_Discriminants (Parent_Type)
                              or else Unknown_Discriminants_Present (N));
-         else
-            Set_Has_Unknown_Discriminants
-              (Derived_Type, Has_Unknown_Discriminants (Parent_Type));
+
+         --  The partial view of the parent may have unknown discriminants,
+         --  but if the full view has discriminants and the parent type is
+         --  in scope they must be inherited.
+
+         elsif Has_Unknown_Discriminants (Parent_Type)
+           and then
+            (not Has_Discriminants (Parent_Type)
+              or else not In_Open_Scopes (Scope (Parent_Type)))
+         then
+            Set_Has_Unknown_Discriminants (Derived_Type);
          end if;
 
          if not Has_Unknown_Discriminants (Derived_Type)
@@ -7636,7 +7665,15 @@ package body Sem_Ch3 is
          T := Designated_Type (T);
       end if;
 
-      if not Has_Discriminants (T) then
+      --  Check that the type has visible discriminants. The type may be
+      --  a private type with unknown discriminants whose full view has
+      --  discriminants which are invisible.
+
+      if not Has_Discriminants (T)
+        or else
+          (Has_Unknown_Discriminants (T)
+             and then Is_Private_Type (T))
+      then
          Error_Msg_N ("invalid constraint: type has no discriminant", C);
          Fixup_Bad_Constraint;
          return;

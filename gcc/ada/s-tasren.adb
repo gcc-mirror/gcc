@@ -66,6 +66,7 @@ with System.Tasking.Utilities;
 --  used for Check_Exception
 --           Make_Passive
 --           Wakeup_Entry_Caller
+--           Exit_One_ATC_Level
 
 with System.Tasking.Protected_Objects.Operations;
 --  used for PO_Do_Or_Queue
@@ -452,7 +453,9 @@ package body System.Tasking.Rendezvous is
       if not Task_Do_Or_Queue
         (Self_Id, Entry_Call, With_Abort => True)
       then
-         Self_Id.ATC_Nesting_Level := Self_Id.ATC_Nesting_Level - 1;
+         STPO.Write_Lock (Self_Id);
+         Utilities.Exit_One_ATC_Level (Self_Id);
+         STPO.Unlock (Self_Id);
 
          if Single_Lock then
             Unlock_RTS;
@@ -463,9 +466,6 @@ package body System.Tasking.Rendezvous is
          end if;
 
          Initialization.Undefer_Abort (Self_Id);
-         pragma Debug
-           (Debug.Trace (Self_Id, "CS: exited to ATC level: " &
-            ATC_Level'Image (Self_Id.ATC_Nesting_Level), 'A'));
          raise Tasking_Error;
       end if;
 
@@ -808,7 +808,9 @@ package body System.Tasking.Rendezvous is
          --  ??? In some cases abort is deferred more than once. Need to
          --  figure out why this happens.
 
-         Self_Id.Deferral_Level := 1;
+         if Self_Id.Deferral_Level > 1 then
+            Self_Id.Deferral_Level := 1;
+         end if;
 
          Initialization.Undefer_Abort (Self_Id);
 
@@ -1347,10 +1349,9 @@ package body System.Tasking.Rendezvous is
          if not Task_Do_Or_Queue
            (Self_Id, Entry_Call, With_Abort => True)
          then
-            Self_Id.ATC_Nesting_Level := Self_Id.ATC_Nesting_Level - 1;
-            pragma Debug
-              (Debug.Trace (Self_Id, "TEC: exited to ATC level: " &
-               ATC_Level'Image (Self_Id.ATC_Nesting_Level), 'A'));
+            STPO.Write_Lock (Self_Id);
+            Utilities.Exit_One_ATC_Level (Self_Id);
+            STPO.Unlock (Self_Id);
 
             if Single_Lock then
                Unlock_RTS;
@@ -1710,11 +1711,9 @@ package body System.Tasking.Rendezvous is
       if not Task_Do_Or_Queue
        (Self_Id, Entry_Call, With_Abort => True)
       then
-         Self_Id.ATC_Nesting_Level := Self_Id.ATC_Nesting_Level - 1;
-
-         pragma Debug
-           (Debug.Trace (Self_Id, "TTEC: exited to ATC level: " &
-            ATC_Level'Image (Self_Id.ATC_Nesting_Level), 'A'));
+         STPO.Write_Lock (Self_Id);
+         Utilities.Exit_One_ATC_Level (Self_Id);
+         STPO.Unlock (Self_Id);
 
          if Single_Lock then
             Unlock_RTS;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1533,6 +1533,13 @@ package Einfo is
 --       either from their declaration or through type derivation. The use
 --       of this flag exactly meets the spec in RM 3.7(26). Note that all
 --       class-wide types are considered to have unknown discriminants.
+--       Note that both Has_Discriminants and Has_Unknown_Discriminants may
+--       be true for a type. Class-wide types and their subtypes have
+--       unknown discriminants and can have declared ones as well. Private
+--       types declared with unknown discriminants may have a full view that
+--       has explicit discriminants, and both flag will be set on the partial
+--       view, to insure that discriminants are properly inherited in certain
+--       contexts.
 
 --    Has_Volatile_Components (Flag87) [implementation base type only]
 --       Present in all types and objects. Set only for an array type or
@@ -2599,6 +2606,16 @@ package Einfo is
 --       This is used by Layout in front end layout mode to properly computed
 --       the maximum size such records (needed for allocation purposes when
 --       there are default discriminants, and also for the 'Size value).
+
+--    No_Strict_Aliasing (Flag136) [base type only]
+--       Present in access types. Set to direct the back end to avoid any
+--       optimizations based on an assumption about the aliasing status of
+--       objects designated by the access type. For the case of the gcc
+--       back end, the effect is as though all references to objects of
+--       the type were compiled with -fno-strict-aliasing. This flag is
+--       set if an unchecked conversion with the access type as a target
+--       type occurs in the same source unit as the declaration of the
+--       access type, or if an explicit pragma No_Strict_Aliasing applies.
 
 --    Number_Dimensions (synthesized)
 --       Applies to array types and subtypes. Returns the number of dimensions
@@ -3997,6 +4014,7 @@ package Einfo is
    --    Has_Storage_Size_Clause       (Flag23)   (base type only)
    --    Is_Access_Constant            (Flag69)
    --    No_Pool_Assigned              (Flag131)  (base type only)
+   --    No_Strict_Aliasing            (Flag136)  (base type only)
    --    (plus type attributes)
 
    --  E_Access_Attribute_Type
@@ -5154,6 +5172,7 @@ package Einfo is
    function Next_Inlined_Subprogram            (Id : E) return E;
    function No_Pool_Assigned                   (Id : E) return B;
    function No_Return                          (Id : E) return B;
+   function No_Strict_Aliasing                 (Id : E) return B;
    function Non_Binary_Modulus                 (Id : E) return B;
    function Non_Limited_View                   (Id : E) return E;
    function Nonzero_Is_True                    (Id : E) return B;
@@ -5626,6 +5645,7 @@ package Einfo is
    procedure Set_Next_Inlined_Subprogram       (Id : E; V : E);
    procedure Set_No_Pool_Assigned              (Id : E; V : B := True);
    procedure Set_No_Return                     (Id : E; V : B := True);
+   procedure Set_No_Strict_Aliasing            (Id : E; V : B := True);
    procedure Set_Non_Binary_Modulus            (Id : E; V : B := True);
    procedure Set_Non_Limited_View              (Id : E; V : E);
    procedure Set_Nonzero_Is_True               (Id : E; V : B := True);
@@ -6152,6 +6172,7 @@ package Einfo is
    pragma Inline (Next_Literal);
    pragma Inline (No_Pool_Assigned);
    pragma Inline (No_Return);
+   pragma Inline (No_Strict_Aliasing);
    pragma Inline (Non_Binary_Modulus);
    pragma Inline (Non_Limited_View);
    pragma Inline (Nonzero_Is_True);
@@ -6457,6 +6478,7 @@ package Einfo is
    pragma Inline (Set_Next_Inlined_Subprogram);
    pragma Inline (Set_No_Pool_Assigned);
    pragma Inline (Set_No_Return);
+   pragma Inline (Set_No_Strict_Aliasing);
    pragma Inline (Set_Non_Binary_Modulus);
    pragma Inline (Set_Non_Limited_View);
    pragma Inline (Set_Nonzero_Is_True);

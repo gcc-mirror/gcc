@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2157,8 +2157,13 @@ package body Osint is
          declare
             pragma Suppress (All_Checks);
 
+            pragma Warnings (Off);
+            --  This use of unchecked conversion is aliasing safe
+
             function To_Source_Buffer_Ptr is new
               Unchecked_Conversion (Address, Source_Buffer_Ptr);
+
+            pragma Warnings (On);
 
          begin
             Src := To_Source_Buffer_Ptr (Actual_Ptr (0)'Address);

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1993-2000 Free Software Foundation, Inc.          --
+--          Copyright (C) 1993-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -46,15 +46,17 @@ pragma Preelaborate (Pointers);
 
    type Pointer is access all Element;
 
-   function Value
-     (Ref        : in Pointer;
-      Terminator : in Element := Default_Terminator)
-      return       Element_Array;
+   pragma No_Strict_Aliasing (Pointer);
+   --  We turn off any strict aliasing assumptions for the pointer type,
+   --  since it is possible to create "improperly" aliased values.
 
    function Value
-     (Ref    : in Pointer;
-      Length : in ptrdiff_t)
-      return   Element_Array;
+     (Ref        : Pointer;
+      Terminator : Element := Default_Terminator) return Element_Array;
+
+   function Value
+     (Ref    : Pointer;
+      Length : ptrdiff_t) return Element_Array;
 
    Pointer_Error : exception;
 
@@ -62,10 +64,10 @@ pragma Preelaborate (Pointers);
    -- C-style Pointer Arithmetic --
    --------------------------------
 
-   function "+" (Left : in Pointer;   Right : in ptrdiff_t) return Pointer;
-   function "+" (Left : in ptrdiff_t; Right : in Pointer)   return Pointer;
-   function "-" (Left : in Pointer;   Right : in ptrdiff_t) return Pointer;
-   function "-" (Left : in Pointer;   Right : in Pointer)   return ptrdiff_t;
+   function "+" (Left : Pointer;   Right : ptrdiff_t) return Pointer;
+   function "+" (Left : ptrdiff_t; Right : Pointer)   return Pointer;
+   function "-" (Left : Pointer;   Right : ptrdiff_t) return Pointer;
+   function "-" (Left : Pointer;   Right : Pointer)   return ptrdiff_t;
 
    procedure Increment (Ref : in out Pointer);
    procedure Decrement (Ref : in out Pointer);
@@ -76,20 +78,19 @@ pragma Preelaborate (Pointers);
    pragma Convention (Intrinsic, Decrement);
 
    function Virtual_Length
-     (Ref        : in Pointer;
-      Terminator : in Element := Default_Terminator)
-      return       ptrdiff_t;
+     (Ref        : Pointer;
+      Terminator : Element := Default_Terminator) return ptrdiff_t;
 
    procedure Copy_Terminated_Array
-     (Source     : in Pointer;
-      Target     : in Pointer;
-      Limit      : in ptrdiff_t := ptrdiff_t'Last;
-      Terminator : in Element := Default_Terminator);
+     (Source     : Pointer;
+      Target     : Pointer;
+      Limit      : ptrdiff_t := ptrdiff_t'Last;
+      Terminator : Element := Default_Terminator);
 
    procedure Copy_Array
-     (Source  : in Pointer;
-      Target  : in Pointer;
-      Length  : in ptrdiff_t);
+     (Source  : Pointer;
+      Target  : Pointer;
+      Length  : ptrdiff_t);
 
 private
    pragma Inline ("+");

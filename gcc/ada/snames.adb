@@ -169,6 +169,7 @@ package body Snames is
      "locking_policy#" &
      "long_float#" &
      "no_run_time#" &
+     "no_strict_aliasing#" &
      "normalize_scalars#" &
      "polling#" &
      "persistent_data#" &

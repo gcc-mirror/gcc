@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2003, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2004, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -125,7 +125,7 @@ package System.Tasking is
    --  This is the compiler interface version of this function. Do not call
    --  from the run-time system.
 
-   function To_Task_Id is new Unchecked_Conversion (System.Address, Task_ID);
+   function To_Task_ID is new Unchecked_Conversion (System.Address, Task_ID);
    function To_Address is new Unchecked_Conversion (Task_ID, System.Address);
 
    -----------------------
@@ -728,6 +728,12 @@ package System.Tasking is
    ------------------------------------
 
    type Access_Address is access all System.Address;
+   --  Comment on what this is used for ???
+
+   pragma No_Strict_Aliasing (Access_Address);
+   --  This type is used in contexts where aliasing may be an issue (see
+   --  for example s-tataat.adb), so we avoid any incorrect aliasing
+   --  assumptions.
 
    ----------------------------------------------
    -- Ada_Task_Control_Block (ATCB) definition --

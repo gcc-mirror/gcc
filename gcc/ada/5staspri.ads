@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2000, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2004, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,9 +31,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is a Solaris version of this package.
---  It was created by hand for use with new "checked"
---  GNULLI primitives.
+--  This is a Solaris version of this package
 
 --  This package provides low-level support for most tasking features.
 
@@ -46,12 +44,14 @@ with System.OS_Interface;
 --           cond_t
 --           thread_t
 
+with Unchecked_Conversion;
+
 package System.Task_Primitives is
    pragma Preelaborate;
 
    type Lock is limited private;
    type Lock_Ptr is access all Lock;
-   --  Should be used for implementation of protected objects.
+   --  Should be used for implementation of protected objects
 
    type RTS_Lock is limited private;
    type RTS_Lock_Ptr is access all RTS_Lock;
@@ -59,6 +59,8 @@ package System.Task_Primitives is
    --  The difference between Lock and the RTS_Lock is that the later
    --  one serves only as a semaphore so that do not check for
    --  ceiling violations.
+
+   function To_Lock_Ptr is new Unchecked_Conversion (RTS_Lock_Ptr, Lock_Ptr);
 
    type Task_Body_Access is access procedure;
    --  Pointer to the task body's entry point (or possibly a wrapper
@@ -81,15 +83,18 @@ private
 
    type Owner_ID is access all Owner_Int;
 
+   function To_Owner_ID is
+     new Unchecked_Conversion (System.Address, Owner_ID);
+
    type Lock is record
-      L : aliased Base_Lock;
-      Ceiling : System.Any_Priority := System.Any_Priority'First;
+      L              : aliased Base_Lock;
+      Ceiling        : System.Any_Priority := System.Any_Priority'First;
       Saved_Priority : System.Any_Priority :=  System.Any_Priority'First;
-      Owner : Owner_ID;
-      Next  : Lock_Ptr;
-      Level : Private_Task_Serial_Number := 0;
-      Buddy : Owner_ID;
-      Frozen : Boolean := False;
+      Owner          : Owner_ID;
+      Next           : Lock_Ptr;
+      Level          : Private_Task_Serial_Number := 0;
+      Buddy          : Owner_ID;
+      Frozen         : Boolean := False;
    end record;
 
    type RTS_Lock is new Lock;
@@ -109,16 +114,16 @@ private
       LWP : System.OS_Interface.lwpid_t;
       --  The LWP id of the thread. Set by self in Enter_Task.
 
-      CV          : aliased System.OS_Interface.cond_t;
-      L           : aliased RTS_Lock;
-      --  protection for all components is lock L
+      CV : aliased System.OS_Interface.cond_t;
+      L  : aliased RTS_Lock;
+      --  Protection for all components is lock L
 
       Active_Priority : System.Any_Priority := System.Any_Priority'First;
       --  Simulated active priority,
       --  used only if Priority_Ceiling_Support is True.
 
       Locking : Lock_Ptr;
-      Locks : Lock_Ptr;
+      Locks   : Lock_Ptr;
       Wakeups : Natural := 0;
    end record;
 

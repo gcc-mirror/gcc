@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2003, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2004, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -75,7 +75,6 @@ with System.OS_Primitives;
 with System.Task_Info;
 --  used for Unspecified_Task_Info
 
-with Unchecked_Conversion;
 with Unchecked_Deallocation;
 
 package body System.Task_Primitives.Operations is
@@ -169,14 +168,6 @@ package body System.Task_Primitives.Operations is
 
    function Register_Foreign_Thread
      (Thread : Thread_Id) return Task_ID is separate;
-
-   ----------------------------------
-   -- Utility Conversion Functions --
-   ----------------------------------
-
-   function To_Task_Id is new Unchecked_Conversion (System.Address, Task_ID);
-
-   function To_Address is new Unchecked_Conversion (Task_ID, System.Address);
 
    ----------------------------------
    -- Condition Variable Functions --
@@ -377,8 +368,7 @@ package body System.Task_Primitives.Operations is
    ----------
 
    function Self return Task_ID is
-      Self_Id : constant Task_ID := To_Task_Id (TlsGetValue (TlsIndex));
-
+      Self_Id : constant Task_ID := To_Task_ID (TlsGetValue (TlsIndex));
    begin
       if Self_Id = null then
          return Register_Foreign_Thread (GetCurrentThread);
@@ -862,9 +852,6 @@ package body System.Task_Primitives.Operations is
       Result         : DWORD;
       Entry_Point    : PTHREAD_START_ROUTINE;
 
-      function To_PTHREAD_START_ROUTINE is new
-        Unchecked_Conversion (System.Address, PTHREAD_START_ROUTINE);
-
    begin
       pTaskParameter := To_Address (T);
 
@@ -1091,8 +1078,7 @@ package body System.Task_Primitives.Operations is
 
    function Suspend_Task
      (T           : ST.Task_ID;
-      Thread_Self : Thread_Id)
-      return        Boolean
+      Thread_Self : Thread_Id) return Boolean
    is
    begin
       if T.Common.LL.Thread /= Thread_Self then
@@ -1108,8 +1094,7 @@ package body System.Task_Primitives.Operations is
 
    function Resume_Task
      (T           : ST.Task_ID;
-      Thread_Self : Thread_Id)
-      return        Boolean
+      Thread_Self : Thread_Id) return Boolean
    is
    begin
       if T.Common.LL.Thread /= Thread_Self then

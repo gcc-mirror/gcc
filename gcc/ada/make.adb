@@ -1000,9 +1000,9 @@ package body Make is
       File_Name   : String;
       Program     : Make_Program_Type)
    is
-      Switches      : Variable_Value;
-      Switch_List   : String_List_Id;
-      Element       : String_Element;
+      Switches    : Variable_Value;
+      Switch_List : String_List_Id;
+      Element     : String_Element;
 
    begin
       if File_Name'Length > 0 then
@@ -5095,8 +5095,8 @@ package body Make is
 
                      if Run_Path_Option and Path_Option /= null then
                         declare
-                           Option : String_Access;
-                           Length : Natural := Path_Option'Length;
+                           Option  : String_Access;
+                           Length  : Natural := Path_Option'Length;
                            Current : Natural;
 
                         begin

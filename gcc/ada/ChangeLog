@@ -1,3 +1,127 @@
+2004-03-05  Robert Dewar  <dewar@gnat.com>
+
+	* 56taprop.adb, 5ataprop.adb: Remove unneeded unchecked conversions
+
+	* a-tags.adb, a-tags.ads, s-finimp.adb, s-finroo.ads,
+	i-cpoint.ads, i-cpoint.adb, i-cstrin.adb, i-cstrin.ads,
+	5iosinte.ads, 5sosinte.ads, 5staspri.ads, 5itaprop.adb, 
+	5staprop.adb, 5wtaprop.adb, s-tataat.ads, s-tataat.adb: Move
+	unchecked conversion to spec to avoid warnings.
+
+	* s-tasini.adb, s-taskin.ads, 5atpopsp.adb: Correct spelling Task_Id
+	to Task_ID
+
+	* 7stpopsp.adb: Correct casing in To_Task_ID call
+
+	* a-strsea.ads, a-strsea.adb: Minor reformatting
+
+	* einfo.ads, einfo.adb: Define new flag No_Strict_Aliasing
+
+	* errout.ads: Switch for VMS is now NO_STRICT_ALIASING.
+	Adjust Max_Msg_Length to be clearly large enough.
+
+	* fe.h: Define In_Same_Source_Unit
+
+	* osint.adb: Add pragma Warnings Off to suppress warnings
+	* g-dyntab.adb, g-table.adb, g-thread.adb: Add Warnings (Off) to kill
+	aliasing warnings.
+
+	* opt.ads: Put entries in alpha order. Add entry for No_Strict_Aliasing
+
+	* par-prag.adb: Add dummy entry for No_Strict_Aliasing pragma
+
+	* sem_ch13.adb: Generate validate unchecked conversion nodes for gcc.
+
+	* sem_ch3.adb: Set No_Strict_Aliasing flag if config pragma set.
+
+	* sem_prag.adb: Implement pragma No_Strict_Aliasing.
+
+	* sinfo.ads: Remove obsolete comment on validate unchecked conversion
+	node. We now do generate them for gcc back end.
+
+	* table.adb, sinput.adb: Add pragma Warnings Off to suppress aliasing
+	warning.
+
+	* sinput-c.adb: Fix bad name in header.
+	Add pragma Warnings Off to suppress aliasing warning.
+
+	* sinput-l.adb: Add pragma Warnings Off to suppress aliasing warning.
+
+	* snames.h, snames.ads, snames.adb: Add entry for pragma
+	No_Strict_Aliasing.
+
+2004-03-05  Vincent Celier  <celier@gnat.com>
+
+	* prj-com.ads: Add hash table Files_Htable to check when a file name
+	is already a source of another project.
+
+	* prj-nmsc.adb (Record_Source): Before recording a new source, check
+	if its file name is not already a source of another project. Report an
+	error if it is.
+
+	* gnatcmd.adb: When GNAT PRETTY is invoked with a project file and no
+	source file name, call gnatpp with all the sources of the main project.
+
+	* vms_conv.adb (Initialize): GNAT PRETTY may be called with any number
+	of file names.
+
+	* vms_data.ads: Correct documentation of new /OPTIMIZE keyword
+	NO_STRICT_ALIASING. Add new qualifier for GNAT PRETTY:
+	/RUNTIME_SYSTEM=, converted to --RTS=
+	/NOTABS, converted to -notabs
+
+2004-03-05  Pascal Obry  <obry@gnat.com>
+
+	* make.adb: Minor reformatting.
+
+2004-03-05  Ed Schonberg  <schonberg@gnat.com>
+
+	Part of implemention of AI-262.
+	* par-ch10.adb (P_Context_Clause): Recognize private with_clauses.
+
+	* sem_ch10.ads, sem_ch10.adb: (Install_Private_With_Clauses): New
+	procedure.
+
+	* sem_ch3.adb (Analyze_Component_Declaration): Improve error message
+	when component type is a partially constrained class-wide subtype.
+	(Constrain_Discriminated_Type): If parent type has unknown
+	discriminants, a constraint is illegal, even if full view has
+	discriminants.
+	(Build_Derived_Record_Type): Inherit discriminants when deriving a type
+	with unknown discriminants whose full view is a discriminated record.
+
+	* sem_ch7.adb (Preserve_Full_Attributes): Preserve Has_Discriminants
+	flag, to handle properly derivations of tagged types with unknown
+	discriminants.
+	(Analyze_Package_Spec, Analyze_Package_Body): Install
+	Private_With_Clauses before analyzing private part or body.
+
+	* einfo.ads: Indicate that both Has_Unknown_Discriminants and
+	Has_Discriminants can be true for a given type (documentation).
+
+2004-03-05  Arnaud Charlet  <charlet@act-europe.fr>
+
+	* s-restri.ads: Fix license (GPL->GMGPL).
+
+	* s-tassta.adb: Minor reformatting.
+
+	* s-tasren.adb: Replace manual handling of Self_Id.ATC_Nesting_Level
+	by calls to Exit_One_ATC_Level, since additional clean up is performed
+	by this function.
+
+	* s-tpobop.adb: Replace manual handling of Self_Id.ATC_Nesting_Level
+	by calls to Exit_One_ATC_Level, since additional clean up is performed
+	by this function.
+
+2004-03-05  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* trans.c: Reflect GCC changes to fix bootstrap problem.
+	Add warning for suspicious aliasing unchecked conversion.
+
+2004-03-05  GNAT Script  <nobody@gnat.com>
+
+	* Make-lang.in: Makefile automatically updated
+
 2004-03-02  Emmanuel Briot  <briot@act-europe.fr>
 
 	* ali.adb (Read_Instantiation_Instance): Do not modify the

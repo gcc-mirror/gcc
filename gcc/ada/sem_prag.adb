@@ -2333,7 +2333,6 @@ package body Sem_Prag is
                        and then Paren_Count (Arg_Parameter_Types) = 0
                      then
                         Ptype := First (Expressions (Arg_Parameter_Types));
-
                         while Present (Ptype) or else Present (Formal) loop
                            if No (Ptype)
                              or else No (Formal)
@@ -3431,7 +3430,6 @@ package body Sem_Prag is
          if not Is_Check_Name (Chars (Expression (Arg1))) then
             Error_Pragma_Arg
               ("argument of pragma% is not valid check name", Arg1);
-
          else
             C := Get_Check_Id (Chars (Expression (Arg1)));
          end if;
@@ -7484,6 +7482,36 @@ package body Sem_Prag is
             end if;
          end No_Return;
 
+         ------------------------
+         -- No_Strict_Aliasing --
+         ------------------------
+
+         when Pragma_No_Strict_Aliasing => No_Strict_Alias : declare
+            E_Id : Entity_Id;
+
+         begin
+            GNAT_Pragma;
+            Check_At_Most_N_Arguments (1);
+
+            if Arg_Count = 0 then
+               Check_Valid_Configuration_Pragma;
+               Opt.No_Strict_Aliasing := True;
+
+            else
+               Check_Optional_Identifier (Arg2, Name_Entity);
+               Check_Arg_Is_Local_Name (Arg1);
+               E_Id := Entity (Expression (Arg1));
+
+               if E_Id = Any_Type then
+                  return;
+               elsif No (E_Id) or else not Is_Access_Type (E_Id) then
+                  Error_Pragma_Arg ("pragma% requires access type", Arg1);
+               end if;
+
+               Set_No_Strict_Aliasing (Base_Type (E_Id));
+            end if;
+         end No_Strict_Alias;
+
          -----------------
          -- Obsolescent --
          -----------------
@@ -9899,6 +9927,7 @@ package body Sem_Prag is
       Pragma_Memory_Size                  => -1,
       Pragma_No_Return                    =>  0,
       Pragma_No_Run_Time                  => -1,
+      Pragma_No_Strict_Aliasing           => -1,
       Pragma_Normalize_Scalars            => -1,
       Pragma_Obsolescent                  =>  0,
       Pragma_Optimize                     => -1,
