@@ -8,5 +8,5 @@ template<class T> class smart_ptr2 {
     T* real_ptr;
  public:
     typedef typename T::subT  td;
-    friend class td; // { dg-error "typename|not name a class" }
+    friend class td; // { dg-error "typedef" }
 };

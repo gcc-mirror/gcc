@@ -750,7 +750,10 @@ add_method (tree type, tree method, int error_p)
   if (DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (method))
     slot = CLASSTYPE_CONSTRUCTOR_SLOT;
   else if (DECL_MAYBE_IN_CHARGE_DESTRUCTOR_P (method))
-    slot = CLASSTYPE_DESTRUCTOR_SLOT;
+    {
+      slot = CLASSTYPE_DESTRUCTOR_SLOT;
+      TYPE_HAS_DESTRUCTOR (type) = 1;
+    }
   else
     {
       int have_template_convs_p = 0;
@@ -1646,16 +1649,12 @@ maybe_warn_about_overly_private_class (tree t)
   /* Even if some of the member functions are non-private, the class
      won't be useful for much if all the constructors or destructors
      are private: such an object can never be created or destroyed.  */
-  if (TYPE_HAS_DESTRUCTOR (t))
+  if (TYPE_HAS_DESTRUCTOR (t)
+      && TREE_PRIVATE (CLASSTYPE_DESTRUCTORS (t)))
     {
-      tree dtor = TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (t), 1);
-
-      if (TREE_PRIVATE (dtor))
-	{
-	  warning ("`%#T' only defines a private destructor and has no friends",
-		      t);
-	  return;
-	}
+      warning ("`%#T' only defines a private destructor and has no friends",
+	       t);
+      return;
     }
 
   if (TYPE_HAS_CONSTRUCTOR (t))
@@ -5485,7 +5484,7 @@ pushclass (tree type)
 	  
 	  push_class_binding (id, decl);
 	  if (TREE_CODE (decl) == TYPE_DECL)
-	    set_identifier_type_value (id, TREE_TYPE (decl));
+	    set_identifier_type_value (id, decl);
 	}
       unuse_fields (type);
     }

@@ -3695,7 +3695,7 @@ extern int copy_fn_p				(tree);
 extern tree get_scope_of_declarator             (tree);
 extern void grok_special_member_properties	(tree);
 extern int grok_ctor_properties			(tree, tree);
-extern void grok_op_properties			(tree, int);
+extern bool grok_op_properties			(tree, int, bool);
 extern tree xref_tag				(enum tag_types, tree, tree, bool, bool);
 extern tree xref_tag_from_type			(tree, tree, int);
 extern void xref_basetypes			(tree, tree);
@@ -3744,6 +3744,7 @@ extern void register_dtor_fn                    (tree);
 extern tmpl_spec_kind current_tmpl_spec_kind    (int);
 extern tree cp_fname_init			(const char *);
 extern tree check_elaborated_type_specifier     (enum tag_types, tree, bool);
+extern int add_binding                          (cxx_binding *, tree);
 extern bool have_extern_spec;
 
 /* in decl2.c */

@@ -1114,23 +1114,7 @@ build_functional_cast (tree exp, tree parms)
   if (exp == error_mark_node || parms == error_mark_node)
     return error_mark_node;
 
-  if (TREE_CODE (exp) == IDENTIFIER_NODE)
-    {
-      if (IDENTIFIER_HAS_TYPE_VALUE (exp))
-	/* Either an enum or an aggregate type.  */
-	type = IDENTIFIER_TYPE_VALUE (exp);
-      else
-	{
-	  type = lookup_name (exp, 1);
-	  if (!type || TREE_CODE (type) != TYPE_DECL)
-	    {
-	      error ("`%T' fails to be a typedef or built-in type", exp);
-	      return error_mark_node;
-	    }
-	  type = TREE_TYPE (type);
-	}
-    }
-  else if (TREE_CODE (exp) == TYPE_DECL)
+  if (TREE_CODE (exp) == TYPE_DECL)
     type = TREE_TYPE (exp);
   else
     type = exp;

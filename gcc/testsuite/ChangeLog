@@ -1,3 +1,23 @@
+2003-08-19  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/10926
+	* g++.dg/template/dtor2.C: New test.
+
+	PR c++/11684
+	* g++.dg/template/operator1.C: New test.
+	* g++.dg/parse/operator4.C: New test.
+
+	PR c++/11946.C
+	* g++.dg/expr/enum1.C: New test.
+	* gcc.dg/c99-bool-1.c: Remove bogus warning.
+
+	PR c++/11036.C
+	* g++.dg/parse/elab2.C: New test.
+	* g++.dg/parse/typedef4.C: Change error message.
+	* g++.old-deja/g++.robertl/eb133.C: Remove bogus error markers.
+	* g++.old-deja/g++.robertl/eb133a.C: Remove bogus error markers.
+	* g++.old-deja/g++.robertl/eb133b.C: Remove bogus error markers.
+
 2003-08-19  Geoffrey Keating  <geoffk@apple.com>
 
 	* gcc.dg/pch/warn-1.c: New.

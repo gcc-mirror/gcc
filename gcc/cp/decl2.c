@@ -387,12 +387,6 @@ grokclassfn (tree ctype, tree function, enum overload_flags flags, tree quals)
 
   if (flags == DTOR_FLAG || DECL_CONSTRUCTOR_P (function))
     maybe_retrofit_in_chrg (function);
-
-  if (flags == DTOR_FLAG)
-    {
-      DECL_DESTRUCTOR_P (function) = 1;
-      TYPE_HAS_DESTRUCTOR (ctype) = 1;
-    }
 }
 
 /* Create an ARRAY_REF, checking for the user doing things backwards

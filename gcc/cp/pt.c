@@ -2674,6 +2674,15 @@ push_template_decl_real (tree decl, int is_friend)
       else if (TREE_CODE (decl) == TYPE_DECL 
 	       && ANON_AGGRNAME_P (DECL_NAME (decl))) 
 	error ("template class without a name");
+      else if (TREE_CODE (decl) == FUNCTION_DECL
+	       && DECL_DESTRUCTOR_P (decl))
+	{
+	  /* [temp.mem]
+	     
+	      A destructor shall not be a member template.  */
+	  error ("destructor `%D' declared as member template", decl);
+	  return error_mark_node;
+	}
       else if ((DECL_IMPLICIT_TYPEDEF_P (decl)
 		&& CLASS_TYPE_P (TREE_TYPE (decl)))
 	       || (TREE_CODE (decl) == VAR_DECL && ctx && CLASS_TYPE_P (ctx))
@@ -5996,7 +6005,8 @@ tsubst_decl (tree t, tree args, tree type, tsubst_flags_t complain)
 	      clone_function_decl (r, /*update_method_vec_p=*/0);
 	  }
 	else if (IDENTIFIER_OPNAME_P (DECL_NAME (r)))
-	  grok_op_properties (r, DECL_FRIEND_P (r));
+	  grok_op_properties (r, DECL_FRIEND_P (r),
+			      (complain & tf_error) != 0);
       }
       break;
 
