@@ -1,3 +1,8 @@
+2004-10-07  Richard Sandiford  <rsandifo@redhat.com>
+
+	PR bootstrap/17857
+	* Makefile.in (stmp-fixproto): Pass FIX_HEADER=build/... to fixproto.
+
 2004-10-07  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* hooks.c (hook_int_void_1, hook_void_int): Remove.
