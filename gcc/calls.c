@@ -1974,6 +1974,10 @@ check_sibcall_argument_overlap_1 (x)
       else
 	return 0;
 
+#ifdef ARGS_GROW_DOWNWARD
+      i = -i - GET_MODE_SIZE (GET_MODE (x));
+#endif
+
       for (k = 0; k < GET_MODE_SIZE (GET_MODE (x)); k++)
 	if (i + k < stored_args_map->n_bits
 	    && TEST_BIT (stored_args_map, i + k))
@@ -2025,7 +2029,12 @@ check_sibcall_argument_overlap (insn, arg)
 	check_sibcall_argument_overlap_1 (PATTERN (insn)))
       break;
 
+#ifdef ARGS_GROW_DOWNWARD
+  low = -arg->offset.constant - arg->size.constant;
+#else
   low = arg->offset.constant;
+#endif
+
   for (high = low + arg->size.constant; low < high; low++)
     SET_BIT (stored_args_map, low);
   return insn != NULL_RTX;
