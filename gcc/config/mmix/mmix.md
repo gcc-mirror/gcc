@@ -88,8 +88,8 @@
 
 ;; We assume all "s" are addresses.  Does that hold?
 (define_insn "movdi"
-  [(set (match_operand:DI 0 "nonimmediate_operand" "=r,r ,r,x,r,m,r,m,r,??r")
-	(match_operand:DI 1 "general_operand"	    "r,LS,K,r,x,I,m,r,s,n"))]
+  [(set (match_operand:DI 0 "nonimmediate_operand" "=r,r ,r,x,r,m,r,m,r,r,??r")
+	(match_operand:DI 1 "general_operand"	    "r,LS,K,r,x,I,m,r,R,s,n"))]
   ""
   "@
    SET %0,%1
@@ -101,6 +101,7 @@
    LDO %0,%1
    STOU %1,%0
    GETA %0,%1
+   LDA %0,%1
    %r0%I1")
 
 ;; Note that we move around the float as a collection of bits; no

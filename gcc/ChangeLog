@@ -1,3 +1,35 @@
+2002-02-06  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	Implement using "base addresses" in insn operands as default.
+	* config/mmix/mmix.c (mmix_conditional_register_usage): if
+	-mabi=gnu, modify fixed_regs to fit the GNU ABI.
+	(mmix_extra_constraint): Use 'R' to indicate that GETA should be
+	used to read the rtx value.
+	(mmix_target_asm_function_epilogue): Fix spacing.
+	(mmix_constant_address_p): Handle TARGET_BASE_ADDRESSES.
+	(mmix_legitimate_address): Ditto.
+	(mmix_encode_section_info): Set SYMBOL_REF_FLAG on rtx:es that
+	should be loaded with a GETA insn.  Don't allocate needless extra
+	char for nul termination and fix misleading comment.
+	(mmix_print_operand_address): Handle constants if
+	TARGET_BASE_ADDRESSES.
+	(mmix_output_register_setting): Use base addressing if
+	TARGET_BASE_ADDRESSES and the number of insns is 3.
+	* config/mmix/t-mmix (MULTILIB_EXTRA_OPTS): New.
+	* config/mmix/mmix.md ("movdi"): Change the alternative with GETA
+	to use R as constraint, add LDA to match s.
+	* config/mmix/mmix.h (TARGET_BASE_ADDRESSES): New.
+	(TARGET_DEFAULT): Add TARGET_MASK_BASE_ADDRESSES.
+	(TARGET_SWITCHES): Add -mbase-addresses, -mno-base-addresses.
+	(FIXED_REGISTERS): Make registers $231..$246 fixed by default.
+	(MMIX_MMIXWARE_ABI_REG_ALLOC_ORDER): Move $231..$246 last, in
+	order with other fixed registers.
+	(MMIX_GNU_ABI_REG_ALLOC_ORDER): Put forward $231, in order with
+	other parameter/call-clobbered registers.
+	* doc/invoke.texi (Option Summary) <MMIX Options>: Add
+	-mbase-addresses, -mno-base-addresses.
+	(MMIX Options): Ditto.
+
 2002-02-05  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* pa.h (PREDICATE_CODES): Add reg_before_reload_operand.
