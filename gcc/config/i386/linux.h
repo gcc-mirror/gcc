@@ -60,7 +60,7 @@
 #endif
 
 #undef LIB_SPEC
-#define LIB_SPEC "%{p:-lgmon -lc_p} %{pg:-lgmon -lc_p} %{!p:%{!pg:%{!g*:-lc} %{g*:-lg}}}"
+#define LIB_SPEC "%{mieee-fp:-lieee} %{p:-lgmon -lc_p} %{pg:-lgmon -lc_p} %{!p:%{!pg:%{!g*:-lc} %{g*:-lg}}}"
 
 
 #undef STARTFILE_SPEC
