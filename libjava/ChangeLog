@@ -1,5 +1,10 @@
 2003-03-02  Michael Koch  <konqueror@gmx.de>
 
+	* java/lang/Package.java:
+	Remerged from classpath.
+
+2003-03-02  Michael Koch  <konqueror@gmx.de>
+
 	* java/net/HttpURLConnection.java
 	(HTTP_SERVER_ERROR): Deprecated.
 	* java/net/MulticastSocket.java
