@@ -886,6 +886,13 @@ push_reload (in, out, inloc, outloc, class,
 		      && INTEGRAL_MODE_P (GET_MODE (SUBREG_REG (in)))
 		      && LOAD_EXTEND_OP (GET_MODE (SUBREG_REG (in))) != NIL)
 #endif
+#ifdef WORD_REGISTER_OPERATIONS
+		  || ((GET_MODE_SIZE (inmode)
+		       < GET_MODE_SIZE (GET_MODE (SUBREG_REG (in))))
+		      && ((GET_MODE_SIZE (inmode) - 1) / UNITS_PER_WORD ==
+			  ((GET_MODE_SIZE (GET_MODE (SUBREG_REG (in))) - 1)
+			   / UNITS_PER_WORD)))
+#endif
 		  ))
 	  || (GET_CODE (SUBREG_REG (in)) == REG
 	      && REGNO (SUBREG_REG (in)) < FIRST_PSEUDO_REGISTER
@@ -923,7 +930,7 @@ push_reload (in, out, inloc, outloc, class,
       in_subreg_loc = inloc;
       inloc = &SUBREG_REG (in);
       in = *inloc;
-#ifndef LOAD_EXTEND_OP
+#if ! defined (LOAD_EXTEND_OP) && ! defined (WORD_REGISTER_OPERATIONS)
       if (GET_CODE (in) == MEM)
 	/* This is supposed to happen only for paradoxical subregs made by
 	   combine.c.  (SUBREG (MEM)) isn't supposed to occur other ways.  */
@@ -1027,7 +1034,7 @@ push_reload (in, out, inloc, outloc, class,
       out_subreg_loc = outloc;
       outloc = &SUBREG_REG (out);
       out = *outloc; 
-#ifndef LOAD_EXTEND_OP
+#if ! defined (LOAD_EXTEND_OP) && ! defined (WORD_REGISTER_OPERATIONS)
      if (GET_CODE (out) == MEM
 	  && GET_MODE_SIZE (GET_MODE (out)) > GET_MODE_SIZE (outmode))
 	abort ();
