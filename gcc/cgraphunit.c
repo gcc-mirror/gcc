@@ -476,7 +476,7 @@ cgraph_inlined_into (struct cgraph_node *node, struct cgraph_node **array)
 	  fprintf (cgraph_dump_file, " %s", cgraph_node_name (array[i]));
 	  if (INLINED_TIMES (array[i]) != 1)
 	    fprintf (cgraph_dump_file, " (%i times)",
-		     INLINED_TIMES (array[i]));
+		     (int)INLINED_TIMES (array[i]));
 	}
       fprintf (cgraph_dump_file, "\n");
     }
@@ -573,7 +573,7 @@ cgraph_inlined_callees (struct cgraph_node *node, struct cgraph_node **array)
 	  fprintf (cgraph_dump_file, " %s", cgraph_node_name (array[i]));
 	  if (INLINED_TIMES (array[i]) != 1)
 	    fprintf (cgraph_dump_file, " (%i times)",
-		     INLINED_TIMES (array[i]));
+		     (int)INLINED_TIMES (array[i]));
 	}
       fprintf (cgraph_dump_file, "\n");
     }
