@@ -18,7 +18,26 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
+/* 
+ * This configuration file is for gcc with gas-2.x and gnu ld 2.x
+ * with aix ps/2 1.3.x.
+ */
+
 #include "i386/aix386ng.h"
+
+/* Use crt1.o as a startup file and crtn.o as a closing file.
+   And add crtbegin.o and crtend.o for ctors and dtors */
+
+#undef  STARTFILE_SPEC
+#define STARTFILE_SPEC \
+  "%{pg:gcrt0.o%s}%{!pg:%{p:mcrt1.o%s}%{!p:crt1.o%s}} crtbegin.o%s"
+#undef  ENDFILE_SPEC
+#define ENDFILE_SPEC \
+  "crtend.o%s crtn.o%s"
+
+/* Removed the -K flags because the gnu ld does not handle it */
+#undef LINK_SPEC
+#define LINK_SPEC "%{T*} %{z:-lm}"
 
 /* Define a few machine-specific details of the implementation of
    constructors.  */
