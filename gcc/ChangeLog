@@ -1,3 +1,10 @@
+2005-01-06  Richard Sandiford  <rsandifo@redhat.com>
+
+        PR rtl-opt/13299
+        * loop.c (get_monotonic_increment, biased_biv_fits_mode_p,
+        biv_fits_mode_p, extension_within_bounds_p): New functions.
+        (check_ext_dependent_givs): Use them.
+
 2005-01-05  Richard Henderson  <rth@redhat.com>
 
         PR rtl-opt/10692

@@ -303,6 +303,14 @@ static void record_giv (const struct loop *, struct induction *, rtx, rtx,
 			rtx, rtx, rtx, rtx, int, enum g_types, int, int,
 			rtx *);
 static void update_giv_derive (const struct loop *, rtx);
+static HOST_WIDE_INT get_monotonic_increment (struct iv_class *);
+static bool biased_biv_fits_mode_p (const struct loop *, struct iv_class *,
+				    HOST_WIDE_INT, enum machine_mode,
+				    unsigned HOST_WIDE_INT);
+static bool biv_fits_mode_p (const struct loop *, struct iv_class *,
+			     HOST_WIDE_INT, enum machine_mode, bool);
+static bool extension_within_bounds_p (const struct loop *, struct iv_class *,
+				       HOST_WIDE_INT, rtx);
 static void check_ext_dependent_givs (const struct loop *, struct iv_class *);
 static int basic_induction_var (const struct loop *, rtx, enum machine_mode,
 				rtx, rtx, rtx *, rtx *, rtx **);
@@ -7367,6 +7375,173 @@ combine_givs_p (struct induction *g1, struct induction *g2)
   return NULL_RTX;
 }
 
+/* See if BL is monotonic and has a constant per-iteration increment.
+   Return the increment if so, otherwise return 0.  */
+
+static HOST_WIDE_INT
+get_monotonic_increment (struct iv_class *bl)
+{
+  struct induction *v;
+  rtx incr;
+
+  /* Get the total increment and check that it is constant.  */
+  incr = biv_total_increment (bl);
+  if (incr == 0 || GET_CODE (incr) != CONST_INT)
+    return 0;
+
+  for (v = bl->biv; v != 0; v = v->next_iv)
+    {
+      if (GET_CODE (v->add_val) != CONST_INT)
+	return 0;
+
+      if (INTVAL (v->add_val) < 0 && INTVAL (incr) >= 0)
+	return 0;
+
+      if (INTVAL (v->add_val) > 0 && INTVAL (incr) <= 0)
+	return 0;
+    }
+  return INTVAL (incr);
+}
+
+
+/* Subroutine of biv_fits_mode_p.  Return true if biv BL, when biased by
+   BIAS, will never exceed the unsigned range of MODE.  LOOP is the loop
+   to which the biv belongs and INCR is its per-iteration increment.  */
+
+static bool
+biased_biv_fits_mode_p (const struct loop *loop, struct iv_class *bl,
+			HOST_WIDE_INT incr, enum machine_mode mode,
+			unsigned HOST_WIDE_INT bias)
+{
+  unsigned HOST_WIDE_INT initial, maximum, span, delta;
+
+  /* We need to be able to manipulate MODE-size constants.  */
+  if (HOST_BITS_PER_WIDE_INT < GET_MODE_BITSIZE (mode))
+    return false;
+
+  /* The number of loop iterations must be constant.  */
+  if (LOOP_INFO (loop)->n_iterations == 0)
+    return false;
+
+  /* So must the biv's initial value.  */
+  if (bl->initial_value == 0 || GET_CODE (bl->initial_value) != CONST_INT)
+    return false;
+
+  initial = bias + INTVAL (bl->initial_value);
+  maximum = GET_MODE_MASK (mode);
+
+  /* Make sure that the initial value is within range.  */
+  if (initial > maximum)
+    return false;
+
+  /* Set up DELTA and SPAN such that the number of iterations * DELTA
+     (calculated to arbitrary precision) must be <= SPAN.  */
+  if (incr < 0)
+    {
+      delta = -incr;
+      span = initial;
+    }
+  else
+    {
+      delta = incr;
+      /* Handle the special case in which MAXIMUM is the largest
+	 unsigned HOST_WIDE_INT and INITIAL is 0.  */
+      if (maximum + 1 == initial)
+	span = LOOP_INFO (loop)->n_iterations * delta;
+      else
+	span = maximum + 1 - initial;
+    }
+  return (span / LOOP_INFO (loop)->n_iterations >= delta);
+}
+
+
+/* Return true if biv BL will never exceed the bounds of MODE.  LOOP is
+   the loop to which BL belongs and INCR is its per-iteration increment.
+   UNSIGNEDP is true if the biv should be treated as unsigned.  */
+
+static bool
+biv_fits_mode_p (const struct loop *loop, struct iv_class *bl,
+		 HOST_WIDE_INT incr, enum machine_mode mode, bool unsignedp)
+{
+  struct loop_info *loop_info;
+  unsigned HOST_WIDE_INT bias;
+
+  /* A biv's value will always be limited to its natural mode.
+     Larger modes will observe the same wrap-around.  */
+  if (GET_MODE_SIZE (mode) > GET_MODE_SIZE (GET_MODE (bl->biv->src_reg)))
+    mode = GET_MODE (bl->biv->src_reg);
+
+  loop_info = LOOP_INFO (loop);
+
+  bias = (unsignedp ? 0 : (GET_MODE_MASK (mode) >> 1) + 1);
+  if (biased_biv_fits_mode_p (loop, bl, incr, mode, bias))
+    return true;
+
+  if (mode == GET_MODE (bl->biv->src_reg)
+      && bl->biv->src_reg == loop_info->iteration_var
+      && loop_info->comparison_value
+      && loop_invariant_p (loop, loop_info->comparison_value))
+    {
+      /* If the increment is +1, and the exit test is a <, the BIV
+         cannot overflow.  (For <=, we have the problematic case that
+         the comparison value might be the maximum value of the range.)  */
+      if (incr == 1)
+	{
+	  if (loop_info->comparison_code == LT)
+	    return true;
+	  if (loop_info->comparison_code == LTU && unsignedp)
+	    return true;
+	}
+
+      /* Likewise for increment -1 and exit test >.  */
+      if (incr == -1)
+	{
+	  if (loop_info->comparison_code == GT)
+	    return true;
+	  if (loop_info->comparison_code == GTU && unsignedp)
+	    return true;
+	}
+    }
+  return false;
+}
+
+
+/* Given that X is an extension or truncation of BL, return true
+   if it is unaffected by overflow.  LOOP is the loop to which
+   BL belongs and INCR is its per-iteration increment.  */
+
+static bool
+extension_within_bounds_p (const struct loop *loop, struct iv_class *bl,
+			   HOST_WIDE_INT incr, rtx x)
+{
+  enum machine_mode mode;
+  bool signedp, unsignedp;
+
+  switch (GET_CODE (x))
+    {
+    case SIGN_EXTEND:
+    case ZERO_EXTEND:
+      mode = GET_MODE (XEXP (x, 0));
+      signedp = (GET_CODE (x) == SIGN_EXTEND);
+      unsignedp = (GET_CODE (x) == ZERO_EXTEND);
+      break;
+
+    case TRUNCATE:
+      /* We don't know whether this value is being used as signed
+	 or unsigned, so check the conditions for both.  */
+      mode = GET_MODE (x);
+      signedp = unsignedp = true;
+      break;
+
+    default:
+      abort ();
+    }
+
+  return ((!signedp || biv_fits_mode_p (loop, bl, incr, mode, false))
+	  && (!unsignedp || biv_fits_mode_p (loop, bl, incr, mode, true)));
+}
+
+
 /* Check each extension dependent giv in this class to see if its
    root biv is safe from wrapping in the interior mode, which would
    make the giv illegal.  */
@@ -7374,185 +7549,30 @@ combine_givs_p (struct induction *g1, struct induction *g2)
 static void
 check_ext_dependent_givs (const struct loop *loop, struct iv_class *bl)
 {
-  struct loop_info *loop_info = LOOP_INFO (loop);
-  int ze_ok = 0, se_ok = 0, info_ok = 0;
-  enum machine_mode biv_mode = GET_MODE (bl->biv->src_reg);
-  HOST_WIDE_INT start_val;
-  unsigned HOST_WIDE_INT u_end_val = 0;
-  unsigned HOST_WIDE_INT u_start_val = 0;
-  rtx incr = pc_rtx;
   struct induction *v;
+  HOST_WIDE_INT incr;
 
-  /* Make sure the iteration data is available.  We must have
-     constants in order to be certain of no overflow.  */
-  if (loop_info->n_iterations > 0
-      && bl->initial_value
-      && GET_CODE (bl->initial_value) == CONST_INT
-      && (incr = biv_total_increment (bl))
-      && GET_CODE (incr) == CONST_INT
-      /* Make sure the host can represent the arithmetic.  */
-      && HOST_BITS_PER_WIDE_INT >= GET_MODE_BITSIZE (biv_mode))
-    {
-      unsigned HOST_WIDE_INT abs_incr, total_incr;
-      HOST_WIDE_INT s_end_val;
-      int neg_incr;
-
-      info_ok = 1;
-      start_val = INTVAL (bl->initial_value);
-      u_start_val = start_val;
-
-      neg_incr = 0, abs_incr = INTVAL (incr);
-      if (INTVAL (incr) < 0)
-	neg_incr = 1, abs_incr = -abs_incr;
-      total_incr = abs_incr * loop_info->n_iterations;
-
-      /* Check for host arithmetic overflow.  */
-      if (total_incr / loop_info->n_iterations == abs_incr)
-	{
-	  unsigned HOST_WIDE_INT u_max;
-	  HOST_WIDE_INT s_max;
-
-	  u_end_val = start_val + (neg_incr ? -total_incr : total_incr);
-	  s_end_val = u_end_val;
-	  u_max = GET_MODE_MASK (biv_mode);
-	  s_max = u_max >> 1;
-
-	  /* Check zero extension of biv ok.  */
-	  if (start_val >= 0
-	      /* Check for host arithmetic overflow.  */
-	      && (neg_incr
-		  ? u_end_val < u_start_val
-		  : u_end_val > u_start_val)
-	      /* Check for target arithmetic overflow.  */
-	      && (neg_incr
-		  ? 1 /* taken care of with host overflow */
-		  : u_end_val <= u_max))
-	    {
-	      ze_ok = 1;
-	    }
-
-	  /* Check sign extension of biv ok.  */
-	  /* ??? While it is true that overflow with signed and pointer
-	     arithmetic is undefined, I fear too many programmers don't
-	     keep this fact in mind -- myself included on occasion.
-	     So leave alone with the signed overflow optimizations.  */
-	  if (start_val >= -s_max - 1
-	      /* Check for host arithmetic overflow.  */
-	      && (neg_incr
-		  ? s_end_val < start_val
-		  : s_end_val > start_val)
-	      /* Check for target arithmetic overflow.  */
-	      && (neg_incr
-		  ? s_end_val >= -s_max - 1
-		  : s_end_val <= s_max))
-	    {
-	      se_ok = 1;
-	    }
-	}
-    }
-
-  /* If we know the BIV is compared at run-time against an 
-     invariant value, and the increment is +/- 1, we may also 
-     be able to prove that the BIV cannot overflow.  */
-  else if (bl->biv->src_reg == loop_info->iteration_var
-           && loop_info->comparison_value
-           && loop_invariant_p (loop, loop_info->comparison_value)
-           && (incr = biv_total_increment (bl))
-           && GET_CODE (incr) == CONST_INT)
-    {
-      /* If the increment is +1, and the exit test is a <,
-         the BIV cannot overflow.  (For <=, we have the 
-         problematic case that the comparison value might
-         be the maximum value of the range.)  */
-       if (INTVAL (incr) == 1)
-         {
-           if (loop_info->comparison_code == LT)
-             se_ok = ze_ok = 1;
-           else if (loop_info->comparison_code == LTU)
-             ze_ok = 1;
-         }
-
-       /* Likewise for increment -1 and exit test >.  */
-       if (INTVAL (incr) == -1)
-         {
-           if (loop_info->comparison_code == GT)
-             se_ok = ze_ok = 1;
-           else if (loop_info->comparison_code == GTU)
-             ze_ok = 1;
-         }
-    }
+  incr = get_monotonic_increment (bl);
 
   /* Invalidate givs that fail the tests.  */
   for (v = bl->giv; v; v = v->next_iv)
     if (v->ext_dependent)
       {
-	enum rtx_code code = GET_CODE (v->ext_dependent);
-	int ok = 0;
-
-	switch (code)
-	  {
-	  case SIGN_EXTEND:
-	    ok = se_ok;
-	    break;
-	  case ZERO_EXTEND:
-	    ok = ze_ok;
-	    break;
-
-	  case TRUNCATE:
-	    /* We don't know whether this value is being used as either
-	       signed or unsigned, so to safely truncate we must satisfy
-	       both.  The initial check here verifies the BIV itself;
-	       once that is successful we may check its range wrt the
-	       derived GIV.  This works only if we were able to determine
-	       constant start and end values above.  */
-	    if (se_ok && ze_ok && info_ok)
-	      {
-		enum machine_mode outer_mode = GET_MODE (v->ext_dependent);
-		unsigned HOST_WIDE_INT max = GET_MODE_MASK (outer_mode) >> 1;
-
-		/* We know from the above that both endpoints are nonnegative,
-		   and that there is no wrapping.  Verify that both endpoints
-		   are within the (signed) range of the outer mode.  */
-		if (u_start_val <= max && u_end_val <= max)
-		  ok = 1;
-	      }
-	    break;
-
-	  default:
-	    abort ();
-	  }
-
-	if (ok)
+	if (incr != 0
+	    && extension_within_bounds_p (loop, bl, incr, v->ext_dependent))
 	  {
 	    if (loop_dump_stream)
-	      {
-		fprintf (loop_dump_stream,
-			 "Verified ext dependent giv at %d of reg %d\n",
-			 INSN_UID (v->insn), bl->regno);
-	      }
+	      fprintf (loop_dump_stream,
+		       "Verified ext dependent giv at %d of reg %d\n",
+		       INSN_UID (v->insn), bl->regno);
 	  }
 	else
 	  {
 	    if (loop_dump_stream)
-	      {
-		const char *why;
+	      fprintf (loop_dump_stream,
+		       "Failed ext dependent giv at %d\n",
+		       INSN_UID (v->insn));
 
-		if (info_ok)
-		  why = "biv iteration values overflowed";
-		else
-		  {
-		    if (incr == pc_rtx)
-		      incr = biv_total_increment (bl);
-		    if (incr == const1_rtx)
-		      why = "biv iteration info incomplete; incr by 1";
-		    else
-		      why = "biv iteration info incomplete";
-		  }
-
-		fprintf (loop_dump_stream,
-			 "Failed ext dependent giv at %d, %s\n",
-			 INSN_UID (v->insn), why);
-	      }
 	    v->ignore = 1;
 	    bl->all_reduced = 0;
 	  }
