@@ -1,5 +1,5 @@
 /* Allocate registers within a basic block, for GNU compiler.
-   Copyright (C) 1987, 1988, 1991, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1991, 1993, 1994 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -770,7 +770,9 @@ optimize_reg_copy_1 (insn, dest, src)
 	      if (dest_death)
 		d_length++;
 
-	      if (GET_CODE (q) == CALL_INSN)
+	      /* If the insn in which SRC dies is a CALL_INSN, don't count it
+		 as a call that has been crossed.  Otherwise, count it.  */
+	      if (q != p && GET_CODE (q) == CALL_INSN)
 		{
 		  n_calls++;
 		  if (dest_death)
