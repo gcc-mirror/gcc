@@ -2043,151 +2043,153 @@ emulm (a, b)
 /* Multiply significand of e-type number b
 by 16-bit quantity a, e-type result to c. */
 
-void m16m( a, b, c )
-unsigned short a;
-unsigned short b[], c[];
+void
+m16m (a, b, c)
+     unsigned short a;
+     unsigned short b[], c[];
 {
-register unsigned short *pp;
-register unsigned long carry;
-unsigned short *ps;
-unsigned short p[NI];
-unsigned long aa, m;
-int i;
+  register unsigned short *pp;
+  register unsigned long carry;
+  unsigned short *ps;
+  unsigned short p[NI];
+  unsigned long aa, m;
+  int i;
 
-aa = a;
-pp = &p[NI-2];
-*pp++ = 0;
-*pp = 0;
-ps = &b[NI-1];
+  aa = a;
+  pp = &p[NI-2];
+  *pp++ = 0;
+  *pp = 0;
+  ps = &b[NI-1];
 
-for( i=M+1; i<NI; i++ )
+  for (i=M+1; i<NI; i++)
+    {
+      if (*ps == 0)
 	{
-	if( *ps == 0 )
-		{
-		--ps;
-		--pp;
-		*(pp-1) = 0;
-		}
-	else
-		{
-		m = (unsigned long) aa * *ps--;
-		carry = (m & 0xffff) + *pp;
-		*pp-- = (unsigned short )carry;
-		carry = (carry >> 16) + (m >> 16) + *pp;
-		*pp = (unsigned short )carry;
-		*(pp-1) = carry >> 16;
-		}
+	  --ps;
+	  --pp;
+	  *(pp-1) = 0;
 	}
-for( i=M; i<NI; i++ )
-	c[i] = p[i];
+      else
+	{
+	  m = (unsigned long) aa * *ps--;
+	  carry = (m & 0xffff) + *pp;
+	  *pp-- = (unsigned short)carry;
+	  carry = (carry >> 16) + (m >> 16) + *pp;
+	  *pp = (unsigned short)carry;
+	  *(pp-1) = carry >> 16;
+	}
+    }
+  for (i=M; i<NI; i++)
+    c[i] = p[i];
 }
 
 
 /* Divide significands. Neither the numerator nor the denominator
-is permitted to have its high guard word nonzero.  */
+   is permitted to have its high guard word nonzero.  */
 
-
-int edivm( den, num )
-unsigned short den[], num[];
+int
+edivm (den, num)
+     unsigned short den[], num[];
 {
-int i;
-register unsigned short *p;
-unsigned long tnum;
-unsigned short j, tdenm, tquot;
-unsigned short tprod[NI+1];
+  int i;
+  register unsigned short *p;
+  unsigned long tnum;
+  unsigned short j, tdenm, tquot;
+  unsigned short tprod[NI+1];
 
-p = &equot[0];
-*p++ = num[0];
-*p++ = num[1];
+  p = &equot[0];
+  *p++ = num[0];
+  *p++ = num[1];
 
-for( i=M; i<NI; i++ )
+  for (i=M; i<NI; i++)
+    {
+      *p++ = 0;
+    }
+  eshdn1 (num);
+  tdenm = den[M+1];
+  for (i=M; i<NI; i++)
+    {
+      /* Find trial quotient digit (the radix is 65536). */
+      tnum = (((unsigned long) num[M]) << 16) + num[M+1];
+
+      /* Do not execute the divide instruction if it will overflow. */
+      if ((tdenm * 0xffffL) < tnum)
+	tquot = 0xffff;
+      else
+	tquot = tnum / tdenm;
+      /* Multiply denominator by trial quotient digit. */
+      m16m (tquot, den, tprod);
+      /* The quotient digit may have been overestimated. */
+      if (ecmpm (tprod, num) > 0)
 	{
-	*p++ = 0;
+	  tquot -= 1;
+	  esubm (den, tprod);
+	  if (ecmpm (tprod, num) > 0)
+	    {
+	      tquot -= 1;
+	      esubm (den, tprod);
+	    }
 	}
-eshdn1( num );
-tdenm = den[M+1];
-for( i=M; i<NI; i++ )
-	{
-	/* Find trial quotient digit (the radix is 65536). */
-	tnum = (((unsigned long) num[M]) << 16) + num[M+1];
+      esubm (tprod, num);
+      equot[i] = tquot;
+      eshup6(num);
+    }
+  /* test for nonzero remainder after roundoff bit */
+  p = &num[M];
+  j = 0;
+  for (i=M; i<NI; i++)
+    {
+      j |= *p++;
+    }
+  if (j)
+    j = 1;
 
-	/* Do not execute the divide instruction if it will overflow. */
-        if( (tdenm * 0xffffL) < tnum )
-		tquot = 0xffff;
-	else
-		tquot = tnum / tdenm;
-	/* Multiply denominator by trial quotient digit. */
-	m16m( tquot, den, tprod );
-	/* The quotient digit may have been overestimated. */
-	if( ecmpm( tprod, num ) > 0 )
-		{
-		tquot -= 1;
-		esubm( den, tprod );
-		if( ecmpm( tprod, num ) > 0 )
-			{
-			tquot -= 1;
-			esubm( den, tprod );
-			}
-		}
-	esubm( tprod, num );
-	equot[i] = tquot;
-	eshup6(num);
-	}
-/* test for nonzero remainder after roundoff bit */
-p = &num[M];
-j = 0;
-for( i=M; i<NI; i++ )
-	{
-	j |= *p++;
-	}
-if( j )
-	j = 1;
+  for (i=0; i<NI; i++)
+    num[i] = equot[i];
 
-for( i=0; i<NI; i++ )
-	num[i] = equot[i];
-
-return( (int )j );
+  return ((int)j);
 }
 
 
 
 /* Multiply significands */
-int emulm( a, b )
-unsigned short a[], b[];
+int
+emulm (a, b)
+     unsigned short a[], b[];
 {
-unsigned short *p, *q;
-unsigned short pprod[NI];
-unsigned short j;
-int i;
+  unsigned short *p, *q;
+  unsigned short pprod[NI];
+  unsigned short j;
+  int i;
 
-equot[0] = b[0];
-equot[1] = b[1];
-for( i=M; i<NI; i++ )
-	equot[i] = 0;
+  equot[0] = b[0];
+  equot[1] = b[1];
+  for (i=M; i<NI; i++)
+    equot[i] = 0;
 
-j = 0;
-p = &a[NI-1];
-q = &equot[NI-1];
-for( i=M+1; i<NI; i++ )
+  j = 0;
+  p = &a[NI-1];
+  q = &equot[NI-1];
+  for (i=M+1; i<NI; i++)
+    {
+      if (*p == 0)
 	{
-	if( *p == 0 )
-		{
-		--p;
-		}
-	else
-		{
-		m16m( *p--, b, pprod );
-		eaddm(pprod, equot);
-		}
-	j |= *q;
-	eshdn6(equot);
+	  --p;
 	}
+      else
+	{
+	  m16m (*p--, b, pprod);
+	  eaddm(pprod, equot);
+	}
+      j |= *q;
+      eshdn6(equot);
+    }
 
-for( i=0; i<NI; i++ )
-	b[i] = equot[i];
+  for (i=0; i<NI; i++)
+    b[i] = equot[i];
 
-/* return flag for lost nonzero bits */
-return( (int)j );
+  /* return flag for lost nonzero bits */
+  return ((int)j);
 }
 #endif
 
@@ -4476,7 +4478,7 @@ etoasc (x, string, ndigs)
     }
   else
     {
-      *s++ = (char )digit + '0';
+      *s++ = (char)digit + '0';
       *s++ = '.';
     }
   /* Generate digits after the decimal point. */
@@ -5082,10 +5084,10 @@ eremain (a, b, c)
   unsigned EMUSHORT den[NI], num[NI];
 
 #ifdef NANS
-  if ( eisinf (b)
-       || (ecmp (a, ezero) == 0)
-       || eisnan (a)
-       || eisnan (b))
+  if (eisinf (b)
+      || (ecmp (a, ezero) == 0)
+      || eisnan (a)
+      || eisnan (b))
     {
       enan (c);
       return;
