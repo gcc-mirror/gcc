@@ -1,3 +1,8 @@
+Tue Dec  8 22:04:33 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* i960/i960.h (CONST_COSTS, case CONST_INT): Accept power2_operand
+	only when OUTER_CODE is SET.
+
 Tue Dec  8 22:47:15 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* loop.c (strength_reduce): If scan_start points to the loop exit
