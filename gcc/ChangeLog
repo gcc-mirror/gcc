@@ -1,3 +1,14 @@
+Sat Feb 23 08:42:47 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* expr.c (store_expr): When converting expression to promoted
+	equivalent type, allow using SUBREG_REG of TARGET as the target
+	of the expansion of EXP.
+	* loop.c (basic_induction_var, case SUBREG): Always look inside.
+	* config/alpha/alpha.c (rtx_equiv_function_matters): Delete decl.
+	(alpha_emit_set_const): Handle SImode when can't make new pseudos.
+	(alpha_emit_set_const_1, alpha_sa_mask): Use no_new_pseudos.
+	* config/alpha/alpha.md (addsi3, subsi3): Don't use if optimizing.
+
 2002-02-23  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* doc/contribute.texi, doc/extend.texi, doc/install.texi,
