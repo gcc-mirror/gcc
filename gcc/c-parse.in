@@ -1976,7 +1976,8 @@ label:	  CASE expr_no_commas ':'
 
 maybe_type_qual:
 	/* empty */
-		{ emit_line_note (input_filename, lineno); }
+		{ emit_line_note (input_filename, lineno);
+		  $$ = NULL_TREE; }
 	| TYPE_QUAL
 		{ emit_line_note (input_filename, lineno); }
 	;
