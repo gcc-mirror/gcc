@@ -2318,7 +2318,7 @@ extern void pop_temp_slots		PROTO ((void));
 extern void push_temp_slots		PROTO ((void));
 extern void preserve_temp_slots		PROTO ((struct rtx_def *));
 extern int aggregate_value_p		PROTO ((tree));
-extern tree reorder_blocks		PROTO ((tree *, tree,
+extern tree reorder_blocks		PROTO ((tree,
 						struct rtx_def *));
 extern void free_temps_for_rtl_expr	PROTO ((tree));
 extern void instantiate_virtual_regs	PROTO ((tree, struct rtx_def *));
