@@ -1,5 +1,16 @@
 2004-10-01  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/bits/sstream.tcc (pbackfail): Implement correctly
+	27.7.1.3/2, bullet 2: if mode & ios_base::out is false do not
+	write in the buffer.
+	* testsuite/27_io/basic_stringbuf/pbackfail/char/1.cc: New.
+	* testsuite/27_io/basic_stringbuf/pbackfail/char/2.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/pbackfail/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/pbackfail/wchar_t/2.cc: Likewise.
+	* testsuite/27_io/basic_istream/putback/char/1.cc: Tweak consistently.
+
+2004-10-01  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/bits/sstream.tcc (seekpos): Minor rearrangement of two
 	conditionals consistently with seekoff.
 	* include/std/std_sstream.h (setbuf): Avoid a string temporary.

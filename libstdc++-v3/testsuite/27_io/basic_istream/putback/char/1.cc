@@ -49,11 +49,11 @@ test01()
   is_04.ignore(30);
   is_04.clear();
   state1 = is_04.rdstate();
-  is_04.putback('|');
+  is_04.putback('t');
   VERIFY( is_04.gcount() == 0 );  // DR 60
   state2 = is_04.rdstate();
   VERIFY( state1 == state2 );
-  VERIFY( is_04.peek() == '|' );
+  VERIFY( is_04.peek() == 't' );
 
   // istream& unget()
   is_04.clear();
