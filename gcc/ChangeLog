@@ -1,3 +1,7 @@
+2001-05-01  Mark Mitchell  <mark@codesourcery.com>
+
+	* extend.texi: Fix typo.
+
 2001-05-01  Stan Shebs  <shebs@apple.com>
 
 	* objc/objc-act.c (build_module_descriptor): Clear DECL_CONTEXT
