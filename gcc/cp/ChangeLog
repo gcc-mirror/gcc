@@ -1,3 +1,8 @@
+2002-12-13  Geoffrey Keating  <geoffk@apple.com>
+
+	* cp-tree.h: Have the multiple-include guards around
+	the entire file.
+
 2002-12-10  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/8372

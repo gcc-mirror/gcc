@@ -20,13 +20,13 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
+#ifndef GCC_CP_TREE_H
+#define GCC_CP_TREE_H
+
 #include "function.h"
 #include "hashtab.h"
 #include "splay-tree.h"
 #include "varray.h"
-
-#ifndef GCC_CP_TREE_H
-#define GCC_CP_TREE_H
 
 #ifndef __GNUC__
 #error "You should be using 'make bootstrap' -- see installation instructions"
