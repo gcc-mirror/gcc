@@ -52,13 +52,14 @@ proc mauve_compute_uses {aName} {
   return [lsort [array names uses]]
 }
 
-# Run all the Mauve tests.
+# Run all the Mauve tests.  Return 1 on success, 0 on any failure.  If
+# the tests are skipped, that is treated like success.
 proc test_mauve {} {
   global srcdir objdir subdir env
 
   if {! [info exists env(MAUVEDIR)]} then {
     verbose "MAUVEDIR not set; not running Mauve tests"
-    return
+    return 1
   }
 
   # Run in subdir so we don't overwrite our own Makefile.
@@ -95,7 +96,7 @@ proc test_mauve {} {
   } msg]} then {
     fail "Mauve configure"
     verbose "configure failed with $msg"
-    return
+    return 0
   }
   pass "Mauve configure"
 
@@ -114,14 +115,14 @@ proc test_mauve {} {
   } msg]} then {
     fail "Mauve build"
     verbose "build failed with $msg"
-    return
+    return 0
   }
   pass "Mauve build"
 
   set srcfile $full_srcdir/$subdir/DejaGNUTestHarness.java
   if {! [bytecompile_file $srcfile [pwd] $env(MAUVEDIR):[pwd]]} then {
     fail "Compile DejaGNUTestHarness.java"
-    return
+    return 0
   }
   pass "Compile DejaGNUTestHarness.java"
 
@@ -149,9 +150,10 @@ proc test_mauve {} {
     lappend objlist $obj
   }
   if {! $ok} then {
-    return
+    return 0
   }
 
+  set proc_ok 1
   set Executable DejaGNUTestHarness
   foreach file $choices {
     # Turn `java/lang/Foo.java' into `java.lang.Foo'.
@@ -174,12 +176,14 @@ proc test_mauve {} {
       }
     }
     if {! $ok} then {
+      set proc_ok 0
       continue
     }
 
     set x [prune_warnings [target_compile [concat $uses($file) $objlist] \
 			     $Executable executable $link_args]]
     if {$x != ""} then {
+      set proc_ok 0
       fail "Link for $class"
       continue
     }
@@ -197,23 +201,28 @@ proc test_mauve {} {
 	if {$what == "PASS" || $what == "XPASS"} then {
 	  pass $msg
 	} else {
+	  set proc_ok 0
 	  fail $msg
 	}
       }
     }
   }
+
+  return $proc_ok
 }
 
 # Run all the Mauve tests in a sim environment.  In this case, the
 # program cannot use argv[] because there's no way to pass in the
 # command line, so tha name of the class to test is substituted by
-# patching the source of the DejaGNUTestHarness.
+# patching the source of the DejaGNUTestHarness.  Return 1 on success,
+# 0 on any failure.  If the tests are skipped, that is treated like
+# success.
 proc test_mauve_sim {} {
   global srcdir subdir env
 
   if {! [info exists env(MAUVEDIR)]} then {
     verbose "MAUVEDIR not set; not running Mauve tests"
-    return
+    return 1
   }
 
   # Run in subdir so we don't overwrite our own Makefile.
@@ -230,7 +239,7 @@ proc test_mauve_sim {} {
   } msg]} then {
     fail "Mauve configure"
     verbose "configure failed with $msg"
-    return
+    return 0
   }
   pass "Mauve configure"
 
@@ -249,7 +258,7 @@ proc test_mauve_sim {} {
   } msg]} then {
     fail "Mauve build"
     verbose "build failed with $msg"
-    return
+    return 0
   }
   pass "Mauve build"
 
@@ -279,11 +288,12 @@ proc test_mauve_sim {} {
     lappend objlist $obj
   }
   if {! $ok} then {
-    return
+    return 0
   }
 
   lappend objlist gnu/testlet/DejaGNUTestHarness.o
 
+  set proc_ok 1
   set Executable DejaGNUTestHarness
   foreach file $choices {
     # Turn `java/lang/Foo.java' into `java.lang.Foo'.
@@ -307,6 +317,7 @@ proc test_mauve_sim {} {
       }
     }
     if {! $ok} then {
+      set proc_ok 0
       continue
     }
 
@@ -328,7 +339,7 @@ proc test_mauve_sim {} {
     if {! [bytecompile_file [pwd]/gnu/testlet/$srcfile [pwd]/gnu/testlet \
 	       $env(MAUVEDIR):[pwd]]} then {
 	fail "Compile DejaGNUTestHarness.java"
-	return
+	return 0
     }
 
     set x [prune_warnings \
@@ -336,12 +347,14 @@ proc test_mauve_sim {} {
 		gnu/testlet/DejaGNUTestHarness.o object $compile_args]]
     if {$x != ""} then {
 	fail "Compile DejaGNUTestHarness.java"
+        set proc_ok 0
 	continue
-      }
+    }
 
     set x [prune_warnings [target_compile [concat $uses($file) $objlist] \
 			     $Executable executable $link_args]]
     if {$x != ""} then {
+      set proc_ok 0
       fail "Link for $class"
       continue
     }
@@ -359,19 +372,33 @@ proc test_mauve_sim {} {
 	if {$what == "PASS" || $what == "XPASS"} then {
 	  pass $msg
 	} else {
+	  set proc_ok 0
 	  fail $msg
 	}
       }
     }
   }
+
+  return $proc_ok
 }
 
-# The test_mauve* procs will change the current directory.  It's
-# simpler to fix this up here than to keep track of this in the procs.
-set here [pwd]
-if { [board_info target exists is_simulator] } {
-    test_mauve_sim
-} else {
-    test_mauve
+proc gcj_run_mauve_tests {} {
+  # The test_mauve* procs will change the current directory.  It's
+  # simpler to fix this up here than to keep track of this in the
+  # procs.
+  set here [pwd]
+  if { [board_info target exists is_simulator] } {
+    set r [test_mauve_sim]
+  } else {
+    set r [test_mauve]
+  }
+  cd $here
+
+  if {$r} {
+    # No need to keep the build around.  FIXME: this knows how the
+    # tests work.  This whole file could use a rewrite.
+    system "rm -rf mauve-build"
+  }
 }
-cd $here
+
+gcj_run_mauve_tests
