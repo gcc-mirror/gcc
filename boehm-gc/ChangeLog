@@ -1,3 +1,9 @@
+2003-04-28  Mohan Embar  <gnustuff@thisiscool.com>
+
+	* configure.in: define GC_DLL under mingw if --enable-shared
+	* configure: rebuilt
+	* win32_threads.c: add #ifdef GC_DLL around DllMain
+
 2003-04-16  Richard Earnshaw  <rearnsha@arm.com>
 
 	* include/private/gcconfig.h: Add support for arm-netbsdelf.
