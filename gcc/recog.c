@@ -1,6 +1,6 @@
 /* Subroutines used by or related to instruction recognition.
    Copyright (C) 1987, 1988, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998
-   1999, 2000 Free Software Foundation, Inc.
+   1999, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -59,6 +59,7 @@ static void validate_replace_rtx_1	PARAMS ((rtx *, rtx, rtx, rtx));
 static rtx *find_single_use_1		PARAMS ((rtx, rtx *));
 static rtx *find_constant_term_loc	PARAMS ((rtx *));
 static int insn_invalid_p		PARAMS ((rtx));
+static void validate_replace_src_1 	PARAMS ((rtx *, void *));
 
 /* Nonzero means allow operands to be volatile.
    This should be 0 if you are generating rtl, such as if you are calling
@@ -741,6 +742,23 @@ validate_replace_rtx_group (from, to, insn)
   validate_replace_rtx_1 (&PATTERN (insn), from, to, insn);
 }
 
+/* Function called by note_uses to replace used subexpressions.  */
+struct validate_replace_src_data
+  {
+    rtx from, to, insn;
+  };
+
+static void
+validate_replace_src_1 (x, data)
+     rtx *x;
+     void *data;
+{
+  struct validate_replace_src_data *d
+    = (struct validate_replace_src_data *) data;
+
+  validate_replace_rtx_1 (x, d->from, d->to, d->insn);
+}
+
 /* Try replacing every occurrence of FROM in INSN with TO, avoiding
    SET_DESTs.  After all changes have been made, validate by seeing if
    INSN is still valid.  */
@@ -749,22 +767,12 @@ int
 validate_replace_src (from, to, insn)
      rtx from, to, insn;
 {
-  if ((GET_CODE (insn) != INSN && GET_CODE (insn) != JUMP_INSN)
-      || GET_CODE (PATTERN (insn)) != SET)
-    abort ();
+  struct validate_replace_src_data d;
 
-  validate_replace_rtx_1 (&SET_SRC (PATTERN (insn)), from, to, insn);
-  if (GET_CODE (SET_DEST (PATTERN (insn))) == MEM)
-    validate_replace_rtx_1 (&XEXP (SET_DEST (PATTERN (insn)), 0),
-			    from, to, insn);
-  else if (GET_CODE (SET_DEST (PATTERN (insn))) == ZERO_EXTRACT)
-    {
-      validate_replace_rtx_1 (&XEXP (SET_DEST (PATTERN (insn)), 1),
-			      from, to, insn);
-      validate_replace_rtx_1 (&XEXP (SET_DEST (PATTERN (insn)), 2),
-			      from, to, insn);
-    }
-
+  d.from = from;
+  d.to = to;
+  d.insn = insn;
+  note_uses (&PATTERN (insn), validate_replace_src_1, &d);
   return apply_change_group ();
 }
 
