@@ -1,17 +1,24 @@
+2003-01-10  Geoffrey Keating  <geoffk@apple.com>
+
+	* Makefile.in (RANLIB_FOR_TARGET): Use RANLIB when native.
+	(RANLIB_TEST_FOR_TARGET): Delete.  Don't pass down to sub-makes.
+	Remove calls.
+	* mklibgcc.in: Remove uses of RANLIB_TEST_FOR_TARGET.
+
 Fri Jan 10 22:05:35 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* ifcvt.c (noce_try_addcc): Do not call emit_conditional_add
 	with weird operands.
 
 2003-01-10  Dale Johannesen <dalej@apple.com>
- 
-        * calls.c (load_register_parameters):  Add is_sibcall, sibcall_failure
-        parameters.  Call check_sibcall_argument_overlap if indicated.
-        (check_sibcall_argument_overlap):  Add mark_stored_args_map
-        parameter.  Don't mark parameter area as clobbered if not set.
-        (expand_call):  Adjust calls to above.
- 
- 2003-01-10 Kelley Cook <kelleycook@comcast.net>
+
+	* calls.c (load_register_parameters):  Add is_sibcall, sibcall_failure
+	parameters.  Call check_sibcall_argument_overlap if indicated.
+	(check_sibcall_argument_overlap):  Add mark_stored_args_map
+	parameter.  Don't mark parameter area as clobbered if not set.
+	(expand_call):	Adjust calls to above.
+
+2003-01-10 Kelley Cook <kelleycook@comcast.net>
 
 	* configure.in (linker read-only and read-write section mixing):
 	Squelch some assembler warnings.
