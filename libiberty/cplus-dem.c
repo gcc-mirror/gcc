@@ -2,6 +2,7 @@
    Copyright 1989, 91, 94, 95, 96, 97, 1998 Free Software Foundation, Inc.
    Written by James Clark (jjc@jclark.uucp)
    Rewritten by Fred Fish (fnf@cygnus.com) for ARM and Lucid demangling
+   Modified by Satish Pai (pai@apollo.hp.com) for HP demangling
    
 This file is part of the libiberty library.
 Libiberty is free software; you can redistribute it and/or
@@ -93,6 +94,8 @@ enum demangling_styles current_demangling_style = gnu_demangling;
 
 static char cplus_markers[] = { CPLUS_MARKER, '.', '$', '\0' };
 
+static char char_str[2] = { '\000', '\000' };
+
 void
 set_cplus_marker_for_demangling (ch)
      int ch;
@@ -125,6 +128,7 @@ struct work_stuff
   int constructor;
   int destructor;
   int static_type;	/* A static member function */
+  int temp_start;       /* index in demangled to start of template args */   
   int type_quals;       /* The type qualifiers.  */
   int dllimported;	/* Symbol imported from a PE DLL */
   char **tmpl_argvec;   /* Template function arguments. */
@@ -390,6 +394,15 @@ string_prepends PARAMS ((string *, string *));
 static int 
 demangle_template_value_parm PARAMS ((struct work_stuff*, const char**, 
 				      string*, type_kind_t));
+
+static int 
+do_hpacc_template_const_value PARAMS ((struct work_stuff *, const char **, string *));
+
+static int 
+do_hpacc_template_literal PARAMS ((struct work_stuff *, const char **, string *));
+
+static int 
+snarf_numeric_literal PARAMS ((char **, string *));
 
 /* There is a TYPE_QUAL value for each type qualifier.  They can be
    combined by bitwise-or to form the complete set of qualifiers for a
@@ -970,6 +983,21 @@ demangle_signature (work, mangled, declp)
 	    oldmangled = *mangled;
 	  (*mangled)++;
 	  break;
+
+	case 'L':
+	  /* Local class name follows after "Lnnn_" */
+	  if (HP_DEMANGLING)
+	    {
+	      while (**mangled && (**mangled != '_'))
+		(*mangled)++;
+	      if (!**mangled)
+		success = 0;
+	      else
+		(*mangled)++;
+	    }
+	  else
+	    success = 0;
+	  break;
 	  
 	case '0': case '1': case '2': case '3': case '4':
 	case '5': case '6': case '7': case '8': case '9':
@@ -977,14 +1005,18 @@ demangle_signature (work, mangled, declp)
 	    {
 	      oldmangled = *mangled;
 	    }
+          work->temp_start = -1; /* uppermost call to demangle_class */ 
 	  success = demangle_class (work, mangled, declp);
 	  if (success)
 	    {
 	      remember_type (work, oldmangled, *mangled - oldmangled);
 	    }
-	  if (AUTO_DEMANGLING || GNU_DEMANGLING)
+	  if (AUTO_DEMANGLING || GNU_DEMANGLING || EDG_DEMANGLING)
 	    {
-	      expect_func = 1;
+              /* EDG and others will have the "F", so we let the loop cycle 
+                 if we are looking at one. */
+              if (**mangled != 'F')
+                 expect_func = 1;
 	    }
 	  oldmangled = NULL;
 	  break;
@@ -1005,7 +1037,7 @@ demangle_signature (work, mangled, declp)
 
 	case 'F':
 	  /* Function */
-	  /* ARM style demangling includes a specific 'F' character after
+	  /* ARM/HP style demangling includes a specific 'F' character after
 	     the class name.  For GNU style, it is just implied.  So we can
 	     safely just consume any 'F' at this point and be compatible
 	     with either style.  */
@@ -1014,16 +1046,27 @@ demangle_signature (work, mangled, declp)
 	  func_done = 1;
 	  (*mangled)++;
 
-	  /* For lucid/ARM style we have to forget any types we might
+	  /* For lucid/ARM/HP style we have to forget any types we might
 	     have remembered up to this point, since they were not argument
 	     types.  GNU style considers all types seen as available for
 	     back references.  See comment in demangle_args() */
 
-	  if (LUCID_DEMANGLING || ARM_DEMANGLING)
+	  if (LUCID_DEMANGLING || ARM_DEMANGLING || HP_DEMANGLING || EDG_DEMANGLING)
 	    {
 	      forget_types (work);
 	    }
 	  success = demangle_args (work, mangled, declp);
+	  /* After picking off the function args, we expect to either
+	     find the function return type (preceded by an '_') or the
+	     end of the string. */
+	  if (success && (AUTO_DEMANGLING || EDG_DEMANGLING) && **mangled == '_')
+	    {
+	      ++(*mangled);
+              /* At this level, we do not care about the return type. */
+              success = do_type (work, mangled, &tname);
+              string_delete (&tname);
+            }
+
 	  break;
 	  
 	case 't':
@@ -1081,7 +1124,17 @@ demangle_signature (work, mangled, declp)
 	       a mangled name that is either bogus, or has been mangled by
 	       some algorithm we don't know how to deal with.  So just
 	       reject the entire demangling.  */
-	    success = 0;
+            /* However, "_nnn" is an expected suffix for alternate entry point
+               numbered nnn for a function, with HP aCC, so skip over that
+               without reporting failure. pai/1997-09-04 */
+            if (HP_DEMANGLING)
+              {
+                (*mangled)++;
+                while (**mangled && isdigit (**mangled))
+                  (*mangled)++;
+              }
+            else
+	      success = 0;
 	  break;
 
 	case 'H':
@@ -1111,7 +1164,7 @@ demangle_signature (work, mangled, declp)
 	    {
 	      /* Non-GNU demanglers use a specific token to mark the start
 		 of the outermost function argument tokens.  Typically 'F',
-		 for ARM-demangling, for example.  So if we find something
+		 for ARM/HP-demangling, for example.  So if we find something
 		 we are not prepared for, it must be an error.  */
 	      success = 0;
 	    }
@@ -1124,6 +1177,10 @@ demangle_signature (work, mangled, declp)
 	if (success && expect_func)
 	  {
 	    func_done = 1;
+              if (LUCID_DEMANGLING || ARM_DEMANGLING || EDG_DEMANGLING)
+                {
+                  forget_types (work);
+                }
 	    success = demangle_args (work, mangled, declp);
 	    /* Since template include the mangling of their return types,
 	       we must set expect_func to 0 so that we don't try do
@@ -1139,7 +1196,7 @@ demangle_signature (work, mangled, declp)
 	  /* With GNU style demangling, bar__3foo is 'foo::bar(void)', and
 	     bar__3fooi is 'foo::bar(int)'.  We get here when we find the
 	     first case, and need to ensure that the '(void)' gets added to
-	     the current declp.  Note that with ARM, the first case
+	     the current declp.  Note that with ARM/HP, the first case
 	     represents the name of a static data member 'foo::bar',
 	     which is in the current declp, so we leave it alone.  */
 	  success = demangle_args (work, mangled, declp);
@@ -1683,8 +1740,9 @@ arm_pt (work, mangled, n, anchor, args)
      int n;
      const char **anchor, **args;
 {
-  /* ARM template? */
-  if (ARM_DEMANGLING && (*anchor = mystrstr (mangled, "__pt__")))
+  /* Check if ARM template with "__pt__" in it ("parameterized type") */
+  /* Allow HP also here, because HP's cfront compiler follows ARM to some extent */
+  if ((ARM_DEMANGLING || HP_DEMANGLING) && (*anchor = mystrstr (mangled, "__pt__")))
     {
       int len;
       *args = *anchor + 6;
@@ -1695,36 +1753,168 @@ arm_pt (work, mangled, n, anchor, args)
 	  return 1;
 	}
     }
+  if (AUTO_DEMANGLING || EDG_DEMANGLING)
+    {
+      if ((*anchor = mystrstr (mangled, "__tm__"))
+          || (*anchor = mystrstr (mangled, "__ps__"))
+          || (*anchor = mystrstr (mangled, "__pt__")))
+        {
+          int len;
+          *args = *anchor + 6;
+          len = consume_count (args);
+          if (*args + len == mangled + n && **args == '_')
+            {
+              ++*args;
+              return 1;
+            }
+        }
+      else if (*anchor = mystrstr (mangled, "__S"))
+        {
+ 	  int len;
+ 	  *args = *anchor + 3;
+ 	  len = consume_count (args);
+ 	  if (*args + len == mangled + n && **args == '_')
+            {
+              ++*args;
+ 	      return 1;
+            }
+        }
+    }
+
   return 0;
 }
 
 static void
-demangle_arm_pt (work, mangled, n, declp)
+demangle_arm_hp_template (work, mangled, n, declp)
      struct work_stuff *work;
      const char **mangled;
      int n;
      string *declp;
 {
   const char *p;
-  const char *args;
+  char *args;
   const char *e = *mangled + n;
+  string arg;
 
-  /* ARM template? */
-  if (arm_pt (work, *mangled, n, &p, &args))
+  /* Check for HP aCC template spec: classXt1t2 where t1, t2 are
+     template args */
+  if (HP_DEMANGLING && ((*mangled)[n] == 'X'))
     {
-      string arg;
+      char *start_spec_args = NULL;
+
+      /* First check for and omit template specialization pseudo-arguments,
+         such as in "Spec<#1,#1.*>" */
+      start_spec_args = strchr (*mangled, '<');
+      if (start_spec_args && (start_spec_args - *mangled < n))
+        string_appendn (declp, *mangled, start_spec_args - *mangled);
+      else
+        string_appendn (declp, *mangled, n);
+      (*mangled) += n + 1;
+      string_init (&arg);
+      if (work->temp_start == -1) /* non-recursive call */ 
+        work->temp_start = declp->p - declp->b;
+      string_append (declp, "<");
+      while (1)
+        {
+          string_clear (&arg);
+          switch (**mangled)
+            {
+              case 'T':
+                /* 'T' signals a type parameter */
+                (*mangled)++;
+                if (!do_type (work, mangled, &arg))
+                  goto hpacc_template_args_done;
+                break;
+                
+              case 'U':
+              case 'S':
+                /* 'U' or 'S' signals an integral value */
+                if (!do_hpacc_template_const_value (work, mangled, &arg))
+                  goto hpacc_template_args_done;
+                break;
+                
+              case 'A':
+                /* 'A' signals a named constant expression (literal) */
+                if (!do_hpacc_template_literal (work, mangled, &arg))
+                  goto hpacc_template_args_done;
+                break;
+                
+              default:
+                /* Today, 1997-09-03, we have only the above types
+                   of template parameters */ 
+                /* FIXME: maybe this should fail and return null */ 
+                goto hpacc_template_args_done;
+            }
+          string_appends (declp, &arg);
+         /* Check if we're at the end of template args.
+             0 if at end of static member of template class,
+             _ if done with template args for a function */ 
+          if ((**mangled == '\000') || (**mangled == '_')) 
+            break; 
+          else
+            string_append (declp, ",");
+        }
+    hpacc_template_args_done:
+      string_append (declp, ">");
+      string_delete (&arg);
+      if (**mangled == '_')
+        (*mangled)++;
+      return;
+    }
+  /* ARM template? (Also handles HP cfront extensions) */
+  else if (arm_pt (work, *mangled, n, &p, &args))
+    {
+      string type_str;
+
       string_init (&arg);
       string_appendn (declp, *mangled, p - *mangled);
+      if (work->temp_start == -1)  /* non-recursive call */
+	work->temp_start = declp->p - declp->b;  
       string_append (declp, "<");
       /* should do error checking here */
       while (args < e) {
 	string_clear (&arg);
-	do_type (work, &args, &arg);
+
+	/* Check for type or literal here */
+	switch (*args)
+	  {
+	    /* HP cfront extensions to ARM for template args */
+	    /* spec: Xt1Lv1 where t1 is a type, v1 is a literal value */
+	    /* FIXME: We handle only numeric literals for HP cfront */
+          case 'X':
+            /* A typed constant value follows */ 
+            args++;
+            if (!do_type (work, &args, &type_str))
+	      goto cfront_template_args_done;
+            string_append (&arg, "(");
+            string_appends (&arg, &type_str);
+            string_append (&arg, ")");
+            if (*args != 'L')
+              goto cfront_template_args_done;
+            args++;
+            /* Now snarf a literal value following 'L' */
+            if (!snarf_numeric_literal (&args, &arg))
+	      goto cfront_template_args_done;
+            break;
+
+          case 'L':
+            /* Snarf a literal following 'L' */
+            args++;
+            if (!snarf_numeric_literal (&args, &arg))
+	      goto cfront_template_args_done;
+            break;
+          default:
+            /* Not handling other HP cfront stuff */ 
+            if (!do_type (work, &args, &arg))
+              goto cfront_template_args_done;
+	  }
 	string_appends (declp, &arg);
 	string_append (declp, ",");
       }
+    cfront_template_args_done:
       string_delete (&arg);
-      --declp->p;
+      if (args >= e)
+	--declp->p; /* remove extra comma */ 
       string_append (declp, ">");
     }
   else if (n>10 && strncmp (*mangled, "_GLOBAL_", 8) == 0
@@ -1737,10 +1927,16 @@ demangle_arm_pt (work, mangled, n, declp)
     }
   else
     {
+      if (work->temp_start == -1) /* non-recursive call only */ 
+	work->temp_start = 0;     /* disable in recursive calls */ 
       string_appendn (declp, *mangled, n);
     }
   *mangled += n;
 }
+
+/* Extract a class name, possibly a template with arguments, from the
+   mangled string; qualifiers, local class indicators, etc. have
+   already been dealt with */
 
 static int
 demangle_class_name (work, mangled, declp)
@@ -1754,7 +1950,7 @@ demangle_class_name (work, mangled, declp)
   n = consume_count (mangled);
   if ((int) strlen (*mangled) >= n)
     {
-      demangle_arm_pt (work, mangled, n, declp);
+      demangle_arm_hp_template (work, mangled, n, declp);
       success = 1;
     }
 
@@ -1805,13 +2001,20 @@ demangle_class (work, mangled, declp)
   int success = 0;
   int btype;
   string class_name;
+  char *save_class_name_end = 0;  
 
   string_init (&class_name);
   btype = register_Btype (work);
   if (demangle_class_name (work, mangled, &class_name))
     {
+      save_class_name_end = class_name.p;
       if ((work->constructor & 1) || (work->destructor & 1))
 	{
+          /* adjust so we don't include template args */
+          if (work->temp_start && (work->temp_start != -1))
+            {
+              class_name.p = class_name.b + work->temp_start;
+            }
 	  string_prepends (declp, &class_name);
 	  if (work -> destructor & 1)
 	    {
@@ -1823,6 +2026,7 @@ demangle_class (work, mangled, declp)
 	      work -> constructor -= 1; 
 	    }
 	}
+      class_name.p = save_class_name_end;
       remember_Ktype (work, class_name.b, LEN_STRING(&class_name));
       remember_Btype (work, class_name.b, LEN_STRING(&class_name), btype);
       string_prepend (declp, SCOPE_STRING (work));
@@ -1907,13 +2111,13 @@ demangle_prefix (work, mangled, declp)
 	    }
 	}
     }
-  else if (ARM_DEMANGLING && strncmp(*mangled, "__std__", 7) == 0)
+  else if ((ARM_DEMANGLING || HP_DEMANGLING || EDG_DEMANGLING) && strncmp(*mangled, "__std__", 7) == 0)
     {
       /* it's a ARM global destructor to be executed at program exit */
       (*mangled) += 7;
       work->destructor = 2;
     }
-  else if (ARM_DEMANGLING && strncmp(*mangled, "__sti__", 7) == 0)
+  else if ((ARM_DEMANGLING || HP_DEMANGLING || EDG_DEMANGLING) && strncmp(*mangled, "__sti__", 7) == 0)
     {
       /* it's a ARM global constructor to be executed at program initial */
       (*mangled) += 7;
@@ -1963,7 +2167,7 @@ demangle_prefix (work, mangled, declp)
       /* The ARM says nothing about the mangling of local variables.
 	 But cfront mangles local variables by prepending __<nesting_level>
 	 to them. As an extension to ARM demangling we handle this case.  */
-      if ((LUCID_DEMANGLING || ARM_DEMANGLING)
+      if ((LUCID_DEMANGLING || ARM_DEMANGLING || HP_DEMANGLING)
 	  && isdigit ((unsigned char)scan[2]))
 	{
 	  *mangled = scan + 2;
@@ -1978,10 +2182,28 @@ demangle_prefix (work, mangled, declp)
 	     names like __Q2_3foo3bar for nested type names.  So don't accept
 	     this style of constructor for cfront demangling.  A GNU
 	     style member-template constructor starts with 'H'. */
-	  if (!(LUCID_DEMANGLING || ARM_DEMANGLING))
+	  if (!(LUCID_DEMANGLING || ARM_DEMANGLING || HP_DEMANGLING || EDG_DEMANGLING))
 	    work -> constructor += 1;
 	  *mangled = scan + 2;
 	}
+    }
+  else if (ARM_DEMANGLING && scan[2] == 'p' && scan[3] == 't')
+    {
+      /* Cfront-style parameterized type.  Handled later as a signature. */
+      success = 1;
+      
+      /* ARM template? */
+      demangle_arm_hp_template (work, mangled, strlen (*mangled), declp);
+    }
+  else if (EDG_DEMANGLING && ((scan[2] == 't' && scan[3] == 'm')
+                              || (scan[2] == 'p' && scan[3] == 's')
+                              || (scan[2] == 'p' && scan[3] == 't')))
+    {
+      /* EDG-style parameterized type.  Handled later as a signature. */
+      success = 1;
+      
+      /* EDG template? */
+      demangle_arm_hp_template (work, mangled, strlen (*mangled), declp);
     }
   else if ((scan == *mangled) && !isdigit ((unsigned char)scan[2])
 	   && (scan[2] != 't'))
@@ -1989,7 +2211,7 @@ demangle_prefix (work, mangled, declp)
       /* Mangled name starts with "__".  Skip over any leading '_' characters,
 	 then find the next "__" that separates the prefix from the signature.
 	 */
-      if (!(ARM_DEMANGLING || LUCID_DEMANGLING)
+      if (!(ARM_DEMANGLING || LUCID_DEMANGLING || HP_DEMANGLING || EDG_DEMANGLING)
 	  || (arm_special (mangled, declp) == 0))
 	{
 	  while (*scan == '_')
@@ -2015,14 +2237,6 @@ demangle_prefix (work, mangled, declp)
                 demangle_function_name (work, mangled, declp, scan);
 	    }
 	}
-    }
-  else if (ARM_DEMANGLING && scan[2] == 'p' && scan[3] == 't')
-    {
-      /* Cfront-style parameterized type.  Handled later as a signature.  */
-      success = 1;
-
-      /* ARM template? */
-      demangle_arm_pt (work, mangled, strlen (*mangled), declp);
     }
   else if (*(scan + 2) != '\0')
     {
@@ -2243,6 +2457,35 @@ gnu_special (work, mangled, declp)
       success = 0;
     }
   return (success);
+}
+
+static void
+recursively_demangle(work, mangled, result, namelength)
+     struct work_stuff *work;
+     const char **mangled;
+     string *result;
+     int namelength;
+{
+  char * recurse = (char *)NULL;
+  char * recurse_dem = (char *)NULL;
+  
+  recurse = (char *) xmalloc (namelength + 1);
+  memcpy (recurse, *mangled, namelength);
+  recurse[namelength] = '\000';
+  
+  recurse_dem = cplus_demangle (recurse, work->options);
+  
+  if (recurse_dem)
+    {
+      string_append (result, recurse_dem);
+      free (recurse_dem);
+    }
+  else
+    {
+      string_appendn (result, *mangled, namelength);
+    }
+  free (recurse);
+  *mangled += namelength;
 }
 
 /*
@@ -2478,10 +2721,22 @@ demangle_qualified (work, mangled, result, isfuncname, append)
 	}
       else
 	{
-	  success = do_type (work, mangled, &last_name);
-	  if (!success)
-	    break;
-	  string_appends (&temp, &last_name);
+	  if (EDG_DEMANGLING)
+            {
+	      int namelength;
+ 	      /* Now recursively demangle the qualifier
+ 	       * This is necessary to deal with templates in 
+ 	       * mangling styles like EDG */ 
+	      namelength = consume_count (mangled);
+ 	      recursively_demangle(work, mangled, &temp, namelength);
+            }
+          else
+            {
+              success = do_type (work, mangled, &last_name);
+              if (!success)
+                break;
+              string_appends (&temp, &last_name);
+            }
 	}
 
       if (remember_K)
@@ -3063,6 +3318,141 @@ demangle_fund_type (work, mangled, result)
   return success ? ((int) tk) : 0;
 }
 
+
+/* Handle a template's value parameter for HP aCC (extension from ARM)
+   **mangled points to 'S' or 'U' */
+
+static int
+do_hpacc_template_const_value (work, mangled, result)
+     struct work_stuff *work;
+     const char **mangled;
+     string *result;
+{
+  int unsigned_const;
+
+  if (**mangled != 'U' && **mangled != 'S')
+    return 0;
+  
+  unsigned_const = (**mangled == 'U');
+
+  (*mangled)++;
+
+  switch (**mangled)
+    {
+      case 'N':
+        string_append (result, "-");
+        /* fall through */ 
+      case 'P':
+        (*mangled)++;
+        break;
+      case 'M':
+        /* special case for -2^31 */ 
+        string_append (result, "-2147483648");
+        (*mangled)++;
+        return 1;
+      default:
+        return 0;
+    }
+
+  /* We have to be looking at an integer now */
+  if (!(isdigit (**mangled)))
+    return 0;
+
+  /* We only deal with integral values for template
+     parameters -- so it's OK to look only for digits */
+  while (isdigit (**mangled))
+    {
+      char_str[0] = **mangled;
+      string_append (result, char_str);
+      (*mangled)++;
+    }
+
+  if (unsigned_const)
+    string_append (result, "U");
+
+  /* FIXME? Some day we may have 64-bit (or larger :-) ) constants
+     with L or LL suffixes. pai/1997-09-03 */
+  
+  return 1; /* success */ 
+}
+
+/* Handle a template's literal parameter for HP aCC (extension from ARM)
+   **mangled is pointing to the 'A' */
+
+static int
+do_hpacc_template_literal (work, mangled, result)
+     struct work_stuff *work;
+     const char **mangled;
+     string *result;
+{
+  int literal_len = 0;
+  int i;
+  char * recurse;
+  char * recurse_dem;
+  
+  if (**mangled != 'A')
+    return 0;
+
+  (*mangled)++;
+
+  literal_len = consume_count (mangled);
+
+  if (!literal_len)
+    return 0;
+
+  /* Literal parameters are names of arrays, functions, etc.  and the
+     canonical representation uses the address operator */
+  string_append (result, "&");
+
+  /* Now recursively demangle the literal name */ 
+  recurse = (char *) xmalloc (literal_len + 1);
+  memcpy (recurse, *mangled, literal_len);
+  recurse[literal_len] = '\000';
+
+  recurse_dem = cplus_demangle (recurse, work->options);
+  
+  if (recurse_dem)
+    {
+      string_append (result, recurse_dem);
+      free (recurse_dem);
+    }
+  else
+    {
+      string_appendn (result, *mangled, literal_len);
+    }
+  (*mangled) += literal_len;
+  free (recurse);
+
+  return 1;
+}
+
+static int
+snarf_numeric_literal (args, arg)
+     char ** args;
+     string * arg;
+{
+  if (**args == '-')
+    {
+      char_str[0] = '-';
+      string_append (arg, char_str);
+      (*args)++;
+    }
+  else if (**args == '+')
+    (*args)++;
+  
+  if (!isdigit (**args))
+    return 0;
+
+  while (isdigit (**args))
+    {
+      char_str[0] = **args;
+      string_append (arg, char_str);
+      (*args)++;
+    }
+
+  return 1;
+}
+
 /* Demangle the next argument, given by MANGLED into RESULT, which
    *should be an uninitialized* string.  It will be initialized here,
    and free'd should anything go wrong.  */
@@ -3376,7 +3766,7 @@ demangle_args (work, mangled, declp)
 	    {
 	      r = 1;
 	    }
-          if (ARM_DEMANGLING && work -> ntypes >= 10)
+          if ((HP_DEMANGLING || ARM_DEMANGLING || EDG_DEMANGLING) && work -> ntypes >= 10)
             {
               /* If we have 10 or more types we might have more than a 1 digit
                  index so we'll have to consume the whole count here. This
@@ -3396,7 +3786,7 @@ demangle_args (work, mangled, declp)
 	          return (0);
 	    	}
 	    }
-	  if (LUCID_DEMANGLING || ARM_DEMANGLING)
+	  if (LUCID_DEMANGLING || ARM_DEMANGLING || HP_DEMANGLING || EDG_DEMANGLING)
 	    {
 	      t--;
 	    }
@@ -3516,8 +3906,18 @@ demangle_function_name (work, mangled, declp, scan)
      separator.  */
 
   (*mangled) = scan + 2;
+  /* We may be looking at an instantiation of a template function:
+     foo__Xt1t2_Ft3t4, where t1, t2, ... are template arguments and a
+     following _F marks the start of the function arguments.  Handle
+     the template arguments first. */
+  
+  if (HP_DEMANGLING && (**mangled == 'X'))
+    {
+      demangle_arm_hp_template (work, mangled, 0, declp);
+      /* This leaves MANGLED pointing to the 'F' marking func args */
+    }
 
-  if (LUCID_DEMANGLING || ARM_DEMANGLING)
+  if (LUCID_DEMANGLING || ARM_DEMANGLING || HP_DEMANGLING || EDG_DEMANGLING)
     {
 
       /* See if we have an ARM style constructor or destructor operator.
@@ -3835,8 +4235,8 @@ usage (stream, status)
      int status;
 {    
   fprintf (stream, "\
-Usage: %s [-_] [-n] [-s {gnu,lucid,arm}] [--strip-underscores]\n\
-      [--no-strip-underscores] [--format={gnu,lucid,arm}]\n\
+Usage: %s [-_] [-n] [-s {gnu,lucid,arm,hp,edg}] [--strip-underscores]\n\
+       [--no-strip-underscores] [--format={gnu,lucid,arm,hp,edg}]\n\
       [--help] [--version] [arg...]\n",
 	   program_name);
   exit (status);
@@ -3893,7 +4293,7 @@ main (argc, argv)
 	  strip_underscore = 0;
 	  break;
 	case 'v':
-	  printf ("GNU %s version %s\n", program_name, program_version);
+	  printf ("GNU %s (C++ demangler), version %s\n", program_name, program_version);
 	  exit (0);
 	case '_':
 	  strip_underscore = 1;
@@ -3911,6 +4311,14 @@ main (argc, argv)
 	    {
 	      current_demangling_style = arm_demangling;
 	    }
+	  else if (strcmp (optarg, "hp") == 0)
+	    {
+	      current_demangling_style = hp_demangling;
+	    }
+          else if (strcmp (optarg, "edg") == 0)
+            {
+              current_demangling_style = edg_demangling;
+            }
 	  else
 	    {
 	      fprintf (stderr, "%s: unknown demangling style `%s'\n",
@@ -3935,7 +4343,11 @@ main (argc, argv)
 	  int i = 0;
 	  c = getchar ();
 	  /* Try to read a label.  */
-	  while (c != EOF && (isalnum(c) || c == '_' || c == '$' || c == '.'))
+	  while (c != EOF && (isalnum(c) || c == '_' || c == '$' || c == '.' ||
+                              c == '<' || c == '>' || c == '#' || c == ',' || c == '*' || c == '&' ||
+                              c == '[' || c == ']' || c == ':' || c == '(' || c == ')'))
+                              /* the ones in the 2nd & 3rd lines were added to handle
+                                 HP aCC template specialization manglings */ 
 	    {
 	      if (i >= MBUF_SIZE-1)
 		break;
@@ -4007,3 +4419,4 @@ xrealloc (ptr, size)
   return value;
 }
 #endif	/* main */
+

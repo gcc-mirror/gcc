@@ -1,3 +1,56 @@
+Fri Dec  4 13:51:04 1998  David Taylor   <taylor@texas.cygnus.com>
+			  Elena Zannoni  <ezannoni@cygnus.com>
+			  Stan Shebs     <shebs@cygnus.com>
+			  Edith Epstein  <eepstein@cygnus.com>
+			  Andres MacLeod <amacleod@cygnus.com>
+			  Satish Pai	 <pai@apollo.hp.com>
+
+	* HP aCC demangling support.
+	* cplus-dem.c
+	(main): Remove default to HP style demangling, set to EDG
+ 	demangling correctly when -edg specified; set the demangling style
+ 	when user specifies 'edg'. Set strip_underscore to
+ 	prepends_underscore, if not HPUXHPPA.  Set
+ 	current_demangling_style to hp_demangling if HPUXHPPA.  Set
+ 	current demangling style correctly if the switch is hp.  Read
+ 	label correctly also in the HP style case.
+	(work_stuff): add temp_start field; add field for volatile member
+ 	function.
+	(arm_pt): handle ARM_DEMANGLING and EDG_DEMANGLING styles; HP
+ 	style for this case is the same as ARM.
+	(demangle_args): handle EDG_DEMANGLING style; support HP style.
+	(demangle_arm_hp_template): new function. (It was
+ 	demangle_arm_pt.); check and set value of temp_start field in
+ 	multiple places. Also, when ceching for end of template args,
+ 	check to see if at end of static member of template class.
+	(demangle_class): new local variable : save_class_name_end Don't
+ 	include template args in string defining class.
+	(demangle_class_name): use demangel_arm_hp_template.
+	(demangle_function_name): handle case where demangling style is
+ 	HP_DEMANGLING and currently point at an 'X' in the mangled name.
+  	Handle EDG_DEMANGLING style.  Handle constructor and destructor
+ 	ops for HP style.
+	(demangle_prefix): handle EDG_DEMANGLING and ARM_DEMANGLING
+ 	styles.  global destructor and constructor for HP style are same
+ 	as for ARM style. Same for local variables.
+	(demangle_qualified): handle EDG_DEMANGLING style.
+	(demangle_signature): add case for volatile member function.  For
+ 	cases '1' - '9' : initialize the temp_start field to -1 and handle
+ 	the EDG_DEMANGLING style.  for case 'F' : handle EDG_DEMANGLING
+ 	and AUTO_DEMANGLING styles.  If expecting a function and managed
+ 	to demangle the funct args, then handle the LUCID_DEMANGLING,
+ 	ARM_DEMANGLING, and EDG_DEMANGLING styles.  Add case for local
+ 	class name after "Lnnn_ in HP style case. HP style too needs to
+ 	forget types.  _nnn is OK for HP style, so don't report failure.
+	(do_hpacc_template_const_value): new function. Handle template's
+ 	value param for HP/aCC.
+	(do_hpacc_template_literal): new function.  Handle a template's
+ 	literal parameter for HP aCC.
+	(recursively_demangle): new function
+	(snarf_numeric_literal): new function.
+	(usage): add 'edg' to the list of demangling styles; add hp switch
+ 	to message.
+
 Sat Nov 28 17:25:22 1998  Christopher Faylor <cgf@cygnus.com>
 
 	* pexecute.c: Remove obsolete ifdefed cygwin code.
