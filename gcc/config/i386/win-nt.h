@@ -31,6 +31,7 @@ Boston, MA 02111-1307, USA. */
   -DWINNT -D_M_IX86=300 -D_X86_=1 -D__STDC__=0 -DALMOST_STDC -D_MSC_VER=800 \
   -D__stdcall=__attribute__((__stdcall__)) \
   -D__cdecl=__attribute__((__cdecl__)) \
+  -D_cdecl=__attribute__((__cdecl__)) \
   -Asystem(unix) -Asystem(winnt) -Acpu(i386) -Amachine(i386)"
 
 #define SIZE_TYPE "unsigned int"
@@ -140,12 +141,11 @@ while (0)
    linker the proper switches and libraries to build a graphical program */
 
 #undef LIB_SPEC
-#define LIB_SPEC "%{mwindows:-subsystem:windows -entry:WinMainCRTStartup \
-  USER32.LIB GDI32.LIB COMDLG32.LIB WINSPOOL.LIB} \
- %{!mwindows:-subsystem:console -entry:mainCRTStartup} \
- %{mcrtmt:OLDNAMES.LIB LIBCMT.LIB KERNEL32.LIB ADVAPI32.LIB} \
- %{!mcrtmt:OLDNAMES.LIB LIBC.LIB KERNEL32.LIB ADVAPI32.LIB} \
- %{g:-debugtype:coff -debug:full} \
+#define LIB_SPEC "%{mwindows:-subsystem windows -e _WinMainCRTStartup \
+  USER32.LIB%s GDI32.LIB%s COMDLG32.LIB%s WINSPOOL.LIB%s} \
+ %{!mwindows:-subsystem console -e _mainCRTStartup} \
+ %{mcrtmt:LIBCMT.LIB%s KERNEL32.LIB%s ADVAPI32.LIB%s} \
+ %{!mcrtmt:LIBC.LIB%s KERNEL32.LIB%s ADVAPI32.LIB%s} \
  %{v}"
 
 #include "winnt/winnt.h"
