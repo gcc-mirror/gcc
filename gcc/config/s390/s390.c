@@ -3255,6 +3255,14 @@ s390_emit_epilogue ()
 	   i <= frame.last_save_gpr;
 	   i++)
 	{
+	  /* These registers are special and need to be 
+	     restored in any case.  */
+	  if (i == STACK_POINTER_REGNUM 
+              || i == RETURN_REGNUM
+              || i == BASE_REGISTER 
+              || (flag_pic && i == PIC_OFFSET_TABLE_REGNUM))
+	    continue;
+
 	  if (global_regs[i])
 	    {
 	      addr = plus_constant (frame_pointer, 

@@ -1,3 +1,8 @@
+2002-04-25  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.c (s390_emit_epilogue): Always restore registers
+	needed by the compiler, even if they are used as global regs.
+
 2002-04-25  Matt Hiller  <hiller@redhat.com>
 
 	* mips.c (mips_class_max_nregs, mips_register_move_cost): New
