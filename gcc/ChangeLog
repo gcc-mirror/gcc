@@ -1,3 +1,9 @@
+Tue May  2 23:38:37 2000  Jason Eckhardt  <jle@cygnus.com>
+
+        * bb-reorder (chain_reorder_blocks): Changed code to test for
+        EDGE_FALLTHRU rather than making erroneous assumption that the
+        first outgoing edge is the fall-through edge.
+
 Tue May  2 18:20:31 2000  Donald Lindsay  <dlindsay@hound.cygnus.com>
 
 	* config/mips/mips.c (mips_build_va_list,mips_va_start,mips_va_arg): new 

@@ -323,6 +323,7 @@ chain_reorder_blocks (e, ceb)
   basic_block db = e->dest;
   rtx cebe_insn, dbh_insn, dbe_insn;
   edge ee, last_edge;
+  edge e_fallthru, e_jump;
 
   enum cond_types {NO_COND, PREDICT_THEN_WITH_ELSE, PREDICT_ELSE,
 		   PREDICT_THEN_NO_ELSE, PREDICT_NOT_THEN_NO_ELSE};
@@ -342,6 +343,8 @@ chain_reorder_blocks (e, ceb)
       && ceb->index + 1 == db->index && NEXT_INSN (cebe_insn))
     return db;
 
+  e_fallthru = e_jump = e;
+
   /* Get the type of block and type of condition.  */
   cond_type = NO_COND;
   cond_block_type = NO_COND_BLOCK;
@@ -349,18 +352,36 @@ chain_reorder_blocks (e, ceb)
       && condjump_p (sb->end))
     {
       if (e->flags & EDGE_FALLTHRU)
+	{
+	  if (e == sb->succ)
+	    e_jump = sb->succ->succ_next;
+	  else if (e == sb->succ->succ_next)
+	    e_jump = sb->succ;
+	  else
+	    abort ();
+	}
+      else
+	{
+	  if (e == sb->succ)
+	    e_fallthru = sb->succ->succ_next;
+	  else if (e == sb->succ->succ_next)
+	    e_fallthru = sb->succ;
+	  else
+	    abort ();
+	}
+
+      if (e->flags & EDGE_FALLTHRU)
 	cond_block_type = THEN_BLOCK;
-      else if (get_common_dest (sb->succ->dest, sb))
+      else if (get_common_dest (e_fallthru->dest, sb))
 	cond_block_type = NO_ELSE_BLOCK;
       else 
 	cond_block_type = ELSE_BLOCK;
 
-      if (sb->succ->succ_next
-	  && get_common_dest (sb->succ->dest, sb))
+      if (get_common_dest (e_fallthru->dest, sb))
 	{
 	  if (cond_block_type == THEN_BLOCK)
 	    {
-	      if (! (REORDER_BLOCK_FLAGS (sb->succ->succ_next->dest)
+	      if (! (REORDER_BLOCK_FLAGS (e->dest)
 		     & REORDER_BLOCK_VISITED))
 		cond_type = PREDICT_THEN_NO_ELSE;
 	      else
@@ -368,7 +389,7 @@ chain_reorder_blocks (e, ceb)
 	    }
 	  else if (cond_block_type == NO_ELSE_BLOCK)
 	    {
-	      if (! (REORDER_BLOCK_FLAGS (sb->succ->dest)
+	      if (! (REORDER_BLOCK_FLAGS (e->dest)
 		     & REORDER_BLOCK_VISITED))
 		cond_type = PREDICT_NOT_THEN_NO_ELSE;
 	      else
@@ -379,16 +400,16 @@ chain_reorder_blocks (e, ceb)
 	{
 	  if (cond_block_type == THEN_BLOCK)
 	    {
-	      if (! (REORDER_BLOCK_FLAGS (sb->succ->succ_next->dest)
+	      if (! (REORDER_BLOCK_FLAGS (e->dest)
 		     & REORDER_BLOCK_VISITED))
 		cond_type = PREDICT_THEN_WITH_ELSE;
 	      else
 		cond_type = PREDICT_ELSE;
 	    }
 	  else if (cond_block_type == ELSE_BLOCK
-		   && sb->succ->dest != EXIT_BLOCK_PTR)
+		   && e_fallthru->dest != EXIT_BLOCK_PTR)
 	    {
-	      if (! (REORDER_BLOCK_FLAGS (sb->succ->dest)
+	      if (! (REORDER_BLOCK_FLAGS (e->dest)
 		     & REORDER_BLOCK_VISITED))
 		cond_type = PREDICT_ELSE;
 	      else
@@ -421,25 +442,26 @@ chain_reorder_blocks (e, ceb)
       if (rtl_dump_file)
 	fprintf (rtl_dump_file,
 		 "    then jump from block %d to block %d\n",
-		 sb->index, sb->succ->dest->index);
+		 sb->index, e_fallthru->dest->index);
 
       /* Jump to reordered then block.  */
-      REORDER_BLOCK_ADD_JUMP (sb) = sb->succ->dest;
+      REORDER_BLOCK_ADD_JUMP (sb) = e_fallthru->dest;
     }
   
   /* Reflect that then block will jump back when we have no else.  */
   if (cond_block_type != THEN_BLOCK
       && cond_type == PREDICT_NOT_THEN_NO_ELSE)
     {
-      for (ee = sb->succ->dest->succ;
+      basic_block jbb = e_fallthru->dest;
+      for (ee = jbb->succ;
 	   ee && ! (ee->flags & EDGE_FALLTHRU);
 	   ee = ee->succ_next)
 	continue;
 
-      if (ee && ! (GET_CODE (sb->succ->dest->end) == JUMP_INSN
-		   && ! simplejump_p (sb->succ->dest->end)))
+      if (ee && ! (GET_CODE (jbb->end) == JUMP_INSN
+		   && ! simplejump_p (jbb->end)))
 	{
-	  REORDER_BLOCK_ADD_JUMP (sb->succ->dest) = ee->dest;
+	  REORDER_BLOCK_ADD_JUMP (jbb) = ee->dest;
 	}
     }
 
