@@ -1,3 +1,11 @@
+Wed Jun  9 04:14:48 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* fixincludes: Avoid removing '.'.
+	* fixinc/fixinc.svr4: Likewise.
+	* fixinc/fixinc.winnt: Likewise.
+	* fixinc/inclhack.tpl: Likewise.
+	* fixinc/fixincl.sh, fixinc/inclhack.sh: Rebuilt.
+
 Wed Jun  9 03:55:34 1999  Jim Wilson <wilson@cygnus.com>
 
 	* configure.in (rs6000-ibm-aix4.[12]*): Change rx6000 to rs6000.

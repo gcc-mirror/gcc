@@ -224,7 +224,7 @@ fi
 
 echo 'Removing unneeded directories:'
 cd $LIB
-files=`find . -type d -print | sort -r`
+files=`find . -type d \! -name '.' -print | sort -r`
 for file in $files; do
   rmdir $LIB/$file > NUL 2>&1
 done
