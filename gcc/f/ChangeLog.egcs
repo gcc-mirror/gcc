@@ -1,3 +1,8 @@
+Sun Nov  2 19:49:51 1997  Richard Henderson  <rth@cygnus.com>
+
+	* com.c (ffecom_expr_): Only use TREE_TYPE argument for simple
+	arithmetic; convert types as necessary; recurse with target tree type.
+
 Wed Oct 22 11:37:41 1997  Richard Henderson  <rth@cygnus.com>
 
 	* com.c (ffecom_expr_): Take an new arg TREE_TYPE that if non-null
