@@ -6,7 +6,7 @@ This library is written to appropriate C++ coding standards.  As such,
 it is intended to precede the recommendations of the GNU Coding
 Standard, which can be referenced here:
 
-http://www.gnu.ai.mit.edu/prep/standards_toc.html 
+http://www.gnu.org/prep/standards_toc.html
 
 ChangeLog entries for member functions should use the
 classname::member function name syntax as follows:
@@ -27,7 +27,7 @@ Notable areas of divergence from what may be previous local practice
   char &c = *p;      // wrong
   
     Reason: In C++, definitions are mixed with executable code.  Here,       
-	    p          is being initialized, not *p.  This is near-universal
+	    p is being initialized, not *p.  This is near-universal
             practice among C++ programmers; it is normal for C hackers
             to switch spontaneously as they gain experience.
 
@@ -183,6 +183,16 @@ Notable areas of divergence from what may be previous local practice
    }
 
    return __ret;
+
+14. Location of global variables.
+   All global variables of class type, whether in the "user visable"
+   space (e.g., cin) or the implementation namespace, must be defined
+   as a character array with the appropriate alignment and then later
+   re-initialized to the correct value.
+
+   This is due to startup issues on certain platforms, such as AIX.
+   For more explanation and examples, see src/globals.cc.  All such
+   variables should be contained in that file, for simplicity.
 
 
 

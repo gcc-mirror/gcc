@@ -8,7 +8,7 @@
    <META NAME="GENERATOR" CONTENT="vi and eight fingers">
    <TITLE>libstdc++-v3 HOWTO:  Chapter 27</TITLE>
 <LINK REL=StyleSheet HREF="../lib3styles.css">
-<!-- $Id: howto.html,v 1.1 2000/12/10 04:04:56 pme Exp $ -->
+<!-- $Id: howto.html,v 1.2 2001/01/23 17:02:27 pme Exp $ -->
 </HEAD>
 <BODY>
 
@@ -29,6 +29,7 @@
    <LI><A HREF="#4">Iostreams class hierarchy diagram</A>
    <LI><A HREF="#5">What is this &lt;sstream&gt;/stringstreams thing?</A>
    <LI><A HREF="#6">Deriving a stream buffer</A>
+   <LI><A HREF="#7">More on binary I/O</A>
 </UL>
 
 <HR>
@@ -196,9 +197,9 @@
    <P>Sorry.  Them's the breaks.
    </P>
    <P>This isn't going to try and be a complete tutorial on reading and
-      writing binary files (because &quot;binary&quot; covers a lot of
-      ground), but we will try and clear up a couple of misconceptions
-      and common errors.
+      writing binary files (because &quot;binary&quot;
+      <A HREF="#7">covers a lot of ground)</A>, but we will try and clear
+      up a couple of misconceptions and common errors.
    </P>
    <P>First, <TT>ios::binary</TT> has exactly one defined effect, no more
       and no less.  Normal text mode has to be concerned with the newline
@@ -224,7 +225,7 @@
    <P>Third, using the <TT>get()</TT> and <TT>put()/write()</TT> member
       functions still aren't guaranteed to help you.  These are
       &quot;unformatted&quot; I/O functions, but still character-based.
-      (This may or may not be what you want.)
+      (This may or may not be what you want, see below.)
    </P>
    <P>Notice how all the problems here are due to the inappropriate use
       of <EM>formatting</EM> functions and classes to perform something
@@ -383,6 +384,31 @@
       Try it yourself!
    </P>
 
+<HR>
+<H2><A NAME="7">More on binary I/O</A></H2>
+   <P>Towards the beginning of February 2001, the subject of
+      &quot;binary&quot; I/O was brought up in a couple of places at the
+      same time.  One notable place was Usenet, where James Kanze and
+      Dietmar K&uuml;hl separately posted articles on why attempting
+      generic binary I/O was not a good idea.  (Here are copies of
+      <A HREF="binary_iostreams_kanze.txt">Kanze's article</A> and
+      <A HREF="binary_iostreams_kuehl.txt">K&uuml;hl's article</A>.)
+   </P>
+   <P>Briefly, the problems of byte ordering and type sizes mean that
+      the unformatted functions like <TT>ostream::put()</TT> and
+      <TT>istream::get()</TT> cannot safely be used to communicate
+      between arbitrary programs, or across a network, or from one
+      invocation of a program to another invocation of the same program
+      on a different platform, etc.
+   </P>
+   <P>The entire Usenet thread is instructive, and took place under the
+      subject heading &quot;binary iostreams&quot; on both comp.std.c++
+      and comp.lang.c++.moderated in parallel.  Also in that thread,
+      Dietmar K&uuml;hl mentioned that he had written a pair of stream
+      classes that would read and write XDR, which is a good step towards
+      a portable binary format.
+   </P>
+
 
 <!-- ####################################################### -->
 
@@ -391,7 +417,7 @@
 Comments and suggestions are welcome, and may be sent to
 <A HREF="mailto:pme@sources.redhat.com">Phil Edwards</A> or
 <A HREF="mailto:gdr@gcc.gnu.org">Gabriel Dos Reis</A>.
-<BR> $Id: howto.html,v 1.1 2000/12/10 04:04:56 pme Exp $
+<BR> $Id: howto.html,v 1.2 2001/01/23 17:02:27 pme Exp $
 </EM></P>
 
 

@@ -8,7 +8,7 @@
    <META NAME="GENERATOR" CONTENT="vi and eight fingers">
    <TITLE>libstdc++-v3 HOWTO:  Chapter 21</TITLE>
 <LINK REL=StyleSheet HREF="../lib3styles.css">
-<!-- $Id: howto.html,v 1.7 2000/12/03 23:47:47 jsm28 Exp $ -->
+<!-- $Id: howto.html,v 1.1 2000/12/10 04:04:55 pme Exp $ -->
 </HEAD>
 <BODY>
 
@@ -236,6 +236,13 @@
       with reading the new function names, this version is recommended
       as an example.
    </P>
+   <P><B>Added February 2001:</B>  Mark Wilden pointed out that the
+      standard <TT>std::getline()</TT> function can be used with standard
+      <A HREF="../27_io/howto.html">istringstreams</A> to perform
+      tokenizing as well.  Build an istringstream from the input text,
+      and then use std::getline with varying delimiters (the three-argument
+      signature) to extract tokens into a string.
+   </P>
    <P>Return <A HREF="#top">to top of page</A> or
       <A HREF="../faq/index.html">to the FAQ</A>.
    </P>
@@ -324,7 +331,7 @@
 Comments and suggestions are welcome, and may be sent to
 <A HREF="mailto:pme@sources.redhat.com">Phil Edwards</A> or
 <A HREF="mailto:gdr@gcc.gnu.org">Gabriel Dos Reis</A>.
-<BR> $Id: howto.html,v 1.7 2000/12/03 23:47:47 jsm28 Exp $
+<BR> $Id: howto.html,v 1.1 2000/12/10 04:04:55 pme Exp $
 </EM></P>
 
 
