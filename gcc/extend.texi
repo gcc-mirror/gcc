@@ -203,7 +203,7 @@ handled.  For example:
 does not work the same way as:
 
 @example
-inline int foo(a) @{ int b = a; return b + 3; @}
+inline int foo(int a) @{ int b = a; return b + 3; @}
 @end example
 
 @noindent
@@ -213,19 +213,9 @@ run earlier in the case of the macro than in the case of the function.
 
 These considerations mean that it is probably a bad idea to use
 statement-expressions of this form in header files that are designed to
-work with C++.  Note that the GNU C Library does contain header files
-using statement-expressions, and that these definitions make the library
-technically non-conforming.  For example, when optimization is turned
-on,
-
-@example
-string a, b;
-printf("%c", toupper((a+b).c_str()[0]));
-@end example
-
-@noindent
-will result in the destructor for the temporary created for @code{a+b}
-being run earlier than it should be.
+work with C++.  (Note that some versions of the GNU C Library contained
+header files using statement-expression that lead to precisely this
+bug.)
 
 @node Local Labels
 @section Locally Declared Labels
