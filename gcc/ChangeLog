@@ -1,3 +1,9 @@
+Tue Oct 26 00:41:54 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* reload1.c (reload_reg_free_for_value_p): Show
+	RELOAD_FOR_OTHER_ADDRESS reloads can conflict with RELOAD_OTHER
+	reloads.
+
 Mon Oct 25 23:54:45 1999  Geoff Keating  <geoffk@cygnus.com>
 
 	* loop.c (basic_induction_var): A non-integer variable which is
