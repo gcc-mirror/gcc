@@ -1,3 +1,8 @@
+Thu Jul  4 07:58:01 2002  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* sh.md (mshfhi_b, mshflo_b, mshfhi_l, mshflo_l, mshfhi_w): Add DONE.
+	(mshflo_w): Likewise.
+
 Thu Jul  4 07:36:29 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* simplify-rtx.c (simplify_subreg): Reduce problem of finding

@@ -9503,6 +9503,7 @@
 {
   emit_insn ((TARGET_LITTLE_ENDIAN ? gen_mshf4_b : gen_mshf0_b)
 	     (operands[0], operands[1], operands[2]));
+  DONE;
 }")
 
 (define_expand "mshflo_b"
@@ -9514,6 +9515,7 @@
 {
   emit_insn ((TARGET_LITTLE_ENDIAN ? gen_mshf0_b : gen_mshf4_b)
 	     (operands[0], operands[1], operands[2]));
+  DONE;
 }")
 
 (define_insn "mshf4_b"
@@ -9553,6 +9555,7 @@
 {
   emit_insn ((TARGET_LITTLE_ENDIAN ? gen_mshf4_l : gen_mshf0_l)
 	     (operands[0], operands[1], operands[2]));
+  DONE;
 }")
 
 (define_expand "mshflo_l"
@@ -9564,6 +9567,7 @@
 {
   emit_insn ((TARGET_LITTLE_ENDIAN ? gen_mshf0_l : gen_mshf4_l)
 	     (operands[0], operands[1], operands[2]));
+  DONE;
 }")
 
 (define_insn "mshf4_l"
@@ -9599,6 +9603,7 @@
 {
   emit_insn ((TARGET_LITTLE_ENDIAN ? gen_mshf4_w : gen_mshf0_w)
 	     (operands[0], operands[1], operands[2]));
+  DONE;
 }")
 
 (define_expand "mshflo_w"
@@ -9610,6 +9615,7 @@
 {
   emit_insn ((TARGET_LITTLE_ENDIAN ? gen_mshf0_w : gen_mshf4_w)
 	     (operands[0], operands[1], operands[2]));
+  DONE;
 }")
 
 (define_insn "mshf4_w"
