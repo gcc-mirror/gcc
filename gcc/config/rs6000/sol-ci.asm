@@ -96,6 +96,9 @@ __fini:	stwu	%r1,-16(%r1)
 	mflr	%r31
 
 # _environ and its evil twin environ, pointing to the environment
-	.comm	_environ,4,4
+	.section ".sdata","aw"
+	.align 2
+	.globl _environ
+	.space 4
 	.weak	environ
 	.set	environ,_environ
