@@ -1953,25 +1953,6 @@ allocation.
 Define this macro if the compiler should avoid copies to/from @code{CCmode}
 registers.  You should only define this macro if support for copying to/from
 @code{CCmode} is incomplete.
-
-@findex SUBREG_REGNO_OFFSET
-@item SUBREG_REGNO_OFFSET
-Define this macro if the compiler needs to handle subregs in a non-standard
-way.  The macro returns the correct regno offset for mode @code{YMODE} given
-a subreg of type @code{XMODE}.
-This macro takes 4 parameters:
-@table @code
-@item XREGNO
-A regno of an inner hard subreg_reg (or what will become one).
-@item XMODE
-The mode of xregno.
-@item OFFSET
-The byte offset.
-@item YMODE
-The mode of a top level SUBREG (or what may become one).
-@end table
-The default function can be found in @file{rtlanal.c}, function
-@code{subreg_regno_offset}.  Normally this does not need to be defined.
 @end table
 
 @node Leaf Functions
