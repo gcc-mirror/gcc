@@ -1,3 +1,9 @@
+Thu Sep 18 16:47:52 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* search.c (lookup_field): Call complete_type in all cases.
+
+	* decl.c (finish_function): Just warn about flowing off the end.
+
 Wed Sep 17 10:31:25 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl.c (grokparms): Don't bash a permanent list node if we're
@@ -306,11 +312,12 @@ Tue Sep  2 10:27:08 1997  Richard Henderson  <rth@cygnus.com>
 
 	* typeck.c (build_ptrmemfunc1): Clean up ptr->int cast warnings.
 
-Mon Sep  1 13:19:04 1997  Jason Merrill  <jason@yorick.cygnus.com>
+Mon Sep  1 13:19:04 1997  Eugene Mamchits <eugin@ips.ras.ru>
 
 	* call.c (add_builtin_candidate): Add missing TREE_TYPE.
 	(compare_ics): Likewise.
-	From someone whose name I've lost (sorry).
+
+Mon Sep  1 13:19:04 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* call.c (joust): Warn about choosing one conversion op over
  	another because of 'this' argument when the other return type is
