@@ -6976,65 +6976,77 @@ These @samp{-m} options are defined for the MIPS family of computers:
 
 @table @gcctabopt
 
-@item -march=@var{cpu-type}
+@item -march=@var{arch}
 @opindex march
-Assume the defaults for the machine type @var{cpu-type} when generating
-instructions.  The choices for @var{cpu-type} are  @samp{r2000}, @samp{r3000},
-@samp{r3900}, @samp{r4000}, @samp{r4100}, @samp{r4300}, @samp{r4400},
-@samp{r4600}, @samp{r4650}, @samp{r5000}, @samp{r6000}, @samp{r8000},
-and @samp{orion}.  Additionally, the @samp{r2000}, @samp{r3000},
-@samp{r4000}, @samp{r5000}, and @samp{r6000} can be abbreviated as
-@samp{r2k} (or @samp{r2K}), @samp{r3k}, etc.
+Generate code that will run on @var{arch}, which can be the name of a
+generic MIPS ISA, or the name of a particular processor.  The ISA names
+are: @samp{mips1}, @samp{mips2}, @samp{mips3}, @samp{mips4}, @samp{mips32}
+and @samp{mips64}.  The processor names are: @samp{r2000},
+@samp{r3000}, @samp{r3900}, @samp{r4000}, @samp{vr4100}, @samp{vr4300},
+@samp{r4400}, @samp{r4600}, @samp{r4650}, @samp{vr5000}, @samp{r6000},
+@samp{r8000}, @samp{4kc}, @samp{4kp}, @samp{5kc}, @samp{20kc}
+and @samp{orion}.  The special value @samp{from-abi} selects the
+most compatible architecture for the selected ABI (that is,
+@samp{mips1} for 32-bit ABIs and @samp{mips3} for 64-bit ABIs)@.
 
-@item -mtune=@var{cpu-type}
+In processor names, a final @samp{000} can be abbreviated as @samp{k}
+(for example, @samp{-march=r2k}).  Prefixes are optional, and
+@samp{vr} may be written @samp{r}.
+
+GCC defines two macros based on the value of this option.  The first
+is @samp{_MIPS_ARCH}, which gives the name of target architecture, as
+a string.  The second has the form @samp{_MIPS_ARCH_@var{foo}},
+where @var{foo} is the capitialized value of @samp{_MIPS_ARCH}@.
+For example, @samp{-march=r2000} will set @samp{_MIPS_ARCH}
+to @samp{"r2000"} and define the macro @samp{_MIPS_ARCH_R2000}.
+
+Note that the @samp{_MIPS_ARCH} macro uses the processor names given
+above.  In other words, it will have the full prefix and will not
+abbreviate @samp{000} as @samp{k}.  In the case of @samp{from-abi},
+the macro names the resolved architecture (either @samp{"mips1"} or
+@samp{"mips3"}).  It names the default architecture when no
+@option{-march} option is given.
+
+@item -mtune=@var{arch}
 @opindex mtune
-Assume the defaults for the machine type @var{cpu-type} when scheduling
-instructions.  The choices for @var{cpu-type} are @samp{r2000}, @samp{r3000},
-@samp{r3900}, @samp{r4000}, @samp{r4100}, @samp{r4300}, @samp{r4400},
-@samp{r4600}, @samp{r4650}, @samp{r5000}, @samp{r6000}, @samp{r8000},
-and @samp{orion}.  Additionally, the @samp{r2000}, @samp{r3000},
-@samp{r4000}, @samp{r5000}, and @samp{r6000} can be abbreviated as
-@samp{r2k} (or @samp{r2K}), @samp{r3k}, etc.  While picking a specific
-@var{cpu-type} will schedule things appropriately for that particular
-chip, the compiler will not generate any code that does not meet level 1
-of the MIPS ISA (instruction set architecture) without a @option{-mipsX}
-or @option{-mabi} switch being used.
+Optimize for @var{arch}.  Among other things, this option controls
+the way instructions are scheduled, and the perceived cost of arithmetic
+operations.  The list of @var{arch} values is the same as for
+@option{-march}.
 
-@item -mcpu=@var{cpu-type}
-@opindex mcpu
-This is identical to specifying both @option{-march} and @option{-mtune}.
+When this option is not used, GCC will optimize for the processor
+specified by @option{-march}.  By using @option{-march} and
+@option{-mtune} together, it is possible to generate code that will
+run on a family of processors, but optimize the code for one
+particular member of that family.
+
+@samp{-mtune} defines the macros @samp{_MIPS_TUNE} and
+@samp{_MIPS_TUNE_@var{foo}}, which work in the same way as the
+@samp{-march} ones described above.
 
 @item -mips1
 @opindex mips1
-Issue instructions from level 1 of the MIPS ISA@.  This is the default.
-@samp{r3000} is the default @var{cpu-type} at this ISA level.
+Equivalent to @samp{-march=mips1}.
 
 @item -mips2
 @opindex mips2
-Issue instructions from level 2 of the MIPS ISA (branch likely, square
-root instructions).  @samp{r6000} is the default @var{cpu-type} at this
-ISA level.
+Equivalent to @samp{-march=mips2}.
 
 @item -mips3
 @opindex mips3
-Issue instructions from level 3 of the MIPS ISA (64-bit instructions).
-@samp{r4000} is the default @var{cpu-type} at this ISA level.
+Equivalent to @samp{-march=mips3}.
 
 @item -mips4
 @opindex mips4
-Issue instructions from level 4 of the MIPS ISA (conditional move,
-prefetch, enhanced FPU instructions).  @samp{r8000} is the default
-@var{cpu-type} at this ISA level.
+Equivalent to @samp{-march=mips4}.
 
-@item -mfp32
-@opindex mfp32
-Assume that 32 32-bit floating point registers are available.  This is
-the default.
+@item -mips32
+@opindex mips32
+Equivalent to @samp{-march=mips32}.
 
-@item -mfp64
-@opindex mfp64
-Assume that 32 64-bit floating point registers are available.  This is
-the default when the @option{-mips3} option is used.
+@item -mips64
+@opindex mips64
+Equivalent to @samp{-march=mips64}.
 
 @item -mfused-madd
 @itemx -mno-fused-madd
@@ -7048,15 +7060,21 @@ in the mode where denormals are rounded to zero where denormals
 generated by multiply and accumulate instructions cause exceptions
 anyway.
 
+@item -mfp32
+@opindex mfp32
+Assume that floating point registers are 32 bits wide.
+
+@item -mfp64
+@opindex mfp64
+Assume that floating point registers are 64 bits wide.
+
 @item -mgp32
 @opindex mgp32
-Assume that 32 32-bit general purpose registers are available.  This is
-the default.
+Assume that general purpose registers are 32 bits wide.
 
 @item -mgp64
 @opindex mgp64
-Assume that 32 64-bit general purpose registers are available.  This is
-the default when the @option{-mips3} option is used.
+Assume that general purpose registers are 64 bits wide.
 
 @item -mint64
 @opindex mint64
@@ -7072,31 +7090,32 @@ explanation of the default, and the width of pointers.
 @opindex mlong32
 Force long, int, and pointer types to be 32 bits wide.
 
-If none of @option{-mlong32}, @option{-mlong64}, or @option{-mint64} are set,
-the size of ints, longs, and pointers depends on the ABI and ISA chosen.
-For @option{-mabi=32}, and @option{-mabi=n32}, ints and longs are 32 bits
-wide.  For @option{-mabi=64}, ints are 32 bits, and longs are 64 bits wide.
-For @option{-mabi=eabi} and either @option{-mips1} or @option{-mips2}, ints
-and longs are 32 bits wide.  For @option{-mabi=eabi} and higher ISAs, ints
-are 32 bits, and longs are 64 bits wide.  The width of pointer types is
-the smaller of the width of longs or the width of general purpose
-registers (which in turn depends on the ISA)@.
+The default size of ints, longs and pointers depends on the ABI@.  All
+the supported ABIs use 32-bit ints.  The n64 ABI uses 64-bit longs, as
+does the 64-bit Cygnus EABI; the others use 32-bit longs.  Pointers
+are the same size as longs, or the same size as integer registers,
+whichever is smaller.
 
 @item -mabi=32
 @itemx -mabi=o64
 @itemx -mabi=n32
 @itemx -mabi=64
 @itemx -mabi=eabi
+@itemx -mabi=meabi
 @opindex mabi=32
 @opindex mabi=o64
 @opindex mabi=n32
 @opindex mabi=64
 @opindex mabi=eabi
-Generate code for the indicated ABI@.  The default instruction level is
-@option{-mips1} for @samp{32}, @option{-mips3} for @samp{n32}, and
-@option{-mips4} otherwise.  Conversely, with @option{-mips1} or
-@option{-mips2}, the default ABI is @samp{32}; otherwise, the default ABI
-is @samp{64}.
+@opindex mabi=meabi
+Generate code for the given ABI@.
+
+Note that there are two embedded ABIs: @option{-mabi=eabi}
+selects the one defined by Cygnus while @option{-meabi=meabi}
+selects the one defined by MIPS@.  Both these ABIs have
+32-bit and 64-bit variants.  Normally, GCC will generate
+64-bit code when you select a 64-bit architecture, but you
+can use @option{-mgp32} to get 32-bit code instead.
 
 @item -mmips-as
 @opindex mmips-as

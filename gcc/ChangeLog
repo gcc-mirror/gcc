@@ -1,5 +1,52 @@
 2002-07-25  Richard Sandiford  <rsandifo@redhat.com>
 
+	* doc/invoke.texi: Document -mabi=meabi, and expand on the EABI
+	description.  Document -mips32, -mips64, and the associated -march
+	values.  Describe the "mipsN" arguments to -march.  Say that the
+	-mipsN options are equivalent to -march.  Reword the description
+	of default type sizes.
+	* toplev.h (target_flags_explicit): Declare.
+	* toplev.c (target_flags_explicit): New var.
+	(set_target_switch): Update target_flags_explicit.
+	* config/mips/abi64.h (SUBTARGET_TARGET_OPTIONS): Undefine.
+	* config/mips/elf64.h (MIPS_ISA_DEFAULT): Undefine.
+	* config/mips/iris6.h (SUBTARGET_ASM_SPEC): -mabi=64 implies -mips3.
+	* config/mips/isa3264.h (MIPS_ENABLE_EMBEDDED_O32): Undefine.
+	* config/mips/mips.h (mips_cpu_info): New struct.
+	(mips_cpu_string, mips_explicit_type_size_string): Remove.
+	(mips_cpu_info_table, mips_arch_info, mips_tune_info): Declare.
+	(MIPS_CPP_SET_PROCESSOR): New macro.
+	(TARGET_CPP_BUILTINS): Declare a macro for each supported processor.
+	Define _MIPS_ARCH and _MIPS_TUNE.
+	(MIPS_ISA_DEFAULT): Don't provide a default value.  Instead...
+	(MIPS_CPU_STRING_DEFAULT): Set to "from-abi" if neither it nor
+	MIPS_ISA_DEFAULT were already defined.
+	(MULTILIB_DEFAULTS): Add MULTILIB_ABI_DEFAULT.
+	(TARGET_OPTIONS): Remove -mcpu and -mexplicit-type-size.
+	(ABI_NEEDS_32BIT_REGS, ABI_NEEDS_64BIT_REGS): New.
+	(GAS_ASM_SPEC): Remove -march, -mcpu, -mgp* and -mabi rules.
+	(ABI_GAS_ASM_SPEC): Remove.
+	(MULTILIB_ABI_DEFAULT, ASM_ABI_DEFAULT_SPEC): New macros.
+	(ASM_SPEC): Add -mgp32, -mgp64, -march, -mabi=eabi and -mabi=o64.
+	Invoke %(asm_abi_default_spec) if no ABI was specified.
+	(CC1_SPEC): Remove ISA -> register-size rules.
+	(EXTRA_SPECS): Remove abi_gas_asm_spec.  Add asm_abi_default_spec.
+	* config/mips/mips.c (mips_arch_info, mips_tune_info): New vars.
+	(mips_cpu_string, mips_explicit_type_size_string): Remove.
+	(mips_cpu_info_table): New array.
+	(mips_set_architecture, mips_set_tune): New fns.
+	(override_options): Rework to make -mipsN equivalent to -march.
+	Detect more erroneous cases, including those removed from CC1_SPEC.
+	Don't change the ABI based on architecture, or vice versa.
+	Unify logic with GAS.
+	(mips_asm_file_start): Get architecture name from mips_arch_info.
+	(mips_strict_matching_cpu_name_p, mips_matching_cpu_name_p): New fns.
+	(mips_parse_cpu): Take the name of the option as argument.  Handle
+	'from-abi'.  Raise an error if the option is wrong.
+	(mips_cpu_info_from_isa): New fn.
+
+2002-07-25  Richard Sandiford  <rsandifo@redhat.com>
+
 	* config/mips/mips.md (tablejump_mips161): Use gen_rtx_LABEL_REF.
 	(tablejump_mips162): Likewise.
 

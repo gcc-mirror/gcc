@@ -118,6 +118,23 @@ enum block_move_type {
   BLOCK_MOVE_LAST			/* generate just the last store */
 };
 
+/* Information about one recognised processor.  Defined here for the
+   benefit of TARGET_CPU_CPP_BUILTINS.  */
+struct mips_cpu_info {
+  /* The 'canonical' name of the processor as far as GCC is concerned.
+     It's typically a manufacturer's prefix followed by a numerical
+     designation.  It should be lower case.  */
+  const char *name;
+
+  /* The internal processor number that most closely matches this
+     entry.  Several processors can have the same value, if there's no
+     difference between them from GCC's point of view.  */
+  enum processor_type cpu;
+
+  /* The ISA level that the processor implements.  */
+  int isa;
+};
+
 extern char mips_reg_names[][8];	/* register names (a0 vs. $4).  */
 extern char mips_print_operand_punct[256]; /* print_operand punctuation chars */
 extern const char *current_function_file; /* filename current function is in */
@@ -146,14 +163,12 @@ extern int mips_isa;			/* architectural level */
 extern int mips16;			/* whether generating mips16 code */
 extern int mips16_hard_float;		/* mips16 without -msoft-float */
 extern int mips_entry;			/* generate entry/exit for mips16 */
-extern const char *mips_cpu_string;	/* for -mcpu=<xxx> */
 extern const char *mips_arch_string;    /* for -march=<xxx> */
 extern const char *mips_tune_string;    /* for -mtune=<xxx> */
 extern const char *mips_isa_string;	/* for -mips{1,2,3,4} */
 extern const char *mips_abi_string;	/* for -mabi={32,n32,64} */
 extern const char *mips_entry_string;	/* for -mentry */
 extern const char *mips_no_mips16_string;/* for -mno-mips16 */
-extern const char *mips_explicit_type_size_string;/* for -mexplicit-type-size */
 extern const char *mips_cache_flush_func;/* for -mflush-func= and -mno-flush-func */
 extern int mips_split_addresses;	/* perform high/lo_sum support */
 extern int dslots_load_total;		/* total # load related delay slots */
@@ -167,6 +182,9 @@ extern GTY(()) rtx mips_load_reg2;	/* 2nd reg to check for load delay */
 extern GTY(()) rtx mips_load_reg3;	/* 3rd reg to check for load delay */
 extern GTY(()) rtx mips_load_reg4;	/* 4th reg to check for load delay */
 extern int mips_string_length;		/* length of strings for mips16 */
+extern const struct mips_cpu_info mips_cpu_info_table[];
+extern const struct mips_cpu_info *mips_arch_info;
+extern const struct mips_cpu_info *mips_tune_info;
 
 /* Functions to change what output section we are using.  */
 extern void		sdata_section PARAMS ((void));
@@ -342,6 +360,25 @@ extern void		sbss_section PARAMS ((void));
 #define TUNE_MIPS5000               (mips_tune == PROCESSOR_R5000)
 #define TUNE_MIPS6000               (mips_tune == PROCESSOR_R6000)
 
+/* Define preprocessor macros for the -march and -mtune options.
+   PREFIX is either _MIPS_ARCH or _MIPS_TUNE, INFO is the selected
+   processor.  If INFO's canonical name is "foo", define PREFIX to
+   be "foo", and define an additional macro PREFIX_FOO.  */
+#define MIPS_CPP_SET_PROCESSOR(PREFIX, INFO)			\
+  do								\
+    {								\
+      char *macro, *p;						\
+								\
+      macro = concat ((PREFIX), "_", (INFO)->name, NULL);	\
+      for (p = macro; *p != 0; p++)				\
+	*p = TOUPPER (*p);					\
+								\
+      builtin_define (macro);					\
+      builtin_define_with_value ((PREFIX), (INFO)->name, 1);	\
+      free (macro);						\
+    }								\
+  while (0)
+
 /* Target CPU builtins.  */
 #define TARGET_CPU_CPP_BUILTINS()				\
   do								\
@@ -355,16 +392,16 @@ extern void		sbss_section PARAMS ((void));
       if (!flag_iso)						\
 	  builtin_define ("mips");				\
 								\
+      /* Treat _R3000 and _R4000 like register-size defines,	\
+	 which is how they've historically been used.  */	\
       if (TARGET_64BIT)						\
 	{							\
 	  builtin_define ("__mips64");     			\
-	  /* Silly, but will do until processor defines.  */	\
 	  builtin_define_std ("R4000");				\
 	  builtin_define ("_R4000");				\
 	}							\
       else							\
 	{							\
-	  /* Ditto.  */						\
 	  builtin_define_std ("R3000");				\
 	  builtin_define ("_R3000");				\
 	}							\
@@ -375,6 +412,9 @@ extern void		sbss_section PARAMS ((void));
 								\
       if (TARGET_MIPS16)					\
 	  builtin_define ("__mips16");				\
+								\
+      MIPS_CPP_SET_PROCESSOR ("_MIPS_ARCH", mips_arch_info);	\
+      MIPS_CPP_SET_PROCESSOR ("_MIPS_TUNE", mips_tune_info);	\
 								\
       if (ISA_MIPS1)						\
 	{							\
@@ -605,8 +645,11 @@ extern void		sbss_section PARAMS ((void));
 #define TARGET_ENDIAN_DEFAULT MASK_BIG_ENDIAN
 #endif
 
+/* 'from-abi' makes a good default: you get whatever the ABI requires.  */
 #ifndef MIPS_ISA_DEFAULT
-#define MIPS_ISA_DEFAULT 1
+#ifndef MIPS_CPU_STRING_DEFAULT
+#define MIPS_CPU_STRING_DEFAULT "from-abi"
+#endif
 #endif
 
 #ifdef IN_LIBGCC2
@@ -656,7 +699,8 @@ extern void		sbss_section PARAMS ((void));
 #endif
 
 #ifndef MULTILIB_DEFAULTS
-#define MULTILIB_DEFAULTS { MULTILIB_ENDIAN_DEFAULT, MULTILIB_ISA_DEFAULT }
+#define MULTILIB_DEFAULTS \
+    { MULTILIB_ENDIAN_DEFAULT, MULTILIB_ISA_DEFAULT, MULTILIB_ABI_DEFAULT }
 #endif
 
 /* We must pass -EL to the linker by default for little endian embedded
@@ -675,20 +719,18 @@ extern void		sbss_section PARAMS ((void));
 #define TARGET_OPTIONS							\
 {									\
   SUBTARGET_TARGET_OPTIONS						\
-  { "cpu=",	&mips_cpu_string,					\
-      N_("Specify CPU for scheduling purposes")},			\
   { "tune=",    &mips_tune_string,			                \
       N_("Specify CPU for scheduling purposes")},                       \
   { "arch=",    &mips_arch_string,                                      \
       N_("Specify CPU for code generation purposes")},                  \
+  { "abi=", &mips_abi_string,						\
+      N_("Specify an ABI")},						\
   { "ips",	&mips_isa_string,					\
       N_("Specify a Standard MIPS ISA")},				\
   { "entry",	&mips_entry_string,					\
       N_("Use mips16 entry/exit psuedo ops")},				\
   { "no-mips16", &mips_no_mips16_string,				\
       N_("Don't use MIPS16 instructions")},				\
-  { "explicit-type-size", &mips_explicit_type_size_string,		\
-      NULL},								\
   { "no-flush-func", &mips_cache_flush_func,				\
       N_("Don't call any cache flush functions")},			\
   { "flush-func=", &mips_cache_flush_func,				\
@@ -715,6 +757,16 @@ extern void		sbss_section PARAMS ((void));
 
 #define BRANCH_LIKELY_P()	GENERATE_BRANCHLIKELY
 #define HAVE_SQRT_P()		(!ISA_MIPS1)
+
+/* True if the ABI can only work with 64-bit integer registers.  We
+   generally allow ad-hoc variations for TARGET_SINGLE_FLOAT, but
+   otherwise floating-point registers must also be 64-bit.  */
+#define ABI_NEEDS_64BIT_REGS	(mips_abi == ABI_64			\
+				 || mips_abi == ABI_O64			\
+				 || mips_abi == ABI_N32)
+
+/* Likewise for 32-bit regs.  */
+#define ABI_NEEDS_32BIT_REGS	(mips_abi == ABI_32)
 
 /* ISA has instructions for managing 64 bit fp and gp regs (eg. mips3).  */
 #define ISA_HAS_64BIT_REGS	(ISA_MIPS3				\
@@ -911,7 +963,7 @@ while (0)
 /* GAS_ASM_SPEC is passed when using gas, rather than the MIPS
    assembler.  */
 
-#define GAS_ASM_SPEC "%{march=*} %{mtune=*} %{mcpu=*} %{m4650} %{mmad:-m4650} %{m3900} %{v} %{mgp32} %{mgp64} %(abi_gas_asm_spec) %{mabi=32:%{!mips*:-mips1}}"
+#define GAS_ASM_SPEC "%{mtune=*} %{v}"
 
 
 extern int mips_abi;
@@ -920,8 +972,43 @@ extern int mips_abi;
 #define MIPS_ABI_DEFAULT ABI_32
 #endif
 
-#ifndef ABI_GAS_ASM_SPEC
-#define ABI_GAS_ASM_SPEC ""
+/* Use the most portable ABI flag for the ASM specs.  */
+
+#if MIPS_ABI_DEFAULT == ABI_32
+#define MULTILIB_ABI_DEFAULT "mabi=32"
+#define ASM_ABI_DEFAULT_SPEC "-32"
+#endif
+
+#if MIPS_ABI_DEFAULT == ABI_O64
+#define MULTILIB_ABI_DEFAULT "mabi=o64"
+#define ASM_ABI_DEFAULT_SPEC "-mabi=o64"
+#endif
+
+#if MIPS_ABI_DEFAULT == ABI_N32
+#define MULTILIB_ABI_DEFAULT "mabi=n32"
+#define ASM_ABI_DEFAULT_SPEC "-n32"
+#endif
+
+#if MIPS_ABI_DEFAULT == ABI_64
+#define MULTILIB_ABI_DEFAULT "mabi=64"
+#define ASM_ABI_DEFAULT_SPEC "-64"
+#endif
+
+#if MIPS_ABI_DEFAULT == ABI_EABI
+#define MULTILIB_ABI_DEFAULT "mabi=eabi"
+#define ASM_ABI_DEFAULT_SPEC "-mabi=eabi"
+#endif
+
+#if MIPS_ABI_DEFAULT == ABI_MEABI
+/* Most GAS don't know about MEABI.  */
+#define MULTILIB_ABI_DEFAULT "mabi=meabi"
+#define ASM_ABI_DEFAULT_SPEC ""
+#endif
+
+/* Only ELF targets can switch the ABI.  */
+#ifndef OBJECT_FORMAT_ELF
+#undef ASM_ABI_DEFAULT_SPEC
+#define ASM_ABI_DEFAULT_SPEC ""
 #endif
 
 /* TARGET_ASM_SPEC is used to select either MIPS_AS_ASM_SPEC or
@@ -969,7 +1056,11 @@ extern int mips_abi;
 #define SUBTARGET_ASM_SPEC ""
 #endif
 
-/* ASM_SPEC is the set of arguments to pass to the assembler.  */
+/* ASM_SPEC is the set of arguments to pass to the assembler.  Note: we
+   pass -mgp32, -mgp64, -march, -mabi=eabi and -meabi=o64 regardless of
+   whether we're using GAS.  These options can only be used properly
+   with GAS, and it is better to get an error from a non-GAS assembler
+   than to silently generate bad code.  */
 
 #undef ASM_SPEC
 #define ASM_SPEC "\
@@ -978,7 +1069,9 @@ extern int mips_abi;
 %(subtarget_asm_optimizing_spec) \
 %(subtarget_asm_debugging_spec) \
 %{membedded-pic} \
-%{mabi=32:-32}%{mabi=o32:-32}%{mabi=n32:-n32}%{mabi=64:-64}%{mabi=n64:-64} \
+%{mabi=32:-32}%{mabi=n32:-n32}%{mabi=64:-64}%{mabi=n64:-64} \
+%{mabi=eabi} %{mabi=o64} %{!mabi*: %(asm_abi_default_spec)} \
+%{mgp32} %{mgp64} %{march=*} \
 %(target_asm_spec) \
 %(subtarget_asm_spec)"
 
@@ -1049,15 +1142,6 @@ extern int mips_abi;
 #ifndef CC1_SPEC
 #define CC1_SPEC "\
 %{gline:%{!g:%{!g0:%{!g1:%{!g2: -g1}}}}} \
-%{mips1:-mfp32 -mgp32} %{mips2:-mfp32 -mgp32}\
-%{mips3:%{!msingle-float:%{!m4650:-mfp64}} -mgp64} \
-%{mips4:%{!msingle-float:%{!m4650:-mfp64}} -mgp64} \
-%{mips32:-mfp32 -mgp32} \
-%{mips64:%{!msingle-float:-mfp64} -mgp64} \
-%{mfp64:%{msingle-float:%emay not use both -mfp64 and -msingle-float}} \
-%{mfp64:%{m4650:%emay not use both -mfp64 and -m4650}} \
-%{mint64|mlong64|mlong32:-mexplicit-type-size }\
-%{mgp32: %{mfp64:%emay not use both -mgp32 and -mfp64} %{!mfp32: -mfp32}} \
 %{G*} %{EB:-meb} %{EL:-mel} %{EB:%{EL:%emay not use both -EB and -EL}} \
 %{save-temps: } \
 %(subtarget_cc1_spec)"
@@ -1088,12 +1172,12 @@ extern int mips_abi;
   { "subtarget_cpp_spec", SUBTARGET_CPP_SPEC },				\
   { "mips_as_asm_spec", MIPS_AS_ASM_SPEC },				\
   { "gas_asm_spec", GAS_ASM_SPEC },					\
-  { "abi_gas_asm_spec", ABI_GAS_ASM_SPEC },                             \
   { "target_asm_spec", TARGET_ASM_SPEC },				\
   { "subtarget_mips_as_asm_spec", SUBTARGET_MIPS_AS_ASM_SPEC }, 	\
   { "subtarget_asm_optimizing_spec", SUBTARGET_ASM_OPTIMIZING_SPEC },	\
   { "subtarget_asm_debugging_spec", SUBTARGET_ASM_DEBUGGING_SPEC },	\
   { "subtarget_asm_spec", SUBTARGET_ASM_SPEC },				\
+  { "asm_abi_default_spec", ASM_ABI_DEFAULT_SPEC },			\
   { "endian_spec", ENDIAN_SPEC },					\
   SUBTARGET_EXTRA_SPECS
 

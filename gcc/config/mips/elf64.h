@@ -22,13 +22,10 @@ Boston, MA 02111-1307, USA.  */
 
 #define OBJECT_FORMAT_ELF
 
-/* Default to -mips3.  */
+/* If an embedded ABI is selected, prefer to generate 64-bit code.
+   Implies -mips3 in such cases.  */
 #ifndef TARGET_DEFAULT
 #define TARGET_DEFAULT MASK_FLOAT64|MASK_64BIT
-#endif
-
-#ifndef MIPS_ISA_DEFAULT
-#define MIPS_ISA_DEFAULT 3
 #endif
 
 /* This should change to n32 when it is supported in gas.  */
