@@ -1,5 +1,5 @@
 /* Register Transfer Language (RTL) definitions for GNU C-Compiler
-   Copyright (C) 1987, 1991, 1992, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1991, 1992, 1993, 1994 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -24,6 +24,10 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #undef FLOAT /* Likewise.  */
 #undef ABS /* Likewise.  */
 #undef PC /* Likewise.  */
+
+#ifndef TREE_CODE
+union tree_node;
+#endif
 
 /* Register Transfer Language EXPRESSIONS CODES */
 
@@ -160,6 +164,14 @@ typedef struct rtx_def
 #define PVPROTO(ARGS)		()
 #define VPROTO(ARGS)		(va_alist) va_dcl
 #define VA_START(va_list,var)	va_start(va_list)
+#endif
+#endif
+
+#ifndef STDIO_PROTO
+#ifdef BUFSIZ
+#define STDIO_PROTO(ARGS) PROTO(ARGS)
+#else
+#define STDIO_PROTO(ARGS) ()
 #endif
 #endif
 
@@ -661,11 +673,7 @@ extern rtx gen_rtx			PVPROTO((enum rtx_code,
 						 enum machine_mode, ...));
 extern rtvec gen_rtvec			PVPROTO((int, ...));
 
-#ifdef BUFSIZ			/* stdio.h has been included */
-extern rtx read_rtx			PROTO((FILE *));
-#else
-extern rtx read_rtx ();
-#endif
+extern rtx read_rtx			STDIO_PROTO((FILE *));
 
 #if 0
 /* At present, don't prototype xrealloc, since all of the callers don't
@@ -898,20 +906,10 @@ extern rtx *find_single_use		PROTO((rtx, rtx, rtx *));
    expr.h to be included for the enumeration.  */
 
 extern rtx expand_expr ();
-extern rtx immed_real_const_1();
 
-#ifdef TREE_CODE
-/* rtl.h and tree.h were included.  */
-extern rtx  output_constant_def PROTO((tree));
-extern rtx  immed_real_const	PROTO((tree));
-extern rtx  immed_real_const_1	PROTO((REAL_VALUE_TYPE, enum machine_mode));
-extern tree make_tree		PROTO((tree, rtx));
-
-#else
-extern rtx output_constant_def ();
-extern rtx immed_real_const ();
-extern rtx immed_real_const_1 ();
-#endif
+extern rtx output_constant_def		PROTO((union tree_node *));
+extern rtx immed_real_const		PROTO((union tree_node *));
+extern union tree_node *make_tree	PROTO((union tree_node *, rtx));
 
 /* Define a default value for STORE_FLAG_VALUE.  */
 
@@ -942,5 +940,7 @@ extern int cse_not_expected;
 extern rtx *regno_reg_rtx;
 
 /* Translates rtx code to tree code, for those codes needed by
-   REAL_ARITHMETIC.  */
-extern int rtx_to_tree_code ();
+   REAL_ARITHMETIC.  The function returns an int because the caller may not
+   know what `enum tree_code' means.  */
+
+extern int rtx_to_tree_code	PROTO((enum rtx_code));
