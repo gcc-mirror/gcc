@@ -1,3 +1,8 @@
+2003-09-12  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR bootstrap/12264
+	* tree-inline.c (inline_forbidden_p_1): Cast the 3rd arg to tree.
+
 2003-09-12  Bob Wilson  <bob.wilson@acm.org>
 	
 	* config/xtensa/elf.h (ASM_SPEC): Remove no-density option.  Reformat.
