@@ -26,6 +26,12 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #include "halfpic.h"
 
+#define WORD_SWITCH_TAKES_ARG(STR)					\
+ (!strcmp (STR, "Tdata") || !strcmp (STR, "Ttext")			\
+  || !strcmp (STR, "Tbss") || !strcmp (STR, "include")			\
+  || !strcmp (STR, "imacros") || !strcmp (STR, "aux-info")		\
+  || !strcmp (STR, "pic-names"))
+
 #define CPP_PREDEFINES "-DOSF -DOSF1 -Dbsd4_2 -DMIPSEL -Dhost_mips -Dmips -Dunix -DR3000 -DSYSTYPE_BSD"
 
 #define ASM_SPEC	"\
@@ -93,6 +99,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 %{pic-lib:    -mhalf-pic} \
 %{pic-extern: -mhalf-pic} \
 %{pic-calls:  -mhalf-pic} \
+%{pic-names*: -mhalf-pic} \
 %{!pic-*:     -mhalf-pic}"
 
 /* Specify size_t, ptrdiff_t, and wchar_t types.  */
