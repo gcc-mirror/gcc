@@ -173,7 +173,6 @@ static void read_name_map (cpp_dir *dir);
 static char *remap_filename (cpp_reader *pfile, _cpp_file *file);
 static char *append_file_to_dir (const char *fname, cpp_dir *dir);
 static bool validate_pch (cpp_reader *, _cpp_file *file, const char *pchname);
-static int pchf_adder (void **slot, void *data);
 static int pchf_save_compare (const void *e1, const void *e2);
 static int pchf_compare (const void *d_p, const void *e_p);
 static bool check_file_against_entries (cpp_reader *, _cpp_file *, bool);
@@ -1448,58 +1447,6 @@ struct pchf_data {
 
 static struct pchf_data *pchf;
 
-/* Data for pchf_addr.  */
-struct pchf_adder_info
-{
-  cpp_reader *pfile;
-  struct pchf_data *d;
-};
-
-/* A hash traversal function to add entries into DATA->D.  */
-
-static int
-pchf_adder (void **slot, void *data)
-{
-  struct file_hash_entry *h = (struct file_hash_entry *) *slot;
-  struct pchf_adder_info *i = (struct pchf_adder_info *) data;
-
-  if (h->start_dir != NULL && h->u.file->stack_count != 0)
-    {
-      struct pchf_data *d = i->d;
-      _cpp_file *f = h->u.file;
-      size_t count = d->count++;
-
-      /* This should probably never happen, since if a read error occurred
-	 the PCH file shouldn't be written...  */
-      if (f->dont_read || f->err_no)
-	return 1;
-
-      d->entries[count].once_only = f->once_only;
-      /* |= is avoided in the next line because of an HP C compiler bug */
-      d->have_once_only = d->have_once_only | f->once_only; 
-      if (f->buffer_valid)
-	  md5_buffer ((const char *)f->buffer,
-		      f->st.st_size, d->entries[count].sum);
-      else
-	{
-	  FILE *ff;
-	  int oldfd = f->fd;
-
-	  if (!open_file (f))
-	    {
-	      open_file_failed (i->pfile, f);
-	      return 0;
-	    }
-	  ff = fdopen (f->fd, "rb");
-	  md5_stream (ff, d->entries[count].sum);
-	  fclose (ff);
-	  f->fd = oldfd;
-	}
-      d->entries[count].size = f->st.st_size;
-    }
-  return 1;
-}
-
 /* A qsort ordering function for pchf_entry structures.  */
 
 static int
@@ -1511,14 +1458,16 @@ pchf_save_compare (const void *e1, const void *e2)
 /* Create and write to F a pchf_data structure.  */
 
 bool
-_cpp_save_file_entries (cpp_reader *pfile, FILE *f)
+_cpp_save_file_entries (cpp_reader *pfile, FILE *fp)
 {
   size_t count = 0;
   struct pchf_data *result;
   size_t result_size;
-  struct pchf_adder_info pai;
+  _cpp_file *f;
 
-  count = htab_elements (pfile->file_hash);
+  for (f = pfile->all_files; f; f = f->next_file)
+    ++count;
+
   result_size = (sizeof (struct pchf_data)
 		 + sizeof (struct pchf_entry) * (count - 1));
   result = xcalloc (result_size, 1);
@@ -1526,9 +1475,43 @@ _cpp_save_file_entries (cpp_reader *pfile, FILE *f)
   result->count = 0;
   result->have_once_only = false;
 
-  pai.pfile = pfile;
-  pai.d = result;
-  htab_traverse (pfile->file_hash, pchf_adder, &pai);
+  for (f = pfile->all_files; f; f = f->next_file)
+    {
+      size_t count;
+
+      /* This should probably never happen, since if a read error occurred
+	 the PCH file shouldn't be written...  */
+      if (f->dont_read || f->err_no)
+	continue;
+
+      if (f->stack_count == 0)
+	continue;
+
+      count = result->count++;
+
+      result->entries[count].once_only = f->once_only;
+      /* |= is avoided in the next line because of an HP C compiler bug */
+      result->have_once_only = result->have_once_only | f->once_only;
+      if (f->buffer_valid)
+	md5_buffer ((const char *)f->buffer,
+		    f->st.st_size, result->entries[count].sum);
+      else
+	{
+	  FILE *ff;
+	  int oldfd = f->fd;
+
+	  if (!open_file (f))
+	    {
+	      open_file_failed (pfile, f);
+	      return false;
+	    }
+	  ff = fdopen (f->fd, "rb");
+	  md5_stream (ff, result->entries[count].sum);
+	  fclose (ff);
+	  f->fd = oldfd;
+	}
+      result->entries[count].size = f->st.st_size;
+    }
 
   result_size = (sizeof (struct pchf_data)
                  + sizeof (struct pchf_entry) * (result->count - 1));
@@ -1536,7 +1519,7 @@ _cpp_save_file_entries (cpp_reader *pfile, FILE *f)
   qsort (result->entries, result->count, sizeof (struct pchf_entry),
 	 pchf_save_compare);
 
-  return fwrite (result, result_size, 1, f) == 1;
+  return fwrite (result, result_size, 1, fp) == 1;
 }
 
 /* Read the pchf_data structure from F.  */
