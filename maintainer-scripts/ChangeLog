@@ -1,3 +1,8 @@
+2003-05-27  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* gcc_release (build_diffs): Add diagnostics in case we cannot
+	generate a specific diff file.
+
 2003-05-24  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* gcc_release (build_sources): Only update ChangeLog files which

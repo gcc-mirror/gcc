@@ -306,7 +306,11 @@ build_diffs() {
   for f in gcc gcc-ada gcc-g++ gcc-g77 gcc-java gcc-objc gcc-testsuite gcc-core; do
     old_tar=${old_dir}/${f}-${old_vers}.tar.gz
     new_tar=${WORKING_DIRECTORY}/${f}-${RELEASE}.tar.gz
-    if [ -e $old_tar ] && [ -e $new_tar ]; then
+    if [ ! -e $old_tar ]; then
+      inform "$old_tar not found; not generating diff file"
+    elif [ ! -e $new_tar ]; then
+      inform "$new_tar not found; not generating diff file"
+    else
       build_diff $old_tar gcc-${old_vers} $new_tar gcc-${RELEASE} \
         ${f}-${old_vers}-${RELEASE}.diff.gz
     fi
