@@ -1,5 +1,7 @@
 2003-10-29  Hans-Peter Nilsson  <hp@axis.com>
 
+	* real.c (do_divide): Initialize result with a 0.
+
 	* configure.in <enable-checking for valgrind>: Look for
 	<valgrind/memcheck.h> first.  AC_DEFINE HAVE_VALGRIND_MEMCHECK_H
 	if it exists.
