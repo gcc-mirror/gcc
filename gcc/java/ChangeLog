@@ -1,3 +1,10 @@
+2002-05-04  Mark Wielaard  <mark@klomp.org>
+
+	For PR java/6519:
+	* parse.y (build_string_concatenation): Return just op1 only when op2
+	is null and op1 is a STRING_CST, otherwise always construct a
+	StringBuffer.
+
 2002-04-27  Tom Tromey  <tromey@redhat.com>
 
 	For PR java/6382:
