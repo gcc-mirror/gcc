@@ -526,6 +526,7 @@ read_radix (fnode * f, char *dest, int length, int radix)
 	    case 'c':
 	    case 'd':
 	    case 'e':
+	    case 'f':
 	      c = c - 'a' + '9' + 1;
 	      break;
 
@@ -534,6 +535,7 @@ read_radix (fnode * f, char *dest, int length, int radix)
 	    case 'C':
 	    case 'D':
 	    case 'E':
+	    case 'F':
 	      c = c - 'A' + '9' + 1;
 	      break;
 
