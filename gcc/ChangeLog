@@ -1,5 +1,7 @@
 2000-08-06  Kazu Hirata  <kazu@hxi.com>
 
+	* tm.texi (FUNCTION_ARG_PARTIAL_NREGS): Fix a typo.
+
 	* expr.c: Fix formatting.
 
 2000-08-06  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
