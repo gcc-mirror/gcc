@@ -4755,10 +4755,6 @@
            (const_int 4)
 	   (const_int 8)))])
 
-;; These insns will replace fmpyadd and fmpysub peepholes when the
-;; independent insn combination code is installed at the FSF.  Until
-;; then these patterns aren't used by the FSF compiler and are only
-;; here for documentation purposes.
 (define_insn ""
   [(set (match_operand 0 "register_operand" "=f")
 	(mult (match_operand 1 "register_operand" "f")
