@@ -1,3 +1,19 @@
+2004-06-04  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR target/15822
+	* gcc.c-torture/execute/compare-fp-1.c,
+	gcc.c-torture/execute/compare-fp-2.c,
+	gcc.c-torture/execute/compare-fp-3.c,
+	gcc.c-torture/execute/compare-fp-4.c,
+	gcc.c-torture/execute/compare-fp-3.x,
+	gcc.c-torture/execute/compare-fp-4.x: Moved...
+	* gcc.c-torture/execute/ieee/compare-fp-1.c,
+	gcc.c-torture/execute/ieee/compare-fp-2.c,
+	gcc.c-torture/execute/ieee/compare-fp-3.c,
+	gcc.c-torture/execute/ieee/compare-fp-4.c,
+	gcc.c-torture/execute/ieee/compare-fp-3.x,
+	gcc.c-torture/execute/ieee/compare-fp-4.x: ...here.
+
 2004-06-04  David Ayers  <d.ayers@inode.at>
 
 	* objc/execute/protocol-isEqual-4.m: New testcase.
@@ -133,10 +149,13 @@
 
 2004-05-28  Paolo Bonzini  <bonzini@gnu.org>
 
-	* gcc.c-torture/compare-fp-1.c, gcc.c-torture/compare-fp-2.c,
-	gcc.c-torture/compare-fp-3.c, gcc.c-torture/compare-fp-4.c,
-	gcc.c-torture/compare-fp-3.x, gcc.c-torture/compare-fp-4.x,
-	gcc.c-torture/pr15649-1.c: New.
+	* gcc.c-torture/execute/compare-fp-1.c,
+	gcc.c-torture/execute/compare-fp-2.c,
+	gcc.c-torture/execute/compare-fp-3.c,
+	gcc.c-torture/execute/compare-fp-4.c,
+	gcc.c-torture/execute/compare-fp-3.x,
+	gcc.c-torture/execute/compare-fp-4.x,
+	gcc.dg/pr15649-1.c: New.
 
 2004-05-27  Adam Nemet  <anemet@lnxw.com>
 
