@@ -1,3 +1,8 @@
+Tue Oct 19 23:43:50 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* pa.md (call, call_value): Do not emit a blockage after restoring
+	the PIC register.
+
 Tue Oct 19 17:22:39 1999  Mark Mitchell  <mark@codesourcery.com>
 
 	* c-typeck.c (c_expand_asm_operands): Fix typo.
