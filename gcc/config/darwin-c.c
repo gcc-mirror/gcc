@@ -442,7 +442,7 @@ darwin_register_objc_includes (const char *sysroot, const char *iprefix,
     {
       char *str;
       /* See if our directory starts with the standard prefix.
-	 "Translate" them, ie. replace /usr/local/lib/gcc... with
+	 "Translate" them, i.e. replace /usr/local/lib/gcc... with
 	 IPREFIX and search them first.  */
       if (iprefix && (len = cpp_GCC_INCLUDE_DIR_len) != 0 && !sysroot
 	  && !strncmp (fname, cpp_GCC_INCLUDE_DIR, len))

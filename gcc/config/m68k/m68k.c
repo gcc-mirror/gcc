@@ -2713,8 +2713,8 @@ print_operand (FILE *file, rtx op, int letter)
 
    This routine is responsible for distinguishing between -fpic and -fPIC 
    style relocations in an address.  When generating -fpic code the
-   offset is output in word mode (eg movel a5@(_foo:w), a0).  When generating
-   -fPIC code the offset is output in long mode (eg movel a5@(_foo:l), a0) */
+   offset is output in word mode (e.g. movel a5@(_foo:w), a0).  When generating
+   -fPIC code the offset is output in long mode (e.g. movel a5@(_foo:l), a0) */
 
 #if MOTOROLA
 #  define ASM_OUTPUT_CASE_FETCH(file, labelno, regname)\

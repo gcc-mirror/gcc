@@ -1,3 +1,22 @@
+2004-09-18  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/darwin-c.c, config/arc/arc.c, config/arc/arc.md,
+	config/arm/README-interworking, config/arm/arm-cores.def,
+	config/arm/arm.c, config/arm/arm.h, config/arm/pe.c,
+	config/arm/vfp.md, config/c4x/c4x.c, config/c4x/c4x.h,
+	config/cris/cris.c, config/cris/cris.h, config/fr30/fr30.c,
+	config/fr30/fr30.h, config/fr30/fr30.md, config/frv/frv.c,
+	config/frv/frv.md, config/i386/winnt.c,
+	config/ia64/unwind-ia64.c, config/iq2000/iq2000.c,
+	config/iq2000/iq2000.h, config/m68hc11/m68hc11.c,
+	config/m68hc11/m68hc11.md, config/m68k/m68k.c,
+	config/mcore/mcore.c, config/mips/mips.h,
+	config/mn10300/mn10300.md, config/pa/pa.c,
+	config/pa/pa64-regs.h, config/pdp11/pdp11.c,
+	config/rs6000/rs6000.c, config/sh/symbian.c,
+	config/sparc/sparc.h: Fix comment typos.  Follow spelling
+	conventions.
+
 2004-09-18  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	PR c/17424

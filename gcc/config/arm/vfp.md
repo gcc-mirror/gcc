@@ -56,7 +56,7 @@
 (define_cpu_unit "vfp_ls" "vfp11")
 
 ;; The VFP "type" attributes differ from those used in the FPA model.
-;; ffarith	Fast floating point insns, eg. abs, neg, cpy, cmp.
+;; ffarith	Fast floating point insns, e.g. abs, neg, cpy, cmp.
 ;; farith	Most arithmetic insns.
 ;; fmul		Double precision multiply.
 ;; fdivs	Single precision sqrt or division.

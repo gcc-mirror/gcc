@@ -2111,7 +2111,7 @@ uw_init_context_1 (struct _Unwind_Context *context, void *bsp)
   uw_update_context (context, &fs);
 }
 
-/* Install (ie longjmp to) the contents of TARGET.  */
+/* Install (i.e. longjmp to) the contents of TARGET.  */
 
 static void __attribute__((noreturn))
 uw_install_context (struct _Unwind_Context *current __attribute__((unused)),

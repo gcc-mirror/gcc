@@ -231,7 +231,7 @@ i386_pe_dllimport_name_p (const char *symbol)
 }
 
 /* Mark a DECL as being dllexport'd.
-   Note that we override the previous setting (eg: dllimport).  */
+   Note that we override the previous setting (e.g.: dllimport).  */
 
 static void
 i386_pe_mark_dllexport (tree decl)

@@ -25,7 +25,7 @@
 
    The CORE_NAME is the name of the core, represented as a string constant.
    The CORE_IDENT is the name of the core, represented as an identifier.
-   ARCH is the architecture revision implemeted by the chip.
+   ARCH is the architecture revision implemented by the chip.
    FLAGS are the bitwise-or of the traits that apply to that core.
    This need not include flags implied by the architecture.
    COSTS is the name of the rtx_costs routine to use.

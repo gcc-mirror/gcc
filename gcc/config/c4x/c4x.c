@@ -3342,7 +3342,7 @@ tsrc_operand (rtx op, enum machine_mode mode)
 }
 
 
-/* Check src operand of two operand non immedidate instructions.  */
+/* Check src operand of two operand non immediate instructions.  */
 
 int
 nonimmediate_src_operand (rtx op, enum machine_mode mode)
@@ -3354,7 +3354,7 @@ nonimmediate_src_operand (rtx op, enum machine_mode mode)
 }
 
 
-/* Check logical src operand of two operand non immedidate instructions.  */
+/* Check logical src operand of two operand non immediate instructions.  */
 
 int
 nonimmediate_lsrc_operand (rtx op, enum machine_mode mode)

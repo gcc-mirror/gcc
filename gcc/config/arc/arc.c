@@ -1971,7 +1971,7 @@ arc_final_prescan_insn (rtx insn,
   /* BODY will hold the body of INSN.  */
   register rtx body = PATTERN (insn);
 
-  /* This will be 1 if trying to repeat the trick (ie: do the `else' part of
+  /* This will be 1 if trying to repeat the trick (i.e.: do the `else' part of
      an if/then/else), and things need to be reversed.  */
   int reverse = 0;
 

@@ -293,7 +293,7 @@ enum reg_class
   MULTIPLY_64_REG,	/* the MDH,MDL register pair as used by MUL and MULU */
   LOW_REGS,		/* registers 0 through 7 */
   HIGH_REGS,		/* registers 8 through 15 */
-  REAL_REGS,		/* ie all the general hardware registers on the FR30 */
+  REAL_REGS,		/* i.e. all the general hardware registers on the FR30 */
   ALL_REGS,
   LIM_REG_CLASSES
 };

@@ -3099,7 +3099,7 @@ restart:
       break;
 
     case PLUS:
-      /* Some assemblers need integer constants to appear last (eg masm).  */
+      /* Some assemblers need integer constants to appear last (e.g. masm).  */
       if (GET_CODE (XEXP (x, 0)) == CONST_INT)
 	{
 	  cris_output_addr_const (file, XEXP (x, 1));
