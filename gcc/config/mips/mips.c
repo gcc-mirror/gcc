@@ -2979,6 +2979,8 @@ gen_int_relational (test_code, result, cmp0, cmp1, p_invert)
       if (! TARGET_MIPS16)
 	{
 	  convert_move (result, gen_rtx (GTU, mode, reg, const0_rtx), 0);
+	  if (p_invert != NULL)
+	    *p_invert = 0;
 	  invert = 0;
 	}
       else
