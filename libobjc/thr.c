@@ -75,8 +75,8 @@ struct __objc_thread_start_state
   id argument;
 };
 
-static volatile void
-__objc_thread_detach_function (struct __objc_thread_start_state *istate)
+static void __attribute__((noreturn))
+__objc_thread_detach_function (struct __objc_thread_start_state *istate) 
 {
   /* Valid state? */
   if (istate) {
