@@ -1,5 +1,9 @@
 2001-12-04  Douglass B. Rupp <rupp@gnat.com>
 
+	* adaint.c: Minor cleanups.
+
+2001-12-04  Douglass B. Rupp <rupp@gnat.com>
+
 	* adaint.c: Do not use utime.h on vxworks.
 
 2001-12-04  Arnaud Charlet <charlet@gnat.com>

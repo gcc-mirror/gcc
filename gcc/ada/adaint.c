@@ -69,6 +69,9 @@
 
 #if defined (__EMX__) || defined (MSDOS) || defined (_WIN32)
 #elif defined (VMS)
+
+/* Header files and definitions for __gnat_set_file_time_name. */
+
 #include <rms.h>
 #include <atrdef.h>
 #include <fibdef.h>
@@ -78,17 +81,6 @@
 #include <descrip.h>
 #include <string.h>
 #include <unixlib.h>
-
-struct utimbuf
-{
-  time_t actime;
-  time_t modtime;
-};
-
-#define NOREAD     0x01
-#define NOWRITE    0x02
-#define NOEXECUTE  0x04
-#define NODELETE   0x08
 
 /* use native 64-bit arithmetic */
 #define unix_time_to_vms(X,Y) \
@@ -104,6 +96,7 @@ struct dsc$descriptor_fib
   struct fibdef *fib$l_addr;
 };
 
+/* I/O Status Block.  */
 struct IOSB
 { 
   unsigned short status, count;
@@ -112,6 +105,7 @@ struct IOSB
 
 static char *tryfile;
 
+/* Variable length string.  */
 struct vstring
 {
   short length;
@@ -937,6 +931,9 @@ __gnat_set_file_time_name (name, time_stamp)
 {
 #if defined (__EMX__) || defined (MSDOS) || defined (_WIN32) \
     || defined (__vxworks)
+
+/* Code to implement __gnat_set_file_time_name for these systems. */
+
 #elif defined (VMS)
   struct FAB fab;
   struct NAM nam;
