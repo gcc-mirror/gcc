@@ -1,3 +1,8 @@
+Mon Feb 15 00:40:45 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* alias.c (init_alias_analysis): Avoid self-referential value
+	when setting reg_known_value from REG_EQUAL notes.
+
 Sun Feb 14 23:12:10 1999  Richard Henderson  <rth@cygnus.com>
 
 	* i386.c (legitimate_address_p): Verify modes of base and index.
