@@ -1,3 +1,15 @@
+2002-05-03  David Billinghurst  <David.Billinghurst@riotinto.com>
+	    Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/natSystem.cc (getSystemTimeZone): Use
+	HAVE_UNDERSCORE_TIMEZONE.
+	* include/config.h.in: Rebuilt.
+	* acconfig.h (HAVE_UNDERSCORE_TIMEZONE, HAVE_BACKTRACE): Undef.
+	* aclocal.m4, configure: Rebuilt.
+	* acinclude.m4: Run AC_EXEEXT.
+	* configure.in: Adjust test for `timezone' so it fails on Cygwin.
+	Add test for `_timezone'.
+
 2002-05-03  Alexandre Oliva  <aoliva@redhat.com>
 
 	Suggested by Rainer Orth <ro@TechFak.Uni-Bielefeld.DE>
