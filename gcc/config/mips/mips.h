@@ -2804,17 +2804,19 @@ typedef struct mips_args {
       GO_DEBUG_RTX (xinsn);						\
     }									\
 									\
+  /* Check for constant before stripping off SUBREG, so that we don't	\
+     accept (subreg (const_int)) which will fail to reload. */   	\
+  if (CONSTANT_ADDRESS_P (xinsn)					\
+      && ! (mips_split_addresses && mips_check_split (xinsn, MODE))	\
+      && (! TARGET_MIPS16 || mips16_constant (xinsn, MODE, 1, 0)))	\
+    goto ADDR;								\
+									\
   while (GET_CODE (xinsn) == SUBREG)					\
     xinsn = SUBREG_REG (xinsn);						\
 									\
   /* The mips16 can only use the stack pointer as a base register when	\
      loading SImode or DImode values.  */				\
   if (GET_CODE (xinsn) == REG && REG_MODE_OK_FOR_BASE_P (xinsn, MODE))	\
-    goto ADDR;								\
-									\
-  if (CONSTANT_ADDRESS_P (xinsn)					\
-      && ! (mips_split_addresses && mips_check_split (xinsn, MODE))	\
-      && (! TARGET_MIPS16 || mips16_constant (xinsn, MODE, 1, 0)))	\
     goto ADDR;								\
 									\
   if (GET_CODE (xinsn) == LO_SUM && mips_split_addresses)		\

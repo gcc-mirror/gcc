@@ -1,5 +1,16 @@
 2000-01-11  Clinton Popetz  <cpopetz@cygnus.com>
 
+        * config/mips/mips.c (mips_va_arg): For EABI, emit the queued
+        integer vararg POSTINCREMENT before the destination of the jump
+        for the hard fp case. 
+        (function_arg_pass_by_reference): Pass a copy of CUM to 
+	FUNCTION_ARG.
+        
+        * config/mips/mips.h (GO_IF_LEGITIMATE_ADDRESS): Move check
+        for CONSTANT_ADDRESS_P above while loop for subreg.
+
+2000-01-11  Clinton Popetz  <cpopetz@cygnus.com>
+
 	* flow.c (propagate_block): When a prologue/epilogue insn
         is marked dead, unconditionally clear libcall_is_dead and
         insn_is_dead, and only dump rtl if warnings aren't being
