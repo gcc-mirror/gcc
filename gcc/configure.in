@@ -1277,6 +1277,12 @@ changequote([,])dnl
 		gas=yes
 		gnu_ld=yes
 		stabs=yes
+		case x${enable_threads} in
+		xyes | xpthreads | xposix)
+			thread_file='posix'
+			tmake_file="${tmake_file} t-openbsd-thread"
+			;;
+		esac
 		;;
 changequote(,)dnl
 	i[34567]86-*-freebsd*)
