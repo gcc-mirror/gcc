@@ -232,10 +232,9 @@ package body Sinfo is
       (N : Node_Id) return Node_Id is
    begin
       pragma Assert (False
-          or else NT (N).Nkind in N_Has_Entity
+        or else NT (N).Nkind in N_Has_Entity
         or else NT (N).Nkind = N_Aggregate
         or else NT (N).Nkind = N_Extension_Aggregate
-        or else NT (N).Nkind = N_Freeze_Entity
         or else NT (N).Nkind = N_Selected_Component);
       return Node4 (N);
    end Associated_Node;
@@ -2589,10 +2588,9 @@ package body Sinfo is
       (N : Node_Id; Val : Node_Id) is
    begin
       pragma Assert (False
-          or else NT (N).Nkind in N_Has_Entity
+        or else NT (N).Nkind in N_Has_Entity
         or else NT (N).Nkind = N_Aggregate
         or else NT (N).Nkind = N_Extension_Aggregate
-        or else NT (N).Nkind = N_Freeze_Entity
         or else NT (N).Nkind = N_Selected_Component);
       Set_Node4 (N, Val); -- semantic field, no parent set
    end Set_Associated_Node;
