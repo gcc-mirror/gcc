@@ -3479,7 +3479,12 @@ pushdecl (x)
 	      if (TYPE_NAME (type) == 0)
 	        TYPE_NAME (type) = x;
             }
-          else if (type != error_mark_node && TYPE_NAME (type) != x)
+          else if (type != error_mark_node && TYPE_NAME (type) != x
+		   /* We don't want to copy the type when all we're
+		      doing is making a TYPE_DECL for the purposes of
+		      inlining.  */
+		   && (!TYPE_NAME (type) 
+		       || TYPE_NAME (type) != DECL_ABSTRACT_ORIGIN (x)))
             {
 	      push_obstacks (TYPE_OBSTACK (type), TYPE_OBSTACK (type));
 
