@@ -9569,6 +9569,7 @@ recog_for_combine (pnewpat, insn, pnotes)
   int num_clobbers_to_add = 0;
   int i;
   rtx notes = 0;
+  rtx old_notes;
 
   /* If PAT is a PARALLEL, check to see if it contains the CLOBBER
      we use to indicate that something didn't match.  If we find such a
@@ -9578,6 +9579,10 @@ recog_for_combine (pnewpat, insn, pnotes)
       if (GET_CODE (XVECEXP (pat, 0, i)) == CLOBBER
 	  && XEXP (XVECEXP (pat, 0, i), 0) == const0_rtx)
 	return -1;
+
+  /* Remove the old notes prior to trying to recognize the new pattern.  */
+  old_notes = REG_NOTES (insn);
+  REG_NOTES (insn) = 0;
 
   /* Is the result of combination a valid instruction?  */
   insn_code_number = recog (pat, insn, &num_clobbers_to_add);
@@ -9607,6 +9612,8 @@ recog_for_combine (pnewpat, insn, pnotes)
 
       insn_code_number = recog (pat, insn, &num_clobbers_to_add);
     }
+
+  REG_NOTES (insn) = old_notes;
 
   /* If we had any clobbers to add, make a new pattern than contains
      them.  Then check to make sure that all of them are dead.  */
@@ -12079,7 +12086,6 @@ distribute_notes (notes, from_insn, i3, i2, elim_i2, elim_i1)
 
 	case REG_EQUAL:
 	case REG_EQUIV:
-	case REG_NONNEG:
 	case REG_NOALIAS:
 	  /* These notes say something about results of an insn.  We can
 	     only support them if they used to be on I3 in which case they
@@ -12137,9 +12143,12 @@ distribute_notes (notes, from_insn, i3, i2, elim_i2, elim_i1)
 	    }
 	  break;
 
+	case REG_NONNEG:
 	case REG_WAS_0:
-	  /* It is too much trouble to try to see if this note is still
-	     correct in all situations.  It is better to simply delete it.  */
+	  /* These notes say something about the value of a register prior
+	     to the execution of an insn.  It is too much trouble to see
+	     if the note is still correct in all situations.  It is better
+	     to simply delete it.  */
 	  break;
 
 	case REG_RETVAL:

@@ -1,3 +1,9 @@
+Fri Aug  4 11:43:49 2000  John Wehle  (john@feith.com)
+
+	* combine.c (recog_for_combine): Remove the old notes
+	prior to attempting to recognize the new pattern.
+	(distribute_notes): Ignore REG_NONNEG notes.
+
 2000-08-04  Chandrakala Chavva  <cchavva@redhat.com>
 
 	* varasm.c (output_constructor): Add .align 0 for packed vars.
