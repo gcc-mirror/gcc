@@ -1,5 +1,5 @@
 /* Implements exception handling.
-   Copyright (C) 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 
+   Copyright (C) 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
    1999, 2000, 2001 Free Software Foundation, Inc.
    Contributed by Mike Stump <mrs@cygnus.com>.
 
@@ -164,7 +164,7 @@ struct eh_region
       int filter;
     } allowed;
 
-    /* The type given by a call to "throw foo();", or discovered 
+    /* The type given by a call to "throw foo();", or discovered
        for a throw.  */
     struct {
       tree type;
@@ -342,7 +342,7 @@ static void sjlj_output_call_site_table		PARAMS ((void));
 
 /* Routine to see if exception handling is turned on.
    DO_WARN is non-zero if we want to inform the user that exception
-   handling is turned off. 
+   handling is turned off.
 
    This is used to ensure that -fexceptions has been specified if the
    compiler tries to use any exception-specific functions.  */
@@ -716,9 +716,9 @@ expand_eh_region_end_cleanup (handler)
 
   /* Give the language a chance to specify an action to be taken if an
      exception is thrown that would propagate out of the HANDLER.  */
-  protect_cleanup_actions 
-    = (lang_protect_cleanup_actions 
-       ? (*lang_protect_cleanup_actions) () 
+  protect_cleanup_actions
+    = (lang_protect_cleanup_actions
+       ? (*lang_protect_cleanup_actions) ()
        : NULL_TREE);
 
   if (protect_cleanup_actions)
@@ -1039,7 +1039,7 @@ add_partial_entry (handler)
     begin_protect_partials ();
 
   /* Add this entry to the front of the list.  */
-  TREE_VALUE (cfun->eh->protect_list) 
+  TREE_VALUE (cfun->eh->protect_list)
     = tree_cons (NULL_TREE, handler, TREE_VALUE (cfun->eh->protect_list));
 }
 
@@ -1381,7 +1381,7 @@ duplicate_eh_region_1 (o, map)
 
     case ERT_THROW:
       n->u.throw.type = o->u.throw.type;
-      
+
     default:
       abort ();
     }
@@ -1429,7 +1429,7 @@ duplicate_eh_region_2 (o, n_array)
     n->inner = n_array[o->inner->region_number];
   if (o->next_peer)
     n->next_peer = n_array[o->next_peer->region_number];
-}    
+}
 
 int
 duplicate_eh_regions (ifun, map)
@@ -1549,7 +1549,7 @@ add_type_for_runtime (type)
       *slot = tree_cons (type, runtime, NULL_TREE);
     }
 }
-  
+
 static tree
 lookup_type_for_runtime (type)
      tree type;
@@ -1681,7 +1681,7 @@ add_ehspec_entry (ehspec_hash, ttypes_hash, list)
       /* Look up each type in the list and encode its filter
 	 value as a uleb128.  Terminate the list with 0.  */
       for (; list ; list = TREE_CHAIN (list))
-	push_uleb128 (&cfun->eh->ehspec_data, 
+	push_uleb128 (&cfun->eh->ehspec_data,
 		      add_ttypes_entry (ttypes_hash, TREE_VALUE (list)));
       VARRAY_PUSH_UCHAR (cfun->eh->ehspec_data, 0);
     }
@@ -1731,8 +1731,8 @@ assign_filter_values ()
 		{
 		  int flt = add_ttypes_entry (ttypes, TREE_VALUE (tp_node));
 		  tree flt_node = build_int_2 (flt, 0);
-		  
-		  r->u.catch.filter_list 
+
+		  r->u.catch.filter_list
 		    = tree_cons (NULL_TREE, flt_node, r->u.catch.filter_list);
 		}
 	    }
@@ -1742,11 +1742,11 @@ assign_filter_values ()
 		 an action record anyway.  */
 	      int flt = add_ttypes_entry (ttypes, NULL);
 	      tree flt_node = build_int_2 (flt, 0);
-	      
-	      r->u.catch.filter_list 
+
+	      r->u.catch.filter_list
 		= tree_cons (NULL_TREE, flt_node, r->u.catch.filter_list);
 	    }
-	      
+
 	  break;
 
 	case ERT_ALLOWED_EXCEPTIONS:
@@ -2208,7 +2208,7 @@ sjlj_emit_function_enter (dispatch_label)
     }
   else
     emit_move_insn (mem, const0_rtx);
-  
+
 #ifdef DONT_USE_BUILTIN_SETJMP
   {
     rtx x, note;
@@ -2288,7 +2288,7 @@ sjlj_emit_dispatch_table (dispatch_label, lp_info)
   start_sequence ();
 
   emit_label (dispatch_label);
-  
+
 #ifndef DONT_USE_BUILTIN_SETJMP
   expand_builtin_setjmp_receiver (dispatch_label);
 #endif
@@ -2584,7 +2584,7 @@ check_handled (handled, type)
 /* A subroutine of reachable_next_level.  If we are collecting a list
    of handlers, add one.  After landing pad generation, reference
    it instead of the handlers themselves.  Further, the handlers are
-   all wired together, so by referencing one, we've got them all. 
+   all wired together, so by referencing one, we've got them all.
    Before landing pad generation we reference each handler individually.
 
    LP_REGION contains the landing pad; REGION is the handler.  */
@@ -2607,7 +2607,7 @@ add_reachable_handler (info, lp_region, region)
     info->handlers = alloc_INSN_LIST (region->label, info->handlers);
 }
 
-/* Process one level of exception regions for reachability.  
+/* Process one level of exception regions for reachability.
    If TYPE_THROWN is non-null, then it is the *exact* type being
    propagated.  If INFO is non-null, then collect handler labels
    and caught/allowed type information between invocations.  */
@@ -2647,7 +2647,7 @@ reachable_next_level (region, type_thrown, info)
 	      {
 		/* If we have a at least one type match, end the search.  */
 		tree tp_node = c->u.catch.type_list;
-		
+
 		for (; tp_node; tp_node = TREE_CHAIN (tp_node))
 		  {
 		    tree type = TREE_VALUE (tp_node);
@@ -2670,11 +2670,11 @@ reachable_next_level (region, type_thrown, info)
 	    /* At this point, we either don't know what type is thrown or
 	       don't have front-end assistance to help deciding if it is
 	       covered by one of the types in the list for this region.
-	    
+
 	       We'd then like to add this region to the list of reachable
 	       handlers since it is indeed potentially reachable based on the
-	       information we have. 
-	       
+	       information we have.
+
 	       Actually, this handler is for sure not reachable if all the
 	       types it matches have already been caught. That is, it is only
 	       potentially reachable if at least one of the types it catches
@@ -2697,15 +2697,15 @@ reachable_next_level (region, type_thrown, info)
 		      {
 			info->types_caught
 			  = tree_cons (NULL, type, info->types_caught);
-			
+
 			maybe_reachable = true;
 		      }
 		  }
-		
+
 		if (maybe_reachable)
 		  {
 		    add_reachable_handler (info, region, c);
-		
+
 		    /* ??? If the catch type is a base class of every allowed
 		       type, then we know we can stop the search.  */
 		    ret = RNL_MAYBE_CAUGHT;
@@ -2730,7 +2730,7 @@ reachable_next_level (region, type_thrown, info)
 	info->types_allowed = tree_cons (NULL_TREE,
 					 region->u.allowed.type_list,
 					 info->types_allowed);
-	    
+
       /* If we have definitive information about the type hierarchy,
 	 then we can tell if the thrown type will pass through the
 	 filter.  */
@@ -2767,6 +2767,7 @@ reachable_next_level (region, type_thrown, info)
 
     case ERT_THROW:
     case ERT_FIXUP:
+    case ERT_UNKNOWN:
       /* Shouldn't see these here.  */
       break;
     }
@@ -3013,7 +3014,7 @@ expand_builtin_eh_return_data_regno (arglist)
   iwhich = DBX_REGISTER_NUMBER (iwhich);
 #endif
 
-  return GEN_INT (iwhich);      
+  return GEN_INT (iwhich);
 }
 
 /* Given a value extracted from the return address register or stack slot,
@@ -3253,7 +3254,7 @@ collect_one_action_chain (ar_hash, region)
 	    {
 	      /* Retrieve the filter from the head of the filter list
 		 where we have stored it (see assign_filter_values).  */
-	      int filter 
+	      int filter
 		= TREE_INT_CST_LOW (TREE_VALUE (c->u.catch.filter_list));
 
 	      next = add_action_record (ar_hash, filter, 0);
@@ -3278,7 +3279,7 @@ collect_one_action_chain (ar_hash, region)
 		  else if (next <= 0)
 		    next = add_action_record (ar_hash, 0, 0);
 		}
-	      
+
 	      flt_node = c->u.catch.filter_list;
 	      for (; flt_node; flt_node = TREE_CHAIN (flt_node))
 		{
@@ -3446,7 +3447,7 @@ convert_to_eh_region_ranges ()
 	       are created.  */
 	    if (this_action >= -1)
 	      {
-		call_site = add_call_site (this_landing_pad, 
+		call_site = add_call_site (this_landing_pad,
 					   this_action < 0 ? 0 : this_action);
 		note = emit_note_before (NOTE_INSN_EH_REGION_BEG, iter);
 		NOTE_EH_HANDLER (note) = call_site;
@@ -3692,7 +3693,7 @@ output_function_exception_table ()
     {
 #ifdef HAVE_AS_LEB128
       char ttype_after_disp_label[32];
-      ASM_GENERATE_INTERNAL_LABEL (ttype_after_disp_label, "LLSDATTD", 
+      ASM_GENERATE_INTERNAL_LABEL (ttype_after_disp_label, "LLSDATTD",
 				   funcdef_number);
       dw2_asm_output_delta_uleb128 (ttype_label, ttype_after_disp_label,
 				    "@TType base offset");

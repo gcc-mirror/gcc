@@ -1,5 +1,10 @@
+2001-12-11  Roger Sayle <roger@eyesopen.com>
+
+	* except.c (reachable_next_level): Handle ERT_UNKNOWN to avoid
+	compiler warning about enumeration values not being handled.
+
 2001-12-11  Momchil Velikov  <velco@fadata.bg>
-  
+
 	* config/fp-bit.c (pack_d): Cast to ``fractype'' for long long
 	shifts.
 
@@ -26,7 +31,7 @@ Tue Dec 11 23:54:27 EST 2001  John Wehle  (john@feith.com)
 
 2001-11-30 Alan Matsuoka <alanm@redhat.com>
 
-	* combine.c (combine_simplify_rtx) : Can't simplify 
+	* combine.c (combine_simplify_rtx) : Can't simplify
 	cases that use mode class MODE_CC.
 
 2001-12-11  Richard Henderson  <rth@redhat.com>
@@ -93,7 +98,7 @@ Tue Dec 11 23:54:27 EST 2001  John Wehle  (john@feith.com)
 	(copy_blkmode_from_reg): Ditto.
 	* stmt.c (expand_return): Ditto.
 	* stor-layout.c (compute_record_mode): If
-	FUNCTION_ARG_REG_LITTLE_ENDIAN is set then check 
+	FUNCTION_ARG_REG_LITTLE_ENDIAN is set then check
 	MEMBER_TYPE_FORCES_BLK even if mode == VOIDmode.
 	* config/ia64/hpux.h (MEMBER_TYPE_FORCES_BLK): Set to true
 	so that Structures of one field are still treated as structures.
