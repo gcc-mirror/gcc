@@ -10047,7 +10047,6 @@ cp_parser_using_declaration (cp_parser* parser)
   bool global_scope_p;
   tree decl;
   tree identifier;
-  tree scope;
   tree qscope;
 
   /* Look for the `using' keyword.  */
@@ -10106,8 +10105,7 @@ cp_parser_using_declaration (cp_parser* parser)
     error ("a template-id may not appear in a using-declaration");
   else
     {
-      scope = current_scope ();
-      if (scope && TYPE_P (scope))
+      if (at_class_scope_p ())
 	{
 	  /* Create the USING_DECL.  */
 	  decl = do_class_using_decl (build_nt (SCOPE_REF,
@@ -10121,7 +10119,7 @@ cp_parser_using_declaration (cp_parser* parser)
 	  decl = cp_parser_lookup_name_simple (parser, identifier);
 	  if (decl == error_mark_node)
 	    cp_parser_name_lookup_error (parser, identifier, decl, NULL);
-	  else if (scope)
+	  else if (!at_namespace_scope_p ())
 	    do_local_using_decl (decl, qscope, identifier);
 	  else
 	    do_toplevel_using_decl (decl, qscope, identifier);
@@ -10982,7 +10980,7 @@ cp_parser_direct_declarator (cp_parser* parser,
 	      break;
 	    }
 
-	  if (TREE_CODE (id) == SCOPE_REF && !current_scope ())
+	  if (TREE_CODE (id) == SCOPE_REF && at_namespace_scope_p ())
 	    {
 	      tree scope = TREE_OPERAND (id, 0);
 
@@ -12560,8 +12558,6 @@ cp_parser_class_head (cp_parser* parser,
       tree scope;
       /* Figure out in what scope the declaration is being placed.  */
       scope = current_scope ();
-      if (!scope)
-	scope = current_namespace;
       /* If that scope does not contain the scope in which the
 	 class was originally declared, the program is invalid.  */
       if (scope && !is_ancestor (scope, nested_name_specifier))

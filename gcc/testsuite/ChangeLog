@@ -1,3 +1,14 @@
+2004-10-26  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/18093
+	* g++.dg/lookup/ns2.C: New test.
+
+	PR c++/18020
+	* g++.dg/template/enum4.C: New test.
+
+	PR c++/18161
+	* g++.dg/template/expr1.C: New test.
+
 2004-10-26  Ben Elliston  <bje@au.ibm.com>
 
 	* gcc.dg/tree-ssa/20030922-2.c: Now passing, so remove xfail.

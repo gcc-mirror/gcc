@@ -5918,11 +5918,7 @@ grokvardecl (tree type,
       if (declspecs->storage_class == sc_extern)
 	scope = current_namespace;
       else if (!at_function_scope_p ())
-	{
-	  scope = current_scope ();
-	  if (!scope)
-	    scope = current_namespace;
-	}
+	scope = current_scope ();
     }
 
   if (scope
@@ -9746,8 +9742,6 @@ build_enumerator (tree name, tree value, tree enumtype)
 
   /* C++ associates enums with global, function, or class declarations.  */
   context = current_scope ();
-  if (!context)
-    context = current_namespace;
 
   /* Build the actual enumeration constant.  Note that the enumeration
     constants have the type of their initializers until the
