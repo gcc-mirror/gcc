@@ -2197,10 +2197,6 @@ ia64_initial_elimination_offset (from, to)
 	abort ();
       break;
 
-    case RETURN_ADDRESS_POINTER_REGNUM:
-      offset = 0;
-      break;
-
     default:
       abort ();
     }
@@ -2550,17 +2546,6 @@ ia64_expand_prologue ()
 	= reg_names[current_frame_info.reg_fp];
       reg_names[current_frame_info.reg_fp] = tmp;
     }
-
-  /* Fix up the return address placeholder.  */
-  /* ??? We can fail if __builtin_return_address is used, and we didn't
-     allocate a register in which to save b0.  I can't think of a way to
-     eliminate RETURN_ADDRESS_POINTER_REGNUM to a local register and
-     then be sure that I got the right one.  Further, reload doesn't seem
-     to care if an eliminable register isn't used, and "eliminates" it
-     anyway.  */
-  if (regs_ever_live[RETURN_ADDRESS_POINTER_REGNUM]
-      && current_frame_info.reg_save_b0 != 0)
-    XINT (return_address_pointer_rtx, 0) = current_frame_info.reg_save_b0;
 
   /* We don't need an alloc instruction if we've used no outputs or locals.  */
   if (current_frame_info.n_local_regs == 0
@@ -3118,6 +3103,72 @@ ia64_direct_return ()
   return 0;
 }
 
+/* Return the magic cookie that we use to hold the return address
+   during early compilation.  */
+
+rtx
+ia64_return_addr_rtx (count, frame)
+     HOST_WIDE_INT count;
+     rtx frame ATTRIBUTE_UNUSED;
+{
+  if (count != 0)
+    return NULL;
+  return gen_rtx_UNSPEC (Pmode, gen_rtvec (1, const0_rtx), UNSPEC_RET_ADDR);
+}
+
+/* Split this value after reload, now that we know where the return
+   address is saved.  */
+
+void
+ia64_split_return_addr_rtx (dest)
+     rtx dest;
+{
+  rtx src;
+
+  if (TEST_HARD_REG_BIT (current_frame_info.mask, BR_REG (0)))
+    {
+      if (current_frame_info.reg_save_b0 != 0)
+	src = gen_rtx_REG (DImode, current_frame_info.reg_save_b0);
+      else
+	{
+	  HOST_WIDE_INT off;
+	  unsigned int regno;
+
+	  /* Compute offset from CFA for BR0.  */
+	  /* ??? Must be kept in sync with ia64_expand_prologue.  */
+	  off = (current_frame_info.spill_cfa_off
+		 + current_frame_info.spill_size);
+	  for (regno = GR_REG (1); regno <= GR_REG (31); ++regno)
+	    if (TEST_HARD_REG_BIT (current_frame_info.mask, regno))
+	      off -= 8;
+
+	  /* Convert CFA offset to a register based offset.  */
+	  if (frame_pointer_needed)
+	    src = hard_frame_pointer_rtx;
+	  else
+	    {
+	      src = stack_pointer_rtx;
+	      off += current_frame_info.total_size;
+	    }
+
+	  /* Load address into scratch register.  */
+	  if (CONST_OK_FOR_I (off))
+	    emit_insn (gen_adddi3 (dest, src, GEN_INT (off)));
+	  else
+	    {
+	      emit_move_insn (dest, GEN_INT (off));
+	      emit_insn (gen_adddi3 (dest, src, dest));
+	    }
+
+	  src = gen_rtx_MEM (Pmode, dest);
+	}
+    }
+  else
+    src = gen_rtx_REG (DImode, BR_REG (0));
+
+  emit_move_insn (dest, src);
+}
+
 int
 ia64_hard_regno_rename_ok (from, to)
      int from;
@@ -3266,9 +3317,6 @@ ia64_output_function_epilogue (file, size)
      HOST_WIDE_INT size ATTRIBUTE_UNUSED;
 {
   int i;
-
-  /* Reset from the function's potential modifications.  */
-  XINT (return_address_pointer_rtx, 0) = RETURN_ADDRESS_POINTER_REGNUM;
 
   if (current_frame_info.reg_fp)
     {
