@@ -1240,8 +1240,9 @@ main (argc, argv)
 
 #ifdef COLLECT_EXPORT_LIST
 	    case 'b':
-	      if (!strncmp (arg, "-bE:", 4)
-		  || !strncmp (arg, "-bexport:", 9))
+	      if ((!strncmp (arg, "-bE:", 4)
+		   || !strncmp (arg, "-bexport:", 9))
+		  && strcmp (arg, "-bexport:/usr/lib/libg.exp"))
 		auto_export = 0;
 	      break;
 #endif
@@ -1258,7 +1259,10 @@ main (argc, argv)
 	      break;
 
 	    case 'o':
-	      output_file = (arg[2] == '\0') ? argv[1] : &arg[2];
+	      if (arg[2] == '\0')
+		output_file = *ld1++ = *ld2++ = *++argv;
+	      else
+		output_file = &arg[2];
 	      break;
 
 	    case 'r':
@@ -1289,10 +1293,15 @@ main (argc, argv)
 	  if (first_file)
 	    {
 	      first_file = 0;
-	      /* place o_file BEFORE this argument! */
-	      ld2--;
-	      *ld2++ = o_file;
-	      *ld2++ = arg;
+	      if (p[1] == 'o')
+		*ld2++ = o_file;
+	      else
+		{
+		  /* place o_file BEFORE this argument! */
+		  ld2--;
+		  *ld2++ = o_file;
+		  *ld2++ = arg;
+		}
 	    }
 	  if (p[1] == 'o')
 	    *object++ = arg;
@@ -1315,19 +1324,6 @@ main (argc, argv)
 	p = q;
       }
 
-  /* Tell the linker that we have initializer and finalizer functions.  */
-  if (shared_obj)
-    {
-#ifdef LD_INIT_SWITCH
-      *ld2++ = LD_INIT_SWITCH;
-      *ld2++ = "_GLOBAL__DI";
-#endif
-#ifdef LD_FINI_SWITCH
-      *ld2++ = LD_FINI_SWITCH;
-      *ld2++ = "_GLOBAL__DD";
-#endif
-    }
-
 #ifdef COLLECT_EXPORT_LIST
   /* The AIX linker will discard static constructors in object files if
      nothing else in the file is referenced, so look at them first.  */
@@ -1349,7 +1345,7 @@ main (argc, argv)
 #endif
 
   *c_ptr++ = c_file;
-  *object = *c_ptr = *ld1 = *ld2 = (char *)0;
+  *object = *c_ptr = *ld1 = (char *)0;
 
   if (vflag)
     {
@@ -1462,11 +1458,22 @@ main (argc, argv)
   if (fclose (outf))
     fatal_perror ("closing %s", c_file);
 
+  /* Tell the linker that we have initializer and finalizer functions.  */
+#ifdef LD_INIT_SWITCH
+  *ld2++ = LD_INIT_SWITCH;
+  *ld2++ = initname;
+  *ld2++ = LD_FINI_SWITCH;
+  *ld2++ = fininame;
+#endif
+  *ld2 = (char*)0;
+
 #ifdef COLLECT_EXPORT_LIST
   if (shared_obj)
     {
       add_to_list (&exports, initname);
       add_to_list (&exports, fininame);
+      add_to_list (&exports, "_GLOBAL__DI");
+      add_to_list (&exports, "_GLOBAL__DD");
       exportf = fopen (export_file, "w");
       if (exportf == (FILE *)0)
 	fatal_perror ("%s", export_file);
@@ -1775,6 +1782,8 @@ write_c_file_stat (stream, name)
       fprintf (stream, "\tp = ctors + %d;\n", constructors.number);
       fprintf (stream, "\twhile (p > ctors) (*--p)();\n");
     }
+  else
+    fprintf (stream, "\t++count;\n");
   fprintf (stream, "}\n");
   write_list_with_asm (stream, "extern entry_pt ", destructors.first);
   fprintf (stream, "void %s() {\n", fininame);
@@ -1791,8 +1800,11 @@ write_c_file_stat (stream, name)
     }
   fprintf (stream, "}\n");
 
-  fprintf (stream, "void _GLOBAL__DI() {\n\t%s();\n}\n", initname);
-  fprintf (stream, "void _GLOBAL__DD() {\n\t%s();\n}\n", fininame);
+  if (shared_obj)
+    {
+      fprintf (stream, "void _GLOBAL__DI() {\n\t%s();\n}\n", initname);
+      fprintf (stream, "void _GLOBAL__DD() {\n\t%s();\n}\n", fininame);
+    }
 }
 
 /* Write the constructor/destructor tables. */
@@ -1829,10 +1841,12 @@ write_c_file (stream, name)
      FILE *stream;
      char *name;
 {
-  if (shared_obj)
-    write_c_file_stat (stream, name);
-  else
+#ifndef LD_INIT_SWITCH
+  if (! shared_obj)
     write_c_file_glob (stream, name);
+  else
+#endif
+    write_c_file_stat (stream, name);
 }
 
 static void
