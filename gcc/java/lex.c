@@ -91,10 +91,6 @@ java_init_lex (finput, encoding)
 
   if (!java_lang_id)
     java_lang_id = get_identifier ("java.lang");
-  if (!java_lang_cloneable)
-    java_lang_cloneable = get_identifier ("java.lang.Cloneable");
-  if (!java_io_serializable)
-    java_io_serializable = get_identifier ("java.io.Serializable");
   if (!inst_id)
     inst_id = get_identifier ("inst$");
   if (!wpv_id)
