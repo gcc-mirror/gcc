@@ -42,6 +42,15 @@
 #	CPU_TYPE-MANUFACTURER-OPERATING_SYSTEM
 # It is wrong to echo any other type of specification.
 
+if [ x$1 = x ]
+then
+	echo Configuration name missing. 1>&2
+	echo "Usage: $0 CPU-MFR-OPSYS" 1>&2
+	echo "or     $0 ALIAS" 1>&2
+	echo where ALIAS is a recognized configuration type. 1>&2
+	exit 1
+fi
+
 # First pass through any local machine types.
 case $1 in
 	*local*)
@@ -123,7 +132,8 @@ case $basic_machine in
 		| tron | a29k | 580 | i960 | h8300 | hppa1.0 | hppa1.1 \
 		| alpha | we32k | ns16k | clipper | sparclite | i370 | sh \
 		| powerpc | sparc64 | 1750a | dsp16xx | mips64 | mipsel \
-		| pdp11 | mips64el | mips64orion | mips64orionel )
+		| pdp11 | mips64el | mips64orion | mips64orionel \
+		| sparc)
 		basic_machine=$basic_machine-unknown
 		;;
 	# Object if more than one company name word.
@@ -139,7 +149,8 @@ case $basic_machine in
 	      | hppa1.0-* | hppa1.1-* | alpha-* | we32k-* | cydra-* | ns16k-* \
 	      | pn-* | np1-* | xps100-* | clipper-* | orion-* | sparclite-* \
 	      | pdp11-* | sh-* | powerpc-* | sparc64-* | mips64-* | mipsel-* \
-	      | mips64el-* | mips64orion-* | mips64orionel-* )
+	      | mips64el-* | mips64orion-* | mips64orionel-* \
+	      | sparc-*)
 		;;
 	# Recognize the various machine names and aliases which stand
 	# for a CPU type and a company and sometimes even an OS.
@@ -478,6 +489,10 @@ case $basic_machine in
 	tower | tower-32)
 		basic_machine=m68k-ncr
 		;;
+	udi29k)
+		basic_machine=a29k-amd
+		os=-udi
+		;;
 	ultra3)
 		basic_machine=a29k-nyu
 		os=-sym1
@@ -587,7 +602,7 @@ case $os in
 	      | -riscos* | -linux* | -uniplus* | -iris* | -rtu* | -xenix* \
 	      | -hiux* | -386bsd* | -netbsd* | -freebsd* | -riscix* \
 	      | -lynxos* | -bosx* | -nextstep* | -cxux* | -aout* | -elf* \
-	      | -ptx* | -coff* | -winnt* | -domain* )
+	      | -ptx* | -coff* | -ecoff* | -winnt* | -domain* | -vsta | -udi)
 		;;
 	-sunos5*)
 		os=`echo $os | sed -e 's|sunos5|solaris2|'`
