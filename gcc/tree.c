@@ -245,6 +245,8 @@ static int do_identifier_warnings;
 
 /* Unique id for next decl created.  */
 static int next_decl_uid;
+/* Unique id for next type created.  */
+static int next_type_uid = 1;
 
 extern char *mode_name[];
 
@@ -908,11 +910,7 @@ make_node (code)
       break;
 
     case 't':
-      {
-	static unsigned next_type_uid = 1;
-
-	TYPE_UID (t) = next_type_uid++;
-      }
+      TYPE_UID (t) = next_type_uid++;
       TYPE_ALIGN (t) = 1;
       TYPE_MAIN_VARIANT (t) = t;
       break;
@@ -986,6 +984,11 @@ copy_node (node)
     ((char *) t)[i] = ((char *) node)[i];
 
   TREE_CHAIN (t) = 0;
+
+  if (TREE_CODE_CLASS (code) == 'd')
+    DECL_UID (t) = next_decl_uid++;
+  else if (TREE_CODE_CLASS (code) == 't')
+    TYPE_UID (t) = next_type_uid++;
 
   TREE_PERMANENT (t) = (current_obstack == &permanent_obstack);
 
