@@ -93,7 +93,6 @@ static int tree_verify_flow_info (void);
 static void tree_make_forwarder_block (edge);
 static bool thread_jumps (void);
 static bool tree_forwarder_block_p (basic_block);
-static void bsi_commit_edge_inserts_1 (edge e);
 static void tree_cfg2vcg (FILE *);
 
 /* Flowgraph optimization and cleanup.  */
@@ -2871,22 +2870,25 @@ bsi_commit_edge_inserts (int *new_blocks)
 
   blocks = n_basic_blocks;
 
-  bsi_commit_edge_inserts_1 (EDGE_SUCC (ENTRY_BLOCK_PTR, 0));
+  bsi_commit_one_edge_insert (EDGE_SUCC (ENTRY_BLOCK_PTR, 0), NULL);
 
   FOR_EACH_BB (bb)
     FOR_EACH_EDGE (e, ei, bb->succs)
-      bsi_commit_edge_inserts_1 (e);
+      bsi_commit_one_edge_insert (e, NULL);
 
   if (new_blocks)
     *new_blocks = n_basic_blocks - blocks;
 }
 
 
-/* Commit insertions pending at edge E.  */
+/* Commit insertions pending at edge E. If a new block is created, set NEW_BB
+   to this block, otherwise set it to NULL.  */
 
-static void
-bsi_commit_edge_inserts_1 (edge e)
+void
+bsi_commit_one_edge_insert (edge e, basic_block *new_bb)
 {
+  if (new_bb)
+    *new_bb = NULL;
   if (PENDING_STMT (e))
     {
       block_stmt_iterator bsi;
@@ -2894,7 +2896,7 @@ bsi_commit_edge_inserts_1 (edge e)
 
       PENDING_STMT (e) = NULL_TREE;
 
-      if (tree_find_edge_insert_loc (e, &bsi, NULL))
+      if (tree_find_edge_insert_loc (e, &bsi, new_bb))
 	bsi_insert_after (&bsi, stmt, BSI_NEW_STMT);
       else
 	bsi_insert_before (&bsi, stmt, BSI_NEW_STMT);

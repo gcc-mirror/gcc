@@ -1,3 +1,21 @@
+2004-11-01  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/16447
+	* tree-cfg.c (bsi_commit_one_edge_insert): Rename from 
+	bsi_commit_edge_inserts_1, and make funtion external.  Return new block.
+	(bsi_commit_edge_inserts): Use renamed bsi_commit_one_edge_insert.
+	* tree-optimize.c (pass_cleanup_cfg_post_optimizing): Enable listing.
+	* tree-flow.h (bsi_commit_one_edge_insert): Extern decl.
+	* tree-outof-ssa.c (rewrite_trees): Don't commit edges here.
+	(same_stmt_list_p): New.  Return TRUE if edge is to be forwarded.
+	(identical_copies_p): New.  Return true is two copies are the same.
+	(identical_stmt_lists_p): New.  Return true if stmt lists are the same.
+	(analyze_edges_for_bb): New.  Determine how best to insert edge stmts 
+	for a basic block.
+	(perform_edge_inserts): New.  Determine what to do with all stmts that
+	have been inserted on edges.
+	(remove_ssa_form):  Analyze and commit edges from here.
+
 2004-11-01  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR bootstrap/18232
