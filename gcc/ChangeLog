@@ -1,3 +1,13 @@
+2002-02-19  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/linux64.h (LINK_OS_LINUX_SPEC): Look in /lib64.
+	({STARTFILE,ENDFILE}_LINUX_SPEC): Define.
+
+	* config/rs6000/sysv4.h (ENDFILE_SPEC): Add crtsaveres.o.
+	* config/rs6000/eabi.asm: Remove ABI save restore routines.
+	* config/rs6000/t-ppccomm: Build crtsavres.o.
+	* config/rs6000/crtsavres.asm: New file.
+
 2002-02-19  Philip Blundell  <philb@gnu.org>
 
 	* config/arm/arm.c (use_return_insn): Don't reject interrupt

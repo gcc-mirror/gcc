@@ -87,10 +87,6 @@ Boston, MA 02111-1307, USA.  */
 #undef  JUMP_TABLES_IN_TEXT_SECTION
 #define JUMP_TABLES_IN_TEXT_SECTION 1
 
-/* Define cutoff for using external functions to save floating point.  */
-#undef  FP_SAVE_INLINE
-#define FP_SAVE_INLINE(FIRST_REG) ((FIRST_REG) == 62 || (FIRST_REG) == 63)
-
 /* 64-bit PowerPC Linux always has GPR13 fixed.  */
 #define FIXED_R13		1
 
@@ -142,9 +138,29 @@ Boston, MA 02111-1307, USA.  */
 #define LINK_OS_DEFAULT_SPEC "%(link_os_linux)"
 
 #undef  LINK_OS_LINUX_SPEC
+#ifndef CROSS_COMPILE
 #define LINK_OS_LINUX_SPEC "-m elf64ppc %{!shared: %{!static: \
   %{rdynamic:-export-dynamic} \
-  %{!dynamic-linker:-dynamic-linker /lib/ld.so.1}}}"
+  %{!dynamic-linker:-dynamic-linker /lib64/ld.so.1}}}"
+#else
+#define LINK_OS_LINUX_SPEC "-m elf64ppc %{!shared: %{!static: \
+  %{rdynamic:-export-dynamic} \
+  %{!dynamic-linker:-dynamic-linker ld.so.1}}}"
+#endif
+
+#ifndef CROSS_COMPILE
+#undef  STARTFILE_LINUX_SPEC
+#define STARTFILE_LINUX_SPEC "\
+%{!shared: %{pg:/usr/lib64/gcrt1.o%s} %{!pg:%{p:/usr/lib64/gcrt1.o%s} \
+  %{!p:/usr/lib64/crt1.o%s}}} /usr/lib64/crti.o%s \
+%{!shared:crtbegin.o%s} %{shared:crtbeginS.o%s}"
+#endif
+
+#ifndef CROSS_COMPILE
+#undef  ENDFILE_LINUX_SPEC
+#define ENDFILE_LINUX_SPEC "\
+%{!shared:crtend.o%s} %{shared:crtendS.o%s} /usr/lib64/crtn.o%s"
+#endif
 
 #undef  TOC_SECTION_ASM_OP
 #define TOC_SECTION_ASM_OP "\t.section\t\".toc\",\"aw\""
