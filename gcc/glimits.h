@@ -79,11 +79,24 @@
 #undef ULONG_MAX
 #define ULONG_MAX (LONG_MAX * 2UL + 1)
 
-#if defined (__GNU_LIBRARY__) ? defined (__USE_GNU) : !defined (__STRICT_ANSI__)
-/* Minimum and maximum values a `signed long long int' can hold.  */
 #ifndef __LONG_LONG_MAX__
 #define __LONG_LONG_MAX__ 9223372036854775807LL
 #endif
+
+#if defined (__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
+/* Minimum and maximum values a `signed long long int' can hold.  */
+#undef LLONG_MIN
+#define LLONG_MIN (-LLONG_MAX-1)
+#undef LLONG_MAX
+#define LLONG_MAX __LONG_LONG_MAX__
+
+/* Maximum value an `unsigned long long int' can hold.  (Minimum is 0).  */
+#undef ULLONG_MAX
+#define ULLONG_MAX (LLONG_MAX * 2ULL + 1)
+#endif
+
+#if defined (__GNU_LIBRARY__) ? defined (__USE_GNU) : !defined (__STRICT_ANSI__)
+/* Minimum and maximum values a `signed long long int' can hold.  */
 #undef LONG_LONG_MIN
 #define LONG_LONG_MIN (-LONG_LONG_MAX-1)
 #undef LONG_LONG_MAX
