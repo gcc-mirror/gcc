@@ -4341,8 +4341,8 @@ joust (cand1, cand2, warn)
 	   != DECL_CONSTRUCTOR_P (cand2->fn))
 	  /* Don't warn if the two conv ops convert to the same type...  */
 	  || (! DECL_CONSTRUCTOR_P (cand1->fn)
-	      && ! same_type_p (TREE_TYPE (cand1->second_conv),
-				TREE_TYPE (cand2->second_conv)))))
+	      && ! same_type_p (TREE_TYPE (TREE_TYPE (cand1->fn)),
+				TREE_TYPE (TREE_TYPE (cand2->fn))))))
     {
       int comp = compare_ics (cand1->second_conv, cand2->second_conv);
       if (comp != winner)

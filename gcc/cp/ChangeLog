@@ -7,6 +7,11 @@ Wed May 19 02:50:53 1999  Arvind Sankar <arvinds@mit.edu>
 
 	* gxxint.texi: Fix typo.
 
+1999-05-18  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* call.c (joust): Compare the types of the conv ops, not the
+	target types of the conversions.
+
 Tue May 18 00:21:34 1999  Zack Weinberg  <zack@rabi.phys.columbia.edu>
 
 	* lang-specs.h: Define __GNUC__ and __GNUC_MINOR__ only if -no-gcc
