@@ -4338,7 +4338,7 @@ get_inner_reference (exp, pbitsize, pbitpos, poffset, pmode,
 
   if (TREE_CODE_CLASS (TREE_CODE (exp)) == 'd')
     alignment = MIN (alignment, DECL_ALIGN (exp));
-  else
+  else if (TREE_TYPE (exp) != 0)
     alignment = MIN (alignment, TYPE_ALIGN (TREE_TYPE (exp)));
 
   if (integer_zerop (offset))
