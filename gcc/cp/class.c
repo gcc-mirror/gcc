@@ -6671,7 +6671,7 @@ dump_array (FILE * stream, tree decl)
 			   TFF_PLAIN_IDENTIFIER));
   fprintf (stream, "\n");
 
-  for (ix = 0, inits = TREE_OPERAND (DECL_INITIAL (decl), 1);
+  for (ix = 0, inits = CONSTRUCTOR_ELTS (DECL_INITIAL (decl));
        inits; ix++, inits = TREE_CHAIN (inits))
     fprintf (stream, "%-4ld  %s\n", (long)(ix * elt),
 	     expr_as_string (TREE_VALUE (inits), TFF_PLAIN_IDENTIFIER));
