@@ -1,3 +1,8 @@
+2001-07-19  Alexandre Oliva  <aoliva@redhat.com>
+
+	* simplify-rtx.c (simplify_replace_rtx): Try to obtain mode from
+	old and new operands in `<', `3' and `b'.
+
 2001-07-19  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* Makefile.in (emit-rtl.o, c-decl.o): Depend on debug.h.
