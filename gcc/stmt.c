@@ -5188,6 +5188,10 @@ expand_end_case (orig_index)
   tree index_expr, index_type;
   int unsignedp;
 
+  /* Don't crash due to previous errors.  */
+  if (thiscase == NULL)
+    return;
+
   table_label = gen_label_rtx ();
   index_expr = thiscase->data.case_stmt.index_expr;
   index_type = TREE_TYPE (index_expr);
