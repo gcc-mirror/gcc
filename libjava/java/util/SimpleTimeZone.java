@@ -1,5 +1,5 @@
 /* java.util.SimpleTimeZone
-   Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -390,7 +390,8 @@ public class SimpleTimeZone extends TimeZone
    * @param dayOfWeek The day of week where daylight savings start.
    * @param time The time in milliseconds standard time where daylight
    * savings start.
-   * @see SimpleTimeZone */
+   * @see SimpleTimeZone
+   */
   public void setStartRule(int month, int day, int dayOfWeek, int time)
   {
     this.startMode = checkRule(month, day, dayOfWeek);
@@ -411,11 +412,12 @@ public class SimpleTimeZone extends TimeZone
    *
    * @param rawOffset The time offset from GMT.
    * @param id  The identifier of this time zone.
-   * @param Month The end month of daylight savings.
+   * @param month The end month of daylight savings.
    * @param day A day in month, or a day of week in month.
-   * @param DayOfWeek A day of week, when daylight savings ends.
-   * @param Time A time in millis in standard time.
-   * @see #setStartRule */
+   * @param dayOfWeek A day of week, when daylight savings ends.
+   * @param time A time in millis in standard time.
+   * @see #setStartRule
+   */
   public void setEndRule(int month, int day, int dayOfWeek, int time)
   {
     this.endMode = checkRule(month, day, dayOfWeek);
@@ -509,11 +511,27 @@ public class SimpleTimeZone extends TimeZone
    * is one hour, but for some time zones this may be half an our.
    * @return the daylight savings offset in milliseconds.
    * 
-   * @since JDK1.2
+   * @since 1.2
    */
   public int getDSTSavings()
   {
     return dstSavings;
+  }
+
+  /**
+   * Sets the daylight savings offset.  This is a positive offset in
+   * milliseconds with respect to standard time.
+   *
+   * @param dstSavings the daylight savings offset in milliseconds.
+   *
+   * @since 1.2
+   */
+  public void setDSTSavings(int dstSavings)
+  {
+    if (dstSavings <= 0)
+      throw new IllegalArgumentException("illegal value for dstSavings");
+    
+    this.dstSavings = dstSavings;
   }
 
   /**
