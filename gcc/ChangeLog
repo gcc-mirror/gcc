@@ -1,5 +1,23 @@
 2005-02-12  Ira Rosen  <irar@il.ibm.com>
 
+	* tree-vectorizer.c (vect_get_base_and_offset): Remove.
+	(vect_is_simple_iv_evolution): Remove redundant parameter
+	and step check.
+	(vect_analyze_scalar_cycles): Call vect_is_simple_iv_evolution
+	without last parameter.
+	(vect_analyze_pointer_ref_access): Get access_fn as parameter.
+	Return pointer step. Call vect_is_simple_iv_evolution without
+	last parameter. Check only that the step is multiple of size
+	type. Remove stmt_vinfo updates.
+	(vect_get_memtag_and_dr): Remove.
+	(vect_get_memtag): New function.
+	(vect_address_analysis): New function.
+	(vect_object_analysis): New function.
+	(vect_analyze_data_refs): Call vect_object_analysis and
+	vect_get_memtag. Update stmt_vinfo fields.
+
+2005-02-12  Ira Rosen  <irar@il.ibm.com>
+
 	* tree-data-ref.c (array_base_name_differ_p): Check that the bases
 	exist and are objects. Remove checks for pointer.
 	* tree-vectorizer.c (vect_create_addr_base_for_vector_ref): Use

@@ -1,5 +1,9 @@
 2005-02-12  Ira Rosen  <irar@il.ibm.com>
 
+	* gcc.dg/vect/vect-97.c: New test.
+
+2005-02-12  Ira Rosen  <irar@il.ibm.com>
+
 	* gcc.dg/vect/vect-96.c: New test.
 
 2005-02-12  Uros Bizjak  <uros@kss-loka.si>
