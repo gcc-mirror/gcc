@@ -2,6 +2,8 @@ Fri Mar 26 16:02:37 1999  Nick Clifton  <nickc@cygnus.com>
 
 	* configure.in (arm-*-vxworks*): Just include arm/vxarm.h
 	* configure: Regenerate.
+	* config/arm/vxarm.h: Define SUBTARGET_CPU_DEFAULT before
+	including arm/coff.h
 
 1999-02-16  Scott Bambrough <scottb@corelcomputer.com>
 
