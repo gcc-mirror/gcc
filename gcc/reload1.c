@@ -406,8 +406,7 @@ static void mark_reload_reg_in_use	PROTO((int, int, enum reload_type,
 static void clear_reload_reg_in_use	PROTO((int, int, enum reload_type,
 					       enum machine_mode));
 static int reload_reg_free_p		PROTO((int, int, enum reload_type));
-static int reload_reg_free_before_p	PROTO((int, int, enum reload_type, int));
-static int reload_reg_free_for_value_p	PROTO((int, int, enum reload_type, rtx, rtx, int));
+static int reload_reg_free_for_value_p	PROTO((int, int, enum reload_type, rtx, rtx, int, int));
 static int reload_reg_reaches_end_p	PROTO((int, int, enum reload_type));
 static int allocate_reload_reg		PROTO((struct insn_chain *, int, int,
 					       int));
@@ -4819,175 +4818,6 @@ reload_reg_free_p (regno, opnum, type)
 
 /* Return 1 if the value in reload reg REGNO, as used by a reload
    needed for the part of the insn specified by OPNUM and TYPE,
-   is not in use for a reload in any prior part of the insn.
-
-   We can assume that the reload reg was already tested for availability
-   at the time it is needed, and we should not check this again,
-   in case the reg has already been marked in use.
-
-   However, if EQUIV is set, we are checking the availability of a register
-   holding an equivalence to the value to be loaded into the reload register,
-   not the availability of the reload register itself.
-
-   This is still less stringent than what reload_reg_free_p checks; for
-   example, compare the checks for RELOAD_OTHER.  */
-
-static int
-reload_reg_free_before_p (regno, opnum, type, equiv)
-     int regno;
-     int opnum;
-     enum reload_type type;
-     int equiv;
-{
-  int i;
-
-  /* The code to handle EQUIV below is wrong.
-
-     If we wnat to know if a value in a particular reload register is available
-     at a particular point in time during reloading, we must check *all*
-     prior reloads to see if they clobber the value.
-
-     Note this is significantly different from determining when a register is
-     free for usage in a reload!
-
-     This change is temporary.  It will go away.  */
-  if (equiv)
-    return 0;
-
-  switch (type)
-    {
-    case RELOAD_FOR_OTHER_ADDRESS:
-      /* These always come first.  */
-      if (equiv && TEST_HARD_REG_BIT (reload_reg_used_in_other_addr, regno))
-	return 0;
-      return 1;
-
-    case RELOAD_OTHER:
-      if (equiv && TEST_HARD_REG_BIT (reload_reg_used, regno))
-	return 0;
-      return ! TEST_HARD_REG_BIT (reload_reg_used_in_other_addr, regno);
-
-      /* If this use is for part of the insn,
-	 check the reg is not in use for any prior part.  It is tempting
-	 to try to do this by falling through from objecs that occur
-	 later in the insn to ones that occur earlier, but that will not
-	 correctly take into account the fact that here we MUST ignore
-	 things that would prevent the register from being allocated in
-	 the first place, since we know that it was allocated.  */
-
-    case RELOAD_FOR_OUTPUT_ADDRESS:
-      if (equiv
-	  && TEST_HARD_REG_BIT (reload_reg_used_in_output_addr[opnum], regno))
-	return 0;
-      /* Earlier reloads include RELOAD_FOR_OUTADDR_ADDRESS reloads.  */
-      if (TEST_HARD_REG_BIT (reload_reg_used_in_outaddr_addr[opnum], regno))
-	return 0;
-      /* ... fall through ...  */
-    case RELOAD_FOR_OUTADDR_ADDRESS:
-      if (equiv
-	  && (TEST_HARD_REG_BIT (reload_reg_used_in_outaddr_addr[opnum], regno)
-	      || TEST_HARD_REG_BIT (reload_reg_used, regno)))
-	return 0;
-      /* Earlier reloads are for earlier outputs or their addresses,
-	 any RELOAD_FOR_INSN reloads, any inputs or their addresses, or any
-	 RELOAD_FOR_OTHER_ADDRESS reloads (we know it can't conflict with
-	 RELOAD_OTHER)..  */
-      for (i = 0; i < opnum; i++)
-	if (TEST_HARD_REG_BIT (reload_reg_used_in_output_addr[i], regno)
-	    || TEST_HARD_REG_BIT (reload_reg_used_in_outaddr_addr[i], regno))
-	  return 0;
-
-      if (TEST_HARD_REG_BIT (reload_reg_used_in_insn, regno))
-	return 0;
-
-      for (i = 0; i < reload_n_operands; i++)
-	if (TEST_HARD_REG_BIT (reload_reg_used_in_input_addr[i], regno)
-	    || TEST_HARD_REG_BIT (reload_reg_used_in_inpaddr_addr[i], regno)
-	    || TEST_HARD_REG_BIT (reload_reg_used_in_input[i], regno)
-	    || TEST_HARD_REG_BIT (reload_reg_used_in_output[i], regno))
-	  return 0;
-
-      return (! TEST_HARD_REG_BIT (reload_reg_used_in_other_addr, regno)
-	      && ! TEST_HARD_REG_BIT (reload_reg_used_in_insn, regno)
-	      && ! TEST_HARD_REG_BIT (reload_reg_used_in_op_addr_reload, regno)
-	      && ! TEST_HARD_REG_BIT (reload_reg_used_in_op_addr, regno));
-				   
-    case RELOAD_FOR_OUTPUT:
-    case RELOAD_FOR_INSN:
-      /* There is no reason to call this function for output reloads, thus
-	 anything we'd put here wouldn't be tested.  So just abort.  */
-       abort ();
-
-    case RELOAD_FOR_OPERAND_ADDRESS:
-      if (equiv && TEST_HARD_REG_BIT (reload_reg_used_in_op_addr, regno))
-	return 0;
-
-      /* Earlier reloads include RELOAD_FOR_OPADDR_ADDR reloads.  */
-      if (TEST_HARD_REG_BIT (reload_reg_used_in_op_addr_reload, regno))
-	return 0;
-
-      /* ... fall through ...  */
-
-    case RELOAD_FOR_OPADDR_ADDR:
-      if (equiv)
-	{
-	  if (TEST_HARD_REG_BIT (reload_reg_used_in_op_addr_reload, regno)
-	      || TEST_HARD_REG_BIT (reload_reg_used, regno))
-	    return 0;
-	  for (i = 0; i < reload_n_operands; i++)
-	    if (TEST_HARD_REG_BIT (reload_reg_used_in_input[i], regno))
-	      return 0;
-	}
-      /* These can't conflict with inputs, or each other, so all we have to
-	 test is input addresses and the addresses of OTHER items.  */
-
-      for (i = 0; i < reload_n_operands; i++)
-	if (TEST_HARD_REG_BIT (reload_reg_used_in_input_addr[i], regno)
-	    || TEST_HARD_REG_BIT (reload_reg_used_in_inpaddr_addr[i], regno))
-	  return 0;
-
-      return ! TEST_HARD_REG_BIT (reload_reg_used_in_other_addr, regno);
-
-    case RELOAD_FOR_INPUT:
-      if (equiv && TEST_HARD_REG_BIT (reload_reg_used, regno))
-	return 0;
-
-      /* The only things earlier are the address for this and
-	 earlier inputs, other inputs (which we know we don't conflict
-	 with), and addresses of RELOAD_OTHER objects.
-	 We can ignore the conflict with addresses of this operand, since
-         when we inherit this operand, its address reloads are discarded.  */
-
-      for (i = 0; i < opnum; i++)
-	if (TEST_HARD_REG_BIT (reload_reg_used_in_input_addr[i], regno)
-	    || TEST_HARD_REG_BIT (reload_reg_used_in_inpaddr_addr[i], regno))
-	  return 0;
-
-      return ! TEST_HARD_REG_BIT (reload_reg_used_in_other_addr, regno);
-
-    case RELOAD_FOR_INPUT_ADDRESS:
-      /* Earlier reloads include RELOAD_FOR_INPADDR_ADDRESS reloads.  */
-      if (TEST_HARD_REG_BIT (reload_reg_used_in_inpaddr_addr[opnum], regno))
-	return 0;
-      /* ... fall through ...  */
-    case RELOAD_FOR_INPADDR_ADDRESS:
-      if (equiv && TEST_HARD_REG_BIT (reload_reg_used, regno))
-	return 0;
-
-      /* Similarly, all we have to check is for use in earlier inputs'
-	 addresses.  */
-      for (i = 0; i < opnum; i++)
-	if (TEST_HARD_REG_BIT (reload_reg_used_in_input_addr[i], regno)
-	    || TEST_HARD_REG_BIT (reload_reg_used_in_inpaddr_addr[i], regno))
-	  return 0;
-
-      return ! TEST_HARD_REG_BIT (reload_reg_used_in_other_addr, regno);
-    }
-  abort ();
-}
-
-/* Return 1 if the value in reload reg REGNO, as used by a reload
-   needed for the part of the insn specified by OPNUM and TYPE,
    is still available in REGNO at the end of the insn.
 
    We can assume that the reload reg was already tested for availability
@@ -5222,14 +5052,21 @@ int reload_spill_index[MAX_RELOADS];
    Other read-only reloads with the same value do not conflict
    unless OUT is non-zero and these other reloads have to live while
    output reloads live.
+   If OUT is CONST0_RTX, this is a special case: it means that the
+   test should not be for using register REGNO as reload register, but
+   for copying from register REGNO into the reload register.
 
    RELOADNUM is the number of the reload we want to load this value for;
    a reload does not conflict with itself.
 
+   When IGNORE_ADDRESS_RELOADS is set, we can not have conflicts with
+   reloads that load an address for the very reload we are considering.
+
    The caller has to make sure that there is no conflict with the return
    register.  */
 static int
-reload_reg_free_for_value_p (regno, opnum, type, value, out, reloadnum)
+reload_reg_free_for_value_p (regno, opnum, type, value, out, reloadnum,
+                             ignore_address_reloads)
      int regno;
      int opnum;
      enum reload_type type;
@@ -5238,6 +5075,13 @@ reload_reg_free_for_value_p (regno, opnum, type, value, out, reloadnum)
 {
   int time1;
   int i;
+  int copy = 0;
+
+  if (out == const0_rtx)
+    {
+      copy = 1;
+      out = NULL_RTX;
+    }
 
   /* We use some pseudo 'time' value to check if the lifetimes of the
      new register use would overlap with the one of a previous reload
@@ -5259,6 +5103,9 @@ reload_reg_free_for_value_p (regno, opnum, type, value, out, reloadnum)
     case RELOAD_FOR_OTHER_ADDRESS:
       time1 = 0;
       break;
+    case RELOAD_OTHER:
+      time1 = copy ? 1 : MAX_RECOG_OPERANDS * 5 + 5;
+      break;
     /* For each input, we might have a sequence of RELOAD_FOR_INPADDR_ADDRESS,
        RELOAD_FOR_INPUT_ADDRESS and RELOAD_FOR_INPUT.  By adding 0 / 1 / 2 ,
        respectively, to the time values for these, we get distinct time
@@ -5266,31 +5113,34 @@ reload_reg_free_for_value_p (regno, opnum, type, value, out, reloadnum)
        multiply opnum by at least three.  We round that up to four because
        multiply by four is often cheaper.  */
     case RELOAD_FOR_INPADDR_ADDRESS:
-      time1 = opnum * 4 + 1;
-      break;
-    case RELOAD_FOR_INPUT_ADDRESS:
       time1 = opnum * 4 + 2;
       break;
-    case RELOAD_FOR_OPADDR_ADDR:
-    /* opnum * 4 + 3 < opnum * 4 + 4
-       <= (MAX_RECOG_OPERANDS - 1) * 4 + 4 == MAX_RECOG_OPERANDS * 4 */
-      time1 = MAX_RECOG_OPERANDS * 4;
+    case RELOAD_FOR_INPUT_ADDRESS:
+      time1 = opnum * 4 + 3;
       break;
     case RELOAD_FOR_INPUT:
-      /* All RELOAD_FOR_INPUT reloads remain live till just before the
-	 instruction is executed.  */
+      /* All RELOAD_FOR_INPUT reloads remain live till the instruction
+	 executes (inclusive).  */
+      time1 = copy ? opnum * 4 + 4 : MAX_RECOG_OPERANDS * 4 + 3;
+      break;
+    case RELOAD_FOR_OPADDR_ADDR:
+    /* opnum * 4 + 4
+       <= (MAX_RECOG_OPERANDS - 1) * 4 + 4 == MAX_RECOG_OPERANDS * 4 */
       time1 = MAX_RECOG_OPERANDS * 4 + 1;
       break;
     case RELOAD_FOR_OPERAND_ADDRESS:
       /* RELOAD_FOR_OPERAND_ADDRESS reloads are live even while the insn
 	 is executed.  */
-      time1 = MAX_RECOG_OPERANDS * 4 + 2;
+      time1 = copy ? MAX_RECOG_OPERANDS * 4 + 2 : MAX_RECOG_OPERANDS * 4 + 3;
+      break;
+    case RELOAD_FOR_OUTADDR_ADDRESS:
+      time1 = MAX_RECOG_OPERANDS * 4 + 4 + opnum;
       break;
     case RELOAD_FOR_OUTPUT_ADDRESS:
-      time1 = MAX_RECOG_OPERANDS * 4 + 3 + opnum;
+      time1 = MAX_RECOG_OPERANDS * 4 + 5 + opnum;
       break;
     default:
-      time1 = MAX_RECOG_OPERANDS * 5 + 3;
+      time1 = MAX_RECOG_OPERANDS * 5 + 5;
     }
 
   for (i = 0; i < n_reloads; i++)
@@ -5301,11 +5151,6 @@ reload_reg_free_for_value_p (regno, opnum, type, value, out, reloadnum)
 	      <= HARD_REGNO_NREGS (REGNO (reg), GET_MODE (reg)) - (unsigned)1)
 	  && i != reloadnum)
 	{
-	  if (out
-	      && reload_when_needed[i] != RELOAD_FOR_INPUT
-	      && reload_when_needed[i] != RELOAD_FOR_INPUT_ADDRESS
-	      && reload_when_needed[i] != RELOAD_FOR_INPADDR_ADDRESS)
-	    return 0;
 	  if (! reload_in[i] || ! rtx_equal_p (reload_in[i], value)
 	      || reload_out[i])
 	    {
@@ -5322,48 +5167,87 @@ reload_reg_free_for_value_p (regno, opnum, type, value, out, reloadnum)
 		     RELOAD_FOR_{INPUT,OPERAND,OUTPUT}_ADDRESS .  If the
 		     address reload is inherited, the address address reload
 		     goes away, so we can ignore this conflict.  */
-		  if (type == RELOAD_FOR_INPUT_ADDRESS && reloadnum == i + 1)
+		  if (type == RELOAD_FOR_INPUT_ADDRESS && reloadnum == i + 1
+		      && ignore_address_reloads
+		      /* Unless the RELOAD_FOR_INPUT is an auto_inc expression.
+			 Then the address address is still needed to store
+			 back the new address.  */
+		      && ! reload_out[reloadnum])
 		    continue;
-		  time2 = reload_opnum[i] * 4 + 1;
-		  break;
-		case RELOAD_FOR_INPUT_ADDRESS:
+		  /* Likewise, if a RELOAD_FOR_INPUT can inherit a value, its
+		     RELOAD_FOR_INPUT_ADDRESS / RELOAD_FOR_INPADDR_ADDRESS
+		     reloads go away.  */
+		  if (type == RELOAD_FOR_INPUT && opnum == reload_opnum[i]
+		      && ignore_address_reloads
+		      /* Unless we are reloading an auto_inc expression.  */
+		      && ! reload_out[reloadnum])
+		    continue;
 		  time2 = reload_opnum[i] * 4 + 2;
 		  break;
-		case RELOAD_FOR_INPUT:
+		case RELOAD_FOR_INPUT_ADDRESS:
+		  if (type == RELOAD_FOR_INPUT && opnum == reload_opnum[i]
+		      && ignore_address_reloads
+		      && ! reload_out[reloadnum])
+		    continue;
 		  time2 = reload_opnum[i] * 4 + 3;
 		  break;
+		case RELOAD_FOR_INPUT:
+		  time2 = reload_opnum[i] * 4 + 4;
+		  break;
+		/* reload_opnum[i] * 4 + 4 <= (MAX_RECOG_OPERAND - 1) * 4 + 4
+		   == MAX_RECOG_OPERAND * 4  */
 		case RELOAD_FOR_OPADDR_ADDR:
-		  if (type == RELOAD_FOR_OPERAND_ADDRESS && reloadnum == i + 1)
+		  if (type == RELOAD_FOR_OPERAND_ADDRESS && reloadnum == i + 1
+		      && ignore_address_reloads
+		      && ! reload_out[reloadnum])
 		    continue;
-		  time2 = MAX_RECOG_OPERANDS * 4;
+		  time2 = MAX_RECOG_OPERANDS * 4 + 1;
 		  break;
 		case RELOAD_FOR_OPERAND_ADDRESS:
-		  time2 = MAX_RECOG_OPERANDS * 4 + 1;
+		  time2 = MAX_RECOG_OPERANDS * 4 + 2;
+		  break;
+		case RELOAD_FOR_INSN:
+		  time2 = MAX_RECOG_OPERANDS * 4 + 3;
 		  break;
 		case RELOAD_FOR_OUTPUT:
 		/* All RELOAD_FOR_OUTPUT reloads become live just after the
 		   instruction is executed.  */
-		  time2 = MAX_RECOG_OPERANDS * 4 + 3;
+		  time2 = MAX_RECOG_OPERANDS * 4 + 4;
 		  break;
+		/* The first RELOAD_FOR_OUTADDR_ADDRESS reload conflicts with
+		   the RELOAD_FOR_OUTPUT reloads, so assign it the same time
+		   value.  */
 		case RELOAD_FOR_OUTADDR_ADDRESS:
-		  if (type == RELOAD_FOR_OUTPUT_ADDRESS && reloadnum == i + 1)
+		  if (type == RELOAD_FOR_OUTPUT_ADDRESS && reloadnum == i + 1
+		      && ignore_address_reloads
+		      && ! reload_out[reloadnum])
 		    continue;
-		/* fall through. */
-		/* The first RELOAD_FOR_OUTPUT_ADDRESS reload conflicts with the
-		   RELOAD_FOR_OUTPUT reloads, so assign it the same time value.  */
+		  time2 = MAX_RECOG_OPERANDS * 4 + 4 + reload_opnum[i];
+		  break;
 		case RELOAD_FOR_OUTPUT_ADDRESS:
-		  time2 = MAX_RECOG_OPERANDS * 4 + 3 + reload_opnum[i];
+		  time2 = MAX_RECOG_OPERANDS * 4 + 5 + reload_opnum[i];
 		  break;
 		case RELOAD_OTHER:
+		  /* If there is no conflict in the input part, handle this
+		     like an output reload.  */
 		  if (! reload_in[i] || rtx_equal_p (reload_in[i], value))
 		    {
-		      time2 = MAX_RECOG_OPERANDS * 4 + 3;
+		      time2 = MAX_RECOG_OPERANDS * 4 + 4;
 		      break;
 		    }
+		  time2 = 1;
+		  /* RELOAD_OTHER might be live beyond instruction execution,
+		     but this is not obvious when we set time2 = 1.  So check
+		     here if there might be a problem with the new reload
+		     clobbering the register used by the RELOAD_OTHER.  */
+		  if (out)
+		    return 0;
+		  break;
 		default:
-		  time2 = 0;
+		  return 0;
 		}
-	      if (time1 >= time2)
+	      if (time1 >= time2
+		  || (out && time2 >= MAX_RECOG_OPERANDS * 4 + 4))
 		return 0;
 	    }
 	}
@@ -5455,7 +5339,7 @@ allocate_reload_reg (chain, r, last_reload, noerror)
 						  reload_opnum[r],
 						  reload_when_needed[r],
 						  reload_in[r],
-						  reload_out[r], r)))
+						  reload_out[r], r, 1)))
 	      && TEST_HARD_REG_BIT (reg_class_contents[class], regnum)
 	      && HARD_REGNO_MODE_OK (regnum, reload_mode[r])
 	      /* Look first for regs to share, then for unshared.  But
@@ -5903,15 +5787,10 @@ choose_reload_regs (chain)
 		      && (reload_nregs[r] == max_group_size
 			  || ! TEST_HARD_REG_BIT (reg_class_contents[(int) group_class],
 						  i))
-		      && ((reload_reg_free_p (i, reload_opnum[r],
-					      reload_when_needed[r])
-			   && reload_reg_free_before_p (i, reload_opnum[r],
-							reload_when_needed[r],
-							0))
-			  || reload_reg_free_for_value_p (i, reload_opnum[r],
-							  reload_when_needed[r],
-							  reload_in[r],
-							  reload_out[r], r)))
+		      && reload_reg_free_for_value_p (i, reload_opnum[r],
+						      reload_when_needed[r],
+						      reload_in[r],
+						      const0_rtx, r, 1))
 		    {
 		      /* If a group is needed, verify that all the subsequent
 			 registers still have their values intact.  */
@@ -5945,6 +5824,9 @@ choose_reload_regs (chain)
 			      break;
 
 			  if (i1 != n_earlyclobbers
+			      || ! (reload_reg_free_for_value_p
+				    (i, reload_opnum[r], reload_when_needed[r],
+				     reload_in[r], reload_out[r], r, 1))
 			      /* Don't use it if we'd clobber a pseudo reg.  */
 			      || (TEST_HARD_REG_BIT (reg_used_by_pseudo, i)
 				  && reload_out[r]
@@ -6032,7 +5914,7 @@ choose_reload_regs (chain)
 		       && ! reload_reg_free_for_value_p (regno, reload_opnum[r],
 							 reload_when_needed[r],
 							 reload_in[r],
-							 reload_out[r], r))
+							 reload_out[r], r, 1))
 		      || ! TEST_HARD_REG_BIT (reg_class_contents[(int) reload_reg_class[r]],
 					      regno)))
 		equiv = 0;
@@ -6240,14 +6122,13 @@ choose_reload_regs (chain)
 	    check_reg = reload_override_in[r];
 	  else
 	    continue;
-	  if (! (reload_reg_free_before_p (true_regnum (check_reg),
-	    			       reload_opnum[r], reload_when_needed[r],
-	    			       ! reload_inherited[r])
-		 || reload_reg_free_for_value_p (true_regnum (check_reg),
+	  if (! reload_reg_free_for_value_p (true_regnum (check_reg),
 	    				     reload_opnum[r],
 	    				     reload_when_needed[r],
 	    				     reload_in[r],
-	    				     reload_out[r], r)))
+	    				     (reload_inherited[r]
+					      ? reload_out[r] : const0_rtx),
+					     r, 1))
 	    {
 	      if (pass)
 		continue;
@@ -6600,30 +6481,13 @@ emit_reload_insns (chain)
 	    {
 	      int regno = true_regnum (oldequiv);
 
-	      /* If OLDEQUIV is a spill register, don't use it for this
-		 if any other reload needs it at an earlier stage of this insn
-		 or at this stage.  */
-	      if (spill_reg_order[regno] >= 0
-		  && (! reload_reg_free_p (regno, reload_opnum[j],
-					   reload_when_needed[j])
-		      || ! reload_reg_free_before_p (regno, reload_opnum[j],
-						     reload_when_needed[j], 1)))
+	      /* Don't use OLDEQUIV if any other reload changes it at an
+		 earlier stage of this insn or at this stage.  */
+	      if (! reload_reg_free_for_value_p (regno, reload_opnum[j],
+						 reload_when_needed[j],
+						 reload_in[j], const0_rtx, j,
+						 0))
 		oldequiv = 0;
-
-	      /* If OLDEQUIV is not a spill register,
-		 don't use it if any other reload wants it.  */
-	      if (spill_reg_order[regno] < 0)
-		{
-		  int k;
-		  for (k = 0; k < n_reloads; k++)
-		    if (reload_reg_rtx[k] != 0 && k != j
-			&& reg_overlap_mentioned_for_reload_p (reload_reg_rtx[k],
-							       oldequiv))
-		      {
-			oldequiv = 0;
-			break;
-		      }
-		}
 
 	      /* If it is no cheaper to copy from OLDEQUIV into the
 		 reload register than it would be to move from memory,
@@ -6772,9 +6636,11 @@ emit_reload_insns (chain)
 		   && dead_or_set_p (insn, old)
 		   /* This is unsafe if some other reload
 		      uses the same reg first.  */
-		   && reload_reg_free_before_p (REGNO (reloadreg),
-						reload_opnum[j],
-						reload_when_needed[j], 0))
+		   && reload_reg_free_for_value_p (REGNO (reloadreg),
+						   reload_opnum[j],
+						   reload_when_needed[j], 
+						   old, reload_out[j],
+						   j, 0))
 	    {
 	      rtx temp = PREV_INSN (insn);
 	      while (temp && GET_CODE (temp) == NOTE)
