@@ -631,10 +631,16 @@ scan_linker_output (fname)
 	  else if (p = strchr (oldq, '"'), p)
 	    p++, q = strchr (p, '"');
 
-	  /* Don't let the strstr's below see the demangled name; we
-	     might get spurious matches.  */
 	  if (p)
-	    p[-1] = '\0';
+	    {
+	      /* Don't let the strstr's below see the demangled name; we
+		 might get spurious matches.  */
+	      p[-1] = '\0';
+
+	      /* powerpc64-linux references .foo when calling function foo.  */
+	      if (*p == '.')
+		p++;
+	    }
 
 	  /* We need to check for certain error keywords here, or we would
 	     mistakenly use GNU ld's "In function `foo':" message.  */
