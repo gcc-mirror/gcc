@@ -1,3 +1,19 @@
+Thu May 17 23:19:46 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* integrate.c (copy_rtx_and_substitute): Use simplify_gen_subreg.
+	(simplify_subreg): Handle complex types represented as CONCAT.
+
+	* recog.c (validate_replace_rtx_1): Properly canonicalize expression
+	* rtl.h (swap_commutative_operands_p): Declare.
+	* rtlanal.c (swap_commutative_operands_p): New.
+	(operand_preference): New static function.
+
+	* combine.c (combine_simplify_rtx): Use swap_commutative_operands_p.
+	(gen_binary): Likewise.
+	* optabs.c (emit_cmp_and_jump_insns, emit_conditional_move): Likewise.
+	* simplify-rtx.c (simplify_gen_binary,
+	simplify_gen_relational): Likewise.
+
 Thu May 17 20:43:36 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* cse.c (fold_rtx): Use simplify_subreg.

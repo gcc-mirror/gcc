@@ -30,6 +30,7 @@ Boston, MA 02111-1307, USA.  */
 static void set_of_1		PARAMS ((rtx, rtx, void *));
 static void insn_dependent_p_1	PARAMS ((rtx, rtx, void *));
 static int computed_jump_p_1	PARAMS ((rtx));
+static int operand_preference	PARAMS ((rtx));
 
 /* Bit flags that specify the machine subtype we are compiling for.
    Bits are tested using macros TARGET_... defined in the tm.h file
@@ -2533,6 +2534,52 @@ regno_use_in (regno, x)
   return NULL_RTX;
 }
 
+/* Return a value indicating whether OP, an operand of a commutative
+   operation, is preferred as the first or second operand.  The higher
+   the value, the stronger the preference for being the first operand.
+   We use negative values to indicate a preference for the first operand
+   and positive values for the second operand.  */
+
+static int
+operand_preference (op)
+     rtx op;
+{
+  /* Constants always come the second operand.  Prefer "nice" constants.  */
+  if (GET_CODE (op) == CONST_INT)
+    return -4;
+  if (GET_CODE (op) == CONST_DOUBLE)
+    return -3;
+  if (CONSTANT_P (op))
+    return -2;
+
+  /* SUBREGs of objects should come second.  */
+  if (GET_CODE (op) == SUBREG
+      && GET_RTX_CLASS (GET_CODE (SUBREG_REG (op))) == 'o')
+    return -1;
+
+  /* If only one operand is a `neg', `not',
+    `mult', `plus', or `minus' expression, it will be the first
+    operand.  */
+  if (GET_CODE (op) == NEG || GET_CODE (op) == NOT
+      || GET_CODE (op) == MULT || GET_CODE (op) == PLUS
+      || GET_CODE (op) == MINUS)
+    return 2;
+
+  /* Complex expressions should be the first.  */
+  if (GET_RTX_CLASS (GET_CODE (op)) == 'o')
+    return 1;
+  return 0;
+}
+
+/* Return 1 iff it is neccesary to swap operands of commutative operation
+   in order to canonicalize expression.  */
+
+int
+swap_commutative_operands_p (x, y)
+     rtx x, y;
+{
+  return operand_preference (x) < operand_preference (y);
+}
 
 /* Return 1 if X is an autoincrement side effect and the register is
    not the stack pointer.  */

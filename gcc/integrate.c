@@ -1902,35 +1902,9 @@ copy_rtx_and_substitute (orig, map, for_lhs)
 
     case SUBREG:
       copy = copy_rtx_and_substitute (SUBREG_REG (orig), map, for_lhs);
-      /* SUBREG is ordinary, but don't make nested SUBREGs.  */
-      if (GET_CODE (copy) == SUBREG)
-	{
-	  int final_offset = SUBREG_BYTE (orig) + SUBREG_BYTE (copy);
-
-	  /* When working with SUBREGs the rule is that the byte
-	     offset must be a multiple of the SUBREG's mode.  */
-	  final_offset = (final_offset / GET_MODE_SIZE (GET_MODE (orig)));
-	  final_offset = (final_offset * GET_MODE_SIZE (GET_MODE (orig)));
-	  return gen_rtx_SUBREG (GET_MODE (orig), SUBREG_REG (copy),
-				 final_offset);
-	}
-      else if (GET_CODE (copy) == CONCAT)
-	{
-	  rtx retval = subreg_realpart_p (orig) ? XEXP (copy, 0) : XEXP (copy, 1);
-	  int final_offset;
-
-	  if (GET_MODE (retval) == GET_MODE (orig))
-	    return retval;
-	  
-	  final_offset = SUBREG_BYTE (orig) %
-	  		 GET_MODE_UNIT_SIZE (GET_MODE (SUBREG_REG (orig)));
-	  final_offset = (final_offset / GET_MODE_SIZE (GET_MODE (orig)));
-	  final_offset = (final_offset * GET_MODE_SIZE (GET_MODE (orig)));
-	  return gen_rtx_SUBREG (GET_MODE (orig), retval, final_offset);
-	}
-      else
-	return gen_rtx_SUBREG (GET_MODE (orig), copy,
-			       SUBREG_BYTE (orig));
+      return simplify_gen_subreg (GET_MODE (orig), copy,
+				  GET_MODE (SUBREG_REG (orig)),
+				  SUBREG_BYTE (orig));
 
     case ADDRESSOF:
       copy = gen_rtx_ADDRESSOF (mode,

@@ -113,12 +113,7 @@ simplify_gen_binary (code, mode, op0, op1)
 
   /* Put complex operands first and constants second if commutative.  */
   if (GET_RTX_CLASS (code) == 'c'
-      && ((CONSTANT_P (op0) && GET_CODE (op1) != CONST_INT)
-	  || (GET_RTX_CLASS (GET_CODE (op0)) == 'o'
-	      && GET_RTX_CLASS (GET_CODE (op1)) != 'o')
-	  || (GET_CODE (op0) == SUBREG
-	      && GET_RTX_CLASS (GET_CODE (SUBREG_REG (op0))) == 'o'
-	      && GET_RTX_CLASS (GET_CODE (op1)) != 'o')))
+      && swap_commutative_operands_p (op0, op1))
     tem = op0, op0 = op1, op1 = tem;
 
   /* If this simplifies, do it.  */
@@ -194,12 +189,7 @@ simplify_gen_relational (code, mode, cmp_mode, op0, op1)
     return tem;
 
   /* Put complex operands first and constants second.  */
-  if ((CONSTANT_P (op0) && GET_CODE (op1) != CONST_INT)
-      || (GET_RTX_CLASS (GET_CODE (op0)) == 'o'
-	  && GET_RTX_CLASS (GET_CODE (op1)) != 'o')
-      || (GET_CODE (op0) == SUBREG
-	  && GET_RTX_CLASS (GET_CODE (SUBREG_REG (op0))) == 'o'
-	  && GET_RTX_CLASS (GET_CODE (op1)) != 'o'))
+  if (swap_commutative_operands_p (op0, op1))
     tem = op0, op0 = op1, op1 = tem, code = swap_condition (code);
 
   return gen_rtx_fmt_ee (code, mode, op0, op1);
@@ -2212,6 +2202,9 @@ simplify_subreg (outermode, op, innermode, byte)
       || byte >= GET_MODE_SIZE (innermode))
     abort ();
 
+  if (outermode == innermode && !byte)
+    return op;
+
   /* Attempt to simplify constant to non-SUBREG expression.  */
   if (CONSTANT_P (op))
     {
@@ -2388,6 +2381,19 @@ simplify_subreg (outermode, op, innermode, byte)
       MEM_COPY_ATTRIBUTES (new, op);
       return new;
     }
+
+  /* Handle complex values represented as CONCAT
+     of real and imaginary part.  */
+  if (GET_CODE (op) == CONCAT)
+    {
+      int is_realpart = byte < GET_MODE_UNIT_SIZE (innermode) / 2;
+      rtx part = is_realpart ? XEXP (op, 0) : XEXP (op, 1);
+      unsigned int final_offset;
+
+      final_offset = SUBREG_BYTE (op) % (GET_MODE_UNIT_SIZE (innermode) / 2);
+      return simplify_subreg (outermode, part, GET_MODE (part), final_offset);
+    }
+
   return NULL_RTX;
 }
 /* Make a SUBREG operation or equivalent if it folds.  */
