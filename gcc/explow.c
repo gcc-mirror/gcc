@@ -1,5 +1,5 @@
 /* Subroutines for manipulating rtx's in semantically interesting ways.
-   Copyright (C) 1987, 91, 94, 95, 96, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1987, 91, 94-97, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1234,7 +1234,8 @@ probe_stack_range (first, size)
 
   /* If we have to generate explicit probes, see if we have a constant
      small number of them to generate.  If so, that's the easy case.  */
-  if (GET_CODE (size) == CONST_INT && INTVAL (size) < 10)
+  if (GET_CODE (size) == CONST_INT
+      && INTVAL (size) < 10 * STACK_CHECK_PROBE_INTERVAL)
     {
       HOST_WIDE_INT offset;
 
