@@ -2310,7 +2310,7 @@ Currently not used in @code{libgcj}.
 
 @item java.ext.dirs
 Directories containing jar files with extra libraries.  Will be used when
-resolving classes.  Currently not used in @code{libgcj}.
+resolving classes.
 
 @item java.protocol.handler.pkgs
 A @samp{|} separated list of package names that is used to find classes that
