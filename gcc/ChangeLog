@@ -1,3 +1,12 @@
+Tue Sep 28 16:45:40 1999  David Edelsohn  <edelsohn@gnu.org>
+
+	* xcoffout.c (xcoffout_declare_function): Add documentation.
+	* rs6000.c (num_insns_constant_wide): Use TARGET_POWERPC64 not
+	TARGET_64BIT.  Compare constant to -1, not bit pattern.
+	(easy_fp_constant): Use TARGET_POWERPC64 not TARGET_64BIT.
+	(expand_block_move): Allow 8 DImode loads for PowerPC64.  Fix
+	gen_movsi typos.
+
 Tue Sep 28 16:43:14 1999  Nick Clifton  <nickc@cygnus.com>
 
 	* dwarf2out.c (add_abstract_origin_attribute): Abort if
@@ -167,7 +176,7 @@ Fri Sep 24 11:57:06 1999  Geoffrey Keating  <geoffk@cygnus.com>
 
 Thu Sep 23 18:18:55 1999  Mark Mitchell  <mark@codesourcery.com>
 
-	* stmt.c (expand_start_bindings): Don't allow cleanup isntructions
+	* stmt.c (expand_start_bindings): Don't allow cleanup instructions
 	to disappear.
 
 Thu Sep 23 18:07:01 1999  Mark Mitchell  <mark@codesourcery.com>

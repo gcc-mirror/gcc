@@ -455,9 +455,9 @@ direct_return ()
 
       if (info->first_gp_reg_save == 32
 	  && info->first_fp_reg_save == 64
-	  && !info->lr_save_p
-	  && !info->cr_save_p
-	  && !info->push_p)
+	  && ! info->lr_save_p
+	  && ! info->cr_save_p
+	  && ! info->push_p)
 	return 1;
     }
 
@@ -676,7 +676,7 @@ num_insns_constant_wide (value)
     return 1;
 
 #if HOST_BITS_PER_WIDE_INT == 64
-  else if (TARGET_64BIT)
+  else if (TARGET_POWERPC64)
     {
       HOST_WIDE_INT low  = value & 0xffffffff;
       HOST_WIDE_INT high = value >> 32;
@@ -684,10 +684,10 @@ num_insns_constant_wide (value)
       if (high == 0 && (low & 0x80000000) == 0)
 	return 2;
 
-      else if (high == 0xffffffff && (low & 0x80000000) != 0)
+      else if (high == -1 && (low & 0x80000000) != 0)
 	return 2;
 
-      else if (!low)
+      else if (! low)
 	return num_insns_constant_wide (high) + 1;
 
       else
@@ -748,8 +748,7 @@ num_insns_constant (op, mode)
 	  if (high == 0 && (low & 0x80000000) == 0)
 	    return num_insns_constant_wide (low);
 
-	  else if (((high & 0xffffffff) == 0xffffffff)
-		   && ((low & 0x80000000) != 0))
+	  else if (high == -1 && (low & 0x80000000) != 0)
 	    return num_insns_constant_wide (low);
 
 	  else if (mask64_operand (op, mode))
@@ -820,7 +819,7 @@ easy_fp_constant (op, mode)
     }
 
   else if (mode == DImode)
-    return ((TARGET_64BIT
+    return ((TARGET_POWERPC64
 	     && GET_CODE (op) == CONST_DOUBLE && CONST_DOUBLE_LOW (op) == 0)
 	    || (num_insns_constant (op, DImode) <= 2));
 
@@ -1132,7 +1131,7 @@ current_file_function_operand (op, mode)
   return (GET_CODE (op) == SYMBOL_REF
 	  && (SYMBOL_REF_FLAG (op)
 	      || (op == XEXP (DECL_RTL (current_function_decl), 0)
-	          && !DECL_WEAK (current_function_decl))));
+	          && ! DECL_WEAK (current_function_decl))));
 }
 
 
@@ -1549,7 +1548,7 @@ function_arg (cum, mode, type, named)
 	           && function_arg_boundary (mode, type) == 64) ? 1 : 0;
       int align_words = cum->words + align;
 
-      if (!named)
+      if (! named)
 	return NULL_RTX;
 
       if (type && TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
@@ -1724,7 +1723,7 @@ setup_incoming_varargs (cum, mode, type, pretend_size, no_rtl)
     }
 
   set = get_varargs_alias_set ();
-  if (!no_rtl && first_reg_offset < GP_ARG_NUM_REG)
+  if (! no_rtl && first_reg_offset < GP_ARG_NUM_REG)
     {
       mem = gen_rtx_MEM (BLKmode,
 		         plus_constant (save_area,
@@ -1742,7 +1741,7 @@ setup_incoming_varargs (cum, mode, type, pretend_size, no_rtl)
 
   /* Save FP registers if needed.  */
   if ((DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS)
-      && TARGET_HARD_FLOAT && !no_rtl
+      && TARGET_HARD_FLOAT && ! no_rtl
       && next_cum.fregno <= FP_ARG_V4_MAX_REG)
     {
       int fregno = next_cum.fregno;
@@ -2087,13 +2086,19 @@ expand_block_move (operands)
      then don't generate more than 8 loads.  */
   if (TARGET_STRING)
     {
-      if (bytes > 4*8)
+      if (bytes > 8*4)
 	return 0;
     }
   else if (! STRICT_ALIGNMENT)
     {
-      if (bytes > 4*8)
-	return 0;
+      if (TARGET_POWERPC64 && align >= 4)
+	{
+	  if (bytes > 8*8)
+	    return 0;
+	}
+      else
+	if (bytes > 8*4)
+	  return 0;
     }
   else if (bytes > 8*align)
     return 0;
@@ -2290,7 +2295,7 @@ expand_block_move (operands)
 	    {
 	      move_bytes = 2;
 	      tmp_reg = gen_reg_rtx (HImode);
-	      emit_insn (gen_movsi (tmp_reg,
+	      emit_insn (gen_movhi (tmp_reg,
 				    expand_block_move_mem (HImode,
 							   src_addr,
 							   orig_src)));
@@ -2303,7 +2308,7 @@ expand_block_move (operands)
 	    {
 	      move_bytes = 1;
 	      tmp_reg = gen_reg_rtx (QImode);
-	      emit_insn (gen_movsi (tmp_reg,
+	      emit_insn (gen_movqi (tmp_reg,
 				    expand_block_move_mem (QImode,
 							   src_addr,
 							   orig_src)));
@@ -3919,16 +3924,16 @@ rs6000_stack_info ()
   if (info_ptr->gp_size == 0)
     info_ptr->gp_save_offset = 0;
 
-  if (!info_ptr->lr_save_p)
+  if (! info_ptr->lr_save_p)
     info_ptr->lr_save_offset = 0;
 
-  if (!info_ptr->cr_save_p)
+  if (! info_ptr->cr_save_p)
     info_ptr->cr_save_offset = 0;
 
-  if (!info_ptr->toc_save_p)
+  if (! info_ptr->toc_save_p)
     info_ptr->toc_save_offset = 0;
 
-  if (!info_ptr->main_save_p)
+  if (! info_ptr->main_save_p)
     info_ptr->main_save_offset = 0;
 
   return info_ptr;
@@ -3940,7 +3945,7 @@ debug_stack_info (info)
 {
   const char *abi_string;
 
-  if (!info)
+  if (! info)
     info = rs6000_stack_info ();
 
   fprintf (stderr, "\nStack information for function %s:\n",
@@ -4080,7 +4085,7 @@ rs6000_output_load_toc_table (file, reg)
       fprintf (file, "\n");
 
       /* possibly create the toc section */
-      if (!toc_initialized)
+      if (! toc_initialized)
 	{
 	  toc_section ();
 	  function_section (current_function_decl);
@@ -4339,13 +4344,13 @@ output_prolog (file, size)
   if ((DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS) 
       && flag_pic == 1 && regs_ever_live[PIC_OFFSET_TABLE_REGNUM])
     {
-      if (!info->lr_save_p)
+      if (! info->lr_save_p)
 	asm_fprintf (file, "\tmflr %s\n", reg_names[0]);
 
       fputs ("\tbl _GLOBAL_OFFSET_TABLE_@local-4\n", file);
       asm_fprintf (file, "\tmflr %s\n", reg_names[PIC_OFFSET_TABLE_REGNUM]);
 
-      if (!info->lr_save_p)
+      if (! info->lr_save_p)
 	asm_fprintf (file, "\tmtlr %s\n", reg_names[0]);
     }
 
@@ -4459,7 +4464,7 @@ output_prolog (file, size)
   if (TARGET_TOC && TARGET_MINIMAL_TOC && get_pool_size () != 0)
     {
 #ifdef USING_SVR4_H
-      if (!profile_flag)
+      if (! profile_flag)
 	rs6000_pic_func_labelno = rs6000_pic_labelno;
 #endif
       rs6000_output_load_toc_table (file, 30);
@@ -5195,7 +5200,7 @@ output_toc (file, x, labelno)
      a TOC reference to an unknown section.  Thus, for vtables only,
      we emit the TOC reference to reference the symbol and not the
      section.  */
-  if (!strncmp ("_vt.", name, 4))
+  if (! strncmp ("_vt.", name, 4))
     {
       RS6000_OUTPUT_BASENAME (file, name);
       if (offset < 0)
@@ -5983,7 +5988,7 @@ rs6000_encode_section_info (decl)
     {
       rtx sym_ref = XEXP (DECL_RTL (decl), 0);
       if ((TREE_ASM_WRITTEN (decl) || ! TREE_PUBLIC (decl))
-          && !DECL_WEAK (decl))
+          && ! DECL_WEAK (decl))
 	SYMBOL_REF_FLAG (sym_ref) = 1;
 
       if (DEFAULT_ABI == ABI_AIX || DEFAULT_ABI == ABI_NT)
