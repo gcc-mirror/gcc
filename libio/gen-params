@@ -1,5 +1,5 @@
 #!/bin/sh
-# Copyright (C) 1992, 1993, 1994, 1997, 1998, 1999 Free Software Foundation
+# Copyright (C) 1992, 1993, 1994, 1997, 1998, 1999, 2000 Free Software Foundation
 # 
 # This file is part of the GNU IO Library.  This library is free
 # software; you can redistribute it and/or modify it under the
@@ -186,6 +186,40 @@ if ${CC} -c dummy.c >/dev/null 2>&1 ; then
   echo "#define ${macro_prefix}HAVE_ST_BLKSIZE 1"
 else
   echo "#define ${macro_prefix}HAVE_ST_BLKSIZE 0"
+fi
+
+# A little test program to check if there is an O_APPEND.
+cat >dummy.c <<!EOF!
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+int foo()
+{
+    return O_APPEND;
+}
+!EOF!
+
+if ${CC} -c dummy.c >/dev/null 2>&1 ; then
+  :
+else
+  echo "#define O_APPEND 0"
+fi
+
+# A little test program to check if there is an O_EXCL.
+cat >dummy.c <<!EOF!
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+int foo()
+{
+    return O_EXCL;
+}
+!EOF!
+
+if ${CC} -c dummy.c >/dev/null 2>&1 ; then
+  :
+else
+  echo "#define O_EXCL 0"
 fi
 
 # A little test program to check if the name 'clog' is defined in libm,
