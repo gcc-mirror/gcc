@@ -4816,7 +4816,7 @@ lookup_name_real (name, prefer_type, nonclass, namespaces_only)
 	  else if (type == current_class_type)
 	    val = IDENTIFIER_CLASS_VALUE (name);
 	  else
-	    val = lookup_field (type, name, 0, prefer_type);
+	    val = lookup_member (type, name, 0, prefer_type);
 	}
       else
 	val = NULL_TREE;

@@ -2708,6 +2708,7 @@ extern tree compute_access			PROTO((tree, tree));
 extern tree lookup_field			PROTO((tree, tree, int, int));
 extern tree lookup_nested_field			PROTO((tree, int));
 extern tree lookup_fnfields			PROTO((tree, tree, int));
+extern tree lookup_member			PROTO((tree, tree, int, int));
 extern tree lookup_nested_tag			PROTO((tree, tree));
 extern tree get_matching_virtual		PROTO((tree, tree, int));
 extern tree get_abstract_virtuals		PROTO((tree));

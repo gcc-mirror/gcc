@@ -3210,9 +3210,7 @@ finish_struct_1 (t, warn_anon)
 	      || sname == constructor_name_full (ctype))
 	    cp_error_at ("using-declaration for constructor", x);
 
-	  fdecl = lookup_field (binfo, sname, 0, 0);
-	  if (! fdecl)
-	    fdecl = lookup_fnfields (binfo, sname, 0);
+	  fdecl = lookup_member (binfo, sname, 0, 0);
 
 	  if (fdecl)
 	    access_decls = scratch_tree_cons (access, fdecl, access_decls);
