@@ -1,3 +1,7 @@
+Fri Jun 12 18:06:45 1998  Doug Evans  <devans@egcs.cygnus.com>
+
+	* m32r/m32r.h (STARTFILE_SPEC): Delete crtsysc.o.
+
 Fri Jun 12 14:57:59 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* mips.c (small_int): Mark parameter `mode' with ATTRIBUTE_UNUSED.

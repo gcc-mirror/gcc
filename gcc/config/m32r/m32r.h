@@ -72,7 +72,7 @@ Boston, MA 02111-1307, USA.  */
 #endif
 
 #undef STARTFILE_SPEC
-#define STARTFILE_SPEC "%{!shared:crt0.o%s crtsysc.o%s} crtinit.o%s"
+#define STARTFILE_SPEC "%{!shared:crt0.o%s} crtinit.o%s"
 
 
 #undef ENDFILE_SPEC
