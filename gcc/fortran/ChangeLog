@@ -1,3 +1,8 @@
+2004-05-17  Steve Kargl  <kargls@comcast.net>
+
+	* arith.c (gfc_real2complex): Range checking wrong part of complex
+        number. 
+	
 2004-05-16  Paul Brook  <paul@codesourcery.com>
 
 	* options.c (gfc_handle_module_path_options): Fix buffer overrun.
