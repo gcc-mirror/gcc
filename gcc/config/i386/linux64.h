@@ -43,6 +43,6 @@ Boston, MA 02111-1307, USA.  */
   %{!shared: \
     %{!static: \
       %{rdynamic:-export-dynamic} \
-      %{!dynamic-linker:-dynamic-linker /lib/ld64.so.1}} \
+      %{!dynamic-linker:-dynamic-linker /lib64/ld-linux-x86-64.so.2}} \
       %{static:-static}}"
 

@@ -1,3 +1,7 @@
+2001-12-06  Bo Thorsen  <bo@suse.co.uk>
+
+	* config/i386/linux64.h (LINK_SPEC): Correct name of dynamic linker.
+
 Wed Dec  5 19:18:53 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* function.c (keep_stack_depressed): Check global_live_at_start
