@@ -4316,6 +4316,7 @@ record_giv (v, insn, src_reg, dest_reg, mult_val, add_val, benefit,
   v->ignore = 0;
   v->new_reg = 0;
   v->final_value = 0;
+  v->same_insn = 0;
 
   /* The v->always_computable field is used in update_giv_derive, to
      determine whether a giv can be used to derive another giv.  For a
