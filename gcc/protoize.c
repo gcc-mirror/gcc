@@ -1,6 +1,5 @@
 /* Protoize program - Original version by Ron Guilmette at MCC.
-
-   Copyright (C) 1989, 1992, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1989, 1992, 1993 Free, 1994 Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -2377,6 +2376,7 @@ start_over: ;
 			     sys_errlist[errno]);
                     return;
                   }
+		must_create = 1;
                 goto start_over;
               }
     
