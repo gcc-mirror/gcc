@@ -339,15 +339,13 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
 	}
       else if (GET_CODE (last_loop_insn) == JUMP_INSN)
 	{
+	  rtx prev = PREV_INSN (last_loop_insn);
+	  delete_insn (last_loop_insn);
 #ifdef HAVE_cc0
-	  /* The immediately preceding insn is a compare which must be
+	  /* The immediately preceding insn may be a compare which must be
 	     deleted.  */
-	  delete_insn (last_loop_insn);
-	  delete_insn (PREV_INSN (last_loop_insn));
-#else
-	  /* The immediately preceding insn may not be the compare, so don't
-	     delete it.  */
-	  delete_insn (last_loop_insn);
+	  if (sets_cc0_p (prev))
+	    delete_insn (prev);
 #endif
 	}
       return;
@@ -479,14 +477,12 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
 	copy_end = PREV_INSN (PREV_INSN (last_loop_insn));
       else if (GET_CODE (last_loop_insn) == JUMP_INSN)
 	{
-#ifdef HAVE_cc0
-	  /* The instruction immediately before the JUMP_INSN is a compare
-	     instruction which we do not want to copy.  */
-	  copy_end = PREV_INSN (PREV_INSN (last_loop_insn));
-#else
-	  /* The instruction immediately before the JUMP_INSN may not be the
-	     compare, so we must copy it.  */
 	  copy_end = PREV_INSN (last_loop_insn);
+#ifdef HAVE_cc0
+	  /* The instruction immediately before the JUMP_INSN may be a compare
+	     instruction which we do not want to copy.  */
+	  if (sets_cc0_p (PREV_INSN (copy_end)))
+	    copy_end = PREV_INSN (copy_end);
 #endif
 	}
       else
@@ -520,17 +516,14 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
 	}
       else if (GET_CODE (last_loop_insn) == JUMP_INSN)
 	{
-#ifdef HAVE_cc0
-	  /* The instruction immediately before the JUMP_INSN is a compare
-	     instruction which we do not want to copy or delete.  */
-	  insert_before = PREV_INSN (last_loop_insn);
-	  copy_end = PREV_INSN (insert_before);
-#else
-	  /* The instruction immediately before the JUMP_INSN may not be the
-	     compare, so we must copy it.  */
 	  insert_before = last_loop_insn;
-	  copy_end = PREV_INSN (last_loop_insn);
+#ifdef HAVE_cc0
+	  /* The instruction immediately before the JUMP_INSN may be a compare
+	     instruction which we do not want to copy or delete.  */
+	  if (sets_cc0_p (PREV_INSN (insert_before)))
+	    insert_before = PREV_INSN (insert_before);
 #endif
+	  copy_end = PREV_INSN (insert_before);
 	}
       else
 	{
@@ -793,9 +786,9 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
 	copy_end_luid--;
 
       /* If we have a target that uses cc0, then we also must not duplicate
-	 the insn that sets cc0 before the jump insn.  */
+	 the insn that sets cc0 before the jump insn, if one is present.  */
 #ifdef HAVE_cc0
-      if (GET_CODE (copy_end) == JUMP_INSN)
+      if (GET_CODE (copy_end) == JUMP_INSN && sets_cc0_p (PREV_INSN (copy_end)))
 	copy_end_luid--;
 #endif
 
@@ -1036,14 +1029,12 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
 	    copy_end = PREV_INSN (PREV_INSN (last_loop_insn));
 	  else if (GET_CODE (last_loop_insn) == JUMP_INSN)
 	    {
-#ifdef HAVE_cc0
-	      /* The immediately preceding insn is a compare which we do not
-		 want to copy.  */
-	      copy_end = PREV_INSN (PREV_INSN (last_loop_insn));
-#else
-	      /* The immediately preceding insn may not be a compare, so we
-		 must copy it.  */
 	      copy_end = PREV_INSN (last_loop_insn);
+#ifdef HAVE_cc0
+	      /* The immediately preceding insn may be a compare which we do not
+		 want to copy.  */
+	      if (sets_cc0_p (PREV_INSN (copy_end)))
+		copy_end = PREV_INSN (copy_end);
 #endif
 	    }
 	  else
@@ -1098,17 +1089,14 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
 	    }
 	  else
 	    {
-#ifdef HAVE_cc0
-	      /* The immediately preceding insn is a compare which we do not
-		 want to copy.  */
-	      insert_before = PREV_INSN (last_loop_insn);
-	      copy_end = PREV_INSN (insert_before);
-#else
-	      /* The immediately preceding insn may not be a compare, so we
-		 must copy it.  */
 	      insert_before = last_loop_insn;
-	      copy_end = PREV_INSN (last_loop_insn);
+#ifdef HAVE_cc0
+	      /* The instruction immediately before the JUMP_INSN may be a compare
+		 instruction which we do not want to copy or delete.  */
+	      if (sets_cc0_p (PREV_INSN (insert_before)))
+		insert_before = PREV_INSN (insert_before);
 #endif
+	      copy_end = PREV_INSN (insert_before);
 	    }
 
 	  /* Set unroll type to MODULO now.  */
@@ -2089,8 +2077,9 @@ copy_loop_body (copy_start, copy_end, map, exit_label, last_iteration,
 	  if (condjump_p (insn) && !simplejump_p (insn) && map->last_pc_value)
 	    {
 #ifdef HAVE_cc0
-	      /* The previous insn set cc0 for us.  So delete it.  */
-	      delete_insn (PREV_INSN (copy));
+	      /* If the previous insn set cc0 for us, delete it.  */
+	      if (sets_cc0_p (PREV_INSN (copy)))
+		delete_insn (PREV_INSN (copy));
 #endif
 
 	      /* If this is now a no-op, delete it.  */

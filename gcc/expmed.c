@@ -4093,6 +4093,9 @@ emit_store_flag (target, code, op0, op1, mode, unsignedp, normalizep)
   rtx last = get_last_insn ();
   rtx pattern, comparison;
 
+  if (unsignedp)
+    code = unsigned_condition (code);
+
   /* If one operand is constant, make it the second one.  Only do this
      if the other operand is not constant as well.  */
 
@@ -4492,15 +4495,10 @@ emit_store_flag_force (target, code, op0, op1, mode, unsignedp, normalizep)
     target = gen_reg_rtx (GET_MODE (target));
 
   emit_move_insn (target, const1_rtx);
-  tem = compare_from_rtx (op0, op1, code, unsignedp, mode, NULL_RTX, 0);
-  if (GET_CODE (tem) == CONST_INT)
-    return tem;
-
   label = gen_label_rtx ();
-  if (bcc_gen_fctn[(int) code] == 0)
-    abort ();
+  do_compare_rtx_and_jump (op0, op1, code, unsignedp, mode, NULL_RTX, 0,
+			   NULL_RTX, label);
 
-  emit_jump_insn ((*bcc_gen_fctn[(int) code]) (label));
   emit_move_insn (target, const0_rtx);
   emit_label (label);
 
@@ -4519,13 +4517,13 @@ emit_store_flag_force (target, code, op0, op1, mode, unsignedp, normalizep)
 static void
 do_cmp_and_jump (arg1, arg2, op, mode, label)
      rtx arg1, arg2, label;
-    enum rtx_code op;
-    enum machine_mode mode;
+     enum rtx_code op;
+     enum machine_mode mode;
 {
   /* If this mode is an integer too wide to compare properly,
      compare word by word.  Rely on cse to optimize constant cases.  */
 
-  if (GET_MODE_CLASS (mode) == MODE_INT && !can_compare_p (mode))
+  if (GET_MODE_CLASS (mode) == MODE_INT && ! can_compare_p (mode))
     {
       rtx label2 = gen_label_rtx ();
 

@@ -1998,7 +1998,7 @@ tidy_fallthru_edge (e, b, c)
 #ifdef HAVE_cc0
       /* If this was a conditional jump, we need to also delete
 	 the insn that set cc0.  */
-      if (! simplejump_p (q) && condjump_p (q))
+      if (! simplejump_p (q) && condjump_p (q) && sets_cc0_p (PREV_INSN (q)))
 	q = PREV_INSN (q);
 #endif
 

@@ -801,6 +801,9 @@ extern void do_jump PROTO((tree, rtx, rtx));
 /* Generate rtl to compare two rtx's, will call emit_cmp_insn.  */
 extern rtx compare_from_rtx PROTO((rtx, rtx, enum rtx_code, int,
 				   enum machine_mode, rtx, int));
+extern void do_compare_rtx_and_jump PROTO((rtx, rtx, enum rtx_code, int,
+					   enum machine_mode, rtx, int,
+					   rtx, rtx));
 
 /* Generate a tablejump instruction (used for switch statements).  */
 extern void do_tablejump PROTO((rtx, enum machine_mode, rtx, rtx, rtx));
