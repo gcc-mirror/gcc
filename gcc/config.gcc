@@ -181,7 +181,11 @@ md_file=
 
 # Obsolete configurations.
 case ${target} in
- dummy*)
+   sparclite-*-coff*	\
+ | sparclite-*-elf*	\
+ | sparc86x-*-elf*	\
+ | sparc-*-openbsd*	\
+ )
     if test "x$enable_obsolete" != xyes; then
       echo "*** Configuration ${target} is obsolete." >&2
       echo "*** Specify --enable-obsolete to build it anyway." >&2
