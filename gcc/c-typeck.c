@@ -2373,7 +2373,7 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
 	  if (TREE_CODE (op1) == INTEGER_CST)
 	    {
 	      if (tree_int_cst_lt (op1, integer_zero_node))
-		warning ("shift count is negative");
+		warning ("right shift count is negative");
 	      else
 		{
 		  if (TREE_INT_CST_LOW (op1) | TREE_INT_CST_HIGH (op1))
@@ -2381,7 +2381,7 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
 		  if (TREE_INT_CST_HIGH (op1) != 0
 		      || ((unsigned HOST_WIDE_INT) TREE_INT_CST_LOW (op1)
 			  >= TYPE_PRECISION (type0)))
-		    warning ("shift count >= width of type");
+		    warning ("right shift count >= width of type");
 		}
 	    }
 	  /* Use the type of the value to be shifted.
@@ -2405,11 +2405,11 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
 	  if (TREE_CODE (op1) == INTEGER_CST)
 	    {
 	      if (tree_int_cst_lt (op1, integer_zero_node))
-		warning ("shift count is negative");
+		warning ("left shift count is negative");
 	      else if (TREE_INT_CST_HIGH (op1) != 0
 		       || ((unsigned HOST_WIDE_INT) TREE_INT_CST_LOW (op1)
 			   >= TYPE_PRECISION (type0)))
-		warning ("shift count >= width of type");
+		warning ("left shift count >= width of type");
 	    }
 	  /* Use the type of the value to be shifted.
 	     This is what most traditional C compilers do.  */
