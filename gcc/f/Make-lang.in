@@ -578,25 +578,25 @@ LIBU77STAGESTUFF = f/runtime/libU77/*$(objext) f/runtime/libU77/Makefile \
   f/runtime/libU77/config.cache f/runtime/libU77/config.log \
   f/runtime/libU77/config.status
 
-f77.stage1:
+f77.stage1: stage1-start
 	-mv $(G77STAGESTUFF) stage1/f
 	-mv $(RUNTIMESTAGESTUFF) stage1/f/runtime
 	-mv $(LIBF77STAGESTUFF) stage1/f/runtime/libF77
 	-mv $(LIBI77STAGESTUFF) stage1/f/runtime/libI77
 	-mv $(LIBU77STAGESTUFF) stage1/f/runtime/libU77
-f77.stage2:
+f77.stage2: stage2-start
 	-mv $(G77STAGESTUFF) stage2/f
 	-mv $(RUNTIMESTAGESTUFF) stage2/f/runtime
 	-mv $(LIBF77STAGESTUFF) stage2/f/runtime/libF77
 	-mv $(LIBI77STAGESTUFF) stage2/f/runtime/libI77
 	-mv $(LIBU77STAGESTUFF) stage2/f/runtime/libU77
-f77.stage3:
+f77.stage3: stage3-start
 	-mv $(G77STAGESTUFF) stage3/f
 	-mv $(RUNTIMESTAGESTUFF) stage3/f/runtime
 	-mv $(LIBF77STAGESTUFF) stage3/f/runtime/libF77
 	-mv $(LIBI77STAGESTUFF) stage3/f/runtime/libI77
 	-mv $(LIBU77STAGESTUFF) stage3/f/runtime/libU77
-f77.stage4:
+f77.stage4: stage4-start
 	-mv $(G77STAGESTUFF) stage4/f
 	-mv $(RUNTIMESTAGESTUFF) stage4/f/runtime
 	-mv $(LIBF77STAGESTUFF) stage4/f/runtime/libF77
