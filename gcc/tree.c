@@ -4538,9 +4538,14 @@ build_function_type_list (tree return_type, ...)
   for (args = NULL_TREE; t != NULL_TREE; t = va_arg (p, tree))
     args = tree_cons (NULL_TREE, t, args);
 
-  last = args;
-  args = nreverse (args);
-  TREE_CHAIN (last) = void_list_node;
+  if (args == NULL_TREE)
+    args = void_list_node;
+  else
+    {
+      last = args;
+      args = nreverse (args);
+      TREE_CHAIN (last) = void_list_node;
+    }
   args = build_function_type (return_type, args);
 
   va_end (p);
