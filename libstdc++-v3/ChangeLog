@@ -1,3 +1,16 @@
+2002-03-18  Paolo Carlini  <pcarlini@unitus.it>
+
+	* include/bits/locale_facets.tcc
+	(money_put::do_put(long double)): Fix dimensioning of
+	temporary buffers to avoid risk of overruns.
+	(money_put::do_put(string)): Same for the buffer used to
+	add the grouping chars.
+	* testsuite/22_locale/money_put_members_char.cc: Add test06.
+	* testsuite/22_locale/money_put_members_wchar_t.cc: Ditto.
+
+	* include/bits/locale_facets.tcc
+	(collate::do_transform): Simplify.
+
 2002-03-18  Phil Edwards  <pme@gcc.gnu.org>
 
 	* acinclude.m4 (GLIBCPP_CONFIGURE):  Make indentation/spacing uniform.
