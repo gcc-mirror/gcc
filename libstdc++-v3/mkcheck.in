@@ -57,11 +57,11 @@ BUILD_DIR=$1; SRC_DIR=$2; PREFIX_DIR=$3; LTCXX=$4; LIBS=$5; LTEXE=$6; CXX=$7; CX
 IFS=$saved_ifs
 
 # specific libtool flag(s) to force the use of shared libraries, if any
-SH_FLAGS=
+SH_FLAG=
 
 # specific libtool flag(s) to force the use of static libraries, if any
-ST_FLAGS="-static"
-#ST_FLAGS="-all-static"
+ST_FLAG="-static"
+#ST_FLAG="-all-static"
 
 # Set up the testing directory, which should be in a directory called
 # "testsuite" in the root level of the build directory.
@@ -144,13 +144,19 @@ echo "text == size of the executable text section" >> $RESULTS_FILE
 echo "data == size of the executable data section" >> $RESULTS_FILE
 echo "total == size of the executable" >> $RESULTS_FILE
 echo "" >> $RESULTS_FILE
-echo "(First static, then shared.)" >> $RESULTS_FILE
 
 echo "p" | awk '{printf("%s ", $1)}' >> $RESULTS_FILE
 echo "ctime" "etime" | awk '{printf("%s\t%s\t", $1, $2)}' >> $RESULTS_FILE
 echo "text" "data" | awk '{printf("%s\t%s\t", $1, $2)}' >> $RESULTS_FILE
 echo "total" "name" | awk '{printf("%s\t%s\t", $1, $2)}' >> $RESULTS_FILE
 echo "" >> $RESULTS_FILE
+
+# Counters.  These could be members of an array, but they'd all have to
+# become individuals anyhow if we ever change this script to super-portable sh.
+shared_pass=0
+shared_fail=0
+static_pass=0
+static_fail=0
 
 
 #
@@ -355,16 +361,32 @@ test_file()
         # the file did not compile/link.
         printf "\n" >> $LOG_FILE
         `cat compile.out >> $LOG_FILE` 
-	rm compile.out
+        rm compile.out
         RESULT="-b"
         TEXT="0"
         DATA="0"
         SIZE="0"
     fi
 
+    # update the counters
+    if test "$RESULT" = "+" ; then
+        if test x"$S_FLAG" = x"$ST_FLAG"; then
+            static_pass=`expr $static_pass + 1`
+        else
+            shared_pass=`expr $shared_pass + 1`
+        fi
+    else
+        if test x"$S_FLAG" = x"$ST_FLAG"; then
+            static_fail=`expr $static_fail + 1`
+        else
+            shared_fail=`expr $shared_fail + 1`
+        fi
+    fi
+
     printf "%s\t" "$RESULT"
-    printf "%-2s %d\t%.3f\t%s\t%s\t%s\t%s\n"   \
-        "$RESULT" $C_TIME $E_TIME $TEXT $DATA $SIZE $NAME >> $RESULTS_FILE
+    printf "%-2s %d\t%.3f\t%s\t%s\t%s\t%s %s\n"   \
+        "$RESULT" $C_TIME $E_TIME $TEXT $DATA $SIZE $NAME "$S_FLAG"    \
+        >> $RESULTS_FILE
 }
 
 setup_size_command
@@ -383,13 +405,13 @@ do
     SH_NAME="`echo $PRE_NAME | sed 's/cc$/sh-exe/'`"
 
     if test @enable_static@ = yes; then
-        test_file $NAME $ST_NAME $ST_FLAG 
+        test_file $NAME $ST_NAME "$ST_FLAG"
     else
         printf "x\t"
         printf "static skipped\n" >> $RESULTS_FILE
     fi
     if test @enable_shared@ = yes; then
-        test_file $NAME $SH_NAME $SH_FLAG 
+        test_file $NAME $SH_NAME "$SH_FLAG"
     else
         printf "x\t"
         printf "shared skipped\n" >> $RESULTS_FILE
@@ -405,9 +427,9 @@ TEST_TIME_END=$($TIMER_COMMAND)
 # 4: summary
 #
 # grep can count faster than we can...
-total_failures=$(egrep -c "^\-" $RESULTS_FILE)
-total_successes=$(egrep -c "^\+" $RESULTS_FILE)
-resultstext="pass/fail results:  ${total_successes}/${total_failures}"
+total_failures=`expr ${shared_fail} + ${static_fail}`
+total_successes=`expr ${shared_pass} + ${static_pass}`
+resultstext="pass/fail results:  ${shared_pass}/${shared_fail} shared + ${static_pass}/${static_fail} static = ${total_successes}/${total_failures} total"
 if [ $total_failures -eq 0 ]; then
     resultstext="${resultstext}, WIN WIN"
 fi

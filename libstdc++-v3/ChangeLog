@@ -1,3 +1,11 @@
+2000-12-01  Phil Edwards  <pme@sources.redhat.com>
+
+	* mkcheck.in:  Count static and shared results separately.
+
+2000-12-01  Loren J. Rittle  <ljrittle@acm.org>
+
+	* mkcheck.in:  Correct typo.
+
 2000-12-01  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* src/cmath.cc: Remove.
