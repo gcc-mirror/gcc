@@ -1237,29 +1237,18 @@ implicit_conversion (to, from, expr, flags)
   if (conv)
     ;
   else if (expr != NULL_TREE
-	   && (IS_AGGR_TYPE (non_reference (from))
-	       || IS_AGGR_TYPE (non_reference (to)))
+	   && (IS_AGGR_TYPE (from)
+	       || IS_AGGR_TYPE (to))
 	   && (flags & LOOKUP_NO_CONVERSION) == 0)
     {
       cand = build_user_type_conversion_1
 	(to, expr, LOOKUP_ONLYCONVERTING);
       if (cand)
 	conv = cand->second_conv;
-      if ((! conv || ICS_BAD_FLAG (conv))
-	  && TREE_CODE (to) == REFERENCE_TYPE
-	  && (flags & LOOKUP_NO_TEMP_BIND) == 0)
-	{
-	  cand = build_user_type_conversion_1
-	    (TYPE_MAIN_VARIANT (TREE_TYPE (to)), expr, LOOKUP_ONLYCONVERTING);
-	  if (cand)
-	    {
-	      if (!CP_TYPE_CONST_NON_VOLATILE_P (TREE_TYPE (to)))
-		ICS_BAD_FLAG (cand->second_conv) = 1;
-	      if (!conv || (ICS_BAD_FLAG (conv)
-			    > ICS_BAD_FLAG (cand->second_conv)))
-		conv = build_conv (REF_BIND, to, cand->second_conv);
-	    }
-	}
+
+      /* We used to try to bind a reference to a temporary here, but that
+	 is now handled by the recursive call to this function at the end
+	 of reference_binding.  */
     }
 
   return conv;
@@ -2325,6 +2314,13 @@ build_user_type_conversion_1 (totype, expr, flags)
   tree args = NULL_TREE;
   tree templates = NULL_TREE;
 
+  /* We represent conversion within a hierarchy using RVALUE_CONV and
+     BASE_CONV, as specified by [over.best.ics]; these become plain
+     constructor calls, as specified in [dcl.init].  */
+  if (IS_AGGR_TYPE (fromtype) && IS_AGGR_TYPE (totype)
+      && DERIVED_FROM_P (totype, fromtype))
+    abort ();
+
   if (IS_AGGR_TYPE (totype))
     ctors = lookup_fnfields (TYPE_BINFO (totype),
 			     (flag_new_abi 
@@ -2332,8 +2328,7 @@ build_user_type_conversion_1 (totype, expr, flags)
 			      : ctor_identifier),
 			     0);
 
-  if (IS_AGGR_TYPE (fromtype)
-      && (! IS_AGGR_TYPE (totype) || ! DERIVED_FROM_P (totype, fromtype)))
+  if (IS_AGGR_TYPE (fromtype))
     convs = lookup_conversions (fromtype);
 
   candidates = 0;
@@ -2509,9 +2504,7 @@ build_user_type_conversion (totype, expr, flags)
     {
       if (TREE_CODE (cand->second_conv) == AMBIG_CONV)
 	return error_mark_node;
-      return convert_from_reference
-              (convert_like_with_context
-                (cand->second_conv, expr, cand->fn, 0));
+      return convert_from_reference (convert_like (cand->second_conv, expr));
     }
   return NULL_TREE;
 }
@@ -3653,6 +3646,11 @@ convert_like_real (convs, expr, fn, argnum, inner)
      int argnum;
      int inner;
 {
+  extern int warningcount, errorcount;
+  int savew, savee;
+
+  tree totype = TREE_TYPE (convs);
+
   if (ICS_BAD_FLAG (convs)
       && TREE_CODE (convs) != USER_CONV
       && TREE_CODE (convs) != AMBIG_CONV
@@ -3672,29 +3670,29 @@ convert_like_real (convs, expr, fn, argnum, inner)
 	    break;
 	}
       return convert_for_initialization
-	(NULL_TREE, TREE_TYPE (convs), expr, LOOKUP_NORMAL,
+	(NULL_TREE, totype, expr, LOOKUP_NORMAL,
 	 "conversion", fn, argnum);
     }
   
   if (!inner)
     expr = dubious_conversion_warnings
-             (TREE_TYPE (convs), expr, "argument", fn, argnum);
+             (totype, expr, "argument", fn, argnum);
   switch (TREE_CODE (convs))
     {
     case USER_CONV:
       {
 	struct z_candidate *cand
 	  = WRAPPER_PTR (TREE_OPERAND (convs, 1));
-	tree fn = cand->fn;
+	tree convfn = cand->fn;
 	tree args;
 
-	if (DECL_CONSTRUCTOR_P (fn))
+	if (DECL_CONSTRUCTOR_P (convfn))
 	  {
 	    tree t = build_int_2 (0, 0);
-	    TREE_TYPE (t) = build_pointer_type (DECL_CONTEXT (fn));
+	    TREE_TYPE (t) = build_pointer_type (DECL_CONTEXT (convfn));
 
 	    args = build_tree_list (NULL_TREE, expr);
-	    if (DECL_HAS_IN_CHARGE_PARM_P (fn))
+	    if (DECL_HAS_IN_CHARGE_PARM_P (convfn))
 	      args = tree_cons (NULL_TREE, integer_one_node, args);
 	    args = tree_cons (NULL_TREE, t, args);
 	  }
@@ -3704,19 +3702,61 @@ convert_like_real (convs, expr, fn, argnum, inner)
 
 	/* If this is a constructor or a function returning an aggr type,
 	   we need to build up a TARGET_EXPR.  */
-	if (DECL_CONSTRUCTOR_P (fn))
-	  expr = build_cplus_new (TREE_TYPE (convs), expr);
+	if (DECL_CONSTRUCTOR_P (convfn))
+	  expr = build_cplus_new (totype, expr);
 
+	/* The result of the call is then used to direct-initialize the object
+	   that is the destination of the copy-initialization.  [dcl.init]
+
+	   Note that this step is not reflected in the conversion sequence;
+	   it affects the semantics when we actually perform the
+	   conversion, but is not considered during overload resolution.
+
+	   If the target is a class, that means call a ctor.  */
+	if (IS_AGGR_TYPE (totype))
+	  {
+	    savew = warningcount, savee = errorcount;
+	    expr = build_new_method_call
+	      (NULL_TREE, complete_ctor_identifier,
+	       build_tree_list (NULL_TREE, expr), TYPE_BINFO (totype),
+	       /* Core issue 84, now a DR, says that we don't allow UDCs
+		  for these args (which deliberately breaks copy-init of an
+		  auto_ptr<Base> from an auto_ptr<Derived>).  */
+	       LOOKUP_NORMAL|LOOKUP_ONLYCONVERTING|LOOKUP_NO_CONVERSION);
+
+	    /* Tell the user where this failing constructor call came from.  */
+	    if (fn)
+	      {
+		if (warningcount > savew)
+		  cp_warning
+		    ("  initializing argument %P of `%D' from result of `%D'",
+		     argnum, fn, convfn);
+		else if (errorcount > savee)
+		  cp_error
+		    ("  initializing argument %P of `%D' from result of `%D'",
+		     argnum, fn, convfn);
+	      }
+	    else
+	      {
+		if (warningcount > savew)
+		  cp_warning ("  initializing temporary from result of `%D'",
+			      convfn);
+		else if (errorcount > savee)
+		  cp_error ("  initializing temporary from result of `%D'",
+			    convfn);
+	      }
+	    expr = build_cplus_new (totype, expr);
+	  }
 	return expr;
       }
     case IDENTITY_CONV:
       if (type_unknown_p (expr))
-	expr = instantiate_type (TREE_TYPE (convs), expr, itf_complain);
+	expr = instantiate_type (totype, expr, itf_complain);
       return expr;
     case AMBIG_CONV:
       /* Call build_user_type_conversion again for the error.  */
       return build_user_type_conversion
-	(TREE_TYPE (convs), TREE_OPERAND (convs, 0), LOOKUP_NORMAL);
+	(totype, TREE_OPERAND (convs, 0), LOOKUP_NORMAL);
 
     default:
       break;
@@ -3736,7 +3776,7 @@ convert_like_real (convs, expr, fn, argnum, inner)
   switch (TREE_CODE (convs))
     {
     case RVALUE_CONV:
-      if (! IS_AGGR_TYPE (TREE_TYPE (convs)))
+      if (! IS_AGGR_TYPE (totype))
 	return expr;
       /* else fall through */
     case BASE_CONV:
@@ -3744,7 +3784,7 @@ convert_like_real (convs, expr, fn, argnum, inner)
 	{
 	  /* We are going to bind a reference directly to a base-class
 	     subobject of EXPR.  */
-	  tree base_ptr = build_pointer_type (TREE_TYPE (convs));
+	  tree base_ptr = build_pointer_type (totype);
 
 	  /* Build an expression for `*((base*) &expr)'.  */
 	  expr = build_unary_op (ADDR_EXPR, expr, 0);
@@ -3753,35 +3793,27 @@ convert_like_real (convs, expr, fn, argnum, inner)
 	  return expr;
 	}
 
-      {
-	tree cvt_expr = build_user_type_conversion
-	  (TREE_TYPE (convs), expr, LOOKUP_NORMAL);
-	if (!cvt_expr) 
-	  {
-	    /* This can occur if, for example, the EXPR has incomplete
-	       type.  We can't check for that before attempting the
-	       conversion because the type might be an incomplete
-	       array type, which is OK if some constructor for the
-	       destination type takes a pointer argument.  */
-	    if (!COMPLETE_TYPE_P (TREE_TYPE (expr)))
-	      {
-		if (same_type_p (TREE_TYPE (expr), TREE_TYPE (convs)))
-		  incomplete_type_error (expr, TREE_TYPE (expr));
-		else
-		  cp_error ("could not convert `%E' (with incomplete type `%T') to `%T'",
-			    expr, TREE_TYPE (expr), TREE_TYPE (convs));
-	      }
-	    else
-	      cp_error ("could not convert `%E' to `%T'",
-			expr, TREE_TYPE (convs));
-	    return error_mark_node;
-	  }
-	return cvt_expr;
-      }
+      /* Copy-initialization where the cv-unqualified version of the source
+	 type is the same class as, or a derived class of, the class of the
+	 destination [is treated as direct-initialization].  [dcl.init] */
+      if (fn)
+	savew = warningcount, savee = errorcount;
+      expr = build_new_method_call (NULL_TREE, complete_ctor_identifier,
+				    build_tree_list (NULL_TREE, expr),
+				    TYPE_BINFO (totype),
+				    LOOKUP_NORMAL|LOOKUP_ONLYCONVERTING);
+      if (fn)
+	{
+	  if (warningcount > savew)
+	    cp_warning ("  initializing argument %P of `%D'", argnum, fn);
+	  else if (errorcount > savee)
+	    cp_error ("  initializing argument %P of `%D'", argnum, fn);
+	}
+      return build_cplus_new (totype, expr);
 
     case REF_BIND:
       {
-	tree ref_type = TREE_TYPE (convs);
+	tree ref_type = totype;
 
 	/* If necessary, create a temporary.  */
 	if (NEED_TEMPORARY_P (convs))
@@ -3812,13 +3844,13 @@ convert_like_real (convs, expr, fn, argnum, inner)
 
     case QUAL_CONV:
       /* Warn about deprecated conversion if appropriate.  */
-      string_conv_p (TREE_TYPE (convs), expr, 1);
+      string_conv_p (totype, expr, 1);
       break;
       
     default:
       break;
     }
-  return ocp_convert (TREE_TYPE (convs), expr, CONV_IMPLICIT,
+  return ocp_convert (totype, expr, CONV_IMPLICIT,
 		      LOOKUP_NORMAL|LOOKUP_NO_CONVERSION);
 }
 

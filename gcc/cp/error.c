@@ -1340,6 +1340,11 @@ dump_function_name (t, flags)
 {
   tree name = DECL_NAME (t);
 
+  /* Don't let the user see __comp_ctor et al.  */
+  if (DECL_CONSTRUCTOR_P (t)
+      || DECL_DESTRUCTOR_P (t))
+    name = constructor_name (DECL_CONTEXT (t));
+
   if (DECL_DESTRUCTOR_P (t))
     {
       output_add_character (scratch_buffer, '~');
