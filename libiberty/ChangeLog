@@ -1,3 +1,7 @@
+2002-01-31  Phil Edwards  <pme@gcc.gnu.org>
+
+	* cp-demangle.c:  Revert yesterday's change.
+
 2002-01-31  Adam Megacz  <adam@xwt.org>
 
 	* gcc/libiberty/configure.in: Treat mingw the same as cywin
