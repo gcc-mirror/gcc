@@ -1,3 +1,26 @@
+2000-10-21  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
+
+	* docs/links.html: Add links to defects list, standards FAQ.
+
+	* testsuite/21_strings/ctor_copy_dtor.cc (test01): Disable tests
+	with string creation that allocate huge ammounts of memory.
+
+	* include/c/bits/std_cstddef.h: Put size_t, ptrdiff_t in
+	namepace std.
+
+2000-10-21  Theodore Papadopoulo <Theodore.Papadopoulo@sophia.inria.fr>
+
+    	* libsupc++/exception.cc: Use namespace std.
+    	* libsupc++/new: DITTO.
+    	* libsupc++/new_op.cc: DITTO.
+    	* libsupc++/new_opnt.cc: DITTO.
+    	* libsupc++/new_opv.cc: DITTO.
+    	* libsupc++/new_opvnt.cc: DITTO.
+    	* libsupc++/tinfo.cc: DITTO.
+    	* libsupc++/tinfo.h: DITTO.
+    	* libsupc++/vec.cc: DITTO.
+    	* libsupc++/Makefile.am: Blank lines removal.
+
 2000-10-21  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* docs/configopts.html, docs/install.html, docs/17_intro/BADNAMES,

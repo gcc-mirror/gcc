@@ -2,6 +2,7 @@
 // Copyright (C) 1994, 1995, 1996, 1998, 1999, 2000 Free Software Foundation
 
 #include "typeinfo"
+#include <cstddef>
 
 // Class declarations shared between the typeinfo implementation files.
 
@@ -200,9 +201,9 @@ struct __class_type_info : public __user_type_info {
   };
 
   const base_info *base_list;
-  size_t n_bases;
+  std::size_t n_bases;
 
-  __class_type_info (const char *name, const base_info *bl, size_t bn)
+  __class_type_info (const char *name, const base_info *bl, std::size_t bn)
     : __user_type_info (name), base_list (bl), n_bases (bn) {}
 
   public:

@@ -41,9 +41,9 @@ namespace __cxxabiv1
 
 /* allocate and construct array */
 extern "C" void *
-__cxa_vec_new (size_t element_count,
-               size_t element_size,
-               size_t padding_size,
+__cxa_vec_new (std::size_t element_count,
+               std::size_t element_size,
+               std::size_t padding_size,
                void (*constructor) (void *),
                void (*destructor) (void *))
 {
@@ -53,21 +53,21 @@ __cxa_vec_new (size_t element_count,
 }
 
 extern "C" void *
-__cxa_vec_new2 (size_t element_count,
-                size_t element_size,
-                size_t padding_size,
+__cxa_vec_new2 (std::size_t element_count,
+                std::size_t element_size,
+                std::size_t padding_size,
                 void (*constructor) (void *),
                 void (*destructor) (void *),
                 void *(*alloc) (size_t),
                 void (*dealloc) (void *))
 {
-  size_t size = element_count * element_size + padding_size;
+  std::size_t size = element_count * element_size + padding_size;
   char *base = static_cast <char *> (alloc (size));
   
   if (padding_size)
     {
       base += padding_size;
-      reinterpret_cast <size_t *> (base)[-1] = element_count;
+      reinterpret_cast <std::size_t *> (base)[-1] = element_count;
     }
   try
     {
@@ -84,21 +84,21 @@ __cxa_vec_new2 (size_t element_count,
 }
 
 extern "C" void *
-__cxa_vec_new3 (size_t element_count,
-                size_t element_size,
-                size_t padding_size,
+__cxa_vec_new3 (std::size_t element_count,
+                std::size_t element_size,
+                std::size_t padding_size,
                 void (*constructor) (void *),
                 void (*destructor) (void *),
-                void *(*alloc) (size_t),
-                void (*dealloc) (void *, size_t))
+                void *(*alloc) (std::size_t),
+                void (*dealloc) (void *, std::size_t))
 {
-  size_t size = element_count * element_size + padding_size;
+  std::size_t size = element_count * element_size + padding_size;
   char *base = static_cast <char *> (alloc (size));
   
   if (padding_size)
     {
       base += padding_size;
-      reinterpret_cast <size_t *> (base)[-1] = element_count;
+      reinterpret_cast <std::size_t *> (base)[-1] = element_count;
     }
   try
     {
@@ -117,12 +117,12 @@ __cxa_vec_new3 (size_t element_count,
 /* construct array */
 extern "C" void
 __cxa_vec_ctor (void *array_address,
-                size_t element_count,
-                size_t element_size,
+                std::size_t element_count,
+                std::size_t element_size,
                 void (*constructor) (void *),
                 void (*destructor) (void *))
 {
-  size_t ix = 0;
+  std::size_t ix = 0;
   char *ptr = static_cast <char *> (array_address);
   
   try
@@ -144,12 +144,12 @@ __cxa_vec_ctor (void *array_address,
 extern "C" void
 __cxa_vec_cctor (void *dest_array,
 		 void *src_array,
-		 size_t element_count,
-		 size_t element_size,
+		 std::size_t element_count,
+		 std::size_t element_size,
 		 void (*constructor) (void *, void *),
 		 void (*destructor) (void *))
 {
-  size_t ix = 0;
+  std::size_t ix = 0;
   char *dest_ptr = static_cast <char *> (dest_array);
   char *src_ptr = static_cast <char *> (src_array);
 
@@ -171,14 +171,14 @@ __cxa_vec_cctor (void *dest_array,
 /* destruct array */
 extern "C" void
 __cxa_vec_dtor (void *array_address,
-                size_t element_count,
-                size_t element_size,
+                std::size_t element_count,
+                std::size_t element_size,
                 void (*destructor) (void *))
 {
   if (destructor)
     {
       char *ptr = static_cast <char *> (array_address);
-      size_t ix = element_count;
+      std::size_t ix = element_count;
       bool unwinding = std::uncaught_exception ();
       
       ptr += element_count * element_size;
@@ -207,8 +207,8 @@ __cxa_vec_dtor (void *array_address,
 /* destruct and release array */
 extern "C" void
 __cxa_vec_delete (void *array_address,
-                  size_t element_size,
-                  size_t padding_size,
+                  std::size_t element_size,
+                  std::size_t padding_size,
                   void (*destructor) (void *))
 {
   __cxa_vec_delete2 (array_address, element_size, padding_size,
@@ -218,8 +218,8 @@ __cxa_vec_delete (void *array_address,
 
 extern "C" void
 __cxa_vec_delete2 (void *array_address,
-                  size_t element_size,
-                  size_t padding_size,
+                  std::size_t element_size,
+                  std::size_t padding_size,
                   void (*destructor) (void *),
                   void (*dealloc) (void *))
 {
@@ -227,7 +227,7 @@ __cxa_vec_delete2 (void *array_address,
   
   if (padding_size)
     {
-      size_t element_count = reinterpret_cast <size_t *> (base)[-1];
+      std::size_t element_count = reinterpret_cast <std::size_t *> (base)[-1];
       base -= padding_size;
       try
         {
@@ -246,17 +246,17 @@ __cxa_vec_delete2 (void *array_address,
 
 extern "C" void
 __cxa_vec_delete3 (void *array_address,
-                  size_t element_size,
-                  size_t padding_size,
+                  std::size_t element_size,
+                  std::size_t padding_size,
                   void (*destructor) (void *),
-                  void (*dealloc) (void *, size_t))
+                  void (*dealloc) (void *, std::size_t))
 {
   char *base = static_cast <char *> (array_address);
-  size_t size = 0;
+  std::size_t size = 0;
   
   if (padding_size)
     {
-      size_t element_count = reinterpret_cast <size_t *> (base)[-1];
+      std::size_t element_count = reinterpret_cast <std::size_t *> (base)[-1];
       base -= padding_size;
       size = element_count * element_size + padding_size;
       try
