@@ -37,10 +37,11 @@ exception statement from your version. */
 
 package javax.swing;
 
-// Imports
-import java.io.*;
-import java.util.*;
-import javax.swing.event.*;
+import java.io.Serializable;
+import java.util.EventListener;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.EventListenerList;
 
 /**
  * DefaultBoundedRangeModel
@@ -52,299 +53,296 @@ public class DefaultBoundedRangeModel
 {
   static final long serialVersionUID = 5034068491295259790L;
 
-	//-------------------------------------------------------------
-	// Variables --------------------------------------------------
-	//-------------------------------------------------------------
+  /**
+   * changeEvent
+   */
+  protected transient ChangeEvent changeEvent = new ChangeEvent (this);
 
-	/**
-	 * changeEvent
-	 */
-	protected transient ChangeEvent changeEvent = new ChangeEvent(this);
+  /**
+   * listenerList
+   */
+  protected EventListenerList listenerList = new EventListenerList ();
 
-	/**
-	 * listenerList
-	 */
-	protected EventListenerList listenerList = new EventListenerList();
+  /**
+   * value
+   */
+  private int value;
 
-	/**
-	 * value
-	 */
-	private int value;
+  /**
+   * extent
+   */
+  private int extent;
 
-	/**
-	 * extent
-	 */
-	private int extent;
+  /**
+   * minimum
+   */
+  private int minimum;
 
-	/**
-	 * minimum
-	 */
-	private int minimum;
+  /**
+   * maximum
+   */
+  private int maximum;
 
-	/**
-	 * maximum
-	 */
-	private int maximum;
+  /**
+   * isAdjusting
+   */
+  private boolean isAdjusting;
 
-	/**
-	 * isAdjusting
-	 */
-	private boolean isAdjusting;
+  /**
+   * Constructor DefaultBoundedRangeModel
+   */
+  public DefaultBoundedRangeModel ()
+  {
+    setRangeProperties (0, 0, 0, 100, false);
+  }
 
+  /**
+   * Constructor DefaultBoundedRangeModel
+   * @param value TODO
+   * @param extent TODO
+   * @param minimum TODO
+   * @param maximum TODO
+   */
+  public DefaultBoundedRangeModel (int value, int extent, int minimum,
+                                  int maximum)
+  {
+    setRangeProperties(value, extent, minimum, maximum, false);
+  }
 
-	//-------------------------------------------------------------
-	// Initialization ---------------------------------------------
-	//-------------------------------------------------------------
+  /**
+   * toString
+   * @returns String
+   */
+  public String toString ()
+  {
+    return null; // TODO
+  }
 
-	/**
-	 * Constructor DefaultBoundedRangeModel
-	 */
-	public DefaultBoundedRangeModel() {
-		setRangeProperties(0, 0, 0, 100, false);
-	} // DefaultBoundedRangeModel()
+  /**
+   * getValue
+   * @returns int
+   */
+  public int getValue ()
+  {
+    return value;
+  }
 
-	/**
-	 * Constructor DefaultBoundedRangeModel
-	 * @param value TODO
-	 * @param extent TODO
-	 * @param minimum TODO
-	 * @param maximum TODO
-	 */
-	public DefaultBoundedRangeModel(int value, int extent,
-				int minimum, int maximum) {
-		setRangeProperties(value, extent, minimum, maximum, false);
-	} // DefaultBoundedRangeModel()
-
-
-	//-------------------------------------------------------------
-	// Methods ----------------------------------------------------
-	//-------------------------------------------------------------
-
-	/**
-	 * toString
-	 * @returns String
-	 */
-	public String toString() {
-		return null; // TODO
-	} // toString()
-
-	/**
-	 * getValue
-	 * @returns int
-	 */
-	public int getValue() {
-		return value;
-	} // getValue()
-
-	/**
-	 * setValue
-	 * @param value TODO
-	 */
-	public void setValue(int value) {
-	
-		// Validate Constraints
-		if (minimum > value || value > (value + extent) ||
-			(value + extent) > maximum) {
-			throw new IllegalArgumentException("Invalid value property set");
-		} // if
+  /**
+   * setValue
+   * @param value TODO
+   */
+  public void setValue (int value)
+  {
+    // Validate Constraints
+    if (minimum > value ||
+        value > (value + extent) ||
+        (value + extent) > maximum)
+      {
+        throw new IllegalArgumentException ("Invalid value property set");
+      }
 		
-		// Set Value
-		this.value = value;
+    // Set Value
+    this.value = value;
 
-		// Notification
-		fireStateChanged();
+    // Notification
+    fireStateChanged ();
+  }
 
-	} // setValue()
+  /**
+   * getExtent
+   * @returns int
+   */
+  public int getExtent ()
+  {
+    return extent;
+  }
 
-	/**
-	 * getExtent
-	 * @returns int
-	 */
-	public int getExtent() {
-		return extent;
-	} // getExtent()
+  /**
+   * setExtent
+   * @param extent TODO
+   */
+  public void setExtent (int extent)
+  {
+    // Validate Constraints
+    if (minimum > value ||
+        value > (value + extent) ||
+        (value + extent) > maximum)
+      {
+        throw new IllegalArgumentException("Invalid extent property set");
+      }
 
-	/**
-	 * setExtent
-	 * @param extent TODO
-	 */
-	public void setExtent(int extent) {
-
-		// Validate Constraints
-		if (minimum > value || value > (value + extent) ||
-			(value + extent) > maximum) {
-			throw new IllegalArgumentException("Invalid extent property set");
-		} // if
+    // Set Extent
+    this.extent = extent;
 		
-		// Set Extent
-		this.extent = extent;
+    // Notification
+    fireStateChanged ();
+  }
+
+  /**
+   * getMinimum
+   * @returns int
+   */
+  public int getMinimum ()
+  {
+    return minimum;
+  }
+
+  /**
+   * setMinimum
+   * @param minimum TODO
+   */
+  public void setMinimum (int minimum)
+  {
+    // Validate Constraints
+    if (minimum > value ||
+        value > (value + extent) ||
+        (value + extent) > maximum)
+      {
+        throw new IllegalArgumentException("Invalid minimum property set");
+      }
 		
-		// Notification
-		fireStateChanged();
-
-	} // setExtent()
-
-	/**
-	 * getMinimum
-	 * @returns int
-	 */
-	public int getMinimum() {
-		return minimum;
-	} // getMinimum()
-
-	/**
-	 * setMinimum
-	 * @param minimum TODO
-	 */
-	public void setMinimum(int minimum) {
-	
-		// Validate Constraints
-		if (minimum > value || value > (value + extent) ||
-			(value + extent) > maximum) {
-			throw new IllegalArgumentException("Invalid minimum property set");
-		} // if
+    // Set Minimum
+    this.minimum = minimum;
 		
-		// Set Minimum
-		this.minimum = minimum;
-		
-		// Notification
-		fireStateChanged();
+    // Notification
+    fireStateChanged ();
+  }
 
-	} // setMinimum()
-
-	/**
-	 * getMaximum
-	 * @returns int
-	 */
-	public int getMaximum() {
+  /**
+   * getMaximum
+   * @returns int
+   */
+  public int getMaximum() {
 		return maximum;
-	} // getMaximum()
+  }
 
-	/**
-	 * setMaximum
-	 * @param maximum TODO
-	 */
-	public void setMaximum(int maximum) {
-	
-		// Validate Constraints
-		if (minimum > value || value > (value + extent) ||
-			(value + extent) > maximum) {
-			throw new IllegalArgumentException("Invalid maximum property set");
-		} // if
+  /**
+   * setMaximum
+   * @param maximum TODO
+   */
+  public void setMaximum (int maximum)
+  {
+    // Validate Constraints
+    if (minimum > value ||
+        value > (value + extent) ||
+        (value + extent) > maximum)
+      {
+        throw new IllegalArgumentException ("Invalid maximum property set");
+      }
 
-		// Set Maximum
-		this.maximum = maximum;
+    // Set Maximum
+    this.maximum = maximum;
 
-		// Notification
-		fireStateChanged();
+    // Notification
+    fireStateChanged ();
+  }
 
-	} // setMaximum()
+  /**
+   * getValueIsAdjusting
+   * @returns boolean
+   */
+  public boolean getValueIsAdjusting ()
+  {
+    return isAdjusting;
+  }
 
-	/**
-	 * getValueIsAdjusting
-	 * @returns boolean
-	 */
-	public boolean getValueIsAdjusting() {
-		return isAdjusting;
-	} // getValueIsAdjusting()
+  /**
+   * setValueIsAdjusting
+   * @param isAdjusting TODO
+   */
+  public void setValueIsAdjusting (boolean isAdjusting)
+  {
+    // Set isAdjusting
+    this.isAdjusting = isAdjusting;
 
-	/**
-	 * setValueIsAdjusting
-	 * @param isAdjusting TODO
-	 */
-	public void setValueIsAdjusting(boolean isAdjusting) {
-	
-		// Set isAdjusting
-		this.isAdjusting = isAdjusting;
+    // Notification
+    fireStateChanged();
+  }
 
-		// Notification
-		fireStateChanged();
+  /**
+   * setRangeProperties
+   * @param value TODO
+   * @param extent TODO
+   * @param minimum TODO
+   * @param maximum TODO
+   * @param isAdjusting TODO
+   */
+  public void setRangeProperties (int value, int extent, int minimum,
+                                  int maximum, boolean isAdjusting)
+  {
+    // Validate Constraints
+    if (minimum > value ||
+        value > (value + extent) ||
+        (value + extent) > maximum)
+      {
+        throw new IllegalArgumentException ("Invalid property set");
+      }
 
-	} // setValueIsAdjusting()
-
-	/**
-	 * setRangeProperties
-	 * @param value TODO
-	 * @param extent TODO
-	 * @param minimum TODO
-	 * @param maximum TODO
-	 * @param isAdjusting TODO
-	 */
-	public void setRangeProperties(int value, int extent, int minimum,
-			int maximum, boolean isAdjusting) {
-			
-		// Validate Constraints
-		if (minimum > value || value > (value + extent) ||
-			(value + extent) > maximum) {
-			throw new IllegalArgumentException("Invalid property set");
-		} // if
-
-		// Set Data
-		this.value = value;
-		this.extent = extent;
-		this.minimum = minimum;
-		this.maximum = maximum;
-		this.isAdjusting = isAdjusting;
+    // Set Data
+    this.value = value;
+    this.extent = extent;
+    this.minimum = minimum;
+    this.maximum = maximum;
+    this.isAdjusting = isAdjusting;
 		
-		// Notification
-		fireStateChanged();
+    // Notification
+    fireStateChanged ();
+  }
 
-	} // setRangeProperties()
+  /**
+   * addChangeListener
+   * @param listener TODO
+   */
+  public void addChangeListener (ChangeListener listener)
+  {
+    listenerList.add (ChangeListener.class, listener);
+  }
 
-	/**
-	 * addChangeListener
-	 * @param listener TODO
-	 */
-	public void addChangeListener(ChangeListener listener) {
-		listenerList.add(ChangeListener.class, listener);
-	} // addChangeListener()
+  /**
+   * removeChangeListener
+   * @param listener TODO
+   */
+  public void removeChangeListener (ChangeListener listener)
+  {
+    listenerList.remove (ChangeListener.class, listener);
+  }
 
-	/**
-	 * removeChangeListener
-	 * @param listener TODO
-	 */
-	public void removeChangeListener(ChangeListener listener) {
-		listenerList.remove(ChangeListener.class, listener);
-	} // removeChangeListener()
+  /**
+   * fireStateChanged
+   */
+  protected void fireStateChanged ()
+  {
+    // Variables
+    ChangeListener listener;
+    ChangeListener[] listeners;
+    int index;
 
-	/**
-	 * fireStateChanged
-	 */
-	protected void fireStateChanged() {
+    // Get Listeners
+    listeners = getChangeListeners ();
 
-		// Variables
-		ChangeListener			listener;
-		EventListener[]			listeners;
-		int						index;
+    // Process Listeners
+    for (index = 0; index < listeners.length; index++)
+    {
+      listener = listeners [index];
+      listener.stateChanged (changeEvent);
+    }
+  }
 
-		// Get Listeners
-		listeners = listenerList.getListeners(ChangeListener.class);
+  /**
+   * getListeners
+   * @param c TODO
+   * @returns EventListener[]
+   */
+  public EventListener[] getListeners (Class listenerType)
+  {
+    return listenerList.getListeners (listenerType);
+  }
 
-		// Process Listeners
-		for (index = 0; index < listeners.length; index++) {
-			listener = (ChangeListener) listeners[index];
-			listener.stateChanged(changeEvent);
-		} // for
-
-	} // fireStateChanged()
-
-	/**
-	 * getListeners
-	 * @param c TODO
-	 * @returns EventListener[]
-	 */
-	public EventListener[] getListeners(Class c) {
-		return listenerList.getListeners(c);
-	} // getListeners()
-
-	/**
-	 * getChangeListeners
-	 */
-	public ChangeListener[] getChangeListeners()
-	{
-	  // FIXME: implement this
-	  return null;
-	}
-
-
-} // DefaultBoundedRangeModel
+  /**
+   * getChangeListeners
+   */
+  public ChangeListener[] getChangeListeners ()
+  {
+    return (ChangeListener[]) getListeners (ChangeListener.class);
+  }
+}

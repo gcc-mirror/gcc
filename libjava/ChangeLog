@@ -1,5 +1,12 @@
 2003-04-29  Michael Koch  <konqueror@gmx.de>
 
+	* javax/swing/AbstractListModel.java,
+	javax/swing/DefaultBoundedRangeModel.java,
+	javax/swing/DefaultSingleSelectionModel.java:
+	New Versions from classpath.
+
+2003-04-29  Michael Koch  <konqueror@gmx.de>
+
 	* java/awt/Window.java
 	(show): Call super.show() instead of setVisible() to avoid endless
 	loop.
