@@ -24,7 +24,7 @@
 AUTOMAKE_OPTIONS = 1.3 cygnus
 MAINT_CHARSET = latin1
 
-SUBDIRS = libio libmath libsupc++ src testsuite
+SUBDIRS = include libio libmath libsupc++ src testsuite
 
 mkinstalldirs = $(SHELL) $(toplevel_srcdir)/mkinstalldirs
 
@@ -58,7 +58,6 @@ doxygen-maint:
 	  ${srcdir}/docs/doxygen/run_doxygen --mode=maint $${srcdir} $${outdir})
 
 .PHONY: doxygen doxygen-maint
-
 
 # Multilib support.
 MAKEOVERRIDES=

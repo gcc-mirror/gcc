@@ -1,6 +1,6 @@
 /* Configuration data for libmath subpart of libstdc++. */
 
-/* Copyright (C) 1997-1999, 2000 Free Software Foundation, Inc.
+/* Copyright (C) 1997-1999, 2000, 2001 Free Software Foundation, Inc.
 
    This file is part of the GNU ISO C++ Library.  This library is free
    software; you can redistribute it and/or modify it under the
@@ -28,23 +28,23 @@
    the GNU General Public License.  */
 
 
-#include <bits/c++config.h>
+#include <config.h>
 
-#ifdef _GLIBCPP_HAVE_ENDIAN_H
+#ifdef HAVE_ENDIAN_H
 # include <endian.h>
 #else
-# ifdef _GLIBCPP_HAVE_MACHINE_ENDIAN_H
+# ifdef HAVE_MACHINE_ENDIAN_H
 #  include <machine/endian.h>
 # else
-#  ifdef _GLIBCPP_HAVE_SYS_MACHINE_H
+#  ifdef HAVE_SYS_MACHINE_H
 #   include <sys/machine.h>
 #  else
-#   if defined _GLIBCPP_HAVE_SYS_ISA_DEFS_H || defined _GLIBCPP_HAVE_MACHINE_PARAM_H
+#   if defined HAVE_SYS_ISA_DEFS_H || defined HAVE_MACHINE_PARAM_H
 /* This is on Solaris.  */
-#    ifdef _GLIBCPP_HAVE_SYS_ISA_DEFS_H
+#    ifdef HAVE_SYS_ISA_DEFS_H
 #     include <sys/isa_defs.h>
 #    endif
-#    ifdef _GLIBCPP_HAVE_MACHINE_PARAM_H
+#    ifdef HAVE_MACHINE_PARAM_H
 #     include <machine/param.h>
 #    endif
 #    ifdef _LITTLE_ENDIAN
@@ -72,7 +72,7 @@ typedef int Int32_t __attribute ((mode (SI)));
 typedef unsigned int U_int64_t __attribute ((mode (DI)));
 typedef int Int64_t __attribute ((mode (DI)));
 
-#ifdef _GLIBCPP_HAVE_NAN_H
+#ifdef HAVE_NAN_H
 # include <nan.h>
 #endif
 
@@ -81,15 +81,15 @@ typedef int Int64_t __attribute ((mode (DI)));
 double nan (void);
 #endif
 
-#ifdef _GLIBCPP_HAVE_IEEEFP_H
+#ifdef HAVE_IEEEFP_H
 # include <ieeefp.h>
 #endif
 
-#ifdef _GLIBCPP_HAVE_FP_H
+#ifdef HAVE_FP_H
 # include <fp.h>
 #endif
 
-#ifdef _GLIBCPP_HAVE_FLOAT_H
+#ifdef HAVE_FLOAT_H
 # include <float.h>
 #endif
 
@@ -262,49 +262,50 @@ do {								\
   qw_u.value = (d);						\
   (msw) = qw_u.parts64.msw;					\
 } while (0)
-        
+
 
 /* Replacement for non-existing float functions.  */
-#if !defined(_GLIBCPP_HAVE_FABSF) && !defined(_GLIBCPP_HAVE___BUILTIN_FABSF)
+#if !defined(HAVE_FABSF) && !defined(HAVE___BUILTIN_FABSF)
 # define fabsf(x) fabs (x)
 #endif
-#if !defined(_GLIBCPP_HAVE_COSF) && !defined(_GLIBCPP_HAVE___BUILTIN_COSF)
+#if !defined(HAVE_COSF) && !defined(HAVE___BUILTIN_COSF)
 # define cosf(x) cos (x)
 #endif
-#ifndef _GLIBCPP_HAVE_COSHF
+#ifndef HAVE_COSHF
 # define coshf(x) cosh (x)
 #endif
-#ifndef _GLIBCPP_HAVE_EXPF
+#ifndef HAVE_EXPF
 # define expf(x) expf (x)
 #endif
-#ifndef _GLIBCPP_HAVE_LOGF
+#ifndef HAVE_LOGF
 # define logf(x) log(x)
 #endif
-#ifndef _GLIBCPP_HAVE_LOG10F
+#ifndef HAVE_LOG10F
 # define log10f(x) log10 (x)
 #endif
-#ifndef _GLIBCPP_HAVE_POWF
+#ifndef HAVE_POWF
 # define powf(x, y) pow (x, y)
 #endif
-#if !defined(_GLIBCPP_HAVE_SINF) && !defined(_GLIBCPP_HAVE___BUILTIN_SINF)
+#if !defined(HAVE_SINF) && !defined(HAVE___BUILTIN_SINF)
 # define sinf(x) sin (x)
 #endif
-#ifndef _GLIBCPP_HAVE_SINHF
+#ifndef HAVE_SINHF
 # define sinhf(x) sinh (x)
 #endif
-#if !defined(_GLIBCPP_HAVE_SQRTF) && !defined(_GLIBCPP_HAVE___BUILTIN_SQRTF)
+#if !defined(HAVE_SQRTF) && !defined(HAVE___BUILTIN_SQRTF)
 # define sqrtf(x) sqrt (x)
 #endif
-#ifndef _GLIBCPP_HAVE_TANF
+#ifndef HAVE_TANF
 # define tanf(x) tan (x)
 #endif
-#ifndef _GLIBCPP_HAVE_TANHF
+#ifndef HAVE_TANHF
 # define tanhf(x) tanh (x)
 #endif
-#ifndef _GLIBCPP_HAVE_STRTOF
+#ifndef HAVE_STRTOF
 # define strtof(s, e) strtod (s, e)
 #endif
 
 #ifdef __cplusplus
 }
 #endif
+

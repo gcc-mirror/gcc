@@ -61,8 +61,7 @@ bits_headers = \
 	${bits_srcdir}/mask_array.h \
 	${bits_srcdir}/ostream.tcc \
 	${bits_srcdir}/pthread_allocimpl.h \
-	${bits_srcdir}/stream_iterator.h \
-	${bits_srcdir}/streambuf_iterator.h \
+	${bits_srcdir}/sbuf_iter.h \
 	${bits_srcdir}/slice.h \
 	${bits_srcdir}/slice_array.h \
 	${bits_srcdir}/sstream.tcc \
