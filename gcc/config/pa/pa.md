@@ -2610,7 +2610,6 @@
   "*
 {
   rtx xoperands[3];
-  extern FILE *asm_out_file;
 
   xoperands[0] = operands[0];
   xoperands[1] = operands[1];
@@ -2644,7 +2643,6 @@
   "*
 {
   rtx xoperands[3];
-  extern FILE *asm_out_file;
 
   xoperands[0] = operands[0];
   xoperands[1] = operands[1];
