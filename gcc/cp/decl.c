@@ -1925,10 +1925,6 @@ wrapup_globals_for_namespace (namespace, data)
   tree decl;
   int last_time = (data != 0);
 
-  if (last_time && namespace == global_namespace)
-    /* Let compile_file handle the global namespace.  */
-    return 0;
-
   /* Process the decls in reverse order--earliest first.
      Put them into VEC from back to front, then take out from front.  */       
   for (i = 0, decl = globals; i < len; i++, decl = TREE_CHAIN (decl))

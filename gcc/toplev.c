@@ -1904,8 +1904,10 @@ wrapup_global_declarations (vec, len)
     {
       decl = vec[i];
 
-      /* We're not deferring this any longer.  */
-      DECL_DEFER_OUTPUT (decl) = 0;
+      /* We're not deferring this any longer.  Assignment is
+	 conditional to avoid needlessly dirtying PCH pages. */
+      if (DECL_DEFER_OUTPUT (decl) != 0)
+	DECL_DEFER_OUTPUT (decl) = 0;
 
       if (TREE_CODE (decl) == VAR_DECL && DECL_SIZE (decl) == 0)
 	(*lang_hooks.finish_incomplete_decl) (decl);
@@ -2112,8 +2114,6 @@ pop_srcloc ()
 static void
 compile_file ()
 {
-  tree globals;
-
   /* Initialize yet another pass.  */
 
   init_final (main_input_filename);
@@ -2136,25 +2136,7 @@ compile_file ()
   if (flag_syntax_only)
     return;
 
-  globals = (*lang_hooks.decls.getdecls) ();
-
-  /* Really define vars that have had only a tentative definition.
-     Really output inline functions that must actually be callable
-     and have not been output so far.  */
-
-  {
-    int len = list_length (globals);
-    tree *vec = (tree *) xmalloc (sizeof (tree) * len);
-    int i;
-    tree decl;
-
-    /* Process the decls in reverse order--earliest first.
-       Put them into VEC from back to front, then take out from front.  */
-
-    for (i = 0, decl = globals; i < len; i++, decl = TREE_CHAIN (decl))
-      vec[len - i - 1] = decl;
-
-    wrapup_global_declarations (vec, len);
+  (*lang_hooks.decls.final_write_globals)();
 
     /* This must occur after the loop to output deferred functions.  Else
        the profiler initializer would not be emitted if all the functions
@@ -2164,12 +2146,6 @@ compile_file ()
        data to need to be output, so it need not be in the deferred function
        loop above.  */
     output_func_start_profiler ();
-
-    check_global_declarations (vec, len);
-
-    /* Clean up.  */
-    free (vec);
-  }
 
   /* Write out any pending weak symbol declarations.  */
 
@@ -2223,6 +2199,36 @@ compile_file ()
       close_dump_file (DFI_combine, NULL, NULL_RTX);
       timevar_pop (TV_DUMP);
     }
+}
+
+/* Default for lang_hooks.decls.final_write_globals */
+void write_global_declarations ()
+{
+  tree globals = (*lang_hooks.decls.getdecls) ();
+
+  /* Really define vars that have had only a tentative definition.
+     Really output inline functions that must actually be callable
+     and have not been output so far.  */
+
+  {
+    int len = list_length (globals);
+    tree *vec = (tree *) xmalloc (sizeof (tree) * len);
+    int i;
+    tree decl;
+
+    /* Process the decls in reverse order--earliest first.
+       Put them into VEC from back to front, then take out from front.  */
+
+    for (i = 0, decl = globals; i < len; i++, decl = TREE_CHAIN (decl))
+      vec[len - i - 1] = decl;
+
+    wrapup_global_declarations (vec, len);
+
+    check_global_declarations (vec, len);
+
+    /* Clean up.  */
+    free (vec);
+  }
 }
 
 /* This is called from various places for FUNCTION_DECL, VAR_DECL,

@@ -82,6 +82,9 @@ int lhd_tree_inlining_start_inlining		PARAMS ((tree));
 void lhd_tree_inlining_end_inlining		PARAMS ((tree));
 tree lhd_tree_inlining_convert_parm_for_inlining PARAMS ((tree, tree, tree));
 
+/* In toplev.c */
+void write_global_declarations PARAMS ((void));
+
 #define LANG_HOOKS_NAME			"GNU unknown"
 #define LANG_HOOKS_IDENTIFIER_SIZE	sizeof (struct lang_identifier)
 #define LANG_HOOKS_INIT			lhd_do_nothing
@@ -209,6 +212,7 @@ int lhd_tree_dump_type_quals			PARAMS ((tree));
 #define LANG_HOOKS_PUSHDECL	pushdecl
 #define LANG_HOOKS_GETDECLS	getdecls
 #define LANG_HOOKS_WARN_UNUSED_GLOBAL_DECL lhd_warn_unused_global_decl
+#define LANG_HOOKS_WRITE_GLOBALS write_global_declarations
 
 #define LANG_HOOKS_DECLS { \
   LANG_HOOKS_PUSHLEVEL, \
@@ -218,7 +222,8 @@ int lhd_tree_dump_type_quals			PARAMS ((tree));
   LANG_HOOKS_SET_BLOCK, \
   LANG_HOOKS_PUSHDECL, \
   LANG_HOOKS_GETDECLS, \
-  LANG_HOOKS_WARN_UNUSED_GLOBAL_DECL \
+  LANG_HOOKS_WARN_UNUSED_GLOBAL_DECL, \
+  LANG_HOOKS_WRITE_GLOBALS \
 }
 
 /* The whole thing.  The structure is defined in langhooks.h.  */

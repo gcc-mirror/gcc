@@ -1,3 +1,13 @@
+2003-02-18  Matt Austern <austern@apple.com>
+	
+	* langhooks.h, langhooks-def.h: introduce new langhook,
+	final_write_globals, with write_global_declarations as default.
+	* toplev.c: Move invocation of wrapup_global_declarations from
+	compile_file to new function, write_global_declarations.  Change
+	compile_file to use final_write_globals hook.  Change
+	wrapup_global_declarations so writing to DECL_DEFER_OUTPUT is
+	conditional. 
+	
 2003-02-18  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa.md: Correct and enhance comment.

@@ -90,6 +90,9 @@ static bool cp_var_mod_type_p PARAMS ((tree));
 #define LANG_HOOKS_PRINT_ERROR_FUNCTION	cxx_print_error_function
 #undef LANG_HOOKS_WARN_UNUSED_GLOBAL_DECL
 #define LANG_HOOKS_WARN_UNUSED_GLOBAL_DECL cxx_warn_unused_global_decl
+#undef LANG_HOOKS_WRITE_GLOBALS
+#define LANG_HOOKS_WRITE_GLOBALS lhd_do_nothing
+
 
 #undef LANG_HOOKS_FUNCTION_INIT
 #define LANG_HOOKS_FUNCTION_INIT cxx_push_function_context
