@@ -31,6 +31,7 @@
 #define _NEW_ALLOCATOR_H 1
 
 #include <new>
+#include <bits/functexcept.h>
 
 namespace __gnu_cxx
 {
@@ -78,7 +79,12 @@ namespace __gnu_cxx
       // about what the return value is when __n == 0.
       pointer
       allocate(size_type __n, const void* = 0)
-      { return static_cast<_Tp*>(::operator new(__n * sizeof(_Tp))); }
+      { 
+	if (__builtin_expect(__n > this->max_size(), false))
+	  std::__throw_bad_alloc();
+
+	return static_cast<_Tp*>(::operator new(__n * sizeof(_Tp)));
+      }
 
       // __p is not permitted to be a null pointer.
       void
