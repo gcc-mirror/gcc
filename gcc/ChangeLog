@@ -1,3 +1,25 @@
+2004-10-22  Aldy Hernandez  <aldyh@redhat.com>
+
+	* config/rs6000/rs6000.md (fix_truncdfsi2): Handle e500
+	doubles.
+	(floatunssidf2): Same.
+	(floatsidf2): Same.
+	("extendsfdf2"): New expander.
+	(*extendsfdf2_fpr): Rename.
+	(*truncdfsf2_fpr): Same.
+	(*negdf2_fpr): Same.
+	(*absdf2_fpr): Same.
+	(*nabsdf2_fpr): Same.
+	(*adddf3_fpr): Same.
+	(*subdf3_fpr): Same.
+	(*muldf3_fpr): Same.
+	(*divdf3_fpr): Same.
+
+	* config/rs6000/spe.md ("spe_extendsfdf2"): Remove FIXME comment.
+	("spe_fix_truncdfsi2"): Same.
+	(spe_floatunssidf2): Same.
+	(spe_floatsidf2): Same.
+
 2004-11-09  Joseph S. Myers  <joseph@codesourcery.com>
 
 	PR c/18322
