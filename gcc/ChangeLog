@@ -1,3 +1,8 @@
+2000-04-12  Mark Mitchell  <mark@codesourcery.com>
+
+	* function.c (aggregate_value_p): VOID_TYPE nodes are never
+	aggregates.
+
 2000-04-05  Andreas Jaeger  <aj@suse.de>
 
 	* config/mips/linux.h (SUBTARGET_ASM_SPEC): Use proper flags if

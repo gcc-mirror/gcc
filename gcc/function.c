@@ -4031,6 +4031,8 @@ aggregate_value_p (exp)
 
   tree type = (TYPE_P (exp)) ? exp : TREE_TYPE (exp);
 
+  if (TREE_CODE (type) == VOID_TYPE)
+    return 0;
   if (RETURN_IN_MEMORY (type))
     return 1;
   /* Types that are TREE_ADDRESSABLE must be constructed in memory,
