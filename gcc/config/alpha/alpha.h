@@ -80,7 +80,8 @@ Boston, MA 02111-1307, USA.  */
 
 enum processor_type
  {PROCESSOR_EV4,			/* 2106[46]{a,} */
-  PROCESSOR_EV5};			/* 21164{a,} */
+  PROCESSOR_EV5,			/* 21164{a,pc,} */
+  PROCESSOR_EV6};			/* 21264 */
 
 extern enum processor_type alpha_cpu;
 
@@ -168,14 +169,31 @@ extern enum alpha_fp_trap_mode alpha_fptm;
 #define MASK_FLOAT_VAX 512
 #define TARGET_FLOAT_VAX (target_flags & MASK_FLOAT_VAX)
 
-/* This means that the processor has byte and half word loads and stores.  */
+/* This means that the processor has byte and half word loads and stores
+   (the BWX extension).  */
 
-#define MASK_BYTE_OPS 1024
-#define TARGET_BYTE_OPS	(target_flags & MASK_BYTE_OPS)
+#define MASK_BWX 1024
+#define TARGET_BWX	(target_flags & MASK_BWX)
 
-/* This means that the processor is an EV5 or EV56.  This is defined only
-   in TARGET_CPU_DEFAULT.  */
-#define MASK_CPU_EV5 2048
+/* This means that the processor has the CIX extension.  */
+#define MASK_CIX 2048
+#define TARGET_CIX	(target_flags & MASK_CIX)
+
+/* This means that the processor has the MAX extension.  */
+#define MASK_MAX 4096
+#define TARGET_MAX	(target_flags & MASK_MAX)
+
+/* This means that the processor is an EV5, EV56, or PCA56.  This is defined
+   only in TARGET_CPU_DEFAULT.  */
+#define MASK_CPU_EV5 8192
+
+/* Likewise for EV6.  */
+#define MASK_CPU_EV6 16384
+
+/* This means we support the .arch directive in the assembler.  Only
+   defined in TARGET_CPU_DEFAULT.  */
+#define MASK_SUPPORT_ARCH 32768
+#define TARGET_SUPPORT_ARCH	(target_flags & MASK_SUPPORT_ARCH)
 
 /* Macro to define tables used to set the flags.
    This is a list in braces of pairs in braces,
@@ -196,8 +214,12 @@ extern enum alpha_fp_trap_mode alpha_fptm;
     {"build-constants", MASK_BUILD_CONSTANTS},  \
     {"float-vax", MASK_FLOAT_VAX},		\
     {"float-ieee", -MASK_FLOAT_VAX},		\
-    {"byte", MASK_BYTE_OPS},			\
-    {"no-byte", -MASK_BYTE_OPS},		\
+    {"bwx", MASK_BWX},				\
+    {"no-bwx", -MASK_BWX},			\
+    {"cix", MASK_CIX},				\
+    {"no-cix", -MASK_CIX},			\
+    {"max", MASK_MAX},				\
+    {"no-max", -MASK_MAX},			\
     {"", TARGET_DEFAULT | TARGET_CPU_DEFAULT} }
 
 #define TARGET_DEFAULT MASK_FP|MASK_FPREGS
@@ -403,7 +425,7 @@ extern void override_options ();
 
 /* For atomic access to objects, must have at least 32-bit alignment
    unless the machine has byte operations.  */
-#define MINIMUM_ATOMIC_ALIGNMENT (TARGET_BYTE_OPS ? 8 : 32)
+#define MINIMUM_ATOMIC_ALIGNMENT (TARGET_BWX ? 8 : 32)
 
 /* Align all constants and variables to at least a word boundary so
    we can pick up pieces of them faster.  */
@@ -711,7 +733,7 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, ALL_REGS,
   && (((CLASS) == FLOAT_REGS						\
        && ((MODE) == SImode || (MODE) == HImode || (MODE) == QImode))	\
       || (((MODE) == QImode || (MODE) == HImode)			\
-	  && ! TARGET_BYTE_OPS && unaligned_memory_operand (IN, MODE)))) \
+	  && ! TARGET_BWX && unaligned_memory_operand (IN, MODE)))) \
  ? GENERAL_REGS								\
  : ((CLASS) == FLOAT_REGS && GET_CODE (IN) == MEM			\
     && GET_CODE (XEXP (IN, 0)) == AND) ? GENERAL_REGS			\
@@ -727,7 +749,7 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, ALL_REGS,
        && (GET_CODE (SUBREG_REG (OUT)) == MEM				\
 	   || (GET_CODE (SUBREG_REG (OUT)) == REG			\
 	       && REGNO (SUBREG_REG (OUT)) >= FIRST_PSEUDO_REGISTER)))) \
-  && ((((MODE) == HImode || (MODE) == QImode) && ! TARGET_BYTE_OPS	\
+  && ((((MODE) == HImode || (MODE) == QImode) && ! TARGET_BWX		\
        || ((MODE) == SImode && (CLASS) == FLOAT_REGS))))		\
  ? GENERAL_REGS								\
  : ((CLASS) == FLOAT_REGS && GET_CODE (OUT) == MEM			\
@@ -738,9 +760,10 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, ALL_REGS,
  : NO_REGS)
 
 /* If we are copying between general and FP registers, we need a memory
-   location.  */
+   location unless the CIX extension is available.  */
 
-#define SECONDARY_MEMORY_NEEDED(CLASS1,CLASS2,MODE) ((CLASS1) != (CLASS2))
+#define SECONDARY_MEMORY_NEEDED(CLASS1,CLASS2,MODE) \
+ (! TARGET_CIX && (CLASS1) != (CLASS2))
 
 /* Specify the mode to be used for memory when a secondary memory
    location is needed.  If MODE is floating-point, use it.  Otherwise,
@@ -1719,9 +1742,13 @@ extern void final_prescan_insn ();
   fprintf (FILE, "\t.set noreorder\n");				\
   fprintf (FILE, "\t.set volatile\n");                          \
   fprintf (FILE, "\t.set noat\n");				\
-  fprintf (FILE, "\t.arch %s\n",				\
-	   (TARGET_BYTE_OPS ? "ev56"				\
-	    : alpha_cpu == PROCESSOR_EV4 ? "ev4" : "ev5"));	\
+  if (TARGET_SUPPORT_ARCH)					\
+    fprintf (FILE, "\t.arch %s\n",				\
+             alpha_cpu == PROCESSOR_EV6 ? "ev6"			\
+	     : (alpha_cpu == PROCESSOR_EV5			\
+		? (TARGET_MAX ? "pca56" : TARGET_BWX ? "ev56" : "ev5") \
+		: "ev4"));					\
+								\
   ASM_OUTPUT_SOURCE_FILENAME (FILE, main_input_filename);	\
 }
 
