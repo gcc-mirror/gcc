@@ -1,3 +1,8 @@
+Sun Aug  6 23:47:35 2000  Ovidiu Predescu  <ovidiu@cup.hp.com>
+
+	* c-parse.in: Changed the language string for Objective-C to "GNU
+	Objective-C".
+
 Sun Aug  6 11:54:03 2000  Ovidiu Predescu  <ovidiu@cup.hp.com>
 
 	* gthr-posix.h: Integrated Chris Ball's <cball@fmco.com> changes
