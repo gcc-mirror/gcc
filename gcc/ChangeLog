@@ -1,5 +1,9 @@
 2003-12-07  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* configure.in: Replace AC_INIT, AC_OUTPUT, AC_CANONICAL_SYSTEM
+	with modern equivalents.
+	* configure: Regenerate.
+
 	* configure.in: Replace gcc_AC_CHECK_TYPE with AC_CHECK_TYPE.
 	* aclocal.m4 (gcc_AC_CHECK_TYPE): Remove.
 	* configure: Regenerate.
