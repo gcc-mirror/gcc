@@ -1133,13 +1133,10 @@ do {						\
 
 /* For a MEM rtx, the alias set.  If 0, this MEM is not in any alias
    set, and may alias anything.  Otherwise, the MEM can only alias
-   MEMs in the same alias set.  This value is set in a
+   MEMs in a conflicting alias set.  This value is set in a
    language-dependent manner in the front-end, and should not be
-   altered in the back-end.  These set numbers are tested for zero,
-   and compared for equality; they have no other significance.  In
-   some front-ends, these numbers may correspond in some way to types,
-   or other language-level entities, but they need not, and the
-   back-end makes no such assumptions.  */
+   altered in the back-end.  These set numbers are tested with
+   alias_sets_conflict_p.  */
 #define MEM_ALIAS_SET(RTX) (MEM_ATTRS (RTX) == 0 ? 0 : MEM_ATTRS (RTX)->alias)
 
 /* For a MEM rtx, the decl it is known to refer to, if it is known to
