@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: gcc 3.4.2\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2004-07-01 11:41-0700\n"
-"PO-Revision-Date: 2004-10-27 10:20+0100\n"
+"PO-Revision-Date: 2004-11-02 18:52+0100\n"
 "Last-Translator: Roland Stigge <stigge@antcom.de>\n"
 "Language-Team: German <de@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -12983,7 +12983,7 @@ msgstr "Vergleich zwischen »%#T« und »%#T«"
 
 #: cp/call.c:3831
 msgid "no suitable `operator %s' for `%T'"
-msgstr "kein geeigneter »operator %s« für »%T«"
+msgstr "kein geeignetes »operator %s« für »%T«"
 
 #: cp/call.c:3848
 msgid "`%+#D' is private"
@@ -13044,7 +13044,7 @@ msgstr "»%T« ist keine erreichbare Basis von »%T«"
 
 #: cp/call.c:4725
 msgid "could not find class$ field in java interface type `%T'"
-msgstr "class$-Feld konnte nicht im JAVA-Schnittstellentyp »%T« gefunden werden"
+msgstr "class$-Feld konnte nicht im Java-Schnittstellentyp »%T« gefunden werden"
 
 #: cp/call.c:4980
 msgid "call to non-function `%D'"
@@ -13061,341 +13061,341 @@ msgstr "keine passende Funktion für Aufruf von »%T::%s(%A)%#V«"
 #: cp/call.c:5101
 #, c-format
 msgid "call of overloaded `%s(%A)' is ambiguous"
-msgstr ""
+msgstr "Aufruf des überladenen »%s(%A)« ist mehrdeutig"
 
 #: cp/call.c:5122
 msgid "cannot call member function `%D' without object"
-msgstr ""
+msgstr "Elementfunktion »%D« kann nicht ohne Objekt aufgerufen werden"
 
 #: cp/call.c:5707
 msgid "passing `%T' chooses `%T' over `%T'"
-msgstr ""
+msgstr "Übergabe von »%T« wählt »%T« (statt »%T«)"
 
 #: cp/call.c:5709 cp/name-lookup.c:4155
 msgid "  in call to `%D'"
-msgstr ""
+msgstr "  in Aufruf von »%D«"
 
 #: cp/call.c:5766
 msgid "choosing `%D' over `%D'"
-msgstr ""
+msgstr "Wahl von »%D« (statt »%D«)"
 
 #: cp/call.c:5767
 msgid "  for conversion from `%T' to `%T'"
-msgstr ""
+msgstr "  für Umwandlung von »%T« in »%T«"
 
 #: cp/call.c:5769
 msgid "  because conversion sequence for the argument is better"
-msgstr ""
+msgstr "  denn die Umwandlungsfolge für das Argument ist besser"
 
 #: cp/call.c:5889
 msgid "ISO C++ says that these are ambiguous, even though the worst conversion for the first is better than the worst conversion for the second:"
-msgstr ""
+msgstr "ISO C++ besagt, dass diese mehrdeutig sind, auch wenn die schlechteste Umwandlung für das erste besser ist als die schlechteste Umwandlung für das zweite:"
 
 #: cp/call.c:5893
 msgid "candidate 1:"
-msgstr ""
+msgstr "Kandidat 1:"
 
 #: cp/call.c:5894
 msgid "candidate 2:"
-msgstr ""
+msgstr "Kandidat 2:"
 
 #: cp/call.c:6003
 msgid "could not convert `%E' to `%T'"
-msgstr ""
+msgstr "»%E« konnte nicht nach »%T« konvertiert werden"
 
 #: cp/call.c:6108
 msgid "invalid initialization of non-const reference of type '%T' from a temporary of type '%T'"
-msgstr ""
+msgstr "ungültige Initialisierung einer nicht-konstanten Referenz des Typs »%T« von temporärem Wert des Typs »%T«"
 
 #: cp/call.c:6112
 msgid "invalid initialization of reference of type '%T' from expression of type '%T'"
-msgstr ""
+msgstr "ungültige Initialisierung einer nicht-konstanten Referenz des Typs »%T« von Ausdruck des Typs »%T"
 
 #: cp/class.c:279
 msgid "cannot convert from base `%T' to derived type `%T' via virtual base `%T'"
-msgstr ""
+msgstr "Es kann nicht von Basis »%T« in abgeleiteten Typ »%T« über virtuelle Basis »%T« gewandelt werden"
 
 #: cp/class.c:762
 msgid "Java class '%T' cannot have an implicit non-trivial destructor"
-msgstr ""
+msgstr "Java-Klasse »%T« kann keinen impliziten nicht-trivialen Destruktor haben"
 
 #: cp/class.c:763
 msgid "Java class '%T' cannot have a destructor"
-msgstr ""
+msgstr "Java-Klasse »%T« kann keinen Destruktor haben"
 
 #: cp/class.c:931
 msgid "`%#D' and `%#D' cannot be overloaded"
-msgstr ""
+msgstr "»%#D« und »%#D« können nicht überladen werden"
 
 #: cp/class.c:977
 msgid "conflicting access specifications for method `%D', ignored"
-msgstr ""
+msgstr "Zugriffsangaben für Methode »%D« stehen in Konflikt, ignoriert"
 
 #: cp/class.c:979
 #, c-format
 msgid "conflicting access specifications for field `%s', ignored"
-msgstr ""
+msgstr "Zugriffsangaben für Feld »%s« stehen in Konflikt, ignoriert"
 
 #: cp/class.c:1029
 msgid "`%D' names constructor"
-msgstr ""
+msgstr "»%D« benennt Konstruktor"
 
 #: cp/class.c:1034
 msgid "`%D' invalid in `%T'"
-msgstr ""
+msgstr "»%D« ungültig in »%T«"
 
 #: cp/class.c:1042
 msgid "no members matching `%D' in `%#T'"
-msgstr ""
+msgstr "kein Element passt zu »%D« in »%#T«"
 
 #: cp/class.c:1074 cp/class.c:1082
 msgid "`%D' invalid in `%#T'"
-msgstr ""
+msgstr "»%D« ungültig in »%#T«"
 
 #: cp/class.c:1075
 msgid "  because of local method `%#D' with same name"
-msgstr ""
+msgstr "  wegen lokaler Methode »%#D« mit gleichem Namen"
 
 #: cp/class.c:1083
 msgid "  because of local member `%#D' with same name"
-msgstr ""
+msgstr "  wegen lokalem Element »%#D« mit gleichem Namen"
 
 #: cp/class.c:1153
 msgid "base class `%#T' has a non-virtual destructor"
-msgstr ""
+msgstr "Basisklasse »%#T« hat nicht-virtuellen Destruktor"
 
 #: cp/class.c:1173
 msgid "base `%T' with only non-default constructor in class without a constructor"
-msgstr ""
+msgstr "Basis »%T« ohne Standard-Konstruktor in Klasse ohne Konstruktor"
 
 #: cp/class.c:1557
 msgid "all member functions in class `%T' are private"
-msgstr ""
+msgstr "alle Elementfunktionen in Klasse »%T« sind privat"
 
 #: cp/class.c:1568
 msgid "`%#T' only defines a private destructor and has no friends"
-msgstr ""
+msgstr "»%#T« definiert nur einen privaten Destruktor und hat keine »friends«"
 
 #: cp/class.c:1610
 msgid "`%#T' only defines private constructors and has no friends"
-msgstr ""
+msgstr "»%#T« definiert nur private Konstruktoren und hat keine »friends«"
 
 #: cp/class.c:1995
 msgid "no unique final overrider for `%D' in `%T'"
-msgstr ""
+msgstr "»%D« wurde nicht eindeutig und endgültig in »%T« überschrieben"
 
 #. Here we know it is a hider, and no overrider exists.
 #: cp/class.c:2441
 msgid "`%D' was hidden"
-msgstr ""
+msgstr "»%D« war versteckt"
 
 #: cp/class.c:2442
 msgid "  by `%D'"
-msgstr ""
+msgstr "  von »%D«"
 
 #: cp/class.c:2484 cp/decl2.c:1161
 msgid "`%#D' invalid; an anonymous union can only have non-static data members"
-msgstr ""
+msgstr "»%#D« ungültig; eine anonyme Union kann nur nicht-statische Datentypen haben"
 
 #: cp/class.c:2490 cp/decl2.c:1168
 msgid "private member `%#D' in anonymous union"
-msgstr ""
+msgstr "privates Element »%#D« in anonymer Union"
 
 #: cp/class.c:2493 cp/decl2.c:1170
 msgid "protected member `%#D' in anonymous union"
-msgstr ""
+msgstr "geschütztes Element »%#D« in anonymer Union"
 
 #: cp/class.c:2612
 msgid "vtable layout for class `%T' may not be ABI-compliant and may change in a future version of GCC due to implicit virtual destructor"
-msgstr ""
+msgstr "vtable-Anordnung für Klasse »%T« könnte ABI-unverträglich sein und sich in zukünftigen GCC-Versionen durch implizite virtuelle Destruktoren ändern"
 
 #: cp/class.c:2672
 msgid "bit-field `%#D' with non-integral type"
-msgstr ""
+msgstr "Bit-Feld »%#D« ohne eingebauten Typ"
 
 #: cp/class.c:2692
 msgid "bit-field `%D' width not an integer constant"
-msgstr ""
+msgstr "Breite des Bitfeldes »%D« ist keine Ganzzahlkonstante"
 
 #: cp/class.c:2698
 msgid "negative width in bit-field `%D'"
-msgstr ""
+msgstr "negative Breite in Bitfeld »%D«"
 
 #: cp/class.c:2703
 msgid "zero width for bit-field `%D'"
-msgstr ""
+msgstr "Breite null für Bitfeld »%D«"
 
 #: cp/class.c:2709
 msgid "width of `%D' exceeds its type"
-msgstr ""
+msgstr "Breite von »%D« übersteigt seinen Typen"
 
 #: cp/class.c:2718
 msgid "`%D' is too small to hold all values of `%#T'"
-msgstr ""
+msgstr "»%D« ist zu klein um alle Werte von »%#T« aufzunehmen"
 
 #: cp/class.c:2780
 msgid "member `%#D' with constructor not allowed in union"
-msgstr ""
+msgstr "Element »%#D« mit Konstruktor nicht erlaubt in Union"
 
 #: cp/class.c:2783
 msgid "member `%#D' with destructor not allowed in union"
-msgstr ""
+msgstr "Element »%#D« mit Destruktor nicht erlaubt in Union"
 
 #: cp/class.c:2786
 msgid "member `%#D' with copy assignment operator not allowed in union"
-msgstr ""
+msgstr "Element »%#D« mit Zuweisungsoperator ist nicht erlaubt in Union"
 
 #: cp/class.c:2813
 msgid "multiple fields in union `%T' initialized"
-msgstr ""
+msgstr "in Union »%T« werden mehrere Felder initialisiert"
 
 #: cp/class.c:2879
 msgid "ignoring packed attribute on unpacked non-POD field `%#D'"
-msgstr ""
+msgstr "»gepackt«-Attribut für ungepacktes nicht-POD-Feld »%#D« wird ignoriert"
 
 #: cp/class.c:2939
 msgid "`%D' may not be static because it is a member of a union"
-msgstr "»%D« kann nicht static sein, da es ein union-Element ist"
+msgstr "»%D« kann nicht static sein, da es ein Union-Element ist"
 
 #: cp/class.c:2944
 msgid "`%D' may not have reference type `%T' because it is a member of a union"
-msgstr ""
+msgstr "»%D« darf keinen Referenztyp »%T« haben, da es ein Element einer Union ist"
 
 #: cp/class.c:2952
 msgid "field `%D' in local class cannot be static"
-msgstr ""
+msgstr "Feld »%D« in lokaler Klasse kann nicht statisch sein"
 
 #: cp/class.c:2958
 msgid "field `%D' invalidly declared function type"
-msgstr ""
+msgstr "Feld »%D« deklarierte ungültigerweise einen Funktionstypen"
 
 #: cp/class.c:2965
 msgid "field `%D' invalidly declared method type"
-msgstr ""
+msgstr "Feld »%D« deklarierte ungültigerweise einen Methodentypen"
 
 #: cp/class.c:2998
 msgid "non-static reference `%#D' in class without a constructor"
-msgstr ""
+msgstr "nicht-statische Referenz »%#D« in Klasse ohne Konstruktor"
 
 #: cp/class.c:3041
 msgid "non-static const member `%#D' in class without a constructor"
-msgstr ""
+msgstr "nicht-statisches const-Element »%#D« in Klasse ohne einen Konstruktor"
 
 #: cp/class.c:3056
 msgid "field `%#D' with same name as class"
-msgstr ""
+msgstr "Feld »%#D« mit gleichem Namen wie die Klasse"
 
 #: cp/class.c:3074
 msgid "`%#T' has pointer data members"
-msgstr ""
+msgstr "»%#T« hat Zeigertypen als Elemente"
 
 #: cp/class.c:3078
 msgid "  but does not override `%T(const %T&)'"
-msgstr ""
+msgstr "  aber überschreibt nicht »%T(const %T&)«"
 
 #: cp/class.c:3080
 msgid "  or `operator=(const %T&)'"
-msgstr ""
+msgstr "  oder »operator=(const %T&)«"
 
 #: cp/class.c:3083
 msgid "  but does not override `operator=(const %T&)'"
-msgstr ""
+msgstr "  aber überschreibt nicht »operator=(const %T&)«"
 
 #: cp/class.c:3517
 msgid "offset of empty base `%T' may not be ABI-compliant and maychange in a future version of GCC"
-msgstr ""
+msgstr "Versatz der leeren Basis »%T« könnte ABI-unverträglich sein und sich in zukünftigen GCC-Versionen ändern"
 
 #: cp/class.c:3627
 msgid "class `%T' will be considered nearly empty in a future version of GCC"
-msgstr ""
+msgstr "Klasse »%T« wird in zukünftigen GCC-Versionen als fast leer betrachtet werden"
 
 #: cp/class.c:3714
 msgid "initializer specified for non-virtual method `%D'"
-msgstr ""
+msgstr "Initialisierung für nicht-virtuelle Methode »%D« angegeben"
 
 #: cp/class.c:4402
 msgid "offset of virtual base `%T' is not ABI-compliant and may change in a future version of GCC"
-msgstr ""
+msgstr "Versatz der virtuellen Basis »%T« ist ABI-unverträglich und kann sich in zukünftigen GCC-Versionen ändern"
 
 #: cp/class.c:4492
 msgid "direct base `%T' inaccessible in `%T' due to ambiguity"
-msgstr ""
+msgstr "direkte Basis »%T« ist in »%T« durch Mehrdeutigkeit unzugänglich"
 
 #: cp/class.c:4505
 msgid "virtual base `%T' inaccessible in `%T' due to ambiguity"
-msgstr ""
+msgstr "virtuelle Basis »%T« ist in »%T« durch Mehrdeutigkeit unzugänglich"
 
 #: cp/class.c:4679
 msgid "size assigned to `%T' may not be ABI-compliant and may change in a future version of GCC"
-msgstr ""
+msgstr "»%T« zugewiesene Größe könnte ABI-unverträglich sein und sich in zukünftigen GCC-Versionen ändern"
 
 #. Versions of G++ before G++ 3.4 did not reset the
 #. DECL_MODE.
 #: cp/class.c:4718
 msgid "the offset of `%D' may not be ABI-compliant and may change in a future version of GCC"
-msgstr ""
+msgstr "der Versatz von »%D« könnte ABI-unverträglich sein und sich in einer zukünftigen GCC-Version ändern"
 
 #: cp/class.c:4741
 msgid "offset of `%D' is not ABI-compliant and may change in a future version of GCC"
-msgstr ""
+msgstr "Versatz von »%D« ist ABI-unverträglich und kann sich in zukünftigen GCC-Versionen ändern"
 
 #: cp/class.c:4750
 msgid "`%D' contains empty classes which may cause base classes to be placed at different locations in a future version of GCC"
-msgstr ""
+msgstr "»%D« enthält leere Klassen, die in zukünftigen GCC-Versionen die Basisklassen an andere Orte verschieben können"
 
 #: cp/class.c:4809
 msgid "layout of classes derived from empty class `%T' may change in a future version of GCC"
-msgstr ""
+msgstr "die Anordnung der von der leeren Klasse »%T« abgeleiteten Klassen könnte sich in zukünftigen GCC-Versionen ändern"
 
 #: cp/class.c:4939 cp/semantics.c:2044
 msgid "redefinition of `%#T'"
-msgstr ""
+msgstr "Redefinition von »%#T«"
 
 #: cp/class.c:5109
 msgid "`%#T' has virtual functions but non-virtual destructor"
-msgstr ""
+msgstr "»%#T« hat virtuelle Funktionen aber nicht-virtuellen Destruktor"
 
 #: cp/class.c:5188
 msgid "trying to finish struct, but kicked out due to previous parse errors"
-msgstr ""
+msgstr "struct konnte wegen Syntaxfehlern nicht beendet werden"
 
 #: cp/class.c:5630
 #, c-format
 msgid "language string `\"%s\"' not recognized"
-msgstr ""
+msgstr "Sprachen-Zeichenkette »\"%s\"« nicht erkannt"
 
 #: cp/class.c:5718
 msgid "cannot resolve overloaded function `%D' based on conversion to type `%T'"
-msgstr ""
+msgstr "überladene Funktion »%D« konnte nicht durch Umwandlung in Typ »%T« aufgelöst werden"
 
 #: cp/class.c:5843
 msgid "no matches converting function `%D' to type `%#T'"
-msgstr ""
+msgstr "bei der Umwandlung der Funktion »%D« in den Typ »%#T« gab es keine Übereinstimmungen"
 
 #: cp/class.c:5866
 msgid "converting overloaded function `%D' to type `%#T' is ambiguous"
-msgstr ""
+msgstr "Umwandung der überladenen Funktion »%D« in den Typ »%#T« ist mehrdeutig"
 
 #: cp/class.c:5892
 msgid "assuming pointer to member `%D'"
-msgstr ""
+msgstr "Zeiger auf Element »%D« wird angenommen"
 
 #: cp/class.c:5895
 #, c-format
 msgid "(a pointer to member can only be formed with `&%E')"
-msgstr ""
+msgstr "(ein Zeiger auf ein Element kann nur mit »&%E« erzeugt werden)"
 
 #: cp/class.c:5940 cp/class.c:6122 cp/class.c:6129
 msgid "not enough type information"
-msgstr ""
+msgstr "zu wenig Typinformationen"
 
 #: cp/class.c:5957
 msgid "argument of type `%T' does not match `%T'"
-msgstr ""
+msgstr "Argument des Typs »%T« passt nicht zu »%T«"
 
 #: cp/class.c:6106
 msgid "invalid operation on uninstantiated type"
-msgstr ""
+msgstr "ungültige Operation auf nicht instanziierten Typen"
 
 #. [basic.scope.class]
 #.
@@ -13404,92 +13404,92 @@ msgstr ""
 #. S.
 #: cp/class.c:6364 cp/decl.c:1222 cp/name-lookup.c:514 cp/pt.c:2097
 msgid "declaration of `%#D'"
-msgstr ""
+msgstr "Deklaration von »%#D«"
 
 #: cp/class.c:6365
 msgid "changes meaning of `%D' from `%+#D'"
-msgstr ""
+msgstr "verändert die Bedeutung von »%D« von »%+#D«"
 
 #: cp/cp-lang.c:398
 msgid "inter-module optimisations not implemented yet"
-msgstr ""
+msgstr "Optimierungen zwischen Modulen noch nicht implementiert"
 
 #: cp/cvt.c:88
 msgid "can't convert from incomplete type `%T' to `%T'"
-msgstr ""
+msgstr "unvollständiger Typ »%T« kann nicht nach »%T« umgewandelt werden"
 
 #: cp/cvt.c:97
 msgid "conversion of `%E' from `%T' to `%T' is ambiguous"
-msgstr ""
+msgstr "Umwandlung von »%E« von »%T« nach »%T« ist mehrdeutig"
 
 #: cp/cvt.c:113 cp/cvt.c:127
 msgid "converting from `%T' to `%T'"
-msgstr ""
+msgstr "Umwandlung von »%T« nach »%T«"
 
 #: cp/cvt.c:185 cp/cvt.c:253 cp/cvt.c:297
 msgid "cannot convert `%E' from type `%T' to type `%T'"
-msgstr ""
+msgstr "»%E« kann nicht vom Typ »%T« in den Typ »%T« umgewandelt werden"
 
 #: cp/cvt.c:214 cp/cvt.c:218
 msgid "pointer to member cast from `%T' to `%T' is via virtual base"
-msgstr ""
+msgstr "Umwandlung von Zeiger auf Element von »%T« nach »%T« geschieht über virtuelle Basis"
 
 #: cp/cvt.c:276
 msgid "invalid conversion from '%T' to '%T'"
-msgstr ""
+msgstr "ungültige Umwandlung von »%T« in »%T«"
 
 #: cp/cvt.c:508
 msgid "conversion from `%T' to `%T' discards qualifiers"
-msgstr ""
+msgstr "Umwandlung von »%T« in »%T« löscht Qualifizierer"
 
 #: cp/cvt.c:526
 msgid "casting `%T' to `%T' does not dereference pointer"
-msgstr ""
+msgstr "Umwandlung von »%T« in »%T« dereferenziert nicht den Zeiger"
 
 #: cp/cvt.c:553
 msgid "cannot convert type `%T' to type `%T'"
-msgstr ""
+msgstr "Typ »%T« kann nicht in den Typ »%T« umgewandelt werden"
 
 #: cp/cvt.c:679
 msgid "conversion from `%#T' to `%#T'"
-msgstr ""
+msgstr "Umwandlung von »%#T« nach »%#T«"
 
 #: cp/cvt.c:691
 msgid "`%#T' used where a `%T' was expected"
-msgstr ""
+msgstr "»%#T« verwendet, wo »%T« erwartet wurde"
 
 #: cp/cvt.c:715
 msgid "`%#T' used where a floating point value was expected"
-msgstr ""
+msgstr "»%#T« verwendet, wo ein Fließkommawert erwartet wurde"
 
 #: cp/cvt.c:762
 msgid "conversion from `%T' to non-scalar type `%T' requested"
-msgstr ""
+msgstr "Umwandlung von »%T« in nicht-skalaren Typen »%T« angefordert"
 
 #: cp/cvt.c:852
 msgid "object of incomplete type `%T' will not be accessed in %s"
-msgstr ""
+msgstr "auf Objekt unvollständigen Typs »%T« wird in %s nicht zugegriffen"
 
 #: cp/cvt.c:855
 msgid "object of type `%T' will not be accessed in %s"
-msgstr ""
+msgstr "auf Objekt des Typs »%T« wird in %s nicht zugegriffen"
 
 #: cp/cvt.c:871
 msgid "object `%E' of incomplete type `%T' will not be accessed in %s"
-msgstr ""
+msgstr "auf Objekt »%E« des unvollständigen Typs »%T« wird in %s nicht zugegriffen"
 
 #. [over.over] enumerates the places where we can take the address
 #. of an overloaded function, and this is not one of them.
 #: cp/cvt.c:887
 #, c-format
 msgid "%s cannot resolve address of overloaded function"
-msgstr ""
+msgstr "%s kann die Adresse der überladenen Funktion nicht auflösen"
 
 #. Only warn when there is no &.
 #: cp/cvt.c:893
 #, c-format
 msgid "%s is a reference, not call, to function `%E'"
-msgstr ""
+msgstr "%s ist eine Referenz, kein Aufruf, zur Funktion »%E«"
 
 #: cp/cvt.c:900
 #, c-format
@@ -13498,27 +13498,27 @@ msgstr "%s hat keinen Effekt"
 
 #: cp/cvt.c:1011
 msgid "converting NULL to non-pointer type"
-msgstr ""
+msgstr "Umwandlung von NULL in Nicht-Zeiger-Typ"
 
 #: cp/cvt.c:1084
 msgid "ambiguous default type conversion from `%T'"
-msgstr ""
+msgstr "mehrdeutige Standard-Typumwandlung von »%T«"
 
 #: cp/cvt.c:1086
 msgid "  candidate conversions include `%D' and `%D'"
-msgstr ""
+msgstr "  in Frage kommende Umwandlungen beziehen »%D« und »%D« ein"
 
 #: cp/decl.c:371
 msgid "label `%D' used but not defined"
-msgstr ""
+msgstr "Marke »%D« verwendet, aber nicht definiert"
 
 #: cp/decl.c:378
 msgid "label `%D' defined but not used"
-msgstr ""
+msgstr "Marke »%D« definiert, aber nicht verwendet"
 
 #: cp/decl.c:1130 cp/decl.c:1556
 msgid "previous declaration of `%D'"
-msgstr ""
+msgstr "vorherige Deklaration von »%D«"
 
 #: cp/decl.c:1178
 msgid "%Jfunction '%D' redeclared as inline"
@@ -13530,7 +13530,7 @@ msgstr "%Jvorherige Deklaration von »%D« mit Attribut noinline"
 
 #: cp/decl.c:1186
 msgid "%Jfunction '%D' redeclared with attribute noinline"
-msgstr "%JFunktion »%D« redeklariert mit Attribut noinline"
+msgstr "%JFunktion »%D« mit Attribut noinline redeklariert"
 
 #: cp/decl.c:1188
 msgid "%Jprevious declaration of '%D' was inline"
@@ -13538,51 +13538,51 @@ msgstr "%Jvorherige Deklaration von »%D« war inline"
 
 #: cp/decl.c:1209 cp/decl.c:1247
 msgid "shadowing %s function `%#D'"
-msgstr ""
+msgstr "überschatten der %s Funktion »%#D«"
 
 #: cp/decl.c:1218
 msgid "library function `%#D' redeclared as non-function `%#D'"
-msgstr ""
+msgstr "Bibliotheksfunktion »%#D« als Nicht-Funktion »%#D« redeklariert"
 
 #: cp/decl.c:1223
 msgid "conflicts with built-in declaration `%#D'"
-msgstr ""
+msgstr "steht mit eingebauter Deklaration »%#D« in Konflikt"
 
 #: cp/decl.c:1242 cp/decl.c:1354 cp/decl.c:1370
 msgid "new declaration `%#D'"
-msgstr ""
+msgstr "neue Deklaration »%#D«"
 
 #: cp/decl.c:1243
 msgid "ambiguates built-in declaration `%#D'"
-msgstr ""
+msgstr "macht eingebaute Deklaration »%#D« mehrdeutig"
 
 #: cp/decl.c:1314
 msgid "`%#D' redeclared as different kind of symbol"
-msgstr ""
+msgstr "»%#D« als andere Symbolart redeklariert"
 
 #: cp/decl.c:1317
 msgid "previous declaration of `%#D'"
-msgstr ""
+msgstr "vorherige Deklaration von »%#D«"
 
 #: cp/decl.c:1339
 msgid "declaration of template `%#D'"
-msgstr ""
+msgstr "Deklaration des Templates »%#D«"
 
 #: cp/decl.c:1340 cp/name-lookup.c:515
 msgid "conflicts with previous declaration `%#D'"
-msgstr ""
+msgstr "steht mit der vorherigen Deklaration »%#D« in Konflikt"
 
 #: cp/decl.c:1355 cp/decl.c:1371
 msgid "ambiguates old declaration `%#D'"
-msgstr ""
+msgstr "macht alte Deklaration »%#D« mehrdeutig"
 
 #: cp/decl.c:1363
 msgid "declaration of C function `%#D' conflicts with"
-msgstr ""
+msgstr "Deklaration der C-Funktion »%#D« steht in Konflikt mit"
 
 #: cp/decl.c:1365
 msgid "previous declaration `%#D' here"
-msgstr ""
+msgstr "vorherige Deklaration »%#D« hier"
 
 #: cp/decl.c:1381
 msgid "conflicting declaration '%#D'"
@@ -13590,20 +13590,20 @@ msgstr "in Konflikt stehende Deklaration »%#D«"
 
 #: cp/decl.c:1382
 msgid "'%D' has a previous declaration as `%#D'"
-msgstr "»%D« hat eine vorherige Deklaration als »%#Ds«"
+msgstr "»%D« hat eine vorherige Deklaration als »%#D«"
 
 #: cp/decl.c:1435
 msgid "`%#D' previously defined here"
-msgstr ""
+msgstr "»%#D« wurde vorher hier definiert"
 
 #: cp/decl.c:1436
 msgid "`%#D' previously declared here"
-msgstr ""
+msgstr "»%#D« wurde vorher hier deklariert"
 
 #. Prototype decl follows defn w/o prototype.
 #: cp/decl.c:1445
 msgid "prototype for `%#D'"
-msgstr ""
+msgstr "Prototyp für »%#D«"
 
 #: cp/decl.c:1446
 msgid "%Jfollows non-prototype definition here"
@@ -13611,41 +13611,41 @@ msgstr "%Jfolgt Nicht-Prototyp-Definition hier"
 
 #: cp/decl.c:1458
 msgid "previous declaration of `%#D' with %L linkage"
-msgstr ""
+msgstr "vorherige Deklaration von »%#D« mit %L-Bindung"
 
 #: cp/decl.c:1460
 msgid "conflicts with new declaration with %L linkage"
-msgstr ""
+msgstr "steht mit neuer Deklaration mit %L-Bindung in Konflikt"
 
 #: cp/decl.c:1483 cp/decl.c:1490
 msgid "default argument given for parameter %d of `%#D'"
-msgstr ""
+msgstr "Standardargument für Parameter %d von »%#D« angegeben"
 
 #: cp/decl.c:1485 cp/decl.c:1492
 msgid "after previous specification in `%#D'"
-msgstr ""
+msgstr "nach vorheriger Spezifikation in »%#D«"
 
 #: cp/decl.c:1501
 msgid "`%#D' was used before it was declared inline"
-msgstr ""
+msgstr "»%#D« wurde verwendet, bevor es »inline« deklariert wurde"
 
 #: cp/decl.c:1502
 msgid "%Jprevious non-inline declaration here"
-msgstr "%Jvorherige nicht-inline-Deklaration hier"
+msgstr "%Jvorherige Nicht-inline-Deklaration hier"
 
 #: cp/decl.c:1555
 msgid "redundant redeclaration of `%D' in same scope"
-msgstr ""
+msgstr "redundante Redeklaration von »%D« im selben Gültigkeitsbereich"
 
 #: cp/decl.c:1649
 #, c-format
 msgid "declaration of `%F' throws different exceptions"
-msgstr ""
+msgstr "Deklaration von »%F« wirft andere Ausnahmen"
 
 #: cp/decl.c:1651
 #, c-format
 msgid "than previous declaration `%F'"
-msgstr ""
+msgstr "als vorherige Deklaration »%F«"
 
 #. From [temp.expl.spec]:
 #.
@@ -13657,32 +13657,32 @@ msgstr ""
 #. which such a use occurs.
 #: cp/decl.c:1798
 msgid "explicit specialization of %D after first use"
-msgstr ""
+msgstr "explizite Spezialisierung von %D nach erster Benutzung"
 
 #: cp/decl.c:1878
 msgid "%J'%D': visibility attribute ignored because it"
-msgstr ""
+msgstr "%J»%D«: Sichtbarkeitsattribut ignoriert, da es"
 
 #: cp/decl.c:1880
 msgid "%Jconflicts with previous declaration here"
-msgstr "%Jin Konflikt mit vorheriger Deklaration hier"
+msgstr "%Jin Konflikt mit vorheriger Deklaration (hier) steht"
 
 #: cp/decl.c:1974
 msgid "implicit declaration of function `%#D'"
-msgstr ""
+msgstr "implizite Deklaration der Funktion »%#D«"
 
 #: cp/decl.c:2137
 #, c-format
 msgid "label `%s' referenced outside of any function"
-msgstr ""
+msgstr "Marke »%s« außerhalb jeder Funktion referenziert"
 
 #: cp/decl.c:2234 cp/decl.c:2258 cp/decl.c:2346
 msgid "jump to label `%D'"
-msgstr ""
+msgstr "Sprung zur Marke »%D«"
 
 #: cp/decl.c:2236 cp/decl.c:2260
 msgid "jump to case label"
-msgstr ""
+msgstr "Sprung zur case-Marke"
 
 #: cp/decl.c:2239 cp/decl.c:2263
 msgid "%H  from here"
@@ -13690,207 +13690,207 @@ msgstr "%H  von hier"
 
 #: cp/decl.c:2244
 msgid "  crosses initialization of `%#D'"
-msgstr ""
+msgstr "  überkreuzt Initialisierung von »%#D«"
 
 #: cp/decl.c:2247 cp/decl.c:2362
 msgid "  enters scope of non-POD `%#D'"
-msgstr ""
+msgstr "  tritt in Gültigkeitsbereich des nicht-POD »%#D« ein"
 
 #: cp/decl.c:2267 cp/decl.c:2366
 msgid "  enters try block"
-msgstr ""
+msgstr "  tritt in try-Block ein"
 
 #: cp/decl.c:2269 cp/decl.c:2368
 msgid "  enters catch block"
-msgstr ""
+msgstr "  tritt in catch-Block ein"
 
 #: cp/decl.c:2347
 msgid "  from here"
-msgstr ""
+msgstr "  von hier"
 
 #. Can't skip init of __exception_info.
 #: cp/decl.c:2358
 msgid "%J  enters catch block"
-msgstr ""
+msgstr "%J  tritt in catch-Block ein"
 
 #: cp/decl.c:2360
 msgid "  skips initialization of `%#D'"
-msgstr ""
+msgstr "  überspringt Initialisierung von »%#D«"
 
 #: cp/decl.c:2394
 msgid "label named wchar_t"
-msgstr ""
+msgstr "Marke wurde wchar_t genannt"
 
 #: cp/decl.c:2397
 msgid "duplicate label `%D'"
-msgstr ""
+msgstr "doppelte Marke »%D«"
 
 #: cp/decl.c:2625 cp/parser.c:3182
 msgid "`%D' used without template parameters"
-msgstr ""
+msgstr "»%D« ohne Template-Parameter verwendet"
 
 #: cp/decl.c:2635 cp/decl.c:2651 cp/decl.c:2739
 msgid "no class template named `%#T' in `%#T'"
-msgstr ""
+msgstr "kein Klassentemplate namens »%#T« in »%#T«"
 
 #: cp/decl.c:2672 cp/decl.c:2682 cp/decl.c:2702
 msgid "no type named `%#T' in `%#T'"
-msgstr ""
+msgstr "kein Typ namens »%#T« in »%#T«"
 
 #: cp/decl.c:3429
 msgid "%Jan anonymous union cannot have function members"
-msgstr ""
+msgstr "%Jeine anonyme Union kann keine Funktionselemente haben"
 
 #: cp/decl.c:3447
 msgid "member %#D' with constructor not allowed in anonymous aggregate"
-msgstr ""
+msgstr "Element »%#D« mit Konstruktor in anonymem Aggregat nicht erlaubt"
 
 #: cp/decl.c:3450
 msgid "member %#D' with destructor not allowed in anonymous aggregate"
-msgstr ""
+msgstr "Element »%#D« mit Destruktor in anonymem Aggregat nicht erlaubt"
 
 #: cp/decl.c:3453
 msgid "member %#D' with copy assignment operator not allowed in anonymous aggregate"
-msgstr ""
+msgstr "Element »%#D« mit Zuweisungsoperator ist in anonymem Aggregt nicht erlaubt"
 
 #: cp/decl.c:3493
 msgid "redeclaration of C++ built-in type `%T'"
-msgstr ""
+msgstr "Redeklaration des eingebauten C++-Typs »%T«"
 
 #: cp/decl.c:3531
 msgid "multiple types in one declaration"
-msgstr ""
+msgstr "mehrere Typen in einer Deklaration"
 
 #: cp/decl.c:3557
 msgid "missing type-name in typedef-declaration"
-msgstr ""
+msgstr "fehlender Typname in typedef-Deklaration"
 
 #: cp/decl.c:3565
 msgid "ISO C++ prohibits anonymous structs"
-msgstr ""
+msgstr "ISO-C++ verbietet anonyme structs"
 
 #: cp/decl.c:3572
 msgid "`%D' can only be specified for functions"
-msgstr ""
+msgstr "»%D« kann nur für Funktionen angegeben werden"
 
 #: cp/decl.c:3574
 msgid "`%D' can only be specified inside a class"
-msgstr ""
+msgstr "»%D« kann nur innerhalb einer Klasse angegeben werden"
 
 #: cp/decl.c:3576
 msgid "`%D' can only be specified for constructors"
-msgstr ""
+msgstr "»%D« kann nur für Konstruktoren angegeben werden"
 
 #: cp/decl.c:3579
 msgid "`%D' can only be specified for objects and functions"
-msgstr ""
+msgstr "»%D« kann nur für Objekte und Funktionen angegeben werden"
 
 #: cp/decl.c:3721 cp/decl2.c:855
 msgid "typedef `%D' is initialized (use __typeof__ instead)"
-msgstr ""
+msgstr "typedef »%D« ist initialisiert (stattdessen lieber __typeof__ verwenden)"
 
 #: cp/decl.c:3726
 msgid "function `%#D' is initialized like a variable"
-msgstr ""
+msgstr "Funktion »%#D« ist wie eine Variable initialisiert"
 
 #: cp/decl.c:3738
 msgid "declaration of `%#D' has `extern' and is initialized"
-msgstr ""
+msgstr "Deklaration von »%#D« hat »extern« und ist initialisiert"
 
 #: cp/decl.c:3771
 msgid "`%#D' is not a static member of `%#T'"
-msgstr ""
+msgstr "»%#D« ist kein statisches Element von »%#T«"
 
 #: cp/decl.c:3777
 msgid "ISO C++ does not permit `%T::%D' to be defined as `%T::%D'"
-msgstr ""
+msgstr "ISO-C++ erlaubt nicht, »%T::%D« als »%T::%D« zu definieren"
 
 #: cp/decl.c:3788
 msgid "duplicate initialization of %D"
-msgstr ""
+msgstr "doppelte Initialisierung von %D"
 
 #: cp/decl.c:3819
 msgid "declaration of `%#D' outside of class is not definition"
-msgstr ""
+msgstr "Deklaration von »%#D« außerhalb einer Klasse ist keine Definition"
 
 #: cp/decl.c:3868
 msgid "variable `%#D' has initializer but incomplete type"
-msgstr ""
+msgstr "Variable »%#D« hat Initialisierung, aber unvollständigen Typ"
 
 #: cp/decl.c:3876 cp/decl.c:4445
 msgid "elements of array `%#D' have incomplete type"
-msgstr ""
+msgstr "Elemente des Feldes »%#D« haben unvollständigen Typ"
 
 #: cp/decl.c:3892
 msgid "aggregate `%#D' has incomplete type and cannot be defined"
-msgstr ""
+msgstr "Aggregat »%#D« hat unvollständigen Typ und kann nicht definiert werden"
 
 #: cp/decl.c:3942
 msgid "`%D' declared as reference but not initialized"
-msgstr ""
+msgstr "»%D« als Referenz deklariert, aber nicht initialisiert"
 
 #: cp/decl.c:3948
 msgid "ISO C++ forbids use of initializer list to initialize reference `%D'"
-msgstr ""
+msgstr "ISO-C++ verbietet die Verwendung einer Initialisierungsliste zur Initialisierung der Referenz »%D«"
 
 #: cp/decl.c:3976
 msgid "cannot initialize `%T' from `%T'"
-msgstr ""
+msgstr "»%T« kann nicht von »%T« initialisiert werden"
 
 #: cp/decl.c:4008
 msgid "initializer fails to determine size of `%D'"
-msgstr ""
+msgstr "Initialisierung gibt nicht die Größe von »%D« an"
 
 #: cp/decl.c:4013
 msgid "array size missing in `%D'"
-msgstr ""
+msgstr "Feldgröße fehlt in »%D«"
 
 #: cp/decl.c:4025
 msgid "zero-size array `%D'"
-msgstr ""
+msgstr "Feld »%D« der Größe null"
 
 #. An automatic variable with an incomplete type: that is an error.
 #. Don't talk about array types here, since we took care of that
 #. message in grokdeclarator.
 #: cp/decl.c:4062
 msgid "storage size of `%D' isn't known"
-msgstr ""
+msgstr "Speichergröße von »%D« ist unbekannt"
 
 #: cp/decl.c:4084
 msgid "storage size of `%D' isn't constant"
-msgstr ""
+msgstr "Speichergröße von »%D« ist nicht konstant"
 
 #: cp/decl.c:4139
 msgid "sorry: semantics of inline function static data `%#D' are wrong (you'll wind up with multiple copies)"
-msgstr ""
+msgstr "Entschuldigung: Semantik der statischen Daten »%#D« der inline-Funktion ist falsch (mehrere Kopien wären die Folge)"
 
 #: cp/decl.c:4140
 msgid "%J  you can work around this by removing the initializer"
-msgstr ""
+msgstr "%J  dies kann durch das Löschen des Initialisierers umgangen werden"
 
 #: cp/decl.c:4166
 msgid "uninitialized const `%D'"
-msgstr ""
+msgstr "nicht initialisiertes const »%D«"
 
 #: cp/decl.c:4245
 msgid "brace-enclosed initializer used to initialize `%T'"
-msgstr ""
+msgstr "geklammerter Initialisierer zur Initialisierung von »%T« verwendet"
 
 #: cp/decl.c:4309
 msgid "initializer for `%T' must be brace-enclosed"
-msgstr ""
+msgstr "Initialisierung für »%T« muss geklammert sein"
 
 #: cp/decl.c:4326
 msgid "ISO C++ does not allow designated initializers"
-msgstr ""
+msgstr "ISO-C++ erlaubt keine benannten Initialisierungen"
 
 #: cp/decl.c:4330
 msgid "`%T' has no non-static data member named `%D'"
-msgstr ""
+msgstr "»%T« hat kein nicht-statisches Datenelement namens »%D«"
 
 #: cp/decl.c:4378
 msgid "name `%D' used in a GNU-style designated initializer for an array"
-msgstr ""
+msgstr "Name »%D« in benannter Initialisierung im GNU-Stil für ein Feld verwendet"
 
 #: cp/decl.c:4401
 msgid "too many initializers for `%T'"
@@ -13898,192 +13898,192 @@ msgstr "zu viele Initialisierer für »%T«"
 
 #: cp/decl.c:4439
 msgid "variable-sized object `%D' may not be initialized"
-msgstr ""
+msgstr "Objekt »%D« variabler Größe kann nicht initialisiert werden"
 
 #: cp/decl.c:4450
 msgid "`%D' has incomplete type"
-msgstr ""
+msgstr "»%D« hat unvollständigen Typen"
 
 #: cp/decl.c:4505
 msgid "`%D' must be initialized by constructor, not by `{...}'"
-msgstr ""
+msgstr "»%D« muss mit Konstruktor initialisiert werden, nicht mit »{...}«"
 
 #: cp/decl.c:4549
 msgid "structure `%D' with uninitialized const members"
-msgstr ""
+msgstr "Struktur »%D« mit nicht initialisierten const-Elementen"
 
 #: cp/decl.c:4551
 msgid "structure `%D' with uninitialized reference members"
-msgstr ""
+msgstr "Struktur »%D« mit nicht initialisierten Referenzelementen"
 
 #: cp/decl.c:4732
 msgid "assignment (not initialization) in declaration"
-msgstr ""
+msgstr "Zuweisung (nicht Initialisierung) in Deklaration"
 
 #: cp/decl.c:4749
 msgid "cannot initialize `%D' to namespace `%D'"
-msgstr ""
+msgstr "»%D« kann nicht zu Namespace »%D« initialisiert werden"
 
 #: cp/decl.c:4803
 msgid "shadowing previous type declaration of `%#D'"
-msgstr ""
+msgstr "vorherige Typdeklaration von »%#D« wird überschattet"
 
 #: cp/decl.c:4840
 msgid "`%D' cannot be thread-local because it has non-POD type `%T'"
-msgstr ""
+msgstr "»%D« kann nicht Thread-lokal sein, weil es Nicht-POD-Typen »%T« hat"
 
 #: cp/decl.c:4855
 msgid "`%D' is thread-local and so cannot be dynamically initialized"
-msgstr ""
+msgstr "»%D« ist Thread-lokal und kann damit nicht dynamisch initialisiert werden"
 
 #: cp/decl.c:5337
 msgid "invalid catch parameter"
-msgstr ""
+msgstr "ungültiger catch-Parameter"
 
 #: cp/decl.c:5451
 msgid "destructor for alien class `%T' cannot be a member"
-msgstr ""
+msgstr "Destruktor für fremde Klasse »%T« kann kein Element sein"
 
 #: cp/decl.c:5454
 msgid "constructor for alien class `%T' cannot be a member"
-msgstr ""
+msgstr "Konstruktor für fremde Klasse »%T« kann kein Element sein"
 
 #: cp/decl.c:5476
 msgid "`%D' declared as a `virtual' %s"
-msgstr ""
+msgstr "»%D« als »virtuelles« %s deklariert"
 
 #: cp/decl.c:5478
 msgid "`%D' declared as an `inline' %s"
-msgstr ""
+msgstr "»%D« als »inline« %s deklariert"
 
 #: cp/decl.c:5480
 msgid "`const' and `volatile' function specifiers on `%D' invalid in %s declaration"
-msgstr ""
+msgstr "Funktionsspezifizierer »const« und »volatile« an »%D« ungültig in %d-Deklaration"
 
 #: cp/decl.c:5483
 msgid "`%D' declared as a friend"
-msgstr ""
+msgstr "»%D« als »friend« deklariert"
 
 #: cp/decl.c:5489
 msgid "`%D' declared with an exception specification"
-msgstr ""
+msgstr "»%D« mit Ausnahmespezifikation deklariert"
 
 #: cp/decl.c:5571
 msgid "cannot declare `::main' to be a template"
-msgstr ""
+msgstr "»::main« kann nicht als Template deklariert werden"
 
 #: cp/decl.c:5573
 msgid "cannot declare `::main' to be inline"
-msgstr ""
+msgstr "»::main« kann nicht inline deklariert werden"
 
 #: cp/decl.c:5575
 msgid "cannot declare `::main' to be static"
-msgstr ""
+msgstr "»::main« kann nicht statisch deklariert werden"
 
 #: cp/decl.c:5578
 msgid "`main' must return `int'"
-msgstr ""
+msgstr "»main« muss »int« zurückgeben"
 
 #: cp/decl.c:5606
 msgid "non-local function `%#D' uses anonymous type"
-msgstr ""
+msgstr "nicht lokale Funktion »%#D« verwendet anonymen Typen"
 
 #: cp/decl.c:5609
 msgid "`%#D' does not refer to the unqualified type, so it is not used for linkage"
-msgstr ""
+msgstr "»%#D« verweist nicht auf den unqualifizierten Typen, also wird es nicht zum Binden verwendet"
 
 #: cp/decl.c:5615
 msgid "non-local function `%#D' uses local type `%T'"
-msgstr ""
+msgstr "nicht lokale Funktion »%#D« verwendet lokalen Typen »%T«"
 
 #: cp/decl.c:5639
 msgid "%smember function `%D' cannot have `%T' method qualifier"
-msgstr ""
+msgstr "%sElementfunktion »%D« kann nicht den Methodenqualifizierer »%T« haben"
 
 #: cp/decl.c:5663
 msgid "defining explicit specialization `%D' in friend declaration"
-msgstr ""
+msgstr "Definition der expliziten Spezialisierung »%D« in friend-Deklaration"
 
 #. Something like `template <class T> friend void f<T>()'.
 #: cp/decl.c:5673
 msgid "invalid use of template-id `%D' in declaration of primary template"
-msgstr ""
+msgstr "ungültige Verwendung der Template-ID »%D« in Deklaration des ursprünglichen Templates"
 
 #: cp/decl.c:5700
 msgid "default arguments are not allowed in declaration of friend template specialization `%D'"
-msgstr ""
+msgstr "Standardargumente sind nicht in Deklaration der friend-Template-Spezialisierung »%D« erlaubt"
 
 #: cp/decl.c:5707
 msgid "`inline' is not allowed in declaration of friend template specialization `%D'"
-msgstr ""
+msgstr "»inline« ist nicht in Deklaration der friend-Template-Spezialisierung »%D« erlaubt"
 
 #: cp/decl.c:5765
 msgid "definition of implicitly-declared `%D'"
-msgstr ""
+msgstr "Definition des implizit deklarierten »%D«"
 
 #: cp/decl.c:5785 cp/decl2.c:738
 msgid "no `%#D' member function declared in class `%T'"
-msgstr ""
+msgstr "keine Elementfunktion »%#D« in Klasse »%T« deklariert"
 
 #: cp/decl.c:5919
 msgid "non-local variable `%#D' uses local type `%T'"
-msgstr ""
+msgstr "nicht-lokale Variable »%#D« verwendet lokalen Typen »%T«"
 
 #: cp/decl.c:6034
 msgid "invalid in-class initialization of static data member of non-integral type `%T'"
-msgstr ""
+msgstr "ungültige Initialisierung des statischen Datenelements vom nicht eingebauten Typen »%T«"
 
 #: cp/decl.c:6043
 msgid "ISO C++ forbids in-class initialization of non-const static member `%D'"
-msgstr ""
+msgstr "ISO-C++ verbietet Initialisierung des nicht konstanten statischen Elements »%D« in der Klasse"
 
 #: cp/decl.c:6046
 msgid "ISO C++ forbids initialization of member constant `%D' of non-integral type `%T'"
-msgstr ""
+msgstr "ISO-C++ verbietet Initialisierung der Elementkonstante »%D« vom nicht eingebauten Typen »%T«"
 
 #: cp/decl.c:6065
 msgid "size of array `%D' has non-integral type `%T'"
-msgstr "Feldgröße von »%D« hat Nicht-Ganzzahltyp »%T«"
+msgstr "Feldgröße von »%D« hat nicht-ganzzahligen Typen »%T«"
 
 #: cp/decl.c:6067
 msgid "size of array has non-integral type `%T'"
-msgstr "Feldgröße hat Nicht-Ganzzahltyp »%T«"
+msgstr "Feldgröße hat nicht-ganzzahligen Typen »%T«"
 
 #: cp/decl.c:6103
 msgid "size of array `%D' is negative"
-msgstr ""
+msgstr "Größe des Feldes »%D« ist negativ"
 
 #: cp/decl.c:6105
 msgid "size of array is negative"
-msgstr ""
+msgstr "Größe des Feldes ist negativ"
 
 #: cp/decl.c:6113
 msgid "ISO C++ forbids zero-size array `%D'"
-msgstr ""
+msgstr "ISO-C++ verbietet Feld »%D« der Größe null"
 
 #: cp/decl.c:6115
 msgid "ISO C++ forbids zero-size array"
-msgstr ""
+msgstr "ISO-C++ verbietet Feld der Größe null"
 
 #: cp/decl.c:6122
 msgid "size of array `%D' is not an integral constant-expression"
-msgstr ""
+msgstr "Größe des Feldes »%D« ist kein konstanter Ganzzahlausdruck"
 
 #: cp/decl.c:6125
 msgid "size of array is not an integral constant-expression"
-msgstr ""
+msgstr "Größe des Feldes ist kein konstanter Ganzzahlausdruck"
 
 #: cp/decl.c:6130
 msgid "ISO C++ forbids variable-size array `%D'"
-msgstr ""
+msgstr "ISO-C++ verbietet Feld »%D« variabler Größe"
 
 #: cp/decl.c:6132
 msgid "ISO C++ forbids variable-size array"
-msgstr ""
+msgstr "ISO-C++ verbietet Feld variabler Größe"
 
 #: cp/decl.c:6154
 msgid "overflow in array dimension"
-msgstr ""
+msgstr "Überlauf in Feldgröße"
 
 #: cp/decl.c:6248
 msgid "declaration of `%D' as %s"
@@ -14096,53 +14096,53 @@ msgstr "Erzeugen von %s"
 
 #: cp/decl.c:6262
 msgid "declaration of `%D' as multidimensional array must have bounds for all dimensions except the first"
-msgstr ""
+msgstr "Deklaration von »%D« als multidimensionales Feld muss für alle Dimensionen außer der ersten Grenzen haben"
 
 #: cp/decl.c:6265
 msgid "multidimensional array must have bounds for all dimensions except the first"
-msgstr ""
+msgstr " multidimensionales Feld muss für alle Dimensionen außer der ersten Grenzen haben"
 
 #: cp/decl.c:6293
 msgid "return type specification for constructor invalid"
-msgstr ""
+msgstr "Angabe des Rückgabetyps für Konstruktor ist ungültig"
 
 #: cp/decl.c:6300
 msgid "return type specification for destructor invalid"
-msgstr ""
+msgstr "Angabe des Rückgabetyps für Destruktor ist ungültig"
 
 #: cp/decl.c:6306
 msgid "operator `%T' declared to return `%T'"
-msgstr ""
+msgstr "Operator »%T« ist deklariert, »%T« zurückzugeben"
 
 #: cp/decl.c:6308
 msgid "return type specified for `operator %T'"
-msgstr ""
+msgstr "Rückgabetyp für »operator %T« angegeben"
 
 #: cp/decl.c:6452
 msgid "destructors must be member functions"
-msgstr ""
+msgstr "Destruktoren müssen Elementfunktionen sein"
 
 #: cp/decl.c:6471
 msgid "destructor `%T' must match class name `%T'"
-msgstr ""
+msgstr "Destruktor »%T« muss zu Klassenname »%T« passen"
 
 #: cp/decl.c:6534
 msgid "declarator-id missing; using reserved word `%D'"
-msgstr ""
+msgstr "Deklarator-ID fehlt: reserviertes Wort »%D« wird verwendet"
 
 #: cp/decl.c:6588
 msgid "type `%T' is not derived from type `%T'"
-msgstr ""
+msgstr "Typ »%T« ist nicht vom Typ »%T« abgeleitet"
 
 #. Parse error puts this typespec where
 #. a declarator should go.
 #: cp/decl.c:6651
 msgid "`%T' specified as declarator-id"
-msgstr ""
+msgstr "»%T« als Deklarator-ID angegeben"
 
 #: cp/decl.c:6653
 msgid "  perhaps you want `%T' for a constructor"
-msgstr ""
+msgstr "  vielleicht wollen Sie »%T« als Konstruktor"
 
 #. Sometimes, we see a template-name used as part of a
 #. decl-specifier like in
@@ -14151,209 +14151,209 @@ msgstr ""
 #: cp/decl.c:6675
 #, c-format
 msgid "invalid use of template-name '%E' in a declarator"
-msgstr ""
+msgstr "ungültige Verwendung des Template-Namens »%E« in einem Deklarator"
 
 #: cp/decl.c:6695
 msgid "declaration of `%D' as non-function"
-msgstr ""
+msgstr "Deklaration von »%D« als Nicht-Funktion"
 
 #: cp/decl.c:6772
 msgid "`bool' is now a keyword"
-msgstr ""
+msgstr "»bool« ist jetzt ein Schlüsselwort"
 
 #: cp/decl.c:6774
 msgid "extraneous `%T' ignored"
-msgstr ""
+msgstr "belangloses »%T« ignoriert"
 
 #: cp/decl.c:6790 cp/decl.c:6834
 msgid "multiple declarations `%T' and `%T'"
-msgstr ""
+msgstr "mehrfache Deklarationen »%T« und »%T«"
 
 #: cp/decl.c:6803
 msgid "ISO C++ does not support `long long'"
-msgstr ""
+msgstr "ISO-C++ unterstützt nicht »long long«"
 
 #: cp/decl.c:6907 cp/decl.c:6910
 #, c-format
 msgid "ISO C++ forbids declaration of `%s' with no type"
-msgstr ""
+msgstr "ISO-C++ verbietet Deklaration von »%s« ohne Typ"
 
 #: cp/decl.c:6941
 #, c-format
 msgid "short, signed or unsigned invalid for `%s'"
-msgstr ""
+msgstr "»short«, »signed« oder »unsigned« ungültig für »%s«"
 
 #: cp/decl.c:6946
 #, c-format
 msgid "long and short specified together for `%s'"
-msgstr ""
+msgstr "»long« und »short« für »%s« gleichzeitig angegeben"
 
 #: cp/decl.c:6957
 #, c-format
 msgid "signed and unsigned given together for `%s'"
-msgstr ""
+msgstr "»signed« und »unsigned« für »%s« gleichzeitig angegeben"
 
 #: cp/decl.c:7066
 msgid "qualifiers are not allowed on declaration of `operator %T'"
-msgstr ""
+msgstr "Qualifizierer sind bei Deklaration von »operator %T« nicht erlaubt"
 
 #: cp/decl.c:7088
 msgid "member `%D' cannot be declared both virtual and static"
-msgstr ""
+msgstr "Element »%D« kann nicht gleichzeitig virtuell und statisch deklariert werden"
 
 #: cp/decl.c:7097
 msgid "`%T::%D' is not a valid declarator"
-msgstr ""
+msgstr "»%T::%D« ist kein gültiger Deklarator"
 
 #: cp/decl.c:7109
 msgid "storage class specifiers invalid in parameter declarations"
-msgstr ""
+msgstr "Speicherklassenangaben sind in Parameterdeklarationen ungültig"
 
 #: cp/decl.c:7113
 msgid "typedef declaration invalid in parameter declaration"
-msgstr ""
+msgstr "»typedef«-Deklaration in Parameterdeklaration ungültig"
 
 #: cp/decl.c:7126
 msgid "virtual outside class declaration"
-msgstr ""
+msgstr "virtuelle Deklaration einer äußeren Klasse"
 
 #: cp/decl.c:7185
 #, c-format
 msgid "storage class specified for %s `%s'"
-msgstr ""
+msgstr "Speicherklasse für %s »%s« angegeben"
 
 #: cp/decl.c:7220
 #, c-format
 msgid "top-level declaration of `%s' specifies `auto'"
-msgstr "Deklaration höchster Ebene von »%s« spezifiziert »auto«"
+msgstr "Deklaration höchster Ebene von »%s« gibt »auto« an"
 
 #: cp/decl.c:7232
 msgid "storage class specifiers invalid in friend function declarations"
-msgstr ""
+msgstr "Speicherklassenangaben sind in friend-Funktionsdeklarationen ungültig"
 
 #: cp/decl.c:7397
 msgid "destructor cannot be static member function"
-msgstr ""
+msgstr "Destruktor kann keine statische Elementfunktion sein"
 
 #: cp/decl.c:7400
 #, c-format
 msgid "destructors may not be `%s'"
-msgstr ""
+msgstr "Destruktoren dürfen nicht »%s« sein"
 
 #: cp/decl.c:7421
 msgid "constructor cannot be static member function"
-msgstr ""
+msgstr "Konstruktor kann keine statische Elementfunktion sein"
 
 #: cp/decl.c:7424
 msgid "constructors cannot be declared virtual"
-msgstr ""
+msgstr "Konstruktoren können nicht als virtuell deklariert werden"
 
 #: cp/decl.c:7429
 #, c-format
 msgid "constructors may not be `%s'"
-msgstr ""
+msgstr "Konstruktoren dürfen nicht »%s« sein"
 
 #: cp/decl.c:7439
 msgid "return value type specifier for constructor ignored"
-msgstr ""
+msgstr "Typangabe des Rückgabewerts für Konstruktor ignoriert"
 
 #: cp/decl.c:7458
 #, c-format
 msgid "can't initialize friend function `%s'"
-msgstr ""
+msgstr "friend-Funktion »%s« kann nicht initialisiert werden"
 
 #. Cannot be both friend and virtual.
 #: cp/decl.c:7462
 msgid "virtual functions cannot be friends"
-msgstr ""
+msgstr "virtuelle Funktionen können keine friends sein"
 
 #: cp/decl.c:7467
 msgid "friend declaration not in class definition"
-msgstr ""
+msgstr "friend-Deklaration nicht in Klassendefinition"
 
 #: cp/decl.c:7469
 #, c-format
 msgid "can't define friend function `%s' in a local class definition"
-msgstr ""
+msgstr "friend-Funktion »%s« kann nicht in einer lokalen Klassendefinition definiert werden"
 
 #: cp/decl.c:7490
 msgid "destructors may not have parameters"
-msgstr ""
+msgstr "Destruktoren dürfen keine Parameter haben"
 
 #: cp/decl.c:7510 cp/decl.c:7517
 msgid "cannot declare reference to `%#T'"
-msgstr ""
+msgstr "Referenz auf »%#T« kann nicht definiert werden"
 
 #: cp/decl.c:7511
 msgid "cannot declare pointer to `%#T'"
-msgstr ""
+msgstr "Zeiger auf »%#T« kann nicht deklariert werden"
 
 #: cp/decl.c:7516
 msgid "cannot declare pointer to `%#T' member"
-msgstr ""
+msgstr "Zeiger auf Element von »%#T« kann nicht deklariert werden"
 
 #: cp/decl.c:7655
 msgid "extra qualification `%T::' on member `%s' ignored"
-msgstr ""
+msgstr "zusätzliche Qualifizierung »%T::« an Element »%s« ignoriert"
 
 #: cp/decl.c:7671
 msgid "cannot declare member function `%T::%s' within `%T'"
-msgstr ""
+msgstr "Elementfunktion »%T::%s« kann nicht in »%T« deklariert werden"
 
 #: cp/decl.c:7686
 msgid "cannot declare member `%T::%s' within `%T'"
-msgstr ""
+msgstr "Element »%T::%s« kann nicht in »%T« deklariert werden"
 
 #: cp/decl.c:7766
 msgid "data member may not have variably modified type `%T'"
-msgstr ""
+msgstr "Datenelement darf nicht variabel modifizierten Typ »%T« haben"
 
 #: cp/decl.c:7768
 msgid "parameter may not have variably modified type `%T'"
-msgstr ""
+msgstr "Parameter darf nicht variabel modifizierten Typ »%T« haben"
 
 #. [dcl.fct.spec] The explicit specifier shall only be used in
 #. declarations of constructors within a class definition.
 #: cp/decl.c:7776
 msgid "only declarations of constructors can be `explicit'"
-msgstr ""
+msgstr "nur Deklarationen von Konstruktoren können »explicit« sein"
 
 #: cp/decl.c:7784
 #, c-format
 msgid "non-member `%s' cannot be declared `mutable'"
-msgstr ""
+msgstr "Nicht-Element »%s« kann nicht als »mutable« deklariert sein"
 
 #: cp/decl.c:7789
 #, c-format
 msgid "non-object member `%s' cannot be declared `mutable'"
-msgstr ""
+msgstr "Nicht-Objekt-Element »%s« kann nicht als »mutable« deklariert sein"
 
 #: cp/decl.c:7795
 #, c-format
 msgid "function `%s' cannot be declared `mutable'"
-msgstr ""
+msgstr "Funktion »%s« kann nicht als »mutable« deklariert sein"
 
 #: cp/decl.c:7800
 #, c-format
 msgid "static `%s' cannot be declared `mutable'"
-msgstr ""
+msgstr "statisches »%s« kann nicht als »mutable« deklariert sein"
 
 #: cp/decl.c:7805
 #, c-format
 msgid "const `%s' cannot be declared `mutable'"
-msgstr ""
+msgstr "Konstante »%s« kann nicht als »mutable« deklariert sein"
 
 #: cp/decl.c:7818
 msgid "template-id `%D' used as a declarator"
-msgstr ""
+msgstr "Template-ID »%D« als Deklarator verwendet"
 
 #: cp/decl.c:7839
 msgid "ISO C++ forbids nested type `%D' with same name as enclosing class"
-msgstr ""
+msgstr "ISO-C++ verbietet geschachtelten Typen »%D« mit gleichem Namen wie umschließende Klasse"
 
 #: cp/decl.c:7847
 msgid "%Jtypedef name may not be a nested-name-specifier"
-msgstr ""
+msgstr "%Jtypedef-Name darf kein Spezifizierer mit geschachteltem Namen sein"
 
 #: cp/decl.c:7893
 msgid "%Jinvalid type qualifier for non-member function type"
@@ -14361,89 +14361,89 @@ msgstr "%Jungültiger Typkennzeichner für Nicht-Element-Funktionstyp"
 
 #: cp/decl.c:7956
 msgid "type qualifiers specified for friend class declaration"
-msgstr ""
+msgstr "Typkennzeichner für friend-Klassen-Deklaration angegeben"
 
 #: cp/decl.c:7961
 msgid "`inline' specified for friend class declaration"
-msgstr ""
+msgstr "»inline« für friend-Klassen-Deklaration angegeben"
 
 #: cp/decl.c:7969
 msgid "template parameters cannot be friends"
-msgstr ""
+msgstr "Template-Parameter können keine »friends« sein"
 
 #: cp/decl.c:7971
 msgid "friend declaration requires class-key, i.e. `friend class %T::%D'"
-msgstr ""
+msgstr "friend-Deklaration erfordert Klassenschlüssel, z.B. »friend class %T::%D«"
 
 #: cp/decl.c:7975
 msgid "friend declaration requires class-key, i.e. `friend %#T'"
-msgstr ""
+msgstr "friend-Deklaration erfordert Klassenschlüssel, z.B. »friend %#T«"
 
 #: cp/decl.c:7988
 msgid "trying to make class `%T' a friend of global scope"
-msgstr ""
+msgstr "Versuch, die Klasse »%T« zu einem »friend« des globalen Gültigkeitsbereiches zu machen"
 
 #: cp/decl.c:7999
 msgid "invalid qualifiers on non-member function type"
-msgstr ""
+msgstr "ungültige Qualifizierer an Nicht-Element-Funktionstyp"
 
 #: cp/decl.c:8018
 msgid "abstract declarator `%T' used as declaration"
-msgstr ""
+msgstr "abstrakter Deklarator »%T« als Deklaration verwendet"
 
 #: cp/decl.c:8030
 msgid "unnamed variable or field declared void"
-msgstr ""
+msgstr "unbenannte Variable oder Feld als »void« deklariert"
 
 #: cp/decl.c:8039
 msgid "variable or field declared void"
-msgstr ""
+msgstr "Variable oder Feld als »void« deklariert"
 
 #: cp/decl.c:8049
 msgid "cannot use `::' in parameter declaration"
-msgstr ""
+msgstr "»::« kann nicht in Parameterdeklaration verwendet werden"
 
 #. Something like struct S { int N::j; };
 #: cp/decl.c:8094
 msgid "invalid use of `::'"
-msgstr ""
+msgstr "ungültige Verwendung von »::«"
 
 #: cp/decl.c:8106
 msgid "function `%D' cannot be declared friend"
-msgstr ""
+msgstr "Funktion »%D« kann nicht als »friend« deklariert werden"
 
 #: cp/decl.c:8118
 msgid "can't make `%D' into a method -- not in a class"
-msgstr ""
+msgstr "»%D« kann nicht zur Methode gemacht werden -- nicht in einer Klasse"
 
 #: cp/decl.c:8127
 msgid "function `%D' declared virtual inside a union"
-msgstr ""
+msgstr "Funktion »%D« als virtuell innerhalb einer Union deklariert"
 
 #: cp/decl.c:8136
 msgid "`%D' cannot be declared virtual, since it is always static"
-msgstr ""
+msgstr "»%D« kann nicht als virtuell deklariert werden, da es immer statisch ist"
 
 #: cp/decl.c:8215
 msgid "field `%D' has incomplete type"
-msgstr ""
+msgstr "Feld »%D« hat unvollständigen Typen"
 
 #: cp/decl.c:8217
 msgid "name `%T' has incomplete type"
-msgstr ""
+msgstr "Name »%T« hat unvollständigen Typen"
 
 #: cp/decl.c:8226
 msgid "  in instantiation of template `%T'"
-msgstr ""
+msgstr "  in Instanziierung des Templates »%T«"
 
 #: cp/decl.c:8236
 #, c-format
 msgid "`%s' is neither function nor member function; cannot be declared friend"
-msgstr ""
+msgstr "»%s« ist weder eine Funktion noch Elementfunktion; kann nicht als »friend« deklariert werden"
 
 #: cp/decl.c:8247
 msgid "member functions are implicitly friends of their class"
-msgstr ""
+msgstr "Elementfunktionen sind implizite »friends« ihrer Klasse"
 
 #. An attempt is being made to initialize a non-static
 #. member.  But, from [class.mem]:
@@ -14459,91 +14459,91 @@ msgstr ""
 #. static so we make it static below.
 #: cp/decl.c:8287
 msgid "ISO C++ forbids initialization of member `%D'"
-msgstr ""
+msgstr "ISO-C++ verbietet Initialisierung des Elementes »%D«"
 
 #: cp/decl.c:8289
 msgid "making `%D' static"
-msgstr ""
+msgstr "»%D« wird statisch gemacht"
 
 #: cp/decl.c:8345
 #, c-format
 msgid "storage class `auto' invalid for function `%s'"
-msgstr ""
+msgstr "Speicherklasse »auto« ungültig für Funktion »%s«"
 
 #: cp/decl.c:8347
 #, c-format
 msgid "storage class `register' invalid for function `%s'"
-msgstr ""
+msgstr "Speicherklasse »register« ungültig für Funktion »%s«"
 
 #: cp/decl.c:8349
 #, c-format
 msgid "storage class `__thread' invalid for function `%s'"
-msgstr ""
+msgstr "Speicherklasse »__thread« ungültig für Funktion »%s«"
 
 #: cp/decl.c:8360
 #, c-format
 msgid "storage class `static' invalid for function `%s' declared out of global scope"
-msgstr ""
+msgstr "Speicherklasse »static« ungültig für außerhalb des globalen Gültigkeitsbereiches deklarierte Funktion »%s«"
 
 #: cp/decl.c:8362
 #, c-format
 msgid "storage class `inline' invalid for function `%s' declared out of global scope"
-msgstr ""
+msgstr "Speicherklasse »inline« ungültig für außerhalb des globalen Gültigkeitsbereiches deklarierte Funktion »%s«"
 
 #: cp/decl.c:8369
 #, c-format
 msgid "virtual non-class function `%s'"
-msgstr ""
+msgstr "virtuelle Nicht-Klassen-Funktion »%s«"
 
 #: cp/decl.c:8400
 msgid "cannot declare member function `%D' to have static linkage"
-msgstr ""
+msgstr "Elementfunktion »%D« kann nicht deklariert werden, statische Bindung zu haben"
 
 #. FIXME need arm citation
 #: cp/decl.c:8406
 msgid "cannot declare static function inside another function"
-msgstr ""
+msgstr "statische Funktion innerhalb anderer Funktion kann nicht deklariert werden"
 
 #: cp/decl.c:8434
 msgid "`static' may not be used when defining (as opposed to declaring) a static data member"
-msgstr ""
+msgstr "»static« darf nicht bei der Definition (im Gegensatz zu Deklaration) eines statischen Datenelementes verwendet werden"
 
 #: cp/decl.c:8440
 msgid "static member `%D' declared `register'"
-msgstr ""
+msgstr "statisches Element »%D« als »register« deklariert"
 
 #: cp/decl.c:8445
 msgid "cannot explicitly declare member `%#D' to have extern linkage"
-msgstr ""
+msgstr "Element »%#D« kann nicht explizit deklariert werden, externe Bindung zu haben"
 
 #: cp/decl.c:8585
 msgid "default argument for `%#D' has type `%T'"
-msgstr ""
+msgstr "Standardargument für »%#D« hat Typ »%T«"
 
 #: cp/decl.c:8588
 msgid "default argument for parameter of type `%T' has type `%T'"
-msgstr ""
+msgstr "Standardargument für Parameter des Typs »%T« hat Typ »%T«"
 
 #: cp/decl.c:8605
 msgid "default argument `%E' uses local variable `%D'"
-msgstr ""
+msgstr "Standardargument »%E« verwendet lokale Variable »%D«"
 
 #: cp/decl.c:8649
 #, c-format
 msgid "invalid string constant `%E'"
-msgstr ""
+msgstr "ungültige Zeichenkettenkonstante »%E«"
 
 #: cp/decl.c:8651
 msgid "invalid integer constant in parameter list, did you forget to give parameter name?"
-msgstr ""
+msgstr "ungültige Ganzzahlkonstante in Parameterliste; vergessen, den Parameternamen anzugeben?"
 
 #: cp/decl.c:8689
 msgid "parameter `%D' invalidly declared method type"
-msgstr ""
+msgstr "Parameter »%D« deklariert ungültigerweise Methodentyp"
 
 #: cp/decl.c:8713
 msgid "parameter `%D' includes %s to array of unknown bound `%T'"
-msgstr ""
+msgstr "Parameter »%D« bezieht %s in Feld mit unbekannter Grenze »%T« ein"
 
 #. [class.copy]
 #.
@@ -14562,93 +14562,93 @@ msgstr ""
 #. instantiated, but that's hard to forestall.
 #: cp/decl.c:8872
 msgid "invalid constructor; you probably meant `%T (const %T&)'"
-msgstr ""
+msgstr "ungültiger Konstruktor; wahrscheinlich war »%T (const %T&)« gemeint"
 
 #: cp/decl.c:9000
 msgid "`%D' must be a nonstatic member function"
-msgstr ""
+msgstr "»%D« muss eine nichtstatische Elementfunktion sein"
 
 #: cp/decl.c:9006
 msgid "`%D' must be either a non-static member function or a non-member function"
-msgstr ""
+msgstr "»%D« muss entweder eine nichtstatische Elementfunktion oder eine Nicht-Element-Funktion sein"
 
 #: cp/decl.c:9023
 msgid "`%D' must have an argument of class or enumerated type"
-msgstr ""
+msgstr "»%D« muss ein Argument von einem Klassen- oder Aufzählungstyp haben"
 
 #: cp/decl.c:9058
 #, c-format
 msgid "conversion to %s%s will never use a type conversion operator"
-msgstr ""
+msgstr "Umwandlung in %s%s wird nie einen Typumwandlungsoperator verwenden"
 
 #. 13.4.0.3
 #: cp/decl.c:9065
 msgid "ISO C++ prohibits overloading operator ?:"
-msgstr ""
+msgstr "ISO-C++ verbietet Überladen des Operators ?:"
 
 #: cp/decl.c:9115
 msgid "postfix `%D' must take `int' as its argument"
-msgstr ""
+msgstr "Suffix-»%D« muss »int« als sein Argument nehmen"
 
 #: cp/decl.c:9119
 msgid "postfix `%D' must take `int' as its second argument"
-msgstr ""
+msgstr "Suffix-»%D« muss »int« als sein zweites Argument nehmen"
 
 #: cp/decl.c:9126
 msgid "`%D' must take either zero or one argument"
-msgstr ""
+msgstr "»%D« muss entweder null oder ein Argument nehmen"
 
 #: cp/decl.c:9128
 msgid "`%D' must take either one or two arguments"
-msgstr ""
+msgstr "»%D« muss entweder ein oder zwei Argumente nehmen"
 
 #: cp/decl.c:9149
 msgid "prefix `%D' should return `%T'"
-msgstr ""
+msgstr "Präfix-»%D« sollte »%T« zurückgeben"
 
 #: cp/decl.c:9155
 msgid "postfix `%D' should return `%T'"
-msgstr ""
+msgstr "Suffix-»%D« sollte »%T« zurückgeben"
 
 #: cp/decl.c:9164
 msgid "`%D' must take `void'"
-msgstr ""
+msgstr "»%D« muss »void« nehmen"
 
 #: cp/decl.c:9166 cp/decl.c:9174
 msgid "`%D' must take exactly one argument"
-msgstr ""
+msgstr "»%D« muss genau ein Argument nehmen"
 
 #: cp/decl.c:9176
 msgid "`%D' must take exactly two arguments"
-msgstr ""
+msgstr "»%D« muss genau zwei Argumente nehmen"
 
 #: cp/decl.c:9184
 msgid "user-defined `%D' always evaluates both arguments"
-msgstr ""
+msgstr "benutzerdefiniertes »%D« wertet immer beide Argumente aus"
 
 #: cp/decl.c:9198
 msgid "`%D' should return by value"
-msgstr ""
+msgstr "»%D« sollte Wert zurückgeben"
 
 #: cp/decl.c:9210 cp/decl.c:9213
 msgid "`%D' cannot have default arguments"
-msgstr ""
+msgstr "»%D« kann keine Standardargumente haben"
 
 #: cp/decl.c:9273
 msgid "using typedef-name `%D' after `%s'"
-msgstr ""
+msgstr "typedef-Name »%D« wird nach »%s« verwendet"
 
 #: cp/decl.c:9279
 msgid "using template type parameter `%T' after `%s'"
-msgstr ""
+msgstr "Templatetyp-Parameter »%T« wird nach »%s« verwendet"
 
 #: cp/decl.c:9287
 msgid "`%T' referred to as `%s'"
-msgstr ""
+msgstr "»%T« als »%s« verwendet"
 
 #: cp/decl.c:9293
 msgid "`%T' referred to as enum"
-msgstr ""
+msgstr "»%T« als enum verwendet"
 
 #. If a class template appears as elaborated type specifier
 #. without a template header such as:
@@ -14659,11 +14659,11 @@ msgstr ""
 #. then the required template argument is missing.
 #: cp/decl.c:9308
 msgid "template argument required for `%s %T'"
-msgstr ""
+msgstr "Template-Argument für »%s %T« benötigt"
 
 #: cp/decl.c:9453
 msgid "use of enum `%#D' without previous declaration"
-msgstr ""
+msgstr "Verwendung des enum »%#D« ohne vorherige Deklaration"
 
 #: cp/decl.c:9471
 msgid "redeclaration of `%T' as a non-template"
@@ -14671,31 +14671,31 @@ msgstr "Redeklaration von »%T« als Nicht-Template"
 
 #: cp/decl.c:9517
 msgid "derived union `%T' invalid"
-msgstr ""
+msgstr "abgeleitete Union »%T« ist ungültig"
 
 #: cp/decl.c:9570
 msgid "base type `%T' fails to be a struct or class type"
-msgstr ""
+msgstr "Basistyp »%T« ist kein struct- oder Klassentyp"
 
 #: cp/decl.c:9578
 msgid "recursive type `%T' undefined"
-msgstr ""
+msgstr "rekursiver Typ »%T« nicht definiert"
 
 #: cp/decl.c:9580
 msgid "duplicate base type `%T' invalid"
-msgstr ""
+msgstr "doppelter Basistyp »%T« ungültig"
 
 #: cp/decl.c:9658
 msgid "Java class '%T' cannot have multiple bases"
-msgstr ""
+msgstr "Java-Klasse »%T« kann nicht mehrere Basen haben"
 
 #: cp/decl.c:9660
 msgid "Java class '%T' cannot have virtual bases"
-msgstr ""
+msgstr "Java-Klasse »%T« kann keine virtuellen Basen haben"
 
 #: cp/decl.c:9700
 msgid "multiple definition of `%#T'"
-msgstr ""
+msgstr "mehrfache Definition von »%#T«"
 
 #: cp/decl.c:9701
 msgid "%Jprevious definition here"
@@ -14707,35 +14707,35 @@ msgstr "%Jvorherige Definition hier"
 #. enumeration is ill-formed.
 #: cp/decl.c:9836
 msgid "no integral type can represent all of the enumerator values for `%T'"
-msgstr ""
+msgstr "kein Ganzzahltyp kann alle Aufzählungswerte für »%T« darstellen"
 
 #: cp/decl.c:9926
 msgid "enumerator value for `%D' not integer constant"
-msgstr ""
+msgstr "Aufzählungswert für »%D« ist keine Ganzzahlkonstante"
 
 #: cp/decl.c:9946
 msgid "overflow in enumeration values at `%D'"
-msgstr ""
+msgstr "Überlauf in Aufzählungswerten bei »%D«"
 
 #: cp/decl.c:10015
 msgid "return type `%#T' is incomplete"
-msgstr ""
+msgstr "Rückgabetyp »%#T« ist unvollständig"
 
 #: cp/decl.c:10133
 msgid "return type for `main' changed to `int'"
-msgstr ""
+msgstr "Rückgabetyp für »main« zu »int« geändert"
 
 #: cp/decl.c:10162
 msgid "`%D' implicitly declared before its definition"
-msgstr ""
+msgstr "»%D« vor seiner Definition implizit deklariert"
 
 #: cp/decl.c:10184 cp/typeck.c:6071
 msgid "`operator=' should return a reference to `*this'"
-msgstr ""
+msgstr "»operator=« sollte eine Referenz auf »*this« zurück geben"
 
 #: cp/decl.c:10453
 msgid "parameter `%D' declared void"
-msgstr ""
+msgstr "Parameter »%D« leer definiert"
 
 #: cp/decl.c:10919
 msgid "invalid member function declaration"
@@ -14743,261 +14743,261 @@ msgstr "ungültige Elementfunktionsdeklaration"
 
 #: cp/decl.c:10936
 msgid "`%D' is already defined in class `%T'"
-msgstr ""
+msgstr "»%D« ist bereits in Klasse »%T« definiert"
 
 #: cp/decl.c:11149
 msgid "static member function `%#D' declared with type qualifiers"
-msgstr ""
+msgstr "statische Elementfunktion »%#D« mit Typqualifizierern deklariert"
 
 #: cp/decl2.c:143
 #, c-format
 msgid "duplicate type qualifiers in %s declaration"
-msgstr ""
+msgstr "doppelte Typqualifizierer in Deklaration von %s"
 
 #: cp/decl2.c:316
 msgid "name missing for member function"
-msgstr ""
+msgstr "Name der Elementfunktion fehlt"
 
 #: cp/decl2.c:408 cp/decl2.c:422
 msgid "ambiguous conversion for array subscript"
-msgstr ""
+msgstr "mehrdeutige Umwandlung für Feldindex"
 
 #: cp/decl2.c:416
 msgid "invalid types `%T[%T]' for array subscript"
-msgstr ""
+msgstr "ungültige Typen »%T[%T]« für Feldindex"
 
 #: cp/decl2.c:461
 msgid "deleting array `%#D'"
-msgstr ""
+msgstr "Feld »%#D« wird gelöscht"
 
 #: cp/decl2.c:467
 msgid "type `%#T' argument given to `delete', expected pointer"
-msgstr ""
+msgstr "Argument vom Typ »%#T« wurde »delete« übergeben, Zeiger erwartet"
 
 #: cp/decl2.c:479
 msgid "cannot delete a function.  Only pointer-to-objects are valid arguments to `delete'"
-msgstr ""
+msgstr "Funktion kann nicht gelöscht werden. Nur Zeiger auf Objekte sind gültige Argumente für »delete«"
 
 #: cp/decl2.c:486
 msgid "deleting `%T' is undefined"
-msgstr ""
+msgstr "Löschen von »%T« ist nicht definiert"
 
 #. 14.5.2.2 [temp.mem]
 #.
 #. A local class shall not have member templates.
 #: cp/decl2.c:522
 msgid "invalid declaration of member template `%#D' in local class"
-msgstr ""
+msgstr "ungültige Deklaration des Elementtemplates »%#D« in lokaler Klasse"
 
 #: cp/decl2.c:531
 msgid "invalid use of `virtual' in template declaration of `%#D'"
-msgstr ""
+msgstr "ungültige Verwendung von »virtual« in Templatedeklaration von »%#D«"
 
 #: cp/decl2.c:541 cp/pt.c:2834
 msgid "template declaration of `%#D'"
-msgstr ""
+msgstr "Templatedeklaration von »%#D«"
 
 #: cp/decl2.c:590
 msgid "Java method '%D' has non-Java return type `%T'"
-msgstr ""
+msgstr "Java-Methode »%D« hat Nicht-Java-Rückgabetyp »%T«"
 
 #: cp/decl2.c:606
 msgid "Java method '%D' has non-Java parameter type `%T'"
-msgstr ""
+msgstr "Java-Methode »%D« hat Nicht-Java-Parametertyp »%T«"
 
 #: cp/decl2.c:699
 msgid "prototype for `%#D' does not match any in class `%T'"
-msgstr ""
+msgstr "Prototyp für »%#D« passt zu nichts in Klasse »%T«"
 
 #: cp/decl2.c:778
 msgid "local class `%#T' shall not have static data member `%#D'"
-msgstr ""
+msgstr "lokale Klasse »%#T« sollte nicht statische Datenelemente »%#D« haben"
 
 #: cp/decl2.c:786
 msgid "initializer invalid for static member with constructor"
-msgstr ""
+msgstr "Initialisierung ungültig für statisches Element mit Konstruktor"
 
 #: cp/decl2.c:789
 msgid "(an out of class initialization is required)"
-msgstr ""
+msgstr "(eine Initialisierung außerhalb der Klasse ist erforderlich)"
 
 #: cp/decl2.c:872
 msgid "member `%D' conflicts with virtual function table field name"
-msgstr ""
+msgstr "Element »%D« steht in Konflikt mit Feldname in virtueller Funktionstabelle"
 
 #: cp/decl2.c:889
 msgid "`%D' is already defined in `%T'"
-msgstr ""
+msgstr "»%D« ist bereits in »%T« definiert"
 
 #: cp/decl2.c:936
 msgid "field initializer is not constant"
-msgstr ""
+msgstr "Feldinitialisierung ist nicht konstant"
 
 #: cp/decl2.c:964
 msgid "`asm' specifiers are not permitted on non-static data members"
-msgstr ""
+msgstr "»asm«-Symbole sind an nicht statischen Datenelementen nicht erlaubt"
 
 #: cp/decl2.c:1014
 msgid "cannot declare `%D' to be a bit-field type"
-msgstr ""
+msgstr "»%D« kann nicht mit Bitfeldtyp deklariert werden"
 
 #: cp/decl2.c:1024
 msgid "cannot declare bit-field `%D' with function type"
-msgstr ""
+msgstr "Bitfeld »%D« kann nicht mit Funktionstyp deklariert werden"
 
 #: cp/decl2.c:1031
 msgid "`%D' is already defined in the class %T"
-msgstr ""
+msgstr "»%D« ist bereits in der Klasse %T definiert"
 
 #: cp/decl2.c:1038
 msgid "static member `%D' cannot be a bit-field"
-msgstr ""
+msgstr "statisches Element »%D« kann kein Bitfeld sein"
 
 #: cp/decl2.c:1097
 msgid "initializer specified for non-member function `%D'"
-msgstr ""
+msgstr "Initialisierung für Nicht-Element-Funktion »%D« angegeben"
 
 #: cp/decl2.c:1101
 msgid "invalid initializer for virtual method `%D'"
-msgstr ""
+msgstr "ungültige Initialisierung für virtuelle Methode »%D«"
 
 #: cp/decl2.c:1148
 msgid "anonymous struct not inside named type"
-msgstr ""
+msgstr "anonymes struct nicht innerhalb eines benannten Typs"
 
 #: cp/decl2.c:1218
 msgid "namespace-scope anonymous aggregates must be static"
-msgstr ""
+msgstr "anonymes Aggregat im Gültigkeitsbereich eines Namespace muss statisch sein"
 
 #: cp/decl2.c:1225
 msgid "anonymous union with no members"
-msgstr "anonymes union ohne Element"
+msgstr "anonyme Union ohne Element"
 
 #: cp/decl2.c:1259
 msgid "`operator new' must return type `%T'"
-msgstr ""
+msgstr "»operator new« muss Typ »%T« zurück geben"
 
 #: cp/decl2.c:1267
 msgid "`operator new' takes type `size_t' (`%T') as first parameter"
-msgstr ""
+msgstr "»operator new« nimmt Typ »size_t« (»%T«) als ersten Parameter"
 
 #: cp/decl2.c:1293
 msgid "`operator delete' must return type `%T'"
-msgstr ""
+msgstr "»operator delete« muss Typ »%T« zurück geben"
 
 #: cp/decl2.c:1301
 msgid "`operator delete' takes type `%T' as first parameter"
-msgstr ""
+msgstr "»operator delete« nimmt Typ »%T« als ersten Parameter"
 
 #: cp/decl2.c:2810
 msgid "inline function `%D' used but never defined"
-msgstr "inline-Funktion »%D«, aber nirgendwo definiert"
+msgstr "inline-Funktion »%D« verwendet, aber nirgendwo definiert"
 
 #: cp/decl2.c:2956
 msgid "default argument missing for parameter %P of `%+#D'"
-msgstr ""
+msgstr "Standardargument fehlt für Parameter %P von »%+#D«"
 
 #. damn ICE suppression
 #: cp/error.c:2387
 #, c-format
 msgid "unexpected letter `%c' in locate_error\n"
-msgstr ""
+msgstr "unerwarteter Buchstabe »%c« in locate_error\n"
 
 #. Can't throw a reference.
 #: cp/except.c:239
 msgid "type `%T' is disallowed in Java `throw' or `catch'"
-msgstr ""
+msgstr "Typ »%T« ist in Javas »throw« oder »catch« nicht erlaubt"
 
 #: cp/except.c:250
 msgid "call to Java `catch' or `throw' with `jthrowable' undefined"
-msgstr ""
+msgstr "Aufruf von Javas »catch« oder »throw« mit »jthrowable« ist nicht definiert"
 
 #. Thrown object must be a Throwable.
 #: cp/except.c:257
 msgid "type `%T' is not derived from `java::lang::Throwable'"
-msgstr ""
+msgstr "Typ »%T« ist nicht von »java::lang::Throwable« abgeleitet"
 
 #: cp/except.c:320
 msgid "mixing C++ and Java catches in a single translation unit"
-msgstr ""
+msgstr "Mischen von »catch« in C++ und Java in einzelner Übersetzungseinheit"
 
 #: cp/except.c:575
 msgid "throwing NULL, which has integral, not pointer type"
-msgstr ""
+msgstr "wirft NULL, was ganzzahlig, aber kein Zeigertyp ist"
 
 #: cp/except.c:598 cp/init.c:2038
 msgid "`%D' should never be overloaded"
-msgstr ""
+msgstr "»%D« sollte niemals überladen werden"
 
 #: cp/except.c:665
 msgid "  in thrown expression"
-msgstr ""
+msgstr "  in geworfenem Ausdruck"
 
 #: cp/except.c:812
 msgid "expression '%E' of abstract class type '%T' cannot be used in throw-expression"
-msgstr ""
+msgstr "Ausdruck »%E« von abstraktem Klassentyp »%T« kann nicht in throw-Ausdruck verwendet werden"
 
 #: cp/except.c:894
 msgid "exception of type `%T' will be caught"
-msgstr ""
+msgstr "Ausnahme des Typs »%T« wird gefangen werden"
 
 #: cp/except.c:897
 msgid "   by earlier handler for `%T'"
-msgstr ""
+msgstr "   von früherem Behandler für »%T«"
 
 #: cp/except.c:918
 msgid "`...' handler must be the last handler for its try block"
-msgstr ""
+msgstr "»...«-Behandler muss der letzte Behandler für seinen »try«-Block sein"
 
 #: cp/friend.c:151
 msgid "`%D' is already a friend of class `%T'"
-msgstr ""
+msgstr "»%D« ist bereits ein »friend« der Klasse »%T«"
 
 #: cp/friend.c:206
 msgid "invalid type `%T' declared `friend'"
-msgstr ""
+msgstr "ungültiger Typ »%T« als »friend« deklariert"
 
 #. [temp.friend]
 #. Friend declarations shall not declare partial
 #. specializations.
 #: cp/friend.c:222
 msgid "partial specialization `%T' declared `friend'"
-msgstr ""
+msgstr "Teilspezialisierung »%T« als »friend« deklariert"
 
 #: cp/friend.c:232
 msgid "class `%T' is implicitly friends with itself"
-msgstr ""
+msgstr "Klasse »%T« ist implizit »friend« von ihr selbst"
 
 #. template <class T> friend typename S<T>::X;
 #: cp/friend.c:250
 msgid "typename type `%#T' declared `friend'"
-msgstr ""
+msgstr "»typename«-Typ »%#T« als »friend« deklariert"
 
 #. template <class T> friend class T;
 #: cp/friend.c:256
 msgid "template parameter type `%T' declared `friend'"
-msgstr ""
+msgstr "Template-Parameter-Typ »%T« als »friend« deklariert"
 
 #. template <class T> friend class A; where A is not a template
 #: cp/friend.c:262
 msgid "`%#T' is not a template"
-msgstr ""
+msgstr "»%#T« ist kein Template"
 
 #: cp/friend.c:281
 msgid "`%D' is already a friend of `%T'"
-msgstr ""
+msgstr "»%D« ist bereits ein »friend« von »%T«"
 
 #: cp/friend.c:291
 msgid "`%T' is already a friend of `%T'"
-msgstr ""
+msgstr "»%T« ist bereits ein »friend« von »%T«"
 
 #: cp/friend.c:413
 msgid "member `%D' declared as friend before type `%T' defined"
-msgstr ""
+msgstr "Element »%D« als »friend« deklariert, bevor Typ »%T« definiert wurde"
 
 #: cp/friend.c:469
 msgid "friend declaration `%#D' declares a non-template function"
-msgstr ""
+msgstr "»friend«-Deklaration »%#D« deklariert eine Nicht-Template-Funktion"
 
 #: cp/friend.c:472
 msgid "(if this is not what you intended, make sure the function template has already been declared and add <> after the function name here) -Wno-non-template-friend disables this warning"
