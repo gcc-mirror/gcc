@@ -1,3 +1,12 @@
+2001-08-30  Per Bothner  <per@bothner.com>
+
+	* jcf-dump.c (print_constant):  Fix fencepost error so "Float" and
+	"Double" are printed at verbosity 1.
+
+	* jcf-dump.c (main):  Disable flag_print_attributes if --javap.
+
+	* jcf-dump.c (SPECIAL_IINC):  Remove unneeded casts to long.
+
 2001-08-28  Per Bothner  <per@bothner.com>
 
 	* jcf-write.c  (generate_bytecode_insns):  For increments and
