@@ -1,5 +1,10 @@
 2004-12-07  Eric Christopher  <echristo@redhat.com>
 
+	PR target/16317
+	* config/netbsd.h (NO_IMPLICIT_EXTERN_C): Define.
+
+2004-12-07  Eric Christopher  <echristo@redhat.com>
+
 	* config/mips/mips-protos.h (mips_valid_pointer_mode): Move
 	prototype...
 	* config/mips/mips.c: ... here. Make static.

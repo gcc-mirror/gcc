@@ -163,6 +163,9 @@ Boston, MA 02111-1307, USA.  */
 
 #define HANDLE_SYSV_PRAGMA 1
 
+/* Don't assume anything about the header files.  */
+#undef  NO_IMPLICIT_EXTERN_C
+#define NO_IMPLICIT_EXTERN_C    1
 
 /* Define some types that are the same on all NetBSD platforms,
    making them agree with <machine/ansi.h>.  */
