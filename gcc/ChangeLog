@@ -1,3 +1,8 @@
+2005-01-20  Janis Johnson  <janis187@us.ibm.com>
+	    Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	* doc/sourcebuild.texi (Test Directives): New.
+
 2005-01-20  Roger Sayle  <roger@eyesopen.com>
 
 	* real.c (real_floor): Don't leave the result uninitialized when
