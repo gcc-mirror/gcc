@@ -1,5 +1,9 @@
 2003-11-13  Jonathan Wakely <redi@gcc.gnu.org>
 
+	* docs/html/17_intro/configury.html: XHTML tweak.
+
+2003-11-13  Jonathan Wakely <redi@gcc.gnu.org>
+
 	* docs/html/debug_mode.html: XHTML fixes.
 
 2003-11-12  Benjamin Kosnik  <bkoz@redhat.com>
