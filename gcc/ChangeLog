@@ -1,5 +1,9 @@
 Fri Apr  2 11:26:51 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* explow.c (set_stack_check_libfunc): New function.
+	(stack_check_libfunc): New static variable.
+	(probe_stack_range): Allow front-end to set up a libfunc to call.
+
 	* c-common.c (shorten_compare): Fix typo in last change.
 
 Mon Mar 22 20:13:19 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
