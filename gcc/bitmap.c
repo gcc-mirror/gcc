@@ -1,5 +1,5 @@
 /* Functions to support general ended bitmaps.
-   Copyright (C) 1997 Free Software Foundation, Inc.
+   Copyright (C) 1997, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -563,9 +563,9 @@ bitmap_debug_file (file, head)
   bitmap_element *ptr;
 
   fprintf (file, "\nfirst = ");
-  fprintf (file, HOST_PTR_PRINTF, (HOST_WIDE_INT) head->first);
+  fprintf (file, HOST_PTR_PRINTF, head->first);
   fprintf (file, " current = ");
-  fprintf (file, HOST_PTR_PRINTF, (HOST_WIDE_INT) head->current);
+  fprintf (file, HOST_PTR_PRINTF, head->current);
   fprintf (file, " indx = %u\n", head->indx);
 
   for (ptr = head->first; ptr; ptr = ptr->next)
@@ -573,11 +573,11 @@ bitmap_debug_file (file, head)
       int i, j, col = 26;
 
       fprintf (file, "\t");
-      fprintf (file, HOST_PTR_PRINTF, (HOST_WIDE_INT) ptr);
+      fprintf (file, HOST_PTR_PRINTF, ptr);
       fprintf (file, " next = ");
-      fprintf (file, HOST_PTR_PRINTF, (HOST_WIDE_INT) ptr->next);
+      fprintf (file, HOST_PTR_PRINTF, ptr->next);
       fprintf (file, " prev = ");
-      fprintf (file, HOST_PTR_PRINTF, (HOST_WIDE_INT) ptr->prev);
+      fprintf (file, HOST_PTR_PRINTF, ptr->prev);
       fprintf (file, " indx = %u\n\t\tbits = {", ptr->indx);
 
       for (i = 0; i < BITMAP_ELEMENT_WORDS; i++)

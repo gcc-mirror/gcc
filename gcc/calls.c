@@ -1,5 +1,5 @@
 /* Convert function calls to rtl insns, for GNU C compiler.
-   Copyright (C) 1989, 92, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1989, 92-97, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -730,7 +730,7 @@ expand_call (exp, target, ignore)
 				     structure_value_addr);
 
       /* If inlining succeeded, return.  */
-      if ((HOST_WIDE_INT) temp != -1)
+      if (temp != (rtx) (HOST_WIDE_INT) -1)
 	{
 #ifdef ACCUMULATE_OUTGOING_ARGS
 	  /* If the outgoing argument list must be preserved, push
