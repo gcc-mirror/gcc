@@ -32,16 +32,26 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #include "mips/ultrix.h"
 
-/* Specify size_t, ptrdiff_t, and wchar_t types.  */
+/* Specify size_t and wchar_t types.  */
 #undef	SIZE_TYPE
-#undef	PTRDIFF_TYPE
 #undef	WCHAR_TYPE
 #undef	WCHAR_TYPE_SIZE
 
 #define SIZE_TYPE	"long unsigned int"
-#define PTRDIFF_TYPE	"int"
 #define WCHAR_TYPE	"short unsigned int"
 #define WCHAR_TYPE_SIZE SHORT_TYPE_SIZE
+
+#undef CPP_SPEC
+#define CPP_SPEC "\
+%{.S:	-D__LANGUAGE_ASSEMBLY__ -D__LANGUAGE_ASSEMBLY %{!ansi:-DLANGUAGE_ASSEMBLY}} \
+%{.s:	-D__LANGUAGE_ASSEMBLY__ -D__LANGUAGE_ASSEMBLY %{!ansi:-DLANGUAGE_ASSEMBLY}} \
+%{.cc:	-D__LANGUAGE_C_PLUS_PLUS__ -D__LANGUAGE_C_PLUS_PLUS} \
+%{.cxx:	-D__LANGUAGE_C_PLUS_PLUS__ -D__LANGUAGE_C_PLUS_PLUS} \
+%{.C:	-D__LANGUAGE_C_PLUS_PLUS__ -D__LANGUAGE_C_PLUS_PLUS} \
+%{.m:	-D__LANGUAGE_OBJECTIVE_C__ -D__LANGUAGE_OBJECTIVE_C} \
+%{!.S:%{!.s:	-D__LANGUAGE_C__  -D__LANGUAGE_C %{!ansi:-DLANGUAGE_C}}} \
+%{mlong64:-D__PTRDIFF_TYPE__=long\\ int} \
+%{!mlong64:-D__PTRDIFF_TYPE__=int}"
 
 /* turn off collect2 COFF support, since ldfcn now has elf declaration */
 #undef OBJECT_FORMAT_COFF
