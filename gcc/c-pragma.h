@@ -47,14 +47,14 @@ Boston, MA 02111-1307, USA.  */
 struct weak_syms
 {
   struct weak_syms * next;
-  char * name;
-  char * value;
+  const char * name;
+  const char * value;
 };
 
 /* Declared in varasm.c */
 extern struct weak_syms * weak_decls;
 
-extern int add_weak PARAMS ((char *, char *));
+extern int add_weak PARAMS ((const char *, const char *));
 #endif /* HANDLE_PRAGMA_WEAK */
 
 

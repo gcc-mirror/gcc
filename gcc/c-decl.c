@@ -2439,7 +2439,7 @@ pushdecl (x)
 		   /* No shadow warnings for vars made for inlining.  */
 		   && ! DECL_FROM_INLINE (x))
 	    {
-	      char *id = IDENTIFIER_POINTER (name);
+	      const char *id = IDENTIFIER_POINTER (name);
 
 	      if (TREE_CODE (x) == PARM_DECL
 		  && current_binding_level->level_chain->parm_flag)
@@ -2560,7 +2560,7 @@ void
 implicit_decl_warning (id)
      tree id;
 {
-  char *name = IDENTIFIER_POINTER (id);
+  const char *name = IDENTIFIER_POINTER (id);
   if (mesg_implicit_function_declaration == 2)
     error ("implicit declaration of function `%s'", name);
   else if (mesg_implicit_function_declaration == 1)
@@ -3187,7 +3187,11 @@ init_decl_processing ()
 
   pedantic_lvalues = pedantic;
 
-  /* Create the global bindings for __FUNCTION__ and __PRETTY_FUNCTION__.  */
+  /* Create the global bindings for __FUNCTION__, __PRETTY_FUNCTION__,
+     and __func__.  */
+  function_id_node = get_identifier ("__FUNCTION__");
+  pretty_function_id_node = get_identifier ("__PRETTY_FUNCTION__");
+  func_id_node = get_identifier ("__func__");
   make_fname_decl = c_make_fname_decl;
   declare_function_name ();
 
@@ -3217,7 +3221,7 @@ init_decl_processing ()
    delayed emission of static data, we mark the decl as emitted
    so it is not placed in the output.  Anything using it must therefore pull
    out the STRING_CST initializer directly.  This does mean that these names
-   are string merging candidates, which C99 does not permit.  */
+   are string merging candidates, which is wrong for C99's __func__.  FIXME.  */
 
 static tree
 c_make_fname_decl (id, name, type_dep)

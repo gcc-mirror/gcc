@@ -855,7 +855,8 @@ build_secondary_vtable (binfo, for_type)
   tree new_decl;
   tree offset;
   tree path = binfo;
-  char *buf, *buf2;
+  char *buf;
+  const char *buf2;
   char joiner = '_';
   int i;
 

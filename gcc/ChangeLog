@@ -1,3 +1,42 @@
+2000-08-29  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* c-common.c (declare_function_name): Use func_id_node,
+	function_id_node, and pretty_function_id_node.  Do not make
+	__func__ visible at file scope.   
+	* c-common.h (c_tree_index): Add CTI_FUNCTION_ID,
+	CTI_PRETTY_FUNCTION_ID, and CTI_FUNC_ID.
+	(function_id_node, pretty_function_id_node, func_id_node): New
+	macros.
+	* c-decl.c (init_decl_processing): Initialize function_id_node,
+	pretty_function_id_node, and func_id_node.
+	(c_make_fname_decl): Correct comment.
+
+	* tree.h (struct tree_identifier): Constify pointer member.
+
+	* c-decl.c (pushdecl, implicit_decl_warning): Constify a char *.
+	* c-pragma.h (struct weak_syms): Constify name and value members.
+	(add_weak): Constify arguments.   
+
+	* calls.c (special_function_p): Constify a char *.
+	(expand_call): Remove variable which is initialized and then
+	never used.
+	* dependence.c (struct def_use, struct induction, struct subscript):
+	Constify 'variable' member.
+	(get_low_bound, have_induction_variable): Constify char * argument.
+	(find_induction_variable): Add braces to avoid dangling else.
+	(classify_dependence): Constify char * arrays.
+	* profile.c (output_func_start_profiler): Constify a char *.
+	* stor-layout.c (finalize_record_size): Constify a char *.
+	* tree.c (is_attribute_p): Constify a char *.
+	* varasm.c (add_weak, remove_from_pending_weak_list): Constify argument.
+
+	* varasm.c (make_function_rtl, make_decl_rtl): Rearrange code
+	for comprehensibility.  Do not call get_identifier if we did
+	not change the DECL_ASSEMBLER_NAME of the decl.  Use alloca to
+	create temporary string constants, not ggc_alloc_string.  No
+	need to copy result of ASM_FORMAT_PRIVATE_NAME.  Use const
+	char * to hold IDENTIFIER_POINTERs.
+
 2000-08-29  Richard Henderson  <rth@cygnus.com>
 
 	* config/ia64/ia64.md (muldi3): Use grfr_register_operand

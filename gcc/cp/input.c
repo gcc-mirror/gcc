@@ -45,7 +45,7 @@ static struct putback_buffer putback = {NULL, 0, -1};
 
 struct input_source {
   /* saved string */
-  char *str;
+  const char *str;
   int length;
   /* current position, when reading as input */
   int offset;
@@ -67,7 +67,7 @@ extern unsigned char *yy_cur, *yy_lim;
 extern int yy_get_token ();
 #endif
 
-extern void feed_input PARAMS ((char *, int, const char *, int));
+extern void feed_input PARAMS ((const char *, int, const char *, int));
 extern void put_input PARAMS ((int));
 extern void put_back PARAMS ((int));
 extern int getch PARAMS ((void));
@@ -109,7 +109,7 @@ free_input (inp)
 inline
 void
 feed_input (str, len, file, line)
-     char *str;
+     const char *str;
      int len;
      const char *file;
      int line;

@@ -2158,7 +2158,7 @@ yywrap ()
   if (next_file_to_seize && !grant_only_flag)
     {
       FILE *grt_in = NULL;
-      char *seizefile_name_chars
+      const char *seizefile_name_chars
 	= IDENTIFIER_POINTER (TREE_VALUE (next_file_to_seize));
 
       /* find a seize file, open it.  If it's not at the path the

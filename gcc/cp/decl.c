@@ -6671,6 +6671,10 @@ init_decl_processing ()
     flag_weak = 0;
 
   /* Create the global bindings for __FUNCTION__ and __PRETTY_FUNCTION__.  */
+  function_id_node = get_identifier ("__FUNCTION__");
+  pretty_function_id_node = get_identifier ("__PRETTY_FUNCTION__");
+  func_id_node = get_identifier ("__func__");
+
   make_fname_decl = cp_make_fname_decl;
   declare_function_name ();
 

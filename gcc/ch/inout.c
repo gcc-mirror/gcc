@@ -130,8 +130,7 @@ static tree add_enum_to_list (type, context)
       if (wrk->context == context && wrk->type == type)
 	{
 	  /* yes, found. look if the ptrdecl is valid in this scope */
-	  char  *name = IDENTIFIER_POINTER (DECL_NAME (wrk->ptrdecl));
-	  tree   var  = get_identifier (name);
+	  tree   var  = DECL_NAME (wrk->ptrdecl);
 	  tree   decl = lookup_name (var);
 	    
 	  if (decl == NULL_TREE)

@@ -5014,7 +5014,7 @@ build_alias_initializer_parameter_list (mode, class_type, parm, artificial)
   for (field = TYPE_FIELDS (class_type); field; field = TREE_CHAIN (field))
     if (FIELD_LOCAL_ALIAS (field))
       {
-	char *buffer = IDENTIFIER_POINTER (DECL_NAME (field));
+	const char *buffer = IDENTIFIER_POINTER (DECL_NAME (field));
 	tree purpose = NULL_TREE, value = NULL_TREE, name = NULL_TREE;
 
 	switch (mode)
@@ -10746,12 +10746,14 @@ static int
 breakdown_qualified (left, right, source)
     tree *left, *right, source;
 {
-  char *p = IDENTIFIER_POINTER (source), *base;
+  char *p, *base;
   int   l = IDENTIFIER_LENGTH (source);
 
+  base = alloca (l + 1);
+  memcpy (base, IDENTIFIER_POINTER (source), l + 1);
+
   /* Breakdown NAME into REMAINDER . IDENTIFIER */
-  base = p;
-  p += (l-1);
+  p = base + l - 1;
   while (*p != '.' && p != base)
     p--;
 
@@ -10762,8 +10764,7 @@ breakdown_qualified (left, right, source)
   *p = '\0';
   if (right)
     *right = get_identifier (p+1);
-  *left = get_identifier (IDENTIFIER_POINTER (source));
-  *p = '.';
+  *left = get_identifier (base);
   
   return 0;
 }
