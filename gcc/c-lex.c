@@ -1446,10 +1446,10 @@ yylex ()
 		      warn = 1;
 		    }
 		if (warn)
-		  warning ("integer constant out of range");
+		  pedwarn ("integer constant out of range");
 	      }
 	    else if (overflow)
-	      warning ("integer constant larger than compiler can handle");
+	      pedwarn ("integer constant larger than compiler can handle");
 
 	    /* If it overflowed our internal buffer, then make it unsigned.
 	       We can't distinguish based on the tree node because
@@ -1601,6 +1601,9 @@ yylex ()
 		  warning ("width of integer constant may change on other systems with -traditional");
 	      }
 #endif
+
+	    if (!int_fits_type_p (yylval.ttype, type))
+	      pedwarn ("integer constant out of range");
 
 	    TREE_TYPE (yylval.ttype) = type;
 	    *p = 0;
