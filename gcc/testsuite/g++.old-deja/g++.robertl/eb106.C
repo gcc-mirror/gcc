@@ -1,3 +1,4 @@
+// Skip if not native
 // Special g++ Options: -O2 -fPIC 
 // Build don't link: 
 struct T
