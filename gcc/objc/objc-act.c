@@ -48,7 +48,7 @@ Boston, MA 02111-1307, USA.  */
 #include "input.h"
 #include "except.h"
 #include "function.h"
-
+#include <string.h>
 
 /* This is the default way of generating a method name.  */
 /* I am not sure it is really correct.
@@ -190,6 +190,9 @@ static tree synth_id_with_class_suffix		PROTO((char *, tree));
 
 /* From expr.c */
 extern int apply_args_register_offset           PROTO((int));
+
+/* We handle printing method names ourselves for ObjC */
+extern char *(*decl_printable_name) ();
 
 /* Misc. bookkeeping */
 
@@ -7863,6 +7866,71 @@ dump_interface (fp, chain)
   fprintf (fp, "\n@end");
 }
 
+/* Demangle function for Objective-C */
+static const char *
+objc_demangle (mangled)
+     const char *mangled;
+{
+  char *demangled, *cp;
+
+  if (mangled[0] == '_' &&
+      (mangled[1] == 'i' || mangled[1] == 'c') &&
+      mangled[2] == '_')
+    {
+      cp = demangled = xmalloc(strlen(mangled) + 2);
+      if (mangled[1] == 'i')
+	*cp++ = '-';            /* for instance method */
+      else
+	*cp++ = '+';            /* for class method */
+      *cp++ = '[';              /* opening left brace */
+      strcpy(cp, mangled+3);    /* tack on the rest of the mangled name */
+      while (*cp && *cp == '_')
+	cp++;                   /* skip any initial underbars in class name */
+      cp = strchr(cp, '_');     /* find first non-initial underbar */
+      if (cp == NULL)
+	{
+	  free(demangled);      /* not mangled name */
+	  return mangled;
+	}
+      if (cp[1] == '_')  /* easy case: no category name */
+	{
+	  *cp++ = ' ';            /* replace two '_' with one ' ' */
+	  strcpy(cp, mangled + (cp - demangled) + 2);
+	}
+      else
+	{
+	  *cp++ = '(';            /* less easy case: category name */
+	  cp = strchr(cp, '_');
+	  if (cp == 0)
+	    {
+	      free(demangled);    /* not mangled name */
+	      return mangled;
+	    }
+	  *cp++ = ')';
+	  *cp++ = ' ';            /* overwriting 1st char of method name... */
+	  strcpy(cp, mangled + (cp - demangled)); /* get it back */
+	}
+      while (*cp && *cp == '_')
+	cp++;                   /* skip any initial underbars in method name */
+      for (; *cp; cp++)
+	if (*cp == '_')
+	  *cp = ':';            /* replace remaining '_' with ':' */
+      *cp++ = ']';              /* closing right brace */
+      *cp++ = 0;                /* string terminator */
+      return demangled;
+    }
+  else
+    return mangled;             /* not an objc mangled name */
+}
+
+static const char *
+objc_printable_name (decl, kind)
+     tree decl;
+     char **kind;
+{
+  return objc_demangle (IDENTIFIER_POINTER (DECL_NAME (decl)));
+}
+
 static void
 init_objc ()
 {
@@ -7898,6 +7966,9 @@ init_objc ()
   errbuf = (char *)xmalloc (BUFSIZE);
   hash_init ();
   synth_module_prologue ();
+
+  /* Change the default error function */
+  decl_printable_name = (char* (*)()) objc_printable_name;
 }
 
 static void
