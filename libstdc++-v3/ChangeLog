@@ -1,3 +1,10 @@
+2004-03-22  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cpu/cris/atomicity.h (__atomic_add): Remove "static
+	inline" and attribute-unused.  Qualify parameter __mem with
+	"volatile".
+	(__exchange_and_add): Ditto.  Add back memory clobber to asm.
+
 2004-03-20  Paolo Carlini  <pcarlini@suse.de>
 
 	* testsuite/27_io/basic_istream/extractors_arithmetic/char/2.cc:

@@ -31,9 +31,8 @@
 
 namespace __gnu_cxx
 {
-  static inline _Atomic_word
-  __attribute__ ((__unused__))
-  __exchange_and_add(_Atomic_word* __mem, int __val)
+  _Atomic_word
+  __exchange_and_add(volatile _Atomic_word* __mem, int __val)
   {
     int __tmp;
     _Atomic_word __result;
@@ -49,9 +48,12 @@ namespace __gnu_cxx
 			" bwf 0b		\n"
 			" clearf		\n"
 			:  "=&r" (__result), "=m" (*__mem), "=&r" (__tmp)
-			: "r" (__mem), "g" (__val), "m" (*__mem));
+			: "r" (__mem), "g" (__val), "m" (*__mem)
+			/* The memory clobber must stay, regardless of
+			   current uses of this function.  */
+			: "memory");
 #else
-    __asm__ __volatile__ (" move $ccr,$r9		\n"
+    __asm__ __volatile__ (" move $ccr,$r9	\n"
 			" di			\n"
 			" move.d %4,%2		\n"
 			" move.d [%3],%0	\n"
@@ -60,14 +62,16 @@ namespace __gnu_cxx
 			" move $r9,$ccr		\n"
 			:  "=&r" (__result), "=m" (*__mem), "=&r" (__tmp)
 			: "r" (__mem), "g" (__val), "m" (*__mem)
-			: "r9");
+			: "r9",
+			  /* The memory clobber must stay, regardless of
+			     current uses of this function.  */
+			  "memory");
 #endif
 
     return __result;
   }
 
   void
-  __attribute__ ((__unused__))
-  __atomic_add(_Atomic_word* __mem, int __val)
+  __atomic_add(volatile _Atomic_word* __mem, int __val)
   { __exchange_and_add(__mem, __val); }
 } // namespace __gnu_cxx
