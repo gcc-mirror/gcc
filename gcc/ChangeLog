@@ -1,5 +1,10 @@
 Fri Jan 14 00:28:06 2000  Jeffrey A Law  (law@cygnus.com)
 
+	* fr30.h (TRAMPOLINE_TEMPLATE): Use nops to ensure the static chain
+	and destination functions are 32bit aligned within the trampoline.
+	(TRAMPOLINE_SIZE, INITIALIZE_TRAMPOLINE): Corresponding changes.
+	(TRAMPOLINE_ALIGNMENT): Define.
+
 	* cse.c (cse_insn): When changing (set (pc) (reg)) to
 	(set (pc) (label_ref)), verify the change creates a valid insn.
 
