@@ -1493,7 +1493,7 @@ rs6000_override_options (const char *default_cpu)
 
   /* We should always be splitting complex arguments, but we can't break
      Linux and Darwin ABIs at the moment.  For now, only AIX is fixed.  */
-  if (DEFAULT_ABI != ABI_AIX && !TARGET_E500_DOUBLE)
+  if (DEFAULT_ABI != ABI_AIX)
     targetm.calls.split_complex_arg = NULL;
 
   /* Initialize rs6000_cost with the appropriate target costs.  */
@@ -5018,23 +5018,32 @@ function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 static rtx
 spe_build_register_parallel (enum machine_mode mode, int gregno)
 {
-  rtx r1, r2;
-  enum machine_mode inner;
-  unsigned int inner_bytes;
+  rtx r1, r2, r3, r4;
+  enum machine_mode inner = SImode;
 
   if (mode == DFmode)
     {
-      inner = SImode;
-      inner_bytes = 4;
+      r1 = gen_rtx_REG (inner, gregno);
+      r1 = gen_rtx_EXPR_LIST (SImode, r1, const0_rtx);
+      r2 = gen_rtx_REG (inner, gregno + 1);
+      r2 = gen_rtx_EXPR_LIST (SImode, r2, GEN_INT (4));
+      return gen_rtx_PARALLEL (mode, gen_rtvec (2, r1, r2));
     }
-  else
-    abort ();
+  else if (mode == DCmode)
+    {
+      r1 = gen_rtx_REG (inner, gregno);
+      r1 = gen_rtx_EXPR_LIST (SImode, r1, const0_rtx);
+      r2 = gen_rtx_REG (inner, gregno + 1);
+      r2 = gen_rtx_EXPR_LIST (SImode, r2, GEN_INT (4));
+      r3 = gen_rtx_REG (inner, gregno + 2);
+      r3 = gen_rtx_EXPR_LIST (SImode, r3, GEN_INT (8));
+      r4 = gen_rtx_REG (inner, gregno + 3);
+      r4 = gen_rtx_EXPR_LIST (SImode, r4, GEN_INT (12));
+      return gen_rtx_PARALLEL (mode, gen_rtvec (4, r1, r2, r3, r4));
+    }
 
-  r1 = gen_rtx_REG (inner, gregno);
-  r1 = gen_rtx_EXPR_LIST (SImode, r1, const0_rtx);
-  r2 = gen_rtx_REG (inner, gregno + 1);
-  r2 = gen_rtx_EXPR_LIST (SImode, r2, GEN_INT (inner_bytes));
-  return gen_rtx_PARALLEL (mode, gen_rtvec (2, r1, r2));
+  abort ();
+  return NULL_RTX;
 }
 
 /* Determine where to put a SIMD argument on the SPE.  */
@@ -5046,7 +5055,7 @@ rs6000_spe_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 
   /* On E500 v2, double arithmetic is done on the full 64-bit GPR, but
      are passed and returned in a pair of GPRs for ABI compatibility.  */
-  if (TARGET_E500_DOUBLE && mode == DFmode)
+  if (TARGET_E500_DOUBLE && (mode == DFmode || mode == DCmode))
     {
       /* Doubles go in an odd/even register pair (r5/r6, etc).  */
       gregno += (1 - gregno) & 1;
@@ -5380,7 +5389,8 @@ function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
     }
   else if (TARGET_SPE_ABI && TARGET_SPE
 	   && (SPE_VECTOR_MODE (mode)
-	       || (TARGET_E500_DOUBLE && mode == DFmode)))
+	       || (TARGET_E500_DOUBLE && (mode == DFmode
+					  || mode == DCmode))))
     return rs6000_spe_function_arg (cum, mode, type);
 
   else if (rs6000_darwin64_abi
@@ -18315,30 +18325,19 @@ rs6000_complex_function_value (enum machine_mode mode)
   enum machine_mode inner = GET_MODE_INNER (mode);
   unsigned int inner_bytes = GET_MODE_SIZE (inner);
 
-  if (TARGET_E500_DOUBLE)
-    {
-      /* FIXME: This causes complex values to be returned in the full
-	 64-bit GPR.  It works, but is not ABI compatible with
-	 soft-float.  Complex doubles should be returned in 4
-	 consecutive 32-bit GPRs.  */
-      regno = GP_ARG_RETURN;
-    }
+  if (FLOAT_MODE_P (mode) && TARGET_HARD_FLOAT && TARGET_FPRS)
+    regno = FP_ARG_RETURN;
   else
     {
-      if (FLOAT_MODE_P (mode) && TARGET_HARD_FLOAT && TARGET_FPRS)
-	regno = FP_ARG_RETURN;
-      else
-	{
-	  regno = GP_ARG_RETURN;
+      regno = GP_ARG_RETURN;
 
-	  /* 32-bit is OK since it'll go in r3/r4.  */
-	  if (TARGET_32BIT && inner_bytes >= 4)
-	    return gen_rtx_REG (mode, regno);
-	}
-
-      if (inner_bytes >= 8)
+      /* 32-bit is OK since it'll go in r3/r4.  */
+      if (TARGET_32BIT && inner_bytes >= 4)
 	return gen_rtx_REG (mode, regno);
     }
+
+  if (inner_bytes >= 8)
+    return gen_rtx_REG (mode, regno);
 
   r1 = gen_rtx_EXPR_LIST (inner, gen_rtx_REG (inner, regno),
 			  const0_rtx);
@@ -18533,8 +18532,9 @@ rs6000_function_value (tree valtype, tree func ATTRIBUTE_UNUSED)
 	   && TARGET_ALTIVEC && TARGET_ALTIVEC_ABI
 	   && ALTIVEC_VECTOR_MODE(mode))
     regno = ALTIVEC_ARG_RETURN;
-  else if (TARGET_E500_DOUBLE && TARGET_HARD_FLOAT && mode == DFmode)
-    return spe_build_register_parallel (DFmode, GP_ARG_RETURN);
+  else if (TARGET_E500_DOUBLE && TARGET_HARD_FLOAT
+	   && (mode == DFmode || mode == DCmode))
+    return spe_build_register_parallel (mode, GP_ARG_RETURN);
   else
     regno = GP_ARG_RETURN;
 
@@ -18570,8 +18570,9 @@ rs6000_libcall_value (enum machine_mode mode)
     regno = ALTIVEC_ARG_RETURN;
   else if (COMPLEX_MODE_P (mode) && targetm.calls.split_complex_arg)
     return rs6000_complex_function_value (mode);
-  else if (TARGET_E500_DOUBLE && TARGET_HARD_FLOAT && mode == DFmode)
-    return spe_build_register_parallel (DFmode, GP_ARG_RETURN);
+  else if (TARGET_E500_DOUBLE && TARGET_HARD_FLOAT
+	   && (mode == DFmode || mode == DCmode))
+    return spe_build_register_parallel (mode, GP_ARG_RETURN);
   else
     regno = GP_ARG_RETURN;
 
