@@ -102,7 +102,10 @@ do {									\
 #undef STARTFILE_SPEC
 #define STARTFILE_SPEC "%{!shared: \
 			 %{!symbolic: \
-			  %{p:mcrt1.o%s}%{!p:crt1.o%s} %{pg:gmon.o%s}}} \
+			  %{p:mcrt1.o%s} \
+                          %{!p: \
+	                    %{pg:gcrt1.o%s gmon.o%s} \
+                            %{!pg:crt1.o%s}}}} \
 			crti.o%s \
 			%{ansi:values-Xc.o%s} \
 			%{!ansi: \
