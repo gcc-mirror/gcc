@@ -480,14 +480,29 @@ validate_replace_rtx_1 (loc, from, to, object)
       /* In these cases, the operation to be performed depends on the mode
 	 of the operand.  If we are replacing the operand with a VOIDmode
 	 constant, we lose the information.  So try to simplify the operation
-	 in that case.  If it fails, substitute in something that we know
-	 won't be recognized.  */
+	 in that case.  */
       if (GET_MODE (to) == VOIDmode
-	  && rtx_equal_p (XEXP (x, 0), from))
+	  && (rtx_equal_p (XEXP (x, 0), from)
+	      || (GET_CODE (XEXP (x, 0)) == SUBREG
+		  && rtx_equal_p (SUBREG_REG (XEXP (x, 0)), from))))
 	{
-	  rtx new = simplify_unary_operation (code, GET_MODE (x), to,
-					      GET_MODE (from));
-	  if (new == 0)
+	  rtx new = NULL_RTX;
+
+	  /* If there is a subreg involved, crop to the portion of the
+	     constant that we are interested in.  */
+	  if (GET_CODE (XEXP (x, 0)) == SUBREG)
+	    to = operand_subword (to, SUBREG_WORD (XEXP (x, 0)),
+				  0, GET_MODE (from));
+
+	  /* If the above didn't fail, perform the extension from the
+	     mode of the operand (and not the mode of FROM).  */
+	  if (to)
+	    new = simplify_unary_operation (code, GET_MODE (x), to,
+					    GET_MODE (XEXP (x, 0)));
+
+	  /* If any of the above failed, substitute in something that
+	     we know won't be recognized.  */
+	  if (!new)
 	    new = gen_rtx_CLOBBER (GET_MODE (x), const0_rtx);
 
 	  validate_change (object, loc, new, 1);
