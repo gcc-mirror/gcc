@@ -303,12 +303,14 @@ remove_dup_nonsys_dirs (pfile, head_ptr, end)
      struct search_path **head_ptr;
      struct search_path *end;
 {
-  struct search_path *prev, *cur, *other;
+  int sysdir = 0;
+  struct search_path *prev = NULL, *cur, *other;
 
   for (cur = *head_ptr; cur; cur = cur->next)
     {
       if (cur->sysp)
 	{
+	  sysdir = 1;
 	  for (other = *head_ptr, prev = NULL;
 	       other != end;
 	       other = other ? other->next : *head_ptr)
@@ -326,6 +328,10 @@ remove_dup_nonsys_dirs (pfile, head_ptr, end)
 	    }
 	}
     }
+
+  if (!sysdir)
+    for (cur = *head_ptr; cur != end; cur = cur->next)
+      prev = cur;
 
   return prev;
 }

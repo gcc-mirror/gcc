@@ -1,3 +1,7 @@
+2002-08-21  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* cppinit.c (remove_dup_nonsys_dirs): Fix warning and return value.
+
 2002-08-21  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* c-decl.c (grokdeclarator): Make invalid combinations with long,
