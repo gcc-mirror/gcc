@@ -961,7 +961,7 @@ small_insn_p (op, mode)
   if (GET_CODE (op) == CONST_INT && INTVAL (op) == 0)
     return 1;
 
-  if (GET_RTX_CLASS (GET_CODE (op)) != 'i')
+  if (! INSN_P (op))
     return 0;
 
   return get_attr_length (op) == 2;
@@ -974,7 +974,7 @@ large_insn_p (op, mode)
      rtx op;
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {
-  if (GET_RTX_CLASS (GET_CODE (op)) != 'i')
+  if (! INSN_P (op))
     return 0;
 
   return get_attr_length (op) != 2;
@@ -1484,27 +1484,29 @@ m32r_adjust_cost (insn, link, dep_insn, cost)
 }
 
 
-/* A C statement (sans semicolon) to update the integer scheduling
-   priority `INSN_PRIORITY(INSN)'.  Reduce the priority to execute
-   the INSN earlier, increase the priority to execute INSN later.
-   Do not define this macro if you do not need to adjust the
-   scheduling priorities of insns.
+/* Return true if INSN is real instruction bearing insn.  */
 
-   On the m32r, increase the priority of long instructions so that
-   the short instructions are scheduled ahead of the long ones.  */
+static int
+m32r_is_insn (insn)
+     rtx insn;
+{
+  return (INSN_P (insn)
+	  && GET_CODE (PATTERN (insn)) != USE
+	  && GET_CODE (PATTERN (insn)) != CLOBBER
+	  && GET_CODE (PATTERN (insn)) != ADDR_VEC);
+}
+
+/* Increase the priority of long instructions so that the
+   short instructions are scheduled ahead of the long ones.  */
 
 int
 m32r_adjust_priority (insn, priority)
      rtx insn;
      int priority;
 {
-  if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
-    {
-      enum rtx_code code = GET_CODE (PATTERN (insn));
-      if (code != USE && code != CLOBBER && code != ADDR_VEC
-	  && get_attr_insn_size (insn) != INSN_SIZE_SHORT)
-	priority <<= 3;
-    }
+  if (m32r_is_insn (insn)
+      && get_attr_insn_size (insn) != INSN_SIZE_SHORT)
+    priority <<= 3;
 
   return priority;
 }
@@ -1560,11 +1562,9 @@ m32r_sched_reorder (stream, verbose, ready, n_ready)
 	  rtx insn = ready[i];
 	  enum rtx_code code;
 
-	  if (GET_RTX_CLASS (GET_CODE (insn)) != 'i'
-	      || (code = GET_CODE (PATTERN (insn))) == USE
-	      || code == CLOBBER || code == ADDR_VEC)
+	  if (! m32r_is_insn (insn))
 	    {
-	      /* Dump all current short/long insns just in case */
+	      /* Dump all current short/long insns just in case.  */
 	      while (long_head != long_tail)
 		*new_tail-- = *long_head++;
 
@@ -1619,9 +1619,8 @@ m32r_sched_reorder (stream, verbose, ready, n_ready)
 	      enum rtx_code code;
 
 	      fprintf (stream, " %d", INSN_UID (ready[i]));
-	      if (GET_RTX_CLASS (GET_CODE (insn)) != 'i'
-		  || (code = GET_CODE (PATTERN (insn))) == USE
-		  || code == CLOBBER || code == ADDR_VEC)
+
+	      if (! m32r_is_insn (insn))
 		fputs ("(?)", stream);
 
 	      else if (get_attr_insn_size (insn) != INSN_SIZE_SHORT)
@@ -1654,12 +1653,7 @@ m32r_sched_variable_issue (stream, verbose, insn, how_many)
   how_many--;
   if (how_many > 0 && !TARGET_DEBUG)
     {
-      if (GET_RTX_CLASS (GET_CODE (insn)) != 'i')
-	how_many++;
-
-      else if (GET_CODE (PATTERN (insn)) == USE
-	       || GET_CODE (PATTERN (insn)) == CLOBBER
-	       || GET_CODE (PATTERN (insn)) == ADDR_VEC)
+      if (! m32r_is_insn (insn))
 	how_many++;
 
       else if (get_attr_insn_size (insn) != INSN_SIZE_SHORT)
