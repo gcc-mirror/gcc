@@ -16,10 +16,9 @@ FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
 for more details.
 
 You should have received a copy of the GNU General Public License
-
-along with GNU CC; see the file COPYING.  If not, write to
-the Free Software Foundation, 59 Temple Place - Suite 330,
-Boston, MA 02111-1307, USA.  */
+along with GCC; see the file COPYING.  If not, write to the Free
+Software Foundation, 59 Temple Place - Suite 330, Boston, MA
+02111-1307, USA.  */
 
 #include "config.h"
 #include "system.h"
@@ -174,9 +173,11 @@ associated_type (decl)
      to the containing class.  So we look at the 'this' arg.  */
   if (TREE_CODE (TREE_TYPE (decl)) == METHOD_TYPE)
     {
-      /* Artificial methods are not affected by the import/export status of
-	 their class unless they are virtual.  */
-      if (! DECL_ARTIFICIAL (decl) || DECL_VINDEX (decl))
+      /* Artificial methods are not affected by the import/export status
+	 of their class unless they are COMDAT.  Implicit copy ctor's and
+	 dtor's are not affected by class status but virtual and
+	 non-virtual thunks are.  */
+      if (!DECL_ARTIFICIAL (decl) || DECL_COMDAT (decl))
 	t = TREE_TYPE (TREE_VALUE (TYPE_ARG_TYPES (TREE_TYPE (decl))));
     }
   else if (DECL_CONTEXT (decl)
@@ -279,9 +280,11 @@ i386_pe_dllimport_p (decl)
 
       /* Since we can't treat a pointer to a dllimport'd symbol as a
 	 constant address, we turn off the attribute on C++ virtual
-	 methods to allow creation of vtables using thunks.  */
+	 methods to allow creation of vtables using thunks.  Don't mark
+	 artificial methods either (in associated_type, only COMDAT
+	 artificial method get import status from class context).  */
       else if (TREE_CODE (TREE_TYPE (decl)) == METHOD_TYPE
-	       && (DECL_VIRTUAL_P (decl)))
+	       && (DECL_VIRTUAL_P (decl) || DECL_ARTIFICIAL (decl)))
 	return 0;
 
       return 1;

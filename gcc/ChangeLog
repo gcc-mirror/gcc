@@ -1,3 +1,12 @@
+2003-07-16  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	* config/i386/winnt.c (associated_type): Artificial methods are not
+	affected by the import/export status of their class unless they are
+	COMDAT.
+	(i386_pe_dllimport_p): Do not mark artificial methods as dllimport.
+
+	* config/i386/winnt.c: Fix GCC copyright comment.
+
 2003-07-16  Gabriel Dos Reis  <gcc@integrable-solutions.net>
 
 	PR c++/11531
