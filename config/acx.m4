@@ -1,6 +1,67 @@
 # Autoconf M4 include file defining utility macros for complex Canadian
 # cross builds.
 
+dnl ####
+dnl # _GCC_TOPLEV_NONCANONICAL_BUILD
+dnl # $build_alias or canonical $build if blank.
+dnl # Used when we would use $build_alias, but empty is not OK.
+AC_DEFUN([_GCC_TOPLEV_NONCANONICAL_BUILD],
+[AC_REQUIRE([AC_CANONICAL_BUILD]) []dnl
+case ${build_alias} in
+  "") build_noncanonical=${build} ;;
+  *) build_noncanonical=${build_alias} ;;
+esac
+]) []dnl # _GCC_TOPLEV_NONCANONICAL_BUILD
+
+dnl ####
+dnl # _GCC_TOPLEV_NONCANONICAL_HOST
+dnl # $host_alias, or $build_noncanonical if blank.
+dnl # Used when we would use $host_alias, but empty is not OK.
+AC_DEFUN([_GCC_TOPLEV_NONCANONICAL_HOST],
+[AC_REQUIRE([_GCC_TOPLEV_NONCANONICAL_BUILD]) []dnl
+case ${host_alias} in
+  "") host_noncanonical=${build_noncanonical} ;;
+  *) host_noncanonical=${host_alias} ;;
+esac
+]) []dnl # _GCC_TOPLEV_NONCANONICAL_HOST
+
+dnl ####
+dnl # _GCC_TOPLEV_NONCANONICAL_TARGET
+dnl # $target_alias or $host_noncanonical if blank.
+dnl # Used when we would use $target_alias, but empty is not OK.
+AC_DEFUN([_GCC_TOPLEV_NONCANONICAL_TARGET],
+[AC_REQUIRE([_GCC_TOPLEV_NONCANONICAL_HOST]) []dnl
+case ${target_alias} in
+  "") target_noncanonical=${host_noncanonical} ;;
+  *) target_noncanonical=${target_alias} ;;
+esac
+]) []dnl # _GCC_TOPLEV_NONCANONICAL_TARGET
+
+dnl ####
+dnl # GCC_TOPLEV_SUBDIRS
+dnl # GCC & friends build 'build', 'host', and 'target' tools.  These must
+dnl # be separated into three well-known subdirectories of the build directory:
+dnl # build_subdir, host_subdir, and target_subdir.  The values are determined
+dnl # here so that they can (theoretically) be changed in the future.  They
+dnl # were previously reproduced across many different files.
+dnl #
+dnl # This logic really amounts to very little with autoconf 2.13; it will
+dnl # amount to a lot more with autoconf 2.5x.
+AC_DEFUN([GCC_TOPLEV_SUBDIRS],
+[AC_REQUIRE([_GCC_TOPLEV_NONCANONICAL_TARGET]) []dnl
+AC_REQUIRE([_GCC_TOPLEV_NONCANONICAL_BUILD]) []dnl
+# Prefix 'build-' so this never conflicts with target_subdir.
+build_subdir="build-${build_noncanonical}"
+# Not really a subdirectory, but here for completeness.
+host_subdir=.
+# No prefix.
+target_subdir=${target_noncanonical}
+AC_SUBST([build_subdir]) []dnl
+AC_SUBST([host_subdir]) []dnl
+AC_SUBST([target_subdir]) []dnl
+]) []dnl # GCC_TOPLEV_SUBDIRS
+
+
 ####
 # _NCN_TOOL_PREFIXES:  Some stuff that oughtta be done in AC_CANONICAL_SYSTEM 
 # or AC_INIT.

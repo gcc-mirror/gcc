@@ -554,8 +554,16 @@ EXTRA_GCC_FLAGS = \
 
 GCC_FLAGS_TO_PASS = $(BASE_FLAGS_TO_PASS) $(EXTRA_GCC_FLAGS)
 
-configure-host: @configure_host_modules@
-configure-target: @configure_target_modules@
+.PHONY: configure-host
+configure-host: maybe-configure-gcc [+
+  FOR host_modules +] \
+    maybe-configure-[+module+][+
+  ENDFOR host_modules +]
+.PHONY: configure-target
+configure-target: [+
+  FOR target_modules +] \
+    maybe-configure-target-[+module+][+
+  ENDFOR target_modules +]
 
 # This is a list of the targets for which we can do a clean-{target}.
 CLEAN_MODULES =[+
@@ -578,14 +586,19 @@ CLEAN_X11_MODULES = [+ FOR host_modules +][+ IF with_x +]\
 	clean-[+module+] [+ ENDIF with_x +][+ ENDFOR host_modules +]
 
 # The target built for a native build.
-# This list only includes modules actually being configured and built.
 .PHONY: all.normal
-all.normal: @all_build_modules@ \
-	@all_host_modules@ \
-	@all_target_modules@
+all.normal: @all_build_modules@ all-host all-target
 
-all-host: @all_host_modules@
-all-target: @all_target_modules@
+.PHONY: all-host
+all-host: maybe-all-gcc [+
+  FOR host_modules +] \
+    maybe-all-[+module+][+
+  ENDFOR host_modules +]
+.PHONY: all-target
+all-target: [+
+  FOR target_modules +] \
+    maybe-all-target-[+module+][+
+  ENDFOR target_modules +]
 
 # Do a target for all the subdirectories.  A ``make do-X'' will do a
 # ``make X'' in all subdirectories (because, in general, there is a
@@ -757,9 +770,18 @@ mail-report-with-warnings.log: warning.log
 # Installation targets.
 
 .PHONY: install uninstall
-install: installdirs @install_host_modules@ @install_target_modules@
+install: installdirs install-host install-target
 
-install-target: @install_target_modules@
+.PHONY: install-host
+install-host: maybe-install-gcc [+
+  FOR host_modules +] \
+    maybe-install-[+module+][+
+  ENDFOR host_modules +]
+.PHONY: install-target
+install-target: [+
+  FOR target_modules +] \
+    maybe-install-target-[+module+][+
+  ENDFOR target_modules +]
 
 uninstall:
 	@echo "the uninstall target is not supported in this tree"
@@ -779,7 +801,7 @@ install.all: install-no-fixedincludes
 # the fixed header files.
 .PHONY: install-no-fixedincludes
 install-no-fixedincludes: installdirs @install_host_modules_nogcc@ \
-	@install_target_modules@ gcc-no-fixedincludes
+	install-target gcc-no-fixedincludes
 
 ### other supporting targets
 

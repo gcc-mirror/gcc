@@ -1,3 +1,11 @@
+2003-05-18  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* configure.in: Switch more things to use maybe dependencies.
+	Rearrange a little.  Use GCC_TOPLEV_SUBDIRS.
+	* configure: Regenerate.
+	* Makefile.tpl: Switch more things to use maybe dependencies.
+	* Makefile.in: Regenerate.
+
 2003-05-16  Andreas Schwab  <schwab@suse.de>
 
 	* Makefile.tpl (install-opcodes): Define.

@@ -551,8 +551,90 @@ EXTRA_GCC_FLAGS = \
 
 GCC_FLAGS_TO_PASS = $(BASE_FLAGS_TO_PASS) $(EXTRA_GCC_FLAGS)
 
-configure-host: @configure_host_modules@
-configure-target: @configure_target_modules@
+.PHONY: configure-host
+configure-host: maybe-configure-gcc  \
+    maybe-configure-ash \
+    maybe-configure-autoconf \
+    maybe-configure-automake \
+    maybe-configure-bash \
+    maybe-configure-bfd \
+    maybe-configure-opcodes \
+    maybe-configure-binutils \
+    maybe-configure-bison \
+    maybe-configure-byacc \
+    maybe-configure-bzip2 \
+    maybe-configure-dejagnu \
+    maybe-configure-diff \
+    maybe-configure-dosutils \
+    maybe-configure-etc \
+    maybe-configure-fastjar \
+    maybe-configure-fileutils \
+    maybe-configure-findutils \
+    maybe-configure-find \
+    maybe-configure-flex \
+    maybe-configure-gas \
+    maybe-configure-gawk \
+    maybe-configure-gettext \
+    maybe-configure-gnuserv \
+    maybe-configure-gprof \
+    maybe-configure-gzip \
+    maybe-configure-hello \
+    maybe-configure-indent \
+    maybe-configure-intl \
+    maybe-configure-tcl \
+    maybe-configure-itcl \
+    maybe-configure-ld \
+    maybe-configure-libgui \
+    maybe-configure-libiberty \
+    maybe-configure-libtool \
+    maybe-configure-m4 \
+    maybe-configure-make \
+    maybe-configure-mmalloc \
+    maybe-configure-patch \
+    maybe-configure-perl \
+    maybe-configure-prms \
+    maybe-configure-rcs \
+    maybe-configure-readline \
+    maybe-configure-release \
+    maybe-configure-recode \
+    maybe-configure-sed \
+    maybe-configure-send-pr \
+    maybe-configure-shellutils \
+    maybe-configure-sid \
+    maybe-configure-sim \
+    maybe-configure-tar \
+    maybe-configure-texinfo \
+    maybe-configure-textutils \
+    maybe-configure-time \
+    maybe-configure-uudecode \
+    maybe-configure-wdiff \
+    maybe-configure-zip \
+    maybe-configure-zlib \
+    maybe-configure-gdb \
+    maybe-configure-expect \
+    maybe-configure-guile \
+    maybe-configure-tk \
+    maybe-configure-tix \
+    maybe-configure-libtermcap \
+    maybe-configure-utils
+.PHONY: configure-target
+configure-target:  \
+    maybe-configure-target-libstdc++-v3 \
+    maybe-configure-target-newlib \
+    maybe-configure-target-libf2c \
+    maybe-configure-target-libobjc \
+    maybe-configure-target-libtermcap \
+    maybe-configure-target-winsup \
+    maybe-configure-target-libgloss \
+    maybe-configure-target-libiberty \
+    maybe-configure-target-gperf \
+    maybe-configure-target-examples \
+    maybe-configure-target-libffi \
+    maybe-configure-target-libjava \
+    maybe-configure-target-zlib \
+    maybe-configure-target-boehm-gc \
+    maybe-configure-target-qthreads \
+    maybe-configure-target-rda
 
 # This is a list of the targets for which we can do a clean-{target}.
 CLEAN_MODULES = \
@@ -642,14 +724,93 @@ CLEAN_X11_MODULES = \
 	clean-tix 
 
 # The target built for a native build.
-# This list only includes modules actually being configured and built.
 .PHONY: all.normal
-all.normal: @all_build_modules@ \
-	@all_host_modules@ \
-	@all_target_modules@
+all.normal: @all_build_modules@ all-host all-target
 
-all-host: @all_host_modules@
-all-target: @all_target_modules@
+.PHONY: all-host
+all-host: maybe-all-gcc  \
+    maybe-all-ash \
+    maybe-all-autoconf \
+    maybe-all-automake \
+    maybe-all-bash \
+    maybe-all-bfd \
+    maybe-all-opcodes \
+    maybe-all-binutils \
+    maybe-all-bison \
+    maybe-all-byacc \
+    maybe-all-bzip2 \
+    maybe-all-dejagnu \
+    maybe-all-diff \
+    maybe-all-dosutils \
+    maybe-all-etc \
+    maybe-all-fastjar \
+    maybe-all-fileutils \
+    maybe-all-findutils \
+    maybe-all-find \
+    maybe-all-flex \
+    maybe-all-gas \
+    maybe-all-gawk \
+    maybe-all-gettext \
+    maybe-all-gnuserv \
+    maybe-all-gprof \
+    maybe-all-gzip \
+    maybe-all-hello \
+    maybe-all-indent \
+    maybe-all-intl \
+    maybe-all-tcl \
+    maybe-all-itcl \
+    maybe-all-ld \
+    maybe-all-libgui \
+    maybe-all-libiberty \
+    maybe-all-libtool \
+    maybe-all-m4 \
+    maybe-all-make \
+    maybe-all-mmalloc \
+    maybe-all-patch \
+    maybe-all-perl \
+    maybe-all-prms \
+    maybe-all-rcs \
+    maybe-all-readline \
+    maybe-all-release \
+    maybe-all-recode \
+    maybe-all-sed \
+    maybe-all-send-pr \
+    maybe-all-shellutils \
+    maybe-all-sid \
+    maybe-all-sim \
+    maybe-all-tar \
+    maybe-all-texinfo \
+    maybe-all-textutils \
+    maybe-all-time \
+    maybe-all-uudecode \
+    maybe-all-wdiff \
+    maybe-all-zip \
+    maybe-all-zlib \
+    maybe-all-gdb \
+    maybe-all-expect \
+    maybe-all-guile \
+    maybe-all-tk \
+    maybe-all-tix \
+    maybe-all-libtermcap \
+    maybe-all-utils
+.PHONY: all-target
+all-target:  \
+    maybe-all-target-libstdc++-v3 \
+    maybe-all-target-newlib \
+    maybe-all-target-libf2c \
+    maybe-all-target-libobjc \
+    maybe-all-target-libtermcap \
+    maybe-all-target-winsup \
+    maybe-all-target-libgloss \
+    maybe-all-target-libiberty \
+    maybe-all-target-gperf \
+    maybe-all-target-examples \
+    maybe-all-target-libffi \
+    maybe-all-target-libjava \
+    maybe-all-target-zlib \
+    maybe-all-target-boehm-gc \
+    maybe-all-target-qthreads \
+    maybe-all-target-rda
 
 # Do a target for all the subdirectories.  A ``make do-X'' will do a
 # ``make X'' in all subdirectories (because, in general, there is a
@@ -1197,9 +1358,92 @@ mail-report-with-warnings.log: warning.log
 # Installation targets.
 
 .PHONY: install uninstall
-install: installdirs @install_host_modules@ @install_target_modules@
+install: installdirs install-host install-target
 
-install-target: @install_target_modules@
+.PHONY: install-host
+install-host: maybe-install-gcc  \
+    maybe-install-ash \
+    maybe-install-autoconf \
+    maybe-install-automake \
+    maybe-install-bash \
+    maybe-install-bfd \
+    maybe-install-opcodes \
+    maybe-install-binutils \
+    maybe-install-bison \
+    maybe-install-byacc \
+    maybe-install-bzip2 \
+    maybe-install-dejagnu \
+    maybe-install-diff \
+    maybe-install-dosutils \
+    maybe-install-etc \
+    maybe-install-fastjar \
+    maybe-install-fileutils \
+    maybe-install-findutils \
+    maybe-install-find \
+    maybe-install-flex \
+    maybe-install-gas \
+    maybe-install-gawk \
+    maybe-install-gettext \
+    maybe-install-gnuserv \
+    maybe-install-gprof \
+    maybe-install-gzip \
+    maybe-install-hello \
+    maybe-install-indent \
+    maybe-install-intl \
+    maybe-install-tcl \
+    maybe-install-itcl \
+    maybe-install-ld \
+    maybe-install-libgui \
+    maybe-install-libiberty \
+    maybe-install-libtool \
+    maybe-install-m4 \
+    maybe-install-make \
+    maybe-install-mmalloc \
+    maybe-install-patch \
+    maybe-install-perl \
+    maybe-install-prms \
+    maybe-install-rcs \
+    maybe-install-readline \
+    maybe-install-release \
+    maybe-install-recode \
+    maybe-install-sed \
+    maybe-install-send-pr \
+    maybe-install-shellutils \
+    maybe-install-sid \
+    maybe-install-sim \
+    maybe-install-tar \
+    maybe-install-texinfo \
+    maybe-install-textutils \
+    maybe-install-time \
+    maybe-install-uudecode \
+    maybe-install-wdiff \
+    maybe-install-zip \
+    maybe-install-zlib \
+    maybe-install-gdb \
+    maybe-install-expect \
+    maybe-install-guile \
+    maybe-install-tk \
+    maybe-install-tix \
+    maybe-install-libtermcap \
+    maybe-install-utils
+.PHONY: install-target
+install-target:  \
+    maybe-install-target-libstdc++-v3 \
+    maybe-install-target-newlib \
+    maybe-install-target-libf2c \
+    maybe-install-target-libobjc \
+    maybe-install-target-libtermcap \
+    maybe-install-target-winsup \
+    maybe-install-target-libgloss \
+    maybe-install-target-libiberty \
+    maybe-install-target-gperf \
+    maybe-install-target-examples \
+    maybe-install-target-libffi \
+    maybe-install-target-libjava \
+    maybe-install-target-zlib \
+    maybe-install-target-boehm-gc \
+    maybe-install-target-qthreads \
+    maybe-install-target-rda
 
 uninstall:
 	@echo "the uninstall target is not supported in this tree"
@@ -1219,7 +1463,7 @@ install.all: install-no-fixedincludes
 # the fixed header files.
 .PHONY: install-no-fixedincludes
 install-no-fixedincludes: installdirs @install_host_modules_nogcc@ \
-	@install_target_modules@ gcc-no-fixedincludes
+	install-target gcc-no-fixedincludes
 
 ### other supporting targets
 

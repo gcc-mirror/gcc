@@ -164,6 +164,16 @@ target_tools="target-examples target-groff target-gperf target-rda"
 configdirs=`echo ${host_libs} ${host_tools}`
 target_configdirs=`echo ${target_libs} ${target_tools}`
 
+# Only make build modules if build != host.
+# This should be done more generally, but at the moment it doesn't matter.
+if test ${host_alias} != ${build_alias} ; then
+  # This is the only build module.
+  build_modules=libiberty
+else
+  build_modules=
+fi
+
+
 ################################################################################
 
 srcname="gnu development package"
@@ -179,9 +189,8 @@ else
   is_cross_compiler=yes
 fi	
 
-# We always want to use the same name for this directory, so that dejagnu
-# can reliably find it.
-target_subdir=${target_alias}
+# Find the build and target subdirs.
+GCC_TOPLEV_SUBDIRS
 
 if test ! -d ${target_subdir} ; then
   if mkdir ${target_subdir} ; then true
@@ -190,9 +199,6 @@ if test ! -d ${target_subdir} ; then
     exit 1
   fi
 fi
-
-build_prefix=build-
-build_subdir=${build_prefix}${build_alias}
 
 if test x"${build_alias}" != x"${host}" ; then
   if test ! -d ${build_subdir} ; then
@@ -1604,59 +1610,27 @@ esac
 target_configdirs=`echo "${target_configdirs}" | sed -e 's/target-//g'`
 
 # This is the final value for target_configdirs.  configdirs already
-# has its final value.  It's time to create some lists of valid targets.
-
-# While at that, we remove Makefiles if we were started for recursive
-# configuration, such that the top-level Makefile reconfigures them,
-# like we used to do when configure itself was recursive.
+# has its final value, as does build_modules.  It's time to create some 
+# lists of valid targets.
 
 all_build_modules=
 configure_build_modules=
-# Only make build modules if build != host.
-# This should be done more generally, but at the moment it doesn't matter.
-if test ${host_alias} != ${build_alias} ; then
-  for module in libiberty ; do
-    all_build_modules=all-build-${module}
-    configure_build_modules=configure-build-${module}
-    if test -z "${no_recursion}" \
-       && test -f ${build_subdir}/${module}/Makefile; then
-      echo 1>&2 "*** removing ${build_subdir}/${module}/Makefile to force reconfigure"
-      rm -f ${build_subdir}/${module}/Makefile
-    fi
-  done
-fi
+for module in ${build_modules} ; do
+  all_build_modules=all-build-${module}
+  configure_build_modules=configure-build-${module}
+done
 
-all_host_modules=
 check_host_modules=
 install_host_modules=
-configure_host_modules=
 for module in ${configdirs} ; do
-  all_host_modules="${all_host_modules} all-${module}"
   check_host_modules="${check_host_modules} check-${module}"
   install_host_modules="${install_host_modules} install-${module}"
-  configure_host_modules="${configure_host_modules} configure-${module}"
-  if test -z "${no_recursion}" \
-     && test -f ${module}/Makefile; then
-    echo 1>&2 "*** removing ${module}/Makefile to force reconfigure"
-    rm -f ${module}/Makefile
-  fi
 done
 install_host_modules_nogcc=`echo "${install_host_modules}" | sed -e 's/install-gcc//g'`
 
-all_target_modules=
 check_target_modules=
-install_target_modules=
-configure_target_modules=
 for module in ${target_configdirs} ; do
-  all_target_modules="${all_target_modules} all-target-${module}"
   check_target_modules="${check_target_modules} check-target-${module}"
-  install_target_modules="${install_target_modules} install-target-${module}"
-  configure_target_modules="${configure_target_modules} configure-target-${module}"
-  if test -z "${no_recursion}" \
-     && test -f ${target_subdir}/${module}/Makefile; then
-    echo 1>&2 "*** removing ${target_subdir}/${module}/Makefile to force reconfigure"
-    rm -f ${target_subdir}/${module}/Makefile
-  fi
 done
 
 # Determine whether gdb needs tk/tcl or not.
@@ -1686,13 +1660,49 @@ case "$enable_gdbtk" in
 esac
 
 # Create the 'maybe dependencies'.  This uses a temporary file.
+
+# While at that, we remove Makefiles if we were started for recursive
+# configuration, so that the top-level Makefile reconfigures them,
+# like we used to do when configure itself was recursive.
 rm -f maybedep.tmp
 echo '# maybedep.tmp' > maybedep.tmp
-for item in ${all_build_modules} ${all_host_modules} ${all_target_modules} \
-	${install_host_modules} ${install_target_modules} \
-	${configure_build_modules} ${configure_host_modules} ${configure_target_modules} \
-	; do
-  echo "maybe-${item}: ${item}" >> maybedep.tmp
+
+# Make-targets which may need maybe dependencies.
+mts="configure all install"
+
+# Loop over modules and make-targets.
+for module in ${build_modules} ; do
+  if test -z "${no_recursion}" \
+     && test -f ${build_subdir}/${module}/Makefile; then
+    echo 1>&2 "*** removing ${build_subdir}/${module}/Makefile to force reconfigure"
+    rm -f ${build_subdir}/${module}/Makefile
+  fi
+  for mt in ${mts} ; do
+    case ${mt} in
+      install) ;; # No installing build modules.
+      *) echo "maybe-${mt}-build-${module}: ${mt}-build-${module}" >> maybedep.tmp ;;
+    esac
+  done
+done
+for module in ${configdirs} ; do
+  if test -z "${no_recursion}" \
+     && test -f ${module}/Makefile; then
+    echo 1>&2 "*** removing ${module}/Makefile to force reconfigure"
+    rm -f ${module}/Makefile
+  fi
+  for mt in ${mts} ; do
+    echo "maybe-${mt}-${module}: ${mt}-${module}" >> maybedep.tmp
+  done
+done
+for module in ${target_configdirs} ; do
+  if test -z "${no_recursion}" \
+     && test -f ${target_subdir}/${module}/Makefile; then
+    echo 1>&2 "*** removing ${target_subdir}/${module}/Makefile to force reconfigure"
+    rm -f ${target_subdir}/${module}/Makefile
+  fi
+  for mt in ${mts} ; do
+    echo "maybe-${mt}-target-${module}: ${mt}-target-${module}" >> maybedep.tmp
+  done
 done
 maybe_dependencies=maybedep.tmp
 AC_SUBST_FILE(maybe_dependencies)
@@ -1977,7 +1987,6 @@ AC_SUBST(gxx_include_dir)
 AC_SUBST(libstdcxx_incdir)
 
 # Build module lists & subconfigure args.
-AC_SUBST(build_subdir)
 AC_SUBST(build_configargs)
 AC_SUBST(configure_build_modules)
 AC_SUBST(all_build_modules)
@@ -1985,20 +1994,13 @@ AC_SUBST(all_build_modules)
 # Host module lists & subconfigure args.
 AC_SUBST(host_configargs)
 AC_SUBST(configdirs)
-AC_SUBST(configure_host_modules)
-AC_SUBST(all_host_modules)
 AC_SUBST(check_host_modules)
-AC_SUBST(install_host_modules)
 AC_SUBST(install_host_modules_nogcc)
 
 # Target module lists & subconfigure args.
-AC_SUBST(target_subdir)
 AC_SUBST(target_configargs)
 AC_SUBST(target_configdirs)
-AC_SUBST(configure_target_modules)
-AC_SUBST(all_target_modules)
 AC_SUBST(check_target_modules)
-AC_SUBST(install_target_modules)
 
 # Build tools.
 AC_SUBST(BISON)
