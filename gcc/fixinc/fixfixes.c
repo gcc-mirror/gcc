@@ -403,11 +403,13 @@ FIX_PROC_HEAD( char_macro_def_fix )
 
   compile_re (pz_pat, &re, 1, "macro pattern", "char_macro_def_fix");
 
+#ifdef DEBUG
   if ((rerr = regexec (&re, text, 3, rm, 0)) != 0)
     {
       fprintf( stderr, "Match error %d:\n%s\n", rerr, pz_pat );
       exit(3);
     }
+#endif
 
   free (pz_pat);
   
