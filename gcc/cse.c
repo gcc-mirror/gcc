@@ -618,7 +618,7 @@ static struct table_elt *insert PROTO((rtx, struct table_elt *, unsigned,
 				       enum machine_mode));
 static void merge_equiv_classes PROTO((struct table_elt *,
 				       struct table_elt *));
-static void invalidate		PROTO((rtx));
+static void invalidate		PROTO((rtx, enum machine_mode));
 static void remove_invalid_refs	PROTO((int));
 static void rehash_using_reg	PROTO((rtx));
 static void invalidate_memory	PROTO((struct write_data *));
