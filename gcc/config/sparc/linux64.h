@@ -104,23 +104,28 @@ Boston, MA 02111-1307, USA.  */
 #define ENDFILE_SPEC64 \
   "%{!shared:crtend.o%s} %{shared:crtendS.o%s} /usr/lib64/crtn.o%s"
   
+#define ENDFILE_SPEC_COMMON \
+  "%{ffast-math|funsafe-math-optimizations:crtfastmath.o%s}"
+
 #ifdef SPARC_BI_ARCH
 
 #if DEFAULT_ARCH32_P
 #define ENDFILE_SPEC "\
 %{m32:" ENDFILE_SPEC32 "} \
 %{m64:" ENDFILE_SPEC64 "} \
-%{!m32:%{!m64:" ENDFILE_SPEC32 "}}"
+%{!m32:%{!m64:" ENDFILE_SPEC32 "}} " \
+ENDFILE_SPEC_COMMON
 #else
 #define ENDFILE_SPEC "\
 %{m32:" ENDFILE_SPEC32 "} \
 %{m64:" ENDFILE_SPEC64 "} \
-%{!m32:%{!m64:" ENDFILE_SPEC64 "}}"
+%{!m32:%{!m64:" ENDFILE_SPEC64 "}} " \
+ENDFILE_SPEC_COMMON
 #endif
 
 #else
 
-#define ENDFILE_SPEC ENDFILE_SPEC64
+#define ENDFILE_SPEC ENDFILE_SPEC64 " " ENDFILE_SPEC_COMMON
 
 #endif
 

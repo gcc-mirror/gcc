@@ -26,7 +26,9 @@ Boston, MA 02111-1307, USA.  */
 #define STARTFILE_SPEC "crt0.o%s crti.o%s crtbegin.o%s"
 
 #undef  ENDFILE_SPEC
-#define ENDFILE_SPEC "crtend.o%s crtn.o%s"
+#define ENDFILE_SPEC \
+  "%{ffast-math|funsafe-math-optimizations:crtfastmath.o%s} \
+   crtend.o%s crtn.o%s"
 
 /* Use the default.  */
 #undef LINK_SPEC
