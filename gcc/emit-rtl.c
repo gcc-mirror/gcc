@@ -931,6 +931,7 @@ gen_lowpart_common (mode, x)
       REAL_VALUE_TYPE r;
       long i[4];  /* Only the low 32 bits of each 'long' are used.  */
       int endian = WORDS_BIG_ENDIAN ? 1 : 0;
+      int c;
 
       REAL_VALUE_FROM_CONST_DOUBLE (r, x);
       switch (GET_MODE (x))
