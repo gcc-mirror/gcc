@@ -36,8 +36,8 @@ namespace __cxxabiv1
 #endif
 
   // The generic ABI uses the first byte of a 64-bit guard variable.
-#define _GLIBCXX_GUARD_ACQUIRE(x) (!*(char *) (x))
-#define _GLIBCXX_GUARD_RELEASE(x) *(char *) (x) = 1
+#define _GLIBCXX_GUARD_TEST(x) (*(char *) (x) != 0)
+#define _GLIBCXX_GUARD_SET(x) *(char *) (x) = 1
   __extension__ typedef int __guard __attribute__((mode (__DI__)));
 
   // __cxa_vec_ctor has void return type.

@@ -494,6 +494,11 @@ enum processor_type sparc_cpu;
 #define TARGET_ATTRIBUTE_TABLE sparc_attribute_table
 #endif
 
+/* The SPARC v9 architecture defines a relaxed memory ordering model (RMO)
+   which requires this if enabled, though it is never used in userspace,
+   and the Ultra3 processors don't implement it.  */
+#define TARGET_RELAXED_ORDERING TARGET_V9
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 /* Validate and override various options, and do some machine dependent

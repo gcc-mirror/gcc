@@ -1,3 +1,31 @@
+2004-12-27  Jason Merrill  <jason@redhat.com>
+
+	Add memory barriers to the double-checked locking used for static
+	initialization.
+	* libsupc++/guard.cc (__test_and_acquire): Define default.
+	(_GLIBCXX_GUARD_TEST_AND_ACQUIRE, __set_and_release) 
+	(_GLIBCXX_GUARD_SET_AND_RELEASE): Likewise.
+	(recursion_push, recursion_pop): New abstraction functions.
+	(__cxa_guard_acquire): Use _GLIBCXX_GUARD_TEST_AND_ACQUIRE.
+	(__cxa_guard_release): Use _GLIBCXX_GUARD_SET_AND_RELEASE.
+	* config/cpu/generic/cxxabi_tweaks.h (_GLIBCXX_GUARD_TEST): Rename
+	from _GLIBCXX_GUARD_ACQUIRE and reverse sense.
+	(_GLIBCXX_GUARD_SET): Rename from _GLIBCXX_GUARD_RELEASE.
+	* config/cpu/arm/cxxabi_tweaks.h: Likewise.
+	* config/cpu/alpha/atomic_word.h (_GLIBCXX_READ_MEM_BARRIER) 
+	(_GLIBCXX_WRITE_MEM_BARRIER): Define.
+	* config/cpu/powerpc/atomic_word.h: Likewise.
+	* config/cpu/sparc/atomic_word.h: Likewise.
+	* config/cpu/generic/atomic_word.h: Define them, commented out.
+	* include/bits/atomicity.h: Define defaults.
+	* config/cpu/ia64/atomic_word.h (__test_and_acquire)
+	(__set_and_release): New inlines.
+	(_GLIBCXX_GUARD_TEST_AND_ACQUIRE): Define.
+	(_GLIBCXX_GUARD_SET_AND_RELEASE): Define.
+
+	* libsupc++/guard.cc (acquire_1): Use __builtin_trap instead of
+	abort();
+
 2004-12-27  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1/type_traits: Rework the _DEFINE_SPEC* macros.

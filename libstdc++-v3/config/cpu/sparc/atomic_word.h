@@ -36,4 +36,18 @@
   typedef int _Atomic_word;
 #endif
 
+#if defined(__sparc_v9__)
+// These are necessary under the V9 RMO model, though it is almost never
+// used in userspace.
+#define _GLIBCXX_READ_MEM_BARRIER \
+  __asm __volatile ("membar #LoadLoad":::"memory")
+#define _GLIBCXX_WRITE_MEM_BARRIER \
+  __asm __volatile ("membar #StoreStore":::"memory")
+
+#elif defined(__sparc_v8__)
+// This is necessary under the PSO model.
+#define _GLIBCXX_WRITE_MEM_BARRIER __asm __volatile ("stbar":::"memory")
+
+#endif
+
 #endif 

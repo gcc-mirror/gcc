@@ -1,3 +1,14 @@
+2004-12-27  Jason Merrill  <jason@redhat.com>
+
+	* doc/tm.texi (TARGET_RELAXED_ORDERING): Document.
+	* target.h (struct gcc_target): Add relaxed_ordering field.
+	* target-def.h (TARGET_RELAXED_ORDERING): Define default.
+	(TARGET_INITIALIZER): Add it.
+	* config/alpha/alpha.c (TARGET_RELAXED_ORDERING): Define.
+	* config/ia64/ia64.c (TARGET_RELAXED_ORDERING): Define.
+	* config/rs6000/rs6000.c (TARGET_RELAXED_ORDERING): Define.
+	* config/sparc/sparc.c (TARGET_RELAXED_ORDERING): Define.
+
 2004-12-27  Roger Sayle  <roger@eyesopen.com>
 
 	PR driver/16118

@@ -5313,8 +5313,8 @@ expand_static_init (tree decl, tree init)
   if (DECL_FUNCTION_SCOPE_P (decl))
     {
       /* Emit code to perform this initialization but once.  */
-      tree if_stmt, inner_if_stmt = NULL_TREE;
-      tree then_clause, inner_then_clause = NULL_TREE;
+      tree if_stmt = NULL_TREE, inner_if_stmt = NULL_TREE;
+      tree then_clause = NULL_TREE, inner_then_clause = NULL_TREE;
       tree guard, guard_addr, guard_addr_list;
       tree acquire_fn, release_fn, abort_fn;
       tree flag, begin;
@@ -5353,10 +5353,16 @@ expand_static_init (tree decl, tree init)
       /* Create the guard variable.  */
       guard = get_guard (decl);
 
-      /* Begin the conditional initialization.  */
-      if_stmt = begin_if_stmt ();
-      finish_if_stmt_cond (get_guard_cond (guard), if_stmt);
-      then_clause = begin_compound_stmt (BCS_NO_SCOPE);
+      /* This optimization isn't safe on targets with relaxed memory
+	 consistency.  On such targets we force synchronization in
+	 __cxa_guard_acquire.  */
+      if (!targetm.relaxed_ordering || !flag_threadsafe_statics)
+	{
+	  /* Begin the conditional initialization.  */
+	  if_stmt = begin_if_stmt ();
+	  finish_if_stmt_cond (get_guard_cond (guard), if_stmt);
+	  then_clause = begin_compound_stmt (BCS_NO_SCOPE);
+	}
 
       if (flag_threadsafe_statics)
 	{
@@ -5419,9 +5425,12 @@ expand_static_init (tree decl, tree init)
 	  finish_if_stmt (inner_if_stmt);
 	}
 
-      finish_compound_stmt (then_clause);
-      finish_then_clause (if_stmt);
-      finish_if_stmt (if_stmt);
+      if (!targetm.relaxed_ordering || !flag_threadsafe_statics)
+	{
+	  finish_compound_stmt (then_clause);
+	  finish_then_clause (if_stmt);
+	  finish_if_stmt (if_stmt);
+	}
     }
   else
     static_aggregates = tree_cons (init, decl, static_aggregates);
