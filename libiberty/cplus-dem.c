@@ -430,6 +430,7 @@ cplus_demangle_opname (opname, result, options)
   len = strlen(opname);
   result[0] = '\0';
   ret = 0;
+  memset ((char *) work, 0, sizeof (work));
   work->options = options;
   
   if (opname[0] == '_' && opname[1] == '_'

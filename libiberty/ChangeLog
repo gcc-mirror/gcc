@@ -7,6 +7,10 @@ Wed May 13 14:24:38 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
         replace with `size_t i' at each location where it is used.
         (cplus_mangle_opname): change type of `i' from int to size_t.
 
+Fri May  1 04:26:25 1998  Peter Schauer <pes@regent.e-technik.tu-muenchen.de>
+
+	* cplus-dem.c (cplus_demangle_opname):  Initialize work.
+
 Mon Apr 27 15:53:30 EDT 1998 Andrew MacLeod <amacleod@cygnus.com>
 
 	* cplus-dem.c (demangle_qualified): Replace missing else.
