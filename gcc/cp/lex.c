@@ -112,7 +112,6 @@ extern cpp_reader  parse_in;
 extern cpp_options parse_options;
 extern unsigned char *yy_cur, *yy_lim;
 extern enum cpp_token cpp_token;
-extern int errorcount;
 #else
 FILE *finput;
 #endif
@@ -415,7 +414,6 @@ lang_init ()
 void
 lang_finish ()
 {
-  extern int errorcount, sorrycount;
   if (flag_gnu_xref) GNU_xref_end (errorcount+sorrycount);
 }
 
