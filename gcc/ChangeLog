@@ -1,3 +1,8 @@
+Wed Feb 18 13:38:29 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* pa.h (ASM_OUTPUT_FUNCTION_PREFIX): Correctly translate from
+	a function name to a section name.
+
 1998-02-18  Doug Evans  <devans@cygnus.com>
 
 	* tree.h (merge_machine_{type,decl}_attributes): Declare.
