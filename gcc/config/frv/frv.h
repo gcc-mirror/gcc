@@ -959,6 +959,8 @@ extern int target_flags;
 #define EH_RETURN_STACKADJ_RTX	gen_rtx_REG (SImode, STACKADJ_REGNO)
 #define EH_RETURN_HANDLER_RTX   RETURN_ADDR_RTX (0, frame_pointer_rtx)
 
+#define EPILOGUE_USES(REGNO) ((REGNO) == LR_REGNO)
+
 /* An initializer that says which registers are used for fixed purposes all
    throughout the compiled code and are therefore not available for general
    allocation.  These would include the stack pointer, the frame pointer
