@@ -3565,7 +3565,14 @@ finish_decl (decl, init, asmspec_tree)
 	     initializer instead of discarding it so that we can optimize
 	     references to it.  */
 	  if (TREE_STATIC (decl) && TREE_READONLY (decl))
-	    preserve_initializer ();
+	    {
+	      preserve_initializer ();
+	      /* Hack?  Set the permanent bit for something that is permanent,
+		 but not on the permenent obstack, so as to convince
+		 output_constant_def to make its rtl on the permanent
+		 obstack.  */
+	      TREE_PERMANENT (DECL_INITIAL (decl)) = 1;
+	    }
 	  else
 	    DECL_INITIAL (decl) = error_mark_node;
 	}
