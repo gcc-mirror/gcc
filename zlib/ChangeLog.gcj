@@ -1,3 +1,8 @@
+2000-10-10  Alexandre Oliva  <aoliva@redhat.com>
+
+	* configure.in (zlib_basedir): Cope with empty with_target_subdir
+	* configure: Rebuilt.
+
 2000-09-06  Alexandre Oliva  <aoliva@redhat.com>
 
 	* configure.in (multilib): Enable by default only for target.
