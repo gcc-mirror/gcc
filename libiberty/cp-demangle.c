@@ -3324,7 +3324,7 @@ d_print_cast (dpi, dc)
       /* It appears that for a templated cast operator, we need to put
 	 the template parameters in scope for the operator name, but
 	 not for the parameters.  The effect is that we need to handle
-	 the template printing here.  FIXME: Verify this.  */
+	 the template printing here.  */
 
       hold_dpm = dpi->modifiers;
       dpi->modifiers = NULL;
@@ -3455,6 +3455,11 @@ d_demangle (mangled, options, palc)
     dc = d_mangled_name (&di, 1);
   else
     dc = d_type (&di);
+
+  /* If we didn't consume the entire mangled string, then we didn't
+     successfully demangle it.  */
+  if (d_peek_char (&di) != '\0')
+    dc = NULL;
 
 #ifdef CP_DEMANGLE_DEBUG
   if (dc == NULL)
@@ -3657,7 +3662,7 @@ is_ctor_or_dtor (mangled, ctor_kind, dtor_kind)
 
   dc = d_mangled_name (&di, 1);
 
-  if (dc == NULL)
+  if (dc == NULL || d_peek_char (&di) != '\0')
     return 0;
 
   while (dc != NULL)
