@@ -1,3 +1,19 @@
+2004-07-21  Steven Bosscher  <stevenb@suse.de>
+
+	* rtl.h (insn_note): Remove NOTE_INSN_PREDICTION.
+	* rtl.c (note_insn_name): Likewise.
+	* print-rtl.c (print_rtx): Don't print it.
+	* cfgrtl.h (can_delete_note_p): Don't handle it.
+	(rtl_delete_block): Likewise.
+	* passes.c (rest_of_handle_guess_branch_prob): Remove.
+	(rest_of_compilation): Don't call it.
+	* predict.c (process_note_predictions, process_note_prediction,
+	note_prediction_to_br_prob): Remove.
+	* basic-block.c (note_prediction_to_br_prob): Remove prototype.
+	* stmt.c (return_prediction): Remove.
+	(expand_value_return): Don't call it.  Don't add prediction
+	notes for return statements.
+
 2004-07-21  Josef Zlomek  <zlomekj@suse.cz>
 
 	* var-tracking.c (vt_find_locations): Set the in_pending bitmap at

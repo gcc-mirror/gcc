@@ -1473,18 +1473,6 @@ rest_of_handle_jump (void)
 }
 
 static void
-rest_of_handle_guess_branch_prob (void)
-{
-  /* Turn NOTE_INSN_PREDICTIONs into branch predictions.  */
-  if (flag_guess_branch_prob)
-    {
-      timevar_push (TV_BRANCH_PROB);
-      note_prediction_to_br_prob ();
-      timevar_pop (TV_BRANCH_PROB);
-    }
-}
-
-static void
 rest_of_handle_eh (void)
 {
   insn_locators_initialize ();
@@ -1791,7 +1779,6 @@ rest_of_compilation (void)
     goto exit_rest_of_compilation;
 
   rest_of_handle_jump ();
-  rest_of_handle_guess_branch_prob ();
 
   if (cfun->tail_call_emit)
     fixup_tail_calls ();

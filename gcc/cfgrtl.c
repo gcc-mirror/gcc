@@ -93,8 +93,7 @@ can_delete_note_p (rtx note)
 {
   return (NOTE_LINE_NUMBER (note) == NOTE_INSN_DELETED
 	  || NOTE_LINE_NUMBER (note) == NOTE_INSN_BASIC_BLOCK
-	  || NOTE_LINE_NUMBER (note) == NOTE_INSN_UNLIKELY_EXECUTED_CODE
-	  || NOTE_LINE_NUMBER (note) == NOTE_INSN_PREDICTION);
+	  || NOTE_LINE_NUMBER (note) == NOTE_INSN_UNLIKELY_EXECUTED_CODE);
 }
 
 /* True if a given label can be deleted.  */
@@ -376,15 +375,13 @@ rtl_delete_block (basic_block b)
      and remove the associated NOTE_INSN_EH_REGION_BEG and
      NOTE_INSN_EH_REGION_END notes.  */
 
-  /* Get rid of all NOTE_INSN_PREDICTIONs and NOTE_INSN_LOOP_CONTs
-     hanging before the block.  */
+  /* Get rid of all NOTE_INSN_LOOP_CONTs hanging before the block.  */
 
   for (insn = PREV_INSN (BB_HEAD (b)); insn; insn = PREV_INSN (insn))
     {
       if (!NOTE_P (insn))
 	break;
-      if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_PREDICTION
-	  || NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_CONT)
+      if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_CONT)
 	NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
     }
 

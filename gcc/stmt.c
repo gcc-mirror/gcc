@@ -264,7 +264,6 @@ static bool check_operand_nalternatives (tree, tree);
 static bool check_unique_operand_names (tree, tree);
 static char *resolve_operand_name_1 (char *, tree, tree);
 static void expand_null_return_1 (void);
-static enum br_predictor return_prediction (rtx);
 static rtx shift_return_value (rtx);
 static void expand_value_return (rtx);
 static void do_jump_if_equal (rtx, rtx, rtx, int);
@@ -1811,35 +1810,6 @@ expand_naked_return (void)
   emit_jump (end_label);
 }
 
-/* Try to guess whether the value of return means error code.  */
-static enum br_predictor
-return_prediction (rtx val)
-{
-  /* Different heuristics for pointers and scalars.  */
-  if (POINTER_TYPE_P (TREE_TYPE (DECL_RESULT (current_function_decl))))
-    {
-      /* NULL is usually not returned.  */
-      if (val == const0_rtx)
-	return PRED_NULL_RETURN;
-    }
-  else
-    {
-      /* Negative return values are often used to indicate
-         errors.  */
-      if (GET_CODE (val) == CONST_INT
-	  && INTVAL (val) < 0)
-	return PRED_NEGATIVE_RETURN;
-      /* Constant return values are also usually erors,
-         zero/one often mean booleans so exclude them from the
-	 heuristics.  */
-      if (CONSTANT_P (val)
-	  && (val != const0_rtx && val != const1_rtx))
-	return PRED_CONST_RETURN;
-    }
-  return PRED_NO_PREDICTION;
-}
-
-
 /* If the current function returns values in the most significant part
    of a register, shift return value VAL appropriately.  The mode of
    the function's return type is known not to be BLKmode.  */
@@ -1872,26 +1842,10 @@ shift_return_value (rtx val)
 static void
 expand_value_return (rtx val)
 {
-  rtx return_reg;
-  enum br_predictor pred;
-
-  if (flag_guess_branch_prob
-      && (pred = return_prediction (val)) != PRED_NO_PREDICTION)
-    {
-      /* Emit information for branch prediction.  */
-      rtx note;
-
-      note = emit_note (NOTE_INSN_PREDICTION);
-
-      NOTE_PREDICTION (note) = NOTE_PREDICT (pred, NOT_TAKEN);
-
-    }
-
-  return_reg = DECL_RTL (DECL_RESULT (current_function_decl));
-
   /* Copy the value to the return location
      unless it's already there.  */
 
+  rtx return_reg = DECL_RTL (DECL_RESULT (current_function_decl));
   if (return_reg != val)
     {
       tree type = TREE_TYPE (DECL_RESULT (current_function_decl));

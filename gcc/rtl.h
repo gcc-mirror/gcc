@@ -1029,9 +1029,6 @@ enum insn_note
      NOTE_EXPECTED_VALUE; stored as (eq (reg) (const_int)).  */
   NOTE_INSN_EXPECTED_VALUE,
 
-  /* Record a prediction.  Uses NOTE_PREDICTION.  */
-  NOTE_INSN_PREDICTION,
-
   /* Record that the current basic block is unlikely to be executed and
      should be moved to the UNLIKELY_EXECUTED_TEXT_SECTION.  */
   NOTE_INSN_UNLIKELY_EXECUTED_CODE,
