@@ -1,3 +1,9 @@
+2000-04-20  Tom Tromey  <tromey@cygnus.com>
+
+	* parse.y (not_accessible_p): Use member's class, not current
+	class, when doing inheritance check for protected reference.
+	Fixes PR gcj/124.
+
 Thu Apr 20 18:20:58 2000  Jason Schroeder  <shrode@subnature.com>
 
 	* jcf-dump.c (SPECIAL_IINC): Fixed typo printing iinc instruction.
