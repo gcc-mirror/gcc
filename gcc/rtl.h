@@ -691,7 +691,9 @@ extern char *xrealloc ();
 
 extern char *oballoc			PROTO((int));
 extern char *permalloc			PROTO((int));
+#ifdef NEED_DECLARATION_FREE
 extern void free			PROTO((void *));
+#endif
 extern rtx rtx_alloc			PROTO((RTX_CODE));
 extern rtvec rtvec_alloc		PROTO((int));
 extern rtx copy_rtx			PROTO((rtx));
