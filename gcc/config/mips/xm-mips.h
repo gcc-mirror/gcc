@@ -29,10 +29,3 @@ Boston, MA 02111-1307, USA.  */
    VAX_FLOAT_FORMAT, and UNKNOWN_FLOAT_FORMAT.  */
 
 #define HOST_FLOAT_FORMAT IEEE_FLOAT_FORMAT
-
-#ifndef __GNUC__
-/* The MIPS compiler gets it wrong, and treats enumerated bitfields
-   as signed quantities, making it impossible to use an 8-bit enum
-   for compiling GNU C++.  */
-#define ONLY_INT_FIELDS 1
-#endif

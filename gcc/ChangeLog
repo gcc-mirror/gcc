@@ -1,3 +1,30 @@
+2001-03-11  Zack Weinberg  <zackw@stanford.edu>
+
+	* configure.in: Move check for unsigned enumerated bitfields   
+	to macro in aclocal.m4.  Disable it for now.
+	* configure, config.in: Regenerate.
+	* system.h: Don't do anything with ONLY_INT_FIELDS.  Use the
+	unsigned-int form of ENUM_BITFIELD() unless being compiled by GCC.
+	* varasm.c (struct rtx_const): Use ENUM_BITFIELD().  Move enum
+	kind above its first use.
+
+	* config/xm-interix.h, config/alpha/xm-alpha.h,
+	config/i370/xm-linux.h, config/i386/xm-beos.h,
+	config/i386/xm-mingw32.h, config/mips/xm-mips.h,
+	config/pa/xm-pa.h, config/pa/xm-pa64hpux.h,
+	config/rs6000/xm-beos.h, config/rs6000/xm-sysv4.h, 
+	Don't define ONLY_INT_FIELDS under any circumstances.
+
+	* config/pa/xm-pa.h: Don't define __BSD_NET2__.
+
+	* config/pa/xm-pahpux.h, config/pa/xm-papro.h,
+	config/sparc/xm-sysv4.h: Delete - now identical with some
+	other xm header.
+	* config.gcc (hppa targets): Replace xm-pahpux.h and
+	xm-papro.h with implicit xm-pa.h.
+	(sparc targets): Replace xm-sysv4.h with implicit or explicit
+	xm-sparc.h. 
+
 2001-03-12  Aldy Hernandez  <aldyh@redhat.com>
 
         * reload1.c (reload_cse_simplify): Call reload_cse_simplify_set

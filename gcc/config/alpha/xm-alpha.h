@@ -22,10 +22,3 @@ Boston, MA 02111-1307, USA.  */
 
 /* This describes the machine the compiler is hosted on.  */
 #define	HOST_BITS_PER_LONG	64
-
-/* The host compiler has problems with enum bitfields since it makes
-   them signed so we can't fit all our codes in.  */
-
-#ifndef __GNUC__
-#define ONLY_INT_FIELDS
-#endif

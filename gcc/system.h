@@ -507,14 +507,6 @@ extern void abort PARAMS ((void));
 /* Get libiberty declarations. */
 #include "libiberty.h"
 
-/* Make sure that ONLY_INT_FIELDS has an integral value.  */
-#ifdef ONLY_INT_FIELDS
-#undef ONLY_INT_FIELDS
-#define ONLY_INT_FIELDS 1
-#else
-#define ONLY_INT_FIELDS 0
-#endif 
-
 /* Provide a default for the HOST_BIT_BUCKET.
    This suffices for POSIX-like hosts.  */
 
@@ -522,12 +514,10 @@ extern void abort PARAMS ((void));
 #define HOST_BIT_BUCKET "/dev/null"
 #endif
 
-/* Enumerated bitfields are safe to use unless we've been explictly told
-   otherwise or if they are signed. */
- 
-#define USE_ENUM_BITFIELDS (__GNUC__ || (!ONLY_INT_FIELDS && ENUM_BITFIELDS_ARE_UNSIGNED))
+/* Be conservative and only use enum bitfields with GCC.
+   FIXME: provide a complete autoconf test for buggy enum bitfields.  */
 
-#if USE_ENUM_BITFIELDS
+#if (GCC_VERSION > 2000)
 #define ENUM_BITFIELD(TYPE) enum TYPE
 #else
 #define ENUM_BITFIELD(TYPE) unsigned int

@@ -305,9 +305,6 @@
 /* Define if you have a working <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
 
-/* Define if enumerated bitfields are treated as unsigned values. */
-#undef ENUM_BITFIELDS_ARE_UNSIGNED
-
 /* Define if printf supports %p. */
 #undef HAVE_PRINTF_PTR
 

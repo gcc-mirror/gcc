@@ -23,13 +23,3 @@ Boston, MA 02111-1307, USA.  */
 /* Doubles are stored in memory with the high order word first.  This
    matters when cross-compiling.  */
 #define HOST_WORDS_BIG_ENDIAN 1
-
-/* Place any machine-dependent include files here, in case we
-   are bootstrapping.  */
-
-/* 4.3BSD, OSF1 and Lites on the PA are all derived from NET2 or
-   later code from Berkeley.  */
-#define __BSD_NET2__
-
-/* HP's compiler has problems with enum bitfields.  */
-#define ONLY_INT_FIELDS
