@@ -1,3 +1,15 @@
+2000-11-18  Mark Mitchell  <mark@codesourcery.com>
+
+	* libsupc++/exception_support.h: New header file.
+	* libsupc++/vec.cc: Include it.
+	(__cxa_vec_new2): Recatch exceptions before rethrows.
+	(__cxa_vec_new3): Likewise.
+	(__cxa_vec_ctor): Likewise.
+	(__cxa_vec_cctor): Likewise.
+	(__cxa_vec_dtor): Likewise.
+	(__cxa_vec_delete2): Likewise.
+	(__cxa_vec_delete3): Likewise.
+
 2000-11-17  Theodore Papadopoulo  <Theodore.Papadopoulo@sophia.inria.fr>
 
 	* include/bits/stl_tree.h: Overload operators == and != to be able

@@ -32,12 +32,20 @@
 #include <new>
 #include <exception>
 
-// Exception handling hook, to mark current exception as not caught --
-// generally because we're about to rethrow it after some cleanup.
-extern "C" void __uncatch_exception (void);
+#include "exception_support.h"
 
 namespace __cxxabiv1
 {
+
+namespace 
+{
+struct uncatch_exception {
+  uncatch_exception () { p = __uncatch_exception (); }
+  ~uncatch_exception () { __recatch_exception (p); }
+
+  cp_eh_info *p;
+};
+}
 
 /* allocate and construct array */
 extern "C" void *
@@ -76,8 +84,10 @@ __cxa_vec_new2 (std::size_t element_count,
     }
   catch (...)
     {
-      __uncatch_exception ();
-      dealloc (base - padding_size);
+      {
+	uncatch_exception ue;
+	dealloc (base - padding_size);
+      }
       throw;
     }
   return base;
@@ -107,8 +117,10 @@ __cxa_vec_new3 (std::size_t element_count,
     }
   catch (...)
     {
-      __uncatch_exception ();
-      dealloc (base - padding_size, size);
+      {
+	uncatch_exception ue;
+	dealloc (base - padding_size, size);
+      }
       throw;
     }
   return base;
@@ -133,8 +145,10 @@ __cxa_vec_ctor (void *array_address,
     }
   catch (...)
     {
-      __uncatch_exception ();
-      __cxa_vec_dtor (array_address, ix, element_size, destructor);
+      {
+	uncatch_exception ue;
+	__cxa_vec_dtor (array_address, ix, element_size, destructor);
+      }
       throw;
     }
 }
@@ -162,8 +176,10 @@ __cxa_vec_cctor (void *dest_array,
     }
   catch (...)
     {
-      __uncatch_exception ();
-      __cxa_vec_dtor (dest_array, ix, element_size, destructor);
+      {
+	uncatch_exception ue;
+	__cxa_vec_dtor (dest_array, ix, element_size, destructor);
+      }
       throw;
     }
 }
@@ -197,8 +213,11 @@ __cxa_vec_dtor (void *array_address,
             // [except.ctor]/3 If a destructor called during stack unwinding
             // exits with an exception, terminate is called.
             std::terminate ();
-          __uncatch_exception ();
-          __cxa_vec_dtor (array_address, ix, element_size, destructor);
+	  {
+	    uncatch_exception ue;
+	    __cxa_vec_dtor (array_address, ix, element_size,
+			    destructor);
+	  }
           throw;
         }
     }
@@ -236,8 +255,10 @@ __cxa_vec_delete2 (void *array_address,
         }
       catch (...)
         {
-          __uncatch_exception ();
-          dealloc (base);
+	  {
+	    uncatch_exception ue;
+	    dealloc (base);
+	  }
           throw;
         }
     }
@@ -266,8 +287,10 @@ __cxa_vec_delete3 (void *array_address,
         }
       catch (...)
         {
-          __uncatch_exception ();
-          dealloc (base, size);
+	  {
+	    uncatch_exception ue;
+	    dealloc (base, size);
+	  }
           throw;
         }
     }

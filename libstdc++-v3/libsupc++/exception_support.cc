@@ -32,8 +32,7 @@
 #include "typeinfo"
 #include "exception"
 #include <cstddef>
-#include "gansidecl.h" /* Needed to support macros used in eh-common.h. */
-#include "eh-common.h"
+#include "exception_support.h"
 
 /* Define terminate, unexpected, set_terminate, set_unexpected as
    well as the default terminate func and default unexpected func.  */
@@ -79,40 +78,6 @@ std::unexpected ()
 {
   __unexpected_func ();
 }
-
-/* The type of a function called to clean up an exception object.
-   (These will be destructors.)  Under the old ABI, these take a
-   second argument (the `in-charge' argument), that indicates whether
-   or not do delete the object, and whether or not to destroy virtual
-   bases.  Under the new ABI, there is no second argument.  */
-#if !defined (__GXX_ABI_VERSION) || __GXX_ABI_VERSION < 100
-typedef void (*cleanup_fn)(void *, int);
-/* The `2' is the value for the in-charge parameter that indicates
-   that virtual bases should be destroyed.  */
-#define CALL_CLEANUP(FN, THIS) FN (THIS, 2)
-#else
-typedef void (*cleanup_fn)(void *);
-#define CALL_CLEANUP(FN, THIS) FN (THIS)
-#endif
-
-/* C++-specific state about the current exception.
-   This must match init_exception_processing().
-
-   Note that handlers and caught are not redundant; when rethrown, an
-   exception can have multiple active handlers and still be considered
-   uncaught.  */
-
-struct cp_eh_info
-{
-  __eh_info eh_info;
-  void *value;
-  void *type;
-  cleanup_fn cleanup;
-  bool caught;
-  cp_eh_info *next;
-  long handlers;
-  void *original_value;
-};
 
 /* Language-specific EH info pointer, defined in libgcc2. */
 
@@ -281,7 +246,7 @@ __cp_pop_exception (cp_eh_info *p)
 /* We're doing a rethrow.  Find the currently handled exception, mark it
    uncaught, and move it to the top of the EH stack.  */
 
-extern "C" void
+extern "C" cp_eh_info *
 __uncatch_exception (void)
 {
   cp_eh_info **stack = __get_eh_info ();
@@ -308,6 +273,16 @@ __uncatch_exception (void)
     }
 
   p->caught = false;
+
+  return p;
+}
+
+/* Mark P as caught after we previously marked it as uncaught.  */
+
+extern "C" void
+__recatch_exception (cp_eh_info *p)
+{
+  p->caught = true;
 }
 
 /* As per [except.unexpected]:
