@@ -1,3 +1,18 @@
+2001-07-09  Diego Novillo  <dnovillo@redhat.com>
+
+	* basic-block.h (tree_node): Forward declare if needed.
+	(struct basic_block_def): Add fields 'head_tree' and 'end_tree'.
+	(BLOCK_HEAD_TREE): Define.
+	(BLOCK_END_TREE): Define.
+	(struct loops): Rename field 'tree' to 'tree_root'.
+	* flow.c (entry_exit_blocks): Add initializers for 'head_tree' and 
+	'end_tree'.
+	(flow_loops_tree_build): Rename reference to field 'tree' to
+	'tree_root'.
+	(flow_loops_level_compute): Ditto.
+	* predict.c (estimate_bb_frequencies): Ditto.
+	* tree.h (struct tree_common): Add field 'aux'.
+
 2001-07-09  Stan Shebs  <shebs@apple.com>
 
 	* config/darwin.c (darwin_encode_section_info): Don't mark any
