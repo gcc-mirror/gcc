@@ -1,5 +1,7 @@
 2003-08-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* config/sparc/sparc.c: Convert to ISO C.
+
 	* config/sparc/sparc-protos.h: Don't use the PARAMS macro.
 	* config/sparc/sparc.c: Likewise.
 
