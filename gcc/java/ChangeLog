@@ -1,5 +1,10 @@
 2000-03-07  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
+	* parse.y (qualify_ambiguous_name): Properly handle expressions
+	using `null'.
+	
+2000-03-07  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
 	* parse.y (check_final_assignment): Extended to process
 	COMPOUND_EXPR.
 	(patch_assignment): Have check_final_assignment called only once.
