@@ -743,6 +743,7 @@ mx_register_decls (tree decl, tree *stmt_list)
       if ((TREE_CODE (decl) == VAR_DECL || TREE_CODE (decl) == PARM_DECL) &&
           (! TREE_STATIC (decl)) && /* auto variable */
           (! DECL_EXTERNAL (decl)) && /* not extern variable */
+          (TREE_TYPE (decl) != error_mark_node) && /* not decl with error */
           (COMPLETE_OR_VOID_TYPE_P (TREE_TYPE (decl))) && /* complete type */
           (! mf_marked_p (decl)) && /* not already processed */
           (TREE_ADDRESSABLE (decl))) /* has address taken */
