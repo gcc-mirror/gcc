@@ -9897,7 +9897,29 @@ patch_method_invocation (patch, primary, where, from_super,
          alternate class is specified. */
       else
 	{
-	  class_to_search = (where ? where : current_class);
+	  if (where != NULL_TREE)
+	    class_to_search = where;
+	  else if (QUALIFIED_P (name))
+	    class_to_search = current_class;
+	  else
+	    {
+	      class_to_search = current_class;
+
+	      for (;;)
+		{
+		  if (has_method (class_to_search, name))
+		    break;
+		  if (! INNER_CLASS_TYPE_P (class_to_search))
+		    {
+		      parse_error_context (wfl,
+					   "No method named `%s' in scope",
+					   IDENTIFIER_POINTER (name));
+		      PATCH_METHOD_RETURN_ERROR ();
+		    }
+		  class_to_search
+		    = TREE_TYPE (DECL_CONTEXT (TYPE_NAME (class_to_search)));
+		}
+	    }
 	  lc = 0;
 	}
 
@@ -10512,8 +10534,6 @@ find_applicable_accessible_methods_list (lc, class, name, arglist)
   /* Search classes */
   else
     {
-      tree sc = class;
-      int seen_inner_class = 0;
       search_applicable_methods_list (lc, TYPE_METHODS (class), 
 				      name, arglist, &list, &all_list);
 
@@ -10530,7 +10550,7 @@ find_applicable_accessible_methods_list (lc, class, name, arglist)
       /* We must search all interfaces of this class */
       if (!lc)
       {
-	tree basetype_vec = TYPE_BINFO_BASETYPES (sc);
+	tree basetype_vec = TYPE_BINFO_BASETYPES (class);
 	int n = TREE_VEC_LENGTH (basetype_vec), i;
 	for (i = 1; i < n; i++)
 	  {
@@ -10544,24 +10564,6 @@ find_applicable_accessible_methods_list (lc, class, name, arglist)
 	      }
 	  }
       }
-
-      /* Search enclosing context of inner classes before looking
-         ancestors up. */
-      while (!lc && INNER_CLASS_TYPE_P (class))
-	{
-	  tree rlist;
-	  seen_inner_class = 1;
-	  class = TREE_TYPE (DECL_CONTEXT (TYPE_NAME (class)));
-	  rlist = find_applicable_accessible_methods_list (lc, class, 
-							   name, arglist);
-	  list = chainon (rlist, list);
-	}
-
-      if (!lc && seen_inner_class 
-	  && TREE_TYPE (DECL_CONTEXT (TYPE_NAME (sc))) == CLASSTYPE_SUPER (sc))
-	class = CLASSTYPE_SUPER (sc);
-      else
-	class = sc;
 
       /* Search superclass */
       if (!lc && CLASSTYPE_SUPER (class) != NULL_TREE)

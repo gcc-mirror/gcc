@@ -579,6 +579,13 @@ get_type_from_signature (tree signature)
   return type;
 }
 
+tree
+build_null_signature (type)
+     tree type;
+{
+  return NULL_TREE;
+}
+
 /* Return the signature string for the arguments of method type TYPE. */
 
 tree
@@ -761,9 +768,20 @@ lookup_java_method (searched_class, method_name, method_signature)
 		    method_signature, build_java_signature);
 }
 
-/* Search in class SEARCHED_CLASS (an its superclasses) for a method
+/* Return true iff CLASS (or its ancestors) has a method METHOD_NAME. */
+
+int
+has_method (class, method_name)
+     tree class;
+     tree method_name;
+{
+  return lookup_do (class, class,  method_name,
+		    NULL_TREE, build_null_signature) != NULL_TREE;
+}
+
+/* Search in class SEARCHED_CLASS (and its superclasses) for a method
    matching METHOD_NAME and signature SIGNATURE.  Also search in
-   SEARCHED_INTERFACE (an its superinterfaces) for a similar match.
+   SEARCHED_INTERFACE (and its superinterfaces) for a similar match.
    Return the matched method DECL or NULL_TREE.  SIGNATURE_BUILDER is
    used on method candidates to build their (sometimes partial)
    signature.  */
