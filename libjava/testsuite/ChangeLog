@@ -1,3 +1,8 @@
+1999-08-09  Anthony Green  <green@cygnus.com>
+
+	* libjava.lang/Primes.java: New file.
+	* libjava.lang/Primes.out: New file.
+
 1999-07-31  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* lib/libjava.exp (bytecompile_file): Use `env(SUN_JAVAC)', that
