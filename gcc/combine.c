@@ -3444,6 +3444,13 @@ simplify_rtx (x, op0_mode, last, in_dest)
 	  && GET_MODE (XEXP (XEXP (XEXP (x, 0), 0), 0)) == mode)
 	return gen_unary (GET_CODE (XEXP (x, 0)), mode, mode,
 			  XEXP (XEXP (XEXP (x, 0), 0), 0));
+
+      /* (float_truncate:SF (subreg:DF (float_truncate:SF X) 0))
+	 is (float_truncate:SF x).  */
+      if (GET_CODE (XEXP (x, 0)) == SUBREG
+	  && subreg_lowpart_p (XEXP (x, 0))
+	  && GET_CODE (SUBREG_REG (XEXP (x, 0))) == FLOAT_TRUNCATE)
+	return SUBREG_REG (XEXP (x, 0));
       break;  
 
 #ifdef HAVE_cc0
