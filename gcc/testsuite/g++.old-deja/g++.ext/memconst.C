@@ -12,7 +12,7 @@ public:
 
 class foo {
 private:
-  static const unsigned char * const dummy_key = (unsigned char*)"ThisIs a dummy!";
+  static const unsigned char * const dummy_key = (unsigned char*)"ThisIs a dummy!"; // { dg-error "in-class" }
 
 public:
     void bar ();

@@ -1,3 +1,12 @@
+2002-12-09  Mark Mitchell  <mark@codesourcery.com>
+
+	* NEWS: Document removal of in-class initialization extension for 
+	static data members of non-arithmetic, non-enumeration type.
+	* decl.c (check_static_variable_definition): Do not allow that
+	extension.
+	* decl2.c (grokfield): Do not call digest_init when processing
+	templates.
+
 2002-12-05  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* error.c (dump_expr): Fix format specifier warning.
