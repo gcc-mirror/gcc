@@ -390,7 +390,7 @@ utf8_cmp (str, length, name)
 
 /* This is a sorted list of all C++ keywords.  */
 
-static const char *cxx_keywords[] =
+static const char *const cxx_keywords[] =
 {
   "_Complex",
   "__alignof",

@@ -2774,7 +2774,7 @@ static void
 java_parser_context_suspend ()
 {
   /* This makes debugging through java_debug_context easier */
-  static const char *name = "<inner buffer context>";
+  static const char *const name = "<inner buffer context>";
 
   /* Duplicate the previous context, use it to save the globals we're
      interested in */
@@ -13902,9 +13902,9 @@ merge_string_cste (op1, op2, after)
   /* Reasonable integer constant can be treated right away */
   if (TREE_CODE (op2) == INTEGER_CST && !TREE_CONSTANT_OVERFLOW (op2))
     {
-      static const char *boolean_true = "true";
-      static const char *boolean_false = "false";
-      static const char *null_pointer = "null";
+      static const char *const boolean_true = "true";
+      static const char *const boolean_false = "false";
+      static const char *const null_pointer = "null";
       char ch[3];
       const char *string;
       
