@@ -154,11 +154,7 @@ get_alias_var_decl (tree decl)
       newvar = create_alias_var (decl);
       /* Assign globals to global var for purposes of intraprocedural
 	 analysis.  */
-      if ((DECL_CONTEXT (decl) == NULL 
-	   || TREE_PUBLIC (decl)
-	   || TREE_STATIC (decl)
-	   || decl_function_context (decl) == NULL) 
-	  && decl != pta_global_var)
+      if (TREE_STATIC (decl) && decl != pta_global_var)
 	{
 	  current_alias_ops->addr_assign (current_alias_ops, 
 					  get_alias_var (pta_global_var), 
@@ -1016,7 +1012,7 @@ create_alias_vars (void)
 	{
 	  var = TREE_VALUE (vars);
 	  if (TREE_CODE (var) != LABEL_DECL
-	      && decl_function_context (var) == NULL
+	      && TREE_STATIC (var)
 	      && DECL_INITIAL (var))
 	    find_func_aliases (var);
 	}

@@ -87,16 +87,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    alignment.  */
 #define CEIL_ROUND(VALUE,ALIGN)	(((VALUE) + (ALIGN) - 1) & ~((ALIGN)- 1))
 
-/* NEED_SEPARATE_AP means that we cannot derive ap from the value of fp
-   during rtl generation.  If they are different register numbers, this is
-   always true.  It may also be true if
-   FIRST_PARM_OFFSET - STARTING_FRAME_OFFSET is not a constant during rtl
-   generation.  See fix_lexical_addr for details.  */
-
-#if ARG_POINTER_REGNUM != FRAME_POINTER_REGNUM
-#define NEED_SEPARATE_AP
-#endif
-
 /* Nonzero if function being compiled doesn't contain any calls
    (ignoring the prologue and epilogue).  This is set prior to
    local register allocation and is valid for the remaining
@@ -3570,41 +3560,6 @@ setjmp_args_warning (void)
 	       decl, decl);
 }
 
-
-/* Convert a stack slot address ADDR for variable VAR
-   (from a containing function)
-   into an address valid in this function (using a static chain).  */
-
-rtx
-fix_lexical_addr (rtx addr, tree var)
-{
-  rtx basereg;
-  HOST_WIDE_INT displacement;
-  tree context = decl_function_context (var);
-  struct function *fp;
-  rtx base = 0;
-
-  /* If this is the present function, we need not do anything.  */
-  if (context == current_function_decl)
-    return addr;
-
-  fp = find_function_data (context);
-
-  /* Decode given address as base reg plus displacement.  */
-  if (REG_P (addr))
-    basereg = addr, displacement = 0;
-  else if (GET_CODE (addr) == PLUS && GET_CODE (XEXP (addr, 1)) == CONST_INT)
-    basereg = XEXP (addr, 0), displacement = INTVAL (XEXP (addr, 1));
-  else
-    abort ();
-
-  if (base == 0)
-    abort ();
-
-  /* Use same offset, relative to appropriate static chain or argument
-     pointer.  */
-  return plus_constant (base, displacement);
-}
 
 /* Identify BLOCKs referenced by more than one NOTE_INSN_BLOCK_{BEG,END},
    and create duplicate blocks.  */

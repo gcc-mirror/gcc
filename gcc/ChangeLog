@@ -1,3 +1,22 @@
+2004-07-23  Richard Henderson  <rth@redhat.com>
+
+	* expr.c (expand_expr_real_1): Don't handle non-local variables.
+	* expr.h (fix_lexical_addr): Remove.
+	* function.c (NEED_SEPARATE_AP): Remove.
+	(fix_lexical_addr): Remove.
+	* tree-alias-common.c (get_alias_var_decl): Check TREE_STATIC,
+	not null decl_function_context.
+	(create_alias_vars): Likewise.
+	* tree-cfg.c (make_ctrl_stmt_edges): Don't check for non-local labels.
+	(simple_goto_p): Likewise.
+	* tree-dfa.c (add_referenced_var): Don't check for non-local variables.
+	* tree-ssa-ccp.c (get_default_value): Likewise.
+	* tree-tailcall.c (suitable_for_tail_opt_p): Likewise.
+	* tree.c (needs_to_live_in_memory): Likewise.
+	* tree-flow-inline.h (may_be_aliased): Move...
+	* tree-ssa-alias.c (may_be_aliased): ... here.  Enhance check for
+	when TREE_STATIC variables may be addressable.
+
 2004-07-24  Jakub Jelinek  <jakub@redhat.com>
 
 	* Makefile.in (site.exp): Add HOSTCC and HOSTCFLAGS to site.exp.

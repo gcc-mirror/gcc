@@ -903,11 +903,6 @@ add_referenced_var (tree var, struct walk_state *walk_state)
       /* Global and static variables are call-clobbered, always.  */
       if (needs_to_live_in_memory (var))
 	mark_call_clobbered (var);
-
-      /* DECL_NONLOCAL variables should not be removed, as they are needed
-	 to emit nested functions.  */
-      if (DECL_NONLOCAL (var))
-	v_ann->used = 1;
     }
 }
 

@@ -2473,3 +2473,34 @@ debug_may_aliases_for (tree var)
 {
   dump_may_aliases_for (stderr, var);
 }
+
+/* Return true if VAR may be aliased.  */
+
+bool
+may_be_aliased (tree var)
+{
+  /* Obviously.  */
+  if (TREE_ADDRESSABLE (var))
+    return true;
+
+  /* Automatic variables can't have their addresses escape any other way.  */
+  if (!TREE_STATIC (var))
+    return false;
+
+  /* Globally visible variables can have their addresses taken by other
+     translation units.  */
+  if (DECL_EXTERNAL (var) || TREE_PUBLIC (var))
+    return true;
+
+  /* If we're in unit-at-a-time mode, then we must have seen all occurrences
+     of address-of operators, and so we can trust TREE_ADDRESSABLE.  Otherwise
+     we can only be sure the variable isn't addressable if it's local to the
+     current function.  */
+  if (flag_unit_at_a_time)
+    return false;
+  if (decl_function_context (var) == current_function_decl)
+    return false;
+
+  return true;
+}
+
