@@ -1,3 +1,7 @@
+2003-03-31  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.md (a peephole2): New.
+
 2003-03-31  Michael Matz  <matz@suse.de>
 
 	* config/i386/i386.h (TARGET_FLT_EVAL_METHOD): Change 1 into 0.
