@@ -1,5 +1,15 @@
 2000-05-24  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
 
+	* Makefile.am (TAGS): Construct.
+	* Makefile.in: Rengerate.
+	* src/Makefile.am: Tweak.
+	* src/Makefile.in: Tweak.
+	* configure.in: Tweak.
+
+	* bits/c++config.h: Rename to ...
+	* bits/c++config: This.
+	* mkc++config: Adjust.
+	
 	* m4: Remove.
 	* m4/lc_message.m4: Merge into acinclude.m4.
 	* m4/mathfcts.m4: Same.
