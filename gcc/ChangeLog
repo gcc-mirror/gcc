@@ -1,3 +1,7 @@
+2003-04-19  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* calls.c (expand_call): Provide init for old_stack_pointer_delta.
+
 2003-04-19  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* doc/invoke.texi (-fprofile-arcs): Mention -lgcov, locking and
