@@ -403,7 +403,7 @@ input_operand (op, mode)
      do not get called for MODE_CC values).  These can be in any
      register.  */
   if (register_operand (op, mode))
-    return;
+    return 1;
 
   /* For HImode and QImode, any constant is valid. */
   if ((mode == HImode || mode == QImode)
@@ -709,6 +709,12 @@ print_operand (file, x, code)
 
   switch (code)
     {
+    case '.':
+      /* Write out the bit number for "cror" after a call.   This differs
+	 between AIX 3.2 and earlier versions.  */
+      fprintf (file, "%d", RS6000_CROR_BIT_NUMBER);
+      return;
+
     case 'A':
       /* If X is a constant integer whose low-order 5 bits are zero,
 	 write 'l'.  Otherwise, write 'r'.  This is a kludge to fix a bug
@@ -1223,7 +1229,6 @@ int
 rs6000_sa_size ()
 {
   int size;
-  int i;
 
   /* We have the six fixed words, plus the size of the register save 
      areas, rounded to a double-word.  */
@@ -1318,7 +1323,9 @@ output_prolog (file, size)
   else if (first_fp_reg == 63)
     fprintf (file, "\tstfd 31,-8(1)\n");
   else if (first_fp_reg != 64)
-    fprintf (file, "\tbl ._savef%d\n\tcror 15,15,15\n", first_fp_reg - 32);
+    fprintf (file, "\tbl ._savef%d\n\tcror %d,%d,%d\n", first_fp_reg - 32,
+	     RS6000_CROR_BIT_NUMBER, RS6000_CROR_BIT_NUMBER,
+	     RS6000_CROR_BIT_NUMBER);
 
   /* Now save gpr's.  */
   if (first_reg == 31)
@@ -1421,7 +1428,9 @@ output_epilog (file, size)
       /* If we have to restore more than two FP registers, branch to the
 	 restore function.  It will return to our caller.  */
       if (first_fp_reg < 62)
-	fprintf (file, "\tb ._restf%d\n\tcror 15,15,15\n", first_fp_reg - 32);
+	fprintf (file, "\tb ._restf%d\n\tcror %d,%d,%d\n", first_fp_reg - 32,
+		 RS6000_CROR_BIT_NUMBER, RS6000_CROR_BIT_NUMBER,
+		 RS6000_CROR_BIT_NUMBER);
       else
 	fprintf (file, "\tbr\n");
     }
