@@ -6220,6 +6220,8 @@ find_equiv_reg (goal, insn, class, other, reload_reg_p, goalreg, mode)
 		  if (goal_mem_addr_varies
 		      && reg_overlap_mentioned_for_reload_p (dest, goal))
 		    return 0;
+		  if (xregno == STACK_POINTER_REGNUM && need_stable_sp)
+		    return 0;
 		}
 	      else if (goal_mem && GET_CODE (dest) == MEM
 		       && ! push_operand (dest, GET_MODE (dest)))
