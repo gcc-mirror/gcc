@@ -1,7 +1,7 @@
 // HttpURLConnection.java - Subclass of communications links using
 //			Hypertext Transfer Protocol.
 
-/* Copyright (C) 1999  Free Software Foundation
+/* Copyright (C) 1999, 2000  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -69,11 +69,14 @@ public abstract class HttpURLConnection extends URLConnection
   public static final int HTTP_GATEWAY_TIMEOUT	= 504;
   public static final int HTTP_VERSION		= 505;
 
+  static boolean followRedirects = true;
+
   protected String method = "GET";
   protected int responseCode = -1;
   protected String responseMessage;
+  protected boolean instanceFollowRedirects = followRedirects;
 
-  static boolean followRedirects = true;
+  private boolean gotResponseVals = false;
 
   protected HttpURLConnection(URL url)
   {
@@ -121,21 +124,30 @@ public abstract class HttpURLConnection extends URLConnection
 
   public int getResponseCode() throws IOException
   {
-    getResponseVals();
+    if (!gotResponseVals)
+      getResponseVals();
     return responseCode;
   }
 
   public String getResponseMessage() throws IOException
   {
-    getResponseVals();
+    if (!gotResponseVals)
+      getResponseVals();
     return responseMessage;
   }
 
   private void getResponseVals() throws IOException
   {
+    // getHeaderField() will connect for us, but do it here first in
+    // order to pick up IOExceptions.
+    if (!connected)
+      connect();
+      
+    gotResponseVals = true;
     // Response is the first header received from the connection.
     String respField = getHeaderField(0);
-    if (! respField.startsWith("HTTP/"))
+    
+    if (respField == null || ! respField.startsWith("HTTP/"))
       {
 	// Set to default values on failure.
         responseCode = -1;
@@ -158,10 +170,6 @@ public abstract class HttpURLConnection extends URLConnection
         responseCode = -1;
 	responseMessage = null;
       }
-    if (responseCode == HTTP_NOT_FOUND)
-      throw new FileNotFoundException(url.toString());
-    else if (responseCode >= 400)
-      throw new IOException(url.toString() + " " + respField);
   }
 
   // TODO12: public Permission getPermission() throws IOException
