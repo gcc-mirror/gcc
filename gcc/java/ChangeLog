@@ -1,3 +1,12 @@
+2004-08-16  Tom Tromey  <tromey@redhat.com>
+
+	PR java/8473:
+	* parse.y (primary): Changed for initialized and uninitialized
+	array creations.
+	(array_access): Handle array_creation_initialized.
+	(array_creation_expression): Split into
+	array_creation_initialized and array_creation_uninitialized.
+
 2004-08-16  Andrew Haley  <aph@redhat.com>
 
 	* jcf-write.c (find_constant_index): Canonicalize NaNs when
