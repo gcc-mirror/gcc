@@ -1,3 +1,7 @@
+2000-04-22  Gabriel Dos Reis <gdr@codesourcery.com>
+
+	        * ir.texi:  Document complex number representation.
+	
 2000-04-20  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* rtti.c (init_rtti_processing): Set tinfo_var_id in new-abi.
