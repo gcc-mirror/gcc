@@ -801,7 +801,14 @@ assemble_start_function (decl, fnname)
   if (TREE_PUBLIC (decl))
     {
       if (!first_global_object_name)
-	STRIP_NAME_ENCODING (first_global_object_name, fnname);
+	{
+	  char *p;
+
+	  STRIP_NAME_ENCODING (p, fnname);
+	  first_global_object_name = permalloc (strlen (p) + 1);
+	  strcpy (first_global_object_name, p);
+	}
+
 #ifdef ASM_WEAKEN_LABEL
       if (DECL_WEAK (decl))
 	ASM_WEAKEN_LABEL (asm_out_file, fnname);
@@ -1176,7 +1183,14 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
   if (TREE_PUBLIC (decl) && DECL_NAME (decl))
     {
       if (!first_global_object_name)
-	STRIP_NAME_ENCODING(first_global_object_name, name);
+	{
+	  char *p;
+
+	  STRIP_NAME_ENCODING (p, name);
+	  first_global_object_name = permalloc (strlen (p) + 1);
+	  strcpy (first_global_object_name, p);
+	}
+
 #ifdef ASM_WEAKEN_LABEL
       if (DECL_WEAK (decl))
 	ASM_WEAKEN_LABEL (asm_out_file, name);
