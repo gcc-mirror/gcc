@@ -362,6 +362,7 @@ static void fixup_reorder_chain		PARAMS ((void));
    it being unused. */
 void verify_flow_info			PARAMS ((void));
 int flow_loop_outside_edge_p		PARAMS ((const struct loop *, edge));
+void clear_log_links                    PARAMS ((rtx));
 
 /* Find basic blocks of the current function.
    F is the first insn of the function and NREGS the number of register
@@ -1369,7 +1370,8 @@ split_edge (edge_in)
 	  basic_block jump_block;
 	  rtx pos;
 
-	  if ((e->flags & EDGE_CRITICAL) == 0)
+	  if ((e->flags & EDGE_CRITICAL) == 0
+	      && e->src != ENTRY_BLOCK_PTR)
 	    {
 	      /* Non critical -- we can simply add a jump to the end
 		 of the existing predecessor.  */
@@ -7047,7 +7049,6 @@ flow_loop_outside_edge_p (loop, e)
 }
 
 
-
 typedef struct reorder_block_def {
   int flags;
   int index;
@@ -7769,3 +7770,14 @@ reorder_basic_blocks ()
   flow_loops_free (&loops_info);
 }
 
+
+/* Clear LOG_LINKS fields of insns in a chain.  */
+void
+clear_log_links (insns)
+     rtx insns;
+{
+  rtx i;
+  for (i = insns; i; i = NEXT_INSN (i))
+    if (GET_RTX_CLASS (GET_CODE (i)) == 'i')
+      LOG_LINKS (i) = 0;
+}

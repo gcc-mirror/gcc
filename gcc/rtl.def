@@ -880,6 +880,21 @@ DEF_RTL_EXPR(CONSTANT_P_RTX, "constant_p_rtx", "e", 'x')
    after we select a call method.  */
 DEF_RTL_EXPR(CALL_PLACEHOLDER, "call_placeholder", "uuuu", 'x')
 
+/* The SSA phi operator. 
+
+   The argument is a vector of 2N rtxes.  Element 2N+1 is a CONST_INT
+   containing the block number of the predecessor through which control
+   has passed when the register at element 2N is used.
+
+   Note that PHI may only appear at the beginning of a basic block.
+
+   ??? There may be multiple PHI insns, but they are all evaluated
+   in parallel.  This probably ought to be changed to use a real
+   PARALLEL, as that would be less confusing and more in the spirit
+   of canonical RTL.  It is, however, easier to manipulate this way.  */
+DEF_RTL_EXPR(PHI, "phi", "E", 'x')
+
+
 /*
 Local variables:
 mode:c

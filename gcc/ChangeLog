@@ -1,3 +1,25 @@
+2000-03-09  Richard Henderson  <rth@cygnus.com>
+	    Alex Samuel  <samuel@codesourcery.com> and others
+	
+	* Makefile.in (ssa.o): New rule.
+	(OBJS): Add ssa.o.
+	(STAGESTUFF): Add *.ssa and *.ussa.
+	(mostlyclean): Delete *.ssa, *.ussa, */*.ssa, */*.ussa.
+	* rtl.def (PHI): New RTL expression.
+	* rtl.h (clear_log_links): New declaration.
+	(convert_to_ssa): Likewise.
+	(convert_from_ssa): Likewise.
+	* flow.c (split_edge): If the entry node falls through to the
+	split edge's source block, split the entry edge.
+	(clear_log_links): New function.
+	* toplev.c (ssa_dump): New variable.
+	(flag_ssa): Likewise.
+	(f_options): Add "ssa".
+	(compile_file): Create SSA dump files.
+	(rest_of_compilation): Go to and from SSA if enabled.
+	(decide_d_option): Handle -de for SSA dump files.
+	* ssa.c: New file.
+	
 Thu Mar  9 20:01:38 2000  Jim Wilson  <wilson@cygnus.com>
 
 	* expr.c (expand_assignment): For a CALL_EXPR, special case PARM_DECL
