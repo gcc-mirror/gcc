@@ -758,14 +758,17 @@ efixui (x)
 /* REAL_VALUE_FROM_INT macro.  */
 
 void 
-ereal_from_int (d, i, j)
+ereal_from_int (d, i, j, mode)
      REAL_VALUE_TYPE *d;
      HOST_WIDE_INT i, j;
+     enum machine_mode mode;
 {
   unsigned EMUSHORT df[NE], dg[NE];
   HOST_WIDE_INT low, high;
   int sign;
 
+  if (GET_MODE_CLASS (mode) != MODE_FLOAT)
+    abort ();
   sign = 0;
   low = i;
   if ((high = j) < 0)
@@ -785,6 +788,36 @@ ereal_from_int (d, i, j)
   eadd (df, dg, dg);
   if (sign)
     eneg (dg);
+
+  /* A REAL_VALUE_TYPE may not be wide enough to hold the two HOST_WIDE_INTS.
+     Avoid double-rounding errors later by rounding off now from the
+     extra-wide internal format to the requested precision.  */
+  switch (GET_MODE_BITSIZE (mode))
+    {
+    case 32:
+      etoe24 (dg, df);
+      e24toe (df, dg);
+      break;
+
+    case 64:
+      etoe53 (dg, df);
+      e53toe (df, dg);
+      break;
+
+    case 96:
+      etoe64 (dg, df);
+      e64toe (df, dg);
+      break;
+
+    case 128:
+      etoe113 (dg, df);
+      e113toe (df, dg);
+      break;
+
+    default:
+      abort ();
+  }
+
   PUT_REAL (dg, d);
 }
 
@@ -792,13 +825,16 @@ ereal_from_int (d, i, j)
 /* REAL_VALUE_FROM_UNSIGNED_INT macro.   */
 
 void 
-ereal_from_uint (d, i, j)
+ereal_from_uint (d, i, j, mode)
      REAL_VALUE_TYPE *d;
      unsigned HOST_WIDE_INT i, j;
+     enum machine_mode mode;
 {
   unsigned EMUSHORT df[NE], dg[NE];
   unsigned HOST_WIDE_INT low, high;
 
+  if (GET_MODE_CLASS (mode) != MODE_FLOAT)
+    abort ();
   low = i;
   high = j;
   eldexp (eone, HOST_BITS_PER_WIDE_INT, df);
@@ -806,6 +842,36 @@ ereal_from_uint (d, i, j)
   emul (dg, df, dg);
   ultoe (&low, df);
   eadd (df, dg, dg);
+
+  /* A REAL_VALUE_TYPE may not be wide enough to hold the two HOST_WIDE_INTS.
+     Avoid double-rounding errors later by rounding off now from the
+     extra-wide internal format to the requested precision.  */
+  switch (GET_MODE_BITSIZE (mode))
+    {
+    case 32:
+      etoe24 (dg, df);
+      e24toe (df, dg);
+      break;
+
+    case 64:
+      etoe53 (dg, df);
+      e53toe (df, dg);
+      break;
+
+    case 96:
+      etoe64 (dg, df);
+      e64toe (df, dg);
+      break;
+
+    case 128:
+      etoe113 (dg, df);
+      e113toe (df, dg);
+      break;
+
+    default:
+      abort ();
+  }
+
   PUT_REAL (dg, d);
 }
 
