@@ -1511,7 +1511,7 @@ do							\
 	  _rtl = TREE_CST_RTL (DECL);			\
 	SYMBOL_REF_FLAG (XEXP (_rtl, 0)) = 1;		\
 	if (TREE_CODE (DECL) == FUNCTION_DECL)		\
-	  hppa_encode_label (XEXP (DECL_RTL (DECL), 0));\
+	  hppa_encode_label (XEXP (DECL_RTL (DECL), 0), 0);\
       }							\
   }							\
 while (0)
@@ -1897,7 +1897,7 @@ readonly_data ()							\
 #define ASM_OUTPUT_EXTERNAL_LIBCALL(FILE, RTL) \
   do { fputs ("\t.IMPORT ", FILE);					\
        if (!function_label_operand (RTL, VOIDmode))			\
-	 hppa_encode_label (RTL);					\
+	 hppa_encode_label (RTL, 1);					\
        assemble_name (FILE, XSTR ((RTL), 0));		       		\
        fputs (",CODE\n", FILE);						\
      } while (0)
