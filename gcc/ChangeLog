@@ -1,3 +1,9 @@
+2005-03-15  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.c (s390_secondary_output_reload_class): Adapt check
+	for non-offsettable memory references to cope with outstanding reload
+	replacements, take 2.
+
 2005-03-14  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR c++/20280
