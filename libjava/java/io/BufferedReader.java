@@ -72,6 +72,8 @@ public class BufferedReader extends Reader
      guaranteed to be >= the read-limit requested in the call to mark. */
   int markPos = -1;
 
+  // The JCL book specifies the default buffer size as 8K characters.
+  // This is package-private because it is used by LineNumberReader.
   static final int DEFAULT_BUFFER_SIZE = 8192;
 
   /**
