@@ -3088,10 +3088,10 @@ rs6000_stack_info ()
   info_ptr->reg_size     = reg_size;
   info_ptr->fixed_size   = RS6000_SAVE_AREA;
   info_ptr->varargs_size = RS6000_VARARGS_AREA;
-  info_ptr->vars_size    = ALIGN (get_frame_size (), 8);
-  info_ptr->parm_size    = ALIGN (current_function_outgoing_args_size, 8);
+  info_ptr->vars_size    = RS6000_ALIGN (get_frame_size (), 8);
+  info_ptr->parm_size    = RS6000_ALIGN (current_function_outgoing_args_size, 8);
   info_ptr->fpmem_size	 = (info_ptr->fpmem_p) ? 8 : 0;
-  info_ptr->save_size    = ALIGN (info_ptr->fp_size
+  info_ptr->save_size    = RS6000_ALIGN (info_ptr->fp_size
 				  + info_ptr->gp_size
 				  + info_ptr->cr_size
 				  + info_ptr->lr_size
@@ -3105,7 +3105,7 @@ rs6000_stack_info ()
 			    + info_ptr->varargs_size
 			    + info_ptr->fixed_size);
 
-  info_ptr->total_size   = ALIGN (total_raw_size, ABI_STACK_BOUNDARY / BITS_PER_UNIT);
+  info_ptr->total_size   = RS6000_ALIGN (total_raw_size, ABI_STACK_BOUNDARY / BITS_PER_UNIT);
 
   /* Determine if we need to allocate any stack frame.
      For AIX We need to push the stack if a frame pointer is needed (because
