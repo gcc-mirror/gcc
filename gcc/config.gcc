@@ -620,11 +620,6 @@ arm*-*-linux*)			# ARM GNU/Linux with ELF
 	tmake_file="t-slibgcc-elf-ver t-linux arm/t-linux"
 	extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
 	gnu_ld=yes
-	case ${enable_threads} in
-	  "" | yes | posix)
-	    thread_file='posix'
-	    ;;
-	esac
 	;;
 arm*-*-uclinux*)		# ARM ucLinux
 	tm_file="dbxelf.h elfos.h arm/unknown-elf.h arm/elf.h arm/aout.h arm/arm.h arm/linux-gas.h arm/linux-elf.h arm/uclinux-elf.h"
@@ -1443,9 +1438,6 @@ mips64*-*-linux*)
 	extra_parts="crtbegin.o crtbeginS.o crtbeginT.o crtend.o crtendS.o"
 	gnu_ld=yes
 	gas=yes
-	if test x$enable_threads = xyes; then
-		thread_file='posix'
-	fi
 	;;
 mips*-*-linux*)				# Linux MIPS, either endian.
         tm_file="dbxelf.h elfos.h svr4.h linux.h ${tm_file} mips/linux.h"
@@ -2158,9 +2150,6 @@ am33_2.0-*-linux*)
 	tm_file="mn10300/mn10300.h dbxelf.h elfos.h linux.h mn10300/linux.h"
 	tmake_file="t-linux mn10300/t-linux"
 	gas=yes gnu_ld=yes
-	if test x$enable_threads = xyes; then
-		thread_file='posix'
-	fi
 	extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o"
 	use_collect2=no
 	;;

@@ -1,3 +1,8 @@
+2003-10-09  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* config.gcc: Remove redundant thread_file setting clauses for
+	various *-*-linux* targets.
+
 2003-10-09  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.md (define_asm_attributes): New.
