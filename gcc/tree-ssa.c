@@ -1388,7 +1388,7 @@ warn_uninitialized_var (tree *tp, int *walk_subtrees, void *data)
   /* We only do data flow with SSA_NAMEs, so that's all we can warn about.  */
   if (TREE_CODE (t) == SSA_NAME)
     {
-      warn_uninit (t, "%H'%D' is used uninitialized in this function", locus);
+      warn_uninit (t, "%H%qD is used uninitialized in this function", locus);
       *walk_subtrees = 0;
     }
   else if (IS_TYPE_OR_DECL_P (t))
@@ -1413,7 +1413,7 @@ warn_uninitialized_phi (tree phi)
     {
       tree op = PHI_ARG_DEF (phi, i);
       if (TREE_CODE (op) == SSA_NAME)
-	warn_uninit (op, "%H'%D' may be used uninitialized in this function",
+	warn_uninit (op, "%H%qD may be used uninitialized in this function",
 		     NULL);
     }
 }

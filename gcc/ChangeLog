@@ -1,3 +1,13 @@
+2004-10-31  Roger Sayle  <roger@eyesopen.com>
+
+	PR middle-end/14521
+	* tree-inline.c (inline_forbidden_p_1): Use %qF instead of '%F'
+	for consistent quoting in diagnostic messages.
+	(expand_call_inline): Likewise.
+	* tree-optimize.c (tree_rest_of_compilation): Likewise.
+	* tree-ssa.c (warn_uninitialized_var): Likewise.
+	(warn_uninitialized_phi): Likewise.
+
 2004-10-31  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips.c (mips_cannot_change_mode_class): Use a stricter
