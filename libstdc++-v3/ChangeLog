@@ -1,7 +1,7 @@
 2002-03-25  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
             Paolo Carlini  <pcarlini@unitus.it>
 
-	* testsuite/locale/codecvt_members_unicode_char.cc
+	* testsuite/22_locale/codecvt_members_unicode_char.cc
 	(test01, test02): Fix i_lit_base arrays, making them
 	independent from the endianness of the platform.
 
