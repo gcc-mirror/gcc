@@ -1,3 +1,8 @@
+2000-02-10  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* except.c (check_start_handlers): Re-add prototype lost in last
+	patch.
+
 2000-02-09  Andrew Haley  <aph@cygnus.com>
 
 	* decl.c (clear_binding_level): Remove excess initializer.

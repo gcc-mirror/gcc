@@ -42,6 +42,7 @@ static void expand_end_java_handler PARAMS ((struct eh_range *));
 static struct eh_range *find_handler_in_range PARAMS ((int, struct eh_range *,
 						      struct eh_range *));
 static void link_handler PARAMS ((struct eh_range *, struct eh_range *));
+static void check_start_handlers PARAMS ((struct eh_range *, int));
 
 extern struct obstack permanent_obstack;
 
