@@ -6123,14 +6123,17 @@ if (! TARGET_ARCH64)
 ;; ??? This should be a define expand, so that the extra instruction have
 ;; a chance of being optimized away.
 
-(define_insn "ffsdi2"
-  [(set (match_operand:DI 0 "register_operand" "=&r")
-	(ffs:DI (match_operand:DI 1 "register_operand" "r")))
-   (clobber (match_scratch:DI 2 "=&r"))]
-  "TARGET_ARCH64"
-  "neg %1,%2\;not %2,%2\;xor %1,%2,%2\;popc %2,%0\;movrz %1,0,%0"
-  [(set_attr "type" "multi")
-   (set_attr "length" "5")])
+;; Disabled because none of the UltraSparcs implement popc.  The HAL R1
+;; does, but no one uses that and we don't have a switch for it.
+;
+;(define_insn "ffsdi2"
+;  [(set (match_operand:DI 0 "register_operand" "=&r")
+;	(ffs:DI (match_operand:DI 1 "register_operand" "r")))
+;   (clobber (match_scratch:DI 2 "=&r"))]
+;  "TARGET_ARCH64"
+;  "neg %1,%2\;xnor %1,%2,%2\;popc %2,%0"
+;  [(set_attr "type" "multi")
+;   (set_attr "length" "3")])
 
 ;; Split up troublesome insns for better scheduling.  */
 
