@@ -174,8 +174,7 @@ diagnostic_build_prefix (diagnostic_info *diagnostic)
     "must-not-happen"
   };
   expanded_location s = expand_location (diagnostic->location);
-  if (diagnostic->kind >= DK_LAST_DIAGNOSTIC_KIND)
-    abort();
+  gcc_assert (diagnostic->kind < DK_LAST_DIAGNOSTIC_KIND);
 
   return s.file
     ? build_message_string ("%s:%d: %s",
@@ -194,8 +193,7 @@ diagnostic_count_diagnostic (diagnostic_context *context,
   switch (kind)
     {
     default:
-      abort();
-      break;
+      gcc_unreachable ();
 
     case DK_ICE:
 #ifndef ENABLE_CHECKING

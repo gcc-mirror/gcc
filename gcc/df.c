@@ -648,8 +648,8 @@ df_ref_unlink (struct df_link **phead, struct ref *ref)
 	  /* Only a single ref.  It must be the one we want.
 	     If not, the def-use and use-def chains are likely to
 	     be inconsistent.  */
-	  if (link->ref != ref)
-	    abort ();
+	  gcc_assert (link->ref == ref);
+	  
 	  /* Now have an empty chain.  */
 	  *phead = NULL;
 	}
@@ -808,8 +808,7 @@ df_ref_record (struct df *df, rtx reg, rtx *loc, rtx insn,
 {
   unsigned int regno;
 
-  if (!REG_P (reg) && GET_CODE (reg) != SUBREG)
-    abort ();
+  gcc_assert (REG_P (reg) || GET_CODE (reg) == SUBREG);
 
   /* For the reg allocator we are interested in some SUBREG rtx's, but not
      all.  Notably only those representing a word extraction from a multi-word
@@ -1040,10 +1039,10 @@ df_uses_record (struct df *df, rtx *loc, enum df_ref_type ref_type,
 			      bb, insn, 0);
 	      break;
 	    case STRICT_LOW_PART:
-	      /* A strict_low_part uses the whole REG and not just the SUBREG.  */
+	      /* A strict_low_part uses the whole REG and not just the
+		 SUBREG.  */
 	      dst = XEXP (dst, 0);
-	      if (GET_CODE (dst) != SUBREG)
-		abort ();
+	      gcc_assert (GET_CODE (dst) == SUBREG);
 	      df_uses_record (df, &SUBREG_REG (dst), DF_REF_REG_USE, bb,
 			     insn, DF_REF_READ_WRITE);
 	      break;
@@ -1056,7 +1055,7 @@ df_uses_record (struct df *df, rtx *loc, enum df_ref_type ref_type,
 	      dst = XEXP (dst, 0);
 	      break;
 	    default:
-	      abort ();
+	      gcc_unreachable ();
 	  }
 	return;
       }
@@ -1311,8 +1310,7 @@ df_reg_def_chain_create (struct df *df, bitmap blocks, bool redo)
     {
 #ifdef ENABLE_CHECKING
       for (regno = 0; regno < df->n_regs; regno++)
-	if (df->regs[regno].defs)
-	  abort ();
+	gcc_assert (!df->regs[regno].defs);
 #endif
 
       /* Pretend that all defs are new.  */
@@ -1393,8 +1391,7 @@ df_reg_use_chain_create (struct df *df, bitmap blocks, bool redo)
     {
 #ifdef ENABLE_CHECKING
       for (regno = 0; regno < df->n_regs; regno++)
-	if (df->regs[regno].uses)
-	  abort ();
+	gcc_assert (!df->regs[regno].uses);
 #endif
 
       /* Pretend that all uses are new.  */
@@ -2298,8 +2295,7 @@ df_analyze (struct df *df, bitmap blocks, int flags)
 
   /* We could deal with additional basic blocks being created by
      rescanning everything again.  */
-  if (df->n_bbs && df->n_bbs != (unsigned int) last_basic_block)
-    abort ();
+  gcc_assert (!df->n_bbs || df->n_bbs == (unsigned int) last_basic_block);
 
   update = df_modified_p (df, blocks);
   if (update || (flags != df->flags))
@@ -2321,8 +2317,7 @@ df_analyze (struct df *df, bitmap blocks, int flags)
 	  if (blocks == (bitmap) -1)
 	    blocks = df->bbs_modified;
 
-	  if (! df->n_bbs)
-	    abort ();
+	  gcc_assert (df->n_bbs);
 
 	  df_analyze_1 (df, blocks, flags, 1);
 	  bitmap_zero (df->bbs_modified);
@@ -2631,8 +2626,7 @@ df_insn_delete (struct df *df, basic_block bb ATTRIBUTE_UNUSED, rtx insn)
      handle the JUMP_LABEL?  */
 
   /* We should not be deleting the NOTE_INSN_BASIC_BLOCK or label.  */
-  if (insn == BB_HEAD (bb))
-    abort ();
+  gcc_assert (insn != BB_HEAD (bb));
 
   /* Delete the insn.  */
   delete_insn (insn);
@@ -2796,24 +2790,17 @@ df_refs_reg_replace (struct df *df, bitmap blocks, struct df_link *chain, rtx ol
       if (! INSN_P (insn))
 	continue;
 
-      if (bitmap_bit_p (blocks, DF_REF_BBNO (ref)))
-	{
-	  df_ref_reg_replace (df, ref, oldreg, newreg);
+      gcc_assert (bitmap_bit_p (blocks, DF_REF_BBNO (ref)));
+      
+      df_ref_reg_replace (df, ref, oldreg, newreg);
 
-	  /* Replace occurrences of the reg within the REG_NOTES.  */
-	  if ((! link->next || DF_REF_INSN (ref)
-	      != DF_REF_INSN (link->next->ref))
-	      && REG_NOTES (insn))
-	    {
-	      args.insn = insn;
-	      for_each_rtx (&REG_NOTES (insn), df_rtx_reg_replace, &args);
-	    }
-	}
-      else
+      /* Replace occurrences of the reg within the REG_NOTES.  */
+      if ((! link->next || DF_REF_INSN (ref)
+	   != DF_REF_INSN (link->next->ref))
+	  && REG_NOTES (insn))
 	{
-	  /* Temporary check to ensure that we have a grip on which
-	     regs should be replaced.  */
-	  abort ();
+	  args.insn = insn;
+	  for_each_rtx (&REG_NOTES (insn), df_rtx_reg_replace, &args);
 	}
     }
 }
@@ -2844,8 +2831,7 @@ df_ref_reg_replace (struct df *df, struct ref *ref, rtx oldreg, rtx newreg)
   if (! INSN_P (DF_REF_INSN (ref)))
     return 0;
 
-  if (oldreg && oldreg != DF_REF_REG (ref))
-    abort ();
+  gcc_assert (!oldreg || oldreg == DF_REF_REG (ref));
 
   if (! validate_change (DF_REF_INSN (ref), DF_REF_LOC (ref), newreg, 1))
     return 0;
@@ -2911,10 +2897,8 @@ df_insns_modify (struct df *df, basic_block bb, rtx first_insn, rtx last_insn)
       /* A non-const call should not have slipped through the net.  If
 	 it does, we need to create a new basic block.  Ouch.  The
 	 same applies for a label.  */
-      if ((CALL_P (insn)
-	   && ! CONST_OR_PURE_CALL_P (insn))
-	  || LABEL_P (insn))
-	abort ();
+      gcc_assert ((!CALL_P (insn) || CONST_OR_PURE_CALL_P (insn))
+		  && !LABEL_P (insn));
 
       uid = INSN_UID (insn);
 
@@ -2937,8 +2921,7 @@ df_pattern_emit_before (struct df *df, rtx pattern, basic_block bb, rtx insn)
   rtx prev_insn = PREV_INSN (insn);
 
   /* We should not be inserting before the start of the block.  */
-  if (insn == BB_HEAD (bb))
-    abort ();
+  gcc_assert (insn != BB_HEAD (bb));
   ret_insn = emit_insn_before (pattern, insn);
   if (ret_insn == insn)
     return ret_insn;
@@ -3196,10 +3179,7 @@ df_bb_reg_live_start_p (struct df *df, basic_block bb, rtx reg)
 {
   struct bb_info *bb_info = DF_BB_INFO (df, bb);
 
-#ifdef ENABLE_CHECKING
-  if (! bb_info->lr_in)
-    abort ();
-#endif
+  gcc_assert (bb_info->lr_in);
 
   return bitmap_bit_p (bb_info->lr_in, REGNO (reg));
 }
@@ -3211,10 +3191,7 @@ df_bb_reg_live_end_p (struct df *df, basic_block bb, rtx reg)
 {
   struct bb_info *bb_info = DF_BB_INFO (df, bb);
 
-#ifdef ENABLE_CHECKING
-  if (! bb_info->lr_in)
-    abort ();
-#endif
+  gcc_assert (bb_info->lr_in);
 
   return bitmap_bit_p (bb_info->lr_out, REGNO (reg));
 }
@@ -3234,9 +3211,8 @@ df_bb_regs_lives_compare (struct df *df, basic_block bb, rtx reg1, rtx reg2)
 
 
   /* The regs must be local to BB.  */
-  if (df_regno_bb (df, regno1) != bb
-      || df_regno_bb (df, regno2) != bb)
-    abort ();
+  gcc_assert (df_regno_bb (df, regno1) == bb
+	      && df_regno_bb (df, regno2) == bb);
 
   def2 = df_bb_regno_first_def_find (df, bb, regno2);
   use1 = df_bb_regno_last_use_find (df, bb, regno1);
@@ -3380,8 +3356,7 @@ df_bb_single_def_use_insn_find (struct df *df, basic_block bb, rtx insn, rtx reg
 
   def = df_bb_insn_regno_first_def_find (df, bb, insn, REGNO (reg));
 
-  if (! def)
-    abort ();
+  gcc_assert (def);
 
   du_link = DF_REF_CHAIN (def);
 
@@ -3761,7 +3736,7 @@ dataflow_set_a_op_b (enum set_representation repr,
 	  break;
 
     	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
       break;
 
@@ -3777,12 +3752,12 @@ dataflow_set_a_op_b (enum set_representation repr,
 	  break;
 
     	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 }
 
@@ -3800,7 +3775,7 @@ dataflow_set_copy (enum set_representation repr, void *dest, void *src)
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 }
 
@@ -3816,8 +3791,7 @@ hybrid_search (basic_block bb, struct dataflow *dataflow,
   edge e;
 
   SET_BIT (visited, bb->index);
-  if (!TEST_BIT (pending, bb->index))
-    abort ();
+  gcc_assert (TEST_BIT (pending, bb->index));
   RESET_BIT (pending, i);
 
 #define HS(E_ANTI, E_ANTI_NEXT, E_ANTI_BB, E_ANTI_START_BB, IN_SET,	\

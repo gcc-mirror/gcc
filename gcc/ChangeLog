@@ -1,3 +1,55 @@
+2004-09-08  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* dbxout.c (dbxout_type, dbxout_type_name, dbxout_symbol): Use
+	gcc_assert and gcc_unreachable.
+	* ddg.c (create_ddg_dependence, add_deps_for_def,
+	add_deps_for_use, create_ddg, add_edge_to_ddg): Likewise.
+	* df.c (df_ref_unlink, df_ref_record, df_uses_record,
+	df_reg_def_chain_create, df_reg_use_chain_create, df_analyze,
+	df_insn_delete, df_refs_reg_replace, df_ref_reg_replace,
+	df_insns_modify, df_pattern_emit_before, df_bb_reg_live_start_p,
+	df_bb_reg_live_end_p, df_bb_regs_lives_compare,
+	df_bb_single_def_use_insn_find, dataflow_set_a_op_b,
+	dataflow_set_copy, hybrid_search, diagnostic.c,
+	diagnostic_build_prefix, diagnostic_count_diagnostic): Likewise.
+	* dojump.c (do_jump): Likewise.
+	* dominance.c (calc_dfs_tree_nonrec, calc_dfs_tree,
+	compute_dom_fast_query, calculate_dominance_info,
+	free_dominance_info, get_immediate_dominator,
+	set_immediate_dominator, get_dominated_by,
+	redirect_immediate_dominators, nearest_common_dominator,
+	dominated_by_p, verify_dominators, recount_dominator,
+	iterate_fix_dominators, add_to_dominance_info,
+	delete_from_dominance_info): Likewise.
+	* dwarf2asm.c (size_of_encoded_value, eh_data_format_name,
+	dw2_asm_output_delta_uleb128, dw2_asm_output_delta_sleb128,
+	dw2_force_const_mem, dw2_asm_output_encoded_addr_rtx): Likewise.
+	* dwarf2out.c (expand_builtin_init_dwarf_reg_sizes, reg_save,
+	initial_return_save, stack_adjust_offset, dwarf2out_stack_adjust,
+	flush_queued_reg_saves, dwarf2out_frame_debug_expr,
+	dwarf2out_frame_debug, dw_cfi_oprnd1_desc, output_cfi,
+	output_call_frame_info, output_loc_operands, build_cfa_loc,
+	decl_ultimate_origin, AT_flag, AT_int, AT_unsigned, AT_string,
+	AT_string_form, add_AT_specification, AT_ref, set_AT_ref_external,
+	AT_loc, AT_loc_list, AT_addr, AT_lbl, add_child_die,
+	splice_child_die, attr_checksum, same_dw_val_p,
+	break_out_includes, build_abbrev_table, size_of_die, mark_dies,
+	unmark_dies, value_format, output_loc_list, output_die,
+	output_pubnames, output_aranges, base_type_die, is_base_type,
+	modified_type_die, dbx_reg_number, multiple_reg_loc_descriptor,
+	mem_loc_descriptor, loc_descriptor, loc_descriptor_from_tree_1,
+	field_byte_offset, add_data_member_location_attribute,
+	add_const_value_attribute, rtl_for_decl_location,
+	add_location_or_const_value_attribute, add_byte_size_attribute,
+	add_bit_offset_attribute, add_bit_size_attribute,
+	add_abstract_origin_attribute, pop_decl_scope, scope_die_for,
+	decl_start_label, gen_formal_parameter_die,
+	gen_type_die_for_member, gen_subprogram_die, gen_label_die,
+	gen_typedef_die, gen_type_die, gen_tagged_type_instantiation_die,
+	force_decl_die, force_type_die, gen_decl_die,
+	dwarf2out_imported_module_or_decl, prune_unused_types_prune,
+	dwarf2out_finish): Likewise.
+
 2004-09-08  Andreas Tobler  <toa@pop.agri.ch>
 
 	* Makefile.in (builtins.o): Depend on tree-mudflap.h.
@@ -6014,7 +6066,7 @@
 	* config/i386/xmmintrin.h: Include <mm_malloc.h>.
 
 2004-08-03  H.J. Lu  <hongjiu.lu@intel.com>
-	    Tanguy Fautr√  <tfautre@pandora.be>
+	    Tanguy Fautr√É  <tfautre@pandora.be>
 
 	* config/i386/pmm_malloc.h: New file.
 
