@@ -67,11 +67,15 @@ while (0)
 do									\
 {									\
   /* Sparc-32 leaves PC pointing at a faulting instruction		\
-   always.  So we adjust the saved PC to point to the following		\
-   instruction; this is what the handler in libgcc expects.  */		\
-  /* Note that we are lying to the unwinder here, which expects the	\
-   faulting pc, not pc+1.  But we claim the unwind information can't	\
-   be changed by such a ld or st instruction, so it doesn't matter. */	\
+   always.								\
+   We advance the PC one instruction past the exception causing PC.	\
+   This is done because FDEs are found with "context->ra - 1" in the	\
+   unwinder.								\
+   Also, the dwarf2 unwind machinery is going to add 8 to the		\
+   PC it uses on Sparc.  So we adjust the PC here.  We do it here	\
+   because we run once for such an exception, however the Sparc specific\
+   unwind can run multiple times for the same exception and it would	\
+   adjust the PC more than once resulting in a bogus value.  */		\
   struct sig_regs {							\
     unsigned int psr, pc, npc, y, u_regs[16];				\
   } *regp;								\
@@ -83,8 +87,7 @@ do									\
   else									\
     /* mov __NR_rt_sigaction, %g1; New signal stack layout */		\
     regp = (struct sig_regs *) (_sip + 1);				\
-  regp->pc = regp->npc;							\
-  regp->npc += 4;							\
+  regp->pc = ((regp->pc + 4) - 8);					\
 }									\
 while (0)
 #else
@@ -92,18 +95,21 @@ while (0)
 do									\
 {									\
   /* Sparc-64 leaves PC pointing at a faulting instruction		\
-   always.  So we adjust the saved PC to point to the following		\
-   instruction; this is what the handler in libgcc expects.  */		\
-  /* Note that we are lying to the unwinder here, which expects the	\
-   faulting pc, not pc+1.  But we claim the unwind information can't	\
-   be changed by such a ld or st instruction, so it doesn't matter. */	\
+   always.								\
+   We advance the PC one instruction past the exception causing PC.	\
+   This is done because FDEs are found with "context->ra - 1" in the	\
+   unwinder.								\
+   Also, the dwarf2 unwind machinery is going to add 8 to the		\
+   PC it uses on Sparc.  So we adjust the PC here.  We do it here	\
+   because we run once for such an exception, however the Sparc specific\
+   unwind can run multiple times for the same exception and it would	\
+   adjust the PC more than once resulting in a bogus value.  */		\
   struct pt_regs {							\
     unsigned long u_regs[16];						\
     unsigned long tstate, tpc, tnpc;					\
     unsigned int y, fprs;						\
   } *regp = (struct pt_regs *) (_sip + 1);				\
-  regp->tpc = regp->tnpc;						\
-  regp->tnpc += 4;							\
+  regp->tpc = ((regp->tpc + 4) - 8);					\
 }									\
 while (0)
 #endif

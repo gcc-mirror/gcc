@@ -1,3 +1,10 @@
+2002-04-25  David S. Miller  <davem@redhat.com>
+
+	PR target/6422
+	* include/dwarf2-signal.h (MAKE_THROW_FRAME for sparc*): Set
+	program counter to next program counter minus 8.  Update
+	comments in this macro to explain why.
+
 2002-04-22  Tom Tromey  <tromey@redhat.com>
 
 	* gnu/gcj/natCore.cc (create): Use __builtin_alloca, and compute
