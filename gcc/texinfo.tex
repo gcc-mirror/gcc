@@ -1,5 +1,5 @@
 %% TeX macros to handle Texinfo files.
-%% $Id: texinfo.tex,v 2.191 1996/11/16 00:20:09 karl Exp karl $
+%% $Id: texinfo.tex,v 2.192 1996/11/17 00:12:46 karl Exp karl $
 
 %  Copyright (C) 1985, 86, 88, 90, 91, 92, 93,
 %                94, 95, 1996 Free Software Foundation, Inc.
@@ -36,7 +36,7 @@
 
 % This automatically updates the version number based on RCS.
 \def\deftexinfoversion$#1: #2 ${\def\texinfoversion{#2}}
-\deftexinfoversion$Revision: 2.191 $
+\deftexinfoversion$Revision: 2.192 $
 \message{Loading texinfo package [Version \texinfoversion]:}
 
 % If in a .fmt file, print the version number
@@ -4049,19 +4049,21 @@ width0pt\relax} \fi
 
 \def\deftypevar{\defvarparsebody\Edeftypevar\deftypevarx\deftypevarheader}
 
-% #1 is the data type.  #2 is the name.
+% #1 is the data type.  #2 is the name, perhaps followed by text that
+% is actually part of the data type, which should not be put into the index.
 \def\deftypevarheader #1#2{%
-\doind {vr}{\code{#2}}% Make entry in variables index
+\dovarind#2 \relax% Make entry in variables index
 \begingroup\defname {\defheaderxcond#1\relax$$$#2}{Variable}%
 \interlinepenalty=10000
 \endgraf\penalty 10000\vskip -\parskip\penalty 10000
 \endgroup}
+\def\dovarind#1 #2\relax{\doind{vr}{\code{#1}}}
 
 % @deftypevr {Global Flag} int enable
 
 \def\deftypevr{\defvrparsebody\Edeftypevr\deftypevrx\deftypevrheader}
 
-\def\deftypevrheader #1#2#3{\doind {vr}{\code{#3}}%
+\def\deftypevrheader #1#2#3{\dovarind#3 \relax%
 \begingroup\defname {\defheaderxcond#2\relax$$$#3}{#1}
 \interlinepenalty=10000
 \endgraf\penalty 10000\vskip -\parskip\penalty 10000
