@@ -55,6 +55,7 @@ Boston, MA 02111-1307, USA.  */
 #include "langhooks.h"
 #include "cfglayout.h"
 #include "sched-int.h"
+#include "tree-gimple.h"
 
 /* Enumeration for all of the relational tests, so that we can build
    arrays indexed by the test type, and not worry about the order
@@ -288,6 +289,7 @@ static void mips_init_libfuncs (void);
 static void mips_setup_incoming_varargs (CUMULATIVE_ARGS *, enum machine_mode,
 					 tree, int *, int);
 static tree mips_build_builtin_va_list (void);
+static tree mips_gimplify_va_arg_expr (tree, tree, tree *, tree *);
 
 #if TARGET_IRIX
 static void irix_asm_named_section_1 (const char *, unsigned int,
@@ -716,6 +718,8 @@ const struct mips_cpu_info mips_cpu_info_table[] = {
 
 #undef TARGET_BUILD_BUILTIN_VA_LIST
 #define TARGET_BUILD_BUILTIN_VA_LIST mips_build_builtin_va_list
+#undef TARGET_GIMPLIFY_VA_ARG_EXPR
+#define TARGET_GIMPLIFY_VA_ARG_EXPR mips_gimplify_va_arg_expr
 
 #undef TARGET_PROMOTE_FUNCTION_ARGS
 #define TARGET_PROMOTE_FUNCTION_ARGS hook_bool_tree_true
@@ -3554,22 +3558,15 @@ mips_arg_info (const CUMULATIVE_ARGS *cum, enum machine_mode mode,
 	even_reg_p = true;
     }
 
-  if (mips_abi != ABI_EABI && targetm.calls.must_pass_in_stack (mode, type))
-    /* This argument must be passed on the stack.  Eat up all the
-       remaining registers.  */
-    info->reg_offset = MAX_ARGS_IN_REGISTERS;
-  else
-    {
-      /* Set REG_OFFSET to the register count we're interested in.
-	 The EABI allocates the floating-point registers separately,
-	 but the other ABIs allocate them like integer registers.  */
-      info->reg_offset = (mips_abi == ABI_EABI && info->fpr_p
-			  ? cum->num_fprs
-			  : cum->num_gprs);
+  /* Set REG_OFFSET to the register count we're interested in.
+     The EABI allocates the floating-point registers separately,
+     but the other ABIs allocate them like integer registers.  */
+  info->reg_offset = (mips_abi == ABI_EABI && info->fpr_p
+		      ? cum->num_fprs
+		      : cum->num_gprs);
 
-      if (even_reg_p)
-	info->reg_offset += info->reg_offset & 1;
-    }
+  if (even_reg_p)
+    info->reg_offset += info->reg_offset & 1;
 
   /* The alignment applied to registers is also applied to stack arguments.  */
   info->stack_offset = cum->stack_words;
@@ -4041,272 +4038,179 @@ mips_va_start (tree valist, rtx nextarg)
 
 /* Implement va_arg.  */
 
-rtx
-mips_va_arg (tree valist, tree type)
+static tree
+mips_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p, tree *post_p)
 {
   HOST_WIDE_INT size, rsize;
-  rtx addr_rtx;
-  tree t;
+  tree addr;
+  bool indirect;
+
+  indirect
+    = function_arg_pass_by_reference (NULL, TYPE_MODE (type), type, 0);
+
+  if (indirect)
+    type = build_pointer_type (type);
 
   size = int_size_in_bytes (type);
   rsize = (size + UNITS_PER_WORD - 1) & -UNITS_PER_WORD;
 
-  if (mips_abi == ABI_EABI)
-    {
-      bool indirect;
-      rtx r;
-
-      indirect
-	= function_arg_pass_by_reference (NULL, TYPE_MODE (type), type, 0);
-
-      if (indirect)
-	{
-	  size = POINTER_SIZE / BITS_PER_UNIT;
-	  rsize = UNITS_PER_WORD;
-	}
-
-      if (!EABI_FLOAT_VARARGS_P)
-	{
-	  /* Case of all args in a merged stack.  No need to check bounds,
-	     just advance valist along the stack.  */
-
-	  tree gpr = valist;
-	  if (!indirect
-	      && !TARGET_64BIT
-	      && TYPE_ALIGN (type) > (unsigned) BITS_PER_WORD)
-	    {
-	      /* Align the pointer using: ap = (ap + align - 1) & -align,
-		 where align is 2 * UNITS_PER_WORD.  */
-	      t = build (PLUS_EXPR, TREE_TYPE (gpr), gpr,
-			 build_int_2 (2 * UNITS_PER_WORD - 1, 0));
-	      t = build (BIT_AND_EXPR, TREE_TYPE (t), t,
-			 build_int_2 (-2 * UNITS_PER_WORD, -1));
-	      t = build (MODIFY_EXPR, TREE_TYPE (gpr), gpr, t);
-	      expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
-	    }
-
-	  /* Emit code to set addr_rtx to the valist, and postincrement
-	     the valist by the size of the argument, rounded up to the
-	     next word.	 Account for padding on big-endian targets.  */
-	  t = build (POSTINCREMENT_EXPR, TREE_TYPE (gpr), gpr,
-		     size_int (rsize));
-	  addr_rtx = expand_expr (t, 0, Pmode, EXPAND_NORMAL);
-	  if (BYTES_BIG_ENDIAN)
-	    addr_rtx = plus_constant (addr_rtx, rsize - size);
-
-	  /* Flush the POSTINCREMENT.  */
-	  emit_queue();
-	}
-      else
-	{
-	  /* Not a simple merged stack.	 */
-
-	  tree f_ovfl, f_gtop, f_ftop, f_goff, f_foff;
-	  tree ovfl, top, off;
-	  rtx lab_over = NULL_RTX, lab_false;
-	  HOST_WIDE_INT osize;
-
-	  addr_rtx = gen_reg_rtx (Pmode);
-
-	  f_ovfl = TYPE_FIELDS (va_list_type_node);
-	  f_gtop = TREE_CHAIN (f_ovfl);
-	  f_ftop = TREE_CHAIN (f_gtop);
-	  f_goff = TREE_CHAIN (f_ftop);
-	  f_foff = TREE_CHAIN (f_goff);
-
-	  /* We maintain separate pointers and offsets for floating-point
-	     and integer arguments, but we need similar code in both cases.
-	     Let:
-
-		 TOP be the top of the register save area;
-		 OFF be the offset from TOP of the next register;
-		 ADDR_RTX be the address of the argument;
-		 RSIZE be the number of bytes used to store the argument
-		   when it's in the register save area;
-		 OSIZE be the number of bytes used to store it when it's
-		   in the stack overflow area; and
-		 PADDING be (BYTES_BIG_ENDIAN ? OSIZE - RSIZE : 0)
-
-	     The code we want is:
-
-		  1: off &= -rsize;	  // round down
-		  2: if (off != 0)
-		  3:   {
-		  4:	 addr_rtx = top - off;
-		  5:	 off -= rsize;
-		  6:   }
-		  7: else
-		  8:   {
-		  9:	 ovfl += ((intptr_t) ovfl + osize - 1) & -osize;
-		 10:	 addr_rtx = ovfl + PADDING;
-		 11:	 ovfl += osize;
-		 14:   }
-
-	     [1] and [9] can sometimes be optimized away.  */
-
-	  lab_false = gen_label_rtx ();
-	  lab_over = gen_label_rtx ();
-
-	  ovfl = build (COMPONENT_REF, TREE_TYPE (f_ovfl), valist, f_ovfl,
-			NULL_TREE);
-	  if (GET_MODE_CLASS (TYPE_MODE (type)) == MODE_FLOAT
-	      && GET_MODE_SIZE (TYPE_MODE (type)) <= UNITS_PER_FPVALUE)
-	    {
-	      top = build (COMPONENT_REF, TREE_TYPE (f_ftop), valist, f_ftop,
-			   NULL_TREE);
-	      off = build (COMPONENT_REF, TREE_TYPE (f_foff), valist, f_foff,
-			   NULL_TREE);
-
-	      /* When floating-point registers are saved to the stack,
-		 each one will take up UNITS_PER_HWFPVALUE bytes, regardless
-		 of the float's precision.  */
-	      rsize = UNITS_PER_HWFPVALUE;
-
-	      /* Overflow arguments are padded to UNITS_PER_WORD bytes
-		 (= PARM_BOUNDARY bits).  This can be different from RSIZE
-		 in two cases:
-
-		     (1) On 32-bit targets when TYPE is a structure such as:
-
-			     struct s { float f; };
-
-			 Such structures are passed in paired FPRs, so RSIZE
-			 will be 8 bytes.  However, the structure only takes
-			 up 4 bytes of memory, so OSIZE will only be 4.
-
-		     (2) In combinations such as -mgp64 -msingle-float
-			 -fshort-double.  Doubles passed in registers
-			 will then take up 4 (UNITS_PER_HWFPVALUE) bytes,
-			 but those passed on the stack take up
-			 UNITS_PER_WORD bytes.  */
-	      osize = MAX (GET_MODE_SIZE (TYPE_MODE (type)), UNITS_PER_WORD);
-	    }
-	  else
-	    {
-	      top = build (COMPONENT_REF, TREE_TYPE (f_gtop), valist, f_gtop,
-			   NULL_TREE);
-	      off = build (COMPONENT_REF, TREE_TYPE (f_goff), valist, f_goff,
-			   NULL_TREE);
-	      if (rsize > UNITS_PER_WORD)
-		{
-		  /* [1] Emit code for: off &= -rsize.	*/
-		  t = build (BIT_AND_EXPR, TREE_TYPE (off), off,
-			     build_int_2 (-rsize, -1));
-		  t = build (MODIFY_EXPR, TREE_TYPE (off), off, t);
-		  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
-		}
-	      osize = rsize;
-	    }
-
-	  /* [2] Emit code to branch if off == 0.  */
-	  r = expand_expr (off, NULL_RTX, TYPE_MODE (TREE_TYPE (off)),
-			   EXPAND_NORMAL);
-	  emit_cmp_and_jump_insns (r, const0_rtx, EQ, const1_rtx, GET_MODE (r),
-				   1, lab_false);
-
-	  /* [4] Emit code for: addr_rtx = top - off.  On big endian machines,
-	     the argument has RSIZE - SIZE bytes of leading padding.  */
-	  t = build (MINUS_EXPR, TREE_TYPE (top), top, off);
-	  if (BYTES_BIG_ENDIAN && rsize > size)
-	    t = build (PLUS_EXPR, TREE_TYPE (t), t,
-		       build_int_2 (rsize - size, 0));
-	  r = expand_expr (t, addr_rtx, Pmode, EXPAND_NORMAL);
-	  if (r != addr_rtx)
-	    emit_move_insn (addr_rtx, r);
-
-	  /* [5] Emit code for: off -= rsize.  */
-	  t = build (MINUS_EXPR, TREE_TYPE (off), off, build_int_2 (rsize, 0));
-	  t = build (MODIFY_EXPR, TREE_TYPE (off), off, t);
-	  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
-
-	  /* [7] Emit code to jump over the else clause, then the label
-	     that starts it.  */
-	  emit_queue();
-	  emit_jump (lab_over);
-	  emit_barrier ();
-	  emit_label (lab_false);
-
-	  if (osize > UNITS_PER_WORD)
-	    {
-	      /* [9] Emit: ovfl += ((intptr_t) ovfl + osize - 1) & -osize.  */
-	      t = build (PLUS_EXPR, TREE_TYPE (ovfl), ovfl,
-			 build_int_2 (osize - 1, 0));
-	      t = build (BIT_AND_EXPR, TREE_TYPE (ovfl), t,
-			 build_int_2 (-osize, -1));
-	      t = build (MODIFY_EXPR, TREE_TYPE (ovfl), ovfl, t);
-	      expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
-	    }
-
-	  /* [10, 11].	Emit code to store ovfl in addr_rtx, then
-	     post-increment ovfl by osize.  On big-endian machines,
-	     the argument has OSIZE - SIZE bytes of leading padding.  */
-	  t = build (POSTINCREMENT_EXPR, TREE_TYPE (ovfl), ovfl,
-		     size_int (osize));
-	  if (BYTES_BIG_ENDIAN && osize > size)
-	    t = build (PLUS_EXPR, TREE_TYPE (t), t,
-		       build_int_2 (osize - size, 0));
-	  r = expand_expr (t, addr_rtx, Pmode, EXPAND_NORMAL);
-	  if (r != addr_rtx)
-	    emit_move_insn (addr_rtx, r);
-
-	  emit_queue();
-	  emit_label (lab_over);
-	}
-      if (indirect)
-	{
-	  addr_rtx = force_reg (Pmode, addr_rtx);
-	  r = gen_rtx_MEM (Pmode, addr_rtx);
-	  set_mem_alias_set (r, get_varargs_alias_set ());
-	  emit_move_insn (addr_rtx, r);
-	}
-      return addr_rtx;
-    }
+  if (mips_abi != ABI_EABI || !EABI_FLOAT_VARARGS_P)
+    addr = std_gimplify_va_arg_expr (valist, type, pre_p, post_p);
   else
     {
-      /* Not EABI.  */
-      int align;
-      HOST_WIDE_INT min_offset;
+      /* Not a simple merged stack.	 */
 
-      /* ??? The original va-mips.h did always align, despite the fact
-	 that alignments <= UNITS_PER_WORD are preserved by the va_arg
-	 increment mechanism.  */
+      tree f_ovfl, f_gtop, f_ftop, f_goff, f_foff;
+      tree ovfl, top, off, align;
+      HOST_WIDE_INT osize;
+      tree t, u;
 
-      if (TARGET_NEWABI && TYPE_ALIGN (type) > 64)
-	align = 16;
-      else if (TARGET_64BIT)
-	align = 8;
-      else if (TYPE_ALIGN (type) > 32)
-	align = 8;
+      f_ovfl = TYPE_FIELDS (va_list_type_node);
+      f_gtop = TREE_CHAIN (f_ovfl);
+      f_ftop = TREE_CHAIN (f_gtop);
+      f_goff = TREE_CHAIN (f_ftop);
+      f_foff = TREE_CHAIN (f_goff);
+
+      /* We maintain separate pointers and offsets for floating-point
+	 and integer arguments, but we need similar code in both cases.
+	 Let:
+
+	 TOP be the top of the register save area;
+	 OFF be the offset from TOP of the next register;
+	 ADDR_RTX be the address of the argument;
+	 RSIZE be the number of bytes used to store the argument
+	 when it's in the register save area;
+	 OSIZE be the number of bytes used to store it when it's
+	 in the stack overflow area; and
+	 PADDING be (BYTES_BIG_ENDIAN ? OSIZE - RSIZE : 0)
+
+	 The code we want is:
+
+	 1: off &= -rsize;	  // round down
+	 2: if (off != 0)
+	 3:   {
+	 4:	 addr_rtx = top - off;
+	 5:	 off -= rsize;
+	 6:   }
+	 7: else
+	 8:   {
+	 9:	 ovfl += ((intptr_t) ovfl + osize - 1) & -osize;
+	 10:	 addr_rtx = ovfl + PADDING;
+	 11:	 ovfl += osize;
+	 14:   }
+
+	 [1] and [9] can sometimes be optimized away.  */
+
+      ovfl = build (COMPONENT_REF, TREE_TYPE (f_ovfl), valist, f_ovfl,
+		    NULL_TREE);
+
+      if (GET_MODE_CLASS (TYPE_MODE (type)) == MODE_FLOAT
+	  && GET_MODE_SIZE (TYPE_MODE (type)) <= UNITS_PER_FPVALUE)
+	{
+	  top = build (COMPONENT_REF, TREE_TYPE (f_ftop), valist, f_ftop,
+		       NULL_TREE);
+	  off = build (COMPONENT_REF, TREE_TYPE (f_foff), valist, f_foff,
+		       NULL_TREE);
+
+	  /* When floating-point registers are saved to the stack,
+	     each one will take up UNITS_PER_HWFPVALUE bytes, regardless
+	     of the float's precision.  */
+	  rsize = UNITS_PER_HWFPVALUE;
+
+	  /* Overflow arguments are padded to UNITS_PER_WORD bytes
+	     (= PARM_BOUNDARY bits).  This can be different from RSIZE
+	     in two cases:
+
+	     (1) On 32-bit targets when TYPE is a structure such as:
+
+	     struct s { float f; };
+
+	     Such structures are passed in paired FPRs, so RSIZE
+	     will be 8 bytes.  However, the structure only takes
+	     up 4 bytes of memory, so OSIZE will only be 4.
+
+	     (2) In combinations such as -mgp64 -msingle-float
+	     -fshort-double.  Doubles passed in registers
+	     will then take up 4 (UNITS_PER_HWFPVALUE) bytes,
+	     but those passed on the stack take up
+	     UNITS_PER_WORD bytes.  */
+	  osize = MAX (GET_MODE_SIZE (TYPE_MODE (type)), UNITS_PER_WORD);
+	}
       else
-	align = 4;
+	{
+	  top = build (COMPONENT_REF, TREE_TYPE (f_gtop), valist, f_gtop,
+		       NULL_TREE);
+	  off = build (COMPONENT_REF, TREE_TYPE (f_goff), valist, f_goff,
+		       NULL_TREE);
+	  if (rsize > UNITS_PER_WORD)
+	    {
+	      /* [1] Emit code for: off &= -rsize.	*/
+	      t = build (BIT_AND_EXPR, TREE_TYPE (off), off,
+			 build_int_2 (-rsize, -1));
+	      t = build (MODIFY_EXPR, TREE_TYPE (off), off, t);
+	      gimplify_and_add (t, pre_p);
+	    }
+	  osize = rsize;
+	}
 
-      t = build (PLUS_EXPR, TREE_TYPE (valist), valist,
-		 build_int_2 (align - 1, 0));
-      t = build (BIT_AND_EXPR, TREE_TYPE (t), t, build_int_2 (-align, -1));
+      /* [2] Emit code to branch if off == 0.  */
+      t = lang_hooks.truthvalue_conversion (off);
+      addr = build (COND_EXPR, ptr_type_node, t, NULL, NULL);
 
-      /* If arguments of type TYPE must be passed on the stack,
-	 set MIN_OFFSET to the offset of the first stack parameter.  */
-      if (!targetm.calls.must_pass_in_stack (TYPE_MODE (type), type))
-	min_offset = 0;
-      else if (TARGET_NEWABI)
-	min_offset = current_function_pretend_args_size;
+      /* [5] Emit code for: off -= rsize.  We do this as a form of
+	 post-increment not available to C.  Also widen for the
+	 coming pointer arithmetic.  */
+      t = fold_convert (TREE_TYPE (off), build_int_2 (rsize, 0));
+      t = build (POSTDECREMENT_EXPR, TREE_TYPE (off), off, t);
+      t = fold_convert (sizetype, t);
+      t = fold_convert (TREE_TYPE (top), t);
+
+      /* [4] Emit code for: addr_rtx = top - off.  On big endian machines,
+	 the argument has RSIZE - SIZE bytes of leading padding.  */
+      t = build (MINUS_EXPR, TREE_TYPE (top), top, t);
+      if (BYTES_BIG_ENDIAN && rsize > size)
+	{
+	  u = fold_convert (TREE_TYPE (t), build_int_2 (rsize - size, 0));
+	  t = build (PLUS_EXPR, TREE_TYPE (t), t, u);
+	}
+      COND_EXPR_THEN (addr) = t;
+
+      if (osize > UNITS_PER_WORD)
+	{
+	  /* [9] Emit: ovfl += ((intptr_t) ovfl + osize - 1) & -osize.  */
+	  u = fold_convert (TREE_TYPE (ovfl), build_int_2 (osize - 1, 0));
+	  t = build (PLUS_EXPR, TREE_TYPE (ovfl), ovfl, u);
+	  u = fold_convert (TREE_TYPE (ovfl), build_int_2 (-osize, -1));
+	  t = build (BIT_AND_EXPR, TREE_TYPE (ovfl), t, u);
+	  align = build (MODIFY_EXPR, TREE_TYPE (ovfl), ovfl, t);
+	}
       else
-	min_offset = REG_PARM_STACK_SPACE (current_function_decl);
+	align = NULL;
 
-      /* Make sure the new address is at least MIN_OFFSET bytes from
-	 the incoming argument pointer.  */
-      if (min_offset > 0)
-	t = build (MAX_EXPR, TREE_TYPE (valist), t,
-		   make_tree (TREE_TYPE (valist),
-			      plus_constant (virtual_incoming_args_rtx,
-					     min_offset)));
+      /* [10, 11].	Emit code to store ovfl in addr_rtx, then
+	 post-increment ovfl by osize.  On big-endian machines,
+	 the argument has OSIZE - SIZE bytes of leading padding.  */
+      u = fold_convert (TREE_TYPE (ovfl), build_int_2 (osize, 0));
+      t = build (POSTINCREMENT_EXPR, TREE_TYPE (ovfl), ovfl, u);
+      if (BYTES_BIG_ENDIAN && osize > size)
+	{
+	  u = fold_convert (TREE_TYPE (t), build_int_2 (osize - size, 0));
+	  t = build (PLUS_EXPR, TREE_TYPE (t), t, u);
+	}
 
-      t = build (MODIFY_EXPR, TREE_TYPE (valist), valist, t);
-      expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
+      /* String [9] and [10,11] together.  */
+      if (align)
+	t = build (COMPOUND_EXPR, TREE_TYPE (t), align, t);
+      COND_EXPR_ELSE (addr) = t;
 
-      /* Everything past the alignment is standard.  */
-      return std_expand_builtin_va_arg (valist, type);
+      addr = fold_convert (build_pointer_type (type), addr);
+      addr = build_fold_indirect_ref (addr);
     }
+
+  if (indirect)
+    addr = build_fold_indirect_ref (addr);
+
+  return addr;
 }
 
 /* Return true if it is possible to use left/right accesses for a
@@ -7425,18 +7329,22 @@ function_arg_pass_by_reference (const CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
 				enum machine_mode mode, tree type,
 				int named ATTRIBUTE_UNUSED)
 {
-  int size;
+  if (mips_abi == ABI_EABI)
+    {
+      int size;
 
-  /* The EABI is the only one to pass args by reference.  */
-  if (mips_abi != ABI_EABI)
-    return 0;
+      /* ??? How should SCmode be handled?  */
+      if (type == NULL_TREE || mode == DImode || mode == DFmode)
+	return 0;
 
-  /* ??? How should SCmode be handled?  */
-  if (type == NULL_TREE || mode == DImode || mode == DFmode)
-    return 0;
-
-  size = int_size_in_bytes (type);
-  return size == -1 || size > UNITS_PER_WORD;
+      size = int_size_in_bytes (type);
+      return size == -1 || size > UNITS_PER_WORD;
+    }
+  else
+    {
+      /* If we have a variable-sized parameter, we have no choice.  */
+      return targetm.calls.must_pass_in_stack (mode, type);
+    }
 }
 
 /* Return the class of registers for which a mode change from FROM to TO

@@ -143,7 +143,6 @@ extern int function_arg_partial_nregs (const CUMULATIVE_ARGS *,
 extern bool mips_pad_arg_upward (enum machine_mode, tree);
 extern bool mips_pad_reg_upward (enum machine_mode, tree);
 extern void mips_va_start (tree, rtx);
-extern struct rtx_def *mips_va_arg (tree, tree);
 
 extern bool mips_expand_unaligned_load (rtx, rtx, unsigned int, int);
 extern bool mips_expand_unaligned_store (rtx, rtx, unsigned int, int);

@@ -2387,10 +2387,6 @@ typedef struct mips_args {
 /* Implement `va_start' for varargs and stdarg.  */
 #define EXPAND_BUILTIN_VA_START(valist, nextarg) \
   mips_va_start (valist, nextarg)
-
-/* Implement `va_arg'.  */
-#define EXPAND_BUILTIN_VA_ARG(valist, type) \
-  mips_va_arg (valist, type)
 
 /* Output assembler code to FILE to increment profiler label # LABELNO
    for profiling a function entry.  */
