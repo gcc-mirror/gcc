@@ -1,3 +1,9 @@
+2002-03-26  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.md (reload_mulsi3, reload_mulsi_compare0, reload_muladdsi)
+	(reload_mulsi_compare0_scratch, reload_muladdsi_compare0)
+	(reload_muladdsi_compare0_scratch): Delete.
+
 2002-03-26  Loren J. Rittle  <ljrittle@acm.org>
 
 	* doc/install.texi (*-*-freebsd*): Update.
