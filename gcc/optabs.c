@@ -186,11 +186,14 @@ widen_operand (op, mode, oldmode, unsignedp, no_extend)
 {
   rtx result;
 
-  /* If we must extend do so.  If OP is either a constant or a SUBREG
-     for a promoted object, also extend since it will be more efficient to
-     do so.  */
+  /* If we don't have to extend and this is a constant, return it.  */
+  if (no_extend && GET_MODE (op) == VOIDmode)
+    return op;
+
+  /* If we must extend do so.  If OP is a SUBREG for a promoted object, also
+     extend since it will be more efficient to do so unless the signedness of
+     a promoted object differs from our extension.  */
   if (! no_extend
-      || GET_MODE (op) == VOIDmode
       || (GET_CODE (op) == SUBREG && SUBREG_PROMOTED_VAR_P (op)
 	  && SUBREG_PROMOTED_UNSIGNED_P (op) == unsignedp))
     return convert_modes (mode, oldmode, op, unsignedp);
