@@ -1266,24 +1266,24 @@ gencheck.o : gencheck.c gencheck.h tree.def $(HCONFIG_H) $(SYSTEM_H) \
 
 gencheck.h : s-gencheck ; @true
 s-gencheck : Makefile
-	for t in $(lang_tree_files); do \
-	    echo "#include \"$$t\""; \
+	ltf="$(lang_tree_files)"; for f in $$ltf; do \
+	    echo "#include \"$$f\""; \
 	done | sed 's|$(srcdir)/||' > tmp-gencheck.h
 	$(SHELL) $(srcdir)/move-if-change tmp-gencheck.h gencheck.h
 	$(STAMP) s-gencheck
 
 options.h : s-options ; @true
 s-options : Makefile
-	for t in $(lang_options_files); do \
-	    echo "#include \"$$t\""; \
+	lof="$(lang_options_files)"; for f in $$lof; do \
+	    echo "#include \"$$f\""; \
 	done | sed 's|$(srcdir)/||' > tmp-options.h
 	$(SHELL) $(srcdir)/move-if-change tmp-options.h options.h
 	$(STAMP) s-options
 
 specs.h : s-specs ; @true
 s-specs : Makefile
-	for t in $(lang_specs_files); do \
-	    echo "#include \"$$t\""; \
+	lsf="$(lang_specs_files)"; for f in $$lsf; do \
+	    echo "#include \"$$f\""; \
 	done | sed 's|$(srcdir)/||' > tmp-specs.h
 	$(SHELL) $(srcdir)/move-if-change tmp-specs.h specs.h
 	$(STAMP) s-specs
