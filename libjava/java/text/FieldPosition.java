@@ -65,6 +65,38 @@ public class FieldPosition
   private int end;
 
   /**
+   * This is the field attribute value.
+   */
+  private Format.Field field_attribute;
+
+  /**
+   * This method initializes a new instance of <code>FieldPosition</code>
+   * to have the specified field attribute. The attribute will be used as
+   * an id.
+   *
+   * @param field The field format attribute.
+   */
+  public FieldPosition (Format.Field field)
+  {
+    this.field_attribute = field;
+  }
+
+  /**
+   * This method initializes a new instance of <code>FieldPosition</code>
+   * to have the specified field attribute. The attribute will be used as
+   * an id is non null. The integer field id is only used if the Format.Field
+   * attribute is not used by the formatter.
+   *
+   * @param field The field format attribute.
+   * @param field_id The field identifier value.
+   */
+  public FieldPosition (Format.Field field, int field_id)
+  {
+    this.field_attribute = field;
+    this.field_id = field_id;
+  }
+
+  /**
    * This method initializes a new instance of <code>FieldPosition</code> to
    * have the specified field id.
    *
@@ -83,6 +115,11 @@ public class FieldPosition
   public int getField ()
   {
     return field_id;
+  }
+
+  public Format.Field getFieldAttribute ()
+  {
+    return field_attribute;
   }
 
   /**
@@ -132,8 +169,8 @@ public class FieldPosition
    * <ul>
    * <li>The specified object is not <code>null</code>.
    * <li>The specified object is an instance of <code>FieldPosition</code>.
-   * <li>The specified object has the same field identifier and beginning
-   * and ending index as this object.
+   * <li>The specified object has the same field identifier, field attribute 
+   * and beginning and ending index as this object.
    * </ul>
    *
    * @param obj The object to test for equality to this object.
@@ -143,13 +180,38 @@ public class FieldPosition
    */
   public boolean equals (Object obj)
   {
-    if (! (obj instanceof FieldPosition))
+    if (this == obj)
+      return true;
+
+    if (obj == null || obj.getClass() != this.getClass())
       return false;
 
     FieldPosition fp = (FieldPosition) obj;
     return (field_id == fp.field_id
+	    && (field_attribute == fp.field_attribute 
+		|| (field_attribute != null 
+		    && field_attribute.equals(fp.field_attribute)))
 	    && begin == fp.begin
 	    && end == fp.end);
+  }
+
+
+  /**
+   * This method returns a hash value for this object
+   * 
+   * @return A hash value for this object.
+   */
+  public int hashCode ()
+  {
+    int hash = 5;
+
+    hash = 31 * hash + field_id;
+    hash = 31 * hash + begin;
+    hash = 31 * hash + end;
+    hash = 31 * hash + 
+      (null == field_attribute ? 0 : field_attribute.hashCode());
+
+    return hash;
   }
 
   /**
@@ -160,7 +222,11 @@ public class FieldPosition
    */
   public String toString ()
   {
-    return (getClass ().getName () + "[field=" + getField () + ",beginIndex="
-	    + getBeginIndex () + ",endIndex=" + getEndIndex () + "]");
+    return (getClass ().getName ()
+	    + "[field=" + getField ()
+	    + ",attribute=" + getFieldAttribute ()
+	    + ",beginIndex=" + getBeginIndex () 
+	    + ",endIndex=" + getEndIndex () 
+	    + "]");
   }
 }
