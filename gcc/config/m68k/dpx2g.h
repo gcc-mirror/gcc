@@ -5,7 +5,8 @@
 #define USE_GAS
 #include "m68k/dpx2.h"
 
-#ifndef USE_COLLECT2
+#if 0 /* #ifndef USE_COLLECT2 */
+
 /* We use set vectors for the constructors/destructors. */ 
 
 #undef ASM_OUTPUT_CONSTRUCTOR
@@ -34,14 +35,12 @@
    %{pg:gcrt0.o%s}%{!pg:%{p:mcrt0.o%s}%{!p:crt0.o%s}}\
   huge.o%s"
 
-#else /* !USE_COLLECT2 */
+#endif /* !USE_COLLECT2 */
 
 #undef STARTFILE_SPEC
 #define STARTFILE_SPEC \
   "%{pg:gcrt0.o%s}%{!pg:%{p:mcrt0.o%s}%{!p:crt0.o%s}}\
   huge.o%s"
-
-#endif /* !USE_COLLECT2 */
 
 
 /*
