@@ -103,9 +103,9 @@ typedef unsigned int UHItype __attribute__ ((mode (HI)));
 typedef unsigned int USItype __attribute__ ((mode (SI)));
 typedef unsigned int UDItype __attribute__ ((mode (DI)));
 
-#define MAX_SI_INT   ((SItype) ((unsigned) (~0)>>1))
-#define MAX_USI_INT  ((USItype) ~0)
-
+#define MAX_USI_INT  (~(USItype)0)
+#define MAX_SI_INT   ((SItype) (MAX_USI_INT >> 1))
+#define BITS_PER_SI  (4 * BITS_PER_UNIT)
 
 #ifdef FLOAT_ONLY
 #define NO_DI_MODE
