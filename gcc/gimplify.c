@@ -1788,6 +1788,31 @@ gimplify_self_mod_expr (tree *expr_p, tree *pre_p, tree *post_p,
     }
 }
 
+/* Subroutine of gimplify_call_expr:  Gimplify a single argument.  */
+
+static enum gimplify_status
+gimplify_arg (tree *expr_p, tree *pre_p)
+{
+  bool (*test) (tree);
+  fallback_t fb;
+
+  /* In general, we allow lvalues for function arguments to avoid
+     extra overhead of copying large aggregates out of even larger
+     aggregates into temporaries only to copy the temporaries to
+     the argument list.  Make optimizers happy by pulling out to
+     temporaries those types that fit in registers.  */
+  if (is_gimple_reg_type (TREE_TYPE (*expr_p)))
+    test = is_gimple_val, fb = fb_rvalue;
+  else
+    test = is_gimple_lvalue, fb = fb_either;
+
+  /* There is a sequence point before a function call.  Side effects in
+     the argument list must occur before the actual call. So, when
+     gimplifying arguments, force gimplify_expr to use an internal
+     post queue which is then appended to the end of PRE_P.  */
+  return gimplify_expr (expr_p, pre_p, NULL, test, fb);
+}
+
 /* Gimplify the CALL_EXPR node pointed by EXPR_P.  PRE_P points to the
    list where side effects that must happen before *EXPR_P should be stored.
    WANT_VALUE is true if the result of the call is desired.  */
@@ -1847,6 +1872,11 @@ gimplify_call_expr (tree *expr_p, tree *pre_p, bool want_value)
 	  *expr_p = new;
 	  return GS_OK;
 	}
+
+      if (DECL_FUNCTION_CODE (decl) == BUILT_IN_VA_START)
+	/* Avoid gimplifying the second argument to va_start, which needs
+	   to be the plain PARM_DECL.  */
+	return gimplify_arg (&TREE_VALUE (TREE_OPERAND (*expr_p, 1)), pre_p);
     }
 
   /* There is a sequence point before the call, so any side effects in
@@ -1861,24 +1891,8 @@ gimplify_call_expr (tree *expr_p, tree *pre_p, bool want_value)
        arglist = TREE_CHAIN (arglist))
     {
       enum gimplify_status t;
-      bool (*test) (tree);
-      fallback_t fb;
 
-      /* In general, we allow lvalues for function arguments to avoid
-	 extra overhead of copying large aggregates out of even larger
-	 aggregates into temporaries only to copy the temporaries to
-	 the argument list.  Make optimizers happy by pulling out to
-	 temporaries those types that fit in registers.  */
-      if (is_gimple_reg_type (TREE_TYPE (TREE_VALUE (arglist))))
-	test = is_gimple_val, fb = fb_rvalue;
-      else
-	test = is_gimple_lvalue, fb = fb_either;
-
-      /* There is a sequence point before a function call.  Side effects in
-	 the argument list must occur before the actual call. So, when
-	 gimplifying arguments, force gimplify_expr to use an internal
-	 post queue which is then appended to the end of PRE_P.  */
-      t = gimplify_expr (&TREE_VALUE (arglist), pre_p, NULL, test, fb);
+      t = gimplify_arg (&TREE_VALUE (arglist), pre_p);
 
       if (t == GS_ERROR)
 	ret = GS_ERROR;
