@@ -2,7 +2,8 @@
 
 	* configure.in (AC_EXEEXT): Work around in case it expands to
 	nothing, as in autoconf 2.50.
-	* configure: Rebuilt.
+	* acinclude.m4: Likewise.
+	* aclocal.m4, configure: Rebuilt.
 
 2001-06-07  Tom Tromey  <tromey@redhat.com>
 
