@@ -8913,7 +8913,7 @@ done
 
 rm -f Make-hooks
 touch Make-hooks
-target_list="all.build all.cross start.encap rest.encap \
+target_list="all.build all.cross start.encap rest.encap tags \
 	info dvi generated-manpages \
 	install-normal install-common install-info install-man \
 	uninstall \

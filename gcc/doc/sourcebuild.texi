@@ -1,4 +1,4 @@
-@c Copyright (C) 2002 Free Software Foundation, Inc.
+@c Copyright (C) 2002, 2003 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -539,6 +539,9 @@ deprecated).
 @itemx start.encap
 @itemx rest.encap
 FIXME: exactly what goes in each of these targets?
+@item tags
+Build an @command{etags} @file{TAGS} file in the language subdirectory
+in the source tree.
 @item info
 Build info documentation for the front end, in the source directory.
 This target is only called by @command{make bootstrap} if a suitable

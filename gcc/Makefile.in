@@ -3378,12 +3378,18 @@ paranoia: paranoia.o real.o $(LIBIBERTY)
 # These exist for maintenance purposes.
 
 # Update the tags table.
-TAGS: force
-	(cd $(srcdir);							\
-	mkdir tmp-tags;							\
-	mv -f c-parse.[ch] =*.[chy] tmp-tags;				\
-	etags *.y *.h *.c;						\
-	mv tmp-tags/* .;						\
+TAGS: lang.tags
+	(cd $(srcdir);						     \
+	incs= ;							     \
+	list='$(SUBDIRS)'; for dir in $$list; do		     \
+	  if test -f $$dir/TAGS; then				     \
+	    incs="$$incs --include $$dir/TAGS";			     \
+	  fi;							     \
+	done;							     \
+	mkdir tmp-tags;						     \
+	mv -f c-parse.[ch] =*.[chy] tmp-tags;			     \
+	etags *.y *.h *.c $$incs;				     \
+	mv tmp-tags/* .;					     \
 	rmdir tmp-tags)
 
 # A list of files to be destroyed during "lean" builds.
