@@ -42,6 +42,11 @@ SUBDIRS =@subdirs@
 CONFIG_LANGUAGES = @all_languages@
 LANGUAGES = c proto gcov$(exeext) $(CONFIG_LANGUAGES)
 
+# Languages should create dependencies of $(INTL_TARGETS) on generated
+# sources in Make-lang.in.  Example:
+# $(INTL_TARGETS): $(srcdir)/cp/parse.c
+INTL_TARGETS = intl.all intl.install intl.distdir
+
 # Selection of languages to be made during stage1 build.
 # This is overridden by configure.
 BOOT_LANGUAGES = c @all_boot_languages@
@@ -1900,18 +1905,8 @@ $(top_builddir)/intl/libintl.a:
 	@$(MAKE) $(FLAGS_TO_PASS) intl.all
 
 # Make sure all the headers are there for xgettext to scan.
-# FIXME: extend the language interface
-# so that we needn't jump into language build internals like this.
-intl.all intl.install intl.distdir: \
-    $(srcdir)/c-gperf.h \
-    $(srcdir)/c-parse.c $(srcdir)/c-parse.h $(srcdir)/cexp.c \
-    $(srcdir)/cp/parse.c $(srcdir)/objc/objc-parse.c
-$(srcdir)/cp/parse.c:
-	@cp_srcdir=`sed -n 's/^srcdir[ 	]*=[	 ]*//p' cp/Makefile` && \
-	echo "cd cp && $(MAKE) $$cp_srcdir/parse.c" && \
-	cd cp && \
-	  $(MAKE) $(SUBDIR_FLAGS_TO_PASS) $(CXX_FLAGS_TO_PASS) \
-	    $$cp_srcdir/parse.c
+$(INTL_TARGETS): $(srcdir)/c-gperf.h \
+    $(srcdir)/c-parse.c $(srcdir)/c-parse.h $(srcdir)/cexp.c
 
 intl.all intl.install intl.uninstall intl.distdir \
   intl.mostlyclean intl.clean intl.distclean intl.maintainer-clean:
