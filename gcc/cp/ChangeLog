@@ -1,3 +1,37 @@
+2000-08-22  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* Makefile.in (error.o): Depends on diagnostic.h
+
+	* cp-tree.h (problematic_instantiation_changed,
+	record_last_problematic_instantiation, current_instantiation,
+	print_instantiation_context): Declare.
+	(maybe_print_template_context): Remove.
+
+	* decl.c (init_decl_processing): Set print_error_function to NULL.
+	(lang_print_error_function): Remove, since we're using a new
+	machinery.
+
+	* error.c: #include diagnostic.h
+	(function_category): New function.
+	(cp_diagnostic_starter): Likewise.
+	(cp_diagnostic_finalizer): Likewise.
+	(cp_print_error_function): Likewise.
+	(maybe_print_instantiation_context): Likewise.
+	(print_instantiation_full_context): Likewise.
+	(print_instantiation_partial_context): Likewise.
+	(print_instantiation_context): Define.
+	(init_error): Initialize diagnostic pager and finalizer.
+
+	* pt.c (problematic_instantiation_changed): Define.
+	(record_last_problematic_instantiation): Likewise.
+	(current_instantiation): Likewise.
+	(maybe_print_template_context): Remove.
+	(print_template_context): Likewise.
+	(current_tinst_level): Make static to reflect Brendan Kehoe's
+	change of 1995-04-13.
+	(push_tinst_level): Call print_instantiation_context. 
+	
+
 2000-08-21  Nix  <nix@esperi.demon.co.uk>
         
 	* lang-specs.h: Do not process -o or run the assembler if

@@ -129,7 +129,6 @@ static tree build_library_fn_1 PARAMS ((tree, enum tree_code, tree));
 static int member_function_or_else PARAMS ((tree, tree, enum overload_flags));
 static void bad_specifiers PARAMS ((tree, const char *, int, int, int, int,
 				  int));
-static void lang_print_error_function PARAMS ((const char *));
 static tree maybe_process_template_type_declaration PARAMS ((tree, int, struct binding_level*));
 static void check_for_uninitialized_const_var PARAMS ((tree));
 static unsigned long typename_hash PARAMS ((hash_table_key));
@@ -6652,7 +6651,7 @@ init_decl_processing ()
   /* Show we use EH for cleanups.  */
   using_eh_for_cleanups ();
 
-  print_error_function = lang_print_error_function;
+  print_error_function = NULL;
   valid_lang_attribute = cp_valid_lang_attribute;
 
   /* Maintain consistency.  Perhaps we should just complain if they
@@ -6744,16 +6743,6 @@ cp_make_fname_decl (id, name, type_dep)
   
   /* We will have to make sure we only emit this, if it is actually used. */
   return decl;
-}
-
-/* Function to print any language-specific context for an error message.  */
-
-static void
-lang_print_error_function (file)
-     const char *file;
-{
-  default_print_error_function (file);
-  maybe_print_template_context ();
 }
 
 /* Entry point for the benefit of c_common_nodes_and_builtins.

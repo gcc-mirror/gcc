@@ -72,7 +72,7 @@ static tree saved_trees;
 static varray_type inline_parm_levels;
 static size_t inline_parm_levels_used;
 
-tree current_tinst_level;
+static tree current_tinst_level;
 
 /* A map from local variable declarations in the body of the template
    presently being instantiated to the corresponding instantiated
@@ -163,7 +163,6 @@ static int coerce_template_template_parms PARAMS ((tree, tree, int,
 						 tree, tree));
 static tree determine_specialization PARAMS ((tree, tree, tree *, int));
 static int template_args_equal PARAMS ((tree, tree));
-static void print_template_context PARAMS ((int));
 static void tsubst_default_arguments PARAMS ((tree));
 static tree for_each_template_parm_r PARAMS ((tree *, int *, void *));
 static tree instantiate_clone PARAMS ((tree, tree));
@@ -4297,65 +4296,6 @@ int depth_reached;
 static int tinst_level_tick;
 static int last_template_error_tick;
 
-/* Print out all the template instantiations that we are currently
-   working on.  If ERR, we are being called from cp_thing, so do
-   the right thing for an error message.  */
-
-static void
-print_template_context (err)
-     int err;
-{
-  tree p = current_tinst_level;
-  int line = lineno;
-  const char *file = input_filename;
-
-  if (err && p)
-    {
-      if (current_function_decl != TINST_DECL (p)
-	  && current_function_decl != NULL_TREE)
-	/* We can get here during the processing of some synthesized
-	   method.  Then, TINST_DECL (p) will be the function that's causing
-	   the synthesis.  */
-	;
-      else
-	{
-	  if (current_function_decl == TINST_DECL (p))
-	    /* Avoid redundancy with the the "In function" line.  */;
-	  else 
-	    fprintf (stderr, "%s: In instantiation of `%s':\n",
-		     file, decl_as_string (TINST_DECL (p),
-					   TS_DECL_TYPE | TS_FUNC_NORETURN));
-	  
-	  line = TINST_LINE (p);
-	  file = TINST_FILE (p);
-	  p = TREE_CHAIN (p);
-	}
-    }
-
-  for (; p; p = TREE_CHAIN (p))
-    {
-      fprintf (stderr, "%s:%d:   instantiated from `%s'\n", file, line,
-	       decl_as_string (TINST_DECL (p),
-			       TS_DECL_TYPE | TS_FUNC_NORETURN));
-      line = TINST_LINE (p);
-      file = TINST_FILE (p);
-    }
-  fprintf (stderr, "%s:%d:   instantiated from here\n", file, line);
-}
-
-/* Called from cp_thing to print the template context for an error.  */
-
-void
-maybe_print_template_context ()
-{
-  if (last_template_error_tick == tinst_level_tick
-      || current_tinst_level == 0)
-    return;
-
-  last_template_error_tick = tinst_level_tick;
-  print_template_context (1);
-}
-
 /* We're starting to instantiate D; record the template instantiation context
    for diagnostics and to restore it later.  */
 
@@ -4377,7 +4317,7 @@ push_tinst_level (d)
       cp_error ("template instantiation depth exceeds maximum of %d (use -ftemplate-depth-NN to increase the maximum) instantiating `%D'",
 	     max_tinst_depth, d);
 
-      print_template_context (0);
+      print_instantiation_context ();
 
       return 0;
     }
@@ -10154,4 +10094,25 @@ set_mangled_name_for_template_decl (decl)
 				tparms, targs, 
 				DECL_FUNCTION_MEMBER_P (decl) 
 			        + DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (decl));
+}
+
+/* Return truthvalue if we're processing a template different from
+   the last one involved in diagnotics.  */
+int
+problematic_instantiation_changed ()
+{
+  return last_template_error_tick != tinst_level_tick;
+}
+
+/* Remember current template involved in diagnostics.  */
+void
+record_last_problematic_instantiation ()
+{
+  last_template_error_tick = tinst_level_tick;
+}
+
+tree
+current_instantiation ()
+{
+  return current_tinst_level;
 }
