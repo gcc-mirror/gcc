@@ -1,5 +1,5 @@
 /* GNU Objective C Runtime internal declarations
-   Copyright (C) 1993, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1995, 1996 Free Software Foundation, Inc.
    Contributed by Kresten Krab Thorup
 
 This file is part of GNU CC.
@@ -37,8 +37,10 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #include "objc/objc.h"		/* core data types */
 #include "objc/objc-api.h"	/* runtime api functions */
 
+#include "objc/thread.h"  	/* thread and mutex support */
+
 #include "objc/hash.h"		/* hash structures */
-#include "objc/list.h"		/* linear lists */
+#include "objc/objc-list.h"		/* linear lists */
 
 extern void __objc_add_class_to_hash(Class);   /* (objc-class.c) */
 extern void __objc_init_selector_tables();     /* (objc-sel.c) */
@@ -48,6 +50,10 @@ extern void __objc_install_premature_dtable(Class); /* (objc-dispatch.c) */
 extern void __objc_resolve_class_links();      /* (objc-class.c) */
 extern void __objc_register_selectors_from_class(Class); /* (objc-sel.c) */
 extern void __objc_update_dispatch_table_for_class (Class);/* (objc-msg.c) */
+
+extern int  __objc_init_thread_system(void);    /* thread.c                 */
+extern int  __objc_fini_thread_system(void);    /* thread.c                 */
+
 extern void class_add_method_list(Class, MethodList_t);
 
 extern void objc_error(id object, const char* fmt, va_list);
@@ -58,6 +64,12 @@ extern BOOL __objc_class_links_resolved;
 
 /* Number of selectors stored in each of the selector  tables */
 extern int __objc_selector_max_index;
+
+/* Mutex locking __objc_selector_max_index and its arrays. */
+extern _objc_mutex_t __objc_runtime_mutex;
+
+/* Number of threads which are alive. */
+extern int __objc_runtime_threads_alive;
 
 #ifdef DEBUG
 #define DEBUG_PRINTF(format, args...) printf (format, ## args)
