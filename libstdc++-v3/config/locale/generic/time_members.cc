@@ -1,4 +1,4 @@
-// std::time_get, std::time_put implementation, GNU version -*- C++ -*-
+// std::time_get, std::time_put implementation, generic version -*- C++ -*-
 
 // Copyright (C) 2001, 2002 Free Software Foundation, Inc.
 //

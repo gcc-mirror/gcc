@@ -1011,22 +1011,10 @@ namespace std
 
     public:
       explicit 
-      __timepunct(size_t __refs = 0) 
-      : locale::facet(__refs)
-      { 
-	_M_name_timepunct = new char[2];
-	strcpy(_M_name_timepunct, "C");
-	_M_initialize_timepunct(); 
-      }
+      __timepunct(size_t __refs = 0);
 
       explicit 
-      __timepunct(__c_locale __cloc, const char* __s, size_t __refs = 0) 
-      : locale::facet(__refs)
-      { 
-	_M_name_timepunct = new char[strlen(__s) + 1];
-	strcpy(_M_name_timepunct, __s);
-	_M_initialize_timepunct(__cloc); 
-      }
+      __timepunct(__c_locale __cloc, const char* __s, size_t __refs = 0);
 
       void
       _M_put(_CharT* __s, size_t __maxlen, const _CharT* __format, 
@@ -1123,11 +1111,7 @@ namespace std
 
     protected:
       virtual 
-      ~__timepunct()
-      { 
-	delete [] _M_name_timepunct;
-	_S_destroy_c_locale(_M_c_locale_timepunct); 
-      }
+      ~__timepunct();
 
       // For use at construction time only.
       void 
@@ -1169,6 +1153,8 @@ namespace std
   template<typename _CharT>
     const _CharT* __timepunct<_CharT>::_S_timezones[14];
 
+  // Include host and configuration specific timepunct functions.
+  #include <bits/time_members.h>
 
   template<typename _CharT, typename _InIter>
     class time_get : public locale::facet, public time_base
@@ -1628,32 +1614,17 @@ namespace std
       // Underlying "C" library locale information saved from
       // initialization, needed by messages_byname as well.
       __c_locale			_M_c_locale_messages;
-#if 1
-      // Only needed if glibc < 2.3
       char*				_M_name_messages;
-#endif
 
     public:
       static locale::id 		id;
 
       explicit 
-      messages(size_t __refs = 0) 
-      : locale::facet(__refs)
-      { 
-	_M_name_messages = new char[2];
-	strcpy(_M_name_messages, "C");
-	_M_c_locale_messages = _S_c_locale; 
-      }
+      messages(size_t __refs = 0);
 
       // Non-standard.
       explicit 
-      messages(__c_locale __cloc, const char* __s, size_t __refs = 0) 
-      : locale::facet(__refs)
-      { 
-	_M_name_messages = new char[strlen(__s) + 1];
-	strcpy(_M_name_messages, __s);
-	_M_c_locale_messages = _S_clone_c_locale(__cloc); 
-      }
+      messages(__c_locale __cloc, const char* __s, size_t __refs = 0);
 
       catalog 
       open(const basic_string<char>& __s, const locale& __loc) const
@@ -1673,11 +1644,7 @@ namespace std
 
     protected:
       virtual 
-      ~messages()
-       { 
-	 delete [] _M_name_messages;
-	 _S_destroy_c_locale(_M_c_locale_messages); 
-       }
+      ~messages();
 
       virtual catalog 
       do_open(const basic_string<char>&, const locale&) const;
@@ -1751,9 +1718,6 @@ namespace std
     messages<wchar_t>::do_get(catalog, int, int, const wstring&) const;
 #endif
 
-  // Include host and configuration specific messages virtual functions.
-  #include <bits/messages_members.h>
-
   template<typename _CharT>
     class messages_byname : public messages<_CharT>
     {
@@ -1762,21 +1726,16 @@ namespace std
       typedef basic_string<_CharT> 	string_type;
 
       explicit 
-      messages_byname(const char* __s, size_t __refs = 0)
-      : messages<_CharT>(__refs) 
-      { 
-	delete [] _M_name_messages;
-	_M_name_messages = new char[strlen(__s) + 1];
-	strcpy(_M_name_messages, __s);
-	_S_destroy_c_locale(_M_c_locale_messages);
-	_S_create_c_locale(_M_c_locale_messages, __s); 
-      }
+      messages_byname(const char* __s, size_t __refs = 0);
 
     protected:
       virtual 
       ~messages_byname() 
       { }
     };
+
+  // Include host and configuration specific messages functions.
+  #include <bits/messages_members.h>
 
 
   // Subclause convenience interfaces, inlines.

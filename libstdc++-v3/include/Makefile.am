@@ -320,6 +320,7 @@ target_headers_extra = \
 	${target_builddir}/c++io.h \
 	${target_builddir}/c++locale.h \
 	${target_builddir}/messages_members.h \
+	${target_builddir}/time_members.h \
 	${target_builddir}/codecvt_specializations.h
 
 thread_target_headers = \
@@ -409,6 +410,7 @@ ${target_builddir}/stamp-target: ${target_headers} stamp-${target_alias}
 	  @LN_S@ ${glibcpp_srcdir}/@CSTDIO_H@ c++io.h || true ;\
 	  @LN_S@ ${glibcpp_srcdir}/@CLOCALE_H@ c++locale.h || true ;\
 	  @LN_S@ ${glibcpp_srcdir}/@CMESSAGES_H@ messages_members.h || true ;\
+	  @LN_S@ ${glibcpp_srcdir}/@CTIME_H@ time_members.h || true ;\
 	  @LN_S@ ${glibcpp_srcdir}/@CCODECVT_H@ codecvt_specializations.h || true ;\
 	  echo `date` > stamp-target; \
 	fi

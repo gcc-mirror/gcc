@@ -50,7 +50,14 @@ GLIBCPP_3.2 {
       std::[A-Zd-k]*;
       std::length_error*;
       std::logic_error*;
-      std::locale::[A-Za-z]*;
+      std::locale::[A-Za-e]*;
+      std::locale::facet::[A-Za-z]*;
+      std::locale::facet::_M*;
+      std::locale::facet::_S_c_locale;
+      std::locale::facet::_S_clone_c_locale*;
+      std::locale::facet::_S_create_c_locale*;
+      std::locale::facet::_S_destroy_c_locale*;
+      std::locale::[A-Zg-z]*;
       std::locale::_[A-Ra-z]*;
       std::locale::_S_classic;
       std::locale::_S_global;
@@ -99,6 +106,9 @@ GLIBCPP_3.2 {
 
     # std::locale destructors
     _ZNSt6localeD*;
+	
+    # std::locale::facet destructors
+    _ZNSt6locale5facetD*;
 	 
     # std::codecvt<char> members.
     _ZNKSt7codecvtIcc11__mbstate_tE*;

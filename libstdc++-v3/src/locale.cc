@@ -1,4 +1,4 @@
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -451,6 +451,8 @@ namespace std
   __c_locale
   locale::facet::_S_c_locale;
   
+  char locale::facet::_S_c_name[2];
+
   locale::facet::
   ~facet() { }
 

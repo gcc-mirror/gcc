@@ -209,7 +209,10 @@ namespace std
   : _M_references(__refs), _M_facets_size(_GLIBCPP_NUM_FACETS)
   {
     // Initialize the underlying locale model.
-    locale::facet::_S_create_c_locale(locale::facet::_S_c_locale, "C");
+    locale::facet::_S_c_name[0] = 'C';
+    locale::facet::_S_c_name[1] = '\0';
+    locale::facet::_S_create_c_locale(locale::facet::_S_c_locale, 
+				      locale::facet::_S_c_name);
 
     _M_facets = new(&facet_vec) facet*[_M_facets_size];
     for (size_t __i = 0; __i < _M_facets_size; ++__i)
@@ -220,7 +223,7 @@ namespace std
 	 __i < _S_categories_size + _S_extra_categories_size; ++__i)
       {
 	_M_names[__i]  = new (&facet_name[__i]) char[2];
-	strcpy(_M_names[__i], "C");
+	strcpy(_M_names[__i], locale::facet::_S_c_name);
       }
 
     // This is needed as presently the C++ version of "C" locales

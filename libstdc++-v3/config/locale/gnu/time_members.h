@@ -46,8 +46,7 @@
 
   template<typename _CharT>
     __timepunct<_CharT>::__timepunct(__c_locale __cloc, 
-				 const char* __s __attribute__ ((__unused__)), 
-				     size_t __refs) 
+				     const char* __s, size_t __refs) 
     : locale::facet(__refs)
     { 
 #if !(__GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2))

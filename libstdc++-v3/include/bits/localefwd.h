@@ -264,7 +264,7 @@ namespace std
     // The "C" reference locale
     static _Impl* 	_S_classic; 
 
-    // Current global reference locale
+    // Current global locale
     static _Impl* 	_S_global;  
 
     // Number of standard categories. For C++, these categories are
@@ -419,10 +419,13 @@ namespace std
     _Atomic_word _M_references;
 
   protected:
-    // Contains data from the underlying "C" library for default "C"
-    // or "POSIX" locale.
-    static __c_locale		     _S_c_locale;
-    
+    // Contains data from the underlying "C" library for for the
+    // classic locale.
+    static __c_locale	      		_S_c_locale;
+
+    // String literal for the name of the classic locale.
+    static char                        	_S_c_name[2];
+   
     explicit 
     facet(size_t __refs = 0) throw();
 
