@@ -1,3 +1,20 @@
+2003-03-04  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* gcov-io.h (gcov_save_position, gcov_reserve_length, gcov_resync,
+	gcov_skip, gcov_skip_string, gcov_write_unsigned, gcov_write_counter,
+	gcov_write_string, gcov_read_unsigned, gcov_read_counter,
+	gcov_read_string, gcov_write_length): Modified to enable reading/
+	writing of whole .da file just once.
+	(da_file_open, da_file_close, da_file_eof, da_file_error,
+	da_file_position, da_file_seek, da_file_write, da_file_read): New
+	functions.
+	(actual_da_file, actual_da_file_position, actual_da_file_length,
+	actual_da_file_buffer, actual_da_file_buffer_size): New static
+	functions.
+	* libgcov.c (gcov_exit): Modified to read/write the whole .da file at
+	just once.
+
+
 2003-03-04  Andreas Schwab  <schwab@suse.de>
 
 	* config/m68k/m68k.c (m68k_output_function_prologue): Fix CFA
