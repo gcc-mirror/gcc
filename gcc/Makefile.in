@@ -743,11 +743,12 @@ MACHMODE_H = machmode.h machmode.def
 RTL_BASE_H = rtl.h rtl.def $(MACHMODE_H)
 RTL_H = $(RTL_BASE_H) genrtl.h
 TREE_H = tree.h real.h tree.def $(MACHMODE_H) tree-check.h
-BASIC_BLOCK_H = basic-block.h bitmap.h sbitmap.h
+BASIC_BLOCK_H = basic-block.h bitmap.h sbitmap.h varray.h
 DEMANGLE_H = $(srcdir)/../include/demangle.h
 RECOG_H = recog.h
 EXPR_H = expr.h insn-codes.h
 REGS_H = regs.h varray.h $(MACHMODE_H)
+INTREGRATE_H = integrate.h varray.h
 LOOP_H = loop.h varray.h
 #
 # Language makefile fragments.
@@ -1527,7 +1528,7 @@ emit-rtl.o : emit-rtl.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) flags.h \
    $(EXPR_H) $(srcdir)/../include/obstack.h hard-reg-set.h bitmap.h toplev.h
 real.o : real.c $(CONFIG_H) system.h $(TREE_H) toplev.h
 integrate.o : integrate.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) flags.h \
-   integrate.h insn-flags.h insn-config.h $(EXPR_H) real.h $(REGS_H) \
+   $(INTEGRATE_H) insn-flags.h insn-config.h $(EXPR_H) real.h $(REGS_H) \
    intl.h function.h output.h $(RECOG_H) except.h toplev.h $(LOOP_H)
 jump.o : jump.c $(CONFIG_H) system.h $(RTL_H) flags.h hard-reg-set.h $(REGS_H) \
    insn-config.h insn-flags.h $(RECOG_H) $(EXPR_H) real.h except.h function.h \
@@ -1555,7 +1556,8 @@ loop.o : loop.c $(CONFIG_H) system.h $(RTL_H) flags.h $(LOOP_H) insn-config.h \
    insn-flags.h $(REGS_H) hard-reg-set.h $(RECOG_H) $(EXPR_H) real.h \
    $(BASIC_BLOCK_H) function.h toplev.h varray.h except.h
 unroll.o : unroll.c $(CONFIG_H) system.h $(RTL_H) insn-config.h function.h \
-   integrate.h $(REGS_H) $(RECOG_H) flags.h $(EXPR_H) $(LOOP_H) toplev.h varray.h
+   $(INTEGRATE_H) $(REGS_H) $(RECOG_H) flags.h $(EXPR_H) $(LOOP_H) toplev.h \
+   varray.h 
 flow.o : flow.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) flags.h insn-config.h \
    $(BASIC_BLOCK_H) $(REGS_H) hard-reg-set.h output.h toplev.h $(RECOG_H) \
    insn-flags.h function.h except.h

@@ -40,8 +40,9 @@ varray_init (num_elements, element_size, name)
   varray_type ptr = (varray_type) xcalloc (VARRAY_HDR_SIZE + data_size, 1);
 
   ptr->num_elements = num_elements;
+  ptr->elements_used = 0;
   ptr->element_size = element_size;
-  ptr->name	    = name;
+  ptr->name = name;
   return ptr;
 }
 

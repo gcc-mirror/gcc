@@ -81,6 +81,8 @@ typedef union varray_data_tag {
 /* Virtual array of pointers header.  */
 typedef struct varray_head_tag {
   size_t	num_elements;	/* maximum element number allocated */
+  size_t        elements_used;  /* the number of elements used, if
+				   using VARRAY_PUSH/VARRAY_POP.  */
   size_t	element_size;	/* size of each data element */
   const char   *name;		/* name of the varray for reporting errors */
   varray_data	data;		/* data elements follow, must be last */
@@ -178,6 +180,25 @@ extern void varray_check_failed PROTO ((varray_type, size_t,
 #define VARRAY_CHECK(VA, N, T) ((VA)->data.T[N])
 #endif
 
+/* Push X onto VA.  T is the name of the field in varray_data
+   corresponding to the type of X.  */
+#define VARRAY_PUSH(VA, T, X) 				\
+  do 							\
+    {							\
+      if ((VA)->elements_used >= (VA)->num_elements)	\
+        VARRAY_GROW ((VA), 2 * (VA)->num_elements);	\
+      (VA)->data.T[(VA)->elements_used++] = (X);	\
+    }							\
+  while (0)
+
+/* Pop the top element of VA.  */
+#define VARRAY_POP(VA) \
+  ((VA)->elements_used--)
+
+/* Return the top element of VA.  */
+#define VARRAY_TOP(VA, T) \
+  ((VA)->data.T[(VA)->elements_used - 1])
+
 #define VARRAY_CHAR(VA, N)		VARRAY_CHECK (VA, N, c)
 #define VARRAY_UCHAR(VA, N)		VARRAY_CHECK (VA, N, uc)
 #define VARRAY_SHORT(VA, N)		VARRAY_CHECK (VA, N, s)
@@ -198,5 +219,49 @@ extern void varray_check_failed PROTO ((varray_type, size_t,
 #define VARRAY_REG(VA, N)		VARRAY_CHECK (VA, N, reg)
 #define VARRAY_CONST_EQUIV(VA, N)	VARRAY_CHECK (VA, N, const_equiv)
 #define VARRAY_BB(VA, N)		VARRAY_CHECK (VA, N, bb)
+
+/* Push a new element on the end of VA, extending it if necessary.  */
+#define VARRAY_PUSH_CHAR(VA, X)		VARRAY_PUSH (VA, c, X)
+#define VARRAY_PUSH_UCHAR(VA, X)	VARRAY_PUSH (VA, uc, X)
+#define VARRAY_PUSH_SHORT(VA, X)	VARRAY_PUSH (VA, s, X)
+#define VARRAY_PUSH_USHORT(VA, X)	VARRAY_PUSH (VA, us, X)
+#define VARRAY_PUSH_INT(VA, X)		VARRAY_PUSH (VA, i, X)
+#define VARRAY_PUSH_UINT(VA, X)		VARRAY_PUSH (VA, u, X)
+#define VARRAY_PUSH_LONG(VA, X)		VARRAY_PUSH (VA, l, X)
+#define VARRAY_PUSH_ULONG(VA, X)	VARRAY_PUSH (VA, ul, X)
+#define VARRAY_PUSH_WIDE_INT(VA, X)	VARRAY_PUSH (VA, hint, X)
+#define VARRAY_PUSH_UWIDE_INT(VA, X)	VARRAY_PUSH (VA, uhint, X)
+#define VARRAY_PUSH_GENERIC_PTR(VA,N)	VARRAY_PUSH (VA, generic, X)
+#define VARRAY_PUSH_CHAR_PTR(VA,N)	VARRAY_PUSH (VA, cptr, X)
+#define VARRAY_PUSH_RTX(VA, X)		VARRAY_PUSH (VA, rtx, X)
+#define VARRAY_PUSH_RTVEC(VA, X)	VARRAY_PUSH (VA, rtvec, X)
+#define VARRAY_PUSH_TREE(VA, X)		VARRAY_PUSH (VA, tree, X)
+#define VARRAY_PUSH_BITMAP(VA, X)	VARRAY_PUSH (VA, bitmap, X)
+#define VARRAY_PUSH_SCHED(VA, X)	VARRAY_PUSH (VA, sched, X)
+#define VARRAY_PUSH_REG(VA, X)		VARRAY_PUSH (VA, reg, X)
+#define VARRAY_PUSH_CONST_EQUIV(VA, X)	VARRAY_PUSH (VA, const_equiv, X)
+#define VARRAY_PUSH_BB(VA, X)		VARRAY_PUSH (VA, bb, X)
+
+/* Return the last element of VA.  */
+#define VARRAY_TOP_CHAR(VA)		VARRAY_TOP (VA, c)
+#define VARRAY_TOP_UCHAR(VA)	        VARRAY_TOP (VA, uc)
+#define VARRAY_TOP_SHORT(VA)	        VARRAY_TOP (VA, s)
+#define VARRAY_TOP_USHORT(VA)	        VARRAY_TOP (VA, us)
+#define VARRAY_TOP_INT(VA)		VARRAY_TOP (VA, i)
+#define VARRAY_TOP_UINT(VA)		VARRAY_TOP (VA, u)
+#define VARRAY_TOP_LONG(VA)		VARRAY_TOP (VA, l)
+#define VARRAY_TOP_ULONG(VA)	        VARRAY_TOP (VA, ul)
+#define VARRAY_TOP_WIDE_INT(VA)	        VARRAY_TOP (VA, hint)
+#define VARRAY_TOP_UWIDE_INT(VA)	VARRAY_TOP (VA, uhint)
+#define VARRAY_TOP_GENERIC_PTR(VA,N)	VARRAY_TOP (VA, generic)
+#define VARRAY_TOP_CHAR_PTR(VA,N)	VARRAY_TOP (VA, cptr)
+#define VARRAY_TOP_RTX(VA)		VARRAY_TOP (VA, rtx)
+#define VARRAY_TOP_RTVEC(VA)	        VARRAY_TOP (VA, rtvec)
+#define VARRAY_TOP_TREE(VA)		VARRAY_TOP (VA, tree)
+#define VARRAY_TOP_BITMAP(VA)	        VARRAY_TOP (VA, bitmap)
+#define VARRAY_TOP_SCHED(VA)	        VARRAY_TOP (VA, sched)
+#define VARRAY_TOP_REG(VA)		VARRAY_TOP (VA, reg)
+#define VARRAY_TOP_CONST_EQUIV(VA)	VARRAY_TOP (VA, const_equiv)
+#define VARRAY_TOP_BB(VA)		VARRAY_TOP (VA, bb)
 
 #endif /* _VARRAY_H_ */
