@@ -3428,13 +3428,10 @@ output_constant (exp, size)
 
   /* Eliminate the NON_LVALUE_EXPR_EXPR that makes a cast not be an lvalue.
      That way we get the constant (we hope) inside it.  Also, strip off any
-     NOP_EXPR that converts between two record, union, or array types.  */
+     NOP_EXPR that converts between two record, union, array, or set types.  */
   while ((TREE_CODE (exp) == NOP_EXPR 
 	  && (TREE_TYPE (exp) == TREE_TYPE (TREE_OPERAND (exp, 0))
-	      || TREE_CODE (TREE_TYPE (exp)) == ARRAY_TYPE
-	      || TREE_CODE (TREE_TYPE (exp)) == RECORD_TYPE
-	      || TREE_CODE (TREE_TYPE (exp)) == UNION_TYPE
-	      || TREE_CODE (TREE_TYPE (exp)) == QUAL_UNION_TYPE))
+	      || AGGREGATE_TYPE_P (TREE_TYPE (exp))))
 	 || TREE_CODE (exp) == NON_LVALUE_EXPR)
     exp = TREE_OPERAND (exp, 0);
 
