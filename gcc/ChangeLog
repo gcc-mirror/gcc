@@ -1,3 +1,14 @@
+2001-03-27  Jim Wilson  <wilson@redhat.com>
+
+	* flow.c (struct reg_cond_life_info): New fields orig_condition
+	and stores.
+	(init_propagate_block_info): Set new fields.
+	(mark_regno_cond_dead): Set and use new fields.
+	(flush_reg_cond_reg_1): Likewise.
+	(and_reg_cond, case AND): Check for redundant AND conditions.
+	(mark_used_reg): Delete unnecessary clears before freeing splay trees.
+	Set new fields.
+
 2001-03-27  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* cppmacro.c (stringify_arg): Null terminate strings.

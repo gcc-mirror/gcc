@@ -270,8 +270,14 @@ static rtx tail_recursion_label_list;
 /* Holds information for tracking conditional register life information.  */
 struct reg_cond_life_info
 {
-  /* An EXPR_LIST of conditions under which a register is dead.  */
+  /* A boolean expression of conditions under which a register is dead.  */
   rtx condition;
+  /* Conditions under which a register is dead at the basic block end.  */
+  rtx orig_condition;
+
+  /* A boolean expression of conditions under which a register has been
+     stored into.  */
+  rtx stores;
 
   /* ??? Could store mask of bytes that are dead, so that we could finally
      track lifetimes of multi-word registers accessed via subregs.  */
@@ -4076,6 +4082,8 @@ init_propagate_block_info (bb, live, local_set, cond_local_set, flags)
 	       else
 		 cond = cond_true;
 	       rcli->condition = cond;
+	       rcli->stores = const0_rtx;
+	       rcli->orig_condition = cond;
 
 	       splay_tree_insert (pbi->reg_cond_dead, i,
 				  (splay_tree_value) rcli);
@@ -5019,6 +5027,8 @@ mark_regno_cond_dead (pbi, regno, cond)
 	     which it is dead.  */
 	  rcli = (struct reg_cond_life_info *) xmalloc (sizeof (*rcli));
 	  rcli->condition = cond;
+	  rcli->stores = cond;
+	  rcli->orig_condition = const0_rtx;
 	  splay_tree_insert (pbi->reg_cond_dead, regno,
 			     (splay_tree_value) rcli);
 
@@ -5034,10 +5044,21 @@ mark_regno_cond_dead (pbi, regno, cond)
 	  rcli = (struct reg_cond_life_info *) node->value;
 	  ncond = rcli->condition;
 	  ncond = ior_reg_cond (ncond, cond, 1);
+	  if (rcli->stores == const0_rtx)
+	    rcli->stores = cond;
+	  else if (rcli->stores != const1_rtx)
+	    rcli->stores = ior_reg_cond (rcli->stores, cond, 1);
 
-	  /* If the register is now unconditionally dead,
-	     remove the entry in the splay_tree.  */
-	  if (ncond == const1_rtx)
+	  /* If the register is now unconditionally dead, remove the entry
+	     in the splay_tree.  A register is unconditionally dead if the
+	     dead condition ncond is true.  A register is also unconditionally
+	     dead if the sum of all conditional stores is an unconditional
+	     store (stores is true), and the dead condition is identically the
+	     same as the original dead condition initialized at the end of
+	     the block.  This is a pointer compare, not an rtx_equal_p
+	     compare.  */
+	  if (ncond == const1_rtx
+	      || (ncond == rcli->orig_condition && rcli->stores == const1_rtx))
 	    splay_tree_remove (pbi->reg_cond_dead, regno);
 	  else
 	    {
@@ -5083,6 +5104,8 @@ flush_reg_cond_reg_1 (node, data)
   /* Splice out portions of the expression that refer to regno.  */
   rcli = (struct reg_cond_life_info *) node->value;
   rcli->condition = elim_reg_cond (rcli->condition, regno);
+  if (rcli->stores != const0_rtx && rcli->stores != const1_rtx)
+    rcli->stores = elim_reg_cond (rcli->stores, regno);
 
   /* If the entire condition is now false, signal the node to be removed.  */
   if (rcli->condition == const0_rtx)
@@ -5289,6 +5312,17 @@ and_reg_cond (old, x, add)
 	}
       if (! add)
 	return old;
+
+      /* If X is identical to one of the existing terms of the AND,
+	 then just return what we already have.  */
+      /* ??? There really should be some sort of recursive check here in
+	 case there are nested ANDs.  */
+      if ((GET_CODE (XEXP (old, 0)) == GET_CODE (x)
+	   && REGNO (XEXP (XEXP (old, 0), 0)) == REGNO (XEXP (x, 0)))
+	  || (GET_CODE (XEXP (old, 1)) == GET_CODE (x)
+	      && REGNO (XEXP (XEXP (old, 1), 0)) == REGNO (XEXP (x, 0))))
+	return old;
+
       return gen_rtx_AND (0, old, x);
 
     case NOT:
@@ -5772,10 +5806,7 @@ mark_used_reg (pbi, reg, cond, insn)
 	      /* If the register is now unconditionally live, remove the
 		 entry in the splay_tree.  */
 	      if (ncond == const0_rtx)
-		{
-		  rcli->condition = NULL_RTX;
-		  splay_tree_remove (pbi->reg_cond_dead, regno);
-		}
+		splay_tree_remove (pbi->reg_cond_dead, regno);
 	      else
 		{
 		  rcli->condition = ncond;
@@ -5789,6 +5820,8 @@ mark_used_reg (pbi, reg, cond, insn)
 	     the condition under which it is still dead.  */
 	  rcli = (struct reg_cond_life_info *) xmalloc (sizeof (*rcli));
 	  rcli->condition = not_reg_cond (cond);
+	  rcli->stores = const0_rtx;
+	  rcli->orig_condition = const0_rtx;
 	  splay_tree_insert (pbi->reg_cond_dead, regno,
 			     (splay_tree_value) rcli);
 
@@ -5798,7 +5831,6 @@ mark_used_reg (pbi, reg, cond, insn)
   else if (some_was_live)
     {
       splay_tree_node node;
-      struct reg_cond_life_info *rcli;
 
       node = splay_tree_lookup (pbi->reg_cond_dead, regno);
       if (node != NULL)
@@ -5807,8 +5839,6 @@ mark_used_reg (pbi, reg, cond, insn)
 	     unconditionally so.  Remove it from the conditionally dead
 	     list, so that a conditional set won't cause us to think
 	     it dead.  */
-	  rcli = (struct reg_cond_life_info *) node->value;
-	  rcli->condition = NULL_RTX;
 	  splay_tree_remove (pbi->reg_cond_dead, regno);
 	}
     }
