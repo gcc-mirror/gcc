@@ -9,8 +9,10 @@
 #error L'a'	/* { dg-bogus "error" "wide charconst recognition 1" } */
 #endif
 
+#if 0 /* This test doesn't work on targets with signed 16-bit wchar_t.  */
 #if L'\xfeed' != 0xfeed
 #error 0xfeed	/* { dg-bogus "error" "wide charconst recognition 2" } */
+#endif
 #endif
 
 #if L'\x1234' != 0x1234
