@@ -1,3 +1,13 @@
+2000-11-28  Nick Clifton  <nickc@redhat.com>
+
+	* config/arm/arm.md (pic_load_addr): Split into
+	pic_load_addr_arm and pic_load_addr_thumb.
+
+	* config/arm/arm.c (legitimize_pic_address): Generate either
+	ARM or Thumb versions of pic_load_addr.
+	(arm_finalize_pic): Generate either ARM or Thumb versions of
+	pic_load_addr.
+
 2000-11-28  Richard Henderson  <rth@redhat.com>
 
 	* calls.c (expand_call): Defer const/pure NO_DEFER_POP until
