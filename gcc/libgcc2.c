@@ -3811,6 +3811,6 @@ __pure_virtual ()
 #ifndef inhibit_libc
   write (2, MESSAGE, sizeof (MESSAGE) - 1);
 #endif
-  _exit (-1);
+  __terminate ();
 }
 #endif
