@@ -5501,7 +5501,10 @@ dwarfout_start_new_source_file (filename)
 
   sprintf (label, SFNAMES_ENTRY_LABEL_FMT, lookup_filename (filename));
   sprintf (type_and_offset, "0x%08x+%s-%s",
-	   ((unsigned) MACINFO_start << 24), label, SFNAMES_BEGIN_LABEL);
+	   ((unsigned) MACINFO_start << 24),
+	   /* Hack: skip leading '*' .  */
+	   (*label == '*') + label,
+	   (*SFNAMES_BEGIN_LABEL == '*') + SFNAMES_BEGIN_LABEL);
   generate_macinfo_entry (type_and_offset, "");
 }
 
