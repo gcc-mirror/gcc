@@ -543,7 +543,7 @@ expand_builtin_dwarf_reg_size (reg_tree, target)
 	  ++n_ranges;
 	  assert (n_ranges < 5);
 	}
-      ranges[n_ranges].end = i;
+      ranges[n_ranges-1].end = i;
     }
 
   /* The usual case: fp regs surrounded by general regs.  */
