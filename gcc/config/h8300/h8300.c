@@ -626,25 +626,46 @@ call_insn_operand (op, mode)
   return 0;
 }
 
+/* Return 1 if a addition/subtraction of a constant integer can be
+   transformed into two consecutive adds/subs that are faster than the
+   straightforward way.  Otherwise, return 0. */
+
 int
 two_insn_adds_subs_operand (op, mode)
      rtx op;
-     enum machine_mode mode ATTRIBUTE_UNUSED;
+     enum machine_mode mode;
 {
   if (GET_CODE (op) == CONST_INT)
     {
       HOST_WIDE_INT value = INTVAL (op);
 
+      /* Force VALUE to be positive so that we do not have to consider
+         the negative case.  */
+      if (value < 0)
+	value = -value;
       if (TARGET_H8300H || TARGET_H8300S)
 	{
-	  if (value >= -8 && value < -4 && value != -7)
-	    return 1;
-	  if (value > 4 && value <= 8 && value != 7)
-	    return 1;
+	  /* A constant addition/subtraction takes 2 states in QImode,
+	     4 states in HImode, and 6 states in SImode.  Thus, the
+	     only case we can win is when SImode is used, in which
+	     case, two adds/subs is used, taking 4 states.  */
+	  if (mode == SImode
+	      && (value == 2 + 1
+		  || value == 4 + 1
+		  || value == 4 + 2
+		  || value == 4 + 4))
+	      return 1;
 	}
       else
 	{
-	  if (value == -4 || value == -3 || value == 3 || value == 4)
+	  /* A constant addition/subtraction takes 2 states in
+	     QImode. It takes 6 states in HImode, requiring the
+	     constant to be loaded to a register first, and a lot more
+	     in SImode.  Thus the only case we can win is when either
+	     HImode or SImode is used.  */
+	  if (mode != QImode
+	      && (value == 2 + 1
+		  || value == 2 + 2))
 	    return 1;
 	}
     }
