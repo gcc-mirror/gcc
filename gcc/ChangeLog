@@ -1,3 +1,26 @@
+2003-04-16  Richard Henderson  <rth@redhat.com>
+
+	* config/alpha/alpha.c (SYMBOL_FLAG_NEAR, SYMBOL_FLAG_SAMEGP): New.
+	(samegp_function_operand): Use SYMBOL_FLAG_SAMEGP.
+	(direct_call_operand): Use SYMBOL_FLAG_NEAR.
+	(local_symbolic_operand): Use SYMBOL_REF_LOCAL_P.
+	(small_symbolic_operand): Use SYMBOL_REF_SMALL_P.
+	(global_symbolic_operand): Similarly.
+	(tls_symbolic_operand_1): Use SYMBOL_REF_TLS_MODEL.
+	(tls_symbolic_operand_type): Likewise.
+	(alpha_encode_section_info): Use default_encode_section_info.
+	(alpha_strip_name_encoding): Remove.
+	(get_tls_get_addr): Split out from ...
+	(alpha_legitimize_address): ... here.
+	(alpha_emit_xfloating_libcall): Use init_one_libfunc.
+	(get_some_local_dynamic_name_1): Use SYMBOL_REF_TLS_MODEL.
+	(alpha_initialize_trampoline): Use init_one_libfunc.
+	(alpha_setup_incoming_varargs): Mark unused parameters.
+	(alpha_initial_elimination_offset): Likewise.
+	(alpha_end_function): Use SYMBOL_FLAG_NEAR, SYMBOL_FLAG_SAMEGP.
+	(unicosmk_unique_section): Use default_strip_name_encoding.
+	(unicosmk_ssib_name, unicosmk_output_externs): Likewise.
+
 2003-04-16  Aldy Hernandez  <aldyh@redhat.com>
 
         * config.gcc: Add t-spe for eabispe.
