@@ -309,8 +309,9 @@ static int ignore_library	PARAMS ((const char *));
 #endif
 static char *extract_string	PARAMS ((const char **));
 
-#ifdef NO_DUP2
-int
+#ifndef HAVE_DUP2
+static int dup2 PARAMS ((int, int));
+static int
 dup2 (oldfd, newfd)
      int oldfd;
      int newfd;
@@ -329,7 +330,7 @@ dup2 (oldfd, newfd)
 
   return fd;
 }
-#endif
+#endif /* ! HAVE_DUP2 */
 
 /* Delete tempfiles and exit function.  */
 
