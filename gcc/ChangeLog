@@ -1,3 +1,20 @@
+2004-01-16  Jan Hubicka  <jh@suse.cz>
+
+	* i386.md (load_tp_di): Fix pasto.
+
+	PR opt/13608
+	* i386.c (ix86_compute_frame_layout): Fix for alloca on leaf function.
+
+	* c-pretty-print.c (pp_c_type_cast, pp_c_abstract_declarator,
+	pp_c_character_constant, pp_c_floating_constant,
+	pp_c_additive_expression, pp_c_shift_expression,
+	pp_c_equality_expression, pp_c_and_expression,
+	pp_c_exclusive_or_expression, pp_c_inclusive_or_expression,
+	pp_c_logical_and_expression): Remove inline modifier.
+	* dwarf2out.c (get_AT): Likewise.
+	* et-forest.c (et_splay): Likewise.
+	* ra.h (ra_alloc, ra_calloc): Likewise
+
 2004-01-16  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/frv/frv-protos.h: Fix comment formatting.

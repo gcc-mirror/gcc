@@ -732,7 +732,7 @@ actual_hazard_this_instance (int unit, int instance, rtx insn, int clock, int co
    at time CLOCK.  The scheduler using only DFA description should
    never use the following function.  */
 
-HAIFA_INLINE static void
+static void
 schedule_unit (int unit, rtx insn, int clock)
 {
   int i;
@@ -764,7 +764,7 @@ schedule_unit (int unit, rtx insn, int clock)
    was COST.  The scheduler using only DFA description should never
    use the following function.  */
 
-HAIFA_INLINE static int
+static int
 actual_hazard (int unit, rtx insn, int clock, int cost)
 {
   int i;
