@@ -1082,10 +1082,18 @@ sdbout_field_types (type)
   tree tail;
 
   for (tail = TYPE_FIELDS (type); tail; tail = TREE_CHAIN (tail))
-    if (POINTER_TYPE_P (TREE_TYPE (tail)))
-      sdbout_one_type (TREE_TYPE (TREE_TYPE (tail)));
-    else
-      sdbout_one_type (TREE_TYPE (tail));
+    /* This condition should match the one for emitting the actual members
+       below.  */
+    if (TREE_CODE (tail) == FIELD_DECL
+	&& DECL_NAME (tail) != 0
+	&& TREE_CODE (DECL_SIZE (tail)) == INTEGER_CST
+	&& TREE_CODE (DECL_FIELD_BITPOS (tail)) == INTEGER_CST)
+      {
+	if (POINTER_TYPE_P (TREE_TYPE (tail)))
+	  sdbout_one_type (TREE_TYPE (TREE_TYPE (tail)));
+	else
+	  sdbout_one_type (TREE_TYPE (tail));
+      }
 }
 
 /* Use this to put out the top level defined record and union types
