@@ -1645,6 +1645,7 @@ build_function_call (tree function, tree params)
   tree fntype, fundecl = 0;
   tree coerced_params;
   tree name = NULL_TREE, result;
+  tree tem;
 
   /* Strip NON_LVALUE_EXPRs, etc., since we aren't using as an lvalue.  */
   STRIP_TYPE_NOPS (function);
@@ -1683,6 +1684,47 @@ build_function_call (tree function, tree params)
 
   /* fntype now gets the type of function pointed to.  */
   fntype = TREE_TYPE (fntype);
+
+  /* Check that the function is called through a compatible prototype.
+     If it is not, replace the call by a trap, wrapped up in a compound
+     expression if necessary.  This has the nice side-effect to prevent
+     the tree-inliner from generating invalid assignment trees which may
+     blow up in the RTL expander later.
+
+     ??? This doesn't work for Objective-C because objc_comptypes
+     refuses to compare function prototypes, yet the compiler appears
+     to build calls that are flagged as invalid by C's comptypes.  */
+  if (! c_dialect_objc ()
+      && TREE_CODE (function) == NOP_EXPR
+      && TREE_CODE (tem = TREE_OPERAND (function, 0)) == ADDR_EXPR
+      && TREE_CODE (tem = TREE_OPERAND (tem, 0)) == FUNCTION_DECL
+      && ! comptypes (fntype, TREE_TYPE (tem), COMPARE_STRICT))
+    {
+      tree return_type = TREE_TYPE (fntype);
+      tree trap = build_function_call (built_in_decls[BUILT_IN_TRAP],
+				       NULL_TREE);
+
+      /* This situation leads to run-time undefined behavior.  We can't,
+	 therefore, simply error unless we can prove that all possible
+	 executions of the program must execute the code.  */
+      warning ("function called through a non-compatible type");
+
+      if (VOID_TYPE_P (return_type))
+	return trap;
+      else
+	{
+	  tree rhs;
+
+	  if (AGGREGATE_TYPE_P (return_type))
+	    rhs = build_compound_literal (return_type,
+					  build_constructor (return_type,
+							     NULL_TREE));
+	  else
+	    rhs = fold (build1 (NOP_EXPR, return_type, integer_zero_node));
+
+	  return build (COMPOUND_EXPR, return_type, trap, rhs);
+	}
+    }
 
   /* Convert the parameters to the types declared in the
      function prototype, or apply default promotions.  */

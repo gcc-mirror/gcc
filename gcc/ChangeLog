@@ -1,3 +1,10 @@
+2003-12-20  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR c/12085
+	* c-typeck.c (build_function_call): Issue a warning if a
+	function is called through an incompatible prototype and
+	replace the call by a trap in this case.
+
 2003-12-19  James E Wilson  <wilson@specifixinc.com>
 
 	* install.texi (ia64-*-linux): Document minimum libunwind version
