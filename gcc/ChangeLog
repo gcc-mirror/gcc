@@ -1,3 +1,7 @@
+2004-05-13  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* bb-reoder.c (connect_traces): Free cold_traces at the end.
+
 2004-05-13  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-forwprop.c (record_single_argument_cond_exprs): Accept
