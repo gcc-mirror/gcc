@@ -1,3 +1,10 @@
+2004-06-04  Jan Hubicka  <jh@suse.cz>
+
+	Re-apply hopefully fixed patch:
+	* i386.md (UNSPECV_EH_RETURN): Kill.
+	(eh_return): Use jump_insn.
+	(eh_return_si, eh_return_di): Change pattern to jump instruction.
+
 2004-06-04  Jeff Law  <law@redhat.com>
 
 	* cfgrtl.c (try_redirect_by_replacing_jump): Fix return value.
