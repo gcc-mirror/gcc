@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.558 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
 --                                                                          --
@@ -5255,6 +5255,30 @@ package body Sem_Prag is
             Check_No_Identifiers;
             Check_Arg_Is_One_Of (Arg1, Name_On, Name_Off);
             Extensions_Allowed := (Chars (Expression (Arg1)) = Name_On);
+
+         --------------
+         -- External --
+         --------------
+
+         --  pragma External (
+         --    [   Convention    =>] convention_IDENTIFIER,
+         --    [   Entity        =>] local_NAME
+         --    [, [External_Name =>] static_string_EXPRESSION ]
+         --    [, [Link_Name     =>] static_string_EXPRESSION ]);
+
+         when Pragma_External => External : declare
+            C      : Convention_Id;
+            Def_Id : Entity_Id;
+
+         begin
+            GNAT_Pragma;
+            Check_At_Least_N_Arguments (2);
+            Check_At_Most_N_Arguments  (4);
+            Process_Convention (C, Def_Id);
+            Note_Possible_Modification (Expression (Arg2));
+            Process_Interface_Name (Def_Id, Arg3, Arg4);
+            Set_Exported (Def_Id, Arg2);
+         end External;
 
          --------------------------
          -- External_Name_Casing --

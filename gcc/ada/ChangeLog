@@ -1,3 +1,13 @@
+2001-10-10  Robert Dewar <dewar@gnat.com>
+
+	* sem_prag.adb: Add processing for pragma External.
+	
+	* snames.ads: Add entry for pragma External.
+	
+	* par-prag.adb: Add pragma External.
+	
+	* snames.adb: Updated to match snames.ads.
+
 2001-10-10  Ed Schonberg <schonber@gnat.com>
 
 	* exp_ch4.adb (Expand_N_Allocator): Generate meaningful names for
