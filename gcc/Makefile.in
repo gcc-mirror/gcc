@@ -386,7 +386,7 @@ LIB2FUNCS = _muldi3 _divdi3 _moddi3 _udivdi3 _umoddi3 _negdi2 \
     _udiv_w_sdiv _udivmoddi4 _cmpdi2 _ucmpdi2 _floatdidf _floatdisf \
     _fixunsdfsi _fixunssfsi _fixunsdfdi _fixdfdi _fixunssfdi _fixsfdi \
     __gcc_bcmp _varargs _eprintf _builtin_new _caps_New _builtin_del \
-    _bb _shtab _clear_cache _trampoline __main _exit
+    _bb _shtab _clear_cache _trampoline __main _exit _ctors
 
 # Header files that are made available under the same name
 # to programs compiled with GCC.
@@ -1488,12 +1488,13 @@ install-common-headers: install-dir $(USER_H) gvarargs.h gstdarg.h gstddef.h
 	-rm -f $(libsubdir)/include/stddef.h
 	$(INSTALL_DATA) $(srcdir)/gstddef.h $(libsubdir)/include/stddef.h
 	chmod a-x $(libsubdir)/include/stddef.h
-# Copy byteorder.h into the object file directory 
-# so that fixinc.svr4 can get at it if necessary.
-# If the dirs are the same, this won't do anything.
-# Delete file first in case it is read-only
-	-if [ x`cd $(srcdir);pwd` != x`pwd` ]; then rm -f byteorder.h; else true; fi
-	-cp $(srcdir)/byteorder.h . > /dev/null 2>&1
+# This is turned off because fixinc.svr4 can now get it directly from srcdir.
+## Copy byteorder.h into the object file directory 
+## so that fixinc.svr4 can get at it if necessary.
+## If the dirs are the same, this won't do anything.
+## Delete file first in case it is read-only
+#	-if [ x`cd $(srcdir);pwd` != x`pwd` ]; then rm -f byteorder.h; else true; fi
+#	-cp $(srcdir)/byteorder.h . > /dev/null 2>&1
 
 # $(libsubdir)/include:
 #	-if [ -d $(libsubdir)/include ] ; then true ; else mkdir $(libsubdir)/include ; fi
