@@ -1,3 +1,9 @@
+2001-11-23  David Edelsohn  <edelsohn@gnu.org>
+
+	* rs6000.c (print_operand, case 'v'): Use HOST_WIDE_INT_PRINT_HEX
+	format.
+	* rs6000.md (cmptf): Fix typo.
+
 2001-11-23  Richard Sandiford  <rsandifo@redhat.com>
 
 	* final.c (output_addr_const): Output PC as '.' even if !flag_pic.
