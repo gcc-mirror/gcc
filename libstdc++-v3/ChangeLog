@@ -1,3 +1,10 @@
+2003-04-11  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/27_io/basic_istream/sentry/char/3983-fstream.cc: Add
+	instantiation for AIX.
+	* testsuite/27_io/basic_ostream/sentry/char/3983-fstream.cc: Same.
+	* testsuite/25_algorithms/min_max.cc: Same.
+	
 2003-04-10  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* basic_file_stdio.cc (__basic_file<char>::close): Don't flush stream
