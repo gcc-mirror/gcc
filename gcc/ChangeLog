@@ -1,5 +1,8 @@
 Mon Jun 28 05:32:09 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* m68k.h (CONDITIONAL_REGISTER_USAGE): Define for !SUN_FPA
+	case.  Also make the PIC register call_used.
+
         * m68k.h (FINALIZE_PIC): Delete.
         * m68k.c (finalize_pic): Delete.
 

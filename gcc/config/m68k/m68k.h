@@ -442,9 +442,16 @@ extern int target_flags;
 	fixed_regs[i] = call_used_regs[i] = 1; 	\
     } 						\
   if (flag_pic)					\
-    fixed_regs[PIC_OFFSET_TABLE_REGNUM] = 1;	\
+    fixed_regs[PIC_OFFSET_TABLE_REGNUM]		\
+      = call_used_regs[PIC_OFFSET_TABLE_REGNUM] = 1;\
 }
-
+#else
+#define CONDITIONAL_REGISTER_USAGE \
+{ 						\
+  if (flag_pic)					\
+    fixed_regs[PIC_OFFSET_TABLE_REGNUM]		\
+      = call_used_regs[PIC_OFFSET_TABLE_REGNUM] = 1;\
+}
 #endif /* defined SUPPORT_SUN_FPA */
 
 /* Return number of consecutive hard regs needed starting at reg REGNO
