@@ -1,3 +1,7 @@
+2004-08-16  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* calls.c (load_register_parameters): Remove spurious FIXME token.
+
 2004-08-15  Ziemowit Laski  <zlaski@apple.com>
 
 	* Makefile.in (C_PRETTY_PRINT_H): Add c-pretty-print.h.
