@@ -110,7 +110,7 @@ make_string_token (pool, token, text, len)
   token->type = CPP_STRING;
   token->val.str.text = buf;
   token->val.str.len = quote_string (buf, text, len) - buf;
-  token->val.str.text[token->val.str.len] = '\0';
+  buf[token->val.str.len] = '\0';
   token->flags = 0;
 }
 
@@ -1549,9 +1549,10 @@ check_trad_stringification (pfile, macro, string)
     }
 }
 
-/* Returns the expansion of a macro, in a format suitable to be read
-   back in again, and therefore also for DWARF 2 debugging info.
-   Caller is expected to generate the "#define NAME" bit.  The
+/* Returns the name, arguments and expansion of a macro, in a format
+   suitable to be read back in again, and therefore also for DWARF 2
+   debugging info.  e.g. "PASTE(X, Y) X ## Y", or "MACNAME EXPANSION".
+   Caller is expected to generate the "#define" bit if needed.  The
    returned text is temporary, and automatically freed later.  */
 
 const unsigned char *
@@ -1565,15 +1566,16 @@ cpp_macro_definition (pfile, node)
 
   if (node->type != NT_MACRO || (node->flags & NODE_BUILTIN))
     {
-      cpp_ice (pfile, "invalid hash type %d in dump_definition", node->type);
+      cpp_ice (pfile, "invalid hash type %d in cpp_macro_definition", node->type);
       return 0;
     }
 
   /* Calculate length.  */
-  len = 1;			/* ' ' */
+  len = NODE_LEN (node) + 1;			/* ' ' */
   if (macro->fun_like)
     {
-      len += 3;		/* "()" plus possible final "." of ellipsis.  */
+      len += 3;		/* "()" plus possible final "." of named
+			   varargs (we have + 2 below).  */
       for (i = 0; i < macro->paramc; i++)
 	len += NODE_LEN (macro->params[i]) + 2; /* ", " */
     }
@@ -1597,7 +1599,11 @@ cpp_macro_definition (pfile, node)
       pfile->macro_buffer = (U_CHAR *) xrealloc (pfile->macro_buffer, len);
       pfile->macro_buffer_len = len;
     }
+
+  /* Fill in the buffer.  Start with the macro name.  */
   buffer = pfile->macro_buffer;
+  memcpy (buffer, NODE_NAME (node), NODE_LEN (node));
+  buffer += NODE_LEN (node);
 
   /* Parameter names.  */
   if (macro->fun_like)
