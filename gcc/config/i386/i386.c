@@ -8814,15 +8814,15 @@ ix86_register_move_cost (mode, class1, class2)
      stall.  Count this as arbitarily high cost of 20.  */
   if (ix86_secondary_memory_needed (class1, class2, mode, 0))
     {
-      if (CLASS_MAX_NREGS (CLASS1, MODE) > CLASS_MAX_NREGS (CLASS2, MODE))
+      if (CLASS_MAX_NREGS (class1, mode) > CLASS_MAX_NREGS (class2, mode))
 	return 10;
-      return (MEMORY_MOVE_COST (MODE, CLASS1, 0)
-	      + MEMORY_MOVE_COST (MODE, CLASS2, 1));
+      return (MEMORY_MOVE_COST (mode, class1, 0)
+	      + MEMORY_MOVE_COST (mode, class2, 1));
     }
   /* Moves between SSE/MMX and integer unit are expensive.
      ??? We should make this cost CPU specific.  */
-  if (MMX_CLASS_P (CLASS1) != MMX_CLASS_P (CLASS2)
-      || SSE_CLASS_P (CLASS1) != SSE_CLASS_P (CLASS2))
+  if (MMX_CLASS_P (class1) != MMX_CLASS_P (class2)
+      || SSE_CLASS_P (class1) != SSE_CLASS_P (class2))
     return 3;
   return 2;
 }
@@ -8852,7 +8852,7 @@ ix86_hard_regno_mode_ok (regno, mode)
     return 0;
   /* Take care for QImode values - they can be in non-QI regs, but then
      they do cause partial register stalls.  */
-  if (QI_REG_P (regno) || mode != QImode)
+  if (regno < 4 || mode != QImode)
     return 1;
   return reload_in_progress || reload_completed || !TARGET_PARTIAL_REG_STALL;
 }
