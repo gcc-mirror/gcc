@@ -1,3 +1,8 @@
+Wed Sep 30 18:17:17 1998  Robert Lipe  <robertl@dgii.com
+
+	* configure.in: Escape ^ in grep string.
+	* configure: Rebuilt.
+
 Wed Sep 30 09:14:52 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* All .h files pushed down into the objc/ subdirectory.

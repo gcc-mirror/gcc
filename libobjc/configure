@@ -1040,7 +1040,7 @@ if eval "test \"`echo '$''{'objc_cv_thread_file'+set}'`\" = set"; then
 else
   if test -f ../../gcc/Makefile
 then
-  objc_cv_thread_file=`grep ^GCC_THREAD_FILE ../../gcc/Makefile | awk -F= '{ print $2 }'`
+  objc_cv_thread_file=`grep \^GCC_THREAD_FILE ../../gcc/Makefile | awk -F= '{ print $2 }'`
 else
   { echo "configure: error: not found" 1>&2; exit 1; }
 fi
