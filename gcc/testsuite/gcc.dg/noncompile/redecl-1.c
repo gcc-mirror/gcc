@@ -4,7 +4,7 @@
 int
 foo ()
 {
-  int bar; /* { dg-error "previous declaration" "previously declared" } */
+  int bar; /* { dg-error "previously declared" "previously declared" } */
   volatile int bar; /* { dg-error "redeclaration" "redeclaration" } */
 }
 
