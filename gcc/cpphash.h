@@ -64,7 +64,7 @@ struct definition
   char rest_args;		/* Nonzero if last arg. absorbs the rest */
   struct reflist *pattern;
 
-  /* Names of macro args, concatenated in order with commas between
+  /* Names of macro args, concatenated in order with \0 between
      them.  The only use of this is that we warn on redefinition if
      this differs between the old and new definitions.  */
   U_CHAR *argnames;

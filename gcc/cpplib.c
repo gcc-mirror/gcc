@@ -78,7 +78,7 @@ static int do_warning PARAMS ((cpp_reader *, const struct directive *));
 /* Forward declarations.  */
 
 static void validate_else		PARAMS ((cpp_reader *, const char *));
-static HOST_WIDEST_INT eval_if_expression PARAMS ((cpp_reader *));
+static HOST_WIDEST_INT eval_if_expr	PARAMS ((cpp_reader *));
 static void conditional_skip		PARAMS ((cpp_reader *, int,
 						enum node_type, U_CHAR *));
 static void skip_if_group		PARAMS ((cpp_reader *));
@@ -87,7 +87,6 @@ static void parse_string		PARAMS ((cpp_reader *, int));
 static int parse_assertion		PARAMS ((cpp_reader *));
 static const char *if_directive_name	PARAMS ((cpp_reader *,
 						 struct if_stack *));
-static enum cpp_token null_underflow	PARAMS ((cpp_reader *));
 static int null_cleanup			PARAMS ((cpp_buffer *, cpp_reader *));
 static int skip_comment			PARAMS ((cpp_reader *, int));
 static int copy_comment			PARAMS ((cpp_reader *, int));
@@ -100,8 +99,8 @@ static void pass_thru_directive		PARAMS ((const U_CHAR *, size_t,
 						 const struct directive *));
 static int read_line_number		PARAMS ((cpp_reader *, int *));
 static U_CHAR *detect_if_not_defined	PARAMS ((cpp_reader *));
-static int consider_directive_while_skipping PARAMS ((cpp_reader *,
-						      IF_STACK_FRAME *));
+static int consider_directive_while_skipping
+					PARAMS ((cpp_reader *, IF_STACK *));
 static void skip_block_comment		PARAMS ((cpp_reader *));
 static void skip_line_comment		PARAMS ((cpp_reader *));
 static void parse_set_mark		PARAMS ((cpp_reader *));
@@ -262,13 +261,6 @@ cpp_defined (pfile, id, len)
       return 0;
     }
   return (hp != NULL);
-}
-
-static enum cpp_token
-null_underflow (pfile)
-     cpp_reader *pfile ATTRIBUTE_UNUSED;
-{
-  return CPP_EOF;
 }
 
 static int
@@ -758,7 +750,6 @@ cpp_push_buffer (pfile, buffer, length)
 
   new->if_stack = pfile->if_stack;
   new->cleanup = null_cleanup;
-  new->underflow = null_underflow;
   new->buf = new->cur = buffer;
   new->alimit = new->rlimit = buffer + length;
   new->prev = buf;
@@ -805,8 +796,7 @@ cpp_scan_buffer (pfile)
 	    break;
 	  if (token == CPP_POP && CPP_BUFFER (pfile) == buffer)
 	    {
-	      if (CPP_PREV_BUFFER (CPP_BUFFER (pfile))
-		  != CPP_NULL_BUFFER (pfile))
+	      if (CPP_PREV_BUFFER (CPP_BUFFER (pfile)) != NULL)
 		cpp_pop_buffer (pfile);
 	      break;
 	    }
@@ -822,8 +812,7 @@ cpp_scan_buffer (pfile)
 	    break;
 	  if (token == CPP_POP && CPP_BUFFER (pfile) == buffer)
 	    {
-	      if (CPP_PREV_BUFFER (CPP_BUFFER (pfile))
-		  != CPP_NULL_BUFFER (pfile))
+	      if (CPP_PREV_BUFFER (CPP_BUFFER (pfile)) != NULL)
 		cpp_pop_buffer (pfile);
 	      break;
 	    }
@@ -903,10 +892,10 @@ cpp_buffer *
 cpp_file_buffer (pfile)
      cpp_reader *pfile;
 {
-  cpp_buffer *ip = CPP_BUFFER (pfile);
+  cpp_buffer *ip;
 
-  for ( ; ip != CPP_NULL_BUFFER (pfile); ip = CPP_PREV_BUFFER (ip))
-    if (ip->fname != NULL)
+  for (ip = CPP_BUFFER (pfile); ip; ip = CPP_PREV_BUFFER (ip))
+    if (ip->ihash != NULL)
       return ip;
   return NULL;
 }
@@ -1058,7 +1047,7 @@ do_include (pfile, keyword)
   enum cpp_token token;
 
   /* Chain of dirs to search */
-  struct include_hash *ihash;
+  IHASH *ihash;
   struct file_name_list *search_start;
   
   long old_written = CPP_WRITTEN (pfile);
@@ -1151,23 +1140,13 @@ do_include (pfile, keyword)
 
   search_start = 0;
 
-  for (fp = CPP_BUFFER (pfile);
-       fp != CPP_NULL_BUFFER (pfile);
-       fp = CPP_PREV_BUFFER (fp))
-    if (fp->fname != NULL)
-      break;
+  fp = cpp_file_buffer (pfile);
 
-  if (fp == CPP_NULL_BUFFER (pfile))
-    {
-      cpp_ice (pfile, "fp == NULL_BUFFER in do_include");
-      return 0;
-    }
-  
   /* For #include_next, skip in the search path past the dir in which the
      containing file was found.  Treat files specified using an absolute path
      as if there are no more directories to search.  Treat the primary source
      file like any other included source, but generate a warning.  */
-  if (skip_dirs && CPP_PREV_BUFFER(fp) != CPP_NULL_BUFFER (pfile))
+  if (skip_dirs && CPP_PREV_BUFFER (fp))
     {
       if (fp->ihash->foundhere != ABSOLUTE_PATH)
 	search_start = fp->ihash->foundhere->next;
@@ -1257,7 +1236,7 @@ do_include (pfile, keyword)
   if (CPP_OPTIONS(pfile)->print_include_names)
     {
       fp = CPP_BUFFER (pfile);
-      while ((fp = CPP_PREV_BUFFER (fp)) != CPP_NULL_BUFFER (pfile))
+      while ((fp = CPP_PREV_BUFFER (fp)) != NULL)
 	putc ('.', stderr);
       fprintf (stderr, " %s\n", ihash->name);
     }
@@ -1390,8 +1369,8 @@ do_line (pfile, keyword)
       if (strcmp (fname, ip->nominal_fname))
 	{
 	  const char *newname, *oldname;
-	  if (!strcmp (fname, ip->fname))
-	    newname = ip->fname;
+	  if (!strcmp (fname, ip->ihash->name))
+	    newname = ip->ihash->name;
 	  else if (ip->last_nominal_fname
 		   && !strcmp (fname, ip->last_nominal_fname))
 	    newname = ip->last_nominal_fname;
@@ -1404,10 +1383,10 @@ do_line (pfile, keyword)
 	  if (ip->last_nominal_fname
 	      && ip->last_nominal_fname != oldname
 	      && ip->last_nominal_fname != newname
-	      && ip->last_nominal_fname != ip->fname)
+	      && ip->last_nominal_fname != ip->ihash->name)
 	    free ((void *) ip->last_nominal_fname);
 
-	  if (newname == ip->fname)
+	  if (newname == ip->ihash->name)
 	    ip->last_nominal_fname = NULL;
 	  else
 	    ip->last_nominal_fname = oldname;
@@ -1676,18 +1655,12 @@ do_pragma_once (pfile)
 {
   cpp_buffer *ip = CPP_BUFFER (pfile);
 
-  if (ip->fname == NULL)
-    {
-      cpp_ice (pfile, "ip->fname == NULL in do_pragma_once");
-      return 1;
-    }
-  
   /* Allow #pragma once in system headers, since that's not the user's
      fault.  */
   if (!ip->system_header_p)
     cpp_warning (pfile, "`#pragma once' is obsolete");
       
-  if (CPP_PREV_BUFFER (ip) == CPP_NULL_BUFFER (pfile))
+  if (CPP_PREV_BUFFER (ip) == NULL)
     cpp_warning (pfile, "`#pragma once' outside include file");
   else
     ip->ihash->control_macro = "";  /* never repeat */
@@ -1887,7 +1860,7 @@ do_if (pfile, keyword)
      const struct directive *keyword ATTRIBUTE_UNUSED;
 {
   U_CHAR *control_macro = detect_if_not_defined (pfile);
-  HOST_WIDEST_INT value = eval_if_expression (pfile);
+  HOST_WIDEST_INT value = eval_if_expr (pfile);
   conditional_skip (pfile, value == 0, T_IF, control_macro);
   return 0;
 }
@@ -1922,7 +1895,7 @@ do_elif (pfile, keyword)
     skip_if_group (pfile);
   else
     {
-      HOST_WIDEST_INT value = eval_if_expression (pfile);
+      HOST_WIDEST_INT value = eval_if_expr (pfile);
       if (value == 0)
 	skip_if_group (pfile);
       else
@@ -1940,7 +1913,7 @@ do_elif (pfile, keyword)
  */
 
 static HOST_WIDEST_INT
-eval_if_expression (pfile)
+eval_if_expr (pfile)
      cpp_reader *pfile;
 {
   HOST_WIDEST_INT value;
@@ -1968,7 +1941,6 @@ do_xifdef (pfile, keyword)
      const struct directive *keyword;
 {
   int skip;
-  cpp_buffer *ip = CPP_BUFFER (pfile);
   U_CHAR *ident;
   int ident_length;
   enum cpp_token token;
@@ -1977,7 +1949,7 @@ do_xifdef (pfile, keyword)
   int old_written = CPP_WRITTEN (pfile);
 
   /* Detect a #ifndef at start of file (not counting comments).  */
-  if (ip->fname != 0 && keyword->type == T_IFNDEF)
+  if (keyword->type == T_IFNDEF)
     start_of_file = pfile->only_seen_white == 2;
 
   pfile->no_macro_expand++;
@@ -2038,10 +2010,9 @@ conditional_skip (pfile, skip, type, control_macro)
      enum node_type type;
      U_CHAR *control_macro;
 {
-  IF_STACK_FRAME *temp;
+  IF_STACK *temp;
 
-  temp = (IF_STACK_FRAME *) xcalloc (1, sizeof (IF_STACK_FRAME));
-  temp->fname = CPP_BUFFER (pfile)->nominal_fname;
+  temp = (IF_STACK *) xcalloc (1, sizeof (IF_STACK));
   temp->lineno = CPP_BUFFER (pfile)->lineno;
   temp->next = pfile->if_stack;
   temp->control_macro = control_macro;
@@ -2066,11 +2037,11 @@ conditional_skip (pfile, skip, type, control_macro)
 static int
 consider_directive_while_skipping (pfile, stack)
     cpp_reader *pfile;
-    IF_STACK_FRAME *stack; 
+    IF_STACK *stack; 
 {
   long ident_len, ident;
   const struct directive *kt;
-  IF_STACK_FRAME *temp;
+  IF_STACK *temp;
     
   cpp_skip_hspace (pfile);
 
@@ -2088,10 +2059,9 @@ consider_directive_while_skipping (pfile, stack)
 	case T_IF:
 	case T_IFDEF:
 	case T_IFNDEF:
-	    temp = (IF_STACK_FRAME *) xmalloc (sizeof (IF_STACK_FRAME));
+	    temp = (IF_STACK *) xmalloc (sizeof (IF_STACK));
 	    temp->next = pfile->if_stack;
 	    pfile->if_stack = temp;
-	    temp->fname = CPP_BUFFER(pfile)->nominal_fname;
 	    temp->type = kt->type;
 	    return 0;
 
@@ -2138,7 +2108,7 @@ skip_if_group (pfile)
     cpp_reader *pfile;
 {
   int c;
-  IF_STACK_FRAME *save_if_stack = pfile->if_stack; /* don't pop past here */
+  IF_STACK *save_if_stack = pfile->if_stack; /* don't pop past here */
   U_CHAR *beg_of_line;
   long old_written;
 
@@ -2241,7 +2211,7 @@ do_endif (pfile, keyword)
     cpp_error (pfile, "`#endif' not within a conditional");
   else
     {
-      IF_STACK_FRAME *temp = pfile->if_stack;
+      IF_STACK *temp = pfile->if_stack;
       pfile->if_stack = temp->next;
       if (temp->control_macro != 0)
 	{
@@ -2266,11 +2236,7 @@ do_endif (pfile, keyword)
 		 that contains all of the file (aside from whitespace).
 		 Arrange not to include the file again
 		 if the macro that was tested is defined. */
-	      struct cpp_buffer *ip;
-	      for (ip = CPP_BUFFER (pfile); ; ip = CPP_PREV_BUFFER (ip))
-		if (ip->fname != NULL)
-		  break;
-	      ip->ihash->control_macro = temp->control_macro;
+	      CPP_BUFFER (pfile)->ihash->control_macro = temp->control_macro;
 	    }
         }
       free (temp);
@@ -2337,7 +2303,7 @@ cpp_get_token (pfile)
 	return CPP_EOF;
       else if (CPP_BUFFER (pfile)->seen_eof)
 	{
-	  if (CPP_PREV_BUFFER (CPP_BUFFER (pfile)) == CPP_NULL_BUFFER (pfile))
+	  if (CPP_PREV_BUFFER (CPP_BUFFER (pfile)) == NULL)
 	    return CPP_EOF;
 
 	  cpp_pop_buffer (pfile);
@@ -2362,8 +2328,7 @@ cpp_get_token (pfile)
 	    }
 	  pfile->if_stack = ifs;
 
-	  if (CPP_BUFFER (pfile)->nominal_fname
-	      && next_buf != CPP_NULL_BUFFER (pfile))
+	  if (CPP_BUFFER (pfile)->nominal_fname && next_buf != NULL)
 	    {
 	      /* We're about to return from an #include file.
 		 Emit #line information now (as part of the CPP_POP) result.

@@ -398,7 +398,7 @@ cpp_cleanup (pfile)
      cpp_reader *pfile;
 {
   int i;
-  while (CPP_BUFFER (pfile) != CPP_NULL_BUFFER (pfile))
+  while (CPP_BUFFER (pfile) != NULL)
     cpp_pop_buffer (pfile);
 
   if (pfile->token_buffer)
@@ -420,22 +420,20 @@ cpp_cleanup (pfile)
 
   while (pfile->if_stack)
     {
-      IF_STACK_FRAME *temp = pfile->if_stack;
+      IF_STACK *temp = pfile->if_stack;
       pfile->if_stack = temp->next;
       free (temp);
     }
 
   for (i = ALL_INCLUDE_HASHSIZE; --i >= 0; )
     {
-      struct include_hash *imp = pfile->all_include_files[i];
-      while (imp)
+      IHASH *imp, *next;
+      for (imp = pfile->all_include_files[i]; imp; imp = next)
 	{
-	  struct include_hash *next = imp->next;
-
+	  next = imp->next;
 	  free ((PTR) imp->name);
 	  free ((PTR) imp->nshort);
 	  free (imp);
-	  imp = next;
 	}
       pfile->all_include_files[i] = 0;
     }
@@ -846,7 +844,7 @@ cpp_finish (pfile)
 {
   struct cpp_options *opts = CPP_OPTIONS (pfile);
 
-  if (CPP_PREV_BUFFER (CPP_BUFFER (pfile)) != CPP_NULL_BUFFER (pfile))
+  if (CPP_PREV_BUFFER (CPP_BUFFER (pfile)) != NULL)
     cpp_ice (pfile, "buffers still stacked in cpp_finish");
   cpp_pop_buffer (pfile);
 

@@ -29,26 +29,21 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #include "cpplib.h"
 #include "intl.h"
 
-static struct include_hash *include_hash PARAMS ((cpp_reader *,
-						  const char *, int));
-static struct include_hash *redundant_include_p
-					PARAMS ((cpp_reader *,
-						 struct include_hash *,
-						 struct file_name_list *));
+static IHASH *include_hash	PARAMS ((cpp_reader *, const char *, int));
+static IHASH *redundant_include_p PARAMS ((cpp_reader *, IHASH *,
+					   struct file_name_list *));
 static struct file_name_map *read_name_map
-					PARAMS ((cpp_reader *, const char *));
-static char *read_filename_string	PARAMS ((int, FILE *));
-static char *remap_filename 		PARAMS ((cpp_reader *, char *,
-						 struct file_name_list *));
-static long read_and_prescan		PARAMS ((cpp_reader *, cpp_buffer *,
-						 int, size_t));
+				PARAMS ((cpp_reader *, const char *));
+static char *read_filename_string PARAMS ((int, FILE *));
+static char *remap_filename 	PARAMS ((cpp_reader *, char *,
+					 struct file_name_list *));
+static long read_and_prescan	PARAMS ((cpp_reader *, cpp_buffer *,
+					 int, size_t));
 static struct file_name_list *actual_directory
-					PARAMS ((cpp_reader *, const char *));
-static void initialize_input_buffer	PARAMS ((cpp_reader *, int,
-						 struct stat *));
-static int file_cleanup			PARAMS ((cpp_buffer *, cpp_reader *));
-static U_CHAR *find_position		PARAMS ((U_CHAR *, U_CHAR *,
-						 unsigned long *));
+				PARAMS ((cpp_reader *, const char *));
+static void init_input_buffer	PARAMS ((cpp_reader *, int, struct stat *));
+static int file_cleanup		PARAMS ((cpp_buffer *, cpp_reader *));
+static U_CHAR *find_position	PARAMS ((U_CHAR *, U_CHAR *, unsigned long *));
 
 #if 0
 static void hack_vms_include_specification PARAMS ((char *));
@@ -205,14 +200,14 @@ _cpp_merge_include_chains (opts)
  #include name (there are at least three ways this can happen).  The
  hash function could probably be improved a bit. */
 
-static struct include_hash *
+static IHASH *
 include_hash (pfile, fname, add)
      cpp_reader *pfile;
      const char *fname;
      int add;
 {
   unsigned int hash = 0;
-  struct include_hash *l, *m;
+  IHASH *l, *m;
   const char *f = fname;
 
   while (*f)
@@ -227,7 +222,7 @@ include_hash (pfile, fname, add)
   if (!add)
     return 0;
   
-  l = (struct include_hash *) xmalloc (sizeof (struct include_hash));
+  l = (IHASH *) xmalloc (sizeof (IHASH));
   l->next = NULL;
   l->next_this_file = NULL;
   l->foundhere = NULL;
@@ -263,14 +258,14 @@ include_hash (pfile, fname, add)
    so the test below (i->foundhere == l) may be false even when
    the directories are in fact the same.  */
 
-static struct include_hash *
+static IHASH *
 redundant_include_p (pfile, ihash, ilist)
      cpp_reader *pfile;
-     struct include_hash *ihash;
+     IHASH *ihash;
      struct file_name_list *ilist;
 {
   struct file_name_list *l;
-  struct include_hash *i;
+  IHASH *i;
 
   if (! ihash->foundhere)
     return 0;
@@ -285,7 +280,7 @@ redundant_include_p (pfile, ihash, ilist)
 	 return (i->control_macro
 		 && (i->control_macro[0] == '\0'
 		     || cpp_defined (pfile, i->control_macro, -1)))
-	     ? (struct include_hash *)-1 : i;
+	     ? (IHASH *)-1 : i;
 
   return 0;
 }
@@ -297,7 +292,7 @@ cpp_included (pfile, fname)
      cpp_reader *pfile;
      const char *fname;
 {
-  struct include_hash *ptr;
+  IHASH *ptr;
 
   ptr = include_hash (pfile, fname, 0);
   return (ptr != NULL);
@@ -330,11 +325,11 @@ _cpp_find_include_file (pfile, fname, search_start, ihash, before)
      cpp_reader *pfile;
      const char *fname;
      struct file_name_list *search_start;
-     struct include_hash **ihash;
+     IHASH **ihash;
      int *before;
 {
   struct file_name_list *l;
-  struct include_hash *ih, *jh;
+  IHASH *ih, *jh;
   int f, len;
   char *name;
   
@@ -347,7 +342,7 @@ _cpp_find_include_file (pfile, fname, search_start, ihash, before)
       *before = 1;
       *ihash = jh;
 
-      if (jh == (struct include_hash *)-1)
+      if (jh == (IHASH *)-1)
 	return -2;
       else
 	return open (jh->name, O_RDONLY, 0666);
@@ -358,7 +353,7 @@ _cpp_find_include_file (pfile, fname, search_start, ihash, before)
        Allocate another include_hash block and add it to the next_this_file
        chain. */
     {
-      jh = (struct include_hash *)xmalloc (sizeof (struct include_hash));
+      jh = (IHASH *) xmalloc (sizeof (IHASH));
       while (ih->next_this_file) ih = ih->next_this_file;
 
       ih->next_this_file = jh;
@@ -422,7 +417,7 @@ _cpp_find_include_file (pfile, fname, search_start, ihash, before)
 	free (ih);
       }
     free (name);
-    *ihash = (struct include_hash *)-1;
+    *ihash = (IHASH *)-1;
     return -1;
 }
 
@@ -627,7 +622,7 @@ cpp_read_file (pfile, fname)
      cpp_reader *pfile;
      const char *fname;
 {
-  struct include_hash *ih_fake;
+  IHASH *ih_fake;
   int f;
 
   if (fname == NULL || *fname == 0)
@@ -655,7 +650,7 @@ cpp_read_file (pfile, fname)
   /* Gin up an include_hash structure for this file and feed it
      to finclude.  */
 
-  ih_fake = (struct include_hash *) xmalloc (sizeof (struct include_hash));
+  ih_fake = (IHASH *) xmalloc (sizeof (IHASH));
   ih_fake->next = 0;
   ih_fake->next_this_file = 0;
   ih_fake->foundhere = ABSOLUTE_PATH;  /* well sort of ... */
@@ -687,7 +682,7 @@ int
 _cpp_read_include_file (pfile, fd, ihash)
      cpp_reader *pfile;
      int fd;
-     struct include_hash *ihash;
+     IHASH *ihash;
 {
   struct stat st;
   size_t st_size;
@@ -749,12 +744,12 @@ _cpp_read_include_file (pfile, fd, ihash)
     }
 
   if (pfile->input_buffer == NULL)
-    initialize_input_buffer (pfile, fd, &st);
+    init_input_buffer (pfile, fd, &st);
 
   /* Read the file, converting end-of-line characters and trigraphs
      (if enabled). */
   fp->ihash = ihash;
-  fp->nominal_fname = fp->fname = ihash->name;
+  fp->nominal_fname = ihash->name;
   length = read_and_prescan (pfile, fp, fd, st_size);
   if (length < 0)
     goto fail;
@@ -774,7 +769,7 @@ _cpp_read_include_file (pfile, fd, ihash)
   /* The ->actual_dir field is only used when ignore_srcdir is not in effect;
      see do_include */
   if (!CPP_OPTIONS (pfile)->ignore_srcdir)
-    fp->actual_dir = actual_directory (pfile, fp->fname);
+    fp->actual_dir = actual_directory (pfile, ihash->name);
 
   pfile->input_stack_listing_current = 0;
   return 1;
@@ -1176,7 +1171,7 @@ read_and_prescan (pfile, fp, desc, len)
   return -1;
 
  error:
-  cpp_error_from_errno (pfile, fp->fname);
+  cpp_error_from_errno (pfile, fp->ihash->name);
   free (buf);
   return -1;
 }
@@ -1187,7 +1182,7 @@ read_and_prescan (pfile, fp, desc, len)
    the duration of the cpp run.  */
 
 static void
-initialize_input_buffer (pfile, fd, st)
+init_input_buffer (pfile, fd, st)
      cpp_reader *pfile;
      int fd;
      struct stat *st;

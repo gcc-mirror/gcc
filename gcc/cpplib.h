@@ -61,7 +61,6 @@ enum cpp_token
   CPP_POP		/* We're about to pop the buffer stack.  */
 };
 
-typedef enum cpp_token (*parse_underflow_t) PARAMS((cpp_reader *));
 typedef int (*parse_cleanup_t) PARAMS((cpp_buffer *, cpp_reader *));
 
 extern int cpp_handle_options PARAMS ((cpp_reader *, int, char **));
@@ -82,8 +81,6 @@ struct cpp_buffer
 
   struct cpp_buffer *prev;
 
-  /* Real filename.  (Alias to ->ihash->fname, obsolete). */
-  const char *fname;
   /* Filename specified with #line command.  */
   const char *nominal_fname;
   /* Last filename specified with #line command.  */
@@ -93,12 +90,11 @@ struct cpp_buffer
 
   /* Pointer into the include hash table.  Used for include_next and
      to record control macros. */
-  struct include_hash *ihash;
+  struct ihash *ihash;
 
   long lineno; /* Line number at CPP_LINE_BASE. */
   long colno; /* Column number at CPP_LINE_BASE. */
   long mark;  /* Saved position for lengthy backtrack. */
-  parse_underflow_t underflow;
   parse_cleanup_t cleanup;
   void *data;
 
@@ -146,7 +142,6 @@ struct file_name_map_list;
 
 struct cpp_reader
 {
-  parse_underflow_t get_token;
   cpp_buffer *buffer;
   cpp_options *opts;
 
@@ -175,7 +170,7 @@ struct cpp_reader
 
   /* Hash table of other included files.  See cppfiles.c */
 #define ALL_INCLUDE_HASHSIZE 71
-  struct include_hash *all_include_files[ALL_INCLUDE_HASHSIZE];
+  struct ihash *all_include_files[ALL_INCLUDE_HASHSIZE];
 
   /* Chain of `actual directory' file_name_list entries,
      for "" inclusion. */
@@ -284,8 +279,6 @@ struct cpp_reader
 #define CPP_OPTIONS(PFILE) ((PFILE)->opts)
 #define CPP_BUFFER(PFILE) ((PFILE)->buffer)
 #define CPP_PREV_BUFFER(BUFFER) ((BUFFER)->prev)
-/* The bottom of the buffer stack. */
-#define CPP_NULL_BUFFER(PFILE) NULL
 
 /* The `pending' structure accumulates all the options that are not
    actually processed until we hit cpp_start_read.  It consists of
@@ -528,12 +521,12 @@ struct file_name_list
 /* This structure is used for the table of all includes.  It is
    indexed by the `short name' (the name as it appeared in the
    #include statement) which is stored in *nshort.  */
-struct include_hash
+struct ihash
 {
-  struct include_hash *next;
+  struct ihash *next;
   /* Next file with the same short name but a
      different (partial) pathname). */
-  struct include_hash *next_this_file;
+  struct ihash *next_this_file;
 
   /* Location of the file in the include search path.
      Used for include_next */
@@ -545,6 +538,7 @@ struct include_hash
   char *buf, *limit;		/* for file content cache,
 				   not yet implemented */
 };
+typedef struct ihash IHASH;
 
 /* Name under which this program was invoked.  */
 
@@ -623,17 +617,15 @@ extern unsigned char _cpp_IStable[256];
 /* Stack of conditionals currently in progress
    (including both successful and failing conditionals).  */
 
-struct if_stack {
-  struct if_stack *next;	/* for chaining to the next stack frame */
-  const char *fname;		/* copied from input when frame is made */
-  int lineno;			/* similarly */
-  int if_succeeded;		/* true if a leg of this if-group
-				    has been passed through rescan */
-  U_CHAR *control_macro;	/* For #ifndef at start of file,
-				   this is the macro name tested.  */
+struct if_stack
+{
+  struct if_stack *next;
+  int lineno;			/* line number where condition started */
+  int if_succeeded;		/* truth of last condition in this group */
+  const U_CHAR *control_macro;	/* macro name for #ifndef around entire file */
   enum node_type type;		/* type of last directive seen in this group */
 };
-typedef struct if_stack IF_STACK_FRAME;
+typedef struct if_stack IF_STACK;
 
 extern void cpp_buf_line_and_col PARAMS((cpp_buffer *, long *, long *));
 extern cpp_buffer *cpp_file_buffer PARAMS((cpp_reader *));
@@ -700,10 +692,8 @@ extern void _cpp_simplify_pathname	PARAMS ((char *));
 extern void _cpp_merge_include_chains	PARAMS ((struct cpp_options *));
 extern int _cpp_find_include_file	PARAMS ((cpp_reader *, const char *,
 						struct file_name_list *,
-						struct include_hash **,
-						int *));
-extern int _cpp_read_include_file	PARAMS ((cpp_reader *, int,
-					        struct include_hash *));
+						IHASH **, int *));
+extern int _cpp_read_include_file	PARAMS ((cpp_reader *, int, IHASH *));
 
 /* In cppexp.c */
 extern HOST_WIDEST_INT _cpp_parse_expr	PARAMS ((cpp_reader *));
