@@ -1,3 +1,8 @@
+Wed Mar 17 23:17:42 1999  Mark Kettenis  <kettenis@gnu.org>
+
+	* config/t-gnu (SYSTEM_HEADER_DIR): New variable.  Set to
+	`/include' in order to find the system's limits.h.
+
 Wed Mar 17 23:00:18 1999  Robert Lipe <robertlipe@usa.net>
 
 	* fixinc/fixincl.c: Include auto-host.h instead of config.h

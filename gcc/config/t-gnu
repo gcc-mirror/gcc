@@ -1,5 +1,8 @@
-LIBGCC1=libgcc1.null
-CROSS_LIBGCC1=libgcc1.null
+# In GNU, "/usr" is a four-letter word.
+SYSTEM_HEADER_DIR = /include
+
+LIBGCC1 = libgcc1.null
+CROSS_LIBGCC1 = libgcc1.null
 
 # The pushl in CTOR initialization interferes with frame pointer elimination.
 
