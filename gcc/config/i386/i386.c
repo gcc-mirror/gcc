@@ -1572,7 +1572,8 @@ legitimize_pic_address (orig, reg)
 	  if (reg == 0)
 	    reg = gen_reg_rtx (Pmode);
 
-	  if (GET_CODE (addr) == SYMBOL_REF && SYMBOL_REF_FLAG (addr))
+	  if ((GET_CODE (addr) == SYMBOL_REF && SYMBOL_REF_FLAG (addr))
+	      || GET_CODE (addr) == LABEL_REF)
 	    new = gen_rtx (PLUS, Pmode, pic_offset_table_rtx, orig);
 	  else
 	    new = gen_rtx (MEM, Pmode,
@@ -1854,7 +1855,9 @@ output_pic_addr_const (file, x, code)
 	fprintf (file, "@GOTOFF(%%ebx)");
       else if (code == 'P')
 	fprintf (file, "@PLT");
-      else if (GET_CODE (x) == LABEL_REF || ! SYMBOL_REF_FLAG (x))
+      else if (GET_CODE (x) == LABEL_REF)
+	fprintf (file, "@GOTOFF");
+      else if (! SYMBOL_REF_FLAG (x))
 	fprintf (file, "@GOT");
       else
 	fprintf (file, "@GOTOFF");
@@ -2176,15 +2179,14 @@ print_operand_address (file, addr)
 
 	  if (addr != 0)
 	    {
-	      if (GET_CODE (addr) == LABEL_REF)
+	      if (flag_pic)
+		output_pic_addr_const (file, addr, 0);
+
+	      else if (GET_CODE (addr) == LABEL_REF)
 		output_asm_label (addr);
+
 	      else
-		{
-		  if (flag_pic)
-		    output_pic_addr_const (file, addr, 0);
-		  else
-		    output_addr_const (file, addr);
-		}
+		output_addr_const (file, addr);
 	    }
 
   	  if (ireg != 0 && GET_CODE (ireg) == MULT)
