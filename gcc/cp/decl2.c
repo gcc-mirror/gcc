@@ -66,7 +66,6 @@ static void add_using_namespace (tree, tree, bool);
 static cxx_binding *ambiguous_decl (tree, cxx_binding *, cxx_binding *, int);
 static tree build_anon_union_vars (tree);
 static bool acceptable_java_type (tree);
-static void output_vtable_inherit (tree);
 static tree start_objects (int, int);
 static void finish_objects (int, int, tree);
 static tree merge_functions (tree, tree);
@@ -1606,11 +1605,15 @@ import_export_class (tree ctype)
 /* We need to describe to the assembler the relationship between
    a vtable and the vtable of the parent class.  */
 
-static void
-output_vtable_inherit (tree vars)
+void
+prepare_assemble_variable (tree vars)
 {
   tree parent;
   rtx child_rtx, parent_rtx;
+
+  if (!flag_vtable_gc || TREE_CODE (vars) != VAR_DECL
+      || !DECL_VTABLE_OR_VTT_P (vars))
+    return;
 
   child_rtx = XEXP (DECL_RTL (vars), 0);	  /* strip the mem ref  */
 
@@ -1707,9 +1710,6 @@ maybe_emit_vtables (tree ctype)
 	comdat_linkage (vtbl);
 
       rest_of_decl_compilation (vtbl, NULL, 1, 1);
-
-      if (flag_vtable_gc)
-	output_vtable_inherit (vtbl);
 
       /* Because we're only doing syntax-checking, we'll never end up
 	 actually marking the variable as written.  */

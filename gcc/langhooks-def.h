@@ -221,6 +221,7 @@ int lhd_tree_dump_type_quals			PARAMS ((tree));
 #define LANG_HOOKS_GETDECLS	getdecls
 #define LANG_HOOKS_WARN_UNUSED_GLOBAL_DECL lhd_warn_unused_global_decl
 #define LANG_HOOKS_WRITE_GLOBALS write_global_declarations
+#define LANG_HOOKS_PREPARE_ASSEMBLE_VARIABLE NULL
 #define LANG_HOOKS_DECL_OK_FOR_SIBCALL	lhd_decl_ok_for_sibcall
 
 #define LANG_HOOKS_DECLS { \
@@ -233,6 +234,7 @@ int lhd_tree_dump_type_quals			PARAMS ((tree));
   LANG_HOOKS_GETDECLS, \
   LANG_HOOKS_WARN_UNUSED_GLOBAL_DECL, \
   LANG_HOOKS_WRITE_GLOBALS, \
+  LANG_HOOKS_PREPARE_ASSEMBLE_VARIABLE, \
   LANG_HOOKS_DECL_OK_FOR_SIBCALL, \
 }
 

@@ -1,3 +1,13 @@
+Tue Jun 24 13:52:34 CEST 2003  Jan Hubicka  <jh@suse.cz>
+
+	* class.c (build_vtable): Make vtables.
+	* cp-tree.h (DECL_VTABLE_OR_VTT_P): New macro.
+	* decl2.c (output_vtable_inherit): Rename to ...
+	(prepare_assemble_variable): ... this one; change interface.
+	(maybe_emit_vtables): Do not call output_vtable_inherit.
+	* cp-lang.c (LANG_HOOKS_PREPARE_ASSEMBLE_VARIABLE): Define.
+	* cp-tree.h (prepare_assemble_variable): New.
+
 2003-06-23  Andrew Pinski <pinskia@physics.uc.edu>
 
 	* method.c: add prototype for make_alias_for_thunk.

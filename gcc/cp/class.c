@@ -530,6 +530,7 @@ build_vtable (tree class_type, tree name, tree vtable_type)
   TREE_READONLY (decl) = 1;
   DECL_VIRTUAL_P (decl) = 1;
   DECL_ALIGN (decl) = TARGET_VTABLE_ENTRY_ALIGN;
+  DECL_VTABLE_OR_VTT_P (decl) = 1;
 
   /* At one time the vtable info was grabbed 2 words at a time.  This
      fails on sparc unless you have 8-byte alignment.  (tiemann) */

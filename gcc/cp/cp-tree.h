@@ -73,6 +73,7 @@ struct diagnostic_context;
       NEED_TEMPORARY_P (in REF_BIND, BASE_CONV)
       IDENTIFIER_TYPENAME_P (in IDENTIFIER_NODE)
    5: C_IS_RESERVED_WORD (in IDENTIFIER_NODE)
+      DECL_VTABLE_OR_VTT_P (in VAR_DECL)
    6: For future expansion
 
    Usage of TYPE_LANG_FLAG_?:
@@ -2056,6 +2057,9 @@ struct lang_decl GTY(())
   (DECL_CONTEXT (NODE) \
    && TREE_CODE (DECL_CONTEXT (NODE)) == FUNCTION_DECL)
 
+/* 1 iff VAR_DECL node NODE is virtual table or VTT.  */
+#define DECL_VTABLE_OR_VTT_P(NODE) TREE_LANG_FLAG_5 (VAR_DECL_CHECK (NODE))
+
 /* 1 iff NODE is function-local, but for types.  */
 #define LOCAL_CLASS_P(NODE)				\
   (decl_function_context (TYPE_MAIN_DECL (NODE)) != NULL_TREE)
@@ -3794,6 +3798,7 @@ extern tree build_artificial_parm (tree, tree);
 extern tree get_guard (tree);
 extern tree get_guard_cond (tree);
 extern tree set_guard (tree);
+extern void prepare_assemble_variable (tree);
 
 extern void cp_error_at		(const char *msgid, ...);
 extern void cp_warning_at	(const char *msgid, ...);
