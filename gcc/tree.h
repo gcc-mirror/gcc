@@ -1081,7 +1081,7 @@ struct tree_vec GTY(())
    a goto statement.  */
 #define GOTO_DESTINATION(NODE)  TREE_OPERAND ((NODE), 0)
 
-/* ASM_STMT accessors. ASM_STRING returns a STRING_CST for the
+/* ASM_EXPR accessors. ASM_STRING returns a STRING_CST for the
    instruction (e.g., "mov x, y"). ASM_OUTPUTS, ASM_INPUTS, and
    ASM_CLOBBERS represent the outputs, inputs, and clobbers for the
    statement.  */

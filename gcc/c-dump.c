@@ -63,17 +63,6 @@ c_dump_tree (void *dump_info, tree t)
 	dump_string (di, "bitfield");
       break;
 
-    case ASM_STMT:
-      dump_stmt (di, t);
-      if (ASM_VOLATILE_P (t))
-	dump_string (di, "volatile");
-      dump_child ("strg", ASM_STRING (t));
-      dump_child ("outs", ASM_OUTPUTS (t));
-      dump_child ("ins", ASM_INPUTS (t));
-      dump_child ("clbr", ASM_CLOBBERS (t));
-      dump_next_stmt (di, t);
-      break;
-
     case BREAK_STMT:
     case CONTINUE_STMT:
       dump_stmt (di, t);

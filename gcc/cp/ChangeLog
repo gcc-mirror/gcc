@@ -1,5 +1,11 @@
 2004-06-16  Richard Henderson  <rth@redhat.com>
 
+	* parser.c (cp_parser_asm_definition): Update commentary.
+	* pt.c (tsubst_expr): Use ASM_EXPR.
+	* semantics.c (finish_asm_stmt): Likewise.
+
+2004-06-16  Richard Henderson  <rth@redhat.com>
+
 	* decl.c (finish_destructor_body): Use LABEL_EXPR.
 	* parser.c (cp_parser_statement): Update commentary.
 	* pt.c (tsubst_expr): Use LABEL_EXPR, GOTO_EXPR.

@@ -6124,7 +6124,7 @@ process_init_element (tree value)
 
 /* Build a complete asm-statement, whose components are a CV_QUALIFIER
    (guaranteed to be 'volatile' or null) and ARGS (represented using
-   an ASM_STMT node).  */
+   an ASM_EXPR node).  */
 tree
 build_asm_stmt (tree cv_qualifier, tree args)
 {
@@ -6137,7 +6137,7 @@ build_asm_stmt (tree cv_qualifier, tree args)
    some INPUTS, and some CLOBBERS.  The latter three may be NULL.
    SIMPLE indicates whether there was anything at all after the
    string in the asm expression -- asm("blah") and asm("blah" : )
-   are subtly different.  We use a ASM_STMT node to represent this.  */
+   are subtly different.  We use a ASM_EXPR node to represent this.  */
 tree
 build_asm_expr (tree string, tree outputs, tree inputs, tree clobbers,
 		bool simple)
@@ -6188,7 +6188,7 @@ build_asm_expr (tree string, tree outputs, tree inputs, tree clobbers,
   for (tail = inputs; tail; tail = TREE_CHAIN (tail))
     TREE_VALUE (tail) = default_function_array_conversion (TREE_VALUE (tail));
 
-  args = build_stmt (ASM_STMT, string, outputs, inputs, clobbers);
+  args = build_stmt (ASM_EXPR, string, outputs, inputs, clobbers);
 
   /* Simple asm statements are treated as volatile.  */
   if (simple)

@@ -1073,7 +1073,7 @@ finish_asm_stmt (int volatile_p, tree string, tree output_operands,
 	}
     }
 
-  r = build_stmt (ASM_STMT, string,
+  r = build_stmt (ASM_EXPR, string,
 		  output_operands, input_operands,
 		  clobbers);
   ASM_VOLATILE_P (r) = volatile_p;

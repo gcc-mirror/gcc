@@ -7997,7 +7997,7 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
       finish_goto_stmt (tmp);
       break;
 
-    case ASM_STMT:
+    case ASM_EXPR:
       prep_stmt (t);
       tmp = finish_asm_stmt
 	(ASM_VOLATILE_P (t),

@@ -2117,37 +2117,6 @@ pp_c_statement (c_pretty_printer *pp, tree stmt)
       pp_needs_newline (pp) = true;
       break;
 
-    case ASM_STMT:
-      {
-	bool has_volatile_p = ASM_VOLATILE_P (stmt);
-	bool is_extended = has_volatile_p || ASM_INPUTS (stmt)
-	  || ASM_OUTPUTS (stmt) || ASM_CLOBBERS (stmt);
-	pp_c_identifier (pp, is_extended ? "__asm__" : "asm");
-	if (has_volatile_p)
-	  pp_c_identifier (pp, "__volatile__");
-	pp_space (pp);
-	pp_c_left_paren (pp);
-	pp_c_string_literal (pp, ASM_STRING (stmt));
-	if (is_extended)
-	  {
-	    pp_space (pp);
-	    pp_separate_with (pp, ':');
-	    if (ASM_OUTPUTS (stmt))
-	      pp_expression (pp, ASM_OUTPUTS (stmt));
-	    pp_space (pp);
-	    pp_separate_with (pp, ':');
-	    if (ASM_INPUTS (stmt))
-	      pp_expression (pp, ASM_INPUTS (stmt));
-	    pp_space (pp);
-	    pp_separate_with (pp, ':');
-	    if (ASM_CLOBBERS (stmt))
-	      pp_expression (pp, ASM_CLOBBERS (stmt));
-	  }
-	pp_c_right_paren (pp);
-	pp_newline (pp);
-      }
-      break;
-
     default:
       pp_unsupported_tree (pp, stmt);
     }
