@@ -159,7 +159,7 @@ install_to_tooldir: all
 # can't use anything encumbering.
 NEEDED = atexit calloc memchr memcmp memcpy memmove memset rename strchr \
 	 strerror strrchr strstr strtol strtoul tmpnam vfprintf vprintf \
-	 vfork waitpid mkstemps
+	 vfork waitpid bcmp bcopy bzero
 needed-list: Makefile
 	rm -f needed-list; touch needed-list; \
 	for f in $(NEEDED); do \
