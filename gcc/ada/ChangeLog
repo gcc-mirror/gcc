@@ -1,3 +1,8 @@
+2001-12-04  Ed Schonberg <schonber@gnat.com>
+
+	* sem_prag.adb (Analyze_Pragma, case Validity_Checks): do not treat as 
+	a configuration pragma, it is now legal wherever a pragma can appear.
+
 2001-12-04  Zack Weinberg  <zack@codesourcery.com>
 
 	* Makefile.in: Don't set ALL.  Delete @cross_defines@,
