@@ -919,6 +919,9 @@ output_scc_di(op, operand1, operand2, dest)
   rtx loperands[7];
   enum rtx_code op_code = GET_CODE (op);
 
+  /* This does not produce a usefull cc.  */
+  CC_STATUS_INIT;
+
   /* The m68k cmp.l instruction requires operand1 to be a reg as used
      below.  Swap the operands and change the op if these requirements
      are not fulfilled.  */
