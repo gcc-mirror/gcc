@@ -977,7 +977,7 @@ namespace std {
       typedef typename _Traits::int_type 		int_type;
       typedef _CharT                     		char_type;
       typedef ctype<_CharT>     			__ctype_type;
-      int_type __extracted = 0;
+      streamsize __extracted = 0;
 
       typename __istream_type::sentry __cerb(__in, false);
       if (__cerb)
