@@ -145,6 +145,7 @@ extern int target_flags;
 #define TARGET_386 (ix86_cpu == PROCESSOR_I386)
 #define TARGET_486 (ix86_cpu == PROCESSOR_I486)
 #define TARGET_PENTIUM (ix86_cpu == PROCESSOR_PENTIUM)
+#define TARGET_PENTIUMPRO (ix86_cpu == PROCESSOR_PENTIUMPRO)
 #define TARGET_USE_LEAVE (ix86_cpu == PROCESSOR_I386)
 #define TARGET_PUSH_MEMORY (ix86_cpu == PROCESSOR_I386)
 #define TARGET_ZERO_EXTEND_WITH_AND (ix86_cpu != PROCESSOR_I386)
@@ -153,6 +154,8 @@ extern int target_flags;
 #define TARGET_UNROLL_STRLEN (ix86_cpu != PROCESSOR_I386)
 #define TARGET_USE_Q_REG (ix86_cpu == PROCESSOR_PENTIUM)
 #define TARGET_USE_ANY_REG (ix86_cpu == PROCESSOR_I486)
+#define TARGET_CMOVE (ix86_isa == PROCESSOR_PENTIUMPRO)
+#define TARGET_DEEP_BRANCH_PREDICTION (ix86_isa == PROCESSOR_PENTIUMPRO)
 
 #define TARGET_SWITCHES							\
 { { "80387",			 MASK_80387 },				\
@@ -207,6 +210,8 @@ enum processor_type
 
 extern enum processor_type ix86_cpu;
 
+extern int ix86_isa;
+
 /* Define generic processor types based upon current deployment.  */
 #define PROCESSOR_COMMON  PROCESSOR_I386
 #define PROCESSOR_COMMON_STRING PROCESSOR_I386_STRING
@@ -240,7 +245,7 @@ extern enum processor_type ix86_cpu;
    by appending `-m' to the specified name.  */
 #define TARGET_OPTIONS							\
 { { "cpu=",		&ix86_cpu_string},				\
-  { "arch=",		&ix86_isa_string},				\
+  { "isa=",		&ix86_isa_string},				\
   { "reg-alloc=",	&i386_reg_alloc_order },			\
   { "regparm=",		&i386_regparm_string },				\
   { "align-loops=",	&i386_align_loops_string },			\
@@ -511,6 +516,9 @@ extern enum processor_type ix86_cpu;
    for any hard reg, then this must be 0 for correct output.  */
 
 #define MODES_TIEABLE_P(MODE1, MODE2) ((MODE1) == (MODE2))
+
+/* Provide the cost of a branch.  Exact meaning under development.  */
+#define BRANCH_COST (TARGET_PENTIUMPRO ? 5 : 1)    
 
 /* Specify the registers used for certain standard purposes.
    The values of these macros are register numbers.  */
@@ -935,6 +943,14 @@ typedef struct i386_args {
 
 #define FUNCTION_ARG_PARTIAL_NREGS(CUM, MODE, TYPE, NAMED) \
   (function_arg_partial_nregs (&CUM, MODE, TYPE, NAMED))
+
+/* This macro is invoked just before the start of a function.
+   It is used here to output code for -fpic that will load the
+   return address into %ebx.  */
+
+#undef ASM_OUTPUT_FUNCTION_PREFIX
+#define ASM_OUTPUT_FUNCTION_PREFIX(FILE, FNNAME) \
+  asm_output_function_prefix (FILE, FNNAME)
 
 /* This macro generates the assembly code for function entry.
    FILE is a stdio stream to output the code to.
