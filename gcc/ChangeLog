@@ -1,3 +1,8 @@
+2002-04-21  David S. Miller  <davem@redhat.com>
+
+	* config/sparc/sparc.md (set then compare DI mode peephole2): Fix
+	compare mode in output RTL.
+
 2002-04-22  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.c (rs6000_override_options): Correct
