@@ -2937,9 +2937,6 @@ get_member_function_from_ptrfunc (instance_ptrptr, function)
 	  abort ();
 	}
 
-      delta = cp_convert (ptrdiff_type_node,
-			  build_component_ref (function, delta_identifier,
-					       NULL_TREE, 0));
       /* DELTA2 is the amount by which to adjust the `this' pointer
 	 to find the vtbl.  */
       delta2 = delta;
@@ -6175,12 +6172,12 @@ expand_ptrmemfunc_cst (cst, delta, pfn)
 	 ptrmemfunc_vbit_in_delta, in which case delta is shifted
 	 left, and then incremented).  */
       *pfn = DECL_VINDEX (fn);
+      *pfn = fold (build (MULT_EXPR, integer_type_node, *pfn,
+			  TYPE_SIZE_UNIT (vtable_entry_type)));
 
       switch (TARGET_PTRMEMFUNC_VBIT_LOCATION)
 	{
 	case ptrmemfunc_vbit_in_pfn:
-	  *pfn = fold (build (MULT_EXPR, integer_type_node, *pfn,
-			      TYPE_SIZE_UNIT (vtable_entry_type)));
 	  *pfn = fold (build (PLUS_EXPR, integer_type_node, *pfn,
 			      integer_one_node));
 	  break;
