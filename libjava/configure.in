@@ -1093,7 +1093,7 @@ case "${which_gcj}" in
       GCJ="$built_gcc_dir/gcj -B`${PWDCMD-pwd}`/ -B$built_gcc_dir/"
    ;;
    cross)
-      # See the comment in Makefile.am about CANADIAN being a misnomer
+      # See the comment below about CANADIAN being a misnomer
       CANADIAN=yes
       NULL_TARGET=no
       if test "x${with_newlib}" = "xyes"; then
@@ -1105,12 +1105,32 @@ case "${which_gcj}" in
       fi
    ;;
    path)
-      # See the comment in Makefile.am about CANADIAN being a misnomer
+      # See the comment below about CANADIAN being a misnomer
       CANADIAN=yes
       NULL_TARGET=yes
       GCJ="gcj -B`${PWDCMD-pwd}`/"
    ;;
 esac
+
+## CANADIAN is a misnomer.  Really we check to see if we must pick up
+## the tools from the path.
+if test $CANADIAN = yes ; then
+  if test $NULL_TARGET = yes ; then
+    ## In this case, gcj is found outside the build tree.  However, zip is
+    ## found in the build tree.
+    ZIP = '$(MULTIBUILDTOP)../$(COMPPATH)/fastjar/jar'
+    GCJH = gcjh
+  else
+    ZIP = jar
+    GCJH = '$(target_noncanonical)-gcjh'
+  fi
+else # CANADIAN
+  GCJH = '$(MULTIBUILDTOP)../$(COMPPATH)/gcc/gcjh'
+  ZIP = '$(MULTIBUILDTOP)../$(COMPPATH)/fastjar/jar'
+fi # CANADIAN
+
+AC_SUBST(GCJH)
+AC_SUBST(ZIP)
 
 # Create it, so that compile/link tests don't fail
 test -f libgcj.spec || touch libgcj.spec
@@ -1163,9 +1183,7 @@ AC_SUBST(CHECKREFSPEC)
 AC_SUBST(EXCEPTIONSPEC)
 AC_SUBST(IEEESPEC)
 
-AM_CONDITIONAL(CANADIAN, test "$CANADIAN" = yes)
-AM_CONDITIONAL(NULL_TARGET, test "$NULL_TARGET" = yes)
-AM_CONDITIONAL(NATIVE, test "$NATIVE" = yes || test "$NULL_TARGET" = yes)
+AM_CONDITIONAL(NATIVE, test "$NATIVE" = yes)
 AM_CONDITIONAL(NEEDS_DATA_START, test "$NEEDS_DATA_START" = yes && test "$NATIVE" = yes)
 AC_SUBST(GCC_UNWIND_INCLUDE)
 

@@ -71,22 +71,8 @@ bin_SCRIPTS = addr2name.awk
 ## Compilers and compilation flags.
 ##
 
-## CANADIAN is a misnomer.  Really we check to see if we must pick up
-## the tools from the path.
-if CANADIAN
-if NULL_TARGET
-## In this case, gcj is found outside the build tree.  However, zip is
-## found in the build tree.
-ZIP = $(MULTIBUILDTOP)../$(COMPPATH)/fastjar/jar
-GCJH = gcjh
-else
-ZIP = jar
-GCJH = $(target_noncanonical)-gcjh
-endif
-else # CANADIAN
-GCJH = $(MULTIBUILDTOP)../$(COMPPATH)/gcc/gcjh
-ZIP = $(MULTIBUILDTOP)../$(COMPPATH)/fastjar/jar
-endif # CANADIAN
+GCJH = @GCJH@
+ZIP = @ZIP@
 
 ## The compiler with whatever flags we want for both -c and -C
 ## compiles.
