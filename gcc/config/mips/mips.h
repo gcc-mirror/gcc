@@ -395,9 +395,12 @@ while (0)
 /* Specify to run a post-processor, mips-tfile after the assembler
    has run to stuff the mips debug information into the object file.
    This is needed because the $#!%^ MIPS assembler provides no way
-   of specifying such information in the assembly file.  */
+   of specifying such information in the assembly file.  If we are
+   cross compiling, disable mips-tfile unless the user specifies
+   -mmips-tfile.  */
 
 #ifndef ASM_FINAL_SPEC
+#ifndef CROSS_COMPILE
 #define ASM_FINAL_SPEC "\
 %{!mgas: %{!mno-mips-tfile: \
 	\n mips-tfile %{v*: -v} \
@@ -405,7 +408,18 @@ while (0)
 		%{!K: %{save-temps: -I %b.o~}} \
 		%{c:%W{o*}%{!o*:-o %b.o}}%{!c:-o %U.o} \
 		%{.s:%i} %{!.s:%g.s}}}"
-#endif
+
+#else				/* CROSS_COMPILE */
+#define ASM_FINAL_SPEC "\
+%{!mgas: %{mmips-tfile: \
+	\n mips-tfile %{v*: -v} \
+		%{K: -I %b.o~} \
+		%{!K: %{save-temps: -I %b.o~}} \
+		%{c:%W{o*}%{!o*:-o %b.o}}%{!c:-o %U.o} \
+		%{.s:%i} %{!.s:%g.s}}}"
+
+#endif	/* CROSS_COMPILE */
+#endif	/* ASM_FINAL_SPEC */
 
 /* Redefinition of libraries used.  Mips doesn't support normal
    UNIX style profiling via calling _mcount.  It does offer

@@ -47,6 +47,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 	%{v*: -v} \
 	%{G*}"
 
+#ifndef CROSS_COMPILE
 #define ASM_FINAL_SPEC "\
 %{mmips-as: %{!mno-mips-tfile: \
 	\n mips-tfile %{v*: -v} %{d*} \
@@ -54,6 +55,16 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 			%{!K: %{save-temps: -I %b.o~}} \
 			%{c:%W{o*}%{!o*:-o %b.o}}%{!c:-o %U.o} \
 			%{.s:%i} %{!.s:%g.s}}}"
+
+#else				/* CROSS_COMPILE */
+#define ASM_FINAL_SPEC "\
+%{mmips-as: %{mmips-tfile: \
+	\n mips-tfile %{v*: -v} %{d*} \
+			%{K: -I %b.o~} \
+			%{!K: %{save-temps: -I %b.o~}} \
+			%{c:%W{o*}%{!o*:-o %b.o}}%{!c:-o %U.o} \
+			%{.s:%i} %{!.s:%g.s}}}"
+#endif
 
 #define CPP_SPEC "\
 %{.S:	-D__LANGUAGE_ASSEMBLY__ -D__LANGUAGE_ASSEMBLY %{!ansi:-DLANGUAGE_ASSEMBLY} \
