@@ -1,5 +1,5 @@
 # Process this file with autoconf to produce a configure script.
-#   Copyright (C) 1995, 1997, 1998 Free Software Foundation, Inc.
+#   Copyright (C) 1995, 1997, 1998, 1999 Free Software Foundation, Inc.
 #   Contributed by Dave Love (d.love@dl.ac.uk).
 #
 #This file is part of GNU Objective C.
@@ -19,7 +19,7 @@
 #the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #02111-1307, USA.
 
-AC_PREREQ(2.12.1)
+AC_PREREQ(2.13)
 AC_INIT(objc/objc.h)
 #AC_CONFIG_HEADER(config.h)
 
@@ -36,29 +36,37 @@ dnl This is needed for a multilibbed build in the source tree so
 dnl that install-sh and config.sub get found.
 AC_CONFIG_AUX_DIR($topsrcdir)
 
-# If the language specific compiler does not exist, but the "gcc" directory does,
-# we do not build anything. Note, $r is set by the top-level Makefile.
+# We have to handle 3 cases -- native, cross and canadian cross -- and
+# the extension returned from this macro needs to be treated as a possible
+# scenario and not the only one.
+AC_EXEEXT
+
+# If the language specific compiler does not exist, but the "gcc" directory 
+# does, we do not build anything. Note, $r is set by the top-level Makefile.
+# Note that when we look for the compiler, we search both with and without
+# extension to handle cross and canadian cross builds. 
 compiler_name=cc1obj
 rm -f skip-this-dir
 AC_MSG_CHECKING(if compiler $compiler_name has been built)
 AC_CACHE_VAL(objc_cv_compiler_exists,
-	[objc_cv_compiler_exists=yes
-	if test -n "$r"; then
-		if test -d "$r"/gcc; then
-			if test -f "$r"/gcc/$compiler_name; then
-				true
-			else
-				objc_cv_compiler_exists=no
-				echo "rm -f config.cache config.log multilib.out" > skip-this-dir
-			fi
-		fi
-	fi
-	])
+[objc_cv_compiler_exists=yes
+if test -n "$r"; then
+  if test -d "$r"/gcc; then
+    if test -f "$r"/gcc/$compiler_name \
+       || test -f "$r"/gcc/$compiler_name$EXEEXT; then
+      true
+    else
+      objc_cv_compiler_exists=no
+      echo "rm -f config.cache config.log multilib.out" > skip-this-dir
+    fi
+  fi
+fi
+])
 AC_MSG_RESULT($objc_cv_compiler_exists)
 if test x$objc_cv_compiler_exists = xno
 then
-	rm -f Makefile conftest* confdefs* core
-	exit 0
+  rm -f Makefile conftest* confdefs* core
+  exit 0
 fi
 
 dnl Checks for programs.
