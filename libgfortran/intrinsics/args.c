@@ -28,8 +28,11 @@ Boston, MA 02111-1307, USA.  */
 
 /* Get a commandline argument.  */
 
+extern void getarg_i4 (GFC_INTEGER_4 *, char *, gfc_charlen_type);
+iexport_proto(getarg_i4);
+
 void 
-prefix(getarg_i4) (GFC_INTEGER_4 *pos, char  *val, gfc_charlen_type val_len)
+getarg_i4 (GFC_INTEGER_4 *pos, char  *val, gfc_charlen_type val_len)
 {
   int argc;
   int arglen;
@@ -50,24 +53,29 @@ prefix(getarg_i4) (GFC_INTEGER_4 *pos, char  *val, gfc_charlen_type val_len)
       memcpy (val, argv[*pos], arglen);
     }
 }
+iexport(getarg_i4);
 
 
 /* INTEGER*8 wrapper of getarg.  */
 
-void 
-prefix(getarg_i8) (GFC_INTEGER_8 *pos, char  *val, gfc_charlen_type val_len)
-{
-  GFC_INTEGER_4 pos4;
+extern void getarg_i8 (GFC_INTEGER_8 *, char *, gfc_charlen_type);
+export_proto (getarg_i8);
 
-  pos4 = (GFC_INTEGER_4) *pos;
-  prefix(getarg_i4) (&pos4, val, val_len);
+void 
+getarg_i8 (GFC_INTEGER_8 *pos, char  *val, gfc_charlen_type val_len)
+{
+  GFC_INTEGER_4 pos4 = (GFC_INTEGER_4) *pos;
+  getarg_i4 (&pos4, val, val_len);
 }
 
 
 /* Return the number of commandline arguments.  */
 
+extern GFC_INTEGER_4 iargc (void);
+export_proto(iargc);
+
 GFC_INTEGER_4
-prefix(iargc) (void)
+iargc (void)
 {
   int argc;
   char **argv;
@@ -96,14 +104,16 @@ prefix(iargc) (void)
 #define GFC_GC_FAILURE 42
 
 
+extern void get_command_argument_i4 (GFC_INTEGER_4 *, char *, GFC_INTEGER_4 *,
+				     GFC_INTEGER_4 *, gfc_charlen_type);
+iexport_proto(get_command_argument_i4);
+
 /* Get a single commandline argument.  */
 
 void
-prefix(get_command_argument_i4) (GFC_INTEGER_4 *number, 
-				 char *value, 
-				 GFC_INTEGER_4 *length, 
-				 GFC_INTEGER_4 *status, 
-				 gfc_charlen_type value_len)
+get_command_argument_i4 (GFC_INTEGER_4 *number, char *value, 
+			 GFC_INTEGER_4 *length, GFC_INTEGER_4 *status, 
+			 gfc_charlen_type value_len)
 {
   int argc, arglen = 0, stat_flag = GFC_GC_SUCCESS;
   char **argv;
@@ -146,24 +156,26 @@ prefix(get_command_argument_i4) (GFC_INTEGER_4 *number,
   if (status != NULL)
     *status = stat_flag;
 }
+iexport(get_command_argument_i4);
 
 
 /* INTEGER*8 wrapper for get_command_argument.  */
 
+extern void get_command_argument_i8 (GFC_INTEGER_8 *, char *, GFC_INTEGER_8 *, 
+				     GFC_INTEGER_8 *, gfc_charlen_type);
+export_proto(get_command_argument_i8);
+
 void
-prefix(get_command_argument_i8) (GFC_INTEGER_8 *number, 
-				 char *value, 
-				 GFC_INTEGER_8 *length, 
-				 GFC_INTEGER_8 *status, 
-				 gfc_charlen_type value_len)
+get_command_argument_i8 (GFC_INTEGER_8 *number, char *value, 
+			 GFC_INTEGER_8 *length, GFC_INTEGER_8 *status, 
+			 gfc_charlen_type value_len)
 {
   GFC_INTEGER_4 number4;
   GFC_INTEGER_4 length4;
   GFC_INTEGER_4 status4;
 
   number4 = (GFC_INTEGER_4) *number;
-  prefix (get_command_argument_i4) (&number4, value, &length4, &status4,
-				    value_len);
+  get_command_argument_i4 (&number4, value, &length4, &status4, value_len);
   if (length)
     *length = length4;
   if (status)
@@ -173,11 +185,13 @@ prefix(get_command_argument_i8) (GFC_INTEGER_8 *number,
 
 /* Return the whole commandline.  */
 
+extern void get_command_i4 (char *, GFC_INTEGER_4 *, GFC_INTEGER_4 *,
+			    gfc_charlen_type);
+iexport_proto(get_command_i4);
+
 void
-prefix(get_command_i4) (char *command, 
-			GFC_INTEGER_4 *length, 
-			GFC_INTEGER_4 *status,
-			gfc_charlen_type command_len)
+get_command_i4 (char *command, GFC_INTEGER_4 *length, GFC_INTEGER_4 *status,
+		gfc_charlen_type command_len)
 {
   int i, argc, arglen, thisarg;
   int stat_flag = GFC_GC_SUCCESS;
@@ -229,20 +243,23 @@ prefix(get_command_i4) (char *command,
   if (status != NULL)
     *status = stat_flag;
 }
+iexport(get_command_i4);
 
 
 /* INTEGER*8 wrapper for get_command.  */
 
+extern void get_command_i8 (char *, GFC_INTEGER_8 *, GFC_INTEGER_8 *,
+			    gfc_charlen_type);
+export_proto(get_command_i8);
+
 void
-prefix(get_command_i8) (char *command, 
-			GFC_INTEGER_8 *length, 
-			GFC_INTEGER_8 *status,
-			gfc_charlen_type command_len)
+get_command_i8 (char *command, GFC_INTEGER_8 *length, GFC_INTEGER_8 *status,
+		gfc_charlen_type command_len)
 {
   GFC_INTEGER_4 length4;
   GFC_INTEGER_4 status4;
 
-  prefix (get_command_i4) (command, &length4, &status4, command_len);
+  get_command_i4 (command, &length4, &status4, command_len);
   if (length)
     *length = length4;
   if (status)

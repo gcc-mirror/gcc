@@ -410,6 +410,9 @@ already_open (gfc_unit * u, unit_flags * flags)
 
 /* Open file.  */
 
+extern void st_open (void);
+export_proto(st_open);
+
 void
 st_open (void)
 {

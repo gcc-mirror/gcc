@@ -26,9 +26,15 @@ Boston, MA 02111-1307, USA.  */
 #include "libgfortran.h"'
 include(iparm.m4)dnl
 
+void __cshift1_`'atype_kind (const gfc_array_char * ret,
+			     const gfc_array_char * array,
+			     const atype * h, const atype_name * pwhich);
+export_proto_np(__cshift1_`'atype_kind);
+
 void
-`__cshift1_'atype_kind (const gfc_array_char * ret, const gfc_array_char * array,
-    const atype * h, const atype_name * pwhich)
+__cshift1_`'atype_kind (const gfc_array_char * ret,
+			const gfc_array_char * array,
+			const atype * h, const atype_name * pwhich)
 {
   /* r.* indicates the return array.  */
   index_type rstride[GFC_MAX_DIMENSIONS - 1];
@@ -42,7 +48,7 @@ void
   index_type soffset;
   const char *sptr;
   const char *src;
-`  /* h.* indicates the shift array.  */'
+  /* h.* indicates the shift array.  */
   index_type hstride[GFC_MAX_DIMENSIONS - 1];
   index_type hstride0;
   const atype_name *hptr;
@@ -71,7 +77,7 @@ void
   size = GFC_DESCRIPTOR_SIZE (array);
   n = 0;
 
-`/* Initialized for avoiding compiler warnings.  */'
+  /* Initialized for avoiding compiler warnings.  */
   roffset = size;
   soffset = size;
   len = 0;
@@ -116,7 +122,7 @@ void
 
   while (rptr)
     {
-`      /* Do the shift for this dimension.  */'
+      /* Do the shift for this dimension.  */
       sh = *hptr;
       sh = (div (sh, len)).rem;
       if (sh < 0)
@@ -168,4 +174,3 @@ void
         }
     }
 }
-

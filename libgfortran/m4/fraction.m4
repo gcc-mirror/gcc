@@ -23,8 +23,11 @@ Boston, MA 02111-1307, USA.  */
 
 include(`mtype.m4')dnl
 
+extern real_type fraction_r`'kind (real_type s);
+export_proto(fraction_r`'kind);
+
 real_type
-prefix(fraction_r`'kind) (real_type s)
+fraction_r`'kind (real_type s)
 {
   int dummy_exp;
   return frexp`'q (s, &dummy_exp);

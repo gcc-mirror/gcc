@@ -76,10 +76,85 @@ typedef off_t gfc_offset;
 #define __attribute__(x)
 #endif
 
-/* For a library, a standard prefix is a requirement in order to
-   partition the namespace.  It's ugly to look at and a pain to type,
-   so we hide it behind macros.  */
-#define prefix(x) _gfortran_ ## x
+/* For a library, a standard prefix is a requirement in order to partition
+   the namespace.  IPREFIX is for symbols intended to be internal to the
+   library.  */
+#define PREFIX(x)	_gfortran_ ## x
+#define IPREFIX(x)	_gfortrani_ ## x
+
+/* Magic to rename a symbol at the compiler level.  You continue to refer
+   to the symbol as OLD in the source, but it'll be named NEW in the asm.  */
+#define sym_rename(old, new) sym_rename1(old, __USER_LABEL_PREFIX__, new)
+#define sym_rename1(old, ulp, new) sym_rename2(old, ulp, new)
+#define sym_rename2(old, ulp, new) extern __typeof(old) old __asm__(#ulp #new)
+
+/* There are several classifications of routines:
+
+     (1) Symbols used only within the library,
+     (2) Symbols to be exported from the library,
+     (3) Symbols to be exported from the library, but
+	 also used inside the library.
+
+   By telling the compiler about these different classifications we can
+   tightly control the interface seen by the user, and get better code
+   from the compiler at the same time.
+
+   One of the following should be used immediately after the declaration
+   of each symbol:
+
+     internal_proto	Marks a symbol used only within the library,
+			and adds IPREFIX to the assembly-level symbol
+			name.  The later is important for maintaining
+			the namespace partition for the static library.
+
+     export_proto	Marks a symbol to be exported, and adds PREFIX
+			to the assembly-level symbol name.
+
+     export_proto_np	Marks a symbol to be exported without adding PREFIX.
+
+     iexport_proto	Marks a function to be exported, but with the 
+			understanding that it can be used inside as well.
+
+     iexport_data_proto	Similarly, marks a data symbol to be exported.
+			Unfortunately, some systems can't play the hidden
+			symbol renaming trick on data symbols, thanks to
+			the horribleness of COPY relocations.
+
+   If iexport_proto or iexport_data_proto is used, you must also use
+   iexport or iexport_data after the *definition* of the symbol.  */
+
+#if defined(HAVE_ATTRIBUTE_VISIBILITY)
+# define internal_proto(x) \
+	sym_rename(x, IPREFIX (x)) __attribute__((__visibility__("hidden")))
+#else
+# define internal_proto(x)	sym_rename(x, IPREFIX(x))
+#endif
+
+#if defined(HAVE_ATTRIBUTE_VISIBILITY) && defined(HAVE_ATTRIBUTE_ALIAS)
+# define export_proto(x)	sym_rename(x, PREFIX(x))
+# define export_proto_np(x)	extern char swallow_semicolon
+# define iexport_proto(x)	internal_proto(x)
+# define iexport(x)		iexport1(x, __USER_LABEL_PREFIX__, IPREFIX(x))
+# define iexport1(x,p,y)	iexport2(x,p,y)
+# define iexport2(x,p,y) \
+	extern __typeof(x) PREFIX(x) __attribute__((__alias__(#p #y)))
+/* ??? We're not currently building a dll, and it's wrong to add dllexport
+   to objects going into a static library archive.  */
+#elif 0 && defined(HAVE_ATTRIBUTE_DLLEXPORT)
+# define export_proto_np(x)	extern __typeof(x) x __attribute__((dllexport))
+# define export_proto(x)    sym_rename(x, PREFIX(x)) __attribute__((dllexport))
+# define iexport_proto(x)	export_proto(x)
+# define iexport(x)		extern char swallow_semicolon
+#else
+# define export_proto(x)	sym_rename(x, PREFIX(x))
+# define export_proto_np(x)	extern char swallow_semicolon
+# define iexport_proto(x)	export_proto(x)
+# define iexport(x)		extern char swallow_semicolon
+#endif
+
+/* TODO: detect the case when we *can* hide the symbol.  */
+#define iexport_data_proto(x)	export_proto(x)
+#define iexport_data(x)		extern char swallow_semicolon
 
 /* The only reliable way to get the offset of a field in a struct
    in a system independent way is via this macro.  */
@@ -129,8 +204,8 @@ typedef size_t index_type;
 typedef GFC_INTEGER_4 gfc_charlen_type;
 
 /* This will be 0 on little-endian machines and one on big-endian machines.  */
-#define l8_to_l4_offset prefix(l8_to_l4_offset)
 extern int l8_to_l4_offset;
+internal_proto(l8_to_l4_offset);
 
 #define GFOR_POINTER_L8_TO_L4(p8) \
   (l8_to_l4_offset + (GFC_LOGICAL_4 *)(p8))
@@ -224,8 +299,8 @@ typedef struct
 options_t;
 
 
-#define options prefix(options)
 extern options_t options;
+internal_proto(options);
 
 
 /* Structure for statement options.  */
@@ -265,204 +340,171 @@ error_codes;
 /* The filename and line number don't go inside the globals structure.
    They are set by the rest of the program and must be linked to.  */
 
-#define line prefix(line)
-extern unsigned line;		/* Location of the current libray call (optional).  */
+/* Location of the current library call (optional).  */
+extern unsigned line;
+iexport_data_proto(line);
 
-#define filename prefix(filename)
 extern char *filename;
+iexport_data_proto(filename);
 
 /* Avoid conflicting prototypes of alloca() in system headers by using 
    GCC's builtin alloca().  */
-
 #define gfc_alloca(x)  __builtin_alloca(x)
 
 
 /* main.c */
 
-#define library_start prefix(library_start)
-void library_start (void);
+extern void library_start (void);
+internal_proto(library_start);
 
-#define library_end prefix(library_end)
-void library_end (void);
+extern void library_end (void);
+internal_proto(library_end);
 
-#define set_args prefix(set_args)
-void set_args (int, char **);
+extern void set_args (int, char **);
+export_proto(set_args);
 
-#define get_args prefix(get_args)
-void get_args (int *, char ***);
-
+extern void get_args (int *, char ***);
+internal_proto(get_args);
 
 /* error.c */
-#define itoa prefix(itoa)
-char *itoa (int64_t);
 
-#define xtoa prefix(xtoa)
-char *xtoa (uint64_t);
+extern char *itoa (int64_t);
+internal_proto(itoa);
 
-#define os_error prefix(os_error)
-void os_error (const char *) __attribute__ ((noreturn));
+extern char *xtoa (uint64_t);
+internal_proto(xtoa);
 
-#define show_locus prefix(show_locus)
-void show_locus (void);
+extern void os_error (const char *) __attribute__ ((noreturn));
+internal_proto(os_error);
 
-#define runtime_error prefix(runtime_error)
-void runtime_error (const char *) __attribute__ ((noreturn));
+extern void show_locus (void);
+internal_proto(show_locus);
 
-#define internal_error prefix(internal_error)
-void internal_error (const char *) __attribute__ ((noreturn));
+extern void runtime_error (const char *) __attribute__ ((noreturn));
+iexport_proto(runtime_error);
 
-#define get_oserror prefix(get_oserror)
-const char *get_oserror (void);
+extern void internal_error (const char *) __attribute__ ((noreturn));
+internal_proto(internal_error);
 
-#define write_error prefix(write_error)
-void write_error (const char *);
+extern const char *get_oserror (void);
+internal_proto(get_oserror);
 
-#define sys_exit prefix(sys_exit)
-void sys_exit (int) __attribute__ ((noreturn));
+extern void sys_exit (int) __attribute__ ((noreturn));
+internal_proto(sys_exit);
 
-#define st_printf prefix(st_printf)
-int st_printf (const char *, ...) __attribute__ ((format (printf, 1, 2)));
+extern int st_printf (const char *, ...)
+  __attribute__ ((format (printf, 1, 2)));
+internal_proto(st_printf);
 
-#define st_sprintf prefix(st_sprintf)
-void st_sprintf (char *, const char *, ...) __attribute__ ((format (printf, 2, 3)));
+extern void st_sprintf (char *, const char *, ...)
+  __attribute__ ((format (printf, 2, 3)));
+internal_proto(st_sprintf);
 
-#define translate_error prefix(translate_error)
-const char *translate_error (int);
+extern const char *translate_error (int);
+internal_proto(translate_error);
 
-#define generate_error prefix(generate_error)
-void generate_error (int, const char *);
-
+extern void generate_error (int, const char *);
+internal_proto(generate_error);
 
 /* memory.c */
 
-#define memory_init	prefix(memory_init)
-void memory_init (void);
+extern void *get_mem (size_t) __attribute__ ((malloc));
+internal_proto(get_mem);
 
-#define runtime_cleanup	prefix(runtime_cleanup)
-void runtime_cleanup (void);
+extern void free_mem (void *);
+internal_proto(free_mem);
 
-#define get_mem		prefix(get_mem)
-void *get_mem (size_t) __attribute__ ((malloc));
+extern void *internal_malloc_size (size_t);
+internal_proto(internal_malloc_size);
 
-#define free_mem	prefix(free_mem)
-void free_mem (void *);
-
-#define internal_malloc_size	prefix(internal_malloc_size)
-void *internal_malloc_size (size_t);
-
-#define internal_malloc	prefix(internal_malloc)
-void *internal_malloc (GFC_INTEGER_4);
-
-#define internal_malloc64 prefix(internal_malloc64)
-void *internal_malloc64 (GFC_INTEGER_8);
-
-#define internal_free	prefix(internal_free)
-void internal_free (void *);
-
-#define allocate	prefix(allocate)
-void allocate (void **, GFC_INTEGER_4, GFC_INTEGER_4 *);
-
-#define allocate64	prefix(allocate64)
-void allocate64 (void **, GFC_INTEGER_8, GFC_INTEGER_4 *);
-
-#define deallocate	prefix(deallocate)
-void deallocate (void **, GFC_INTEGER_4 *);
-
+extern void internal_free (void *);
+iexport_proto(internal_free);
 
 /* environ.c */
 
-#define check_buffered prefix(check_buffered)
-int check_buffered (int);
+extern int check_buffered (int);
+internal_proto(check_buffered);
 
-#define init_variables prefix(init_variables)
-void init_variables (void);
+extern void init_variables (void);
+internal_proto(init_variables);
 
-#define show_variables prefix(show_variables)
-void show_variables (void);
-
+extern void show_variables (void);
+internal_proto(show_variables);
 
 /* string.c */
 
-#define find_option prefix(find_option)
-int find_option (const char *, int, st_option *, const char *);
+extern int find_option (const char *, int, st_option *, const char *);
+internal_proto(find_option);
 
-#define fstrlen prefix(fstrlen)
-int fstrlen (const char *, int);
+extern int fstrlen (const char *, int);
+internal_proto(fstrlen);
 
-#define fstrcpy prefix(fstrcpy)
-void fstrcpy (char *, int, const char *, int);
+extern void fstrcpy (char *, int, const char *, int);
+internal_proto(fstrcpy);
 
-#define cf_strcpy prefix(cf_strcpy)
-void cf_strcpy (char *, int, const char *);
+extern void cf_strcpy (char *, int, const char *);
+internal_proto(cf_strcpy);
 
 /* io.c */
 
-#define init_units prefix(init_units)
-void init_units (void);
+extern void init_units (void);
+internal_proto(init_units);
 
-#define close_units prefix(close_units)
-void close_units (void);
+extern void close_units (void);
+internal_proto(close_units);
 
 /* stop.c */
-#define stop_numeric prefix(stop_numeric)
-void stop_numeric (GFC_INTEGER_4);
+
+extern void stop_numeric (GFC_INTEGER_4);
+iexport_proto(stop_numeric);
 
 /* reshape_packed.c */
-#define reshape_packed prefix(reshape_packed)
-void reshape_packed (char *, index_type, const char *, index_type,
-		     const char *, index_type);
+
+extern void reshape_packed (char *, index_type, const char *, index_type,
+			    const char *, index_type);
+internal_proto(reshape_packed);
 
 /* Repacking functions.  */
-#define internal_pack prefix(internal_pack)
-void *internal_pack (gfc_array_char *);
 
-#define internal_unpack prefix(internal_unpack)
-void internal_unpack (gfc_array_char *, const void *);
-
-#define internal_pack_4 prefix(internal_pack_4)
+/* ??? These four aren't currently used by the compiler, though we
+   certainly could do so.  */
 GFC_INTEGER_4 *internal_pack_4 (gfc_array_i4 *);
+internal_proto(internal_pack_4);
 
-#define internal_pack_8 prefix(internal_pack_8)
 GFC_INTEGER_8 *internal_pack_8 (gfc_array_i8 *);
+internal_proto(internal_pack_8);
 
-#define internal_unpack_4 prefix(internal_unpack_4)
-void internal_unpack_4 (gfc_array_i4 *, const GFC_INTEGER_4 *);
+extern void internal_unpack_4 (gfc_array_i4 *, const GFC_INTEGER_4 *);
+internal_proto(internal_unpack_4);
 
-#define internal_unpack_8 prefix(internal_unpack_8)
-void internal_unpack_8 (gfc_array_i8 *, const GFC_INTEGER_8 *);
-
-/* date_and_time.c */
-
-#define date_and_time prefix(date_and_time)
-void date_and_time (char *, char *, char *, gfc_array_i4 *,
-                   GFC_INTEGER_4, GFC_INTEGER_4, GFC_INTEGER_4);
+extern void internal_unpack_8 (gfc_array_i8 *, const GFC_INTEGER_8 *);
+internal_proto(internal_unpack_8);
 
 /* string_intrinsics.c */
 
-#define compare_string prefix(compare_string)
-GFC_INTEGER_4 compare_string (GFC_INTEGER_4, const char *,
-			      GFC_INTEGER_4, const char *);
+extern GFC_INTEGER_4 compare_string (GFC_INTEGER_4, const char *,
+				     GFC_INTEGER_4, const char *);
+iexport_proto(compare_string);
 
 /* random.c */
 
-#define random_seed prefix(random_seed)
-void random_seed (GFC_INTEGER_4 * size, gfc_array_i4 * put,
-		  gfc_array_i4 * get);
+extern void random_seed (GFC_INTEGER_4 * size, gfc_array_i4 * put,
+			 gfc_array_i4 * get);
+iexport_proto(random_seed);
 
 /* normalize.c */
 
-#define normalize_r4_i4 prefix(normalize_r4_i4)
-GFC_REAL_4 normalize_r4_i4 (GFC_UINTEGER_4, GFC_UINTEGER_4);
+extern GFC_REAL_4 normalize_r4_i4 (GFC_UINTEGER_4, GFC_UINTEGER_4);
+internal_proto(normalize_r4_i4);
 
-#define normalize_r8_i8 prefix(normalize_r8_i8)
-GFC_REAL_8 normalize_r8_i8 (GFC_UINTEGER_8, GFC_UINTEGER_8);
+extern GFC_REAL_8 normalize_r8_i8 (GFC_UINTEGER_8, GFC_UINTEGER_8);
+internal_proto(normalize_r8_i8);
 
 /* size.c */
 
 typedef GFC_ARRAY_DESCRIPTOR (GFC_MAX_DIMENSIONS, void) array_t;
 
-#define size0 prefix(size0)
-index_type size0 (const array_t * array); 
+extern index_type size0 (const array_t * array); 
+iexport_proto(size0);
 
 #endif  /* LIBGFOR_H  */
-

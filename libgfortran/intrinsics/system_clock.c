@@ -41,14 +41,22 @@ static struct timeval tp0 = {-1, 0};
 static time_t t0 = (time_t) -2;
 #endif
 
+
+extern void system_clock_4 (GFC_INTEGER_4 *, GFC_INTEGER_4 *, GFC_INTEGER_4 *);
+export_proto(system_clock_4);
+
+extern void system_clock_8 (GFC_INTEGER_8 *, GFC_INTEGER_8 *, GFC_INTEGER_8 *);
+export_proto(system_clock_8);
+
+
 /* prefix(system_clock_4) is the INTEGER(4) version of the SYSTEM_CLOCK
    intrinsic subroutine.  It returns the number of clock ticks for the current
    system time, the number of ticks per second, and the maximum possible value
    for COUNT.  On the first call to SYSTEM_CLOCK, COUNT is set to zero. */
 
 void
-prefix(system_clock_4)(GFC_INTEGER_4 *count, GFC_INTEGER_4 *count_rate,
-		       GFC_INTEGER_4 *count_max)
+system_clock_4(GFC_INTEGER_4 *count, GFC_INTEGER_4 *count_rate,
+	       GFC_INTEGER_4 *count_max)
 {
   GFC_INTEGER_4 cnt;
   GFC_INTEGER_4 rate;
@@ -123,8 +131,8 @@ prefix(system_clock_4)(GFC_INTEGER_4 *count, GFC_INTEGER_4 *count_rate,
 /* INTEGER(8) version of the above routine.  */
 
 void
-prefix(system_clock_8)(GFC_INTEGER_8 *count, GFC_INTEGER_8 *count_rate,
-		       GFC_INTEGER_8 *count_max)
+system_clock_8 (GFC_INTEGER_8 *count, GFC_INTEGER_8 *count_rate,
+	        GFC_INTEGER_8 *count_max)
 {
   GFC_INTEGER_8 cnt;
   GFC_INTEGER_8 rate;

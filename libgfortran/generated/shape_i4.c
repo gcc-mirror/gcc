@@ -24,6 +24,9 @@ Boston, MA 02111-1307, USA.  */
 #include <assert.h>
 #include "libgfortran.h"
 
+extern void __shape_4 (gfc_array_i4 * ret, const gfc_array_i4 * array);
+export_proto_np(__shape_4);
+
 void
 __shape_4 (gfc_array_i4 * ret, const gfc_array_i4 * array)
 {
@@ -40,4 +43,3 @@ __shape_4 (gfc_array_i4 * ret, const gfc_array_i4 * array)
         array->dim[n].ubound + 1 - array->dim[n].lbound;
     }
 }
-

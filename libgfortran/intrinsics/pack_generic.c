@@ -65,6 +65,10 @@ Boston, MA 02111-1307, USA.  */
 There are two variants of the PACK intrinsic: one, where MASK is
 array valued, and the other one where MASK is scalar.  */
 
+extern void __pack (gfc_array_char *, const gfc_array_char *,
+		    const gfc_array_l4 *, const gfc_array_char *);
+export_proto_np(__pack);
+
 void
 __pack (gfc_array_char * ret, const gfc_array_char * array,
 	const gfc_array_l4 * mask, const gfc_array_char * vector)
@@ -264,6 +268,10 @@ __pack (gfc_array_char * ret, const gfc_array_char * array,
         }
     }
 }
+
+extern void __pack_s (gfc_array_char *ret, const gfc_array_char *array,
+		      const GFC_LOGICAL_4 *, const gfc_array_char *);
+export_proto_np(__pack_s);
 
 void
 __pack_s (gfc_array_char * ret, const gfc_array_char * array,

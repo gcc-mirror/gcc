@@ -1,3 +1,40 @@
+2004-12-12  Richard Henderson  <rth@redhat.com>
+
+	* acinclude.m4 (LIBGFOR_CHECK_ATTRIBUTE_VISIBILITY): New.
+	(LIBGFOR_CHECK_ATTRIBUTE_DLLEXPORT): New.
+	(LIBGFOR_CHECK_ATTRIBUTE_ALIAS): New.
+	* configure.ac: Use them.
+	* configure, config.h.in, aclocal.m4: Rebuild.
+	* libgfortran.h (prefix): Remove.
+	(PREFIX, IPREFIX): New.
+	(sym_rename, sym_rename1, sym_rename2): New.
+	(internal_proto, export_proto, export_proto_np): New.
+	(iexport_proto, iexport): New.
+	(iexport_data_proto, iexport_data): New.
+	* intrinsics/abort.c, intrinsics/args.c, intrinsics/associated.c,
+	intrinsics/cpu_time.c, intrinsics/cshift0.c,
+	intrinsics/date_and_time.c, intrinsics/env.c, intrinsics/eoshift0.c,
+	intrinsics/eoshift2.c, intrinsics/etime.c, intrinsics/exit.c,
+	intrinsics/flush.c, intrinsics/fnum.c, intrinsics/getXid.c,
+	intrinsics/getcwd.c, intrinsics/ishftc.c, intrinsics/mvbits.c,
+	intrinsics/pack_generic.c, intrinsics/rand.c, intrinsics/random.c,
+	intrinsics/reshape_generic.c, intrinsics/size.c,
+	intrinsics/spread_generic.c, intrinsics/stat.c,
+	intrinsics/string_intrinsics.c, intrinsics/system.c,
+	intrinsics/system_clock.c, intrinsics/transpose_generic.c,
+	intrinsics/umask.c, intrinsics/unlink.c, intrinsics/unpack_generic.c,
+	io/backspace.c, io/close.c, io/endfile.c, io/inquire.c, io/io.h,
+	io/open.c, io/rewind.c, io/transfer.c, libgfortran.h, m4/cshift1.m4,
+	m4/dotprod.m4, m4/dotprodc.m4, m4/dotprodl.m4, m4/eoshift1.m4,
+	m4/eoshift3.m4, m4/exponent.m4, m4/fraction.m4, m4/iforeach.m4,
+	m4/ifunction.m4, m4/matmul.m4, m4/matmull.m4, m4/nearest.m4,
+	m4/pow.m4, m4/reshape.m4, m4/set_exponent.m4, m4/shape.m4,
+	m4/transpose.m4, runtime/environ.c, runtime/error.c,
+	runtime/in_pack_generic.c, runtime/in_unpack_generic.c,
+	runtime/main.c, runtime/memory.c, runtime/pause.c, runtime/select.c,
+	runtime/stop.c: Use them to mark symbols internal or external.
+	* generated/*: Rebuild.
+
 2004-12-09  David Edelsohn  <edelsohn@gnu.org>
 
 	PR bootstrap/18895

@@ -26,6 +26,9 @@ Boston, MA 02111-1307, USA.  */
 
 typedef GFC_ARRAY_DESCRIPTOR(GFC_MAX_DIMENSIONS, char) char_array;
 
+extern GFC_REAL_8 __dot_product_r8 (gfc_array_r8 * a, gfc_array_r8 * b);
+export_proto_np(__dot_product_r8);
+
 /* Both parameters will already have been converted to the result type.  */
 GFC_REAL_8
 __dot_product_r8 (gfc_array_r8 * a, gfc_array_r8 * b)
@@ -61,4 +64,3 @@ __dot_product_r8 (gfc_array_r8 * a, gfc_array_r8 * b)
 
   return res;
 }
-

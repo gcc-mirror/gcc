@@ -37,7 +37,7 @@ Boston, MA 02111-1307, USA.  */
  * but other variables are checked during execution of the user's
  * program. */
 
-options_t options;
+options_t options = { };
 
 extern char **environ;
 

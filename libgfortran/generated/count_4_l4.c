@@ -24,8 +24,12 @@ Boston, MA 02111-1307, USA.  */
 #include <assert.h>
 #include "libgfortran.h"
 
+
+extern void __count_4_l4 (gfc_array_i4 *, gfc_array_l4 *, index_type *);
+export_proto_np(__count_4_l4);
+
 void
-__count_4_l4 (gfc_array_i4 * retarray, gfc_array_l4 *array, index_type *pdim)
+__count_4_l4 (gfc_array_i4 *retarray, gfc_array_l4 *array, index_type *pdim)
 {
   index_type count[GFC_MAX_DIMENSIONS - 1];
   index_type extent[GFC_MAX_DIMENSIONS - 1];

@@ -25,6 +25,10 @@ Boston, MA 02111-1307, USA.  */
 #include <string.h>
 #include "libgfortran.h"
 
+extern void __unpack1 (const gfc_array_char *, const gfc_array_char *,
+		       const gfc_array_l4 *, const gfc_array_char *);
+export_proto_np(__unpack1);
+
 void
 __unpack1 (const gfc_array_char * ret, const gfc_array_char * vector,
     const gfc_array_l4 * mask, const gfc_array_char * field)
@@ -139,6 +143,10 @@ __unpack1 (const gfc_array_char * ret, const gfc_array_char * vector,
         }
     }
 }
+
+extern void __unpack0 (const gfc_array_char *, const gfc_array_char *,
+		       const gfc_array_l4 *, char *);
+export_proto_np(__unpack0);
 
 void
 __unpack0 (const gfc_array_char * ret, const gfc_array_char * vector,

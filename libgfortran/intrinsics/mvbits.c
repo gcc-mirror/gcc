@@ -29,6 +29,10 @@ Boston, MA 02111-1307, USA.  */
 /* MVBITS copies LEN bits starting at bit position FROMPOS from FROM
    into TO, starting at bit position TOPOS.  */
 
+extern void SUB_NAME (const TYPE *, const GFC_INTEGER_4 *,
+		      const GFC_INTEGER_4 *, TYPE *, const GFC_INTEGER_4 *);
+export_proto(SUB_NAME);
+
 void 
 SUB_NAME (const TYPE *from, const GFC_INTEGER_4 *frompos,
           const GFC_INTEGER_4 *len, TYPE *to, const GFC_INTEGER_4 *topos)
@@ -46,7 +50,7 @@ SUB_NAME (const TYPE *from, const GFC_INTEGER_4 *frompos,
 #ifndef SUB_NAME
 #  define TYPE GFC_INTEGER_4
 #  define UTYPE GFC_UINTEGER_4
-#  define SUB_NAME prefix (mvbits_i4)
+#  define SUB_NAME mvbits_i4
 #  include "mvbits.c"
 #  undef SUB_NAME
 #  undef TYPE
@@ -54,7 +58,7 @@ SUB_NAME (const TYPE *from, const GFC_INTEGER_4 *frompos,
 
 #  define TYPE GFC_INTEGER_8
 #  define UTYPE GFC_UINTEGER_8
-#  define SUB_NAME prefix (mvbits_i8)
+#  define SUB_NAME mvbits_i8
 #  include "mvbits.c"
 #  undef SUB_NAME
 #  undef TYPE

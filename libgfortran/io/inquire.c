@@ -356,6 +356,9 @@ inquire_via_filename (void)
 /* Library entry point for the INQUIRE statement (non-IOLENGTH
    form).  */
 
+extern void st_inquire (void);
+export_proto(st_inquire);
+
 void
 st_inquire (void)
 {

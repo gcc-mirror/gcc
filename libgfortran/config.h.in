@@ -15,6 +15,15 @@
 /* libm includes atanf */
 #undef HAVE_ATANF
 
+/* Define to 1 if the target supports __attribute__((alias(...))). */
+#undef HAVE_ATTRIBUTE_ALIAS
+
+/* Define to 1 if the target supports __attribute__((dllexport)). */
+#undef HAVE_ATTRIBUTE_DLLEXPORT
+
+/* Define to 1 if the target supports __attribute__((visibility(...))). */
+#undef HAVE_ATTRIBUTE_VISIBILITY
+
 /* libm includes ceilf */
 #undef HAVE_CEILF
 

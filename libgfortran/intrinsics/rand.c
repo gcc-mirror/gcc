@@ -38,19 +38,29 @@ static GFC_UINTEGER_8 rand_seed = 1;
 
 /* Set the seed of the irand generator.  Note 0 is a bad seed.  */
 
-void
-prefix(srand) (GFC_INTEGER_4 *i)
+static void
+srand_internal (GFC_INTEGER_8 i)
 {
-  rand_seed = (GFC_UINTEGER_8) (*i != 0) ? *i : 123459876;
+  rand_seed = i ? i : 123459876;
 }
 
+extern void PREFIX(srand) (GFC_INTEGER_4 *i);
+export_proto_np(PREFIX(srand));
+
+void
+PREFIX(srand) (GFC_INTEGER_4 *i)
+{
+  srand_internal (*i);
+}
 
 /* Return an INTEGER in the range [1,GFC_RAND_M-1].  */
 
+extern GFC_INTEGER_4 irand (GFC_INTEGER_4 *);
+iexport_proto(irand);
+
 GFC_INTEGER_4
-prefix(irand) (GFC_INTEGER_4 *i)
+irand (GFC_INTEGER_4 *i)
 {
-  
   GFC_INTEGER_4 j;
   if (i)
     j = *i;
@@ -66,25 +76,29 @@ prefix(irand) (GFC_INTEGER_4 *i)
     /* Reset the RN sequence to system-dependent sequence and return the
        first value.  */
     case 1:
-      j = 0;
-      prefix(srand) (&j);
+      srand_internal (0);
       break;
     
     /* Seed the RN sequence with j and return the first value.  */
     default:
-      prefix(srand) (&j);
+      srand_internal (j);
+      break;
    }
 
    rand_seed = GFC_RAND_A * rand_seed % GFC_RAND_M;
 
    return (GFC_INTEGER_4) rand_seed;
 }
+iexport(irand);
 
 
 /*  Return a random REAL in the range [0,1).  */
 
+extern GFC_REAL_4 PREFIX(rand) (GFC_INTEGER_4 *i);
+export_proto_np(PREFIX(rand));
+
 GFC_REAL_4
-prefix(rand) (GFC_INTEGER_4 *i)
+PREFIX(rand) (GFC_INTEGER_4 *i)
 {
-  return normalize_r4_i4 (prefix(irand) (i) - 1, GFC_RAND_M1 - 1);
+  return normalize_r4_i4 (irand (i) - 1, GFC_RAND_M1 - 1);
 }

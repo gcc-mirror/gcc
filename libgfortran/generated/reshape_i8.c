@@ -28,6 +28,11 @@ typedef GFC_ARRAY_DESCRIPTOR(1, index_type) shape_type;
 
 /* The shape parameter is ignored. We can currently deduce the shape from the
    return array.  */
+
+extern void __reshape_8 (gfc_array_i8 *, gfc_array_i8 *, shape_type *,
+				    gfc_array_i8 *, shape_type *);
+extern_proto_np(__reshape_8);
+
 void
 __reshape_8 (gfc_array_i8 * ret, gfc_array_i8 * source, shape_type * shape,
                       gfc_array_i8 * pad, shape_type * order)
@@ -222,4 +227,3 @@ __reshape_8 (gfc_array_i8 * ret, gfc_array_i8 * source, shape_type * shape,
         }
     }
 }
-

@@ -25,9 +25,6 @@ Boston, MA 02111-1307, USA.  */
 
 #include "libgfortran.h"
 
-#define pause_numeric prefix(pause_numeric)
-#define pause_string prefix(pause_string)
-
 static void
 do_pause (void)
 {
@@ -42,6 +39,10 @@ do_pause (void)
 }
 
 /* A numeric or blank STOP statement.  */
+
+extern void pause_numeric (GFC_INTEGER_4 code);
+export_proto(pause_numeric);
+
 void
 pause_numeric (GFC_INTEGER_4 code)
 {
@@ -55,6 +56,8 @@ pause_numeric (GFC_INTEGER_4 code)
   do_pause ();
 }
 
+extern void pause_string (char *string, GFC_INTEGER_4 len);
+export_proto(pause_string);
 
 void
 pause_string (char *string, GFC_INTEGER_4 len)

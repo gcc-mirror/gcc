@@ -25,6 +25,10 @@ Boston, MA 02111-1307, USA.  */
 #include <string.h>
 #include "libgfortran.h"
 
+extern void __spread (const gfc_array_char *, const gfc_array_char *,
+		      const index_type *, const index_type *);
+export_proto_np(__spread);
+
 void
 __spread (const gfc_array_char * ret, const gfc_array_char * source,
     const index_type * along, const index_type * pncopies)

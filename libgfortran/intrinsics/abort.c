@@ -21,11 +21,10 @@ Boston, MA 02111-1307, USA.  */
 #include <stdlib.h>
 #include "libgfortran.h"
 
+void PREFIX(abort) (void);
+export_proto_np(PREFIX(abort));
 
-void prefix(abort) (void);
-
-void prefix(abort) ()
+void PREFIX(abort) (void)
 {
   abort ();
 }
-

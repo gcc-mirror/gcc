@@ -25,9 +25,15 @@ Boston, MA 02111-1307, USA.  */
 #include <string.h>
 #include "libgfortran.h"
 
+void __cshift1_8 (const gfc_array_char * ret,
+			     const gfc_array_char * array,
+			     const gfc_array_i8 * h, const GFC_INTEGER_8 * pwhich);
+export_proto_np(__cshift1_8);
+
 void
-__cshift1_8 (const gfc_array_char * ret, const gfc_array_char * array,
-    const gfc_array_i8 * h, const GFC_INTEGER_8 * pwhich)
+__cshift1_8 (const gfc_array_char * ret,
+			const gfc_array_char * array,
+			const gfc_array_i8 * h, const GFC_INTEGER_8 * pwhich)
 {
   /* r.* indicates the return array.  */
   index_type rstride[GFC_MAX_DIMENSIONS - 1];
@@ -41,7 +47,7 @@ __cshift1_8 (const gfc_array_char * ret, const gfc_array_char * array,
   index_type soffset;
   const char *sptr;
   const char *src;
-  /* h.* indicates the shift array.  */
+  /* h.* indicates the  array.  */
   index_type hstride[GFC_MAX_DIMENSIONS - 1];
   index_type hstride0;
   const GFC_INTEGER_8 *hptr;
@@ -70,7 +76,7 @@ __cshift1_8 (const gfc_array_char * ret, const gfc_array_char * array,
   size = GFC_DESCRIPTOR_SIZE (array);
   n = 0;
 
-/* Initialized for avoiding compiler warnings.  */
+  /* Initialized for avoiding compiler warnings.  */
   roffset = size;
   soffset = size;
   len = 0;
@@ -115,7 +121,7 @@ __cshift1_8 (const gfc_array_char * ret, const gfc_array_char * array,
 
   while (rptr)
     {
-      /* Do the shift for this dimension.  */
+      /* Do the  for this dimension.  */
       sh = *hptr;
       sh = (div (sh, len)).rem;
       if (sh < 0)
@@ -167,4 +173,3 @@ __cshift1_8 (const gfc_array_char * ret, const gfc_array_char * array,
         }
     }
 }
-

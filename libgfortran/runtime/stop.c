@@ -24,8 +24,6 @@ Boston, MA 02111-1307, USA.  */
 
 #include "libgfortran.h"
 
-#define stop_string prefix(stop_string)
-
 /* A numeric or blank STOP statement.  */
 void
 stop_numeric (GFC_INTEGER_4 code)
@@ -39,7 +37,11 @@ stop_numeric (GFC_INTEGER_4 code)
 
   sys_exit (code);
 }
+iexport(stop_numeric);
 
+
+extern void stop_string (const char *string, GFC_INTEGER_4 len);
+export_proto(stop_string);
 
 void
 stop_string (const char *string, GFC_INTEGER_4 len)

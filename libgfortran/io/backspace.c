@@ -114,6 +114,9 @@ unformatted_backspace (void)
 }
 
 
+extern void st_backspace (void);
+export_proto(st_backspace);
+
 void
 st_backspace (void)
 {

@@ -48,8 +48,11 @@ Boston, MA 02111-1307, USA.  */
  * that files that report loci and those that do not can be linked
  * together without reporting an erroneous position. */
 
-char *filename;
-unsigned line;
+char *filename = 0;
+iexport_data(filename);
+
+unsigned line = 0;
+iexport_data(line);
 
 static char buffer[32];		/* buffer for integer/ascii conversions */
 
@@ -332,6 +335,7 @@ runtime_error (const char *message)
   st_printf ("Fortran runtime error: %s\n", message);
   sys_exit (2);
 }
+iexport(runtime_error);
 
 
 /* void internal_error()-- These are this-can't-happen errors

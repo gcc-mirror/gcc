@@ -22,8 +22,11 @@ Boston, MA 02111-1307, USA.  */
 #include "libgfortran.h"
 
 
+extern GFC_REAL_4 fraction_r4 (GFC_REAL_4 s);
+export_proto(fraction_r4);
+
 GFC_REAL_4
-prefix(fraction_r4) (GFC_REAL_4 s)
+fraction_r4 (GFC_REAL_4 s)
 {
   int dummy_exp;
   return frexpf (s, &dummy_exp);
