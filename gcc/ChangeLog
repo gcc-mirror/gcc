@@ -1,5 +1,10 @@
 2002-09-24  Eric Christopher  <echristo@redhat.com>
 
+        * config/mips/elf.h: Add HANDLE_SYSV_PRAGMA.
+        * config/mips/elf64.h: Ditto.
+
+2002-09-24  Eric Christopher  <echristo@redhat.com>
+
         * except.c (expand_builtin_extract_return_address): Handle case
 	where Pmode != ptr_mode.
 
