@@ -1,3 +1,9 @@
+2001-07-10  Jason Merrill  <jason_merrill@redhat.com>
+
+	* collect2.c (main): Set COLLECT_NO_DEMANGLE for subprocesses.
+	(dump_file): Only pad the demangled name with spaces if the 
+	mangled name was padded with spaces.
+
 2001-07-10  Bernd Schmidt  <bernds@redhat.com>
 
 	* bb-reorder.c (make_reorder_chain_1): Correct branch/fallthru
