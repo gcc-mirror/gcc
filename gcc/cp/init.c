@@ -42,7 +42,7 @@ static tree build_vec_delete_1 PARAMS ((tree, tree, tree, special_function_kind,
 static void perform_member_init PARAMS ((tree, tree, int));
 static void sort_base_init PARAMS ((tree, tree, tree *, tree *));
 static tree build_builtin_delete_call PARAMS ((tree));
-static int member_init_ok_or_else PARAMS ((tree, tree, const char *));
+static int member_init_ok_or_else PARAMS ((tree, tree, tree));
 static void expand_virtual_init PARAMS ((tree, tree));
 static tree sort_member_init PARAMS ((tree, tree));
 static tree initializing_context PARAMS ((tree));
@@ -1043,19 +1043,19 @@ static int
 member_init_ok_or_else (field, type, member_name)
      tree field;
      tree type;
-     const char *member_name;
+     tree member_name;
 {
   if (field == error_mark_node)
     return 0;
   if (field == NULL_TREE || initializing_context (field) != type)
     {
-      cp_error ("class `%T' does not have any field named `%s'", type,
+      cp_error ("class `%T' does not have any field named `%D'", type,
 		member_name);
       return 0;
     }
   if (TREE_STATIC (field))
     {
-      cp_error ("field `%#D' is static; only point of initialization is its declaration",
+      cp_error ("field `%#D' is static; the only point of initialization is its definition",
 		field);
       return 0;
     }
@@ -1162,7 +1162,7 @@ expand_member_init (exp, name, init)
     try_member:
       field = lookup_field (type, name, 1, 0);
 
-      if (! member_init_ok_or_else (field, type, IDENTIFIER_POINTER (name)))
+      if (! member_init_ok_or_else (field, type, name))
 	return NULL_TREE;
 
       init = build_tree_list (field, init);
