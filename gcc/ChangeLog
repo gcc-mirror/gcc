@@ -1,3 +1,12 @@
+2001-01-27  Michael Hayes  <mhayes@redhat.com>
+
+	* loop.c (loop_giv_reduce_benefit): Copy mode size into
+	int variable.
+	(check_ext_dependant_givs): Initialise u_start_val and
+	u_end_val.
+	(load_mems): Make last_max_reg unsigned.
+	(try_swap_copy_prop): Use INSN_P and initialise set.
+
 Fri Jan 26 23:22:58 2001  Denis Chertykov  <denisc@overta.ru>
 
 	* README.AVR : Removed.
