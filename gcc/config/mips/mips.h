@@ -3043,7 +3043,13 @@ typedef struct mips_args {
    constants which are put in the .text section.  We also record the
    total length of all such strings; this total is used to decide
    whether we need to split the constant table, and need not be
-   precisely correct.  */
+   precisely correct. 
+
+   When not mips16 code nor embedded PIC, if a symbol is in a
+   gp addresable section, SYMBOL_REF_FLAG is set prevent gcc from
+   splitting the reference so that gas can generate a gp relative
+   reference.
+ */
 
 #define ENCODE_SECTION_INFO(DECL)					\
 do									\
@@ -3068,6 +3074,16 @@ do									\
 	  SYMBOL_REF_FLAG (XEXP (TREE_CST_RTL (DECL), 0)) = 0;		\
         else								\
 	  SYMBOL_REF_FLAG (XEXP (TREE_CST_RTL (DECL), 0)) = 1;		\
+      }									\
+									\
+    else if (TREE_CODE (DECL) == VAR_DECL				\
+             && DECL_SECTION_NAME (DECL) != NULL_TREE                   \
+             && (0 == strcmp (TREE_STRING_POINTER (DECL_SECTION_NAME (DECL)), \
+                              ".sdata")                                 \
+                || 0 == strcmp (TREE_STRING_POINTER (DECL_SECTION_NAME (DECL)),\
+                              ".sbss")))                                \
+      {									\
+        SYMBOL_REF_FLAG (XEXP (DECL_RTL (DECL), 0)) = 1;		\
       }									\
 									\
     else if (TARGET_GP_OPT && TREE_CODE (DECL) == VAR_DECL)		\
