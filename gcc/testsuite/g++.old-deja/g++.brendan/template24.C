@@ -1,5 +1,5 @@
 // GROUPS passed templates
-extern "C" void printf (char *, ...);
+extern "C" int printf (const char *, ...);
 
 template <class F>
 class Temp

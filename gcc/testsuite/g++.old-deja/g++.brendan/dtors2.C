@@ -9,7 +9,7 @@
 //    the virtual table, rather than directly. This, of course, results in the
 //    infinite recursion.
 
-extern "C" void printf (char *, ...); 
+extern "C" int printf (const char *, ...); 
 
 int errors = 0;
 

@@ -21,7 +21,7 @@ BaseClass::Increm --> {i=7, virtMember()=30}
 b=9  b.virtMember()=30
 */
 
-extern "C" void printf (char *, ...);
+extern "C" int printf (const char *, ...);
 extern "C" void exit (int);
 
 void die () { printf ("FAIL\n"); exit (1); }

@@ -6,7 +6,7 @@
 // of whether or not the constructor for the given class is defined
 // before or after the new operator is even declared.
 
-extern "C" void printf (char *, ...); 
+extern "C" int printf (const char *, ...); 
 
 typedef __SIZE_TYPE__ size_t;
 

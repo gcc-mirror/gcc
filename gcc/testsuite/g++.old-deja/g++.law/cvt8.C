@@ -6,7 +6,7 @@
 // Subject: g++ 2.2.2 seems to be forgetting a "const"
 // Date: Mon, 14 Sep 92 10:09:58 -0500
 
-extern "C" void printf(...);
+extern "C" int printf (const char *, ...);
 
 struct A {
         int i;

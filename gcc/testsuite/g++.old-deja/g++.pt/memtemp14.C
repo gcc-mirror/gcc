@@ -1,6 +1,6 @@
 // Build don't run:
 // GROUPS passed templates membertemplates
-extern "C" const char* printf(const char*, ...);
+extern "C" int printf (const char *, ...);
 
 template <class T>
 struct S

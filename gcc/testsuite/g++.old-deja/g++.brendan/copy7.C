@@ -1,5 +1,5 @@
 // GROUPS passed copy-ctors
-extern "C" void printf (char *, ...);
+extern "C" int printf (const char *, ...);
 extern "C" void exit (int);
 
 void die () { printf ("FAIL\n"); exit (1); }

@@ -1,6 +1,6 @@
 // prms-id: 789
 
-extern "C" void printf (char *, ...);
+extern "C" int printf (const char *, ...);
 struct foo
 {
   static int count;

@@ -1,7 +1,7 @@
 // GROUPS passed operators
 // Check that operators may be (directly) recursive.
 
-extern "C" void printf (char *, ...); 
+extern "C" int printf (const char *, ...); 
 
 struct base {
 	int i;

@@ -9,7 +9,7 @@
 // This test fails with G++ 1.35.0- (pre-release).
 // Reported 4/4/89 by Kim Smith
 
-extern "C" void printf (char *, ...); 
+extern "C" int printf (const char *, ...); 
 
 struct base {
 	mutable int data_member;

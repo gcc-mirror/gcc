@@ -1,7 +1,7 @@
 // GROUPS passed constructors
 // Check that global level object constructors get called.
 
-extern "C" void printf (char *, ...); 
+extern "C" int printf (const char *, ...); 
 
 struct base {
 	int f1;

@@ -1,6 +1,6 @@
 // prms-id: 786
 
-extern "C" void printf (char *, ...);
+extern "C" int printf (const char *, ...);
 extern "C" void exit(int);
 class C
    {

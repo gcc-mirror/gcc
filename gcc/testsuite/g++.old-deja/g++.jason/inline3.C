@@ -1,7 +1,7 @@
 // Testcase for order of destruction.
 // Special g++ Options: -O2
 
-extern "C" int printf( char const*, ... );
+extern "C" int printf (const char *, ...);
 int c;
 int r;
 

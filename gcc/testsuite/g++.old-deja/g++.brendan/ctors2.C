@@ -2,7 +2,7 @@
 // Check that sub-words sized class members are correctly set
 // by constructors.
 
-extern "C" void printf (char *, ...); 
+extern "C" int printf (const char *, ...); 
 
 struct base {
 	int f1 : 8;

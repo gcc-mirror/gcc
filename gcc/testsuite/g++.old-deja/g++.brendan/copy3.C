@@ -18,7 +18,7 @@ If I compile it with g++ (gcc version 2.2.2) and run it I get:
 	A::~A()
 
 */
-extern "C" void printf (char *, ...);
+extern "C" int printf (const char *, ...);
 extern "C" void exit (int);
 
 int count = 0;

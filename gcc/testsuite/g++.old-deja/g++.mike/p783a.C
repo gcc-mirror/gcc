@@ -2,7 +2,7 @@
 // Deleting an object many times is a lose.
 // prms-id: 783
 
-extern "C" void printf (char *, ...);
+extern "C" int printf (const char *, ...);
 extern "C" void exit (int);
 
 class C {

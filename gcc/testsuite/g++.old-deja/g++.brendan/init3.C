@@ -2,7 +2,7 @@
 // p2766: Make sure that members are initialized in order of declaration
 // in the class, not in order of specification in the mem-initializer list.
 
-extern "C" void printf (char *, ...);
+extern "C" int printf (const char *, ...);
 extern "C" void exit (int);
 
 int count = 0;

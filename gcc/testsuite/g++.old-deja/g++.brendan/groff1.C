@@ -1,7 +1,7 @@
 // GROUPS passed groff
 /* This should compile properly with the new overloading scheme.  */
 
-extern "C" void printf (const char *, ...);
+extern "C" int printf (const char *, ...);
 extern "C" void exit (int);
 
 int win = 0;

@@ -2,7 +2,7 @@
 // Check that type float parameters can be correctly passed to
 // methods.
 
-extern "C" void printf (char *, ...); 
+extern "C" int printf (const char *, ...); 
 
 class tres_floats {
 	float ff1;

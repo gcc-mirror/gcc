@@ -1,5 +1,5 @@
 // GROUPS passed pure-virt
-extern "C" { void printf(const char *, ...); }
+extern "C" int printf (const char *, ...);
 class Base {
 public:
   virtual ~Base() =0;

@@ -17,7 +17,7 @@ typescript that lists the program, shows how I compiled it, and shows the
 incorrect output.
 */
 
-extern "C" void printf (char *, ...);
+extern "C" int printf (const char *, ...);
 extern "C" void exit (int);
 
 int count = 0;

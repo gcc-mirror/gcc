@@ -6,7 +6,7 @@
 //
 // This test fails (in test5()) when compiled with g++ 1.34.1.
 
-extern "C" void printf (char *, ...); 
+extern "C" int printf (const char *, ...); 
 
 int function (char c);
 int function (float f);

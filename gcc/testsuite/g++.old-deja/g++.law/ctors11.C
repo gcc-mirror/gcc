@@ -4,7 +4,7 @@
 // Message-Id: <9302081631.AA14744@tera.com>
 // From: rrh@tera.com (Robert R. Henry)
 // Date: Mon, 8 Feb 93 08:31:39 PST
-extern "C" void printf(const char *,...);
+extern "C" int printf (const char *, ...);
 class A{
 public:
   inline A(int x){printf("constructing A with %d\n", x);}
