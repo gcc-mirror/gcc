@@ -4047,7 +4047,7 @@ convert_for_assignment (type, rhs, errtype, fundecl, funname, parmnum)
       (coder == INTEGER_TYPE || coder == REAL_TYPE || coder == ENUMERAL_TYPE))
     return convert_and_check (type, rhs);
   /* Conversion to a union from its member types.  */
-  else if (codel = UNION_TYPE)
+  else if (codel == UNION_TYPE)
     {
       tree memb_types;
       for (memb_types = TYPE_FIELDS (type); memb_types;
