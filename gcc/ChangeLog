@@ -1,5 +1,21 @@
 2004-01-30  Jan Hubicka  <jh@suse.cz>
 
+	* alias.c (reg_base_value): Turn into varray.
+	(reg_base_value_size): Kill.
+	(old_reg_base_value): New deletable varray.
+	(alias_invariant_size): New variable.
+	(REG_BASE_VALUE): Update to use varray.
+	(find_base_value): Likewise.
+	(record_set): Likewise.
+	(record_base_value): Likewise.
+	(memrefs_conflict_p): Likewise.
+	(record_set): Likewise
+	(record_base_value): Likewise.
+	(memrefs_conflict_p): Use alias_invariant_size.
+	(init_alias_analysis): Use varray; set alias_invariant_size;
+	rescale other arrays to be sized by maxreg.
+	(end_alias_analysis): Save reg_base_value; clear alias_invariant_size.
+
 	* basic-block.h (PROP_POSTRELOAD): New macro.
 	(CLEANUP_LOG_LINKS): New.
 	* cfgcleanup.c (cleanup_cfg): Only PROP_LOG_LINKS when asked to.
