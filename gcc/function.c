@@ -4566,6 +4566,7 @@ assign_parms (fndecl)
 		&& XINT (XEXP (XVECEXP (entry_parm, 0, i), 1), 0) == 0)
 	      {
 		entry_parm = XEXP (XVECEXP (entry_parm, 0, i), 0);
+		DECL_INCOMING_RTL (parm) = entry_parm;
 		break;
 	      }
 	}

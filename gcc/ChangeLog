@@ -1,3 +1,8 @@
+2000-12-22  Alexandre Oliva  <aoliva@redhat.com>
+
+	* function.c (assign_parms): Update parm's DECL_INCOMING_RTL
+	when optimizing PARALLEL to REG.
+
 2000-12-22  Graham Stott  <grahams@redhat.com>
 
 	* reload.c (update_auto_inc_notes): New, broken out from ...
