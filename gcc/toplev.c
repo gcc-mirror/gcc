@@ -2332,7 +2332,9 @@ rest_of_type_compilation (type, toplev)
     sdbout_symbol (TYPE_STUB_DECL (type), !toplev);
 #endif
 #ifdef DWARF2_DEBUGGING_INFO
-  if (write_symbols == DWARF2_DEBUG && toplev)
+  if ((write_symbols == DWARF2_DEBUG
+       || write_symbols == VMS_AND_DWARF2_DEBUG)
+      && toplev)
     dwarf2out_decl (TYPE_STUB_DECL (type));
 #endif
   timevar_pop (TV_SYMOUT);
@@ -3974,7 +3976,7 @@ decode_g_option (arg)
   /* Indexed by enum debug_info_type.  */
   static const char *const debug_type_names[] =
   {
-    "none", "stabs", "coff", "dwarf-1", "dwarf-2", "xcoff"
+    "none", "stabs", "coff", "dwarf-1", "dwarf-2", "xcoff", "vms"
   };
 
   /* The maximum admissible debug level value.  */
@@ -4937,6 +4939,10 @@ process_options ()
   if (write_symbols == DWARF2_DEBUG)
     debug_hooks = &dwarf2_debug_hooks;
 #endif
+#ifdef VMS_DEBUGGING_INFO
+  if (write_symbols == VMS_DEBUG || write_symbols == VMS_AND_DWARF2_DEBUG)
+    debug_hooks = &vmsdbg_debug_hooks;
+#endif
 
   /* If auxiliary info generation is desired, open the output file.
      This goes in the same directory as the source file--unlike
@@ -4999,8 +5005,12 @@ lang_independent_init ()
 
   init_emit_once (debug_info_level == DINFO_LEVEL_NORMAL
 		  || debug_info_level == DINFO_LEVEL_VERBOSE
-		  || flag_test_coverage
-		  || warn_notreached);
+#ifdef VMS_DEBUGGING_INFO
+		    /* Enable line number info for traceback */
+		    || debug_info_level > DINFO_LEVEL_NONE
+#endif
+		    || flag_test_coverage
+		    || warn_notreached);
   init_regs ();
   init_alias_once ();
   init_stmt ();

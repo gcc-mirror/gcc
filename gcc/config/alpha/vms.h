@@ -403,6 +403,7 @@ do {									\
 #undef DBX_DEBUGGING_INFO
 
 #define DWARF2_DEBUGGING_INFO
+#define VMS_DEBUGGING_INFO
 
 /* This is how to output an assembler line
    that says to advance the location counter
@@ -425,7 +426,7 @@ do {									\
   } while (0)
 
 #undef PREFERRED_DEBUGGING_TYPE
-#define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
+#define PREFERRED_DEBUGGING_TYPE VMS_AND_DWARF2_DEBUG
 
 #undef ASM_FORMAT_PRIVATE_NAME
 #define ASM_FORMAT_PRIVATE_NAME(OUTPUT, NAME, LABELNO)	\
@@ -437,10 +438,33 @@ do {									\
 
 #undef ASM_SPEC
 #undef ASM_FINAL_SPEC
+
+/* The VMS convention is to always provide minimal debug info
+   for a traceback unless specifically overridden.  Defaulting this here
+   is a kludge.  */
+
+#define OPTIMIZATION_OPTIONS(OPTIMIZE, OPTIMIZE_SIZE) \
+{                                                  \
+   write_symbols = VMS_DEBUG;                      \
+   debug_info_level = (enum debug_info_level) 1;   \
+}
+
+/* Override traceback debug info on -g0.  */
+#undef OVERRIDE_OPTIONS
+#define OVERRIDE_OPTIONS                           \
+{                                                  \
+   if (write_symbols == NO_DEBUG)                  \
+     debug_info_level = (enum debug_info_level) 0; \
+   override_options ();                            \
+}
+
+/* Link with vms-dwarf2.o if -g (except -g0). This causes the
+   VMS link to pull all the dwarf2 debug sections together. */
 #undef LINK_SPEC
+#define LINK_SPEC "%{g:-g vms-dwarf2.o%s} %{g0} %{g1:-g1 vms-dwarf2.o%s} \
+%{g2:-g2 vms-dwarf2.o%s} %{g3:-g3 vms-dwarf2.o%s} %{shared} %{v} %{map}"
+
 #undef STARTFILE_SPEC
-#define ASM_SPEC "-nocpp %{pg}"
-#define LINK_SPEC "%{g3:-g3} %{g0:-g0} %{shared:-shared} %{v:-v}"
 
 /* Define the names of the division and modulus functions.  */
 #define DIVSI3_LIBCALL "OTS$DIV_I"

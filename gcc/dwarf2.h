@@ -232,7 +232,9 @@ enum dwarf_attribute
     DW_AT_mac_info = 0x2103,
     DW_AT_src_coords = 0x2104,
     DW_AT_body_begin = 0x2105,
-    DW_AT_body_end = 0x2106
+    DW_AT_body_end = 0x2106,
+    /* VMS Extensions */
+    DW_AT_VMS_rtnbeg_pd_address = 0x2201
   };
 
 #define DW_AT_lo_user	0x2000	/* implementation-defined range start */

@@ -1678,7 +1678,7 @@ final_start_function (first, file, optimize)
   (*debug_hooks->begin_prologue) (last_linenum, last_filename);
 
 #if defined (DWARF2_UNWIND_INFO) || defined (IA64_UNWIND_INFO)
-  if (write_symbols != DWARF2_DEBUG)
+  if (write_symbols != DWARF2_DEBUG && write_symbols != VMS_AND_DWARF2_DEBUG)
     dwarf2out_begin_prologue (0, NULL);
 #endif
 
@@ -1714,6 +1714,12 @@ final_start_function (first, file, optimize)
 
   /* First output the function prologue: code to set up the stack frame.  */
   (*targetm.asm_out.function_prologue) (file, get_frame_size ());
+
+#ifdef VMS_DEBUGGING_INFO
+  /* Output label after the prologue of the function.  */
+  if (write_symbols == VMS_DEBUG || write_symbols == VMS_AND_DWARF2_DEBUG)
+    vmsdbgout_after_prologue ();
+#endif
 
   /* If the machine represents the prologue as RTL, the profiling code must
      be emitted when NOTE_INSN_PROLOGUE_END is scanned.  */
@@ -1846,7 +1852,8 @@ final_end_function ()
   (*debug_hooks->end_epilogue) ();
 
 #if defined (DWARF2_UNWIND_INFO)
-  if (write_symbols != DWARF2_DEBUG && dwarf2out_do_frame ())
+  if (write_symbols != DWARF2_DEBUG && write_symbols != VMS_AND_DWARF2_DEBUG
+      && dwarf2out_do_frame ())
     dwarf2out_end_epilogue ();
 #endif
 
@@ -2160,7 +2167,9 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	  if (debug_info_level == DINFO_LEVEL_NORMAL
 	      || debug_info_level == DINFO_LEVEL_VERBOSE
 	      || write_symbols == DWARF_DEBUG
-	      || write_symbols == DWARF2_DEBUG)
+	      || write_symbols == DWARF2_DEBUG
+	      || write_symbols == VMS_AND_DWARF2_DEBUG
+	      || write_symbols == VMS_DEBUG)
 	    {
 	      int n = BLOCK_NUMBER (NOTE_BLOCK (insn));
 
@@ -2180,7 +2189,9 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	  if (debug_info_level == DINFO_LEVEL_NORMAL
 	      || debug_info_level == DINFO_LEVEL_VERBOSE
 	      || write_symbols == DWARF_DEBUG
-	      || write_symbols == DWARF2_DEBUG)
+	      || write_symbols == DWARF2_DEBUG
+	      || write_symbols == VMS_AND_DWARF2_DEBUG
+	      || write_symbols == VMS_DEBUG)
 	    {
 	      int n = BLOCK_NUMBER (NOTE_BLOCK (insn));
 

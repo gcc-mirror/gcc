@@ -1,3 +1,36 @@
+Sun Dec  2 09:22:25 2001  Douglas B. Rupp  <rupp@gnat.com>
+
+	* config/alpha/vms.h (VMS_DEBUGGING_INFO): New macro.
+	(PREFERRED_DEBUGGING_TYPE): Define as VMS_AND_DWARF2_DEBUG.
+	(ASM_SPEC): Don't redefine.
+	(OPTIMIZATION_OPTIONS, OVERRIDE_OPTIONS, LINK_SPEC): Define.
+	* config/alpha/t-vms (EXTRA_PARTS): Use; add rule for vms-dwarf2.asm.
+	* config/alpha/vms-dwarf2.asm: New file.
+
+	* Makefile.in (OBJS): Add vmsdbgout.c and its rule.
+	* c-lex.c (init_c_lex): Test for VMS_AND_DWARF2_DEBUG.
+	* debug.h (gcc_debug_hooks): Add vmsdbg_debug_hooks.
+	(vmsdbgout_after_prologue): New declaration.
+	* defaults.h (VMS_DEBUGGING_INFO): Add to PREFERRED_DEBUGGING_TYPE.
+	* dwarf2.h (dwarf_attribute): New DW_AT_VMS_rtnbeg_pd_address.
+	* dwarf2out.c (dwarf2out_do_frame): Test for VMS_AND_DWARF2_DEBUG.
+	(dwarf2out_frame_finish): Test for VMS_AND_DWARF2_DEBUG.
+	(dwarf_attr_name): Use DW_AT_VMS_rtnbeg_pd_address.
+	(add_name_and_src_coords_attributes): Test VMS_DEBUGGING_INFO
+	* final.c (final_start_function): Test for VMS_AND_DWARF2_DEBUG.
+	Test VMS_DEBUGGING_INFO.
+	(final_end_function): Test for VMS_AND_DWARF2_DEBUG.
+	(final_scan_insn): Test for VMS_AND_DWARF2_DEBUG and VMS_DEBUG.
+	* flags.h (debug_info_type): Add VMS_DEBUG and VMS_AND_DWARF2_DEBUG.
+	* toplev.c (compile_file): Test VMS_DEBUGGING_INFO, VMS_DEBUG, and
+	VMS_AND_DWARF2_DEBUG.
+	(rest_of_type_compilation): Test for VMS_AND_DWARF2_DEBUG.
+	(decode_g_option): Add "vms" to debug_type_names.
+	(process_options): Set vmsdbg_debug_hooks if -gvms.
+	(lang_independent_init): Emit line number for VMS unless -g0.
+	* tree.c: (build_complex_type): Test for VMS_AND_DWARF2_DEBUG.
+	* vmsdbg.h, vmsdbgout.c: New files.
+
 Sun Dec  2 09:03:06 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* cfgbuild.c (SET_STATE): Add cast to eliminate warning.a

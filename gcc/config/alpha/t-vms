@@ -1,1 +1,7 @@
 LIB2FUNCS_EXTRA = $(srcdir)/config/alpha/vms_tramp.asm
+EXTRA_PARTS = vms-dwarf2.o
+
+# This object must be linked in in order to make the executable debuggable.
+# vms-ld handles it automatically when passed -g.
+vms-dwarf2.o : $(srcdir)/config/alpha/vms-dwarf2.asm
+	gcc -c -x assembler $<

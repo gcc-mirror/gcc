@@ -133,22 +133,22 @@ extern struct gcc_debug_hooks sdb_debug_hooks;
 extern struct gcc_debug_hooks xcoff_debug_hooks;
 extern struct gcc_debug_hooks dwarf_debug_hooks;
 extern struct gcc_debug_hooks dwarf2_debug_hooks;
+extern struct gcc_debug_hooks vmsdbg_debug_hooks;
 
 /* Dwarf2 frame information.  */
 
-/* FILE is NULL iff being called for frame information for non-dwarf
-   debug output.  */
-extern void dwarf2out_begin_prologue
-  PARAMS ((unsigned int, const char * file));
-extern void dwarf2out_end_epilogue
-  PARAMS ((void));
-extern void dwarf2out_frame_init
-  PARAMS ((void));
-extern void dwarf2out_frame_finish
-  PARAMS ((void));
+extern void dwarf2out_begin_prologue	PARAMS ((unsigned int, const char *));
+extern void dwarf2out_end_epilogue	PARAMS ((void));
+extern void dwarf2out_frame_init	PARAMS ((void));
+extern void dwarf2out_frame_finish	PARAMS ((void));
 /* Decide whether we want to emit frame unwind information for the current
    translation unit.  */
-extern int dwarf2out_do_frame
-  PARAMS ((void));
+extern int dwarf2out_do_frame		PARAMS ((void));
+
+/* When writing VMS debug info, output label after the prologue of the
+   function.  */
+extern void vmsdbgout_after_prologue	PARAMS ((void));
+
+
 
 #endif /* !GCC_DEBUG_H  */
