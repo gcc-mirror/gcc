@@ -588,9 +588,8 @@ cpp_cleanup (pfile)
    be entered in the macro hash table under the name NAME, with value
    VALUE (if any).  FLAGS tweaks the behavior a little:
    DUMP		write debug info for this macro
-   STDC		define only if not -traditional
-   ULP		value is the global user_label_prefix (which can't be
-		put directly into the table).
+   VERS		value is the global version_string, quoted
+   ULP		value is the global user_label_prefix
  */
 
 struct builtin
@@ -601,35 +600,35 @@ struct builtin
   unsigned short flags;
 };
 #define DUMP 0x01
-#define STDC 0x02
-#define VERS 0x04
-#define ULP  0x08
+#define VERS 0x02
+#define ULP  0x04
 
 static const struct builtin builtin_array[] =
 {
-  { "__TIME__",			0, T_TIME,		DUMP },
-  { "__DATE__",			0, T_DATE,		DUMP },
-  { "__FILE__",			0, T_FILE,		0    },
-  { "__BASE_FILE__",		0, T_BASE_FILE,		0    },
-  { "__LINE__",			0, T_SPECLINE,		0    },
-  { "__INCLUDE_LEVEL__",	0, T_INCLUDE_LEVEL,	0    },
-  { "__VERSION__",		0, T_VERSION,		DUMP|VERS },
-  { "__STDC__",			0, T_STDC,		DUMP|STDC },
+  { "__TIME__",			0, T_TIME,		0 },
+  { "__DATE__",			0, T_DATE,		0 },
+  { "__FILE__",			0, T_FILE,		0 },
+  { "__BASE_FILE__",		0, T_BASE_FILE,		0 },
+  { "__LINE__",			0, T_SPECLINE,		0 },
+  { "__INCLUDE_LEVEL__",	0, T_INCLUDE_LEVEL,	0 },
 
-  { "__USER_LABEL_PREFIX__",	0,		 T_CONST, ULP  },
-  { "__REGISTER_PREFIX__",	REGISTER_PREFIX, T_CONST, 0    },
-  { "__HAVE_BUILTIN_SETJMP__",	"1",		 T_CONST, 0    },
+  { "__VERSION__",		0,		 T_MCONST, DUMP|VERS },
+  { "__USER_LABEL_PREFIX__",	0,		 T_CONST,  DUMP|ULP  },
+  { "__STDC__",			"1",		 T_STDC,   DUMP },
+  { "__REGISTER_PREFIX__",	REGISTER_PREFIX, T_CONST,  DUMP },
+  { "__HAVE_BUILTIN_SETJMP__",	"1",		 T_CONST,  DUMP },
 #ifndef NO_BUILTIN_SIZE_TYPE
-  { "__SIZE_TYPE__",		SIZE_TYPE,	 T_CONST, DUMP },
+  { "__SIZE_TYPE__",		SIZE_TYPE,	 T_CONST,  DUMP },
 #endif
 #ifndef NO_BUILTIN_PTRDIFF_TYPE
-  { "__PTRDIFF_TYPE__",		PTRDIFF_TYPE,	 T_CONST, DUMP },
+  { "__PTRDIFF_TYPE__",		PTRDIFF_TYPE,	 T_CONST,  DUMP },
 #endif
 #ifndef NO_BUILTIN_WCHAR_TYPE
-  { "__WCHAR_TYPE__",		WCHAR_TYPE,	 T_CONST, DUMP },
+  { "__WCHAR_TYPE__",		WCHAR_TYPE,	 T_CONST,  DUMP },
 #endif
-  { 0, 0, 0, 0 }
 };
+#define builtin_array_end \
+ builtin_array + sizeof(builtin_array)/sizeof(struct builtin)
 
 /* Subroutine of cpp_start_read; reads the builtins table above and
    enters the macros into the hash table.  */
@@ -641,15 +640,18 @@ initialize_builtins (pfile)
   const struct builtin *b;
   const char *val;
   HASHNODE *hp;
-  for(b = builtin_array; b->name; b++)
+  for(b = builtin_array; b < builtin_array_end; b++)
     {
-      if ((b->flags & STDC) && CPP_TRADITIONAL (pfile))
+      if (b->type == T_STDC && CPP_TRADITIONAL (pfile))
 	continue;
 
       if (b->flags & ULP)
 	val = user_label_prefix;
       else if (b->flags & VERS)
-	val = version_string;
+	{
+	  val = xmalloc (strlen (version_string) + 3);
+	  sprintf ((char *)val, "\"%s\"", version_string);
+	}
       else
 	val = b->value;
 
@@ -662,7 +664,6 @@ initialize_builtins (pfile)
       if ((b->flags & DUMP) && CPP_OPTION (pfile, debug_output))
 	dump_special_to_buffer (pfile, b->name);
     }
-
 }
 #undef DUMP
 #undef STDC

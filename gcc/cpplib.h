@@ -352,8 +352,6 @@ struct cpp_reader
 
   long lineno;
 
-  struct tm *timebuf;
-
   /* Buffer of -M output.  */
   struct deps *deps;
 

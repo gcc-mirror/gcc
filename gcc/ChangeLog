@@ -1,3 +1,21 @@
+2000-04-09  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cpphash.c (timestamp): Delete.
+	(del_HASHNODE): If type is T_MCONST, free value.cpval.
+	(special_symbol): Remove unnecessary braces.  Remove
+	T_VERSION.  Treat T_STDC like T_CONST unless
+	STDC_0_IN_SYSTEM_HEADERS.  Render both __DATE__ and __TIME__
+	when one is encountered, then convert them into T_MCONST
+	nodes.
+	* cppinit.c (builtin_array): version_string is T_MCONST.
+	__STDC__ has a "1" in its cpval.  Don't have a terminator
+	entry.  Clean up which entries are dumped.
+	(initialize_builtins): Only __STDC__ gets the special
+	-traditional treatment.  Count the length of builtin_array.
+	Render version_string here.
+	* cpphash.h: Remove T_VERSION.  Add T_MCONST.
+	* cpplib.h (struct cpp_reader): Remove timebuf.	
+
 2000-04-09  Richard Henderson  <rth@cygnus.com>
 
 	* genrecog.c (pred): Update comparison_operator for the unordered

@@ -42,7 +42,6 @@ static void push_macro_expansion PARAMS ((cpp_reader *,
 static int unsafe_chars		 PARAMS ((cpp_reader *, int, int));
 static int macro_cleanup	 PARAMS ((cpp_buffer *, cpp_reader *));
 static enum cpp_token macarg	 PARAMS ((cpp_reader *, int));
-static struct tm *timestamp	 PARAMS ((cpp_reader *));
 static void special_symbol	 PARAMS ((HASHNODE *, cpp_reader *));
 
 /* Initial hash table size.  (It can grow if necessary - see hashtab.c.)  */
@@ -141,6 +140,8 @@ del_HASHNODE (x)
   
   if (h->type == T_MACRO)
     _cpp_free_definition (h->value.defn);
+  else if (h->type == T_MCONST)
+    free ((void *) h->value.cpval);
   free ((void *) h->name);
   free (h);
 }
@@ -794,18 +795,6 @@ macarg (pfile, rest_args)
 }
 
 
-static struct tm *
-timestamp (pfile)
-     cpp_reader *pfile;
-{
-  if (!pfile->timebuf)
-    {
-      time_t t = time ((time_t *) 0);
-      pfile->timebuf = localtime (&t);
-    }
-  return pfile->timebuf;
-}
-
 static const char * const monthnames[] =
 {
   "Jan", "Feb", "Mar", "Apr", "May", "Jun",
@@ -854,6 +843,7 @@ _cpp_quote_string (pfile, src)
  * buffer *without* rescanning.
  */
 
+#define DSC(str) (const U_CHAR *)str, sizeof str - 1
 static void
 special_symbol (hp, pfile)
      HASHNODE *hp;
@@ -867,22 +857,15 @@ special_symbol (hp, pfile)
     {
     case T_FILE:
     case T_BASE_FILE:
-      {
-	ip = cpp_file_buffer (pfile);
-	if (hp->type == T_BASE_FILE)
-	  {
-	    while (CPP_PREV_BUFFER (ip) != NULL)
-	      ip = CPP_PREV_BUFFER (ip);
-	  }
+      ip = cpp_file_buffer (pfile);
+      if (hp->type == T_BASE_FILE)
+	while (CPP_PREV_BUFFER (ip) != NULL)
+	  ip = CPP_PREV_BUFFER (ip);
 
-	buf = ip->nominal_fname;
-
-	if (!buf)
-	  buf = "";
-	CPP_RESERVE (pfile, 3 + 4 * strlen (buf));
-	_cpp_quote_string (pfile, buf);
-	return;
-      }
+      buf = ip->nominal_fname;
+      CPP_RESERVE (pfile, 3 + 4 * strlen (buf));
+      _cpp_quote_string (pfile, buf);
+      return;
 
     case T_INCLUDE_LEVEL:
       {
@@ -897,16 +880,21 @@ special_symbol (hp, pfile)
 	return;
       }
 
-    case T_VERSION:
-      len = strlen (hp->value.cpval);
-      CPP_RESERVE (pfile, 3 + len);
-      CPP_PUTC_Q (pfile, '"');
-      CPP_PUTS_Q (pfile, hp->value.cpval, len);
-      CPP_PUTC_Q (pfile, '"');
-      CPP_NUL_TERMINATE_Q (pfile);
-      return;
-
+    case T_STDC:
+#ifdef STDC_0_IN_SYSTEM_HEADERS
+      ip = cpp_file_buffer (pfile);
+      if (ip->system_header_p && !cpp_defined (pfile, DSC("__STRICT_ANSI__")))
+	{
+	  CPP_RESERVE (pfile, 2);
+	  CPP_PUTC_Q (pfile, '0');
+	  CPP_NUL_TERMINATE_Q (pfile);
+	  return;
+	}
+#endif
+      /* else fall through */
     case T_CONST:
+    case T_MCONST:
+    constant:
       buf = hp->value.cpval;
       if (!buf)
 	return;
@@ -916,19 +904,6 @@ special_symbol (hp, pfile)
       len = strlen (buf);
       CPP_RESERVE (pfile, len + 1);
       CPP_PUTS_Q (pfile, buf, len);
-      CPP_NUL_TERMINATE_Q (pfile);
-      return;
-
-    case T_STDC:
-      CPP_RESERVE (pfile, 2);
-#ifdef STDC_0_IN_SYSTEM_HEADERS
-      ip = cpp_file_buffer (pfile);
-      if (ip->system_header_p
-	  && !cpp_defined (pfile, (const U_CHAR *) "__STRICT_ANSI__", 15))
-	CPP_PUTC_Q (pfile, '0');
-      else
-#endif
-	CPP_PUTC_Q (pfile, '1');
       CPP_NUL_TERMINATE_Q (pfile);
       return;
 
@@ -945,21 +920,31 @@ special_symbol (hp, pfile)
 
     case T_DATE:
     case T_TIME:
+      /* Generate both __DATE__ and __TIME__, stuff them into their
+	 respective hash nodes, and mark the nodes T_MCONST so we
+	 don't have to do this again.  We don't generate these strings
+	 at init time because time() and localtime() are very slow on
+	 some systems.  */
       {
-	struct tm *timebuf;
+	time_t tt = time (NULL);
+	struct tm *tb = localtime (&tt);
+	HASHNODE *d, *t;
 
-	CPP_RESERVE (pfile, 20);
-	timebuf = timestamp (pfile);
 	if (hp->type == T_DATE)
-	  sprintf (CPP_PWRITTEN (pfile), "\"%s %2d %4d\"",
-		   monthnames[timebuf->tm_mon],
-		   timebuf->tm_mday, timebuf->tm_year + 1900);
+	  d = hp, t = _cpp_lookup (pfile, DSC("__TIME__"));
 	else
-	  sprintf (CPP_PWRITTEN (pfile), "\"%02d:%02d:%02d\"",
-		   timebuf->tm_hour, timebuf->tm_min, timebuf->tm_sec);
+	  t = hp, d = _cpp_lookup (pfile, DSC("__DATE__"));
 
-	CPP_ADJUST_WRITTEN (pfile, strlen (CPP_PWRITTEN (pfile)));
-	return;
+	d->value.cpval = xmalloc (sizeof "'Oct 11 1347'");
+	sprintf ((char *)d->value.cpval, "\"%s %2d %4d\"",
+		 monthnames[tb->tm_mon], tb->tm_mday, tb->tm_year + 1900);
+	d->type = T_MCONST;
+
+	t->value.cpval = xmalloc (sizeof "'12:34:56'");
+	sprintf ((char *)t->value.cpval, "\"%02d:%02d:%02d\"",
+		 tb->tm_hour, tb->tm_min, tb->tm_sec);
+	t->type = T_MCONST;
+	goto constant;
       }
 
     case T_POISON:
@@ -974,6 +959,7 @@ special_symbol (hp, pfile)
       return;
     }
 }
+#undef DSC
 
 /* Expand a macro call.
    HP points to the symbol that is the macro being called.
