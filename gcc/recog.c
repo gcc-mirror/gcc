@@ -1726,6 +1726,8 @@ constrain_operands (insn_code_num, strict)
 		if (strict < 0
 		    || GENERAL_REGS == ALL_REGS
 		    || GET_CODE (op) != REG
+		    || (reload_in_progress
+			&& REGNO (op) >= FIRST_PSEUDO_REGISTER)
 		    || reg_fits_class_p (op, GENERAL_REGS, offset, mode))
 		  win = 1;
 		break;
@@ -1752,7 +1754,10 @@ constrain_operands (insn_code_num, strict)
 	      case 'm':
 		if (GET_CODE (op) == MEM
 		    /* Before reload, accept what reload can turn into mem.  */
-		    || (strict < 0 && CONSTANT_P (op)))
+		    || (strict < 0 && CONSTANT_P (op))
+		    /* During reload, accept a pseudo  */
+		    || (reload_in_progress && GET_CODE (op) == REG
+			&& REGNO (op) >= FIRST_PSEUDO_REGISTER))
 		  win = 1;
 		break;
 
@@ -1845,7 +1850,10 @@ constrain_operands (insn_code_num, strict)
 		    || (strict == 0 && offsettable_nonstrict_memref_p (op))
 		    /* Before reload, accept what reload can handle.  */
 		    || (strict < 0
-			&& (CONSTANT_P (op) || GET_CODE (op) == MEM)))
+			&& (CONSTANT_P (op) || GET_CODE (op) == MEM))
+		    /* During reload, accept a pseudo  */
+		    || (reload_in_progress && GET_CODE (op) == REG
+			&& REGNO (op) >= FIRST_PSEUDO_REGISTER))
 		  win = 1;
 		break;
 
