@@ -101,11 +101,6 @@ struct arglist {
 
 #endif
 
-#define HOST_WIDE_INT_MASK(bits) \
-  ((bits) < HOST_BITS_PER_WIDE_INT \
-   ? ~ (~ (HOST_WIDE_INT) 0 << (bits)) \
-   : ~ (HOST_WIDE_INT) 0)
-
 #if __GNUC__ < 2 || (__GNUC__ == 2 && __GNUC_MINOR__ < 6)
 # define __attribute__(x)
 #endif
@@ -196,6 +191,18 @@ extern int traditional;
 
 #ifndef MAX_WCHAR_TYPE_SIZE
 #define MAX_WCHAR_TYPE_SIZE WCHAR_TYPE_SIZE
+#endif
+
+#if MAX_CHAR_TYPE_SIZE < HOST_BITS_PER_WIDE_INT
+#define MAX_CHAR_TYPE_MASK (~ (~ (HOST_WIDE_INT) 0 << MAX_CHAR_TYPE_SIZE))
+#else
+#define MAX_CHAR_TYPE_MASK (~ (HOST_WIDE_INT) 0)
+#endif
+
+#if MAX_WCHAR_TYPE_SIZE < HOST_BITS_PER_WIDE_INT
+#define MAX_WCHAR_TYPE_MASK (~ (~ (HOST_WIDE_INT) 0 << MAX_WCHAR_TYPE_SIZE))
+#else
+#define MAX_WCHAR_TYPE_MASK (~ (HOST_WIDE_INT) 0)
 #endif
 
 /* Suppose A1 + B1 = SUM1, using 2's complement arithmetic ignoring overflow.
@@ -632,21 +639,21 @@ yylex ()
       {
 	lexptr++;
 	wide_flag = 1;
-	mask = HOST_WIDE_INT_MASK (MAX_WCHAR_TYPE_SIZE);
+	mask = MAX_WCHAR_TYPE_MASK;
 	goto char_constant;
       }
     if (lexptr[1] == '"')
       {
 	lexptr++;
 	wide_flag = 1;
-	mask = HOST_WIDE_INT_MASK (MAX_WCHAR_TYPE_SIZE);
+	mask = MAX_WCHAR_TYPE_MASK;
 	goto string_constant;
       }
     break;
 
   case '\'':
     wide_flag = 0;
-    mask = HOST_WIDE_INT_MASK (MAX_CHAR_TYPE_SIZE);
+    mask = MAX_CHAR_TYPE_MASK;
   char_constant:
     lexptr++;
     if (keyword_parsing) {
@@ -801,7 +808,7 @@ yylex ()
     return c;
 
   case '"':
-    mask = HOST_WIDE_INT_MASK (MAX_CHAR_TYPE_SIZE);
+    mask = MAX_CHAR_TYPE_MASK;
   string_constant:
     if (keyword_parsing) {
       char *start_ptr = lexptr;
