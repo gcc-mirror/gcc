@@ -1,5 +1,9 @@
 2003-09-07  Andrew Pinski  <pinskia@physics.uc.edu>
 
+	* g++.dg/template/crash10.C: Only compile it.
+
+2003-09-07  Andrew Pinski  <pinskia@physics.uc.edu>
+
 	PR middle-end/11665
 	* gcc.c-torture/compile/20030907-1.c: New test.
 	* g++.dg/init/array11.C: New test.
