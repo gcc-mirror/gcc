@@ -57,10 +57,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 				   declarations for e.g. AIX 4.x.  */
 #endif
 
-#ifndef ASM_STABS_OP
-#define ASM_STABS_OP "\t.stabs\t"
-#endif
-
 /* The (assembler) name of the first globally-visible object output.  */
 const char *first_global_object_name;
 const char *weak_global_object_name;
@@ -1023,12 +1019,15 @@ assemble_asm (tree string)
 void
 default_stabs_asm_out_destructor (rtx symbol, int priority ATTRIBUTE_UNUSED)
 {
+#if defined DBX_DEBUGGING_INFO || defined XCOFF_DEBUGGING_INFO
   /* Tell GNU LD that this is part of the static destructor set.
      This will work for any system that uses stabs, most usefully
      aout systems.  */
-  fprintf (asm_out_file, "%s\"___DTOR_LIST__\",22,0,0,", ASM_STABS_OP);
-  assemble_name (asm_out_file, XSTR (symbol, 0));
-  fputc ('\n', asm_out_file);
+  dbxout_begin_simple_stabs ("___DTOR_LIST__", 22 /* N_SETT */);
+  dbxout_stab_value_label (XSTR (symbol, 0));
+#else
+  sorry ("global destructors not supported on this target");
+#endif
 }
 
 void
@@ -1080,12 +1079,15 @@ default_dtor_section_asm_out_destructor (rtx symbol,
 void
 default_stabs_asm_out_constructor (rtx symbol, int priority ATTRIBUTE_UNUSED)
 {
+#if defined DBX_DEBUGGING_INFO || defined XCOFF_DEBUGGING_INFO
   /* Tell GNU LD that this is part of the static destructor set.
      This will work for any system that uses stabs, most usefully
      aout systems.  */
-  fprintf (asm_out_file, "%s\"___CTOR_LIST__\",22,0,0,", ASM_STABS_OP);
-  assemble_name (asm_out_file, XSTR (symbol, 0));
-  fputc ('\n', asm_out_file);
+  dbxout_begin_simple_stabs ("___CTOR_LIST__", 22 /* N_SETT */);
+  dbxout_stab_value_label (XSTR (symbol, 0));
+#else
+  sorry ("global constructors not supported on this target");
+#endif
 }
 
 void

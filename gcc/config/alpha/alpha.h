@@ -1662,13 +1662,15 @@ extern long alpha_auto_offset;
 #define DEBUGGER_ARG_OFFSET(OFFSET, X) (OFFSET + alpha_arg_offset)
 
 /* mips-tfile doesn't understand .stabd directives.  */
-#define DBX_OUTPUT_SOURCE_LINE(STREAM, LINE, COUNTER)			\
-  fprintf (STREAM, "$LM%d:\n%s%d,0,%d,$LM%d\n", COUNTER, ASM_STABN_OP,	\
-           N_SLINE, LINE, COUNTER)
+#define DBX_OUTPUT_SOURCE_LINE(STREAM, LINE, COUNTER) do {	\
+  dbxout_begin_stabn_sline (LINE);				\
+  dbxout_stab_value_internal_label ("LM", &COUNTER);		\
+} while (0)
 
 /* We want to use MIPS-style .loc directives for SDB line numbers.  */
+extern int num_source_filenames;
 #define SDB_OUTPUT_SOURCE_LINE(STREAM, LINE)	\
-  fprintf (STREAM, "\t.loc\t%d %d", num_source_filenames, LINE)
+  fprintf (STREAM, "\t.loc\t%d %d\n", num_source_filenames, LINE)
 
 #define ASM_OUTPUT_SOURCE_FILENAME(STREAM, NAME)			\
   alpha_output_filename (STREAM, NAME)

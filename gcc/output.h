@@ -522,4 +522,24 @@ extern bool default_valid_pointer_mode (enum machine_mode);
 
 extern int default_address_cost (rtx);
 
+/* dbxout helper functions */
+#if defined DBX_DEBUGGING_INFO || defined XCOFF_DEBUGGING_INFO
+
+extern void dbxout_int (int);
+extern void dbxout_stabd (int, int);
+extern void dbxout_begin_stabn (int);
+extern void dbxout_begin_stabn_sline (int);
+extern void dbxout_begin_empty_stabs (int);
+extern void dbxout_begin_simple_stabs (const char *, int);
+extern void dbxout_begin_simple_stabs_desc (const char *, int, int);
+
+extern void dbxout_stab_value_zero (void);
+extern void dbxout_stab_value_label (const char *);
+extern void dbxout_stab_value_label_diff (const char *, const char *);
+extern void dbxout_stab_value_internal_label (const char *, int *);
+extern void dbxout_stab_value_internal_label_diff (const char *, int *,
+						   const char *);
+
+#endif
+
 #endif /* ! GCC_OUTPUT_H */

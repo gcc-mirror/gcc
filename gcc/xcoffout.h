@@ -21,8 +21,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.  */
 
 
-#define ASM_STABS_OP "\t.stabx\t"
-
 /* Tags and typedefs are C_DECL in XCOFF, not C_LSYM.  */
 
 #define DBX_TYPE_DECL_STABS_CODE N_DECL
@@ -70,32 +68,35 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 /* Define our own finish symbol function, since xcoff stabs have their
    own different format.  */
 
-#define DBX_FINISH_SYMBOL(ASMFILE,SYM)				\
-{								\
-  if (current_sym_addr && current_sym_code == N_FUN)		\
-    fprintf ((ASMFILE), "\",.");				\
-  else								\
-    fprintf ((ASMFILE), "\",");					\
-  /* If we are writing a function name, we must ensure that	\
-     there is no storage-class suffix on the name.  */		\
-  if (current_sym_addr && current_sym_code == N_FUN		\
-      && GET_CODE (current_sym_addr) == SYMBOL_REF)		\
+#define DBX_FINISH_STABS(CODE, LINE, ADDR, LABEL, NUMBER) do {	\
+  if (ADDR)							\
     {								\
-      const char *_p = XSTR (current_sym_addr, 0);		\
-      if (*_p == '*')						\
-	fprintf ((ASMFILE), "%s", _p+1);			\
+      /* If we are writing a function name, we must ensure that	\
+	 there is no storage-class suffix on the name.  */	\
+      if (CODE == N_FUN && GET_CODE (ADDR) == SYMBOL_REF)	\
+	{							\
+	  const char *_p = XSTR (ADDR, 0);			\
+	  if (*_p == '*')					\
+	    fputs (_p+1, asm_out_file);				\
+	  else							\
+	    for (; *_p != '[' && *_p; _p++)			\
+	      putc (*_p, asm_out_file);				\
+	}							\
       else							\
-	for (; *_p != '[' && *_p; _p++)				\
-	  fprintf ((ASMFILE), "%c", *_p);			\
+	{							\
+	  if (CODE == N_FUN)					\
+	    putc ('.', asm_out_file);				\
+	  output_addr_const (asm_out_file, ADDR);		\
+	}							\
     }								\
-  else if (current_sym_addr)					\
-    output_addr_const ((ASMFILE), current_sym_addr);		\
-  else if (current_sym_code == N_GSYM)				\
-    assemble_name ((ASMFILE), XSTR (XEXP (DECL_RTL (SYM), 0), 0)); \
+  else if (LABEL)						\
+    assemble_name (asm_out_file, LABEL);			\
   else								\
-    fprintf ((ASMFILE), "%d", current_sym_value);		\
-  fprintf ((ASMFILE), ",%d,0\n", stab_to_sclass (current_sym_code)); \
-}
+    dbxout_int (NUMBER);					\
+  putc (',', asm_out_file);					\
+  dbxout_int (stab_to_sclass (CODE));				\
+  fputs (",0\n", asm_out_file);					\
+} while (0)
 
 /* These are IBM XCOFF extensions we need to reference in dbxout.c
    and xcoffout.c.  */
@@ -128,7 +129,7 @@ extern char *xcoff_read_only_section_name;
 extern const char *xcoff_lastfile;
 
 /* Don't write out path name for main source file.  */
-#define DBX_OUTPUT_MAIN_SOURCE_DIRECTORY(FILE,FILENAME)
+#define NO_DBX_MAIN_SOURCE_DIRECTORY 1
 
 /* Write out main source file name using ".file" rather than ".stabs".
    We don't actually do this here, because the assembler gets confused if there
@@ -140,7 +141,7 @@ extern const char *xcoff_lastfile;
 
 /* If we are still in an include file, its end must be marked.  */
 #define DBX_OUTPUT_MAIN_SOURCE_FILE_END(FILE, FILENAME)	\
-{							\
+do {							\
   if (xcoff_current_include_file)			\
     {							\
       fputs ("\t.ei\t", (FILE));			\
@@ -148,16 +149,10 @@ extern const char *xcoff_lastfile;
       putc ('\n', (FILE));				\
       xcoff_current_include_file = NULL;		\
     }							\
-}
+} while (0)
 
-/* .stabx has the type in a different place.  */
-#if 0  /* Do not emit any marker for XCOFF until assembler allows XFT_CV.  */
-#define DBX_OUTPUT_GCC_MARKER(FILE) \
-  fprintf ((FILE), "%s\"gcc2_compiled.\",0,%d,0\n", ASM_STABS_OP, \
-	   stab_to_sclass (N_GSYM))
-#else
-#define DBX_OUTPUT_GCC_MARKER(FILE)
-#endif
+/* Do not emit any marker for XCOFF until assembler allows XFT_CV.  */
+#define NO_DBX_GCC_MARKER
 
 /* Do not break .stabs pseudos into continuations.  */
 #define DBX_CONTIN_LENGTH 0

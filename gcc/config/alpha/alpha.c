@@ -6548,7 +6548,7 @@ alpha_expand_prologue (void)
 }
 
 /* Count the number of .file directives, so that .loc is up to date.  */
-static int num_source_filenames = 0;
+int num_source_filenames = 0;
 
 /* Output the textual info surrounding the prologue.  */
 
