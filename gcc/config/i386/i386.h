@@ -127,10 +127,12 @@ extern int target_flags;
 
 /* Hack macros for tuning code generation */
 #define TARGET_MOVE	((target_flags & MASK_NO_MOVE) == 0)	/* Don't generate memory->memory */
-
-/* Specific hardware switches */
-#define TARGET_486	(target_flags & MASK_486)	/* 80486DX, 80486SX, 80486DX[24] */
-#define TARGET_386	(!TARGET_486) 			/* 80386 */
+#define TARGET_LEAVE (ix86_cpu == PROCESSOR_I386)
+#define TARGET_386_ALIGNMENT (ix86_cpu == PROCESSOR_I386)
+#define TARGET_PUSH_MEMORY (ix86_cpu == PROCESSOR_I386)
+#define TARGET_ZERO_EXTEND_WITH_AND (ix86_cpu != PROCESSOR_I386)
+#define TARGET_DOUBLE_WITH_ADD (ix86_cpu != PROCESSOR_I386)
+#define TARGET_BIT_TEST (ix86_cpu == PROCESSOR_I386)
 
 #define TARGET_SWITCHES							\
 { { "80387",			 MASK_80387 },				\
@@ -138,10 +140,12 @@ extern int target_flags;
   { "hard-float",		 MASK_80387 },				\
   { "soft-float",		-MASK_80387 },				\
   { "no-soft-float",		 MASK_80387 },				\
-  { "386",			-MASK_486 },				\
-  { "no-386",			 MASK_486 },				\
-  { "486",			 MASK_486 },				\
-  { "no-486",			-MASK_486 },				\
+  { "386",			 0 },					\
+  { "no-386",			 0 },					\
+  { "486",			 0 },					\
+  { "no-486",			 0 },					\
+  { "pentium",			 0 },					\
+  { "pentiumpro",		 0 },					\
   { "rtd",			 MASK_RTD },				\
   { "no-rtd",			-MASK_RTD },				\
   { "align-double",		 MASK_ALIGN_DOUBLE },			\
@@ -163,7 +167,45 @@ extern int target_flags;
   { "debug-arg",		 MASK_DEBUG_ARG },			\
   { "no-debug-arg",		-MASK_DEBUG_ARG },			\
   SUBTARGET_SWITCHES							\
-  { "", TARGET_DEFAULT | TARGET_CPU_DEFAULT}}
+  { "", TARGET_DEFAULT}}
+
+/* Processor type.  */
+enum processor_type
+ {PROCESSOR_I386,			/* 80386 */
+  PROCESSOR_I486,			/* 80486DX, 80486SX, 80486DX[24] */
+  PROCESSOR_PENTIUM,
+  PROCESSOR_PENTIUMPRO};
+
+#define PROCESSOR_I386_STRING "i386"
+#define PROCESSOR_I486_STRING "i486"
+#define PROCESSOR_I586_STRING "i586"
+#define PROCESSOR_PENTIUM_STRING "pentium"
+#define PROCESSOR_I686_STRING "i686"
+#define PROCESSOR_PENTIUMPRO_STRING "pentiumpro"
+
+extern enum processor_type ix86_cpu;
+
+/* Define generic processor types based upon current deployment.  */
+#define PROCESSOR_COMMON  PROCESSOR_I386
+#define PROCESSOR_COMMON_STRING PROCESSOR_I386_STRING
+
+/* Define the default processor.  This is overridden by other tm.h files.  */
+#define PROCESSOR_DEFAULT \
+  ((enum processor_type) TARGET_CPU_DEFAULT == PROCESSOR_I486) \
+			 		     ? PROCESSOR_I486  \
+  : ((enum processor_type) TARGET_CPU_DEFAULT == PROCESSOR_PENTIUM) \
+					       ? PROCESSOR_PENTIUM  \
+  : ((enum processor_type) TARGET_CPU_DEFAULT == PROCESSOR_PENTIUMPRO) \
+					       ? PROCESSOR_PENTIUMPRO  \
+  : PROCESSOR_I386
+#define PROCESSOR_DEFAULT_STRING \
+  ((enum processor_type) TARGET_CPU_DEFAULT == PROCESSOR_I486) \
+			 		     ? PROCESSOR_I486_STRING  \
+  : ((enum processor_type) TARGET_CPU_DEFAULT == PROCESSOR_PENTIUM) \
+					       ? PROCESSOR_PENTIUM_STRING  \
+  : ((enum processor_type) TARGET_CPU_DEFAULT == PROCESSOR_PENTIUMPRO) \
+					       ? PROCESSOR_PENTIUMPRO_STRING  \
+  : PROCESSOR_I386_STRING
 
 /* This macro is similar to `TARGET_SWITCHES' but defines names of
    command options that have values.  Its definition is an
@@ -175,7 +217,9 @@ extern int target_flags;
    option if the fixed part matches.  The actual option name is made
    by appending `-m' to the specified name.  */
 #define TARGET_OPTIONS							\
-{ { "reg-alloc=",	&i386_reg_alloc_order },			\
+{ { "cpu=",		&ix86_cpu_string},				\
+  { "arch=",		&ix86_isa_string},				\
+  { "reg-alloc=",	&i386_reg_alloc_order },			\
   { "regparm=",		&i386_regparm_string },				\
   { "align-loops=",	&i386_align_loops_string },			\
   { "align-jumps=",	&i386_align_jumps_string },			\
@@ -198,6 +242,20 @@ extern int target_flags;
 #define SUBTARGET_SWITCHES
 #define SUBTARGET_OPTIONS
 
+/* Specs for the compiler proper */
+
+#ifndef CC1_SPEC
+#define CC1_SPEC "\
+%{!mcpu*: \
+%{m386:-mcpu=i386} \
+%{mno-486:-mcpu=i386} \
+%{mno-pentium:-mcpu=i386} \
+%{mno-pentiumpro:-mcpu=i386} \
+%{m486:-mcpu=i486} \
+%{mno-386:-mcpu=i486} \
+%{mpentium:-mcpu=pentium} \
+%{mpentiumpro:-mcpu=pentiumpro}}"
+#endif
 
 /* target machine storage layout */
 
@@ -431,9 +489,7 @@ extern int target_flags;
    registers is expensive.  */
 
 #define REGISTER_MOVE_COST(CLASS1, CLASS2)			\
-  (((FLOAT_CLASS_P (CLASS1) && ! FLOAT_CLASS_P (CLASS2))		\
-    || (! FLOAT_CLASS_P (CLASS1) && FLOAT_CLASS_P (CLASS2))) ? 10	\
-   : 2)
+  ((FLOAT_CLASS_P (CLASS1) == FLOAT_CLASS_P (CLASS2)) ? 2 : 10)
 
 /* Specify the registers used for certain standard purposes.
    The values of these macros are register numbers.  */
@@ -1384,7 +1440,7 @@ while (0)
 /* Define if shifts truncate the shift count
    which implies one can omit a sign-extension or zero-extension
    of a shift count.  */
-/* One i386, shifts do truncate the count.  But bit opcodes don't. */
+/* On i386, shifts do truncate the count.  But bit opcodes don't. */
 
 /* #define SHIFT_COUNT_TRUNCATED */
 
@@ -1904,6 +1960,8 @@ extern void clear_386_stack_locals ();
 extern struct rtx_def *assign_386_stack_local ();
 
 /* Variables in i386.c */
+extern char *ix86_cpu_string;			/* for -mcpu=<xxx> */
+extern char *ix86_isa_string;			/* for -mcpu=<xxx> */
 extern char *i386_reg_alloc_order;		/* register allocation order */
 extern char *i386_regparm_string;		/* # registers to use to pass args */
 extern char *i386_align_loops_string;		/* power of two alignment for loops */
