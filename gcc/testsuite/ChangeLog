@@ -1,3 +1,8 @@
+2004-07-22  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.dg/cris-peep2-xsrand.c, gcc.dg/cris-peep2-andu1.c,
+	gcc.dg/cris-peep2-andu2.c: New tests.
+
 2004-07-22  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	PR c/15052
