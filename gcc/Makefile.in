@@ -3548,14 +3548,6 @@ stagefeedback_copy: stagefeedback_build
 	$(STAMP) stagefeedback_copy
 	echo stagefeedback2_build > stage_last
 
-stageprofile_build: stage1_copy
-	$(MAKE) CC="$(STAGE_CC_WRAPPER) stage1/xgcc$(exeext) -Bstage1/ -B$(build_tooldir)/bin/" BUILD_CC="$(STAGE_CC_WRAPPER) stage1/xgcc$(exeext) -Bstage1/ -B$(build_tooldir)/bin/" \
-		 STAGE_PREFIX=stage1/ \
-		 $(POSTSTAGE1_FLAGS_TO_PASS) \
-		 $(STAGEPROFILE_FLAGS_TO_PASS)
-	$(STAMP) stageprofile_build
-	echo stageprofile_build > stage_last
-
 # For bootstrap4:
 stage3_copy: stage3_build
 	$(MAKE) stage3

@@ -15752,7 +15752,8 @@ ix86_reorg ()
 	delete_insn (ret);
       }
   }
-  k8_avoid_jump_misspredicts ();
+  if (TARGET_K8)
+    k8_avoid_jump_misspredicts ();
 }
 
 /* Return nonzero when QImode register that must be represented via REX prefix
