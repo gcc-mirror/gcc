@@ -2070,7 +2070,7 @@ handle_directive (ip, op)
 		while (cp != buf && is_space(cp[-1])) cp--;
 		cp++;
 		SKIP_WHITE_SPACE (xp);
-	      } else if (is_space (*xp)) {
+	      } else if (is_nvspace (*xp)) {
 		*cp++ = *xp++;
 		SKIP_WHITE_SPACE (xp);
 	      }

@@ -1,3 +1,7 @@
+2002-01-21  Zack Weinberg  <zack@codesourcery.com>
+
+	* g77.f-torture/compile/cpp2.F: New test.
+
 2001-12-20  Release Manager
 
 	* GCC 3.0.3 Released.
