@@ -23,8 +23,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    This exception does not however invalidate any other reasons why
    the executable file might be covered by the GNU General Public License.  */
 
-#include <objc/Protocol.h>
-#include <objc/objc-api.h>
+#include "objc/Protocol.h"
+#include "objc/objc-api.h"
 
 /* Method description list */
 struct objc_method_description_list {
