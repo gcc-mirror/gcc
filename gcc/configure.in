@@ -413,8 +413,8 @@ for machine in $build $host $target; do
 		tm_file=arm/netbsd.h
 		xm_file=arm/xm-netbsd.h
 		tmake_file=arm/t-netbsd
-		# On NetBSD, the headers are already okay.
-		fixincludes=Makefile.in
+		# On NetBSD, the headers are already okay, except for math.h.
+		fixincludes=fixinc.math
 		use_collect2=yes
 		;;
 	arm-*-linux-gnuaout*)		# ARM Linux
@@ -789,8 +789,8 @@ for machine in $build $host $target; do
 	i[[3456]]86-*-freebsdelf*)
 		tm_file="i386/i386.h i386/att.h linux.h i386/freebsd-elf.h i386/perform.h"
 		xm_file=i386/xm-freebsd.h
-		# On FreeBSD, the headers are already ok.
-		fixincludes=Makefile.in
+		# On FreeBSD, the headers are already ok, except for math.h.
+		fixincludes=fixinc.math
 		tmake_file=i386/t-freebsd
 		gas=yes
 		gnu_ld=yes
@@ -799,15 +799,15 @@ for machine in $build $host $target; do
 	i[[3456]]86-*-freebsd*)
 		tm_file=i386/freebsd.h
 		xm_file=i386/xm-freebsd.h
-		# On FreeBSD, the headers are already ok.
-		fixincludes=Makefile.in
+		# On FreeBSD, the headers are already ok, except for math.h.
+		fixincludes=fixinc.math
 		tmake_file=i386/t-freebsd
 		;;
 	i[[3456]]86-*-netbsd*)
 		tm_file=i386/netbsd.h
 		xm_file=i386/xm-netbsd.h
-		# On NetBSD, the headers are already okay.
-		fixincludes=Makefile.in
+		# On NetBSD, the headers are already okay, except for math.h.
+		fixincludes=fixinc.math
 		tmake_file=t-netbsd
 		;;
 	i[[3456]]86-*-coff*)
@@ -1464,8 +1464,8 @@ for machine in $build $host $target; do
 	m68k-*-netbsd*)
 		tm_file=m68k/netbsd.h
 		xm_file=m68k/xm-netbsd.h
-		# On NetBSD, the headers are already okay.
-		fixincludes=Makefile.in
+		# On NetBSD, the headers are already okay, except for math.h.
+		fixincludes=fixinc.math
 		tmake_file=t-netbsd
 		;;
 	m68k-*-sysv3*)			# Motorola m68k's running system V.3
@@ -1763,8 +1763,8 @@ for machine in $build $host $target; do
 	mips-dec-netbsd*)                  # Decstation running NetBSD
 		tm_file=mips/netbsd.h
 		xm_file=mips/xm-netbsd.h
-		# On NetBSD, the headers are already okay.
-		fixincludes=Makefile.in
+		# On NetBSD, the headers are already okay, except for math.h.
+		fixincludes=fixinc.math
 		tmake_file=t-netbsd
 		;;
 	mips-sony-bsd* | mips-sony-newsos*)	# Sony NEWS 3600 or risc/news.
@@ -2083,8 +2083,8 @@ for machine in $build $host $target; do
 	ns32k-pc532-netbsd*)
 		tm_file=ns32k/netbsd.h
 		xm_file=ns32k/xm-netbsd.h
-		# On NetBSD, the headers are already okay.
-		fixincludes=Makefile.in
+		# On NetBSD, the headers are already okay, except for math.h.
+		fixincludes=fixinc.math
 		tmake_file=t-netbsd
 		;;
         pdp11-*-bsd)
@@ -2313,8 +2313,8 @@ for machine in $build $host $target; do
 	sparc-*-netbsd*)
 		tm_file=sparc/netbsd.h
 		xm_file=sparc/xm-netbsd.h
-		# On NetBSD, the headers are already okay.
-		fixincludes=Makefile.in
+		# On NetBSD, the headers are already okay, except for math.h.
+		fixincludes=fixinc.math
 		tmake_file=t-netbsd
 		;;
 	sparc-*-bsd*)
@@ -2455,8 +2455,8 @@ for machine in $build $host $target; do
 	vax-*-netbsd*)
 		tm_file="${tm_file} netbsd.h vax/netbsd.h"
 		xm_file="${xm_file} xm-netbsd.h"
-		# On NetBSD, the headers are already okay.
-		fixincludes=Makefile.in
+		# On NetBSD, the headers are already okay, except for math.h.
+		fixincludes=fixinc.math
 		tmake_file=t-netbsd
 		float_format=vax
 		;;
