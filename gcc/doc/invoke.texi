@@ -617,6 +617,15 @@ in the following sections.
 -m32-bit -m16-bit -m8-bit -mno-prologue-epilogue -mno-gotplt @gol
 -melf -maout -melinux -mlinux -sim -sim2}
 
+@emph{PDP-11 Options}
+@gccoptlist{
+-mfpu  -msoft-float  -mac0  -mno-ac0  -m40  -m45  -m10 @gol
+-mbcopy  -mbcopy-builtin  -mint32  -mno-int16 @gol
+-mint16  -mno-int32  -mfloat32  -mno-float64 @gol
+-mfloat64  -mno-float32  -mabshi  -mno-abshi @gol
+-mbranch-expensive  -mbranch-cheap @gol
+-msplit  -mno-split  -munix-asm  -mdec-asm}
+
 @item Code Generation Options
 @xref{Code Gen Options,,Options for Code Generation Conventions}.
 @gccoptlist{
@@ -5091,6 +5100,7 @@ that macro, which enables you to change the defaults.
 * S/390 and zSeries Options::
 * CRIS Options::
 * MMIX Options::
+* PDP-11 Options::
 @end menu
 
 @node M680x0 Options
@@ -9759,6 +9769,111 @@ Work around (do not work around) an inconsistency in the circular
 register stack mechanism in the @command{mmix} simulator, which
 causes entries in the register stack to not be flushed to memory if
 the instruction causing the fill-up is @code{PUSHJ} or @code{PUSHGO}.
+@end table
+
+@node PDP-11 Options
+@subsection PDP-11 Options
+@cindex PDP-11 Options
+
+These options are defined for the PDP-11:
+
+@table @gcctabopt
+@item -mfpu
+@opindex mfpu
+Use hardware FPP floating point.  This is the default.  (FIS floating
+point on the PDP-11/40 is not supported.)
+
+@item -msoft-float
+@opindex msoft-float
+Do not use hardware floating point.
+
+@item -mac0
+@opindex mac0
+Return floating-point results in ac0 (fr0 in Unix assembler syntax).
+
+@item -mno-ac0
+@opindex mno-ac0
+Return floating-point results in memory.  This is the default.
+
+@item -m40
+@opindex m40
+Generate code for a PDP-11/40.
+
+@item -m45
+@opindex m45
+Generate code for a PDP-11/45.  This is the default.
+
+@item -m10
+@opindex m10
+Generate code for a PDP-11/10.
+
+@item -mbcopy-builtin
+@opindex bcopy-builtin
+Use inline @code{movstrhi} patterns for copying memory.  This is the
+default.
+
+@item -mbcopy
+@opindex mbcopy
+Do not use inline @code{movstrhi} patterns for copying memory.
+
+@item -mint16
+@itemx -mno-int32
+@opindex mint16
+@opindex mno-int32
+Use 16-bit @code{int}.  This is the default.
+
+@item -mint32
+@itemx -mno-int16
+@opindex mint32
+@opindex mno-int16
+Use 32-bit @code{int}.
+
+@item -mfloat64
+@itemx -mno-float32
+@opindex mfloat64
+@opindex mno-float32
+Use 64-bit @code{float}.  This is the default.
+
+@item -mfloat32
+@item -mno-float64
+@opindex mfloat32
+@opindex mno-float64
+Use 32-bit @code{float}.
+
+@item -mabshi
+@opindex mabshi
+Use @code{abshi2} pattern.  This is the default.
+
+@item -mno-abshi
+@opindex mno-abshi
+Do not use @code{abshi2} pattern.
+
+@item -mbranch-expensive
+@opindex mbranch-expensive
+Pretend that branches are expensive.  This is for experimenting with
+code generation only.
+
+@item -mbranch-cheap
+@opindex mbranch-cheap
+Do not pretend that branches are expensive.  This is the default.
+
+@item -msplit
+@opindex msplit
+Generate code for a system with split I&D.
+
+@item -mno-split
+@opindex mno-split
+Generate code for a system without split I&D.  This is the default.
+
+@item -munix-asm
+@opindex munix-asm
+Use Unix assembler syntax.  This is the default when configured for
+@samp{pdp11-*-bsd}.
+
+@item -mdec-asm
+@opindex mdec-asm
+Use DEC assembler syntax.  This is the default when configured for any
+PDP-11 target other than @samp{pdp11-*-bsd}.
 @end table
 
 @node Code Gen Options
