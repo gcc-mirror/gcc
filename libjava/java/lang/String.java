@@ -1,5 +1,5 @@
 /* String.java -- immutable character sequences; the object of string literals
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004
    Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -1254,5 +1254,4 @@ public final class String implements Serializable, Comparable, CharSequence
   private native void init(byte[] chars, int offset, int count, String enc)
     throws UnsupportedEncodingException;
   private native void init(gnu.gcj.runtime.StringBuffer buffer);
-  private static native void rehash();
 }
