@@ -21,8 +21,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 /* Random number that should be large enough for all purposes.  */
 #define MAX_RECOG_ALTERNATIVES 30
-#define recog_memoized(I) (INSN_CODE (I) >= 0 \
-			   ? INSN_CODE (I) : recog_memoized_1 (I))
 
 /* Types of operands.  */
 enum op_type {
@@ -73,7 +71,6 @@ struct operand_alternative
 
 extern void init_recog (void);
 extern void init_recog_no_volatile (void);
-extern int recog_memoized_1 (rtx);
 extern int check_asm_operands (rtx);
 extern int asm_operand_ok (rtx, const char *);
 extern int validate_change (rtx, rtx *, rtx, int);
@@ -102,6 +99,7 @@ extern int offsettable_address_p (int, enum machine_mode, rtx);
 extern int mode_dependent_address_p (rtx);
 
 extern int recog (rtx, rtx, int *);
+static inline int recog_memoized (rtx insn);
 extern void add_clobbers (rtx, int);
 extern int added_clobbers_hard_reg_p (int);
 extern void insn_extract (rtx);
@@ -121,6 +119,23 @@ extern rtx peephole2_insns (rtx, rtx, int *);
 
 extern int store_data_bypass_p (rtx, rtx);
 extern int if_test_bypass_p (rtx, rtx);
+
+/* Try recognizing the instruction INSN,
+   and return the code number that results.
+   Remember the code so that repeated calls do not
+   need to spend the time for actual rerecognition.
+
+   This function is the normal interface to instruction recognition.
+   The automatically-generated function `recog' is normally called
+   through this one.  (The only exception is in combine.c.)  */
+
+static inline int
+recog_memoized (rtx insn)
+{
+  if (INSN_CODE (insn) < 0)
+    INSN_CODE (insn) = recog (PATTERN (insn), insn, 0);
+  return INSN_CODE (insn);
+}
 
 /* Nonzero means volatile operands are recognized.  */
 extern int volatile_ok;

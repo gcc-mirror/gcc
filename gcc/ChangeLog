@@ -1,3 +1,9 @@
+2004-11-24  Matt Austern  <austern@apple.com>
+
+	* recog.c (recog_memoized_1): Remove.
+	* recog.h (recog_memoized_1): Remove declaration.
+	(recog_memoized): Change from macro to inline function.
+	
 2004-11-24  Devang Patel  <dpatel@apple.com>
 
 	PR/18555
