@@ -6,7 +6,7 @@
 extern int printf (const char *, ...);
 
 void
-foo (char *s, int i)
+foo (char *s, __SIZE_TYPE__ i)
 {
   printf ((const char *)i, i); /* { dg-warning "argument types" "non-literal" } */
   printf (s, i); /* { dg-warning "argument types" "non-literal" } */
