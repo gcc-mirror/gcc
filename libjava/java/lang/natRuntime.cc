@@ -550,6 +550,11 @@ java::lang::Runtime::insertSystemProperties (java::util::Properties *newprops)
   // The java extensions directory.
   SET ("java.ext.dirs", JAVA_EXT_DIRS);
 
+  // The endorsed directories that libgcj knows about by default.
+  // This is a way to get other jars into the boot class loader
+  // without overriding java.endorsed.dirs.
+  SET ("gnu.gcj.runtime.endorsed.dirs", GCJ_ENDORSED_DIRS);
+
   // The path to libgcj's boot classes
   SET ("sun.boot.class.path", BOOT_CLASS_PATH);
 

@@ -14,7 +14,7 @@
 
 @SET_MAKE@
 
-SOURCES = $(libw3c_convenience_la_SOURCES)
+SOURCES = $(libw3c_gcj_la_SOURCES)
 
 srcdir = @srcdir@
 top_srcdir = @top_srcdir@
@@ -60,131 +60,9 @@ CONFIG_HEADER = $(top_builddir)/include/config.h \
 	$(top_builddir)/gcj/libgcj-config.h
 CONFIG_CLEAN_FILES =
 LTLIBRARIES = $(noinst_LTLIBRARIES)
-libw3c_convenience_la_LIBADD =
-am__dirstamp = $(am__leading_dot)dirstamp
-am_libw3c_convenience_la_OBJECTS =  \
-	org/w3c/dom/xpath/XPathNamespace.lo \
-	org/w3c/dom/xpath/XPathResult.lo \
-	org/w3c/dom/xpath/XPathException.lo \
-	org/w3c/dom/xpath/XPathExpression.lo \
-	org/w3c/dom/xpath/XPathNSResolver.lo \
-	org/w3c/dom/xpath/XPathEvaluator.lo \
-	org/w3c/dom/DOMException.lo org/w3c/dom/Comment.lo \
-	org/w3c/dom/stylesheets/DocumentStyle.lo \
-	org/w3c/dom/stylesheets/MediaList.lo \
-	org/w3c/dom/stylesheets/LinkStyle.lo \
-	org/w3c/dom/stylesheets/StyleSheet.lo \
-	org/w3c/dom/stylesheets/StyleSheetList.lo org/w3c/dom/Attr.lo \
-	org/w3c/dom/Notation.lo org/w3c/dom/TypeInfo.lo \
-	org/w3c/dom/html2/HTMLIsIndexElement.lo \
-	org/w3c/dom/html2/HTMLTableColElement.lo \
-	org/w3c/dom/html2/HTMLLinkElement.lo \
-	org/w3c/dom/html2/HTMLTitleElement.lo \
-	org/w3c/dom/html2/HTMLBRElement.lo \
-	org/w3c/dom/html2/HTMLHeadElement.lo \
-	org/w3c/dom/html2/HTMLHtmlElement.lo \
-	org/w3c/dom/html2/HTMLScriptElement.lo \
-	org/w3c/dom/html2/HTMLTableRowElement.lo \
-	org/w3c/dom/html2/HTMLOptionsCollection.lo \
-	org/w3c/dom/html2/HTMLTableCellElement.lo \
-	org/w3c/dom/html2/HTMLDListElement.lo \
-	org/w3c/dom/html2/HTMLFieldSetElement.lo \
-	org/w3c/dom/html2/HTMLImageElement.lo \
-	org/w3c/dom/html2/HTMLHRElement.lo \
-	org/w3c/dom/html2/HTMLModElement.lo \
-	org/w3c/dom/html2/HTMLHeadingElement.lo \
-	org/w3c/dom/html2/HTMLTableElement.lo \
-	org/w3c/dom/html2/HTMLAreaElement.lo \
-	org/w3c/dom/html2/HTMLOptGroupElement.lo \
-	org/w3c/dom/html2/HTMLIFrameElement.lo \
-	org/w3c/dom/html2/HTMLDirectoryElement.lo \
-	org/w3c/dom/html2/HTMLParamElement.lo \
-	org/w3c/dom/html2/HTMLLegendElement.lo \
-	org/w3c/dom/html2/HTMLFrameElement.lo \
-	org/w3c/dom/html2/HTMLFormElement.lo \
-	org/w3c/dom/html2/HTMLStyleElement.lo \
-	org/w3c/dom/html2/HTMLFrameSetElement.lo \
-	org/w3c/dom/html2/HTMLCollection.lo \
-	org/w3c/dom/html2/HTMLAnchorElement.lo \
-	org/w3c/dom/html2/HTMLLabelElement.lo \
-	org/w3c/dom/html2/HTMLBodyElement.lo \
-	org/w3c/dom/html2/HTMLOptionElement.lo \
-	org/w3c/dom/html2/HTMLTableSectionElement.lo \
-	org/w3c/dom/html2/HTMLAppletElement.lo \
-	org/w3c/dom/html2/HTMLSelectElement.lo \
-	org/w3c/dom/html2/HTMLMetaElement.lo \
-	org/w3c/dom/html2/HTMLMenuElement.lo \
-	org/w3c/dom/html2/HTMLDivElement.lo \
-	org/w3c/dom/html2/HTMLLIElement.lo \
-	org/w3c/dom/html2/HTMLFontElement.lo \
-	org/w3c/dom/html2/HTMLOListElement.lo \
-	org/w3c/dom/html2/HTMLBaseFontElement.lo \
-	org/w3c/dom/html2/HTMLElement.lo \
-	org/w3c/dom/html2/HTMLTableCaptionElement.lo \
-	org/w3c/dom/html2/HTMLTextAreaElement.lo \
-	org/w3c/dom/html2/HTMLPreElement.lo \
-	org/w3c/dom/html2/HTMLObjectElement.lo \
-	org/w3c/dom/html2/HTMLBaseElement.lo \
-	org/w3c/dom/html2/HTMLUListElement.lo \
-	org/w3c/dom/html2/HTMLMapElement.lo \
-	org/w3c/dom/html2/HTMLParagraphElement.lo \
-	org/w3c/dom/html2/HTMLButtonElement.lo \
-	org/w3c/dom/html2/HTMLQuoteElement.lo \
-	org/w3c/dom/html2/HTMLInputElement.lo \
-	org/w3c/dom/html2/HTMLDocument.lo org/w3c/dom/ls/LSParser.lo \
-	org/w3c/dom/ls/LSSerializerFilter.lo \
-	org/w3c/dom/ls/LSLoadEvent.lo \
-	org/w3c/dom/ls/DOMImplementationLS.lo \
-	org/w3c/dom/ls/LSException.lo org/w3c/dom/ls/LSSerializer.lo \
-	org/w3c/dom/ls/LSResourceResolver.lo \
-	org/w3c/dom/ls/LSOutput.lo org/w3c/dom/ls/LSInput.lo \
-	org/w3c/dom/ls/LSProgressEvent.lo \
-	org/w3c/dom/ls/LSParserFilter.lo org/w3c/dom/DOMLocator.lo \
-	org/w3c/dom/DOMStringList.lo org/w3c/dom/DocumentFragment.lo \
-	org/w3c/dom/events/MutationEvent.lo \
-	org/w3c/dom/events/UIEvent.lo \
-	org/w3c/dom/events/EventListener.lo \
-	org/w3c/dom/events/Event.lo org/w3c/dom/events/MouseEvent.lo \
-	org/w3c/dom/events/EventTarget.lo \
-	org/w3c/dom/events/DocumentEvent.lo \
-	org/w3c/dom/events/EventException.lo \
-	org/w3c/dom/EntityReference.lo org/w3c/dom/DOMErrorHandler.lo \
-	org/w3c/dom/views/AbstractView.lo \
-	org/w3c/dom/views/DocumentView.lo org/w3c/dom/DOMError.lo \
-	org/w3c/dom/bootstrap/DOMImplementationRegistry.lo \
-	org/w3c/dom/traversal/TreeWalker.lo \
-	org/w3c/dom/traversal/NodeFilter.lo \
-	org/w3c/dom/traversal/DocumentTraversal.lo \
-	org/w3c/dom/traversal/NodeIterator.lo \
-	org/w3c/dom/CharacterData.lo org/w3c/dom/DOMConfiguration.lo \
-	org/w3c/dom/css/CSSRule.lo org/w3c/dom/css/Rect.lo \
-	org/w3c/dom/css/CSSStyleSheet.lo \
-	org/w3c/dom/css/CSSFontFaceRule.lo \
-	org/w3c/dom/css/CSSPrimitiveValue.lo \
-	org/w3c/dom/css/CSSRuleList.lo org/w3c/dom/css/ViewCSS.lo \
-	org/w3c/dom/css/CSSStyleRule.lo \
-	org/w3c/dom/css/CSSUnknownRule.lo org/w3c/dom/css/RGBColor.lo \
-	org/w3c/dom/css/ElementCSSInlineStyle.lo \
-	org/w3c/dom/css/CSSMediaRule.lo \
-	org/w3c/dom/css/CSS2Properties.lo org/w3c/dom/css/CSSValue.lo \
-	org/w3c/dom/css/CSSStyleDeclaration.lo \
-	org/w3c/dom/css/DOMImplementationCSS.lo \
-	org/w3c/dom/css/CSSCharsetRule.lo org/w3c/dom/css/Counter.lo \
-	org/w3c/dom/css/CSSPageRule.lo org/w3c/dom/css/DocumentCSS.lo \
-	org/w3c/dom/css/CSSValueList.lo \
-	org/w3c/dom/css/CSSImportRule.lo org/w3c/dom/NameList.lo \
-	org/w3c/dom/Element.lo org/w3c/dom/Document.lo \
-	org/w3c/dom/ranges/Range.lo \
-	org/w3c/dom/ranges/RangeException.lo \
-	org/w3c/dom/ranges/DocumentRange.lo \
-	org/w3c/dom/DOMImplementationList.lo org/w3c/dom/Entity.lo \
-	org/w3c/dom/UserDataHandler.lo \
-	org/w3c/dom/DOMImplementation.lo org/w3c/dom/CDATASection.lo \
-	org/w3c/dom/ProcessingInstruction.lo org/w3c/dom/Node.lo \
-	org/w3c/dom/NamedNodeMap.lo org/w3c/dom/NodeList.lo \
-	org/w3c/dom/Text.lo org/w3c/dom/DocumentType.lo \
-	org/w3c/dom/DOMImplementationSource.lo
-libw3c_convenience_la_OBJECTS = $(am_libw3c_convenience_la_OBJECTS)
+libw3c_gcj_la_LIBADD =
+am_libw3c_gcj_la_OBJECTS = libw3c_gcj_la-w3c.lo
+libw3c_gcj_la_OBJECTS = $(am_libw3c_gcj_la_OBJECTS)
 DEFAULT_INCLUDES = -I. -I$(srcdir) -I$(top_builddir)/include -I$(top_builddir)/gcj
 depcomp = $(SHELL) $(top_srcdir)/../depcomp
 am__depfiles_maybe = depfiles
@@ -194,8 +72,8 @@ LTGCJCOMPILE = $(LIBTOOL) --mode=compile $(GCJ) $(AM_GCJFLAGS) \
 GCJLD = $(GCJ)
 GCJLINK = $(LIBTOOL) --mode=link $(GCJLD) $(AM_GCJFLAGS) $(GCJFLAGS) \
 	$(AM_LDFLAGS) $(LDFLAGS) -o $@
-SOURCES = $(libw3c_convenience_la_SOURCES)
-DIST_SOURCES = $(libw3c_convenience_la_SOURCES)
+SOURCES = $(libw3c_gcj_la_SOURCES)
+DIST_SOURCES = $(libw3c_gcj_la_SOURCES)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -218,7 +96,6 @@ CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
 CHECKREFSPEC = @CHECKREFSPEC@
 CLASSPATH_SEPARATOR = @CLASSPATH_SEPARATOR@
-COMPPATH = @COMPPATH@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
 CXX = @CXX@
@@ -424,7 +301,7 @@ toolexecdir = @toolexecdir@
 toolexeclibdir = @toolexeclibdir@
 toolexecmainlibdir = @toolexecmainlibdir@
 AUTOMAKE_OPTIONS = foreign subdir-objects
-GCJ_WITH_FLAGS = $(GCJ) --encoding=UTF-8 -Wno-deprecated -fbootclasspath=$(BOOTCLASSPATH)
+GCJ_WITH_FLAGS = $(GCJ) --encoding=UTF-8 -Wno-deprecated -fclasspath= -fbootclasspath=$(BOOTCLASSPATH)
 BOOTCLASSPATH = $(here)'$(CLASSPATH_SEPARATOR)'$(srcdir)'$(CLASSPATH_SEPARATOR)'$(top_srcdir)'$(CLASSPATH_SEPARATOR)'$(top_builddir)
 AM_GCJFLAGS = \
 	-B$(top_builddir) \
@@ -434,8 +311,10 @@ AM_GCJFLAGS = \
 	-Wno-deprecated
 
 BUILT_SOURCES = classes.stamp
-noinst_LTLIBRARIES = libw3c_convenience.la
-libw3c_convenience_la_SOURCES = \
+noinst_LTLIBRARIES = libw3c-gcj.la
+libw3c_gcj_la_SOURCES = w3c.jar
+libw3c_gcj_la_GCJFLAGS = -findirect-dispatch $(AM_GCJFLAGS)
+source_files = \
 org/w3c/dom/xpath/XPathNamespace.java \
 org/w3c/dom/xpath/XPathResult.java \
 org/w3c/dom/xpath/XPathException.java \
@@ -587,7 +466,7 @@ all: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
 .SUFFIXES:
-.SUFFIXES: .java .lo .o .obj
+.SUFFIXES: .jar .lo .o .obj
 $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am  $(am__configure_deps)
 	@for dep in $?; do \
 	  case '$(am__configure_deps)' in \
@@ -626,888 +505,18 @@ clean-noinstLTLIBRARIES:
 	  echo "rm -f \"$${dir}/so_locations\""; \
 	  rm -f "$${dir}/so_locations"; \
 	done
-org/w3c/dom/xpath/$(am__dirstamp):
-	@$(mkdir_p) org/w3c/dom/xpath
-	@: > org/w3c/dom/xpath/$(am__dirstamp)
-org/w3c/dom/xpath/$(DEPDIR)/$(am__dirstamp):
-	@$(mkdir_p) org/w3c/dom/xpath/$(DEPDIR)
-	@: > org/w3c/dom/xpath/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/xpath/XPathNamespace.lo:  \
-	org/w3c/dom/xpath/$(am__dirstamp) \
-	org/w3c/dom/xpath/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/xpath/XPathResult.lo: org/w3c/dom/xpath/$(am__dirstamp) \
-	org/w3c/dom/xpath/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/xpath/XPathException.lo:  \
-	org/w3c/dom/xpath/$(am__dirstamp) \
-	org/w3c/dom/xpath/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/xpath/XPathExpression.lo:  \
-	org/w3c/dom/xpath/$(am__dirstamp) \
-	org/w3c/dom/xpath/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/xpath/XPathNSResolver.lo:  \
-	org/w3c/dom/xpath/$(am__dirstamp) \
-	org/w3c/dom/xpath/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/xpath/XPathEvaluator.lo:  \
-	org/w3c/dom/xpath/$(am__dirstamp) \
-	org/w3c/dom/xpath/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/$(am__dirstamp):
-	@$(mkdir_p) org/w3c/dom
-	@: > org/w3c/dom/$(am__dirstamp)
-org/w3c/dom/$(DEPDIR)/$(am__dirstamp):
-	@$(mkdir_p) org/w3c/dom/$(DEPDIR)
-	@: > org/w3c/dom/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/DOMException.lo: org/w3c/dom/$(am__dirstamp) \
-	org/w3c/dom/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/Comment.lo: org/w3c/dom/$(am__dirstamp) \
-	org/w3c/dom/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/stylesheets/$(am__dirstamp):
-	@$(mkdir_p) org/w3c/dom/stylesheets
-	@: > org/w3c/dom/stylesheets/$(am__dirstamp)
-org/w3c/dom/stylesheets/$(DEPDIR)/$(am__dirstamp):
-	@$(mkdir_p) org/w3c/dom/stylesheets/$(DEPDIR)
-	@: > org/w3c/dom/stylesheets/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/stylesheets/DocumentStyle.lo:  \
-	org/w3c/dom/stylesheets/$(am__dirstamp) \
-	org/w3c/dom/stylesheets/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/stylesheets/MediaList.lo:  \
-	org/w3c/dom/stylesheets/$(am__dirstamp) \
-	org/w3c/dom/stylesheets/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/stylesheets/LinkStyle.lo:  \
-	org/w3c/dom/stylesheets/$(am__dirstamp) \
-	org/w3c/dom/stylesheets/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/stylesheets/StyleSheet.lo:  \
-	org/w3c/dom/stylesheets/$(am__dirstamp) \
-	org/w3c/dom/stylesheets/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/stylesheets/StyleSheetList.lo:  \
-	org/w3c/dom/stylesheets/$(am__dirstamp) \
-	org/w3c/dom/stylesheets/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/Attr.lo: org/w3c/dom/$(am__dirstamp) \
-	org/w3c/dom/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/Notation.lo: org/w3c/dom/$(am__dirstamp) \
-	org/w3c/dom/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/TypeInfo.lo: org/w3c/dom/$(am__dirstamp) \
-	org/w3c/dom/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/html2/$(am__dirstamp):
-	@$(mkdir_p) org/w3c/dom/html2
-	@: > org/w3c/dom/html2/$(am__dirstamp)
-org/w3c/dom/html2/$(DEPDIR)/$(am__dirstamp):
-	@$(mkdir_p) org/w3c/dom/html2/$(DEPDIR)
-	@: > org/w3c/dom/html2/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/html2/HTMLIsIndexElement.lo:  \
-	org/w3c/dom/html2/$(am__dirstamp) \
-	org/w3c/dom/html2/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/html2/HTMLTableColElement.lo:  \
-	org/w3c/dom/html2/$(am__dirstamp) \
-	org/w3c/dom/html2/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/html2/HTMLLinkElement.lo:  \
-	org/w3c/dom/html2/$(am__dirstamp) \
-	org/w3c/dom/html2/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/html2/HTMLTitleElement.lo:  \
-	org/w3c/dom/html2/$(am__dirstamp) \
-	org/w3c/dom/html2/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/html2/HTMLBRElement.lo: org/w3c/dom/html2/$(am__dirstamp) \
-	org/w3c/dom/html2/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/html2/HTMLHeadElement.lo:  \
-	org/w3c/dom/html2/$(am__dirstamp) \
-	org/w3c/dom/html2/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/html2/HTMLHtmlElement.lo:  \
-	org/w3c/dom/html2/$(am__dirstamp) \
-	org/w3c/dom/html2/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/html2/HTMLScriptElement.lo:  \
-	org/w3c/dom/html2/$(am__dirstamp) \
-	org/w3c/dom/html2/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/html2/HTMLTableRowElement.lo:  \
-	org/w3c/dom/html2/$(am__dirstamp) \
-	org/w3c/dom/html2/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/html2/HTMLOptionsCollection.lo:  \
-	org/w3c/dom/html2/$(am__dirstamp) \
-	org/w3c/dom/html2/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/html2/HTMLTableCellElement.lo:  \
-	org/w3c/dom/html2/$(am__dirstamp) \
-	org/w3c/dom/html2/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/html2/HTMLDListElement.lo:  \
-	org/w3c/dom/html2/$(am__dirstamp) \
-	org/w3c/dom/html2/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/html2/HTMLFieldSetElement.lo:  \
-	org/w3c/dom/html2/$(am__dirstamp) \
-	org/w3c/dom/html2/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/html2/HTMLImageElement.lo:  \
-	org/w3c/dom/html2/$(am__dirstamp) \
-	org/w3c/dom/html2/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/html2/HTMLHRElement.lo: org/w3c/dom/html2/$(am__dirstamp) \
-	org/w3c/dom/html2/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/html2/HTMLModElement.lo:  \
-	org/w3c/dom/html2/$(am__dirstamp) \
-	org/w3c/dom/html2/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/html2/HTMLHeadingElement.lo:  \
-	org/w3c/dom/html2/$(am__dirstamp) \
-	org/w3c/dom/html2/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/html2/HTMLTableElement.lo:  \
-	org/w3c/dom/html2/$(am__dirstamp) \
-	org/w3c/dom/html2/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/html2/HTMLAreaElement.lo:  \
-	org/w3c/dom/html2/$(am__dirstamp) \
-	org/w3c/dom/html2/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/html2/HTMLOptGroupElement.lo:  \
-	org/w3c/dom/html2/$(am__dirstamp) \
-	org/w3c/dom/html2/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/html2/HTMLIFrameElement.lo:  \
-	org/w3c/dom/html2/$(am__dirstamp) \
-	org/w3c/dom/html2/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/html2/HTMLDirectoryElement.lo:  \
-	org/w3c/dom/html2/$(am__dirstamp) \
-	org/w3c/dom/html2/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/html2/HTMLParamElement.lo:  \
-	org/w3c/dom/html2/$(am__dirstamp) \
-	org/w3c/dom/html2/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/html2/HTMLLegendElement.lo:  \
-	org/w3c/dom/html2/$(am__dirstamp) \
-	org/w3c/dom/html2/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/html2/HTMLFrameElement.lo:  \
-	org/w3c/dom/html2/$(am__dirstamp) \
-	org/w3c/dom/html2/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/html2/HTMLFormElement.lo:  \
-	org/w3c/dom/html2/$(am__dirstamp) \
-	org/w3c/dom/html2/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/html2/HTMLStyleElement.lo:  \
-	org/w3c/dom/html2/$(am__dirstamp) \
-	org/w3c/dom/html2/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/html2/HTMLFrameSetElement.lo:  \
-	org/w3c/dom/html2/$(am__dirstamp) \
-	org/w3c/dom/html2/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/html2/HTMLCollection.lo:  \
-	org/w3c/dom/html2/$(am__dirstamp) \
-	org/w3c/dom/html2/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/html2/HTMLAnchorElement.lo:  \
-	org/w3c/dom/html2/$(am__dirstamp) \
-	org/w3c/dom/html2/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/html2/HTMLLabelElement.lo:  \
-	org/w3c/dom/html2/$(am__dirstamp) \
-	org/w3c/dom/html2/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/html2/HTMLBodyElement.lo:  \
-	org/w3c/dom/html2/$(am__dirstamp) \
-	org/w3c/dom/html2/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/html2/HTMLOptionElement.lo:  \
-	org/w3c/dom/html2/$(am__dirstamp) \
-	org/w3c/dom/html2/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/html2/HTMLTableSectionElement.lo:  \
-	org/w3c/dom/html2/$(am__dirstamp) \
-	org/w3c/dom/html2/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/html2/HTMLAppletElement.lo:  \
-	org/w3c/dom/html2/$(am__dirstamp) \
-	org/w3c/dom/html2/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/html2/HTMLSelectElement.lo:  \
-	org/w3c/dom/html2/$(am__dirstamp) \
-	org/w3c/dom/html2/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/html2/HTMLMetaElement.lo:  \
-	org/w3c/dom/html2/$(am__dirstamp) \
-	org/w3c/dom/html2/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/html2/HTMLMenuElement.lo:  \
-	org/w3c/dom/html2/$(am__dirstamp) \
-	org/w3c/dom/html2/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/html2/HTMLDivElement.lo:  \
-	org/w3c/dom/html2/$(am__dirstamp) \
-	org/w3c/dom/html2/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/html2/HTMLLIElement.lo: org/w3c/dom/html2/$(am__dirstamp) \
-	org/w3c/dom/html2/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/html2/HTMLFontElement.lo:  \
-	org/w3c/dom/html2/$(am__dirstamp) \
-	org/w3c/dom/html2/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/html2/HTMLOListElement.lo:  \
-	org/w3c/dom/html2/$(am__dirstamp) \
-	org/w3c/dom/html2/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/html2/HTMLBaseFontElement.lo:  \
-	org/w3c/dom/html2/$(am__dirstamp) \
-	org/w3c/dom/html2/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/html2/HTMLElement.lo: org/w3c/dom/html2/$(am__dirstamp) \
-	org/w3c/dom/html2/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/html2/HTMLTableCaptionElement.lo:  \
-	org/w3c/dom/html2/$(am__dirstamp) \
-	org/w3c/dom/html2/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/html2/HTMLTextAreaElement.lo:  \
-	org/w3c/dom/html2/$(am__dirstamp) \
-	org/w3c/dom/html2/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/html2/HTMLPreElement.lo:  \
-	org/w3c/dom/html2/$(am__dirstamp) \
-	org/w3c/dom/html2/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/html2/HTMLObjectElement.lo:  \
-	org/w3c/dom/html2/$(am__dirstamp) \
-	org/w3c/dom/html2/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/html2/HTMLBaseElement.lo:  \
-	org/w3c/dom/html2/$(am__dirstamp) \
-	org/w3c/dom/html2/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/html2/HTMLUListElement.lo:  \
-	org/w3c/dom/html2/$(am__dirstamp) \
-	org/w3c/dom/html2/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/html2/HTMLMapElement.lo:  \
-	org/w3c/dom/html2/$(am__dirstamp) \
-	org/w3c/dom/html2/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/html2/HTMLParagraphElement.lo:  \
-	org/w3c/dom/html2/$(am__dirstamp) \
-	org/w3c/dom/html2/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/html2/HTMLButtonElement.lo:  \
-	org/w3c/dom/html2/$(am__dirstamp) \
-	org/w3c/dom/html2/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/html2/HTMLQuoteElement.lo:  \
-	org/w3c/dom/html2/$(am__dirstamp) \
-	org/w3c/dom/html2/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/html2/HTMLInputElement.lo:  \
-	org/w3c/dom/html2/$(am__dirstamp) \
-	org/w3c/dom/html2/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/html2/HTMLDocument.lo: org/w3c/dom/html2/$(am__dirstamp) \
-	org/w3c/dom/html2/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/ls/$(am__dirstamp):
-	@$(mkdir_p) org/w3c/dom/ls
-	@: > org/w3c/dom/ls/$(am__dirstamp)
-org/w3c/dom/ls/$(DEPDIR)/$(am__dirstamp):
-	@$(mkdir_p) org/w3c/dom/ls/$(DEPDIR)
-	@: > org/w3c/dom/ls/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/ls/LSParser.lo: org/w3c/dom/ls/$(am__dirstamp) \
-	org/w3c/dom/ls/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/ls/LSSerializerFilter.lo: org/w3c/dom/ls/$(am__dirstamp) \
-	org/w3c/dom/ls/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/ls/LSLoadEvent.lo: org/w3c/dom/ls/$(am__dirstamp) \
-	org/w3c/dom/ls/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/ls/DOMImplementationLS.lo: org/w3c/dom/ls/$(am__dirstamp) \
-	org/w3c/dom/ls/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/ls/LSException.lo: org/w3c/dom/ls/$(am__dirstamp) \
-	org/w3c/dom/ls/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/ls/LSSerializer.lo: org/w3c/dom/ls/$(am__dirstamp) \
-	org/w3c/dom/ls/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/ls/LSResourceResolver.lo: org/w3c/dom/ls/$(am__dirstamp) \
-	org/w3c/dom/ls/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/ls/LSOutput.lo: org/w3c/dom/ls/$(am__dirstamp) \
-	org/w3c/dom/ls/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/ls/LSInput.lo: org/w3c/dom/ls/$(am__dirstamp) \
-	org/w3c/dom/ls/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/ls/LSProgressEvent.lo: org/w3c/dom/ls/$(am__dirstamp) \
-	org/w3c/dom/ls/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/ls/LSParserFilter.lo: org/w3c/dom/ls/$(am__dirstamp) \
-	org/w3c/dom/ls/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/DOMLocator.lo: org/w3c/dom/$(am__dirstamp) \
-	org/w3c/dom/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/DOMStringList.lo: org/w3c/dom/$(am__dirstamp) \
-	org/w3c/dom/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/DocumentFragment.lo: org/w3c/dom/$(am__dirstamp) \
-	org/w3c/dom/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/events/$(am__dirstamp):
-	@$(mkdir_p) org/w3c/dom/events
-	@: > org/w3c/dom/events/$(am__dirstamp)
-org/w3c/dom/events/$(DEPDIR)/$(am__dirstamp):
-	@$(mkdir_p) org/w3c/dom/events/$(DEPDIR)
-	@: > org/w3c/dom/events/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/events/MutationEvent.lo:  \
-	org/w3c/dom/events/$(am__dirstamp) \
-	org/w3c/dom/events/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/events/UIEvent.lo: org/w3c/dom/events/$(am__dirstamp) \
-	org/w3c/dom/events/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/events/EventListener.lo:  \
-	org/w3c/dom/events/$(am__dirstamp) \
-	org/w3c/dom/events/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/events/Event.lo: org/w3c/dom/events/$(am__dirstamp) \
-	org/w3c/dom/events/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/events/MouseEvent.lo: org/w3c/dom/events/$(am__dirstamp) \
-	org/w3c/dom/events/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/events/EventTarget.lo: org/w3c/dom/events/$(am__dirstamp) \
-	org/w3c/dom/events/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/events/DocumentEvent.lo:  \
-	org/w3c/dom/events/$(am__dirstamp) \
-	org/w3c/dom/events/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/events/EventException.lo:  \
-	org/w3c/dom/events/$(am__dirstamp) \
-	org/w3c/dom/events/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/EntityReference.lo: org/w3c/dom/$(am__dirstamp) \
-	org/w3c/dom/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/DOMErrorHandler.lo: org/w3c/dom/$(am__dirstamp) \
-	org/w3c/dom/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/views/$(am__dirstamp):
-	@$(mkdir_p) org/w3c/dom/views
-	@: > org/w3c/dom/views/$(am__dirstamp)
-org/w3c/dom/views/$(DEPDIR)/$(am__dirstamp):
-	@$(mkdir_p) org/w3c/dom/views/$(DEPDIR)
-	@: > org/w3c/dom/views/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/views/AbstractView.lo: org/w3c/dom/views/$(am__dirstamp) \
-	org/w3c/dom/views/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/views/DocumentView.lo: org/w3c/dom/views/$(am__dirstamp) \
-	org/w3c/dom/views/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/DOMError.lo: org/w3c/dom/$(am__dirstamp) \
-	org/w3c/dom/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/bootstrap/$(am__dirstamp):
-	@$(mkdir_p) org/w3c/dom/bootstrap
-	@: > org/w3c/dom/bootstrap/$(am__dirstamp)
-org/w3c/dom/bootstrap/$(DEPDIR)/$(am__dirstamp):
-	@$(mkdir_p) org/w3c/dom/bootstrap/$(DEPDIR)
-	@: > org/w3c/dom/bootstrap/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/bootstrap/DOMImplementationRegistry.lo:  \
-	org/w3c/dom/bootstrap/$(am__dirstamp) \
-	org/w3c/dom/bootstrap/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/traversal/$(am__dirstamp):
-	@$(mkdir_p) org/w3c/dom/traversal
-	@: > org/w3c/dom/traversal/$(am__dirstamp)
-org/w3c/dom/traversal/$(DEPDIR)/$(am__dirstamp):
-	@$(mkdir_p) org/w3c/dom/traversal/$(DEPDIR)
-	@: > org/w3c/dom/traversal/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/traversal/TreeWalker.lo:  \
-	org/w3c/dom/traversal/$(am__dirstamp) \
-	org/w3c/dom/traversal/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/traversal/NodeFilter.lo:  \
-	org/w3c/dom/traversal/$(am__dirstamp) \
-	org/w3c/dom/traversal/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/traversal/DocumentTraversal.lo:  \
-	org/w3c/dom/traversal/$(am__dirstamp) \
-	org/w3c/dom/traversal/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/traversal/NodeIterator.lo:  \
-	org/w3c/dom/traversal/$(am__dirstamp) \
-	org/w3c/dom/traversal/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/CharacterData.lo: org/w3c/dom/$(am__dirstamp) \
-	org/w3c/dom/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/DOMConfiguration.lo: org/w3c/dom/$(am__dirstamp) \
-	org/w3c/dom/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/css/$(am__dirstamp):
-	@$(mkdir_p) org/w3c/dom/css
-	@: > org/w3c/dom/css/$(am__dirstamp)
-org/w3c/dom/css/$(DEPDIR)/$(am__dirstamp):
-	@$(mkdir_p) org/w3c/dom/css/$(DEPDIR)
-	@: > org/w3c/dom/css/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/css/CSSRule.lo: org/w3c/dom/css/$(am__dirstamp) \
-	org/w3c/dom/css/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/css/Rect.lo: org/w3c/dom/css/$(am__dirstamp) \
-	org/w3c/dom/css/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/css/CSSStyleSheet.lo: org/w3c/dom/css/$(am__dirstamp) \
-	org/w3c/dom/css/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/css/CSSFontFaceRule.lo: org/w3c/dom/css/$(am__dirstamp) \
-	org/w3c/dom/css/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/css/CSSPrimitiveValue.lo: org/w3c/dom/css/$(am__dirstamp) \
-	org/w3c/dom/css/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/css/CSSRuleList.lo: org/w3c/dom/css/$(am__dirstamp) \
-	org/w3c/dom/css/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/css/ViewCSS.lo: org/w3c/dom/css/$(am__dirstamp) \
-	org/w3c/dom/css/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/css/CSSStyleRule.lo: org/w3c/dom/css/$(am__dirstamp) \
-	org/w3c/dom/css/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/css/CSSUnknownRule.lo: org/w3c/dom/css/$(am__dirstamp) \
-	org/w3c/dom/css/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/css/RGBColor.lo: org/w3c/dom/css/$(am__dirstamp) \
-	org/w3c/dom/css/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/css/ElementCSSInlineStyle.lo:  \
-	org/w3c/dom/css/$(am__dirstamp) \
-	org/w3c/dom/css/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/css/CSSMediaRule.lo: org/w3c/dom/css/$(am__dirstamp) \
-	org/w3c/dom/css/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/css/CSS2Properties.lo: org/w3c/dom/css/$(am__dirstamp) \
-	org/w3c/dom/css/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/css/CSSValue.lo: org/w3c/dom/css/$(am__dirstamp) \
-	org/w3c/dom/css/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/css/CSSStyleDeclaration.lo:  \
-	org/w3c/dom/css/$(am__dirstamp) \
-	org/w3c/dom/css/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/css/DOMImplementationCSS.lo:  \
-	org/w3c/dom/css/$(am__dirstamp) \
-	org/w3c/dom/css/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/css/CSSCharsetRule.lo: org/w3c/dom/css/$(am__dirstamp) \
-	org/w3c/dom/css/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/css/Counter.lo: org/w3c/dom/css/$(am__dirstamp) \
-	org/w3c/dom/css/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/css/CSSPageRule.lo: org/w3c/dom/css/$(am__dirstamp) \
-	org/w3c/dom/css/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/css/DocumentCSS.lo: org/w3c/dom/css/$(am__dirstamp) \
-	org/w3c/dom/css/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/css/CSSValueList.lo: org/w3c/dom/css/$(am__dirstamp) \
-	org/w3c/dom/css/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/css/CSSImportRule.lo: org/w3c/dom/css/$(am__dirstamp) \
-	org/w3c/dom/css/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/NameList.lo: org/w3c/dom/$(am__dirstamp) \
-	org/w3c/dom/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/Element.lo: org/w3c/dom/$(am__dirstamp) \
-	org/w3c/dom/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/Document.lo: org/w3c/dom/$(am__dirstamp) \
-	org/w3c/dom/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/ranges/$(am__dirstamp):
-	@$(mkdir_p) org/w3c/dom/ranges
-	@: > org/w3c/dom/ranges/$(am__dirstamp)
-org/w3c/dom/ranges/$(DEPDIR)/$(am__dirstamp):
-	@$(mkdir_p) org/w3c/dom/ranges/$(DEPDIR)
-	@: > org/w3c/dom/ranges/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/ranges/Range.lo: org/w3c/dom/ranges/$(am__dirstamp) \
-	org/w3c/dom/ranges/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/ranges/RangeException.lo:  \
-	org/w3c/dom/ranges/$(am__dirstamp) \
-	org/w3c/dom/ranges/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/ranges/DocumentRange.lo:  \
-	org/w3c/dom/ranges/$(am__dirstamp) \
-	org/w3c/dom/ranges/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/DOMImplementationList.lo: org/w3c/dom/$(am__dirstamp) \
-	org/w3c/dom/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/Entity.lo: org/w3c/dom/$(am__dirstamp) \
-	org/w3c/dom/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/UserDataHandler.lo: org/w3c/dom/$(am__dirstamp) \
-	org/w3c/dom/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/DOMImplementation.lo: org/w3c/dom/$(am__dirstamp) \
-	org/w3c/dom/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/CDATASection.lo: org/w3c/dom/$(am__dirstamp) \
-	org/w3c/dom/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/ProcessingInstruction.lo: org/w3c/dom/$(am__dirstamp) \
-	org/w3c/dom/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/Node.lo: org/w3c/dom/$(am__dirstamp) \
-	org/w3c/dom/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/NamedNodeMap.lo: org/w3c/dom/$(am__dirstamp) \
-	org/w3c/dom/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/NodeList.lo: org/w3c/dom/$(am__dirstamp) \
-	org/w3c/dom/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/Text.lo: org/w3c/dom/$(am__dirstamp) \
-	org/w3c/dom/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/DocumentType.lo: org/w3c/dom/$(am__dirstamp) \
-	org/w3c/dom/$(DEPDIR)/$(am__dirstamp)
-org/w3c/dom/DOMImplementationSource.lo: org/w3c/dom/$(am__dirstamp) \
-	org/w3c/dom/$(DEPDIR)/$(am__dirstamp)
-libw3c_convenience.la: $(libw3c_convenience_la_OBJECTS) $(libw3c_convenience_la_DEPENDENCIES) 
-	$(GCJLINK)  $(libw3c_convenience_la_LDFLAGS) $(libw3c_convenience_la_OBJECTS) $(libw3c_convenience_la_LIBADD) $(LIBS)
+libw3c-gcj.la: $(libw3c_gcj_la_OBJECTS) $(libw3c_gcj_la_DEPENDENCIES) 
+	$(GCJLINK)  $(libw3c_gcj_la_LDFLAGS) $(libw3c_gcj_la_OBJECTS) $(libw3c_gcj_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
-	-rm -f org/w3c/dom/Attr.$(OBJEXT)
-	-rm -f org/w3c/dom/Attr.lo
-	-rm -f org/w3c/dom/CDATASection.$(OBJEXT)
-	-rm -f org/w3c/dom/CDATASection.lo
-	-rm -f org/w3c/dom/CharacterData.$(OBJEXT)
-	-rm -f org/w3c/dom/CharacterData.lo
-	-rm -f org/w3c/dom/Comment.$(OBJEXT)
-	-rm -f org/w3c/dom/Comment.lo
-	-rm -f org/w3c/dom/DOMConfiguration.$(OBJEXT)
-	-rm -f org/w3c/dom/DOMConfiguration.lo
-	-rm -f org/w3c/dom/DOMError.$(OBJEXT)
-	-rm -f org/w3c/dom/DOMError.lo
-	-rm -f org/w3c/dom/DOMErrorHandler.$(OBJEXT)
-	-rm -f org/w3c/dom/DOMErrorHandler.lo
-	-rm -f org/w3c/dom/DOMException.$(OBJEXT)
-	-rm -f org/w3c/dom/DOMException.lo
-	-rm -f org/w3c/dom/DOMImplementation.$(OBJEXT)
-	-rm -f org/w3c/dom/DOMImplementation.lo
-	-rm -f org/w3c/dom/DOMImplementationList.$(OBJEXT)
-	-rm -f org/w3c/dom/DOMImplementationList.lo
-	-rm -f org/w3c/dom/DOMImplementationSource.$(OBJEXT)
-	-rm -f org/w3c/dom/DOMImplementationSource.lo
-	-rm -f org/w3c/dom/DOMLocator.$(OBJEXT)
-	-rm -f org/w3c/dom/DOMLocator.lo
-	-rm -f org/w3c/dom/DOMStringList.$(OBJEXT)
-	-rm -f org/w3c/dom/DOMStringList.lo
-	-rm -f org/w3c/dom/Document.$(OBJEXT)
-	-rm -f org/w3c/dom/Document.lo
-	-rm -f org/w3c/dom/DocumentFragment.$(OBJEXT)
-	-rm -f org/w3c/dom/DocumentFragment.lo
-	-rm -f org/w3c/dom/DocumentType.$(OBJEXT)
-	-rm -f org/w3c/dom/DocumentType.lo
-	-rm -f org/w3c/dom/Element.$(OBJEXT)
-	-rm -f org/w3c/dom/Element.lo
-	-rm -f org/w3c/dom/Entity.$(OBJEXT)
-	-rm -f org/w3c/dom/Entity.lo
-	-rm -f org/w3c/dom/EntityReference.$(OBJEXT)
-	-rm -f org/w3c/dom/EntityReference.lo
-	-rm -f org/w3c/dom/NameList.$(OBJEXT)
-	-rm -f org/w3c/dom/NameList.lo
-	-rm -f org/w3c/dom/NamedNodeMap.$(OBJEXT)
-	-rm -f org/w3c/dom/NamedNodeMap.lo
-	-rm -f org/w3c/dom/Node.$(OBJEXT)
-	-rm -f org/w3c/dom/Node.lo
-	-rm -f org/w3c/dom/NodeList.$(OBJEXT)
-	-rm -f org/w3c/dom/NodeList.lo
-	-rm -f org/w3c/dom/Notation.$(OBJEXT)
-	-rm -f org/w3c/dom/Notation.lo
-	-rm -f org/w3c/dom/ProcessingInstruction.$(OBJEXT)
-	-rm -f org/w3c/dom/ProcessingInstruction.lo
-	-rm -f org/w3c/dom/Text.$(OBJEXT)
-	-rm -f org/w3c/dom/Text.lo
-	-rm -f org/w3c/dom/TypeInfo.$(OBJEXT)
-	-rm -f org/w3c/dom/TypeInfo.lo
-	-rm -f org/w3c/dom/UserDataHandler.$(OBJEXT)
-	-rm -f org/w3c/dom/UserDataHandler.lo
-	-rm -f org/w3c/dom/bootstrap/DOMImplementationRegistry.$(OBJEXT)
-	-rm -f org/w3c/dom/bootstrap/DOMImplementationRegistry.lo
-	-rm -f org/w3c/dom/css/CSS2Properties.$(OBJEXT)
-	-rm -f org/w3c/dom/css/CSS2Properties.lo
-	-rm -f org/w3c/dom/css/CSSCharsetRule.$(OBJEXT)
-	-rm -f org/w3c/dom/css/CSSCharsetRule.lo
-	-rm -f org/w3c/dom/css/CSSFontFaceRule.$(OBJEXT)
-	-rm -f org/w3c/dom/css/CSSFontFaceRule.lo
-	-rm -f org/w3c/dom/css/CSSImportRule.$(OBJEXT)
-	-rm -f org/w3c/dom/css/CSSImportRule.lo
-	-rm -f org/w3c/dom/css/CSSMediaRule.$(OBJEXT)
-	-rm -f org/w3c/dom/css/CSSMediaRule.lo
-	-rm -f org/w3c/dom/css/CSSPageRule.$(OBJEXT)
-	-rm -f org/w3c/dom/css/CSSPageRule.lo
-	-rm -f org/w3c/dom/css/CSSPrimitiveValue.$(OBJEXT)
-	-rm -f org/w3c/dom/css/CSSPrimitiveValue.lo
-	-rm -f org/w3c/dom/css/CSSRule.$(OBJEXT)
-	-rm -f org/w3c/dom/css/CSSRule.lo
-	-rm -f org/w3c/dom/css/CSSRuleList.$(OBJEXT)
-	-rm -f org/w3c/dom/css/CSSRuleList.lo
-	-rm -f org/w3c/dom/css/CSSStyleDeclaration.$(OBJEXT)
-	-rm -f org/w3c/dom/css/CSSStyleDeclaration.lo
-	-rm -f org/w3c/dom/css/CSSStyleRule.$(OBJEXT)
-	-rm -f org/w3c/dom/css/CSSStyleRule.lo
-	-rm -f org/w3c/dom/css/CSSStyleSheet.$(OBJEXT)
-	-rm -f org/w3c/dom/css/CSSStyleSheet.lo
-	-rm -f org/w3c/dom/css/CSSUnknownRule.$(OBJEXT)
-	-rm -f org/w3c/dom/css/CSSUnknownRule.lo
-	-rm -f org/w3c/dom/css/CSSValue.$(OBJEXT)
-	-rm -f org/w3c/dom/css/CSSValue.lo
-	-rm -f org/w3c/dom/css/CSSValueList.$(OBJEXT)
-	-rm -f org/w3c/dom/css/CSSValueList.lo
-	-rm -f org/w3c/dom/css/Counter.$(OBJEXT)
-	-rm -f org/w3c/dom/css/Counter.lo
-	-rm -f org/w3c/dom/css/DOMImplementationCSS.$(OBJEXT)
-	-rm -f org/w3c/dom/css/DOMImplementationCSS.lo
-	-rm -f org/w3c/dom/css/DocumentCSS.$(OBJEXT)
-	-rm -f org/w3c/dom/css/DocumentCSS.lo
-	-rm -f org/w3c/dom/css/ElementCSSInlineStyle.$(OBJEXT)
-	-rm -f org/w3c/dom/css/ElementCSSInlineStyle.lo
-	-rm -f org/w3c/dom/css/RGBColor.$(OBJEXT)
-	-rm -f org/w3c/dom/css/RGBColor.lo
-	-rm -f org/w3c/dom/css/Rect.$(OBJEXT)
-	-rm -f org/w3c/dom/css/Rect.lo
-	-rm -f org/w3c/dom/css/ViewCSS.$(OBJEXT)
-	-rm -f org/w3c/dom/css/ViewCSS.lo
-	-rm -f org/w3c/dom/events/DocumentEvent.$(OBJEXT)
-	-rm -f org/w3c/dom/events/DocumentEvent.lo
-	-rm -f org/w3c/dom/events/Event.$(OBJEXT)
-	-rm -f org/w3c/dom/events/Event.lo
-	-rm -f org/w3c/dom/events/EventException.$(OBJEXT)
-	-rm -f org/w3c/dom/events/EventException.lo
-	-rm -f org/w3c/dom/events/EventListener.$(OBJEXT)
-	-rm -f org/w3c/dom/events/EventListener.lo
-	-rm -f org/w3c/dom/events/EventTarget.$(OBJEXT)
-	-rm -f org/w3c/dom/events/EventTarget.lo
-	-rm -f org/w3c/dom/events/MouseEvent.$(OBJEXT)
-	-rm -f org/w3c/dom/events/MouseEvent.lo
-	-rm -f org/w3c/dom/events/MutationEvent.$(OBJEXT)
-	-rm -f org/w3c/dom/events/MutationEvent.lo
-	-rm -f org/w3c/dom/events/UIEvent.$(OBJEXT)
-	-rm -f org/w3c/dom/events/UIEvent.lo
-	-rm -f org/w3c/dom/html2/HTMLAnchorElement.$(OBJEXT)
-	-rm -f org/w3c/dom/html2/HTMLAnchorElement.lo
-	-rm -f org/w3c/dom/html2/HTMLAppletElement.$(OBJEXT)
-	-rm -f org/w3c/dom/html2/HTMLAppletElement.lo
-	-rm -f org/w3c/dom/html2/HTMLAreaElement.$(OBJEXT)
-	-rm -f org/w3c/dom/html2/HTMLAreaElement.lo
-	-rm -f org/w3c/dom/html2/HTMLBRElement.$(OBJEXT)
-	-rm -f org/w3c/dom/html2/HTMLBRElement.lo
-	-rm -f org/w3c/dom/html2/HTMLBaseElement.$(OBJEXT)
-	-rm -f org/w3c/dom/html2/HTMLBaseElement.lo
-	-rm -f org/w3c/dom/html2/HTMLBaseFontElement.$(OBJEXT)
-	-rm -f org/w3c/dom/html2/HTMLBaseFontElement.lo
-	-rm -f org/w3c/dom/html2/HTMLBodyElement.$(OBJEXT)
-	-rm -f org/w3c/dom/html2/HTMLBodyElement.lo
-	-rm -f org/w3c/dom/html2/HTMLButtonElement.$(OBJEXT)
-	-rm -f org/w3c/dom/html2/HTMLButtonElement.lo
-	-rm -f org/w3c/dom/html2/HTMLCollection.$(OBJEXT)
-	-rm -f org/w3c/dom/html2/HTMLCollection.lo
-	-rm -f org/w3c/dom/html2/HTMLDListElement.$(OBJEXT)
-	-rm -f org/w3c/dom/html2/HTMLDListElement.lo
-	-rm -f org/w3c/dom/html2/HTMLDirectoryElement.$(OBJEXT)
-	-rm -f org/w3c/dom/html2/HTMLDirectoryElement.lo
-	-rm -f org/w3c/dom/html2/HTMLDivElement.$(OBJEXT)
-	-rm -f org/w3c/dom/html2/HTMLDivElement.lo
-	-rm -f org/w3c/dom/html2/HTMLDocument.$(OBJEXT)
-	-rm -f org/w3c/dom/html2/HTMLDocument.lo
-	-rm -f org/w3c/dom/html2/HTMLElement.$(OBJEXT)
-	-rm -f org/w3c/dom/html2/HTMLElement.lo
-	-rm -f org/w3c/dom/html2/HTMLFieldSetElement.$(OBJEXT)
-	-rm -f org/w3c/dom/html2/HTMLFieldSetElement.lo
-	-rm -f org/w3c/dom/html2/HTMLFontElement.$(OBJEXT)
-	-rm -f org/w3c/dom/html2/HTMLFontElement.lo
-	-rm -f org/w3c/dom/html2/HTMLFormElement.$(OBJEXT)
-	-rm -f org/w3c/dom/html2/HTMLFormElement.lo
-	-rm -f org/w3c/dom/html2/HTMLFrameElement.$(OBJEXT)
-	-rm -f org/w3c/dom/html2/HTMLFrameElement.lo
-	-rm -f org/w3c/dom/html2/HTMLFrameSetElement.$(OBJEXT)
-	-rm -f org/w3c/dom/html2/HTMLFrameSetElement.lo
-	-rm -f org/w3c/dom/html2/HTMLHRElement.$(OBJEXT)
-	-rm -f org/w3c/dom/html2/HTMLHRElement.lo
-	-rm -f org/w3c/dom/html2/HTMLHeadElement.$(OBJEXT)
-	-rm -f org/w3c/dom/html2/HTMLHeadElement.lo
-	-rm -f org/w3c/dom/html2/HTMLHeadingElement.$(OBJEXT)
-	-rm -f org/w3c/dom/html2/HTMLHeadingElement.lo
-	-rm -f org/w3c/dom/html2/HTMLHtmlElement.$(OBJEXT)
-	-rm -f org/w3c/dom/html2/HTMLHtmlElement.lo
-	-rm -f org/w3c/dom/html2/HTMLIFrameElement.$(OBJEXT)
-	-rm -f org/w3c/dom/html2/HTMLIFrameElement.lo
-	-rm -f org/w3c/dom/html2/HTMLImageElement.$(OBJEXT)
-	-rm -f org/w3c/dom/html2/HTMLImageElement.lo
-	-rm -f org/w3c/dom/html2/HTMLInputElement.$(OBJEXT)
-	-rm -f org/w3c/dom/html2/HTMLInputElement.lo
-	-rm -f org/w3c/dom/html2/HTMLIsIndexElement.$(OBJEXT)
-	-rm -f org/w3c/dom/html2/HTMLIsIndexElement.lo
-	-rm -f org/w3c/dom/html2/HTMLLIElement.$(OBJEXT)
-	-rm -f org/w3c/dom/html2/HTMLLIElement.lo
-	-rm -f org/w3c/dom/html2/HTMLLabelElement.$(OBJEXT)
-	-rm -f org/w3c/dom/html2/HTMLLabelElement.lo
-	-rm -f org/w3c/dom/html2/HTMLLegendElement.$(OBJEXT)
-	-rm -f org/w3c/dom/html2/HTMLLegendElement.lo
-	-rm -f org/w3c/dom/html2/HTMLLinkElement.$(OBJEXT)
-	-rm -f org/w3c/dom/html2/HTMLLinkElement.lo
-	-rm -f org/w3c/dom/html2/HTMLMapElement.$(OBJEXT)
-	-rm -f org/w3c/dom/html2/HTMLMapElement.lo
-	-rm -f org/w3c/dom/html2/HTMLMenuElement.$(OBJEXT)
-	-rm -f org/w3c/dom/html2/HTMLMenuElement.lo
-	-rm -f org/w3c/dom/html2/HTMLMetaElement.$(OBJEXT)
-	-rm -f org/w3c/dom/html2/HTMLMetaElement.lo
-	-rm -f org/w3c/dom/html2/HTMLModElement.$(OBJEXT)
-	-rm -f org/w3c/dom/html2/HTMLModElement.lo
-	-rm -f org/w3c/dom/html2/HTMLOListElement.$(OBJEXT)
-	-rm -f org/w3c/dom/html2/HTMLOListElement.lo
-	-rm -f org/w3c/dom/html2/HTMLObjectElement.$(OBJEXT)
-	-rm -f org/w3c/dom/html2/HTMLObjectElement.lo
-	-rm -f org/w3c/dom/html2/HTMLOptGroupElement.$(OBJEXT)
-	-rm -f org/w3c/dom/html2/HTMLOptGroupElement.lo
-	-rm -f org/w3c/dom/html2/HTMLOptionElement.$(OBJEXT)
-	-rm -f org/w3c/dom/html2/HTMLOptionElement.lo
-	-rm -f org/w3c/dom/html2/HTMLOptionsCollection.$(OBJEXT)
-	-rm -f org/w3c/dom/html2/HTMLOptionsCollection.lo
-	-rm -f org/w3c/dom/html2/HTMLParagraphElement.$(OBJEXT)
-	-rm -f org/w3c/dom/html2/HTMLParagraphElement.lo
-	-rm -f org/w3c/dom/html2/HTMLParamElement.$(OBJEXT)
-	-rm -f org/w3c/dom/html2/HTMLParamElement.lo
-	-rm -f org/w3c/dom/html2/HTMLPreElement.$(OBJEXT)
-	-rm -f org/w3c/dom/html2/HTMLPreElement.lo
-	-rm -f org/w3c/dom/html2/HTMLQuoteElement.$(OBJEXT)
-	-rm -f org/w3c/dom/html2/HTMLQuoteElement.lo
-	-rm -f org/w3c/dom/html2/HTMLScriptElement.$(OBJEXT)
-	-rm -f org/w3c/dom/html2/HTMLScriptElement.lo
-	-rm -f org/w3c/dom/html2/HTMLSelectElement.$(OBJEXT)
-	-rm -f org/w3c/dom/html2/HTMLSelectElement.lo
-	-rm -f org/w3c/dom/html2/HTMLStyleElement.$(OBJEXT)
-	-rm -f org/w3c/dom/html2/HTMLStyleElement.lo
-	-rm -f org/w3c/dom/html2/HTMLTableCaptionElement.$(OBJEXT)
-	-rm -f org/w3c/dom/html2/HTMLTableCaptionElement.lo
-	-rm -f org/w3c/dom/html2/HTMLTableCellElement.$(OBJEXT)
-	-rm -f org/w3c/dom/html2/HTMLTableCellElement.lo
-	-rm -f org/w3c/dom/html2/HTMLTableColElement.$(OBJEXT)
-	-rm -f org/w3c/dom/html2/HTMLTableColElement.lo
-	-rm -f org/w3c/dom/html2/HTMLTableElement.$(OBJEXT)
-	-rm -f org/w3c/dom/html2/HTMLTableElement.lo
-	-rm -f org/w3c/dom/html2/HTMLTableRowElement.$(OBJEXT)
-	-rm -f org/w3c/dom/html2/HTMLTableRowElement.lo
-	-rm -f org/w3c/dom/html2/HTMLTableSectionElement.$(OBJEXT)
-	-rm -f org/w3c/dom/html2/HTMLTableSectionElement.lo
-	-rm -f org/w3c/dom/html2/HTMLTextAreaElement.$(OBJEXT)
-	-rm -f org/w3c/dom/html2/HTMLTextAreaElement.lo
-	-rm -f org/w3c/dom/html2/HTMLTitleElement.$(OBJEXT)
-	-rm -f org/w3c/dom/html2/HTMLTitleElement.lo
-	-rm -f org/w3c/dom/html2/HTMLUListElement.$(OBJEXT)
-	-rm -f org/w3c/dom/html2/HTMLUListElement.lo
-	-rm -f org/w3c/dom/ls/DOMImplementationLS.$(OBJEXT)
-	-rm -f org/w3c/dom/ls/DOMImplementationLS.lo
-	-rm -f org/w3c/dom/ls/LSException.$(OBJEXT)
-	-rm -f org/w3c/dom/ls/LSException.lo
-	-rm -f org/w3c/dom/ls/LSInput.$(OBJEXT)
-	-rm -f org/w3c/dom/ls/LSInput.lo
-	-rm -f org/w3c/dom/ls/LSLoadEvent.$(OBJEXT)
-	-rm -f org/w3c/dom/ls/LSLoadEvent.lo
-	-rm -f org/w3c/dom/ls/LSOutput.$(OBJEXT)
-	-rm -f org/w3c/dom/ls/LSOutput.lo
-	-rm -f org/w3c/dom/ls/LSParser.$(OBJEXT)
-	-rm -f org/w3c/dom/ls/LSParser.lo
-	-rm -f org/w3c/dom/ls/LSParserFilter.$(OBJEXT)
-	-rm -f org/w3c/dom/ls/LSParserFilter.lo
-	-rm -f org/w3c/dom/ls/LSProgressEvent.$(OBJEXT)
-	-rm -f org/w3c/dom/ls/LSProgressEvent.lo
-	-rm -f org/w3c/dom/ls/LSResourceResolver.$(OBJEXT)
-	-rm -f org/w3c/dom/ls/LSResourceResolver.lo
-	-rm -f org/w3c/dom/ls/LSSerializer.$(OBJEXT)
-	-rm -f org/w3c/dom/ls/LSSerializer.lo
-	-rm -f org/w3c/dom/ls/LSSerializerFilter.$(OBJEXT)
-	-rm -f org/w3c/dom/ls/LSSerializerFilter.lo
-	-rm -f org/w3c/dom/ranges/DocumentRange.$(OBJEXT)
-	-rm -f org/w3c/dom/ranges/DocumentRange.lo
-	-rm -f org/w3c/dom/ranges/Range.$(OBJEXT)
-	-rm -f org/w3c/dom/ranges/Range.lo
-	-rm -f org/w3c/dom/ranges/RangeException.$(OBJEXT)
-	-rm -f org/w3c/dom/ranges/RangeException.lo
-	-rm -f org/w3c/dom/stylesheets/DocumentStyle.$(OBJEXT)
-	-rm -f org/w3c/dom/stylesheets/DocumentStyle.lo
-	-rm -f org/w3c/dom/stylesheets/LinkStyle.$(OBJEXT)
-	-rm -f org/w3c/dom/stylesheets/LinkStyle.lo
-	-rm -f org/w3c/dom/stylesheets/MediaList.$(OBJEXT)
-	-rm -f org/w3c/dom/stylesheets/MediaList.lo
-	-rm -f org/w3c/dom/stylesheets/StyleSheet.$(OBJEXT)
-	-rm -f org/w3c/dom/stylesheets/StyleSheet.lo
-	-rm -f org/w3c/dom/stylesheets/StyleSheetList.$(OBJEXT)
-	-rm -f org/w3c/dom/stylesheets/StyleSheetList.lo
-	-rm -f org/w3c/dom/traversal/DocumentTraversal.$(OBJEXT)
-	-rm -f org/w3c/dom/traversal/DocumentTraversal.lo
-	-rm -f org/w3c/dom/traversal/NodeFilter.$(OBJEXT)
-	-rm -f org/w3c/dom/traversal/NodeFilter.lo
-	-rm -f org/w3c/dom/traversal/NodeIterator.$(OBJEXT)
-	-rm -f org/w3c/dom/traversal/NodeIterator.lo
-	-rm -f org/w3c/dom/traversal/TreeWalker.$(OBJEXT)
-	-rm -f org/w3c/dom/traversal/TreeWalker.lo
-	-rm -f org/w3c/dom/views/AbstractView.$(OBJEXT)
-	-rm -f org/w3c/dom/views/AbstractView.lo
-	-rm -f org/w3c/dom/views/DocumentView.$(OBJEXT)
-	-rm -f org/w3c/dom/views/DocumentView.lo
-	-rm -f org/w3c/dom/xpath/XPathEvaluator.$(OBJEXT)
-	-rm -f org/w3c/dom/xpath/XPathEvaluator.lo
-	-rm -f org/w3c/dom/xpath/XPathException.$(OBJEXT)
-	-rm -f org/w3c/dom/xpath/XPathException.lo
-	-rm -f org/w3c/dom/xpath/XPathExpression.$(OBJEXT)
-	-rm -f org/w3c/dom/xpath/XPathExpression.lo
-	-rm -f org/w3c/dom/xpath/XPathNSResolver.$(OBJEXT)
-	-rm -f org/w3c/dom/xpath/XPathNSResolver.lo
-	-rm -f org/w3c/dom/xpath/XPathNamespace.$(OBJEXT)
-	-rm -f org/w3c/dom/xpath/XPathNamespace.lo
-	-rm -f org/w3c/dom/xpath/XPathResult.$(OBJEXT)
-	-rm -f org/w3c/dom/xpath/XPathResult.lo
 
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/$(DEPDIR)/Attr.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/$(DEPDIR)/CDATASection.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/$(DEPDIR)/CharacterData.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/$(DEPDIR)/Comment.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/$(DEPDIR)/DOMConfiguration.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/$(DEPDIR)/DOMError.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/$(DEPDIR)/DOMErrorHandler.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/$(DEPDIR)/DOMException.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/$(DEPDIR)/DOMImplementation.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/$(DEPDIR)/DOMImplementationList.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/$(DEPDIR)/DOMImplementationSource.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/$(DEPDIR)/DOMLocator.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/$(DEPDIR)/DOMStringList.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/$(DEPDIR)/Document.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/$(DEPDIR)/DocumentFragment.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/$(DEPDIR)/DocumentType.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/$(DEPDIR)/Element.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/$(DEPDIR)/Entity.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/$(DEPDIR)/EntityReference.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/$(DEPDIR)/NameList.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/$(DEPDIR)/NamedNodeMap.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/$(DEPDIR)/Node.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/$(DEPDIR)/NodeList.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/$(DEPDIR)/Notation.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/$(DEPDIR)/ProcessingInstruction.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/$(DEPDIR)/Text.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/$(DEPDIR)/TypeInfo.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/$(DEPDIR)/UserDataHandler.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/bootstrap/$(DEPDIR)/DOMImplementationRegistry.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/css/$(DEPDIR)/CSS2Properties.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/css/$(DEPDIR)/CSSCharsetRule.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/css/$(DEPDIR)/CSSFontFaceRule.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/css/$(DEPDIR)/CSSImportRule.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/css/$(DEPDIR)/CSSMediaRule.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/css/$(DEPDIR)/CSSPageRule.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/css/$(DEPDIR)/CSSPrimitiveValue.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/css/$(DEPDIR)/CSSRule.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/css/$(DEPDIR)/CSSRuleList.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/css/$(DEPDIR)/CSSStyleDeclaration.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/css/$(DEPDIR)/CSSStyleRule.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/css/$(DEPDIR)/CSSStyleSheet.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/css/$(DEPDIR)/CSSUnknownRule.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/css/$(DEPDIR)/CSSValue.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/css/$(DEPDIR)/CSSValueList.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/css/$(DEPDIR)/Counter.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/css/$(DEPDIR)/DOMImplementationCSS.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/css/$(DEPDIR)/DocumentCSS.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/css/$(DEPDIR)/ElementCSSInlineStyle.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/css/$(DEPDIR)/RGBColor.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/css/$(DEPDIR)/Rect.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/css/$(DEPDIR)/ViewCSS.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/events/$(DEPDIR)/DocumentEvent.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/events/$(DEPDIR)/Event.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/events/$(DEPDIR)/EventException.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/events/$(DEPDIR)/EventListener.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/events/$(DEPDIR)/EventTarget.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/events/$(DEPDIR)/MouseEvent.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/events/$(DEPDIR)/MutationEvent.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/events/$(DEPDIR)/UIEvent.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/html2/$(DEPDIR)/HTMLAnchorElement.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/html2/$(DEPDIR)/HTMLAppletElement.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/html2/$(DEPDIR)/HTMLAreaElement.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/html2/$(DEPDIR)/HTMLBRElement.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/html2/$(DEPDIR)/HTMLBaseElement.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/html2/$(DEPDIR)/HTMLBaseFontElement.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/html2/$(DEPDIR)/HTMLBodyElement.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/html2/$(DEPDIR)/HTMLButtonElement.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/html2/$(DEPDIR)/HTMLCollection.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/html2/$(DEPDIR)/HTMLDListElement.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/html2/$(DEPDIR)/HTMLDirectoryElement.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/html2/$(DEPDIR)/HTMLDivElement.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/html2/$(DEPDIR)/HTMLDocument.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/html2/$(DEPDIR)/HTMLElement.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/html2/$(DEPDIR)/HTMLFieldSetElement.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/html2/$(DEPDIR)/HTMLFontElement.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/html2/$(DEPDIR)/HTMLFormElement.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/html2/$(DEPDIR)/HTMLFrameElement.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/html2/$(DEPDIR)/HTMLFrameSetElement.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/html2/$(DEPDIR)/HTMLHRElement.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/html2/$(DEPDIR)/HTMLHeadElement.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/html2/$(DEPDIR)/HTMLHeadingElement.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/html2/$(DEPDIR)/HTMLHtmlElement.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/html2/$(DEPDIR)/HTMLIFrameElement.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/html2/$(DEPDIR)/HTMLImageElement.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/html2/$(DEPDIR)/HTMLInputElement.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/html2/$(DEPDIR)/HTMLIsIndexElement.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/html2/$(DEPDIR)/HTMLLIElement.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/html2/$(DEPDIR)/HTMLLabelElement.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/html2/$(DEPDIR)/HTMLLegendElement.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/html2/$(DEPDIR)/HTMLLinkElement.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/html2/$(DEPDIR)/HTMLMapElement.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/html2/$(DEPDIR)/HTMLMenuElement.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/html2/$(DEPDIR)/HTMLMetaElement.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/html2/$(DEPDIR)/HTMLModElement.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/html2/$(DEPDIR)/HTMLOListElement.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/html2/$(DEPDIR)/HTMLObjectElement.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/html2/$(DEPDIR)/HTMLOptGroupElement.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/html2/$(DEPDIR)/HTMLOptionElement.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/html2/$(DEPDIR)/HTMLOptionsCollection.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/html2/$(DEPDIR)/HTMLParagraphElement.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/html2/$(DEPDIR)/HTMLParamElement.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/html2/$(DEPDIR)/HTMLPreElement.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/html2/$(DEPDIR)/HTMLQuoteElement.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/html2/$(DEPDIR)/HTMLScriptElement.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/html2/$(DEPDIR)/HTMLSelectElement.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/html2/$(DEPDIR)/HTMLStyleElement.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/html2/$(DEPDIR)/HTMLTableCaptionElement.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/html2/$(DEPDIR)/HTMLTableCellElement.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/html2/$(DEPDIR)/HTMLTableColElement.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/html2/$(DEPDIR)/HTMLTableElement.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/html2/$(DEPDIR)/HTMLTableRowElement.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/html2/$(DEPDIR)/HTMLTableSectionElement.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/html2/$(DEPDIR)/HTMLTextAreaElement.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/html2/$(DEPDIR)/HTMLTitleElement.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/html2/$(DEPDIR)/HTMLUListElement.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/ls/$(DEPDIR)/DOMImplementationLS.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/ls/$(DEPDIR)/LSException.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/ls/$(DEPDIR)/LSInput.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/ls/$(DEPDIR)/LSLoadEvent.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/ls/$(DEPDIR)/LSOutput.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/ls/$(DEPDIR)/LSParser.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/ls/$(DEPDIR)/LSParserFilter.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/ls/$(DEPDIR)/LSProgressEvent.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/ls/$(DEPDIR)/LSResourceResolver.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/ls/$(DEPDIR)/LSSerializer.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/ls/$(DEPDIR)/LSSerializerFilter.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/ranges/$(DEPDIR)/DocumentRange.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/ranges/$(DEPDIR)/Range.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/ranges/$(DEPDIR)/RangeException.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/stylesheets/$(DEPDIR)/DocumentStyle.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/stylesheets/$(DEPDIR)/LinkStyle.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/stylesheets/$(DEPDIR)/MediaList.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/stylesheets/$(DEPDIR)/StyleSheet.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/stylesheets/$(DEPDIR)/StyleSheetList.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/traversal/$(DEPDIR)/DocumentTraversal.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/traversal/$(DEPDIR)/NodeFilter.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/traversal/$(DEPDIR)/NodeIterator.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/traversal/$(DEPDIR)/TreeWalker.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/views/$(DEPDIR)/AbstractView.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/views/$(DEPDIR)/DocumentView.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/xpath/$(DEPDIR)/XPathEvaluator.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/xpath/$(DEPDIR)/XPathException.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/xpath/$(DEPDIR)/XPathExpression.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/xpath/$(DEPDIR)/XPathNSResolver.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/xpath/$(DEPDIR)/XPathNamespace.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/w3c/dom/xpath/$(DEPDIR)/XPathResult.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libw3c_gcj_la-w3c.Plo@am__quote@
 
-.java.o:
+.jar.o:
 @am__fastdepGCJ_TRUE@	depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`; \
 @am__fastdepGCJ_TRUE@	if $(GCJCOMPILE) -MT $@ -MD -MP -MF "$$depbase.Tpo" -c -o $@ $<; \
 @am__fastdepGCJ_TRUE@	then mv -f "$$depbase.Tpo" "$$depbase.Po"; else rm -f "$$depbase.Tpo"; exit 1; fi
@@ -1515,7 +524,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepGCJ_FALSE@	DEPDIR=$(DEPDIR) $(GCJDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepGCJ_FALSE@	$(GCJCOMPILE) -c -o $@ $<
 
-.java.obj:
+.jar.obj:
 @am__fastdepGCJ_TRUE@	depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.obj$$||'`; \
 @am__fastdepGCJ_TRUE@	if $(GCJCOMPILE) -MT $@ -MD -MP -MF "$$depbase.Tpo" -c -o $@ `$(CYGPATH_W) '$<'`; \
 @am__fastdepGCJ_TRUE@	then mv -f "$$depbase.Tpo" "$$depbase.Po"; else rm -f "$$depbase.Tpo"; exit 1; fi
@@ -1523,7 +532,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepGCJ_FALSE@	DEPDIR=$(DEPDIR) $(GCJDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepGCJ_FALSE@	$(GCJCOMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
 
-.java.lo:
+.jar.lo:
 @am__fastdepGCJ_TRUE@	depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.lo$$||'`; \
 @am__fastdepGCJ_TRUE@	if $(LTGCJCOMPILE) -MT $@ -MD -MP -MF "$$depbase.Tpo" -c -o $@ $<; \
 @am__fastdepGCJ_TRUE@	then mv -f "$$depbase.Tpo" "$$depbase.Plo"; else rm -f "$$depbase.Tpo"; exit 1; fi
@@ -1531,22 +540,18 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepGCJ_FALSE@	DEPDIR=$(DEPDIR) $(GCJDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepGCJ_FALSE@	$(LTGCJCOMPILE) -c -o $@ $<
 
+libw3c_gcj_la-w3c.lo: w3c.jar
+@am__fastdepGCJ_TRUE@	if $(LIBTOOL) --mode=compile $(GCJ) $(libw3c_gcj_la_GCJFLAGS) $(GCJFLAGS) -MT libw3c_gcj_la-w3c.lo -MD -MP -MF "$(DEPDIR)/libw3c_gcj_la-w3c.Tpo" -c -o libw3c_gcj_la-w3c.lo `test -f 'w3c.jar' || echo '$(srcdir)/'`w3c.jar; \
+@am__fastdepGCJ_TRUE@	then mv -f "$(DEPDIR)/libw3c_gcj_la-w3c.Tpo" "$(DEPDIR)/libw3c_gcj_la-w3c.Plo"; else rm -f "$(DEPDIR)/libw3c_gcj_la-w3c.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	source='w3c.jar' object='libw3c_gcj_la-w3c.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	DEPDIR=$(DEPDIR) $(GCJDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepGCJ_FALSE@	$(LIBTOOL) --mode=compile $(GCJ) $(libw3c_gcj_la_GCJFLAGS) $(GCJFLAGS) -c -o libw3c_gcj_la-w3c.lo `test -f 'w3c.jar' || echo '$(srcdir)/'`w3c.jar
+
 mostlyclean-libtool:
 	-rm -f *.lo
 
 clean-libtool:
 	-rm -rf .libs _libs
-	-rm -rf org/w3c/dom/.libs org/w3c/dom/_libs
-	-rm -rf org/w3c/dom/bootstrap/.libs org/w3c/dom/bootstrap/_libs
-	-rm -rf org/w3c/dom/css/.libs org/w3c/dom/css/_libs
-	-rm -rf org/w3c/dom/events/.libs org/w3c/dom/events/_libs
-	-rm -rf org/w3c/dom/html2/.libs org/w3c/dom/html2/_libs
-	-rm -rf org/w3c/dom/ls/.libs org/w3c/dom/ls/_libs
-	-rm -rf org/w3c/dom/ranges/.libs org/w3c/dom/ranges/_libs
-	-rm -rf org/w3c/dom/stylesheets/.libs org/w3c/dom/stylesheets/_libs
-	-rm -rf org/w3c/dom/traversal/.libs org/w3c/dom/traversal/_libs
-	-rm -rf org/w3c/dom/views/.libs org/w3c/dom/views/_libs
-	-rm -rf org/w3c/dom/xpath/.libs org/w3c/dom/xpath/_libs
 
 distclean-libtool:
 	-rm -f libtool
@@ -1653,28 +658,6 @@ clean-generic:
 
 distclean-generic:
 	-test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
-	-rm -f org/w3c/dom/$(DEPDIR)/$(am__dirstamp)
-	-rm -f org/w3c/dom/$(am__dirstamp)
-	-rm -f org/w3c/dom/bootstrap/$(DEPDIR)/$(am__dirstamp)
-	-rm -f org/w3c/dom/bootstrap/$(am__dirstamp)
-	-rm -f org/w3c/dom/css/$(DEPDIR)/$(am__dirstamp)
-	-rm -f org/w3c/dom/css/$(am__dirstamp)
-	-rm -f org/w3c/dom/events/$(DEPDIR)/$(am__dirstamp)
-	-rm -f org/w3c/dom/events/$(am__dirstamp)
-	-rm -f org/w3c/dom/html2/$(DEPDIR)/$(am__dirstamp)
-	-rm -f org/w3c/dom/html2/$(am__dirstamp)
-	-rm -f org/w3c/dom/ls/$(DEPDIR)/$(am__dirstamp)
-	-rm -f org/w3c/dom/ls/$(am__dirstamp)
-	-rm -f org/w3c/dom/ranges/$(DEPDIR)/$(am__dirstamp)
-	-rm -f org/w3c/dom/ranges/$(am__dirstamp)
-	-rm -f org/w3c/dom/stylesheets/$(DEPDIR)/$(am__dirstamp)
-	-rm -f org/w3c/dom/stylesheets/$(am__dirstamp)
-	-rm -f org/w3c/dom/traversal/$(DEPDIR)/$(am__dirstamp)
-	-rm -f org/w3c/dom/traversal/$(am__dirstamp)
-	-rm -f org/w3c/dom/views/$(DEPDIR)/$(am__dirstamp)
-	-rm -f org/w3c/dom/views/$(am__dirstamp)
-	-rm -f org/w3c/dom/xpath/$(DEPDIR)/$(am__dirstamp)
-	-rm -f org/w3c/dom/xpath/$(am__dirstamp)
 
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
@@ -1686,7 +669,7 @@ clean-am: clean-generic clean-libtool clean-noinstLTLIBRARIES \
 	mostlyclean-am
 
 distclean: distclean-am
-	-rm -rf org/w3c/dom/$(DEPDIR) org/w3c/dom/bootstrap/$(DEPDIR) org/w3c/dom/css/$(DEPDIR) org/w3c/dom/events/$(DEPDIR) org/w3c/dom/html2/$(DEPDIR) org/w3c/dom/ls/$(DEPDIR) org/w3c/dom/ranges/$(DEPDIR) org/w3c/dom/stylesheets/$(DEPDIR) org/w3c/dom/traversal/$(DEPDIR) org/w3c/dom/views/$(DEPDIR) org/w3c/dom/xpath/$(DEPDIR)
+	-rm -rf ./$(DEPDIR)
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-libtool distclean-tags
@@ -1712,7 +695,7 @@ install-man:
 installcheck-am:
 
 maintainer-clean: maintainer-clean-am
-	-rm -rf org/w3c/dom/$(DEPDIR) org/w3c/dom/bootstrap/$(DEPDIR) org/w3c/dom/css/$(DEPDIR) org/w3c/dom/events/$(DEPDIR) org/w3c/dom/html2/$(DEPDIR) org/w3c/dom/ls/$(DEPDIR) org/w3c/dom/ranges/$(DEPDIR) org/w3c/dom/stylesheets/$(DEPDIR) org/w3c/dom/traversal/$(DEPDIR) org/w3c/dom/views/$(DEPDIR) org/w3c/dom/xpath/$(DEPDIR)
+	-rm -rf ./$(DEPDIR)
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 
@@ -1744,14 +727,17 @@ uninstall-am: uninstall-info-am
 	uninstall-am uninstall-info-am
 
 
-classes.stamp:	$(libw3c_convenience_la_SOURCES)
+w3c.jar: classes.stamp
+	find org -name '*.class' -print | $(ZIP) -cfME@ $@
+
+classes.stamp:	$(source_files)
 	here=`pwd`; cd $(srcdir); \
-	$(GCJ_WITH_FLAGS) -C -d $$here $(libw3c_convenience_la_SOURCES)
+	$(GCJ_WITH_FLAGS) -C -d $$here $(source_files)
 	echo > classes.stamp
 
 mostlyclean-local:
 	-find . -name '*.class' | xargs rm
-	-rm classes.stamp
+	-rm classes.stamp w3c.jar
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:

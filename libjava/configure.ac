@@ -162,13 +162,6 @@ AM_PROG_GCJ
 AM_PROG_CC_C_O
 AC_CONFIG_SUBDIRS(libltdl)
 
-if test -z "$with_target_subdir" || test "$with_target_subdir" = "."; then
-   COMPPATH=.
-else
-   COMPPATH=..
-fi
-AC_SUBST(COMPPATH)
-
 # The -no-testsuite modules omit the test subdir.
 AM_CONDITIONAL(TESTSUBDIR, test -d $srcdir/testsuite)
 
@@ -1046,7 +1039,7 @@ NATIVE=yes
 
 # Which gcj do we use?
 which_gcj=default
-built_gcc_dir="`cd ${builddotdot}/../../gcc && ${PWDCMD-pwd}`"
+built_gcc_dir="`cd ${builddotdot}/../../${host_subdir}/gcc && ${PWDCMD-pwd}`"
 if test -n "${with_cross_host}"; then
   # We are being configured with a cross compiler. We can't
   # use ac_exeext, because that is for the target platform.
@@ -1085,8 +1078,8 @@ fi
 case "${which_gcj}" in
    built)
       GCJ="$built_gcc_dir/gcj -B`${PWDCMD-pwd}`/ -B$built_gcc_dir/"
-      GCJH='$(MULTIBUILDTOP)../$(COMPPATH)/gcc/gcjh'
-      ZIP='$(MULTIBUILDTOP)../$(COMPPATH)/fastjar/fastjar'
+      GCJH='$(top_builddir)/$(MULTIBUILDTOP)../../$(host_subdir)/gcc/gcjh'
+      ZIP='$(top_builddir)/$(MULTIBUILDTOP)../../$(host_subdir)/fastjar/fastjar'
    ;;
    cross)
       if test "x${with_newlib}" = "xyes"; then
@@ -1103,7 +1096,7 @@ case "${which_gcj}" in
       GCJ="gcj -B`${PWDCMD-pwd}`/"
       ## In this case, gcj is found outside the build tree.  However, zip is
       ## found in the build tree.
-      ZIP='$(MULTIBUILDTOP)../$(COMPPATH)/fastjar/fastjar'
+      ZIP='$(top_builddir)/$(MULTIBUILDTOP)../$(COMPPATH)/fastjar/fastjar'
       GCJH=gcjh
    ;;
 esac
@@ -1420,6 +1413,12 @@ case " $CONFIG_FILES " in
    ac_file=Makefile . ${libgcj_basedir}/../config-ml.in
    ;;
 esac
+for ac_multi_file in $CONFIG_FILES; do
+  case $ac_multi_file in
+  */Makefile)
+    grep "^MULTI[[^ ]]* =" Makefile >> "$ac_multi_file" ;;
+  esac
+done
 ],
 srcdir=${srcdir}
 host=${host}

@@ -1,3 +1,136 @@
+2005-04-06  Tom Tromey  <tromey@redhat.com>
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (lib_gnu_java_awt_peer_gtk_la_SOURCES): Removed
+	gtk_awt_peer_sources.
+	(lib_gnu_java_awt_peer_gtk_la_LIBADD): Added gtk-awt-peer.lo.
+	(lib_gnu_java_awt_peer_gtk_la_DEPENDENCIES): Likewise.
+	($(gtk_awt_peer_sources:.java=.lo)): Removed.
+	(gtk-awt-peer.lo): New target.
+
+	* java/lang/natVMClassLoader.cc (getSystemClassLoaderInternal):
+	Updated for name change.
+	(nativeFindClass): New method.
+	(loadClass): Use nativeFindClass.
+	* java/lang/natClassLoader.cc (_Jv_FindClass): Use single-argument
+	form of loadClass.
+	* java/lang/VMClassLoader.java (tried_libraries, lib_control,
+	LIB_FULL, LIB_CACHE, LIB_NEVER): New fields from old
+	VMClassLoader.
+	(initialize): New method.
+	(nativeFindClass): Declare.
+	* gnu/gcj/runtime/natVMClassLoader.cc: Removed.
+	* gnu/gcj/runtime/VMClassLoader.java: Removed.
+	* gnu/gcj/runtime/ExtensionClassLoader.java: Renamed from
+	VMClassLoader.java.
+	(definePackageForNative): Removed.
+	(tried_libraries, LIB_CACHE, LIB_FULL, LIB_NEVER, lib_control):
+	Moved to VMClassLoader.java.
+	* prims.cc (_Jv_CreateJavaVM): Updated for renaming.
+	* Makefile.am (gnu/gcj/runtime/ExtensionClassLoader.h): Renamed.
+	(ordinary_java_source_files): Added ExtensionClassLoader.java,
+	removed VMClassLoader.java.
+	(nat_source_files): Removed natVMClassLoader.cc.
+
+	* java/lang/natRuntime.cc (insertSystemProperties): Set
+	gnu.gcj.runtime.endorsed.dirs.
+	* Makefile.in: Rebuilt.
+	* Makefile.am (ordinary_java_source_files): Added
+	HelperClassLoader.java.
+	(AM_CXXFLAGS): Define GCJ_ENDORSED_DIRS.
+	* gnu/gcj/runtime/VMClassLoader.java (VMClassLoader): Extends
+	HelperClassLoader.
+	(init): Use addDirectoriesFromProperty.
+	* gnu/gcj/runtime/BootClassLoader.java (BootClassLoader): Extends
+	HelperClassLoader.  Use addDirectoriesFromProperty.  Handle
+	gnu.gcj.runtime.endorsed.dirs.
+	* gnu/gcj/runtime/HelperClassLoader.java: New file.
+
+	* gnu/gcj/runtime/BootClassLoader.java (BootClassLoader): Don't
+	add sax and w3c libraries.
+	* Makefile.am (libgij_la_LIBADD): Added libsax-gcj.la and
+	libw3c-gcj.la.
+	* external/w3c_dom/Makefile.in: Rebuilt.
+	* external/w3c_dom/Makefile.am (libw3c_gcj_la_GCJFLAGS): Include
+	AM_GCJFLAGS.
+	(libw3c_gcj_la_LDFLAGS): New variable.
+	(noinst_LTLIBRARIES): Renamed.
+	* external/sax/Makefile.in: Rebuilt.
+	* external/sax/Makefile.am (libsax_gcj_la_GCJFLAGS): Include
+	AM_GCJFLAGS.
+	(libsax_gcj_la_LDFLAGS): New variable.
+	(noinst_LTLIBRARIES): Renamed.
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (AM_CXXFLAGS): Define TOOLEXECLIBDIR.
+	(libgcj0_convenience_la_SOURCES): Don't include
+	gnu_xml_source_files.
+	(libgcj0_convenience_la_LIBADD): New variable.
+	(libgcj_la_LIBADD): Don't include sax or w3c_dom.
+	(all_java_source_files): javax_imageio_source_files,
+	javax_xml_source_files, and gnu_java_beans_source_files.
+	($(gnu_xml_source_files:.java=.lo)): Removed target.
+	(gnu-xml.lo): New target.
+	(javax-imageio.lo): Likewise.
+	(javax-xml.lo): Likewise.
+	(gnu-java-beans.lo): Likewise.
+	(gnu_java_beans_source_files): New variable.
+	(javax_imageio_source_files): Likewise.
+	(javax_xml_source_files): Likewise.
+	(javax_source_files): Moved files to other variable.
+	(awt_java_source_files): Likewise.
+	(ordinary_java_source_files): Added BootClassLoader.java.
+	* java/lang/natVMClassLoader.cc (defineClass): Use boot loader,
+	not system class loader.
+	(initBootLoader): New method.
+	(loadClass): Search bootLoader.
+	* java/lang/natClassLoader.cc (_Jv_RegisterInitiatingLoader): Use
+	boot loader, not system class loader.
+	(_Jv_UnregisterInitiatingLoader): Likewise.
+	(_Jv_FindClass): Likewise.  Ensure entries in
+	bootstrap_class_list are unique.
+	* java/lang/natClass.cc (getClassLoader): Don't special case
+	system class loader.
+	* java/lang/VMClassLoader.java (bootLoader): New field.
+	(getResource): Use bootLoader.
+	(getResources): Likewise.
+	(initBootLoader): Declare.
+	* gnu/gcj/runtime/BootClassLoader.java: New file.
+	* external/sax/org/xml/sax/helpers/NamespaceSupport.java
+	(EMPTY_ENUMERATION): Now package-private.
+	* external/w3c_com/Makefile.in: Rebuilt.
+	* external/w3c_com/Makefile.am (MULTIBUILDTOP): New variable.
+	(w3c.jar): New target.
+	(classes.stamp): Updated.
+	(toolexeclib_LTLIBRARIES): Renamed from noinst_LTLIBRARIES.
+	Changed name of library.
+	(libw3c_gcj_la_SOURCES): New variable.
+	(libw3c_gcj_la_GCJFLAGS): Likewise.
+	(source_files): Renamed from lib3c_convenience_la_SOURCES.
+	* external/sax/Makefile.in: Rebuilt.
+	* external/sax/Makefile.am (MULTIBUILDTOP): New variable.
+	(sax.jar): New target.
+	(classes.stamp): Updated.
+	(toolexeclib_LTLIBRARIES): Renamed from noinst_LTLIBRARIES.
+	Changed name of library.
+	(libsax_gcj_la_SOURCES): New variable.
+	(libsax_gcj_la_GCJFLAGS): Likewise.
+	(source_files): Renamed from libsax_convenience_la_SOURCES.
+	* prims.cc (_Jv_CreateJavaVM): Initialize the bootstrap class
+	loader.
+	(_Jv_RunMain): Handle case where 'runtime' is NULL at exit.
+
+2005-03-28  Alexandre Oliva  <aoliva@redhat.com>
+
+	* configure.ac: Revert 2005-03-25's patch.  Propagate MULTIlib
+	settings to sub Makefiles.
+	(GCJH, ZIP): Prefix with top_builddir.
+	* configure: Rebuild.
+	* external/w3c_dom/Makefile.am (MULTIBUILDTOP): Don't override.
+	* external/w3c_dom/Makefile.in: Rebuild.
+	* external/sax/Makefile.am (MULTIBUILDTOP): Don't override.
+	* external/sax/Makefile.in: Rebuild.
+
 2005-04-05  Andrew Haley  <aph@redhat.com>
 
 	* gnu/gcj/tools/gcj_dbtool/Main.java (Fileset): New class.

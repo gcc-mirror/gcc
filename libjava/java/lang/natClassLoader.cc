@@ -26,7 +26,6 @@ details.  */
 #include <java/lang/Character.h>
 #include <java/lang/Thread.h>
 #include <java/lang/ClassLoader.h>
-#include <gnu/gcj/runtime/VMClassLoader.h>
 #include <java/lang/InternalError.h>
 #include <java/lang/IllegalAccessError.h>
 #include <java/lang/LinkageError.h>
@@ -43,6 +42,7 @@ details.  */
 #include <java/io/Serializable.h>
 #include <java/lang/Cloneable.h>
 #include <java/util/HashMap.h>
+#include <gnu/gcj/runtime/BootClassLoader.h>
 
 // Size of local hash table.
 #define HASH_LEN 1013
@@ -106,7 +106,7 @@ void
 _Jv_RegisterInitiatingLoader (jclass klass, java::lang::ClassLoader *loader)
 {
   if (! loader)
-    loader = java::lang::ClassLoader::systemClassLoader;
+    loader = java::lang::VMClassLoader::bootLoader;
   loader->loadedClasses->put(klass->name->toString(), klass);
 }
 
@@ -116,7 +116,7 @@ void
 _Jv_UnregisterInitiatingLoader (jclass klass, java::lang::ClassLoader *loader)
 {
   if (! loader)
-    loader = java::lang::ClassLoader::systemClassLoader;
+    loader = java::lang::VMClassLoader::bootLoader;
   loader->loadedClasses->remove(klass->name->toString());
 }
 
@@ -211,35 +211,37 @@ _Jv_FindClass (_Jv_Utf8Const *name, java::lang::ClassLoader *loader)
   // See if the class was already loaded by this loader.  This handles
   // initiating loader checks, as we register classes with their
   // initiating loaders.
-  java::lang::ClassLoader *sys = java::lang::ClassLoader::systemClassLoader;
+
+  java::lang::ClassLoader *boot = java::lang::VMClassLoader::bootLoader;
   java::lang::ClassLoader *real = loader;
   if (! real)
-    real = sys;
+    real = boot;
   jstring sname = name->toString();
   // We might still be bootstrapping the VM, in which case there
-  // won't be a system class loader yet.
+  // won't be a bootstrap class loader yet.
   jclass klass = real ? real->findLoadedClass (sname) : NULL;
 
   if (! klass)
     {
       if (loader)
 	{
-	  // Load using a user-defined loader, jvmspec 5.3.2
-	  klass = loader->loadClass(sname, false);
+	  // Load using a user-defined loader, jvmspec 5.3.2.
+	  // Note that we explicitly must call the single-argument form.
+	  klass = loader->loadClass(sname);
 
 	  // If "loader" delegated the loadClass operation to another
 	  // loader, explicitly register that it is also an initiating
 	  // loader of the given class.
-	  java::lang::ClassLoader *delegate = (loader == sys
+	  java::lang::ClassLoader *delegate = (loader == boot
 					       ? NULL
 					       : loader);
 	  if (klass && klass->getClassLoaderInternal () != delegate)
 	    _Jv_RegisterInitiatingLoader (klass, loader);
 	}
-      else if (sys)
+      else if (boot)
 	{
 	  // Load using the bootstrap loader jvmspec 5.3.1.
-	  klass = sys->loadClass (sname, false); 
+	  klass = java::lang::VMClassLoader::loadClass (sname, false); 
 
 	  // Register that we're an initiating loader.
 	  if (klass)
@@ -250,15 +252,30 @@ _Jv_FindClass (_Jv_Utf8Const *name, java::lang::ClassLoader *loader)
 	  // Not even a bootstrap loader, try the built-in cache.
 	  klass = _Jv_FindClassInCache (name);
 
-	  if (bootstrap_index == BOOTSTRAP_CLASS_LIST_SIZE)
-	    abort ();
-	  bootstrap_class_list[bootstrap_index++] = klass;
+	  if (klass)
+	    {
+	      bool found = false;
+	      for (int i = 0; i < bootstrap_index; ++i)
+		{
+		  if (bootstrap_class_list[i] == klass)
+		    {
+		      found = true;
+		      break;
+		    }
+		}
+	      if (! found)
+		{
+		  if (bootstrap_index == BOOTSTRAP_CLASS_LIST_SIZE)
+		    abort ();
+		  bootstrap_class_list[bootstrap_index++] = klass;
+		}
+	    }
 	}
     }
   else
     {
-      // we need classes to be in the hash while
-      // we're loading, so that they can refer to themselves. 
+      // We need classes to be in the hash while we're loading, so
+      // that they can refer to themselves.
       _Jv_Linker::wait_for_state (klass, JV_STATE_LOADED);
     }
 

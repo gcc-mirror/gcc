@@ -192,8 +192,10 @@ AM_CXXFLAGS = \
         -DJAVA_HOME="\"$(JAVA_HOME_DIR)\"" \
         -DBOOT_CLASS_PATH="\"$(BOOT_CLASS_PATH_DIR)\"" \
 	-DJAVA_EXT_DIRS="\"$(jardir)/ext\"" \
+	-DGCJ_ENDORSED_DIRS="\"$(jardir)/gcj-endorsed\"" \
 	-DLIBGCJ_DEFAULT_DATABASE="\"$(dbexecdir)/$(db_name)\"" \
-	-DLIBGCJ_DEFAULT_DATABASE_PATH_TAIL="\"$(db_pathtail)\""
+	-DLIBGCJ_DEFAULT_DATABASE_PATH_TAIL="\"$(db_pathtail)\"" \
+	-DTOOLEXECLIBDIR="\"$(toolexeclibdir)\""
 
 AM_GCJFLAGS = \
 	@LIBGCJ_JAVAFLAGS@ \
@@ -230,7 +232,9 @@ BOOTCLASSPATH = $(here)'$(CLASSPATH_SEPARATOR)'$(srcdir)'$(CLASSPATH_SEPARATOR)'
 libgij_la_SOURCES = gij.cc
 libgij_la_DEPENDENCIES = libgcj.la libgcj.spec
 ## See jv_convert_LDADD.
-libgij_la_LIBADD = -L$(here)/.libs libgcj.la
+libgij_la_LIBADD = -L$(here)/.libs libgcj.la \
+	external/sax/libsax-gcj.la \
+	external/w3c_dom/libw3c-gcj.la
 ## The mysterious backslash in the grep pattern is consumed by make.
 libgij_la_LDFLAGS = -rpath $(toolexeclibdir) \
         -version-info `grep -v '^\#' $(srcdir)/libtool-version` $(LIBGCJ_LD_SYMBOLIC)
@@ -242,12 +246,16 @@ libgij_la_LDFLAGS = -rpath $(toolexeclibdir) \
 libgcj0_convenience_la_SOURCES = prims.cc jni.cc exception.cc \
 	link.cc defineclass.cc interpret.cc verify.cc \
 	$(nat_source_files) $(math_c_source_files) $(java_source_files) \
-	$(gnu_xml_source_files) $(built_java_source_files) \
+	$(built_java_source_files) \
 	$(BOEHMGC_SRC) $(NOGC_SRC) \
 	$(BACKTRACE_SRC) \
 	$(POSIX_PLATFORM_SRC) $(WIN32_PLATFORM_SRC) $(ECOS_PLATFORM_SRC) \
 	$(DARWIN_CRT_SRC) \
 	$(POSIX_THREAD_SRC) $(WIN32_THREAD_SRC) $(NO_THREAD_SRC)
+libgcj0_convenience_la_LIBADD = \
+	gnu-xml.lo javax-imageio.lo \
+	javax-xml.lo gnu-java-beans.lo
+
 noinst_LTLIBRARIES = libgcj0_convenience.la
 
 libgcj_la_SOURCES =
@@ -263,13 +271,11 @@ libgcj_la_LDFLAGS = -rpath $(toolexeclibdir) $(THREADLDFLAGS) $(THREADLIBS) \
 	$(LIBLTDL) $(SYS_ZLIBS) \
 	-version-info `grep -v '^\#' $(srcdir)/libtool-version`
 libgcj_la_LIBADD = \
-	external/sax/libsax_convenience.la \
-	external/w3c_dom/libw3c_convenience.la \
 	libgcj0_convenience.la \
 	$(LIBFFI) $(ZLIBS) $(GCLIBS) $(propertyo_files)
-libgcj_la_DEPENDENCIES = libgcj-@gcc_version@.jar \
+libgcj_la_DEPENDENCIES = libgcj-$(gcc_version).jar \
 	java/lang/fdlibm.h java/lang/ieeefp.h java/lang/mprec.h \
-	$(libgcj_la_LIBADD)
+	$(LIBLTDL) $(libgcj_la_LIBADD)
 libgcj_la_LINK = $(LIBLINK)
 
 
@@ -474,7 +480,6 @@ jni/gtk-peer/gnu_java_awt_peer_gtk_GtkWindowPeer.lo: $(top_builddir)/jniinclude/
 $(lib_gnu_java_awt_peer_gtk_la_OBJECTS): $(lib_gnu_java_awt_peer_gtk_la_DEPENDENCIES)
 
 lib_gnu_java_awt_peer_gtk_la_SOURCES = \
-$(gtk_awt_peer_sources) \
 $(gtk_c_source_files) \
 jni/gtk-peer/gthread-jni.h \
 jni/gtk-peer/gtkpeer.h \
@@ -485,8 +490,8 @@ lib_gnu_java_awt_peer_gtk_la_CFLAGS = \
 	-I$(srcdir)/jni/gtk-peer $(PEDANTIC_CFLAGS) $(GTK_CFLAGS) $(LIBART_CFLAGS) \
 	$(X_CFLAGS) $(CAIRO_CFLAGS) $(PANGOFT2_CFLAGS)
 lib_gnu_java_awt_peer_gtk_la_GCJFLAGS = $(AM_GCJFLAGS) -fjni
-lib_gnu_java_awt_peer_gtk_la_LIBADD = $(GTK_LIBS) $(GLIB_LIBS) $(LIBART_LIBS) $(CAIRO_LIBS) $(PANGOFT2_LIBS)
-lib_gnu_java_awt_peer_gtk_la_DEPENDENCIES = $(gtk_jni_headers) libgcj-@gcc_version@.jar libgcj.la libgcj.spec
+lib_gnu_java_awt_peer_gtk_la_LIBADD = gtk-awt-peer.lo $(GTK_LIBS) $(GLIB_LIBS) $(LIBART_LIBS) $(CAIRO_LIBS) $(PANGOFT2_LIBS)
+lib_gnu_java_awt_peer_gtk_la_DEPENDENCIES = gtk-awt-peer.lo $(gtk_jni_headers) libgcj-$(gcc_version).jar libgcj.la libgcj.spec
 ## The mysterious backslash in the grep pattern is consumed by make.
 lib_gnu_java_awt_peer_gtk_la_LDFLAGS = \
         -version-info `grep -v '^\#' $(srcdir)/libtool-version` $(LIBGCJ_LD_SYMBOLIC) $(X_LIBS) -lXtst
@@ -524,7 +529,10 @@ all_java_source_files = \
     $(built_java_source_files) \
     $(gtk_awt_peer_sources) \
     $(xlib_java_source_files) \
-    $(gnu_xml_source_files)
+    $(gnu_xml_source_files) \
+    $(javax_imageio_source_files) \
+    $(javax_xml_source_files) \
+    $(gnu_java_beans_source_files)
 
 all_java_class_files = $(all_java_source_files:.java=.class)
 
@@ -621,9 +629,6 @@ SUFFIXES = .class .java .h .properties
 $(filter-out gnu/gcj/runtime/StackTrace.lo, $(javao_files)) $(xlib_javao_files): %.lo: %.java
 	$(LTGCJCOMPILE) -o $@ -c $<
 
-$(gtk_awt_peer_sources:.java=.lo) $(gnu_xml_source_files:.java=.lo): %.lo: %.java
-	$(LTGCJCOMPILE) -fjni -o $@ -c $<
-
 ## A special case.  The sibcall optimization can change the number of
 ## frames on the stack, and StackTrace makes assumptions about this
 ## number.
@@ -644,6 +649,69 @@ lib-gnu-awt-xlib.la: $(lib_gnu_awt_xlib_la_OBJECTS) $(lib_gnu_awt_xlib_la_DEPEND
 	@: $(call write_entries_to_file,$(lib_gnu_awt_xlib_la_OBJECTS) $(lib_gnu_awt_xlib_la_LIBADD),lib_gnu_awt_xlib.objectlist)
 	$(lib_gnu_awt_xlib_la_LINK) -objectlist lib_gnu_awt_xlib.objectlist \
 	-rpath $(toolexeclibdir) $(lib_gnu_awt_xlib_la_LDFLAGS) $(LIBS)
+
+## ################################################################
+
+##
+## Some packages must be built with the binary compatibility ABI.  We
+## compile each such package into a .so, broken down more or less by
+## conceptual unit.
+##
+
+## Depend on the sources, even though we are going to compile the
+## classes.
+gnu-xml.lo: $(gnu_xml_source_files)
+## FIXME: this is ugly.  We want to make sure the .class files have
+## been built, but we don't want a real dependency on them as this
+## would cause our target to be rebuilt whenever any .java file is
+## touched.
+	$(MAKE) classes.stamp
+	$(LTGCJCOMPILE) -fjni -findirect-dispatch -c -o gnu-xml.lo \
+		`find gnu/xml -name '*.class' -print`
+
+## Depend on the sources, even though we are going to compile the
+## classes.
+javax-imageio.lo: $(javax_imageio_source_files)
+## FIXME: this is ugly.  We want to make sure the .class files have
+## been built, but we don't want a real dependency on them as this
+## would cause our target to be rebuilt whenever any .java file is
+## touched.
+	$(MAKE) classes.stamp
+	$(LTGCJCOMPILE) -findirect-dispatch -c -o javax-imageio.lo \
+		`find javax/imageio -name '*.class' -print`
+
+## Depend on the sources, even though we are going to compile the
+## classes.
+javax-xml.lo: $(javax_xml_source_files)
+## FIXME: this is ugly.  We want to make sure the .class files have
+## been built, but we don't want a real dependency on them as this
+## would cause our target to be rebuilt whenever any .java file is
+## touched.
+	$(MAKE) classes.stamp
+	$(LTGCJCOMPILE) -findirect-dispatch -c -o javax-xml.lo \
+		`find javax/xml -name '*.class' -print`
+
+## Depend on the sources, even though we are going to compile the
+## classes.
+gnu-java-beans.lo: $(gnu_java_beans_source_files)
+## FIXME: this is ugly.  We want to make sure the .class files have
+## been built, but we don't want a real dependency on them as this
+## would cause our target to be rebuilt whenever any .java file is
+## touched.
+	$(MAKE) classes.stamp
+	$(LTGCJCOMPILE) -findirect-dispatch -c -o gnu-java-beans.lo \
+		`find gnu/java/beans -name '*.class' -print`
+
+## Depend on the sources, even though we are going to compile the
+## classes.
+gtk-awt-peer.lo: $(gtk_awt_peer_sources)
+## FIXME: this is ugly.  We want to make sure the .class files have
+## been built, but we don't want a real dependency on them as this
+## would cause our target to be rebuilt whenever any .java file is
+## touched.
+	$(MAKE) classes.stamp
+	$(LTGCJCOMPILE) -findirect-dispatch -fjni -c -o gtk-awt-peer.lo \
+		`find gnu/java/awt/peer/gtk -name '*.class' -print`
 
 ## ################################################################
 
@@ -764,7 +832,7 @@ java/lang/reflect/Proxy$$ProxyType.h: java/lang/reflect/Proxy.class
 	$(GCJH) -classpath '' -bootclasspath $(top_builddir) \
 	'java/lang/reflect/Proxy$$ProxyType'
 
-gnu/gcj/runtime/VMClassLoader.h: gnu/gcj/runtime/VMClassLoader.class
+gnu/gcj/runtime/ExtensionClassLoader.h: gnu/gcj/runtime/ExtensionClassLoader.class
 	$(GCJH) -classpath '' -bootclasspath $(top_builddir) \
 	    -friend 'class ::java::lang::ClassLoader;' \
 	    $(basename $<)
@@ -1072,40 +1140,7 @@ gnu/gcj/convert/UnicodeToBytes.java
 ## hand.
 special_java_source_files = java/lang/Class.java java/lang/Object.java
 
-awt_java_source_files =	\
-gnu/awt/LightweightRedirector.java \
-gnu/awt/j2d/AbstractGraphicsState.java \
-gnu/awt/j2d/DirectRasterGraphics.java \
-gnu/awt/j2d/Graphics2DImpl.java \
-gnu/awt/j2d/IntegerGraphicsState.java \
-gnu/awt/j2d/MappedRaster.java \
-gnu/java/awt/BitMaskExtent.java \
-gnu/java/awt/Buffers.java \
-gnu/java/awt/BitwiseXORComposite.java \
-gnu/java/awt/ComponentDataBlitOp.java \
-gnu/java/awt/ClasspathToolkit.java \
-gnu/java/awt/EmbeddedWindow.java \
-gnu/java/awt/EmbeddedWindowSupport.java \
-gnu/java/awt/EventModifier.java \
-gnu/java/awt/color/CieXyzConverter.java \
-gnu/java/awt/color/ClutProfileConverter.java \
-gnu/java/awt/color/ColorLookUpTable.java \
-gnu/java/awt/color/ColorSpaceConverter.java \
-gnu/java/awt/color/GrayProfileConverter.java \
-gnu/java/awt/color/GrayScaleConverter.java \
-gnu/java/awt/color/LinearRGBConverter.java \
-gnu/java/awt/color/ProfileHeader.java \
-gnu/java/awt/color/PyccConverter.java \
-gnu/java/awt/color/RgbProfileConverter.java \
-gnu/java/awt/color/SrgbConverter.java \
-gnu/java/awt/color/TagEntry.java \
-gnu/java/awt/color/ToneReproductionCurve.java \
-gnu/java/awt/image/ImageDecoder.java \
-gnu/java/awt/image/XBMDecoder.java \
-gnu/java/awt/peer/EmbeddedWindowPeer.java \
-gnu/java/awt/peer/GLightweightPeer.java \
-gnu/java/awt/peer/ClasspathFontPeer.java \
-gnu/java/awt/peer/ClasspathTextLayoutPeer.java \
+gnu_java_beans_source_files = \
 gnu/java/beans/decoder/AbstractContext.java \
 gnu/java/beans/decoder/AbstractCreatableObjectContext.java \
 gnu/java/beans/decoder/AbstractElementHandler.java \
@@ -1157,7 +1192,42 @@ gnu/java/beans/BeanInfoEmbryo.java \
 gnu/java/beans/DummyAppletContext.java \
 gnu/java/beans/DummyAppletStub.java \
 gnu/java/beans/ExplicitBeanInfo.java \
-gnu/java/beans/IntrospectionIncubator.java \
+gnu/java/beans/IntrospectionIncubator.java
+
+awt_java_source_files =	\
+gnu/awt/LightweightRedirector.java \
+gnu/awt/j2d/AbstractGraphicsState.java \
+gnu/awt/j2d/DirectRasterGraphics.java \
+gnu/awt/j2d/Graphics2DImpl.java \
+gnu/awt/j2d/IntegerGraphicsState.java \
+gnu/awt/j2d/MappedRaster.java \
+gnu/java/awt/BitMaskExtent.java \
+gnu/java/awt/Buffers.java \
+gnu/java/awt/BitwiseXORComposite.java \
+gnu/java/awt/ComponentDataBlitOp.java \
+gnu/java/awt/ClasspathToolkit.java \
+gnu/java/awt/EmbeddedWindow.java \
+gnu/java/awt/EmbeddedWindowSupport.java \
+gnu/java/awt/EventModifier.java \
+gnu/java/awt/color/CieXyzConverter.java \
+gnu/java/awt/color/ClutProfileConverter.java \
+gnu/java/awt/color/ColorLookUpTable.java \
+gnu/java/awt/color/ColorSpaceConverter.java \
+gnu/java/awt/color/GrayProfileConverter.java \
+gnu/java/awt/color/GrayScaleConverter.java \
+gnu/java/awt/color/LinearRGBConverter.java \
+gnu/java/awt/color/ProfileHeader.java \
+gnu/java/awt/color/PyccConverter.java \
+gnu/java/awt/color/RgbProfileConverter.java \
+gnu/java/awt/color/SrgbConverter.java \
+gnu/java/awt/color/TagEntry.java \
+gnu/java/awt/color/ToneReproductionCurve.java \
+gnu/java/awt/image/ImageDecoder.java \
+gnu/java/awt/image/XBMDecoder.java \
+gnu/java/awt/peer/EmbeddedWindowPeer.java \
+gnu/java/awt/peer/GLightweightPeer.java \
+gnu/java/awt/peer/ClasspathFontPeer.java \
+gnu/java/awt/peer/ClasspathTextLayoutPeer.java \
 java/applet/Applet.java \
 java/applet/AppletStub.java \
 java/applet/AppletContext.java \
@@ -2000,7 +2070,7 @@ gnu/java/rmi/server/UnicastRemoteStub.java \
 gnu/java/rmi/server/UnicastServer.java \
 gnu/java/rmi/server/UnicastServerRef.java
 
-javax_source_files = \
+javax_imageio_source_files = \
 javax/imageio/ImageWriteParam.java \
 javax/imageio/ImageReader.java \
 javax/imageio/ImageWriter.java \
@@ -2046,7 +2116,63 @@ javax/imageio/event/IIOWriteProgressListener.java \
 javax/imageio/ImageTranscoder.java \
 javax/imageio/ImageTypeSpecifier.java \
 javax/imageio/ImageIO.java \
-javax/imageio/IIOImage.java \
+javax/imageio/IIOImage.java
+
+javax_xml_source_files = \
+javax/xml/xpath/XPathConstants.java \
+javax/xml/xpath/XPathFunction.java \
+javax/xml/xpath/XPathVariableResolver.java \
+javax/xml/xpath/XPathExpressionException.java \
+javax/xml/xpath/XPathFunctionResolver.java \
+javax/xml/xpath/XPath.java \
+javax/xml/xpath/XPathFactoryConfigurationException.java	\
+javax/xml/xpath/XPathFactory.java \
+javax/xml/xpath/XPathException.java \
+javax/xml/xpath/XPathExpression.java \
+javax/xml/xpath/XPathFunctionException.java \
+javax/xml/validation/ValidatorHandler.java \
+javax/xml/validation/Validator.java \
+javax/xml/validation/TypeInfoProvider.java \
+javax/xml/validation/SchemaFactory.java	\
+javax/xml/validation/Schema.java \
+javax/xml/parsers/SAXParserFactory.java	\
+javax/xml/parsers/FactoryConfigurationError.java \
+javax/xml/parsers/SAXParser.java \
+javax/xml/parsers/DocumentBuilderFactory.java \
+javax/xml/parsers/ParserConfigurationException.java \
+javax/xml/parsers/DocumentBuilder.java \
+javax/xml/datatype/DatatypeFactory.java	\
+javax/xml/datatype/XMLGregorianCalendar.java \
+javax/xml/datatype/Duration.java \
+javax/xml/datatype/DatatypeConfigurationException.java \
+javax/xml/datatype/DatatypeConstants.java \
+javax/xml/XMLConstants.java \
+javax/xml/namespace/NamespaceContext.java \
+javax/xml/namespace/QName.java \
+javax/xml/transform/TransformerException.java \
+javax/xml/transform/TransformerFactoryConfigurationError.java \
+javax/xml/transform/sax/SAXResult.java \
+javax/xml/transform/sax/TransformerHandler.java	\
+javax/xml/transform/sax/SAXTransformerFactory.java \
+javax/xml/transform/sax/SAXSource.java \
+javax/xml/transform/sax/TemplatesHandler.java \
+javax/xml/transform/OutputKeys.java \
+javax/xml/transform/stream/StreamResult.java \
+javax/xml/transform/stream/StreamSource.java \
+javax/xml/transform/Source.java	\
+javax/xml/transform/SourceLocator.java \
+javax/xml/transform/ErrorListener.java \
+javax/xml/transform/TransformerConfigurationException.java \
+javax/xml/transform/Templates.java \
+javax/xml/transform/Result.java	\
+javax/xml/transform/URIResolver.java \
+javax/xml/transform/dom/DOMSource.java \
+javax/xml/transform/dom/DOMLocator.java	\
+javax/xml/transform/dom/DOMResult.java \
+javax/xml/transform/Transformer.java \
+javax/xml/transform/TransformerFactory.java
+
+javax_source_files = \
 javax/net/VanillaSocketFactory.java \
 javax/net/ssl/TrustManagerFactorySpi.java \
 javax/net/ssl/SSLKeyException.java \
@@ -2285,58 +2411,6 @@ javax/naming/NameClassPair.java	\
 javax/naming/RefAddr.java \
 javax/naming/CompositeName.java	\
 javax/naming/Name.java \
-javax/xml/xpath/XPathConstants.java \
-javax/xml/xpath/XPathFunction.java \
-javax/xml/xpath/XPathVariableResolver.java \
-javax/xml/xpath/XPathExpressionException.java \
-javax/xml/xpath/XPathFunctionResolver.java \
-javax/xml/xpath/XPath.java \
-javax/xml/xpath/XPathFactoryConfigurationException.java	\
-javax/xml/xpath/XPathFactory.java \
-javax/xml/xpath/XPathException.java \
-javax/xml/xpath/XPathExpression.java \
-javax/xml/xpath/XPathFunctionException.java \
-javax/xml/validation/ValidatorHandler.java \
-javax/xml/validation/Validator.java \
-javax/xml/validation/TypeInfoProvider.java \
-javax/xml/validation/SchemaFactory.java	\
-javax/xml/validation/Schema.java \
-javax/xml/parsers/SAXParserFactory.java	\
-javax/xml/parsers/FactoryConfigurationError.java \
-javax/xml/parsers/SAXParser.java \
-javax/xml/parsers/DocumentBuilderFactory.java \
-javax/xml/parsers/ParserConfigurationException.java \
-javax/xml/parsers/DocumentBuilder.java \
-javax/xml/datatype/DatatypeFactory.java	\
-javax/xml/datatype/XMLGregorianCalendar.java \
-javax/xml/datatype/Duration.java \
-javax/xml/datatype/DatatypeConfigurationException.java \
-javax/xml/datatype/DatatypeConstants.java \
-javax/xml/XMLConstants.java \
-javax/xml/namespace/NamespaceContext.java \
-javax/xml/namespace/QName.java \
-javax/xml/transform/TransformerException.java \
-javax/xml/transform/TransformerFactoryConfigurationError.java \
-javax/xml/transform/sax/SAXResult.java \
-javax/xml/transform/sax/TransformerHandler.java	\
-javax/xml/transform/sax/SAXTransformerFactory.java \
-javax/xml/transform/sax/SAXSource.java \
-javax/xml/transform/sax/TemplatesHandler.java \
-javax/xml/transform/OutputKeys.java \
-javax/xml/transform/stream/StreamResult.java \
-javax/xml/transform/stream/StreamSource.java \
-javax/xml/transform/Source.java	\
-javax/xml/transform/SourceLocator.java \
-javax/xml/transform/ErrorListener.java \
-javax/xml/transform/TransformerConfigurationException.java \
-javax/xml/transform/Templates.java \
-javax/xml/transform/Result.java	\
-javax/xml/transform/URIResolver.java \
-javax/xml/transform/dom/DOMSource.java \
-javax/xml/transform/dom/DOMLocator.java	\
-javax/xml/transform/dom/DOMResult.java \
-javax/xml/transform/Transformer.java \
-javax/xml/transform/TransformerFactory.java \
 javax/security/cert/CertificateNotYetValidException.java \
 javax/security/cert/Certificate.java \
 javax/security/cert/X509Certificate.java \
@@ -2937,18 +3011,20 @@ gnu/gcj/RawDataManaged.java \
 gnu/gcj/io/DefaultMimeTypes.java \
 gnu/gcj/io/MimeTypes.java \
 gnu/gcj/io/SimpleSHSStream.java	\
+gnu/gcj/runtime/BootClassLoader.java \
+gnu/gcj/runtime/ExtensionClassLoader.java \
 gnu/gcj/runtime/FileDeleter.java \
 gnu/gcj/runtime/FinalizerThread.java \
+gnu/gcj/runtime/HelperClassLoader.java \
 gnu/gcj/runtime/JNIWeakRef.java \
 gnu/gcj/runtime/MethodRef.java \
 gnu/gcj/runtime/NameFinder.java \
 gnu/gcj/runtime/PersistentByteMap.java \
 gnu/gcj/runtime/SharedLibHelper.java \
 gnu/gcj/runtime/SharedLibLoader.java \
-gnu/gcj/runtime/StackTrace.java \
 gnu/gcj/runtime/StringBuffer.java \
+gnu/gcj/runtime/StackTrace.java \
 gnu/gcj/runtime/SystemClassLoader.java \
-gnu/gcj/runtime/VMClassLoader.java \
 gnu/gcj/util/Debug.java \
 gnu/java/io/ASN1ParsingException.java \
 gnu/java/io/Base64InputStream.java \
@@ -3709,7 +3785,6 @@ gnu/gcj/runtime/natNameFinder.cc \
 gnu/gcj/runtime/natSharedLibLoader.cc \
 gnu/gcj/runtime/natStackTrace.cc \
 gnu/gcj/runtime/natStringBuffer.cc \
-gnu/gcj/runtime/natVMClassLoader.cc \
 gnu/gcj/util/natDebug.cc \
 gnu/java/lang/natMainThread.cc \
 gnu/java/net/natPlainDatagramSocketImpl.cc \

@@ -14,7 +14,7 @@
 
 @SET_MAKE@
 
-SOURCES = $(libsax_convenience_la_SOURCES)
+SOURCES = $(libsax_gcj_la_SOURCES)
 
 srcdir = @srcdir@
 top_srcdir = @top_srcdir@
@@ -60,37 +60,9 @@ CONFIG_HEADER = $(top_builddir)/include/config.h \
 	$(top_builddir)/gcj/libgcj-config.h
 CONFIG_CLEAN_FILES =
 LTLIBRARIES = $(noinst_LTLIBRARIES)
-libsax_convenience_la_LIBADD =
-am__dirstamp = $(am__leading_dot)dirstamp
-am_libsax_convenience_la_OBJECTS =  \
-	org/xml/sax/SAXNotSupportedException.lo \
-	org/xml/sax/helpers/NamespaceSupport.lo \
-	org/xml/sax/helpers/AttributesImpl.lo \
-	org/xml/sax/helpers/LocatorImpl.lo \
-	org/xml/sax/helpers/DefaultHandler.lo \
-	org/xml/sax/helpers/AttributeListImpl.lo \
-	org/xml/sax/helpers/ParserFactory.lo \
-	org/xml/sax/helpers/NewInstance.lo \
-	org/xml/sax/helpers/XMLFilterImpl.lo \
-	org/xml/sax/helpers/ParserAdapter.lo \
-	org/xml/sax/helpers/XMLReaderAdapter.lo \
-	org/xml/sax/helpers/XMLReaderFactory.lo \
-	org/xml/sax/HandlerBase.lo org/xml/sax/SAXException.lo \
-	org/xml/sax/ContentHandler.lo \
-	org/xml/sax/SAXNotRecognizedException.lo \
-	org/xml/sax/ErrorHandler.lo org/xml/sax/AttributeList.lo \
-	org/xml/sax/Locator.lo org/xml/sax/Attributes.lo \
-	org/xml/sax/SAXParseException.lo org/xml/sax/XMLFilter.lo \
-	org/xml/sax/EntityResolver.lo org/xml/sax/XMLReader.lo \
-	org/xml/sax/ext/Locator2.lo org/xml/sax/ext/LexicalHandler.lo \
-	org/xml/sax/ext/Attributes2Impl.lo \
-	org/xml/sax/ext/DeclHandler.lo org/xml/sax/ext/Attributes2.lo \
-	org/xml/sax/ext/EntityResolver2.lo \
-	org/xml/sax/ext/Locator2Impl.lo \
-	org/xml/sax/ext/DefaultHandler2.lo org/xml/sax/InputSource.lo \
-	org/xml/sax/DocumentHandler.lo org/xml/sax/DTDHandler.lo \
-	org/xml/sax/Parser.lo
-libsax_convenience_la_OBJECTS = $(am_libsax_convenience_la_OBJECTS)
+libsax_gcj_la_LIBADD =
+am_libsax_gcj_la_OBJECTS = libsax_gcj_la-sax.lo
+libsax_gcj_la_OBJECTS = $(am_libsax_gcj_la_OBJECTS)
 DEFAULT_INCLUDES = -I. -I$(srcdir) -I$(top_builddir)/include -I$(top_builddir)/gcj
 depcomp = $(SHELL) $(top_srcdir)/../depcomp
 am__depfiles_maybe = depfiles
@@ -100,8 +72,8 @@ LTGCJCOMPILE = $(LIBTOOL) --mode=compile $(GCJ) $(AM_GCJFLAGS) \
 GCJLD = $(GCJ)
 GCJLINK = $(LIBTOOL) --mode=link $(GCJLD) $(AM_GCJFLAGS) $(GCJFLAGS) \
 	$(AM_LDFLAGS) $(LDFLAGS) -o $@
-SOURCES = $(libsax_convenience_la_SOURCES)
-DIST_SOURCES = $(libsax_convenience_la_SOURCES)
+SOURCES = $(libsax_gcj_la_SOURCES)
+DIST_SOURCES = $(libsax_gcj_la_SOURCES)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -124,7 +96,6 @@ CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
 CHECKREFSPEC = @CHECKREFSPEC@
 CLASSPATH_SEPARATOR = @CLASSPATH_SEPARATOR@
-COMPPATH = @COMPPATH@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
 CXX = @CXX@
@@ -330,7 +301,7 @@ toolexecdir = @toolexecdir@
 toolexeclibdir = @toolexeclibdir@
 toolexecmainlibdir = @toolexecmainlibdir@
 AUTOMAKE_OPTIONS = foreign subdir-objects
-GCJ_WITH_FLAGS = $(GCJ) --encoding=UTF-8 -Wno-deprecated -fbootclasspath=$(BOOTCLASSPATH)
+GCJ_WITH_FLAGS = $(GCJ) --encoding=UTF-8 -Wno-deprecated -fclasspath= -fbootclasspath=$(BOOTCLASSPATH)
 BOOTCLASSPATH = $(here)'$(CLASSPATH_SEPARATOR)'$(srcdir)'$(CLASSPATH_SEPARATOR)'$(top_srcdir)'$(CLASSPATH_SEPARATOR)'$(top_builddir)
 AM_GCJFLAGS = \
 	-B$(top_builddir) \
@@ -340,8 +311,10 @@ AM_GCJFLAGS = \
 	-Wno-deprecated
 
 BUILT_SOURCES = classes.stamp
-noinst_LTLIBRARIES = libsax_convenience.la
-libsax_convenience_la_SOURCES = \
+noinst_LTLIBRARIES = libsax-gcj.la
+libsax_gcj_la_SOURCES = sax.jar
+libsax_gcj_la_GCJFLAGS = -findirect-dispatch $(AM_GCJFLAGS)
+source_files = \
 org/xml/sax/SAXNotSupportedException.java \
 org/xml/sax/helpers/NamespaceSupport.java \
 org/xml/sax/helpers/AttributesImpl.java	\
@@ -383,7 +356,7 @@ all: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
 .SUFFIXES:
-.SUFFIXES: .java .lo .o .obj
+.SUFFIXES: .jar .lo .o .obj
 $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am  $(am__configure_deps)
 	@for dep in $?; do \
 	  case '$(am__configure_deps)' in \
@@ -422,226 +395,18 @@ clean-noinstLTLIBRARIES:
 	  echo "rm -f \"$${dir}/so_locations\""; \
 	  rm -f "$${dir}/so_locations"; \
 	done
-org/xml/sax/$(am__dirstamp):
-	@$(mkdir_p) org/xml/sax
-	@: > org/xml/sax/$(am__dirstamp)
-org/xml/sax/$(DEPDIR)/$(am__dirstamp):
-	@$(mkdir_p) org/xml/sax/$(DEPDIR)
-	@: > org/xml/sax/$(DEPDIR)/$(am__dirstamp)
-org/xml/sax/SAXNotSupportedException.lo: org/xml/sax/$(am__dirstamp) \
-	org/xml/sax/$(DEPDIR)/$(am__dirstamp)
-org/xml/sax/helpers/$(am__dirstamp):
-	@$(mkdir_p) org/xml/sax/helpers
-	@: > org/xml/sax/helpers/$(am__dirstamp)
-org/xml/sax/helpers/$(DEPDIR)/$(am__dirstamp):
-	@$(mkdir_p) org/xml/sax/helpers/$(DEPDIR)
-	@: > org/xml/sax/helpers/$(DEPDIR)/$(am__dirstamp)
-org/xml/sax/helpers/NamespaceSupport.lo:  \
-	org/xml/sax/helpers/$(am__dirstamp) \
-	org/xml/sax/helpers/$(DEPDIR)/$(am__dirstamp)
-org/xml/sax/helpers/AttributesImpl.lo:  \
-	org/xml/sax/helpers/$(am__dirstamp) \
-	org/xml/sax/helpers/$(DEPDIR)/$(am__dirstamp)
-org/xml/sax/helpers/LocatorImpl.lo:  \
-	org/xml/sax/helpers/$(am__dirstamp) \
-	org/xml/sax/helpers/$(DEPDIR)/$(am__dirstamp)
-org/xml/sax/helpers/DefaultHandler.lo:  \
-	org/xml/sax/helpers/$(am__dirstamp) \
-	org/xml/sax/helpers/$(DEPDIR)/$(am__dirstamp)
-org/xml/sax/helpers/AttributeListImpl.lo:  \
-	org/xml/sax/helpers/$(am__dirstamp) \
-	org/xml/sax/helpers/$(DEPDIR)/$(am__dirstamp)
-org/xml/sax/helpers/ParserFactory.lo:  \
-	org/xml/sax/helpers/$(am__dirstamp) \
-	org/xml/sax/helpers/$(DEPDIR)/$(am__dirstamp)
-org/xml/sax/helpers/NewInstance.lo:  \
-	org/xml/sax/helpers/$(am__dirstamp) \
-	org/xml/sax/helpers/$(DEPDIR)/$(am__dirstamp)
-org/xml/sax/helpers/XMLFilterImpl.lo:  \
-	org/xml/sax/helpers/$(am__dirstamp) \
-	org/xml/sax/helpers/$(DEPDIR)/$(am__dirstamp)
-org/xml/sax/helpers/ParserAdapter.lo:  \
-	org/xml/sax/helpers/$(am__dirstamp) \
-	org/xml/sax/helpers/$(DEPDIR)/$(am__dirstamp)
-org/xml/sax/helpers/XMLReaderAdapter.lo:  \
-	org/xml/sax/helpers/$(am__dirstamp) \
-	org/xml/sax/helpers/$(DEPDIR)/$(am__dirstamp)
-org/xml/sax/helpers/XMLReaderFactory.lo:  \
-	org/xml/sax/helpers/$(am__dirstamp) \
-	org/xml/sax/helpers/$(DEPDIR)/$(am__dirstamp)
-org/xml/sax/HandlerBase.lo: org/xml/sax/$(am__dirstamp) \
-	org/xml/sax/$(DEPDIR)/$(am__dirstamp)
-org/xml/sax/SAXException.lo: org/xml/sax/$(am__dirstamp) \
-	org/xml/sax/$(DEPDIR)/$(am__dirstamp)
-org/xml/sax/ContentHandler.lo: org/xml/sax/$(am__dirstamp) \
-	org/xml/sax/$(DEPDIR)/$(am__dirstamp)
-org/xml/sax/SAXNotRecognizedException.lo: org/xml/sax/$(am__dirstamp) \
-	org/xml/sax/$(DEPDIR)/$(am__dirstamp)
-org/xml/sax/ErrorHandler.lo: org/xml/sax/$(am__dirstamp) \
-	org/xml/sax/$(DEPDIR)/$(am__dirstamp)
-org/xml/sax/AttributeList.lo: org/xml/sax/$(am__dirstamp) \
-	org/xml/sax/$(DEPDIR)/$(am__dirstamp)
-org/xml/sax/Locator.lo: org/xml/sax/$(am__dirstamp) \
-	org/xml/sax/$(DEPDIR)/$(am__dirstamp)
-org/xml/sax/Attributes.lo: org/xml/sax/$(am__dirstamp) \
-	org/xml/sax/$(DEPDIR)/$(am__dirstamp)
-org/xml/sax/SAXParseException.lo: org/xml/sax/$(am__dirstamp) \
-	org/xml/sax/$(DEPDIR)/$(am__dirstamp)
-org/xml/sax/XMLFilter.lo: org/xml/sax/$(am__dirstamp) \
-	org/xml/sax/$(DEPDIR)/$(am__dirstamp)
-org/xml/sax/EntityResolver.lo: org/xml/sax/$(am__dirstamp) \
-	org/xml/sax/$(DEPDIR)/$(am__dirstamp)
-org/xml/sax/XMLReader.lo: org/xml/sax/$(am__dirstamp) \
-	org/xml/sax/$(DEPDIR)/$(am__dirstamp)
-org/xml/sax/ext/$(am__dirstamp):
-	@$(mkdir_p) org/xml/sax/ext
-	@: > org/xml/sax/ext/$(am__dirstamp)
-org/xml/sax/ext/$(DEPDIR)/$(am__dirstamp):
-	@$(mkdir_p) org/xml/sax/ext/$(DEPDIR)
-	@: > org/xml/sax/ext/$(DEPDIR)/$(am__dirstamp)
-org/xml/sax/ext/Locator2.lo: org/xml/sax/ext/$(am__dirstamp) \
-	org/xml/sax/ext/$(DEPDIR)/$(am__dirstamp)
-org/xml/sax/ext/LexicalHandler.lo: org/xml/sax/ext/$(am__dirstamp) \
-	org/xml/sax/ext/$(DEPDIR)/$(am__dirstamp)
-org/xml/sax/ext/Attributes2Impl.lo: org/xml/sax/ext/$(am__dirstamp) \
-	org/xml/sax/ext/$(DEPDIR)/$(am__dirstamp)
-org/xml/sax/ext/DeclHandler.lo: org/xml/sax/ext/$(am__dirstamp) \
-	org/xml/sax/ext/$(DEPDIR)/$(am__dirstamp)
-org/xml/sax/ext/Attributes2.lo: org/xml/sax/ext/$(am__dirstamp) \
-	org/xml/sax/ext/$(DEPDIR)/$(am__dirstamp)
-org/xml/sax/ext/EntityResolver2.lo: org/xml/sax/ext/$(am__dirstamp) \
-	org/xml/sax/ext/$(DEPDIR)/$(am__dirstamp)
-org/xml/sax/ext/Locator2Impl.lo: org/xml/sax/ext/$(am__dirstamp) \
-	org/xml/sax/ext/$(DEPDIR)/$(am__dirstamp)
-org/xml/sax/ext/DefaultHandler2.lo: org/xml/sax/ext/$(am__dirstamp) \
-	org/xml/sax/ext/$(DEPDIR)/$(am__dirstamp)
-org/xml/sax/InputSource.lo: org/xml/sax/$(am__dirstamp) \
-	org/xml/sax/$(DEPDIR)/$(am__dirstamp)
-org/xml/sax/DocumentHandler.lo: org/xml/sax/$(am__dirstamp) \
-	org/xml/sax/$(DEPDIR)/$(am__dirstamp)
-org/xml/sax/DTDHandler.lo: org/xml/sax/$(am__dirstamp) \
-	org/xml/sax/$(DEPDIR)/$(am__dirstamp)
-org/xml/sax/Parser.lo: org/xml/sax/$(am__dirstamp) \
-	org/xml/sax/$(DEPDIR)/$(am__dirstamp)
-libsax_convenience.la: $(libsax_convenience_la_OBJECTS) $(libsax_convenience_la_DEPENDENCIES) 
-	$(GCJLINK)  $(libsax_convenience_la_LDFLAGS) $(libsax_convenience_la_OBJECTS) $(libsax_convenience_la_LIBADD) $(LIBS)
+libsax-gcj.la: $(libsax_gcj_la_OBJECTS) $(libsax_gcj_la_DEPENDENCIES) 
+	$(GCJLINK)  $(libsax_gcj_la_LDFLAGS) $(libsax_gcj_la_OBJECTS) $(libsax_gcj_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
-	-rm -f org/xml/sax/AttributeList.$(OBJEXT)
-	-rm -f org/xml/sax/AttributeList.lo
-	-rm -f org/xml/sax/Attributes.$(OBJEXT)
-	-rm -f org/xml/sax/Attributes.lo
-	-rm -f org/xml/sax/ContentHandler.$(OBJEXT)
-	-rm -f org/xml/sax/ContentHandler.lo
-	-rm -f org/xml/sax/DTDHandler.$(OBJEXT)
-	-rm -f org/xml/sax/DTDHandler.lo
-	-rm -f org/xml/sax/DocumentHandler.$(OBJEXT)
-	-rm -f org/xml/sax/DocumentHandler.lo
-	-rm -f org/xml/sax/EntityResolver.$(OBJEXT)
-	-rm -f org/xml/sax/EntityResolver.lo
-	-rm -f org/xml/sax/ErrorHandler.$(OBJEXT)
-	-rm -f org/xml/sax/ErrorHandler.lo
-	-rm -f org/xml/sax/HandlerBase.$(OBJEXT)
-	-rm -f org/xml/sax/HandlerBase.lo
-	-rm -f org/xml/sax/InputSource.$(OBJEXT)
-	-rm -f org/xml/sax/InputSource.lo
-	-rm -f org/xml/sax/Locator.$(OBJEXT)
-	-rm -f org/xml/sax/Locator.lo
-	-rm -f org/xml/sax/Parser.$(OBJEXT)
-	-rm -f org/xml/sax/Parser.lo
-	-rm -f org/xml/sax/SAXException.$(OBJEXT)
-	-rm -f org/xml/sax/SAXException.lo
-	-rm -f org/xml/sax/SAXNotRecognizedException.$(OBJEXT)
-	-rm -f org/xml/sax/SAXNotRecognizedException.lo
-	-rm -f org/xml/sax/SAXNotSupportedException.$(OBJEXT)
-	-rm -f org/xml/sax/SAXNotSupportedException.lo
-	-rm -f org/xml/sax/SAXParseException.$(OBJEXT)
-	-rm -f org/xml/sax/SAXParseException.lo
-	-rm -f org/xml/sax/XMLFilter.$(OBJEXT)
-	-rm -f org/xml/sax/XMLFilter.lo
-	-rm -f org/xml/sax/XMLReader.$(OBJEXT)
-	-rm -f org/xml/sax/XMLReader.lo
-	-rm -f org/xml/sax/ext/Attributes2.$(OBJEXT)
-	-rm -f org/xml/sax/ext/Attributes2.lo
-	-rm -f org/xml/sax/ext/Attributes2Impl.$(OBJEXT)
-	-rm -f org/xml/sax/ext/Attributes2Impl.lo
-	-rm -f org/xml/sax/ext/DeclHandler.$(OBJEXT)
-	-rm -f org/xml/sax/ext/DeclHandler.lo
-	-rm -f org/xml/sax/ext/DefaultHandler2.$(OBJEXT)
-	-rm -f org/xml/sax/ext/DefaultHandler2.lo
-	-rm -f org/xml/sax/ext/EntityResolver2.$(OBJEXT)
-	-rm -f org/xml/sax/ext/EntityResolver2.lo
-	-rm -f org/xml/sax/ext/LexicalHandler.$(OBJEXT)
-	-rm -f org/xml/sax/ext/LexicalHandler.lo
-	-rm -f org/xml/sax/ext/Locator2.$(OBJEXT)
-	-rm -f org/xml/sax/ext/Locator2.lo
-	-rm -f org/xml/sax/ext/Locator2Impl.$(OBJEXT)
-	-rm -f org/xml/sax/ext/Locator2Impl.lo
-	-rm -f org/xml/sax/helpers/AttributeListImpl.$(OBJEXT)
-	-rm -f org/xml/sax/helpers/AttributeListImpl.lo
-	-rm -f org/xml/sax/helpers/AttributesImpl.$(OBJEXT)
-	-rm -f org/xml/sax/helpers/AttributesImpl.lo
-	-rm -f org/xml/sax/helpers/DefaultHandler.$(OBJEXT)
-	-rm -f org/xml/sax/helpers/DefaultHandler.lo
-	-rm -f org/xml/sax/helpers/LocatorImpl.$(OBJEXT)
-	-rm -f org/xml/sax/helpers/LocatorImpl.lo
-	-rm -f org/xml/sax/helpers/NamespaceSupport.$(OBJEXT)
-	-rm -f org/xml/sax/helpers/NamespaceSupport.lo
-	-rm -f org/xml/sax/helpers/NewInstance.$(OBJEXT)
-	-rm -f org/xml/sax/helpers/NewInstance.lo
-	-rm -f org/xml/sax/helpers/ParserAdapter.$(OBJEXT)
-	-rm -f org/xml/sax/helpers/ParserAdapter.lo
-	-rm -f org/xml/sax/helpers/ParserFactory.$(OBJEXT)
-	-rm -f org/xml/sax/helpers/ParserFactory.lo
-	-rm -f org/xml/sax/helpers/XMLFilterImpl.$(OBJEXT)
-	-rm -f org/xml/sax/helpers/XMLFilterImpl.lo
-	-rm -f org/xml/sax/helpers/XMLReaderAdapter.$(OBJEXT)
-	-rm -f org/xml/sax/helpers/XMLReaderAdapter.lo
-	-rm -f org/xml/sax/helpers/XMLReaderFactory.$(OBJEXT)
-	-rm -f org/xml/sax/helpers/XMLReaderFactory.lo
 
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@org/xml/sax/$(DEPDIR)/AttributeList.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/xml/sax/$(DEPDIR)/Attributes.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/xml/sax/$(DEPDIR)/ContentHandler.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/xml/sax/$(DEPDIR)/DTDHandler.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/xml/sax/$(DEPDIR)/DocumentHandler.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/xml/sax/$(DEPDIR)/EntityResolver.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/xml/sax/$(DEPDIR)/ErrorHandler.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/xml/sax/$(DEPDIR)/HandlerBase.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/xml/sax/$(DEPDIR)/InputSource.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/xml/sax/$(DEPDIR)/Locator.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/xml/sax/$(DEPDIR)/Parser.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/xml/sax/$(DEPDIR)/SAXException.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/xml/sax/$(DEPDIR)/SAXNotRecognizedException.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/xml/sax/$(DEPDIR)/SAXNotSupportedException.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/xml/sax/$(DEPDIR)/SAXParseException.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/xml/sax/$(DEPDIR)/XMLFilter.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/xml/sax/$(DEPDIR)/XMLReader.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/xml/sax/ext/$(DEPDIR)/Attributes2.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/xml/sax/ext/$(DEPDIR)/Attributes2Impl.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/xml/sax/ext/$(DEPDIR)/DeclHandler.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/xml/sax/ext/$(DEPDIR)/DefaultHandler2.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/xml/sax/ext/$(DEPDIR)/EntityResolver2.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/xml/sax/ext/$(DEPDIR)/LexicalHandler.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/xml/sax/ext/$(DEPDIR)/Locator2.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/xml/sax/ext/$(DEPDIR)/Locator2Impl.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/xml/sax/helpers/$(DEPDIR)/AttributeListImpl.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/xml/sax/helpers/$(DEPDIR)/AttributesImpl.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/xml/sax/helpers/$(DEPDIR)/DefaultHandler.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/xml/sax/helpers/$(DEPDIR)/LocatorImpl.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/xml/sax/helpers/$(DEPDIR)/NamespaceSupport.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/xml/sax/helpers/$(DEPDIR)/NewInstance.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/xml/sax/helpers/$(DEPDIR)/ParserAdapter.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/xml/sax/helpers/$(DEPDIR)/ParserFactory.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/xml/sax/helpers/$(DEPDIR)/XMLFilterImpl.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/xml/sax/helpers/$(DEPDIR)/XMLReaderAdapter.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@org/xml/sax/helpers/$(DEPDIR)/XMLReaderFactory.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsax_gcj_la-sax.Plo@am__quote@
 
-.java.o:
+.jar.o:
 @am__fastdepGCJ_TRUE@	depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`; \
 @am__fastdepGCJ_TRUE@	if $(GCJCOMPILE) -MT $@ -MD -MP -MF "$$depbase.Tpo" -c -o $@ $<; \
 @am__fastdepGCJ_TRUE@	then mv -f "$$depbase.Tpo" "$$depbase.Po"; else rm -f "$$depbase.Tpo"; exit 1; fi
@@ -649,7 +414,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepGCJ_FALSE@	DEPDIR=$(DEPDIR) $(GCJDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepGCJ_FALSE@	$(GCJCOMPILE) -c -o $@ $<
 
-.java.obj:
+.jar.obj:
 @am__fastdepGCJ_TRUE@	depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.obj$$||'`; \
 @am__fastdepGCJ_TRUE@	if $(GCJCOMPILE) -MT $@ -MD -MP -MF "$$depbase.Tpo" -c -o $@ `$(CYGPATH_W) '$<'`; \
 @am__fastdepGCJ_TRUE@	then mv -f "$$depbase.Tpo" "$$depbase.Po"; else rm -f "$$depbase.Tpo"; exit 1; fi
@@ -657,7 +422,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepGCJ_FALSE@	DEPDIR=$(DEPDIR) $(GCJDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepGCJ_FALSE@	$(GCJCOMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
 
-.java.lo:
+.jar.lo:
 @am__fastdepGCJ_TRUE@	depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.lo$$||'`; \
 @am__fastdepGCJ_TRUE@	if $(LTGCJCOMPILE) -MT $@ -MD -MP -MF "$$depbase.Tpo" -c -o $@ $<; \
 @am__fastdepGCJ_TRUE@	then mv -f "$$depbase.Tpo" "$$depbase.Plo"; else rm -f "$$depbase.Tpo"; exit 1; fi
@@ -665,14 +430,18 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepGCJ_FALSE@	DEPDIR=$(DEPDIR) $(GCJDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepGCJ_FALSE@	$(LTGCJCOMPILE) -c -o $@ $<
 
+libsax_gcj_la-sax.lo: sax.jar
+@am__fastdepGCJ_TRUE@	if $(LIBTOOL) --mode=compile $(GCJ) $(libsax_gcj_la_GCJFLAGS) $(GCJFLAGS) -MT libsax_gcj_la-sax.lo -MD -MP -MF "$(DEPDIR)/libsax_gcj_la-sax.Tpo" -c -o libsax_gcj_la-sax.lo `test -f 'sax.jar' || echo '$(srcdir)/'`sax.jar; \
+@am__fastdepGCJ_TRUE@	then mv -f "$(DEPDIR)/libsax_gcj_la-sax.Tpo" "$(DEPDIR)/libsax_gcj_la-sax.Plo"; else rm -f "$(DEPDIR)/libsax_gcj_la-sax.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	source='sax.jar' object='libsax_gcj_la-sax.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	DEPDIR=$(DEPDIR) $(GCJDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepGCJ_FALSE@	$(LIBTOOL) --mode=compile $(GCJ) $(libsax_gcj_la_GCJFLAGS) $(GCJFLAGS) -c -o libsax_gcj_la-sax.lo `test -f 'sax.jar' || echo '$(srcdir)/'`sax.jar
+
 mostlyclean-libtool:
 	-rm -f *.lo
 
 clean-libtool:
 	-rm -rf .libs _libs
-	-rm -rf org/xml/sax/.libs org/xml/sax/_libs
-	-rm -rf org/xml/sax/ext/.libs org/xml/sax/ext/_libs
-	-rm -rf org/xml/sax/helpers/.libs org/xml/sax/helpers/_libs
 
 distclean-libtool:
 	-rm -f libtool
@@ -779,12 +548,6 @@ clean-generic:
 
 distclean-generic:
 	-test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
-	-rm -f org/xml/sax/$(DEPDIR)/$(am__dirstamp)
-	-rm -f org/xml/sax/$(am__dirstamp)
-	-rm -f org/xml/sax/ext/$(DEPDIR)/$(am__dirstamp)
-	-rm -f org/xml/sax/ext/$(am__dirstamp)
-	-rm -f org/xml/sax/helpers/$(DEPDIR)/$(am__dirstamp)
-	-rm -f org/xml/sax/helpers/$(am__dirstamp)
 
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
@@ -796,7 +559,7 @@ clean-am: clean-generic clean-libtool clean-noinstLTLIBRARIES \
 	mostlyclean-am
 
 distclean: distclean-am
-	-rm -rf org/xml/sax/$(DEPDIR) org/xml/sax/ext/$(DEPDIR) org/xml/sax/helpers/$(DEPDIR)
+	-rm -rf ./$(DEPDIR)
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-libtool distclean-tags
@@ -822,7 +585,7 @@ install-man:
 installcheck-am:
 
 maintainer-clean: maintainer-clean-am
-	-rm -rf org/xml/sax/$(DEPDIR) org/xml/sax/ext/$(DEPDIR) org/xml/sax/helpers/$(DEPDIR)
+	-rm -rf ./$(DEPDIR)
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 
@@ -854,14 +617,17 @@ uninstall-am: uninstall-info-am
 	uninstall-am uninstall-info-am
 
 
-classes.stamp:	$(libsax_convenience_la_SOURCES)
+sax.jar: classes.stamp
+	find org -name '*.class' -print | $(ZIP) -cfME@ $@
+
+classes.stamp:	$(source_files)
 	here=`pwd`; cd $(srcdir); \
-	$(GCJ_WITH_FLAGS) -C -d $$here $(libsax_convenience_la_SOURCES)
+	$(GCJ_WITH_FLAGS) -C -d $$here $(source_files)
 	echo > classes.stamp
 
 mostlyclean-local:
 	-find . -name '*.class' | xargs rm
-	-rm classes.stamp
+	-rm classes.stamp sax.jar
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:

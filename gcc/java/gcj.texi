@@ -2556,6 +2556,15 @@ search is done for each requested class.  If this property is set to
 tried again.  If this property is set to @samp{never}, then lookups
 are never done.  For more information, @xref{Extensions}.
 
+@item gnu.gcj.runtime.endorsed.dirs
+This is like the standard @code{java.endorsed.dirs}, property, but
+specifies some extra directories which are searched after the standard
+endorsed directories.  This is primarily useful for telling
+@code{libgcj} about additional libraries which are ordinarily
+incorporated into the JDK, and which should be loaded by the bootstrap
+class loader, but which are not yet part of @code{libgcj} itself for
+some reason.
+
 @item gnu.gcj.jit.compiler
 @c FIXME we should probably have a whole node on this...
 This is the full path to @command{gcj} executable which should be

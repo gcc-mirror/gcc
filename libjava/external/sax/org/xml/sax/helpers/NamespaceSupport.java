@@ -2,7 +2,7 @@
 // http://www.saxproject.org
 // Written by David Megginson
 // This class is in the Public Domain.  NO WARRANTY!
-// $Id: NamespaceSupport.java,v 1.1 2004/12/23 22:38:42 mark Exp $
+// $Id: NamespaceSupport.java,v 1.2 2005/03/24 00:04:07 tromey Exp $
 
 package org.xml.sax.helpers;
 
@@ -113,7 +113,8 @@ public class NamespaceSupport
     /**
      * An empty enumeration.
      */
-    private final static Enumeration EMPTY_ENUMERATION =
+    // GCJ LOCAL: work around gcj bug by making this package-private
+    final static Enumeration EMPTY_ENUMERATION =
 	new Vector().elements();
 
 
