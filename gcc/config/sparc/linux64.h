@@ -21,8 +21,6 @@ Boston, MA 02111-1307, USA.  */
 
 #define LINUX_DEFAULT_ELF
 
-#define HANDLE_PRAGMA_PACK_PUSH_POP
-
 /* Don't assume anything about the header files.  */
 #define NO_IMPLICIT_EXTERN_C
 
