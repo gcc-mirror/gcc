@@ -1,3 +1,21 @@
+Wed Nov 24 14:12:15 MET 1999  Jan Hubicka  <hubicka@freesoft.cz>
+
+	* local-alloc.c (qty): New structure and static variable.
+	(qty_phys_reg): Remove, all references changed to qty.
+	(qty_n_refs): Likewise.
+	(qty_min_class): Likewise.
+	(qty_birth): Likewise.
+	(qty_death): Likewise.
+	(qty_size): Likewise.
+	(qty_mode): Likewise.
+	(qty_n_calls_crossed): Likewise.
+	(qty_alternate_class): Likewise.
+	(qty_changes_size): Likewise.
+	(qty_first_reg): Likewise.
+	(alloc_qty): Rename variable QTY to QTYNO.
+	(finf_free_reg): Likewise.
+	(local_alloc): Allocate qty, do not allocate the removed variables.
+
 Wed Nov 24 17:26:05 1999  Geoffrey Keating  <geoffk@cygnus.com>
 
 	* config/mips/mips.h (ASM_SPEC): Don't pass -G to the assembler
