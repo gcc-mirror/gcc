@@ -1100,7 +1100,7 @@ dbxout_type (type, full, show_arg_types)
     case SET_TYPE:
       putc ('S', asmfile);
       CHARS (1);
-      dbxout_type (TREE_TYPE (type), 0, 0);
+      dbxout_type (TYPE_DOMAIN (type), 0, 0);
       break;
 
     case ARRAY_TYPE:
