@@ -2286,6 +2286,10 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 		 be a problem accessing the register in the outer mode.  */
 	      if (GET_CODE (operand) != REG
 #ifdef BYTE_LOADS_ZERO_EXTEND
+		  /* The comment below clearly does not match the code.
+		     What the code below actually does is set force_reload
+		     for a paradoxical subreg of a pseudo.  rms and kenner
+		     can't see the point of doing this.  */
 		  /* Nonparadoxical subreg of a pseudoreg.
 		     Don't to load the full width if on this machine
 		     we expected the fetch to zero-extend.  */
