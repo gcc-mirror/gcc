@@ -58,13 +58,16 @@ DEF_PREDICTOR (PRED_BUILTIN_EXPECT, "__builtin_expect", PROB_VERY_LIKELY,
 	       PRED_FLAG_FIRST_MATCH)
 
 /* Branch to basic block containing call marked by noreturn attribute.  */
-DEF_PREDICTOR (PRED_NORETURN, "noreturn call", PROB_ALWAYS, 0)
+DEF_PREDICTOR (PRED_NORETURN, "noreturn call", PROB_ALWAYS,
+	       PRED_FLAG_FIRST_MATCH)
 
 /* Loopback edge is taken.  */
-DEF_PREDICTOR (PRED_LOOP_BRANCH, "loop branch", HITRATE (88), 0)
+DEF_PREDICTOR (PRED_LOOP_BRANCH, "loop branch", HITRATE (88),
+	       PRED_FLAG_FIRST_MATCH)
 
 /* Edge causing loop to terminate is probably not taken. */
-DEF_PREDICTOR (PRED_LOOP_EXIT, "loop exit", HITRATE (80), 0)
+DEF_PREDICTOR (PRED_LOOP_EXIT, "loop exit", HITRATE (80),
+	       PRED_FLAG_FIRST_MATCH)
 
 /* Condition emitted by preconditiong code to ensure that variable
    setting number of iterations is greater than initial value of iterator.  */
