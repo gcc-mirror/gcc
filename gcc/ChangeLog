@@ -1,3 +1,16 @@
+2003-01-18  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* basic-block.h: Fix comment formatting.
+	* calls.c: Likewise.
+	* combine.c: Likewise.
+	* convert.c: Likewise.
+	* gcov.c: Likewise.
+	* haifa-sched.c: Likewise.
+	* libgcc2.c: Likewise.
+	* loop.c: Likewise.
+	* profile.c: Likewise.
+	* system.h: Likewise.
+
 2003-01-18  Roger Sayle  <roger@eyesopen.com>
 
 	* config/pa/pa.md (muldi3): Avoid invalid sharing of SUBREG RTXs.

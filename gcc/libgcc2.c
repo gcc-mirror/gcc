@@ -1279,7 +1279,7 @@ gcov_version_mismatch (struct gcov_info *ptr, unsigned version)
    program's checksum to make sure we only accumulate whole program
    statistics to the correct summary. An object file might be embedded
    in two separate programs, and we must keep the two program
-   summaries separate. */
+   summaries separate.  */
 
 static void
 gcov_exit (void)
@@ -1503,7 +1503,7 @@ gcov_exit (void)
       count_ptr = ptr->arc_counts;
       for (ix = ptr->n_functions, fn_info = ptr->functions; ix--; fn_info++)
 	{
-	  /* Announce function. */
+	  /* Announce function.  */
 	  if (gcov_write_unsigned (da_file, GCOV_TAG_FUNCTION)
 	      || !(base = gcov_reserve_length (da_file))
 	      /* function name */
@@ -1533,7 +1533,7 @@ gcov_exit (void)
 	    goto write_error;
 	}
 
-      /* Object file summary. */
+      /* Object file summary.  */
       if (gcov_write_summary (da_file, GCOV_TAG_OBJECT_SUMMARY, &object))
 	goto write_error;
 

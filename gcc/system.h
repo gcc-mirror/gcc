@@ -569,7 +569,7 @@ typedef char _Bool;
 
 #if defined(FLEX_SCANNER) || defined(YYBISON)
 /* Flex and bison use malloc and realloc.  Yuk.  Note that this means
-   really_call_* cannot be used in a .l or .y file. */
+   really_call_* cannot be used in a .l or .y file.  */
 #define malloc xmalloc
 #define realloc xrealloc
 #endif

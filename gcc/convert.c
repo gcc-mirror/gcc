@@ -210,7 +210,7 @@ convert_to_real (type, expr)
 
 	  /* ??? Fortran frontend does not initialize built_in_decls.
 	     For some reason creating the decl using builtin_function does not
-	     work as it should.   */
+	     work as it should.  */
 	  if (built_in_decls [fcode])
 	    {
 	      arglist = build_tree_list (NULL_TREE, fold (convert_to_real (newtype, arg0)));
