@@ -12,4 +12,4 @@ CLIB=-lld
 BOOT_LDFLAGS=-Wl,-bbigtoc
 
 # Both 32-bit and 64-bit objects in archives
-AR_FOR_TARGET_FLAGS=-X32_64 rc
+AR_FOR_TARGET=ar -X32_64
