@@ -1,3 +1,9 @@
+2004-07-26  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* ra.h (enum node_type): Rename to:
+	(enum ra_node_type).
+	* ra-colorize.c: Likewise.
+
 2004-07-26  Richard Sandiford  <rsandifo@redhat.com>
 
 	* cfgcleanup.c (try_simplify_condjump): Call update_forwarder_flag

@@ -50,7 +50,7 @@
 static void push_list (struct dlist *, struct dlist **);
 static void push_list_end (struct dlist *, struct dlist **);
 static void free_dlist (struct dlist **);
-static void put_web_at_end (struct web *, enum node_type);
+static void put_web_at_end (struct web *, enum ra_node_type);
 static void put_move (struct move *, enum move_type);
 static void build_worklists (struct df *);
 static void enable_move (struct web *);
@@ -61,7 +61,7 @@ static void remove_move (struct web *, struct move *);
 static void add_worklist (struct web *);
 static int ok (struct web *, struct web *);
 static int conservative (struct web *, struct web *);
-static inline unsigned int simplify_p (enum node_type);
+static inline unsigned int simplify_p (enum ra_node_type);
 static void combine (struct web *, struct web *);
 static void coalesce (void);
 static void freeze_moves (struct web *);
@@ -168,7 +168,7 @@ free_dlist (struct dlist **list)
    Inline, because it's called with constant TYPE every time.  */
 
 inline void
-put_web (struct web *web, enum node_type type)
+put_web (struct web *web, enum ra_node_type type)
 {
   switch (type)
     {
@@ -260,7 +260,7 @@ reset_lists (void)
    list.  Additionally TYPE may not be SIMPLIFY.  */
 
 static void
-put_web_at_end (struct web *web, enum node_type type)
+put_web_at_end (struct web *web, enum ra_node_type type)
 {
   if (type == PRECOLORED)
     type = INITIAL;
@@ -683,7 +683,7 @@ alias (struct web *web)
    SIMPLIFY types.  */
 
 static inline unsigned int
-simplify_p (enum node_type type)
+simplify_p (enum ra_node_type type)
 {
   return type == SIMPLIFY || type == SIMPLIFY_SPILL || type == SIMPLIFY_FAT;
 }
