@@ -1,3 +1,8 @@
+Tue Feb 25 12:39:33 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	PR target/8343
+	* m68k.md (umulsidi, mulsidi expanders): Use register operand.
+
 2003-02-24  Svein E. Seldal  <Svein.Seldal@solidas.com>
 
 	* config/c4x/c4x.h (ASM_FILE_START): Added support for the c33
