@@ -6159,38 +6159,54 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
     {
     case TEMPLATE_DECL:
       {
-	/* We can get here when processing a member template function
-	   of a template class.  */
+	/* We can get here when processing a member function template,
+	   member class template, and template template parameter of
+	   a template class.  */
 	tree decl = DECL_TEMPLATE_RESULT (t);
 	tree spec;
-	int is_template_template_parm = DECL_TEMPLATE_TEMPLATE_PARM_P (t);
+	tree tmpl_args;
+	tree full_args;
 
-	if (!is_template_template_parm)
+	if (DECL_TEMPLATE_TEMPLATE_PARM_P (t))
 	  {
-	    /* We might already have an instance of this template.
-	       The ARGS are for the surrounding class type, so the
-	       full args contain the tsubst'd args for the context,
-	       plus the innermost args from the template decl.  */
-	    tree tmpl_args = DECL_CLASS_TEMPLATE_P (t) 
-	      ? CLASSTYPE_TI_ARGS (TREE_TYPE (t))
-	      : DECL_TI_ARGS (DECL_TEMPLATE_RESULT (t));
-	    tree full_args;
-	    
-	    full_args = tsubst_template_args (tmpl_args, args,
-					      complain, in_decl);
+	    /* Template template parameter is treated here.  */
+	    tree new_type = tsubst (TREE_TYPE (t), args, complain, in_decl);
+	    if (new_type == error_mark_node)
+	      return error_mark_node;
 
-	    /* tsubst_template_args doesn't copy the vector if
-	       nothing changed.  But, *something* should have
-	       changed.  */
-	    gcc_assert (full_args != tmpl_args);
+	    r = copy_decl (t);
+	    TREE_CHAIN (r) = NULL_TREE;
+	    TREE_TYPE (r) = new_type;
+	    DECL_TEMPLATE_RESULT (r)
+	      = build_decl (TYPE_DECL, DECL_NAME (decl), new_type);
+	    DECL_TEMPLATE_PARMS (r) 
+	      = tsubst_template_parms (DECL_TEMPLATE_PARMS (t), args,
+				       complain);
+	    TYPE_NAME (new_type) = r;
+	    break;
+	  }
 
-	    spec = retrieve_specialization (t, full_args,
-					    /*class_specializations_p=*/true);
-	    if (spec != NULL_TREE)
-	      {
-		r = spec;
-		break;
-	      }
+	/* We might already have an instance of this template.
+	   The ARGS are for the surrounding class type, so the
+	   full args contain the tsubst'd args for the context,
+	   plus the innermost args from the template decl.  */
+	tmpl_args = DECL_CLASS_TEMPLATE_P (t) 
+	  ? CLASSTYPE_TI_ARGS (TREE_TYPE (t))
+	  : DECL_TI_ARGS (DECL_TEMPLATE_RESULT (t));
+	full_args = tsubst_template_args (tmpl_args, args,
+					  complain, in_decl);
+
+	/* tsubst_template_args doesn't copy the vector if
+	   nothing changed.  But, *something* should have
+	   changed.  */
+	gcc_assert (full_args != tmpl_args);
+
+	spec = retrieve_specialization (t, full_args,
+					/*class_specializations_p=*/true);
+	if (spec != NULL_TREE)
+	  {
+	    r = spec;
+	    break;
 	  }
 
 	/* Make a new template decl.  It will be similar to the
@@ -6201,14 +6217,6 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	r = copy_decl (t);
 	gcc_assert (DECL_LANG_SPECIFIC (r) != 0);
 	TREE_CHAIN (r) = NULL_TREE;
-
-	if (is_template_template_parm)
-	  {
-	    tree new_decl = tsubst (decl, args, complain, in_decl);
-	    DECL_TEMPLATE_RESULT (r) = new_decl;
-	    TREE_TYPE (r) = TREE_TYPE (new_decl);
-	    break;
-	  }
 
 	DECL_CONTEXT (r) 
 	  = tsubst_aggr_type (DECL_CONTEXT (t), args, 
