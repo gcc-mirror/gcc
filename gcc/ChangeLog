@@ -1,3 +1,9 @@
+2001-11-27  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* defaults.h (UNALIGNED_SHORT_ASM_OP, UNALIGNED_INT_ASM_OP,
+	UNALIGNED_DOUBLE_INT_ASM_OP): Also provide defaults when we have
+	OBJECT_FORMAT_ROSE.
+
 2001-11-28  Hans-Peter Nilsson  <hp@axis.com>
 
 	* config/cris/cris.c: Tweak spacing for prototypes.
