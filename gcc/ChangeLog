@@ -1,3 +1,11 @@
+2003-12-05  Per Bothner  <pbothner@apple.com>
+
+	* line-map.h (source_location):  New typedef.
+	(fileline):  Redefined as source_location.
+	(struct line_map, linemap_add, linemap_lookup):  Replace filefile
+	by source_location.
+	* line-map.c (linemap_add, linemap_lookup):  Use source_location.
+
 2003-12-05  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/alpha.c (alpha_build_builtin_va_list): Add dummy
@@ -96,6 +104,7 @@
 	PR target/12467
 	* config/rs6000/altivec.md (altivec_vmsummbm): Fix typo.
 
+>>>>>>> 2.1930
 2003-12-04  Stuart Hastings  <stuart@apple.com>
 
         * rs6000.c (output_call, macho_branch_islands,

@@ -1,5 +1,5 @@
 /* Map logical line numbers to (source file, line number) pairs.
-   Copyright (C) 2001
+   Copyright (C) 2001, 2003
    Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify it
@@ -32,8 +32,9 @@ enum lc_reason {LC_ENTER = 0, LC_LEAVE, LC_RENAME};
 
 /* A logical line number, i,e, an "index" into a line_map.  */
 /* Long-term, we want to use this to replace struct location_s (in input.h),
-   and effectively typedef fileline location_t.  */
-typedef unsigned int fileline;
+   and effectively typedef source_location location_t.  */
+typedef unsigned int source_location;
+typedef source_location fileline; /* deprecated name */
 
 /* The logical line FROM_LINE maps to physical source file TO_FILE at
    line TO_LINE, and subsequently one-to-one until the next line_map
@@ -47,7 +48,7 @@ struct line_map
 {
   const char *to_file;
   unsigned int to_line;
-  fileline from_line;
+  source_location from_line;
   int included_from;
   ENUM_BITFIELD (lc_reason) reason : CHAR_BIT;
   unsigned char sysp;
@@ -92,11 +93,12 @@ extern void linemap_free (struct line_maps *);
    maps, so any stored line_map pointers should not be used.  */
 extern const struct line_map *linemap_add
   (struct line_maps *, enum lc_reason, unsigned int sysp,
-   fileline from_line, const char *to_file, unsigned int to_line);
+   source_location from_line, const char *to_file, unsigned int to_line);
 
 /* Given a logical line, returns the map from which the corresponding
    (source file, line) pair can be deduced.  */
-extern const struct line_map *linemap_lookup (struct line_maps *, fileline);
+extern const struct line_map *linemap_lookup
+  (struct line_maps *, source_location);
 
 /* Print the file names and line numbers of the #include commands
    which led to the map MAP, if any, to stderr.  Nothing is output if
