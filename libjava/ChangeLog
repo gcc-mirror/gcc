@@ -1,5 +1,7 @@
 2000-01-19  Tom Tromey  <tromey@cygnus.com>
 
+	* interpret.cc (PC_REGISTER_ASM): Removed.
+
 	* java/lang/natThrowable.cc: Don't use `#pragma implementation'.
 	From Bryce McKinlay.
 
