@@ -3,7 +3,7 @@
    as distinct from winnt.h, which is used to build GCC for use with a
    windows style library and tool set and uses the Microsoft tools.
    This variant uses CRTDLL.DLL insted of MSVCRTDLL.DLL.
-   Copyright (C) 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -32,7 +32,8 @@ Boston, MA 02111-1307, USA. */
   -Asystem(winnt) -Acpu(i386) -Amachine(i386)"
 
 #undef LIBGCC_SPEC
-#define LIBGCC_SPEC "-lmingw32 -lgcc -lmoldname -lcrtdll"
+#define LIBGCC_SPEC \
+  "%{mthreads:-lmingwthrd} -lmingw32 -lgcc -lmoldname -lcrtdll"
 
 /* Specify a different entry point when linking a DLL */
 #undef STARTFILE_SPEC
