@@ -800,7 +800,7 @@ copy_to_suggested_reg (rtx x, rtx target, enum machine_mode mode)
    FOR_CALL is nonzero if this call is promoting args for a call.  */
 
 #if defined(PROMOTE_MODE) && !defined(PROMOTE_FUNCTION_MODE)
-#define PROMOTE_FUNCTON_MODE PROMOTE_MODE
+#define PROMOTE_FUNCTION_MODE PROMOTE_MODE
 #endif
 
 enum machine_mode
