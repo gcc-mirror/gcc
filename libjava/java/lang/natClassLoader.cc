@@ -131,12 +131,12 @@ _Jv_PrepareCompiledClass (jclass klass)
   // If superclass looks like a constant pool entry,
   // resolve it now.
   if ((uaddr) klass->superclass < pool->size)
-    klass->superclass = pool->data[(int) klass->superclass].clazz;
+    klass->superclass = pool->data[(uaddr) klass->superclass].clazz;
 
   // Likewise for interfaces.
   for (int i = 0; i < klass->interface_count; i++)
     if ((uaddr) klass->interfaces[i] < pool->size)
-      klass->interfaces[i] = pool->data[(int) klass->interfaces[i]].clazz;
+      klass->interfaces[i] = pool->data[(uaddr) klass->interfaces[i]].clazz;
 
   // Resolve the remaining constant pool entries.
   for (int index = 1; index < pool->size; ++index)
