@@ -485,7 +485,6 @@ eliminate_dead_code ()
   /* Map element (b,e) is nonzero if the block is control dependent on
      edge.  "cdbte" abbreviates control dependent block to edge.  */
   control_dependent_block_to_edge_map cdbte;
-  sbitmap *postdominators;
  /* Element I is the immediate postdominator of block I.  */
   int *pdom;
   struct edge_list *el;
@@ -504,17 +503,14 @@ eliminate_dead_code ()
   compute_bb_for_insn (max_insn_uid);
 
   /* Compute control dependence.  */
-  postdominators = sbitmap_vector_alloc (n_basic_blocks, n_basic_blocks);
-  compute_flow_dominators (NULL, postdominators);
   pdom = (int *) xmalloc (n_basic_blocks * sizeof (int));
   for (i = 0; i < n_basic_blocks; ++i)
     pdom[i] = INVALID_BLOCK;
-  compute_immediate_postdominators (pdom, postdominators);
+  calculate_dominance_info (pdom, NULL, CDI_POST_DOMINATORS);
   /* Assume there is a path from each node to the exit block.  */
   for (i = 0; i < n_basic_blocks; ++i)
     if (pdom[i] == INVALID_BLOCK)
       pdom[i] = EXIT_BLOCK;
-  sbitmap_vector_free (postdominators);
   el = create_edge_list();
   find_all_control_dependences (el, pdom, cdbte);
 

@@ -458,10 +458,6 @@ void verify_edge_list			PARAMS ((FILE *, struct edge_list *));
 int find_edge_index			PARAMS ((struct edge_list *, 
 						 basic_block, basic_block));
 
-extern void compute_flow_dominators	PARAMS ((sbitmap *, sbitmap *));
-extern void compute_immediate_dominators	PARAMS ((int *, sbitmap *));
-extern void compute_immediate_postdominators	PARAMS ((int *, sbitmap *));
-
 
 enum update_life_extent
 {
@@ -564,5 +560,16 @@ extern void conflict_graph_print        PARAMS ((conflict_graph, FILE*));
 extern conflict_graph conflict_graph_compute 
                                         PARAMS ((regset,
 						 partition));
+
+/* In dominance.c */
+
+enum cdi_direction
+{
+  CDI_DOMINATORS,
+  CDI_POST_DOMINATORS
+};
+
+extern void calculate_dominance_info	PARAMS ((int *, sbitmap *,
+						 enum cdi_direction));
 
 #endif /* _BASIC_BLOCK_H */

@@ -2104,7 +2104,7 @@ if_convert (life_data_ok)
   if (HAVE_conditional_execution || life_data_ok)
     {
       post_dominators = sbitmap_vector_alloc (n_basic_blocks, n_basic_blocks);
-      compute_flow_dominators (NULL, post_dominators);
+      calculate_dominance_info (NULL, post_dominators, CDI_POST_DOMINATORS);
     }
 
   /* Record initial block numbers.  */
