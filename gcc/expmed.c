@@ -4156,6 +4156,44 @@ make_tree (type, x)
     }
 }
 
+/* Check whether the multiplication X * MULT + ADD overflows.
+   X, MULT and ADD must be CONST_*.
+   MODE is the machine mode for the computation.
+   X and MULT must have mode MODE.  ADD may have a different mode.
+   So can X (defaults to same as MODE).
+   UNSIGNEDP is non-zero to do unsigned multiplication.  */
+
+bool
+const_mult_add_overflow_p (x, mult, add, mode, unsignedp)
+     rtx x, mult, add;
+     enum machine_mode mode;
+     int unsignedp;
+{
+  tree type, mult_type, add_type, result;
+
+  type = (*lang_hooks.types.type_for_mode) (mode, unsignedp);
+
+  /* In order to get a proper overflow indication from an unsigned
+     type, we have to pretend that it's a sizetype.  */
+  mult_type = type;
+  if (unsignedp)
+    {
+      mult_type = copy_node (type);
+      TYPE_IS_SIZETYPE (mult_type) = 1;
+    }
+
+  add_type = (GET_MODE (add) == VOIDmode ? mult_type
+	      : (*lang_hooks.types.type_for_mode) (GET_MODE (add), unsignedp));
+
+  result = fold (build (PLUS_EXPR, mult_type,
+			fold (build (MULT_EXPR, mult_type,
+				     make_tree (mult_type, x),
+				     make_tree (mult_type, mult))),
+			make_tree (add_type, add)));
+
+  return TREE_CONSTANT_OVERFLOW (result);
+}
+
 /* Return an rtx representing the value of X * MULT + ADD.
    TARGET is a suggestion for where to store the result (an rtx).
    MODE is the machine mode for the computation.

@@ -8863,6 +8863,22 @@ maybe_eliminate_biv_1 (loop, x, insn, bl, eliminate_p, where_bb, where_insn)
 		if (! biv_elimination_giv_has_0_offset (bl->biv, v, insn))
 		  continue;
 
+		/* Don't eliminate if the linear combination that makes up
+		   the giv overflows when it is applied to ARG.  */
+		if (GET_CODE (arg) == CONST_INT)
+		  {
+		    rtx add_val;
+
+		    if (GET_CODE (v->add_val) == CONST_INT)
+		      add_val = v->add_val;
+		    else
+		      add_val = const0_rtx;
+
+		    if (const_mult_add_overflow_p (arg, v->mult_val,
+						   add_val, mode, 1))
+		      continue;
+		  }
+
 		if (! eliminate_p)
 		  return 1;
 
@@ -8873,13 +8889,10 @@ maybe_eliminate_biv_1 (loop, x, insn, bl, eliminate_p, where_bb, where_insn)
 		   the derived constant can be directly placed in the COMPARE,
 		   do so.  */
 		if (GET_CODE (arg) == CONST_INT
-		    && GET_CODE (v->mult_val) == CONST_INT
 		    && GET_CODE (v->add_val) == CONST_INT)
 		  {
-		    validate_change (insn, &XEXP (x, arg_operand),
-				     GEN_INT (INTVAL (arg)
-					      * INTVAL (v->mult_val)
-					      + INTVAL (v->add_val)), 1);
+		    tem = expand_mult_add (arg, NULL_RTX, v->mult_val,
+					   v->add_val, mode, 1);
 		  }
 		else
 		  {
@@ -8888,8 +8901,10 @@ maybe_eliminate_biv_1 (loop, x, insn, bl, eliminate_p, where_bb, where_insn)
 		    loop_iv_add_mult_emit_before (loop, arg,
 						  v->mult_val, v->add_val,
 						  tem, where_bb, where_insn);
-		    validate_change (insn, &XEXP (x, arg_operand), tem, 1);
 		  }
+
+		validate_change (insn, &XEXP (x, arg_operand), tem, 1);
+
 		if (apply_change_group ())
 		  return 1;
 	      }
