@@ -44,10 +44,6 @@ Boston, MA 02111-1307, USA.  */
 #include "ggc.h"
 #include "tm_p.h"
 
-extern int current_class_depth;
-
-extern tree global_namespace;
-
 extern int (*valid_lang_attribute) PARAMS ((tree, tree, tree, tree));
 
 #ifndef BOOL_TYPE_SIZE

@@ -1,5 +1,16 @@
 2001-04-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* cp-tree.h (warn_return_type, yylex): Delete redundant
+	declarations.
+	
+	* decl.c (current_class_depth, global_namespace): Likewise.
+
+	* decl2.c (current_class_depth, flag_gnu_xref): Likewise
+
+	* repo.c (flag_use_repository): Likewise.
+
+2001-04-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* cp-tree.h (pedantic, convert, global_bindings_p, insert_block,
 	set_block, pushdecl, getdecls, gettags, init_decl_processing,
 	maybe_build_cleanup, copy_lang_decl, prep_stmt, lvalue_p,

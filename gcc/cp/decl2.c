@@ -92,8 +92,6 @@ static tree key_method PARAMS ((tree));
 static int compare_options PARAMS ((const PTR, const PTR));
 static tree get_guard_bits PARAMS ((tree));
 
-extern int current_class_depth;
-
 /* A list of static class variables.  This is needed, because a
    static class variable can be declared inside the class without
    an initializer, and then initialized, staticly, outside the class.  */
@@ -357,11 +355,6 @@ int flag_default_inline = 1;
    run-time type information.  */
 
 int flag_rtti = 1;
-
-/* Nonzero if we wish to output cross-referencing information
-   for the GNU class browser.  */
-
-extern int flag_gnu_xref;
 
 /* Nonzero if we want to support huge (> 2^(sizeof(short)*8-1) bytes)
    objects.  */
@@ -4164,8 +4157,6 @@ tree
 finish_decl_parsing (decl)
      tree decl;
 {
-  extern int current_class_depth;
-  
   switch (TREE_CODE (decl))
     {
     case IDENTIFIER_NODE:
