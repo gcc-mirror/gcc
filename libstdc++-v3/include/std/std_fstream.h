@@ -163,6 +163,9 @@ namespace std
       bool			_M_pback_init; 
       //@}
 
+      // Cached codecvt facet.
+      const __codecvt_type* 	_M_codecvt;
+
       // Initializes pback buffers, and moves normal buffers to safety.
       // Assumptions:
       // _M_in_cur has already been moved back
@@ -403,7 +406,6 @@ namespace std
 	  }
 	else
 	  _M_file.sync();
-
 	_M_last_overflowed = false;
 	return __ret;
       }

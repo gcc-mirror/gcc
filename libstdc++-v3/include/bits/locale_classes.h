@@ -65,13 +65,13 @@ namespace std
     friend class _Impl;
 
     template<typename _Facet>
-      friend const _Facet& 
-      use_facet(const locale&);
-    
-    template<typename _Facet>
       friend bool 
       has_facet(const locale&) throw();
- 
+
+    template<typename _Facet>
+      friend const _Facet& 
+      use_facet(const locale&);
+     
     // Category values:
     // NB: Order must match _S_facet_categories definition in locale.cc
     static const category none		= 0;

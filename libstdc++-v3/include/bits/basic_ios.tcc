@@ -110,22 +110,12 @@ namespace std
   template<typename _CharT, typename _Traits>
     char
     basic_ios<_CharT, _Traits>::narrow(char_type __c, char __dfault) const
-    { 
-      char __ret = __dfault;
-      if (_M_check_facet(_M_fctype))
-	__ret = _M_fctype->narrow(__c, __dfault); 
-      return __ret;
-    }
+    { return __check_facet(_M_ctype).narrow(__c, __dfault); }
 
   template<typename _CharT, typename _Traits>
     _CharT
     basic_ios<_CharT, _Traits>::widen(char __c) const
-    {
-      char_type __ret = char_type();
-      if (_M_check_facet(_M_fctype))
-	__ret = _M_fctype->widen(__c); 
-      return __ret;
-    }
+    { return __check_facet(_M_ctype).widen(__c); }
 
   // Locales:
   template<typename _CharT, typename _Traits>
@@ -181,11 +171,11 @@ namespace std
     basic_ios<_CharT, _Traits>::_M_cache_locale(const locale& __loc)
     {
       if (__builtin_expect(has_facet<__ctype_type>(__loc), true))
-	_M_fctype = &use_facet<__ctype_type>(__loc);
+	_M_ctype = &use_facet<__ctype_type>(__loc);
       if (__builtin_expect(has_facet<__numput_type>(__loc), true))
-	_M_fnumput = &use_facet<__numput_type>(__loc); 
+	_M_num_put = &use_facet<__numput_type>(__loc); 
       if (__builtin_expect(has_facet<__numget_type>(__loc), true))
-	_M_fnumget = &use_facet<__numget_type>(__loc); 
+	_M_num_get = &use_facet<__numget_type>(__loc); 
       static_cast<__locale_cache<_CharT>&>(_M_cache())._M_init(__loc); 
     }
 

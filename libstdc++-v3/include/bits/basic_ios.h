@@ -90,11 +90,11 @@ namespace std
       basic_streambuf<_CharT, _Traits>*              _M_streambuf;
 
       // Cached use_facet<ctype>, which is based on the current locale info.
-      const __ctype_type*                            _M_fctype;      
+      const __ctype_type*                            _M_ctype;      
       // For ostream.
-      const __numput_type*                           _M_fnumput;
+      const __numput_type*                           _M_num_put;
       // For istream.
-      const __numget_type*                           _M_fnumget;
+      const __numget_type*                           _M_num_get;
 
     public:
       //@{
@@ -241,7 +241,7 @@ namespace std
       */
       explicit 
       basic_ios(basic_streambuf<_CharT, _Traits>* __sb) 
-      : ios_base(), _M_fctype(0), _M_fnumput(0), _M_fnumget(0)
+      : ios_base(), _M_ctype(0), _M_num_put(0), _M_num_get(0)
       { this->init(__sb); }
 
       /**
@@ -419,7 +419,7 @@ namespace std
        *  The default constructor does nothing and is not normally
        *  accessible to users.
       */
-      basic_ios() : ios_base(), _M_fctype(0), _M_fnumput(0), _M_fnumget(0)
+      basic_ios() : ios_base(), _M_ctype(0), _M_num_put(0), _M_num_get(0)
       { }
 
       /**
@@ -430,14 +430,6 @@ namespace std
       */
       void 
       init(basic_streambuf<_CharT, _Traits>* __sb);
-
-      bool
-      _M_check_facet(const locale::facet* __f) const
-      {
-	if (!__f)
-	  __throw_bad_cast();
-	return true;
-      }
 
       void
       _M_cache_locale(const locale& __loc);

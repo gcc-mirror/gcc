@@ -343,9 +343,10 @@ namespace std
       int_type 
       snextc()
       {
-	int_type __eof = traits_type::eof();
-	return (traits_type::eq_int_type(this->sbumpc(), __eof) 
-		? __eof : this->sgetc());
+	int_type __ret = traits_type::eof();
+	if (!traits_type::eq_int_type(this->sbumpc(), __ret))
+	  __ret = this->sgetc();
+	return __ret;
       }
 
       /**
@@ -699,8 +700,8 @@ namespace std
       uflow() 
       {
 	int_type __ret = traits_type::eof();
-	const bool __testeof =
-	  traits_type::eq_int_type(this->underflow(), __ret);
+	const bool __testeof = traits_type::eq_int_type(this->underflow(), 
+							__ret);
 	if (!__testeof && _M_in_cur < _M_in_end)
 	  {
 	    __ret = traits_type::to_int_type(*_M_in_cur);

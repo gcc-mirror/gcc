@@ -78,8 +78,13 @@ namespace std
     _M_state_cur(__state_type()), _M_state_beg(__state_type()), 
     _M_buf(NULL), _M_buf_size(BUFSIZ), _M_buf_allocated(false),
     _M_last_overflowed(false), _M_pback_cur_save(0),
-    _M_pback_end_save(0), _M_pback_init(false)
-    { this->_M_buf_unified = true; }
+    _M_pback_end_save(0), _M_pback_init(false), _M_codecvt(0)
+    { 
+      this->_M_buf_unified = true; 	  
+      if (__builtin_expect(has_facet<__codecvt_type>(this->_M_buf_locale), 
+			                             true))
+	_M_codecvt = &use_facet<__codecvt_type>(this->_M_buf_locale);
+    }
 
   template<typename _CharT, typename _Traits>
     typename basic_filebuf<_CharT, _Traits>::__filebuf_type* 
@@ -163,17 +168,14 @@ namespace std
     {
       streamsize __ret = -1;
       const bool __testin = this->_M_mode & ios_base::in;
-      const locale __loc = this->getloc();
-      const __codecvt_type& __cvt = use_facet<__codecvt_type>(__loc);
 
       if (__testin && this->is_open())
 	{
-	  __ret = this->_M_in_end - this->_M_in_cur;
-
 	  // For a stateful encoding (-1) the pending sequence might be just
 	  // shift and unshift prefixes with no actual character.
-	  if (__cvt.encoding() >= 0)
-	    __ret += _M_file.showmanyc() / __cvt.max_length();
+	  __ret = this->_M_in_end - this->_M_in_cur;
+	  if (__check_facet(_M_codecvt).encoding() >= 0)
+	    __ret += _M_file.showmanyc() / _M_codecvt->max_length();
 	}
 
       _M_last_overflowed = false;	
@@ -220,9 +222,8 @@ namespace std
 	    {
 	      streamsize __elen = 0;
 	      streamsize __ilen = 0;
-	      const locale __loc = this->getloc();
-	      const __codecvt_type& __cvt = use_facet<__codecvt_type>(__loc);
-	      if (__cvt.always_noconv())
+
+	      if (__check_facet(_M_codecvt).always_noconv())
 		{
 		  __elen = _M_file.xsgetn(reinterpret_cast<char*>(this->_M_in_beg), _M_buf_size);
 		  __ilen = __elen;
@@ -235,9 +236,9 @@ namespace std
 		  const char* __eend;
 		  char_type* __iend;
 		  codecvt_base::result __r;
-		  __r = __cvt.in(_M_state_cur, __buf, __buf + __elen, __eend, 
-				 this->_M_in_beg, 
-				 this->_M_in_beg + _M_buf_size, __iend);
+		  __r = _M_codecvt->in(_M_state_cur, __buf, __buf + __elen, 
+				       __eend, this->_M_in_beg, 
+				       this->_M_in_beg + _M_buf_size, __iend);
 		  if (__r == codecvt_base::ok)
 		    __ilen = __iend - this->_M_in_beg;
 		  else if (__r == codecvt_base::noconv)
@@ -400,7 +401,6 @@ namespace std
 	  else 
 	    __ret = this->_M_overflow(__c);
 	}
-
       _M_last_overflowed = false;    // Set in _M_overflow, below.
       return __ret;
     }
@@ -414,9 +414,7 @@ namespace std
       streamsize __elen = 0;
       streamsize __plen = 0;
 
-      const locale __loc = this->getloc();
-      const __codecvt_type& __cvt = use_facet<__codecvt_type>(__loc);
-      if (__cvt.always_noconv() && __ilen)
+      if (__check_facet(_M_codecvt).always_noconv() && __ilen)
 	{
 	  __elen += _M_file.xsputn(reinterpret_cast<char*>(__ibuf), __ilen);
 	  __plen += __ilen;
@@ -424,7 +422,7 @@ namespace std
       else
 	{
 	  // Worst-case number of external bytes needed.
-	  int __ext_multiplier = __cvt.encoding();
+	  int __ext_multiplier = _M_codecvt->encoding();
 	  if (__ext_multiplier ==  -1 || __ext_multiplier == 0)
 	    __ext_multiplier = sizeof(char_type);
 	  streamsize __blen = __ilen * __ext_multiplier;
@@ -432,8 +430,8 @@ namespace std
 	  char* __bend;
 	  const char_type* __iend;
 	  codecvt_base::result __r;
-	  __r = __cvt.out(_M_state_cur, __ibuf, __ibuf + __ilen,
-			  __iend, __buf, __buf + __blen, __bend);
+	  __r = _M_codecvt->out(_M_state_cur, __ibuf, __ibuf + __ilen,
+				__iend, __buf, __buf + __blen, __bend);
 	  
 	  if (__r == codecvt_base::ok || __r == codecvt_base::partial)
 	    __blen = __bend - __buf;
@@ -460,8 +458,9 @@ namespace std
 	    {
 	      const char_type* __iresume = __iend;
 	      streamsize __rlen = this->_M_out_lim - __iend;
-	      __r = __cvt.out(_M_state_cur, __iresume, __iresume + __rlen, 
-			      __iend, __buf, __buf + __blen, __bend);
+	      __r = _M_codecvt->out(_M_state_cur, __iresume,
+				    __iresume + __rlen, __iend, __buf, 
+				    __buf + __blen, __bend);
 	      if (__r != codecvt_base::error)
 		{
 		  __rlen = __bend - __buf;
@@ -470,7 +469,6 @@ namespace std
 		}
 	    }
 	}
-
       return __elen && __elen == __plen;
     }
 
@@ -510,8 +508,8 @@ namespace std
       const bool __testout = (ios_base::out & this->_M_mode & __mode) != 0;
       
       int __width = 0;
-      if (has_facet<__codecvt_type>(this->_M_buf_locale))
-	  __width = use_facet<__codecvt_type>(this->_M_buf_locale).encoding();
+      if (_M_codecvt)
+	  __width = _M_codecvt->encoding();
       if (__width < 0)
 	__width = 0;
 
@@ -523,20 +521,19 @@ namespace std
 
 	  if (__way != ios_base::cur || __off != 0)
 	    { 
-	      off_type __computed_off = __width * __off;
-	      
+	      // Sync the internal and external streams.	      
 	      const bool __testget = this->_M_in_beg < this->_M_in_end;
 	      const bool __testput = this->_M_out_beg < this->_M_out_lim;
-	      // Sync the internal and external streams.
-	      // out
+	      off_type __computed_off = __width * __off;
+
 	      if (__testput || _M_last_overflowed)
 		{
 		  // Part one: update the output sequence.
 		  this->sync();
+
 		  // Part two: output unshift sequence.
 		  _M_output_unshift();
 		}
-	      //in
 	      else if (__testget && __way == ios_base::cur)
 		__computed_off += this->_M_in_cur - _M_filepos;
 
@@ -544,10 +541,10 @@ namespace std
 	      __ret = _M_file.seekoff(__computed_off, __way, __mode);
 	      _M_set_indeterminate();
 	    }
-	  // NB: Need to do this in case _M_file in indeterminate
-	  // state, ie _M_file._offset == -1
 	  else
 	    {
+	      // NB: Need to do this in case _M_file in indeterminate
+	      // state, ie _M_file._offset == -1
 	      pos_type __tmp = _M_file.seekoff(__off, ios_base::cur, __mode);
 	      if (__tmp >= 0)
 		{
@@ -584,16 +581,23 @@ namespace std
     basic_filebuf<_CharT, _Traits>::
     imbue(const locale& __loc)
     {
-      const bool __testbeg = this->_M_in_cur == this->_M_in_beg
-	                     && this->_M_out_cur == this->_M_out_beg;
+      const bool __testbeg = !this->seekoff(0, ios_base::cur, this->_M_mode);
+      const bool __teststate = __check_facet(_M_codecvt).encoding() == -1;
 
-      if (__testbeg && this->_M_buf_locale != __loc)
-	this->_M_buf_locale = __loc;
+      if (this->_M_buf_locale != __loc 
+	  && (!this->is_open() || (__testbeg && !__teststate)))
+	{
+	  this->_M_buf_locale = __loc;
+	  if (__builtin_expect(has_facet<__codecvt_type>(__loc), true))
+	    _M_codecvt = &use_facet<__codecvt_type>(__loc);
 
-      // NB this may require the reconversion of previously
-      // converted chars. This in turn may cause the reconstruction
-      // of the original file. YIKES!!
-      // XXX The part in the above comment is not done.
+	  // NB This may require the reconversion of previously
+	  // converted chars. This in turn may cause the
+	  // reconstruction of the original file. YIKES!!  This
+	  // implementation interprets this requirement as requiring
+	  // the file position be at the beginning, and a stateless
+	  // encoding, or that the filebuf be closed. Opinions may differ.
+	}
       _M_last_overflowed = false;	
     }
 
