@@ -1698,6 +1698,15 @@ arithmetic_comparison_operator (op, mode)
 
   return (code != GT && code != LE);
 }
+
+int
+ix86_logical_operator (op, mode)
+     register rtx op;
+     enum machine_mode mode;
+{
+  return GET_CODE (op) == AND || GET_CODE (op) == IOR || GET_CODE (op) == XOR;
+}
+
 
 /* Returns 1 if OP contains a symbol reference */
 
@@ -3688,17 +3697,20 @@ split_di (operands, num, lo_half, hi_half)
 {
   while (num--)
     {
-      if (GET_CODE (operands[num]) == REG)
+      rtx op = operands[num];
+      if (GET_CODE (op) == REG)
 	{
-	  lo_half[num] = gen_rtx_REG (SImode, REGNO (operands[num]));
-	  hi_half[num] = gen_rtx_REG (SImode, REGNO (operands[num]) + 1);
+	  lo_half[num] = gen_rtx_REG (SImode, REGNO (op));
+	  hi_half[num] = gen_rtx_REG (SImode, REGNO (op) + 1);
 	}
-      else if (CONSTANT_P (operands[num]))
-	split_double (operands[num], &lo_half[num], &hi_half[num]);
-      else if (offsettable_memref_p (operands[num]))
+      else if (CONSTANT_P (op))
+	split_double (op, &lo_half[num], &hi_half[num]);
+      else if (offsettable_memref_p (op))
 	{
-	  lo_half[num] = operands[num];
-	  hi_half[num] = adj_offsettable_operand (operands[num], 4);
+	  rtx lo_addr = XEXP (op, 0);
+	  rtx hi_addr = XEXP (adj_offsettable_operand (op, 4), 0);
+	  lo_half[num] = change_address (op, SImode, lo_addr);
+	  hi_half[num] = change_address (op, SImode, hi_addr);
 	}
       else
 	abort();
