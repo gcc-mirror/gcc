@@ -1,3 +1,16 @@
+2000-12-19  Benjamin Kosnik  <bkoz@fillmore.constant.com>
+
+	* configure.in: Don't turn on long long by default.
+	* configure: Regenerate.
+	* include/c/bits/std_cstdio.h: Remove c++config.h include.
+	* src/locale.cc: Formatting tweaks.
+	* testsuite/22_locale/ctype.cc (char<unsigned char>): Provide
+	member functions.
+
+2000-12-19  Loren J. Rittle  <ljrittle@acm.org>
+
+        * testsuite/22_locale/ctype.cc (test01): Correct ~ operator usage.
+
 2000-12-19  Mark Kettenis  <kettenis@gnu.org>
 
         * configure.target: Support the Hurd.

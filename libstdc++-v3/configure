@@ -41,7 +41,7 @@ ac_help="$ac_help
 ac_help="$ac_help
   --enable-c-mbchar       enable multibyte (wide) characters [default=yes]"
 ac_help="$ac_help
-  --enable-long-long      turns on 'long long' [default=yes]"
+  --enable-long-long      turns on 'long long' [default=no]"
 ac_help="$ac_help
   --enable-cshadow-headers construct "shadowed" C header files for
                            g++ [default=no]"
@@ -2881,7 +2881,7 @@ if test "${enable_long_long+set}" = set; then
    *)   { echo "configure: error: Unknown argument to enable/disable long long" 1>&2; exit 1; } ;;
    esac
 else
-  enable_long_long=yes
+  enable_long_long=no
 fi
  
   # Allow use of os-dependent settings, so that macros that turn on
