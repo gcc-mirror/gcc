@@ -1,5 +1,8 @@
 Sat Jan 30 08:27:23 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* pa.md (parallel shift and shiftadd): Mark output of shift as an
+	earlyclobber.
+
 	* loop.c: Disable recent loop changes.  Temporary as Joern
 	continues to fix problems.
 

@@ -3627,42 +3627,6 @@
   [(set_attr "type" "binary")
    (set_attr "length" "4")])
 
-;; This anonymous pattern and splitter wins because it reduces the latency
-;; of the shadd sequence without increasing the latency of the shift.
-;;
-;; We want to make sure and split up the operations for the scheduler since
-;; these instructions can (and should) schedule independently.
-;;
-;; It would be clearer if combine used the same operator for both expressions,
-;; it's somewhat confusing to have a mult in ine operation and an ashift
-;; in the other.
-(define_insn ""
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(plus:SI (mult:SI (match_operand:SI 2 "register_operand" "r")
-			  (match_operand:SI 3 "shadd_operand" ""))
-		 (match_operand:SI 1 "register_operand" "r")))
-   (set (match_operand:SI 4 "register_operand" "=r")
-	(ashift:SI (match_dup 2)
-		   (match_operand:SI 5 "const_int_operand" "i")))]
-  "INTVAL (operands[5]) == exact_log2 (INTVAL (operands[3]))"
-  "#"
-  [(set_attr "type" "binary")
-   (set_attr "length" "8")])
-
-(define_split
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(plus:SI (mult:SI (match_operand:SI 2 "register_operand" "r")
-			  (match_operand:SI 3 "shadd_operand" ""))
-		 (match_operand:SI 1 "register_operand" "r")))
-   (set (match_operand:SI 4 "register_operand" "=r")
-	(ashift:SI (match_dup 2)
-		   (match_operand:SI 5 "const_int_operand" "i")))]
-  "INTVAL (operands[5]) == exact_log2 (INTVAL (operands[3]))"
-  [(set (match_dup 4) (ashift:SI (match_dup 2) (match_dup 5)))
-   (set (match_dup 0) (plus:SI (mult:SI (match_dup 2) (match_dup 3))
-			       (match_dup 1)))]
-  "")
-
 ;; This variant of the above insn can occur if the first operand
 ;; is the frame pointer.  This is a kludge, but there doesn't
 ;; seem to be a way around it.  Only recognize it while reloading.
@@ -3684,6 +3648,45 @@
    sh%O4addl %2,%1,%0\;ldo %3(%0),%0"
   [(set_attr "type" "multi")
    (set_attr "length" "8")])
+
+;; This anonymous pattern and splitter wins because it reduces the latency
+;; of the shadd sequence without increasing the latency of the shift.
+;;
+;; We want to make sure and split up the operations for the scheduler since
+;; these instructions can (and should) schedule independently.
+;;
+;; It would be clearer if combine used the same operator for both expressions,
+;; it's somewhat confusing to have a mult in ine operation and an ashift
+;; in the other.
+;;
+;; If this pattern is not split before register allocation, then we must expose
+;; the fact that operand 4 is set before operands 1, 2 and 3 have been read.
+(define_insn ""
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(plus:SI (mult:SI (match_operand:SI 2 "register_operand" "r")
+			  (match_operand:SI 3 "shadd_operand" ""))
+		 (match_operand:SI 1 "register_operand" "r")))
+   (set (match_operand:SI 4 "register_operand" "=&r")
+	(ashift:SI (match_dup 2)
+		   (match_operand:SI 5 "const_int_operand" "i")))]
+  "INTVAL (operands[5]) == exact_log2 (INTVAL (operands[3]))"
+  "#"
+  [(set_attr "type" "binary")
+   (set_attr "length" "8")])
+
+(define_split
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(plus:SI (mult:SI (match_operand:SI 2 "register_operand" "r")
+			  (match_operand:SI 3 "shadd_operand" ""))
+		 (match_operand:SI 1 "register_operand" "r")))
+   (set (match_operand:SI 4 "register_operand" "=&r")
+	(ashift:SI (match_dup 2)
+		   (match_operand:SI 5 "const_int_operand" "i")))]
+  "INTVAL (operands[5]) == exact_log2 (INTVAL (operands[3]))"
+  [(set (match_dup 4) (ashift:SI (match_dup 2) (match_dup 5)))
+   (set (match_dup 0) (plus:SI (mult:SI (match_dup 2) (match_dup 3))
+			       (match_dup 1)))]
+  "")
 
 (define_expand "ashlsi3"
   [(set (match_operand:SI 0 "register_operand" "")
