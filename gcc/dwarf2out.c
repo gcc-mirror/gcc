@@ -59,6 +59,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "diagnostic.h"
 #include "debug.h"
 #include "target.h"
+#include "langhooks.h"
 #include "hashtable.h"
 
 #ifdef DWARF2_DEBUGGING_INFO
@@ -10470,6 +10471,7 @@ gen_compile_unit_die (filename)
   dw_die_ref die;
   char producer[250];
   const char *wd = getpwd ();
+  const char *language_string = lang_hooks.name;
   int language;
 
   die = new_die (DW_TAG_compile_unit, NULL);

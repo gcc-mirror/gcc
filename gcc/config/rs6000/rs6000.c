@@ -46,6 +46,7 @@ Boston, MA 02111-1307, USA.  */
 #include "tm_p.h"
 #include "target.h"
 #include "target-def.h"
+#include "langhooks.h"
 
 #ifndef TARGET_NO_PROTOTYPE
 #define TARGET_NO_PROTOTYPE 0
@@ -7499,6 +7500,7 @@ rs6000_output_function_epilogue (file, size)
   if (DEFAULT_ABI == ABI_AIX && ! flag_inhibit_size_directive)
     {
       const char *fname = XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0);
+      const char *language_string = lang_hooks.name;
       int fixed_parms, float_parms, parm_info;
       int i;
 

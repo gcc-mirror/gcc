@@ -136,11 +136,6 @@ typedef struct { unsigned :16, :16, :16; } vms_ino_t;
 
 /* Externals defined here.  */
 
-/* ~~gcc/tree.h *should* declare this, because toplev.c and dwarfout.c
-   reference it.  */
-
-const char * const language_string = "GNU F77";
-
 /* Stream for reading from the input file.  */
 FILE *finput;
 
@@ -14212,8 +14207,6 @@ init_parse (filename)
   setvbuf (finput, (char *) xmalloc (IO_BUFFER_SIZE), _IOFBF, IO_BUFFER_SIZE);
 #endif
 
-  /* Make identifier nodes long enough for the language-specific slots.  */
-  set_identifier_size (sizeof (struct lang_identifier));
   decl_printable_name = lang_printable_name;
   print_error_function = lang_print_error_function;
 
@@ -14264,6 +14257,8 @@ static void ffe_init PARAMS ((void));
 static void ffe_finish PARAMS ((void));
 static void ffe_init_options PARAMS ((void));
 
+#undef  LANG_HOOKS_NAME
+#define LANG_HOOKS_NAME			"GNU F77"
 #undef  LANG_HOOKS_INIT
 #define LANG_HOOKS_INIT			ffe_init
 #undef  LANG_HOOKS_FINISH
@@ -14281,7 +14276,7 @@ static void ffe_init_options PARAMS ((void));
 #undef LANG_HOOKS_GET_ALIAS_SET
 #define LANG_HOOKS_GET_ALIAS_SET hook_get_alias_set_0
 
-struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
+const struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
 
 /* used by print-tree.c */
 
@@ -14300,12 +14295,6 @@ ffe_finish ()
 
   if (ffe_is_ffedebug ())
     malloc_pool_display (malloc_pool_image ());
-}
-
-const char *
-lang_identify ()
-{
-  return "f77";
 }
 
 static void

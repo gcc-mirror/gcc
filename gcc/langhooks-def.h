@@ -56,6 +56,8 @@ tree lhd_tree_inlining_copy_res_decl_for_inlining PARAMS ((tree, tree,
 							   int *, void *));
 int lhd_tree_inlining_anon_aggr_type_p		PARAMS ((tree));
 
+#define LANG_HOOKS_NAME			"GNU unknown"
+#define LANG_HOOKS_IDENTIFIER_SIZE	sizeof (struct lang_identifier)
 #define LANG_HOOKS_INIT			lhd_do_nothing
 #define LANG_HOOKS_FINISH		lhd_do_nothing
 #define LANG_HOOKS_CLEAR_BINDING_STACK	lhd_clear_binding_stack
@@ -95,6 +97,8 @@ int lhd_tree_inlining_anon_aggr_type_p		PARAMS ((tree));
 
 /* The whole thing.  The structure is defined in toplev.h.  */
 #define LANG_HOOKS_INITIALIZER { \
+  LANG_HOOKS_NAME, \
+  LANG_HOOKS_IDENTIFIER_SIZE, \
   LANG_HOOKS_INIT, \
   LANG_HOOKS_FINISH, \
   LANG_HOOKS_CLEAR_BINDING_STACK, \

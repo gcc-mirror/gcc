@@ -248,9 +248,6 @@ cxx_post_options ()
 void
 cxx_init_options ()
 {
-  /* Make identifier nodes long enough for the language-specific slots.  */
-  set_identifier_size (sizeof (struct lang_identifier));
-
   parse_in = cpp_create_reader (ident_hash, CLK_GNUCXX);
 
   /* Default exceptions on.  */
@@ -279,12 +276,6 @@ cxx_finish ()
 {
   if (flag_gnu_xref)
     GNU_xref_end (errorcount+sorrycount);
-}
-
-const char *
-lang_identify ()
-{
-  return "cplusplus";
 }
 
 static int *

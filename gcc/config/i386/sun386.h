@@ -76,7 +76,7 @@ do								\
       fprintf (FILE, "\n");				\
     }							\
     fprintf (FILE, "\t.version\t\"%s %s\"\n",		\
-	     language_string, version_string);		\
+	     lang_hooks.name, version_string);		\
     if (optimize) ASM_FILE_START_1 (FILE);		\
   } while (0)
 

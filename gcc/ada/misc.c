@@ -6,7 +6,7 @@
  *                                                                          *
  *                           C Implementation File                          *
  *                                                                          *
- *                             $Revision: 1.8 $
+ *                             $Revision: 1.9 $
  *                                                                          *
  *          Copyright (C) 1992-2001 Free Software Foundation, Inc.          *
  *                                                                          *
@@ -116,6 +116,10 @@ static HOST_WIDE_INT gnat_get_alias_set	PARAMS ((tree));
 
 /* Structure giving our language-specific hooks.  */
 
+#undef  LANG_HOOKS_NAME
+#define LANG_HOOKS_NAME			"GNU Ada"
+#undef  LANG_HOOKS_IDENTIFIER_SIZE
+#define LANG_HOOKS_IDENTIFIER_SIZE	sizeof (struct tree_identifier)
 #undef  LANG_HOOKS_INIT
 #define LANG_HOOKS_INIT			gnat_init
 #undef  LANG_HOOKS_INIT_OPTIONS
@@ -127,7 +131,7 @@ static HOST_WIDE_INT gnat_get_alias_set	PARAMS ((tree));
 #undef LANG_HOOKS_GET_ALIAS_SET
 #define LANG_HOOKS_GET_ALIAS_SET	gnat_get_alias_set
 
-struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
+const struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
 
 /* gnat standard argc argv */
 
@@ -136,7 +140,6 @@ extern char **gnat_argv;
 
 /* Global Variables Expected by gcc: */
 
-const char * const language_string = "GNU Ada";
 int flag_traditional;		/* Used by dwarfout.c.  */
 int ggc_p = 1;
 
@@ -356,14 +359,6 @@ gnat_init ()
 #if defined(MIPS_DEBUGGING_INFO) && defined(DWARF2_DEBUGGING_INFO)
   dwarf2out_set_demangle_name_func (convert_ada_name_to_qualified_name);
 #endif
-}
-
-/* Return a short string identifying this language to the debugger.  */
-
-const char *
-lang_identify ()
-{
-  return "ada";
 }
 
 /* If DECL has a cleanup, build and return that cleanup here.

@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *                            $Revision$
+ *                            $Revision: 1.2 $
  *                                                                          *
  *          Copyright (C) 1992-2001, Free Software Foundation, Inc.         *
  *                                                                          *
@@ -480,12 +480,6 @@ pushdecl (decl)
 void
 init_decl_processing ()
 {
-  /* The structure `tree_identifier' is the GCC tree data structure that holds
-     IDENTIFIER_NODE nodes. We need to call `set_identifier_size' to tell GCC
-     that we have not added any language specific fields to IDENTIFIER_NODE
-     nodes.  */
-  set_identifier_size (sizeof (struct tree_identifier));
-
   lineno = 0;
 
   /* incomplete_decl_finalize_hook is defined in toplev.c. It needs to be set

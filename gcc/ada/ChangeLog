@@ -1,3 +1,10 @@
+2001-11-09  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* misc.c (LANG_HOOKS_NAME, LANG_HOOKS_IDENTIFIER_SIZE): Override.
+	(struct lang_hooks): Constify.
+	(language_string, lang_identify): Remove.
+	* utils.c (init_decl_processing): Update.
+
 2001-11-06  Neil Booth  <neil@cat.daikokuya.demon.co.uk>
 
 	* misc.c: Include langhooks-def.h.

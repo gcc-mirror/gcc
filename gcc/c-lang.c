@@ -49,6 +49,8 @@ static void c_post_options PARAMS ((void));
 static int c_disregard_inline_limits PARAMS ((tree));
 static int c_cannot_inline_tree_fn PARAMS ((tree *));
 
+#undef LANG_HOOKS_NAME
+#define LANG_HOOKS_NAME "GNU C"
 #undef LANG_HOOKS_INIT
 #define LANG_HOOKS_INIT c_init
 #undef LANG_HOOKS_INIT_OPTIONS
@@ -71,7 +73,7 @@ static int c_cannot_inline_tree_fn PARAMS ((tree *));
   anon_aggr_type_p
 
 /* Each front end provides its own.  */
-struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
+const struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
 
 /* Post-switch processing.  */
 static void
@@ -99,9 +101,6 @@ c_post_options ()
 static void
 c_init_options ()
 {
-  /* Make identifier nodes long enough for the language-specific slots.  */
-  set_identifier_size (sizeof (struct lang_identifier));
-
   parse_in = cpp_create_reader (ident_hash, CLK_GNUC89);
 
   /* Mark as "unspecified".  */
@@ -133,12 +132,6 @@ c_init ()
   lang_missing_noreturn_ok_p = &c_missing_noreturn_ok_p;
 
   c_parse_init ();
-}
-
-const char *
-lang_identify ()
-{
-  return "c";
 }
 
 void

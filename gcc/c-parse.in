@@ -60,15 +60,6 @@ ifobjc
 #include "objc-act.h"
 end ifobjc
 
-/* Since parsers are distinct for each language, put the language string
-   definition here.  */
-ifobjc
-const char * const language_string = "GNU Objective-C";
-end ifobjc
-ifc
-const char * const language_string = "GNU C";
-end ifc
-
 /* Like YYERROR but do call yyerror.  */
 #define YYERROR1 { yyerror ("syntax error"); YYERROR; }
 
@@ -3542,10 +3533,6 @@ init_parse (filename)
      const char *filename;
 {
   add_c_tree_codes ();
-
-  /* Make identifier nodes long enough for the language-specific slots.  */
-  set_identifier_size (sizeof (struct lang_identifier));
-
   init_reswords ();
   init_pragma ();
 

@@ -49,6 +49,13 @@ struct lang_hooks_for_tree_inlining
 
 struct lang_hooks
 {
+  /* String identifying the front end.  e.g. "GNU C++".  */
+  const char *name;
+
+  /* sizeof (struct lang_identifier), so make_node () creates
+     identifier nodes long enough for the language-specific slots.  */
+  size_t identifier_size;
+
   /* Called first, to initialize the front end.  */
   void (*init) PARAMS ((void));
 
@@ -88,6 +95,6 @@ struct lang_hooks
 };
 
 /* Each front end provides its own.  */
-extern struct lang_hooks lang_hooks;
+extern const struct lang_hooks lang_hooks;
 
 #endif /* GCC_LANG_HOOKS_H */

@@ -262,13 +262,6 @@ parse_signature (jcf, sig_index)
 }
 
 void
-init_lex ()
-{
-  /* Make identifier nodes long enough for the language-specific slots.  */
-  set_identifier_size (sizeof (struct lang_identifier));
-}
-
-void
 set_yydebug (value)
      int value;
 {

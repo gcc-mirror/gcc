@@ -4647,6 +4647,10 @@ toplev_main (argc, argv)
   flag_short_enums = DEFAULT_SHORT_ENUMS;
 #endif
 
+  tree_code_length[(int) IDENTIFIER_NODE]
+    = ((lang_hooks.identifier_size - sizeof (struct tree_common))
+       / sizeof (tree));
+
   /* Initialize the garbage-collector.  */
   init_ggc ();
   init_stringpool ();
@@ -5015,7 +5019,7 @@ print_version (file, indent)
 	   "%s%s%s version %s (%s) compiled by CC.\n"
 #endif
 	   , indent, *indent != 0 ? " " : "",
-	   language_string, version_string, TARGET_NAME,
+	   lang_hooks.name, version_string, TARGET_NAME,
 	   indent, __VERSION__);
 }
 

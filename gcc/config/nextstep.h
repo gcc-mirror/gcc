@@ -229,7 +229,7 @@ extern void nextstep_asm_out_destructor  PARAMS ((struct rtx_def *, int));
 #undef	ASM_FILE_END
 #define ASM_FILE_END(FILE)					\
   do {								\
-    if (strcmp (language_string, "GNU C++") == 0)		\
+    if (strcmp (lang_hooks.name, "GNU C++") == 0)		\
       {								\
 	constructor_section ();					\
 	destructor_section ();					\
