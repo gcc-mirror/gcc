@@ -189,9 +189,12 @@ static int method_printed = 0;
       if (out)								      \
         print_method_info (out, jcf, NAME, SIGNATURE, ACCESS_FLAGS);	      \
     }									      \
-  else if (flag_jni)							      \
-    print_method_info (NULL, jcf, NAME, SIGNATURE, ACCESS_FLAGS);	      \
-  else if (! stubs) add_class_decl (out, jcf, SIGNATURE);
+  else                                                                       \
+    {                                                                        \
+      print_method_info (NULL, jcf, NAME, SIGNATURE, ACCESS_FLAGS);          \
+      if (! stubs && ! flag_jni)                                             \
+       add_class_decl (out, jcf, SIGNATURE);                                 \
+    }
 
 #define HANDLE_CODE_ATTRIBUTE(MAX_STACK, MAX_LOCALS, CODE_LENGTH) \
   if (out && method_declared) decompile_method (out, jcf, CODE_LENGTH);
@@ -665,6 +668,7 @@ DEFUN(print_field_info, (stream, jcf, name_index, sig_index, flags),
     free (override);
 }
 
+
 static void
 DEFUN(print_method_info, (stream, jcf, name_index, sig_index, flags),
       FILE *stream AND JCF* jcf
@@ -700,7 +704,10 @@ DEFUN(print_method_info, (stream, jcf, name_index, sig_index, flags),
       else
 	return;
     }
-  else
+
+  /* During the first method pass, build a list of method names. This will
+  be used to determine if field names conflict with method names. */
+  if (! stream)
     {
       struct method_name *nn;
 
@@ -714,13 +721,10 @@ DEFUN(print_method_info, (stream, jcf, name_index, sig_index, flags),
       memcpy (nn->signature, JPOOL_UTF_DATA (jcf, sig_index),
 	      nn->sig_length);
       method_name_list = nn;
+      
+      /* The rest of this function doesn't matter. */
+      return;
     }
-
-  /* If we're not printing, then the rest of this function doesn't
-     matter.  This happens during the first method pass in JNI mode.
-     Eww.  */
-  if (! stream)
-    return;
 
   /* We don't worry about overrides in JNI mode.  */
   if (! flag_jni)
