@@ -1876,7 +1876,7 @@ done
 fi
 
 if test x$ac_cv_sizeof_char = x ; then
-  { echo "configure: error: cannot determine a size for char" 1>&2; exit 1; }
+  ac_cv_sizeof_char=0
 fi
 echo "$ac_t""$ac_cv_sizeof_char" 1>&6
 cat >> confdefs.h <<EOF
@@ -1915,7 +1915,7 @@ done
 fi
 
 if test x$ac_cv_sizeof_short = x ; then
-  { echo "configure: error: cannot determine a size for short" 1>&2; exit 1; }
+  ac_cv_sizeof_short=0
 fi
 echo "$ac_t""$ac_cv_sizeof_short" 1>&6
 cat >> confdefs.h <<EOF
@@ -1954,7 +1954,7 @@ done
 fi
 
 if test x$ac_cv_sizeof_int = x ; then
-  { echo "configure: error: cannot determine a size for int" 1>&2; exit 1; }
+  ac_cv_sizeof_int=0 
 fi
 echo "$ac_t""$ac_cv_sizeof_int" 1>&6
 cat >> confdefs.h <<EOF
@@ -1993,7 +1993,7 @@ done
 fi
 
 if test x$ac_cv_sizeof_long = x ; then
-  { echo "configure: error: cannot determine a size for long" 1>&2; exit 1; }
+  ac_cv_sizeof_long=0 
 fi
 echo "$ac_t""$ac_cv_sizeof_long" 1>&6
 cat >> confdefs.h <<EOF
@@ -2032,7 +2032,7 @@ done
 fi
 
 if test x$ac_cv_sizeof_long_long = x ; then
-  { echo "configure: error: cannot determine a size for long long" 1>&2; exit 1; }
+  ac_cv_sizeof_long_long=0 
 fi
 echo "$ac_t""$ac_cv_sizeof_long_long" 1>&6
 cat >> confdefs.h <<EOF

@@ -1,6 +1,7 @@
 
 dnl Host type sizes probe.
 dnl By Kaveh R. Ghazi.  One typo fixed since.
+dnl Modified to return a size of 0 if type doesn't exist
 dnl
 AC_DEFUN([gcc_AC_COMPILE_CHECK_SIZEOF],
 [changequote(<<, >>)dnl
@@ -20,7 +21,7 @@ $2
 done
 ])
 if test x$AC_CV_NAME = x ; then
-  AC_MSG_ERROR([cannot determine a size for $1])
+  AC_CV_NAME=0
 fi
 AC_MSG_RESULT($AC_CV_NAME)
 AC_DEFINE_UNQUOTED(AC_TYPE_NAME, $AC_CV_NAME, [The number of bytes in type $1])
