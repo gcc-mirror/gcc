@@ -1,3 +1,9 @@
+Wed Jun  3 23:41:24 EDT 1998  John Wehle  (john@feith.com)
+
+	* i386.md (movsfcc, movdfcc, movxfcc): The floating point
+	conditional move instructions don't support signed integer
+	comparisons.
+
 Tue Jun  9 14:31:19 1998  Nick Clifton  <nickc@cygnus.com>
 
 	* config/v850/t-v850 (TCFLAGS): Add assembler options to warn of
@@ -32,6 +38,12 @@ Tue Jun  9 12:10:27 1998  John Carr  <jfc@mit.edu>
         as the threshold to permit splitting memory operations.
 
 Tue Jun  9 12:36:16 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* mips.c (gpr_mode): New variable.
+	(override_options): Initialize gpr_mode.
+	(compute_frame_size): Use "gpr_mode" instead of "word_mode" to
+	determine size and offset of general purpose registers save slots.
+	(save_restore_insns, mips_expand_prologue): Similarly.
 
 	* Makefile.in (LIB2FUNCS_EH): Define.  Just "_eh" for now.
 	(LIBGCC2_CFLAGS): Remove -fexceptions.
