@@ -2237,9 +2237,14 @@ __throw_type_match (const char *catch_type, const char *throw_type)
 void
 __register_exceptions (exception_table *table)
 {
-  struct exception_table_node *node = (struct exception_table_node*)
-      malloc (sizeof (struct exception_table_node));
+  struct exception_table_node *node;
   exception_table *range = table + 1;
+
+  if (range->start == (void*)-1)
+    return;
+
+  node = (struct exception_table_node*)
+    malloc (sizeof (struct exception_table_node));
   node->table = table;
 
   /* This look can be optimized away either if the table
