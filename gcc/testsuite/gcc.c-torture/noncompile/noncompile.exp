@@ -81,7 +81,7 @@ set groups {passed gcc-noncompile}
 postbase $src_code $run $groups
 
 
-# Test 9211102-1.c
+# Test 921102-1.c
 prebase
 
 set src_code 921102-1.c
@@ -191,17 +191,6 @@ set groups {passed gcc-noncompile}
 postbase $src_code $run $groups
 
 
-# Test 940510-1.c
-prebase
-
-set src_code 940510-1.c
-set compiler_output ".*:1.*:1"
-
-set groups {passed gcc-noncompile}
-
-postbase $src_code $run $groups
-
-
 # Test 940712-1.c
 prebase
 
@@ -257,6 +246,16 @@ postbase $src_code $run $groups
 prebase
 set src_code 951227-1.c
 set compiler_output ".*:1:"
+
+set groups {passed gcc-noncompile}
+
+postbase $src_code $run $groups
+
+
+# Test 971104-1.c
+prebase
+set src_code 971104-1.c
+set compiler_output ".*:25:"
 
 set groups {passed gcc-noncompile}
 
