@@ -2397,6 +2397,12 @@ do { long l;						\
   {"cmpsi_operand", {CONST_INT, CONST_DOUBLE, CONST, SYMBOL_REF,	\
 		     LABEL_REF, SUBREG, REG, MEM, AND}},		\
   {"long_memory_operand", {MEM}},
+
+/* A list of predicates that do special things with modes, and so
+   should not elicit warnings for VOIDmode match_operand.  */
+
+#define SPECIAL_MODE_PREDICATES \
+  "ext_register_operand",
 
 /* Variables in i386.c */
 extern const char *ix86_cpu_string;		/* for -mcpu=<xxx> */
