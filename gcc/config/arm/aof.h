@@ -420,6 +420,9 @@ do {						\
 #define USER_LABEL_PREFIX ""
 #define LOCAL_LABEL_PREFIX ""
 
+/* AOF does not prefix user function names with an underscore.  */
+#define ARM_MCOUNT_NAME "_mcount"
+
 /* Output of Dispatch Tables */
 
 #define ASM_OUTPUT_ADDR_DIFF_ELT(STREAM,BODY,VALUE,REL)		\

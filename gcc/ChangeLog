@@ -1,3 +1,13 @@
+Wed May  5 07:40:02 1999  Nick Clifton  <nickc@cygnus.com>
+
+	Patch from: Nick Burrett  <nick.burrett@btinternet.com>
+	* config/arm/arm.h (ARM_MCOUNT_NAME): Define.
+	(FUNCTION_PROFILER): Remove assembler dialect dependency and use
+	ARM_MCOUNT_NAME.
+	(TRAMPOLINE_TEMPLATE): Remove assembler dialect dependency.
+	
+	* config/arm/aof.h (ARM_MCOUNT_NAME): Define.
+
 1999-05-05 09:58 -0400  Zack Weinberg  <zack@rabi.columbia.edu>
 
 	* gcc.c (default_compilers): Fix brace nesting bug.
