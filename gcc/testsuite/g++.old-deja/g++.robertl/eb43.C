@@ -1,4 +1,7 @@
-// excess errors test - XFAIL *-*-*
+// All the pointer_to_binary_function cases used to fail because g++
+// couldn't handle converting an overloaded function to a class type.
+// The first one should still fail because it requires an implicit conversion
+// to pointer_to_binary_function, which has an `explicit' constructor.
 
 #include <vector.h>
 #include <algo.h>
@@ -13,7 +16,7 @@ public :
 template <class T >
 inline bool compare(const Expr<T> a, const Expr<T> b){ return true; };
 
-void main()
+int main()
 {
   vector<int>	a(3);
   sort( a.begin(), a.end(),
@@ -21,7 +24,7 @@ void main()
   sort( a.begin(), a.end(), compare<int> );
   sort<vector<int>::iterator,
        pointer_to_binary_function<const Expr<int>, const Expr<int>, bool> >
-    ( a.begin(), a.end(), compare );
+    ( a.begin(), a.end(), compare ); // ERROR - constructor is explicit
   sort( a.begin(), a.end(),
 	ptr_fun<const Expr<int>, const Expr<int>, bool> (compare) );
   sort( a.begin(), a.end(),
