@@ -83,8 +83,7 @@ Thu Apr 26 11:15:12 2001  Jeffrey A Law  (law@cygnus.com)
 
 2001-04-25  Jakub Jelinek  <jakub@redhat.com>
 
-	* c-format.c (check_format_info_recurse): Handle
-	PLUS_EXPR for format string.
+	* gcc.dg/format/plus-1.c: New test.
 
 2001-04-25  Jakub Jelinek  <jakub@redhat.com>
 
