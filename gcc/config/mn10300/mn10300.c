@@ -419,6 +419,11 @@ expand_prologue ()
 {
   unsigned int size;
 
+  /* We need to end the current sequence so that count_tst_insns can
+     look at all the insns in this function.  Normally this would be
+     unsafe, but it's OK in the prologue/epilogue expanders.  */
+  end_sequence ();
+
   /* Determine if it is profitable to put the value zero into a register
      for the entire function.  If so, set ZERO_DREG and ZERO_AREG.  */
   if (regs_ever_live[2] || regs_ever_live[3]
@@ -474,6 +479,9 @@ expand_prologue ()
       zero_dreg = NULL_RTX;
       zero_areg = NULL_RTX;
     }
+
+  /* Start a new sequence.  */
+  start_sequence ();
 
   /* SIZE includes the fixed stack space needed for function calls.  */
   size = get_frame_size () + current_function_outgoing_args_size;

@@ -743,7 +743,7 @@ extern struct rtx_def *mn10300_builtin_saveregs ();
     return 8;
 
 
-#define REGISTER_MOVE_COST(CLASS1, CLASS2)  (CLASS1 != CLASS2 ? 4 : 0)
+#define REGISTER_MOVE_COST(CLASS1, CLASS2)  (CLASS1 != CLASS2 ? 4 : 2)
 
 /* A crude cut at RTX_COSTS for the MN10300.  */
 
