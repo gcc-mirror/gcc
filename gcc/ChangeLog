@@ -1,3 +1,10 @@
+2003-07-15  Kazu Hirata  <kazu@cs.umass.edu>
+
+	PR target/10795
+	* config/i386/i386.c (ix86_expand_carry_flag_compare): Don't
+	swap comparison operands if doing so would generate an
+	unrecognizable insn.
+
 2003-07-15  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR optimization/11320
