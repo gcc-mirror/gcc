@@ -1,3 +1,7 @@
+Mon Jul 13 23:42:36 1998  Ralf Corsepius <corsepiu@faw.uni-ulm.de>
+
+	* sh/elf.h (MAX_OFILE_ALIGNMENT): Undefine before including svr4.h.
+
 Mon Jul 13 23:36:08 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* i386/i386.h (CPP_486_SPEC, CPP_586_SPEC, CPP_686_SPEC): New specs.
