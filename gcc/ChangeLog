@@ -1,3 +1,7 @@
+2001-02-05  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	* Makefile.in (gcc_gxx_target_include_dir): Use $(target_alias).
+
 2001-02-05  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-typeck.c (common_type): push and pop binding level around
