@@ -2471,7 +2471,8 @@ dfs_walk (binfo, fn, qfn)
 
       if (qfn == 0 || (*qfn)(base_binfo))
 	{
-	  if (TREE_CODE (BINFO_TYPE (base_binfo)) == TEMPLATE_TYPE_PARM)
+	  if (TREE_CODE (BINFO_TYPE (base_binfo)) == TEMPLATE_TYPE_PARM
+	      || TREE_CODE (BINFO_TYPE (base_binfo)) == TEMPLATE_TEMPLATE_PARM)
 	    /* Pass */;
 	  else if (fn == dfs_init_vbase_pointers)
 	    {
@@ -3134,7 +3135,8 @@ dfs_record_inheritance (binfo)
       tree baseclass = BINFO_TYPE (base_binfo);
       mi_boolean *base_row = BINFO_DERIVES_FROM_STAR (base_binfo);
 
-      if (TREE_CODE (baseclass) == TEMPLATE_TYPE_PARM)
+      if (TREE_CODE (baseclass) == TEMPLATE_TYPE_PARM
+          || TREE_CODE (baseclass) == TEMPLATE_TEMPLATE_PARM)
 	continue;
       my_friendly_assert (CLASSTYPE_CID (baseclass) != 0, 2365);
 

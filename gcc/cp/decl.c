@@ -397,6 +397,9 @@ static struct named_label_list *named_label_uses = NULL;
    in the TREE_PURPOSE slot.  */
 tree static_aggregates;
 
+/* Nonzero if we lookup name inside template argument.  */
+int arg_looking_for_template;
+
 /* -- end of C++ */
 
 /* Two expressions that are constants with value zero.
@@ -3104,7 +3107,8 @@ pushdecl (x)
   /* Type are looked up using the DECL_NAME, as that is what the rest of the
      compiler wants to use.  */
   if (TREE_CODE (x) == TYPE_DECL || TREE_CODE (x) == VAR_DECL
-      || TREE_CODE (x) == NAMESPACE_DECL || TREE_CODE (x) == TEMPLATE_TYPE_PARM)
+      || TREE_CODE (x) == NAMESPACE_DECL || TREE_CODE (x) == TEMPLATE_TYPE_PARM
+      || TREE_CODE (x) == TEMPLATE_TEMPLATE_PARM)
     name = DECL_NAME (x);
 
   if (name)
@@ -4534,6 +4538,7 @@ lookup_name_real (name, prefer_type, nonclass)
 	    }
 	  else if (! IS_AGGR_TYPE (type)
 		   || TREE_CODE (type) == TEMPLATE_TYPE_PARM
+		   || TREE_CODE (type) == TEMPLATE_TEMPLATE_PARM
 		   || TREE_CODE (type) == TYPENAME_TYPE)
 	    /* Someone else will give an error about this if needed.  */
 	    val = NULL_TREE;
@@ -4667,7 +4672,13 @@ lookup_name_real (name, prefer_type, nonclass)
 	  val = from_obj;
 	}
 
-      if ((TREE_CODE (val) == TEMPLATE_DECL && looking_for_template)
+      if (TREE_CODE (val) == TEMPLATE_DECL && arg_looking_for_template)
+	{
+	  /* TEMPLATE_TEMPLATE_PARM node is preferred over TEMPLATE_DECL.  */
+	  if (DECL_TEMPLATE_TEMPLATE_PARM_P (val))
+	  	val = TREE_TYPE (val);
+	}
+      else if ((TREE_CODE (val) == TEMPLATE_DECL && looking_for_template)
 	  || TREE_CODE (val) == TYPE_DECL || prefer_type <= 0)
 	;
       else if (IDENTIFIER_HAS_TYPE_VALUE (name))
@@ -7996,7 +8007,8 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	      else if (TREE_OPERAND (decl, 1)
 		       && TREE_CODE (TREE_OPERAND (decl, 1)) == INDIRECT_REF)
 		ctype = cname;
-	      else if (TREE_CODE (cname) == TEMPLATE_TYPE_PARM)
+	      else if (TREE_CODE (cname) == TEMPLATE_TYPE_PARM
+		       || TREE_CODE (cname) == TEMPLATE_TEMPLATE_PARM)
 		{
 		  cp_error ("`%T::%D' is not a valid declarator", cname,
 			    TREE_OPERAND (decl, 1));
@@ -8205,7 +8217,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	    }
 	}
       /* C++ aggregate types.  */
-      else if (TREE_CODE (id) == TYPE_DECL)
+      else if (TREE_CODE (id) == TYPE_DECL || TREE_CODE (id) == TEMPLATE_DECL)
 	{
 	  if (type)
 	    cp_error ("multiple declarations `%T' and `%T'", type,
@@ -10592,7 +10604,8 @@ grok_op_properties (decl, virtualp, friendp)
 		    /* This lets bad template code slip through.  */
 		    if (IS_AGGR_TYPE (arg)
 			|| TREE_CODE (arg) == ENUMERAL_TYPE
-			|| TREE_CODE (arg) == TEMPLATE_TYPE_PARM)
+			|| TREE_CODE (arg) == TEMPLATE_TYPE_PARM
+			|| TREE_CODE (arg) == TEMPLATE_TEMPLATE_PARM)
 		      goto foundaggr;
 		  }
 	      cp_error
@@ -10821,12 +10834,14 @@ xref_tag (code_type_node, name, binfo, globalize)
     }
   else
     t = IDENTIFIER_TYPE_VALUE (name);
-  if (t && TREE_CODE (t) != code && TREE_CODE (t) != TEMPLATE_TYPE_PARM)
+  if (t && TREE_CODE (t) != code && TREE_CODE (t) != TEMPLATE_TYPE_PARM
+      && TREE_CODE (t) != TEMPLATE_TEMPLATE_PARM)
     t = NULL_TREE;
 
   if (! globalize)
     {
-      if (pedantic && t && TREE_CODE (t) == TEMPLATE_TYPE_PARM)
+      if (pedantic && t && (TREE_CODE (t) == TEMPLATE_TYPE_PARM 
+			    || TREE_CODE (t) == TEMPLATE_TEMPLATE_PARM))
 	{
 	  cp_pedwarn ("redeclaration of template type-parameter `%T'", name);
 	  cp_pedwarn_at ("  previously declared here", t);
@@ -11023,7 +11038,8 @@ xref_basetypes (code_type_node, name, ref, binfo)
       if (!basetype
 	  || (TREE_CODE (basetype) != RECORD_TYPE
 	      && TREE_CODE (basetype) != TYPENAME_TYPE
-	      && TREE_CODE (basetype) != TEMPLATE_TYPE_PARM))
+	      && TREE_CODE (basetype) != TEMPLATE_TYPE_PARM
+	      && TREE_CODE (basetype) != TEMPLATE_TEMPLATE_PARM))
 	{
 	  cp_error ("base type `%T' fails to be a struct or class type",
 		    TREE_VALUE (binfo));

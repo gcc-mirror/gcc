@@ -229,6 +229,86 @@ dump_type (t, v)
       OB_PUTID (TYPE_IDENTIFIER (t));
       break;
 
+      /* A substituted template template parameter.  Default template 
+	 argument handling are different from dump_decl.  */
+    case TEMPLATE_DECL:
+      {
+	tree orig_args = DECL_TEMPLATE_PARMS (t);
+	tree args;
+	int i; 
+	for (args = orig_args = nreverse (orig_args); 
+	     args;
+	     args = TREE_CHAIN (args))
+	  {
+	    int len = TREE_VEC_LENGTH (TREE_VALUE (args));
+
+	    OB_PUTS ("template <");
+	    for (i = 0; i < len; i++)
+	      {
+		tree arg = TREE_VEC_ELT (TREE_VALUE (args), i);
+		tree defval = TREE_PURPOSE (arg);
+		arg = TREE_VALUE (arg);
+		if (TREE_CODE (arg) == TYPE_DECL)
+		  {
+		    OB_PUTS ("class ");
+		    if (DECL_NAME (arg))
+		      OB_PUTID (DECL_NAME (arg));
+		    else
+		      OB_PUTS ("{anon}");
+		  }
+		else
+		  dump_decl (arg, 1);
+		
+		if (defval)
+		  {
+		    OB_PUTS (" = ");
+		    if (TREE_CODE (arg) == TYPE_DECL)
+		      dump_type (defval, 1);
+		    else
+		      dump_expr (defval, 1);
+		  }
+		
+		OB_PUTC2 (',', ' ');
+	      }
+	    if (len != 0)
+	      OB_UNPUT (2);
+	    OB_PUTC2 ('>', ' ');
+	  }
+	nreverse(orig_args);
+	dump_type (TREE_TYPE (t), v);
+      }
+      break;
+
+    case TEMPLATE_TEMPLATE_PARM:
+      if (!CLASSTYPE_TEMPLATE_INFO (t))
+	{
+	  /* For parameters inside template signature. */
+	  if (TYPE_IDENTIFIER (t))
+	    OB_PUTID (TYPE_IDENTIFIER (t));
+	  else
+	    OB_PUTS ("{anonymous template template parm}");
+	}
+      else
+	{
+	  int i;
+	  tree args = CLASSTYPE_TI_ARGS (t);
+	  OB_PUTID (TYPE_IDENTIFIER (t));
+	  OB_PUTC ('<');
+	  for (i = 0; i < TREE_VEC_LENGTH (args); i++)
+	    {
+	      tree arg = TREE_VEC_ELT (args, i);
+	      if (TREE_CODE_CLASS (TREE_CODE (arg)) == 't'
+		  || TREE_CODE (arg) == TEMPLATE_DECL)
+	        dump_type (arg, 0);
+	      else
+	        dump_expr (arg, 0);
+	      if (i < TREE_VEC_LENGTH (args)-1)
+	        OB_PUTC2 (',', ' ');
+	    }
+	  OB_PUTC ('>');
+	}
+      break;
+
     case TEMPLATE_TYPE_PARM:
       dump_readonly_or_volatile (t, after);
       if (TYPE_IDENTIFIER (t))
@@ -447,6 +527,7 @@ dump_type_prefix (t, v)
     case REAL_TYPE:
     case RECORD_TYPE:
     case TEMPLATE_TYPE_PARM:
+    case TEMPLATE_TEMPLATE_PARM:
     case TREE_LIST:
     case TYPE_DECL:
     case TREE_VEC:
@@ -529,6 +610,7 @@ dump_type_suffix (t, v)
     case REAL_TYPE:
     case RECORD_TYPE:
     case TEMPLATE_TYPE_PARM:
+    case TEMPLATE_TEMPLATE_PARM:
     case TREE_LIST:
     case TYPE_DECL:
     case TREE_VEC:
@@ -740,7 +822,10 @@ dump_decl (t, v)
 		if (TREE_CODE (arg) == TYPE_DECL)
 		  {
 		    OB_PUTS ("class ");
-		    OB_PUTID (DECL_NAME (arg));
+		    if (DECL_NAME (arg))
+		      OB_PUTID (DECL_NAME (arg));
+		    else
+		      OB_PUTS ("{anon}");
 		  }
 		else
 		  dump_decl (arg, 1);
@@ -786,7 +871,8 @@ dump_decl (t, v)
 	OB_PUTC ('<');
 	for (args = TREE_OPERAND (t, 1); args; args = TREE_CHAIN (args))
 	  {
-	    if (TREE_CODE_CLASS (TREE_CODE (TREE_VALUE (args))) == 't')
+	    if (TREE_CODE_CLASS (TREE_CODE (TREE_VALUE (args))) == 't'
+		|| TREE_CODE (TREE_VALUE (args)) == TEMPLATE_DECL)
 	      dump_type (TREE_VALUE (args), 0);
 	    else
 	      dump_expr (TREE_VALUE (args), 0);
@@ -995,7 +1081,8 @@ dump_function_name (t)
 
 		      if (a)
 			{
-			  if (TREE_CODE_CLASS (TREE_CODE (a)) == 't')
+			  if (TREE_CODE_CLASS (TREE_CODE (a)) == 't'
+			      || TREE_CODE (a) == TEMPLATE_DECL)
 			    dump_type (a, 0);
 			  else
 			    dump_expr (a, 0);
@@ -1023,7 +1110,8 @@ dump_function_name (t)
 
 		      if (a)
 			{
-			  if (TREE_CODE_CLASS (TREE_CODE (a)) == 't')
+			  if (TREE_CODE_CLASS (TREE_CODE (a)) == 't'
+			      || TREE_CODE (a) == TEMPLATE_DECL)
 			    dump_type (a, 0);
 			  else
 			    dump_expr (a, 0);

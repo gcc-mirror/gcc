@@ -836,6 +836,37 @@ comptypes (type1, type2, strict)
       val = comp_array_types (comptypes, t1, t2, strict);
       break;
 
+    case TEMPLATE_TEMPLATE_PARM:
+      if (TEMPLATE_TYPE_IDX (t1) != TEMPLATE_TYPE_IDX (t2)
+	  || TEMPLATE_TYPE_LEVEL (t1) != TEMPLATE_TYPE_LEVEL (t2))
+	return 0;
+
+      if (CLASSTYPE_TEMPLATE_INFO (t1) && CLASSTYPE_TEMPLATE_INFO (t2))
+	{
+	  int i = TREE_VEC_LENGTH (CLASSTYPE_TI_ARGS (t1));
+	  tree *p1 = &TREE_VEC_ELT (CLASSTYPE_TI_ARGS (t1), 0);
+	  tree *p2 = &TREE_VEC_ELT (CLASSTYPE_TI_ARGS (t2), 0);
+	
+	  while (i--)
+	    {
+	      if (TREE_CODE_CLASS (TREE_CODE (p1[i])) == 't')
+		{
+		  if (! comptypes (p1[i], p2[i], 1))
+		    return 0;
+		}
+	      else
+		{
+		  if (simple_cst_equal (p1[i], p2[i]) <= 0)
+		    return 0;
+		}
+	    }
+	  return 1;
+	}
+      else if (CLASSTYPE_TEMPLATE_INFO (t1) || CLASSTYPE_TEMPLATE_INFO (t2))
+	return 0;
+      else
+	return 1;
+
     case TEMPLATE_TYPE_PARM:
       return TEMPLATE_TYPE_IDX (t1) == TEMPLATE_TYPE_IDX (t2)
 	&& TEMPLATE_TYPE_LEVEL (t1) == TEMPLATE_TYPE_LEVEL (t2);

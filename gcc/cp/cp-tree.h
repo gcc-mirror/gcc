@@ -1350,6 +1350,12 @@ extern int flag_new_for_scope;
 #define DECL_TEMPLATE_INSTANTIATIONS(NODE) DECL_VINDEX(NODE)
 #define DECL_TEMPLATE_INJECT(NODE)	DECL_INITIAL(NODE)
 
+/* Nonzero for TEMPLATE_DECL nodes that represents template template
+   parameters */
+#define DECL_TEMPLATE_TEMPLATE_PARM_P(NODE) \
+  (TREE_CODE (NODE) == TEMPLATE_DECL && TREE_TYPE (NODE) \
+   && TREE_CODE (TREE_TYPE (NODE)) == TEMPLATE_TEMPLATE_PARM)
+
 #define DECL_FUNCTION_TEMPLATE_P(NODE)  \
   (TREE_CODE (NODE) == TEMPLATE_DECL \
    && TREE_CODE (DECL_TEMPLATE_RESULT (NODE)) == FUNCTION_DECL)
@@ -1920,11 +1926,13 @@ extern tree current_class_type;	/* _TYPE: the type of the current class */
 #define FRIEND_NAME(LIST) (TREE_PURPOSE (LIST))
 #define FRIEND_DECLS(LIST) (TREE_VALUE (LIST))
 
-/* These macros are for accessing the fields of TEMPLATE...PARM nodes.  */
+/* These macros are for accessing the fields of TEMPLATE_TYPE_PARM 
+   and TEMPLATE_TEMPLATE_PARM nodes.  */
 #define TEMPLATE_TYPE_IDX(NODE) TREE_INT_CST_LOW (TYPE_FIELDS (NODE))
 #define TEMPLATE_TYPE_LEVEL(NODE) TREE_INT_CST_HIGH (TYPE_FIELDS (NODE))
 #define TEMPLATE_TYPE_SET_INFO(NODE,I,L) \
   (TYPE_FIELDS (NODE) = build_int_2 (I, L))
+/* These macros are for accessing the fields of TEMPLATE_CONST_PARM nodes.  */
 #define TEMPLATE_CONST_IDX(NODE) (TREE_INT_CST_LOW(NODE))
 #define TEMPLATE_CONST_LEVEL(NODE) (TREE_INT_CST_HIGH(NODE))
 #define TEMPLATE_CONST_SET_INFO(NODE,I,L) \
@@ -2463,6 +2471,7 @@ extern int promotes_to_aggr_type		PROTO((tree, enum tree_code));
 extern int is_aggr_type_2			PROTO((tree, tree));
 extern char *lang_printable_name		PROTO((tree, int));
 extern tree build_exception_variant		PROTO((tree, tree));
+extern tree copy_template_template_parm		PROTO((tree));
 extern tree copy_to_permanent			PROTO((tree));
 extern void print_lang_statistics		PROTO((void));
 extern void __eprintf

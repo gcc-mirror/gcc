@@ -111,6 +111,7 @@ begin_member_template_processing (decl)
       switch (TREE_CODE (parm))
 	{
 	case TYPE_DECL:
+	case TEMPLATE_DECL:
 	  pushdecl (parm);
 	  break;
 
@@ -951,6 +952,8 @@ process_template_parm (list, next)
 
       if (TREE_CODE (p) == TYPE_DECL)
 	idx = TEMPLATE_TYPE_IDX (TREE_TYPE (p));
+      else if (TREE_CODE (p) == TEMPLATE_DECL)
+	idx = TEMPLATE_TYPE_IDX (TREE_TYPE (DECL_TEMPLATE_RESULT (p)));
       else
 	idx = TEMPLATE_CONST_IDX (DECL_INITIAL (p));
       ++idx;
@@ -996,9 +999,26 @@ process_template_parm (list, next)
     }
   else
     {
-      tree t = make_lang_type (TEMPLATE_TYPE_PARM);
+      tree t;
+      parm = TREE_VALUE (parm);
+      
+      if (parm && TREE_CODE (parm) == TEMPLATE_DECL)
+	{
+	  t = make_lang_type (TEMPLATE_TEMPLATE_PARM);
+	  /* This is for distinguishing between real templates and template 
+	     template parameters */
+	  TREE_TYPE (parm) = t;
+	  TREE_TYPE (DECL_TEMPLATE_RESULT (parm)) = t;
+	  decl = parm;
+	}
+      else
+	{
+	  t = make_lang_type (TEMPLATE_TYPE_PARM);
+	  /* parm is either IDENTIFIER_NODE or NULL_TREE */
+	  decl = build_decl (TYPE_DECL, parm, t);
+	}
+        
       CLASSTYPE_GOT_SEMICOLON (t) = 1;
-      decl = build_decl (TYPE_DECL, TREE_VALUE (parm), t);
       TYPE_NAME (t) = decl;
       TYPE_STUB_DECL (t) = decl;
       parm = decl;
@@ -1077,7 +1097,8 @@ current_template_args ()
 	    {
 	      t = TREE_VALUE (t);
 	      
-	      if (TREE_CODE (t) == TYPE_DECL)
+	      if (TREE_CODE (t) == TYPE_DECL 
+		  || TREE_CODE (t) == TEMPLATE_DECL)
 		t = TREE_TYPE (t);
 	      else
 		t = DECL_INITIAL (t);
@@ -1637,6 +1658,7 @@ coerce_template_parms (parms, arglist, in_decl,
      int require_all_arguments;
 {
   int nparms, nargs, i, lost = 0;
+  int is_tmpl_parm = 0;
   tree vec = NULL_TREE;
 
   if (arglist == NULL_TREE)
@@ -1667,7 +1689,31 @@ coerce_template_parms (parms, arglist, in_decl,
     }
 
   if (arglist && TREE_CODE (arglist) == TREE_VEC)
-    vec = copy_node (arglist);
+    if (nargs == nparms)
+      vec = copy_node (arglist);
+    else
+      {
+	/* We arrive here when a template with some default arguments
+	   is used as template template argument.  */
+	is_tmpl_parm = 1;
+	vec = make_tree_vec (nparms);
+	for (i = 0; i < nparms; i++)
+	  {
+	    tree arg;
+
+	    if (i < nargs)
+	      arg = TREE_VEC_ELT (arglist, i);
+	    else if (TREE_CODE (TREE_VALUE (TREE_VEC_ELT (parms, i)))
+		     == TYPE_DECL)
+	      arg = tsubst (TREE_PURPOSE (TREE_VEC_ELT (parms, i)),
+			    vec, i, in_decl);
+	    else
+	      arg = tsubst_expr (TREE_PURPOSE (TREE_VEC_ELT (parms, i)),
+				 vec, i, in_decl);
+
+	    TREE_VEC_ELT (vec, i) = arg;
+	  }
+      }
   else
     {
       vec = make_tree_vec (nparms);
@@ -1705,7 +1751,7 @@ coerce_template_parms (parms, arglist, in_decl,
       tree arg = TREE_VEC_ELT (vec, i);
       tree parm = TREE_VALUE (TREE_VEC_ELT (parms, i));
       tree val = 0;
-      int is_type, requires_type;
+      int is_type, requires_type, is_tmpl_type, requires_tmpl_type;
 
       if (arg == NULL_TREE)
 	/* We're out of arguments.  */
@@ -1721,8 +1767,29 @@ coerce_template_parms (parms, arglist, in_decl,
 	  continue;
 	}
 
-      is_type = TREE_CODE_CLASS (TREE_CODE (arg)) == 't';
-      requires_type = TREE_CODE (parm) == TYPE_DECL;
+      /* In case we are checking arguments inside a template template
+	 parameter, ARG that does not come from default argument is 
+	 also a TREE_LIST node */
+      if (TREE_CODE (arg) == TREE_LIST)
+	{
+          is_tmpl_parm = 1;
+	  arg = TREE_VALUE (arg);
+	}
+
+      /* Check if it is a class template.  */
+      is_tmpl_type = (TREE_CODE (arg) == TEMPLATE_DECL
+		      && TREE_CODE (DECL_TEMPLATE_RESULT (arg)) == TYPE_DECL)
+		     || (TREE_CODE (arg) == TEMPLATE_TEMPLATE_PARM
+			 && !CLASSTYPE_TEMPLATE_INFO (arg));
+      if (is_tmpl_type && TREE_CODE (arg) == TEMPLATE_TEMPLATE_PARM)
+	arg = TYPE_STUB_DECL (arg);
+      
+      requires_tmpl_type = TREE_CODE (parm) == TEMPLATE_DECL;
+      is_type = TREE_CODE_CLASS (TREE_CODE (arg)) == 't'
+		|| is_tmpl_type
+		|| (is_tmpl_parm && TREE_CODE (arg) == TYPE_DECL);
+      requires_type = TREE_CODE (parm) == TYPE_DECL
+		      || requires_tmpl_type;
 
       if (requires_type && ! is_type && TREE_CODE (arg) == SCOPE_REF
 	  && TREE_CODE (TREE_OPERAND (arg, 0)) == TEMPLATE_TYPE_PARM)
@@ -1744,7 +1811,8 @@ coerce_template_parms (parms, arglist, in_decl,
 			    i + 1, in_decl);
 		  if (is_type)
 		    cp_error ("  expected a constant of type `%T', got `%T'",
-			      TREE_TYPE (parm), arg);
+			      TREE_TYPE (parm),
+			      (is_tmpl_type ? DECL_NAME (arg) : arg));
 		  else
 		    cp_error ("  expected a type, got `%E'", arg);
 		}
@@ -1753,18 +1821,71 @@ coerce_template_parms (parms, arglist, in_decl,
 	  TREE_VEC_ELT (vec, i) = error_mark_node;
 	  continue;
 	}
+      if (is_tmpl_type ^ requires_tmpl_type)
+	{
+	  if (in_decl)
+	    {
+	      cp_error ("type/value mismatch at argument %d in template parameter list for `%D'",
+			i, in_decl);
+	      if (is_tmpl_type)
+		cp_error ("  expected a type, got `%T'", DECL_NAME (arg));
+	      else
+		cp_error ("  expected a class template, got `%T'", arg);
+	    }
+	  lost++;
+	  TREE_VEC_ELT (vec, i) = error_mark_node;
+	  continue;
+	}
+      if (is_tmpl_parm)
+	{
+	  if (requires_tmpl_type)
+	    {
+	      cp_error ("nested template template parameter not implemented");
+	      lost++;
+	      TREE_VEC_ELT (vec, i) = error_mark_node;
+	    }
+	  continue;
+	}
+        
       if (is_type)
 	{
-	  val = groktypename (arg);
-	  if (! processing_template_decl)
+	  if (requires_tmpl_type)
 	    {
-	      tree t = target_type (val);
-	      if (TREE_CODE (t) != TYPENAME_TYPE 
-		  && IS_AGGR_TYPE (t)
-		  && decl_function_context (TYPE_MAIN_DECL (t)))
+	      tree parmparm = DECL_INNERMOST_TEMPLATE_PARMS (parm);
+	      tree argparm = DECL_INNERMOST_TEMPLATE_PARMS (arg);
+
+	      /* The parameter and argument roles have to be switched 
+		 here in order to handle default arguments properly.  
+		 For example, 
+		   template<template <class> class TT> void f(TT<int>) 
+		 should be able to accept vector<int> which comes from 
+		   template <class T, class Allcator = allocator> 
+		   class vector.  */
+
+	      val = coerce_template_parms (argparm, parmparm, in_decl, 1, 1);
+	      if (val != error_mark_node)
+		val = arg;
+		    
+	      /* TEMPLATE_TEMPLATE_PARM node is preferred over 
+		 TEMPLATE_DECL.  */
+	      if (val != error_mark_node 
+		  && DECL_TEMPLATE_TEMPLATE_PARM_P (val))
+		val = TREE_TYPE (val);
+	    }
+	  else
+	    {
+	      val = groktypename (arg);
+	      if (! processing_template_decl)
 		{
-		  cp_error ("type `%T' composed from a local class is not a valid template-argument", val);
-		  return error_mark_node;
+		  tree t = target_type (val);
+		  if (TREE_CODE (t) != TYPENAME_TYPE 
+		      && IS_AGGR_TYPE (t)
+		      && decl_function_context (TYPE_MAIN_DECL (t)))
+		    {
+		      cp_error ("type `%T' composed from a local class is not a valid template-argument",
+				val);
+		      return error_mark_node;
+		    }
 		}
 	    }
 	}
@@ -1899,6 +2020,17 @@ mangle_class_name_for_template (name, parms, arglist, ctx)
 	  cat (type_as_string (arg, 0));
 	  continue;
 	}
+      else if (TREE_CODE (parm) == TEMPLATE_DECL)
+	{
+	  if (TREE_CODE (arg) == TEMPLATE_DECL)
+	    /* Already substituted with real template.  Just output 
+	       the template name here */
+	    cat (IDENTIFIER_POINTER (DECL_NAME (arg)));
+	  else
+	    /* Output the parameter declaration */
+	    cat (type_as_string (arg, 0));
+	  continue;
+	}
       else
 	my_friendly_assert (TREE_CODE (parm) == PARM_DECL, 269);
 
@@ -2029,9 +2161,15 @@ lookup_template_class (d1, arglist, in_decl, function_context)
 
   if (TREE_CODE (d1) == IDENTIFIER_NODE)
     {
-      template = IDENTIFIER_GLOBAL_VALUE (d1); /* XXX */
-      if (! template)
-	template = IDENTIFIER_CLASS_VALUE (d1);
+      if (IDENTIFIER_LOCAL_VALUE (d1) 
+	  && DECL_TEMPLATE_TEMPLATE_PARM_P (IDENTIFIER_LOCAL_VALUE (d1)))
+	template = IDENTIFIER_LOCAL_VALUE (d1);
+      else
+	{
+	  template = IDENTIFIER_GLOBAL_VALUE (d1); /* XXX */
+	  if (! template)
+	    template = IDENTIFIER_CLASS_VALUE (d1);
+	}
     }
   else if (TREE_CODE (d1) == TYPE_DECL && IS_AGGR_TYPE (TREE_TYPE (d1)))
     {
@@ -2060,7 +2198,29 @@ lookup_template_class (d1, arglist, in_decl, function_context)
       return error_mark_node;
     }
 
-  if (PRIMARY_TEMPLATE_P (template))
+  if (DECL_TEMPLATE_TEMPLATE_PARM_P (template))
+    {
+      /* Create a new TEMPLATE_DECL and TEMPLATE_TEMPLATE_PARM node to store
+         template arguments */
+
+      tree parm = copy_template_template_parm (TREE_TYPE (template));
+      tree template2 = TYPE_STUB_DECL (parm);
+      tree arglist2;
+
+      CLASSTYPE_GOT_SEMICOLON (parm) = 1;
+      parmlist = DECL_INNERMOST_TEMPLATE_PARMS (template);
+
+      arglist2 = coerce_template_parms (parmlist, arglist, template, 1, 1);
+      if (arglist2 == error_mark_node)
+	return error_mark_node;
+
+      arglist2 = copy_to_permanent (arglist2);
+      CLASSTYPE_TEMPLATE_INFO (parm)
+	= perm_tree_cons (template2, arglist2, NULL_TREE);
+      TYPE_SIZE (parm) = 0;
+      return parm;
+    }
+  else if (PRIMARY_TEMPLATE_P (template))
     {
       parmlist = DECL_INNERMOST_TEMPLATE_PARMS (template);
 
@@ -2244,6 +2404,15 @@ uses_template_parms (t)
     case TYPE_DECL:
       return uses_template_parms (TREE_TYPE (t));
 
+    case TEMPLATE_DECL:
+      /* A template template parameter is encountered */
+      if (DECL_TEMPLATE_TEMPLATE_PARM_P (t))
+        /* We are parsing a template declaration */
+        return 1;
+      /* We are instantiating templates with template template
+         parameter */
+      return 0;
+      
     case FUNCTION_DECL:
     case VAR_DECL:
       /* ??? What about FIELD_DECLs?  */
@@ -2266,6 +2435,7 @@ uses_template_parms (t)
 
       /* template parm nodes */
     case TEMPLATE_TYPE_PARM:
+    case TEMPLATE_TEMPLATE_PARM:
     case TEMPLATE_CONST_PARM:
       return 1;
 
@@ -2864,12 +3034,14 @@ tsubst (t, args, nargs, in_decl)
       }
 
     case TEMPLATE_TYPE_PARM:
+    case TEMPLATE_TEMPLATE_PARM:
     case TEMPLATE_CONST_PARM:
       {
 	int idx;
 	int level;
 
-	if (TREE_CODE (t) == TEMPLATE_TYPE_PARM)
+	if (TREE_CODE (t) == TEMPLATE_TYPE_PARM
+	    || TREE_CODE (t) == TEMPLATE_TEMPLATE_PARM)
 	  {
 	    idx = TEMPLATE_TYPE_IDX (t);
 	    level = TEMPLATE_TYPE_LEVEL (t);
@@ -2899,6 +3071,34 @@ tsubst (t, args, nargs, in_decl)
 		  return cp_build_type_variant
 		    (arg, TYPE_READONLY (arg) || TYPE_READONLY (t),
 		     TYPE_VOLATILE (arg) || TYPE_VOLATILE (t));
+		else if (TREE_CODE (t) == TEMPLATE_TEMPLATE_PARM)
+		  {
+		    if (CLASSTYPE_TEMPLATE_INFO (t))
+		      {
+			/* We are processing a type constructed from
+			   a template template parameter */
+			tree argvec = tsubst (
+					TREE_VALUE (CLASSTYPE_TEMPLATE_INFO (t)), 
+					args, nargs, in_decl);
+			tree r;
+
+			/* We can get a TEMPLATE_TEMPLATE_PARM here when 
+			   we are resolving nested-types in the signature of 
+			   a member function templates.
+			   Otherwise ARG is a TEMPLATE_DECL and is the real 
+			   template to be instantiated.  */
+			if (TREE_CODE (arg) == TEMPLATE_TEMPLATE_PARM)
+			  arg = TYPE_NAME (arg);
+
+			r = lookup_template_class (DECL_NAME (arg), 
+						   argvec, in_decl, NULL_TREE);
+			return cp_build_type_variant (r, TYPE_READONLY (t),
+						      TYPE_VOLATILE (t));
+		      }
+		    else
+		      /* We are processing a template argument list.  */ 
+		      return arg;
+		  }
 		else
 		  return arg;
 	      }
@@ -2909,6 +3109,8 @@ tsubst (t, args, nargs, in_decl)
 	my_friendly_assert((TREE_CODE (t) == TEMPLATE_CONST_PARM 
 			    && TEMPLATE_CONST_LEVEL (t) > 1) 
 			   || (TREE_CODE (t) == TEMPLATE_TYPE_PARM
+			       && TEMPLATE_TYPE_LEVEL (t) > 1)
+			   || (TREE_CODE (t) == TEMPLATE_TEMPLATE_PARM
 			       && TEMPLATE_TYPE_LEVEL (t) > 1),
 			   0);
 	return t;
@@ -3903,6 +4105,7 @@ tsubst_copy (t, args, nargs, in_decl)
     case ENUMERAL_TYPE:
     case INTEGER_TYPE:
     case TEMPLATE_TYPE_PARM:
+    case TEMPLATE_TEMPLATE_PARM:
     case TEMPLATE_CONST_PARM:
     case POINTER_TYPE:
     case REFERENCE_TYPE:
@@ -4641,6 +4844,79 @@ unify (tparms, targs, ntparms, parm, arg, nsubsts, strict)
 	return 1;
       targs[idx] = arg;
       return 0;
+
+    case TEMPLATE_TEMPLATE_PARM:
+      (*nsubsts)++;
+      idx = TEMPLATE_TYPE_IDX (parm);
+      /* Check for mixed types and values.  */
+      if (TREE_CODE (TREE_VALUE (TREE_VEC_ELT (tparms, idx))) != TEMPLATE_DECL)
+	return 1;
+
+      if (!strict && targs[idx] != NULL_TREE && 
+	  TREE_CODE (targs[idx]) == NOP_EXPR)
+	/* An explicit template argument.  Don't even try to match
+	   here; the overload resolution code will manage check to
+	   see whether the call is legal.  */ 
+	return 0;
+
+      if (CLASSTYPE_TEMPLATE_INFO (parm))
+	{
+	  /* We arrive here when PARM does not involve template 
+	     specialization.  */
+
+	  /* ARG must be constructed from a template class.  */
+	  if (TREE_CODE (arg) != RECORD_TYPE || !CLASSTYPE_TEMPLATE_INFO (arg))
+	    return 1;
+
+	  {
+	    tree parmtmpl = CLASSTYPE_TI_TEMPLATE (parm);
+	    tree parmvec = CLASSTYPE_TI_ARGS (parm);
+	    tree argvec = CLASSTYPE_TI_ARGS (arg);
+	    tree argtmplvec
+	      = DECL_INNERMOST_TEMPLATE_PARMS (CLASSTYPE_TI_TEMPLATE (arg));
+	    int i, j;
+
+	    /* The parameter and argument roles have to be switched here 
+	       in order to handle default arguments properly.  For example, 
+		 template<template <class> class TT> void f(TT<int>) 
+	       should be able to accept vector<int> which comes from 
+		 template <class T, class Allcator = allocator> 
+		   class vector.  */
+
+	    if (coerce_template_parms (argtmplvec, parmvec, parmtmpl, 1, 1)
+		== error_mark_node)
+	      return 1;
+	  
+	    /* Deduce arguments T, i from TT<T> or TT<i>.  */
+	    for (i = 0; i < TREE_VEC_LENGTH (parmvec); ++i)
+	      {
+		tree t = TREE_VEC_ELT (parmvec, i);
+		if (TREE_CODE (t) != TEMPLATE_TYPE_PARM
+		    && TREE_CODE (t) != TEMPLATE_TEMPLATE_PARM
+		    && TREE_CODE (t) != TEMPLATE_CONST_PARM)
+		  continue;
+
+		/* This argument can be deduced.  */
+
+		if (unify (tparms, targs, ntparms, t, 
+			   TREE_VEC_ELT (argvec, i), nsubsts, strict))
+		  return 1;
+	      }
+	  }
+	  arg = CLASSTYPE_TI_TEMPLATE (arg);
+	}
+
+      /* Simple cases: Value already set, does match or doesn't.  */
+      if (targs[idx] == arg 
+	  || (targs[idx] 
+	      && TREE_CODE (targs[idx]) == NOP_EXPR 
+	      && TREE_OPERAND (targs[idx], 0) == arg))
+	return 0;
+      else if (targs[idx])
+	return 1;
+      targs[idx] = arg;
+      return 0;
+
     case TEMPLATE_CONST_PARM:
       (*nsubsts)++;
       idx = TEMPLATE_CONST_IDX (parm);
