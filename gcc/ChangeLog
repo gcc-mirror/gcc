@@ -1,3 +1,10 @@
+2004-12-13  Jeff Law  <law@redhat.com>
+            Kazu Hirata  <kazu@cs.umass.edu>
+
+	* tree-ssa-dom.c (thread_across_edge): Do not thread jumps if a
+	PHI argument is set from a PHI_RESULT in the same block and the
+	PHI argument is not the same as the PHI result.
+
 2004-12-13  David Edelsohn  <edelsohn@gnu.org>
 
 	* xcoffout.c (xcoffout_declare_function): Always strip storage
