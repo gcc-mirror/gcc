@@ -1,3 +1,8 @@
+2005-01-09  Falk Hueffner  <falk@debian.org>
+
+	* fold-const.c (fold): Also handle EXACT_DIV_EXPR when folding
+	X/C1 cmpop C2.
+
 2005-01-09  David Edelsohn  <edelsohn@gnu.org>
 
 	PR target/18720
