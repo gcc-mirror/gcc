@@ -1077,22 +1077,26 @@ build_m_component_ref (datum, component)
      tree datum, component;
 {
   tree type;
-  tree objtype = TREE_TYPE (datum);
-  tree rettype;
+  tree objtype;
+  tree field_type;
+  int type_quals;
   tree binfo;
 
   if (processing_template_decl)
     return build_min_nt (DOTSTAR_EXPR, datum, component);
 
+  datum = decay_conversion (datum);
+  objtype = TYPE_MAIN_VARIANT (TREE_TYPE (datum));  
+
   if (TYPE_PTRMEMFUNC_P (TREE_TYPE (component)))
     {
       type = TREE_TYPE (TYPE_PTRMEMFUNC_FN_TYPE (TREE_TYPE (component)));
-      rettype = type;
+      field_type = type;
     }
   else
     {
       type = TREE_TYPE (TREE_TYPE (component));
-      rettype = TREE_TYPE (type);
+      field_type = TREE_TYPE (type);
     }
 
   if (datum == error_mark_node || component == error_mark_node)
@@ -1103,10 +1107,6 @@ build_m_component_ref (datum, component)
       cp_error ("`%E' cannot be used as a member pointer, since it is of type `%T'", component, type);
       return error_mark_node;
     }
-
-  if (TREE_CODE (objtype) == REFERENCE_TYPE)
-    objtype = TREE_TYPE (objtype);
-  objtype = TYPE_MAIN_VARIANT (objtype);
 
   if (! IS_AGGR_TYPE (objtype))
     {
@@ -1125,7 +1125,24 @@ build_m_component_ref (datum, component)
   else if (binfo == error_mark_node)
     return error_mark_node;
 
-  component = build (OFFSET_REF, rettype, datum, component);
+  /* Compute the type of the field, as described in [expr.ref].  */
+  type_quals = TYPE_UNQUALIFIED;
+  if (TREE_CODE (field_type) == REFERENCE_TYPE)
+    /* The standard says that the type of the result should be the
+       type referred to by the reference.  But for now, at least, we
+       do the conversion from reference type later.  */
+    ;
+  else
+    {
+      type_quals = (CP_TYPE_QUALS (field_type)  
+		    | CP_TYPE_QUALS (TREE_TYPE (datum)));
+
+      /* There's no such thing as a mutable pointer-to-member, so we don't
+	 need to deal with that here like we do in build_component_ref.  */
+      field_type = cp_build_qualified_type (field_type, type_quals);
+    }
+
+  component = build (OFFSET_REF, field_type, datum, component);
   if (TREE_CODE (type) == OFFSET_TYPE)
     component = resolve_offset_ref (component);
   return component;

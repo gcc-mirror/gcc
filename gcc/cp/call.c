@@ -2576,7 +2576,7 @@ build_new_function_call (fn, args)
 	{
 	  if (candidates && ! candidates->next)
 	    return build_function_call (candidates->fn, args);
-	  cp_error ("no matching function for call to `%D (%A)'",
+	  cp_error ("no matching function for call to `%D(%A)'",
 		    DECL_NAME (OVL_FUNCTION (fn)), args);
 	  if (candidates)
 	    print_z_candidates (candidates);
@@ -2587,7 +2587,7 @@ build_new_function_call (fn, args)
 
       if (cand == 0)
 	{
-	  cp_error ("call of overloaded `%D (%A)' is ambiguous",
+	  cp_error ("call of overloaded `%D(%A)' is ambiguous",
 		    DECL_NAME (OVL_FUNCTION (fn)), args);
 	  print_z_candidates (candidates);
 	  return error_mark_node;
@@ -3322,7 +3322,7 @@ build_new_op (code, flags, arg1, arg2, arg3)
 	  /* Look for an `operator++ (int)'.  If they didn't have
 	     one, then we fall back to the old way of doing things.  */
 	  if (flags & LOOKUP_COMPLAIN)
-	    cp_pedwarn ("no `%D (int)' declared for postfix `%s', trying prefix operator instead",
+	    cp_pedwarn ("no `%D(int)' declared for postfix `%s', trying prefix operator instead",
 			fnname, 
 			operator_name_info[code].name);
 	  if (code == POSTINCREMENT_EXPR)
@@ -3518,6 +3518,9 @@ build_op_delete_call (code, addr, size, flags, placement)
     return error_mark_node;
 
   type = TREE_TYPE (TREE_TYPE (addr));
+  while (TREE_CODE (type) == ARRAY_TYPE)
+    type = TREE_TYPE (type);
+
   fnname = ansi_opname (code);
 
   if (IS_AGGR_TYPE (type) && ! (flags & LOOKUP_GLOBAL))
@@ -3562,8 +3565,7 @@ build_op_delete_call (code, addr, size, flags, placement)
   fntype = build_function_type (void_type_node, argtypes);
 
   /* Strip const and volatile from addr.  */
-  if (type != TYPE_MAIN_VARIANT (type))
-    addr = cp_convert (build_pointer_type (TYPE_MAIN_VARIANT (type)), addr);
+  addr = cp_convert (ptr_type_node, addr);
 
   fn = instantiate_type (fntype, fns, itf_no_attributes);
 
@@ -4447,7 +4449,7 @@ build_new_method_call (instance, name, args, basetype_path, flags)
       if (!COMPLETE_TYPE_P (basetype))
 	incomplete_type_error (instance_ptr, basetype);
       else
-	cp_error ("no matching function for call to `%T::%D (%A)%V'",
+	cp_error ("no matching function for call to `%T::%D(%A)%V'",
 		  basetype, pretty_name, user_args,
 		  TREE_TYPE (TREE_TYPE (instance_ptr)));
       print_z_candidates (candidates);
