@@ -1,3 +1,28 @@
+2004-03-15  Richard Henderson  <rth@redhat.com>
+
+        PR target/14547
+        * target.h (struct gcc_target): Move calls substructure before
+        booleans.  Add split_complex_arg.
+        * function.c (assign_parms, split_complex_args): Use it.
+        * calls.c (expand_call): Likewise.
+        (split_complex_values): Likewise.  Check for splittable types
+        before allocating memory.
+        (split_complex_types): Likewise.
+        * system.h (SPLIT_COMPLEX_ARGS): Poison.
+        * expr.h (SPLIT_COMPLEX_ARGS): Remove.
+        * target-def.h (TARGET_SPLIT_COMPLEX_ARG): New.
+        * config/alpha/alpha.c (alpha_split_complex_arg): New.
+        (TARGET_SPLIT_COMPLEX_ARG): New.
+        * config/alpha/alpha.h (SPLIT_COMPLEX_ARGS): Remove.
+        * config/rs6000/rs6000.c (TARGET_SPLIT_COMPLEX_ARG): New.
+        (rs6000_override_options): Zap it for non-AIX.
+        (rs6000_function_value): Use targetm.calls.split_complex_arg.
+        * config/rs6000/rs6000.h (SPLIT_COMPLEX_ARGS): Remove.
+        * config/xtensa/xtensa.c (TARGET_SPLIT_COMPLEX_ARG): New.
+        * config/xtensa/xtensa.h (SPLIT_COMPLEX_ARGS): Remove.
+        * doc/tm.texi (TARGET_SPLIT_COMPLEX_ARG): Modify from old
+        SPLIT_COMPLEX_ARGS entry.
+
 2004-03-15  Eric Botcazou  <ebotcazou@act-europe.fr>
 
 	* config/sparc/sparc.h: Rework comments about the code model

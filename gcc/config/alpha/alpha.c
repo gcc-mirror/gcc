@@ -5902,7 +5902,7 @@ function_arg (CUMULATIVE_ARGS cum, enum machine_mode mode, tree type,
   else
     {
 #ifdef ENABLE_CHECKING
-      /* With SPLIT_COMPLEX_ARGS, we shouldn't see any raw complex
+      /* With alpha_split_complex_arg, we shouldn't see any raw complex
 	 values here.  */
       if (COMPLEX_MODE_P (mode))
 	abort ();
@@ -6117,6 +6117,15 @@ function_value (tree valtype, tree func ATTRIBUTE_UNUSED,
     }
 
   return gen_rtx_REG (mode, regnum);
+}
+
+/* TCmode complex values are passed by invisible reference.  We 
+   should not split these values.  */
+
+static bool
+alpha_split_complex_arg (tree type)
+{
+  return TYPE_MODE (type) != TCmode;
 }
 
 static tree
@@ -10238,6 +10247,8 @@ alpha_init_libfuncs (void)
 #define TARGET_STRICT_ARGUMENT_NAMING hook_bool_CUMULATIVE_ARGS_true
 #undef TARGET_PRETEND_OUTGOING_VARARGS_NAMED
 #define TARGET_PRETEND_OUTGOING_VARARGS_NAMED hook_bool_CUMULATIVE_ARGS_true
+#undef TARGET_SPLIT_COMPLEX_ARG
+#define TARGET_SPLIT_COMPLEX_ARG alpha_split_complex_arg
 
 #undef TARGET_BUILD_BUILTIN_VA_LIST
 #define TARGET_BUILD_BUILTIN_VA_LIST alpha_build_builtin_va_list

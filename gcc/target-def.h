@@ -336,7 +336,9 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #define TARGET_EXPAND_BUILTIN_SAVEREGS default_expand_builtin_saveregs
 #define TARGET_SETUP_INCOMING_VARARGS default_setup_incoming_varargs
 #define TARGET_STRICT_ARGUMENT_NAMING default_strict_argument_naming
-#define TARGET_PRETEND_OUTGOING_VARARGS_NAMED default_pretend_outgoing_varargs_named
+#define TARGET_PRETEND_OUTGOING_VARARGS_NAMED \
+  default_pretend_outgoing_varargs_named
+#define TARGET_SPLIT_COMPLEX_ARG NULL
 
 #define TARGET_CALLS {						\
    TARGET_PROMOTE_FUNCTION_ARGS,				\
@@ -349,6 +351,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
    TARGET_SETUP_INCOMING_VARARGS,				\
    TARGET_STRICT_ARGUMENT_NAMING,				\
    TARGET_PRETEND_OUTGOING_VARARGS_NAMED,			\
+   TARGET_SPLIT_COMPLEX_ARG,					\
    }
 
 /* The whole shebang.  */
@@ -390,6 +393,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
   TARGET_BUILD_BUILTIN_VA_LIST,			\
   TARGET_GET_PCH_VALIDITY,			\
   TARGET_PCH_VALID_P,				\
+  TARGET_CALLS,					\
   TARGET_HAVE_NAMED_SECTIONS,			\
   TARGET_HAVE_CTORS_DTORS,			\
   TARGET_HAVE_TLS,				\
@@ -397,7 +401,6 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
   TARGET_TERMINATE_DW2_EH_FRAME_INFO,		\
   TARGET_ASM_FILE_START_APP_OFF,		\
   TARGET_ASM_FILE_START_FILE_DIRECTIVE,		\
-  TARGET_CALLS,					\
 }
 
 #include "hooks.h"

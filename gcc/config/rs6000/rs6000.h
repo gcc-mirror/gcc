@@ -1854,13 +1854,6 @@ typedef struct rs6000_args
 #define FUNCTION_ARG_BOUNDARY(MODE, TYPE) \
   function_arg_boundary (MODE, TYPE)
 
-/* Define to nonzero if complex arguments should be split into their
-   corresponding components.
-
-   This should be set for Linux and Darwin as well, but we can't break
-   the ABIs at the moment.  For now, only AIX gets fixed.  */
-#define SPLIT_COMPLEX_ARGS (DEFAULT_ABI == ABI_AIX)
-
 /* Implement `va_start' for varargs and stdarg.  */
 #define EXPAND_BUILTIN_VA_START(valist, nextarg) \
   rs6000_va_start (valist, nextarg)

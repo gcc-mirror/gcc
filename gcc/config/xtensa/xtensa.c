@@ -242,6 +242,8 @@ static const int reg_nonleaf_alloc_order[FIRST_PSEUDO_REGISTER] =
 
 #undef TARGET_RETURN_IN_MSB
 #define TARGET_RETURN_IN_MSB xtensa_return_in_msb
+#undef TARGET_SPLIT_COMPLEX_ARG
+#define TARGET_SPLIT_COMPLEX_ARG hook_bool_tree_true
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

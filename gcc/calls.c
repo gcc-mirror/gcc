@@ -2360,7 +2360,7 @@ expand_call (tree exp, rtx target, int ignore)
 
   /* Munge the tree to split complex arguments into their imaginary
      and real parts.  */
-  if (SPLIT_COMPLEX_ARGS)
+  if (targetm.calls.split_complex_arg)
     {
       type_arg_types = split_complex_types (TYPE_ARG_TYPES (funtype));
       actparms = split_complex_values (actparms);
@@ -3574,6 +3574,17 @@ split_complex_values (tree values)
 {
   tree p;
 
+  /* Before allocating memory, check for the common case of no complex.  */
+  for (p = values; p; p = TREE_CHAIN (p))
+    {
+      tree type = TREE_TYPE (TREE_VALUE (p));
+      if (type && TREE_CODE (type) == COMPLEX_TYPE
+	  && targetm.calls.split_complex_arg (type))
+        goto found;
+    }
+  return values;
+
+ found:
   values = copy_list (values);
 
   for (p = values; p; p = TREE_CHAIN (p))
@@ -3585,7 +3596,8 @@ split_complex_values (tree values)
       if (!complex_type)
 	continue;
 
-      if (TREE_CODE (complex_type) == COMPLEX_TYPE)
+      if (TREE_CODE (complex_type) == COMPLEX_TYPE
+	  && targetm.calls.split_complex_arg (complex_type))
 	{
 	  tree subtype;
 	  tree real, imag, next;
@@ -3616,13 +3628,25 @@ split_complex_types (tree types)
 {
   tree p;
 
+  /* Before allocating memory, check for the common case of no complex.  */
+  for (p = types; p; p = TREE_CHAIN (p))
+    {
+      tree type = TREE_VALUE (p);
+      if (TREE_CODE (type) == COMPLEX_TYPE
+	  && targetm.calls.split_complex_arg (type))
+        goto found;
+    }
+  return types;
+
+ found:
   types = copy_list (types);
 
   for (p = types; p; p = TREE_CHAIN (p))
     {
       tree complex_type = TREE_VALUE (p);
 
-      if (TREE_CODE (complex_type) == COMPLEX_TYPE)
+      if (TREE_CODE (complex_type) == COMPLEX_TYPE
+	  && targetm.calls.split_complex_arg (complex_type))
 	{
 	  tree next, imag;
 

@@ -610,6 +610,8 @@ static const char alt_reg_names[][8] =
 #define TARGET_STRICT_ARGUMENT_NAMING hook_bool_CUMULATIVE_ARGS_true
 #undef TARGET_PRETEND_OUTGOING_VARARGS_NAMED
 #define TARGET_PRETEND_OUTGOING_VARARGS_NAMED hook_bool_CUMULATIVE_ARGS_true
+#undef TARGET_SPLIT_COMPLEX_ARG
+#define TARGET_SPLIT_COMPLEX_ARG hook_bool_tree_true
 
 #undef TARGET_BUILD_BUILTIN_VA_LIST
 #define TARGET_BUILD_BUILTIN_VA_LIST rs6000_build_builtin_va_list
@@ -984,6 +986,11 @@ rs6000_override_options (const char *default_cpu)
 
   /* Arrange to save and restore machine status around nested functions.  */
   init_machine_status = rs6000_init_machine_status;
+
+  /* We should always be splitting complex arguments, but we can't break
+     Linux and Darwin ABIs at the moment.  For now, only AIX is fixed.  */
+  if (DEFAULT_ABI != ABI_AIX)
+    targetm.calls.split_complex_arg = NULL;
 }
 
 /* Handle generic options of the form -mfoo=yes/no.
@@ -15818,7 +15825,7 @@ rs6000_function_value (tree valtype, tree func ATTRIBUTE_UNUSED)
     regno = FP_ARG_RETURN;
   else if (TREE_CODE (valtype) == COMPLEX_TYPE
 	   && TARGET_HARD_FLOAT
-	   && SPLIT_COMPLEX_ARGS)
+	   && targetm.calls.split_complex_arg)
     return rs6000_complex_function_value (mode);
   else if (TREE_CODE (valtype) == VECTOR_TYPE && TARGET_ALTIVEC)
     regno = ALTIVEC_ARG_RETURN;
@@ -15840,7 +15847,7 @@ rs6000_libcall_value (enum machine_mode mode)
     regno = FP_ARG_RETURN;
   else if (ALTIVEC_VECTOR_MODE (mode))
     regno = ALTIVEC_ARG_RETURN;
-  else if (COMPLEX_MODE_P (mode) && SPLIT_COMPLEX_ARGS)
+  else if (COMPLEX_MODE_P (mode) && targetm.calls.split_complex_arg)
     return rs6000_complex_function_value (mode);
   else
     regno = GP_ARG_RETURN;

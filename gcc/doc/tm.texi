@@ -3839,16 +3839,18 @@ used for this purpose since all function arguments are pushed on the
 stack.
 @end defmac
 
-@defmac SPLIT_COMPLEX_ARGS
+@deftypefn {Target Hook} bool TARGET_SPLIT_COMPLEX_ARG (tree @var{type})
+This hook should return true if parameter of type @var{type} are passed
+as two scalar parameters.  By default, GCC will attempt to pack complex
+arguments into the target's word size.  Some ABIs require complex arguments
+to be split and treated as their individual components.  For example, on
+AIX64, complex floats should be passed in a pair of floating point
+registers, even though a complex float would fit in one 64-bit floating
+point register.
 
-Define this macro to a nonzero value if complex function arguments
-should be split into their corresponding components.  By default, GCC
-will attempt to pack complex arguments into the target's word size.
-Some ABIs require complex arguments to be split and treated as their
-individual components.  For example, on AIX64, complex floats should
-be passed in a pair of floating point registers, even though a complex
-float would fit in one 64-bit floating point register.
-@end defmac
+The default value of this hook is @code{NULL}, which is treated as always
+false.
+@end deftypefn
 
 @node Scalar Return
 @subsection How Scalar Function Values Are Returned

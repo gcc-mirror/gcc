@@ -821,9 +821,6 @@ typedef struct xtensa_args
    && (TREE_CODE (TYPE_SIZE (TYPE)) != INTEGER_CST			\
        || TREE_ADDRESSABLE (TYPE)))
 
-/* Pass complex arguments independently.  */
-#define SPLIT_COMPLEX_ARGS 1
-
 /* Profiling Xtensa code is typically done with the built-in profiling
    feature of Tensilica's instruction set simulator, which does not
    require any compiler support.  Profiling code on a real (i.e.,
