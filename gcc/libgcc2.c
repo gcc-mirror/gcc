@@ -1593,6 +1593,14 @@ __enable_execute_stack ()
 #ifdef L__main
 
 #include "gbl-ctors.h"
+/* Some systems use __main in a way incompatible with its use in gcc, in these
+   cases use the macros NAME__MAIN to give a quoted symbol and SYMBOL__MAIN to
+   give the same symbol without quotes for an alternative entry point.  You
+   must define both, or niether. */
+#ifndef NAME__MAIN
+#define NAME__MAIN "__main"
+#define SYMBOL__MAIN __main
+#endif
 
 /* Run all the global destructors on exit from the program.  */
 
@@ -1652,7 +1660,7 @@ __do_global_ctors ()
    to run __do_global_ctors, so we need not do anything here.  */
 
 void
-__main ()
+SYMBOL__MAIN ()
 {
   /* Support recursive calls to `main': run initializers just once.  */
   static int initialized = 0;
