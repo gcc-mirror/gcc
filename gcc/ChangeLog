@@ -2,6 +2,12 @@
 
 	* config/arm/arm.c (thumb_expand_prologue): Remove bogus GEN_INT.
 
+2004-07-20  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* fold-const.c (operand_equal_p): Temporarily support NULL args.
+	(operand_equal_p, case ARRAY_REF): Compare args 2 and 3.
+	(operand_equal_p, case COMPONENT_REF): Likewise, for arg 2.
+
 2004-07-20  Zack Weinberg  <zack@codesourcery.com>
 
 	* rtl.h (plus_constant): Delete.
