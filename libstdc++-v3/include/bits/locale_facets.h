@@ -621,7 +621,7 @@ namespace std
     public:
       // Types:
       typedef _CharT 		  	char_type;
-      typedef typename ctype::mask 	mask;
+      typedef typename __ctype_abstract_base<_CharT>::mask mask;
 
       /// The facet id for ctype<char_type>
       static locale::id 	       	id;
