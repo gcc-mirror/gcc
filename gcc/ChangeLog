@@ -1,3 +1,8 @@
+1999-12-06  Brendan Kehoe  <brendan@cygnus.com>
+
+	* dwarf2out.c (field_byte_offset): As with dwarfout.c, size can be
+	zero if there was an error.
+
 1999-12-06  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/sparc/sparc.md (return_losum_di): Fix typo in asm
