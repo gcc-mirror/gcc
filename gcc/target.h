@@ -410,6 +410,11 @@ struct gcc_target
   void * (* get_pch_validity) (size_t *);
   const char * (* pch_valid_p) (const void *, size_t);
 
+  /* True if the compiler should give an @code{enum} type only as many
+     bytes as it takes to represent the range of possible values of
+     that type.  */
+  bool (* default_short_enums) (void);
+
   /* Leave the boolean fields at the end.  */
 
   /* True if arbitrary sections are supported.  */

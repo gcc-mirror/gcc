@@ -1,3 +1,18 @@
+2004-02-23  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* Makefile.in (opts.o): Depend on target.h.
+	* opts.c (decode_options): Use targetm.default_short_enums
+	instead of DEFAULT_SHORT_ENUMS.
+	* system.h (DEFAULT_SHORT_ENUMS): Poison.
+	* target-def.h (TARGET_DEFAULT_SHORT_ENUMS): New.
+	(TARGET_INITIALIZER): Add TARGET_DEFAULT_SHORT_ENUMS.
+	* target.h (gcc_target): Add default_short_enums.
+	* config/cris/cris.h: Remove a comment about
+	DEFAULT_SHORT_ENUMS.
+	* config/ip2k/ip2k.h: Likewise.
+	* doc/tm.texi (DEFAULT_SHORT_ENUMS): Change to
+	TARGET_DEFAULT_SHORT_ENUMS.  Update the description.
+
 2004-02-23  Eric Botcazou  <ebotcazou@libertysurf.fr>
             Falk Hueffner  <falk@debian.org>
 

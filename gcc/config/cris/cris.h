@@ -567,8 +567,6 @@ extern int target_flags;
 /* For compatibility and historical reasons, a char should be signed.  */
 #define DEFAULT_SIGNED_CHAR 1
 
-/* No DEFAULT_SHORT_ENUMS, please.  */
-
 /* Note that WCHAR_TYPE_SIZE is used in cexp.y,
    where TARGET_SHORT is not available.  */
 #undef WCHAR_TYPE
