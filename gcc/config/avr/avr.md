@@ -224,7 +224,7 @@
 {
    /* One of the ops has to be in a register */
   if (!register_operand(operand0, HImode)
-      && !(register_operand(operand1, HImode)  || const0_rtx == operands[1]))
+      && !(register_operand(operand1, HImode) || const0_rtx == operands[1]))
     {
       operands[1] = copy_to_mode_reg(HImode, operand1);
     }
@@ -475,11 +475,10 @@
    (set_attr "cc" "clobber,clobber")])
 
 (define_expand "strlenhi"
-    [(parallel
-      [(set (match_dup 4)
-	    (unspec:HI [(match_operand:BLK 1 "memory_operand" "")
-			(match_operand:QI 2 "const_int_operand" "")
-			(match_operand:HI 3 "immediate_operand" "")] 0))])
+    [(set (match_dup 4)
+	  (unspec:HI [(match_operand:BLK 1 "memory_operand" "")
+		      (match_operand:QI 2 "const_int_operand" "")
+		      (match_operand:HI 3 "immediate_operand" "")] 0))
      (set (match_dup 4) (plus:HI (match_dup 4)
 				 (const_int -1)))
      (set (match_operand:HI 0 "register_operand" "")
