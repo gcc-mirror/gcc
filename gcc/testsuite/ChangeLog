@@ -1,3 +1,8 @@
+2002-07-06  Alexandre Oliva  <aoliva@redhat.com>
+
+	* gcc.c-torture/compile/20020706-1.c: New test.
+	* gcc.c-torture/compile/20020706-2.c: New test.
+
 2002-07-06  Brian R. Gaeke  <brg@dgate.ORG>, Alexandre Oliva  <aoliva@redhat.com>
 
 	* g++.dg/warn/incomplete1.C: New test.
