@@ -1,5 +1,7 @@
 1998-12-09  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
+	* gcc.dg/ultrasp1.c: empty dg-options, avoid `long long' warnings
+
 	* g++.old-deja/g++.pt/instantiate6.C: linker error, not	crash
 
 Tue Dec  8 22:50:04 1998  Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
