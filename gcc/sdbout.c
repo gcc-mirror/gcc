@@ -344,8 +344,10 @@ gen_fake_label ()
 /* Produce the number that describes a pointer, function or array type.
    PREV is the number describing the target, value or element type.
    DT_type describes how to transform that type.  */
-#define PUSH_DERIVED_LEVEL(DT_type,PREV) \
-  ((((PREV)&~N_BTMASK)<<N_TSHIFT)|(DT_type<<N_BTSHFT)|(PREV&N_BTMASK))
+#define PUSH_DERIVED_LEVEL(DT_type,PREV)		\
+  ((((PREV) & ~(int)N_BTMASK) << (int)N_TSHIFT)		\
+   | ((int)DT_type << (int)N_BTSHFT)			\
+   | ((PREV) & (int)N_BTMASK))
 
 /* Number of elements used in sdb_dims.  */
 static int sdb_n_dims = 0;
