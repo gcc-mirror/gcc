@@ -1,3 +1,8 @@
+2002-06-11  Tom Tromey  <tromey@redhat.com>
+
+	For PR java/6520:
+	* fold-const.c (fold_convert): Don't modify existing tree's type.
+
 2002-06-11  Geoffrey Keating  <geoffk@redhat.com>
 
 	* config/rs6000/ppc-asm.h: Remove some Windows NT leftovers.
