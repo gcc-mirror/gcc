@@ -1,3 +1,9 @@
+2002-11-25  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/abi_check.cc: Add CXXABI_1.2.1 as compatible.
+	* config/linker-map.gnu: Version __cxa_guard_acquire,
+	__cxa_guard_release, __cxa_guard_abort in CXXABI_1.2.1.
+
 2002-11-25  Paolo Carlini  <pcarlini@unitus.it>
             Nathan Myers  <ncm@cantrip.org>
 
