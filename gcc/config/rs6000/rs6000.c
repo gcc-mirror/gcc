@@ -4448,6 +4448,223 @@ output_epilog (file, size)
     }
 }
 
+/* A C compound statement that outputs the assembler code for a thunk function,
+   used to implement C++ virtual function calls with multiple inheritance.  The
+   thunk acts as a wrapper around a virtual function, adjusting the implicit
+   object parameter before handing control off to the real function.
+
+   First, emit code to add the integer DELTA to the location that contains the
+   incoming first argument.  Assume that this argument contains a pointer, and
+   is the one used to pass the `this' pointer in C++.  This is the incoming
+   argument *before* the function prologue, e.g. `%o0' on a sparc.  The
+   addition must preserve the values of all other incoming arguments.
+
+   After the addition, emit code to jump to FUNCTION, which is a
+   `FUNCTION_DECL'.  This is a direct pure jump, not a call, and does not touch
+   the return address.  Hence returning from FUNCTION will return to whoever
+   called the current `thunk'.
+
+   The effect must be as if FUNCTION had been called directly with the adjusted
+   first argument.  This macro is responsible for emitting all of the code for
+   a thunk function; `FUNCTION_PROLOGUE' and `FUNCTION_EPILOGUE' are not
+   invoked.
+
+   The THUNK_FNDECL is redundant.  (DELTA and FUNCTION have already been
+   extracted from it.)  It might possibly be useful on some targets, but
+   probably not.
+
+   If you do not define this macro, the target-independent code in the C++
+   frontend will generate a less efficient heavyweight thunk that calls
+   FUNCTION instead of jumping to it.  The generic approach does not support
+   varargs.  */
+
+void
+output_mi_thunk (file, thunk_fndecl, delta, function)
+     FILE *file;
+     tree thunk_fndecl;
+     int delta;
+     tree function;
+{
+  char *this_reg = reg_names[ aggregate_value_p (TREE_TYPE (function)) ? 3 : 4 ];
+  char *r0	 = reg_names[0];
+  char *sp	 = reg_names[1];
+  char *toc	 = reg_names[2];
+  char *schain	 = reg_names[11];
+  char *r12	 = reg_names[12];
+  char *prefix;
+  char *fname;
+  char buf[512];
+  static int labelno = 0;
+
+  /* Small constants that can be done by one add instruction */
+  if (delta >= -32768 && delta <= 32767)
+    {
+      if (!TARGET_NEW_MNEMONICS)
+	fprintf (file, "\tcal %s,%d(%s)\n", this_reg, delta, this_reg);
+      else
+	fprintf (file, "\taddi %s,%s,%d\n", this_reg, this_reg, delta);
+    }
+
+  /* Large constants that can be done by one addis instruction */
+  else if ((delta & 0xffff) == 0 && num_insns_constant_wide (delta) == 1)
+    asm_fprintf (file, "\t{cau|addis} %s,%s,%d\n", this_reg, this_reg,
+		 delta >> 16);
+
+  /* 32-bit constants that can be done by an add and addis instruction.  */
+  else if (TARGET_32BIT || num_insns_constant_wide (delta) == 1)
+    {
+      /* Break into two pieces, propigating the sign bit from the low word to
+	 the upper word.  */
+      int delta_high = delta >> 16;
+      int delta_low  = delta & 0xffff;
+      if ((delta_low & 0x8000) != 0)
+	{
+	  delta_high++;
+	  delta_low = (delta_low ^ 0x8000) - 0x8000;	/* sign extend */
+	}
+
+      asm_fprintf (file, "\t{cau|addis} %s,%s,%d\n", this_reg, this_reg,
+		   delta_high);
+
+      if (!TARGET_NEW_MNEMONICS)
+	fprintf (file, "\tcal %s,%d(%s)\n", this_reg, delta_low, this_reg);
+      else
+	fprintf (file, "\taddi %s,%s,%d\n", this_reg, this_reg, delta_low);
+    }
+
+  /* 64-bit constants, fixme */
+  else
+    abort ();
+
+  /* Get the prefix in front of the names.  */
+  switch (DEFAULT_ABI)
+    {
+    default:
+      abort ();
+
+    case ABI_AIX:
+      prefix = ".";
+      break;
+
+    case ABI_V4:
+    case ABI_AIX_NODESC:
+    case ABI_SOLARIS:
+      prefix = "";
+      break;
+
+    case ABI_NT:
+      prefix = "..";
+      break;
+    }
+
+  /* If the function is compiled in this module, jump to it directly.
+     Otherwise, load up its address and jump to it.  */
+
+  fname = XSTR (XEXP (DECL_RTL (function), 0), 0);
+  if (TREE_ASM_WRITTEN (function)
+      && !lookup_attribute ("longcall", TYPE_ATTRIBUTES (TREE_TYPE (function))))
+    {
+      fprintf (file, "\tb %s", prefix);
+      assemble_name (file, fname);
+      fprintf (file, "\n");
+    }
+
+  else
+    {
+      switch (DEFAULT_ABI)
+	{
+	default:
+	case ABI_NT:
+	  abort ();
+
+	case ABI_AIX:
+	  /* Set up a TOC entry for the function.  */
+	  ASM_GENERATE_INTERNAL_LABEL (buf, "Lthunk", labelno);
+	  toc_section ();
+	  ASM_OUTPUT_INTERNAL_LABEL (file, "Lthunk", labelno);
+	  labelno++;
+
+	  /* Note, MINIMAL_TOC doesn't make sense in the case of a thunk, since
+	     there will be only one TOC entry for this function.  */
+	  fputs ("\t.tc\t", file);
+	  assemble_name (file, buf);
+	  fputs ("[TC],", file);
+	  assemble_name (file, buf);
+	  putc ('\n', file);
+	  text_section ();
+	  asm_fprintf (file, (TARGET_32BIT) ? "\t{l|lwz} %s," : "\tld %s", r12);
+	  assemble_name (file, buf);
+	  asm_fprintf (file, "(%s)\n", reg_names[2]);
+	  asm_fprintf (file,
+		       (TARGET_32BIT) ? "\t{l|lwz} %s,0(%s)\n" : "\tld %s,0(%s)\n",
+		       r0, r12);
+
+	  asm_fprintf (file,
+		       (TARGET_32BIT) ? "\t{l|lwz} %s,4(%s)\n" : "\tld %s,8(%s)\n",
+		       toc, r12);
+
+	  asm_fprintf (file, "\tmtctr %s\n", r0);
+	  asm_fprintf (file,
+		       (TARGET_32BIT) ? "\t{l|lwz} %s,8(%s)\n" : "\tld %s,16(%s)\n",
+		       schain, r12);
+
+	  asm_fprintf (file, "\tbctr\n");
+	  break;
+
+	  /* Don't use r11, that contains the static chain, just use r0/r12.  */
+	case ABI_V4:
+	case ABI_AIX_NODESC:
+	case ABI_SOLARIS:
+	  if (flag_pic == 1)
+	    {
+	      fprintf (file, "\tmflr %s\n", r0);
+	      fputs ("\tbl _GLOBAL_OFFSET_TABLE_@local-4\n", file);
+	      asm_fprintf (file, "\tmflr %s\n", r12);
+	      asm_fprintf (file, "\tmtlr %s\n", r0);
+	      asm_fprintf (file, "\t{l|lwz} %s,", r0);
+	      assemble_name (file, fname);
+	      asm_fprintf (file, "@got(%s)\n", r12);
+	    }
+#if TARGET_ELF
+	  else if (flag_pic > 1 || TARGET_RELOCATABLE)
+	    {
+	      ASM_GENERATE_INTERNAL_LABEL (buf, "Lthunk", labelno);
+	      labelno++;
+	      fprintf (file, "\tmflr %s\n", r0);
+	      asm_fprintf (file, "\t{st|stw} %s,4(%s)\n", r0, sp);
+	      rs6000_pic_func_labelno = rs6000_pic_labelno;
+	      rs6000_output_load_toc_table (file, 12);
+	      asm_fprintf (file, "\t{l|lwz} %s,", r0);
+	      assemble_name (file, buf);
+	      asm_fprintf (file, "(%s)\n", r12);
+	      asm_fprintf (file, "\t{l|lwz} %s,4(%s)\n", r12, sp);
+	      asm_fprintf (file, "\tmtlr %s\n", r12);
+	      asm_fprintf (file, "%s\n", MINIMAL_TOC_SECTION_ASM_OP);
+	      assemble_name (file, buf);
+	      fputs (" = .-.LCTOC1\n", file);
+	      fputs ("\t.long ", file);
+	      assemble_name (file, fname);
+	      fputs ("\n\t.previous\n", file);
+	    }
+#endif
+	  else
+	    {
+	      asm_fprintf (file, "\t{liu|lis} %s,", r0);
+	      assemble_name (file, fname);
+	      asm_fprintf (file, "@ha\n");
+	      asm_fprintf (file, "\t{cal|la} %s,", r0);
+	      assemble_name (file, fname);
+	      asm_fprintf (file, "@l(%s)\n", r0);
+	    }
+
+	  asm_fprintf (file, "\tmtctr %s\n", r0);
+	  asm_fprintf (file, "\tbctr\n");
+	  break;
+	}
+    }
+}
+
+
 /* Output a TOC entry.  We derive the entry name from what is
    being written.  */
 
@@ -4778,10 +4995,10 @@ output_function_profiler (file, labelno)
 	  fputs ("\tbl _GLOBAL_OFFSET_TABLE_@local-4\n", file);
 	  asm_fprintf (file, "\t{st|stw} %s,4(%s)\n",
 		       reg_names[0], reg_names[1]);
-	  asm_fprintf (file, "\tmflr %s\n", reg_names[11]);
+	  asm_fprintf (file, "\tmflr %s\n", reg_names[12]);
 	  asm_fprintf (file, "\t{l|lwz} %s,", reg_names[0]);
 	  assemble_name (file, buf);
-	  asm_fprintf (file, "@got(%s)\n", reg_names[11]);
+	  asm_fprintf (file, "@got(%s)\n", reg_names[12]);
 	}
 #if TARGET_ELF
       else if (flag_pic > 1 || TARGET_RELOCATABLE)
@@ -4789,10 +5006,10 @@ output_function_profiler (file, labelno)
 	  asm_fprintf (file, "\t{st|stw} %s,4(%s)\n",
 		       reg_names[0], reg_names[1]);
 	  rs6000_pic_func_labelno = rs6000_pic_labelno;
-	  rs6000_output_load_toc_table (file, 11);
-	  asm_fprintf (file, "\t{l|lwz} %s,", reg_names[11]);
+	  rs6000_output_load_toc_table (file, 12);
+	  asm_fprintf (file, "\t{l|lwz} %s,", reg_names[12]);
 	  assemble_name (file, buf);
-	  asm_fprintf (file, "X(%s)\n", reg_names[11]);
+	  asm_fprintf (file, "X(%s)\n", reg_names[12]);
 	  asm_fprintf (file, "%s\n", MINIMAL_TOC_SECTION_ASM_OP);
 	  assemble_name (file, buf);
 	  fputs ("X = .-.LCTOC1\n", file);
@@ -4803,13 +5020,13 @@ output_function_profiler (file, labelno)
 #endif
       else
 	{
-	  asm_fprintf (file, "\t{liu|lis} %s,", reg_names[11]);
+	  asm_fprintf (file, "\t{liu|lis} %s,", reg_names[12]);
 	  assemble_name (file, buf);
 	  fputs ("@ha\n", file);
 	  asm_fprintf (file, "\t{st|stw} %s,4(%s)\n", reg_names[0], reg_names[1]);
 	  asm_fprintf (file, "\t{cal|la} %s,", reg_names[0]);
 	  assemble_name (file, buf);
-	  asm_fprintf (file, "@l(%s)\n", reg_names[11]);
+	  asm_fprintf (file, "@l(%s)\n", reg_names[12]);
 	}
 
       fprintf (file, "\tbl %s\n", RS6000_MCOUNT);

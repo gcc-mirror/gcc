@@ -1,3 +1,12 @@
+Fri Sep 25 20:30:00 1998  Michael Meissner  <meissner@cygnus.com>
+
+	* rs6000.h (ASM_OUTPUT_MI_THUNK): Declare, call output_mi_thunk.
+	(output_mi_thunk): Declare.
+
+	* rs6000.c (output_mi_thunk): Function to create thunks for MI.
+	(output_function_profiler): Use r12 for temp, instead of r11 so
+	that we preserve the static chain register.
+	
 Fri Sep 25 14:18:33 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* sdbout.c (sdbout_one_type): Don't look at TYPE_BINFO field of enums.
