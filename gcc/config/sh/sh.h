@@ -1381,7 +1381,7 @@ extern enum reg_class reg_class_from_letter[];
    : 0)
 
 #define CONST_OK_FOR_J16(VALUE) \
-  ((unsigned) (VALUE) == (unsigned) 0xffffffff \
+  (HOST_BITS_PER_WIDE_INT >= 64 && (VALUE) == (HOST_WIDE_INT) 0xffffffff \
    || (HOST_BITS_PER_WIDE_INT >= 64 && (VALUE) == (HOST_WIDE_INT) -1 << 32))
 #define CONST_OK_FOR_J(VALUE, STR) \
   ((STR)[1] == '1' && (STR)[2] == '6' ? CONST_OK_FOR_J16 (VALUE) \
