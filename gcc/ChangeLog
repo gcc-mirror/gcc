@@ -1,3 +1,8 @@
+Sat Oct  3 16:14:44 1998  John Carr  <jfc@mit.edu>
+
+	* dwarf2out.c (expand_builtin_dwarf_reg_size):  Initialize
+	last_end to 0x7fffffff.
+
 Fri Oct  2 19:14:20 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
 
 	* function.c (purge_addressof_1): Do not perform endianness
