@@ -1517,8 +1517,14 @@ do {							\
    the next available register.  */
 #define FP_INC (TARGET_FLOAT64 || TARGET_SINGLE_FLOAT ? 1 : 2)
 
-/* The largest size of value that can be held in floating-point registers.  */
-#define UNITS_PER_FPVALUE (TARGET_SOFT_FLOAT ? 0 : FP_INC * UNITS_PER_FPREG)
+/* The largest size of value that can be held in floating-point
+   registers and moved with a single instruction.  */
+#define UNITS_PER_HWFPVALUE (TARGET_SOFT_FLOAT ? 0 : FP_INC * UNITS_PER_FPREG)
+
+/* The largest size of value that can be held in floating-point
+   registers.  */
+#define UNITS_PER_FPVALUE \
+  (TARGET_SOFT_FLOAT ? 0 : (LONG_DOUBLE_TYPE_SIZE / BITS_PER_UNIT))
 
 /* The number of bytes in a double.  */
 #define UNITS_PER_DOUBLE (TYPE_PRECISION (double_type_node) / BITS_PER_UNIT)
@@ -1565,7 +1571,21 @@ do {							\
 /* A C expression for the size in bits of the type `long double' on
    the target machine.  If you don't define this, the default is two
    words.  */
-#define LONG_DOUBLE_TYPE_SIZE 64
+#define LONG_DOUBLE_TYPE_SIZE \
+  (mips_abi == ABI_N32 || mips_abi == ABI_64 ? 128 : 64)
+
+/* long double is not a fixed mode, but the idea is that, if we
+   support long double, we also want a 128-bit integer type.  */
+#define MAX_FIXED_MODE_SIZE LONG_DOUBLE_TYPE_SIZE
+
+#ifdef IN_LIBGCC2
+#if  (defined _ABIN32 && _MIPS_SIM == _ABIN32) \
+  || (defined _ABI64 && _MIPS_SIM == _ABI64)
+#  define LIBGCC2_LONG_DOUBLE_TYPE_SIZE 128
+# else
+#  define LIBGCC2_LONG_DOUBLE_TYPE_SIZE 64
+# endif
+#endif
 
 /* Width in bits of a pointer.
    See also the macro `Pmode' defined below.  */
@@ -1592,7 +1612,7 @@ do {							\
 #define STRUCTURE_SIZE_BOUNDARY 8
 
 /* There is no point aligning anything to a rounder boundary than this.  */
-#define BIGGEST_ALIGNMENT 64
+#define BIGGEST_ALIGNMENT LONG_DOUBLE_TYPE_SIZE
 
 /* Set this nonzero if move instructions will actually fail to work
    when given unaligned data.  */
@@ -2654,7 +2674,9 @@ extern enum reg_class mips_char_to_class[256];
    On the MIPS, R2 R3 and F0 F2 are the only register thus used.
    Currently, R2 and F0 are only implemented  here (C has no complex type)  */
 
-#define FUNCTION_VALUE_REGNO_P(N) ((N) == GP_RETURN || (N) == FP_RETURN)
+#define FUNCTION_VALUE_REGNO_P(N) ((N) == GP_RETURN || (N) == FP_RETURN \
+  || (LONG_DOUBLE_TYPE_SIZE == 128 && FP_RETURN != GP_RETURN \
+      && (N) == FP_RETURN + 2))
 
 /* 1 if N is a possible register number for function argument passing.
    We have no FP argument registers when soft-float.  When FP registers
