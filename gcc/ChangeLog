@@ -1,3 +1,10 @@
+2004-12-28  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	PR target/18321
+	* config/mmix/mmix.c (mmix_expand_epilogue): Change type of
+	variable offset to HOST_WIDE_INT.  Remove obsolete comment.  Fix
+	spacing.
+
 2004-12-28  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* fold-const.c (fold_build_cleanup_point_expr): For a RETURN_EXPR,
