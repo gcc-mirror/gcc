@@ -1,3 +1,7 @@
+1999-05-22  Mark Mitchell  <mark@codesourcery.com>
+
+	* tree.c (mapcar): Handle NON_LVALUE_EXPR.
+
 1999-05-21  Mark Mitchell  <mark@codesourcery.com>
 
 	* typeck.c (build_ptrmemfunc): Handle PTRMEM_CSTs carefully to
