@@ -5795,6 +5795,9 @@ integer_valued_real_p (tree t)
 	case BUILT_IN_NEARBYINT:
 	case BUILT_IN_NEARBYINTF:
 	case BUILT_IN_NEARBYINTL:
+	case BUILT_IN_RINT:
+	case BUILT_IN_RINTF:
+	case BUILT_IN_RINTL:
 	case BUILT_IN_ROUND:
 	case BUILT_IN_ROUNDF:
 	case BUILT_IN_ROUNDL:
@@ -7044,6 +7047,9 @@ fold_builtin (tree exp)
     case BUILT_IN_NEARBYINT:
     case BUILT_IN_NEARBYINTF:
     case BUILT_IN_NEARBYINTL:
+    case BUILT_IN_RINT:
+    case BUILT_IN_RINTF:
+    case BUILT_IN_RINTL:
       return fold_trunc_transparent_mathfn (exp);
 
     case BUILT_IN_FFS:

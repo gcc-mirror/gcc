@@ -1,5 +1,9 @@
 2004-03-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* builtins.c (integer_valued_real_p): Add builtin rint.
+	(fold_builtin): Likewise.
+	* convert.c (convert_to_real): Likewise.
+
 	* convert.c (convert_to_real): Fix typos in `long double'
 	builtins.
 

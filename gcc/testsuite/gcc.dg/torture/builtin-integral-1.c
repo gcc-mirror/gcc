@@ -28,6 +28,7 @@ void test(int i1, int i2)
   CHECK_FN(ceil);
   CHECK_FN(floor);
   CHECK_FN(nearbyint);
+  CHECK_FN(rint);
   CHECK_FN(round);
   CHECK_FN(trunc);
 
