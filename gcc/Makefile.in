@@ -1530,7 +1530,7 @@ cselib.o : cselib.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) $(REGS_
    output.h function.h cselib.h $(GGC_H) $(TM_P_H) gt-cselib.h
 cse.o : cse.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) $(REGS_H) \
    hard-reg-set.h flags.h real.h insn-config.h $(RECOG_H) $(EXPR_H) toplev.h output.h \
-   function.h $(BASIC_BLOCK_H) $(GGC_H) $(TM_P_H) $(TIMEVAR_H)
+   function.h $(BASIC_BLOCK_H) $(GGC_H) $(TM_P_H) $(TIMEVAR_H) except.h
 gcse.o : gcse.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) $(REGS_H) \
    hard-reg-set.h flags.h real.h insn-config.h ggc.h $(RECOG_H) $(EXPR_H) \
    $(BASIC_BLOCK_H) function.h output.h toplev.h $(TM_P_H) $(PARAMS_H) except.h gt-gcse.h

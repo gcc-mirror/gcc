@@ -40,6 +40,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "output.h"
 #include "ggc.h"
 #include "timevar.h"
+#include "except.h"
 
 /* The basic idea of common subexpression elimination is to go
    through the code, keeping a record of expressions that would
@@ -6809,6 +6810,8 @@ cse_set_around_loop (x, insn, loop_start)
 		       SET_SRC, add an insn after P to copy its destination
 		       to what we will be replacing SET_SRC with.  */
 		    if (cse_check_loop_start_value
+			&& single_set (p)
+			&& !can_throw_internal (insn)
 			&& validate_change (insn, &SET_SRC (x),
 					    src_elt->exp, 0))
 		      {
