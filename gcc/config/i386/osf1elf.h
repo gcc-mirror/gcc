@@ -153,9 +153,9 @@ do									\
   {									\
     if (!OSF_PROFILE_BEFORE_PROLOGUE)					\
       {									\
-	char *prefix = "";			\
-	char *lprefix = LPREFIX;					\
-	int labelno = LABELNO;					\
+	const char *const prefix = "";					\
+	const char *const lprefix = LPREFIX;				\
+	int labelno = LABELNO;						\
 									\
 	/* Note that OSF/rose blew it in terms of calling mcount,	\
 	   since OSF/rose prepends a leading underscore, but mcount's	\

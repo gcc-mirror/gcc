@@ -1941,6 +1941,8 @@ print_operand_address(file, addr)
 	offset = INTVAL(XEXP(addr,0)), base = XEXP(addr,1);
       else if (GET_CODE (XEXP(addr,1)) == CONST_INT)
 	offset = INTVAL(XEXP(addr,1)), base = XEXP(addr,0);
+      else
+	abort();
       if (GET_CODE (base) == REG && REGNO(base) == STACK_POINTER_REGNUM)
 	{
 	  if (offset >= -31 && offset <= 0)

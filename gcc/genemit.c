@@ -464,7 +464,7 @@ gen_expand (expand)
   for (i = operands; i <= max_dup_opno; i++)
     printf ("  rtx operand%d;\n", i);
   for (; i <= max_scratch_opno; i++)
-    printf ("  rtx operand%d;\n", i);
+    printf ("  rtx operand%d ATTRIBUTE_UNUSED;\n", i);
   printf ("  rtx _val = 0;\n");
   printf ("  start_sequence ();\n");
 

@@ -395,6 +395,8 @@ while (0)
   { (OFFSET) = s390_arg_frame_offset (); }     				  \
   else if ((FROM) == ARG_POINTER_REGNUM && (TO) == STACK_POINTER_REGNUM)  \
   { (OFFSET) = s390_arg_frame_offset (); }     				  \
+  else									  \
+    abort();								  \
 }
 
 #define CAN_DEBUG_WITHOUT_FP
