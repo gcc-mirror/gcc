@@ -1,3 +1,8 @@
+2001-01-16  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* libsupc++/exception_support.cc (__cp_pop_exception): Fix
+	uninitialized thinko in last change.
+
 2001-01-16  Mark Mitchell  <mark@codesourcery.com>
 
 	* libsupc++/exception_support.cc (__cp_pop_exception): Change

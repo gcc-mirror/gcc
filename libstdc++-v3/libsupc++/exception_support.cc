@@ -191,9 +191,9 @@ __cp_push_exception (void *value, void *type, cleanup_fn cleanup)
    current catch block.  */
 
 extern "C" void
-__cp_pop_exception (void* v)
+__cp_pop_exception (void* p_)
 {
-  cp_eh_info *p;
+  cp_eh_info *p = static_cast <cp_eh_info *> (p_);
   cp_eh_info **stack = __get_eh_info ();
   cp_eh_info **q = stack;
 
