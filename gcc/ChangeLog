@@ -1,3 +1,8 @@
+2002-02-23  Zack Weinberg  <zack@codesourcery.com>
+
+	* cppinit.c (merge_include_chains): Check for brack being
+	NULL before attempting to merge it with qtail.
+
 2002-02-20  Release Manager
 
 	* GCC 3.0.4 Released.
