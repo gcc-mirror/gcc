@@ -101,8 +101,6 @@ AC_DEFUN(GLIBCXX_CONFIGURE, [
     AC_HELP_STRING([--with-newlib],
                    [assume newlib as a system C library]))
 
-  AC_PROG_CC
-
   # We're almost certainly being configured before anything else which uses
   # C++, so all of our AC_PROG_* discoveries will be cached.  It's vital that
   # we not cache the value of CXX that we "discover" here, because it's set
@@ -115,7 +113,7 @@ AC_DEFUN(GLIBCXX_CONFIGURE, [
   # wrong (non-multilib-adjusted) value will be used in multilibs.  This
   # little trick also affects CPPFLAGS, CXXFLAGS, and LDFLAGS.  And as a side
   # effect, CXXFLAGS is no longer automagically subst'd, so we have to do
-  # that ourselves.
+  # that ourselves.  Un-preciousing AC_PROG_CC also affects CC and CFLAGS.
   #
   # -fno-builtin must be present here so that a non-conflicting form of
   # std::exit can be guessed by AC_PROG_CXX, and used in later tests.
@@ -125,9 +123,11 @@ AC_DEFUN(GLIBCXX_CONFIGURE, [
   m4_define([_AC_ARG_VAR_PRECIOUS],[])
   save_CXXFLAGS="$CXXFLAGS"
   CXXFLAGS="$CXXFLAGS -fno-builtin"
+  AC_PROG_CC
   AC_PROG_CXX
   CXXFLAGS="$save_CXXFLAGS"
   m4_rename([glibcxx_PRECIOUS],[_AC_ARG_VAR_PRECIOUS])
+  AC_SUBST(CFLAGS)
   AC_SUBST(CXXFLAGS)
 
   # For directory versioning (e.g., headers) and other variables.
