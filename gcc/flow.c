@@ -317,7 +317,8 @@ flow_analysis (f, nregs, file)
 	    || (GET_RTX_CLASS (code) == 'i'
 		&& (prev_code == JUMP_INSN
 		    || (prev_code == CALL_INSN
-			&& (nonlocal_label_list != 0 || eh_region))
+			&& (nonlocal_label_list != 0 || eh_region)
+			&& ! find_reg_note (insn, REG_RETVAL, NULL_RTX))
 		    || prev_code == BARRIER)))
 	  i++;
 
