@@ -1,3 +1,8 @@
+2000-07-25  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cpplib.c (_cpp_check_directive): Issue -Wtraditional
+	warnings for indented directives even if we are skipping.
+
 2000-07-25  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* invoke.texi (strict-prototypes): Remove.

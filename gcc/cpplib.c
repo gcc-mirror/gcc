@@ -154,27 +154,32 @@ _cpp_check_directive (pfile, token, bol)
   for (i = 0; i < N_DIRECTIVES; i++)
     if (pfile->spec_nodes->dirs[i] == token->val.node)
       {
+	/* In -traditional mode, a directive is ignored unless its #
+	   is in column 1.  In code intended to work with K+R compilers,
+	   therefore, directives added by C89 must have their # indented,
+	   and directives present in traditional C must not.  This is true
+	   even of directives in skipped conditional blocks.  */
+	if (CPP_WTRADITIONAL (pfile))
+	  {
+	    if (!bol && dtable[i].origin == KANDR)
+	      cpp_warning (pfile,
+			   "traditional C ignores #%s with the # indented",
+			   dtable[i].name);
+
+	    if (bol && dtable[i].origin != KANDR)
+	      cpp_warning (pfile,
+		    "suggest hiding #%s from traditional C with an indented #",
+			   dtable[i].name);
+	  }
+
 	/* If we are skipping a failed conditional group, all non-conditional
 	   directives are ignored.  */
 	if (pfile->skipping && !(dtable[i].flags & COND))
 	  return 0;
 
-	/* In -traditional mode, a directive is ignored unless its #
-	   is in column 1.  */
-	if (!bol && dtable[i].origin == KANDR && CPP_WTRADITIONAL (pfile))
-	  cpp_warning (pfile, "traditional C ignores #%s with the # indented",
-		       dtable[i].name);
-
 	/* Issue -pedantic warnings for extended directives.   */
 	if (CPP_PEDANTIC (pfile) && dtable[i].origin == EXTENSION)
 	  cpp_pedwarn (pfile, "ISO C does not allow #%s", dtable[i].name);
-
-	/* -Wtraditional gives warnings about directives with inappropriate
-	   indentation of #.  */
-	if (bol && dtable[i].origin != KANDR && CPP_WTRADITIONAL (pfile))
-	  cpp_warning (pfile,
-		    "suggest hiding #%s from traditional C with an indented #",
-		       dtable[i].name);
 
 	return &dtable[i];
       }
