@@ -24,20 +24,6 @@ Boston, MA 02111-1307, USA.  */
 
 #include "fixlib.h"
 
-void *
-must_malloc( siz )
-    size_t  siz;
-{
-  void*  res = malloc( siz );
-
-  if (res == (void*)NULL) {
-    fprintf( stderr, "fixincl failed to malloc %d bytes\n", siz );
-    exit( 3 );
-  }
-
-  return res;
-}
-
 /* * * * * * * * * * * * *
  
    load_file_data loads all the contents of a file into malloc-ed memory.
@@ -95,7 +81,7 @@ load_file_data (fp)
   return pz_data;
 }
 
-
+#ifdef IS_CXX_HEADER_NEEDED
 t_bool
 is_cxx_header (fname, text)
      tCC *fname;
@@ -153,6 +139,44 @@ template[ \t]*<|\
 		   
   return BOOL_FALSE;
 }
+#endif /* CXX_TYPE_NEEDED */
+
+#ifdef SKIP_QUOTE_NEEDED
+/*
+ *  Skip over a quoted string.  Single quote strings may
+ *  contain multiple characters if the first character is
+ *  a backslash.  Especially a backslash followed by octal digits.
+ *  We are not doing a correctness syntax check here.
+ */
+tCC*
+skip_quote( q, text )
+  char  q;
+  char* text;
+{
+  for (;;)
+    {
+      char ch = *(text++);
+      switch (ch)
+        {
+        case '\\':
+          text++; /* skip over whatever character follows */
+          break;
+
+        case '"':
+        case '\'':
+          if (ch != q)
+            break;
+          /*FALLTHROUGH*/
+
+        case '\n':
+        case NUL:
+          goto skip_done;
+        }
+    } skip_done:;
+
+  return text;
+}
+#endif /* SKIP_QUOTE_NEEDED */
 
 /* * * * * * * * * * * * *
  

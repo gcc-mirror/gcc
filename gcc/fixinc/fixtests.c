@@ -47,9 +47,6 @@ Boston, MA 02111-1307, USA.  */
 
 #include "fixlib.h"
 
-#define SHOULD_APPLY(afp) ((afp) == APPLY_FIX)
-apply_fix_p_t run_test();
-
 typedef struct {
     tCC*  test_name;
     apply_fix_p_t (*test_proc)();
