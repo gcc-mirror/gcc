@@ -2383,7 +2383,7 @@
 	 The const zero case is more complex, on v9
 	 we can always perform it.  */
       if (register_operand (operands[1], DImode)
-	  || (TARGET_ARCH64
+	  || (TARGET_V9
               && (operands[1] == const0_rtx)))
         goto movdi_is_ok;
 
@@ -2443,6 +2443,13 @@
  movdi_is_ok:
   ;
 }")
+
+(define_insn "*movdi_zero"
+  [(set (match_operand:DI 0 "memory_operand" "")
+	(const_int 0))]
+  "TARGET_V9"
+  "stx\\t%%g0, %0"
+  [(set_attr "type" "store")])
 
 ;; Be careful, fmovd does not exist when !arch64.
 ;; We match MEM moves directly when we have correct even
@@ -7212,6 +7219,26 @@
   "TARGET_ARCH64"
   "xnorcc\\t%%g0, %1, %0"
   [(set_attr "type" "compare")])
+
+(define_insn "*cmp_cc_set"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(match_operand:SI 1 "register_operand" "r"))
+   (set (reg:CC 100)
+	(compare:CC (match_dup 1)
+		    (const_int 0)))]
+  ""
+  "orcc\\t%1, 0, %0"
+  [(set_attr "type" "compare")])
+
+(define_insn "*cmp_ccx_set64"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(match_operand:DI 1 "register_operand" "r"))
+   (set (reg:CCX 100)
+	(compare:CCX (match_dup 1)
+		     (const_int 0)))]
+  "TARGET_ARCH64"
+  "orcc\\t%1, 0, %0"
+   [(set_attr "type" "compare")])
 
 ;; Floating point arithmetic instructions.
 
@@ -8871,7 +8898,7 @@
 ;; The conditions in which we do this are very restricted and are 
 ;; explained in the code for {registers,memory}_ok_for_ldd functions.
 
-(define_peephole
+(define_peephole2
   [(set (match_operand:SI 0 "memory_operand" "")
       (const_int 0))
    (set (match_operand:SI 1 "memory_operand" "")
@@ -8879,10 +8906,12 @@
   "TARGET_V9
    && ! MEM_VOLATILE_P (operands[0])
    && ! MEM_VOLATILE_P (operands[1])
-   && addrs_ok_for_ldd_peep (XEXP (operands[0], 0), XEXP (operands[1], 0))"
-  "stx\\t%%g0, %0")
+   && mems_ok_for_ldd_peep (operands[0], operands[1])"
+  [(set (match_dup 0)
+       (const_int 0))]
+  "operands[0] = change_address (operands[0], DImode, NULL);")
 
-(define_peephole
+(define_peephole2
   [(set (match_operand:SI 0 "memory_operand" "")
       (const_int 0))
    (set (match_operand:SI 1 "memory_operand" "")
@@ -8890,125 +8919,158 @@
   "TARGET_V9
    && ! MEM_VOLATILE_P (operands[0])
    && ! MEM_VOLATILE_P (operands[1])
-   && addrs_ok_for_ldd_peep (XEXP (operands[1], 0), XEXP (operands[0], 0))"
-  "stx\\t%%g0, %1")
+   && mems_ok_for_ldd_peep (operands[1], operands[0])"
+  [(set (match_dup 1)
+       (const_int 0))]
+  "operands[1] = change_address (operands[1], DImode, NULL);")
 
-(define_peephole
-  [(set (match_operand:SI 0 "register_operand" "=rf")
+(define_peephole2
+  [(set (match_operand:SI 0 "register_operand" "")
         (match_operand:SI 1 "memory_operand" ""))
-   (set (match_operand:SI 2 "register_operand" "=rf")
+   (set (match_operand:SI 2 "register_operand" "")
         (match_operand:SI 3 "memory_operand" ""))]
   "registers_ok_for_ldd_peep (operands[0], operands[2]) 
    && ! MEM_VOLATILE_P (operands[1])
    && ! MEM_VOLATILE_P (operands[3])
-   && addrs_ok_for_ldd_peep (XEXP (operands[1], 0), XEXP (operands[3], 0))" 
-  "ldd\\t%1, %0")
+   && mems_ok_for_ldd_peep (operands[1], operands[3])" 
+  [(set (match_dup 0)
+	(match_dup 1))]
+  "operands[1] = change_address (operands[1], DImode, NULL);
+   operands[0] = gen_rtx_REG (DImode, REGNO (operands[0]));")
 
-(define_peephole
+(define_peephole2
   [(set (match_operand:SI 0 "memory_operand" "")
-        (match_operand:SI 1 "register_operand" "rf"))
+        (match_operand:SI 1 "register_operand" ""))
    (set (match_operand:SI 2 "memory_operand" "")
-        (match_operand:SI 3 "register_operand" "rf"))]
+        (match_operand:SI 3 "register_operand" ""))]
   "registers_ok_for_ldd_peep (operands[1], operands[3]) 
    && ! MEM_VOLATILE_P (operands[0])
    && ! MEM_VOLATILE_P (operands[2])
-   && addrs_ok_for_ldd_peep (XEXP (operands[0], 0), XEXP (operands[2], 0))"
-  "std\\t%1, %0")
- 
-(define_peephole
-  [(set (match_operand:SF 0 "register_operand" "=fr")
+   && mems_ok_for_ldd_peep (operands[0], operands[2])"
+  [(set (match_dup 0)
+	(match_dup 1))]
+  "operands[0] = change_address (operands[0], DImode, NULL);
+   operands[1] = gen_rtx_REG (DImode, REGNO (operands[1]));")
+
+(define_peephole2
+  [(set (match_operand:SF 0 "register_operand" "")
         (match_operand:SF 1 "memory_operand" ""))
-   (set (match_operand:SF 2 "register_operand" "=fr")
+   (set (match_operand:SF 2 "register_operand" "")
         (match_operand:SF 3 "memory_operand" ""))]
   "registers_ok_for_ldd_peep (operands[0], operands[2]) 
    && ! MEM_VOLATILE_P (operands[1])
    && ! MEM_VOLATILE_P (operands[3])
-   && addrs_ok_for_ldd_peep (XEXP (operands[1], 0), XEXP (operands[3], 0))"
-  "ldd\\t%1, %0")
+   && mems_ok_for_ldd_peep (operands[1], operands[3])"
+  [(set (match_dup 0)
+	(match_dup 1))]
+  "operands[1] = change_address (operands[1], DFmode, NULL);
+   operands[0] = gen_rtx_REG (DFmode, REGNO (operands[0]));")
 
-(define_peephole
+(define_peephole2
   [(set (match_operand:SF 0 "memory_operand" "")
-        (match_operand:SF 1 "register_operand" "fr"))
+        (match_operand:SF 1 "register_operand" ""))
    (set (match_operand:SF 2 "memory_operand" "")
-        (match_operand:SF 3 "register_operand" "fr"))]
+        (match_operand:SF 3 "register_operand" ""))]
   "registers_ok_for_ldd_peep (operands[1], operands[3]) 
   && ! MEM_VOLATILE_P (operands[0])
   && ! MEM_VOLATILE_P (operands[2])
-  && addrs_ok_for_ldd_peep (XEXP (operands[0], 0), XEXP (operands[2], 0))"
-  "std\\t%1, %0")
+  && mems_ok_for_ldd_peep (operands[0], operands[2])"
+  [(set (match_dup 0)
+	(match_dup 1))]
+  "operands[0] = change_address (operands[0], DFmode, NULL);
+   operands[1] = gen_rtx_REG (DFmode, REGNO (operands[1]));")
 
-(define_peephole
-  [(set (match_operand:SI 0 "register_operand" "=rf")
+(define_peephole2
+  [(set (match_operand:SI 0 "register_operand" "")
         (match_operand:SI 1 "memory_operand" ""))
-   (set (match_operand:SI 2 "register_operand" "=rf")
+   (set (match_operand:SI 2 "register_operand" "")
         (match_operand:SI 3 "memory_operand" ""))]
   "registers_ok_for_ldd_peep (operands[2], operands[0]) 
   && ! MEM_VOLATILE_P (operands[3])
   && ! MEM_VOLATILE_P (operands[1])
-  && addrs_ok_for_ldd_peep (XEXP (operands[3], 0), XEXP (operands[1], 0))"
-  "ldd\\t%3, %2")
+  && mems_ok_for_ldd_peep (operands[3], operands[1])"
+  [(set (match_dup 2)
+	(match_dup 3))]
+   "operands[3] = change_address (operands[3], DImode, NULL);
+    operands[2] = gen_rtx_REG (DImode, REGNO (operands[2]));")
 
-(define_peephole
+(define_peephole2
   [(set (match_operand:SI 0 "memory_operand" "")
-        (match_operand:SI 1 "register_operand" "rf"))
+        (match_operand:SI 1 "register_operand" ""))
    (set (match_operand:SI 2 "memory_operand" "")
-        (match_operand:SI 3 "register_operand" "rf"))]
+        (match_operand:SI 3 "register_operand" ""))]
   "registers_ok_for_ldd_peep (operands[3], operands[1]) 
   && ! MEM_VOLATILE_P (operands[2])
   && ! MEM_VOLATILE_P (operands[0])
-  && addrs_ok_for_ldd_peep (XEXP (operands[2], 0), XEXP (operands[0], 0))" 
-  "std\\t%3, %2")
+  && mems_ok_for_ldd_peep (operands[2], operands[0])" 
+  [(set (match_dup 2)
+	(match_dup 3))]
+  "operands[2] = change_address (operands[2], DImode, NULL);
+   operands[3] = gen_rtx_REG (DImode, REGNO (operands[3]));
+   ")
  
-(define_peephole
-  [(set (match_operand:SF 0 "register_operand" "=fr")
+(define_peephole2
+  [(set (match_operand:SF 0 "register_operand" "")
         (match_operand:SF 1 "memory_operand" ""))
-   (set (match_operand:SF 2 "register_operand" "=fr")
+   (set (match_operand:SF 2 "register_operand" "")
         (match_operand:SF 3 "memory_operand" ""))]
   "registers_ok_for_ldd_peep (operands[2], operands[0]) 
   && ! MEM_VOLATILE_P (operands[3])
   && ! MEM_VOLATILE_P (operands[1])
-  && addrs_ok_for_ldd_peep (XEXP (operands[3], 0), XEXP (operands[1], 0))"
-  "ldd\\t%3, %2")
+  && mems_ok_for_ldd_peep (operands[3], operands[1])"
+  [(set (match_dup 2)
+	(match_dup 3))]
+  "operands[3] = change_address (operands[3], DFmode, NULL);
+   operands[2] = gen_rtx_REG (DFmode, REGNO (operands[2]));")
 
-(define_peephole
+(define_peephole2
   [(set (match_operand:SF 0 "memory_operand" "")
-        (match_operand:SF 1 "register_operand" "fr"))
+        (match_operand:SF 1 "register_operand" ""))
    (set (match_operand:SF 2 "memory_operand" "")
-        (match_operand:SF 3 "register_operand" "fr"))]
+        (match_operand:SF 3 "register_operand" ""))]
   "registers_ok_for_ldd_peep (operands[3], operands[1]) 
   && ! MEM_VOLATILE_P (operands[2])
   && ! MEM_VOLATILE_P (operands[0])
-  && addrs_ok_for_ldd_peep (XEXP (operands[2], 0), XEXP (operands[0], 0))"
-  "std\\t%3, %2")
+  && mems_ok_for_ldd_peep (operands[2], operands[0])"
+  [(set (match_dup 2)
+	(match_dup 3))]
+  "operands[2] = change_address (operands[2], DFmode, NULL);
+   operands[3] = gen_rtx_REG (DFmode, REGNO (operands[3]));")
  
 ;; Optimize the case of following a reg-reg move with a test
 ;; of reg just moved.  Don't allow floating point regs for operand 0 or 1.
 ;; This can result from a float to fix conversion.
 
-(define_peephole
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(match_operand:SI 1 "register_operand" "r"))
+(define_peephole2
+  [(set (match_operand:SI 0 "register_operand" "")
+	(match_operand:SI 1 "register_operand" ""))
    (set (reg:CC 100)
-	(compare:CC (match_operand:SI 2 "register_operand" "r")
+	(compare:CC (match_operand:SI 2 "register_operand" "")
 		    (const_int 0)))]
   "(rtx_equal_p (operands[2], operands[0])
     || rtx_equal_p (operands[2], operands[1]))
-   && ! FP_REG_P (operands[0])
-   && ! FP_REG_P (operands[1])"
-  "orcc\\t%1, 0, %0")
+    && ! SPARC_FP_REG_P (REGNO (operands[0]))
+    && ! SPARC_FP_REG_P (REGNO (operands[1]))"
+  [(parallel [(set (match_dup 0) (match_dup 1))
+	      (set (reg:CC 100)
+		   (compare:CC (match_dup 1) (const_int 0)))])]
+  "")
 
-(define_peephole
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(match_operand:DI 1 "register_operand" "r"))
+(define_peephole2
+  [(set (match_operand:DI 0 "register_operand" "")
+	(match_operand:DI 1 "register_operand" ""))
    (set (reg:CCX 100)
-	(compare:CCX (match_operand:DI 2 "register_operand" "r")
+	(compare:CCX (match_operand:DI 2 "register_operand" "")
 		    (const_int 0)))]
   "TARGET_ARCH64
    && (rtx_equal_p (operands[2], operands[0])
        || rtx_equal_p (operands[2], operands[1]))
-   && ! FP_REG_P (operands[0])
-   && ! FP_REG_P (operands[1])"
-  "orcc\\t%1, 0, %0")
+   && ! SPARC_FP_REG_P (REGNO (operands[0]))
+   && ! SPARC_FP_REG_P (REGNO (operands[1]))"
+  [(parallel [(set (match_dup 0) (match_dup 1))
+	      (set (reg:CCX 100)
+		   (compare:CC (match_dup 1) (const_int 0)))])]
+  "")
 
 ;; Return peepholes.  First the "normal" ones.
 ;; These are necessary to catch insns ending up in the epilogue delay list.

@@ -1,3 +1,15 @@
+2001-12-15  Dan Nicolaescu  <dann@ics.uci.edu>
+
+        * config/sparc/sparc.c (mems_ok_for_ldd_peep): Rename from
+	addrs_ok_for_ldd_peep_withmem; take MEMs as parameters, not
+        addrs; eliminate restriction of only using fp and sp as base
+        registers. 
+        * config/sparc/sparc-protos.h: Update.
+        * config/sparc/sparc.md (movdi): Use TARGET_V9 not TARGET_ARCH64.
+        (*cmp_cc_set, *cmp_ccx_set64, *movdi_zero): New insns derived
+        from old define_peepholes.
+        Convert all the ldd/std peepholes to peephole2.
+
 2001-12-15  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* s390.md (prologue, epilogue, *return_si, *return_di): New.
