@@ -91,7 +91,7 @@ proc scan-assembler-not { args } {
 
 # Utility for scanning demangled compiler result, invoked via dg-final.
 # Call pass if pattern is present, otherwise fail.
-proc scan-assembler-dem { pattern args } {
+proc scan-assembler-dem { args } {
     global cxxfilt
     global base_dir
 
@@ -135,7 +135,7 @@ proc scan-assembler-dem { pattern args } {
 }
 
 # Call pass if demangled pattern is not present, otherwise fail.
-proc scan-assembler-dem-not { pattern args } {
+proc scan-assembler-dem-not { args } {
     global cxxfilt
     global base_dir
 
