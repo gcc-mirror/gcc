@@ -1242,18 +1242,37 @@ fprintf (FILE, "$help$: . = .+8 ; space for tmp moves!\n")	\
 
 #define ASM_OUTPUT_DOUBLE_INT(a,b)	fprintf(a,"%d", b)
 
-/* trampoline - how should i do it in separate i+d ? */
-#define TRAMPOLINE_SIZE 0
+/* trampoline - how should i do it in separate i+d ? 
+   have some allocate_trampoline magic??? 
 
-#define INITIALIZE_TRAMPOLINE(x,y,z)	\
-{					\
-abort();				\
-}
+   the following should work for shared I/D: */
+
+/* lets see whether this works as trampoline:
+MV	#STATIC, $4	0x940Y	0x0000 <- STATIC; Y = STATIC_CHAIN_REGNUM
+JMP	FUNCTION	0x0058  0x0000 <- FUNCTION
+*/
 
 #define TRAMPOLINE_TEMPLATE(FILE)	\
 {					\
-abort();				\
+  ASM_OUTPUT_INT (FILE, gen_rtx(CONST_INT, VOIDmode, 0x9400+STATIC_CHAIN_REGNUM)); \
+  ASM_OUTPUT_INT (FILE, const0_rtx);				\
+  ASM_OUTPUT_INT (FILE, gen_rtx(CONST_INT, VOIDmode, 0x0058));	\
+  ASM_OUTPUT_INT (FILE, const0_rtx);				\
 }
+
+#define TRAMPOLINE_SIZE 8
+#define TRAMPOLINE_ALIGN 16
+
+/* Emit RTL insns to initialize the variable parts of a trampoline.
+   FNADDR is an RTX for the address of the function's pure code.
+   CXT is an RTX for the static chain value for the function.  */
+
+#define INITIALIZE_TRAMPOLINE(TRAMP,FNADDR,CXT)	\
+{					\
+  emit_move_insn (gen_rtx (MEM, HImode, plus_constant (TRAMP, 2)), CXT); \
+  emit_move_insn (gen_rtx (MEM, HImode, plus_constant (TRAMP, 6)), FNADDR); \
+}
+
 
 /* Some machines may desire to change what optimizations are
    performed for various optimization levels.   This macro, if
