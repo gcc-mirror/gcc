@@ -1,3 +1,8 @@
+Thu Feb 18 16:36:58 1999  Per Bothner  <bothner@cygnus.com>
+
+	* tree.def (TRY_FINALLY_EXPR, GOTO_SUBROUTINE_EXPR):  New tree nodes,
+	* expr.c (expand_expr):  Support new tree nodes.
+
 Fri Feb 19 10:17:56 1999  Andreas Schwab  <schwab@issan.cs.uni-dortmund.de>
 
 	* config/m68k/m68k.c (m68k_align_loops_string,
