@@ -779,6 +779,7 @@ extern const struct mips_cpu_info *mips_tune_info;
                                   || TARGET_MIPS5500                    \
                                   || TARGET_MIPS7000                    \
                                   || TARGET_MIPS9000                    \
+				  || TARGET_MAD				\
                                   || ISA_MIPS32	                        \
                                   || ISA_MIPS32R2                       \
                                   || ISA_MIPS64)                        \
