@@ -1260,7 +1260,7 @@ array_type_nelts (tree type)
 
   return (integer_zerop (min)
 	  ? max
-	  : fold (build (MINUS_EXPR, TREE_TYPE (max), max, min)));
+	  : fold (build2 (MINUS_EXPR, TREE_TYPE (max), max, min)));
 }
 
 /* Return nonzero if arg is static -- a reference to an object in
@@ -1383,7 +1383,8 @@ save_expr (tree expr)
   if (contains_placeholder_p (inner))
     return t;
 
-  t = build (SAVE_EXPR, TREE_TYPE (expr), t, current_function_decl, NULL_TREE);
+  t = build3 (SAVE_EXPR, TREE_TYPE (expr), t, current_function_decl,
+	      NULL_TREE);
 
   /* This expression might be placed ahead of a jump to ensure that the
      value was computed on both sides of the jump.  So make sure it isn't
@@ -1938,7 +1939,7 @@ substitute_in_expr (tree exp, tree f, tree r)
      if (op0 == TREE_OPERAND (exp, 0))
        return exp;
 
-     new = fold (build (code, TREE_TYPE (exp), op0, TREE_OPERAND (exp, 1)));
+     new = fold (build2 (code, TREE_TYPE (exp), op0, TREE_OPERAND (exp, 1)));
    }
   else
     switch (TREE_CODE_CLASS (code))
@@ -4458,8 +4459,8 @@ get_unwidened (tree op, tree for_type)
 	  && (for_type || ! DECL_BIT_FIELD (TREE_OPERAND (op, 1)))
 	  && (! uns || final_prec <= innerprec || unsignedp))
 	{
-	  win = build (COMPONENT_REF, type, TREE_OPERAND (op, 0),
-		       TREE_OPERAND (op, 1));
+	  win = build2 (COMPONENT_REF, type, TREE_OPERAND (op, 0),
+			TREE_OPERAND (op, 1));
 	  TREE_SIDE_EFFECTS (win) = TREE_SIDE_EFFECTS (op);
 	  TREE_THIS_VOLATILE (win) = TREE_THIS_VOLATILE (op);
 	}
@@ -4547,8 +4548,8 @@ get_narrower (tree op, int *unsignedp_ptr)
 	{
 	  if (first)
 	    uns = DECL_UNSIGNED (TREE_OPERAND (op, 1));
-	  win = build (COMPONENT_REF, type, TREE_OPERAND (op, 0),
-		       TREE_OPERAND (op, 1));
+	  win = build2 (COMPONENT_REF, type, TREE_OPERAND (op, 0),
+			TREE_OPERAND (op, 1));
 	  TREE_SIDE_EFFECTS (win) = TREE_SIDE_EFFECTS (op);
 	  TREE_THIS_VOLATILE (win) = TREE_THIS_VOLATILE (op);
 	}
