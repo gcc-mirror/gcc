@@ -1,3 +1,12 @@
+2002-08-28  Jason Thorpe  <thorpej@wasabisystems.com>
+
+	* config.gcc (mips*-*-netbsd*): Set target_cpu_default to
+	"MASK_GAS|MASK_ABICALLS".
+	* config/mips/netbsd.h (TARGET_ENDIAN_DEFAULT)
+	(TARGET_DEFAULT): Remove.
+	(MACHINE_TYPE): Undefine before defining.
+	(DBX_DEBUGGING_INFO, PREFERRED_DEBUGGING_TYPE): Remove.
+
 2002-08-27  Mark Mitchell  <mark@codesourcery.com>
 
 	* c-common.c (warn_abi): New variable.
