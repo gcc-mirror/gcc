@@ -483,7 +483,6 @@ static void flow_loop_tree_node_add	PARAMS ((struct loop *, struct loop *));
 static void flow_loops_tree_build	PARAMS ((struct loops *));
 static int flow_loop_level_compute	PARAMS ((struct loop *, int));
 static int flow_loops_level_compute	PARAMS ((struct loops *));
-static void allocate_bb_life_data	PARAMS ((void));
 static void find_sub_basic_blocks	PARAMS ((basic_block));
 static bool redirect_edge_and_branch 	PARAMS ((edge, basic_block));
 static basic_block redirect_edge_and_branch_force PARAMS ((edge, basic_block));
@@ -1932,6 +1931,15 @@ redirect_edge_and_branch_force (e, target)
   new_edge->flags = EDGE_FALLTHRU;
   new_edge->probability = e->probability;
   new_edge->count = e->count;
+
+  if (e->dest->global_live_at_start)
+    {
+      new_bb->global_live_at_start = OBSTACK_ALLOC_REG_SET (&flow_obstack);
+      new_bb->global_live_at_end = OBSTACK_ALLOC_REG_SET (&flow_obstack);
+      COPY_REG_SET (new_bb->global_live_at_start,
+		    e->dest->global_live_at_start);
+      COPY_REG_SET (new_bb->global_live_at_end, new_bb->global_live_at_start);
+    }
 
   /* Wire edge in.  */
   new_edge->src = e->src;
@@ -4675,7 +4683,7 @@ calculate_global_regs_live (blocks_in, blocks_out, flags)
 /* Allocate the permanent data structures that represent the results
    of life analysis.  Not static since used also for stupid life analysis.  */
 
-static void
+void
 allocate_bb_life_data ()
 {
   register int i;
