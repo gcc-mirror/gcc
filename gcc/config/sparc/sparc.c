@@ -4707,7 +4707,7 @@ output_return (rtx insn)
 	  if (! delay)
 	    abort ();
 
-	  final_scan_insn (delay, asm_out_file, 1, 0, 1, NULL);
+	  final_scan_insn (delay, asm_out_file, 1, 0, 2, NULL);
 	  PATTERN (delay) = gen_blockage ();
 	  INSN_CODE (delay) = -1;
 	}
@@ -4756,7 +4756,7 @@ output_return (rtx insn)
 	      epilogue_renumber (&pat, 0);
 	      fprintf (asm_out_file, "\treturn\t%%i7+%d\n",
 		       sparc_skip_caller_unimp ? 12 : 8);
-	      final_scan_insn (delay, asm_out_file, 1, 0, 1, NULL);
+	      final_scan_insn (delay, asm_out_file, 1, 0, 2, NULL);
 	    }
 	  else
 	    {
@@ -4817,7 +4817,7 @@ output_sibcall (rtx insn, rtx call_operand)
 
 	  output_asm_insn ("sethi\t%%hi(%a0), %%g1", operands);
 	  output_asm_insn ("jmp\t%%g1 + %%lo(%a0)", operands);
-	  final_scan_insn (delay, asm_out_file, 1, 0, 1, NULL);
+	  final_scan_insn (delay, asm_out_file, 1, 0, 2, NULL);
 
 	  PATTERN (delay) = gen_blockage ();
 	  INSN_CODE (delay) = -1;
