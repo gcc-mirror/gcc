@@ -1,5 +1,11 @@
 2000-05-16  Phil Edwards  <pme@sourceware.cygnus.com>
 
+	* acinclude.m4:  Fix typo, switch to decaf...
+	* aclocal.m4:  Regenerate.
+	* configure:  Regenerate.
+
+2000-05-16  Phil Edwards  <pme@sourceware.cygnus.com>
+
 	* acinclude.m4 (GLIBCPP_ENABLE_SHADOW):  New macro, stub.
 	* aclocal.m4:  Regenerate.
 	* configure.in:  Call.
