@@ -14,8 +14,8 @@ using namespace abi;
 
 int expect (int flags, type_info const &info)
 {
-  __pointer_type_info const *ptr =
-      dynamic_cast <__pointer_type_info const *> (&info);
+  __pbase_type_info const *ptr =
+      dynamic_cast <__pbase_type_info const *> (&info);
   if (!ptr)
     return 0;
   if (ptr->quals != flags)
