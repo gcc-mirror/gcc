@@ -519,7 +519,7 @@ enum reg_class { NO_REGS, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLASSES };
 /* Define the following macro if function calls on the target machine
    do not preserve any registers; in other words, if `CALL_USED_REGISTERS'
    has 1 for all registers. This macro enables `-fcaller-saves' by
-   default. Eventually that option will be nabled by default on all
+   default. Eventually that option will be enabled by default on all
    machines and both the option and this macro will be eliminated. */
 
 #define DEFAULT_CALLER_SAVES

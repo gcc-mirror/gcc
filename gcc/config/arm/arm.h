@@ -780,7 +780,7 @@ enum reg_class
    Frame pointer elimination is automatically handled.
 
    All eliminations are permissible.  Note that ARG_POINTER_REGNUM and
-   HARD_FRAME_POINTER_REGNUM are infact the same thing.  If we need a frame
+   HARD_FRAME_POINTER_REGNUM are in fact the same thing.  If we need a frame
    pointer, we must eliminate FRAME_POINTER_REGNUM into
    HARD_FRAME_POINTER_REGNUM and not into STACK_POINTER_REGNUM.  */
 #define CAN_ELIMINATE(FROM, TO)		\

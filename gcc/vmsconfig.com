@@ -194,7 +194,7 @@ ENDPROCEDURE; !process_makefile
 
 PROCEDURE process_objc_lib( )
   !
-  ! Intrepret objc/Makefile, after finishing the top makefile.
+  ! Interpret objc/Makefile, after finishing the top makefile.
   !
   ON_ERROR
     [TPU$_OPENIN]:
@@ -451,7 +451,7 @@ $!
 $ exit
 $
 $!
-$! Constuct a header file based on subdirectory contents
+$! Construct a header file based on subdirectory contents
 $!
 $make_lang_incl: subroutine
 $  if f$search(p1).nes."" then delete 'p1';*

@@ -2204,7 +2204,7 @@ find_exception_table (pc)
     return 0;
 
    Assuming a correctly sorted table (ascending order) this routine should
-   return the tighest match...
+   return the tightest match...
 
    In the advent of a tie, we have to give the last entry, as it represents
    an inner block.

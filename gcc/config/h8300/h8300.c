@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for Hitachi H8/300.
-   Copyright (C) 1992, 1993, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1993, 1994, 1995 Free Software Foundation, Inc.
    Contributed by Steve Chamberlain (sac@cygnus.com),
    Jim Wilson (wilson@cygnus.com), and Doug Evans (dje@cygnus.com).
 
@@ -2002,7 +2002,7 @@ fix_bit_operand (operands, what, type)
      char what;
      enum rtx_code type;
 {
-  /* The bit_operand predicate accepts any memory durint RTL generation, but
+  /* The bit_operand predicate accepts any memory during RTL generation, but
      only 'U' memory afterwards, so if this is a MEM operand, we must force
      it to be valid for 'U' by reloading the address.  */
 

@@ -3456,7 +3456,7 @@ assign_parms (fndecl, second_time)
 	     ??? When MAYBE_REG_PARM_STACK_SPACE is defined, we can't tell
 	     whether this parameter already has a stack slot allocated,
 	     because an arg block exists only if current_function_args_size
-	     is larger than some threshhold, and we haven't calculated that
+	     is larger than some threshold, and we haven't calculated that
 	     yet.  So, for now, we just assume that stack slots never exist
 	     in this case.  */
 	  || REG_PARM_STACK_SPACE (fndecl) > 0

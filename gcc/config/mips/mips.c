@@ -873,13 +873,13 @@ embedded_pic_offset (x)
 
       embedded_pic_fnaddr_rtx = gen_reg_rtx (Pmode);
       
-      /* Output code at function start to initialize the psuedo-reg.  */
+      /* Output code at function start to initialize the pseudo-reg.  */
       /* ??? We used to do this in FINALIZE_PIC, but that does not work for
 	 inline functions, because it is called after RTL for the function
 	 has been copied.  The pseudo-reg in embedded_pic_fnaddr_rtx however
 	 does not get copied, and ends up not matching the rest of the RTL.
 	 This solution works, but means that we get unnecessary code to
-	 initialize this value everytime a function is inlined into another
+	 initialize this value every time a function is inlined into another
 	 function.  */
       start_sequence ();
       emit_insn (gen_get_fnaddr (embedded_pic_fnaddr_rtx,

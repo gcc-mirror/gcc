@@ -2788,7 +2788,7 @@ encode_method_prototype (method_decl, func_decl)
       /* Compute offset. */
       sprintf (buf, "%d", forwarding_offset (parms));
 
-      /* Indicate registe.r */
+      /* Indicate register. */
       if (offset_is_register)
 	obstack_1grow (&util_obstack, '+');
       

@@ -1184,7 +1184,7 @@ DESCRIPTION
 	On exit, it points to the next token after the mangled class on
 	success, or the first unconsumed token on failure.
 
-	If the constRUCTOR or DESTRUCTOR flags are set in WORK, then
+	If the CONSTRUCTOR or DESTRUCTOR flags are set in WORK, then
 	we are demangling a constructor or destructor.  In this case
 	we prepend "class::class" or "class::~class" to DECLP.
 

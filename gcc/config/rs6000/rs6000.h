@@ -862,8 +862,8 @@ typedef struct rs6000_stack {
   int push_p;			/* true if we need to allocate stack space */
   int calls_p;			/* true if the function makes any calls */
   int v4_call_p;		/* true if V.4 calling sequence used */
-  int gp_save_offset;		/* offset to save GP regs from inital SP */
-  int fp_save_offset;		/* offset to save FP regs from inital SP */
+  int gp_save_offset;		/* offset to save GP regs from initial SP */
+  int fp_save_offset;		/* offset to save FP regs from initial SP */
   int lr_save_offset;		/* offset to save LR from initial SP */
   int cr_save_offset;		/* offset to save CR from initial SP */
   int varargs_save_offset;	/* offset to save the varargs registers */
@@ -1279,7 +1279,7 @@ typedef struct rs6000_args
    For the RS/6000, if frame pointer elimination is being done, we would like
    to convert ap into fp, not sp.
 
-   We need r30 if -mmininal-toc was specified, and there are constant pool
+   We need r30 if -mminimal-toc was specified, and there are constant pool
    references.  */
 
 #define CAN_ELIMINATE(FROM, TO)					\

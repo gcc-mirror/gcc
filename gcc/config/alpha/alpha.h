@@ -1526,7 +1526,7 @@ extern char *current_function_name;
 /* Define an extra section for read-only data, a routine to enter it, and
    indicate that it is for read-only data.
 
-   The first timem we enter the readonly data sectiono for a file, we write
+   The first time we enter the readonly data section for a file, we write
    eight bytes of zero.  This works around a bug in DEC's assembler in
    some versions of OSF/1 V3.x.  */
 

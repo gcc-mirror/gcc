@@ -1372,7 +1372,7 @@ mostly_true_jump (jump_insn, condition)
 	  return 1;
     }
 
-  /* Look at the relative rarities of the fallthough and destination.  If
+  /* Look at the relative rarities of the fallthrough and destination.  If
      they differ, we can predict the branch that way. */
 
   switch (rare_fallthrough - rare_dest)
@@ -3649,7 +3649,7 @@ fill_eager_delay_slots (first)
       if (condition == 0)
 	continue;
 
-      /* Get the next active fallthough and target insns and see if we own
+      /* Get the next active fallthrough and target insns and see if we own
 	 them.  Then see whether the branch is likely true.  We don't need
 	 to do a lot of this for unconditional branches.  */
 

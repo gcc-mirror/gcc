@@ -3959,7 +3959,7 @@ sparc_type_code (type)
   register unsigned long qualifiers = 0;
   register unsigned shift = 6;
 
-  /* Only the first 30 bits of the qualifer are valid.  We must refrain from
+  /* Only the first 30 bits of the qualifier are valid.  We must refrain from
      setting more, since some assemblers will give an error for this.  Also,
      we must be careful to avoid shifts of 32 bits or more to avoid getting
      unpredictable results.  */

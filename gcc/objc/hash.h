@@ -1,5 +1,5 @@
 /* Hash tables for Objective C method dispatch.
-   Copyright (C) 1993 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -63,7 +63,7 @@ typedef unsigned int (*hash_func_type)(void *, const void *);
 /*
  * This data type is the function that compares two hash keys and returns an
  * integer greater than, equal to, or less than 0, according as the first
- * parameter is lexico-graphically greater than, equal to, or less than the
+ * parameter is lexicographically greater than, equal to, or less than the
  * second. 
  */
 

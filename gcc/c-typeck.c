@@ -5231,7 +5231,7 @@ really_start_incremental_init (type)
       || TREE_CODE (constructor_type) == UNION_TYPE)
     {
       constructor_fields = TYPE_FIELDS (constructor_type);
-      /* Skip any nameless bit fields atthe beginning.  */
+      /* Skip any nameless bit fields at the beginning.  */
       while (constructor_fields != 0 && DECL_BIT_FIELD (constructor_fields)
 	     && DECL_NAME (constructor_fields) == 0)
 	constructor_fields = TREE_CHAIN (constructor_fields);
@@ -5403,7 +5403,7 @@ push_init_level (implicit)
 	   || TREE_CODE (constructor_type) == UNION_TYPE)
     {
       constructor_fields = TYPE_FIELDS (constructor_type);
-      /* Skip any nameless bit fields atthe beginning.  */
+      /* Skip any nameless bit fields at the beginning.  */
       while (constructor_fields != 0 && DECL_BIT_FIELD (constructor_fields)
 	     && DECL_NAME (constructor_fields) == 0)
 	constructor_fields = TREE_CHAIN (constructor_fields);
@@ -6221,7 +6221,7 @@ process_init_element (value)
 	    }
 
 	  constructor_fields = TREE_CHAIN (constructor_fields);
-	  /* Skip any nameless bit fields atthe beginning.  */
+	  /* Skip any nameless bit fields at the beginning.  */
 	  while (constructor_fields != 0 && DECL_BIT_FIELD (constructor_fields)
 		 && DECL_NAME (constructor_fields) == 0)
 	    constructor_fields = TREE_CHAIN (constructor_fields);

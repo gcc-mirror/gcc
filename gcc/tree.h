@@ -1297,7 +1297,7 @@ extern tree sizetype;
 /* If nonzero, an upper limit on alignment of structure fields, in bits. */
 extern int maximum_field_alignment;
 
-/* If non-zero, the alignment of a bitsting or (power-)set value, in bits. */
+/* If non-zero, the alignment of a bitstring or (power-)set value, in bits. */
 extern int set_alignment;
 
 /* Concatenate two lists (chains of TREE_LIST nodes) X and Y

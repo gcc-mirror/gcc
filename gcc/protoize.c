@@ -2993,7 +2993,7 @@ seek_to_line (n)
 }
 
 /* Given a pointer to a character in the cleaned text buffer, return a pointer
-   to the next non-whitepace character which follows it.  */
+   to the next non-whitespace character which follows it.  */
 
 static const char *
 forward_to_next_token_char (ptr)

@@ -209,7 +209,7 @@ do {									\
 #undef BIGGEST_ALIGNMENT
 #define BIGGEST_ALIGNMENT 64
 
-/* SVR4 m68k assembler is bitching on the `comm i,1,1' which askes for 
+/* SVR4 m68k assembler is bitching on the `comm i,1,1' which asks for 
    1 byte alignment. Don't generate alignment for COMMON seems to be
    safer until we the assembler is fixed. */
 #undef ASM_OUTPUT_ALIGNED_COMMON

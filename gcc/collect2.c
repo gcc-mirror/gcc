@@ -2099,7 +2099,7 @@ libselect (d)
   return (strncmp (libname, d->d_name, strlen (libname)) == 0);
 }
 
-/* If one file has an additional numeric extention past LIBNAME, then put
+/* If one file has an additional numeric extension past LIBNAME, then put
    that one first in the sort.  If both files have additional numeric
    extensions, then put the one with the higher number first in the sort.
 

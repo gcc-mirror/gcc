@@ -1,5 +1,5 @@
 /* Definitions for Intel 386 running system V, using dbx-in-coff encapsulation.
-   Copyright (C) 1992 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -37,7 +37,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* With the current gas, .align N aligns to an N-byte boundary.
    This is done to be compatible with the system assembler.
-   You have specify -DOTHER_ALIGN wenn building gas-1.38.1. */
+   You must specify -DOTHER_ALIGN when building gas-1.38.1.  */
 
 #undef ASM_OUTPUT_ALIGN
 #define ASM_OUTPUT_ALIGN(FILE,LOG)	\

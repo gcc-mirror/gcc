@@ -515,7 +515,7 @@ legitimize_pic_address (orig, mode, reg)
 {
   rtx pic_ref = orig;
 
-  /* Lables need special handling.  */
+  /* Labels need special handling.  */
   if (pic_label_operand (orig))
     {
       emit_insn (gen_pic_load_label (reg, orig));
