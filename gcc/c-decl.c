@@ -237,7 +237,7 @@ static tree current_function_parm_tags;
    that have names.  Here so we can clear out their names' definitions
    at the end of the function.  */
 
-tree named_labels;
+static tree named_labels;
 
 /* A list of LABEL_DECLs from outer contexts that are currently shadowed.  */
 
