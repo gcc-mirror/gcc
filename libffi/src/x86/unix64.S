@@ -237,7 +237,7 @@ ffi_closure_UNIX64:
 	ret
 .LFE2:	
 		
-        .section        .eh_frame,"a",@progbits
+        .section        .eh_frame,EH_FRAME_FLAGS,@progbits
 .Lframe0:
         .long   .LECIE1-.LSCIE1
 .LSCIE1:

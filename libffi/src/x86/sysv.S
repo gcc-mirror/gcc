@@ -129,41 +129,55 @@ epilogue:
 .ffi_call_SYSV_end:
         .size    ffi_call_SYSV,.ffi_call_SYSV_end-ffi_call_SYSV
 
-.section	.eh_frame,"aw",@progbits
-__FRAME_BEGIN__:
-	.4byte	.LLCIE1
+	.section	.eh_frame,EH_FRAME_FLAGS,@progbits
+.Lframe1:
+	.long	.LECIE1-.LSCIE1	# Length of Common Information Entry
 .LSCIE1:
-	.4byte	0x0
-	.byte	0x1
-	.byte	0x0
-	.byte	0x1
-	.byte	0x7c
-	.byte	0x8
-	.byte	0xc
-	.byte	0x4
-	.byte	0x4
-	.byte	0x88
-	.byte	0x1
+	.long	0x0	# CIE Identifier Tag
+	.byte	0x1	# CIE Version
+#ifdef __PIC__
+	.ascii "zR\0"	# CIE Augmentation
+#else
+	.ascii "\0"	# CIE Augmentation
+#endif
+	.uleb128 0x1	# CIE Code Alignment Factor
+	.sleb128 -4	# CIE Data Alignment Factor
+	.byte	0x8	# CIE RA Column
+#ifdef __PIC__
+	.uleb128 0x1	# Augmentation size
+	.byte	0x1b	# FDE Encoding (pcrel sdata4)
+#endif
+	.byte	0xc	# DW_CFA_def_cfa
+	.uleb128 0x4
+	.uleb128 0x4
+	.byte	0x88	# DW_CFA_offset, column 0x8
+	.uleb128 0x1
 	.align 4
 .LECIE1:
-	.set	.LLCIE1,.LECIE1-.LSCIE1
-	.4byte	.LLFDE1
 .LSFDE1:
-	.4byte	.LSFDE1-__FRAME_BEGIN__
-	.4byte	.LFB1
-	.4byte	.LFE1-.LFB1
-	.byte	0x4
-	.4byte	.LCFI0-.LFB1
-	.byte	0xe
-	.byte	0x8
-	.byte	0x85
-	.byte	0x2
-	.byte	0x4
-	.4byte	.LCFI1-.LCFI0
-	.byte	0xd
-	.byte	0x5
+	.long	.LEFDE1-.LASFDE1	# FDE Length
+.LASFDE1:
+	.long	.LASFDE1-.Lframe1	# FDE CIE offset
+#ifdef __PIC__
+	.long	.LFB1-.	# FDE initial location
+#else
+	.long	.LFB1	# FDE initial location
+#endif
+	.long	.LFE1-.LFB1	# FDE address range
+#ifdef __PIC__
+	.uleb128 0x0	# Augmentation size
+#endif
+	.byte	0x4	# DW_CFA_advance_loc4
+	.long	.LCFI0-.LFB1
+	.byte	0xe	# DW_CFA_def_cfa_offset
+	.uleb128 0x8
+	.byte	0x85	# DW_CFA_offset, column 0x5
+	.uleb128 0x2
+	.byte	0x4	# DW_CFA_advance_loc4
+	.long	.LCFI1-.LCFI0
+	.byte	0xd	# DW_CFA_def_cfa_register
+	.uleb128 0x5
 	.align 4
 .LEFDE1:
-	.set	.LLFDE1,.LEFDE1-.LSFDE1
 
 #endif /* ifndef __x86_64__ */

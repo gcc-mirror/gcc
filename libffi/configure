@@ -3638,6 +3638,34 @@ EOF
     fi
 fi
 
+echo $ac_n "checking whether .eh_frame section should be read-only""... $ac_c" 1>&6
+echo "configure:3495: checking whether .eh_frame section should be read-only" >&5
+if eval "test \"`echo '$''{'libffi_cv_ro_eh_frame'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  
+	libffi_cv_ro_eh_frame=no
+	echo 'extern void foo (void); void bar (void) { foo (); foo (); }' > conftest.c
+	if $CC $CFLAGS -S -fpic -fexceptions -o conftest.s conftest.c > /dev/null 2>&1; then
+	    if grep '.section.*eh_frame.*"a"' conftest.s > /dev/null; then
+		libffi_cv_ro_eh_frame=yes
+	    elif grep '.section.*eh_frame.*#alloc' conftest.c \
+		 | grep -v '#write' > /dev/null; then
+		libffi_cv_ro_eh_frame=yes
+	    fi
+	fi
+	rm -f conftest.*
+    
+fi
+
+echo "$ac_t""$libffi_cv_ro_eh_frame" 1>&6
+if test "x$libffi_cv_ro_eh_frame" = xyes; then
+    cat >> confdefs.h <<\EOF
+#define HAVE_RO_EH_FRAME 1
+EOF
+
+fi
+
 
 
 

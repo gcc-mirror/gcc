@@ -172,7 +172,11 @@ done1:
 #define uanword	uaword
 #endif
 
+#ifdef HAVE_RO_EH_FRAME
+	.section	".eh_frame",#alloc
+#else
 	.section	".eh_frame",#alloc,#write
+#endif
 .LLframe1:
 	.uaword	.LLECIE1-.LLSCIE1	! Length of Common Information Entry
 .LLSCIE1:

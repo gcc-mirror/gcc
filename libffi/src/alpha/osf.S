@@ -292,7 +292,7 @@ $load_table:
 #endif
 
 #ifdef __ELF__
-	.section	.eh_frame,"aw",@progbits
+	.section	.eh_frame,EH_FRAME_FLAGS,@progbits
 __FRAME_BEGIN__:
 	.4byte	$LECIE1-$LSCIE1	 # Length of Common Information Entry
 $LSCIE1:

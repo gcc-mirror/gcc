@@ -77,3 +77,5 @@
 /* Define if your assembler supports .register. */
 #undef HAVE_AS_REGISTER_PSEUDO_OP
 
+/* Define if .eh_frame sections should be read-only. */
+#undef HAVE_RO_EH_FRAME

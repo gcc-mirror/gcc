@@ -23,6 +23,9 @@
    OTHER DEALINGS IN THE SOFTWARE.
    ----------------------------------------------------------------------- */
 
+#define LIBFFI_ASM
+#include <ffi.h>
+
 #ifndef __s390x__
  
 .text
@@ -146,7 +149,7 @@ ffi_closure_SYSV:
 	.size	 ffi_closure_SYSV,.ffi_closure_SYSV_end-ffi_closure_SYSV
 
 
-	.section	.eh_frame,"a",@progbits
+	.section	.eh_frame,EH_FRAME_FLAGS,@progbits
 .Lframe1:
 	.4byte	.LECIE1-.LSCIE1	# Length of Common Information Entry
 .LSCIE1:
@@ -345,7 +348,7 @@ ffi_closure_SYSV:
 
 
 
-	.section	.eh_frame,"a",@progbits
+	.section	.eh_frame,EH_FRAME_FLAGS,@progbits
 .Lframe1:
 	.4byte	.LECIE1-.LSCIE1	# Length of Common Information Entry
 .LSCIE1:

@@ -141,7 +141,7 @@ ffi_call_LINUX64:
 	.byte	0,12,0,1,128,4,0,0
 	.size	.ffi_call_LINUX64,.-.ffi_call_LINUX64
 
-	.section	.eh_frame,"aw",@progbits
+	.section	.eh_frame,EH_FRAME_FLAGS,@progbits
 .Lframe1:
 	.4byte	.LECIE1-.LSCIE1	 # Length of Common Information Entry
 .LSCIE1:
