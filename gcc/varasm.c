@@ -3407,19 +3407,25 @@ force_const_mem (mode, x)
       pool_offset &= ~ (align - 1);
 
       /* If RTL is not being placed into the saveable obstack, make a
-	 copy of X that is in the saveable obstack in case we are being
-	 called from combine or some other phase that discards memory
-	 it allocates.  We need only do this if it is a CONST, since
-	 no other RTX should be allocated in this situation.  */
+	 copy of X that is in the saveable obstack in case we are
+	 being called from combine or some other phase that discards
+	 memory it allocates.  We used to only do this if it is a
+	 CONST; however, reload can allocate a CONST_INT when
+	 eliminating registers.  */
       if (rtl_obstack != saveable_obstack
-	  && GET_CODE (x) == CONST)
+	  && (GET_CODE (x) == CONST || GET_CODE (x) == CONST_INT))
 	{
 	  push_obstacks_nochange ();
 	  rtl_in_saveable_obstack ();
 
-	  x = gen_rtx (CONST, GET_MODE (x), 
-		       gen_rtx (PLUS, GET_MODE (x), 
-				XEXP (XEXP (x, 0), 0), XEXP (XEXP (x, 0), 1)));
+	  if (GET_CODE (x) == CONST)
+	    x = gen_rtx (CONST, GET_MODE (x), 
+			 gen_rtx (PLUS, GET_MODE (x), 
+				  XEXP (XEXP (x, 0), 0),
+				  XEXP (XEXP (x, 0), 1)));
+	  else
+	    x = GEN_INT (INTVAL (x));
+
 	  pop_obstacks ();
 	}
 
