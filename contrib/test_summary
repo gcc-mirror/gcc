@@ -107,7 +107,7 @@ $1 ~ /\/configure$/ { $1 = "configure flags:"; configflags = $0 }
 }
 /--disable-haifa/ { prefix="haifa-disabled "; }
 /--enable-haifa/ { prefix="haifa-enabled "; }
-$2 == "version" { save = $0; $1 = ""; $2 = ""; version = $0; gsub(/^ */, "", version); $0 = save; }
+$2 == "version" { save = $0; $1 = ""; $2 = ""; version = $0; gsub(/^ */, "", version); gsub(/\r$/, "", version); $0 = save; }
 /\===.*Summary/ { print ""; print; blanks=1; }
 /tests ===/ || /^(Target|Host|Native)/ || $2 == "version" { print; blanks=1; }
 /^(XPASS|FAIL|# of )/ { print; }
