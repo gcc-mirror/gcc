@@ -1,3 +1,9 @@
+2004-02-07  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* system.h (SHARED_SECTION_ASM_OP): Poison.
+	* varasm.c (data_section): Don't use SHARED_SECTION_ASM_OP.
+	* doc/tm.texi (SHARED_SECTION_ASM_OP): Remove.
+
 2004-02-07  Zack Weinberg  <zack@codesourcery.com>
 
 	Bug 13856

@@ -210,16 +210,7 @@ data_section (void)
   if (in_section != in_data)
     {
       in_section = in_data;
-      if (flag_shared_data)
-	{
-#ifdef SHARED_SECTION_ASM_OP
-	  fprintf (asm_out_file, "%s\n", SHARED_SECTION_ASM_OP);
-#else
-	  fprintf (asm_out_file, "%s\n", DATA_SECTION_ASM_OP);
-#endif
-	}
-      else
-	fprintf (asm_out_file, "%s\n", DATA_SECTION_ASM_OP);
+      fprintf (asm_out_file, "%s\n", DATA_SECTION_ASM_OP);
     }
 }
 
