@@ -1,3 +1,8 @@
+2001-07-04  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* varray.h (VARRAY_TOP_GENERIC_PTR): Remove spurious parameter.
+	(VARRAY_TOP_CHAR_PTR): Likewise.
+
 2001-07-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.c (process_command): Don't assign elements of a const char*.
@@ -110,11 +115,11 @@ Tue Jul  3 22:33:15 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2001-07-03  Stan Shebs  <shebs@apple.com>
 
-	* darwin.h (SECTION_FUNCTION): Remove WAS_TEXT argument, remove
+	* config/darwin.h (SECTION_FUNCTION): Remove WAS_TEXT argument, remove
 	case for flag_no_mach_text_sections.
 	(EXTRA_SECTION_FUNCTIONS): Remove arg from uses of SECTION_FUNCTION.
-	* darwin.c (flag_no_mach_text_sections): Remove.
-	* darwin-protos.h (darwin_init_pragma): Remove decl.
+	* config/darwin.c (flag_no_mach_text_sections): Remove.
+	* config/darwin-protos.h (darwin_init_pragma): Remove decl.
 
 Tue Jul  3 15:35:52 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
