@@ -291,8 +291,10 @@ pch_open_file (cpp_reader *pfile, _cpp_file *file, bool *invalid_pch)
 	    }
 	  closedir (pchdir);
 	}
-      file->pch |= valid;
-      *invalid_pch |= ! valid;
+      if (valid)
+	file->pch = true;
+      else
+	*invalid_pch = true;
     }
 
   if (valid)
