@@ -4626,9 +4626,8 @@ asctoe (s, y)
   asctoeg (s, y, NBITS);
 }
 
-/* Space to make a copy of the input string: */
-static char lstr[82];
 
+/* ASCII to e type, with specified rounding precision = oprec. */
 void 
 asctoeg (ss, y, oprec)
      char *ss;
@@ -4640,19 +4639,16 @@ asctoeg (ss, y, oprec)
   int k, trail, c, rndsav;
   EMULONG lexp;
   unsigned EMUSHORT nsign, *p;
-  char *sp, *s;
+  char *sp, *s, *lstr;
 
   /* Copy the input string. */
+  lstr = (char *) alloca (strlen (ss) + 1);
   s = ss;
   while (*s == ' ')		/* skip leading spaces */
     ++s;
   sp = lstr;
-  for (k = 0; k < 79; k++)
-    {
-      if ((*sp++ = *s++) == '\0')
-	break;
-    }
-  *sp = '\0';
+  while ((*sp++ = *s++) == '\0')
+	;
   s = lstr;
 
   rndsav = rndprc;
@@ -4713,7 +4709,11 @@ asctoeg (ss, y, oprec)
 	}
       else
 	{
+	  /* Mark any lost non-zero digit.  */
 	  lost |= k;
+	  /* Count lost digits before the decimal point.  */
+	  if (decflg == 0)
+	    nexp -= 1;
 	}
       prec += 1;
       goto donchr;
