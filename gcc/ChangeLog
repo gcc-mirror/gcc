@@ -1,3 +1,7 @@
+2003-11-10  Richard Henderson  <rth@redhat.com>
+
+	* dwarf2out.c (gen_label_die): Cope with DECL_RTL not set.
+
 2003-11-10  Matt Austern  <austern@apple.com>
 
 	* config/darwin-protos.h (darwin_assemble_visibility): Declare.
