@@ -2264,6 +2264,10 @@ expand_call (exp, target, ignore)
 	      || ! FUNCTION_OK_FOR_SIBCALL (fndecl))
 	    continue;
 
+	  /* Emit any queued insns now; otherwise they would end up in
+             only one of the alternates.  */
+	  emit_queue ();
+
 	  /* We know at this point that there are not currently any
 	     pending cleanups.  If, however, in the process of evaluating
 	     the arguments we were to create some, we'll need to be
