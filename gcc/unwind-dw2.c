@@ -42,6 +42,11 @@
 #define DWARF_FRAME_REGISTERS FIRST_PSEUDO_REGISTER
 #endif
 
+/* Dwarf frame registers used for pre gcc 3.0 compiled glibc.  */
+#ifndef PRE_GCC3_DWARF_FRAME_REGISTERS
+#define PRE_GCC3_DWARF_FRAME_REGISTERS DWARF_FRAME_REGISTERS
+#endif
+
 /* This is the register and unwind state for a particular frame.  */
 struct _Unwind_Context
 {
@@ -944,10 +949,10 @@ typedef struct frame_state
   void *eh_ptr;
   long cfa_offset;
   long args_size;
-  long reg_or_offset[DWARF_FRAME_REGISTERS+1];
+  long reg_or_offset[PRE_GCC3_DWARF_FRAME_REGISTERS+1];
   unsigned short cfa_reg;
   unsigned short retaddr_column;
-  char saved[DWARF_FRAME_REGISTERS+1];
+  char saved[PRE_GCC3_DWARF_FRAME_REGISTERS+1];
 } frame_state;
 
 struct frame_state * __frame_state_for (void *, struct frame_state *);
@@ -974,7 +979,7 @@ __frame_state_for (void *pc_target, struct frame_state *state_in)
   if (fs.cfa_how == CFA_EXP)
     return 0;
 
-  for (reg = 0; reg < DWARF_FRAME_REGISTERS + 1; reg++)
+  for (reg = 0; reg < PRE_GCC3_DWARF_FRAME_REGISTERS + 1; reg++)
     {
       state_in->saved[reg] = fs.regs.reg[reg].how;
       switch (state_in->saved[reg])
