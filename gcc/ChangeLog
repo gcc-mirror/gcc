@@ -1,3 +1,7 @@
+Fri Apr 16 00:19:31 1999  Jan Hubicka <hubicka@freesoft.cz>
+
+	* i386.c (x86_adjust_cost): Move break statement to correct place.
+
 Thu Apr 15 23:17:33 1999  Jerry Quinn <jquinn@nortelnetworks.com>
 
 	* pa.h (HAVE_PRE_INCREMENT, HAVE_POST_INCREMENT,
