@@ -1,3 +1,10 @@
+2002-07-02  Andrew Haley  <aph@redhat.com>
+
+	* libjava.lang/inline.java: New file.
+	* libjava.lang/inline.out: Likewise.
+
+	* libjava.lang/Array_3.java: Add another case.
+
 2002-06-23  Tom Tromey  <tromey@redhat.com>
 
 	* Makefile.in: Rebuilt.
