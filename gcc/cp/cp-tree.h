@@ -3623,7 +3623,7 @@ extern void pushtag				(tree, tree, int);
 extern tree make_anon_name			(void);
 extern void clear_anon_tags			(void);
 extern int decls_match				(tree, tree);
-extern int duplicate_decls			(tree, tree);
+extern tree duplicate_decls			(tree, tree);
 extern tree pushdecl_top_level			(tree);
 extern tree pushdecl_top_level_and_finish       (tree, tree);
 extern tree push_using_decl                     (tree, tree);

@@ -680,33 +680,38 @@ pushdecl (tree x)
 	      /* Throw away the redeclaration.  */
 	      POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, t);
 	    }
-	  else if (TREE_CODE (t) != TREE_CODE (x))
+	  else
 	    {
-	      if (duplicate_decls (x, t))
-		POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, t);
-	    }
-	  else if (duplicate_decls (x, t))
-	    {
-	      if (TREE_CODE (t) == TYPE_DECL)
-		SET_IDENTIFIER_TYPE_VALUE (name, TREE_TYPE (t));
-	      else if (TREE_CODE (t) == FUNCTION_DECL)
-		check_default_args (t);
+	      tree olddecl = duplicate_decls (x, t);
+	      
+	      /* If the redeclaration failed, we can stop at this
+		 point.  */
+	      if (olddecl == error_mark_node)
+		POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, error_mark_node);
 
-	      POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, t);
-	    }
-	  else if (DECL_MAIN_P (x))
-	    {
-	      /* A redeclaration of main, but not a duplicate of the
-		 previous one.
+	      if (olddecl)
+		{
+		  if (TREE_CODE (t) == TYPE_DECL)
+		    SET_IDENTIFIER_TYPE_VALUE (name, TREE_TYPE (t));
+		  else if (TREE_CODE (t) == FUNCTION_DECL)
+		    check_default_args (t);
 
-		 [basic.start.main]
-
-	         This function shall not be overloaded.  */
-	      cp_error_at ("invalid redeclaration of `%D'", t);
-	      error ("as `%D'", x);
-	      /* We don't try to push this declaration since that
-		 causes a crash.  */
-	      POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, x);
+		  POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, t);
+		}
+	      else if (DECL_MAIN_P (x))
+		{
+		  /* A redeclaration of main, but not a duplicate of the
+		     previous one.
+		     
+		     [basic.start.main]
+		     
+		     This function shall not be overloaded.  */
+		  cp_error_at ("invalid redeclaration of `%D'", t);
+		  error ("as `%D'", x);
+		  /* We don't try to push this declaration since that
+		     causes a crash.  */
+		  POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, x);
+		}
 	    }
 	}
 
@@ -1982,7 +1987,7 @@ push_overloaded_decl (tree decl, int flags)
 		error ("`%#D' conflicts with previous using declaration `%#D'",
 			  decl, fn);
 
-	      if (duplicate_decls (decl, fn))
+	      if (duplicate_decls (decl, fn) == fn)
 		POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, fn);
 	    }
 	}

@@ -1137,14 +1137,14 @@ warn_extern_redeclared_static (tree newdecl, tree olddecl)
   cp_pedwarn_at ("previous declaration of `%D'", olddecl);
 }
 
-/* Handle when a new declaration NEWDECL has the same name as an old
-   one OLDDECL in the same binding contour.  Prints an error message
-   if appropriate.
+/* If NEWDECL is a redeclaration of OLDDECL, merge the declarations.
+   If the redeclaration is invalid, a diagnostic is issued, and the
+   error_mark_node is returned.  Otherwise, OLDDECL is returned.
 
-   If safely possible, alter OLDDECL to look like NEWDECL, and return 1.
-   Otherwise, return 0.  */
+   If NEWDECL is not a redeclaration of OLDDECL, NULL_TREE is
+   returned.  */
 
-int
+tree
 duplicate_decls (tree newdecl, tree olddecl)
 {
   unsigned olddecl_uid = DECL_UID (olddecl);
@@ -1152,7 +1152,7 @@ duplicate_decls (tree newdecl, tree olddecl)
   int new_defines_function = 0;
 
   if (newdecl == olddecl)
-    return 1;
+    return olddecl;
 
   types_match = decls_match (newdecl, olddecl);
 
@@ -1205,7 +1205,7 @@ duplicate_decls (tree newdecl, tree olddecl)
 	{
           /* Avoid warnings redeclaring anticipated built-ins.  */
           if (DECL_ANTICIPATED (olddecl))
-            return 0;
+            return NULL_TREE;
 
 	  /* If you declare a built-in or predefined function name as static,
 	     the old definition is overridden, but optionally warn this was a
@@ -1217,7 +1217,7 @@ duplicate_decls (tree newdecl, tree olddecl)
 			    DECL_BUILT_IN (olddecl) ? "built-in" : "library",
 			    olddecl);
 	      /* Discard the old built-in function.  */
-	      return 0;
+	      return NULL_TREE;
 	    }
 	  /* If the built-in is not ansi, then programs can override
 	     it even globally without an error.  */
@@ -1230,7 +1230,7 @@ duplicate_decls (tree newdecl, tree olddecl)
 	      error ("conflicts with built-in declaration `%#D'",
 			olddecl);
 	    }
-	  return 0;
+	  return NULL_TREE;
 	}
       else if (!types_match)
 	{
@@ -1257,7 +1257,7 @@ duplicate_decls (tree newdecl, tree olddecl)
 	    }
 	  else
 	    /* Discard the old built-in function.  */
-	    return 0;
+	    return NULL_TREE;
 
 	  /* Replace the old RTL to avoid problems with inlining.  */
 	  SET_DECL_RTL (olddecl, DECL_RTL (newdecl));
@@ -1302,14 +1302,14 @@ duplicate_decls (tree newdecl, tree olddecl)
 	     get shadowed, and know that if we need to find a TYPE_DECL
 	     for a given name, we can look in the IDENTIFIER_TYPE_VALUE
 	     slot of the identifier.  */
-	  return 0;
+	  return NULL_TREE;
 	}
 
       if ((TREE_CODE (newdecl) == FUNCTION_DECL
 	   && DECL_FUNCTION_TEMPLATE_P (olddecl))
 	  || (TREE_CODE (olddecl) == FUNCTION_DECL
 	      && DECL_FUNCTION_TEMPLATE_P (newdecl)))
-	return 0;
+	return NULL_TREE;
 
       error ("`%#D' redeclared as different kind of symbol", newdecl);
       if (TREE_CODE (olddecl) == TREE_LIST)
@@ -1319,14 +1319,14 @@ duplicate_decls (tree newdecl, tree olddecl)
       /* New decl is completely inconsistent with the old one =>
 	 tell caller to replace the old one.  */
 
-      return 0;
+      return NULL_TREE;
     }
   else if (!types_match)
     {
       if (CP_DECL_CONTEXT (newdecl) != CP_DECL_CONTEXT (olddecl))
 	/* These are certainly not duplicate declarations; they're
 	   from different scopes.  */
-	return 0;
+	return NULL_TREE;
 
       if (TREE_CODE (newdecl) == TEMPLATE_DECL)
 	{
@@ -1354,7 +1354,7 @@ duplicate_decls (tree newdecl, tree olddecl)
 	      error ("new declaration `%#D'", newdecl);
 	      cp_error_at ("ambiguates old declaration `%#D'", olddecl);
 	    }
-	  return 0;
+	  return NULL_TREE;
 	}
       if (TREE_CODE (newdecl) == FUNCTION_DECL)
 	{
@@ -1371,7 +1371,7 @@ duplicate_decls (tree newdecl, tree olddecl)
 	      cp_error_at ("ambiguates old declaration `%#D'", olddecl);
 	    }
 	  else
-	    return 0;
+	    return NULL_TREE;
 	}
 
       /* Already complained about this, so don't do so again.  */
@@ -1381,7 +1381,7 @@ duplicate_decls (tree newdecl, tree olddecl)
 	  error ("conflicting declaration '%#D'", newdecl);
 	  cp_error_at ("'%D' has a previous declaration as `%#D'",
                        olddecl, olddecl);
-          return false;
+          return NULL_TREE;
 	}
     }
   else if (TREE_CODE (newdecl) == FUNCTION_DECL
@@ -1401,7 +1401,7 @@ duplicate_decls (tree newdecl, tree olddecl)
        can occur if we instantiate a template class, and then
        specialize one of its methods.  This situation is valid, but
        the declarations must be merged in the usual way.  */
-    return 0;
+    return NULL_TREE;
   else if (TREE_CODE (newdecl) == FUNCTION_DECL
 	   && ((DECL_TEMPLATE_INSTANTIATION (olddecl)
 		&& !DECL_USE_TEMPLATE (newdecl))
@@ -1409,12 +1409,20 @@ duplicate_decls (tree newdecl, tree olddecl)
 		   && !DECL_USE_TEMPLATE (olddecl))))
     /* One of the declarations is a template instantiation, and the
        other is not a template at all.  That's OK.  */
-    return 0;
+    return NULL_TREE;
   else if (TREE_CODE (newdecl) == NAMESPACE_DECL
            && DECL_NAMESPACE_ALIAS (newdecl)
            && DECL_NAMESPACE_ALIAS (newdecl) == DECL_NAMESPACE_ALIAS (olddecl))
-    /* Redeclaration of namespace alias, ignore it.  */
-    return 1;
+    /* In [namespace.alias] we have:
+
+	 In a declarative region, a namespace-alias-definition can be
+	 used to redefine a namespace-alias declared in that declarative
+	 region to refer only to the namespace to which it already
+	 refers.  
+
+      Therefore, if we encounter a second alias directive for the same
+      alias, we can just ignore the second directive.  */
+    return olddecl;
   else
     {
       const char *errmsg = redeclaration_error_message (newdecl, olddecl);
@@ -1426,7 +1434,7 @@ duplicate_decls (tree newdecl, tree olddecl)
 			  && namespace_bindings_p ())
 			 ? "`%#D' previously defined here"
 			 : "`%#D' previously declared here", olddecl);
-	  return 0;
+	  return error_mark_node;
 	}
       else if (TREE_CODE (olddecl) == FUNCTION_DECL
 	       && DECL_INITIAL (olddecl) != NULL_TREE
@@ -1506,7 +1514,7 @@ duplicate_decls (tree newdecl, tree olddecl)
   if (TREE_CODE (olddecl) == TYPE_DECL
       && (DECL_IMPLICIT_TYPEDEF_P (olddecl)
 	  || DECL_IMPLICIT_TYPEDEF_P (newdecl)))
-    return 0;
+    return NULL_TREE;
 
   /* If new decl is `static' and an `extern' was seen previously,
      warn about it.  */
@@ -1585,7 +1593,7 @@ duplicate_decls (tree newdecl, tree olddecl)
 	    = DECL_SOURCE_LOCATION (newdecl);
 	}
 
-      return 1;
+      return olddecl;
     }
 
   if (types_match)
@@ -1914,7 +1922,7 @@ duplicate_decls (tree newdecl, tree olddecl)
 	      && TREE_STATIC (olddecl))))
     make_decl_rtl (olddecl, NULL);
 
-  return 1;
+  return olddecl;
 }
 
 /* Generate an implicit declaration for identifier FUNCTIONID
@@ -10218,7 +10226,19 @@ start_function (tree declspecs, tree declarator, tree attrs, int flags)
       /* A specialization is not used to guide overload resolution.  */
       if (!DECL_TEMPLATE_SPECIALIZATION (decl1)
 	  && ! DECL_FUNCTION_MEMBER_P (decl1))
-	decl1 = pushdecl (decl1);
+	{
+	  tree olddecl = pushdecl (decl1);
+
+	  if (olddecl == error_mark_node)
+	    /* If something went wrong when registering the declaration,
+	       use DECL1; we have to have a FUNCTION_DECL to use when
+	       parsing the body of the function.  */
+	    ;
+	  else
+	    /* Otherwise, OLDDECL is either a previous declaration of
+	       the same function or DECL1 itself.  */
+	    decl1 = olddecl;
+	}
       else
 	{
 	  /* We need to set the DECL_CONTEXT.  */
