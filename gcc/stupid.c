@@ -1,5 +1,5 @@
 /* Dummy data flow analysis for GNU compiler in nonoptimizing mode.
-   Copyright (C) 1987, 1991, 1994, 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1991, 1994, 1995, 1996, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -179,12 +179,10 @@ stupid_life_analysis (f, nregs, file)
   regs_crosses_setjmp = (char *) alloca (nregs * sizeof (char));
   bzero ((char *) regs_crosses_setjmp, nregs * sizeof (char));
 
-  reg_renumber = (short *) oballoc (nregs * sizeof (short));
+  /* Allocate the reg_renumber array */
+  allocate_reg_info (max_regno, FALSE, TRUE);
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     reg_renumber[i] = i;
-
-  for (i = FIRST_VIRTUAL_REGISTER; i < max_regno; i++)
-    reg_renumber[i] = -1;
 
   after_insn_hard_regs
     = (HARD_REG_SET *) alloca (max_suid * sizeof (HARD_REG_SET));

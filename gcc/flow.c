@@ -1286,7 +1286,7 @@ allocate_for_life_analysis ()
      information, explicitly reset it here.  The allocation should have
      already happened on the previous reg_scan pass.  Make sure in case
      some more registers were allocated.  */
-  allocate_reg_info (max_regno, FALSE);
+  allocate_reg_info (max_regno, FALSE, FALSE);
 
   for (i = 0; i < max_regno; i++)
     REG_N_SETS (i) = 0;

@@ -1,5 +1,5 @@
 /* Compute register class preferences for pseudo-registers.
-   Copyright (C) 1987, 88, 91, 92, 93, 94, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 91, 92, 93, 94, 96, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1651,36 +1651,83 @@ auto_inc_dec_reg_p (reg, mode)
 
 /* Allocate enough space to hold NUM_REGS registers for the tables used for
    reg_scan and flow_analysis that are indexed by the register number.  If
-   NEW_P is set, initialize all of the registers, otherwise only initialize the
-   new registers allocated.  The same table is kept from function to function,
-   only reallocating it when we need more room.  */
+   NEW_P is non zero, initialize all of the registers, otherwise only
+   initialize the new registers allocated.  The same table is kept from
+   function to function, only reallocating it when we need more room.  If
+   RENUMBER_P is non zero, allocate the reg_renumber array also.  */
 
 void
-allocate_reg_info (num_regs, new_p)
+allocate_reg_info (num_regs, new_p, renumber_p)
      int num_regs;
      int new_p;
+     int renumber_p;
 {
   static int regno_allocated = 0;
   static int regno_max = 0;
+  static short *renumber = (short *)0;
   int i;
-  int size;
+  int size_info;
+  int size_renumber;
   int min = (new_p) ? 0 : regno_max+1;
+
+  /* If this message come up, and you want to fix it, then all of the tables
+     like reg_renumber, etc. that use short will have to be found and lengthed
+     to int or HOST_WIDE_INT.  */
+
+  /* Free up all storage allocated */
+  if (num_regs < 0)
+    {
+      if (reg_n_info)
+	{
+	  free ((char *)reg_n_info);
+	  free ((char *)renumber);
+	  reg_n_info = (reg_info *)0;
+	  renumber = (short *)0;
+	}
+      regno_allocated = 0;
+      regno_max = 0;
+      return;
+    }
 
   if (num_regs > regno_allocated)
     {
       regno_allocated = num_regs + (num_regs / 20);	/* add some slop space */
-      size = regno_allocated * sizeof (reg_info);
-      reg_n_info = ((reg_n_info)
-		    ? (reg_info *) xrealloc ((char *)reg_n_info, size)
-		    : (reg_info *) xmalloc (size));
+      size_info = regno_allocated * sizeof (reg_info);
+      size_renumber = regno_allocated * sizeof (short);
+
+      if (!reg_n_info)
+	{
+	  reg_n_info = (reg_info *) xmalloc (size_info);
+	  renumber = (short *) xmalloc (size_renumber);
+	}
+
+      else if (new_p)		/* if we're zapping everything, no need to realloc */
+	{
+	  free ((char *)reg_n_info);
+	  free ((char *)renumber);
+	  reg_n_info = (reg_info *) xmalloc (size_info);
+	  renumber = (short *) xmalloc (size_renumber);
+	}
+
+      else
+	{
+	  reg_n_info = (reg_info *) xrealloc ((char *)reg_n_info, size_info);
+	  renumber = (short *) xrealloc ((char *)renumber, size_renumber);
+	}
     }
 
   if (min < num_regs)
     {
       bzero ((char *) &reg_n_info[min], (num_regs - min) * sizeof (reg_info));
       for (i = min; i < num_regs; i++)
-	REG_BASIC_BLOCK (i) = REG_BLOCK_UNKNOWN;
+	{
+	  REG_BASIC_BLOCK (i) = REG_BLOCK_UNKNOWN;
+	  renumber[i] = -1;
+	}
     }
+
+  if (renumber_p)
+    reg_renumber = renumber;
 
   regno_max = num_regs;
 }
@@ -1709,7 +1756,7 @@ reg_scan (f, nregs, repeat)
 {
   register rtx insn;
 
-  allocate_reg_info (nregs, TRUE);
+  allocate_reg_info (nregs, TRUE, FALSE);
   max_parallel = 3;
 
   for (insn = f; insn; insn = NEXT_INSN (insn))
