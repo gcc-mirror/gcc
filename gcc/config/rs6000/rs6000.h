@@ -543,7 +543,10 @@ extern struct rs6000_cpu_select rs6000_select[];
 #define FUNCTION_BOUNDARY 32
 
 /* No data type wants to be aligned rounder than this.  */
-#define BIGGEST_ALIGNMENT (TARGET_64BIT ? 64 : 32)
+#define BIGGEST_ALIGNMENT 64
+
+/* AIX aligns internal doubles in structures on word boundaries.  */
+#define BIGGEST_FIELD_ALIGNMENT 32
 
 /* Alignment of field after `int : 0' in a structure.  */
 #define EMPTY_FIELD_BOUNDARY 32
@@ -2593,10 +2596,14 @@ do {									\
 /* This says how to output an assembler line
    to define a global common symbol.  */
 
-#define ASM_OUTPUT_COMMON(FILE, NAME, SIZE, ROUNDED)	\
+#define ASM_OUTPUT_ALIGNED_COMMON(FILE, NAME, SIZE, ALIGNMENT)	\
   do { fputs (".comm ", (FILE));			\
        RS6000_OUTPUT_BASENAME ((FILE), (NAME));		\
-       fprintf ((FILE), ",%d\n", (SIZE)); } while (0)
+       if ( (SIZE) > 4)					\
+         fprintf ((FILE), ",%d,3\n", (SIZE));		\
+       else						\
+	 fprintf( (FILE), ",%d\n", (SIZE));		\
+  } while (0)
 
 /* This says how to output an assembler line
    to define a local common symbol.  */
