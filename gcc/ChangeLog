@@ -1,3 +1,7 @@
+2001-11-09  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* doc/install.texi2html: Use $MAKEINFO --no-split.
+
 2001-11-09  Andreas Schwab  <schwab@suse.de>
 
 	* Makefile.in ($(HOST_PREFIX_1)rtl.o,
