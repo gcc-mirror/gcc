@@ -2629,7 +2629,7 @@ can_throw (insn)
   if (GET_CODE (insn) == CALL_INSN)
     {
       rtx note = find_reg_note (insn, REG_EH_REGION, NULL_RTX);
-      if (!note || XINT (XEXP (note, 0), 0) > 0)
+      if (!note || INTVAL (XEXP (note, 0), 0) > 0)
 	return 1;
     }
 
@@ -3390,7 +3390,7 @@ reachable_handlers (block, info, insn, handlers)
 	  note = find_reg_note (insn, REG_EH_REGION, NULL_RTX);
 	  if (note)
 	    {
-	      int b = XINT (XEXP (note, 0), 0);
+	      int b = INTVAL (XEXP (note, 0), 0);
 	      if (b <= 0)
 	        index = 0;
 	      else
