@@ -1,3 +1,14 @@
+2003-07-07 Andrew Pinski <pinskia@physics.uc.edu>
+
+	PR optimization/11368
+	* doc/invoke.texi (-falign-functions): Document that
+	when n is zero then a machine-dependent default is used.
+	(-falign-labels): Document that when n is zero then a
+	machine-dependent default is used and that -falign-labels =1
+	is equivalent to -fno-align-labels.
+	(-falign-loops): Likewise.
+	(-falign-jumps): Likewise.
+
 2003-07-07  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
             Eric Botcazou  <ebotcazou@libertysurf.fr>
 
