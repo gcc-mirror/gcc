@@ -1,3 +1,16 @@
+2000-05-27  Richard Henderson  <rth@cygnus.com>
+
+	* config/d30v/d30v.c (d30v_print_operand): Handle ':'.
+	* config/d30v/d30v.h (PRINT_OPERAND_PUNCT_VALID_P): Accept ':'.
+	* config/d30v/d30v.md (attr predicable): New.
+	(all insn patterns): Mark non-predicable patterns; use %: on the rest.
+	(andsi3*): Unify into one pattern.
+	(iorsi3*, xorsi3*): Likewise.
+	(peephole2 patterns): Use peep2_reg_dead_p; verify not a
+	conditional return.
+	(old cond_exec patterns): Remove.
+	(define_cond_exec): New.
+
 Sat May 27 11:01:27 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* tree.h (TREE_CODE_LENGTH): New macro.
