@@ -165,7 +165,6 @@ Tue Sep 11 11:37:52 CEST 2001  Jan Hubicka  <jh@suse.cz>
 	* unroll.c (loop_find_equiv_value): Ditto.
 	* toplev.c (rest_of_compilation): Ditto.
 	* loop.c (scan_loop): Ditto.
-	(scan_loop): Ditto.
 	* dwarf2out.c (struct dw_fde_struct): Ditto.
 
 2001-09-10  Zack Weinberg  <zackw@panix.com>
