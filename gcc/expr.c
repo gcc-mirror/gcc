@@ -5006,9 +5006,7 @@ store_field (target, bitsize, bitpos, mode, exp, value_mode, unsignedp, type,
 	= assign_temp
 	  (build_qualified_type (type, TYPE_QUALS (type) | TYPE_QUAL_CONST),
 	   0, 1, 1);
-      rtx blk_object = copy_rtx (object);
-
-      PUT_MODE (blk_object, BLKmode);
+      rtx blk_object = adjust_address (object, BLKmode, 0);
 
       if (bitsize != (HOST_WIDE_INT) GET_MODE_BITSIZE (GET_MODE (target)))
 	emit_move_insn (object, target);
@@ -7340,12 +7338,11 @@ expand_expr (exp, target, tmode, modifier)
 		       (HOST_WIDE_INT) GET_MODE_SIZE (TYPE_MODE (type)));
 	      rtx new = assign_stack_temp_for_type (TYPE_MODE (type),
 						    temp_size, 0, type);
-	      rtx new_with_op0_mode = copy_rtx (new);
+	      rtx new_with_op0_mode = adjust_address (new, GET_MODE (op0), 0);
 
 	      if (TREE_ADDRESSABLE (exp))
 		abort ();
 
-	      PUT_MODE (new_with_op0_mode, GET_MODE (op0));
 	      if (GET_MODE (op0) == BLKmode)
 		emit_block_move (new_with_op0_mode, op0,
 				 GEN_INT (GET_MODE_SIZE (TYPE_MODE (type))));
@@ -7355,7 +7352,7 @@ expand_expr (exp, target, tmode, modifier)
 	      op0 = new;
 	    }
       
-	  PUT_MODE (op0, TYPE_MODE (type));
+	  op0 = adjust_address (op0, TYPE_MODE (type), 0);
 	}
 
       return op0;

@@ -2263,10 +2263,9 @@ copy_rtx_and_substitute (orig, map, for_lhs)
 	  return validize_mem (force_const_mem (const_mode, constant));
 	}
 
-      copy = rtx_alloc (MEM);
-      PUT_MODE (copy, mode);
-      XEXP (copy, 0) = copy_rtx_and_substitute (XEXP (orig, 0), map, 0);
-      MEM_COPY_ATTRIBUTES (copy, orig);
+     copy = replace_equiv_address_nv (orig,
+				      copy_rtx_and_substitute (XEXP (orig, 0),
+							       map, 0));
 
       /* If inlining and this is not for the LHS, turn off RTX_UNCHANGING_P
 	 since this may be an indirect reference to a parameter and the
