@@ -1,3 +1,8 @@
+2004-05-22  Richard Sandiford  <rsandifo@redhat.com>
+
+	* calls.c (initialize_argument_information): Forbid sibcalls if a
+	callee-copied argument is stored in the current function's frame.
+
 2004-05-22  Eric Christopher  <echristo@redhat.com>
 
 	* fix-header.c (read_scan_file): Update for add_path change.

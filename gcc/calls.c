@@ -1129,6 +1129,13 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
 		  && ! REG_P (DECL_RTL (TREE_OPERAND (args[i].tree_value, 1))))
 		args[i].tree_value = TREE_OPERAND (args[i].tree_value, 1);
 
+	      /* We can't use sibcalls if a callee-copied argument is stored
+		 in the current function's frame.  */
+	      if (!call_from_thunk_p
+		  && (!DECL_P (args[i].tree_value)
+		      || !TREE_STATIC (args[i].tree_value)))
+		*may_tailcall = false;
+
 	      args[i].tree_value = build1 (ADDR_EXPR,
 					   build_pointer_type (type),
 					   args[i].tree_value);
