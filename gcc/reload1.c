@@ -34,6 +34,7 @@ Boston, MA 02111-1307, USA.  */
 #include "recog.h"
 #include "basic-block.h"
 #include "output.h"
+#include "real.h"
 
 /* This file contains the reload pass of the compiler, which is
    run after register allocation has been done.  It checks that
