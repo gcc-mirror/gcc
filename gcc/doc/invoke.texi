@@ -8223,13 +8223,6 @@ code that expects temporaries to be 80bit.
 
 This is the default choice for the x86-64 compiler.
 
-@item pni
-Use all SSE extensions enabled by @option{-msse2} as well as the new
-SSE extensions in Prescott New Instructions. @option{-mpni} also
-enables 2 builtin functions, @code{__builtin_ia32_monitor} and
-@code{__builtin_ia32_mwait}, for new instructions @code{monitor} and
-@code{mwait}.
-
 @item sse,387
 Attempt to utilize both instruction sets at once.  This effectively double the
 amount of available registers and on chips with separate execution units for
@@ -8422,7 +8415,8 @@ preferred alignment to @option{-mpreferred-stack-boundary=2}.
 @opindex m3dnow
 @opindex mno-3dnow
 These switches enable or disable the use of built-in functions that allow
-direct access to the MMX, SSE and 3Dnow extensions of the instruction set.
+direct access to the MMX, SSE, SSE2, PNI and 3Dnow extensions of the
+instruction set.
 
 @xref{X86 Built-in Functions}, for details of the functions enabled
 and disabled by these switches.
