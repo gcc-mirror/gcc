@@ -125,9 +125,16 @@ struct type_hash GTY(())
 static GTY ((if_marked ("type_hash_marked_p"), param_is (struct type_hash)))
      htab_t type_hash_table;
 
+/* Hash table and temporary node for larger integer const values.  */
+static GTY (()) tree int_cst_node;
+static GTY ((if_marked ("ggc_marked_p"), param_is (union tree_node)))
+     htab_t int_cst_hash_table;
+
 static void set_type_quals (tree, int);
 static int type_hash_eq (const void *, const void *);
 static hashval_t type_hash_hash (const void *);
+static hashval_t int_cst_hash_hash (const void *);
+static int int_cst_hash_eq (const void *, const void *);
 static void print_type_hash_statistics (void);
 static tree make_vector_type (tree, int, enum machine_mode);
 static int type_hash_marked_p (const void *);
@@ -145,6 +152,9 @@ init_ttree (void)
   /* Initialize the hash table of types.  */
   type_hash_table = htab_create_ggc (TYPE_HASH_INITIAL_SIZE, type_hash_hash,
 				     type_hash_eq, 0);
+  int_cst_hash_table = htab_create_ggc (1024, int_cst_hash_hash,
+					int_cst_hash_eq, NULL);
+  int_cst_node = make_node (INTEGER_CST);
 }
 
 
@@ -522,8 +532,38 @@ build_int_cst_type (tree type, HOST_WIDE_INT low)
   return ret;
 }
 
+/* These are the hash table functions for the hash table of INTEGER_CST
+   nodes of a sizetype.  */
+
+/* Return the hash code code X, an INTEGER_CST.  */
+
+static hashval_t
+int_cst_hash_hash (const void *x)
+{
+  tree t = (tree) x;
+
+  return (TREE_INT_CST_HIGH (t) ^ TREE_INT_CST_LOW (t)
+	  ^ htab_hash_pointer (TREE_TYPE (t)));
+}
+
+/* Return nonzero if the value represented by *X (an INTEGER_CST tree node)
+   is the same as that given by *Y, which is the same.  */
+
+static int
+int_cst_hash_eq (const void *x, const void *y)
+{
+  tree xt = (tree) x;
+  tree yt = (tree) y;
+
+  return (TREE_TYPE (xt) == TREE_TYPE (yt)
+	  && TREE_INT_CST_HIGH (xt) == TREE_INT_CST_HIGH (yt)
+	  && TREE_INT_CST_LOW (xt) == TREE_INT_CST_LOW (yt));
+}
+
 /* Create an INT_CST node of TYPE and value HI:LOW.  If TYPE is NULL,
-   integer_type_node is used.  */
+   integer_type_node is used.  The returned node is always shared.
+   For small integers we use a per-type vector cache, for larger ones
+   we use a single hash table.  */
 
 tree
 build_int_cst_wide (tree type, unsigned HOST_WIDE_INT low, HOST_WIDE_INT hi)
@@ -580,6 +620,7 @@ build_int_cst_wide (tree type, unsigned HOST_WIDE_INT low, HOST_WIDE_INT hi)
 
   if (ix >= 0)
     {
+      /* Look for it in the type's vector of small shared ints.  */
       if (!TYPE_CACHED_VALUES_P (type))
 	{
 	  TYPE_CACHED_VALUES_P (type) = 1;
@@ -593,18 +634,39 @@ build_int_cst_wide (tree type, unsigned HOST_WIDE_INT low, HOST_WIDE_INT hi)
 	  gcc_assert (TREE_TYPE (t) == type);
 	  gcc_assert (TREE_INT_CST_LOW (t) == low);
 	  gcc_assert (TREE_INT_CST_HIGH (t) == hi);
-	  return t;
+	}
+      else
+	{
+	  /* Create a new shared int.  */
+	  t = make_node (INTEGER_CST);
+
+	  TREE_INT_CST_LOW (t) = low;
+	  TREE_INT_CST_HIGH (t) = hi;
+	  TREE_TYPE (t) = type;
+	  
+	  TREE_VEC_ELT (TYPE_CACHED_VALUES (type), ix) = t;
 	}
     }
+  else
+    {
+      /* Use the cache of larger shared ints.  */
+      void **slot;
 
-  t = make_node (INTEGER_CST);
+      TREE_INT_CST_LOW (int_cst_node) = low;
+      TREE_INT_CST_HIGH (int_cst_node) = hi;
+      TREE_TYPE (int_cst_node) = type;
 
-  TREE_INT_CST_LOW (t) = low;
-  TREE_INT_CST_HIGH (t) = hi;
-  TREE_TYPE (t) = type;
-
-  if (ix >= 0)
-    TREE_VEC_ELT (TYPE_CACHED_VALUES (type), ix) = t;
+      slot = htab_find_slot (int_cst_hash_table, int_cst_node, INSERT);
+      t = *slot;
+      if (!t)
+	{
+	  /* Insert this one into the hash table.  */
+	  t = int_cst_node;
+	  *slot = t;
+	  /* Make a new node for next time round.  */
+	  int_cst_node = make_node (INTEGER_CST);
+	}
+    }
 
   return t;
 }
