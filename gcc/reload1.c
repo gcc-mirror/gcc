@@ -6648,7 +6648,8 @@ do_output_reload (chain, rl, j)
       /* We don't need to test full validity of last_regno for
 	 inherit here; we only want to know if the store actually
 	 matches the pseudo.  */
-      if (reg_reloaded_contents[last_regno] == pseudo_no
+      if (TEST_HARD_REG_BIT (reg_reloaded_valid, last_regno)
+	  && reg_reloaded_contents[last_regno] == pseudo_no
 	  && spill_reg_store[last_regno]
 	  && rtx_equal_p (pseudo, spill_reg_stored_to[last_regno]))
 	delete_output_reload (insn, j, last_regno);
