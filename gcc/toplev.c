@@ -3008,6 +3008,9 @@ main (argc, argv, envp)
 #ifdef DELAY_SLOTS
       flag_delayed_branch = 1;
 #endif
+#ifdef CAN_DEBUG_WITHOUT_FP
+      flag_omit_frame_pointer = 1;
+#endif
     }
 
   if (optimize >= 2)
@@ -3022,6 +3025,11 @@ main (argc, argv, envp)
       flag_schedule_insns = 1;
       flag_schedule_insns_after_reload = 1;
 #endif
+    }
+
+  if (optimize >= 3)
+    {
+      flag_inline_functions = 1;
     }
 
 #ifdef OPTIMIZATION_OPTIONS
