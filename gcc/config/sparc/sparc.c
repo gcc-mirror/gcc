@@ -2157,11 +2157,6 @@ output_function_prologue (file, size, leaf_function)
 		   frame_base_name, offset, n_fregs);
     }
 
-  if (regs_ever_live[62])
-    fprintf (file, "\tst %s,[%s-16]\n\tst %s,[%s-12]\n",
-	     reg_names[0], frame_base_name,
-	     reg_names[0], frame_base_name);
-
   leaf_label = 0;
   if (leaf_function && actual_fsize != 0)
     {
