@@ -397,7 +397,7 @@ emit_call_1 (funexp, funtype, stack_size, struct_value_size, next_arg_reg,
 
   if (stack_size != 0)
     {
-      if (flag_defer_pop && inhibit_defer_pop == 0)
+      if (flag_defer_pop && inhibit_defer_pop == 0 && !is_const)
 	pending_stack_adjust += stack_size;
       else
 	adjust_stack (stack_size_rtx);
