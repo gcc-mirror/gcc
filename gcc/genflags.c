@@ -224,6 +224,7 @@ main (argc, argv)
       perror (argv[1]);
       return (FATAL_EXIT_CODE);
     }
+  read_rtx_filename = argv[1];
 
   printf ("/* Generated automatically by the program `genflags'\n\
 from the machine description file `md'.  */\n\n");

@@ -6000,6 +6000,7 @@ main (argc, argv)
       perror (argv[1]);
       return (FATAL_EXIT_CODE);
     }
+  read_rtx_filename = argv[1];
 
   /* Set up true and false rtx's */
   true_rtx = rtx_alloc (CONST_INT);

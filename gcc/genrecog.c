@@ -115,6 +115,7 @@ struct decision_test
 
     struct {
       int code_number;		/* Insn number matched.  */
+      int lineno;		/* Line number of the insn.  */
       int num_clobbers_to_add;	/* Number of CLOBBERs to be added.  */
     } insn;
   } u;
@@ -170,6 +171,12 @@ static int next_index;
    allocate in each subroutine we make.  */
 
 static int max_depth;
+
+/* The line number of the start of the pattern currently being processed.  */
+static int pattern_lineno;
+
+/* Count of errors.  */
+static int error_count;
 
 /* This table contains a list of the rtl codes that can possibly match a
    predicate defined in recog.c.  The function `maybe_both_true' uses it to
@@ -213,6 +220,8 @@ static struct decision *new_decision
   PROTO((const char *, struct decision_head *));
 static struct decision_test *new_decision_test
   PROTO((enum decision_type, struct decision_test ***));
+static void validate_pattern
+  PROTO((rtx, int));
 static struct decision *add_to_sequence
   PROTO((rtx, struct decision_head *, const char *, enum routine_type, int));
 
@@ -284,6 +293,29 @@ static void debug_decision_2
 extern void debug_decision
   PROTO((struct decision *));
 
+static void
+message_with_line VPROTO ((int lineno, const char *msg, ...))
+{
+#ifndef ANSI_PROTOTYPES
+  int lineno;
+  const char *msg;
+#endif
+  va_list ap;
+
+  VA_START (ap, msg);
+
+#ifndef ANSI_PROTOTYPES
+  lineno = va_arg (ap, int);
+  msg = va_arg (ap, const char *);
+#endif
+
+  fprintf (stderr, "%s:%d: ", read_rtx_filename, lineno);
+  vfprintf (stderr, msg, ap);
+  fputc ('\n', stderr);
+
+  va_end (ap);
+}
+
 /* Create a new node in sequence after LAST.  */
 
 static struct decision *
@@ -322,6 +354,142 @@ new_decision_test (type, pplace)
   *pplace = place;
 
   return test;
+}
+
+/* Check for various errors in patterns.  */
+
+static void
+validate_pattern (pattern, set_dest)
+     rtx pattern;
+     int set_dest;
+{
+  const char *fmt;
+  RTX_CODE code;
+  int i, j, len;
+
+  code = GET_CODE (pattern);
+  switch (code)
+    {
+    case MATCH_SCRATCH:
+    case MATCH_INSN:
+      return;
+
+    case MATCH_OPERAND:
+      {
+	const char *pred_name = XSTR (pattern, 1);
+
+	if (pred_name[0] != 0)
+	  {
+	    /* See if we know about this predicate and save its number.  If
+	       we do, and it only accepts one code, note that fact.  The
+	       predicate `const_int_operand' only tests for a CONST_INT, so
+	       if we do so we can avoid calling it at all.
+
+	       Finally, if we know that the predicate does not allow
+	       CONST_INT, we know that the only way the predicate can match
+	       is if the modes match (here we use the kludge of relying on
+	       the fact that "address_operand" accepts CONST_INT; otherwise,
+	       it would have to be a special case), so we can test the mode
+	       (but we need not).  This fact should considerably simplify the
+	       generated code.  */
+
+	    for (i = 0; i < (int) NUM_KNOWN_PREDS; i++)
+	      if (! strcmp (preds[i].name, pred_name))
+		break;
+
+	    if (i < (int) NUM_KNOWN_PREDS)
+	      {
+		int j, allows_const_int;
+
+		allows_const_int = 0;
+		for (j = 0; preds[i].codes[j] != 0; j++)
+		  if (preds[i].codes[j] == CONST_INT)
+		    {
+		      allows_const_int = 1;
+		      break;
+		    }
+
+		if (allows_const_int && set_dest)
+		  {
+		    message_with_line (pattern_lineno,
+				       "warning: `%s' accepts const_int,",
+				       pred_name);
+		    message_with_line (pattern_lineno,
+				       "  and used as destination of a set");
+		  }
+	      }
+	    else
+	      {
+#ifdef PREDICATE_CODES
+		/* If the port has a list of the predicates it uses but
+		   omits one, warn.  */
+		message_with_line (pattern_lineno, "warning: `%s' not in PREDICATE_CODES", pred_name);
+#endif
+	      }
+	  }
+
+	return;
+      }
+
+    case SET:
+      /* The operands of a SET must have the same mode unless one
+	 is VOIDmode.  */
+      if (GET_MODE (SET_SRC (pattern)) != VOIDmode
+	  && GET_MODE (SET_DEST (pattern)) != VOIDmode
+	  && GET_MODE (SET_SRC (pattern)) != GET_MODE (SET_DEST (pattern))
+	  /* The mode of an ADDRESS_OPERAND is the mode of the memory
+	     reference, not the mode of the address.  */
+	  && ! (GET_CODE (SET_SRC (pattern)) == MATCH_OPERAND
+		&& ! strcmp (XSTR (SET_SRC (pattern), 1), "address_operand")))
+	{
+	  message_with_line (pattern_lineno,
+			     "mode mismatch in set: %smode vs %smode",
+			     GET_MODE_NAME (GET_MODE (SET_DEST (pattern))),
+			     GET_MODE_NAME (GET_MODE (SET_SRC (pattern))));
+	  error_count++;
+	}
+
+      validate_pattern (SET_DEST (pattern), 1);
+      validate_pattern (SET_SRC (pattern), 0);
+      return;
+      
+    case LABEL_REF:
+      if (GET_MODE (XEXP (pattern, 0)) != VOIDmode)
+	{
+	  message_with_line (pattern_lineno,
+			     "operand to label_ref %smode not VOIDmode",
+			     GET_MODE_NAME (GET_MODE (XEXP (pattern, 0))));
+	  error_count++;
+	}
+      break;
+
+    default:
+      break;
+    }
+
+  fmt = GET_RTX_FORMAT (code);
+  len = GET_RTX_LENGTH (code);
+  for (i = 0; i < len; i++)
+    {
+      switch (fmt[i])
+	{
+	case 'e': case 'u':
+	  validate_pattern (XEXP (pattern, i), 0);
+	  break;
+
+	case 'E':
+	  for (j = 0; j < XVECLEN (pattern, i); j++)
+	    validate_pattern (XVECEXP (pattern, i, j), 0);
+	  break;
+
+	case 'i': case 'w': case '0': case 's':
+	  break;
+
+	default:
+	  abort ();
+	}
+    }
+
 }
 
 /* Create a chain of nodes to verify that an rtl expression matches
@@ -465,15 +633,7 @@ add_to_sequence (pattern, last, position, insn_type, top)
 		    }
 	      }
 	    else
-	      {
-		test->u.pred.index = -1;
-#ifdef PREDICATE_CODES
-		/* If the port has a list of the predicates it uses but
-		   omits one, warn.  */
-		fprintf (stderr, "Warning: `%s' not in PREDICATE_CODES\n",
-			 pred_name);
-#endif
-	      }
+	      test->u.pred.index = -1;
 	  }
 
 	/* Can't enforce a mode if we allow const_int.  */
@@ -525,32 +685,6 @@ add_to_sequence (pattern, last, position, insn_type, top)
     case ADDRESS:
       pattern = XEXP (pattern, 0);
       goto restart;
-
-    case SET:
-      /* The operands of a SET must have the same mode unless one
-	 is VOIDmode.  */
-      if (GET_MODE (SET_SRC (pattern)) != VOIDmode
-	  && GET_MODE (SET_DEST (pattern)) != VOIDmode
-	  && GET_MODE (SET_SRC (pattern)) != GET_MODE (SET_DEST (pattern))
-	  /* The mode of an ADDRESS_OPERAND is the mode of the memory
-	     reference, not the mode of the address.  */
-	  && ! (GET_CODE (SET_SRC (pattern)) == MATCH_OPERAND
-		&& ! strcmp (XSTR (SET_SRC (pattern), 1), "address_operand")))
-	{
-	  print_rtl (stderr, pattern);
-	  fputc ('\n', stderr);
-	  fatal ("mode mismatch in SET");
-	}
-      break;
-      
-    case LABEL_REF:
-      if (GET_MODE (XEXP (pattern, 0)) != VOIDmode)
-	{
-	  print_rtl (stderr, pattern);
-	  fputc ('\n', stderr);
-	  fatal ("operand to LABEL_REF not VOIDmode");
-	}
-      break;
 
     default:
       break;
@@ -966,11 +1100,12 @@ merge_accept_insn (oldd, addd)
     }
   else
     {
-      fatal ("Two actions at one point in tree for insns \"%s\" (%d) and \"%s\" (%d)",
-	     get_insn_name (old->u.insn.code_number),
-	     old->u.insn.code_number,
-	     get_insn_name (add->u.insn.code_number),
-	     add->u.insn.code_number);
+      message_with_line (add->u.insn.lineno, "`%s' matches `%s'",
+			 get_insn_name (add->u.insn.code_number),
+			 get_insn_name (old->u.insn.code_number));
+      message_with_line (old->u.insn.lineno, "previous definition of `%s'",
+			 get_insn_name (old->u.insn.code_number));
+      error_count++;
     }
 }
 
@@ -2015,6 +2150,8 @@ make_insn_sequence (insn, type)
       PUT_MODE (x, VOIDmode);
     }
 
+  validate_pattern (x, 0);
+
   memset(&head, 0, sizeof(head));
   last = add_to_sequence (x, &head, "", type, 1);
 
@@ -2037,6 +2174,7 @@ make_insn_sequence (insn, type)
 
   test = new_decision_test (DT_accept_insn, &place);
   test->u.insn.code_number = next_insn_code;
+  test->u.insn.lineno = pattern_lineno;
   test->u.insn.num_clobbers_to_add = 0;
 
   switch (type)
@@ -2103,6 +2241,7 @@ make_insn_sequence (insn, type)
 
 	      test = new_decision_test (DT_accept_insn, &place);
 	      test->u.insn.code_number = next_insn_code;
+	      test->u.insn.lineno = pattern_lineno;
 	      test->u.insn.num_clobbers_to_add = XVECLEN (x, 0) - i;
 
 	      merge_trees (&head, &clobber_head);
@@ -2171,6 +2310,7 @@ main (argc, argv)
       perror (argv[1]);
       return FATAL_EXIT_CODE;
     }
+  read_rtx_filename = argv[1];
 
   next_insn_code = 0;
   next_index = 0;
@@ -2185,6 +2325,7 @@ main (argc, argv)
       if (c == EOF)
 	break;
       ungetc (c, infile);
+      pattern_lineno = read_rtx_lineno;
 
       desc = read_rtx (infile);
       if (GET_CODE (desc) == DEFINE_INSN)
@@ -2208,6 +2349,9 @@ main (argc, argv)
 	next_insn_code++;
       next_index++;
     }
+
+  if (error_count)
+    return FATAL_EXIT_CODE;
 
   puts ("\n\n");
 

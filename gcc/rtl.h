@@ -963,10 +963,6 @@ extern rtx gen_rtx			PVPROTO((enum rtx_code,
 						 enum machine_mode, ...));
 extern rtvec gen_rtvec			PVPROTO((int, ...));
 
-#ifdef BUFSIZ
-extern rtx read_rtx			PROTO((FILE *));
-#endif
-
 extern char *oballoc			PROTO((int));
 extern char *permalloc			PROTO((int));
 extern rtx rtx_alloc			PROTO((RTX_CODE));
@@ -1379,10 +1375,6 @@ extern void gcc_obstack_init		PROTO ((struct obstack *));
 extern void pop_obstacks		PROTO ((void));
 extern void push_obstacks		PROTO ((struct obstack *,
 						struct obstack *));
-#ifdef BUFSIZ
-extern int read_skip_spaces		PROTO ((FILE *));
-#endif
-
 /* In cse.c */
 struct cse_basic_block_data;
 extern int rtx_cost			PROTO ((rtx, enum rtx_code));
@@ -1642,7 +1634,6 @@ extern void rrotate_double	PROTO ((HOST_WIDE_INT, HOST_WIDE_INT,
 					HOST_WIDE_INT *));
 
 /* In calls.c */
-/* Emit library call.  */                                           
 extern void emit_library_call		PVPROTO ((rtx, int, enum machine_mode,
 						  int, ...));
 extern rtx emit_library_call_value	PVPROTO((rtx, rtx, int,
@@ -1661,6 +1652,14 @@ extern void init_varasm_once		PROTO ((void));
 /* In rtl.c */
 extern void init_rtl			PROTO ((void));
 extern void rtx_free			PROTO ((rtx));
+
+#ifdef BUFSIZ
+extern int read_skip_spaces		PROTO ((FILE *));
+extern rtx read_rtx			PROTO ((FILE *));
+#endif
+
+extern const char *read_rtx_filename;
+extern int read_rtx_lineno;
 
 /* Redefine abort to report an internal error w/o coredump, and
    reporting the location of the error in the source file.  This logic
