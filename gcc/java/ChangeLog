@@ -1,3 +1,8 @@
+2003-01-21  Tom Tromey  <tromey@redhat.com>
+
+	* parse.y (method_header): Native method can't be strictfp.
+	No method can be transient or volatile.
+
 2003-01-14  Andrew Haley  <aph@redhat.com>
 
 	* decl.c (java_init_decl_processing): _Jv_NewMultiArray is a
@@ -15,7 +20,6 @@
 	Fix for PR java/8712:
 	* expr.c (build_instanceof): Build an NE_EXPR, not a COND_EXPR,
 	when simply checking against `null'.
-
 
 2003-01-03  Tom Tromey  <tromey@redhat.com>
 

@@ -1,6 +1,6 @@
 /* Source code parsing and tree node generation for the GNU compiler
    for the Java(TM) language.
-   Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
    Contributed by Alexandre Petit-Bianco (apbianco@cygnus.com)
 
 This file is part of GNU CC.
@@ -4581,6 +4581,18 @@ method_header (flags, type, mdecl, throws)
 	   IDENTIFIER_POINTER (DECL_NAME (GET_CPC ())),
 	   IDENTIFIER_POINTER (EXPR_WFL_NODE (id)));
     }
+
+  /* A native method can't be strictfp.  */
+  if ((flags & ACC_NATIVE) && (flags & ACC_STRICT))
+    parse_error_context (id, "native method `%s' can't be strictfp",
+			 IDENTIFIER_POINTER (EXPR_WFL_NODE (id)));
+  /* No such thing as a transient or volatile method.  */
+  if ((flags & ACC_TRANSIENT))
+    parse_error_context (id, "method `%s' can't be transient",
+			 IDENTIFIER_POINTER (EXPR_WFL_NODE (id)));
+  if ((flags & ACC_VOLATILE))
+    parse_error_context (id, "method `%s' can't be volatile",
+			 IDENTIFIER_POINTER (EXPR_WFL_NODE (id)));
 
   /* Things to be checked when declaring a constructor */
   if (!type)
