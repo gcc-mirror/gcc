@@ -684,7 +684,7 @@ public class ThreadGroup
   {
     if (groups == null)
       return;
-    System.out.print(indentation + this);
+    System.out.println(indentation + this);
     indentation += "    ";
     int i = threads.size();
     while (--i >= 0)
