@@ -119,3 +119,6 @@
 
 /* Define if using setjmp/longjmp exceptions.  */
 #undef SJLJ_EXCEPTIONS
+
+/* Define if getuid() and friends are missing.  */
+#undef NO_GETUID

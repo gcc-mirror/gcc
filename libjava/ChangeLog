@@ -1,3 +1,15 @@
+1999-12-15  Tom Tromey  <tromey@cygnus.com>
+
+	* java/lang/natSystem.cc (init_properties): Don't set user.name or
+	user.home if NO_GETUID defined.  Only set user.dir if getcwd
+	exists.
+
+	* include/config.h.in: Rebuilt.
+	* acconfig.h (NO_GETUID): New define.
+	* configure.in: Rebuilt.
+	* configure.in: Define NO_GETUID in cross case.  Check for getcwd
+	in native case.
+
 1999-12-08  Tom Tromey  <tromey@cygnus.com>
 
 	* include/posix-threads.h (_Jv_PthreadCheckMonitor): Handle case

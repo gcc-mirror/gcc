@@ -282,6 +282,7 @@ java::lang::System::init_properties (void)
     }
 #endif /* HAVE_UNAME */
 
+#ifndef NO_GETUID
 #ifdef HAVE_PWD_H
   uid_t user_id = getuid ();
   struct passwd *pwd_entry;
@@ -315,7 +316,9 @@ java::lang::System::init_properties (void)
       SET ("user.home", pwd_entry->pw_dir);
     }
 #endif /* HAVE_PWD_H */
+#endif /* NO_GETUID */
 
+#ifdef HAVE_GETCWD
 #ifdef HAVE_UNISTD_H
   /* Use getcwd to set "user.dir". */
   int buflen = 250;
@@ -334,7 +337,8 @@ java::lang::System::init_properties (void)
     }
   if (buffer != NULL)
     free (buffer);
-#endif
+#endif /* HAVE_UNISTD_H */
+#endif /* HAVE_GETCWD */
 
   // Set some properties according to whatever was compiled in with
   // `-D'.
