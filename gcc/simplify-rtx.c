@@ -360,16 +360,15 @@ simplify_unary_operation (enum rtx_code code, enum machine_mode mode,
 
   if (code == VEC_DUPLICATE)
     {
-      if (!VECTOR_MODE_P (mode))
-	abort ();
-      if (GET_MODE (trueop) != VOIDmode
-	  && !VECTOR_MODE_P (GET_MODE (trueop))
-	  && GET_MODE_INNER (mode) != GET_MODE (trueop))
-	abort ();
-      if (GET_MODE (trueop) != VOIDmode
-	  && VECTOR_MODE_P (GET_MODE (trueop))
-	  && GET_MODE_INNER (mode) != GET_MODE_INNER (GET_MODE (trueop)))
-	abort ();
+      gcc_assert (VECTOR_MODE_P (mode));
+      if (GET_MODE (trueop) != VOIDmode)
+      {
+	if (!VECTOR_MODE_P (GET_MODE (trueop)))
+	  gcc_assert (GET_MODE_INNER (mode) == GET_MODE (trueop));
+	else
+	  gcc_assert (GET_MODE_INNER (mode) == GET_MODE_INNER
+						(GET_MODE (trueop)));
+      }
       if (GET_CODE (trueop) == CONST_INT || GET_CODE (trueop) == CONST_DOUBLE
 	  || GET_CODE (trueop) == CONST_VECTOR)
 	{
@@ -387,8 +386,8 @@ simplify_unary_operation (enum rtx_code code, enum machine_mode mode,
               int in_elt_size = GET_MODE_SIZE (GET_MODE_INNER (inmode));
               unsigned in_n_elts = (GET_MODE_SIZE (inmode) / in_elt_size);
 
-	      if (in_n_elts >= n_elts || n_elts % in_n_elts)
-		abort ();
+	      gcc_assert (in_n_elts < n_elts);
+	      gcc_assert ((n_elts % in_n_elts) == 0);
 	      for (i = 0; i < n_elts; i++)
 	        RTVEC_ELT (v, i) = CONST_VECTOR_ELT (trueop, i % in_n_elts);
 	    }
@@ -408,9 +407,7 @@ simplify_unary_operation (enum rtx_code code, enum machine_mode mode,
       rtvec v = rtvec_alloc (n_elts);
       unsigned int i;
 
-      if (op_n_elts != n_elts)
-	abort ();
-
+      gcc_assert (op_n_elts == n_elts);
       for (i = 0; i < n_elts; i++)
 	{
 	  rtx x = simplify_unary_operation (code, GET_MODE_INNER (mode),
@@ -541,15 +538,13 @@ simplify_unary_operation (enum rtx_code code, enum machine_mode mode,
 	case ZERO_EXTEND:
 	  /* When zero-extending a CONST_INT, we need to know its
              original mode.  */
-	  if (op_mode == VOIDmode)
-	    abort ();
+	  gcc_assert (op_mode != VOIDmode);
 	  if (GET_MODE_BITSIZE (op_mode) == HOST_BITS_PER_WIDE_INT)
 	    {
 	      /* If we were really extending the mode,
 		 we would have to distinguish between zero-extension
 		 and sign-extension.  */
-	      if (width != GET_MODE_BITSIZE (op_mode))
-		abort ();
+	      gcc_assert (width == GET_MODE_BITSIZE (op_mode));
 	      val = arg0;
 	    }
 	  else if (GET_MODE_BITSIZE (op_mode) < HOST_BITS_PER_WIDE_INT)
@@ -566,8 +561,7 @@ simplify_unary_operation (enum rtx_code code, enum machine_mode mode,
 	      /* If we were really extending the mode,
 		 we would have to distinguish between zero-extension
 		 and sign-extension.  */
-	      if (width != GET_MODE_BITSIZE (op_mode))
-		abort ();
+	      gcc_assert (width == GET_MODE_BITSIZE (op_mode));
 	      val = arg0;
 	    }
 	  else if (GET_MODE_BITSIZE (op_mode) < HOST_BITS_PER_WIDE_INT)
@@ -590,7 +584,7 @@ simplify_unary_operation (enum rtx_code code, enum machine_mode mode,
 	  return 0;
 
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
 
       val = trunc_int_for_mode (val, mode);
@@ -690,8 +684,7 @@ simplify_unary_operation (enum rtx_code code, enum machine_mode mode,
 	  break;
 
 	case ZERO_EXTEND:
-	  if (op_mode == VOIDmode)
-	    abort ();
+	  gcc_assert (op_mode != VOIDmode);
 
 	  if (GET_MODE_BITSIZE (op_mode) > HOST_BITS_PER_WIDE_INT)
 	    return 0;
@@ -766,7 +759,7 @@ simplify_unary_operation (enum rtx_code code, enum machine_mode mode,
 	    real_from_target (&d, tmp, mode);
 	  }
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
       return CONST_DOUBLE_FROM_REAL_VALUE (d, mode);
     }
@@ -864,7 +857,7 @@ simplify_unary_operation (enum rtx_code code, enum machine_mode mode,
 	  break;
 
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
       return immed_double_const (xl, xh, mode);
     }
@@ -1175,16 +1168,12 @@ simplify_binary_operation (enum rtx_code code, enum machine_mode mode,
   rtx trueop0, trueop1;
   rtx tem;
 
-#ifdef ENABLE_CHECKING
   /* Relational operations don't work here.  We must know the mode
      of the operands in order to do the comparison correctly.
      Assuming a full word can give incorrect results.
      Consider comparing 128 with -128 in QImode.  */
-
-  if (GET_RTX_CLASS (code) == RTX_COMPARE
-      || GET_RTX_CLASS (code) == RTX_COMM_COMPARE)
-    abort ();
-#endif
+  gcc_assert (GET_RTX_CLASS (code) != RTX_COMPARE);
+  gcc_assert (GET_RTX_CLASS (code) != RTX_COMM_COMPARE);
 
   /* Make sure the constant is second.  */
   if (GET_RTX_CLASS (code) == RTX_COMM_ARITH
@@ -1211,9 +1200,8 @@ simplify_binary_operation (enum rtx_code code, enum machine_mode mode,
       rtvec v = rtvec_alloc (n_elts);
       unsigned int i;
 
-      if (op0_n_elts != n_elts || op1_n_elts != n_elts)
-	abort ();
-
+      gcc_assert (op0_n_elts == n_elts);
+      gcc_assert (op1_n_elts == n_elts);
       for (i = 0; i < n_elts; i++)
 	{
 	  rtx x = simplify_binary_operation (code, GET_MODE_INNER (mode),
@@ -1247,14 +1235,20 @@ simplify_binary_operation (enum rtx_code code, enum machine_mode mode,
 			  GET_MODE (op1));
 	  for (i = 0; i < 4; i++)
 	    {
-	      if (code == AND)
+	      switch (code)
+	      {
+	      case AND:
 		tmp0[i] &= tmp1[i];
-	      else if (code == IOR)
+		break;
+	      case IOR:
 		tmp0[i] |= tmp1[i];
-	      else if (code == XOR)
+		break;
+	      case XOR:
 		tmp0[i] ^= tmp1[i];
-	      else
-		abort ();
+		break;
+	      default:
+		gcc_unreachable ();
+	      }
 	    }
 	   real_from_target (&r, tmp0, mode);
 	   return CONST_DOUBLE_FROM_REAL_VALUE (r, mode);
@@ -2142,24 +2136,22 @@ simplify_binary_operation (enum rtx_code code, enum machine_mode mode,
 	case VEC_SELECT:
 	  if (!VECTOR_MODE_P (mode))
 	    {
-	      if (!VECTOR_MODE_P (GET_MODE (trueop0))
-		  || (mode
-		      != GET_MODE_INNER (GET_MODE (trueop0)))
-		  || GET_CODE (trueop1) != PARALLEL
-		  || XVECLEN (trueop1, 0) != 1
-		  || GET_CODE (XVECEXP (trueop1, 0, 0)) != CONST_INT)
-		abort ();
+	      gcc_assert (VECTOR_MODE_P (GET_MODE (trueop0)));
+	      gcc_assert (mode == GET_MODE_INNER (GET_MODE (trueop0)));
+	      gcc_assert (GET_CODE (trueop1) == PARALLEL);
+	      gcc_assert (XVECLEN (trueop1, 0) == 1);
+	      gcc_assert (GET_CODE (XVECEXP (trueop1, 0, 0)) == CONST_INT);
 
 	      if (GET_CODE (trueop0) == CONST_VECTOR)
-		return CONST_VECTOR_ELT (trueop0, INTVAL (XVECEXP (trueop1, 0, 0)));
+		return CONST_VECTOR_ELT (trueop0, INTVAL (XVECEXP
+							  (trueop1, 0, 0)));
 	    }
 	  else
 	    {
-	      if (!VECTOR_MODE_P (GET_MODE (trueop0))
-		  || (GET_MODE_INNER (mode)
-		      != GET_MODE_INNER (GET_MODE (trueop0)))
-		  || GET_CODE (trueop1) != PARALLEL)
-		abort ();
+	      gcc_assert (VECTOR_MODE_P (GET_MODE (trueop0)));
+	      gcc_assert (GET_MODE_INNER (mode)
+			  == GET_MODE_INNER (GET_MODE (trueop0)));
+	      gcc_assert (GET_CODE (trueop1) == PARALLEL);
 
 	      if (GET_CODE (trueop0) == CONST_VECTOR)
 		{
@@ -2168,15 +2160,14 @@ simplify_binary_operation (enum rtx_code code, enum machine_mode mode,
 		  rtvec v = rtvec_alloc (n_elts);
 		  unsigned int i;
 
-		  if (XVECLEN (trueop1, 0) != (int) n_elts)
-		    abort ();
+		  gcc_assert (XVECLEN (trueop1, 0) == (int) n_elts);
 		  for (i = 0; i < n_elts; i++)
 		    {
 		      rtx x = XVECEXP (trueop1, 0, i);
 
-		      if (GET_CODE (x) != CONST_INT)
-			abort ();
-		      RTVEC_ELT (v, i) = CONST_VECTOR_ELT (trueop0, INTVAL (x));
+		      gcc_assert (GET_CODE (x) == CONST_INT);
+		      RTVEC_ELT (v, i) = CONST_VECTOR_ELT (trueop0,
+							   INTVAL (x));
 		    }
 
 		  return gen_rtx_CONST_VECTOR (mode, v);
@@ -2192,24 +2183,21 @@ simplify_binary_operation (enum rtx_code code, enum machine_mode mode,
 					  ? GET_MODE (trueop1)
 					  : GET_MODE_INNER (mode));
 
-	    if (!VECTOR_MODE_P (mode)
-		|| (GET_MODE_SIZE (op0_mode) + GET_MODE_SIZE (op1_mode)
-		    != GET_MODE_SIZE (mode)))
-	      abort ();
+	    gcc_assert (VECTOR_MODE_P (mode));
+	    gcc_assert (GET_MODE_SIZE (op0_mode) + GET_MODE_SIZE (op1_mode)
+			== GET_MODE_SIZE (mode));
 
-	    if ((VECTOR_MODE_P (op0_mode)
-		 && (GET_MODE_INNER (mode)
-		     != GET_MODE_INNER (op0_mode)))
-		|| (!VECTOR_MODE_P (op0_mode)
-		    && GET_MODE_INNER (mode) != op0_mode))
-	      abort ();
+	    if (VECTOR_MODE_P (op0_mode))
+	      gcc_assert (GET_MODE_INNER (mode)
+			  == GET_MODE_INNER (op0_mode));
+	    else
+	      gcc_assert (GET_MODE_INNER (mode) == op0_mode);
 
-	    if ((VECTOR_MODE_P (op1_mode)
-		 && (GET_MODE_INNER (mode)
-		     != GET_MODE_INNER (op1_mode)))
-		|| (!VECTOR_MODE_P (op1_mode)
-		    && GET_MODE_INNER (mode) != op1_mode))
-	      abort ();
+	    if (VECTOR_MODE_P (op1_mode))
+	      gcc_assert (GET_MODE_INNER (mode)
+			  == GET_MODE_INNER (op1_mode));
+	    else
+	      gcc_assert (GET_MODE_INNER (mode) == op1_mode);
 
 	    if ((GET_CODE (trueop0) == CONST_VECTOR
 		 || GET_CODE (trueop0) == CONST_INT
@@ -2251,7 +2239,7 @@ simplify_binary_operation (enum rtx_code code, enum machine_mode mode,
 	  return 0;
 
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
 
       return 0;
@@ -2413,7 +2401,7 @@ simplify_binary_operation (enum rtx_code code, enum machine_mode mode,
       return 0;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   val = trunc_int_for_mode (val, mode);
@@ -2799,10 +2787,9 @@ simplify_const_relational_operation (enum rtx_code code,
   rtx trueop0;
   rtx trueop1;
 
-  if (mode == VOIDmode
-      && (GET_MODE (op0) != VOIDmode
-	  || GET_MODE (op1) != VOIDmode))
-    abort ();
+  gcc_assert (mode != VOIDmode
+	      || (GET_MODE (op0) == VOIDmode
+		  && GET_MODE (op1) == VOIDmode));
 
   /* If op0 is a compare, extract the comparison arguments from it.  */
   if (GET_CODE (op0) == COMPARE && op1 == const0_rtx)
@@ -3101,7 +3088,7 @@ simplify_const_relational_operation (enum rtx_code code,
     case UNORDERED:
       return const0_rtx;
     default:
-      abort ();
+      gcc_unreachable ();
     }
 }
 
@@ -3240,10 +3227,9 @@ simplify_ternary_operation (enum rtx_code code, enum machine_mode mode,
       break;
 
     case VEC_MERGE:
-      if (GET_MODE (op0) != mode
-	  || GET_MODE (op1) != mode
-	  || !VECTOR_MODE_P (mode))
-	abort ();
+      gcc_assert (GET_MODE (op0) == mode);
+      gcc_assert (GET_MODE (op1) == mode);
+      gcc_assert (VECTOR_MODE_P (mode));
       op2 = avoid_constant_pool_reference (op2);
       if (GET_CODE (op2) == CONST_INT)
 	{
@@ -3274,7 +3260,7 @@ simplify_ternary_operation (enum rtx_code code, enum machine_mode mode,
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   return 0;
@@ -3328,11 +3314,10 @@ simplify_immed_subreg (enum machine_mode outermode, rtx op,
       elems = &op;
       elem_bitsize = max_bitsize;
     }
-
-  if (BITS_PER_UNIT % value_bit != 0)
-    abort ();  /* Too complicated; reducing value_bit may help.  */
-  if (elem_bitsize % BITS_PER_UNIT != 0)
-    abort ();  /* I don't know how to handle endianness of sub-units.  */
+  /* If this asserts, it is too complicated; reducing value_bit may help.  */
+  gcc_assert (BITS_PER_UNIT % value_bit == 0);
+  /* I don't know how to handle endianness of sub-units.  */
+  gcc_assert (elem_bitsize % BITS_PER_UNIT == 0);
   
   for (elem = 0; elem < num_elem; elem++)
     {
@@ -3369,8 +3354,7 @@ simplify_immed_subreg (enum machine_mode outermode, rtx op,
 	    {
 	      /* If this triggers, someone should have generated a
 		 CONST_INT instead.  */
-	      if (elem_bitsize <= HOST_BITS_PER_WIDE_INT)
-		abort ();
+	      gcc_assert (elem_bitsize > HOST_BITS_PER_WIDE_INT);
 
 	      for (i = 0; i < HOST_BITS_PER_WIDE_INT; i += value_bit)
 		*vp++ = CONST_DOUBLE_LOW (el) >> i;
@@ -3385,15 +3369,14 @@ simplify_immed_subreg (enum machine_mode outermode, rtx op,
 	      for (; i < max_bitsize; i += value_bit)
 		*vp++ = 0;
 	    }
-	  else if (GET_MODE_CLASS (GET_MODE (el)) == MODE_FLOAT)
+	  else
 	    {
 	      long tmp[max_bitsize / 32];
 	      int bitsize = GET_MODE_BITSIZE (GET_MODE (el));
-	      
-	      if (bitsize > elem_bitsize)
-		abort ();
-	      if (bitsize % value_bit != 0)
-		abort ();
+
+	      gcc_assert (GET_MODE_CLASS (GET_MODE (el)) == MODE_FLOAT);
+	      gcc_assert (bitsize <= elem_bitsize);
+	      gcc_assert (bitsize % value_bit == 0);
 
 	      real_to_target (tmp, CONST_DOUBLE_REAL_VALUE (el),
 			      GET_MODE (el));
@@ -3417,12 +3400,10 @@ simplify_immed_subreg (enum machine_mode outermode, rtx op,
 	      for (; i < elem_bitsize; i += value_bit)
 		*vp++ = 0;
 	    }
-	  else
-	    abort ();
 	  break;
 	  
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
     }
 
@@ -3442,8 +3423,7 @@ simplify_immed_subreg (enum machine_mode outermode, rtx op,
 
   /* BYTE should still be inside OP.  (Note that BYTE is unsigned,
      so if it's become negative it will instead be very large.)  */
-  if (byte >= GET_MODE_SIZE (innermode))
-    abort ();
+  gcc_assert (byte < GET_MODE_SIZE (innermode));
 
   /* Convert from bytes to chunks of size value_bit.  */
   value_start = byte * (BITS_PER_UNIT / value_bit);
@@ -3467,10 +3447,8 @@ simplify_immed_subreg (enum machine_mode outermode, rtx op,
   outer_class = GET_MODE_CLASS (outer_submode);
   elem_bitsize = GET_MODE_BITSIZE (outer_submode);
 
-  if (elem_bitsize % value_bit != 0)
-    abort ();
-  if (elem_bitsize + value_start * value_bit > max_bitsize)
-    abort ();
+  gcc_assert (elem_bitsize % value_bit == 0);
+  gcc_assert (elem_bitsize + value_start * value_bit <= max_bitsize);
 
   for (elem = 0; elem < num_elem; elem++)
     {
@@ -3540,7 +3518,7 @@ simplify_immed_subreg (enum machine_mode outermode, rtx op,
 	  break;
 	    
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
     }
   if (VECTOR_MODE_P (outermode))
@@ -3556,17 +3534,16 @@ simplify_subreg (enum machine_mode outermode, rtx op,
 		 enum machine_mode innermode, unsigned int byte)
 {
   /* Little bit of sanity checking.  */
-  if (innermode == VOIDmode || outermode == VOIDmode
-      || innermode == BLKmode || outermode == BLKmode)
-    abort ();
+  gcc_assert (innermode != VOIDmode);
+  gcc_assert (outermode != VOIDmode);
+  gcc_assert (innermode != BLKmode);
+  gcc_assert (outermode != BLKmode);
 
-  if (GET_MODE (op) != innermode
-      && GET_MODE (op) != VOIDmode)
-    abort ();
+  gcc_assert (GET_MODE (op) == innermode
+	      || GET_MODE (op) == VOIDmode);
 
-  if (byte % GET_MODE_SIZE (outermode)
-      || byte >= GET_MODE_SIZE (innermode))
-    abort ();
+  gcc_assert ((byte % GET_MODE_SIZE (outermode)) == 0);
+  gcc_assert (byte < GET_MODE_SIZE (innermode));
 
   if (outermode == innermode && !byte)
     return op;
@@ -3772,17 +3749,16 @@ simplify_gen_subreg (enum machine_mode outermode, rtx op,
 {
   rtx newx;
   /* Little bit of sanity checking.  */
-  if (innermode == VOIDmode || outermode == VOIDmode
-      || innermode == BLKmode || outermode == BLKmode)
-    abort ();
+  gcc_assert (innermode != VOIDmode);
+  gcc_assert (outermode != VOIDmode);
+  gcc_assert (innermode != BLKmode);
+  gcc_assert (outermode != BLKmode);
 
-  if (GET_MODE (op) != innermode
-      && GET_MODE (op) != VOIDmode)
-    abort ();
+  gcc_assert (GET_MODE (op) == innermode
+	      || GET_MODE (op) == VOIDmode);
 
-  if (byte % GET_MODE_SIZE (outermode)
-      || byte >= GET_MODE_SIZE (innermode))
-    abort ();
+  gcc_assert ((byte % GET_MODE_SIZE (outermode)) == 0);
+  gcc_assert (byte < GET_MODE_SIZE (innermode));
 
   newx = simplify_subreg (outermode, op, innermode, byte);
   if (newx)

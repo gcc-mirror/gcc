@@ -47,14 +47,15 @@ gen_lowpart_general (enum machine_mode mode, rtx x)
     {
       /* Must be a hard reg that's not valid in MODE.  */
       result = gen_lowpart_common (mode, copy_to_reg (x));
-      if (result == 0)
-	abort ();
+      gcc_assert (result != 0);
       return result;
     }
-  else if (MEM_P (x))
+  else
     {
-      /* The only additional case we can do is MEM.  */
       int offset = 0;
+
+      /* The only additional case we can do is MEM.  */
+      gcc_assert (MEM_P (x));
 
       /* The following exposes the use of "x" to CSE.  */
       if (GET_MODE_SIZE (GET_MODE (x)) <= UNITS_PER_WORD
@@ -76,8 +77,6 @@ gen_lowpart_general (enum machine_mode mode, rtx x)
 
       return adjust_address (x, mode, offset);
     }
-  else
-    abort ();
 }
 
 rtx

@@ -1,3 +1,85 @@
+2004-09-09  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	* ra-build.c (copy_insn_p, remember_move, defuse_overlap_p_1,
+	live_out_1, prune_hardregs_for_mode, init_one_web_common,
+	reinit_one_web, add_subweb, add_subweb_2, init_web_parts,
+	record_conflict, compare_and_free_webs, init_webs_defs_uses,
+	parts_to_webs_1, parts_to_webs, reset_conflicts,
+	check_conflict_numbers, remember_web_was_spilled, handle_asm_insn,
+	ra_build_free): Use gcc_assert and gcc_unreachable instead of abort.
+	* ra-colorize.c (push_list, put_web, reset_lists, put_web_at_end,
+	put_move, remove_move, combine, select_spill, colorize_one_web,
+	try_recolor_web, insert_coalesced_conflicts, check_colors,
+	break_precolored_alias, restore_conflicts_from_coalesce,
+	sort_and_combine_web_pairs, check_uncoalesced_moves): Likewise.
+	* ra-rewrite.c (spill_coalescing, slots_overlap_p, emit_loads,
+	reloads_to_loads, rewrite_program2, emit_colors): Likewise.
+	* ra.c (first_hard_reg, create_insn_info, find_subweb, init_ra,
+	check_df): Likewise.
+	* real.c (do_add, do_multiply, do_divide, do_compare, do_fix_trunc,
+	real_arithmetic, real_compare, real_exponent, real_ldexp,
+	real_identical, real_to_integer, real_to_integer2, real_to_decimal,
+	real_to_hexadecimal, real_from_integer, ten_to_ptwo, ten_to_mptwo,
+	real_digit, real_nan, real_maxval, round_for_format, real_convert,
+	real_to_target, real_from_target, real_hash, encode_ieee_single,
+	encode_ieee_double, encode_ieee_extended, encode_ieee_quad,
+	encode_vax_f, encode_vax_d, encode_vax_g, encode_i370_single,
+	encode_i370_double, encode_c4x_single, encode_c4x_extended): Likewise.
+	* recog.c (validate_change, validate_replace_rtx_1, asm_operand_ok,
+	extract_insn, peep2_next_insn, peep2_reg_dead_p,
+	peep2_find_free_register, peephole2_optimize, store_data_bypass_p,
+	if_test_bypass_p): Likewise.
+	* reg-stack.c (record_label_references, get_asm_operand_n_inputs,
+	stack_result, remove_regno_note, get_hard_regnum, emit_pop_insn,
+	emit_swap_insn, swap_to_top, move_for_stack_reg,
+	subst_stack_regs_pat, subst_asm_stack_regs, change_stack,
+	compensate_edge, convert_regs_1): Likewise.
+	* regclass.c (init_reg_sets, init_reg_sets_1,
+	memory_move_secondary_cost): Likewise.
+	* regrename.c (note_sets, clear_dead_regs, scan_rtx_reg, scan_rtx):
+	Likewise.
+	* reload.c (push_secondary_reload, find_valid_class, push_reload,
+	operands_match_p, decompose, immune_p, find_reloads,
+	find_reloads_toplev, find_reloads_address_1, subst_reloads,
+	copy_replacements, refers_to_regno_for_reload_p,
+	reg_overlap_mentioned_for_reload_p): Likewise.
+	* reload1.c (compute_use_by_pseudos, replace_pseudos_in, reload,
+	count_pseudo, find_reg, eliminate_regs, eliminate_regs_in_insn,
+	verify_initial_elim_offsets, finish_spills, clear_reload_reg_in_use,
+	reload_reg_free_p, reload_reg_reaches_end_p, reloads_conflict,
+	choose_reload_regs, merge_assigned_reloads, emit_input_reload_insns,
+	do_output_reload, fixup_abnormal_edges): Likewise.
+	* reorg.c (stop_search_p, emit_delay_sequence, get_jump_flags,
+	fill_slots_from_thread, relax_delay_slots): Likewise.
+	* resource.c (mark_referenced_resources, mark_set_resources):
+	Likewise.
+	* rtl.c (copy_rtx, rtx_equal_p): Likewise.
+	* rtlanal.c (insn_dependent_p, reg_overlap_mentioned_p,
+	dead_or_set_p, find_reg_fusage, remove_note, replace_rtx,
+	subreg_lsb_1, subreg_regno_offset, subreg_offset_representable_p,
+	find_first_parameter_load, can_hoist_insn_p, hoist_update_store,
+	hoist_insn_after, hoist_insn_to_edge, nonzero_bits1): Likewise.
+	* rtlhooks.c (gen_lowpart_general): Likewise.
+	* sbitmap.c (sbitmap_difference): Likewise.
+	* sched-deps.c (add_dependence, sched_analyze_1, sched_analyze_2,
+	sched_analyze, add_forward_dependence): Likewise.
+	* sched-ebb.c (fix_basic_block_boundaries, schedule_ebb): Likewise.
+	* sched-rgn.c (debug_regions, compute_trg_info, schedule_region,
+	schedule_insns): Likewise.
+	* sched-vis.c (print_pattern): Likewise.
+	* sdbout.c (sdbout_symbol, sdbout_toplevel_data): Likewise.
+	* simplify-rtx.c (simplify_unary_operation, simplify_binary_operation,
+	simplify_const_relational_operation, simplify_ternary_operation,
+	simplify_immed_subreg, simplify_subreg, simplify_gen_subreg):
+	Likewise.
+	* sreal.c (copy, sreal_sub, sreal_div): Likewise.
+	* stmt.c (force_label_rtx, expand_goto, expand_asm_operands,
+	resolve_operand_name_1, expand_return, expand_decl,
+	expand_anon_union_decl, emit_case_bit_tests, expand_case): Likewise.
+	* stor-layout.c (put_pending_size, smallest_mode_for_size,
+	int_mode_for_mode, layout_decl, finish_builtin_struct, layout_type,
+	set_sizetype, get_mode_bounds): Likewise.
+
 2004-09-09  Zack Weinberg  <zack@codesourcery.com>
 
 	* defaults.h (MULTIPLE_SYMBOL_SPACES): Provide default.
@@ -16,7 +98,7 @@
 	* config/ia64/ia64.c (ia64_gimplify_va_arg): Ditto.
 	* tree.h: Declare new function.
 
-2004-09-08  Nathan Sidwell  <nathan@codesourcery.com>
+2004-09-09  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* cgraphunit.c (cgraph_mark_functions_to_output): Renable node
 	dumping for development builds.
@@ -27,7 +109,7 @@
 	* tree.c (iterative_hash_expr): Replace gcc_unreachable with
 	gcc_assert.
 
-2004-09-08  Nathan Sidwell  <nathan@codesourcery.com>
+2004-09-09  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* gcse.c (INSN_CUID, insert_set_in_table, find_avail_set,
 	cprop_insn, do_local_cprop, local_cprop_pass, find_bypass_set,

@@ -105,8 +105,7 @@ note_sets (rtx x, rtx set ATTRIBUTE_UNUSED, void *data)
   nregs = hard_regno_nregs[regno][GET_MODE (x)];
 
   /* There must not be pseudos at this point.  */
-  if (regno + nregs > FIRST_PSEUDO_REGISTER)
-    abort ();
+  gcc_assert (regno + nregs <= FIRST_PSEUDO_REGISTER);
 
   while (nregs-- > 0)
     SET_HARD_REG_BIT (*pset, regno + nregs);
@@ -127,8 +126,7 @@ clear_dead_regs (HARD_REG_SET *pset, enum machine_mode kind, rtx notes)
 	int nregs = hard_regno_nregs[regno][GET_MODE (reg)];
 
 	/* There must not be pseudos at this point.  */
-	if (regno + nregs > FIRST_PSEUDO_REGISTER)
-	  abort ();
+	gcc_assert (regno + nregs <= FIRST_PSEUDO_REGISTER);
 
 	while (nregs-- > 0)
 	  CLEAR_HARD_REG_BIT (*pset, regno + nregs);
@@ -442,8 +440,7 @@ scan_rtx_reg (rtx insn, rtx *loc, enum reg_class cl,
 
 	  if (action == mark_read)
 	    {
-	      if (! exact_match)
-		abort ();
+	      gcc_assert (exact_match);
 
 	      /* ??? Class NO_REGS can happen if the md file makes use of
 		 EXTRA_CONSTRAINTS to match registers.  Which is arguably
@@ -692,7 +689,7 @@ scan_rtx (rtx insn, rtx *loc, enum reg_class cl,
     case POST_MODIFY:
     case PRE_MODIFY:
       /* Should only happen inside MEM.  */
-      abort ();
+      gcc_unreachable ();
 
     case CLOBBER:
       scan_rtx (insn, &SET_DEST (x), cl, action, OP_OUT, 1);

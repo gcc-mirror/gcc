@@ -240,8 +240,7 @@ fix_basic_block_boundaries (basic_block bb, basic_block last, rtx head,
 
   for (; insn != aftertail; insn = NEXT_INSN (insn))
     {
-      if (LABEL_P (insn))
-	abort ();
+      gcc_assert (!LABEL_P (insn));
       /* Create new basic blocks just before first insn.  */
       if (inside_basic_block_p (insn))
 	{
@@ -542,8 +541,7 @@ schedule_ebb (rtx head, rtx tail)
   schedule_block (-1, n_insns);
 
   /* Sanity check: verify that all region insns were scheduled.  */
-  if (sched_n_insns != n_insns)
-    abort ();
+  gcc_assert (sched_n_insns == n_insns);
   head = current_sched_info->head;
   tail = current_sched_info->tail;
 

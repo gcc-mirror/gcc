@@ -228,8 +228,7 @@ copy_insn_p (rtx insn, rtx *source, rtx *target)
   unsigned int d_regno, s_regno;
   int uid = INSN_UID (insn);
 
-  if (!INSN_P (insn))
-    abort ();
+  gcc_assert (INSN_P (insn));
 
   /* First look, if we already saw this insn.  */
   if (copy_cache[uid].seen)
@@ -541,24 +540,25 @@ remember_move (rtx insn)
   if (!TEST_BIT (move_handled, INSN_UID (insn)))
     {
       rtx s, d;
+      int ret;
+      struct df_link *slink = DF_INSN_USES (df, insn);
+      struct df_link *link = DF_INSN_DEFS (df, insn);
+      
       SET_BIT (move_handled, INSN_UID (insn));
-      if (copy_insn_p (insn, &s, &d))
-	{
-	  /* Some sanity test for the copy insn.  */
-	  struct df_link *slink = DF_INSN_USES (df, insn);
-	  struct df_link *link = DF_INSN_DEFS (df, insn);
-	  if (!link || !link->ref || !slink || !slink->ref)
-	    abort ();
-	  /* The following (link->next != 0) happens when a hardreg
-	     is used in wider mode (REG:DI %eax).  Then df.* creates
-	     a def/use for each hardreg contained therein.  We only
-	     allow hardregs here.  */
-	  if (link->next
-	      && DF_REF_REGNO (link->next->ref) >= FIRST_PSEUDO_REGISTER)
-	    abort ();
-	}
-      else
-	abort ();
+      ret = copy_insn_p (insn, &s, &d);
+      gcc_assert (ret);
+      
+      /* Some sanity test for the copy insn.  */
+      gcc_assert (link && link->ref);
+      gcc_assert (slink && slink->ref);
+      /* The following (link->next != 0) happens when a hardreg
+	  is used in wider mode (REG:DI %eax).  Then df.* creates
+	  a def/use for each hardreg contained therein.  We only
+	  allow hardregs here.  */
+      gcc_assert (!link->next
+		  || DF_REF_REGNO (link->next->ref)
+		      < FIRST_PSEUDO_REGISTER);
+      
       /* XXX for now we don't remember move insns involving any subregs.
 	 Those would be difficult to coalesce (we would need to implement
 	 handling of all the subwebs in the allocator, including that such
@@ -669,7 +669,7 @@ defuse_overlap_p_1 (rtx def, struct curr_use *use)
 	  return (old_u != use->undefined) ? 4 : -1;
 	}
       default:
-        abort ();
+        gcc_unreachable ();
     }
 }
 
@@ -821,8 +821,7 @@ live_out_1 (struct df *df ATTRIBUTE_UNUSED, struct curr_use *use, rtx insn)
 	{
 	  /* If this insn doesn't completely define the USE, increment also
 	     it's spanned deaths count (if this insn contains a death).  */
-	  if (uid >= death_insns_max_uid)
-	    abort ();
+	  gcc_assert (uid < death_insns_max_uid);
 	  if (TEST_BIT (insns_with_deaths, uid))
 	    wp->spanned_deaths++;
 	  use->undefined = final_undef;
@@ -1206,8 +1205,7 @@ prune_hardregs_for_mode (HARD_REG_SET *s, enum machine_mode mode)
 static void
 init_one_web_common (struct web *web, rtx reg)
 {
-  if (!REG_P (reg))
-    abort ();
+  gcc_assert (REG_P (reg));
   /* web->id isn't initialized here.  */
   web->regno = REGNO (reg);
   web->orig_x = reg;
@@ -1272,8 +1270,7 @@ init_one_web_common (struct web *web, rtx reg)
 #endif
       web->num_freedom = hard_regs_count (web->usable_regs);
       web->num_freedom -= web->add_hardregs;
-      if (!web->num_freedom)
-	abort();
+      gcc_assert (web->num_freedom);
     }
   COPY_HARD_REG_SET (web->orig_usable_regs, web->usable_regs);
 }
@@ -1324,10 +1321,8 @@ reinit_one_web (struct web *web, rtx reg)
   web->stack_slot = NULL;
   web->pattern = NULL;
   web->alias = NULL;
-  if (web->moves)
-    abort ();
-  if (!web->useless_conflicts)
-    abort ();
+  gcc_assert (!web->moves);
+  gcc_assert (web->useless_conflicts);
 }
 
 /* Insert and returns a subweb corresponding to REG into WEB (which
@@ -1337,8 +1332,7 @@ static struct web *
 add_subweb (struct web *web, rtx reg)
 {
   struct web *w;
-  if (GET_CODE (reg) != SUBREG)
-    abort ();
+  gcc_assert (GET_CODE (reg) == SUBREG);
   w = xmalloc (sizeof (struct web));
   /* Copy most content from parent-web.  */
   *w = *web;
@@ -1376,8 +1370,7 @@ add_subweb_2 (struct web *web, unsigned int  size_word)
   mode = mode_for_size (size, GET_MODE_CLASS (GET_MODE (ref_rtx)), 0);
   if (mode == BLKmode)
     mode = mode_for_size (size, MODE_INT, 0);
-  if (mode == BLKmode)
-    abort ();
+  gcc_assert (mode != BLKmode);
   web = add_subweb (web, gen_rtx_SUBREG (mode, web->orig_x,
 					 BYTE_BEGIN (size_word)));
   web->artificial = 1;
@@ -1396,8 +1389,7 @@ init_web_parts (struct df *df)
     {
       if (df->defs[no])
 	{
-	  if (no < last_def_id && web_parts[no].ref != df->defs[no])
-	    abort ();
+	  gcc_assert (no >= last_def_id || web_parts[no].ref == df->defs[no]);
 	  web_parts[no].ref = df->defs[no];
 	  /* Uplink might be set from the last iteration.  */
 	  if (!web_parts[no].uplink)
@@ -1414,9 +1406,8 @@ init_web_parts (struct df *df)
     {
       if (df->uses[no])
 	{
-	  if (no < last_use_id
-	      && web_parts[no + df->def_id].ref != df->uses[no])
-	    abort ();
+	  gcc_assert (no >= last_use_id
+		      || web_parts[no + df->def_id].ref == df->uses[no]);
 	  web_parts[no + df->def_id].ref = df->uses[no];
 	  if (!web_parts[no + df->def_id].uplink)
 	    num_webs++;
@@ -1464,8 +1455,8 @@ static void
 copy_conflict_list (struct web *web)
 {
   struct conflict_link *cl;
-  if (web->orig_conflict_list || web->have_orig_conflicts)
-    abort ();
+  gcc_assert (!web->orig_conflict_list);
+  gcc_assert (!web->have_orig_conflicts);
   web->have_orig_conflicts = 1;
   for (cl = web->conflict_list; cl; cl = cl->next)
     {
@@ -1572,8 +1563,7 @@ record_conflict (struct web *web1, struct web *web2)
   /* Trivial non-conflict or already recorded conflict.  */
   if (web1 == web2 || TEST_BIT (igraph, index))
     return;
-  if (id1 == id2)
-    abort ();
+  gcc_assert (id1 != id2);
   /* As fixed_regs are no targets for allocation, conflicts with them
      are pointless.  */
   if ((web1->regno < FIRST_PSEUDO_REGISTER && fixed_regs[web1->regno])
@@ -1663,32 +1653,27 @@ compare_and_free_webs (struct web_link **link)
     {
       struct web *web1 = wl->web;
       struct web *web2 = ID2WEB (web1->id);
-      if (web1->regno != web2->regno
-	  || web1->mode_changed != web2->mode_changed
-	  || !rtx_equal_p (web1->orig_x, web2->orig_x)
-	  || web1->type != web2->type
-	  /* Only compare num_defs/num_uses with non-hardreg webs.
-	     E.g. the number of uses of the framepointer changes due to
-	     inserting spill code.  */
-	  || (web1->type != PRECOLORED
-	      && (web1->num_uses != web2->num_uses
-	          || web1->num_defs != web2->num_defs))
-	  /* Similarly, if the framepointer was unreferenced originally
-	     but we added spills, these fields may not match.  */
-	  || (web1->type != PRECOLORED
-               && web1->crosses_call != web2->crosses_call)
-	  || (web1->type != PRECOLORED
-	       && web1->live_over_abnormal != web2->live_over_abnormal))
-	abort ();
+      gcc_assert (web1->regno == web2->regno);
+      gcc_assert (web1->mode_changed == web2->mode_changed);
+      gcc_assert (rtx_equal_p (web1->orig_x, web2->orig_x));
+      gcc_assert (web1->type == web2->type);
       if (web1->type != PRECOLORED)
 	{
 	  unsigned int i;
+
+	  /* Only compare num_defs/num_uses with non-hardreg webs.
+	      E.g. the number of uses of the framepointer changes due to
+	      inserting spill code.  */
+	  gcc_assert (web1->num_uses == web2->num_uses);
+	  gcc_assert (web1->num_defs == web2->num_defs);
+	  /* Similarly, if the framepointer was unreferenced originally
+	      but we added spills, these fields may not match.  */
+	  gcc_assert (web1->crosses_call == web2->crosses_call);
+	  gcc_assert (web1->live_over_abnormal == web2->live_over_abnormal);
 	  for (i = 0; i < web1->num_defs; i++)
-	    if (web1->defs[i] != web2->defs[i])
-	      abort ();
+	    gcc_assert (web1->defs[i] == web2->defs[i]);
 	  for (i = 0; i < web1->num_uses; i++)
-	    if (web1->uses[i] != web2->uses[i])
-	      abort ();
+	    gcc_assert (web1->uses[i] == web2->uses[i]);
 	}
       if (web1->type == PRECOLORED)
 	{
@@ -1733,8 +1718,8 @@ init_webs_defs_uses (void)
 	    web->uses[use_i++] = link->ref;
 	}
       web->temp_refs = NULL;
-      if (def_i != web->num_defs || use_i != web->num_uses)
-	abort ();
+      gcc_assert (def_i == web->num_defs);
+      gcc_assert (use_i == web->num_uses);
     }
 }
 
@@ -1834,11 +1819,13 @@ parts_to_webs_1 (struct df *df, struct web_link **copy_webs,
 	  web->id = newid;
 	  web->temp_refs = NULL;
 	  webnum++;
-	  if (web->regno < FIRST_PSEUDO_REGISTER && !hardreg2web[web->regno])
-	    hardreg2web[web->regno] = web;
-	  else if (web->regno < FIRST_PSEUDO_REGISTER
-		   && hardreg2web[web->regno] != web)
-	    abort ();
+	  if (web->regno < FIRST_PSEUDO_REGISTER)
+	    {
+	      if (!hardreg2web[web->regno])
+		hardreg2web[web->regno] = web;
+	      else
+		gcc_assert (hardreg2web[web->regno] == web);
+	    }
 	}
 
       /* If this reference already had a web assigned, we are done.
@@ -1861,8 +1848,8 @@ parts_to_webs_1 (struct df *df, struct web_link **copy_webs,
 	    web->live_over_abnormal = 1;
 	  /* And check, that it's not a newly allocated web.  This would be
 	     an inconsistency.  */
-	  if (!web->old_web || web->type == PRECOLORED)
-	    abort ();
+	  gcc_assert (web->old_web);
+	  gcc_assert (web->type != PRECOLORED);
 	  continue;
 	}
       /* In case this was no web part root, we need to initialize WEB
@@ -1884,8 +1871,7 @@ parts_to_webs_1 (struct df *df, struct web_link **copy_webs,
 
       /* And the test, that if def2web[i] was NULL above, that we are _not_
 	 an old web.  */
-      if (web->old_web && web->type != PRECOLORED)
-	abort ();
+      gcc_assert (!web->old_web || web->type == PRECOLORED);
 
       /* Possible create a subweb, if this ref was a subreg.  */
       if (GET_CODE (reg) == SUBREG)
@@ -1894,8 +1880,7 @@ parts_to_webs_1 (struct df *df, struct web_link **copy_webs,
 	  if (!subweb)
 	    {
 	      subweb = add_subweb (web, reg);
-	      if (web->old_web)
-		abort ();
+	      gcc_assert (!web->old_web);
 	    }
 	}
       else
@@ -1917,14 +1902,9 @@ parts_to_webs_1 (struct df *df, struct web_link **copy_webs,
 	    {
 	      struct web *compare = def2web[i];
 	      if (i < last_def_id)
-		{
-		  if (web->old_web && compare != subweb)
-		    abort ();
-		}
-	      if (!web->old_web && compare)
-		abort ();
-	      if (compare && compare != subweb)
-		abort ();
+		gcc_assert (!web->old_web || compare == subweb);
+	      gcc_assert (web->old_web || !compare);
+	      gcc_assert (!compare || compare == subweb);
 	    }
 	  def2web[i] = subweb;
 	  web->num_defs++;
@@ -1934,15 +1914,11 @@ parts_to_webs_1 (struct df *df, struct web_link **copy_webs,
 	  if (ra_pass > 1)
 	    {
 	      struct web *compare = use2web[ref_id];
-	      if (ref_id < last_use_id)
-		{
-		  if (web->old_web && compare != subweb)
-		    abort ();
-		}
-	      if (!web->old_web && compare)
-		abort ();
-	      if (compare && compare != subweb)
-		abort ();
+	      
+	      gcc_assert (ref_id >= last_use_id
+			  || !web->old_web || compare == subweb);
+	      gcc_assert (web->old_web || !compare);
+	      gcc_assert (!compare || compare == subweb);
 	    }
 	  use2web[ref_id] = subweb;
 	  web->num_uses++;
@@ -1952,8 +1928,7 @@ parts_to_webs_1 (struct df *df, struct web_link **copy_webs,
     }
 
   /* We better now have exactly as many webs as we had web part roots.  */
-  if (webnum != num_webs)
-    abort ();
+  gcc_assert (webnum == num_webs);
 
   return webnum;
 }
@@ -2001,8 +1976,7 @@ parts_to_webs (struct df *df)
       struct web *web;
       if (wp->uplink || !wp->ref)
 	{
-	  if (wp->sub_conflicts)
-	    abort ();
+	  gcc_assert (!wp->sub_conflicts);
 	  continue;
 	}
       web = def2web[i];
@@ -2087,8 +2061,7 @@ reset_conflicts (void)
 	  web->conflict_list = web->orig_conflict_list;
 	  web->orig_conflict_list = NULL;
 	}
-      if (web->orig_conflict_list)
-	abort ();
+      gcc_assert (!web->orig_conflict_list);
 
       /* New non-precolored webs, have no conflict list.  */
       if (web->type != PRECOLORED && !web->old_web)
@@ -2097,8 +2070,7 @@ reset_conflicts (void)
 	  /* Useless conflicts will be rebuilt completely.  But check
 	     for cleanliness, as the web might have come from the
 	     free list.  */
-	  if (bitmap_first_set_bit (web->useless_conflicts) >= 0)
-	    abort ();
+	  gcc_assert (bitmap_first_set_bit (web->useless_conflicts) < 0);
 	}
       else
 	{
@@ -2153,8 +2125,7 @@ check_conflict_numbers (void)
       for (cl = web->conflict_list; cl; cl = cl->next)
 	if (cl->t->type != SELECT && cl->t->type != COALESCED)
 	  new_conf += 1 + cl->t->add_hardregs;
-      if (web->type != PRECOLORED && new_conf != web->num_conflicts)
-	abort ();
+      gcc_assert (web->type == PRECOLORED || new_conf == web->num_conflicts);
     }
 }
 #endif
@@ -2316,8 +2287,7 @@ remember_web_was_spilled (struct web *web)
     AND_COMPL_HARD_REG_SET (web->usable_regs, invalid_mode_change_regs);
 #endif
   web->num_freedom = hard_regs_count (web->usable_regs);
-  if (!web->num_freedom)
-    abort();
+  gcc_assert (web->num_freedom);
   COPY_HARD_REG_SET (web->orig_usable_regs, web->usable_regs);
   /* Now look for a class, which is subset of our constraints, to
      setup add_hardregs, and regclass for debug output.  */
@@ -2345,8 +2315,7 @@ remember_web_was_spilled (struct web *web)
   web->add_hardregs =
     CLASS_MAX_NREGS (web->regclass, PSEUDO_REGNO_MODE (web->regno)) - 1;
   web->num_freedom -= web->add_hardregs;
-  if (!web->num_freedom)
-    abort();
+  gcc_assert (web->num_freedom);
   adjust -= 0 * web->add_hardregs;
   web->num_conflicts -= adjust;
 }
@@ -2853,10 +2822,8 @@ handle_asm_insn (struct df *df, rtx insn)
 	    link = link->next;
 	  if (!link || !link->ref)
 	    {
-	      if (in_output)
-	        in_output = 0;
-	      else
-	        abort ();
+	      gcc_assert (in_output);
+	      in_output = 0;
 	    }
 	  else
 	    break;
@@ -3124,11 +3091,9 @@ ra_build_free (void)
   for (i = 0; i < num_webs; i++)
     {
       struct web *web = ID2WEB (i);
-      if (!web)
-	abort ();
-      if (i >= num_webs - num_subwebs
-	  && (web->conflict_list || web->orig_conflict_list))
-	abort ();
+      gcc_assert (web);
+      gcc_assert (i < num_webs - num_subwebs
+		  || (!web->conflict_list && !web->orig_conflict_list));
       web->moves = NULL;
     }
   /* All webs in the free list have no defs or uses anymore.  */

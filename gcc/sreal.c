@@ -94,17 +94,12 @@ copy (sreal *r, sreal *a)
 static inline void
 shift_right (sreal *x, int s)
 {
-#ifdef ENABLE_CHECKING
-  if (s <= 0 || s > SREAL_BITS)
-    abort ();
-  if (x->exp + s > SREAL_MAX_EXP)
-    {
-      /* Exponent should never be so large because shift_right is used only by
-	 sreal_add and sreal_sub ant thus the number cannot be shifted out from
-	 exponent range.  */
-      abort ();
-    }
-#endif
+  gcc_assert (s > 0);
+  gcc_assert (s <= SREAL_BITS);
+  /* Exponent should never be so large because shift_right is used only by
+     sreal_add and sreal_sub ant thus the number cannot be shifted out from
+     exponent range.  */
+  gcc_assert (x->exp + s <= SREAL_MAX_EXP);
 
   x->exp += s;
 
@@ -401,10 +396,7 @@ sreal_sub (sreal *r, sreal *a, sreal *b)
   sreal tmp;
   sreal *bb;
 
-  if (sreal_compare (a, b) < 0)
-    {
-      abort ();
-    }
+  gcc_assert (sreal_compare (a, b) >= 0);
 
   dexp = a->exp - b->exp;
   r->exp = a->exp;
@@ -509,11 +501,8 @@ sreal_div (sreal *r, sreal *a, sreal *b)
 #if SREAL_PART_BITS < 32
   unsigned HOST_WIDE_INT tmp, tmp1, tmp2;
 
-  if (b->sig_hi < SREAL_MIN_SIG)
-    {
-      abort ();
-    }
-  else if (a->sig_hi < SREAL_MIN_SIG)
+  gcc_assert (b->sig_hi >= SREAL_MIN_SIG);
+  if (a->sig_hi < SREAL_MIN_SIG)
     {
       r->sig_hi = 0;
       r->sig_lo = 0;
@@ -546,16 +535,10 @@ sreal_div (sreal *r, sreal *a, sreal *b)
       normalize (r);
     }
 #else
-  if (b->sig == 0)
-    {
-      abort ();
-    }
-  else
-    {
-      r->sig = (a->sig << SREAL_PART_BITS) / b->sig;
-      r->exp = a->exp - b->exp - SREAL_PART_BITS;
-      normalize (r);
-    }
+  gcc_assert (b->sig != 0);
+  r->sig = (a->sig << SREAL_PART_BITS) / b->sig;
+  r->exp = a->exp - b->exp - SREAL_PART_BITS;
+  normalize (r);
 #endif
   return r;
 }

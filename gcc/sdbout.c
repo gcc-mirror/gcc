@@ -758,7 +758,7 @@ sdbout_symbol (tree decl, int local)
     case PARM_DECL:
       /* Parm decls go in their own separate chains
 	 and are output by sdbout_reg_parms and sdbout_parms.  */
-      abort ();
+      gcc_unreachable ();
 
     case VAR_DECL:
       /* Don't mention a variable that is external.
@@ -942,10 +942,9 @@ sdbout_toplevel_data (tree decl)
   if (DECL_IGNORED_P (decl))
     return;
 
-  if (! (TREE_CODE (decl) == VAR_DECL
-	 && MEM_P (DECL_RTL (decl))
-	 && DECL_INITIAL (decl)))
-    abort ();
+  gcc_assert (TREE_CODE (decl) == VAR_DECL);
+  gcc_assert (MEM_P (DECL_RTL (decl)));
+  gcc_assert (DECL_INITIAL (decl));
 
   PUT_SDB_DEF (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)));
   PUT_SDB_VAL (XEXP (DECL_RTL (decl), 0));
