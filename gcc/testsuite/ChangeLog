@@ -1,3 +1,7 @@
+2002-09-15  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* g++.dg/template/pretty1.C: New test.
+
 2002-09-14  Alan Modra  <amodra@bigpond.net.au>
 
 	* gcc.c-torture/execute/struct-cpy-1.c: New test.
