@@ -1,4 +1,4 @@
-// deque implementation -*- C++ -*-
+// Deque implementation -*- C++ -*-
 
 // Copyright (C) 2001, 2002 Free Software Foundation, Inc.
 //
@@ -58,13 +58,12 @@
  *  You should not attempt to use it directly.
  */
 
-#include <bits/concept_check.h>
-#include <bits/stl_iterator_base_types.h>
-#include <bits/stl_iterator_base_funcs.h>
-
 #ifndef __GLIBCPP_INTERNAL_DEQUE_H
 #define __GLIBCPP_INTERNAL_DEQUE_H
 
+#include <bits/concept_check.h>
+#include <bits/stl_iterator_base_types.h>
+#include <bits/stl_iterator_base_funcs.h>
 
 // Since this entire file is within namespace std, there's no reason to
 // waste two spaces along the left column.  Thus the leading indentation is
@@ -76,19 +75,22 @@ namespace std
  *  @if maint
  *  @brief This function controls the size of memory nodes.
  *  @param  size  The size of an element.
- *  @return   The number (not bytesize) of elements per node.
+ *  @return   The number (not byte size) of elements per node.
  *
  *  This function started off as a compiler kludge from SGI, but seems to
- *  be a useful wrapper around a repeated constant expression.
+ *  be a useful wrapper around a repeated constant expression.  The '512' is
+ *  tuneable (and no other code needs to change), but no investigation has
+ *  been done since inheriting the SGI code.
  *  @endif
 */
 inline size_t 
 __deque_buf_size(size_t __size) 
-{ return __size < 512 ? size_t(512 / __size) : size_t(1); }
+  { return __size < 512 ? size_t(512 / __size) : size_t(1); }
 
 
-/// A deque::iterator.
 /**
+ *  @brief A deque::iterator.
+ *
  *  Quite a bit of intelligence here.  Much of the functionality of deque is
  *  actually passed off to this class.  A deque holds two of these internally,
  *  marking its valid range.  Access to elements is done as offsets of either
@@ -99,7 +101,7 @@ __deque_buf_size(size_t __size)
  *  @endif
 */
 template <class _Tp, class _Ref, class _Ptr>
-struct _Deque_iterator
+  struct _Deque_iterator
 {
   typedef _Deque_iterator<_Tp, _Tp&, _Tp*>             iterator;
   typedef _Deque_iterator<_Tp, const _Tp&, const _Tp*> const_iterator;
@@ -200,7 +202,9 @@ struct _Deque_iterator
    *  _M_first and _M_last.
    *  @endif
   */
-  void _M_set_node(_Map_pointer __new_node) {
+  void
+  _M_set_node(_Map_pointer __new_node)
+  {
     _M_node = __new_node;
     _M_first = *__new_node;
     _M_last = _M_first + difference_type(_S_buffer_size());
@@ -208,7 +212,7 @@ struct _Deque_iterator
 };
 
 // Note: we also provide overloads whose operands are of the same type in
-// order to avoid ambiguos overload resolution when std::rel_ops operators
+// order to avoid ambiguous overload resolution when std::rel_ops operators
 // are in scope (for additional details, see libstdc++/3628)
 template <class _Tp, class _Ref, class _Ptr>
 inline bool
@@ -321,14 +325,15 @@ operator+(ptrdiff_t __n, const _Deque_iterator<_Tp, _Ref, _Ptr>& __x)
  *  @if maint
  *  Deque base class.  It has two purposes.  First, its constructor
  *  and destructor allocate (but don't initialize) storage.  This makes
- *  exception safety easier.  Second, the base class encapsulates all of
+ *  %exception safety easier.  Second, the base class encapsulates all of
  *  the differences between SGI-style allocators and standard-conforming
- *  allocators.  There are two versions:  this ordinary one, and the
- *  space-saving specialization for instanceless allocators.
+ *  allocators.  (See stl_alloc.h for more on this topic.)  There are two
+ *  versions:  this ordinary one, and the space-saving specialization for
+ *  instanceless allocators.
  *  @endif
 */
 template <class _Tp, class _Alloc, bool __is_static>
-class _Deque_alloc_base
+  class _Deque_alloc_base
 {
 public:
   typedef typename _Alloc_traits<_Tp,_Alloc>::allocator_type allocator_type;
@@ -343,51 +348,70 @@ protected:
   typedef typename _Alloc_traits<_Tp*, _Alloc>::allocator_type
           _Map_allocator_type;
 
-  allocator_type      _M_node_allocator;
-  _Map_allocator_type _M_map_allocator;
-
-  _Tp* _M_allocate_node() {
+  _Tp*
+  _M_allocate_node()
+  {
     return _M_node_allocator.allocate(__deque_buf_size(sizeof(_Tp)));
   }
-  void _M_deallocate_node(_Tp* __p) {
+
+  void
+  _M_deallocate_node(_Tp* __p)
+  {
     _M_node_allocator.deallocate(__p, __deque_buf_size(sizeof(_Tp)));
   }
-  _Tp** _M_allocate_map(size_t __n) 
+
+  _Tp**
+  _M_allocate_map(size_t __n) 
     { return _M_map_allocator.allocate(__n); }
-  void _M_deallocate_map(_Tp** __p, size_t __n) 
+
+  void
+  _M_deallocate_map(_Tp** __p, size_t __n) 
     { _M_map_allocator.deallocate(__p, __n); }
 
-  _Tp** _M_map;
-  size_t _M_map_size;
+  _Tp**                _M_map;
+  size_t               _M_map_size;
+  allocator_type       _M_node_allocator;
+  _Map_allocator_type  _M_map_allocator;
 };
 
 /// @if maint Specialization for instanceless allocators.  @endif
 template <class _Tp, class _Alloc>
-class _Deque_alloc_base<_Tp, _Alloc, true>
+  class _Deque_alloc_base<_Tp, _Alloc, true>
 {
 public:
   typedef typename _Alloc_traits<_Tp,_Alloc>::allocator_type allocator_type;
   allocator_type get_allocator() const { return allocator_type(); }
 
-  _Deque_alloc_base(const allocator_type&) : _M_map(0), _M_map_size(0) {}
+  _Deque_alloc_base(const allocator_type&)
+    : _M_map(0), _M_map_size(0)
+  {}
   
 protected:
-  typedef typename _Alloc_traits<_Tp, _Alloc>::_Alloc_type _Node_alloc_type;
-  typedef typename _Alloc_traits<_Tp*, _Alloc>::_Alloc_type _Map_alloc_type;
+  typedef typename _Alloc_traits<_Tp,_Alloc>::_Alloc_type  _Node_alloc_type;
+  typedef typename _Alloc_traits<_Tp*,_Alloc>::_Alloc_type _Map_alloc_type;
 
-  _Tp* _M_allocate_node() {
+  _Tp*
+  _M_allocate_node()
+  {
     return _Node_alloc_type::allocate(__deque_buf_size(sizeof(_Tp)));
   }
-  void _M_deallocate_node(_Tp* __p) {
+
+  void
+  _M_deallocate_node(_Tp* __p)
+  {
     _Node_alloc_type::deallocate(__p, __deque_buf_size(sizeof(_Tp)));
   }
-  _Tp** _M_allocate_map(size_t __n) 
+
+  _Tp**
+  _M_allocate_map(size_t __n) 
     { return _Map_alloc_type::allocate(__n); }
-  void _M_deallocate_map(_Tp** __p, size_t __n) 
+
+  void
+  _M_deallocate_map(_Tp** __p, size_t __n) 
     { _Map_alloc_type::deallocate(__p, __n); }
 
-  _Tp** _M_map;
-  size_t _M_map_size;
+  _Tp**   _M_map;
+  size_t  _M_map_size;
 };
 
 
@@ -395,14 +419,14 @@ protected:
  *  @if maint
  *  Deque base class.  Using _Alloc_traits in the instantiation of the parent
  *  class provides the compile-time dispatching mentioned in the parent's docs.
- *  This class provides the unified face for deque's allocation.
+ *  This class provides the unified face for %deque's allocation.
  *
  *  Nothing in this class ever constructs or destroys an actual Tp element.
  *  (Deque handles that itself.)  Only/All memory management is performed here.
  *  @endif
 */
 template <class _Tp, class _Alloc>
-class _Deque_base
+  class _Deque_base
   : public _Deque_alloc_base<_Tp,_Alloc,
                               _Alloc_traits<_Tp, _Alloc>::_S_instanceless>
 {
@@ -427,7 +451,6 @@ protected:
   void _M_destroy_nodes(_Tp** __nstart, _Tp** __nfinish);
   enum { _S_initial_map_size = 8 };
 
-protected:
   iterator _M_start;
   iterator _M_finish;
 };
@@ -436,7 +459,8 @@ protected:
 template <class _Tp, class _Alloc>
 _Deque_base<_Tp,_Alloc>::~_Deque_base()
 {
-  if (_M_map) {
+  if (_M_map)
+  {
     _M_destroy_nodes(_M_start._M_node, _M_finish._M_node + 1);
     _M_deallocate_map(_M_map, _M_map_size);
   }
@@ -461,6 +485,10 @@ _Deque_base<_Tp,_Alloc>::_M_initialize_map(size_t __num_elements)
   _M_map_size = max((size_t) _S_initial_map_size, __num_nodes + 2);
   _M_map = _M_allocate_map(_M_map_size);
 
+  // For "small" maps (needing less than _M_map_size nodes), allocation
+  // starts in the middle elements and grows outwards.  So nstart may be the
+  // beginning of _M_map, but for small maps it may be as far in as _M_map+3.
+
   _Tp** __nstart = _M_map + (_M_map_size - __num_nodes) / 2;
   _Tp** __nfinish = __nstart + __num_nodes;
     
@@ -478,17 +506,18 @@ _Deque_base<_Tp,_Alloc>::_M_initialize_map(size_t __num_elements)
   _M_finish._M_set_node(__nfinish - 1);
   _M_start._M_cur = _M_start._M_first;
   _M_finish._M_cur = _M_finish._M_first +
-               __num_elements % __deque_buf_size(sizeof(_Tp));
+                     __num_elements % __deque_buf_size(sizeof(_Tp));
 }
 
 template <class _Tp, class _Alloc>
 void _Deque_base<_Tp,_Alloc>::_M_create_nodes(_Tp** __nstart, _Tp** __nfinish)
 {
   _Tp** __cur;
-  try {
-    for (__cur = __nstart; __cur < __nfinish; ++__cur)
-      *__cur = _M_allocate_node();
-  }
+  try
+    {
+      for (__cur = __nstart; __cur < __nfinish; ++__cur)
+        *__cur = _M_allocate_node();
+    }
   catch(...)
     { 
       _M_destroy_nodes(__nstart, __cur);
@@ -506,6 +535,9 @@ _Deque_base<_Tp,_Alloc>::_M_destroy_nodes(_Tp** __nstart, _Tp** __nfinish)
 
 
 /**
+ *  @brief  A standard container using fixed-size memory allocation and
+ *  constant-time manipulation of elements at either end.
+ *
  *  @ingroup Containers
  *  @ingroup Sequences
  *
@@ -513,8 +545,6 @@ _Deque_base<_Tp,_Alloc>::_M_destroy_nodes(_Tp** __nstart, _Tp** __nfinish)
  *  <a href="tables.html#66">reversible container</a>, and a
  *  <a href="tables.html#67">sequence</a>, including the
  *  <a href="tables.html#68">optional sequence requirements</a>.
- *
- *  Placeholder:  see http://www.sgi.com/tech/stl/Deque.html for now.
  *
  *  In previous HP/SGI versions of deque, there was an extra template parameter
  *  so users could control the node size.  This extension turned out to violate
@@ -529,7 +559,8 @@ _Deque_base<_Tp,_Alloc>::_M_destroy_nodes(_Tp** __nstart, _Tp** __nfinish)
  *  - iterator    _M_start, _M_finish
  *  
  *  map_size is at least 8.  %map is an array of map_size pointers-to-"nodes".
- *  (The name has nothing to do with the std::map class.)
+ *  (The name %map has nothing to do with the std::map class, and "nodes"
+ *  should not be confused with std::list's usage of "node".)
  *  
  *  A "node" has no specific type name as such, but it is referred to as
  *  "node" in this file.  It is a simple array-of-Tp.  If Tp is very large,
@@ -586,32 +617,29 @@ _Deque_base<_Tp,_Alloc>::_M_destroy_nodes(_Tp** __nstart, _Tp** __nfinish)
  *  @endif
 */
 template <class _Tp, class _Alloc = allocator<_Tp> >
-class deque : protected _Deque_base<_Tp, _Alloc>
+  class deque : protected _Deque_base<_Tp, _Alloc>
 {
   // concept requirements
   __glibcpp_class_requires(_Tp, _SGIAssignableConcept)
 
-  typedef _Deque_base<_Tp, _Alloc> _Base;
+  typedef _Deque_base<_Tp, _Alloc>           _Base;
 
 public:
   typedef _Tp                                value_type;
   typedef value_type*                        pointer;
   typedef const value_type*                  const_pointer;
-  typedef value_type&                        reference;
-  typedef const value_type&                  const_reference;
-  typedef size_t                             size_type;
-  typedef ptrdiff_t                          difference_type;
-
-  typedef typename _Base::allocator_type allocator_type;
-  allocator_type get_allocator() const { return _Base::get_allocator(); }
-
   typedef typename _Base::iterator           iterator;
   typedef typename _Base::const_iterator     const_iterator;
   typedef reverse_iterator<const_iterator>   const_reverse_iterator;
   typedef reverse_iterator<iterator>         reverse_iterator;
+  typedef value_type&                        reference;
+  typedef const value_type&                  const_reference;
+  typedef size_t                             size_type;
+  typedef ptrdiff_t                          difference_type;
+  typedef typename _Base::allocator_type     allocator_type;
 
 protected:
-  typedef pointer* _Map_pointer;
+  typedef pointer*                           _Map_pointer;
   static size_t _S_buffer_size() { return __deque_buf_size(sizeof(_Tp)); }
 
   // Functions controlling memory layout, and nothing else.
@@ -634,95 +662,91 @@ protected:
   using _Base::_M_start;
   using _Base::_M_finish;
 
-public:                         // Basic accessors
-  iterator begin() { return _M_start; }
-  iterator end() { return _M_finish; }
-  const_iterator begin() const { return _M_start; }
-  const_iterator end() const { return _M_finish; }
-
-  reverse_iterator rbegin() { return reverse_iterator(_M_finish); }
-  reverse_iterator rend() { return reverse_iterator(_M_start); }
-  const_reverse_iterator rbegin() const 
-    { return const_reverse_iterator(_M_finish); }
-  const_reverse_iterator rend() const 
-    { return const_reverse_iterator(_M_start); }
-
-  reference operator[](size_type __n)
-    { return _M_start[difference_type(__n)]; }
-  const_reference operator[](size_type __n) const 
-    { return _M_start[difference_type(__n)]; }
-
-  void _M_range_check(size_type __n) const {
-    if (__n >= this->size())
-      __throw_range_error("deque");
-  }
-
-  reference at(size_type __n)
-    { _M_range_check(__n); return (*this)[__n]; }
-  const_reference at(size_type __n) const
-    { _M_range_check(__n); return (*this)[__n]; }
-
-  reference front() { return *_M_start; }
-  reference back() {
-    iterator __tmp = _M_finish;
-    --__tmp;
-    return *__tmp;
-  }
-  const_reference front() const { return *_M_start; }
-  const_reference back() const {
-    const_iterator __tmp = _M_finish;
-    --__tmp;
-    return *__tmp;
-  }
-
-  size_type size() const { return _M_finish - _M_start; }
-  size_type max_size() const { return size_type(-1); }
-  bool empty() const { return _M_finish == _M_start; }
-
-public:                         // Constructor, destructor.
-  explicit deque(const allocator_type& __a = allocator_type()) 
+public:
+  // [23.2.1.1] construct/copy/destroy
+  // (assign() and get_allocator() are also listed in this section)
+  /**
+   *  @brief  Default constructor creates no elements.
+  */
+  explicit
+  deque(const allocator_type& __a = allocator_type()) 
     : _Base(__a, 0) {}
-  deque(const deque& __x) : _Base(__x.get_allocator(), __x.size()) 
-    { uninitialized_copy(__x.begin(), __x.end(), _M_start); }
+
+  /**
+   *  @brief  Create a %deque with copies of an exemplar element.
+   *  @param  n  The number of elements to initially create.
+   *  @param  value  An element to copy.
+   * 
+   *  This constructor fills the %deque with @a n copies of @a value.
+  */
   deque(size_type __n, const value_type& __value,
-        const allocator_type& __a = allocator_type()) : _Base(__a, __n)
+        const allocator_type& __a = allocator_type())
+    : _Base(__a, __n)
     { _M_fill_initialize(__value); }
 
+  /**
+   *  @brief  Create a %deque with default elements.
+   *  @param  n  The number of elements to initially create.
+   * 
+   *  This constructor fills the %deque with @a n copies of a
+   *  default-constructed element.
+  */
   explicit
   deque(size_type __n)
-  : _Base(allocator_type(), __n)
-  { _M_fill_initialize(value_type()); }
+    : _Base(allocator_type(), __n)
+    { _M_fill_initialize(value_type()); }
 
-  // Check whether it's an integral type.  If so, it's not an iterator.
+  /**
+   *  @brief  %Deque copy constructor.
+   *  @param  x  A %deque of identical element and allocator types.
+   * 
+   *  The newly-created %deque uses a copy of the allocation object used
+   *  by @a x.
+  */
+  deque(const deque& __x)
+    : _Base(__x.get_allocator(), __x.size()) 
+    { uninitialized_copy(__x.begin(), __x.end(), _M_start); }
+
+  /**
+   *  @brief  Builds a %deque from a range.
+   *  @param  first  An input iterator.
+   *  @param  last  An input iterator.
+   * 
+   *  Creats a %deque consisting of copies of the elements from [first,last).
+   *
+   *  If the iterators are forward, bidirectional, or random-access, then
+   *  this will call the elements' copy constructor N times (where N is
+   *  distance(first,last)) and do no memory reallocation.  But if only
+   *  input iterators are used, then this will do at most 2N calls to the
+   *  copy constructor, and logN memory reallocations.
+  */
   template<class _InputIterator>
     deque(_InputIterator __first, _InputIterator __last,
           const allocator_type& __a = allocator_type())
-    : _Base(__a)
+      : _Base(__a)
     {
+      // Check whether it's an integral type.  If so, it's not an iterator.
       typedef typename _Is_integer<_InputIterator>::_Integral _Integral;
       _M_initialize_dispatch(__first, __last, _Integral());
     }
 
-  template<class _Integer>
-    void
-    _M_initialize_dispatch(_Integer __n, _Integer __x, __true_type)
-    {
-      _M_initialize_map(__n);
-      _M_fill_initialize(__x);
-    }
+  /**
+   *  The dtor only erases the elements, and note that if the elements
+   *  themselves are pointers, the pointed-to memory is not touched in any
+   *  way.  Managing the pointer is the user's responsibilty.
+  */
+  ~deque() { _Destroy(_M_start, _M_finish); }
 
-  template<class _InputIter>
-    void
-    _M_initialize_dispatch(_InputIter __first, _InputIter __last, __false_type)
-    {
-      typedef typename iterator_traits<_InputIter>::iterator_category _IterCategory;
-      _M_range_initialize(__first, __last, _IterCategory());
-    }
-
-  ~deque()
-  { _Destroy(_M_start, _M_finish); }
-
-  deque& operator= (const deque& __x) {
+  /**
+   *  @brief  %Deque assignment operator.
+   *  @param  x  A %deque of identical element and allocator types.
+   * 
+   *  All the elements of @a x are copied, but unlike the copy constructor, the
+   *  allocator object is not copied.
+  */
+  deque&
+  operator=(const deque& __x)  // FIXME move to tcc
+  {
     const size_type __len = size();
     if (&__x != this) {
       if (__len >= __x.size())
@@ -736,34 +760,31 @@ public:                         // Constructor, destructor.
     return *this;
   }        
 
-  void swap(deque& __x) {
-    std::swap(_M_start, __x._M_start);
-    std::swap(_M_finish, __x._M_finish);
-    std::swap(_M_map, __x._M_map);
-    std::swap(_M_map_size, __x._M_map_size);
-  }
-
-public: 
-  // assign(), a generalized assignment member function.  Two
-  // versions: one that takes a count, and one that takes a range.
-  // The range version is a member template, so we dispatch on whether
-  // or not the type is an integer.
-
-  void _M_fill_assign(size_type __n, const _Tp& __val) {
-    if (__n > size()) {
-      fill(begin(), end(), __val);
-      insert(end(), __n - size(), __val);
-    }
-    else {
-      erase(begin() + __n, end());
-      fill(begin(), end(), __val);
-    }
-  }
-
+  /**
+   *  @brief  Assigns a given value to a %deque.
+   *  @param  n  Number of elements to be assigned.
+   *  @param  val  Value to be assigned.
+   *
+   *  This function fills a %deque with @a n copies of the given value.
+   *  Note that the assignment completely changes the %deque and that the
+   *  resulting %deque's size is the same as the number of elements assigned.
+   *  Old data may be lost.
+  */
   void
-  assign(size_type __n, const _Tp& __val)
-  { _M_fill_assign(__n, __val); }
+  assign(size_type __n, const value_type& __val) { _M_fill_assign(__n, __val); }
 
+  /**
+   *  @brief  Assigns a range to a %deque.
+   *  @param  first  An input iterator.
+   *  @param  last   An input iterator.
+   *
+   *  This function fills a %deque with copies of the elements in the
+   *  range [first,last).
+   *
+   *  Note that the assignment completely changes the %deque and that the
+   *  resulting %deque's size is the same as the number of elements assigned.
+   *  Old data may be lost.
+  */
   template<class _InputIterator>
     void
     assign(_InputIterator __first, _InputIterator __last)
@@ -772,74 +793,247 @@ public:
       _M_assign_dispatch(__first, __last, _Integral());
     }
 
-private:                        // helper functions for assign() 
+  /// Get a copy of the memory allocation object.
+  allocator_type
+  get_allocator() const { return _Base::get_allocator(); }
 
-  template<class _Integer>
-    void
-    _M_assign_dispatch(_Integer __n, _Integer __val, __true_type)
-    { _M_fill_assign(static_cast<size_type>(__n), static_cast<_Tp>(__val)); }
+  // iterators
+  /**
+   *  Returns a read/write iterator that points to the first element in the
+   *  %deque.  Iteration is done in ordinary element order.
+  */
+  iterator
+  begin() { return _M_start; }
 
-  template<class _InputIterator>
-    void
-    _M_assign_dispatch(_InputIterator __first, _InputIterator __last, __false_type)
-    {
-      typedef typename iterator_traits<_InputIterator>::iterator_category _IterCategory;
-      _M_assign_aux(__first, __last, _IterCategory());
-    }
+  /**
+   *  Returns a read-only (constant) iterator that points to the first element
+   *  in the %deque.  Iteration is done in ordinary element order.
+  */
+  const_iterator
+  begin() const { return _M_start; }
 
-  template <class _InputIterator>
-  void _M_assign_aux(_InputIterator __first, _InputIterator __last,
-                     input_iterator_tag);
+  /**
+   *  Returns a read/write iterator that points one past the last element in
+   *  the %deque.  Iteration is done in ordinary element order.
+  */
+  iterator
+  end() { return _M_finish; }
 
-  template <class _ForwardIterator>
-  void _M_assign_aux(_ForwardIterator __first, _ForwardIterator __last,
-                     forward_iterator_tag) {
-    size_type __len = distance(__first, __last);
-    if (__len > size()) {
-      _ForwardIterator __mid = __first;
-      advance(__mid, size());
-      copy(__first, __mid, begin());
-      insert(end(), __mid, __last);
-    }
-    else
-      erase(copy(__first, __last, begin()), end());
-  }
+  /**
+   *  Returns a read-only (constant) iterator that points one past the last
+   *  element in the %deque.  Iteration is done in ordinary element order.
+  */
+  const_iterator
+  end() const { return _M_finish; }
 
-public:                         // push_* and pop_*
-  
+  /**
+   *  Returns a read/write reverse iterator that points to the last element in
+   *  the %deque.  Iteration is done in reverse element order.
+  */
+  reverse_iterator
+  rbegin() { return reverse_iterator(_M_finish); }
+
+  /**
+   *  Returns a read-only (constant) reverse iterator that points to the last
+   *  element in the %deque.  Iteration is done in reverse element order.
+  */
+  const_reverse_iterator
+  rbegin() const { return const_reverse_iterator(_M_finish); }
+
+  /**
+   *  Returns a read/write reverse iterator that points to one before the
+   *  first element in the %deque.  Iteration is done in reverse element
+   *  order.
+  */
+  reverse_iterator
+  rend() { return reverse_iterator(_M_start); }
+
+  /**
+   *  Returns a read-only (constant) reverse iterator that points to one
+   *  before the first element in the %deque.  Iteration is done in reverse
+   *  element order.
+  */
+  const_reverse_iterator
+  rend() const { return const_reverse_iterator(_M_start); }
+
+  // [23.2.1.2] capacity
+  /**  Returns the number of elements in the %deque.  */
+  size_type
+  size() const { return _M_finish - _M_start; }
+
+  /**  Returns the size() of the largest possible %deque.  */
+  size_type
+  max_size() const { return size_type(-1); }
+
+  /**
+   *  @brief  Resizes the %deque to the specified number of elements.
+   *  @param  new_size  Number of elements the %deque should contain.
+   *  @param  x  Data with which new elements should be populated.
+   *
+   *  This function will %resize the %deque to the specified number of
+   *  elements.  If the number is smaller than the %deque's current size the
+   *  %deque is truncated, otherwise the %deque is extended and new elements
+   *  are populated with given data.
+  */
   void
-  push_back(const value_type& __t)
+  resize(size_type __new_size, const value_type& __x)
   {
-    if (_M_finish._M_cur != _M_finish._M_last - 1) {
-      _Construct(_M_finish._M_cur, __t);
-      ++_M_finish._M_cur;
-    }
+    const size_type __len = size();
+    if (__new_size < __len) 
+      erase(_M_start + __new_size, _M_finish);
     else
-      _M_push_back_aux(__t);
+      insert(_M_finish, __new_size - __len, __x);
   }
 
+  /**
+   *  @brief  Resizes the %deque to the specified number of elements.
+   *  @param  new_size  Number of elements the %deque should contain.
+   *
+   *  This function will resize the %deque to the specified number of
+   *  elements.  If the number is smaller than the %deque's current size the
+   *  %deque is truncated, otherwise the %deque is extended and new elements
+   *  are default-constructed.
+  */
   void
-  push_back()
+  resize(size_type new_size) { resize(new_size, value_type()); }
+
+  /**
+   *  Returns true if the %deque is empty.  (Thus begin() would equal end().)
+  */
+  bool empty() const { return _M_finish == _M_start; }
+
+  // element access
+  /**
+   *  @brief  Subscript access to the data contained in the %deque.
+   *  @param  n  The index of the element for which data should be accessed.
+   *  @return  Read/write reference to data.
+   *
+   *  This operator allows for easy, array-style, data access.
+   *  Note that data access with this operator is unchecked and out_of_range
+   *  lookups are not defined. (For checked lookups see at().)
+  */
+  reference
+  operator[](size_type __n) { return _M_start[difference_type(__n)]; }
+
+  /**
+   *  @brief  Subscript access to the data contained in the %deque.
+   *  @param  n  The index of the element for which data should be accessed.
+   *  @return  Read-only (constant) reference to data.
+   *
+   *  This operator allows for easy, array-style, data access.
+   *  Note that data access with this operator is unchecked and out_of_range
+   *  lookups are not defined. (For checked lookups see at().)
+  */
+  const_reference
+  operator[](size_type __n) const { return _M_start[difference_type(__n)]; }
+
+protected:
+  /// @if maint Safety check used only from at().  @endif
+  void
+  _M_range_check(size_type __n) const
   {
-    if (_M_finish._M_cur != _M_finish._M_last - 1) {
-      _Construct(_M_finish._M_cur);
-      ++_M_finish._M_cur;
-    }
-    else
-      _M_push_back_aux();
+    if (__n >= this->size())
+      __throw_out_of_range("deque [] access out of range");
   }
 
+public:
+  /**
+   *  @brief  Provides access to the data contained in the %deque.
+   *  @param  n  The index of the element for which data should be accessed.
+   *  @return  Read/write reference to data.
+   *  @throw  std::out_of_range  If @a n is an invalid index.
+   *
+   *  This function provides for safer data access.  The parameter is first
+   *  checked that it is in the range of the deque.  The function throws
+   *  out_of_range if the check fails.
+  */
+  reference
+  at(size_type __n) { _M_range_check(__n); return (*this)[__n]; }
+
+  /**
+   *  @brief  Provides access to the data contained in the %deque.
+   *  @param  n  The index of the element for which data should be accessed.
+   *  @return  Read-only (constant) reference to data.
+   *  @throw  std::out_of_range  If @a n is an invalid index.
+   *
+   *  This function provides for safer data access.  The parameter is first
+   *  checked that it is in the range of the deque.  The function throws
+   *  out_of_range if the check fails.
+  */
+  const_reference
+  at(size_type __n) const { _M_range_check(__n); return (*this)[__n]; }
+
+  /**
+   *  Returns a read/write reference to the data at the first element of the
+   *  %deque.
+  */
+  reference
+  front() { return *_M_start; }
+
+  /**
+   *  Returns a read-only (constant) reference to the data at the first
+   *  element of the %deque.
+  */
+  const_reference
+  front() const { return *_M_start; }
+
+  /**
+   *  Returns a read/write reference to the data at the last element of the
+   *  %deque.
+  */
+  reference
+  back()
+  {
+    iterator __tmp = _M_finish;
+    --__tmp;
+    return *__tmp;
+  }
+
+  /**
+   *  Returns a read-only (constant) reference to the data at the last
+   *  element of the %deque.
+  */
+  const_reference
+  back() const
+  {
+    const_iterator __tmp = _M_finish;
+    --__tmp;
+    return *__tmp;
+  }
+
+  // [23.2.1.2] modifiers
+  /**
+   *  @brief  Add data to the front of the %deque.
+   *  @param  x  Data to be added.
+   *
+   *  This is a typical stack operation.  The function creates an element at
+   *  the front of the %deque and assigns the given data to it.  Due to the
+   *  nature of a %deque this operation can be done in constant time.
+  */
   void
-  push_front(const value_type& __t) 
+  push_front(const value_type& __x) 
   {
     if (_M_start._M_cur != _M_start._M_first) {
-      _Construct(_M_start._M_cur - 1, __t);
+      _Construct(_M_start._M_cur - 1, __x);
       --_M_start._M_cur;
     }
     else
-      _M_push_front_aux(__t);
+      _M_push_front_aux(__x);
   }
 
+#ifdef _GLIBCPP_DEPRECATED
+  /**
+   *  @brief  Add data to the front of the %deque.
+   *
+   *  This is a typical stack operation.  The function creates a
+   *  default-constructed element at the front of the %deque.  Due to the nature
+   *  of a %deque this operation can be done in constant time.  You should
+   *  consider using push_front(value_type()) instead.
+   *
+   *  @note This was deprecated in 3.2 and will be removed in 3.3.  You must
+   *        define @c _GLIBCPP_DEPRECATED to make this visible in 3.2; see
+   *        c++config.h.
+  */
   void
   push_front()
   {
@@ -850,19 +1044,60 @@ public:                         // push_* and pop_*
     else
       _M_push_front_aux();
   }
+#endif
 
-
+  /**
+   *  @brief  Add data to the end of the %deque.
+   *  @param  x  Data to be added.
+   *
+   *  This is a typical stack operation.  The function creates an element at
+   *  the end of the %deque and assigns the given data to it.  Due to the
+   *  nature of a %deque this operation can be done in constant time.
+  */
   void
-  pop_back()
+  push_back(const value_type& __x)
   {
-    if (_M_finish._M_cur != _M_finish._M_first) {
-      --_M_finish._M_cur;
-      _Destroy(_M_finish._M_cur);
+    if (_M_finish._M_cur != _M_finish._M_last - 1) {
+      _Construct(_M_finish._M_cur, __x);
+      ++_M_finish._M_cur;
     }
     else
-      _M_pop_back_aux();
+      _M_push_back_aux(__x);
   }
 
+#ifdef _GLIBCPP_DEPRECATED
+  /**
+   *  @brief  Add data to the end of the %deque.
+   *
+   *  This is a typical stack operation.  The function creates a
+   *  default-constructed element at the end of the %deque.  Due to the nature
+   *  of a %deque this operation can be done in constant time.  You should
+   *  consider using push_back(value_type()) instead.
+   *
+   *  @note This was deprecated in 3.2 and will be removed in 3.3.  You must
+   *        define @c _GLIBCPP_DEPRECATED to make this visible in 3.2; see
+   *        c++config.h.
+  */
+  void
+  push_back()
+  {
+    if (_M_finish._M_cur != _M_finish._M_last - 1) {
+      _Construct(_M_finish._M_cur);
+      ++_M_finish._M_cur;
+    }
+    else
+      _M_push_back_aux();
+  }
+#endif
+
+  /**
+   *  @brief  Removes first element.
+   *
+   *  This is a typical stack operation.  It shrinks the %deque by one.
+   *
+   *  Note that no data is returned, and if the first element's data is
+   *  needed, it should be retrieved before pop_front() is called.
+  */
   void
   pop_front()
   {
@@ -874,8 +1109,34 @@ public:                         // push_* and pop_*
       _M_pop_front_aux();
   }
 
-public:                         // Insert
+  /**
+   *  @brief  Removes last element.
+   *
+   *  This is a typical stack operation.  It shrinks the %deque by one.
+   *
+   *  Note that no data is returned, and if the last element's data is
+   *  needed, it should be retrieved before pop_back() is called.
+  */
+  void
+  pop_back()
+  {
+    if (_M_finish._M_cur != _M_finish._M_first) {
+      --_M_finish._M_cur;
+      _Destroy(_M_finish._M_cur);
+    }
+    else
+      _M_pop_back_aux();
+  }
 
+  /**
+   *  @brief  Inserts given value into %deque before specified iterator.
+   *  @param  position  An iterator into the %deque.
+   *  @param  x  Data to be inserted.
+   *  @return  An iterator that points to the inserted data.
+   *
+   *  This function will insert a copy of the given value before the specified
+   *  location.
+  */
   iterator
   insert(iterator position, const value_type& __x)
   {
@@ -894,148 +1155,381 @@ public:                         // Insert
     }
   }
 
+#ifdef _GLIBCPP_DEPRECATED
+  /**
+   *  @brief  Inserts an element into the %deque.
+   *  @param  position  An iterator into the %deque.
+   *  @return  An iterator that points to the inserted element.
+   *
+   *  This function will insert a default-constructed element before the
+   *  specified location.  You should consider using
+   *  insert(position,value_type()) instead.
+   *
+   *  @note This was deprecated in 3.2 and will be removed in 3.3.  You must
+   *        define @c _GLIBCPP_DEPRECATED to make this visible in 3.2; see
+   *        c++config.h.
+  */
   iterator
   insert(iterator __position)
-  { return insert(__position, value_type()); }
+    { return insert(__position, value_type()); }
+#endif
 
+  /**
+   *  @brief  Inserts a number of copies of given data into the %deque.
+   *  @param  position  An iterator into the %deque.
+   *  @param  n  Number of elements to be inserted.
+   *  @param  x  Data to be inserted.
+   *
+   *  This function will insert a specified number of copies of the given data
+   *  before the location specified by @a position.
+  */
   void
-  insert(iterator __pos, size_type __n, const value_type& __x)
-  { _M_fill_insert(__pos, __n, __x); }
+  insert(iterator __position, size_type __n, const value_type& __x)
+    { _M_fill_insert(__position, __n, __x); }
 
-  void
-  _M_fill_insert(iterator __pos, size_type __n, const value_type& __x); 
-
-  // Check whether it's an integral type.  If so, it's not an iterator.
+  /**
+   *  @brief  Inserts a range into the %deque.
+   *  @param  pos  An iterator into the %deque.
+   *  @param  first  An input iterator.
+   *  @param  last   An input iterator.
+   *
+   *  This function will insert copies of the data in the range [first,last)
+   *  into the %deque before the location specified by @a pos.  This is
+   *  known as "range insert."
+  */
   template<class _InputIterator>
     void
     insert(iterator __pos, _InputIterator __first, _InputIterator __last)
     {
+      // Check whether it's an integral type.  If so, it's not an iterator.
       typedef typename _Is_integer<_InputIterator>::_Integral _Integral;
       _M_insert_dispatch(__pos, __first, __last, _Integral());
     }
 
+  /**
+   *  @brief  Remove element at given position.
+   *  @param  position  Iterator pointing to element to be erased.
+   *  @return  An iterator pointing to the next element (or end()).
+   *
+   *  This function will erase the element at the given position and thus
+   *  shorten the %deque by one.
+   *
+   *  The user is cautioned that
+   *  this function only erases the element, and that if the element is itself
+   *  a pointer, the pointed-to memory is not touched in any way.  Managing
+   *  the pointer is the user's responsibilty.
+  */
+  iterator
+  erase(iterator __position)
+  {
+    iterator __next = __position;
+    ++__next;
+    size_type __index = __position - _M_start;
+    if (__index < (size() >> 1)) {
+      copy_backward(_M_start, __position, __next);
+      pop_front();
+    }
+    else {
+      copy(__next, _M_finish, __position);
+      pop_back();
+    }
+    return _M_start + __index;
+  }
+
+  /**
+   *  @brief  Remove a range of elements.
+   *  @param  first  Iterator pointing to the first element to be erased.
+   *  @param  last  Iterator pointing to one past the last element to be erased.
+   *  @return  An iterator pointing to the element pointed to by @a last
+   *           prior to erasing (or end()).
+   *
+   *  This function will erase the elements in the range [first,last) and
+   *  shorten the %deque accordingly.
+   *
+   *  The user is cautioned that
+   *  this function only erases the elements, and that if the elements
+   *  themselves are pointers, the pointed-to memory is not touched in any
+   *  way.  Managing the pointer is the user's responsibilty.
+  */
+  iterator
+  erase(iterator __first, iterator __last);
+
+  /**
+   *  @brief  Swaps data with another %deque.
+   *  @param  x  A %deque of the same element and allocator types.
+   *
+   *  This exchanges the elements between two deques in constant time.
+   *  (Four pointers, so it should be quite fast.)
+   *  Note that the global std::swap() function is specialized such that
+   *  std::swap(d1,d2) will feed to this function.
+  */
+  void
+  swap(deque& __x)
+  {
+    std::swap(_M_start, __x._M_start);
+    std::swap(_M_finish, __x._M_finish);
+    std::swap(_M_map, __x._M_map);
+    std::swap(_M_map_size, __x._M_map_size);
+  }
+
+  /**
+   *  Erases all the elements.  Note that this function only erases the
+   *  elements, and that if the elements themselves are pointers, the
+   *  pointed-to memory is not touched in any way.  Managing the pointer is
+   *  the user's responsibilty.
+  */
+  void clear(); 
+
+protected:
+  // Internal constructor functions follow.
+
+  // called by the range constructor to implement [23.1.1]/9
+  template<class _Integer>
+    void
+    _M_initialize_dispatch(_Integer __n, _Integer __x, __true_type)
+    {
+      _M_initialize_map(__n);
+      _M_fill_initialize(__x);
+    }
+
+  // called by the range constructor to implement [23.1.1]/9
+  template<class _InputIter>
+    void
+    _M_initialize_dispatch(_InputIter __first, _InputIter __last, __false_type)
+    {
+      typedef typename iterator_traits<_InputIter>::iterator_category
+                       _IterCategory;
+      _M_range_initialize(__first, __last, _IterCategory());
+    }
+
+  // called by the second initialize_dispatch above
+  template <class _InputIterator>
+    void
+    _M_range_initialize(_InputIterator __first, _InputIterator __last,
+                        input_iterator_tag);
+
+  // called by the second initialize_dispatch above
+  template <class _ForwardIterator>
+    void
+    _M_range_initialize(_ForwardIterator __first, _ForwardIterator __last,
+                        forward_iterator_tag);
+
+  /**
+   *  @if maint
+   *  @brief Fills the %deque with copies of value.
+   *  @param  value  Initial value.
+   *  @return   Nothing.
+   *  @pre _M_start and _M_finish have already been initialized, but none of
+   *       the %deque's elements have yet been constructed.
+   *
+   *  This function is called only when the user provides an explicit size
+   *  (with or without an explicit exemplar value).
+   *  @endif
+  */
+  void
+  _M_fill_initialize(const value_type& __value);
+
+
+  // Internal assign functions follow.  The *_aux functions do the actual
+  // assignment work for the range versions.
+
+  // called by the range assign to implement [23.1.1]/9
+  template<class _Integer>
+    void
+    _M_assign_dispatch(_Integer __n, _Integer __val, __true_type)
+    {
+      _M_fill_assign(static_cast<size_type>(__n),
+                     static_cast<value_type>(__val));
+    }
+
+  // called by the range assign to implement [23.1.1]/9
+  template<class _InputIter>
+    void
+    _M_assign_dispatch(_InputIter __first, _InputIter __last, __false_type)
+    {
+      typedef typename iterator_traits<_InputIter>::iterator_category
+                       _IterCategory;
+      _M_assign_aux(__first, __last, _IterCategory());
+    }
+
+  // called by the second assign_dispatch above
+  template <class _InputIterator>
+    void
+    _M_assign_aux(_InputIterator __first, _InputIterator __last,
+                  input_iterator_tag);
+
+  // called by the second assign_dispatch above
+  template <class _ForwardIterator>
+    void
+    _M_assign_aux(_ForwardIterator __first, _ForwardIterator __last,
+                  forward_iterator_tag)
+    {
+      size_type __len = distance(__first, __last);
+      if (__len > size()) {
+        _ForwardIterator __mid = __first;
+        advance(__mid, size());
+        copy(__first, __mid, begin());
+        insert(end(), __mid, __last);
+      }
+      else
+        erase(copy(__first, __last, begin()), end());
+    }
+
+  // Called by assign(n,t), and the range assign when it turns out to be the
+  // same thing.
+  void
+  _M_fill_assign(size_type __n, const value_type& __val)
+  {
+    if (__n > size())
+    {
+      fill(begin(), end(), __val);
+      insert(end(), __n - size(), __val);
+    }
+    else
+    {
+      erase(begin() + __n, end());
+      fill(begin(), end(), __val);
+    }
+  }
+
+
+  /** @{
+   *  @if maint
+   *  @brief Helper functions for push_* and pop_*.
+   *  @endif
+  */
+  void _M_push_back_aux(const value_type&);
+  void _M_push_front_aux(const value_type&);
+#ifdef _GLIBCPP_DEPRECATED
+  void _M_push_back_aux();
+  void _M_push_front_aux();
+#endif
+  void _M_pop_back_aux();
+  void _M_pop_front_aux();
+  /** @} */
+
+
+  // Internal insert functions follow.  The *_aux functions do the actual
+  // insertion work when all shortcuts fail.
+
+  // called by the range insert to implement [23.1.1]/9
   template<class _Integer>
     void
     _M_insert_dispatch(iterator __pos, _Integer __n, _Integer __x, __true_type)
-    { _M_fill_insert(__pos, static_cast<size_type>(__n), static_cast<value_type>(__x)); }
+    {
+      _M_fill_insert(__pos, static_cast<size_type>(__n),
+                     static_cast<value_type>(__x));
+    }
 
+  // called by the range insert to implement [23.1.1]/9
   template<class _InputIterator>
     void
     _M_insert_dispatch(iterator __pos,
                        _InputIterator __first, _InputIterator __last,
                        __false_type)
     {
-      typedef typename iterator_traits<_InputIterator>::iterator_category _IterCategory;
-      insert(__pos, __first, __last, _IterCategory());
+      typedef typename iterator_traits<_InputIterator>::iterator_category
+                       _IterCategory;
+      _M_range_insert_aux(__pos, __first, __last, _IterCategory());
     }
 
-  void resize(size_type __new_size, const value_type& __x) {
-    const size_type __len = size();
-    if (__new_size < __len) 
-      erase(_M_start + __new_size, _M_finish);
-    else
-      insert(_M_finish, __new_size - __len, __x);
-  }
-
-  void resize(size_type new_size) { resize(new_size, value_type()); }
-
-public:                         // Erase
-  iterator erase(iterator __pos) {
-    iterator __next = __pos;
-    ++__next;
-    size_type __index = __pos - _M_start;
-    if (__index < (size() >> 1)) {
-      copy_backward(_M_start, __pos, __next);
-      pop_front();
-    }
-    else {
-      copy(__next, _M_finish, __pos);
-      pop_back();
-    }
-    return _M_start + __index;
-  }
-
-  iterator erase(iterator __first, iterator __last);
-  void clear(); 
-
-protected:                        // Internal construction/destruction
-
-  void _M_fill_initialize(const value_type& __value);
-
+  // called by the second insert_dispatch above
   template <class _InputIterator>
-  void _M_range_initialize(_InputIterator __first, _InputIterator __last,
-                        input_iterator_tag);
+    void
+    _M_range_insert_aux(iterator __pos, _InputIterator __first,
+                        _InputIterator __last, input_iterator_tag);
 
+  // called by the second insert_dispatch above
   template <class _ForwardIterator>
-  void _M_range_initialize(_ForwardIterator __first, _ForwardIterator __last,
-                        forward_iterator_tag);
+    void
+    _M_range_insert_aux(iterator __pos, _ForwardIterator __first,
+                        _ForwardIterator __last, forward_iterator_tag);
 
-protected:                        // Internal push_* and pop_*
+  // Called by insert(p,n,x), and the range insert when it turns out to be
+  // the same thing.  Can use fill functions in optimal situations, otherwise
+  // passes off to insert_aux(p,n,x).
+  void
+  _M_fill_insert(iterator __pos, size_type __n, const value_type& __x); 
 
-  void _M_push_back_aux(const value_type&);
-  void _M_push_back_aux();
-  void _M_push_front_aux(const value_type&);
-  void _M_push_front_aux();
-  void _M_pop_back_aux();
-  void _M_pop_front_aux();
+  // called by insert(p,x)
+  iterator
+  _M_insert_aux(iterator __pos, const value_type& __x);
 
-protected:                        // Internal insert functions
+  // called by insert(p,n,x) via fill_insert
+  void
+  _M_insert_aux(iterator __pos, size_type __n, const value_type& __x);
 
-  template <class _InputIterator>
-  void insert(iterator __pos, _InputIterator __first, _InputIterator __last,
-              input_iterator_tag);
-
+  // called by range_insert_aux for forward iterators
   template <class _ForwardIterator>
-  void insert(iterator __pos,
-              _ForwardIterator __first, _ForwardIterator __last,
-              forward_iterator_tag);
+    void
+    _M_insert_aux(iterator __pos, 
+                  _ForwardIterator __first, _ForwardIterator __last,
+                  size_type __n);
 
-  iterator _M_insert_aux(iterator __pos, const value_type& __x);
+#ifdef _GLIBCPP_DEPRECATED
+  // unused, see comment in implementation
   iterator _M_insert_aux(iterator __pos);
-  void _M_insert_aux(iterator __pos, size_type __n, const value_type& __x);
+#endif
 
-  template <class _ForwardIterator>
-  void _M_insert_aux(iterator __pos, 
-                     _ForwardIterator __first, _ForwardIterator __last,
-                     size_type __n);
-
-  iterator _M_reserve_elements_at_front(size_type __n) {
+  /** @{
+   *  @if maint
+   *  @brief Memory-handling helpers for the previous internal insert functions.
+   *  @endif
+  */
+  iterator
+  _M_reserve_elements_at_front(size_type __n)
+  {
     size_type __vacancies = _M_start._M_cur - _M_start._M_first;
     if (__n > __vacancies) 
       _M_new_elements_at_front(__n - __vacancies);
     return _M_start - difference_type(__n);
   }
 
-  iterator _M_reserve_elements_at_back(size_type __n) {
+  iterator
+  _M_reserve_elements_at_back(size_type __n)
+  {
     size_type __vacancies = (_M_finish._M_last - _M_finish._M_cur) - 1;
     if (__n > __vacancies)
       _M_new_elements_at_back(__n - __vacancies);
     return _M_finish + difference_type(__n);
   }
 
-  void _M_new_elements_at_front(size_type __new_elements);
-  void _M_new_elements_at_back(size_type __new_elements);
+  void
+  _M_new_elements_at_front(size_type __new_elements);
 
-protected:                      // Allocation of _M_map and nodes
+  void
+  _M_new_elements_at_back(size_type __new_elements);
+  /** @} */
 
-  // Makes sure the _M_map has space for new nodes.  Does not actually
-  //  add the nodes.  Can invalidate _M_map pointers.  (And consequently, 
-  //  deque iterators.)
 
-  void _M_reserve_map_at_back (size_type __nodes_to_add = 1) {
+  /** @{
+   *  @if maint
+   *  @brief Memory-handling helpers for the major %map.
+   *
+   *  Makes sure the _M_map has space for new nodes.  Does not actually add
+   *  the nodes.  Can invalidate _M_map pointers.  (And consequently, %deque
+   *  iterators.)
+   *  @endif
+  */
+  void
+  _M_reserve_map_at_back (size_type __nodes_to_add = 1)
+  {
     if (__nodes_to_add + 1 > _M_map_size - (_M_finish._M_node - _M_map))
       _M_reallocate_map(__nodes_to_add, false);
   }
 
-  void _M_reserve_map_at_front (size_type __nodes_to_add = 1) {
+  void
+  _M_reserve_map_at_front (size_type __nodes_to_add = 1)
+  {
     if (__nodes_to_add > size_type(_M_start._M_node - _M_map))
       _M_reallocate_map(__nodes_to_add, true);
   }
 
-  void _M_reallocate_map(size_type __nodes_to_add, bool __add_at_front);
+  void
+  _M_reallocate_map(size_type __nodes_to_add, bool __add_at_front);
+  /** @} */
 };
 
-// Non-inline member functions
 
 template <class _Tp, class _Alloc>
 template <class _InputIter>
@@ -1055,7 +1549,8 @@ template <class _Tp, class _Alloc>
 void deque<_Tp, _Alloc>::_M_fill_insert(iterator __pos,
                                         size_type __n, const value_type& __x)
 {
-  if (__pos._M_cur == _M_start._M_cur) {
+  if (__pos._M_cur == _M_start._M_cur)
+  {
     iterator __new_start = _M_reserve_elements_at_front(__n);
     try {
       uninitialized_fill(__new_start, _M_start, __x);
@@ -1067,7 +1562,8 @@ void deque<_Tp, _Alloc>::_M_fill_insert(iterator __pos,
 	__throw_exception_again;
       }
   }
-  else if (__pos._M_cur == _M_finish._M_cur) {
+  else if (__pos._M_cur == _M_finish._M_cur)
+  {
     iterator __new_finish = _M_reserve_elements_at_back(__n);
     try {
       uninitialized_fill(_M_finish, __new_finish, __x);
@@ -1133,18 +1629,6 @@ void deque<_Tp,_Alloc>::clear()
   _M_finish = _M_start;
 }
 
-/**
- *  @if maint
- *  @brief Fills the deque with copies of value.
- *  @param  value  Initial value.
- *  @return   Nothing.
- *  @pre _M_start and _M_finish have already been initialized, but none of the
- *       deque's elements have yet been constructed.
- *
- *  This function is called only when the user provides an explicit size (with
- *  or without an explicit exemplar value).
- *  @endif
-*/
 template <class _Tp, class _Alloc>
 void deque<_Tp,_Alloc>::_M_fill_initialize(const value_type& __value)
 {
@@ -1238,6 +1722,7 @@ deque<_Tp,_Alloc>::_M_push_back_aux(const value_type& __t)
     }
 }
 
+#ifdef _GLIBCPP_DEPRECATED
 // Called only if _M_finish._M_cur == _M_finish._M_last - 1.
 template <class _Tp, class _Alloc>
 void
@@ -1256,6 +1741,7 @@ deque<_Tp,_Alloc>::_M_push_back_aux()
       __throw_exception_again;
     }
 }
+#endif
 
 // Called only if _M_start._M_cur == _M_start._M_first.
 template <class _Tp, class _Alloc>
@@ -1278,6 +1764,7 @@ deque<_Tp,_Alloc>::_M_push_front_aux(const value_type& __t)
     }
 } 
 
+#ifdef _GLIBCPP_DEPRECATED
 // Called only if _M_start._M_cur == _M_start._M_first.
 template <class _Tp, class _Alloc>
 void
@@ -1297,6 +1784,7 @@ deque<_Tp,_Alloc>::_M_push_front_aux()
       __throw_exception_again;
     }
 } 
+#endif
 
 // Called only if _M_finish._M_cur == _M_finish._M_first.
 template <class _Tp, class _Alloc>
@@ -1322,7 +1810,7 @@ void deque<_Tp,_Alloc>::_M_pop_front_aux()
 }      
 
 template <class _Tp, class _Alloc> template <class _InputIterator>
-void deque<_Tp,_Alloc>::insert(iterator __pos,
+void deque<_Tp,_Alloc>::_M_range_insert_aux(iterator __pos,
                                _InputIterator __first, _InputIterator __last,
                                input_iterator_tag)
 {
@@ -1331,7 +1819,7 @@ void deque<_Tp,_Alloc>::insert(iterator __pos,
 
 template <class _Tp, class _Alloc> template <class _ForwardIterator>
 void
-deque<_Tp,_Alloc>::insert(iterator __pos,
+deque<_Tp,_Alloc>::_M_range_insert_aux(iterator __pos,
                           _ForwardIterator __first, _ForwardIterator __last,
                           forward_iterator_tag) {
   size_type __n = distance(__first, __last);
@@ -1368,7 +1856,7 @@ typename deque<_Tp, _Alloc>::iterator
 deque<_Tp,_Alloc>::_M_insert_aux(iterator __pos, const value_type& __x)
 {
   difference_type __index = __pos - _M_start;
-  value_type __x_copy = __x;
+  value_type __x_copy = __x; // XXX copy
   if (static_cast<size_type>(__index) < size() / 2) {
     push_front(front());
     iterator __front1 = _M_start;
@@ -1393,6 +1881,11 @@ deque<_Tp,_Alloc>::_M_insert_aux(iterator __pos, const value_type& __x)
   return __pos;
 }
 
+#ifdef _GLIBCPP_DEPRECATED
+// Nothing seems to actually use this.  According to the pattern followed by
+// the rest of the SGI code, it would be called by the deprecated insert(pos)
+// function, but that has been replaced.  We'll take our time removing this
+// anyhow; mark for 3.3.  -pme
 template <class _Tp, class _Alloc>
 typename deque<_Tp,_Alloc>::iterator 
 deque<_Tp,_Alloc>::_M_insert_aux(iterator __pos)
@@ -1421,6 +1914,7 @@ deque<_Tp,_Alloc>::_M_insert_aux(iterator __pos)
   *__pos = value_type();
   return __pos;
 }
+#endif
 
 template <class _Tp, class _Alloc>
 void deque<_Tp,_Alloc>::_M_insert_aux(iterator __pos,
@@ -1621,47 +2115,75 @@ void deque<_Tp,_Alloc>::_M_reallocate_map(size_type __nodes_to_add,
 }
 
 
-// Nonmember functions.
-
+/**
+ *  @brief  Deque equality comparison.
+ *  @param  x  A %deque.
+ *  @param  y  A %deque of the same type as @a x.
+ *  @return  True iff the size and elements of the deques are equal.
+ *
+ *  This is an equivalence relation.  It is linear in the size of the
+ *  deques.  Deques are considered equivalent if their sizes are equal,
+ *  and if corresponding elements compare equal.
+*/
 template <class _Tp, class _Alloc>
 inline bool operator==(const deque<_Tp, _Alloc>& __x,
-                       const deque<_Tp, _Alloc>& __y) {
+                       const deque<_Tp, _Alloc>& __y)
+{
   return __x.size() == __y.size() &&
          equal(__x.begin(), __x.end(), __y.begin());
 }
 
+/**
+ *  @brief  Deque ordering relation.
+ *  @param  x  A %deque.
+ *  @param  y  A %deque of the same type as @a x.
+ *  @return  True iff @a x is lexographically less than @a y.
+ *
+ *  This is a total ordering relation.  It is linear in the size of the
+ *  deques.  The elements must be comparable with @c <.
+ *
+ *  See std::lexographical_compare() for how the determination is made.
+*/
 template <class _Tp, class _Alloc>
 inline bool operator<(const deque<_Tp, _Alloc>& __x,
-                      const deque<_Tp, _Alloc>& __y) {
+                      const deque<_Tp, _Alloc>& __y)
+{
   return lexicographical_compare(__x.begin(), __x.end(), 
                                  __y.begin(), __y.end());
 }
 
+/// Based on operator==
 template <class _Tp, class _Alloc>
 inline bool operator!=(const deque<_Tp, _Alloc>& __x,
                        const deque<_Tp, _Alloc>& __y) {
   return !(__x == __y);
 }
 
+/// Based on operator<
 template <class _Tp, class _Alloc>
 inline bool operator>(const deque<_Tp, _Alloc>& __x,
                       const deque<_Tp, _Alloc>& __y) {
   return __y < __x;
 }
 
+/// Based on operator<
 template <class _Tp, class _Alloc>
 inline bool operator<=(const deque<_Tp, _Alloc>& __x,
                        const deque<_Tp, _Alloc>& __y) {
   return !(__y < __x);
 }
+
+/// Based on operator<
 template <class _Tp, class _Alloc>
 inline bool operator>=(const deque<_Tp, _Alloc>& __x,
                        const deque<_Tp, _Alloc>& __y) {
   return !(__x < __y);
 }
 
+/// See std::deque::swap().
 template <class _Tp, class _Alloc>
-inline void swap(deque<_Tp,_Alloc>& __x, deque<_Tp,_Alloc>& __y) {
+inline void swap(deque<_Tp,_Alloc>& __x, deque<_Tp,_Alloc>& __y)
+{
   __x.swap(__y);
 }
 
