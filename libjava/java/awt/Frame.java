@@ -54,6 +54,6 @@ public class Frame extends Window implements MenuContainer
   }
 
   public Font getFont() { return null; } // FIXME
-  public boolean postEvent(Event evt) { return null; } // FIXME
+  public boolean postEvent(Event evt) { return false; } // FIXME
   public void remove(MenuComponent comp) { } // FIXME
 }

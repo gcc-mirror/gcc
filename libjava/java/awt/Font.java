@@ -52,7 +52,7 @@ public class Font
 
   public boolean isBold()
   {
-    if (style & BOLD == BOLD)
+    if ((style & BOLD) == BOLD)
       return true;
 
     return false;
@@ -60,7 +60,7 @@ public class Font
 
   public boolean isItalic()
   {
-    if (style & ITALIC == ITALIC)
+    if ((style & ITALIC) == ITALIC)
       return true;
 
     return false;

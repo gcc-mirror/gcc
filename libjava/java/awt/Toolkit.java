@@ -26,6 +26,7 @@ public abstract class Toolkit
   protected abstract FramePeer createFrame(Frame target);
   public abstract Image getImage(URL url);
 
-  private static native void init();
+  private static void init() { }
+  // private static native void init();
   // static { init(); }
 }
