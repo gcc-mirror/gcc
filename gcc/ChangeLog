@@ -1,3 +1,68 @@
+2002-06-20  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* config/sol2.h: New file.
+	* config.gcc (i?86-*-solaris2*): Include it before i386/sol2.h.
+	(sparc64-wrs-vxworks*): Include it before sparc/sol2.h.
+	(sparc-*-chorusos*): Likewise.
+	(sparc-*-elf*): Likewise.
+	(sparc-*-rtems*, sparc-*-rtemself*): Likewise.
+	(sparc64-*-solaris2*, sparcv9-*-solaris2*): Likewise.
+	(sparc-hal-solaris2*): Likewise.
+	(sparc-*-solaris2*): Likewise.
+	(sparclite-*-elf*): Likewise.
+	(sparc86x-*-elf*): Likewise.
+	(sparc64-*-elf*): Likewise.
+	
+	* config/i386/sol2.h (PREFERRED_DEBUGGING_TYPE): Moved to
+	config/sol2.h.
+	(ASM_SPEC): Override config/sol2.h version for now.
+	Removed obsolete GAS_REJECTS_MINUS_S variant.
+	(WINT_TYPE, WINT_TYPE_SIZE): Moved to config/sol2.h.
+	(HANDLE_PRAGMA_REDEFINE_EXTNAME): Likewise.
+	(TARGET_OS_CPP_BUILTINS): Likewise.
+	Assert system=unix.
+	(CPP_SPEC): Simplified using new CPP_SUBTARGET_SPEC.
+	(LIB_SPEC, ENDFILE_SPEC, STARTFILE_SPEC, LINK_SPEC): Moved to
+	config/sol2.h.
+	(SWITCH_TAKES_ARG, STDC_0_IN_SYSTEM_HEADERS): Likewise.
+	(ASM_CPU_SPEC): Define.
+	(SUBTARGET_EXTRA_SPECS): Define.
+	
+	* config/sparc/sol2-bi.h (LONG_DOUBLE_TYPE_SIZE): Removed, already
+	in config/sparc/sol2.h.
+	(ASM_SPEC): Moved to config/sol2.h.
+	(CPP_CPU_SPEC): Simplified.
+	(STARTFILE_SPEC32): Likewise, renamed to STARTFILE_ARCH32_SPEC for
+	consistency.
+	(STARTFILE_SPEC64): Renamed to STARTFILE_ARCH64_SPEC.
+	(STARTFILE_ARCH_SPEC): Use new names STARTFILE_ARCH32_SPEC,
+	STARTFILE_ARCH64_SPEC.
+	(STARTFILE_SPEC): Moved to config/sol2.h
+	(SUBTARGET_EXTRA_SPECS): Add startfile_arch.
+	(LINK_ARCH32_SPEC): Moved to config/sol2.h.
+	(LINK_ARCH64_SPEC): Simplified.
+	(LINK_ARCH_SPEC): Redefined config/sol2.h version for 64-bit support.
+	(LINK_SPEC): Moved to config/sol2.h
+	
+	* config/sparc/sol2.h (WCHAR_TYPE, WCHAR_TYPE_SIZE): Moved to
+	config/sol2.h.
+	Use BITS_PER_WORD for size.
+	(WINT_TYPE, WINT_TYPE_SIZE): Likewise.
+	(HANDLE_PRAGMA_REDEFINE_EXTNAME): Likewise.
+	(CPP_PREDEFINES): Removed OS-specific part handled by
+	TARGET_OS_CPP_BUILTINS.
+	(CPP_SUBTARGET_SPEC): Moved to config/sol2.h.
+	(CPLUSPLUS_CPP_SPEC): Removed, handled by TARGET_OS_CPP_BUILTINS.
+	(ASM_SPEC): Moved to config/sol2.h.
+	(PREFERRED_DEBUGGING_TYPE): Likewise.
+	(STARTFILE_SPEC, LIB_SPEC, LINK_SPEC): Likewise.
+	(SWITCH_TAKES_ARG, STDC_0_IN_SYSTEM_HEADERS): Likewise.
+	(TARGET_DEFAULT): Reordered to match config/sparc/sol2-bi.h version.
+	(TRANSFER_FROM_TRAMPOLINE): Moved to config/sol2.h
+	
+	* config.gcc (i?86-*-solaris2*): Removed obsolete gas support.
+	* config/i386/sol2gas.h: Removed.
+
 Thu Jun 20 12:14:01 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (xorqi_1_slp, xorqi_2_slp): New patterns.

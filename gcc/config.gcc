@@ -1190,10 +1190,7 @@ i[34567]86-*-sco3.2v5*)	# 80386 running SCO Open Server 5
 	;;
 i[34567]86-*-solaris2*)
 	xm_defines="POSIX SMALL_ARG_MAX"
-	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h svr4.h i386/sysv4.h i386/sol2.h"
-	if test x$gas = xyes; then
-		tm_file="i386/sol2gas.h ${tm_file}"
-	fi
+	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h svr4.h i386/sysv4.h sol2.h i386/sol2.h"
 	tmake_file="i386/t-sol2 t-svr4"
 	if test x$gnu_ld = xyes; then
 		tmake_file="$tmake_file t-slibgcc-elf-ver"
@@ -2313,7 +2310,7 @@ sparc-tti-*)
 	xm_defines=POSIX
 	;;
 sparc64-wrs-vxworks*)
-        tm_file="${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h sparc/sol2.h sparc/elf.h sparc/biarch64.h gofast.h sparc/vxsparc64.h"
+        tm_file="${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h sol2.h sparc/sol2.h sparc/elf.h sparc/biarch64.h gofast.h sparc/vxsparc64.h"
         tmake_file="sparc/t-vxsparc64 sparc/t-crtfm"
         use_collect2=yes
         ;;
@@ -2353,7 +2350,7 @@ sparc-*-bsd*)
 	tm_file="${tm_file} sparc/bsd.h"
 	;;
 sparc-*-chorusos*)
-	tm_file="${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h sparc/sol2.h sparc/elf.h chorus.h"
+	tm_file="${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h sol2.h sparc/sol2.h sparc/elf.h chorus.h"
 	tmake_file="sparc/t-chorus-elf sparc/t-crtfm"
 	extra_parts="crti.o crtn.o crtbegin.o crtend.o"
 	float_format=i64
@@ -2364,7 +2361,7 @@ sparc-*-chorusos*)
 	esac
 	;;
 sparc-*-elf*)
-	tm_file="${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h sparc/sol2.h sparc/elf.h"
+	tm_file="${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h sol2.h sparc/sol2.h sparc/elf.h"
 	tmake_file="sparc/t-elf sparc/t-crtfm"
 	extra_parts="crti.o crtn.o crtbegin.o crtend.o"
 	#float_format=i128
@@ -2406,7 +2403,7 @@ sparc-*-rtemsaout*)	# would otherwise be caught by sparc-*-rtems*
 	;;
 sparc-*-rtems*)
 	xm_defines=POSIX
-	tm_file="${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h sparc/sol2.h sparc/elf.h sparc/rtemself.h rtems.h"
+	tm_file="${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h sol2.h sparc/sol2.h sparc/elf.h sparc/rtemself.h rtems.h"
 	tmake_file="sparc/t-elf sparc/t-crtfm t-rtems"
 	extra_parts="crti.o crtn.o crtbegin.o crtend.o"
 	#float_format=i128
@@ -2416,7 +2413,7 @@ sparc-*-rtems*)
 	fi
 	;;
 sparc64-*-solaris2* | sparcv9-*-solaris2*)
-	tm_file="sparc/biarch64.h ${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h sparc/sol2.h sparc/sol2-64.h sparc/sol2-bi.h"
+	tm_file="sparc/biarch64.h ${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h sol2.h sparc/sol2.h sparc/sol2-64.h sparc/sol2-bi.h"
 	if test x$gnu_ld = xyes; then
 		tm_file="${tm_file} sparc/sol2-gld.h sparc/sol2-gld-bi.h"
 	fi
@@ -2448,7 +2445,7 @@ sparc64-*-solaris2* | sparcv9-*-solaris2*)
 	;;
 sparc-hal-solaris2*)
         xm_defines=POSIX
-        tm_file="${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h sparc/sol2.h sparc/hal.h"
+        tm_file="${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h sol2.h sparc/sol2.h sparc/hal.h"
         tmake_file="sparc/t-halos sparc/t-sol2 sparc/t-crtfm"
 	if test x$gnu_ld = xyes; then
 		tm_file="${tm_file} sparc/sol2-gld.h"
@@ -2461,7 +2458,7 @@ sparc-hal-solaris2*)
 	thread_file='solaris'
         ;;
 sparc-*-solaris2*)
-	tm_file="${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h sparc/sol2.h"
+	tm_file="${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h sol2.h sparc/sol2.h"
 	if test x$gnu_ld = xyes; then
 		tm_file="${tm_file} sparc/sol2-gld.h"
 	fi
@@ -2545,7 +2542,7 @@ sparclite-*-aout*)
 	tmake_file=sparc/t-sparclite
 	;;
 sparclite-*-elf*)
-	tm_file="${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h sparc/sol2.h sparc/elf.h gofast.h sparc/liteelf.h"
+	tm_file="${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h sol2.h sparc/sol2.h sparc/elf.h gofast.h sparc/liteelf.h"
 	tmake_file="sparc/t-sparclite sparc/t-crtfm"
         extra_parts="crtbegin.o crtend.o"
 	;;
@@ -2554,7 +2551,7 @@ sparc86x-*-aout*)
 	tmake_file=sparc/t-sp86x
 	;;
 sparc86x-*-elf*)
-	tm_file="${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h sparc/sol2.h sparc/elf.h gofast.h sparc/sp86x-elf.h"
+	tm_file="${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h sol2.h sparc/sol2.h sparc/elf.h gofast.h sparc/sp86x-elf.h"
 	tmake_file="sparc/t-sp86x sparc/t-crtfm"
         extra_parts="crtbegin.o crtend.o"
 	;;
@@ -2562,7 +2559,7 @@ sparc64-*-aout*)
 	tm_file="sparc/sparc.h aoutos.h sparc/aout.h sparc/sp64-aout.h"
 	;;
 sparc64-*-elf*)
-	tm_file="${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h sparc/sol2.h sparc/sp64-elf.h"
+	tm_file="${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h sol2.h sparc/sol2.h sparc/sp64-elf.h"
 	tmake_file="${tmake_file} sparc/t-crtfm"
 	extra_parts="crtbegin.o crtend.o"
 	;;

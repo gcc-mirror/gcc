@@ -20,35 +20,7 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-
-/* We use stabs-in-elf for debugging, because that is what the native
-   toolchain uses.  */
-#undef PREFERRED_DEBUGGING_TYPE
-#define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
-
-#if ! GAS_REJECTS_MINUS_S
-
-/*
-  Changed from config/svr4.h in the following ways:
-
-  - Removed -Yd (neither the sun bundled assembler nor gas accept it).
-  - Added "-s" so that stabs are not discarded.
-*/
-
-#undef ASM_SPEC
-#define ASM_SPEC \
-  "%{v:-V} %{Qy:} %{!Qn:-Qy} %{n} %{T} %{Ym,*} %{Wa,*:%*} -s"
-
 #define CMOV_SUN_AS_SYNTAX 1
-
-#else /* GAS_REJECTS_MINUS_S */
-
-/* Same as above, except for -s, unsupported by GNU as.  */
-#undef ASM_SPEC
-#define ASM_SPEC \
-  "%{v:-V} %{Qy:} %{!Qn:-Qy} %{n} %{T} %{Ym,*} %{Wa,*:%*}"
-
-#endif /* GAS_REJECTS_MINUS_S */
 
 /* The Solaris 2.0 x86 linker botches alignment of code sections.
    It tries to align to a 16 byte boundary by padding with 0x00000090
@@ -68,98 +40,26 @@ Boston, MA 02111-1307, USA.  */
   (flag_pic ? (GLOBAL ? DW_EH_PE_indirect : 0) | DW_EH_PE_datarel	\
    : DW_EH_PE_absptr)
 
-/* Solaris 2/Intel uses a wint_t different from the default, as on SPARC.  */
-#undef	WINT_TYPE
-#define	WINT_TYPE "long int"
-
-#undef	WINT_TYPE_SIZE
-#define	WINT_TYPE_SIZE BITS_PER_WORD
-
-#define HANDLE_PRAGMA_REDEFINE_EXTNAME 1
-
-#define TARGET_OS_CPP_BUILTINS()			\
-  do							\
-    {							\
-	builtin_define_std ("unix");			\
-	builtin_define_std ("sun");			\
-	builtin_define ("__svr4__");			\
-	builtin_define ("__SVR4");			\
-	builtin_define ("__PRAGMA_REDEFINE_EXTNAME");	\
-	builtin_assert ("system=svr4");			\
-	/* For C++ we must add some additional macros	\
-	   required by the C++ standard library.  */	\
-	if (c_language == clk_cplusplus)		\
-	  {						\
-	    builtin_define ("_XOPEN_SOURCE=500");	\
-	    builtin_define ("_LARGEFILE_SOURCE=1");	\
-	    builtin_define ("_LARGEFILE64_SOURCE=1");	\
-	    builtin_define ("-D__EXTENSIONS__");	\
-	  }						\
-    }							\
-  while (0)
-
 /* Solaris 2/Intel as chokes on #line directives.  */
 #undef CPP_SPEC
-#define CPP_SPEC \
-  "%{.S:-P} \
-   %{pthreads:-D_REENTRANT -D_PTHREADS} \
-   %{!pthreads:%{threads:-D_REENTRANT -D_SOLARIS_THREADS}} \
-   %{compat-bsd:-iwithprefixbefore ucbinclude -I/usr/ucbinclude}"
+#define CPP_SPEC "%{.S:-P} %(cpp_subtarget)"
 
-#undef LIB_SPEC
-#define LIB_SPEC \
-  "%{compat-bsd:-lucb -lsocket -lnsl -lelf -laio} \
-   %{!shared:\
-     %{!symbolic:\
-       %{pthreads:-lpthread} \
-       %{!pthreads:%{threads:-lthread}} \
-       -lc}}"
+/* FIXME: Removed -K PIC from generic Solaris 2 ASM_SPEC: the native assembler
+   gives many warnings: R_386_32 relocation is used for symbol ".text".  */
+#undef ASM_SPEC
+#define ASM_SPEC "\
+%{v:-V} %{Qy:} %{!Qn:-Qy} %{n} %{T} %{Ym,*} %{Wa,*:%*} -s \
+%(asm_cpu) \
+"
 
-#undef  ENDFILE_SPEC
-#define ENDFILE_SPEC "crtend.o%s %{pg:crtn.o%s}%{!pg:crtn.o%s}"
-
-#undef	STARTFILE_SPEC
-#define STARTFILE_SPEC "%{!shared: \
-			 %{!symbolic: \
-			  %{pg:gcrt1.o%s}%{!pg:%{p:mcrt1.o%s}%{!p:crt1.o%s}}}}\
-			%{pg:gmon.o%s} crti.o%s \
-			%{ansi:values-Xc.o%s} \
-			%{!ansi:values-Xa.o%s} \
- 			crtbegin.o%s"
-  
-/* This should be the same as in svr4.h, except with -R added.  */
-#undef LINK_SPEC
-#define LINK_SPEC \
-  "%{h*} %{v:-V} \
-   %{b} %{Wl,*:%*} \
-   %{static:-dn -Bstatic} \
-   %{shared:-G -dy %{!mimpure-text:-z text}} \
-   %{symbolic:-Bsymbolic -G -dy -z text} \
-   %{G:-G} \
-   %{YP,*} \
-   %{R*} \
-   %{compat-bsd: \
-     %{!YP,*:%{pg:-Y P,/usr/ucblib:/usr/ccs/lib/libp:/usr/lib/libp:/usr/ccs/lib:/usr/lib} \
-             %{!pg:%{p:-Y P,/usr/ucblib:/usr/ccs/lib/libp:/usr/lib/libp:/usr/ccs/lib:/usr/lib} \
-                   %{!p:-Y P,/usr/ucblib:/usr/ccs/lib:/usr/lib}}} \
-             -R /usr/ucblib} \
-   %{!compat-bsd: \
-     %{!YP,*:%{pg:-Y P,/usr/ccs/lib/libp:/usr/lib/libp:/usr/ccs/lib:/usr/lib} \
-             %{!pg:%{p:-Y P,/usr/ccs/lib/libp:/usr/lib/libp:/usr/ccs/lib:/usr/lib} \
-                   %{!p:-Y P,/usr/ccs/lib:/usr/lib}}}} \
-   %{Qy:} %{!Qn:-Qy}"
-
-/* This defines which switch letters take arguments.
-   It is as in svr4.h but with -R added.  */
-
-#undef SWITCH_TAKES_ARG
-#define SWITCH_TAKES_ARG(CHAR) \
-  (DEFAULT_SWITCH_TAKES_ARG(CHAR) \
-   || (CHAR) == 'R' \
-   || (CHAR) == 'h' \
-   || (CHAR) == 'z')
-
-#define STDC_0_IN_SYSTEM_HEADERS 1
+#define ASM_CPU_SPEC ""
+ 
+#undef SUBTARGET_EXTRA_SPECS
+#define SUBTARGET_EXTRA_SPECS \
+  { "cpp_subtarget",	CPP_SUBTARGET_SPEC },	\
+  { "asm_cpu",		ASM_CPU_SPEC },		\
+  { "startfile_arch",	STARTFILE_ARCH_SPEC },	\
+  { "link_arch",	LINK_ARCH_SPEC }
 
 #undef LOCAL_LABEL_PREFIX
 #define LOCAL_LABEL_PREFIX "."

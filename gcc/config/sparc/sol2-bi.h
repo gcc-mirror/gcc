@@ -5,9 +5,6 @@
 #undef SPARC_DEFAULT_CMODEL
 #define SPARC_DEFAULT_CMODEL CM_MEDANY
 
-#undef LONG_DOUBLE_TYPE_SIZE
-#define LONG_DOUBLE_TYPE_SIZE 128
-
 #define AS_SPARC64_FLAG	"-xarch=v9"
 
 #undef ASM_CPU32_DEFAULT_SPEC
@@ -30,15 +27,6 @@
 #define ASM_CPU64_DEFAULT_SPEC AS_SPARC64_FLAG "a"
 #endif
 
-/* The sun bundled assembler doesn't accept -Yd, (and neither does gas).
-   It's safe to pass -s always, even if -g is not used.  */
-#undef ASM_SPEC
-#define ASM_SPEC "\
-%{v:-V} %{Qy:} %{!Qn:-Qy} %{n} %{T} %{Ym,*} %{Wa,*:%*} -s \
-%{fpic:-K PIC} %{fPIC:-K PIC} \
-%(asm_cpu)\
-"
-
 #if DEFAULT_ARCH32_P
 #define DEF_ARCH32_SPEC(__str) "%{!m64:" __str "}"
 #define DEF_ARCH64_SPEC(__str) "%{m64:" __str "}"
@@ -50,17 +38,14 @@
 #undef CPP_CPU_SPEC
 #define CPP_CPU_SPEC "\
 %{mcypress:} \
-%{msparclite:-D__sparclite__} \
-%{mf930:-D__sparclite__} %{mf934:-D__sparclite__} \
+%{msparclite|mf930|mf934:-D__sparclite__} \
 %{mv8:" DEF_ARCH32_SPEC("-D__sparcv8") "} \
 %{msupersparc:-D__supersparc__ " DEF_ARCH32_SPEC("-D__sparcv8") "} \
-%{mcpu=sparclet:-D__sparclet__} %{mcpu=tsc701:-D__sparclet__} \
-%{mcpu=sparclite:-D__sparclite__} \
-%{mcpu=f930:-D__sparclite__} %{mcpu=f934:-D__sparclite__} \
+%{mcpu=sparclet|mcpu=tsc701:-D__sparclet__} \
+%{mcpu=sparclite|mcpu-f930|mcpu=f934:-D__sparclite__} \
 %{mcpu=v8:" DEF_ARCH32_SPEC("-D__sparcv8") "} \
 %{mcpu=supersparc:-D__supersparc__ " DEF_ARCH32_SPEC("-D__sparcv8") "} \
-%{mcpu=v9:" DEF_ARCH32_SPEC("-D__sparcv8") "} \
-%{mcpu=ultrasparc:" DEF_ARCH32_SPEC("-D__sparcv8") "} \
+%{mcpu=v9|mcpu=ultrasparc:" DEF_ARCH32_SPEC("-D__sparcv8") "} \
 %{!mcpu*:%{!mcypress:%{!msparclite:%{!mf930:%{!mf934:%{!mv8:%{!msupersparc:%(cpp_cpu_default)}}}}}}} \
 "
 
@@ -72,35 +57,23 @@
 %{!mcpu*:%(asm_cpu_default)} \
 "
 
-#define STARTFILE_SPEC32 "\
-%{ansi:values-Xc.o%s} \
-%{!ansi:values-Xa.o%s}"
-
-#define STARTFILE_SPEC64 "\
+#define STARTFILE_ARCH64_SPEC "\
 %{ansi:/usr/lib/sparcv9/values-Xc.o%s} \
 %{!ansi:/usr/lib/sparcv9/values-Xa.o%s}"
  
+#undef STARTFILE_ARCH_SPEC
+
 #if DEFAULT_ARCH32_P
 #define STARTFILE_ARCH_SPEC "\
-%{m32:" STARTFILE_SPEC32 "} \
-%{m64:" STARTFILE_SPEC64 "} \
-%{!m32:%{!m64:" STARTFILE_SPEC32 "}}"
+%{m32:" STARTFILE_ARCH32_SPEC "} \
+%{m64:" STARTFILE_ARCH64_SPEC "} \
+%{!m32:%{!m64:" STARTFILE_ARCH32_SPEC "}}"
 #else
 #define STARTFILE_ARCH_SPEC "\
-%{m32:" STARTFILE_SPEC32 "} \
-%{m64:" STARTFILE_SPEC64 "} \
-%{!m32:%{!m64:" STARTFILE_SPEC64 "}}"
+%{m32:" STARTFILE_ARCH32_SPEC "} \
+%{m64:" STARTFILE_ARCH64_SPEC "} \
+%{!m32:%{!m64:" STARTFILE_ARCH64_SPEC "}}"
 #endif
-
-#undef STARTFILE_SPEC
-#define STARTFILE_SPEC "%{!shared: \
-			 %{!symbolic: \
-			  %{p:mcrt1.o%s} \
-                          %{!p: \
-	                    %{pg:gcrt1.o%s gmon.o%s} \
-                            %{!pg:crt1.o%s}}}} \
-			crti.o%s " STARTFILE_ARCH_SPEC " \
-			crtbegin.o%s"
 
 #undef CPP_CPU_DEFAULT_SPEC
 #define CPP_CPU_DEFAULT_SPEC \
@@ -170,41 +143,30 @@
 
 #undef SUBTARGET_EXTRA_SPECS
 #define SUBTARGET_EXTRA_SPECS \
+  { "startfile_arch",	 STARTFILE_ARCH_SPEC },		  \
   { "link_arch32",       LINK_ARCH32_SPEC },              \
   { "link_arch64",       LINK_ARCH64_SPEC },              \
   { "link_arch_default", LINK_ARCH_DEFAULT_SPEC },	  \
   { "link_arch",	 LINK_ARCH_SPEC },
     
-/* This should be the same as in svr4.h, except with -R added.  */
-#define LINK_ARCH32_SPEC \
-  "%{G:-G} \
-   %{YP,*} \
-   %{R*} \
-   %{compat-bsd: \
-     %{!YP,*:%{p:-Y P,/usr/ucblib:/usr/ccs/lib/libp:/usr/lib/libp:/usr/ccs/lib:/usr/lib} \
-       %{pg:-Y P,/usr/ucblib:/usr/ccs/lib/libp:/usr/lib/libp:/usr/ccs/lib:/usr/lib} \
-       %{!p:%{!pg:-Y P,/usr/ucblib:/usr/ccs/lib:/usr/lib}}} \
-     -R /usr/ucblib} \
-   %{!compat-bsd: \
-     %{!YP,*:%{p:-Y P,/usr/ccs/lib/libp:/usr/lib/libp:/usr/ccs/lib:/usr/lib} \
-       %{pg:-Y P,/usr/ccs/lib/libp:/usr/lib/libp:/usr/ccs/lib:/usr/lib} \
-       %{!p:%{!pg:-Y P,/usr/ccs/lib:/usr/lib}}}}"
-
+/*
+ * This should be the same as in sol2.h, except with "/sparcv9"
+ * appended to the paths and /usr/ccs/lib is no longer necessary
+ */
 #define LINK_ARCH64_SPEC \
   "%{mcmodel=medlow:-M /usr/lib/ld/sparcv9/map.below4G} \
    %{G:-G} \
    %{YP,*} \
    %{R*} \
    %{compat-bsd: \
-     %{!YP,*:%{p:-Y P,/usr/ucblib/sparcv9:/usr/lib/libp/sparcv9:/usr/lib/sparcv9} \
-       %{pg:-Y P,/usr/ucblib/sparcv9:/usr/lib/libp/sparcv9:/usr/lib/sparcv9} \
+     %{!YP,*:%{p|pg:-Y P,/usr/ucblib/sparcv9:/usr/lib/libp/sparcv9:/usr/lib/sparcv9} \
        %{!p:%{!pg:-Y P,/usr/ucblib/sparcv9:/usr/lib/sparcv9}}} \
      -R /usr/ucblib} \
    %{!compat-bsd: \
-     %{!YP,*:%{p:-Y P,/usr/lib/libp/sparcv9:/usr/lib/sparcv9} \
-       %{pg:-Y P,/usr/lib/libp/sparcv9:/usr/lib/sparcv9} \
+     %{!YP,*:%{p|pg:-Y P,/usr/lib/libp/sparcv9:/usr/lib/sparcv9} \
        %{!p:%{!pg:-Y P,/usr/lib/sparcv9}}}}"
 
+#undef LINK_ARCH_SPEC
 #define LINK_ARCH_SPEC "\
 %{m32:%(link_arch32)} \
 %{m64:%(link_arch64)} \
@@ -213,16 +175,6 @@
 
 #define LINK_ARCH_DEFAULT_SPEC \
 (DEFAULT_ARCH32_P ? LINK_ARCH32_SPEC : LINK_ARCH64_SPEC)
-
-#undef  LINK_SPEC
-#define LINK_SPEC \
-  "%{h*} %{v:-V} \
-   %{b} %{Wl,*:%*} \
-   %{static:-dn -Bstatic} \
-   %{shared:-G -dy %{!mimpure-text:-z text}} \
-   %{symbolic:-Bsymbolic -G -dy -z text} \
-   %(link_arch) \
-   %{Qy:} %{!Qn:-Qy}"
 
 #undef	CC1_SPEC
 #if DEFAULT_ARCH32_P
