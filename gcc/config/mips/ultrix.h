@@ -50,4 +50,8 @@ Boston, MA 02111-1307, USA.  */
    handling code. */
 #define DWARF2_UNWIND_INFO 0
 
+/* INITIALIZE_TRAMPOLINE calls this library function to flush
+   program and data caches.  */
+#define CACHE_FLUSH_FUNC "cacheflush"
+
 #include "mips/mips.h"
