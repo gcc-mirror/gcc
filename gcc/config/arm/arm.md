@@ -1214,8 +1214,8 @@
 			  (match_operand 2 "const_int_operand" "n"))
 			 (const_int 0)))
    (clobber (match_scratch:QI 3 "=r"))]
-  "INTVAL (operands[2]) >= 0 && INTVAL (operands[2]) < 8
-   && INTVAL (operands[1]) > 0 && INTVAL (operands[1]) <= 8"
+  "INTVAL (operands[2]) >= 0 && INTVAL (operands[1]) > 0 &&
+  ((INTVAL (operands[1]) + INTVAL (operands[2])) <= 8)"
   "*
 {
   unsigned int mask = 0;
@@ -1224,7 +1224,6 @@
   while (cnt--)
     mask = (mask << 1) | 1;
   operands[1] = GEN_INT (mask << INTVAL (operands[2]));
-  output_asm_insn (\"ldr%?b\\t%3, %0\", operands);
   output_asm_insn (\"tst%?\\t%3, %1\", operands);
   return \"\";
 }

@@ -1,3 +1,8 @@
+Tue Feb 16 09:52:26 1999  Nick Clifton  <nickc@cygnus.com>
+
+	* config/arm/arm.md (zeroextractqi_compare0_scratch): Ensure that
+	bitfield doe snot overflow a byte boundary.
+
 Tue Feb 16 01:37:33 1999  Charles G Waldman  <cgw@alum.mit.edu>
 
 	* c-common.c (shorten_compare): Get the min/max value from the
