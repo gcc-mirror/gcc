@@ -1,3 +1,18 @@
+2002-07-10  Marek Michalkiewicz  <marekm@amelek.gda.pl>
+
+	* config/avr/avr.md: Fix two 0x80000000 constants to make them
+	negative also on 64-bit hosts.
+
+	Default to -fno-reorder-blocks when optimizing for size.
+	* config/avr/avr-protos.h (avr_optimization_options): Declare.
+	* config/avr/avr.c (avr_optimization_options): New function.
+	* config/avr/avr.h (OPTIMIZATION_OPTIONS): New.
+
+	Optimize returning from simple functions.
+	* config/avr/avr-protos.h (avr_simple_epilogue): Declare.
+	* config/avr/avr.c (avr_simple_epilogue): New function.
+	* config/avr/avr.md (return): New insn.
+
 2002-07-10  Douglas B Rupp  <rupp@gnat.com>
 
 	* config/i386/i386.c  (ix86_svr3_asm_out_constructor): Add
@@ -1213,7 +1228,6 @@ Thu Jun 20 00:26:53 2002  Denis Chertykov  <denisc@overta.ru>
 	at start of buffer.
 	* gcc.c (trad_capable_cpp): Use cc1 always.
 
->>>>>>> 1.14808
 2002-06-20  Jeffrey Law  <law@redhat.com>
 
 	* i386.h (TARGET_DEFAULT): Do not turn on frame pointer

@@ -121,7 +121,7 @@ extern int avr_asm_only_p;
    fprintf (stderr, " (68k, MIT syntax)");
    #endif  */
 
-#define OVERRIDE_OPTIONS avr_override_options()
+#define OVERRIDE_OPTIONS avr_override_options ()
 /* `OVERRIDE_OPTIONS'
    Sometimes certain combinations of command options do not make
    sense on a particular target machine.  You can define a macro
@@ -131,6 +131,9 @@ extern int avr_asm_only_p;
 
    Don't use this macro to turn on various extra optimizations for
    `-O'.  That is what `OPTIMIZATION_OPTIONS' is for.  */
+
+#define OPTIMIZATION_OPTIONS(LEVEL, SIZE) \
+   avr_optimization_options (LEVEL, SIZE)
 
 #define CAN_DEBUG_WITHOUT_FP
 /* Define this macro if debugging can be performed even without a
