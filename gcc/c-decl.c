@@ -1800,11 +1800,17 @@ duplicate_decls (newdecl, olddecl, different_binding_level)
       if (TREE_CODE (newdecl) != FUNCTION_DECL || !DECL_BUILT_IN (olddecl))
 	{
 	  if (different_binding_level)
-	    TREE_TYPE (newdecl)
-	      = build_type_attribute_variant
-		(newtype,
-		 merge_attributes (TYPE_ATTRIBUTES (newtype),
-				   TYPE_ATTRIBUTES (oldtype)));
+	    {
+	      if (TYPE_ARG_TYPES (oldtype) != 0
+		  && TYPE_ARG_TYPES (newtype) == 0)
+		TREE_TYPE (newdecl) = common_type (newtype, oldtype);
+	      else
+		TREE_TYPE (newdecl)
+		  = build_type_attribute_variant
+		    (newtype,
+		     merge_attributes (TYPE_ATTRIBUTES (newtype),
+				       TYPE_ATTRIBUTES (oldtype)));
+	    }
 	  else
 	    TREE_TYPE (newdecl)
 	      = TREE_TYPE (olddecl)
