@@ -1,5 +1,8 @@
 2004-11-29  Hans-Peter Nilsson  <hp@bitrange.com>
 
+	PR target/18488
+	* g++.dg/opt/vt1.C: Skip for mmix-*-*.
+
 	PR target/18336
 	* gcc.dg/20040813-1.c: Skip for mmix-*-*.
 
