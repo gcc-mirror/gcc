@@ -46,7 +46,6 @@ static bool decl_is_java_type PARAMS ((tree decl, int err));
 static void choose_personality_routine PARAMS ((bool));
 static void initialize_handler_parm PARAMS ((tree, tree));
 static tree do_allocate_exception PARAMS ((tree));
-static tree do_free_exception PARAMS ((tree));
 static int complete_ptr_ref_or_void_ptr_p PARAMS ((tree, tree));
 static bool is_admissible_throw_operand PARAMS ((tree));
 static int can_convert_eh PARAMS ((tree, tree));
@@ -504,8 +503,9 @@ do_allocate_exception (type)
 					     NULL_TREE));
 }
 
-/* Call __cxa_free_exception from a cleanup.  This is invoked when
-   a constructor for a thrown object throws.  */
+#if 0
+/* Call __cxa_free_exception from a cleanup.  This is never invoked
+   directly.  */
 
 static tree
 do_free_exception (ptr)
@@ -525,6 +525,7 @@ do_free_exception (ptr)
 
   return build_function_call (fn, tree_cons (NULL_TREE, ptr, NULL_TREE));
 }
+#endif
 
 /* Build a throw expression.  */
 
@@ -573,7 +574,6 @@ build_throw (exp)
       tree cleanup;
       tree stmt_expr;
       tree compound_stmt;
-      tree try_block;
       tree object, ptr;
       tree tmp;
 
@@ -645,15 +645,12 @@ build_throw (exp)
       object = build1 (NOP_EXPR, build_pointer_type (TREE_TYPE (exp)), ptr);
       object = build_indirect_ref (object, NULL_PTR);
 
-      try_block = begin_try_block ();
-
       exp = build_modify_expr (object, INIT_EXPR, exp);
       if (exp == error_mark_node)
 	error ("  in thrown expression");
 
+      exp = build1 (MUST_NOT_THROW_EXPR, TREE_TYPE (exp), exp);
       finish_expr_stmt (exp);
-      finish_cleanup_try_block (try_block);
-      finish_cleanup (do_free_exception (ptr), try_block);
 
       throw_type = build_eh_type_type (prepare_eh_type (TREE_TYPE (object)));
 
