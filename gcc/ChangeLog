@@ -1,5 +1,10 @@
 2004-01-05  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/avr/avr.c (avr_output_function_prologue): Remove an
+	extra pair of curly braces.
+
+2004-01-05  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/mn10300/mn10300.c: Fix comment formatting.
 	* config/mn10300/mn10300.h: Likewise.
 

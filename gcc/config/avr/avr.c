@@ -700,32 +700,30 @@ avr_output_function_prologue (FILE *file, HOST_WIDE_INT size)
 	}
       if (frame_pointer_needed)
 	{
-	  {
-	    fprintf (file, "\t"
-		     AS1 (push,r28) CR_TAB
-		     AS1 (push,r29) CR_TAB
-		     AS2 (in,r28,__SP_L__) CR_TAB
-		     AS2 (in,r29,__SP_H__) "\n");
-	    prologue_size += 4;
-	    if (size)
-	      {
-		fputs ("\t", file);
-		prologue_size += out_adj_frame_ptr (file, size);
+	  fprintf (file, "\t"
+		   AS1 (push,r28) CR_TAB
+		   AS1 (push,r29) CR_TAB
+		   AS2 (in,r28,__SP_L__) CR_TAB
+		   AS2 (in,r29,__SP_H__) "\n");
+	  prologue_size += 4;
+	  if (size)
+	    {
+	      fputs ("\t", file);
+	      prologue_size += out_adj_frame_ptr (file, size);
 
-		if (interrupt_func_p)
-		  {
-		    prologue_size += out_set_stack_ptr (file, 1, 1);
-		  }
-		else if (signal_func_p)
-		  {
-		    prologue_size += out_set_stack_ptr (file, 0, 0);
-		  }
-		else
-		  {
-		    prologue_size += out_set_stack_ptr (file, -1, -1);
-		  }
-	      }
-	  }
+	      if (interrupt_func_p)
+		{
+		  prologue_size += out_set_stack_ptr (file, 1, 1);
+		}
+	      else if (signal_func_p)
+		{
+		  prologue_size += out_set_stack_ptr (file, 0, 0);
+		}
+	      else
+		{
+		  prologue_size += out_set_stack_ptr (file, -1, -1);
+		}
+	    }
 	}
     }
 
