@@ -1,3 +1,11 @@
+2000-09-22  Brad Lucier <lucier@math.purdue.edu>
+	    Mark Mitchell  <mark@codesourcery.com>
+
+        * toplev.c (warn_disabled_optimization): Declare new warning flag.
+        * flags.h (warn_disabled_optimization): Add it here.
+        * gcse.c (gcse_main): Add warning when disabled.
+        * invoke.texi: Document -Wdisabled-optimization
+
 2000-09-21  Jason Merrill  <jason@redhat.com>
 
 	* dwarf2out.c (add_const_value_attribute): Multiply by length, not 4.

@@ -131,7 +131,7 @@ in the following sections.
 -fsyntax-only  -pedantic  -pedantic-errors
 -w  -W  -Wall  -Waggregate-return 
 -Wcast-align  -Wcast-qual  -Wchar-subscripts  -Wcomment
--Wconversion  -Werror  -Wformat
+-Wconversion  -Wdisabled-optimization -Werror  -Wformat
 -Wid-clash-@var{len}  -Wimplicit -Wimplicit-int 
 -Wimplicit-function-declaration  -Wimport
 -Werror-implicit-function-declaration  -Wfloat-equal -Winline
@@ -2017,6 +2017,14 @@ Warn if @samp{long long} type is used.  This is default.  To inhibit
 the warning messages, use @samp{-Wno-long-long}.  Flags
 @samp{-Wlong-long} and @samp{-Wno-long-long} are taken into account
 only when @samp{-pedantic} flag is used.
+
+@item -Wdisabled-optimization
+Warn if a requested optimization pass is disabled.  This warning does
+not generally indicate that there is anything wrong with your code; it
+merely indicates that GCC's optimizers were unable to handle the code
+effectively.  Often, the problem is that your code is too big or too
+complex; GCC will refuse to optimize programs when the optimization
+itself is likely to take inordinate amounts of time.
 
 @item -Werror
 Make all warnings into errors.
