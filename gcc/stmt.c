@@ -366,10 +366,9 @@ struct stmt_status GTY(())
      always compute a value for each expr-stmt in case it is the last one.  */
   int x_expr_stmts_for_value;
 
-  /* Filename and line number of last line-number note,
-     whether we actually emitted it or not.  */
-  const char *x_emit_filename;
-  int x_emit_lineno;
+  /* Location of last line-number note, whether we actually
+     emitted it or not.  */
+  location_t x_emit_locus;
 
   struct goto_fixup *x_goto_fixup_chain;
 };
@@ -385,8 +384,7 @@ struct stmt_status GTY(())
 #define last_expr_type (cfun->stmt->x_last_expr_type)
 #define last_expr_value (cfun->stmt->x_last_expr_value)
 #define expr_stmts_for_value (cfun->stmt->x_expr_stmts_for_value)
-#define emit_filename (cfun->stmt->x_emit_filename)
-#define emit_lineno (cfun->stmt->x_emit_lineno)
+#define emit_locus (cfun->stmt->x_emit_locus)
 #define goto_fixup_chain (cfun->stmt->x_goto_fixup_chain)
 
 /* Nonzero if we are using EH to handle cleanups.  */
@@ -474,8 +472,8 @@ set_file_and_line_for_stmt (file, line)
      update it.  */
   if (cfun->stmt)
     {
-      emit_filename = file;
-      emit_lineno = line;
+      emit_locus.file = file;
+      emit_locus.line = line;
     }
 }
 
@@ -2200,8 +2198,7 @@ expand_expr_stmt_value (exp, want_value, maybe_last)
 	  if (warn_unused_value
 	      && !(TREE_CODE (exp) == CONVERT_EXPR
 		   && VOID_TYPE_P (TREE_TYPE (exp))))
-	    warning_with_file_and_line (emit_filename, emit_lineno,
-				        "statement with no effect");
+	    warning ("%Hstatement with no effect", &emit_locus);
 	}
       else if (warn_unused_value)
 	warn_if_unused_value (exp);
@@ -2361,8 +2358,7 @@ warn_if_unused_value (exp)
       if (TREE_SIDE_EFFECTS (exp))
 	return 0;
 
-      warning_with_file_and_line (emit_filename, emit_lineno,
-				  "value computed is not used");
+      warning ("%Hvalue computed is not used", &emit_locus);
       return 1;
     }
 }
@@ -4507,10 +4503,13 @@ check_seenlabel ()
 
 	      /* If insn is zero, then there must have been a syntax error.  */
 	      if (insn)
-		warning_with_file_and_line (NOTE_SOURCE_FILE (insn),
-					    NOTE_LINE_NUMBER (insn),
-					    "unreachable code at beginning of %s",
-					    case_stack->data.case_stmt.printname);
+                {
+                  location_t locus;
+                  locus.file = NOTE_SOURCE_FILE (insn);
+                  locus.line = NOTE_LINE_NUMBER (insn);
+                  warning ("%Hunreachable code at beginning of %s", &locus,
+                           case_stack->data.case_stmt.printname);
+                }
 	      break;
 	    }
 	}
