@@ -991,6 +991,13 @@ performed.  If the @code{DECL_INITIAL} is the @code{error_mark_node},
 there is an initializer, but it is given by an explicit statement later
 in the code; no bitwise copy is required.
 
+GCC provides an extension that allows either automatic variables, or
+global variables, to be placed in particular registers.  This extension
+is being used for a particular @code{VAR_DECL} if @code{DECL_REGISTER}
+holds for the @code{VAR_DECL}, and if @code{DECL_ASSEMBLER_NAME} is not
+equal to @code{DECL_NAME}.  In that case, @code{DECL_ASSEMBLER_NAME} is
+the name of the register into which the variable will be placed.
+
 @item PARM_DECL
 Used to represent a parameter to a function.  Treat these nodes
 similarly to @code{VAR_DECL} nodes.  These nodes only appear in the

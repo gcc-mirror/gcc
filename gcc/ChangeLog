@@ -1,5 +1,8 @@
 2000-11-08  Mark Mitchell  <mark@codesourcery.com>
 
+	* c-tree.texi (VAR_DECL): Describe representation of GCC's
+	extension for placing variables in particular registers.
+
 	* c-tree.texi (FUNCTION_TYPE): Clarify TYPE_ARG_TYPES for
 	unprototyped C functions with no parameters.
 
