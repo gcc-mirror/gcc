@@ -1,3 +1,8 @@
+Sun Feb 15 15:23:15 1998  John Carr  <jfc@mit.edu>
+
+	* alias.c: Include <stdlib.h> and <string.h>.
+	(init_alias_analysis): Pass NULL_RTX instead of 0 to record_set.
+
 Sat Feb 14 11:23:09 PST 1998 Jeff Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.

@@ -20,6 +20,16 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+#ifdef HAVE_STRING_H
+#include <string.h>
+#else
+#ifdef HAVE_STRINGS_H
+#include <strings.h>
+#endif
+#endif
 #include "rtl.h"
 #include "expr.h"
 #include "regs.h"
@@ -1085,7 +1095,7 @@ init_alias_analysis ()
 
 	      if (GET_CODE (PATTERN (insn)) == SET
 		  && (find_reg_note (insn, REG_NOALIAS, NULL_RTX)))
-		record_set (SET_DEST (PATTERN (insn)), 0);
+		record_set (SET_DEST (PATTERN (insn)), NULL_RTX);
 	      else
 		note_stores (PATTERN (insn), record_set);
 
