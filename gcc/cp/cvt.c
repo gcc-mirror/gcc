@@ -1246,23 +1246,7 @@ cp_convert (type, expr, convtype, flags)
 	  return error_mark_node;
 	}
       if (code == BOOLEAN_TYPE)
-	{
-	  tree newe = truthvalue_conversion (e);
-	  /* Avoid stupid (infinite) recursion from backend. */
-	  if (TREE_CODE (newe) != NOP_EXPR || e != TREE_OPERAND (newe, 0))
-	    e = newe;
-	  if (TREE_TYPE (e) == bool_type_node)
-	    return e;
-	  else if (TREE_CODE (e) == INTEGER_CST)
-	    {
-	      if (e == integer_zero_node)
-		e = false_node;
-	      else
-		e = true_node;
-	    }
-	  else
-	    return build1 (NOP_EXPR, bool_type_node, e);
-	}
+	return truthvalue_conversion (e);
       return fold (convert_to_integer (type, e));
     }
   if (code == POINTER_TYPE)
@@ -1907,8 +1891,8 @@ build_default_binary_type_conversion (code, arg1, arg2)
   if (code == TRUTH_ANDIF_EXPR
       || code == TRUTH_ORIF_EXPR)
     {
-      *arg1 = convert (bool_type_node, *arg1);
-      *arg2 = convert (bool_type_node, *arg2);
+      *arg1 = convert (boolean_type_node, *arg1);
+      *arg2 = convert (boolean_type_node, *arg2);
     }
   else if (TYPE_HAS_INT_CONVERSION (type1))
     {
@@ -1971,7 +1955,7 @@ build_default_unary_type_conversion (code, arg)
     }
 
   if (code == TRUTH_NOT_EXPR)
-    *arg = convert (bool_type_node, *arg);
+    *arg = convert (boolean_type_node, *arg);
   else if (TYPE_HAS_INT_CONVERSION (type))
     {
       if (TYPE_HAS_REAL_CONVERSION (type))
@@ -2006,7 +1990,7 @@ type_promotes_to (type)
 
   /* bool always promotes to int (not unsigned), even if it's the same
      size.  */
-  if (type == bool_type_node)
+  if (type == boolean_type_node)
     type = integer_type_node;
 
   /* Normally convert enums to int, but convert wide enums to something

@@ -1439,7 +1439,7 @@ extern tree delta_type_node;
 extern tree long_long_integer_type_node, long_long_unsigned_type_node;
 /* For building calls to `delete'.  */
 extern tree integer_two_node, integer_three_node;
-extern tree bool_type_node, true_node, false_node;
+extern tree boolean_type_node, boolean_true_node, boolean_false_node;
 
 /* in pt.c  */
 /* PARM_VEC is a vector of template parameters, either IDENTIFIER_NODEs or
