@@ -2532,7 +2532,7 @@ process_command (argc, argv)
 	}
       else if (! strcmp (argv[i], "-dumpversion"))
 	{
-	  printf ("%s\n", version_string);
+	  printf ("%s\n", spec_version);
 	  exit (0);
 	}
       else if (! strcmp (argv[i], "-dumpmachine"))
