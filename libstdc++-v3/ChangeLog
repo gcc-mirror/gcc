@@ -1,3 +1,11 @@
+2002-01-23  Richard Henderson  <rth@redhat.com>
+
+	PR libstdc++/5198
+	* config/cpu/m68k/bits/atomicity.h (__exchange_and_add): Only use
+	CAS on the cpu variants that support it.  Add versions that use
+	TAS and that disable interrupts.
+	(__atomic_add): Use __exchange_and_add to guarantee atomicity.
+
 2002-01-23  Matt Kraai  <kraai@alumni.cmu.edu>
 
 	* include/bits/locale_facets.tcc: Remove old comments.
