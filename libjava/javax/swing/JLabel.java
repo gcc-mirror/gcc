@@ -35,19 +35,16 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package javax.swing;
 
-import java.awt.*;
-import javax.swing.plaf.*;
-
-
+import java.awt.Component;
+import java.awt.Image;
+import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
-import javax.accessibility.AccessibleRole;
-import javax.accessibility.AccessibleState;
-import javax.accessibility.AccessibleStateSet;
+import javax.swing.plaf.LabelUI;
 
-
-public class JLabel extends JComponent implements SwingConstants
+public class JLabel extends JComponent implements Accessible, SwingConstants
 {
     String text;
     Icon icon;

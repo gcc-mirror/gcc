@@ -1,5 +1,5 @@
 /* CompoundBorder.java -- 
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -42,45 +42,212 @@ import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Insets;
 
-public class CompoundBorder extends AbstractBorder
+/**
+ * A Border that is composed of an interior and an exterior border,
+ * where the interior border is tightly nested into the exterior.
+ *
+ * @author Sascha Brawer (brawer@dandelis.ch)
+ */
+public class CompoundBorder
+  extends AbstractBorder
 {
+  static final long serialVersionUID = 9054540377030555103L;
+
+
+  /**
+   * The inside border, which is painted between the bordered
+   * Component and the outside border. It is valid for
+   * <code>insideBorder</code> to be <code>null</code>.
+   */
   protected Border insideBorder;
+
+
+  /**
+   * The outside border, which is painted outside both the
+   * bordered Component and the inside border. It is valid for
+   * <code>outsideBorder</code> to be <code>null</code>.
+   */
   protected Border outsideBorder;
 
+
+  /**
+   * Constructs a CompoundBorder whose inside and outside borders
+   * are both <code>null</code>. While this does not really make
+   * any sense (there exists a class EmptyBorder as well, and not
+   * every Component needs to have a border at all), the API
+   * specification requires the existence of this constructor.
+   *
+   * @see EmptyBorder
+   */
   public CompoundBorder ()
   {
     this (null, null);
   }
 
+
+  /**
+   * Constructs a CompoundBorder with the specified inside and
+   * outside borders.
+   *
+   * @param outsideBorder the outside border, which is painted to the
+   *        outside of both <code>insideBorder</code> and the bordered
+   *        compoonent. It is acceptable to pass <code>null</code>, in
+   *        which no outside border is painted.
+   *
+   * @param insideBorder the inside border, which is painted to
+   *        between <code>outsideBorder</code> and the bordered
+   *        component. It is acceptable to pass <code>null</code>, in
+   *        which no intside border is painted.
+   */
   public CompoundBorder (Border outsideBorder, Border insideBorder)
   {
     this.outsideBorder = outsideBorder;
     this.insideBorder = insideBorder;
   }
+
+
+  /**
+   * Determines whether or not this border is opaque. An opaque
+   * border fills every pixel in its area when painting. Partially
+   * translucent borders must return <code>false</code>, or ugly
+   * artifacts can appear on screen.
+   *
+   * @return <code>true</code> if both the inside and outside borders
+   *         are opaque, or <code>false</code> otherwise.
+   */
+  public boolean isBorderOpaque ()
+  {
+    /* While it would be safe to assume true for the opacity of
+     * a null border, this behavior would not be according to
+     * the API specification. Also, it is pathological to have
+     * null borders anyway.
+     */
+    if ((insideBorder == null) || (outsideBorder == null))
+      return false;
+
+    return insideBorder.isBorderOpaque()
+      && outsideBorder.isBorderOpaque();
+  }
     
-    public Insets getBorderInsets(Component  c,
-				  Insets s)
+
+  /**
+   * Paints the compound border by first painting the outside border,
+   * then painting the inside border tightly nested into the outside. 
+   *
+   * @param c the component whose border is to be painted.
+   * @param g the graphics for painting.
+   * @param x the horizontal position for painting the border.
+   * @param y the vertical position for painting the border.
+   * @param width the width of the available area for painting the border.
+   * @param height the height of the available area for painting the border.
+   */
+  public void paintBorder(Component c, Graphics g,
+                          int x, int y, int width, int height)
+  {
+    /* If there is an outside border, paint it and reduce the
+     * bounding box by its insets.
+     */
+    if (outsideBorder != null)
     {
-	if (s == null)
-	    s = new Insets(0,0,0,0);
-	
-	s.left = s.right = s.top = s.bottom = 5;
-	
-	return s;
+      Insets outsideInsets;
+
+      outsideBorder.paintBorder(c, g, x, y, width, height);
+      outsideInsets = outsideBorder.getBorderInsets(c);
+
+      x += outsideInsets.left;
+      y += outsideInsets.top;
+
+      /* Reduce width and height by the respective extent of the
+       * outside border.
+       */
+      width -= outsideInsets.left + outsideInsets.right;
+      height -= outsideInsets.top + outsideInsets.bottom;
     }
-    
-    public boolean isBorderOpaque()
+
+    if (insideBorder != null)
+      insideBorder.paintBorder(c, g, x, y, width, height);
+  }
+
+
+  /**
+   * Changes the specified insets to the insets of this border,
+   * which is the sum of the insets of the inside and the outside
+   * border.
+   *
+   * @param c the component in the center of this border.
+   * @param insets an Insets object for holding the added insets.
+   *
+   * @return the <code>insets</code> object.
+   */
+  public Insets getBorderInsets(Component c, Insets insets)
+  {
+    Insets borderInsets;
+
+    if (insets == null)
+      insets = new Insets (0,0,0,0);
+    else
+      insets.left = insets.right = insets.top = insets.bottom = 0;
+
+    /* If there is an outside border, add it to insets. */
+    if (outsideBorder != null)
     {
-	return false;
+      borderInsets = outsideBorder.getBorderInsets(c);
+      insets.left += borderInsets.left;
+      insets.right += borderInsets.right;
+      insets.top += borderInsets.top;
+      insets.bottom += borderInsets.bottom;
     }
-    
-    public void paintBorder(Component  c, 
-			    Graphics  g,
-			    int  x,
-			    int  y,
-			    int  width,
-			    int  height)
+
+    /* If there is an inside border, add it to insets. */
+    if (insideBorder != null)
     {
+      borderInsets = insideBorder.getBorderInsets(c);
+      insets.left += borderInsets.left;
+      insets.right += borderInsets.right;
+      insets.top += borderInsets.top;
+      insets.bottom += borderInsets.bottom;
     }
+
+    return insets;
+  }
+
+
+  /**
+   * Determines the insets of this border, which is the sum of the
+   * insets of the inside and the outside border.
+   *
+   * @param c the component in the center of this border.
+   */
+  public Insets getBorderInsets (Component c)
+  {
+    /* It is not clear why CompoundBorder does not simply inherit
+     * the implementation from AbstractBorder. However, we want
+     * to be compatible with the API specification, which overrides
+     * the getBorderInsets(Component) method.
+     */
+    return getBorderInsets (c, null);
+  }
+
+
+  /**
+   * Returns the outside border, which is painted outside both the
+   * bordered Component and the inside border. It is valid for the
+   * result to be <code>null</code>.
+   */
+  public Border getOutsideBorder ()
+  {
+    return outsideBorder;
+  }
+
+
+  /**
+   * Returns the inside border, which is painted between the bordered
+   * Component and the outside border. It is valid for the result to
+   * be <code>null</code>.
+   */
+  public Border getInsideBorder ()
+  {
+    return insideBorder;
+  }
 }
 

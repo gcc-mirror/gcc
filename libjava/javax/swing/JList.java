@@ -1,5 +1,5 @@
 /* JList.java -- 
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -35,21 +35,21 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package javax.swing;
 
-import javax.swing.event.*;
-
-import java.awt.*;
-import javax.swing.plaf.*;
-import java.util.*;
-
-
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Rectangle;
+import java.util.Vector;
+import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
-import javax.accessibility.AccessibleRole;
-import javax.accessibility.AccessibleState;
-import javax.accessibility.AccessibleStateSet;
+import javax.swing.event.ListDataEvent;
+import javax.swing.event.ListDataListener;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.plaf.ListUI;
 
-public class JList extends JComponent implements Scrollable
+public class JList extends JComponent implements Accessible, Scrollable
 {
     Color select_back, select_fore;
     ListCellRenderer render;
@@ -143,14 +143,13 @@ public class JList extends JComponent implements Scrollable
     
     public void setListData(final Vector listData)
     {
-	// XXX - FIXME Don't also name this AL, workaround for gcj 3.1.
-	class ALData extends AbstractListModel 
+	class AL extends AbstractListModel 
 	{
 	    public int getSize()              { return listData.size(); }
 	    public Object getElementAt(int i) { return listData.elementAt(i); }
 	};
 	
-        setModel (new ALData());
+        setModel (new AL());
     }
     
     

@@ -35,15 +35,19 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package javax.swing;
 
-import java.io.*;
-import java.net.*;
-import javax.swing.text.*;
-import javax.swing.event.*;
-import java.awt.event.*;
-import java.awt.*;
-import javax.accessibility.*;
+import java.awt.Dimension;
+import java.awt.event.KeyEvent;
+import java.io.InputStream;
+import java.net.URL;
+import javax.accessibility.AccessibleContext;
+import javax.swing.text.EditorKit;
+import javax.swing.text.JTextComponent;
+import javax.swing.text.PlainEditorKit;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
 
 public class JEditorPane extends JTextComponent
 {

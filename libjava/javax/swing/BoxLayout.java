@@ -35,9 +35,15 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package javax.swing;
 
-import java.awt.*;
+import java.awt.Container;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.GridLayout;
+import java.awt.LayoutManager2;
+import java.io.Serializable;
 
 /**
  * A layout for swing components.
@@ -46,7 +52,7 @@ import java.awt.*;
  *
  * @author Ronald Veldema (rveldema@cs.vu.nl)
  */
-public class BoxLayout implements LayoutManager2
+public class BoxLayout implements LayoutManager2, Serializable
 {
     GridLayout      gridbag;
     

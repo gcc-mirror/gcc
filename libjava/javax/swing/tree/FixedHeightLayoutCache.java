@@ -35,12 +35,12 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package javax.swing.tree;
 
-// Imports
-import java.awt.*;
-import java.util.*;
-import javax.swing.event.*;
+import java.awt.Rectangle;
+import java.util.Enumeration;
+import javax.swing.event.TreeModelEvent;
 
 /**
  * FixedHeightLayoutCache

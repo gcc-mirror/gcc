@@ -37,10 +37,13 @@ exception statement from your version. */
 
 
 package javax.swing.table;
+
 import java.awt.Component;
 import java.io.Serializable;
 import javax.swing.JLabel;
 import javax.swing.JTable;
+import javax.swing.border.Border;
+
 /**
  * STUBBED
  */

@@ -35,11 +35,17 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package javax.swing;
 
-import javax.swing.plaf.*;
-import java.awt.*;
-
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Graphics;
+import java.awt.Image;
+import java.awt.Point;
+import java.awt.Rectangle;
+import javax.accessibility.Accessible;
+import javax.swing.plaf.ViewportUI;
 
 public class JViewport extends JComponent
 {

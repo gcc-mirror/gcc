@@ -35,12 +35,18 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package javax.swing;
 
-import java.awt.*;
-import java.awt.image.*;
-
-
+import java.awt.Component;
+import java.awt.Graphics;
+import java.awt.Image;
+import java.awt.MediaTracker;
+import java.awt.Toolkit;
+import java.io.Serializable;
+import java.net.URL;
+import javax.accessibility.Accessible;
+import javax.accessibility.AccessibleContext;
 
 public class ImageIcon implements Icon
 {

@@ -46,7 +46,8 @@ import javax.accessibility.*;
  * @author	Andrew Selkirk
  * @version	1.0
  */
-public class JRadioButtonMenuItem extends JMenuItem implements Accessible {
+public class JRadioButtonMenuItem extends JMenuItem implements Accessible
+{
 
 	//-------------------------------------------------------------
 	// Classes ----------------------------------------------------

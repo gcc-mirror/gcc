@@ -35,15 +35,22 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package javax.swing;
 
-import java.util.*;
-import java.awt.event.*;
-import java.awt.*;
-import javax.swing.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.io.Serializable;
+import java.util.EventListener;
+import java.util.Vector;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.EventListenerList;
 
 public class DefaultButtonModel
-  implements ButtonModel, java.io.Serializable
+  implements ButtonModel, Serializable
 {
   static final long serialVersionUID = -5342609566534980231L;
 

@@ -218,6 +218,7 @@ public class JPasswordField extends JTextField {
 	/**
 	 * getText
 	 * @returns String
+         * @deprecated
 	 */
 	public String getText() {
 		return null; // TODO
@@ -229,6 +230,7 @@ public class JPasswordField extends JTextField {
 	 * @param length TODO
 	 * @exception BadLocationException TODO
 	 * @returns String
+         * @deprecated
 	 */
 	public String getText(int offset, int length) throws BadLocationException {
 		return null; // TODO

@@ -49,6 +49,8 @@ import javax.accessibility.*;
  */
 public class JButton extends AbstractButton implements Accessible 
 {
+  private static final long serialVersionUID = -1907255238954382202L;
+
     boolean def, is_def;
 
     

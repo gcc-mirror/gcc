@@ -41,6 +41,7 @@ package javax.swing;
 import java.awt.event.FocusEvent;
 import java.io.Serializable;
 import java.text.Format;
+import java.text.ParseException;
 import javax.swing.text.Document;
 import javax.swing.text.DocumentFilter;
 import javax.swing.text.NavigationFilter;

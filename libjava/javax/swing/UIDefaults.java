@@ -77,7 +77,7 @@ public class UIDefaults extends Hashtable
     Object createValue(UIDefaults table);
   } // interface LazyValue
 
-  public static class ProxyLazyValue
+  public static class ProxyLazyValue implements LazyValue
   {
     public ProxyLazyValue(String s)
     {
@@ -100,6 +100,8 @@ public class UIDefaults extends Hashtable
       throw new Error("not implemented");
     }
   } // class ProxyLazyValue
+
+  private static final long serialVersionUID = 7341222528856548117L;
 
   public UIDefaults()
   {

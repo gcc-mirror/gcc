@@ -35,18 +35,20 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package javax.swing.event;
 
-// Imports
-import java.net.*;
-import java.util.*;
+import java.net.URL;
+import java.util.EventObject;
+import javax.swing.text.Element;
 
 /**
  * HyperlinkEvent
  * @author Andrew Selkirk
  * @author Ronald Veldema
  */
-public class HyperlinkEvent extends EventObject {
+public class HyperlinkEvent extends EventObject
+{
 
 	//-------------------------------------------------------------
 	// Classes ----------------------------------------------------

@@ -67,7 +67,6 @@ public class BorderUIResource
      */
     public BorderUIResource(Border delegate)
     {
-	super ();
 	this.delegate = delegate;
     }
 
@@ -128,7 +127,7 @@ public class BorderUIResource
 				     Color highlight, 
 				     Color shadow) 
 	{
-	    super (bevelType);
+	  super (bevelType, highlight, shadow);
 	}
 	public BevelBorderUIResource(int bevelType,
 				     Color highlightOuter,
@@ -136,7 +135,8 @@ public class BorderUIResource
 				     Color shadowOuter,
 				     Color shadowInner) 
 	{
-	    super (bevelType);
+	  super (bevelType, highlightOuter, highlightInner, shadowOuter,
+		 shadowInner);
 	}
     }
 
@@ -191,7 +191,7 @@ public class BorderUIResource
 	public EtchedBorderUIResource(int etchType, Color highlight, 
 				      Color shadow)
 	{
-	  super (etchType);
+          super (etchType, highlight, shadow);
 	}
 
     }
@@ -210,7 +210,7 @@ public class BorderUIResource
 	public LineBorderUIResource(Color color,
 				    int thickness)
 	{
-	   super (color); 
+	   super (color, thickness);
 	}
     }
 
@@ -224,12 +224,13 @@ public class BorderUIResource
 	public MatteBorderUIResource(int top, int left, int bottom, 
 				     int right, Color color)
 	{
-	  super (top, left, bottom, right, color);
+          super (new Insets (top, left, bottom, right), color);
 	}
 	public MatteBorderUIResource(int top, int left, int bottom,
 				     int right, Icon tileIcon)
 	{
-	  super (top, left, bottom, right, tileIcon);
+          super (new Insets (top, left, bottom, right), tileIcon);
+
 	}
 	public MatteBorderUIResource(Icon tileIcon)
 	{
@@ -254,24 +255,24 @@ public class BorderUIResource
 	}
 	TitledBorderUIResource(Border border, String title)
 	{
-          super (border);
+          super (border, title);
 	}
 	TitledBorderUIResource(Border border, String title,
 			       int titleJustification, int titlePosition)
 	{
-          super (border);
+          super (border, title, titleJustification, titlePosition);
 	}
 	TitledBorderUIResource(Border border, String title,
 			       int titleJustification, int titlePosition,
 			       Font titleFont)
 	{
-          super (border);
+          super (border, title, titleJustification, titlePosition, titleFont);
 	}
 	TitledBorderUIResource(Border border, String title,
 			       int titleJustification, int titlePosition,
 			       Font titleFont, Color titleColor)
 	{
-          super (border);
+          super (border, title, titleJustification, titlePosition, titleFont, titleColor);
 	}
     }
 }

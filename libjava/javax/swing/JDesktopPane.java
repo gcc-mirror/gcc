@@ -47,7 +47,8 @@ import javax.swing.plaf.*;
  * @author	Andrew Selkirk
  * @version	1.0
  */
-public class JDesktopPane extends JLayeredPane implements Accessible {
+public class JDesktopPane extends JLayeredPane implements Accessible
+{
 
 	//-------------------------------------------------------------
 	// Classes ----------------------------------------------------

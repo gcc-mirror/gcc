@@ -35,10 +35,14 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package javax.swing;
 
+import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Rectangle;
+import java.util.Hashtable;
 import java.util.Vector;
 import javax.accessibility.Accessible;
 import javax.swing.event.ChangeEvent;
@@ -49,9 +53,10 @@ import javax.swing.event.TableColumnModelEvent;
 import javax.swing.event.TableColumnModelListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
+import javax.swing.table.JTableHeader;
 import javax.swing.table.TableModel;
+import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableColumnModel;
-import javax.swing.table.DefaultTableModel;
 
 public class JTable extends JComponent
   implements TableModelListener, Scrollable, TableColumnModelListener,

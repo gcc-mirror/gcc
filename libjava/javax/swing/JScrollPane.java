@@ -35,13 +35,14 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package javax.swing;
 
-import java.awt.*;
-import javax.swing.plaf.*;
+import java.awt.Component;
+import javax.accessibility.Accessible;
+import javax.swing.plaf.ScrollPaneUI;
 
-
-public class JScrollPane extends JComponent
+public class JScrollPane extends JComponent implements Accessible, ScrollPaneConstants
 {
     protected JViewport  columnHeader;
     protected JViewport  rowHeader;

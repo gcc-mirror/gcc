@@ -37,9 +37,9 @@ exception statement from your version. */
 
 package javax.swing;
 
-// Imports
-import java.awt.event.*;
-import java.io.*;
+import java.awt.AWTKeyStroke;
+import java.awt.event.KeyEvent;
+import java.io.Serializable;
 
 /**
  * KeyStroke

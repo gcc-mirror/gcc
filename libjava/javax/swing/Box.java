@@ -35,14 +35,17 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package javax.swing;
+
+import javax.accessibility.Accessible;
 
 /**
  * Needs some work I guess....
  *
  * @author Ronald Veldema (rveldema@cs.vu.nl)
  */
-public class Box extends JComponent
+public class Box extends JComponent implements Accessible
 {
     Box(int a)
     {

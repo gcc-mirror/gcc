@@ -189,17 +189,4 @@ public abstract class AbstractListModel
   {
     return (ListDataListener[]) getListeners (ListDataListener.class);
   }
-
-  /**
-   * getElementAt
-   * @param index TODO
-   * @returns Object
-   */
-  public abstract Object getElementAt (int index);
-
-  /**
-   * getSize
-   * @returns int
-   */
-  public abstract int getSize ();
 }
