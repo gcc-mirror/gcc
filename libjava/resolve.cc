@@ -696,9 +696,7 @@ _Jv_PrepareClass(jclass klass)
   clz->vtable_method_count = vtable_count;
 
   /* allocate vtable structure */
-  _Jv_VTable *vtable = (_Jv_VTable*) 
-    _Jv_AllocBytes (sizeof (_Jv_VTable) 
-			   + (sizeof (void*) * (vtable_count)));
+  _Jv_VTable *vtable = _Jv_VTable::new_vtable (vtable_count);
   vtable->clas = clz;
   vtable->gc_descr = _Jv_BuildGCDescr(clz);
 
@@ -712,9 +710,8 @@ _Jv_PrepareClass(jclass klass)
 
     /* copy super class' vtable entries. */
     if (effective_superclass && effective_superclass->vtable)
-      memcpy ((void*)&vtable->method[0],
-	      (void*)&effective_superclass->vtable->method[0],
-	      sizeof (void*) * effective_superclass->vtable_method_count);
+      for (int i = 0; i < effective_superclass->vtable_method_count; ++i)
+	vtable->set_method (i, effective_superclass->vtable->get_method (i));
   }
 
   /* now, install our own vtable entries, reprise... */
@@ -735,9 +732,9 @@ _Jv_PrepareClass(jclass klass)
 	    throw_internal_error ("vtable problem...");
 
 	  if (clz->interpreted_methods[i] == 0)
-	    vtable->method[index] = (void*)&_Jv_abstractMethodError;
+	    vtable->set_method(i, (void*)&_Jv_abstractMethodError);
 	  else
-	    vtable->method[index] = this_meth->ncode;
+	    vtable->set_method(i, this_meth->ncode);
 	}
     }
 
