@@ -1,3 +1,7 @@
+Sun Oct 11 14:21:14 1998  Mark Mitchell  <mark@markmitchell.com>
+
+	* flow.c (find_basic_blocks_1): Fix prototype.
+
 Sun Oct 11 05:03:41 1998  Ken Raeburn  <raeburn@cygnus.com>
 
 	* tree.h (DECL_NO_CHECK_MEMORY_USAGE): New macros.
