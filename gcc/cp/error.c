@@ -111,7 +111,6 @@ static void cp_print_error_function (diagnostic_context *, diagnostic_info *);
 
 static bool cp_printer (output_buffer *, text_info *);
 static void print_non_consecutive_character (output_buffer *, int);
-static void print_integer (output_buffer *, HOST_WIDE_INT);
 static tree locate_error (const char *, va_list);
 static location_t location_of (tree);
 
@@ -725,7 +724,7 @@ dump_type_suffix (tree t, int flags)
       if (TYPE_DOMAIN (t))
 	{
 	  if (host_integerp (TYPE_MAX_VALUE (TYPE_DOMAIN (t)), 0))
-	    print_integer
+	    output_host_wide_integer
               (scratch_buffer,
                tree_low_cst (TYPE_MAX_VALUE (TYPE_DOMAIN (t)), 0) + 1);
 	  else if (TREE_CODE (TYPE_MAX_VALUE (TYPE_DOMAIN (t))) == MINUS_EXPR)
@@ -1477,7 +1476,7 @@ dump_expr (tree t, int flags)
 		output_add_string (scratch_buffer, digit_buffer);
 	      }
 	    else
-	      print_integer (scratch_buffer, TREE_INT_CST_LOW (t));
+	      output_host_wide_integer (scratch_buffer, TREE_INT_CST_LOW (t));
 	  }
       }
       break;
@@ -2500,13 +2499,6 @@ cp_printer (output_buffer *buffer, text_info *text)
 #undef next_tcode
 #undef next_lang
 #undef next_int
-}
-
-static void
-print_integer (output_buffer *buffer, HOST_WIDE_INT i)
-{
-  sprintf (digit_buffer, HOST_WIDE_INT_PRINT_DEC, (HOST_WIDE_INT) i);
-  output_add_string (buffer, digit_buffer);
 }
 
 static void

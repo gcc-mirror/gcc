@@ -1,3 +1,9 @@
+2003-06-29  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* error.c (print_integer): Remove.
+	(dump_type_suffix): Adjust.
+	(dump_expr): Likewise.
+
 2003-06-28  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* error.c (print_instantiation_partial_context): Take a
