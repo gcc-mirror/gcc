@@ -1,3 +1,29 @@
+2004-11-09  James A. Morrison  <phython@gcc.gnu.org>
+            Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR target/18230
+	* doc/md.texi (SPARC constraints): Document 'Y' constraint.
+	* config/sparc/sparc-modes.def: Add vector modes of 4 and 8 bytes.
+	* config/sparc/sparc.c (sparc_vector_mode_supported_p): New function.
+	(TARGET_VECTOR_MODE_SUPPORTED_P): Set to sparc_vector_mode_supported_p.
+	(fp_zero_operand): Accept MODE_VECTOR_INT modes.
+	(input_operand): Accept CONST_VECTOR with MODE_VECTOR_INT modes.
+	(sparc_cannot_force_const_mem): Return false for CONST_VECTOR.
+	(sparc_init_modes): Set sparc_mode_class to SF_MODE or DF_MODE for
+	MODE_VECTOR_INT modes.
+	(sparc_extra_constraint_check): Add new constraint 'Y'.
+	* config/sparc/sparc.h: Define UNITS_PER_SIMD_WORD to 8 for TARGET_VIS.
+	* config/sparc/sparc.md (V32): New mode macro for 32-bit modes.
+	(V64): New mode macro for 64-bit modes.
+	(movsf): Use V32 for mode instead of SF.
+	(movsf_insn_vis): Use V32 for mode instead of SF.  Add 'Y' constraint
+	alongside 'G' constraint.
+	(movdf): Use V64 for mode instead of DF.
+	(movdf_insn_v9only_vis, modf_insn_sp64_vis): Use V64 for mode instead
+	of DF.  Add 'Y' constraint alongside 'G' constraint.
+	(multi-isn and misaligned mems DFmode splitters): Use V64 for mode
+	instead of DF.
+
 2004-11-09  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.c (s390_select_ccmode): Return CCAPmode for

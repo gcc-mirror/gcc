@@ -769,6 +769,8 @@ extern struct sparc_cpu_select sparc_select[];
 #define MIN_UNITS_PER_WORD	4
 #endif
 
+#define UNITS_PER_SIMD_WORD	(TARGET_VIS ? 8 : 0)
+
 /* Now define the sizes of the C data types.  */
 
 #define SHORT_TYPE_SIZE		16
@@ -2042,7 +2044,9 @@ do {									\
        integer register, needed for ldd/std instructions.
 
    'W' handles the memory operand when moving operands in/out
-       of 'e' constraint floating point registers.  */
+       of 'e' constraint floating point registers.
+
+   'Y' handles the zero vector constant.  */
 
 #ifndef REG_OK_STRICT
 
