@@ -48,11 +48,14 @@ proc dg-scan { name positive testcase output_file orig_args } {
     set text [read $fd]
     close $fd
 
-    set match [regexp -- [lindex $orig_args 0] $text]
+    set pattern [lindex $orig_args 0]
+    set printable_pattern [string map {\t \\t \n \\n \r \\r \\ \\\\} $pattern]
+
+    set match [regexp -- $pattern $text]
     if { $match == $positive } {
-	pass "$testcase $name [lindex $orig_args 0]"
+	pass "$testcase $name $printable_pattern"
     } else {
-	fail "$testcase $name [lindex $orig_args 0]"
+	fail "$testcase $name $printable_pattern"
     }
 }
 
