@@ -1,5 +1,8 @@
 2001-11-03  Geoffrey Keating  <geoffk@redhat.com>
 
+	* config/stormy16/stormy16.c (stormy16_output_shift): Don't
+	look at 'temp' if we won't be using it.
+
 	* config/stormy16/stormy16.h (CONST_COSTS): Define.
 	(RTX_COSTS): Define.
 	(ADDRESS_COST): Define.
