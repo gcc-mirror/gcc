@@ -280,6 +280,14 @@ If you obtained the sources via CVS, @var{srcdir} must refer to the top
 @file{gcc} directory, the one where the @file{MAINTAINERS} can be found,
 and not its @file{gcc} subdirectory, otherwise the build will fail.
 
+If either @var{srcdir} or @var{objdir} is located on an automounted NFS
+file system, the shell's built-in @command{pwd} command will return
+temporary pathnames.  Using these can lead to various sorts of build
+problems.  To avoid this issue, set the @env{PWDCMD} environment
+variable to an automounter-aware @command{pwd} command, e.g.,
+@command{pawd} or @command{amq -w}, during the configuration and build
+phases.
+
 First, in general, GCC @strong{must} be built into a separate directory
 than the sources which does @strong{not} reside within the source tree.
 This is how almost all developers build GCC; building where @var{srcdir}
