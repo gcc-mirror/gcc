@@ -1,3 +1,7 @@
+2002-03-27  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* configure.in (alpha*-dec-osf*): Enable libgcj.
+
 2002-03-24  Nick Clifton  <nickc@cambridge.redhat.com>
 
 	Fix for: PR bootstrap/3591, target/5676
