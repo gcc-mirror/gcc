@@ -1865,51 +1865,50 @@ main (argc, argv)
     deps_column = 0;
 
     if (deps_target) {
-      deps_output (deps_target, 0);
-      deps_output (":", 0);
-    } else if (*in_fname == 0)
-      deps_output ("-: ", 0);
-    else {
+      deps_output (deps_target, ':');
+    } else if (*in_fname == 0) {
+      deps_output ("-", ':');
+    } else {
+      char *p, *q;
       int len;
-      char *p = in_fname;
-      char *p1 = p;
-      /* Discard all directory prefixes from P.  */
-      while (*p1) {
-	if (*p1 == '/')
-	  p = p1 + 1;
-	p1++;
-      }
+
+      /* Discard all directory prefixes from filename.  */
+      if ((q = rindex (in_fname, '/')) != NULL)
+	++q;
+      else
+	q = in_fname;
+
+      /* Copy remainder to mungable area.  */
+      p = alloca (strlen(q) + 8);
+      strcpy (p, q);
+
       /* Output P, but remove known suffixes.  */
       len = strlen (p);
-      if (p[len - 2] == '.' && p[len - 1] == 'c')
-	deps_output (p, len - 2);
-      else if (p[len - 2] == '.' && p[len - 1] == 'C')
-	deps_output (p, len - 2);
-      else if (p[len - 3] == '.'
+      q = p + len;
+      if (len >= 2
+	  && p[len - 2] == '.'
+	  && index("cCsSm", p[len - 1]))
+	q = p + (len - 2);
+      else if (len >= 3
+	       && p[len - 3] == '.'
 	       && p[len - 2] == 'c'
 	       && p[len - 1] == 'c')
-	deps_output (p, len - 3);
-      else if (p[len - 4] == '.'
+	q = p + (len - 3);
+      else if (len >= 4
+	       && p[len - 4] == '.'
 	       && p[len - 3] == 'c'
 	       && p[len - 2] == 'x'
 	       && p[len - 1] == 'x')
-	deps_output (p, len - 4);
-      else if (p[len - 2] == '.' && p[len - 1] == 's')
-	deps_output (p, len - 2);
-      else if (p[len - 2] == '.' && p[len - 1] == 'S')
-	deps_output (p, len - 2);
-      else if (p[len - 2] == '.' && p[len - 1] == 'm')
-	deps_output (p, len - 2);
-      else
-	deps_output (p, 0);
+	q = p + (len - 4);
+
       /* Supply our own suffix.  */
 #ifndef VMS
-      deps_output (".o : ", 0);
+      strcpy (q, ".o");
 #else
-      deps_output (".obj : ", 0);
+      strcpy (q, ".obj");
 #endif
-      deps_output (in_fname, 0);
-      deps_output (" ", 0);
+
+      deps_output (p, ':');
     }
   }
 
@@ -4170,11 +4169,8 @@ get_filename:
       ptr->fname = savestring (fname);
 
       /* For -M, add this file to the dependencies.  */
-      if (print_deps > (angle_brackets || (system_include_depth > 0))) {
-	deps_output ("", 0);
-	deps_output (fname, 0);
-	deps_output (" ", 0);
-      }
+      if (print_deps > (angle_brackets || (system_include_depth > 0)))
+	deps_output (fname, ' ');
     }   
 
     /* Handle -H option.  */
@@ -8925,34 +8921,41 @@ append_include_chain (first, last)
 
 /* Add output to `deps_buffer' for the -M switch.
    STRING points to the text to be output.
-   SIZE is the number of bytes, or 0 meaning output until a null.
-   Outputting the empty string breaks the line if it is long enough.  */
+   SPACER is ':' for targets, ' ' for dependencies, zero for text
+   to be inserted literally.  */
 
 static void
-deps_output (string, size)
+deps_output (string, spacer)
      char *string;
-     unsigned size;
+     int spacer;
 {
+  int size = strlen (string);
+
   if (size == 0)
-    size = strlen (string);
+    return;
 
 #ifndef MAX_OUTPUT_COLUMNS
-#define MAX_OUTPUT_COLUMNS 75
+#define MAX_OUTPUT_COLUMNS 72
 #endif
-  if (size == 0 && deps_column != 0
-      && size + deps_column > MAX_OUTPUT_COLUMNS) {
-    deps_output ("\\\n  ", 0);
+  if (spacer
+      && deps_column > 0
+      && (deps_column + size) > MAX_OUTPUT_COLUMNS)
+  {
+    deps_output (" \\\n  ", 0);
     deps_column = 0;
   }
 
-  if (deps_size + size + 1 > deps_allocated_size) {
-    deps_allocated_size = deps_size + size + 50;
-    deps_allocated_size *= 2;
+  if (deps_size + size + 8 > deps_allocated_size) {
+    deps_allocated_size = (deps_size + size + 50) * 2;
     deps_buffer = (char *) xrealloc (deps_buffer, deps_allocated_size);
   }
+  if (spacer == ' ' && deps_column > 0)
+    deps_buffer[deps_size++] = ' ';
   bcopy (string, &deps_buffer[deps_size], size);
   deps_size += size;
   deps_column += size;
+  if (spacer == ':')
+    deps_buffer[deps_size++] = ':';
   deps_buffer[deps_size] = 0;
 }
 
