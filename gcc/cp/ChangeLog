@@ -1,3 +1,8 @@
+2002-04-28  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	PR c/6343
+	* decl.c (duplicate_decls): Call merge_weak.
+
 2002-04-26  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/6497

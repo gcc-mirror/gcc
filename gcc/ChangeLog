@@ -1,3 +1,13 @@
+2002-04-28  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	PR c/6343
+	* c-decl.c (duplicate_decls): Call merge_weak.
+	* c-pragma.c (apply_pragma_weak): Warn about misuse.
+	* output.h (merge_weak): Prototype merge_weak.
+	* varasm.c (merge_weak): New function.
+	(declare_weak): Make sure we don't give an error on VAR_DECLs.
+	Mark RTL with SYMBOL_REF_WEAK.
+
 2002-04-25  David S. Miller  <davem@redhat.com>
 
 	PR target/6422

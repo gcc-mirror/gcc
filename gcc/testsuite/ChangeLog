@@ -1,3 +1,8 @@
+2002-04-28  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	PR c/6343
+	* gcc.dg/weak-[2-7].c: New tests.
+
 2002-04-26  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/6497
