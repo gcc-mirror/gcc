@@ -49,13 +49,13 @@ int hp_profile_labelno;
 static rtx find_addr_reg ();
 
 /* Return non-zero only if OP is a register of mode MODE,
-   or const0_rtx.  */
+   or CONST0_RTX.  */
 int
 reg_or_0_operand (op, mode)
      rtx op;
      enum machine_mode mode;
 {
-  return (op == const0_rtx || register_operand (op, mode));
+  return (op == CONST0_RTX (mode) || register_operand (op, mode));
 }
 
 int
@@ -113,6 +113,26 @@ reg_or_nonsymb_mem_operand (op, mode)
     enum machine_mode mode;
 {
   if (register_operand (op, mode))
+    return 1;
+
+  if (memory_operand (op, mode) && ! symbolic_memory_operand (op, mode))
+    return 1;
+
+  return 0;
+}
+
+/* Return 1 if the operand is either a register, zero,  or a memory operand 
+   that is not symbolic.  */
+
+int
+reg_or_0_or_nonsymb_mem_operand (op, mode)
+    register rtx op;
+    enum machine_mode mode;
+{
+  if (register_operand (op, mode))
+    return 1;
+
+  if (op == CONST0_RTX (mode))
     return 1;
 
   if (memory_operand (op, mode) && ! symbolic_memory_operand (op, mode))
@@ -525,6 +545,7 @@ emit_move_sequence (operands, mode, scratch_reg)
     {
       if (register_operand (operand1, mode)
 	  || (GET_CODE (operand1) == CONST_INT && INT_14_BITS (operand1))
+	  || (operand1 == CONST0_RTX (mode))
 	  || (GET_CODE (operand1) == HIGH
 	      && !symbolic_operand (XEXP (operand1, 0)))
 	  /* Only `general_operands' can come here, so MEM is ok.  */
@@ -537,7 +558,7 @@ emit_move_sequence (operands, mode, scratch_reg)
     }
   else if (GET_CODE (operand0) == MEM)
     {
-      if (register_operand (operand1, mode) || operand1 == const0_rtx)
+      if (register_operand (operand1, mode) || operand1 == CONST0_RTX (mode))
 	{
 	  /* Run this case quickly.  */
 	  emit_insn (gen_rtx (SET, VOIDmode, operand0, operand1));
@@ -947,8 +968,9 @@ output_fp_move_double (operands)
 {
   if (FP_REG_P (operands[0]))
     {
-      if (FP_REG_P (operands[1]))
-	output_asm_insn ("fcpy,dbl %1,%0", operands);
+      if (FP_REG_P (operands[1]) 
+	  || operands[1] == CONST0_RTX (GET_MODE (operands[0])))
+	output_asm_insn ("fcpy,dbl %r1,%0", operands);
       else if (GET_CODE (operands[1]) == REG)
 	{
 	  rtx xoperands[3];
@@ -976,6 +998,22 @@ output_fp_move_double (operands)
 	}
       else
 	output_asm_insn ("fstds%F0 %1,%0", operands);
+    }
+  else if (operands[1] == CONST0_RTX (GET_MODE (operands[0])))
+    {
+      if (GET_CODE (operands[0]) == REG)
+	{
+	  rtx xoperands[2];
+	  xoperands[1] = gen_rtx (REG, SImode, REGNO (operands[0]) + 1);
+	  xoperands[0] = operands[0];
+	  output_asm_insn ("copy %%r0,%0\n\tcopy %%r0,%1", xoperands);
+	}
+      /* This is a pain.  You have to be prepared to deal with an 
+	 arbritary address here including pre/post increment/decrement.
+
+	 so avoid this in the MD.  */
+      else
+	abort ();
     }
   else abort ();
   return "";
@@ -1905,7 +1943,9 @@ print_operand (file, x, code)
       return;
     case 'r':
       /* A register or zero. */
-      if (x == const0_rtx)
+      if (x == const0_rtx
+	  || (x == CONST0_RTX (DFmode))
+	  || (x == CONST0_RTX (SFmode)))
 	{
 	  fputs ("0", file);
 	  return;
