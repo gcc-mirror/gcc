@@ -901,7 +901,7 @@ lookup_protocol_in_reflist (rproto_list, lproto)
 {
    tree rproto, p;
 
-   /* Make sure the protocol is support by the object on the rhs.  */
+   /* Make sure the protocol is supported by the object on the rhs.  */
    if (TREE_CODE (lproto) == PROTOCOL_INTERFACE_TYPE)
      {
        tree fnd = 0;
@@ -1021,7 +1021,7 @@ objc_comptypes (lhs, rhs, reflexive)
 	return (TYPED_OBJECT (TREE_TYPE (lhs)) != 0);
 
       else
-	/* Defer to comptypes .*/
+	/* Defer to comptypes.  */
 	return -1;
     }
 
@@ -1118,7 +1118,8 @@ get_static_reference (interface, protocols)
       TYPE_NEXT_VARIANT (t) = TYPE_NEXT_VARIANT (m);
       TYPE_NEXT_VARIANT (m) = t;
 
-      /* Look up protocols and install in lang specific list.  */
+      /* Look up protocols and install in lang specific list.  Note
+	 that the protocol list can have a different lifetime than T!  */
       TYPE_PROTOCOL_LIST (t) = lookup_and_install_protocols (protocols);
 
       /* This forces a new pointer type to be created later
@@ -1404,11 +1405,11 @@ my_build_string (len, str)
 }
 
 /* Given a chain of STRING_CST's, build a static instance of
-   NXConstanString which points at the concatenation of those strings.
+   NXConstantString which points at the concatenation of those strings.
    We place the string object in the __string_objects section of the
    __OBJC segment.  The Objective-C runtime will initialize the isa
-   pointers of the string objects to point at the NXConstandString class
-   object.  */
+   pointers of the string objects to point at the NXConstantString
+   class object.  */
 
 tree
 build_objc_string_object (strings)
@@ -3038,6 +3039,9 @@ generate_method_descriptors (protocol)	/* generate_dispatch_tables */
     UOBJC_INSTANCE_METHODS_decl = 0;
 }
 
+/* Generate a temporary FUNCTION_DECL node to be used in
+   hack_method_prototype below.  */
+
 static tree
 build_tmp_function_decl ()
 {
@@ -3070,6 +3074,13 @@ build_tmp_function_decl ()
 
   return define_decl (expr_decl, decl_specs);
 }
+
+/* Generate the prototypes for protocol methods.  This is used to
+   generate method encodings for these.
+
+   NST_METHODS is the method to generate a _DECL node for TMP_DECL is
+   a decl node to be used.  This is also where the return value is
+   given.  */
 
 static void
 hack_method_prototype (nst_methods, tmp_decl)
@@ -5439,7 +5450,7 @@ hash_init ()
   cls_method_hash_list = (hash *)xmalloc (SIZEHASHTABLE * sizeof (hash));
 
   if (!nst_method_hash_list || !cls_method_hash_list)
-    perror ("unable to allocate space in objc-tree.c");
+    perror ("unable to allocate space in objc-act.c");
   else
     {
       int i;
@@ -5451,6 +5462,11 @@ hash_init ()
 	}
     }
 }
+
+/* WARNING!!!!  hash_enter is called with a method, and will peek
+   inside to find its selector!  But hash_lookup is given a selector
+   directly, and looks for the selector that's inside the found
+   entry's key (method) for comparison.  */
 
 static void
 hash_enter (hashlist, method)
@@ -5468,7 +5484,7 @@ hash_enter (hashlist, method)
       hash_alloc_list = (hash) xmalloc (sizeof (struct hashed_entry)
 					* HASH_ALLOC_LIST_SIZE);
       if (! hash_alloc_list)
-	perror ("unable to allocate in objc-tree.c");
+	perror ("unable to allocate in objc-act.c");
     }
   obj = &hash_alloc_list[hash_alloc_index++];
   obj->list = 0;
@@ -5512,7 +5528,7 @@ hash_add_attr (entry, value)
       attr_alloc_list = (attr) xmalloc (sizeof (struct hashed_attribute)
 					* ATTR_ALLOC_LIST_SIZE);
       if (! attr_alloc_list)
-	perror ("unable to allocate in objc-tree.c");
+	perror ("unable to allocate in objc-act.c");
     }
   obj = &attr_alloc_list[attr_alloc_index++];
   obj->next = entry->list;
@@ -5913,6 +5929,9 @@ tree
 get_class_ivars (interface)
      tree interface;
 {
+  /* Make sure we copy the leaf ivars in case @defs is used in a local
+     context.  Otherwise finish_struct will overwrite the layout info
+     using temporary storage.  */
   return build_ivar_chain (interface, 1);
 }
 
@@ -6283,7 +6302,7 @@ continue_class (class)
 
       if (!(imp_entry
 	    = (struct imp_entry *) xmalloc (sizeof (struct imp_entry))))
-	perror ("unable to allocate in objc-tree.c");
+	perror ("unable to allocate in objc-act.c");
 
       imp_entry->next = imp_list;
       imp_entry->imp_context = class;
@@ -7164,6 +7183,8 @@ really_start_method (method, parmlist)
 
   METHOD_DEFINITION (method) = current_function_decl;
 
+  /* Check consistency...start_function, pushdecl, duplicate_decls.  */
+
   if (implementation_template != implementation_context)
     {
       tree proto;
@@ -7270,6 +7291,7 @@ get_super_receiver ()
 	  tree super_name = CLASS_SUPER_NAME (implementation_template);
 	  tree super_class;
 
+	  /* Barf if super used in a category of Object. */
 	  if (!super_name)
 	    {
 	      error ("no super class declared in interface for `%s'",
@@ -7368,6 +7390,7 @@ encode_method_def (func_decl)
       obstack_grow (&util_obstack, buffer, strlen (buffer));
     }
 
+  /* Null terminate string.  */
   obstack_1grow (&util_obstack, 0);
   result = get_identifier (obstack_finish (&util_obstack));
   obstack_free (&util_obstack, util_firstobj);
@@ -7774,7 +7797,7 @@ gen_declspecs (declspecs, buf, raw)
 	    strcat (buf, "long double ");
 	  break;
 
-      case RECORD_TYPE:
+	case RECORD_TYPE:
 	  if (TYPE_NAME (declspecs)
 	      && TREE_CODE (TYPE_NAME (declspecs)) == IDENTIFIER_NODE)
 	    {

@@ -1,3 +1,12 @@
+2001-03-08  Stan Shebs  <shebs@apple.com>
+
+	* objc/objc-act.c: Fix old typos in comments, add comments for
+	various functions.
+	(hash_init): Fix file name in error message.
+	(hash_enter): Ditto.
+	(hash_add_attr): Ditto.
+	(continue_class): Ditto.
+
 2001-03-08  Bruce Korb  <bkorb@gnu.org>
 
 	gcc.c(main): ensure SIGCHLD handling is set to SIG_DFL so that
