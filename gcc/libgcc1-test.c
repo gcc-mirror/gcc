@@ -90,3 +90,11 @@ dfoo ()
   return table[idx++];
 }
 
+/* Provide functions that some versions of the linker use to default
+   the start address if -e symbol is not used, to avoid the warning
+   message saying the start address is defaulted.  */
+extern void start() __asm__("start");
+extern void _start() __asm__("_start");
+
+void start() {}
+void _start() {}
