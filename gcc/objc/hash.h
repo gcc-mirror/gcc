@@ -1,5 +1,5 @@
 /* Hash tables for Objective C method dispatch.
-   Copyright (C) 1993, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1995, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -29,6 +29,7 @@ Boston, MA 02111-1307, USA.  */
 #define __hash_INCLUDE_GNU
 
 #include <stddef.h>
+#include <objc/objc.h>
 
 /*
  * This data structure is used to hold items
@@ -140,6 +141,9 @@ node_ptr hash_next (cache_ptr cache, node_ptr node);
 
 void *hash_value_for_key (cache_ptr cache, const void *key);
 
+/* Used to determine if the given key exists in the hash table */
+
+BOOL hash_is_key_in_hash (cache_ptr cache, const void *key);
 
 /************************************************
 
