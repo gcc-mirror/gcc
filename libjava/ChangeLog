@@ -1,3 +1,18 @@
+2004-01-13  David Jee  <djee@redhat.com>
+
+	* gnu/java/awt/peer/gtk/GtkContainerPeer.java
+	(setBackground): New method. Children with no explicitly-set
+	background will be repainted with the parent container's new
+	background color.
+
+2004-01-13  David Jee  <djee@redhat.com>
+
+	* Makefile.am: Add BitwiseXORComposite.java.
+	* Makefile.in: Regenerated.
+	* gcj/Makefile.in: Regenerated.
+	* include/Makefile.in: Regenerated.
+	* testsuite/Makefile.in: Regenerated.
+
 2004-01-12  Fernando Nasser  <fnasser@redhat.com>
 
 	* gnu/java/awt/peer/gtk/TestAWT.java: Fix test program so that it does
