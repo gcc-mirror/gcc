@@ -58,8 +58,15 @@ fi
 
 ORIG_DIR=`pwd`
 
-# Make LIB absolute.
-cd $LIB; LIB=`pwd`
+# Make LIB absolute if it is relative.
+# Don't do this if not necessary, since may screw up automounters.
+case $LIB in
+/*)
+	;;
+*)
+	cd $LIB; LIB=`${PWDCMD}`
+	;;
+esac
 
 echo 'Building fixincludes in ' ${LIB}
 
