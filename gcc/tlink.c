@@ -49,8 +49,12 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define obstack_chunk_free free
 
 extern char * xmalloc PARAMS((unsigned));
+#ifdef NEED_DECLARATION_FREE
 extern void free ();
+#endif
+#ifdef NEED_DECLARATION_GETENV
 extern char * getenv ();
+#endif
 
 /* Defined in collect2.c.  */
 extern int vflag, debug;

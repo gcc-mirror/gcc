@@ -1,6 +1,6 @@
 /* Generate from machine description:
    - some #define configuration flags.
-   Copyright (C) 1987, 1991, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1991, 1997, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -35,7 +35,9 @@ struct obstack *rtl_obstack = &obstack;
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
 
+#ifdef NEED_DECLARATION_FREE
 extern void free ();
+#endif
 extern rtx read_rtx ();
 
 /* flags to determine output of machine description dependent #define's.  */

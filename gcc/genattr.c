@@ -1,5 +1,5 @@
 /* Generate attribute information (insn-attr.h) from machine description.
-   Copyright (C) 1991, 1994, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1994, 1996, 1998 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
 This file is part of GNU CC.
@@ -35,7 +35,9 @@ struct obstack *rtl_obstack = &obstack;
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
 
+#ifdef NEED_DECLARATION_FREE
 extern void free PROTO((void *));
+#endif
 extern rtx read_rtx PROTO((FILE *));
 
 char *xmalloc PROTO((unsigned));

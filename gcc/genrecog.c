@@ -61,7 +61,9 @@ struct obstack *rtl_obstack = &obstack;
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
 
+#ifdef NEED_DECLARATION_FREE
 extern void free ();
+#endif
 extern rtx read_rtx ();
 
 /* Data structure for a listhead of decision trees.  The alternatives
