@@ -201,8 +201,14 @@ public abstract class ResourceBundle
   private static Map resourceBundleCache = new HashMap();
 
   /**
+   * The `empty' locale is created once in order to optimize
+   * tryBundle().  
+   */
+  private static final Locale emptyLocale = new Locale ("", "");
+
+  /**
    * Tries to load a class or a property file with the specified name.
-   * @param name the name.
+   * @param localizedName the name.
    * @param locale the locale, that must be used exactly.
    * @param classloader the classloader.
    * @param bundle the back up (parent) bundle
@@ -229,21 +235,24 @@ public abstract class ResourceBundle
 	}
     }
 
+    // foundBundle holds exact matches for the localizedName resource
+    // bundle, which may later be cached.
+    ResourceBundle foundBundle = null;
+
     try
       {
 	java.io.InputStream is;
+	final String resourceName =
+	  localizedName.replace('.', '/') + ".properties";
 	if (classloader == null)
-	  is = ClassLoader.getSystemResourceAsStream
-	    (localizedName.replace('.', '/') + ".properties");
+	  is = ClassLoader.getSystemResourceAsStream (resourceName);
 	else
-	  is = classloader.getResourceAsStream
-	    (localizedName.replace('.', '/') + ".properties");
+	  is = classloader.getResourceAsStream (resourceName);
 	if (is != null)
 	  {
-	    ResourceBundle rb = new PropertyResourceBundle(is);
-	    rb.parent = bundle;
-	    rb.locale = locale;
-	    bundle = rb;
+	    foundBundle = new PropertyResourceBundle(is);
+	    foundBundle.parent = bundle;
+	    foundBundle.locale = locale;
 	  }
       }
     catch (java.io.IOException ex)
@@ -257,10 +266,9 @@ public abstract class ResourceBundle
 	  rbClass = Class.forName(localizedName);
 	else
 	  rbClass = classloader.loadClass(localizedName);
-	ResourceBundle rb = (ResourceBundle) rbClass.newInstance();
-	rb.parent = bundle;
-	rb.locale = locale;
-	bundle = rb;
+	foundBundle = (ResourceBundle) rbClass.newInstance();
+	foundBundle.parent = bundle;
+	foundBundle.locale = locale;
       }
     catch (ClassNotFoundException ex)
       {
@@ -274,11 +282,10 @@ public abstract class ResourceBundle
 	// XXX should we also ignore ClassCastException?
       }
 
-    // Put the bundle in the cache
-    if (bundle != null)
-      cache.put(localizedName, new SoftReference(bundle));
+    if (foundBundle != null)
+      cache.put(localizedName, new SoftReference(foundBundle));
 
-    return bundle;
+    return foundBundle != null ? foundBundle : bundle;
   }
 
   /**
@@ -298,26 +305,31 @@ public abstract class ResourceBundle
 						     ResourceBundle bundle,
 						     HashMap cache)
   {
-    if (locale.getLanguage().length() > 0)
-      {
-	String name = baseName + "_" + locale.getLanguage();
+    final String language = locale.getLanguage();
 
-	if (locale.getCountry().length() != 0)
+    if (language.length() > 0)
+      {
+	final String country = locale.getCountry();
+	String name = baseName + "_" + language;
+
+	if (country.length() != 0)
 	  {
 	    bundle = tryBundle(name,
-			       new Locale(locale.getLanguage(), ""),
+			       new Locale(language, ""),
 			       classloader, bundle, cache);
 
-	    name += "_" + locale.getCountry();
+	    name += "_" + country;
 
-	    if (locale.getVariant().length() != 0)
+	    final String variant = locale.getVariant();
+
+	    if (variant.length() != 0)
 	      {
 		bundle = tryBundle(name,
-				   new Locale(locale.getLanguage(),
-					      locale.getCountry()),
+				   new Locale(language,
+					      country),
 				   classloader, bundle, cache);
 
-		name += "_" + locale.getVariant();
+		name += "_" + variant;
 	      }
 	  }
 	bundle = tryBundle(name, locale, classloader, bundle, cache);
@@ -367,14 +379,14 @@ public abstract class ResourceBundle
 	  }
       }
 
-    ResourceBundle baseBundle = tryBundle(baseName, new Locale("", ""),
+    ResourceBundle baseBundle = tryBundle(baseName, emptyLocale,
 					  classLoader, null, cache);
     if (baseBundle == null)
       // JDK says, that if one provides a bundle base_en_UK, one
       // must also provide the bundles base_en and base.
       // This implies that if there is no bundle for base, there
       // is no bundle at all.
-      throw new MissingResourceException("Bundle not found", baseName, "");
+      throw new MissingResourceException("Bundle " + baseName + " not found", baseName, "");
 
     // Now use the default locale.
     ResourceBundle bundle = tryLocalBundle(baseName, locale,
