@@ -1162,7 +1162,7 @@ dump_function_decl (t, flags)
 
   dump_function_name (t, flags);
 
-  if (1)
+  if (!(flags & TFF_NO_FUNCTION_ARGUMENTS))
     {
       dump_parameters (parmtypes, flags);
 
@@ -1458,7 +1458,7 @@ dump_expr (t, flags)
     case TEMPLATE_DECL:
     case NAMESPACE_DECL:
     case OVERLOAD:
-      dump_decl (t, flags & ~TFF_DECL_SPECIFIERS);
+      dump_decl (t, (flags & ~TFF_DECL_SPECIFIERS) | TFF_NO_FUNCTION_ARGUMENTS);
       break;
 
     case INTEGER_CST:

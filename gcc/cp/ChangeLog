@@ -1,3 +1,16 @@
+2003-11-08  Bernardo Innocenti  <bernie@develer.com>
+
+	Backport from 3.4-branch
+
+	2003-10-08  Giovanni Bajo  <giovannibajo@libero.it>
+
+	* cp_tree.h: Added TFF_NO_FUNCTION_ARGUMENTS.
+	* error.c (dump_function_decl): Use it to skip the dump of the
+	arguments.
+	(dump_expr): When dumping a declaration found within an
+	expression, always set TFF_NO_FUNCTION_ARGUMENTS
+	in the flags.
+
 2003-10-23  Jason Merrill  <jason@redhat.com>
 
 	PR c++/12726
