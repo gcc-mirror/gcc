@@ -1,3 +1,9 @@
+2004-06-14  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	PR c++/15947
+	* parser.c (cp_parser_template_name): Ctors/dtors never need a
+	template keyword to disambiguate.
+
 2004-06-14  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/15096
