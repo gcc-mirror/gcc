@@ -75,8 +75,8 @@ gcc_obstack_init (obstack)
 #define OBSTACK_CHUNK_FREE free
 #endif
   _obstack_begin (obstack, OBSTACK_CHUNK_SIZE, 0,
-		  (void *(*) ()) OBSTACK_CHUNK_ALLOC,
-		  (void (*) ()) OBSTACK_CHUNK_FREE);
+		  (void *(*) PROTO((long))) OBSTACK_CHUNK_ALLOC,
+		  (void (*) PROTO((void *))) OBSTACK_CHUNK_FREE);
 }
 
 int
@@ -84,7 +84,7 @@ main (int argc, const char **argv)
 {
   const char *classname;
   FILE *stream;
-  char *mangled_classname;
+  const char *mangled_classname;
 
   if (argc < 2 || argc > 3)
     {

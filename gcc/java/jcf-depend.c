@@ -39,6 +39,11 @@ struct entry
   struct entry *next;
 };
 
+static void free_entry PROTO ((struct entry **));
+static void add_entry PROTO ((struct entry **, const char *));
+static const char *munge PROTO ((const char *));
+static int print_ents PROTO ((struct entry *, int));
+
 /* List of files.  */
 static struct entry *dependencies = NULL;
 
@@ -77,7 +82,7 @@ free_entry (entp)
 static void
 add_entry (entp, name)
      struct entry **entp;
-     char *name;
+     const char *name;
 {
   struct entry *ent;
 
@@ -110,7 +115,7 @@ jcf_dependency_reset ()
 
 void
 jcf_dependency_set_target (name)
-     char *name;
+     const char *name;
 {
   free_entry (&targets);
   if (name != NULL)
@@ -119,7 +124,7 @@ jcf_dependency_set_target (name)
 
 void
 jcf_dependency_add_target (name)
-     char *name;
+     const char *name;
 {
   add_entry (&targets, name);
 }
@@ -158,15 +163,16 @@ jcf_dependency_init (system_p)
 
 /* FIXME: this is taken almost directly from cccp.c.  Such duplication
    is bad.  */
-static char *
+static const char *
 munge (filename)
-     char *filename;
+     const char *filename;
 {
   static char *buffer = NULL;
   static int buflen = 0;
 
   int len = 2 * strlen (filename) + 1;
-  char *p, *dst;
+  const char *p;
+  char *dst;
 
   if (buflen < len)
     {
@@ -191,7 +197,7 @@ munge (filename)
 	       preceded by 2N backslashes represents N backslashes at
 	       the end of a file name; and backslashes in other
 	       contexts should not be doubled.  */
-	    char *q;
+	    const char *q;
 	    for (q = p - 1; filename < q && q[-1] == '\\';  q--)
 	      *dst++ = '\\';
 	  }
@@ -228,7 +234,7 @@ print_ents (ent, column)
 
   for (; ent != NULL; ent = ent->next)
     {
-      char *depname = munge (ent->file);
+      const char *depname = munge (ent->file);
       int len = strlen (depname);
 
       if (column + len + 2 > MAX_OUTPUT_COLUMNS)

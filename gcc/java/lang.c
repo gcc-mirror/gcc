@@ -36,6 +36,10 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "flags.h"
 #include "xref.h"
 
+static void put_decl_string PROTO ((const char *, int));
+static void put_decl_node PROTO ((tree));
+static void java_dummy_print PROTO ((const char *));
+
 #ifndef OBJECT_SUFFIX
 # define OBJECT_SUFFIX ".o"
 #endif
@@ -337,7 +341,7 @@ static int decl_bufpos = 0;
 
 static void
 put_decl_string (str, len)
-     char *str;
+     const char *str;
      int len;
 {
   if (len < 0)
@@ -475,7 +479,7 @@ lang_print_error (file)
 	fprintf (stderr, "At top level:\n");
       else
 	{
-	  char *name = lang_printable_name (current_function_decl, 2);
+	  const char *name = lang_printable_name (current_function_decl, 2);
 	  fprintf (stderr, "In method `%s':\n", name);
 	}
 
@@ -487,7 +491,6 @@ lang_print_error (file)
 void
 lang_init ()
 {
-  extern struct rtx_def * (*lang_expand_expr) ();
 #if 0
   extern int flag_minimal_debug;
   flag_minimal_debug = 0;

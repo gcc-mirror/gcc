@@ -26,7 +26,16 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "jcf.h"
 #include "zipfile.h"
 
-int
+static int get_attribute PROTO((JCF *));
+static int jcf_parse_preamble PROTO((JCF *));
+static int jcf_parse_constant_pool PROTO((JCF *));
+static void jcf_parse_class PROTO((JCF *));
+static int jcf_parse_fields PROTO((JCF *));
+static int jcf_parse_one_method PROTO((JCF *));
+static int jcf_parse_methods PROTO((JCF *));
+static int jcf_parse_final_attributes PROTO((JCF *));
+
+static int
 DEFUN(get_attribute, (jcf),
       JCF *jcf)
 {
@@ -34,7 +43,7 @@ DEFUN(get_attribute, (jcf),
   uint32 attribute_length = JCF_readu4 (jcf);
   uint32 start_pos = JCF_TELL(jcf);
   int name_length;
-  unsigned char *name_data;
+  const unsigned char *name_data;
   JCF_FILL (jcf, (long) attribute_length);
   if (attribute_name <= 0 || attribute_name >= JPOOL_SIZE(jcf))
     return -2;
@@ -134,7 +143,7 @@ DEFUN(get_attribute, (jcf),
 }
 
 /* Read and handle the pre-amble. */
-int
+static int
 DEFUN(jcf_parse_preamble, (jcf),
       JCF* jcf)
 {
@@ -155,7 +164,7 @@ DEFUN(jcf_parse_preamble, (jcf),
    Return 0 if OK.
    Return -2 if a bad cross-reference (index of other constant) was seen.
 */
-int
+static int
 DEFUN(jcf_parse_constant_pool, (jcf),
       JCF* jcf)
 {
@@ -221,7 +230,7 @@ DEFUN(jcf_parse_constant_pool, (jcf),
 
 /* Read various class flags and numbers. */
 
-void
+static void
 DEFUN(jcf_parse_class, (jcf),
       JCF* jcf)
 {
@@ -250,7 +259,7 @@ DEFUN(jcf_parse_class, (jcf),
 }
 
 /* Read fields. */
-int
+static int
 DEFUN(jcf_parse_fields, (jcf),
       JCF* jcf)
 {
@@ -290,7 +299,7 @@ DEFUN(jcf_parse_fields, (jcf),
 
 /* Read methods. */
 
-int
+static int
 DEFUN(jcf_parse_one_method, (jcf),
       JCF* jcf)
 {
@@ -314,7 +323,7 @@ DEFUN(jcf_parse_one_method, (jcf),
   return 0;
 }
 
-int
+static int
 DEFUN(jcf_parse_methods, (jcf),
       JCF* jcf)
 {
@@ -338,7 +347,7 @@ DEFUN(jcf_parse_methods, (jcf),
 }
 
 /* Read attributes. */
-int
+static int
 DEFUN(jcf_parse_final_attributes, (jcf),
       JCF *jcf)
 {

@@ -1,3 +1,87 @@
+1999-08-10  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* check-init.c (check_bool2_init, done_alternative): Add static
+	prototypes.
+
+	* class.c (add_interface_do, maybe_layout_super_class): Likewise.
+	(add_method, build_utf8_ref, build_class_ref,
+	append_gpp_mangled_type, layout_class_method): Constify a char*.
+
+	* decl.c (push_promoted_type, make_binding_level): Add static
+	prototypes.
+	(push_promoted_type, pushdecl): Constify a char*.
+
+	* except.c (find_handler_in_range, link_handler,
+	check_start_handlers): Add static prototypes.
+
+	* expr.c (process_jvm_instruction): Constify a char*.
+
+	* gjavah.c (main): Constify a char*.
+
+	* java-tree.h (verify_jvm_instructions, process_jvm_instruction):
+	Constify a char*.
+
+	* jcf-depend.c (free_entry, add_entry, munge, print_ents): Add
+	static prototypes.
+	(add_entry, jcf_dependency_set_target, jcf_dependency_add_target,
+	munge, print_ents): Constify a char*.
+
+	* jcf-dump.c (disassemble_method): Constify a char*.
+	(print_constant_pool, print_exception_table): Add static prototypes.
+	(print_constant, print_exception_table, main, disassemble_method):
+	Constify a char*.
+
+	* jcf-io.c (find_classfile, find_class): Likewise.
+
+	* jcf-parse.c (JPOOL_UTF_DATA, find_in_current_zip): Likewise.
+	(set_source_filename, predefined_filename_p): Add static prototypes.
+	(set_source_filename, get_constant, get_class_constant,
+	find_in_current_zip): Constify a char*.
+
+	* jcf-path.c (free_entry, append_entry, add_entry, add_path): Add
+	static prototypes.
+	(add_entry, add_path, jcf_path_classpath_arg,
+	jcf_path_CLASSPATH_arg, jcf_path_include_arg): Constify a char*.
+
+	* jcf-reader.c (get_attribute, jcf_parse_preamble,
+	jcf_parse_constant_pool, jcf_parse_class, jcf_parse_fields,
+	jcf_parse_one_method, jcf_parse_methods,
+	jcf_parse_final_attributes): Add static prototypes.
+	(get_attribute): Constify a char*.
+
+	* jcf.h (find_class, find_classfile, jcf_dependency_set_target,
+	jcf_dependency_add_target, jcf_path_classpath_arg,
+	jcf_path_CLASSPATH_arg, jcf_path_include_arg): Constify a char*.
+
+	* jv-scan.c (main): Constify a char*.
+	(gcc_obstack_init): Add prototype arguments.
+
+	* jvgenmain.c (gcc_obstack_init): Likewise.
+	(main): Constify a char*.
+
+	* lang.c (put_decl_string, put_decl_node, java_dummy_print): Add
+	static prototypes.
+	(put_decl_string, lang_print_error): Constify a char*.
+	(lang_init): Remove redundant extern prototype.
+	
+	* mangle.c (emit_unicode_mangled_name): Constify a char*.
+
+	* typeck.c (convert_ieee_real_to_integer, parse_signature_type):
+	Add static prototypes.
+	(get_type_from_signature): Constify a char*.
+
+	* verify.c (check_pending_block, type_stack_dup, start_pc_cmp ):
+	Add static prototypes.
+	(start_pc_cmp): Prefer PTR over GENERIC_PTR.
+	(verify_jvm_instructions): Constify a char*.
+
+	* xref.c (xref_flag_value): Likewise.
+	
+	* xref.h (xref_flag_value): Likewise.
+
+	* zextract.c (makeword, makelong): Add static prototypes.
+	(makeword, makelong): Constify a uch*.
+
 1999-08-09  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
         * lang.c (java_dummy_print): Constify a char*.

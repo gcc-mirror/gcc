@@ -100,6 +100,9 @@ static tree wfl;
 static void check_bool_init PROTO ((tree, words, words, words));
 static void check_init PROTO ((tree, words));
 static void check_cond_init PROTO ((tree, tree, tree, words, words, words));
+static void check_bool2_init PROTO ((enum tree_code, tree, tree, words, words, words));
+struct alternatives;
+static void done_alternative PROTO ((words, struct alternatives *));
 
 #if 0
 #define ALLOC_WORDS(NUM) ((word*) xmalloc ((NUM) * sizeof (word)))

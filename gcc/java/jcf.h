@@ -223,8 +223,8 @@ typedef struct JCF {
 
 #define DEFAULT_CLASS_PATH "."
 
-extern char *find_class PROTO ((const char *, int, JCF*, int));
-extern char *find_classfile PROTO ((char *, JCF*, const char *));
+extern const char *find_class PROTO ((const char *, int, JCF*, int));
+extern const char *find_classfile PROTO ((char *, JCF*, const char *));
 extern int jcf_filbuf_from_stdio PROTO ((JCF *jcf, int count));
 extern void jcf_out_of_synch PROTO((JCF *));
 extern int jcf_unexpected_eof PROTO ((JCF*, int));
@@ -259,8 +259,8 @@ extern int quiet_flag;
 
 /* Declarations for dependency code.  */
 extern void jcf_dependency_reset PROTO ((void));
-extern void jcf_dependency_set_target PROTO ((char *));
-extern void jcf_dependency_add_target PROTO ((char *));
+extern void jcf_dependency_set_target PROTO ((const char *));
+extern void jcf_dependency_add_target PROTO ((const char *));
 extern void jcf_dependency_set_dep_file PROTO ((const char *));
 extern void jcf_dependency_add_file PROTO ((const char *, int));
 extern void jcf_dependency_write PROTO ((void));
@@ -268,9 +268,9 @@ extern void jcf_dependency_init PROTO ((int));
 
 /* Declarations for path handling code.  */
 extern void jcf_path_init PROTO ((void));
-extern void jcf_path_classpath_arg PROTO ((char *));
-extern void jcf_path_CLASSPATH_arg PROTO ((char *));
-extern void jcf_path_include_arg PROTO ((char *));
+extern void jcf_path_classpath_arg PROTO ((const char *));
+extern void jcf_path_CLASSPATH_arg PROTO ((const char *));
+extern void jcf_path_include_arg PROTO ((const char *));
 extern void jcf_path_seal PROTO ((void));
 extern void *jcf_path_start PROTO ((void));
 extern void *jcf_path_next PROTO ((void *));
