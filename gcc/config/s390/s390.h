@@ -990,8 +990,10 @@ do {									\
   {"consttable_operand", { SYMBOL_REF, LABEL_REF, CONST, 		\
 			   CONST_INT, CONST_DOUBLE }},			\
   {"s390_plus_operand", { PLUS }},					\
-  {"s390_alc_comparison", { LTU, GTU, LEU, GEU }},			\
-  {"s390_slb_comparison", { LTU, GTU, LEU, GEU }},
+  {"s390_alc_comparison", { ZERO_EXTEND, SIGN_EXTEND, 			\
+			    LTU, GTU, LEU, GEU }},			\
+  {"s390_slb_comparison", { ZERO_EXTEND, SIGN_EXTEND,			\
+			    LTU, GTU, LEU, GEU }},
 
 /* Specify the machine mode that this machine uses for the index in the
    tablejump instruction.  */

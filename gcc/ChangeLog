@@ -1,3 +1,23 @@
+2004-06-17  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390-modes.def (CCL3mode): New machine mode.
+	* config/s390/s390.c (s390_match_ccmode_set): Support CCL3mode.
+	(s390_alc_comparison, s390_slb_comparison): Likewise.
+	(s390_branch_condition_mask): Likewise.
+	* config/s390/s390.md ("*subdi3_cc2", "*subdi3_cconly2"): New.
+	("*subsi3_cc2", "*subsi3_cconly2"): New.
+
+	* config/s390/s390.h (PREDICATE_CODE): Accept SIGN_EXTEND and
+	ZERO_EXTEND for s390_alc_comparison and s390_slb_comparison.
+	* config/s390/s390.c (s390_alc_comparison, s390_slb_comparison):
+	Handle SIGN_EXTEND and ZERO_EXTEND.
+
+	* config/s390/s390-protos.h (s390_expand_addcc): New prototype.
+	* config/s390/s390.c (s390_expand_addcc): New function.
+	* config/s390/s390.md ("adddicc", "addsicc"): New expanders.
+	("*sconddi", "*scondsi", "*sconddi_neg", "*scondsi_neg"): New insns.
+	("sltu", "sgtu", "sleu", "sgeu"): New expanders.
+
 2004-06-17  Ben Elliston  <bje@au.ibm.com>
 
 	* tree-alias-common.c: Add whitespace.
