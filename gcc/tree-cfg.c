@@ -4130,8 +4130,8 @@ remove_forwarder_block_with_phi (basic_block bb)
 {
   edge succ = EDGE_SUCC (bb, 0);
   basic_block dest = succ->dest;
+  tree label;
   basic_block dombb, domdest, dom;
-  block_stmt_iterator bsi;
 
   /* We check for infinite loops already in tree_forwarder_block_p.
      However it may happen that the infinite loop is created
@@ -4141,16 +4141,11 @@ remove_forwarder_block_with_phi (basic_block bb)
 
   /* If the destination block consists of a nonlocal label, do not
      merge it.  */
-  for (bsi = bsi_start (dest); !bsi_end_p (bsi); bsi_next (&bsi))
-    {
-      tree stmt = bsi_stmt (bsi);
-
-      if (TREE_CODE (stmt) != LABEL_EXPR)
-	break;
-
-      if (DECL_NONLOCAL (LABEL_EXPR_LABEL (stmt)))
-	return;
-    }
+  label = first_stmt (dest);
+  if (label
+      && TREE_CODE (label) == LABEL_EXPR
+      && DECL_NONLOCAL (LABEL_EXPR_LABEL (label)))
+    return;
 
   /* Redirect each incoming edge to BB to DEST.  */
   while (EDGE_COUNT (bb->preds) > 0)
