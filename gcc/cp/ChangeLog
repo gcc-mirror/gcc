@@ -1,5 +1,9 @@
 1998-06-17  Mark Mitchell  <mark@markmitchell.com>
 
+	* pt.c (convert_nontype_argument): Issue an error when presented
+	with an integer (real) constant that cannot be simplified to an
+	INT_CST (REAL_CST).
+
 	* cp-tree.h (c_get_alias_set): Remove declaration added in
 	1998-06-13 change that should never have been checked in.
 

@@ -2056,6 +2056,7 @@ convert_nontype_argument (type, expr)
     {
       if (! TREE_CONSTANT (expr))
 	{
+	non_constant:
 	  cp_error ("non-constant `%E' cannot be used as template argument",
 		    expr);
 	  return NULL_TREE;
@@ -2128,15 +2129,28 @@ convert_nontype_argument (type, expr)
       
       /* It's safe to call digest_init in this case; we know we're
 	 just converting one integral constant expression to another.  */
-      return digest_init (type, expr, (tree*) 0);
+      expr = digest_init (type, expr, (tree*) 0);
 
+      if (TREE_CODE (expr) != INTEGER_CST)
+	/* Curiously, some TREE_CONSTNAT integral expressions do not
+	   simplify to integer constants.  For example, `3 % 0',
+	   remains a TRUNC_MOD_EXPR.  */
+	goto non_constant;
+      
+      return expr;
+	
     case REAL_TYPE:
     case COMPLEX_TYPE:
       /* These are g++ extensions.  */
       if (TREE_CODE (expr_type) != TREE_CODE (type))
 	return error_mark_node;
 
-      return digest_init (type, expr, (tree*) 0);
+      expr = digest_init (type, expr, (tree*) 0);
+      
+      if (TREE_CODE (expr) != REAL_CST)
+	goto non_constant;
+
+      return expr;
 
     case POINTER_TYPE:
       {
