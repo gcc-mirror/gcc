@@ -1,3 +1,7 @@
+2001-11-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* 1750a.md: Don't use hex format for a const_int.
+
 2001-11-19  Geoffrey Keating  <geoffk@redhat.com>
 
 	* expmed.c (extract_bit_field): Don't create invalid SUBREGs.
