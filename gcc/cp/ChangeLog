@@ -1,3 +1,15 @@
+2000-10-06  Richard Henderson  <rth@cygnus.com>
+
+	* cp-tree.h (struct cp_language_function): Remove x_result_rtx.
+	(original_result_rtx): Remove.
+	* decl.c (save_function_data): Don't clear x_result_rtx.
+	(mark_lang_function): Don't mark it either.
+	* expr.c (fixup_result_decl): Remove.
+	* semantics.c (genrtl_named_return_value): Frob the return decl
+	before calling emit_local_var.
+	(genrtl_finish_function): Don't call fixup_result_decl.
+	Always emit the jump to return_label.
+
 2000-10-06  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* pt.c (lookup_template_class): Set current access for enum.

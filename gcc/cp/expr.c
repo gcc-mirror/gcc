@@ -148,36 +148,6 @@ init_cplus_expand ()
   lang_expand_constant = cplus_expand_constant;
 }
 
-/* If DECL had its rtl moved from where callers expect it
-   to be, fix it up.  RESULT is the nominal rtl for the RESULT_DECL,
-   which may be a pseudo instead of a hard register.  */
-
-void
-fixup_result_decl (decl, result)
-     tree decl;
-     rtx result;
-{
-  if (REG_P (result))
-    {
-      if (REGNO (result) >= FIRST_PSEUDO_REGISTER)
-	{
-	  rtx real_decl_result;
-
-#ifdef FUNCTION_OUTGOING_VALUE
-	  real_decl_result
-	    = FUNCTION_OUTGOING_VALUE (TREE_TYPE (decl), current_function_decl);
-#else
-	  real_decl_result
-	    = FUNCTION_VALUE (TREE_TYPE (decl), current_function_decl);
-#endif
-	  REG_FUNCTION_VALUE_P (real_decl_result) = 1;
-	  result = real_decl_result;
-	}
-      store_expr (decl, result, 0);
-      emit_insn (gen_rtx (USE, VOIDmode, result));
-    }
-}
-
 int
 extract_init (decl, init)
      tree decl ATTRIBUTE_UNUSED, init ATTRIBUTE_UNUSED;

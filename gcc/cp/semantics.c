@@ -975,17 +975,12 @@ finish_decl_cleanup (decl, cleanup)
 static void
 genrtl_named_return_value ()
 {
-  tree decl;
-
-  decl = DECL_RESULT (current_function_decl);
-
-  emit_local_var (decl);
+  tree decl = DECL_RESULT (current_function_decl);
 
   /* If this named return value comes in a register, put it in a
      pseudo-register.  */
   if (DECL_REGISTER (decl))
     {
-      original_result_rtx = DECL_RTL (decl);
       /* Note that the mode of the old DECL_RTL may be wider than the
 	 mode of DECL_RESULT, depending on the calling conventions for
 	 the processor.  For example, on the Alpha, a 32-bit integer
@@ -993,10 +988,12 @@ genrtl_named_return_value ()
 	 SImode but the DECL_RTL for the DECL_RESULT has DImode.  So,
 	 here, we use the mode the back-end has already assigned for
 	 the return value.  */
-      DECL_RTL (decl) = gen_reg_rtx (GET_MODE (original_result_rtx));
+      DECL_RTL (decl) = gen_reg_rtx (GET_MODE (DECL_RTL (decl)));
       if (TREE_ADDRESSABLE (decl))
 	put_var_into_stack (decl);
     }
+
+  emit_local_var (decl);
 }
 
 /* Bind a name and initialization to the return value of
@@ -2602,15 +2599,9 @@ genrtl_finish_function (fn)
       emit_label (cleanup_label);
     }
 
-  /* Get return value into register if that's where it's supposed to
-     be.  */
-  if (original_result_rtx)
-    fixup_result_decl (DECL_RESULT (fn), original_result_rtx);
-
   /* Finish building code that will trigger warnings if users forget
      to make their functions return values.  */
-  if (no_return_label || cleanup_label)
-    emit_jump (return_label);
+  emit_jump (return_label);
   if (no_return_label)
     {
       /* We don't need to call `expand_*_return' here because we don't

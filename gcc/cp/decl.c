@@ -13992,7 +13992,6 @@ save_function_data (decl)
   /* Clear out the bits we don't need.  */
   f->base.x_stmt_tree.x_last_stmt = NULL_TREE;
   f->base.x_stmt_tree.x_last_expr_type = NULL_TREE;
-  f->x_result_rtx = NULL_RTX;
   f->x_named_label_uses = NULL;
   f->bindings = NULL;
 
@@ -14630,8 +14629,6 @@ mark_lang_function (p)
   ggc_mark_tree (p->x_current_class_ptr);
   ggc_mark_tree (p->x_current_class_ref);
   ggc_mark_tree (p->x_eh_spec_try_block);
-
-  ggc_mark_rtx (p->x_result_rtx);
 
   mark_named_label_lists (&p->x_named_labels, &p->x_named_label_uses);
   mark_binding_level (&p->bindings);
