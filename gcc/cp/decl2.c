@@ -2863,6 +2863,9 @@ finish_file ()
 	  && wrapup_global_declarations (&VARRAY_TREE (pending_statics, 0),
 					 pending_statics_used))
 	reconsider = true;
+
+      if (cgraph_assemble_pending_functions ())
+	reconsider = true;
     } 
   while (reconsider);
 
