@@ -2207,6 +2207,10 @@
   [(set_attr "type" "*,*,*,load,store,fpmove,fpload,fpstore")
    (set_attr "fptype" "*,*,*,*,*,double,*,*")])
 
+;; We don't define V1SI because SI should work just fine.
+(define_mode_macro V64 [DF V4HI V8QI V2SI])
+(define_mode_macro V32 [SF V2HI V4QI])
+
 (define_insn "*movdi_insn_sp64_vis"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=r,r,r,r,m,?e,?e,?W,b")
         (match_operand:DI 1 "input_operand"   "rI,N,J,m,rJ,e,W,e,J"))]
@@ -2627,12 +2631,12 @@
   [(set_attr "type" "fpmove,*,*,*,*,load,fpload,fpstore,store")])
 
 (define_insn "*movsf_insn_vis"
-  [(set (match_operand:SF 0 "nonimmediate_operand" "=f,f,*r,*r,*r,*r,*r,f,m,m")
-	(match_operand:SF 1 "input_operand"         "f,G,G,Q,*rR,S,m,m,f,*rG"))]
+  [(set (match_operand:V32 0 "nonimmediate_operand" "=f,f,*r,*r,*r,*r,*r,f,m,m")
+	(match_operand:V32 1 "input_operand"         "f,GY,GY,Q,*rR,S,m,m,f,*rGY"))]
   "(TARGET_FPU && TARGET_VIS)
-   && (register_operand (operands[0], SFmode)
-       || register_operand (operands[1], SFmode)
-       || fp_zero_operand (operands[1], SFmode))"
+   && (register_operand (operands[0], <V32:MODE>mode)
+       || register_operand (operands[1], <V32:MODE>mode)
+       || fp_zero_operand (operands[1], <V32:MODE>mode))"
 {
   if (GET_CODE (operands[1]) == CONST_DOUBLE
       && (which_alternative == 3
@@ -2718,6 +2722,8 @@
 }
   [(set_attr "type" "*,*,*,*,load,store")])
 
+;; The following 3 patterns build SFmode constants in integer registers.
+
 (define_insn "*movsf_lo_sum"
   [(set (match_operand:SF 0 "register_operand" "=r")
         (lo_sum:SF (match_operand:SF 1 "register_operand" "r")
@@ -2756,27 +2762,29 @@
   [(set (match_dup 0) (high:SF (match_dup 1)))
    (set (match_dup 0) (lo_sum:SF (match_dup 0) (match_dup 1)))])
 
-(define_expand "movsf"
-  [(set (match_operand:SF 0 "general_operand" "")
-	(match_operand:SF 1 "general_operand" ""))]
-  ""
+;; Yes, you guessed it right, the former movsf expander.
+(define_expand "mov<V32:mode>"
+  [(set (match_operand:V32 0 "general_operand" "")
+	(match_operand:V32 1 "general_operand" ""))]
+  "<V32:MODE>mode == SFmode || TARGET_VIS"
 {
-  /* Force SFmode constants into memory.  */
-  if (GET_CODE (operands[0]) == REG
-      && CONSTANT_P (operands[1]))
+  /* Force constants into memory.  */
+  if (GET_CODE (operands[0]) == REG && CONSTANT_P (operands[1]))
     {
       /* emit_group_store will send such bogosity to us when it is
          not storing directly into memory.  So fix this up to avoid
          crashes in output_constant_pool.  */
       if (operands [1] == const0_rtx)
-        operands[1] = CONST0_RTX (SFmode);
+        operands[1] = CONST0_RTX (<V32:MODE>mode);
 
-      if (TARGET_VIS && fp_zero_operand (operands[1], SFmode))
+      if ((TARGET_VIS || REGNO (operands[0]) < 32)
+	  && fp_zero_operand (operands[1], <V32:MODE>mode))
 	goto movsf_is_ok;
 
       /* We are able to build any SF constant in integer registers
 	 with at most 2 instructions.  */
-      if (REGNO (operands[0]) < 32)
+      if (REGNO (operands[0]) < 32
+	  && <V32:MODE>mode == SFmode)
 	goto movsf_is_ok;
 
       operands[1] = validize_mem (force_const_mem (GET_MODE (operands[0]),
@@ -2786,14 +2794,14 @@
   /* Handle sets of MEM first.  */
   if (GET_CODE (operands[0]) == MEM)
     {
-      if (register_operand (operands[1], SFmode)
-	  || fp_zero_operand (operands[1], SFmode))
+      if (register_operand (operands[1], <V32:MODE>mode)
+	  || fp_zero_operand (operands[1], <V32:MODE>mode))
 	goto movsf_is_ok;
 
       if (! reload_in_progress)
 	{
 	  operands[0] = validize_mem (operands[0]);
-	  operands[1] = force_reg (SFmode, operands[1]);
+	  operands[1] = force_reg (<V32:MODE>mode, operands[1]);
 	}
     }
 
@@ -2802,12 +2810,12 @@
     {
       if (CONSTANT_P (operands[1])
 	  && pic_address_needs_scratch (operands[1]))
-	operands[1] = legitimize_pic_address (operands[1], SFmode, 0);
+	operands[1] = legitimize_pic_address (operands[1], <V32:MODE>mode, 0);
 
-      if (symbolic_operand (operands[1], SFmode))
+      if (symbolic_operand (operands[1], <V32:MODE>mode))
 	{
 	  operands[1] = legitimize_pic_address (operands[1],
-						SFmode,
+						<V32:MODE>mode,
 						(reload_in_progress ?
 						 operands[0] :
 						 NULL_RTX));
@@ -2818,27 +2826,28 @@
   ;
 })
 
-(define_expand "movdf"
-  [(set (match_operand:DF 0 "general_operand" "")
-	(match_operand:DF 1 "general_operand" ""))]
-  ""
+;; Yes, you again guessed it right, the former movdf expander.
+(define_expand "mov<V64:mode>"
+  [(set (match_operand:V64 0 "general_operand" "")
+	(match_operand:V64 1 "general_operand" ""))]
+  "<V64:MODE>mode == DFmode || TARGET_VIS"
 {
-  /* Force DFmode constants into memory.  */
-  if (GET_CODE (operands[0]) == REG
-      && CONSTANT_P (operands[1]))
+  /* Force constants into memory.  */
+  if (GET_CODE (operands[0]) == REG && CONSTANT_P (operands[1]))
     {
       /* emit_group_store will send such bogosity to us when it is
          not storing directly into memory.  So fix this up to avoid
          crashes in output_constant_pool.  */
       if (operands [1] == const0_rtx)
-        operands[1] = CONST0_RTX (DFmode);
+        operands[1] = CONST0_RTX (<V64:MODE>mode);
 
       if ((TARGET_VIS || REGNO (operands[0]) < 32)
-	  && fp_zero_operand (operands[1], DFmode))
+	  && fp_zero_operand (operands[1], <V64:MODE>mode))
 	goto movdf_is_ok;
 
       /* We are able to build any DF constant in integer registers.  */
       if (REGNO (operands[0]) < 32
+	  && <V64:MODE>mode == DFmode
 	  && (reload_completed || reload_in_progress))
 	goto movdf_is_ok;
 
@@ -2849,14 +2858,14 @@
   /* Handle MEM cases first.  */
   if (GET_CODE (operands[0]) == MEM)
     {
-      if (register_operand (operands[1], DFmode)
-	  || fp_zero_operand (operands[1], DFmode))
+      if (register_operand (operands[1], <V64:MODE>mode)
+	  || fp_zero_operand (operands[1], <V64:MODE>mode))
 	goto movdf_is_ok;
 
       if (! reload_in_progress)
 	{
 	  operands[0] = validize_mem (operands[0]);
-	  operands[1] = force_reg (DFmode, operands[1]);
+	  operands[1] = force_reg (<V64:MODE>mode, operands[1]);
 	}
     }
 
@@ -2865,12 +2874,12 @@
     {
       if (CONSTANT_P (operands[1])
 	  && pic_address_needs_scratch (operands[1]))
-	operands[1] = legitimize_pic_address (operands[1], DFmode, 0);
+	operands[1] = legitimize_pic_address (operands[1], <V64:MODE>mode, 0);
 
-      if (symbolic_operand (operands[1], DFmode))
+      if (symbolic_operand (operands[1], <V64:MODE>mode))
 	{
 	  operands[1] = legitimize_pic_address (operands[1],
-						DFmode,
+						<V64:MODE>mode,
 						(reload_in_progress ?
 						 operands[0] :
 						 NULL_RTX));
@@ -2969,14 +2978,14 @@
 ;; We have available v9 double floats but not 64-bit
 ;; integer registers but we have VIS.
 (define_insn "*movdf_insn_v9only_vis"
-  [(set (match_operand:DF 0 "nonimmediate_operand" "=e,e,e,T,W,U,T,f,*r,o")
-        (match_operand:DF 1 "input_operand" "G,e,W#F,G,e,T,U,o#F,*roGF,*rGf"))]
+  [(set (match_operand:V64 0 "nonimmediate_operand" "=e,e,e,T,W,U,T,f,*r,o")
+        (match_operand:V64 1 "input_operand" "GY,e,W#F,GY,e,T,U,o#F,*roGYF,*rGYf"))]
   "TARGET_FPU
    && TARGET_VIS
    && ! TARGET_ARCH64
-   && (register_operand (operands[0], DFmode)
-       || register_operand (operands[1], DFmode)
-       || fp_zero_operand (operands[1], DFmode))"
+   && (register_operand (operands[0], <V64:MODE>mode)
+       || register_operand (operands[1], <V64:MODE>mode)
+       || fp_zero_operand (operands[1], <V64:MODE>mode))"
   "@
   fzero\t%0
   fmovd\t%1, %0
@@ -3018,14 +3027,14 @@
 ;; We have available both v9 double floats and 64-bit
 ;; integer registers. And we have VIS.
 (define_insn "*movdf_insn_sp64_vis"
-  [(set (match_operand:DF 0 "nonimmediate_operand" "=e,e,e,W,*r,*r,m,*r")
-        (match_operand:DF 1 "input_operand"    "G,e,W#F,e,*rG,m,*rG,F"))]
+  [(set (match_operand:V64 0 "nonimmediate_operand" "=e,e,e,W,*r,*r,m,*r")
+        (match_operand:V64 1 "input_operand"    "GY,e,W#F,e,*rGY,m,*rGY,F"))]
   "TARGET_FPU
    && TARGET_VIS
    && TARGET_ARCH64
-   && (register_operand (operands[0], DFmode)
-       || register_operand (operands[1], DFmode)
-       || fp_zero_operand (operands[1], DFmode))"
+   && (register_operand (operands[0], <V64:MODE>mode)
+       || register_operand (operands[1], <V64:MODE>mode)
+       || fp_zero_operand (operands[1], <V64:MODE>mode))"
   "@
   fzero\t%0
   fmovd\t%1, %0
@@ -3053,6 +3062,7 @@
   stx\t%r1, %0"
   [(set_attr "type" "*,load,store")])
 
+;; This pattern build DFmode constants in integer registers.
 (define_split
   [(set (match_operand:DF 0 "register_operand" "")
         (match_operand:DF 1 "const_double_operand" ""))]
@@ -3112,8 +3122,8 @@
 ;; careful when V9 but not ARCH64 because the integer
 ;; register DFmode cases must be handled.
 (define_split
-  [(set (match_operand:DF 0 "register_operand" "")
-        (match_operand:DF 1 "register_operand" ""))]
+  [(set (match_operand:V64 0 "register_operand" "")
+        (match_operand:V64 1 "register_operand" ""))]
   "(! TARGET_V9
     || (! TARGET_ARCH64
         && ((GET_CODE (operands[0]) == REG
@@ -3128,30 +3138,37 @@
   rtx set_src = operands[1];
   rtx dest1, dest2;
   rtx src1, src2;
+  enum machine_mode half_mode;
 
-  dest1 = gen_highpart (SFmode, set_dest);
-  dest2 = gen_lowpart (SFmode, set_dest);
-  src1 = gen_highpart (SFmode, set_src);
-  src2 = gen_lowpart (SFmode, set_src);
+  /* We can be expanded for DFmode or integral vector modes.  */
+  if (<V64:MODE>mode == DFmode)
+    half_mode = SFmode;
+  else
+    half_mode = SImode;
+  
+  dest1 = gen_highpart (half_mode, set_dest);
+  dest2 = gen_lowpart (half_mode, set_dest);
+  src1 = gen_highpart (half_mode, set_src);
+  src2 = gen_lowpart (half_mode, set_src);
 
   /* Now emit using the real source and destination we found, swapping
      the order if we detect overlap.  */
   if (reg_overlap_mentioned_p (dest1, src2))
     {
-      emit_insn (gen_movsf (dest2, src2));
-      emit_insn (gen_movsf (dest1, src1));
+      emit_move_insn_1 (dest2, src2);
+      emit_move_insn_1 (dest1, src1);
     }
   else
     {
-      emit_insn (gen_movsf (dest1, src1));
-      emit_insn (gen_movsf (dest2, src2));
+      emit_move_insn_1 (dest1, src1);
+      emit_move_insn_1 (dest2, src2);
     }
   DONE;
 })
 
 (define_split
-  [(set (match_operand:DF 0 "register_operand" "")
-	(match_operand:DF 1 "memory_operand" ""))]
+  [(set (match_operand:V64 0 "register_operand" "")
+	(match_operand:V64 1 "memory_operand" ""))]
   "reload_completed
    && ! TARGET_ARCH64
    && (((REGNO (operands[0]) % 2) != 0)
@@ -3159,29 +3176,34 @@
    && offsettable_memref_p (operands[1])"
   [(clobber (const_int 0))]
 {
-  rtx word0 = adjust_address (operands[1], SFmode, 0);
-  rtx word1 = adjust_address (operands[1], SFmode, 4);
+  enum machine_mode half_mode;
+  rtx word0, word1;
 
-  if (reg_overlap_mentioned_p (gen_highpart (SFmode, operands[0]), word1))
+  /* We can be expanded for DFmode or integral vector modes.  */
+  if (<V64:MODE>mode == DFmode)
+    half_mode = SFmode;
+  else
+    half_mode = SImode;
+
+  word0 = adjust_address (operands[1], half_mode, 0);
+  word1 = adjust_address (operands[1], half_mode, 4);
+
+  if (reg_overlap_mentioned_p (gen_highpart (half_mode, operands[0]), word1))
     {
-      emit_insn (gen_movsf (gen_lowpart (SFmode, operands[0]),
-			    word1));
-      emit_insn (gen_movsf (gen_highpart (SFmode, operands[0]),
-			    word0));
+      emit_move_insn_1 (gen_lowpart (half_mode, operands[0]), word1);
+      emit_move_insn_1 (gen_highpart (half_mode, operands[0]), word0);
     }
   else
     {
-      emit_insn (gen_movsf (gen_highpart (SFmode, operands[0]),
-			    word0));
-      emit_insn (gen_movsf (gen_lowpart (SFmode, operands[0]),
-			    word1));
+      emit_move_insn_1 (gen_highpart (half_mode, operands[0]), word0);
+      emit_move_insn_1 (gen_lowpart (half_mode, operands[0]), word1);
     }
   DONE;
 })
 
 (define_split
-  [(set (match_operand:DF 0 "memory_operand" "")
-	(match_operand:DF 1 "register_operand" ""))]
+  [(set (match_operand:V64 0 "memory_operand" "")
+	(match_operand:V64 1 "register_operand" ""))]
   "reload_completed
    && ! TARGET_ARCH64
    && (((REGNO (operands[1]) % 2) != 0)
@@ -3189,19 +3211,26 @@
    && offsettable_memref_p (operands[0])"
   [(clobber (const_int 0))]
 {
-  rtx word0 = adjust_address (operands[0], SFmode, 0);
-  rtx word1 = adjust_address (operands[0], SFmode, 4);
+  enum machine_mode half_mode;
+  rtx word0, word1;
 
-  emit_insn (gen_movsf (word0,
-			gen_highpart (SFmode, operands[1])));
-  emit_insn (gen_movsf (word1,
-			gen_lowpart (SFmode, operands[1])));
+  /* We can be expanded for DFmode or integral vector modes.  */
+  if (<V64:MODE>mode == DFmode)
+    half_mode = SFmode;
+  else
+    half_mode = SImode;
+
+  word0 = adjust_address (operands[0], half_mode, 0);
+  word1 = adjust_address (operands[0], half_mode, 4);
+
+  emit_move_insn_1 (word0, gen_highpart (half_mode, operands[1]));
+  emit_move_insn_1 (word1, gen_lowpart (half_mode, operands[1]));
   DONE;
 })
 
 (define_split
-  [(set (match_operand:DF 0 "memory_operand" "")
-        (match_operand:DF 1 "fp_zero_operand" ""))]
+  [(set (match_operand:V64 0 "memory_operand" "")
+        (match_operand:V64 1 "fp_zero_operand" ""))]
   "reload_completed
    && (! TARGET_V9
        || (! TARGET_ARCH64
@@ -3209,19 +3238,26 @@
    && offsettable_memref_p (operands[0])"
   [(clobber (const_int 0))]
 {
+  enum machine_mode half_mode;
   rtx dest1, dest2;
 
-  dest1 = adjust_address (operands[0], SFmode, 0);
-  dest2 = adjust_address (operands[0], SFmode, 4);
+  /* We can be expanded for DFmode or integral vector modes.  */
+  if (<V64:MODE>mode == DFmode)
+    half_mode = SFmode;
+  else
+    half_mode = SImode;
 
-  emit_insn (gen_movsf (dest1, CONST0_RTX (SFmode)));
-  emit_insn (gen_movsf (dest2, CONST0_RTX (SFmode)));
+  dest1 = adjust_address (operands[0], half_mode, 0);
+  dest2 = adjust_address (operands[0], half_mode, 4);
+
+  emit_move_insn_1 (dest1, CONST0_RTX (half_mode));
+  emit_move_insn_1 (dest2, CONST0_RTX (half_mode));
   DONE;
 })
 
 (define_split
-  [(set (match_operand:DF 0 "register_operand" "")
-        (match_operand:DF 1 "fp_zero_operand" ""))]
+  [(set (match_operand:V64 0 "register_operand" "")
+        (match_operand:V64 1 "fp_zero_operand" ""))]
   "reload_completed
    && ! TARGET_ARCH64
    && ((GET_CODE (operands[0]) == REG
@@ -3231,13 +3267,20 @@
 	   && REGNO (SUBREG_REG (operands[0])) < 32))"
   [(clobber (const_int 0))]
 {
+  enum machine_mode half_mode;
   rtx set_dest = operands[0];
   rtx dest1, dest2;
 
-  dest1 = gen_highpart (SFmode, set_dest);
-  dest2 = gen_lowpart (SFmode, set_dest);
-  emit_insn (gen_movsf (dest1, CONST0_RTX (SFmode)));
-  emit_insn (gen_movsf (dest2, CONST0_RTX (SFmode)));
+  /* We can be expanded for DFmode or integral vector modes.  */
+  if (<V64:MODE>mode == DFmode)
+    half_mode = SFmode;
+  else
+    half_mode = SImode;
+
+  dest1 = gen_highpart (half_mode, set_dest);
+  dest2 = gen_lowpart (half_mode, set_dest);
+  emit_move_insn_1 (dest1, CONST0_RTX (half_mode));
+  emit_move_insn_1 (dest2, CONST0_RTX (half_mode));
   DONE;
 })
 

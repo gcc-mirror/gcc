@@ -1,5 +1,5 @@
 /* Definitions of target machine for GCC, for Sun SPARC.
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com).
    64 bit SPARC V9 support by Michael Tiemann, Jim Wilson, and Doug Evans,
    at Cygnus Support.
@@ -42,3 +42,7 @@ CC_MODE (CC_NOOV);
 CC_MODE (CCX_NOOV);
 CC_MODE (CCFP);
 CC_MODE (CCFPE);
+
+/* Vector modes.  */
+VECTOR_MODES (INT, 8);        /*       V8QI V4HI V2SI */
+VECTOR_MODES (INT, 4);        /*       V4QI V2HI */
