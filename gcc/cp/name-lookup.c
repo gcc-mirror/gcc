@@ -2735,7 +2735,10 @@ namespace_binding (tree name, tree scope)
 
   if (scope == NULL)
     scope = global_namespace;
-  scope = ORIGINAL_NAMESPACE (scope);
+  else
+    /* Unnecessary for the global namespace because it can't be an alias. */
+    scope = ORIGINAL_NAMESPACE (scope);
+
   binding = cxx_scope_find_binding_for_name (NAMESPACE_LEVEL (scope), name);
 
   return binding ? binding->value : NULL_TREE;

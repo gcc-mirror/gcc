@@ -1,3 +1,7 @@
+2004-12-01  Matt Austern  <austern@apple.com>
+
+	* name-lookup.c (namespace_binding): Omit alias check for global namespace.
+
 2004-12-01  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/18729
