@@ -2955,15 +2955,20 @@ merge_ranges (pin_p, plow, phigh, in0_p, low0, high0, in1_p, low1, high1)
   tree tem;
   int in_p;
   tree low, high;
+  int lowequal = ((low0 == 0 && low1 == 0)
+		  || integer_onep (range_binop (EQ_EXPR, integer_type_node,
+						low0, 0, low1, 0)));
+  int highequal = ((high0 == 0 && high1 == 0)
+		   || integer_onep (range_binop (EQ_EXPR, integer_type_node,
+						 high0, 1, high1, 1)));
 
-  /* Make range 0 be the range that starts first.  Swap them if it isn't.  */
+  /* Make range 0 be the range that starts first, or ends last if they
+     start at the same value.  Swap them if it isn't.  */
   if (integer_onep (range_binop (GT_EXPR, integer_type_node, 
 				 low0, 0, low1, 0))
-      || (((low0 == 0 && low1 == 0)
-	   || integer_onep (range_binop (EQ_EXPR, integer_type_node,
-					 low0, 0, low1, 0)))
+      || (lowequal
 	  && integer_onep (range_binop (GT_EXPR, integer_type_node,
-					high0, 1, high1, 1))))
+					high1, 1, high0, 1))))
     {
       temp = in0_p, in0_p = in1_p, in1_p = temp;
       tem = low0, low0 = low1, low1 = tem;
@@ -2995,27 +3000,32 @@ merge_ranges (pin_p, plow, phigh, in0_p, low0, high0, in1_p, low1, high1)
 
   else if (in0_p && ! in1_p)
     {
-      /* If they don't overlap, the result is the first range.  If the
-	 second range is a subset of the first, we can't describe this as
-	 a single range unless both ranges end at the same place.  If both
-	 ranges start in the same place, then the result is false.
-	 Otherwise, we go from the start of the first range to just before
-	 the start of the second.  */
+      /* If they don't overlap, the result is the first range.  If they are
+	 equal, the result is false.  If the second range is a subset of the
+	 first, and the ranges begin at the same place, we go from just after
+	 the end of the first range to the end of the second.  If the second
+	 range is not a subset of the first, or if it is a subset and both
+	 ranges end at the same place, the range starts at the start of the
+	 first range and ends just before the second range.
+	 Otherwise, we can't describe this as a single range.  */
       if (no_overlap)
 	in_p = 1, low = low0, high = high0;
-      else if (subset
-	       && integer_zerop (range_binop (EQ_EXPR, integer_type_node,
-					      high0, 1, high1, 0)))
-	return 0;
-      else if (integer_onep (range_binop (EQ_EXPR, integer_type_node,
-					  low0, 0, low1, 0)))
+      else if (lowequal && highequal)
 	in_p = 0, low = high = 0;
-      else
+      else if (subset && lowequal)
+	{
+	  in_p = 1, high = high0;
+	  low = range_binop (PLUS_EXPR, NULL_TREE, high1, 0,
+			     integer_one_node, 0);	  
+	}
+      else if (! subset || highequal)
 	{
 	  in_p = 1, low = low0;
 	  high = range_binop (MINUS_EXPR, NULL_TREE, low1, 0,
 			      integer_one_node, 0);
 	}
+      else
+	return 0;
     }
 
   else if (! in0_p && in1_p)
