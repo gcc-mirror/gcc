@@ -1,3 +1,7 @@
+Fri Jan 16 00:48:03 1998  Manfred Hollstein  <manfred@lts.sel.alcatel.de>
+
+	* config.shared (FLAGS_TO_PASS): Add SHELL.
+
 Tue Jan 13 21:30:33 1998  H.J. Lu  (hjl@gnu.org)
 
 	* configure.in (CHECK_SUBDIRS): Set to testsuite only if
