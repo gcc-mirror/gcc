@@ -1,3 +1,8 @@
+Mon Feb 15 22:29:49 1999  Douglas Rupp <rupp@gnat.com>
+
+	* dbxout.c (dbxout_parms): Generate a second stabs line for parameters
+	passed in a register but moved to the stack.
+
 Mon Feb 15 21:26:15 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* alpha.c (output_epilogue): Use $22, not $2, as scratch for VMS.
