@@ -177,6 +177,7 @@ proc libstdc++-dg-test { testfile compile_type additional-options } {
     
     libstdc++-process-options $testfile
     set output_file [file rootname [file tail $testfile]]
+    set output_file "./$output_file"
     switch $compile_type {
 	"preprocess" {
 	    set lt $lib_env(CXX)
@@ -544,7 +545,7 @@ proc dg-test { args } {
 	    warning "$name compilation failed to produce executable"
 	} else {
 	    set status -1
-	    set result [${tool}_load ./$output_file]
+	    set result [${tool}_load $output_file]
 	    set status [lindex $result 0];
 	    set output [lindex $result 1];
 	    #send_user "After exec, status: $status\n"

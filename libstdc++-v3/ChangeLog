@@ -1,3 +1,9 @@
+2001-04-12  Jason Merrill  <jason_merrill@redhat.com>
+
+	* testsuite/lib/libstdc++.exp (libstdc++-dg-test): Prepend "./" to
+	output_file.
+	(dg-test): Revert rth's change.
+
 2001-04-10  Richard Henderson  <rth@redhat.com>
 
 	* testsuite/lib/libstdc++.exp (dg-test): Explicitly run
