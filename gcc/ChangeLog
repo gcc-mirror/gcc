@@ -1,4 +1,9 @@
-Sat Jun  3 19:05:30 2000  Michael Meissner  <meissner@redhat.com>
+S2000-06-03  Geoff Keating  <geoffk@cygnus.com>
+
+        * alias.c (record_component_aliases): Don't inspect
+        DECL_NONADDRESSABLE_P of non-FIELD_DECL components of structures.
+
+at Jun  3 19:05:30 2000  Michael Meissner  <meissner@redhat.com>
 
 	* ifcvt.c (process_insns): If IFCVT_MODIFY_INSN is defined, call
 	it with the pattern to do machine dependent work.
