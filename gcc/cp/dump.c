@@ -336,13 +336,20 @@ cp_dump_tree (dump_info, t)
 	}
       else
 	{
+	  tree virt = THUNK_VIRTUAL_OFFSET (t);
+	  
 	  dump_string (di, "thunk");
 	  if (DECL_THIS_THUNK_P (t))
 	    dump_string (di, "this adjusting");
 	  else
-	    dump_string (di, "result adjusting");
+	    {
+	      dump_string (di, "result adjusting");
+	      if (virt)
+		virt = BINFO_VPTR_FIELD (virt);
+	    }
 	  dump_int (di, "fixd", THUNK_FIXED_OFFSET (t));
-	  dump_child ("virt", THUNK_VIRTUAL_OFFSET (t));
+	  if (virt)
+	    dump_int (di, "virt", tree_low_cst (virt, 0));
 	  dump_child ("fn", DECL_INITIAL (t));
 	}
       break;

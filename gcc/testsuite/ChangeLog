@@ -1,3 +1,9 @@
+2002-12-30  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* g++.dg/inherit/covariant5.C: New test.
+	* g++.dg/inherit/covariant6.C: New test.
+	* g++.dg/inherit/covariant7.C: New test.
+
 2002-12-29  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/2739
