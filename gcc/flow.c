@@ -1563,10 +1563,9 @@ delete_unreachable_blocks ()
 	 out edge for the block which ended with the conditional
 	 branch (since we do not create duplicate edges).
 
-	 Furthermore, because we create the edge for the jump to the
-	 label before the fallthrough edge, we will only see the
-	 jump edge.  So we do not want to check that the edge is a 
-	 FALLTHRU edge.  */
+	 Furthermore, the edge will be marked as a fallthru because we
+	 merge the flags for the duplicate edges.  So we do not want to
+	 check that the edge is not a FALLTHRU edge.  */
       if ((s = b->succ) != NULL
 	  && s->succ_next == NULL
 	  && s->dest == c)
