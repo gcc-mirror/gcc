@@ -1662,7 +1662,14 @@ replace_regs (x, reg_map, nregs, replace_dest)
     case REG:
       /* Verify that the register has an entry before trying to access it.  */
       if (REGNO (x) < nregs && reg_map[REGNO (x)] != 0)
-	return reg_map[REGNO (x)];
+	{
+	  /* SUBREGs can't be shared.  Always return a copy to ensure that if
+	     this replacement occurs more than once then each instance will
+	     get distinct rtx.  */
+	  if (GET_CODE (reg_map[REGNO (x)]) == SUBREG)
+	    return copy_rtx (reg_map[REGNO (x)]);
+	  return reg_map[REGNO (x)];
+	}
       return x;
 
     case SUBREG:
