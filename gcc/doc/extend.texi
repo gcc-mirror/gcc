@@ -4834,6 +4834,16 @@ long __builtin_alpha_ctlz (long)
 long __builtin_alpha_ctpop (long)
 @end example
 
+The following builtins are available on systems that use the OSF/1
+PALcode.  Normally they invoke the @code{rduniq} and @code{wruniq}
+PAL calls, but when invoked with @option{-mtls-kernel}, they invoke
+@code{rdval} and @code{wrval}.
+
+@example
+void *__builtin_thread_pointer (void)
+void __builtin_set_thread_pointer (void *)
+@end example
+
 @node X86 Built-in Functions
 @subsection X86 Built-in Functions
 
