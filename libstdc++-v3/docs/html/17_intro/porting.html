@@ -3,8 +3,7 @@
 <title>Porting libstdc++-v3</title>
 <meta http-equiv="Content-Type" content="text/html">
 <meta name="description" content="Porting libstdc++-v3">
-<meta name="generator" content="makeinfo 4.3">
-<link href="http://www.gnu.org/software/texinfo/" rel="generator-home">
+<meta name="generator" content="makeinfo 4.6">
 <!--
 Copyright &copy; 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 
@@ -25,20 +24,29 @@ texts being (a) (see below), and with the Back-Cover Texts being (b)
    <p>You have freedom to copy and modify this GNU Manual, like GNU
      software.  Copies published by the Free Software Foundation raise
      funds for GNU development.-->
+<meta http-equiv="Content-Style-Type" content="text/css">
+<style type="text/css"><!--
+  pre.display { font-family:inherit }
+  pre.format  { font-family:inherit }
+  pre.smalldisplay { font-family:inherit; font-size:smaller }
+  pre.smallformat  { font-family:inherit; font-size:smaller }
+  pre.smallexample { font-size:smaller }
+  pre.smalllisp    { font-size:smaller }
+--></style>
 </head>
 <body>
 <h1 class="settitle">Porting libstdc++-v3</h1>
 <div class="node">
 <p><hr>
-Node:<a name="Top">Top</a>,
-Next:<a rel="next" accesskey="n" href="#Operating%20system">Operating system</a>,
-Up:<a rel="up" accesskey="u" href="#dir">(dir)</a>
+Node:&nbsp;<a name="Top">Top</a>,
+Next:&nbsp;<a rel="next" accesskey="n" href="#Operating%20system">Operating system</a>,
+Up:&nbsp;<a rel="up" accesskey="u" href="#dir">(dir)</a>
 <br>
 </div>
 
 <h2 class="unnumbered">Porting libstdc++-v3</h2>
 
-   <p>This document explains how to port libstdc++-v3 (the GNU C++ library) to
+<p>This document explains how to port libstdc++-v3 (the GNU C++ library) to
 a new target.
 
    <p>In order to make the GNU C++ library (libstdc++-v3) work with a new
@@ -57,7 +65,7 @@ works.  It is difficult to test the C++ compiler without a working
 library, but you should at least try some minimal test cases.
 
    <p>(Note that what we think of as a "target," the library refers to as
-a "host."  The comment at the top of <code>configure.in</code> explains why.)
+a "host."  The comment at the top of <code>configure.ac</code> explains why.)
 
    <p>Here are the primary steps required to port the library:
 
@@ -73,16 +81,16 @@ a "host."  The comment at the top of <code>configure.in</code> explains why.)
 
 <div class="node">
 <p><hr>
-Node:<a name="Operating%20system">Operating system</a>,
-Next:<a rel="next" accesskey="n" href="#CPU">CPU</a>,
-Previous:<a rel="previous" accesskey="p" href="#Top">Top</a>,
-Up:<a rel="up" accesskey="u" href="#Top">Top</a>
+Node:&nbsp;<a name="Operating%20system">Operating system</a>,
+Next:&nbsp;<a rel="next" accesskey="n" href="#CPU">CPU</a>,
+Previous:&nbsp;<a rel="previous" accesskey="p" href="#Top">Top</a>,
+Up:&nbsp;<a rel="up" accesskey="u" href="#Top">Top</a>
 <br>
 </div>
 
 <h2 class="chapter">Operating system</h2>
 
-   <p>If you are porting to a new operating system (as opposed to a new chip
+<p>If you are porting to a new operating system (as opposed to a new chip
 using an existing operating system), you will need to create a new
 directory in the <code>config/os</code> hierarchy.  For example, the IRIX
 configuration files are all in <code>config/os/irix</code>.  There is no set
@@ -191,16 +199,16 @@ starting point.
 
 <div class="node">
 <p><hr>
-Node:<a name="CPU">CPU</a>,
-Next:<a rel="next" accesskey="n" href="#Character%20types">Character types</a>,
-Previous:<a rel="previous" accesskey="p" href="#Operating%20system">Operating system</a>,
-Up:<a rel="up" accesskey="u" href="#Top">Top</a>
+Node:&nbsp;<a name="CPU">CPU</a>,
+Next:&nbsp;<a rel="next" accesskey="n" href="#Character%20types">Character types</a>,
+Previous:&nbsp;<a rel="previous" accesskey="p" href="#Operating%20system">Operating system</a>,
+Up:&nbsp;<a rel="up" accesskey="u" href="#Top">Top</a>
 <br>
 </div>
 
 <h2 class="chapter">CPU</h2>
 
-   <p>If you are porting to a new chip (as opposed to a new operating system
+<p>If you are porting to a new chip (as opposed to a new operating system
 running on an existing chip), you will need to create a new directory in the
 <code>config/cpu</code> hierarchy.  Much like the <a href="#Operating%20system">Operating system</a> setup,
 there are no strict rules on how to organize the CPU configuration
@@ -224,16 +232,16 @@ appropriate for your chip.
 
 <div class="node">
 <p><hr>
-Node:<a name="Character%20types">Character types</a>,
-Next:<a rel="next" accesskey="n" href="#Thread%20safety">Thread safety</a>,
-Previous:<a rel="previous" accesskey="p" href="#CPU">CPU</a>,
-Up:<a rel="up" accesskey="u" href="#Top">Top</a>
+Node:&nbsp;<a name="Character%20types">Character types</a>,
+Next:&nbsp;<a rel="next" accesskey="n" href="#Thread%20safety">Thread safety</a>,
+Previous:&nbsp;<a rel="previous" accesskey="p" href="#CPU">CPU</a>,
+Up:&nbsp;<a rel="up" accesskey="u" href="#Top">Top</a>
 <br>
 </div>
 
 <h2 class="chapter">Character types</h2>
 
-   <p>The library requires that you provide three header files to implement
+<p>The library requires that you provide three header files to implement
 character classification, analogous to that provided by the C libraries
 <code>&lt;ctype.h&gt;</code> header.  You can model these on the files provided in
 <code>config/os/generic</code>.  However, these files will almost
@@ -421,16 +429,16 @@ from <code>__low</code> up until <code>__high</code> into the vector given by
 
 <div class="node">
 <p><hr>
-Node:<a name="Thread%20safety">Thread safety</a>,
-Next:<a rel="next" accesskey="n" href="#Numeric%20limits">Numeric limits</a>,
-Previous:<a rel="previous" accesskey="p" href="#Character%20types">Character types</a>,
-Up:<a rel="up" accesskey="u" href="#Top">Top</a>
+Node:&nbsp;<a name="Thread%20safety">Thread safety</a>,
+Next:&nbsp;<a rel="next" accesskey="n" href="#Numeric%20limits">Numeric limits</a>,
+Previous:&nbsp;<a rel="previous" accesskey="p" href="#Character%20types">Character types</a>,
+Up:&nbsp;<a rel="up" accesskey="u" href="#Top">Top</a>
 <br>
 </div>
 
 <h2 class="chapter">Thread safety</h2>
 
-   <p>The C++ library string functionality requires a couple of atomic
+<p>The C++ library string functionality requires a couple of atomic
 operations to provide thread-safety.  If you don't take any special
 action, the library will use stub versions of these functions that are
 not thread-safe.  They will work fine, unless your applications are
@@ -498,16 +506,16 @@ must be equivalent to those provided here, but using atomic operations:
 
 <div class="node">
 <p><hr>
-Node:<a name="Numeric%20limits">Numeric limits</a>,
-Next:<a rel="next" accesskey="n" href="#Libtool">Libtool</a>,
-Previous:<a rel="previous" accesskey="p" href="#Thread%20safety">Thread safety</a>,
-Up:<a rel="up" accesskey="u" href="#Top">Top</a>
+Node:&nbsp;<a name="Numeric%20limits">Numeric limits</a>,
+Next:&nbsp;<a rel="next" accesskey="n" href="#Libtool">Libtool</a>,
+Previous:&nbsp;<a rel="previous" accesskey="p" href="#Thread%20safety">Thread safety</a>,
+Up:&nbsp;<a rel="up" accesskey="u" href="#Top">Top</a>
 <br>
 </div>
 
 <h2 class="chapter">Numeric limits</h2>
 
-   <p>The C++ library requires information about the fundamental data types,
+<p>The C++ library requires information about the fundamental data types,
 such as the minimum and maximum representable values of each type. 
 You can define each of these values individually, but it is usually
 easiest just to indicate how many bits are used in each of the data
@@ -523,16 +531,16 @@ your CPU configuration directory (see <a href="#CPU">CPU</a>).
 
 <div class="node">
 <p><hr>
-Node:<a name="Libtool">Libtool</a>,
-Next:<a rel="next" accesskey="n" href="#GNU%20Free%20Documentation%20License">GNU Free Documentation License</a>,
-Previous:<a rel="previous" accesskey="p" href="#Numeric%20limits">Numeric limits</a>,
-Up:<a rel="up" accesskey="u" href="#Top">Top</a>
+Node:&nbsp;<a name="Libtool">Libtool</a>,
+Next:&nbsp;<a rel="next" accesskey="n" href="#GNU%20Free%20Documentation%20License">GNU Free Documentation License</a>,
+Previous:&nbsp;<a rel="previous" accesskey="p" href="#Numeric%20limits">Numeric limits</a>,
+Up:&nbsp;<a rel="up" accesskey="u" href="#Top">Top</a>
 <br>
 </div>
 
 <h2 class="chapter">Libtool</h2>
 
-   <p>The C++ library is compiled, archived and linked with libtool. 
+<p>The C++ library is compiled, archived and linked with libtool. 
 Explaining the full workings of libtool is beyond the scope of this
 document, but there are a few, particular bits that are necessary for
 porting.
@@ -561,9 +569,9 @@ operating system.
 
 <div class="node">
 <p><hr>
-Node:<a name="GNU%20Free%20Documentation%20License">GNU Free Documentation License</a>,
-Previous:<a rel="previous" accesskey="p" href="#Libtool">Libtool</a>,
-Up:<a rel="up" accesskey="u" href="#Top">Top</a>
+Node:&nbsp;<a name="GNU%20Free%20Documentation%20License">GNU Free Documentation License</a>,
+Previous:&nbsp;<a rel="previous" accesskey="p" href="#Libtool">Libtool</a>,
+Up:&nbsp;<a rel="up" accesskey="u" href="#Top">Top</a>
 <br>
 </div>
 
@@ -947,7 +955,7 @@ as a draft) by the Free Software Foundation.
 
 <h3 class="unnumberedsec">ADDENDUM: How to use this License for your documents</h3>
 
-   <p>To use this License in a document you have written, include a copy of
+<p>To use this License in a document you have written, include a copy of
 the License in the document and put the following copyright and
 license notices just after the title page:
 
