@@ -1,3 +1,7 @@
+2002-02-08  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	* HACKING: Fix URL for the automake-gcj.
+
 2002-02-07  Tom Tromey  <tromey@redhat.com>
 
 	* java/lang/natThrowable.cc: Updated copyright.
