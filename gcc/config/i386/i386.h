@@ -2371,8 +2371,8 @@ do { long l;						\
    programs that are not linked with aux-output.o.  */
 
 #define DEBUG_PRINT_REG(X, CODE, FILE)			\
-  do { static char *hi_name[] = HI_REGISTER_NAMES;	\
-       static char *qi_name[] = QI_REGISTER_NAMES;	\
+  do { static const char * const hi_name[] = HI_REGISTER_NAMES;	\
+       static const char * const qi_name[] = QI_REGISTER_NAMES;	\
        fprintf (FILE, "%d ", REGNO (X));		\
        if (REGNO (X) == FLAGS_REG)			\
 	 { fputs ("flags", FILE); break; }		\

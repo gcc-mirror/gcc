@@ -1,3 +1,18 @@
+1999-12-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* i386-protos.h (output_387_binary_op, output_fix_trunc,
+	output_fp_compare): Constify a char*.
+
+	* i386.c (ix86_split_to_parts, ix86_safe_length_prefix): Add
+	static prototypes.
+	(override_options, ix86_comp_type_attributes, print_operand,
+	output_387_binary_op, output_fix_trunc, output_fp_compare):
+	Constify a char*.
+	(ix86_sched_reorder): Mark parameter `clock_var' with
+	ATTRIBUTE_UNUSED.
+
+	* i386.h (DEBUG_PRINT_REG): Constify a char*.
+
 1999-12-10  Ben Collins  <bcollins@debian.org>
 
         * configure.in: Fix typo for "-64" in 64bit as check.
