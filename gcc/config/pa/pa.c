@@ -183,8 +183,9 @@ override_options ()
       write_symbols = NO_DEBUG;
     }
 
-  /* We always generate PIC code when in 64bit mode.  */
-  if (TARGET_64BIT)
+  /* We only support the "big PIC" model now.  And we always generate PIC
+     code when in 64bit mode.  */
+  if (flag_pic == 1 || TARGET_64BIT)
     flag_pic = 2;
 
   /* Register global variables with the garbage collector.  */
@@ -713,22 +714,15 @@ legitimize_pic_address (orig, mode, reg)
       if (reg == 0)
 	abort ();
 
-      if (flag_pic == 2)
-	{
-	  emit_move_insn (reg,
-			  gen_rtx_PLUS (word_mode, pic_offset_table_rtx,
-					gen_rtx_HIGH (word_mode, orig)));
-	  pic_ref
-	    = gen_rtx_MEM (Pmode,
-			   gen_rtx_LO_SUM (Pmode, reg,
-					   gen_rtx_UNSPEC (Pmode,
-							   gen_rtvec (1, orig),
-							   0)));
-	}
-      else
-	pic_ref = gen_rtx_MEM (Pmode,
-			       gen_rtx_PLUS (Pmode, pic_offset_table_rtx,
-					     orig));
+      emit_move_insn (reg,
+		      gen_rtx_PLUS (word_mode, pic_offset_table_rtx,
+				    gen_rtx_HIGH (word_mode, orig)));
+      pic_ref
+	= gen_rtx_MEM (Pmode,
+		       gen_rtx_LO_SUM (Pmode, reg,
+				       gen_rtx_UNSPEC (Pmode,
+						       gen_rtvec (1, orig),
+						       0)));
 
       current_function_uses_pic_offset_table = 1;
       RTX_UNCHANGING_P (pic_ref) = 1;
@@ -4564,7 +4558,7 @@ secondary_reload_class (class, mode, in)
 
   /* Trying to load a constant into a FP register during PIC code
      generation will require %r1 as a scratch register.  */
-  if (flag_pic == 2
+  if (flag_pic
       && GET_MODE_CLASS (mode) == MODE_INT
       && FP_REG_CLASS_P (class)
       && (GET_CODE (in) == CONST_INT || GET_CODE (in) == CONST_DOUBLE))

@@ -2085,17 +2085,6 @@
   DONE;
 }")
 
-;;; pic symbol references
-
-(define_insn ""
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(mem:SI (plus:SI (match_operand:SI 1 "register_operand" "r")
-			 (match_operand:SI 2 "symbolic_operand" ""))))]
-  "flag_pic && operands[1] == pic_offset_table_rtx"
-  "ldw T'%2(%1),%0"
-  [(set_attr "type" "load")
-   (set_attr "length" "4")])
-
 (define_insn ""
   [(set (match_operand:SI 0 "reg_or_nonsymb_mem_operand"
 				"=r,r,r,r,r,r,Q,*q,!f,f,*TR")
@@ -2331,7 +2320,7 @@
 		 (high:SI (match_operand 2 "" ""))))]
   "symbolic_operand (operands[2], Pmode)
    && ! function_label_operand (operands[2], Pmode)
-   && flag_pic == 2"
+   && flag_pic"
   "addil LT'%G2,%1"
   [(set_attr "type" "binary")
    (set_attr "length" "4")])
@@ -2343,7 +2332,7 @@
   "symbolic_operand (operands[2], Pmode)
    && ! function_label_operand (operands[2], Pmode)
    && TARGET_64BIT
-   && flag_pic == 2"
+   && flag_pic"
   "addil LT'%G2,%1"
   [(set_attr "type" "binary")
    (set_attr "length" "4")])
