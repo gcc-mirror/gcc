@@ -5075,20 +5075,6 @@ reopen_tinst_level (tree level)
   pop_tinst_level ();
 }
 
-/* Return the outermost template instantiation context, for use with
-   -falt-external-templates.  */
-
-tree
-tinst_for_decl (void)
-{
-  tree p = current_tinst_level;
-
-  if (p)
-    for (; TREE_CHAIN (p) ; p = TREE_CHAIN (p))
-      ;
-  return p;
-}
-
 /* DECL is a friend FUNCTION_DECL or TEMPLATE_DECL.  ARGS is the
    vector of template arguments, as for tsubst.
 
