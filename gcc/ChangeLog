@@ -1,3 +1,9 @@
+Sat Nov 16 02:06:02 CET 2002  Jan Hubicka  <jh@suse.cz>
+
+	* athlon.md, k6.md, pentium.md, ppro.md: Handle shift1, rotate1
+	* i386.md (attribute type): Add type shift1 and rotate1.
+	(*_slp): Rewrite to have just two operands to avoid reload problems.
+
 2002-11-15  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.md (4 anonymous patterns): New.
