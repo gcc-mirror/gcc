@@ -116,6 +116,7 @@ static void dump_exception_spec PROTO((tree, int));
 static const char *aggr_variety PROTO((tree));
 static tree ident_fndecl PROTO((tree));
 static int interesting_scope_p PROTO((tree));
+static void dump_template_value PROTO((tree, int, int));
 
 void
 init_error ()
@@ -186,6 +187,22 @@ dump_qualifiers (t, p)
 /* This must be large enough to hold any printed integer or floating-point
    value.  */
 static char digit_buffer[128];
+
+/* Dump a template parameter or template argument VALUE at VERBOSITY
+   level.  The boolean CANONICAL_NAME indicates whether to dump abstract
+   names, e.g. typedefs, or not. */
+
+static void
+dump_template_value (value, verbosity, canonical_name)
+     tree value;
+     int verbosity, canonical_name;
+{
+  if (TREE_CODE_CLASS (TREE_CODE (value)) == 't'
+      || TREE_CODE (value) == TEMPLATE_DECL)
+    dump_type_real (value, verbosity, canonical_name);
+  else
+    dump_expr (value, verbosity);
+}
 
 /* Dump into the obstack a human-readable equivalent of TYPE.  */
 
@@ -282,12 +299,7 @@ dump_type_real (t, v, canonical_name)
 	  OB_PUTC ('<');
 	  for (i = 0; i < TREE_VEC_LENGTH (args); i++)
 	    {
-	      tree arg = TREE_VEC_ELT (args, i);
-	      if (TREE_CODE_CLASS (TREE_CODE (arg)) == 't'
-		  || TREE_CODE (arg) == TEMPLATE_DECL)
-	        dump_type_real (arg, 0, canonical_name);
-	      else
-	        dump_expr (arg, 0);
+              dump_template_value (TREE_VEC_ELT (args, i), 0, canonical_name);
 	      if (i < TREE_VEC_LENGTH (args)-1)
 	        OB_PUTC2 (',', ' ');
 	    }
@@ -895,11 +907,7 @@ dump_decl (t, v)
 	OB_PUTC ('<');
 	for (args = TREE_OPERAND (t, 1); args; args = TREE_CHAIN (args))
 	  {
-	    if (TREE_CODE_CLASS (TREE_CODE (TREE_VALUE (args))) == 't'
-		|| TREE_CODE (TREE_VALUE (args)) == TEMPLATE_DECL)
-	      dump_type (TREE_VALUE (args), 0);
-	    else
-	      dump_expr (TREE_VALUE (args), 0);
+            dump_template_value (TREE_VALUE (args), 0, 0);
 	    if (TREE_CHAIN (args))
 	      OB_PUTC2 (',', ' ');
 	  }
@@ -985,7 +993,7 @@ dump_function_decl (t, v)
 	  && ! DECL_CONSTRUCTOR_P (t)
 	  && ! DECL_DESTRUCTOR_P (t))
 	{
-	  dump_type_prefix (TREE_TYPE (fntype), 1, 0);
+	  dump_type_prefix (TREE_TYPE (fntype), 0, 0);
 	  OB_PUTC (' ');
 	}
     }
@@ -1149,13 +1157,7 @@ dump_function_name (t)
 		    OB_PUTS (", ");
 		  
 		  if (a)
-		    {
-		      if (TREE_CODE_CLASS (TREE_CODE (a)) == 't'
-			  || TREE_CODE (a) == TEMPLATE_DECL)
-			dump_type (a, 0);
-		      else
-			dump_expr (a, 0);
-		    }
+                    dump_template_value (a, 0, 0);
 		  
 		  need_comma = 1;
 		}
@@ -1178,13 +1180,7 @@ dump_function_name (t)
 		    OB_PUTS (", ");
 		  
 		  if (a)
-		    {
-		      if (TREE_CODE_CLASS (TREE_CODE (a)) == 't'
-			  || TREE_CODE (a) == TEMPLATE_DECL)
-			dump_type (a, 0);
-		      else
-			dump_expr (a, 0);
-		    }
+                    dump_template_value (a, 0, 0);
 		  
 		  need_comma = 1;
 		}
