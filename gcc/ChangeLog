@@ -47,6 +47,11 @@
 
 	* gcc.texi (Contributing): Update.
 
+2000-10-13  Diego Novillo  <dnovillo@cygnus.com>
+
+	* config/i386/unix.h (ASM_OUTPUT_MI_THUNK): Output final jump using
+	appropriate assembler dialect.
+
 2000-10-13  Alexandre Oliva  <aoliva@redhat.com>
 
 	* c-common.c (c_expand_builtin): PARAMS-ize prototype.

@@ -118,9 +118,11 @@ do {									    \
       ASM_OUTPUT_INTERNAL_LABEL (FILE, "L", CODE_LABEL_NUMBER (xops[1]));   \
       output_asm_insn ("pop{l}\t%0", xops);				    \
       output_asm_insn ("add{l}\t$_GLOBAL_OFFSET_TABLE_+[.-%P1], %0", xops); \
-      fprintf (FILE, "\tmovl ");					    \
-      assemble_name (FILE, XSTR (XEXP (DECL_RTL (FUNCTION), 0), 0));	    \
-      fprintf (FILE, "@GOT(%%ebx),%%ecx\n\tpopl %%ebx\n\tjmp *%%ecx\n");    \
+      xops[0] = gen_rtx_MEM (SImode, XEXP (DECL_RTL (FUNCTION), 0));	    \
+      output_asm_insn ("mov{l}\t{%0@GOT(%%ebx), %%ecx|%%ecx, %0@GOT[%%ebx]}",\
+	               xops);						    \
+      asm_fprintf (FILE, "\tpop{l\t%%ebx|\t%%ebx}\n");			    \
+      asm_fprintf (FILE, "\tjmp\t{*%%ecx|%%ecx}\n");			    \
     }									    \
   else									    \
     {									    \
