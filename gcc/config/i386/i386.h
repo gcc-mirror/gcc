@@ -2830,6 +2830,18 @@ extern int const svr4_dbx_register_map[FIRST_PSEUDO_REGISTER];
 #define EH_RETURN_DATA_REGNO(N)	((N) < 2 ? (N) : INVALID_REGNUM)
 #define EH_RETURN_STACKADJ_RTX	gen_rtx_REG (Pmode, 2)
 
+/* Select a format to encode pointers in exception handling data.  CODE
+   is 0 for data, 1 for code labels, 2 for function pointers.  GLOBAL is
+   true if the symbol may be affected by dynamic relocations.
+
+   ??? All x86 object file formats are capable of representing this.
+   After all, the relocation needed is the same as for the call insn.
+   Whether or not a particular assembler allows us to enter such, I
+   guess we'll have to see.  */
+#define ASM_PREFERRED_EH_DATA_FORMAT(CODE,GLOBAL)       		\
+  (flag_pic ? (GLOBAL ? DW_EH_PE_indirect : 0) | DW_EH_PE_pcrel		\
+   : DW_EH_PE_absptr)
+
 /* This is how to output the definition of a user-level label named NAME,
    such as the label on a static function or variable NAME.  */
 
