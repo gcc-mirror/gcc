@@ -456,7 +456,7 @@
 	     "dmi" ((USItype) (d)))
 
 #else /* not mc68020 */
-#if !defined(__mc5200__)
+#if !defined(__mcf5200__)
 /* %/ inserts REGISTER_PREFIX, %# inserts IMMEDIATE_PREFIX.  */
 #define umul_ppmm(xh, xl, a, b) \
   __asm__ ("| Inlined umul_ppmm
