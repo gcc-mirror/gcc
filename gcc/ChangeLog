@@ -1,3 +1,21 @@
+2001-01-07  Alexandre Oliva  <aoliva@redhat.com>
+
+	* reload.c (subst_reloads): Take INSN argument.  When
+	replacing a LABEL_REF in a JUMP_INSN, add a REG_LABEL note.
+	* reload.h (subst_reloads): Adjust prototype.
+	* reload1.c (reload_as_needed): Pass INSN to subst_reloads.
+	* jump.c (mark_all_labels): Canonicalize any REG_LABEL notes
+	present in JUMP_INSNs and copy them to JUMP_LABEL.
+	* flow.c (find_label_refs, find_basic_blocks_1): Skip
+	JUMP_INSNs and insns with REG_LABELs that are followed by
+	JUMP_INSNs with the same REG_LABEL.
+	* sched-rgn.c (is_cfg_nonregular): Likewise.
+	* rtlanal.c (computed_jump_p): Make it false if a REG_LABEL
+	note is available.
+	* unroll.c (unroll_loop): Look for REG_LABEL notes in
+	JUMP_INSNs too.
+	* rtl.texi (REG_LABEL): Document usage in JUMP_INSNs.
+
 2001-01-06  Richard Henderson  <rth@redhat.com>
 
 	* loop.c (scan_loop): Use xcalloc for the regs array.

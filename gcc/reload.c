@@ -5679,7 +5679,8 @@ find_reloads_subreg_address (x, force_replace, opnum, type,
    Return the rtx that X translates into; usually X, but modified.  */
 
 void
-subst_reloads ()
+subst_reloads (insn)
+     rtx insn;
 {
   register int i;
 
@@ -5689,6 +5690,15 @@ subst_reloads ()
       register rtx reloadreg = rld[r->what].reg_rtx;
       if (reloadreg)
 	{
+	  /* If we're replacing a LABEL_REF with a register, add a
+	     REG_LABEL note to indicate to flow which label this
+	     register refers to.  */
+	  if (GET_CODE (*r->where) == LABEL_REF
+	      && GET_CODE (insn) == JUMP_INSN)
+	    REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_LABEL,
+						  XEXP (*r->where, 0),
+						  REG_NOTES (insn));
+
 	  /* Encapsulate RELOADREG so its machine mode matches what
 	     used to be there.  Note that gen_lowpart_common will
 	     do the wrong thing if RELOADREG is multi-word.  RELOADREG

@@ -640,7 +640,7 @@ find_label_refs (f, lvl)
   rtx insn;
 
   for (insn = f; insn; insn = NEXT_INSN (insn))
-    if (INSN_P (insn))
+    if (INSN_P (insn) && GET_CODE (insn) != JUMP_INSN)
       {
 	rtx note;
 
@@ -651,7 +651,10 @@ find_label_refs (f, lvl)
 	   as this would be a part of the tablejump setup code.
 
 	   Make a special exception for the eh_return_stub_label, which
-	   we know isn't part of any otherwise visible control flow.  */
+	   we know isn't part of any otherwise visible control flow.
+
+	   Make a special exception to registers loaded with label
+	   values just before jump insns that use them.  */
 
 	for (note = REG_NOTES (insn); note; note = XEXP (note, 1))
 	  if (REG_NOTE_KIND (note) == REG_LABEL)
@@ -666,6 +669,9 @@ find_label_refs (f, lvl)
 			   || GET_CODE (PATTERN (next)) == ADDR_DIFF_VEC))
 		;
 	      else if (GET_CODE (lab) == NOTE)
+		;
+	      else if (GET_CODE (NEXT_INSN (insn)) == JUMP_INSN
+		       && find_reg_note (NEXT_INSN (insn), REG_LABEL, lab))
 		;
 	      else
 		lvl = alloc_EXPR_LIST (0, XEXP (note, 0), lvl);
@@ -862,18 +868,21 @@ find_basic_blocks_1 (f)
 	  break;
 	}
 
-      if (GET_RTX_CLASS (code) == 'i')
+      if (GET_RTX_CLASS (code) == 'i'
+	  && GET_CODE (insn) != JUMP_INSN)
 	{
 	  rtx note;
 
-	  /* Make a list of all labels referred to other than by jumps
-	     (which just don't have the REG_LABEL notes).
+	  /* Make a list of all labels referred to other than by jumps.
 
 	     Make a special exception for labels followed by an ADDR*VEC,
 	     as this would be a part of the tablejump setup code.
 
 	     Make a special exception for the eh_return_stub_label, which
-	     we know isn't part of any otherwise visible control flow.  */
+	     we know isn't part of any otherwise visible control flow.
+
+	     Make a special exception to registers loaded with label
+	     values just before jump insns that use them.  */
 
 	  for (note = REG_NOTES (insn); note; note = XEXP (note, 1))
 	    if (REG_NOTE_KIND (note) == REG_LABEL)
@@ -888,6 +897,9 @@ find_basic_blocks_1 (f)
 			     || GET_CODE (PATTERN (next)) == ADDR_DIFF_VEC))
 		  ;
 		else if (GET_CODE (lab) == NOTE)
+		  ;
+		else if (GET_CODE (NEXT_INSN (insn)) == JUMP_INSN
+			 && find_reg_note (NEXT_INSN (insn), REG_LABEL, lab))
 		  ;
 		else
 		  lvl = alloc_EXPR_LIST (0, XEXP (note, 0), lvl);

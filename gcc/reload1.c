@@ -3830,7 +3830,7 @@ reload_as_needed (live_known)
 		 into the insn's body (or perhaps into the bodies of other
 		 load and store insn that we just made for reloading
 		 and that we moved the structure into).  */
-	      subst_reloads ();
+	      subst_reloads (insn);
 
 	      /* If this was an ASM, make sure that all the reload insns
 		 we have generated are valid.  If not, give an error
