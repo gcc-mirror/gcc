@@ -1,5 +1,10 @@
 2003-07-06  Phil Edwards  <pme@gcc.gnu.org>
 
+	* include/bits/allocator_traits.h:  Fix doxygen markup.
+	* include/ext/mt_allocator.h:  Likewise.
+
+2003-07-06  Phil Edwards  <pme@gcc.gnu.org>
+
 	* testsuite/testsuite_hooks.h:  Guard against a missing unlink().
 
 2003-07-05  Phil Edwards  <pme@gcc.gnu.org>

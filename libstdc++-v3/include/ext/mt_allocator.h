@@ -41,6 +41,9 @@
 #include <bits/atomicity.h>
 #include <bits/allocator_traits.h>
 
+namespace __gnu_cxx
+{
+
 /**
  *  This is a fixed size (power of 2) allocator which - when compiled
  *  with thread support - will maintain one freelist per size per thread
@@ -48,14 +51,13 @@
  *  sizes (by returning excess back to "global").
  *
  *  Usage examples:
+ *  @code
  *    vector<int, __gnu_cxx::__mt_alloc<0> > v1;
  *
  *    typedef std::__allocator<char, __gnu_cxx::__mt_alloc<0> > string_alloc;
  *    std::basic_string<char, std::char_traits<char>, string_alloc> s1;
+ *  @endcode
  */
-
-namespace __gnu_cxx
-{
   template<int __inst>
     class __mt_alloc
     {
@@ -860,4 +862,3 @@ namespace std
 } // namespace std
 
 #endif
-
