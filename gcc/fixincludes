@@ -1651,6 +1651,37 @@ extern "C" {
   fi
 fi
 
+# check for broken assert.h that needs stdio.h or stdlib.h
+file=assert.h
+if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
+  cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
+  chmod +w ${LIB}/$file 2>/dev/null
+  chmod a+r ${LIB}/$file 2>/dev/null
+fi
+
+if [ -r ${LIB}/$file ]; then
+  if grep 'stderr' ${LIB}/$file >/dev/null ; then
+    if grep 'include.*stdio.h' ${LIB}/$file >/dev/null ; then
+      true
+    else
+      echo "Fixing $file (needs stdio.h)"
+      echo '#include <stdio.h>' >>${LIB}/$file
+    fi
+  fi
+  if grep 'exit *(' ${LIB}/$file >/dev/null || 
+     grep 'abort *(' ${LIB}/$file >/dev/null ; then
+    if grep 'include.*stdlib.h' ${LIB}/$file >/dev/null ; then
+      true
+    else
+      echo "Fixing $file (needs stdlib.h)"
+      echo '#include <stdlib.h>' >>${LIB}/$file
+    fi
+  fi
+  if cmp $file ${LIB}/$file >/dev/null 2>&1; then
+    rm -f ${LIB}/$file
+  fi
+fi
+
 # This file on SunOS 4 has a very large macro.  When the sed loop
 # tries pull it in, it overflows the pattern space size of the SunOS
 # sed (GNU sed does not have this problem).  Since the file does not
