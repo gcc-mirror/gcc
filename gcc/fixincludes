@@ -1745,13 +1745,6 @@ for file in time.h sys/time.h ; do
   fi
 done
 
-echo 'Removing unneeded directories:'
-cd $LIB
-files=`find . -type d -print | sort -r`
-for file in $files; do
-  rmdir $LIB/$file > /dev/null 2>&1
-done
-
 if $LINKS; then
   echo 'Making internal symbolic non-directory links'
   cd ${INPUT}
@@ -1800,5 +1793,12 @@ done
 echo 'Cleaning up DONE files.'
 cd $LIB
 find . -name DONE -exec rm -f '{}' ';'
+
+echo 'Removing unneeded directories:'
+cd $LIB
+files=`find . -type d -print | sort -r`
+for file in $files; do
+  rmdir $LIB/$file > /dev/null 2>&1
+done
 
 exit 0
