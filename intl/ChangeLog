@@ -1,5 +1,13 @@
 2004-09-22  Kelley Cook  <kcook@gcc.gnu.org>
 
+	* configure.ac (AC_CONFIG_MACRO_DIR): New.
+	(ACLOCAL, AUTOCONF, AUTOHEADER, MAINT): Substitute.
+	* Makefile.in: Update with maintainer mode rules.
+	* README: Update aclocal regeneration instructions.
+	* aclocal.m4, configure: Regenerate.
+
+2004-09-22  Kelley Cook  <kcook@gcc.gnu.org>
+
 	* .cvsignore: Ignore autom4te.cache
 
 2004-04-25  Paolo Bonzini  <bonzini@gnu.org>

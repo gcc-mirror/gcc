@@ -14,9 +14,7 @@ gettext developers first.  However, note the following:
   and os2compat.h are not used in this setup and have therefore been 
   removed.
 
-* aclocal.m4 was constructed following the instructions printed by
-  "gettextize" from the files that gettext 0.12.1 installs in
-  $(prefix)/share/aclocal.
+* aclocal.m4 was constructed using automake's "aclocal -I ../config".
 
 * configure.ac, config.intl.in, and Makefile.in were written for this
   directory layout, by Zack Weinberg <zack@codesourcery.com>.  Please

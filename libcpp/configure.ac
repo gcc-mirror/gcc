@@ -4,6 +4,7 @@
 AC_PREREQ(2.59)
 AC_INIT(cpplib, [ ], gcc-bugs@gcc.gnu.org, cpplib)
 AC_CONFIG_SRCDIR(ucnid.h)
+AC_CONFIG_MACRO_DIR(../config)
 AC_CANONICAL_SYSTEM
 AC_PROG_MAKE_SET
 AC_PROG_INSTALL

@@ -100,7 +100,10 @@ $(srcdir)/configure: @MAINT@ $(srcdir)/aclocal.m4
 	cd $(srcdir) && $(AUTOCONF)
 
 $(srcdir)/aclocal.m4: @MAINT@ $(srcdir)/../config/acx.m4 \
-	$(srcdir)/../config/gettext.m4 $(srcdir)/configure.ac
+	$(srcdir)/../config/gettext-sister.m4 $(srcdir)/../config/iconv.m4 \
+	$(srcdir)/../config/codeset.m4 $(srcdir)/../config/lib-ld.m4 \
+	$(srcdir)/../config/lib-link.m4 $(srcdir)/../config/lib-prefix.m4 \
+	$(srcdir)/configure.ac
 	cd $(srcdir) && $(ACLOCAL) -I ../config
 
 config.h: stamp-h1
