@@ -1,5 +1,14 @@
 Sat Oct 16 21:50:28 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* haifa-sched.c (true_dependency_cache): New.
+	(add_dependence): Use the true dependency cache to avoid expensive
+	walks down the LOG_LINKS dependency list.  Add entries to the
+	cache as necessary.
+	(remove_dependence): Remove entries from the true dependency cache
+	as needed.
+	(schedule_insns): Allocate and initialize and free the true
+	dependency cache.
+
 	* haifa-sched.c (schedule_insns): Do not remove inter-block
 	dependencies anymore.
 
