@@ -4105,7 +4105,8 @@ get_unwidened (tree op, tree for_type)
     {
       unsigned int innerprec
 	= tree_low_cst (DECL_SIZE (TREE_OPERAND (op, 1)), 1);
-      int unsignedp = TREE_UNSIGNED (TREE_OPERAND (op, 1));
+      int unsignedp = (TREE_UNSIGNED (TREE_OPERAND (op, 1))
+		       || TREE_UNSIGNED (TREE_TYPE (TREE_OPERAND (op, 1))));
       type = (*lang_hooks.types.type_for_size) (innerprec, unsignedp);
 
       /* We can get this structure field in the narrowest type it fits in.
@@ -4189,8 +4190,9 @@ get_narrower (tree op, int *unsignedp_ptr)
     {
       unsigned HOST_WIDE_INT innerprec
 	= tree_low_cst (DECL_SIZE (TREE_OPERAND (op, 1)), 1);
-      tree type = (*lang_hooks.types.type_for_size) (innerprec,
-						     TREE_UNSIGNED (op));
+      int unsignedp = (TREE_UNSIGNED (TREE_OPERAND (op, 1))
+		       || TREE_UNSIGNED (TREE_TYPE (TREE_OPERAND (op, 1))));
+      tree type = (*lang_hooks.types.type_for_size) (innerprec, unsignedp);
 
       /* We can get this structure field in a narrower type that fits it,
 	 but the resulting extension to its nominal type (a fullword type)
