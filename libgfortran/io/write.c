@@ -653,41 +653,41 @@ write_float (fnode *f, const char *source, int len)
   n = extract_real (source, len);
 
   if (f->format != FMT_B && f->format != FMT_O && f->format != FMT_Z)
-   {
-     res = finite (n);
-     if (res == 0)
-       {
-         nb =  f->u.real.w;
-         p = write_block (nb);
-         if (nb < 3)
-         {
-             memset (p, '*',nb);
-             return;
-         }
+    {
+      res = finite (n);
+      if (res == 0)
+	{
+	  nb =  f->u.real.w;
+	  p = write_block (nb);
+	  if (nb < 3)
+	    {
+	      memset (p, '*',nb);
+	      return;
+	    }
 
-         memset(p, ' ', nb);
-         res = !isnan (n); 
-         if (res != 0)
-         {
-            if (signbit(n))   
-               fin = '-';
-            else
-               fin = '+';
+	  memset(p, ' ', nb);
+	  res = !isnan (n); 
+	  if (res != 0)
+	    {
+	      if (signbit(n))   
+		fin = '-';
+	      else
+		fin = '+';
 
-            if (nb > 7)
-               memcpy(p + nb - 8, "Infinity", 8); 
-            else
-               memcpy(p + nb - 3, "Inf", 3);
-            if (nb < 8 && nb > 3)
-               p[nb - 4] = fin;
-            else if (nb > 8)
-               p[nb - 9] = fin; 
-          }
-         else
-             memcpy(p + nb - 3, "NaN", 3);
-         return;
-       }
-   }
+	      if (nb > 7)
+		memcpy(p + nb - 8, "Infinity", 8); 
+	      else
+		memcpy(p + nb - 3, "Inf", 3);
+	      if (nb < 8 && nb > 3)
+		p[nb - 4] = fin;
+	      else if (nb > 8)
+		p[nb - 9] = fin; 
+	    }
+	  else
+	    memcpy(p + nb - 3, "NaN", 3);
+	  return;
+	}
+    }
 
   if (f->format != FMT_G)
     {
@@ -1252,20 +1252,20 @@ list_formatted_write (bt type, void *p, int len)
 void
 namelist_write (void)
 {
-   namelist_info * t1, *t2;
-   int len,num;
-   void * p;
+  namelist_info * t1, *t2;
+  int len,num;
+  void * p;
 
-   num = 0;
-   write_character("&",1);
-   write_character (ioparm.namelist_name, ioparm.namelist_name_len);
-   write_character("\n",1);
+  num = 0;
+  write_character("&",1);
+  write_character (ioparm.namelist_name, ioparm.namelist_name_len);
+  write_character("\n",1);
 
-   if (ionml != NULL)
-     {
-       t1 = ionml;
-       while (t1 != NULL)
-        {
+  if (ionml != NULL)
+    {
+      t1 = ionml;
+      while (t1 != NULL)
+	{
           num ++;
           t2 = t1;
           t1 = t1->next;
@@ -1296,14 +1296,13 @@ namelist_write (void)
             default:
               internal_error ("Bad type for namelist write");
             }
-         write_character(",",1);
-         if (num > 5)
-           {
-              num = 0;
-              write_character("\n",1);
-           }
-        }
-     }
-     write_character("/",1);
-
+	  write_character(",",1);
+	  if (num > 5)
+	    {
+	      num = 0;
+	      write_character("\n",1);
+	    }
+	}
+    }
+  write_character("/",1);
 }

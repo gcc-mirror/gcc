@@ -1,3 +1,7 @@
+2004-11-20  Roger Sayle  <roger@eyesopen.com>
+
+	* io/write.c (write_float, list_formatted_write): Fix indentation.
+
 2004-11-20  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR target/16135
