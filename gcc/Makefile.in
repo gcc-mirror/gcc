@@ -49,7 +49,7 @@ LANGUAGES = c gcov$(exeext) $(CONFIG_LANGUAGES)
 # Languages should create dependencies of $(INTL_TARGETS) on generated
 # sources in Make-lang.in.  Example:
 # $(INTL_TARGETS): $(srcdir)/cp/parse.c
-INTL_TARGETS = intl.all intl.install intl.distdir
+INTL_TARGETS = intl.all intl.install
 
 # Selection of languages to be made during stage1 build.
 # This is overridden by configure.
@@ -700,7 +700,6 @@ ORDINARY_FLAGS_TO_PASS = \
 	"bindir=$(bindir)" \
 	"libsubdir=$(libsubdir)" \
 	"datadir=$(datadir)" \
-	"distdir=../tmp/\$$(subdir)" \
 	"localedir=$(localedir)"
 FLAGS_TO_PASS = $(ORDINARY_FLAGS_TO_PASS) "CC=@cc_set_by_configure@"
 PREPEND_DOTDOT_TO_RELATIVE_PATHS = sed \
@@ -831,7 +830,7 @@ C_TREE_H = c-tree.h $(C_COMMON_H)
 # all.build, all.cross, start.encap, rest.encap,
 # info, dvi,
 # install-normal, install-common, install-info, install-man,
-# uninstall, distdir,
+# uninstall,
 # mostlyclean, clean, distclean, extraclean, maintainer-clean,
 # stage1, stage2, stage3, stage4
 #
@@ -893,7 +892,7 @@ cstamp-h: config.in config.status
 # config.status does not exist before failing.
 config.status: $(srcdir)/configure version.c
 	@if [ ! -f config.status ] ; then \
-	  echo You must configure gcc.  Look at the INSTALL file for details.; \
+	  echo You must configure gcc.  Look at http://gcc.gnu.org/install/ for details.; \
 	  false; \
 	else \
 	  LANGUAGES="$(CONFIG_LANGUAGES)" $(SHELL) config.status --recheck; \
@@ -1815,7 +1814,7 @@ $(top_builddir)/intl/libintl.a: intl.all
 # Make sure all the headers are there for xgettext to scan.
 $(INTL_TARGETS): $(srcdir)/c-parse.c
 
-intl.all intl.install intl.uninstall intl.distdir \
+intl.all intl.install intl.uninstall \
   intl.mostlyclean intl.clean intl.distclean intl.maintainer-clean:
 	@for d in $(INTL_SUBDIRS); do \
 	  target=`expr $@ : 'intl.\(.*\)'` && \
@@ -1824,12 +1823,6 @@ intl.all intl.install intl.uninstall intl.distdir \
 	  if [ $$? -eq 0 ] ; then true ; else exit 1 ; fi ; \
 	done
 
-# intl.distdir doesn't copy the intl makefiles (since they aren't distributed),
-# but we need them for the `make extraclean' in distdir-finish.
-intl.distdir-fixup:
-	for d in $(INTL_SUBDIRS); do \
-	  ln $$d/Makefile tmp/$$d || cp $$d/Makefile tmp/$$d || exit; \
-	done
 #
 # Remake cpp and protoize.
 
@@ -2161,10 +2154,6 @@ cpp.dvi: $(srcdir)/cpp.texi
 	texindex cpp.??
 	TEXINPUTS=${texidir}:$(srcdir):$$TEXINPUTS tex cpp.texi
 
-
-INSTALL: $(srcdir)/install1.texi $(srcdir)/install.texi
-	(cd $(srcdir) && $(MAKEINFO) -D INSTALLONLY \
-		--no-split --no-headers -o INSTALL install1.texi)
 #
 # Deletion of files made during compilation.
 # There are four levels of this:
@@ -2719,106 +2708,6 @@ TAGS: force
 	etags *.y *.h *.c;						\
 	mv tmp-tags/* .;						\
 	rmdir tmp-tags)
-
-# Create the distribution tar.gz file.
-dist: tmp-gcc.xtar
-	gzip --best < tmp-gcc.xtar > tmp-gcc.xtar.gz
-	mv tmp-gcc.xtar.gz gcc-$(version).tar.gz
-
-tmp-gcc.xtar: distdir
-# Make the distribution.
-	tar -chf tmp-gcc.xtar gcc-$(version)
-
-distdir-cvs: force
-	if [ -d $(srcdir)/CVS ]; then (cd $(srcdir) && cvs -r update); fi
-
-# This target exists to do the initial work before the language specific
-# stuff gets done.
-distdir-start: doc $(srcdir)/INSTALL $(srcdir)/c-parse.y \
-  $(srcdir)/c-parse.c $(srcdir)/config.in $(srcdir)/version.c TAGS
-	@case '$(USE_NLS)' in \
-	yes) ;; \
-	*) echo "configure with --enable-nls before making a distribution"; \
-	   exit 1;; \
-	esac
-	@if grep -s "for version ${mainversion}" gcc.texi > /dev/null; \
-	then true; \
-	else echo "You must update the version number in \`gcc.texi'"; sleep 10;\
-	fi
-# Update the version number in README
-	$(AWK) '$$1 " " $$2 " " $$3 == "This directory contains" \
-		{ $$6 = version; print $$0 } \
-	     $$1 " " $$2 " " $$3 != "This directory contains"' \
-	  version=$(version) $(srcdir)/README > tmp.README
-	mv tmp.README README
-	-rm -rf gcc-$(version) tmp
-# Put all the files in a temporary subdirectory
-# which has the name that we want to have in the tar file.
-	mkdir tmp
-	mkdir tmp/config
-	mkdir tmp/ginclude
-	mkdir tmp/objc
-	mkdir tmp/intl
-	mkdir tmp/po
-	for file in `(cd $(srcdir) && echo *[0-9a-zA-Z+])`; do \
-	  test -f $(srcdir)/$$file && $(LN_S) $(srcdir)/$$file tmp; \
-	done
-	if test "$(srcdir)" != "." ; then \
-	  for file in c-parse.c ; do \
-	    test -f ./$$file && $(LN_S) ../$$file tmp; \
-	  done; \
-	fi
-	for file in `(cd $(srcdir)/config && echo *[0-9a-zA-Z+])`; do \
-	  if test -d $(srcdir)/config/$$file \
-	      && test "$$file" != RCS && test "$$file" != CVS; then \
-	    mkdir tmp/config/$$file; \
-	    for subfile in `(cd $(srcdir)/config/$$file && echo *[0-9a-zA-Z+])`; do \
-	      $(LN_S) $(srcdir)/config/$$file/$$subfile tmp/config/$$file; \
-	    done; \
-	  else \
-	    $(LN_S) $(srcdir)/config/$$file tmp/config; \
-	  fi; \
-	done
-	for file in `(cd $(srcdir)/ginclude && echo *[0-9a-zA-Z+])`; do \
-	  $(LN_S) $(srcdir)/ginclude/$$file tmp/ginclude; \
-	done
-	for file in `(cd $(srcdir)/objc && echo *[0-9a-zA-Z+])`; do \
-	  $(LN_S) $(srcdir)/objc/$$file tmp/objc; \
-	done
-	$(LN_S) .gdbinit tmp
-
-# Finish making `distdir', after the languages have done their thing.
-distdir-finish:
-	mv tmp gcc-$(version)
-# Get rid of everything we don't want in the distribution.  We'd want
-# this to use Makefile.in, but it doesn't have the `lang.foo' targets
-# expanded.
-	(cd gcc-$(version) && make extraclean distdir-check VERSION_DEP=)
-
-distdir-check:
-	($(AWK) '/^[^#]/{print} /^#[A-Za-z]/{print substr($$1, 2)}' | sort) \
-	  < po/POTFILES.in > tmp.POTFILES
-	ls [A-Za-z]*.[ch] [a-z]*/[A-Za-z]*.[ch] \
-	  [a-z]*/[a-z]*/[A-Za-z]*.[ch] | sort > tmp.src
-	diff tmp.POTFILES tmp.src || { \
-	  echo "po/POTFILES.in and sources do not match -- please fix"; \
-	  exit 1; \
-	}
-	rm -f tmp.*
-
-distdir: distdir-cvs distdir-start intl.distdir intl.distdir-fixup \
-  lang.distdir distdir-finish
-
-# make diff oldversion=M.N
-# creates a diff file between an older distribution and this one.
-# The -P option assumes this is GNU diff.
-diff:
-	diff -rc2P -x c-parse.y -x c-parse.c \
-	   -x TAGS -x INSTALL -x configure -x config.in \
-	  -x "gcc.??" -x "gcc.??s" -x gcc.aux -x "gcc.info*" \
-	  -x "cpp.??" -x "cpp.??s" -x cpp.aux -x "cpp.info*" \
-	  $(LANG_DIFF_EXCLUDES) \
-	  gcc-$(oldversion) gcc-$(version) > gcc-$(oldversion)-$(version).diff
 
 # A list of files to be destroyed during "lean" builds.
 VOL_FILES=`echo $(BACKEND) $(OBJS) $(C_OBJS) $(LIBCPP_OBJS) *.c *.h gen*`

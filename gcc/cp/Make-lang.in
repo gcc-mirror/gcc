@@ -25,7 +25,7 @@
 # foo.all.build, foo.all.cross, foo.start.encap, foo.rest.encap,
 # foo.info, foo.dvi,
 # foo.install-normal, foo.install-common, foo.install-info, foo.install-man,
-# foo.uninstall, foo.distdir,
+# foo.uninstall,
 # foo.mostlyclean, foo.clean, foo.distclean, foo.extraclean,
 # foo.maintainer-clean, foo.stage1, foo.stage2, foo.stage3, foo.stage4
 #
@@ -225,24 +225,6 @@ c++.stage3: stage3-start
 	-mv cp/*$(objext) stage3/cp
 c++.stage4: stage4-start
 	-mv cp/*$(objext) stage4/cp
-#
-# Maintenance hooks:
-
-# This target creates the files that can be rebuilt, but go in the
-# distribution anyway.  It then copies the files to the distdir directory.
-c++.distdir:
-	mkdir tmp/cp
-	mkdir tmp/cp/inc
-	cd cp ; $(MAKE) $(LANG_FLAGS_TO_PASS) $(CXX_FLAGS_TO_PASS) parse.c hash.h
-	cd cp; \
-	for file in *[0-9a-zA-Z+]; do \
-	  $(LN) $$file ../tmp/cp; \
-	done
-	cd cp/inc; \
-	for file in *[0-9a-zA-Z+]; do \
-	  ln $$file ../../tmp/cp/inc >/dev/null 2>&1 \
-	   || cp $$file ../../tmp/cp/inc; \
-	done
 
 #
 # .o: .h dependencies.

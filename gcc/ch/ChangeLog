@@ -1,3 +1,7 @@
+2000-11-05  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* Make-lang.in (CHILL.distdir): Remove.
+
 2000-11-02  Geoffrey Keating  <geoffk@cygnus.com>
 
 	* Make-lang.in: Remove 'CYGNUS LOCAL' markers.
