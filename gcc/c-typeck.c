@@ -3358,8 +3358,10 @@ build_conditional_expr (ifexp, op1, op2)
       else
 	result_type = TYPE_MAIN_VARIANT (type1);
     }
-  else if ((code1 == INTEGER_TYPE || code1 == REAL_TYPE)
-           && (code2 == INTEGER_TYPE || code2 == REAL_TYPE))
+  else if ((code1 == INTEGER_TYPE || code1 == REAL_TYPE
+            || code1 == COMPLEX_TYPE)
+           && (code2 == INTEGER_TYPE || code2 == REAL_TYPE
+               || code2 == COMPLEX_TYPE))
     {
       result_type = common_type (type1, type2);
 
