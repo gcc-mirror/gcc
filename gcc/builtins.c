@@ -157,6 +157,7 @@ static tree fold_builtin_mempcpy (tree);
 static tree fold_builtin_memmove (tree);
 static tree fold_builtin_strcpy (tree);
 static tree fold_builtin_strncpy (tree);
+static tree fold_builtin_strchr (tree, bool);
 static tree fold_builtin_memcmp (tree);
 static tree fold_builtin_strcmp (tree);
 static tree fold_builtin_strncmp (tree);
