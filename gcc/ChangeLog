@@ -1,3 +1,8 @@
+Thu Jun 17 02:54:30 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* emit-rtl.c (operand_subword): Tighten checks for when it is safe
+	to safe to extract a subword out of a REG.
+
 Wed Jun 16 10:33:02 1999  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* dwarfout.c (add_incomplete_type): New fn.
