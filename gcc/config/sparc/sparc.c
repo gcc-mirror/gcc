@@ -8086,6 +8086,10 @@ sparc_extra_constraint_check (op, c, strict)
   return reload_ok_mem;
 }
 
+/* ??? This duplicates information provided to the compiler by the
+   ??? scheduler description.  Some day, teach genautomata to output
+   ??? the latencies and then CSE will just use that.  */
+
 int
 sparc_rtx_costs (x, code, outer_code)
      rtx x;
@@ -8093,13 +8097,157 @@ sparc_rtx_costs (x, code, outer_code)
 {
   switch (code)
     {
+    case PLUS: case MINUS: case ABS: case NEG:
+    case FLOAT: case UNSIGNED_FLOAT:
+    case FIX: case UNSIGNED_FIX:
+    case FLOAT_EXTEND: case FLOAT_TRUNCATE:
+      if (FLOAT_MODE_P (GET_MODE (x)))
+	{
+	  switch (sparc_cpu)
+	    {
+	    case PROCESSOR_ULTRASPARC:
+	    case PROCESSOR_ULTRASPARC3:
+	      return COSTS_N_INSNS (4);
+
+	    case PROCESSOR_SUPERSPARC:
+	      return COSTS_N_INSNS (3);
+
+	    case PROCESSOR_CYPRESS:
+	      return COSTS_N_INSNS (5);
+
+	    case PROCESSOR_HYPERSPARC:
+	    case PROCESSOR_SPARCLITE86X:
+	    default:
+	      return COSTS_N_INSNS (1);
+	    }
+	}
+
+      return COSTS_N_INSNS (1);
+
+    case SQRT:
+      switch (sparc_cpu)
+	{
+	case PROCESSOR_ULTRASPARC:
+	  if (GET_MODE (x) == SFmode)
+	    return COSTS_N_INSNS (13);
+	  else
+	    return COSTS_N_INSNS (23);
+
+	case PROCESSOR_ULTRASPARC3:
+	  if (GET_MODE (x) == SFmode)
+	    return COSTS_N_INSNS (20);
+	  else
+	    return COSTS_N_INSNS (29);
+
+	case PROCESSOR_SUPERSPARC:
+	  return COSTS_N_INSNS (12);
+
+	case PROCESSOR_CYPRESS:
+	  return COSTS_N_INSNS (63);
+
+	case PROCESSOR_HYPERSPARC:
+	case PROCESSOR_SPARCLITE86X:
+	  return COSTS_N_INSNS (17);
+
+	default:
+	  return COSTS_N_INSNS (30);
+	}
+
+    case COMPARE:
+      if (FLOAT_MODE_P (GET_MODE (x)))
+	{
+	  switch (sparc_cpu)
+	    {
+	    case PROCESSOR_ULTRASPARC:
+	    case PROCESSOR_ULTRASPARC3:
+	      return COSTS_N_INSNS (1);
+
+	    case PROCESSOR_SUPERSPARC:
+	      return COSTS_N_INSNS (3);
+
+	    case PROCESSOR_CYPRESS:
+	      return COSTS_N_INSNS (5);
+
+	    case PROCESSOR_HYPERSPARC:
+	    case PROCESSOR_SPARCLITE86X:
+	    default:
+	      return COSTS_N_INSNS (1);
+	    }
+	}
+
+      /* ??? Maybe mark integer compares as zero cost on
+	 ??? all UltraSPARC processors because the result
+	 ??? can be bypassed to a branch in the same group.  */
+
+      return COSTS_N_INSNS (1);
+
     case MULT:
+      if (FLOAT_MODE_P (GET_MODE (x)))
+	{
+	  switch (sparc_cpu)
+	    {
+	    case PROCESSOR_ULTRASPARC:
+	    case PROCESSOR_ULTRASPARC3:
+	      return COSTS_N_INSNS (4);
+
+	    case PROCESSOR_SUPERSPARC:
+	      return COSTS_N_INSNS (3);
+
+	    case PROCESSOR_CYPRESS:
+	      return COSTS_N_INSNS (7);
+
+	    case PROCESSOR_HYPERSPARC:
+	    case PROCESSOR_SPARCLITE86X:
+	      return COSTS_N_INSNS (1);
+
+	    default:
+	      return COSTS_N_INSNS (5);
+	    }
+	}
+
+      /* The latency is actually variable for Ultra-I/II
+	 And if one of the inputs have a known constant
+	 value, we could calculate this precisely.
+
+	 However, for that to be useful we would need to
+	 add some machine description changes which would
+	 make sure small constants ended up in rs1 of the
+	 multiply instruction.  This is because the multiply
+	 latency is determined by the number of clear (or
+	 set if the value is negative) bits starting from
+	 the most significant bit of the first input.
+
+	 The algorithm for computing num_cycles of a multiply
+	 on Ultra-I/II is:
+
+	 	if (rs1 < 0)
+			highest_bit = highest_clear_bit(rs1);
+		else
+			highest_bit = highest_set_bit(rs1);
+		if (num_bits < 3)
+			highest_bit = 3;
+		num_cycles = 4 + ((highest_bit - 3) / 2);
+
+	 If we did that we would have to also consider register
+	 allocation issues that would result from forcing such
+	 a value into a register.
+
+	 There are other similar tricks we could play if we
+	 knew, for example, that one input was an array index.
+
+	 Since we do not play any such tricks currently the
+	 safest thing to do is report the worst case latency.  */
       if (sparc_cpu == PROCESSOR_ULTRASPARC)
 	return (GET_MODE (x) == DImode ?
 		COSTS_N_INSNS (34) : COSTS_N_INSNS (19));
 
+      /* Multiply latency on Ultra-III, fortunately, is constant.  */
       if (sparc_cpu == PROCESSOR_ULTRASPARC3)
 	return COSTS_N_INSNS (6);
+
+      if (sparc_cpu == PROCESSOR_HYPERSPARC
+	  || sparc_cpu == PROCESSOR_SPARCLITE86X)
+	return COSTS_N_INSNS (17);
 
       return (TARGET_HARD_MUL
 	      ? COSTS_N_INSNS (5)
@@ -8109,6 +8257,40 @@ sparc_rtx_costs (x, code, outer_code)
     case UDIV:
     case MOD:
     case UMOD:
+      if (FLOAT_MODE_P (GET_MODE (x)))
+	{
+	  switch (sparc_cpu)
+	    {
+	    case PROCESSOR_ULTRASPARC:
+	      if (GET_MODE (x) == SFmode)
+		return COSTS_N_INSNS (13);
+	      else
+		return COSTS_N_INSNS (23);
+
+	    case PROCESSOR_ULTRASPARC3:
+	      if (GET_MODE (x) == SFmode)
+		return COSTS_N_INSNS (17);
+	      else
+		return COSTS_N_INSNS (20);
+
+	    case PROCESSOR_SUPERSPARC:
+	      if (GET_MODE (x) == SFmode)
+		return COSTS_N_INSNS (6);
+	      else
+		return COSTS_N_INSNS (9);
+
+	    case PROCESSOR_HYPERSPARC:
+	    case PROCESSOR_SPARCLITE86X:
+	      if (GET_MODE (x) == SFmode)
+		return COSTS_N_INSNS (8);
+	      else
+		return COSTS_N_INSNS (12);
+
+	    default:
+	      return COSTS_N_INSNS (7);
+	    }
+	}
+
       if (sparc_cpu == PROCESSOR_ULTRASPARC)
 	return (GET_MODE (x) == DImode ?
 		COSTS_N_INSNS (68) : COSTS_N_INSNS (37));
@@ -8117,11 +8299,83 @@ sparc_rtx_costs (x, code, outer_code)
 		COSTS_N_INSNS (71) : COSTS_N_INSNS (40));
       return COSTS_N_INSNS (25);
 
-      /* Make FLOAT and FIX more expensive than CONST_DOUBLE,
-	 so that cse will favor the latter.  */
-    case FLOAT:
-    case FIX:
-      return 19;
+    case IF_THEN_ELSE:
+      /* Conditional moves. */
+      switch (sparc_cpu)
+	{
+	case PROCESSOR_ULTRASPARC:
+	  return COSTS_N_INSNS (2);
+
+	case PROCESSOR_ULTRASPARC3:
+	  if (FLOAT_MODE_P (GET_MODE (x)))
+	    return COSTS_N_INSNS (3);
+	  else
+	    return COSTS_N_INSNS (2);
+
+	default:
+	  return COSTS_N_INSNS (1);
+	}
+
+    case MEM:
+      /* If outer-code is SIGN/ZERO extension we have to subtract
+	 out COSTS_N_INSNS (1) from whatever we return in determining
+	 the cost.  */
+      switch (sparc_cpu)
+	{
+	case PROCESSOR_ULTRASPARC:
+	  if (outer_code == ZERO_EXTEND)
+	    return COSTS_N_INSNS (1);
+	  else
+	    return COSTS_N_INSNS (2);
+
+	case PROCESSOR_ULTRASPARC3:
+	  if (outer_code == ZERO_EXTEND)
+	    {
+	      if (GET_MODE (x) == QImode
+		  || GET_MODE (x) == HImode
+		  || outer_code == SIGN_EXTEND)
+		return COSTS_N_INSNS (2);
+	      else
+		return COSTS_N_INSNS (1);
+	    }
+	  else
+	    {
+	      /* This handles sign extension (3 cycles)
+		 and everything else (2 cycles).  */
+	      return COSTS_N_INSNS (2);
+	    }
+
+	case PROCESSOR_SUPERSPARC:
+	  if (FLOAT_MODE_P (GET_MODE (x))
+	      || outer_code == ZERO_EXTEND
+	      || outer_code == SIGN_EXTEND)
+	    return COSTS_N_INSNS (0);
+	  else
+	    return COSTS_N_INSNS (1);
+
+	case PROCESSOR_TSC701:
+	  if (outer_code == ZERO_EXTEND
+	      || outer_code == SIGN_EXTEND)
+	    return COSTS_N_INSNS (2);
+	  else
+	    return COSTS_N_INSNS (3);
+	  
+	case PROCESSOR_CYPRESS:
+	  if (outer_code == ZERO_EXTEND
+	      || outer_code == SIGN_EXTEND)
+	    return COSTS_N_INSNS (1);
+	  else
+	    return COSTS_N_INSNS (2);
+	  
+	case PROCESSOR_HYPERSPARC:
+	case PROCESSOR_SPARCLITE86X:
+	default:
+	  if (outer_code == ZERO_EXTEND
+	      || outer_code == SIGN_EXTEND)
+	    return COSTS_N_INSNS (0);
+	  else
+	    return COSTS_N_INSNS (1);
+	}
 
     case CONST_INT:
       if (INTVAL (x) < 0x1000 && INTVAL (x) >= -0x1000)
