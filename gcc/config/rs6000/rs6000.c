@@ -3343,6 +3343,34 @@ rs6000_mode_dependent_address (rtx addr)
 
   return false;
 }
+
+/* Return number of consecutive hard regs needed starting at reg REGNO
+   to hold something of mode MODE.
+   This is ordinarily the length in words of a value of mode MODE
+   but can be less for certain modes in special long registers.
+
+   For the SPE, GPRs are 64 bits but only 32 bits are visible in
+   scalar instructions.  The upper 32 bits are only available to the
+   SIMD instructions.
+
+   POWER and PowerPC GPRs hold 32 bits worth;
+   PowerPC64 GPRs and FPRs point register holds 64 bits worth.  */
+
+int
+rs6000_hard_regno_nregs (int regno, enum machine_mode mode)
+{
+  if (FP_REGNO_P (regno))
+    return (GET_MODE_SIZE (mode) + UNITS_PER_FP_WORD - 1) / UNITS_PER_FP_WORD;
+
+  if (SPE_SIMD_REGNO_P (regno) && TARGET_SPE && SPE_VECTOR_MODE (mode))
+    return (GET_MODE_SIZE (mode) + UNITS_PER_SPE_WORD - 1) / UNITS_PER_SPE_WORD;
+
+  if (ALTIVEC_REGNO_P (regno))
+    return
+      (GET_MODE_SIZE (mode) + UNITS_PER_ALTIVEC_WORD - 1) / UNITS_PER_ALTIVEC_WORD;
+
+  return (GET_MODE_SIZE (mode) + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
+}
 
 /* Try to output insns to set TARGET equal to the constant C if it can
    be done in less than N insns.  Do all computations in MODE.

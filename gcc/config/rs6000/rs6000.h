@@ -997,25 +997,9 @@ extern const char *rs6000_warn_altivec_long_switch;
 #define ALTIVEC_REGNO_P(N) ((N) >= FIRST_ALTIVEC_REGNO && (N) <= LAST_ALTIVEC_REGNO)
 
 /* Return number of consecutive hard regs needed starting at reg REGNO
-   to hold something of mode MODE.
-   This is ordinarily the length in words of a value of mode MODE
-   but can be less for certain modes in special long registers.
+   to hold something of mode MODE.  */
 
-   For the SPE, GPRs are 64 bits but only 32 bits are visible in
-   scalar instructions.  The upper 32 bits are only available to the
-   SIMD instructions.
-
-   POWER and PowerPC GPRs hold 32 bits worth;
-   PowerPC64 GPRs and FPRs point register holds 64 bits worth.  */
-
-#define HARD_REGNO_NREGS(REGNO, MODE)					\
-  (FP_REGNO_P (REGNO)							\
-   ? ((GET_MODE_SIZE (MODE) + UNITS_PER_FP_WORD - 1) / UNITS_PER_FP_WORD) \
-   : (SPE_SIMD_REGNO_P (REGNO) && TARGET_SPE && SPE_VECTOR_MODE (MODE))   \
-   ? ((GET_MODE_SIZE (MODE) + UNITS_PER_SPE_WORD - 1) / UNITS_PER_SPE_WORD) \
-   : ALTIVEC_REGNO_P (REGNO)						\
-   ? ((GET_MODE_SIZE (MODE) + UNITS_PER_ALTIVEC_WORD - 1) / UNITS_PER_ALTIVEC_WORD) \
-   : ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD))
+#define HARD_REGNO_NREGS(REGNO, MODE) rs6000_hard_regno_nregs ((REGNO), (MODE))
 
 #define HARD_REGNO_CALL_PART_CLOBBERED(REGNO, MODE)	\
   ((TARGET_32BIT && TARGET_POWERPC64			\
