@@ -1314,6 +1314,11 @@ pexecute.o: $(srcdir)/../libiberty/pexecute.c $(CONFIG_H) system.h gansidecl.h
 	$(LN_S) $(srcdir)/../libiberty/pexecute.c pexecute.c
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) pexecute.c
 
+vfprintf.o: $(srcdir)/../libiberty/vfprintf.c $(CONFIG_H) system.h gansidecl.h
+	rm -f vfprintf.c
+	$(LN_S) $(srcdir)/../libiberty/vfprintf.c vfprintf.c
+	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) vfprintf.c
+
 underscore.c: s-under ; @true
 
 s-under: $(GCC_PASSES)
@@ -1527,9 +1532,11 @@ halfpic.o: halfpic.c $(CONFIG_H) $(RTL_H) $(TREE_H) system.h
 # Normally this target is not used; but it is used if you
 # define ALLOCA=alloca.o.  In that case, you must get a suitable alloca.c
 # from the GNU Emacs distribution.
-alloca.o:	alloca.c
+alloca.o:	$(srcdir)/../libiberty/alloca.c
+	rm -f alloca.c
+	$(LN_S) $(srcdir)/../libiberty/alloca.c alloca.c
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(ALLOCA_FLAGS) \
-	  -c `echo $(srcdir)/alloca.c | sed 's,^\./,,'`
+	  -c `echo alloca.c | sed 's,^\./,,'`
 	$(ALLOCA_FINISH)
 #
 # Generate header and source files from the machine description, 
@@ -1794,9 +1801,9 @@ $(HOST_PREFIX_1)rtlanal.o: $(srcdir)/rtlanal.c $(CONFIG_H) $(RTL_H)
 	sed -e 's/config[.]h/hconfig.h/' $(srcdir)/rtlanal.c > $(HOST_PREFIX)rtlanal.c
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(HOST_PREFIX)rtlanal.c
 
-$(HOST_PREFIX_1)alloca.o: alloca.c
+$(HOST_PREFIX_1)alloca.o: $(srcdir)/../libiberty/alloca.c
 	rm -f $(HOST_PREFIX)alloca.c
-	cp $(srcdir)/alloca.c $(HOST_PREFIX)alloca.c
+	$(LN_S) $(srcdir)/../libiberty/alloca.c $(HOST_PREFIX)alloca.c
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(HOST_PREFIX)alloca.c
 
 $(HOST_PREFIX_1)obstack.o: obstack.c
@@ -1806,7 +1813,7 @@ $(HOST_PREFIX_1)obstack.o: obstack.c
 
 $(HOST_PREFIX_1)vfprintf.o: $(srcdir)/../libiberty/vfprintf.c
 	rm -f $(HOST_PREFIX)vfprintf.c
-	sed -e 's/config[.]h/hconfig.h/' $(srcdir)../libiberty/vfprintf.c > $(HOST_PREFIX)vfprintf.c
+	sed -e 's/config[.]h/hconfig.h/' $(srcdir)/../libiberty/vfprintf.c > $(HOST_PREFIX)vfprintf.c
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(HOST_PREFIX)vfprintf.c
 
 $(HOST_PREFIX_1)doprint.o: doprint.c
