@@ -19,7 +19,7 @@ gnu::awt::gtk::GtkButtonPeer::setLabel (java::lang::String *label)
   // FIXME: this can allocate an unbounded amount.  Should use heap
   // even though it is slower.
   if (label)
-    JvGetStringUTFRegion (label, 0, len, buf);
+    JvGetStringUTFRegion (label, 0, label->length(), buf);
   buf[len] = '\0';
   // The button child is a label.
   GtkBin *bin = GTK_BIN (ptr);

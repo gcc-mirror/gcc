@@ -1,6 +1,6 @@
 // natDouble.cc - Implementation of java.lang.Double native methods.
 
-/* Copyright (C) 1998, 1999, 2000, 2001  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001, 2003  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -183,7 +183,7 @@ java::lang::Double::parseDouble(jstring str)
     {
       // Note that UTF can expand 3x.
       char *data = (char *) __builtin_alloca (3 * length + 1);
-      jsize blength = _Jv_GetStringUTFRegion (str, start, length, data);
+      jsize blength = _Jv_GetStringUTFRegion (str, start, str->length(), data);
       data[blength] = 0; 
 
       struct _Jv_reent reent;  

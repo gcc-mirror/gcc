@@ -1,3 +1,24 @@
+2003-11-13  Tom Tromey  <tromey@redhat.com>
+
+	* jni.cc (_Jv_JNI_GetStringUTFChars): Pass length of string to
+	JvGetStringUTFRegion.
+	* java/lang/natPosixProcess.cc (new_string): Pass length of string
+	to JvGetStringUTFRegion.
+	* java/lang/natDouble.cc (parseDouble): Pass length of string to
+	JvGetStringUTFRegion.
+	* java/lang/natWin32Process.cc (startProcess): Pass length of
+	string to JvGetStringUTFRegion.
+	* java/lang/natClass.cc (forName): Pass length of string to
+	JvGetStringUTFRegion.
+	* gnu/gcj/runtime/natNameFinder.cc (getExternalLabel): Pass length
+	of string to JvGetStringUTFRegion.
+	* gnu/gcj/convert/natIconv.cc (init): Pass length of string to
+	JvGetStringUTFRegion.
+	* gnu/awt/gtk/natGtkLabelPeer.cc (setText): Pass length of string
+	to JvGetStringUTFRegion.
+	* gnu/awt/gtk/natGtkButtonPeer.cc (setLabel): Pass length of
+	string to JvGetStringUTFRegion.
+
 2003-11-13  Mohan Embar  <gnustuff@thisiscool.com>
 
 	* gnu/java/nio/natSelectorImplPosix.cc
@@ -113,6 +134,7 @@
 
 	* java/net/URLStreamHandler.java (toExternalForm): Print port only
 	if host is printed too and port was really given to URL.
+
 2003-11-10  Gary Benson  <gbenson@redhat.com>
 
 	* java/sql/Timestamp.java (valueOf): Correctly handle

@@ -1303,7 +1303,7 @@ static const char *
   try
     {
       char *r = (char *) _Jv_Malloc (len + 1);
-      JvGetStringUTFRegion (string, 0, len, r);
+      JvGetStringUTFRegion (string, 0, string->length(), r);
       r[len] = '\0';
 
       if (isCopy)
