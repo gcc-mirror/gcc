@@ -1410,6 +1410,16 @@ extern int rs6000_trunc_used;
 
 #define READONLY_DATA_SECTION read_only_data_section
 
+/* If we are referencing a function that is static or is known to be
+   in this file, make the SYMBOL_REF special.  We can use this to indicate
+   that we can branch to this function without emitting a no-op after the
+   call.  */
+
+#define ENCODE_SECTION_INFO(DECL)  \
+  if (TREE_CODE (DECL) == FUNCTION_DECL			\
+      && (TREE_ASM_WRITTEN (DECL) || ! TREE_PUBLIC (DECL))) \
+    SYMBOL_REF_FLAG (XEXP (DECL_RTL (DECL), 0)) = 1;
+
 /* Indicate that jump tables go in the text section.  */
 
 #define JUMP_TABLES_IN_TEXT_SECTION
@@ -1876,6 +1886,7 @@ toc_section ()						\
   {"non_logical_cint_operand", {CONST_INT}},			\
   {"mask_operand", {CONST_INT}},				\
   {"call_operand", {SYMBOL_REF, REG}},				\
+  {"current_file_function_operand", {SYMBOL_REF}},			\
   {"input_operand", {SUBREG, MEM, REG, CONST_INT}},		\
   {"branch_comparison_operation", {EQ, NE, LE, LT, GE,		\
 				   LT, LEU, LTU, GEU, GTU}},	\
