@@ -603,6 +603,9 @@ CONFIG_H =
 RTL_H = rtl.h rtl.def machmode.h machmode.def
 TREE_H = tree.h real.h tree.def machmode.h machmode.def
 BYTECODE_H = bytecode.h bc-emit.h bc-optab.h
+
+# "t" or nothing, for building multilibbed versions of, say, crtbegin.o.
+T =
 
 # Language makefile fragments.
 
@@ -995,6 +998,7 @@ stmp-multilib: $(LIBGCC1) libgcc2.c libgcc2.ready $(CONFIG_H) \
 	    RANLIB="$(RANLIB)" RANLIB_TEST="$(RANLIB_TEST)" \
 	    HOST_PREFIX="$(HOST_PREFIX)" HOST_PREFIX_1="$(HOST_PREFIX_1)" \
 	    LIBGCC2_CFLAGS="$(LIBGCC2_CFLAGS) $${flags}" \
+	    MULTILIB_CFLAGS="$${flags}" \
 	    LIBGCC1="$(LIBGCC1)" LIBGCC2="$(LIBGCC2)" \
 	    dir="$${dir}" stmp-multilib-sub; \
 	  if [ $$? -eq 0 ] ; then true; else exit 1; fi; \
@@ -1003,7 +1007,11 @@ stmp-multilib: $(LIBGCC1) libgcc2.c libgcc2.ready $(CONFIG_H) \
 
 # Subroutine of stmp-multilib so make -n works.
 stmp-multilib-sub:
-	rm -f $(dir)/libgcc.a $(LIBGCC2)
+	rm -f $(LIBGCC2)
+	if [ -d $(dir) ]; then \
+	  cd $(dir); \
+	  rm -f libgcc.a $(EXTRA_MULTILIB_PARTS); \
+	fi
 	$(MAKE) GCC_FOR_TARGET="$(GCC_FOR_TARGET)" \
 	  AR="$(AR)" AR_FLAGS="$(AR_FLAGS)" CC="$(CC)" CFLAGS="$(CFLAGS)" \
 	  HOST_PREFIX="$(HOST_PREFIX)" HOST_PREFIX_1="$(HOST_PREFIX_1)" \
@@ -1032,6 +1040,13 @@ stmp-multilib-sub:
 	if $(RANLIB_TEST) ; then $(RANLIB) tmplibgcc.a; else true; fi
 	if [ -d $(dir) ]; then true; else mkdir $(dir); fi
 	mv tmplibgcc.a $(dir)/libgcc.a
+	for f in .. $(EXTRA_MULTILIB_PARTS); do if [ x$${f} != x.. ]; then \
+	  $(MAKE) GCC_FOR_TARGET="$(GCC_FOR_TARGET)" \
+	    AR="$(AR)" AR_FLAGS="$(AR_FLAGS)" CC="$(CC)" CFLAGS="$(CFLAGS)" \
+	    HOST_PREFIX="$(HOST_PREFIX)" HOST_PREFIX_1="$(HOST_PREFIX_1)" \
+	    MULTILIB_CFLAGS="$(MULTILIB_CFLAGS)" T="t" t$${f}; \
+	  mv t$${f} $(dir)/$${f}; \
+	fi; done
 
 objc-runtime: libobjc.a
 
@@ -1062,18 +1077,15 @@ sublibobjc.a: cc1obj specs stmp-int-hdrs libgcc2.ready
 # Compile two additional files that are linked with every program
 # linked using GCC on systems using COFF or ELF, for the sake of C++
 # constructors.
-crtbegin.o: stamp-crt ; @true
-crtend.o: stamp-crt; @true
+$(T)crtbegin.o: crtstuff.c $(GCC_PASSES) $(CONFIG_H) gbl-ctors.h
+	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(CRTSTUFF_T_CFLAGS) \
+	  $(MULTILIB_CFLAGS) -finhibit-size-directive -fno-inline-functions \
+	  -g0 -c $(srcdir)/crtstuff.c -DCRT_BEGIN -o $(T)crtbegin$(objext)
 
-stamp-crt:	crtstuff.c $(GCC_PASSES) $(CONFIG_H) gbl-ctors.h
+$(T)crtend.o: crtstuff.c $(GCC_PASSES) $(CONFIG_H) gbl-ctors.h
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(CRTSTUFF_T_CFLAGS) \
-	  -DCRT_BEGIN -finhibit-size-directive -fno-inline-functions \
-	  -g0 -c $(srcdir)/crtstuff.c
-	mv crtstuff$(objext) crtbegin$(objext)
-	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(CRTSTUFF_T_CFLAGS) \
-	  -DCRT_END -finhibit-size-directive -fno-inline-functions \
-	  -g0 -c $(srcdir)/crtstuff.c -o crtend$(objext)
-	touch stamp-crt
+	  $(MULTILIB_CFLAGS) -finhibit-size-directive -fno-inline-functions \
+	  -g0 -c $(srcdir)/crtstuff.c -DCRT_END -o $(T)crtend$(objext)
 
 # On some systems we also want to install versions of these files
 # compiled using PIC for use in shared libraries.
@@ -2239,8 +2251,10 @@ install-multilib: stmp-multilib installdirs
 	for i in `$(GCC_FOR_TARGET) --print-multi-lib`; do \
 	  dir=`echo $$i | sed -e 's/;.*$$//'`; \
 	  if [ -d $(libsubdir)/$${dir} ]; then true; else mkdir $(libsubdir)/$${dir}; fi; \
-	  rm -f $(libsubdir)/$${dir}/libgcc.a; \
-	  $(INSTALL_DATA) $${dir}/libgcc.a $(libsubdir)/$${dir}/libgcc.a; \
+	  for f in libgcc.a $(EXTRA_MULTILIB_PARTS); do \
+	    rm -f $(libsubdir)/$${dir}/$${f}; \
+	    $(INSTALL_DATA) $${dir}/$${f} $(libsubdir)/$${dir}/$${f}; \
+	  done; \
 	  if $(RANLIB_TEST); then \
 	    (cd $(libsubdir)/$${dir}; $(RANLIB) libgcc.a); else true; fi; \
 	  chmod a-x $(libsubdir)/$${dir}/libgcc.a; \
