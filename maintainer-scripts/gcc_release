@@ -518,7 +518,7 @@ if [ $SNAPSHOT -eq 0 ]; then
 else
   RELEASE=$DATE
   # For now snapshots come from the 3.1 branch.
-  BRANCH=gcc-3_1-branch
+  BRANCH=gcc-3_2-branch
   FTP_PATH="${FTP_PATH}/snapshots/${LONG_DATE}"
   TAG=gcc_ss_${DATE}
 
