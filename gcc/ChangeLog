@@ -1,3 +1,9 @@
+2003-01-07  Janis Johnson  <janis187@us.ibm.com>
+
+	PR other/8947
+	* doc/invoke.texi (-malign-double): Explain that the option breaks
+	binary compatibility.
+
 2003-01-07  Richard Henderson  <rth@redhat.com>
 
 	* alias.c (find_base_value): Only use new_reg_base_value shortcut

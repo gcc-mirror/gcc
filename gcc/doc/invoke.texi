@@ -1,12 +1,12 @@
 @c Copyright (C) 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
-@c 2000, 2001, 2002 Free Software Foundation, Inc.
+@c 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
 @ignore
 @c man begin COPYRIGHT
 Copyright @copyright{} 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997,
-1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+1998, 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.1 or
@@ -7784,9 +7784,11 @@ boundary.  Aligning @code{double} variables on a two word boundary will
 produce code that runs somewhat faster on a @samp{Pentium} at the
 expense of more memory.
 
-@strong{Warning:} if you use the @samp{-malign-double} switch,
+@strong{Warning:} if you use the @option{-malign-double} switch,
 structures containing the above types will be aligned differently than
-the published application binary interface specifications for the 386.
+the published application binary interface specifications for the 386
+and will not be binary compatible with structures in code compiled
+without that switch.
 
 @item -m128bit-long-double
 @opindex m128bit-long-double
