@@ -1,3 +1,7 @@
+Wed Apr 15 12:37:10 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* pa.h (LEGITIMIZE_RELOAD_ADDRESS): Do nothing if not optimizing.
+
 Wed Apr 15 12:10:18 1998  Michael Meissner  <meissner@cygnus.com>
 
 	* Makefile.in (gen{config,flags,codes,emit}): Link in host print-rtl.o.

@@ -1641,7 +1641,8 @@ do { 									\
   int offset, newoffset, mask;						\
   mask = GET_MODE_CLASS (MODE) == MODE_FLOAT ? 0x1f : 0x3fff;		\
 									\
-  if (GET_CODE (AD) == PLUS						\
+  if (optimize								\
+      && GET_CODE (AD) == PLUS						\
       && GET_CODE (XEXP (AD, 0)) == REG					\
       && GET_CODE (XEXP (AD, 1)) == CONST_INT)				\
     {									\
