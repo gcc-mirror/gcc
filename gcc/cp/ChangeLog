@@ -1,3 +1,8 @@
+2002-10-18  Zack Weinberg  <zack@codesourcery.com>
+
+	* decl.c (start_decl): Point users of the old initialized-
+	typedef extension at __typeof__.
+
 2002-10-18  Mark Mitchell  <mark@codesourcery.com>
 
 	* Make-lang.in (method.o): Depend on TARGET_H.
@@ -107,7 +112,7 @@
 
 2002-10-14  Mark Mitchell  <mark@codesourcery.com>
 
-	* decl.c (layout_var_decl): Call layout_decl even for variables 
+	* decl.c (layout_var_decl): Call layout_decl even for variables
 	whose type is an array with unspecified bounds.
 
 	PR c++/7176
@@ -134,7 +139,7 @@
 	fields.
 	* pt.c (convert_template_argument): Do not allow variably modified
 	types as template arguments.
-	* tree.c (variably_modified_type_p): New function.	
+	* tree.c (variably_modified_type_p): New function.
 
 	* NEWS: Document removal of "new X = ..." extension.
 	* class.c (initialize_array): Set TREE_HAS_CONSTRUCTOR on
@@ -517,7 +522,7 @@
 
 2002-09-13  Matt Austern  <austern@apple.com>
 
-        PR C++/7828 
+	PR C++/7828
 	* cp/cp-tree.h, cp/tree.c: New function non_cast_lvalue_p.
 	* cp/call.c: Change call-by-const-reference mechanism to use
 	non_cast_lvalue_p when deciding whether the create a temporary.
