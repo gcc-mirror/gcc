@@ -1618,7 +1618,7 @@ GDB_TK = all-tk all-tcl all-itcl all-tix all-libgui
 all-gdb: all-libiberty all-opcodes all-bfd all-mmalloc all-readline all-bison all-byacc all-sim $(gdbnlmrequirements) $(GDB_TK)
 all-gettext:
 all-gnuserv:
-configure-target-gperf: $(ALL_GCC_C)
+configure-target-gperf: $(ALL_GCC_CXX)
 all-target-gperf: configure-target-gperf all-target-libiberty all-target-libstdc++-v3
 all-gprof: all-libiberty all-bfd all-opcodes all-intl
 all-grep: all-libiberty
