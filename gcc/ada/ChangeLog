@@ -1,4 +1,15 @@
 Nathanael Nerode  <neroden@gcc.gnu.org>
+	PR ada/5904
+	* 1ssecsta.adb 1ssecsta.ads adadecode.c adadecode.h aux-io.c 
+	gnatname.adb gnatname.ads mkdir.c osint-b.adb osint-b.ads 
+	osint-c.adb osint-c.ads osint-l.adb osint-l.ads osint-m.adb 
+	osint-m.ads prj-makr.adb prj-makr.ads prj-pp.adb prj-pp.ads 
+	s-atacco.ads s-traceb.adb s-traceb.ads s-traces.adb 
+	s-traces.ads s-tratas.adb s-tratas.ads sinput-d.adb 
+	sinput-d.ads switch-b.adb switch-b.ads switch-c.adb 
+	switch-c.ads switch-m.adb switch-m.ads: Correct statements in
+	comments about maintainership of GNAT.
+
 	PR ada/6919 (forward port of patch for PR ada/5904)
 	* 1aexcept.adb 1aexcept.ads 41intnam.ads 42intnam.ads 
 	4aintnam.ads 4cintnam.ads 4dintnam.ads 4hexcpol.adb 
