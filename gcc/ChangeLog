@@ -1,3 +1,10 @@
+2001-06-13  Kazu Hirata  <kazu@hxi.com>
+
+	* config/h8300/h8300.h (OK_FOR_T): Remove.
+	(EXTRA_CONSTRAINT): Do not use OK_FOR_T.
+	* config/h8300/h8300.md: Remove alternatives involving inc and dec
+	in the helper patterns for addhi3 and addsi3.
+
 2001-06-13  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* gthr-dce.h (UNUSED): Attribute unused macro.
