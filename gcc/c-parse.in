@@ -224,7 +224,8 @@ ifobjc
 %type <ttype> keywordexpr keywordarglist keywordarg
 %type <ttype> myparms myparm optparmlist reservedwords objcselectorexpr
 %type <ttype> selectorarg keywordnamelist keywordname objcencodeexpr
-%type <ttype> objc_string protocolrefs identifier_list objcprotocolexpr
+%type <ttype> objc_string non_empty_protocolrefs protocolrefs identifier_list objcprotocolexpr
+
 %type <ttype> CLASSNAME OBJC_STRING OBJECTNAME
 end ifobjc
 
@@ -1041,6 +1042,11 @@ ifobjc
 		{ $$ = get_static_reference ($1, $2); }
 	| OBJECTNAME protocolrefs
 		{ $$ = get_object_reference ($2); }
+
+/* Make "<SomeProtocol>" equivalent to "id <SomeProtocol>"
+   - nisse@lysator.liu.se */
+        | non_empty_protocolrefs
+                { $$ = get_object_reference ($1); }
 end ifobjc
 	| TYPEOF '(' expr ')'
 		{ $$ = TREE_TYPE ($3); }
@@ -2440,7 +2446,11 @@ protocolrefs:
 		{
 		  $$ = NULL_TREE;
 		}
-	| ARITHCOMPARE identifier_list ARITHCOMPARE
+	| non_empty_protocolrefs
+	;
+
+non_empty_protocolrefs:
+	  ARITHCOMPARE identifier_list ARITHCOMPARE
 		{
 		  if ($1 == LT_EXPR && $3 == GT_EXPR)
 		    $$ = $2;
