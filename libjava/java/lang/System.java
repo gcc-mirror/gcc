@@ -133,7 +133,7 @@ public final class System
    */
   // Note that we use clone here and not new.  Some programs assume
   // that the system properties do not have a parent.
-  private static Properties properties
+  static Properties properties
     = (Properties) Runtime.defaultProperties.clone();
 
   /**

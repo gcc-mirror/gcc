@@ -1,5 +1,5 @@
 /* java.lang.Throwable -- Root class for all Exceptions and Errors
-   Copyright (C) 1998, 1999, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2002, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -396,7 +396,21 @@ public class Throwable implements Serializable
     pw.print(stackTraceString());
   }
 
-  private static final String nl = System.getProperty("line.separator");
+  /*
+   * We use inner class to avoid a static initializer in this basic class.
+   */
+  private static class StaticData
+  {
+
+    final static String nl;
+
+    static
+    {
+      // Access package private properties field to prevent Security check.
+      nl = System.properties.getProperty("line.separator");
+    }
+  }
+
   // Create whole stack trace in a stringbuffer so we don't have to print
   // it line by line. This prevents printing multiple stack traces from
   // different threads to get mixed up when written to the same PrintWriter.
@@ -449,6 +463,7 @@ public class Throwable implements Serializable
   private static void stackTraceStringBuffer(StringBuffer sb, String name,
 					StackTraceElement[] stack, int equal)
   {
+    String nl = StaticData.nl;
     // (finish) first line
     sb.append(name);
     sb.append(nl);
