@@ -2807,7 +2807,8 @@ simplify_relational_operation_1 (enum rtx_code code, enum machine_mode mode,
   if ((code == EQ || code == NE)
       && (op0code == PLUS || op0code == MINUS)
       && CONSTANT_P (op1)
-      && CONSTANT_P (XEXP (op0, 1)))
+      && CONSTANT_P (XEXP (op0, 1))
+      && (INTEGRAL_MODE_P (cmp_mode) || flag_unsafe_math_optimizations))
     {
       rtx x = XEXP (op0, 0);
       rtx c = XEXP (op0, 1);
