@@ -1,3 +1,9 @@
+2004-03-10  Andrew Haley  <aph@redhat.com>
+
+	PR optimization/14381
+	* function.c (expand_function_end): Emit a blockage insn before
+	the epilogue when -fnon-call-exceptions is used.
+
 2004-03-10  Joel Sherrill  <joel@oarcorp.com>
 
 	PR target/14480
