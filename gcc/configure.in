@@ -386,6 +386,13 @@ for machine in $build $host $target; do
 		;;
  	alpha*-*-vxworks*)
 		tm_file="${tm_file} dbx.h alpha/vxworks.h"
+		# If we're on an Alpha, we assume we use the system assembler,
+		# so check it to see if we should put in .arch lines.
+		case $host in
+		  *-*-osf4.0[[b-z]] | *-*-osf4.[[1-9]]*)
+		    target_cpu_default=MASK_SUPPORT_ARCH
+		    ;;
+		esac
 		if [ x$gas != xyes ]
 		then
 			extra_passes="mips-tfile mips-tdump"
