@@ -1,3 +1,8 @@
+2004-01-23  Daniel Jacobowitz  <drow@mvista.com>
+
+	* config/arm/arm.c (arm_legitimate_address_p): Don't check the mode
+	size for minipool references.
+
 2004-01-23  Roger Sayle  <roger@eyesopen.com>
 
 	* real.c (real_floor, real_ceil): Tweak to allow input and output
