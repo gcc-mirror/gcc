@@ -5,8 +5,8 @@ RANLIB_FOR_TARGET = ` \
     if [ "$(host)" = "$(target)" ] ; then \
       echo ranlib; \
     else \
-       if [ -f $(bindir)/$(target_alias)-ranlib ] ; then \
-	  echo $(bindir)/$(target_alias)-ranlib ; \
+       if [ -f $(bindir)/$(target_noncanonical)-ranlib ] ; then \
+	  echo $(bindir)/$(target_noncanonical)-ranlib ; \
        else \
           t='$(program_transform_cross_name)'; echo ranlib | sed -e $$t ; \
        fi; \

@@ -42,7 +42,7 @@
 
 # Actual names to use when installing a native compiler.
 JAVA_INSTALL_NAME = `echo gcj|sed '$(program_transform_name)'`
-JAVA_TARGET_INSTALL_NAME = $(target_alias)-`echo gcj|sed '$(program_transform_name)'`
+JAVA_TARGET_INSTALL_NAME = $(target_noncanonical)-`echo gcj|sed '$(program_transform_name)'`
 
 # Actual names to use when installing a cross-compiler.
 JAVA_CROSS_NAME = `echo gcj|sed '$(program_transform_cross_name)'`

@@ -2192,7 +2192,7 @@ if test x$with_cpu = x ; then
       with_cpu=i486
       ;;
     i586-*-*)
-      case $target_alias in
+      case ${target_noncanonical} in
         k6_2-*)
           with_cpu=k6-2
           ;;
@@ -2211,7 +2211,7 @@ if test x$with_cpu = x ; then
       esac
       ;;
     i686-*-* | i786-*-*)
-      case $target_alias in
+      case ${target_noncanonical} in
         k8-*)
           with_cpu=k8
           ;;

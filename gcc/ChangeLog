@@ -1,3 +1,8 @@
+2003-10-14  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* config.gcc, config/m68hc11/t-m68hc11-gas: Replace uses of
+	target_alias with target_noncanonical.
+
 2003-10-14  Geoffrey Keating  <geoffk@apple.com>
 
 	* expr.c (block_move_libcall_safe_for_call_parm): Clean up,

@@ -1,3 +1,8 @@
+2003-10-14  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* Make-lang.in: Replace uses of $(target_alias) with
+	$(target_noncanonical).
+
 2003-10-13  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	* ChangeLog: Add PR number to patch for PR c++/12370.
