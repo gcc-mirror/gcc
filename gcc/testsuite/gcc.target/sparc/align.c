@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-mcpu=ultrasparc -mvis" } */
-#include <stdint.h>
+
+typedef long long int64_t;
 typedef int vec32 __attribute__((vector_size(8)));
 typedef short vec16 __attribute__((vector_size(8)));
 typedef char vec8 __attribute__((vector_size(8)));

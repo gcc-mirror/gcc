@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-mcpu=ultrasparc -mvis" } */
-#include <stdint.h>
 
+typedef long long int64_t;
 typedef char vec8 __attribute__((vector_size(8)));
 
 int64_t foo (vec8 a, vec8 b) {
@@ -20,4 +20,4 @@ int64_t baz (vec8 a, vec8 b, int64_t d) {
   return e + d;
 }
 
-/* { dg-final { scan-assembler-times "pdist" 4 } } */
+/* { dg-final { scan-assembler-times "pdist\t%" 3 } } */
