@@ -1098,7 +1098,7 @@ dwarf_fund_type_name (ft)
     case FT_unsigned_int32:	return "FT_unsigned_int32";
     case FT_int64:		return "FT_int64";
     case FT_signed_int64:	return "FT_signed_int64";
-    case FT_unsigned_int64:	return "FT_signed_int64";
+    case FT_unsigned_int64:	return "FT_unsigned_int64";
 
     case FT_real32:		return "FT_real32";
     case FT_real64:		return "FT_real64";
@@ -1661,6 +1661,15 @@ output_mem_loc_descriptor (rtl)
       case CONST_INT:
 	ASM_OUTPUT_DWARF_STACK_OP (asm_out_file, OP_CONST);
 	ASM_OUTPUT_DWARF_DATA4 (asm_out_file, INTVAL (rtl));
+	break;
+
+      case MULT:
+	/* If a pseudo-reg is optimized away, it is possible for it to
+	   be replaced with a MEM containing a multiply.  Use a GNU extension
+	   to describe it.  */
+	output_mem_loc_descriptor (XEXP (rtl, 0));
+	output_mem_loc_descriptor (XEXP (rtl, 1));
+	ASM_OUTPUT_DWARF_STACK_OP (asm_out_file, OP_MULT);
 	break;
 
       default:
