@@ -1674,15 +1674,18 @@ extern char mips_hard_regno_mode_ok[][FIRST_PSEUDO_REGISTER];
 /* Pass structure addresses as an "invisible" first argument.  */
 #define STRUCT_VALUE 0
 
-/* Mips registers used in prologue/epilogue code when the stack frame
-   is larger than 32K bytes.  These registers must come from the
-   scratch register set, and not used for passing and returning
-   arguments and any other information used in the calling sequence
-   (such as pic).  Must start at 12, since t0/t3 are parameter passing
-   registers in the 64 bit ABI.  */
+/* Registers used as temporaries in prologue/epilogue code.  If we're
+   generating mips16 code, these registers must come from the core set
+   of 8.  The prologue register mustn't conflict with any incoming
+   arguments, the static chain pointer, or the frame pointer.  The
+   epilogue temporary mustn't conflict with the return registers, the
+   frame pointer, the EH stack adjustment, or the EH data registers.  */
 
-#define MIPS_TEMP1_REGNUM (GP_REG_FIRST + 12)
-#define MIPS_TEMP2_REGNUM (GP_REG_FIRST + 13)
+#define MIPS_PROLOGUE_TEMP_REGNUM (GP_REG_FIRST + 3)
+#define MIPS_EPILOGUE_TEMP_REGNUM (GP_REG_FIRST + (TARGET_MIPS16 ? 6 : 8))
+
+#define MIPS_PROLOGUE_TEMP(MODE) gen_rtx_REG (MODE, MIPS_PROLOGUE_TEMP_REGNUM)
+#define MIPS_EPILOGUE_TEMP(MODE) gen_rtx_REG (MODE, MIPS_EPILOGUE_TEMP_REGNUM)
 
 /* Define this macro if it is as good or better to call a constant
    function address than to call an address kept in a register.  */
