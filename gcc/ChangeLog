@@ -1,5 +1,8 @@
 2001-03-15  Bernd Schmidt  <bernds@redhat.com>
 
+	* cselib.c (hash_rtx): For REG and MEM, just use value of expression
+	without adding in rtx code and mode.
+
 	* config/ia64/ia64.c (maybe_rotate): New function, broken out of
 	ia64_sched_reorder.
 	(ia64_sched_reorder): Call maybe_rotate; also rotate after
