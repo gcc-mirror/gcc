@@ -1,7 +1,7 @@
 /* Target definitions for GNU compiler for mc680x0 running System V.4
    Copyright (C) 1991, 1993, 1994, 1995, 1996 Free Software Foundation, Inc.
-
-   Written by Ron Guilmette (rfg@netcom.com) and Fred Fish (fnf@cygnus.com).
+   Contributed by Ron Guilmette (rfg@monkeys.com) and
+   Fred Fish (fnf@cygnus.com).
 
 This file is part of GNU CC.
 
@@ -321,7 +321,7 @@ int switch_table_difference_label_flag;
 #undef TRAMPOLINE_TEMPLATE
 #define TRAMPOLINE_TEMPLATE(FILE)					\
 {									\
-  ASM_OUTPUT_SHORT (FILE, gen_rtx (CONST_INT, VOIDmode, 0x207b));	\
+  ASM_OUTPUT_SHORT (FILE, gen_rtx (CONST_INT, VOIDmode, 0x227a));	\
   ASM_OUTPUT_SHORT (FILE, gen_rtx (CONST_INT, VOIDmode, 8));		\
   ASM_OUTPUT_SHORT (FILE, gen_rtx (CONST_INT, VOIDmode, 0x2f3a));	\
   ASM_OUTPUT_SHORT (FILE, gen_rtx (CONST_INT, VOIDmode, 8));		\
