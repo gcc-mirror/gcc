@@ -61,6 +61,11 @@ begin
    Write_Str ("  -b       Bind only");
    Write_Eol;
 
+   --  Line for -B
+
+   Write_Str ("  -B       Build, bind and link full project");
+   Write_Eol;
+
    --  Line for -c
 
    Write_Str ("  -c       Compile only");

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1997-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1997-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -77,10 +77,9 @@ begin
       exit when Next_Arg > Argument_Count;
 
       Process_One_Arg : declare
-         Arg : String := Argument (Next_Arg);
+         Arg : constant String := Argument (Next_Arg);
 
       begin
-
          if Arg'Length > 9 and then Arg (1 .. 9) = "--create=" then
             if Mode = None then
                Mode := Create;
@@ -192,28 +191,29 @@ begin
             --
             Include_Dirs := 0;
             Include_Dir_Name := new String'(Include_Dir_Default_Prefix);
-            Get_Next_Dir_In_Path_Init (String_Access (Include_Dir_Name));
+            Get_Next_Dir_In_Path_Init (Include_Dir_Name);
 
             loop
                declare
-                  Dir : String_Access := String_Access
-                    (Get_Next_Dir_In_Path (String_Access (Include_Dir_Name)));
+                  Dir : constant String_Access := String_Access
+                    (Get_Next_Dir_In_Path (Include_Dir_Name));
                begin
                   exit when Dir = null;
                   Include_Dirs := Include_Dirs + 1;
-                  Include_Dir (Include_Dirs)
-                    := String_Access (Normalize_Directory_Name (Dir.all));
+                  Include_Dir (Include_Dirs) :=
+                    String_Access (Normalize_Directory_Name (Dir.all));
                end;
             end loop;
 
             Object_Dirs := 0;
             Object_Dir_Name := new String'(Object_Dir_Default_Prefix);
-            Get_Next_Dir_In_Path_Init (String_Access (Object_Dir_Name));
+            Get_Next_Dir_In_Path_Init (Object_Dir_Name);
 
             loop
                declare
-                  Dir : String_Access := String_Access
-                    (Get_Next_Dir_In_Path (String_Access (Object_Dir_Name)));
+                  Dir : constant String_Access :=
+                          String_Access
+                            (Get_Next_Dir_In_Path (Object_Dir_Name));
                begin
                   exit when Dir = null;
                   Object_Dirs := Object_Dirs + 1;
@@ -225,7 +225,6 @@ begin
             --  "Make" an alternate sublibrary for each default sublibrary.
 
             for Dirs in 1 .. Object_Dirs loop
-
                Make_Args (1) :=
                  new String'("-C");
 
@@ -269,13 +268,14 @@ begin
                Make_Path := Locate_Exec_On_Path (Make);
                Put (Make);
 
-               for I in 1 .. Make_Args'Last loop
+               for J in 1 .. Make_Args'Last loop
                   Put (" ");
-                  Put (Make_Args (I).all);
+                  Put (Make_Args (J).all);
                end loop;
 
                New_Line;
                Spawn (Make_Path.all, Make_Args, Success);
+
                if not Success then
                   Put_Line (Standard_Error, "Error: Make failed");
                   Exit_Program (E_Fatal);
@@ -285,7 +285,7 @@ begin
 
       when Set =>
 
-         --  Validate arguments.
+         --  Validate arguments
 
          if Lib_Dir = null then
             Put_Line (Standard_Error,
@@ -311,7 +311,7 @@ begin
             Exit_Program (E_Fatal);
          end if;
 
-         --  Give instructions.
+         --  Give instructions
 
          Put_Line ("Copy the contents of "
            & ADC_File.all & " into your GNAT.ADC file");
@@ -332,7 +332,7 @@ begin
 
       when Delete =>
 
-         --  Give instructions.
+         --  Give instructions
 
          Put_Line ("GNAT Librarian DELETE not yet implemented.");
          Put_Line ("Use appropriate system tools to remove library");

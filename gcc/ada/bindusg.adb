@@ -6,7 +6,7 @@
 --                                                                          --
 --                                B o d y                                   --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -71,6 +71,11 @@ begin
    --  Line for C switch
 
    Write_Str ("  -C        Generate binder program in C");
+   Write_Eol;
+
+   --  Line for D switch
+
+   Write_Str ("  -Dnnn     Default secondary stack size = nnn bytes");
    Write_Eol;
 
    --  Line for -e switch

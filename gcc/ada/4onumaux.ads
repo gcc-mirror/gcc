@@ -7,7 +7,7 @@
 --                                 S p e c                                  --
 --                       (C Library Version for x86)                        --
 --                                                                          --
---          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -50,43 +50,59 @@ pragma Pure (Aux);
 
    type Double is digits 18;
 
+   --  We import these functions directly from C. Note that we label them
+   --  all as pure functions, because indeed all of them are in fact pure!
+
    function Sin (X : Double) return Double;
    pragma Import (C, Sin, "sinl");
+   pragma Pure_Function (Sin);
 
    function Cos (X : Double) return Double;
    pragma Import (C, Cos, "cosl");
+   pragma Pure_Function (Cos);
 
    function Tan (X : Double) return Double;
    pragma Import (C, Tan, "tanl");
+   pragma Pure_Function (Tan);
 
    function Exp (X : Double) return Double;
    pragma Import (C, Exp, "expl");
+   pragma Pure_Function (Exp);
 
    function Sqrt (X : Double) return Double;
    pragma Import (C, Sqrt, "sqrtl");
+   pragma Pure_Function (Sqrt);
 
    function Log (X : Double) return Double;
    pragma Import (C, Log, "logl");
+   pragma Pure_Function (Log);
 
    function Acos (X : Double) return Double;
    pragma Import (C, Acos, "acosl");
+   pragma Pure_Function (Acos);
 
    function Asin (X : Double) return Double;
    pragma Import (C, Asin, "asinl");
+   pragma Pure_Function (Asin);
 
    function Atan (X : Double) return Double;
    pragma Import (C, Atan, "atanl");
+   pragma Pure_Function (Atan);
 
    function Sinh (X : Double) return Double;
    pragma Import (C, Sinh, "sinhl");
+   pragma Pure_Function (Sinh);
 
    function Cosh (X : Double) return Double;
    pragma Import (C, Cosh, "coshl");
+   pragma Pure_Function (Cosh);
 
    function Tanh (X : Double) return Double;
    pragma Import (C, Tanh, "tanhl");
+   pragma Pure_Function (Tanh);
 
    function Pow (X, Y : Double) return Double;
    pragma Import (C, Pow, "powl");
+   pragma Pure_Function (Pow);
 
 end Ada.Numerics.Aux;

@@ -733,7 +733,7 @@ package body Sem_Ch7 is
       --------------------------------
 
       procedure Generate_Parent_References is
-         Decl : Node_Id := Parent (N);
+         Decl : constant Node_Id := Parent (N);
 
       begin
          if Id = Cunit_Entity (Main_Unit)

@@ -108,18 +108,20 @@ package body System.Machine_State_Operations is
    -- ABI-Dependent Declarations --
    --------------------------------
 
-   o32 : constant Natural := Boolean'Pos (System.Word_Size = 32);
-   n32 : constant Natural := Boolean'Pos (System.Word_Size = 64);
+   o32  : constant Boolean := System.Word_Size = 32;
+   n32  : constant Boolean := System.Word_Size = 64;
+   o32n : constant Natural := Boolean'Pos (o32);
+   n32n : constant Natural := Boolean'Pos (n32);
    --  Flags to indicate which ABI is in effect for this compilation. For the
    --  purposes of this unit, the n32 and n64 ABI's are identical.
 
-   LSC : constant Character := Character'Val (o32 * Character'Pos ('w') +
-                                              n32 * Character'Pos ('d'));
+   LSC : constant Character := Character'Val (o32n * Character'Pos ('w') +
+                                              n32n * Character'Pos ('d'));
    --  This is 'w' for o32, and 'd' for n32/n64, used for constructing the
    --  load/store instructions used to save/restore machine instructions.
 
-   Roff : constant Character := Character'Val (o32 * Character'Pos ('4') +
-                                               n32 * Character'Pos (' '));
+   Roff : constant Character := Character'Val (o32n * Character'Pos ('4') +
+                                               n32n * Character'Pos (' '));
    --  Offset from first byte of a __uint64 register save location where
    --  the register value is stored.  For n32/64 we store the entire 64
    --  bit register into the uint64.  For o32, only 32 bits are stored
@@ -156,7 +158,7 @@ package body System.Machine_State_Operations is
       function To_I_Type_Ptr is new
         Unchecked_Conversion (Address_Int, I_Type_Ptr);
 
-      Ret_Ins : I_Type_Ptr := To_I_Type_Ptr (Address_Int (Scp.SC_PC));
+      Ret_Ins : constant I_Type_Ptr := To_I_Type_Ptr (Address_Int (Scp.SC_PC));
       GP_Ptr  : Uns32_Ptr;
 
    begin
@@ -311,12 +313,11 @@ package body System.Machine_State_Operations is
          Scp.SC_PC := 0;
 
       else
-
          --  Set the GP to restore to the caller value (not callee value)
          --  This is done only in o32 mode. In n32/n64 mode, GP is a normal
          --  callee save register
 
-         if o32 = 1 then
+         if o32 then
             Update_GP (Scp);
          end if;
 

@@ -776,9 +776,8 @@ package body Lib.Xref is
               and then Ent = Base_Type (Ent)
               and then In_Extended_Main_Source_Unit (Ent)
             then
-
                declare
-                  Op_List : Elist_Id := Primitive_Operations (Ent);
+                  Op_List : constant Elist_Id := Primitive_Operations (Ent);
                   Op      : Elmt_Id;
                   Prim    : Entity_Id;
 
@@ -787,11 +786,10 @@ package body Lib.Xref is
                   --  through several derivations.
 
                   function Parent_Op (E : Entity_Id) return Entity_Id is
-                     Orig_Op : Entity_Id := Alias (E);
+                     Orig_Op : constant Entity_Id := Alias (E);
                   begin
                      if No (Orig_Op) then
                         return Empty;
-
                      elsif not Comes_From_Source (E)
                        and then not Has_Xref_Entry (Orig_Op)
                        and then Comes_From_Source (Orig_Op)
@@ -804,9 +802,7 @@ package body Lib.Xref is
 
                begin
                   Op := First_Elmt (Op_List);
-
                   while Present (Op) loop
-
                      Prim := Parent_Op (Node (Op));
 
                      if Present (Prim) then

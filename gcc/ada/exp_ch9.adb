@@ -8211,14 +8211,13 @@ package body Exp_Ch9 is
                  and then Chars (Ritem) = Name_Attach_Handler
                then
                   declare
-                     Handler   : constant Node_Id :=
-                       First (Pragma_Argument_Associations (Ritem));
-                     Interrupt : constant Node_Id :=
-                       Next (Handler);
-                     Expr :  Node_Id := Expression (Interrupt);
+                     Handler : constant Node_Id :=
+                                 First (Pragma_Argument_Associations (Ritem));
+
+                     Interrupt : constant Node_Id  := Next (Handler);
+                     Expr      : constant  Node_Id := Expression (Interrupt);
 
                   begin
-
                      Append_To (Table,
                        Make_Aggregate (Loc, Expressions => New_List (
                          Unchecked_Convert_To

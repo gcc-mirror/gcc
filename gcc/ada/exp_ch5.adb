@@ -48,6 +48,7 @@ with Sem_Res;  use Sem_Res;
 with Sem_Util; use Sem_Util;
 with Snames;   use Snames;
 with Stand;    use Stand;
+with Stringt;  use Stringt;
 with Tbuild;   use Tbuild;
 with Ttypes;   use Ttypes;
 with Uintp;    use Uintp;
@@ -75,8 +76,7 @@ package body Exp_Ch5 is
       L_Type : Entity_Id;
       R_Type : Entity_Id;
       Ndim   : Pos;
-      Rev    : Boolean)
-      return   Node_Id;
+      Rev    : Boolean) return Node_Id;
    --  N is an assignment statement which assigns an array value. This routine
    --  expands the assignment into a loop (or nested loops for the case of a
    --  multi-dimensional array) to do the assignment component by component.
@@ -104,32 +104,11 @@ package body Exp_Ch5 is
 
    function Possible_Bit_Aligned_Component (N : Node_Id) return Boolean;
    --  This function is used in processing the assignment of a record or
-   --  indexed component. The back end can handle such assignments fine
-   --  if the objects involved are small (64-bits or less) records or
-   --  scalar items (including bit-packed arrays represented with modular
-   --  types) or are both aligned on a byte boundary (starting on a byte
-   --  boundary, and occupying an integral number of bytes).
-   --
-   --  However, problems arise for records larger than 64 bits, or for
-   --  arrays (other than bit-packed arrays represented with a modular
-   --  type) if the component starts on a non-byte boundary, or does
-   --  not occupy an integral number of bytes (i.e. there are some bits
-   --  possibly shared with fields at the start or beginning of the
-   --  component). The back end cannot handle loading and storing such
-   --  components in a single operation.
-   --
-   --  This function is used to detect the troublesome situation. it is
-   --  conservative in the sense that it produces True unless it knows
-   --  for sure that the component is safe (as outlined in the first
-   --  paragraph above). The code generation for record and array
-   --  assignment checks for trouble using this function, and if so
-   --  the assignment is generated component-wise, which the back end
-   --  is required to handle correctly.
-   --
-   --  Note that in GNAT 3, the back end will reject such components
-   --  anyway, so the hard work in checking for this case is wasted
-   --  in GNAT 3, but it's harmless, so it is easier to do it in
-   --  all cases, rather than conditionalize it in GNAT 5 or beyond.
+   --  indexed component. The argument N is either the left hand or right
+   --  hand side of an assignment, and this function determines if there
+   --  is a record component reference where the record may be bit aligned
+   --  in a manner that causes trouble for the back end (see description
+   --  of Sem_Util.Component_May_Be_Bit_Aligned for further details).
 
    ------------------------------
    -- Change_Of_Representation --
@@ -508,9 +487,12 @@ package body Exp_Ch5 is
       --  statement, a length check has already been emitted to verify that
       --  the range of the left-hand side is empty.
 
+      --  Note that this code is not executed if we had an assignment of
+      --  a string literal to a non-bit aligned component of a record, a
+      --  case which cannot be handled by the backend
+
       elsif Nkind (Rhs) = N_String_Literal then
-         if Ekind (R_Type) = E_String_Literal_Subtype
-           and then String_Literal_Length (R_Type) = 0
+         if String_Length (Strval (Rhs)) = 0
            and then Is_Bit_Packed_Array (L_Type)
          then
             Rewrite (N, Make_Null_Statement (Loc));
@@ -731,8 +713,8 @@ package body Exp_Ch5 is
 
          elsif Restrictions (No_Implicit_Conditionals) then
             declare
-               T : constant Entity_Id := Make_Defining_Identifier (Loc,
-                                           Chars => Name_T);
+                  T : constant Entity_Id :=
+                        Make_Defining_Identifier (Loc, Chars => Name_T);
 
             begin
                Rewrite (N,
@@ -881,8 +863,7 @@ package body Exp_Ch5 is
       L_Type : Entity_Id;
       R_Type : Entity_Id;
       Ndim   : Pos;
-      Rev    : Boolean)
-      return   Node_Id
+      Rev    : Boolean) return Node_Id
    is
       Loc  : constant Source_Ptr := Sloc (N);
 
@@ -2244,8 +2225,8 @@ package body Exp_Ch5 is
          and then List_Length (Else_Statements (N)) = 1
       then
          declare
-            Then_Stm : Node_Id := First (Then_Statements (N));
-            Else_Stm : Node_Id := First (Else_Statements (N));
+            Then_Stm : constant Node_Id := First (Then_Statements (N));
+            Else_Stm : constant Node_Id := First (Else_Statements (N));
 
          begin
             if Nkind (Then_Stm) = N_Return_Statement
@@ -3277,39 +3258,10 @@ package body Exp_Ch5 is
                --  unless it is forced to do so. In the clear means we need
                --  only the recursive test on the prefix.
 
-               if No (Component_Clause (Comp)) then
-                  return Possible_Bit_Aligned_Component (P);
-
-               --  Otherwise we have a component clause, which means that
-               --  the Esize and Normalized_First_Bit fields are set and
-               --  contain static values known at compile time.
-
+               if Component_May_Be_Bit_Aligned (Comp) then
+                  return True;
                else
-                  --  If we know that we have a small (64 bits or less) record
-                  --  or bit-packed array, then everything is fine, since the
-                  --  back end can handle these cases correctly.
-
-                  if Esize (Comp) <= 64
-                    and then (Is_Record_Type (Etype (Comp))
-                               or else
-                              Is_Bit_Packed_Array (Etype (Comp)))
-                  then
-                     return False;
-
-                  --  Otherwise if the component is not byte aligned, we
-                  --  know we have the nasty unaligned case.
-
-                  elsif Normalized_First_Bit (Comp) /= Uint_0
-                    or else Esize (Comp) mod System_Storage_Unit /= Uint_0
-                  then
-                     return True;
-
-                  --  If we are large and byte aligned, then OK at this level
-                  --  but we still need to test our prefix recursively.
-
-                  else
-                     return Possible_Bit_Aligned_Component (P);
-                  end if;
+                  return Possible_Bit_Aligned_Component (P);
                end if;
             end;
 

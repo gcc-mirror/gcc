@@ -102,8 +102,7 @@ package body GNAT.Expect is
      (Fds     : System.Address;
       Num_Fds : Integer;
       Timeout : Integer;
-      Is_Set  : System.Address)
-      return    Integer;
+      Is_Set  : System.Address) return Integer;
    pragma Import (C, Poll, "__gnat_expect_poll");
    --  Check whether there is any data waiting on the file descriptor
    --  Out_fd, and wait if there is none, at most Timeout milliseconds
@@ -130,8 +129,7 @@ package body GNAT.Expect is
    ---------
 
    function "+"
-     (P    : GNAT.Regpat.Pattern_Matcher)
-      return Pattern_Matcher_Access
+     (P : GNAT.Regpat.Pattern_Matcher) return Pattern_Matcher_Access
    is
    begin
       return new GNAT.Regpat.Pattern_Matcher'(P);
@@ -768,8 +766,7 @@ package body GNAT.Expect is
    ------------------
 
    function Get_Error_Fd
-     (Descriptor : Process_Descriptor)
-      return       GNAT.OS_Lib.File_Descriptor
+     (Descriptor : Process_Descriptor) return GNAT.OS_Lib.File_Descriptor
    is
    begin
       return Descriptor.Error_Fd;
@@ -780,8 +777,7 @@ package body GNAT.Expect is
    ------------------
 
    function Get_Input_Fd
-     (Descriptor : Process_Descriptor)
-      return       GNAT.OS_Lib.File_Descriptor
+     (Descriptor : Process_Descriptor) return GNAT.OS_Lib.File_Descriptor
    is
    begin
       return Descriptor.Input_Fd;
@@ -792,8 +788,7 @@ package body GNAT.Expect is
    -------------------
 
    function Get_Output_Fd
-     (Descriptor : Process_Descriptor)
-      return       GNAT.OS_Lib.File_Descriptor
+     (Descriptor : Process_Descriptor) return GNAT.OS_Lib.File_Descriptor
    is
    begin
       return Descriptor.Output_Fd;
@@ -804,8 +799,7 @@ package body GNAT.Expect is
    -------------
 
    function Get_Pid
-     (Descriptor : Process_Descriptor)
-      return       Process_Id
+     (Descriptor : Process_Descriptor) return Process_Id
    is
    begin
       return Descriptor.Pid;
@@ -848,8 +842,8 @@ package body GNAT.Expect is
       function Get_Vfork_Jmpbuf return System.Address;
       pragma Import (C, Get_Vfork_Jmpbuf, "decc$$get_vfork_jmpbuf");
 
-      function Get_Current_Invo_Context (Addr : System.Address)
-        return Process_Id;
+      function Get_Current_Invo_Context
+        (Addr : System.Address) return Process_Id;
       pragma Import (C, Get_Current_Invo_Context,
         "LIB$GET_CURRENT_INVO_CONTEXT");
 
@@ -1003,21 +997,23 @@ package body GNAT.Expect is
    ----------
 
    procedure Send
-     (Descriptor : in out Process_Descriptor;
-      Str        : String;
-      Add_LF     : Boolean := True;
+     (Descriptor   : in out Process_Descriptor;
+      Str          : String;
+      Add_LF       : Boolean := True;
       Empty_Buffer : Boolean := False)
    is
-      N           : Natural;
       Full_Str    : constant String := Str & ASCII.LF;
       Last        : Natural;
       Result      : Expect_Match;
       Descriptors : Array_Of_Pd := (1 => Descriptor'Unrestricted_Access);
 
+      Discard : Natural;
+      pragma Unreferenced (Discard);
+
    begin
       if Empty_Buffer then
 
-         --  Force a read on the process if there is anything waiting.
+         --  Force a read on the process if there is anything waiting
 
          Expect_Internal (Descriptors, Result,
                           Timeout => 0, Full_Buffer => False);
@@ -1036,9 +1032,10 @@ package body GNAT.Expect is
 
       Call_Filters (Descriptor, Full_Str (Full_Str'First .. Last), Input);
 
-      N := Write (Descriptor.Input_Fd,
-                  Full_Str'Address,
-                  Last - Full_Str'First + 1);
+      Discard := Write (Descriptor.Input_Fd,
+                        Full_Str'Address,
+                        Last - Full_Str'First + 1);
+      --  Shouldn't we at least have a pragma Assert on the result ???
    end Send;
 
    -----------------

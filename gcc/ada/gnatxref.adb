@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---         Copyright (C) 1998-2003 Free Software Foundation, Inc.           --
+--         Copyright (C) 1998-2004 Free Software Foundation, Inc.           --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -72,7 +72,7 @@ procedure Gnatxref is
             when ASCII.NUL =>
                exit;
 
-            when 'a'    =>
+            when 'a' =>
                if GNAT.Command_Line.Full_Switch = "a" then
                   Read_Only := True;
 
@@ -83,49 +83,49 @@ procedure Gnatxref is
                   Osint.Add_Lib_Search_Dir (GNAT.Command_Line.Parameter);
                end if;
 
-            when 'd'    =>
+            when 'd' =>
                Der_Info := True;
 
-            when 'f'    =>
+            when 'f' =>
                Full_Path_Name := True;
 
-            when 'g'    =>
+            when 'g' =>
                Local_Symbols := False;
 
-            when 'h'    =>
+            when 'h' =>
                Write_Usage;
 
-            when 'I'    =>
+            when 'I' =>
                Osint.Add_Src_Search_Dir (GNAT.Command_Line.Parameter);
                Osint.Add_Lib_Search_Dir (GNAT.Command_Line.Parameter);
 
-            when 'n'    =>
+            when 'n' =>
                if GNAT.Command_Line.Full_Switch = "nostdinc" then
                   Opt.No_Stdinc := True;
                elsif GNAT.Command_Line.Full_Switch = "nostlib" then
                   Opt.No_Stdlib := True;
                end if;
 
-            when 'p'    =>
+            when 'p' =>
                declare
                   S : constant String := GNAT.Command_Line.Parameter;
-
                begin
                   Prj_File_Length := S'Length;
                   Prj_File (1 .. Prj_File_Length) := S;
                end;
 
-            when 'u'    =>
+            when 'u' =>
                Search_Unused := True;
                Vi_Mode := False;
 
-            when 'v'    =>
+            when 'v' =>
                Vi_Mode := True;
                Search_Unused := False;
 
             --  The only switch starting with -- recognized is --RTS
 
-            when '-'    =>
+            when '-' =>
+
                --  Check that it is the first time we see this switch
 
                if RTS_Specified = null then
@@ -210,7 +210,7 @@ procedure Gnatxref is
    procedure Write_Usage is
    begin
       Put_Line ("GNATXREF " & Gnatvsn.Gnat_Version_String
-                & " Copyright 1998-2003, Ada Core Technologies Inc.");
+                & " Copyright 1998-2004, Ada Core Technologies Inc.");
       Put_Line ("Usage: gnatxref [switches] file1 file2 ...");
       New_Line;
       Put_Line ("  file ... list of source files to xref, " &

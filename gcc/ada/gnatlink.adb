@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1996-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1996-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,7 +26,6 @@
 
 --  Gnatlink usage: please consult the gnat documentation
 
-with Ada.Exceptions; use Ada.Exceptions;
 with ALI;      use ALI;
 with Gnatvsn;  use Gnatvsn;
 with Hostparm;
@@ -40,6 +39,7 @@ with Table;
 with Types;
 
 with Ada.Command_Line;     use Ada.Command_Line;
+with Ada.Exceptions;       use Ada.Exceptions;
 with GNAT.OS_Lib;          use GNAT.OS_Lib;
 with Interfaces.C_Streams; use Interfaces.C_Streams;
 with System.CRTL;
@@ -234,9 +234,10 @@ procedure Gnatlink is
 
    procedure Delete (Name : in String) is
       Status : int;
-
+      pragma Unreferenced (Status);
    begin
       Status := unlink (Name'Address);
+      --  Is it really right to ignore an error here ???
    end Delete;
 
    ---------------
@@ -601,6 +602,9 @@ procedure Gnatlink is
       Nlast  : Integer;
       Nfirst : Integer;
       --  Current line slice (the slice does not contain line terminator)
+
+      Last : Integer;
+      --  Current line last character for shared libraries (without version)
 
       Objs_Begin : Integer := 0;
       --  First object file index in Linker_Objects table
@@ -986,20 +990,45 @@ procedure Gnatlink is
                elsif Next_Line (Nfirst .. Nlast) = "-ldecgnat"
                  or else Next_Line (Nfirst .. Nlast) = "-lgnarl"
                  or else Next_Line (Nfirst .. Nlast) = "-lgnat"
+                 or else Next_Line
+                     (1 .. Natural'Min (Nlast, 8 + Library_Version'Length)) =
+                       Shared_Lib ("gnarl")
+                 or else Next_Line
+                     (1 .. Natural'Min (Nlast, 7 + Library_Version'Length)) =
+                       Shared_Lib ("gnat")
                then
+                  --  If it is a shared library, remove the library version.
+                  --  We will be looking for the static version of the library
+                  --  as it is in the same directory as the shared version.
+
+                  if Next_Line (Nlast - Library_Version'Length + 1 .. Nlast)
+                       = Library_Version
+                  then
+                     --  Set Last to point to last character before the
+                     --  library version.
+
+                     Last := Nlast - Library_Version'Length - 1;
+                  else
+                     Last := Nlast;
+                  end if;
+
                   --  Given a Gnat standard library, search the
                   --  library path to find the library location
 
                   declare
                      File_Path : String_Access;
+
                      Object_Lib_Extension : constant String :=
-                       Value (Object_Library_Ext_Ptr);
+                                              Value (Object_Library_Ext_Ptr);
+
                      File_Name : constant String := "lib" &
-                                   Next_Line (Nfirst + 2 .. Nlast) &
-                                                  Object_Lib_Extension;
+                                   Next_Line (Nfirst + 2 .. Last) &
+                                   Object_Lib_Extension;
+
                      Run_Path_Opt : constant String :=
                        Value (Run_Path_Option_Ptr);
-                     GCC_Index    : Natural;
+
+                     GCC_Index          : Natural;
                      Run_Path_Opt_Index : Natural := 0;
 
                   begin
@@ -1189,7 +1218,7 @@ procedure Gnatlink is
          Write_Eol;
          Write_Str ("GNATLINK ");
          Write_Str (Gnat_Version_String);
-         Write_Str (" Copyright 1995-2003 Free Software Foundation, Inc");
+         Write_Str (" Copyright 1995-2004 Free Software Foundation, Inc");
          Write_Eol;
       end if;
    end Write_Header;
@@ -1586,7 +1615,7 @@ begin
                --  Remove duplicate IDENTIFICATION directives (VMS)
 
                if Linker_Options.Table (J)'Length > 27
-                 and then Linker_Options.Table (J) (1 .. 27)
+                 and then Linker_Options.Table (J) (1 .. 28)
                           = "--for-linker=IDENTIFICATION="
                then
                   if IDENT_Op then

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -55,15 +55,16 @@ with Sinput.P;
 with Snames;   use Snames;
 with Switch;   use Switch;
 with Switch.M; use Switch.M;
-with System.HTable;
 with Targparm;
 with Tempdir;
 
-with Ada.Exceptions;   use Ada.Exceptions;
-with Ada.Command_Line; use Ada.Command_Line;
+with Ada.Exceptions;            use Ada.Exceptions;
+with Ada.Command_Line;          use Ada.Command_Line;
 
 with GNAT.Directory_Operations; use GNAT.Directory_Operations;
 with GNAT.Case_Util;            use GNAT.Case_Util;
+
+with System.HTable;
 
 package body Make is
 
@@ -3265,7 +3266,7 @@ package body Make is
    --------------------------
 
    procedure Enter_Into_Obsoleted (F : Name_Id) is
-      Name  : String := Get_Name_String (F);
+      Name  : constant String := Get_Name_String (F);
       First : Natural := Name'Last;
       F2    : Name_Id := F;
 
@@ -3398,7 +3399,55 @@ package body Make is
          Opt.Check_Object_Consistency := False;
       end if;
 
-      if Main_Project /= No_Project then
+      --  Special case when switch -B was specified
+
+      if Build_Bind_And_Link_Full_Project then
+
+         --  When switch -B is specified, there must be a project file
+
+         if Main_Project = No_Project then
+            Make_Failed ("-B cannot be used without a project file");
+
+         --  No main program may be specified on the command line
+
+         elsif Osint.Number_Of_Files /= 0 then
+            Make_Failed ("-B cannot be used with a main specified on " &
+                         "the command line");
+
+         --  And the project file cannot be a library project file
+
+         elsif Projects.Table (Main_Project).Library then
+            Make_Failed ("-B cannot be used for a library project file");
+
+         else
+            Insert_Project_Sources
+              (The_Project  => Main_Project,
+               All_Projects => Unique_Compile_All_Projects,
+               Into_Q       => False);
+
+            --  If there are no sources to compile, we fail
+
+            if Osint.Number_Of_Files = 0 then
+               Make_Failed ("no sources to compile");
+            end if;
+
+            --  Specify -n for gnatbind and add the ALI files of all the
+            --  sources, except the one which is a fake main subprogram:
+            --  this is the one for the binder generated file and it will be
+            --  transmitted to gnatlink. These sources are those that are
+            --  in the queue.
+
+            Add_Switch ("-n", Binder, And_Save => True);
+
+            for J in Q.First .. Q.Last - 1 loop
+               Add_Switch
+                 (Get_Name_String
+                    (Lib_File_Name (Q.Table (J).File)),
+                  Binder, And_Save => True);
+            end loop;
+         end if;
+
+      elsif Main_Project /= No_Project then
 
          --  If the main project file is a library project file, main(s)
          --  cannot be specified on the command line.
@@ -3602,9 +3651,10 @@ package body Make is
                   --  all the sources of the project.
 
                   declare
-                     Data : Project_Data := Projects.Table (Main_Project);
+                     Data : constant Project_Data :=
+                              Projects.Table (Main_Project);
 
-                     Languages : Variable_Value :=
+                     Languages : constant Variable_Value :=
                                    Prj.Util.Value_Of
                                      (Name_Languages, Data.Decl.Attributes);
 
@@ -3661,31 +3711,12 @@ package body Make is
                      end loop;
 
                      --  If we did not get any main, it means that all mains
-                     --  in attribute Mains are in a foreign language. So,
-                     --  we put all sources of the main project in the Q.
+                     --  in attribute Mains are in a foreign language and -B
+                     --  was not specified to gnatmake; so, we fail.
 
                      if not At_Least_One_Main then
-
-                        --  First make sure that the binder and the linker
-                        --  will not be invoked if -z is not used.
-
-                        if not No_Main_Subprogram then
-                           Do_Bind_Step := False;
-                           Do_Link_Step := False;
-                        end if;
-
-                        --  Put all the sources in the queue
-
-                        Insert_Project_Sources
-                          (The_Project  => Main_Project,
-                           All_Projects => Unique_Compile_All_Projects,
-                           Into_Q       => False);
-
-                        --  If there are no sources to compile, we fail
-
-                        if Osint.Number_Of_Files = 0 then
-                           Make_Failed ("no sources to compile");
-                        end if;
+                        Make_Failed
+                          ("no Ada mains; use -B to build foreign main");
                      end if;
                   end;
 
@@ -3698,7 +3729,7 @@ package body Make is
          Write_Eol;
          Write_Str ("GNATMAKE ");
          Write_Str (Gnatvsn.Gnat_Version_String);
-         Write_Str (" Copyright 1995-2003 Free Software Foundation, Inc.");
+         Write_Str (" Copyright 1995-2004 Free Software Foundation, Inc.");
          Write_Eol;
       end if;
 
@@ -4563,6 +4594,7 @@ package body Make is
                    or not Do_Bind_Step
                    or not Is_Main_Unit)
                  and then not No_Main_Subprogram
+                 and then not Build_Bind_And_Link_Full_Project
                then
                   if Osint.Number_Of_Files = 1 then
                      exit Multiple_Main_Loop;
@@ -5995,7 +6027,7 @@ package body Make is
 
       else
          declare
-            Name  : String := Get_Name_String (F);
+            Name  : constant String := Get_Name_String (F);
             First : Natural := Name'Last;
             F2    : Name_Id := F;
 

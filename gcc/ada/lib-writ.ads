@@ -176,6 +176,9 @@ package Lib.Writ is
    --              compiler, but is added by the Project Manager in gnatmake
    --              when an Interface ALI file is copied to the library
    --              directory.
+
+   --         SS   This unit references System.Secondary_Stack (that is,
+   --              the unit makes use of the secondary stack facilities).
    --
    --         Tx   A valid Task_Dispatching_Policy pragma applies to all
    --              the units in this file, where x is the first character

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2002, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2003, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,7 +31,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is a version for Solaris native threads.
+--  This is a version for Solaris native threads
 
 separate (System.Task_Primitives.Operations)
 package body Specific is
@@ -54,11 +54,9 @@ package body Specific is
    function Is_Valid_Task return Boolean is
       Unknown_Task : aliased System.Address;
       Result       : Interfaces.C.int;
-
    begin
       Result := thr_getspecific (ATCB_Key, Unknown_Task'Unchecked_Access);
       pragma Assert (Result = 0);
-
       return Unknown_Task /= System.Null_Address;
    end Is_Valid_Task;
 

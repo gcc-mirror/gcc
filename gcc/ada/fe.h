@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *          Copyright (C) 1992-2003 Free Software Foundation, Inc.          *
+ *          Copyright (C) 1992-2004 Free Software Foundation, Inc.          *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -86,7 +86,7 @@ extern Node_Id Get_Attribute_Definition_Clause (Entity_Id, char);
 
 extern void Error_Msg_N	          (Fat_Pointer, Node_Id);
 extern void Error_Msg_NE          (Fat_Pointer, Node_Id, Entity_Id);
-extern void Set_Identifier_Casing (Char, Char);
+extern void Set_Identifier_Casing (Char *, Char *);
 
 /* err_vars: */
 
@@ -97,7 +97,6 @@ extern void Set_Identifier_Casing (Char, Char);
 extern Entity_Id             Error_Msg_Node_2;
 extern Uint                  Error_Msg_Uint_1;
 extern Uint                  Error_Msg_Uint_2;
-
 
 /* exp_code:  */
 
@@ -168,6 +167,12 @@ extern Boolean No_Exception_Handlers_Set   (void);
 extern void Check_No_Implicit_Heap_Alloc   (Node_Id);
 extern void Check_Elaboration_Code_Allowed (Node_Id);
 extern void Check_No_Implicit_Heap_Alloc   (Node_Id);
+
+/* sem_elim: */
+
+#define Eliminate_Error_Msg    sem_elim__eliminate_error_msg
+
+extern void Eliminate_Error_Msg (Node_Id, Entity_Id);
 
 /* sem_eval: */
 

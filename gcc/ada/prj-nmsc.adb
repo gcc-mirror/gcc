@@ -125,8 +125,7 @@ package body Prj.Nmsc is
 
    function Is_Illegal_Suffix
      (Suffix                          : String;
-      Dot_Replacement_Is_A_Single_Dot : Boolean)
-      return                            Boolean;
+      Dot_Replacement_Is_A_Single_Dot : Boolean) return Boolean;
    --  Returns True if the string Suffix cannot be used as
    --  a spec suffix, a body suffix or a separate suffix.
 
@@ -154,15 +153,13 @@ package body Prj.Nmsc is
 
    function Path_Name_Of
      (File_Name : Name_Id;
-      Directory : Name_Id)
-      return      String;
+      Directory : Name_Id) return String;
    --  Returns the path name of a (non project) file.
    --  Returns an empty string if file cannot be found.
 
    function Project_Extends
      (Extending : Project_Id;
-      Extended  : Project_Id)
-      return      Boolean;
+      Extended  : Project_Id) return Boolean;
    --  Returns True if Extending is extending directly or indirectly Extended.
 
    procedure Check_Naming_Scheme
@@ -2522,8 +2519,7 @@ package body Prj.Nmsc is
 
    function Is_Illegal_Suffix
      (Suffix                          : String;
-      Dot_Replacement_Is_A_Single_Dot : Boolean)
-      return                            Boolean
+      Dot_Replacement_Is_A_Single_Dot : Boolean) return Boolean
    is
    begin
       if Suffix'Length = 0 or else Index (Suffix, ".") = 0 then
@@ -2574,14 +2570,16 @@ package body Prj.Nmsc is
       ----------------------
 
       procedure Find_Source_Dirs (From : Name_Id; Location : Source_Ptr) is
-         Directory    : constant String := Get_Name_String (From);
+         Directory : constant String := Get_Name_String (From);
+         Element   : String_Element;
+
          Canonical_Directory_Id : Name_Id;
-         Element      : String_Element;
+         pragma Unreferenced (Canonical_Directory_Id);
+         --  Is this in fact being used for anything useful ???
 
          procedure Recursive_Find_Dirs (Path : Name_Id);
-         --  Find all the subdirectories (recursively) of Path
-         --  and add them to the list of source directories
-         --  of the project.
+         --  Find all the subdirectories (recursively) of Path and add them
+         --  to the list of source directories of the project.
 
          -------------------------
          -- Recursive_Find_Dirs --
@@ -2602,12 +2600,14 @@ package body Prj.Nmsc is
             Canonical_Case_File_Name (Name_Buffer (1 .. Name_Len));
 
             declare
-               The_Path : String :=
+               The_Path : constant String :=
                             Normalize_Pathname
                               (Name => Name_Buffer (1 .. Name_Len)) &
-                            Directory_Separator;
+                               Directory_Separator;
+
                The_Path_Last : constant Natural :=
                                  Compute_Directory_Last (The_Path);
+
             begin
                Name_Len := The_Path_Last - The_Path'First + 1;
                Name_Buffer (1 .. Name_Len) :=
@@ -2738,8 +2738,13 @@ package body Prj.Nmsc is
 
          Get_Name_String (From);
          Canonical_Case_File_Name (Name_Buffer (1 .. Name_Len));
+
          --  Directory    := Name_Buffer (1 .. Name_Len);
+         --  Why is above line commented out ???
+
          Canonical_Directory_Id := Name_Find;
+         --  What is purpose of above assignment ???
+         --  Are we sure it is being used ???
 
          if Current_Verbosity = High then
             Write_Str (Directory);
@@ -3609,8 +3614,7 @@ package body Prj.Nmsc is
 
    function Path_Name_Of
      (File_Name : Name_Id;
-      Directory : Name_Id)
-      return      String
+      Directory : Name_Id) return String
    is
       Result : String_Access;
       The_Directory : constant String := Get_Name_String (Directory);
@@ -3635,8 +3639,7 @@ package body Prj.Nmsc is
 
    function Project_Extends
      (Extending : Project_Id;
-      Extended  : Project_Id)
-      return      Boolean
+      Extended  : Project_Id) return Boolean
    is
       Current : Project_Id := Extending;
    begin

@@ -93,28 +93,28 @@ package body System.OS_Primitives is
    --  Use to have indirect access to multi-word variables
 
    Tick_Frequency : aliased LARGE_INTEGER;
-   TFA : LIA := Tick_Frequency'Access;
+   TFA : constant LIA := Tick_Frequency'Access;
    --  Holds frequency of high-performance counter used by Clock
    --  Windows NT uses a 1_193_182 Hz counter on PCs.
 
    Base_Ticks : aliased LARGE_INTEGER;
-   BTA : LIA := Base_Ticks'Access;
+   BTA : constant LIA := Base_Ticks'Access;
    --  Holds the Tick count for the base time.
 
    Base_Monotonic_Ticks : aliased LARGE_INTEGER;
-   BMTA : LIA := Base_Monotonic_Ticks'Access;
-   --  Holds the Tick count for the base monotonic time.
+   BMTA : constant LIA := Base_Monotonic_Ticks'Access;
+   --  Holds the Tick count for the base monotonic time
 
    Base_Clock : aliased Duration;
-   BCA : DA := Base_Clock'Access;
+   BCA : constant DA := Base_Clock'Access;
    --  Holds the current clock for the standard clock's base time
 
    Base_Monotonic_Clock : aliased Duration;
-   BMCA : DA := Base_Monotonic_Clock'Access;
+   BMCA : constant DA := Base_Monotonic_Clock'Access;
    --  Holds the current clock for monotonic clock's base time
 
    Base_Time : aliased Long_Long_Integer;
-   BTiA : LLIA := Base_Time'Access;
+   BTiA : constant LLIA := Base_Time'Access;
    --  Holds the base time used to check for system time change, used with
    --  the standard clock.
 

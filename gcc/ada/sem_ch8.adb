@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2003, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2004, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1240,7 +1240,8 @@ package body Sem_Ch8 is
 
       --  There is no need for elaboration checks on the new entity, which
       --  may be called before the next freezing point where the body will
-      --  appear.
+      --  appear. Elaboration checks refer to the real entity, not the one
+      --  created by the renaming declaration.
 
       Set_Kill_Elaboration_Checks (New_S, True);
 

@@ -346,8 +346,7 @@ package body System.Interrupts is
    ---------------------
 
    function Current_Handler
-     (Interrupt : Interrupt_ID)
-      return      Parameterless_Handler
+     (Interrupt : Interrupt_ID) return Parameterless_Handler
    is
    begin
       if Is_Reserved (Interrupt) then
@@ -455,21 +454,17 @@ package body System.Interrupts is
    --  Need comments as to why these always return True
 
    function Has_Interrupt_Or_Attach_Handler
-     (Object : access Dynamic_Interrupt_Protection)
-      return   Boolean
+     (Object : access Dynamic_Interrupt_Protection) return Boolean
    is
       pragma Unreferenced (Object);
-
    begin
       return True;
    end Has_Interrupt_Or_Attach_Handler;
 
    function Has_Interrupt_Or_Attach_Handler
-     (Object : access Static_Interrupt_Protection)
-      return   Boolean
+     (Object : access Static_Interrupt_Protection) return Boolean
    is
       pragma Unreferenced (Object);
-
    begin
       return True;
    end Has_Interrupt_Or_Attach_Handler;
@@ -686,8 +681,7 @@ package body System.Interrupts is
    ------------------
 
    function Unblocked_By
-     (Interrupt : Interrupt_ID)
-      return      System.Tasking.Task_ID
+     (Interrupt : Interrupt_ID) return System.Tasking.Task_ID
    is
    begin
       if Is_Reserved (Interrupt) then

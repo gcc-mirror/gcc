@@ -1424,7 +1424,7 @@ package body Sem_Attr is
             ------------
 
             function On_X86 return Boolean is
-               T : String := Sdefault.Target_Name.all;
+               T : constant String := Sdefault.Target_Name.all;
 
             begin
                --  There is no clean way to check this. That's not surprising,

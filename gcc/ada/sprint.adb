@@ -90,7 +90,7 @@ package body Sprint is
    --  with a lower precedence than the operator (or equal precedence if
    --  appearing as the right operand), then parentheses are required.
 
-   Op_Prec : array (N_Subexpr) of Short_Short_Integer :=
+   Op_Prec : constant array (N_Subexpr) of Short_Short_Integer :=
                (N_Op_And          => 1,
                 N_Op_Or           => 1,
                 N_Op_Xor          => 1,

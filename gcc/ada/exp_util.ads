@@ -208,6 +208,36 @@ package Exp_Util is
    --  computes the image without using concatenation, and one for the
    --  variable that holds the result.
 
+   function Component_May_Be_Bit_Aligned (Comp : Entity_Id) return Boolean;
+   --  This function is in charge of detecting record components that may
+   --  cause trouble in the back end if an attempt is made to assign the
+   --  component. The back end can handle such assignments with no problem
+   --  if the components involved are small (64-bits or less) records or
+   --  scalar items (including bit-packed arrays represented with modular
+   --  types) or are both aligned on a byte boundary (starting on a byte
+   --  boundary, and occupying an integral number of bytes).
+   --
+   --  However, problems arise for records larger than 64 bits, or for
+   --  arrays (other than bit-packed arrays represented with a modular
+   --  type) if the component starts on a non-byte boundary, or does
+   --  not occupy an integral number of bytes (i.e. there are some bits
+   --  possibly shared with fields at the start or beginning of the
+   --  component). The back end cannot handle loading and storing such
+   --  components in a single operation.
+   --
+   --  This function is used to detect the troublesome situation. it is
+   --  conservative in the sense that it produces True unless it knows
+   --  for sure that the component is safe (as outlined in the first
+   --  paragraph above). The code generation for record and array
+   --  assignment checks for trouble using this function, and if so
+   --  the assignment is generated component-wise, which the back end
+   --  is required to handle correctly.
+   --
+   --  Note that in GNAT 3, the back end will reject such components
+   --  anyway, so the hard work in checking for this case is wasted
+   --  in GNAT 3, but it's harmless, so it is easier to do it in
+   --  all cases, rather than conditionalize it in GNAT 5 or beyond.
+
    procedure Convert_To_Actual_Subtype (Exp : Node_Id);
    --  The Etype of an expression is the nominal type of the expression,
    --  not the actual subtype. Often these are the same, but not always.
@@ -511,6 +541,14 @@ package Exp_Util is
    --  for fixed-by-fixed multiplications and divisions for the given
    --  operand and result types. This is called in package Exp_Fixd to
    --  determine whether to expand such operations.
+
+   function Type_May_Have_Bit_Aligned_Components
+     (Typ : Entity_Id) return Boolean;
+   --  Determines if Typ is a composite type that has within it (looking
+   --  down recursively at any subcomponents), a record type which has a
+   --  component that may be bit aligned (see Possible_Bit_Aligned_Component).
+   --  The result is conservative, in that a result of False is decisive.
+   --  A result of True means that such a component may or may not be present.
 
    procedure Wrap_Cleanup_Procedure (N : Node_Id);
    --  Given an N_Subprogram_Body node, this procedure adds an Abort_Defer

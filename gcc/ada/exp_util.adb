@@ -898,6 +898,52 @@ package body Exp_Util is
       return Build_Task_Image_Function (Loc, Decls, Stats, Res);
    end Build_Task_Record_Image;
 
+   ----------------------------------
+   -- Component_May_Be_Bit_Aligned --
+   ----------------------------------
+
+   function Component_May_Be_Bit_Aligned (Comp : Entity_Id) return Boolean is
+   begin
+      --  If no component clause, then everything is fine, since the
+      --  back end never bit-misaligns by default, even if there is
+      --  a pragma Packed for the record.
+
+      if No (Component_Clause (Comp)) then
+         return False;
+      end if;
+
+      --  It is only array and record types that cause trouble
+
+      if not Is_Record_Type (Etype (Comp))
+        and then not Is_Array_Type (Etype (Comp))
+      then
+         return False;
+
+      --  If we know that we have a small (64 bits or less) record
+      --  or bit-packed array, then everything is fine, since the
+      --  back end can handle these cases correctly.
+
+      elsif Esize (Comp) <= 64
+        and then (Is_Record_Type (Etype (Comp))
+                   or else Is_Bit_Packed_Array (Etype (Comp)))
+      then
+         return False;
+
+      --  Otherwise if the component is not byte aligned, we
+      --  know we have the nasty unaligned case.
+
+      elsif Normalized_First_Bit (Comp) /= Uint_0
+        or else Esize (Comp) mod System_Storage_Unit /= Uint_0
+      then
+         return True;
+
+      --  If we are large and byte aligned, then OK at this level
+
+      else
+         return False;
+      end if;
+   end Component_May_Be_Bit_Aligned;
+
    -------------------------------
    -- Convert_To_Actual_Subtype --
    -------------------------------
@@ -3876,6 +3922,53 @@ package body Exp_Util is
         and then Esize (Left_Typ) = Esize (Right_Typ)
         and then Esize (Left_Typ) = Esize (Result_Typ);
    end Target_Has_Fixed_Ops;
+
+   ------------------------------------------
+   -- Type_May_Have_Bit_Aligned_Components --
+   ------------------------------------------
+
+   function Type_May_Have_Bit_Aligned_Components
+     (Typ : Entity_Id) return Boolean
+   is
+   begin
+      --  Array type, check component type
+
+      if Is_Array_Type (Typ) then
+         return
+           Type_May_Have_Bit_Aligned_Components (Component_Type (Typ));
+
+      --  Record type, check components
+
+      elsif Is_Record_Type (Typ) then
+         declare
+            E : Entity_Id;
+
+         begin
+            E := First_Entity (Typ);
+            while Present (E) loop
+               if Ekind (E) = E_Component
+                 or else Ekind (E) = E_Discriminant
+               then
+                  if Component_May_Be_Bit_Aligned (E)
+                    or else
+                      Type_May_Have_Bit_Aligned_Components (Etype (E))
+                  then
+                     return True;
+                  end if;
+               end if;
+
+               Next_Entity (E);
+            end loop;
+
+            return False;
+         end;
+
+      --  Type other than array or record is always OK
+
+      else
+         return False;
+      end if;
+   end Type_May_Have_Bit_Aligned_Components;
 
    ----------------------------
    -- Wrap_Cleanup_Procedure --

@@ -881,6 +881,10 @@ package body Lib.Writ is
          Write_Info_Str (" NS");
       end if;
 
+      if Sec_Stack_Used then
+         Write_Info_Str (" SS");
+      end if;
+
       if Unreserve_All_Interrupts then
          Write_Info_Str (" UA");
       end if;

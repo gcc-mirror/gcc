@@ -521,7 +521,7 @@ package Einfo is
 --       representation clause is present for the corresponding record
 --       type a that specifies a position for the component, then the
 --       Component_Clause field of the E_Component entity points to the
---       N_Component_Claue node. Set to Empty if no record representation
+--       N_Component_Clause node. Set to Empty if no record representation
 --       clause was present, or if there was no specification for this
 --       component.
 
@@ -2581,6 +2581,7 @@ package Einfo is
 --       Present in components and discriminants. Indicates the normalized
 --       value of First_Bit for the component, i.e. the offset within the
 --       lowest addressed storage unit containing part or all of the field.
+--       Set to No_Uint if no first bit position is assigned yet.
 
 --    Normalized_Position (Uint14)
 --       Present in components and discriminants. Indicates the normalized

@@ -24,9 +24,9 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Debug;    use Debug;
-with Osint;    use Osint;
-with Opt;      use Opt;
+with Debug; use Debug;
+with Osint; use Osint;
+with Opt;   use Opt;
 
 with System.WCh_Con; use System.WCh_Con;
 
@@ -58,7 +58,6 @@ package body Switch.B is
       then
          Osint.Fail ("invalid switch: """, Switch_Chars, """"
             & " (gnat not needed here)");
-
       end if;
 
       --  Loop to scan through switches given in switch string
@@ -131,6 +130,12 @@ package body Switch.B is
             end if;
 
             return;
+
+         --  Processing for D switch
+
+         when 'D' =>
+            Ptr := Ptr + 1;
+            Scan_Pos (Switch_Chars, Max, Ptr, Default_Sec_Stack_Size);
 
          --  Processing for e switch
 

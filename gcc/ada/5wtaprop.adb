@@ -1012,7 +1012,8 @@ package body System.Task_Primitives.Operations is
    ----------------
 
    procedure Initialize (Environment_Task : Task_ID) is
-      Res : BOOL;
+      Discard : BOOL;
+      pragma Unreferenced (Discard);
 
    begin
       Environment_Task_ID := Environment_Task;
@@ -1022,7 +1023,7 @@ package body System.Task_Primitives.Operations is
          --  Here we need Annex E semantics, switch the current process to the
          --  High_Priority_Class.
 
-         Res :=
+         Discard :=
            OS_Interface.SetPriorityClass
              (GetCurrentProcess, High_Priority_Class);
 

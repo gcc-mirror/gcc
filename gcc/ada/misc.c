@@ -530,12 +530,18 @@ gnat_print_type (FILE *file, tree node, int indent)
 }
 
 static const char *
-gnat_printable_name (tree decl, int verbosity ATTRIBUTE_UNUSED)
+gnat_printable_name (tree decl, int verbosity)
 {
   const char *coded_name = IDENTIFIER_POINTER (DECL_NAME (decl));
-  char *ada_name = (char *) ggc_alloc (strlen (coded_name) * 2 + 60);
+  char *ada_name = (char *) ggc_alloc (strlen (coded_name) * 2 + 60);    
 
   __gnat_decode (coded_name, ada_name, 0);
+
+  if (verbosity == 2)
+    {
+      Set_Identifier_Casing (ada_name, (char *) DECL_SOURCE_FILE (decl));
+      ada_name = Name_Buffer;
+    }
 
   return (const char *) ada_name;
 }

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2003, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2004, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -654,6 +654,8 @@ package body Exp_Ch4 is
 
       Comp : RE_Id;
 
+      Stg_Unit_Is_Byte : constant Boolean := System_Storage_Unit = Byte'Size;
+
       function Length_Less_Than_4 (Opnd : Node_Id) return Boolean;
       --  Returns True if the length of the given operand is known to be
       --  less than 4. Returns False if this length is known to be four
@@ -705,7 +707,7 @@ package body Exp_Ch4 is
       --  addressing of array components.
 
       if not Is_Bit_Packed_Array (Typ1)
-        and then System_Storage_Unit = Byte'Size
+        and then Stg_Unit_Is_Byte
         and then not Java_VM
       then
          --  The call we generate is:
@@ -5471,8 +5473,8 @@ package body Exp_Ch4 is
       then
          return;
 
-      elsif (Nkind (Parent (N)) = N_Attribute_Reference
-        and then Attribute_Name (Parent (N)) = Name_Address)
+      elsif Nkind (Parent (N)) = N_Attribute_Reference
+        and then Attribute_Name (Parent (N)) = Name_Address
       then
          return;
 

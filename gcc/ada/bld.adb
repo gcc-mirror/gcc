@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2002-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 2002-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -66,12 +66,12 @@ package body Bld is
    Copyright_Displayed : Boolean := False;
    --  To avoid displaying the Copyright line several times
 
-   Usage_Displayed     : Boolean := False;
+   Usage_Displayed : Boolean := False;
    --  To avoid displaying the usage several times
 
    type Expression_Kind_Type is (Undecided, Static_String, Other);
 
-   Expression_Kind   : Expression_Kind_Type := Undecided;
+   Expression_Kind : Expression_Kind_Type := Undecided;
    --  After procedure Expression has been called, this global variable
    --  indicates if the expression is a static string or not.
    --  If it is a static string, then Expression_Value (1 .. Expression_Last)
@@ -110,16 +110,14 @@ package body Bld is
    --  The following variables are used to controlled what attributes
    --  Default_Switches and Switches are allowed in expressions.
 
-   Default_Switches_Project  : Project_Node_Id  := Empty_Node;
-   Default_Switches_Package  : Name_Id          := No_Name;
-   Default_Switches_Language : Name_Id        := No_Name;
-
-   Switches_Project          : Project_Node_Id  := Empty_Node;
+   Default_Switches_Package  : Name_Id := No_Name;
+   Default_Switches_Language : Name_Id := No_Name;
    Switches_Package          : Name_Id          := No_Name;
    Switches_Language         : Source_Kind_Type := Unknown;
 
    --  Other attribute references are only allowed in attribute declarations
    --  of the same package and of the same name.
+
    --  Other_Attribute is True only during attribute declarations other than
    --  Switches or Default_Switches.
 
@@ -383,8 +381,7 @@ package body Bld is
      (Static  : Boolean;
       Value   : String_Access;
       Last    : Natural;
-      Default : String)
-      return    String;
+      Default : String) return String;
    --  Returns the current suffix, if it is statically known, or ""
    --  if it is not statically known. Used on C_Suffix, Cxx_Suffix,
    --  Ada_Body_Suffix and Ada_Spec_Suffix.
@@ -435,7 +432,7 @@ package body Bld is
          Copyright_Displayed := True;
          Write_Str ("GPR2MAKE ");
          Write_Str (Gnatvsn.Gnat_Version_String);
-         Write_Str (" Copyright 2002-2003 Free Software Foundation, Inc.");
+         Write_Str (" Copyright 2002-2004 Free Software Foundation, Inc.");
          Write_Eol;
          Write_Eol;
       end if;
@@ -1175,12 +1172,10 @@ package body Bld is
          Current_Declarative_Item := Next_Declarative_Item
                                             (Current_Declarative_Item);
 
-         --  By default, indicate that Default_Switches and Switches
-         --  attribute references are not allowed in expressions.
+         --  By default, indicate that we are not declaring attribute
+         --  Default_Switches or Switches.
 
-         Default_Switches_Project := Empty_Node;
-         Switches_Project         := Empty_Node;
-         Other_Attribute          := False;
+         Other_Attribute := False;
 
          --  Write_Line (Project_Node_Kind'Image (Kind_Of (Current_Item)));
 
@@ -1345,7 +1340,6 @@ package body Bld is
                   --  in expressions.
 
                   if Item_Name = Snames.Name_Default_Switches then
-                     Default_Switches_Project  := Project;
                      Default_Switches_Package  := Pkg;
                      Default_Switches_Language := Index;
 
@@ -1354,7 +1348,6 @@ package body Bld is
                   --  Switches attribute references are allowed in expressions.
 
                   elsif Item_Name = Snames.Name_Switches then
-                     Switches_Project  := Project;
                      Switches_Package  := Pkg;
                      Switches_Language := Source_Kind_Of (Index);
 
@@ -1862,7 +1855,7 @@ package body Bld is
                                     end if;
                                  end if;
 
-                              elsif Item_Name = Snames.Name_Ada then
+                              elsif Index_Name = Snames.Name_Ada then
 
                                  --  For "Ada", we set the variable ADA_BODY
 
@@ -1897,9 +1890,9 @@ package body Bld is
                                     else
                                        Ada_Body_Suffix_Static :=
                                          Expression_Value
-                                         (1 .. Expression_Last) =
-                                         Ada_Body_Suffix
-                                         (1 .. Ada_Body_Suffix_Last);
+                                           (1 .. Expression_Last) =
+                                           Ada_Body_Suffix
+                                             (1 .. Ada_Body_Suffix_Last);
                                     end if;
                                  end if;
                               end if;
@@ -3511,8 +3504,7 @@ package body Bld is
      (Static  : Boolean;
       Value   : String_Access;
       Last    : Natural;
-      Default : String)
-      return    String
+      Default : String) return String
    is
    begin
       if Static then

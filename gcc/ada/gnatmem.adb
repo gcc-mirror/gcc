@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 1997-2003, Ada Core Technologies, Inc.           --
+--           Copyright (C) 1997-2004, Ada Core Technologies, Inc.           --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -53,14 +53,18 @@
 --   execution generating memory allocation where data is collected (such as
 --   number of allocations, amount of memory allocated, high water mark, etc.)
 
-with GNAT.Command_Line;       use GNAT.Command_Line;
+with Gnatvsn; use Gnatvsn;
+
+
 with Ada.Text_IO;             use Ada.Text_IO;
 with Ada.Float_Text_IO;
 with Ada.Integer_Text_IO;
-with Gnatvsn;                 use Gnatvsn;
+
+with GNAT.Command_Line;       use GNAT.Command_Line;
 with GNAT.Heap_Sort_G;
 with GNAT.OS_Lib;             use GNAT.OS_Lib;
 with GNAT.HTable;             use GNAT.HTable;
+
 with System;                  use System;
 with System.Storage_Elements; use System.Storage_Elements;
 
@@ -230,7 +234,7 @@ procedure Gnatmem is
       New_Line;
       Put ("GNATMEM ");
       Put (Gnat_Version_String);
-      Put_Line (" Copyright 1997-2003 Free Software Foundation, Inc.");
+      Put_Line (" Copyright 1997-2004 Free Software Foundation, Inc.");
       New_Line;
 
       Put_Line ("Usage: gnatmem switches [depth] exename");
@@ -287,20 +291,20 @@ procedure Gnatmem is
 
             when 's' =>
                declare
-                  S : String (Sort_Order'Range) := Parameter;
+                  S : constant String (Sort_Order'Range) := Parameter;
+
                begin
                   for J in Sort_Order'Range loop
-                     if S (J) = 'n' or else S (J) = 'w'
-                       or else S (J) = 'h' then
+                     if S (J) = 'n' or else
+                        S (J) = 'w' or else
+                        S (J) = 'h'
+                     then
                         Sort_Order (J) := S (J);
                      else
-                        raise Constraint_Error;
+                        Put_Line ("Invalid sort criteria string.");
+                        GNAT.OS_Lib.OS_Exit (1);
                      end if;
                   end loop;
-               exception
-                  when Constraint_Error =>
-                     Put_Line ("Invalid sort criteria string.");
-                     GNAT.OS_Lib.OS_Exit (1);
                end;
 
             when others =>
@@ -606,6 +610,8 @@ begin
          end Apply_Sort_Criterion;
 
          Result : Integer;
+
+      --  Start of processing for Lt
 
       begin
          for S in Sort_Order'Range loop

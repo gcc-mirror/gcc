@@ -600,7 +600,7 @@ package body System.Task_Primitives.Operations is
 
    procedure Yield (Do_Yield : Boolean := True) is
       Result : Interfaces.C.int;
-
+      pragma Unreferenced (Result);
    begin
       if Do_Yield then
          Result := sched_yield;

@@ -4660,7 +4660,7 @@ package body Einfo is
    end Entry_Index_Type;
 
    ---------------------
-   -- First_Component --
+   -- 1 --
    ---------------------
 
    function First_Component (Id : E) return E is
@@ -4671,7 +4671,6 @@ package body Einfo is
         (Is_Record_Type (Id) or else Is_Incomplete_Or_Private_Type (Id));
 
       Comp_Id := First_Entity (Id);
-
       while Present (Comp_Id) loop
          exit when Ekind (Comp_Id) = E_Component;
          Comp_Id := Next_Entity (Comp_Id);

@@ -1,3 +1,255 @@
+2004-01-05  Robert Dewar  <dewar@gnat.com>
+
+	* 1ssecsta.ads: Default_Secondary_Stack is not a constant since it may
+	be modified by the binder generated main program if the -D switch is
+	used.
+
+	* 4onumaux.ads, 4znumaux.ads: Add Pure_Function pragmas for all
+	imported functions (since now we expect this to be done for imported
+	functions)
+
+	* 5vtaprop.adb: Add several ??? for sections requiring more comments
+	Minor reformatting throughout
+
+	* 5zinit.adb: Minor reformatting
+	Add 2004 to copyright date
+	Minor changes to avoid -gnatwa warnings
+	Correct some instances of using OR instead of OR ELSE (noted while
+	doing reformatting)
+
+	* sprint.adb: Minor updates to avoid -gnatwa warnings
+
+	* s-secsta.ads, s-secsta.adb: 
+	(SS_Get_Max): New function to obtain high water mark for ss stack
+	Default_Secondary_Stack is not a constant since it may be modified by
+	the binder generated main program if the -D switch is used.
+
+	* switch-b.adb: New -Dnnn switch for binder
+
+	* switch-c.adb: 
+	Make -gnatg imply all warnings currently in -gnatwa
+
+	* vms_conv.adb: Minor reformatting
+	Add 2004 to copyright notice
+	Add 2004 to printed copyright notice
+
+	* 3vexpect.adb, 4zsytaco.adb, 3wsocthi.adb, 3zsocthi.adb,
+	3zsocthi.adb, 56taprop.adb, 56tpopsp.adb, 5amastop.adb,
+	5aml-tgt.adb, 5ataprop.adb, 5ataprop.adb, 5atpopsp.adb,
+	5ftaprop.adb, 5ginterr.adb, 5gmastop.adb, 5gml-tgt.adb,
+	5gtaprop.adb, 5hml-tgt.adb, 5hml-tgt.adb, 5hml-tgt.adb,
+	5htaprop.adb, 5htraceb.adb, 5itaprop.adb, 5lml-tgt.adb,
+	5sml-tgt.adb, 5staprop.adb, 5staprop.adb, 5stpopsp.adb,
+	5vasthan.adb, 5vinmaop.adb, 5vinterr.adb, 5vtaprop.adb,
+	5vml-tgt.adb, 5vtaprop.adb, 5wosprim.adb, 5wtaprop.adb,
+	5zinterr.adb, 5zintman.adb, 5zml-tgt.adb, 5ztaprop.adb,
+	6vcpp.adb, 6vcstrea.adb, 7staprop.adb, 7stpopsp.adb,
+	vxaddr2line.adb, vxaddr2line.adb, xref_lib.adb, xr_tabls.adb,
+	xr_tabls.ads, s-tasdeb.adb, s-tasdeb.adb, sem_res.ads,
+	sem_util.adb, sem_util.adb, sem_util.ads, s-interr.adb,
+	checks.adb, clean.adb, cstand.adb, einfo.ads,
+	einfo.adb, exp_aggr.adb, exp_ch11.adb, exp_ch3.adb,
+	exp_ch4.adb, exp_ch5.adb, exp_ch7.adb, exp_ch9.adb,
+	prj-nmsc.adb, prj-pp.adb, prj-util.adb, sem_attr.adb,
+	sem_ch10.adb, sem_ch12.adb, sem_ch4.adb, g-dirope.adb,
+	g-dirope.ads, gnatlbr.adb, i-cstrea.adb, inline.adb,
+	lib-xref.adb, sem_ch5.adb, sem_ch7.adb, sem_ch8.adb:
+	Minor reformatting and code clean ups.
+	Minor changes to prevent -gnatwa warnings
+
+	* ali.adb: Minor reformatting and cleanup of code
+	Acquire new SS indication of secondary stack use from ali files
+
+	* a-numaux.ads: Add Pure_Function pragmas for all imported functions
+	(since now we expect this to be done for imported functions)
+
+	* bindgen.adb: Generate call to modify default secondary stack size if
+	-Dnnn switch given
+
+	* bindusg.adb: Add line for new -D switch
+
+	* exp_aggr.adb (Type_May_Have_Bit_Aligned_Components): More appropriate
+	replacement name for Type_May_Have_Non_Bit_Aligned_Components!
+	Add circuitry for both records and arrays to avoid gigi
+	processing if the type involved has non-bit-aligned components
+
+	* exp_ch5.adb (Expand_Assign_Array): Avoid assumption that
+	N_String_Literal node always references an E_String_Literal_Subtype
+	entity. This may not be true in the future.
+	(Possible_Bit_Aligned_Component): Move processing of
+	Component_May_Be_Bit_Aligned from exp_ch5 to exp_util
+
+	* exp_ch6.adb (Expand_Thread_Body): Pick up
+	Default_Secondary_Stack_Size as variable so that we get value modified
+	by possible -Dnnn binder parameter.
+
+	* exp_util.adb (Component_May_Be_Bit_Aligned): New function.
+	(Type_May_Have_Bit_Aligned_Components): New function.
+
+	* exp_util.ads (Component_May_Be_Bit_Aligned): New function.
+	(Type_May_Have_Bit_Aligned_Components): New function.
+
+	* fe.h: (Set_Identifier_Casing): Fix prototype.
+	Add declaration for Sem_Elim.Eliminate_Error_Msg.
+	Minor reformatting.
+
+	* freeze.adb (Freeze_Entity): Add RM reference to error message about
+	importing constant atomic/volatile objects.
+	(Freeze_Subprogram): Reset Is_Pure indication for imported subprogram
+	unless explicit Pure_Function pragma given, to avoid insidious bug of
+	call to non-pure imported function getting eliminated.
+
+	* gnat1drv.adb, gnatbind.adb, gnatchop.adb, gnatfind.adb,
+	gnatls.adb, gnatlink.adb, gnatmem.adb, gnatname.adb, gnatsym.adb,
+	gnatxref.adb, gprcmd.adb, gprep.adb, make.adb: Minor reformatting
+	Add 2004 to printed copyright notice
+
+	* lib-writ.ads, lib-writ.adb: Put new SS flag in ali file if secondary
+	stack used.
+
+	* Makefile.rtl: Add entry for g-sestin.o
+	g-sestin.ads: New file.
+
+	* mdll.adb: Minor changes to avoid -gnatwa warnings
+
+	* mlib-tgt.adb: Minor reformatting
+
+	* opt.ads: New parameter Default_Secondary_Stack_Size (GNATBIND)
+	New switch Sec_Stack_Used (GNAT, GNATBIND)
+	Make Default_Secondary_Stack_Size a variable instead of a constant,
+	so that it can be modified by the new -Dnnn bind switch.
+
+	* rtsfind.adb (Load_Fail): Give full error message in configurable
+	run-time mode if all_errors mode is set. This was not done in the case
+	of a file not found, which was an oversight.
+	Note if secondary stack unit is used by compiler.
+
+	* sem_elab.adb (Check_A_Call): Rewrite to avoid trying to put
+	ineffective elaborate all pragmas on non-visible packages (this
+	happened when a renamed subprogram was called). Now the elaborate all
+	always goes on the package containing the renaming rather than the one
+	containing the renamed subprogram.
+
+	* sem_elim.ads, sem_elim.adb (Eliminate_Error_Msg): New procedure
+	(Process_Eliminate_Pragma): Add parameter to capture pragma location.
+
+	* sem_eval.adb (Eval_String_Literal): Do not assume that string literal
+	has an Etype that references an E_String_Literal.
+	(Eval_String_Literal): Avoid assumption that N_String_Literal node
+	always references an E_String_Literal_Subtype entity. This may not
+	be true in the future.
+
+	* sem_prag.adb (Process_Eliminate_Pragma): Add parameter to capture
+	pragma location.
+
+	* sem_res.adb (Resolve): Specialize msg for function name used in proc
+	call.
+
+2004-01-05  Ed Falis  <falis@gnat.com>
+
+	* g-debuti.adb: Replaced direct boolean operator with short-circuit
+	form.
+
+2004-01-05  Vincent Celier  <celier@gnat.com>
+
+	* bld.adb: Minor comment updates
+	(Process_Declarative_Items): Correct incorrect name (Index_Name instead
+	of Item_Name).
+
+	* make.adb (Gnatmake): Special process for files to compile/check when
+	-B is specified. Fail when there are only foreign mains in attribute
+	Main of the project file and -B is not specified. Do not skip bind/link
+	steps when -B is specified.
+
+	* makeusg.adb: Document new switch -B
+
+	* opt.ads (Build_Bind_And_Link_Full_Project): New Boolean flag
+
+	* switch-m.adb: (Scan_Make_Switches): Process -B switch
+
+	* vms_data.ads: Add new GNAT PRETTY qualifier
+	/FORM_FEED_AFTER_PRAGMA_PAGE for switch -ff
+
+2004-01-05  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* trans.c (tree_transform, case N_Free_Statement): Handle thin pointer
+	case.
+
+	* misc.c (gnat_printable_name): If VERBOSITY is 2, call
+	Set_Identifier_Casing.
+
+	* decl.c (gnat_to_gnu_entity, E_Function): Give error if return type
+	has size that overflows.
+
+2004-01-05  Gary Dismukes  <dismukes@gnat.com>
+
+	* exp_ch4.adb (Expand_Array_Comparison): Add Boolean constant to avoid
+	-gnatwa warning on static condition.
+
+2004-01-05  Doug Rupp  <rupp@gnat.com>
+
+	* link.c: (shared_libgnat_default) [VMS]: Change to STATIC.
+
+2004-01-05  Arnaud Charlet  <charlet@act-europe.fr>
+
+	* Makefile.in: Install ali files using INSTALL_DATA_DATE to preserve
+	all attributes, including read-only attribute.
+
+2004-01-05  Pascal Obry  <obry@gnat.com>
+
+	* bindgen.adb (Gen_Object_Files_Options): Generate the new shared
+	library naming scheme.
+
+	* mlib-prj.adb (Build_Library): Generate different names for the static
+	or dynamic version of the GNAT runtime. This is needed to support the
+	new shared library naming scheme.
+	(Process_Binder_File): Add detection of shared library in binder file
+	based on the new naming scheme.
+
+	* gnatlink.adb (Process_Binder_File): Properly detect the new naming
+	scheme for the shared runtime libraries.
+
+	* Makefile.in:
+	(LIBRARY_VERSION) [VMS]: Convert all . to _ to conform to new naming
+	scheme.
+	(install-gnatlib): Do not create symlinks for shared libraries.
+	(gnatlib-shared-default): Idem.
+	(gnatlib-shared-dual-win32): New target. Not used for now as the
+	auto-import feature does not support arrays/records.
+	(gnatlib-shared-win32): Do not create copy for the shared libraries.
+	(gnatlib-shared-vms): Fix shared runtime libraries names.
+
+	* osint.ads, osint.adb (Shared_Lib): New routine, returns the target
+	dependent runtime shared library name.
+
+2004-01-05  Vasiliy Fofanov  <fofanov@act-europe.fr>
+
+	* osint.adb (Read_Library_Info): Remove bogus check if ALI is older
+	than the object.
+
+2004-01-05  Ed Schonberg  <schonberg@gnat.com>
+
+	* sem_ch4.adb (Analyze_Allocator): Check restriction on dynamic
+	protected objects when allocator has a subtype indication, not a
+	qualified expression. Note that qualified expressions may have to be
+	checked when limited aggregates are implemented.
+
+	* sem_prag.adb (Analyze_Pragma, case Import): If enclosing package is
+	pure, emit warning.
+	(Analyze_Pragma, case Pure_Function): If enclosing package is pure and
+	subprogram is imported, remove warning.
+
+2004-01-05  Geert Bosch  <bosch@gnat.com>
+
+	* s-poosiz.adb: Update copyright notice.
+	(Allocate): Use Task_Lock to protect against concurrent access.
+	(Deallocate): Likewise.
+
+2004-01-05  Joel Brobecker  <brobecker@gnat.com>
+
+	* s-stalib.adb (Elab_Final_Code): Add missing year in date inside ???
+	comment.
+
 2003-12-23  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* gnat_ug.texi: Force a CVS commit by updating copyright.

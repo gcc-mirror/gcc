@@ -59,7 +59,6 @@ with Sem_Ch12; use Sem_Ch12;
 with Sem_Ch13; use Sem_Ch13;
 with Sem_Disp; use Sem_Disp;
 with Sem_Dist; use Sem_Dist;
-with Sem_Eval; use Sem_Eval;
 with Sem_Res;  use Sem_Res;
 with Sem_Util; use Sem_Util;
 with Sinfo;    use Sinfo;
@@ -2989,10 +2988,7 @@ package body Exp_Ch6 is
               Expression (Last (Pragma_Argument_Associations (TB_Pragma)));
          else
             Sec_Stack_Len :=
-              Make_Integer_Literal (Loc,
-                Intval =>
-                  Expr_Value
-                   (Constant_Value (RTE (RE_Default_Secondary_Stack_Size))));
+              New_Occurrence_Of (RTE (RE_Default_Secondary_Stack_Size), Loc);
          end if;
 
          Sec_Stack_Len := Convert_To (RTE (RE_Storage_Offset), Sec_Stack_Len);
@@ -3120,7 +3116,16 @@ package body Exp_Ch6 is
 
       --  If this is a Pure function which has any parameters whose root
       --  type is System.Address, reset the Pure indication, since it will
-      --  likely cause incorrect code to be generated.
+      --  likely cause incorrect code to be generated as the parameter is
+      --  probably a pointer, and the fact that the same pointer is passed
+      --  does not mean that the same value is being referenced.
+
+      --  Note that if the programmer gave an explicit Pure_Function pragma,
+      --  then we believe the programmer, and leave the subprogram Pure.
+
+      --  This code should probably be at the freeze point, so that it
+      --  happens even on a -gnatc (or more importantly -gnatt) compile
+      --  so that the semantic tree has Is_Pure set properly ???
 
       if Is_Pure (Spec_Id)
         and then Is_Subprogram (Spec_Id)

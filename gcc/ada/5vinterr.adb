@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2003, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2004, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -219,17 +219,18 @@ package body System.Interrupts is
    pragma Volatile_Components (User_Entry);
    --  Holds the task and entry index (if any) for each interrupt
 
-   Blocked : array (Interrupt_ID'Range) of Boolean := (others => False);
-   pragma Volatile_Components (Blocked);
+   Blocked : constant array (Interrupt_ID'Range) of Boolean :=
+     (others => False);
+--  ??? pragma Volatile_Components (Blocked);
    --  True iff the corresponding interrupt is blocked in the process level
 
    Ignored : array (Interrupt_ID'Range) of Boolean := (others => False);
    pragma Volatile_Components (Ignored);
    --  True iff the corresponding interrupt is blocked in the process level
 
-   Last_Unblocker :
-     array (Interrupt_ID'Range) of Task_ID := (others => Null_Task);
-   pragma Volatile_Components (Last_Unblocker);
+   Last_Unblocker : constant array (Interrupt_ID'Range) of Task_ID :=
+     (others => Null_Task);
+--  ??? pragma Volatile_Components (Last_Unblocker);
    --  Holds the ID of the last Task which Unblocked this Interrupt.
    --  It contains Null_Task if no tasks have ever requested the
    --  Unblocking operation or the Interrupt is currently Blocked.
@@ -324,7 +325,7 @@ package body System.Interrupts is
 
       Ptr := Registered_Handler_Head;
 
-      while (Ptr /= null) loop
+      while Ptr /= null loop
          if Ptr.H = Fat.Handler_Addr then
             return True;
          end if;
@@ -726,8 +727,6 @@ package body System.Interrupts is
         (Interrupt   : Interrupt_ID;
          Static      : Boolean)
       is
-         Old_Handler : Parameterless_Handler;
-
       begin
          if User_Entry (Interrupt).T /= Null_Task then
             --  In case we have an Interrupt Entry installed.
@@ -753,8 +752,6 @@ package body System.Interrupts is
          --  it was ever ignored.
 
          Ignored (Interrupt) := False;
-
-         Old_Handler := User_Handler (Interrupt).H;
 
          --  The new handler
 
@@ -959,7 +956,6 @@ package body System.Interrupts is
       Tmp_ID          : Task_ID;
       Tmp_Entry_Index : Task_Entry_Index;
       Intwait_Mask    : aliased IMNG.Interrupt_Mask;
-      Ret_Interrupt   : IMNG.Interrupt_ID;
 
    begin
       --  By making this task independent of master, when the process
@@ -1016,7 +1012,6 @@ package body System.Interrupts is
 
          else
             Self_ID.Common.State := Interrupt_Server_Blocked_On_Event_Flag;
-            Ret_Interrupt := IMOP.Interrupt_Wait (Intwait_Mask'Access);
             Self_ID.Common.State := Runnable;
 
             if not (Self_ID.Deferral_Level = 0

@@ -656,9 +656,7 @@ package body System.Task_Primitives.Operations is
 
    procedure Wakeup (T : Task_ID; Reason : System.Tasking.Task_States) is
       pragma Unreferenced (Reason);
-
       Result : Interfaces.C.int;
-
    begin
       Result := pthread_cond_signal (T.Common.LL.CV'Access);
       pragma Assert (Result = 0);
@@ -671,7 +669,6 @@ package body System.Task_Primitives.Operations is
    procedure Yield (Do_Yield : Boolean := True) is
       Result : Interfaces.C.int;
       pragma Unreferenced (Result);
-
    begin
       if Do_Yield then
          Result := sched_yield;
@@ -988,8 +985,7 @@ package body System.Task_Primitives.Operations is
 
    function Suspend_Task
      (T           : ST.Task_ID;
-      Thread_Self : Thread_Id)
-      return        Boolean
+      Thread_Self : Thread_Id) return Boolean
    is
    begin
       if T.Common.LL.Thread /= Thread_Self then
@@ -1005,8 +1001,7 @@ package body System.Task_Primitives.Operations is
 
    function Resume_Task
      (T           : ST.Task_ID;
-      Thread_Self : Thread_Id)
-      return        Boolean
+      Thread_Self : Thread_Id) return Boolean
    is
    begin
       if T.Common.LL.Thread /= Thread_Self then

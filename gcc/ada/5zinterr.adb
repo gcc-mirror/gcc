@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2003, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2004, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -422,12 +422,15 @@ package body System.Interrupts is
    --------------------------------
 
    --  Restore default handlers for interrupt servers.
+
    --  This is called by the Interrupt_Manager task when it receives the abort
    --  signal during program finalization.
 
    procedure Finalize_Interrupt_Servers is
+      HW_Interrupts : constant Boolean := HW_Interrupt'Last >= 0;
+
    begin
-      if HW_Interrupt'Last >= 0 then
+      if HW_Interrupts then
          for Int in HW_Interrupt loop
             if Server_ID (Interrupt_ID (Int)) /= null
               and then
@@ -527,11 +530,16 @@ package body System.Interrupts is
    is
       use Interfaces.VxWorks;
 
-      Vec  : constant Interrupt_Vector :=
-        INUM_TO_IVEC (Interfaces.VxWorks.int (Interrupt));
+      Vec : constant Interrupt_Vector :=
+              INUM_TO_IVEC (Interfaces.VxWorks.int (Interrupt));
+
       Old_Handler : constant VOIDFUNCPTR :=
-        intVecGet (INUM_TO_IVEC (Interfaces.VxWorks.int (Interrupt)));
+                      intVecGet
+                        (INUM_TO_IVEC (Interfaces.VxWorks.int (Interrupt)));
+
       Stat : Interfaces.VxWorks.STATUS;
+      pragma Unreferenced (Stat);
+      --  ??? shouldn't we test Stat at least in a pragma Assert?
 
    begin
       --  Only install umbrella handler when no Ada handler has already been
@@ -541,7 +549,7 @@ package body System.Interrupts is
 
       if Default_Handler (Interrupt) = null then
          Stat :=
-           intConnect (Vec, VOIDFUNCPTR (Handler), System.Address (Interrupt));
+           intConnect (Vec, Handler, System.Address (Interrupt));
          Default_Handler (Interrupt) := Old_Handler;
       end if;
    end Install_Umbrella_Handler;
@@ -611,7 +619,7 @@ package body System.Interrupts is
 
       Ptr := Registered_Handler_Head;
 
-      while (Ptr /= null) loop
+      while Ptr /= null loop
          if Ptr.H = Fat.Handler_Addr then
             return True;
          end if;
@@ -653,8 +661,10 @@ package body System.Interrupts is
    --  server task deletes its semaphore and terminates.
 
    procedure Notify_Interrupt (Param : System.Address) is
-      Interrupt      : Interrupt_ID := Interrupt_ID (Param);
+      Interrupt : constant Interrupt_ID := Interrupt_ID (Param);
+
       Discard_Result : STATUS;
+      pragma Unreferenced (Discard_Result);
 
    begin
       Discard_Result := semGive (Semaphore_ID_Map (Interrupt));

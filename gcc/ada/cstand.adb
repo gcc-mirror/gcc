@@ -258,10 +258,10 @@ package body CStand is
    --  by Initialize_Standard in the semantics module.
 
    procedure Create_Standard is
-      Decl_S : List_Id := New_List;
+      Decl_S : constant List_Id := New_List;
       --  List of declarations in Standard
 
-      Decl_A : List_Id := New_List;
+      Decl_A : constant List_Id := New_List;
       --  List of declarations in ASCII
 
       Decl       : Node_Id;

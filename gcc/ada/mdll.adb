@@ -59,12 +59,12 @@ package body MDLL is
 
       Base_Filename : constant String := MDLL.Fil.Ext_To (Lib_Filename);
 
-      Def_File : aliased String := Def_Filename;
-      Jnk_File : aliased String := Base_Filename & ".jnk";
-      Bas_File : aliased String := Base_Filename & ".base";
-      Dll_File : aliased String := Base_Filename & ".dll";
-      Exp_File : aliased String := Base_Filename & ".exp";
-      Lib_File : aliased String := "lib" & Base_Filename & ".a";
+      Def_File : aliased constant String := Def_Filename;
+      Jnk_File : aliased          String := Base_Filename & ".jnk";
+      Bas_File : aliased constant String := Base_Filename & ".base";
+      Dll_File : aliased          String := Base_Filename & ".dll";
+      Exp_File : aliased          String := Base_Filename & ".exp";
+      Lib_File : aliased constant String := "lib" & Base_Filename & ".a";
 
       Bas_Opt  : aliased String := "-Wl,--base-file," & Bas_File;
       Lib_Opt  : aliased String := "-mdll";
@@ -187,10 +187,13 @@ package body MDLL is
          Utl.Gnatbind (L_Afiles, Options & Bargs_Options);
 
          declare
-            Params : OS_Lib.Argument_List :=
-              Out_Opt'Unchecked_Access & Jnk_File'Unchecked_Access &
-              Lib_Opt'Unchecked_Access &
-              Bas_Opt'Unchecked_Access & Ofiles & All_Options;
+            Params : constant OS_Lib.Argument_List :=
+                       Out_Opt'Unchecked_Access &
+                       Jnk_File'Unchecked_Access &
+                       Lib_Opt'Unchecked_Access &
+                       Bas_Opt'Unchecked_Access &
+                       Ofiles &
+                       All_Options;
          begin
             Utl.Gnatlink (L_Afiles (L_Afiles'Last).all, Params);
          end;
@@ -207,13 +210,14 @@ package body MDLL is
          Utl.Gnatbind (L_Afiles, Options & Bargs_Options);
 
          declare
-            Params : OS_Lib.Argument_List :=
-              Out_Opt'Unchecked_Access & Jnk_File'Unchecked_Access &
-              Lib_Opt'Unchecked_Access &
-              Bas_Opt'Unchecked_Access &
-              Exp_File'Unchecked_Access &
-              Ofiles &
-              All_Options;
+            Params : constant OS_Lib.Argument_List :=
+                       Out_Opt'Unchecked_Access &
+                       Jnk_File'Unchecked_Access &
+                       Lib_Opt'Unchecked_Access &
+                       Bas_Opt'Unchecked_Access &
+                       Exp_File'Unchecked_Access &
+                       Ofiles &
+                       All_Options;
          begin
             Utl.Gnatlink (L_Afiles (L_Afiles'Last).all, Params);
          end;
@@ -230,13 +234,14 @@ package body MDLL is
          Utl.Gnatbind (L_Afiles, Options & Bargs_Options);
 
          declare
-            Params : OS_Lib.Argument_List :=
-              Out_Opt'Unchecked_Access & Dll_File'Unchecked_Access &
-              Lib_Opt'Unchecked_Access &
-              Exp_File'Unchecked_Access &
-              Adr_Opt'Unchecked_Access &
-              Ofiles &
-              All_Options;
+            Params : constant OS_Lib.Argument_List :=
+                       Out_Opt'Unchecked_Access &
+                       Dll_File'Unchecked_Access &
+                       Lib_Opt'Unchecked_Access &
+                       Exp_File'Unchecked_Access &
+                       Adr_Opt'Unchecked_Access &
+                       Ofiles &
+                       All_Options;
          begin
             Utl.Gnatlink (L_Afiles (L_Afiles'Last).all, Params);
          end;
@@ -325,13 +330,14 @@ package body MDLL is
          Utl.Gnatbind (L_Afiles, Options & Bargs_Options);
 
          declare
-            Params : OS_Lib.Argument_List :=
-              Out_Opt'Unchecked_Access & Dll_File'Unchecked_Access &
-              Lib_Opt'Unchecked_Access &
-              Exp_File'Unchecked_Access &
-              Adr_Opt'Unchecked_Access &
-              Ofiles &
-              All_Options;
+            Params : constant OS_Lib.Argument_List :=
+                       Out_Opt'Unchecked_Access &
+                       Dll_File'Unchecked_Access &
+                       Lib_Opt'Unchecked_Access &
+                       Exp_File'Unchecked_Access &
+                       Adr_Opt'Unchecked_Access &
+                       Ofiles &
+                       All_Options;
          begin
             Utl.Gnatlink (L_Afiles (L_Afiles'Last).all, Params);
          end;

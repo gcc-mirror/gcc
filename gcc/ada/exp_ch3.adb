@@ -2882,7 +2882,7 @@ package body Exp_Ch3 is
 
    begin
       --  Don't do anything for deferred constants. All proper actions will
-      --  be expanded during the redeclaration.
+      --  be expanded during the full declaration.
 
       if No (Expr) and Constant_Present (N) then
          return;
@@ -3018,7 +3018,7 @@ package body Exp_Ch3 is
          --  When we have the appropriate type of aggregate in the
          --  expression (it has been determined during analysis of the
          --  aggregate by setting the delay flag), let's perform in
-         --  place assignment and thus avoid creating a temporay.
+         --  place assignment and thus avoid creating a temporary.
 
          if Is_Delayed_Aggregate (Expr_Q) then
             Convert_Aggr_In_Object_Decl (N);

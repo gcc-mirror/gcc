@@ -370,7 +370,7 @@ package body Inline is
       ----------------------------
 
       function Back_End_Cannot_Inline (Subp : Entity_Id) return Boolean is
-         Decl     : Node_Id := Unit_Declaration_Node (Subp);
+         Decl     : constant Node_Id := Unit_Declaration_Node (Subp);
          Body_Ent : Entity_Id;
          Ent      : Entity_Id;
 

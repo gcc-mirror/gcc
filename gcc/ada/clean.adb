@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2003, Free Software Foundation, Inc.              --
+--          Copyright (C) 2003-2004, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -370,9 +370,6 @@ package body Clean is
       Source_File : File_Name_Type;
       --  Current source file
 
-      Full_Source_File : File_Name_Type;
-      --  Full name of the current source file
-
       Lib_File : File_Name_Type;
       --  Current library file
 
@@ -401,9 +398,8 @@ package body Clean is
          while not Empty_Q loop
             Sources.Set_Last (0);
             Extract_From_Q (Source_File);
-            Full_Source_File := Osint.Full_Source_Name (Source_File);
-            Lib_File         := Osint.Lib_File_Name (Source_File);
-            Full_Lib_File    := Osint.Full_Lib_File_Name (Lib_File);
+            Lib_File      := Osint.Lib_File_Name (Source_File);
+            Full_Lib_File := Osint.Full_Lib_File_Name (Lib_File);
 
             --  If we have an existing ALI file that is not read-only,
             --  process it.
@@ -925,7 +921,7 @@ package body Clean is
       if not Copyright_Displayed then
          Copyright_Displayed := True;
          Put_Line ("GNATCLEAN " & Gnatvsn.Gnat_Version_String
-                   & " Copyright 2003 Free Software Foundation, Inc.");
+                   & " Copyright 2003-2004 Free Software Foundation, Inc.");
       end if;
    end Display_Copyright;
 
@@ -1156,9 +1152,7 @@ package body Clean is
    -- Insert_Q --
    --------------
 
-   procedure Insert_Q
-     (Source_File : File_Name_Type)
-   is
+   procedure Insert_Q (Source_File : File_Name_Type) is
    begin
       --  Do not insert an empty name or an already marked source
 
@@ -1180,6 +1174,7 @@ package body Clean is
 
    function Object_File_Name (Source : Name_Id) return String is
       Src : constant String := Get_Name_String (Source);
+
    begin
       --  If the source name has an extension, then replace it with
       --  the Object suffix.

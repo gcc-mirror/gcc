@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2003, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2004, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -3939,6 +3939,15 @@ tree_transform (Node_Id gnat_node)
 	  tree gnu_obj_type;
 	  tree gnu_obj_size;
 	  int align;
+
+	  /* If this is a thin pointer, we must dereference it to create
+	     a fat pointer, then go back below to a thin pointer.  The
+	     reason for this is that we need a fat pointer someplace in
+	     order to properly compute the size.  */
+	  if (TYPE_THIN_POINTER_P (TREE_TYPE (gnu_ptr)))
+	    gnu_ptr = build_unary_op (ADDR_EXPR, NULL_TREE,
+				      build_unary_op (INDIRECT_REF, NULL_TREE,
+						      gnu_ptr));
 
 	  /* If this is an unconstrained array, we know the object must
 	     have been allocated with the template in front of the object.

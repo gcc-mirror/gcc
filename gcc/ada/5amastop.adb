@@ -7,7 +7,7 @@
 --                                 B o d y                                  --
 --                         (Version for Alpha/Dec Unix)                     --
 --                                                                          --
---           Copyright (C) 1999-2002 Ada Core Technologies, Inc.            --
+--           Copyright (C) 1999-2003 Ada Core Technologies, Inc.            --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -105,7 +105,8 @@ package body System.Machine_State_Operations is
       --  asm instruction takes 4 bytes. So we must remove this value from
       --  c_get_code_loc to have the call point.
 
-      Loc : Code_Loc := c_get_code_loc (M);
+      Loc : constant Code_Loc := c_get_code_loc (M);
+
    begin
       if Loc = 0 then
          return 0;

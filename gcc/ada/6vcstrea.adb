@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1996-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1996-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -38,6 +38,14 @@ package body Interfaces.C_Streams is
 
    use type System.CRTL.size_t;
 
+   --  Substantial rewriting is needed here. These functions are far too
+   --  long to be inlined. They should be rewritten to be small helper
+   --  functions that are inlined, and then call the real routines.???
+
+   --  Alternatively, provide a separate spec for VMS, in which case we
+   --  could reduce the amount of junk bodies in the other cases by
+   --  interfacing directly in the spec.???
+
    ------------
    -- fread --
    ------------
@@ -46,31 +54,36 @@ package body Interfaces.C_Streams is
      (buffer : voids;
       size   : size_t;
       count  : size_t;
-      stream : FILEs)
-      return   size_t
+      stream : FILEs) return size_t
    is
       Get_Count : size_t := 0;
+
       type Buffer_Type is array (size_t range 1 .. count,
                                  size_t range 1 .. size) of Character;
       type Buffer_Access is access Buffer_Type;
       function To_BA is new Unchecked_Conversion (voids, Buffer_Access);
-      BA : Buffer_Access := To_BA (buffer);
-      Ch : int;
-   begin
 
+      BA : constant Buffer_Access := To_BA (buffer);
+      Ch : int;
+
+   begin
       --  This Fread goes with the Fwrite below.
       --  The C library fread sometimes can't read fputc generated files.
 
       for C in 1 .. count loop
          for S in 1 .. size loop
             Ch := fgetc (stream);
+
             if Ch = EOF then
                return Get_Count;
             end if;
+
             BA.all (C, S) := Character'Val (Ch);
          end loop;
+
          Get_Count := Get_Count + 1;
       end loop;
+
       return Get_Count;
    end fread;
 
@@ -83,31 +96,36 @@ package body Interfaces.C_Streams is
       index  : size_t;
       size   : size_t;
       count  : size_t;
-      stream : FILEs)
-      return   size_t
+      stream : FILEs) return size_t
    is
       Get_Count : size_t := 0;
+
       type Buffer_Type is array (size_t range 1 .. count,
                                  size_t range 1 .. size) of Character;
       type Buffer_Access is access Buffer_Type;
       function To_BA is new Unchecked_Conversion (voids, Buffer_Access);
-      BA : Buffer_Access := To_BA (buffer);
-      Ch : int;
-   begin
 
+      BA : constant Buffer_Access := To_BA (buffer);
+      Ch : int;
+
+   begin
       --  This Fread goes with the Fwrite below.
       --  The C library fread sometimes can't read fputc generated files.
 
       for C in 1 + index .. count + index loop
          for S in 1 .. size loop
             Ch := fgetc (stream);
+
             if Ch = EOF then
                return Get_Count;
             end if;
+
             BA.all (C, S) := Character'Val (Ch);
          end loop;
+
          Get_Count := Get_Count + 1;
       end loop;
+
       return Get_Count;
    end fread;
 
@@ -119,17 +137,18 @@ package body Interfaces.C_Streams is
      (buffer : voids;
       size   : size_t;
       count  : size_t;
-      stream : FILEs)
-      return   size_t
+      stream : FILEs) return size_t
    is
       Put_Count : size_t := 0;
+
       type Buffer_Type is array (size_t range 1 .. count,
                                  size_t range 1 .. size) of Character;
       type Buffer_Access is access Buffer_Type;
       function To_BA is new Unchecked_Conversion (voids, Buffer_Access);
-      BA : Buffer_Access := To_BA (buffer);
-   begin
 
+      BA : constant Buffer_Access := To_BA (buffer);
+
+   begin
       --  Fwrite on VMS has the undesirable effect of always generating at
       --  least one record of output per call, regardless of buffering.  To
       --  get around this, we do multiple fputc calls instead.
@@ -140,8 +159,10 @@ package body Interfaces.C_Streams is
                return Put_Count;
             end if;
          end loop;
+
          Put_Count := Put_Count + 1;
       end loop;
+
       return Put_Count;
    end fwrite;
 
@@ -153,12 +174,11 @@ package body Interfaces.C_Streams is
      (stream : FILEs;
       buffer : chars;
       mode   : int;
-      size   : size_t)
-      return   int
+      size   : size_t) return int
    is
       use type System.Address;
-   begin
 
+   begin
       --  In order for the above fwrite hack to work, we must always buffer
       --  stdout and stderr. Is_regular_file on VMS cannot detect when
       --  these are redirected to a file, so checking for that condition

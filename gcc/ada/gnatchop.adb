@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 1998-2003 Ada Core Technologies, Inc.           --
+--            Copyright (C) 1998-2004 Ada Core Technologies, Inc.           --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -375,7 +375,8 @@ procedure Gnatchop is
 
          if not Is_Duplicated (SNum) then
             declare
-               Info : Unit_Info := Unit.Table (Sorted_Units.Table (SNum));
+               Info : constant Unit_Info :=
+                        Unit.Table (Sorted_Units.Table (SNum));
 
             begin
                if Is_Writable_File (Info.File_Name.all) then
@@ -587,10 +588,10 @@ procedure Gnatchop is
    ----------------
 
    function Parse_File (Num : File_Num) return Boolean is
-      Chop_Name   : constant String_Access := File.Table (Num).Name;
+      Chop_Name   : constant String_Access   := File.Table (Num).Name;
+      Save_Stdout : constant File_Descriptor := dup (Standout);
       Offset_Name : Temp_File_Name;
       Offset_FD   : File_Descriptor;
-      Save_Stdout : File_Descriptor := dup (Standout);
       Buffer      : String_Access;
       Success     : Boolean;
       Failure     : exception;
@@ -690,9 +691,9 @@ procedure Gnatchop is
      (Chop_File : File_Num;
       Source    : access String)
    is
-      First_Unit : Unit_Num      := Unit.Last + 1;
-      Bufferg    : String_Access := null;
-      Parse_Ptr  : File_Offset   := Source'First;
+      First_Unit : constant Unit_Num := Unit.Last + 1;
+      Bufferg    : String_Access     := null;
+      Parse_Ptr  : File_Offset       := Source'First;
       Token_Ptr  : File_Offset;
       Info       : Unit_Info;
 
@@ -1147,7 +1148,7 @@ procedure Gnatchop is
                Put (Standard_Error, Gnatvsn.Gnat_Version_String);
                Put_Line
                  (Standard_Error,
-                  " Copyright 1998-2000, Ada Core Technologies Inc.");
+                  " Copyright 1998-2004, Ada Core Technologies Inc.");
 
             when 'w' =>
                Overwrite_Files := True;
@@ -1736,7 +1737,7 @@ begin
 
    if Warning_Count > 0 then
       declare
-         Warnings_Msg : String := Warning_Count'Img & " warning(s)";
+         Warnings_Msg : constant String := Warning_Count'Img & " warning(s)";
       begin
          Error_Msg (Warnings_Msg (2 .. Warnings_Msg'Last), Warning => True);
       end;

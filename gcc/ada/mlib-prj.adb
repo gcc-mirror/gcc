@@ -25,12 +25,14 @@
 ------------------------------------------------------------------------------
 
 with ALI;      use ALI;
+with Gnatvsn;  use Gnatvsn;
 with Hostparm;
 with MLib.Fil; use MLib.Fil;
 with MLib.Tgt; use MLib.Tgt;
 with MLib.Utl; use MLib.Utl;
 with Namet;    use Namet;
 with Opt;
+with Osint;    use Osint;
 with Output;   use Output;
 with Prj.Com;  use Prj.Com;
 with Prj.Env;  use Prj.Env;
@@ -1165,7 +1167,12 @@ package body MLib.Prj is
 
          if Libgnarl_Needed then
             Opts.Increment_Last;
-            Opts.Table (Opts.Last) := new String'("-lgnarl");
+
+            if The_Build_Mode = Static then
+               Opts.Table (Opts.Last) := new String'("-lgnarl");
+            else
+               Opts.Table (Opts.Last) := new String'(Shared_Lib ("gnarl"));
+            end if;
          end if;
 
          if Libdecgnat_Needed then
@@ -1177,7 +1184,12 @@ package body MLib.Prj is
          end if;
 
          Opts.Increment_Last;
-         Opts.Table (Opts.Last) := new String'("-lgnat");
+
+         if The_Build_Mode = Static then
+            Opts.Table (Opts.Last) := new String'("-lgnat");
+         else
+            Opts.Table (Opts.Last) := new String'(Shared_Lib ("gnat"));
+         end if;
 
          --  If Path Option is supported, add the necessary switch with the
          --  content of Rpath. As Rpath contains at least libgnat directory
@@ -1717,10 +1729,11 @@ package body MLib.Prj is
       --  For fopen
 
       Status : Interfaces.C_Streams.int;
+      pragma Unreferenced (Status);
       --  For fclose
 
-      Begin_Info : String := "--  BEGIN Object file/option list";
-      End_Info   : String := "--  END Object file/option list   ";
+      Begin_Info : constant String := "--  BEGIN Object file/option list";
+      End_Info   : constant String := "--  END Object file/option list   ";
 
       Next_Line : String (1 .. 1000);
       --  Current line value
@@ -1793,18 +1806,30 @@ package body MLib.Prj is
 
       if Next_Line (1 .. Nlast) /= End_Info then
          loop
-            --  Disregard -static and -shared, as -shared will be used
+            --  Ignore -static and -shared, since -shared will be used
             --  in any case.
 
-            --  Disregard -lgnat, -lgnarl and -ldecgnat as they will be added
+            --  Ignore -lgnat, -lgnarl and -ldecgnat as they will be added
             --  later, because they are also needed for non Stand-Alone shared
             --  libraries.
+
+            --  Also ignore the shared libraries which are :
+
+            --  UNIX / Windows    VMS
+            --  -lgnat-<version>  -lgnat_<version>  (7 + version'length chars)
+            --  -lgnarl-<version> -lgnarl_<version> (8 + version'length chars)
 
             if Next_Line (1 .. Nlast) /= "-static" and then
                Next_Line (1 .. Nlast) /= "-shared" and then
                Next_Line (1 .. Nlast) /= "-ldecgnat" and then
                Next_Line (1 .. Nlast) /= "-lgnarl" and then
-               Next_Line (1 .. Nlast) /= "-lgnat"
+               Next_Line (1 .. Nlast) /= "-lgnat" and then
+               Next_Line
+                 (1 .. Natural'Min (Nlast, 8 + Library_Version'Length)) /=
+                   Shared_Lib ("gnarl") and then
+               Next_Line
+                 (1 .. Natural'Min (Nlast, 7 + Library_Version'Length)) /=
+                   Shared_Lib ("gnat")
             then
                if Next_Line (1) /= '-' then
 
@@ -1838,6 +1863,7 @@ package body MLib.Prj is
       end if;
 
       Status := fclose (Fd);
+      --  Is it really right to ignore any close error ???
    end Process_Binder_File;
 
    ------------------

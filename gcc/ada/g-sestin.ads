@@ -1,12 +1,12 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                         GNAT COMPILER COMPONENTS                         --
+--                         GNAT RUNTIME COMPONENTS                          --
 --                                                                          --
---                             S E M _ E L I M                              --
+--            G N A T . S E C O N D A R Y _ S T A C K _ I N F O             --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1997-2003 Free Software Foundation, Inc.          --
+--              Copyright (C) 2004 Ada Core Technologies, Inc.              --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -19,45 +19,32 @@
 -- to  the Free Software Foundation,  59 Temple Place - Suite 330,  Boston, --
 -- MA 02111-1307, USA.                                                      --
 --                                                                          --
+-- As a special exception,  if other files  instantiate  generics from this --
+-- unit, or you link  this unit with other files  to produce an executable, --
+-- this  unit  does not  by itself cause  the resulting  executable  to  be --
+-- covered  by the  GNU  General  Public  License.  This exception does not --
+-- however invalidate  any other reasons why  the executable file  might be --
+-- covered by the  GNU Public License.                                      --
+--                                                                          --
 -- GNAT was originally developed  by the GNAT team at  New York University. --
 -- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package contains the routines used to process the Eliminate pragma
+--  This package provides facilities for obtaining information on secondary
+--  stack usage.
 
-with Types; use Types;
+with System.Secondary_Stack;
 
-package Sem_Elim is
+package GNAT.Secondary_Stack_Info is
 
-   procedure Initialize;
-   --  Initialize for new main souce program
+   function SS_Get_Max return Long_Long_Integer
+     renames System.Secondary_Stack.SS_Get_Max;
+   --  Return maximum used space in storage units for the current secondary
+   --  stack. For a dynamically allocated secondary stack, the returned
+   --  result is always -1. For a statically allocated secondary stack,
+   --  the returned value shows the largest amount of space allocated so
+   --  far during execution of the program to the current secondary stack,
+   --  i.e. the secondary stack for the current task.
 
-   procedure Process_Eliminate_Pragma
-     (Pragma_Node         : Node_Id;
-      Arg_Unit_Name       : Node_Id;
-      Arg_Entity          : Node_Id;
-      Arg_Parameter_Types : Node_Id;
-      Arg_Result_Type     : Node_Id;
-      Arg_Homonym_Number  : Node_Id);
-   --  Process eliminate pragma (given by Pragma_Node). The number of
-   --  arguments has been checked, as well as possible optional identifiers,
-   --  but no other checks have been made. This subprogram completes the
-   --  checking, and then if the pragma is well formed, makes appropriate
-   --  entries in the internal tables used to keep track of Eliminate pragmas.
-   --  The other five arguments are expressions (rather than pragma argument
-   --  associations) for the possible pragma arguments. A parameter that
-   --  is not present is set to Empty.
-
-   procedure Check_Eliminated (E : Entity_Id);
-   --  Checks if entity E is eliminated, and if so sets the Is_Eliminated
-   --  flag on the given entity.
-
-   procedure Eliminate_Error_Msg (N : Node_Id; E : Entity_Id);
-   --  Called by the back end on encouterning a call to an eliminated
-   --  subprogram. N is the node for the call, and E is the entity of
-   --  the subprogram being eliminated.
-
-
-
-end Sem_Elim;
+end GNAT.Secondary_Stack_Info;

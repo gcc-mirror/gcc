@@ -534,7 +534,6 @@ package body System.Task_Primitives.Operations is
       Reason : System.Tasking.Task_States)
    is
       Result : Interfaces.C.int;
-
    begin
       Result := pthread_cond_signal (T.Common.LL.CV'Access);
       pragma Assert (Result = 0);
@@ -878,8 +877,7 @@ package body System.Task_Primitives.Operations is
 
    function Suspend_Task
      (T           : ST.Task_ID;
-      Thread_Self : Thread_Id)
-      return        Boolean
+      Thread_Self : Thread_Id) return Boolean
    is
    begin
       if T.Common.LL.Thread /= Thread_Self then
@@ -895,8 +893,7 @@ package body System.Task_Primitives.Operations is
 
    function Resume_Task
      (T           : ST.Task_ID;
-      Thread_Self : Thread_Id)
-      return        Boolean
+      Thread_Self : Thread_Id) return Boolean
    is
    begin
       if T.Common.LL.Thread /= Thread_Self then

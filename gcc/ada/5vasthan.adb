@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1996-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1996-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -320,6 +320,7 @@ package body System.AST_Handling is
 
    procedure Allocate_New_AST_Server is
       Dummy : AST_Server_Task_Ptr;
+      pragma Unreferenced (Dummy);
 
    begin
       if Num_AST_Servers = Max_AST_Servers then
@@ -454,8 +455,7 @@ package body System.AST_Handling is
 
    function Create_AST_Handler
      (Taskid  : ATID.Task_Id;
-      Entryno : Natural)
-      return    System.Aux_DEC.AST_Handler
+      Entryno : Natural) return System.Aux_DEC.AST_Handler
    is
       Attr_Ref : Attribute_Handle;
 
@@ -465,7 +465,7 @@ package body System.AST_Handling is
       function To_Descriptor_Ref is new Ada.Unchecked_Conversion
         (AST_Handler, Descriptor_Ref);
 
-      Original_Descriptor_Ref : Descriptor_Ref :=
+      Original_Descriptor_Ref : constant Descriptor_Ref :=
                                   To_Descriptor_Ref (Process_AST_Ptr);
 
    begin

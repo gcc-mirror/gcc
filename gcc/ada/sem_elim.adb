@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1997-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1997-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,6 +33,7 @@ with Sinfo;   use Sinfo;
 with Snames;  use Snames;
 with Stand;   use Stand;
 with Stringt; use Stringt;
+with Table;
 with Uintp;   use Uintp;
 
 with GNAT.HTable; use GNAT.HTable;
@@ -90,6 +91,9 @@ package body Sem_Elim is
 
       Homonym : Access_Elim_Data;
       --  Pointer to next entry with same key
+
+      Prag : Node_Id;
+      --  Node_Id for Eliminate pragma
 
    end record;
 
@@ -179,6 +183,14 @@ package body Sem_Elim is
       end Set_Next;
    end Hash_Subprograms;
 
+   ------------
+   -- Tables --
+   ------------
+
+   --  The following table records the data for each pragmas, using the
+   --  entity name as the hash key for retrieval. Entries in this table
+   --  are set by Process_Eliminate_Pragma and read by Check_Eliminated.
+
    package Elim_Hash_Table is new Static_HTable (
       Header_Num => Header_Num,
       Element    => Element,
@@ -190,6 +202,24 @@ package body Sem_Elim is
       Get_Key    => Hash_Subprograms.Get_Key,
       Hash       => Hash_Subprograms.Hash,
       Equal      => Hash_Subprograms.Equal);
+
+   --  The following table records entities for subprograms that are
+   --  eliminated, and corresponding eliminate pragmas that caused the
+   --  elimination. Entries in this table are set by Check_Eliminated
+   --  and read by Eliminate_Error_Msg.
+
+   type Elim_Entity_Entry is record
+      Prag : Node_Id;
+      Subp : Entity_Id;
+   end record;
+
+   package Elim_Entities is new Table.Table (
+     Table_Component_Type => Elim_Entity_Entry,
+     Table_Index_Type     => Name_Id,
+     Table_Low_Bound      => First_Name_Id,
+     Table_Initial        => 50,
+     Table_Increment      => 200,
+     Table_Name           => "Elim_Entries");
 
    ----------------------
    -- Check_Eliminated --
@@ -206,7 +236,7 @@ package body Sem_Elim is
       if No_Elimination then
          return;
 
-      --  Elimination of objects and types is not implemented yet.
+      --  Elimination of objects and types is not implemented yet
 
       elsif Ekind (E) not in Subprogram_Kind then
          return;
@@ -217,141 +247,172 @@ package body Sem_Elim is
       --  Loop through homonyms for this key
 
       while Elmt /= null loop
+         declare
+            procedure Set_Eliminated;
+            --  Set current subprogram entity as eliminated
 
-         --  First we check that the name of the entity matches
+            procedure Set_Eliminated is
+            begin
+               Set_Is_Eliminated (E);
+               Elim_Entities.Append ((Prag => Elmt.Prag, Subp => E));
+            end Set_Eliminated;
 
-         if Elmt.Entity_Name /= Chars (E) then
-            goto Continue;
-         end if;
+         begin
+            --  First we check that the name of the entity matches
 
-         --  Then we need to see if the static scope matches within the
-         --  compilation unit.
+            if Elmt.Entity_Name /= Chars (E) then
+               goto Continue;
+            end if;
 
-         Scop := Scope (E);
-         if Elmt.Entity_Scope /= null then
-            for J in reverse Elmt.Entity_Scope'Range loop
-               if Elmt.Entity_Scope (J) /= Chars (Scop) then
+            --  Then we need to see if the static scope matches within the
+            --  compilation unit.
+
+            Scop := Scope (E);
+            if Elmt.Entity_Scope /= null then
+               for J in reverse Elmt.Entity_Scope'Range loop
+                  if Elmt.Entity_Scope (J) /= Chars (Scop) then
+                     goto Continue;
+                  end if;
+
+                  Scop := Scope (Scop);
+
+                  if not Is_Compilation_Unit (Scop) and then J = 1 then
+                     goto Continue;
+                  end if;
+               end loop;
+            end if;
+
+            --  Now see if compilation unit matches
+
+            for J in reverse Elmt.Unit_Name'Range loop
+               if Elmt.Unit_Name (J) /= Chars (Scop) then
                   goto Continue;
                end if;
 
                Scop := Scope (Scop);
 
-               if not Is_Compilation_Unit (Scop) and then J = 1 then
+               if Scop /= Standard_Standard and then J = 1 then
                   goto Continue;
                end if;
             end loop;
-         end if;
 
-         --  Now see if compilation unit matches
-
-         for J in reverse Elmt.Unit_Name'Range loop
-            if Elmt.Unit_Name (J) /= Chars (Scop) then
+            if Scop /= Standard_Standard then
                goto Continue;
             end if;
 
-            Scop := Scope (Scop);
+            --  Check for case of given entity is a library level subprogram
+            --  and we have the single parameter Eliminate case, a match!
 
-            if Scop /= Standard_Standard and then J = 1 then
-               goto Continue;
-            end if;
-         end loop;
+            if Is_Compilation_Unit (E)
+              and then Is_Subprogram (E)
+              and then No (Elmt.Entity_Node)
+            then
+               Set_Eliminated;
+               return;
 
-         if Scop /= Standard_Standard then
-            goto Continue;
-         end if;
+               --  Check for case of type or object with two parameter case
 
-         --  Check for case of given entity is a library level subprogram
-         --  and we have the single parameter Eliminate case, a match!
+            elsif (Is_Type (E) or else Is_Object (E))
+              and then Elmt.Result_Type = No_Name
+              and then Elmt.Parameter_Types = null
+            then
+               Set_Eliminated;
+               return;
 
-         if Is_Compilation_Unit (E)
-           and then Is_Subprogram (E)
-           and then No (Elmt.Entity_Node)
-         then
-            Set_Is_Eliminated (E);
-            return;
+               --  Check for case of subprogram
 
-         --  Check for case of type or object with two parameter case
+            elsif Ekind (E) = E_Function
+              or else Ekind (E) = E_Procedure
+            then
+               --  If Homonym_Number present, then see if it matches
 
-         elsif (Is_Type (E) or else Is_Object (E))
-           and then Elmt.Result_Type = No_Name
-           and then Elmt.Parameter_Types = null
-         then
-            Set_Is_Eliminated (E);
-            return;
+               if Elmt.Homonym_Number /= No_Uint then
+                  Ctr := 1;
 
-         --  Check for case of subprogram
-
-         elsif Ekind (E) = E_Function
-           or else Ekind (E) = E_Procedure
-         then
-            --  If Homonym_Number present, then see if it matches
-
-            if Elmt.Homonym_Number /= No_Uint then
-               Ctr := 1;
-
-               Ent := E;
-               while Present (Homonym (Ent))
-                 and then Scope (Ent) = Scope (Homonym (Ent))
-               loop
-                  Ctr := Ctr + 1;
-                  Ent := Homonym (Ent);
-               end loop;
-
-               if Ctr /= Elmt.Homonym_Number then
-                  goto Continue;
-               end if;
-            end if;
-
-            --  If we have a Result_Type, then we must have a function
-            --  with the proper result type
-
-            if Elmt.Result_Type /= No_Name then
-               if Ekind (E) /= E_Function
-                 or else Chars (Etype (E)) /= Elmt.Result_Type
-               then
-                  goto Continue;
-               end if;
-            end if;
-
-            --  If we have Parameter_Types, they must match
-
-            if Elmt.Parameter_Types /= null then
-               Form := First_Formal (E);
-
-               if No (Form) and then Elmt.Parameter_Types = null then
-                  null;
-
-               elsif Elmt.Parameter_Types = null then
-                  goto Continue;
-
-               else
-                  for J in Elmt.Parameter_Types'Range loop
-                     if No (Form)
-                       or else Chars (Etype (Form)) /= Elmt.Parameter_Types (J)
-                     then
-                        goto Continue;
-                     else
-                        Next_Formal (Form);
-                     end if;
+                  Ent := E;
+                  while Present (Homonym (Ent))
+                    and then Scope (Ent) = Scope (Homonym (Ent))
+                  loop
+                     Ctr := Ctr + 1;
+                     Ent := Homonym (Ent);
                   end loop;
 
-                  if Present (Form) then
+                  if Ctr /= Elmt.Homonym_Number then
                      goto Continue;
                   end if;
                end if;
+
+               --  If we have a Result_Type, then we must have a function
+               --  with the proper result type
+
+               if Elmt.Result_Type /= No_Name then
+                  if Ekind (E) /= E_Function
+                    or else Chars (Etype (E)) /= Elmt.Result_Type
+                  then
+                     goto Continue;
+                  end if;
+               end if;
+
+               --  If we have Parameter_Types, they must match
+
+               if Elmt.Parameter_Types /= null then
+                  Form := First_Formal (E);
+
+                  if No (Form) and then Elmt.Parameter_Types = null then
+                     null;
+
+                  elsif Elmt.Parameter_Types = null then
+                     goto Continue;
+
+                  else
+                     for J in Elmt.Parameter_Types'Range loop
+                        if No (Form)
+                          or else
+                            Chars (Etype (Form)) /= Elmt.Parameter_Types (J)
+                        then
+                           goto Continue;
+                        else
+                           Next_Formal (Form);
+                        end if;
+                     end loop;
+
+                     if Present (Form) then
+                        goto Continue;
+                     end if;
+                  end if;
+               end if;
+
+               --  If we fall through, this is match
+
+               Set_Eliminated;
+               return;
             end if;
 
-            --  If we fall through, this is match
-
-            Set_Is_Eliminated (E);
-            return;
-         end if;
-
-         <<Continue>> Elmt := Elmt.Homonym;
+            <<Continue>> Elmt := Elmt.Homonym;
+         end;
       end loop;
 
       return;
    end Check_Eliminated;
+
+   -------------------------
+   -- Eliminate_Error_Msg --
+   -------------------------
+
+   procedure Eliminate_Error_Msg (N : Node_Id; E : Entity_Id) is
+   begin
+      for J in Elim_Entities.First .. Elim_Entities.Last loop
+         if E = Elim_Entities.Table (J).Subp then
+            Error_Msg_Sloc := Sloc (Elim_Entities.Table (J).Prag);
+            Error_Msg_NE ("cannot call subprogram & eliminated #", N, E);
+            return;
+         end if;
+      end loop;
+
+      --  Should never fall through, since entry should be in table
+
+      pragma Assert (False);
+   end Eliminate_Error_Msg;
 
    ----------------
    -- Initialize --
@@ -360,6 +421,7 @@ package body Sem_Elim is
    procedure Initialize is
    begin
       Elim_Hash_Table.Reset;
+      Elim_Entities.Init;
       No_Elimination := True;
    end Initialize;
 
@@ -368,7 +430,8 @@ package body Sem_Elim is
    ------------------------------
 
    procedure Process_Eliminate_Pragma
-     (Arg_Unit_Name       : Node_Id;
+     (Pragma_Node         : Node_Id;
+      Arg_Unit_Name       : Node_Id;
       Arg_Entity          : Node_Id;
       Arg_Parameter_Types : Node_Id;
       Arg_Result_Type     : Node_Id;
@@ -416,6 +479,7 @@ package body Sem_Elim is
    --  Start of processing for Process_Eliminate_Pragma
 
    begin
+      Data.Prag := Pragma_Node;
       Error_Msg_Name_1 := Name_Eliminate;
 
       --  Process Unit_Name argument

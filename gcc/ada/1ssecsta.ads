@@ -39,8 +39,8 @@ package System.Secondary_Stack is
 
    package SSE renames System.Storage_Elements;
 
-   Default_Secondary_Stack_Size : constant := 10 * 1024;
-   --  Default size of a secondary stack
+   Default_Secondary_Stack_Size : Natural := 10 * 1024;
+   --  Default size of a secondary stack. May be modified by binder -D switch
 
    procedure SS_Init
      (Stk  : System.Address;

@@ -3554,13 +3554,13 @@ package body Sem_Util is
 
    function Is_Fully_Initialized_Variant (Typ : Entity_Id) return Boolean is
       Loc           : constant Source_Ptr := Sloc (Typ);
+      Constraints   : constant List_Id    := New_List;
+      Components    : constant Elist_Id   := New_Elmt_List;
       Comp_Elmt     : Elmt_Id;
       Comp_Id       : Node_Id;
       Comp_List     : Node_Id;
       Discr         : Entity_Id;
       Discr_Val     : Node_Id;
-      Constraints   : List_Id := New_List;
-      Components    : Elist_Id := New_Elmt_List;
       Report_Errors : Boolean;
 
    begin
@@ -6038,13 +6038,14 @@ package body Sem_Util is
    -----------------------
 
    function Type_Access_Level (Typ : Entity_Id) return Uint is
-      Btyp : Entity_Id := Base_Type (Typ);
+      Btyp : Entity_Id;
 
    begin
       --  If the type is an anonymous access type we treat it as being
       --  declared at the library level to ensure that names such as
       --  X.all'access don't fail static accessibility checks.
 
+      Btyp := Base_Type (Typ);
       if Ekind (Btyp) in Access_Kind then
          if Ekind (Btyp) = E_Anonymous_Access_Type then
             return Scope_Depth (Standard_Standard);

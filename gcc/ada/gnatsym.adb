@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2003 Free Software Foundation, Inc.               --
+--          Copyright (C) 2003-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -55,7 +55,7 @@ with Table;
 procedure Gnatsym is
 
    Empty_String : aliased String := "";
-   Empty : constant String_Access := Empty_String'Unchecked_Access;
+   Empty        : constant String_Access := Empty_String'Unchecked_Access;
    --  To initialize variables Reference and Version_String
 
    Copyright_Displayed : Boolean := False;
@@ -111,7 +111,7 @@ procedure Gnatsym is
          Write_Eol;
          Write_Str ("GNATSYMB ");
          Write_Str (Gnat_Version_String);
-         Write_Str (" Copyright 2003 Free Software Foundation, Inc");
+         Write_Str (" Copyright 2003-2004 Free Software Foundation, Inc");
          Write_Eol;
          Copyright_Displayed := True;
       end if;
@@ -224,8 +224,7 @@ begin
          Write_Line ("""");
       end if;
 
-      --  Initialize the symbol file and, if specified, read the reference
-      --  file.
+      --  Initialize symbol file and, if specified, read reference file
 
       Symbols.Initialize
         (Symbol_File   => Symbol_File_Name.all,

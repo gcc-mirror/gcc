@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 2001-2003 Free Software Foundation, Inc.         --
+--           Copyright (C) 2001-2004 Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -66,7 +66,7 @@ procedure Gnatname is
       Table_Initial        => 10,
       Table_Increment      => 10,
       Table_Name           => "Gnatname.Excluded_Patterns");
-   --  Table to accumulate the negative patterns.
+   --  Table to accumulate the negative patterns
 
    package Foreign_Patterns is new Table.Table
      (Table_Component_Type => String_Access,
@@ -75,7 +75,7 @@ procedure Gnatname is
       Table_Initial        => 10,
       Table_Increment      => 10,
       Table_Name           => "Gnatname.Foreign_Patterns");
-   --  Table to accumulate the foreign patterns.
+   --  Table to accumulate the foreign patterns
 
    package Patterns is new Table.Table
      (Table_Component_Type => String_Access,
@@ -84,7 +84,7 @@ procedure Gnatname is
       Table_Initial        => 10,
       Table_Increment      => 10,
       Table_Name           => "Gnatname.Patterns");
-   --  Table to accumulate the name patterns.
+   --  Table to accumulate the name patterns
 
    package Source_Directories is new Table.Table
      (Table_Component_Type => String_Access,
@@ -170,7 +170,7 @@ procedure Gnatname is
          Output.Write_Str ("GNATNAME ");
          Output.Write_Str (Gnatvsn.Gnat_Version_String);
          Output.Write_Line
-           (" Copyright 2001-2003 Free Software Foundation, Inc.");
+           (" Copyright 2001-2004 Free Software Foundation, Inc.");
       end if;
    end Output_Version;
 
@@ -261,7 +261,6 @@ procedure Gnatname is
    exception
       when Invalid_Switch =>
          Fail ("invalid switch " & Full_Switch);
-
    end Scan_Args;
 
    -----------

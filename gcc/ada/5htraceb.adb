@@ -221,8 +221,7 @@ package body System.Traceback is
      (Pc          : Address;
       Space       : Address;
       Table_Start : Address;
-      Table_End   : Address)
-      return        Address;
+      Table_End   : Address) return Address;
    pragma Import (C, U_get_unwind_entry, "U_get_unwind_entry");
    --  Given the bounds of an unwind table, return the address of the
    --  unwind descriptor associated with a code location/space. In the case
@@ -254,8 +253,7 @@ package body System.Traceback is
    function U_get_previous_frame_x
      (current_frame  : access CFD;
       previous_frame : access PFD;
-      previous_size  : Integer)
-      return           Integer;
+      previous_size  : Integer) return Integer;
    pragma Import (C, U_get_previous_frame_x, "U_get_previous_frame_x");
    --  Fetch the data describing the "previous" frame relatively to the
    --  "current" one. "previous_size" should be the size of the "previous"
@@ -270,9 +268,8 @@ package body System.Traceback is
    ------------------
 
    function C_Call_Chain
-     (Traceback   : System.Address;
-      Max_Len     : Natural)
-      return        Natural
+     (Traceback : System.Address;
+      Max_Len   : Natural) return Natural
    is
       Val : Natural;
 
@@ -530,10 +527,12 @@ package body System.Traceback is
            and then U_is_shared_pc (Frame.cur_rlo, Frame.cur_r19) /= 0
          then
             declare
-               Shlib_UWT   : UWT := U_get_shLib_unwind_table (Frame.cur_r19);
-               Shlib_Start : Address := U_get_shLib_text_addr (Frame.cur_r19);
-               Rlo_Offset  : Address := Frame.cur_rlo - Shlib_Start;
-
+               Shlib_UWT   : constant UWT     :=
+                               U_get_shLib_unwind_table (Frame.cur_r19);
+               Shlib_Start : constant Address :=
+                               U_get_shLib_text_addr (Frame.cur_r19);
+               Rlo_Offset  : constant Address :=
+                               Frame.cur_rlo - Shlib_Start;
             begin
                UWD_Address := U_get_unwind_entry (Rlo_Offset,
                                                   Frame.cur_rls,

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---             Copyright (C) 2002, 2003 Ada Core Technologies, Inc.         --
+--            Copyright (C) 2002-2003 Ada Core Technologies, Inc.           --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,17 +26,17 @@
 
 --  This program is meant to be used with vxworks to compute symbolic
 --  backtraces on the host from non-symbolic backtraces obtained on the target.
---
+
 --  The basic idea is to automate the computation of the necessary address
 --  adjustments prior to calling addr2line when the application has only been
 --  partially linked on the host.
---
+
 --  Variants for various targets are supported, and the command line should
 --  be like :
---
+
 --  <target>-addr2line [-a <target_arch>] <exe_file> <ref_address>
 --                     <backtrace addresses>
---
+
 --  Where:
 --  <target_arch> :
 --    selects the target architecture. In the absence of this parameter the
@@ -45,20 +45,20 @@
 --    Otherwise, the command name will always be of the form
 --    <target>-vxaddr2line where there is no ambiguity on the target's
 --    architecture.
---
+
 --  <exe_file> :
 --    The name of the partially linked binary file for the application.
---
+
 --  <ref_address> :
 --    Runtime address (on the target) of a reference symbol you choose,
 --    which name shall match the value of the Ref_Symbol variable declared
 --    below. A symbol with a small offset from the beginning of the text
 --    segment is better, so "adainit" is a good choice.
---
+
 --  <backtrace addresses> :
 --    The call chain addresses you obtained at run time on the target and
 --    for which you want a symbolic association.
---
+
 --  TO ADD A NEW ARCHITECTURE add an appropriate value to Architecture type
 --  (in a format <host>_<target>), and then an appropriate value to Config_List
 --  array
@@ -75,7 +75,7 @@ with GNAT.Regpat; use GNAT.Regpat;
 
 procedure VxAddr2Line is
 
-   Ref_Symbol : String := "adainit";
+   Ref_Symbol : constant String := "adainit";
    --  This is the name of the reference symbol which runtime address shall
    --  be provided as the <ref_address> argument.
 
@@ -171,9 +171,11 @@ procedure VxAddr2Line is
    -----------------
 
    procedure Detect_Arch is
-      Name   : String := Base_Name (Command_Name);
-      Proc   : String := Name (Name'First .. Index (Name, "-") - 1);
-      Target : String := Name (Name'First .. Index (Name, "vxaddr2line") - 1);
+      Name   : constant String := Base_Name (Command_Name);
+      Proc   : constant String :=
+                 Name (Name'First .. Index (Name, "-") - 1);
+      Target : constant String :=
+                 Name (Name'First .. Index (Name, "vxaddr2line") - 1);
 
    begin
       Detect_Success := False;
@@ -231,7 +233,7 @@ procedure VxAddr2Line is
       Nm_Cmd  : constant String_Access :=
                   Locate_Exec_On_Path (Arch_List (Cur_Arch).Nm_Binary.all);
 
-      Nm_Args : Argument_List :=
+      Nm_Args : constant Argument_List :=
                   (new String'("-P"),
                    new String'(Argument (1)));
 
@@ -260,9 +262,9 @@ procedure VxAddr2Line is
       --  If we are here, the pattern was matched successfully
 
       declare
-         Match_String : String := Expect_Out_Match (Pd);
-         Matches : Match_Array (0 .. 1);
-         Value : Integer;
+         Match_String : constant String := Expect_Out_Match (Pd);
+         Matches      : Match_Array (0 .. 1);
+         Value        : Integer;
 
       begin
          Match (Reference, Match_String, Matches);
@@ -303,8 +305,8 @@ procedure VxAddr2Line is
    ----------------------------
 
    function Get_Value_From_Hex_Arg (Arg : Natural) return Integer is
+      Cur_Arg : constant String := Argument (Arg);
       Offset  : Natural;
-      Cur_Arg : String := Argument (Arg);
 
    begin
       --  Skip "0x" prefix if present

@@ -508,7 +508,7 @@ package body Exp_Ch7 is
       return List_Id
    is
       Loc        : constant Source_Ptr := Sloc (N);
-      Index_List : List_Id := New_List;
+      Index_List : constant List_Id := New_List;
 
       function Free_Component return List_Id;
       --  Generate the code to finalize the task or protected  subcomponents
@@ -524,7 +524,7 @@ package body Exp_Ch7 is
       function Free_Component return List_Id is
          Stmts : List_Id := New_List;
          Tsk   : Node_Id;
-         C_Typ : Entity_Id := Component_Type (Typ);
+         C_Typ : constant Entity_Id := Component_Type (Typ);
 
       begin
          --  Component type is known to contain tasks or protected objects
@@ -608,8 +608,8 @@ package body Exp_Ch7 is
       Loc   : constant Source_Ptr := Sloc (N);
       Tsk   : Node_Id;
       Comp  : Entity_Id;
-      Stmts : List_Id := New_List;
-      U_Typ : constant Entity_Id := Underlying_Type (Typ);
+      Stmts : constant List_Id    := New_List;
+      U_Typ : constant Entity_Id  := Underlying_Type (Typ);
 
    begin
       if Has_Discriminants (U_Typ)
@@ -696,13 +696,12 @@ package body Exp_Ch7 is
    ------------------------------------
 
    procedure Clean_Simple_Protected_Objects (N : Node_Id) is
+      Stmts : constant List_Id := Statements (Handled_Statement_Sequence (N));
+      Stmt  : Node_Id          := Last (Stmts);
       E     : Entity_Id;
-      Stmts : List_Id := Statements (Handled_Statement_Sequence (N));
-      Stmt  : Node_Id := Last (Stmts);
 
    begin
       E := First_Entity (Current_Scope);
-
       while Present (E) loop
          if (Ekind (E) = E_Variable
               or else Ekind (E) = E_Constant)

@@ -122,8 +122,7 @@ package GNAT.Directory_Operations is
 
    function Base_Name
      (Path   : Path_Name;
-      Suffix : String    := "")
-      return   String;
+      Suffix : String := "") return String;
    --  Any directory prefix is removed. If Suffix is non-empty and is a
    --  suffix of Path, it is removed. This is equivalent to the UNIX basename
    --  command. The following rule is always true:
@@ -158,8 +157,7 @@ package GNAT.Directory_Operations is
 
    function Format_Pathname
      (Path  : Path_Name;
-      Style : Path_Style := System_Default)
-      return  Path_Name;
+      Style : Path_Style := System_Default) return Path_Name;
    --  Removes all double directory separator and converts all '\' to '/' if
    --  Style is UNIX and converts all '/' to '\' if Style is set to DOS. This
    --  function will help to provide a consistent naming scheme running for
@@ -187,8 +185,7 @@ package GNAT.Directory_Operations is
 
    function Expand_Path
      (Path : Path_Name;
-      Mode : Environment_Style := System_Default)
-      return Path_Name;
+      Mode : Environment_Style := System_Default) return Path_Name;
    --  Returns Path with environment variables (or logical names on OpenVMS)
    --  replaced by the current environment variable value. For example,
    --  $HOME/mydir will be replaced by /home/joe/mydir if $HOME environment

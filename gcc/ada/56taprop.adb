@@ -332,7 +332,6 @@ package body System.Task_Primitives.Operations is
 
    procedure Finalize_Lock (L : access Lock) is
       Result : Interfaces.C.int;
-
    begin
       Result := pthread_mutex_destroy (L.Mutex'Access);
       pragma Assert (Result = 0);
@@ -340,7 +339,6 @@ package body System.Task_Primitives.Operations is
 
    procedure Finalize_Lock (L : access RTS_Lock) is
       Result : Interfaces.C.int;
-
    begin
       Result := pthread_mutex_destroy (L);
       pragma Assert (Result = 0);
@@ -382,7 +380,6 @@ package body System.Task_Primitives.Operations is
      (L : access RTS_Lock; Global_Lock : Boolean := False)
    is
       Result : Interfaces.C.int;
-
    begin
       if not Single_Lock or else Global_Lock then
          Result := pthread_mutex_lock (L);
@@ -429,7 +426,6 @@ package body System.Task_Primitives.Operations is
 
    procedure Unlock (L : access RTS_Lock; Global_Lock : Boolean := False) is
       Result : Interfaces.C.int;
-
    begin
       if not Single_Lock or else Global_Lock then
          Result := pthread_mutex_unlock (L);
@@ -439,7 +435,6 @@ package body System.Task_Primitives.Operations is
 
    procedure Unlock (T : Task_ID) is
       Result : Interfaces.C.int;
-
    begin
       if not Single_Lock then
          Result := pthread_mutex_unlock (T.Common.LL.L'Access);
@@ -456,7 +451,6 @@ package body System.Task_Primitives.Operations is
       Reason   : System.Tasking.Task_States)
    is
       pragma Unreferenced (Reason);
-
       Result : Interfaces.C.int;
 
    begin
@@ -468,7 +462,7 @@ package body System.Task_Primitives.Operations is
            (Self_ID.Common.LL.CV'Access, Self_ID.Common.LL.L'Access);
       end if;
 
-      --  EINTR is not considered a failure.
+      --  EINTR is not considered a failure
 
       pragma Assert (Result = 0 or else Result = EINTR);
    end Sleep;
@@ -654,7 +648,6 @@ package body System.Task_Primitives.Operations is
    function Monotonic_Clock return Duration is
       TS     : aliased timespec;
       Result : Interfaces.C.int;
-
    begin
       Result := clock_gettime
         (clock_id => CLOCK_REALTIME, tp => TS'Unchecked_Access);
@@ -669,7 +662,6 @@ package body System.Task_Primitives.Operations is
    function RT_Resolution return Duration is
       Res    : aliased timespec;
       Result : Interfaces.C.int;
-
    begin
       Result := clock_getres
         (clock_id => CLOCK_REALTIME, Res => Res'Unchecked_Access);
@@ -683,9 +675,7 @@ package body System.Task_Primitives.Operations is
 
    procedure Wakeup (T : Task_ID; Reason : System.Tasking.Task_States) is
       pragma Unreferenced (Reason);
-
       Result : Interfaces.C.int;
-
    begin
       Result := pthread_cond_signal (T.Common.LL.CV'Access);
       pragma Assert (Result = 0);
@@ -697,7 +687,7 @@ package body System.Task_Primitives.Operations is
 
    procedure Yield (Do_Yield : Boolean := True) is
       Result : Interfaces.C.int;
-
+      pragma Unreferenced (Result);
    begin
       if Do_Yield then
          Result := sched_yield;
@@ -923,6 +913,7 @@ package body System.Task_Primitives.Operations is
       end if;
 
       if Stack_Base_Available then
+
          --  If Stack Checking is supported then allocate 2 additional pages:
          --
          --  In the worst case, stack is allocated at something like
@@ -1028,7 +1019,6 @@ package body System.Task_Primitives.Operations is
 
    procedure Abort_Task (T : Task_ID) is
       Result : Interfaces.C.int;
-
    begin
       Result := pthread_kill (T.Common.LL.Thread,
         Signal (System.Interrupt_Management.Abort_Task_Interrupt));
@@ -1095,7 +1085,6 @@ package body System.Task_Primitives.Operations is
    is
       pragma Unreferenced (T);
       pragma Unreferenced (Thread_Self);
-
    begin
       return False;
    end Suspend_Task;
@@ -1106,12 +1095,10 @@ package body System.Task_Primitives.Operations is
 
    function Resume_Task
      (T           : ST.Task_ID;
-      Thread_Self : Thread_Id)
-      return        Boolean
+      Thread_Self : Thread_Id) return Boolean
    is
       pragma Unreferenced (T);
       pragma Unreferenced (Thread_Self);
-
    begin
       return False;
    end Resume_Task;
