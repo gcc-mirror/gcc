@@ -1,3 +1,12 @@
+2004-04-30  Ranjit Mathew  <rmathew@hotmail.com>
+
+	Fixes PR java/15133
+	* gjavah.c (struct method_name): Add member is_native.
+	(overloaded_jni_method_exists_p): Match candidate method only if
+	it is native.
+	(print_method_info): Initialise is_native flag from the method's
+	access flags.
+
 2004-04-30  Roger Sayle  <roger@eyesopen.com>
 
 	* builtins.c (java_builtins): Add acos, asin, ceil and floor.
