@@ -1,3 +1,7 @@
+Wed Jan 28 20:08:26 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* config/t-svr4 (TARGET_LIBGCC2_CFLAGS): Add -fPIC.
+
 Wed Jan 28 20:04:43 1998  Ian Lance Taylor  <ian@cygnus.com>
 
 	* i386/t-cygwin32 (LIMITS_H_TEST, LIBGCC2_INCLUDES): Define.
