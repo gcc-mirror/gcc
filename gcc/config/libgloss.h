@@ -1,6 +1,6 @@
 /* libgloss.h -- operating system specific defines to be used when
    targeting GCC for Libgloss supported targets.
-   Copyright (C) 1996 Free Software Foundation, Inc.
+   Copyright (C) 1996, 2004 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
