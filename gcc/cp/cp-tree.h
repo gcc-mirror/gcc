@@ -3016,7 +3016,7 @@ extern int is_friend				PROTO((tree, tree));
 extern void make_friend_class			PROTO((tree, tree));
 extern void add_friend                          PROTO((tree, tree));
 extern void add_friends                         PROTO((tree, tree, tree));
-extern tree do_friend				PROTO((tree, tree, tree, tree, enum overload_flags, tree, int));
+extern tree do_friend				PROTO((tree, tree, tree, tree, tree, enum overload_flags, tree, int));
 
 /* in init.c */
 extern void init_init_processing		PROTO((void));

@@ -1,3 +1,21 @@
+1999-05-16  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl2.c (finish_objects): Don't use .?tors.* if we don't have
+	ASM_OUTPUT_CONSTRUCTOR.
+
+	* friend.c (do_friend): Add attrlist arg.  Remove support for
+	getting a non-decl as 'decl'.
+	* decl.c (grokfndecl): Remove attrlist arg.  Don't set attrs or
+	rtl.
+	(grokdeclarator): Adjust.
+	* cp-tree.h: Adjust.
+
+	* parse.y (direct_new_declarator): Make the first one a
+	nonmomentary_expr, too.
+	* init.c (build_new): suspend_momentary while we're calculating
+	the size.
+	(build_new_1): Don't copy size.
+
 1999-05-16  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (permanent_p): New function.
@@ -209,7 +227,7 @@ Wed Apr 28 11:42:22 1999  Andreas Schwab  <schwab@issan.cs.uni-dortmund.de>
 	* cp-tree.h (lang_decl_flags): Remove returns_first_arg and
 	preserves_first_arg.  Enlarge dummy accordingly.
 	(DECL_TINFO_FN_P): New macro.
-	(SET_DECL_TINO_FN_P): Likeiwse.
+	(SET_DECL_TINFO_FN_P): Likeiwse.
 	(DECL_RETURNS_FIRST_ARG): Remove.
 	(DECL_PRESERVES_THIS): Likewise.
 	(DECL_INIT_PRIORITY): New macro.

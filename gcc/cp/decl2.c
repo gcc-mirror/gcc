@@ -2950,7 +2950,7 @@ finish_objects (method_type, initp)
 	assemble_destructor (fnname);
     }
 
-#ifdef ASM_OUTPUT_SECTION_NAME
+#if defined (ASM_OUTPUT_SECTION_NAME) && defined (ASM_OUTPUT_CONSTRUCTOR)
   /* If we're using init priority we can't use assemble_*tor, but on ELF
      targets we can stick the references into named sections for GNU ld
      to collect.  */

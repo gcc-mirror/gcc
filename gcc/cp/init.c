@@ -1893,6 +1893,7 @@ build_new (placement, decl, init, use_global_new)
   tree type, rval;
   tree nelts = NULL_TREE, t;
   int has_array = 0;
+  int momentary;
 
   tree pending_sizes = NULL_TREE;
 
@@ -1952,6 +1953,9 @@ build_new (placement, decl, init, use_global_new)
 		      == NULL_TREE)
 		    pedwarn ("size in array new must have integral type");
 
+		  /* The size must live long so it can be used in a
+		     cleanup.  */
+		  momentary = suspend_momentary ();
 		  this_nelts = save_expr (cp_convert (sizetype, this_nelts));
 		  absdcl = TREE_OPERAND (absdcl, 0);
 	          if (this_nelts == integer_zero_node)
@@ -1961,6 +1965,7 @@ build_new (placement, decl, init, use_global_new)
 		    }
 		  else
 		    nelts = build_binary_op (MULT_EXPR, nelts, this_nelts);
+		  resume_momentary (momentary);
 		}
 	    }
 	  else
@@ -2046,7 +2051,9 @@ build_new (placement, decl, init, use_global_new)
      both new int and new int[10] return an int*.  5.3.4.  */
   if (TREE_CODE (type) == ARRAY_TYPE && has_array == 0)
     {
+      momentary = suspend_momentary ();
       nelts = array_type_nelts_top (type);
+      resume_momentary (momentary);
       has_array = 1;
       type = TREE_TYPE (type);
     }
@@ -2428,9 +2435,6 @@ build_new_1 (exp)
 	      fn = TREE_OPERAND (alloc_expr, 1);
 	      fn = TREE_OPERAND (fn, 0);
 	    }
-
-	  /* Copy size to the saveable obstack.  */
-	  size = mapcar (size, permanent_p);
 
 	  cleanup = build_op_delete_call (dcode, alloc_node, size, flags, fn);
 
