@@ -53,6 +53,7 @@ static void flow_dfs_compute_reverse_finish
   PARAMS ((depth_first_search_ds));
 static void remove_fake_successors	PARAMS ((basic_block));
 static bool need_fake_edge_p		PARAMS ((rtx));
+static bool keep_with_call_p		PARAMS ((rtx));
 
 /* Return true if the block has no effect and only forwards control flow to
    its single destination.  */
@@ -209,6 +210,29 @@ need_fake_edge_p (insn)
 	  || GET_CODE (PATTERN (insn)) == ASM_INPUT);
 }
 
+/* Return true if INSN should be kept in the same block as a preceding call.
+   This is done for a single-set whose destination is a fixed register or
+   whose source is the function return value.  This is a helper function for
+   flow_call_edges_add.  */
+
+static bool
+keep_with_call_p (insn)
+     rtx insn;
+{
+  rtx set;
+
+  if (INSN_P (insn) && (set = single_set (insn)) != NULL)
+    {
+      if (GET_CODE (SET_DEST (set)) == REG
+	  && fixed_regs[REGNO (SET_DEST (set))])
+	return true;
+      if (GET_CODE (SET_SRC (set)) == REG
+	  && REG_FUNCTION_VALUE_P (SET_SRC (set)))
+	return true;
+    }
+  return false;
+}
+
 /* Add fake edges to the function exit for any non constant and non noreturn
    calls, volatile inline assembly in the bitmap of blocks specified by
    BLOCKS or to the whole CFG if BLOCKS is zero.  Return the number of blocks
@@ -259,17 +283,27 @@ flow_call_edges_add (blocks)
      spanning tree in the case that the call doesn't return.
 
      Handle this by adding a dummy instruction in a new last basic block.  */
-  if (check_last_block
-      && need_fake_edge_p (BASIC_BLOCK (n_basic_blocks - 1)->end))
+  if (check_last_block)
     {
-       edge e;
+      basic_block bb = BASIC_BLOCK (n_basic_blocks - 1);
+      rtx insn = bb->end;
 
-       for (e = BASIC_BLOCK (n_basic_blocks - 1)->succ; e; e = e->succ_next)
-	 if (e->dest == EXIT_BLOCK_PTR)
-	    break;
+      /* Back up past insns that must be kept in the same block as a call.  */
+      while (insn != bb->head
+	     && keep_with_call_p (insn))
+	insn = PREV_INSN (insn);
 
-       insert_insn_on_edge (gen_rtx_USE (VOIDmode, const0_rtx), e);
-       commit_edge_insertions ();
+      if (need_fake_edge_p (insn))
+	{
+	  edge e;
+
+	  for (e = bb->succ; e; e = e->succ_next)
+	    if (e->dest == EXIT_BLOCK_PTR)
+	      break;
+
+	  insert_insn_on_edge (gen_rtx_USE (VOIDmode, const0_rtx), e);
+	  commit_edge_insertions ();
+	}
     }
 
   /* Now add fake edges to the function exit for any non constant
@@ -288,14 +322,22 @@ flow_call_edges_add (blocks)
 	  if (need_fake_edge_p (insn))
 	    {
 	      edge e;
+	      rtx split_at_insn = insn;
 
-	      /* The above condition should be enough to verify that there is
-		 no edge to the exit block in CFG already.  Calling make_edge
-		 in such case would make us to mark that edge as fake and
-		 remove it later.  */
+	      /* Don't split the block between a call and an insn that should
+	         remain in the same block as the call.  */
+	      if (GET_CODE (insn) == CALL_INSN)
+		while (split_at_insn != bb->end
+		       && keep_with_call_p (NEXT_INSN (split_at_insn)))
+		  split_at_insn = NEXT_INSN (split_at_insn);
+
+	      /* The handling above of the final block before the epilogue
+	         should be enough to verify that there is no edge to the exit
+		 block in CFG already.  Calling make_edge in such case would
+		 cause us to mark that edge as fake and remove it later.  */
 
 #ifdef ENABLE_CHECKING
-	      if (insn == bb->end)
+	      if (split_at_insn == bb->end)
 		for (e = bb->succ; e; e = e->succ_next)
 		  if (e->dest == EXIT_BLOCK_PTR)
 		    abort ();
@@ -303,7 +345,7 @@ flow_call_edges_add (blocks)
 
 	      /* Note that the following may create a new basic block
 		 and renumber the existing basic blocks.  */
-	      e = split_block (bb, insn);
+	      e = split_block (bb, split_at_insn);
 	      if (e)
 		blocks_split++;
 

@@ -1,3 +1,9 @@
+2002-02-01  Janis Johnson  <janis187@us.ibm.com>
+
+	* cfganal.c (keep_with_call_p): New function.
+	(flow_call_edges_add): Prevent splitting a block between a call and
+	a single-set instruction that should be kept in the same block.
+
 2002-02-01  Craig Rodrigues  <rodrigc@gcc.gnu.org>
 
 	* doc/install.texi (avr): Update outdated URL.
