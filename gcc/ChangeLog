@@ -1,3 +1,9 @@
+Thu May 23 19:43:41 CEST 2002  Jan Hubicka  <jh@suse.cz>
+
+	* cfg.c (dump_flow_info): Print results of
+	maybe_hot/probably_never_executed predicates.
+	* toplev.c (open_dump_file): Print function frequency.
+
 2002-05-23  David S. Miller  <davem@redhat.com>
 
 	* cse.c (approx_reg_cost_1, approx_reg_cost): Recode to not use
