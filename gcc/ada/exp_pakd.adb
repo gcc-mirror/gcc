@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1219,9 +1219,13 @@ package body Exp_Pakd is
 
          --  Currently the code in this unit requires that packed arrays
          --  represented by non-modular arrays of bytes be on a byte
-         --  boundary.
+         --  boundary for bit sizes handled by System.Pack_nn units.
+         --  That's because these units assume the array being accessed
+         --  starts on a byte boundary.
 
-         Set_Must_Be_On_Byte_Boundary (Typ);
+         if Get_Id (UI_To_Int (Csize)) /= RE_Null then
+            Set_Must_Be_On_Byte_Boundary (Typ);
+         end if;
       end if;
    end Create_Packed_Array_Type;
 

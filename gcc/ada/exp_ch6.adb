@@ -123,6 +123,9 @@ package body Exp_Ch6 is
    --
    --  For all parameter modes, actuals that denote components and slices
    --  of packed arrays are expanded into suitable temporaries.
+   --
+   --  For non-scalar objects that are possibly unaligned, add call by copy
+   --  code (copy in for IN and IN OUT, copy out for OUT and IN OUT).
 
    procedure Expand_Inlined_Call
     (N         : Node_Id;
@@ -501,11 +504,10 @@ package body Exp_Ch6 is
       --  also takes care of any constraint checks required for the type
       --  conversion case (on both the way in and the way out).
 
-      procedure Add_Packed_Call_By_Copy_Code;
-      --  This is used when the actual involves a reference to an element
-      --  of a packed array, where we can appropriately use a simpler
-      --  approach than the full call by copy code. We just copy the value
-      --  in and out of an appropriate temporary.
+      procedure Add_Simple_Call_By_Copy_Code;
+      --  This is similar to the above, but is used in cases where we know
+      --  that all that is needed is to simply create a temporary and copy
+      --  the value in and out of the temporary.
 
       procedure Check_Fortran_Logical;
       --  A value of type Logical that is passed through a formal parameter
@@ -532,7 +534,7 @@ package body Exp_Ch6 is
          Expr  : Node_Id;
          Init  : Node_Id;
          Temp  : Entity_Id;
-         Indic : Node_Id := New_Occurrence_Of (Etype (Formal), Loc);
+         Indic : Node_Id;
          Var   : Entity_Id;
          F_Typ : constant Entity_Id := Etype (Formal);
          V_Typ : Entity_Id;
@@ -540,6 +542,17 @@ package body Exp_Ch6 is
 
       begin
          Temp := Make_Defining_Identifier (Loc, New_Internal_Name ('T'));
+
+         --  Use formal type for temp, unless formal type is an unconstrained
+         --  array, in which case we don't have to worry about bounds checks,
+         --  and we use the actual type, since that has appropriate bonds.
+
+         if Is_Array_Type (F_Typ) and then not Is_Constrained (F_Typ) then
+            Indic := New_Occurrence_Of (Etype (Actual), Loc);
+         else
+            Indic := New_Occurrence_Of (Etype (Formal), Loc);
+         end if;
+
 
          if Nkind (Actual) = N_Type_Conversion then
             V_Typ := Etype (Expression (Actual));
@@ -584,7 +597,7 @@ package body Exp_Ch6 is
             then
                --  Actual is a one-dimensional array or slice, and the type
                --  requires no initialization. Create a temporary of the
-               --  right size, but do copy actual into it (optimization).
+               --  right size, but do not copy actual into it (optimization).
 
                Init := Empty;
                Indic :=
@@ -621,11 +634,9 @@ package body Exp_Ch6 is
                      Is_Bit_Packed_Array (Etype (Expression (Actual))))
          then
             if Conversion_OK (Actual) then
-               Init :=
-                 OK_Convert_To (F_Typ, New_Occurrence_Of (Var, Loc));
+               Init := OK_Convert_To (F_Typ, New_Occurrence_Of (Var, Loc));
             else
-               Init :=
-                 Convert_To (F_Typ, New_Occurrence_Of (Var, Loc));
+               Init := Convert_To (F_Typ, New_Occurrence_Of (Var, Loc));
             end if;
 
          elsif Ekind (Formal) = E_In_Parameter then
@@ -639,7 +650,7 @@ package body Exp_Ch6 is
            Make_Object_Declaration (Loc,
              Defining_Identifier => Temp,
              Object_Definition   => Indic,
-             Expression => Init);
+             Expression          => Init);
          Set_Assignment_OK (N_Node);
          Insert_Action (N, N_Node);
 
@@ -700,20 +711,32 @@ package body Exp_Ch6 is
       end Add_Call_By_Copy_Code;
 
       ----------------------------------
-      -- Add_Packed_Call_By_Copy_Code --
+      -- Add_Simple_Call_By_Copy_Code --
       ----------------------------------
 
-      procedure Add_Packed_Call_By_Copy_Code is
+      procedure Add_Simple_Call_By_Copy_Code is
          Temp   : Entity_Id;
          Incod  : Node_Id;
          Outcod : Node_Id;
          Lhs    : Node_Id;
          Rhs    : Node_Id;
+         Indic  : Node_Id;
+         F_Typ  : constant Entity_Id := Etype (Formal);
 
       begin
-         Reset_Packed_Prefix;
+         --  Use formal type for temp, unless formal type is an unconstrained
+         --  array, in which case we don't have to worry about bounds checks,
+         --  and we use the actual type, since that has appropriate bonds.
+
+         if Is_Array_Type (F_Typ) and then not Is_Constrained (F_Typ) then
+            Indic := New_Occurrence_Of (Etype (Actual), Loc);
+         else
+            Indic := New_Occurrence_Of (Etype (Formal), Loc);
+         end if;
 
          --  Prepare to generate code
+
+         Reset_Packed_Prefix;
 
          Temp := Make_Defining_Identifier (Loc, New_Internal_Name ('T'));
          Incod  := Relocate_Node (Actual);
@@ -729,9 +752,8 @@ package body Exp_Ch6 is
          Insert_Action (N,
            Make_Object_Declaration (Loc,
              Defining_Identifier => Temp,
-             Object_Definition   =>
-               New_Occurrence_Of (Etype (Formal), Loc),
-             Expression => Incod));
+             Object_Definition   => Indic,
+             Expression          => Incod));
 
          --  The actual is simply a reference to the temporary
 
@@ -754,8 +776,9 @@ package body Exp_Ch6 is
               Make_Assignment_Statement (Loc,
                 Name       => Lhs,
                 Expression => Rhs));
+            Set_Assignment_OK (Name (Last (Post_Call)));
          end if;
-      end Add_Packed_Call_By_Copy_Code;
+      end Add_Simple_Call_By_Copy_Code;
 
       ---------------------------
       -- Check_Fortran_Logical --
@@ -930,7 +953,14 @@ package body Exp_Ch6 is
             --  [in] out parameters.
 
             elsif Is_Ref_To_Bit_Packed_Array (Actual) then
-               Add_Packed_Call_By_Copy_Code;
+               Add_Simple_Call_By_Copy_Code;
+
+            --  If a non-scalar actual is possibly unaligned, we need a copy
+
+            elsif Is_Possibly_Unaligned_Object (Actual)
+              and then not Represented_As_Scalar (Etype (Formal))
+            then
+               Add_Simple_Call_By_Copy_Code;
 
             --  References to slices of bit packed arrays are expanded
 
@@ -983,7 +1013,7 @@ package body Exp_Ch6 is
             --  the special processing above for the OUT and IN OUT cases
             --  could be performed. We could make the test in Exp_Ch4 more
             --  complex and have it detect the parameter mode, but it is
-            --  easier simply to handle all cases here.
+            --  easier simply to handle all cases here.)
 
             if Nkind (Actual) = N_Indexed_Component
               and then Is_Packed (Etype (Prefix (Actual)))
@@ -997,7 +1027,14 @@ package body Exp_Ch6 is
             --  Is this really necessary in all cases???
 
             elsif Is_Ref_To_Bit_Packed_Array (Actual) then
-               Add_Packed_Call_By_Copy_Code;
+               Add_Simple_Call_By_Copy_Code;
+
+            --  If a non-scalar actual is possibly unaligned, we need a copy
+
+            elsif Is_Possibly_Unaligned_Object (Actual)
+              and then not Represented_As_Scalar (Etype (Formal))
+            then
+               Add_Simple_Call_By_Copy_Code;
 
             --  Similarly, we have to expand slices of packed arrays here
             --  because the result must be byte aligned.
@@ -1768,13 +1805,10 @@ package body Exp_Ch6 is
          end loop;
       end if;
 
-      if Ekind (Subp) = E_Procedure
-         or else (Ekind (Subp) = E_Subprogram_Type
-                   and then Etype (Subp) = Standard_Void_Type)
-         or else Is_Entry (Subp)
-      then
-         Expand_Actuals (N, Subp);
-      end if;
+      --  At this point we have all the actuals, so this is the point at
+      --  which the various expansion activities for actuals is carried out.
+
+      Expand_Actuals (N, Subp);
 
       --  If the subprogram is a renaming, or if it is inherited, replace it
       --  in the call with the name of the actual subprogram being called.
@@ -1924,14 +1958,17 @@ package body Exp_Ch6 is
                        Designated_Type (Base_Type (Etype (Ptr)));
 
             begin
-               Obj := Make_Selected_Component (Loc,
-                 Prefix => Unchecked_Convert_To (T, Ptr),
-                 Selector_Name => New_Occurrence_Of (First_Entity (T), Loc));
+               Obj :=
+                 Make_Selected_Component (Loc,
+                   Prefix        => Unchecked_Convert_To (T, Ptr),
+                   Selector_Name =>
+                     New_Occurrence_Of (First_Entity (T), Loc));
 
-               Nam := Make_Selected_Component (Loc,
-                 Prefix => Unchecked_Convert_To (T, Ptr),
-                 Selector_Name => New_Occurrence_Of (
-                   Next_Entity (First_Entity (T)), Loc));
+               Nam :=
+                 Make_Selected_Component (Loc,
+                   Prefix        => Unchecked_Convert_To (T, Ptr),
+                   Selector_Name =>
+                     New_Occurrence_Of (Next_Entity (First_Entity (T)), Loc));
 
                Nam := Make_Explicit_Dereference (Loc, Nam);
 
@@ -2621,11 +2658,11 @@ package body Exp_Ch6 is
    --  Start of processing for Expand_Inlined_Call
 
    begin
-      --  Check for special case of To_Address call, and if so, just
-      --  do an unchecked conversion instead of expanding the call.
-      --  Not only is this more efficient, but it also avoids a
-      --  problem with order of elaboration when address clauses
-      --  are inlined (address expr elaborated at wrong point).
+      --  Check for special case of To_Address call, and if so, just do an
+      --  unchecked conversion instead of expanding the call. Not only is this
+      --  more efficient, but it also avoids problem with order of elaboration
+      --  when address clauses are inlined (address expr elaborated at wrong
+      --  point).
 
       if Subp = RTE (RE_To_Address) then
          Rewrite (N,
@@ -2635,13 +2672,31 @@ package body Exp_Ch6 is
          return;
       end if;
 
+      --  Check for an illegal attempt to inline a recursive procedure. If the
+      --  subprogram has parameters this is detected when trying to supply a
+      --  binding for parameters that already have one. For parameterless
+      --  subprograms this must be done explicitly.
+
+      if In_Open_Scopes (Subp) then
+         Error_Msg_N ("call to recursive subprogram cannot be inlined?", N);
+         Set_Is_Inlined (Subp, False);
+         return;
+      end if;
+
       if Nkind (Orig_Bod) = N_Defining_Identifier then
 
          --  Subprogram is a renaming_as_body. Calls appearing after the
          --  renaming can be replaced with calls to the renamed entity
-         --  directly, because the subprograms are subtype conformant.
+         --  directly, because the subprograms are subtype conformant. If
+         --  the renamed subprogram is an inherited operation, we must redo
+         --  the expansion because implicit conversions may be needed.
 
          Set_Name (N, New_Occurrence_Of (Orig_Bod, Loc));
+
+         if Present (Alias (Orig_Bod)) then
+            Expand_Call (N);
+         end if;
+
          return;
       end if;
 
@@ -2685,10 +2740,10 @@ package body Exp_Ch6 is
          end if;
 
          --  If the argument may be a controlling argument in a call within
-         --  the inlined body, we must preserve its classwide nature to
-         --  insure that dynamic dispatching take place subsequently.
-         --  If the formal has a constraint it must be preserved to retain
-         --  the semantics of the body.
+         --  the inlined body, we must preserve its classwide nature to insure
+         --  that dynamic dispatching take place subsequently. If the formal
+         --  has a constraint it must be preserved to retain the semantics of
+         --  the body.
 
          if Is_Class_Wide_Type (Etype (F))
            or else (Is_Access_Type (Etype (F))
@@ -2847,7 +2902,7 @@ package body Exp_Ch6 is
       end if;
 
       --  Analyze Blk with In_Inlined_Body set, to avoid spurious errors on
-      --  conflicting private views that Gigi would ignore. If this is a
+      --  conflicting private views that Gigi would ignore. If this is
       --  predefined unit, analyze with checks off, as is done in the non-
       --  inlined run-time units.
 
@@ -2924,8 +2979,8 @@ package body Exp_Ch6 is
 
          elsif Requires_Transient_Scope (Typ) then
 
-            --  Verify that the return type of the enclosing function has
-            --  the same constrained status as that of the expression.
+            --  Verify that the return type of the enclosing function has the
+            --  same constrained status as that of the expression.
 
             while Ekind (S) /= E_Function loop
                S := Scope (S);
@@ -2968,16 +3023,16 @@ package body Exp_Ch6 is
 
    begin
       --  A special check. If stack checking is enabled, and the return type
-      --  might generate a large temporary, and the call is not the right
-      --  side of an assignment, then generate an explicit temporary. We do
-      --  this because otherwise gigi may generate a large temporary on the
-      --  fly and this can cause trouble with stack checking.
+      --  might generate a large temporary, and the call is not the right side
+      --  of an assignment, then generate an explicit temporary. We do this
+      --  because otherwise gigi may generate a large temporary on the fly and
+      --  this can cause trouble with stack checking.
 
       --  This is unecessary if the call is the expression in an object
-      --  declaration, or if it appears outside of any library unit. This
-      --  can only happen if it appears as an actual in a library-level
-      --  instance, in which case a temporary will be generated for it once
-      --  the instance itself is installed.
+      --  declaration, or if it appears outside of any library unit. This can
+      --  only happen if it appears as an actual in a library-level instance,
+      --  in which case a temporary will be generated for it once the instance
+      --  itself is installed.
 
       if May_Generate_Large_Temp (Typ)
         and then not Rhs_Of_Assign_Or_Decl (N)
@@ -2986,10 +3041,10 @@ package body Exp_Ch6 is
       then
          if Stack_Checking_Enabled then
 
-            --  Note: it might be thought that it would be OK to use a call
-            --  to Force_Evaluation here, but that's not good enough, because
-            --  that can results in a 'Reference construct that may still
-            --  need a temporary.
+            --  Note: it might be thought that it would be OK to use a call to
+            --  Force_Evaluation here, but that's not good enough, because
+            --  that can results in a 'Reference construct that may still need
+            --  a temporary.
 
             declare
                Loc      : constant Source_Ptr := Sloc (N);
@@ -3086,9 +3141,9 @@ package body Exp_Ch6 is
    --  Add poll call if ATC polling is enabled, unless the body will be
    --  inlined by the back-end.
 
-   --  Add return statement if last statement in body is not a return
-   --  statement (this makes things easier on Gigi which does not want
-   --  to have to handle a missing return).
+   --  Add return statement if last statement in body is not a return statement
+   --  (this makes things easier on Gigi which does not want to have to handle
+   --  a missing return).
 
    --  Add call to Activate_Tasks if body is a task activator
 

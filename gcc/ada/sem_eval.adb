@@ -377,8 +377,7 @@ package body Sem_Eval is
 
    function Compile_Time_Compare
      (L, R : Node_Id;
-      Rec  : Boolean := False)
-      return Compare_Result
+      Rec  : Boolean := False) return Compare_Result
    is
       Ltyp : constant Entity_Id := Etype (L);
       Rtyp : constant Entity_Id := Etype (R);
@@ -794,6 +793,34 @@ package body Sem_Eval is
          end;
       end if;
    end Compile_Time_Compare;
+
+   -------------------------------
+   -- Compile_Time_Known_Bounds --
+   -------------------------------
+
+   function Compile_Time_Known_Bounds (T : Entity_Id) return Boolean is
+      Indx : Node_Id;
+      Typ  : Entity_Id;
+
+   begin
+      if not Is_Array_Type (T) then
+         return False;
+      end if;
+
+      Indx := First_Index (T);
+      while Present (Indx) loop
+         Typ := Underlying_Type (Etype (Indx));
+         if not Compile_Time_Known_Value (Type_Low_Bound (Typ)) then
+            return False;
+         elsif not Compile_Time_Known_Value (Type_High_Bound (Typ)) then
+            return False;
+         else
+            Next_Index (Indx);
+         end if;
+      end loop;
+
+      return True;
+   end Compile_Time_Known_Bounds;
 
    ------------------------------
    -- Compile_Time_Known_Value --
@@ -3116,8 +3143,7 @@ package body Sem_Eval is
    function In_Subrange_Of
      (T1        : Entity_Id;
       T2        : Entity_Id;
-      Fixed_Int : Boolean := False)
-      return      Boolean
+      Fixed_Int : Boolean := False) return Boolean
    is
       L1 : Node_Id;
       H1 : Node_Id;
@@ -3219,8 +3245,7 @@ package body Sem_Eval is
      (N         : Node_Id;
       Typ       : Entity_Id;
       Fixed_Int : Boolean := False;
-      Int_Real  : Boolean := False)
-      return      Boolean
+      Int_Real  : Boolean := False) return Boolean
    is
       Val  : Uint;
       Valr : Ureal;
@@ -3400,8 +3425,7 @@ package body Sem_Eval is
      (N         : Node_Id;
       Typ       : Entity_Id;
       Fixed_Int : Boolean := False;
-      Int_Real  : Boolean := False)
-      return      Boolean
+      Int_Real  : Boolean := False) return Boolean
    is
       Val  : Uint;
       Valr : Ureal;
@@ -3691,9 +3715,8 @@ package body Sem_Eval is
    ------------------------------------
 
    function Subtypes_Statically_Compatible
-     (T1   : Entity_Id;
-      T2   : Entity_Id)
-      return Boolean
+     (T1 : Entity_Id;
+      T2 : Entity_Id) return Boolean
    is
    begin
       if Is_Scalar_Type (T1) then

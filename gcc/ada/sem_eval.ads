@@ -137,8 +137,7 @@ package Sem_Eval is
    subtype Compare_LE is Compare_Result range LT .. EQ;
    function Compile_Time_Compare
      (L, R : Node_Id;
-      Rec  : Boolean := False)
-      return Compare_Result;
+      Rec  : Boolean := False) return Compare_Result;
    --  Given two expression nodes, finds out whether it can be determined
    --  at compile time how the runtime values will compare. An Unknown
    --  result means that the result of a comparison cannot be determined at
@@ -194,9 +193,8 @@ package Sem_Eval is
    --  range is not static, or because one or the other bound raises CE).
 
    function Subtypes_Statically_Compatible
-     (T1   : Entity_Id;
-      T2   : Entity_Id)
-      return Boolean;
+     (T1 : Entity_Id;
+      T2 : Entity_Id) return Boolean;
    --  Returns true if the subtypes are unconstrained or the constraint on
    --  on T1 is statically compatible with T2 (as defined by 4.9.1(4)).
    --  Otherwise returns false.
@@ -221,6 +219,11 @@ package Sem_Eval is
    --  value is a compile time known aggregate, i.e. an aggregate all of
    --  whose constituent expressions are either compile time known values
    --  or compile time known aggregates.
+
+   function Compile_Time_Known_Bounds (T : Entity_Id) return Boolean;
+   --  If T is an array whose index bounds are all known at compile time,
+   --  then True is returned, if T is not an array, or one or more of its
+   --  index bounds is not known at compile time, then False is returned.
 
    function Expr_Value (N : Node_Id) return Uint;
    --  Returns the folded value of the expression N. This function is called
@@ -330,8 +333,7 @@ package Sem_Eval is
      (N         : Node_Id;
       Typ       : Entity_Id;
       Fixed_Int : Boolean := False;
-      Int_Real  : Boolean := False)
-      return      Boolean;
+      Int_Real  : Boolean := False) return Boolean;
    --  Returns True if it can be guaranteed at compile time that expression
    --  N is known to be in range of the subtype Typ. If the values of N or
    --  of either bouds of Type are unknown at compile time, False will
@@ -353,8 +355,7 @@ package Sem_Eval is
      (N         : Node_Id;
       Typ       : Entity_Id;
       Fixed_Int : Boolean := False;
-      Int_Real  : Boolean := False)
-      return      Boolean;
+      Int_Real  : Boolean := False) return Boolean;
    --  Returns True if it can be guaranteed at compile time that expression
    --  N is known to be out of range of the subtype Typ.  True is returned
    --  if Typ is a scalar type, at least one of whose bounds is known at
@@ -367,8 +368,7 @@ package Sem_Eval is
    function In_Subrange_Of
      (T1        : Entity_Id;
       T2        : Entity_Id;
-      Fixed_Int : Boolean := False)
-      return      Boolean;
+      Fixed_Int : Boolean := False) return Boolean;
    --  Returns True if it can be guaranteed at compile time that the range
    --  of values for scalar type T1 are always in the range of scalar type
    --  T2.  A result of False does not mean that T1 is not in T2's subrange,
