@@ -1,3 +1,8 @@
+2001-10-12  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR g++/4476
+	* g++.dg/other/friend1.C: New test.
+
 2001-10-11  Richard Henderson  <rth@redhat.com>
 
 	* g++.old-deja/g++.other/crash18.C: Add -S to options.
