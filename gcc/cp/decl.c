@@ -254,18 +254,6 @@ int in_std;
 /* Expect only namespace names now. */
 static int only_namespace_names;
 
-/* In a destructor, the last insn emitted after the start of the
-   function and the parms.  */
-
-#define last_dtor_insn cp_function_chain->x_last_dtor_insn
-
-/* In a constructor, the last insn emitted after the start of the
-   function and the parms, the exception specification and any
-   function-try-block.  The constructor initializers are emitted after
-   this insn.  */
-
-#define last_parm_cleanup_insn cp_function_chain->x_last_parm_cleanup_insn
-
 /* If original DECL_RESULT of current function was a register,
    but due to being an addressable named return value, would up
    on the stack, this variable holds the named return value's
@@ -13099,15 +13087,12 @@ start_function (declspecs, declarator, attrs, flags)
   return 1;
 }
 
-/* Called after store_parm_decls for a function-try-block.  We need to update
-   last_parm_cleanup_insn so that the base initializers for a constructor
-   are run within this block, not before it.  */
+/* Called after store_parm_decls for a function-try-block.  */
 
 void
 expand_start_early_try_stmts ()
 {
   expand_start_try_stmts ();
-  last_parm_cleanup_insn = get_last_insn ();
 }
 
 /* Store the parameter declarations into the current function declaration.
@@ -13249,9 +13234,6 @@ store_parm_decls ()
       && building_stmt_tree () 
       && TYPE_RAISES_EXCEPTIONS (TREE_TYPE (current_function_decl)))
     current_eh_spec_try_block = expand_start_eh_spec ();
-
-  last_parm_cleanup_insn = get_last_insn ();
-  last_dtor_insn = get_last_insn ();
 }
 
 /* Bind a name and initialization to the return value of
@@ -13298,8 +13280,6 @@ save_function_data (decl)
   f->x_member_init_list = NULL_TREE;
   f->x_stmt_tree.x_last_stmt = NULL_TREE;
   f->x_stmt_tree.x_last_expr_type = NULL_TREE;
-  f->x_last_dtor_insn = NULL_RTX;
-  f->x_last_parm_cleanup_insn = NULL_RTX;
   f->x_result_rtx = NULL_RTX;
   f->x_named_label_uses = NULL;
   f->bindings = NULL;
@@ -14233,8 +14213,6 @@ mark_lang_function (p)
   ggc_mark_tree (p->x_eh_spec_try_block);
   ggc_mark_tree (p->x_scope_stmt_stack);
 
-  ggc_mark_rtx (p->x_last_dtor_insn);
-  ggc_mark_rtx (p->x_last_parm_cleanup_insn);
   ggc_mark_rtx (p->x_result_rtx);
 
   mark_stmt_tree (&p->x_stmt_tree);

@@ -679,8 +679,6 @@ struct language_function
 
   tree *x_vcalls_possible_p;
 
-  struct rtx_def *x_last_dtor_insn;
-  struct rtx_def *x_last_parm_cleanup_insn;
   struct rtx_def *x_result_rtx;
 
   int returns_value;
