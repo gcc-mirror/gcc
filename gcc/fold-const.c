@@ -6172,12 +6172,12 @@ fold_sign_changed_comparison (enum tree_code code, tree type,
 }
 
 /* Tries to replace &a[idx] CODE s * delta with &a[idx CODE delta], if s is
-   step of the array.  TYPE is the type of the expression.  ADDR is the address.
-   MULT is the multiplicative expression.  If the function succeeds, the new
-   address expression is returned.  Otherwise NULL_TREE is returned.  */
+   step of the array.  ADDR is the address. MULT is the multiplicative expression.
+   If the function succeeds, the new address expression is returned.  Otherwise
+   NULL_TREE is returned.  */
 
 static tree
-try_move_mult_to_index (tree type, enum tree_code code, tree addr, tree mult)
+try_move_mult_to_index (enum tree_code code, tree addr, tree mult)
 {
   tree s, delta, step;
   tree arg0 = TREE_OPERAND (mult, 0), arg1 = TREE_OPERAND (mult, 1);
@@ -6214,7 +6214,7 @@ try_move_mult_to_index (tree type, enum tree_code code, tree addr, tree mult)
 
 	  /* If the type sizes do not match, we might run into problems
 	     when one of them would overflow.  */
-	  if (TYPE_PRECISION (itype) != TYPE_PRECISION (type))
+	  if (TYPE_PRECISION (itype) != TYPE_PRECISION (TREE_TYPE (s)))
 	    continue;
 
 	  if (!operand_equal_p (step, fold_convert (itype, s), 0))
@@ -6246,7 +6246,7 @@ try_move_mult_to_index (tree type, enum tree_code code, tree addr, tree mult)
 					TREE_OPERAND (pos, 1),
 					delta));
 
-  return build1 (ADDR_EXPR, type, ret);
+  return build1 (ADDR_EXPR, TREE_TYPE (addr), ret);
 }
 
 
@@ -6944,16 +6944,16 @@ fold (tree expr)
 	  if (TREE_CODE (arg0) == ADDR_EXPR
 	      && TREE_CODE (arg1) == MULT_EXPR)
 	    {
-	      tem = try_move_mult_to_index (type, PLUS_EXPR, arg0, arg1);
+	      tem = try_move_mult_to_index (PLUS_EXPR, arg0, arg1);
 	      if (tem)
-		return fold (tem);
+		return fold_convert (type, fold (tem));
 	    }
 	  else if (TREE_CODE (arg1) == ADDR_EXPR
 		   && TREE_CODE (arg0) == MULT_EXPR)
 	    {
-	      tem = try_move_mult_to_index (type, PLUS_EXPR, arg1, arg0);
+	      tem = try_move_mult_to_index (PLUS_EXPR, arg1, arg0);
 	      if (tem)
-		return fold (tem);
+		return fold_convert (type, fold (tem));
 	    }
 	}
       else
@@ -7332,9 +7332,9 @@ fold (tree expr)
       if (TREE_CODE (arg0) == ADDR_EXPR
 	  && TREE_CODE (arg1) == MULT_EXPR)
 	{
-	  tem = try_move_mult_to_index (type, MINUS_EXPR, arg0, arg1);
+	  tem = try_move_mult_to_index (MINUS_EXPR, arg0, arg1);
 	  if (tem)
-	    return fold (tem);
+	    return fold_convert (type, fold (tem));
 	}
 
       if (TREE_CODE (arg0) == MULT_EXPR
