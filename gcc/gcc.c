@@ -1402,21 +1402,6 @@ static const char *gcc_libexec_prefix;
 #define MD_STARTFILE_PREFIX_1 ""
 #endif
 
-/* Supply defaults for the standard prefixes.  */
-
-#ifndef STANDARD_EXEC_PREFIX
-#define STANDARD_EXEC_PREFIX "/usr/local/lib/gcc/"
-#endif
-#ifndef STANDARD_STARTFILE_PREFIX
-#define STANDARD_STARTFILE_PREFIX "/usr/local/lib/"
-#endif
-#ifndef TOOLDIR_BASE_PREFIX
-#define TOOLDIR_BASE_PREFIX "/usr/local/"
-#endif
-#ifndef STANDARD_BINDIR_PREFIX
-#define STANDARD_BINDIR_PREFIX "/usr/local/bin"
-#endif
-
 static const char *const standard_exec_prefix = STANDARD_EXEC_PREFIX;
 static const char *const standard_exec_prefix_1 = "/usr/libexec/gcc/";
 static const char *const standard_exec_prefix_2 = "/usr/lib/gcc/";
@@ -6121,12 +6106,15 @@ main (int argc, const char *const *argv)
       /* If standard_startfile_prefix is relative, base it on
 	 standard_exec_prefix.  This lets us move the installed tree
 	 as a unit.  If GCC_EXEC_PREFIX is defined, base
-	 standard_startfile_prefix on that as well.  */
+	 standard_startfile_prefix on that as well.
+
+         If the prefix is relative, only search it for native compilers;
+         otherwise we will search a directory containing host libraries.  */
       if (IS_ABSOLUTE_PATH (standard_startfile_prefix))
 	add_sysrooted_prefix (&startfile_prefixes,
 			      standard_startfile_prefix, "BINUTILS",
 			      PREFIX_PRIORITY_LAST, 0, NULL, 1);
-      else
+      else if (*cross_compile == '0')
 	{
 	  if (gcc_exec_prefix)
 	    add_prefix (&startfile_prefixes,
