@@ -798,8 +798,6 @@ namespace std
 		__throw_exception_again;
 	    }
 	}
-      else
-	this->setstate(ios_base::failbit);
       return *this;
     }
   
@@ -834,8 +832,6 @@ namespace std
 		__throw_exception_again;
 	    }
 	}
-      else
-	this->setstate(ios_base::failbit);
       return _M_gcount;
     }
       
@@ -868,8 +864,6 @@ namespace std
 		__throw_exception_again;
 	    }
 	}
-      else
-	this->setstate(ios_base::failbit);
       return *this;
     }
   
@@ -902,8 +896,6 @@ namespace std
 		__throw_exception_again;
 	    }
 	}
-      else
-	this->setstate(ios_base::failbit);
       return *this;
     }
   
@@ -1014,8 +1006,6 @@ namespace std
 		__throw_exception_again;
 	    }
 	}
-      else
-	__in.setstate(ios_base::failbit);
       return __in;
     }
 
