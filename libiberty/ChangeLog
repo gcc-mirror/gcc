@@ -1,3 +1,7 @@
+2001-03-20  Jason Merrill  <jason@redhat.com>
+
+	* cplus-dem.c (main): Skip initial $.
+
 2001-03-15  Michael Meissner  <meissner@redhat.com>
 
 	* hashtab.c (higher_prime_number): Silence warning that 4294967291
