@@ -25,6 +25,9 @@ Fri Sep  5 10:08:44 1997  Jeffrey A Law  (law@cygnus.com)
 
 Fri Sep  5 09:37:50 1997  Jim Wilson  (wilson@cygnus.com)
 
+	* sdbout.c (plain_type_1, case ARRAY_TYPE): Verify that TYPE_DOMAIN
+	has integer TYPE_{MAX,MIN}_VALUE before using them.
+
 	* m68k/m68k.h (MACHINE_STATE_SAVE, MACHINE_STATE_RESTORE): Add
 	__HPUX_ASM__ versions.
 
