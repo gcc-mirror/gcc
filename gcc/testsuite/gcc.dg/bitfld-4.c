@@ -1,4 +1,5 @@
 /* { dg-do run } */
+/* { dg-options "" } */
 
 /* Check bitfields and non-bitfields are aligned & sized similarly.
 
