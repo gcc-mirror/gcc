@@ -1,6 +1,6 @@
 // natFileDescriptor.cc - Native part of FileDescriptor class.
 
-/* Copyright (C) 1998, 1999  Red Hat, Inc.
+/* Copyright (C) 1998, 1999, 2000  Red Hat, Inc.
 
    This file is part of libgcj.
 
@@ -83,6 +83,7 @@ java::io::FileDescriptor::open (jstring path, jint jflags)
 #endif
 
   JvAssert ((jflags & READ) || (jflags & WRITE));
+  int mode = 0644;
   if ((jflags & READ) && (jflags & WRITE))
     flags |= O_RDWR;
   else if ((jflags & READ))
@@ -94,9 +95,16 @@ java::io::FileDescriptor::open (jstring path, jint jflags)
 	flags |= O_APPEND;
       else
 	flags |= O_TRUNC;
+
+      if ((jflags & EXCL))
+	{
+	  flags |= O_EXCL;
+	  // In this case we are making a temp file.
+	  mode = 0600;
+	}
     }
 
-  int fd = ::open (buf, flags, 0644);
+  int fd = ::open (buf, flags, mode);
   if (fd == -1)
     {
       char msg[MAXPATHLEN + 200];

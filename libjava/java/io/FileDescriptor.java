@@ -1,6 +1,6 @@
 // FileDescriptor.java - Open file or device
 
-/* Copyright (C) 1998, 1999  Red Hat, Inc.
+/* Copyright (C) 1998, 1999, 2000  Red Hat, Inc.
 
    This file is part of libgcj.
 
@@ -36,6 +36,8 @@ public final class FileDescriptor
   static final int READ   = 1;
   static final int WRITE  = 2;
   static final int APPEND = 4;
+  // EXCL is used only when making a temp file.
+  static final int EXCL   = 8;
 
   // These are WHENCE values for seek.
   static final int SET = 0;

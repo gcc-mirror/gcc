@@ -1,6 +1,6 @@
 // File.java - File name
 
-/* Copyright (C) 1998, 1999  Red Hat, Inc.
+/* Copyright (C) 1998, 1999, 2000  Red Hat, Inc.
 
    This file is part of libgcj.
 
@@ -215,6 +215,68 @@ public class File implements Serializable
     return mkdirs (new File (path));
   }
 
+  private static String nextValue ()
+  {
+    return Long.toString(counter++, Character.MAX_RADIX);
+  }
+
+  public static File createTempFile (String prefix, String suffix,
+				     File directory)
+    throws IOException
+  {
+    FileDescriptor desc = new FileDescriptor ();
+
+    SecurityManager s = System.getSecurityManager();
+    if (s != null)
+      s.checkWrite (desc);
+
+    if (prefix.length () < 3)
+      throw new IllegalArgumentException ();
+    if (suffix == null)
+      suffix = ".tmp";
+
+    // FIXME: filename length varies by architecture and filesystem.
+    int max_length = 255;
+
+    // Truncation rules.
+    // `6' is the number of characters we generate.
+    if (prefix.length () + 6 + suffix.length () > max_length)
+      {
+	int suf_len = 0;
+	if (suffix.charAt(0) == '.')
+	  suf_len = 4;
+	suffix = suffix.substring(0, suf_len);
+	if (prefix.length () + 6 + suf_len > max_length)
+	  prefix = prefix.substring(0, max_length - 6 - suf_len);
+      }
+
+    // We don't care about the name because we set it later.
+    File ret = new File ("");
+    // How many times should we try?  We choose 100.
+    for (int i = 0; i < 100; ++i)
+      {
+	// This is ugly.
+	String l = prefix + (nextValue () + "ZZZZZZ").substring(0,6) + suffix;
+	try
+	  {
+	    desc.open (l, FileDescriptor.WRITE | FileDescriptor.EXCL);
+	    ret.setPath(l);
+	    return ret;
+	  }
+	catch (IOException _)
+	  {
+	  }
+      }
+
+    throw new IOException ("couldn't make temp file");
+  }
+
+  public static File createTempFile (String prefix, String suffix)
+    throws IOException
+  {
+    return createTempFile (prefix, suffix, null);
+  }
+
   private final native boolean performRenameTo (File dest);
   public boolean renameTo (File dest)
   {
@@ -234,9 +296,14 @@ public class File implements Serializable
   public static final String separator = System.getProperty("file.separator");
   public static final char separatorChar = separator.charAt(0);
 
+  private static final String tmpdir = System.getProperty("java.io.tmpdir");
 
   // The path.
   private String path;
+
+  // We keep a counter for use by createTempFile.  We choose the first
+  // value randomly to try to avoid clashes with other VMs.
+  private static long counter = Double.doubleToLongBits (Math.random ());
 
   // mkdirs() uses this to avoid repeated allocations.
   private final void setPath (String n)
