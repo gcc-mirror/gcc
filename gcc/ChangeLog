@@ -1,3 +1,7 @@
+2003-04-11  Eric Christopher  <echristo@redhat.com>
+
+	* emit-rtl.c (gen_rtx): Fix typos.
+
 2003-04-11  Richard Henderson  <rth@redhat.com>
 
 	* emit-rtl.c (gen_rtx): Zero '0' fields.
