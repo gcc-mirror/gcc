@@ -330,13 +330,15 @@ make_friend_class (type, friend_type)
    pointed to by `this'.  */
 
 tree
-do_friend (ctype, declarator, decl, parmdecls, flags, quals, funcdef_flag)
-     tree ctype, declarator, decl, parmdecls;
+do_friend (ctype, declarator, decl, parmdecls, attrlist,
+	   flags, quals, funcdef_flag)
+     tree ctype, declarator, decl, parmdecls, attrlist;
      enum overload_flags flags;
      tree quals;
      int funcdef_flag;
 {
   int is_friend_template = 0;
+  tree prefix_attributes, attributes;
 
   /* Every decl that gets here is a friend of something.  */
   DECL_FRIEND_P (decl) = 1;
@@ -350,8 +352,10 @@ do_friend (ctype, declarator, decl, parmdecls, flags, quals, funcdef_flag)
 	declarator = DECL_NAME (get_first_fn (declarator));
     }
 
-  if (TREE_CODE (decl) == FUNCTION_DECL)
-    is_friend_template = PROCESSING_REAL_TEMPLATE_DECL_P ();
+  if (TREE_CODE (decl) != FUNCTION_DECL)
+    my_friendly_abort (990513);
+
+  is_friend_template = PROCESSING_REAL_TEMPLATE_DECL_P ();
 
   if (ctype)
     {
@@ -360,53 +364,35 @@ do_friend (ctype, declarator, decl, parmdecls, flags, quals, funcdef_flag)
 	cname = DECL_NAME (cname);
 
       /* A method friend.  */
-      if (TREE_CODE (decl) == FUNCTION_DECL)
+      if (flags == NO_SPECIAL && ctype && declarator == cname)
+	DECL_CONSTRUCTOR_P (decl) = 1;
+
+      /* This will set up DECL_ARGUMENTS for us.  */
+      grokclassfn (ctype, decl, flags, quals);
+
+      if (is_friend_template)
+	decl = DECL_TI_TEMPLATE (push_template_decl (decl));
+      else if (template_class_depth (current_class_type))
+	decl = push_template_decl_real (decl, /*is_friend=*/1);
+
+      /* We can't do lookup in a type that involves template
+	 parameters.  Instead, we rely on tsubst_friend_function
+	 to check the validity of the declaration later.  */
+      if (uses_template_parms (ctype))
+	add_friend (current_class_type, decl);
+      /* A nested class may declare a member of an enclosing class
+	 to be a friend, so we do lookup here even if CTYPE is in
+	 the process of being defined.  */
+      else if (TYPE_SIZE (ctype) != 0 || TYPE_BEING_DEFINED (ctype))
 	{
-	  if (flags == NO_SPECIAL && ctype && declarator == cname)
-	    DECL_CONSTRUCTOR_P (decl) = 1;
+	  decl = check_classfn (ctype, decl);
 
-	  /* This will set up DECL_ARGUMENTS for us.  */
-	  grokclassfn (ctype, decl, flags, quals);
-
-	  if (is_friend_template)
-	    decl = DECL_TI_TEMPLATE (push_template_decl (decl));
-	  else if (template_class_depth (current_class_type))
-	    decl = push_template_decl_real (decl, /*is_friend=*/1);
-
-	  /* We can't do lookup in a type that involves template
-	     parameters.  Instead, we rely on tsubst_friend_function
-	     to check the validity of the declaration later.  */
-	  if (uses_template_parms (ctype))
+	  if (decl)
 	    add_friend (current_class_type, decl);
-	  /* A nested class may declare a member of an enclosing class
-	     to be a friend, so we do lookup here even if CTYPE is in
-	     the process of being defined.  */
-	  else if (TYPE_SIZE (ctype) != 0 || TYPE_BEING_DEFINED (ctype))
-	    {
-	      decl = check_classfn (ctype, decl);
-
-	      if (decl)
-		add_friend (current_class_type, decl);
-	    }
-	  else
-	    cp_error ("member `%D' declared as friend before type `%T' defined",
-		      decl, ctype);
 	}
       else
-	{
-	  /* Possibly a bunch of method friends.  */
-
-	  /* Get the class they belong to.  */
-	  tree ctype = IDENTIFIER_TYPE_VALUE (cname);
-	  tree fields = lookup_fnfields (TYPE_BINFO (ctype), declarator, 0);
-
-	  if (fields)
-	    add_friends (current_class_type, declarator, ctype);
-	  else
-	    cp_error ("method `%D' is not a member of class `%T'",
-		      declarator, ctype);
-	  decl = void_type_node;
-	}
+	cp_error ("member `%D' declared as friend before type `%T' defined",
+		  decl, ctype);
     }
   /* A global friend.
      @@ or possibly a friend from a base class ?!?  */
@@ -459,32 +445,28 @@ do_friend (ctype, declarator, decl, parmdecls, flags, quals, funcdef_flag)
 		  is_friend_template ? DECL_TI_TEMPLATE (decl) : decl);
       DECL_FRIEND_P (decl) = 1;
     }
+
+  /* Unfortunately, we have to handle attributes here.  Normally we would
+     handle them in start_decl_1, but since this is a friend decl start_decl_1
+     never gets to see it.  */
+
+  if (attrlist)
+    {
+      attributes = TREE_PURPOSE (attrlist);
+      prefix_attributes = TREE_VALUE (attrlist);
+    }
   else
     {
-      /* @@ Should be able to ingest later definitions of this function
-	 before use.  */
-      tree decl = lookup_name_nonclass (declarator);
-      if (decl == NULL_TREE)
-	{
-	  cp_warning ("implicitly declaring `%T' as struct", declarator);
-	  decl = xref_tag (record_type_node, declarator, 1);
-	  decl = TYPE_MAIN_DECL (decl);
-	}
+      attributes = NULL_TREE;
+      prefix_attributes = NULL_TREE;
+    } 
 
-      /* Allow abbreviated declarations of overloaded functions,
-	 but not if those functions are really class names.  */
-      if (TREE_CODE (decl) == TREE_LIST && TREE_TYPE (TREE_PURPOSE (decl)))
-	{
-	  cp_warning ("`friend %T' archaic, use `friend class %T' instead",
-		      declarator, declarator);
-	  decl = TREE_TYPE (TREE_PURPOSE (decl));
-	}
+#ifdef SET_DEFAULT_DECL_ATTRIBUTES
+  SET_DEFAULT_DECL_ATTRIBUTES (decl, attributes);
+#endif
+  
+  /* Set attributes here so if duplicate decl, will have proper attributes.  */
+  cplus_decl_attributes (decl, attributes, prefix_attributes);
 
-      if (TREE_CODE (decl) == TREE_LIST)
-	add_friends (current_class_type, TREE_PURPOSE (decl), NULL_TREE);
-      else
-	make_friend_class (current_class_type, TREE_TYPE (decl));
-      decl = void_type_node;
-    }
   return decl;
 }

@@ -161,7 +161,7 @@ static void warn_extern_redeclared_static PROTO((tree, tree));
 static void grok_reference_init PROTO((tree, tree, tree));
 static tree grokfndecl PROTO((tree, tree, tree, tree, int,
 			      enum overload_flags, tree,
-			      tree, tree, int, int, int, int, int, int, tree));
+			      tree, int, int, int, int, int, int, tree));
 static tree grokvardecl PROTO((tree, tree, RID_BIT_TYPE *, int, int, tree));
 static tree lookup_tag PROTO((enum tree_code, tree,
 			      struct binding_level *, int));
@@ -8697,14 +8697,14 @@ bad_specifiers (object, type, virtualp, quals, inlinep, friendp, raises)
 
 static tree
 grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
-	    raises, attrlist, check, friendp, publicp, inlinep, funcdef_flag,
+	    raises, check, friendp, publicp, inlinep, funcdef_flag,
 	    template_count, in_namespace)
      tree ctype, type;
      tree declarator;
      tree orig_declarator;
      int virtualp;
      enum overload_flags flags;
-     tree quals, raises, attrlist;
+     tree quals, raises;
      int check, friendp, publicp, inlinep, funcdef_flag, template_count;
      tree in_namespace;
 {
@@ -8868,10 +8868,6 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
        tentative.  error_mark_node is replaced later with the BLOCK.  */
     DECL_INITIAL (decl) = error_mark_node;
 
-  if (attrlist)
-    cplus_decl_attributes (decl, TREE_PURPOSE (attrlist), 
-			   TREE_VALUE (attrlist));
-
   /* Caller will do the rest of this.  */
   if (check < 0)
     return decl;
@@ -8963,8 +8959,6 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
 
       if (ctype == NULL_TREE || check)
 	return decl;
-
-      make_decl_rtl (decl, NULL_PTR, 1);
 
       if (virtualp)
 	{
@@ -11306,7 +11300,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 			       TREE_CODE (declarator) != TEMPLATE_ID_EXPR
 			       ? declarator : dname,
 			       declarator,
-			       virtualp, flags, quals, raises, attrlist,
+			       virtualp, flags, quals, raises,
 			       friendp ? -1 : 0, friendp, publicp, inlinep,
 			       funcdef_flag, template_count, in_namespace);
 	    if (decl == NULL_TREE)
@@ -11356,7 +11350,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	    /* All method decls are public, so tell grokfndecl to set
 	       TREE_PUBLIC, also.  */
 	    decl = grokfndecl (ctype, type, declarator, declarator,
-			       virtualp, flags, quals, raises, attrlist,
+			       virtualp, flags, quals, raises,
 			       friendp ? -1 : 0, friendp, 1, 0, funcdef_flag,
 			       template_count, in_namespace);
 	    if (decl == NULL_TREE)
@@ -11416,7 +11410,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		      }
 
 		    t = do_friend (ctype, declarator, decl,
-				   last_function_parms, flags, quals,
+				   last_function_parms, attrlist, flags, quals,
 				   funcdef_flag);
 		  }
 		if (t && funcdef_flag)
@@ -11549,7 +11543,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		   || !RIDBIT_SETP (RID_STATIC, specbits));
 
 	decl = grokfndecl (ctype, type, original_name, declarator,
-			   virtualp, flags, quals, raises, attrlist,
+			   virtualp, flags, quals, raises,
 			   1, friendp,
 			   publicp, inlinep, funcdef_flag, 
 			   template_count, in_namespace);
