@@ -536,21 +536,20 @@ extern const enum reg_class regclass_map[FIRST_PSEUDO_REGISTER];
    (C) == 'd' ? GENERAL_REGS :                                          \
    (C) == 'f' ? FP_REGS : NO_REGS)
 
-#define CONST_OK_FOR_LETTER_P(VALUE, C)                                 \
-  ((C) == 'I' ? (unsigned long) (VALUE) < 256 :                         \
-   (C) == 'J' ? (unsigned long) (VALUE) < 4096 :                        \
-   (C) == 'K' ? (VALUE) >= -32768 && (VALUE) < 32768 :                  \
-   (C) == 'L' ? (unsigned long) (VALUE) < 65536 : 0)
+#define CONST_OK_FOR_CONSTRAINT_P(VALUE, C, STR)                          \
+  s390_const_ok_for_constraint_p ((VALUE), (C), (STR))
 
-#define CONST_DOUBLE_OK_FOR_LETTER_P(VALUE, C)  1
+#define CONST_DOUBLE_OK_FOR_CONSTRAINT_P(VALUE, C, STR)  1
 
-#define EXTRA_CONSTRAINT(OP, C)                               	\
-  s390_extra_constraint ((OP), (C))
+#define EXTRA_CONSTRAINT_STR(OP, C, STR)                               	\
+  s390_extra_constraint_str ((OP), (C), (STR))
 #define EXTRA_MEMORY_CONSTRAINT(C, STR)				\
   ((C) == 'Q' || (C) == 'R' || (C) == 'S' || (C) == 'T')
 #define EXTRA_ADDRESS_CONSTRAINT(C, STR)			\
   ((C) == 'U' || (C) == 'W' || (C) == 'Y')
 
+#define CONSTRAINT_LEN(C, STR)                                   \
+  ((C) == 'N' ? 5 : DEFAULT_CONSTRAINT_LEN ((C), (STR)))
 
 /* Stack layout and calling conventions.  */
 

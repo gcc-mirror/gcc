@@ -30,7 +30,8 @@ extern void s390_emit_epilogue (void);
 extern void s390_function_profiler (FILE *, int);
 
 #ifdef RTX_CODE
-extern int s390_extra_constraint (rtx, int);
+extern int s390_extra_constraint_str (rtx, int, const char *);
+extern int s390_const_ok_for_constraint_p (HOST_WIDE_INT, int, const char *);
 extern int const0_operand (rtx, enum machine_mode);
 extern int consttable_operand (rtx, enum machine_mode);
 extern int larl_operand (rtx, enum machine_mode);
@@ -40,10 +41,8 @@ extern int shift_count_operand (rtx, enum machine_mode);
 extern int bras_sym_operand (rtx, enum machine_mode);
 extern int load_multiple_operation (rtx, enum machine_mode);
 extern int store_multiple_operation (rtx, enum machine_mode);
-extern int s390_single_hi (rtx, enum machine_mode, int);
-extern int s390_extract_hi (rtx, enum machine_mode, int);
-extern int s390_single_qi (rtx, enum machine_mode, int);
-extern int s390_extract_qi (rtx, enum machine_mode, int);
+extern int s390_single_part (rtx, enum machine_mode, enum machine_mode, int);
+extern unsigned HOST_WIDE_INT s390_extract_part (rtx, enum machine_mode, int);
 extern bool s390_split_ok_p (rtx, rtx, enum machine_mode, int);
 extern int tls_symbolic_operand (rtx);
 

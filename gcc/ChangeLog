@@ -1,3 +1,40 @@
+2003-11-30  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* config/s390/s390.md ("tmdi_reg", "tmsi_reg", "*movdi_64", "*movdi_31", 
+	"iordi3"): Insns now use multiple letter constraints.
+	("*movdi_lhi", "*movdi_lli", "*movdi_lay"): Insns deleted. They are now
+	covered by "*movdi_64".
+	("*movsi_lhi", "*movsi_lli", "*movsi_lay"): Insns deleted. They are now
+	covered by "*movsi_zarch" and "*movsi_esa".
+	("*movsi_zarch", "*movsi_!zarch"): New insns.
+	("*llgt_sisi_split", "*llgt_didi_split"): Insns deleted. Now covered 
+	by "*andsi3_zarch" and "anddi3".
+	("*anddi3_ni"): Insn merged with "anddi3".
+	("*andsi3_ni"): Insn merged with "*andsi3_zarch".
+	("*andsi3_zarch", "*andsi3_esa"): New insns.
+	("*iordi3_oi"): Insn merged with "iordi3".
+	("*iorsi3_oi"): Insn merged with "*iorsi3_zarch".
+	("*iorsi3_zarch", "*iorsi3_esa"): New insns.
+
+	* config/s390/s390.c (s390_single_qi, s390_single_hi): Functions 
+	merged to s390_single_part.
+	(s390_single_part): New function.
+	NOTE: Semantics have changed a bit. Now the value of the part must
+	be different from the others to get a non-negative return value.
+	(s390_extract_qi, s390_extract_hi): Functions merged to 
+	s390_extract_part.
+	(s390_extract_part, s390_extra_constraint_str,
+	s390_const_ok_for_constraint_p): New functions. The L constraint got a 
+	new meaning and the N constraint was added as a multiple letter 
+	constraint.
+	(s390_extra_constraint): Function deleted.
+	(print_operand): New output modifier 'i' and 'j' added.
+	All uses of CONST_OK_FOR_LETTER_P were replaced by 
+	CONST_OK_FOR_CONSTRAINT_P.
+
+	* config/s390/s390-protos.h: Function prototypes adapted.
+	* doc/md.texi: Documentation for new constraint letters added.
+
 2003-11-30  Andreas Schwab  <schwab@suse.de>
 
 	* Makefile.in ($(DESTDIR)$(infodir)/%.info): Fix missing semicolon.
