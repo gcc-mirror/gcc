@@ -1,4 +1,4 @@
-// Copyright (C) 1999 Free Software Foundation, Inc.
+// Copyright (C) 1999, 2002 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -32,6 +32,6 @@ int main ()
   double a = fabs (-2.4);
   realfn myfn = fabs;
   double b = myfn (-2.5);
-  printf ("%f, %f, %p\n", a, b, myfn);
+  std::printf ("%f, %f, %p\n", a, b, myfn);
   return 0;
 }

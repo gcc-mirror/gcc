@@ -36,6 +36,29 @@
 
 #pragma GCC system_header
 
+#include <bits/c++config.h>
+#include <cstddef>
+#include <ctime>
+
+#if _GLIBCPP_HAVE_WCHAR_H
 #include_next <wchar.h>
+#endif
+
+// Need to do a bit of trickery here with mbstate_t as char_traits
+// assumes it is in wchar.h, regardless of wchar_t specializations.
+#ifndef _GLIBCPP_HAVE_MBSTATE_T
+extern "C" 
+{
+  typedef struct 
+  {
+    int __fill[6];
+  } mbstate_t;
+}
+#endif
+
+namespace std 
+{
+  using ::mbstate_t;
+}
 
 #endif 

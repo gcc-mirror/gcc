@@ -38,4 +38,47 @@
 
 #include_next <stdio.h>
 
+// Get rid of those macros defined in <stdio.h> in lieu of real functions.
+#undef clearerr
+#undef fclose
+#undef feof
+#undef ferror
+#undef fflush
+#undef fgetc
+#undef fgetpos
+#undef fgets
+#undef fopen
+#undef fprintf
+#undef fputc
+#undef fputs
+#undef fread
+#undef freopen
+#undef fscanf
+#undef fseek
+#undef fsetpos
+#undef ftell
+#undef fwrite
+#undef getc
+#undef getchar
+#undef gets
+#undef perror
+#undef printf
+#undef putc
+#undef putchar
+#undef puts
+#undef remove
+#undef rename
+#undef rewind
+#undef scanf
+#undef setbuf
+#undef setvbuf
+#undef sprintf
+#undef sscanf
+#undef tmpfile
+#undef tmpnam
+#undef ungetc
+#undef vfprintf
+#undef vprintf
+#undef vsprintf
+
 #endif

@@ -36,6 +36,10 @@
 
 #pragma GCC system_header
 
+#define __need_size_t
+#define __need_ptrdiff_t
+#define __need_NULL
+#define __need_offsetof
 #include_next <stddef.h>
 
 #endif

@@ -129,12 +129,12 @@ void test03()
 {
   bool test = true;
 
-  const char* tentLANG = setlocale(LC_ALL, "ja_JP.eucjp");
+  const char* tentLANG = std::setlocale(LC_ALL, "ja_JP.eucjp");
   if (tentLANG != NULL)
     {
       std::string preLANG = tentLANG;
       test01();
-      std::string postLANG = setlocale(LC_ALL, NULL);
+      std::string postLANG = std::setlocale(LC_ALL, NULL);
       VERIFY( preLANG == postLANG );
     }
 }

@@ -74,7 +74,6 @@ CLOCALE_H = @CLOCALE_H@
 CMESSAGES_H = @CMESSAGES_H@
 CPP = @CPP@
 CPU_LIMITS_INC_SRCDIR = @CPU_LIMITS_INC_SRCDIR@
-CSHADOW_FLAGS = @CSHADOW_FLAGS@
 CSTDIO_H = @CSTDIO_H@
 CXXCPP = @CXXCPP@
 C_INCLUDE_DIR = @C_INCLUDE_DIR@
@@ -144,7 +143,7 @@ OPTIMIZE_CXXFLAGS = @OPTIMIZE_CXXFLAGS@
 # or configure.in to see how they are set. See GLIBCPP_EXPORT_FLAGS
 # NB: DEBUGFLAGS have to be at the end so that -O2 can be overridden.
 CONFIG_CXXFLAGS = \
-	@EXTRA_CXX_FLAGS@ @SECTION_FLAGS@ @CSHADOW_FLAGS@ @DEBUG_FLAGS@ 
+	@EXTRA_CXX_FLAGS@ @SECTION_FLAGS@ @DEBUG_FLAGS@ 
 
 
 # Warning flags to use.
@@ -169,7 +168,7 @@ INCLUDES = \
 sources = \
 	globals.cc limits.cc \
 	basic_file.cc complex_io.cc ios.cc strstream.cc \
-	cmath.cc bitset.cc \
+	bitset.cc \
 	functexcept.cc stdexcept.cc vterminate.cc \
 	c++locale.cc locale.cc localename.cc codecvt.cc \
 	collate.cc ctype.cc messages.cc monetary.cc numeric.cc time.cc \
@@ -255,12 +254,12 @@ CPPFLAGS = @CPPFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
 libstdc___la_OBJECTS =  globals.lo limits.lo basic_file.lo complex_io.lo \
-ios.lo strstream.lo cmath.lo bitset.lo functexcept.lo stdexcept.lo \
-vterminate.lo c++locale.lo locale.lo localename.lo codecvt.lo \
-collate.lo ctype.lo messages.lo monetary.lo numeric.lo time.lo \
-concept-inst.lo locale-inst.lo misc-inst.lo stl-inst.lo string-inst.lo \
-wstring-inst.lo valarray-inst.lo ext-inst.lo fstream-inst.lo io-inst.lo \
-istream-inst.lo ostream-inst.lo streambuf-inst.lo sstream-inst.lo
+ios.lo strstream.lo bitset.lo functexcept.lo stdexcept.lo vterminate.lo \
+c++locale.lo locale.lo localename.lo codecvt.lo collate.lo ctype.lo \
+messages.lo monetary.lo numeric.lo time.lo concept-inst.lo \
+locale-inst.lo misc-inst.lo stl-inst.lo string-inst.lo wstring-inst.lo \
+valarray-inst.lo ext-inst.lo fstream-inst.lo io-inst.lo istream-inst.lo \
+ostream-inst.lo streambuf-inst.lo sstream-inst.lo
 CXXFLAGS = @CXXFLAGS@
 CXXCOMPILE = $(CXX) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
 CXXLD = $(CXX)

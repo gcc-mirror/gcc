@@ -31,11 +31,25 @@
 // ISO C++ 14882: 19.3  Error numbers
 //
 
+/** @file cerrno
+ *  This is a Standard C++ Library file.  You should @c #include this file
+ *  in your programs, rather than any of the "*.h" implementation files.
+ *
+ *  This is the C++ version of the Standard C Library header @c errno.h,
+ *  and its contents are (mostly) the same as that header, but are all
+ *  contained in the namespace @c std.
+ */
+
 #ifndef _CPP_CERRNO
 #define _CPP_CERRNO 1
 
 #pragma GCC system_header
 
 #include_next <errno.h>
+
+// Adhere to section 17.4.1.2 clause 5 of ISO 14882:1998
+#ifndef errno
+#define errno errno
+#endif
 
 #endif

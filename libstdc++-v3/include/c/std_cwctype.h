@@ -36,6 +36,10 @@
 
 #pragma GCC system_header
 
+#include <bits/c++config.h>
+
+#if _GLIBCPP_HAVE_WCTYPE_H
 #include_next <wctype.h>
+#endif
 
 #endif 
