@@ -2327,7 +2327,16 @@ struct constant_descriptor
   struct constant_descriptor *next;
   char *label;
   rtx rtl;
-  unsigned char contents[1];
+  /* Make sure the data is reasonably aligned.  */
+  union 
+  {
+    unsigned char contents[1];
+#ifdef HAVE_LONG_DOUBLE
+    long double d;
+#else
+    double d;
+#endif
+  } u;
 };
 
 #define HASHBITS 30
@@ -2477,7 +2486,7 @@ compare_constant (exp, desc)
      tree exp;
      struct constant_descriptor *desc;
 {
-  return 0 != compare_constant_1 (exp, desc->contents);
+  return 0 != compare_constant_1 (exp, desc->u.contents);
 }
 
 /* Compare constant expression EXP with a substring P of a constant descriptor.
@@ -3475,7 +3484,7 @@ compare_constant_rtx (mode, x, desc)
      rtx x;
      struct constant_descriptor *desc;
 {
-  register int *p = (int *) desc->contents;
+  register int *p = (int *) desc->u.contents;
   register int *strp;
   register int len;
   struct rtx_const value;
@@ -3503,10 +3512,9 @@ record_constant_rtx (mode, x)
   struct constant_descriptor *ptr;
 
   ptr = ((struct constant_descriptor *) 
-	 xcalloc (1, 
-		  (sizeof (struct constant_descriptor) 
-		   + sizeof (struct rtx_const) - 1)));
-  decode_rtx_const (mode, x, (struct rtx_const *) ptr->contents);
+	 xcalloc (1, (offsetof (struct constant_descriptor, u)
+		      + sizeof (struct rtx_const))));
+  decode_rtx_const (mode, x, (struct rtx_const *) ptr->u.contents);
 
   return ptr;
 }
