@@ -134,7 +134,7 @@ int flag_deprecated = 1;
 int flag_verify_invocations = 0; 
 
 /* True if the new bytecode verifier should be used.  */
-int flag_new_verifier = 0;
+int flag_new_verifier = 1;
 
 /* When nonzero, print extra version information.  */
 static int v_flag = 0;
