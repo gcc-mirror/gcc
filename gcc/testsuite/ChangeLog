@@ -1,3 +1,7 @@
+2002-03-26  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* g++.dg/abi/vbase9.C: New test.
+
 2002-03-26  Richard Earnshaw  <rearnsha@arm.com>
 
 	* gcc.dg/arm-asm.c: New test.

@@ -127,7 +127,6 @@ static int protected_accessible_p PARAMS ((tree, tree, tree));
 static int friend_accessible_p PARAMS ((tree, tree, tree));
 static void setup_class_bindings PARAMS ((tree, int));
 static int template_self_reference_p PARAMS ((tree, tree));
-static tree get_shared_vbase_if_not_primary PARAMS ((tree, void *));
 static tree dfs_find_vbase_instance PARAMS ((tree, void *));
 static tree dfs_get_pure_virtuals PARAMS ((tree, void *));
 static tree dfs_build_inheritance_graph_order PARAMS ((tree, void *));
@@ -1950,81 +1949,30 @@ look_for_overrides_r (type, fndecl)
   return look_for_overrides (type, fndecl);
 }
 
-/* A queue function for dfs_walk that skips any nonprimary virtual
-   bases and any already marked bases.  */
-
-tree
-dfs_skip_nonprimary_vbases_unmarkedp (binfo, data)
-     tree binfo;
-     void *data ATTRIBUTE_UNUSED;
-{
-  if (TREE_VIA_VIRTUAL (binfo) && !BINFO_PRIMARY_P (binfo))
-    /* This is a non-primary virtual base.  Skip it.  */
-    return NULL_TREE;
-
-  return unmarkedp (binfo, NULL);
-}
-
-/* A queue function for dfs_walk that skips any nonprimary virtual
-   bases and any unmarked bases.  */
-
-tree
-dfs_skip_nonprimary_vbases_markedp (binfo, data)
-     tree binfo;
-     void *data ATTRIBUTE_UNUSED;
-{
-  if (TREE_VIA_VIRTUAL (binfo) && !BINFO_PRIMARY_P (binfo))
-    /* This is a non-primary virtual base.  Skip it.  */
-    return NULL_TREE;
-
-  return markedp (binfo, NULL);
-}
-
-/* If BINFO is a non-primary virtual baseclass (in the hierarchy
-   dominated by TYPE), and no primary copy appears anywhere in the
-   hierarchy, return the shared copy.  If a primary copy appears
-   elsewhere, return NULL_TREE.  Otherwise, return BINFO itself; it is
-   either a non-virtual base or a primary virtual base.  */
-
-static tree
-get_shared_vbase_if_not_primary (binfo, data)
-     tree binfo;
-     void *data;
-{
-  if (TREE_VIA_VIRTUAL (binfo) && !BINFO_PRIMARY_P (binfo))
-    {
-      tree type = (tree) data;
-
-      if (TREE_CODE (type) == TREE_LIST)
-	type = TREE_PURPOSE (type);
-
-      /* This is a non-primary virtual base.  If there is no primary
-	 version, get the shared version.  */
-      binfo = binfo_for_vbase (BINFO_TYPE (binfo), type);
-      if (BINFO_PRIMARY_P (binfo))
-	return NULL_TREE;
-    }
-
-  return binfo;
-}
-
-/* A queue function to use with dfs_walk that prevents travel into any
-   nonprimary virtual base, or its baseclasses.  DATA should be the
-   type of the complete object, or a TREE_LIST whose TREE_PURPOSE is
-   the type of the complete object.  By using this function as a queue
-   function, you will walk over exactly those BINFOs that actually
-   exist in the complete object, including those for virtual base
-   classes.  If you SET_BINFO_MARKED for each binfo you process, you
-   are further guaranteed that you will walk into each virtual base
-   class exactly once.  */
+/* A queue function to use with dfs_walk that only walks into
+   canonical bases.  DATA should be the type of the complete object,
+   or a TREE_LIST whose TREE_PURPOSE is the type of the complete
+   object.  By using this function as a queue function, you will walk
+   over exactly those BINFOs that actually exist in the complete
+   object, including those for virtual base classes.  If you
+   SET_BINFO_MARKED for each binfo you process, you are further
+   guaranteed that you will walk into each virtual base class exactly
+   once.  */
 
 tree
 dfs_unmarked_real_bases_queue_p (binfo, data)
      tree binfo;
      void *data;
 {
-  binfo = get_shared_vbase_if_not_primary (binfo, data); 
-  return binfo ? unmarkedp (binfo, NULL) : NULL_TREE;
+  if (TREE_VIA_VIRTUAL (binfo))
+    {
+      tree type = (tree) data;
+
+      if (TREE_CODE (type) == TREE_LIST)
+	type = TREE_PURPOSE (type);
+      binfo = binfo_for_vbase (BINFO_TYPE (binfo), type);
+    }
+  return unmarkedp (binfo, NULL);
 }
 
 /* Like dfs_unmarked_real_bases_queue_p but walks only into things
@@ -2035,8 +1983,15 @@ dfs_marked_real_bases_queue_p (binfo, data)
      tree binfo;
      void *data;
 {
-  binfo = get_shared_vbase_if_not_primary (binfo, data); 
-  return binfo ? markedp (binfo, NULL) : NULL_TREE;
+  if (TREE_VIA_VIRTUAL (binfo))
+    {
+      tree type = (tree) data;
+
+      if (TREE_CODE (type) == TREE_LIST)
+	type = TREE_PURPOSE (type);
+      binfo = binfo_for_vbase (BINFO_TYPE (binfo), type);
+    }
+  return markedp (binfo, NULL);
 }
 
 /* A queue function that skips all virtual bases (and their 
