@@ -9776,7 +9776,8 @@ move\\t%0,%z4\\n\\
         (call (mem:SI (match_operand:SI 1 "register_operand" "r"))
 	      (match_operand 2 "" "i")))
    (clobber (match_operand:SI 3 "register_operand" "=d"))]
-  "!(Pmode == DImode) && !TARGET_ABICALLS && TARGET_LONG_CALLS"
+  "!TARGET_MIPS16 
+   && !(Pmode == DImode) && !TARGET_ABICALLS && TARGET_LONG_CALLS"
   "%*jal\\t%3,%1"
   [(set_attr "type"	"call")
    (set_attr "mode"	"none")
@@ -9787,7 +9788,20 @@ move\\t%0,%z4\\n\\
         (call (mem:DI (match_operand:DI 1 "se_register_operand" "r"))
 	      (match_operand 2 "" "i")))
    (clobber (match_operand:SI 3 "register_operand" "=d"))]
-  "Pmode == DImode && !TARGET_ABICALLS && TARGET_LONG_CALLS"
+  "!TARGET_MIPS16 
+   && Pmode == DImode && !TARGET_ABICALLS && TARGET_LONG_CALLS"
+  "%*jal\\t%3,%1"
+  [(set_attr "type"	"call")
+   (set_attr "mode"	"none")
+   (set_attr "length"	"1")])
+
+(define_insn "call_value_internal3c"
+  [(set (match_operand 0 "register_operand" "=df")
+        (call (mem:SI (match_operand:SI 1 "register_operand" "e"))
+	      (match_operand 2 "" "i")))
+   (clobber (match_operand:SI 3 "register_operand" "=y"))]
+  "TARGET_MIPS16 && !(Pmode == DImode) && !TARGET_ABICALLS && TARGET_LONG_CALLS
+   && GET_CODE (operands[3]) == REG && REGNO (operands[3]) == 31"
   "%*jal\\t%3,%1"
   [(set_attr "type"	"call")
    (set_attr "mode"	"none")
