@@ -36,15 +36,47 @@ Boston, MA 02111-1307, USA.  */
    REG_BR_PROB_BASE / 2).  */
    
 
+/* An combined heuristics using probability determined by first
+   matching heuristics from this list.  */
 DEF_PREDICTOR (PRED_FIRST_MATCH, "first match", PROB_ALWAYS)
+
+/* Mark unconditional jump as taken.  */
 DEF_PREDICTOR (PRED_UNCONDITIONAL, "unconditional jump", PROB_ALWAYS)
+
+/* Use number of loop iterations determined by loop unroller to set
+   probability.  */
 DEF_PREDICTOR (PRED_LOOP_ITERATIONS, "loop iterations", PROB_ALWAYS)
+
+/* Hints dropped by user via __builtin_expect feature.  */
 DEF_PREDICTOR (PRED_BUILTIN_EXPECT, "__builtin_expect", PROB_VERY_LIKELY)
+
+/* Branch to basic block containing call marked by noreturn attribute.  */
 DEF_PREDICTOR (PRED_NORETURN, "noreturn call", PROB_ALWAYS)
+
+/* Loopback edge is taken.  */
 DEF_PREDICTOR (PRED_LOOP_BRANCH, "loop branch", PROB_VERY_LIKELY)
+
+/* Edge causing loop to terminate is probably not taken. */
 DEF_PREDICTOR (PRED_LOOP_EXIT, "loop exit", PROB_LIKELY)
+
+/* Condition emitted by preconditiong code to ensure that variable
+   setting number of iterations is greater than initial value of iterator.  */
+DEF_PREDICTOR (PRED_LOOP_CONDITION, "loop condition", PROB_VERY_LIKELY)
+
+/* Preconditioning makes linear list of branches.  */
+DEF_PREDICTOR (PRED_LOOP_PRECONDITIONING, "loop preconditioning", PROB_VERY_LIKELY)
+
+/* Copied condition for the first iteration of loop is probably true.  */
 DEF_PREDICTOR (PRED_LOOP_HEADER, "loop header", PROB_LIKELY)
+
+/* Pointers are usually not NULL.  */
 DEF_PREDICTOR (PRED_POINTER, "pointer", PROB_LIKELY)
+
+/* NE is probable, EQ not etc...  */
 DEF_PREDICTOR (PRED_OPCODE, "opcode", PROB_LIKELY)
+
+/* Branch guarding call is probably taken.  */
 DEF_PREDICTOR (PRED_CALL, "call", PROB_LIKELY)
+
+/* Branch causing function to terminate is probably not taken.  */
 DEF_PREDICTOR (PRED_ERROR_RETURN, "error return", PROB_LIKELY)

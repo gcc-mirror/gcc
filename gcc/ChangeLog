@@ -1,3 +1,23 @@
+Mon Jun 18 17:27:24 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* unroll.c: Include predict.h.
+	(unroll_loop): Drop prediction notes on preconditioning.
+	* predict.def (PRED_LOOP_PRECONDITIONG, PRED_LOOP_CONDITION):
+	New; add comments on the others.
+	* Makefile.in: (unroll.o): Add dependancy on predict.h.
+	* loop.c (strength_reduce): Fix branch prediction.
+
+Mon Jun 18 17:26:56 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* stmt.c (emit_case_nodes): Optimize test whether index is in given
+	interval.
+
+Mon Jun 18 15:43:10 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* predict.c (estimate_probability): Do not bail out early
+	when note is present.
+	(combine_predictions_for_insn): Fix note removal code.
+
 2001-06-18  Ben Elliston  <bje@redhat.com>
 
 	* except.c (resolve_fixup_regions): Initialise "cleanup".

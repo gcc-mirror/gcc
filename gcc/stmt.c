@@ -6293,8 +6293,10 @@ emit_case_nodes (index, node, default_label, index_type)
 	  /* Node has no children so we check low and high bounds to remove
 	     redundant tests.  Only one of the bounds can exist,
 	     since otherwise this node is bounded--a case tested already.  */
+	  int high_bound = node_has_high_bound (node, index_type);
+	  int low_bound = node_has_low_bound (node, index_type);
 
-	  if (!node_has_high_bound (node, index_type))
+	  if (!high_bound && low_bound)
 	    {
 	      emit_cmp_and_jump_insns (index,
 				       convert_modes
@@ -6306,7 +6308,7 @@ emit_case_nodes (index, node, default_label, index_type)
 				       default_label);
 	    }
 
-	  if (!node_has_low_bound (node, index_type))
+	  else if (!low_bound && high_bound)
 	    {
 	      emit_cmp_and_jump_insns (index,
 				       convert_modes
@@ -6315,6 +6317,24 @@ emit_case_nodes (index, node, default_label, index_type)
 						     VOIDmode, 0),
 					unsignedp),
 				       LT, NULL_RTX, mode, unsignedp, 0,
+				       default_label);
+	    }
+	  else if (!low_bound && !high_bound)
+	    {
+	      /* Instead of doing two branches emit test (index-low) <= (high-low).  */
+	      tree new_bound = fold (build (MINUS_EXPR, index_type, node->high,
+					    node->low));
+	      rtx new_index;
+	      
+	      new_index = expand_binop (mode, sub_optab, index,
+			      		expand_expr (node->low, NULL_RTX,
+						     VOIDmode, 0),
+				        NULL_RTX, 0, OPTAB_WIDEN);
+				
+	      emit_cmp_and_jump_insns (new_index,
+				       expand_expr (new_bound, NULL_RTX,
+						    VOIDmode, 0),
+				       GT, NULL_RTX, mode, 1, 0,
 				       default_label);
 	    }
 

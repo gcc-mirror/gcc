@@ -208,7 +208,6 @@ combine_predictions_for_insn (insn, bb)
      probability combination techniques.  */
   while (*pnote)
     {
-      rtx *next_pnote = &XEXP (*pnote, 1);
       if (REG_NOTE_KIND (*pnote) == REG_BR_PRED)
 	{
 	  int predictor = INTVAL (XEXP (XEXP (*pnote, 0), 0));
@@ -219,7 +218,8 @@ combine_predictions_for_insn (insn, bb)
 	    best_probability = probability, best_predictor = predictor;
 	  *pnote = XEXP (*pnote, 1);
 	}
-      pnote = next_pnote;
+      else
+        pnote = &XEXP (*pnote, 1);
     }
   dump_prediction (PRED_FIRST_MATCH, best_probability, bb);
   if (!prob_note)
@@ -311,9 +311,6 @@ estimate_probability (loops_info)
 
       if (GET_CODE (last_insn) != JUMP_INSN
 	  || ! any_condjump_p (last_insn))
-	continue;
-
-      if (find_reg_note (last_insn, REG_BR_PROB, 0))
 	continue;
 
       for (e = bb->succ; e; e = e->succ_next)
