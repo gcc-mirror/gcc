@@ -1,3 +1,10 @@
+2004-03-14  Andreas Tobler <a.tobler@schweiz.ch>
+
+	* gnu/java/nio/channels/natFileChannelPosix.cc: Implement
+	munmap_adaptor and msync_adaptor for older POSIX_C_SOURCES specs.
+	(MappedByteBufferImpl::unmapImpl): Use munmap_adaptor.
+	(MappedByteBufferImpl::forceImpl): Use msync_adptor.
+
 2004-03-12  Michael Koch  <konqueror@gmx.de>
 
 	* java/text/DateFormatSymbols.java: Fixed file name in copyright.
