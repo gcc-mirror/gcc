@@ -42,7 +42,6 @@ static struct file_name_list *actual_directory
 				PARAMS ((cpp_reader *, const char *));
 static unsigned int hash_IHASH	PARAMS ((const void *));
 static int eq_IHASH		PARAMS ((const void *, const void *));
-static int file_cleanup		PARAMS ((cpp_buffer *, cpp_reader *));
 static int find_include_file	PARAMS ((cpp_reader *, const char *,
 					struct file_name_list *,
 					IHASH **, int *));
@@ -192,24 +191,6 @@ make_IHASH (name, fname, path, hash, slot)
   ih->next_this_file = *slot;
   *slot = ih;
   return ih;
-}
-
-static int
-file_cleanup (pbuf, pfile)
-     cpp_buffer *pbuf;
-     cpp_reader *pfile;
-{
-  if (pbuf->buf)
-    free ((PTR) pbuf->buf);
-  if (pfile->system_include_depth)
-    pfile->system_include_depth--;
-  if (pfile->potential_control_macro)
-    {
-      pbuf->ihash->control_macro = pfile->potential_control_macro;
-      pfile->potential_control_macro = 0;
-    }
-  pfile->input_stack_listing_current = 0;
-  return 0;
 }
 
 /* Centralize calls to open(2) here.  This provides a hook for future
@@ -639,7 +620,7 @@ _cpp_execute_include (pfile, fname, len, no_reinclude, search_start)
   if (read_include_file (pfile, fd, ihash))
     {
       if (angle_brackets)
-	pfile->system_include_depth++;   /* Decremented in file_cleanup. */
+	pfile->system_include_depth++;
     }
 }
 
@@ -771,7 +752,6 @@ read_include_file (pfile, fd, ihash)
       fp->system_header_p = ihash->foundhere->sysp;
   fp->lineno = 1;
   fp->line_base = fp->buf;
-  fp->cleanup = file_cleanup;
 
   /* The ->actual_dir field is only used when ignore_srcdir is not in effect;
      see do_include */

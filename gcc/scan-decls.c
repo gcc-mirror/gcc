@@ -116,7 +116,12 @@ scan_decls (pfile, argc, argv)
       goto new_statement;
     }
   if (token == CPP_EOF)
-    return 0;
+    {
+      if (CPP_BUFFER (pfile) == NULL)
+	return 0;
+      else
+	goto new_statement;
+    }
   if (token == CPP_SEMICOLON)
     goto new_statement;
   if (token != CPP_NAME)
@@ -235,13 +240,15 @@ scan_decls (pfile, argc, argv)
 	  prev_id_end = CPP_WRITTEN (pfile);
 	  break;
 
-	case CPP_EOF:
-	  return 0;
-
 	case CPP_OPEN_BRACE:  case CPP_CLOSE_BRACE:  case CPP_DIRECTIVE:
 	  goto new_statement;  /* handle_statement? */
 	  
-	case CPP_HSPACE:  case CPP_VSPACE:  case CPP_COMMENT:  case CPP_POP:
+	case CPP_EOF:
+	  if (CPP_BUFFER (pfile) == NULL)
+	    return 0;
+	  /* else fall through */
+
+	case CPP_HSPACE:  case CPP_VSPACE:  case CPP_COMMENT:
 	  /* Skip initial white space.  */
 	  if (start_written == 0)
 	    CPP_SET_WRITTEN (pfile, 0);

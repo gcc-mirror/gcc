@@ -658,10 +658,12 @@ read_scan_file (in_fname, argc, argv)
       && (fn = lookup_std_proto ("_filbuf", 7)) != NULL)
     {
       static char getchar_call[] = "getchar();";
-      cpp_buffer *buf
-	= cpp_push_buffer (&scan_in, getchar_call, sizeof(getchar_call) - 1);
       int old_written = CPP_WRITTEN (&scan_in);
       int seen_filbuf = 0;
+      cpp_buffer *buf = CPP_BUFFER (&scan_in);
+      if (cpp_push_buffer (&scan_in, getchar_call,
+			   sizeof(getchar_call) - 1) == NULL)
+	return;
 
       /* Scan the macro expansion of "getchar();".  */
       for (;;)
@@ -671,13 +673,8 @@ read_scan_file (in_fname, argc, argv)
 	  unsigned char *id = scan_in.token_buffer + old_written;
 	  
 	  CPP_SET_WRITTEN (&scan_in, old_written);
-	  if (token == CPP_EOF) /* Should not happen ...  */
+	  if (token == CPP_EOF && CPP_BUFFER (&scan_in) == buf)
 	    break;
-	  if (token == CPP_POP && CPP_BUFFER (&scan_in) == buf)
-	    {
-	      cpp_pop_buffer (&scan_in);
-	      break;
-	    }
 	  if (token == CPP_NAME && cpp_idcmp (id, length, "_filbuf") == 0)
 	    seen_filbuf++;
 	}
