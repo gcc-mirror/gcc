@@ -26,6 +26,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #endif
 #define DBX_DEBUGGING_INFO
 
+#include "aoutos.h"
 #include "m88k.h"
 
 /* Identify the compiler.  */
