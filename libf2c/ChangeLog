@@ -1,3 +1,7 @@
+2001-07-04  Zack Weinberg  <zackw@stanford.edu>
+
+	* Makefile.in: Take PICFLAG and RUNTESTFLAGS out of FLAGS_TO_PASS.
+
 2001-07-01  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	* libI77/fio.h: Include <sys/types.h> for off_t.
