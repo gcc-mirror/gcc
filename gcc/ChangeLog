@@ -1,3 +1,8 @@
+Thu Jun  5 13:23:51 CEST 2003  Jan Hubicka  <jh@suse.cz>
+
+	* i386.md (align): Fix warning; clarify what to do when no p2align
+	is available.
+
 2003-06-05  Nick Clifton  <nickc@redhat.com>
 
 	* config.gcc (m32r-elf): Revert previous delta.
