@@ -36,9 +36,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "tconfig.h"
 #include "tsystem.h"
 
-#include "symcat.h"
-#include "machmode.h"
-
 /* Don't use `fancy_abort' here even if config.h says to use it.  */
 #ifdef abort
 #undef abort
