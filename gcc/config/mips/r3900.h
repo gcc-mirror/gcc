@@ -69,21 +69,4 @@ Boston, MA 02111-1307, USA.  */
 %{gstabs+:-g} %{gstabs+0:-g0} %{gstabs+1:-g1} %{gstabs+2:-g2} %{gstabs+3:-g3} \
 %{gcoff:-g} %{gcoff0:-g0} %{gcoff1:-g1} %{gcoff2:-g2} %{gcoff3:-g3}"
 
-/* This is how to equate one symbol to another symbol.  The syntax used is
-   `SYM1=SYM2'.  Note that this is different from the way equates are done
-   with most svr4 assemblers, where the syntax is `.set SYM1,SYM2'.  */
-
-#define ASM_OUTPUT_DEF(FILE,LABEL1,LABEL2)                            \
- do { fprintf ((FILE), "\t");                                         \
-      assemble_name (FILE, LABEL1);                                   \
-      fprintf (FILE, " = ");                                          \
-      assemble_name (FILE, LABEL2);                                   \
-      fprintf (FILE, "\n");                                           \
- } while (0)
-
-#define SUPPORTS_WEAK 1
-#define ASM_WEAKEN_LABEL(FILE,NAME)                                   \
- do { fprintf ((FILE), "\t.weak\t");                                  \
-      assemble_name (FILE, NAME);                                     \
-      fprintf (FILE, "\n");                                           \
- } while (0)
+/* eof */
