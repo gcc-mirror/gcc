@@ -910,10 +910,11 @@ default_conversion (exp)
 
   if (C_PROMOTING_INTEGER_TYPE_P (type))
     {
-      /* Traditionally, unsignedness is preserved in default promotions.  */
-      if ((flag_traditional && TREE_UNSIGNED (type))
-	  /* Also preserve unsignedness if not really getting any wider.  */
-	  || (TYPE_PRECISION (type) == TYPE_PRECISION (integer_type_node)))
+      /* Traditionally, unsignedness is preserved in default promotions.
+         Also preserve unsignedness if not really getting any wider.  */
+      if (TREE_UNSIGNED (type)
+	  && (flag_traditional
+	      || TYPE_PRECISION (type) == TYPE_PRECISION (integer_type_node)))
 	return convert (unsigned_type_node, exp);
       return convert (integer_type_node, exp);
     }
