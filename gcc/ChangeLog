@@ -1,5 +1,13 @@
 2000-02-09  Zack Weinberg  <zack@wolery.cumb.org>
 
+	* configure.in: Correct --help text for --with-dwarf2.
+	Put tm-dwarf2.h after other tm files, if it's requested.
+	* configure: Regenerate.
+	* config/tm-dwarf2.h: #undef PREFERRED_DEBUGGING_TYPE before
+	defining it.
+
+2000-02-09  Zack Weinberg  <zack@wolery.cumb.org>
+
 	* cpplib.h: Provide HASHNODE typedef and forward decl of
 	struct hashnode only.  Kill cpp_hashnode typedef.  MACRODEF,
 	DEFINITION, struct hashnode, struct macrodef, struct
