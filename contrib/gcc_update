@@ -77,6 +77,21 @@ libf2c/libI77/configure: libf2c/libI77/configure.in
 libf2c/libU77/configure: libf2c/libU77/configure.in
 libf2c/libU77/stamp-h.in: libf2c/libU77/configure.in libf2c/libU77/acconfig.h
 libobjc/configure: libobjc/configure.in
+# fastjar
+fastjar/aclocal.m4: fastjar/configure.in
+fastjar/Makefile.in: fastjar/Makefile.am fastjar/configure.in fastjar/aclocal.m4
+fastjar/configure: fastjar/configure.in fastjar/aclocal.m4
+fastjar/stamp-h.in: fastjar/configure.in fastjar/aclocal.m4
+boehm-gc/aclocal.m4: boehm-gc/configure.in boehm-gc/acinclude.m4
+boehm-gc/Makefile.in: boehm-gc/Makefile.am boehm-gc/configure.in boehm-gc/aclocal.m4
+boehm-gc/configure: boehm-gc/configure.in boehm-gc/aclocal.m4
+libjava/aclocal.m4: libjava/configure.in libjava/acinclude.m4
+libjava/Makefile.in: libjava/Makefile.am libjava/configure.in libjava/aclocal.m4
+libjava/configure: libjava/configure.in libjava/aclocal.m4
+libjava/libltdl/aclocal.m4: libjava/libltdl/configure.in libjava/libltdl/acinclude.m4
+libjava/libltdl/Makefile.in: libjava/libltdl/Makefile.am libjava/libltdl/configure.in libjava/libltdl/aclocal.m4
+libjava/libltdl/configure: libjava/libltdl/configure.in libjava/libltdl/aclocal.m4
+libjava/libltdl/stamp-h.in: libjava/libltdl/configure.in libjava/libltdl/aclocal.m4 libjava/libltdl/acconfig.h
 EOF
 }
 

@@ -1,3 +1,7 @@
+2000-12-12  Rodney Brown  <RodneyBrown@mynd.com>
+
+	* contrib/gcc_update: Add fastjar --touch entries.
+
 2000-12-12  Alexandre Oliva  <aoliva@redhat.com>
 
 	* configure.in: Disable language-specific target libraries for
