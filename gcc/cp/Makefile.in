@@ -274,7 +274,8 @@ cvt.o : cvt.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../system.h decl.h \
 search.o : search.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../stack.h \
   $(srcdir)/../flags.h $(srcdir)/../system.h $(srcdir)/../toplev.h $(RTL_H)
 tree.o : tree.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h \
-  $(srcdir)/../system.h $(srcdir)/../toplev.h $(srcdir)/../ggc.h $(RTL_H)
+  $(srcdir)/../system.h $(srcdir)/../toplev.h $(srcdir)/../ggc.h $(RTL_H) \
+  $(srcdir)/../../include/splay-tree.h
 ptree.o : ptree.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../system.h
 rtti.o : rtti.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h \
   $(srcdir)/../system.h $(srcdir)/../toplev.h

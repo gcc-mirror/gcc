@@ -830,7 +830,6 @@ expand_throw (exp)
      tree exp;
 {
   tree fn;
-  static tree cleanup_type;
 
   if (! doing_eh (1))
     return;

@@ -149,7 +149,7 @@ static boolean typename_compare PROTO((hash_table_key, hash_table_key));
 static void push_binding PROTO((tree, tree, struct binding_level*));
 static int add_binding PROTO((tree, tree));
 static void pop_binding PROTO((tree, tree));
-static tree local_variable_p PROTO((tree));
+static tree local_variable_p PROTO((tree *));
 static tree find_binding PROTO((tree, tree));
 static tree select_decl PROTO((tree, int));
 static int lookup_flags PROTO((int, int));
@@ -11188,13 +11188,15 @@ require_complete_types_for_parms (parms)
     }
 }
 
-/* Returns DECL if DECL is a local variable (or parameter).  Returns
+/* Returns *TP if *TP is a local variable (or parameter).  Returns
    NULL_TREE otherwise.  */
 
 static tree
-local_variable_p (t)
-     tree t;
+local_variable_p (tp)
+     tree *tp;
 {
+  tree t = *tp;
+
   if ((TREE_CODE (t) == VAR_DECL 
        /* A VAR_DECL with a context that is a _TYPE is a static data
 	  member.  */
@@ -11273,7 +11275,7 @@ check_default_argument (decl, arg)
 
      The keyword `this' shall not be used in a default argument of a
      member function.  */
-  var = search_tree (arg, local_variable_p);
+  var = search_tree (&arg, local_variable_p);
   if (var)
     {
       cp_error ("default argument `%E' uses local variable `%D'",

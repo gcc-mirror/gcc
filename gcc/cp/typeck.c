@@ -5877,7 +5877,8 @@ build_modify_expr (lhs, modifycode, rhs)
     {
       newrhs = convert_for_initialization (lhs, lhstype, newrhs, LOOKUP_NORMAL,
 					   "assignment", NULL_TREE, 0);
-      if (lhs == DECL_RESULT (current_function_decl))
+      if (current_function_decl && 
+	  lhs == DECL_RESULT (current_function_decl))
 	{
 	  if (DECL_INITIAL (lhs))
 	    warning ("return value from function receives multiple initializations");

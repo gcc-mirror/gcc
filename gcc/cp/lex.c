@@ -795,6 +795,7 @@ init_parse (filename)
   opname_tab[(int) INDIRECT_REF] = "*";
   opname_tab[(int) ARRAY_REF] = "[]";
   opname_tab[(int) MODIFY_EXPR] = "=";
+  opname_tab[(int) INIT_EXPR] = "=";
   opname_tab[(int) NEW_EXPR] = "new";
   opname_tab[(int) DELETE_EXPR] = "delete";
   opname_tab[(int) VEC_NEW_EXPR] = "new []";
