@@ -1340,7 +1340,7 @@ print_operand (file, x, code)
       if (GET_CODE (x) != CONST_INT)
 	output_operand_lossage ("invalid %%N value");
 
-      fprintf (file, "%ld", ~ INTVAL (x));
+      fprintf (file, HOST_WIDE_INT_PRINT_DEC, ~ INTVAL (x));
       break;
 
     case 'P':
@@ -1348,7 +1348,7 @@ print_operand (file, x, code)
       if (GET_CODE (x) != CONST_INT)
 	output_operand_lossage ("invalid %%P value");
 
-      fprintf (file, "%ld", (HOST_WIDE_INT) 1 << INTVAL (x));
+      fprintf (file, HOST_WIDE_INT_PRINT_DEC, (HOST_WIDE_INT) 1 << INTVAL (x));
       break;
 
     case 'h':
@@ -1356,7 +1356,7 @@ print_operand (file, x, code)
       if (GET_CODE (x) != CONST_INT)
 	output_operand_lossage ("invalid %%h value");
 
-      fprintf (file, "%ld", INTVAL (x) >> 16);
+      fprintf (file, HOST_WIDE_INT_PRINT_DEC, INTVAL (x) >> 16);
       break;
 
     case 'L':
@@ -1364,7 +1364,8 @@ print_operand (file, x, code)
       if (GET_CODE (x) != CONST_INT)
 	output_operand_lossage ("invalid %%L value");
 
-      fprintf (file, "%ld", (INTVAL (x) & 0xffff) - 2 * (INTVAL (x) & 0x8000));
+      fprintf (file, HOST_WIDE_INT_PRINT_DEC,
+	       (INTVAL (x) & 0xffff) - 2 * (INTVAL (x) & 0x8000));
       break;
 
     case 'm':
@@ -1386,7 +1387,7 @@ print_operand (file, x, code)
 	    if (value & 0xff)
 	      mask |= (1 << (i + sizeof (int)));
 
-	  fprintf (file, "%ld", mask & 0xff);
+	  fprintf (file, HOST_WIDE_INT_PRINT_DEC, mask & 0xff);
 	}
 
       else if (GET_CODE (x) == CONST_INT)
@@ -1397,7 +1398,7 @@ print_operand (file, x, code)
 	    if (value & 0xff)
 	      mask |= (1 << i);
 
-	  fprintf (file, "%ld", mask);
+	  fprintf (file, HOST_WIDE_INT_PRINT_DEC, mask);
 	}
       else
 	output_operand_lossage ("invalid %%m value");
@@ -1439,7 +1440,7 @@ print_operand (file, x, code)
 	  && (INTVAL (x) & 7) != 8)
 	output_operand_lossage ("invalid %%s value");
 
-      fprintf (file, "%ld", INTVAL (x) / 8);
+      fprintf (file, HOST_WIDE_INT_PRINT_DEC, INTVAL (x) / 8);
       break;
 
     case 'S':
@@ -1450,7 +1451,7 @@ print_operand (file, x, code)
 	  && (INTVAL (x) & 7) != 8)
 	output_operand_lossage ("invalid %%s value");
 
-      fprintf (file, "%ld", (64 - INTVAL (x)) / 8);
+      fprintf (file, HOST_WIDE_INT_PRINT_DEC, (64 - INTVAL (x)) / 8);
       break;
 
     case 'C': case 'D': case 'c': case 'd':
@@ -2008,10 +2009,6 @@ output_prolog (file, size)
     = ALPHA_ROUND (sa_size 
 		   + (is_stack_procedure ? 8 : 0)
 		   + size + current_function_pretend_args_size);
-
-  fprintf (file, "# size %d, current_function_pretend_args_size %d, current_function_outgoing_args_size %d\n",
-	size, current_function_pretend_args_size, current_function_outgoing_args_size);
-  fprintf (file, "# sa_size %d, frame_size %d\n", sa_size, frame_size);
 
   /* Issue function start and label.  */
   fprintf (file, "\t.ent ");
