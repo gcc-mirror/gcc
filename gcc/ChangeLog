@@ -1,3 +1,26 @@
+1999-12-12  David S. Miller  <davem@redhat.com>
+
+	* cse.c (struct cse_reg_info): Add hash_next member,
+	reorder rest of struct for better packing on 64-bit
+	hosts.
+	(cse_reg_info_tree): Kill.
+	(REGHASH_SHIFT, REGHASH_SIZE, REGHASH_MASK, reg_hash,
+	REGHASH_FN): New custom pow2 hash mechanism.
+	(NBUCKETS): Kill.
+	(HASH_SHIFT, HASH_SIZE, HASH_MASK, HASH, table): Rework to
+	use a pow2 hash table.
+	(get_cse_reg_info): Rework to use new REGHASH.
+	(new_basic_block): Likewise, use HASH_SIZE, and inline
+	free_element call.
+	(remove_from_table): Rework to use HASH_SIZE/HASH_MASK,
+	and inline free_element call.
+	(lookup_as_function, insert, flush_hash_table, invalidate,
+	remove_invalid_refs, remove_invalid_subreg_refs, rehash_using_reg,
+	invalidate_for_call, use_related_value, find_comparison_args,
+	fold_rtx, equiv_constant, cse_insn, invalidate_memory): Likewise.
+	(hash_cse_reg_info, cse_reg_info_equal_p, free_element,
+	get_element): Kill.
+	
 Sun Dec 12 21:31:44 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* cse.c (cse_basic_block): Free qty_table consistently.
