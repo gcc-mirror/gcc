@@ -1,3 +1,7 @@
+1998-09-21  Dave Love  <d.love@dl.ac.uk>
+
+	* libI77/Version.c: Update.
+
 Mon Sep 21 12:27:27 1998  Robert Lipe  <robertl@dgii.com>
 
 	* Makefile.in (distclean, clean, uninstall, install, all): Add 
