@@ -1,5 +1,12 @@
 2001-10-15  Richard Sandiford  <rsandifo@redhat.com>
 
+	* pt.c (UNIFY_ALLOW_MAX_CORRECTION): Define.
+	(unify): Only handle MINUS_EXPR specially if the above flag is set
+	and the subtracted constant is 1.  Clear the flag on recursive calls.
+	Set it when unifying the maximum value in an INTEGER_TYPE's range.
+
+2001-10-15  Richard Sandiford  <rsandifo@redhat.com>
+
 	* decl.c (bad_specifiers): Don't allow exception specifications
 	on any typedefs.
 

@@ -84,6 +84,7 @@ static htab_t local_specializations;
 #define UNIFY_ALLOW_OUTER_LEVEL 16
 #define UNIFY_ALLOW_OUTER_MORE_CV_QUAL 32
 #define UNIFY_ALLOW_OUTER_LESS_CV_QUAL 64
+#define UNIFY_ALLOW_MAX_CORRECTION 128
 
 #define GTB_VIA_VIRTUAL 1 /* The base class we are examining is
 			     virtual, or a base class of a virtual
@@ -8473,7 +8474,14 @@ check_cv_quals_for_unify (strict, arg, parm)
        qualified at this point.
      UNIFY_ALLOW_OUTER_LESS_CV_QUAL:
        This is the outermost level of a deduction, and PARM can be less CV
-       qualified at this point.  */
+       qualified at this point.
+     UNIFY_ALLOW_MAX_CORRECTION:
+       This is an INTEGER_TYPE's maximum value.  Used if the range may
+       have been derived from a size specification, such as an array size.
+       If the size was given by a nontype template parameter N, the maximum
+       value will have the form N-1.  The flag says that we can (and indeed
+       must) unify N with (ARG + 1), an exception to the normal rules on
+       folding PARM.  */
 
 static int
 unify (tparms, targs, parm, arg, strict)
@@ -8529,6 +8537,7 @@ unify (tparms, targs, parm, arg, strict)
   strict &= ~UNIFY_ALLOW_DERIVED;
   strict &= ~UNIFY_ALLOW_OUTER_MORE_CV_QUAL;
   strict &= ~UNIFY_ALLOW_OUTER_LESS_CV_QUAL;
+  strict &= ~UNIFY_ALLOW_MAX_CORRECTION;
   
   switch (TREE_CODE (parm))
     {
@@ -8784,7 +8793,8 @@ unify (tparms, targs, parm, arg, strict)
 	    return 1;
 	  if (TYPE_MAX_VALUE (parm) && TYPE_MAX_VALUE (arg)
 	      && unify (tparms, targs, TYPE_MAX_VALUE (parm),
-			TYPE_MAX_VALUE (arg), UNIFY_ALLOW_INTEGER))
+			TYPE_MAX_VALUE (arg),
+			UNIFY_ALLOW_INTEGER | UNIFY_ALLOW_MAX_CORRECTION))
 	    return 1;
 	}
       /* We have already checked cv-qualification at the top of the
@@ -8914,7 +8924,8 @@ unify (tparms, targs, parm, arg, strict)
       return 1;
 
     case MINUS_EXPR:
-      if (TREE_CODE (TREE_OPERAND (parm, 1)) == INTEGER_CST)
+      if (tree_int_cst_equal (TREE_OPERAND (parm, 1), integer_one_node)
+	  && (strict_in & UNIFY_ALLOW_MAX_CORRECTION))
 	{
 	  /* We handle this case specially, since it comes up with
 	     arrays.  In particular, something like:
