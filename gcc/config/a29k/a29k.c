@@ -724,13 +724,17 @@ secondary_reload_class (class, mode, in)
 	code = MEM;
     }
 
-  /* If we are transferring between memory and a multi-word mode or between
-     memory and a mode smaller than a word without DW being enabled, we need
-     BP.  */
+  /* If we are transferring between memory and a multi-word mode, we need
+     CR.  */
 
-  if (code == MEM
-      && (GET_MODE_SIZE (mode) > UNITS_PER_WORD
-	  || (! TARGET_DW_ENABLE && GET_MODE_SIZE (mode) < UNITS_PER_WORD)))
+  if (code == MEM && GET_MODE_SIZE (mode) > UNITS_PER_WORD)
+    return CR_REGS;
+
+  /* If between memory and a mode smaller than a word without DW being
+     enabled, we need BP.  */
+
+  if (code == MEM && ! TARGET_DW_ENABLE
+      && GET_MODE_SIZE (mode) < UNITS_PER_WORD)
     return BP_REGS;
 
   /* Otherwise, we can place anything into GENERAL_REGS and can put
