@@ -38,6 +38,7 @@ Boston, MA 02111-1307, USA.  */
 #include "expr.h"
 #include "obstack.h"
 #include "toplev.h"
+#include "ggc.h"
 
 static void restore_unscaled_index_insn_codes		PROTO((rtx));
 static void record_unscaled_index_insn_codes		PROTO((rtx));
@@ -45,6 +46,8 @@ static void pa_combine_instructions			PROTO((rtx));
 static int pa_can_combine_p	PROTO((rtx, rtx, rtx, int, rtx, rtx, rtx));
 static int forward_branch_p				PROTO((rtx));
 static int shadd_constant_p				PROTO((int));
+static void pa_add_gc_roots                             PROTO((void));
+static void mark_deferred_plabels                       PROTO((void *));
 
 /* Save the operands last given to a compare for use when we
    generate a scc or bcc insn.  */
@@ -176,6 +179,9 @@ override_options ()
       warning ("-g option disabled.");
       write_symbols = NO_DEBUG;
     }
+
+  /* Register global variables with the garbage collector.  */
+  pa_add_gc_roots ();
 }
 
 
@@ -6515,4 +6521,30 @@ insn_sets_and_refs_are_delayed (insn)
 	   && GET_CODE (PATTERN (insn)) != USE
 	   && GET_CODE (PATTERN (insn)) != CLOBBER
 	   && get_attr_type (insn) == TYPE_MILLI));
+}
+
+/* Mark ARG (which is really a struct deferred_plabel **) for GC.  */
+
+static void
+mark_deferred_plabels (arg)
+     void *arg;
+{
+  struct deferred_plabel *dp = *(struct deferred_plabel **) arg;
+  int i;
+
+  for (i = 0; i < n_deferred_plabels; ++i)
+    ggc_mark_rtx (dp[i].internal_label);
+}
+
+/* Called to register all of our global variables with the garbage
+   collector.  */
+
+static void 
+pa_add_gc_roots ()
+{
+  ggc_add_rtx_root (&hppa_compare_op0, 1);
+  ggc_add_rtx_root (&hppa_compare_op1, 1);
+  ggc_add_rtx_root (&hp_profile_label_rtx, 1);
+  ggc_add_root (&deferred_plabels, sizeof (&deferred_plabels), 1,
+		&mark_deferred_plabels);
 }

@@ -38,6 +38,7 @@ Boston, MA 02111-1307, USA.  */
 #include "expr.h"
 #include "recog.h"
 #include "toplev.h"
+#include "ggc.h"
 
 /* 1 if the caller has placed an "unimp" insn immediately after the call.
    This is used in v8 code when calling a function that returns a structure.
@@ -119,7 +120,8 @@ static int ultrasparc_adjust_cost PROTO((rtx, rtx, rtx, int));
 static void sparc_output_addr_vec PROTO((rtx));
 static void sparc_output_addr_diff_vec PROTO((rtx));
 static void sparc_output_deferred_case_vectors PROTO((void));
-
+static void sparc_add_gc_roots    PROTO ((void));
+static void mark_ultrasparc_pipeline_state PROTO ((void *));
 
 #ifdef DWARF2_DEBUGGING_INFO
 extern char *dwarf2out_cfi_label ();
@@ -331,6 +333,9 @@ sparc_override_options ()
     {
       error ("profiling does not support code models other than medlow");
     }
+
+  /* Register global variables with the garbage collector.  */
+  sparc_add_gc_roots ();
 }
 
 /* Miscellaneous utilities.  */
@@ -7907,4 +7912,38 @@ sparc_function_block_profiler_exit(file)
     fprintf (file, "\tcall\t%s__bb_trace_ret\n\t nop\n", user_label_prefix);
   else
     abort ();
+}
+
+/* Mark ARG, which is really a struct ultrasparc_pipline_state *, for
+   GC.  */
+
+static void
+mark_ultrasparc_pipeline_state (arg)
+     void *arg;
+{
+  struct ultrasparc_pipeline_state *ups;
+  size_t i;
+
+  ups = (struct ultrasparc_pipeline_state *) arg;
+  for (i = 0; i < sizeof (ups->group) / sizeof (rtx); ++i)
+    ggc_mark_rtx (ups->group[i]);
+}
+
+/* Called to register all of our global variables with the garbage
+   collector.  */
+
+static void
+sparc_add_gc_roots ()
+{
+  ggc_add_rtx_root (&sparc_compare_op0, 1);
+  ggc_add_rtx_root (&sparc_compare_op1, 1);
+  ggc_add_rtx_root (&leaf_label, 1);
+  ggc_add_rtx_root (&global_offset_table, 1);
+  ggc_add_rtx_root (&get_pc_symbol, 1);
+  ggc_add_rtx_root (&sparc_addr_diff_list, 1);
+  ggc_add_rtx_root (&sparc_addr_list, 1);
+  ggc_add_root (ultra_pipe_hist, 
+		sizeof (ultra_pipe_hist) / sizeof (ultra_pipe_hist[0]),
+		sizeof (ultra_pipe_hist[0]),
+		&mark_ultrasparc_pipeline_state);
 }
