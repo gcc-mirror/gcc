@@ -227,7 +227,8 @@ extern const char *ia64_fixed_range_string;
    `cc1'.  It can also specify how to translate options you give to GNU CC into
    options for GNU CC to pass to the `cc1'.  */
 
-/* #define CC1_SPEC "" */
+#undef CC1_SPEC
+#define CC1_SPEC "%{G*}"
 
 /* A C string constant that tells the GNU CC driver program options to pass to
    `cc1plus'.  It can also specify how to translate options you give to GNU CC

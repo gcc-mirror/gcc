@@ -1,3 +1,8 @@
+2001-04-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/ia64/ia64.h (CC1_SPEC): Define.
+	* config/ia64/linux.h (CC1_SPEC): Define.
+
 Wed Apr 25 17:09:50 2001  J"orn Rennecke <amylaar@redhat.com>
 
 	* emit-rtl.c (constant_subword): Also do sign extension in
