@@ -588,27 +588,27 @@ dnl
 dnl Substs:
 dnl  GLIBCXX_INCLUDES
 dnl  TOPLEVEL_INCLUDES
-dnl  LIBMATH_INCLUDES
-dnl  LIBSUPCXX_INCLUDES
 dnl
 AC_DEFUN(GLIBCXX_EXPORT_INCLUDES, [
-  # Root level of the build directory include sources.
-  GLIBCXX_INCLUDES="-I$glibcxx_builddir/include/$host_alias -I$glibcxx_builddir/include"
+  # Used for every C++ compile we perform.
+  GLIBCXX_INCLUDES="\
+-I$glibcxx_builddir/include/$host_alias \
+-I$glibcxx_builddir/include \
+-I$glibcxx_srcdir/libsupc++"
 
-  # Passed down for canadian crosses.
+  # For Canadian crosses, pick this up too.
   if test $CANADIAN = yes; then
-    TOPLEVEL_INCLUDES='-I${includedir}'
+    GLIBCXX_INCLUDES="$GLIBCXX_INCLUDES '-I${includedir}'"
   fi
 
-  LIBMATH_INCLUDES='-I${glibcxx_srcdir}/libmath'
-
-  LIBSUPCXX_INCLUDES='-I${glibcxx_srcdir}/libsupc++'
+  # Stuff in the actual top level.  Currently only used by libsupc++ to
+  # get unwind* headers from the gcc dir.
+  #TOPLEVEL_INCLUDES='-I$(toplevel_srcdir)/gcc -I$(toplevel_srcdir)/include'
+  TOPLEVEL_INCLUDES='-I$(toplevel_srcdir)/gcc'
 
   # Now, export this to all the little Makefiles....
   AC_SUBST(GLIBCXX_INCLUDES)
   AC_SUBST(TOPLEVEL_INCLUDES)
-  AC_SUBST(LIBMATH_INCLUDES)
-  AC_SUBST(LIBSUPCXX_INCLUDES)
 ])
 
 

@@ -21,15 +21,7 @@
 ## the Free Software Foundation, 59 Temple Place - Suite 330,
 ## Boston, MA 02111-1307, USA. 
 
-MAINT_CHARSET = latin1
-
-mkinstalldirs = $(SHELL) $(toplevel_srcdir)/mkinstalldirs
-
-# Cross compiler and multilib support.
-CC = @CC@
-toolexecdir = @glibcxx_toolexecdir@
-toolexeclibdir = @glibcxx_toolexeclibdir@
-
+include $(top_srcdir)/fragment.am
 
 # Need this library to both be part of libstdc++.a, and installed
 # separately too.
@@ -39,29 +31,8 @@ toolexeclib_LTLIBRARIES = libsupc++.la
 noinst_LTLIBRARIES = libsupc++convenience.la
 
 
-# Compile flags that should be constant throughout the build, both for
-# SUBDIRS and for libstdc++-v3 in general.
-OPTIMIZE_CXXFLAGS = @OPTIMIZE_CXXFLAGS@
-
-# These bits are all figured out from configure. Look in acinclude.m4
-# or configure.in to see how they are set. See GLIBCXX_EXPORT_FLAGS
-# NB: DEBUGFLAGS have to be at the end so that -O2 can be overridden.
-CONFIG_CXXFLAGS = \
-	@SECTION_FLAGS@ @EXTRA_CXX_FLAGS@
-
-# Warning flags to use.
-WARN_CXXFLAGS = \
-	@WARN_FLAGS@ $(WERROR) -fdiagnostics-show-location=once
 
 LIBSUPCXX_CXXFLAGS = @LIBSUPCXX_PICFLAGS@
-
-# Use common includes from acinclude.m4/GLIBCXX_EXPORT_INCLUDES
-GLIBCXX_INCLUDES = @GLIBCXX_INCLUDES@
-LIBSUPCXX_INCLUDES = @LIBSUPCXX_INCLUDES@
-GCC_INCLUDES = -I$(toplevel_srcdir)/gcc -I$(toplevel_srcdir)/include
-
-INCLUDES = \
-	$(GCC_INCLUDES) $(GLIBCXX_INCLUDES) $(LIBSUPCXX_INCLUDES)
 
 headers = \
 	exception new typeinfo cxxabi.h exception_defines.h 
@@ -137,7 +108,7 @@ AM_MAKEFLAGS = \
 # We have to put --tag disable-shared after --tag CXX lest things
 # CXX undo the affect of disable-shared.
 LTCXXCOMPILE = $(LIBTOOL) --tag CXX --tag disable-shared \
-               --mode=compile $(CXX) $(INCLUDES) \
+               --mode=compile $(CXX) $(TOPLEVEL_INCLUDES) \
 	       $(AM_CPPFLAGS) $(CPPFLAGS) $(CXXFLAGS) $(AM_CXXFLAGS) 
 
 # 3) We'd have a problem when building the shared libstdc++ object if

@@ -22,26 +22,20 @@
 ## Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 ## USA.
 
-MAINT_CHARSET = latin1
-
-mkinstalldirs = $(SHELL) $(toplevel_srcdir)/mkinstalldirs
+include $(top_srcdir)/fragment.am
 
 # Cross compiler support.
-glibcxx_srcdir=@glibcxx_srcdir@
-glibcxx_builddir=@glibcxx_builddir@
-toolexecdir = @glibcxx_toolexecdir@
-toolexeclibdir = @glibcxx_toolexeclibdir@
 toolexeclib_LTLIBRARIES = libstdc++.la
 
 # Symbol versioning for shared libraries.
 if GLIBCXX_BUILD_VERSIONED_SHLIB
 version_arg = -Wl,--version-script=libstdc++-symbol.ver
-libstdc++-symbol.ver:  ${glibcxx_srcdir}/@SYMVER_MAP@
-	cp ${glibcxx_srcdir}/@SYMVER_MAP@ ./libstdc++-symbol.ver
-	if test "x@port_specific_symbol_files@" != x; then \
+libstdc++-symbol.ver:  ${glibcxx_srcdir}/$(SYMVER_MAP)
+	cp ${glibcxx_srcdir}/$(SYMVER_MAP) ./libstdc++-symbol.ver
+	if test "x$(port_specific_symbol_files)" != x; then \
 	  sed -n '1,/DO NOT DELETE/p' $@ > tmp.top; \
 	  sed -n '/DO NOT DELETE/,$$p' $@ > tmp.bottom; \
-	  cat tmp.top @port_specific_symbol_files@ tmp.bottom > $@; \
+	  cat tmp.top $(port_specific_symbol_files) tmp.bottom > $@; \
 	  rm tmp.top tmp.bottom; \
 	fi
 else
@@ -49,30 +43,6 @@ version_arg =
 libstdc++-symbol.ver:
 endif
 
-# Compile flags that should be constant throughout the build, both for
-# SUBDIRS and for libstdc++-v3 in general.
-OPTIMIZE_CXXFLAGS = @OPTIMIZE_CXXFLAGS@
-
-# These bits are all figured out from configure. Look in acinclude.m4
-# or configure.in to see how they are set. See GLIBCXX_EXPORT_FLAGS
-CONFIG_CXXFLAGS = \
-	@SECTION_FLAGS@ @EXTRA_CXX_FLAGS@
-
-# Warning flags to use.
-WARN_CXXFLAGS = \
-	@WARN_FLAGS@ $(WERROR) -fdiagnostics-show-location=once
-
-# Use common includes from acinclude.m4/GLIBCXX_EXPORT_INCLUDES
-GLIBCXX_INCLUDES = @GLIBCXX_INCLUDES@
-LIBMATH_INCLUDES = @LIBMATH_INCLUDES@
-LIBSUPCXX_INCLUDES = @LIBSUPCXX_INCLUDES@
-TOPLEVEL_INCLUDES = @TOPLEVEL_INCLUDES@
-
-INCLUDES = \
-	-nostdinc++ \
-	$(GLIBCXX_INCLUDES) \
-	$(LIBSUPCXX_INCLUDES) $(LIBMATH_INCLUDES) \
-	$(TOPLEVEL_INCLUDES)
 
 # Source files linked in via configuration/make substitution for a
 # particular host.

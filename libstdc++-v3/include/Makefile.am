@@ -21,17 +21,7 @@
 ## Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 ## USA.
 
-MAINT_CHARSET = latin1
-
-mkinstalldirs = $(SHELL) $(toplevel_srcdir)/mkinstalldirs
-
-# Cross compiler and multilib support.
-glibcxx_srcdir=@glibcxx_srcdir@
-glibcxx_builddir=@glibcxx_builddir@
-
-GLIBCXX_INCLUDES = @GLIBCXX_INCLUDES@
-LIBSUPCXX_INCLUDES = @LIBSUPCXX_INCLUDES@
-INCLUDES = -nostdinc++ $(GLIBCXX_INCLUDES) $(LIBSUPCXX_INCLUDES)
+include $(top_srcdir)/fragment.am
 
 # Standard C++ includes.
 std_srcdir = ${glibcxx_srcdir}/include/std
@@ -509,8 +499,8 @@ ${pch_input}: ${allstamped} ${host_builddir}/c++config.h ${pch_source}
 	if [ ! -d "${pch_output_builddir}" ]; then \
 	  mkdir -p ${pch_output_builddir}; \
 	fi; \
-	$(CXX) $(PCHFLAGS) $(INCLUDES) ${pch_source} -O0 -g -o ${pch_output_builddir}/O0g; \
-	$(CXX) $(PCHFLAGS) $(INCLUDES) ${pch_source} -O2 -g -o ${pch_output_builddir}/O2g;
+	$(CXX) $(PCHFLAGS) $(AM_CPPFLAGS) ${pch_source} -O0 -g -o ${pch_output_builddir}/O0g; \
+	$(CXX) $(PCHFLAGS) $(AM_CPPFLAGS) ${pch_source} -O2 -g -o ${pch_output_builddir}/O2g;
 
 # For robustness sake (in light of junk files or in-source
 # configuration), copy from the build or source tree to the install

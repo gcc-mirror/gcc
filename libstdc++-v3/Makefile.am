@@ -22,13 +22,9 @@
 ## Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 ## USA.
 
-MAINT_CHARSET = latin1
+include $(top_srcdir)/fragment.am
 
 SUBDIRS = include libmath libsupc++ src po testsuite 
-
-mkinstalldirs = $(SHELL) $(toplevel_srcdir)/mkinstalldirs
-
-PWD_COMMAND = $${PWDCMD-pwd}
 
 # These rules are messy, but are hella worth it.
 doxygen:

@@ -1,6 +1,6 @@
 ## Makefile for the po subdirectory of the GNU C++ Standard library.
 ##
-## Copyright (C) 2001 Free Software Foundation, Inc.
+## Copyright (C) 2001, 2003 Free Software Foundation, Inc.
 ##
 ## This file is part of the libstdc++ version 3 distribution.
 ## Process this file with automake to produce Makefile.in.
@@ -21,11 +21,8 @@
 ## Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 ## USA.
 
-PACKAGE = @PACKAGE@
-glibcxx_srcdir = @glibcxx_srcdir@
 
 # Location of installation directories.
-mkinstalldirs = $(SHELL) $(toplevel_srcdir)/mkinstalldirs
 locale_installdir = $(DESTDIR)$(datadir)/locale
 locale_builddir = @glibcxx_localedir@
 
@@ -53,8 +50,8 @@ all-local-yes: $(LOCALE_OUT)
 check: check-@USE_NLS@
 check-no:
 check-yes:
-	@$(mkinstalldirs) $(locale_builddir) 
-	@catalogs='$(LOCALE_OUT)'; \
+	$(mkinstalldirs) $(locale_builddir) 
+	catalogs='$(LOCALE_OUT)'; \
 	for cat in $$catalogs; do \
 	  cat=`basename $$cat`; \
 	  lang=`echo $$cat | sed 's/\.mo$$//'`; \
@@ -69,7 +66,7 @@ install-data-local: install-data-local-@USE_NLS@
 install-data-local-no:
 install-data-local-yes: all-local-yes
 	$(mkinstalldirs) $(locale_installdir) 
-	@catalogs='$(LOCALE_OUT)'; \
+	catalogs='$(LOCALE_OUT)'; \
 	for cat in $$catalogs; do \
 	  cat=`basename $$cat`; \
 	  lang=`echo $$cat | sed 's/\.mo$$//'`; \
