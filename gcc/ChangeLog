@@ -1,3 +1,7 @@
+Fri Oct 23 13:12:35 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* mn10200.md (truncated shift): Accept constant inputs too.
+
 Fri Oct 23 04:06:57 1998  Richard Earnshaw (rearnsha@arm.com)
 
 	* machmode.h (mode_mask_array): No longer const.
