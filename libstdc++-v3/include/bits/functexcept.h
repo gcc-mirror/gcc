@@ -35,22 +35,22 @@
 
 namespace std
 {
-  // Helper for exception objects in <except> 
+  // Helper for exception objects in <except>
   void
   __throw_bad_exception(void);
 
-  // Helper for exception objects in <new> 
+  // Helper for exception objects in <new>
   void
   __throw_bad_alloc(void);
 
-  // Helper for exception objects in <typeinfo> 
+  // Helper for exception objects in <typeinfo>
   void
   __throw_bad_cast(void);
 
   void
   __throw_bad_typeid(void);
 
-  // Helpers for exception objects in <stdexcept> 
+  // Helpers for exception objects in <stdexcept>
   void
   __throw_logic_error(const char* __s);
 

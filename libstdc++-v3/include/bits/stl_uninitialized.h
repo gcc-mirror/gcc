@@ -67,20 +67,20 @@ namespace std
 {
   // uninitialized_copy
   template<typename _InputIterator, typename _ForwardIterator>
-    inline _ForwardIterator 
+    inline _ForwardIterator
     __uninitialized_copy_aux(_InputIterator __first, _InputIterator __last,
 			     _ForwardIterator __result,
 			     __true_type)
     { return std::copy(__first, __last, __result); }
 
   template<typename _InputIterator, typename _ForwardIterator>
-    inline _ForwardIterator 
+    inline _ForwardIterator
     __uninitialized_copy_aux(_InputIterator __first, _InputIterator __last,
 			     _ForwardIterator __result,
 			     __false_type)
     {
       _ForwardIterator __cur = __result;
-      try 
+      try
 	{
 	  for ( ; __first != __last; ++__first, ++__cur)
 	    std::_Construct(&*__cur, *__first);
@@ -89,7 +89,7 @@ namespace std
       catch(...)
 	{
 	  std::_Destroy(__result, __cur);
-	  __throw_exception_again; 
+	  __throw_exception_again;
 	}
     }
 
@@ -104,7 +104,7 @@ namespace std
   */
   template<typename _InputIterator, typename _ForwardIterator>
     inline _ForwardIterator
-    uninitialized_copy(_InputIterator __first, _InputIterator __last, 
+    uninitialized_copy(_InputIterator __first, _InputIterator __last,
 		       _ForwardIterator __result)
     {
       typedef typename iterator_traits<_ForwardIterator>::value_type _ValueType;
@@ -120,7 +120,7 @@ namespace std
     return __result + (__last - __first);
   }
 
-  inline wchar_t* 
+  inline wchar_t*
   uninitialized_copy(const wchar_t* __first, const wchar_t* __last,
 		     wchar_t* __result)
   {
@@ -132,14 +132,14 @@ namespace std
   // destructor is trivial.
   template<typename _ForwardIterator, typename _Tp>
     inline void
-    __uninitialized_fill_aux(_ForwardIterator __first, 
-			     _ForwardIterator __last, 
+    __uninitialized_fill_aux(_ForwardIterator __first,
+			     _ForwardIterator __last,
 			     const _Tp& __x, __true_type)
     { std::fill(__first, __last, __x); }
 
   template<typename _ForwardIterator, typename _Tp>
     void
-    __uninitialized_fill_aux(_ForwardIterator __first, _ForwardIterator __last, 
+    __uninitialized_fill_aux(_ForwardIterator __first, _ForwardIterator __last,
 			     const _Tp& __x, __false_type)
     {
       _ForwardIterator __cur = __first;
@@ -151,7 +151,7 @@ namespace std
       catch(...)
 	{
 	  std::_Destroy(__first, __cur);
-	  __throw_exception_again; 
+	  __throw_exception_again;
 	}
     }
 
@@ -166,7 +166,7 @@ namespace std
   */
   template<typename _ForwardIterator, typename _Tp>
     inline void
-    uninitialized_fill(_ForwardIterator __first, _ForwardIterator __last, 
+    uninitialized_fill(_ForwardIterator __first, _ForwardIterator __last,
 		       const _Tp& __x)
     {
       typedef typename iterator_traits<_ForwardIterator>::value_type _ValueType;
@@ -188,16 +188,16 @@ namespace std
 			       const _Tp& __x, __false_type)
     {
       _ForwardIterator __cur = __first;
-      try 
+      try
 	{
 	  for ( ; __n > 0; --__n, ++__cur)
 	    std::_Construct(&*__cur, __x);
 	  return __cur;
 	}
       catch(...)
-	{ 
+	{
 	  std::_Destroy(__first, __cur);
-	  __throw_exception_again; 
+	  __throw_exception_again;
 	}
     }
 
@@ -211,7 +211,7 @@ namespace std
    *  Like fill_n(), but does not require an initialized output range.
   */
   template<typename _ForwardIterator, typename _Size, typename _Tp>
-    inline _ForwardIterator 
+    inline _ForwardIterator
     uninitialized_fill_n(_ForwardIterator __first, _Size __n, const _Tp& __x)
     {
       typedef typename iterator_traits<_ForwardIterator>::value_type _ValueType;
@@ -219,7 +219,7 @@ namespace std
       return std::__uninitialized_fill_n_aux(__first, __n, __x, _Is_POD());
     }
 
-  // Extensions: __uninitialized_copy_copy, __uninitialized_copy_fill, 
+  // Extensions: __uninitialized_copy_copy, __uninitialized_copy_fill,
   // __uninitialized_fill_copy.
 
   // __uninitialized_copy_copy
@@ -227,12 +227,12 @@ namespace std
   //  copies [first2, last2) into
   //  [result, result + (last1 - first1) + (last2 - first2)).
 
-  template<typename _InputIterator1, typename _InputIterator2, 
+  template<typename _InputIterator1, typename _InputIterator2,
 	   typename _ForwardIterator>
     inline _ForwardIterator
-    __uninitialized_copy_copy(_InputIterator1 __first1, 
+    __uninitialized_copy_copy(_InputIterator1 __first1,
 			      _InputIterator1 __last1,
-			      _InputIterator2 __first2, 
+			      _InputIterator2 __first2,
 			      _InputIterator2 __last2,
 			      _ForwardIterator __result)
     {
@@ -243,9 +243,9 @@ namespace std
 	  return std::uninitialized_copy(__first2, __last2, __mid);
 	}
       catch(...)
-	{ 
+	{
 	  std::_Destroy(__result, __mid);
-	  __throw_exception_again; 
+	  __throw_exception_again;
 	}
     }
 
@@ -253,7 +253,7 @@ namespace std
   // Fills [result, mid) with x, and copies [first, last) into
   //  [mid, mid + (last - first)).
   template<typename _ForwardIterator, typename _Tp, typename _InputIterator>
-    inline _ForwardIterator 
+    inline _ForwardIterator
     __uninitialized_fill_copy(_ForwardIterator __result, _ForwardIterator __mid,
 			      const _Tp& __x, _InputIterator __first,
 			      _InputIterator __last)
@@ -266,7 +266,7 @@ namespace std
       catch(...)
 	{
 	  std::_Destroy(__result, __mid);
-	  __throw_exception_again; 
+	  __throw_exception_again;
 	}
     }
 
@@ -279,16 +279,16 @@ namespace std
 			      _ForwardIterator __first2,
 			      _ForwardIterator __last2, const _Tp& __x)
     {
-      _ForwardIterator __mid2 = std::uninitialized_copy(__first1, __last1, 
+      _ForwardIterator __mid2 = std::uninitialized_copy(__first1, __last1,
 							__first2);
-      try 
+      try
 	{
 	  std::uninitialized_fill(__mid2, __last2, __x);
 	}
       catch(...)
 	{
 	  std::_Destroy(__first2, __mid2);
-	  __throw_exception_again; 
+	  __throw_exception_again;
 	}
     }
 

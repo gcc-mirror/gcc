@@ -74,7 +74,7 @@ namespace std
       _Distance __parent = 0;
       for (_Distance __child = 1; __child < __n; ++__child)
 	{
-	  if (__first[__parent] < __first[__child]) 
+	  if (__first[__parent] < __first[__child])
 	    return false;
 	  if ((__child & 1) == 0)
 	    ++__parent;
@@ -113,7 +113,7 @@ namespace std
   // Heap-manipulation functions: push_heap, pop_heap, make_heap, sort_heap.
 
   template<typename _RandomAccessIterator, typename _Distance, typename _Tp>
-    void 
+    void
     __push_heap(_RandomAccessIterator __first,
 		_Distance __holeIndex, _Distance __topIndex, _Tp __value)
     {
@@ -137,7 +137,7 @@ namespace std
    *  range [first,last-1).  After completion, [first,last) is a valid heap.
   */
   template<typename _RandomAccessIterator>
-    inline void 
+    inline void
     push_heap(_RandomAccessIterator __first, _RandomAccessIterator __last)
     {
       typedef typename iterator_traits<_RandomAccessIterator>::value_type
@@ -156,7 +156,7 @@ namespace std
 		       _DistanceType(0), _ValueType(*(__last - 1)));
     }
 
-  template<typename _RandomAccessIterator, typename _Distance, typename _Tp, 
+  template<typename _RandomAccessIterator, typename _Distance, typename _Tp,
 	    typename _Compare>
     void
     __push_heap(_RandomAccessIterator __first, _Distance __holeIndex,
@@ -185,7 +185,7 @@ namespace std
    *  Compare operations are performed using comp.
   */
   template<typename _RandomAccessIterator, typename _Compare>
-    inline void 
+    inline void
     push_heap(_RandomAccessIterator __first, _RandomAccessIterator __last,
 	      _Compare __comp)
     {
@@ -205,7 +205,7 @@ namespace std
     }
 
   template<typename _RandomAccessIterator, typename _Distance, typename _Tp>
-    void 
+    void
     __adjust_heap(_RandomAccessIterator __first, _Distance __holeIndex,
 		  _Distance __len, _Tp __value)
     {
@@ -228,7 +228,7 @@ namespace std
     }
 
   template<typename _RandomAccessIterator, typename _Tp>
-    inline void 
+    inline void
     __pop_heap(_RandomAccessIterator __first, _RandomAccessIterator __last,
 	       _RandomAccessIterator __result, _Tp __value)
     {
@@ -292,7 +292,7 @@ namespace std
     }
 
   template<typename _RandomAccessIterator, typename _Tp, typename _Compare>
-    inline void 
+    inline void
     __pop_heap(_RandomAccessIterator __first, _RandomAccessIterator __last,
 	       _RandomAccessIterator __result, _Tp __value, _Compare __comp)
     {
@@ -315,7 +315,7 @@ namespace std
    *  made using comp.
   */
   template<typename _RandomAccessIterator, typename _Compare>
-    inline void 
+    inline void
     pop_heap(_RandomAccessIterator __first,
 	     _RandomAccessIterator __last, _Compare __comp)
     {
@@ -340,7 +340,7 @@ namespace std
    *  This operation makes the elements in [first,last) into a heap.
   */
   template<typename _RandomAccessIterator>
-    void 
+    void
     make_heap(_RandomAccessIterator __first, _RandomAccessIterator __last)
     {
       typedef typename iterator_traits<_RandomAccessIterator>::value_type
@@ -357,7 +357,7 @@ namespace std
       if (__last - __first < 2)
 	return;
 
-      const _DistanceType __len = __last - __first;    
+      const _DistanceType __len = __last - __first;
       _DistanceType __parent = (__len - 2) / 2;
       while (true)
 	{
@@ -380,7 +380,7 @@ namespace std
    *  Comparisons are made using comp.
   */
   template<typename _RandomAccessIterator, typename _Compare>
-    inline void 
+    inline void
     make_heap(_RandomAccessIterator __first, _RandomAccessIterator __last,
 	      _Compare __comp)
     {
@@ -393,7 +393,7 @@ namespace std
       __glibcxx_function_requires(_Mutable_RandomAccessIteratorConcept<
 	    _RandomAccessIterator>)
       __glibcxx_requires_valid_range(__first, __last);
-      
+
       if (__last - __first < 2)
 	return;
 
@@ -444,7 +444,7 @@ namespace std
    *  Comparisons are made using comp.
   */
   template<typename _RandomAccessIterator, typename _Compare>
-    void 
+    void
     sort_heap(_RandomAccessIterator __first, _RandomAccessIterator __last,
 	      _Compare __comp)
     {

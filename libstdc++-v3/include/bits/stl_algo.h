@@ -211,7 +211,7 @@ namespace std
 	  if (*__first == __val)
 	    return __first;
 	  ++__first;
-	  
+
 	  if (*__first == __val)
 	    return __first;
 	  ++__first;
@@ -1624,7 +1624,7 @@ namespace std
 	{
 	  const _ValueType __tmp = *__first;
 	  _RandomAccessIterator __p = __first;
-	  
+
 	  if (__k < __l)
 	    {
 	      for (_Distance __j = 0; __j < __l / __d; __j++)
@@ -1652,7 +1652,7 @@ namespace std
 		  __p -= __l;
 		}
 	    }
-	  
+
 	  *__p = __tmp;
 	  ++__first;
 	}
@@ -1743,7 +1743,7 @@ namespace std
 	    _RandomAccessIterator>)
       __glibcxx_requires_valid_range(__first, __last);
 
-      if (__first != __last) 
+      if (__first != __last)
 	for (_RandomAccessIterator __i = __first + 1; __i != __last; ++__i)
 	  std::iter_swap(__i, __first + (std::rand() % ((__i - __first) + 1)));
     }
@@ -1850,7 +1850,7 @@ namespace std
    *  @return  An iterator @p middle such that @p pred(i) is true for each
    *  iterator @p i in the range @p [first,middle) and false for each @p i
    *  in the range @p [middle,last).
-   *  
+   *
    *  @p pred must not modify its operand. @p partition() does not preserve
    *  the relative ordering of elements in each group, use
    *  @p stable_partition() if this is needed.
@@ -1959,7 +1959,7 @@ namespace std
    *  @return  An iterator @p middle such that @p pred(i) is true for each
    *  iterator @p i in the range @p [first,middle) and false for each @p i
    *  in the range @p [middle,last).
-   *  
+   *
    *  Performs the same function as @p partition() with the additional
    *  guarantee that the relative ordering of elements in each group is
    *  preserved, so any two elements @p x and @p y in the range
@@ -2477,10 +2477,10 @@ namespace std
 	    std::__unguarded_partition(__first, __last,
 				       _ValueType(std::__median(*__first,
 								*(__first
-								  + (__last 
-								     - __first) 
+								  + (__last
+								     - __first)
 								  / 2),
-								*(__last 
+								*(__last
 								  - 1))));
 	  std::__introsort_loop(__cut, __last, __depth_limit);
 	  __last = __cut;
@@ -3095,7 +3095,7 @@ namespace std
 	  __first += __two_step;
 	}
       __step_size = std::min(_Distance(__last - __first), __step_size);
-      
+
       std::merge(__first, __first + __step_size,
 		 __first + __step_size, __last,
 		 __result,
@@ -3673,7 +3673,7 @@ namespace std
    *
    *  Rearranges the elements in the range @p [first,last) so that @p *nth
    *  is the same element that would have been in that position had the
-   *  whole sequence been sorted. 
+   *  whole sequence been sorted.
    *  whole sequence been sorted. The elements either side of @p *nth are
    *  not completely sorted, but for any iterator @i in the range
    *  @p [first,nth) and any iterator @j in the range @p [nth,last) it
@@ -3753,9 +3753,9 @@ namespace std
 	  _RandomAccessIterator __cut =
 	    std::__unguarded_partition(__first, __last,
 				       _ValueType(std::__median(*__first,
-								*(__first 
+								*(__first
 								  + (__last
-								     - __first) 
+								     - __first)
 								  / 2),
 								*(__last - 1),
 							      __comp)), __comp);
@@ -4160,7 +4160,7 @@ namespace std
 	      *__result = *__first2;
 	      ++__first2;
 	    }
-	  else 
+	  else
 	    {
 	      *__result = *__first1;
 	      ++__first1;
@@ -4168,7 +4168,7 @@ namespace std
 	    }
 	  ++__result;
 	}
-      return std::copy(__first2, __last2, std::copy(__first1, __last1, 
+      return std::copy(__first2, __last2, std::copy(__first1, __last1,
 						    __result));
     }
 
@@ -4225,7 +4225,7 @@ namespace std
 
   /**
    *  @brief Return the intersection of two sorted ranges using comparison
-   *  functor. 
+   *  functor.
    *  @param  first1  Start of first range.
    *  @param  last1   End of first range.
    *  @param  first2  Start of second range.
@@ -4446,7 +4446,7 @@ namespace std
 	    ++__first1;
 	    ++__first2;
 	  }
-      return std::copy(__first2, __last2, std::copy(__first1, 
+      return std::copy(__first2, __last2, std::copy(__first1,
 						    __last1, __result));
     }
 
@@ -4683,7 +4683,7 @@ namespace std
    *  comparison functor.
    *  @param  first  Start of range.
    *  @param  last   End of range.
-   *  @param  comp   
+   *  @param  comp
    *  @return  False if wrapped to first permutation, true otherwise.
    *
    *  Treats all permutations of the range [first,last) as a set of
@@ -4794,7 +4794,7 @@ namespace std
    *  comparison functor.
    *  @param  first  Start of range.
    *  @param  last   End of range.
-   *  @param  comp   
+   *  @param  comp
    *  @return  False if wrapped to last permutation, true otherwise.
    *
    *  Treats all permutations of the range [first,last) as a set of
@@ -5023,9 +5023,9 @@ namespace std
   template<typename _BidirectionalIterator1, typename _BidirectionalIterator2,
 	   typename _BinaryPredicate>
     _BidirectionalIterator1
-    __find_end(_BidirectionalIterator1 __first1, 
+    __find_end(_BidirectionalIterator1 __first1,
 	       _BidirectionalIterator1 __last1,
-	       _BidirectionalIterator2 __first2, 
+	       _BidirectionalIterator2 __first2,
 	       _BidirectionalIterator2 __last2,
 	       bidirectional_iterator_tag, bidirectional_iterator_tag,
 	       _BinaryPredicate __comp)

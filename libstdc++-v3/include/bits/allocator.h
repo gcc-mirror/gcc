@@ -84,7 +84,7 @@ namespace std
    *  (See @link Allocators allocators info @endlink for more.)
    */
   template<typename _Tp>
-    class allocator: public __glibcxx_default_allocator<_Tp>  
+    class allocator: public __glibcxx_default_allocator<_Tp>
     {
    public:
       typedef size_t     size_type;
@@ -101,7 +101,7 @@ namespace std
 
       allocator() throw() { }
 
-      allocator(const allocator& a) throw() 
+      allocator(const allocator& a) throw()
       : __glibcxx_default_allocator<_Tp>(a) { }
 
       template<typename _Tp1>

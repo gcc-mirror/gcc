@@ -74,10 +74,10 @@ attain their correct values by one of these means:
 EXAMPLE:
 
 //Copy an array of elements which have non-trivial copy constructors
-template <class _Tp> void 
+template <class _Tp> void
   copy(_Tp* __source,_Tp* __destination,int __n,__false_type);
 //Copy an array of elements which have trivial copy constructors. Use memcpy.
-template <class _Tp> void 
+template <class _Tp> void
   copy(_Tp* __source,_Tp* __destination,int __n,__true_type);
 
 //Copy an array of any type by using the most efficient copy mechanism
@@ -92,7 +92,7 @@ struct __false_type {};
 
 template <class _Tp>
   struct __type_traits
-  { 
+  {
     typedef __true_type     this_dummy_member_must_be_first;
     /* Do not remove this member. It informs a compiler which
        automatically specializes __type_traits that this
@@ -101,7 +101,7 @@ template <class _Tp>
        called __type_traits for something unrelated. */
 
    /* The following restrictions should be observed for the sake of
-      compilers which automatically produce type specific specializations 
+      compilers which automatically produce type specific specializations
       of this class:
           - You may reorder the members below if you wish
           - You may remove any of the members below if you wish
@@ -109,7 +109,7 @@ template <class _Tp>
             name change in the compiler
           - Members you add will be treated like regular members unless
             you add the appropriate support in the compiler. */
- 
+
 
     typedef __false_type    has_trivial_default_constructor;
     typedef __false_type    has_trivial_copy_constructor;
@@ -291,7 +291,7 @@ template <class _Tp>
     typedef __true_type    is_POD_type;
   };
 
-// The following could be written in terms of numeric_limits.  
+// The following could be written in terms of numeric_limits.
 // We're doing it separately to reduce the number of dependencies.
 
 template <class _Tp>

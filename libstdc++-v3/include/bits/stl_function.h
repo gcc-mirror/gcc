@@ -118,7 +118,7 @@ namespace std
 
       typedef _Arg2 second_argument_type;  ///< the type of the second argument
       typedef _Result result_type;         ///< type of the return type
-    };      
+    };
   /** @}  */
 
   // 20.3.2 arithmetic
@@ -132,7 +132,7 @@ namespace std
   /// One of the @link s20_3_2_arithmetic math functors@endlink.
   template <class _Tp>
     struct plus : public binary_function<_Tp, _Tp, _Tp>
-    { 
+    {
       _Tp
       operator()(const _Tp& __x, const _Tp& __y) const
       { return __x + __y; }
@@ -193,7 +193,7 @@ namespace std
    */
   /// One of the @link s20_3_3_comparisons comparison functors@endlink.
   template <class _Tp>
-    struct equal_to : public binary_function<_Tp, _Tp, bool> 
+    struct equal_to : public binary_function<_Tp, _Tp, bool>
     {
       bool
       operator()(const _Tp& __x, const _Tp& __y) const
@@ -202,7 +202,7 @@ namespace std
 
   /// One of the @link s20_3_3_comparisons comparison functors@endlink.
   template <class _Tp>
-    struct not_equal_to : public binary_function<_Tp, _Tp, bool> 
+    struct not_equal_to : public binary_function<_Tp, _Tp, bool>
     {
       bool
       operator()(const _Tp& __x, const _Tp& __y) const
@@ -245,7 +245,7 @@ namespace std
       { return __x <= __y; }
     };
   /** @}  */
-  
+
   // 20.3.4 logical operations
   /** @defgroup s20_3_4_logical Boolean Operations Classes
    *  Here are wrapper functors for Boolean operations:  @c &&, @c ||, and @c !.
@@ -295,7 +295,7 @@ namespace std
    *  {
    *      bool operator() (int x) { return x > 3; }
    *  };
-   *  
+   *
    *  std::find_if (v.begin(), v.end(), not1(IntGreaterThanThree()));
    *  \endcode
    *  The call to @c find_if will locate the first index (i) of @c v for which
@@ -317,7 +317,7 @@ namespace std
     public:
       explicit
       unary_negate(const _Predicate& __x) : _M_pred(__x) {}
-      
+
       bool
       operator()(const typename _Predicate::argument_type& __x) const
       { return !_M_pred(__x); }
@@ -325,13 +325,13 @@ namespace std
 
   /// One of the @link s20_3_5_negators negation functors@endlink.
   template <class _Predicate>
-    inline unary_negate<_Predicate> 
+    inline unary_negate<_Predicate>
     not1(const _Predicate& __pred)
     { return unary_negate<_Predicate>(__pred); }
 
   /// One of the @link s20_3_5_negators negation functors@endlink.
-  template <class _Predicate> 
-    class binary_negate 
+  template <class _Predicate>
+    class binary_negate
     : public binary_function<typename _Predicate::first_argument_type,
 			     typename _Predicate::second_argument_type,
 			     bool>
@@ -344,18 +344,18 @@ namespace std
       : _M_pred(__x) { }
 
       bool
-      operator()(const typename _Predicate::first_argument_type& __x, 
+      operator()(const typename _Predicate::first_argument_type& __x,
 		 const typename _Predicate::second_argument_type& __y) const
       { return !_M_pred(__x, __y); }
     };
 
   /// One of the @link s20_3_5_negators negation functors@endlink.
   template <class _Predicate>
-    inline binary_negate<_Predicate> 
+    inline binary_negate<_Predicate>
     not2(const _Predicate& __pred)
     { return binary_negate<_Predicate>(__pred); }
   /** @}  */
-  
+
   // 20.3.6 binders
   /** @defgroup s20_3_6_binder Binder Classes
    *  Binders turn functions/functors with two arguments into functors with
@@ -388,7 +388,7 @@ namespace std
    *  @{
    */
   /// One of the @link s20_3_6_binder binder functors@endlink.
-  template <class _Operation> 
+  template <class _Operation>
     class binder1st
     : public unary_function<typename _Operation::second_argument_type,
 			    typename _Operation::result_type>
@@ -404,7 +404,7 @@ namespace std
       typename _Operation::result_type
       operator()(const typename _Operation::second_argument_type& __x) const
       { return op(value, __x); }
-      
+
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 109.  Missing binders for non-const sequence elements
       typename _Operation::result_type
@@ -414,15 +414,15 @@ namespace std
 
   /// One of the @link s20_3_6_binder binder functors@endlink.
   template <class _Operation, class _Tp>
-    inline binder1st<_Operation> 
-    bind1st(const _Operation& __fn, const _Tp& __x) 
+    inline binder1st<_Operation>
+    bind1st(const _Operation& __fn, const _Tp& __x)
     {
       typedef typename _Operation::first_argument_type _Arg1_type;
       return binder1st<_Operation>(__fn, _Arg1_type(__x));
     }
 
   /// One of the @link s20_3_6_binder binder functors@endlink.
-  template <class _Operation> 
+  template <class _Operation>
     class binder2nd
     : public unary_function<typename _Operation::first_argument_type,
 			    typename _Operation::result_type>
@@ -432,13 +432,13 @@ namespace std
       typename _Operation::second_argument_type value;
     public:
       binder2nd(const _Operation& __x,
-		const typename _Operation::second_argument_type& __y) 
+		const typename _Operation::second_argument_type& __y)
       : op(__x), value(__y) {}
 
       typename _Operation::result_type
       operator()(const typename _Operation::first_argument_type& __x) const
       { return op(__x, value); }
-      
+
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 109.  Missing binders for non-const sequence elements
       typename _Operation::result_type
@@ -448,14 +448,14 @@ namespace std
 
   /// One of the @link s20_3_6_binder binder functors@endlink.
   template <class _Operation, class _Tp>
-    inline binder2nd<_Operation> 
-    bind2nd(const _Operation& __fn, const _Tp& __x) 
+    inline binder2nd<_Operation>
+    bind2nd(const _Operation& __fn, const _Tp& __x)
     {
       typedef typename _Operation::second_argument_type _Arg2_type;
       return binder2nd<_Operation>(__fn, _Arg2_type(__x));
     }
   /** @}  */
-  
+
   // 20.3.7 adaptors pointers functions
   /** @defgroup s20_3_7_adaptors Adaptors for pointers to functions
    *  The advantage of function objects over pointers to functions is that
@@ -484,7 +484,7 @@ namespace std
       _Result (*_M_ptr)(_Arg);
     public:
       pointer_to_unary_function() {}
-      
+
       explicit
       pointer_to_unary_function(_Result (*__x)(_Arg))
       : _M_ptr(__x) {}
@@ -511,7 +511,7 @@ namespace std
       pointer_to_binary_function() {}
 
       explicit
-      pointer_to_binary_function(_Result (*__x)(_Arg1, _Arg2)) 
+      pointer_to_binary_function(_Result (*__x)(_Arg1, _Arg2))
       : _M_ptr(__x) {}
 
       _Result
@@ -521,18 +521,18 @@ namespace std
 
   /// One of the @link s20_3_7_adaptors adaptors for function pointers@endlink.
   template <class _Arg1, class _Arg2, class _Result>
-    inline pointer_to_binary_function<_Arg1, _Arg2, _Result> 
+    inline pointer_to_binary_function<_Arg1, _Arg2, _Result>
     ptr_fun(_Result (*__x)(_Arg1, _Arg2))
     { return pointer_to_binary_function<_Arg1, _Arg2, _Result>(__x); }
   /** @}  */
-  
+
   template <class _Tp>
     struct _Identity : public unary_function<_Tp,_Tp>
     {
       _Tp&
       operator()(_Tp& __x) const
       { return __x; }
-      
+
       const _Tp&
       operator()(const _Tp& __x) const
       { return __x; }
@@ -545,7 +545,7 @@ namespace std
       typename _Pair::first_type&
       operator()(_Pair& __x) const
       { return __x.first; }
-      
+
       const typename _Pair::first_type&
       operator()(const _Pair& __x) const
       { return __x.first; }
@@ -558,7 +558,7 @@ namespace std
       typename _Pair::second_type&
       operator()(_Pair& __x) const
       { return __x.second; }
-      
+
       const typename _Pair::second_type&
       operator()(const _Pair& __x) const
       { return __x.second; }
@@ -633,7 +633,7 @@ namespace std
     private:
       _Ret (_Tp::*_M_f)();
   };
-  
+
   /// One of the @link s20_3_8_memadaptors adaptors for member pointers@endlink.
   template <class _Ret, class _Tp>
     class const_mem_fun_ref_t : public unary_function<_Tp, _Ret>
@@ -656,7 +656,7 @@ namespace std
     {
     public:
       explicit
-      mem_fun1_t(_Ret (_Tp::*__pf)(_Arg)) 
+      mem_fun1_t(_Ret (_Tp::*__pf)(_Arg))
       : _M_f(__pf) {}
 
       _Ret
@@ -713,7 +713,7 @@ namespace std
     private:
       _Ret (_Tp::*_M_f)(_Arg) const;
     };
-  
+
   /// One of the @link s20_3_8_memadaptors adaptors for member pointers@endlink.
   template <class _Tp>
     class mem_fun_t<void, _Tp> : public unary_function<_Tp*, void>
@@ -729,7 +729,7 @@ namespace std
     private:
       void (_Tp::*_M_f)();
     };
-  
+
   /// One of the @link s20_3_8_memadaptors adaptors for member pointers@endlink.
   template <class _Tp>
     class const_mem_fun_t<void, _Tp> : public unary_function<const _Tp*, void>
@@ -745,7 +745,7 @@ namespace std
     private:
       void (_Tp::*_M_f)() const;
     };
-  
+
   /// One of the @link s20_3_8_memadaptors adaptors for member pointers@endlink.
   template <class _Tp>
     class mem_fun_ref_t<void, _Tp> : public unary_function<_Tp, void>
@@ -777,7 +777,7 @@ namespace std
     private:
       void (_Tp::*_M_f)() const;
     };
-  
+
   /// One of the @link s20_3_8_memadaptors adaptors for member pointers@endlink.
   template <class _Tp, class _Arg>
     class mem_fun1_t<void, _Tp, _Arg> : public binary_function<_Tp*, _Arg, void>
@@ -786,7 +786,7 @@ namespace std
       explicit
       mem_fun1_t(void (_Tp::*__pf)(_Arg))
       : _M_f(__pf) {}
-    
+
       void
       operator()(_Tp* __p, _Arg __x) const
       { (__p->*_M_f)(__x); }
@@ -796,21 +796,21 @@ namespace std
 
   /// One of the @link s20_3_8_memadaptors adaptors for member pointers@endlink.
   template <class _Tp, class _Arg>
-    class const_mem_fun1_t<void, _Tp, _Arg> 
+    class const_mem_fun1_t<void, _Tp, _Arg>
     : public binary_function<const _Tp*, _Arg, void>
     {
     public:
       explicit
       const_mem_fun1_t(void (_Tp::*__pf)(_Arg) const)
       : _M_f(__pf) {}
-      
+
       void
       operator()(const _Tp* __p, _Arg __x) const
       { (__p->*_M_f)(__x); }
     private:
       void (_Tp::*_M_f)(_Arg) const;
     };
-  
+
   /// One of the @link s20_3_8_memadaptors adaptors for member pointers@endlink.
   template <class _Tp, class _Arg>
     class mem_fun1_ref_t<void, _Tp, _Arg>
@@ -856,10 +856,10 @@ namespace std
     inline const_mem_fun_t<_Ret, _Tp>
     mem_fun(_Ret (_Tp::*__f)() const)
     { return const_mem_fun_t<_Ret, _Tp>(__f); }
-  
+
   template <class _Ret, class _Tp>
     inline mem_fun_ref_t<_Ret, _Tp>
-    mem_fun_ref(_Ret (_Tp::*__f)()) 
+    mem_fun_ref(_Ret (_Tp::*__f)())
     { return mem_fun_ref_t<_Ret, _Tp>(__f); }
 
   template <class _Ret, class _Tp>
@@ -888,7 +888,7 @@ namespace std
     { return const_mem_fun1_ref_t<_Ret, _Tp, _Arg>(__f); }
 
   /** @}  */
-  
+
 } // namespace std
 
 #endif /* _FUNCTION_H */

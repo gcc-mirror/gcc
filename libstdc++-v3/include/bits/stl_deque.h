@@ -66,7 +66,7 @@
 #include <bits/stl_iterator_base_funcs.h>
 
 namespace __gnu_norm
-{ 
+{
   /**
    *  @if maint
    *  @brief This function controls the size of memory nodes.
@@ -79,11 +79,11 @@ namespace __gnu_norm
    *  been done since inheriting the SGI code.
    *  @endif
   */
-  inline size_t 
-  __deque_buf_size(size_t __size) 
+  inline size_t
+  __deque_buf_size(size_t __size)
   { return __size < 512 ? size_t(512 / __size) : size_t(1); }
-  
-  
+
+
   /**
    *  @brief A deque::iterator.
    *
@@ -104,7 +104,7 @@ namespace __gnu_norm
 
       static size_t _S_buffer_size()
       { return __deque_buf_size(sizeof(_Tp)); }
-  
+
       typedef random_access_iterator_tag iterator_category;
       typedef _Tp                        value_type;
       typedef _Ptr                       pointer;
@@ -113,22 +113,22 @@ namespace __gnu_norm
       typedef ptrdiff_t                  difference_type;
       typedef _Tp**                      _Map_pointer;
       typedef _Deque_iterator            _Self;
-  
+
       _Tp* _M_cur;
       _Tp* _M_first;
       _Tp* _M_last;
       _Map_pointer _M_node;
-      
-      _Deque_iterator(_Tp* __x, _Map_pointer __y) 
+
+      _Deque_iterator(_Tp* __x, _Map_pointer __y)
       : _M_cur(__x), _M_first(*__y),
         _M_last(*__y + _S_buffer_size()), _M_node(__y) {}
 
       _Deque_iterator() : _M_cur(0), _M_first(0), _M_last(0), _M_node(0) {}
 
       _Deque_iterator(const iterator& __x)
-      : _M_cur(__x._M_cur), _M_first(__x._M_first), 
+      : _M_cur(__x._M_cur), _M_first(__x._M_first),
         _M_last(__x._M_last), _M_node(__x._M_node) {}
-  
+
       reference
       operator*() const
       { return *_M_cur; }
@@ -136,7 +136,7 @@ namespace __gnu_norm
       pointer
       operator->() const
       { return _M_cur; }
-      
+
       _Self&
       operator++()
       {
@@ -146,7 +146,7 @@ namespace __gnu_norm
 	    _M_set_node(_M_node + 1);
 	    _M_cur = _M_first;
 	  }
-	return *this; 
+	return *this;
       }
 
       _Self
@@ -156,7 +156,7 @@ namespace __gnu_norm
 	++*this;
 	return __tmp;
       }
-      
+
       _Self&
       operator--()
       {
@@ -168,7 +168,7 @@ namespace __gnu_norm
 	--_M_cur;
 	return *this;
       }
-      
+
       _Self
       operator--(int)
       {
@@ -176,7 +176,7 @@ namespace __gnu_norm
 	--*this;
 	return __tmp;
       }
-      
+
       _Self&
       operator+=(difference_type __n)
       {
@@ -195,29 +195,29 @@ namespace __gnu_norm
 	  }
 	return *this;
       }
-  
+
       _Self
       operator+(difference_type __n) const
       {
 	_Self __tmp = *this;
 	return __tmp += __n;
       }
-  
+
       _Self&
       operator-=(difference_type __n)
       { return *this += -__n; }
-   
+
       _Self
       operator-(difference_type __n) const
       {
 	_Self __tmp = *this;
 	return __tmp -= __n;
       }
-  
+
       reference
       operator[](difference_type __n) const
       { return *(*this + __n); }
-  
+
       /** @if maint
        *  Prepares to traverse new_node.  Sets everything except _M_cur, which
        *  should therefore be set by the caller immediately afterwards, based on
@@ -232,7 +232,7 @@ namespace __gnu_norm
 	_M_last = _M_first + difference_type(_S_buffer_size());
       }
     };
-  
+
   // Note: we also provide overloads whose operands are of the same type in
   // order to avoid ambiguous overload resolution when std::rel_ops operators
   // are in scope (for additional details, see libstdc++/3628)
@@ -241,34 +241,34 @@ namespace __gnu_norm
     operator==(const _Deque_iterator<_Tp, _Ref, _Ptr>& __x,
 	       const _Deque_iterator<_Tp, _Ref, _Ptr>& __y)
     { return __x._M_cur == __y._M_cur; }
-  
+
   template<typename _Tp, typename _RefL, typename _PtrL,
 	   typename _RefR, typename _PtrR>
     inline bool
     operator==(const _Deque_iterator<_Tp, _RefL, _PtrL>& __x,
 	       const _Deque_iterator<_Tp, _RefR, _PtrR>& __y)
     { return __x._M_cur == __y._M_cur; }
-  
+
   template<typename _Tp, typename _Ref, typename _Ptr>
     inline bool
     operator!=(const _Deque_iterator<_Tp, _Ref, _Ptr>& __x,
 	       const _Deque_iterator<_Tp, _Ref, _Ptr>& __y)
     { return !(__x == __y); }
-  
+
   template<typename _Tp, typename _RefL, typename _PtrL,
 	   typename _RefR, typename _PtrR>
     inline bool
     operator!=(const _Deque_iterator<_Tp, _RefL, _PtrL>& __x,
 	       const _Deque_iterator<_Tp, _RefR, _PtrR>& __y)
     { return !(__x == __y); }
-  
+
   template<typename _Tp, typename _Ref, typename _Ptr>
     inline bool
     operator<(const _Deque_iterator<_Tp, _Ref, _Ptr>& __x,
 	      const _Deque_iterator<_Tp, _Ref, _Ptr>& __y)
     { return (__x._M_node == __y._M_node) ? (__x._M_cur < __y._M_cur)
                                           : (__x._M_node < __y._M_node); }
-  
+
   template<typename _Tp, typename _RefL, typename _PtrL,
 	   typename _RefR, typename _PtrR>
     inline bool
@@ -276,46 +276,46 @@ namespace __gnu_norm
 	      const _Deque_iterator<_Tp, _RefR, _PtrR>& __y)
     { return (__x._M_node == __y._M_node) ? (__x._M_cur < __y._M_cur)
 	                                  : (__x._M_node < __y._M_node); }
-  
+
   template<typename _Tp, typename _Ref, typename _Ptr>
     inline bool
     operator>(const _Deque_iterator<_Tp, _Ref, _Ptr>& __x,
 	      const _Deque_iterator<_Tp, _Ref, _Ptr>& __y)
     { return __y < __x; }
-  
+
   template<typename _Tp, typename _RefL, typename _PtrL,
 	   typename _RefR, typename _PtrR>
     inline bool
     operator>(const _Deque_iterator<_Tp, _RefL, _PtrL>& __x,
 	      const _Deque_iterator<_Tp, _RefR, _PtrR>& __y)
     { return __y < __x; }
-  
+
   template<typename _Tp, typename _Ref, typename _Ptr>
     inline bool
     operator<=(const _Deque_iterator<_Tp, _Ref, _Ptr>& __x,
 	       const _Deque_iterator<_Tp, _Ref, _Ptr>& __y)
     { return !(__y < __x); }
-  
+
   template<typename _Tp, typename _RefL, typename _PtrL,
 	   typename _RefR, typename _PtrR>
     inline bool
     operator<=(const _Deque_iterator<_Tp, _RefL, _PtrL>& __x,
 	       const _Deque_iterator<_Tp, _RefR, _PtrR>& __y)
     { return !(__y < __x); }
-  
+
   template<typename _Tp, typename _Ref, typename _Ptr>
     inline bool
     operator>=(const _Deque_iterator<_Tp, _Ref, _Ptr>& __x,
 	       const _Deque_iterator<_Tp, _Ref, _Ptr>& __y)
     { return !(__x < __y); }
-  
+
   template<typename _Tp, typename _RefL, typename _PtrL,
 	   typename _RefR, typename _PtrR>
     inline bool
     operator>=(const _Deque_iterator<_Tp, _RefL, _PtrL>& __x,
 	       const _Deque_iterator<_Tp, _RefR, _PtrR>& __y)
     { return !(__x < __y); }
-  
+
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
   // According to the resolution of DR179 not only the various comparison
   // operators but also operator- must accept mixed iterator/const_iterator
@@ -331,12 +331,12 @@ namespace __gnu_norm
 	* (__x._M_node - __y._M_node - 1) + (__x._M_cur - __x._M_first)
 	+ (__y._M_last - __y._M_cur);
     }
-  
+
   template<typename _Tp, typename _Ref, typename _Ptr>
     inline _Deque_iterator<_Tp, _Ref, _Ptr>
     operator+(ptrdiff_t __n, const _Deque_iterator<_Tp, _Ref, _Ptr>& __x)
     { return __x + __n; }
-  
+
   /**
    *  @if maint
    *  Deque base class.  This class provides the unified face for %deque's
@@ -362,15 +362,15 @@ namespace __gnu_norm
 
       typedef _Deque_iterator<_Tp,_Tp&,_Tp*>             iterator;
       typedef _Deque_iterator<_Tp,const _Tp&,const _Tp*> const_iterator;
-      
+
       _Deque_base(const allocator_type& __a, size_t __num_elements)
       : _Alloc(__a), _M_start(), _M_finish()
       { _M_initialize_map(__num_elements); }
 
-      _Deque_base(const allocator_type& __a) 
+      _Deque_base(const allocator_type& __a)
       : _Alloc(__a), _M_start(), _M_finish() { }
 
-      ~_Deque_base();    
+      ~_Deque_base();
 
     protected:
       typedef typename _Alloc::template rebind<_Tp*>::other _Map_alloc_type;
@@ -380,31 +380,31 @@ namespace __gnu_norm
       _Tp*
       _M_allocate_node()
       { return _Alloc::allocate(__deque_buf_size(sizeof(_Tp))); }
-      
+
       void
       _M_deallocate_node(_Tp* __p)
       { _Alloc::deallocate(__p, __deque_buf_size(sizeof(_Tp))); }
-      
+
       _Tp**
       _M_allocate_map(size_t __n)
       { return _M_get_map_allocator().allocate(__n); }
-  
+
       void
-      _M_deallocate_map(_Tp** __p, size_t __n) 
+      _M_deallocate_map(_Tp** __p, size_t __n)
       { _M_get_map_allocator().deallocate(__p, __n); }
-      
+
     protected:
       void _M_initialize_map(size_t);
       void _M_create_nodes(_Tp** __nstart, _Tp** __nfinish);
       void _M_destroy_nodes(_Tp** __nstart, _Tp** __nfinish);
       enum { _S_initial_map_size = 8 };
-      
+
       _Tp** _M_map;
       size_t _M_map_size;
       iterator _M_start;
       iterator _M_finish;
     };
-  
+
   template<typename _Tp, typename _Alloc>
   _Deque_base<_Tp,_Alloc>::~_Deque_base()
   {
@@ -414,7 +414,7 @@ namespace __gnu_norm
       _M_deallocate_map(this->_M_map, this->_M_map_size);
     }
   }
-  
+
   /**
    *  @if maint
    *  @brief Layout storage.
@@ -430,20 +430,20 @@ namespace __gnu_norm
     _Deque_base<_Tp,_Alloc>::_M_initialize_map(size_t __num_elements)
     {
       size_t __num_nodes = __num_elements / __deque_buf_size(sizeof(_Tp)) + 1;
-      
+
       this->_M_map_size = std::max((size_t) _S_initial_map_size,
 				   __num_nodes + 2);
       this->_M_map = _M_allocate_map(this->_M_map_size);
-  
+
       // For "small" maps (needing less than _M_map_size nodes), allocation
       // starts in the middle elements and grows outwards.  So nstart may be
       // the beginning of _M_map, but for small maps it may be as far in as
       // _M_map+3.
-  
+
       _Tp** __nstart = this->_M_map + (this->_M_map_size - __num_nodes) / 2;
       _Tp** __nfinish = __nstart + __num_nodes;
-      
-      try 
+
+      try
 	{ _M_create_nodes(__nstart, __nfinish); }
       catch(...)
 	{
@@ -452,14 +452,14 @@ namespace __gnu_norm
 	  this->_M_map_size = 0;
 	  __throw_exception_again;
 	}
-      
+
       _M_start._M_set_node(__nstart);
       _M_finish._M_set_node(__nfinish - 1);
       _M_start._M_cur = _M_start._M_first;
       _M_finish._M_cur = _M_finish._M_first + __num_elements
 	                 % __deque_buf_size(sizeof(_Tp));
     }
-  
+
   template<typename _Tp, typename _Alloc>
     void
     _Deque_base<_Tp,_Alloc>::_M_create_nodes(_Tp** __nstart, _Tp** __nfinish)
@@ -471,12 +471,12 @@ namespace __gnu_norm
 	    *__cur = this->_M_allocate_node();
 	}
       catch(...)
-	{ 
+	{
 	  _M_destroy_nodes(__nstart, __cur);
-	  __throw_exception_again; 
+	  __throw_exception_again;
 	}
     }
-  
+
   template<typename _Tp, typename _Alloc>
     void
     _Deque_base<_Tp,_Alloc>::_M_destroy_nodes(_Tp** __nstart, _Tp** __nfinish)
@@ -484,7 +484,7 @@ namespace __gnu_norm
       for (_Tp** __n = __nstart; __n < __nfinish; ++__n)
 	_M_deallocate_node(*__n);
     }
-  
+
   /**
    *  @brief  A standard container using fixed-size memory allocation and
    *  constant-time manipulation of elements at either end.
@@ -504,15 +504,15 @@ namespace __gnu_norm
    *
    *  @if maint
    *  Here's how a deque<Tp> manages memory.  Each deque has 4 members:
-   *  
+   *
    *  - Tp**        _M_map
    *  - size_t      _M_map_size
    *  - iterator    _M_start, _M_finish
-   *  
+   *
    *  map_size is at least 8.  %map is an array of map_size pointers-to-"nodes".
    *  (The name %map has nothing to do with the std::map class, and "nodes"
    *  should not be confused with std::list's usage of "node".)
-   *  
+   *
    *  A "node" has no specific type name as such, but it is referred to as
    *  "node" in this file.  It is a simple array-of-Tp.  If Tp is very large,
    *  there will be one Tp element per node (i.e., an "array" of one).
@@ -520,11 +520,11 @@ namespace __gnu_norm
    *  larger the Tp, the fewer Tp's will fit in a node.  The goal here is to
    *  keep the total size of a node relatively small and constant over different
    *  Tp's, to improve allocator efficiency.
-   *  
+   *
    *  **** As I write this, the nodes are /not/ allocated using the high-speed
    *  memory pool.  There are 20 hours left in the year; perhaps I can fix
    *  this before 2002.
-   *  
+   *
    *  Not every pointer in the %map array will point to a node.  If the initial
    *  number of elements in the deque is small, the /middle/ %map pointers will
    *  be valid, and the ones at the edges will be unused.  This same situation
@@ -552,9 +552,9 @@ namespace __gnu_norm
    *   that range are uninitialized storage.  Otherwise, [start.cur, start.last)
    *   and [finish.first, finish.cur) are initialized objects, and [start.first,
    *   start.cur) and [finish.cur, finish.last) are uninitialized storage.
-   * - [%map, %map + map_size) is a valid, non-empty range.  
-   * - [start.node, finish.node] is a valid range contained within 
-   *   [%map, %map + map_size).  
+   * - [%map, %map + map_size) is a valid, non-empty range.
+   * - [start.node, finish.node] is a valid range contained within
+   *   [%map, %map + map_size).
    * - A pointer in the range [%map, %map + map_size) points to an allocated
    *   node if and only if the pointer is in the range
    *   [start.node, finish.node].
@@ -574,9 +574,9 @@ namespace __gnu_norm
     {
       // concept requirements
       __glibcxx_class_requires(_Tp, _SGIAssignableConcept)
-	
+
       typedef _Deque_base<_Tp, _Alloc>           _Base;
-      
+
     public:
       typedef _Tp                                value_type;
       typedef value_type*                        pointer;
@@ -590,13 +590,13 @@ namespace __gnu_norm
       typedef size_t                             size_type;
       typedef ptrdiff_t                          difference_type;
       typedef typename _Base::allocator_type     allocator_type;
-      
+
     protected:
       typedef pointer*                           _Map_pointer;
-      
+
       static size_t _S_buffer_size()
       { return __deque_buf_size(sizeof(_Tp)); }
-      
+
       // Functions controlling memory layout, and nothing else.
       using _Base::_M_initialize_map;
       using _Base::_M_create_nodes;
@@ -605,7 +605,7 @@ namespace __gnu_norm
       using _Base::_M_deallocate_node;
       using _Base::_M_allocate_map;
       using _Base::_M_deallocate_map;
-      
+
       /** @if maint
        *  A total of four data members accumulated down the heirarchy.
        *  @endif
@@ -614,7 +614,7 @@ namespace __gnu_norm
       using _Base::_M_map_size;
       using _Base::_M_start;
       using _Base::_M_finish;
-      
+
     public:
       // [23.2.1.1] construct/copy/destroy
       // (assign() and get_allocator() are also listed in this section)
@@ -622,25 +622,25 @@ namespace __gnu_norm
        *  @brief  Default constructor creates no elements.
        */
       explicit
-      deque(const allocator_type& __a = allocator_type()) 
+      deque(const allocator_type& __a = allocator_type())
       : _Base(__a, 0) {}
-  
+
       /**
        *  @brief  Create a %deque with copies of an exemplar element.
        *  @param  n  The number of elements to initially create.
        *  @param  value  An element to copy.
-       * 
+       *
        *  This constructor fills the %deque with @a n copies of @a value.
        */
       deque(size_type __n, const value_type& __value,
 	    const allocator_type& __a = allocator_type())
       : _Base(__a, __n)
       { _M_fill_initialize(__value); }
-  
+
       /**
        *  @brief  Create a %deque with default elements.
        *  @param  n  The number of elements to initially create.
-       * 
+       *
        *  This constructor fills the %deque with @a n copies of a
        *  default-constructed element.
        */
@@ -648,23 +648,23 @@ namespace __gnu_norm
       deque(size_type __n)
       : _Base(allocator_type(), __n)
       { _M_fill_initialize(value_type()); }
-  
+
       /**
        *  @brief  %Deque copy constructor.
        *  @param  x  A %deque of identical element and allocator types.
-       * 
+       *
        *  The newly-created %deque uses a copy of the allocation object used
        *  by @a x.
        */
       deque(const deque& __x)
-      : _Base(__x.get_allocator(), __x.size()) 
+      : _Base(__x.get_allocator(), __x.size())
       { std::uninitialized_copy(__x.begin(), __x.end(), this->_M_start); }
-  
+
       /**
        *  @brief  Builds a %deque from a range.
        *  @param  first  An input iterator.
        *  @param  last  An input iterator.
-       * 
+       *
        *  Create a %deque consisting of copies of the elements from [first,
        *  last).
        *
@@ -683,7 +683,7 @@ namespace __gnu_norm
 	  typedef typename _Is_integer<_InputIterator>::_Integral _Integral;
 	  _M_initialize_dispatch(__first, __last, _Integral());
 	}
-  
+
       /**
        *  The dtor only erases the elements, and note that if the elements
        *  themselves are pointers, the pointed-to memory is not touched in any
@@ -691,17 +691,17 @@ namespace __gnu_norm
        */
       ~deque()
       { std::_Destroy(this->_M_start, this->_M_finish); }
-  
+
       /**
        *  @brief  %Deque assignment operator.
        *  @param  x  A %deque of identical element and allocator types.
-       * 
+       *
        *  All the elements of @a x are copied, but unlike the copy constructor,
        *  the allocator object is not copied.
        */
       deque&
       operator=(const deque& __x);
-  
+
       /**
        *  @brief  Assigns a given value to a %deque.
        *  @param  n  Number of elements to be assigned.
@@ -715,7 +715,7 @@ namespace __gnu_norm
       void
       assign(size_type __n, const value_type& __val)
       { _M_fill_assign(__n, __val); }
-  
+
       /**
        *  @brief  Assigns a range to a %deque.
        *  @param  first  An input iterator.
@@ -735,12 +735,12 @@ namespace __gnu_norm
 	  typedef typename _Is_integer<_InputIterator>::_Integral _Integral;
 	  _M_assign_dispatch(__first, __last, _Integral());
 	}
-  
+
       /// Get a copy of the memory allocation object.
       allocator_type
       get_allocator() const
       { return _Base::get_allocator(); }
-      
+
       // iterators
       /**
        *  Returns a read/write iterator that points to the first element in the
@@ -749,7 +749,7 @@ namespace __gnu_norm
       iterator
       begin()
       { return this->_M_start; }
-      
+
       /**
        *  Returns a read-only (constant) iterator that points to the first
        *  element in the %deque.  Iteration is done in ordinary element order.
@@ -757,7 +757,7 @@ namespace __gnu_norm
       const_iterator
       begin() const
       { return this->_M_start; }
-      
+
       /**
        *  Returns a read/write iterator that points one past the last element in
        *  the %deque.  Iteration is done in ordinary element order.
@@ -765,7 +765,7 @@ namespace __gnu_norm
       iterator
       end()
       { return this->_M_finish; }
-      
+
       /**
        *  Returns a read-only (constant) iterator that points one past the last
        *  element in the %deque.  Iteration is done in ordinary element order.
@@ -773,7 +773,7 @@ namespace __gnu_norm
       const_iterator
       end() const
       { return this->_M_finish; }
-      
+
       /**
        *  Returns a read/write reverse iterator that points to the last element
        *  in the %deque.  Iteration is done in reverse element order.
@@ -781,7 +781,7 @@ namespace __gnu_norm
       reverse_iterator
       rbegin()
       { return reverse_iterator(this->_M_finish); }
-      
+
       /**
        *  Returns a read-only (constant) reverse iterator that points to the
        *  last element in the %deque.  Iteration is done in reverse element
@@ -790,7 +790,7 @@ namespace __gnu_norm
       const_reverse_iterator
       rbegin() const
       { return const_reverse_iterator(this->_M_finish); }
-      
+
       /**
        *  Returns a read/write reverse iterator that points to one before the
        *  first element in the %deque.  Iteration is done in reverse element
@@ -798,7 +798,7 @@ namespace __gnu_norm
        */
       reverse_iterator
       rend() { return reverse_iterator(this->_M_start); }
-      
+
       /**
        *  Returns a read-only (constant) reverse iterator that points to one
        *  before the first element in the %deque.  Iteration is done in reverse
@@ -807,18 +807,18 @@ namespace __gnu_norm
       const_reverse_iterator
       rend() const
       { return const_reverse_iterator(this->_M_start); }
-      
+
       // [23.2.1.2] capacity
       /**  Returns the number of elements in the %deque.  */
       size_type
       size() const
       { return this->_M_finish - this->_M_start; }
-      
+
       /**  Returns the size() of the largest possible %deque.  */
       size_type
       max_size() const
       { return size_type(-1); }
-      
+
       /**
        *  @brief  Resizes the %deque to the specified number of elements.
        *  @param  new_size  Number of elements the %deque should contain.
@@ -833,12 +833,12 @@ namespace __gnu_norm
       resize(size_type __new_size, const value_type& __x)
       {
 	const size_type __len = size();
-	if (__new_size < __len) 
+	if (__new_size < __len)
 	  erase(this->_M_start + __new_size, this->_M_finish);
 	else
 	  insert(this->_M_finish, __new_size - __len, __x);
       }
-      
+
       /**
        *  @brief  Resizes the %deque to the specified number of elements.
        *  @param  new_size  Number of elements the %deque should contain.
@@ -851,14 +851,14 @@ namespace __gnu_norm
       void
       resize(size_type new_size)
       { resize(new_size, value_type()); }
-  
+
       /**
        *  Returns true if the %deque is empty.  (Thus begin() would equal end().)
        */
       bool
       empty() const
       { return this->_M_finish == this->_M_start; }
-  
+
       // element access
       /**
        *  @brief  Subscript access to the data contained in the %deque.
@@ -872,7 +872,7 @@ namespace __gnu_norm
       reference
       operator[](size_type __n)
       { return this->_M_start[difference_type(__n)]; }
-      
+
       /**
        *  @brief  Subscript access to the data contained in the %deque.
        *  @param  n  The index of the element for which data should be accessed.
@@ -885,7 +885,7 @@ namespace __gnu_norm
       const_reference
       operator[](size_type __n) const
       { return this->_M_start[difference_type(__n)]; }
-  
+
     protected:
       /// @if maint Safety check used only from at().  @endif
       void
@@ -894,7 +894,7 @@ namespace __gnu_norm
 	if (__n >= this->size())
 	  __throw_out_of_range(__N("deque::_M_range_check"));
       }
-      
+
     public:
       /**
        *  @brief  Provides access to the data contained in the %deque.
@@ -909,7 +909,7 @@ namespace __gnu_norm
       reference
       at(size_type __n)
       { _M_range_check(__n); return (*this)[__n]; }
-      
+
       /**
        *  @brief  Provides access to the data contained in the %deque.
        *  @param  n  The index of the element for which data should be accessed.
@@ -926,7 +926,7 @@ namespace __gnu_norm
 	_M_range_check(__n);
 	return (*this)[__n];
       }
-      
+
       /**
        *  Returns a read/write reference to the data at the first element of the
        *  %deque.
@@ -934,7 +934,7 @@ namespace __gnu_norm
       reference
       front()
       { return *this->_M_start; }
-      
+
       /**
        *  Returns a read-only (constant) reference to the data at the first
        *  element of the %deque.
@@ -942,7 +942,7 @@ namespace __gnu_norm
       const_reference
       front() const
       { return *this->_M_start; }
-      
+
       /**
        *  Returns a read/write reference to the data at the last element of the
        *  %deque.
@@ -954,7 +954,7 @@ namespace __gnu_norm
 	--__tmp;
 	return *__tmp;
       }
-      
+
       /**
        *  Returns a read-only (constant) reference to the data at the last
        *  element of the %deque.
@@ -966,7 +966,7 @@ namespace __gnu_norm
 	--__tmp;
 	return *__tmp;
       }
-      
+
       // [23.2.1.2] modifiers
       /**
        *  @brief  Add data to the front of the %deque.
@@ -977,7 +977,7 @@ namespace __gnu_norm
        *  nature of a %deque this operation can be done in constant time.
        */
       void
-      push_front(const value_type& __x) 
+      push_front(const value_type& __x)
       {
 	if (this->_M_start._M_cur != this->_M_start._M_first)
 	  {
@@ -987,7 +987,7 @@ namespace __gnu_norm
 	else
 	  _M_push_front_aux(__x);
       }
-      
+
       /**
        *  @brief  Add data to the end of the %deque.
        *  @param  x  Data to be added.
@@ -1007,7 +1007,7 @@ namespace __gnu_norm
 	else
 	  _M_push_back_aux(__x);
       }
-  
+
       /**
        *  @brief  Removes first element.
        *
@@ -1024,10 +1024,10 @@ namespace __gnu_norm
 	    std::_Destroy(this->_M_start._M_cur);
 	    ++this->_M_start._M_cur;
 	  }
-	else 
+	else
 	  _M_pop_front_aux();
       }
-      
+
       /**
        *  @brief  Removes last element.
        *
@@ -1047,7 +1047,7 @@ namespace __gnu_norm
 	else
 	  _M_pop_back_aux();
       }
-      
+
       /**
        *  @brief  Inserts given value into %deque before specified iterator.
        *  @param  position  An iterator into the %deque.
@@ -1059,7 +1059,7 @@ namespace __gnu_norm
        */
       iterator
       insert(iterator position, const value_type& __x);
-      
+
       /**
        *  @brief  Inserts a number of copies of given data into the %deque.
        *  @param  position  An iterator into the %deque.
@@ -1072,7 +1072,7 @@ namespace __gnu_norm
       void
       insert(iterator __position, size_type __n, const value_type& __x)
       { _M_fill_insert(__position, __n, __x); }
-      
+
       /**
        *  @brief  Inserts a range into the %deque.
        *  @param  position  An iterator into the %deque.
@@ -1092,7 +1092,7 @@ namespace __gnu_norm
 	  typedef typename _Is_integer<_InputIterator>::_Integral _Integral;
 	  _M_insert_dispatch(__position, __first, __last, _Integral());
 	}
-      
+
       /**
        *  @brief  Remove element at given position.
        *  @param  position  Iterator pointing to element to be erased.
@@ -1108,7 +1108,7 @@ namespace __gnu_norm
        */
       iterator
       erase(iterator __position);
-      
+
       /**
        *  @brief  Remove a range of elements.
        *  @param  first  Iterator pointing to the first element to be erased.
@@ -1127,7 +1127,7 @@ namespace __gnu_norm
        */
       iterator
       erase(iterator __first, iterator __last);
-  
+
       /**
        *  @brief  Swaps data with another %deque.
        *  @param  x  A %deque of the same element and allocator types.
@@ -1145,18 +1145,18 @@ namespace __gnu_norm
 	std::swap(this->_M_map, __x._M_map);
 	std::swap(this->_M_map_size, __x._M_map_size);
       }
-      
+
       /**
        *  Erases all the elements.  Note that this function only erases the
        *  elements, and that if the elements themselves are pointers, the
        *  pointed-to memory is not touched in any way.  Managing the pointer is
        *  the user's responsibilty.
        */
-      void clear(); 
-      
+      void clear();
+
     protected:
       // Internal constructor functions follow.
-      
+
       // called by the range constructor to implement [23.1.1]/9
       template<typename _Integer>
         void
@@ -1165,7 +1165,7 @@ namespace __gnu_norm
 	  _M_initialize_map(__n);
 	  _M_fill_initialize(__x);
 	}
-      
+
       // called by the range constructor to implement [23.1.1]/9
       template<typename _InputIterator>
         void
@@ -1176,7 +1176,7 @@ namespace __gnu_norm
 	    _IterCategory;
 	  _M_range_initialize(__first, __last, _IterCategory());
 	}
-  
+
       // called by the second initialize_dispatch above
       //@{
       /**
@@ -1192,17 +1192,17 @@ namespace __gnu_norm
        *  @endif
        */
       template<typename _InputIterator>
-        void  
+        void
         _M_range_initialize(_InputIterator __first, _InputIterator __last,
 			    input_iterator_tag);
-  
+
       // called by the second initialize_dispatch above
       template<typename _ForwardIterator>
-        void 
+        void
         _M_range_initialize(_ForwardIterator __first, _ForwardIterator __last,
 			    forward_iterator_tag);
       //@}
-      
+
       /**
        *  @if maint
        *  @brief Fills the %deque with copies of value.
@@ -1217,10 +1217,10 @@ namespace __gnu_norm
        */
       void
       _M_fill_initialize(const value_type& __value);
-      
+
       // Internal assign functions follow.  The *_aux functions do the actual
       // assignment work for the range versions.
-      
+
       // called by the range assign to implement [23.1.1]/9
       template<typename _Integer>
         void
@@ -1229,7 +1229,7 @@ namespace __gnu_norm
 	  _M_fill_assign(static_cast<size_type>(__n),
 			 static_cast<value_type>(__val));
 	}
-  
+
       // called by the range assign to implement [23.1.1]/9
       template<typename _InputIterator>
         void
@@ -1240,13 +1240,13 @@ namespace __gnu_norm
 	    _IterCategory;
 	  _M_assign_aux(__first, __last, _IterCategory());
 	}
-  
+
       // called by the second assign_dispatch above
       template<typename _InputIterator>
         void
         _M_assign_aux(_InputIterator __first, _InputIterator __last,
 		      input_iterator_tag);
-  
+
       // called by the second assign_dispatch above
       template<typename _ForwardIterator>
         void
@@ -1264,7 +1264,7 @@ namespace __gnu_norm
 	  else
 	    erase(std::copy(__first, __last, begin()), end());
 	}
-  
+
       // Called by assign(n,t), and the range assign when it turns out to be the
       // same thing.
       void
@@ -1281,7 +1281,7 @@ namespace __gnu_norm
 	    std::fill(begin(), end(), __val);
 	  }
       }
-  
+
       //@{
       /**
        *  @if maint
@@ -1293,10 +1293,10 @@ namespace __gnu_norm
       void _M_pop_back_aux();
       void _M_pop_front_aux();
       //@}
-    
+
       // Internal insert functions follow.  The *_aux functions do the actual
       // insertion work when all shortcuts fail.
-  
+
       // called by the range insert to implement [23.1.1]/9
       template<typename _Integer>
         void
@@ -1306,7 +1306,7 @@ namespace __gnu_norm
 	  _M_fill_insert(__pos, static_cast<size_type>(__n),
 			 static_cast<value_type>(__x));
 	}
-  
+
       // called by the range insert to implement [23.1.1]/9
       template<typename _InputIterator>
         void
@@ -1318,40 +1318,40 @@ namespace __gnu_norm
 	    _IterCategory;
           _M_range_insert_aux(__pos, __first, __last, _IterCategory());
 	}
-  
+
       // called by the second insert_dispatch above
       template<typename _InputIterator>
         void
         _M_range_insert_aux(iterator __pos, _InputIterator __first,
 			    _InputIterator __last, input_iterator_tag);
-  
+
       // called by the second insert_dispatch above
       template<typename _ForwardIterator>
         void
         _M_range_insert_aux(iterator __pos, _ForwardIterator __first,
 			    _ForwardIterator __last, forward_iterator_tag);
-  
+
       // Called by insert(p,n,x), and the range insert when it turns out to be
       // the same thing.  Can use fill functions in optimal situations,
       // otherwise passes off to insert_aux(p,n,x).
       void
-      _M_fill_insert(iterator __pos, size_type __n, const value_type& __x); 
-  
+      _M_fill_insert(iterator __pos, size_type __n, const value_type& __x);
+
       // called by insert(p,x)
       iterator
       _M_insert_aux(iterator __pos, const value_type& __x);
-  
+
       // called by insert(p,n,x) via fill_insert
       void
       _M_insert_aux(iterator __pos, size_type __n, const value_type& __x);
-  
+
       // called by range_insert_aux for forward iterators
       template<typename _ForwardIterator>
         void
-        _M_insert_aux(iterator __pos, 
+        _M_insert_aux(iterator __pos,
 		      _ForwardIterator __first, _ForwardIterator __last,
 		      size_type __n);
-  
+
       //@{
       /**
        *  @if maint
@@ -1368,7 +1368,7 @@ namespace __gnu_norm
 	  _M_new_elements_at_front(__n - __vacancies);
 	return this->_M_start - difference_type(__n);
       }
-      
+
       iterator
       _M_reserve_elements_at_back(size_type __n)
       {
@@ -1378,15 +1378,15 @@ namespace __gnu_norm
 	  _M_new_elements_at_back(__n - __vacancies);
 	return this->_M_finish + difference_type(__n);
       }
-      
+
       void
       _M_new_elements_at_front(size_type __new_elements);
-      
+
       void
       _M_new_elements_at_back(size_type __new_elements);
       //@}
-      
-      
+
+
       //@{
       /**
        *  @if maint
@@ -1404,20 +1404,20 @@ namespace __gnu_norm
 	    - (this->_M_finish._M_node - this->_M_map))
 	  _M_reallocate_map(__nodes_to_add, false);
       }
-  
+
       void
       _M_reserve_map_at_front (size_type __nodes_to_add = 1)
       {
 	if (__nodes_to_add > size_type(this->_M_start._M_node - this->_M_map))
 	  _M_reallocate_map(__nodes_to_add, true);
       }
-  
+
       void
       _M_reallocate_map(size_type __nodes_to_add, bool __add_at_front);
       //@}
     };
-  
-  
+
+
   /**
    *  @brief  Deque equality comparison.
    *  @param  x  A %deque.
@@ -1434,7 +1434,7 @@ namespace __gnu_norm
                          const deque<_Tp, _Alloc>& __y)
     { return __x.size() == __y.size()
              && std::equal(__x.begin(), __x.end(), __y.begin()); }
-  
+
   /**
    *  @brief  Deque ordering relation.
    *  @param  x  A %deque.
@@ -1450,42 +1450,42 @@ namespace __gnu_norm
     inline bool
     operator<(const deque<_Tp, _Alloc>& __x,
 	      const deque<_Tp, _Alloc>& __y)
-    { return lexicographical_compare(__x.begin(), __x.end(), 
+    { return lexicographical_compare(__x.begin(), __x.end(),
 				     __y.begin(), __y.end()); }
-  
+
   /// Based on operator==
   template<typename _Tp, typename _Alloc>
     inline bool
     operator!=(const deque<_Tp, _Alloc>& __x,
 	       const deque<_Tp, _Alloc>& __y)
     { return !(__x == __y); }
-  
+
   /// Based on operator<
   template<typename _Tp, typename _Alloc>
     inline bool
     operator>(const deque<_Tp, _Alloc>& __x,
 	      const deque<_Tp, _Alloc>& __y)
     { return __y < __x; }
-  
+
   /// Based on operator<
   template<typename _Tp, typename _Alloc>
     inline bool
     operator<=(const deque<_Tp, _Alloc>& __x,
 	       const deque<_Tp, _Alloc>& __y)
     { return !(__y < __x); }
-  
+
   /// Based on operator<
   template<typename _Tp, typename _Alloc>
     inline bool
     operator>=(const deque<_Tp, _Alloc>& __x,
 	       const deque<_Tp, _Alloc>& __y)
     { return !(__x < __y); }
-  
+
   /// See std::deque::swap().
   template<typename _Tp, typename _Alloc>
     inline void
     swap(deque<_Tp,_Alloc>& __x, deque<_Tp,_Alloc>& __y)
     { __x.swap(__y); }
 } // namespace __gnu_norm
-  
+
 #endif /* _DEQUE_H */

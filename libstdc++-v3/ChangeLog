@@ -1,3 +1,39 @@
+2004-02-08  Bernardo Innocenti  <bernie@develer.com>
+
+	* include/bits/allocator.h, include/bits/basic_ios.h,
+	include/bits/basic_ios.tcc, include/bits/basic_string.h,
+	include/bits/basic_string.tcc, include/bits/boost_concept_check.h,
+	include/bits/char_traits.h, include/bits/codecvt.h,
+	include/bits/concurrence.h, include/bits/cpp_type_traits.h,
+	include/bits/demangle.h, include/bits/deque.tcc,
+	include/bits/fstream.tcc, include/bits/functexcept.h,
+	include/bits/gslice.h, include/bits/gslice_array.h,
+	include/bits/indirect_array.h, include/bits/ios_base.h,
+	include/bits/istream.tcc, include/bits/list.tcc,
+	include/bits/locale_classes.h, include/bits/locale_facets.h,
+	include/bits/locale_facets.tcc, include/bits/localefwd.h,
+	include/bits/mask_array.h, include/bits/ostream.tcc,
+	include/bits/postypes.h, include/bits/slice_array.h,
+	include/bits/sstream.tcc, include/bits/stl_algo.h,
+	include/bits/stl_algobase.h, include/bits/stl_bvector.h,
+	include/bits/stl_construct.h, include/bits/stl_deque.h,
+	include/bits/stl_function.h, include/bits/stl_heap.h,
+	include/bits/stl_iterator.h, include/bits/stl_iterator_base_funcs.h,
+	include/bits/stl_list.h, include/bits/stl_map.h,
+	include/bits/stl_multimap.h, include/bits/stl_multiset.h,
+	include/bits/stl_numeric.h, include/bits/stl_pair.h,
+	include/bits/stl_queue.h, include/bits/stl_raw_storage_iter.h,
+	include/bits/stl_relops.h, include/bits/stl_set.h,
+	include/bits/stl_stack.h, include/bits/stl_tempbuf.h,
+	include/bits/stl_threads.h, include/bits/stl_tree.h,
+	include/bits/stl_uninitialized.h, include/bits/stl_vector.h,
+	include/bits/stream_iterator.h, include/bits/streambuf.tcc,
+	include/bits/streambuf_iterator.h,include/bits/stringfwd.h,
+	include/bits/type_traits.h, include/bits/valarray_after.h,
+	include/bits/valarray_array.h, include/bits/valarray_array.tcc,
+	include/bits/valarray_before.h, include/bits/vector.tcc: Remove
+	trailing whitespace.
+
 2004-02-06  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/basic_string.h: Fix comment.

@@ -76,7 +76,7 @@ namespace std
     {
       // concept requirements
       __glibcxx_function_requires(_InputIteratorConcept<_InputIterator>)
-  
+
       typename iterator_traits<_InputIterator>::difference_type __n = 0;
       while (__first != __last)
 	{
@@ -85,7 +85,7 @@ namespace std
 	}
       return __n;
     }
-  
+
   template<typename _RandomAccessIterator>
     inline typename iterator_traits<_RandomAccessIterator>::difference_type
     __distance(_RandomAccessIterator __first, _RandomAccessIterator __last,
@@ -96,7 +96,7 @@ namespace std
 				  _RandomAccessIterator>)
       return __last - __first;
     }
-  
+
   /**
    *  @brief A generalization of pointer arithmetic.
    *  @param  first  An input iterator.
@@ -117,7 +117,7 @@ namespace std
       return std::__distance(__first, __last,
 			     std::__iterator_category(__first));
     }
-  
+
   template<typename _InputIterator, typename _Distance>
     inline void
     __advance(_InputIterator& __i, _Distance __n, input_iterator_tag)
@@ -127,7 +127,7 @@ namespace std
       while (__n--)
 	++__i;
     }
-  
+
   template<typename _BidirectionalIterator, typename _Distance>
     inline void
     __advance(_BidirectionalIterator& __i, _Distance __n,
@@ -143,7 +143,7 @@ namespace std
         while (__n++)
 	  --__i;
     }
-  
+
   template<typename _RandomAccessIterator, typename _Distance>
     inline void
     __advance(_RandomAccessIterator& __i, _Distance __n,
@@ -154,7 +154,7 @@ namespace std
 				  _RandomAccessIterator>)
       __i += __n;
     }
-  
+
   /**
    *  @brief A generalization of pointer arithmetic.
    *  @param  i  An input iterator.

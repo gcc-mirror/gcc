@@ -71,16 +71,16 @@
    *  functions.
   */
   template<typename _InternT, typename _ExternT, typename _StateT>
-    class __codecvt_abstract_base 
+    class __codecvt_abstract_base
     : public locale::facet, public codecvt_base
     {
     public:
       // Types:
       typedef codecvt_base::result	result;
-      typedef _InternT 			intern_type;
-      typedef _ExternT 			extern_type;
-      typedef _StateT  			state_type;
-      
+      typedef _InternT			intern_type;
+      typedef _ExternT			extern_type;
+      typedef _StateT			state_type;
+
       // 22.2.1.5.1 codecvt members
       /**
        *  @brief  Convert from internal to external character set.
@@ -118,13 +118,13 @@
        *  @return  codecvt_base::result.
       */
       result
-      out(state_type& __state, const intern_type* __from, 
+      out(state_type& __state, const intern_type* __from,
 	  const intern_type* __from_end, const intern_type*& __from_next,
-	  extern_type* __to, extern_type* __to_end, 
+	  extern_type* __to, extern_type* __to_end,
 	  extern_type*& __to_next) const
-      { 
-	return this->do_out(__state, __from, __from_end, __from_next, 
-			    __to, __to_end, __to_next); 
+      {
+	return this->do_out(__state, __from, __from_end, __from_next,
+			    __to, __to_end, __to_next);
       }
 
       /**
@@ -197,20 +197,20 @@
        *  @return  codecvt_base::result.
       */
       result
-      in(state_type& __state, const extern_type* __from, 
+      in(state_type& __state, const extern_type* __from,
 	 const extern_type* __from_end, const extern_type*& __from_next,
-	 intern_type* __to, intern_type* __to_end, 
+	 intern_type* __to, intern_type* __to_end,
 	 intern_type*& __to_next) const
-      { 
+      {
 	return this->do_in(__state, __from, __from_end, __from_next,
-			   __to, __to_end, __to_next); 
+			   __to, __to_end, __to_next);
       }
 
-      int 
+      int
       encoding() const throw()
       { return this->do_encoding(); }
 
-      bool 
+      bool
       always_noconv() const throw()
       { return this->do_always_noconv(); }
 
@@ -219,15 +219,15 @@
 	     const extern_type* __end, size_t __max) const
       { return this->do_length(__state, __from, __end, __max); }
 
-      int 
+      int
       max_length() const throw()
       { return this->do_max_length(); }
 
     protected:
-      explicit 
+      explicit
       __codecvt_abstract_base(size_t __refs = 0) : locale::facet(__refs) { }
 
-      virtual 
+      virtual
       ~__codecvt_abstract_base() { }
 
       /**
@@ -238,92 +238,92 @@
        *  the value returned.  @see out for more information.
       */
       virtual result
-      do_out(state_type& __state, const intern_type* __from, 
+      do_out(state_type& __state, const intern_type* __from,
 	     const intern_type* __from_end, const intern_type*& __from_next,
 	     extern_type* __to, extern_type* __to_end,
 	     extern_type*& __to_next) const = 0;
 
       virtual result
-      do_unshift(state_type& __state, extern_type* __to, 
+      do_unshift(state_type& __state, extern_type* __to,
 		 extern_type* __to_end, extern_type*& __to_next) const = 0;
-      
+
       virtual result
-      do_in(state_type& __state, const extern_type* __from, 
-	    const extern_type* __from_end, const extern_type*& __from_next, 
-	    intern_type* __to, intern_type* __to_end, 
+      do_in(state_type& __state, const extern_type* __from,
+	    const extern_type* __from_end, const extern_type*& __from_next,
+	    intern_type* __to, intern_type* __to_end,
 	    intern_type*& __to_next) const = 0;
-      
-      virtual int 
+
+      virtual int
       do_encoding() const throw() = 0;
 
-      virtual bool 
+      virtual bool
       do_always_noconv() const throw() = 0;
 
-      virtual int 
-      do_length(state_type&, const extern_type* __from, 
+      virtual int
+      do_length(state_type&, const extern_type* __from,
 		const extern_type* __end, size_t __max) const = 0;
 
-      virtual int 
+      virtual int
       do_max_length() const throw() = 0;
     };
 
   // 22.2.1.5 Template class codecvt
   // NB: Generic, mostly useless implementation.
   template<typename _InternT, typename _ExternT, typename _StateT>
-    class codecvt 
+    class codecvt
     : public __codecvt_abstract_base<_InternT, _ExternT, _StateT>
     {
-    public:      
+    public:
       // Types:
       typedef codecvt_base::result	result;
-      typedef _InternT 			intern_type;
-      typedef _ExternT 			extern_type;
-      typedef _StateT  			state_type;
+      typedef _InternT			intern_type;
+      typedef _ExternT			extern_type;
+      typedef _StateT			state_type;
 
     protected:
       __c_locale			_M_c_locale_codecvt;
 
     public:
-      static locale::id 		id;
+      static locale::id			id;
 
-      explicit 
-      codecvt(size_t __refs = 0) 
+      explicit
+      codecvt(size_t __refs = 0)
       : __codecvt_abstract_base<_InternT, _ExternT, _StateT> (__refs) { }
 
-      explicit 
+      explicit
       codecvt(__c_locale __cloc, size_t __refs = 0);
 
     protected:
-      virtual 
+      virtual
       ~codecvt() { }
 
       virtual result
-      do_out(state_type& __state, const intern_type* __from, 
+      do_out(state_type& __state, const intern_type* __from,
 	     const intern_type* __from_end, const intern_type*& __from_next,
 	     extern_type* __to, extern_type* __to_end,
 	     extern_type*& __to_next) const;
 
       virtual result
-      do_unshift(state_type& __state, extern_type* __to, 
+      do_unshift(state_type& __state, extern_type* __to,
 		 extern_type* __to_end, extern_type*& __to_next) const;
-      
+
       virtual result
-      do_in(state_type& __state, const extern_type* __from, 
-	    const extern_type* __from_end, const extern_type*& __from_next, 
-	    intern_type* __to, intern_type* __to_end, 
+      do_in(state_type& __state, const extern_type* __from,
+	    const extern_type* __from_end, const extern_type*& __from_next,
+	    intern_type* __to, intern_type* __to_end,
 	    intern_type*& __to_next) const;
-      
-      virtual int 
+
+      virtual int
       do_encoding() const throw();
 
-      virtual bool 
+      virtual bool
       do_always_noconv() const throw();
 
-      virtual int 
-      do_length(state_type&, const extern_type* __from, 
+      virtual int
+      do_length(state_type&, const extern_type* __from,
 		const extern_type* __end, size_t __max) const;
 
-      virtual int 
+      virtual int
       do_max_length() const throw();
     };
 
@@ -332,14 +332,14 @@
 
   // codecvt<char, char, mbstate_t> required specialization
   template<>
-    class codecvt<char, char, mbstate_t> 
+    class codecvt<char, char, mbstate_t>
     : public __codecvt_abstract_base<char, char, mbstate_t>
     {
-    public:      
+    public:
       // Types:
-      typedef char 			intern_type;
-      typedef char 			extern_type;
-      typedef mbstate_t 		state_type;
+      typedef char			intern_type;
+      typedef char			extern_type;
+      typedef mbstate_t			state_type;
 
     protected:
       __c_locale			_M_c_locale_codecvt;
@@ -347,76 +347,76 @@
     public:
       static locale::id id;
 
-      explicit 
+      explicit
       codecvt(size_t __refs = 0);
 
-      explicit 
+      explicit
       codecvt(__c_locale __cloc, size_t __refs = 0);
 
     protected:
-      virtual 
+      virtual
       ~codecvt();
 
       virtual result
-      do_out(state_type& __state, const intern_type* __from, 
+      do_out(state_type& __state, const intern_type* __from,
 	     const intern_type* __from_end, const intern_type*& __from_next,
 	     extern_type* __to, extern_type* __to_end,
 	     extern_type*& __to_next) const;
 
       virtual result
-      do_unshift(state_type& __state, extern_type* __to, 
+      do_unshift(state_type& __state, extern_type* __to,
 		 extern_type* __to_end, extern_type*& __to_next) const;
 
       virtual result
-      do_in(state_type& __state, const extern_type* __from, 
+      do_in(state_type& __state, const extern_type* __from,
 	    const extern_type* __from_end, const extern_type*& __from_next,
-	    intern_type* __to, intern_type* __to_end, 
+	    intern_type* __to, intern_type* __to_end,
 	    intern_type*& __to_next) const;
 
-      virtual int 
+      virtual int
       do_encoding() const throw();
 
-      virtual bool 
+      virtual bool
       do_always_noconv() const throw();
 
-      virtual int 
-      do_length(state_type&, const extern_type* __from, 
+      virtual int
+      do_length(state_type&, const extern_type* __from,
 		const extern_type* __end, size_t __max) const;
 
-      virtual int 
+      virtual int
       do_max_length() const throw();
   };
 
 #ifdef _GLIBCXX_USE_WCHAR_T
   // codecvt<wchar_t, char, mbstate_t> required specialization
   template<>
-    class codecvt<wchar_t, char, mbstate_t> 
+    class codecvt<wchar_t, char, mbstate_t>
     : public __codecvt_abstract_base<wchar_t, char, mbstate_t>
     {
     public:
       // Types:
-      typedef wchar_t 			intern_type;
-      typedef char 			extern_type;
-      typedef mbstate_t 		state_type;
+      typedef wchar_t			intern_type;
+      typedef char			extern_type;
+      typedef mbstate_t			state_type;
 
     protected:
       __c_locale			_M_c_locale_codecvt;
 
     public:
-      static locale::id 		id;
+      static locale::id			id;
 
-      explicit 
+      explicit
       codecvt(size_t __refs = 0);
 
-      explicit 
+      explicit
       codecvt(__c_locale __cloc, size_t __refs = 0);
 
     protected:
-      virtual 
+      virtual
       ~codecvt();
 
       virtual result
-      do_out(state_type& __state, const intern_type* __from, 
+      do_out(state_type& __state, const intern_type* __from,
 	     const intern_type* __from_end, const intern_type*& __from_next,
 	     extern_type* __to, extern_type* __to_end,
 	     extern_type*& __to_next) const;
@@ -433,17 +433,17 @@
 	     intern_type* __to, intern_type* __to_end,
 	     intern_type*& __to_next) const;
 
-      virtual 
+      virtual
       int do_encoding() const throw();
 
-      virtual 
+      virtual
       bool do_always_noconv() const throw();
 
-      virtual 
+      virtual
       int do_length(state_type&, const extern_type* __from,
 		    const extern_type* __end, size_t __max) const;
 
-      virtual int 
+      virtual int
       do_max_length() const throw();
     };
 #endif //_GLIBCXX_USE_WCHAR_T
@@ -453,19 +453,19 @@
     class codecvt_byname : public codecvt<_InternT, _ExternT, _StateT>
     {
     public:
-      explicit 
-      codecvt_byname(const char* __s, size_t __refs = 0) 
+      explicit
+      codecvt_byname(const char* __s, size_t __refs = 0)
       : codecvt<_InternT, _ExternT, _StateT>(__refs)
-      { 
+      {
 	if (std::strcmp(__s, "C") != 0 && std::strcmp(__s, "POSIX") != 0)
 	  {
 	    _S_destroy_c_locale(this->_M_c_locale_codecvt);
-	    _S_create_c_locale(this->_M_c_locale_codecvt, __s); 
+	    _S_create_c_locale(this->_M_c_locale_codecvt, __s);
 	  }
       }
 
     protected:
-      virtual 
+      virtual
       ~codecvt_byname() { }
     };
 

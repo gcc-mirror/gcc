@@ -41,7 +41,7 @@
 #pragma GCC system_header
 
 namespace std {
-    
+
   /**
    *  @brief  Class defining multi-dimensional subset of an array.
    *
@@ -90,7 +90,7 @@ namespace std {
       // XXX: See the note above.
       ///  Assignment operator.
       gslice& operator=(const gslice&);
-        
+
       ///  Return array offset of first slice element.
       size_t           start() const;
 
@@ -99,7 +99,7 @@ namespace std {
 
       ///  Return array of array strides for each dimension.
       valarray<size_t> stride() const;
-        
+
     private:
       struct _Indexer {
 	size_t _M_count;
@@ -114,22 +114,22 @@ namespace std {
       };
 
       _Indexer* _M_index;
-        
+
       template<typename _Tp> friend class valarray;
     };
-    
+
     inline size_t
     gslice::start () const
     { return _M_index ? _M_index->_M_start : 0; }
-    
+
     inline valarray<size_t>
     gslice::size () const
     { return _M_index ? _M_index->_M_size : valarray<size_t>(); }
-    
+
     inline valarray<size_t>
     gslice::stride () const
     { return _M_index ? _M_index->_M_stride : valarray<size_t>(); }
-    
+
     inline gslice::gslice () : _M_index(0) {}
 
     inline
@@ -140,7 +140,7 @@ namespace std {
     inline
     gslice::gslice(const gslice& __g) : _M_index(__g._M_index)
     { if (_M_index) _M_index->_M_increment_use(); }
-    
+
     inline
     gslice::~gslice()
     { if (_M_index && _M_index->_M_decrement_use() == 0) delete _M_index; }
@@ -153,8 +153,8 @@ namespace std {
         _M_index = __g._M_index;
         return *this;
     }
-            
-    
+
+
 } // std::
 
 

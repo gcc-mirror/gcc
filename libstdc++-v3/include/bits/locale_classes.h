@@ -80,16 +80,16 @@ namespace std
     friend class _Impl;
 
     template<typename _Facet>
-      friend bool 
+      friend bool
       has_facet(const locale&) throw();
 
     template<typename _Facet>
-      friend const _Facet& 
+      friend const _Facet&
       use_facet(const locale&);
 
     template<typename _Cache>
       friend struct __use_cache;
-   
+
     //@{
     /**
      *  @brief  Category values.
@@ -103,18 +103,18 @@ namespace std
      *  @endif
     */
     static const category none		= 0;
-    static const category ctype 	= 1L << 0;
-    static const category numeric 	= 1L << 1;
-    static const category collate  	= 1L << 2;
-    static const category time 		= 1L << 3;
-    static const category monetary 	= 1L << 4;
-    static const category messages 	= 1L << 5;
-    static const category all 		= (ctype | numeric | collate |
-				 	   time  | monetary | messages);
+    static const category ctype		= 1L << 0;
+    static const category numeric	= 1L << 1;
+    static const category collate	= 1L << 2;
+    static const category time		= 1L << 3;
+    static const category monetary	= 1L << 4;
+    static const category messages	= 1L << 5;
+    static const category all		= (ctype | numeric | collate |
+					   time  | monetary | messages);
     //@}
 
     // Construct/copy/destroy:
-    
+
     /**
      *  @brief  Default constructor.
      *
@@ -140,7 +140,7 @@ namespace std
      *  @param  s  Name of the locale to construct.
      *  @throw  std::runtime_error if s is null or an undefined locale.
     */
-    explicit  
+    explicit
     locale(const char* __s);
 
     /**
@@ -152,7 +152,7 @@ namespace std
      *
      *  @param  base  The locale to copy.
      *  @param  s  Name of the locale to use facets from.
-     *  @param  cat  Set of categories defining the facets to use from s.  
+     *  @param  cat  Set of categories defining the facets to use from s.
      *  @throw  std::runtime_error if s is null or an undefined locale.
     */
     locale(const locale& __base, const char* __s, category __cat);
@@ -210,7 +210,7 @@ namespace std
      *  @throw  std::runtime_error if other has no facet of type Facet.
     */
     template<typename _Facet>
-      locale  
+      locale
       combine(const locale& __other) const;
 
     // Locale operations:
@@ -218,7 +218,7 @@ namespace std
      *  @brief  Return locale name.
      *  @return  Locale name or "*" if unnamed.
     */
-    string 
+    string
     name() const;
 
     /**
@@ -226,9 +226,9 @@ namespace std
      *
      *  @param  other  The locale to compare against.
      *  @return  True if other and this refer to the same locale instance, are
-     *  	 copies, or have the same name.  False otherwise.
+     *		 copies, or have the same name.  False otherwise.
     */
-    bool 
+    bool
     operator==(const locale& __other) const throw ();
 
     /**
@@ -237,7 +237,7 @@ namespace std
      *  @param  other  The locale to compare against.
      *  @return  ! (*this == other)
     */
-    inline bool  
+    inline bool
     operator!=(const locale& __other) const throw ()
     { return !(this->operator==(__other));  }
 
@@ -257,7 +257,7 @@ namespace std
      *  @return  True if collate<Char> facet compares s1 < s2, else false.
     */
     template<typename _Char, typename _Traits, typename _Alloc>
-      bool  
+      bool
       operator()(const basic_string<_Char, _Traits, _Alloc>& __s1,
 		 const basic_string<_Char, _Traits, _Alloc>& __s2) const;
 
@@ -272,26 +272,26 @@ namespace std
      *  @param  locale  The new locale to make global.
      *  @return  Copy of the old global locale.
     */
-    static locale 
+    static locale
     global(const locale&);
 
     /**
      *  @brief  Return reference to the "C" locale.
     */
-    static const locale& 
+    static const locale&
     classic();
 
   private:
     // The (shared) implementation
-    _Impl* 		_M_impl;  
+    _Impl*		_M_impl;
 
     // The "C" reference locale
     static _Impl*       _S_classic;
 
     // Current global locale
-    static _Impl* 	_S_global;  
+    static _Impl*	_S_global;
 
-    // Names of underlying locale categories.  
+    // Names of underlying locale categories.
     // NB: locale::global() has to know how to modify all the
     // underlying categories, not just the ones required by the C++
     // standard.
@@ -313,16 +313,16 @@ namespace std
     static __gthread_once_t _S_once;
 #endif
 
-    explicit 
+    explicit
     locale(_Impl*) throw();
 
-    static void  
+    static void
     _S_initialize();
 
     static void
     _S_initialize_once();
 
-    static category  
+    static category
     _S_normalize_category(category);
 
     void
@@ -355,10 +355,10 @@ namespace std
     static const char			_S_c_name[2];
 
 #ifdef __GTHREADS
-    static __gthread_once_t 		_S_once;
+    static __gthread_once_t		_S_once;
 #endif
 
-    static void 
+    static void
     _S_initialize_once();
 
   protected:
@@ -371,16 +371,16 @@ namespace std
      *
      *  @param refs  The initial value for reference count.
     */
-    explicit 
+    explicit
     facet(size_t __refs = 0) throw() : _M_refcount(__refs ? 1 : 0)
     { }
 
     /// Facet destructor.
-    virtual 
+    virtual
     ~facet();
 
     static void
-    _S_create_c_locale(__c_locale& __cloc, const char* __s, 
+    _S_create_c_locale(__c_locale& __cloc, const char* __s,
 		       __c_locale __old = 0);
 
     static __c_locale
@@ -407,16 +407,16 @@ namespace std
     {
       if (__exchange_and_add(&_M_refcount, -1) == 1)
 	{
-	  try 
-	    { delete this; }  
-	  catch (...) 
+	  try
+	    { delete this; }
+	  catch (...)
 	    { }
 	}
     }
 
     facet(const facet&);  // Not defined.
 
-    void 
+    void
     operator=(const facet&);  // Not defined.
   };
 
@@ -438,22 +438,22 @@ namespace std
     friend class locale::_Impl;
 
     template<typename _Facet>
-      friend const _Facet&  
+      friend const _Facet&
       use_facet(const locale&);
 
     template<typename _Facet>
-      friend bool           
+      friend bool
       has_facet(const locale&) throw ();
 
     // NB: There is no accessor for _M_index because it may be used
     // before the constructor is run; the effect of calling a member
     // function (even an inline) would be undefined.
-    mutable size_t 		_M_index;
+    mutable size_t		_M_index;
 
     // Last id number assigned.
-    static _Atomic_word 	_S_refcount;   
+    static _Atomic_word		_S_refcount;
 
-    void 
+    void
     operator=(const id&);  // Not defined.
 
     id(const id&);  // Not defined.
@@ -478,11 +478,11 @@ namespace std
     friend class locale::facet;
 
     template<typename _Facet>
-      friend bool  
+      friend bool
       has_facet(const locale&) throw();
 
     template<typename _Facet>
-      friend const _Facet&  
+      friend const _Facet&
       use_facet(const locale&);
 
     template<typename _Cache>
@@ -492,29 +492,29 @@ namespace std
     // Data Members.
     _Atomic_word			_M_refcount;
     const facet**			_M_facets;
-    size_t 				_M_facets_size;
+    size_t				_M_facets_size;
     const facet**			_M_caches;
-    char** 				_M_names;
-    static const locale::id* const 	_S_id_ctype[];
-    static const locale::id* const 	_S_id_numeric[];
-    static const locale::id* const 	_S_id_collate[];
-    static const locale::id* const 	_S_id_time[];
-    static const locale::id* const 	_S_id_monetary[];
-    static const locale::id* const 	_S_id_messages[];
+    char**				_M_names;
+    static const locale::id* const	_S_id_ctype[];
+    static const locale::id* const	_S_id_numeric[];
+    static const locale::id* const	_S_id_collate[];
+    static const locale::id* const	_S_id_time[];
+    static const locale::id* const	_S_id_monetary[];
+    static const locale::id* const	_S_id_messages[];
     static const locale::id* const* const _S_facet_categories[];
 
-    inline void 
+    inline void
     _M_add_reference() throw()
     { __atomic_add(&_M_refcount, 1); }
 
-    inline void 
+    inline void
     _M_remove_reference() throw()
     {
       if (__exchange_and_add(&_M_refcount, -1) == 1)
 	{
-	  try 
-	    { delete this; } 
-	  catch(...) 
+	  try
+	    { delete this; }
+	  catch(...)
 	    { }
 	}
     }
@@ -527,7 +527,7 @@ namespace std
 
     _Impl(const _Impl&);  // Not defined.
 
-    void 
+    void
     operator=(const _Impl&);  // Not defined.
 
     inline bool
@@ -539,29 +539,29 @@ namespace std
       return __ret;
     }
 
-    void 
+    void
     _M_replace_categories(const _Impl*, category);
 
-    void 
+    void
     _M_replace_category(const _Impl*, const locale::id* const*);
 
-    void 
+    void
     _M_replace_facet(const _Impl*, const locale::id*);
 
-    void 
+    void
     _M_install_facet(const locale::id*, const facet*);
 
     template<typename _Facet>
-      inline void 
+      inline void
       _M_init_facet(_Facet* __facet)
       { _M_install_facet(&_Facet::id, __facet); }
 
     void
     _M_install_cache(const facet* __cache, size_t __index) throw()
-    { 
+    {
       __cache->_M_add_reference();
-      _M_caches[__index] = __cache; 
-    }      
+      _M_caches[__index] = __cache;
+    }
   };
 
   template<typename _Facet>
@@ -584,7 +584,7 @@ namespace std
 	{
 	  _M_impl->_M_remove_reference();
 	  for (size_t __j = 0; __j < __i; ++__j)
-	    delete [] _M_tmp_names[__j];	  
+	    delete [] _M_tmp_names[__j];
 	  __throw_exception_again;
 	}
 

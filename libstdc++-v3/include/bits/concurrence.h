@@ -27,7 +27,7 @@
 // the GNU General Public License.  This exception does not however
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
- 
+
 #ifndef _CONCURRENCE
 #define _CONCURRENCE 1
 
@@ -47,8 +47,8 @@ __GTHREAD_MUTEX_INIT_FUNCTION(&NAME)
 # define __glibcxx_mutex_unlock(LOCK) __gthread_mutex_unlock(&LOCK)
 #else
 # define __glibcxx_mutex_define_initialized(NAME)
-# define __glibcxx_mutex_lock(LOCK) 
-# define __glibcxx_mutex_unlock(LOCK) 
+# define __glibcxx_mutex_lock(LOCK)
+# define __glibcxx_mutex_unlock(LOCK)
 #endif
 
 #endif

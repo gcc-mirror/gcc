@@ -73,7 +73,7 @@ namespace __gnu_cxx
       int M_start_pos;
       substitution_nt M_type;
       int M_number_of_prefixes;
-      
+
       substitution_st(int start_pos,
 		      substitution_nt type,
 		      int number_of_prefixes)
@@ -209,7 +209,7 @@ namespace __gnu_cxx
       class qualifier_list
       {
 	typedef typename Allocator::template rebind<char>::other
-  	  char_Allocator;
+	  char_Allocator;
 	typedef std::basic_string<char, std::char_traits<char>, char_Allocator>
 	  string_type;
 
@@ -250,7 +250,7 @@ namespace __gnu_cxx
 
 	void
 	add_qualifier_start(param_qualifier_nt param_qualifier,
-	    		    int start_pos,
+			    int start_pos,
 			    string_type optional_type,
 			    int inside_substitution)
 	{ M_qualifier_starts.
@@ -259,7 +259,7 @@ namespace __gnu_cxx
 
 	void
 	decode_qualifiers(string_type& prefix,
-	    		  string_type& postfix,
+			  string_type& postfix,
 			  bool member_function_pointer_qualifiers) const;
 
 	bool
@@ -307,7 +307,7 @@ namespace __gnu_cxx
 	// Use (void) instead of ():			int f(void)
 
         static unsigned int const style_literal = 2;
-	// Default behaviour:				(long)13, 
+	// Default behaviour:				(long)13,
 	//						(unsigned long long)19
 	// Use extensions 'u', 'l' and 'll' for integral
 	// literals (as in template arguments):		13l, 19ull
@@ -352,7 +352,7 @@ namespace __gnu_cxx
       {
 	friend class qualifier_list<Allocator>;
 	typedef typename Allocator::template rebind<char>::other
-    	    char_Allocator;
+	    char_Allocator;
 	typedef std::basic_string<char, std::char_traits<char>, char_Allocator>
 	    string_type;
 
@@ -498,7 +498,7 @@ namespace __gnu_cxx
 	  int n = M_substitutions_pos.size() - 1;
 	  if (n > 0)
 	    substitution_name += (n <= 10) ? (char)(n + '0' - 1)
-	      				   : (char)(n + 'A' - 11);
+					   : (char)(n + 'A' - 11);
 	  substitution_name += '_';
 	  string_type subst;
 	  int saved_pos = M_pos;
@@ -1051,56 +1051,56 @@ namespace __gnu_cxx
       }
 
     // <operator-name> ::=
-    //   nw				# new           
+    //   nw				# new
     //   na				# new[]
-    //   dl				# delete        
-    //   da				# delete[]      
+    //   dl				# delete
+    //   da				# delete[]
     //   ps				# + (unary)
-    //   ng				# - (unary)     
-    //   ad				# & (unary)     
-    //   de				# * (unary)     
-    //   co				# ~             
-    //   pl				# +             
-    //   mi				# -             
-    //   ml				# *             
-    //   dv				# /             
-    //   rm				# %             
-    //   an				# &             
-    //   or				# |             
-    //   eo				# ^             
-    //   aS				# =             
-    //   pL				# +=            
-    //   mI				# -=            
-    //   mL				# *=            
-    //   dV				# /=            
-    //   rM				# %=            
-    //   aN				# &=            
-    //   oR				# |=            
-    //   eO				# ^=            
-    //   ls				# <<            
-    //   rs				# >>            
-    //   lS				# <<=           
-    //   rS				# >>=           
-    //   eq				# ==            
-    //   ne				# !=            
-    //   lt				# <             
-    //   gt				# >             
-    //   le				# <=            
-    //   ge				# >=            
-    //   nt				# !             
-    //   aa				# &&            
-    //   oo				# ||            
-    //   pp				# ++            
-    //   mm				# --            
-    //   cm				# ,             
-    //   pm				# ->*           
-    //   pt				# ->            
-    //   cl				# ()            
-    //   ix				# []            
+    //   ng				# - (unary)
+    //   ad				# & (unary)
+    //   de				# * (unary)
+    //   co				# ~
+    //   pl				# +
+    //   mi				# -
+    //   ml				# *
+    //   dv				# /
+    //   rm				# %
+    //   an				# &
+    //   or				# |
+    //   eo				# ^
+    //   aS				# =
+    //   pL				# +=
+    //   mI				# -=
+    //   mL				# *=
+    //   dV				# /=
+    //   rM				# %=
+    //   aN				# &=
+    //   oR				# |=
+    //   eO				# ^=
+    //   ls				# <<
+    //   rs				# >>
+    //   lS				# <<=
+    //   rS				# >>=
+    //   eq				# ==
+    //   ne				# !=
+    //   lt				# <
+    //   gt				# >
+    //   le				# <=
+    //   ge				# >=
+    //   nt				# !
+    //   aa				# &&
+    //   oo				# ||
+    //   pp				# ++
+    //   mm				# --
+    //   cm				# ,
+    //   pm				# ->*
+    //   pt				# ->
+    //   cl				# ()
+    //   ix				# []
     //   qu				# ?
     //   st				# sizeof (a type)
     //   sz				# sizeof (an expression)
-    //   cv <type>			# (cast)        
+    //   cv <type>			# (cast)
     //   v <digit> <source-name>	# vendor extended operator
     //
     // Symbol operator codes exist of two characters, we need to find a
@@ -1579,15 +1579,15 @@ namespace __gnu_cxx
     //   <builtin-type>		# Starts with a lower case character != r.
     //   <function-type>	# Starts with F
     //   <class-enum-type>	# Starts with N, S, C, D, Z, a digit or a lower
-    //   			# case character.  Since a lower case character
-    //   			# would be an operator name, that would be an
-    //   			# error.  The S is a substitution or St
-    //   			# (::std::).  A 'C' would be a constructor and
-    //   			# thus also an error.
+    //				# case character.  Since a lower case character
+    //				# would be an operator name, that would be an
+    //				# error.  The S is a substitution or St
+    //				# (::std::).  A 'C' would be a constructor and
+    //				# thus also an error.
     //   <template-param>	# Starts with T
     //   <substitution>         # Starts with S
     //   <template-template-param> <template-args>  # Starts with T or S,
-    //   					    # equivalent with the above.
+    //						    # equivalent with the above.
     //
     //   <array-type>			# Starts with A
     //   <pointer-to-member-type>	# Starts with M
@@ -1596,8 +1596,8 @@ namespace __gnu_cxx
     //   R <type>   # reference-to	# Starts with R
     //   C <type>   # complex (C 2000)	# Starts with C
     //   G <type>   # imaginary (C 2000)# Starts with G
-    //   U <source-name> <type>     	# vendor extended type qualifier,
-    //   				# starts with U
+    //   U <source-name> <type>		# vendor extended type qualifier,
+    //					# starts with U
     //
     // <template-template-param> ::= <template-param>
     //                           ::= <substitution>
@@ -1613,9 +1613,9 @@ namespace __gnu_cxx
     // <I> is the array index.
     //						Substitutions:
     // <Q>M<C><Q2>F<R><B>E  ==> R (C::*Q)B Q2	"<C>", "F<R><B>E"
-    // 						    (<R> and <B> recursive),
-    // 						    "M<C><Q2>F<R><B>E".
-    // <Q>F<R><B>E 	    ==> R (Q)B		"<R>", "<B>" (<B> recursive)
+    //						    (<R> and <B> recursive),
+    //						    "M<C><Q2>F<R><B>E".
+    // <Q>F<R><B>E	    ==> R (Q)B		"<R>", "<B>" (<B> recursive)
     //                                              and "F<R><B>E".
     //
     // Note that if <R> has postfix qualifiers (an array or function), then
@@ -1623,14 +1623,14 @@ namespace __gnu_cxx
     // <Q>FPA<R><B>E ==> R (*(Q)B) [], where the PA added the prefix
     // "(*" and the postfix ") []".
     //
-    // <Q>G<T>     	    ==> imaginary T Q	"<T>", "G<T>" (<T> recursive).
-    // <Q>C<T>     	    ==> complex T Q	"<T>", "C<T>" (<T> recursive).
-    // <Q><T>      	    ==> T Q		"<T>" (<T> recursive).
+    // <Q>G<T>		    ==> imaginary T Q	"<T>", "G<T>" (<T> recursive).
+    // <Q>C<T>		    ==> complex T Q	"<T>", "C<T>" (<T> recursive).
+    // <Q><T>		    ==> T Q		"<T>" (<T> recursive).
     //
     // where <Q> is any of:
     //
-    // <Q>P   		==> *Q				"P..."
-    // <Q>R   		==> &Q				"R..."
+    // <Q>P		==> *Q				"P..."
+    // <Q>R		==> &Q				"R..."
     // <Q>[K|V|r]+	==> [ const| volatile| restrict]+Q	"KVr..."
     // <Q>U<S>		==>  SQ				"U<S>..."
     // <Q>M<C>		==> C::*Q			"M<C>..." (<C> recurs.)
@@ -1641,7 +1641,7 @@ namespace __gnu_cxx
     //   A<I2>A<I>	==>  [I2][I]
     //   If <Q> ends on [KVr]+, which can happen in combination with
     //   substitutions only, then special handling is required, see below.
-    //  
+    //
     // A <substitution> is handled with an input position switch during which
     // new substitutions are turned off.  Because recursive handling of types
     // (and therefore the order in which substitutions must be generated) must
@@ -1653,7 +1653,7 @@ namespace __gnu_cxx
     //
     // The following comment was for the demangling of g++ version 3.0.x.  The
     // mangling (and I believe even the ABI description) have been fixed now
-    // (as of g++ version 3.1).	
+    // (as of g++ version 3.1).
     //
     // g++ 3.0.x only:
     // The ABI specifies for pointer-to-member function types the format
@@ -1696,7 +1696,7 @@ namespace __gnu_cxx
     static int const cvq_A = 8;		// Saw at least one A
     static int const cvq_last = 16;	// No remaining qualifiers.
     static int const cvq_A_cnt = 32;	// Bit 5 and higher represent the
-    					//   number of A's in the series.
+					//   number of A's in the series.
     // In the function below, iter_array points to the first (right most)
     // A in the series, if any.
     template<typename Allocator>
@@ -2011,9 +2011,9 @@ namespace __gnu_cxx
 	}
 	if (!failure)
 	{
-	  // <Q>G<T>     		==> imaginary T Q
+	  // <Q>G<T>			==> imaginary T Q
 	  //     substitutions: "<T>", "G<T>" (<T> recursive).
-	  // <Q>C<T>     		==> complex T Q
+	  // <Q>C<T>			==> complex T Q
 	  //     substitutions: "<T>", "C<T>" (<T> recursive).
 	  if (current() == 'C' || current() == 'G')
 	  {
@@ -2034,8 +2034,8 @@ namespace __gnu_cxx
 	      bool extern_C = (next() == 'Y');
 	      if (extern_C)
 		eat_current();
-	        
-	      // <Q>F<R><B>E 		==> R (Q)B
+
+	      // <Q>F<R><B>E		==> R (Q)B
 	      //     substitution: "<R>", "<B>" (<B> recursive) and "F<R><B>E".
 
 	      // Return type.
@@ -2143,7 +2143,7 @@ namespace __gnu_cxx
 	    case '7':
 	    case '8':
 	    case '9':
-	      // <Q><T>      		==> T Q
+	      // <Q><T>			==> T Q
 	      //     substitutions: "<T>" (<T> recursive).
 	      if (!decode_class_enum_type(prefix))
 	      {
@@ -2161,7 +2161,7 @@ namespace __gnu_cxx
 		qualifiers->printing_suppressed();
 	      break;
 	    default:
-	      // <Q><T>      		==> T Q
+	      // <Q><T>			==> T Q
 	      //     substitutions: "<T>" (<T> recursive).
 	      if (!decode_builtin_type(prefix))
 	      {
@@ -2246,7 +2246,7 @@ namespace __gnu_cxx
 	    {
 	      // substitution: "<template-prefix> <template-args>".
 	      add_substitution(substitution_start, nested_name_prefix,
-		  	       number_of_prefixes);
+			       number_of_prefixes);
 	    }
 	  }
 	  else
@@ -2348,7 +2348,7 @@ namespace __gnu_cxx
 
     // <unqualified-name> ::= <operator-name>	# Starts with lower case.
     //                    ::= <ctor-dtor-name>  # Starts with 'C' or 'D'.
-    //                    ::= <source-name>   	# Starts with a digit.
+    //                    ::= <source-name>	# Starts with a digit.
     //
     template<typename Allocator>
       bool
@@ -2446,8 +2446,8 @@ namespace __gnu_cxx
     //   <unscoped-template-name> <template-args> # idem
     //   <local-name>				# Starts with 'Z'
     //   <unscoped-name>			# Starts with 'S', 'C', 'D',
-    //   					# a digit or a lower case
-    //   					# character.
+    //						# a digit or a lower case
+    //						# character.
     //
     // <unscoped-template-name> ::= <unscoped-name>
     //                          ::= <substitution>
@@ -2488,7 +2488,7 @@ namespace __gnu_cxx
 
     // <call-offset> ::= h <nv-offset> _
     //               ::= v <v-offset> _
-    // <nv-offset>   ::= <offset number> 
+    // <nv-offset>   ::= <offset number>
     //     non-virtual base override
     //
     // <v-offset>    ::= <offset number> _ <virtual offset number>
@@ -2538,10 +2538,10 @@ namespace __gnu_cxx
     //   TS <type>			# typeinfo name (null-terminated
     //                                    byte string).
     //   GV <object name>		# Guard variable for one-time
-    //   				  initialization of static objects in
-    //   				  a local scope.
+    //					  initialization of static objects in
+    //					  a local scope.
     //   T <call-offset> <base encoding># base is the nominal target function
-    //   				  of thunk.
+    //					  of thunk.
     //   Tc <call-offset> <call-offset> <base encoding> # base is the nominal
     //                                    target function of thunk; first
     //                                    call-offset is 'this' adjustment;
@@ -2629,8 +2629,8 @@ namespace __gnu_cxx
 
     // <encoding> ::=
     //   <function name> <bare-function-type>	# Starts with 'C', 'D', 'N',
-    //                                        	  'S', a digit or a lower case
-    //                                        	  character.
+    //						  'S', a digit or a lower case
+    //						  character.
     //   <data name>				# Idem.
     //   <special-name>				# Starts with 'T' or 'G'.
     template<typename Allocator>
@@ -2691,7 +2691,7 @@ namespace __gnu_cxx
     struct demangle
     {
       typedef typename Allocator::template rebind<char>::other char_Allocator;
-      typedef std::basic_string<char, std::char_traits<char>, char_Allocator> 
+      typedef std::basic_string<char, std::char_traits<char>, char_Allocator>
 	  string_type;
       static string_type symbol(char const* in,
                                 demangler::implementation_details const& id);
@@ -2769,7 +2769,7 @@ namespace __gnu_cxx
 	    || demangler_session.remaining_input_characters())
 	{
 	  // Failure to demangle, return the mangled name.
-	  result = input;				
+	  result = input;
 	}
       }
       return result;

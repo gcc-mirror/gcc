@@ -56,12 +56,12 @@ namespace std
     { return false; }
 
   template<typename _CharT, typename _Traits, typename _Alloc>
-    const typename basic_string<_CharT, _Traits, _Alloc>::size_type 
+    const typename basic_string<_CharT, _Traits, _Alloc>::size_type
     basic_string<_CharT, _Traits, _Alloc>::
     _Rep::_S_max_size = (((npos - sizeof(_Rep_base))/sizeof(_CharT)) - 1) / 4;
 
   template<typename _CharT, typename _Traits, typename _Alloc>
-    const _CharT 
+    const _CharT
     basic_string<_CharT, _Traits, _Alloc>::
     _Rep::_S_terminal = _CharT();
 
@@ -94,13 +94,13 @@ namespace std
 	_CharT __buf[100];
 	size_type __len = 0;
 	while (__beg != __end && __len < sizeof(__buf) / sizeof(_CharT))
-	  { 
-	    __buf[__len++] = *__beg; 
+	  {
+	    __buf[__len++] = *__beg;
 	    ++__beg;
 	  }
 	_Rep* __r = _Rep::_S_create(__len, size_type(0), __a);
 	traits_type::copy(__r->_M_refdata(), __buf, __len);
-	try 
+	try
 	  {
 	    while (__beg != __end)
 	      {
@@ -108,36 +108,36 @@ namespace std
 		  {
 		    // Allocate more space.
 		    _Rep* __another = _Rep::_S_create(__len + 1, __len, __a);
-		    traits_type::copy(__another->_M_refdata(), 
+		    traits_type::copy(__another->_M_refdata(),
 				      __r->_M_refdata(), __len);
 		    __r->_M_destroy(__a);
 		    __r = __another;
 		  }
-		__r->_M_refdata()[__len++] = *__beg; 
+		__r->_M_refdata()[__len++] = *__beg;
 		++__beg;
 	      }
 	  }
-	catch(...) 
+	catch(...)
 	  {
-	    __r->_M_destroy(__a); 
+	    __r->_M_destroy(__a);
 	    __throw_exception_again;
 	  }
 	__r->_M_length = __len;
 	__r->_M_refdata()[__len] = _Rep::_S_terminal;       // grrr.
 	return __r->_M_refdata();
       }
-  
+
   template<typename _CharT, typename _Traits, typename _Alloc>
     template <typename _InIterator>
       _CharT*
       basic_string<_CharT, _Traits, _Alloc>::
-      _S_construct(_InIterator __beg, _InIterator __end, const _Alloc& __a, 
+      _S_construct(_InIterator __beg, _InIterator __end, const _Alloc& __a,
 		   forward_iterator_tag)
       {
 	if (__beg == __end && __a == _Alloc())
 	  return _S_empty_rep()._M_refdata();
 
-	// NB: Not required, but considered best practice. 
+	// NB: Not required, but considered best practice.
 	if (__builtin_expect(__is_null_pointer(__beg), 0))
 	  __throw_logic_error(__N("basic_string::_S_construct NULL not valid"));
 
@@ -145,11 +145,11 @@ namespace std
 								      __end));
 	// Check for out_of_range and length_error exceptions.
 	_Rep* __r = _Rep::_S_create(__dnew, size_type(0), __a);
-	try 
+	try
 	  { _S_copy_chars(__r->_M_refdata(), __beg, __end); }
-	catch(...) 
-	  { 
-	    __r->_M_destroy(__a); 
+	catch(...)
+	  {
+	    __r->_M_destroy(__a);
 	    __throw_exception_again;
 	  }
 	__r->_M_length = __dnew;
@@ -167,8 +167,8 @@ namespace std
 
       // Check for out_of_range and length_error exceptions.
       _Rep* __r = _Rep::_S_create(__n, size_type(0), __a);
-      if (__n) 
-	traits_type::assign(__r->_M_refdata(), __n, __c); 
+      if (__n)
+	traits_type::assign(__r->_M_refdata(), __n, __c);
 
       __r->_M_length = __n;
       __r->_M_refdata()[__n] = _Rep::_S_terminal;  // grrr
@@ -187,7 +187,7 @@ namespace std
     basic_string(const _Alloc& __a)
     : _M_dataplus(_S_construct(size_type(), _CharT(), __a), __a)
     { }
- 
+
   template<typename _CharT, typename _Traits, typename _Alloc>
     basic_string<_CharT, _Traits, _Alloc>::
     basic_string(const basic_string& __str, size_type __pos, size_type __n)
@@ -230,7 +230,7 @@ namespace std
     : _M_dataplus(_S_construct(__n, __c, __a), __a)
     { }
 
-  // TBD: DPG annotate 
+  // TBD: DPG annotate
   template<typename _CharT, typename _Traits, typename _Alloc>
     template<typename _InputIterator>
     basic_string<_CharT, _Traits, _Alloc>::
@@ -313,7 +313,7 @@ namespace std
            return *this;
          }
      }
- 
+
    template<typename _CharT, typename _Traits, typename _Alloc>
      basic_string<_CharT, _Traits, _Alloc>&
      basic_string<_CharT, _Traits, _Alloc>::
@@ -350,7 +350,7 @@ namespace std
 	   return _M_replace_safe(__pos, __n1, __tmp._M_data(), __n2);
 	 }
      }
-  
+
   template<typename _CharT, typename _Traits, typename _Alloc>
     void
     basic_string<_CharT, _Traits, _Alloc>::_Rep::
@@ -369,7 +369,7 @@ namespace std
     {
       if (_M_rep() == &_S_empty_rep())
         return;
-      if (_M_rep()->_M_is_shared()) 
+      if (_M_rep()->_M_is_shared())
 	_M_mutate(0, 0, 0);
       _M_rep()->_M_set_leaked();
     }
@@ -383,7 +383,7 @@ namespace std
       const size_type __new_size = __old_size + __len2 - __len1;
       const _CharT*        __src = _M_data()  + __pos + __len1;
       const size_type __how_much = __old_size - __pos - __len1;
-      
+
       if (_M_rep() == &_S_empty_rep()
 	  || _M_rep()->_M_is_shared() || __new_size > capacity())
 	{
@@ -410,7 +410,7 @@ namespace std
       _M_data()[__new_size] = _Rep::_S_terminal; // grrr. (per 21.3.4)
       // You cannot leave those LWG people alone for a second.
     }
-  
+
   template<typename _CharT, typename _Traits, typename _Alloc>
     void
     basic_string<_CharT, _Traits, _Alloc>::reserve(size_type __res)
@@ -428,13 +428,13 @@ namespace std
 	  _M_data(__tmp);
         }
     }
-  
+
   template<typename _CharT, typename _Traits, typename _Alloc>
     void basic_string<_CharT, _Traits, _Alloc>::swap(basic_string& __s)
     {
-      if (_M_rep()->_M_is_leaked()) 
+      if (_M_rep()->_M_is_leaked())
 	_M_rep()->_M_set_sharable();
-      if (__s._M_rep()->_M_is_leaked()) 
+      if (__s._M_rep()->_M_is_leaked())
 	__s._M_rep()->_M_set_sharable();
       if (this->get_allocator() == __s.get_allocator())
 	{
@@ -443,11 +443,11 @@ namespace std
 	  __s._M_data(__tmp);
 	}
       // The code below can usually be optimized away.
-      else 
+      else
 	{
 	  const basic_string __tmp1(_M_ibegin(), _M_iend(),
 				    __s.get_allocator());
-	  const basic_string __tmp2(__s._M_ibegin(), __s._M_iend(), 
+	  const basic_string __tmp2(__s._M_ibegin(), __s._M_iend(),
 				    this->get_allocator());
 	  *this = __tmp2;
 	  __s = __tmp1;
@@ -504,7 +504,7 @@ namespace std
       const size_type __page_capacity = ((__pagesize - __malloc_header_size
 					  - sizeof(_Rep) - sizeof(_CharT))
 					 / sizeof(_CharT));
-      
+
       if (__capacity > __old_capacity && __capacity < 2 * __old_capacity
 	  && __capacity > __page_capacity)
 	__capacity = 2 * __old_capacity;
@@ -558,7 +558,7 @@ namespace std
       __r->_M_refdata()[this->_M_length] = _Rep::_S_terminal;
       return __r->_M_refdata();
     }
-  
+
   template<typename _CharT, typename _Traits, typename _Alloc>
     void
     basic_string<_CharT, _Traits, _Alloc>::resize(size_type __n, _CharT __c)
@@ -577,7 +577,7 @@ namespace std
     template<typename _InputIterator>
       basic_string<_CharT, _Traits, _Alloc>&
       basic_string<_CharT, _Traits, _Alloc>::
-      _M_replace_dispatch(iterator __i1, iterator __i2, _InputIterator __k1, 
+      _M_replace_dispatch(iterator __i1, iterator __i2, _InputIterator __k1,
 			  _InputIterator __k2, __false_type)
       {
 	const basic_string __s(__k1, __k2);
@@ -720,16 +720,16 @@ namespace std
 	{
 	  __pos = std::min(size_type(__size - __n), __pos);
 	  const _CharT* __data = _M_data();
-	  do 
+	  do
 	    {
 	      if (traits_type::compare(__data + __pos, __s, __n) == 0)
 		return __pos;
-	    } 
+	    }
 	  while (__pos-- > 0);
 	}
       return npos;
     }
-  
+
   template<typename _CharT, typename _Traits, typename _Alloc>
     typename basic_string<_CharT, _Traits, _Alloc>::size_type
     basic_string<_CharT, _Traits, _Alloc>::
@@ -746,7 +746,7 @@ namespace std
 	}
       return npos;
     }
-  
+
   template<typename _CharT, typename _Traits, typename _Alloc>
     typename basic_string<_CharT, _Traits, _Alloc>::size_type
     basic_string<_CharT, _Traits, _Alloc>::
@@ -761,7 +761,7 @@ namespace std
 	}
       return npos;
     }
- 
+
   template<typename _CharT, typename _Traits, typename _Alloc>
     typename basic_string<_CharT, _Traits, _Alloc>::size_type
     basic_string<_CharT, _Traits, _Alloc>::
@@ -770,19 +770,19 @@ namespace std
       __glibcxx_requires_string_len(__s, __n);
       size_type __size = this->size();
       if (__size && __n)
-	{ 
-	  if (--__size > __pos) 
+	{
+	  if (--__size > __pos)
 	    __size = __pos;
 	  do
 	    {
 	      if (traits_type::find(__s, __n, _M_data()[__size]))
 		return __size;
-	    } 
+	    }
 	  while (__size-- != 0);
 	}
       return npos;
     }
-  
+
   template<typename _CharT, typename _Traits, typename _Alloc>
     typename basic_string<_CharT, _Traits, _Alloc>::size_type
     basic_string<_CharT, _Traits, _Alloc>::
@@ -817,11 +817,11 @@ namespace std
 	{
 	  if (--__size > __pos)
 	    __size = __pos;
- 	  do
+	  do
 	    {
 	      if (!traits_type::find(__s, __n, _M_data()[__size]))
 		return __size;
-	    } 
+	    }
 	  while (__size--);
 	}
       return npos;
@@ -836,17 +836,17 @@ namespace std
       if (__size)
 	{
 	  if (--__size > __pos)
-	    __size = __pos;	  
+	    __size = __pos;
 	  do
 	    {
 	      if (!traits_type::eq(_M_data()[__size], __c))
 		return __size;
-	    } 
+	    }
 	  while (__size--);
 	}
       return npos;
     }
-  
+
   template<typename _CharT, typename _Traits, typename _Alloc>
     int
     basic_string<_CharT, _Traits, _Alloc>::
@@ -873,7 +873,7 @@ namespace std
       __n1 = _M_limit(__pos1, __n1);
       __n2 = __str._M_limit(__pos2, __n2);
       const size_type __len = std::min(__n1, __n2);
-      int __r = traits_type::compare(_M_data() + __pos1, 
+      int __r = traits_type::compare(_M_data() + __pos1,
 				     __str.data() + __pos2, __len);
       if (!__r)
 	__r = __n1 - __n2;
@@ -914,7 +914,7 @@ namespace std
   template<typename _CharT, typename _Traits, typename _Alloc>
     int
     basic_string <_CharT, _Traits, _Alloc>::
-    compare(size_type __pos, size_type __n1, const _CharT* __s, 
+    compare(size_type __pos, size_type __n1, const _CharT* __s,
 	    size_type __n2) const
     {
       __glibcxx_requires_string_len(__s, __n2);
@@ -928,36 +928,36 @@ namespace std
     }
 
   // Inhibit implicit instantiations for required instantiations,
-  // which are defined via explicit instantiations elsewhere.  
+  // which are defined via explicit instantiations elsewhere.
   // NB: This syntax is a GNU extension.
 #if _GLIBCXX_EXTERN_TEMPLATE
   extern template class basic_string<char>;
-  extern template 
-    basic_istream<char>& 
+  extern template
+    basic_istream<char>&
     operator>>(basic_istream<char>&, string&);
-  extern template 
-    basic_ostream<char>& 
+  extern template
+    basic_ostream<char>&
     operator<<(basic_ostream<char>&, const string&);
-  extern template 
-    basic_istream<char>& 
+  extern template
+    basic_istream<char>&
     getline(basic_istream<char>&, string&, char);
-  extern template 
-    basic_istream<char>& 
+  extern template
+    basic_istream<char>&
     getline(basic_istream<char>&, string&);
 
 #ifdef _GLIBCXX_USE_WCHAR_T
   extern template class basic_string<wchar_t>;
-  extern template 
-    basic_istream<wchar_t>& 
+  extern template
+    basic_istream<wchar_t>&
     operator>>(basic_istream<wchar_t>&, wstring&);
-  extern template 
-    basic_ostream<wchar_t>& 
+  extern template
+    basic_ostream<wchar_t>&
     operator<<(basic_ostream<wchar_t>&, const wstring&);
-  extern template 
-    basic_istream<wchar_t>& 
+  extern template
+    basic_istream<wchar_t>&
     getline(basic_istream<wchar_t>&, wstring&, wchar_t);
-  extern template 
-    basic_istream<wchar_t>& 
+  extern template
+    basic_istream<wchar_t>&
     getline(basic_istream<wchar_t>&, wstring&);
 #endif
 #endif

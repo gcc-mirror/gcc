@@ -84,7 +84,7 @@ namespace __gnu_norm
 
       _Vector_base(const allocator_type& __a)
       : _Alloc(__a), _M_start(0), _M_finish(0), _M_end_of_storage(0) { }
-      
+
       _Vector_base(size_t __n, const allocator_type& __a)
       : _Alloc(__a)
       {
@@ -92,25 +92,25 @@ namespace __gnu_norm
 	this->_M_finish = this->_M_start;
 	this->_M_end_of_storage = this->_M_start + __n;
       }
-      
-      ~_Vector_base() 
-      { _M_deallocate(this->_M_start, 
+
+      ~_Vector_base()
+      { _M_deallocate(this->_M_start,
 		      this->_M_end_of_storage - this->_M_start); }
 
     public:
       _Tp*           _M_start;
       _Tp*           _M_finish;
       _Tp*           _M_end_of_storage;
-  
+
       _Tp*
       _M_allocate(size_t __n) { return _Alloc::allocate(__n); }
-  
+
       void
       _M_deallocate(_Tp* __p, size_t __n)
       { if (__p) _Alloc::deallocate(__p, __n); }
     };
-  
-  
+
+
   /**
    *  @brief A standard container which offers fixed time access to
    *  individual elements in any order.
@@ -135,25 +135,25 @@ namespace __gnu_norm
     {
       // Concept requirements.
       __glibcxx_class_requires(_Tp, _SGIAssignableConcept)
-  
-      typedef _Vector_base<_Tp, _Alloc>                     _Base;
-      typedef vector<_Tp, _Alloc>                           vector_type;
-  
+
+      typedef _Vector_base<_Tp, _Alloc>			_Base;
+      typedef vector<_Tp, _Alloc>			vector_type;
+
     public:
-      typedef _Tp 						value_type;
-      typedef value_type* 					pointer;
-      typedef const value_type* 				const_pointer;
+      typedef _Tp					value_type;
+      typedef value_type*				pointer;
+      typedef const value_type*				const_pointer;
       typedef __gnu_cxx::__normal_iterator<pointer, vector_type> iterator;
       typedef __gnu_cxx::__normal_iterator<const_pointer, vector_type>
       const_iterator;
-      typedef std::reverse_iterator<const_iterator>    	const_reverse_iterator;
-      typedef std::reverse_iterator<iterator>                reverse_iterator;
-      typedef value_type& 					reference;
-      typedef const value_type& 				const_reference;
-      typedef size_t 					size_type;
-      typedef ptrdiff_t 					difference_type;
-      typedef typename _Base::allocator_type                allocator_type;
-      
+      typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
+      typedef std::reverse_iterator<iterator>		reverse_iterator;
+      typedef value_type&				reference;
+      typedef const value_type&				const_reference;
+      typedef size_t					size_type;
+      typedef ptrdiff_t					difference_type;
+      typedef typename _Base::allocator_type		allocator_type;
+
     protected:
       /** @if maint
        *  These two functions and three data members are all from the
@@ -165,7 +165,7 @@ namespace __gnu_norm
       using _Base::_M_start;
       using _Base::_M_finish;
       using _Base::_M_end_of_storage;
-      
+
     public:
       // [23.2.4.1] construct/copy/destroy
       // (assign() and get_allocator() are also listed in this section)
@@ -175,24 +175,24 @@ namespace __gnu_norm
       explicit
       vector(const allocator_type& __a = allocator_type())
       : _Base(__a) { }
-  
+
       /**
        *  @brief  Create a %vector with copies of an exemplar element.
        *  @param  n  The number of elements to initially create.
        *  @param  value  An element to copy.
-       * 
+       *
        *  This constructor fills the %vector with @a n copies of @a value.
        */
       vector(size_type __n, const value_type& __value,
 	     const allocator_type& __a = allocator_type())
       : _Base(__n, __a)
-      { this->_M_finish = std::uninitialized_fill_n(this->_M_start, 
+      { this->_M_finish = std::uninitialized_fill_n(this->_M_start,
 						    __n, __value); }
-  
+
       /**
        *  @brief  Create a %vector with default elements.
        *  @param  n  The number of elements to initially create.
-       * 
+       *
        *  This constructor fills the %vector with @a n copies of a
        *  default-constructed element.
        */
@@ -201,11 +201,11 @@ namespace __gnu_norm
       : _Base(__n, allocator_type())
       { this->_M_finish = std::uninitialized_fill_n(this->_M_start,
 						    __n, value_type()); }
-      
+
       /**
        *  @brief  %Vector copy constructor.
        *  @param  x  A %vector of identical element and allocator types.
-       * 
+       *
        *  The newly-created %vector uses a copy of the allocation
        *  object used by @a x.  All the elements of @a x are copied,
        *  but any extra memory in
@@ -216,12 +216,12 @@ namespace __gnu_norm
       { this->_M_finish = std::uninitialized_copy(__x.begin(), __x.end(),
 						  this->_M_start);
       }
-  
+
       /**
        *  @brief  Builds a %vector from a range.
        *  @param  first  An input iterator.
        *  @param  last  An input iterator.
-       * 
+       *
        *  Create a %vector consisting of copies of the elements from
        *  [first,last).
        *
@@ -241,7 +241,7 @@ namespace __gnu_norm
 	  typedef typename _Is_integer<_InputIterator>::_Integral _Integral;
 	  _M_initialize_dispatch(__first, __last, _Integral());
 	}
-      
+
       /**
        *  The dtor only erases the elements, and note that if the
        *  elements themselves are pointers, the pointed-to memory is
@@ -249,18 +249,18 @@ namespace __gnu_norm
        *  responsibilty.
        */
       ~vector() { std::_Destroy(this->_M_start, this->_M_finish); }
-  
+
       /**
        *  @brief  %Vector assignment operator.
        *  @param  x  A %vector of identical element and allocator types.
-       * 
+       *
        *  All the elements of @a x are copied, but any extra memory in
        *  @a x (for fast expansion) will not be copied.  Unlike the
        *  copy constructor, the allocator object is not copied.
        */
       vector&
       operator=(const vector& __x);
-  
+
       /**
        *  @brief  Assigns a given value to a %vector.
        *  @param  n  Number of elements to be assigned.
@@ -272,9 +272,9 @@ namespace __gnu_norm
        *  the number of elements assigned.  Old data may be lost.
        */
       void
-      assign(size_type __n, const value_type& __val) 
+      assign(size_type __n, const value_type& __val)
       { _M_fill_assign(__n, __val); }
-  
+
       /**
        *  @brief  Assigns a range to a %vector.
        *  @param  first  An input iterator.
@@ -295,10 +295,10 @@ namespace __gnu_norm
 	  typedef typename _Is_integer<_InputIterator>::_Integral _Integral;
 	  _M_assign_dispatch(__first, __last, _Integral());
 	}
-  
+
       /// Get a copy of the memory allocation object.
       using _Base::get_allocator;
-      
+
       // iterators
       /**
        *  Returns a read/write iterator that points to the first
@@ -307,7 +307,7 @@ namespace __gnu_norm
        */
       iterator
       begin() { return iterator (this->_M_start); }
-      
+
       /**
        *  Returns a read-only (constant) iterator that points to the
        *  first element in the %vector.  Iteration is done in ordinary
@@ -315,7 +315,7 @@ namespace __gnu_norm
        */
       const_iterator
       begin() const { return const_iterator (this->_M_start); }
-      
+
       /**
        *  Returns a read/write iterator that points one past the last
        *  element in the %vector.  Iteration is done in ordinary
@@ -323,7 +323,7 @@ namespace __gnu_norm
        */
       iterator
       end() { return iterator (this->_M_finish); }
-      
+
       /**
        *  Returns a read-only (constant) iterator that points one past
        *  the last element in the %vector.  Iteration is done in
@@ -331,7 +331,7 @@ namespace __gnu_norm
        */
       const_iterator
       end() const { return const_iterator (this->_M_finish); }
-      
+
       /**
        *  Returns a read/write reverse iterator that points to the
        *  last element in the %vector.  Iteration is done in reverse
@@ -339,7 +339,7 @@ namespace __gnu_norm
        */
       reverse_iterator
       rbegin() { return reverse_iterator(end()); }
-      
+
       /**
        *  Returns a read-only (constant) reverse iterator that points
        *  to the last element in the %vector.  Iteration is done in
@@ -347,7 +347,7 @@ namespace __gnu_norm
        */
       const_reverse_iterator
       rbegin() const { return const_reverse_iterator(end()); }
-      
+
       /**
        *  Returns a read/write reverse iterator that points to one
        *  before the first element in the %vector.  Iteration is done
@@ -355,7 +355,7 @@ namespace __gnu_norm
        */
       reverse_iterator
       rend() { return reverse_iterator(begin()); }
-      
+
       /**
        *  Returns a read-only (constant) reverse iterator that points
        *  to one before the first element in the %vector.  Iteration
@@ -363,16 +363,16 @@ namespace __gnu_norm
        */
       const_reverse_iterator
       rend() const { return const_reverse_iterator(begin()); }
-  
+
       // [23.2.4.2] capacity
       /**  Returns the number of elements in the %vector.  */
       size_type
       size() const { return size_type(end() - begin()); }
-      
+
       /**  Returns the size() of the largest possible %vector.  */
       size_type
       max_size() const { return size_type(-1) / sizeof(value_type); }
-      
+
       /**
        *  @brief  Resizes the %vector to the specified number of elements.
        *  @param  new_size  Number of elements the %vector should contain.
@@ -392,7 +392,7 @@ namespace __gnu_norm
 	else
 	  insert(end(), __new_size - size(), __x);
       }
-      
+
       /**
        *  @brief  Resizes the %vector to the specified number of elements.
        *  @param  new_size  Number of elements the %vector should contain.
@@ -405,7 +405,7 @@ namespace __gnu_norm
        */
       void
       resize(size_type __new_size) { resize(__new_size, value_type()); }
-      
+
       /**
        *  Returns the total number of elements that the %vector can
        *  hold before needing to allocate more memory.
@@ -413,14 +413,14 @@ namespace __gnu_norm
       size_type
       capacity() const
       { return size_type(const_iterator(this->_M_end_of_storage) - begin()); }
-      
+
       /**
        *  Returns true if the %vector is empty.  (Thus begin() would
        *  equal end().)
        */
       bool
       empty() const { return begin() == end(); }
-      
+
       /**
        *  @brief  Attempt to preallocate enough memory for specified number of
        *          elements.
@@ -440,7 +440,7 @@ namespace __gnu_norm
        */
       void
       reserve(size_type __n);
-      
+
       // element access
       /**
        *  @brief  Subscript access to the data contained in the %vector.
@@ -455,7 +455,7 @@ namespace __gnu_norm
        */
       reference
       operator[](size_type __n) { return *(begin() + __n); }
-      
+
       /**
        *  @brief  Subscript access to the data contained in the %vector.
        *  @param n The index of the element for which data should be
@@ -469,7 +469,7 @@ namespace __gnu_norm
        */
       const_reference
       operator[](size_type __n) const { return *(begin() + __n); }
-  
+
     protected:
       /// @if maint Safety check used only from at().  @endif
       void
@@ -478,7 +478,7 @@ namespace __gnu_norm
 	if (__n >= this->size())
 	  __throw_out_of_range(__N("vector::_M_range_check"));
       }
-      
+
     public:
       /**
        *  @brief  Provides access to the data contained in the %vector.
@@ -493,7 +493,7 @@ namespace __gnu_norm
        */
       reference
       at(size_type __n) { _M_range_check(__n); return (*this)[__n]; }
-      
+
       /**
        *  @brief  Provides access to the data contained in the %vector.
        *  @param n The index of the element for which data should be
@@ -507,35 +507,35 @@ namespace __gnu_norm
        */
       const_reference
       at(size_type __n) const { _M_range_check(__n); return (*this)[__n]; }
-      
+
       /**
        *  Returns a read/write reference to the data at the first
        *  element of the %vector.
        */
       reference
       front() { return *begin(); }
-      
+
       /**
        *  Returns a read-only (constant) reference to the data at the first
        *  element of the %vector.
        */
       const_reference
       front() const { return *begin(); }
-      
+
       /**
        *  Returns a read/write reference to the data at the last
        *  element of the %vector.
        */
       reference
       back() { return *(end() - 1); }
-      
+
       /**
        *  Returns a read-only (constant) reference to the data at the
        *  last element of the %vector.
        */
       const_reference
       back() const { return *(end() - 1); }
-  
+
       // [23.2.4.3] modifiers
       /**
        *  @brief  Add data to the end of the %vector.
@@ -558,7 +558,7 @@ namespace __gnu_norm
 	else
 	  _M_insert_aux(end(), __x);
       }
-      
+
       /**
        *  @brief  Removes last element.
        *
@@ -574,7 +574,7 @@ namespace __gnu_norm
 	--this->_M_finish;
 	std::_Destroy(this->_M_finish);
       }
-      
+
       /**
        *  @brief  Inserts given value into %vector before specified iterator.
        *  @param  position  An iterator into the %vector.
@@ -605,7 +605,7 @@ namespace __gnu_norm
       void
       insert(iterator __position, size_type __n, const value_type& __x)
       { _M_fill_insert(__position, __n, __x); }
-      
+
       /**
        *  @brief  Inserts a range into the %vector.
        *  @param  position  An iterator into the %vector.
@@ -622,14 +622,14 @@ namespace __gnu_norm
        */
       template<typename _InputIterator>
         void
-        insert(iterator __position, _InputIterator __first, 
+        insert(iterator __position, _InputIterator __first,
 	       _InputIterator __last)
         {
 	  // Check whether it's an integral type.  If so, it's not an iterator.
 	  typedef typename _Is_integer<_InputIterator>::_Integral _Integral;
 	  _M_insert_dispatch(__position, __first, __last, _Integral());
 	}
-      
+
       /**
        *  @brief  Remove element at given position.
        *  @param  position  Iterator pointing to element to be erased.
@@ -647,7 +647,7 @@ namespace __gnu_norm
        */
       iterator
       erase(iterator __position);
-  
+
       /**
        *  @brief  Remove a range of elements.
        *  @param  first  Iterator pointing to the first element to be erased.
@@ -668,7 +668,7 @@ namespace __gnu_norm
        */
       iterator
       erase(iterator __first, iterator __last);
-      
+
       /**
        *  @brief  Swaps data with another %vector.
        *  @param  x  A %vector of the same element and allocator types.
@@ -685,7 +685,7 @@ namespace __gnu_norm
 	std::swap(this->_M_finish, __x._M_finish);
 	std::swap(this->_M_end_of_storage, __x._M_end_of_storage);
       }
-      
+
       /**
        *  Erases all the elements.  Note that this function only erases the
        *  elements, and that if the elements themselves are pointers, the
@@ -694,7 +694,7 @@ namespace __gnu_norm
        */
       void
       clear() { erase(begin(), end()); }
-      
+
     protected:
       /**
        *  @if maint
@@ -719,10 +719,10 @@ namespace __gnu_norm
 	      __throw_exception_again;
 	    }
 	}
-      
-      
+
+
       // Internal constructor functions follow.
-      
+
       // Called by the range constructor to implement [23.1.1]/9
       template<typename _Integer>
         void
@@ -730,10 +730,10 @@ namespace __gnu_norm
         {
 	  this->_M_start = _M_allocate(__n);
 	  this->_M_end_of_storage = this->_M_start + __n;
-	  this->_M_finish = std::uninitialized_fill_n(this->_M_start, 
+	  this->_M_finish = std::uninitialized_fill_n(this->_M_start,
 						      __n, __value);
 	}
-      
+
       // Called by the range constructor to implement [23.1.1]/9
       template<typename _InputIterator>
         void
@@ -744,7 +744,7 @@ namespace __gnu_norm
 	    _IterCategory;
 	  _M_range_initialize(__first, __last, _IterCategory());
 	}
-      
+
       // Called by the second initialize_dispatch above
       template<typename _InputIterator>
         void
@@ -754,10 +754,10 @@ namespace __gnu_norm
 	  for ( ; __first != __last; ++__first)
 	    push_back(*__first);
 	}
-      
+
       // Called by the second initialize_dispatch above
       template<typename _ForwardIterator>
-        void 
+        void
         _M_range_initialize(_ForwardIterator __first,
 			    _ForwardIterator __last, forward_iterator_tag)
         {
@@ -767,11 +767,11 @@ namespace __gnu_norm
 	  this->_M_finish = std::uninitialized_copy(__first, __last,
 						    this->_M_start);
 	}
-      
-      
+
+
       // Internal assign functions follow.  The *_aux functions do the actual
       // assignment work for the range versions.
-      
+
       // Called by the range assign to implement [23.1.1]/9
       template<typename _Integer>
         void
@@ -780,38 +780,38 @@ namespace __gnu_norm
 	  _M_fill_assign(static_cast<size_type>(__n),
 			 static_cast<value_type>(__val));
 	}
-      
+
       // Called by the range assign to implement [23.1.1]/9
       template<typename _InputIterator>
         void
-        _M_assign_dispatch(_InputIterator __first, _InputIterator __last, 
+        _M_assign_dispatch(_InputIterator __first, _InputIterator __last,
 			   __false_type)
         {
 	  typedef typename iterator_traits<_InputIterator>::iterator_category
 	    _IterCategory;
 	  _M_assign_aux(__first, __last, _IterCategory());
 	}
-      
+
       // Called by the second assign_dispatch above
       template<typename _InputIterator>
-        void 
+        void
         _M_assign_aux(_InputIterator __first, _InputIterator __last,
 		      input_iterator_tag);
-  
+
       // Called by the second assign_dispatch above
       template<typename _ForwardIterator>
-        void 
+        void
         _M_assign_aux(_ForwardIterator __first, _ForwardIterator __last,
 		      forward_iterator_tag);
-  
+
       // Called by assign(n,t), and the range assign when it turns out
       // to be the same thing.
       void
       _M_fill_assign(size_type __n, const value_type& __val);
-  
-      
+
+
       // Internal insert functions follow.
-      
+
       // Called by the range insert to implement [23.1.1]/9
       template<typename _Integer>
         void
@@ -821,7 +821,7 @@ namespace __gnu_norm
 	  _M_fill_insert(__pos, static_cast<size_type>(__n),
 			 static_cast<value_type>(__val));
 	}
-      
+
       // Called by the range insert to implement [23.1.1]/9
       template<typename _InputIterator>
         void
@@ -832,30 +832,30 @@ namespace __gnu_norm
 	    _IterCategory;
 	  _M_range_insert(__pos, __first, __last, _IterCategory());
 	}
-      
+
       // Called by the second insert_dispatch above
       template<typename _InputIterator>
         void
-        _M_range_insert(iterator __pos, _InputIterator __first, 
+        _M_range_insert(iterator __pos, _InputIterator __first,
 			_InputIterator __last, input_iterator_tag);
-      
+
       // Called by the second insert_dispatch above
       template<typename _ForwardIterator>
         void
-        _M_range_insert(iterator __pos, _ForwardIterator __first, 
+        _M_range_insert(iterator __pos, _ForwardIterator __first,
 			_ForwardIterator __last, forward_iterator_tag);
-      
+
       // Called by insert(p,n,x), and the range insert when it turns out to be
       // the same thing.
       void
       _M_fill_insert(iterator __pos, size_type __n, const value_type& __x);
-      
+
       // Called by insert(p,x)
       void
       _M_insert_aux(iterator __position, const value_type& __x);
     };
-  
-  
+
+
   /**
    *  @brief  Vector equality comparison.
    *  @param  x  A %vector.
@@ -873,7 +873,7 @@ namespace __gnu_norm
       return __x.size() == __y.size() &&
              std::equal(__x.begin(), __x.end(), __y.begin());
     }
-  
+
   /**
    *  @brief  Vector ordering relation.
    *  @param  x  A %vector.
@@ -892,31 +892,31 @@ namespace __gnu_norm
       return std::lexicographical_compare(__x.begin(), __x.end(),
 					  __y.begin(), __y.end());
     }
-  
+
   /// Based on operator==
   template<typename _Tp, typename _Alloc>
     inline bool
     operator!=(const vector<_Tp,_Alloc>& __x, const vector<_Tp,_Alloc>& __y)
     { return !(__x == __y); }
-  
+
   /// Based on operator<
   template<typename _Tp, typename _Alloc>
     inline bool
     operator>(const vector<_Tp,_Alloc>& __x, const vector<_Tp,_Alloc>& __y)
     { return __y < __x; }
-  
+
   /// Based on operator<
   template<typename _Tp, typename _Alloc>
     inline bool
     operator<=(const vector<_Tp,_Alloc>& __x, const vector<_Tp,_Alloc>& __y)
     { return !(__y < __x); }
-  
+
   /// Based on operator<
   template<typename _Tp, typename _Alloc>
     inline bool
     operator>=(const vector<_Tp,_Alloc>& __x, const vector<_Tp,_Alloc>& __y)
     { return !(__x < __y); }
-  
+
   /// See std::vector::swap().
   template<typename _Tp, typename _Alloc>
     inline void
