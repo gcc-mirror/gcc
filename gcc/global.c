@@ -343,22 +343,42 @@ global_alloc (FILE *file)
 #ifdef ELIMINABLE_REGS
   for (i = 0; i < ARRAY_SIZE (eliminables); i++)
     {
-      SET_HARD_REG_BIT (eliminable_regset, eliminables[i].from);
+      bool cannot_elim
+	= (! CAN_ELIMINATE (eliminables[i].from, eliminables[i].to)
+	   || (eliminables[i].to == STACK_POINTER_REGNUM && need_fp));
 
-      if (! CAN_ELIMINATE (eliminables[i].from, eliminables[i].to)
-	  || (eliminables[i].to == STACK_POINTER_REGNUM && need_fp))
-	SET_HARD_REG_BIT (no_global_alloc_regs, eliminables[i].from);
+      if (!regs_asm_clobbered[eliminables[i].from])
+	{
+	  SET_HARD_REG_BIT (eliminable_regset, eliminables[i].from);
+
+	  if (cannot_elim)
+	    SET_HARD_REG_BIT (no_global_alloc_regs, eliminables[i].from);
+	}
+      else if (cannot_elim)
+	error ("%s cannot be used in asm here",
+	       reg_names[eliminables[i].from]);
     }
 #if FRAME_POINTER_REGNUM != HARD_FRAME_POINTER_REGNUM
-  SET_HARD_REG_BIT (eliminable_regset, HARD_FRAME_POINTER_REGNUM);
-  if (need_fp)
-    SET_HARD_REG_BIT (no_global_alloc_regs, HARD_FRAME_POINTER_REGNUM);
+  if (!regs_asm_clobbered[HARD_FRAME_POINTER_REGNUM])
+    {
+      SET_HARD_REG_BIT (eliminable_regset, HARD_FRAME_POINTER_REGNUM);
+      if (need_fp)
+	SET_HARD_REG_BIT (no_global_alloc_regs, HARD_FRAME_POINTER_REGNUM);
+    }
+  else if (need_fp)
+    error ("%s cannot be used in asm here",
+	   reg_names[HARD_FRAME_POINTER_REGNUM]);
 #endif
 
 #else
-  SET_HARD_REG_BIT (eliminable_regset, FRAME_POINTER_REGNUM);
-  if (need_fp)
-    SET_HARD_REG_BIT (no_global_alloc_regs, FRAME_POINTER_REGNUM);
+  if (!regs_asm_clobbered[FRAME_POINTER_REGNUM])
+    {
+      SET_HARD_REG_BIT (eliminable_regset, FRAME_POINTER_REGNUM);
+      if (need_fp)
+	SET_HARD_REG_BIT (no_global_alloc_regs, FRAME_POINTER_REGNUM);
+    }
+  else if (need_fp)
+    error ("%s cannot be used in asm here", reg_names[FRAME_POINTER_REGNUM]);
 #endif
 
   /* Track which registers have already been used.  Start with registers

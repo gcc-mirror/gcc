@@ -170,6 +170,12 @@ CC_STATUS cc_prev_status;
 
 char regs_ever_live[FIRST_PSEUDO_REGISTER];
 
+/* Like regs_ever_live, but 1 if a reg is set or clobbered from an asm.
+   Unlike regs_ever_live, elements of this array corresponding to
+   eliminable regs like the frame pointer are set if an asm sets them.  */
+
+char regs_asm_clobbered[FIRST_PSEUDO_REGISTER];
+
 /* Nonzero means current function must be given a frame pointer.
    Initialized in function.c to 0.  Set only in reload1.c as per
    the needs of the function.  */
