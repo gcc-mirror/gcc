@@ -641,7 +641,7 @@ scan_linker_output (fname)
 	  /* We need to check for certain error keywords here, or we would
 	     mistakenly use GNU ld's "In function `foo':" message.  */
 	  if (q && (strstr (oldq, "ndefined")
-		    || strstr (old, "nresolved")
+		    || strstr (oldq, "nresolved")
 		    || strstr (oldq, "ultiple")))
 	    {
 	      *q = 0;
