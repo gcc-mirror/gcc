@@ -124,9 +124,11 @@ static int delete_labelref_insn		PROTO((rtx, rtx, int));
 static void mark_modified_reg		PROTO((rtx, rtx));
 static void redirect_tablejump		PROTO((rtx, rtx));
 static void jump_optimize_1		PROTO ((rtx, int, int, int, int));
-#ifndef HAVE_cc0
+#if ! defined(HAVE_cc0) && ! defined(HAVE_conditional_arithmetic)
 static rtx find_insert_position         PROTO((rtx, rtx));
 #endif
+static int returnjump_p_1	        PROTO((rtx *, void *));
+static void delete_prior_computation    PROTO((rtx, rtx));
 
 /* Main external entry point into the jump optimizer.  See comments before
    jump_optimize_1 for descriptions of the arguments.  */
@@ -5450,7 +5452,7 @@ rtx_equal_for_thread_p (x, y, yinsn)
 }
 
 
-#ifndef HAVE_cc0
+#if !defined(HAVE_cc0) && !defined(HAVE_conditional_arithmetic)
 /* Return the insn that NEW can be safely inserted in front of starting at
    the jump insn INSN.  Return 0 if it is not safe to do this jump
    optimization.  Note that NEW must contain a single set. */

@@ -56,8 +56,10 @@ typedef const PTR_T CPTR_T;
 #define uint	unsigned int
 #define ulong	unsigned long
 
-
-static void
+void fatal PROTO ((const char *)) ATTRIBUTE_NORETURN;
+void fancy_abort PROTO ((void)) ATTRIBUTE_NORETURN;
+  
+void
 fatal(s)
   const char *s;
 {
@@ -1438,6 +1440,8 @@ read_tfile __proto((void))
 }
 
 
+
+extern int main PROTO ((int, char **));
 
 int
 main (argc, argv)

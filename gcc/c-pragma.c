@@ -235,9 +235,13 @@ handle_pragma_token (string, token)
 {
   static enum pragma_state state = ps_start;
   static enum pragma_state type;
+#ifdef HANDLE_PRAGMA_WEAK
   static char * name;
   static char * value;
+#endif
+#if defined(HANDLE_PRAGMA_PACK) || defined(HANDLE_PRAGMA_PACK_PUSH_POP)
   static int align;
+#endif
   static tree id;
 
   /* If we have reached the end of the #pragma directive then

@@ -177,7 +177,9 @@ static void mark_constants		PROTO((rtx));
 static int output_addressed_constants	PROTO((tree));
 static void output_after_function_constants PROTO((void));
 static void output_constructor		PROTO((tree, int));
+#ifdef ASM_WEAKEN_LABEL
 static void remove_from_pending_weak_list	PROTO ((char *));
+#endif
 #ifdef ASM_OUTPUT_BSS
 static void asm_output_bss		PROTO((FILE *, tree, char *, int, int));
 #endif
@@ -188,6 +190,7 @@ static void asm_output_aligned_bss	PROTO((FILE *, tree, char *, int, int));
 #endif /* BSS_SECTION_ASM_OP */
 static void mark_pool_constant          PROTO((struct pool_constant *));
 static void mark_pool_sym_hash_table	PROTO((struct pool_sym **));
+static void mark_const_hash_entry	PROTO((void *));
 
 static enum in_section { no_section, in_text, in_data, in_named
 #ifdef BSS_SECTION_ASM_OP
@@ -4445,6 +4448,7 @@ weak_finish ()
 /* Remove NAME from the pending list of weak symbols.  This prevents
    the compiler from emitting multiple .weak directives which confuses
    some assemblers.  */
+#ifdef ASM_WEAKEN_LABEL
 static void
 remove_from_pending_weak_list (name)
      char *name ATTRIBUTE_UNUSED;
@@ -4461,6 +4465,7 @@ remove_from_pending_weak_list (name)
     }
 #endif
 }
+#endif
 
 void
 assemble_alias (decl, target)

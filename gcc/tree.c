@@ -209,7 +209,7 @@ int tree_node_counts[(int)all_kinds];
 int tree_node_sizes[(int)all_kinds];
 int id_string_size = 0;
 
-const char *tree_node_kind_names[] = {
+static const char * const tree_node_kind_names[] = {
   "decls",
   "types",
   "blocks",
@@ -272,8 +272,7 @@ static void set_type_quals PROTO((tree, int));
 static void append_random_chars PROTO((char *));
 static void build_real_from_int_cst_1 PROTO((PTR));
 static void mark_type_hash PROTO ((void *));
-
-void gcc_obstack_init ();
+static void fix_sizetype PROTO ((tree));
 
 /* If non-null, a language specific helper for unsave_expr_now. */
 
@@ -332,8 +331,8 @@ gcc_obstack_init (obstack)
 #define OBSTACK_CHUNK_FREE free
 #endif
   _obstack_begin (obstack, OBSTACK_CHUNK_SIZE, 0,
-		  (void *(*) ()) OBSTACK_CHUNK_ALLOC,
-		  (void (*) ()) OBSTACK_CHUNK_FREE);
+		  (void *(*) PROTO ((long))) OBSTACK_CHUNK_ALLOC,
+		  (void (*) PROTO ((void *))) OBSTACK_CHUNK_FREE);
 }
 
 /* Save all variables describing the current status into the structure
@@ -2046,7 +2045,7 @@ tree_cons (purpose, value, chain)
   else
     {
       node = (tree) obstack_alloc (current_obstack, sizeof (struct tree_list));
-      bzero (node, sizeof (struct tree_common));
+      memset (node, 0, sizeof (struct tree_common));
     }
 
 #ifdef GATHER_STATISTICS

@@ -1828,7 +1828,8 @@ offsettable_address_p (strictp, mode, y)
   register rtx z;
   rtx y1 = y;
   rtx *y2;
-  int (*addressp) () = (strictp ? strict_memory_address_p : memory_address_p);
+  int (*addressp) PROTO ((enum machine_mode, rtx)) =
+    (strictp ? strict_memory_address_p : memory_address_p);
 
   if (CONSTANT_ADDRESS_P (y))
     return 1;
@@ -2062,7 +2063,7 @@ preprocess_constraints ()
 {
   int i;
 
-  bzero (recog_op_alt, sizeof recog_op_alt);
+  memset (recog_op_alt, 0, sizeof recog_op_alt);
   for (i = 0; i < recog_data.n_operands; i++)
     {
       int j;

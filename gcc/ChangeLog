@@ -1,3 +1,30 @@
+Tue Sep 14 14:14:28 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* c-pragma.c (handle_pragma_token): Wrap variables `name' and
+	`value' in HANDLE_PRAGMA_WEAK.  Wrap variable `align' in
+	HANDLE_PRAGMA_PACK||HANDLE_PRAGMA_PACK_PUSH_POP.
+
+	* genrecog.c (make_insn_sequence): Call memset, not bzero.
+
+	* jump.c (find_insert_position): Don't declare or define unless
+	!HAVE_conditional_arithmetic.
+	(returnjump_p_1, delete_prior_computation): Add static prototypes.
+
+	* mips-tdump.c (fatal, fancy_abort, main): Add extern prototypes.
+	
+	* recog.c (offsettable_address_p): Prototype function pointer.
+	(preprocess_constraints): Call memset, not bzero.
+	
+	* tree.c (tree_node_kind_names): Constify a char*.  Make static.
+	(gcc_obstack_init): Don't declare.
+	(fix_sizetype): Add static prototype.
+	(gcc_obstack_init): Use prototype casts in call to _obstack_begin.
+	(tree_cons): Call memset, not bzero.
+
+	* varasm.c (remove_from_pending_weak_list): Wrap declaration and
+	definition in macro ASM_WEAKEN_LABEL.
+	(mark_const_hash_entry): Add static prototype.
+
 Tue Sep 14 12:22:50 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* c-lex.c (handle_generic_pragma): Remove unused variable `c'.
