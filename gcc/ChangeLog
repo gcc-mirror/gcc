@@ -1,3 +1,7 @@
+2001-11-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* doc/hostconfig.texi (DUMPFILE_FORMAT): Move into the table.
+
 Mon Nov 19 16:57:44 2001  Douglas B. Rupp  <rupp@gnat.com>
 
 	* toplev.c (DUMPFILE_FORMAT): Define default.
