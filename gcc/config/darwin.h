@@ -98,12 +98,13 @@ Boston, MA 02111-1307, USA.  */
 
 #undef	STARTFILE_SPEC
 #define STARTFILE_SPEC  \
-  "%{pg:%{static:-lgcrt0.o}%{!static:-lgcrt1.o -lcrtbegin.o}} \
-    %{!pg:%{static:-lcrt0.o}%{!static:-lcrt1.o -lcrtbegin.o}}"
+  "%{pg:%{static:-lgcrt0.o}%{!static:-lgcrt1.o} -lcrt2.o} \
+    %{!pg:%{static:-lcrt0.o}%{!static:-lcrt1.o} -lcrt2.o}"
 
-#undef	ENDFILE_SPEC
-#define ENDFILE_SPEC \
-  "-lcrtend.o"
+/* The native Darwin linker doesn't necessarily place files in the order
+   that they're specified on the link line.  Thus, it is pointless
+   to put anything in ENDFILE_SPEC.  */
+/* #define ENDFILE_SPEC "" */
 
 #undef	DOLLARS_IN_IDENTIFIERS
 #define DOLLARS_IN_IDENTIFIERS 2

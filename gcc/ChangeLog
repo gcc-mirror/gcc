@@ -1,3 +1,26 @@
+2002-11-05  Geoffrey Keating  <geoffk@apple.com>
+
+	* config.gcc: Don't create crtbegin, crtend on Darwin; do create
+	crt2.o.  Rearrange t-darwin makefiles.
+	* crtstuff.c [OBJECT_FORMAT_MACHO]: Delete.
+	* unwind-dw2-fde-darwin.c: New.
+	* unwind-dw2-fde-glibc.c: Correct comment.
+	* unwind-dw2-fde.c (__register_frame_info_bases)
+	[DWARF2_OBJECT_END_PTR_EXTENSION]: Clear fde_end.
+	(classify_object_over_fdes): Use last_fde.
+	(add_fdes): Likewise.
+	(linear_search_fdes): Likewise.
+	* unwind-dw2-fde.h (struct object)
+	[DWARF2_OBJECT_END_PTR_EXTENSION]: Add fde_end field.
+	(last_fde): New.
+	* config/darwin.h (STARTFILE_SPEC): Include crt2.o not crtbegin.o.
+	(ENDFILE_SPEC): No crtend.o.
+	* config/t-darwin: New.
+	* config/i386/t-darwin: Delete.
+	* config/darwin-crt2.c: New.
+	* config/rs6000/t-darwin: Delete contents duplicated in t-rs6000
+	or config/t-darwin.
+
 2002-11-06  David Edelsohn  <edelsohn@gnu.org>
 
 	PR target/8480
