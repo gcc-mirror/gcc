@@ -1,5 +1,9 @@
 2003-12-15  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* class.c (add_method): Disallow destructor for java classes.
+	* decl.c (xref_basetypes): Check java class inheritance.
+	* decl2.c (check_java_method): Skip artificial params.
+
  	PR c++/13241
 	C++ ABI change. Mangling of symbols in expressions.
 	* mangle.c (write_mangled_name): Add top_level flag. Rework for
