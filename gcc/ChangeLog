@@ -1,3 +1,8 @@
+Fri Jan 25 22:42:49 CET 2002  Jan Hubicka  <jh@suse.cz>
+
+	* unroll.c (unroll_loop): Lower final_value to nonmemory operand;
+	avoid it's copies.
+
 Fri Jan 25 08:26:19 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* builtins.c (expand_builtin_strncpy): Use integer_zerop instead
