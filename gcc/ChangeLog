@@ -1,3 +1,7 @@
+Sun Mar 14 01:15:06 PST 1999 Jeff Law  (law@cygnus.com)
+
+	* version.c: Bump for snapshot.
+
 Sat Mar 13 17:37:18 1999  Richard Henderson  <rth@cygnus.com>
 
 	* haifa-sched.c (sched_analyze_1): Only clear reg_last_uses on a SET.
