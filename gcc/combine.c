@@ -5120,6 +5120,16 @@ make_extraction (mode, inner, pos, pos_rtx, len,
       && ! in_compare && ! spans_byte && unsignedp)
     return 0;
 
+  /* Unless we are allowed to span bytes, reject this if we would be
+     spanning bytes or if the position is not a constant and the length
+     is not 1.  In all other cases, we would only be going outside
+     out object in cases when an original shift would have been
+     undefined.  */
+  if (! spans_byte
+      && ((pos_rtx == 0 && pos + len > GET_MODE_BITSIZE (is_mode))
+	  || (pos_rtx != 0 && len != 1)))
+    return 0;
+
   /* Get the mode to use should INNER be a MEM, the mode for the position,
      and the mode for the result.  */
 #ifdef HAVE_insv
