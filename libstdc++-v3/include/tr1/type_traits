@@ -26,7 +26,7 @@
 #define _TYPE_TRAITS 1
 
 #include <bits/c++config.h>
-#include <cstddef>
+#include <tr1/type_traits_fwd.h>
 
 // namespace std::tr1
 namespace std
@@ -120,32 +120,15 @@ namespace tr1
     : public true_type { };
   
   template<typename _Tp>
-    struct is_member_object_pointer;
-  
-  template<typename _Tp>
-    struct is_member_function_pointer;   
-
-  template<typename _Tp>
-    struct is_enum;
-  
-  template<typename _Tp>
-    struct is_union;
-  
-  template<typename _Tp>
-    struct is_class;
-
-  template<typename _Tp>
     struct __is_function_helper
     : public __sfinae_types
     {
     private:
       template<typename>
-        static __one
-        __test(...);
+        static __one __test(...);
 
       template<typename _Up>
-        static __two
-        __test(_Up (*) [1]);
+        static __two __test(_Up(*)[1]);
     
     public:
       static const bool __value = sizeof(__test<_Tp>(0)) == 1;
@@ -179,24 +162,24 @@ namespace tr1
     { };
 
   template<typename _Tp>
-    struct is_member_pointer
-    : public integral_constant<bool,
-			       (is_member_object_pointer<_Tp>::value
-				|| is_member_function_pointer<_Tp>::value)>
-    { };
-  
-  template<typename _Tp>
     struct is_scalar
     : public integral_constant<bool, (is_arithmetic<_Tp>::value
 				      || is_enum<_Tp>::value
 				      || is_pointer<_Tp>::value
 				      || is_member_pointer<_Tp>::value)>
     { };
-  
+
   template<typename _Tp>
     struct is_compound
     : public integral_constant<bool, !is_fundamental<_Tp>::value> { };
-   
+
+  template<typename _Tp>
+    struct is_member_pointer
+    : public integral_constant<bool,
+			       (is_member_object_pointer<_Tp>::value
+				|| is_member_function_pointer<_Tp>::value)>
+    { };
+  
   /// @brief  type properties [4.5.3].
   template<typename>
     struct is_const
@@ -214,51 +197,9 @@ namespace tr1
     struct is_volatile<_Tp volatile>
     : public true_type { };
 
-  template<typename _Tp>
-    struct is_pod;
-  
-  template<typename _Tp>
-    struct is_empty;
-  
-  template<typename _Tp>
-    struct is_polymorphic;
-  
-  template<typename _Tp>
-    struct is_abstract;
-  
-  template<typename _Tp>
-    struct has_trivial_constructor;
-  
-  template<typename _Tp>
-    struct has_trivial_copy;
-
-  template<typename _Tp>
-    struct has_trivial_assign;
-  
-  template<typename _Tp>
-    struct has_trivial_destructor;
-  
-  template<typename _Tp>
-    struct has_nothrow_constructor;
-  
-  template<typename _Tp>
-    struct has_nothrow_copy;
-
-  template<typename _Tp>
-    struct has_nothrow_assign;
-  
-  template<typename _Tp>
+  template<typename>
     struct has_virtual_destructor
     : public false_type { };
-  
-  template<typename _Tp>
-    struct is_signed;
-  
-  template<typename _Tp>
-    struct is_unsigned;
-   
-  template<typename _Tp>
-    struct alignment_of;
   
   template<typename>
     struct rank
@@ -272,7 +213,7 @@ namespace tr1
     struct rank<_Tp[]>
     : public integral_constant<std::size_t, 1 + rank<_Tp>::value> { };
    
-  template<typename, unsigned = 0>
+  template<typename, unsigned>
     struct extent
     : public integral_constant<std::size_t, 0> { };
   
@@ -298,12 +239,6 @@ namespace tr1
   template<typename _Tp>
     struct is_same<_Tp, _Tp>
     : public true_type { };
-
-  template<typename _From, typename _To>
-    struct is_convertible;
-  
-  template<typename _Base, typename _Derived>
-    struct is_base_of;
 
   /// @brief  const-volatile modifications [4.7.1].
   template<typename _Tp>
@@ -403,8 +338,6 @@ namespace tr1
     { typedef typename remove_reference<_Tp>::type*     type; };
 
   /// @brief  other transformations [4.8].
-  template<std::size_t _Len, std::size_t _Align>
-    struct aligned_storage;
 
 #undef _DEFINE_SPEC_HELPER
 #undef _DEFINE_SPEC

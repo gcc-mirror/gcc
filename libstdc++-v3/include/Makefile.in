@@ -449,7 +449,8 @@ tr1_headers = \
 	${tr1_srcdir}/functional \
 	${tr1_srcdir}/tuple \
 	${tr1_srcdir}/utility \
-	${tr1_srcdir}/type_traits
+	${tr1_srcdir}/type_traits \
+	${tr1_srcdir}/type_traits_fwd.h
 
 
 # This is the common subset of files that all three "C" header models use.

@@ -1,3 +1,10 @@
+2004-12-22  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1/type_traits_fwd.h: New, forward declarations.
+	* include/tr1/type_traits: Clean-up.
+	* include/Makefile.am: Add.
+	* include/Makefile.in: Regenerate.
+
 2004-12-20  Paolo Carlini  <pcarlini@suse.de>
 
 	* testsuite/27_io/basic_istream/peek/wchar_t/1.cc: New.
