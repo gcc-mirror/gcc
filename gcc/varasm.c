@@ -1690,7 +1690,7 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
 
   if (!dont_output_data)
     {
-      if (DECL_INITIAL (decl))
+      if (DECL_INITIAL (decl) && DECL_INITIAL (decl) != error_mark_node)
 	/* Output the actual data.  */
 	output_constant (DECL_INITIAL (decl),
 			 tree_low_cst (DECL_SIZE_UNIT (decl), 1),
