@@ -22049,8 +22049,6 @@ texinfo: TexinfoDoclet.class
 	javadoc -outfile $(srcdir)/doc/java-util-jar.texi -doclet TexinfoDoclet -sourcepath .:$(srcdir) $(srcdir)/java/util/jar/*.java
 	javadoc -outfile $(srcdir)/doc/java-util-zip.texi -doclet TexinfoDoclet -sourcepath .:$(srcdir) $(srcdir)/java/util/zip/*.java
 
--include deps.mk
-
 all-recursive: libgcj-@gcc_version@.jar $(nat_headers) $(xlib_nat_headers)
 
 # Multilib support.
