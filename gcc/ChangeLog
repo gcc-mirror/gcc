@@ -7,6 +7,8 @@
 
 2003-12-03  James E Wilson  <wilson@specifixinc.com>
 
+	* gcc.c (init_spec): Pass -lunwind to init_gcc_specs in eh_name.
+
 	* gcc-page.c (extra_order_size_tab): Correct comment.
 
 2003-12-03  Kazu Hirata  <kazu@cs.umass.edu>

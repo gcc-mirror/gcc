@@ -302,13 +302,6 @@ lang_specific_driver (int *in_argc, const char *const **in_argv,
     {
       arglist[j++] = saw_profile_flag ? LIBSTDCXX_PROFILE : LIBSTDCXX;
       added_libraries++;
-#ifdef USE_LIBUNWIND_EXCEPTIONS
-# ifndef LIBUNWIND
-#  define LIBUNWIND "-lunwind"
-# endif
-      arglist[j++] = LIBUNWIND;
-      added_libraries++;
-#endif
     }
   if (saw_math)
     arglist[j++] = saw_math;

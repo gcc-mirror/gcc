@@ -1,3 +1,8 @@
+2003-12-03  James E Wilson  <wilson@specifixinc.com>
+
+	* g++spec.c (lang_specific_driver): Delete USE_LIBUNWIND_EXCEPTIONS
+	support.
+
 2003-12-03  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/13179
