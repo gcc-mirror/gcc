@@ -161,9 +161,8 @@ struct rtx_def
      and must not be deleted even if its count is zero.
      1 in a LABEL_REF if this is a reference to a label outside the
      current loop.
-     1 in an INSN, JUMP_INSN, CALL_INSN, CODE_LABEL, BARRIER, or NOTE if
-     this insn must be scheduled together with the preceding insn.  Valid
-     only within sched.
+     1 in an INSN, JUMP_INSN or CALL_INSN if this insn must be scheduled
+     together with the preceding insn.  Valid only within sched.
      1 in an INSN, JUMP_INSN, or CALL_INSN if insn is in a delay slot and
      from the target of a branch.  Valid from reorg until end of compilation;
      cleared before used.
@@ -1118,8 +1117,8 @@ do {						\
 /* During sched, 1 if RTX is an insn that must be scheduled together
    with the preceding insn.  */
 #define SCHED_GROUP_P(RTX)						\
-  (RTL_FLAG_CHECK6("SCHED_GROUP_P", (RTX), INSN, JUMP_INSN, CALL_INSN,	\
-		          CODE_LABEL, BARRIER, NOTE)->in_struct)
+  (RTL_FLAG_CHECK3("SCHED_GROUP_P", (RTX), INSN, JUMP_INSN, CALL_INSN	\
+		          )->in_struct)
 
 /* For a SET rtx, SET_DEST is the place that is set
    and SET_SRC is the value it is set to.  */

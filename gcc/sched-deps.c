@@ -222,8 +222,7 @@ add_dependence (insn, elem, dep_type)
      setters of the condition codes, so we must skip past notes here.
      Otherwise, NOTEs are impossible here.  */
   next = next_nonnote_insn (elem);
-  if (next && SCHED_GROUP_P (next)
-      && GET_CODE (next) != CODE_LABEL)
+  if (next && INSN_P (next) && SCHED_GROUP_P (next))
     {
       /* Notes will never intervene here though, so don't bother checking
          for them.  */
@@ -235,8 +234,8 @@ add_dependence (insn, elem, dep_type)
 
       rtx nnext;
       while ((nnext = next_nonnote_insn (next)) != NULL
-	     && SCHED_GROUP_P (nnext)
-	     && GET_CODE (nnext) != CODE_LABEL)
+	     && INSN_P (nnext)
+	     && SCHED_GROUP_P (nnext))
 	next = nnext;
 
       /* Again, don't depend an insn on itself.  */
@@ -448,7 +447,7 @@ group_leader (insn)
       prev = insn;
       insn = next_nonnote_insn (insn);
     }
-  while (insn && SCHED_GROUP_P (insn) && (GET_CODE (insn) != CODE_LABEL));
+  while (insn && INSN_P (insn) && SCHED_GROUP_P (insn));
 
   return prev;
 }
