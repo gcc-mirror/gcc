@@ -3255,7 +3255,7 @@ find_expr_with_wfl (tree node)
 	  continue;
 
 	case LABELED_BLOCK_EXPR:
-	  node = TREE_OPERAND (node, 1);
+	  node = LABELED_BLOCK_BODY (node);
 	  continue;
 
 	default:
@@ -11747,8 +11747,6 @@ java_complete_lhs (tree node)
       return node;
 
     case EXIT_BLOCK_EXPR:
-      /* We don't complete operand 1, because it's the return value of
-         the EXIT_BLOCK_EXPR which doesn't exist it Java */
       return patch_bc_statement (node);
 
     case CASE_EXPR:
@@ -15269,8 +15267,7 @@ build_bc_statement (int location, int is_break, tree name)
     }
   /* Unlabeled break/continue will be handled during the
      break/continue patch operation */
-  break_continue = build2 (EXIT_BLOCK_EXPR, NULL_TREE,
-			   label_block_expr, NULL_TREE);
+  break_continue = build1 (EXIT_BLOCK_EXPR, NULL_TREE, label_block_expr);
 
   IS_BREAK_STMT_P (break_continue) = is_break;
   TREE_SIDE_EFFECTS (break_continue) = 1;

@@ -8124,8 +8124,6 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
     case POSTDECREMENT_EXPR:
     case LOOP_EXPR:
     case EXIT_EXPR:
-    case LABELED_BLOCK_EXPR:
-    case EXIT_BLOCK_EXPR:
     case TRUTH_ANDIF_EXPR:
     case TRUTH_ORIF_EXPR:
       /* Lowered by gimplify.c.  */

@@ -731,6 +731,10 @@ java_tree_inlining_walk_subtrees (tree *tp ATTRIBUTE_UNUSED,
       WALK_SUBTREE (BLOCK_EXPR_BODY (t));
       return NULL_TREE;
 
+    case EXIT_BLOCK_EXPR:
+      *subtrees = 0;
+      return NULL_TREE;
+
     default:
       return NULL_TREE;
     }
@@ -921,13 +925,12 @@ java_dump_tree (void *dump_info, tree t)
       return true;
 
     case LABELED_BLOCK_EXPR:
-      dump_child ("label", TREE_OPERAND (t, 0));
-      dump_child ("block", TREE_OPERAND (t, 1));
+      dump_child ("label", LABELED_BLOCK_LABEL (t));
+      dump_child ("block", LABELED_BLOCK_BODY (t));
       return true;
 
     case EXIT_BLOCK_EXPR:
-      dump_child ("block", TREE_OPERAND (t, 0));
-      dump_child ("val", TREE_OPERAND (t, 1));
+      dump_child ("block", EXIT_BLOCK_LABELED_BLOCK (t));
       return true;
 
     case BLOCK:

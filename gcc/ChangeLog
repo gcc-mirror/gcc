@@ -1,5 +1,25 @@
 2004-11-24  Steven Bosscher  <stevenb@suse.de>
 
+	* expr.c (expand_expr_real_1): Remove cases for EXIT_BLOCK_EXPR 
+	and LABELED_BLOCK_EXPR.
+	* gimplify.c (gimplify_labeled_block_expr): Remove.
+	(gimplify_exit_block_expr): Remove.
+	(gimplify_expr): Don't call them.
+	* tree-inline.c (copy_body_r): Don't handle EXIT_BLOCK_EXPR
+	and LABELED_BLOCK_EXPR.
+	(estimate_num_insns_1): Likewise.
+	(walk_tree): Likewise.
+	* tree-pretty-print.c (dump_generic_node): Don't handle
+	EXIT_BLOCK_EXPR and LABELED_BLOCK_EXPR.
+	* tree.def (EXIT_BLOCK_EXPR): Moved to java-tree.def.
+	(LABELED_BLOCK_EXPR): Likewise.
+	* tree.h (LABELED_BLOCK_LABEL): Moved to java-tree.h.
+	(LABELED_BLOCK_BODY): Likewise.
+	(EXIT_BLOCK_LABELED_BLOCK): Likewise.
+	(EXIT_BLOCK_RETURN): Removed.
+
+2004-11-24  Steven Bosscher  <stevenb@suse.de>
+
 	* cfgrtl.c (rtl_delete_block): Fix comment.
 	* emit-rtl.c (remove_unnecessary_notes): Die if we see BLOCK_BEG
 	or BLOCK_END insn notes.
@@ -88,7 +108,7 @@
 	(record_jump_cond): Use it instead of gen_lowpart.
 
 2004-11-23  Daniel Jacobowitz  <dan@codesourcery.com>
-            Joseph Myers  <joseph@codesourcery.com>
+	    Joseph Myers  <joseph@codesourcery.com>
 
 	* config/sol2-c.c (solaris_register_pragmas): Use
 	c_register_pragma_with_expansion.
