@@ -1,0 +1,1069 @@
+/* gnu_java_awt_peer_gtk_GdkGraphics2d.c
+   Copyright (C) 2003 Free Software Foundation, Inc.
+
+   This file is part of GNU Classpath.
+   
+   GNU Classpath is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 2, or (at your option)
+   any later version.
+   
+   GNU Classpath is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+   
+   You should have received a copy of the GNU General Public License
+   along with GNU Classpath; see the file COPYING.  If not, write to the
+   Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+   02111-1307 USA.
+   
+   Linking this library statically or dynamically with other modules is
+   making a combined work based on this library.  Thus, the terms and
+   conditions of the GNU General Public License cover the whole
+   combination.
+   
+   As a special exception, the copyright holders of this library give you
+   permission to link this library with independent modules to produce an
+   executable, regardless of the license terms of these independent
+   modules, and to copy and distribute the resulting executable under
+   terms of your choice, provided that you also meet, for each linked
+   independent module, the terms and conditions of the license of that
+   module.  An independent module is a module which is not derived from
+   or based on this library.  If you modify this library, you may extend
+   this exception to your version of the library, but you are not
+   obligated to do so.  If you do not wish to do so, delete this
+   exception statement from your version. */
+
+#include "gtkpeer.h"
+#include "gnu_java_awt_peer_gtk_GdkGraphics2D.h"
+#include <gdk/gdktypes.h>
+#include <gdk/gdkprivate.h>
+#include <gdk/gdkx.h>
+
+#include <gdk-pixbuf/gdk-pixbuf.h>
+#include <gdk-pixbuf/gdk-pixdata.h>
+
+#include <cairo.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+struct state_table *native_graphics2d_state_table;
+
+#define NSA_G2D_INIT(env, clazz) \
+  native_graphics2d_state_table = init_state_table (env, clazz)
+
+#define NSA_GET_G2D_PTR(env, obj) \
+  get_state (env, obj, native_graphics2d_state_table)
+
+#define NSA_SET_G2D_PTR(env, obj, ptr) \
+  set_state (env, obj, native_graphics2d_state_table, (void *)ptr)
+
+#define NSA_DEL_G2D_PTR(env, obj) \
+  remove_state_slot (env, obj, native_graphics2d_state_table)
+
+JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkGraphics2D_initStaticState 
+  (JNIEnv *env, jclass clazz)
+{
+    NSA_G2D_INIT (env, clazz);
+}
+
+/* these public final constants are part of the java2d public API, so we
+   write them explicitly here to save fetching them from the constant pool
+   all the time. */
+
+#ifndef min
+#define min(x,y) ((x) < (y) ? (x) : (y))
+#endif
+
+enum java_awt_alpha_composite_rule
+  {
+    java_awt_alpha_composite_CLEAR = 1,
+    java_awt_alpha_composite_SRC = 2,
+    java_awt_alpha_composite_SRC_OVER = 3,
+    java_awt_alpha_composite_DST_OVER = 4,
+    java_awt_alpha_composite_SRC_IN = 5,
+    java_awt_alpha_composite_DST_IN = 6,
+    java_awt_alpha_composite_SRC_OUT = 7,
+    java_awt_alpha_composite_DST_OUT = 8,
+    java_awt_alpha_composite_DST = 9,
+    java_awt_alpha_composite_SRC_ATOP = 10,
+    java_awt_alpha_composite_DST_ATOP = 11,
+    java_awt_alpha_composite_XOR = 12
+  };
+
+enum java_awt_basic_stroke_join_rule
+  {
+    java_awt_basic_stroke_JOIN_MITER = 0,
+    java_awt_basic_stroke_JOIN_ROUND = 1,
+    java_awt_basic_stroke_JOIN_BEVEL = 2
+  };
+
+enum java_awt_basic_stroke_cap_rule
+  {
+    java_awt_basic_stroke_CAP_BUTT = 0,
+    java_awt_basic_stroke_CAP_ROUND = 1,
+    java_awt_basic_stroke_CAP_SQUARE = 2
+  };
+
+enum java_awt_geom_path_iterator_winding_rule
+  {
+    java_awt_geom_path_iterator_WIND_EVEN_ODD = 0,
+    java_awt_geom_path_iterator_WIND_NON_ZERO = 1
+  };
+
+
+static void 
+grab_current_drawable (GtkWidget *widget, GdkDrawable **draw, GdkWindow **win)
+{  
+  g_assert (widget != NULL);
+  g_assert (draw != NULL);
+  g_assert (win != NULL);
+
+  if (GTK_IS_WINDOW (widget))
+    {
+      *win = find_gtk_layout (widget)->bin_window;
+    }
+  else if (GTK_IS_LAYOUT (widget))
+    {
+      *win = GTK_LAYOUT (widget)->bin_window;
+    }
+  else
+    {
+      *win = widget->window;
+    }
+
+  *draw = *win;
+  gdk_window_get_internal_paint_info (*win, draw, 0, 0);
+  g_object_ref (*draw);
+}
+
+
+static int
+x_server_has_render_extension (void)
+{
+  int ev = 0, err = 0; 
+  return (int) XRenderQueryExtension (GDK_DISPLAY (), &ev, &err);
+}
+
+
+static void
+init_graphics2d_as_pixbuf (struct graphics2d *gr)
+{
+  gint width, height;
+  gint bits_per_sample = 8;
+  gint total_channels = 4;
+  gboolean has_alpha = TRUE;
+  
+  g_assert (gr != NULL);
+  g_assert (gr->drawable != NULL);
+
+  if (gr->debug) printf ("initializing graphics2d as pixbuf\n");
+  gdk_drawable_get_size (gr->drawable, &width, &height);
+  gr->drawbuf = gdk_pixbuf_new (GDK_COLORSPACE_RGB, 
+				has_alpha, bits_per_sample,
+				width, height);
+  g_assert (gr->drawbuf != NULL);
+  g_assert (gdk_pixbuf_get_bits_per_sample (gr->drawbuf) == bits_per_sample);
+  g_assert (gdk_pixbuf_get_n_channels (gr->drawbuf) == total_channels);
+  
+  gr->surface = cairo_surface_create_for_image (gdk_pixbuf_get_pixels (gr->drawbuf), 
+						CAIRO_FORMAT_ARGB32, 
+						gdk_pixbuf_get_width (gr->drawbuf), 
+						gdk_pixbuf_get_height (gr->drawbuf), 
+						gdk_pixbuf_get_rowstride (gr->drawbuf));      
+  g_assert (gr->surface != NULL);
+  g_assert (gr->cr != NULL);
+  cairo_set_target_surface (gr->cr, gr->surface);
+}
+
+static void
+init_graphics2d_as_renderable (struct graphics2d *gr)
+{
+  Drawable draw;
+  Display * dpy;
+  Visual * vis;
+  
+  g_assert (gr != NULL);
+  g_assert (gr->drawable != NULL);
+
+  gr->drawbuf = NULL;
+  
+  if (gr->debug) printf ("initializing graphics2d as renderable\n");
+  draw = gdk_x11_drawable_get_xid (gr->drawable);
+  
+  dpy = gdk_x11_drawable_get_xdisplay (gr->drawable);
+  g_assert (dpy != NULL);
+  
+  vis = gdk_x11_visual_get_xvisual (gdk_drawable_get_visual (gr->drawable));
+  g_assert (vis != NULL);
+  
+  gr->surface = cairo_surface_create_for_drawable (dpy, draw, vis, 
+						   CAIRO_FORMAT_ARGB32,
+						   DefaultColormap (dpy, DefaultScreen (dpy)));
+  g_assert (gr->surface != NULL);
+  g_assert (gr->cr != NULL);
+  cairo_set_target_surface (gr->cr, gr->surface);
+}
+
+static void
+begin_drawing_operation (struct graphics2d * gr)
+{  
+  gdk_threads_enter ();
+  if (gr->drawbuf)
+    {
+
+      gint drawable_width, drawable_height;
+      gint pixbuf_width, pixbuf_height;
+      gint width, height;
+      
+      gdk_drawable_get_size (gr->drawable, &drawable_width, &drawable_height);
+      pixbuf_width = gdk_pixbuf_get_width (gr->drawbuf);
+      pixbuf_height = gdk_pixbuf_get_height (gr->drawbuf);
+      width = min (drawable_width, pixbuf_width);
+      height = min (drawable_height, pixbuf_height);
+
+      gdk_pixbuf_get_from_drawable (gr->drawbuf, /* destination pixbuf */
+				    gr->drawable, 
+				    NULL, /* colormap */
+				    0, 0, 0, 0,
+				    width, height); 
+      
+      if (gr->debug) printf ("copied (%d, %d) pixels from GDK drawable to pixbuf\n",
+			     width, height);      
+    }
+}
+
+static void
+end_drawing_operation (struct graphics2d * gr)
+{
+  if (gr->drawbuf)
+    { 
+      gint drawable_width, drawable_height;
+      gint pixbuf_width, pixbuf_height;
+      gint width, height;
+      
+      gdk_drawable_get_size (gr->drawable, &drawable_width, &drawable_height);
+      pixbuf_width = gdk_pixbuf_get_width (gr->drawbuf);
+      pixbuf_height = gdk_pixbuf_get_height (gr->drawbuf);
+      width = min (drawable_width, pixbuf_width);
+      height = min (drawable_height, pixbuf_height);
+
+      gdk_draw_pixbuf (gr->drawable, NULL, gr->drawbuf,
+		       0, 0, 0, 0, 
+		       width, height, 
+		       GDK_RGB_DITHER_NORMAL, 0, 0);
+
+      if (gr->debug) printf ("copied (%d, %d) pixels from pixbuf to GDK drawable\n",
+			     width, height);
+    }
+  gdk_threads_leave ();
+}
+
+
+static void 
+update_pattern_transform (struct graphics2d *gr)
+{
+  double a, b, c, d, tx, ty;
+  cairo_matrix_t *mat = NULL;
+
+  g_assert (gr != NULL);
+  if (gr->pattern == NULL)
+    return;
+
+  return;
+  /* temporarily disabled: ambiguous behavior */
+  /*   cairo_get_matrix (gr->cr, &a, &b, &c, &d, &tx, &ty); */
+  mat = cairo_matrix_create ();
+  g_assert (mat != NULL);
+  cairo_matrix_set_affine (mat, a, b, c, d, tx, ty);
+  cairo_surface_set_matrix (gr->pattern, mat);
+  cairo_matrix_destroy (mat);
+}
+
+static void
+check_for_debug (struct graphics2d *gr)
+{
+  gr->debug = (gboolean)(getenv("DEBUGJ2D") != NULL);
+}
+
+JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkGraphics2D_copyState
+  (JNIEnv *env, jobject obj, jobject old)
+{
+  struct graphics2d *g = NULL, *g_old = NULL;
+
+  g = (struct graphics2d *) malloc (sizeof (struct graphics2d));
+  g_assert (g != NULL);
+  memset (g, 0, sizeof(struct graphics2d));
+
+  g_old = (struct graphics2d *) NSA_GET_G2D_PTR (env, old);
+  g_assert (g_old != NULL);
+
+  g->drawable = g_old->drawable;
+  g->debug = g_old->debug; 
+
+  gdk_threads_enter ();
+  g_object_ref (g->drawable);
+  
+  g->cr = cairo_create();
+  g_assert (g->cr != NULL);
+
+  if (x_server_has_render_extension ())
+    init_graphics2d_as_renderable (g);
+  else
+    init_graphics2d_as_pixbuf (g);
+
+  cairo_surface_set_filter (g->surface, CAIRO_FILTER_BILINEAR);
+
+  gdk_threads_leave ();
+
+  NSA_SET_G2D_PTR (env, obj, g);
+}
+
+
+JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkGraphics2D_initState__II
+  (JNIEnv *env, jobject obj, jint width, jint height)
+{
+  struct graphics2d *gr;
+
+  gdk_threads_enter ();
+  
+  gr = (struct graphics2d *) malloc (sizeof (struct graphics2d));
+  g_assert (gr != NULL);
+  memset (gr, 0, sizeof(struct graphics2d));
+
+  check_for_debug (gr);  
+
+  if (gr->debug) printf ("constructing offscreen drawable of size (%d,%d)\n",
+			 width, height);
+  
+  gr->drawable = (GdkDrawable *) gdk_pixmap_new (NULL, width, height, 
+						 gdk_rgb_get_visual ()->depth);
+  g_assert (gr->drawable != NULL);
+
+  gr->cr = cairo_create();
+  g_assert (gr->cr != NULL);
+
+  if (x_server_has_render_extension ())
+    init_graphics2d_as_renderable (gr);
+  else
+    init_graphics2d_as_pixbuf (gr);
+
+  gdk_threads_leave ();
+  if (gr->debug) printf ("constructed offscreen drawable of size (%d,%d)\n",
+			 width, height);
+  NSA_SET_G2D_PTR (env, obj, gr);
+}
+
+JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkGraphics2D_gdkDrawDrawable
+  (JNIEnv *env, jobject self, jobject other, jint x, jint y)
+{
+  struct graphics2d *src = NULL, *dst = NULL;
+  gint s_height, s_width, d_height, d_width, height, width;
+  GdkGC *gc;
+
+  src = (struct graphics2d *)NSA_GET_G2D_PTR (env, other);
+  dst = (struct graphics2d *)NSA_GET_G2D_PTR (env, self);
+  g_assert (src != NULL);
+  g_assert (dst != NULL);  
+
+  if (src->debug) printf ("copying from offscreen drawable\n");
+
+  gdk_threads_enter ();
+  gdk_drawable_get_size (src->drawable, &s_width, &s_height);
+  gdk_drawable_get_size (dst->drawable, &d_width, &d_height);
+  width = min (s_width, d_width);
+  height = min (s_width, d_height);
+
+  gc = gdk_gc_new (dst->drawable);
+  g_assert (gc != NULL);
+
+  gdk_draw_drawable(dst->drawable, gc, src->drawable,
+		    0, 0, x, y, width, height);
+
+  g_object_unref (gc);
+
+  if (src->debug) printf ("copied %d x %d pixels from offscreen drawable\n", width, height);
+  gdk_threads_leave ();  
+}
+
+static jintArray
+current_colors_of_widget (GtkWidget *widget, JNIEnv *env)
+{
+  GdkColor color;
+  jintArray array;
+  jint *rgb;
+
+  g_assert (widget != NULL);
+  g_assert (env != NULL);
+
+  color = widget->style->fg[GTK_STATE_NORMAL];
+  array = (*env)->NewIntArray (env, 6);
+
+  rgb = (*env)->GetIntArrayElements (env, array, NULL);
+  rgb[0] = color.red >> 8;
+  rgb[1] = color.green >> 8;
+  rgb[2] = color.blue >> 8;
+
+  color = widget->style->bg[GTK_STATE_NORMAL];
+  rgb[3] = color.red >> 8;
+  rgb[4] = color.green >> 8;
+  rgb[5] = color.blue >> 8;
+
+  (*env)->ReleaseIntArrayElements (env, array, rgb, 0);
+  
+  return array;
+}
+
+JNIEXPORT jintArray JNICALL Java_gnu_java_awt_peer_gtk_GdkGraphics2D_initState__Lgnu_java_awt_peer_gtk_GtkComponentPeer_2
+  (JNIEnv *env, jobject obj, jobject peer)
+{
+  struct graphics2d *gr = NULL;
+  GtkWidget *widget = NULL;
+  void *ptr = NULL;
+  jintArray color;
+
+  ptr = NSA_GET_PTR (env, peer);
+  g_assert (ptr != NULL);
+  gdk_threads_enter ();
+
+  gr = (struct graphics2d *) malloc (sizeof (struct graphics2d));
+  g_assert (gr != NULL);
+  memset (gr, 0, sizeof(struct graphics2d));
+
+  check_for_debug (gr);
+
+  gr->cr = cairo_create();
+  g_assert (gr->cr != NULL);
+
+  widget = GTK_WIDGET (ptr);
+  g_assert (widget != NULL);
+
+  grab_current_drawable (widget, &(gr->drawable), &(gr->win));
+  g_assert (gr->drawable != NULL);
+
+  if (x_server_has_render_extension ())
+    init_graphics2d_as_renderable (gr);
+  else
+    init_graphics2d_as_pixbuf (gr);
+
+  color = current_colors_of_widget (widget, env);
+
+  gdk_threads_leave ();
+  NSA_SET_G2D_PTR (env, obj, gr);
+  return color;
+}
+
+JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkGraphics2D_dispose
+  (JNIEnv *env, jobject obj)
+{
+  struct graphics2d *gr = NULL;
+
+  gr = (struct graphics2d *) NSA_DEL_G2D_PTR (env, obj);
+  if (gr == NULL) 
+    return; /* dispose has been called more than once */
+  
+  gdk_threads_enter ();
+
+  if (gr->surface)
+    cairo_surface_destroy (gr->surface);
+
+  cairo_destroy (gr->cr);
+
+  if (gr->drawbuf)
+    g_object_unref (gr->drawbuf); 
+
+  g_object_unref (gr->drawable);
+  free (gr);
+
+  if (gr->pattern)
+    cairo_surface_destroy (gr->pattern);
+
+  if (gr->pattern_pixels)
+    free (gr->pattern_pixels);
+
+  if (gr->debug) printf ("disposed of graphics2d\n");
+
+  gdk_threads_leave ();
+}
+
+
+JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkGraphics2D_setGradient 
+  (JNIEnv *env, jobject obj, 
+   jdouble x1, jdouble y1, 
+   jdouble x2, jdouble y2,
+   jint r1, jint g1, jint b1, jint a1,
+   jint r2, jint g2, jint b2, jint a2,
+   jboolean cyclic)
+{
+  struct graphics2d *gr = NULL;
+  cairo_surface_t *surf = NULL;
+  cairo_matrix_t *mat = NULL;
+  gr = (struct graphics2d *) NSA_GET_G2D_PTR (env, obj);
+  g_assert (gr != NULL);
+
+  if (gr->debug) printf ("setGradient (%f,%f) -> (%f,%f); (%d,%d,%d,%d) -> (%d,%d,%d,%d)\n",
+			 x1, y1, 
+			 x2, y2, 
+			 r1, g1, b1, a1, 
+			 r2, g2, b2, a2);
+  
+  cairo_save (gr->cr);
+  
+  if (cyclic)
+    surf = cairo_surface_create_similar (gr->surface, CAIRO_FORMAT_ARGB32, 3, 2);
+  else
+    surf = cairo_surface_create_similar (gr->surface, CAIRO_FORMAT_ARGB32, 2, 2);      
+  g_assert (surf != NULL);
+
+  cairo_set_target_surface (gr->cr, surf);
+  
+  cairo_identity_matrix (gr->cr);
+
+  cairo_set_rgb_color (gr->cr, r1 / 255.0, g1 / 255.0, b1 / 255.0);
+  cairo_set_alpha (gr->cr, a1 / 255.0);
+  cairo_rectangle (gr->cr, 0, 0, 1, 2);
+  cairo_fill (gr->cr);
+    
+  cairo_set_rgb_color (gr->cr, r2 / 255.0, g2 / 255.0, b2 / 255.0);
+  cairo_set_alpha (gr->cr, a2 / 255.0);
+  cairo_rectangle (gr->cr, 1, 0, 1, 2);
+  cairo_fill (gr->cr);
+
+  if (cyclic)
+    {
+      cairo_set_rgb_color (gr->cr, r1 / 255.0, g1 / 255.0, b1 / 255.0);
+      cairo_set_alpha (gr->cr, a1 / 255.0);
+      cairo_rectangle (gr->cr, 2, 0, 1, 2);
+      cairo_fill (gr->cr);
+    }
+
+  mat = cairo_matrix_create ();
+  g_assert (mat != NULL);
+
+  /* 
+     consider the vector [x2 - x1, y2 - y1] = [p,q]
+
+     this is a line in space starting at an 'origin' x1, y1.
+
+     it can also be thought of as a "transformed" unit vector in either the
+     x or y directions. we have just *drawn* our gradient as a unit vector
+     (well, a 2-3x unit vector) in the x dimension. so what we want to know
+     is which transformation turns our existing unit vector into [p,q].
+
+     which means solving for M in 
+ 
+     [p,q] = M[1,0]
+
+     [p,q] = |a b| [1,0]
+             |c d|      
+
+     [p,q] = [a,c], with b = d = 0.
+
+     what does this mean? it means that our gradient is 1-dimensional; as
+     you move through the x axis of our 2 or 3 pixel gradient from logical
+     x positions 0 to 1, the transformation of your x coordinate under the
+     matrix M causes you to accumulate both x and y values in fill
+     space. the y value of a gradient coordinate is ignored, since the
+     gradient is one dimensional. which is correct.
+
+     unfortunately we want the opposite transformation, it seems, because of
+     the way cairo is going to use this transformation. I'm a bit confused by
+     that, but it seems to work right, so we take reciprocals of values and
+     negate offsets. oh well.
+     
+   */
+
+  double a = (x2 - x1 == 0.) ? 0. : ((cyclic ? 3.0 : 2.0) / (x2 - x1));
+  double c = (y2 - y1 == 0.) ? 0. : (1. / (y2 - y1));
+  double dx = (x1 == 0.) ? 0. : 1. / x1;
+  double dy = (y1 == 0.) ? 0. : 1. / y1;
+
+  cairo_matrix_set_affine (mat,
+			   a, 0.,
+			   c, 0.,
+			   dx, dy);
+
+  cairo_surface_set_matrix (surf, mat);
+  cairo_matrix_destroy (mat);
+  cairo_surface_set_filter (surf, CAIRO_FILTER_BILINEAR);
+
+  /* FIXME: repeating gradients (not to mention hold gradients) don't seem to work. */
+  /*   cairo_surface_set_repeat (surf, cyclic ? 1 : 0); */
+
+  if (gr->pattern)
+    cairo_surface_destroy (gr->pattern);
+
+  if (gr->pattern_pixels)
+    {
+      free (gr->pattern_pixels);
+      gr->pattern_pixels = NULL;
+    }
+
+  gr->pattern = surf;  
+
+  cairo_restore (gr->cr);    
+  cairo_set_pattern (gr->cr, gr->pattern);
+
+}
+
+JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkGraphics2D_setTexturePixels 
+  (JNIEnv *env, jobject obj, jintArray jarr, jint w, jint h, jint stride)
+{
+  struct graphics2d *gr = NULL;
+  jint *jpixels = NULL;
+
+  gr = (struct graphics2d *) NSA_GET_G2D_PTR (env, obj);
+  g_assert (gr != NULL);
+
+  if (gr->debug) printf ("setTexturePixels (%d pixels, %dx%d, stride: %d)\n",
+			 (*env)->GetArrayLength (env, jarr), w, h, stride);
+
+  if (gr->pattern)
+    cairo_surface_destroy (gr->pattern);
+
+  if (gr->pattern_pixels)
+    free (gr->pattern_pixels);
+
+  gr->pattern = NULL;
+  gr->pattern_pixels = NULL;
+
+  gr->pattern_pixels = (char *) malloc (h * stride * 4);
+  g_assert (gr->pattern_pixels != NULL);
+
+  jpixels = (*env)->GetIntArrayElements (env, jarr, NULL);
+  g_assert (jpixels != NULL);
+  memcpy (gr->pattern_pixels, jpixels, h * stride * 4);
+  (*env)->ReleaseIntArrayElements (env, jarr, jpixels, 0);
+
+  gr->pattern = cairo_surface_create_for_image (gr->pattern_pixels, 
+						CAIRO_FORMAT_ARGB32, 
+						w, h, stride * 4);
+  g_assert (gr->pattern != NULL);
+  cairo_surface_set_repeat (gr->pattern, 1);
+  cairo_set_pattern (gr->cr, gr->pattern);
+
+}
+
+JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkGraphics2D_drawPixels 
+  (JNIEnv *env, jobject obj, jintArray jarr, jint w, jint h, jint stride)
+{
+  struct graphics2d *gr = NULL;
+  jint *jpixels = NULL;
+
+  gr = (struct graphics2d *) NSA_GET_G2D_PTR (env, obj);
+  g_assert (gr != NULL);
+
+  if (gr->debug) printf ("drawPixels (%d pixels, %dx%d, stride: %d)\n",
+			 (*env)->GetArrayLength (env, jarr), w, h, stride);
+
+  jpixels = (*env)->GetIntArrayElements (env, jarr, NULL);
+  g_assert (jpixels != NULL);
+
+  begin_drawing_operation (gr);
+
+ {
+   cairo_surface_t *surf = cairo_surface_create_for_image ((char *)jpixels, 
+							   CAIRO_FORMAT_ARGB32, 
+							   w, h, stride * 4);   
+   cairo_surface_set_filter (surf, CAIRO_FILTER_BILINEAR);
+   cairo_show_surface (gr->cr, surf, w, h);
+   cairo_surface_destroy (surf);
+ }
+
+  end_drawing_operation (gr);
+
+  (*env)->ReleaseIntArrayElements (env, jarr, jpixels, 0);
+
+}
+
+/* passthrough methods to cairo */
+
+JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkGraphics2D_cairoSave 
+   (JNIEnv *env, jobject obj)
+{
+  struct graphics2d *gr = NULL;
+  gr = (struct graphics2d *) NSA_GET_G2D_PTR (env, obj);
+  g_assert (gr != NULL);
+  if (gr->debug) printf ("cairo_save\n");
+  cairo_save (gr->cr);
+}
+
+JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkGraphics2D_cairoRestore 
+   (JNIEnv *env, jobject obj)
+{
+  struct graphics2d *gr = NULL;
+  gr = (struct graphics2d *) NSA_GET_G2D_PTR (env, obj);
+  g_assert (gr != NULL);
+  if (gr->debug) printf ("cairo_restore\n");
+  cairo_restore (gr->cr);
+  update_pattern_transform (gr);
+}
+
+JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkGraphics2D_cairoSetMatrix 
+   (JNIEnv *env, jobject obj,
+    jdouble m00, jdouble m10,
+    jdouble m01, jdouble m11,
+    jdouble m02, jdouble m12)
+{
+  struct graphics2d *gr = NULL;
+  gr = (struct graphics2d *) NSA_GET_G2D_PTR (env, obj);
+  g_assert (gr != NULL);
+  if (gr->debug) printf ("cairo_set_matrix\n");
+
+  {
+    cairo_matrix_t * mat = cairo_matrix_create ();
+    cairo_matrix_set_affine (mat,
+			     m00, m10,
+			     m01, m11,
+			     m02, m12);
+    cairo_set_matrix (gr->cr, mat);
+    cairo_matrix_destroy (mat);
+  }
+  update_pattern_transform (gr);
+}
+
+JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkGraphics2D_cairoSetOperator 
+   (JNIEnv *env, jobject obj, jint op)
+{
+  struct graphics2d *gr = NULL;
+  gr = (struct graphics2d *) NSA_GET_G2D_PTR (env, obj);
+  g_assert (gr != NULL);
+  if (gr->debug) printf ("cairo_set_operator %d\n", op);
+  switch ((enum java_awt_alpha_composite_rule) op)
+    {
+    case java_awt_alpha_composite_CLEAR: 
+      cairo_set_operator (gr->cr, CAIRO_OPERATOR_CLEAR);
+      break;
+      
+    case java_awt_alpha_composite_SRC: 
+      cairo_set_operator (gr->cr, CAIRO_OPERATOR_SRC);
+      break;
+      
+    case java_awt_alpha_composite_SRC_OVER: 
+      cairo_set_operator (gr->cr, CAIRO_OPERATOR_OVER);
+      break;
+
+    case java_awt_alpha_composite_DST_OVER: 
+      cairo_set_operator (gr->cr, CAIRO_OPERATOR_OVER_REVERSE);
+      break;
+
+    case java_awt_alpha_composite_SRC_IN: 
+      cairo_set_operator (gr->cr, CAIRO_OPERATOR_IN);
+      break;
+
+    case java_awt_alpha_composite_DST_IN: 
+      cairo_set_operator (gr->cr, CAIRO_OPERATOR_IN_REVERSE);
+      break;
+
+    case java_awt_alpha_composite_SRC_OUT: 
+      cairo_set_operator (gr->cr, CAIRO_OPERATOR_OUT);
+      break;
+
+    case java_awt_alpha_composite_DST_OUT: 
+      cairo_set_operator (gr->cr, CAIRO_OPERATOR_OUT_REVERSE);
+      break;
+
+    case java_awt_alpha_composite_DST: 
+      cairo_set_operator (gr->cr, CAIRO_OPERATOR_DST);
+      break;
+
+    case java_awt_alpha_composite_SRC_ATOP: 
+      cairo_set_operator (gr->cr, CAIRO_OPERATOR_ATOP);
+      break;
+
+    case java_awt_alpha_composite_DST_ATOP: 
+      cairo_set_operator (gr->cr, CAIRO_OPERATOR_ATOP_REVERSE);
+      break;
+
+    case java_awt_alpha_composite_XOR: 
+      cairo_set_operator (gr->cr, CAIRO_OPERATOR_XOR);
+      break;
+    }
+}
+
+JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkGraphics2D_cairoSetRGBColor 
+   (JNIEnv *env, jobject obj, jdouble r, jdouble g, jdouble b)
+{
+  struct graphics2d *gr = NULL;
+  gr = (struct graphics2d *) NSA_GET_G2D_PTR (env, obj);
+  g_assert (gr != NULL);
+
+  /* this is a very weird fact: GDK Pixbufs and RENDER drawables consider
+     colors in opposite pixel order. I have no idea why.  thus when you
+     draw to a PixBuf, you must exchange the R and B components of your
+     color. */
+
+  if (gr->debug) printf ("cairo_set_rgb_color (%f, %f, %f)\n", r, g, b);
+
+  if (gr->drawbuf)
+    cairo_set_rgb_color (gr->cr, b, g, r);
+  else
+    cairo_set_rgb_color (gr->cr, r, g, b);
+}
+
+JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkGraphics2D_cairoSetAlpha 
+   (JNIEnv *env, jobject obj, jdouble a)
+{
+  struct graphics2d *gr = NULL;
+  gr = (struct graphics2d *) NSA_GET_G2D_PTR (env, obj);
+  g_assert (gr != NULL);
+  if (gr->debug) printf ("cairo_set_alpha %f\n", a);
+  cairo_set_alpha (gr->cr, a);
+}
+
+JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkGraphics2D_cairoSetFillRule 
+   (JNIEnv *env, jobject obj, jint rule)
+{
+  struct graphics2d *gr = NULL;
+  gr = (struct graphics2d *) NSA_GET_G2D_PTR (env, obj);
+  if (gr->debug) printf ("cairo_set_fill_rule %d\n", rule);
+  g_assert (gr != NULL);
+  switch ((enum java_awt_geom_path_iterator_winding_rule) rule)
+    {
+    case java_awt_geom_path_iterator_WIND_NON_ZERO:
+      cairo_set_fill_rule (gr->cr, CAIRO_FILL_RULE_WINDING);
+      break;
+    case java_awt_geom_path_iterator_WIND_EVEN_ODD:
+      cairo_set_fill_rule (gr->cr, CAIRO_FILL_RULE_EVEN_ODD);
+      break;
+    }  
+}
+
+JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkGraphics2D_cairoSetLineWidth 
+   (JNIEnv *env, jobject obj, jdouble width)
+{
+  struct graphics2d *gr = NULL;
+  gr = (struct graphics2d *) NSA_GET_G2D_PTR (env, obj);
+  g_assert (gr != NULL);
+  if (gr->debug) printf ("cairo_set_line_width %f\n", width);
+  cairo_set_line_width (gr->cr, width);
+}
+
+JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkGraphics2D_cairoSetLineCap 
+   (JNIEnv *env, jobject obj, jint cap)
+{
+  struct graphics2d *gr = NULL;
+  gr = (struct graphics2d *) NSA_GET_G2D_PTR (env, obj);
+  g_assert (gr != NULL);
+  if (gr->debug) printf ("cairo_set_line_cap %d\n", cap);
+  switch ((enum java_awt_basic_stroke_cap_rule) cap)
+    {
+    case java_awt_basic_stroke_CAP_BUTT: 
+      cairo_set_line_cap (gr->cr, CAIRO_LINE_CAP_BUTT);
+      break;
+
+    case java_awt_basic_stroke_CAP_ROUND: 
+      cairo_set_line_cap (gr->cr, CAIRO_LINE_CAP_ROUND);
+      break;
+
+    case java_awt_basic_stroke_CAP_SQUARE: 
+      cairo_set_line_cap (gr->cr, CAIRO_LINE_CAP_SQUARE);
+      break;
+    }
+}
+
+JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkGraphics2D_cairoSetLineJoin 
+   (JNIEnv *env, jobject obj, jint join)
+{
+  struct graphics2d *gr = NULL;
+  gr = (struct graphics2d *) NSA_GET_G2D_PTR (env, obj);
+  g_assert (gr != NULL);
+  if (gr->debug) printf ("cairo_set_line_join %d\n", join);
+  switch ((enum java_awt_basic_stroke_join_rule) join)
+    {
+    case java_awt_basic_stroke_JOIN_MITER:
+      cairo_set_line_join (gr->cr, CAIRO_LINE_JOIN_MITER);
+      break;
+
+    case java_awt_basic_stroke_JOIN_ROUND:
+      cairo_set_line_join (gr->cr, CAIRO_LINE_JOIN_ROUND);
+      break;
+
+    case java_awt_basic_stroke_JOIN_BEVEL:
+      cairo_set_line_join (gr->cr, CAIRO_LINE_JOIN_BEVEL);
+      break;
+    }
+}
+
+JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkGraphics2D_cairoSetDash 
+   (JNIEnv *env, jobject obj, jdoubleArray dashes, jint ndash, jdouble offset)
+{
+  struct graphics2d *gr = NULL;
+  jdouble *dasharr = NULL;
+  gr = (struct graphics2d *) NSA_GET_G2D_PTR (env, obj);
+  g_assert (gr != NULL);
+  if (gr->debug) printf ("cairo_set_dash\n");
+  dasharr = (*env)->GetDoubleArrayElements (env, dashes, NULL);  
+  g_assert (dasharr != NULL);
+  cairo_set_dash (gr->cr, dasharr, ndash, offset);
+  (*env)->ReleaseDoubleArrayElements (env, dashes, dasharr, 0);
+}
+
+JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkGraphics2D_cairoSetMiterLimit 
+   (JNIEnv *env, jobject obj, jdouble miter)
+{
+  struct graphics2d *gr = NULL;
+  gr = (struct graphics2d *) NSA_GET_G2D_PTR (env, obj);
+  g_assert (gr != NULL);
+  if (gr->debug) printf ("cairo_set_miter_limit %f\n", miter);
+  cairo_set_miter_limit (gr->cr, miter);
+}
+
+JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkGraphics2D_cairoTranslate 
+   (JNIEnv *env, jobject obj, jdouble dx, jdouble dy)
+{
+  struct graphics2d *gr = NULL;
+  gr = (struct graphics2d *) NSA_GET_G2D_PTR (env, obj);
+  g_assert (gr != NULL);
+  if (gr->debug) printf ("cairo_translate (%f, %f)\n", dx, dy);
+  cairo_translate (gr->cr, dx, dy);
+  update_pattern_transform (gr);
+}
+
+JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkGraphics2D_cairoScale 
+   (JNIEnv *env, jobject obj, jdouble sx, jdouble sy)
+{
+  struct graphics2d *gr = NULL;
+  gr = (struct graphics2d *) NSA_GET_G2D_PTR (env, obj);
+  g_assert (gr != NULL);
+  if (gr->debug) printf ("cairo_scale (%f, %f)\n", sx, sy);
+  cairo_scale (gr->cr, sx, sy);
+  update_pattern_transform (gr);
+}
+
+JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkGraphics2D_cairoRotate 
+   (JNIEnv *env, jobject obj, jdouble angle)
+{
+  struct graphics2d *gr = NULL;
+  gr = (struct graphics2d *) NSA_GET_G2D_PTR (env, obj);
+  g_assert (gr != NULL);
+  if (gr->debug) printf ("cairo_rotate %f\n", angle);
+  cairo_rotate (gr->cr, angle);
+  update_pattern_transform (gr);
+}
+
+JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkGraphics2D_cairoNewPath 
+   (JNIEnv *env, jobject obj)
+{
+  struct graphics2d *gr = NULL;
+  gr = (struct graphics2d *) NSA_GET_G2D_PTR (env, obj);
+  g_assert (gr != NULL);
+  if (gr->debug) printf ("cairo_new_path\n");
+  cairo_new_path (gr->cr);
+}
+
+JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkGraphics2D_cairoMoveTo 
+   (JNIEnv *env, jobject obj, jdouble x, jdouble y)
+{
+  struct graphics2d *gr = NULL;
+  gr = (struct graphics2d *) NSA_GET_G2D_PTR (env, obj);
+  g_assert (gr != NULL);
+  if (gr->debug) printf ("cairo_move_to (%f, %f)\n", x, y);
+  cairo_move_to (gr->cr, x, y);
+}
+
+JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkGraphics2D_cairoLineTo 
+   (JNIEnv *env, jobject obj, jdouble x, jdouble y)
+{
+  struct graphics2d *gr = NULL;
+  gr = (struct graphics2d *) NSA_GET_G2D_PTR (env, obj);
+  g_assert (gr != NULL);
+  if (gr->debug) printf ("cairo_line_to (%f, %f)\n", x, y);
+  cairo_line_to (gr->cr, x, y);
+}
+
+JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkGraphics2D_cairoCurveTo 
+   (JNIEnv *env, jobject obj, jdouble x1, jdouble y1, jdouble x2, jdouble y2, jdouble x3, jdouble y3)
+{
+  struct graphics2d *gr = NULL;
+  gr = (struct graphics2d *) NSA_GET_G2D_PTR (env, obj);
+  g_assert (gr != NULL);
+  if (gr->debug) printf ("cairo_curve_to (%f, %f), (%f, %f), (%f, %f)\n", x1, y1, x2, y2, x3, y3);
+  cairo_curve_to (gr->cr, x1, y1, x2, y2, x3, y3);
+}
+
+JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkGraphics2D_cairoRelMoveTo 
+   (JNIEnv *env, jobject obj, jdouble dx, jdouble dy)
+{
+  struct graphics2d *gr = NULL;
+  gr = (struct graphics2d *) NSA_GET_G2D_PTR (env, obj);
+  g_assert (gr != NULL);
+  if (gr->debug) printf ("cairo_rel_move_to (%f, %f)\n", dx, dy);
+  cairo_rel_move_to (gr->cr, dx, dy);
+}
+
+JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkGraphics2D_cairoRelLineTo 
+   (JNIEnv *env, jobject obj, jdouble dx, jdouble dy)
+{
+  struct graphics2d *gr = NULL;
+  gr = (struct graphics2d *) NSA_GET_G2D_PTR (env, obj);
+  g_assert (gr != NULL);
+  if (gr->debug) printf ("cairo_rel_line_to (%f, %f)\n", dx, dy);
+  cairo_rel_line_to (gr->cr, dx, dy);
+}
+
+JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkGraphics2D_cairoRelCurveTo 
+   (JNIEnv *env, jobject obj, jdouble dx1, jdouble dy1, jdouble dx2, jdouble dy2, jdouble dx3, jdouble dy3)
+{
+  struct graphics2d *gr = NULL;
+  gr = (struct graphics2d *) NSA_GET_G2D_PTR (env, obj);
+  g_assert (gr != NULL);
+  if (gr->debug) printf ("cairo_rel_curve_to (%f, %f), (%f, %f), (%f, %f)\n", dx1, dy1, dx2, dy2, dx3, dy3);
+  cairo_rel_curve_to (gr->cr, dx1, dy1, dx2, dy2, dx3, dy3);
+}
+
+JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkGraphics2D_cairoRectangle 
+   (JNIEnv *env, jobject obj, jdouble x, jdouble y, jdouble width, jdouble height)
+{
+  struct graphics2d *gr = NULL;
+  gr = (struct graphics2d *) NSA_GET_G2D_PTR (env, obj);
+  g_assert (gr != NULL);
+  if (gr->debug) printf ("cairo_rectangle (%f, %f) (%f, %f)\n", x, y, width, height);
+  cairo_rectangle (gr->cr, x, y, width, height);
+}
+
+JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkGraphics2D_cairoClosePath 
+   (JNIEnv *env, jobject obj)
+{
+  struct graphics2d *gr = NULL;
+  gr = (struct graphics2d *) NSA_GET_G2D_PTR (env, obj);
+  g_assert (gr != NULL);
+  if (gr->debug) printf ("cairo_close_path\n");
+  cairo_close_path (gr->cr);
+}
+
+JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkGraphics2D_cairoStroke 
+   (JNIEnv *env, jobject obj)
+{
+  struct graphics2d *gr = NULL;
+  gr = (struct graphics2d *) NSA_GET_G2D_PTR (env, obj);
+  g_assert (gr != NULL);
+  if (gr->debug) printf ("cairo_stroke\n");
+  begin_drawing_operation (gr);
+  cairo_stroke (gr->cr);
+  end_drawing_operation (gr);
+}
+
+JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkGraphics2D_cairoFill 
+   (JNIEnv *env, jobject obj)
+{
+  struct graphics2d *gr = NULL;
+  gr = (struct graphics2d *) NSA_GET_G2D_PTR (env, obj);
+  g_assert (gr != NULL);
+  if (gr->debug) printf ("cairo_fill\n");
+  begin_drawing_operation (gr);
+  cairo_fill (gr->cr);
+  end_drawing_operation (gr);
+}
+
+JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkGraphics2D_cairoClip 
+   (JNIEnv *env, jobject obj)
+{
+  struct graphics2d *gr = NULL;
+  gr = (struct graphics2d *) NSA_GET_G2D_PTR (env, obj);
+  g_assert (gr != NULL);
+  if (gr->debug) printf ("cairo_clip\n");
+  cairo_clip (gr->cr);
+}
+

@@ -1,3 +1,11 @@
+2003-09-17  Graydon Hoare  <graydon@redhat.com>
+
+	* gnu/java/awt/peer/gtk/GdkGraphics2D.java,
+	gnu/java/awt/peer/gtk/GdkPixbufDecoder.java,
+	jni/gtk-peer/gnu_java_awt_peer_gtk_GdkGraphics2D.c,
+	jni/gtk-peer/gnu_java_awt_peer_gtk_GdkPixbufDecoder.c: 
+	New files.
+
 2003-09-16  Graydon Hoare  <graydon@redhat.com>
 
 	* java/awt/BufferedImage.java (setData): Support non-component
