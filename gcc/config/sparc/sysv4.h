@@ -91,6 +91,9 @@ Boston, MA 02111-1307, USA.  */
 #define STRING_ASM_OP		".asciz"
 #define COMMON_ASM_OP		".common"
 #define SKIP_ASM_OP		".skip"
+#define UNALIGNED_DOUBLE_INT_ASM_OP ".uaxword"
+#define UNALIGNED_INT_ASM_OP	".uaword"
+#define UNALIGNED_SHORT_ASM_OP	".uahalf"
 #define PUSHSECTION_ASM_OP	".pushsection"
 #define POPSECTION_ASM_OP	".popsection"
 

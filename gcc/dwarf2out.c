@@ -20,19 +20,15 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
-#include "config.h"
-#include "defaults.h"
-
 /* The first part of this file deals with the DWARF 2 frame unwind
    information, which is also used by the GCC efficient exception handling
    mechanism.  The second part, controlled only by an #ifdef
    DWARF2_DEBUGGING_INFO, deals with the other DWARF 2 debugging
    information.  */
 
-#if defined (DWARF2_DEBUGGING_INFO) || defined (DWARF2_UNWIND_INFO)
-
+#include "config.h"
+#include "defaults.h"
 #include <stdio.h>
-#include <setjmp.h>
 #include "dwarf2.h"
 #include "tree.h"
 #include "flags.h"
@@ -47,6 +43,21 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* #define NDEBUG 1 */
 #include "assert.h"
+
+/* Decide whether we want to emit frame unwind information for the current
+   translation unit.  */
+
+int
+dwarf2out_do_frame ()
+{
+  return (write_symbols == DWARF2_DEBUG
+#ifdef DWARF2_UNWIND_INFO
+	  || (flag_exceptions && ! exceptions_via_longjmp)
+#endif
+	  );
+}
+
+#if defined (DWARF2_DEBUGGING_INFO) || defined (DWARF2_UNWIND_INFO)
 
 #ifndef __GNUC__
 #define inline
@@ -191,6 +202,7 @@ static unsigned reg_number		PROTO((rtx));
    Theses may be overridden in the tm.h file (if necessary) for a particular
    assembler.  */
 
+#ifdef OBJECT_FORMAT_ELF
 #ifndef UNALIGNED_SHORT_ASM_OP
 #define UNALIGNED_SHORT_ASM_OP	".2byte"
 #endif
@@ -200,18 +212,10 @@ static unsigned reg_number		PROTO((rtx));
 #ifndef UNALIGNED_DOUBLE_INT_ASM_OP
 #define UNALIGNED_DOUBLE_INT_ASM_OP	".8byte"
 #endif
+#endif /* OBJECT_FORMAT_ELF */
+
 #ifndef ASM_BYTE_OP
 #define ASM_BYTE_OP		".byte"
-#endif
-
-#ifndef UNALIGNED_OFFSET_ASM_OP
-#define UNALIGNED_OFFSET_ASM_OP \
-  (DWARF_OFFSET_SIZE == 8 ? UNALIGNED_DOUBLE_INT_ASM_OP : UNALIGNED_INT_ASM_OP)
-#endif
-
-#ifndef UNALIGNED_WORD_ASM_OP
-#define UNALIGNED_WORD_ASM_OP \
-  (PTR_SIZE == 8 ? UNALIGNED_DOUBLE_INT_ASM_OP : UNALIGNED_INT_ASM_OP)
 #endif
 
 /* Data and reference forms for relocatable data.  */
@@ -257,6 +261,23 @@ static unsigned reg_number		PROTO((rtx));
 #ifndef ASM_OUTPUT_SECTION
 #define ASM_OUTPUT_SECTION(FILE, SECTION) \
   fprintf ((FILE), SECTION_FORMAT, SECTION_ASM_OP, SECTION)
+#endif
+
+#ifndef ASM_OUTPUT_DWARF_DATA1
+#define ASM_OUTPUT_DWARF_DATA1(FILE,VALUE) \
+  fprintf ((FILE), "\t%s\t0x%x", ASM_BYTE_OP, VALUE)
+#endif
+
+#ifdef UNALIGNED_INT_ASM_OP
+
+#ifndef UNALIGNED_OFFSET_ASM_OP
+#define UNALIGNED_OFFSET_ASM_OP \
+  (DWARF_OFFSET_SIZE == 8 ? UNALIGNED_DOUBLE_INT_ASM_OP : UNALIGNED_INT_ASM_OP)
+#endif
+
+#ifndef UNALIGNED_WORD_ASM_OP
+#define UNALIGNED_WORD_ASM_OP \
+  (PTR_SIZE == 8 ? UNALIGNED_DOUBLE_INT_ASM_OP : UNALIGNED_INT_ASM_OP)
 #endif
 
 #ifndef ASM_OUTPUT_DWARF_DELTA2
@@ -314,11 +335,6 @@ static unsigned reg_number		PROTO((rtx));
   } while (0)
 #endif
 
-#ifndef ASM_OUTPUT_DWARF_DATA1
-#define ASM_OUTPUT_DWARF_DATA1(FILE,VALUE) \
-  fprintf ((FILE), "\t%s\t0x%x", ASM_BYTE_OP, VALUE)
-#endif
-
 #ifndef ASM_OUTPUT_DWARF_DATA2
 #define ASM_OUTPUT_DWARF_DATA2(FILE,VALUE) \
   fprintf ((FILE), "\t%s\t0x%x", UNALIGNED_SHORT_ASM_OP, (unsigned) VALUE)
@@ -356,6 +372,43 @@ static unsigned reg_number		PROTO((rtx));
       }									\
   } while (0)
 #endif
+
+#else /* UNALIGNED_INT_ASM_OP */
+
+/* We don't have unaligned support, let's hope the normal output works for
+   .debug_frame.  */
+
+#define ASM_OUTPUT_DWARF_ADDR(FILE,LABEL) \
+  assemble_integer (gen_rtx (SYMBOL_REF, Pmode, LABEL), PTR_SIZE, 1)
+
+#define ASM_OUTPUT_DWARF_OFFSET(FILE,LABEL) \
+  assemble_integer (gen_rtx (SYMBOL_REF, SImode, LABEL), 4, 1)
+
+#define ASM_OUTPUT_DWARF_DELTA2(FILE,LABEL1,LABEL2)			\
+  assemble_integer (gen_rtx (MINUS, HImode,			      	\
+			     gen_rtx (SYMBOL_REF, Pmode, LABEL1),   	\
+			     gen_rtx (SYMBOL_REF, Pmode, LABEL2)),	\
+		    2, 1)
+  
+#define ASM_OUTPUT_DWARF_DELTA4(FILE,LABEL1,LABEL2)			\
+  assemble_integer (gen_rtx (MINUS, SImode,			      	\
+			     gen_rtx (SYMBOL_REF, Pmode, LABEL1),   	\
+			     gen_rtx (SYMBOL_REF, Pmode, LABEL2)),	\
+		    4, 1)
+
+#define ASM_OUTPUT_DWARF_ADDR_DELTA(FILE,LABEL1,LABEL2)			\
+  assemble_integer (gen_rtx (MINUS, Pmode,				\
+			     gen_rtx (SYMBOL_REF, Pmode, LABEL1),	\
+			     gen_rtx (SYMBOL_REF, Pmode, LABEL2)),	\
+		    PTR_SIZE, 1)
+
+#define ASM_OUTPUT_DWARF_DELTA(FILE,LABEL1,LABEL2) \
+  ASM_OUTPUT_DWARF_DELTA4 (FILE,LABEL1,LABEL2)
+
+#define ASM_OUTPUT_DWARF_DATA4(FILE,VALUE) \
+  assemble_integer (GEN_INT (VALUE), 4, 1)
+
+#endif /* UNALIGNED_INT_ASM_OP */
 
 /* This is similar to the default ASM_OUTPUT_ASCII, except that no trailing
    newline is produced.  When flag_verbose_asm is asserted, we add commnetary
@@ -1288,9 +1341,9 @@ output_call_frame_info (for_eh)
   fputc ('\n', asm_out_file);
   if (eh_ptr)
     {
-      /* The "z" augmentation was defined by SGI; the FDE contains a pointer
+      /* The FDE contains a pointer
 	 to the exception region info for the frame.  */
-      ASM_OUTPUT_DWARF_STRING (asm_out_file, "z");
+      ASM_OUTPUT_DWARF_STRING (asm_out_file, "e");
       if (flag_verbose_asm)
 	fprintf (asm_out_file, "\t%s CIE Augmentation", ASM_COMMENT_START);
     }
@@ -1318,14 +1371,6 @@ output_call_frame_info (for_eh)
     fprintf (asm_out_file, "\t%s CIE RA Column", ASM_COMMENT_START);
 
   fputc ('\n', asm_out_file);
-  if (eh_ptr)
-    {
-      output_uleb128 (0);
-      if (flag_verbose_asm)
-	fprintf (asm_out_file, "\t%s CIE augmentation fields length",
-		 ASM_COMMENT_START);
-      fputc ('\n', asm_out_file);
-    }
 
   for (cfi = cie_cfi_head; cfi != NULL; cfi = cfi->dw_cfi_next)
     output_cfi (cfi, NULL);
@@ -1371,19 +1416,9 @@ output_call_frame_info (for_eh)
       fputc ('\n', asm_out_file);
       if (eh_ptr)
 	{
-	  output_uleb128 (PTR_SIZE);
-	  if (flag_verbose_asm)
-	    fprintf (asm_out_file, "\t%s FDE augmentation fields length",
-		     ASM_COMMENT_START);
-	  fputc ('\n', asm_out_file);
-
 	  /* For now, a pointer to the translation unit's info will do.
 	     ??? Eventually this should point to the function's info.  */
-	  if (exception_table_p ())
-	    ASM_OUTPUT_DWARF_ADDR (asm_out_file, "__EXCEPTION_TABLE__");
-	  else
-	    ASM_OUTPUT_DWARF_ADDR_DATA (asm_out_file, 0);
-
+	  ASM_OUTPUT_DWARF_ADDR (asm_out_file, "__EXCEPTION_TABLE__");
 	  if (flag_verbose_asm)
 	    fprintf (asm_out_file, "\t%s pointer to exception region info",
 		     ASM_COMMENT_START);
@@ -1413,19 +1448,6 @@ output_call_frame_info (for_eh)
      get a value of 0.  Putting .align 0 after the label fixes it.  */
   ASM_OUTPUT_ALIGN (asm_out_file, 0);
 #endif
-}
-
-/* Decide whether we want to emit frame unwind information for the current
-   translation unit.  */
-
-int
-dwarf2out_do_frame ()
-{
-  return (write_symbols == DWARF2_DEBUG
-#ifdef DWARF2_UNWIND_INFO
-	  || (flag_exceptions && ! exceptions_via_longjmp)
-#endif
-	  );
 }
 
 /* Output a marker (i.e. a label) for the beginning of a function, before

@@ -1757,6 +1757,9 @@ write_c_file_stat (stream, name)
       write_list (stream, "\t\t&", frame_tables.first);
       fprintf (stream, "\t0\n};\n");
 
+      fprintf (stream, "extern void __register_frame_table (void *);\n");
+      fprintf (stream, "extern void __deregister_frame (void *);\n");
+
       fprintf (stream, "static void reg_frame () {\n");
       fprintf (stream, "\t__register_frame_table (frame_table);\n");
       fprintf (stream, "\t}\n");
@@ -1828,6 +1831,9 @@ write_c_file_glob (stream, name)
       fprintf (stream, "\tstatic void *frame_table[] = {\n");
       write_list (stream, "\t\t&", frame_tables.first);
       fprintf (stream, "\t0\n};\n");
+
+      fprintf (stream, "extern void __register_frame_table (void *);\n");
+      fprintf (stream, "extern void __deregister_frame (void *);\n");
 
       fprintf (stream, "static void reg_frame () {\n");
       fprintf (stream, "\t__register_frame_table (frame_table);\n");

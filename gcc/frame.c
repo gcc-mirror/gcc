@@ -32,12 +32,18 @@ Boston, MA 02111-1307, USA.  */
    do not apply.  */
 
 #include "tconfig.h"
-#include "dwarf2.h"
-#include "frame.h"
 #include "defaults.h"
-#include <stddef.h>
 
 #ifdef DWARF2_UNWIND_INFO
+#include "dwarf2.h"
+#include "frame.h"
+#include <stddef.h>
+
+/* Don't use `fancy_abort' here even if config.h says to use it.  */
+#ifdef abort
+#undef abort
+#endif
+
 /* Some types used by the DWARF 2 spec.  */
 
 typedef unsigned int uword __attribute__ ((mode (SI)));
@@ -338,7 +344,8 @@ extract_cie_info (fde *f, struct cie_info *c)
   c->augmentation = f->CIE_pointer->augmentation;
 
   if (strcmp (c->augmentation, "") != 0
-      && strcmp (c->augmentation, "z") != 0)
+      && strcmp (c->augmentation, "e") != 0
+      && c->augmentation[0] != 'z')
     return 0;
 
   p = c->augmentation + strlen (c->augmentation) + 1;
@@ -574,13 +581,13 @@ __frame_state_for (void *pc_target, struct frame_state *state_in)
   if (info.augmentation[0] == 'z')
     {
       int i;
-      void *p;
-      p = decode_uleb128 (insn, &i);
-
-      if (strcmp (info.augmentation, "z") == 0)
-	state.s.eh_ptr = read_pointer (p);
-
-      insn = p + i;
+      insn = decode_uleb128 (insn, &i);
+      insn += i;
+    }
+  else if (strcmp (info.augmentation, "e") == 0)
+    {
+      state.s.eh_ptr = read_pointer (insn);
+      insn += sizeof (void *);
     }
 
   /* Then the insns in the FDE up to our target PC.  */
