@@ -1,5 +1,8 @@
 2002-06-04  Geoffrey Keating  <geoffk@redhat.com>
 
+	* gengtype.c (write_gc_root): Don't unnecessarily prevent
+	global variable-length arrays being roots.
+
 	* config.gcc (powerpc-*-darwin*): Set config_gtfiles.
 	* configure.in (config_gtfiles): New variable.
 	(all_gtfiles): Initialise from config_gtfiles.

@@ -1546,7 +1546,7 @@ write_gc_root (f, v, type, name, has_length, line, if_marked)
 		     tp->u.param_struct.stru->u.s.tag);
 	  }
 	else if (has_length
-		 && tp->kind == TYPE_POINTER)
+		 && (tp->kind == TYPE_POINTER || UNION_OR_STRUCT_P (tp)))
 	  {
 	    fprintf (f, "    &gt_ggc_ma_%s", name);
 	  }
