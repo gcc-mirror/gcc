@@ -4,6 +4,9 @@
 	jump.c, toplev.c:
 	Rename asynchronous_exceptions to flag_non_call_exceptions.
 
+	* gthr-single.h (UNUSED): New.  Distinguish between how C 
+	and C++ mark unused function arguments.  Use throughout.
+
 2001-03-27  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* configure.in: Don't check for bcopy.
