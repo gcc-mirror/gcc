@@ -190,9 +190,33 @@ inline bool operator==(const _Rb_tree_iterator<_Value, _Ref, _Ptr>& __x,
   return __x._M_node == __y._M_node;
 }
 
+template <class _Value>
+inline bool operator==(const _Rb_tree_iterator<_Value, const _Value&, const _Value*>& __x,
+		       const _Rb_tree_iterator<_Value, _Value&, _Value*>& __y) {
+  return __x._M_node == __y._M_node;
+}
+
+template <class _Value>
+inline bool operator==(const _Rb_tree_iterator<_Value, _Value&, _Value*>& __x,
+		       const _Rb_tree_iterator<_Value, const _Value&, const _Value*>& __y) {
+  return __x._M_node == __y._M_node;
+}
+
 template <class _Value, class _Ref, class _Ptr>
 inline bool operator!=(const _Rb_tree_iterator<_Value, _Ref, _Ptr>& __x,
 		       const _Rb_tree_iterator<_Value, _Ref, _Ptr>& __y) {
+  return __x._M_node != __y._M_node;
+}
+
+template <class _Value>
+inline bool operator!=(const _Rb_tree_iterator<_Value, const _Value&, const _Value*>& __x,
+		       const _Rb_tree_iterator<_Value, _Value&, _Value*>& __y) {
+  return __x._M_node != __y._M_node;
+}
+
+template <class _Value>
+inline bool operator!=(const _Rb_tree_iterator<_Value, _Value&, _Value*>& __x,
+		       const _Rb_tree_iterator<_Value, const _Value&, const _Value*>& __y) {
   return __x._M_node != __y._M_node;
 }
 
