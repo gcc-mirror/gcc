@@ -6100,6 +6100,13 @@ arm_select_cc_mode (enum rtx_code op, rtx x, rtx y)
 	  || GET_CODE (x) == ROTATERT))
     return CC_SWPmode;
 
+  /* This operation is performed swapped, but since we only rely on the Z
+     flag we don't need an additional mode.  */
+  if (GET_MODE (y) == SImode && REG_P (y)
+      && GET_CODE (x) == NEG
+      && (op ==	EQ || op == NE))
+    return CC_Zmode;
+
   /* This is a special case that is used by combine to allow a
      comparison of a shifted byte load to be split into a zero-extend
      followed by a comparison of the shifted integer (only valid for
