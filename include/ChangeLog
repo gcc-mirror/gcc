@@ -1,3 +1,8 @@
+2002-04-16  David S. Miller  <davem@redhat.com>
+
+	* xregex2.h (__restrict_arr): Define to __restrict on GCC
+	3.1 and later.  Do not redefine.
+
 2002-04-01  Phil Edwards  <pme@gcc.gnu.org>
 
 	* dyn-string.h:  Also allow IN_GLIBCPP_V3 to redefine names.
