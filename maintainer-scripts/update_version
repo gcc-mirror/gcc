@@ -7,7 +7,7 @@
 
 CVSROOT=${CVSROOT:-/cvs/gcc}
 IGNORE_BRANCHES='gcc-(2_95|3_0|3_1|3_2)-branch'
-ADD_BRANCHES='HEAD lno-branch'
+ADD_BRANCHES='HEAD autovect-branch'
 
 # Run this from /tmp.
 export CVSROOT

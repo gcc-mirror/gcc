@@ -1,3 +1,8 @@
+2004-12-30  Sebastian Pop  <pop@cri.ensmp.fr>
+
+	* update_version (ADD_BRANCHES): Replace lno-branch with 
+	autovect-branch.
+
 2004-09-11  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* crontab: Rename GCC 3.5 snapshots to GCC 4.0 snapshots.
