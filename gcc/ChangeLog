@@ -1,3 +1,9 @@
+Sun Nov 16 23:52:48 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* cse.c (cse_insn): Don't look at JUMP_LABEL field of a conditionl
+	return.
+	(cse_end_of_basic_block): Similarly.
+	
 Sun Nov 16 23:01:40 1997  J. Kean Johnston  <jkj@sco.com>
 
 	* i386/sco5.h (ASM_OUTPUT_ALIGNED_BSS): Define.

@@ -7027,7 +7027,8 @@ cse_insn (insn, in_libcall_block)
 	  NOTE_SOURCE_FILE (insn) = 0;
 	  cse_jumps_altered = 1;
 	  /* One less use of the label this insn used to jump to.  */
-	  --LABEL_NUSES (JUMP_LABEL (insn));
+	  if (JUMP_LABEL (insn) != 0)
+	    --LABEL_NUSES (JUMP_LABEL (insn));
 	  /* No more processing for this set.  */
 	  sets[i].rtl = 0;
 	}
@@ -8057,6 +8058,7 @@ cse_end_of_basic_block (insn, data, follow_jumps, after_loop, skip_blocks)
 	       && GET_CODE (p) == JUMP_INSN
       	       && GET_CODE (PATTERN (p)) == SET
 	       && GET_CODE (SET_SRC (PATTERN (p))) == IF_THEN_ELSE
+	       && JUMP_LABEL (p) != 0
 	       && LABEL_NUSES (JUMP_LABEL (p)) == 1
 	       && NEXT_INSN (JUMP_LABEL (p)) != 0)
 	{
