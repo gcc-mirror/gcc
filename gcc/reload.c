@@ -547,7 +547,7 @@ push_reload (in, out, inloc, outloc, class,
   /* If IN appears in OUT, we can't share any input-only reload for IN.  */
   if (in != 0 && out != 0 && GET_CODE (out) == MEM
       && (GET_CODE (in) == REG || GET_CODE (in) == MEM)
-      && reg_overlap_mentioned_p (in, XEXP (out, 0)))
+      && reg_overlap_mentioned_for_reload_p (in, XEXP (out, 0)))
     dont_share = 1;
 
   /* Narrow down the class of register wanted if that is
@@ -1104,8 +1104,8 @@ combine_reloads ()
 	    /* Args reversed because the first arg seems to be
 	       the one that we imagine being modified
 	       while the second is the one that might be affected.  */
-	    || (! reg_overlap_mentioned_p (reload_out[output_reload],
-					   reload_in[i])
+	    || (! reg_overlap_mentioned_for_reload_p (reload_out[output_reload],
+						      reload_in[i])
 		/* However, if the input is a register that appears inside
 		   the output, then we also can't share.
 		   Imagine (set (mem (reg 69)) (plus (reg 69) ...)).
@@ -1113,8 +1113,8 @@ combine_reloads ()
 		   result to be stored in memory, then that result
 		   will clobber the address of the memory ref.  */
 		&& ! (GET_CODE (reload_in[i]) == REG
-		      && reg_overlap_mentioned_p (reload_in[i],
-						  reload_out[output_reload])))))
+		      && reg_overlap_mentioned_for_reload_p (reload_in[i],
+							     reload_out[output_reload])))))
       {
 	int j;
 
@@ -1162,8 +1162,8 @@ combine_reloads ()
   for (note = REG_NOTES (this_insn); note; note = XEXP (note, 1))
     if (REG_NOTE_KIND (note) == REG_DEAD
 	&& GET_CODE (XEXP (note, 0)) == REG
-	&& ! reg_overlap_mentioned_p (XEXP (note, 0),
-				      reload_out[output_reload])
+	&& ! reg_overlap_mentioned_for_reload_p (XEXP (note, 0),
+						 reload_out[output_reload])
 	&& REGNO (XEXP (note, 0)) < FIRST_PSEUDO_REGISTER
 	&& HARD_REGNO_MODE_OK (REGNO (XEXP (note, 0)), reload_outmode[output_reload])
 	&& TEST_HARD_REG_BIT (reg_class_contents[(int) reload_reg_class[output_reload]],
@@ -4343,6 +4343,70 @@ refers_to_regno_for_reload_p (regno, endregno, x, loc)
     }
   return 0;
 }
+
+/* Nonzero if modifying X will affect IN.  If X is a register or a SUBREG,
+   we check if any register number in X conflicts with the relevant register
+   numbers.  If X is a constant, return 0.  If X is a MEM, return 1 iff IN
+   contains a MEM (we don't bother checking for memory addresses that can't
+   conflict because we expect this to be a rare case. 
+
+   This function is similar to reg_overlap_mention_p in rtlanal.c except
+   that we look at equivalences for pseudos that didn't get hard registers.  */
+
+int
+reg_overlap_mentioned_for_reload_p (x, in)
+     rtx x, in;
+{
+  int regno, endregno;
+
+  if (GET_CODE (x) == SUBREG)
+    {
+      regno = REGNO (SUBREG_REG (x));
+      if (regno < FIRST_PSEUDO_REGISTER)
+	regno += SUBREG_WORD (x);
+    }
+  else if (GET_CODE (x) == REG)
+    {
+      regno = REGNO (x);
+      if (regno >= FIRST_PSEUDO_REGISTER && reg_renumber[regno] == -1
+	  && ((reg_equiv_address[regno]
+	       && reg_overlap_mentioned_for_reload_p (reg_equiv_address[regno],
+						      in))
+	      || (reg_equiv_mem[regno]
+		  && reg_overlap_mentioned_for_reload_p (reg_equiv_mem[regno],
+							 in))))
+	return 1;
+    }
+  else if (CONSTANT_P (x))
+    return 0;
+  else if (GET_CODE (x) == MEM)
+    {
+      char *fmt;
+      int i;
+
+      if (GET_CODE (in) == MEM)
+	return 1;
+
+      fmt = GET_RTX_FORMAT (GET_CODE (in));
+
+      for (i = GET_RTX_LENGTH (GET_CODE (in)) - 1; i >= 0; i--)
+	if (fmt[i] == 'e' && reg_overlap_mentioned_for_reload_p (x,
+								 XEXP (in, i)))
+	  return 1;
+
+      return 0;
+    }
+  else if (GET_CODE (x) == SCRATCH || GET_CODE (x) == PC
+	   || GET_CODE (x) == CC0)
+    return reg_mentioned_p (x, in);
+  else
+    abort ();
+
+  endregno = regno + (regno < FIRST_PSEUDO_REGISTER
+		      ? HARD_REGNO_NREGS (regno, GET_MODE (x)) : 1);
+
+  return refers_to_regno_for_reload_p (regno, endregno, in, 0);
+}
 
 #if 0
 
@@ -4584,7 +4648,8 @@ find_equiv_reg (goal, insn, class, other, reload_reg_p, goalreg, mode)
   /* If we propose to get the value from the stack pointer or if GOAL is
      a MEM based on the stack pointer, we need a stable SP.  */
   if (valueno == STACK_POINTER_REGNUM
-      || (goal_mem && reg_overlap_mentioned_p (stack_pointer_rtx, goal)))
+      || (goal_mem && reg_overlap_mentioned_for_reload_p (stack_pointer_rtx,
+							  goal)))
     need_stable_sp = 1;
 
   /* Reject VALUE if the copy-insn moved the wrong sort of datum.  */
@@ -4595,9 +4660,10 @@ find_equiv_reg (goal, insn, class, other, reload_reg_p, goalreg, mode)
      and is also a register that appears in the address of GOAL.  */
 
   if (goal_mem && value == SET_DEST (PATTERN (where))
-      && refers_to_regno_p (valueno,
-			    valueno + HARD_REGNO_NREGS (valueno, mode),
-			    goal, 0))
+      && refers_to_regno_for_reload_p (valueno,
+				       (valueno
+					+ HARD_REGNO_NREGS (valueno, mode)),
+				       goal, 0))
     return 0;
 
   /* Reject registers that overlap GOAL.  */
@@ -4710,7 +4776,7 @@ find_equiv_reg (goal, insn, class, other, reload_reg_p, goalreg, mode)
 		      && xregno + xnregs > valueno)
 		    return 0;
 		  if (goal_mem_addr_varies
-		      && reg_overlap_mentioned_p (dest, goal))
+		      && reg_overlap_mentioned_for_reload_p (dest, goal))
 		    return 0;
 		}
 	      else if (goal_mem && GET_CODE (dest) == MEM
@@ -4748,7 +4814,8 @@ find_equiv_reg (goal, insn, class, other, reload_reg_p, goalreg, mode)
 			      && xregno + xnregs > valueno)
 			    return 0;
 			  if (goal_mem_addr_varies
-			      && reg_overlap_mentioned_p (dest, goal))
+			      && reg_overlap_mentioned_for_reload_p (dest,
+								     goal))
 			    return 0;
 			}
 		      else if (goal_mem && GET_CODE (dest) == MEM
@@ -4779,7 +4846,8 @@ find_equiv_reg (goal, insn, class, other, reload_reg_p, goalreg, mode)
 		  if (incno < valueno + valuenregs && incno >= valueno)
 		    return 0;
 		  if (goal_mem_addr_varies
-		      && reg_overlap_mentioned_p (XEXP (link, 0), goal))
+		      && reg_overlap_mentioned_for_reload_p (XEXP (link, 0),
+							     goal))
 		    return 0;
 		}
 	  }

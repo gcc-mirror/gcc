@@ -4272,7 +4272,8 @@ choose_reload_regs (insn, avoid_return_reg)
 
 	      if (equiv != 0)
 		for (i = 0; i < n_earlyclobbers; i++)
-		  if (reg_overlap_mentioned_p (equiv, reload_earlyclobbers[i]))
+		  if (reg_overlap_mentioned_for_reload_p (equiv,
+							  reload_earlyclobbers[i]))
 		    {
 		      reload_override_in[r] = equiv;
 		      equiv = 0;
@@ -4600,7 +4601,8 @@ emit_reload_insns (insn)
 		  int k;
 		  for (k = 0; k < n_reloads; k++)
 		    if (reload_reg_rtx[k] != 0 && k != j
-			&& reg_overlap_mentioned_p (reload_reg_rtx[k], oldequiv))
+			&& reg_overlap_mentioned_for_reload_p (reload_reg_rtx[k],
+							       oldequiv))
 		      {
 			oldequiv = 0;
 			break;
@@ -4879,8 +4881,8 @@ emit_reload_insns (insn)
 		       prev != PREV_INSN (this_reload_insn);
 		       prev = PREV_INSN (prev))
 		    if (GET_RTX_CLASS (GET_CODE (prev) == 'i')
-			&& reg_overlap_mentioned_p (second_reload_reg,
-						    PATTERN (prev)))
+			&& reg_overlap_mentioned_for_reload_p (second_reload_reg,
+							       PATTERN (prev)))
 		      {
 			REG_NOTES (prev) = gen_rtx (EXPR_LIST, REG_DEAD,
 						    second_reload_reg,
@@ -5008,8 +5010,8 @@ emit_reload_insns (insn)
 		    for (prev1 = this_reload_insn;
 			 prev1; prev1 = PREV_INSN (prev1))
 		      if (GET_RTX_CLASS (GET_CODE (prev1) == 'i')
-			&& reg_overlap_mentioned_p (oldequiv_reg,
-						    PATTERN (prev1)))
+			&& reg_overlap_mentioned_for_reload_p (oldequiv_reg,
+							       PATTERN (prev1)))
 		      {
 			REG_NOTES (prev1) = gen_rtx (EXPR_LIST, REG_DEAD,
 						     oldequiv_reg,
@@ -5190,7 +5192,8 @@ emit_reload_insns (insn)
 	    for (p = PREV_INSN (first_output_reload_insn);
 		 p != prev_insn; p = PREV_INSN (p))
 	      if (GET_RTX_CLASS (GET_CODE (p)) == 'i'
-		  && reg_overlap_mentioned_p (reloadreg, PATTERN (p)))
+		  && reg_overlap_mentioned_for_reload_p (reloadreg,
+							 PATTERN (p)))
 		REG_NOTES (p) = gen_rtx (EXPR_LIST, REG_DEAD,
 					 reloadreg, REG_NOTES (p));
 
@@ -5200,7 +5203,8 @@ emit_reload_insns (insn)
 	    for (p = PREV_INSN (first_output_reload_insn);
 		 p != prev_insn; p = PREV_INSN (p))
 	      if (GET_RTX_CLASS (GET_CODE (p)) == 'i'
-		  && reg_overlap_mentioned_p (second_reloadreg, PATTERN (p)))
+		  && reg_overlap_mentioned_for_reload_p (second_reloadreg,
+							 PATTERN (p)))
 		REG_NOTES (p) = gen_rtx (EXPR_LIST, REG_DEAD,
 					 second_reloadreg, REG_NOTES (p));
 #endif
@@ -5253,8 +5257,10 @@ emit_reload_insns (insn)
 	      if (REG_NOTE_KIND (reg_notes) == REG_DEAD
 		  && GET_CODE (XEXP (reg_notes, 0)) == REG
 		  && ((GET_CODE (dest) != REG
-		       && reg_overlap_mentioned_p (XEXP (reg_notes, 0), dest))
-		      || reg_overlap_mentioned_p (XEXP (reg_notes, 0), source)))
+		       && reg_overlap_mentioned_for_reload_p (XEXP (reg_notes, 0),
+							      dest))
+		      || reg_overlap_mentioned_for_reload_p (XEXP (reg_notes, 0),
+							     source)))
 		{
 		  *prev_reg_note = next_reg_notes;
 		  XEXP (reg_notes, 1) = REG_NOTES (insn1);
