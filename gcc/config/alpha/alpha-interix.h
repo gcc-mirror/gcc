@@ -33,13 +33,13 @@ Boston, MA 02111-1307, USA.  */
   -D__alpha -D__alpha__\
   -D__stdcall= \
   -D__cdecl= \
-  -Asystem(unix) -Asystem(interix) -Asystem(interix) -Acpu(alpha) -Amachine(alpha)"
+  -Asystem(unix) -Asystem(interix) -Acpu(alpha) -Amachine(alpha)"
 
 #undef CPP_SUBTARGET_SPEC
 #define CPP_SUBTARGET_SPEC "\
 -remap \
 %{posix:-D_POSIX_SOURCE} \
--idirafter %$INTERIX_ROOT/usr/include"
+-isystem %$INTERIX_ROOT/usr/include"
 
 #undef TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (alpha Interix)");

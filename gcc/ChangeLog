@@ -1,3 +1,9 @@
+Wed Jun 28 15:39:26 2000  Donn Terry (donnte@microsoft.com)
+
+	* alpha/alpha-interix.h: Delete redundant -Asystem(interix),
+	use -isystem instead of -idirafter.
+	* i386/i386-interix.h: Likewise.
+
 2000-06-28  Jason Merrill  <jason@redhat.com>
 
 	* dwarf2out.c (output_loc_operands): Don't support >1 byte output
