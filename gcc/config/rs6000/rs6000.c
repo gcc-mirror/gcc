@@ -387,6 +387,7 @@ static void enable_mask_for_builtins (struct builtin_description *, int,
 static tree build_opaque_vector_type (tree, int);
 static void spe_init_builtins (void);
 static rtx spe_expand_builtin (tree, rtx, bool *);
+static rtx spe_expand_stv_builtin (enum insn_code, tree);
 static rtx spe_expand_predicate_builtin (enum insn_code, tree, rtx);
 static rtx spe_expand_evsel_builtin (enum insn_code, tree, rtx);
 static int rs6000_emit_int_cmove (rtx, rtx, rtx, rtx);
@@ -6008,6 +6009,39 @@ altivec_expand_lv_builtin (enum insn_code icode, tree arglist, rtx target)
 }
 
 static rtx
+spe_expand_stv_builtin (enum insn_code icode, tree arglist)
+{
+  tree arg0 = TREE_VALUE (arglist);
+  tree arg1 = TREE_VALUE (TREE_CHAIN (arglist));
+  tree arg2 = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist)));
+  rtx op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
+  rtx op1 = expand_expr (arg1, NULL_RTX, VOIDmode, 0);
+  rtx op2 = expand_expr (arg2, NULL_RTX, VOIDmode, 0);
+  rtx pat;
+  enum machine_mode mode0 = insn_data[icode].operand[0].mode;
+  enum machine_mode mode1 = insn_data[icode].operand[1].mode;
+  enum machine_mode mode2 = insn_data[icode].operand[2].mode;
+
+  /* Invalid arguments.  Bail before doing anything stoopid!  */
+  if (arg0 == error_mark_node
+      || arg1 == error_mark_node
+      || arg2 == error_mark_node)
+    return const0_rtx;
+
+  if (! (*insn_data[icode].operand[2].predicate) (op0, mode2))
+    op0 = copy_to_mode_reg (mode2, op0);
+  if (! (*insn_data[icode].operand[0].predicate) (op1, mode0))
+    op1 = copy_to_mode_reg (mode0, op1);
+  if (! (*insn_data[icode].operand[1].predicate) (op2, mode1))
+    op2 = copy_to_mode_reg (mode1, op2);
+
+  pat = GEN_FCN (icode) (op1, op2, op0);
+  if (pat)
+    emit_insn (pat);
+  return NULL_RTX;
+}
+
+static rtx
 altivec_expand_stv_builtin (enum insn_code icode, tree arglist)
 {
   tree arg0 = TREE_VALUE (arglist);
@@ -6534,33 +6568,33 @@ spe_expand_builtin (tree exp, rtx target, bool *expandedp)
   switch (fcode)
     {
     case SPE_BUILTIN_EVSTDDX:
-      return altivec_expand_stv_builtin (CODE_FOR_spe_evstddx, arglist);
+      return spe_expand_stv_builtin (CODE_FOR_spe_evstddx, arglist);
     case SPE_BUILTIN_EVSTDHX:
-      return altivec_expand_stv_builtin (CODE_FOR_spe_evstdhx, arglist);
+      return spe_expand_stv_builtin (CODE_FOR_spe_evstdhx, arglist);
     case SPE_BUILTIN_EVSTDWX:
-      return altivec_expand_stv_builtin (CODE_FOR_spe_evstdwx, arglist);
+      return spe_expand_stv_builtin (CODE_FOR_spe_evstdwx, arglist);
     case SPE_BUILTIN_EVSTWHEX:
-      return altivec_expand_stv_builtin (CODE_FOR_spe_evstwhex, arglist);
+      return spe_expand_stv_builtin (CODE_FOR_spe_evstwhex, arglist);
     case SPE_BUILTIN_EVSTWHOX:
-      return altivec_expand_stv_builtin (CODE_FOR_spe_evstwhox, arglist);
+      return spe_expand_stv_builtin (CODE_FOR_spe_evstwhox, arglist);
     case SPE_BUILTIN_EVSTWWEX:
-      return altivec_expand_stv_builtin (CODE_FOR_spe_evstwwex, arglist);
+      return spe_expand_stv_builtin (CODE_FOR_spe_evstwwex, arglist);
     case SPE_BUILTIN_EVSTWWOX:
-      return altivec_expand_stv_builtin (CODE_FOR_spe_evstwwox, arglist);
+      return spe_expand_stv_builtin (CODE_FOR_spe_evstwwox, arglist);
     case SPE_BUILTIN_EVSTDD:
-      return altivec_expand_stv_builtin (CODE_FOR_spe_evstdd, arglist);
+      return spe_expand_stv_builtin (CODE_FOR_spe_evstdd, arglist);
     case SPE_BUILTIN_EVSTDH:
-      return altivec_expand_stv_builtin (CODE_FOR_spe_evstdh, arglist);
+      return spe_expand_stv_builtin (CODE_FOR_spe_evstdh, arglist);
     case SPE_BUILTIN_EVSTDW:
-      return altivec_expand_stv_builtin (CODE_FOR_spe_evstdw, arglist);
+      return spe_expand_stv_builtin (CODE_FOR_spe_evstdw, arglist);
     case SPE_BUILTIN_EVSTWHE:
-      return altivec_expand_stv_builtin (CODE_FOR_spe_evstwhe, arglist);
+      return spe_expand_stv_builtin (CODE_FOR_spe_evstwhe, arglist);
     case SPE_BUILTIN_EVSTWHO:
-      return altivec_expand_stv_builtin (CODE_FOR_spe_evstwho, arglist);
+      return spe_expand_stv_builtin (CODE_FOR_spe_evstwho, arglist);
     case SPE_BUILTIN_EVSTWWE:
-      return altivec_expand_stv_builtin (CODE_FOR_spe_evstwwe, arglist);
+      return spe_expand_stv_builtin (CODE_FOR_spe_evstwwe, arglist);
     case SPE_BUILTIN_EVSTWWO:
-      return altivec_expand_stv_builtin (CODE_FOR_spe_evstwwo, arglist);
+      return spe_expand_stv_builtin (CODE_FOR_spe_evstwwo, arglist);
     case SPE_BUILTIN_MFSPEFSCR:
       icode = CODE_FOR_spe_mfspefscr;
       tmode = insn_data[icode].operand[0].mode;
