@@ -3032,7 +3032,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		   of the call to gnat_to_gnu_type above if we are processing
 		   an access type for a record component designating the
 		   record type itself.  */
-		if (!COMPLETE_TYPE_P (gnu_desig_type))
+		if (TYPE_MODE (gnu_desig_type) == VOIDmode)
 		  {
 		    /* We must ensure that the pointer to variant we make will
 		       be processed by update_pointer_to when the initial type
