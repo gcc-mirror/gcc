@@ -737,9 +737,7 @@ ix86_valid_type_attribute_p (type, attributes, identifier, args)
       if (TREE_CODE (cst) != INTEGER_CST)
 	return 0;
 
-      if (TREE_INT_CST_HIGH (cst) != 0
-	  || TREE_INT_CST_LOW (cst) < 0
-	  || TREE_INT_CST_LOW (cst) > REGPARM_MAX)
+      if (compare_tree_int (cst, REGPARM_MAX) > 0)
 	return 0;
 
       return 1;
