@@ -8819,11 +8819,18 @@ loop_regs_scan (loop, extra_size)
 	memset (last_set, 0, regs->num * sizeof (rtx));
     }
 
-  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-    {
-      regs->array[i].may_not_optimize = 1;
-      regs->array[i].set_in_loop = 1;
-    }
+  /* Invalidate all hard registers clobbered by calls.  With one exception:
+     a call-clobbered PIC register is still function-invariant for our
+     purposes, since we can hoist any PIC calculations out of the loop.
+     Thus the call to rtx_varies_p.  */
+  if (LOOP_INFO (loop)->has_call)
+    for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+      if (TEST_HARD_REG_BIT (regs_invalidated_by_call, i)
+          && rtx_varies_p (gen_rtx_REG (Pmode, i), /*for_alias=*/1))
+        {
+          regs->array[i].may_not_optimize = 1;
+          regs->array[i].set_in_loop = 1;
+        }
 
 #ifdef AVOID_CCMODE_COPIES
   /* Don't try to move insns which set CC registers if we should not
