@@ -476,7 +476,7 @@ extern const struct mips_cpu_info *mips_tune_info;
         {							\
 	  builtin_define ("_LANGUAGE_OBJECTIVE_C");		\
           builtin_define ("__LANGUAGE_OBJECTIVE_C");		\
-	  /* Bizzare, but needed at least for Irix.  */		\
+	  /* Bizarre, but needed at least for Irix.  */		\
 	  builtin_define_std ("LANGUAGE_C");			\
 	  builtin_define ("_LANGUAGE_C");			\
         }							\
@@ -2230,7 +2230,7 @@ extern enum reg_class mips_char_to_class[256];
 
 /* 1 if N is a possible register number for a function value.
    On the MIPS, R2 R3 and F0 F2 are the only register thus used.
-   Currently, R2 and F0 are only implemented  here (C has no complex type)  */
+   Currently, R2 and F0 are only implemented here (C has no complex type)  */
 
 #define FUNCTION_VALUE_REGNO_P(N) ((N) == GP_RETURN || (N) == FP_RETURN \
   || (LONG_DOUBLE_TYPE_SIZE == 128 && FP_RETURN != GP_RETURN \
@@ -2317,9 +2317,7 @@ typedef struct mips_args {
 
 /* Initialize a variable CUM of type CUMULATIVE_ARGS
    for a call to a function whose data type is FNTYPE.
-   For a library call, FNTYPE is 0.
-
-*/
+   For a library call, FNTYPE is 0.  */
 
 #define INIT_CUMULATIVE_ARGS(CUM,FNTYPE,LIBNAME,INDIRECT)		\
   init_cumulative_args (&CUM, FNTYPE, LIBNAME)				\
