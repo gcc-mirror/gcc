@@ -176,7 +176,7 @@ public abstract class URLStreamHandler
       } 
     else if (start < end)
       {
-	// Context is available, but only override it if there is a new file.
+        // Context is available, but only override it if there is a new file.
         char sepChar = '/';
         int lastSlash = file.lastIndexOf (sepChar);
         if (lastSlash < 0 && File.separatorChar != sepChar
