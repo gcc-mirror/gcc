@@ -218,10 +218,7 @@ commonparms (p1, p2)
 	}
       else
 	{
-	  int cmp = simple_cst_equal (TREE_PURPOSE (p1), TREE_PURPOSE (p2));
-	  if (cmp < 0)
-	    my_friendly_abort (111);
-	  if (cmp == 0)
+	  if (1 != simple_cst_equal (TREE_PURPOSE (p1), TREE_PURPOSE (p2)))
 	    any_change = 1;
 	  TREE_PURPOSE (n) = TREE_PURPOSE (p2);
 	}
@@ -419,7 +416,7 @@ common_type (t1, t2)
 	if (elt == TREE_TYPE (t2) && TYPE_DOMAIN (t2))
 	  return build_type_attribute_variant (t2, attributes);
 	/* Merge the element types, and have a size if either arg has one.  */
-	t1 = build_array_type (elt, TYPE_DOMAIN (TYPE_DOMAIN (t1) ? t1 : t2));
+	t1 = build_cplus_array_type (elt, TYPE_DOMAIN (TYPE_DOMAIN (t1) ? t1 : t2));
 	return build_type_attribute_variant (t1, attributes);
       }
 
@@ -1858,8 +1855,12 @@ build_indirect_ref (ptr, errorstring)
   if (TREE_CODE (type) == POINTER_TYPE || TREE_CODE (type) == REFERENCE_TYPE)
     {
       if (TREE_CODE (pointer) == ADDR_EXPR
-	  && (TREE_TYPE (TREE_OPERAND (pointer, 0))
-	      == TREE_TYPE (type)))
+	  && (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_OPERAND (pointer, 0)))
+	      == TYPE_MAIN_VARIANT (TREE_TYPE (type)))
+	  && (TREE_READONLY (TREE_OPERAND (pointer, 0))
+	      == TYPE_READONLY (TREE_TYPE (type)))
+	  && (TREE_THIS_VOLATILE (TREE_OPERAND (pointer, 0))
+	      == TYPE_VOLATILE (TREE_TYPE (type))))
 	return TREE_OPERAND (pointer, 0);
       else
 	{
@@ -4559,7 +4560,7 @@ build_conditional_expr (ifexp, op1, op2)
       ifexp = op1 = save_expr (ifexp);
     }
 
-  ifexp = truthvalue_conversion (ifexp);
+  ifexp = convert (boolean_type_node, ifexp);
 
   if (TREE_CODE (ifexp) == ERROR_MARK)
     return error_mark_node;
@@ -5233,11 +5234,12 @@ build_c_cast (type, expr, allow_nonconverting)
        so we can tell (for -pedantic) that the cast is no lvalue.
        Also, pedantically, don't let (void *) (FOO *) 0 be a null
        pointer constant.  */
-  if (value == expr
-      || (pedantic
-	  && TREE_CODE (value) == INTEGER_CST
-	  && TREE_CODE (expr) == INTEGER_CST
-	  && TREE_CODE (TREE_TYPE (expr)) != INTEGER_TYPE))
+  if (TREE_CODE (type) != REFERENCE_TYPE
+      && (value == expr
+	  || (pedantic
+	      && TREE_CODE (value) == INTEGER_CST
+	      && TREE_CODE (expr) == INTEGER_CST
+	      && TREE_CODE (TREE_TYPE (expr)) != INTEGER_TYPE)))
     value = non_lvalue (value);
 
   return value;
@@ -5670,7 +5672,10 @@ build_modify_expr (lhs, modifycode, rhs)
       if (! IS_AGGR_TYPE (lhstype))
 	/* Do the default thing */;
       else if (! TYPE_HAS_CONSTRUCTOR (lhstype))
-	cp_error ("`%T' has no constructors", lhstype);
+	{
+	  cp_error ("`%T' has no constructors", lhstype);
+	  return error_mark_node;
+	}
       else if (TYPE_HAS_TRIVIAL_INIT_REF (lhstype)
 	       && TYPE_MAIN_VARIANT (lhstype) == TYPE_MAIN_VARIANT (TREE_TYPE (newrhs)))
 	/* Do the default thing */;
@@ -5691,7 +5696,10 @@ build_modify_expr (lhs, modifycode, rhs)
       if (! IS_AGGR_TYPE (lhstype))
 	/* Do the default thing */;
       else if (! TYPE_HAS_ASSIGNMENT (lhstype))
-	cp_error ("`%T' does not define operator=", lhstype);
+	{
+	  cp_error ("`%T' does not define operator=", lhstype);
+	  return error_mark_node;
+	}
       else if (TYPE_HAS_TRIVIAL_ASSIGN_REF (lhstype)
 	       && TYPE_MAIN_VARIANT (lhstype) == TYPE_MAIN_VARIANT (TREE_TYPE (newrhs)))
 	{
