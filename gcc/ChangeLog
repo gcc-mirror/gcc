@@ -1,5 +1,11 @@
 2000-05-31  Richard Henderson  <rth@cygnus.com>
 
+	* config/ia64/ia64.c (sdata_symbolic_operand): Consider small
+	CONSTANT_POOL_ADDRESS_P addresses for .sdata.
+	* config/ia64/sysv4.h (SELECT_RTX_SECTION): New.
+
+2000-05-31  Richard Henderson  <rth@cygnus.com>
+
 	* config/ia64/ia64-protos.h (ia64_expand_prediction): Remove.
 	* config/ia64/ia64.c (ia64_expand_prediction): Move code ...
 	(ia64_print_operand) [+]: ... here.  Use current_output_insn.
