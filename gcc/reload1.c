@@ -5376,20 +5376,24 @@ choose_reload_regs (insn, avoid_return_reg)
 		 to load it, and use it as our reload reg.  */
 	      if (equiv != 0 && regno != HARD_FRAME_POINTER_REGNUM)
 		{
+		  int nr = HARD_REGNO_NREGS (regno, reload_mode[r]);
+		  int k;
 		  reload_reg_rtx[r] = equiv;
 		  reload_inherited[r] = 1;
-		  /* If it is a spill reg,
-		     mark the spill reg as in use for this insn.  */
-		  i = spill_reg_order[regno];
-		  if (i >= 0)
+
+		  /* If any of the hard registers in EQUIV are spill
+		     registers, mark them as in use for this insn.  */
+		  for (k = 0; k < nr; k++)
 		    {
-		      int nr = HARD_REGNO_NREGS (regno, reload_mode[r]);
-		      int k;
-		      mark_reload_reg_in_use (regno, reload_opnum[r],
-					      reload_when_needed[r],
-					      reload_mode[r]);
-		      for (k = 0; k < nr; k++)
-			SET_HARD_REG_BIT (reload_reg_used_for_inherit, regno + k);
+		      i = spill_reg_order[regno + k];
+		      if (i >= 0)
+			{
+			  mark_reload_reg_in_use (regno, reload_opnum[r],
+						  reload_when_needed[r],
+						  reload_mode[r]);
+			  SET_HARD_REG_BIT (reload_reg_used_for_inherit,
+					    regno + k);
+			}
 		    }
 		}
 	    }
