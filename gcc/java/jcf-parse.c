@@ -449,34 +449,22 @@ DEFUN(jcf_out_of_synch, (jcf),
   free (source);
 }
 
-/* Load CLASS_OR_NAME. CLASS_OR_NAME can be a mere identifier if
-   called from the parser, otherwise it's a RECORD_TYPE node. If
-   VERBOSE is 1, print error message on failure to load a class. */
+/* Read a class with the fully qualified-name NAME.
+   Return 1 iff we read the requested file.
+   (It is still possible we failed if the file did not
+   define the class it is supposed to.) */
 
-void
-load_class (class_or_name, verbose)
-     tree class_or_name;
-     int verbose;
+int
+read_class (name)
+     tree name;
 {
   JCF this_jcf, *jcf;
-  tree name;
   tree save_current_class = current_class;
   char *save_input_filename = input_filename;
   JCF *save_current_jcf = current_jcf;
   long saved_pos;
   if (current_jcf->read_state)
     saved_pos = ftell (current_jcf->read_state);
-
-  /* class_or_name can be the name of the class we want to load */
-  if (TREE_CODE (class_or_name) == IDENTIFIER_NODE)
-    name = class_or_name;
-  /* In some cases, it's a dependency that we process earlier that
-     we though */
-  else if (TREE_CODE (class_or_name) == TREE_LIST)
-    name = TYPE_NAME (TREE_PURPOSE (class_or_name));
-  /* Or it's a type in the making */
-  else
-    name = DECL_NAME (TYPE_NAME (class_or_name));
 
   push_obstacks (&permanent_obstack, &permanent_obstack);
 
@@ -491,19 +479,8 @@ load_class (class_or_name, verbose)
     if (find_class (IDENTIFIER_POINTER (name), IDENTIFIER_LENGTH (name),
 		     &this_jcf, saw_java_source) == 0)
       {
-	if (verbose)
-	  {
-	    error ("Cannot find class file for class %s.",
-		   IDENTIFIER_POINTER (name));
-	    TYPE_SIZE (class_or_name) = error_mark_node;
-#if 0
-	    /* FIXME: what to do here?  */
-	    if (!strcmp (classpath, DEFAULT_CLASS_PATH))
-	      fatal ("giving up");
-#endif
-	    pop_obstacks ();	/* FIXME: one pop_obstack() per function */
-	  }
-	return;
+	pop_obstacks ();	/* FIXME: one pop_obstack() per function */
+	return 0;
       }
     else
       {
@@ -528,7 +505,6 @@ load_class (class_or_name, verbose)
 
   if (!current_jcf->seen_in_zip)
     JCF_FINISH (current_jcf);
-/*  DECL_IGNORED_P (TYPE_NAME (class_or_name)) = 1;*/
   pop_obstacks ();
 
   current_class = save_current_class;
@@ -536,6 +512,47 @@ load_class (class_or_name, verbose)
   current_jcf = save_current_jcf;
   if (current_jcf->read_state)
     fseek (current_jcf->read_state, saved_pos, SEEK_SET);
+  return 1;
+}
+
+/* Load CLASS_OR_NAME. CLASS_OR_NAME can be a mere identifier if
+   called from the parser, otherwise it's a RECORD_TYPE node. If
+   VERBOSE is 1, print error message on failure to load a class. */
+
+/* Replace calls to load_class by having callers call read_class directly
+   - and then perhaps rename read_class to load_class.  FIXME */
+
+void
+load_class (class_or_name, verbose)
+     tree class_or_name;
+     int verbose;
+{
+  tree name;
+
+  /* class_or_name can be the name of the class we want to load */
+  if (TREE_CODE (class_or_name) == IDENTIFIER_NODE)
+    name = class_or_name;
+  /* In some cases, it's a dependency that we process earlier that
+     we though */
+  else if (TREE_CODE (class_or_name) == TREE_LIST)
+    name = TYPE_NAME (TREE_PURPOSE (class_or_name));
+  /* Or it's a type in the making */
+  else
+    name = DECL_NAME (TYPE_NAME (class_or_name));
+
+  if (read_class (name) == 0 && verbose)
+    {
+      error ("Cannot find file for class %s.",
+	     IDENTIFIER_POINTER (name));
+      if (TREE_CODE (class_or_name) == RECORD_TYPE)
+	TYPE_SIZE (class_or_name) = error_mark_node;
+#if 0
+      /* FIXME: what to do here?  */
+      if (!strcmp (classpath, DEFAULT_CLASS_PATH))
+	fatal ("giving up");
+#endif
+      return;
+    }
 }
 
 /* Parse a source file when JCF refers to a source file.  */
@@ -717,12 +734,15 @@ static void
 parse_source_file (file)
      tree file;
 {
+  int save_error_count = java_error_count;
   /* Mark the file as parsed */
   HAS_BEEN_ALREADY_PARSED_P (file) = 1;
 
   lang_init_source (1);		    /* Error msgs have no method prototypes */
+
   java_init_lex ();		    /* Initialize the parser */
   java_parse_abort_on_error ();
+
   java_parse ();		    /* Parse and build partial tree nodes. */
   java_parse_abort_on_error ();
   java_complete_class ();	    /* Parse unsatisfied class decl. */

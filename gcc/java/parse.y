@@ -3137,6 +3137,8 @@ register_fields (flags, type, variable_list)
 	      TREE_CHAIN (init) = ctxp->static_initialized;
 	      ctxp->static_initialized = init;
 	      DECL_INITIAL (field_decl) = TREE_OPERAND (init, 1);
+	      if (TREE_CODE (TREE_OPERAND (init, 1)) == NEW_ARRAY_INIT)
+		TREE_STATIC (TREE_OPERAND (TREE_OPERAND (init, 1), 0)) = 1;
 	    }
 	  /* A non-static field declared with an immediate initialization is
 	     to be initialized in <init>, if any.  This field is remembered
@@ -4077,6 +4079,7 @@ do_resolve_class (class_type, decl, cl)
      tree cl;
 {
   tree new_class_decl;
+  tree new_name;
   tree original_name = NULL_TREE;
 
   /* Do not try to replace TYPE_NAME (class_type) by a variable, since
@@ -4100,6 +4103,7 @@ do_resolve_class (class_type, decl, cl)
   if (!QUALIFIED_P (TYPE_NAME (class_type)) && ctxp->package)
     TYPE_NAME (class_type) = merge_qualified_name (ctxp->package, 
 						   TYPE_NAME (class_type));
+#if 1
   if (!(new_class_decl = IDENTIFIER_CLASS_VALUE (TYPE_NAME (class_type))))
     load_class (TYPE_NAME (class_type), 0);
   if ((new_class_decl = IDENTIFIER_CLASS_VALUE (TYPE_NAME (class_type))))
@@ -4109,6 +4113,27 @@ do_resolve_class (class_type, decl, cl)
 	load_class (TYPE_NAME (class_type), 0);
       return IDENTIFIER_CLASS_VALUE (TYPE_NAME (class_type));
     }
+#else
+  new_name = TYPE_NAME (class_type);
+  if ((new_class_decl = IDENTIFIER_CLASS_VALUE (new_name)) != NULL_TREE)
+    {
+      if (!CLASS_LOADED_P (TREE_TYPE (new_class_decl)) &&
+          !CLASS_FROM_SOURCE_P (TREE_TYPE (new_class_decl)))
+        load_class (new_name, 0);
+      return IDENTIFIER_CLASS_VALUE (new_name);
+    }
+  else
+    {
+      tree class = read_class (new_name);
+      if (class != NULL_TREE)
+	{
+	  tree decl = IDENTIFIER_CLASS_VALUE (new_name);
+	  if (decl == NULL_TREE)
+	    decl = push_class (class, new_name);
+	  return decl;
+	}
+    }
+#endif
   TYPE_NAME (class_type) = original_name;
 
   /* 3- Check an other compilation unit that bears the name of type */
@@ -5486,6 +5511,7 @@ void
 java_layout_classes ()
 {
   tree current;
+  int save_error_count = java_error_count;
 
   /* Layout the methods of all classes seen so far */
   java_layout_seen_class_methods ();
@@ -5647,7 +5673,10 @@ java_complete_expand_method (mdecl)
       PUSH_EXCEPTIONS (DECL_FUNCTION_THROWS (mdecl));
 
       if (block_body != NULL_TREE)
-	block_body = java_complete_tree (block_body);
+	{
+	  block_body = java_complete_tree (block_body);
+	  check_for_initialization (block_body);
+	}
       BLOCK_EXPR_BODY (fbody) = block_body;
 
       if ((block_body == NULL_TREE || CAN_COMPLETE_NORMALLY (block_body))
@@ -5786,6 +5815,7 @@ java_expand_finals ()
 void
 java_expand_classes ()
 {
+  int save_error_count = java_error_count;
   java_parse_abort_on_error ();
   if (!(ctxp = ctxp_for_generation))
     return;
@@ -5876,6 +5906,11 @@ make_qualified_name (left, right, location)
      tree left, right;
      int location;
 {
+#ifdef USE_COMPONENT_REF
+  tree node = build (COMPONENT_REF, NULL_TREE, left, right);
+  EXPR_WFL_LINECOL (node) = location;
+  return node;
+#else
   tree left_id = EXPR_WFL_NODE (left);
   tree right_id = EXPR_WFL_NODE (right);
   tree wfl, merge;
@@ -5896,6 +5931,7 @@ make_qualified_name (left, right, location)
 
   EXPR_WFL_NODE (left) = merge;
   return left;
+#endif
 }
 
 /* Extract the last identifier component of the qualified in WFL. The
@@ -9864,6 +9900,7 @@ patch_new_array_init (type, node)
   TREE_TYPE (init) = TREE_TYPE (TREE_CHAIN (TREE_CHAIN (TYPE_FIELDS (type))));
   TREE_TYPE (node) = promote_type (type);
   TREE_CONSTANT (init) = all_constant;
+  TREE_CONSTANT (node) = all_constant;
   return node;
 }
 
@@ -11084,17 +11121,17 @@ fold_constant_for_init (node, context)
 
   switch (code)
     {
-    case MULT_EXPR:
     case PLUS_EXPR:
     case MINUS_EXPR:
+    case MULT_EXPR:
+    case TRUNC_MOD_EXPR:
+    case RDIV_EXPR:
     case LSHIFT_EXPR:
     case RSHIFT_EXPR:
     case URSHIFT_EXPR:
     case BIT_AND_EXPR:
     case BIT_XOR_EXPR:
     case BIT_IOR_EXPR:
-    case TRUNC_MOD_EXPR:
-    case RDIV_EXPR:
     case TRUTH_ANDIF_EXPR:
     case TRUTH_ORIF_EXPR:
     case EQ_EXPR: 
@@ -11193,7 +11230,32 @@ fold_constant_for_init (node, context)
 	  return val;
 	}
 
+#ifdef USE_COMPONENT_REF
+    case IDENTIFIER:
+    case COMPONENT_REF:
+      ?;
+#endif
+
     default:
       return NULL_TREE;
     }
 }
+
+#ifdef USE_COMPONENT_REF
+/* Context is 'T' for TypeName, 'P' for PackageName,
+   'M' for MethodName, 'E' for ExpressionName, and 'A' for AmbiguousName. */
+
+tree
+resolve_simple_name (name, context)
+     tree name;
+     int context;
+{
+}
+
+tree
+resolve_qualified_name (name, context)
+     tree name;
+     int context;
+{
+}
+#endif

@@ -1765,7 +1765,37 @@ java_lang_expand_expr (exp, target, tmode, modifier)
 	HOST_WIDE_INT ilength = java_array_type_length (array_type);
 	tree length = build_int_2 (ilength, 0);
 	tree init = TREE_OPERAND (exp, 0);
-	tree array_decl = build_decl (VAR_DECL, NULL_TREE, TREE_TYPE (exp));
+	tree array_decl;
+#if 0
+	/* Enable this once we can set the vtable field statically.  FIXME */
+	if (TREE_CONSTANT (init) && TREE_STATIC (init)
+	    && JPRIMITIVE_TYPE_P (element_type))
+	  {
+	    tree temp, value, init_decl;
+	    START_RECORD_CONSTRUCTOR (temp, object_type_node);
+	    PUSH_FIELD_VALUE (temp, "vtable",
+			      null_pointer_node /* FIXME */
+			      );
+	    PUSH_FIELD_VALUE (temp, "sync_info", null_pointer_node);
+	    FINISH_RECORD_CONSTRUCTOR (temp);
+	    START_RECORD_CONSTRUCTOR (value, array_type);
+	    PUSH_SUPER_VALUE (value, temp);
+	    PUSH_FIELD_VALUE (value, "length", length);
+	    PUSH_FIELD_VALUE (value, "data", init);
+	    FINISH_RECORD_CONSTRUCTOR (value);
+
+	    init_decl = build_decl (VAR_DECL, generate_name (), array_type);
+	    pushdecl_top_level (init_decl);
+	    TREE_STATIC (init_decl) = 1;
+	    DECL_INITIAL (init_decl) = value;
+	    DECL_IGNORED_P (init_decl) = 1;
+	    TREE_READONLY (init_decl) = 1;
+	    make_decl_rtl (init_decl, NULL, 1);
+	    init = build1 (ADDR_EXPR, TREE_TYPE (exp), init_decl);
+	    return expand_expr (init, target, tmode, modifier);
+	  }
+#endif
+	array_decl = build_decl (VAR_DECL, NULL_TREE, TREE_TYPE (exp));
 	expand_decl (array_decl);
 	tmp = expand_assignment (array_decl,
 				 build_new_array (element_type, length),
