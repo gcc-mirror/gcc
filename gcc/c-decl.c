@@ -414,7 +414,7 @@ tree static_ctors, static_dtors;
 static struct binding_level * make_binding_level	PROTO((void));
 static void clear_limbo_values		PROTO((tree));
 static int duplicate_decls		PROTO((tree, tree, int));
-static char *redeclaration_error_message PROTO((tree, tree));
+static int redeclaration_error_message	PROTO((tree, tree));
 static void storedecls			PROTO((tree));
 static void storetags			PROTO((tree));
 static tree lookup_tag			PROTO((enum tree_code, tree,
@@ -1006,24 +1006,22 @@ poplevel (keep, reverse, functionbody)
     if (TYPE_SIZE (TREE_VALUE (link)) == 0)
       {
 	tree type = TREE_VALUE (link);
-	char *errmsg;
+	tree type_name = TYPE_NAME (type);
+	char *id = IDENTIFIER_POINTER (TREE_CODE (type_name) == IDENTIFIER_NODE
+				       ? type_name
+				       : DECL_NAME (type_name));
 	switch (TREE_CODE (type))
 	  {
 	  case RECORD_TYPE:
-	    errmsg = "`struct %s' incomplete in scope ending here";
+	    error ("`struct %s' incomplete in scope ending here", id);
 	    break;
 	  case UNION_TYPE:
-	    errmsg = "`union %s' incomplete in scope ending here";
+	    error ("`union %s' incomplete in scope ending here", id);
 	    break;
 	  case ENUMERAL_TYPE:
-	    errmsg = "`enum %s' incomplete in scope ending here";
+	    error ("`enum %s' incomplete in scope ending here", id);
 	    break;
 	  }
-	if (TREE_CODE (TYPE_NAME (type)) == IDENTIFIER_NODE)
-	  error (errmsg, IDENTIFIER_POINTER (TYPE_NAME (type)));
-	else
-	  /* If this type has a typedef-name, the TYPE_NAME is a TYPE_DECL.  */
-	  error (errmsg, IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (type))));
       }
 #endif /* 0 */
 
@@ -1403,7 +1401,7 @@ duplicate_decls (newdecl, olddecl, different_binding_level)
 			   && DECL_INITIAL (newdecl) != 0);
   tree oldtype = TREE_TYPE (olddecl);
   tree newtype = TREE_TYPE (newdecl);
-  char *errmsg = 0;
+  int errmsg = 0;
 
   if (TREE_CODE_CLASS (TREE_CODE (olddecl)) == 'd')
     DECL_MACHINE_ATTRIBUTES (newdecl) = DECL_MACHINE_ATTRIBUTES (olddecl);
@@ -1629,16 +1627,14 @@ duplicate_decls (newdecl, olddecl, different_binding_level)
 	      if (TREE_CHAIN (t) == 0
 		  && TYPE_MAIN_VARIANT (type) != void_type_node)
 		{
-		  error ("A parameter list with an ellipsis can't match");
-		  error ("an empty parameter name list declaration.");
+		  error ("A parameter list with an ellipsis can't match an empty parameter name list declaration.");
 		  break;
 		}
 
 	      if (TYPE_MAIN_VARIANT (type) == float_type_node
 		  || C_PROMOTING_INTEGER_TYPE_P (type))
 		{
-		  error ("An argument type that has a default promotion");
-		  error ("can't match an empty parameter name list declaration.");
+		  error ("An argument type that has a default promotion can't match an empty parameter name list declaration.");
 		  break;
 		}
 	    }
@@ -1650,7 +1646,21 @@ duplicate_decls (newdecl, olddecl, different_binding_level)
       errmsg = redeclaration_error_message (newdecl, olddecl);
       if (errmsg)
 	{
-	  error_with_decl (newdecl, errmsg);
+	  switch (errmsg)
+	    {
+	    case 1:
+	      error_with_decl (newdecl, "redefinition of `%s'");
+	      break;
+	    case 2:
+	      error_with_decl (newdecl, "redeclaration of `%s'");
+	      break;
+	    case 3:
+	      error_with_decl (newdecl, "conflicting declarations of `%s'");
+	      break;
+	    default:
+	      abort ();
+	    }
+
 	  error_with_decl (olddecl,
 			   ((DECL_INITIAL (olddecl)
 			     && current_binding_level == global_binding_level)
@@ -1682,14 +1692,22 @@ duplicate_decls (newdecl, olddecl, different_binding_level)
 	  for (parm = TYPE_ACTUAL_ARG_TYPES (oldtype),
 	       type = TYPE_ARG_TYPES (newtype),
 	       nargs = 1;
-	       (TYPE_MAIN_VARIANT (TREE_VALUE (parm)) != void_type_node
-		|| TYPE_MAIN_VARIANT (TREE_VALUE (type)) != void_type_node);
+	       ;
 	       parm = TREE_CHAIN (parm), type = TREE_CHAIN (type), nargs++)
 	    {
 	      if (TYPE_MAIN_VARIANT (TREE_VALUE (parm)) == void_type_node
+		  && TYPE_MAIN_VARIANT (TREE_VALUE (type)) == void_type_node)
+		{
+		  warning_with_decl (newdecl, "prototype for `%s' follows");
+		  warning_with_decl (olddecl, "non-prototype definition here");
+		  break;
+		}
+	      if (TYPE_MAIN_VARIANT (TREE_VALUE (parm)) == void_type_node
 		  || TYPE_MAIN_VARIANT (TREE_VALUE (type)) == void_type_node)
 		{
-		  errmsg = "prototype for `%s' follows and number of arguments";
+		  error_with_decl (newdecl, "prototype for `%s' follows and number of arguments doesn't match");
+		  error_with_decl (olddecl, "non-prototype definition here");
+		  errmsg = 1;
 		  break;
 		}
 	      /* Type for passing arg must be consistent
@@ -1701,20 +1719,13 @@ duplicate_decls (newdecl, olddecl, different_binding_level)
 			 && TYPE_MAIN_VARIANT (TREE_VALUE (parm)) == integer_type_node
 			 && TYPE_MAIN_VARIANT (TREE_VALUE (type)) == unsigned_type_node)))
 		{
-		  errmsg = "prototype for `%s' follows and argument %d";
+		  error_with_decl (newdecl,
+				   "prototype for `%s' follows and argument %d doesn't match",
+				   nargs);
+		  error_with_decl (olddecl, "non-prototype definition here");
+		  errmsg = 1;
 		  break;
 		}
-	    }
-	  if (errmsg)
-	    {
-	      error_with_decl (newdecl, errmsg, nargs);
-	      error_with_decl (olddecl,
-			       "doesn't match non-prototype definition here");
-	    }
-	  else
-	    {
-	      warning_with_decl (newdecl, "prototype for `%s' follows");
-	      warning_with_decl (olddecl, "non-prototype definition here");
 	    }
 	}
       /* Warn about mismatches in various flags.  */
@@ -2389,7 +2400,7 @@ pushdecl (x)
 		   /* No shadow warnings for vars made for inlining.  */
 		   && ! DECL_FROM_INLINE (x))
 	    {
-	      char *warnstring = 0;
+	      char *id = IDENTIFIER_POINTER (name);
 
 	      if (TREE_CODE (x) == PARM_DECL
 		  && current_binding_level->level_chain->parm_flag)
@@ -2400,15 +2411,12 @@ pushdecl (x)
 		   but there is no way to tell it's not a definition.  */
 		;
 	      else if (oldlocal != 0 && TREE_CODE (oldlocal) == PARM_DECL)
-		warnstring = "declaration of `%s' shadows a parameter";
+		warning ("declaration of `%s' shadows a parameter", id);
 	      else if (oldlocal != 0)
-		warnstring = "declaration of `%s' shadows previous local";
+		warning ("declaration of `%s' shadows previous local", id);
 	      else if (IDENTIFIER_GLOBAL_VALUE (name) != 0
 		       && IDENTIFIER_GLOBAL_VALUE (name) != error_mark_node)
-		warnstring = "declaration of `%s' shadows global declaration";
-
-	      if (warnstring)
-		warning (warnstring, IDENTIFIER_POINTER (name));
+		warning ("declaration of `%s' shadows global declaration", id);
 	    }
 
 	  /* If storing a local value, there may already be one (inherited).
@@ -2519,10 +2527,10 @@ implicitly_declare (functionid)
 /* Return zero if the declaration NEWDECL is valid
    when the declaration OLDDECL (assumed to be for the same name)
    has already been seen.
-   Otherwise return an error message format string with a %s
-   where the identifier should go.  */
+   Otherwise return 1 if NEWDECL is a redefinition, 2 if it is a redeclaration,
+   and 3 if it is a conflicting declaration.  */
 
-static char *
+static int
 redeclaration_error_message (newdecl, olddecl)
      tree newdecl, olddecl;
 {
@@ -2541,7 +2549,7 @@ redeclaration_error_message (newdecl, olddecl)
 	return 0;
       if (DECL_IN_SYSTEM_HEADER (olddecl) || DECL_IN_SYSTEM_HEADER (newdecl))
 	return 0;
-      return "redefinition of `%s'";
+      return 1;
     }
   else if (TREE_CODE (newdecl) == FUNCTION_DECL)
     {
@@ -2554,7 +2562,7 @@ redeclaration_error_message (newdecl, olddecl)
 	     time in another way is ok.  */
 	  && !(DECL_INLINE (olddecl) && DECL_EXTERNAL (olddecl)
 	       && !(DECL_INLINE (newdecl) && DECL_EXTERNAL (newdecl))))
-	return "redefinition of `%s'";
+	return 1;
       return 0;
     }
   else if (current_binding_level == global_binding_level)
@@ -2565,11 +2573,11 @@ redeclaration_error_message (newdecl, olddecl)
 	return 0;
       /* Reject two definitions.  */
       if (DECL_INITIAL (olddecl) != 0 && DECL_INITIAL (newdecl) != 0)
-	return "redefinition of `%s'";
+	return 1;
       /* Now we have two tentative defs, or one tentative and one real def.  */
       /* Insist that the linkage match.  */
       if (TREE_PUBLIC (olddecl) != TREE_PUBLIC (newdecl))
-	return "conflicting declarations of `%s'";
+	return 3;
       return 0;
     }
   else if (current_binding_level->parm_flag
@@ -2583,7 +2591,7 @@ redeclaration_error_message (newdecl, olddecl)
 	 be an extern reference to olddecl.  */
       if (!(DECL_EXTERNAL (newdecl) && DECL_EXTERNAL (olddecl))
 	  && DECL_CONTEXT (newdecl) == DECL_CONTEXT (olddecl))
-	return "redeclaration of `%s'";
+	return 2;
       return 0;
     }
 }
@@ -5500,8 +5508,7 @@ parmlist_tags_warning ()
 
       if (! already)
 	{
-	  warning ("its scope is only this definition or declaration,");
-	  warning ("which is probably not what you want.");
+	  warning ("its scope is only this definition or declaration, which is probably not what you want.");
 	  already = 1;
 	}
     }
@@ -5698,9 +5705,10 @@ finish_struct (t, fieldlist, attributes)
 	  break;
 
       if (x == 0)
-	pedwarn ("%s has no %smembers",
-		 (TREE_CODE (t) == UNION_TYPE ? "union" : "structure"),
-		 (fieldlist ? "named " : ""));
+	pedwarn ((fieldlist
+		  ? "%s has no named members"
+		  : "%s has no members"),
+		 TREE_CODE (t) == UNION_TYPE ? "union" : "struct");
     }
 
   /* Install struct as DECL_CONTEXT of each field decl.
