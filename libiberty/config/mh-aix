@@ -1,3 +1,4 @@
+# This file is only needed by AIX 3.1.
 HDEFINES = -D__IEEE_BIG_ENDIAN
 RANLIB=true
 INSTALL=cp
