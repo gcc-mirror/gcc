@@ -1,5 +1,10 @@
 1999-12-28  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* configure.in (--enable-checking): Use a more portable `for'
+	loop syntax.
+
+1999-12-28  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* configure.in (AC_DECL_SYS_SIGLIST, xm-siglist.h,
 	arm/xm-netbsd.h, NO_SYS_SIGLIST): Don't use.
 

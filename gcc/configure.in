@@ -189,7 +189,8 @@ no)	;;
 *)	ac_save_IFS="$IFS" IFS="$IFS,"
 	set fnord $enableval; shift
 	IFS="$ac_save_IFS"
-	for check; do
+	for check
+	do
 		case $check in
 		misc)	AC_DEFINE(ENABLE_CHECKING)		;;
 		tree)	AC_DEFINE(ENABLE_TREE_CHECKING)		;;
