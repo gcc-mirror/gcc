@@ -1765,10 +1765,11 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 	  else if (!allows_mem)
 	    warning ("asm operand %d probably doesn't match constraints",
 		     i + noutputs);
-	  else if (GET_CODE (op) == MEM && MEM_VOLATILE_P (op))
+	  else if (GET_CODE (op) == MEM)
 	    {
-	      /* We won't recognize volatile memory as available a
-		 memory_operand at this point.  Ignore it.  */
+	      /* We won't recognize either volatile memory or memory
+		 with a queued address as available a memory_operand
+		 at this point.  Ignore it: clearly this *is* a memory.  */
 	    }
 	  else
 	    {
