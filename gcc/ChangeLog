@@ -1,3 +1,17 @@
+2003-07-15  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips.h (PROCESSOR_R9000): New processor_type.
+	(TARGET_MIPS9000, TUNE_MIPS9000): New macros.
+	(GENERATE_MULT3_SI): True for TARGET_MIPS9000.
+	* config/mips/mips.c (mips_cpu_info_table): Add rm9000 entry.
+	(mips_rtx_costs): Adjust integer multiplication costs for the rm9000.
+	(mips_issue_rate): Handle PROCESSOR_R9000.
+	(mips_use_dfa_pipeline_interface): Likewise.
+	* config/mips/9000.md: New file.
+	* config/mips/mips.md: Include it.
+	(define_attr cpu): Add r9000.
+	(mulsi3_mult3): Use "mul" for rm9000 code.
+
 2003-07-15  Stan Cox  <scox@redhat.com>
 
 	* config/mips/mips.h (PROCESSOR_R7000): New processor_type.

@@ -195,7 +195,7 @@
 
 ;; ??? Fix everything that tests this attribute.
 (define_attr "cpu"
-  "default,4kc,5kc,20kc,m4k,r3000,r3900,r6000,r4000,r4100,r4111,r4120,r4300,r4600,r4650,r5000,r5400,r5500,r7000,r8000,sb1,sr71000"
+  "default,4kc,5kc,20kc,m4k,r3000,r3900,r6000,r4000,r4100,r4111,r4120,r4300,r4600,r4650,r5000,r5400,r5500,r7000,r8000,r9000,sb1,sr71000"
   (const (symbol_ref "mips_cpu_attr")))
 
 ;; The type of hardware hazard associated with this instruction.
@@ -624,6 +624,7 @@
 (include "5400.md")
 (include "5500.md")
 (include "7000.md")
+(include "9000.md")
 (include "sr71k.md")
 
 
@@ -1498,6 +1499,7 @@
       || TARGET_MIPS5400
       || TARGET_MIPS5500
       || TARGET_MIPS7000
+      || TARGET_MIPS9000
       || ISA_MIPS32
       || ISA_MIPS32R2
       || ISA_MIPS64)
