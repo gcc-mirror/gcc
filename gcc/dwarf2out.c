@@ -931,7 +931,7 @@ initial_return_save (rtl)
 
 static long
 stack_adjust_offset (pattern)
-  rtx pattern;
+     rtx pattern;
 {
   rtx src = SET_SRC (pattern);
   rtx dest = SET_DEST (pattern);
@@ -966,7 +966,7 @@ stack_adjust_offset (pattern)
 	  /* We handle only adjustments by constant amount.  */
 	  if (GET_CODE (XEXP (src, 1)) != PLUS ||
 	      GET_CODE (val) != CONST_INT)
-	    abort();
+	    abort ();
 
 	  offset = -INTVAL (val);
 	}
@@ -1484,7 +1484,7 @@ dwarf2out_frame_debug_expr (expr, label)
 	case PRE_MODIFY:
 	  /* We can't handle variable size modifications.  */
 	  if (GET_CODE (XEXP (XEXP (XEXP (dest, 0), 1), 1)) != CONST_INT)
-	    abort();
+	    abort ();
 	  offset = -INTVAL (XEXP (XEXP (XEXP (dest, 0), 1), 1));
 
 	  if (REGNO (XEXP (XEXP (dest, 0), 0)) != STACK_POINTER_REGNUM
@@ -5602,7 +5602,7 @@ is_symbol_die (c)
 
 static char *
 gen_internal_sym (prefix)
-	const char *prefix;
+     const char *prefix;
 {
   char buf[256];
   static int label_num;
@@ -6343,7 +6343,7 @@ output_die (die)
 	    char *sym = AT_loc_list (a)->ll_symbol;
 
 	    if (sym == 0)
-	      abort();
+	      abort ();
 	    dw2_asm_output_delta (DWARF_OFFSET_SIZE, sym,
 				  loc_section_label, "%s", name);
 	  }
@@ -6600,7 +6600,7 @@ output_aranges ()
       if (die->die_tag == DW_TAG_subprogram)
 	{
 	  dw2_asm_output_addr (DWARF2_ADDR_SIZE, get_AT_low_pc (die),
-				 "Address");
+			       "Address");
 	  dw2_asm_output_delta (DWARF2_ADDR_SIZE, get_AT_hi_pc (die),
 				get_AT_low_pc (die), "Length");
 	}
@@ -7687,10 +7687,10 @@ static inline int
 is_based_loc (rtl)
      rtx rtl;
 {
-    return (GET_CODE (rtl) == PLUS
-	    && ((GET_CODE (XEXP (rtl, 0)) == REG
-		 && REGNO (XEXP (rtl, 0)) < FIRST_PSEUDO_REGISTER
-		 && GET_CODE (XEXP (rtl, 1)) == CONST_INT)));
+  return (GET_CODE (rtl) == PLUS
+	  && ((GET_CODE (XEXP (rtl, 0)) == REG
+	       && REGNO (XEXP (rtl, 0)) < FIRST_PSEUDO_REGISTER
+	       && GET_CODE (XEXP (rtl, 1)) == CONST_INT)));
 }
 
 /* The following routine converts the RTL for a variable or parameter

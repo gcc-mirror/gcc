@@ -1,5 +1,5 @@
 /* Language-independent diagnostic subroutines for the GNU C compiler
-   Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@codesourcery.com>
 
 This file is part of GCC.
@@ -722,7 +722,7 @@ output_format (buffer)
             if (*++output_buffer_text_cursor (buffer) != '*')
               abort ();
             else if (*++output_buffer_text_cursor (buffer) != 's')
-              abort();
+              abort ();
             n = va_arg (output_buffer_format_args (buffer), int);
             s = va_arg (output_buffer_format_args (buffer), const char *);
             output_append (buffer, s, s + n);
@@ -912,7 +912,7 @@ diagnostic_for_decl (decl, msgid, args_ptr, warn)
       output_buffer_ptr_to_format_args (diagnostic_buffer) = args_ptr;
       output_buffer_text_cursor (diagnostic_buffer) = _(msgid);
       format_with_decl (diagnostic_buffer, decl);
-      diagnostic_finish ((output_buffer *)global_dc);
+      diagnostic_finish ((output_buffer *) global_dc);
       output_destroy_prefix (diagnostic_buffer);
   
       output_buffer_state (diagnostic_buffer) = os;
@@ -979,7 +979,7 @@ fatal_io_error VPARAMS ((const char *msgid, ...))
   output_buffer_ptr_to_format_args (diagnostic_buffer) = &ap;
   output_buffer_text_cursor (diagnostic_buffer) = _(msgid);
   output_format (diagnostic_buffer);
-  diagnostic_finish ((output_buffer *)global_dc);
+  diagnostic_finish ((output_buffer *) global_dc);
   output_buffer_state (diagnostic_buffer) = os;
   VA_CLOSE (ap);
   exit (FATAL_EXIT_CODE);
@@ -1058,7 +1058,7 @@ sorry VPARAMS ((const char *msgid, ...))
   output_buffer_ptr_to_format_args (diagnostic_buffer) = &ap;
   output_buffer_text_cursor (diagnostic_buffer) = _(msgid);
   output_format (diagnostic_buffer);
-  diagnostic_finish ((output_buffer *)global_dc);
+  diagnostic_finish ((output_buffer *) global_dc);
   output_buffer_state (diagnostic_buffer) = os;
   VA_CLOSE (ap);
 }
@@ -1096,25 +1096,25 @@ default_print_error_function (context, file)
       output_state os;
 
       os = output_buffer_state (context);
-      output_set_prefix ((output_buffer *)context, prefix);
+      output_set_prefix ((output_buffer *) context, prefix);
       
       if (current_function_decl == NULL)
-          output_add_string ((output_buffer *)context, _("At top level:"));
+          output_add_string ((output_buffer *) context, _("At top level:"));
       else
 	{
 	  if (TREE_CODE (TREE_TYPE (current_function_decl)) == METHOD_TYPE)
             output_printf
-              ((output_buffer *)context, "In member function `%s':",
+              ((output_buffer *) context, "In member function `%s':",
                (*decl_printable_name) (current_function_decl, 2));
 	  else
             output_printf
-              ((output_buffer *)context, "In function `%s':",
+              ((output_buffer *) context, "In function `%s':",
                (*decl_printable_name) (current_function_decl, 2));
 	}
-      output_add_newline ((output_buffer *)context);
+      output_add_newline ((output_buffer *) context);
 
       record_last_error_function ();
-      output_buffer_to_stream ((output_buffer *)context);
+      output_buffer_to_stream ((output_buffer *) context);
       output_buffer_state (context) = os;
       free ((char*) prefix);
     }
@@ -1128,7 +1128,7 @@ void
 report_error_function (file)
   const char *file ATTRIBUTE_UNUSED;
 {
-  report_problematic_module ((output_buffer *)global_dc);
+  report_problematic_module ((output_buffer *) global_dc);
   (*print_error_function) (global_dc, input_filename);
 }
 
@@ -1366,7 +1366,7 @@ report_diagnostic (dc)
       (*diagnostic_starter (dc)) (diagnostic_buffer, dc);
       output_format (diagnostic_buffer);
       (*diagnostic_finalizer (dc)) (diagnostic_buffer, dc);
-      diagnostic_finish ((output_buffer *)global_dc);
+      diagnostic_finish ((output_buffer *) global_dc);
       output_buffer_state (diagnostic_buffer) = os;
     }
 
@@ -1382,7 +1382,7 @@ static void
 error_recursion ()
 {
   if (diagnostic_lock < 3)
-    diagnostic_finish ((output_buffer *)global_dc);
+    diagnostic_finish ((output_buffer *) global_dc);
 
   fnotice (stderr,
 	   "Internal compiler error: Error reporting routines re-entered.\n");

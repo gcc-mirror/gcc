@@ -281,12 +281,12 @@ c_expand_start_cond (cond, compstmt_count)
   if (if_stack_space == 0)
     {
       if_stack_space = 10;
-      if_stack = (if_elt *)xmalloc (10 * sizeof (if_elt));
+      if_stack = (if_elt *) xmalloc (10 * sizeof (if_elt));
     }
   else if (if_stack_space == if_stack_pointer)
     {
       if_stack_space += 10;
-      if_stack = (if_elt *)xrealloc (if_stack, if_stack_space * sizeof (if_elt));
+      if_stack = (if_elt *) xrealloc (if_stack, if_stack_space * sizeof (if_elt));
     }
 
   if_stmt = build_stmt (IF_STMT, NULL_TREE, NULL_TREE, NULL_TREE);
@@ -2298,7 +2298,7 @@ c_alignof_expr (expr)
       t = size_one_node;
     }
   else if (TREE_CODE (expr) == COMPONENT_REF
-      && TREE_CODE (TREE_OPERAND (expr, 1)) == FIELD_DECL)
+	   && TREE_CODE (TREE_OPERAND (expr, 1)) == FIELD_DECL)
     t = size_int (DECL_ALIGN (TREE_OPERAND (expr, 1)) / BITS_PER_UNIT);
  
   else if (TREE_CODE (expr) == INDIRECT_REF)
@@ -2308,7 +2308,7 @@ c_alignof_expr (expr)
       int bestalign = TYPE_ALIGN (TREE_TYPE (TREE_TYPE (t)));
  
       while (TREE_CODE (t) == NOP_EXPR
-	      && TREE_CODE (TREE_TYPE (TREE_OPERAND (t, 0))) == POINTER_TYPE)
+	     && TREE_CODE (TREE_TYPE (TREE_OPERAND (t, 0))) == POINTER_TYPE)
 	{
 	  int thisalign;
 
@@ -2372,7 +2372,7 @@ c_common_nodes_and_builtins ()
 
   typedef enum builtin_type builtin_type;
 
-  tree builtin_types[(int)BT_LAST];
+  tree builtin_types[(int) BT_LAST];
   int wchar_type_size;
   tree array_domain_type;
   /* Either char* or void*.  */
@@ -3457,7 +3457,7 @@ c_expand_expr (exp, target, tmode, modifier)
 		== BUILT_IN_FRONTEND))
 	  return c_expand_builtin (exp, target, tmode, modifier);
 	else
-	  abort();
+	  abort ();
       }
       break;
 
@@ -3572,13 +3572,13 @@ add_c_tree_codes ()
 {
   memcpy (tree_code_type + (int) LAST_AND_UNUSED_TREE_CODE,
 	  c_tree_code_type,
-	  (int)LAST_C_TREE_CODE - (int)LAST_AND_UNUSED_TREE_CODE);
+	  (int) LAST_C_TREE_CODE - (int) LAST_AND_UNUSED_TREE_CODE);
   memcpy (tree_code_length + (int) LAST_AND_UNUSED_TREE_CODE,
 	  c_tree_code_length,
-	  (LAST_C_TREE_CODE - (int)LAST_AND_UNUSED_TREE_CODE) * sizeof (int));
+	  (LAST_C_TREE_CODE - (int) LAST_AND_UNUSED_TREE_CODE) * sizeof (int));
   memcpy (tree_code_name + (int) LAST_AND_UNUSED_TREE_CODE,
 	  c_tree_code_name,
-	  (LAST_C_TREE_CODE - (int)LAST_AND_UNUSED_TREE_CODE) * sizeof (char *));
+	  (LAST_C_TREE_CODE - (int) LAST_AND_UNUSED_TREE_CODE) * sizeof (char *));
   lang_unsafe_for_reeval = c_unsafe_for_reeval;
 }
 
@@ -3610,28 +3610,28 @@ c_expand_builtin (exp, target, tmode, modifier)
     {
     case BUILT_IN_PRINTF:
       target = c_expand_builtin_printf (arglist, target, tmode,
-					modifier, ignore,/*unlocked=*/ 0);
+					modifier, ignore, /*unlocked=*/ 0);
       if (target)
 	return target;
       break;
 
     case BUILT_IN_PRINTF_UNLOCKED:
       target = c_expand_builtin_printf (arglist, target, tmode,
-					modifier, ignore,/*unlocked=*/ 1);
+					modifier, ignore, /*unlocked=*/ 1);
       if (target)
 	return target;
       break;
 
     case BUILT_IN_FPRINTF:
       target = c_expand_builtin_fprintf (arglist, target, tmode,
-					 modifier, ignore,/*unlocked=*/ 0);
+					 modifier, ignore, /*unlocked=*/ 0);
       if (target)
 	return target;
       break;
 
     case BUILT_IN_FPRINTF_UNLOCKED:
       target = c_expand_builtin_fprintf (arglist, target, tmode,
-					 modifier, ignore,/*unlocked=*/ 1);
+					 modifier, ignore, /*unlocked=*/ 1);
       if (target)
 	return target;
       break;
@@ -3651,7 +3651,7 @@ c_expand_builtin (exp, target, tmode, modifier)
    following it.  */
 static int
 is_valid_printf_arglist (arglist)
-  tree arglist;
+     tree arglist;
 {
   /* Save this value so we can restore it later.  */
   const int SAVE_pedantic = pedantic;
@@ -3738,7 +3738,7 @@ c_expand_builtin_printf (arglist, target, tmode, modifier, ignore, unlocked)
     }
   else
     {
-     /* We can't handle anything else with % args or %% ... yet.  */
+      /* We can't handle anything else with % args or %% ... yet.  */
       if (strchr (TREE_STRING_POINTER (stripped_string), '%'))
 	return 0;
       
@@ -3851,7 +3851,7 @@ c_expand_builtin_fprintf (arglist, target, tmode, modifier, ignore, unlocked)
     }
   else
     {
-     /* We can't handle anything else with % args or %% ... yet.  */
+      /* We can't handle anything else with % args or %% ... yet.  */
       if (strchr (TREE_STRING_POINTER (stripped_string), '%'))
 	return 0;
       

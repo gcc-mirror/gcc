@@ -1,5 +1,5 @@
 /* Perform doloop optimizations
-   Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
    Contributed by Michael P. Hayes (m.hayes@elec.canterbury.ac.nz)
 
 This file is part of GCC.
@@ -197,7 +197,7 @@ doloop_iterations_max (loop_info, mode, nonneg)
 	if (GET_CODE (max_value) == CONST_INT)
 	  umax = INTVAL (max_value);
 	else
-	  umax = ((unsigned)2 << (GET_MODE_BITSIZE (mode) - 1)) - 1;
+	  umax = ((unsigned) 2 << (GET_MODE_BITSIZE (mode) - 1)) - 1;
 
 	n_iterations_max = umax - umin;
 	break;
@@ -212,12 +212,12 @@ doloop_iterations_max (loop_info, mode, nonneg)
 	if (GET_CODE (min_value) == CONST_INT)
 	  smin = INTVAL (min_value);
 	else
-	  smin = -((unsigned)1 << (GET_MODE_BITSIZE (mode) - 1));
+	  smin = -((unsigned) 1 << (GET_MODE_BITSIZE (mode) - 1));
 
 	if (GET_CODE (max_value) == CONST_INT)
 	  smax = INTVAL (max_value);
 	else
-	  smax = ((unsigned)1 << (GET_MODE_BITSIZE (mode) - 1)) - 1;
+	  smax = ((unsigned) 1 << (GET_MODE_BITSIZE (mode) - 1)) - 1;
 
 	n_iterations_max = smax - smin;
 	break;
@@ -230,7 +230,7 @@ doloop_iterations_max (loop_info, mode, nonneg)
       else
 	/* We need to conservatively assume that we might have the maximum
 	   number of iterations without any additional knowledge.  */
-	n_iterations_max = ((unsigned)2 << (GET_MODE_BITSIZE (mode) - 1)) - 1;
+	n_iterations_max = ((unsigned) 2 << (GET_MODE_BITSIZE (mode) - 1)) - 1;
       break;
 
     default:
@@ -242,8 +242,8 @@ doloop_iterations_max (loop_info, mode, nonneg)
   /* If we know that the iteration count is non-negative then adjust
      n_iterations_max if it is so large that it appears negative.  */
   if (nonneg
-      && n_iterations_max > ((unsigned)1 << (GET_MODE_BITSIZE (mode) - 1)))
-    n_iterations_max = ((unsigned)1 << (GET_MODE_BITSIZE (mode) - 1)) - 1;
+      && n_iterations_max > ((unsigned) 1 << (GET_MODE_BITSIZE (mode) - 1)))
+    n_iterations_max = ((unsigned) 1 << (GET_MODE_BITSIZE (mode) - 1)) - 1;
 
   return n_iterations_max;
 }
@@ -308,8 +308,8 @@ doloop_valid_p (loop, jump_insn)
       return 0;
     }
 
- /* Some targets (eg, PPC) use the count register for branch on table
-    instructions.  ??? This should be a target specific check.  */
+  /* Some targets (eg, PPC) use the count register for branch on table
+     instructions.  ??? This should be a target specific check.  */
   if (loop_info->has_tablejump)
     {
       if (loop_dump_stream)
@@ -469,13 +469,13 @@ doloop_modify (loop, iterations, iterations_max,
       /* Determine if the iteration counter will be non-negative.
 	 Note that the maximum value loaded is iterations_max - 1.  */
       if ((unsigned HOST_WIDE_INT) INTVAL (iterations_max)
-	  <= ((unsigned)1 << (GET_MODE_BITSIZE (GET_MODE (counter_reg)) - 1)))
+	  <= ((unsigned) 1 << (GET_MODE_BITSIZE (GET_MODE (counter_reg)) - 1)))
 	nonneg = 1;
       break;
 
       /* Abort if an invalid doloop pattern has been generated.  */
     default:
-      abort();
+      abort ();
     }
 
   if (decrement_count)
@@ -649,7 +649,7 @@ doloop_modify_runtime (loop, iterations_max,
 	}
       else
 	/* Iteration var must be an induction variable to get here.  */
-	abort();
+	abort ();
 
       if (INSN_UID (bl->biv->insn) < max_uid_for_loop
 	  && INSN_LUID (bl->biv->insn) < INSN_LUID (loop->scan_start))
@@ -691,7 +691,7 @@ doloop_modify_runtime (loop, iterations_max,
 	  /* If (abs (final - initial) % (abs_inc * unroll_number)
 	       <= abs_inc * (unroll - 1)),
 	     jump past following increment instruction.  */
-	  label = gen_label_rtx();
+	  label = gen_label_rtx ();
 	  limit = abs_inc * (loop_info->unroll_number - 1);
 	  emit_cmp_and_jump_insns (extra, GEN_INT (limit),
 				   limit == 0 ? EQ : LEU, NULL_RTX,
