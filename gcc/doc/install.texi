@@ -2228,6 +2228,17 @@ and function declarations in the original program.  The warnings should
 not prevent the linker from producing a correct library or runnable
 executable.
 
+GCC's exception handling implementation stores process-specific data in
+the shared library which prevents exception handling from working
+correctly on AIX in a default installation.  To work around this, the
+shared objects need to be loaded in the process private segment to
+prevent them from being shared and marked read-only.  This is
+accomplished on AIX by installing the shared libraries
+(@file{libgcc_s.a} and @file{libstdc++.a}) with file permissions
+disallowing read-other (@samp{chmod a+x,o-r}).  If the shared libraries
+have been used, the shared library segment can be cleaned using the
+@samp{/usr/sbin/slibclean} command.
+
 AIX 4.3 utilizes a ``large format'' archive to support both 32-bit and
 64-bit object modules.  The routines provided in AIX 4.3.0 and AIX 4.3.1
 to parse archive libraries did not handle the new format correctly.
@@ -2236,26 +2247,26 @@ linking such as ``not a COFF file''.  The version of the routines shipped
 with AIX 4.3.1 should work for a 32-bit environment.  The @option{-g}
 option of the archive command may be used to create archives of 32-bit
 objects using the original ``small format''.  A correct version of the
-routines is shipped with AIX 4.3.2.
+routines is shipped with AIX 4.3.2 and above.
 
 Some versions of the AIX binder (linker) can fail with a relocation
 overflow severe error when the @option{-bbigtoc} option is used to link
 GCC-produced object files into an executable that overflows the TOC@.  A fix
 for APAR IX75823 (OVERFLOW DURING LINK WHEN USING GCC AND -BBIGTOC) is
 available from IBM Customer Support and from its
-@uref{http://service.boulder.ibm.com/,,service.boulder.ibm.com}
+@uref{http://techsupport.services.ibm.com/,,techsupport.services.ibm.com}
 website as PTF U455193.
 
 The AIX 4.3.2.1 linker (bos.rte.bind_cmds Level 4.3.2.1) will dump core
 with a segmentation fault when invoked by any version of GCC@.  A fix for
 APAR IX87327 is available from IBM Customer Support and from its
-@uref{http://service.boulder.ibm.com/,,service.boulder.ibm.com}
+@uref{http://techsupport.services.ibm.com/,,techsupport.services.ibm.com}
 website as PTF U461879.  This fix is incorporated in AIX 4.3.3 and above.
 
 The initial assembler shipped with AIX 4.3.0 generates incorrect object
 files.  A fix for APAR IX74254 (64BIT DISASSEMBLED OUTPUT FROM COMPILER FAILS
 TO ASSEMBLE/BIND) is available from IBM Customer Support and from its
-@uref{http://service.boulder.ibm.com/,,service.boulder.ibm.com}
+@uref{http://techsupport.services.ibm.com/,,techsupport.services.ibm.com}
 website as PTF U453956.  This fix is incorporated in AIX 4.3.1 and above.
 
 AIX provides National Language Support (NLS)@.  Compilers and assemblers
@@ -2269,8 +2280,8 @@ environment variable to @samp{C} or @samp{En_US}.
 By default, GCC for AIX 4.1 and above produces code that can be used on
 both Power or PowerPC processors.
 
-You can specify a default version for the @option{-mcpu=@var{cpu_type}}
-switch by using the configure option @option{--with-cpu-@var{cpu_type}}.
+A default can be specified with the @option{-mcpu=@var{cpu_type}}
+switch and using the configure option @option{--with-cpu-@var{cpu_type}}.
 
 @html
 </p>

@@ -3,6 +3,9 @@
 	* rs6000.c (num_insns_constant): Compute number of instructions
 	more accurately.
 
+	* doc/install.texi: Explain AIX exception handling work-around.
+	Update URL for AIX fixes.
+
 2001-09-07  Jim Wilson  <wilson@redhat.com>
 
 	* alias.c (clear_reg_alias_info): New.
