@@ -1257,7 +1257,7 @@ validate_pch (cpp_reader *pfile, _cpp_file *file, const char *pchname)
       if (CPP_OPTION (pfile, print_include_names))
 	{
 	  unsigned int i;
-	  for (i = 1; i < pfile->line_maps.depth; i++)
+	  for (i = 1; i < pfile->line_table->depth; i++)
 	    putc ('.', stderr);
 	  fprintf (stderr, "%c %s\n",
 		   valid ? '!' : 'x', pchname);
