@@ -1,3 +1,58 @@
+2004-08-30  Richard Henderson  <rth@redhat.com>
+
+	* Make-lang.in (fortran/f95-lang.o): Update dependencies.
+	(fortran/trans-decl.o, fortran/trans-types.o): Likewise.
+	* gfortran.h (gfc_integer_info): Add c_char, c_short, c_int,
+	c_long, c_long_long.
+	(gfc_logical_info): Add c_bool.
+	(gfc_real_info): Add mode_precision, c_float, c_double, c_long_double.
+	* trans-array.c (gfc_array_allocate): Use TYPE_PRECISION
+	rather than gfc_int[48]_type_node for allocate choice.
+	* trans-decl.c (gfc_build_intrinsic_function_decls): Cache
+	local copies of some kind type nodes.
+	(gfc_build_builtin_function_decls): Likewise.
+	* trans-expr.c (gfc_conv_power_op): Likewise.
+	* trans-intrinsic.c (gfc_conv_intrinsic_index,
+	gfc_conv_intrinsic_scan, gfc_conv_intrinsic_verify,
+	gfc_conv_intrinsic_trim, gfc_conv_intrinsic_repeat): Likewise.
+	* trans-stmt.c (gfc_trans_pause, gfc_trans_stop,
+	gfc_trans_character_select, gfc_trans_allocate): Likewise.
+	* trans-io.c (gfc_pint4_type_node): Move into ...
+	(gfc_build_io_library_fndecls): ... here.  Cache local copies of
+	some kind type nodes.
+	* trans-types.c (gfc_type_nodes): Remove.
+	(gfc_character1_type_node, gfc_strlen_type_node): New.
+	(gfc_integer_types, gfc_logical_types): New.
+	(gfc_real_types, gfc_complex_types): New.
+	(gfc_init_kinds): Fill in real mode_precision.
+	(gfc_build_int_type, gfc_build_real_type): New.
+	(gfc_build_complex_type, gfc_build_logical_type): New.
+	(c_size_t_size): New.
+	(gfc_init_types): Loop over kinds.
+	(gfc_get_int_type, gfc_get_real_type): Use gfc_validate_kind.
+	(gfc_get_complex_type, gfc_get_logical_type): Likewise.
+	(gfc_get_character_type_len): Likewise.
+	(gfc_type_for_size): Loop over kinds; use a reduced set of
+	unsigned type nodes.
+	(gfc_type_for_mode): Loop over kinds.
+	(gfc_signed_or_unsigned_type): Use gfc_type_for_size.
+	(gfc_unsigned_type, gfc_signed_type): Use gfc_signed_or_unsigned_type.
+	* trans-types.h (F95_INT1_TYPE, F95_INT2_TYPE, F95_INT4_TYPE,
+	F95_INT8_TYPE, F95_INT16_TYPE, F95_REAL4_TYPE, F95_REAL8_TYPE,
+	F95_REAl16_TYPE, F95_COMPLEX4_TYPE, F95_COMPLEX8_TYPE,
+	F95_COMPLEX16_TYPE, F95_LOGICAL1_TYPE, F95_LOGICAL2_TYPE,
+	F95_LOGICAL4_TYPE, F95_LOGICAL8_TYPE, F95_LOGICAL16_TYPE,
+	F95_CHARACTER1_TYPE, NUM_F95_TYPES, gfc_type_nodes,
+	gfc_int1_type_node, gfc_int2_type_node, gfc_int4_type_node,
+	gfc_int8_type_node, gfc_int16_type_node, gfc_real4_type_node,
+	gfc_real8_type_node, gfc_real16_type_node, gfc_complex4_type_node,
+	gfc_complex8_type_node, gfc_complex16_type_node,
+	gfc_logical1_type_node, gfc_logical2_type_node,
+	gfc_logical4_type_node, gfc_logical8_type_node,
+	gfc_logical16_type_node, gfc_strlen_kind): Remove.
+	(gfc_character1_type_node): Turn in to a variable.
+	(gfc_strlen_type_node): Likewise.
+
 2004-08-30  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* gfortran.h (gfc_namespace): Add new field is_block_data.

@@ -275,6 +275,7 @@ gfc_trans_return (gfc_code * code ATTRIBUTE_UNUSED)
 tree
 gfc_trans_pause (gfc_code * code)
 {
+  tree gfc_int4_type_node = gfc_get_int_type (4);
   gfc_se se;
   tree args;
   tree tmp;
@@ -314,6 +315,7 @@ gfc_trans_pause (gfc_code * code)
 tree
 gfc_trans_stop (gfc_code * code)
 {
+  tree gfc_int4_type_node = gfc_get_int_type (4);
   gfc_se se;
   tree args;
   tree tmp;
@@ -991,6 +993,8 @@ gfc_trans_character_select (gfc_code *code)
 
   if (select_struct == NULL)
     {
+      tree gfc_int4_type_node = gfc_get_int_type (4);
+
       select_struct = make_node (RECORD_TYPE);
       TYPE_NAME (select_struct) = get_identifier ("_jump_struct");
 
@@ -3016,6 +3020,8 @@ gfc_trans_allocate (gfc_code * code)
 
   if (code->expr)
     {
+      tree gfc_int4_type_node = gfc_get_int_type (4);
+
       stat = gfc_create_var (gfc_int4_type_node, "stat");
       pstat = gfc_build_addr_expr (NULL, stat);
 

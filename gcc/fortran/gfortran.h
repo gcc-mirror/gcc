@@ -1090,12 +1090,18 @@ gfc_expr;
 
 typedef struct
 {
-  int kind, radix, digits, bit_size;
+  /* Values really representable by the target.  */
+  mpz_t huge, min_int, max_int;
 
-  int range;
-  mpz_t huge;
+  int kind, radix, digits, bit_size, range;
 
-  mpz_t min_int, max_int;	/* Values really representable by the target */
+  /* True if the C type of the given name maps to this precision.
+     Note that more than one bit can be set.  */
+  unsigned int c_char : 1;
+  unsigned int c_short : 1;
+  unsigned int c_int : 1;
+  unsigned int c_long : 1;
+  unsigned int c_long_long : 1;
 }
 gfc_integer_info;
 
@@ -1106,6 +1112,8 @@ typedef struct
 {
   int kind, bit_size;
 
+  /* True if the C++ type bool, C99 type _Bool, maps to this precision.  */
+  unsigned int c_bool : 1;
 }
 gfc_logical_info;
 
@@ -1114,10 +1122,18 @@ extern gfc_logical_info gfc_logical_kinds[];
 
 typedef struct
 {
-  int kind, radix, digits, min_exponent, max_exponent;
-
-  int range, precision;
   mpfr_t epsilon, huge, tiny;
+  int kind, radix, digits, min_exponent, max_exponent;
+  int range, precision;
+
+  /* The precision of the type as reported by GET_MODE_PRECISION.  */
+  int mode_precision;
+
+  /* True if the C type of the given name maps to this precision.
+     Note that more than one bit can be set.  */
+  unsigned int c_float : 1;
+  unsigned int c_double : 1;
+  unsigned int c_long_double : 1;
 }
 gfc_real_info;
 
