@@ -1,5 +1,5 @@
 /* CompoundEdit.java -- Combines multiple UndoableEdits.
-   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -63,6 +63,13 @@ import java.util.Vector;
 public class CompoundEdit
   extends AbstractUndoableEdit
 {
+  /**
+   * The identifier of this class in object serialization. Determined
+   * using the serialver tool of Sun J2SE 1.4.1_01.
+   */
+  private static final long serialVersionUID = -6512679249930119683L;
+
+
   /**
    * The <code>UndoableEdit</code>s being combined into a compound
    * editing action.

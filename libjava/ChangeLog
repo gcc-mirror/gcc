@@ -1,3 +1,7 @@
+2004-01-11  Sascha Brawer  <brawer@dandelis.ch>
+
+	* javax/swing/undo/CompoundEdit.java (serialVersionUID): Added.
+
 2004-01-11  Michael Koch  <konqueror@gmx.de>
 
 	* javax/swing/undo/StateEditable.java
