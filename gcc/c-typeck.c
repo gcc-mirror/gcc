@@ -4505,7 +4505,7 @@ struct constructor_stack
   char designated;
 };
 
-struct constructor_stack *constructor_stack;
+static struct constructor_stack *constructor_stack;
 
 /* This stack represents designators from some range designator up to
    the last designator in the list.  */
@@ -4520,7 +4520,7 @@ struct constructor_range_stack
   tree fields;
 };
 
-struct constructor_range_stack *constructor_range_stack;
+static struct constructor_range_stack *constructor_range_stack;
 
 /* This stack records separate initializers that are nested.
    Nested initializers can't happen in ANSI C, but GNU C allows them
@@ -4541,7 +4541,7 @@ struct initializer_stack
   char require_constant_elements;
 };
 
-struct initializer_stack *initializer_stack;
+static struct initializer_stack *initializer_stack;
 
 /* Prepare to parse and output the initializer for variable DECL.  */
 
