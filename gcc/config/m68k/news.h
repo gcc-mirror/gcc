@@ -139,11 +139,6 @@ Boston, MA 02111-1307, USA.  */
 
 #ifdef MOTOROLA
 
-/* Don't try to define `gcc_compiled.' since the assembler does not
-   accept symbols with periods.  This is no real loss since GDB only
-   really needs it for parms passed in registers.  */
-#define ASM_IDENTIFY_GCC(FILE)
-
 #define FUNCTION_PROLOGUE(FILE, SIZE)     \
 { register int regno;						\
   register int mask = 0;					\

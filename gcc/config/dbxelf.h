@@ -54,28 +54,6 @@ Boston, MA 02111-1307, USA.  */
 #define DBX_CONTIN_LENGTH 0
 #endif
 
-/* When using stabs, gcc2_compiled must be a stabs entry, not an
-   ordinary symbol, or gdb won't see it.  Furthermore, since gdb reads
-   the input piecemeal, starting with each N_SO, it's a lot easier if
-   the gcc2 flag symbol is *after* the N_SO rather than before it.  So
-   we emit an N_OPT stab there.  */
-
-#define ASM_IDENTIFY_GCC(FILE)						\
-do									\
-  {									\
-    if (write_symbols != DBX_DEBUG)					\
-      fputs ("gcc2_compiled.:\n", FILE);				\
-  }									\
-while (0)
-
-#define ASM_IDENTIFY_GCC_AFTER_SOURCE(FILE)				\
-do									\
-  {									\
-    if (write_symbols == DBX_DEBUG)					\
-      fputs ("\t.stabs\t\"gcc2_compiled.\", 0x3c, 0, 0, 0\n", FILE);	\
-  }									\
-while (0)
-
 /* Like block addresses, stabs line numbers are relative to the
    current function.  */
 

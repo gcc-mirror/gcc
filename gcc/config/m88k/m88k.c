@@ -1572,9 +1572,8 @@ output_file_start (file, f_options, f_len, W_options, W_len)
       && TARGET_SVR4)
     fprintf (file, "%s\n", REQUIRES_88110_ASM_OP);
   output_file_directive (file, main_input_filename);
-  /* Switch to the data section so that the coffsem symbol and the
-     gcc2_compiled. symbol aren't in the text section.  */
-  data_section ();
+  /* Switch to the data section so that the coffsem symbol
+     isn't in the text section.  */
   ASM_COFFSEM (file);
 
   if (TARGET_IDENTIFY_REVISION)

@@ -5539,22 +5539,6 @@ definition.
 On systems that use SDB, it is necessary to output certain commands;
 see @file{attasm.h}.
 
-@findex ASM_IDENTIFY_GCC
-@item ASM_IDENTIFY_GCC (@var{file})
-A C statement to output assembler commands which will identify
-the object file as having been compiled with GCC (or another
-GNU compiler).
-
-If you don't define this macro, the string @samp{gcc_compiled.:}
-is output.  This string is calculated to define a symbol which,
-on BSD systems, will never be defined for any other reason.
-GDB checks for the presence of this symbol when reading the
-symbol table of an executable.
-
-On non-BSD systems, you must arrange communication with GDB in
-some other fashion.  If GDB is not used on your system, you can
-define this macro with an empty body.
-
 @findex ASM_COMMENT_START
 @item ASM_COMMENT_START
 A C string constant describing how to begin a comment in the target

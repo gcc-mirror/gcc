@@ -68,15 +68,6 @@ Boston, MA 02111-1307, USA.  */
 
 #define NM_FLAGS	"-p"
 
-/* wir haben ein Problem, wenn in einem Assembler-File keine .text-section
-   erzeugt wird. Dann landen diese Pseudo-Labels in irgendeiner anderen
-   section, z.B. .reginfo. Das macht den ld sehr ungluecklich. */
-
-#define ASM_IDENTIFY_GCC(mw_stream) \
-	fprintf(mw_stream, "\t.ident \"gcc2_compiled.\"\n");
-
-#define ASM_IDENTIFY_LANGUAGE(STREAM)
-
 #define ASM_LONG	".word\t"
 #define ASM_GLOBAL	".rdata\n\t\t.globl\t"
 

@@ -115,32 +115,3 @@ Boston, MA 02111-1307, USA.  */
 
 /* Generate calls to memcpy, etc., not bcopy, etc.  */
 #define TARGET_MEM_FUNCTIONS
-
-/* A C statement to output assembler commands which will identify
-   the object file as having been compiled with GNU CC (or another
-   GNU compiler).
-
-   If you don't define this macro, the string `gcc2_compiled.:' is
-   output.  This string is calculated to define a symbol which, on
-   BSD systems, will never be defined for any other reason.  GDB
-   checks for the presence of this symbol when reading the symbol
-   table of an executable.
-
-   On non-BSD systems, you must arrange communication with GDB in
-   some other fashion.  If GDB is not used on your system, you can
-   define this macro with an empty body.
-
-   On OSF/1, gcc2_compiled. confuses the kernel debugger, so don't
-   put it out.  */
-
-#define ASM_IDENTIFY_GCC(STREAM)
-
-/* Identify the front-end which produced this file.  To keep symbol
-   space down, and not confuse kdb, only do this if the language is
-   not C.  */
-
-#define ASM_IDENTIFY_LANGUAGE(STREAM)					\
-{									\
-  if (strcmp (lang_identify (), "c") != 0)				\
-    output_lang_identify (STREAM);					\
-}

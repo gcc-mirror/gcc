@@ -169,5 +169,4 @@ Boston, MA 02111-1307, USA.  */
 	if (target_flags & MASK_INTEL_SYNTAX)				\
 	  fputs ("\t.intel_syntax\n", FILE);				\
         output_file_directive (FILE, main_input_filename);		\
-        fputs ("\t.version\t\"01.01\"\n", FILE);			\
   } while (0)

@@ -67,18 +67,6 @@ Boston, MA 02111-1307, USA.
 
 #define TARGET_MEM_FUNCTIONS
 
-
-/* When using stabs, gcc2_compiled must be a stabs entry, not an
-   ordinary symbol, or gdb won't see it.  The stabs entry must be
-   before the N_SO in order for gdb to find it.  */
-
-#define ASM_IDENTIFY_GCC(FILE)						\
-do									\
-  {									\
-    fputs (".stabs \"gcc2_compiled.\", 0x3c, 0, 0, 0\n", FILE);	\
-  }									\
-while (0)
-
 /* This is how we tell the assembler that a symbol is weak.  */
 
 #define ASM_WEAKEN_LABEL(FILE,NAME) \

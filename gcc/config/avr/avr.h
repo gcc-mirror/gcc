@@ -3256,12 +3256,3 @@ extern struct rtx_def *ldi_reg_rtx;
 
 /* Get the standard ELF stabs definitions.  */
 #include "dbxelf.h"
-
-#undef ASM_IDENTIFY_GCC
-#define ASM_IDENTIFY_GCC(FILE)				\
-do							\
-  {							\
-    if (write_symbols != DBX_DEBUG)			\
-      fputs ("gcc2_compiled.:\n", FILE);		\
-  }							\
-while (0)

@@ -160,10 +160,6 @@ static const char *decl_name PARAMS ((tree, int));
 
 static void float_signal PARAMS ((int)) ATTRIBUTE_NORETURN;
 static void crash_signal PARAMS ((int)) ATTRIBUTE_NORETURN;
-#ifdef ASM_IDENTIFY_LANGUAGE
-/* This might or might not be used in ASM_IDENTIFY_LANGUAGE. */
-static void output_lang_identify PARAMS ((FILE *)) ATTRIBUTE_UNUSED;
-#endif
 static void compile_file PARAMS ((const char *));
 static void display_help PARAMS ((void));
 static void display_target_options PARAMS ((void));
@@ -1792,21 +1788,6 @@ output_file_directive (asm_file, input_name)
 #endif
 }
 
-#ifdef ASM_IDENTIFY_LANGUAGE
-/* Routine to build language identifier for object file.  */
-
-static void
-output_lang_identify (asm_out_file)
-     FILE *asm_out_file;
-{
-  int len = strlen (lang_identify ()) + sizeof ("__gnu_compiled_") + 1;
-  char *s = (char *) alloca (len);
-
-  sprintf (s, "__gnu_compiled_%s", lang_identify ());
-  ASM_OUTPUT_LABEL (asm_out_file, s);
-}
-#endif
-
 /* Routine to open a dump file.  Return true if the dump file is enabled.  */
 
 static int
@@ -2280,18 +2261,6 @@ compile_file (name)
 	  fprintf (asm_out_file, "\n");
 	}
 #endif
-
-      /* Output something to inform GDB that this compilation was by GCC.  */
-#ifndef ASM_IDENTIFY_GCC
-      fprintf (asm_out_file, "gcc2_compiled.:\n");
-#else
-      ASM_IDENTIFY_GCC (asm_out_file);
-#endif
-
-  /* Output something to identify which front-end produced this file.  */
-#ifdef ASM_IDENTIFY_LANGUAGE
-      ASM_IDENTIFY_LANGUAGE (asm_out_file);
-#endif
     } /* ! flag_syntax_only  */
 
 #ifndef ASM_OUTPUT_SECTION_NAME
@@ -2318,25 +2287,6 @@ compile_file (name)
   if (flag_function_sections && write_symbols != NO_DEBUG)
     warning ("-ffunction-sections may affect debugging on some targets.");
 #endif
-
-  /* ??? Note: There used to be a conditional here
-      to call assemble_zeros without fail if DBX_DEBUGGING_INFO is defined.
-      This was to guarantee separation between gcc_compiled. and
-      the first function, for the sake of dbx on Suns.
-      However, having the extra zero here confused the Emacs
-      code for unexec, and might confuse other programs too.
-      Therefore, I took out that change.
-      In future versions we should find another way to solve
-      that dbx problem.  -- rms, 23 May 93.  */
-
-  /* Don't let the first function fall at the same address
-     as gcc_compiled., if profiling.  */
-  if (profile_flag || profile_block_flag)
-    {
-      /* It's best if we can write a nop here since some
-	 assemblers don't tolerate zeros in the text section.  */
-      output_asm_insn (get_insn_template (CODE_FOR_nop, NULL), NULL_PTR);
-    }
 
   /* If dbx symbol table desired, initialize writing it
      and output the predefined types.  */
@@ -2471,6 +2421,15 @@ compile_file (name)
 
 #ifdef ASM_FILE_END
   ASM_FILE_END (asm_out_file);
+#endif
+
+  /* Attach a special .ident directive to the end of the file to identify
+     the version of GCC which compiled this code.  The format of the .ident
+     string is patterned after the ones produced by native SVR4 compilers.  */
+#ifdef IDENT_ASM_OP
+  if (!flag_no_ident)
+    fprintf (asm_out_file, "%s\"GCC: (GNU) %s\"\n",
+	     IDENT_ASM_OP, version_string);
 #endif
 
   /* Language-specific end of compilation actions.  */

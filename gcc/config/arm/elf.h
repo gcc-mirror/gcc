@@ -198,19 +198,6 @@ Boston, MA 02111-1307, USA.  */
   arm_valid_machine_decl_attribute (DECL, IDENTIFIER, ARGS)
 
 
-/* A C statement to output assembler commands which will identify the
-   object file as having been compiled with GNU CC (or another GNU
-   compiler).  */
-/* Define this to NULL so we don't get anything.
-   We have ASM_IDENTIFY_LANGUAGE.
-   Also, when using stabs, gcc2_compiled must be a stabs entry, not an
-   ordinary symbol, or gdb won't see it.  The stabs entry must be
-   before the N_SO in order for gdb to find it.  */
-#ifndef ASM_IDENTIFY_GCC
-#define ASM_IDENTIFY_GCC(STREAM) 				\
-  fprintf (STREAM, "%sgcc2_compiled.:\n", LOCAL_LABEL_PREFIX )
-#endif
-
 /* This outputs a lot of .req's to define alias for various registers.
    Let's try to avoid this.  */
 #ifndef ASM_FILE_START

@@ -607,10 +607,6 @@ do { register int i;			\
     { fprintf ((FILE), "mov"); (PTR) += 4; }		\
 }
 
-/* Prevent output of `gcc_compiled.:'.  */
-
-#define ASM_IDENTIFY_GCC(FILE)
-
 #else /* not HPUX_ASM */
 
 #undef FUNCTION_PROFILER

@@ -31,14 +31,6 @@ Boston, MA 02111-1307, USA.  */
 #define ASM_OUTPUT_IDENT(FILE, NAME) \
   fprintf (FILE, "\t.ident \"%s\"\n", NAME);
 
-#ifdef IDENTIFY_WITH_IDENT
-/* Put the GCC identification somewhere nicer, I think.
-   Does the COFF GDB use the "gcc2_complied." symbol anyway? */
-#define ASM_IDENTIFY_GCC(FILE) /* nothing */
-#define ASM_IDENTIFY_LANGUAGE(FILE) \
-  fprintf (FILE, "\t.ident \"GCC (%s) %s\"\n", lang_identify(), version_string)
-#endif
-
 #ifdef USE_COLLECT2
 #undef ASM_OUTPUT_CONSTRUCTOR
 #undef ASM_OUTPUT_DESTRUCTOR

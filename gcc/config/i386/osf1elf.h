@@ -85,21 +85,6 @@
 #undef  LIBGCC_SPEC
 #define LIBGCC_SPEC "%{!shared:%{!symbolic:libgcc.a%s}}"
 
-/* A C statement to output assembler commands which will identify the object
-  file as having been compile with GNU CC. We don't need or want this for
-  OSF1. */
-#undef ASM_IDENTIFY_GCC
-#define ASM_IDENTIFY_GCC(FILE)
-
-/* Identify the front-end which produced this file.  To keep symbol
-   space down, and not confuse kdb, only do this if the language is
-   not C.  */
-#define ASM_IDENTIFY_LANGUAGE(STREAM)                                   \
-{                                                                       \
-  if (strcmp (lang_identify (), "c") != 0)                              \
-    output_lang_identify (STREAM);                                      \
-}
-
 /* Specify size_t, ptrdiff_t, and wchar_t types.  */
 #undef  SIZE_TYPE
 #undef  PTRDIFF_TYPE

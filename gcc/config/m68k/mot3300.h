@@ -38,6 +38,9 @@ Boston, MA 02111-1307, USA.  */
 
 #include "m68k/m68k.h"
 
+/* GDB expects a slightly different marker on this target.  */
+#define STABS_GCC_MARKER "gcc2_compiled%"
+
 /* See m68k.h.  0407 means 68020-68040.  */
 
 #ifndef TARGET_DEFAULT
@@ -263,11 +266,6 @@ dtors_section ()							\
        output_file_directive ((FILE), main_input_filename); \
     }
 #endif /* USE_GAS */
-
-/* The sysV68 assembler does not accept dots in labels.
-   Let's use percent instead  */
-
-#define ASM_IDENTIFY_GCC(FILE)        fputs("gcc2_compiled%:\n", FILE)
 
 /* Names to predefine in the preprocessor for this target machine.  */
 /* ihnp4!lmayk!lgm@eddie.mit.edu says mc68000 and m68k should not be here,
