@@ -2944,10 +2944,11 @@ rtx
 expand_builtin_frob_return_addr (addr_tree)
      tree addr_tree;
 {
-  rtx addr = expand_expr (addr_tree, NULL_RTX, Pmode, 0);
+  rtx addr = expand_expr (addr_tree, NULL_RTX, ptr_mode, 0);
 
 #ifdef POINTERS_EXTEND_UNSIGNED
-  addr = convert_memory_address (Pmode, addr);
+  if (GET_MODE (addr) != Pmode)
+    addr = convert_memory_address (Pmode, addr);
 #endif
 
 #ifdef RETURN_ADDR_OFFSET
@@ -2971,8 +2972,11 @@ expand_builtin_eh_return (stackadj_tree, handler_tree)
   handler = expand_expr (handler_tree, cfun->eh->ehr_handler, VOIDmode, 0);
 
 #ifdef POINTERS_EXTEND_UNSIGNED
-  stackadj = convert_memory_address (Pmode, stackadj);
-  handler = convert_memory_address (Pmode, handler);
+  if (GET_MODE (stackadj) != Pmode)
+    stackadj = convert_memory_address (Pmode, stackadj);
+
+  if (GET_MODE (handler) != Pmode)
+    handler = convert_memory_address (Pmode, handler);
 #endif
 
   if (! cfun->eh->ehr_label)

@@ -472,7 +472,7 @@ memory_address (mode, x)
     return x;
 
 #ifdef POINTERS_EXTEND_UNSIGNED
-  if (GET_MODE (x) == ptr_mode)
+  if (GET_MODE (x) != Pmode)
     x = convert_memory_address (Pmode, x);
 #endif
 
@@ -1318,16 +1318,12 @@ allocate_dynamic_stack_space (size, target, known_align)
       enum machine_mode mode = STACK_SIZE_MODE;
       insn_operand_predicate_fn pred;
 
-      pred = insn_data[(int) CODE_FOR_allocate_stack].operand[0].predicate;
-      if (pred && ! ((*pred) (target, Pmode)))
-#ifdef POINTERS_EXTEND_UNSIGNED
-	target = convert_memory_address (Pmode, target);
-#else
-	target = copy_to_mode_reg (Pmode, target);
-#endif
-
+      /* We don't have to check against the predicate for operand 0 since
+	 TARGET is known to be a pseudo of the proper mode, which must
+	 be valid for the operand.  For operand 1, convert to the
+	 proper mode and validate.  */
       if (mode == VOIDmode)
-	mode = Pmode;
+	mode = insn_data[(int) CODE_FOR_allocate_stack].operand[1].mode;
 
       pred = insn_data[(int) CODE_FOR_allocate_stack].operand[1].predicate;
       if (pred && ! ((*pred) (size, mode)))
@@ -1461,7 +1457,11 @@ probe_stack_range (first, size)
      HOST_WIDE_INT first;
      rtx size;
 {
-  /* First see if the front end has set up a function for us to call to
+  /* First ensure SIZE is Pmode.  */
+  if (GET_MODE (size) != VOIDmode && GET_MODE (size) != Pmode)
+    size = convert_to_mode (Pmode, size, 1);
+
+  /* Next see if the front end has set up a function for us to call to
      check the stack.  */
   if (stack_check_libfunc != 0)
     {
