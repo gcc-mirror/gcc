@@ -65,9 +65,9 @@ extern int target_flags;
 
 #define MASK_AUTO_PIC	0x00000400	/* generate automatically PIC */
 
-#define MASK_INLINE_DIV_LAT 0x00000400	/* inline div, min latency.  */
+#define MASK_INLINE_DIV_LAT 0x00000800	/* inline div, min latency.  */
 
-#define MASK_INLINE_DIV_THR 0x00000800	/* inline div, max throughput.  */
+#define MASK_INLINE_DIV_THR 0x00001000	/* inline div, max throughput.  */
 
 #define MASK_DWARF2_ASM 0x40000000	/* test dwarf2 line info via gas.  */
 
