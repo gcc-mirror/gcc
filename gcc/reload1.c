@@ -6635,9 +6635,9 @@ emit_reload_insns (insn)
 	  else if (reload_out[r] == 0
 		   && reload_in[r] != 0
 		   && ((GET_CODE (reload_in[r]) == REG
-			&& ! reg_has_output_reload[REGNO (reload_in[r])]
+			&& ! reg_has_output_reload[REGNO (reload_in[r])])
 		       || (GET_CODE (reload_in_reg[r]) == REG
-			   && ! reg_has_output_reload[REGNO (reload_in_reg[r])]))))
+			   && ! reg_has_output_reload[REGNO (reload_in_reg[r])])))
 	    {
 	      register int nregno;
 	      int nnr;
