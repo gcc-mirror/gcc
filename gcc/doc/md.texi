@@ -448,8 +448,6 @@ those listed in the @code{match_parallel}.
 A typical use of @code{match_parallel} is to match load and store
 multiple expressions, which can contain a variable number of elements
 in a @code{parallel}.  For example,
-@c the following is *still* going over.  need to change the code.
-@c also need to work on grouping of this example.  --mew 1feb93
 
 @smallexample
 (define_insn ""
@@ -463,7 +461,7 @@ in a @code{parallel}.  For example,
 @end smallexample
 
 This example comes from @file{a29k.md}.  The function
-@code{load_multiple_operations} is defined in @file{a29k.c} and checks
+@code{load_multiple_operation} is defined in @file{a29k.c} and checks
 that subsequent elements in the @code{parallel} are the same as the
 @code{set} in the pattern, except that they are referencing subsequent
 registers and memory locations.
@@ -1295,12 +1293,12 @@ general-purpose registers respectively; @pxref{Simple Constraints}), and
 @samp{I}, usually the letter indicating the most common
 immediate-constant format.
 
-For each machine architecture, the @file{config/@var{machine}.h} file
-defines additional constraints.  These constraints are used by the
-compiler itself for instruction generation, as well as for @code{asm}
-statements; therefore, some of the constraints are not particularly
-interesting for @code{asm}.  The constraints are defined through these
-macros:
+For each machine architecture, the
+@file{config/@var{machine}/@var{machine}.h} file defines additional
+constraints.  These constraints are used by the compiler itself for
+instruction generation, as well as for @code{asm} statements; therefore,
+some of the constraints are not particularly interesting for @code{asm}.
+The constraints are defined through these macros:
 
 @table @code
 @item REG_CLASS_FROM_LETTER
@@ -2068,9 +2066,8 @@ machines explicit memory references will get optional reloads.
 If a scratch register is required to move an object to or from memory,
 it can be allocated using @code{gen_reg_rtx} prior to life analysis.
 
-If there are cases needing
-scratch registers after reload, you must define
-@code{SECONDARY_INPUT_RELOAD_CLASS} and perhaps also
+If there are cases which need scratch registers during or after reload,
+you must define @code{SECONDARY_INPUT_RELOAD_CLASS} and/or
 @code{SECONDARY_OUTPUT_RELOAD_CLASS} to detect them, and provide
 patterns @samp{reload_in@var{m}} or @samp{reload_out@var{m}} to handle
 them.  @xref{Register Classes}.
@@ -2947,8 +2944,8 @@ the function should return.  This will normally need to copied by the
 pattern to some special register or memory location.
 
 This pattern only needs to be defined if call frame exception handling
-is to be used, and simple moves to @code{EH_RETURN_STACKADJ_RTX} and
-@code{EH_RETURN_HANDLER_RTX} are not sufficient.
+is to be used, and simple moves involving @code{EH_RETURN_STACKADJ_RTX}
+and @code{EH_RETURN_HANDLER_RTX} are not sufficient.
 
 @cindex @code{prologue} instruction pattern
 @anchor{prologue instruction pattern}
@@ -3251,9 +3248,9 @@ iterations.  This avoids the need for fetching and executing a
 @samp{dbra}-like instruction and avoids pipeline stalls associated with
 the jump.
 
-GCC has three special named patterns to support low overhead looping,
-@samp{decrement_and_branch_until_zero}, @samp{doloop_begin}, and
-@samp{doloop_end}.  The first pattern,
+GCC has three special named patterns to support low overhead looping.
+They are @samp{decrement_and_branch_until_zero}, @samp{doloop_begin},
+and @samp{doloop_end}.  The first pattern,
 @samp{decrement_and_branch_until_zero}, is not emitted during RTL
 generation but may be emitted during the instruction combination phase.
 This requires the assistance of the loop optimizer, using information
@@ -3888,7 +3885,8 @@ from i386.md:
   "TARGET_ZERO_EXTEND_WITH_AND && !optimize_size"
   "#"
   "&& reload_completed"
-  [(parallel [(set (match_dup 0) (and:SI (match_dup 0) (const_int 65535)))
+  [(parallel [(set (match_dup 0) 
+                   (and:SI (match_dup 0) (const_int 65535)))
 	      (clobber (reg:CC 17))])]
   ""
   [(set_attr "type" "alu1")])
@@ -4749,9 +4747,10 @@ as follows:
    return (get_attr_length (insn) == 4
            ? "b %l0" : "l r15,=a(%l0); br r15");
 @}
-  [(set (attr "length") (if_then_else (lt (match_dup 0) (const_int 4096))
-                                      (const_int 4)
-                                      (const_int 6)))])
+  [(set (attr "length")
+        (if_then_else (lt (match_dup 0) (const_int 4096))
+                      (const_int 4)
+                      (const_int 6)))])
 @end smallexample
 
 @node Constant Attributes

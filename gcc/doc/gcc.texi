@@ -2529,11 +2529,18 @@ our current development sources are available by CVS (see
 @uref{http://gcc.gnu.org/cvs.html}).  Source and binary snapshots are
 also available for FTP; see @uref{http://gcc.gnu.org/snapshots.html}.
 
-If you would like to work on improvements to GCC, please read
-@uref{http://gcc.gnu.org/contribute.html} and
-@uref{http://gcc.gnu.org/contributewhy.html} for information on how to
-make useful contributions and avoid duplication of effort.  Suggested
-projects are listed at @uref{http://gcc.gnu.org/projects/}.
+If you would like to work on improvements to GCC, please read the
+advice at these URLs:
+
+@smallexample
+@uref{http://gcc.gnu.org/contribute.html} 
+@uref{http://gcc.gnu.org/contributewhy.html}
+@end smallexample
+
+@noindent
+for information on how to make useful contributions and avoid
+duplication of effort.  Suggested projects are listed at
+@uref{http://gcc.gnu.org/projects/}.
 
 @node VMS
 @chapter Using GCC on VMS
@@ -3229,23 +3236,23 @@ tree node that represents an expression has a data type attached.
 Variables are represented as declaration nodes.
 
 The language-independent source files for parsing are
-@file{stor-layout.c}, @file{fold-const.c}, and @file{tree.c}.
+@file{tree.c}, @file{fold-const.c}, and @file{stor-layout.c}.
 There are also header files @file{tree.h} and @file{tree.def}
 which define the format of the tree representation.
 
-C Preprocessing, for language front ends, that want or require it, is
+C preprocessing, for language front ends, that want or require it, is
 performed by cpplib, which is covered in seperate documentation.  In
-particular, the internals are covered in @xref{Top, ,Cpplib internals, cppinternals, Cpplib Internals}.
-
+particular, the internals are covered in @xref{Top, ,Cpplib internals,
+cppinternals, Cpplib Internals}.
 
 @c Avoiding overfull is tricky here.
 The source files to parse C are
-@file{c-aux-info.c},
 @file{c-convert.c},
 @file{c-decl.c},
 @file{c-errors.c},
 @file{c-lang.c},
 @file{c-parse.in},
+@file{c-aux-info.c},
 and
 @file{c-typeck.c},
 along with a header file
@@ -3266,19 +3273,18 @@ They are @file{parse.y},
 @file{cp-tree.h}, and @file{decl.h}.
 
 The special source files for parsing Objective-C are in @file{objc/}.
-They are @file{objc-parse.y}, @file{objc-act.c}, @file{objc-tree.def}, and
-@file{objc-act.h}.  Certain C-specific files are used for this as
-well.
+They are @file{objc-act.c}, @file{objc-tree.def}, and @file{objc-act.h}.
+Certain C-specific files are used for this as well.
 
 The files
 @file{c-common.c},
 @file{c-common.def},
 @file{c-dump.c},
 @file{c-format.c},
-@file{c-lex.c},
 @file{c-pragma.c},
-and
 @file{c-semantics.c},
+and
+@file{c-lex.c},
 along with header files
 @file{c-common.h},
 @file{c-dump.h},
@@ -4193,7 +4199,9 @@ For example, in the PowerPC embedded ABI support, it is not desirable
 to build libraries compiled with the @option{-mcall-aix} option
 and either of the @option{-fleading-underscore} or @option{-mlittle} options
 at the same time.  Therefore @code{MULTILIB_EXCEPTIONS} is set to
-@code{*mcall-aix/*fleading-underscore* *mlittle/*mcall-aix*}.
+@smallexample
+*mcall-aix/*fleading-underscore* *mlittle/*mcall-aix*
+@end smallexample
 
 @findex MULTILIB_EXTRA_OPTS
 @item MULTILIB_EXTRA_OPTS
