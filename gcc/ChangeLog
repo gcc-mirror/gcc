@@ -4,14 +4,14 @@
 	From trunk:
 	2003-01-20  Nick Clifton  <nickc@redhat.com>
 
-        * config/arm/arm.md (sibcall_epilogue): Add an
-        UNSPEC_PROLOGUE_USE to prevent the link register from being
-        considered dead.
+	* config/arm/arm.md (sibcall_epilogue): Add an
+	UNSPEC_PROLOGUE_USE to prevent the link register from being
+	considered dead.
 
 	2003-02-02  Richard Earnshaw  <rearnsha@arm.com>
 
-        * arm.md (sibcall_epilogue): Set the "conds" to "clob".
-        (epilogue_insns): Likewise.
+	* arm.md (sibcall_epilogue): Set the "conds" to "clob".
+	(epilogue_insns): Likewise.
 
 2003-06-14  Richard Earnshaw  <rearnsha@arm.com>
 
