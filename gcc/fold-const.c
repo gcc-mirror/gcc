@@ -1489,6 +1489,40 @@ size_binop (code, arg0, arg1)
 
   return fold (build (code, sizetype, arg0, arg1));
 }
+
+/* Combine operands OP1 and OP2 with arithmetic operation CODE.
+   CODE is a tree code.  Data type is taken from `ssizetype',
+   If the operands are constant, so is the result.  */
+
+tree
+ssize_binop (code, arg0, arg1)
+     enum tree_code code;
+     tree arg0, arg1;
+{
+  /* Handle the special case of two integer constants faster.  */
+  if (TREE_CODE (arg0) == INTEGER_CST && TREE_CODE (arg1) == INTEGER_CST)
+    {
+      /* And some specific cases even faster than that.  */
+      if (code == PLUS_EXPR && integer_zerop (arg0))
+	return arg1;
+      else if ((code == MINUS_EXPR || code == PLUS_EXPR)
+	       && integer_zerop (arg1))
+	return arg0;
+      else if (code == MULT_EXPR && integer_onep (arg0))
+	return arg1;
+
+      /* Handle general case of two integer constants.  We convert
+         arg0 to ssizetype because int_const_binop uses its type for the
+	 return value.  */
+      arg0 = convert (ssizetype, arg0);
+      return int_const_binop (code, arg0, arg1, 0, 0);
+    }
+
+  if (arg0 == error_mark_node || arg1 == error_mark_node)
+    return error_mark_node;
+
+  return fold (build (code, ssizetype, arg0, arg1));
+}
 
 /* Given T, a tree representing type conversion of ARG1, a constant,
    return a constant tree representing the result of conversion.  */

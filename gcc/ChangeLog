@@ -1,3 +1,8 @@
+1998-05-22  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* fold-const.c (ssize_binop): New fn.
+	* tree.h: Declare it.
+
 Fri May 22 03:42:05 1998  Richard Earnshaw (rearnsha@arm.com)
 
 	* genextract.c (print_path): Handle zero-length path as a special 
