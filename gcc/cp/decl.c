@@ -6656,7 +6656,10 @@ init_decl_processing ()
   }
 
   abort_fndecl
-    = build_library_fn_ptr ("__pure_virtual", void_ftype);
+    = build_library_fn_ptr ((flag_new_abi 
+			     ? "__cxa_pure_virtual"
+			     : "__pure_virtual"),
+			    void_ftype);
 
   /* Perform other language dependent initializations.  */
   init_class_processing ();

@@ -348,15 +348,23 @@ __check_null_eh_spec (void)
 // Helpers for rtti. Although these don't return, we give them return types so
 // that the type system is not broken.
 
+#if !defined(__GXX_ABI_VERSION) || __GXX_ABI_VERSION < 100
+#define THROW_BAD_CAST __throw_bad_cast
+#define THROW_BAD_TYPEID __throw_bad_typeid
+#else 
+#define THROW_BAD_CAST __cxa_bad_cast
+#define THROW_BAD_TYPEID __cxa_bad_typeid
+#endif
+
 extern "C" void *
-__throw_bad_cast ()
+THROW_BAD_CAST ()
 {
   throw std::bad_cast ();
   return 0;
 }
 
 extern "C" std::type_info const &
-__throw_bad_typeid ()
+THROW_BAD_TYPEID ()
 {
   throw std::bad_typeid ();
   return typeid (void);

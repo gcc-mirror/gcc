@@ -46,8 +46,16 @@ extern "C" {
 
 extern void __terminate(void) __attribute__ ((__noreturn__));
 
+// The name of the function to be placed in vtables in place of a pure
+// virtual function is different in the two ABIs.
+#if !defined(__GXX_ABI_VERSION) || __GXX_ABI_VERSION < 100
+#define PURE_VIRTUAL_NAME __pure_virtual
+#else
+#define PURE_VIRTUAL_NAME __cxa_pure_virtual
+#endif
+
 void
-__pure_virtual (void)
+PURE_VIRTUAL_NAME (void)
 {
   writestr ("pure virtual method called\n");
   __terminate ();
