@@ -75,6 +75,7 @@ public abstract class BytesToUnicode extends IOConverter
   {
     /* First hunt in our cache to see if we have a decoder that is
        already allocated. */
+    encoding = canonicalize(encoding);
     synchronized (BytesToUnicode.class)
       {
 	int i;
@@ -91,7 +92,7 @@ public abstract class BytesToUnicode extends IOConverter
       }
 
     // It's not in the cache, so now we have to do real work.
-    String className = "gnu.gcj.convert.Input_" + canonicalize (encoding);
+    String className = "gnu.gcj.convert.Input_" + encoding;
     Class decodingClass;
     try 
       { 
