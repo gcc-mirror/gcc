@@ -566,7 +566,7 @@ finish_expr_stmt (tree expr)
 	convert_to_void (build_non_dependent_expr (expr), "statement");
 
       /* Simplification of inner statement expressions, compound exprs,
-	 etc can result in the us already having an EXPR_STMT.  */
+	 etc can result in us already having an EXPR_STMT.  */
       if (TREE_CODE (expr) != CLEANUP_POINT_EXPR)
 	{
 	  if (TREE_CODE (expr) != EXPR_STMT)
