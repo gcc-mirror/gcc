@@ -1,3 +1,20 @@
+2003-12-16  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/11723
+	* include/bits/locale_facets.h: Add _M_bit and _M_wmask,
+	used to speed up the computation of ctype::do_is.
+	* config/locale/generic/ctype_members.cc
+	(_M_initialize_ctype): Fill _M_bit and _M_wmask.
+	(ctype::do_is): Use _M_bit and _M_wmask.
+	* config/locale/gnu/ctype_members.cc: Likewise.
+	* testsuite/performance/is_wchar_t.cc: New.
+
+	* testsuite/performance/narrow_widen_wchar_t.cc: Tweak
+	string literal (incorrect citation ;)
+
+	* include/bits/locale_facets.h: Minor tweaks, const
+	correctness, unsigned -> size_t.
+
 2003-12-16  Jerry Quinn  <jlquinn@optonline.net>
 
 	* include/bits/locale_facets.h (widen, narrow):  Uncomment the

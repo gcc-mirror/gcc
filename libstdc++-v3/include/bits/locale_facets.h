@@ -247,7 +247,7 @@ namespace std
 
       virtual const char_type*
       do_narrow(const char_type* __lo, const char_type* __hi,
-		 char __dfault, char* __dest) const = 0;
+		char __dfault, char* __dest) const = 0;
     };
 
   // NB: Generic, mostly useless implementation.
@@ -394,16 +394,16 @@ namespace std
       narrow(char_type __c, char __dfault) const
       {
 	if (_M_narrow[__c]) return _M_narrow[__c];
-	char __t = do_narrow(__c, __dfault);
+	const char __t = do_narrow(__c, __dfault);
 	if (__t != __dfault) _M_narrow[__c] = __t;
 	return __t;
       }
 
       const char_type*
       narrow(const char_type* __lo, const char_type* __hi,
-	      char __dfault, char *__to) const
+	     char __dfault, char *__to) const
       {
-	if (__builtin_expect(_M_narrow_ok==1,true))
+	if (__builtin_expect(_M_narrow_ok == 1,true))
 	  {
 	    memcpy(__to, __lo, __hi - __lo);
 	    return __hi;
@@ -464,13 +464,13 @@ namespace std
       void _M_widen_init() const
       {
 	char __tmp[sizeof(_M_widen)];
-	for (unsigned __i = 0; __i < sizeof(_M_widen); ++__i)
+	for (size_t __i = 0; __i < sizeof(_M_widen); ++__i)
 	  __tmp[__i] = __i;
 	do_widen(__tmp, __tmp + sizeof(__tmp), _M_widen);
 	    
 	_M_widen_ok = 1;
 	// Set _M_widen_ok to 2 if memcpy can't be used.
-	for (unsigned __i = 0; __i < sizeof(_M_widen); ++__i)
+	for (size_t __i = 0; __i < sizeof(_M_widen); ++__i)
 	  if (__tmp[__i] != _M_widen[__i])
 	    {
 	      _M_widen_ok = 2;
@@ -484,26 +484,24 @@ namespace std
       void _M_narrow_init() const
       {
 	char __tmp[sizeof(_M_narrow)];
-	for (unsigned __i = 0; __i < sizeof(_M_narrow); ++__i)
+	for (size_t __i = 0; __i < sizeof(_M_narrow); ++__i)
 	  __tmp[__i] = __i;
 	do_narrow(__tmp, __tmp + sizeof(__tmp), 0, _M_narrow);
 
 	// Check if any default values were created.  Do this by
 	// renarrowing with a different default value and comparing.
 	bool __consecutive = true;
-	for (unsigned __i = 0; __i < sizeof(_M_narrow); ++__i)
-	  {
-	    char __c[1];
-	    if (!_M_narrow[__i])
-	      {
-		do_narrow(__tmp + __i, __tmp + __i + 1, 1, __c);
-		if (__c[0] == 1)
-		  {
-		    __consecutive = false;
-		    break;
-		  }
-	      }
-	  }
+	for (size_t __i = 0; __i < sizeof(_M_narrow); ++__i)
+	  if (!_M_narrow[__i])
+	    {
+	      char __c;
+	      do_narrow(__tmp + __i, __tmp + __i + 1, 1, &__c);
+	      if (__c == 1)
+		{
+		  __consecutive = false;
+		  break;
+		}
+	    }
 	_M_narrow_ok = __consecutive ? 1 : 2;
       }
     };
@@ -529,6 +527,10 @@ namespace std
       bool                      _M_narrow_ok;
       char                      _M_narrow[128];
       wint_t                    _M_widen[1 + static_cast<unsigned char>(-1)];
+
+      // Pre-computed elements for do_is.
+      mask                      _M_bit[16];
+      __wmask_type              _M_wmask[16];
 
     public:
       // Data Members:

@@ -26,6 +26,8 @@
 // the GNU General Public License.
 
 #include <locale>
+#include <cwctype>
+#include <cstddef>
 #include <testsuite_performance.h>
 
 int main()
@@ -35,42 +37,51 @@ int main()
 
   time_counter time;
   resource_counter resource;
-  const long iters = 200000000;
-  char bufin[] = "This was an attempt to bypass string construction just for test.";
-  char bufout[sizeof(bufin)];
+  const wchar_t str[] =
+    L"Is this the real life?\n"
+    L"Is this just fantasy?\n"
+    L"Caught in a landslide\n"
+    L"No escape from reality\n"
+    L"Open your eyes\n"
+    L"Look up to the skies and see\n"
+    L"I'm just a poor boy\n"
+    L"I need no sympathy\n"
+    L"Because I'm easy come, easy go\n"
+    L"Little high, little low"
+    L"Anyway the wind blows\n"
+    L"Doesn't really matter to me\n"
+    L"To me\n"
+    L"                      -- Queen\n";
+  const size_t len = sizeof(str) / sizeof(str[0]) - 1;
 
   locale loc;
-  const ctype<char>& ct = use_facet<ctype<char> >(loc);
+  const ctype<wchar_t>& ct = use_facet<ctype<wchar_t> >(loc);
 
-  // narrow
+  // C
+  wctype_t w = wctype("space");
   start_counters(time, resource);
-  for (long i = 0; i < 1000000000; ++i)
-    ct.narrow(i % 128, '*');
+  for (int j = 0; j < 200000; ++j)
+    {
+      for (size_t i = 0; i < len; ++i)
+	{
+	  iswctype(str[i], w);
+	}
+    }
   stop_counters(time, resource);
-  report_performance(__FILE__, "narrow", time, resource);
+  report_performance(__FILE__, "C", time, resource);
   clear_counters(time, resource);
 
-  // narrow array
+  // C++
   start_counters(time, resource);
-  for (long i = 0; i < 100000000; ++i)
-    ct.narrow(bufin, bufin+sizeof(bufin), '*', bufout);
+  for (int j = 0; j < 200000; ++j)
+    {
+      for (size_t i = 0; i < len; ++i)
+	{
+	  ct.is(ctype_base::space, str[i]);
+	}
+    }
   stop_counters(time, resource);
-  report_performance(__FILE__, "narrow_array", time, resource);
-  clear_counters(time, resource);
-
-  // widen
-  start_counters(time, resource);
-  for (long i = 0; i < iters; ++i)
-    ct.widen(i % 128);
-  stop_counters(time, resource);
-  report_performance(__FILE__, "widen", time, resource);
-
-  // widen array
-  start_counters(time, resource);
-  for (long i = 0; i < iters; ++i)
-    ct.widen(bufin, bufin+sizeof(bufin), bufout);
-  stop_counters(time, resource);
-  report_performance(__FILE__, "widen_array", time, resource);
+  report_performance(__FILE__, "C++", time, resource);
 
   return 0;
 }
