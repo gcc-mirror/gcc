@@ -7,6 +7,7 @@ Libgcj License.  Please consult the file "LIBGCJ_LICENSE" for
 details.  */
 
 #include <config.h>
+#include <stddef.h>
 
 #include <java/net/InetAddress.h>
 
