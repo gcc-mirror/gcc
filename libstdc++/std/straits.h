@@ -40,6 +40,8 @@ template <class charT>
 struct string_char_traits {
   typedef charT char_type; // for users to acquire the basic character type
 
+  static const char_type __nullstr[1];
+
   // constraints
 
   static void assign (char_type& c1, const char_type& c2)
@@ -51,9 +53,10 @@ struct string_char_traits {
   static bool lt (const char_type& c1, const char_type& c2)
     { return (c1 < c2); }
   static char_type eos () { return char_type(); } // the null character
+  static char_type* empty() { return __nullstr; }
   static bool is_del(char_type a) { return 0; }
   // characteristic function for delimiters of charT
-  
+
   // speed-up functions
 
   static int compare (const char_type* s1, const char_type* s2, size_t n)
@@ -65,7 +68,7 @@ struct string_char_traits {
 
       return 0;
     }
-    
+
   static size_t length (const char_type* s)
     {
       size_t l = 0;
@@ -117,6 +120,7 @@ struct string_char_traits <char> {
   static bool lt (const char_type& c1, const char_type& c2)
     { return (c1 < c2); }
   static char_type eos () { return 0; }
+  static char_type* empty() { return ""; }
   static bool is_del(char_type a) { return isspace(a); }
 
   static int compare (const char_type* s1, const char_type* s2, size_t n)
@@ -131,8 +135,8 @@ struct string_char_traits <char> {
     { return (char_type*) memset (s1, c, n); }
 };
 
-#if 0
 #include <cwctype>
+#include <cwchar>
 struct string_char_traits <wchar_t> {
   typedef wchar_t char_type;
 
@@ -145,6 +149,7 @@ struct string_char_traits <wchar_t> {
   static bool lt (const char_type& c1, const char_type& c2)
     { return (c1 < c2); }
   static char_type eos () { return 0; }
+  static char_type* empty() { return L""; }
   static bool is_del(char_type a) { return iswspace(a); }
 
   static int compare (const char_type* s1, const char_type* s2, size_t n)
@@ -153,9 +158,10 @@ struct string_char_traits <wchar_t> {
     { return wcslen (s); }
   static char_type* copy (char_type* s1, const char_type* s2, size_t n)
     { return wmemcpy (s1, s2, n); }
+  static char_type* move (char_type* s1, const char_type* s2, size_t n)
+    { return (char_type*) wmemmove (s1, s2, n); }
   static char_type* set (char_type* s1, const char_type& c, size_t n)
     { return wmemset (s1, c, n); }
 };
-#endif
 } // extern "C++"
 #endif
