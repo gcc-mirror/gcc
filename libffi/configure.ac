@@ -37,6 +37,8 @@ AC_PROG_LIBTOOL
 
 AM_MAINTAINER_MODE
 
+AC_CHECK_HEADERS(sys/mman.h)
+AC_CHECK_FUNCS(mmap)
 AC_FUNC_MMAP_BLACKLIST
 
 dnl The -no-testsuite modules omit the test subdir.
