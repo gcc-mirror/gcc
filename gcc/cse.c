@@ -4051,8 +4051,12 @@ simplify_relational_operation (code, mode, op0, op1)
   if (GET_CODE (op0) == COMPARE && op1 == const0_rtx)
     op1 = XEXP (op0, 1), op0 = XEXP (op0, 0);
 
-  if (GET_CODE (op0) != CONST_INT || GET_CODE (op1) != CONST_INT
-      || width > HOST_BITS_PER_WIDE_INT || width == 0)
+  /* Unlike the arithmetic operations, we can do the comparison whether
+     or not WIDTH is larger than HOST_BITS_PER_WIDE_INT because the
+     CONST_INTs are to be understood as being infinite precision as
+     is the comparison.  So there is no question of overflow.  */
+
+  if (GET_CODE (op0) != CONST_INT || GET_CODE (op1) != CONST_INT || width == 0)
     {
       /* Even if we can't compute a constant result,
 	 there are some cases worth simplifying.  */
