@@ -430,7 +430,12 @@ layout_record (rec)
       {
         register tree dsize = DECL_SIZE (field);
 
-	if (TREE_CODE (dsize) == INTEGER_CST)
+	/* This can happen when we have an invalid nested struct definition,
+	   such as struct j { struct j { int i; } }.  The error message is
+	   printed in finish_struct.  */
+	if (dsize == 0)
+	  /* Do nothing.  */;
+	else if (TREE_CODE (dsize) == INTEGER_CST)
 	  const_size += TREE_INT_CST_LOW (dsize);
 	else
 	  {
