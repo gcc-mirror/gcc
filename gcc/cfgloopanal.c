@@ -41,14 +41,35 @@ static bool constant_iterations (struct loop_desc *, unsigned HOST_WIDE_INT *,
 				 bool *);
 static bool simple_loop_exit_p (struct loops *, struct loop *, edge, regset,
 				rtx *, struct loop_desc *);
-static rtx variable_initial_value (rtx, regset, rtx, rtx *);
-static rtx variable_initial_values (edge, rtx);
+static rtx variable_initial_value (rtx, regset, rtx, rtx *, enum machine_mode);
+static rtx variable_initial_values (edge, rtx, enum machine_mode);
 static bool simple_condition_p (struct loop *, rtx, regset,
 				struct loop_desc *);
 static basic_block simple_increment (struct loops *, struct loop *, rtx *,
 				     struct loop_desc *);
 static rtx count_strange_loop_iterations (rtx, rtx, enum rtx_code,
-					  int, rtx, enum machine_mode);
+					  int, rtx, enum machine_mode,
+					  enum machine_mode);
+static unsigned HOST_WIDEST_INT inverse (unsigned HOST_WIDEST_INT, int);
+static bool fits_in_mode_p (enum machine_mode mode, rtx expr);
+
+/* Computes inverse to X modulo (1 << MOD).  */
+static unsigned HOST_WIDEST_INT
+inverse (unsigned HOST_WIDEST_INT x, int mod)
+{
+  unsigned HOST_WIDEST_INT mask =
+	  ((unsigned HOST_WIDEST_INT) 1 << (mod - 1) << 1) - 1;
+  unsigned HOST_WIDEST_INT rslt = 1;
+  int i;
+
+  for (i = 0; i < mod - 1; i++)
+    {
+      rslt = (rslt * x) & mask;
+      x = (x * x) & mask;
+    }
+
+  return rslt;
+}
 
 /* Checks whether BB is executed exactly once in each LOOP iteration.  */
 bool
@@ -277,8 +298,8 @@ static basic_block
 simple_increment (struct loops *loops, struct loop *loop,
 		  rtx *simple_increment_regs, struct loop_desc *desc)
 {
-  rtx mod_insn, set, set_src, set_add;
-  basic_block mod_bb;
+  rtx mod_insn, mod_insn1, set, set_src, set_add;
+  basic_block mod_bb, mod_bb1;
 
   /* Find insn that modifies var.  */
   mod_insn = simple_increment_regs[REGNO (desc->var)];
@@ -300,6 +321,71 @@ simple_increment (struct loops *loops, struct loop *loop,
   set_src = find_reg_equal_equiv_note (mod_insn);
   if (!set_src)
     set_src = SET_SRC (set);
+
+  /* Check for variables that iterate in narrower mode.  */
+  if (GET_CODE (set_src) == SIGN_EXTEND
+      || GET_CODE (set_src) == ZERO_EXTEND)
+    {
+      /* If we are sign extending variable that is then compared unsigned
+	 or vice versa, there is something weird happening.  */
+      if (desc->cond != EQ
+	  && desc->cond != NE
+	  && ((desc->cond == LEU
+	       || desc->cond == LTU
+	       || desc->cond == GEU
+	       || desc->cond == GTU)
+	      ^ (GET_CODE (set_src) == ZERO_EXTEND)))
+	return NULL;
+
+      if (GET_CODE (XEXP (set_src, 0)) != SUBREG
+	  || SUBREG_BYTE (XEXP (set_src, 0)) != 0
+	  || GET_MODE (SUBREG_REG (XEXP (set_src, 0))) != GET_MODE (desc->var))
+	return NULL;
+
+      desc->inner_mode = GET_MODE (XEXP (set_src, 0));
+      desc->extend = GET_CODE (set_src);
+      set_src = SUBREG_REG (XEXP (set_src, 0));
+
+      if (GET_CODE (set_src) != REG)
+	return NULL;
+
+      /* Find where the reg is set.  */
+      mod_insn1 = simple_increment_regs[REGNO (set_src)];
+      if (!mod_insn1)
+	return NULL;
+
+      mod_bb1 = BLOCK_FOR_INSN (mod_insn1);
+      if (!dominated_by_p (loops->cfg.dom, mod_bb, mod_bb1))
+	return NULL;
+      if (mod_bb1 == mod_bb)
+	{
+	  for (;
+	       mod_insn != PREV_INSN (mod_bb->head);
+	       mod_insn = PREV_INSN (mod_insn))
+	    if (mod_insn == mod_insn1)
+	      break;
+
+	  if (mod_insn == PREV_INSN (mod_bb->head))
+	    return NULL;
+	}
+
+      /* Replace the source with the possible place of increment.  */
+      set = single_set (mod_insn1);
+      if (!set)
+	abort ();
+      if (!rtx_equal_p (SET_DEST (set), set_src))
+	abort ();
+
+      set_src = find_reg_equal_equiv_note (mod_insn1);
+      if (!set_src)
+	set_src = SET_SRC (set);
+    }
+  else
+    {
+      desc->inner_mode = GET_MODE (desc->var);
+      desc->extend = NIL;
+    }
+
   if (GET_CODE (set_src) != PLUS)
     return NULL;
   if (!rtx_equal_p (XEXP (set_src, 0), desc->var))
@@ -317,12 +403,14 @@ simple_increment (struct loops *loops, struct loop *loop,
 
 /* Tries to find initial value of VAR in INSN.  This value must be invariant
    wrto INVARIANT_REGS.  If SET_INSN is not NULL, insn in that var is set is
-   placed here.  */
+   placed here.  INNER_MODE is mode in that induction variable VAR iterates.  */
 static rtx
-variable_initial_value (rtx insn, regset invariant_regs, rtx var, rtx *set_insn)
+variable_initial_value (rtx insn, regset invariant_regs,
+			rtx var, rtx *set_insn, enum machine_mode inner_mode)
 {
   basic_block bb;
   rtx set;
+  rtx ret = NULL;
 
   /* Go back through cfg.  */
   bb = BLOCK_FOR_INSN (insn);
@@ -357,8 +445,21 @@ variable_initial_value (rtx insn, regset invariant_regs, rtx var, rtx *set_insn)
 	    val = XEXP (note, 0);
 	  else
 	    val = SET_SRC (set);
+
+	  /* If we know that the initial value is indeed in range of
+	     the inner mode, record the fact even in case the value itself
+	     is useless.  */
+	  if ((GET_CODE (val) == SIGN_EXTEND
+	       || GET_CODE (val) == ZERO_EXTEND)
+	      && GET_MODE (XEXP (val, 0)) == inner_mode)
+	    ret = gen_rtx_fmt_e (GET_CODE (val),
+				 GET_MODE (var),
+				 gen_rtx_fmt_ei (SUBREG,
+						 inner_mode,
+						 var, 0));
+
 	  if (!invariant_rtx_wrto_regs_p (val, invariant_regs))
-	    return NULL;
+	    return ret;
 
 	  if (set_insn)
 	    *set_insn = insn;
@@ -376,9 +477,10 @@ variable_initial_value (rtx insn, regset invariant_regs, rtx var, rtx *set_insn)
   return NULL;
 }
 
-/* Returns list of definitions of initial value of VAR at Edge.  */
+/* Returns list of definitions of initial value of VAR at edge E.  INNER_MODE
+   is mode in that induction variable VAR really iterates.  */
 static rtx
-variable_initial_values (edge e, rtx var)
+variable_initial_values (edge e, rtx var, enum machine_mode inner_mode)
 {
   rtx set_insn, list;
   regset invariant_regs;
@@ -396,7 +498,8 @@ variable_initial_values (edge e, rtx var)
 
   set_insn = e->src->end;
   while (REG_P (var)
-	 && (var = variable_initial_value (set_insn, invariant_regs, var, &set_insn)))
+	 && (var = variable_initial_value (set_insn, invariant_regs, var,
+					   &set_insn, inner_mode)))
     list = alloc_EXPR_LIST (0, copy_rtx (var), list);
 
   FREE_REG_SET (invariant_regs);
@@ -453,17 +556,23 @@ constant_iterations (struct loop_desc *desc, unsigned HOST_WIDE_INT *niter,
 /* Attempts to determine a number of iterations of a "strange" loop.
    Its induction variable starts with value INIT, is compared by COND
    with LIM.  If POSTINCR, it is incremented after the test.  It is incremented
-   by STRIDE each iteration and iterates in MODE.
+   by STRIDE each iteration, has mode MODE but iterates in INNER_MODE.
 
    By "strange" we mean loops where induction variable increases in the wrong
    direction wrto comparison, i.e. for (i = 6; i > 5; i++).  */
 static rtx
 count_strange_loop_iterations (rtx init, rtx lim, enum rtx_code cond,
-			       int postincr, rtx stride, enum machine_mode mode)
+			       int postincr, rtx stride, enum machine_mode mode,
+			       enum machine_mode inner_mode)
 {
   rtx rqmt, n_to_wrap, before_wrap, after_wrap;
   rtx mode_min, mode_max;
   int size;
+
+  /* This could be handled, but it is not important enough to lose time with
+     it just now.  */
+  if (mode != inner_mode)
+    return NULL_RTX;
 
   if (!postincr)
     init = simplify_gen_binary (PLUS, mode, init, stride);
@@ -567,6 +676,28 @@ count_strange_loop_iterations (rtx init, rtx lim, enum rtx_code cond,
   return simplify_gen_binary (PLUS, mode, n_to_wrap, const1_rtx);
 }
 
+/* Checks whether value of EXPR fits into range of MODE.  */
+static bool
+fits_in_mode_p (enum machine_mode mode, rtx expr)
+{
+  unsigned HOST_WIDEST_INT val;
+  int n_bits = 0;
+
+  if (GET_CODE (expr) == CONST_INT)
+    {
+      for (val = INTVAL (expr); val; val >>= 1)
+	n_bits++;
+
+      return n_bits <= GET_MODE_BITSIZE (mode);
+    }
+
+  if (GET_CODE (expr) == SIGN_EXTEND
+      || GET_CODE (expr) == ZERO_EXTEND)
+    return GET_MODE (XEXP (expr, 0)) == mode;
+
+  return false;
+}
+
 /* Return RTX expression representing number of iterations of loop as bounded
    by test described by DESC (in the case loop really has multiple exit
    edges, fewer iterations may happen in the practice).
@@ -584,11 +715,14 @@ count_loop_iterations (struct loop_desc *desc, rtx init, rtx lim)
 {
   enum rtx_code cond = desc->cond;
   rtx stride = desc->stride;
-  rtx mod, exp;
+  rtx mod, exp, ainit, bound;
+  rtx overflow_check, mx, mxp;
+  enum machine_mode mode = GET_MODE (desc->var);
+  unsigned HOST_WIDEST_INT s, size, d;
 
   /* Give up on floating point modes and friends.  It can be possible to do
      the job for constant loop bounds, but it is probably not worthwhile.  */
-  if (!INTEGRAL_MODE_P (GET_MODE (desc->var)))
+  if (!INTEGRAL_MODE_P (mode))
     return NULL;
 
   init = copy_rtx (init ? init : desc->var);
@@ -598,6 +732,82 @@ count_loop_iterations (struct loop_desc *desc, rtx init, rtx lim)
   if (desc->neg)
     cond = reverse_condition (cond);
 
+  if (desc->inner_mode != mode)
+    {
+      /* We have a case when the variable in fact iterates in the narrower
+	 mode.  This has following consequences:
+	 
+	 For induction variable itself, if !desc->postincr, it does not mean
+	 anything too special, since we know the variable is already in range
+	 of the inner mode when we compare it (so it is just needed to shorten
+	 it into the mode before calculations are done, so that we don't risk
+	 wrong results).  More complicated case is when desc->postincr; then
+	 the first two iterations are special (the first one because the value
+	 may be out of range, the second one because after shortening it to the
+	 range it may have absolutely any value), and we do not handle this in
+	 unrolling.  So if we aren't able to prove that the initial value is in
+	 the range, we fail in this case.
+	 
+	 Step is just moduled to fit into inner mode.
+
+	 If lim is out of range, then either the loop is infinite (and then
+	 we may unroll however we like to), or exits in the first iteration
+	 (this is also ok, since we handle it specially for this case anyway).
+	 So we may safely assume that it fits into the inner mode.  */
+
+      for (ainit = desc->var_alts; ainit; ainit = XEXP (ainit, 1))
+	if (fits_in_mode_p (desc->inner_mode, XEXP (ainit, 0)))
+	  break;
+
+      if (!ainit)
+	{
+	  if (desc->postincr)
+	    return NULL_RTX;
+
+	  init = simplify_gen_unary (desc->extend,
+				     mode,
+				     simplify_gen_subreg (desc->inner_mode,
+							  init,
+							  mode,
+							  0),
+				     desc->inner_mode);
+	}
+
+      stride = simplify_gen_subreg (desc->inner_mode, stride, mode, 0);
+      if (stride == const0_rtx)
+	return NULL_RTX;
+    }
+
+  /* Prepare condition to verify that we do not risk overflow.  */
+  if (stride == const1_rtx
+      || stride == constm1_rtx
+      || cond == NE
+      || cond == EQ)
+    {
+      /* Overflow at NE conditions does not occur.  EQ condition
+	 is weird and is handled in count_strange_loop_iterations.
+	 If stride is 1, overflow may occur only for <= and >= conditions,
+	 and then they are infinite, so it does not bother us.  */
+      overflow_check = const0_rtx;
+    }
+  else
+    {
+      if (cond == LT || cond == LTU)
+	mx = simplify_gen_binary (MINUS, mode, lim, const1_rtx);
+      else if (cond == GT || cond == GTU)
+	mx = simplify_gen_binary (PLUS, mode, lim, const1_rtx);
+      else
+	mx = lim;
+      if (mode != desc->inner_mode)
+	mxp = simplify_gen_subreg (desc->inner_mode, mx, mode, 0);
+      else
+	mxp = mx;
+      mxp = simplify_gen_binary (PLUS, desc->inner_mode, mxp, stride);
+      if (mode != desc->inner_mode)
+	mxp = simplify_gen_unary (desc->extend, mode, mxp, desc->inner_mode);
+      overflow_check = simplify_gen_relational (cond, SImode, mode, mx, mxp);
+    }
+    
   /* Compute absolute value of the difference of initial and final value.  */
   if (INTVAL (stride) > 0)
     {
@@ -605,43 +815,57 @@ count_loop_iterations (struct loop_desc *desc, rtx init, rtx lim)
       if (cond == EQ || cond == GE || cond == GT || cond == GEU
 	  || cond == GTU)
 	return count_strange_loop_iterations (init, lim, cond, desc->postincr,
-					      stride, GET_MODE (desc->var));
-      exp = simplify_gen_binary (MINUS, GET_MODE (desc->var),
-				 lim, init);
+					      stride, mode, desc->inner_mode);
+      exp = simplify_gen_binary (MINUS, mode, lim, init);
     }
   else
     {
-      /* Bypass nonsensical tests.  */
       if (cond == EQ || cond == LE || cond == LT || cond == LEU
 	  || cond == LTU)
 	return count_strange_loop_iterations (init, lim, cond, desc->postincr,
-					      stride, GET_MODE (desc->var));
-      exp = simplify_gen_binary (MINUS, GET_MODE (desc->var),
-				 init, lim);
-      stride = simplify_gen_unary (NEG, GET_MODE (desc->var),
-				   stride, GET_MODE (desc->var));
+					      stride, mode, desc->inner_mode);
+      exp = simplify_gen_binary (MINUS, mode, init, lim);
+      stride = simplify_gen_unary (NEG, mode, stride, mode);
     }
+
+  /* If there is a risk of overflow (i.e. when we increment value satisfying
+     a condition, we may again obtain a value satisfying the condition),
+     fail.  */
+  if (overflow_check != const0_rtx)
+    return NULL_RTX;
 
   /* Normalize difference so the value is always first examined
      and later incremented.  */
-
   if (!desc->postincr)
-    exp = simplify_gen_binary (MINUS, GET_MODE (desc->var),
-			       exp, stride);
+    exp = simplify_gen_binary (MINUS, mode, exp, stride);
 
   /* Determine delta caused by exit condition.  */
   switch (cond)
     {
     case NE:
-      /* For NE tests, make sure that the iteration variable won't miss
-	 the final value.  If EXP mod STRIDE is not zero, then the
-	 iteration variable will overflow before the loop exits, and we
-	 can not calculate the number of iterations easily.  */
-      if (stride != const1_rtx
-	  && (simplify_gen_binary (UMOD, GET_MODE (desc->var), exp, stride)
-              != const0_rtx))
-	return NULL;
+      /* NE tests are easy to handle, because we just perform simple
+	 arithmetics modulo power of 2.  Let's use the fact to compute the
+	 number of iterations exactly.  We are now in situation when we want to
+	 solve an equation stride * i = c (mod size of inner_mode).
+	 Let nsd (stride, size of mode) = d.  If d does not divide c, the
+	 loop is infinite.  Otherwise, the number of iterations is
+	 (inverse(s/d) * (c/d)) mod (size of mode/d).  */
+      size = GET_MODE_BITSIZE (desc->inner_mode);
+      s = INTVAL (stride);
+      d = 1;
+      while (s % 2 != 1)
+	{
+	  s /= 2;
+	  d *= 2;
+	  size--;
+	}
+      bound = GEN_INT (((unsigned HOST_WIDEST_INT) 1 << (size - 1 ) << 1) - 1);
+      exp = simplify_gen_binary (UDIV, mode, exp, GEN_INT (d));
+      exp = simplify_gen_binary (MULT, mode,
+				 exp, GEN_INT (inverse (s, size)));
+      exp = simplify_gen_binary (AND, mode, exp, bound);
       break;
+
     case LT:
     case GT:
     case LTU:
@@ -651,19 +875,18 @@ count_loop_iterations (struct loop_desc *desc, rtx init, rtx lim)
     case GE:
     case LEU:
     case GEU:
-      exp = simplify_gen_binary (PLUS, GET_MODE (desc->var),
-				 exp, const1_rtx);
+      exp = simplify_gen_binary (PLUS, mode, exp, const1_rtx);
       break;
     default:
       abort ();
     }
 
-  if (stride != const1_rtx)
+  if (cond != NE && stride != const1_rtx)
     {
       /* Number of iterations is now (EXP + STRIDE - 1 / STRIDE),
 	 but we need to take care for overflows.  */
 
-      mod = simplify_gen_binary (UMOD, GET_MODE (desc->var), exp, stride);
+      mod = simplify_gen_binary (UMOD, mode, exp, stride);
 
       /* This is dirty trick.  When we can't compute number of iterations
 	 to be constant, we simply ignore the possible overflow, as
@@ -672,18 +895,15 @@ count_loop_iterations (struct loop_desc *desc, rtx init, rtx lim)
 
       if (GET_CODE (mod) != CONST_INT)
 	{
-	  rtx stridem1 = simplify_gen_binary (PLUS, GET_MODE (desc->var),
-					      stride, constm1_rtx);
-	  exp = simplify_gen_binary (PLUS, GET_MODE (desc->var),
-				     exp, stridem1);
-	  exp = simplify_gen_binary (UDIV, GET_MODE (desc->var), exp, stride);
+	  rtx stridem1 = simplify_gen_binary (PLUS, mode, stride, constm1_rtx);
+	  exp = simplify_gen_binary (PLUS, mode, exp, stridem1);
+	  exp = simplify_gen_binary (UDIV, mode, exp, stride);
 	}
       else
 	{
-	  exp = simplify_gen_binary (UDIV, GET_MODE (desc->var), exp, stride);
+	  exp = simplify_gen_binary (UDIV, mode, exp, stride);
 	  if (mod != const0_rtx)
-	    exp = simplify_gen_binary (PLUS, GET_MODE (desc->var),
-				       exp, const1_rtx);
+	    exp = simplify_gen_binary (PLUS, mode, exp, const1_rtx);
 	}
     }
 
@@ -792,8 +1012,8 @@ simple_loop_exit_p (struct loops *loops, struct loop *loop, edge exit_edge,
 
   /* Find initial value of var and alternative values for lim.  */
   e = loop_preheader_edge (loop);
-  desc->var_alts = variable_initial_values (e, desc->var);
-  desc->lim_alts = variable_initial_values (e, desc->lim);
+  desc->var_alts = variable_initial_values (e, desc->var, desc->inner_mode);
+  desc->lim_alts = variable_initial_values (e, desc->lim, desc->inner_mode);
 
   /* Number of iterations.  */
   desc->const_iter =
