@@ -249,6 +249,13 @@ _Jv_ThreadCurrent (void)
   return (java::lang::Thread *) pthread_getspecific (_Jv_ThreadKey);
 }
 
+inline _Jv_Thread_t *
+_Jv_ThreadCurrentData (void)
+{
+  extern pthread_key_t _Jv_ThreadDataKey;
+  return (_Jv_Thread_t *) pthread_getspecific (_Jv_ThreadDataKey);
+}
+
 inline void
 _Jv_ThreadYield (void)
 {

@@ -1,3 +1,18 @@
+1999-09-07  Tom Tromey  <tromey@cygnus.com>
+
+	* posix-threads.cc (_Jv_CondWait): Check `errno' against EINTR,
+	not `r'.  Changed `done_sleeping' to a `bool'.
+
+1999-09-07  Matt Welsh <mdw@cs.berkeley.edu
+
+	* libjava/posix-threads.cc: Added _Jv_ThreadDataKey.
+	Added FLAG_INTERRUPTED to indicate that a thread was interrupted
+	by another thread, rather than by the GC.
+	(_Jv_CondWait): Prevent premature thread wakeup by GC.
+	(_Jv_InitThreads): Initialize _Jv_ThreadDataKey.
+	* libjava/include/posix-threads.h (_Jv_ThreadCurrentData): New 
+	function.
+
 1999-09-03  Tom Tromey  <tromey@cygnus.com>
 
 	* configure: Rebuilt.
