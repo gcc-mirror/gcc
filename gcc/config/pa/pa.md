@@ -3813,15 +3813,9 @@
 (define_expand "adddi3"
   [(set (match_operand:DI 0 "register_operand" "")
 	(plus:DI (match_operand:DI 1 "register_operand" "")
-		 (match_operand:DI 2 "arith_operand" "")))]
+		 (match_operand:DI 2 "adddi3_operand" "")))]
   ""
-  "
-{
-  if (!TARGET_64BIT
-      && GET_CODE (operands[2]) == CONST_INT
-      && !VAL_11_BITS_P (INTVAL (operands[2])))
-    operands[2] = force_reg (DImode, operands[2]);
-}")
+  "")
 
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=r")

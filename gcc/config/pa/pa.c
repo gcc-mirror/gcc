@@ -578,6 +578,18 @@ arith11_operand (op, mode)
 	  || (GET_CODE (op) == CONST_INT && INT_11_BITS (op)));
 }
 
+/* Return truth value of whether OP can be used as an operand in a
+   adddi3 insn.  */
+int
+adddi3_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  return (register_operand (op, mode)
+	  || (GET_CODE (op) == CONST_INT
+	      && (TARGET_64BIT ? INT_14_BITS (op) : INT_11_BITS (op))));
+}
+
 /* A constant integer suitable for use in a PRE_MODIFY memory
    reference.  */
 int
