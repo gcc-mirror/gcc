@@ -348,7 +348,7 @@ initialize_handler_parm (decl, exp)
      adjusted by value from __cxa_begin_catch.  Others are returned by 
      reference.  */
   init_type = TREE_TYPE (decl);
-  if (TREE_CODE (init_type) != POINTER_TYPE
+  if (! TYPE_PTR_P (init_type)
       && TREE_CODE (init_type) != REFERENCE_TYPE)
     init_type = build_reference_type (init_type);
 
@@ -357,8 +357,8 @@ initialize_handler_parm (decl, exp)
 
   /* Since pointers are passed by value, initialize a reference to
      pointer catch parm with the address of the temporary.  */
-  if (TREE_CODE (init_type) == REFERENCE_TYPE 
-      && TREE_CODE (TREE_TYPE (init_type)) == POINTER_TYPE)
+  if (TREE_CODE (init_type) == REFERENCE_TYPE
+      && TYPE_PTR_P (TREE_TYPE (init_type)))
     exp = build_unary_op (ADDR_EXPR, exp, 1);
 
   exp = ocp_convert (init_type, exp, CONV_IMPLICIT|CONV_FORCE_TEMP, 0);
