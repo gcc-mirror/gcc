@@ -5145,7 +5145,7 @@ strength_reduce (scan_start, end, loop_top, insn_count,
       /* When we completely unroll a loop on a HAVE_cc0 machine we will not
 	 need the comparison before the conditional branch at the end of the
 	 loop.  */
-      unrolled_insn_copies = insn_count - 2;
+      unrolled_insn_copies -= 1;
 #endif
 
       /* We'll need one copy for each loop iteration.  */
