@@ -1,3 +1,10 @@
+2005-02-28  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/tr1/2_general_utilities/memory/shared_ptr/
+	cons/auto_ptr_neg.cc: Correct line numbers.
+
+	* testsuite/testsuite_abi.cc: Add CXXABI_1.3.1.
+	
 2005-02-28  Jonathan Wakely  <redi@gcc.gnu.org>
 
 	* include/tr1/memory: Replace checked_deleter with (unchecked)

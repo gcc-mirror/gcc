@@ -45,6 +45,6 @@ main()
   test01();
   return 0;
 }
-// { dg-error "shared_ptr" "candidates are" { target *-*-* } 499 }
+// { dg-error "shared_ptr" "candidates are" { target *-*-* } 482 }
 
-// { dg-error "shared_ptr" "" { target *-*-* } 489 }
+// { dg-error "shared_ptr" "" { target *-*-* } 472 }
