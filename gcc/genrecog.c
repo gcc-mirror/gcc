@@ -1,5 +1,5 @@
 /* Generate code from machine description to recognize rtl as insns.
-   Copyright (C) 1987, 1988, 1992, 1993, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 92, 93, 94, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1343,13 +1343,22 @@ write_tree_1 (tree, prevpos, afterward, type)
 	  if (p->test_elt_one_int)
 	    printf ("XINT (x%d, 1) == %d && ", depth, p->elt_one_int);
 	  if (p->test_elt_zero_wide)
-	    printf (
+	    {
+	      /* Set offset to 1 iff the number might get propagated to
+	         unsigned long by ANSI C rules, else 0.
+	         Prospective hosts are required to have at least 32 bit
+	         ints, and integer constants in machine descriptions
+	         must fit in 32 bit, thus it suffices to check only
+	         for 1 << 31 .  */
+	      HOST_WIDE_INT offset = p->elt_zero_wide == -2147483647 - 1;
+	      printf (
 #if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_INT
-		    "XWINT (x%d, 0) == %d && ",
+		       "XWINT (x%d, 0) == %d%s && ",
 #else
-		    "XWINT (x%d, 0) == %ld && ",
+		       "XWINT (x%d, 0) == %ld%s && ",
 #endif
-		    depth, p->elt_zero_wide);
+		       depth, p->elt_zero_wide + offset, offset ? "-1" : "");
+	    }
 	  if (p->veclen)
 	    printf ("XVECLEN (x%d, 0) == %d && ", depth, p->veclen);
 	  if (p->dupno >= 0)
