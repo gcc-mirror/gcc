@@ -1,3 +1,8 @@
+Mon Sep 21 00:52:12 1998  Per Bothner  <bothner@cygnus.com>
+
+	* Makefile.in (LIBS):  Link in libiberty.a.
+	* c-common.c, gcc.c, toplev.c:  Repalce (some) bcopy calls by memcpy.
+
 Sun Sep 20 23:28:11 1998  Richard Henderson  <rth@cygnus.com>
 
 	* reload1.c (emit_reload_insns): Accept a new arg for the bb.  Use
