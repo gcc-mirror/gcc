@@ -1,3 +1,9 @@
+2004-12-18  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR rtl-optimization/16968
+	* loop.c (scan_loop): Stop scanning the loop for movable
+	insns as soon as an optimization barrier is encountered.
+
 2004-12-16  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR other/18508

@@ -765,6 +765,9 @@ scan_loop (struct loop *loop, int flags)
 	in_libcall--;
       if (GET_CODE (p) == INSN)
 	{
+	  /* Do not scan past an optimization barrier.  */
+	  if (GET_CODE (PATTERN (p)) == ASM_INPUT)
+	    break;
 	  temp = find_reg_note (p, REG_LIBCALL, NULL_RTX);
 	  if (temp)
 	    in_libcall++;
