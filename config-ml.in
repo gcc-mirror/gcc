@@ -408,6 +408,7 @@ multi-do:
 				CXXFLAGS="$(CXXFLAGS) $${flags}" \
 				LIBCFLAGS="$(LIBCFLAGS) $${flags}" \
 				LIBCXXFLAGS="$(LIBCXXFLAGS) $${flags}" \
+				LDFLAGS="$(LDFLAGS) $${flags}" \
 				$(DO)); then \
 		  true; \
 		else \
