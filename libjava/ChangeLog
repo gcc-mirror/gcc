@@ -1,3 +1,13 @@
+1999-09-01  Tom Tromey  <tromey@cygnus.com>
+
+	* posix-threads.cc (_Jv_CondWait): Call _Jv_PthreadCheckMonitor.
+	* include/posix-threads.h (_Jv_PthreadCheckMonitor): New
+	function.
+	(_Jv_CondNotify): Use it.
+	(_Jv_CondNotifyAll): Likewise.
+
+	* java/lang/Class.h (JV_STATE_NOTHING): Correct misspelling.
+
 1999-08-31  Tom Tromey  <tromey@cygnus.com>
 
 	* include/jvm.h (_Jv_makeUtf8TypeConst): Removed unused

@@ -405,7 +405,7 @@ _Jv_RegisterClasses (jclass *classes)
 
       // registering a compiled class causes
       // it to be immediately "prepared".  
-      if (klass->state == JV_STATE_NOTING)
+      if (klass->state == JV_STATE_NOTHING)
 	klass->state = JV_STATE_COMPILED;
     }
 }
