@@ -1,3 +1,12 @@
+Thu Apr  5 19:02:15 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* i386.md (movdi_1_rex64): Allow SSE->SSE reg move.
+	(lea_0): Rename to lea_1.
+	(lea_1_zext, lea_1_rex64, lea_2_rex64): New patterns.
+	(lea_general_?): Allow SImodes on TARGET_64BIT
+	(lea_general_?_zext): New patterns.
+	(call_1, call_1_rex64): Fix.
+
 Thu Apr  5 19:00:15 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (ix86_split_long_move): Use PUT_MODE instead of change_address.
