@@ -1,3 +1,12 @@
+MULTILIB_OPTIONS = m64/m31
+MULTILIB_DIRNAMES = 64 32
+MULTILIB_OSDIRNAMES = ../lib64 ../lib
+
+LIBGCC = stmp-multilib
+INSTALL_LIBGCC = install-multilib
+
+EXTRA_MULTILIB_PARTS=crtbegin.o crtend.o crtbeginS.o crtendS.o crtbeginT.o
+
 # Override t-slibgcc-elf-ver to export some libgcc symbols with
 # the symbol versions that glibc used.
 SHLIB_MAPFILES = $(srcdir)/libgcc-std.ver $(srcdir)/config/s390/libgcc-glibc.ver
