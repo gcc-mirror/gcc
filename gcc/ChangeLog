@@ -1,3 +1,59 @@
+2005-02-03  Leehod Baruch  <leehod@il.ibm.com>
+	    Dorit Naishlos  <dorit@il.ibm.com>
+
+	* tree-vectorizer.c (vect_analyze_data_ref_dependence): Function
+	declaration added.
+	(vect_analyze_data_ref_dependences): Likewise.
+
+	(vect_is_simple_use): Argument changed from loop structure to
+	loop_vect_info structure.
+	(vect_can_advance_ivs_p): Likewise.
+	(vect_create_index_for_vector_ref): Likewise.
+	(vect_update_ivs_after_vectorizer): Likewise.
+	(new_stmt_vec_info): Likewise.
+	
+	(new_loop_vec_info): Second argument in call to new_stmt_vec_info was
+	changed from loop to loop_vinfo.
+	(vect_create_data_ref_ptr): First argument in call to
+	vect_create_index_for_vector_ref was changed from loop to loop_vinfo.
+	(vectorizable_assignment): Second argument in call to vect_is_simple_use
+	was changed from loop to loop_vinfo.
+	(vectorizable_operation): Likewise.
+	(vectorizable_store): Likewise.
+	(vect_mark_stmts_to_be_vectorized): Likewise.
+	(vect_do_peeling_for_loop_bound): First argument in call to
+	vect_update_ivs_after_vectorizer was changed from loop to loop_vinfo.
+	(vect_analyze_operations): Argument in call to vect_can_advance_ivs_p
+	was changed from loop to loop_vinfo.
+	(vect_analyze_data_ref_dependences): Third argument in call to
+	vect_analyze_data_ref_dependence was changed from loop to loop_vinfo.
+	
+	(vect_create_index_for_vector_ref): Get the loop from loop_vinfo.
+	(vect_create_data_ref_ptr): Likewise.
+	(vect_init_vector): Likewise.
+	(vect_get_vec_def_for_operand): Likewise.
+	(vectorizable_assignment): Likewise.
+	(vectorizable_operation): Likewise.
+	(vectorizable_store): Likewise.
+	(vectorizable_load): Likewise.
+	(vect_update_ivs_after_vectorizer): Likewise.
+	(vect_is_simple_use): Likewise.
+	(vect_analyze_data_ref_dependence): Likewise.
+	(vect_analyze_pointer_ref_access): Likewise.
+	(vect_can_advance_ivs_p): Likewise.
+
+	* tree-vectorizer.h: (_loop_vec_info): Definition and macros moved
+	before _stmt_vec_info.
+	(_stmt_vec_info): Loop field replaced by loop_vec_info.
+	(STMT_VINFO_LOOP): Replaced with STMT_VINFO_LOOP_VINFO.
+	(new_stmt_vec_info): Argument changed from loop structure to
+	loop_vect_info structure
+
+	(vect_analyze_data_ref_dependences): Unnecessary line was removed.
+	(vect_analyze_offset_expr): Avoid 80 columns overflow.
+	(vect_create_addr_base_for_vector_ref): Likewise.
+	(vect_analyze_pointer_ref_access): Likewise.
+
 2005-02-03  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR tree-opt/19768
