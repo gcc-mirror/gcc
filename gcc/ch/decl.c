@@ -596,10 +596,6 @@ int flag_allow_single_precision = 0;
 int flag_signed_bitfields = 1;
 int explicit_flag_signed_bitfields = 0;
 
-/* Nonzero means handle `#ident' directives.  0 means ignore them.  */
-
-int flag_no_ident = 0;
-
 /* Nonzero means warn about implicit declarations.  */
 
 int warn_implicit;
@@ -798,10 +794,6 @@ c_decode_option (argc, argv)
     flag_no_builtin = 0;
   else if (!strcmp (p, "-fno-builtin"))
     flag_no_builtin = 1;
-  else if (!strcmp (p, "-fno-ident"))
-    flag_no_ident = 1;
-  else if (!strcmp (p, "-fident"))
-    flag_no_ident = 0;
   else if (!strcmp (p, "-ansi"))
     flag_no_asm = 1, flag_no_nonansi_builtin = 1, dollars_in_ident = 0;
   else if (!strcmp (p, "-Wimplicit"))
