@@ -521,7 +521,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 
 	/* If an alignment is specified, use it if valid.   Note that
 	   exceptions are objects but don't have alignments.  We must do this
-	   before we validate the size, since the alignment can affect the 
+	   before we validate the size, since the alignment can affect the
 	   size.  */
 	if (kind != E_Exception && Known_Alignment (gnat_entity))
 	  {
@@ -1342,7 +1342,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	  TYPE_RM_SIZE_NUM (gnu_field_type)
 	    = UI_To_gnu (RM_Size (gnat_entity), bitsizetype);
 	  gnu_type = make_node (RECORD_TYPE);
-	  TYPE_NAME (gnu_type) = create_concat_name (gnat_entity, "LJM");
+	  TYPE_NAME (gnu_type) = create_concat_name (gnat_entity, "JM");
 	  TYPE_ALIGN (gnu_type) = TYPE_ALIGN (gnu_field_type);
 	  TYPE_PACKED (gnu_type) = 1;
 
@@ -5019,15 +5019,15 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
     gnu_size = validate_size (Esize (gnat_field), gnu_field_type,
 			      gnat_field, FIELD_DECL, false, true);
 
-  /* If the field's type is justified modular, the wrapper can prevent
-     packing so we make the field the type of the inner object unless the
-     situation forbids it. We may not do that when the field is addressable_p,
-     typically because in that case this field may later be passed by-ref for
-     a formal argument expecting the justification.  The condition below
-     is then matching the addressable_p code for COMPONENT_REF.  */
-  if (!Is_Aliased (gnat_field) && flag_strict_aliasing
-      && TREE_CODE (gnu_field_type) == RECORD_TYPE
-      && TYPE_JUSTIFIED_MODULAR_P (gnu_field_type))
+  /* If the field's type is justified modular and the size of the packed
+     array it wraps is the same as that of the field, we can make the field
+     the type of the inner object.  Note that we may need to do so if the
+     record is packed or the field has a component clause, but these cases
+     are handled later.  */
+  if (TREE_CODE (gnu_field_type) == RECORD_TYPE
+      && TYPE_JUSTIFIED_MODULAR_P (gnu_field_type)
+      && tree_int_cst_equal (TYPE_SIZE (gnu_field_type),
+			     TYPE_ADA_SIZE (gnu_field_type)))
     gnu_field_type = TREE_TYPE (TYPE_FIELDS (gnu_field_type));
 
   /* If we are packing this record, have a specified size that's smaller than
@@ -5173,12 +5173,16 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
     gnu_pos = NULL_TREE;
   else
     {
-      /* Unless this field is aliased, we can remove any justified
-	 modular type since it's only needed in the unchecked conversion
-	 case, which doesn't apply here.  */
+      /* If the field's type is justified modular, we would need to remove
+	 the wrapper to (better) meet the layout requirements.  However we
+	 can do so only if the field is not aliased to preserve the unique
+	 layout and if the prescribed size is not greater than that of the
+	 packed array to preserve the justification.  */
       if (!needs_strict_alignment
 	  && TREE_CODE (gnu_field_type) == RECORD_TYPE
-	  && TYPE_JUSTIFIED_MODULAR_P (gnu_field_type))
+	  && TYPE_JUSTIFIED_MODULAR_P (gnu_field_type)
+	  && tree_int_cst_compare (gnu_size, TYPE_ADA_SIZE (gnu_field_type))
+	       <= 0)
 	gnu_field_type = TREE_TYPE (TYPE_FIELDS (gnu_field_type));
 
       gnu_field_type
