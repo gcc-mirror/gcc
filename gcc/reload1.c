@@ -8305,6 +8305,9 @@ reload_cse_record_set (set, body)
 		continue;
 	      if (dest_mode == GET_MODE (XEXP (x, 0)))
 		tmp = XEXP (x, 0);
+	      else if (GET_MODE_BITSIZE (dest_mode)
+		        > GET_MODE_BITSIZE (GET_MODE (XEXP (x, 0))))
+		continue;
 	      else
 		tmp = gen_lowpart_common (dest_mode, XEXP (x, 0));
 	      if (tmp)
