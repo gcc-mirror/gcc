@@ -1,4 +1,3 @@
-:1066
 /* Install modified versions of certain ANSI-incompatible system header
    files which are fixed to work correctly with ANSI C and placed in a
    directory that GNU C will search.
