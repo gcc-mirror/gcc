@@ -154,8 +154,8 @@
 
 (define_expand "cmpsf"
   [(set (reg:CCFP 0)
-	(compare:CCFP (match_operand:SF 0 "register_operand" "")
-		      (match_operand:SF 1 "register_operand" "")))]
+	(compare:CCFP (match_operand:SF 0 "reg_or_0_operand" "")
+		      (match_operand:SF 1 "reg_or_0_operand" "")))]
   ""
   "
 {
@@ -167,8 +167,8 @@
 
 (define_expand "cmpdf"
   [(set (reg:CCFP 0)
-      (compare:CCFP (match_operand:DF 0 "register_operand" "")
-                    (match_operand:DF 1 "register_operand" "")))]
+      (compare:CCFP (match_operand:DF 0 "reg_or_0_operand" "")
+                    (match_operand:DF 1 "reg_or_0_operand" "")))]
   ""
   "
 {
@@ -181,19 +181,19 @@
 (define_insn ""
  [(set (reg:CCFP 0)
        (match_operator:CCFP 2 "comparison_operator"
-			    [(match_operand:SF 0 "register_operand" "fx")
-			     (match_operand:SF 1 "register_operand" "fx")]))]
+			    [(match_operand:SF 0 "reg_or_0_operand" "fxG")
+			     (match_operand:SF 1 "reg_or_0_operand" "fxG")]))]
  ""
- "fcmp,sgl,%Y2 %0,%1"
+ "fcmp,sgl,%Y2 %r0,%r1"
  [(set_attr "type" "fpcc")])
 
 (define_insn ""
  [(set (reg:CCFP 0)
        (match_operator:CCFP 2 "comparison_operator"
-			    [(match_operand:DF 0 "register_operand" "fx")
-			     (match_operand:DF 1 "register_operand" "fx")]))]
+			    [(match_operand:DF 0 "reg_or_0_operand" "fxG")
+			     (match_operand:DF 1 "reg_or_0_operand" "fxG")]))]
  ""
- "fcmp,dbl,%Y2 %0,%1"
+ "fcmp,dbl,%Y2 %r0,%r1"
  [(set_attr "type" "fpcc")])
 
 ;; scc insns.
@@ -842,7 +842,7 @@
 
 (define_insn ""
   [(set (match_operand:SI 0 "reg_or_nonsymb_mem_operand" "=r,r,r,r,r,Q,*q,!*r,!fx,!fx")
-	(match_operand:SI 1 "move_operand" "rM,J,N,K,Q,rM,rM,!fx,!*r,!fx"))]
+	(match_operand:SI 1 "move_operand" "rM,J,N,K,Q,rM,rM,!fx,!*r,!fxM"))]
   "register_operand (operands[0], SImode)
    || reg_or_0_operand (operands[1], SImode)"
   "@
@@ -855,7 +855,7 @@
    mtsar %r1
    fstws %1,-16(0,%%r30)\;ldw -16(0,%%r30),%0
    stw %1,-16(0,%%r30)\;fldws -16(0,%%r30),%0
-   fcpy,sgl %1,%0"
+   fcpy,sgl %r1,%0"
   [(set_attr "type" "move,move,move,move,load,store,move,load,fpload,fpalu")
    (set_attr "length" "1,1,1,1,1,1,1,2,2,1")])
 
@@ -1007,7 +1007,7 @@
 
 (define_insn ""
   [(set (match_operand:HI 0 "reg_or_nonsymb_mem_operand" "=r,r,r,r,r,Q,*q,!*r,!fx,!fx")
-	(match_operand:HI 1 "move_operand" "rM,J,N,K,Q,rM,rM,!fx,!*r,!fx"))]
+	(match_operand:HI 1 "move_operand" "rM,J,N,K,Q,rM,rM,!fx,!*r,!fxM"))]
   "register_operand (operands[0], HImode)
    || reg_or_0_operand (operands[1], HImode)"
   "@
@@ -1020,7 +1020,7 @@
    mtsar %r1
    fstws %1,-16(0,%%r30)\;ldw -16(0,%%r30),%0
    stw %1,-16(0,%%r30)\;fldws -16(0,%%r30),%0
-   fcpy,sgl %1,%0"
+   fcpy,sgl %r1,%0"
   [(set_attr "type" "move,move,move,move,load,store,move,load,fpload,fpalu")
    (set_attr "length" "1,1,1,1,1,1,1,2,2,1")])
 
@@ -1084,7 +1084,7 @@
 
 (define_insn ""
   [(set (match_operand:QI 0 "reg_or_nonsymb_mem_operand" "=r,r,r,r,r,Q,*q,!*r,!fx,!fx")
-	(match_operand:QI 1 "move_operand" "rM,J,N,K,Q,rM,rM,!fx,!*r,!fx"))]
+	(match_operand:QI 1 "move_operand" "rM,J,N,K,Q,rM,rM,!fx,!*r,!fxM"))]
   "register_operand (operands[0], QImode)
    || reg_or_0_operand (operands[1], QImode)"
   "@
@@ -1097,7 +1097,7 @@
    mtsar %r1
    fstws %1,-16(0,%%r30)\;ldw -16(0,%%r30),%0
    stw %1,-16(0,%%r30)\;fldws -16(0,%%r30),%0
-   fcpy,sgl %1,%0"
+   fcpy,sgl %r1,%0"
   [(set_attr "type" "move,move,move,move,load,store,move,load,fpload,fpalu")
    (set_attr "length" "1,1,1,1,1,1,1,2,2,1")])
 
@@ -1182,7 +1182,8 @@
 (define_insn ""
   [(set (match_operand:DF 0 "general_operand" "=?r,r,fx")
 	(match_operand:DF 1 "" "?E,G,m"))]
-  "GET_CODE (operands[1]) == CONST_DOUBLE"
+  "GET_CODE (operands[1]) == CONST_DOUBLE
+   && operands[1] != CONST0_RTX (DFmode)"
   "*
 {
   switch (which_alternative)
@@ -1211,13 +1212,14 @@
 (define_insn ""
   [(set (match_operand:DF 0 "reg_or_nonsymb_mem_operand"
 			  "=fx,*r,Q,?Q,fx,*&r,?fx,?*r")
-	(match_operand:DF 1 "reg_or_nonsymb_mem_operand"
-			  "fx,*r,fx,*r,Q,Q,*r,fx"))]
+	(match_operand:DF 1 "reg_or_0_or_nonsymb_mem_operand"
+			  "fxG,*rG,fx,*r,Q,Q,*r,fx"))]
   "register_operand (operands[0], DFmode)
-   || register_operand (operands[1], DFmode)"
+   || reg_or_0_operand (operands[1], DFmode)"
   "*
 {
-  if (FP_REG_P (operands[0]) || FP_REG_P (operands[1]))
+  if (FP_REG_P (operands[0]) || FP_REG_P (operands[1]) 
+      || operands[1] == CONST0_RTX (DFmode))
     return output_fp_move_double (operands);
   return output_move_double (operands);
 }"
@@ -1344,12 +1346,13 @@
   [(set (match_operand:DI 0 "reg_or_nonsymb_mem_operand"
 			  "=r,Q,&r,&r,fx,fx,*r")
 	(match_operand:DI 1 "general_operand"
-			  "r,r,Q,i,*r,fx,fx"))]
+			  "rM,r,Q,i,*r,fxM,fx"))]
   "register_operand (operands[0], DImode)
    || reg_or_0_operand (operands[1], DImode)"
   "*
 {
-  if (FP_REG_P (operands[0]) || FP_REG_P (operands[1]))
+  if (FP_REG_P (operands[0]) || FP_REG_P (operands[1])
+      || (operands[1] == CONST0_RTX (DImode)))
     return output_fp_move_double (operands);
   return output_move_double (operands);
 }"
@@ -1392,13 +1395,13 @@
 (define_insn ""
   [(set (match_operand:SF 0 "reg_or_nonsymb_mem_operand"
 			  "=fx,r,*r,fx,fx,r,Q,Q")
-	(match_operand:SF 1 "reg_or_nonsymb_mem_operand"
-			  "fx,r,!fx,!*r,Q,Q,fx,r"))]
+	(match_operand:SF 1 "reg_or_0_or_nonsymb_mem_operand"
+			  "fxG,rG,!fx,!*r,Q,Q,fx,rG"))]
   "register_operand (operands[0], SFmode)
-   || register_operand (operands[1], SFmode)"
+   || reg_or_0_operand (operands[1], SFmode)"
   "@
-   fcpy,sgl %1,%0
-   copy %1,%0
+   fcpy,sgl %r1,%0
+   copy %r1,%0
    fstws %1,-16(0,%%r30)\;ldw -16(0,%%r30),%0
    stw %r1,-16(0,%%r30)\;fldws -16(0,%%r30),%0
    fldws%F1 %1,%0
