@@ -4678,6 +4678,32 @@ handle_mode_attribute (tree *node, tree name, tree args ATTRIBUTE_UNUSED,
 							mode);
 	      *node = ptr_type;
 	    }
+	  else if (TREE_CODE (type) == ENUMERAL_TYPE)
+	    {
+	      /* For enumeral types, copy the precision from the integer
+		 type returned above.  If not an INTEGER_TYPE, we can't use
+		 this mode for this type.  */
+	      if (TREE_CODE (typefm) != INTEGER_TYPE)
+		{
+		  error ("cannot use mode %qs for enumeral types", p);
+		  return NULL_TREE;
+		}
+
+	      if (!(flags & (int) ATTR_FLAG_TYPE_IN_PLACE))
+		type = build_type_copy (type);
+
+	      /* We cannot use layout_type here, because that will attempt
+		 to re-layout all variants, corrupting our original.  */
+	      TYPE_PRECISION (type) = TYPE_PRECISION (typefm);
+	      TYPE_MIN_VALUE (type) = TYPE_MIN_VALUE (typefm);
+	      TYPE_MAX_VALUE (type) = TYPE_MAX_VALUE (typefm);
+	      TYPE_SIZE (type) = TYPE_SIZE (typefm);
+	      TYPE_SIZE_UNIT (type) = TYPE_SIZE_UNIT (typefm);
+	      if (!TYPE_USER_ALIGN (type))
+		TYPE_ALIGN (type) = TYPE_ALIGN (typefm);
+
+	      *node = type;
+	    }
 	  else if (VECTOR_MODE_P (mode)
 		   ? TREE_CODE (type) != TREE_CODE (TREE_TYPE (typefm))
 		   : TREE_CODE (type) != TREE_CODE (typefm))

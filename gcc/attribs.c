@@ -266,6 +266,8 @@ decl_attributes (tree *node, tree attributes, int flags)
 	  /* Force a recalculation of mode and size.  */
 	  DECL_MODE (*node) = VOIDmode;
 	  DECL_SIZE (*node) = 0;
+	  if (!DECL_USER_ALIGN (*node))
+	    DECL_ALIGN (*node) = 0;
 
 	  layout_decl (*node, 0);
 	}
