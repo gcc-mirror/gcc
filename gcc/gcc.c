@@ -2628,7 +2628,7 @@ add_sysrooted_prefix (struct path_prefix *pprefix, const char *prefix,
 		      int require_machine_suffix, int os_multilib)
 {
   if (!IS_ABSOLUTE_PATH (prefix))
-    abort ();
+    fatal ("system path `%s' is not absolute", prefix);
 
   if (target_system_root)
     {
@@ -2666,8 +2666,7 @@ execute (void)
 
   struct command *commands;	/* each command buffer with above info.  */
 
-  if (processing_spec_function)
-    abort ();
+  gcc_assert (!processing_spec_function);
 
   /* Count # of piped commands.  */
   for (n_commands = 1, i = 0; i < argbuf_index; i++)
@@ -2840,8 +2839,7 @@ execute (void)
 	int pid;
 
 	pid = pwait (commands[i].pid, &status, 0);
-	if (pid < 0)
-	  abort ();
+	gcc_assert (pid >= 0);
 
 #ifdef HAVE_GETRUSAGE
 	if (report_times)
@@ -4365,7 +4363,7 @@ do_self_spec (const char *spec)
 
 	  /* Each switch should start with '-'.  */
 	  if (argbuf[i][0] != '-')
-	    abort ();
+	    fatal ("switch '%s' does not start with '-'", argbuf[i]);
 
 	  sw = &switches[i + first];
 	  sw->part1 = &argbuf[i][1];
@@ -4592,7 +4590,7 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 	switch (c = *p++)
 	  {
 	  case 0:
-	    fatal ("invalid specification!  Bug in cc");
+	    fatal ("spec '%s' invalid", spec);
 
 	  case 'b':
 	    obstack_grow (&obstack, input_basename, basename_length);
@@ -4731,7 +4729,7 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 		    p += 2;
 		    /* We don't support extra suffix characters after %O.  */
 		    if (*p == '.' || ISALPHA ((unsigned char) *p))
-		      abort ();
+		      fatal ("spec '%s' has invalid `%%0%c'", spec, *p);
 		    if (suffix_length == 0)
 		      suffix = TARGET_OBJECT_SUFFIX;
 		    else
@@ -4928,7 +4926,7 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 	      int cur_index = argbuf_index;
 	      /* Handle the {...} following the %W.  */
 	      if (*p != '{')
-		abort ();
+		fatal ("spec `%s' has invalid `%%W%c", spec, *p);
 	      p = handle_braces (p + 1);
 	      if (p == 0)
 		return -1;
@@ -4959,7 +4957,7 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 
 	      /* Skip past the option value and make a copy.  */
 	      if (*p != '{')
-		abort ();
+		fatal ("spec `%s' has invalid `%%x%c'", spec, *p);
 	      while (*p++ != '}')
 		;
 	      string = save_string (p1 + 1, p - p1 - 2);
@@ -5517,6 +5515,7 @@ handle_braces (const char *p)
 {
   const char *atom, *end_atom;
   const char *d_atom = NULL, *d_end_atom = NULL;
+  const char *orig = p;
 
   bool a_is_suffix;
   bool a_is_starred;
@@ -5536,7 +5535,7 @@ handle_braces (const char *p)
   do
     {
       if (a_must_be_last)
-	abort ();
+	goto invalid;
 
       /* Scan one "atom" (S in the description above of %{}, possibly
 	 with !, ., or * modifiers).  */
@@ -5560,32 +5559,33 @@ handle_braces (const char *p)
 	p++, a_is_starred = 1;
 
       SKIP_WHITE();
-      if (*p == '&' || *p == '}')
+      switch (*p)
 	{
+	case '&': case '}':
 	  /* Substitute the switch(es) indicated by the current atom.  */
 	  ordered_set = true;
 	  if (disjunct_set || n_way_choice || a_is_negated || a_is_suffix
 	      || atom == end_atom)
-	    abort ();
+	    goto invalid;
 
 	  mark_matching_switches (atom, end_atom, a_is_starred);
 
 	  if (*p == '}')
 	    process_marked_switches ();
-	}
-      else if (*p == '|' || *p == ':')
-	{
+	  break;
+
+	case '|': case ':':
 	  /* Substitute some text if the current atom appears as a switch
 	     or suffix.  */
 	  disjunct_set = true;
 	  if (ordered_set)
-	    abort ();
+	    goto invalid;
 
 	  if (atom == end_atom)
 	    {
 	      if (!n_way_choice || disj_matched || *p == '|'
 		  || a_is_negated || a_is_suffix || a_is_starred)
-		abort ();
+		goto invalid;
 
 	      /* An empty term may appear as the last choice of an
 		 N-way choice set; it means "otherwise".  */
@@ -5596,7 +5596,7 @@ handle_braces (const char *p)
 	  else
 	    {
 	       if (a_is_suffix && a_is_starred)
-		 abort ();
+		 goto invalid;
 
 	       if (!a_is_starred)
 		 disj_starred = false;
@@ -5639,14 +5639,19 @@ handle_braces (const char *p)
 		  d_atom = d_end_atom = NULL;
 		}
 	    }
+	  break;
+
+	default:
+	  goto invalid;
 	}
-      else
-	abort ();
     }
   while (*p++ != '}');
 
   return p;
-
+  
+ invalid:
+  fatal ("braced spec `%s' is invalid at `%c'", orig, *p);
+  
 #undef SKIP_WHITE
 }
 
@@ -5686,7 +5691,7 @@ process_brace_body (const char *p, const char *atom, const char *end_atom,
       else if (*p == '%' && p[1] == '*' && nesting_level == 1)
 	have_subst = true;
       else if (*p == '\0')
-	abort ();
+	goto invalid;
       p++;
     }
 
@@ -5695,7 +5700,7 @@ process_brace_body (const char *p, const char *atom, const char *end_atom,
     end_body--;
 
   if (have_subst && !starred)
-    abort ();
+    goto invalid;
 
   if (matched)
     {
@@ -5731,6 +5736,9 @@ process_brace_body (const char *p, const char *atom, const char *end_atom,
     }
 
   return p;
+
+ invalid:
+  fatal ("braced spec body `%s' is invalid", body);
 }
 
 /* Return 0 iff switch number SWITCHNUM is obsoleted by a later switch
@@ -6454,13 +6462,13 @@ main (int argc, const char **argv)
 		{
 		  value = do_spec (input_file_compiler->spec);
 		  infiles[i].preprocessed = true;
-		  if (have_o_argbuf_index)
-		    infiles[i].name = argbuf[have_o_argbuf_index];
-		  else
-		    abort ();
-		  infiles[i].incompiler = lookup_compiler (infiles[i].name,
-						       strlen (infiles[i].name),
-						       infiles[i].language);
+		  if (!have_o_argbuf_index)
+		    fatal ("spec `%s' is invalid", input_file_compiler->spec);
+		  infiles[i].name = argbuf[have_o_argbuf_index];
+		  infiles[i].incompiler
+		    = lookup_compiler (infiles[i].name,
+				       strlen (infiles[i].name),
+				       infiles[i].language);
 
 		  if (value < 0)
 		    this_file_error = 1;
@@ -6921,7 +6929,10 @@ used_arg (const char *p, int len)
 	  while (*q != ' ')
 	    {
 	      if (*q == '\0')
-		abort ();
+		{
+		invalid_matches:
+		  fatal ("multilib spec `%s' is invalid", multilib_matches);
+		}
 	      q++;
 	    }
 	  matches[i].len = q - matches[i].str;
@@ -6930,7 +6941,7 @@ used_arg (const char *p, int len)
 	  while (*q != ';' && *q != '\0')
 	    {
 	      if (*q == ' ')
-		abort ();
+		goto invalid_matches;
 	      q++;
 	    }
 	  matches[i].rep_len = q - matches[i].replace;
@@ -7110,7 +7121,11 @@ set_multilib_dir (void)
       while (*p != ';')
 	{
 	  if (*p == '\0')
-	    abort ();
+	    {
+	    invalid_exclusions:
+	      fatal ("multilib exclusions `%s' is invalid",
+		     multilib_exclusions);
+	    }
 
 	  if (! ok)
 	    {
@@ -7122,7 +7137,7 @@ set_multilib_dir (void)
 	  while (*p != ' ' && *p != ';')
 	    {
 	      if (*p == '\0')
-		abort ();
+		goto invalid_exclusions;
 	      ++p;
 	    }
 
@@ -7164,7 +7179,11 @@ set_multilib_dir (void)
       while (*p != ' ')
 	{
 	  if (*p == '\0')
-	    abort ();
+	    {
+	    invalid_select:
+	      fatal ("multilib select `%s' is invalid",
+		     multilib_select);
+	    }
 	  ++p;
 	}
       this_path_len = p - this_path;
@@ -7176,7 +7195,7 @@ set_multilib_dir (void)
       while (*p != ';')
 	{
 	  if (*p == '\0')
-	    abort ();
+	    goto invalid_select;
 
 	  if (! ok)
 	    {
@@ -7188,7 +7207,7 @@ set_multilib_dir (void)
 	  while (*p != ' ' && *p != ';')
 	    {
 	      if (*p == '\0')
-		abort ();
+		goto invalid_select;
 	      ++p;
 	    }
 
@@ -7301,7 +7320,11 @@ print_multilib_info (void)
       while (*p != ' ')
 	{
 	  if (*p == '\0')
-	    abort ();
+	    {
+	    invalid_select:
+	      fatal ("multilib select `%s' is invalid", multilib_select);
+	    }
+	  
 	  ++p;
 	}
 
@@ -7335,7 +7358,11 @@ print_multilib_info (void)
 		int mp = 0;
 
 		if (*e == '\0')
-		  abort ();
+		  {
+		  invalid_exclusion:
+		    fatal ("multilib exclusion `%s' is invalid",
+			   multilib_exclusions);
+		  }
 
 		if (! m)
 		  {
@@ -7348,7 +7375,7 @@ print_multilib_info (void)
 		while (*e != ' ' && *e != ';')
 		  {
 		    if (*e == '\0')
-		      abort ();
+		      goto invalid_exclusion;
 		    ++e;
 		  }
 
@@ -7359,19 +7386,20 @@ print_multilib_info (void)
 		    int len = e - this_arg;
 
 		    if (*q == '\0')
-		      abort ();
+		      goto invalid_select;
 
 		    arg = q;
 
 		    while (*q != ' ' && *q != ';')
 		      {
 			if (*q == '\0')
-			  abort ();
+			  goto invalid_select;
 			++q;
 		      }
 
-		    if (! strncmp (arg, this_arg, (len < q - arg) ? q - arg : len) ||
-			default_arg (this_arg, e - this_arg))
+		    if (! strncmp (arg, this_arg,
+				   (len < q - arg) ? q - arg : len)
+			|| default_arg (this_arg, e - this_arg))
 		      {
 			mp = 1;
 			break;
@@ -7402,7 +7430,8 @@ print_multilib_info (void)
       if (! skip)
 	{
 	  /* If this is a duplicate, skip it.  */
-	  skip = (last_path != 0 && (unsigned int) (p - this_path) == last_path_len
+	  skip = (last_path != 0
+		  && (unsigned int) (p - this_path) == last_path_len
 		  && ! strncmp (last_path, this_path, last_path_len));
 
 	  last_path = this_path;
@@ -7422,7 +7451,7 @@ print_multilib_info (void)
 	      const char *arg;
 
 	      if (*q == '\0')
-		abort ();
+		goto invalid_select;
 
 	      if (*q == '!')
 		arg = NULL;
@@ -7432,7 +7461,7 @@ print_multilib_info (void)
 	      while (*q != ' ' && *q != ';')
 		{
 		  if (*q == '\0')
-		    abort ();
+		    goto invalid_select;
 		  ++q;
 		}
 
@@ -7463,7 +7492,7 @@ print_multilib_info (void)
 	  int use_arg;
 
 	  if (*p == '\0')
-	    abort ();
+	    goto invalid_select;
 
 	  if (skip)
 	    {
@@ -7479,7 +7508,7 @@ print_multilib_info (void)
 	  while (*p != ' ' && *p != ';')
 	    {
 	      if (*p == '\0')
-		abort ();
+		goto invalid_select;
 	      if (use_arg)
 		putchar (*p);
 	      ++p;
