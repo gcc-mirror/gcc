@@ -29,11 +29,14 @@ Boston, MA 02111-1307, USA.  */
 #  include <time.h>
 # endif
 #endif
-#include <sys/times.h>
+#if HAVE_SYS_TIMES_H
+#  include <sys/times.h>
+#endif
 #include <limits.h>
 #if HAVE_UNISTD_H
 #  include <unistd.h>
 #endif
+#include <errno.h>		/* for ENOSYS */
 #include "f2c.h"
 
 #ifdef KR_headers
@@ -43,6 +46,7 @@ int G77_system_clock_0 (count, count_rate, count_max)
 int G77_system_clock_0 (integer *count, integer *count_rate, integer *count_max)
 #endif
 {
+#if defined (HAVE_TIMES)
   struct tms buffer;
   unsigned long cnt;
 #ifdef _SC_CLK_TCK
@@ -63,4 +67,8 @@ int G77_system_clock_0 (integer *count, integer *count_rate, integer *count_max)
   else
     *count = cnt;
   return 0;
+#else /* ! HAVE_TIMES */
+  errno = ENOSYS;
+  return -1;
+#endif /* ! HAVE_TIMES */
 }

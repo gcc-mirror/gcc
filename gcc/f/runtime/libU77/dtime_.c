@@ -23,12 +23,17 @@ Boston, MA 02111-1307, USA.  */
 #  include <unistd.h>
 #endif
 #include <sys/types.h>
-#include <sys/times.h>
-#include <sys/param.h>
+#if HAVE_SYS_TIMES_H
+#  include <sys/times.h>
+#endif
+#if HAVE_SYS_PARAM_H
+#  include <sys/param.h>
+#endif
 #if HAVE_GETRUSAGE
 #  include <sys/time.h>
 #  include <sys/resource.h>
 #endif
+#include <errno.h>		/* for ENOSYS */
 #include "f2c.h"
 
 /* For dtime, etime we store the clock tick parameter (clk_tck) the
@@ -45,6 +50,7 @@ double G77_dtime_0 (tarray)
 double G77_dtime_0 (real tarray[2])
 #endif
 {
+#if defined (HAVE_GETRUSAGE) || defined (HAVE_TIMES)
   /* The getrusage version is only the default for convenience. */
 #ifdef HAVE_GETRUSAGE
   float utime, stime;
@@ -85,4 +91,8 @@ double G77_dtime_0 (real tarray[2])
 #endif /* HAVE_GETRUSAGE */
   old_utime = utime; old_stime = stime;
   return (tarray[0]+tarray[1]);
+#else /* ! HAVE_GETRUSAGE && ! HAVE_TIMES */
+  errno = ENOSYS;
+  return 0.0;
+#endif /* ! HAVE_GETRUSAGE && ! HAVE_TIMES */
 }
