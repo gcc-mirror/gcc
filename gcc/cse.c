@@ -6201,6 +6201,7 @@ cse_insn (insn, in_libcall_block)
           else if (validate_change (insn, &SET_SRC (sets[i].rtl), trial, 0))
 	    {
 	      SET_SRC (sets[i].rtl) = canon_reg (SET_SRC (sets[i].rtl), insn);
+	      apply_change_group ();
 	      break;
 	    }
 
