@@ -1,3 +1,10 @@
+2003-05-07  Jason Merrill  <jason@redhat.com>
+
+	* hashtab.c (burtle_hash): New fn.
+	* configure.in: Add AC_C_BIGENDIAN_CROSS.
+	* aclocal.m4: Include accross.m4.
+	* configure, config.in: Regenerate.
+
 2003-05-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* configure.in (AC_CHECK_FUNCS): Don't make multiple calls.
