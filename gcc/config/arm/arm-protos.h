@@ -151,6 +151,7 @@ extern int arm_is_longcall_p (rtx, int, int);
 extern int    arm_emit_vector_const (FILE *, rtx);
 extern const char * arm_output_load_gr (rtx *);
 extern const char *vfp_output_fstmx (rtx *);
+extern void arm_set_return_address (rtx, rtx);
 
 #if defined TREE_CODE
 extern rtx arm_function_arg (CUMULATIVE_ARGS *, enum machine_mode, tree, int);
@@ -194,6 +195,7 @@ extern int thumb_go_if_legitimate_address (enum machine_mode, rtx);
 extern rtx arm_return_addr (int, rtx);
 extern void thumb_reload_out_hi (rtx *);
 extern void thumb_reload_in_hi (rtx *);
+extern void thumb_set_return_address (rtx, rtx);
 #endif
 
 /* Defined in pe.c.  */
