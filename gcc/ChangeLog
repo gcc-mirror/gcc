@@ -1,3 +1,7 @@
+Tue Apr 14 21:57:57 1998  Paul Eggert <eggert@twinsun.com>
+
+	* install.texi: Update section on warnings that can be safely ignored.
+
 Tue Apr 14 14:55:16 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* mips.md (reload_outdi): Change the scratch mode from DImode to
