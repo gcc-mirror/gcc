@@ -1743,7 +1743,7 @@ reg_dies (regno, mode, chain)
 	{
 	  CLEAR_REGNO_REG_SET (live_relevant_regs, regno);
 	  if (! fixed_regs[regno])
-	    SET_REGNO_REG_SET (chain->dead_or_set, regno);
+	    SET_REGNO_REG_SET (&chain->dead_or_set, regno);
 	  regno++;
 	}
     }
@@ -1751,7 +1751,7 @@ reg_dies (regno, mode, chain)
     {
       CLEAR_REGNO_REG_SET (live_relevant_regs, regno);
       if (reg_renumber[regno] >= 0)
-	SET_REGNO_REG_SET (chain->dead_or_set, regno);
+	SET_REGNO_REG_SET (&chain->dead_or_set, regno);
     }
 }
 
@@ -1809,15 +1809,15 @@ build_insn_chain (first)
 		  reg_dies (REGNO (XEXP (link, 0)), GET_MODE (XEXP (link, 0)),
 			    c);
 
-	      COPY_REG_SET (c->live_throughout, live_relevant_regs);
+	      COPY_REG_SET (&c->live_throughout, live_relevant_regs);
 
 	      /* Mark everything born in this instruction as live.  */
 
 	      note_stores (PATTERN (first), reg_becomes_live,
-			   c->dead_or_set);
+			   &c->dead_or_set);
 	    }
 	  else
-	    COPY_REG_SET (c->live_throughout, live_relevant_regs);
+	    COPY_REG_SET (&c->live_throughout, live_relevant_regs);
 
 	  if (GET_RTX_CLASS (GET_CODE (first)) == 'i')
 	    {

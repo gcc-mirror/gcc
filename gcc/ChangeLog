@@ -1,3 +1,10 @@
+1999-12-20  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* reload.h (struct insn_chain): Change live_throughout and dead_or_set
+	to be of type regset_head, not regset.  All users changed by adding
+	address operator.
+	* reload1.c (new_insn_chain): Don't allocate regsets, just clear them.
+
 1999-12-20  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* config/c4x/rtems.h: New file.
