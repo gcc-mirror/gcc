@@ -5603,7 +5603,7 @@ processor's ``application binary interface'' (ABI)@.  When this macro
 is defined, RTL is generated for this register once, as with the stack
 pointer and frame pointer registers.  If this macro is not defined, it
 is up to the machine-dependent files to allocate such a register (if
-necessary).  Note that this register must be fixed when in use (e.g.
+necessary).  Note that this register must be fixed when in use (e.g.@:
 when @code{flag_pic} is true).
 
 @findex PIC_OFFSET_TABLE_REG_CALL_CLOBBERED
