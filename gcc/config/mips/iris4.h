@@ -32,8 +32,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define LIB_SPEC \
   "%{!p:%{!pg:%{!static:%{!g*:-lc_s}}}}%{p:libprof1.a%s}%{pg:libprof1.a%s} -lc crtn.o%s"
 
-/* Assembler is said to have trouble with .ascii with escape chars.
-   The quickest way to avoid the problem is not to use .ascii.  */
+/* Some assemblers have a bug that causes backslash escaped chars in .ascii
+   to be misassembled, so we just completely avoid it.  */
 #undef ASM_OUTPUT_ASCII
 #define ASM_OUTPUT_ASCII(FILE,PTR,LEN)			\
 do {							\
