@@ -48,17 +48,8 @@ public class XEventLoop implements Runnable
 
   void postNextEvent()
   {
-    try
-      {
-	AWTEvent evt = getNextEvent();
-	queue.postEvent(evt);
-	
-      }
-    catch (InterruptedException ie)
-      {
-	// FIXME: what now?
-	System.err.println(ie);
-      }
+    AWTEvent evt = getNextEvent();
+    queue.postEvent(evt);
   }
     
   /** get next event. Will block until events become available. */

@@ -154,18 +154,10 @@ public class NameFinder
 
 	if (addr2line != null)
 	  {
-	    try
-	      {
-		addr2lineIn = new BufferedReader
-			(new InputStreamReader(addr2line.getInputStream()));
-		addr2lineOut = new BufferedWriter
-			(new OutputStreamWriter(addr2line.getOutputStream()));
-	      }
-	    catch (IOException ioe)
-	      {  
-		addr2line.destroy();
-		addr2line = null;
-	      }
+	    addr2lineIn = new BufferedReader
+	      (new InputStreamReader(addr2line.getInputStream()));
+	    addr2lineOut = new BufferedWriter
+	      (new OutputStreamWriter(addr2line.getOutputStream()));
 	  }
       }
   }

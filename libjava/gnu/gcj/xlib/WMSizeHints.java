@@ -27,12 +27,20 @@ public class WMSizeHints implements Cloneable
   protected native void finalize();
 
   public Object clone() {
-    WMSizeHints hints = (WMSizeHints) super.clone();
-    // In case of an exception before the stucture is copied.
-    hints.structure = null;
-
-    hints.init(this);
-    return hints;
+    try
+      {
+	WMSizeHints hints = (WMSizeHints) super.clone();
+	// In case of an exception before the stucture is copied.
+	hints.structure = null;
+	
+	hints.init(this);
+	return hints;
+      }
+    catch (CloneNotSupportedException ex)
+      {
+	// This should never happen.
+	throw new InternalError ();
+      }
   }
 
   public native void applyNormalHints(Window window);

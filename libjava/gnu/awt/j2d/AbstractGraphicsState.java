@@ -128,6 +128,14 @@ public abstract class AbstractGraphicsState implements Cloneable
 
   public Object clone ()
   {
-    return super.clone ();
+    try
+      {
+	return super.clone ();
+      }
+    catch (CloneNotSupportedException ex)
+      {
+	// This should never happen.
+	throw new InternalError ();
+      }
   }
 }

@@ -46,10 +46,18 @@ public class XGraphics implements Cloneable, DirectRasterGraphics
 
   public Object clone()
   {
-    XGraphics gfxCopy = (XGraphics) super.clone();
-    gfxCopy.context = context.create();
-    
-    return gfxCopy;
+    try
+      {
+	XGraphics gfxCopy = (XGraphics) super.clone();
+	gfxCopy.context = context.create();
+	
+	return gfxCopy;
+      }
+    catch (CloneNotSupportedException ex)
+      {
+	// This should never happen.
+	throw new InternalError ();
+      }
   }
 
   public void dispose()

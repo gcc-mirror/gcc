@@ -36,15 +36,23 @@ public class GC implements Cloneable
    */
   public Object clone()
   {
-    GC gcClone = target.getGCFromCache ();
-    if (gcClone==null)
-    {
-      gcClone = (GC) super.clone();
-      gcClone.structure = null;
-    }
-    gcClone.initStructure(this);
-    gcClone.updateClip();
-    return gcClone;
+    try
+      {
+	GC gcClone = target.getGCFromCache ();
+	if (gcClone==null)
+	  {
+	    gcClone = (GC) super.clone();
+	    gcClone.structure = null;
+	  }
+	gcClone.initStructure(this);
+	gcClone.updateClip();
+	return gcClone;
+      } 
+    catch (CloneNotSupportedException ex)
+      {
+	// This should never happen.
+	throw new InternalError ();
+      }
   }
 
   private native void initStructure(GC copyFrom);

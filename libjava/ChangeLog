@@ -1,3 +1,17 @@
+2003-07-20  Anthony Green  <green@redhat.com>
+
+	* gnu/awt/j2d/AbstractGraphicsState.java (clone): Handle
+	CloneNotSupportedException.
+	* gnu/gcj/xlib/WindowAttributes.java (clone): Ditto.
+	* gnu/gcj/xlib/WMSizeHints.java (clone): Ditto.
+	* gnu/gcj/xlib/GC.java (clone): Ditto.
+	* gnu/awt/xlib/XGraphics.java (clone): Ditto.
+	* gnu/awt/j2d/Graphics2DImpl.java (clone): Ditto.
+
+	* gnu/awt/xlib/XEventLoop.java (postNextEvent): Remove unreachable
+	handler.
+	* gnu/gcj/runtime/NameFinder.java (NameFinder): Ditto.
+
 2003-07-20  Steve Pribyl <steve@netfuel.com.>
 
 	* gnu/gcj/runtime/natSharedLibLoader.cc (init): `libname' now a
