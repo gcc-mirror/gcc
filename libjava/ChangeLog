@@ -1,3 +1,13 @@
+2004-07-04  Michael Koch  <konqueror@gmx.de>
+
+	* gnu/gcj/runtime/FirstThread.java,
+	gnu/gcj/runtime/natFirstThread.cc: Removed.
+	* gnu/java/lang/MainThread.java,
+	gnu/java/lang/natMainThread.cc: New files.
+	* prims.cc (_Jv_RunMain): Use MainThread instead of FirstThread.
+	* Makefile.am: Added new files and removed deleted ones.
+	* Makefile.in: Regenerated.
+
 2004-07-03  Mark Wielaard  <mark@klomp.org>
             Anthony Green  <green@redhat.com>
 
