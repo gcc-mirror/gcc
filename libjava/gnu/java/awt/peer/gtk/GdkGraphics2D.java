@@ -48,6 +48,8 @@ import java.awt.image.renderable.*;
 import java.text.AttributedCharacterIterator;
 import java.util.Map;
 import java.lang.Integer;
+import gnu.java.awt.ClasspathToolkit;
+import gnu.java.awt.peer.ClasspathFontPeer;
 import gnu.classpath.Configuration;
 
 public class GdkGraphics2D extends Graphics2D
@@ -75,8 +77,8 @@ public class GdkGraphics2D extends Graphics2D
   private Shape clip;
   private AffineTransform transform;
   private GtkComponentPeer component;
-  private GdkFont font;  
-
+  private Font font;  
+  
   native private int[] initState (GtkComponentPeer component);
   native private void initState (int width, int height);
   native private void copyState (GdkGraphics2D g);
@@ -172,6 +174,10 @@ public class GdkGraphics2D extends Graphics2D
   private native void cairoSetMatrix (double m00, double m10, 
                                       double m01, double m11,
                                       double m02, double m12);
+  private native void cairoSetFont (GdkClasspathFontPeer peer);
+  private native void cairoShowGlyphs (int codes[],
+                                       float positions[],
+                                       int nglyphs);
   private native void cairoSetOperator (int cairoOperator);
   private native void cairoSetRGBColor (double red, double green, double blue);
   private native void cairoSetAlpha (double alpha);
@@ -1024,8 +1030,14 @@ public class GdkGraphics2D extends Graphics2D
   }
 
   public void drawGlyphVector (GlyphVector g, float x, float y)
-  {
-    throw new java.lang.UnsupportedOperationException ();
+  {    
+    cairoSave ();
+    cairoTranslate ((double)x, (double)y);
+    int nglyphs = g.getNumGlyphs ();
+    int codes[] = g.getGlyphCodes (0, nglyphs, (int []) null);
+    float posns[] = g.getGlyphPositions (0, nglyphs, (float []) null);
+    cairoShowGlyphs (codes, posns, nglyphs);
+    cairoRestore ();
   }
 
   public void copyArea (int x, int y, int width, int height, int dx, int dy)
@@ -1132,10 +1144,16 @@ public class GdkGraphics2D extends Graphics2D
 
   public void setFont (Font f)
   {
-    if (f instanceof GdkFont)
-      font = (GdkFont) f;
+    if (f.getPeer() instanceof GdkClasspathFontPeer)
+      font = f;
     else
-      font = new GdkFont (f.getAttributes ());
+      font = 
+        ((ClasspathToolkit)(Toolkit.getDefaultToolkit ()))
+        .getFont (f.getName(), f.getAttributes ());
+
+    if (f != null && 
+        f.getPeer() instanceof GdkClasspathFontPeer)
+      cairoSetFont ((GdkClasspathFontPeer) f.getPeer());
   }
 
   public String toString()

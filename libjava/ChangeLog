@@ -1,3 +1,17 @@
+2003-10-25  Graydon Hoare  <graydon@redhat.com>
+
+	* gnu/java/awt/ClasspathToolkit.java: New abstract class.
+	* gnu/java/awt/peer/ClasspathFontPeer.java: New abstract class.
+	* gnu/java/awt/peer/gtk/GdkClasspathFontPeer.java,
+	jni/gtk-peer/gnu_java_awt_peer_gtk_GdkClasspathFontPeer.c:
+	New concrete implementation of ClasspathFontPeer, with native part.
+	* gnu/java/awt/peer/gtk/GdkGlyphVector.java,
+	jni/gtk-peer/gnu_java_awt_peer_gtk_GdkGlyphVector.c:
+	New class, with native part.
+	* gnu/java/awt/peer/gtk/GdkGraphics2D.java,
+	jni/gtk-peer/gnu_java_awt_peer_gtk_GdkGraphics2D.c:
+	implement setFont, cairoSetFont, drawGlyphVector, cairoShowGlyphs.
+
 2003-10-25  Bryce McKinlay  <bryce@mckinlay.net.nz>
 
 	* java/lang/reflect/Method.java (toString): Avoid extra whitespace
