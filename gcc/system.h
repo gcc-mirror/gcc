@@ -486,16 +486,21 @@ extern int snprintf (char *, size_t, const char *, ...);
 #define HOST_BIT_BUCKET "/dev/null"
 #endif
 
-/* Be conservative and only use enum bitfields with GCC.  Likewise for
-   char bitfields.
+/* Be conservative and only use enum bitfields with GCC.
    FIXME: provide a complete autoconf test for buggy enum bitfields.  */
 
 #if (GCC_VERSION > 2000)
 #define ENUM_BITFIELD(TYPE) __extension__ enum TYPE
-#define CHAR_BITFIELD __extension__ unsigned char
 #else
 #define ENUM_BITFIELD(TYPE) unsigned int
-#define CHAR_BITFIELD unsigned int
+#endif
+
+/* We only use bool bitfields with gcc3.  Some supposedly C99
+   compilers don't handle them correctly.  */
+#if (GCC_VERSION >= 3000)
+#define BOOL_BITFIELD _Bool
+#else
+#define BOOL_BITFIELD unsigned int
 #endif
 
 #ifndef offsetof

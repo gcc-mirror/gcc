@@ -215,7 +215,7 @@ struct cp_binding_level GTY(())
 
     /* True if this scope is an SK_TEMPLATE_SPEC scope.  This field is
        only valid if KIND == SK_TEMPLATE_PARMS.  */
-    bool explicit_spec_p : 1;
+    BOOL_BITFIELD explicit_spec_p : 1;
 
     /* true means make a BLOCK for this level regardless of all else.  */
     unsigned keep : 1;

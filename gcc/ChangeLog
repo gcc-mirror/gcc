@@ -1,3 +1,10 @@
+2004-01-26  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* system.h (CHAR_BITFIELD): Delete.
+	(BOOL_BITFIELD): New.
+	* c-decl.c (c_scope): Use BOOL_BITFIELD.
+	* gengtype-lex.l: Recognize BOOL_BITFIELD instead of CHAR_BITFIELD.
+
 2004-01-26  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* doc/tm.texi: Insert some weasel words when LOAD_EXTEND_OP
