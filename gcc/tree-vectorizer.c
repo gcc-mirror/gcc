@@ -222,7 +222,7 @@ static bool vect_can_force_dr_alignment_p (tree, unsigned int);
 static struct data_reference * vect_analyze_pointer_ref_access 
   (tree, tree, bool);
 static bool vect_can_advance_ivs_p (struct loop *);
-static tree vect_get_base_and_bit_offset
+static tree vect_get_base_and_offset
   (struct data_reference *, tree, tree, loop_vec_info, tree *, bool*);
 static struct data_reference * vect_analyze_pointer_ref_access
   (tree, tree, bool);
@@ -230,7 +230,7 @@ static tree vect_compute_array_base_alignment (tree, tree, tree *, tree *);
 static tree vect_compute_array_ref_alignment
   (struct data_reference *, loop_vec_info, tree, tree *);
 static tree vect_get_ptr_offset (tree, tree, tree *);
-static tree vect_get_symbl_and_dr
+static tree vect_get_memtag_and_dr
   (tree, tree, bool, loop_vec_info, struct data_reference **);
 static bool vect_analyze_offset_expr (tree, struct loop *, tree, tree *, 
 				      tree *, tree *);
@@ -1527,7 +1527,7 @@ vect_analyze_offset_expr (tree expr,
 }
 
 
-/* Function vect_get_base_and_bit_offset
+/* Function vect_get_base_and_offset
 
    Return the BASE of the data reference EXPR.
    If VECTYPE is given, also compute the OFFSET from BASE in bits.
@@ -1553,12 +1553,12 @@ vect_analyze_offset_expr (tree expr,
    then NULL_TREE is returned.  */
 
 static tree 
-vect_get_base_and_bit_offset (struct data_reference *dr, 
-			      tree expr, 
-			      tree vectype, 
-			      loop_vec_info loop_vinfo,
-			      tree *offset,
-			      bool *base_aligned_p)
+vect_get_base_and_offset (struct data_reference *dr, 
+			  tree expr, 
+			  tree vectype, 
+			  loop_vec_info loop_vinfo,
+			  tree *offset,
+			  bool *base_aligned_p)
 {
   tree this_offset = size_zero_node;
   tree base = NULL_TREE;
@@ -1656,11 +1656,11 @@ vect_get_base_and_bit_offset (struct data_reference *dr,
     case MINUS_EXPR:
       /* In case we have a PLUS_EXPR of the form
 	 (oprnd0 + oprnd1), we assume that only oprnd0 determines the base. 
-	 This is verified in  vect_get_symbl_and_dr.  */ 
+	 This is verified in  vect_get_memtag_and_dr.  */ 
       oprnd0 = TREE_OPERAND (expr, 0);
       oprnd1 = TREE_OPERAND (expr, 1);
 
-      base = vect_get_base_and_bit_offset 
+      base = vect_get_base_and_offset 
 	(dr, oprnd1, vectype, loop_vinfo, &this_offset, base_aligned_p);  
       if (vectype && !base) 
 	return NULL_TREE;
@@ -1672,8 +1672,8 @@ vect_get_base_and_bit_offset (struct data_reference *dr,
       return NULL_TREE;
     }
 
-  base = vect_get_base_and_bit_offset (dr, next_ref, vectype, 
-				       loop_vinfo, offset, base_aligned_p);  
+  base = vect_get_base_and_offset (dr, next_ref, vectype, 
+				   loop_vinfo, offset, base_aligned_p);  
 
   if (vectype && base)
     {
@@ -4303,7 +4303,7 @@ vect_compute_data_ref_alignment (struct data_reference *dr,
   else
     dr_base = STMT_VINFO_VECT_DR_BASE (stmt_info);
 
-  base = vect_get_base_and_bit_offset (dr, dr_base, vectype, 
+  base = vect_get_base_and_offset (dr, dr_base, vectype, 
 			  loop_vinfo, &bit_offset, &base_aligned_p);
   if (!base)
     {
@@ -4946,17 +4946,16 @@ vect_analyze_pointer_ref_access (tree memref, tree stmt, bool is_read)
 }
 
 
-/* Function vect_get_symbl_and_dr.  
+/* Function vect_get_memtag_and_dr.  
 
-   The function returns SYMBL - the relevant variable for
-   memory tag (for aliasing purposes). 
-   Also data reference structure DR is created.  
+   The function returns the relevant variable for memory tag (for aliasing 
+   purposes). Also data reference structure DR is created.  
 
    This function handles three kinds of MEMREF:
 
    It is called from vect_analyze_data_refs with a MEMREF that is either an 
    ARRAY_REF or an INDIRECT_REF (this is category 1 - "recursion begins"). 
-   It builds a DR for them using vect_get_base_and_bit_offset, and calls itself 
+   It builds a DR for them using vect_get_base_and_offset, and calls itself 
    recursively to retrieve the relevant memtag for the MEMREF, "peeling" the 
    MEMREF along the way. During the recursive calls, the function may be called 
    with a MEMREF for which the recursion has to continue - PLUS_EXPR, 
@@ -4980,8 +4979,8 @@ vect_analyze_pointer_ref_access (tree memref, tree stmt, bool is_read)
 */ 
 
 static tree
-vect_get_symbl_and_dr (tree memref, tree stmt, bool is_read, 
-		       loop_vec_info loop_vinfo, struct data_reference **dr)
+vect_get_memtag_and_dr (tree memref, tree stmt, bool is_read, 
+			loop_vec_info loop_vinfo, struct data_reference **dr)
 {
   tree symbl, oprnd0, oprnd1;
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
@@ -5033,7 +5032,7 @@ vect_get_symbl_and_dr (tree memref, tree stmt, bool is_read,
 	  /* Fall through.  */
 	
 	case ADDR_EXPR:
-	  symbl = vect_get_base_and_bit_offset ((*dr), memref, NULL_TREE, 
+	  symbl = vect_get_base_and_offset ((*dr), memref, NULL_TREE, 
 					loop_vinfo, &offset, &base_aligned_p);
 	  break; /* For recursive call.  */
 
@@ -5096,7 +5095,7 @@ vect_get_symbl_and_dr (tree memref, tree stmt, bool is_read,
   if (!symbl)
      return NULL_TREE;
   /* Recursive call to retrieve the relevant memtag.  */
-  tag = vect_get_symbl_and_dr (symbl, stmt, is_read, loop_vinfo, dr);
+  tag = vect_get_memtag_and_dr (symbl, stmt, is_read, loop_vinfo, dr);
   return tag;
 }
 
@@ -5185,7 +5184,7 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo)
 	     struct for it (DR) and find the relevant symbol for aliasing 
 	     purposes.  */
 	  dr = NULL;
-	  symbl = vect_get_symbl_and_dr (memref, stmt, is_read, loop_vinfo, 
+	  symbl = vect_get_memtag_and_dr (memref, stmt, is_read, loop_vinfo, 
 					 &dr);
 	  if (!symbl)
 	    {
