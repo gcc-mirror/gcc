@@ -1,3 +1,7 @@
+2001-10-06  Mark Wielaard  <mark@klomp.org>
+
+	* java/io/BufferedInputStream.java: Merge with Classpath
+
 2001-10-07  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* defineclass.cc, java/awt/image/ColorModel.java,
