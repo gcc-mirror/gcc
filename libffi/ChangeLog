@@ -1,3 +1,8 @@
+2004-06-30  Geoffrey Keating  <geoffk@apple.com>
+
+	* src/powerpc/ffi_darwin.c (flush_icache): ';' is a comment
+	character on Darwin, use '\n\t' instead.
+
 2004-06-26  Matthias Klose  <doko@debian.org>
 
 	* libtool-version: Fix typo in revision/age.

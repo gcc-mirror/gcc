@@ -530,11 +530,11 @@ flush_icache(char *addr)
 {
 #ifndef _AIX
   __asm__ volatile (
-		"dcbf 0,%0;"
-		"sync;"
-		"icbi 0,%0;"
-		"sync;"
-		"isync;"
+		"dcbf 0,%0\n"
+		"\tsync\n"
+		"\ticbi 0,%0\n"
+		"\tsync\n"
+		"\tisync"
 		: : "r"(addr) : "memory");
 #endif
 }
