@@ -1,3 +1,12 @@
+2003-11-12  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/12735
+	* cp-tree.h (duplicate_decls): Return a tree.
+	* decl.c (duplicate_decls): Clarify documentation.  Return
+	error_mark_node to indicate a failed redeclaration.
+	* friend.c (do_friend): Handle that case.
+	* name-lookup.c (pushdecl): Likewise.
+
 2003-11-11  Jason Merrill  <jason@redhat.com>
 
 	* cp-tree.h (DECL_NAMESPACE_ASSOCIATIONS): New macro.

@@ -455,6 +455,9 @@ do_friend (tree ctype, tree declarator, tree decl, tree parmdecls,
 	    }
 	}
 
+      if (decl == error_mark_node)
+	return error_mark_node;
+      
       add_friend (current_class_type, 
 		  is_friend_template ? DECL_TI_TEMPLATE (decl) : decl,
 		  /*complain=*/true);
