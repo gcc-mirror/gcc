@@ -1,5 +1,12 @@
 2004-08-24  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config/mips/mips.c (mips_gen_conditional_trap): Fix mode.
+	* config/mips/mips.md (*conditional_trap[sd]i): Name previously unnamed
+	patterns.  Redefine using :GPR.  Give the match_operator a mode.
+	Use '%2' rather than '%z2' for operand 2.
+
+2004-08-24  Richard Sandiford  <rsandifo@redhat.com>
+
 	* config/mips/mips.md (load_call[sd]i): Redefine using :P.  Add mode
 	attribute.
 
