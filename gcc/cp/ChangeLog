@@ -1,3 +1,10 @@
+2000-07-23  Mark Mitchell  <mark@codesourcery.com>
+
+	* decl.c (make_rtl_for_nonlocal_decl): Rework.
+
+	* pt.c (lookup_template_class): Ensure that TYPE_CONTEXT is set
+	correctly.
+
 2000-07-20  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cp-tree.h: Use __FUNCTION__ not __PRETTY_FUNCTION__.

@@ -3785,9 +3785,6 @@ lookup_template_class (d1, arglist, in_decl, context, entering_scope)
       return error_mark_node;
     }
 
-  if (context == NULL_TREE)
-    context = global_namespace;
-
   if (TREE_CODE (template) != TEMPLATE_DECL)
     {
       cp_error ("non-template type `%T' used as a template", d1);
@@ -3963,6 +3960,11 @@ lookup_template_class (d1, arglist, in_decl, context, entering_scope)
 	  return found;
 	}
       
+      context = tsubst (DECL_CONTEXT (template), arglist,
+			/*complain=*/0, in_decl);
+      if (!context)
+	context = global_namespace;
+
       /* Create the type.  */
       if (TREE_CODE (template_type) == ENUMERAL_TYPE)
 	{
