@@ -3,6 +3,8 @@
 	* config/rs6000/rs6000.md (andsi3): Add attribute "compare" for
 	andi./andis.
 	(anddi3): Same.
+	(extzvdi_internal1): Add attribute "compare".
+	(extzvdi_internal2): Same.
 
 2004-10-12  Tom Tromey  <tromey@redhat.com>
 
