@@ -542,23 +542,31 @@ java_read_unicode (java_lexer *lex, int *unicode_escape_p)
 	  while ((c = java_read_char (lex)) == 'u')
 	    ;
 
-	  /* Unget the most recent character as it is not a `u'.  */
-	  if (c == UEOF)
-	    return UEOF;
-	  lex->unget_value = c;
-
-	  /* Next should be 4 hex digits, otherwise it's an error.
-	     The hex value is converted into the unicode, pushed into
-	     the Unicode stream.  */
-	  for (shift = 12; shift >= 0; shift -= 4)
+	  shift = 12;
+	  do
 	    {
-	      if ((c = java_read_char (lex)) == UEOF)
-	        return UEOF;
+	      if (c == UEOF)
+		{
+		  java_lex_error ("prematurely terminated \\u sequence", 0);
+		  return UEOF;
+		}
+
 	      if (hex_p (c))
 		unicode |= (unicode_t)(hex_value (c) << shift);
 	      else
-		java_lex_error ("Non hex digit in Unicode escape sequence", 0);
+		{
+		  java_lex_error ("non-hex digit in \\u sequence", 0);
+		  break;
+		}
+
+	      c = java_read_char (lex);
+	      shift -= 4;
 	    }
+	  while (shift >= 0);
+
+	  if (c != UEOF)
+	    lex->unget_value = c;
+
 	  lex->bs_count = 0;
 	  *unicode_escape_p = 1;
 	  return unicode;
@@ -1514,7 +1522,7 @@ java_lex (YYSTYPE *java_lval)
   
   /* Keyword, boolean literal or null literal.  */
   for (first_unicode = c, all_ascii = 1, ascii_index = 0; 
-       JAVA_PART_CHAR_P (c); c = java_get_unicode ())
+       c != UEOF && JAVA_PART_CHAR_P (c); c = java_get_unicode ())
     {
       java_unicode_2_utf8 (c);
       if (all_ascii && c >= 128)
@@ -1524,7 +1532,8 @@ java_lex (YYSTYPE *java_lval)
 
   obstack_1grow (&temporary_obstack, '\0');
   string = obstack_finish (&temporary_obstack);
-  java_unget_unicode ();
+  if (c != UEOF)
+    java_unget_unicode ();
 
   /* If we have something all ascii, we consider a keyword, a boolean
      literal, a null literal or an all ASCII identifier.  Otherwise,
