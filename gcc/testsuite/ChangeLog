@@ -1,3 +1,7 @@
+2003-11-30  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.dg/cpp/assert4.c: Check more #system assertions.
+
 2003-11-29  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	PR c/10333
@@ -9,7 +13,7 @@
 
 2003-11-28  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
-	* testsuite/gcc.dg/cpp/assert4.c: Update.
+	* gcc.dg/cpp/assert4.c: Update.
 
 2003-11-28  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
