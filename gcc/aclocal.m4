@@ -1258,6 +1258,49 @@ elif test $ac_cv_c_charset = EBCDIC; then
   [Define if the host execution character set is EBCDIC.])
 fi])
 
+dnl Utility macro used by next two tests.
+dnl AC_EXAMINE_OBJECT(C source code,
+dnl	commands examining object file,
+dnl	[commands to run if compile failed]):
+dnl
+dnl Compile the source code to an object file; then convert it into a
+dnl printable representation.  All unprintable characters and
+dnl asterisks (*) are replaced by dots (.).  All white space is
+dnl deleted.  Newlines (ASCII 0x10) in the input are preserved in the
+dnl output, but runs of newlines are compressed to a single newline.
+dnl Finally, line breaks are forcibly inserted so that no line is
+dnl longer than 80 columns and the file ends with a newline.  The
+dnl result of all this processing is in the file conftest.dmp, which
+dnl may be examined by the commands in the second argument.
+dnl
+AC_DEFUN([gcc_AC_EXAMINE_OBJECT],
+[AC_LANG_SAVE
+AC_LANG_C
+dnl Next bit cribbed from AC_TRY_COMPILE.
+cat > conftest.$ac_ext <<EOF
+[#line __oline__ "configure"
+#include "confdefs.h"
+$1
+]EOF
+if AC_TRY_EVAL(ac_compile); then
+  od -c conftest.o |
+    sed ['s/^[0-7]*[ 	]*//
+	  s/\*/./g
+	  s/ \\n/*/g
+	  s/ [0-9][0-9][0-9]/./g
+	  s/  \\[^ ]/./g'] |
+    tr -d '
+ ' | tr -s '*' '
+' | fold | sed '$a\
+' > conftest.dmp
+  $2
+ifelse($3, , , else
+  $3
+)dnl
+fi
+rm -rf conftest*
+AC_LANG_RESTORE])
+
 dnl Host endianness probe.
 dnl This tests byte-within-word endianness.  GCC actually needs
 dnl to know word-within-larger-object endianness.  They are the
@@ -1266,39 +1309,35 @@ dnl Differs from AC_C_BIGENDIAN in that it does not require
 dnl running a program on the host, and it defines the macro we
 dnl want to see.
 dnl
-AC_DEFUN([gcc_AC_C_COMPILE_BIGENDIAN],
-[AC_CACHE_CHECK(whether byte ordering is bigendian, ac_cv_c_compile_bigendian,
-[dnl The extra quote protects the [] in the structure definition.
-cat >conftest.$ac_ext <<EOF
-[#include "confdefs.h"
+AC_DEFUN([gcc_AC_C_COMPILE_ENDIAN],
+[AC_CACHE_CHECK(byte ordering, ac_cv_c_compile_endian,
+[ac_cv_c_compile_endian=unknown
+gcc_AC_EXAMINE_OBJECT([
 #ifdef HAVE_LIMITS_H
-#include <limits.h>
+# include <limits.h>
 #endif
 /* This structure must have no internal padding.  */
   struct {
-    char prefix[sizeof "endian::" - 1];
+    char prefix[sizeof "\nendian:" - 1];
     short word;
+    char postfix[2];
  } tester = {
-    "endian::",
+    "\nendian:",
 #if SIZEOF_SHORT == 4
     ('A' << (CHAR_BIT * 3)) | ('B' << (CHAR_BIT * 2)) |
 #endif
-    ('A' << CHAR_BIT) | 'B'
-};]
-EOF
-ac_cv_c_compile_bigendian=unknown
-if AC_TRY_EVAL(ac_compile); then
-  if grep 'endian::AB' conftest.o >/dev/null 2>&1; then
-    ac_cv_c_compile_bigendian=yes
-  elif grep 'endian::BA' conftest.o >/dev/null 2>&1; then
-    ac_cv_c_compile_bigendian=no
-  fi
-fi
-if test $ac_cv_c_compile_bigendian = unknown; then
+    ('A' << CHAR_BIT) | 'B',
+    'X', '\n'
+};],
+ [if   grep 'endian:AB' conftest.dmp >/dev/null 2>&1; then
+    ac_cv_c_compile_endian=big-endian
+  elif grep 'endian:BA' conftest.dmp >/dev/null 2>&1; then
+    ac_cv_c_compile_endian=little-endian
+  fi])
+])
+if test $ac_cv_c_compile_endian = unknown; then
   AC_MSG_ERROR([*** unable to determine endianness])
-fi
-rm -rf conftest*])
-if test $ac_cv_c_compile_bigendian = yes; then
+elif test $ac_cv_c_compile_endian = big-endian; then
   AC_DEFINE(HOST_WORDS_BIG_ENDIAN, 1,
   [Define if the host machine stores words of multi-word integers in
    big-endian order.])
@@ -1319,10 +1358,7 @@ dnl as ASCII?)
 dnl
 AC_DEFUN([gcc_AC_C_FLOAT_FORMAT],
 [AC_CACHE_CHECK(floating point format, ac_cv_c_float_format,
-[# [AC_TRY_COMPILE] will delete the object file before we get a
-# chance to look at it.
-dnl The extra quote protects the [] instances in the code. 
-cat >conftest.$ac_ext <<EOF
+[gcc_AC_EXAMINE_OBJECT(
 [/* This will not work unless sizeof(double) == 8.  */
 extern char sizeof_double_must_be_8 [sizeof(double) == 8 ? 1 : -1];
 
@@ -1333,7 +1369,7 @@ struct possibility {
   char postfix[8];
 };
 
-#define C(cand) { "format::", cand, "::tamrof" }
+#define C(cand) { "\nformat:", cand, ":tamrof\n" }
 struct possibility table [] =
 {
   C( 3.25724264705901305206e+01), /* @@IEEEFP - IEEE 754 */
@@ -1341,35 +1377,43 @@ struct possibility table [] =
   C( 5.32201830133125317057e-19), /* D.PDP-10 - PDP-10 - the dot is 0x13a */
   C( 1.77977764695171661377e+10), /* IBMHEXFP - s/390 format, ascii */
   C(-5.22995989424860458374e+10)  /* IBMHEXFP - s/390 format, EBCDIC */
-};]
-EOF
-if AC_TRY_EVAL(ac_compile); then
-  if   grep 'format::.@IEEEF.::tamrof' conftest.o >/dev/null 2>&1; then
+};],
+ [if   grep 'format:.@IEEEF.:tamrof' conftest.dmp >/dev/null 2>&1; then
     ac_cv_c_float_format='IEEE (big-endian)'
-  elif grep 'format::.FEEEI@.::tamrof' conftest.o >/dev/null 2>&1; then
+  elif grep 'format:.I@@PFE.:tamrof' conftest.dmp >/dev/null 2>&1; then
+    ac_cv_c_float_format='IEEE (big-endian)'
+  elif grep 'format:.FEEEI@.:tamrof' conftest.dmp >/dev/null 2>&1; then
     ac_cv_c_float_format='IEEE (little-endian)'
-  elif grep 'format::.__floa.::tamrof' conftest.o >/dev/null 2>&1; then
+  elif grep 'format:.EFP@@I.:tamrof' conftest.dmp >/dev/null 2>&1; then
+    ac_cv_c_float_format='IEEE (little-endian)'
+  elif grep 'format:.__floa.:tamrof' conftest.dmp >/dev/null 2>&1; then
     ac_cv_c_float_format='VAX D-float'
-  elif grep 'format::..PDP-1.::tamrof' conftest.o >/dev/null 2>&1; then
+  elif grep 'format:..PDP-1.:tamrof' conftest.dmp >/dev/null 2>&1; then
     ac_cv_c_float_format='PDP-10'
-  elif grep 'format::.BMHEXF.::tamrof' conftest.o >/dev/null 2>&1; then
+  elif grep 'format:.BMHEXF.:tamrof' conftest.dmp >/dev/null 2>&1; then
     ac_cv_c_float_format='IBM 370 hex'
   else
     AC_MSG_ERROR(Unknown floating point format)
-  fi
-else
-  AC_MSG_ERROR(compile failed)
-fi
-rm -rf conftest*])
+  fi],
+  [AC_MSG_ERROR(compile failed)])
+])
+# IEEE is the default format.  If the float endianness isn't the same
+# as the integer endianness, we have to set FLOAT_WORDS_BIG_ENDIAN
+# (which is a tristate: yes, no, default).  This is only an issue with
+# IEEE; the other formats are only supported by a few machines each,
+# all with the same endianness.
 format=
-bigend=
+fbigend=
 case $ac_cv_c_float_format in
     'IEEE (big-endian)' )
-	# IEEE is the default, but define HOST_FLOAT_WORDS_BIG_ENDIAN
-	# in case it's different from HOST_WORDS_BIG_ENDIAN.
-	bigend=yes
+	if test $ac_cv_c_compile_endian = little-endian; then
+	    fbigend=1
+	fi
 	;;
     'IEEE (little-endian)' )
+	if test $ac_cv_c_compile_endian = big-endian; then
+	    fbigend=0
+	fi
 	;;
     'VAX D-float' )
 	format=VAX_FLOAT_FORMAT
@@ -1385,12 +1429,13 @@ if test -n "$format"; then
 	AC_DEFINE_UNQUOTED(HOST_FLOAT_FORMAT, $format,
   [Define to the floating point format of the host machine, if not IEEE.])
 fi
-if test -n "$bigend"; then
-	AC_DEFINE(HOST_FLOAT_WORDS_BIG_ENDIAN, 1,
+if test -n "$fbigend"; then
+	AC_DEFINE_UNQUOTED(HOST_FLOAT_WORDS_BIG_ENDIAN, $fbigend,
   [Define to 1 if the host machine stores floating point numbers in
-   memory with the word containing the sign bit at the lowest address.
+   memory with the word containing the sign bit at the lowest address,
+   or to 0 if it does it the other way around.
 
-   This macro need not be defined if the ordering is the same as for
+   This macro should not be defined if the ordering is the same as for
    multi-word integers.])
 fi
 ])

@@ -379,7 +379,6 @@ if test $ac_cv_c___int64 = yes; then
 fi
 
 gcc_AC_C_CHARSET
-gcc_AC_C_FLOAT_FORMAT
 
 # If the native compiler is GCC, we can enable warnings even in stage1.  
 # That's useful for people building cross-compilers, or just running a
@@ -464,7 +463,8 @@ AC_CHECK_HEADER(pthread.h, [have_pthread_h=yes], [have_pthread_h=])
 
 # These tests can't be done till we know if we have limits.h.
 gcc_AC_C_CHAR_BIT
-gcc_AC_C_COMPILE_BIGENDIAN
+gcc_AC_C_COMPILE_ENDIAN
+gcc_AC_C_FLOAT_FORMAT
 
 # See if GNAT has been installed
 AC_CHECK_PROG(have_gnat, gnatbind, yes, no)
