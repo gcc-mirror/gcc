@@ -583,9 +583,9 @@ __prologue_saves__:
 	sbc	r29,r27
 	in	__tmp_reg__,__SREG__
 	cli
-	out	__SP_L__,r28
-	out	__SREG__,__tmp_reg__
 	out	__SP_H__,r29
+	out	__SREG__,__tmp_reg__
+	out	__SP_L__,r28
 _prologue_end:
 	ijmp
 .endfunc
@@ -621,9 +621,9 @@ __epilogue_restores__:
 	adc	r29,__zero_reg__
 	in	__tmp_reg__,__SREG__
 	cli
-	out	__SP_L__,r28
-	out	__SREG__,__tmp_reg__
 	out	__SP_H__,r29
+	out	__SREG__,__tmp_reg__
+	out	__SP_L__,r28
 	mov	r28,r26
 	mov	r29,r27
 	ret

@@ -147,21 +147,28 @@
 (define_insn "*mov_sp_r"
   [(set (reg:HI 32)
         (match_operand:HI 0 "register_operand" "r"))]
-  "!TARGET_NO_INTERRUPTS"
+  "(!TARGET_TINY_STACK && !TARGET_NO_INTERRUPTS)"
   "in __tmp_reg__,__SREG__
 	cli
-	out __SP_L__,%A0
+	out __SP_H__,%B0
 	out __SREG__,__tmp_reg__
-	out __SP_H__,%B0"
+	out __SP_L__,%A0"
   [(set_attr "length" "5")])
 
 (define_insn "*mov_sp_r_no_interrupts"
   [(set (reg:HI 32)
         (match_operand:HI 0 "register_operand" "r"))]
-  "TARGET_NO_INTERRUPTS"
-  "out __SP_L__,%A0
-	out __SP_H__,%B0"
+  "(!TARGET_TINY_STACK && TARGET_NO_INTERRUPTS)"
+  "out __SP_H__,%B0
+	out __SP_L__,%A0"
   [(set_attr "length" "2")])
+
+(define_insn "*mov_sp_r_tiny"
+  [(set (reg:HI 32)
+        (match_operand:HI 0 "register_operand" "r"))]
+  "TARGET_TINY_STACK"
+  "out __SP_L__,%A0"
+  [(set_attr "length" "1")])
 
 ;;========================================================================
 ;; move byte
@@ -209,13 +216,10 @@
       case 4:
         return out_movqi_r_mr (insn,operands,NULL);
       case 5:
-        return (AS2 (in,__tmp_reg__,__SREG__) CR_TAB
-	        \"cli\"                       CR_TAB
-	        AS2 (out,__SREG__,__tmp_reg__)CR_TAB
-	        AS2 (out,%0,%1));
+        return (AS2 (out,%0,%1));
       }
 }"
-  [(set_attr "length" "1,1,1,5,5,4")
+  [(set_attr "length" "1,1,1,5,5,1")
    (set_attr "cc" "none,clobber,none,clobber,clobber,none")])
 
 ;;============================================================================

@@ -49,6 +49,8 @@ static int    signal_function_p    PARAMS ((tree));
 static int    sequent_regs_live    PARAMS ((void));
 static char * ptrreg_to_str        PARAMS ((int));
 static char * cond_string          PARAMS ((enum rtx_code));
+static int    out_adj_frame_ptr    PARAMS ((FILE *, int));
+static int    out_set_stack_ptr    PARAMS ((FILE *, int, int));
 
 
 /* Allocate registers from r25 to r8 for parameters for function calls */
@@ -332,6 +334,124 @@ sequent_regs_live ()
 }
 
 
+/* Output to FILE the asm instructions to adjust the frame pointer by
+   ADJ (r29:r28 -= ADJ;) which can be positive (prologue) or negative
+   (epilogue).  Returns the number of instructions generated.  */
+
+static int
+out_adj_frame_ptr (file, adj)
+     FILE *file;
+     int adj;
+{
+  int size = 0;
+
+  if (adj)
+    {
+      /* For -mtiny-stack, the high byte (r29) does not change -
+	 prefer "subi" (1 cycle) over "sbiw" (2 cycles).  */
+
+      if (adj < -63 || adj > 63 || TARGET_TINY_STACK)
+	{
+	  fprintf (file, (AS2 (subi, r28, lo8(%d)) CR_TAB), adj);
+	  size++;
+
+	  if (TARGET_TINY_STACK)
+	    {
+	      /* In addition to any local data, each level of function calls
+		 needs at least 4 more bytes of stack space for the saved
+		 frame pointer and return address.  So, (255 - 16) leaves
+		 room for 4 levels of function calls.  */
+
+	      if (adj < -(255 - 16) || adj > (255 - 16))
+		fatal ("Frame pointer change (%d) too big for -mtiny-stack",
+		       adj);
+	    }
+	  else
+	    {
+	      fprintf (file, (AS2 (sbci, r29, hi8(%d)) CR_TAB), adj);
+	      size++;
+	    }
+	}
+      else if (adj < 0)
+	{
+	  fprintf (file, (AS2 (adiw, r28, %d) CR_TAB), -adj);
+	  size++;
+	}
+      else
+	{
+	  fprintf (file, (AS2 (sbiw, r28, %d) CR_TAB), adj);
+	  size++;
+	}
+    }
+  return size;
+}
+
+
+/* Output to FILE the asm instructions to copy r29:r28 to SPH:SPL,
+   handling various cases of interrupt enable flag state BEFORE and AFTER
+   (0=disabled, 1=enabled, -1=unknown/unchanged) and target_flags.
+   Returns the number of instructions generated.  */
+
+static int
+out_set_stack_ptr (file, before, after)
+     FILE *file;
+     int before;
+     int after;
+{
+  int do_sph, do_cli, do_save, size;
+
+  if (TARGET_NO_INTERRUPTS)
+    {
+      before = 0;
+      after = 0;
+    }
+
+  do_sph = !TARGET_TINY_STACK;
+  do_cli = (before != 0 && (after == 0 || do_sph));
+  do_save = (before == -1 && after == -1 && do_cli);
+  size = 1;
+
+  if (do_save)
+    {
+      fprintf (file, AS2 (in, __tmp_reg__, __SREG__) CR_TAB);
+      size++;
+    }
+
+  if (do_cli)
+    {
+      fprintf (file, "cli" CR_TAB);
+      size++;
+    }
+
+  /* Do SPH first - maybe this will disable interrupts for one instruction
+     someday, much like x86 does when changing SS (a suggestion has been
+     sent to avr@atmel.com for consideration in future devices).  */
+  if (do_sph)
+    {
+      fprintf (file, AS2 (out, __SP_H__, r29) CR_TAB);
+      size++;
+    }
+
+  /* Set/restore the I flag now - interrupts will be really enabled only
+     after the next instruction starts.  This was not clearly documented.
+     XXX - verify this on the new devices with enhanced AVR core.  */
+  if (do_save)
+    {
+      fprintf (file, AS2 (out, __SREG__, __tmp_reg__) CR_TAB);
+      size++;
+    }
+  else if (after == 1 && (before != 1 || do_cli))
+    {
+      fprintf (file, "sei" CR_TAB);
+      size++;
+    }
+
+  fprintf (file, AS2 (out, __SP_L__, r28) "\n");
+
+  return size;
+}
+
+
 /* Output function prologue */
 
 void
@@ -392,8 +512,8 @@ function_prologue (FILE *file, int size)
   else if (minimize && (frame_pointer_needed || live_seq > 6)) 
     {
       fprintf (file, ("\t"
-		      AS2 (ldi, r26, %d) CR_TAB
-		      AS2 (ldi, r27, %d) CR_TAB), size & 0xff, size / 0x100);
+		      AS2 (ldi, r26, lo8(%d)) CR_TAB
+		      AS2 (ldi, r27, hi8(%d)) CR_TAB), size, size);
 
       fprintf (file, (AS2 (ldi, r30, pm_lo8(.L_%s_body)) CR_TAB
 		      AS2 (ldi, r31, pm_hi8(.L_%s_body)) CR_TAB)
@@ -444,44 +564,20 @@ function_prologue (FILE *file, int size)
 	    prologue_size += 4;
 	    if (size)
 	      {
-		if (size > 63)
-		  {
-		    fprintf (file, ("\t"
-				    AS2 (subi,r28,%d) CR_TAB
-				    AS2 (sbci,r29,%d) CR_TAB)
-			     , size & 0xff, size / 0x100);
-		    prologue_size += 2;
-		  }
-		else
-		  {
-		    fprintf (file, "\t" AS2 (sbiw,r28,%d) CR_TAB, size);
-		    ++prologue_size;
-		  }
+		fputs ("\t", file);
+		prologue_size += out_adj_frame_ptr (file, size);
+
 		if (interrupt_func_p)
 		  {
-		    fprintf (file,
-			     "cli" CR_TAB
-			     AS2 (out,__SP_L__,r28) CR_TAB
-			     "sei" CR_TAB
-			     AS2 (out,__SP_H__,r29) "\n");
-		    prologue_size += 4;
+		    prologue_size += out_set_stack_ptr (file, -1, 1);
 		  }
-		else if (signal_func_p || TARGET_NO_INTERRUPTS)
+		else if (signal_func_p)
 		  {
-		    fprintf (file,
-			     AS2 (out,__SP_L__,r28) CR_TAB
-			     AS2 (out,__SP_H__,r29) "\n");
-		    prologue_size += 2;
+		    prologue_size += out_set_stack_ptr (file, 0, 0);
 		  }
 		else
 		  {
-		    fprintf (file,
-			     AS2 (in,__tmp_reg__,__SREG__) CR_TAB
-			     "cli" CR_TAB
-			     AS2 (out,__SP_L__,r28) CR_TAB
-			     AS2 (out,__SREG__,__tmp_reg__) CR_TAB
-			     AS2 (out,__SP_H__,r29) "\n");
-		    prologue_size += 5;
+		    prologue_size += out_set_stack_ptr (file, -1, -1);
 		  }
 	      }
 	  }
@@ -533,20 +629,7 @@ function_epilogue (FILE *file, int size)
       ++epilogue_size;
       if (frame_pointer_needed)
 	{
-	  if (size)
-	    {
-	      if (size > 63)
-		{
-		  fprintf (file, AS2 (subi,r28,lo8(-%d)) CR_TAB, size);
-		  fprintf (file, AS2 (sbci,r29,hi8(-%d)) CR_TAB, size);
-		  epilogue_size += 2;
-		}
-	      else
-		{
-		  fprintf (file, AS2 (adiw,r28,%d) CR_TAB, size);
-		  ++epilogue_size;
-		}
-	    }
+	  epilogue_size += out_adj_frame_ptr (file, -size);
 	}
       else
 	{
@@ -574,41 +657,16 @@ function_epilogue (FILE *file, int size)
 	{
 	  if (size)
 	    {
-	      if (size > 63)
-		{
-		  fprintf (file, "\t" AS2 (subi,r28,lo8(-%d)) CR_TAB, size);
-		  fprintf (file, AS2 (sbci,r29,hi8(-%d)) CR_TAB, size);
-		  epilogue_size += 2;
-		}
-	      else
-		{
-		  fprintf (file, "\t" AS2 (adiw,r28,%d) CR_TAB, size);
-		  ++epilogue_size;
-		}
+	      fputs ("\t", file);
+	      epilogue_size += out_adj_frame_ptr (file, -size);
+
 	      if (interrupt_func_p | signal_func_p)
 		{
-		  fprintf (file,
-			   "cli" CR_TAB
-			   AS2 (out,__SP_L__,r28) CR_TAB
-			   AS2 (out,__SP_H__,r29) "\n");
-		  epilogue_size += 3;
-		}
-	      else if (TARGET_NO_INTERRUPTS)
-		{
-		  fprintf (file,
-			   AS2 (out,__SP_L__,r28) CR_TAB
-			   AS2 (out,__SP_H__,r29) "\n");
-		  epilogue_size += 2;
+		  epilogue_size += out_set_stack_ptr (file, -1, 0);
 		}
 	      else
 		{
-		  fprintf (file,
-			   AS2 (in,__tmp_reg__,__SREG__) CR_TAB
-			   "cli" CR_TAB
-			   AS2 (out,__SP_L__,r28) CR_TAB
-			   AS2 (out,__SREG__,__tmp_reg__) CR_TAB
-			   AS2 (out,__SP_H__,r29) "\n");
-		  epilogue_size += 5;
+		  epilogue_size += out_set_stack_ptr (file, -1, -1);
 		}
 	    }
 	  fprintf (file, "\t"
@@ -3885,4 +3943,21 @@ jump_over_one_insn_p (insn, dest)
   int jump_addr = insn_addresses[INSN_UID (insn)];
   int dest_addr = insn_addresses[uid];
   return dest_addr - jump_addr == 2;
+}
+
+/* Returns 1 if a value of mode MODE can be stored starting with hard
+   register number REGNO.  On the enhanced core, it should be a win to
+   align modes larger than QI on even register numbers (even if < 24).
+   so that the "movw" instruction can be used on them.  */
+
+int
+avr_hard_regno_mode_ok (regno, mode)
+     int regno;
+     enum machine_mode mode;
+{
+  if (mode == QImode)
+    return 1;
+  if (regno < 24 /* && !TARGET_ENHANCED */ )
+    return 1;
+  return !(regno & 1);
 }
