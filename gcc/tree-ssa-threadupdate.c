@@ -169,6 +169,7 @@ remove_ctrl_stmt_and_useless_edges (basic_block bb, basic_block dest_bb)
   if (!bsi_end_p (bsi)
       && bsi_stmt (bsi)
       && (TREE_CODE (bsi_stmt (bsi)) == COND_EXPR
+	  || TREE_CODE (bsi_stmt (bsi)) == GOTO_EXPR
 	  || TREE_CODE (bsi_stmt (bsi)) == SWITCH_EXPR))
     bsi_remove (&bsi);
 
@@ -228,7 +229,7 @@ redirection_data_eq (const void *p1, const void *p2)
    edges associated with E in the hash table.  */
 
 static struct redirection_data *
-lookup_redirection_data (edge e, edge incoming_edge, bool insert)
+lookup_redirection_data (edge e, edge incoming_edge, enum insert_option insert)
 {
   void **slot;
   struct redirection_data *elt;
@@ -733,7 +734,7 @@ thread_block (basic_block bb)
 
 	  /* Insert the outgoing edge into the hash table if it is not
 	     already in the hash table.  */
-	  lookup_redirection_data (e2, e, true);
+	  lookup_redirection_data (e2, e, INSERT);
 	}
     }
 
@@ -744,7 +745,7 @@ thread_block (basic_block bb)
   if (all)
     {
       edge e = EDGE_PRED (bb, 0)->aux;
-      lookup_redirection_data (e, NULL, false)->do_not_duplicate = true;
+      lookup_redirection_data (e, NULL, NO_INSERT)->do_not_duplicate = true;
     }
 
   /* Now create duplicates of BB.

@@ -129,6 +129,7 @@ static bool tree_can_merge_blocks_p (basic_block, basic_block);
 static void remove_bb (basic_block);
 static bool cleanup_control_flow (void);
 static bool cleanup_control_expr_graph (basic_block, block_stmt_iterator);
+static edge find_taken_edge_computed_goto (basic_block, tree);
 static edge find_taken_edge_cond_expr (basic_block, tree);
 static edge find_taken_edge_switch_expr (basic_block, tree);
 static tree find_case_label_for_value (tree, tree);
@@ -1301,7 +1302,22 @@ tree_merge_blocks (basic_block a, basic_block b)
   for (bsi = bsi_start (b); !bsi_end_p (bsi);)
     {
       if (TREE_CODE (bsi_stmt (bsi)) == LABEL_EXPR)
-	bsi_remove (&bsi);
+	{
+	  tree label = bsi_stmt (bsi);
+
+	  bsi_remove (&bsi);
+	  /* Now that we can thread computed gotos, we might have
+	     a situation where we have a forced label in block B
+	     However, the label at the start of block B might still be
+	     used in other ways (think about the runtime checking for
+	     Fortran assigned gotos).  So we can not just delete the
+	     label.  Instead we move the label to the start of block A.  */
+	  if (FORCED_LABEL (LABEL_EXPR_LABEL (label)))
+	    {
+	      block_stmt_iterator dest_bsi = bsi_start (a);
+	      bsi_insert_before (&dest_bsi, label, BSI_NEW_STMT);
+	    }
+	}
       else
 	{
 	  set_bb_for_stmt (bsi_stmt (bsi), a);
@@ -2122,6 +2138,43 @@ cleanup_control_flow (void)
 	  || TREE_CODE (stmt) == SWITCH_EXPR)
 	retval |= cleanup_control_expr_graph (bb, bsi);
 
+      /* If we had a computed goto which has a compile-time determinable
+	 destination, then we can eliminate the goto.  */
+      if (TREE_CODE (stmt) == GOTO_EXPR
+	  && TREE_CODE (GOTO_DESTINATION (stmt)) == ADDR_EXPR
+	  && TREE_CODE (TREE_OPERAND (GOTO_DESTINATION (stmt), 0)) == LABEL_DECL)
+	{
+	  edge e;
+	  tree label;
+	  edge_iterator ei;
+	  basic_block target_block;
+
+	  /* First look at all the outgoing edges.  Delete any outgoing
+	     edges which do not go to the right block.  For the one
+	     edge which goes to the right block, fix up its flags.  */
+	  label = TREE_OPERAND (GOTO_DESTINATION (stmt), 0);
+	  target_block = label_to_block (label);
+	  for (ei = ei_start (bb->succs); (e = ei_safe_edge (ei)); )
+	    {
+	      if (e->dest != target_block)
+		remove_edge (e);
+	      else
+	        {
+		  /* Turn off the EDGE_ABNORMAL flag.  */
+		  EDGE_SUCC (bb, 0)->flags &= ~EDGE_ABNORMAL;
+
+		  /* And set EDGE_FALLTHRU.  */
+		  EDGE_SUCC (bb, 0)->flags |= EDGE_FALLTHRU;
+		  ei_next (&ei);
+		}
+	    }
+
+	  /* Remove the GOTO_EXPR as it is not needed.  The CFG has all the
+	     relevant information we need.  */
+	  bsi_remove (&bsi);
+	  retval = true;
+	}
+
       /* Check for indirect calls that have been turned into
 	 noreturn calls.  */
       if (noreturn_call_p (stmt) && remove_fallthru_edge (bb->succs))
@@ -2229,7 +2282,7 @@ find_taken_edge (basic_block bb, tree val)
   gcc_assert (is_ctrl_stmt (stmt));
   gcc_assert (val);
 
-  if (TREE_CODE (val) != INTEGER_CST)
+  if (! is_gimple_min_invariant (val))
     return NULL;
 
   if (TREE_CODE (stmt) == COND_EXPR)
@@ -2238,9 +2291,31 @@ find_taken_edge (basic_block bb, tree val)
   if (TREE_CODE (stmt) == SWITCH_EXPR)
     return find_taken_edge_switch_expr (bb, val);
 
+  if (computed_goto_p (stmt))
+    return find_taken_edge_computed_goto (bb, TREE_OPERAND( val, 0));
+
   gcc_unreachable ();
 }
 
+/* Given a constant value VAL and the entry block BB to a GOTO_EXPR
+   statement, determine which of the outgoing edges will be taken out of the
+   block.  Return NULL if either edge may be taken.  */
+
+static edge
+find_taken_edge_computed_goto (basic_block bb, tree val)
+{
+  basic_block dest;
+  edge e = NULL;
+
+  dest = label_to_block (val);
+  if (dest)
+    {
+      e = find_edge (bb, dest);
+      gcc_assert (e != NULL);
+    }
+
+  return e;
+}
 
 /* Given a constant value VAL and the entry block BB to a COND_EXPR
    statement, determine which of the two edges will be taken out of the
