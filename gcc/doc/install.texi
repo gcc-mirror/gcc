@@ -325,11 +325,10 @@ The @file{fastjar}, @file{libbanshee}, @file{libffi},
 @file{libjava/libltdl} and @file{zlib} directories require automake
 1.7.9.
 
-The @file{libstdc++-v3} directory requires automake 1.8.2.
-
 The @file{libcpp} directory requires automake 1.8.4.
 
-The @file{libgfortran} directory requires automake 1.8.5.
+The @file{libgfortran} and @file{libstdc++-v3} directories require
+automake 1.8.5.
 
 @item gettext version 0.12 (or later)
 
