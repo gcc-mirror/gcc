@@ -41,8 +41,8 @@
 		     UNSPEC_MOVE_TF_PS))]
   "TARGET_PAIRED_SINGLE_FLOAT"
   "@
-    movt.ps\t%0,%1,%Q3
-    movf.ps\t%0,%2,%Q3"
+    movt.ps\t%0,%1,%3
+    movf.ps\t%0,%2,%3"
   [(set_attr "type" "condmove")
    (set_attr "mode" "SF")])
 
@@ -277,1080 +277,110 @@
    (set_attr "mode" "SF")])
 
 ;----------------------------------------------------------------------------
-; Floating Point Absolute Comparisions for Singles
+; Floating Point Comparisions for Scalars
 ;----------------------------------------------------------------------------
 
-(define_insn "mips_cabs_f_s"
+(define_insn "mips_cabs_cond_<fmt>"
   [(set (match_operand:CC 0 "register_operand" "=z")
-	(unspec:CC [(match_operand:SF 1 "register_operand" "f")
-		    (match_operand:SF 2 "register_operand" "f")]
-		   UNSPEC_CABS_F))]
+	(unspec:CC [(match_operand:SCALARF 1 "register_operand" "f")
+		    (match_operand:SCALARF 2 "register_operand" "f")
+		    (match_operand 3 "const_int_operand" "")]
+		   UNSPEC_CABS))]
   "TARGET_MIPS3D"
-  "cabs.f.s\t%Q0,%1,%2"
+  "cabs.%Y3.<fmt>\t%0,%1,%2"
   [(set_attr "type" "fcmp")
    (set_attr "mode" "FPSW")])
 
-(define_insn "mips_cabs_un_s"
-  [(set (match_operand:CC 0 "register_operand" "=z")
-	(unspec:CC [(match_operand:SF 1 "register_operand" "f")
-		    (match_operand:SF 2 "register_operand" "f")]
-		   UNSPEC_CABS_UN))]
-  "TARGET_MIPS3D"
-  "cabs.un.s\t%Q0,%1,%2"
-  [(set_attr "type" "fcmp")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "mips_cabs_eq_s"
-  [(set (match_operand:CC 0 "register_operand" "=z")
-	(unspec:CC [(match_operand:SF 1 "register_operand" "f")
-		    (match_operand:SF 2 "register_operand" "f")]
-		   UNSPEC_CABS_EQ))]
-  "TARGET_MIPS3D"
-  "cabs.eq.s\t%Q0,%1,%2"
-  [(set_attr "type" "fcmp")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "mips_cabs_ueq_s"
-  [(set (match_operand:CC 0 "register_operand" "=z")
-	(unspec:CC [(match_operand:SF 1 "register_operand" "f")
-		    (match_operand:SF 2 "register_operand" "f")]
-		   UNSPEC_CABS_UEQ))]
-  "TARGET_MIPS3D"
-  "cabs.ueq.s\t%Q0,%1,%2"
-  [(set_attr "type" "fcmp")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "mips_cabs_olt_s"
-  [(set (match_operand:CC 0 "register_operand" "=z")
-	(unspec:CC [(match_operand:SF 1 "register_operand" "f")
-		    (match_operand:SF 2 "register_operand" "f")]
-		   UNSPEC_CABS_OLT))]
-  "TARGET_MIPS3D"
-  "cabs.olt.s\t%Q0,%1,%2"
-  [(set_attr "type" "fcmp")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "mips_cabs_ult_s"
-  [(set (match_operand:CC 0 "register_operand" "=z")
-	(unspec:CC [(match_operand:SF 1 "register_operand" "f")
-		    (match_operand:SF 2 "register_operand" "f")]
-		   UNSPEC_CABS_ULT))]
-  "TARGET_MIPS3D"
-  "cabs.ult.s\t%Q0,%1,%2"
-  [(set_attr "type" "fcmp")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "mips_cabs_ole_s"
-  [(set (match_operand:CC 0 "register_operand" "=z")
-	(unspec:CC [(match_operand:SF 1 "register_operand" "f")
-		    (match_operand:SF 2 "register_operand" "f")]
-		   UNSPEC_CABS_OLE))]
-  "TARGET_MIPS3D"
-  "cabs.ole.s\t%Q0,%1,%2"
-  [(set_attr "type" "fcmp")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "mips_cabs_ule_s"
-  [(set (match_operand:CC 0 "register_operand" "=z")
-	(unspec:CC [(match_operand:SF 1 "register_operand" "f")
-		    (match_operand:SF 2 "register_operand" "f")]
-		   UNSPEC_CABS_ULE))]
-  "TARGET_MIPS3D"
-  "cabs.ule.s\t%Q0,%1,%2"
-  [(set_attr "type" "fcmp")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "mips_cabs_sf_s"
-  [(set (match_operand:CC 0 "register_operand" "=z")
-	(unspec:CC [(match_operand:SF 1 "register_operand" "f")
-		    (match_operand:SF 2 "register_operand" "f")]
-		   UNSPEC_CABS_SF))]
-  "TARGET_MIPS3D"
-  "cabs.sf.s\t%Q0,%1,%2"
-  [(set_attr "type" "fcmp")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "mips_cabs_ngle_s"
-  [(set (match_operand:CC 0 "register_operand" "=z")
-	(unspec:CC [(match_operand:SF 1 "register_operand" "f")
-		    (match_operand:SF 2 "register_operand" "f")]
-		   UNSPEC_CABS_NGLE))]
-  "TARGET_MIPS3D"
-  "cabs.ngle.s\t%Q0,%1,%2"
-  [(set_attr "type" "fcmp")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "mips_cabs_seq_s"
-  [(set (match_operand:CC 0 "register_operand" "=z")
-	(unspec:CC [(match_operand:SF 1 "register_operand" "f")
-		    (match_operand:SF 2 "register_operand" "f")]
-		   UNSPEC_CABS_SEQ))]
-  "TARGET_MIPS3D"
-  "cabs.seq.s\t%Q0,%1,%2"
-  [(set_attr "type" "fcmp")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "mips_cabs_ngl_s"
-  [(set (match_operand:CC 0 "register_operand" "=z")
-	(unspec:CC [(match_operand:SF 1 "register_operand" "f")
-		    (match_operand:SF 2 "register_operand" "f")]
-		   UNSPEC_CABS_NGL))]
-  "TARGET_MIPS3D"
-  "cabs.ngl.s\t%Q0,%1,%2"
-  [(set_attr "type" "fcmp")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "mips_cabs_lt_s"
-  [(set (match_operand:CC 0 "register_operand" "=z")
-	(unspec:CC [(match_operand:SF 1 "register_operand" "f")
-		    (match_operand:SF 2 "register_operand" "f")]
-		   UNSPEC_CABS_LT))]
-  "TARGET_MIPS3D"
-  "cabs.lt.s\t%Q0,%1,%2"
-  [(set_attr "type" "fcmp")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "mips_cabs_nge_s"
-  [(set (match_operand:CC 0 "register_operand" "=z")
-	(unspec:CC [(match_operand:SF 1 "register_operand" "f")
-		    (match_operand:SF 2 "register_operand" "f")]
-		   UNSPEC_CABS_NGE))]
-  "TARGET_MIPS3D"
-  "cabs.nge.s\t%Q0,%1,%2"
-  [(set_attr "type" "fcmp")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "mips_cabs_le_s"
-  [(set (match_operand:CC 0 "register_operand" "=z")
-	(unspec:CC [(match_operand:SF 1 "register_operand" "f")
-		    (match_operand:SF 2 "register_operand" "f")]
-		   UNSPEC_CABS_LE))]
-  "TARGET_MIPS3D"
-  "cabs.le.s\t%Q0,%1,%2"
-  [(set_attr "type" "fcmp")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "mips_cabs_ngt_s"
-  [(set (match_operand:CC 0 "register_operand" "=z")
-	(unspec:CC [(match_operand:SF 1 "register_operand" "f")
-		    (match_operand:SF 2 "register_operand" "f")]
-		   UNSPEC_CABS_NGT))]
-  "TARGET_MIPS3D"
-  "cabs.ngt.s\t%Q0,%1,%2"
-  [(set_attr "type" "fcmp")
-   (set_attr "mode" "FPSW")])
-
-;----------------------------------------------------------------------------
-; Floating Point Absolute Comparisions for Doubles
-;----------------------------------------------------------------------------
-(define_insn "mips_cabs_f_d"
-  [(set (match_operand:CC 0 "register_operand" "=z")
-	(unspec:CC [(match_operand:DF 1 "register_operand" "f")
-		    (match_operand:DF 2 "register_operand" "f")]
-		   UNSPEC_CABS_F))]
-  "TARGET_MIPS3D"
-  "cabs.f.d\t%Q0,%1,%2"
-  [(set_attr "type" "fcmp")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "mips_cabs_un_d"
-  [(set (match_operand:CC 0 "register_operand" "=z")
-	(unspec:CC [(match_operand:DF 1 "register_operand" "f")
-		    (match_operand:DF 2 "register_operand" "f")]
-		   UNSPEC_CABS_UN))]
-  "TARGET_MIPS3D"
-  "cabs.un.d\t%Q0,%1,%2"
-  [(set_attr "type" "fcmp")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "mips_cabs_eq_d"
-  [(set (match_operand:CC 0 "register_operand" "=z")
-	(unspec:CC [(match_operand:DF 1 "register_operand" "f")
-		    (match_operand:DF 2 "register_operand" "f")]
-		   UNSPEC_CABS_EQ))]
-  "TARGET_MIPS3D"
-  "cabs.eq.d\t%Q0,%1,%2"
-  [(set_attr "type" "fcmp")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "mips_cabs_ueq_d"
-  [(set (match_operand:CC 0 "register_operand" "=z")
-	(unspec:CC [(match_operand:DF 1 "register_operand" "f")
-		    (match_operand:DF 2 "register_operand" "f")]
-		   UNSPEC_CABS_UEQ))]
-  "TARGET_MIPS3D"
-  "cabs.ueq.d\t%Q0,%1,%2"
-  [(set_attr "type" "fcmp")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "mips_cabs_olt_d"
-  [(set (match_operand:CC 0 "register_operand" "=z")
-	(unspec:CC [(match_operand:DF 1 "register_operand" "f")
-		    (match_operand:DF 2 "register_operand" "f")]
-		   UNSPEC_CABS_OLT))]
-  "TARGET_MIPS3D"
-  "cabs.olt.d\t%Q0,%1,%2"
-  [(set_attr "type" "fcmp")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "mips_cabs_ult_d"
-  [(set (match_operand:CC 0 "register_operand" "=z")
-	(unspec:CC [(match_operand:DF 1 "register_operand" "f")
-		    (match_operand:DF 2 "register_operand" "f")]
-		   UNSPEC_CABS_ULT))]
-  "TARGET_MIPS3D"
-  "cabs.ult.d\t%Q0,%1,%2"
-  [(set_attr "type" "fcmp")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "mips_cabs_ole_d"
-  [(set (match_operand:CC 0 "register_operand" "=z")
-	(unspec:CC [(match_operand:DF 1 "register_operand" "f")
-		    (match_operand:DF 2 "register_operand" "f")]
-		   UNSPEC_CABS_OLE))]
-  "TARGET_MIPS3D"
-  "cabs.ole.d\t%Q0,%1,%2"
-  [(set_attr "type" "fcmp")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "mips_cabs_ule_d"
-  [(set (match_operand:CC 0 "register_operand" "=z")
-	(unspec:CC [(match_operand:DF 1 "register_operand" "f")
-		    (match_operand:DF 2 "register_operand" "f")]
-		   UNSPEC_CABS_ULE))]
-  "TARGET_MIPS3D"
-  "cabs.ule.d\t%Q0,%1,%2"
-  [(set_attr "type" "fcmp")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "mips_cabs_sf_d"
-  [(set (match_operand:CC 0 "register_operand" "=z")
-	(unspec:CC [(match_operand:DF 1 "register_operand" "f")
-		    (match_operand:DF 2 "register_operand" "f")]
-		   UNSPEC_CABS_SF))]
-  "TARGET_MIPS3D"
-  "cabs.sf.d\t%Q0,%1,%2"
-  [(set_attr "type" "fcmp")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "mips_cabs_ngle_d"
-  [(set (match_operand:CC 0 "register_operand" "=z")
-	(unspec:CC [(match_operand:DF 1 "register_operand" "f")
-		    (match_operand:DF 2 "register_operand" "f")]
-		   UNSPEC_CABS_NGLE))]
-  "TARGET_MIPS3D"
-  "cabs.ngle.d\t%Q0,%1,%2"
-  [(set_attr "type" "fcmp")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "mips_cabs_seq_d"
-  [(set (match_operand:CC 0 "register_operand" "=z")
-	(unspec:CC [(match_operand:DF 1 "register_operand" "f")
-		    (match_operand:DF 2 "register_operand" "f")]
-		   UNSPEC_CABS_SEQ))]
-  "TARGET_MIPS3D"
-  "cabs.seq.d\t%Q0,%1,%2"
-  [(set_attr "type" "fcmp")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "mips_cabs_ngl_d"
-  [(set (match_operand:CC 0 "register_operand" "=z")
-	(unspec:CC [(match_operand:DF 1 "register_operand" "f")
-		    (match_operand:DF 2 "register_operand" "f")]
-		   UNSPEC_CABS_NGL))]
-  "TARGET_MIPS3D"
-  "cabs.ngl.d\t%Q0,%1,%2"
-  [(set_attr "type" "fcmp")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "mips_cabs_lt_d"
-  [(set (match_operand:CC 0 "register_operand" "=z")
-	(unspec:CC [(match_operand:DF 1 "register_operand" "f")
-		    (match_operand:DF 2 "register_operand" "f")]
-		   UNSPEC_CABS_LT))]
-  "TARGET_MIPS3D"
-  "cabs.lt.d\t%Q0,%1,%2"
-  [(set_attr "type" "fcmp")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "mips_cabs_nge_d"
-  [(set (match_operand:CC 0 "register_operand" "=z")
-	(unspec:CC [(match_operand:DF 1 "register_operand" "f")
-		    (match_operand:DF 2 "register_operand" "f")]
-		   UNSPEC_CABS_NGE))]
-  "TARGET_MIPS3D"
-  "cabs.nge.d\t%Q0,%1,%2"
-  [(set_attr "type" "fcmp")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "mips_cabs_le_d"
-  [(set (match_operand:CC 0 "register_operand" "=z")
-	(unspec:CC [(match_operand:DF 1 "register_operand" "f")
-		    (match_operand:DF 2 "register_operand" "f")]
-		   UNSPEC_CABS_LE))]
-  "TARGET_MIPS3D"
-  "cabs.le.d\t%Q0,%1,%2"
-  [(set_attr "type" "fcmp")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "mips_cabs_ngt_d"
-  [(set (match_operand:CC 0 "register_operand" "=z")
-	(unspec:CC [(match_operand:DF 1 "register_operand" "f")
-		    (match_operand:DF 2 "register_operand" "f")]
-		   UNSPEC_CABS_NGT))]
-  "TARGET_MIPS3D"
-  "cabs.ngt.d\t%Q0,%1,%2"
-  [(set_attr "type" "fcmp")
-   (set_attr "mode" "FPSW")])
 
 ;----------------------------------------------------------------------------
 ; Floating Point Comparisions for Four Singles
 ;----------------------------------------------------------------------------
 
-(define_insn "mips_c_f_4s"
+(define_insn_and_split "mips_c_cond_4s"
   [(set (match_operand:CCV4 0 "register_operand" "=z")
 	(unspec:CCV4 [(match_operand:V2SF 1 "register_operand" "f")
 		      (match_operand:V2SF 2 "register_operand" "f")
 		      (match_operand:V2SF 3 "register_operand" "f")
-		      (match_operand:V2SF 4 "register_operand" "f")]
-		     UNSPEC_C_F))]
+		      (match_operand:V2SF 4 "register_operand" "f")
+		      (match_operand 5 "const_int_operand" "")]
+		     UNSPEC_C))]
   "TARGET_PAIRED_SINGLE_FLOAT"
-  "c.f.ps\t%v0,%1,%2\n\tc.f.ps\t%V0,%3,%4"
+  "#"
+  "&& reload_completed"
+  [(set (match_dup 6)
+	(unspec:CCV2 [(match_dup 1)
+		      (match_dup 2)
+		      (match_dup 5)]
+		     UNSPEC_C))
+   (set (match_dup 7)
+	(unspec:CCV2 [(match_dup 3)
+		      (match_dup 4)
+		      (match_dup 5)]
+		     UNSPEC_C))]
+{
+  operands[6] = simplify_gen_subreg (CCV2mode, operands[0], CCV4mode, 0);
+  operands[7] = simplify_gen_subreg (CCV2mode, operands[0], CCV4mode, 8);
+}
   [(set_attr "type" "fcmp")
    (set_attr "length" "8")
    (set_attr "mode" "FPSW")])
 
-(define_insn "mips_c_un_4s"
+(define_insn_and_split "mips_cabs_cond_4s"
   [(set (match_operand:CCV4 0 "register_operand" "=z")
 	(unspec:CCV4 [(match_operand:V2SF 1 "register_operand" "f")
 		      (match_operand:V2SF 2 "register_operand" "f")
 		      (match_operand:V2SF 3 "register_operand" "f")
-		      (match_operand:V2SF 4 "register_operand" "f")]
-		     UNSPEC_C_UN))]
-  "TARGET_PAIRED_SINGLE_FLOAT"
-  "c.un.ps\t%v0,%1,%2\n\tc.un.ps\t%V0,%3,%4"
-  [(set_attr "type" "fcmp")
-   (set_attr "length" "8")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "mips_c_eq_4s"
-  [(set (match_operand:CCV4 0 "register_operand" "=z")
-	(unspec:CCV4 [(match_operand:V2SF 1 "register_operand" "f")
-		      (match_operand:V2SF 2 "register_operand" "f")
-		      (match_operand:V2SF 3 "register_operand" "f")
-		      (match_operand:V2SF 4 "register_operand" "f")]
-		     UNSPEC_C_EQ))]
-  "TARGET_PAIRED_SINGLE_FLOAT"
-  "c.eq.ps\t%v0,%1,%2\n\tc.eq.ps\t%V0,%3,%4"
-  [(set_attr "type" "fcmp")
-   (set_attr "length" "8")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "mips_c_ueq_4s"
-  [(set (match_operand:CCV4 0 "register_operand" "=z")
-	(unspec:CCV4 [(match_operand:V2SF 1 "register_operand" "f")
-		      (match_operand:V2SF 2 "register_operand" "f")
-		      (match_operand:V2SF 3 "register_operand" "f")
-		      (match_operand:V2SF 4 "register_operand" "f")]
-		     UNSPEC_C_UEQ))]
-  "TARGET_PAIRED_SINGLE_FLOAT"
-  "c.ueq.ps\t%v0,%1,%2\n\tc.ueq.ps\t%V0,%3,%4"
-  [(set_attr "type" "fcmp")
-   (set_attr "length" "8")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "mips_c_olt_4s"
-  [(set (match_operand:CCV4 0 "register_operand" "=z")
-	(unspec:CCV4 [(match_operand:V2SF 1 "register_operand" "f")
-		      (match_operand:V2SF 2 "register_operand" "f")
-		      (match_operand:V2SF 3 "register_operand" "f")
-		      (match_operand:V2SF 4 "register_operand" "f")]
-		     UNSPEC_C_OLT))]
-  "TARGET_PAIRED_SINGLE_FLOAT"
-  "c.olt.ps\t%v0,%1,%2\n\tc.olt.ps\t%V0,%3,%4"
-  [(set_attr "type" "fcmp")
-   (set_attr "length" "8")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "mips_c_ult_4s"
-  [(set (match_operand:CCV4 0 "register_operand" "=z")
-	(unspec:CCV4 [(match_operand:V2SF 1 "register_operand" "f")
-		      (match_operand:V2SF 2 "register_operand" "f")
-		      (match_operand:V2SF 3 "register_operand" "f")
-		      (match_operand:V2SF 4 "register_operand" "f")]
-		     UNSPEC_C_ULT))]
-  "TARGET_PAIRED_SINGLE_FLOAT"
-  "c.ult.ps\t%v0,%1,%2\n\tc.ult.ps\t%V0,%3,%4"
-  [(set_attr "type" "fcmp")
-   (set_attr "length" "8")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "mips_c_ole_4s"
-  [(set (match_operand:CCV4 0 "register_operand" "=z")
-	(unspec:CCV4 [(match_operand:V2SF 1 "register_operand" "f")
-		      (match_operand:V2SF 2 "register_operand" "f")
-		      (match_operand:V2SF 3 "register_operand" "f")
-		      (match_operand:V2SF 4 "register_operand" "f")]
-		     UNSPEC_C_OLE))]
-  "TARGET_PAIRED_SINGLE_FLOAT"
-  "c.ole.ps\t%v0,%1,%2\n\tc.ole.ps\t%V0,%3,%4"
-  [(set_attr "type" "fcmp")
-   (set_attr "length" "8")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "mips_c_ule_4s"
-  [(set (match_operand:CCV4 0 "register_operand" "=z")
-	(unspec:CCV4 [(match_operand:V2SF 1 "register_operand" "f")
-		      (match_operand:V2SF 2 "register_operand" "f")
-		      (match_operand:V2SF 3 "register_operand" "f")
-		      (match_operand:V2SF 4 "register_operand" "f")]
-		     UNSPEC_C_ULE))]
-  "TARGET_PAIRED_SINGLE_FLOAT"
-  "c.ule.ps\t%v0,%1,%2\n\tc.ule.ps\t%V0,%3,%4"
-  [(set_attr "type" "fcmp")
-   (set_attr "length" "8")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "mips_c_sf_4s"
-  [(set (match_operand:CCV4 0 "register_operand" "=z")
-	(unspec:CCV4 [(match_operand:V2SF 1 "register_operand" "f")
-		      (match_operand:V2SF 2 "register_operand" "f")
-		      (match_operand:V2SF 3 "register_operand" "f")
-		      (match_operand:V2SF 4 "register_operand" "f")]
-		     UNSPEC_C_SF))]
-  "TARGET_PAIRED_SINGLE_FLOAT"
-  "c.sf.ps\t%v0,%1,%2\n\tc.sf.ps\t%V0,%3,%4"
-  [(set_attr "type" "fcmp")
-   (set_attr "length" "8")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "mips_c_ngle_4s"
-  [(set (match_operand:CCV4 0 "register_operand" "=z")
-	(unspec:CCV4 [(match_operand:V2SF 1 "register_operand" "f")
-		      (match_operand:V2SF 2 "register_operand" "f")
-		      (match_operand:V2SF 3 "register_operand" "f")
-		      (match_operand:V2SF 4 "register_operand" "f")]
-		     UNSPEC_C_NGLE))]
-  "TARGET_PAIRED_SINGLE_FLOAT"
-  "c.ngle.ps\t%v0,%1,%2\n\tc.ngle.ps\t%V0,%3,%4"
-  [(set_attr "type" "fcmp")
-   (set_attr "length" "8")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "mips_c_seq_4s"
-  [(set (match_operand:CCV4 0 "register_operand" "=z")
-	(unspec:CCV4 [(match_operand:V2SF 1 "register_operand" "f")
-		      (match_operand:V2SF 2 "register_operand" "f")
-		      (match_operand:V2SF 3 "register_operand" "f")
-		      (match_operand:V2SF 4 "register_operand" "f")]
-		     UNSPEC_C_SEQ))]
-  "TARGET_PAIRED_SINGLE_FLOAT"
-  "c.seq.ps\t%v0,%1,%2\n\tc.seq.ps\t%V0,%3,%4"
-  [(set_attr "type" "fcmp")
-   (set_attr "length" "8")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "mips_c_ngl_4s"
-  [(set (match_operand:CCV4 0 "register_operand" "=z")
-	(unspec:CCV4 [(match_operand:V2SF 1 "register_operand" "f")
-		      (match_operand:V2SF 2 "register_operand" "f")
-		      (match_operand:V2SF 3 "register_operand" "f")
-		      (match_operand:V2SF 4 "register_operand" "f")]
-		     UNSPEC_C_NGL))]
-  "TARGET_PAIRED_SINGLE_FLOAT"
-  "c.ngl.ps\t%v0,%1,%2\n\tc.ngl.ps\t%V0,%3,%4"
-  [(set_attr "type" "fcmp")
-   (set_attr "length" "8")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "mips_c_lt_4s"
-  [(set (match_operand:CCV4 0 "register_operand" "=z")
-	(unspec:CCV4 [(match_operand:V2SF 1 "register_operand" "f")
-		      (match_operand:V2SF 2 "register_operand" "f")
-		      (match_operand:V2SF 3 "register_operand" "f")
-		      (match_operand:V2SF 4 "register_operand" "f")]
-		     UNSPEC_C_LT))]
-  "TARGET_PAIRED_SINGLE_FLOAT"
-  "c.lt.ps\t%v0,%1,%2\n\tc.lt.ps\t%V0,%3,%4"
-  [(set_attr "type" "fcmp")
-   (set_attr "length" "8")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "mips_c_nge_4s"
-  [(set (match_operand:CCV4 0 "register_operand" "=z")
-	(unspec:CCV4 [(match_operand:V2SF 1 "register_operand" "f")
-		      (match_operand:V2SF 2 "register_operand" "f")
-		      (match_operand:V2SF 3 "register_operand" "f")
-		      (match_operand:V2SF 4 "register_operand" "f")]
-		     UNSPEC_C_NGE))]
-  "TARGET_PAIRED_SINGLE_FLOAT"
-  "c.nge.ps\t%v0,%1,%2\n\tc.nge.ps\t%V0,%3,%4"
-  [(set_attr "type" "fcmp")
-   (set_attr "length" "8")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "mips_c_le_4s"
-  [(set (match_operand:CCV4 0 "register_operand" "=z")
-	(unspec:CCV4 [(match_operand:V2SF 1 "register_operand" "f")
-		      (match_operand:V2SF 2 "register_operand" "f")
-		      (match_operand:V2SF 3 "register_operand" "f")
-		      (match_operand:V2SF 4 "register_operand" "f")]
-		     UNSPEC_C_LE))]
-  "TARGET_PAIRED_SINGLE_FLOAT"
-  "c.le.ps\t%v0,%1,%2\n\tc.le.ps\t%V0,%3,%4"
-  [(set_attr "type" "fcmp")
-   (set_attr "length" "8")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "mips_c_ngt_4s"
-  [(set (match_operand:CCV4 0 "register_operand" "=z")
-	(unspec:CCV4 [(match_operand:V2SF 1 "register_operand" "f")
-		      (match_operand:V2SF 2 "register_operand" "f")
-		      (match_operand:V2SF 3 "register_operand" "f")
-		      (match_operand:V2SF 4 "register_operand" "f")]
-		     UNSPEC_C_NGT))]
-  "TARGET_PAIRED_SINGLE_FLOAT"
-  "c.ngt.ps\t%v0,%1,%2\n\tc.ngt.ps\t%V0,%3,%4"
-  [(set_attr "type" "fcmp")
-   (set_attr "length" "8")
-   (set_attr "mode" "FPSW")])
-
-;----------------------------------------------------------------------------
-; Floating Point Absolute Comparisions for Four Singles
-;----------------------------------------------------------------------------
-(define_insn "mips_cabs_f_4s"
-  [(set (match_operand:CCV4 0 "register_operand" "=z")
-	(unspec:CCV4 [(match_operand:V2SF 1 "register_operand" "f")
-		      (match_operand:V2SF 2 "register_operand" "f")
-		      (match_operand:V2SF 3 "register_operand" "f")
-		      (match_operand:V2SF 4 "register_operand" "f")]
-		     UNSPEC_CABS_F))]
+		      (match_operand:V2SF 4 "register_operand" "f")
+		      (match_operand 5 "const_int_operand" "")]
+		     UNSPEC_CABS))]
   "TARGET_MIPS3D"
-  "cabs.f.ps\t%v0,%1,%2\n\tcabs.f.ps\t%V0,%3,%4"
+  "#"
+  "&& reload_completed"
+  [(set (match_dup 6)
+	(unspec:CCV2 [(match_dup 1)
+		      (match_dup 2)
+		      (match_dup 5)]
+		     UNSPEC_CABS))
+   (set (match_dup 7)
+	(unspec:CCV2 [(match_dup 3)
+		      (match_dup 4)
+		      (match_dup 5)]
+		     UNSPEC_CABS))]
+{
+  operands[6] = simplify_gen_subreg (CCV2mode, operands[0], CCV4mode, 0);
+  operands[7] = simplify_gen_subreg (CCV2mode, operands[0], CCV4mode, 8);
+}
   [(set_attr "type" "fcmp")
    (set_attr "length" "8")
    (set_attr "mode" "FPSW")])
 
-(define_insn "mips_cabs_un_4s"
-  [(set (match_operand:CCV4 0 "register_operand" "=z")
-	(unspec:CCV4 [(match_operand:V2SF 1 "register_operand" "f")
-		      (match_operand:V2SF 2 "register_operand" "f")
-		      (match_operand:V2SF 3 "register_operand" "f")
-		      (match_operand:V2SF 4 "register_operand" "f")]
-		     UNSPEC_CABS_UN))]
-  "TARGET_MIPS3D"
-  "cabs.un.ps\t%v0,%1,%2\n\tcabs.un.ps\t%V0,%3,%4"
-  [(set_attr "type" "fcmp")
-   (set_attr "length" "8")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "mips_cabs_eq_4s"
-  [(set (match_operand:CCV4 0 "register_operand" "=z")
-	(unspec:CCV4 [(match_operand:V2SF 1 "register_operand" "f")
-		      (match_operand:V2SF 2 "register_operand" "f")
-		      (match_operand:V2SF 3 "register_operand" "f")
-		      (match_operand:V2SF 4 "register_operand" "f")]
-		     UNSPEC_CABS_EQ))]
-  "TARGET_MIPS3D"
-  "cabs.eq.ps\t%v0,%1,%2\n\tcabs.eq.ps\t%V0,%3,%4"
-  [(set_attr "type" "fcmp")
-   (set_attr "length" "8")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "mips_cabs_ueq_4s"
-  [(set (match_operand:CCV4 0 "register_operand" "=z")
-	(unspec:CCV4 [(match_operand:V2SF 1 "register_operand" "f")
-		      (match_operand:V2SF 2 "register_operand" "f")
-		      (match_operand:V2SF 3 "register_operand" "f")
-		      (match_operand:V2SF 4 "register_operand" "f")]
-		     UNSPEC_CABS_UEQ))]
-  "TARGET_MIPS3D"
-  "cabs.ueq.ps\t%v0,%1,%2\n\tcabs.ueq.ps\t%V0,%3,%4"
-  [(set_attr "type" "fcmp")
-   (set_attr "length" "8")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "mips_cabs_olt_4s"
-  [(set (match_operand:CCV4 0 "register_operand" "=z")
-	(unspec:CCV4 [(match_operand:V2SF 1 "register_operand" "f")
-		      (match_operand:V2SF 2 "register_operand" "f")
-		      (match_operand:V2SF 3 "register_operand" "f")
-		      (match_operand:V2SF 4 "register_operand" "f")]
-		     UNSPEC_CABS_OLT))]
-  "TARGET_MIPS3D"
-  "cabs.olt.ps\t%v0,%1,%2\n\tcabs.olt.ps\t%V0,%3,%4"
-  [(set_attr "type" "fcmp")
-   (set_attr "length" "8")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "mips_cabs_ult_4s"
-  [(set (match_operand:CCV4 0 "register_operand" "=z")
-	(unspec:CCV4 [(match_operand:V2SF 1 "register_operand" "f")
-		      (match_operand:V2SF 2 "register_operand" "f")
-		      (match_operand:V2SF 3 "register_operand" "f")
-		      (match_operand:V2SF 4 "register_operand" "f")]
-		     UNSPEC_CABS_ULT))]
-  "TARGET_MIPS3D"
-  "cabs.ult.ps\t%v0,%1,%2\n\tcabs.ult.ps\t%V0,%3,%4"
-  [(set_attr "type" "fcmp")
-   (set_attr "length" "8")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "mips_cabs_ole_4s"
-  [(set (match_operand:CCV4 0 "register_operand" "=z")
-	(unspec:CCV4 [(match_operand:V2SF 1 "register_operand" "f")
-		      (match_operand:V2SF 2 "register_operand" "f")
-		      (match_operand:V2SF 3 "register_operand" "f")
-		      (match_operand:V2SF 4 "register_operand" "f")]
-		     UNSPEC_CABS_OLE))]
-  "TARGET_MIPS3D"
-  "cabs.ole.ps\t%v0,%1,%2\n\tcabs.ole.ps\t%V0,%3,%4"
-  [(set_attr "type" "fcmp")
-   (set_attr "length" "8")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "mips_cabs_ule_4s"
-  [(set (match_operand:CCV4 0 "register_operand" "=z")
-	(unspec:CCV4 [(match_operand:V2SF 1 "register_operand" "f")
-		      (match_operand:V2SF 2 "register_operand" "f")
-		      (match_operand:V2SF 3 "register_operand" "f")
-		      (match_operand:V2SF 4 "register_operand" "f")]
-		     UNSPEC_CABS_ULE))]
-  "TARGET_MIPS3D"
-  "cabs.ule.ps\t%v0,%1,%2\n\tcabs.ule.ps\t%V0,%3,%4"
-  [(set_attr "type" "fcmp")
-   (set_attr "length" "8")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "mips_cabs_sf_4s"
-  [(set (match_operand:CCV4 0 "register_operand" "=z")
-	(unspec:CCV4 [(match_operand:V2SF 1 "register_operand" "f")
-		      (match_operand:V2SF 2 "register_operand" "f")
-		      (match_operand:V2SF 3 "register_operand" "f")
-		      (match_operand:V2SF 4 "register_operand" "f")]
-		     UNSPEC_CABS_SF))]
-  "TARGET_MIPS3D"
-  "cabs.sf.ps\t%v0,%1,%2\n\tcabs.sf.ps\t%V0,%3,%4"
-  [(set_attr "type" "fcmp")
-   (set_attr "length" "8")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "mips_cabs_ngle_4s"
-  [(set (match_operand:CCV4 0 "register_operand" "=z")
-	(unspec:CCV4 [(match_operand:V2SF 1 "register_operand" "f")
-		      (match_operand:V2SF 2 "register_operand" "f")
-		      (match_operand:V2SF 3 "register_operand" "f")
-		      (match_operand:V2SF 4 "register_operand" "f")]
-		     UNSPEC_CABS_NGLE))]
-  "TARGET_MIPS3D"
-  "cabs.ngle.ps\t%v0,%1,%2\n\tcabs.ngle.ps\t%V0,%3,%4"
-  [(set_attr "type" "fcmp")
-   (set_attr "length" "8")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "mips_cabs_seq_4s"
-  [(set (match_operand:CCV4 0 "register_operand" "=z")
-	(unspec:CCV4 [(match_operand:V2SF 1 "register_operand" "f")
-		      (match_operand:V2SF 2 "register_operand" "f")
-		      (match_operand:V2SF 3 "register_operand" "f")
-		      (match_operand:V2SF 4 "register_operand" "f")]
-		     UNSPEC_CABS_SEQ))]
-  "TARGET_MIPS3D"
-  "cabs.seq.ps\t%v0,%1,%2\n\tcabs.seq.ps\t%V0,%3,%4"
-  [(set_attr "type" "fcmp")
-   (set_attr "length" "8")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "mips_cabs_ngl_4s"
-  [(set (match_operand:CCV4 0 "register_operand" "=z")
-	(unspec:CCV4 [(match_operand:V2SF 1 "register_operand" "f")
-		      (match_operand:V2SF 2 "register_operand" "f")
-		      (match_operand:V2SF 3 "register_operand" "f")
-		      (match_operand:V2SF 4 "register_operand" "f")]
-		     UNSPEC_CABS_NGL))]
-  "TARGET_MIPS3D"
-  "cabs.ngl.ps\t%v0,%1,%2\n\tcabs.ngl.ps\t%V0,%3,%4"
-  [(set_attr "type" "fcmp")
-   (set_attr "length" "8")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "mips_cabs_lt_4s"
-  [(set (match_operand:CCV4 0 "register_operand" "=z")
-	(unspec:CCV4 [(match_operand:V2SF 1 "register_operand" "f")
-		      (match_operand:V2SF 2 "register_operand" "f")
-		      (match_operand:V2SF 3 "register_operand" "f")
-		      (match_operand:V2SF 4 "register_operand" "f")]
-		     UNSPEC_CABS_LT))]
-  "TARGET_MIPS3D"
-  "cabs.lt.ps\t%v0,%1,%2\n\tcabs.lt.ps\t%V0,%3,%4"
-  [(set_attr "type" "fcmp")
-   (set_attr "length" "8")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "mips_cabs_nge_4s"
-  [(set (match_operand:CCV4 0 "register_operand" "=z")
-	(unspec:CCV4 [(match_operand:V2SF 1 "register_operand" "f")
-		      (match_operand:V2SF 2 "register_operand" "f")
-		      (match_operand:V2SF 3 "register_operand" "f")
-		      (match_operand:V2SF 4 "register_operand" "f")]
-		     UNSPEC_CABS_NGE))]
-  "TARGET_MIPS3D"
-  "cabs.nge.ps\t%v0,%1,%2\n\tcabs.nge.ps\t%V0,%3,%4"
-  [(set_attr "type" "fcmp")
-   (set_attr "length" "8")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "mips_cabs_le_4s"
-  [(set (match_operand:CCV4 0 "register_operand" "=z")
-	(unspec:CCV4 [(match_operand:V2SF 1 "register_operand" "f")
-		      (match_operand:V2SF 2 "register_operand" "f")
-		      (match_operand:V2SF 3 "register_operand" "f")
-		      (match_operand:V2SF 4 "register_operand" "f")]
-		     UNSPEC_CABS_LE))]
-  "TARGET_MIPS3D"
-  "cabs.le.ps\t%v0,%1,%2\n\tcabs.le.ps\t%V0,%3,%4"
-  [(set_attr "type" "fcmp")
-   (set_attr "length" "8")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "mips_cabs_ngt_4s"
-  [(set (match_operand:CCV4 0 "register_operand" "=z")
-	(unspec:CCV4 [(match_operand:V2SF 1 "register_operand" "f")
-		      (match_operand:V2SF 2 "register_operand" "f")
-		      (match_operand:V2SF 3 "register_operand" "f")
-		      (match_operand:V2SF 4 "register_operand" "f")]
-		     UNSPEC_CABS_NGT))]
-  "TARGET_MIPS3D"
-  "cabs.ngt.ps\t%v0,%1,%2\n\tcabs.ngt.ps\t%V0,%3,%4"
-  [(set_attr "type" "fcmp")
-   (set_attr "length" "8")
-   (set_attr "mode" "FPSW")])
 
 ;----------------------------------------------------------------------------
 ; Floating Point Comparisions for Paired Singles
 ;----------------------------------------------------------------------------
-(define_insn "mips_c_f_ps"
+
+(define_insn "mips_c_cond_ps"
   [(set (match_operand:CCV2 0 "register_operand" "=z")
 	(unspec:CCV2 [(match_operand:V2SF 1 "register_operand" "f")
-		      (match_operand:V2SF 2 "register_operand" "f")] 
-		     UNSPEC_C_F))]
+		      (match_operand:V2SF 2 "register_operand" "f")
+		      (match_operand 3 "const_int_operand" "")]
+		     UNSPEC_C))]
   "TARGET_PAIRED_SINGLE_FLOAT"
-  "c.f.ps\t%Z0%1,%2"
+  "c.%Y3.ps\t%0,%1,%2"
   [(set_attr "type" "fcmp")
    (set_attr "mode" "FPSW")])
 
-(define_insn "mips_c_un_ps"
+(define_insn "mips_cabs_cond_ps"
   [(set (match_operand:CCV2 0 "register_operand" "=z")
 	(unspec:CCV2 [(match_operand:V2SF 1 "register_operand" "f")
-		      (match_operand:V2SF 2 "register_operand" "f")] 
-		     UNSPEC_C_UN))]
-  "TARGET_PAIRED_SINGLE_FLOAT"
-  "c.un.ps\t%Z0%1,%2"
-  [(set_attr "type" "fcmp")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "mips_c_eq_ps"
-  [(set (match_operand:CCV2 0 "register_operand" "=z")
-	(unspec:CCV2 [(match_operand:V2SF 1 "register_operand" "f")
-		      (match_operand:V2SF 2 "register_operand" "f")] 
-		     UNSPEC_C_EQ))]
-  "TARGET_PAIRED_SINGLE_FLOAT"
-  "c.eq.ps\t%Z0%1,%2"
-  [(set_attr "type" "fcmp")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "mips_c_ueq_ps"
-  [(set (match_operand:CCV2 0 "register_operand" "=z")
-	(unspec:CCV2 [(match_operand:V2SF 1 "register_operand" "f")
-		      (match_operand:V2SF 2 "register_operand" "f")] 
-		     UNSPEC_C_UEQ))]
-  "TARGET_PAIRED_SINGLE_FLOAT"
-  "c.ueq.ps\t%Z0%1,%2"
-  [(set_attr "type" "fcmp")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "mips_c_olt_ps"
-  [(set (match_operand:CCV2 0 "register_operand" "=z")
-	(unspec:CCV2 [(match_operand:V2SF 1 "register_operand" "f")
-		      (match_operand:V2SF 2 "register_operand" "f")] 
-		     UNSPEC_C_OLT))]
-  "TARGET_PAIRED_SINGLE_FLOAT"
-  "c.olt.ps\t%Z0%1,%2"
-  [(set_attr "type" "fcmp")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "mips_c_ult_ps"
-  [(set (match_operand:CCV2 0 "register_operand" "=z")
-	(unspec:CCV2 [(match_operand:V2SF 1 "register_operand" "f")
-		      (match_operand:V2SF 2 "register_operand" "f")] 
-		     UNSPEC_C_ULT))]
-  "TARGET_PAIRED_SINGLE_FLOAT"
-  "c.ult.ps\t%Z0%1,%2"
-  [(set_attr "type" "fcmp")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "mips_c_ole_ps"
-  [(set (match_operand:CCV2 0 "register_operand" "=z")
-	(unspec:CCV2 [(match_operand:V2SF 1 "register_operand" "f")
-		      (match_operand:V2SF 2 "register_operand" "f")] 
-		     UNSPEC_C_OLE))]
-  "TARGET_PAIRED_SINGLE_FLOAT"
-  "c.ole.ps\t%Z0%1,%2"
-  [(set_attr "type" "fcmp")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "mips_c_ule_ps"
-  [(set (match_operand:CCV2 0 "register_operand" "=z")
-	(unspec:CCV2 [(match_operand:V2SF 1 "register_operand" "f")
-		      (match_operand:V2SF 2 "register_operand" "f")] 
-		     UNSPEC_C_ULE))]
-  "TARGET_PAIRED_SINGLE_FLOAT"
-  "c.ule.ps\t%Z0%1,%2"
-  [(set_attr "type" "fcmp")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "mips_c_sf_ps"
-  [(set (match_operand:CCV2 0 "register_operand" "=z")
-	(unspec:CCV2 [(match_operand:V2SF 1 "register_operand" "f")
-		      (match_operand:V2SF 2 "register_operand" "f")] 
-		     UNSPEC_C_SF))]
-  "TARGET_PAIRED_SINGLE_FLOAT"
-  "c.sf.ps\t%Z0%1,%2"
-  [(set_attr "type" "fcmp")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "mips_c_ngle_ps"
-  [(set (match_operand:CCV2 0 "register_operand" "=z")
-	(unspec:CCV2 [(match_operand:V2SF 1 "register_operand" "f")
-		      (match_operand:V2SF 2 "register_operand" "f")] 
-		     UNSPEC_C_NGLE))]
-  "TARGET_PAIRED_SINGLE_FLOAT"
-  "c.ngle.ps\t%Z0%1,%2"
-  [(set_attr "type" "fcmp")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "mips_c_seq_ps"
-  [(set (match_operand:CCV2 0 "register_operand" "=z")
-	(unspec:CCV2 [(match_operand:V2SF 1 "register_operand" "f")
-		      (match_operand:V2SF 2 "register_operand" "f")] 
-		     UNSPEC_C_SEQ))]
-  "TARGET_PAIRED_SINGLE_FLOAT"
-  "c.seq.ps\t%Z0%1,%2"
-  [(set_attr "type" "fcmp")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "mips_c_ngl_ps"
-  [(set (match_operand:CCV2 0 "register_operand" "=z")
-	(unspec:CCV2 [(match_operand:V2SF 1 "register_operand" "f")
-		      (match_operand:V2SF 2 "register_operand" "f")] 
-		     UNSPEC_C_NGL))]
-  "TARGET_PAIRED_SINGLE_FLOAT"
-  "c.ngl.ps\t%Z0%1,%2"
-  [(set_attr "type" "fcmp")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "mips_c_lt_ps"
-  [(set (match_operand:CCV2 0 "register_operand" "=z")
-	(unspec:CCV2 [(match_operand:V2SF 1 "register_operand" "f")
-		      (match_operand:V2SF 2 "register_operand" "f")] 
-		     UNSPEC_C_LT))]
-  "TARGET_PAIRED_SINGLE_FLOAT"
-  "c.lt.ps\t%Z0%1,%2"
-  [(set_attr "type" "fcmp")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "mips_c_nge_ps"
-  [(set (match_operand:CCV2 0 "register_operand" "=z")
-	(unspec:CCV2 [(match_operand:V2SF 1 "register_operand" "f")
-		      (match_operand:V2SF 2 "register_operand" "f")] 
-		     UNSPEC_C_NGE))]
-  "TARGET_PAIRED_SINGLE_FLOAT"
-  "c.nge.ps\t%Z0%1,%2"
-  [(set_attr "type" "fcmp")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "mips_c_le_ps"
-  [(set (match_operand:CCV2 0 "register_operand" "=z")
-	(unspec:CCV2 [(match_operand:V2SF 1 "register_operand" "f")
-		      (match_operand:V2SF 2 "register_operand" "f")] 
-		     UNSPEC_C_LE))]
-  "TARGET_PAIRED_SINGLE_FLOAT"
-  "c.le.ps\t%Z0%1,%2"
-  [(set_attr "type" "fcmp")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "mips_c_ngt_ps"
-  [(set (match_operand:CCV2 0 "register_operand" "=z")
-	(unspec:CCV2 [(match_operand:V2SF 1 "register_operand" "f")
-		      (match_operand:V2SF 2 "register_operand" "f")] 
-		     UNSPEC_C_NGT))]
-  "TARGET_PAIRED_SINGLE_FLOAT"
-  "c.ngt.ps\t%Z0%1,%2"
-  [(set_attr "type" "fcmp")
-   (set_attr "mode" "FPSW")])
-
-;----------------------------------------------------------------------------
-; Floating Point Absolute Comparisions for Paired Singles
-;----------------------------------------------------------------------------
-(define_insn "mips_cabs_f_ps"
-  [(set (match_operand:CCV2 0 "register_operand" "=z")
-	(unspec:CCV2 [(match_operand:V2SF 1 "register_operand" "f")
-		      (match_operand:V2SF 2 "register_operand" "f")] 
-		     UNSPEC_CABS_F))]
+		      (match_operand:V2SF 2 "register_operand" "f")
+		      (match_operand 3 "const_int_operand" "")]
+		     UNSPEC_CABS))]
   "TARGET_MIPS3D"
-  "cabs.f.ps\t%Q0,%1,%2"
+  "cabs.%Y3.ps\t%0,%1,%2"
   [(set_attr "type" "fcmp")
    (set_attr "mode" "FPSW")])
 
-(define_insn "mips_cabs_un_ps"
-  [(set (match_operand:CCV2 0 "register_operand" "=z")
-	(unspec:CCV2 [(match_operand:V2SF 1 "register_operand" "f")
-		      (match_operand:V2SF 2 "register_operand" "f")] 
-		     UNSPEC_CABS_UN))]
-  "TARGET_MIPS3D"
-  "cabs.un.ps\t%Q0,%1,%2"
-  [(set_attr "type" "fcmp")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "mips_cabs_eq_ps"
-  [(set (match_operand:CCV2 0 "register_operand" "=z")
-	(unspec:CCV2 [(match_operand:V2SF 1 "register_operand" "f")
-		      (match_operand:V2SF 2 "register_operand" "f")] 
-		     UNSPEC_CABS_EQ))]
-  "TARGET_MIPS3D"
-  "cabs.eq.ps\t%Q0,%1,%2"
-  [(set_attr "type" "fcmp")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "mips_cabs_ueq_ps"
-  [(set (match_operand:CCV2 0 "register_operand" "=z")
-	(unspec:CCV2 [(match_operand:V2SF 1 "register_operand" "f")
-		      (match_operand:V2SF 2 "register_operand" "f")] 
-		     UNSPEC_CABS_UEQ))]
-  "TARGET_MIPS3D"
-  "cabs.ueq.ps\t%Q0,%1,%2"
-  [(set_attr "type" "fcmp")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "mips_cabs_olt_ps"
-  [(set (match_operand:CCV2 0 "register_operand" "=z")
-	(unspec:CCV2 [(match_operand:V2SF 1 "register_operand" "f")
-		      (match_operand:V2SF 2 "register_operand" "f")] 
-		     UNSPEC_CABS_OLT))]
-  "TARGET_MIPS3D"
-  "cabs.olt.ps\t%Q0,%1,%2"
-  [(set_attr "type" "fcmp")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "mips_cabs_ult_ps"
-  [(set (match_operand:CCV2 0 "register_operand" "=z")
-	(unspec:CCV2 [(match_operand:V2SF 1 "register_operand" "f")
-		      (match_operand:V2SF 2 "register_operand" "f")] 
-		     UNSPEC_CABS_ULT))]
-  "TARGET_MIPS3D"
-  "cabs.ult.ps\t%Q0,%1,%2"
-  [(set_attr "type" "fcmp")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "mips_cabs_ole_ps"
-  [(set (match_operand:CCV2 0 "register_operand" "=z")
-	(unspec:CCV2 [(match_operand:V2SF 1 "register_operand" "f")
-		      (match_operand:V2SF 2 "register_operand" "f")] 
-		     UNSPEC_CABS_OLE))]
-  "TARGET_MIPS3D"
-  "cabs.ole.ps\t%Q0,%1,%2"
-  [(set_attr "type" "fcmp")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "mips_cabs_ule_ps"
-  [(set (match_operand:CCV2 0 "register_operand" "=z")
-	(unspec:CCV2 [(match_operand:V2SF 1 "register_operand" "f")
-		      (match_operand:V2SF 2 "register_operand" "f")] 
-		     UNSPEC_CABS_ULE))]
-  "TARGET_MIPS3D"
-  "cabs.ule.ps\t%Q0,%1,%2"
-  [(set_attr "type" "fcmp")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "mips_cabs_sf_ps"
-  [(set (match_operand:CCV2 0 "register_operand" "=z")
-	(unspec:CCV2 [(match_operand:V2SF 1 "register_operand" "f")
-		      (match_operand:V2SF 2 "register_operand" "f")] 
-		     UNSPEC_CABS_SF))]
-  "TARGET_MIPS3D"
-  "cabs.sf.ps\t%Q0,%1,%2"
-  [(set_attr "type" "fcmp")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "mips_cabs_ngle_ps"
-  [(set (match_operand:CCV2 0 "register_operand" "=z")
-	(unspec:CCV2 [(match_operand:V2SF 1 "register_operand" "f")
-		      (match_operand:V2SF 2 "register_operand" "f")] 
-		     UNSPEC_CABS_NGLE))]
-  "TARGET_MIPS3D"
-  "cabs.ngle.ps\t%Q0,%1,%2"
-  [(set_attr "type" "fcmp")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "mips_cabs_seq_ps"
-  [(set (match_operand:CCV2 0 "register_operand" "=z")
-	(unspec:CCV2 [(match_operand:V2SF 1 "register_operand" "f")
-		      (match_operand:V2SF 2 "register_operand" "f")] 
-		     UNSPEC_CABS_SEQ))]
-  "TARGET_MIPS3D"
-  "cabs.seq.ps\t%Q0,%1,%2"
-  [(set_attr "type" "fcmp")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "mips_cabs_ngl_ps"
-  [(set (match_operand:CCV2 0 "register_operand" "=z")
-	(unspec:CCV2 [(match_operand:V2SF 1 "register_operand" "f")
-		      (match_operand:V2SF 2 "register_operand" "f")] 
-		     UNSPEC_CABS_NGL))]
-  "TARGET_MIPS3D"
-  "cabs.ngl.ps\t%Q0,%1,%2"
-  [(set_attr "type" "fcmp")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "mips_cabs_lt_ps"
-  [(set (match_operand:CCV2 0 "register_operand" "=z")
-	(unspec:CCV2 [(match_operand:V2SF 1 "register_operand" "f")
-		      (match_operand:V2SF 2 "register_operand" "f")] 
-		     UNSPEC_CABS_LT))]
-  "TARGET_MIPS3D"
-  "cabs.lt.ps\t%Q0,%1,%2"
-  [(set_attr "type" "fcmp")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "mips_cabs_nge_ps"
-  [(set (match_operand:CCV2 0 "register_operand" "=z")
-	(unspec:CCV2 [(match_operand:V2SF 1 "register_operand" "f")
-		      (match_operand:V2SF 2 "register_operand" "f")] 
-		     UNSPEC_CABS_NGE))]
-  "TARGET_MIPS3D"
-  "cabs.nge.ps\t%Q0,%1,%2"
-  [(set_attr "type" "fcmp")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "mips_cabs_le_ps"
-  [(set (match_operand:CCV2 0 "register_operand" "=z")
-	(unspec:CCV2 [(match_operand:V2SF 1 "register_operand" "f")
-		      (match_operand:V2SF 2 "register_operand" "f")] 
-		     UNSPEC_CABS_LE))]
-  "TARGET_MIPS3D"
-  "cabs.le.ps\t%Q0,%1,%2"
-  [(set_attr "type" "fcmp")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "mips_cabs_ngt_ps"
-  [(set (match_operand:CCV2 0 "register_operand" "=z")
-	(unspec:CCV2 [(match_operand:V2SF 1 "register_operand" "f")
-		      (match_operand:V2SF 2 "register_operand" "f")] 
-		     UNSPEC_CABS_NGT))]
-  "TARGET_MIPS3D"
-  "cabs.ngt.ps\t%Q0,%1,%2"
-  [(set_attr "type" "fcmp")
-   (set_attr "mode" "FPSW")])
 
 ;----------------------------------------------------------------------------
 ; Floating Point Branch Instructions.
@@ -1364,7 +394,7 @@
 		      (label_ref (match_operand 1 "" ""))
 		      (pc)))]
   "TARGET_MIPS3D"
-  "%*bc1any4t\t%Q0,%1%/"
+  "%*bc1any4t\t%0,%1%/"
   [(set_attr "type" "branch")
    (set_attr "mode" "none")])
 
@@ -1376,7 +406,7 @@
 		      (label_ref (match_operand 1 "" ""))
 		      (pc)))]
   "TARGET_MIPS3D"
-  "%*bc1any4f\t%Q0,%1%/"
+  "%*bc1any4f\t%0,%1%/"
   [(set_attr "type" "branch")
    (set_attr "mode" "none")])
 
@@ -1388,7 +418,7 @@
 		      (label_ref (match_operand 1 "" ""))
 		      (pc)))]
   "TARGET_MIPS3D"
-  "%*bc1any2t\t%Q0,%1%/"
+  "%*bc1any2t\t%0,%1%/"
   [(set_attr "type" "branch")
    (set_attr "mode" "none")])
 
@@ -1400,7 +430,7 @@
 		      (label_ref (match_operand 1 "" ""))
 		      (pc)))]
   "TARGET_MIPS3D"
-  "%*bc1any2f\t%Q0,%1%/"
+  "%*bc1any2f\t%0,%1%/"
   [(set_attr "type" "branch")
    (set_attr "mode" "none")])
 
