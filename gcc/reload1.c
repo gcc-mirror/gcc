@@ -849,9 +849,22 @@ reload (rtx first, int global)
 
   /* Spill any hard regs that we know we can't eliminate.  */
   CLEAR_HARD_REG_SET (used_spill_regs);
-  for (ep = reg_eliminate; ep < &reg_eliminate[NUM_ELIMINABLE_REGS]; ep++)
-    if (! ep->can_eliminate)
-      spill_hard_reg (ep->from, 1);
+  /* There can be multiple ways to eliminate a register;
+     they should be listed adjacently.
+     Elimination for any register fails only if all possible ways fail.  */
+  for (ep = reg_eliminate; ep < &reg_eliminate[NUM_ELIMINABLE_REGS]; )
+    {
+      int from = ep->from;
+      int can_eliminate = 0;
+      do
+	{
+          can_eliminate |= ep->can_eliminate;
+          ep++;
+	}
+      while (ep < &reg_eliminate[NUM_ELIMINABLE_REGS] && ep->from == from);
+      if (! can_eliminate)
+	spill_hard_reg (from, 1);
+    }
 
 #if HARD_FRAME_POINTER_REGNUM != FRAME_POINTER_REGNUM
   if (frame_pointer_needed)

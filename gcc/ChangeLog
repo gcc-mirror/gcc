@@ -1,3 +1,8 @@
+2004-02-25  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* reload1.c (reload): Only spill eliminable register with multiple
+	adjacent elimination alternatives if all alternatives fail.
+
 2004-02-25  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.c (arm_legitimate_index_p): For QImode the range of an offset
