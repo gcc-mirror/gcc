@@ -6132,6 +6132,9 @@ build_ptrmemfunc (type, pfn, force)
       if (TREE_CODE (pfn) != PTRMEM_CST && same_type_p (to_type, pfn_type))
 	return pfn;
 
+      if (TREE_SIDE_EFFECTS (pfn))
+	pfn = save_expr (pfn);
+
       if (flag_new_abi)
 	{
 	  /* Under the new ABI, the conversion is easy.  Just adjust

@@ -1253,8 +1253,8 @@ process_modifiers (parmtype)
   if (TYPE_READONLY (parmtype))
     OB_PUTC ('C');
   if (TREE_CODE (parmtype) == INTEGER_TYPE
-      && parmtype != char_type_node
-      && parmtype != wchar_type_node
+      && ! same_type_p (parmtype, char_type_node)
+      && ! same_type_p (parmtype, wchar_type_node)
       && (TYPE_MAIN_VARIANT (parmtype)
 	  == unsigned_type (TYPE_MAIN_VARIANT (parmtype)))
       && ! TYPE_FOR_JAVA (parmtype))

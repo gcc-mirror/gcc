@@ -1,3 +1,9 @@
+2000-08-23  Jason Merrill  <jason@redhat.com>
+
+	* typeck.c (build_ptrmemfunc): Save the input pmf.
+
+	* method.c (process_modifiers): Use same_type_p.
+
 2000-08-23  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (DECL_CLONED_FUNCTION_P): Check DECL_LANG_SPECIFIC.
