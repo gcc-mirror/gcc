@@ -4754,6 +4754,42 @@ the corresponding number of memory-to-memory @emph{sequences}.
 
 If you don't define this, a reasonable default is used.
 
+@findex MOVE_BY_PIECES_P
+@item MOVE_BY_PIECES_P (@var{size}, @var{alignment})
+A C expression used to determine whether @code{move_by_pieces} will be used to
+copy a chunk of memory, or whether some other block move mechanism
+will be used. Defaults to 1 if @code{move_by_pieces_ninsns} returns less
+than @code{MOVE_RATIO}.
+
+@findex MOVE_MAX_PIECES
+@item MOVE_MAX_PIECES
+A C expression used by @code{move_by_pieces} to determine the largest unit
+a load or store used to copy memory is. Defaults to @code{MOVE_MAX}.
+
+@findex USE_LOAD_POST_INCREMENT
+@item USE_LOAD_POST_INCREMENT (@var{mode})
+A C expression used to determine whether a load postincrement is
+a good thing for @code{move_by_pieces} to use for a given mode. Defaults
+to the value of @code{HAVE_POST_INCREMENT}.
+
+@findex USE_LOAD_PRE_INCREMENT
+@item USE_LOAD_PRE_INCREMENT (@var{mode})
+A C expression used to determine whether a load preincrement is
+a good thing for @code{move_by_pieces} to use for a given mode. Defaults
+to the value of @code{HAVE_PRE_INCREMENT}.
+
+@findex USE_STORE_POST_INCREMENT
+@item USE_STORE_POST_INCREMENT (@var{mode})
+A C expression used to determine whether a store postincrement is
+a good thing for @code{move_by_pieces} to use for a given mode. Defaults
+to the value of @code{HAVE_POST_INCREMENT}.
+
+@findex USE_STORE_PRE_INCREMENT
+@item USE_STORE_PRE_INCREMENT (@var{mode})
+This macro is used to determine whether a store preincrement is
+a good thing for @code{move_by_pieces} to use for a given mode. Defaults
+to the value of @code{HAVE_PRE_INCREMENT}.
+
 @findex NO_FUNCTION_CSE
 @item NO_FUNCTION_CSE
 Define this macro if it is as good or better to call a constant

@@ -1,3 +1,25 @@
+Thu Jan 21 14:18:04 EST 1999  Andrew MacLeod  <amacleod@cygnus.com>
+
+	* expr.c (MOVE_BY_PIECES_P): Define condition for deciding to use
+	move_by_pieces.
+	(MOVE_MAX_PIECES): Define maximum number of bytes to move at once.
+	(USE_LOAD_POST_INCREMENT, USE_LOAD_PRE_DECREMENT): Define defaults.
+	(USE_STORE_POST_INCREMENT, USE_STORE_PRE_DECREMENT): Define defaults.
+	(move_by_pieces): Use new macros.
+	(emit_block_move): Use new macros.
+	(clear_by_pieces): Use new macros.
+	(clear_storage): Use new macros.
+	(emit_push_insn): Use new macros.
+	(expand_expr): Use new macros.
+	* config/sh/sh.h (USE_LOAD_POST_INCREMENT, USE_LOAD_PRE_DECREMENT): 
+	Define.
+	(USE_STORE_POST_INCREMENT, USE_STORE_PRE_DECREMENT): Define.
+	(MOVE_BY_PIECES_P): Define based on alignment and TARGET_SMALLCODE.
+	(MOVE_MAX_PIECES): move 8 bytes on SH4.
+	* tm.texi(MOVE_BY_PIECES_P, MOVE_MAX_PIECES, USE_LOAD_POST_INCREMENT,
+	USE_LOAD_PRE_DECREMENT, USE_STORE_POST_INCREMENT, 
+	USE_STORE_PRE_DECREMENT): Describe new macros.
+
 Thu Jan 21 14:13:31 1999  Vladimir N. Makarov  <vmakarov@cygnus.com>
 
         * varasm.c (output_constant_pool): Use floor_log2 instead of

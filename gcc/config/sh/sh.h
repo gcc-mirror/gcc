@@ -1155,6 +1155,17 @@ extern struct rtx_def *sh_builtin_saveregs ();
 /*#define HAVE_POST_DECREMENT  1*/
 #define HAVE_PRE_DECREMENT   1
 
+#define USE_LOAD_POST_INCREMENT(mode)    ((mode == SImode || mode == DImode) \
+                                           ? 0 : 1)
+#define USE_LOAD_PRE_DECREMENT(mode)     0
+#define USE_STORE_POST_INCREMENT(mode)   0
+#define USE_STORE_PRE_DECREMENT(mode)    ((mode == SImode || mode == DImode) \
+                                           ? 0 : 1)
+
+#define MOVE_BY_PIECES_P(SIZE, ALIGN)  (move_by_pieces_ninsns (SIZE, ALIGN) \
+                                        < (TARGET_SMALLCODE ? 2 :           \
+                                           ((ALIGN >= 4) ? 16 : 2)))
+
 /* Macros to check register numbers against specific register classes.  */
 
 /* These assume that REGNO is a hard or pseudo reg number.
@@ -1508,6 +1519,10 @@ extern struct rtx_def *sh_builtin_saveregs ();
 /* Max number of bytes we can move from memory to memory
    in one reasonably fast instruction.  */
 #define MOVE_MAX 4
+
+/* Max number of bytes we want move_by_pieces to be able to copy
+   efficiently.  */
+#define MOVE_MAX_PIECES (TARGET_SH4 ? 8 : 4)
 
 /* Define if operations between registers always perform the operation
    on the full register even if a narrower mode is specified.  */
@@ -2071,8 +2086,6 @@ extern int rtx_equal_function_value_matters;
 extern struct rtx_def *fpscr_rtx;
 extern struct rtx_def *get_fpscr_rtx ();
 
-
-#define MOVE_RATIO (TARGET_SMALLCODE ? 2 : 16)
 
 /* Instructions with unfilled delay slots take up an extra two bytes for
    the nop in the delay slot.  */
