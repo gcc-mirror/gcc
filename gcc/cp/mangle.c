@@ -78,14 +78,11 @@
    CLASSTYPE_USE_TEMPLATE here because of tricky bugs in the parser
    that hard to distinguish A<T> from A, where A<T> is the type as
    instantiated outside of the template, and A is the type used
-   without parameters inside the template.  The logic here is
-   historical magic that apparently produces the right result.  */
+   without parameters inside the template.  */
 #define CLASSTYPE_TEMPLATE_ID_P(NODE)				      \
   (TYPE_LANG_SPECIFIC (NODE) != NULL 				      \
    && CLASSTYPE_TEMPLATE_INFO (NODE) != NULL                          \
-   && (PRIMARY_TEMPLATE_P (CLASSTYPE_TI_TEMPLATE (NODE))              \
-       || (TREE_CODE (CP_DECL_CONTEXT (CLASSTYPE_TI_TEMPLATE (NODE))) \
-           == FUNCTION_DECL)))
+   && (PRIMARY_TEMPLATE_P (CLASSTYPE_TI_TEMPLATE (NODE))))
 
 /* Things we only need one of.  This module is not reentrant.  */
 static struct globals
@@ -148,13 +145,12 @@ static int find_substitution PARAMS ((tree));
 
 static void write_mangled_name PARAMS ((tree));
 static void write_encoding PARAMS ((tree));
-static void write_name PARAMS ((tree));
+static void write_name PARAMS ((tree, int));
 static void write_unscoped_name PARAMS ((tree));
 static void write_unscoped_template_name PARAMS ((tree));
 static void write_nested_name PARAMS ((tree));
 static void write_prefix PARAMS ((tree));
 static void write_template_prefix PARAMS ((tree));
-static void write_component PARAMS ((tree));
 static void write_unqualified_name PARAMS ((tree));
 static void write_source_name PARAMS ((tree));
 static void write_number PARAMS ((unsigned HOST_WIDE_INT, int,
@@ -183,7 +179,7 @@ static void write_substitution PARAMS ((int));
 static int discriminator_for_local_entity PARAMS ((tree));
 static int discriminator_for_string_literal PARAMS ((tree, tree));
 static void write_discriminator PARAMS ((int));
-static void write_local_name PARAMS ((tree, tree));
+static void write_local_name PARAMS ((tree, tree, tree));
 static void dump_substitution_candidates PARAMS ((void));
 static const char *mangle_decl_string PARAMS ((tree));
 
@@ -630,7 +626,7 @@ write_encoding (decl)
       return;
     }
 
-  write_name (decl);
+  write_name (decl, /*ignore_local_scope=*/0);
   if (TREE_CODE (decl) == FUNCTION_DECL)
     {
       tree fn_type;
@@ -651,11 +647,18 @@ write_encoding (decl)
 /* <name> ::= <unscoped-name>
           ::= <unscoped-template-name> <template-args>
 	  ::= <nested-name>
-	  ::= <local-name>  */
+	  ::= <local-name>  
+
+   If IGNORE_LOCAL_SCOPE is non-zero, this production of <name> is
+   called from <local-name>, which mangles the enclosing scope
+   elsewhere and then uses this function to mangle just the part
+   underneath the function scope.  So don't use the <local-name>
+   production, to avoid an infinite recursion.  */
 
 static void
-write_name (decl)
+write_name (decl, ignore_local_scope)
      tree decl;
+     int ignore_local_scope;
 {
   tree context;
 
@@ -688,12 +691,44 @@ write_name (decl)
 	/* Everything else gets an <unqualified-name>.  */
 	write_unscoped_name (decl);
     }
-  /* Handle local names.  */
-  else if (TREE_CODE (context) == FUNCTION_DECL)
-    write_local_name (context, decl);
-  /* Other decls get a <nested-name> to encode their scope.  */
   else
-    write_nested_name (decl);
+    {
+      /* Handle local names, unless we asked not to (that is, invoked
+         under <local-name>, to handle only the part of the name under
+         the local scope).  */
+      if (!ignore_local_scope)
+        {
+	  /* Scan up the list of scope context, looking for a
+	     function.  If we find one, this entity is in local
+	     function scope.  local_entity tracks context one scope
+	     level down, so it will contain the element that's
+	     directly in that function's scope, either decl or one of
+	     its enclosing scopes.  */
+	  tree local_entity = decl;
+	  while (context != NULL && context != global_namespace)
+	    {
+	      /* Make sure we're always dealing with decls.  */
+	      if (context != NULL && TYPE_P (context))
+		context = TYPE_NAME (context);
+	      /* Is this a function?  */
+	      if (TREE_CODE (context) == FUNCTION_DECL)
+		{
+		  /* Yes, we have local scope.  Use the <local-name>
+		     production for the innermost function scope.  */
+		  write_local_name (context, local_entity, decl);
+		  return;
+		}
+	      /* Up one scope level.  */
+	      local_entity = context;
+	      context = CP_DECL_CONTEXT (context);
+	    }
+
+	  /* No local scope found?  Fall through to <nested-name>.  */
+	}
+
+      /* Other decls get a <nested-name> to encode their scope.  */
+      write_nested_name (decl);
+    }
 }
 
 /* <unscoped-name> ::= <unqualified-name>
@@ -737,7 +772,7 @@ write_unscoped_template_name (decl)
 
 /* Write the nested name, including CV-qualifiers, of DECL.
 
-   <nested-name> ::= N [<CV-qualifiers>] <prefix> <component> E  
+   <nested-name> ::= N [<CV-qualifiers>] <prefix> <unqualified-name> E  
                  ::= N [<CV-qualifiers>] <template-prefix> <template-args> E
 
    <CV-qualifiers> ::= [r] [V] [K]  */
@@ -773,12 +808,12 @@ write_nested_name (decl)
     {
       /* No, just use <prefix>  */
       write_prefix (DECL_CONTEXT (decl));
-      write_component (decl);
+      write_unqualified_name (decl);
     }
   write_char ('E');
 }
 
-/* <prefix> ::= <prefix> <component>
+/* <prefix> ::= <prefix> <unqualified-name>>
             ::= <template-prefix> <template-args>
 	    ::= # empty
 	    ::= <substitution>  */
@@ -803,6 +838,14 @@ write_prefix (node)
   if (DECL_P (node))
     /* Node is a decl.  */
     {
+      /* If this is a function decl, that means we've hit function
+	 scope, so this prefix must be for a local name.  In this
+	 case, we're under the <local-name> production, which encodes
+	 the enclosing function scope elsewhere.  So don't continue
+	 here.  */
+      if (TREE_CODE (node) == FUNCTION_DECL)
+	return;
+
       decl = node;
       decl_is_template_id (decl, &template_info);
     }
@@ -824,7 +867,7 @@ write_prefix (node)
     /* Not templated.  */
     {
       write_prefix (CP_DECL_CONTEXT (decl));
-      write_component (decl);
+      write_unqualified_name (decl);
     }
 
   add_substitution (node);
@@ -886,37 +929,9 @@ write_template_prefix (node)
     return;
 
   write_prefix (context);
-  write_component (decl);
+  write_unqualified_name (decl);
 
   add_substitution (substitution);
-}
-
-/* <component> ::= <unqualified-name>
-               ::= <local-name> */
-
-static void
-write_component (decl)
-     tree decl;
-{
-  MANGLE_TRACE_TREE ("component", decl);
-
-  switch (TREE_CODE (decl))
-    {
-    case TEMPLATE_DECL:
-    case NAMESPACE_DECL:
-    case VAR_DECL:
-    case TYPE_DECL:
-    case FUNCTION_DECL:
-    case FIELD_DECL:
-      if (TREE_CODE (CP_DECL_CONTEXT (decl)) == FUNCTION_DECL)
-	write_local_name (CP_DECL_CONTEXT (decl), decl);
-      else
-	write_unqualified_name (decl);
-      break;
-
-    default:
-      my_friendly_abort (2000509);
-    }
 }
 
 /* We don't need to handle thunks, vtables, or VTTs here.  Those are
@@ -1160,14 +1175,17 @@ write_discriminator (discriminator)
 
 /* Mangle the name of a function-scope entity.  FUNCTION is the
    FUNCTION_DECL for the enclosing function.  ENTITY is the decl for
-   the entity itself.
+   the entity itself.  LOCAL_ENTITY is the entity that's directly
+   scoped in FUNCTION_DECL, either ENTITY itself or an enclosing scope
+   of ENTITY.
 
      <local-name> := Z <function encoding> E <entity name> [<discriminator>]
                   := Z <function encoding> E s [<discriminator>]  */
 
 static void
-write_local_name (function, entity)
+write_local_name (function, local_entity, entity)
      tree function;
+     tree local_entity;
      tree entity;
 {
   MANGLE_TRACE_TREE ("local-name", entity);
@@ -1183,8 +1201,11 @@ write_local_name (function, entity)
     }
   else
     {
-      write_unqualified_name (entity);
-      write_discriminator (discriminator_for_local_entity (entity));
+      /* Now the <entity name>.  Let write_name know its being called
+	 from <local-name>, so it doesn't try to process the enclosing
+	 function scope again.  */
+      write_name (entity, /*ignore_local_scope=*/1);
+      write_discriminator (discriminator_for_local_entity (local_entity));
     }
 }
 
@@ -1540,7 +1561,7 @@ static void
 write_class_enum_type (type)
      tree type;
 {
-  write_name (TYPE_NAME (type));
+  write_name (TYPE_NAME (type), /*ignore_local_scope=*/0);
 }
 
 /* Non-terminal <template-args>.  ARGS is a TREE_VEC of template
@@ -1785,7 +1806,7 @@ write_template_template_arg (tree decl)
 
   if (find_substitution (decl))
     return;
-  write_name (decl);
+  write_name (decl, /*ignore_local_scope=*/0);
   add_substitution (decl);
 }
 
@@ -2219,6 +2240,6 @@ mangle_guard_variable (variable)
 {
   start_mangling ();
   write_string ("_ZGV");
-  write_name (variable);
+  write_name (variable, /*ignore_local_scope=*/0);
   return get_identifier (finish_mangling ());
 }
