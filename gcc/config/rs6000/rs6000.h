@@ -2009,6 +2009,6 @@ toc_section ()						\
   {"load_multiple_operation", {PARALLEL}},			\
   {"store_multiple_operation", {PARALLEL}},			\
   {"branch_comparison_operator", {EQ, NE, LE, LT, GE,		\
-				  LT, LEU, LTU, GEU, GTU}},	\
+				  GT, LEU, LTU, GEU, GTU}},	\
   {"scc_comparison_operator", {EQ, NE, LE, LT, GE,		\
-			       LT, LEU, LTU, GEU, GTU}},
+			       GT, LEU, LTU, GEU, GTU}},
