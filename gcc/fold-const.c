@@ -512,9 +512,9 @@ div_and_round_double (code, uns,
   short den[MAX_SHORTS], quo[MAX_SHORTS];
   register int i, j, work;
   register int carry = 0;
-  unsigned HOST_WIDE_INT lnum = lnum_orig;
+  HOST_WIDE_INT lnum = lnum_orig;
   HOST_WIDE_INT hnum = hnum_orig;
-  unsigned HOST_WIDE_INT lden = lden_orig;
+  HOST_WIDE_INT lden = lden_orig;
   HOST_WIDE_INT hden = hden_orig;
   int overflow = 0;
 
@@ -541,7 +541,8 @@ div_and_round_double (code, uns,
   if (hnum == 0 && hden == 0)
     {				/* single precision */
       *hquo = *hrem = 0;
-      *lquo = lnum / lden;	/* rounds toward zero since positive args */
+      /* This unsigned division rounds toward zero.  */
+      *lquo = lnum / (unsigned HOST_WIDE_INT) lden;
       goto finish_up;
     }
 
@@ -566,14 +567,14 @@ div_and_round_double (code, uns,
      We also have to require that we don't need more than three bytes
      to hold CARRY.  If we ever did need four bytes to hold it, we
      would lose part of it when computing WORK on the next round.  */
-  if (hden == 0 && ((lden << 8) >> 8) == lden)
+  if (hden == 0 && (((unsigned HOST_WIDE_INT) lden << 8) >> 8) == lden)
     {				/* simpler algorithm */
       /* hnum != 0 already checked.  */
       for (i = MAX_SHORTS - 1; i >= 0; i--)
 	{
 	  work = num[i] + (carry << 8);
-	  quo[i] = work / lden;
-	  carry = work % lden;
+	  quo[i] = work / (unsigned HOST_WIDE_INT) lden;
+	  carry = work % (unsigned HOST_WIDE_INT) lden;
 	}
     }
   else {			/* full double precision,
