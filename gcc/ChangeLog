@@ -1,3 +1,14 @@
+2000-12-12  Alexandre Oliva  <aoliva@redhat.com>
+
+	* configure.in: Simplify language enabling/disabling code.
+	* configure: Rebuilt.
+	* ch/config-lang.in (target_libs): Set.
+	(build_by_default): Set to no.
+	* cp/config-lang.in (target_libs): Set.
+	* f/config-lang.in (target_libs): Set.
+	* java/config-lang.in (target_libs): Set.
+	* objc/config-lang.in (target_libs): Set.
+
 2000-12-12  Neil Booth  <neil@daikokuya.demon.co.uk>
 
         * tradcpp.c (enum node_type): Add T_ERROR.

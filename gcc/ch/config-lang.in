@@ -1,5 +1,5 @@
 # Top level configure fragment for GNU CHILL.
-#   Copyright (C) 1994 Free Software Foundation, Inc.
+#   Copyright (C) 1994, 2000 Free Software Foundation, Inc.
 
 #This file is part of GNU CC.
 
@@ -36,3 +36,6 @@ diff_excludes="-x -x ch/chill.info*"
 
 outputs=ch/Makefile
 
+target_libs=target-libchill
+
+build_by_default=no

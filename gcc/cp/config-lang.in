@@ -1,5 +1,5 @@
 # Top level configure fragment for GNU C++.
-#   Copyright (C) 1994, 1995, 1997, 1998 Free Software Foundation, Inc.
+#   Copyright (C) 1994, 1995, 1997, 1998, 2000 Free Software Foundation, Inc.
 
 #This file is part of GNU CC.
 
@@ -33,3 +33,5 @@ compilers="cc1plus\$(exeext)"
 stagestuff="g++\$(exeext) g++-cross\$(exeext) cc1plus\$(exeext)"
 
 diff_excludes="-x parse.c -x parse.h"
+
+target_libs=${libstdcxx_version}

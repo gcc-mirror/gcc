@@ -1,5 +1,5 @@
 # Top level configure fragment for the GNU Objective-C Runtime Library.
-#   Copyright (C) 1997, 1998 Free Software Foundation, Inc.
+#   Copyright (C) 1997, 1998, 2000 Free Software Foundation, Inc.
 
 #This file is part of GNU CC.
 
@@ -33,3 +33,5 @@ compilers="cc1obj\$(exeext)"
 stagestuff=""
 
 diff_excludes="-x objc-parse.c -x objc-parse.y "
+
+target_libs=target-libobjc
