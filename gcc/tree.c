@@ -1363,12 +1363,23 @@ save_expr (expr)
      a constant, it will be more efficient to not make another SAVE_EXPR since
      it will allow better simplification and GCSE will be able to merge the
      computations if they actualy occur.  */
-  for (inner = t;
-       (TREE_CODE_CLASS (TREE_CODE (inner)) == '1'
-	|| (TREE_CODE_CLASS (TREE_CODE (inner)) == '2'
-	    && TREE_CONSTANT (TREE_OPERAND (inner, 1))));
-       inner = TREE_OPERAND (inner, 0))
-    ;
+  inner = t;
+  while (1)
+    {
+      if (TREE_CODE_CLASS (TREE_CODE (inner)) == '1')
+	inner = TREE_OPERAND (inner, 0);
+      else if (TREE_CODE_CLASS (TREE_CODE (inner)) == '2')
+	{
+	  if (TREE_CONSTANT (TREE_OPERAND (inner, 1)))
+	    inner = TREE_OPERAND (inner, 0);
+	  else if (TREE_CONSTANT (TREE_OPERAND (inner, 0)))
+	    inner = TREE_OPERAND (inner, 1);
+	  else
+	    break;
+	}
+      else
+	break;
+    }
 
   /* If the tree evaluates to a constant, then we don't want to hide that
      fact (i.e. this allows further folding, and direct checks for constants).
@@ -1377,7 +1388,8 @@ save_expr (expr)
      literal node.  */
   if (TREE_CONSTANT (inner)
       || (TREE_READONLY (inner) && ! TREE_SIDE_EFFECTS (inner))
-      || TREE_CODE (inner) == SAVE_EXPR || TREE_CODE (inner) == ERROR_MARK)
+      || TREE_CODE (inner) == SAVE_EXPR
+      || TREE_CODE (inner) == ERROR_MARK)
     return t;
 
   /* If T contains a PLACEHOLDER_EXPR, we must evaluate it each time, since
