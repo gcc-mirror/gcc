@@ -466,7 +466,7 @@ combine_strings (strings)
   nchars = wide_flag ? length / wchar_bytes : length;
 
   if (pedantic && nchars - 1 > nchars_max && c_language == clk_c)
-    pedwarn ("string length `%d' is greater than the minimum length `%d' ISO C%d is required to support",
+    pedwarn ("string length `%d' is greater than the length `%d' ISO C%d compilers are required to support",
 	     nchars - 1, nchars_max, flag_isoc99 ? 99 : 89);
 
   /* Create the array type for the string constant.

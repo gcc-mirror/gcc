@@ -1191,6 +1191,14 @@ library functions.  You should not refer to or test the definition of
 this macro unless you make very sure that programs will execute with the
 same effect regardless.
 
+@item __OPTIMIZE_SIZE__
+@findex __OPTIMIZE_SIZE__
+GNU CC defines this macro when optimizing for size with @samp{-Os}.  It
+causes certain GNU header files to define alternative macro definitions
+for some system library functions.  You should not refer to or test the
+definition of this macro unless you make very sure that programs will
+execute with the same effect regardless.
+
 @item __CHAR_UNSIGNED__
 @findex __CHAR_UNSIGNED__
 GNU C defines this macro if and only if the data type @code{char} is
