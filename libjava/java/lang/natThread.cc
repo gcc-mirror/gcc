@@ -250,6 +250,8 @@ java::lang::Thread::finish_ (void)
       _Jv_MutexUnlock (&t->interrupt_mutex);
     }
 
+  group->remove (this);
+
   _Jv_MonitorExit (this);
 }
 
