@@ -4820,6 +4820,7 @@ struct initializer_stack
   tree decl;
   char *asmspec;
   struct constructor_stack *constructor_stack;
+  tree elements;
   struct spelling *spelling;
   struct spelling *spelling_base;
   int spelling_size;
@@ -4854,6 +4855,7 @@ start_init (decl, asmspec_tree, top_level)
   p->require_constant_value = require_constant_value;
   p->require_constant_elements = require_constant_elements;
   p->constructor_stack = constructor_stack;
+  p->elements = constructor_elements;
   p->spelling = spelling;
   p->spelling_base = spelling_base;
   p->spelling_size = spelling_size;
@@ -4927,6 +4929,7 @@ finish_init ()
   require_constant_value = p->require_constant_value;
   require_constant_elements = p->require_constant_elements;
   constructor_stack = p->constructor_stack;
+  constructor_elements = p->elements;
   spelling = p->spelling;
   spelling_base = p->spelling_base;
   spelling_size = p->spelling_size;
