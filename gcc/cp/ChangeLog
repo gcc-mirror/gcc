@@ -1,3 +1,8 @@
+1998-10-29  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* pt.c (push_template_decl_real): Generalize check for incorrect
+	number of template parms.
+
 1998-10-29  Richard Henderson  <rth@cygnus.com>
 
 	* Makefile.in (cc1plus): Put CXX_OBJS, and thence @extra_cxx_objs@,
