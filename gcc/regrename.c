@@ -526,8 +526,11 @@ replace_reg_in_block (du, uid_ruid, def, reg_def, avail_reg)
      unsigned int avail_reg;
 {
   int du_idx, status = 1;
+  int last_replaced_insn;
   unsigned int r = REGNO (reg_def);
   rtx death_note;
+  rtx reg_notes;
+  rtx reg_use;
   rtx new_reg = gen_rtx_REG (GET_MODE (reg_def), avail_reg);
 
   rr_replace_reg (PATTERN (VARRAY_RTX (*uid_ruid, def)), reg_def, new_reg,
@@ -536,39 +539,64 @@ replace_reg_in_block (du, uid_ruid, def, reg_def, avail_reg)
   if (!status)
     return status;
 
-  death_note = find_reg_note (VARRAY_RTX (*uid_ruid, def), REG_DEAD, reg_def);
-  if (!death_note)
-    death_note = find_reg_note (VARRAY_RTX (*uid_ruid, def), REG_UNUSED,
-				reg_def);
+  death_note = 0;
+  /* This typically happens if a constraint check failed and the register
+     changes are being reversed. */
+  for (reg_notes = REG_NOTES (VARRAY_RTX (*uid_ruid, def));
+       reg_notes; reg_notes = XEXP (reg_notes, 1))
+    {
+      if (REG_NOTE_KIND (reg_notes) == REG_DEAD
+	  && REGNO (XEXP (reg_notes, 0)) == avail_reg)
+	death_note = reg_notes;
+    }
 
   if (death_note)
-    rr_replace_reg (death_note, reg_def, new_reg, 0,
-		    VARRAY_RTX (*uid_ruid, def), &status);
+    remove_note (VARRAY_RTX (*uid_ruid, def), death_note);
+  
+  /* The old destination is now dead if it is also a source. */
+  if (regno_use_in (r, PATTERN (VARRAY_RTX (*uid_ruid, def))))
+    REG_NOTES (VARRAY_RTX (*uid_ruid, def))
+      = gen_rtx_EXPR_LIST (REG_DEAD, reg_def,
+			   REG_NOTES (VARRAY_RTX (*uid_ruid,
+						  def)));
 
+  last_replaced_insn = 0;
+
+  /* Now replace in the uses. */
   for (du_idx = def + 1; du_idx < du->high_bound; du_idx++)
     {
-      rtx reg_use;
-      rtx new_reg;
-
       if (GET_RTX_CLASS (GET_CODE (VARRAY_RTX (*uid_ruid, du_idx))) != 'i')
 	continue;
 
       reg_use = regno_use_in (r, PATTERN (VARRAY_RTX (*uid_ruid, du_idx)));
+
       if (reg_use && TEST_BIT (du->uses[r], du_idx))
 	{
 	  new_reg = gen_rtx_REG (GET_MODE (reg_use), avail_reg);
+	  
 	  rr_replace_reg (PATTERN (VARRAY_RTX (*uid_ruid, du_idx)), reg_use,
 			  new_reg, SOURCE, VARRAY_RTX (*uid_ruid, du_idx),
 			  &status);
 	  death_note = find_reg_note (VARRAY_RTX (*uid_ruid, du_idx),
 				      REG_DEAD, reg_use);
-	  if (!death_note)
-	    death_note = find_reg_note (VARRAY_RTX (*uid_ruid, du_idx),
-					REG_UNUSED, reg_use);
 	  if (death_note)
-	    rr_replace_reg (death_note, reg_use, new_reg, 0,
-			    VARRAY_RTX (*uid_ruid, def), &status);
+	    {
+	      REG_NOTES (VARRAY_RTX (*uid_ruid, du_idx))
+		= gen_rtx_EXPR_LIST (REG_DEAD, new_reg,
+				     REG_NOTES (VARRAY_RTX (*uid_ruid,
+							    du_idx)));
+	      remove_note (VARRAY_RTX (*uid_ruid, du_idx),
+			   find_reg_note (VARRAY_RTX (*uid_ruid, du_idx),
+					  REG_DEAD, reg_use));
+	    }
+	}
 
+      /* This insn may contain shared rtl replaced in the previous iteration.
+	 Treat this equivalent to the rr_replace_reg case. */
+      if (TEST_BIT (du->uses[r], du_idx))
+	{
+	  last_replaced_insn = du_idx;
+	  
 	  SET_BIT (du->uses[avail_reg], du_idx);
 	  RESET_BIT (du->uses[r], du_idx);
 	  if (!status)
@@ -577,6 +605,27 @@ replace_reg_in_block (du, uid_ruid, def, reg_def, avail_reg)
 
       if (TEST_BIT (du->defs[r], du_idx))
 	break;
+    }
+
+  /* Add REG_DEAD note for replaced register at last use. */
+
+  if (last_replaced_insn)
+    {
+      new_reg = regno_use_in (avail_reg,
+			      PATTERN (VARRAY_RTX (*uid_ruid,
+						   last_replaced_insn)));
+      if (new_reg
+	  && ! find_reg_note (VARRAY_RTX (*uid_ruid, last_replaced_insn),
+				      REG_DEAD, new_reg))
+	{
+	  REG_NOTES (VARRAY_RTX (*uid_ruid, last_replaced_insn))
+	    = gen_rtx_EXPR_LIST (REG_DEAD, new_reg,
+				 REG_NOTES (VARRAY_RTX (*uid_ruid,
+							last_replaced_insn)));
+	  remove_note (VARRAY_RTX (*uid_ruid, last_replaced_insn),
+		       find_reg_note (VARRAY_RTX (*uid_ruid, last_replaced_insn),
+					    REG_DEAD, reg_use));
+	}
     }
 
   return status;
@@ -611,7 +660,7 @@ rr_replace_reg (x, reg_use, reg_sub, replace_type, insn, status)
 	  if (GET_MODE (x) == GET_MODE (reg_use))
 	    return reg_sub;
 	  else
-	    return gen_rtx_REG (GET_MODE (x), REGNO (reg_use));
+	    return gen_rtx_REG (GET_MODE (x), REGNO (reg_sub));
 	}
 
       return x;
