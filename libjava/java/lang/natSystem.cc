@@ -261,9 +261,9 @@ java::lang::System::init_properties (void)
   SET ("java.specification.name", "Java(tm) Language Specification");
   SET ("java.specification.vendor", "Sun Microsystems Inc.");
 
-  // FIXME: how to set these given location-independence?
+  // FIXME: how to set this given location-independence?
   // SET ("java.home", "FIXME");
-  // SET ("java.class.path", "FIXME");
+  
   SET ("file.encoding", default_file_encoding);
 
 #ifdef WIN32
@@ -295,6 +295,13 @@ java::lang::System::init_properties (void)
       SET ("os.version", "unknown");
     }
 #endif /* HAVE_UNAME */
+
+  char *classpath = ::getenv("CLASSPATH");
+  // FIXME: find libgcj.zip and append its path?
+  if (classpath != NULL)
+    SET ("java.class.path", classpath);
+  else
+    SET ("java.class.path", ".");
 
 #ifndef NO_GETUID
 #ifdef HAVE_PWD_H
