@@ -1,3 +1,10 @@
+2002-11-27  Richard Henderson  <rth@redhat.com>
+
+	* mkmap-symver.awk (BEGIN): Set sawsymbol false.
+	(nm && NF == 3): Set sawsymbol true.
+	(END): Exit if no symbols seen.
+	(output): Fix map syntax error if no globals for the version.
+
 Wed Nov 27 14:45:46 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 	* builtins.def (DEF_C99_BUILTIN): Fix.
