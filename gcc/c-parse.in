@@ -251,7 +251,6 @@ do {									\
 %type <ttype> CLASSNAME OBJECTNAME OBJC_STRING
 
 %type <ttype> superclass
-%type <itype> objc_try_catch_stmt objc_finally_block
 @@end_ifobjc
 
 %{
@@ -1515,7 +1514,7 @@ designator:
 	;
 
 nested_function:
-	  declarator
+	declarator
 		{ if (pedantic)
 		    pedwarn ("ISO C forbids nested functions");
 
@@ -1527,25 +1526,25 @@ nested_function:
 		      YYERROR1;
 		    }
 		}
-	   old_style_parm_decls save_location
+	old_style_parm_decls save_location
 		{ tree decl = current_function_decl;
 		  DECL_SOURCE_LOCATION (decl) = $4;
 		  store_parm_decls (); }
-/* This used to use compstmt_or_error.
-   That caused a bug with input `f(g) int g {}',
-   where the use of YYERROR1 above caused an error
-   which then was handled by compstmt_or_error.
-   There followed a repeated execution of that same rule,
-   which called YYERROR1 again, and so on.  */
-	  compstmt
+	/* This used to use compstmt_or_error.  That caused a bug with
+	   input `f(g) int g {}', where the use of YYERROR1 above caused
+	   an error which then was handled by compstmt_or_error.  There
+	   followed a repeated execution of that same rule, which called
+	   YYERROR1 again, and so on.  */
+	compstmt
 		{ tree decl = current_function_decl;
+		  add_stmt ($6);
 		  finish_function ();
 		  pop_function_context ();
 		  add_decl_stmt (decl); }
 	;
 
 notype_nested_function:
-	  notype_declarator
+	notype_declarator
 		{ if (pedantic)
 		    pedwarn ("ISO C forbids nested functions");
 
@@ -1557,18 +1556,18 @@ notype_nested_function:
 		      YYERROR1;
 		    }
 		}
-	  old_style_parm_decls save_location
+	old_style_parm_decls save_location
 		{ tree decl = current_function_decl;
 		  DECL_SOURCE_LOCATION (decl) = $4;
 		  store_parm_decls (); }
-/* This used to use compstmt_or_error.
-   That caused a bug with input `f(g) int g {}',
-   where the use of YYERROR1 above caused an error
-   which then was handled by compstmt_or_error.
-   There followed a repeated execution of that same rule,
-   which called YYERROR1 again, and so on.  */
-	  compstmt
+	/* This used to use compstmt_or_error.  That caused a bug with
+	   input `f(g) int g {}', where the use of YYERROR1 above caused
+	   an error which then was handled by compstmt_or_error.  There
+	   followed a repeated execution of that same rule, which called
+	   YYERROR1 again, and so on.  */
+	compstmt
 		{ tree decl = current_function_decl;
+		  add_stmt ($6);
 		  finish_function ();
 		  pop_function_context ();
 		  add_decl_stmt (decl); }
@@ -2029,7 +2028,7 @@ label_decl:
    It causes syntax errors to ignore to the next openbrace.  */
 compstmt_or_error:
 	  compstmt
-		{}
+		{ add_stmt ($1); }
 	| error compstmt
 	;
 
@@ -2060,8 +2059,7 @@ compstmt_primary_start:
         ;
 
 compstmt: compstmt_start compstmt_nostart
-		{ add_stmt (c_end_compound_stmt ($1, true));
-		  $$ = NULL_TREE; }
+		{ $$ = c_end_compound_stmt ($1, true); }
 	;
 
 if_prefix:
@@ -2226,37 +2224,27 @@ xexpr:
 /* Parse a single real statement, not including any labels.  */
 stmt:
 	  compstmt
-		{ stmt_count++; $$ = $1; }
+		{ stmt_count++; add_stmt ($1); }
 	| expr ';'
-		{ stmt_count++;
-		  $$ = c_expand_expr_stmt ($1); }
+		{ stmt_count++; c_expand_expr_stmt ($1); }
 	| c99_block_start select_or_iter_stmt
-                { add_stmt (c_end_compound_stmt ($1, flag_isoc99));
-		  $$ = NULL_TREE; }
+                { add_stmt (c_end_compound_stmt ($1, flag_isoc99)); }
 	| BREAK ';'
 	        { stmt_count++;
 		  if (!(c_in_iteration_stmt || c_in_case_stmt))
-		    {
-		      error ("break statement not within loop or switch");
-		      $$ = NULL_TREE;
-		    }
+		    error ("break statement not within loop or switch");
 		  else
-		    $$ = add_stmt (build_break_stmt ()); }
+		    add_stmt (build_break_stmt ()); }
 	| CONTINUE ';'
                 { stmt_count++;
 		  if (!c_in_iteration_stmt)
-		    {
-		      error ("continue statement not within a loop");
-		      $$ = NULL_TREE;
-		    }
+		    error ("continue statement not within a loop");
 		  else
-		    $$ = add_stmt (build_continue_stmt ()); }
+		    add_stmt (build_continue_stmt ()); }
 	| RETURN ';'
-                { stmt_count++;
-		  $$ = c_expand_return (NULL_TREE); }
+                { stmt_count++; c_expand_return (NULL_TREE); }
 	| RETURN expr ';'
-                { stmt_count++;
-		  $$ = c_expand_return ($2); }
+                { stmt_count++; c_expand_return ($2); }
 	| asm_stmt
 	| GOTO identifier ';'
 		{ tree decl;
@@ -2265,71 +2253,61 @@ stmt:
 		  if (decl != 0)
 		    {
 		      TREE_USED (decl) = 1;
-		      $$ = add_stmt (build_stmt (GOTO_EXPR, decl));
+		      add_stmt (build_stmt (GOTO_EXPR, decl));
 		    }
-		  else
-		    $$ = NULL_TREE;
 		}
 	| GOTO '*' expr ';'
 		{ if (pedantic)
 		    pedwarn ("ISO C forbids `goto *expr;'");
 		  stmt_count++;
 		  $3 = convert (ptr_type_node, $3);
-		  $$ = add_stmt (build_stmt (GOTO_EXPR, $3)); }
+		  add_stmt (build_stmt (GOTO_EXPR, $3)); }
 	| ';'
-		{ $$ = NULL_TREE; }
+		{ }
 @@ifobjc
 	| AT_THROW expr ';'
-		{ stmt_count++;
-		  $$ = objc_build_throw_stmt ($2);
-		}
+		{ stmt_count++; objc_build_throw_stmt ($2); }
 	| AT_THROW ';'
-		{ stmt_count++;
-		  $$ = objc_build_throw_stmt (NULL_TREE);
-		}
+		{ stmt_count++; objc_build_throw_stmt (NULL_TREE); }
 	| objc_try_catch_stmt
-		{ objc_build_finally_prologue (); }
-	  objc_finally_block
-		{ $$ = objc_build_try_catch_finally_stmt ($1, $3); }
-	| AT_SYNCHRONIZED '(' expr ')'
-		{ objc_build_synchronized_prologue ($3); }
-	  compstmt
-		{ $$ = objc_build_synchronized_epilogue (); }
+		{ }
+	| AT_SYNCHRONIZED '(' expr ')' save_location compstmt
+		{ stmt_count++; objc_build_synchronized ($5, $3, $6); }
+	;
+
+objc_catch_prefix:
+	AT_CATCH '(' parm ')'
+		{ objc_begin_catch_clause ($3); }
+	;
+
+objc_catch_clause:
+	  objc_catch_prefix '{' compstmt_nostart
+		{ objc_finish_catch_clause (); }
+	| objc_catch_prefix '{' error '}'
+		{ objc_finish_catch_clause (); }
+	;
+
+objc_opt_catch_list:
+	  /* empty */
+	| objc_opt_catch_list objc_catch_clause
+	;
+
+objc_try_catch_clause:
+	AT_TRY save_location compstmt
+		{ stmt_count++; objc_begin_try_stmt ($2, $3); }
+	objc_opt_catch_list
+	;
+
+objc_finally_clause:
+	AT_FINALLY save_location compstmt
+		{ objc_build_finally_clause ($2, $3); }
 	;
 
 objc_try_catch_stmt:
-	  objc_try_stmt
-		{ objc_build_try_epilogue (1); }
-	  objc_catch_list
-		{ objc_build_catch_epilogue (); $$ = 1; }
-	| objc_try_stmt
-		{ objc_build_try_epilogue (0); $$ = 0; }
-	;
-
-
-objc_try_stmt:
-	  AT_TRY
-		{ objc_build_try_prologue (); }
-	  compstmt
-	;
-
-objc_catch_list:
-	  objc_catch_list objc_catch_block
-	| objc_catch_block
-	;
-
-objc_catch_block:
-	  AT_CATCH '(' parm ')'
-		{ objc_build_catch_stmt ($3); }
-	  compstmt
-		{ stmt_count++; }
-	;
-
-objc_finally_block:
-	  AT_FINALLY compstmt
-	    { $$ = 1; }
-	| /* NULL */
-	    { $$ = 0; }
+	  objc_try_catch_clause
+		{ objc_finish_try_stmt (); }
+	| objc_try_catch_clause objc_finally_clause
+		{ objc_finish_try_stmt (); }
 @@end_ifobjc
 	;
 

@@ -2,11 +2,9 @@
    all uncaught exceptions.  */
 /* Developed by Ziemowit Laski <zlaski@apple.com>.  */
 
-/* { dg-options "-fobjc-exceptions -lobjc" } */
-/* { dg-do run { target *-*-darwin* } } */
+/* { dg-options "-fobjc-exceptions" } */
+/* { dg-do run } */
 
-#include <objc/objc.h>
-#include <objc/objc-runtime.h>
 #include <objc/Object.h>
 #include <stdio.h>
 
@@ -72,10 +70,6 @@ void test (Object* sendPort)
 		CHECK_IF(!sendPort);
 		CHECK_IF(!cleanupPorts);
 	}
-        @catch(Object *obj) { /* { dg-warning "Exception already handled by preceding .\\@catch\\(id\\)." } */
-                printf ("Exception caught by incorrect handler!\n");
-                CHECK_IF(0);
-        }
 }
 
 int main (void) {

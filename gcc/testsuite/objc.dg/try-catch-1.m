@@ -1,8 +1,6 @@
-/* Test if the compiler accepts @throw / @try..@catch..@finally 
-   syntax.  This will only be usable on MacOS X 10.3 and later,
-   but may be compiled on all targets.  */
+/* Test if the compiler accepts @throw / @try..@catch..@finally syntax.  */
 /* Developed by Ziemowit Laski <zlaski@apple.com>.  */
-/* { dg-options "-fnext-runtime -fobjc-exceptions" } */
+/* { dg-options "-fobjc-exceptions" } */
 /* { dg-do compile } */
 
 #include <objc/Object.h>

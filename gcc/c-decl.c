@@ -71,10 +71,13 @@ enum decl_context
 
 /* Nonzero if we have seen an invalid cross reference
    to a struct, union, or enum, but not yet printed the message.  */
-
 tree pending_invalid_xref;
+
 /* File and line to appear in the eventual error message.  */
 location_t pending_invalid_xref_location;
+
+/* True means we've initialized exception handling.  */
+bool c_eh_initialized_p;
 
 /* While defining an enum type, this is 1 plus the last enumerator
    constant value.  Note that will do not have to save this or `enum_overflow'
@@ -2982,8 +2985,6 @@ finish_decl (tree decl, tree init, tree asmspec_tree)
       tree attr = lookup_attribute ("cleanup", DECL_ATTRIBUTES (decl));
       if (attr)
 	{
-	  static bool eh_initialized_p;
-
 	  tree cleanup_id = TREE_VALUE (TREE_VALUE (attr));
 	  tree cleanup_decl = lookup_name (cleanup_id);
 	  tree cleanup;
@@ -2998,9 +2999,9 @@ finish_decl (tree decl, tree init, tree asmspec_tree)
 	  TREE_USED (cleanup_decl) = 1;
 
 	  /* Initialize EH, if we've been told to do so.  */
-	  if (flag_exceptions && !eh_initialized_p)
+	  if (flag_exceptions && !c_eh_initialized_p)
 	    {
-	      eh_initialized_p = true;
+	      c_eh_initialized_p = true;
 	      eh_personality_libfunc
 		= init_one_libfunc (USING_SJLJ_EXCEPTIONS
 				    ? "__gcc_personality_sj0"

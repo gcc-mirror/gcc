@@ -39,16 +39,13 @@ void finish_method_def (void);
 tree start_protocol (enum tree_code, tree, tree);
 void finish_protocol (tree);
 
-tree objc_build_throw_stmt (tree);
-tree objc_build_try_catch_finally_stmt (int, int);
-void objc_build_synchronized_prologue (tree);
-tree objc_build_synchronized_epilogue (void);
-tree objc_build_try_prologue (void);
-void objc_build_try_epilogue (int);
-void objc_build_catch_stmt (tree);
-void objc_build_catch_epilogue (void);
-tree objc_build_finally_prologue (void);
-tree objc_build_finally_epilogue (void);
+void objc_build_throw_stmt (tree);
+void objc_begin_try_stmt (location_t, tree);
+void objc_begin_catch_clause (tree);
+void objc_finish_catch_clause (void);
+void objc_build_finally_clause (location_t, tree);
+void objc_finish_try_stmt (void);
+void objc_build_synchronized (location_t, tree, tree);
 
 tree is_ivar (tree, tree);
 int is_private (tree);
@@ -282,7 +279,6 @@ enum objc_tree_index
     OCTI_LOCAL_EXCEPTION_DECL,
     OCTI_RETHROW_EXCEPTION_DECL,
     OCTI_EVAL_ONCE_DECL,
-    OCTI_EXCEPTION_BLK_STACK,
     OCTI_CATCH_TYPE,
 
     OCTI_MAX
@@ -402,8 +398,6 @@ extern GTY(()) tree objc_global_trees[OCTI_MAX];
 #define objc_caught_exception	objc_global_trees[OCTI_LOCAL_EXCEPTION_DECL]	
 #define objc_rethrow_exception	objc_global_trees[OCTI_RETHROW_EXCEPTION_DECL]	
 #define objc_eval_once		objc_global_trees[OCTI_EVAL_ONCE_DECL]	
-#define objc_exception_block_stack		\
-				objc_global_trees[OCTI_EXCEPTION_BLK_STACK]
 #define objc_catch_type		objc_global_trees[OCTI_CATCH_TYPE]
 
 #define objc_method_template	objc_global_trees[OCTI_METH_TEMPL]

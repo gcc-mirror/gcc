@@ -863,6 +863,10 @@ c_common_handle_option (size_t scode, const char *arg, int value)
       flag_objc_exceptions = value;
       break;
 
+    case OPT_fobjc_sjlj_exceptions:
+      flag_objc_sjlj_exceptions = value;
+      break;
+
     case OPT_foperator_names:
       cpp_opts->operator_names = value;
       break;
@@ -1108,6 +1112,12 @@ c_common_post_options (const char **pfilename)
       flag_inline_trees = 2;
       flag_inline_functions = 0;
     }
+
+  /* Default to ObjC sjlj exception handling if NeXT runtime.  */
+  if (flag_objc_sjlj_exceptions < 0)
+    flag_objc_sjlj_exceptions = flag_next_runtime;
+  if (flag_objc_exceptions && !flag_objc_sjlj_exceptions)
+    flag_exceptions = 1;
 
   /* -Wextra implies -Wsign-compare, but not if explicitly
       overridden.  */

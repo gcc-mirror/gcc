@@ -63,6 +63,8 @@ Boston, MA 02111-1307, USA.  */
 #include "target.h"
 #include "diagnostic.h"
 #include "cgraph.h"
+#include "tree-iterator.h"
+#include "libfuncs.h"
 
 /* This is the default way of generating a method name.  */
 /* I am not sure it is really correct.
@@ -134,13 +136,7 @@ static void build_selector_translation_table (void);
 static tree objc_add_static_instance (tree, tree);
 
 static void build_objc_exception_stuff (void);
-static tree objc_declare_variable (enum rid, tree, tree, tree);
-static tree objc_enter_block (void);
-static tree objc_exit_block (void);
-static void objc_build_try_enter_fragment (void);
-static void objc_build_try_exit_fragment (void);
-static void objc_build_extract_fragment (void);
-static tree objc_build_extract_expr (void);
+static void build_next_objc_exception_stuff (void);
 
 static tree build_ivar_template (void);
 static tree build_method_template (void);
@@ -365,23 +361,6 @@ static const char *default_constant_string_class_name;
 #define TAG_RETURN_STRUCT		"objc_return_struct"
 
 #define UTAG_EXCDATA			"_objc_exception_data"
-#define UTAG_EXCDATA_VAR		"_stackExceptionData"
-#define UTAG_CAUGHTEXC_VAR		"_caughtException"
-#define UTAG_RETHROWEXC_VAR		"_rethrowException"
-#define UTAG_EVALONCE_VAR		"_eval_once"
-
-struct val_stack {
-  long val;
-  struct val_stack *next;
-};
-static struct val_stack *catch_count_stack, *exc_binding_stack;
-
-/* useful for debugging */
-static int if_nesting_count;
-static int blk_nesting_count;
-
-static void val_stack_push (struct val_stack **, long);
-static void val_stack_pop (struct val_stack **);
 
 /* The OCTI_... enumeration itself is in objc/objc-act.h.  */
 tree objc_global_trees[OCTI_MAX];
@@ -626,6 +605,20 @@ lookup_protocol_in_reflist (tree rproto_list, tree lproto)
   return 0;
 }
 
+/* Return true if TYPE is 'id'.  */
+
+static bool
+objc_is_object_id (tree type)
+{
+  return OBJC_TYPE_NAME (type) == objc_object_id;
+}
+
+static bool
+objc_is_class_id (tree type)
+{
+  return OBJC_TYPE_NAME (type) == objc_class_id;
+}
+
 /* Return 1 if LHS and RHS are compatible types for assignment or
    various other operations.  Return 0 if they are incompatible, and
    return -1 if we choose to not decide (because the types are really
@@ -777,12 +770,12 @@ objc_comptypes (tree lhs, tree rhs, int reflexive)
 	      return 1;
 	    }
 	  /* <Protocol> = id */
-	  else if (OBJC_TYPE_NAME (TREE_TYPE (rhs)) == objc_object_id)
+	  else if (objc_is_object_id (TREE_TYPE (rhs)))
 	    {
 	      return 1;
 	    }
 	  /* <Protocol> = Class */
-	  else if (OBJC_TYPE_NAME (TREE_TYPE (rhs)) == objc_class_id)
+	  else if (objc_is_class_id (TREE_TYPE (rhs)))
 	    {
 	      return 0;
 	    }
@@ -854,12 +847,12 @@ objc_comptypes (tree lhs, tree rhs, int reflexive)
 		return 0;
 	    }
 	  /* id = <Protocol> */
-	  else if (OBJC_TYPE_NAME (TREE_TYPE (lhs)) == objc_object_id)
+	  else if (objc_is_object_id (TREE_TYPE (lhs)))
 	    {
 	      return 1;
 	    }
 	  /* Class = <Protocol> */
-	  else if (OBJC_TYPE_NAME (TREE_TYPE (lhs)) == objc_class_id)
+	  else if (objc_is_class_id (TREE_TYPE (lhs)))
 	    {
 	      return 0;
 	    }
@@ -892,16 +885,14 @@ objc_comptypes (tree lhs, tree rhs, int reflexive)
      'Object *o = [[Object alloc] init]; falls
      in the case <class> * = `id'.
   */
-  if ((OBJC_TYPE_NAME (lhs) == objc_object_id && TYPED_OBJECT (rhs))
-      || (OBJC_TYPE_NAME (rhs) == objc_object_id && TYPED_OBJECT (lhs)))
+  if ((objc_is_object_id (lhs) && TYPED_OBJECT (rhs))
+      || (objc_is_object_id (rhs) && TYPED_OBJECT (lhs)))
     return 1;
 
   /* `id' = `Class', `Class' = `id' */
 
-  else if ((OBJC_TYPE_NAME (lhs) == objc_object_id
-	    && OBJC_TYPE_NAME (rhs) == objc_class_id)
-	   || (OBJC_TYPE_NAME (lhs) == objc_class_id
-	       && OBJC_TYPE_NAME (rhs) == objc_object_id))
+  else if ((objc_is_object_id (lhs) && objc_is_class_id (rhs))
+	   || (objc_is_class_id (lhs) && objc_is_object_id (rhs)))
     return 1;
 
   /* `Class' != `<class> *' && `<class> *' != `Class'!  */
@@ -1273,8 +1264,9 @@ synth_module_prologue (void)
     = builtin_function (TAG_GETMETACLASS, temp_type, 0, NOT_BUILT_IN, NULL, NULL_TREE);
 
   build_super_template ();
+  build_objc_exception_stuff ();
   if (flag_next_runtime)
-    build_objc_exception_stuff ();
+    build_next_objc_exception_stuff ();
 
   /* static SEL _OBJC_SELECTOR_TABLE[]; */
 
@@ -2682,563 +2674,561 @@ get_class_ivars (tree interface, int raw)
 }
 
 static tree
-objc_enter_block (void)
-{
-  tree block;
-
-#ifdef OBJCPLUS
-  block = begin_compound_stmt (0);
-#else
-  block = c_begin_compound_stmt (1);
-#endif
-
-  objc_exception_block_stack = tree_cons (NULL_TREE, block,
-					  objc_exception_block_stack);
-
-  blk_nesting_count++;
-  return block;
-}
-
-static tree
-objc_exit_block (void)
-{
-  tree block = TREE_VALUE (objc_exception_block_stack);
-  objc_exception_block_stack = TREE_CHAIN (objc_exception_block_stack);	
-
-  objc_clear_super_receiver ();
-#ifdef OBJCPLUS
-  finish_compound_stmt (block);
-#else
-  block = c_end_compound_stmt (block, 1);
-#endif
-
-  blk_nesting_count--;
-  return block;
-}
-
-static tree
-objc_declare_variable (enum rid scspec, tree name, tree type, tree init)
+objc_create_temporary_var (tree type)
 {
   tree decl;
-
-  type = tree_cons (NULL_TREE, type,
-		    tree_cons (NULL_TREE, ridpointers[(int) scspec],
-			       NULL_TREE));
-  TREE_STATIC (type) = 1;
-  decl = start_decl (name, type, (init != NULL_TREE), NULL_TREE);
-  finish_decl (decl, init, NULL_TREE);
-  /* This prevents `unused variable' warnings when compiling with -Wall.  */
+ 
+  decl = build_decl (VAR_DECL, NULL_TREE, type);
   TREE_USED (decl) = 1;
   DECL_ARTIFICIAL (decl) = 1;
+  DECL_IGNORED_P (decl) = 1;
+  DECL_CONTEXT (decl) = current_function_decl;
+
   return decl;
 }
+
+/* Exception handling constructs.  We begin by having the parser do most
+   of the work and passing us blocks.  What we do next depends on whether
+   we're doing "native" exception handling or legacy Darwin setjmp exceptions.
+   We abstract all of this in a handful of appropriately named routines.  */
 
-tree
+/* Stack of open try blocks.  */
+
+struct objc_try_context
+{
+  struct objc_try_context *outer;
+
+  /* Statements (or statement lists) as processed by the parser.  */
+  tree try_body;
+  tree finally_body;
+
+  /* Some file position locations.  */
+  location_t try_locus;
+  location_t end_try_locus;
+  location_t end_catch_locus;
+  location_t finally_locus;
+  location_t end_finally_locus;
+
+  /* A STATEMENT_LIST of CATCH_EXPRs, appropriate for sticking into op1
+     of a TRY_CATCH_EXPR.  Even when doing Darwin setjmp.  */
+  tree catch_list;
+
+  /* The CATCH_EXPR of an open @catch clause.  */
+  tree current_catch;
+
+  /* The VAR_DECL holding the Darwin equivalent of EXC_PTR_EXPR.  */
+  tree caught_decl;
+  tree stack_decl;
+  tree rethrow_decl;
+};
+
+static struct objc_try_context *cur_try_context;
+
+/* This hook, called via lang_eh_runtime_type, generates a runtime object
+   that represents TYPE.  For Objective-C, this is just the class name.  */
+/* ??? Isn't there a class object or some such?  Is it easy to get?  */
+
+static tree
+objc_eh_runtime_type (tree type)
+{
+  return add_objc_string (OBJC_TYPE_NAME (TREE_TYPE (type)), class_names);
+}
+
+/* Initialize exception handling.  */
+
+static void
+objc_init_exceptions (void)
+{
+  static bool done = false;
+  if (done)
+    return;
+  done = true;
+
+  /* Why?  */
+  if (!flag_objc_exceptions)
+    warning ("use %<-fobjc-exceptions%> to enable Objective-C "
+	     "exception syntax");
+
+  if (!flag_objc_sjlj_exceptions)
+    {
+      c_eh_initialized_p = true;
+      eh_personality_libfunc
+	= init_one_libfunc (USING_SJLJ_EXCEPTIONS
+			    ? "__gnu_objc_personality_sj0"
+			    : "__gnu_objc_personality_v0");
+      using_eh_for_cleanups ();
+      lang_eh_runtime_type = objc_eh_runtime_type;
+    }
+}
+
+/* Build an EXC_PTR_EXPR, or the moral equivalent.  In the case of Darwin,
+   we'll arrange for it to be initialized (and associated with a binding)
+   later.  */
+
+static tree
+objc_build_exc_ptr (void)
+{
+  if (flag_objc_sjlj_exceptions)
+    {
+      tree var = cur_try_context->caught_decl;
+      if (!var)
+	{
+	  var = objc_create_temporary_var (id_type);
+	  cur_try_context->caught_decl = var;
+	}
+      return var;
+    }
+  else
+    return build (EXC_PTR_EXPR, id_type);
+}
+
+/* Build "objc_exception_try_exit(&_stack)".  */
+
+static tree
+next_sjlj_build_try_exit (void)
+{
+  tree t;
+  t = build_fold_addr_expr (cur_try_context->stack_decl);
+  t = tree_cons (NULL, t, NULL);
+  t = build_function_call (objc_exception_try_exit_decl, t);
+  return t;
+}
+
+/* Build
+	objc_exception_try_enter (&_stack);
+	if (_setjmp(&_stack.buf))
+	  ;
+	else
+	  ;
+   Return the COND_EXPR.  Note that the THEN and ELSE fields are left
+   empty, ready for the caller to fill them in.  */
+
+static tree
+next_sjlj_build_enter_and_setjmp (void)
+{
+  tree t, enter, sj, cond;
+
+  t = build_fold_addr_expr (cur_try_context->stack_decl);
+  t = tree_cons (NULL, t, NULL);
+  enter = build_function_call (objc_exception_try_enter_decl, t);
+
+  t = build_component_ref (cur_try_context->stack_decl,
+			   get_identifier ("buf"));
+  t = build_fold_addr_expr (t);
+  t = convert (ptr_type_node, t);
+  t = tree_cons (NULL, t, NULL);
+  sj = build_function_call (objc_setjmp_decl, t);
+
+  cond = build (COMPOUND_EXPR, TREE_TYPE (sj), enter, sj);
+  cond = lang_hooks.truthvalue_conversion (cond);
+
+  return build (COND_EXPR, void_type_node, cond, NULL, NULL);
+}
+
+/* Build
+	DECL = objc_exception_extract(&_stack);
+*/
+   
+static tree
+next_sjlj_build_exc_extract (tree decl)
+{
+  tree t;
+
+  t = build_fold_addr_expr (cur_try_context->stack_decl);
+  t = tree_cons (NULL, t, NULL);
+  t = build_function_call (objc_exception_extract_decl, t);
+  t = convert (TREE_TYPE (decl), t);
+  t = build (MODIFY_EXPR, void_type_node, decl, t);
+
+  return t;
+}
+
+/* Build
+	if (objc_exception_match(obj_get_class(TYPE), _caught)
+	  BODY
+	else if (...)
+	  ...
+	else
+	  {
+	    _rethrow = _caught;
+	    objc_exception_try_exit(&_stack);
+	  }
+   from the sequence of CATCH_EXPRs in the current try context.  */
+
+static tree
+next_sjlj_build_catch_list (void)
+{
+  tree_stmt_iterator i = tsi_start (cur_try_context->catch_list);
+  tree catch_seq, t;
+  tree *last = &catch_seq;
+  bool saw_id = false;
+
+  for (; !tsi_end_p (i); tsi_next (&i))
+    {
+      tree stmt = tsi_stmt (i);
+      tree type = CATCH_TYPES (stmt);
+      tree body = CATCH_BODY (stmt);
+
+      if (type == NULL)
+	{
+	  *last = body;
+	  saw_id = true;
+	  break;
+	}
+      else
+	{
+	  tree args, cond;
+
+	  if (type == error_mark_node)
+	    cond = error_mark_node;
+	  else
+	    {
+	      args = tree_cons (NULL, cur_try_context->caught_decl, NULL);
+	      t = get_class_reference (OBJC_TYPE_NAME (TREE_TYPE (type)));
+	      args = tree_cons (NULL, t, args);
+	      t = build_function_call (objc_exception_match_decl, args);
+	      cond = lang_hooks.truthvalue_conversion (t);
+	    }
+	  t = build (COND_EXPR, void_type_node, cond, body, NULL);
+	  SET_EXPR_LOCUS (t, EXPR_LOCUS (stmt));
+
+	  *last = t;
+	  last = &COND_EXPR_ELSE (t);
+	}
+    }
+
+  if (!saw_id)
+    {
+      t = build (MODIFY_EXPR, void_type_node, cur_try_context->rethrow_decl,
+		 cur_try_context->caught_decl);
+      annotate_with_locus (t, cur_try_context->end_catch_locus);
+      append_to_statement_list (t, last);
+
+      t = next_sjlj_build_try_exit ();
+      annotate_with_locus (t, cur_try_context->end_catch_locus);
+      append_to_statement_list (t, last);
+    }
+
+  return catch_seq;
+}
+
+/* Build a complete @try-@catch-@finally block for legacy Darwin setjmp
+   exception handling.  We aim to build:
+
+	{
+	  struct _objc_exception_data _stack;
+	  id volatile _rethrow = 0;
+	  try
+	    {
+	      objc_exception_try_enter (&_stack);
+	      if (_setjmp(&_stack.buf))
+	        {
+		  id _caught = objc_exception_extract(&_stack);
+		  objc_exception_try_enter (&_stack);
+		  if (_setjmp(&_stack.buf))
+		    _rethrow = objc_exception_extract(&_stack);
+		  else
+		    CATCH-LIST
+	        }
+	      else
+		TRY-BLOCK
+	    }
+	  finally
+	    {
+	      if (!_rethrow)
+		objc_exception_try_exit(&_stack);
+	      FINALLY-BLOCK
+	      if (_rethrow)
+		objc_exception_throw(_rethrow);
+	    }
+	}
+
+   If CATCH-LIST is empty, we can omit all of the block containing
+   "_caught" except for the setting of _rethrow.  Note the use of
+   a real TRY_FINALLY_EXPR here, which is not involved in EH per-se,
+   but handles goto and other exits from the block.  */
+
+static tree
+next_sjlj_build_try_catch_finally (void)
+{
+  tree rethrow_decl, stack_decl, t;
+  tree catch_seq, try_fin, bind;
+
+  /* Create the declarations involved.  */
+  t = xref_tag (RECORD_TYPE, get_identifier (UTAG_EXCDATA));
+  stack_decl = objc_create_temporary_var (t);
+  cur_try_context->stack_decl = stack_decl;
+
+  rethrow_decl = objc_create_temporary_var (id_type);
+  cur_try_context->rethrow_decl = rethrow_decl;
+  TREE_THIS_VOLATILE (rethrow_decl) = 1;
+  TREE_CHAIN (rethrow_decl) = stack_decl;
+
+  /* Build the outermost varible binding level.  */
+  bind = build (BIND_EXPR, void_type_node, rethrow_decl, NULL, NULL);
+  annotate_with_locus (bind, cur_try_context->try_locus);
+  TREE_SIDE_EFFECTS (bind) = 1;
+
+  /* Initialize rethrow_decl.  */
+  t = build (MODIFY_EXPR, void_type_node, rethrow_decl,
+	     convert (id_type, null_pointer_node));
+  annotate_with_locus (t, cur_try_context->try_locus);
+  append_to_statement_list (t, &BIND_EXPR_BODY (bind));
+
+  /* Build the outermost TRY_FINALLY_EXPR.  */
+  try_fin = build (TRY_FINALLY_EXPR, void_type_node, NULL, NULL);
+  annotate_with_locus (try_fin, cur_try_context->try_locus);
+  TREE_SIDE_EFFECTS (try_fin) = 1;
+  append_to_statement_list (try_fin, &BIND_EXPR_BODY (bind));
+
+  /* Create the complete catch sequence.  */
+  if (cur_try_context->catch_list)
+    {
+      tree caught_decl = objc_build_exc_ptr ();
+      catch_seq = build_stmt (BIND_EXPR, caught_decl, NULL, NULL);
+
+      t = next_sjlj_build_exc_extract (caught_decl);
+      append_to_statement_list (t, &BIND_EXPR_BODY (catch_seq));
+
+      t = next_sjlj_build_enter_and_setjmp ();
+      COND_EXPR_THEN (t) = next_sjlj_build_exc_extract (rethrow_decl);
+      COND_EXPR_ELSE (t) = next_sjlj_build_catch_list ();
+      append_to_statement_list (t, &BIND_EXPR_BODY (catch_seq));
+    }
+  else
+    catch_seq = next_sjlj_build_exc_extract (rethrow_decl);
+  annotate_with_locus (catch_seq, cur_try_context->end_try_locus);
+
+  /* Build the main register-and-try if statement.  */
+  t = next_sjlj_build_enter_and_setjmp ();
+  annotate_with_locus (t, cur_try_context->try_locus);
+  COND_EXPR_THEN (t) = catch_seq;
+  COND_EXPR_ELSE (t) = cur_try_context->try_body;
+  TREE_OPERAND (try_fin, 0) = t;
+
+  /* Build the complete FINALLY statement list.  */
+  t = next_sjlj_build_try_exit ();
+  t = build_stmt (COND_EXPR,
+		  lang_hooks.truthvalue_conversion (rethrow_decl),
+		  NULL, t);
+  annotate_with_locus (t, cur_try_context->finally_locus);
+  append_to_statement_list (t, &TREE_OPERAND (try_fin, 1));
+
+  append_to_statement_list (cur_try_context->finally_body,
+			    &TREE_OPERAND (try_fin, 1));
+
+  t = tree_cons (NULL, rethrow_decl, NULL);
+  t = build_function_call (objc_exception_throw_decl, t);
+  t = build_stmt (COND_EXPR,
+		  lang_hooks.truthvalue_conversion (rethrow_decl),
+		  t, NULL);
+  annotate_with_locus (t, cur_try_context->end_finally_locus);
+  append_to_statement_list (t, &TREE_OPERAND (try_fin, 1));
+
+  return bind;
+}
+
+/* Called just after parsing the @try and its associated BODY.  We now
+   must prepare for the tricky bits -- handling the catches and finally.  */
+
+void
+objc_begin_try_stmt (location_t try_locus, tree body)
+{
+  struct objc_try_context *c = xcalloc (1, sizeof (*c));
+  c->outer = cur_try_context;
+  c->try_body = body;
+  c->try_locus = try_locus;
+  c->end_try_locus = input_location;
+  cur_try_context = c;
+
+  objc_init_exceptions ();
+}
+
+/* Called just after parsing "@catch (parm)".  Open a binding level, 
+   enter PARM into the binding level, and initialize it.  Leave the
+   binding level open while the body of the compound statement is parsed.  */
+   
+void
+objc_begin_catch_clause (tree parm)
+{
+  tree compound, decl, type, t;
+
+  /* Begin a new scope that the entire catch clause will live in.  */
+  compound = c_begin_compound_stmt (1);
+
+  /* Turn the raw declarator/declspecs into a decl in the current scope.  */
+  decl = define_decl (TREE_VALUE (TREE_PURPOSE (parm)),
+		      TREE_PURPOSE (TREE_PURPOSE (parm)));
+
+  /* Since a decl is required here by syntax, don't warn if its unused.  */
+  /* ??? As opposed to __attribute__((unused))?  Anyway, this appears to
+     be what the previous objc implementation did.  */
+  TREE_USED (decl) = 1;
+
+  /* Verify that the type of the catch is valid.  It must be a pointer
+     to an Objective-C class, or "id" (which is catch-all).  */
+  type = TREE_TYPE (decl);
+  if (POINTER_TYPE_P (type) && objc_is_object_id (TREE_TYPE (type)))
+    type = NULL;
+  else if (!POINTER_TYPE_P (type) || !TYPED_OBJECT (TREE_TYPE (type)))
+    {
+      error ("@catch parameter is not a known Objective-C class type");
+      type = error_mark_node;
+    }
+  else if (cur_try_context->catch_list)
+    {
+      /* Examine previous @catch clauses and see if we've already
+	 caught the type in question.  */
+      tree_stmt_iterator i = tsi_start (cur_try_context->catch_list);
+      for (; !tsi_end_p (i); tsi_next (&i))
+	{
+	  tree stmt = tsi_stmt (i);
+	  t = CATCH_TYPES (stmt);
+	  if (t == error_mark_node)
+	    continue;
+	  if (!t || objc_comptypes (TREE_TYPE (t), TREE_TYPE (type), 0) == 1)
+	    {
+	      warning ("exception of type %<%T%> will be caught",
+		       TREE_TYPE (type));
+	      warning ("%H   by earlier handler for %<%T%>",
+		       EXPR_LOCUS (stmt), TREE_TYPE (t ? t : id_type));
+	      break;
+	    }
+	}
+    }
+
+  /* Record the data for the catch in the try context so that we can
+     finalize it later.  */
+  t = build_stmt (CATCH_EXPR, type, compound);
+  cur_try_context->current_catch = t;
+
+  /* Initialize the decl from the EXC_PTR_EXPR we get from the runtime.  */
+  t = objc_build_exc_ptr ();
+  t = convert (TREE_TYPE (decl), t);
+  t = build (MODIFY_EXPR, void_type_node, decl, t);
+  add_stmt (t);
+}
+
+/* Called just after parsing the closing brace of a @catch clause.  Close
+   the open binding level, and record a CATCH_EXPR for it.  */
+
+void
+objc_finish_catch_clause (void)
+{
+  tree c = cur_try_context->current_catch;
+  cur_try_context->current_catch = NULL;
+  cur_try_context->end_catch_locus = input_location;
+
+  CATCH_BODY (c) = c_end_compound_stmt (CATCH_BODY (c), 1);
+  append_to_statement_list (c, &cur_try_context->catch_list);
+}
+
+/* Called after parsing a @finally clause and its associated BODY.
+   Record the body for later placement.  */
+
+void
+objc_build_finally_clause (location_t finally_locus, tree body)
+{
+  cur_try_context->finally_body = body;
+  cur_try_context->finally_locus = finally_locus;
+  cur_try_context->end_finally_locus = input_location;
+}
+
+/* Called to finalize a @try construct.  */
+
+void
+objc_finish_try_stmt (void)
+{
+  struct objc_try_context *c = cur_try_context;
+  tree stmt;
+
+  if (c->catch_list == NULL && c->finally_body == NULL)
+    error ("`@try' without `@catch' or `@finally'");
+
+  /* If we're doing Darwin setjmp exceptions, build the big nasty.  */
+  if (flag_objc_sjlj_exceptions)
+    {
+      if (!cur_try_context->finally_body)
+	{
+	  cur_try_context->finally_locus = input_location;
+	  cur_try_context->end_finally_locus = input_location;
+	}
+      stmt = next_sjlj_build_try_catch_finally ();
+    }
+  else
+    {
+      /* Otherwise, nest the CATCH inside a FINALLY.  */
+      stmt = c->try_body;
+      if (c->catch_list)
+	{
+          stmt = build_stmt (TRY_CATCH_EXPR, stmt, c->catch_list);
+	  annotate_with_locus (stmt, cur_try_context->try_locus);
+	}
+      if (c->finally_body)
+	{
+	  stmt = build_stmt (TRY_FINALLY_EXPR, stmt, c->finally_body);
+	  annotate_with_locus (stmt, cur_try_context->try_locus);
+	}
+    }
+  add_stmt (stmt);
+
+  cur_try_context = c->outer;
+  free (c);
+}
+
+void
 objc_build_throw_stmt (tree throw_expr)
 {
   tree func_params;
 
-  if (!flag_objc_exceptions)
-    fatal_error ("Use `-fobjc-exceptions' to enable Objective-C exception syntax");
-
-  if (!throw_expr && objc_caught_exception)
-    throw_expr = TREE_VALUE (objc_caught_exception);
-
-  if (!throw_expr)
+  if (throw_expr == NULL)
     {
-      error ("`@throw;' (rethrow) used outside of a `@catch' block");
-      return error_mark_node;
-    }
-
-  func_params = tree_cons (NULL_TREE, throw_expr, NULL_TREE);
-
-  assemble_external (objc_exception_throw_decl);
-  return c_expand_expr_stmt (build_function_call (objc_exception_throw_decl,
-						  func_params));
-}
-
-static void
-val_stack_push (struct val_stack **nc, long val)
-{
-  struct val_stack *new_elem = xmalloc (sizeof (struct val_stack));
-  new_elem->val = val;
-  new_elem->next = *nc;
-  *nc = new_elem;
-}
-
-static void
-val_stack_pop (struct val_stack **nc)
-{
-  struct val_stack *old_elem = *nc;
-  *nc = old_elem->next;
-  free (old_elem);
-}
-
-static void
-objc_build_try_enter_fragment (void)
-{
-  /* objc_exception_try_enter(&_stackExceptionData);
-     if (!_setjmp(&_stackExceptionData.buf)) {  */
-
-  tree func_params, cond;
-
-  func_params
-    = tree_cons (NULL_TREE,
-		 build_unary_op (ADDR_EXPR,
-				 TREE_VALUE (objc_stack_exception_data),
-				 0),
-		 NULL_TREE);
-
-  assemble_external (objc_exception_try_enter_decl);
-  c_expand_expr_stmt (build_function_call
-		      (objc_exception_try_enter_decl, func_params));
-
-#ifdef OBJCPLUS
-  /* Um, C and C++ have very different statement construction functions.
-     Partly because different scoping rules are in effect, but partly 
-     because of how their parsers are constructed.  I highly recommend
-     simply constructing the statements by hand here.  You don't need
-     any of the ancilliary tracking necessary for user parsing bits anyway.  */
-#error
-#endif
-
-  c_begin_if_stmt ();
-  if_nesting_count++;
-  /* If <setjmp.h> has been included, the _setjmp prototype has
-     acquired a real, breathing type for its parameter.  Cast our
-     argument to that type.  */
-  func_params
-    = tree_cons (NULL_TREE,
-		 build_c_cast (TYPE_ARG_TYPES (TREE_TYPE (objc_setjmp_decl))
-			       ? TREE_VALUE (TYPE_ARG_TYPES (TREE_TYPE (objc_setjmp_decl)))
-			       : ptr_type_node,
-			       build_unary_op
-			       (ADDR_EXPR,
-				build_component_ref (TREE_VALUE (objc_stack_exception_data),
-						     get_identifier ("buf")), 0)),
-		 NULL_TREE);
-  assemble_external (objc_setjmp_decl);
-  cond = build_unary_op (TRUTH_NOT_EXPR,
-			 build_function_call (objc_setjmp_decl, func_params),
-			 0);
-  c_finish_if_cond (cond, 0, 0);
-  objc_enter_block ();
-}
-
-static tree
-objc_build_extract_expr (void)
-{
-  /*	... = objc_exception_extract(&_stackExceptionData);  */
-
-  tree func_params
-    = tree_cons (NULL_TREE,
-		 build_unary_op (ADDR_EXPR,
-				 TREE_VALUE (objc_stack_exception_data), 0),
-		 NULL_TREE);
-
-  assemble_external (objc_exception_extract_decl);
-  return build_function_call (objc_exception_extract_decl, func_params);
-}
-
-static void
-objc_build_try_exit_fragment (void)
-{
-  /* objc_exception_try_exit(&_stackExceptionData); */
-
-  tree func_params
-    = tree_cons (NULL_TREE,
-		 build_unary_op (ADDR_EXPR,
-				 TREE_VALUE (objc_stack_exception_data), 0),
-		 NULL_TREE);
-
-    assemble_external (objc_exception_try_exit_decl);
-    c_expand_expr_stmt (build_function_call (objc_exception_try_exit_decl,
-					     func_params));
-}
-
-static void
-objc_build_extract_fragment (void)
-{
-  /* } else {
-      _rethrowException = objc_exception_extract(&_stackExceptionData);
-     }  */
-
-  c_finish_then (objc_exit_block ());
-
-  c_begin_else (0);
-  objc_enter_block ();
-  c_expand_expr_stmt (build_modify_expr
-		      (TREE_VALUE (objc_rethrow_exception),
-		       NOP_EXPR,
-		       objc_build_extract_expr ()));
-  c_finish_else (objc_exit_block ());
-  c_finish_if_stmt (1);
-  if_nesting_count--;
-}
-
-tree
-objc_build_try_prologue (void)
-{
-  /* { // new scope
-       struct _objc_exception_data _stackExceptionData;
-       volatile id _rethrowException = nil;
-       { // begin TRY-CATCH scope
-         objc_exception_try_enter(&_stackExceptionData);
-	 if (!_setjmp(&_stackExceptionData.buf)) {  */
-
-  tree try_catch_block;
-
-  if (!flag_objc_exceptions)
-    fatal_error ("Use `-fobjc-exceptions' to enable Objective-C exception syntax");
-
-  objc_mark_locals_volatile ((void *)(exc_binding_stack
-				      ? exc_binding_stack->val
-				      : 0));
-  objc_enter_block ();
-  objc_stack_exception_data
-    = tree_cons (NULL_TREE,
-		 objc_declare_variable (RID_AUTO,
-					get_identifier (UTAG_EXCDATA_VAR),
-					xref_tag (RECORD_TYPE,
-						  get_identifier (UTAG_EXCDATA)),
-					NULL_TREE),
-		 objc_stack_exception_data);
-  objc_rethrow_exception = tree_cons (NULL_TREE,
-				      objc_declare_variable (RID_VOLATILE,
-							     get_identifier (UTAG_RETHROWEXC_VAR),
-							     id_type,
-							     build_int_2 (0, 0)),
-				      objc_rethrow_exception);
-
-  try_catch_block = objc_enter_block ();
-  val_stack_push (&exc_binding_stack, (long) get_current_scope ());
-  objc_build_try_enter_fragment ();
-
-  return try_catch_block;
-}
-
-void
-objc_build_try_epilogue (int also_catch_prologue)
-{
-  if (also_catch_prologue)
-    {
-      /* } else {
-	   register id _caughtException = objc_exception_extract( &_stackExceptionData);
-	   objc_exception_try_enter(&_stackExceptionData);
-	   if(!_setjmp(&_stackExceptionData.buf)) {
-	     if (0) {  */
-
-      c_finish_then (objc_exit_block ());
-    		
-      c_begin_else (0);
-      objc_enter_block ();
-      objc_caught_exception
-	= tree_cons (NULL_TREE,
-		     objc_declare_variable (RID_REGISTER,
-					    get_identifier (UTAG_CAUGHTEXC_VAR),
-					    id_type,
-					    objc_build_extract_expr ()),
-		     objc_caught_exception);
-      objc_build_try_enter_fragment ();
-      val_stack_push (&catch_count_stack, 1);
-      c_begin_if_stmt ();
-      if_nesting_count++;
-      c_finish_if_cond (boolean_false_node, 0, 0);
-      objc_enter_block ();
-
-      /* Start a new chain of @catch statements for this @try.  */
-      objc_catch_type = tree_cons (objc_catch_type, NULL_TREE, NULL_TREE);
-    }
-  else
-    {  /* !also_catch_prologue */
-
-      /* } else {
-	   _rethrowException = objc_exception_extract( &_stackExceptionData);
-	 }
-       }  */
-      objc_build_extract_fragment ();
-      objc_exit_block ();
-    }
-}
-
-void
-objc_build_catch_stmt (tree catch_expr)
-{
-  /* } else if (objc_exception_match(objc_get_class("SomeClass"), _caughtException)) {
-       register SomeClass *e = _caughtException;  */
-
-  tree cond, func_params, prev_catch, var_name, var_type;
-  int catch_id;
-
-#ifndef OBJCPLUS
-  /* Yet another C/C++ impedance mismatch.  */
-  catch_expr = TREE_PURPOSE (catch_expr);
-#endif
-
-  var_name = TREE_VALUE (catch_expr);
-  var_type = TREE_VALUE (TREE_PURPOSE (catch_expr));
-  if (TREE_CODE (var_name) == INDIRECT_REF)
-    var_name = TREE_OPERAND (var_name, 0);
-  if (TREE_CODE (var_type) == TYPE_DECL
-      || TREE_CODE (var_type) == POINTER_TYPE)
-    var_type = TREE_TYPE (var_type);
-  catch_id = (var_type == TREE_TYPE (id_type));
-
-  if (!flag_objc_exceptions)
-    fatal_error ("Use `-fobjc-exceptions' to enable Objective-C exception syntax");
-
-  if (!(catch_id || TYPED_OBJECT (var_type)))
-    fatal_error ("`@catch' parameter is not a known Objective-C class type");
-
-  /* Examine previous @catch clauses for the current @try block for
-     superclasses of the 'var_type' class.  */
-  for (prev_catch = objc_catch_type; TREE_VALUE (prev_catch);
-       prev_catch = TREE_CHAIN (prev_catch))
-    {
-      if (TREE_VALUE (prev_catch) == TREE_TYPE (id_type))
+      /* If we're not inside a @catch block, there is no "current
+	 exception" to be rethrown.  */
+      if (cur_try_context == NULL
+          || cur_try_context->current_catch == NULL)
 	{
-	  warning ("Exception already handled by preceding `@catch(id)'");
-	  break;
+	  error ("%<@throw%> (rethrow) used outside of a @catch block");
+	  return;
 	}
-      else if (!catch_id
-	       && objc_comptypes (TREE_VALUE (prev_catch), var_type, 0) == 1)
-	warning ("Exception of type `%s *' already handled by `@catch (%s *)'",
-		 IDENTIFIER_POINTER (OBJC_TYPE_NAME (var_type)),
-		 IDENTIFIER_POINTER (OBJC_TYPE_NAME (TREE_VALUE (prev_catch))));
+
+      /* Otherwise the object is still sitting in the EXC_PTR_EXPR
+	 value that we get from the runtime.  */
+      throw_expr = objc_build_exc_ptr ();
     }
 
-  objc_catch_type = tree_cons (NULL_TREE, var_type, objc_catch_type);
+  /* A throw is just a call to the runtime throw function with the
+     object as a parameter.  */
+  func_params = tree_cons (NULL, throw_expr, NULL);
+  add_stmt (build_function_call (objc_exception_throw_decl, func_params));
 
-  c_finish_then (objc_exit_block ());
-
-  c_begin_else (0);
-  catch_count_stack->val++;
-  c_begin_if_stmt ();
-  if_nesting_count++;
-
-  if (catch_id)
-    cond = integer_one_node;
-  else
-    {
-      cond = get_class_reference (OBJC_TYPE_NAME (var_type));
-	
-      func_params
-	= tree_cons (NULL_TREE, cond,
-		     tree_cons (NULL_TREE,
-				TREE_VALUE (objc_caught_exception),
-				NULL_TREE));
-      assemble_external (objc_exception_match_decl);
-      cond = build_function_call (objc_exception_match_decl, func_params);
-    }
-
-  c_finish_if_cond (cond, 0, 0);
-  objc_enter_block ();
-  objc_declare_variable (RID_REGISTER, var_name,
-			 build_pointer_type (var_type),
-			 TREE_VALUE (objc_caught_exception));
+  objc_init_exceptions ();
 }
 
 void
-objc_build_catch_epilogue (void)
+objc_build_synchronized (location_t start_locus, tree mutex, tree body)
 {
-  /*     } else {
-           _rethrowException = _caughtException;
-           objc_exception_try_exit(&_stackExceptionData);
-         }
-       } else {
-         _rethrowException = objc_exception_extract(&_stackExceptionData);
-       }
-     }
-   } // end TRY-CATCH scope
-  */
+  tree args, call;
 
-  c_finish_then (objc_exit_block ());
+  /* First lock the mutex.  */
+  mutex = save_expr (mutex);
+  args = tree_cons (NULL, mutex, NULL);
+  call = build_function_call (objc_sync_enter_decl, args);
+  annotate_with_locus (call, start_locus);
+  add_stmt (call);
 
-  c_begin_else (0);
-  objc_enter_block ();
-  c_expand_expr_stmt
-    (build_modify_expr
-     (TREE_VALUE (objc_rethrow_exception),
-      NOP_EXPR,
-      TREE_VALUE (objc_caught_exception)));
-  objc_build_try_exit_fragment ();	
-  objc_exit_block ();
-  while (catch_count_stack->val--)
-    {
-      /* FIXME.  Need to have the block of each else that was opened.  */
-      c_finish_else ((abort (), NULL)); /* close off all the nested ifs ! */
-      c_finish_if_stmt (1);
-      if_nesting_count--;
-    }
-  val_stack_pop (&catch_count_stack);
-  objc_caught_exception = TREE_CHAIN (objc_caught_exception);
+  /* Build the mutex unlock.  */
+  args = tree_cons (NULL, mutex, NULL);
+  call = build_function_call (objc_sync_exit_decl, args);
+  annotate_with_locus (call, input_location);
 
-  objc_build_extract_fragment ();
-
-  c_finish_else (objc_exit_block ());
-  c_finish_if_stmt (1);
-  if_nesting_count--;
-  objc_exit_block ();
-
-  /* Return to enclosing chain of @catch statements (if any).  */
-  while (TREE_VALUE (objc_catch_type))
-    objc_catch_type = TREE_CHAIN (objc_catch_type);
-  objc_catch_type = TREE_PURPOSE (objc_catch_type);
+  /* Put the that and the body in a TRY_FINALLY.  */
+  objc_begin_try_stmt (start_locus, body);
+  objc_build_finally_clause (input_location, call);
+  objc_finish_try_stmt ();
 }
 
-tree
-objc_build_finally_prologue (void)
-{
-  /* { // begin FINALLY scope
-       if (!_rethrowException) {
-         objc_exception_try_exit(&_stackExceptionData);
-       }  */
-
-  tree blk = objc_enter_block ();
-
-  c_begin_if_stmt ();
-  if_nesting_count++;
-
-  c_finish_if_cond (build_unary_op (TRUTH_NOT_EXPR,
-				    TREE_VALUE (objc_rethrow_exception), 0),
-		    0, 0);
-  objc_enter_block ();
-  objc_build_try_exit_fragment ();
-  c_finish_then (objc_exit_block ());
-  c_finish_if_stmt (1);
-  if_nesting_count--;
-
-  return blk;
-}
-
-tree
-objc_build_finally_epilogue (void)
-{
-  /*    if (_rethrowException) {
-	  objc_exception_throw(_rethrowException);
-	}
-      } // end FINALLY scope
-    } */
-
-  c_begin_if_stmt ();
-  if_nesting_count++;
-
-  c_finish_if_cond (TREE_VALUE (objc_rethrow_exception), 0, 0);
-  objc_enter_block ();
-  objc_build_throw_stmt (TREE_VALUE (objc_rethrow_exception));
-  c_finish_then (objc_exit_block ());
-  c_finish_if_stmt (1);
-  if_nesting_count--;
-
-  objc_exit_block ();
-  objc_rethrow_exception = TREE_CHAIN (objc_rethrow_exception);
-  objc_stack_exception_data = TREE_CHAIN (objc_stack_exception_data);
-
-  val_stack_pop (&exc_binding_stack);
-  return objc_exit_block ();
-}
-
-tree
-objc_build_try_catch_finally_stmt (int has_catch, int has_finally)
-{
-  /* NB: The operative assumption here is that TRY_FINALLY_EXPR will
-     deal with all exits from 'try_catch_blk' and route them through
-     'finally_blk'.  */
-  /* ??? This is all crock.  What the hell is this trying to do?  */
-  tree outer_blk = objc_build_finally_epilogue ();
-  tree prec_stmt = TREE_CHAIN (TREE_CHAIN (outer_blk));
-  tree try_catch_blk = TREE_CHAIN (prec_stmt), try_catch_expr;
-  tree finally_blk = TREE_CHAIN (try_catch_blk), finally_expr;
-  tree succ_stmt = TREE_CHAIN (finally_blk);
-  tree try_finally_stmt, try_finally_expr;
-
-  if (!flag_objc_exceptions)
-    fatal_error ("Use `-fobjc-exceptions' to enable Objective-C exception syntax");
-
-  /* It is an error to have a @try block without a @catch and/or @finally
-     (even though sensible code can be generated nonetheless).  */
-
-  if (!has_catch && !has_finally)
-    error ("`@try' without `@catch' or `@finally'");
-
-  /* We shall now do something truly disgusting.  We shall remove the
-     'try_catch_blk' and 'finally_blk' from the 'outer_blk' statement
-     chain, and replace them with a TRY_FINALLY_EXPR statement!  If
-     this doesn't work, we will have to learn (from Per/gcj) how to
-     construct the 'outer_blk' lazily.  */
-
-  TREE_CHAIN (try_catch_blk) = TREE_CHAIN (finally_blk) = NULL_TREE;
-  try_catch_expr = build1 (STMT_EXPR, void_type_node, try_catch_blk);
-  TREE_SIDE_EFFECTS (try_catch_expr) = 1;
-  finally_expr = build1 (STMT_EXPR, void_type_node, finally_blk);
-  TREE_SIDE_EFFECTS (finally_expr) = 1;
-  try_finally_expr = build (TRY_FINALLY_EXPR, void_type_node, try_catch_expr,
-			    finally_expr);
-  TREE_SIDE_EFFECTS (try_finally_expr) = 1;
-  try_finally_stmt = build_stmt (EXPR_STMT, try_finally_expr);
-  TREE_CHAIN (prec_stmt) = try_finally_stmt;
-  TREE_CHAIN (try_finally_stmt) = succ_stmt;
-  	
-  return outer_blk;  /* the whole enchilada */
-}
-
-void
-objc_build_synchronized_prologue (tree sync_expr)
-{
-  /* {
-       id _eval_once = <sync_expr>;
-       @try {
-              objc_sync_enter( _eval_once );  */
-
-  tree func_params;
-
-  if (!flag_objc_exceptions)
-    fatal_error ("Use `-fobjc-exceptions' to enable Objective-C exception syntax");
-
-  objc_enter_block ();
-  objc_eval_once
-    = tree_cons (NULL_TREE,
-		 objc_declare_variable (RID_AUTO,
-					get_identifier (UTAG_EVALONCE_VAR),
-					id_type,
-					sync_expr),
-		 objc_eval_once);
-  objc_build_try_prologue ();
-  objc_enter_block ();	
-  func_params = tree_cons (NULL_TREE,
-			   TREE_VALUE (objc_eval_once),
-			   NULL_TREE);
-
-  assemble_external (objc_sync_enter_decl);
-  c_expand_expr_stmt (build_function_call
-		      (objc_sync_enter_decl, func_params));
-}
-
-tree
-objc_build_synchronized_epilogue (void)
-{
-  /* }
-       @finally {
-         objc_sync_exit( _eval_once );
-       }
-     }  */
-
-  tree func_params;
-
-  objc_exit_block ();	
-  objc_build_try_epilogue (0);
-  objc_build_finally_prologue ();
-  func_params = tree_cons (NULL_TREE, TREE_VALUE (objc_eval_once),
-			   NULL_TREE);
-
-  assemble_external (objc_sync_exit_decl);
-  c_expand_expr_stmt (build_function_call (objc_sync_exit_decl,
-					   func_params));
-  objc_build_try_catch_finally_stmt (0, 1);
-
-  return objc_exit_block ();
-}
-
+
 /* Predefine the following data type:
 
    struct _objc_exception_data
@@ -3259,7 +3249,7 @@ objc_build_synchronized_epilogue (void)
 #endif
 
 static void
-build_objc_exception_stuff (void)
+build_next_objc_exception_stuff (void)
 {
   tree field_decl, field_decl_chain, index, temp_type;
 
@@ -3270,6 +3260,7 @@ build_objc_exception_stuff (void)
 
   write_symbols = NO_DEBUG;
   debug_hooks = &do_nothing_debug_hooks;
+
   objc_exception_data_template
     = start_struct (RECORD_TYPE, get_identifier (UTAG_EXCDATA));
 
@@ -3317,20 +3308,7 @@ build_objc_exception_stuff (void)
     = builtin_function (TAG_EXCEPTIONTRYENTER, temp_type, 0, NOT_BUILT_IN, NULL, NULL_TREE);
   objc_exception_try_exit_decl
     = builtin_function (TAG_EXCEPTIONTRYEXIT, temp_type, 0, NOT_BUILT_IN, NULL, NULL_TREE);
-  /* void objc_exception_throw(id) __attribute__((noreturn)); */
-  /* void objc_sync_enter(id); */
-  /* void objc_sync_exit(id); */
-  temp_type = build_function_type (void_type_node,
-				   tree_cons (NULL_TREE, id_type,
-					      void_list_node));
-  objc_exception_throw_decl
-    = builtin_function (TAG_EXCEPTIONTHROW, temp_type, 0, NOT_BUILT_IN, NULL, NULL_TREE);
-  DECL_ATTRIBUTES (objc_exception_throw_decl)
-    = tree_cons (get_identifier ("noreturn"), NULL_TREE, NULL_TREE);
-  objc_sync_enter_decl
-    = builtin_function (TAG_SYNCENTER, temp_type, 0, NOT_BUILT_IN, NULL, NULL_TREE);
-  objc_sync_exit_decl
-    = builtin_function (TAG_SYNCEXIT, temp_type, 0, NOT_BUILT_IN, NULL, NULL_TREE);
+
   /* int objc_exception_match(id, id); */
   temp_type = build_function_type (integer_type_node,
 				   tree_cons (NULL_TREE, id_type,
@@ -3342,6 +3320,32 @@ build_objc_exception_stuff (void)
   write_symbols = save_write_symbols;
   debug_hooks = save_hooks;
 }
+
+static void
+build_objc_exception_stuff (void)
+{
+  tree noreturn_list, nothrow_list, temp_type;
+
+  noreturn_list = tree_cons (get_identifier ("noreturn"), NULL, NULL);
+  nothrow_list = tree_cons (get_identifier ("nothrow"), NULL, NULL);
+
+  /* void objc_exception_throw(id) __attribute__((noreturn)); */
+  /* void objc_sync_enter(id); */
+  /* void objc_sync_exit(id); */
+  temp_type = build_function_type (void_type_node,
+				   tree_cons (NULL_TREE, id_type,
+					      void_list_node));
+  objc_exception_throw_decl
+    = builtin_function (TAG_EXCEPTIONTHROW, temp_type, 0, NOT_BUILT_IN, NULL,
+			noreturn_list);
+  objc_sync_enter_decl
+    = builtin_function (TAG_SYNCENTER, temp_type, 0, NOT_BUILT_IN,
+			NULL, nothrow_list);
+  objc_sync_exit_decl
+    = builtin_function (TAG_SYNCEXIT, temp_type, 0, NOT_BUILT_IN,
+			NULL, nothrow_list);
+}
+
 
 /* struct <classname> {
      struct objc_class *isa;

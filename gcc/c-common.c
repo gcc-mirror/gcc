@@ -361,6 +361,9 @@ int flag_nil_receivers = 1;
    @try, etc.) in source code.  */
 int flag_objc_exceptions = 0;
 
+/* Nonzero means that we generate NeXT setjmp based exceptions.  */
+int flag_objc_sjlj_exceptions = -1;
+
 /* Nonzero means that code generation will be altered to support
    "zero-link" execution.  This currently affects ObjC only, but may
    affect other languages in the future.  */

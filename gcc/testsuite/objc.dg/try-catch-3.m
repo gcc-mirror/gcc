@@ -3,7 +3,7 @@
 /* Author: Ziemowit Laski <zlaski@apple.com> */
 
 /* { dg-do compile } */
-/* { dg-options "-fnext-runtime -fobjc-exceptions" } */
+/* { dg-options "-fobjc-exceptions" } */
 
 #include <objc/Object.h>
 
