@@ -1,5 +1,15 @@
 2002-04-16  Richard Henderson  <rth@redhat.com>
 
+	* config/sparc/sol2-bi.h (AS_SPARC64_FLAG): New.
+	* config/sparc/sol2-gas-bi.h: New file.
+	* config.gcc (sparc*-solaris): Add it as needed.
+	* configure.in (AS_SPARC64_FLAG): Remove check.
+	* config.in, configure: Regenerate.
+
+	* config/sparc/sol2-bi.h (CC1_SPEC): Error for -m32 and -m64.
+
+2002-04-16  Richard Henderson  <rth@redhat.com>
+
 	* config/mips/mips.c (override_options): Don't override N32 for
 	a 64-bit ISA.
 

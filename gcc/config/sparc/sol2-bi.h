@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for bi-arch SPARC
-   running Solaris 2 using the system linker.  */
+   running Solaris 2 using the system assembler and linker.  */
 
 /* The default code model.  */
 #undef SPARC_DEFAULT_CMODEL
@@ -7,6 +7,8 @@
 
 #undef LONG_DOUBLE_TYPE_SIZE
 #define LONG_DOUBLE_TYPE_SIZE 128
+
+#define AS_SPARC64_FLAG	"-xarch=v9"
 
 #undef ASM_CPU32_DEFAULT_SPEC
 #define ASM_CPU32_DEFAULT_SPEC	""
