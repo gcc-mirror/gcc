@@ -1,3 +1,8 @@
+2003-06-27  Chris Demetriou  <cgd@broadcom.com>
+
+	* config/mips/mips.c (mips_build_va_list): Make padding in
+	va_list structure explicit to avoid -Wpadded warnings.
+
 2003-06-27  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.h (SECONDARY_OUTPUT_RELOAD_CLASS): Define.
