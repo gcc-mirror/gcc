@@ -171,7 +171,7 @@ objc_thread_id(void)
 {
   pthread_t self = pthread_self();
 
-  return (_objc_thread_t) self;	/* Return thread handle.    */
+  return (_objc_thread_t) pthread_getuniqe_np (&self);
 }
 
 /********
@@ -219,7 +219,7 @@ objc_mutex_allocate(void)
         free(mutex);                            /* Yes, free local memory.  */
         return NULL;                            /* Abort.                   */
     }
-    mutex->owner = -1;                          /* No owner.                */
+    mutex->owner = (_objc_thread_t) -1;         /* No owner.                */
     mutex->depth = 0;                           /* No locks.                */
     return mutex;                               /* Return mutex handle.     */
 }
@@ -256,7 +256,7 @@ objc_mutex_deallocate(_objc_mutex_t mutex)
 int
 objc_mutex_lock(_objc_mutex_t mutex)
 {
-    int         thread_id;                      /* Cache our thread id.     */
+    _objc_thread_t thread_id;                   /* Cache our thread id.     */
 
     if (!mutex)                                 /* Is argument bad?         */
         return -1;                              /* Yes, abort.              */
@@ -279,7 +279,7 @@ objc_mutex_lock(_objc_mutex_t mutex)
 int
 objc_mutex_trylock(_objc_mutex_t mutex)
 {
-    int         thread_id;                      /* Cache our thread id.     */
+    _objc_thread_t thread_id;                   /* Cache our thread id.     */
 
     if (!mutex)                                 /* Is argument bad?         */
         return -1;                              /* Yes, abort.              */
@@ -304,7 +304,7 @@ objc_mutex_trylock(_objc_mutex_t mutex)
 int
 objc_mutex_unlock(_objc_mutex_t mutex)
 {
-    int         thread_id;                      /* Cache our thread id.     */
+    _objc_thread_t thread_id;                   /* Cache our thread id.     */
     
     if (!mutex)                                 /* Is argument bad?         */
         return -1;                              /* Yes, abort.              */
@@ -314,7 +314,7 @@ objc_mutex_unlock(_objc_mutex_t mutex)
     if (mutex->depth > 1)                       /* Released last lock?      */
         return --mutex->depth;                  /* No, Decrement depth, end.*/
     mutex->depth = 0;                           /* Yes, reset depth to 0.   */
-    mutex->owner = -1;                          /* Set owner to "no thread".*/
+    mutex->owner = (_objc_thread_t) -1;         /* Set owner to "no thread".*/
     
     if (pthread_mutex_unlock(&mutex->lock) != 0)  /* Unlock system mutex.   */
         return -1;                              /* Failed, abort.           */
