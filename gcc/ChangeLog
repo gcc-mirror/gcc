@@ -1,3 +1,9 @@
+2003-05-03  Bruce Korb  <bkorb@gnu.org>
+
+	* gcc/fixinc/fixincl.tpl(dne): restore this to force merge conflicts
+	in fixincl.x
+	* gcc/fixinc/inclhack.def(bsd_stdio_attrs_conflict): fix placement
+
 2003-05-03  Aldy Hernandez  <aldyh@redhat.com>
 
         * config/rs6000/spe.h: Remove unecessary casts.  Misc cleanups.
