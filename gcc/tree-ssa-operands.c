@@ -290,6 +290,16 @@ init_ssa_operands (void)
 void
 fini_ssa_operands (void)
 {
+  ggc_free (build_defs);
+  ggc_free (build_uses);
+  ggc_free (build_v_may_defs);
+  ggc_free (build_vuses);
+  ggc_free (build_v_must_defs);
+  build_defs = NULL;
+  build_uses = NULL;
+  build_v_may_defs = NULL;
+  build_vuses = NULL;
+  build_v_must_defs = NULL;
 }
 
 

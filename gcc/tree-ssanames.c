@@ -155,6 +155,8 @@ init_ssanames (void)
 void
 fini_ssanames (void)
 {
+  ggc_free (ssa_names);
+  ssa_names = NULL;
   free_ssanames = NULL;
 }
 
