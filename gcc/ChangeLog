@@ -1,5 +1,18 @@
 2003-07-06  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* tree.h (default_flag_random_seed): Remove.
+	* toplev.h (local_tick): Declare.
+	* tree.c (flag_random_seed, default_flag_random_seed): Move to
+	toplev.c.
+	(append_random_chars): Don't call default_flag_random_seed.
+	* toplev.c (flag_random_seed): Define here. Set local_tick.
+	(local_tick): Define.
+	(randomize): New, moved from tree.c.
+	(print_switch_values): Adjust.
+	(toplev_main): Call randomize.
+
+2003-07-06  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* tree.h (crc32_string): Declare.
 	* tree.c (append_random_chars): Remove.
 	(crc32_string): New.

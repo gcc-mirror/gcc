@@ -463,6 +463,14 @@ int mem_report = 0;
    and to print them when we are done.  */
 int flag_detailed_statistics = 0;
 
+/* A random sequence of characters, unless overridden by user. */
+const char *flag_random_seed;
+
+/* A local time stamp derived from the time of compilation. It will be
+   zero if the system cannot provide a time.  It will be -1u, if the
+   user has specified a particular random seed.  */
+unsigned local_tick;
+
 /* -f flags.  */
 
 /* Nonzero means `char' should be signed.  */
@@ -1559,6 +1567,43 @@ static const lang_independent_options W_options[] =
 FILE *asm_out_file;
 FILE *aux_info_file;
 FILE *rtl_dump_file = NULL;
+
+/* Set up a default flag_random_seed and local_tick, unless the user
+   already specified one.  */
+
+static void
+randomize (void)
+{
+  if (!flag_random_seed)
+    {
+      unsigned HOST_WIDE_INT value;
+      static char random_seed[HOST_BITS_PER_WIDE_INT / 4 + 3];
+      
+      /* Get some more or less random data.  */
+#ifdef HAVE_GETTIMEOFDAY
+      {
+ 	struct timeval tv;
+ 	
+ 	gettimeofday (&tv, NULL);
+	local_tick = tv.tv_sec * 1000 + tv.tv_usec / 1000;
+      }
+#else
+      {
+	time_t now = time ();
+
+	if (now != (time_t)-1)
+	  local_tick = (unsigned) now;
+      }
+#endif
+      value = local_tick ^ getpid ();
+      
+      sprintf (random_seed, HOST_WIDE_INT_PRINT_HEX, value);
+      flag_random_seed = random_seed;
+    }
+  else
+    local_tick = -1;
+}
+
 
 /* Decode the string P as an integral parameter.
    If the string is indeed an integer return its numeric value else
@@ -4394,13 +4439,10 @@ print_switch_values (FILE *file, int pos, int max,
   const char **p;
 
   /* Fill in the -frandom-seed option, if the user didn't pass it, so
-     that it can be printed below.  This helps reproducibility.  Of
-     course, the string may never be used, but we can't tell that at
-     this point in the compile.  */
-  default_flag_random_seed ();
+     that it can be printed below.  This helps reproducibility.  */
+  randomize ();
 
   /* Print the options as passed.  */
-
   pos = print_single_switch (file, pos, max, indent, *indent ? " " : "", term,
 			     _("options passed: "), "");
 
@@ -4968,6 +5010,8 @@ toplev_main (unsigned int argc, const char **argv)
   /* Parse the options and do minimal processing; basically just
      enough to default flags appropriately.  */
   decode_options (argc, argv);
+
+  randomize ();
 
   /* Exit early if we can (e.g. -help).  */
   if (!exit_after_options)
