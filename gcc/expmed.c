@@ -55,9 +55,6 @@ static int shift_cost[BITS_PER_WORD];
 static int shiftadd_cost[BITS_PER_WORD];
 static int shiftsub_cost[BITS_PER_WORD];
 
-/* Max scale factor for scaled address in lea instruction.  */
-static int lea_max_mul;
-
 void
 init_expmed ()
 {
@@ -67,7 +64,6 @@ init_expmed ()
   rtx reg = gen_rtx (REG, word_mode, FIRST_PSEUDO_REGISTER);
   rtx pow2 = GEN_INT (32);
   rtx shift_tmp, shiftadd_tmp, shiftsub_tmp;
-  HOST_WIDE_INT i;
   int dummy;
   int m;
 
@@ -1722,7 +1718,8 @@ expand_shift (code, mode, shifted, amount, target, unsignedp)
   return temp;
 }
 
-enum alg_code { alg_none, alg_add_t_m2, alg_sub_t_m2,
+enum alg_code { alg_none, alg_shift,
+		  alg_add_t_m2, alg_sub_t_m2,
 		  alg_add_factor, alg_sub_factor,
 		  alg_add_t2_m, alg_sub_t2_m,
 alg_add, alg_subtract, alg_factor, alg_shiftop };
@@ -1733,6 +1730,7 @@ alg_add, alg_subtract, alg_factor, alg_shiftop };
    The operations are stored in `op' and the corresponding
    integer coefficients in `coeff'.
    These are the operations:
+   alg_shift		total := total * coeff
    alg_add_t_m2		total := total + multiplicand * coeff;
    alg_sub_t_m2		total := total - multiplicand * coeff;
    alg_add_factor	total := total * coeff + total;
@@ -1750,8 +1748,10 @@ struct algorithm
   short cost;
   short ops;
 /* The size of the OP and COEFF fields are not directly related to the
-   word size, but that is the worst-case algorithm for any machine for
-   the multiplicand 10101010101...  */
+   word size, but the worst-case algorithms will be if we have few
+   consecutive ones or zeros, i.e., a multiplicand like 10101010101...
+   In that case we will generate shift-by-2, add, shift-by-2, add,...,
+   in total wordsize operations.  */
   enum alg_code op[MAX_BITS_PER_WORD];
   char coeff[MAX_BITS_PER_WORD];
 };
@@ -1766,40 +1766,48 @@ synth_mult (t, cost_limit)
      unsigned HOST_WIDE_INT t;
      int cost_limit;
 {
-  int m, n;
+  int m;
   struct algorithm *best_alg
     = (struct algorithm *)alloca (sizeof (struct algorithm));
   struct algorithm *alg_in
     = (struct algorithm *)alloca (sizeof (struct algorithm));
   unsigned int cost;
+  unsigned HOST_WIDE_INT q;
 
   /* Indicate that no algorithm is yet found.  If no algorithm
      is found, this value will be returned and indicate failure.  */
   best_alg->cost = cost_limit;
-  best_alg->ops = 0;
 
-  if (cost_limit < 0)
+  if (cost_limit <= 0)
     return *best_alg;
 
-  /* Is t an exponent of 2, so we can just do a shift?  */
-  if ((t & (t - 1)) == 0)
+  if (t <= 1)
     {
-      if (t > 1)
+      /* t == 0 or t == 1 takes no instructions.  */
+      best_alg->ops = 0;
+      best_alg->cost = 0;
+      return *best_alg;
+    }
+
+  if ((t & 1) == 0)
+    {
+      m = floor_log2 (t & -t);	/* m = number of low zero bits */
+      q = t >> m;
+      cost = shift_cost[m];
+      if (cost < cost_limit)
 	{
-	  m = exact_log2 (t);
-	  if (shift_cost[m] < cost_limit)
+	  *alg_in = synth_mult (q, cost_limit - cost);
+
+	  cost += alg_in->cost;
+	  if (cost < best_alg->cost)
 	    {
-	      best_alg->cost = shift_cost[m];
-	      best_alg->ops = 1;
-	      best_alg->op[0] = alg_add_t_m2;
-	      best_alg->coeff[0] = m;
+	      struct algorithm *x;
+	      x = alg_in, alg_in = best_alg, best_alg = x;
+	      best_alg->coeff[best_alg->ops] = m;
+	      best_alg->op[best_alg->ops++] = alg_shift;
+	      best_alg->cost = cost_limit = cost;
 	    }
 	}
-      else
-	/* t == 0 or t == 1 takes no instructions.  */
-	best_alg->cost = 0;
-
-      return *best_alg;
     }
 
   /* Look for factors of t of the form
@@ -1819,14 +1827,12 @@ synth_mult (t, cost_limit)
       d = ((unsigned HOST_WIDE_INT) 1 << m) + 1;
       if (t % d == 0 && t > d)
 	{
-	  unsigned HOST_WIDE_INT q = t / d;
-
 	  if (shiftadd_cost[m] <= add_cost + shift_cost[m])
 	    cost = shiftadd_cost[m];
 	  else
 	    cost = add_cost + shift_cost[m];
 
-	  *alg_in = synth_mult (q, cost_limit - cost);
+	  *alg_in = synth_mult (t / d, cost_limit - cost);
 
 	  cost += alg_in->cost;
 	  if (cost < best_alg->cost)
@@ -1842,14 +1848,12 @@ synth_mult (t, cost_limit)
       d = ((unsigned HOST_WIDE_INT) 1 << m) - 1;
       if (t % d == 0 && t > d)
 	{
-	  unsigned HOST_WIDE_INT q = t / d;
-
 	  if (shiftsub_cost[m] <= add_cost + shift_cost[m])
 	    cost = shiftsub_cost[m];
 	  else
 	    cost = add_cost + shift_cost[m];
 
-	  *alg_in = synth_mult (q, cost_limit - cost);
+	  *alg_in = synth_mult (t / d, cost_limit - cost);
 
 	  cost += alg_in->cost;
 	  if (cost < best_alg->cost)
@@ -1867,8 +1871,6 @@ synth_mult (t, cost_limit)
      i.e. do a*3, a*5, a*9.  */
   if ((t & 1) != 0)
     {
-      unsigned HOST_WIDE_INT q;
-
       q = t - 1;
       q = q & -q;
       m = exact_log2 (q);
@@ -1911,7 +1913,6 @@ synth_mult (t, cost_limit)
   /* Now, use the simple method of adding or subtracting at the leftmost
      1-bit.  */
   {
-    unsigned HOST_WIDE_INT q;
     unsigned HOST_WIDE_INT w;
 
     q = t & -t;			/* get out lsb */
@@ -1925,9 +1926,14 @@ synth_mult (t, cost_limit)
 	/* There are many bits in a row.  Make 'em by subtraction.  */
 
 	m = exact_log2 (q);
-	cost = add_cost;
-	if (q != 1)
-	  cost += shift_cost[m];
+	if (m == 0)
+	  cost = add_cost;
+	else
+	  {
+	    /* Don't use shiftsub_cost here, this operation
+	       scales wrong operand.  */
+	    cost = add_cost + shift_cost[m];
+	  }
 
 	*alg_in = synth_mult (t + q, cost_limit - cost);
 
@@ -1946,9 +1952,15 @@ synth_mult (t, cost_limit)
 	/* There's only one or two bit at the left.  Make it by addition.  */
 
 	m = exact_log2 (q);
-	cost = add_cost;
-	if (q != 1)
-	  cost += shift_cost[m];
+	if (m == 0)
+	  cost = add_cost;
+	else
+	  {
+	    if (shiftadd_cost[m] <= add_cost + shift_cost[m])
+	      cost = shiftadd_cost[m];
+	    else
+	      cost = add_cost + shift_cost[m];
+	  }
 
 	*alg_in = synth_mult (t - q, cost_limit - cost);
 
@@ -1963,6 +1975,11 @@ synth_mult (t, cost_limit)
 	  }
       }
   }
+
+  /* If we are getting a too long sequence for `struct algorithm'
+     to record, store a fake cost to make this search fail.  */
+  if (best_alg->ops == MAX_BITS_PER_WORD)
+    best_alg->cost = cost_limit;
 
   return *best_alg;
 }
@@ -2014,7 +2031,7 @@ expand_mult (mode, op0, op1, target, unsignedp)
 
       alg = synth_mult (val, mult_cost);
       neg_alg = synth_mult (- val,
-			    (alg.cost >= 0 ? alg.cost : mult_cost)
+			    (alg.cost < mult_cost ? alg.cost : mult_cost)
 			    - negate_cost);
 
       if (neg_alg.cost + negate_cost < alg.cost)
@@ -2022,8 +2039,7 @@ expand_mult (mode, op0, op1, target, unsignedp)
 
       if (alg.cost < mult_cost)
 	{
-	  /* If we found something, it must be cheaper than multiply.
-	     So use it.  */
+	  /* We found something cheaper than a multiply insn.  */
 	  int opno;
 	  rtx accum, tem;
 
@@ -2040,7 +2056,7 @@ expand_mult (mode, op0, op1, target, unsignedp)
 	    {
 	      int log = alg.coeff[0];
 	      enum alg_code op = alg.op[0];
-	      if (op == alg_add_t_m2)
+	      if (op == alg_shift)
 		{
 		  accum = expand_shift (LSHIFT_EXPR, mode, op0,
 					build_int_2 (log, 0), NULL_RTX, 0);
@@ -2068,18 +2084,39 @@ expand_mult (mode, op0, op1, target, unsignedp)
 	      int log = alg.coeff[opno];
 	      switch (alg.op[opno])
 		{
+		case alg_shift:
+		  accum = expand_shift (LSHIFT_EXPR, mode, accum,
+					build_int_2 (log, 0), NULL_RTX, 0);
+		  break;
+
 		case alg_add_t_m2:
-		  tem = expand_shift (LSHIFT_EXPR, mode, op0,
-				      build_int_2 (log, 0), NULL_RTX, 0);
-		  accum = force_operand (gen_rtx (PLUS, mode, accum, tem),
-					 accum);
+		  if (log != 0)
+		    {
+		      tem = expand_shift (LSHIFT_EXPR, mode, op0,
+					  build_int_2 (log, 0), NULL_RTX, 0);
+		      accum = force_operand (gen_rtx (PLUS, mode, accum, tem),
+					     accum);
+		    }
+		  else
+		    {
+		      accum = force_operand (gen_rtx (PLUS, mode, accum, op0),
+					     accum);
+		    }
 		  break;
 
 		case alg_sub_t_m2:
-		  tem = expand_shift (LSHIFT_EXPR, mode, op0,
-				      build_int_2 (log, 0), NULL_RTX, 0);
-		  accum = force_operand (gen_rtx (MINUS, mode, accum, tem),
-					 accum);
+		  if (log != 0)
+		    {
+		      tem = expand_shift (LSHIFT_EXPR, mode, op0,
+					  build_int_2 (log, 0), NULL_RTX, 0);
+		      accum = force_operand (gen_rtx (MINUS, mode, accum, tem),
+					     accum);
+		    }
+		  else
+		    {
+		      accum = force_operand (gen_rtx (MINUS, mode, accum, op0),
+					     accum);
+		    }
 		  break;
 
 		case alg_add_t2_m:
