@@ -1,3 +1,10 @@
+2005-03-23  Daniel Berlin  <dberlin@dberlin.org>
+
+	Fix PR tree-optimization/20601
+
+	* tree-ssa-pre.c (insert_aux): Add missing condition to
+	constification.
+
 2005-03-22  James E Wilson  <wilson@specifixinc.com>
 
 	PR c++/19769

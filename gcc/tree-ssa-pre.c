@@ -1653,7 +1653,7 @@ insert_aux (basic_block block)
 		      /* If all edges produce the same value and that value is
 			 an invariant, then the PHI has the same value on all
 			 edges.  Note this.  */
-		      else if (all_same && eprime 
+		      else if (!cant_insert && all_same && eprime 
 			       && is_gimple_min_invariant (eprime)
 			       && !is_gimple_min_invariant (val))
 			{
