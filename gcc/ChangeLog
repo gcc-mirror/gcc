@@ -1,3 +1,10 @@
+2002-04-04  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips.h (CUMULATIVE_ARGS): Rename fp_regs to num_fprs
+	to avoid clash with Irix header file sys/ucontext.h.  Rename gp_regs
+	to num_gprs for symmetry.
+	* config/mips/mips.c: Adjust accordingly.
+
 2002-04-04  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* c-common.c (truthvalue_conversion): Rename, update.

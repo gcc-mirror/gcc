@@ -2794,10 +2794,10 @@ typedef struct mips_args {
   /* For EABI, the number of integer registers used so far.  For other
      ABIs, the number of words passed in registers (whether integer
      or floating-point).  */
-  unsigned int gp_regs;
+  unsigned int num_gprs;
 
   /* For EABI, the number of floating-point registers used so far.  */
-  unsigned int fp_regs;
+  unsigned int num_fprs;
 
   /* The number of words passed on the stack.  */
   unsigned int stack_words;

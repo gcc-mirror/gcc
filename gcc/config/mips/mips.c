@@ -4023,8 +4023,8 @@ mips_arg_info (cum, mode, type, named, info)
      The EABI allocates the floating-point registers separately,
      but the other ABIs allocate them like integer registers.  */
   info->reg_offset = (mips_abi == ABI_EABI && info->fpr_p
-		      ? cum->fp_regs
-		      : cum->gp_regs);
+		      ? cum->num_fprs
+		      : cum->num_gprs);
 
   if (even_reg_p)
     info->reg_offset += info->reg_offset & 1;
@@ -4102,9 +4102,9 @@ function_arg_advance (cum, mode, type, named)
     cum->fp_code += (mode == SFmode ? 1 : 2) << ((cum->arg_number - 1) * 2);
 
   if (mips_abi != ABI_EABI || !info.fpr_p)
-    cum->gp_regs = info.reg_offset + info.reg_words;
+    cum->num_gprs = info.reg_offset + info.reg_words;
   else if (info.reg_words > 0)
-    cum->fp_regs += FP_INC;
+    cum->num_fprs += FP_INC;
 
   if (info.stack_words > 0)
     cum->stack_words = info.stack_offset + info.stack_words;
@@ -4279,9 +4279,9 @@ mips_setup_incoming_varargs (cum, mode, type, no_rtl)
     FUNCTION_ARG_ADVANCE (local_cum, mode, type, 1);
 
   /* Found out how many registers we need to save.  */
-  gp_saved = MAX_ARGS_IN_REGISTERS - local_cum.gp_regs;
+  gp_saved = MAX_ARGS_IN_REGISTERS - local_cum.num_gprs;
   fp_saved = (EABI_FLOAT_VARARGS_P
-	      ? MAX_ARGS_IN_REGISTERS - local_cum.fp_regs
+	      ? MAX_ARGS_IN_REGISTERS - local_cum.num_fprs
 	      : 0);
 
   if (!no_rtl)
@@ -4302,7 +4302,7 @@ mips_setup_incoming_varargs (cum, mode, type, no_rtl)
 	  if (mips_abi != ABI_EABI && BYTES_BIG_ENDIAN)
 	    MEM_SET_IN_STRUCT_P (mem, 1);
 
-	  move_block_from_reg (local_cum.gp_regs + GP_ARG_FIRST, mem,
+	  move_block_from_reg (local_cum.num_gprs + GP_ARG_FIRST, mem,
 			       gp_saved, gp_saved * UNITS_PER_WORD);
 	}
       if (fp_saved > 0)
@@ -4321,7 +4321,7 @@ mips_setup_incoming_varargs (cum, mode, type, no_rtl)
 
 	  mode = TARGET_SINGLE_FLOAT ? SFmode : DFmode;
 
-	  for (i = local_cum.fp_regs; i < MAX_ARGS_IN_REGISTERS; i += FP_INC)
+	  for (i = local_cum.num_fprs; i < MAX_ARGS_IN_REGISTERS; i += FP_INC)
 	    {
 	      rtx ptr = plus_constant (virtual_incoming_args_rtx, off);
 	      emit_move_insn (gen_rtx_MEM (mode, ptr),
@@ -4412,7 +4412,7 @@ mips_va_start (stdarg_p, valist, nextarg)
       int gpr_save_area_size;
 
       gpr_save_area_size
-	= (MAX_ARGS_IN_REGISTERS - cum->gp_regs) * UNITS_PER_WORD;
+	= (MAX_ARGS_IN_REGISTERS - cum->num_gprs) * UNITS_PER_WORD;
 
       if (EABI_FLOAT_VARARGS_P)
 	{
@@ -4470,7 +4470,7 @@ mips_va_start (stdarg_p, valist, nextarg)
 	  /* Likewise emit code to initialize FOFF, the offset from FTOP
 	     of the next FPR argument.  */
 	  fpr_save_area_size
-	    = (MAX_ARGS_IN_REGISTERS - cum->fp_regs) * UNITS_PER_FPREG;
+	    = (MAX_ARGS_IN_REGISTERS - cum->num_fprs) * UNITS_PER_FPREG;
 	  t = build (MODIFY_EXPR, TREE_TYPE (foff), foff,
 		     build_int_2 (fpr_save_area_size, 0));
 	  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
@@ -4502,7 +4502,9 @@ mips_va_start (stdarg_p, valist, nextarg)
 	  if (mips_abi == ABI_N32
 	      || mips_abi == ABI_64
 	      || mips_abi == ABI_MEABI)
- 	    ofs = (cum->gp_regs < MAX_ARGS_IN_REGISTERS ? 0 : -UNITS_PER_WORD);
+ 	    ofs = (cum->num_gprs < MAX_ARGS_IN_REGISTERS
+		   ? 0
+		   : -UNITS_PER_WORD);
 	  else
 	    ofs = -UNITS_PER_WORD;
 	}
