@@ -1,3 +1,7 @@
+Tue Nov 11 02:53:44 1997  Jason Merrill  <jason@lasher.cygnus.com>
+
+	* except.c (do_pop_exception): Return a value.
+
 Mon Nov 10 03:04:20 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	Complete nested exception support.
