@@ -1,3 +1,9 @@
+2003-12-05  Andrew Pinski <pinskia@physics.uc.edu>
+
+	PR driver/13211
+	* gcc.c (execute) Increment execution_count when returning
+	early because verbose_only_flag is true.
+
 2003-12-05  Per Bothner  <pbothner@apple.com>
 
 	* cppfiles.c (file_hash_hash):  New static function.
