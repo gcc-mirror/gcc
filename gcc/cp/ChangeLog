@@ -1,5 +1,12 @@
 2003-09-17  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/12266
+	* cp-tree.h (tsubst_flags_t): Add tf_conv.
+	* class.c (standard_conversion): Pass tf_conv to
+	instantiate_type.
+	(resolve_address_of_overloaded_function): Do not call mark_used
+	when just checking conversions.
+
 	PR debug/12066
 	* cp-lang.c (LANG_HOOKS_BUILTIN_TYPE_DECLS): Define.
 	* cp-tree.h (cxx_builtin_type_decls): Declare.

@@ -1,3 +1,8 @@
+2003-09-17  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/12266
+	* g++.dg/overload/template1.C: New test.
+
 2003-09-17  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* g++.dg/opt/cfg3.C: New test.

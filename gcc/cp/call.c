@@ -593,7 +593,7 @@ standard_conversion (tree to, tree from, tree expr)
   if ((TYPE_PTRFN_P (to) || TYPE_PTRMEMFUNC_P (to))
       && expr && type_unknown_p (expr))
     {
-      expr = instantiate_type (to, expr, tf_none);
+      expr = instantiate_type (to, expr, tf_conv);
       if (expr == error_mark_node)
 	return NULL_TREE;
       from = TREE_TYPE (expr);
