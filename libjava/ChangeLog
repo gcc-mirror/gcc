@@ -1,3 +1,11 @@
+2003-02-28  Hans Boehm  <Hans.Boehm@hp.com>
+
+	* java/lang/reflect/natMethod.cc (_Jv_CallAnyMethodA): Allocate a full
+        jvalue for each argument. Simplify.
+	* testsuite/libjava.jni/calls.c (docall),
+	testsuite/libjava.jni/calls.java (longpb_f): check for argument
+	misalignment.
+
 2003-02-28  Mark Wielaard  <mark@klomp.org>
 
 	* Makefile.am (nat_source_files): Remove

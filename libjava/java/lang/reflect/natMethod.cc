@@ -358,46 +358,30 @@ _Jv_CallAnyMethodA (jobject obj,
       obj = JvAllocObject (return_type);
     }
 
+  const int size_per_arg = sizeof(jvalue);
+  ffi_cif cif;
+
+  char *p = (char *) __builtin_alloca (param_count * size_per_arg);
+		// Overallocate to get correct alignment.
+  void **values = (void **)
+			__builtin_alloca (param_count * sizeof (void *));
+
   int i = 0;
-  int size = 0;
   if (needs_this)
     {
       // The `NULL' type is `Object'.
-      argtypes[i++] = get_ffi_type (NULL);
-      size += sizeof (jobject);
-    }
-
-  for (int arg = 0; i < param_count; ++i, ++arg)
-    {
-      argtypes[i] = get_ffi_type (paramelts[arg]);
-      if (paramelts[arg]->isPrimitive())
-	size += paramelts[arg]->size();
-      else
-	size += sizeof (jobject);
-    }
-
-  ffi_cif cif;
-  if (ffi_prep_cif (&cif, FFI_DEFAULT_ABI, param_count,
-		    rtype, argtypes) != FFI_OK)
-    {
-      // FIXME: throw some kind of VirtualMachineError here.
-    }
-
-  char *p = (char *) __builtin_alloca (size);
-  void **values = (void **) __builtin_alloca (param_count * sizeof (void *));
-
-  i = 0;
-  if (needs_this)
-    {
+      argtypes[i] = get_ffi_type (NULL);
       values[i] = p;
       memcpy (p, &obj, sizeof (jobject));
-      p += sizeof (jobject);
+      p += size_per_arg;
       ++i;
     }
 
   for (int arg = 0; i < param_count; ++i, ++arg)
     {
       int tsize;
+
+      argtypes[i] = get_ffi_type (paramelts[arg]);
       if (paramelts[arg]->isPrimitive())
 	tsize = paramelts[arg]->size();
       else
@@ -406,9 +390,16 @@ _Jv_CallAnyMethodA (jobject obj,
       // Copy appropriate bits from the jvalue into the ffi array.
       // FIXME: we could do this copying all in one loop, above, by
       // over-allocating a bit.
+      // How do we do this without breaking big-endian platforms?
       values[i] = p;
       memcpy (p, &args[arg], tsize);
-      p += tsize;
+      p += size_per_arg;
+    }
+
+  if (ffi_prep_cif (&cif, FFI_DEFAULT_ABI, param_count,
+		    rtype, argtypes) != FFI_OK)
+    {
+      // FIXME: throw some kind of VirtualMachineError here.
     }
 
   using namespace java::lang;
