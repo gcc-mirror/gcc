@@ -1923,8 +1923,8 @@ the operands of these.
 @item (set @var{lval} @var{x})
 Represents the action of storing the value of @var{x} into the place
 represented by @var{lval}.  @var{lval} must be an expression
-representing a place that can be stored in: @code{reg} (or
-@code{subreg} or @code{strict_low_part}), @code{mem}, @code{pc} or
+representing a place that can be stored in: @code{reg} (or @code{subreg}
+or @code{strict_low_part}), @code{mem}, @code{pc}, @code{parallel}, or
 @code{cc0}.@refill
 
 If @var{lval} is a @code{reg}, @code{subreg} or @code{mem}, it has a
@@ -1949,6 +1949,14 @@ The latter case represents a ``test'' instruction.  The expression
 @code{(set (cc0) (reg:@var{m} @var{n}))} is equivalent to
 @code{(set (cc0) (compare (reg:@var{m} @var{n}) (const_int 0)))}.
 Use the former expression to save space during the compilation.
+
+If @var{lval} is a @code{parallel}, it is used to represent the case of
+a function returning a structure in multiple registers.  Each element
+of the @code{paralllel} is an @code{expr_list} whose first operand is a
+@code{reg} and whose second operand is a @code{const_int} representing the
+offset (in bytes) into the structure at which the data in that register
+corresponds.  The first element may be null to indicate that the structure
+is also passed partly in memory.
 
 @cindex jump instructions and @code{set}
 @cindex @code{if_then_else} usage
@@ -2006,7 +2014,7 @@ addressed.
 @item (clobber @var{x})
 Represents the storing or possible storing of an unpredictable,
 undescribed value into @var{x}, which must be a @code{reg},
-@code{scratch} or @code{mem} expression.
+@code{scratch}, @code{parallel} or @code{mem} expression.
 
 One place this is used is in string instructions that store standard
 values into particular hard registers.  It may not be worth the
@@ -2015,7 +2023,8 @@ inform the compiler that the registers will be altered, lest it
 attempt to keep data in them across the string instruction.
 
 If @var{x} is @code{(mem:BLK (const_int 0))}, it means that all memory
-locations must be presumed clobbered.
+locations must be presumed clobbered.  If @var{x} is a @code{parallel},
+it has the same meaning as a @code{parallel} in a @code{set} expression.
 
 Note that the machine description classifies certain hard registers as
 ``call-clobbered''.  All function call instructions are assumed by

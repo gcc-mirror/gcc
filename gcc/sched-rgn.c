@@ -1396,20 +1396,14 @@ check_live_1 (src, x)
 	 || GET_CODE (reg) == STRICT_LOW_PART)
     reg = XEXP (reg, 0);
 
-  if (GET_CODE (reg) == PARALLEL && GET_MODE (reg) == BLKmode)
+  if (GET_CODE (reg) == PARALLEL)
     {
       register int i;
 
       for (i = XVECLEN (reg, 0) - 1; i >= 0; i--)
-	{
-	  rtx dest = XVECEXP (reg, 0, i);
-
-	  if (GET_CODE (dest) == EXPR_LIST)
-	    dest = XEXP (dest, 0);
-
-	  if (check_live_1 (src, dest))
+	if (XEXP (XVECEXP (reg, 0, i), 0) != 0)
+	  if (check_live_1 (src, XEXP (XVECEXP (reg, 0, i), 0)))
 	    return 1;
-	}
 
       return 0;
     }
@@ -1482,19 +1476,13 @@ update_live_1 (src, x)
 	 || GET_CODE (reg) == STRICT_LOW_PART)
     reg = XEXP (reg, 0);
 
-  if (GET_CODE (reg) == PARALLEL && GET_MODE (reg) == BLKmode)
+  if (GET_CODE (reg) == PARALLEL)
     {
       register int i;
 
       for (i = XVECLEN (reg, 0) - 1; i >= 0; i--)
-	{
-	  rtx dest = XVECEXP (reg, 0, i);
-
-	  if (GET_CODE (dest) == EXPR_LIST)
-	    dest = XEXP (dest, 0);
-
-	  update_live_1 (src, dest);
-	}
+	if (XEXP (XVECEXP (reg, 0, i), 0) != 0)
+	  update_live_1 (src, XEXP (XVECEXP (reg, 0, i), 0));
 
       return;
     }

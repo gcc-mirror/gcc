@@ -1185,18 +1185,11 @@ reg_overlap_mentioned_p (x, in)
 	int i;
 
 	/* If any register in here refers to it we return true.  */
-	for (i = XVECLEN (x, 0); i >= 0; i--)
-	  {
-	    rtx reg = XVECEXP (x, 0, i);
-
-	    if (GET_CODE (reg) == EXPR_LIST)
-	      reg = XEXP (reg, 0);
-
-	    if (reg_overlap_mentioned_p (reg, in))
+	for (i = XVECLEN (x, 0) - 1; i >= 0; i--)
+	  if (XEXP (XVECEXP (x, 0, i), 0) != 0
+	      && reg_overlap_mentioned_p (XEXP (XVECEXP (x, 0, i), 0), in))
 	      return 1;
-	    return 0;
-	  
-	  }
+	return 0;
       }
 
     default:
@@ -1288,20 +1281,19 @@ note_stores (x, fun, data)
 	     || GET_CODE (dest) == STRICT_LOW_PART)
 	dest = XEXP (dest, 0);
 
-      /* If we have a PARALLEL, SET_DEST is a list of registers or
-	 EXPR_LIST expressions, each of whose first operand is a register.
-	 We can't know what precisely is being set in these cases, so
-	 make up a CLOBBER to pass to the function.  */
-      if (GET_CODE (dest) == PARALLEL && GET_MODE (dest) == BLKmode)
-	for (i = XVECLEN (dest, 0) - 1; i >= 0; i--)
-	  {
-	    rtx reg = XVECEXP (dest, 0, i);
-
-	    if (GET_CODE (reg) == EXPR_LIST)
-	      reg = XEXP (reg, 0);
-
-	    (*fun) (reg, gen_rtx_CLOBBER (VOIDmode, reg), data);
-	  }
+      /* If we have a PARALLEL, SET_DEST is a list of EXPR_LIST expressions,
+	 each of whose first operand is a register.  We can't know what
+	 precisely is being set in these cases, so make up a CLOBBER to pass
+	 to the function.  */
+      if (GET_CODE (dest) == PARALLEL)
+	{
+	  for (i = XVECLEN (dest, 0) - 1; i >= 0; i--)
+	    if (XEXP (XVECEXP (dest, 0, i), 0) != 0)
+	      (*fun) (XEXP (XVECEXP (dest, 0, i), 0),
+		      gen_rtx_CLOBBER (VOIDmode,
+				       XEXP (XVECEXP (dest, 0, i), 0)),
+		      data);
+	}
       else
 	(*fun) (dest, x, data);
     }
