@@ -1,3 +1,18 @@
+1998-09-16  Mark Mitchell  <mark@markmitchell.com>
+
+	* Make-lang.in (tinfo.o): Use CXXFLAGS when compiling.
+	(tinfo2.o): Likewise.
+	(exception.o): Likewise.
+	(new.o): Likewise.
+	(opnew.o): Likewise.
+	(opnewnt.o): Likewise.
+	(opvnew.o): Likewise.
+	(opvnewnt.o): Likewise.
+	(opdel.o): Likewise.
+	(opdelnt.o): Likewise.
+	(opvdel.o): Likewise.
+	(opvdelnt.o): Likewise.
+
 1998-09-16  Richard Henderson  <rth@cygnus.com>
 
         * decl.c (init_decl_processing): Kill __builtin_fp and __builtin_sp.
