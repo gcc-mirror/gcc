@@ -270,9 +270,12 @@ Boston, MA 02111-1307, USA.  */
 #if _MIPS_SZPTR == 64
 #define CTORS_SECTION_ASM_OP "\t.section\t.ctors,1,2,0,8"
 #define DTORS_SECTION_ASM_OP "\t.section\t.dtors,1,2,0,8"
+#define EH_FRAME_SECTION_ASM_OP "\t.section\t.eh_frame,1,2,0,8"
 #else /* _MIPS_SZPTR != 64 */
 #define CTORS_SECTION_ASM_OP "\t.section\t.ctors,1,2,0,4"
 #define DTORS_SECTION_ASM_OP "\t.section\t.dtors,1,2,0,4"
+#define EH_FRAME_SECTION_ASM_OP "\t.section\t.eh_frame,1,2,0,4"
+
 #endif /* _MIPS_SZPTR == 64 */
 
 #else /* ! (defined (CRT_BEGIN) || defined (CRT_END)) */
@@ -282,11 +285,9 @@ Boston, MA 02111-1307, USA.  */
   (Pmode == DImode ? "\t.section\t.ctors,1,2,0,8" : "\t.section\t.ctors,1,2,0,4")
 #define DTORS_SECTION_ASM_OP \
   (Pmode == DImode ? "\t.section\t.dtors,1,2,0,8" : "\t.section\t.dtors,1,2,0,4")
+#define EH_FRAME_SECTION_ASM_OP \
+  (Pmode == DImode ? "\t.section\t.eh_frame,1,2,0,8" : "\t.section\t.eh_frame,1,2,0,4")
 #endif /* defined (CRT_BEGIN) || defined (CRT_END) */
-
-/* dwarf2out will handle padding this data properly.  We definitely don't
-   want it 8-byte aligned on n32.  */
-#define EH_FRAME_SECTION_ASM_OP "\t.section\t.eh_frame,1,2,0,1"
 
 /* A default list of other sections which we might be "in" at any given
    time.  For targets that use additional sections (e.g. .tdesc) you
