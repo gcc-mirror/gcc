@@ -621,6 +621,11 @@ store_init_value (decl, init)
 
   if (TREE_CODE (value) == ERROR_MARK)
     ;
+  /* Other code expects that initializers for objects of types that need
+     constructing never make it into DECL_INITIAL, and passes 'init' to
+     expand_aggr_init without checking DECL_INITIAL.  So just return.  */
+  else if (TYPE_NEEDS_CONSTRUCTING (type))
+    return value;
   else if (TREE_STATIC (decl)
 	   && (! TREE_CONSTANT (value)
 	       || ! initializer_constant_valid_p (value, TREE_TYPE (value))

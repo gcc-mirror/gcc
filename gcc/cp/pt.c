@@ -2686,10 +2686,10 @@ type_unification (tparms, targs, parms, args, nsubsts, subr, strict)
 	  arg = TREE_TYPE (arg);
 	}
 #endif
-      if (TREE_CODE (arg) == REFERENCE_TYPE)
+      if (! subr && TREE_CODE (arg) == REFERENCE_TYPE)
 	arg = TREE_TYPE (arg);
 
-      if (TREE_CODE (parm) != REFERENCE_TYPE)
+      if (! subr && TREE_CODE (parm) != REFERENCE_TYPE)
 	{
 	  if (TREE_CODE (arg) == FUNCTION_TYPE
 	      || TREE_CODE (arg) == METHOD_TYPE)

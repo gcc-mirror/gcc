@@ -1,3 +1,42 @@
+Thu Jul  3 01:44:05 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* class.c (finish_struct_1): Only complain about pointers without
+	copy stuff if there are any constructors.
+
+	* rtti.c (build_dynamic_cast): Call complete_type on the types.
+
+	* decl.c (grokfndecl): If the function we chose doesn't actually
+ 	match, die.
+
+	* decl2.c (grokclassfn): Don't specify 'const int' for the
+ 	artificial destructor parm.
+
+	* pt.c (type_unification): If we are called recursively, nothing 
+	decays.
+
+Mon Jun 30 17:53:21 1997  Geoffrey Noer  <noer@cygnus.com>
+
+        * decl.c: Stop trying to catch signals other than SIGABRT
+        since the Cygwin32 library doesn't support them correctly
+        yet.  This fixes a situation in which g++ causes a hang on
+        SIGSEGVs and other such signals in our Win32-hosted tools.
+
+Mon Jun 30 14:50:01 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* tree.c (mapcar, case CALL_EXPR): Handle all the parse node data.
+
+Fri Jun 27 15:18:49 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* typeck2.c (store_init_value): Always return the value if our 
+	type needs constructing.
+
+	* method.c (hack_identifier): Convert class statics from
+ 	reference, too.
+
+Thu Jun 26 11:44:46 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* Make-lang.in (cplib2.ready): Add $(LANGUAGES) dependency.
+
 Thu Jun 19 16:49:28 1997  Mike Stump  <mrs@cygnus.com>
 
 	* typeck.c (c_expand_return): Make sure we clean up temporaries at

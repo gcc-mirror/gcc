@@ -3598,7 +3598,7 @@ finish_struct_1 (t, warn_anon)
     }
 
   /* Effective C++ rule 11.  */
-  if (has_pointers && warn_ecpp
+  if (has_pointers && warn_ecpp && TYPE_HAS_CONSTRUCTOR (t)
       && ! (TYPE_HAS_INIT_REF (t) && TYPE_HAS_ASSIGN_REF (t)))
     {
       cp_warning ("`%#T' has pointer data members", t);

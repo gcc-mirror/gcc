@@ -949,10 +949,9 @@ grokclassfn (ctype, cname, function, flags, quals)
   if (flags == DTOR_FLAG)
     {
       char *buf, *dbuf;
-      tree const_integer_type = build_type_variant (integer_type_node, 1, 0);
       int len = sizeof (DESTRUCTOR_DECL_PREFIX)-1;
 
-      arg_types = hash_tree_chain (const_integer_type, void_list_node);
+      arg_types = hash_tree_chain (integer_type_node, void_list_node);
       TREE_SIDE_EFFECTS (arg_types) = 1;
       /* Build the overload name.  It will look like `7Example'.  */
       if (IDENTIFIER_TYPE_VALUE (cname))
