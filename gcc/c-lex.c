@@ -714,7 +714,7 @@ cb_enter_file (pfile)
 #ifndef NO_IMPLICIT_EXTERN_C
   if (c_header_level)
     ++c_header_level;
-  else if (flags[2] != 0)
+  else if (in_system_header && flags[1] != 0 && flags[2] != 0)
     {
       c_header_level = 1;
       ++pending_lang_change;
