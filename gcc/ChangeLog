@@ -1,3 +1,7 @@
+Fri Apr 17 22:38:17 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* libgcc2.c (__floatdisf): Fix a couple typos.
+
 Fri Apr 17 17:28:26 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* Makefile.in (mostlyclean): Delete *.mach and *.bp files.
