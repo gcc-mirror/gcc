@@ -3554,7 +3554,8 @@ c_promoting_integer_type_p (t)
 	      || TYPE_MAIN_VARIANT (t) == signed_char_type_node
 	      || TYPE_MAIN_VARIANT (t) == unsigned_char_type_node
 	      || TYPE_MAIN_VARIANT (t) == short_integer_type_node
-	      || TYPE_MAIN_VARIANT (t) == short_unsigned_type_node);
+	      || TYPE_MAIN_VARIANT (t) == short_unsigned_type_node
+	      || TYPE_PRECISION (t) < TYPE_PRECISION (integer_type_node));
 
     case ENUMERAL_TYPE:
       /* ??? Technically all enumerations not larger than an int

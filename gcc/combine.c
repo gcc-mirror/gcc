@@ -6559,8 +6559,8 @@ make_compound_operation (x, in_code)
     case LSHIFTRT:
       /* If the sign bit is known to be zero, replace this with an
 	 arithmetic shift.  */
-      if (ashr_optab->handlers[(int) mode].insn_code == CODE_FOR_nothing
-	  && lshr_optab->handlers[(int) mode].insn_code != CODE_FOR_nothing
+      if (ashr_optab->handlers[(int) mode].insn_code != CODE_FOR_nothing
+	  && lshr_optab->handlers[(int) mode].insn_code == CODE_FOR_nothing
 	  && mode_width <= HOST_BITS_PER_WIDE_INT
 	  && (nonzero_bits (XEXP (x, 0), mode) & (1 << (mode_width - 1))) == 0)
 	{
@@ -11140,7 +11140,7 @@ simplify_comparison (code, pop0, pop1)
 	      /* If OP0 is an AND and we don't have an AND in MODE either,
 		 make a new AND in the proper mode.  */
 	      if (GET_CODE (op0) == AND
-		  && (add_optab->handlers[(int) mode].insn_code
+		  && (and_optab->handlers[(int) mode].insn_code
 		      == CODE_FOR_nothing))
 		op0 = gen_binary (AND, tmode,
 				  gen_lowpart_for_combine (tmode,

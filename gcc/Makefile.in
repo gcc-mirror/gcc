@@ -1338,6 +1338,12 @@ gcc.o: gcc.c $(CONFIG_H) system.h intl.h multilib.h \
   -c $(srcdir)/gcc.c)
 
 gccspec.o: gccspec.c $(CONFIG_H) system.h $(GCC_H)
+	(SHLIB_LINK='$(SHLIB_LINK)' \
+	SHLIB_MULTILIB='$(SHLIB_MULTILIB)'; \
+	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+  $(DRIVER_DEFINES) \
+  -c $(srcdir)/gccspec.c)
+
 cppspec.o: cppspec.c $(CONFIG_H) system.h $(GCC_H)
 
 tree-check.h: s-check ; @true

@@ -1243,6 +1243,9 @@ regmove_optimize (f, nregs, regmove_dump_file)
 	      if (! regclass_compatible_p (src_class, dst_class))
 		continue;
 
+	      if (GET_MODE (src) != GET_MODE (dst))
+		continue;
+
 	      if (fixup_match_1 (insn, set, src, src_subreg, dst, pass,
 				 op_no, match_no,
 				 regmove_dump_file))
