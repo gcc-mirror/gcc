@@ -1,3 +1,7 @@
+2000-05-08  Catherine Moore  <clm@cygnus.com>
+
+	* gcc.dg/unused-3.c: New.
+
 2000-05-06  Richard Henderson  <rth@cygnus.com>
 
 	  * g++.old-deja/g++.brendan/code-gen2.C: Cast to size_t, not int.
