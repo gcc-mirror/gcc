@@ -1,5 +1,10 @@
 2000-12-11  Bryce McKinlay  <bryce@albatross.co.nz>
 
+	* configure.in: Remove check for -fuse-divide-subroutine.
+	* configure: Rebuilt.
+
+2000-12-11  Bryce McKinlay  <bryce@albatross.co.nz>
+
 	* Makefile.am: Add HashSet.java and java/lang/ref classes.
 	Remove BasicMapEntry.java and Bucket.java.
 	* Makefile.in: Rebuilt.
