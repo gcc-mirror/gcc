@@ -26,6 +26,7 @@
 
 with Atree;    use Atree;
 with Einfo;    use Einfo;
+with Exp_Tss;  use Exp_Tss;
 with Namet;    use Namet;
 with Nlists;   use Nlists;
 with Nmake;    use Nmake;
@@ -36,7 +37,6 @@ with Snames;   use Snames;
 with Stand;    use Stand;
 with Tbuild;   use Tbuild;
 with Ttypes;   use Ttypes;
-with Exp_Tss;  use Exp_Tss;
 with Uintp;    use Uintp;
 
 package body Exp_Strm is
@@ -1173,6 +1173,11 @@ package body Exp_Strm is
       Stms : List_Id;
       Typt : Entity_Id;
 
+      In_Limited_Extension : Boolean := False;
+      --  Set to True while processing the record extension definition
+      --  for an extension of a limited type (for which an ancestor type
+      --  has an explicit Nam attribute definition).
+
       function Make_Component_List_Attributes (CL : Node_Id) return List_Id;
       --  Returns a sequence of attributes to process the components that
       --  are referenced in the given component list.
@@ -1254,7 +1259,29 @@ package body Exp_Strm is
       --------------------------
 
       function Make_Field_Attribute (C : Entity_Id) return Node_Id is
+         Field_Typ : constant Entity_Id := Stream_Base_Type (Etype (C));
+
+         TSS_Names : constant array (Name_Input .. Name_Write) of
+                       TSS_Name_Type :=
+                        (Name_Read   => TSS_Stream_Read,
+                         Name_Write  => TSS_Stream_Write,
+                         Name_Input  => TSS_Stream_Input,
+                         Name_Output => TSS_Stream_Output,
+                         others      => TSS_Null);
+         pragma Assert (TSS_Names (Nam) /= TSS_Null);
+
       begin
+         if In_Limited_Extension
+           and then Is_Limited_Type (Field_Typ)
+           and then No (Find_Inherited_TSS (Field_Typ, TSS_Names (Nam)))
+         then
+            --  The declaration is illegal per 13.13.2(9/1), and this is
+            --  enforced in Exp_Ch3.Check_Stream_Attributes. Keep the
+            --  caller happy by returning a null statement.
+
+            return Make_Null_Statement (Loc);
+         end if;
+
          return
            Make_Attribute_Reference (Loc,
              Prefix =>
@@ -1331,6 +1358,10 @@ package body Exp_Strm is
 
       if Nkind (Rdef) = N_Derived_Type_Definition then
          Rdef := Record_Extension_Part (Rdef);
+
+         if Is_Limited_Type (Typt) then
+            In_Limited_Extension := True;
+         end if;
       end if;
 
       if Present (Component_List (Rdef)) then
