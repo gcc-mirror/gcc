@@ -5241,7 +5241,8 @@ expand_function_end (filename, line, end_bindings)
 
       for (decl = DECL_ARGUMENTS (current_function_decl);
 	   decl; decl = TREE_CHAIN (decl))
-	if (! TREE_USED (decl) && TREE_CODE (decl) == PARM_DECL)
+	if (! TREE_USED (decl) && TREE_CODE (decl) == PARM_DECL
+	    && DECL_NAME (decl) && ! DECL_ARTIFICIAL (decl))
 	  warning_with_decl (decl, "unused parameter `%s'");
     }
 
