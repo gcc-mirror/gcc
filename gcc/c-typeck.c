@@ -1147,7 +1147,6 @@ build_array_ref (array, index)
     {
       tree rval, type;
 
-      index = default_conversion (index);
       if (index != error_mark_node
 	  && TREE_CODE (TREE_TYPE (index)) != INTEGER_TYPE)
 	{
@@ -1164,6 +1163,9 @@ build_array_ref (array, index)
       if (warn_char_subscripts
 	  && TYPE_MAIN_VARIANT (TREE_TYPE (index)) == char_type_node)
 	warning ("array subscript has type `char'");
+
+      /* Apply default promotions *after* noticing character types.  */
+      index = default_conversion (index);
 
       /* An array that is indexed by a non-constant
 	 cannot be stored in a register; we must be able to do
