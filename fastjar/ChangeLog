@@ -1,3 +1,9 @@
+2004-11-13  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* Makefile.am: Define ACLOCAL_AMFLAGS.
+	* acinclude.m4: Remove unnecessary sinclude.
+	* aclocal.m4, Makefile.in, configure: Regenerate (autoreconf 1.9.3).
+
 2004-09-23  Tom Tromey  <tromey@redhat.com>
 
 	* jartool.c (extract_jar): Unconditionally read extra data in the
