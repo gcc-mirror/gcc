@@ -1,3 +1,40 @@
+2002-07-16  Bo Thorsen  <bo@suse.de>
+
+	* src/x86/ffi64.c: New file that adds x86-64 support.
+	* src/x86/unix64.S: New file that handles argument setup for
+	x86-64.
+	* src/x86/sysv.S: Don't use this on x86-64.
+	* src/x86/ffi.c: Don't use this on x86-64.
+	Remove unused vars.
+	* src/prep_cif.c (ffi_prep_cif): Don't do stack size calculation
+	for x86-64.
+	* src/ffitest.c (struct6): New test that tests a special case in
+	the x86-64 ABI.
+	(struct7): Likewise.
+	(struct8): Likewise.
+	(struct9): Likewise.
+	(closure_test_fn): Silence warning about this when it's not used.
+	(main): Add the new tests.
+	(main): Fix a couple of wrong casts and silence some compiler warnings.
+	* include/ffi.h.in: Add x86-64 ABI definition.
+	* fficonfig.h.in: Regenerate.
+	* Makefile.am: Add x86-64 support.
+	* configure.in: Likewise.
+	* Makefile.in: Regenerate.
+	* configure: Likewise.
+
+2002-06-24  Bo Thorsen  <bo@suse.de>
+
+	* src/types.c: Merge settings for similar architectures.
+	Add x86-64 sizes and alignments.
+
+2002-06-23  Bo Thorsen  <bo@suse.de>
+
+	* src/arm/ffi.c (ffi_prep_args): Remove unused vars.
+	* src/sparc/ffi.c (ffi_prep_args_v8): Likewise.
+	* src/mips/ffi.c (ffi_prep_args): Likewise.
+	* src/m68k/ffi.c (ffi_prep_args): Likewise.
+
 2002-07-18  H.J. Lu  (hjl@gnu.org)
 
 	* Makefile.am (TARGET_SRC_MIPS_LINUX): New.
@@ -14,11 +51,6 @@
 2002-06-06  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* src/s390/sysv.S: Save/restore %r6.  Add DWARF-2 unwind info.
-
-2002-05-28  Bo Thorsen  <bo@suse.de>
-
-	* src/x86/ffi.c (ffi_prep_incoming_args_SYSV): Remove
-	the same unused avn var from this one too.
 
 2002-05-27  Roger Sayle  <roger@eyesopen.com>
 

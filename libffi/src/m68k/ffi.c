@@ -16,14 +16,11 @@ static void *
 ffi_prep_args (void *stack, extended_cif *ecif)
 {
   unsigned int i;
-  int tmp;
-  unsigned int avn;
   void **p_argv;
   char *argp;
   ffi_type **p_arg;
   void *struct_value_ptr;
 
-  tmp = 0;
   argp = stack;
 
   if (ecif->cif->rtype->type == FFI_TYPE_STRUCT
@@ -32,11 +29,10 @@ ffi_prep_args (void *stack, extended_cif *ecif)
   else
     struct_value_ptr = NULL;
 
-  avn = ecif->cif->nargs;
   p_argv = ecif->avalue;
 
   for (i = ecif->cif->nargs, p_arg = ecif->cif->arg_types;
-       i != 0 && avn != 0;
+       i != 0;
        i--, p_arg++)
     {
       size_t z;
@@ -45,9 +41,6 @@ ffi_prep_args (void *stack, extended_cif *ecif)
       if (((*p_arg)->alignment - 1) & (unsigned) argp)
 	argp = (char *) ALIGN (argp, (*p_arg)->alignment);
 
-      if (avn != 0) 
-	{
-	  avn--;
 	  z = (*p_arg)->size;
 	  if (z < sizeof (int))
 	    {
@@ -82,7 +75,6 @@ ffi_prep_args (void *stack, extended_cif *ecif)
 	    memcpy (argp, *p_argv, z);
 	  p_argv++;
 	  argp += z;
-	}
     }
 
   return struct_value_ptr;

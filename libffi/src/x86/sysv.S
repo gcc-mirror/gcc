@@ -1,5 +1,5 @@
 /* -----------------------------------------------------------------------
-   sysv.S - Copyright (c) 1996, 1998, 2001  Cygnus Solutions
+   sysv.S - Copyright (c) 1996, 1998, 2001, 2002  Cygnus Solutions
    
    X86 Foreign Function Interface 
 
@@ -22,6 +22,8 @@
    ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
    OTHER DEALINGS IN THE SOFTWARE.
    ----------------------------------------------------------------------- */
+
+#ifndef __x86_64__
 
 #define LIBFFI_ASM	
 #include <ffi.h>
@@ -163,3 +165,5 @@ __FRAME_BEGIN__:
 	.align 4
 .LEFDE1:
 	.set	.LLFDE1,.LEFDE1-.LSFDE1
+
+#endif /* ifndef __x86_64__ */

@@ -34,13 +34,9 @@
 void ffi_prep_args_v8(char *stack, extended_cif *ecif)
 {
   int i;
-  int tmp;
-  int avn;
   void **p_argv;
   char *argp;
   ffi_type **p_arg;
-
-  tmp = 0;
 
   /* Skip 16 words for the window save area */
   argp = stack + 16*sizeof(int);
@@ -66,18 +62,12 @@ void ffi_prep_args_v8(char *stack, extended_cif *ecif)
   ((int*)argp)[5] = 0;
 #endif
 
-  avn = ecif->cif->nargs;
   p_argv = ecif->avalue;
 
-  for (i = ecif->cif->nargs, p_arg = ecif->cif->arg_types;
-       i && avn;
-       i--, p_arg++)
+  for (i = ecif->cif->nargs, p_arg = ecif->cif->arg_types; i; i--, p_arg++)
     {
       size_t z;
 
-      if (avn) 
-	{
-	  avn--;
 	  if ((*p_arg)->type == FFI_TYPE_STRUCT
 #if FFI_TYPE_LONGDOUBLE != FFI_TYPE_DOUBLE
 	      || (*p_arg)->type == FFI_TYPE_LONGDOUBLE
@@ -122,7 +112,6 @@ void ffi_prep_args_v8(char *stack, extended_cif *ecif)
 	    }
 	  p_argv++;
 	  argp += z;
-	}
     }
   
   return;
