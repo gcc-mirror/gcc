@@ -1,3 +1,12 @@
+2004-03-29  Matthias Klose  <doko@debian.org>
+
+	Backport:
+	2004-01-15  Andreas Schwab  <schwab@suse.de>
+ 
+	PR bootstrap/13562
+	* config/m68k/m68k.c (output_move_const_into_data_reg): Clear cc
+	status for NOTB/NOTW/NEGW methods.
+
 2004-03-29  Aldy Hernandez  <aldyh@redhat.com>
  
         PR 14219

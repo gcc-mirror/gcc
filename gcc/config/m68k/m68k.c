@@ -1737,6 +1737,7 @@ output_move_const_into_data_reg (operands)
       return "moveq %1,%0";
 #endif
     case NOTB :
+      CC_STATUS_INIT;
       operands[1] = GEN_INT (i ^ 0xff);
 #if defined (MOTOROLA) && !defined (CRDS)
       return "moveq%.l %1,%0\n\tnot%.b %0";
@@ -1744,6 +1745,7 @@ output_move_const_into_data_reg (operands)
       return "moveq %1,%0\n\tnot%.b %0";
 #endif	 
     case NOTW :
+      CC_STATUS_INIT;
       operands[1] = GEN_INT (i ^ 0xffff);
 #if defined (MOTOROLA) && !defined (CRDS)
       return "moveq%.l %1,%0\n\tnot%.w %0";
@@ -1751,6 +1753,7 @@ output_move_const_into_data_reg (operands)
       return "moveq %1,%0\n\tnot%.w %0";
 #endif	 
     case NEGW :
+      CC_STATUS_INIT;
 #if defined (MOTOROLA) && !defined (CRDS)
       return "moveq%.l %#-128,%0\n\tneg%.w %0";
 #else
