@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -289,21 +289,20 @@ package body Interfaces.C is
             return R;
          end;
 
-      else -- Append_Nul is False
+      --  Append_Nul False
+
+      else
 
          --  A nasty case, if the string is null, we must return
          --  a null char_array. The lower bound of this array is
          --  required to be zero (RM B.3(50)) but that is of course
-         --  impossible given that size_t is unsigned. This needs
-         --  ARG resolution, but for now GNAT returns bounds 1 .. 0
+         --  impossible given that size_t is unsigned. According to
+         --  Ada 2005 AI-258, the result is to raise Constraint_Error.
 
          if Item'Length = 0 then
-            declare
-               R : char_array (1 .. 0);
+            raise Constraint_Error;
 
-            begin
-               return R;
-            end;
+         --  Normal case
 
          else
             declare
