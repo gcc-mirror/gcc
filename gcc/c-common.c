@@ -1969,8 +1969,6 @@ c_common_signed_type (tree type)
 tree
 c_common_signed_or_unsigned_type (int unsignedp, tree type)
 {
-  tree new_type;
-
   if (! INTEGRAL_TYPE_P (type)
       || TREE_UNSIGNED (type) == unsignedp)
     return type;
@@ -2003,14 +2001,7 @@ c_common_signed_or_unsigned_type (int unsignedp, tree type)
   if (TYPE_PRECISION (type) == TYPE_PRECISION (intQI_type_node))
     return unsignedp ? unsigned_intQI_type_node : intQI_type_node;
 
-  new_type = (unsignedp 
-	      ? make_unsigned_type (TYPE_PRECISION (type))
-	      : make_signed_type (TYPE_PRECISION (type)));
-  TYPE_SIZE (new_type) = TYPE_SIZE (type);
-  TYPE_SIZE_UNIT (new_type) = TYPE_SIZE_UNIT (type);
-  TYPE_MODE (new_type) = TYPE_MODE (type);
-
-  return new_type;
+  return type;
 }
 
 /* Return the minimum number of bits needed to represent VALUE in a
