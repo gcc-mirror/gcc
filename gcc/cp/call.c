@@ -192,6 +192,15 @@ check_dtor_name (basetype, name)
       else
 	name = get_type_value (name);
     }
+  /* In the case of:
+      
+       template <class T> struct S { ~S(); };
+       int i;
+       i.~S();
+
+     NAME will be a class template.  */
+  else if (DECL_CLASS_TEMPLATE_P (name))
+    return 0;
   else
     my_friendly_abort (980605);
 
