@@ -1,5 +1,5 @@
 /* Definitions for Intel x86 running BeOS
-   Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -19,7 +19,6 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 
-#undef TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (i386 BeOS/ELF)");
 
 /* Change debugging to Dwarf2.  */

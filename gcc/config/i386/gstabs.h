@@ -1,5 +1,3 @@
-#include "i386/gas.h"
-
 /* We do not want to output SDB debugging information.  */
 
 #undef SDB_DEBUGGING_INFO

@@ -1,5 +1,5 @@
 /* Target definitions for GNU compiler for Intel x86 CPU running NeXTSTEP
-   Copyright (C) 1993, 1995, 1996, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1995, 1996, 1999, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -17,9 +17,6 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
-
-#include "i386/gas.h"
-#include "nextstep.h"
 
 /* By default, target has a 80387, with IEEE FP.  */
 

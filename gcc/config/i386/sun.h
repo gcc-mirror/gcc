@@ -1,5 +1,5 @@
 /* Definitions for Intel 386 running SunOS 4.0.
-   Copyright (C) 1988, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1995, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -18,12 +18,7 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-
-#include "i386/i386.h"
-
-/* Use the Sun assembler syntax.  */
-
-#include "i386/sun386.h"
+/* Use's the Sun assembler syntax.  */
 
 /* Use crt0.o as a startup file.  */
 

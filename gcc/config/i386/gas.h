@@ -1,5 +1,5 @@
 /* Definitions for Intel 386 using GAS.
-   Copyright (C) 1988, 1993, 1994, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1993, 1994, 1996, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -21,13 +21,6 @@ Boston, MA 02111-1307, USA.  */
 /* Note that i386/seq-gas.h is a GAS configuration that does not use this
    file.  */
 
-#include "i386/i386.h"
-
-#ifndef YES_UNDERSCORES
-/* Define this now, because i386/bsd.h tests it.  */
-#define NO_UNDERSCORES
-#endif
-
 /* Use the bsd assembler syntax.  */
 /* we need to do this because gas is really a bsd style assembler,
  * and so doesn't work well this these att-isms:
@@ -43,8 +36,6 @@ Boston, MA 02111-1307, USA.  */
  * We can keep i386v for real att style output, and the few
  * people who want both form will have to compile twice.
  */
-
-#include "i386/bsd.h"
 
 /* these come from i386/bsd.h, but are specific to sequent */
 #undef DBX_NO_XREFS
@@ -138,28 +129,6 @@ Boston, MA 02111-1307, USA.  */
 
 /* Print opcodes the way that GAS expects them.  */
 #define GAS_MNEMONICS 1
-
-#ifdef NO_UNDERSCORES /* If user-symbols don't have underscores,
-			 then it must take more than `L' to identify
-			 a label that should be ignored.  */
-
-/* This is how to store into the string BUF
-   the symbol_ref name of an internal numbered label where
-   PREFIX is the class of label and NUM is the number within the class.
-   This is suitable for output with `assemble_name'.  */
-
-#undef ASM_GENERATE_INTERNAL_LABEL
-#define ASM_GENERATE_INTERNAL_LABEL(BUF,PREFIX,NUMBER)	\
-    sprintf ((BUF), ".%s%ld", (PREFIX), (long)(NUMBER))
-
-/* This is how to output an internal numbered label where
-   PREFIX is the class of label and NUM is the number within the class.  */
-
-#undef ASM_OUTPUT_INTERNAL_LABEL
-#define ASM_OUTPUT_INTERNAL_LABEL(FILE,PREFIX,NUM)	\
-  fprintf (FILE, ".%s%d:\n", PREFIX, NUM)
-
-#endif /* NO_UNDERSCORES */
 
 /* Output at beginning of assembler file.  */
 /* The .file command should always begin the output.  */

@@ -1,7 +1,7 @@
 /* Definitions for BSD assembler syntax for Intel 386
    (actually AT&T syntax for insns and operands,
    adapted to BSD conventions for symbol names and debugging.)
-   Copyright (C) 1988, 1996, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1996, 2000, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -20,23 +20,15 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-/* Include common aspects of all 386 Unix assemblers.  */
-#include "i386/unix.h"
-
 /* Use the Sequent Symmetry assembler syntax.  */
-
-#define TARGET_VERSION fprintf (stderr, " (80386, BSD syntax)");
 
 /* Define the syntax of pseudo-ops, labels and comments.  */
 
 /* Prefix for internally generated assembler labels.  If we aren't using
    underscores, we are using prefix `.'s to identify labels that should
    be ignored, as in `i386/gas.h' --karl@cs.umb.edu  */
-#ifdef NO_UNDERSCORES
-#define LPREFIX ".L"
-#else
+
 #define LPREFIX "L"
-#endif /* not NO_UNDERSCORES */
 
 /* Assembler pseudos to introduce constants of various size.  */
 
@@ -93,32 +85,18 @@ Boston, MA 02111-1307, USA.  */
    PREFIX is the class of label and NUM is the number within the class.
    This is suitable for output with `assemble_name'.  */
 
-#ifdef NO_UNDERSCORES
-#define ASM_GENERATE_INTERNAL_LABEL(BUF,PREFIX,NUMBER)	\
-    sprintf ((BUF), "*.%s%ld", (PREFIX), (long)(NUMBER))
-#else
 #define ASM_GENERATE_INTERNAL_LABEL(BUF,PREFIX,NUMBER)	\
     sprintf ((BUF), "*%s%ld", (PREFIX), (long)(NUMBER))
-#endif
 
 /* This is how to output an internal numbered label where
    PREFIX is the class of label and NUM is the number within the class.  */
 
-#ifdef NO_UNDERSCORES
-#define ASM_OUTPUT_INTERNAL_LABEL(FILE,PREFIX,NUM)	\
-  fprintf (FILE, ".%s%d:\n", PREFIX, NUM)
-#else
 #define ASM_OUTPUT_INTERNAL_LABEL(FILE,PREFIX,NUM)	\
   fprintf (FILE, "%s%d:\n", PREFIX, NUM)
-#endif
 
 /* The prefix to add to user-visible assembler symbols.  */
 
-#ifdef NO_UNDERSCORES
-#define USER_LABEL_PREFIX ""
-#else
 #define USER_LABEL_PREFIX "_"
-#endif /* not NO_UNDERSCORES */
 
 /* Sequent has some changes in the format of DBX symbols.  */
 #define DBX_NO_XREFS 1

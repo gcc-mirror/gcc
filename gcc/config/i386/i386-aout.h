@@ -1,7 +1,7 @@
 /* Definitions for "naked" Intel 386 using a.out (or coff encap'd
    a.out) object format and stabs debugging info.
 
-   Copyright (C) 1994 Free Software Foundation, Inc.
+   Copyright (C) 1994, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -21,10 +21,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 
-/* This is tested by gas.h.  */
-#define YES_UNDERSCORES
-
-#include "i386/gstabs.h"
+#define TARGET_VERSION fprintf (stderr, " (80386, BSD a.out syntax)"); 
 
 /* Specify predefined symbols in preprocessor.  */
 

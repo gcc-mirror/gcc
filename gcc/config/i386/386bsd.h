@@ -1,9 +1,6 @@
 /* Configuration for an i386 running 386BSD as the target machine.  */
 
-/* This is tested by i386gas.h.  */
-#define YES_UNDERSCORES
-
-#include "i386/gstabs.h"
+#define TARGET_VERSION fprintf (stderr, " (80386, BSD syntax)"); 
 
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES "-Dunix -D____386BSD____ -D__386BSD__ -DBSD_NET2 -Asystem=unix -Asystem=bsd"

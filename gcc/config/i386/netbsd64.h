@@ -62,5 +62,4 @@ Boston, MA 02111-1307, USA.  */
 }
 
 
-#undef TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (NetBSD/x86_64 ELF)");

@@ -33,7 +33,6 @@ Boston, MA 02111-1307, USA.  */
 	  fputs ("\t.intel_syntax\n", FILE);				\
   } while (0)
 
-#undef TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (i386 Linux/ELF)");
 
 /* The svr4 ABI for the i386 says that records and unions are returned

@@ -1,5 +1,5 @@
 /* Definitions for AMD x86-64 running Linux-based GNU systems with ELF format.
-   Copyright (C) 2001 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002 Free Software Foundation, Inc.
    Contributed by Jan Hubicka <jh@suse.cz>, based on linux.h.
 
 This file is part of GNU CC.
@@ -21,7 +21,6 @@ Boston, MA 02111-1307, USA.  */
 
 #define LINUX_DEFAULT_ELF
 
-#undef TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (x86-64 Linux/ELF)");
 
 #undef CPP_PREDEFINES

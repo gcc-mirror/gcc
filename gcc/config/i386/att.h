@@ -1,5 +1,6 @@
 /* Definitions for AT&T assembler syntax for the Intel 80386.
-   Copyright (C) 1988, 1996, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1996, 2000, 2001, 2002
+   Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -18,10 +19,6 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-/* Include common aspects of all 386 Unix assemblers.  */
-#include "i386/unix.h"
-
-#define TARGET_VERSION fprintf (stderr, " (80386, ATT syntax)");
 
 /* Define the syntax of instructions and addresses.  */
 

@@ -1,5 +1,6 @@
 /* Configuration for an i386 running MS-DOS with DJGPP.
-   Copyright (C) 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002
+   Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -18,8 +19,6 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#include "dbxcoff.h"
-
 /* Support generation of DWARF2 debugging info.  */
 #define DWARF2_DEBUGGING_INFO
 
@@ -31,8 +30,8 @@ Boston, MA 02111-1307, USA.  */
 /* Enable parsing of #pragma pack(push,<n>) and #pragma pack(pop).  */
 #define HANDLE_PRAGMA_PACK_PUSH_POP 1
 
-#define YES_UNDERSCORES
-
+#include "i386/unix.h"
+#include "i386/bsd.h"
 #include "i386/gas.h"
 
 /* If defined, a C expression whose value is a string containing the
@@ -185,6 +184,8 @@ Boston, MA 02111-1307, USA.  */
    weak symbols, and .gnu.linkonce support.  */
 #undef MASK_BNU210
 #define MASK_BNU210 (0x40000000)
+
+#define TARGET_VERSION fprintf (stderr, " (80386, MS-DOS DJGPP)"); 
 
 #undef SUBTARGET_SWITCHES
 #define SUBTARGET_SWITCHES \

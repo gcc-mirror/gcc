@@ -1,5 +1,8 @@
-/* Definitions for Sequent Intel 386.
-   Copyright (C) 1988, 1994, 1999, 2000 Free Software Foundation, Inc.
+/* Definitions for Sequent Intel 386 using BSD assembler syntax
+   (actually AT&T syntax for insns and operands,
+   adapted to BSD conventions for symbol names and debugging.)
+   Copyright (C) 1988, 1994, 1996, 1999, 2000, 2002
+   Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -18,11 +21,7 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#include "i386/i386.h"
-
-/* Use the BSD assembler syntax.  */
-
-#include "i386/bsd.h"
+#define TARGET_VERSION fprintf (stderr, " (80386, BSD syntax)"); 
 
 /* By default, don't use IEEE compatible arithmetic comparisons
    because the assembler can't handle the fucom insn.

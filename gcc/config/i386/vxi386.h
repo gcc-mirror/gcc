@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  VxWorks i386 version.
-   Copyright (C) 1998 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -18,6 +18,9 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
+#undef  TARGET_VERSION
+#define TARGET_VERSION fprintf (stderr, " (80386, VxWorks BSD syntax)"); 
+
 #undef CPP_CPU_SPEC
 #define CPP_CPU_SPEC "\
 -Asystem=unix -Acpu=i386 -Amachine=i386 \
@@ -34,8 +37,6 @@ Boston, MA 02111-1307, USA.  */
  %{mpentiumpro:-DCPU=PENTIUM -DCPU_VARIANT=PENTIUMPRO %(cpp_686)} \
  %{mcpu=pentiumpro:-DCPU=PENTIUM -DCPU_VARIANT=PENTIUMPRO %(cpp_686)} \
  %{!mcpu*:%{!m486:%{!mpentium*:-DCPU=I80386 %(cpp_cpu_default)}}}}"
-
-#include "i386/i386-aout.h"
 
 #define HANDLE_SYSV_PRAGMA
 
