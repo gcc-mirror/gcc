@@ -1,3 +1,14 @@
+Fri Dec  4 16:24:36 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* Defer some __builtin_constant_p elaborations until after cse;
+	original idea from rth@cygnus.com
+	* rtl.def (CONSTANT_P_RTX): New RTL code.
+	* expr.c (expand_builtin, case BUILT_IN_CONSTANT_P): Rework to
+	consider constant CONSTRUCTOR constant and to defer some cases
+	to cse.
+	* cse.c (fold_rtx, case CONST): Add handling for CONSTANT_P_RTX.
+	* regclass.c (reg_scan_mark_refs, case CONST): Likewise.
+	
 Tue Dec  1 17:23:16 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* reload1.c (reload): Sum needs for both OPADDR_ADDR and
