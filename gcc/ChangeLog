@@ -1,3 +1,8 @@
+2004-09-28  Diego Novillo  <dnovillo@redhat.com>
+
+	* tree-ssa-loop.c (pass_record_bounds): Do not assign a
+	name to the pass.
+
 2004-09-28  Steven Bosscher  <stevenb@suse.de>
 
 	* common.opt (flag_gcse_sm): Disable by default.

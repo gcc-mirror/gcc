@@ -311,7 +311,7 @@ tree_ssa_loop_bounds (void)
 
 struct tree_opt_pass pass_record_bounds =
 {
-  "bounds",				/* name */
+  NULL,					/* name */
   NULL,					/* gate */
   tree_ssa_loop_bounds,		       	/* execute */
   NULL,					/* sub */
