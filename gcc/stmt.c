@@ -3415,7 +3415,7 @@ expand_decl (decl)
 	/* An initializer is going to decide the size of this array.
 	   Until we know the size, represent its address with a reg.  */
 	DECL_RTL (decl) = gen_rtx_MEM (BLKmode, gen_reg_rtx (Pmode));
-      MEM_IN_STRUCT_P (DECL_RTL (decl)) = AGGREGATE_TYPE_P (type);
+      MEM_SET_IN_STRUCT_P (DECL_RTL (decl), AGGREGATE_TYPE_P (type));
     }
   else if (DECL_MODE (decl) != BLKmode
 	   /* If -ffloat-store, don't put explicit float vars
@@ -3470,7 +3470,8 @@ expand_decl (decl)
 			       + BITS_PER_UNIT - 1)
 			      / BITS_PER_UNIT),
 			     1);
-      MEM_IN_STRUCT_P (DECL_RTL (decl)) = AGGREGATE_TYPE_P (TREE_TYPE (decl));
+      MEM_SET_IN_STRUCT_P (DECL_RTL (decl),
+			   AGGREGATE_TYPE_P (TREE_TYPE (decl)));
 
       /* Set alignment we actually gave this decl.  */
       DECL_ALIGN (decl) = (DECL_MODE (decl) == BLKmode ? BIGGEST_ALIGNMENT
@@ -3485,7 +3486,8 @@ expand_decl (decl)
 
       /* If this is a memory ref that contains aggregate components,
 	 mark it as such for cse and loop optimize.  */
-      MEM_IN_STRUCT_P (DECL_RTL (decl)) = AGGREGATE_TYPE_P (TREE_TYPE (decl));
+      MEM_SET_IN_STRUCT_P (DECL_RTL (decl),
+			   AGGREGATE_TYPE_P (TREE_TYPE (decl)));
 #if 0
       /* If this is in memory because of -ffloat-store,
 	 set the volatile bit, to prevent optimizations from
@@ -3531,7 +3533,8 @@ expand_decl (decl)
 
       /* If this is a memory ref that contains aggregate components,
 	 mark it as such for cse and loop optimize.  */
-      MEM_IN_STRUCT_P (DECL_RTL (decl)) = AGGREGATE_TYPE_P (TREE_TYPE (decl));
+      MEM_SET_IN_STRUCT_P (DECL_RTL (decl),
+			   AGGREGATE_TYPE_P (TREE_TYPE (decl)));
 
       /* Indicate the alignment we actually gave this variable.  */
 #ifdef STACK_BOUNDARY
@@ -3864,7 +3867,7 @@ expand_anon_union_decl (decl, cleanup, decl_elts)
 	  else
 	    {
 	      DECL_RTL (decl_elt) = gen_rtx_MEM (mode, copy_rtx (XEXP (x, 0)));
-	      MEM_IN_STRUCT_P (DECL_RTL (decl_elt)) = MEM_IN_STRUCT_P (x);
+	      MEM_COPY_ATTRIBUTES (DECL_RTL (decl_elt), x);
 	      RTX_UNCHANGING_P (DECL_RTL (decl_elt)) = RTX_UNCHANGING_P (x);
 	    }
 	}

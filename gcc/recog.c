@@ -539,9 +539,8 @@ validate_replace_rtx_1 (loc, from, to, object)
 		       - MIN (UNITS_PER_WORD, GET_MODE_SIZE (mode)));
 
 	  new = gen_rtx_MEM (mode, plus_constant (XEXP (to, 0), offset));
-	  MEM_VOLATILE_P (new) = MEM_VOLATILE_P (to);
 	  RTX_UNCHANGING_P (new) = RTX_UNCHANGING_P (to);
-	  MEM_IN_STRUCT_P (new) = MEM_IN_STRUCT_P (to);
+	  MEM_COPY_ATTRIBUTES (new, to);
 	  validate_change (object, loc, new, 1);
 	  return;
 	}
@@ -599,8 +598,7 @@ validate_replace_rtx_1 (loc, from, to, object)
 	      newmem = gen_rtx_MEM (wanted_mode,
 				    plus_constant (XEXP (to, 0), offset));
 	      RTX_UNCHANGING_P (newmem) = RTX_UNCHANGING_P (to);
-	      MEM_VOLATILE_P (newmem) = MEM_VOLATILE_P (to);
-	      MEM_IN_STRUCT_P (newmem) = MEM_IN_STRUCT_P (to);
+	      MEM_COPY_ATTRIBUTES (newmem, to);
 
 	      validate_change (object, &XEXP (x, 2), GEN_INT (pos), 1);
 	      validate_change (object, &XEXP (x, 0), newmem, 1);

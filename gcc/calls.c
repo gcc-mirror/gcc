@@ -705,7 +705,6 @@ save_fixed_argument_area (reg_parm_stack_space, argblock,
       if (save_mode == BLKmode)
 	{
 	  save_area = assign_stack_temp (BLKmode, num_to_save, 0);
-	  MEM_IN_STRUCT_P (save_area) = 0;
 	  emit_block_move (validize_mem (save_area), stack_area,
 			   GEN_INT (num_to_save),
 			   PARM_BOUNDARY / BITS_PER_UNIT);
@@ -1386,7 +1385,7 @@ expand_call (exp, target, ignore)
 		  copy = assign_stack_temp (TYPE_MODE (type), size, 0);
 		}
 
-	      MEM_IN_STRUCT_P (copy) = AGGREGATE_TYPE_P (type);
+	      MEM_SET_IN_STRUCT_P (copy, AGGREGATE_TYPE_P (type));
 
 	      store_expr (args[i].tree_value, copy, 0);
 	      is_const = 0;
@@ -1848,8 +1847,9 @@ expand_call (exp, target, ignore)
 
 	  addr = plus_constant (addr, arg_offset);
 	  args[i].stack = gen_rtx_MEM (args[i].mode, addr);
-	  MEM_IN_STRUCT_P (args[i].stack)
-	    = AGGREGATE_TYPE_P (TREE_TYPE (args[i].tree_value));
+	  MEM_SET_IN_STRUCT_P 
+	    (args[i].stack,
+	     AGGREGATE_TYPE_P (TREE_TYPE (args[i].tree_value)));
 
 	  if (GET_CODE (slot_offset) == CONST_INT)
 	    addr = plus_constant (arg_reg, INTVAL (slot_offset));
@@ -2186,7 +2186,8 @@ expand_call (exp, target, ignore)
 	  target = gen_rtx_MEM (TYPE_MODE (TREE_TYPE (exp)),
 				memory_address (TYPE_MODE (TREE_TYPE (exp)),
 						structure_value_addr));
-	  MEM_IN_STRUCT_P (target) = AGGREGATE_TYPE_P (TREE_TYPE (exp));
+	  MEM_SET_IN_STRUCT_P (target,
+			       AGGREGATE_TYPE_P (TREE_TYPE (exp)));
 	}
     }
   else if (pcc_struct_value)
@@ -2196,7 +2197,7 @@ expand_call (exp, target, ignore)
 	 never use this value more than once in one expression.  */
       target = gen_rtx_MEM (TYPE_MODE (TREE_TYPE (exp)),
 			    copy_to_reg (valreg));
-      MEM_IN_STRUCT_P (target) = AGGREGATE_TYPE_P (TREE_TYPE (exp));
+      MEM_SET_IN_STRUCT_P (target, AGGREGATE_TYPE_P (TREE_TYPE (exp)));
     }
   /* Handle calls that return values in multiple non-contiguous locations.
      The Irix 6 ABI has examples of this.  */
@@ -2207,7 +2208,7 @@ expand_call (exp, target, ignore)
       if (target == 0)
 	{
 	  target = assign_stack_temp (TYPE_MODE (TREE_TYPE (exp)), bytes, 0);
-	  MEM_IN_STRUCT_P (target) = AGGREGATE_TYPE_P (TREE_TYPE (exp));
+	  MEM_SET_IN_STRUCT_P (target, AGGREGATE_TYPE_P (TREE_TYPE (exp)));
 	  preserve_temp_slots (target);
 	}
 
@@ -2623,7 +2624,6 @@ emit_library_call VPROTO((rtx orgfun, int no_queue, enum machine_mode outmode,
       if (save_mode == BLKmode)
 	{
 	  save_area = assign_stack_temp (BLKmode, num_to_save, 0);
-	  MEM_IN_STRUCT_P (save_area) = 0;
 	  emit_block_move (validize_mem (save_area), stack_area,
 			   GEN_INT (num_to_save),
 			   PARM_BOUNDARY / BITS_PER_UNIT);
@@ -3187,7 +3187,6 @@ emit_library_call_value VPROTO((rtx orgfun, rtx value, int no_queue,
       if (save_mode == BLKmode)
 	{
 	  save_area = assign_stack_temp (BLKmode, num_to_save, 0);
-	  MEM_IN_STRUCT_P (save_area) = 0;
 	  emit_block_move (validize_mem (save_area), stack_area,
 			   GEN_INT (num_to_save),
 			   PARM_BOUNDARY / BITS_PER_UNIT);
@@ -3527,8 +3526,9 @@ store_one_arg (arg, argblock, may_be_alloca, variable_size,
 	    {
 	      arg->save_area = assign_stack_temp (BLKmode,
 						  arg->size.constant, 0);
-	      MEM_IN_STRUCT_P (arg->save_area)
-		= AGGREGATE_TYPE_P (TREE_TYPE (arg->tree_value));
+	      MEM_SET_IN_STRUCT_P (arg->save_area,
+				   AGGREGATE_TYPE_P (TREE_TYPE
+						     (arg->tree_value))); 
 	      preserve_temp_slots (arg->save_area);
 	      emit_block_move (validize_mem (arg->save_area), stack_area,
 			       GEN_INT (arg->size.constant),

@@ -1083,11 +1083,13 @@ reload (first, global, dumpfile)
     {
       rtx addr = 0;
       int in_struct = 0;
+      int is_scalar;
       int is_readonly = 0;
 
       if (reg_equiv_memory_loc[i])
 	{
 	  in_struct = MEM_IN_STRUCT_P (reg_equiv_memory_loc[i]);
+	  is_scalar = MEM_SCALAR_P (reg_equiv_memory_loc[i]);
 	  is_readonly = RTX_UNCHANGING_P (reg_equiv_memory_loc[i]);
 	}
 
@@ -1106,6 +1108,7 @@ reload (first, global, dumpfile)
 	      REG_USERVAR_P (reg) = 0;
 	      RTX_UNCHANGING_P (reg) = is_readonly;
 	      MEM_IN_STRUCT_P (reg) = in_struct;
+	      MEM_SCALAR_P (reg) = is_scalar;
 	      /* We have no alias information about this newly created
 		 MEM.  */
 	      MEM_ALIAS_SET (reg) = 0;

@@ -163,9 +163,11 @@ typedef struct rtx_def
      In a REG, nonzero means this reg refers to the return value
      of the current function.  */
   unsigned integrated : 1;
-  /* Nonzero if this rtx is related to the call frame, either changing how
-     we compute the frame address or saving and restoring registers in
-     the prologue and epilogue.  */
+  /* 1 in an INSN if this rtx is related to the call frame,
+     either changing how we compute the frame address or saving and
+     restoring registers in the prologue and epilogue.  
+     1 in a MEM if the MEM refers to a scalar, rather than a member of
+     an aggregate.  */
   unsigned frame_related : 1;
   /* The first element of the operands of this rtx.
      The number of operands and their types are controlled
@@ -568,8 +570,28 @@ extern char *note_insn_name[];
    Also in an ASM_OPERANDS rtx.  */
 #define MEM_VOLATILE_P(RTX) ((RTX)->volatil)
 
-/* For a MEM rtx, 1 if it refers to a field of an aggregate.  */
+/* For a MEM rtx, 1 if it refers to a field of an aggregate.  If zero,
+   RTX may or may not refer to a field of an aggregate.  */
 #define MEM_IN_STRUCT_P(RTX) ((RTX)->in_struct)
+
+/* For a MEM rtx, 1 if it refers to a scalar.  If zero, RTX may or may
+   not refer to a scalar.*/
+#define MEM_SCALAR_P(RTX) ((RTX)->frame_related)
+
+/* Copy the MEM_VOLATILE_P, MEM_IN_STRUCT_P, and MEM_SCALAR_P
+   attributes from RHS to LHS.  */
+#define MEM_COPY_ATTRIBUTES(LHS, RHS)			\
+  (MEM_VOLATILE_P (LHS) = MEM_VOLATILE_P (RHS),		\
+   MEM_IN_STRUCT_P (LHS) = MEM_IN_STRUCT_P (RHS),	\
+   MEM_SCALAR_P (LHS) = MEM_SCALAR_P (RHS))		\
+
+/* If VAL is non-zero, set MEM_IN_STRUCT_P and clear MEM_SCALAR_P in
+   RTX.  Otherwise, vice versa.  Use this macro only when you are
+   *sure* that you know that the MEM is in a structure, or is a
+   scalar.  VAL is evaluated only once.  */
+#define MEM_SET_IN_STRUCT_P(RTX, VAL) 				\
+  ((VAL) ? (MEM_IN_STRUCT_P (RTX) = 1, MEM_SCALAR_P (RTX) = 0)	\
+   : (MEM_IN_STRUCT_P (RTX) = 0, MEM_SCALAR_P (RTX) = 1))
 
 /* For a MEM rtx, the alias set.  If 0, this MEM is not in any alias
    set, and may alias anything.  Otherwise, the MEM can only alias

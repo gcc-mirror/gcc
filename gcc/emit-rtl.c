@@ -1199,8 +1199,7 @@ operand_subword (op, i, validate_address, mode)
 
       new = gen_rtx_MEM (word_mode, addr);
 
-      MEM_VOLATILE_P (new) = MEM_VOLATILE_P (op);
-      MEM_IN_STRUCT_P (new) = MEM_IN_STRUCT_P (op);
+      MEM_COPY_ATTRIBUTES (new, op);
       RTX_UNCHANGING_P (new) = RTX_UNCHANGING_P (op);
 
       return new;
@@ -1499,9 +1498,8 @@ change_address (memref, mode, addr)
     return memref;
 
   new = gen_rtx_MEM (mode, addr);
-  MEM_VOLATILE_P (new) = MEM_VOLATILE_P (memref);
   RTX_UNCHANGING_P (new) = RTX_UNCHANGING_P (memref);
-  MEM_IN_STRUCT_P (new) = MEM_IN_STRUCT_P (memref);
+  MEM_COPY_ATTRIBUTES (new, memref);
   return new;
 }
 

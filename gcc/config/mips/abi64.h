@@ -139,7 +139,7 @@ extern struct rtx_def *mips_function_value ();
 		 so that the insn scheduler won't assume that these	\
 		 stores can't possibly overlap with the va_arg loads.  */ \
 	      if (mips_abi != ABI_EABI && BYTES_BIG_ENDIAN)		\
-	        MEM_IN_STRUCT_P (mem) = 1;				\
+	        MEM_SET_IN_STRUCT_P (mem, 1);				\
 	      move_block_from_reg					\
 		((CUM).arg_words + GP_ARG_FIRST + mips_off,		\
 		 mem,							\

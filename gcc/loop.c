@@ -2998,8 +2998,7 @@ note_addr_stored (x, y)
     return;
 
   for (i = 0; i < loop_store_mems_idx; i++)
-    if (rtx_equal_p (XEXP (loop_store_mems[i], 0), XEXP (x, 0))
-	&& MEM_IN_STRUCT_P (x) == MEM_IN_STRUCT_P (loop_store_mems[i]))
+    if (rtx_equal_p (XEXP (loop_store_mems[i], 0), XEXP (x, 0)))
       {
 	/* We are storing at the same address as previously noted.  Save the
 	   wider reference.  */
