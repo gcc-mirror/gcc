@@ -1051,6 +1051,86 @@ if [ -r ${LIB}/$file ]; then
   fi
 fi
 
+# There are several name conflicts with C++ reserved words in X11
+# header files.  These are fixed in some versions, so don't do the
+# fixes if we find __cplusplus in the file.  These were found on the
+# RS/6000.
+
+# class in X11/ShellP.h
+file=X11/ShellP.h
+if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
+  mkdir ${LIB}/sys 2>/dev/null
+  cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
+  chmod +w ${LIB}/$file 2>/dev/null
+  chmod a+r ${LIB}/$file 2>/dev/null
+fi
+
+if [ -r ${LIB}/$file ]; then
+  if grep __cplusplus ${LIB}/$file >/dev/null 2>/dev/null; then
+    true;
+  else
+    echo Fixing $file, field class
+    sed -e '/char [*]class;/i\
+#ifdef __cplusplus\
+	char *c_class;\
+#else' \
+        -e '/char [*]class;/a\
+#endif' ${LIB}/$file > ${LIB}/${file}.sed
+    rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
+  fi
+  if cmp $file ${LIB}/$file >/dev/null 2>&1; then
+    rm -f ${LIB}/$file
+  fi
+fi
+# new in Xm/Traversal.h
+file=Xm/Traversal.h
+if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
+  mkdir ${LIB}/sys 2>/dev/null
+  cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
+  chmod +w ${LIB}/$file 2>/dev/null
+  chmod a+r ${LIB}/$file 2>/dev/null
+fi
+
+if [ -r ${LIB}/$file ]; then
+  if grep __cplusplus ${LIB}/$file >/dev/null 2>/dev/null; then
+    true;
+  else
+    echo Fixing $file, field new
+    sed -e '/Widget	old, new;/i\
+#ifdef __cplusplus\
+	Widget	old, c_new;\
+#else' \
+        -e '/Widget	old, new;/a\
+#endif' ${LIB}/$file > ${LIB}/${file}.sed
+    rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
+  fi
+  if cmp $file ${LIB}/$file >/dev/null 2>&1; then
+    rm -f ${LIB}/$file
+  fi
+fi
+# class in Xm/BaseClassI.h
+file=Xm/BaseClassI.h
+if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
+  mkdir ${LIB}/sys 2>/dev/null
+  cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
+  chmod +w ${LIB}/$file 2>/dev/null
+  chmod a+r ${LIB}/$file 2>/dev/null
+fi
+
+if [ -r ${LIB}/$file ]; then
+  if grep __cplusplus ${LIB}/$file >/dev/null 2>/dev/null; then
+    true;
+  else
+    echo Fixing $file, prototype parameter name
+    sed -e 's/ class[)]/ c_class)/g' ${LIB}/$file > ${LIB}/${file}.sed
+    rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
+  fi
+  if cmp $file ${LIB}/$file >/dev/null 2>&1; then
+    rm -f ${LIB}/$file
+  fi
+fi
+
+
 # NeXT 2.0 defines 'int wait(union wait*)', which conflicts with Posix.1.
 # Note that version 3 of the NeXT system has wait.h in a different directory,
 # so that this code won't do anything.  But wait.h in version 3 has a
