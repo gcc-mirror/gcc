@@ -3552,12 +3552,6 @@ build_new_method_call (instance, name, args, basetype_path, flags)
       template_only = 1;
     }
 
-  if (TREE_CODE (name) == TYPE_DECL)
-    {
-      cp_error ("calling type `%T' like a method", name);
-      return error_mark_node;
-    }
-    
   /* If there is an extra argument for controlling virtual bases,
      remove it for error reporting.  */
   if (flags & LOOKUP_HAS_IN_CHARGE)

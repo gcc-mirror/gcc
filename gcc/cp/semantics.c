@@ -844,7 +844,12 @@ finish_call_expr (fn, args, koenig)
   tree result;
 
   if (koenig)
-    fn = do_identifier (fn, 0, args);
+    {
+      if (TREE_CODE (fn) == BIT_NOT_EXPR)
+	fn = build_x_unary_op (BIT_NOT_EXPR, TREE_OPERAND (fn, 0));
+      else if (TREE_CODE (fn) != TEMPLATE_ID_EXPR)
+	fn = do_identifier (fn, 0, args);
+    }
   result = build_x_function_call (fn, args, current_class_ref);
 
   if (TREE_CODE (result) == CALL_EXPR
@@ -922,6 +927,25 @@ finish_object_call_expr (fn, object, args)
   tree real_fn = build_component_ref (object, fn, NULL_TREE, 1);
   return finish_call_expr (real_fn, args);
 #else
+  if (TREE_CODE (fn) == TYPE_DECL)
+    {
+      if (processing_template_decl)
+	/* This can happen on code like:
+
+	   class X;
+	   template <class T> void f(T t) {
+	     t.X();
+	   }  
+
+	   We just grab the underlying IDENTIFIER.  */
+	fn = DECL_NAME (fn);
+      else
+	{
+	  cp_error ("calling type `%T' like a method", fn);
+	  return error_mark_node;
+	}
+    }
+
   return build_method_call (object, fn, args, NULL_TREE, LOOKUP_NORMAL);
 #endif
 }

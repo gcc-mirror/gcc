@@ -2436,6 +2436,8 @@ build_x_function_call (function, params, decl)
       my_friendly_assert (TREE_CODE (function) == TREE_LIST, 999);
       my_friendly_assert (TREE_CHAIN (function) == NULL_TREE, 999);
       function = TREE_VALUE (function);
+      if (TREE_CODE (function) == OVERLOAD)
+	function = OVL_FUNCTION (function);
       my_friendly_assert (TREE_CODE (function) == FUNCTION_DECL, 999);
       function = DECL_NAME (function);
       return build_method_call (decl, function, params,
@@ -4545,14 +4547,6 @@ build_unary_op (code, xarg, noconvert)
 	  /* We don't know the type yet, so just work around the problem.
 	     We know that this will resolve to an lvalue.  */
 	  return build1 (ADDR_EXPR, unknown_type_node, arg);
-	}
-
-      /* If we have a single function from a using decl, pull it out.  */
-      if (TREE_CODE (arg) == OVERLOAD
-	  && ! really_overloaded_fn (arg))
-	{
-	  arg = OVL_FUNCTION (arg);
-	  argtype = TREE_TYPE (arg);
 	}
 
       if (TREE_CODE (arg) == OVERLOAD 
