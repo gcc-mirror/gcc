@@ -1,3 +1,30 @@
+2003-02-01  Paolo Carlini  <pcarlini@unitus.it>
+            Benjamin Kosnik  <bkoz@redhat.com>
+
+	Const correctness issue:
+	http://gcc.gnu.org/ml/libstdc++/2003-01/msg00370.html
+	* include/bits/locale_classes.h
+	(locale::_Impl::_M_facets): Change type to const facet**.
+	(locale::_Impl::_M_install_facet): Change declaration to
+	take const facet*.
+	(locale::facet::_M_references): Make mutable.
+	(locale::facet::_M_add_reference): Declare const.
+	(locale::facet::_M_remove_reference): Likewise.
+	* include/bits/locale_facets.tcc
+	(use_facet(const locale&)): Tweak for const facet** _M_facets.
+	(has_facet(const locale&)): Likewise.
+	* src/locale.cc
+	(locale::facet::_M_add_reference): Adjust definition.
+	(locale::facet::_M_remove_reference): Likewise.
+	* src/localename.cc
+	(locale::_Impl::_Impl(const _Impl&, size_t)): Tweak for
+	const facet** _M_facets.
+	(locale::_Impl::_Impl(const char*, size_t)): Likewise.
+	(locale::_Impl::_Impl(facet**, size_t, bool)): Likewise.
+	(locale::_Impl::_M_install_facet): Adjust definition to take
+	const facet* and for const facet** _M_facets.
+	* testsuite/22_locale/locale/cons/8.cc: Add.
+
 2003-01-29  Mark Mitchell  <mark@codesourcery.com>
 
 	* include/std/std_limits.h (numeric_limits<float>::has_infinity):
