@@ -312,6 +312,13 @@ extern const char *darwin_fix_and_continue_switch;
 #define LIB_SPEC "%{!static:-lSystem}"
 #endif
 
+/* -dynamiclib implies -shared-libgcc just like -shared would on linux.  */
+#define REAL_LIBGCC_SPEC \
+   "%{static|static-libgcc:-lgcc -lgcc_eh}\
+    %{!static:%{!static-libgcc:\
+      %{!Zdynamiclib:%{!shared-libgcc:-lgcc  -lgcc_eh}\
+      %{shared-libgcc:-lgcc_s -lgcc} } %{Zdynamiclib:-lgcc_s}}}"
+
 /* We specify crt0.o as -lcrt0.o so that ld will search the library path.  */
 
 #undef  STARTFILE_SPEC
