@@ -394,6 +394,7 @@ protected:
 };
 
 /* dynamic cast runtime */
+extern "C++"
 void *__dynamic_cast (const void *__src_ptr,    /* object started from */
                       const __class_type_info *__src_type, /* static type of object */
                       const __class_type_info *__dst_type, /* desired target type */
@@ -409,6 +410,7 @@ void *__dynamic_cast (const void *__src_ptr,    /* object started from */
 /* array ctor/dtor routines */
 
 /* allocate and construct array */
+extern "C++"
 void *__cxa_vec_new (size_t __element_count,
                      size_t __element_size,
                      size_t __padding_size,
@@ -416,6 +418,7 @@ void *__cxa_vec_new (size_t __element_count,
                      void (*__destructor) (void *));
 
 /* construct array */
+extern "C++"
 void __cxa_vec_ctor (void *__array_address,
                      size_t __element_count,
                      size_t __element_size,
@@ -423,12 +426,14 @@ void __cxa_vec_ctor (void *__array_address,
                      void (*__destructor) (void *));
 
 /* destruct array */
+extern "C++"
 void __cxa_vec_dtor (void *__array_address,
                      size_t __element_count,
                      size_t __element_size,
                      void (*__destructor) (void *));
 
 /* destruct and release array */
+extern "C++"
 void __cxa_vec_delete (void *__array_address,
                        size_t __element_size,
                        size_t __padding_size,

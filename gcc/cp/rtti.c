@@ -1440,7 +1440,10 @@ ptmd_initializer (desc, target, non_public_ptr)
       *non_public_ptr = 1;
     }
   if (!COMPLETE_TYPE_P (klass))
-    flags |= 0x10;
+    {
+      flags |= 0x10;
+      *non_public_ptr = 1;
+    }
   init = tree_cons (NULL_TREE, build_int_2 (flags, 0), init);
   init = tree_cons (NULL_TREE,
                     build_unary_op (ADDR_EXPR,
