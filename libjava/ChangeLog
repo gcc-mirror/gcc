@@ -7,6 +7,10 @@
 	* java/lang/natClassLoader.cc (_Jv_RegisterClassHookDefault): Handle
 	duplicate class registration with JvFail if the runtime hasn't been
 	initialized yet.
+	
+	* java/io/BufferedWriter (write (String, int, int)): Remove redundant 
+	bounds checks.
+	(write (char[], int, int)): Likewise.
 
 2001-10-22  Tom Tromey  <tromey@redhat.com>
 

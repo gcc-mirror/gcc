@@ -160,9 +160,6 @@ public class BufferedWriter extends Writer
    */
   public void write (char[] buf, int offset, int len) throws IOException
   {
-    if (offset < 0 || len < 0 || offset + len > buf.length)
-      throw new ArrayIndexOutOfBoundsException ();
-
     synchronized (lock)
       {
 	if (buffer == null)
@@ -199,9 +196,6 @@ public class BufferedWriter extends Writer
    */
   public void write (String str, int offset, int len) throws IOException
   {
-    if (offset < 0 || len < 0 || offset + len > str.length())
-      throw new ArrayIndexOutOfBoundsException ();
-
     synchronized (lock)
       {
 	if (buffer == null)
