@@ -524,6 +524,7 @@ alpha*-dec-vms*)
 	tm_file=alpha/vms.h
 	xm_file=alpha/xm-vms.h
 	tmake_file="alpha/t-alpha alpha/t-vms alpha/t-ieee"
+	xmake_file=alpha/x-vms
 	;;
 arc-*-elf*)
 	tm_file="elfos.h svr4.h ${tm_file}"

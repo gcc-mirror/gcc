@@ -1,3 +1,9 @@
+Sun Nov 25 06:22:09 2001  Douglas B. Rupp  <rupp@gnat.com>
+
+	* config/alpha/vms-ld.c, config/alpha/vms-cc.c: New files.
+	* config/alpha/x-vms: New file, to compile the above.
+	* config.gcc (alpha*-dec-vms*): Add x-vms.
+
 2001-11-24  Hans-Peter Nilsson  <hp@axis.com>
 
 	* genextract.c (main): Set ro_loc for peepholes.
