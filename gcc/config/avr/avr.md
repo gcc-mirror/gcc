@@ -475,11 +475,10 @@
    (set_attr "cc" "clobber,clobber")])
 
 (define_expand "strlenhi"
-    [(parallel
-      [(set (match_dup 4)
-	    (unspec:HI [(match_operand:BLK 1 "memory_operand" "")
-			(match_operand:QI 2 "const_int_operand" "")
-			(match_operand:HI 3 "immediate_operand" "")] 0))])
+    [(set (match_dup 4)
+	  (unspec:HI [(match_operand:BLK 1 "memory_operand" "")
+		      (match_operand:QI 2 "const_int_operand" "")
+		      (match_operand:HI 3 "immediate_operand" "")] 0))
      (set (match_dup 4) (plus:HI (match_dup 4)
 				 (const_int -1)))
      (set (match_operand:HI 0 "register_operand" "")

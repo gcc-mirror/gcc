@@ -1,3 +1,9 @@
+Thu Jun 28 00:31:24 2001  Denis Chertykov  <denisc@overta.ru>
+
+	* config/avr/avr.md (strlenhi): PARALLEL keyword removed.
+	* config/avr/avr.c (legitimate_address_p): Return value changed
+	from letter to register classes. For better debugging.
+
 2001-06-27  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* doc/c-tree.texi, doc/contrib.texi, doc/cpp.texi,

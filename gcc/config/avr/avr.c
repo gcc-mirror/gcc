@@ -802,7 +802,8 @@ legitimate_address_p (mode, x, strict)
      rtx x;
      int strict;
 {
-  int r = 0;
+  enum reg_class r = NO_REGS;
+  
   if (TARGET_ALL_DEBUG)
     {
       fprintf (stderr, "mode: (%s) %s %s %s %s:",
@@ -824,9 +825,9 @@ legitimate_address_p (mode, x, strict)
     }
   if (REG_P (x) && (strict ? REG_OK_FOR_BASE_STRICT_P (x)
                     : REG_OK_FOR_BASE_NOSTRICT_P (x)))
-    r = 'R';
+    r = POINTER_REGS;
   else if (CONSTANT_ADDRESS_P (x))
-    r = 'S';
+    r = ALL_REGS;
   else if (GET_CODE (x) == PLUS
            && REG_P (XEXP (x, 0))
 	   && GET_CODE (XEXP (x, 1)) == CONST_INT
@@ -838,26 +839,26 @@ legitimate_address_p (mode, x, strict)
 	  if (! strict
 	      || REGNO (XEXP (x,0)) == REG_Y
 	      || REGNO (XEXP (x,0)) == REG_Z)
-	      r = 'Q';
+	    r = BASE_POINTER_REGS;
 	  if (XEXP (x,0) == frame_pointer_rtx
 	      || XEXP (x,0) == arg_pointer_rtx)
-	    r = 'Q';
+	    r = BASE_POINTER_REGS;
 	}
       else if (frame_pointer_needed && XEXP (x,0) == frame_pointer_rtx)
-	r = 'U';
+	r = POINTER_Y_REGS;
     }
   else if ((GET_CODE (x) == PRE_DEC || GET_CODE (x) == POST_INC)
            && REG_P (XEXP (x, 0))
            && (strict ? REG_OK_FOR_BASE_STRICT_P (XEXP (x, 0))
                : REG_OK_FOR_BASE_NOSTRICT_P (XEXP (x, 0))))
     {
-      r = 'T';
+      r = POINTER_REGS;
     }
   if (TARGET_ALL_DEBUG)
     {
       fprintf (stderr, "   ret = %c\n", r);
     }
-  return r;
+  return r == NO_REGS ? 0 : (int)r;
 }
 
 /* Attempts to replace X with a valid
