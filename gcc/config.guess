@@ -435,9 +435,15 @@ EOF
 	exit 0 ;;
     M680[234]0:*:R3V[567]*:*)
 	test -r /sysV68 && echo 'm68k-motorola-sysv' && exit 0 ;;
-    3[34]??:*:4.0:3.0 | 3[34]??,*:*:4.0:3.0)
+    3[34]??:*:4.0:3.0 | 3[34]??,*:*:4.0:3.0 | 4850:*:4.0:3.0)
+	UNAME_REL=4.3
+	if test -f /etc/.relid; then
+	  UNAME_REL=4.3.`awk '{ print $3 }' /etc/.relid`
+	fi
         uname -p 2>/dev/null | grep 86 >/dev/null \
-          && echo i486-ncr-sysv4.3 && exit 0 ;;
+          && echo i486-ncr-sysv$UNAME_REL && exit 0
+        uname -p 2>/dev/null | /bin/grep entium >/dev/null \
+          && echo i586-ncr-sysv$UNAME_REL && exit 0 ;;
     3[34]??:*:4.0:* | 3[34]??,*:*:4.0:*)
         uname -p 2>/dev/null | grep 86 >/dev/null \
           && echo i486-ncr-sysv4 && exit 0 ;;
