@@ -1301,20 +1301,20 @@ main (argc, argv)
 
       case 'i':
 	if (!strcmp (argv[i], "-include")) {
-	  int temp = i++;
+	  int temp = i;
 
 	  if (i + 1 == argc)
 	    fatal ("Filename missing after `-include' option");
 	  else
-	    simplify_filename (pend_includes[temp] = argv[temp]);
+	    simplify_filename (pend_includes[temp] = argv[++i]);
 	}
 	if (!strcmp (argv[i], "-imacros")) {
-	  int temp = i++;
+	  int temp = i;
 
 	  if (i + 1 == argc)
 	    fatal ("Filename missing after `-imacros' option");
 	  else
-	    simplify_filename (pend_files[temp] = argv[temp]);
+	    simplify_filename (pend_files[temp] = argv[++i]);
 	}
 	if (!strcmp (argv[i], "-iprefix")) {
 	  if (i + 1 == argc)

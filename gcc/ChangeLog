@@ -1,3 +1,7 @@
+Sat Mar  7 00:54:15 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* cccp.c (main): Fix dumb mistakes in last change.
+
 Fri Mar  6 21:28:45 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* rtl.h (addr_diff_vec_flags): New typedef.
