@@ -7890,10 +7890,11 @@ get_super_receiver (void)
       super_expr_list = build_tree_list (NULL_TREE, super_expr);
 
       /* Set class to begin searching.  */
-      super_expr = build_component_ref (UOBJC_SUPER_decl,
 #ifdef OBJCPLUS
+      super_expr = build_component_ref (UOBJC_SUPER_decl,
 					get_identifier ("super_class"));
 #else
+      super_expr = build_component_ref (UOBJC_SUPER_decl,
 					get_identifier ("class"));
 #endif
 
