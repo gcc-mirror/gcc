@@ -1060,8 +1060,7 @@ typedef struct xtensa_args {
    we currently need to ensure that there is a frame pointer when these
    builtin functions are used. */
 
-#define SETUP_FRAME_ADDRESSES() \
-  xtensa_setup_frame_addresses ()
+#define SETUP_FRAME_ADDRESSES  xtensa_setup_frame_addresses
 
 /* A C expression whose value is RTL representing the address in a
    stack frame where the pointer to the caller's frame is stored.
@@ -1085,22 +1084,8 @@ typedef struct xtensa_args {
 
 /* A C expression whose value is RTL representing the value of the
    return address for the frame COUNT steps up from the current
-   frame, after the prologue.  FRAMEADDR is the frame pointer of the
-   COUNT frame, or the frame pointer of the COUNT - 1 frame if
-   'RETURN_ADDR_IN_PREVIOUS_FRAME' is defined.
-
-   The 2 most-significant bits of the return address on Xtensa hold
-   the register window size.  To get the real return address, these bits
-   must be masked off and replaced with the high bits from the current
-   PC.  Since it is unclear how the __builtin_return_address function
-   is used, the current code does not do this masking and simply returns
-   the raw return address from the a0 register. */
-#define RETURN_ADDR_RTX(count, frame)					\
-  ((count) == -1							\
-   ? gen_rtx_REG (Pmode, 0)						\
-   : gen_rtx_MEM (Pmode, memory_address					\
-		  (Pmode, plus_constant (frame, -4 * UNITS_PER_WORD))))
-
+   frame, after the prologue.  */
+#define RETURN_ADDR_RTX  xtensa_return_addr
 
 /* Addressing modes, and classification of registers for them.  */
 
