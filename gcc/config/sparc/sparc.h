@@ -2557,7 +2557,8 @@ do {									\
 	fprintf (FILE, "%+d", offset);				\
       else if (GET_CODE (index) == REG)				\
 	fprintf (FILE, "+%s", reg_names[REGNO (index)]);	\
-      else if (GET_CODE (index) == SYMBOL_REF)			\
+      else if (GET_CODE (index) == SYMBOL_REF			\
+	       || GET_CODE (index) == CONST)			\
 	fputc ('+', FILE), output_addr_const (FILE, index);	\
       else abort ();						\
     }								\
