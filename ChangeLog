@@ -1,3 +1,8 @@
+2001-01-09  Mike Stump  <mrs@wrs.com>
+
+	* Makefile.in (CONFIGURE_TARGET_MODULES): Pass back configuration
+	failures of subdirectories.
+
 2001-01-02  Laurynas Biveinis  &lt;lauras@softhome.net&gt;
 
 	* ltcf-c.sh: clear ac_cv_prog_cc_pic for DJGPP. Do not add
