@@ -1,3 +1,32 @@
+2003-01-04  Paolo Carlini  <pcarlini@suse.de>
+
+	* testsuite/27_io/basic_istream/extractors_arithmetic/char/01.cc:
+	Remove redundant #includes.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/char/02.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/char/03.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/char/06.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/char/07.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/char/08.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/char/09.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/char/10.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/char/11.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/char/13.cc:
+	Likewise.
+	* testsuite/27_io/basic_ostream/inserters_arithmetic/char/1.cc:
+	Likewise.
+	* testsuite/27_io/basic_ostream/inserters_arithmetic/char/2.cc:
+	Likewise.
+	* testsuite/27_io/basic_ostream/inserters_arithmetic/wchar_t/1.cc:
+	Likewise.
+
 2004-01-04  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/12226

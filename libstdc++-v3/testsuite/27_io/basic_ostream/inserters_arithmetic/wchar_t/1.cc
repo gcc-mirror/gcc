@@ -19,9 +19,6 @@
 // Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 // USA.
 
-#include <cstdio> // for sprintf
-#include <cmath> // for abs
-#include <cfloat> // for DBL_EPSILON
 #include <iostream>
 #include <iomanip>
 #include <sstream>
