@@ -43,8 +43,8 @@ case ${query} in
       echo ${CXX}
       ;;
     --build-cxx)
-      PCHFLAGS="-Winvalid-pch -include ${BUILD_DIR}/include/stdc++.h"
-      CC_build="@glibcpp_CXX@"
+      PCHFLAGS="-include ${BUILD_DIR}/include/stdc++.h"
+      CC_build="@glibcpp_CXX@ ${PCHFLAGS}"
       CXX=`echo $CC_build | sed 's/xgcc/g++/g'`
       echo ${CXX}
       ;;

@@ -1,3 +1,23 @@
+2003-04-16  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* acinclude.m4 (GLIBCPP_CHECK_PCH): New.
+	* aclocal.m4: Regenerated.
+	* configure.in: Remove old demangler bits.
+	Call pch checks.
+	* configure: Regenerate.
+	* config.h.in: Regenerate.
+	* include/Makefile.am (allstamps): Now allstamped.
+	(allcreated): Define this.
+	(all-local): Use 'em.
+	Conditionally define pch_build, pch_install based on
+	GLIBCPP_BUILD_PCH.
+	(${pch_output}): New rule.
+	(install-pch): New rule.
+	(install-headers): New rule.
+	(install-data-local): Install headers and conditionally pch.
+        * include/Makefile.in: Regenerate.
+        * testsuite_flags.in (--build-cxx): Use pch file.
+
 2003-04-16  Jonathan Wakely  <redi@gcc.gnu.org>
 
 	* docs/html/ext/sgiexts.html: Fix path to stylesheet.

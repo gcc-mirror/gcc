@@ -343,15 +343,30 @@ thread_target_headers = \
 pch_input = stdc++.h
 pch_output = stdc++.h.gch
 pch_source = ${glibcpp_srcdir}/include/${pch_input}
+PCHFLAGS=-Winvalid-pch -Wno-deprecated -x c++-header $(CXXFLAGS)
+if GLIBCPP_BUILD_PCH
+pch_build = ${pch_output}
+pch_install = install-pch
+else
+pch_build = 
+pch_install = 
+endif
 
 # List of all timestamp files.  By keeping only one copy of this list, both
 # CLEANFILES and all-local are kept up-to-date.
-allstamps = \
+allstamped = \
 	stamp-std stamp-bits stamp-c_base stamp-c_compatibility \
-	stamp-backward stamp-ext stamp-target
+	stamp-backward stamp-ext stamp-target 
+
+# List of all files that are created by explicit building, editing, or
+# catenation.
+allcreated = \
+	${target_builddir}/c++config.h \
+	${thread_target_headers} \
+	${pch_build}
 
 # Here are the rules for building the headers
-all-local: ${target_builddir}/c++config.h ${thread_target_headers} ${allstamps}
+all-local: ${allstamped} ${allcreated} 
 
 # This rule is slightly different, in that we must change the name of the
 # local file from std_foo.h to foo.
@@ -367,14 +382,6 @@ stamp-std: ${std_headers}
 	  echo `date` > stamp-std ;\
 	fi
 
-PCHFLAGS=-Winvalid-pch -x c++-header $(CXXFLAGS)
-stamp-stdc++-precompile: stamp-std ${target_builddir}/c++config.h ${pch_source}
-	if [ ! -f "${pch_output}" ]; then \
-	  $(CXX) $(PCHFLAGS) $(INCLUDES) ${pch_source} -o ${pch_output}; \
-	  touch ${pch_input}; \
-	fi; \
-	touch stamp-stdc++-precompile
-
 stamp-bits: ${bits_headers}
 	@if [ ! -d "${bits_builddir}" ]; then \
 	  mkdir -p ${bits_builddir} ;\
@@ -388,11 +395,11 @@ stamp-c_base: ${c_base_headers} ${c_base_headers_extra}
 	@if [ ! -d "${c_base_builddir}" ]; then \
 	  mkdir -p ${c_base_builddir} ;\
 	fi ;\
-	(cd ${c_base_builddir} && for h in ${c_base_headers}; do \
-	  official_name=`echo $$h | sed -e 's,.*/std_,,' -e 's,\.h$$,,'` ;\
-	  @LN_S@ $$h ./$${official_name} || true ;\
-	done) ;\
 	if [ ! -f stamp-c_base ]; then \
+	  (cd ${c_base_builddir} && for h in ${c_base_headers}; do \
+	    official_name=`echo $$h | sed -e 's,.*/std_,,' -e 's,\.h$$,,'` ;\
+	    @LN_S@ $$h ./$${official_name} || true ;\
+	  done) ;\
 	  if [ ! -z "${c_base_headers_extra}" ]; then \
 	  (cd ${bits_builddir} && @LN_S@ ${c_base_headers_extra}  . || true) ;\
 	  fi ;\
@@ -492,6 +499,11 @@ ${target_builddir}/gthr-default.h: ${toplevel_srcdir}/gcc/${glibcpp_thread_h} \
 	    -e 's,^#include "\(.*\)",#include <bits/\1>,g' \
 	    < ${toplevel_srcdir}/gcc/${glibcpp_thread_h} > $@
 
+# Build a precompiled C++ include, stdc++.h.gch.
+${pch_output}: ${allstamped} ${target_builddir}/c++config.h ${pch_source}
+	touch ${pch_input}; \
+	$(CXX) $(PCHFLAGS) $(INCLUDES) ${pch_source} -o ${pch_output}; 
+
 # For robustness sake (in light of junk files or in-source
 # configuration), copy from the build or source tree to the install
 # tree using only the human-maintained file lists and directory
@@ -501,7 +513,10 @@ ${target_builddir}/gthr-default.h: ${toplevel_srcdir}/gcc/${glibcpp_thread_h} \
 # target_headers_extra are taken out of the build tree staging area;
 # the rest are taken from the original source tree.
 gxx_include_dir = @gxx_include_dir@
-install-data-local:
+
+install-data-local: install-headers ${pch_install}
+
+install-headers:
 	$(mkinstalldirs) $(DESTDIR)${gxx_include_dir}
 	$(mkinstalldirs) $(DESTDIR)${gxx_include_dir}/${bits_builddir}
 	for file in ${bits_headers}; do \
@@ -529,8 +544,11 @@ install-data-local:
 	 ${thread_target_headers}; do \
 	  $(INSTALL_DATA) $${file} $(DESTDIR)${gxx_include_dir}/${target_builddir}; done
 
+install-pch:
+	$(INSTALL_DATA) ${std_builddir}/${pch_output} $(DESTDIR)${gxx_include_dir}/${std_builddir}
+
 # By adding these files here, automake will remove them for 'make clean'
-CLEANFILES = *.gch stamp-stdc++-precompile
+CLEANFILES = *.gch 
 
 # Stop implicit '.o' make rules from ever stomping on extensionless
 # headers, in the improbable case where some foolish, crack-addled
