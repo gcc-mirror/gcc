@@ -4426,15 +4426,7 @@
 (define_insn "nop"
   [(const_int 0)]
   ""
-  "*
-{
-  rtx operands[1];
-
-  operands[0] = gen_rtx (REG, SImode, 0);
-  output_asm_insn (\"mov%?\\t%0, %0\\t%@ nop\", operands);
-  return \"\";
-}
-")
+  "mov%?\\t%|r0, %|r0\\t%@ nop")
 
 ;; Patterns to allow combination of arithmetic, cond code and shifts
 

@@ -1,3 +1,9 @@
+Thu May 13 01:31:19 1999  Nick Burrett  <nick.burrett@btinternet.com>
+
+	* arm.md (nop): Backout Apr 27 change. Ensure REGISTER_PREFIX is
+	applied to each register.
+	* aof.h (ASM_FILE_START): Define register `r0'.
+
 1999-05-12 20:22 -0400  Zack Weinberg  <zack@rabi.columbia.edu>
 
 	* configure.in: Make --enable-cpp and --with-cpp-install-dir
