@@ -9006,30 +9006,6 @@ The definition should be a C statement (sans semicolon) to generate the
 appropriate rtl instructions.  It is used only when compiling the end of
 @code{main}.
 
-@item NEED_ATEXIT
-@findex NEED_ATEXIT
-Define this if the target system lacks the function @code{atexit}
-from the ISO C standard.  If this macro is defined, a default definition
-will be provided to support C++.  If @code{ON_EXIT} is not defined,
-a default @code{exit} function will also be provided.
-
-@item ON_EXIT
-@findex ON_EXIT
-Define this macro if the target has another way to implement atexit
-functionality without replacing @code{exit}.  For instance, SunOS 4 has
-a similar @code{on_exit} library function.
-
-The definition should be a functional macro which can be used just like
-the @code{atexit} function.
-
-@item EXIT_BODY
-@findex EXIT_BODY
-Define this if your @code{exit} function needs to do something
-besides calling an external function @code{_cleanup} before
-terminating with @code{_exit}.  The @code{EXIT_BODY} macro is
-only needed if @code{NEED_ATEXIT} is defined and @code{ON_EXIT} is not
-defined.
-
 @findex INSN_SETS_ARE_DELAYED
 @item INSN_SETS_ARE_DELAYED (@var{insn})
 Define this macro as a C expression that is nonzero if it is safe for the

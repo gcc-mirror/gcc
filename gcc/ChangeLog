@@ -1,5 +1,13 @@
 2003-06-07  Andreas Jaeger  <aj@suse.de>
 
+	* mklibgcc.in (lib2funcs): Remove _exit.
+	* libgcc2.c: Remove L_exit.
+	* gbl-ctors.h: Remove declarations dependend on NEED_ATEXIT.
+
+	* system.h: Poison NEED_ATEXIT, ON_EXIT, EXIT_BODY.
+
+	* doc/tm.texi (Misc): Remove NEED_ATEXIT, ON_EXIT, EXIT_BODY.
+
 	* ggc.h: Convert to ISO C90 prototypes.
 	* ggc-none.c: Likewise.
 	* ggc-common.c: Likewise.
