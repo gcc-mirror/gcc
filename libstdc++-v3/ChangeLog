@@ -1,3 +1,7 @@
+2004-01-23  Stefan Olsson  <stefan@snon.net>
+
+	* include/ext/mt_allocator.h: Reduce lock contention.
+
 2004-01-23  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/13831
