@@ -1085,9 +1085,8 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
 	      volatile_ok = 1;
 
 	      /* Is the memory operand acceptable?  */
-	      if (flag_force_mem
-		  || ! ((*insn_operand_predicate[(int) CODE_FOR_extzv][1])
-			(xop0, GET_MODE (xop0))))
+	      if (! ((*insn_operand_predicate[(int) CODE_FOR_extzv][1])
+		     (xop0, GET_MODE (xop0))))
 		{
 		  /* No, load into a reg and extract from there.  */
 		  enum machine_mode bestmode;
