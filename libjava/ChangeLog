@@ -1,3 +1,9 @@
+2003-06-30  Gary Benson  <gbenson@redhat.com>
+
+	For PR libgcj/11349:
+	* javax/naming/spi/NamingManager.java (getURLContext): Use
+	correct name for factory class.
+
 2003-06-28  Michael Koch  <konqueror@gmx.de>
 
 	* java/io/PrintStream.java
