@@ -21,6 +21,7 @@ Boston, MA 02111-1307, USA.  */
 
 #include "c-common.h"
 #include "function.h"
+#include "splay-tree.h"
 #include "varray.h"
 
 #ifndef _CP_TREE_H
@@ -40,6 +41,7 @@ Boston, MA 02111-1307, USA.  */
       CLEANUP_P (in TRY_BLOCK)
       AGGR_INIT_VIA_CTOR_P (in AGGR_INIT_EXPR)
       SCOPE_BEGIN_P (in SCOPE_STMT)
+      CTOR_BEGIN_P (in CTOR_STMT)
    1: IDENTIFIER_VIRTUAL_P.
       TI_PENDING_TEMPLATE_FLAG.
       TEMPLATE_PARMS_FOR_INLINE.
@@ -2121,6 +2123,10 @@ extern int flag_new_for_scope;
 #define SET_DECL_C_BIT_FIELD(NODE) \
   (DECL_LANG_SPECIFIC (FIELD_DECL_CHECK (NODE))->decl_flags.bitfield = 1)
 
+/* In a FUNCTION_DECL, nonzero if the function cannot be inlined.  */
+#define DECL_UNINLINABLE(NODE) \
+  (DECL_LANG_SPECIFIC (NODE)->decl_flags.bitfield)
+
 #define INTEGRAL_CODE_P(CODE) \
   (CODE == INTEGER_TYPE || CODE == ENUMERAL_TYPE || CODE == BOOLEAN_TYPE)
 
@@ -2691,6 +2697,14 @@ extern int flag_new_for_scope;
 #define SCOPE_END_P(NODE) \
   (!SCOPE_BEGIN_P (SCOPE_STMT_CHECK (NODE)))
 
+/* Nonzero if this CTOR_STMT is for the beginning of a constructor.  */
+#define CTOR_BEGIN_P(NODE) \
+  (TREE_LANG_FLAG_0 (CTOR_STMT_CHECK (NODE)))
+
+/* Nonzero if this CTOR_STMT is for the end of a constructor.  */
+#define CTOR_END_P(NODE) \
+  (!CTOR_BEGIN_P (NODE))
+
 /* Nonzero for a SCOPE_STMT if there were no variables in this scope.  */
 #define SCOPE_NULLIFIED_P(NODE) \
   (TREE_LANG_FLAG_3 (SCOPE_STMT_CHECK (NODE)))
@@ -3106,6 +3120,11 @@ extern int flag_new_abi;
 /* Nonzero to not ignore namespace std. */
 
 extern int flag_honor_std;
+
+/* Nonzero if we should expand functions calls inline at the tree
+   level, rather than at the RTL level.  */
+
+extern int flag_inline_trees;
 
 /* Nonzero if we're done parsing and into end-of-file activities.  */
 
@@ -3532,6 +3551,8 @@ extern tree maybe_push_decl                     PROTO((tree));
 extern void emit_local_var                      PROTO((tree));
 extern tree build_target_expr_with_type         PROTO((tree, tree));
 extern void make_rtl_for_local_static           PROTO((tree));
+extern int local_variable_p                     PROTO((tree));
+extern int nonstatic_local_decl_p               PROTO((tree));
 
 /* in decl2.c */
 extern void init_decl2				PROTO((void));
@@ -3743,6 +3764,9 @@ extern tree make_thunk				PROTO((tree, int));
 extern void emit_thunk				PROTO((tree));
 extern void synthesize_method			PROTO((tree));
 extern tree get_id_2				PROTO((const char *, tree));
+
+/* In optimize.c */
+extern void optimize_function                   PROTO((tree));
 
 /* in pt.c */
 extern void init_pt                             PROTO ((void));
@@ -3960,7 +3984,6 @@ extern tree arbitrate_lookup			PROTO((tree, tree, tree));
 
 /* in tree.c */
 extern void init_tree			        PROTO((void));
-extern void cplus_unsave_expr_now               PROTO((tree));
 extern int pod_type_p				PROTO((tree));
 extern void unshare_base_binfos			PROTO((tree));
 extern int member_p				PROTO((tree));
@@ -4028,9 +4051,11 @@ extern tree maybe_dummy_object			PROTO((tree, tree *));
 extern int is_dummy_object			PROTO((tree));
 typedef tree (*walk_tree_fn)                    PROTO((tree *, int *, void *));
 extern tree walk_tree                           PROTO((tree *, walk_tree_fn, void *));
+extern tree copy_tree_r                         PROTO((tree *, int *, void *));
 extern int cp_valid_lang_attribute		PROTO((tree, tree, tree, tree));
 extern tree make_ptrmem_cst                     PROTO((tree, tree));
 extern tree cp_build_qualified_type_real        PROTO((tree, int, int));
+extern void remap_save_expr                     PROTO((tree *, splay_tree, tree));
 #define cp_build_qualified_type(TYPE, QUALS) \
   cp_build_qualified_type_real ((TYPE), (QUALS), /*complain=*/1)
 

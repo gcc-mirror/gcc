@@ -405,7 +405,7 @@ my_get_run_time ()
 
 #define DEFTREECODE(SYM, NAME, TYPE, LENGTH) TYPE,
 
-char cplus_tree_code_type[] = {
+static char cplus_tree_code_type[] = {
   'x',
 #include "cp-tree.def"
 };
@@ -417,7 +417,7 @@ char cplus_tree_code_type[] = {
 
 #define DEFTREECODE(SYM, NAME, TYPE, LENGTH) LENGTH,
 
-int cplus_tree_code_length[] = {
+static int cplus_tree_code_length[] = {
   0,
 #include "cp-tree.def"
 };
@@ -427,7 +427,7 @@ int cplus_tree_code_length[] = {
    Used for printing out the tree and error messages.  */
 #define DEFTREECODE(SYM, NAME, TYPE, LEN) NAME,
 
-const char *cplus_tree_code_name[] = {
+static const char *cplus_tree_code_name[] = {
   "@@dummy",
 #include "cp-tree.def"
 };

@@ -30,7 +30,6 @@ Boston, MA 02111-1307, USA.  */
 #include "rtl.h"
 #include "output.h"
 #include "toplev.h"
-#include "splay-tree.h"
 #include "ggc.h"
 #include "lex.h"
 

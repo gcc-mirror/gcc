@@ -564,7 +564,7 @@ expand_end_catch_block (blocks)
 
   /* Cleanup the EH parameter.  */
   finish_compound_stmt (/*has_no_scope=*/0, compound_stmt_2);
-    /* Cleanup the EH object.  */
+  /* Cleanup the EH object.  */
   finish_compound_stmt (/*has_no_scope=*/0, compound_stmt_1);
 }
 
@@ -615,6 +615,7 @@ expand_end_eh_spec (raises, try_block)
   decl = build_decl (VAR_DECL, NULL_TREE, tmp);
   DECL_ARTIFICIAL (decl) = 1;
   DECL_INITIAL (decl) = types;
+  DECL_CONTEXT (decl) = current_function_decl;
   cp_finish_decl (decl, types, NULL_TREE, 0);
 
   decl = decay_conversion (decl);
@@ -804,12 +805,10 @@ expand_throw (exp)
 	  tree object, ptr;
 
 	  /* OK, this is kind of wacky.  The WP says that we call
-	     terminate
-
-	     when the exception handling mechanism, after completing
-	     evaluation of the expression to be thrown but before the
-	     exception is caught (_except.throw_), calls a user function
-	     that exits via an uncaught exception.
+	     terminate when the exception handling mechanism, after
+	     completing evaluation of the expression to be thrown but
+	     before the exception is caught (_except.throw_), calls a
+	     user function that exits via an uncaught exception.
 
 	     So we have to protect the actual initialization of the
 	     exception object with terminate(), but evaluate the expression

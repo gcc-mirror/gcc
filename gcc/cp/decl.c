@@ -141,7 +141,7 @@ static boolean typename_compare PROTO((hash_table_key, hash_table_key));
 static void push_binding PROTO((tree, tree, struct binding_level*));
 static int add_binding PROTO((tree, tree));
 static void pop_binding PROTO((tree, tree));
-static tree local_variable_p PROTO((tree *, int *, void *));
+static tree local_variable_p_walkfn PROTO((tree *, int *, void *));
 static tree find_binding PROTO((tree, tree));
 static tree select_decl PROTO((tree, int));
 static int lookup_flags PROTO((int, int));
@@ -7362,26 +7362,10 @@ make_rtl_for_local_static (decl)
   tree type = TREE_TYPE (decl);
   const char *asmspec = NULL;
 
-  if (TREE_READONLY (decl)
-      && DECL_INITIAL (decl) != NULL_TREE
-      && DECL_INITIAL (decl) != error_mark_node
-      && ! EMPTY_CONSTRUCTOR_P (DECL_INITIAL (decl))
-      && ! TREE_SIDE_EFFECTS (decl)
-      && ! TREE_PUBLIC (decl)
-      && ! DECL_EXTERNAL (decl)
-      && ! TYPE_NEEDS_DESTRUCTOR (type)
-      && ! TREE_ADDRESSABLE (decl)
-      && DECL_MODE (decl) != BLKmode)
-    {
-      /* As an optimization, we try to put register-sized static
-	 constants in a register, rather than writing them out.  If we
-	 take the address of the constant later, we'll make RTL for it
-	 at that point.  */
-      DECL_RTL (decl) = gen_reg_rtx (DECL_MODE (decl));
-      store_expr (DECL_INITIAL (decl), DECL_RTL (decl), 0);
-      TREE_ASM_WRITTEN (decl) = 1;
-      return;
-    }
+  /* If we inlined this variable, we could see it's declaration
+     again.  */
+  if (DECL_RTL (decl))
+    return;
 
   if (DECL_ASSEMBLER_NAME (decl) != DECL_NAME (decl))
     {
@@ -7543,9 +7527,8 @@ emit_local_var (decl)
 {
   /* Create RTL for this variable.  */
   if (DECL_RTL (decl))
-    /* Only a RESULT_DECL should have non-NULL RTL when
-		     arriving here.  All other local variables are
-		     assigned RTL in this function.  */
+    /* Only a RESULT_DECL should have non-NULL RTL when arriving here.
+       All other local variables are assigned RTL in this function.  */
     my_friendly_assert (TREE_CODE (decl) == RESULT_DECL, 
 			19990828);
   else
@@ -11141,27 +11124,48 @@ require_complete_types_for_parms (parms)
     }
 }
 
-/* Returns *TP if *TP is a local variable (or parameter).  Returns
-   NULL_TREE otherwise.  */
+/* Returns non-zero if T is a local variable.  */
 
-static tree
-local_variable_p (tp, walk_subtrees, data)
-     tree *tp;
-     int *walk_subtrees ATTRIBUTE_UNUSED;
-     void *data ATTRIBUTE_UNUSED;
+int
+local_variable_p (t)
+     tree t;
 {
-  tree t = *tp;
-
   if ((TREE_CODE (t) == VAR_DECL 
        /* A VAR_DECL with a context that is a _TYPE is a static data
 	  member.  */
        && !TYPE_P (CP_DECL_CONTEXT (t))
        /* Any other non-local variable must be at namespace scope.  */
-       && TREE_CODE (CP_DECL_CONTEXT (t)) != NAMESPACE_DECL)
+       && !DECL_NAMESPACE_SCOPE_P (t))
       || (TREE_CODE (t) == PARM_DECL))
-    return t;
+    return 1;
 
-  return NULL_TREE;
+  return 0;
+}
+
+/* Returns non-zero if T is an automatic local variable or a label.
+   (These are the declarations that need to be remapped when the code
+   containing them is duplicated.)  */
+
+int
+nonstatic_local_decl_p (t)
+     tree t;
+{
+  return ((local_variable_p (t) && !TREE_STATIC (t))
+	  || TREE_CODE (t) == LABEL_DECL
+	  || TREE_CODE (t) == RESULT_DECL);
+}
+
+/* Like local_variable_p, but suitable for use as a tree-walking
+   function.  */
+
+static tree
+local_variable_p_walkfn (tp, walk_subtrees, data)
+     tree *tp;
+     int *walk_subtrees ATTRIBUTE_UNUSED;
+     void *data ATTRIBUTE_UNUSED;
+{
+  return ((local_variable_p (*tp) && !DECL_ARTIFICIAL (*tp)) 
+	  ? *tp : NULL_TREE);
 }
 
 /* Check that ARG, which is a default-argument expression for a
@@ -11230,7 +11234,7 @@ check_default_argument (decl, arg)
 
      The keyword `this' shall not be used in a default argument of a
      member function.  */
-  var = walk_tree (&arg, local_variable_p, NULL);
+  var = walk_tree (&arg, local_variable_p_walkfn, NULL);
   if (var)
     {
       cp_error ("default argument `%E' uses local variable `%D'",
@@ -13067,9 +13071,15 @@ start_function (declspecs, declarator, attrs, flags)
 
   if (DESTRUCTOR_NAME_P (DECL_ASSEMBLER_NAME (decl1))
       && DECL_LANGUAGE (decl1) == lang_cplusplus)
-    dtor_label = build_decl (LABEL_DECL, NULL_TREE, NULL_TREE);
+    {
+      dtor_label = build_decl (LABEL_DECL, NULL_TREE, NULL_TREE);
+      DECL_CONTEXT (dtor_label) = current_function_decl;
+    }
   else if (DECL_CONSTRUCTOR_P (decl1))
-    ctor_label = build_decl (LABEL_DECL, NULL_TREE, NULL_TREE);
+    {
+      ctor_label = build_decl (LABEL_DECL, NULL_TREE, NULL_TREE);
+      DECL_CONTEXT (ctor_label) = current_function_decl;
+    }
 
   return 1;
 }
@@ -13295,10 +13305,8 @@ finish_constructor_body ()
   /* In check_return_expr we translate an empty return from a
      constructor to a return of `this'.  */
   finish_return_stmt (NULL_TREE);
-
-  /* Mark the end of the main constructor body.  */
-  if (DECL_CONSTRUCTOR_P (current_function_decl))
-    add_tree (build_min_nt (CTOR_COMPLETE));
+  /* Mark the end of the constructor.  */
+  add_tree (build_min_nt (CTOR_STMT));
 }
 
 /* At the end of every destructor we generate code to restore virtual

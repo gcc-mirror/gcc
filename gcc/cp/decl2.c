@@ -42,7 +42,6 @@ Boston, MA 02111-1307, USA.  */
 #include "toplev.h"
 #include "dwarf2out.h"
 #include "dwarfout.h"
-#include "splay-tree.h"
 #include "ggc.h"
 
 #if USE_CPPLIB
@@ -443,6 +442,11 @@ int flag_new_abi;
 /* Nonzero to not ignore namespace std. */
 
 int flag_honor_std;
+
+/* Nonzero if we should expand functions calls inline at the tree
+   level, rather than at the RTL level.  */
+
+int flag_inline_trees = 0;
 
 /* Maximum template instantiation depth. Must be at least 17 for ANSI
    compliance. */

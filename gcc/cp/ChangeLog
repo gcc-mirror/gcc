@@ -1,3 +1,73 @@
+1999-11-25  Mark Mitchell  <mark@codesourcery.com>
+
+	* Make-lang.in (CXX_SRCS): Add optimize.c.  
+	* Makefile.in (CXX_OBJS): Add optimize.o.
+	(CXX_TREE_H): Add splay-tree.h, system.h, and $(CONFIG_H).
+	(spew.o, lex.o, decl.o, decl2.o, typeck2.o, typeck.o): Adjust.
+	(class.o, call.o, friend.o, init.o, method.o, cvt.o): Likewise.
+	(search.o, tree.o, ptree.o, rtti.o, except.o, expr.o): Likewise.
+	(xref.o, pt.o, error.o, errfn.o, repo.o, semantics.o): Likewise.
+	(dump.o): Likewise.
+	(optimize.o): New target.  
+	* class.c: Don't include splay-tree.h.
+	* cp-tree.def (CTOR_COMPLETE): Rename to CTOR_STMT.  
+	* cp-tree.h: Include splay-tree.h.
+	(DECL_UNINLINABLE): New macro.
+	(CTOR_BEGIN_P, CTOR_END_P): New macros.
+	(flag_inline_trees): New variable.
+	(local_variable_p): New function.
+	(nonstatic_local_decl_p): Likewise.
+	(optimize_function): Likewise.
+	(cplus_unsave_expr_now): Remove.
+	(copy_tree_r): Declare.
+	(remap_save_expr): Likewise.  
+	* decl.c (local_variable_p): Don't
+	make it static.
+	(local_variable_p_walkfn): New function.
+	(make_rtl_for_local_static): Remove code to try to avoid writing
+	out static constants.
+	(emit_local_var): Fix indentation.
+	(nonstatic_local_decl_p): New function.
+	(check_default_argument): Use local_variable_p_walkfn, not
+	local_variable_p, when walking the tree.
+	(start_function): Set the DECL_CONTEXT for automatically generated
+	labels.
+	(finish_constructor_body): Use CTOR_STMT to mark the end of a
+	constructor.  
+	* decl2.c: Don't include splay-tree.h.
+	(flag_inline_trees): Define.  
+	* dump.c: Don't include
+	splay-tree.h.  
+	* except.c (expand_end_catch_block): Fix comment formatting.
+	(expand_end_eh_spec): Set DECL_CONTEXT on temporary variables.
+	(expand_throw): Tidy comment.  
+	* init.c (build_vec_delete_1): Use create_temporary_var.  
+	* lex.c (cplus_tree_code_type): Make it static.
+	(cplus_tree_code_length): Likewise.
+	(cplus_tree_code_name): Likewise.  
+	* optimize.c: New file.  
+	* semantics.c (finish_goto_stmt): Set DECL_UNLINABLE for functions
+	with computed gotos.
+	(setup_vtbl_ptr): Mark the beginnings of constructors with
+	CTOR_STMT.
+	(expand_stmt): Handle CTOR_STMT, not CTOR_COMPLETE.
+	(expand_body): Call optimize_function.  Save bodies if we're doing
+	inlining on trees.
+	* tree.c: Don't include splay-tree.h.  Include insn-config.h and
+	integrate.h.
+	(copy_tree_r): Make it public.
+	(statement_code_p): New function.
+	(mark_local_for_remap_r): Likewise.
+	(cp_usave_r): Likewise.
+	(cp_unsave): Likewise.
+	(build_cplus_new): Set DECL_CONTEXT for temporary variables.
+	(walk_tree): Walk into `s' class nodes.  Walk statement chains.
+	(copy_tree_r): Handle 's' class nodes.  Restore chains for
+	statements.  Nullify scopes.  Don't copy types.
+	(init_tree): Set lang_unsave to cp_unsave.
+	(remap_save_expr): Define.
+	* ir.texi: Document CTOR_STMT.
+	
 1999-11-24  Jason Merrill  <jason@casey.cygnus.com>
 
 	* search.c (note_debug_info_needed): Do perform this optimization

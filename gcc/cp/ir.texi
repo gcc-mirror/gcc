@@ -1274,9 +1274,11 @@ following the @code{TREE_CHAIN} link from one substatement to the next.
 Used to represent a @code{continue} statement.  There are no additional
 fields.
 
-@item CTOR_COMPLETE
+@item CTOR_STMT
 
-Used to mark the end of the main body of a constructor.
+Used to mark the beginning (if @code{CTOR_BEGIN_P} holds) or end (if
+@code{CTOR_END_P} holds of the main body of a constructor.  See also
+@code{SUBOBJECT} for more information on how to use these nodes.
 
 @item DECL_STMT
 
@@ -1387,9 +1389,9 @@ equalit) to @code{CATCH_ALL_TYPE} if this handler is for all types.
 
 In a constructor, these nodes are used to mark the point at which a
 subobject of @code{this} is fully constructed.  If, after this point, an
-exception is thrown before a CTOR_COMPLETE statement is encountered, the
-@code{SUBOBJECT_CLEANUP} must be executed.  The cleanups must be
-executed in the reverse order in which they appear.
+exception is thrown before a @code{CTOR_STMT} with @code{CTOR_END_P} set
+is encountered, the @code{SUBOBJECT_CLEANUP} must be executed.  The
+cleanups must be executed in the reverse order in which they appear.
 
 @item SWITCH_STMT
 
