@@ -137,6 +137,11 @@ extern double (atof) ();
 #define REAL_VALUE_ISINF(x) (target_isinf (x))
 #endif
 
+/* Determine whether a floating-point value X is a NaN. */
+#ifndef REAL_VALUE_ISNAN
+#define REAL_VALUE_ISNAN(x) (target_isnan (x))
+#endif
+
 /* Determine whether a floating-point value X is minus 0. */
 #ifndef REAL_VALUE_MINUS_ZERO
 #define REAL_VALUE_MINUS_ZERO(x) (target_minus_zero (x))
