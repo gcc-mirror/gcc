@@ -1,3 +1,9 @@
+2004-07-05  Steven Bosscher  <stevenb@suse.de>
+
+	* rtl.h (struct rtx_def): Remove the integrated flag.
+	Use the return_val flag for MEM_SCALAR_P.
+	Reshuffle and update flags in CLEAR_RTX_FLAGS.
+
 2004-07-05  Richard Sandiford  <rsandifo@redhat.com>
 
 	PR target/16357
