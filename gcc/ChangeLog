@@ -1,3 +1,8 @@
+Wed Sep  1 11:32:00 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* reload1.c: Fix many indentation problems.
+	* reload.c: Likewise.
+
 Tue Aug 31 22:08:03 1999  Marc Espie <espie@cvs.openbsd.org>
 
 	* alias.c (non_local_reference_p): Constify fmt.
