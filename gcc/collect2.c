@@ -551,8 +551,45 @@ static char *target_machine = TARGET_MACHINE;
 /* Names under which we were executed.  Never return one of those files in our
    searches.  */
 
-static char *our_file_name, *last_file_name;
+static struct path_prefix our_file_names;
 
+/* Determine if STRING is in PPREFIX.
+
+   This utility is currently only used to look up file names.  Prefix lists
+   record directory names.  This matters to us because the latter has a 
+   trailing slash, so I've added a flag to handle both.  */
+
+static int
+is_in_prefix_list (pprefix, string, filep)
+     struct path_prefix *pprefix;
+     char *string;
+     int filep;
+{
+  struct prefix_list *pl;
+
+  if (filep)
+    {
+      int len = strlen (string);
+
+      for (pl = pprefix->plist; pl; pl = pl->next)
+	{
+	  if (strncmp (pl->prefix, string, len) == 0
+	      && strcmp (pl->prefix + len, "/") == 0)
+	    return 1;
+	}
+    }
+  else
+    {
+      for (pl = pprefix->plist; pl; pl = pl->next)
+	{
+	  if (strcmp (pl->prefix, string) == 0)
+	    return 1;
+	}
+    }
+
+  return 0;
+}
+
 /* Search for NAME using prefix list PPREFIX.  We only look for executable
    files. 
 
@@ -588,8 +625,7 @@ find_a_file (pprefix, name)
       {
 	strcpy (temp, pl->prefix);
 	strcat (temp, name);
-	if (strcmp (temp, our_file_name) != 0
-	    && ! (last_file_name != 0 && strcmp (temp, last_file_name) == 0)
+	if (! is_in_prefix_list (&our_file_names, temp, 1)
 	    /* This is a kludge, but there seems no way around it.  */
 	    && strcmp (temp, "./ld") != 0
 	    && access (temp, X_OK) == 0)
@@ -599,8 +635,7 @@ find_a_file (pprefix, name)
 	/* Some systems have a suffix for executable files.
 	   So try appending that.  */
 	strcat (temp, EXECUTABLE_SUFFIX);
-	if (strcmp (temp, our_file_name) != 0
-	    && ! (last_file_name != 0 && strcmp (temp, last_file_name) == 0)
+	if (! is_in_prefix_list (&our_file_names, temp, 1)
 	    && access (temp, X_OK) == 0)
 	  return temp;
 #endif
@@ -716,6 +751,7 @@ main (argc, argv)
   FILE *outf;
   char *ld_file_name;
   char *c_file_name;
+  char *collect_names;
   char *p;
   char **c_argv;
   char **c_ptr;
@@ -733,22 +769,30 @@ main (argc, argv)
   vflag = 1;
 #endif
 
-  our_file_name = argv[0];
-
   output_file = "a.out";
 
   /* We must check that we do not call ourselves in an infinite
-     recursion loop. We save the name used for us in the COLLECT_NAME
+     recursion loop. We save the name used for us in the COLLECT_NAMES
      environment variable, first getting the previous value.
 
-     To be fully safe, we need to maintain a list of names that name
-     been used, but, in practice, two names are enough.  */
+     In practice, collect will rarely invoke itself.  This can happen now
+     that we are no longer called gld.  A perfect example is when running
+     gcc in a build directory that has been installed.  When looking for 
+     ld's, we'll find our installed version and believe that's the real ld.  */
 
-  last_file_name = getenv ("COLLECT_NAME");
+  collect_names = (char *) getenv ("COLLECT_NAMES");
 
-  p = (char *) xmalloc (strlen (our_file_name) + strlen ("COLLECT_NAME=") + 1);
-  sprintf (p, "COLLECT_NAME=%s", our_file_name);
+  p = (char *) xmalloc (strlen ("COLLECT_NAMES=")
+			+ (collect_names ? strlen (collect_names) + 1 : 0)
+			+ strlen (argv[0]) + 1);
+  if (collect_names != 0)
+    sprintf (p, "COLLECT_NAMES=%s%c%s",
+	     collect_names, PATH_SEPARATOR, argv[0]);
+  else
+    sprintf (p, "COLLECT_NAMES=%s", argv[0]);
   putenv (p);
+
+  prefix_from_env ("COLLECT_NAMES", &our_file_names);
 
   p = (char *) getenv ("COLLECT_GCC_OPTIONS");
   if (p)
@@ -872,6 +916,18 @@ main (argc, argv)
      for `ld' (if native linking) or `TARGET-ld' (if cross).  */
   if (ld_file_name == 0)
     ld_file_name = find_a_file (&path, full_ld_suffix);
+
+  /* If we've invoked ourselves, try again with LD_FILE_NAME.  */
+
+  if (collect_names != 0)
+    {
+      if (ld_file_name != 0)
+	{
+	  argv[0] = ld_file_name;
+	  execvp (argv[0], argv);
+	}
+      fatal ("cannot find `ld'");
+    }
 
   nm_file_name = find_a_file (&cpath, gnm_suffix);
   if (nm_file_name == 0)
@@ -1037,6 +1093,10 @@ main (argc, argv)
 	       (c_file ? c_file : "not found"));
       fprintf (stderr, "o_file              = %s\n",
 	       (o_file ? o_file : "not found"));
+
+      ptr = getenv ("COLLECT_NAMES");
+      if (ptr)
+	fprintf (stderr, "COLLECT_NAMES       = %s\n", ptr);
 
       ptr = getenv ("COLLECT_GCC_OPTIONS");
       if (ptr)
