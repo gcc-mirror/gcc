@@ -1,3 +1,8 @@
+Tue Jan 27 00:07:02 1998  Jeffrey A Law  (law@cygnus.com)
+
+        * emit-rtl.c (gen_lowpart_common): Handle more case where converting
+	a CONST_INT into SFmode.
+
 Tue Jan 20 16:01:03 1998  Anthony Green  <green@cygnus.com>
 
 	* flags.h: New flag (optimize_size).
