@@ -1,5 +1,5 @@
 /*
- * $Id: fixincl.c,v 1.1 1998/03/20 16:19:41 korbb Exp $
+ * $Id: fixincl.c,v 1.4 1998/08/05 10:20:11 korbb Exp $
  *
  * Install modified versions of certain ANSI-incompatible system header
  * files which are fixed to work correctly with ANSI C and placed in a
@@ -28,7 +28,6 @@
 #include <sys/param.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <sys/stropts.h>
 #include <sys/wait.h>
 #include <signal.h>
 #include <stdio.h>
@@ -36,8 +35,6 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <string.h>
-#include <stropts.h>
-#include <poll.h>
 #include <fcntl.h>
 #include <ctype.h>
 
@@ -138,7 +135,7 @@ main (argc, argv)
 
       if (strcmp (argv[1], "-v") == 0)
 	{
-	  fputs ("$Id: fixincl.c,v 1.1 1998/03/20 16:19:41 korbb Exp $\n", stderr);
+	  fputs ("$Id: fixincl.c,v 1.3 1998/06/02 07:00:12 korbb Exp $\n", stderr);
 	  exit (EXIT_SUCCESS);
         }
 
@@ -448,17 +445,18 @@ createFile (pzFile)
 }
 
 tSuccess
-testTest (pTest)
+testTest (pTest, pzFile)
      tTestDesc *pTest;
+     char*      pzFile;
 {
   char *pzRes;
   tSuccess res = FAILURE;
 
   static char zCmdBuf[4096];
-  tSCC zCmdFmt[] = "if ( test %s ) > /dev/null 2>&1\n"
+  tSCC zCmdFmt[] = "f=%s\nif ( test %s ) > /dev/null 2>&1\n"
   "then echo TRUE\n" "else echo FALSE\n" "fi";
 
-  sprintf (zCmdBuf, zCmdFmt, pTest->pzTest);
+  sprintf (zCmdBuf, zCmdFmt, pzFile, pTest->pzTest);
   pzRes = runShell (zCmdBuf);
   if (*pzRes == 'T')
     res = SUCCESS;
@@ -643,7 +641,7 @@ process (pzDta, pzDir, pzFile)
 	       *  IF *any* of the shell tests fail,
 	       *  THEN do not process the fix.
 	       */
-	      if (!SUCCESSFUL (testTest (pTD)))
+	      if (!SUCCESSFUL (testTest (pTD, pzFile)))
 		goto nextFix;
 	      break;
 
