@@ -1,3 +1,11 @@
+2005-02-19  Zdenek Dvorak  <dvorakz@suse.cz>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/19828
+	* tree-ssa-loop-im.c: Add a TODO comment.
+	(movement_possibility): Return MOVE_PRESERVE_EXECUTION for calls
+	without side-effects.
+
 2005-02-18  James A. Morrison  <phython@gcc.gnu.org>
 
 	* tree-ssa-ccp.c (widen_bitfield): Pass type to build_int_cst and don't

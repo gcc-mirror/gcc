@@ -1,3 +1,10 @@
+2005-02-19  Zdenek Dvorak  <dvorakz@suse.cz>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/19828
+	* gcc.dg/tree-ssa/loop-7.c: New test.
+	* gcc.c-torture/execute/20050218-1.c: New test.
+
 2005-02-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/20043
