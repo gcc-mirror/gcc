@@ -1246,7 +1246,12 @@ final (first, file, optimize, prescan)
 
   /* Output the insns.  */
   for (insn = NEXT_INSN (first); insn;)
-    insn = final_scan_insn (insn, file, optimize, prescan, 0);
+    {
+#ifdef HAVE_ATTR_length
+      insn_current_address = insn_addresses[INSN_UID (insn)];
+#endif
+      insn = final_scan_insn (insn, file, optimize, prescan, 0);
+    }
 
   /* Do basic-block profiling here
      if the last insn was a conditional branch.  */
