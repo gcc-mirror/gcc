@@ -1,3 +1,10 @@
+Mon Mar 27 07:14:33 1995  Warner Losh	<imp@village.org>
+
+	* g++.c: Removed __NetBSD__ from conditional.
+	Declare strerror if HAVE_STRERROR is defined; otherwise
+	declare sys_errlist and sys_nerr.
+	(my_strerror): New function.
+
 Fri Mar 24 12:11:24 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
 
 	* decl.c (duplicate_decls): Propagate DECL_ABSTRACT_VIRTUAL_P.
