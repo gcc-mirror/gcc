@@ -1941,7 +1941,7 @@ mmix_assemble_integer (x, size, aligned_p)
 	return true;
 
       case 4:
-	if (GET_CODE (x) != CONST_INT && GET_CODE (x) != SYMBOL_REF)
+	if (GET_CODE (x) != CONST_INT)
 	  {
 	    aligned_p = 0;
 	    break;

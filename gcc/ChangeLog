@@ -1,3 +1,8 @@
+2002-02-13  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* config/mmix/mmix.c (mmix_assemble_integer) <case 4>: Don't
+	handle SYMBOL_REF.
+
 2002-02-13  Stan Shebs  <shebs@apple.com>
 
         * c-typeck.c (digest_init): Handle vectors.
