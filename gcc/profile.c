@@ -119,9 +119,9 @@ static int total_num_branches;
 /* Forward declarations.  */
 static void find_spanning_tree (struct edge_list *);
 static unsigned instrument_edges (struct edge_list *);
-static void instrument_values (unsigned, struct histogram_value *);
+static void instrument_values (histogram_values);
 static void compute_branch_probabilities (void);
-static void compute_value_histograms (unsigned, struct histogram_value *);
+static void compute_value_histograms (histogram_values);
 static gcov_type * get_exec_counts (void);
 static basic_block find_group (basic_block);
 static void union_groups (basic_block, basic_block);
@@ -166,17 +166,18 @@ instrument_edges (struct edge_list *el)
   return num_instr_edges;
 }
 
-/* Add code to measure histograms list of VALUES of length N_VALUES.  */
+/* Add code to measure histograms for values in list VALUES.  */
 static void
-instrument_values (unsigned n_values, struct histogram_value *values)
+instrument_values (histogram_values values)
 {
   unsigned i, t;
 
   /* Emit code to generate the histograms before the insns.  */
 
-  for (i = 0; i < n_values; i++)
+  for (i = 0; i < VEC_length (histogram_value, values); i++)
     {
-      switch (values[i].type)
+      histogram_value hist = VEC_index (histogram_value, values, i);
+      switch (hist->type)
 	{
 	case HIST_TYPE_INTERVAL:
 	  t = GCOV_COUNTER_V_INTERVAL;
@@ -197,25 +198,25 @@ instrument_values (unsigned n_values, struct histogram_value *values)
 	default:
 	  abort ();
 	}
-      if (!coverage_counter_alloc (t, values[i].n_counters))
+      if (!coverage_counter_alloc (t, hist->n_counters))
 	continue;
 
-      switch (values[i].type)
+      switch (hist->type)
 	{
 	case HIST_TYPE_INTERVAL:
-	  (profile_hooks->gen_interval_profiler) (values + i, t, 0);
+	  (profile_hooks->gen_interval_profiler) (hist, t, 0);
 	  break;
 
 	case HIST_TYPE_POW2:
-	  (profile_hooks->gen_pow2_profiler) (values + i, t, 0);
+	  (profile_hooks->gen_pow2_profiler) (hist, t, 0);
 	  break;
 
 	case HIST_TYPE_SINGLE_VALUE:
-	  (profile_hooks->gen_one_value_profiler) (values + i, t, 0);
+	  (profile_hooks->gen_one_value_profiler) (hist, t, 0);
 	  break;
 
 	case HIST_TYPE_CONST_DELTA:
-	  (profile_hooks->gen_const_delta_profiler) (values + i, t, 0);
+	  (profile_hooks->gen_const_delta_profiler) (hist, t, 0);
 	  break;
 
 	default:
@@ -613,22 +614,27 @@ compute_branch_probabilities (void)
   free_aux_for_blocks ();
 }
 
-/* Load value histograms for N_VALUES values whose description is stored
-   in VALUES array from .da file.  */
+/* Load value histograms values whose description is stored in VALUES array
+   from .da file.  */
+
 static void
-compute_value_histograms (unsigned n_values, struct histogram_value *values)
+compute_value_histograms (histogram_values values)
 {
   unsigned i, j, t, any;
   unsigned n_histogram_counters[GCOV_N_VALUE_COUNTERS];
   gcov_type *histogram_counts[GCOV_N_VALUE_COUNTERS];
   gcov_type *act_count[GCOV_N_VALUE_COUNTERS];
   gcov_type *aact_count;
+  histogram_value hist;
  
   for (t = 0; t < GCOV_N_VALUE_COUNTERS; t++)
     n_histogram_counters[t] = 0;
 
-  for (i = 0; i < n_values; i++)
-    n_histogram_counters[(int) (values[i].type)] += values[i].n_counters;
+  for (i = 0; i < VEC_length (histogram_value, values); i++)
+    {
+      hist = VEC_index (histogram_value, values, i);
+      n_histogram_counters[(int) hist->type] += hist->n_counters;
+    }
 
   any = 0;
   for (t = 0; t < GCOV_N_VALUE_COUNTERS; t++)
@@ -649,25 +655,27 @@ compute_value_histograms (unsigned n_values, struct histogram_value *values)
   if (!any)
     return;
 
-  for (i = 0; i < n_values; i++)
+  for (i = 0; i < VEC_length (histogram_value, values); i++)
     {
       rtx hist_list = NULL_RTX;
-      t = (int) (values[i].type);
+
+      hist = VEC_index (histogram_value, values, i);
+      t = (int) hist->type;
 
       /* FIXME: make this work for trees.  */
       if (!ir_type ())
 	{
 	  aact_count = act_count[t];
-	  act_count[t] += values[i].n_counters;
-	  for (j = values[i].n_counters; j > 0; j--)
+	  act_count[t] += hist->n_counters;
+	  for (j = hist->n_counters; j > 0; j--)
 	    hist_list = alloc_EXPR_LIST (0, GEN_INT (aact_count[j - 1]), 
 					hist_list);
 	      hist_list = alloc_EXPR_LIST (0, 
-			    copy_rtx ((rtx)values[i].value), hist_list);
-	  hist_list = alloc_EXPR_LIST (0, GEN_INT (values[i].type), hist_list);
-	      REG_NOTES ((rtx)values[i].insn) =
+			    copy_rtx ((rtx) hist->value), hist_list);
+	  hist_list = alloc_EXPR_LIST (0, GEN_INT (hist->type), hist_list);
+	      REG_NOTES ((rtx) hist->insn) =
 		  alloc_EXPR_LIST (REG_VALUE_PROFILE, hist_list,
-				       REG_NOTES ((rtx)values[i].insn));
+				   REG_NOTES ((rtx) hist->insn));
 	}
     }
 
@@ -700,8 +708,7 @@ branch_prob (void)
   unsigned num_edges, ignored_edges;
   unsigned num_instrumented;
   struct edge_list *el;
-  unsigned n_values = 0;
-  struct histogram_value *values = NULL;
+  histogram_values values = NULL;
 
   total_num_times_called++;
 
@@ -960,13 +967,13 @@ branch_prob (void)
 #undef BB_TO_GCOV_INDEX
 
   if (flag_profile_values)
-    find_values_to_profile (&n_values, &values);
+    find_values_to_profile (&values);
 
   if (flag_branch_probabilities)
     {
       compute_branch_probabilities ();
       if (flag_profile_values)
-	compute_value_histograms (n_values, values);
+	compute_value_histograms (values);
     }
 
   remove_fake_edges ();
@@ -981,7 +988,7 @@ branch_prob (void)
 	abort ();
 
       if (flag_profile_values)
-	instrument_values (n_values, values);
+	instrument_values (values);
 
       /* Commit changes done by instrumentation.  */
       if (ir_type ())

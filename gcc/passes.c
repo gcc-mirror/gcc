@@ -1820,7 +1820,8 @@ rest_of_compilation (void)
 
       if (flag_branch_probabilities
 	  && flag_profile_values
-	  && flag_value_profile_transformations)
+	  && (flag_value_profile_transformations
+	      || flag_speculative_prefetching))
 	rest_of_handle_value_profile_transformations ();
 
       /* Remove the death notes created for vpt.  */

@@ -39,14 +39,15 @@ enum hist_type
 
 /* The value to measure.  */
 /* The void *'s are either rtx or tree, depending on which IR is in use.  */
-struct histogram_value
+struct histogram_value_t GTY(())
 {
-  void * value;		/* The value to profile.  */
-  enum machine_mode mode; /* And its mode.  */
-  void * seq;		/* Insns required to count the profiled value.  */
-  void * insn;		/* Insn before that to measure.  */
-  enum hist_type type;	/* Type of information to measure.  */
-  unsigned n_counters;	/* Number of required counters.  */
+  PTR GTY ((skip (""))) value;		/* The value to profile.  */
+  enum machine_mode mode;		/* And its mode.  */
+  PTR GTY ((skip (""))) seq;		/* Insns required to count the
+					   profiled value.  */
+  PTR GTY ((skip (""))) insn;		/* Insn before that to measure.  */
+  enum hist_type type;			/* Type of information to measure.  */
+  unsigned n_counters;			/* Number of required counters.  */
   union
     {
       struct
@@ -63,13 +64,18 @@ struct histogram_value
     } hdata;		/* Profiled information specific data.  */
 };
 
+typedef struct histogram_value_t *histogram_value;
+
+DEF_VEC_P(histogram_value);
+
+typedef VEC(histogram_value) *histogram_values;
+
 /* Hooks registration.  */
 extern void rtl_register_value_prof_hooks (void);
 extern void tree_register_value_prof_hooks (void);
 
 /* IR-independent entry points.  */
-extern void find_values_to_profile (unsigned *, struct histogram_value **);
-extern void free_profiled_values (unsigned, struct histogram_value *);
+extern void find_values_to_profile (histogram_values *);
 extern bool value_profile_transformations (void);
 
 /* External declarations for edge-based profiling.  */
@@ -78,18 +84,17 @@ struct profile_hooks {
   void (*gen_edge_profiler) (int, edge);
 
   /* Insert code to increment the interval histogram counter.  */
-  void (*gen_interval_profiler) (struct histogram_value *, unsigned, unsigned);
+  void (*gen_interval_profiler) (histogram_value, unsigned, unsigned);
 
   /* Insert code to increment the power of two histogram counter.  */
-  void (*gen_pow2_profiler) (struct histogram_value *, unsigned, unsigned);
+  void (*gen_pow2_profiler) (histogram_value, unsigned, unsigned);
 
   /* Insert code to find the most common value.  */
-  void (*gen_one_value_profiler) (struct histogram_value *, unsigned, unsigned);
+  void (*gen_one_value_profiler) (histogram_value, unsigned, unsigned);
 
   /* Insert code to find the most common value of a difference between two
      evaluations of an expression.  */
-  void (*gen_const_delta_profiler) (struct histogram_value *, unsigned, 
-				    unsigned);
+  void (*gen_const_delta_profiler) (histogram_value, unsigned, unsigned);
   FILE * (*profile_dump_file) (void);
 };
 

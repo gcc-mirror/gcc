@@ -311,7 +311,7 @@ Objective-C and Objective-C++ Dialects}.
 -fsched-stalled-insns=@var{n} -sched-stalled-insns-dep=@var{n} @gol
 -fsched2-use-superblocks @gol
 -fsched2-use-traces -freschedule-modulo-scheduled-loops @gol
--fsignaling-nans -fsingle-precision-constant  @gol
+-fsignaling-nans -fsingle-precision-constant  -fspeculative-prefetching @gol
 -fstrength-reduce  -fstrict-aliasing  -ftracer  -fthread-jumps @gol
 -funroll-all-loops  -funroll-loops  -fpeel-loops @gol
 -funswitch-loops  -fold-unroll-loops  -fold-unroll-all-loops @gol
@@ -5010,6 +5010,21 @@ With @option{-fbranch-probabilities}, it reads back the data gathered
 and actually performs the optimizations based on them.
 Currently the optimizations include specialization of division operation
 using the knowledge about the value of the denominator.
+
+@item -fspeculative-prefetching
+@opindex fspeculative-prefetching
+If combined with @option{-fprofile-arcs}, it instructs the compiler to add
+a code to gather information about addresses of memory references in the
+program.
+
+With @option{-fbranch-probabilities}, it reads back the data gathered
+and issues prefetch instructions according to them.  In addition to the opportunities
+noticed by @option{-fprefetch-loop-arrays}, it also notices more complicated
+memory access patterns -- for example accesses to the data stored in linked
+list whose elements are usually allocated sequentially.
+
+In order to prevent issuing double prefetches, usage of
+@option{-fspeculative-prefetching} implies @option{-fno-prefetch-loop-arrays}.
 
 Enabled with @option{-fprofile-generate} and @option{-fprofile-use}.
 

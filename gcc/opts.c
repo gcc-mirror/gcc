@@ -93,6 +93,7 @@ static const char undocumented_msg[] = N_("This switch lacks documentation");
 static bool profile_arc_flag_set, flag_profile_values_set;
 static bool flag_unroll_loops_set, flag_tracer_set;
 static bool flag_value_profile_transformations_set;
+bool flag_speculative_prefetching_set;
 static bool flag_peel_loops_set, flag_branch_probabilities_set;
 
 /* Input file names.  */
@@ -830,6 +831,10 @@ common_handle_option (size_t scode, const char *arg, int value)
         flag_tracer = value;
       if (!flag_value_profile_transformations_set)
         flag_value_profile_transformations = value;
+#ifdef HAVE_prefetch
+      if (!flag_speculative_prefetching_set)
+	flag_speculative_prefetching = value;
+#endif
       break;
 
     case OPT_fprofile_generate:
@@ -839,6 +844,10 @@ common_handle_option (size_t scode, const char *arg, int value)
         flag_profile_values = value;
       if (!flag_value_profile_transformations_set)
         flag_value_profile_transformations = value;
+#ifdef HAVE_prefetch
+      if (!flag_speculative_prefetching_set)
+	flag_speculative_prefetching = value;
+#endif
       break;
 
     case OPT_fprofile_values:
@@ -861,7 +870,11 @@ common_handle_option (size_t scode, const char *arg, int value)
       break;
 
     case OPT_fvpt:
-      flag_value_profile_transformations_set = value;
+      flag_value_profile_transformations_set = true;
+      break;
+
+    case OPT_fspeculative_prefetching:
+      flag_speculative_prefetching_set = true;
       break;
 
     case OPT_frandom_seed:

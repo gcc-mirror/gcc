@@ -94,7 +94,7 @@ tree_gen_edge_profiler (int edgeno, edge e)
    tag of the section for counters, BASE is offset of the counter position.  */
 
 static void
-tree_gen_interval_profiler (struct histogram_value *value ATTRIBUTE_UNUSED, 
+tree_gen_interval_profiler (histogram_value value ATTRIBUTE_UNUSED, 
 			    unsigned tag ATTRIBUTE_UNUSED, 
 			    unsigned base ATTRIBUTE_UNUSED)
 {
@@ -107,7 +107,7 @@ tree_gen_interval_profiler (struct histogram_value *value ATTRIBUTE_UNUSED,
    of the section for counters, BASE is offset of the counter position.  */
 
 static void
-tree_gen_pow2_profiler (struct histogram_value *value ATTRIBUTE_UNUSED, 
+tree_gen_pow2_profiler (histogram_value value ATTRIBUTE_UNUSED, 
 			unsigned tag ATTRIBUTE_UNUSED,
 			unsigned base ATTRIBUTE_UNUSED)
 {
@@ -120,7 +120,7 @@ tree_gen_pow2_profiler (struct histogram_value *value ATTRIBUTE_UNUSED,
    section for counters, BASE is offset of the counter position.  */
 
 static void
-tree_gen_one_value_profiler (struct histogram_value *value ATTRIBUTE_UNUSED, 
+tree_gen_one_value_profiler (histogram_value value ATTRIBUTE_UNUSED, 
 			    unsigned tag ATTRIBUTE_UNUSED,
 			    unsigned base ATTRIBUTE_UNUSED)
 {
@@ -134,7 +134,7 @@ tree_gen_one_value_profiler (struct histogram_value *value ATTRIBUTE_UNUSED,
    section for counters, BASE is offset of the counter position.  */
 
 static void
-tree_gen_const_delta_profiler (struct histogram_value *value ATTRIBUTE_UNUSED, 
+tree_gen_const_delta_profiler (histogram_value value ATTRIBUTE_UNUSED, 
 				unsigned tag ATTRIBUTE_UNUSED,
 				unsigned base ATTRIBUTE_UNUSED)
 {
