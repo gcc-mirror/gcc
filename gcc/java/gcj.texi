@@ -2,6 +2,8 @@
 @setfilename gcj.info
 @settitle Guide to GNU gcj
 
+@include gcc-common.texi
+
 @c Note: When reading this manual you'll find lots of strange
 @c circumlocutions like ``compiler for the Java language''.
 @c This is necessary due to Sun's restrictions on the use of
@@ -11,12 +13,7 @@
 @set copyrights-gcj 2001, 2002
 
 @c Versions
-@set version-gcc 3.3
-@set which-gcj GCC-@value{version-gcc}
-
-@macro gcctabopt{body}
-@code{\body\}
-@end macro
+@set which-gcj GCC-@value{version-GCC}
 
 @ifinfo
 @format

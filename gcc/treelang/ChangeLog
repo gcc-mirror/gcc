@@ -1,3 +1,10 @@
+2002-12-23  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* treelang.texi: Include gcc-common.texi.
+	* Make-lang.in ($(srcdir)/treelang/treelang.info, treelang.dvi):
+	Depend on gcc-common.texi.  Add other missing dependencies.
+	(treelang.dvi): Use texi2dvi.
+
 2002-12-22  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* treelang.texi: Use @ifnottex instead of @ifinfo.

@@ -134,15 +134,21 @@ treelang.rest.encap:
 .phony:treelang.info
 treelang.info: $(srcdir)/treelang/treelang.info
 
-$(srcdir)/treelang/treelang.info: $(srcdir)/treelang/treelang.texi
+$(srcdir)/treelang/treelang.info: $(srcdir)/treelang/treelang.texi \
+	 $(srcdir)/doc/include/gcc-common.texi \
+	 $(srcdir)/doc/include/gpl.texi \
+	 $(srcdir)/doc/include/fdl.texi \
+	 $(srcdir)/doc/include/funding.texi
 	cd $(srcdir) && $(MAKEINFO) $(MAKEINFOFLAGS) -Idoc/include \
 	-o treelang/treelang.info treelang/treelang.texi
 
-treelang.dvi: $(srcdir)/treelang/treelang.texi
-	TEXINPUTS=$(srcdir)/treelang:$(srcdir):$$TEXINPUTS $(TEXI2DVI) $(srcdir)/treelang/treelang.texi; \
-	  texindex treelang.??; \
-	  TEXINPUTS=$(srcdir)/treelang:$(srcdir):$$TEXINPUTS $(TEXI2DVI) $(srcdir)/treelang/treelang.texi; \
-	  mv treelang.dvi treelang;
+treelang.dvi: $(srcdir)/treelang/treelang.texi \
+	 $(srcdir)/doc/include/gcc-common.texi \
+	 $(srcdir)/doc/include/gpl.texi \
+	 $(srcdir)/doc/include/fdl.texi \
+	 $(srcdir)/doc/include/funding.texi
+	s=`cd $(srcdir); ${PWD}`; export s; \
+	cd treelang && $(TEXI2DVI) -I $$s/doc/include $$s/treelang/treelang.texi
 
 treelang.generated-manpages:
 

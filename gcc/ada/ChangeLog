@@ -1,3 +1,14 @@
+2002-12-23  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* gnat_rm.texi: Include gcc-common.texi.  Use GCC version number
+	only.
+	* Make-lang.in ($(srcdir)/ada/gnat_ug_unx.info,
+	$(srcdir)/ada/gnat_ug_vms.info, $(srcdir)/ada/gnat_ug_vxw.info,
+	$(srcdir)/ada/gnat_ug_wnt.info, $(srcdir)/ada/gnat_rm.info,
+	ada/gnat_ug_unx.dvi, ada/gnat_ug_vms.dvi, ada/gnat_ug_vxw.dvi,
+	ada/gnat_ug_wnt.dvi, ada/gnat_rm.dvi): Depend on
+	$(srcdir)/doc/include/gcc-common.texi.
+
 2002-11-18  Nathanael Nerode  <neroden@gcc.gnu.org>
 	* adaint.c (__gnat_tmp_name): Better, but good enough for now,
 	solution to buffer overflow bug on GNU/Linux.	
