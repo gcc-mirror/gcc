@@ -492,7 +492,7 @@ public class IdentityHashMap extends AbstractMap
         Object[] old = table;
         // This isn't necessarily prime, but it is an odd number of key/value
         // slots, which has a higher probability of fewer collisions.
-        table = new Object[old.length << 1 + 2];
+        table = new Object[(old.length * 2) + 2];
         Arrays.fill(table, emptyslot);
         size = 0;
         threshold = (table.length >>> 3) * 3;
