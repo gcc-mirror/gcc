@@ -3635,7 +3635,7 @@ tree
 build_compound_expr (list)
      tree list;
 {
-  internal_build_compound_expr (list, TRUE);
+  return internal_build_compound_expr (list, TRUE);
 }
 
 static tree
