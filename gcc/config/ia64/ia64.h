@@ -75,8 +75,6 @@ extern int target_flags;
 
 #define MASK_ILP32      0x00000020      /* Generate ILP32 code.  */
 
-#define MASK_B_STEP	0x00000040	/* Emit code for Itanium B step.  */
-
 #define MASK_REG_NAMES	0x00000080	/* Use in/loc/out register names.  */
 
 #define MASK_NO_SDATA   0x00000100	/* Disable sdata/scommon/sbss.  */
@@ -112,8 +110,6 @@ extern int target_flags;
 #define TARGET_VOL_ASM_STOP	(target_flags & MASK_VOL_ASM_STOP)
 
 #define TARGET_ILP32            (target_flags & MASK_ILP32)
-
-#define TARGET_B_STEP		(target_flags & MASK_B_STEP)
 
 #define TARGET_REG_NAMES	(target_flags & MASK_REG_NAMES)
 
@@ -196,8 +192,6 @@ extern int ia64_tls_size;
       N_("Emit stop bits before and after volatile extended asms") },	\
   { "no-volatile-asm-stop", -MASK_VOL_ASM_STOP,				\
       N_("Don't emit stop bits before and after volatile extended asms") }, \
-  { "b-step",		MASK_B_STEP,					\
-      N_("Emit code for Itanium (TM) processor B step")},		\
   { "register-names",	MASK_REG_NAMES,					\
       N_("Use in/loc/out register names")},				\
   { "no-sdata",		MASK_NO_SDATA,					\

@@ -1,3 +1,13 @@
+2005-02-18  James E. Wilson  <wilson@specifixinc.com>
+
+	* doc/invoke.texi (IA-64 Options): Delete -mb-step.
+	* config/ia64/ia64.c (last_group, group_idx): Delete variables.
+	(errata_find_address_regs, errata_emit_nops, fixup_errata): Delete
+	functions.
+	(ia64_reorg): Delete fixup_errata call.
+	* config/ia64/ia64.h (MASK_B_STEP, TARGET_B_STEP): Delete.
+	(TARGET_SWITCHES): Delete -mb-step entry.
+
 2005-02-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/20043
