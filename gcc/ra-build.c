@@ -346,7 +346,7 @@ static struct undef_table_s {
   unsigned int new_undef;
   /* size | (byte << 16)  */
   unsigned int size_word;
-} undef_table [] = {
+} const undef_table [] = {
   { 0, BL_TO_WORD (0, 0)}, /* 0 */
   { 0, BL_TO_WORD (0, 1)},
   { 0, BL_TO_WORD (1, 1)},

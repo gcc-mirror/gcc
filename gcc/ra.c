@@ -464,7 +464,7 @@ init_ra ()
   int i;
   HARD_REG_SET rs;
 #ifdef ELIMINABLE_REGS
-  static struct {int from, to; } eliminables[] = ELIMINABLE_REGS;
+  static const struct {const int from, to; } eliminables[] = ELIMINABLE_REGS;
   unsigned int j;
 #endif
   int need_fp
