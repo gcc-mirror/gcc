@@ -1585,7 +1585,7 @@ perform_koenig_lookup (tree fn, tree args)
    Returns code for the call.  */
 
 tree 
-finish_call_expr (tree fn, tree args, bool disallow_virtual)
+finish_call_expr (tree fn, tree args, bool disallow_virtual, bool koenig_p)
 {
   tree result;
   tree orig_fn;
@@ -1605,7 +1605,11 @@ finish_call_expr (tree fn, tree args, bool disallow_virtual)
     {
       if (type_dependent_expression_p (fn)
 	  || any_type_dependent_arguments_p (args))
-	return build_nt (CALL_EXPR, fn, args);
+	{
+	  result = build_nt (CALL_EXPR, fn, args);
+	  KOENIG_LOOKUP_P (result) = koenig_p;
+	  return result;
+	}
       if (!BASELINK_P (fn)
 	  && TREE_CODE (fn) != PSEUDO_DTOR_EXPR
 	  && TREE_TYPE (fn) != unknown_type_node)
@@ -1707,7 +1711,10 @@ finish_call_expr (tree fn, tree args, bool disallow_virtual)
     result = build_function_call (fn, args);
 
   if (processing_template_decl)
-    return build (CALL_EXPR, TREE_TYPE (result), orig_fn, orig_args);
+    {
+      result = build (CALL_EXPR, TREE_TYPE (result), orig_fn, orig_args);
+      KOENIG_LOOKUP_P (result) = koenig_p;
+    }
   return result;
 }
 

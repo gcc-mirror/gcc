@@ -1,3 +1,13 @@
+2003-09-02  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/11808
+	* cp-tree.h (KOENIG_LOOKUP_P): New macro.
+	(finish_call_expr): Change prototype.
+	* parser.c (cp_parser_postfix_expression): Adjust call to
+	finish_call_expr.
+	* pt.c (tsubst_copy_and_build): Use KOENIG_LOOKUP_P.
+	* semantics.c (finish_call_expr): Add koenig_p parameter.
+
 2003-09-01  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/12114

@@ -3506,6 +3506,7 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p)
 	case CPP_OPEN_PAREN:
 	  /* postfix-expression ( expression-list [opt] ) */
 	  {
+	    bool koenig_p;
 	    tree args = (cp_parser_parenthesized_expression_list 
 			 (parser, false, /*non_constant_p=*/NULL));
 
@@ -3524,14 +3525,18 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p)
 		parser->non_constant_expression_p = true;
 	      }
 
+	    koenig_p = false;
 	    if (idk == CP_ID_KIND_UNQUALIFIED)
 	      {
 		if (args
 		    && (is_overloaded_fn (postfix_expression)
 			|| DECL_P (postfix_expression)
 			|| TREE_CODE (postfix_expression) == IDENTIFIER_NODE))
-		  postfix_expression 
-		    = perform_koenig_lookup (postfix_expression, args);
+		  {
+		    koenig_p = true;
+		    postfix_expression 
+		      = perform_koenig_lookup (postfix_expression, args);
+		  }
 		else if (TREE_CODE (postfix_expression) == IDENTIFIER_NODE)
 		  postfix_expression
 		    = unqualified_fn_lookup_error (postfix_expression);
@@ -3570,12 +3575,14 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p)
 		 function.  */
 	      postfix_expression
 		= finish_call_expr (postfix_expression, args,
-				    /*disallow_virtual=*/true);
+				    /*disallow_virtual=*/true,
+				    koenig_p);
 	    else
 	      /* All other function calls.  */
 	      postfix_expression 
 		= finish_call_expr (postfix_expression, args, 
-				    /*disallow_virtual=*/false);
+				    /*disallow_virtual=*/false,
+				    koenig_p);
 
 	    /* The POSTFIX_EXPRESSION is certainly no longer an id.  */
 	    idk = CP_ID_KIND_NONE;
