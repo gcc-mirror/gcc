@@ -106,9 +106,6 @@ extern int current_function_outgoing_args_size;
 
 #define WORDS_BIG_ENDIAN 1
 
-/* Width in bits of a "word", which is the contents of a machine register.  */
-
-#define BITS_PER_WORD (TARGET_64BIT ? 64 : 32)
 #define MAX_BITS_PER_WORD 64
 
 /* Width of a word, in units (bytes).  */

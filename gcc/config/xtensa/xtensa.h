@@ -235,8 +235,6 @@ extern unsigned xtensa_current_frame_size;
 /* Define this if most significant word of a multiword number is the lowest. */
 #define WORDS_BIG_ENDIAN (TARGET_BIG_ENDIAN != 0)
 
-/* Width in bits of a "word", which is the contents of a machine register.  */
-#define BITS_PER_WORD 32
 #define MAX_BITS_PER_WORD 32
 
 /* Width of a word, in units (bytes).  */

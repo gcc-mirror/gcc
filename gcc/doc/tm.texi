@@ -928,7 +928,8 @@ unit (byte).  If you do not define this macro the default is 8.
 
 @findex BITS_PER_WORD
 @item BITS_PER_WORD
-Number of bits in a word; normally 32.
+Number of bits in a word.  If you do not define this macro, the default
+is @code{BITS_PER_UNIT * UNITS_PER_WORD}.
 
 @findex MAX_BITS_PER_WORD
 @item MAX_BITS_PER_WORD

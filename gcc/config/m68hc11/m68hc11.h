@@ -241,11 +241,8 @@ extern const struct processor_costs *m68hc11_cost;
 /* Define this if most significant word of a multiword number is numbered.  */
 #define WORDS_BIG_ENDIAN 	1
 
-/* Number of bits in a word */
-#define BITS_PER_WORD		16
-
 /* Width of a word, in units (bytes).  */
-#define UNITS_PER_WORD		(BITS_PER_WORD/8)
+#define UNITS_PER_WORD		2
 
 /* Define if you don't want extended real, but do want to use the
    software floating point emulator for REAL_ARITHMETIC and

@@ -164,13 +164,6 @@ extern int target_flags;
 /* Define this if most significant word of a multiword number is numbered.  */
 #define WORDS_BIG_ENDIAN 1
 
-/* Width in bits of a "word", which is the contents of a machine register.
-   Note that this is not necessarily the width of data type `int';
-   if using 16-bit ints on a 68000, this would still be 32.
-   But on a machine with 16-bit registers, this would be 16.  */
-/*  This is a machine with 16-bit registers */
-#define BITS_PER_WORD 16
-
 /* Width of a word, in units (bytes). 
 
    UNITS OR BYTES - seems like units */

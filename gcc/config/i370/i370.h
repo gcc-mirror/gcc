@@ -86,10 +86,6 @@ extern int mvs_function_name_length;
 
 #define WORDS_BIG_ENDIAN 1
 
-/* Width in bits of a "word", which is the contents of a machine register.  */
-
-#define BITS_PER_WORD 32
-
 /* Width of a word, in units (bytes).  */
 
 #define UNITS_PER_WORD 4

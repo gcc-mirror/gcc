@@ -522,11 +522,6 @@ extern int rs6000_altivec_abi;
    instructions for them.  Might as well be consistent with bits and bytes.  */
 #define WORDS_BIG_ENDIAN 1
 
-/* Width in bits of a "word", which is the contents of a machine register.
-   Note that this is not necessarily the width of data type `int';
-   if using 16-bit ints on a 68000, this would still be 32.
-   But on a machine with 16-bit registers, this would be 16.  */
-#define BITS_PER_WORD (! TARGET_POWERPC64 ? 32 : 64)
 #define MAX_BITS_PER_WORD 64
 
 /* Width of a word, in units (bytes).  */

@@ -126,10 +126,6 @@ extern int avr_enhanced_p;
    numbered.  */
 #define WORDS_BIG_ENDIAN 0
 
-/* Width in bits of a "word", which is the contents of a machine register.
-   Note that this is not necessarily the width of data type `int';  */
-#define BITS_PER_WORD 8
-
 #ifdef IN_LIBGCC2
 /* This is to get correct SI and DI modes in libgcc2.c (32 and 64 bits).  */
 #define UNITS_PER_WORD 4

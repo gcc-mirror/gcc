@@ -430,11 +430,6 @@ do {									\
 #define LIBGCC2_WORDS_BIG_ENDIAN 1
 #endif
 
-/* Width in bits of a "word", which is the contents of a machine register.
-   Note that this is not necessarily the width of data type `int';
-   if using 16-bit ints on a 68000, this would still be 32.
-   But on a machine with 16-bit registers, this would be 16.  */
-#define BITS_PER_WORD  (TARGET_SHMEDIA ? 64 : 32)
 #define MAX_BITS_PER_WORD 64
 
 #define MAX_LONG_TYPE_SIZE MAX_BITS_PER_WORD
