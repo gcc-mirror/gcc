@@ -1,3 +1,8 @@
+2004-09-24  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR libstdc++/17469
+	* testsuite/lib/libstdc++.exp: Don't use global ld_library_path.
+
 2004-09-24  Paolo Carlini  <pcarlini@suse.de>
 	    Magnus Fromreide  <magfr@lysator.liu.se>
 	    
