@@ -1,3 +1,18 @@
+2003-12-15  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* flow.c (EXIT_IGNORE_STACK): Move to ...
+	* defaults.h (EXIT_IGNORE_STACK): ... here.
+	* dojump.c (clear_pending_stack_adjust): Don't use #ifdef
+	EXIT_IGNORE_STACK.
+	* function.c (expand_function_end): Likewise.
+	* global.c (global_alloc): Likewise.
+	* ra.c (init_ra): Likewise.
+	* reload1.c (init_elim_table): Likewise.
+	* reorg.c (fill_simple_delay_slots): Likewise.
+	* resource.c (init_resource_info): Likewise.
+	* doc/tm.texi (EXIT_IGNORE_STACK): Document that the default
+	is 0.
+
 2003-12-15  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* reload.c (reg_overlap_mentioned_for_reload_p):

@@ -1167,10 +1167,8 @@ init_resource_info (rtx epilogue_insn)
 #if HARD_FRAME_POINTER_REGNUM != FRAME_POINTER_REGNUM
       SET_HARD_REG_BIT (end_of_function_needs.regs, HARD_FRAME_POINTER_REGNUM);
 #endif
-#ifdef EXIT_IGNORE_STACK
       if (! EXIT_IGNORE_STACK
 	  || current_function_sp_is_unchanging)
-#endif
 	SET_HARD_REG_BIT (end_of_function_needs.regs, STACK_POINTER_REGNUM);
     }
   else

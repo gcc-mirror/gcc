@@ -7038,16 +7038,14 @@ expand_function_end (void)
   /* If we had calls to alloca, and this machine needs
      an accurate stack pointer to exit the function,
      insert some code to save and restore the stack pointer.  */
-#ifdef EXIT_IGNORE_STACK
-  if (! EXIT_IGNORE_STACK)
-#endif
-    if (current_function_calls_alloca)
-      {
-	rtx tem = 0;
+  if (! EXIT_IGNORE_STACK
+      && current_function_calls_alloca)
+    {
+      rtx tem = 0;
 
-	emit_stack_save (SAVE_FUNCTION, &tem, parm_birth_insn);
-	emit_stack_restore (SAVE_FUNCTION, tem, NULL_RTX);
-      }
+      emit_stack_save (SAVE_FUNCTION, &tem, parm_birth_insn);
+      emit_stack_restore (SAVE_FUNCTION, tem, NULL_RTX);
+    }
 
   /* If scalar return value was computed in a pseudo-reg, or was a named
      return value that got dumped to the stack, copy that to the hard
