@@ -1,3 +1,7 @@
+2004-02-01  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips.md (adddi3_internal_2): Remove superfluous %s.
+
 2004-02-01  Chris Demetriou  <cgd@broadcom.com>
 
 	* config/mips/mips.h (PREDICATE_CODES): Remove entries for
