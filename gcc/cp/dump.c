@@ -851,7 +851,7 @@ dequeue_and_dump (di)
       break;
       
     case AGGR_INIT_EXPR:
-      dump_int ("ctor", AGGR_INIT_VIA_CTOR_P (t));
+      dump_int (di, "ctor", AGGR_INIT_VIA_CTOR_P (t));
       if (dump_children_p)
 	{
 	  dump_child ("fn", TREE_OPERAND (t, 0));
