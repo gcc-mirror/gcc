@@ -959,7 +959,7 @@ build_artificial_parm (name, type)
   tree parm;
 
   parm = build_decl (PARM_DECL, name, type);
-  SET_DECL_ARTIFICIAL (parm);
+  DECL_ARTIFICIAL (parm) = 1;
   DECL_ARG_TYPE (parm) = type;
   return parm;
 }

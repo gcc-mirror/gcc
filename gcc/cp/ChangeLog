@@ -1,3 +1,14 @@
+2000-06-29  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* cp-tree.h (SET_DECL_ARTIFICIAL): Remove.
+	* decl.c (create_implicit_typedef): Adjust.
+	* decl2.c (build_artificial_parm): Adjust.
+	* method.c (implicitly_declare_fn): Adjust.
+	* pt.c (push_inline_template_parms_recursive): Adjust.
+	(process_template_parm): Adjust.
+	(overloaded_template_name): Adjust.
+	* semantics.c (finish_template_template_parm): Adjust.
+
 2000-06-28  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (CLEAR_BINFO_NEW_VTABLE_MARKED): Remove.

@@ -347,7 +347,7 @@ push_inline_template_parms_recursive (parmlist, levels)
 	       available.  */
 	    tree decl = build_decl (CONST_DECL, DECL_NAME (parm),
 				    TREE_TYPE (parm));
-	    SET_DECL_ARTIFICIAL (decl);
+	    DECL_ARTIFICIAL (decl) = 1;
 	    DECL_INITIAL (decl) = DECL_INITIAL (parm);
 	    SET_DECL_TEMPLATE_PARM_P (decl);
 	    pushdecl (decl);
@@ -1871,7 +1871,7 @@ process_template_parm (list, next)
 				     processing_template_decl,
 				     decl, TREE_TYPE (parm));
     }
-  SET_DECL_ARTIFICIAL (decl);
+  DECL_ARTIFICIAL (decl) = 1;
   SET_DECL_TEMPLATE_PARM_P (decl);
   pushdecl (decl);
   parm = build_tree_list (defval, parm);
@@ -7545,7 +7545,7 @@ overload_template_name (type)
     return;
 
   decl = build_decl (TYPE_DECL, id, type);
-  SET_DECL_ARTIFICIAL (decl);
+  DECL_ARTIFICIAL (decl) = 1;
   pushdecl_class_level (decl);
 }
 
