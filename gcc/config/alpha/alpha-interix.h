@@ -211,6 +211,7 @@ while (0)
 
 /* DWARF2 Unwinding doesn't work with exception handling yet. */
 #undef DWARF2_UNWIND_INFO
+#define DWARF2_UNWIND_INFO 0
 
 /* Don't assume anything about the header files. */
 #define NO_IMPLICIT_EXTERN_C
