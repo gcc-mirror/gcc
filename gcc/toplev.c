@@ -4098,7 +4098,16 @@ main (argc, argv, envp)
 		      while (*q && (*q >= '0' && *q <= '9'))
 			q++;
 		      if (*p)
-			level = atoi (p);
+			{
+			  level = atoi (p);
+			  if (len > 1 && !strncmp (str, "gdwarf", len))
+			    {
+			      error ("use -gdwarf -g%d for DWARF v1, level %d",
+				       level, level);
+			      if (level == 2)
+				error ("use -gdwarf-2   for DWARF v2");
+			    }
+			}
 		      else
 			level = 2;	/* default debugging info level */
 		      if (*q || level > 3)
