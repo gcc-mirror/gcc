@@ -363,11 +363,10 @@ use_thunk (tree thunk_fndecl, bool emit_p)
   if (!emit_p)
     return;
 
-#ifdef ASM_OUTPUT_DEF
-  alias = make_alias_for_thunk (function);
-#else
-  alias = function;
-#endif
+  if (TARGET_USE_LOCAL_THUNK_ALIAS_P (function))
+   alias = make_alias_for_thunk (function);
+  else
+   alias = function;
 
   fixed_offset = THUNK_FIXED_OFFSET (thunk_fndecl);
   virtual_offset = THUNK_VIRTUAL_OFFSET (thunk_fndecl);
@@ -401,8 +400,8 @@ use_thunk (tree thunk_fndecl, bool emit_p)
 
   push_to_top_level ();
 
-#ifdef ASM_OUTPUT_DEF
-  if (targetm.have_named_sections)
+  if (TARGET_USE_LOCAL_THUNK_ALIAS_P (function)
+      && targetm.have_named_sections)
     {
       resolve_unique_section (function, 0, flag_function_sections);
 
@@ -414,7 +413,6 @@ use_thunk (tree thunk_fndecl, bool emit_p)
 	  DECL_SECTION_NAME (thunk_fndecl) = DECL_SECTION_NAME (function);
 	}
     }
-#endif
 
   /* The back-end expects DECL_INITIAL to contain a BLOCK, so we
      create one.  */

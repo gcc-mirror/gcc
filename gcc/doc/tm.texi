@@ -9209,3 +9209,11 @@ The parameter @var{path} is the include to register.  On Darwin
 systems, this is used for Framework includes, which have semantics
 that are different from @option{-I}.
 @end deftypefn
+
+@deftypefn {Target Hook} bool TARGET_USE_LOCAL_THUNK_ALIAS_P (tree @var{fndecl})
+This target hook returns @code{true} if it is safe to use a local alias
+for a virtual function @var{fndecl} when constructing thunks,
+@code{false} otherwise. By default, the hook returns @code{true} for all
+functions, if a target supports aliases (ie. defines
+@code{ASM_OUTPUT_DEF}), @code{false} otherwise,
+@end deftypefn

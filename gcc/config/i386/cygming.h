@@ -382,6 +382,11 @@ extern int i386_pe_dllimport_name_p (const char *);
       ASM_OUTPUT_DEF (STREAM, alias, IDENTIFIER_POINTER (TARGET));	\
     } while (0)
 
+/* Decide whether it is safe to use a local alias for a virtual function
+   when constructing thunks.  */
+#undef TARGET_USE_LOCAL_THUNK_ALIAS_P
+#define TARGET_USE_LOCAL_THUNK_ALIAS_P(DECL) (!DECL_ONE_ONLY (DECL))
+
 #undef TREE
 
 #ifndef BUFSIZ
