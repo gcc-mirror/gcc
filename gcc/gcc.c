@@ -2508,31 +2508,36 @@ process_command (argc, argv)
 	  switches[n_switches].part1 = p;
 	  /* Deal with option arguments in separate argv elements.  */
 	  if ((SWITCH_TAKES_ARG (c) > (p[1] != 0))
-	      || WORD_SWITCH_TAKES_ARG (p)) {
-	    int j = 0;
-	    int n_args = WORD_SWITCH_TAKES_ARG (p);
+	      || WORD_SWITCH_TAKES_ARG (p))
+	    {
+	      int j = 0;
+	      int n_args = WORD_SWITCH_TAKES_ARG (p);
 
-	    if (n_args == 0) {
-	      /* Count only the option arguments in separate argv elements.  */
-	      n_args = SWITCH_TAKES_ARG (c) - (p[1] != 0);
+	      if (n_args == 0)
+		{
+		  /* Count only the option arguments in separate argv elements.  */
+		  n_args = SWITCH_TAKES_ARG (c) - (p[1] != 0);
+		}
+	      if (i + n_args >= argc)
+		fatal ("argument to `-%s' is missing", p);
+	      switches[n_switches].args
+		= (char **) xmalloc ((n_args + 1) * sizeof (char *));
+	      while (j < n_args)
+		switches[n_switches].args[j++] = argv[++i];
+	      /* Null-terminate the vector.  */
+	      switches[n_switches].args[j] = 0;
 	    }
-	    if (i + n_args >= argc)
-	      fatal ("argument to `-%s' is missing", p);
-	    switches[n_switches].args
-	      = (char **) xmalloc ((n_args + 1) * sizeof (char *));
-	    while (j < n_args)
-	      switches[n_switches].args[j++] = argv[++i];
-	    /* Null-terminate the vector.  */
-	    switches[n_switches].args[j] = 0;
-	  } else if (*switches_need_spaces != 0 && (c == 'o' || c == 'L')) {
-	    /* On some systems, ld cannot handle -o or -L without space.
-	       So split the -o or -L from its argument.  */
-	    switches[n_switches].part1 = (c == 'o' ? "o" : "L");
-	    switches[n_switches].args = (char **) xmalloc (2 * sizeof (char *));
-	    switches[n_switches].args[0] = xmalloc (strlen (p));
-	    strcpy (switches[n_switches].args[0], &p[1]);
-	    switches[n_switches].args[1] = 0;
-	  } else
+	  else if (*switches_need_spaces != 0 && (c == 'o' || c == 'L'))
+	    {
+	      /* On some systems, ld cannot handle -o or -L without space.
+		 So split the -o or -L from its argument.  */
+	      switches[n_switches].part1 = (c == 'o' ? "o" : "L");
+	      switches[n_switches].args = (char **) xmalloc (2 * sizeof (char *));
+	      switches[n_switches].args[0] = xmalloc (strlen (p));
+	      strcpy (switches[n_switches].args[0], &p[1]);
+	      switches[n_switches].args[1] = 0;
+	    }
+	  else
 	    switches[n_switches].args = 0;
 	  switches[n_switches].valid = 0;
 	  /* This is always valid, since gcc.c itself understands it.  */
@@ -2543,6 +2548,7 @@ process_command (argc, argv)
       else
 	{
 	  if ((argv[i][0] != '-' || argv[i][1] != 'l')
+	      && strcmp (argv[i], "-")
 	      && access (argv[i], R_OK) < 0)
 	    {
 	      perror_with_name (argv[i]);
