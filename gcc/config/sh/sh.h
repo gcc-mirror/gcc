@@ -1650,27 +1650,34 @@ extern int pragma_interrupt;
     LENGTH += 2;						\
   if (! TARGET_SMALLCODE)					\
     {								\
+      /* After the folowing loop,  PAD will be an upper bound	\
+	 for the number of padding bytes the alignment will	\
+	 require.  */						\
        rtx aip;							\
+       int pad = 0;						\
        for (aip = PREV_INSN (X); aip; aip = PREV_INSN (aip))	\
 	 {							\
 	   if (GET_CODE (aip) == BARRIER)			\
 	     {							\
 	       if (TARGET_SH3 || TARGET_SH3E)			\
-		 LENGTH += 14;					\
+		 pad = 14;					\
 	       else						\
-		 LENGTH += 2;					\
+		 pad = 2;					\
 	       break;						\
 	     }							\
 	   else if ((GET_CODE (aip) == NOTE			\
 		     && NOTE_LINE_NUMBER (aip) == NOTE_INSN_LOOP_BEG)) \
 	     {							\
-	       LENGTH += 2;					\
-	       break;						\
+	       pad = 2;					\
+	       /* Don't break here, because there might be a	\
+		  preceding BARRIER, which requires mores	\
+		  alignment for SH3[E] .  */			\
 	     }							\
 	   else if (GET_CODE (aip) != NOTE			\
 		    && GET_CODE (aip) != CODE_LABEL)		\
 	     break;						\
 	 }							\
+       LENGTH += pad;						\
     }
 
 /* Enable a bug fix for the shorten_branches pass.  */
