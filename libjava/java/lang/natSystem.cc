@@ -217,6 +217,11 @@ java::lang::System::identityHashCode (jobject obj)
   return _Jv_HashCode (obj);
 }
 
+#ifndef DEFAULT_FILE_ENCODING
+#define DEFAULT_FILE_ENCODING "8859_1"
+#endif
+char *default_file_encoding = DEFAULT_FILE_ENCODING;
+
 void
 java::lang::System::init_properties (void)
 {
@@ -241,7 +246,7 @@ java::lang::System::init_properties (void)
   SET ("os.name", "FIXME");
   SET ("os.arch", "FIXME");
   SET ("os.version", "FIXME");
-  SET ("file.encoding", "8859_1");  // FIXME
+  SET ("file.encoding", default_file_encoding);
 #ifdef WIN32
   SET ("file.separator", "\\");
   SET ("path.separator", ";");
