@@ -1,3 +1,9 @@
+2001-02-26  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* except.c (call_eh_info): Cleanup generation of cp_eh_info struct.
+	
+	* decl.c (mark_inlined_fns): Prototype.
+
 2001-02-22  Mark Mitchell  <mark@codesourcery.com>
 
 	* spew.c (yylex): Correct handling of friends.

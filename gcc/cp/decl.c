@@ -130,6 +130,7 @@ static void mark_binding_level PARAMS ((void *));
 static void mark_named_label_lists PARAMS ((void *, void *));
 static void mark_cp_function_context PARAMS ((struct function *));
 static void mark_saved_scope PARAMS ((void *));
+static void mark_inlined_fns PARAMS ((struct lang_decl_inlined_fns *));
 static void mark_lang_function PARAMS ((struct cp_language_function *));
 static void save_function_data PARAMS ((tree));
 static void check_function_type PARAMS ((tree, tree));
