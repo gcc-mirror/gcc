@@ -2275,7 +2275,7 @@ try_split (pat, trial, last)
 	     immediately before a BARRIER.  */
 	  for (tem = NEXT_INSN (before); tem != after;
 	       tem = NEXT_INSN (tem))
-	    if (! INSN_DELETED_P (tem) && ! GET_CODE (tem) == BARRIER)
+	    if (! INSN_DELETED_P (tem) && GET_CODE (tem) != BARRIER)
 	      tem = try_split (PATTERN (tem), tem, 1);
 	}
       /* Avoid infinite loop if the result matches the original pattern.  */
