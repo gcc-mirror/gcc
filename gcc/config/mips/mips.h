@@ -488,7 +488,7 @@ extern void		sbss_section PARAMS ((void));
           builtin_define ("__LANGUAGE_C_PLUS_PLUS");		\
           builtin_define ("__LANGUAGE_C_PLUS_PLUS__");		\
         }							\
-      else if (c_language == clk_objective_c)			\
+      if (flag_objc)						\
         {							\
 	  builtin_define ("_LANGUAGE_OBJECTIVE_C");		\
           builtin_define ("__LANGUAGE_OBJECTIVE_C");		\

@@ -1,3 +1,11 @@
+2002-08-10  Ziemowit Laski  <zlaski@apple.com>
+
+	* config/alpha/alpha.h (TARGET_CPU_CPP_BUILTINS): Replace
+	reference to clk_objective_c with flag_objc.
+	* config/i386/i386-interix.h (TARGET_OS_CPP_BUILTINS):
+	Likewise.
+	* config/mips/mips.h (TARGET_CPU_CPP_BUILTINS): Likewise.
+
 2002-08-10  Neil Booth  <neil@daikokuya.co.uk>
 
 	* c-opts.c (set_std_cxx98, set_std_c89): New.
