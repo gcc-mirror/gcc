@@ -1,3 +1,8 @@
+2004-03-23  Roger Sayle  <roger@eyesopen.com>
+
+	PR optimization/14669
+	* g++.dg/opt/fold2.C: New test case.
+
 2004-03-22  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c/13129
