@@ -20,6 +20,5 @@ details.  */
 void
 gnu::java::nio::FileLockImpl::releaseImpl ()
 {
-  throw new ::java::io::IOException
-    (JvNewStringUTF ("releaseImpl not implemented"));
+  fd->unlock(position(), size());
 }

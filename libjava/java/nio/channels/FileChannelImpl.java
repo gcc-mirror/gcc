@@ -38,6 +38,9 @@ exception statement from your version. */
 
 package java.nio.channels;
 
+import gnu.classpath.Configuration;
+import gnu.gcj.RawData;
+import gnu.java.nio.FileLockImpl;
 import java.io.EOFException;
 import java.io.FileDescriptor;
 import java.io.FileInputStream;
@@ -47,8 +50,6 @@ import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
 import java.nio.MappedByteBufferImpl;
-import gnu.classpath.Configuration;
-import gnu.gcj.RawData;
 
 /**
  * This file is not user visible !
@@ -354,8 +355,22 @@ public class FileChannelImpl extends FileChannel
         file_obj instanceof FileInputStream)
       throw new NonWritableChannelException ();
 	
-    throw new Error ("Not implemented");
+    boolean completed = false;
+    
+    try
+      {
+	begin();
+        lockImpl(position, size, shared);
+	completed = true;
+	return new FileLockImpl(fd, this, position, size, shared);
+      }
+    finally
+      {
+	end(completed);
+      }
   }
+
+  private native void lockImpl(long position, long size, boolean shared);
   
   public FileLock tryLock (long position, long size, boolean shared)
     throws IOException
@@ -367,9 +382,27 @@ public class FileChannelImpl extends FileChannel
     if (!isOpen ())
       throw new ClosedChannelException ();
 
-    throw new Error ("Not implemented");
+    if (! tryLockImpl(position, size, shared))
+      return null;
+
+    boolean completed = false;
+
+    try
+      {
+	boolean lockable = tryLockImpl(position, size, shared);
+	completed = true;
+	return (lockable
+		? new FileLockImpl(fd, this, position, size, shared)
+		: null);
+      }
+    finally
+      {
+	end(completed);
+      }
   }
 
+  private native boolean tryLockImpl(long position, long size, boolean shared);
+  
   public long position ()
     throws IOException
   {
