@@ -24,9 +24,6 @@ Boston, MA 02111-1307, USA.  */
 #include "tree.h"
 #include "ggc.h"
 
-void print_node ();
-void indent_to ();
-
 /* Define the hash table of nodes already seen.
    Such nodes are not repeated; brief cross-references are used.  */
 

@@ -1,3 +1,28 @@
+Sun Oct  3 12:44:05 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* print-tree.c (print_node, indent_to): Remove redundant prototypes.
+
+	* profile.c (instrument_arcs, output_gcov_string,
+	tablejump_entry_p): Add static prototypes.
+	(output_gcov_string): Constify a char*.
+	
+	* regmove.c (replacement_quality, fixup_match_2): Add static
+	prototypes.
+
+	* resource.h (reg_dead_p): Add extern prototype.
+
+	* rtl.c (trim_filename): Add static prototype.
+
+	* scan-decls.c (skip_to_closing_brace): Likewise.
+
+	* stmt.c (expand_decl_cleanup_no_eh): Hide definition.
+	(expand_end_case): Initialize variable `range'.
+	(emit_case_nodes): Remove unused prototype `rtx_fn'.
+
+	* varasm.c (asm_emit_uninitialised): Add static prototype.
+	(asm_emit_uninitialised, assemble_variable): Mark parameter with
+	ATTRIBUTE_UNUSED.
+
 Sun Oct  3 12:24:52 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* cpplib.c (if_directive_nameo): Add static prototype.

@@ -157,6 +157,9 @@ static void expand_spanning_tree PROTO((int));
 static void fill_spanning_tree PROTO((int));
 static void init_arc_profiler PROTO((void));
 static void output_arc_profiler PROTO((int, rtx));
+static void instrument_arcs PROTO((rtx, int, FILE *));
+static void output_gcov_string PROTO((const char *, long));
+static int tablejump_entry_p PROTO((rtx, rtx));
 
 #ifndef LONG_TYPE_SIZE
 #define LONG_TYPE_SIZE BITS_PER_WORD
@@ -388,7 +391,7 @@ instrument_arcs (f, num_blocks, dump_file)
 
 static void
 output_gcov_string (string, delimiter)
-     char *string;
+     const char *string;
      long delimiter;
 {
   long temp;
@@ -418,7 +421,7 @@ output_gcov_string (string, delimiter)
 /* Return TRUE if this insn must be a tablejump entry insn.  This works for
    the MIPS port, but may give false negatives for some targets.  */
 
-int
+static int
 tablejump_entry_p (insn, label)
      rtx insn, label;
 {

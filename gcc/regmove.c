@@ -66,6 +66,8 @@ static int fixup_match_1 PROTO((rtx, rtx, rtx, rtx, rtx, int, int, int, FILE *))
 static int reg_is_remote_constant_p PROTO((rtx, rtx, rtx));
 static int stable_and_no_regs_but_for_p PROTO((rtx, rtx, rtx));
 static int regclass_compatible_p PROTO((int, int));
+static int replacement_quality PROTO((rtx));
+static int fixup_match_2 PROTO((rtx, rtx, rtx, rtx, FILE *));
 static int loop_depth;
 
 /* Return non-zero if registers with CLASS1 and CLASS2 can be merged without
@@ -335,7 +337,7 @@ static int *regno_src_regno;
    the choice.  The main objective is to avoid using a register that is
    a candidate for tying to a hard register, since the output might in
    turn be a candidate to be tied to a different hard register.  */
-int
+static int
 replacement_quality(reg)
      rtx reg;
 {
@@ -938,7 +940,7 @@ reg_is_remote_constant_p (reg, insn, first)
 /* cse disrupts preincrement / postdecrement squences when it finds a
    hard register as ultimate source, like the frame pointer.  */
 
-int
+static int
 fixup_match_2 (insn, dst, src, offset, regmove_dump_file)
      rtx insn, dst, src, offset;
      FILE *regmove_dump_file;
