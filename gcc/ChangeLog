@@ -1,3 +1,14 @@
+2000-09-28  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* diagnostic.h (output_clear_message_text): New function.
+	(output_message_text): New macro.
+
+	* diagnostic.c (clear_text_info): Rename to
+	output_clear_message_text. 
+	(output_clear): Adjust.
+	(output_finish): Rename to output_finalize_message.  Tweek.
+	(output_to_stream): Adjust. 
+
 2000-09-28  Neil Booth  <neilb@earthling.net>
 
 	* cpperror.c (_cpp_begin_message):  Do the test for suppression

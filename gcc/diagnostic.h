@@ -93,6 +93,8 @@ struct output_buffer
 #define output_needs_newline(BUFFER) (BUFFER)->state.need_newline_p
 #define output_buffer_state(BUFFER) (BUFFER)->state
 #define output_indentation(BUFFER) (BUFFER)->state.indent_skip
+#define output_message_text(BUFFER) \
+   ((const char *) obstack_base (&(BUFFER)->obstack))
 
 /* This data structure bundles altogether any information relevent to
    the context of a diagnostic message.  */
@@ -189,7 +191,8 @@ void output_append		PARAMS ((output_buffer *, const char *,
 void output_add_character	PARAMS ((output_buffer *, int));
 void output_decimal		PARAMS ((output_buffer *, int));
 void output_add_string		PARAMS ((output_buffer *, const char *));
-const char *output_finish	PARAMS ((output_buffer *));
+const char *output_finalize_message PARAMS ((output_buffer *));
+void output_clear_message_text  PARAMS ((output_buffer *));
 void output_printf		PARAMS ((output_buffer *, const char *,
                                          ...)) ATTRIBUTE_PRINTF_2;
 int output_is_line_wrapping	PARAMS ((output_buffer *));
