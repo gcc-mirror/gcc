@@ -131,7 +131,6 @@ static void add_implicitly_declared_members (tree, int, int, int);
 static tree fixed_type_or_null (tree, int *, int *);
 static tree resolve_address_of_overloaded_function (tree, tree, int,
 							  int, int, tree);
-static tree build_vtable_entry_ref (tree, tree, tree);
 static tree build_vtbl_ref_1 (tree, tree);
 static tree build_vtbl_initializer (tree, tree, tree, tree, int *);
 static int count_fields (tree);
@@ -421,32 +420,6 @@ convert_to_base_statically (tree expr, tree base)
 }
 
 
-/* Virtual function things.  */
-
-static tree
-build_vtable_entry_ref (tree array_ref, tree instance, tree idx)
-{
-  tree i, i2, vtable, first_fn, basetype;
-
-  basetype = non_reference (TREE_TYPE (instance));
-
-  vtable = get_vtbl_decl_for_binfo (TYPE_BINFO (basetype));
-  first_fn = TYPE_BINFO_VTABLE (basetype);
-
-  i = fold (build_array_ref (first_fn, idx));
-  i = fold (build_c_cast (ptrdiff_type_node,
-			  build_unary_op (ADDR_EXPR, i, 0)));
-  i2 = fold (build_array_ref (vtable, build_int_2 (0,0)));
-  i2 = fold (build_c_cast (ptrdiff_type_node,
-			   build_unary_op (ADDR_EXPR, i2, 0)));
-  i = fold (cp_build_binary_op (MINUS_EXPR, i, i2));
-
-  if (TREE_CODE (i) != INTEGER_CST)
-    abort ();
-
-  return build (VTABLE_REF, TREE_TYPE (array_ref), array_ref, vtable, i);
-}
-
 /* Given an object INSTANCE, return an expression which yields the
    vtable element corresponding to INDEX.  There are many special
    cases for INSTANCE which we take care of here, mainly to avoid
@@ -490,9 +463,6 @@ build_vtbl_ref (tree instance, tree idx)
 {
   tree aref = build_vtbl_ref_1 (instance, idx);
 
-  if (flag_vtable_gc)
-    aref = build_vtable_entry_ref (aref, instance, idx);
-
   return aref;
 }
 
@@ -509,9 +479,6 @@ build_vfn_ref (tree instance, tree idx)
   if (TARGET_VTABLE_USES_DESCRIPTORS)
     aref = build1 (NOP_EXPR, TREE_TYPE (aref),
 		   build_unary_op (ADDR_EXPR, aref, /*noconvert=*/1));
-
-  if (flag_vtable_gc)
-    aref = build_vtable_entry_ref (aref, instance, idx);
 
   return aref;
 }

@@ -183,7 +183,7 @@ in the following sections.
 -fno-nonansi-builtins  -fno-operator-names @gol
 -fno-optional-diags  -fpermissive @gol
 -frepo  -fno-rtti  -fstats  -ftemplate-depth-@var{n} @gol
--fuse-cxa-atexit  -fvtable-gc  -fno-weak  -nostdinc++ @gol
+-fuse-cxa-atexit  -fno-weak  -nostdinc++ @gol
 -fno-default-inline  -Wabi  -Wctor-dtor-privacy @gol
 -Wnon-virtual-dtor  -Wreorder @gol
 -Weffc++  -Wno-deprecated @gol
@@ -1455,17 +1455,6 @@ Register destructors for objects with static storage duration with the
 This option is required for fully standards-compliant handling of static
 destructors, but will only work if your C library supports
 @code{__cxa_atexit}.
-
-@item -fvtable-gc
-@opindex fvtable-gc
-Emit special relocations for vtables and virtual function references
-so that the linker can identify unused virtual functions and zero out
-vtable slots that refer to them.  This is most useful with
-@option{-ffunction-sections} and @option{-Wl,--gc-sections}, in order to
-also discard the functions themselves.
-
-This optimization requires GNU as and GNU ld.  Not all systems support
-this option.  @option{-Wl,--gc-sections} is ignored without @option{-static}.
 
 @item -fno-weak
 @opindex fno-weak

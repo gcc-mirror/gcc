@@ -569,10 +569,6 @@ int flag_weak = 1;
 
 int flag_use_cxa_atexit = DEFAULT_USE_CXA_ATEXIT;
 
-/* Nonzero means output .vtable_{entry,inherit} for use in doing vtable gc.  */
-
-int flag_vtable_gc;
-
 /* Nonzero means make the default pedwarns warnings instead of errors.
    The value of this flag is ignored if -pedantic is specified.  */
 

@@ -1,3 +1,22 @@
+Wed Jul 30 19:12:10 CEST 2003  Jan Hubicka  <jh@suse.cz>
+
+	* gcse.c (insert_store): Ignore fake edges.
+
+	* c-common.c (flag_vtable_gc): Kill.
+	* c-common.g (flag_vtable_gc): Kill.
+	* c-opts (c_common_handle_option): Kill.
+	* c.opt (fvtable-gc): Kill.
+	* final.c (final_scan_insn): Do not call assemble_vtable_entry.
+	* output.h (assemble_vtable_entry, assemble_vtable_inherit): Kill.
+	* varasm.c (assemble_vtable_entry, assemble_vtable_inherit): Kill.
+
+	* invoke.texi (-ftable-gc): Kill documentation.
+
+	* tree-inline.c (inlinable_function_p): Don't set DECL_UNINLINABLE
+	just because function body is missing.
+
+	* i386.c (pic_symbolic_operand): Properly detect RIP relative unspecs.
+
 2003-07-30  Ranjit Mathew  <rmathew@hotmail.com>
 
 	* unwind-sjlj.c: Fix typo in file description.

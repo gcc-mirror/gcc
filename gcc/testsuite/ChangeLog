@@ -1,3 +1,7 @@
+Wed Jul 30 19:13:34 CEST 2003  Jan Hubicka  <jh@suse.cz>
+
+	* vtgc1.c: Kill.
+
 2003-07-29  Zack Weinberg  <zack@codesourcery.com>
 
 	* gcc.dg/struct-in-proto-1.c: New test.

@@ -1626,36 +1626,6 @@ import_export_class (tree ctype)
       CLASSTYPE_INTERFACE_ONLY (ctype) = (import_export < 0);
     }
 }
-    
-/* We need to describe to the assembler the relationship between
-   a vtable and the vtable of the parent class.  */
-
-void
-prepare_assemble_variable (tree vars)
-{
-  tree parent;
-  rtx child_rtx, parent_rtx;
-
-  if (!flag_vtable_gc || TREE_CODE (vars) != VAR_DECL
-      || !DECL_VTABLE_OR_VTT_P (vars))
-    return;
-
-  child_rtx = XEXP (DECL_RTL (vars), 0);	  /* strip the mem ref  */
-
-  parent = binfo_for_vtable (vars);
-
-  if (parent == TYPE_BINFO (DECL_CONTEXT (vars)))
-    parent_rtx = const0_rtx;
-  else if (parent)
-    {
-      parent = get_vtbl_decl_for_binfo (TYPE_BINFO (BINFO_TYPE (parent)));
-      parent_rtx = XEXP (DECL_RTL (parent), 0);  /* strip the mem ref  */
-    }
-  else
-    abort ();
-
-  assemble_vtable_inherit (child_rtx, parent_rtx);
-}
 
 /* If necessary, write out the vtables for the dynamic class CTYPE.
    Returns true if any vtables were emitted.  */

@@ -2486,9 +2486,6 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 
 	/* Emit information for vtable gc.  */
 	note = find_reg_note (insn, REG_VTABLE_REF, NULL_RTX);
-	if (note)
-	  assemble_vtable_entry (XEXP (XEXP (note, 0), 0),
-				 INTVAL (XEXP (XEXP (note, 0), 1)));
 
 	current_output_insn = debug_insn = 0;
       }
