@@ -1412,6 +1412,12 @@ ffelex_hash_ (FILE *finput)
 	  input_filename = old_input_filename;
 	  error ("Use `#line ...' instead of `# ...' in first line");
 	}
+      if (c == '\n' || c == EOF)
+	{
+	  if (token != NULL && !ffelex_kludge_flag_)
+	    ffelex_token_kill (token);
+	  return c;
+	}
     }
   else
     error ("invalid #-line");
