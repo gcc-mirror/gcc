@@ -1,3 +1,17 @@
+2003-07-04  Zack Weinberg  <zack@codesourcery.com>
+
+	* ABOUT-NLS: Delete.
+	* intl: Delete entire directory.
+	* aclocal.m4: Include ../config/gettext.m4.  Delete
+	AC_ISC_POSIX, AM_LANGINFO_CODESET, jm_GLIBC21, AM_LC_MESSAGES,
+	AM_PATH_PROG_WITH_TEST, AM_WITH_NLS, and AM_GNU_GETTEXT.
+	* configure.in: Use CY_GNU_GETTEXT, not AM_GNU_GETTEXT.
+	Remove intl/Makefile from all_outputs.
+	* configure, config.in: Regenerate.
+	* Makefile.in: Expunge all references to intl subdirectory.
+	Add -I../intl to INCLUDES.
+	* intl.h: Include libintl.h if and only if ENABLE_NLS is defined.
+
 2003-07-04  Roger Sayle  <roger@eyesopen.com>
 
 	* config/rs6000/aix51.h (TARGET_C99_FUNCTIONS): Define.
@@ -59,7 +73,7 @@
 
 	* c-opts.c (c_common_parse_file): Remove extra
 	debug_hooks->start_source_file call.
-	
+
 2003-07-03  Roger Sayle  <roger@eyesopen.com>
 
 	* real.c (real_trunc, real_floor, real_ceil): New functions

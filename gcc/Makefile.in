@@ -439,9 +439,6 @@ INTLDEPS = @INTLDEPS@
 # Character encoding conversion library.
 LIBICONV = @LIBICONV@
 
-# List of internationalization subdirectories.
-INTL_SUBDIRS = intl
-
 # The GC method to be used on this system.
 GGC=@GGC@.o
 
@@ -719,8 +716,9 @@ BUILD_VARRAY = $(BUILD_PREFIX)varray.o
 # subdirectory rather than in the source directory.
 # -I$(@D) and -I$(srcdir)/$(@D) cause the subdirectory of the file
 # currently being compiled, in both source trees, to be examined as well.
+# libintl.h will be found in ../intl if we are using the included libintl.
 INCLUDES = -I. -I$(@D) -I$(srcdir) -I$(srcdir)/$(@D) \
-	   -I$(srcdir)/config -I$(srcdir)/../include
+	   -I$(srcdir)/config -I$(srcdir)/../include -I../intl
 
 # Always use -I$(srcdir)/config when compiling.
 .c.o:
@@ -1008,7 +1006,7 @@ start.encap: native xgcc$(exeext) cpp$(exeext) specs \
 rest.encap: $(STMP_FIXPROTO) $(LIBGCC) $(EXTRA_PARTS) lang.rest.encap
 # This is what is made with the host's compiler
 # whether making a cross compiler or not.
-native: config.status auto-host.h intl.all build-@POSUB@ $(LANGUAGES) \
+native: config.status auto-host.h build-@POSUB@ $(LANGUAGES) \
 	$(EXTRA_PASSES) $(EXTRA_PROGRAMS) $(USE_COLLECT2)
 
 # Define the names for selecting languages in LANGUAGES.
@@ -2320,19 +2318,6 @@ intl.o: intl.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) intl.h Makefile
 
 $(top_builddir)/intl/libintl.a: intl.all
 
-intl.all intl.install intl.uninstall \
-  intl.mostlyclean intl.clean intl.distclean intl.maintainer-clean:
-	@for d in $(INTL_SUBDIRS); do \
-	  target=`expr $@ : 'intl.\(.*\)'` && \
-	  echo "(cd $$d && $(MAKE) $$target)" && \
-	  (cd $$d && AWK='$(AWK)' $(MAKE) $(SUBDIR_FLAGS_TO_PASS) $$target); \
-	  if [ $$? -eq 0 ] ; then true ; else exit 1 ; fi ; \
-	done
-
-# intl.all and intl.install need config.h to exist, and the files it includes.
-# (FIXME: intl/*.c shouldn't need to see insn-foo.h!)
-intl.all intl.install: config.h insn-flags.h insn-constants.h
-
 # Make-lang.in should add dependencies of po-generated on any generated
 # files which need to be scanned by gettext (usually Yacc-generated parsers).
 po-generated: $(parsedir)/c-parse.c
@@ -2787,8 +2772,7 @@ $(docobjdir)/fsf-funding.7: $(docdir)/include/funding.texi
 # We remove as much from the language subdirectories as we can
 # (less duplicated code).
 
-INTL_MOSTLYCLEAN = intl.mostlyclean
-mostlyclean: $(INTL_MOSTLYCLEAN) lang.mostlyclean
+mostlyclean: lang.mostlyclean
 	-rm -f $(STAGESTUFF)
 	-rm -f *$(coverageexts)
 	-rm -rf libgcc
@@ -2830,8 +2814,7 @@ mostlyclean: $(INTL_MOSTLYCLEAN) lang.mostlyclean
 
 # Delete all files made by compilation
 # that don't exist in the distribution.
-INTL_CLEAN = intl.clean
-clean: mostlyclean $(INTL_CLEAN) lang.clean
+clean: mostlyclean lang.clean
 	-rm -f libgcc.a libgcc_eh.a libgcov.a
 	-rm -f libgcc_s$(SHLIB_EXT) libgcc_s$(SHLIB_EXT).1
 	-rm -f config.h tconfig.h bconfig.h tm_p.h tm.h
@@ -2856,8 +2839,7 @@ clean: mostlyclean $(INTL_CLEAN) lang.clean
 
 # Delete all files that users would normally create
 # while building and installing GCC.
-INTL_DISTCLEAN = intl.distclean
-distclean: clean $(INTL_DISTCLEAN) lang.distclean
+distclean: clean lang.distclean
 	-rm -f auto-host.h auto-build.h
 	-rm -f cstamp-h
 	-rm -f config.status config.run config.cache config.bak
@@ -2872,7 +2854,6 @@ distclean: clean $(INTL_DISTCLEAN) lang.distclean
 	-cd testsuite && rm -f x *.x *.x? *.exe *.rpo *.o *.s *.S *.c
 	-cd testsuite && rm -f *.out *.gcov *$(coverageexts)
 	-rm -rf ${QMTEST_DIR} stamp-qmtest
-	-rm -f intl/libintl.h libintl.h
 	-rm -f cxxmain.c
 	-rm -f mklibgcc mkheaders gccbug .gdbinit configargs.h
 	-rm -f gcov.pod
@@ -2901,14 +2882,10 @@ extraclean: distclean lang.extraclean
 
 # Get rid of every file that's generated from some other file, except for `configure'.
 # Most of these files ARE PRESENT in the GCC distribution.
-# We define INTL_DISTCLEAN, INTL_CLEAN & INTL_MOSTLYCLEAN to be empty in the
-# submake, so that we don't descend into intl after its makefile has been
-# removed.
 maintainer-clean:
 	@echo 'This command is intended for maintainers to use; it'
 	@echo 'deletes files that may need special tools to rebuild.'
-	$(MAKE) INTL_DISTCLEAN= INTL_CLEAN= INTL_MOSTLYCLEAN= \
-		intl.maintainer-clean lang.maintainer-clean distclean
+	$(MAKE) lang.maintainer-clean distclean
 	-rm -f c-parse.y c-parse.c c-parse.output TAGS
 	-rm -f cpp.??s cpp.*aux
 	-rm -f gcc.??s gcc.*aux
@@ -2924,7 +2901,7 @@ maintainer-clean:
 # Install the driver last so that the window when things are
 # broken is small.
 install: install-common $(INSTALL_HEADERS) $(INSTALL_LIBGCC) \
-    install-cpp install-man install-info intl.install install-@POSUB@ \
+    install-cpp install-man install-info install-@POSUB@ \
     lang.install-normal install-driver
 
 # Handle cpp installation.
@@ -3219,7 +3196,7 @@ install-collect2: collect2 installdirs
 	$(INSTALL_PROGRAM) xgcc$(exeext) $(DESTDIR)$(libsubdir)/gcc$(exeext)
 
 # Cancel installation by deleting the installed files.
-uninstall: intl.uninstall lang.uninstall
+uninstall: lang.uninstall
 	-rm -rf $(DESTDIR)$(libsubdir)
 	-rm -rf $(DESTDIR)$(bindir)/$(GCC_INSTALL_NAME)$(exeext)
 	-rm -rf $(DESTDIR)$(bindir)/$(GCC_CROSS_NAME)$(exeext)
@@ -3690,7 +3667,7 @@ slowcompare slowcompare3 slowcompare4 slowcompare-lean slowcompare3-lean slowcom
 	    && (cmp tmp-foo1 tmp-foo2 > /dev/null 2>&1 || echo $$file differs >> .bad_compare) || true; \
 	done
 	case "$@" in slowcompare | slowcompare-lean ) stage=2 ;; * ) stage=`echo $@ | sed -e 's,^slowcompare\([0-9][0-9]*\).*,\1,'` ;; esac; \
-	for dir in tmp-foo intl $(SUBDIRS); do \
+	for dir in tmp-foo $(SUBDIRS); do \
 	  if [ "`echo $$dir/*$(objext)`" != "$$dir/*$(objext)" ] ; then \
 	    for file in $$dir/*$(objext); do \
 	      tail +16c ./$$file > tmp-foo1; \
@@ -3725,7 +3702,7 @@ gnucompare gnucompare3 gnucompare4 gnucompare-lean gnucompare3-lean gnucompare4-
 	  test $$? -eq 1 && echo $$file differs >> .bad_compare || true; \
 	done
 	case "$@" in gnucompare | gnucompare-lean ) stage=2 ;; * ) stage=`echo $@ | sed -e 's,^gnucompare\([0-9][0-9]*\).*,\1,'` ;; esac; \
-	for dir in tmp-foo intl $(SUBDIRS); do \
+	for dir in tmp-foo $(SUBDIRS); do \
 	  if [ "`echo $$dir/*$(objext)`" != "$$dir/*$(objext)" ] ; then \
 	    for file in $$dir/*$(objext); do \
 	      cmp --ignore-initial=16 $$file stage$$stage/$$file > /dev/null 2>&1; \
@@ -3756,14 +3733,13 @@ compare4-lean: @make_compare_target@4-lean
 stage1-start:
 	-if [ -d stage1 ] ; then true ; else mkdir stage1 ; fi
 	$(MAKE) -f libgcc.mk libgcc-stage-start stage=stage1
-	-for dir in intl $(SUBDIRS) ; \
+	-for dir in $(SUBDIRS) ; \
 	 do \
 	   if [ -d stage1/$$dir ] ; then true ; else mkdir stage1/$$dir ; fi ; \
 	 done
 # If SPECS is overridden, make sure it is `installed' as specs.
 	-mv $(SPECS) stage1/specs
 	-mv $(STAGESTUFF) stage1
-	-mv intl/*$(objext) stage1/intl
 # Copy as/ld if they exist to stage dir, so that running xgcc from the stage
 # dir will work properly.
 	-if [ -f as$(exeext) ] ; then (cd stage1 && $(LN_S) ../as$(exeext) .) ; else true ; fi
@@ -3790,14 +3766,13 @@ stage1: force stage1-start lang.stage1
 stage2-start:
 	-if [ -d stage2 ] ; then true ; else mkdir stage2 ; fi
 	$(MAKE) -f libgcc.mk libgcc-stage-start stage=stage2
-	-for dir in intl $(SUBDIRS) ; \
+	-subdirs="$(SUBDIRS)"; for dir in $subdirs; \
 	 do \
 	   if [ -d stage2/$$dir ] ; then true ; else mkdir stage2/$$dir ; fi ; \
 	 done
 # If SPECS is overridden, make sure it is `installed' as specs.
 	-mv $(SPECS) stage2/specs
 	-mv $(STAGESTUFF) stage2
-	-mv intl/*$(objext) stage2/intl
 # Copy as/ld if they exist to stage dir, so that running xgcc from the stage
 # dir will work properly.
 	-if [ -f as$(exeext) ] ; then (cd stage2 && $(LN_S) ../as$(exeext) .) ; else true ; fi
@@ -3820,14 +3795,13 @@ stage2: force stage2-start lang.stage2
 stage3-start:
 	-if [ -d stage3 ] ; then true ; else mkdir stage3 ; fi
 	$(MAKE) -f libgcc.mk libgcc-stage-start stage=stage3
-	-for dir in intl $(SUBDIRS) ; \
+	-subdirs="$(SUBDIRS)"; for dir in $subdirs; \
 	 do \
 	   if [ -d stage3/$$dir ] ; then true ; else mkdir stage3/$$dir ; fi ; \
 	 done
 # If SPECS is overridden, make sure it is `installed' as specs.
 	-mv $(SPECS) stage3/specs
 	-mv $(STAGESTUFF) stage3
-	-mv intl/*$(objext) stage3/intl
 # Copy as/ld if they exist to stage dir, so that running xgcc from the stage
 # dir will work properly.
 	-if [ -f as$(exeext) ] ; then (cd stage3 && $(LN_S) ../as$(exeext) .) ; else true ; fi
@@ -3850,14 +3824,13 @@ stage3: force stage3-start lang.stage3
 stage4-start:
 	-if [ -d stage4 ] ; then true ; else mkdir stage4 ; fi
 	$(MAKE) -f libgcc.mk libgcc-stage-start stage=stage4
-	-for dir in intl $(SUBDIRS) ; \
+	-subdirs="$(SUBDIRS)"; for dir in $subdirs; \
 	 do \
 	   if [ -d stage4/$$dir ] ; then true ; else mkdir stage4/$$dir ; fi ; \
 	 done
 # If SPECS is overridden, make sure it is `installed' as specs.
 	-mv $(SPECS) stage4/specs
 	-mv $(STAGESTUFF) stage4
-	-mv intl/*$(objext) stage4/intl
 # Copy as/ld if they exist to stage dir, so that running xgcc from the stage
 # dir will work properly.
 	-if [ -f as$(exeext) ] ; then (cd stage4 && $(LN_S) ../as$(exeext) .) ; else true ; fi
@@ -3880,12 +3853,11 @@ stage4: force stage4-start lang.stage4
 stageprofile-start:
 	-if [ -d stageprofile ] ; then true ; else mkdir stageprofile ; fi
 	$(MAKE) -f libgcc.mk libgcc-stage-start stage=stageprofile
-	-for dir in intl $(SUBDIRS) ; \
+	-subdirs="$(SUBDIRS)"; for dir in $subdirs; \
 	 do \
 	   if [ -d stageprofile/$$dir ] ; then true ; else mkdir stageprofile/$$dir ; fi ; \
 	 done
 	-mv $(STAGESTUFF) stageprofile
-	-mv intl/*$(objext) stageprofile/intl
 # Copy as/ld if they exist to stage dir, so that running xgcc from the stage
 # dir will work properly.
 	-if [ -f as$(exeext) ] ; then (cd stageprofile && $(LN_S) ../as$(exeext) .) ; else true ; fi
@@ -3908,12 +3880,11 @@ stageprofile: force stageprofile-start lang.stageprofile
 stagefeedback-start:
 	-if [ -d stagefeedback ] ; then true ; else mkdir stagefeedback ; fi
 	$(MAKE) -f libgcc.mk libgcc-stage-start stage=stagefeedback
-	-for dir in intl $(SUBDIRS) ; \
+	-subdirs="$(SUBDIRS)"; for dir in $subdirs; \
 	 do \
 	   if [ -d stagefeedback/$$dir ] ; then true ; else mkdir stagefeedback/$$dir ; fi ; \
 	 done
 	-mv $(STAGESTUFF) stagefeedback
-	-mv intl/*$(objext) stagefeedback/intl
 # Copy as/ld if they exist to stage dir, so that running xgcc from the stage
 # dir will work properly.
 	-if [ -f as$(exeext) ] ; then (cd stagefeedback && $(LN_S) ../as$(exeext) .) ; else true ; fi
@@ -3921,7 +3892,7 @@ stagefeedback-start:
 	-if [ -f collect-ld$(exeext) ] ; then (cd stagefeedback && $(LN_S) ../collect-ld$(exeext) .) ; else true ; fi
 	-rm -f stagefeedback/libgcc.a stagefeedback/libgcov.a stagefeedback/libgcc_eh.a
 	-rm -f *.da
-	-for dir in fixinc intl po testsuite $(SUBDIRS); \
+	-for dir in fixinc po testsuite $(SUBDIRS); \
 	 do \
 	   rm -f $$dir/*.da ; \
 	 done

@@ -1217,7 +1217,7 @@ if test "${build}" != "${host}" && test "x$enable_nls" = "xyes"; then
   enable_nls=no
 fi
 
-AM_GNU_GETTEXT
+CY_GNU_GETTEXT
 
 # Windows32 Registry support for specifying GCC installation paths.
 AC_ARG_ENABLE(win32-registry,
@@ -2923,7 +2923,7 @@ all_languages=
 all_boot_languages=
 all_compilers=
 all_stagestuff=
-all_outputs='Makefile intl/Makefile fixinc/Makefile gccbug mklibgcc mkheaders'
+all_outputs='Makefile fixinc/Makefile gccbug mklibgcc mkheaders'
 # List of language makefile fragments.
 all_lang_makefiles=
 # Files for gengtype
@@ -3236,11 +3236,6 @@ if test "$symbolic_link" = "ln -s"; then
    fi
  done
 else true ; fi
-# Avoid having to add intl to our include paths.
-if test -f intl/libintl.h; then
-  echo creating libintl.h
-  echo '#include "intl/libintl.h"' >libintl.h
-fi
 ], 
 [subdirs='$subdirs'
 symbolic_link='$symbolic_link'

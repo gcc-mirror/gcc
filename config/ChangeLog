@@ -1,3 +1,8 @@
+2003-07-04  Zack Weinberg  <zack@codesourcery.com>
+
+	* gettext.m4: New file - copy of gettext.m4 from binutils
+	CVS, with added AC_ISC_POSIX macro from gcc/aclocal.m4.
+
 2003-05-14  Kelley Cook  <kelleycook@wideopenwest.com>
 
 	* acinclude.m4: Accept i[3456789]86 for machine type.
@@ -15,7 +20,7 @@
 2002-12-28  Alexandre Oliva  <aoliva@redhat.com>
 
 	* acx.m4: Name cache variables properly.
-	(NCN_STRICT_CHECK_TOOL): If program is not found and 
+	(NCN_STRICT_CHECK_TOOL): If program is not found and
 	value-if-not-found is empty, use ${ncn_tool_prefix}$2 or $2,
 	depending on whether build != host or not.
 	(NCN_STRICT_CHECK_TARGET_TOOL): Ditto, with the target prefix.
@@ -139,7 +144,7 @@
 2000-07-21  Andrew Haley  <aph@cygnus.com>
 
 	* mh-ia64pic: New file.
-	* mt-ia64pic: New file.	
+	* mt-ia64pic: New file.
 
 2001-02-09  Martin Schwidefsky  <schwidefsky@de.ibm.com>
 
@@ -207,8 +212,8 @@ Wed Nov 18 20:29:46 1998  Christopher Faylor <cgf@cygnus.com>
 
 Mon Nov  2 15:15:33 1998  Geoffrey Noer  <noer@cygnus.com>
 
-        * mh-cygwin32: delete
-        * mh-cygwin: was mh-cygwin32
+	* mh-cygwin32: delete
+	* mh-cygwin: was mh-cygwin32
 
 1998-10-26  Syd Polk  <spolk@cygnus.com>
 
@@ -235,7 +240,7 @@ Mon Aug 10 00:15:47 1998  HJ Lu (hjl@gnu.org)
 1998-05-29  Rob Savoye  <rob@chinadoll.cygnus.com>
 
 	* acinclude.m4: New collection of generic autoconf macros.
-	
+
 Wed Apr 22 12:24:28 1998  Michael Meissner  <meissner@cygnus.com>
 
 	* mt-ospace: New file, support using -Os instead of -O2 to compile
@@ -278,8 +283,8 @@ Tue Mar 25 18:16:43 1997  Geoffrey Noer  <noer@cygnus.com>
 
 Wed Jan  8 19:56:43 1997  Geoffrey Noer  <noer@cygnus.com>
 
-        * mh-cygwin32: override CFLAGS so debug info isn't included
-        in cygwin32-hosted tools by default
+	* mh-cygwin32: override CFLAGS so debug info isn't included
+	in cygwin32-hosted tools by default
 
 Tue Dec 31 16:04:26 1996  Ian Lance Taylor  <ian@cygnus.com>
 
@@ -377,7 +382,7 @@ Tue Nov  7 15:41:30 1995  Stan Shebs  <shebs@andros.cygnus.com>
 	(CC_MWCPPC): Add -mpw_chars, disable warnings, add comments
 	explaining reasons for various flags.
 	(EXTRALIBS_PPC, EXTRALIBS_MWCPPC ): Put runtime library first.
-	
+
 Fri Oct 13 14:44:25 1995  Jason Molenda  (crash@phydeaux.cygnus.com)
 
 	* mh-aix, mh-sun:  Removed.
@@ -386,7 +391,7 @@ Fri Oct 13 14:44:25 1995  Jason Molenda  (crash@phydeaux.cygnus.com)
 
 	* mh-sco, mh-solaris, mh-sysv4 (X11_EXTRA_LIBS): Define.
 
-        * mh-hp300, mh-hpux, mh-hpux8, mh-solaris, mh-sun3, mh-sysv4: Don't 
+	* mh-hp300, mh-hpux, mh-hpux8, mh-solaris, mh-sun3, mh-sysv4: Don't
 	hardcode location of X stuff here.
 
 Thu Sep 28 13:14:56 1995  Stan Shebs  <shebs@andros.cygnus.com>
@@ -412,7 +417,7 @@ Thu Jun 22 17:47:24 1995  Stan Shebs  <shebs@andros.cygnus.com>
 Mon Apr 10 12:29:48 1995  Stan Shebs  <shebs@andros.cygnus.com>
 
 	* mpw-mh-mpw (EXTRALIBS): Always link in Math.o, CSANELIB.o,
-        and ToolLibs.o.
+	and ToolLibs.o.
 
 	* mpw-mh-mpw (CC): Define ALMOST_STDC.
 	(CFLAGS): Remove ALMOST_STDC, -mc68881.
