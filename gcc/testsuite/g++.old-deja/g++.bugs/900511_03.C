@@ -9,8 +9,8 @@
 class class0;
 
 struct struct1 {
-  int class0;			
-  void member_function (class0 *); // ERROR - 
+  int class0;
+  void member_function (class0 *); // ERROR - invalid use of struct-local member
 };
 
 void class1::member_function (class0 *p) {	// ERROR - 
