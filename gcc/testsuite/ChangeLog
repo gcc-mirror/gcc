@@ -1,3 +1,17 @@
+2003-07-04  Zack Weinberg  <zack@codesourcery.com>
+
+	* gcc.c-torture/execute/wchar_t-1.x: New file; XFAIL wchar_t-1.c
+	everywhere.
+	* gcc.dg/concat.c: Concatenation of string constants with
+	__FUNCTION__ / __PRETTY_FUNCTION__ is now a hard error.
+	* gcc.dg/wtr-strcat-1.c: Loosen dg-warning regexp.
+	* gcc.dg/cpp/escape-2.c: Use wide character constants where
+	necessary to avoid multi-character character constant warning.
+	* gcc.dg/cpp/escape.c: Likewise.
+	* gcc.dg/cpp/ucs.c: Likewise.
+	Remove backslashes from dg-bogus comments, as they confuse Tcl.
+	Fix a typo.
+
 2003-07-04  Kazu Hirata  <kazu@cs.umass.edu>
 
 	PR c/11428
@@ -117,7 +131,7 @@
 
 	PR c++/10219
 	* g++.dg/template/error1.C: New.
-	
+
 	PR c++/9779
 	* g++.dg/template/dependent-expr1.C: New.
 
@@ -131,8 +145,8 @@
 
 2003-07-01  Giovanni Bajo  <giovannibajo@libero.it>
 
-        PR c++/8046
-        * g++.dg/other/error7.C: New test.
+	PR c++/8046
+	* g++.dg/other/error7.C: New test.
 
 2003-07-01  Kazu Hirata  <kazu@cs.umass.edu>
 
@@ -164,22 +178,22 @@
 
 2003-06-30  Giovanni Bajo  <giovannibajo@libero.it>
 
-        PR c++/4933
-        * g++.dg/template/sizeof4.C: New test.
+	PR c++/4933
+	* g++.dg/template/sizeof4.C: New test.
 
 2003-06-30  Giovanni Bajo  <giovannibajo@libero.it>
 
-        * g++.dg/other/error6.C: New test.
+	* g++.dg/other/error6.C: New test.
 
 2003-06-30  Giovanni Bajo  <giovannibajo@libero.it>
 
-        PR c++/10750
-        * g++.dg/parse/constant2.C: New test.
+	PR c++/10750
+	* g++.dg/parse/constant2.C: New test.
 
 2003-06-30  Giovanni Bajo <giovannibajo@libero.it>
 
-        PR c++/11106
-        * g++.dg/other/error5.C: New test.
+	PR c++/11106
+	* g++.dg/other/error5.C: New test.
 
 2003-06-29  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
@@ -238,8 +252,8 @@
 
 2003-06-26  Giovanni Bajo  <giovannibajo@libero.it>
 
-        PR c++/8266
-        * g++.dg/template/explicit-instantiation3.C: New test.
+	PR c++/8266
+	* g++.dg/template/explicit-instantiation3.C: New test.
 
 2003-06-26  Eric Botcazou <ebotcazou@libertysurf.fr>
 
@@ -263,7 +277,7 @@
 
 	PR c++/10931
 	* g++.dg/expr/static_cast1.C: New test.
-	
+
 2003-06-25  Josef Zlomek  <zlomekj@suse.cz>
 
 	* gcc.dg/20030625-1.c: New test.
@@ -295,10 +309,10 @@
 
 2003-06-21  Gabriel Dos Reis <gdr@integrable-solutions.net>
 
-        * g++.old-deja/g++.benjamin/16077.C: Add -Wconversion  option.
-        * g++.old-deja/g++.other/conv7.C: Likewise
-        * g++.old-deja/g++.other/overcnv2.C: Likewise.
-        * g++.old-deja/g++.other/overload14.C: Likewise.
+	* g++.old-deja/g++.benjamin/16077.C: Add -Wconversion  option.
+	* g++.old-deja/g++.other/conv7.C: Likewise
+	* g++.old-deja/g++.other/overcnv2.C: Likewise.
+	* g++.old-deja/g++.other/overload14.C: Likewise.
 
 2003-06-21  Gabriel Dos Reis <gdr@integrable-solutions.net>
 
@@ -308,7 +322,7 @@
 2003-06-20  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/10888
-	* g++.dg/warn/Winline-3.C: New test. 
+	* g++.dg/warn/Winline-3.C: New test.
 
 2003-06-20  Mark Mitchell  <mark@codesourcery.com>
 
@@ -319,8 +333,8 @@
 	* g++.dg/template/memclass2.C: New test.
 
 2003-06-20  Mark Mitchell  <mark@codesourcery.com>
-            Eric Botcazou  <ebotcazou@libertysurf.fr>
-	
+	    Eric Botcazou  <ebotcazou@libertysurf.fr>
+
 	* lib/gcc-dg.exp (dg-xfail-if): Do not process conditional xfail
 	data for non-matching targets.
 	* gcc.c-torture/compile/simd-5.c: Fix typo in conditional xfail.
@@ -349,7 +363,7 @@
 	* g++.dg/anew2.C: New test.
 	* g++.dg/anew3.C: New test.
 	* g++.dg/anew4.C: New test.
-	
+
 2003-06-19  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* gcc.c-torture/compile/simd-5.c: Don't XFAIL on H8.
@@ -363,7 +377,7 @@
 
 	* lib/g++.exp (g++_include_flags): Tweak path to testsuite_flags.
 	Remove cruft.
-	
+
 2003-06-17  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* gcc.c-torture/compile/20020604-1.c: Use dg-xfail-if for h8300.
@@ -374,7 +388,7 @@
 
 	PR c++/10712
 	* g++.dg/lookup/using7.C: New test.
-	
+
 2003-06-17  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/11105
@@ -444,7 +458,7 @@
 	(dg-xfail-if): Likewise.
 	* gcc.c-torture/compile/compile.exp: Use dg rather than c-torture
 	driver.
-	
+
 	* gcc.c-torture/compile/20000804-1.c: Convert to dg format.
 	* gcc.c-torture/compile/20001205-1.c: Likewise.
 	* gcc.c-torture/compile/20001226-1.c: Likewise.
@@ -775,7 +789,7 @@ Sun Jun  8 16:46:04 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	* lib/g++.exp (additional_sources): Remove.
 	(additional_files): Likewise.
 	(g++_target_compile): Use dg-additional-files-options.
-	
+
 	* gcc.dg/special/special.exp: Add "ecos" tests.  Remove complex
 	Tcl logic.
 	* gcc.dg/special/ecos.exp: Remove.
@@ -787,7 +801,7 @@ Sun Jun  8 16:46:04 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	* gcc.dg/special/weak-2.c: Likewise.
 	* gcc.dg/special/wkali-1.c: Likewise.
 	* gcc.dg/special/wkali-2.c: Likewise.
-	
+
 	* g++.dg/special/conpr-2.C: Use dg-additional-*, not
 	dg-gpp-additional-*.
 	* g++.dg/special/conpr-3.C: Likewise.
@@ -819,13 +833,13 @@ Sun Jun  8 16:46:04 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-06-04  Richard Henderson  <rth@redhat.com>
 
-        * gcc.dg/cleanup-1.c: New.
-        * gcc.dg/cleanup-2.c: New.
-        * gcc.dg/cleanup-3.c: New.
-        * gcc.dg/cleanup-4.c: New.
-        * gcc.dg/cleanup-5.c: New.
-        * gcc.dg/cleanup-6.c: New.
-        * gcc.dg/cleanup-7.c: New.
+	* gcc.dg/cleanup-1.c: New.
+	* gcc.dg/cleanup-2.c: New.
+	* gcc.dg/cleanup-3.c: New.
+	* gcc.dg/cleanup-4.c: New.
+	* gcc.dg/cleanup-5.c: New.
+	* gcc.dg/cleanup-6.c: New.
+	* gcc.dg/cleanup-7.c: New.
 
 2003-06-04  Mark Mitchell  <mark@codesourcery.com>
 
@@ -866,7 +880,7 @@ Sun Jun  8 16:46:04 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-06-03  Aldy Hernandez  <aldyh@redhat.com>
 
-        * gcc.c-torture/compile/simd-5.x: Remove xfail for PPC64.
+	* gcc.c-torture/compile/simd-5.x: Remove xfail for PPC64.
 
 2003-06-03  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
@@ -934,7 +948,7 @@ Sun Jun  8 16:46:04 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	* gcc.dg/cpp/cpp.exp: Remove scanning of ".cpp" files.
 
 2003-06-01  Loren James Rittle  <ljrittle@acm.org>
-	
+
 	* gcc.dg/cpp/redef3.c: New file.
 
 2003-06-01  Eric Botcazou  <ebotcazou@libertysurf.fr>
@@ -964,7 +978,7 @@ Sun Jun  8 16:46:04 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	PR fortran/10843
 	* g77.dg/ffixed-form-1.f: New test
 	* g77.dg/ffixed-form-2.f: New test
-	* g77.dg/ffree-form-2.f: New test - XFAIL pending fix 
+	* g77.dg/ffree-form-2.f: New test - XFAIL pending fix
 	* g77.dg/ffree-form-3.f: New test
 
 2003-05-26  Andreas Tobler <a.tobler@schweiz.ch>
@@ -982,21 +996,21 @@ Sun Jun  8 16:46:04 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	* g++.dg/template/access10.C: New test.
 
 2003-05-24  Eric Botcazou  <ebotcazou@libertysurf.fr>
-            Kaveh R. Ghazi <ghazi@caip.rutgers.edu>
+	    Kaveh R. Ghazi <ghazi@caip.rutgers.edu>
 
 	* gcc.c-torture/compile/simd-5.x: XFAIL on SPARC64.
 
 2003-05-24  Andreas Tobler <a.tobler@schweiz.ch>
 
-        * gcc.dg/torture/builtin-noret-1.c: Add dg-option -multiply_defined
-        suppress for powerpc-*-darwin*.
+	* gcc.dg/torture/builtin-noret-1.c: Add dg-option -multiply_defined
+	suppress for powerpc-*-darwin*.
 	* gcc.dg/torture/builtin-noret-2.c: Likewise.
 
 2003-05-24  Andreas Tobler <a.tobler@schweiz.ch>
 
 	* gcc.c-torture/execute/builtins/builtins.exp: Add -multiply_defined
 	suppress option for powerpc-*-darwin*.
-	
+
 2003-05-23  Roger Sayle  <roger@eyesopen.com>
 
 	* gcc.dg/builtins-1.c: Add tests for tan and atan.
@@ -1123,7 +1137,7 @@ Sun Jun  8 16:46:04 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	* lib/g++-dg.exp: Use gcc-dg.exp to implement all functionality.
 	* lib/g77-dg.exp: Likewise.
 	* lib/obj-dg.exp: Likewise.
-	
+
 2003-05-16  Jakub Jelinek  <jakub@redhat.com>
 
 	Merge from gcc-3_2-rhl8-branch:
@@ -1316,13 +1330,13 @@ Sun Jun  8 16:46:04 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-05-07  Richard Henderson  <rth@redhat.com>
 
-        PR c++/10570
-        * g++.dg/eh/forced1.C: Expect catch-all handlers to run.
-        Verify exception_cleanup not called for rethrows.
-        * g++.dg/eh/forced2.C: Test that exception_cleanup is called
-        when exiting catch block without rethrowing.
-        * g++.dg/eh/forced3.C: New.
-        * g++.dg/eh/forced4.C: New.
+	PR c++/10570
+	* g++.dg/eh/forced1.C: Expect catch-all handlers to run.
+	Verify exception_cleanup not called for rethrows.
+	* g++.dg/eh/forced2.C: Test that exception_cleanup is called
+	when exiting catch block without rethrowing.
+	* g++.dg/eh/forced3.C: New.
+	* g++.dg/eh/forced4.C: New.
 
 2003-05-07  Aldy Hernandez  <aldyh@redhat.com>
 

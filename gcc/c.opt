@@ -368,6 +368,9 @@ C++ ObjC++
 fenum-int-equiv
 C++ ObjC++
 
+fexec-charset=
+C ObjC C++ ObjC++ Joined RejectNegative
+
 fexternal-templates
 C++ ObjC++
 
@@ -508,6 +511,9 @@ C++ ObjC++
 
 fweak
 C++ ObjC++
+
+fwide-exec-charset=
+C ObjC C++ ObjC++ Joined RejectNegative
 
 fxref
 C++ ObjC++

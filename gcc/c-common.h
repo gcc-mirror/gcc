@@ -883,7 +883,6 @@ extern void start_fname_decls (void);
 extern void finish_fname_decls (void);
 extern const char *fname_as_string (int);
 extern tree fname_decl (unsigned, tree);
-extern const char *fname_string (unsigned);
 
 extern void check_function_arguments (tree, tree);
 extern void check_function_arguments_recurse (void (*)
@@ -922,7 +921,6 @@ extern void c_expand_end_cond (void);
 extern tree check_case_value (tree);
 extern tree fix_string_type (tree);
 struct varray_head_tag;
-extern tree combine_strings (struct varray_head_tag *);
 extern void constant_expression_warning (tree);
 extern tree convert_and_check (tree, tree);
 extern void overflow_warning (tree);

@@ -25,6 +25,13 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
 #include "hashtable.h"
 
+#ifdef HAVE_ICONV
+#include <iconv.h>
+#else
+#define HAVE_ICONV 0
+typedef int iconv_t;  /* dummy */
+#endif
+
 struct directive;		/* Deliberately incomplete.  */
 struct pending_option;
 struct op;
@@ -362,6 +369,15 @@ struct cpp_reader
   unsigned char *macro_buffer;
   unsigned int macro_buffer_len;
 
+  /* Iconv descriptor for converting from the source character set
+     to the execution character set.  (iconv_t)-1 for no conversion.  */
+  iconv_t narrow_cset_desc;
+
+  /* Iconv descriptor for converting from the execution character set
+     to the wide execution character set.  (iconv_t)-1 for no conversion
+     other than zero-extending each character to the width of wchar_t.  */
+  iconv_t wide_cset_desc;
+
   /* Tree of other included files.  See cppfiles.c.  */
   struct splay_tree_s *all_include_files;
 
@@ -539,7 +555,8 @@ extern uchar *_cpp_copy_replacement_text (const cpp_macro *, uchar *);
 extern size_t _cpp_replacement_text_len (const cpp_macro *);
 
 /* In cppcharset.c.  */
-cppchar_t _cpp_valid_ucn (cpp_reader *, const uchar **, int identifer_p);
+cppchar_t _cpp_valid_ucn (cpp_reader *, const uchar **, const uchar *, int);
+void _cpp_destroy_iconv (cpp_reader *);
 
 /* Utility routines and macros.  */
 #define DSC(str) (const uchar *)str, sizeof str - 1

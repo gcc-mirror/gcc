@@ -157,6 +157,11 @@ cpp_create_reader (enum c_lang lang, hash_table *table)
   CPP_OPTION (pfile, int_precision) = CHAR_BIT * sizeof (int);
   CPP_OPTION (pfile, unsigned_char) = 0;
   CPP_OPTION (pfile, unsigned_wchar) = 1;
+  CPP_OPTION (pfile, bytes_big_endian) = 1;  /* does not matter */
+
+  /* Default to no charset conversion.  */
+  CPP_OPTION (pfile, narrow_charset) = 0;
+  CPP_OPTION (pfile, wide_charset) = 0;
 
   /* Initialize the line map.  Start at logical line 1, so we can use
      a line number of zero for special states.  */
@@ -227,6 +232,7 @@ cpp_destroy (cpp_reader *pfile)
 
   _cpp_destroy_hashtable (pfile);
   _cpp_cleanup_includes (pfile);
+  _cpp_destroy_iconv (pfile);
 
   _cpp_free_buff (pfile->a_buff);
   _cpp_free_buff (pfile->u_buff);

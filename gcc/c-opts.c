@@ -46,10 +46,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 # define TARGET_SYSTEM_ROOT NULL
 #endif
 
-#ifndef TARGET_EBCDIC
-# define TARGET_EBCDIC 0
-#endif
-
 static int saved_lineno;
 
 /* CPP's options.  */
@@ -143,6 +139,8 @@ missing_arg (enum opt_code code)
     case OPT_fdump_:
     case OPT_fname_mangling_version_:
     case OPT_ftabstop_:
+    case OPT_fexec_charset_:
+    case OPT_fwide_exec_charset_:
     case OPT_ftemplate_depth_:
     case OPT_iprefix:
     case OPT_iwithprefix:
@@ -892,6 +890,14 @@ c_common_handle_option (size_t scode, const char *arg, int value)
 	cpp_opts->tabstop = value;
       break;
 
+    case OPT_fexec_charset_:
+      cpp_opts->narrow_charset = arg;
+      break;
+
+    case OPT_fwide_exec_charset_:
+      cpp_opts->wide_charset = arg;
+      break;
+
     case OPT_ftemplate_depth_:
       max_tinst_depth = value;
       break;
@@ -1145,7 +1151,11 @@ c_common_init (void)
   cpp_opts->int_precision = TYPE_PRECISION (integer_type_node);
   cpp_opts->wchar_precision = TYPE_PRECISION (wchar_type_node);
   cpp_opts->unsigned_wchar = TREE_UNSIGNED (wchar_type_node);
-  cpp_opts->EBCDIC = TARGET_EBCDIC;
+  cpp_opts->bytes_big_endian = BYTES_BIG_ENDIAN;
+
+  /* This can't happen until after wchar_precision and bytes_big_endian
+     are known.  */
+  cpp_init_iconv (parse_in);
 
   if (flag_preprocess_only)
     {
@@ -1571,6 +1581,12 @@ Switches:\n\
   fputs (_("\
   -f[no-]preprocessed       Treat the input file as already preprocessed\n\
   -ftabstop=<number>        Distance between tab stops for column reporting\n\
+  -ftarget-charset=<c>      Convert all strings and character constants\n\
+                            to character set <c>\n\
+  -ftarget-wide-charset=<c> Convert all wide strings and character constants\n\
+                            to character set <c>\n\
+"), stdout);
+  fputs (_("\
   -isysroot <dir>           Set <dir> to be the system root directory\n\
   -P                        Do not generate #line directives\n\
   -remap                    Remap file names when including files\n\

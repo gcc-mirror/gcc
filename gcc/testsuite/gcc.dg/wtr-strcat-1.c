@@ -9,7 +9,7 @@ testfunc ()
 {
   const char *foo;
   
-  foo = "hello" "hello"; /* { dg-warning "string concatenation" "string concatenation" } */
+  foo = "hello" "hello"; /* { dg-warning "concatenation" "string concatenation" } */
 
 # 15 "sys-header.h" 3
 /* We are in system headers now, no -Wtraditional warnings should issue.  */

@@ -439,7 +439,6 @@ extensions, accepted by GCC in C89 mode and in C++.
 * Empty Structures::    Structures with no members.
 * Variadic Macros::	Macros with a variable number of arguments.
 * Escaped Newlines::    Slightly looser rules for escaped newlines.
-* Multi-line Strings::  String literals with embedded newlines.
 * Subscripting::        Any array can be subscripted, even if not an lvalue.
 * Pointer Arith::       Arithmetic on @code{void}-pointers and function pointers.
 * Initializers::        Non-constant initializers.
@@ -1529,27 +1528,14 @@ argument, these arguments are not macro expanded.
 
 Recently, the preprocessor has relaxed its treatment of escaped
 newlines.  Previously, the newline had to immediately follow a
-backslash.  The current implementation allows whitespace in the form of
-spaces, horizontal and vertical tabs, and form feeds between the
+backslash.  The current implementation allows whitespace in the form
+of spaces, horizontal and vertical tabs, and form feeds between the
 backslash and the subsequent newline.  The preprocessor issues a
 warning, but treats it as a valid escaped newline and combines the two
 lines to form a single logical line.  This works within comments and
-tokens, including multi-line strings, as well as between tokens.
-Comments are @emph{not} treated as whitespace for the purposes of this
-relaxation, since they have not yet been replaced with spaces.
-
-@node Multi-line Strings
-@section String Literals with Embedded Newlines
-@cindex multi-line string literals
-
-As an extension, GNU CPP permits string literals to cross multiple lines
-without escaping the embedded newlines.  Each embedded newline is
-replaced with a single @samp{\n} character in the resulting string
-literal, regardless of what form the newline took originally.
-
-CPP currently allows such strings in directives as well (other than the
-@samp{#include} family).  This is deprecated and will eventually be
-removed.
+tokens, as well as between tokens.  Comments are @emph{not} treated as
+whitespace for the purposes of this relaxation, since they have not
+yet been replaced with spaces.
 
 @node Subscripting
 @section Non-Lvalue Arrays May Have Subscripts
@@ -4437,18 +4423,47 @@ This extension is not supported by GNU C++.
 
 @node Function Names
 @section Function Names as Strings
+@cindex @code{__func__} identifier
 @cindex @code{__FUNCTION__} identifier
 @cindex @code{__PRETTY_FUNCTION__} identifier
-@cindex @code{__func__} identifier
 
-GCC predefines two magic identifiers to hold the name of the current
-function.  The identifier @code{__FUNCTION__} holds the name of the function
-as it appears in the source.  The identifier @code{__PRETTY_FUNCTION__}
-holds the name of the function pretty printed in a language specific
-fashion.
+GCC provides three magic variables which hold the name of the current
+function, as a string.  The first of these is @code{__func__}, which
+is part of the C99 standard:
 
-These names are always the same in a C function, but in a C++ function
-they may be different.  For example, this program:
+@display
+The identifier @code{__func__} is implicitly declared by the translator
+as if, immediately following the opening brace of each function
+definition, the declaration
+
+@smallexample
+static const char __func__[] = "function-name";
+@end smallexample
+
+appeared, where function-name is the name of the lexically-enclosing
+function.  This name is the unadorned name of the function.
+@end display
+
+@code{__FUNCTION__} is another name for @code{__func__}.  Older
+versions of GCC recognize only this name.  However, it is not
+standardized.  For maximum portability, we recommend you use
+@code{__func__}, but provide a fallback definition with the
+preprocessor:
+
+@smallexample
+#if __STDC_VERSION__ < 199901L
+# if __GNUC__ >= 2
+#  define __func__ __FUNCTION__
+# else
+#  define __func__ "<unknown>"
+# endif
+#endif
+@end smallexample
+
+In C, @code{__PRETTY_FUNCTION__} is yet another name for
+@code{__func__}.  However, in C++, @code{__PRETTY_FUNCTION__} contains
+the type signature of the function as well as its bare name.  For
+example, this program:
 
 @smallexample
 extern "C" @{
@@ -4478,46 +4493,16 @@ gives this output:
 
 @smallexample
 __FUNCTION__ = sub
-__PRETTY_FUNCTION__ = int  a::sub (int)
+__PRETTY_FUNCTION__ = void a::sub(int)
 @end smallexample
 
-The compiler automagically replaces the identifiers with a string
-literal containing the appropriate name.  Thus, they are neither
-preprocessor macros, like @code{__FILE__} and @code{__LINE__}, nor
-variables.  This means that they catenate with other string literals, and
-that they can be used to initialize char arrays.  For example
-
-@smallexample
-char here[] = "Function " __FUNCTION__ " in " __FILE__;
-@end smallexample
-
-On the other hand, @samp{#ifdef __FUNCTION__} does not have any special
-meaning inside a function, since the preprocessor does not do anything
-special with the identifier @code{__FUNCTION__}.
-
-Note that these semantics are deprecated, and that GCC 3.2 will handle
-@code{__FUNCTION__} and @code{__PRETTY_FUNCTION__} the same way as
-@code{__func__}.  @code{__func__} is defined by the ISO standard C99:
-
-@display
-The identifier @code{__func__} is implicitly declared by the translator
-as if, immediately following the opening brace of each function
-definition, the declaration
-
-@smallexample
-static const char __func__[] = "function-name";
-@end smallexample
-
-appeared, where function-name is the name of the lexically-enclosing
-function.  This name is the unadorned name of the function.
-@end display
-
-By this definition, @code{__func__} is a variable, not a string literal.
-In particular, @code{__func__} does not catenate with other string
-literals.
-
-In @code{C++}, @code{__FUNCTION__} and @code{__PRETTY_FUNCTION__} are
-variables, declared in the same way as @code{__func__}.
+These identifiers are not preprocessor macros.  In GCC 3.3 and
+earlier, in C only, @code{__FUNCTION__} and @code{__PRETTY_FUNCTION__}
+were treated as string literals; they could be used to initialize
+@code{char} arrays, and they could be concatenated with other string
+literals.  GCC 3.4 and later treat them as variables, like
+@code{__func__}.  In C++, @code{__FUNCTION__} and
+@code{__PRETTY_FUNCTION__} have always been variables.
 
 @node Return Address
 @section Getting the Return or Frame Address of a Function

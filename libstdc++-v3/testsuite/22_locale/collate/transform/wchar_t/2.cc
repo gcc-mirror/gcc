@@ -20,6 +20,10 @@
 
 // 22.2.4.1.1 collate members
 
+// Doesn't work due to use of literal ISO8859.1 characters.  PR 11439
+// { dg-do compile { xfail *-*-* } } should be run
+// { dg-excess-errors "" }
+
 #include <locale>
 #include <testsuite_hooks.h>
 

@@ -124,6 +124,7 @@ struct file_name_map_list;
   OP(CPP_ATSIGN,	"@")  /* used in Objective-C */ \
 \
   TK(CPP_NAME,		SPELL_IDENT)	/* word */			\
+  TK(CPP_AT_NAME,       SPELL_IDENT)    /* @word - Objective-C */       \
   TK(CPP_NUMBER,	SPELL_LITERAL)	/* 34_be+ta  */			\
 \
   TK(CPP_CHAR,		SPELL_LITERAL)	/* 'char' */			\
@@ -132,6 +133,7 @@ struct file_name_map_list;
 \
   TK(CPP_STRING,	SPELL_LITERAL)	/* "string" */			\
   TK(CPP_WSTRING,	SPELL_LITERAL)	/* L"string" */			\
+  TK(CPP_OBJC_STRING,   SPELL_LITERAL)  /* @"string" - Objective-C */	\
   TK(CPP_HEADER_NAME,	SPELL_LITERAL)	/* <stdio.h> in #include */	\
 \
   TK(CPP_COMMENT,	SPELL_LITERAL)	/* Only if output comments.  */ \
@@ -332,6 +334,12 @@ struct cpp_options
   /* True for traditional preprocessing.  */
   unsigned char traditional;
 
+  /* Holds the name of the target (execution) character set.  */
+  const char *narrow_charset;
+
+  /* Holds the name of the target wide character set.  */
+  const char *wide_charset;
+
   /* True to warn about precompiled header files we couldn't use.  */
   bool warn_invalid_pch;
 
@@ -364,8 +372,9 @@ struct cpp_options
   /* True means chars (wide chars) are unsigned.  */
   bool unsigned_char, unsigned_wchar;
 
-  /* True if target is EBCDIC.  */
-  bool EBCDIC;
+  /* True if the most significant byte in a word has the lowest
+     address in memory.  */
+  bool bytes_big_endian;
 
   /* Nonzero means __STDC__ should have the value 0 in system headers.  */
   unsigned char stdc_0_in_system_headers;
@@ -529,6 +538,9 @@ extern const char *cpp_read_main_file (cpp_reader *, const char *);
 /* Set up built-ins like __FILE__.  */
 extern void cpp_init_builtins (cpp_reader *, int);
 
+/* Set up translation to the target character set.  */
+extern void cpp_init_iconv (cpp_reader *);
+
 /* Call this to finish preprocessing.  If you requested dependency
    generation, pass an open stream to write the information to,
    otherwise NULL.  It is your responsibility to close the stream.
@@ -560,6 +572,10 @@ extern void _cpp_backup_tokens (cpp_reader *, unsigned int);
 /* Evaluate a CPP_CHAR or CPP_WCHAR token.  */
 extern cppchar_t cpp_interpret_charconst (cpp_reader *, const cpp_token *,
 					  unsigned int *, int *);
+/* Evaluate a vector of CPP_STRING or CPP_WSTRING tokens.  */
+extern bool cpp_interpret_string (cpp_reader *,
+				  const cpp_string *, size_t,
+				  cpp_string *, bool);
 
 /* Used to register macros and assertions, perhaps from the command line.
    The text is the same as the command line argument.  */
