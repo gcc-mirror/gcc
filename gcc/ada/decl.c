@@ -5516,7 +5516,7 @@ validate_size (uint_size, gnu_type, gnat_object, kind, component_p, zero_ok)
      need not do it here (which would entail checking against the bounds).
      However, if this is an aliased object, it may not be smaller than the
      type of the object.  */
-  if (INTEGRAL_TYPE_P (gnu_type)
+  if (INTEGRAL_TYPE_P (gnu_type) && ! TYPE_PACKED_ARRAY_TYPE_P (gnu_type)
       && ! (kind == VAR_DECL && Is_Aliased (gnat_object)))
     return size;
 

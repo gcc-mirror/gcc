@@ -1,5 +1,10 @@
 2001-10-10  Richard Kenner <kenner@gnat.com>
 
+	* decl.c: (validate_size): Do check size of object of integral type 
+	if it is a packed array type.
+
+2001-10-10  Richard Kenner <kenner@gnat.com>
+
 	* decl.c: (gnat_to_gnu_entity, case object): Also materialize 
 	VAR_DECL for constant if not Is_Public but -O0.
 
