@@ -1,3 +1,4 @@
+/* CYGNUS LOCAL entire file/law */
 /* Subroutines for insn-output.c for NEC V850 series
    Copyright (C) 1996, 1997 Free Software Foundation, Inc.
    Contributed by Jeff Law (law@cygnus.com).
@@ -1936,7 +1937,55 @@ v850_encode_data_area (decl)
   int len = strlen (str);
   char *newstr;
 
-  /* In the Cygnus sources we actually do something; this is just
-     here to make merges easier.  */
-  return;
+  /* Map explict sections into the appropriate attribute */
+  if (!DECL_DATA_AREA (decl))
+    {
+      if (DECL_SECTION_NAME (decl))
+	{
+	  char *name = TREE_STRING_POINTER (DECL_SECTION_NAME (decl));
+	  if (!strcmp (name, ".zdata") || !strcmp (name, ".zbss"))
+	    DECL_DATA_AREA (decl) = DATA_AREA_ZDA;
+
+	  else if (!strcmp (name, ".sdata") || !strcmp (name, ".sbss"))
+	    DECL_DATA_AREA (decl) = DATA_AREA_SDA;
+
+	  else if (!strcmp (name, ".tdata"))
+	    DECL_DATA_AREA (decl) = DATA_AREA_TDA;
+	}
+
+      /* If no attribute, support -m{zda,sda,tda}=n */
+      else
+	{
+	  int size = int_size_in_bytes (TREE_TYPE (decl));
+	  if (size <= 0)
+	    ;
+
+	  else if (size <= small_memory[ (int)SMALL_MEMORY_TDA ].max)
+	    DECL_DATA_AREA (decl) = DATA_AREA_TDA;
+
+	  else if (size <= small_memory[ (int)SMALL_MEMORY_SDA ].max)
+	    DECL_DATA_AREA (decl) = DATA_AREA_SDA;
+
+	  else if (size <= small_memory[ (int)SMALL_MEMORY_ZDA ].max)
+	    DECL_DATA_AREA (decl) = DATA_AREA_ZDA;
+	}
+    }
+
+  if (!DECL_DATA_AREA (decl))
+    return;
+
+  newstr = obstack_alloc (saveable_obstack, len + 2);
+
+  strcpy (newstr + 1, str);
+
+  switch (DECL_DATA_AREA (decl))
+    {
+    case DATA_AREA_ZDA: *newstr = ZDA_NAME_FLAG_CHAR; break;
+    case DATA_AREA_TDA: *newstr = TDA_NAME_FLAG_CHAR; break;
+    case DATA_AREA_SDA: *newstr = SDA_NAME_FLAG_CHAR; break;
+    default: abort();
+    }
+
+  XSTR (XEXP (DECL_RTL (decl), 0), 0) = newstr;
 }
+/* END CYGNUS LOCAL */
