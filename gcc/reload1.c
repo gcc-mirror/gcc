@@ -2185,7 +2185,7 @@ set_label_offsets (rtx x, rtx insn, int initial_p)
 	  return;
 
 	case LABEL_REF:
-	  set_label_offsets (XEXP (SET_SRC (x), 0), insn, initial_p);
+	  set_label_offsets (SET_SRC (x), insn, initial_p);
 	  return;
 
 	case IF_THEN_ELSE:

@@ -125,7 +125,6 @@ static tree compute_related_constant (tree, tree);
 static tree split_plus (tree, tree *);
 static bool value_zerop (tree);
 static void gnat_gimplify_function (tree);
-static void gnat_finalize (tree);
 static tree float_type_for_precision (int, enum machine_mode);
 static tree convert_to_fat_pointer (tree, tree);
 static tree convert_to_thin_pointer (tree, tree);
@@ -1793,8 +1792,7 @@ end_subprog_body (tree body)
   if (!DECL_CONTEXT (fndecl))
     {
       gnat_gimplify_function (fndecl);
-      lower_nested_functions (fndecl);
-      gnat_finalize (fndecl);
+      cgraph_finalize_function (fndecl, false);
     }
   else
     /* Register this function with cgraph just far enough to get it
@@ -1819,21 +1817,6 @@ gnat_gimplify_function (tree fndecl)
   cgn = cgraph_node (fndecl);
   for (cgn = cgn->nested; cgn; cgn = cgn->next_nested)
     gnat_gimplify_function (cgn->decl);
-}
-
-/* Give FNDECL and all its nested functions to cgraph for compilation.  */
-
-static void
-gnat_finalize (tree fndecl)
-{
-  struct cgraph_node *cgn;
-
-  /* Finalize all nested functions now.  */
-  cgn = cgraph_node (fndecl);
-  for (cgn = cgn->nested; cgn ; cgn = cgn->next_nested)
-    gnat_finalize (cgn->decl);
-
-  cgraph_finalize_function (fndecl, false);
 }
 
 /* Return a definition for a builtin function named NAME and whose data type

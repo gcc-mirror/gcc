@@ -1207,6 +1207,7 @@ finalize_nesting_tree_1 (struct nesting_info *root)
   tree stmt_list = NULL;
   tree context = root->context;
   struct function *sf;
+  struct cgraph_node *node;
 
   /* If we created a non-local frame type or decl, we need to lay them
      out at this time.  */
@@ -1317,6 +1318,15 @@ finalize_nesting_tree_1 (struct nesting_info *root)
 
   /* Dump the translated tree function.  */
   dump_function (TDI_nested, root->context);
+  node = cgraph_node (root->context);
+
+  /* For nested functions update the cgraph to reflect unnesting.
+     We also delay finalizing of these functions up to this point.  */
+  if (node->origin)
+    {
+       cgraph_unnest_node (cgraph_node (root->context));
+       cgraph_finalize_function (root->context, true);
+    }
 }
 
 static void

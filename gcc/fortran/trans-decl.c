@@ -1255,22 +1255,6 @@ create_function_arglist (gfc_symbol * sym)
   DECL_ARGUMENTS (fndecl) = arglist;
 }
 
-
-/* Finalize DECL and all nested functions with cgraph.  */
-
-static void
-gfc_finalize (tree decl)
-{
-  struct cgraph_node *cgn;
-
-  cgn = cgraph_node (decl);
-  for (cgn = cgn->nested; cgn ; cgn = cgn->next_nested)
-    gfc_finalize (cgn->decl);
-
-  cgraph_finalize_function (decl, false);
-}
-
-
 /* Convert FNDECL's code to GIMPLE and handle any nested functions.  */
 
 static void
@@ -1431,8 +1415,7 @@ build_entry_thunks (gfc_namespace * ns)
       current_function_decl = NULL_TREE;
 
       gfc_gimplify_function (thunk_fndecl);
-      lower_nested_functions (thunk_fndecl);
-      gfc_finalize (thunk_fndecl);
+      cgraph_finalize_function (thunk_fndecl, false);
 
       /* We share the symbols in the formal argument list with other entry
 	 points and the master function.  Clear them so that they are
@@ -2313,8 +2296,7 @@ gfc_generate_function_code (gfc_namespace * ns)
   else
     {
       gfc_gimplify_function (fndecl);
-      lower_nested_functions (fndecl);
-      gfc_finalize (fndecl);
+      cgraph_finalize_function (fndecl, false);
     }
 }
 

@@ -1,3 +1,18 @@
+2004-09-20  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/16460
+
+	* cgraph.c (cgraph_unnest_node): New function.
+	(c_finalize): Rename to ....
+	(c_warn_unused_result_recursivly): ... this one; do only the warning
+	(finish_function): Finalize the toplevel function; do not lower nested tree.
+	* cgraph.h (cgraph_unnest_node): Declare.
+	* cgraphunit.c (decide_is_function_needed): Do not use cgraph
+	nestedness datastructure.
+	* cse.c (cse_insn): Do not cprop nonlocal LABEL_REFs.
+	* reload1.c (set_label_offsets): Fix call of set_label_offsets.
+	* tree-nested.c (finlize_nesting_tree_1):  Use un-nesting code.
+
 2004-09-20  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/alpha.c (some_small_symbolic_operand_int): Rename

@@ -263,7 +263,7 @@ static tree memory_identifier;
 static bool
 decide_is_function_needed (struct cgraph_node *node, tree decl)
 {
-  struct cgraph_node *origin;
+  tree origin;
 
   /* If we decided it was needed before, but at the time we didn't have
      the body of the function available, then it's still needed.  We have
@@ -303,8 +303,9 @@ decide_is_function_needed (struct cgraph_node *node, tree decl)
     return false;
   /* Nested functions of extern inline function shall not be emit unless
      we inlined the origin.  */
-  for (origin = node->origin; origin; origin = origin->origin)
-    if (DECL_EXTERNAL (origin->decl))
+  for (origin = decl_function_context (decl); origin;
+       origin = decl_function_context (origin))
+    if (DECL_EXTERNAL (origin))
       return false;
   /* We want to emit COMDAT functions only when absolutely necessary.  */
   if (DECL_COMDAT (decl))
@@ -586,6 +587,9 @@ cgraph_finalize_function (tree decl, bool nested)
   notice_global_symbol (decl);
   node->decl = decl;
   node->local.finalized = true;
+  if (node->nested)
+    lower_nested_functions (decl);
+  gcc_assert (!node->nested);
 
   /* If not unit at a time, then we need to create the call graph
      now, so that called functions can be queued and emitted now.  */

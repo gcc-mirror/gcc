@@ -1,3 +1,9 @@
+2004-09-20  Jan Hubicka  <jh@suse.cz>
+
+	* trans-decl.c (build_entry_thunks): Finalize the function; do not lower
+	tree.
+	(gfc_generate_function_code): Likewise.
+
 2004-09-20  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/15957
