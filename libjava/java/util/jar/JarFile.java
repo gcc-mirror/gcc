@@ -726,7 +726,14 @@ public class JarFile extends ZipFile
     byte[] entryBytes = null;
     try
       {
-        entryBytes = readManifestEntry(super.getEntry(entry));
+	ZipEntry e = super.getEntry(entry);
+	if (e == null)
+	  {
+	    if (DEBUG)
+	      debug("verifyHashes: no entry '" + entry + "'");
+	    return false;
+	  }
+        entryBytes = readManifestEntry(e);
       }
     catch (IOException ioe)
       {
