@@ -867,7 +867,6 @@ static void ix86_expand_strlensi_unroll_1 (rtx, rtx, rtx);
 static int ix86_issue_rate (void);
 static int ix86_adjust_cost (rtx, rtx, rtx, int);
 static int ia32_multipass_dfa_lookahead (void);
-static bool ix86_misaligned_mem_ok (enum machine_mode);
 static void ix86_init_mmx_sse_builtins (void);
 static rtx x86_this_parameter (tree);
 static void x86_output_mi_thunk (FILE *, tree, HOST_WIDE_INT,
@@ -1009,9 +1008,6 @@ static void init_ext_80387_constants (void);
 #undef TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD
 #define TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD \
   ia32_multipass_dfa_lookahead
-
-#undef TARGET_VECTORIZE_MISALIGNED_MEM_OK
-#define TARGET_VECTORIZE_MISALIGNED_MEM_OK ix86_misaligned_mem_ok
 
 #undef TARGET_FUNCTION_OK_FOR_SIBCALL
 #define TARGET_FUNCTION_OK_FOR_SIBCALL ix86_function_ok_for_sibcall
@@ -7556,27 +7552,148 @@ ix86_expand_move (enum machine_mode mode, rtx operands[])
 void
 ix86_expand_vector_move (enum machine_mode mode, rtx operands[])
 {
+  rtx op0 = operands[0], op1 = operands[1];
+
   /* Force constants other than zero into memory.  We do not know how
      the instructions used to build constants modify the upper 64 bits
      of the register, once we have that information we may be able
      to handle some of them more efficiently.  */
   if ((reload_in_progress | reload_completed) == 0
-      && register_operand (operands[0], mode)
-      && CONSTANT_P (operands[1]) && operands[1] != CONST0_RTX (mode))
-    operands[1] = validize_mem (force_const_mem (mode, operands[1]));
+      && register_operand (op0, mode)
+      && CONSTANT_P (op1) && op1 != CONST0_RTX (mode))
+    op1 = validize_mem (force_const_mem (mode, op1));
 
   /* Make operand1 a register if it isn't already.  */
   if (!no_new_pseudos
-      && !register_operand (operands[0], mode)
-      && !register_operand (operands[1], mode))
+      && !register_operand (op0, mode)
+      && !register_operand (op1, mode))
     {
-      rtx temp = force_reg (GET_MODE (operands[1]), operands[1]);
-      emit_move_insn (operands[0], temp);
+      emit_move_insn (op0, force_reg (GET_MODE (op0), op1));
       return;
     }
 
-  emit_insn (gen_rtx_SET (VOIDmode, operands[0], operands[1]));
+  emit_insn (gen_rtx_SET (VOIDmode, op0, op1));
 }
+
+/* Implement the movmisalign patterns for SSE.  Non-SSE modes go 
+   straight to ix86_expand_vector_move.  */
+
+void
+ix86_expand_vector_move_misalign (enum machine_mode mode, rtx operands[])
+{
+  rtx op0, op1, m;
+
+  op0 = operands[0];
+  op1 = operands[1];
+
+  if (MEM_P (op1))
+    {
+      /* If we're optimizing for size, movups is the smallest.  */
+      if (optimize_size)
+	{
+	  op0 = gen_lowpart (V4SFmode, op0);
+	  op1 = gen_lowpart (V4SFmode, op1);
+	  emit_insn (gen_sse_movups (op0, op1));
+	  return;
+	}
+
+      /* ??? If we have typed data, then it would appear that using
+	 movdqu is the only way to get unaligned data loaded with
+	 integer type.  */
+      if (TARGET_SSE2 && GET_MODE_CLASS (mode) == MODE_VECTOR_INT)
+	{
+	  op0 = gen_lowpart (V16QImode, op0);
+	  op1 = gen_lowpart (V16QImode, op1);
+	  emit_insn (gen_sse2_movdqu (op0, op1));
+	  return;
+	}
+
+      if (TARGET_SSE2 && mode == V2DFmode)
+	{
+	  /* When SSE registers are split into halves, we can avoid
+	     writing to the top half twice.  */
+	  if (TARGET_SSE_SPLIT_REGS)
+	    {
+	      emit_insn (gen_rtx_CLOBBER (VOIDmode, op0));
+	      m = adjust_address (op1, DFmode, 0);
+	      emit_insn (gen_sse2_loadlpd (op0, op0, m));
+	      m = adjust_address (op1, DFmode, 8);
+	      emit_insn (gen_sse2_loadhpd (op0, op0, m));
+	    }
+	  else
+	    {
+	      /* ??? Not sure about the best option for the Intel chips.
+		 The following would seem to satisfy; the register is
+		 entirely cleared, breaking the dependency chain.  We
+		 then store to the upper half, with a dependency depth
+		 of one.  A rumor has it that Intel recommends two movsd
+		 followed by an unpacklpd, but this is unconfirmed.  And
+		 given that the dependency depth of the unpacklpd would
+		 still be one, I'm not sure why this would be better.  */
+	      m = adjust_address (op1, DFmode, 0);
+	      emit_insn (gen_sse2_loadsd (op0, m));
+	      m = adjust_address (op1, DFmode, 8);
+	      emit_insn (gen_sse2_loadhpd (op0, op0, m));
+	    }
+	}
+      else
+	{
+	  if (TARGET_SSE_PARTIAL_REG_DEPENDENCY)
+	    emit_move_insn (op0, CONST0_RTX (mode));
+	  else
+	    emit_insn (gen_rtx_CLOBBER (VOIDmode, op0));
+
+	  op0 = gen_lowpart (V4SFmode, op0);
+	  m = adjust_address (op1, V4SFmode, 0);
+	  emit_insn (gen_sse_movlps (op0, op0, m));
+	  m = adjust_address (op1, V4SFmode, 8);
+	  emit_insn (gen_sse_movhps (op0, op0, m));
+	}
+    }
+  else if (MEM_P (op0))
+    {
+      /* If we're optimizing for size, movups is the smallest.  */
+      if (optimize_size)
+	{
+	  op0 = gen_lowpart (V4SFmode, op0);
+	  op1 = gen_lowpart (V4SFmode, op1);
+	  emit_insn (gen_sse_movups (op0, op1));
+	  return;
+	}
+
+      /* ??? Similar to above, only less clear because of quote
+	 typeless stores unquote.  */
+      if (TARGET_SSE2 && !TARGET_SSE_TYPELESS_STORES
+	  && GET_MODE_CLASS (mode) == MODE_VECTOR_INT)
+        {
+	  op0 = gen_lowpart (V16QImode, op0);
+	  op1 = gen_lowpart (V16QImode, op1);
+	  emit_insn (gen_sse2_movdqu (op0, op1));
+	  return;
+	}
+
+      if (TARGET_SSE2 && mode == V2DFmode)
+	{
+	  m = adjust_address (op0, DFmode, 0);
+	  emit_insn (gen_sse2_storelpd (m, op1));
+	  m = adjust_address (op0, DFmode, 8);
+	  emit_insn (gen_sse2_storehpd (m, op1));
+	  return;
+	}
+      else
+	{
+	  op1 = gen_lowpart (V4SFmode, op1);
+	  m = adjust_address (op0, V4SFmode, 0);
+	  emit_insn (gen_sse_movlps (m, m, op1));
+	  m = adjust_address (op0, V4SFmode, 8);
+	  emit_insn (gen_sse_movhps (m, m, op1));
+	  return;
+	}
+    }
+  else
+    gcc_unreachable ();
+}
+
 
 /* Attempt to expand a binary operator.  Make the expansion closer to the
    actual machine, then just general_operand, which will allow 3 separate
@@ -11727,17 +11844,6 @@ ia32_multipass_dfa_lookahead (void)
 }
 
 
-/* Implement the target hook targetm.vectorize.misaligned_mem_ok.  */
-
-static bool
-ix86_misaligned_mem_ok (enum machine_mode mode)
-{
-  if (TARGET_MMX && VALID_MMX_REG_MODE (mode))
-    return true;
-  else
-    return false;
-}
-
 /* Compute the alignment given to a constant that is being placed in memory.
    EXP is the constant and ALIGN is the alignment that the object would
    ordinarily have.
