@@ -66,6 +66,7 @@ POST_UNINSTALL = :
 CC = @CC@
 CHMOD = @CHMOD@
 CP = @CP@
+EXEEXT = @EXEEXT@
 MAKEINFO = @MAKEINFO@
 PACKAGE = @PACKAGE@
 RM = @RM@
@@ -128,6 +129,7 @@ ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = config.h
 CONFIG_CLEAN_FILES =  install-defs.sh
+bin_PROGRAMS =  jar$(EXEEXT)
 PROGRAMS =  $(bin_PROGRAMS)
 
 
@@ -247,12 +249,12 @@ distclean-compile:
 
 maintainer-clean-compile:
 
-grepjar: $(grepjar_OBJECTS) $(grepjar_DEPENDENCIES)
-	@rm -f grepjar
+grepjar$(EXEEXT): $(grepjar_OBJECTS) $(grepjar_DEPENDENCIES)
+	@rm -f grepjar$(EXEEXT)
 	$(LINK) $(grepjar_LDFLAGS) $(grepjar_OBJECTS) $(grepjar_LDADD) $(LIBS)
 
-jar: $(jar_OBJECTS) $(jar_DEPENDENCIES)
-	@rm -f jar
+jar$(EXEEXT): $(jar_OBJECTS) $(jar_DEPENDENCIES)
+	@rm -f jar$(EXEEXT)
 	$(LINK) $(jar_LDFLAGS) $(jar_OBJECTS) $(jar_LDADD) $(LIBS)
 
 tags: TAGS
