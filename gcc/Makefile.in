@@ -2635,7 +2635,7 @@ cppdefault.o: cppdefault.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
 
 proto: config.status protoize$(exeext) unprotoize$(exeext) SYSCALLS.c.X
 
-PROTO_OBJS = intl.o version.o cppdefault.o
+PROTO_OBJS = intl.o version.o cppdefault.o errors.o
 
 protoize$(exeext): protoize.o $(PROTO_OBJS) $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ protoize.o $(PROTO_OBJS) $(LIBS)
