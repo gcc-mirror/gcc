@@ -6030,7 +6030,7 @@ comp_ptr_ttypes_real (tree to, tree from, int constp)
 	    constp &= TYPE_READONLY (to);
 	}
 
-      if (TREE_CODE (to) != POINTER_TYPE && !TYPE_PTR_TO_MEMBER_P (to))
+      if (TREE_CODE (to) != POINTER_TYPE && !TYPE_PTRMEM_P (to))
 	return ((constp >= 0 || to_more_cv_qualified)
 		&& same_type_ignoring_top_level_qualifiers_p (to, from));
     }
