@@ -200,6 +200,9 @@ proc compat-get-options { src } {
     global compiler_conditional_xfail_data
     set compiler_conditional_xfail_data ""
 
+    # dg-xfail-if needs access to dg-do-what.
+    upvar dg-do-what dg-do-what 
+
     set tmp [dg-get-options $src]
     foreach op $tmp {
 	set cmd [lindex $op 0]

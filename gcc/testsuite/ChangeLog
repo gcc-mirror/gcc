@@ -1,5 +1,7 @@
 2004-11-30  Janis Johnson  <janis187@us.ibm.com>
 
+	* lib/compat.exp (compat-get-options): Fix for use with dg-xfail-if.
+
 	* lib/target-supports.exp (is-effective-target): Simplify.
 
 	* lib/target-supports.exp (check_effective_target_vect_long):
