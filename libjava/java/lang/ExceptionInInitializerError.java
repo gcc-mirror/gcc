@@ -1,6 +1,6 @@
 // ExceptionInInitializerError.java
 
-/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -38,7 +38,7 @@ public class ExceptionInInitializerError extends LinkageError
 
   public ExceptionInInitializerError (Throwable e)
   {
-    super ();
+    super (e.toString());
     exception = e;
   }
 
@@ -49,17 +49,35 @@ public class ExceptionInInitializerError extends LinkageError
 
   public void printStackTrace ()
   {
-    exception.printStackTrace ();
+    if (exception != null)
+      {
+	System.err.print (this.getClass() + ": ");
+	exception.printStackTrace ();
+      }
+    else
+      super.printStackTrace ();
   }
 
   public void printStackTrace (PrintStream ps)
   {
-    exception.printStackTrace (ps);
+    if (exception != null)
+      {
+	ps.print (this.getClass() + ": ");
+	exception.printStackTrace (ps);
+      }
+    else
+      super.printStackTrace (ps);
   }
 
   public void printStackTrace (PrintWriter pw)
   {
-    exception.printStackTrace (pw);
+    if (exception != null)
+      {
+	pw.print (this.getClass() + ": ");
+	exception.printStackTrace (pw);
+      }
+    else
+      super.printStackTrace (pw);
   }
 
   // The exception that caused this error.

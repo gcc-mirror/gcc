@@ -1,6 +1,6 @@
 // natRuntime.cc - Implementation of native side of Runtime class.
 
-/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -78,7 +78,12 @@ void
 java::lang::Runtime::exit (jint status)
 {
   checkExit (status);
+  _exit (status);
+}
 
+void
+java::lang::Runtime::_exit (jint status)
+{
   // Make status right for Unix.  This is perhaps strange.
   if (status < 0 || status > 255)
     status = 255;
