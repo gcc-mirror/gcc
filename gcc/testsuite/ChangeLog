@@ -1,3 +1,8 @@
+2002-07-02  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/6716
+	* g++.dg/template/instantiate1.C: New test.
+
 2002-07-01  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/7112
