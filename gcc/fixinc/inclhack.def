@@ -1327,6 +1327,20 @@ fix = {
 
 
 /*
+ *  IRIX 5.x's stdio.h declares some functions that take a va_list as
+ *  taking char *.  However, GCC uses void * for va_list, so 
+ *  calling vfprintf with a va_list fails in C++.  */
+fix = {
+    hackname  = irix_stdio_va_list;
+    files     = stdio.h;
+
+    select = '(printf\(.*), /\* va_list \*/ char \*';
+    c_fix  = format;
+    c_fix_arg = "%1, __gnuc_va_list";
+};
+
+
+/*
  *  Non-traditional "const" declaration in Irix's limits.h.
  */
 fix = {

@@ -1,3 +1,8 @@
+2001-03-16  Bruce Korb  <bkorb@gnu.org>, Alexandre Oliva  <aoliva@redhat.com>
+
+	* fixinc/inclhack.def (irix_stdio_va_list): New.
+	* fixinc/fixincl.x: Rebuilt.
+
 2001-03-15  Richard Henderson  <rth@redhat.com>
 
 	* dwarf2asm.c (dw2_asm_output_offset): Use ASM_OUTPUT_DWARF_OFFSET
