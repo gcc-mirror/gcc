@@ -3990,6 +3990,271 @@ function_arg_partial_nregs (cum, mode, type, named)
   return 0;
 }
 
+/* Create the va_list data type.  */
+
+tree
+mips_build_va_list ()
+{
+  if (mips_abi == ABI_EABI && !TARGET_SOFT_FLOAT && !TARGET_SINGLE_FLOAT)
+    {
+      tree f_fpr, f_rem, f_gpr, record;
+
+      record = make_node (RECORD_TYPE);
+
+      f_fpr = build_decl (FIELD_DECL, get_identifier ("__fp_regs"),
+			  ptr_type_node);
+      f_rem = build_decl (FIELD_DECL, get_identifier ("__fp_left"),
+			  integer_type_node);
+      f_gpr = build_decl (FIELD_DECL, get_identifier ("__gp_regs"),
+			  ptr_type_node);
+
+      DECL_FIELD_CONTEXT (f_fpr) = record;
+      DECL_FIELD_CONTEXT (f_rem) = record;
+      DECL_FIELD_CONTEXT (f_gpr) = record;
+
+      TYPE_FIELDS (record) = f_fpr;
+      TREE_CHAIN (f_fpr) = f_rem;
+      TREE_CHAIN (f_gpr) = f_gpr;
+
+      layout_type (record);
+
+      return record;
+    }
+  else
+    return ptr_type_node;
+}
+
+/* Implement va_start.  */
+
+void
+mips_va_start (stdarg_p, valist, nextarg)
+     int stdarg_p;
+     tree valist;
+     rtx nextarg;
+{
+  int arg_words, fp_arg_words;
+  tree t, u;
+
+  arg_words = current_function_args_info.arg_words;
+  fp_arg_words = current_function_args_info.fp_arg_words;
+
+  if (mips_abi == ABI_EABI)
+    {
+      if (!TARGET_SOFT_FLOAT && !TARGET_SINGLE_FLOAT)
+	{
+	  tree f_fpr, f_rem, f_gpr, fpr, rem, gpr;
+	  tree gprv, fprv;
+	  int gpro, fpro;
+
+	  f_fpr = TYPE_FIELDS (va_list_type_node);
+	  f_rem = TREE_CHAIN (f_fpr);
+	  f_gpr = TREE_CHAIN (f_gpr);
+
+	  fpr = build (COMPONENT_REF, TREE_TYPE (f_fpr), valist, f_fpr);
+	  rem = build (COMPONENT_REF, TREE_TYPE (f_rem), valist, f_rem);
+	  gpr = build (COMPONENT_REF, TREE_TYPE (f_gpr), valist, f_gpr);
+
+	  if (arg_words < 8)
+	    gpro = (8 - arg_words) * UNITS_PER_WORD;
+	  else
+	    gpro = (stdarg_p ? 0 : UNITS_PER_WORD);
+
+	  gprv = make_tree (ptr_type_node, nextarg);
+	  if (gpro != 0)
+	    {
+	      gprv = build (PLUS_EXPR, ptr_type_node, gprv,
+			    build_int_2 (-gpro, -1));
+	    }
+
+	  t = build (MODIFY_EXPR, ptr_type_node, gpr, gprv);
+	  TREE_SIDE_EFFECTS (t) = 1;
+	  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
+
+	  t = build (MODIFY_EXPR, integer_type_node, rem,
+		     build_int_2 (8 - fp_arg_words, 0));
+	  TREE_SIDE_EFFECTS (t) = 1;
+	  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
+
+	  fpro = (8 - fp_arg_words) * 8;
+	  if (fpro == 0)
+	    fprv = gprv;
+	  else
+	    fprv = fold (build (PLUS_EXPR, ptr_type_node, gprv,
+				build_int_2 (-fpro, -1)));
+
+	  if (! TARGET_64BIT)
+	    fprv = fold (build (BIT_AND_EXPR, ptr_type_node, fprv,
+				build_int_2 (-8, -1)));
+
+	  t = build (MODIFY_EXPR, ptr_type_node, fpr, fprv);
+	  TREE_SIDE_EFFECTS (t) = 1;
+	  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
+	}
+      else
+	{
+	  int ofs;
+
+	  if (arg_words >= 8)
+	    ofs = (stdarg_p ? 0 : UNITS_PER_WORD);
+	  else
+	    ofs = (8 - arg_words) * UNITS_PER_WORD;
+
+	  nextarg = plus_constant (nextarg, -ofs);
+	  std_expand_builtin_va_start (1, valist, nextarg);
+	}
+    }
+  else
+    {
+      int ofs;
+
+      if (stdarg_p)
+	ofs = 0;
+      else
+	{
+	  /* ??? This had been conditional on
+	       _MIPS_SIM == _MIPS_SIM_ABI64 || _MIPS_SIM == _MIPS_SIM_NABI32
+	     and both iris5.h and iris6.h define _MIPS_SIM.  */
+	  if (mips_abi == ABI_N32 || mips_abi == ABI_64)
+	    ofs = (arg_words >= 8 ? -UNITS_PER_WORD : 0);
+	  else
+	    ofs = -UNITS_PER_WORD;
+	}
+
+      nextarg = plus_constant (nextarg, ofs);
+      std_expand_builtin_va_start (1, valist, nextarg);
+    }
+}
+
+/* Implement va_arg.  */
+
+rtx
+mips_va_arg (valist, type)
+     tree valist, type;
+{
+  HOST_WIDE_INT size, rsize;
+  rtx addr_rtx;
+  tree t;
+
+  size = int_size_in_bytes (type);
+  rsize = (size + UNITS_PER_WORD - 1) & -UNITS_PER_WORD;
+
+  if (mips_abi == ABI_EABI)
+    {
+      tree gpr;
+      int indirect;
+      rtx lab_over = NULL_RTX, lab_false, r;
+
+      indirect
+	= function_arg_pass_by_reference (NULL, TYPE_MODE (type), type, 0);
+      if (indirect)
+	size = rsize = POINTER_SIZE / BITS_PER_UNIT;
+
+      addr_rtx = gen_reg_rtx (Pmode);
+
+      if (!TARGET_SOFT_FLOAT && !TARGET_SINGLE_FLOAT)
+	{
+	  tree f_fpr, f_rem, f_gpr, fpr, rem;
+
+	  f_fpr = TYPE_FIELDS (va_list_type_node);
+	  f_rem = TREE_CHAIN (f_fpr);
+	  f_gpr = TREE_CHAIN (f_gpr);
+
+	  fpr = build (COMPONENT_REF, TREE_TYPE (f_fpr), valist, f_fpr);
+	  rem = build (COMPONENT_REF, TREE_TYPE (f_rem), valist, f_rem);
+	  gpr = build (COMPONENT_REF, TREE_TYPE (f_gpr), valist, f_gpr);
+
+	  if (TREE_CODE (type) == REAL_TYPE)
+	    {
+	      lab_false = gen_label_rtx ();
+	      lab_over = gen_label_rtx ();
+
+	      r = expand_expr (rem, NULL_RTX, TYPE_MODE (TREE_TYPE (rem)),
+			       EXPAND_NORMAL);
+	      emit_cmp_and_jump_insns (r, const0_rtx, LE, const1_rtx,
+				       GET_MODE (r), 1, 1, lab_false);
+
+	      t = build (PLUS_EXPR, TREE_TYPE (rem), rem,
+			 build_int_2 (-1, -1));
+	      t = build (MODIFY_EXPR, TREE_TYPE (rem), rem, t);
+	      TREE_SIDE_EFFECTS (t) = 1;
+	      expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
+
+	      t = build (POSTINCREMENT_EXPR, TREE_TYPE (fpr), fpr,
+			 build_int_2 (8, 0));
+	      TREE_SIDE_EFFECTS (t) = 1;
+	      r = expand_expr (t, addr_rtx, Pmode, EXPAND_NORMAL);
+	      if (r != addr_rtx)
+		emit_move_insn (addr_rtx, r);
+
+	      emit_jump (gen_jump (lab_over));
+	      emit_barrier ();
+	      emit_label (lab_false);
+	    }
+	}
+      else
+	gpr = valist;
+
+      if (! indirect
+	  && ! TARGET_64BIT
+	  && TYPE_ALIGN (type) > BITS_PER_WORD)
+	{
+	  t = build (PLUS_EXPR, TREE_TYPE (gpr), gpr,
+		     build_int_2 (2*UNITS_PER_WORD - 1, 0));
+	  t = build (BIT_AND_EXPR, TREE_TYPE (t), t, 
+		     build_int_2 (-2*UNITS_PER_WORD, -1));
+	  t = build (MODIFY_EXPR, TREE_TYPE (gpr), gpr, t);
+	  TREE_SIDE_EFFECTS (t) = 1;
+	  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
+	}
+
+      t = build (POSTINCREMENT_EXPR, TREE_TYPE (gpr), gpr, rsize);
+      TREE_SIDE_EFFECTS (t) = 1;
+      r = expand_expr (t, addr_rtx, Pmode, EXPAND_NORMAL);
+      if (r != addr_rtx)
+	emit_move_insn (addr_rtx, r);
+
+      if (lab_over)
+	emit_label (lab_over);
+
+      if (indirect)
+	{
+	  r = gen_rtx_MEM (Pmode, addr_rtx);
+	  MEM_ALIAS_SET (r) = get_varargs_alias_set ();
+	  emit_move_insn (addr_rtx, r);
+	}
+      else
+	{
+	  if (BYTES_BIG_ENDIAN && rsize != size)
+	    addr_rtx = plus_constant (addr_rtx, rsize - size);
+	}
+    }
+  else
+    {
+      int align;
+
+      /* ??? The original va-mips.h did always align, despite the fact 
+	 that alignments <= UNITS_PER_WORD are preserved by the va_arg
+	 increment mechanism.  */
+
+      if (TARGET_64BIT)
+	align = 8;
+      else if (TYPE_ALIGN (type) > 32)
+	align = 8;
+      else
+	align = 4;
+	
+      t = build (PLUS_EXPR, TREE_TYPE (valist), valist,
+		 build_int_2 (align - 1, 0));
+      t = build (BIT_AND_EXPR, TREE_TYPE (t), t, build_int_2 (-align, -1));
+      t = build (MODIFY_EXPR, TREE_TYPE (valist), valist, t);
+      TREE_SIDE_EFFECTS (t) = 1;
+      expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
+
+      /* Everything past the alignment is standard.  */
+      return std_expand_builtin_va_arg (valist, type);
+    }
+}
+
 /* Abort after printing out a specific insn.  */
 
 static void

@@ -2612,6 +2612,22 @@ typedef struct mips_args {
 #endif
 
 
+/* Define the `__builtin_va_list' type for the ABI.  */
+#define BUILD_VA_LIST_TYPE(VALIST) \
+  (VALIST) = mips_build_va_list ()
+
+/* Implement `va_start' for varargs and stdarg.  */
+#define EXPAND_BUILTIN_VA_START(stdarg, valist, nextarg) \
+  mips_va_start (stdarg, valist, nextarg)
+
+/* Implement `va_arg'.  */
+#define EXPAND_BUILTIN_VA_ARG(valist, type) \
+  mips_va_arg (valist, type)
+
+extern union tree_node *mips_build_va_list ();
+extern void mips_va_start ();
+extern struct rtx_def *mips_va_arg ();
+
 /* Output assembler code to FILE to increment profiler label # LABELNO
    for profiling a function entry.  */
 
