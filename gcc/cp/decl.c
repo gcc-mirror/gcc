@@ -9132,6 +9132,8 @@ grokfndecl (tree ctype,
 
       if (old_decl)
 	{
+	  bool ok;
+
 	  /* Since we've smashed OLD_DECL to its
 	     DECL_TEMPLATE_RESULT, we must do the same to DECL.  */
 	  if (TREE_CODE (decl) == TEMPLATE_DECL)
@@ -9140,10 +9142,14 @@ grokfndecl (tree ctype,
 	  /* Attempt to merge the declarations.  This can fail, in
 	     the case of some invalid specialization declarations.  */
 	  push_scope (ctype);
-	  if (!duplicate_decls (decl, old_decl))
-	    error ("no `%#D' member function declared in class `%T'",
-		      decl, ctype);
+	  ok = duplicate_decls (decl, old_decl);
 	  pop_scope (ctype);
+	  if (!ok)
+	    {
+	      error ("no `%#D' member function declared in class `%T'",
+		     decl, ctype);
+	      return NULL_TREE;
+	    }
 	  return old_decl;
 	}
     }

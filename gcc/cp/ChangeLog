@@ -1,5 +1,9 @@
 2003-03-28  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/10218
+	* decl.c (grokfndecl): Return NULL_TREE for bogus out-of-class
+	definitions.
+
 	* decl2.c (generate_ctor_or_dtor_function): Tolerate a
 	non-existant ssdf_decls array.
 	(finish_file): Call generator_ctor_or_dtor_function when there are
