@@ -852,7 +852,7 @@ requested with @code{@w{#include <@var{file}>}} in:
 
 @example
 /usr/local/include
-/usr/lib/gcc-lib/@var{target}/@var{version}/include
+@var{libdir}/gcc/@var{target}/@var{version}/include
 /usr/@var{target}/include
 /usr/include
 @end example

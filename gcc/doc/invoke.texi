@@ -5076,7 +5076,7 @@ without @samp{@var{machine}/@var{version}/} (@pxref{Target Options}).
 For each subprogram to be run, the compiler driver first tries the
 @option{-B} prefix, if any.  If that name is not found, or if @option{-B}
 was not specified, the driver tries two standard prefixes, which are
-@file{/usr/lib/gcc/} and @file{/usr/local/lib/gcc-lib/}.  If neither of
+@file{/usr/lib/gcc/} and @file{/usr/local/lib/gcc/}.  If neither of
 those results in a file name that is found, the unmodified program
 name is searched for using the directories specified in your
 @env{PATH} environment variable.
@@ -11430,7 +11430,7 @@ If GCC cannot find the subprogram using the specified prefix, it
 tries looking in the usual places for the subprogram.
 
 The default value of @env{GCC_EXEC_PREFIX} is
-@file{@var{prefix}/lib/gcc-lib/} where @var{prefix} is the value
+@file{@var{prefix}/lib/gcc/} where @var{prefix} is the value
 of @code{prefix} when you ran the @file{configure} script.
 
 Other prefixes specified with @option{-B} take precedence over this prefix.
@@ -11440,7 +11440,7 @@ used for linking.
 
 In addition, the prefix is used in an unusual way in finding the
 directories to search for header files.  For each of the standard
-directories whose name normally begins with @samp{/usr/local/lib/gcc-lib}
+directories whose name normally begins with @samp{/usr/local/lib/gcc}
 (more precisely, with the value of @env{GCC_INCLUDE_DIR}), GCC tries
 replacing that beginning with the specified prefix to produce an
 alternate directory name.  Thus, with @option{-Bfoo/}, GCC will search
