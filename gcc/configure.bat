@@ -4,6 +4,7 @@ rem This batch file assumes a unix-type "sed" program
 
 update config\i386\xm-dos.h config.h
 update config\i386\xm-dos.h hconfig.h
+update config\i386\xm-dos.h tconfig.h
 update config\i386\go32.h tm.h
 update config\i386\i386.md md
 update config\i386\i386.c aux-output.c
@@ -26,7 +27,7 @@ echo "s/^	\$(srcdir)\/move-if-change/	update/	">> config.sed
 echo "s/^USE_/# USE_/					">> config.sed
 echo "s/`echo \$(srcdir)\///g				">> config.sed
 echo "s/ | sed 's,\^\\\.\/,,'`//g			">> config.sed
-echo "s/^	cd \$(srcdir)[ 	]*;//			">> config.sed
+echo "s/^	cd \$(srcdir)[ 	]*;/	/		">> config.sed
 
 echo "/^# USE_HOST_OBSTACK/ i\				">> config.sed
 echo "USE_HOST_OBSTACK=obstack.o			">> config.sed
@@ -36,42 +37,6 @@ echo "  /\\/d						">> config.sed
 echo "  /fi/d						">> config.sed
 echo "  /update/ i\					">> config.sed
 echo "	  go32 genattrtab md > t-attrtab.c		">> config.sed
-echo "}							">> config.sed
-
-echo "/^cccp.o[ 	]*:/,/-c/ {			">> config.sed
-echo "  s/	\$(CC)/	>cccp_o.rf/			">> config.sed
-echo "  /-c/ a\						">> config.sed
-echo "	$(CC) @cccp_o.rf				">> config.sed
-echo "}							">> config.sed
-
-echo "/^gcc.o[ 	]*:/,/-c/ {				">> config.sed
-echo "  s/	\$(CC)/	>gcc_o.rf/			">> config.sed
-echo "  /-c/ a\						">> config.sed
-echo "	$(CC) @gcc_o.rf					">> config.sed
-echo "}							">> config.sed
-
-echo "/^gcc[ 	]*:/,/-o/ {				">> config.sed
-echo "  s/	\$(CC)/	>gcc.rf/			">> config.sed
-echo "  /-o/ a\						">> config.sed
-echo "	$(CC) @gcc.rf					">> config.sed
-echo "}							">> config.sed
-
-echo "/^cc1[ 	]*:/,/-o/ {				">> config.sed
-echo "  s/	\$(CC)/	>cc1.rf/			">> config.sed
-echo "  /-o/ a\						">> config.sed
-echo "	$(CC) @cc1.rf					">> config.sed
-echo "}							">> config.sed
-
-echo "/^cc1plus[ 	]*:/,/-o/ {			">> config.sed
-echo "  s/	\$(CC)/	>cc1plus.rf/			">> config.sed
-echo "  /-o/ a\						">> config.sed
-echo "	$(CC) @cc1plus.rf				">> config.sed
-echo "}							">> config.sed
-
-echo "/^cc1obj[ 	]*:/,/-o/ {			">> config.sed
-echo "  s/	\$(CC)/	>cc1obj.rf/			">> config.sed
-echo "  /-o/ a\						">> config.sed
-echo "	$(CC) @cc1obj.rf				">> config.sed
 echo "}							">> config.sed
 
 echo "/^enquire[ 	]*:/ s/\$(GCC_PARTS)//g		">> config.sed
