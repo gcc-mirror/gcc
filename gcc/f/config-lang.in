@@ -48,45 +48,20 @@ language="f77"
 
 compilers="f771\$(exeext)"
 
-case "$arguments" in
-# *--enable-f2c* | *-enable-f2c*)
-#   echo "f77: enabling f2c."
-#  stagestuff="g77 g77-cross f771 libf2c.a f2c fc" ;;
-#  stagestuff="g77 g77-cross f771 libf2c.a f2c" ;;
-*)
-  stagestuff="g77\$(exeext) g77-cross\$(exeext) f771\$(exeext) libf2c.a" ;;
-esac
+stagestuff="g77\$(exeext) g77-cross\$(exeext) f771\$(exeext)"
 
 diff_excludes="-x \"f/g77.info*\""
 
-# Create the runtime library directory tree if necessary.
 test -d f || mkdir f
-test -d f/runtime || mkdir f/runtime
-test -d f/runtime/libF77 || mkdir f/runtime/libF77
-test -d f/runtime/libI77 || mkdir f/runtime/libI77
-test -d f/runtime/libU77 || mkdir f/runtime/libU77
-
-# Need to make top-level stageN directory trees, else if needed
-# later by gcc/Makefile, it'll make only the first levels and
-# the language subdirectory levels, not the runtime stuff.
 for stageN in stage1 stage2 stage3 stage4
 do
 	test -d $stageN || mkdir $stageN
 	test -d $stageN/f || mkdir $stageN/f
-	test -d $stageN/f/runtime || mkdir $stageN/f/runtime
-	test -d $stageN/f/runtime/libF77 || mkdir $stageN/f/runtime/libF77
-	test -d $stageN/f/runtime/libI77 || mkdir $stageN/f/runtime/libI77
-	test -d $stageN/f/runtime/libU77 || mkdir $stageN/f/runtime/libU77
 done
 
 # Make links into top-level stageN from target trees.
 for stageN in stage1 stage2 stage3 stage4 include
 do
-	$remove -f f/$stageN f/runtime/$stageN f/runtime/libF77/$stageN \
-		f/runtime/libI77/$stageN f/runtime/libU77/$stageN
+	$remove -f f/$stageN 
 	(cd f; $symbolic_link ../$stageN . 2>/dev/null)
-	(cd f/runtime; $symbolic_link ../$stageN . 2>/dev/null)
-	(cd f/runtime/libF77; $symbolic_link ../$stageN . 2>/dev/null)
-	(cd f/runtime/libI77; $symbolic_link ../$stageN . 2>/dev/null)
-	(cd f/runtime/libU77; $symbolic_link ../$stageN . 2>/dev/null)
 done
