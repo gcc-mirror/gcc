@@ -894,7 +894,7 @@ add_functions (void)
   make_generic ("abs", GFC_ISYM_ABS, GFC_STD_F77);
 
   add_sym_1 ("achar", 1, 1, BT_CHARACTER, dc, GFC_STD_F95,
-	     NULL, gfc_simplify_achar, NULL,
+	     gfc_check_achar, gfc_simplify_achar, NULL,
 	     i, BT_INTEGER, di, REQUIRED);
 
   make_generic ("achar", GFC_ISYM_ACHAR, GFC_STD_F95);

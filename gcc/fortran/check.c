@@ -401,6 +401,16 @@ gfc_check_abs (gfc_expr * a)
   return SUCCESS;
 }
 
+try
+gfc_check_achar (gfc_expr * a)
+{
+
+  if (type_check (a, 0, BT_INTEGER) == FAILURE)
+    return FAILURE;
+
+  return SUCCESS;
+}
+
 
 try
 gfc_check_all_any (gfc_expr * mask, gfc_expr * dim)
