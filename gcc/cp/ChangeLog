@@ -1,3 +1,10 @@
+2003-12-05  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/13314
+	* parser.c (cp_parser_class_specifier): Match push_scope/pop_scope
+	calls.
+	(cp_parser_class_head): Likewise.
+
 2003-12-05  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/13166

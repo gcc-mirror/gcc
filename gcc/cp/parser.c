@@ -11447,6 +11447,8 @@ cp_parser_class_specifier (cp_parser* parser)
   parser->num_template_parameter_lists = 0;
 
   /* Start the class.  */
+  if (nested_name_specifier_p)
+    push_scope (CP_DECL_CONTEXT (TYPE_MAIN_DECL (type)));
   type = begin_class_definition (type);
   if (type == error_mark_node)
     /* If the type is erroneous, skip the entire body of the class.  */
@@ -11737,7 +11739,7 @@ cp_parser_class_head (cp_parser* parser,
      it is not, try to recover gracefully.  */
   if (at_namespace_scope_p () 
       && parser->num_template_parameter_lists == 0
-      && num_templates == 1)
+      && template_id_p)
     {
       error ("an explicit specialization must be preceded by 'template <>'");
       invalid_explicit_specialization_p = true;
@@ -11836,7 +11838,10 @@ cp_parser_class_head (cp_parser* parser,
 	type = push_template_decl (type);
       type = TREE_TYPE (type);
       if (nested_name_specifier)
-	*nested_name_specifier_p = true;
+	{
+	  *nested_name_specifier_p = true;
+	  pop_scope (nested_name_specifier);
+	}
     }
   /* Indicate whether this class was declared as a `class' or as a
      `struct'.  */
