@@ -5498,14 +5498,21 @@ fold (expr)
 		  return pedantic_non_lvalue (convert (type, arg1));
 		case LE_EXPR:
 		case LT_EXPR:
-		  return pedantic_non_lvalue
-		    (convert (type, (fold (build (MIN_EXPR, comp_type,
-						  comp_op0, comp_op1)))));
+		  /* In C++ a ?: expression can be an lvalue, so we can't
+		     do this; we would lose the distinction between
+		     LT and LE.  */
+		  if (pedantic_lvalues)
+		    return pedantic_non_lvalue
+		      (convert (type, (fold (build (MIN_EXPR, comp_type,
+						    comp_op0, comp_op1)))));
+		  break;
 		case GE_EXPR:
 		case GT_EXPR:
-		  return pedantic_non_lvalue
-		    (convert (type, fold (build (MAX_EXPR, comp_type,
-						 comp_op0, comp_op1))));
+		  if (pedantic_lvalues)
+		    return pedantic_non_lvalue
+		      (convert (type, fold (build (MAX_EXPR, comp_type,
+						   comp_op0, comp_op1))));
+		  break;
 		}
 	    }
 
