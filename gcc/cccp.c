@@ -200,6 +200,7 @@ char *strerror ();
 char *strerror (int,...);
 #endif
 extern int parse_escape ();
+extern HOST_WIDE_INT parse_c_expression ();
 
 #ifndef errno
 extern int errno;
@@ -283,7 +284,7 @@ static void write_output ();
 static int check_macro_name ();
 static int compare_defs ();
 static int compare_token_lists ();
-static int eval_if_expression ();
+static HOST_WIDE_INT eval_if_expression ();
 static int discard_comments ();
 static int change_newlines ();
 static int line_for_error ();
@@ -6726,7 +6727,7 @@ do_if (buf, limit, op, keyword)
      FILE_BUF *op;
      struct directive *keyword;
 {
-  int value;
+  HOST_WIDE_INT value;
   FILE_BUF *ip = &instack[indepth];
 
   value = eval_if_expression (buf, limit - buf);
@@ -6745,7 +6746,7 @@ do_elif (buf, limit, op, keyword)
      FILE_BUF *op;
      struct directive *keyword;
 {
-  int value;
+  HOST_WIDE_INT value;
   FILE_BUF *ip = &instack[indepth];
 
   if (if_stack == instack[indepth].if_stack) {
@@ -6781,14 +6782,14 @@ do_elif (buf, limit, op, keyword)
  * evaluate a #if expression in BUF, of length LENGTH,
  * then parse the result as a C expression and return the value as an int.
  */
-static int
+static HOST_WIDE_INT
 eval_if_expression (buf, length)
      U_CHAR *buf;
      int length;
 {
   FILE_BUF temp_obuf;
   HASHNODE *save_defined;
-  int value;
+  HOST_WIDE_INT value;
 
   save_defined = install ("defined", -1, T_SPEC_DEFINED, 0, NULL_PTR, -1);
   pcp_inside_if = 1;
