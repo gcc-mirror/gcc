@@ -626,7 +626,11 @@ init_decl_processing ()
   dtable_ptr_type = build_pointer_type (dtable_type);
 
   PUSH_FIELD (object_type_node, field, "vtable", dtable_ptr_type);
-  PUSH_FIELD (object_type_node, field, "sync_info", ptr_type_node);
+  /* This isn't exactly true, but it is what we have in the source.
+     There is an unresolved issue here, which is whether the vtable
+     should be marked by the GC.  */
+  PUSH_FIELD (object_type_node, field, "sync_info",
+	      build_pointer_type (object_type_node));
   for (t = TYPE_FIELDS (object_type_node); t != NULL_TREE; t = TREE_CHAIN (t))
     FIELD_PRIVATE (t) = 1;
   FINISH_RECORD (object_type_node);
