@@ -1,3 +1,8 @@
+Sat Jul 17 11:28:43 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* root.texi, g77install.texi: Switchover to GCC terminology.
+	Also, FSF-G77 had been mistakenly set at some point.
+
 Thu Jul  8 15:38:50 1999  Craig Burley  <craig@jcb-sc.com>
 
 	* news.texi: Describe DATE intrinsic fix.
