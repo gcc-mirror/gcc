@@ -1,3 +1,9 @@
+Tue Jan  5 01:38:53 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* configure.in (thread_file): Correct and simplify code to find
+	the thread file.
+	* configure: Rebuilt.
+
 1998-11-26  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* configure.in (compiler_name): Add check to detect if this

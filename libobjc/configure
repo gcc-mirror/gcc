@@ -1063,21 +1063,14 @@ fi
 
 # Determine the name of the GCC thread file.
 
-dir=`pwd`
-if test x"${with_multisubdir}" = "x" ; then
-  gccobjdir=`echo $dir/../../gcc`
-else
-  gccobjdir=`echo $dir | sed -e s:${with_multisubdir}::`/../../gcc
-fi
-
 echo $ac_n "checking for thread file""... $ac_c" 1>&6
-echo "configure:1075: checking for thread file" >&5
+echo "configure:1068: checking for thread file" >&5
 if eval "test \"`echo '$''{'objc_cv_thread_file'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
-  if test -f $gccobjdir/Makefile
+  if test -f "$r"/gcc/Makefile
 then
-  objc_cv_thread_file=`grep \^GCC_THREAD_FILE $gccobjdir/Makefile | awk -F= '{ print $2 }'`
+  objc_cv_thread_file=`grep \^GCC_THREAD_FILE "$r"/gcc/Makefile | awk -F= '{ print $2 }'`
 else
   { echo "configure: error: not found" 1>&2; exit 1; }
 fi
