@@ -7360,7 +7360,8 @@ ia64_encode_section_info (decl, first)
 	  if (encoding == symbol_str[1])
 	    return;
 	  /* ??? Sdata became thread or thread becaome not thread.  Lose.  */
-	  abort ();
+	  if (encoding == 's' || symbol_str[1] == 's')
+	    abort ();
 	}
 
       len = strlen (symbol_str);
