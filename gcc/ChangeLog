@@ -1,3 +1,10 @@
+Tue Nov 18 22:50:24 1997  Jim Wilson  <wilson@cygnus.com>
+
+	* mips/mips.c (save_restore_insns): If gp_offset or fp_offset are
+	large_int, emit two insns instead of one splitable insn.
+	* dwarf2out.c (dwarf2out_frame_debug): When set cfa_store_offset
+	from cfa_temp_value, use cfa_offset.  Abort if cfa_reg is not SP.
+
 Fri Nov  7 15:33:11 1997  Robert Lipe (robertl@dgii.com)
 
         * i386/sco5.h (HAVE_ATEXIT): Delete definition.
