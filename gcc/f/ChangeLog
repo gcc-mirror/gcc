@@ -1,3 +1,26 @@
+2002-08-22  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* where.h (struct _ffewhere_file_): Mark GTY.
+	(ffewhere_file_kill): Remove prototype.
+	* where.c: Include ggc.h.
+	(struct _ffewhere_ll_, struct _ffewhere_root_ll_): Mark GTY.
+	(ffewhere_root_ll_): Ditto.  Change type from struct
+	_ffewhere_root_ll_ to struct _ffewhere_root_ll_*.  All uses
+	changed.
+	(ffewhere_file_kill): Remove.
+	(ffewhere_file_new): Use GC to allocate ffewhereFile objects.
+	(ffewhere_file_set): Use GC to allocate ffewhereLL_ objects.
+	(ffewhere_init_1): Use GC to allocate ffewhere_root_ll_ sentinel.
+	Include gt-f-where.h.
+	* lex.c (ffelex_current_wf_, ffelex_include_wherefile_): Mark GTY.
+	Include gt-f-lex.h.
+	* std.c (ffestd_S3P4): Don't call ffewhere_file_kill.
+	* config-lang.in (gtfiles): Add f/where.h f/where.c and f/lex.c.
+	* Make-lang.in (gt-f-lex.h gt-f-where.h): Add to dependents of
+	s-gtype.
+	(f/lex.o): Depend on gt-f-lex.h.
+	(f/where.o): Depend on gt-f-where.h.
+
 Tue Aug 20 16:49:40 2002  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* where.c (ffewhere_track): Remove impossible if-then clause.

@@ -93,7 +93,7 @@ static ffelexType ffelex_first_char_[256];
 
 /* The wf argument of the most recent active ffelex_file_(fixed,free)
    function.  */
-static ffewhereFile ffelex_current_wf_;
+static GTY (()) ffewhereFile ffelex_current_wf_;
 
 /* TRUE if an INCLUDE statement can be processed (ffelex_set_include
    can be called).  */
@@ -106,7 +106,7 @@ static bool ffelex_set_include_;
 /* Information on the pending INCLUDE file.  */
 static FILE *ffelex_include_file_;
 static bool ffelex_include_free_form_;
-static ffewhereFile ffelex_include_wherefile_;
+static GTY(()) ffewhereFile ffelex_include_wherefile_;
 
 /* Current master line count.  */
 static ffewhereLineNumber ffelex_linecount_current_;
@@ -4634,3 +4634,5 @@ ffelex_token_use (ffelexToken t)
   t->uses++;
   return t;
 }
+
+#include "gt-f-lex.h"

@@ -1,5 +1,5 @@
 /* std.c -- Implementation File (module.c template V1.0)
-   Copyright (C) 1995, 1996, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996, 2000, 2002 Free Software Foundation, Inc.
    Contributed by James Craig Burley.
 
 This file is part of GNU Fortran.
@@ -4774,9 +4774,7 @@ ffestd_S3P4 (ffebld filename)
       fi = ffecom_open_include (ffewhere_file_name (wf),
 				ffelex_token_where_line (ffesta_tokens[0]),
 				ffelex_token_where_column (ffesta_tokens[0]));
-      if (fi == NULL)
-	ffewhere_file_kill (wf);
-      else
+      if (fi != NULL)
 	ffelex_set_include (wf, (ffelex_token_type (ffesta_tokens[0])
 				 == FFELEX_typeNAME), fi);
     }
