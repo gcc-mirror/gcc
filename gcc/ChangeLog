@@ -1,5 +1,8 @@
 Tue Aug 24 22:56:35 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* haifa-sched.c (find_rgns): Mark a block found during the DFS search
+	as reachable.
+
 	* haifa-sched.c (get_visual_tbl_length): Fix off-by-one error.
 
 Tue Aug 24 22:41:06 1999  Mumit Khan  <khan@xraylith.wisc.edu>
