@@ -14,7 +14,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
-# Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #
 # As a special exception to the GNU General Public License, if you
 # distribute this file as part of a program that contains a
@@ -316,15 +316,24 @@ EOF
 	echo `echo ${UNAME_MACHINE}|sed -e 's,/.*$,,'`-unknown-gnu`echo ${UNAME_RELEASE}|sed -e 's,/.*$,,'`
 	exit 0 ;;
     *:Linux:*:*)
-	# Systems without a BFD linker
-	if test -d /usr/lib/ldscripts/. ; then
-	  :
+	# The BFD linker knows what the default object file format is, so
+	# first see if it will tell us.
+	ld_help_string=`ld --help 2>&1`
+	if echo $ld_help_string | grep >/dev/null 2>&1 "supported emulations: elf_i[345]86"; then
+	  echo "${UNAME_MACHINE}-unknown-linux" ; exit 0
+	elif echo $ld_help_string | grep >/dev/null 2>&1 "supported emulations: i[345]86linux"; then
+	  echo "${UNAME_MACHINE}-unknown-linuxaout" ; exit 0
+	elif echo $ld_help_string | grep >/dev/null 2>&1 "supported emulations: i[345]86coff"; then
+	  echo "${UNAME_MACHINE}-unknown-linuxcoff" ; exit 0
+	elif test "${UNAME_MACHINE}" = "alpha" ; then
+	  echo alpha-unknown-linux ; exit 0
 	else
-	  echo "${UNAME_MACHINE}-unknown-linuxoldld"
-	  exit 0
-	fi
- 	# Determine whether the default compiler is a.out or elf
-	cat >dummy.c <<EOF
+	  # Either a pre-BFD a.out linker (linuxoldld) or one that does not give us
+	  # useful --help.  Gcc wants to distinguish between linuxoldld and linuxaout.
+	  test ! -d /usr/lib/ldscripts/. \
+	    && echo "${UNAME_MACHINE}-unknown-linuxoldld" && exit 0
+	  # Determine whether the default compiler is a.out or elf
+	  cat >dummy.c <<EOF
 main(argc, argv)
 int argc;
 char *argv[];
@@ -337,8 +346,9 @@ char *argv[];
   return 0;
 }
 EOF
-	${CC-cc} dummy.c -o dummy 2>/dev/null && ./dummy "${UNAME_MACHINE}" && rm dummy.c dummy && exit 0
-	rm -f dummy.c dummy;;
+	  ${CC-cc} dummy.c -o dummy 2>/dev/null && ./dummy "${UNAME_MACHINE}" && rm dummy.c dummy && exit 0
+	  rm -f dummy.c dummy
+	fi ;;
 # ptx 4.0 does uname -s correctly, with DYNIX/ptx in there.  earlier versions
 # are messed up and put the nodename in both sysname and nodename.
     i[34]86:DYNIX/ptx:4*:*)
@@ -388,19 +398,19 @@ EOF
     3[34]??:*:4.0:* | 3[34]??,*:*:4.0:*)
         uname -p 2>/dev/null | grep 86 >/dev/null \
           && echo i486-ncr-sysv4 && exit 0 ;;
-    m680[234]0:LynxOS:2.2*:*)
+    m680[234]0:LynxOS:2.[23]*:*)
 	echo m68k-lynx-lynxos${UNAME_RELEASE}
 	exit 0 ;;
     mc68030:UNIX_System_V:4.*:*)
 	echo m68k-atari-sysv4
 	exit 0 ;;
-    i[34]86:LynxOS:2.2*:*)
+    i[34]86:LynxOS:2.[23]*:*)
 	echo i386-lynx-lynxos${UNAME_RELEASE}
 	exit 0 ;;
-    TSUNAMI:LynxOS:2.2*:*)
+    TSUNAMI:LynxOS:2.[23]*:*)
 	echo sparc-lynx-lynxos${UNAME_RELEASE}
 	exit 0 ;;
-    rs6000:LynxOS:2.2*:*)
+    rs6000:LynxOS:2.[23]*:*)
 	echo rs6000-lynx-lynxos${UNAME_RELEASE}
 	exit 0 ;;
     RM*:SINIX-*:*:*)
