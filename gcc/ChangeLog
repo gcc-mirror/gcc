@@ -1,5 +1,10 @@
 2003-07-22  Per Bothner  <pbothner@apple.com>
 
+	* line-map.c (add_line_map):  Handle invalid LEAVE request.
+	Fixes PR preprocessor/11361.
+
+2003-07-22  Per Bothner  <pbothner@apple.com>
+
 	* diagnostic.c.(diagnostic_report_current_module):  Update to match
 	2003-06-05 changes to push_srcloc and pop_srcloc.
 
