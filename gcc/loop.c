@@ -376,8 +376,6 @@ static int indirect_jump_in_function_p PROTO((rtx));
 
 static int compute_luids PROTO((rtx, rtx, int));
 
-static int loop_insn_first_p PROTO((rtx, rtx));
-
 static int biv_elimination_giv_has_0_offset PROTO((struct induction *,
 						   struct induction *, rtx));
 
@@ -8112,7 +8110,7 @@ maybe_eliminate_biv (bl, loop_start, end, eliminate_p, threshold, insn_count)
    This is like insn_first_p, except that we use the luid information if
    available.  */
 
-static int
+int
 loop_insn_first_p (insn, reference)
      rtx insn, reference;
 {
