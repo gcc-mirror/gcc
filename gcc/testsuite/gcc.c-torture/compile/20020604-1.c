@@ -1,5 +1,5 @@
 /* The array is too big. */
-/* { dg-xfail-if "The array too big" { "h8300-*-*" } { "-mno-h" } { "" } } */
+/* { dg-xfail-if "The array too big" { "h8300-*-*" } { "-mno-h" "-mn" } { "" } } */
 /* { dg-do assemble { xfail m6811-*-* m6812-*-* } } */
 
 /* PR c/6957
