@@ -1,3 +1,9 @@
+Sat Dec 29 15:48:54 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* dwarf2out.c (compute_section_prefix): Avoid cast warning.
+	(gen_decl_die): Only check DECL_IGNORED_P on decls.
+	(dwarf2out_decl): Check for DECL_IGNORED_P only when needed.
+
 2001-12-29  Jakub Jelinek  <jakub@redhat.com>
 
 	* cfglayout.c (insert_intra_before_1): New.
