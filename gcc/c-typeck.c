@@ -3985,7 +3985,7 @@ convert_for_assignment (type, rhs, errtype, fundecl, funname, parmnum)
 	  /* Const and volatile mean something different for function types,
 	     so the usual warnings are not appropriate.  */
 	  else if (TREE_CODE (ttr) != FUNCTION_TYPE
-		   || TREE_CODE (ttl) != FUNCTION_TYPE)
+		   && TREE_CODE (ttl) != FUNCTION_TYPE)
 	    {
 	      if (! TYPE_READONLY (ttl) && TYPE_READONLY (ttr))
 		warn_for_assignment ("%s discards `const' from pointer target type",
