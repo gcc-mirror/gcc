@@ -19,3 +19,10 @@ C gcc 2.7.
       END SELECT
       END
 
+C The relevant change to cure this is:
+C
+C Thu Dec  4 06:34:40 1997  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+C
+C       * stmt.c (pushcase_range): Clean up handling of "infinite" values.
+C
+
