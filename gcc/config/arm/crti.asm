@@ -42,12 +42,12 @@
 #ifdef __thumb__
 	.thumb
 	
-	push	{r4, r5, r6, r7, lr}
+	push	{r3, r4, r5, r6, r7, lr}
 #else
 	.arm
 	#  Create a stack frame and save any call-preserved registers
 	mov	ip, sp
-	stmdb	sp!, {r4, r5, r6, r7, r8, r9, sl, fp, ip, lr, pc}
+	stmdb	sp!, {r3, r4, r5, r6, r7, r8, r9, sl, fp, ip, lr, pc}
 	sub	fp, ip, #4
 #endif
 .endm
