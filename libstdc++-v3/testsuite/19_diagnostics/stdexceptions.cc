@@ -58,7 +58,6 @@ public:
 void test03()
 {
   bool test = true;
-
   try
     { throw fuzzy_logic(); }
   catch(const fuzzy_logic& obj)
@@ -79,6 +78,7 @@ void allocate_on_stack(void)
 }
 void test04()
 {
+  bool test = true;
   const std::string s("CA ISO emergency once again:immediate power down");
   const char* strlit1 = "wish I lived in Palo Alto";
   const char* strlit2 = "...or Santa Barbara";

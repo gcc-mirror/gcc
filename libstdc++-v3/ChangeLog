@@ -1,3 +1,13 @@
+2002-08-06  Benjamin Kosnik  <bkoz@redhat.com>
+
+	Revert PR libstdc++/6594
+	* src/strstream.cc (strstreambuf): Revert.
+	(strstreambuf::overflow): Same.
+	(strstreambuf::~strstreambuf): Same.	
+	* testsuite/backward/strstream_members.cc (test02): Add.
+
+	* testsuite/19_diagnostics/stdexceptions.cc (test04): Add bool test.
+
 2002-08-01  Benjamin Kosnik  <bkoz@redhat.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 	

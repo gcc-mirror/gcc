@@ -18,23 +18,32 @@
 
 // backward strstream members
 
-#include <strstream.h>
+#include <strstream>
 #include <testsuite_hooks.h>
 
 // { dg-options "-Wno-deprecated" }
 
 int test01()
 {
-   strstream s;
+   std::strstream s;
    for (unsigned i=0 ; i!= 1000 ; ++i)
       s << i << std::endl;
    s << std::ends;
-
    return 0;
+}
+
+
+int test02()
+{
+  std::ostrstream buf;
+  buf << std::ends;
+  char *s = buf.str ();
+  delete [] s;
 }
 
 int main()
 {
   test01();
+  test02();
   return 0;
 }
