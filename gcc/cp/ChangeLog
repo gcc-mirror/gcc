@@ -1,3 +1,7 @@
+Tue Oct 11 23:48:31 1994  Jason Merrill  (jason@phydeaux.cygnus.com)
+  
+        * various: Cast pointer arguments to bzero and bcopy to char *.
+
 Mon Oct 10 00:56:53 1994  Jason Merrill  (jason@phydeaux.cygnus.com)
 
         * lex.c (cons_up_default_function): Mark methods in a template class
