@@ -1,5 +1,13 @@
 2001-10-04  Geert Bosch  <bosch@gnat.com>
 
+	* sysdep.c (__gnat_set_binary_mode, __gnat_set_text_mode):
+	Arg is int, not FILE *, in dummy version of functions.
+	
+	* adaint.h (__gnat_set_binary_mode, __gnat_set_text_mode):
+	Arg is int, not FILE *.
+
+2001-10-04  Geert Bosch  <bosch@gnat.com>
+
 	* 3lsoccon.ads: Added file, missed with initial check ins.
   
 	* 4lintnam.ads: Fix header format.

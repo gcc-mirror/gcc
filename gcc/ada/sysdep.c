@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *                            $Revision: 1.2 $
+ *                            $Revision$
  *                                                                          *
  *          Copyright (C) 1992-2001 Free Software Foundation, Inc.          *
  *                                                                          *
@@ -264,14 +264,14 @@ const char __gnat_text_translation_required = 0;
 /* These functions do nothing in non-DOS systems. */
 
 void
-__gnat_set_binary_mode (stream)
-     FILE *stream ATTRIBUTE_UNUSED;
+__gnat_set_binary_mode (handle)
+     int handle ATTRIBUTE_UNUSED;
 {
 }
 
 void
-__gnat_set_text_mode (stream)
-     FILE *stream ATTRIBUTE_UNUSED;
+__gnat_set_text_mode (handle)
+     int handle ATTRIBUTE_UNUSED;
 {
 }
 char *
