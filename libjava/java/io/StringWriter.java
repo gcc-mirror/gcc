@@ -1,6 +1,6 @@
 // StringWriter.java - StringBuffer output stream
 
-/* Copyright (C) 1998, 1999  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -17,7 +17,7 @@ package java.io;
 
 /* Written using "Java Class Libraries", 2nd edition, ISBN 0-201-31002-3
  * "The Java Language Specification", ISBN 0-201-63451-1
- * Status:  Complete to 1.1.
+ * Status:  Complete to 1.2.
  */
 
 public class StringWriter extends Writer
@@ -25,7 +25,7 @@ public class StringWriter extends Writer
   public void close ()
   {
     // JCL says this does nothing.  This seems to violate the Writer
-    // contract, in that other methods should still throw and
+    // contract, in that other methods should still throw an
     // IOException after a close.  Still, we just follow JCL.
   }
 
@@ -43,7 +43,7 @@ public class StringWriter extends Writer
     this (16);
   }
 
-  protected StringWriter (int size)
+  public StringWriter (int size)
   {
     super ();
     buffer = new StringBuffer (size);
