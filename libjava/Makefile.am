@@ -522,6 +522,8 @@ built_java_source_files = java/lang/ConcreteProcess.java
 ## convert_source_files.  If the .java file has a hand-maintained
 ## header, please list it in special_java_source_files.
 ordinary_java_source_files =  $(convert_source_files) \
+gnu/gcj/io/DefaultMimeTypes.java \
+gnu/gcj/io/MimeTypes.java \
 gnu/gcj/jni/NativeThread.java \
 gnu/gcj/runtime/MethodInvocation.java \
 gnu/gcj/runtime/VMClassLoader.java \

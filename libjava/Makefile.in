@@ -326,6 +326,8 @@ java/awt/peer/WindowPeer.java
 built_java_source_files = java/lang/ConcreteProcess.java
 
 ordinary_java_source_files = $(convert_source_files) \
+gnu/gcj/io/DefaultMimeTypes.java \
+gnu/gcj/io/MimeTypes.java \
 gnu/gcj/jni/NativeThread.java \
 gnu/gcj/runtime/MethodInvocation.java \
 gnu/gcj/runtime/VMClassLoader.java \
@@ -732,13 +734,12 @@ LINK = $(LIBTOOL) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(LDFLAGS) -o $@
 DATA =  $(data_DATA) $(toolexeclib_DATA)
 
 DIST_COMMON =  README COPYING.LIB ChangeLog Makefile.am Makefile.in NEWS \
-THANKS acconfig.h acinclude.m4 aclocal.m4 configure configure.in \
-include/config.h.in include/stamp-h.in libgcj.spec.in
+THANKS acinclude.m4 aclocal.m4 configure configure.in libgcj.spec.in
 
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
-TAR = tar
+TAR = gtar
 GZIP_ENV = --best
 DIST_SUBDIRS =  @DIRLTDL@ testsuite gcj include @DIRLTDL@ gcj include
 DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
@@ -755,8 +756,10 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/gnu/gcj/convert/Output_JavaSrc.P \
 .deps/gnu/gcj/convert/Output_SJIS.P .deps/gnu/gcj/convert/Output_UTF8.P \
 .deps/gnu/gcj/convert/Output_iconv.P \
-.deps/gnu/gcj/convert/UnicodeToBytes.P .deps/gnu/gcj/jni/NativeThread.P \
-.deps/gnu/gcj/math/MPN.P .deps/gnu/gcj/protocol/file/Connection.P \
+.deps/gnu/gcj/convert/UnicodeToBytes.P \
+.deps/gnu/gcj/io/DefaultMimeTypes.P .deps/gnu/gcj/io/MimeTypes.P \
+.deps/gnu/gcj/jni/NativeThread.P .deps/gnu/gcj/math/MPN.P \
+.deps/gnu/gcj/protocol/file/Connection.P \
 .deps/gnu/gcj/protocol/file/Handler.P \
 .deps/gnu/gcj/protocol/http/Connection.P \
 .deps/gnu/gcj/protocol/http/Handler.P \
@@ -958,34 +961,6 @@ config.status: $(srcdir)/configure $(CONFIG_STATUS_DEPENDENCIES)
 	$(SHELL) ./config.status --recheck
 $(srcdir)/configure: @MAINTAINER_MODE_TRUE@$(srcdir)/configure.in $(ACLOCAL_M4) $(CONFIGURE_DEPENDENCIES)
 	cd $(srcdir) && $(AUTOCONF)
-
-include/config.h: include/stamp-h
-	@if test ! -f $@; then \
-		rm -f include/stamp-h; \
-		$(MAKE) include/stamp-h; \
-	else :; fi
-include/stamp-h: $(srcdir)/include/config.h.in $(top_builddir)/config.status
-	cd $(top_builddir) \
-	  && CONFIG_FILES= CONFIG_HEADERS=include/config.h \
-	     $(SHELL) ./config.status
-	@echo timestamp > include/stamp-h 2> /dev/null
-$(srcdir)/include/config.h.in: @MAINTAINER_MODE_TRUE@$(srcdir)/include/stamp-h.in
-	@if test ! -f $@; then \
-		rm -f $(srcdir)/include/stamp-h.in; \
-		$(MAKE) $(srcdir)/include/stamp-h.in; \
-	else :; fi
-$(srcdir)/include/stamp-h.in: $(top_srcdir)/configure.in $(ACLOCAL_M4) acconfig.h
-	cd $(top_srcdir) && $(AUTOHEADER)
-	@echo timestamp > $(srcdir)/include/stamp-h.in 2> /dev/null
-
-mostlyclean-hdr:
-
-clean-hdr:
-
-distclean-hdr:
-	-rm -f include/config.h
-
-maintainer-clean-hdr:
 libgcj.spec: $(top_builddir)/config.status libgcj.spec.in
 	cd $(top_builddir) && CONFIG_FILES=$@ CONFIG_HEADERS= $(SHELL) ./config.status
 
@@ -1309,7 +1284,7 @@ distdir: $(DISTFILES)
 	@for file in $(DISTFILES); do \
 	  d=$(srcdir); \
 	  if test -d $$d/$$file; then \
-	    cp -pr $$/$$file $(distdir)/$$file; \
+	    cp -pr $$d/$$file $(distdir)/$$file; \
 	  else \
 	    test -f $(distdir)/$$file \
 	    || ln $$d/$$file $(distdir)/$$file 2> /dev/null \
@@ -1424,33 +1399,31 @@ distclean-generic:
 	-rm -f config.cache config.log stamp-h stamp-h[0-9]*
 
 maintainer-clean-generic:
-mostlyclean-am:  mostlyclean-hdr mostlyclean-toolexeclibLIBRARIES \
-		mostlyclean-compile mostlyclean-libtool \
-		mostlyclean-toolexeclibLTLIBRARIES \
+mostlyclean-am:  mostlyclean-toolexeclibLIBRARIES mostlyclean-compile \
+		mostlyclean-libtool mostlyclean-toolexeclibLTLIBRARIES \
 		mostlyclean-binPROGRAMS mostlyclean-noinstPROGRAMS \
 		mostlyclean-tags mostlyclean-depend mostlyclean-generic
 
 mostlyclean: mostlyclean-recursive
 
-clean-am:  clean-hdr clean-toolexeclibLIBRARIES clean-compile \
-		clean-libtool clean-toolexeclibLTLIBRARIES \
-		clean-binPROGRAMS clean-noinstPROGRAMS clean-tags \
-		clean-depend clean-generic mostlyclean-am clean-local
+clean-am:  clean-toolexeclibLIBRARIES clean-compile clean-libtool \
+		clean-toolexeclibLTLIBRARIES clean-binPROGRAMS \
+		clean-noinstPROGRAMS clean-tags clean-depend \
+		clean-generic mostlyclean-am clean-local
 
 clean: clean-recursive
 
-distclean-am:  distclean-hdr distclean-toolexeclibLIBRARIES \
-		distclean-compile distclean-libtool \
-		distclean-toolexeclibLTLIBRARIES distclean-binPROGRAMS \
-		distclean-noinstPROGRAMS distclean-tags \
-		distclean-depend distclean-generic clean-am
+distclean-am:  distclean-toolexeclibLIBRARIES distclean-compile \
+		distclean-libtool distclean-toolexeclibLTLIBRARIES \
+		distclean-binPROGRAMS distclean-noinstPROGRAMS \
+		distclean-tags distclean-depend distclean-generic \
+		clean-am
 	-rm -f libtool
 
 distclean: distclean-recursive
 	-rm -f config.status
 
-maintainer-clean-am:  maintainer-clean-hdr \
-		maintainer-clean-toolexeclibLIBRARIES \
+maintainer-clean-am:  maintainer-clean-toolexeclibLIBRARIES \
 		maintainer-clean-compile maintainer-clean-libtool \
 		maintainer-clean-toolexeclibLTLIBRARIES \
 		maintainer-clean-binPROGRAMS \
@@ -1463,8 +1436,7 @@ maintainer-clean-am:  maintainer-clean-hdr \
 maintainer-clean: maintainer-clean-recursive
 	-rm -f config.status
 
-.PHONY: mostlyclean-hdr distclean-hdr clean-hdr maintainer-clean-hdr \
-mostlyclean-toolexeclibLIBRARIES distclean-toolexeclibLIBRARIES \
+.PHONY: mostlyclean-toolexeclibLIBRARIES distclean-toolexeclibLIBRARIES \
 clean-toolexeclibLIBRARIES maintainer-clean-toolexeclibLIBRARIES \
 uninstall-toolexeclibLIBRARIES install-toolexeclibLIBRARIES \
 mostlyclean-compile distclean-compile clean-compile \
