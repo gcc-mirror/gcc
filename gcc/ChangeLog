@@ -1,3 +1,8 @@
+Fri Jan 15 11:02:31 1999   Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* unroll.c (loop_iterations): Return 0 if the last loop insn
+	is not a jump insn or if the loop has multiple back edges.
+
 Thu Jan 14 22:38:41 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* unroll.c (find_splittable_givs): For a DEST_ADDR giv, do not share
