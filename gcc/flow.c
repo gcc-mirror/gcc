@@ -3525,6 +3525,12 @@ find_auto_inc (pbi, x, insn)
 								  addr,
 								  inc_val)),
 			  insn, x, incr, addr);
+      else if (HAVE_PRE_MODIFY_DISP && offset == INTVAL (inc_val))
+	attempt_auto_inc (pbi, gen_rtx_PRE_MODIFY (Pmode, addr,
+						    gen_rtx_PLUS (Pmode,
+								  addr,
+								  inc_val)),
+			  insn, x, incr, addr);
     }
   else if (GET_CODE (inc_val) == REG
 	   && ! reg_set_between_p (inc_val, PREV_INSN (insn),
