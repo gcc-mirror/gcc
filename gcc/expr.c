@@ -3125,8 +3125,11 @@ store_expr (exp, target, want_value)
       /* If we don't want a value, we can do the conversion inside EXP,
 	 which will often result in some optimizations.  Do the conversion
 	 in two steps: first change the signedness, if needed, then
-	 the extend.  */
-      if (! want_value)
+	 the extend.  But don't do this if the type of EXP is a subtype
+	 of something else since then the conversion might involve
+	 more than just converting modes.  */
+      if (! want_value && INTEGRAL_TYPE_P (TREE_TYPE (exp))
+	  && TREE_TYPE (TREE_TYPE (exp)) == 0)
 	{
 	  if (TREE_UNSIGNED (TREE_TYPE (exp))
 	      != SUBREG_PROMOTED_UNSIGNED_P (target))
