@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for Sun SPARC.
-   Copyright (C) 1987, 1988, 1989, 1992 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1989, 1992, 1993 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -407,19 +407,6 @@ arith_double_operand (op, mode)
 	  || (GET_CODE (op) == CONST_INT
 	      && (GET_MODE (op) == mode || GET_MODE (op) == VOIDmode)
 	      && (unsigned) (INTVAL (op) + 0x1000) < 0x2000));
-}
-
-/* Return true if OP is a register, or is a CONST_INT that can fit in a 5
-   bit unsigned immediate field.  This is an acceptable SImode operand for
-   the count field of shift instructions.  */
-
-int
-shift_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
-{
-  return (register_operand (op, mode)
-	  || (GET_CODE (op) == CONST_INT && (unsigned) (INTVAL (op)) < 32));
 }
 
 /* Return truth value of whether OP is a integer which fits the
