@@ -1573,7 +1573,6 @@ output_exception_table ()
   free (eh_table);
 
   /* Ending marker for table.  */
-  assemble_label ("__EXCEPTION_END__");
   assemble_integer (constm1_rtx, POINTER_SIZE / BITS_PER_UNIT, 1);
   assemble_integer (constm1_rtx, POINTER_SIZE / BITS_PER_UNIT, 1);
   assemble_integer (constm1_rtx, POINTER_SIZE / BITS_PER_UNIT, 1);

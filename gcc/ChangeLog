@@ -1,3 +1,12 @@
+Thu Nov 20 14:42:15 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* Makefile.in (LIB2FUNCS): Remove C++ memory management support.
+	* libgcc2.c: Remove __builtin_new, __builtin_vec_new, set_new_handler, 
+	__builtin_delete, and __builtin_vec_delete.
+
+	* except.c (output_exception_table): Don't bother with
+ 	__EXCEPTION_END__.
+
 Thu Nov 20 16:11:50 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* mips/x-iris (FIXPROTO_DEFINES): Add -D_SGI_SOURCE.

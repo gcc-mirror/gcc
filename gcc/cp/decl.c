@@ -5577,14 +5577,18 @@ init_decl_processing ()
   /* Now, C++.  */
   current_lang_name = lang_name_cplusplus;
 
-  auto_function (ansi_opname[(int) NEW_EXPR], ptr_ftype_sizetype,
-		 NOT_BUILT_IN);
-  auto_function (ansi_opname[(int) VEC_NEW_EXPR], ptr_ftype_sizetype,
-		 NOT_BUILT_IN);
-  auto_function (ansi_opname[(int) DELETE_EXPR], void_ftype_ptr,
-		 NOT_BUILT_IN);
-  auto_function (ansi_opname[(int) VEC_DELETE_EXPR], void_ftype_ptr,
-		 NOT_BUILT_IN);
+  {
+    tree bad_alloc_type_node = xref_tag
+      (class_type_node, get_identifier ("bad_alloc"), NULL_TREE, 1);
+    tree newtype = build_exception_variant
+      (ptr_ftype_sizetype, build_tree_list (NULL_TREE, bad_alloc_type_node));
+    tree deltype = build_exception_variant
+      (void_ftype_ptr, build_tree_list (NULL_TREE, NULL_TREE));
+    auto_function (ansi_opname[(int) NEW_EXPR], newtype, NOT_BUILT_IN);
+    auto_function (ansi_opname[(int) VEC_NEW_EXPR], newtype, NOT_BUILT_IN);
+    auto_function (ansi_opname[(int) DELETE_EXPR], deltype, NOT_BUILT_IN);
+    auto_function (ansi_opname[(int) VEC_DELETE_EXPR], deltype, NOT_BUILT_IN);
+  }
 
   abort_fndecl
     = define_function ("__pure_virtual", void_ftype,
