@@ -79,8 +79,8 @@ namespace std
     };
 
   // 22.1.1 Locale
-  template<typename _Tp> class allocator;
-  template<typename _Tp, typename _Alloc> class vector;
+  template<typename _Tp, typename _Alloc> 
+    class vector;
   class locale;
 
   // 22.1.3 Convenience interfaces

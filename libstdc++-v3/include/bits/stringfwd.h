@@ -1,6 +1,6 @@
-// Components for manipulating sequences of characters -*- C++ -*-
+// String support -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+// Copyright (C) 2001 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -28,37 +28,34 @@
 // the GNU General Public License.
 
 //
-// ISO C++ 14882: 21  Strings library
+// ISO C++ 14882: 21 Strings library
 //
 
-#ifndef _CPP_STRING
-#define _CPP_STRING	1
+#ifndef _CPP_BITS_STRINGFWD_H
+#define _CPP_BITS_STRINGFWD_H	1
 
 #include <bits/c++config.h>
-#include <bits/stringfwd.h>
-#include <bits/char_traits.h>
-#include <bits/std_iterator.h>
-#include <bits/std_memory.h> 	// For allocator.
-#include <bits/type_traits.h>
-#include <bits/std_iosfwd.h> 	// For operators >>, <<, and getline decls.
-#include <bits/basic_string.h>
 
-#ifdef _GLIBCPP_NO_TEMPLATE_EXPORT
-# include <bits/std_algorithm.h> // for find_if
-# include <bits/basic_string.tcc> 
+namespace std
+{
+  template<class _CharT>
+    struct char_traits;
+
+  template<typename _Alloc> 
+    class allocator;
+
+  template<typename _CharT, typename _Traits = char_traits<_CharT>, 
+           typename _Alloc = allocator<_CharT> >
+    class basic_string;
+
+  typedef basic_string<char>    string;
+#ifdef _GLIBCPP_USE_WCHAR_T
+  typedef basic_string<wchar_t> wstring;
 #endif
+} // namespace std
 
-#endif /* _CPP_STRING */
+#endif	// _CPP_BITS_STRINGFWD_H
 
-
-
-
-
-
-
-
-
-
-
-
-
+// Local Variables:
+// mode:c++
+// End:
