@@ -1448,7 +1448,7 @@ mostlyclean:
 	-rm -f tmplibgcc* tmpcopy xlimits.h
 	for name in $(LIB1FUNCS); do rm -f $${name}.c; done
 # Delete other temporary files.
-	-rm -f tmp-float.h tmp-gcc.xtar.z
+	-rm -f tmp-float.h tmp-gcc.xtar.gz
 	-rm -f tmp-foo1 tmp-foo2 tmp-proto.* tmp-unproto.1 tmp-SYSCALLS.s
 # Delete the stamp files.
 	-rm -f stamp-* tmp-*
@@ -1745,15 +1745,15 @@ TAGS: force
 	rmdir temp
 
 # Create the distribution tar file.
-#dist: gcc-$(version).tar.z
-dist: gcc.xtar.z
+#dist: gcc-$(version).tar.gz
+dist: gcc.xtar.gz
 
-gcc.xtar.z: gcc.xtar
-	gzip < gcc.xtar > tmp-gcc.xtar.z
-	mv tmp-gcc.xtar.z gcc.xtar.z
+gcc.xtar.gz: gcc.xtar
+	gzip < gcc.xtar > tmp-gcc.xtar.gz
+	mv tmp-gcc.xtar.gz gcc.xtar.gz
 
-#gcc-$(version).tar.z: gcc-$(version).tar
-#	gzip < gcc-$(version).tar > gcc-$(version).tar.z
+#gcc-$(version).tar.gz: gcc-$(version).tar
+#	gzip < gcc-$(version).tar > gcc-$(version).tar.gz
 
 #gcc-$(version).tar:
 gcc.xtar: distdir
