@@ -1,3 +1,14 @@
+2003-09-26  Roger Sayle  <roger@eyesopen.com>
+	    Richard Henderson  <rth@redhat.com>
+
+	PR optimization/11741
+	* gcse.c (pre_insert_copy_insn): Tweak the logic for finding the
+	appropriate set to match that in hash_scan_insn.  Fall back to
+	the original copy method, if we can't validate changing insn.
+	(pre_delete): Only delete instructions that have a single_set,
+	instead of aborting when we encounter an PARALLEL insn with more
+	then one SET.
+
 2003-09-26  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* config/s390/s390.md ("builtin_setjmp_setup"): Insn deleted.

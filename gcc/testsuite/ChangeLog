@@ -1,3 +1,8 @@
+2003-09-26  Roger Sayle  <roger@eyesopen.com>
+
+	PR optimization/11741
+	* gcc.dg/20030926-1.c: New test case.
+
 2003-09-25  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/5655
@@ -10,26 +15,31 @@
 	* lib/objc.exp (objc_target_compile): Do not point at libobjc headers
 	if libobjc has not been built.
 	* objc/execute/IMP.m, objc/execute/_cmd.m, objc/execute/bf-common.h,
-	objc/execute/bycopy-3.m, objc/execute/class-{1-14}.m, objc/execute/class-self-2.m,
-	objc/execute/many_args_method.m, objc/execute/nested-3.m, objc/execute/np-2.m,
+	objc/execute/bycopy-3.m, objc/execute/class-{1-14}.m,
+	objc/execute/class-self-2.m, objc/execute/many_args_method.m,
+	objc/execute/nested-3.m, objc/execute/np-2.m,
 	objc/execute/object_is_class.m, objc/execute/object_is_meta_class.m,
 	objc/execute/redefining_self.m, objc/execute/root_methods.m,
-	objc/execute/static-{1-2}.m, objc/execute/string-{1-4}.m, objc/execute/va_method.m,
-	objc.dg/comp-types-4.m, objc.dg/headers.m, objc.dg/special/unclaimed-category-1.h,
-	objc.dg/special/unclaimed-category-1.m: Make usable with NeXT as well as GNU runtime.
+	objc/execute/static-{1-2}.m, objc/execute/string-{1-4}.m,
+	objc/execute/va_method.m, objc.dg/comp-types-4.m, objc.dg/headers.m,
+	objc.dg/special/unclaimed-category-1.h,
+	objc.dg/special/unclaimed-category-1.m: Make usable with NeXT as
+	well as GNU runtime.
 	* execute/next_mapping.h: New header, for GNU->NeXT impedance matching.
-	* execute/cascading-1.m, execute/function-message-1.m, objc.dg/anon-1.m,
-	objc.dg/bitfield-{3-4}.m, objc.dg/call-super-{1-3}.m, objc.dg/category-1.m,
-	objc.dg/const-str-{3-6}.m, objc.dg/encode-{1-4}.m, objc.dg/func-ptr-1.m,
-	objc.dg/gnu-runtime-1.m, objc.dg/image-info.m, objc.dg/method-{3-12}.m,
-	objc.dg/missing-proto-{1-3}.m, objc.dg/nested-func-1.m, objc.dg/proto-lossage-2.m,
-	objc.dg/proto-qual-1.m, objc.dg/sizeof-1.m, objc.dg/static-1.m, objc.dg/symtab-1.m,
-	objc.dg/try-catch-{1-4}.m, objc.dg/type-size-{1-2}.m, objc.dg/zero-link-{1-2}.m:
-	New test cases.
+	* execute/cascading-1.m, execute/function-message-1.m,
+	objc.dg/anon-1.m, objc.dg/bitfield-{3-4}.m,
+	objc.dg/call-super-{1-3}.m, objc.dg/category-1.m,
+	objc.dg/const-str-{3-6}.m, objc.dg/encode-{1-4}.m,
+	objc.dg/func-ptr-1.m, objc.dg/gnu-runtime-1.m, objc.dg/image-info.m,
+	objc.dg/method-{3-12}.m, objc.dg/missing-proto-{1-3}.m,
+	objc.dg/nested-func-1.m, objc.dg/proto-lossage-2.m,
+	objc.dg/proto-qual-1.m, objc.dg/sizeof-1.m, objc.dg/static-1.m,
+	objc.dg/symtab-1.m, objc.dg/try-catch-{1-4}.m,
+	objc.dg/type-size-{1-2}.m, objc.dg/zero-link-{1-2}.m: New test cases.
 	* objc.dg/bitfield-2.m: Run only on Darwin.
 	* objc.dg/class-2.m, objc.dg/comp-types-1.m, objc.dg/desig-init-1.m,
-	objc.dg/method-{1-2}.m, objc.dg/proto-hier-1.m, objc.dg/proto-lossage-1.m:
-	Adjust for message wording changes.
+	objc.dg/method-{1-2}.m, objc.dg/proto-hier-1.m,
+	objc.dg/proto-lossage-1.m: Adjust for message wording changes.
 	* objc.dg/const-str-1.m: Fix constant string layout.
  
 2003-09-24  Alexandre Oliva  <aoliva@redhat.com>
