@@ -30,6 +30,8 @@ static hashval_t hashmem PARAMS ((const void *, size_t));
 static hashval_t cpp_string_hash PARAMS ((const void *));
 static int cpp_string_eq PARAMS ((const void *, const void *));
 static int count_defs PARAMS ((cpp_reader *, cpp_hashnode *, void *));
+static int comp_hashnodes PARAMS ((const void *, const void *));
+static int collect_ht_nodes PARAMS ((cpp_reader *, cpp_hashnode *, void *));
 static int write_defs PARAMS ((cpp_reader *, cpp_hashnode *, void *));
 static int save_macros PARAMS ((cpp_reader *, cpp_hashnode *, void *));
 static int reset_ht PARAMS ((cpp_reader *, cpp_hashnode *, void *));
@@ -109,6 +111,10 @@ struct cpp_savedstate
   /* The size of the definitions of those identifiers (the size of
      'definedstrs').  */
   size_t hashsize;
+  /* Number of definitions */
+  size_t n_defs;
+  /* Array of definitions.  In cpp_write_pch_deps it is used for sorting. */
+  cpp_hashnode **defs;
   /* Space for the next definition.  Definitions are null-terminated
      strings.  */
   unsigned char *definedstrs;
@@ -239,7 +245,10 @@ count_defs (pfile, hn, ss_p)
 	news.text = NODE_NAME (hn);
 	slot = htab_find (ss->definedhash, &news);
 	if (slot == NULL)
-	  ss->hashsize += NODE_LEN (hn) + 1;
+	  {
+	    ss->hashsize += NODE_LEN (hn) + 1;
+	    ss->n_defs += 1;
+	  }
       }
       return 1;
 
@@ -252,8 +261,7 @@ count_defs (pfile, hn, ss_p)
     }
 }
 
-/* Write the identifiers into 'definedstrs' of the state.  */
-
+/* Collect the identifiers into the state's string table. */
 static int
 write_defs (pfile, hn, ss_p)
      cpp_reader *pfile ATTRIBUTE_UNUSED;
@@ -280,9 +288,8 @@ write_defs (pfile, hn, ss_p)
 	slot = htab_find (ss->definedhash, &news);
 	if (slot == NULL)
 	  {
-	    memcpy (ss->definedstrs, NODE_NAME (hn), NODE_LEN (hn));
-	    ss->definedstrs[NODE_LEN (hn)] = 0;
-	    ss->definedstrs += NODE_LEN (hn) + 1;
+	    ss->defs[ss->n_defs] = hn;
+	    ss->n_defs += 1;
 	  }
       }
       return 1;
@@ -296,6 +303,18 @@ write_defs (pfile, hn, ss_p)
     }
 }
 
+/* Comparison function for qsort.  The arguments point to pointers of
+   type ht_hashnode *.  */
+static int
+comp_hashnodes (px, py)
+     const void *px;
+     const void *py;
+{
+  cpp_hashnode *x = *(cpp_hashnode **) px;
+  cpp_hashnode *y = *(cpp_hashnode **) py;
+  return ustrcmp (NODE_NAME (x), NODE_NAME (y));
+}
+
 /* Write out the remainder of the dependency information.  This should be
    called after the PCH is ready to be saved.  */
 
@@ -307,23 +326,37 @@ cpp_write_pch_deps (r, f)
   struct macrodef_struct z;
   struct cpp_savedstate *const ss = r->savedstate;
   unsigned char *definedstrs;
+  size_t i;
   
-  ss->hashsize = 0;
-  
-  /* Write out the list of identifiers which have been seen and
+  /* Collect the list of identifiers which have been seen and
      weren't defined to anything previously.  */
+  ss->hashsize = 0;
+  ss->n_defs = 0;
   cpp_forall_identifiers (r, count_defs, ss);
-  definedstrs = ss->definedstrs = xmalloc (ss->hashsize);
+
+  ss->defs = xmalloc (ss->n_defs * sizeof (cpp_hashnode *));
+  ss->n_defs = 0;
   cpp_forall_identifiers (r, write_defs, ss);
+
+  /* Sort the list, copy it into a buffer, and write it out. */
+  qsort (ss->defs, ss->n_defs, sizeof (cpp_hashnode *), &comp_hashnodes);
+  definedstrs = ss->definedstrs = xmalloc (ss->hashsize);
+  for (i = 0; i < ss->n_defs; ++i)
+    {
+      size_t len = NODE_LEN (ss->defs[i]);
+      memcpy (definedstrs, NODE_NAME (ss->defs[i]), len + 1);
+      definedstrs += len + 1;
+    }
+
   memset (&z, 0, sizeof (z));
   z.definition_length = ss->hashsize;
   if (fwrite (&z, sizeof (z), 1, f) != 1
-      || fwrite (definedstrs, ss->hashsize, 1, f) != 1)
+      || fwrite (ss->definedstrs, ss->hashsize, 1, f) != 1)
     {
       cpp_errno (r, DL_ERROR, "while writing precompiled header");
       return -1;
     }
-  free (definedstrs);
+  free (ss->definedstrs);
 
   /* Free the saved state.  */
   free (ss);
@@ -362,6 +395,44 @@ cpp_write_pch_state (r, f)
   return 0;
 }
 
+
+/* Data structure to transform hash table nodes into a sorted list */
+
+struct ht_node_list
+{
+  /* Array of nodes */
+  cpp_hashnode **defs;
+  /* Number of nodes in the array */
+  size_t n_defs;
+  /* Size of the allocated array */
+  size_t asize;
+};
+
+/* Callback for collecting identifiers from hash table */
+
+static int
+collect_ht_nodes (pfile, hn, nl_p)
+     cpp_reader *pfile ATTRIBUTE_UNUSED;
+     cpp_hashnode *hn;
+     void *nl_p;
+{
+  struct ht_node_list *const nl = (struct ht_node_list *)nl_p;
+
+  if (hn->type != NT_VOID || hn->flags & NODE_POISONED)
+    {
+      if (nl->n_defs == nl->asize)
+        {
+          nl->asize *= 2;
+          nl->defs = xrealloc (nl->defs, nl->asize * sizeof (cpp_hashnode *));
+        }
+
+      nl->defs[nl->n_defs] = hn;
+      ++nl->n_defs;
+    }
+  return 1;
+}
+
+
 /* Return nonzero if FD is a precompiled header which is consistent
    with the preprocessor's current definitions.  It will be consistent
    when:
@@ -385,6 +456,8 @@ cpp_valid_state (r, name, fd)
   size_t namebufsz = 256;
   unsigned char *namebuf = xmalloc (namebufsz);
   unsigned char *undeftab = NULL;
+  struct ht_node_list nl;
+  unsigned char *first, *last;
   unsigned int i;
   
   /* Read in the list of identifiers that must be defined
@@ -445,22 +518,33 @@ cpp_valid_state (r, name, fd)
   undeftab = xmalloc (m.definition_length);
   if ((size_t) read (fd, undeftab, m.definition_length) != m.definition_length)
     goto error;
-  for (i = 0; i < m.definition_length; )
+
+  /* Collect identifiers from the current hash table.  */
+  nl.n_defs = 0;
+  nl.asize = 10;
+  nl.defs = xmalloc (nl.asize * sizeof (cpp_hashnode *));
+  cpp_forall_identifiers (r, &collect_ht_nodes, &nl);
+  qsort (nl.defs, nl.n_defs, sizeof (cpp_hashnode *), &comp_hashnodes);
+ 
+  /* Loop through nl.defs and undeftab, both of which are sorted lists.
+     There should be no matches. */
+  first = undeftab;
+  last = undeftab + m.definition_length;
+  i = 0;
+ 
+  while (first < last && i < nl.n_defs)
     {
-      int l = ustrlen (undeftab + i);
-      cpp_hashnode *h;
-      h = cpp_lookup (r, undeftab + i, l);
-      if (h->type != NT_VOID
-	  || h->flags & NODE_POISONED)
-	{
-	  if (CPP_OPTION (r, warn_invalid_pch))
-	    cpp_error (r, DL_WARNING_SYSHDR, 
-		       "%s: not used because `%s' is defined",
-		       name, undeftab + i);
-	  goto fail;
-	}
-      i += l + 1;
+      int cmp = ustrcmp (first, NODE_NAME (nl.defs[i]));
+ 
+      if (cmp < 0)
+ 	first += ustrlen (first) + 1;
+      else if (cmp > 0)
+ 	++i;
+      else
+	goto fail;
     }
+   
+  free(nl.defs);
   free (undeftab);
 
   /* We win!  */
@@ -475,6 +559,8 @@ cpp_valid_state (r, name, fd)
     free (namebuf);
   if (undeftab != NULL)
     free (undeftab);
+  if (nl.defs != NULL)
+    free (nl.defs);
   return 1;
 }
 
