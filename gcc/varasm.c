@@ -459,13 +459,7 @@ bss_section (void)
 {
   if (in_section != in_bss)
     {
-#ifdef SHARED_BSS_SECTION_ASM_OP
-      if (flag_shared_data)
-	fprintf (asm_out_file, "%s\n", SHARED_BSS_SECTION_ASM_OP);
-      else
-#endif
-	fprintf (asm_out_file, "%s\n", BSS_SECTION_ASM_OP);
-
+      fprintf (asm_out_file, "%s\n", BSS_SECTION_ASM_OP);
       in_section = in_bss;
     }
 }

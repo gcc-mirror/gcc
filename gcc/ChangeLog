@@ -1,3 +1,9 @@
+2004-01-13  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* system.h (SHARED_BSS_SECTION_ASM_OP): Poison.
+	* varasm.c (bss_section): Don't use SHARED_BSS_SECTION_ASM_OP.
+	* doc/tm.texi (SHARED_BSS_SECTION_ASM_OP): Remove.
+
 2004-01-14  Jan Hubicka  <jh@suse.cz>
 
 	Partial fix PR c++/12850
