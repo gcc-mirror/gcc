@@ -1843,11 +1843,11 @@ stmt:
 	  lineno_labeled_stmt
 		{ expand_end_case ($3); }
 	| BREAK ';'
-	        { tree break_stmt = build_break_stmt ();
+	        { build_break_stmt ();
 		  stmt_count++;
 		  genrtl_break_stmt (); }
 	| CONTINUE ';'
-                { tree continue_stmt = build_continue_stmt ();
+                { build_continue_stmt ();
                   stmt_count++;
 		  genrtl_continue_stmt (); }
 	| RETURN ';'

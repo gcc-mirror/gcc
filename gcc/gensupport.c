@@ -173,7 +173,8 @@ process_rtx (desc, lineno)
     case DEFINE_INSN_AND_SPLIT:
       {
 	const char *split_cond;
-	rtx split, attr;
+	rtx split;
+	rtvec attr;
 	int i;
 
 	/* Create a split with values from the insn_and_split. */
