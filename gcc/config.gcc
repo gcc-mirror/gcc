@@ -885,10 +885,9 @@ hppa1.0-*-hpux10*)
 	;;
 hppa*64*-*-hpux11*)
 	xm_defines=POSIX
-	tmake_file="pa/t-pa pa/t-pa-hpux"
 	tm_file="pa/pa64-start.h ${tm_file} pa/pa64-regs.h pa/long_double.h pa/elf.h pa/pa-hpux.h pa/pa-hpux11.h pa/pa-64.h pa/pa64-hpux.h"
 	float_format=i128
-	tmake_file=pa/t-pa64
+	tmake_file="pa/t-pa64 pa/t-pa-hpux"
 	target_cpu_default="(MASK_PA_11|MASK_PA_20|MASK_GAS)"
 
 #	if [ x$enable_threads = x ]; then
