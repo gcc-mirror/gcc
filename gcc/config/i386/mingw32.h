@@ -33,7 +33,7 @@ Boston, MA 02111-1307, USA. */
 #define CPP_PREDEFINES "-Di386 -D_WIN32 -DWIN32 -D__WIN32__ \
   -D__MINGW32__ -D__MSVCRT__ -DWINNT  -D_X86_=1 -D__STDC__=1\
   -D__stdcall=__attribute__((__stdcall__)) \
-  _D_stdcall=__attribute__((__stdcall__)) \
+  -D_stdcall=__attribute__((__stdcall__)) \
   -D__cdecl=__attribute__((__cdecl__)) \
   -D__declspec(x)=__attribute__((x)) \
   -Asystem(winnt) -Acpu(i386) -Amachine(i386)"
