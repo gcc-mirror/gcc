@@ -218,11 +218,7 @@ extern void c_expand_decl_stmt                  PARAMS ((tree));
 /* in c-typeck.c */
 extern tree require_complete_type		PARAMS ((tree));
 extern int comptypes				PARAMS ((tree, tree));
-extern tree c_sizeof                            PARAMS ((tree));
-extern tree c_sizeof_nowarn                     PARAMS ((tree));
 extern tree c_size_in_bytes                     PARAMS ((tree));
-extern tree c_alignof				PARAMS ((tree));
-extern tree c_alignof_expr			PARAMS ((tree));
 extern tree build_component_ref                 PARAMS ((tree, tree));
 extern tree build_indirect_ref                  PARAMS ((tree, const char *));
 extern tree build_array_ref                     PARAMS ((tree, tree));
@@ -286,11 +282,6 @@ extern int flag_no_asm;
 /* Nonzero means warn about implicit declarations.  */
 
 extern int warn_implicit;
-
-/* Nonzero means warn about sizeof (function) or addition/subtraction
-   of function pointers.  */
-
-extern int warn_pointer_arith;
 
 /* Nonzero means warn for all old-style non-prototype function decls.  */
 

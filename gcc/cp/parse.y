@@ -1226,14 +1226,14 @@ unary_expr:
 	| ANDAND identifier
 		{ $$ = finish_label_address_expr ($2); }
 	| SIZEOF unary_expr  %prec UNARY
-		{ $$ = expr_sizeof ($2); }
+		{ $$ = finish_sizeof ($2); }
 	| SIZEOF '(' type_id ')'  %prec HYPERUNARY
-		{ $$ = c_sizeof (groktypename ($3.t));
+		{ $$ = finish_sizeof (groktypename ($3.t));
 		  check_for_new_type ("sizeof", $3); }
 	| ALIGNOF unary_expr  %prec UNARY
-		{ $$ = grok_alignof ($2); }
+		{ $$ = finish_alignof ($2); }
 	| ALIGNOF '(' type_id ')'  %prec HYPERUNARY
-		{ $$ = c_alignof (groktypename ($3.t)); 
+		{ $$ = finish_alignof (groktypename ($3.t)); 
 		  check_for_new_type ("alignof", $3); }
 
 	/* The %prec EMPTY's here are required by the = init initializer

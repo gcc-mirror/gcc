@@ -410,6 +410,11 @@ extern int warn_sequence_point;
 
 extern int warn_missing_format_attribute;
 
+/* Nonzero means warn about sizeof (function) or addition/subtraction
+   of function pointers.  */
+
+extern int warn_pointer_arith;
+
 /* Nonzero means do some things the same way PCC does.  */
 
 extern int flag_traditional;
@@ -522,6 +527,9 @@ extern void set_Wformat				PARAMS ((int));
 extern void decl_handle_format_attribute	PARAMS ((tree, tree));
 extern void decl_handle_format_arg_attribute	PARAMS ((tree, tree));
 extern void c_apply_type_quals_to_decl		PARAMS ((int, tree));
+extern tree c_sizeof				PARAMS ((tree));
+extern tree c_alignof				PARAMS ((tree));
+extern tree c_alignof_expr			PARAMS ((tree));
 /* Print an error message for invalid operands to arith operation CODE.
    NOP_EXPR is used as a special case (see truthvalue_conversion).  */
 extern void binary_op_error			PARAMS ((enum tree_code));

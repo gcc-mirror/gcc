@@ -1670,35 +1670,6 @@ c_sizeof_nowarn (type)
 		      20001021);
   return size;
 }
-
-/* Implement the __alignof keyword: Return the minimum required
-   alignment of TYPE, measured in bytes.  */
-
-tree
-c_alignof (type)
-     tree type;
-{
-  enum tree_code code = TREE_CODE (type);
-  tree t;
-
-  if (processing_template_decl)
-    return build_min (ALIGNOF_EXPR, sizetype, type);
-
-  if (code == FUNCTION_TYPE || code == METHOD_TYPE)
-    t = size_int (FUNCTION_BOUNDARY / BITS_PER_UNIT);
-  else if (code == VOID_TYPE || code == ERROR_MARK)
-    t = size_one_node;
-  else
-    { 
-      /* Similar to sizeof, __alignof applies to the referant.  */
-      if (code == REFERENCE_TYPE)
-	type = TREE_TYPE (type);
-
-      t = size_int (TYPE_ALIGN (type) / BITS_PER_UNIT);
-    }
-
-  return fold (build1 (NOP_EXPR, c_size_type_node, t));
-}
 
 /* Perform the array-to-pointer and function-to-pointer conversions
    for EXP.  

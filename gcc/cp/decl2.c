@@ -1018,42 +1018,6 @@ grokclassfn (ctype, function, flags, quals)
     }
 }
 
-/* Work on the expr used by alignof (this is only called by the parser).  */
-
-tree
-grok_alignof (expr)
-     tree expr;
-{
-  tree best, t;
-  int bestalign;
-
-  if (processing_template_decl)
-    return build_min (ALIGNOF_EXPR, sizetype, expr);
-
-  if (TREE_CODE (expr) == COMPONENT_REF
-      && DECL_C_BIT_FIELD (TREE_OPERAND (expr, 1)))
-    error ("`__alignof__' applied to a bit-field");
-
-  if (TREE_CODE (expr) == INDIRECT_REF)
-    {
-      best = t = TREE_OPERAND (expr, 0);
-      bestalign = TYPE_ALIGN (TREE_TYPE (TREE_TYPE (t)));
-
-      while (TREE_CODE (t) == NOP_EXPR
-	     && TREE_CODE (TREE_TYPE (TREE_OPERAND (t, 0))) == POINTER_TYPE)
-	{
-	  int thisalign;
-	  t = TREE_OPERAND (t, 0);
-	  thisalign = TYPE_ALIGN (TREE_TYPE (TREE_TYPE (t)));
-	  if (thisalign > bestalign)
-	    best = t, bestalign = thisalign;
-	}
-      return c_alignof (TREE_TYPE (TREE_TYPE (best)));
-    }
-  else
-    return c_alignof (TREE_TYPE (expr));
-}
-
 /* Create an ARRAY_REF, checking for the user doing things backwards
    along the way.  */
 
@@ -3858,8 +3822,9 @@ build_expr_from_tree (t)
       {
 	tree r = build_expr_from_tree (TREE_OPERAND (t, 0));
 	if (!TYPE_P (r))
-	  r = TREE_TYPE (r);
-	return TREE_CODE (t) == SIZEOF_EXPR ? c_sizeof (r) : c_alignof (r);
+	  return TREE_CODE (t) == SIZEOF_EXPR ? expr_sizeof (r) : c_alignof_expr (r);
+	else
+	  return TREE_CODE (t) == SIZEOF_EXPR ? c_sizeof (r) : c_alignof (r);
       }
 
     case MODOP_EXPR:

@@ -2165,6 +2165,9 @@ check_multiple_declarators ()
     cp_error ("multiple declarators in template declaration");
 }
 
+/* Implement the __typeof keyword: Return the type of EXPR, suitable for
+   use as a type-specifier.  */
+
 tree
 finish_typeof (expr)
      tree expr;
@@ -2183,6 +2186,31 @@ finish_typeof (expr)
     expr = resolve_offset_ref (expr);
 
   return TREE_TYPE (expr);
+}
+
+/* Compute the value of the `sizeof' operator.  */
+
+tree
+finish_sizeof (t)
+     tree t;
+{
+  if (processing_template_decl)
+    return build_min (SIZEOF_EXPR, sizetype, t);
+
+  return TYPE_P (t) ? c_sizeof (t) : expr_sizeof (t);
+}
+
+/* Implement the __alignof keyword: Return the minimum required
+   alignment of T, measured in bytes.  */
+
+tree
+finish_alignof (t)
+     tree t;
+{
+  if (processing_template_decl)
+    return build_min (ALIGNOF_EXPR, sizetype, t);
+
+  return TYPE_P (t) ? c_alignof (t) : c_alignof_expr (t);
 }
 
 /* Generate RTL for the statement T, and its substatements, and any
