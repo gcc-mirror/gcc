@@ -88,21 +88,6 @@ do									\
 	  _regs->eip = (unsigned long)_eip;				\
 	  return;							\
 	}								\
-      else if (((_modrm >> 3) & 7) == 6) /* Unsigned divide */		\
-	{								\
-	  /* We assume that unsigned divisions are in library code, so	\
-	   * we throw one level down the stack, which was hopefully	\
-	   * the place that called the library routine.  This will	\
-	   * break if the library is ever compiled with			\
-	   * -fomit-frame-pointer, but at least this way we've got a	\
-	   * good chance of finding the exception handler. */		\
-									\
-	  _eip = (unsigned char *)_ebp[1];				\
-	  _ebp = (unsigned long *)_ebp[0];				\
-									\
-	  asm volatile ("mov %0, (%%ebp); mov %1, 4(%%ebp)"		\
-			: : "r"(_ebp), "r"(_eip));			\
-	}								\
       else								\
 	{								\
 	  /* Advance the program counter so that it is after the start	\

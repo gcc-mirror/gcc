@@ -1,3 +1,8 @@
+2001-07-06  Andrew Haley  <aph@cambridge.redhat.com>
+
+	* include/i386-signal.h: Don't do anything with unsigned divide
+	overflow except throw an exception.
+
 2001-07-05  Tom Tromey  <tromey@redhat.com>
 
 	For PR java/3562:
