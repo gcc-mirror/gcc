@@ -57,6 +57,7 @@ extern void bc_init_mode_to_code_map ();
 #define BC_NOP   (0)
 #define BC_GLOBALIZE_LABEL(FP, NAME) BC_NOP
 #define BC_OUTPUT_COMMON(FP, NAME, SIZE, ROUNDED) BC_NOP
+#define BC_OUTPUT_BSS(FP, NAME, SIZE, ROUNDED)    BC_NOP
 #define BC_OUTPUT_LOCAL(FP, NAME, SIZE, ROUNDED)  BC_NOP
 #define BC_OUTPUT_ALIGN(FP, ALIGN)   BC_NOP
 #define BC_OUTPUT_LABEL(FP, NAME)    BC_NOP
