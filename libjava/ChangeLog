@@ -1,3 +1,10 @@
+2004-09-22  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* aclocal.m4: Regenerate with aclocal 1.9.2.
+	* configure: Regenerate.
+	* Makefile.in, gcj/Makefile.in: Regenerate with automake 1.9.2.
+	* include/Makefile.in, testsuite/Makefile.in: Likewise.
+
 2004-09-22  David Daney  <ddaney@avtrex.com>
 
 	PR libgcj/17623
