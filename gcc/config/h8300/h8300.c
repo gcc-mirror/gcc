@@ -3036,7 +3036,9 @@ h8300_adjust_insn_length (insn, length)
   /* We must filter these ou before calling get_attr_adjust_length.  */
   if (GET_CODE (PATTERN (insn)) == USE
       || GET_CODE (PATTERN (insn)) == CLOBBER
-      || GET_CODE (PATTERN (insn)) == SEQUENCE)
+      || GET_CODE (PATTERN (insn)) == SEQUENCE
+      || GET_CODE (PATTERN (insn)) == ADDR_VEC
+      || GET_CODE (PATTERN (insn)) == ADDR_DIFF_VEC)
     return 0;
 
   if (get_attr_adjust_length (insn) == ADJUST_LENGTH_NO)
