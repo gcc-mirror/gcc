@@ -1776,30 +1776,27 @@ write_switch (start, depth)
 	   || type == DT_elt_one_int
 	   || type == DT_elt_zero_wide)
     {
-      const char *str;
-
       printf ("  switch (");
       switch (type)
 	{
 	case DT_mode:
-	  str = "GET_MODE (x%d)";
+	  printf("GET_MODE (x%d)", depth);
 	  break;
 	case DT_veclen:
-	  str = "XVECLEN (x%d, 0)";
+	  printf("XVECLEN (x%d, 0)", depth);
 	  break;
 	case DT_elt_zero_int:
-	  str = "XINT (x%d, 0)";
+	  printf("XINT (x%d, 0)", depth);
 	  break;
 	case DT_elt_one_int:
-	  str = "XINT (x%d, 1)";
+	  printf("XINT (x%d, 1)", depth);
 	  break;
 	case DT_elt_zero_wide:
-	  str = "XWINT (x%d, 0)";
+	  printf("XWINT (x%d, 0)", depth);
 	  break;
 	default:
 	  abort ();
 	}
-      printf (str, depth);
       printf (")\n    {\n");
 
       do
@@ -2159,31 +2156,6 @@ write_subroutine (head, type)
      struct decision_head *head;
      enum routine_type type;
 {
-  static const char * const proto_pattern[] = {
-    "%sint recog%s PROTO ((rtx, rtx, int *));\n",
-    "%srtx split%s PROTO ((rtx, rtx));\n",
-    "%srtx peephole2%s PROTO ((rtx, rtx, rtx *));\n"
-  };
-
-  static const char * const decl_pattern[] = {
-"%sint\n\
-recog%s (x0, insn, pnum_clobbers)\n\
-     register rtx x0;\n\
-     rtx insn ATTRIBUTE_UNUSED;\n\
-     int *pnum_clobbers ATTRIBUTE_UNUSED;\n",
-
-"%srtx\n\
-split%s (x0, insn)\n\
-     register rtx x0;\n\
-     rtx insn ATTRIBUTE_UNUSED;\n",
-
-"%srtx\n\
-peephole2%s (x0, insn, _plast_insn)\n\
-     register rtx x0;\n\
-     rtx insn ATTRIBUTE_UNUSED;\n\
-     rtx *_plast_insn ATTRIBUTE_UNUSED;\n"
-  };
-     
   int subfunction = head->first ? head->first->subroutine_number : 0;
   const char *s_or_e;
   char extension[32];
@@ -2198,8 +2170,32 @@ peephole2%s (x0, insn, _plast_insn)\n\
   else
     strcpy (extension, "_insns");
 
-  printf (proto_pattern[type], s_or_e, extension);
-  printf (decl_pattern[type], s_or_e, extension);
+  switch (type)
+    {
+    case RECOG:
+      printf ("%sint recog%s PROTO ((rtx, rtx, int *));\n", s_or_e, extension);
+      printf ("%sint\n\
+recog%s (x0, insn, pnum_clobbers)\n\
+     register rtx x0;\n\
+     rtx insn ATTRIBUTE_UNUSED;\n\
+     int *pnum_clobbers ATTRIBUTE_UNUSED;\n", s_or_e, extension);
+      break;
+    case SPLIT:
+      printf ("%srtx split%s PROTO ((rtx, rtx));\n", s_or_e, extension);
+      printf ("%srtx\n\
+split%s (x0, insn)\n\
+     register rtx x0;\n\
+     rtx insn ATTRIBUTE_UNUSED;\n", s_or_e, extension);
+      break;
+    case PEEPHOLE2:
+      printf ("%srtx peephole2%s PROTO ((rtx, rtx, rtx *));\n", s_or_e, extension);
+      printf ("%srtx\n\
+peephole2%s (x0, insn, _plast_insn)\n\
+     register rtx x0;\n\
+     rtx insn ATTRIBUTE_UNUSED;\n\
+     rtx *_plast_insn ATTRIBUTE_UNUSED;\n", s_or_e, extension);
+      break;
+    }
 
   printf ("{\n  register rtx * const operands = &recog_data.operand[0];\n");
   for (i = 1; i <= max_depth; i++)

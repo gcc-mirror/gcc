@@ -1569,12 +1569,9 @@ collect_wait (prog)
       if (WIFSIGNALED (status))
 	{
 	  int sig = WTERMSIG (status);
-	  error ((status & 0200
-		  ? "%s terminated with signal %d [%s]"
-		  : "%s terminated with signal %d [%s], core dumped"),
-		 prog,
-		 sig,
-		 strsignal(sig));
+	  error ("%s terminated with signal %d [%s]%s",
+		 prog, sig, strsignal(sig),
+		 status & 0200 ? "" : ", core dumped");
 	  collect_exit (FATAL_EXIT_CODE);
 	}
 

@@ -1382,7 +1382,7 @@ dbxout_type (type, full, show_arg_types)
 	       If the type has a name, don't nest its definition within
 	       another type's definition; instead, output an xref
 	       and let the definition come when the name is defined.  */
-	    fprintf (asmfile, (TREE_CODE (type) == RECORD_TYPE) ? "xs" : "xu");
+	    fputs ((TREE_CODE (type) == RECORD_TYPE) ? "xs" : "xu", asmfile);
 	    CHARS (3);
 #if 0 /* This assertion is legitimately false in C++.  */
 	    /* We shouldn't be outputting a reference to a type before its

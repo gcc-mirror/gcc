@@ -3958,7 +3958,7 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 	      buf = (char *) alloca (p - q + 1);
 	      strncpy (buf, q, p - q);
 	      buf[p - q] = 0;
-	      error (buf);
+	      error ("%s", buf);
 	      return -1;
 	    }
 	    break;

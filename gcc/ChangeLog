@@ -1,3 +1,34 @@
+1999-11-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* c-common.c (check_format_info): Don't call a variadic function
+	with a non-literal format string.
+
+	* c-decl.c (grokdeclarator, start_struct, finish_struct): Likewise.
+
+	* c-typeck.c (build_component_ref, build_unary_op, lvalue_or_else,
+	pedantic_lvalue_warning, error_init, pedwarn_init, warning_init):
+	Likewise.
+
+	* cccp.c (check_macro_name, do_xifdef, vwarning_with_line):
+	Likewise.
+
+	* collect2.c (collect_wait): Likewise.
+
+	* dbxout.c (dbxout_type): Likewise.
+
+	* gcc.c (do_spec_1): Likewise.
+
+	* genemit.c (gen_insn, gen_expand): Likewise.
+
+	* genrecog.c (write_switch, write_subroutine): Likewise.
+
+	* mips-tfile.c (catch_signal, botch): Likewise.
+
+	* print-rtl.c (print_rtx): Likewise.
+
+	* toplev.c (default_print_error_function, report_error_function,
+	_fatal_insn): Likewise.
+
 1999-11-25  Mark Mitchell  <mark@codesourcery.com>
 
 	* tree.c (unsave_expr_now): Handle NULL_TREE as input.

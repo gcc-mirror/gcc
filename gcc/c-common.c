@@ -1925,10 +1925,12 @@ check_format_info (info, params)
 	      continue;
 	    }
 	  if (TREE_CODE (cur_type) != ERROR_MARK)
-	    warning ((fci->pointer_count + aflag == 1
-		      ? "format argument is not a pointer (arg %d)"
-		      : "format argument is not a pointer to a pointer (arg %d)"),
-		     arg_num);
+	    {
+	      if (fci->pointer_count + aflag == 1)
+		warning ("format argument is not a pointer (arg %d)", arg_num);
+	      else
+		warning ("format argument is not a pointer to a pointer (arg %d)", arg_num);
+	    }
 	  break;
 	}
 
