@@ -1,5 +1,5 @@
 /* Subroutines for gcc2 for pdp11.
-   Copyright (C) 1994, 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1995, 1996, 1997 Free Software Foundation, Inc.
    Contributed by Michael K. Gschwind (mike@vlsivie.tuwien.ac.at).
 
 This file is part of GNU CC.
@@ -19,10 +19,8 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#ifndef FILE
-#include <stdio.h>
-#endif
 #include "config.h"
+#include <stdio.h>
 #include "rtl.h"
 #include "regs.h"
 #include "hard-reg-set.h"
@@ -414,10 +412,8 @@ output_move_double (operands)
 	    /* now the mess begins, high word is in lower word??? 
 
 	       that's what ashc makes me think, but I don't remember :-( */
-	    latehalf[1] = gen_rtx(CONST_INT, VOIDmode, 
-				  INTVAL(operands[1])>>16);
-	    operands[1] = gen_rtx(CONST_INT, VOIDmode,
-				  INTVAL(operands[1])&0xff);
+	    latehalf[1] = GEN_INT (INTVAL(operands[1])>>16);
+	    operands[1] = GEN_INT (INTVAL(operands[1])&0xff);
 	}
       else if (GET_CODE (operands[1]) == CONST_DOUBLE)
 	{
@@ -635,20 +631,16 @@ output_move_quad (operands)
 	    abort();
 	    
 #ifndef HOST_WORDS_BIG_ENDIAN
-	  latehalf[1] = gen_rtx (CONST_INT, VOIDmode,
-				 CONST_DOUBLE_LOW (operands[1]));
-	  operands[1] = gen_rtx (CONST_INT, VOIDmode,
-				 CONST_DOUBLE_HIGH (operands[1]));
+	  latehalf[1] = GEN_INT (CONST_DOUBLE_LOW (operands[1]));
+	  operands[1] = GEN_INT (CONST_DOUBLE_HIGH (operands[1]));
 #else /* HOST_WORDS_BIG_ENDIAN */
-	  latehalf[1] = gen_rtx (CONST_INT, VOIDmode,
-				 CONST_DOUBLE_HIGH (operands[1]));
-	  operands[1] = gen_rtx (CONST_INT, VOIDmode,
-				 CONST_DOUBLE_LOW (operands[1]));
+	  latehalf[1] = GEN_INT (CONST_DOUBLE_HIGH (operands[1]));
+	  operands[1] = GEN_INT (CONST_DOUBLE_LOW (operands[1]));
 #endif /* HOST_WORDS_BIG_ENDIAN */
 	}
       else if (GET_CODE(operands[1]) == CONST_INT)
       {
-	  latehalf[1] = gen_rtx (CONST_INT, VOIDmode, 0);
+	  latehalf[1] = GEN_INT (0);
       }
       else
 	  abort();

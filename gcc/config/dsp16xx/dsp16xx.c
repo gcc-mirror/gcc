@@ -1,5 +1,5 @@
 /* Subroutines for assembler code output on the DSP1610.
-   Copyright (C) 1994, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1995, 1997 Free Software Foundation, Inc.
    Contributed by Michael Collison (collison@world.std.com).
 
 This file is part of GNU CC.
@@ -20,8 +20,8 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 /* Some output-actions in dsp1600.md need these.  */
-#include <stdio.h>
 #include "config.h"
+#include <stdio.h>
 #include "rtl.h"
 #include "regs.h"
 #include "hard-reg-set.h"
@@ -1705,7 +1705,7 @@ rtx *operands;
   REAL_VALUE_FROM_CONST_DOUBLE (d, src);
   REAL_VALUE_TO_TARGET_SINGLE (d, value);
   
-  operands[1] = gen_rtx (CONST_INT, VOIDmode, value);
+  operands[1] = GEN_INT (value);
   output_asm_insn ("%u0=%U1\n\t%w0=%H1", operands);
 #else
   fatal ("inline float constants not supported on this host");
@@ -1783,7 +1783,7 @@ enum machine_mode mode;
 	    emit_insn (gen_rtx (SET, VOIDmode, operands[0],
 				gen_rtx (shift_op, mode, 
 					 first_shift_emitted ? operands[0] : operands[1],
-					 gen_rtx (CONST_INT, VOIDmode, 16))));
+					 GEN_INT (16))));
 	  first_shift_emitted = 1;
 	}
       else if (shift_amount/8)
@@ -1794,7 +1794,7 @@ enum machine_mode mode;
 	    emit_insn (gen_rtx (SET, VOIDmode, operands[0],
 				gen_rtx (shift_op, mode, 
 					 first_shift_emitted ? operands[0] : operands[1],
-					 gen_rtx (CONST_INT, VOIDmode, 8))));
+					 GEN_INT (8))));
 	  first_shift_emitted = 1;
 	}
       else if (shift_amount/4)
@@ -1805,7 +1805,7 @@ enum machine_mode mode;
 	    emit_insn (gen_rtx (SET, VOIDmode, operands[0],
 				gen_rtx (shift_op, mode, 
 					 first_shift_emitted ? operands[0] : operands[1],
-					 gen_rtx (CONST_INT, VOIDmode, 4))));
+					 GEN_INT (4))));
 	  first_shift_emitted = 1;
 	}
       else if (shift_amount/1)
@@ -1816,7 +1816,7 @@ enum machine_mode mode;
 	    emit_insn (gen_rtx (SET, VOIDmode, operands[0],
 				gen_rtx (shift_op, mode, 
 					 first_shift_emitted ? operands[0] : operands[1],
-					 gen_rtx (CONST_INT, VOIDmode, 1))));
+					 GEN_INT (1))));
 	  first_shift_emitted = 1;
 	}
     }

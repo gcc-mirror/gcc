@@ -181,7 +181,7 @@
 	{
 	  /* Can do this by loading the negative constant and then negating. */
 	  emit_move_insn (operands[0],
-			  gen_rtx (CONST_INT, VOIDmode, - const_val));
+			  GEN_INT (- const_val));
 	  emit_insn (gen_negsi2 (operands[0], operands[0]));
 	  DONE;
 	}
@@ -196,9 +196,9 @@
 	    i = high_part, high_part = low_part, low_part = i;
 
 	  emit_move_insn (operands[0],
-			  gen_rtx (CONST_INT, VOIDmode, low_part));
+			  GEN_INT (low_part));
 	  emit_insn (gen_iorsi3 (operands[0], operands[0],
-				 gen_rtx (CONST_INT, VOIDmode, high_part)));
+				 GEN_INT (high_part)));
 	  DONE;
 	}
     }
@@ -486,7 +486,7 @@
   operands[6] = operands[2];
   operands[7] = gen_rtx (MEM, SImode,
 			 gen_rtx (PLUS, SImode, operands[2],
-				  gen_rtx (CONST_INT, VOIDmode, 4)));
+				  GEN_INT (4)));
 
   if (operands[2] == 0 || operands[4] == 0)
     FAIL;
@@ -507,7 +507,7 @@
   operands[5] = operand_subword (operands[1], 0, 0, DImode);
   operands[6] = gen_rtx (MEM, SImode,
 			 gen_rtx (PLUS, SImode, operands[2],
-				  gen_rtx (CONST_INT, VOIDmode, 4)));
+				  GEN_INT (4)));
   operands[7] = operand_subword (operands[1], 1, 0, DImode);
 
   if (operands[5] == 0 || operands[7] == 0)
@@ -816,7 +816,7 @@
   operands[5] = operand_subword (operands[0], 1, 0, DFmode);
   operands[6] = gen_rtx (MEM, SImode,
 			 gen_rtx (PLUS, SImode, gen_rtx (REG, SImode, 15),
-				  gen_rtx (CONST_INT, VOIDmode, 4)));
+				  GEN_INT (4)));
 
   if (operands[3] == 0 || operands[5] == 0)
     FAIL;
@@ -837,7 +837,7 @@
   operands[4] = operand_subword (operands[1], 0, 0, DFmode);
   operands[5] = gen_rtx (MEM, SImode,
 			 gen_rtx (PLUS, SImode, gen_rtx (REG, SImode, 15),
-				  gen_rtx (CONST_INT, VOIDmode, 4)));
+				  GEN_INT (4)));
   operands[6] = operand_subword (operands[1], 1, 0, DFmode);
 
   if (operands[4] == 0 || operands[6] == 0)
@@ -1209,9 +1209,9 @@
 	high++, low |= 0xffff0000;
 
       emit_insn (gen_addsi3 (operands[0], operands[1],
-			     gen_rtx (CONST_INT, VOIDmode, high << 16)));
+			     GEN_INT (high << 16)));
       operands[1] = operands[0];
-      operands[2] = gen_rtx (CONST_INT, VOIDmode, low);
+      operands[2] = GEN_INT (low);
     }
 }")
 
@@ -1259,8 +1259,7 @@
   if (GET_CODE (operands [2]) == CONST_INT)
     {
       emit_insn (gen_addsi3 (operands[0], operands[1], 
-			     gen_rtx (CONST_INT,
-				      VOIDmode, - INTVAL (operands[2]))));
+			     GEN_INT (- INTVAL (operands[2]))));
       DONE;
     }
   else
@@ -1516,10 +1515,9 @@
       if (top != 0 && top != 0xffff && bottom != 0 && bottom != 0xffff)
 	{
 	  emit_insn (gen_andsi3 (operands[0], operands[1],
-				 gen_rtx (CONST_INT, VOIDmode,
-					  (top << 16) | 0xffff)));
+				 GEN_INT ((top << 16) | 0xffff)));
 	  operands[1] = operands[0];
-	  operands[2] = gen_rtx (CONST_INT, VOIDmode, 0xffff0000 | bottom);
+	  operands[2] = GEN_INT (0xffff0000 | bottom);
 	}
     }
 }");
@@ -1552,9 +1550,9 @@
       if (top != 0 && bottom != 0)
 	{
 	  emit_insn (gen_iorsi3 (operands[0], operands[1],
-				 gen_rtx (CONST_INT, VOIDmode, (top << 16))));
+				 GEN_INT ((top << 16))));
 	  operands[1] = operands[0];
-	  operands[2] = gen_rtx (CONST_INT, VOIDmode, bottom);
+	  operands[2] = GEN_INT (bottom);
 	}
     }
 }");
@@ -1592,9 +1590,9 @@
       else if (top != 0 && bottom != 0)
 	{
 	  emit_insn (gen_xorsi3 (operands[0], operands[1],
-				 gen_rtx (CONST_INT, VOIDmode, (top << 16))));
+				 GEN_INT ((top << 16))));
 	  operands[1] = operands[0];
-	  operands[2] = gen_rtx (CONST_INT, VOIDmode, bottom);
+	  operands[2] = GEN_INT (bottom);
 	}
     }
 }");
@@ -1979,7 +1977,7 @@
 
       result = expand_binop (SImode, xor_optab,
 			     operand_subword_force (operands[1], 0, SFmode),
-			     gen_rtx (CONST_INT, VOIDmode, 0x80000000),
+			     GEN_INT (0x80000000),
 			     target, 0, OPTAB_WIDEN);
       if (result == 0)
 	abort ();
@@ -2013,7 +2011,7 @@
       start_sequence ();
       result = expand_binop (SImode, xor_optab,
 			     operand_subword_force (operands[1], 0, DFmode),
-			     gen_rtx (CONST_INT, VOIDmode, 0x80000000),
+			     GEN_INT (0x80000000),
 			     target, 0, OPTAB_WIDEN);
       if (result == 0)
 	abort ();

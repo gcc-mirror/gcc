@@ -2,7 +2,7 @@
    Ported by Masanobu Yuhara, Fujitsu Laboratories LTD.
    (yuhara@flab.fujitsu.co.jp)
 
-   Copyright (C) 1990, 1991 Free Software Foundation, Inc.
+   Copyright (C) 1990, 1991, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -25,8 +25,8 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 
-#include <stdio.h>
 #include "config.h"
+#include <stdio.h>
 #include "rtl.h"
 #include "regs.h"
 #include "hard-reg-set.h"
@@ -635,11 +635,9 @@ output_move_const_double (operands)
     {
       rtx xoperands[2];
       xoperands[0] = gen_rtx (REG, SImode, REGNO (operands[0]) + 1);
-      xoperands[1] = gen_rtx (CONST_INT, VOIDmode,
-			      CONST_DOUBLE_HIGH (operands[1]));
+      xoperands[1] = GEN_INT (CONST_DOUBLE_HIGH (operands[1]));
       output_asm_insn ("mov.w %1,%0", xoperands);
-      operands[1] = gen_rtx (CONST_INT, VOIDmode,
-			     CONST_DOUBLE_LOW (operands[1]));
+      operands[1] = GEN_INT (CONST_DOUBLE_LOW (operands[1]));
       return "mov.w %1,%0";
     }
   else 
@@ -760,7 +758,7 @@ add_imm_word (imm, dest, immp)
 
   if (imm < 0) 
     {
-      *immp = gen_rtx (CONST_INT, VOIDmode, -imm);
+      *immp = GEN_INT (-imm);
       return sub_imm_word (-imm, dest);
     }
     
@@ -795,7 +793,7 @@ sub_imm_word (imm, dest, immp)
 
   if (imm < 0 &&  imm != 0x80000000) 
     {
-      *immp = gen_rtx (CONST_INT, VOIDmode, -imm);
+      *immp = GEN_INT (-imm);
       return add_imm_word (-imm, dest);
     }
     

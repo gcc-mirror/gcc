@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on intel 80960.
-   Copyright (C) 1992, 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1995, 1996, 1997 Free Software Foundation, Inc.
    Contributed by Steven McGeady, Intel Corp.
    Additional Work by Glenn Colon-Bonet, Jonathan Shapiro, Andy Wilson
    Converted to GCC 2.0 by Jim Wilson and Michael Tiemann, Cygnus Support.
@@ -21,9 +21,8 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#include <stdio.h>
-
 #include "config.h"
+#include <stdio.h>
 #include "rtl.h"
 #include "regs.h"
 #include "hard-reg-set.h"
@@ -36,7 +35,6 @@ Boston, MA 02111-1307, USA.  */
 #include "flags.h"
 #include "tree.h"
 #include "insn-codes.h"
-#include "assert.h"
 #include "expr.h"
 #include "except.h"
 #include "function.h"
@@ -825,7 +823,7 @@ i960_output_ldconst (dst, src)
 
       output_asm_insn ("# ldconst	%1,%0",operands);
       operands[0] = gen_rtx (REG, SImode, REGNO (dst));
-      operands[1] = gen_rtx (CONST_INT, VOIDmode, value);
+      operands[1] = GEN_INT (value);
       output_asm_insn (i960_output_ldconst (operands[0], operands[1]),
 		      operands);
       return "";
@@ -896,7 +894,7 @@ i960_output_ldconst (dst, src)
 	{
 	  if (i960_last_insn_type == I_TYPE_REG && TARGET_C_SERIES)
 	    return "lda	%1,%0";
-	  operands[1] = gen_rtx (CONST_INT, VOIDmode, rsrc1 - 31);
+	  operands[1] = GEN_INT (rsrc1 - 31);
 	  output_asm_insn ("addo\t31,%1,%0\t# ldconst %3,%0", operands);
 	  return "";
 	}
@@ -907,7 +905,7 @@ i960_output_ldconst (dst, src)
       if (rsrc1 >= -31)
 	{
 	  /* return 'sub -(%1),0,%0' */
-	  operands[1] = gen_rtx (CONST_INT, VOIDmode, - rsrc1);
+	  operands[1] = GEN_INT (- rsrc1);
 	  output_asm_insn ("subo\t%1,0,%0\t# ldconst %3,%0", operands);
 	  return "";
 	}
@@ -915,7 +913,7 @@ i960_output_ldconst (dst, src)
       /* ldconst	-32		->	not	31,X  */
       if (rsrc1 == -32)
 	{
-	  operands[1] = gen_rtx (CONST_INT, VOIDmode, ~rsrc1);
+	  operands[1] = GEN_INT (~rsrc1);
 	  output_asm_insn ("not\t%1,%0	# ldconst %3,%0", operands);
 	  return "";
 	}
@@ -924,7 +922,7 @@ i960_output_ldconst (dst, src)
   /* If const is a single bit.  */
   if (bitpos (rsrc1) >= 0)
     {
-      operands[1] = gen_rtx (CONST_INT, VOIDmode, bitpos (rsrc1));
+      operands[1] = GEN_INT (bitpos (rsrc1));
       output_asm_insn ("setbit\t%1,0,%0\t# ldconst %3,%0", operands);
       return "";
     }
@@ -937,8 +935,8 @@ i960_output_ldconst (dst, src)
       if (bitstr (rsrc1, &s, &e) < 6)
 	{
 	  rsrc2 = ((unsigned int) rsrc1) >> s;
-	  operands[1] = gen_rtx (CONST_INT, VOIDmode, rsrc2);
-	  operands[2] = gen_rtx (CONST_INT, VOIDmode, s);
+	  operands[1] = GEN_INT (rsrc2);
+	  operands[2] = GEN_INT (s);
 	  output_asm_insn ("shlo\t%2,%1,%0\t# ldconst %3,%0", operands);
 	  return "";
 	}
@@ -2242,7 +2240,8 @@ i960_arg_size_and_align (mode, type, size_out, align_out)
   else if (mode == VOIDmode)
     {
       /* End of parm list.  */
-      assert (type != 0 && TYPE_MODE (type) == VOIDmode);
+      if (type == 0 || TYPE_MODE (type) != VOIDmode)
+	abort ();
       size = 1;
     }
   else

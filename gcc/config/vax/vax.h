@@ -348,7 +348,7 @@ enum reg_class { NO_REGS, ALL_REGS, LIM_REG_CLASSES };
    return an rtx for the address of the word in the frame
    that holds the dynamic chain--the previous frame's address.  */
 #define DYNAMIC_CHAIN_ADDRESS(frame) \
-gen_rtx (PLUS, Pmode, frame, gen_rtx (CONST_INT, VOIDmode, 12))
+gen_rtx (PLUS, Pmode, frame, GEN_INT (12))
 
 /* If we generate an insn to push BYTES bytes,
    this says how many the stack pointer really advances by.
@@ -533,10 +533,10 @@ gen_rtx (PLUS, Pmode, frame, gen_rtx (CONST_INT, VOIDmode, 12))
 #define TRAMPOLINE_TEMPLATE(FILE)					\
 {									\
   ASM_OUTPUT_SHORT (FILE, const0_rtx);					\
-  ASM_OUTPUT_SHORT (FILE, gen_rtx (CONST_INT, VOIDmode, 0x8fd0));	\
+  ASM_OUTPUT_SHORT (FILE, GEN_INT (0x8fd0));	\
   ASM_OUTPUT_INT (FILE, const0_rtx);					\
   ASM_OUTPUT_BYTE  (FILE, 0x50+STATIC_CHAIN_REGNUM);			\
-  ASM_OUTPUT_SHORT (FILE, gen_rtx (CONST_INT, VOIDmode, 0x9f17));	\
+  ASM_OUTPUT_SHORT (FILE, GEN_INT (0x9f17));	\
   ASM_OUTPUT_INT (FILE, const0_rtx);					\
 }
 

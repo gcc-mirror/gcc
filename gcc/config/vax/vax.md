@@ -874,7 +874,7 @@
   "*
 {
   if (CONST_DOUBLE_HIGH (operands[3]))
-    operands[3] = gen_rtx (CONST_INT, VOIDmode, CONST_DOUBLE_LOW (operands[3]));
+    operands[3] = GEN_INT (CONST_DOUBLE_LOW (operands[3]));
   return \"emul %1,%2,%3,%0\";
 }")
 
@@ -956,7 +956,7 @@
     }
 
   if (GET_CODE (op1) == CONST_INT)
-    operands[1] = gen_rtx (CONST_INT, VOIDmode, ~INTVAL (op1));
+    operands[1] = GEN_INT (~INTVAL (op1));
   else
     operands[1] = expand_unop (SImode, one_cmpl_optab, op1, 0, 1);
 }")
@@ -978,7 +978,7 @@
     }
 
   if (GET_CODE (op1) == CONST_INT)
-    operands[1] = gen_rtx (CONST_INT, VOIDmode, 65535 & ~INTVAL (op1));
+    operands[1] = GEN_INT (65535 & ~INTVAL (op1));
   else
     operands[1] = expand_unop (HImode, one_cmpl_optab, op1, 0, 1);
 }")
@@ -1000,7 +1000,7 @@
    }
 
   if (GET_CODE (op1) == CONST_INT)
-    operands[1] = gen_rtx (CONST_INT, VOIDmode, 255 & ~INTVAL (op1));
+    operands[1] = GEN_INT (255 & ~INTVAL (op1));
   else
     operands[1] = expand_unop (QImode, one_cmpl_optab, op1, 0, 1);
 }")
@@ -1847,7 +1847,7 @@
   if (GET_CODE (operands[1]) != CONST_INT || INTVAL (operands[1]) > 255 * 4)
     /* Vax `calls' really uses only one byte of #args, so pop explicitly.  */
     return \"calls $0,%0\;addl2 %1,sp\";
-  operands[1] = gen_rtx (CONST_INT, VOIDmode, (INTVAL (operands[1]) + 3)/ 4);
+  operands[1] = GEN_INT ((INTVAL (operands[1]) + 3)/ 4);
   return \"calls %1,%0\";
 ")
 
@@ -1862,7 +1862,7 @@
   if (GET_CODE (operands[2]) != CONST_INT || INTVAL (operands[2]) > 255 * 4)
     /* Vax `calls' really uses only one byte of #args, so pop explicitly.  */
     return \"calls $0,%1\;addl2 %2,sp\";
-  operands[2] = gen_rtx (CONST_INT, VOIDmode, (INTVAL (operands[2]) + 3)/ 4);
+  operands[2] = GEN_INT ((INTVAL (operands[2]) + 3)/ 4);
   return \"calls %2,%1\";
 ")
 
@@ -1877,7 +1877,7 @@
   if (GET_CODE (operands[1]) != CONST_INT || INTVAL (operands[1]) > 255 * 4)
     /* Vax `calls' really uses only one byte of #args, so pop explicitly.  */
     return \"calls $0,%0\;addl2 %1,sp\";
-  operands[1] = gen_rtx (CONST_INT, VOIDmode, (INTVAL (operands[1]) + 3)/ 4);
+  operands[1] = GEN_INT ((INTVAL (operands[1]) + 3)/ 4);
   return \"calls %1,%0\";
 ")
 
@@ -1891,7 +1891,7 @@
   if (GET_CODE (operands[2]) != CONST_INT || INTVAL (operands[2]) > 255 * 4)
     /* Vax `calls' really uses only one byte of #args, so pop explicitly.  */
     return \"calls $0,%1\;addl2 %2,sp\";
-  operands[2] = gen_rtx (CONST_INT, VOIDmode, (INTVAL (operands[2]) + 3)/ 4);
+  operands[2] = GEN_INT ((INTVAL (operands[2]) + 3)/ 4);
   return \"calls %2,%1\";
 ")
 
@@ -2110,7 +2110,7 @@
   unsigned long mask2 = (1 << (32 - INTVAL (operands[2]))) - 1;
 
   if ((mask1 & mask2) != mask1)
-    operands[3] = gen_rtx (CONST_INT, VOIDmode, mask1 & mask2);
+    operands[3] = GEN_INT (mask1 & mask2);
 
   return \"rotl %R2,%1,%0\;bicl2 %N3,%0\";
 }")
@@ -2128,7 +2128,6 @@
   ""
   "*
 {
-  operands[3] = gen_rtx (CONST_INT, VOIDmode,
-			 INTVAL (operands[3]) & ~((1 << INTVAL (operands[2])) - 1));
+  operands[3] = GEN_INT (INTVAL (operands[3]) & ~((1 << INTVAL (operands[2])) - 1));
   return \"rotl %2,%1,%0\;bicl2 %N3,%0\";
 }")

@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for Intel 860
-   Copyright (C) 1989, 1991 Free Software Foundation, Inc.
+   Copyright (C) 1989, 1991, 1997 Free Software Foundation, Inc.
    Derived from sparc.c.
 
    Written by Richard Stallman (rms@ai.mit.edu).
@@ -26,6 +26,7 @@ Boston, MA 02111-1307, USA.  */
 
 
 #include "config.h"
+#include <stdio.h>
 #include "flags.h"
 #include "rtl.h"
 #include "regs.h"
@@ -37,8 +38,6 @@ Boston, MA 02111-1307, USA.  */
 #include "output.h"
 #include "recog.h"
 #include "insn-attr.h"
-
-#include <stdio.h>
 
 static rtx find_addr_reg ();
 
@@ -1115,7 +1114,7 @@ output_size_for_block_move (size, reg, align)
   else
     {
       xoperands[1]
-	= gen_rtx (CONST_INT, VOIDmode, INTVAL (size) - INTVAL (align));
+	= GEN_INT (INTVAL (size) - INTVAL (align));
       cc_status.flags &= ~ CC_KNOW_HI_R31;
       output_asm_insn ("mov %1,%0", xoperands);
     }
@@ -1154,7 +1153,7 @@ output_block_move (operands)
   if (align > 4)
     {
       align = 4;
-      alignrtx = gen_rtx (CONST_INT, VOIDmode, 4);
+      alignrtx = GEN_INT (4);
     }
 
   /* Recognize special cases of block moves.  These occur
@@ -1239,7 +1238,7 @@ output_block_move (operands)
 
   /* Generate number for unique label.  */
 
-  xoperands[3] = gen_rtx (CONST_INT, VOIDmode, movstrsi_label++);
+  xoperands[3] = GEN_INT (movstrsi_label++);
 
   /* Calculate the size of the chunks we will be trying to move first.  */
 
@@ -1254,7 +1253,7 @@ output_block_move (operands)
 
   /* Copy the increment (negative) to a register for bla insn.  */
 
-  xoperands[4] = gen_rtx (CONST_INT, VOIDmode, - chunk_size);
+  xoperands[4] = GEN_INT (- chunk_size);
   xoperands[5] = operands[5];
   output_asm_insn ("adds %4,%?r0,%5", xoperands);
 

@@ -321,11 +321,11 @@ int switch_table_difference_label_flag;
 #undef TRAMPOLINE_TEMPLATE
 #define TRAMPOLINE_TEMPLATE(FILE)					\
 {									\
-  ASM_OUTPUT_SHORT (FILE, gen_rtx (CONST_INT, VOIDmode, 0x227a));	\
-  ASM_OUTPUT_SHORT (FILE, gen_rtx (CONST_INT, VOIDmode, 8));		\
-  ASM_OUTPUT_SHORT (FILE, gen_rtx (CONST_INT, VOIDmode, 0x2f3a));	\
-  ASM_OUTPUT_SHORT (FILE, gen_rtx (CONST_INT, VOIDmode, 8));		\
-  ASM_OUTPUT_SHORT (FILE, gen_rtx (CONST_INT, VOIDmode, 0x4e75));	\
+  ASM_OUTPUT_SHORT (FILE, GEN_INT (0x227a));				\
+  ASM_OUTPUT_SHORT (FILE, GEN_INT (8));					\
+  ASM_OUTPUT_SHORT (FILE, GEN_INT (0x2f3a));				\
+  ASM_OUTPUT_SHORT (FILE, GEN_INT (8));					\
+  ASM_OUTPUT_SHORT (FILE, GEN_INT (0x4e75));				\
   ASM_OUTPUT_INT (FILE, const0_rtx);					\
   ASM_OUTPUT_INT (FILE, const0_rtx);					\
 }

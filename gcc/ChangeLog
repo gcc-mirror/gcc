@@ -1,3 +1,15 @@
+Wed Apr  1 06:09:53 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* 1750a.md, arm.c, clipper.c, clipper.md: Use GEN_INT consistently.
+	* convex.h, dsp16xx.c, fx80.md, gmicro.c, gmicro.md: Likewise.
+	* i370.h, i370.md, i860.c, i860.h, i860.md, i960.c: Likewise.
+	* i960.h, i960.md, m32r.md, m68k.md, m68kv4.h, m88k.c: Likewise.
+	* m88k.md, ns32k.c, ns32k.md, pdp11.c, pdp11.h, pdp11.md: Likewise.
+	* pyr.c, pyr.h, pyr.md, romp.c, romp.h, romp.md: Likewise.
+	* rs6000.md, sparc.c, sparc.h, sparc.md, spur.c, spur.md: Likewise.
+	* tahoe.md, vax.h, vax.md, we32k.c, we32k.h, we32k.md: Likewise.
+	* md.texi: Likewise.
+
 Wed Apr  1 08:33:44 1998  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* fixincludes (limits.h): Fix nested comments in Motorola's

@@ -3222,8 +3222,7 @@ on this machine.  So it must be copied into a register with
                 (match_dup 2)))]
   ""
   "operands[2]
-     = force_reg (SImode, gen_rtx (CONST_INT,
-                                   VOIDmode, 65535)); ")
+     = force_reg (SImode, GEN_INT (65535)); ")
 @end smallexample
 
 @strong{Note:} If the @code{define_expand} is used to serve a
@@ -3354,8 +3353,8 @@ Here is an example of this use of @code{define_split}, taken from
   if (low & 0x8000)
     high++, low |= 0xffff0000;
 
-  operands[3] = gen_rtx (CONST_INT, VOIDmode, high << 16);
-  operands[4] = gen_rtx (CONST_INT, VOIDmode, low);
+  operands[3] = GEN_INT (high << 16);
+  operands[4] = GEN_INT (low);
 @}")
 @end smallexample
 
@@ -3388,8 +3387,8 @@ an equality comparison of a register and a large constant:
   int sextc = (c << 16) >> 16;
   int xorv = c ^ sextc;
 
-  operands[4] = gen_rtx (CONST_INT, VOIDmode, xorv);
-  operands[5] = gen_rtx (CONST_INT, VOIDmode, sextc);
+  operands[4] = GEN_INT (xorv);
+  operands[5] = GEN_INT (sextc);
 @}")
 @end smallexample
 

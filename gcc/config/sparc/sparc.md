@@ -5507,9 +5507,9 @@
 
 #if 0
   if (operands[3])
-    nregs_rtx = gen_rtx (CONST_INT, VOIDmode, REGNO (operands[3]) - 8);
+    nregs_rtx = GEN_INT (REGNO (operands[3]) - 8);
   else
-    nregs_rtx = gen_rtx (CONST_INT, VOIDmode, 6);
+    nregs_rtx = GEN_INT (6);
 #else
   nregs_rtx = const0_rtx;
 #endif

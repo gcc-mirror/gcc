@@ -720,8 +720,7 @@
   "*
 {
   if (GET_CODE (operands[1]) == CONST_DOUBLE)
-    operands[1] = gen_rtx (CONST_INT, VOIDmode,
-				      CONST_DOUBLE_LOW (operands[1]));
+    operands[1] = GEN_INT (CONST_DOUBLE_LOW (operands[1]));
   return \"movl %1,%0\";
 }")
 
@@ -1097,7 +1096,7 @@
       int dealloc_size = current_function_pretend_args_size;
       if (current_function_pops_args)
         dealloc_size += current_function_args_size;
-      operands[0] = gen_rtx (CONST_INT, VOIDmode, dealloc_size);
+      operands[0] = GEN_INT (dealloc_size);
       return \"retd %0\";
     }
   else
@@ -1263,10 +1262,8 @@
     xoperands[1] = gen_rtx (REG, SImode, REGNO (operands[2]) + 1);
   else
     {
-      xoperands[1] = gen_rtx (CONST_INT, VOIDmode,
-			      CONST_DOUBLE_LOW (operands[2]));
-      operands[2] = gen_rtx (CONST_INT, VOIDmode,
-			     CONST_DOUBLE_HIGH (operands[2]));
+      xoperands[1] = GEN_INT (CONST_DOUBLE_LOW (operands[2]));
+      operands[2] = GEN_INT (CONST_DOUBLE_HIGH (operands[2]));
     }
   output_asm_insn (\"addw %1,%0\", xoperands);
   return \"addwc %2,%0\";
@@ -1286,10 +1283,8 @@
     xoperands[1] = gen_rtx (REG, SImode, REGNO (operands[2]) + 1);
   else
     {
-      xoperands[1] = gen_rtx (CONST_INT, VOIDmode,
-			      CONST_DOUBLE_LOW (operands[2]));
-      operands[2] = gen_rtx (CONST_INT, VOIDmode,
-			     CONST_DOUBLE_HIGH (operands[2]));
+      xoperands[1] = GEN_INT (CONST_DOUBLE_LOW (operands[2]));
+      operands[2] = GEN_INT (CONST_DOUBLE_HIGH (operands[2]));
     }
   output_asm_insn (\"subw %1,%0\", xoperands);
   return \"subwb %2,%0\";
@@ -1309,10 +1304,8 @@
     xoperands[1] = gen_rtx (REG, SImode, REGNO (operands[2]) + 1);
   else
     {
-      xoperands[1] = gen_rtx (CONST_INT, VOIDmode,
-			      CONST_DOUBLE_LOW (operands[2]));
-      operands[2] = gen_rtx (CONST_INT, VOIDmode,
-			     CONST_DOUBLE_HIGH (operands[2]));
+      xoperands[1] = GEN_INT (CONST_DOUBLE_LOW (operands[2]));
+      operands[2] = GEN_INT (CONST_DOUBLE_HIGH (operands[2]));
     }
   output_asm_insn (\"orw %1,%0\", xoperands);
   return \"orw %2,%0\";
@@ -1332,10 +1325,8 @@
     xoperands[1] = gen_rtx (REG, SImode, REGNO (operands[2]) + 1);
   else
     {
-      xoperands[1] = gen_rtx (CONST_INT, VOIDmode,
-			      CONST_DOUBLE_LOW (operands[2]));
-      operands[2] = gen_rtx (CONST_INT, VOIDmode,
-			     CONST_DOUBLE_HIGH (operands[2]));
+      xoperands[1] = GEN_INT (CONST_DOUBLE_LOW (operands[2]));
+      operands[2] = GEN_INT (CONST_DOUBLE_HIGH (operands[2]));
     }
   output_asm_insn (\"andw %1,%0\", xoperands);
   return \"andw %2,%0\";
@@ -1355,10 +1346,8 @@
     xoperands[1] = gen_rtx (REG, SImode, REGNO (operands[2]) + 1);
   else
     {
-      xoperands[1] = gen_rtx (CONST_INT, VOIDmode,
-			      CONST_DOUBLE_LOW (operands[2]));
-      operands[2] = gen_rtx (CONST_INT, VOIDmode,
-			     CONST_DOUBLE_HIGH (operands[2]));
+      xoperands[1] = GEN_INT (CONST_DOUBLE_LOW (operands[2]));
+      operands[2] = GEN_INT (CONST_DOUBLE_HIGH (operands[2]));
     }
   output_asm_insn (\"xorw %1,%0\", xoperands);
   return \"xorw %2,%0\";

@@ -1095,13 +1095,13 @@ extern int sparc_mode_class[];
    ? 0							\
    : gen_rtx (MEM, Pmode,				\
 	      gen_rtx (PLUS, Pmode, stack_pointer_rtx,	\
-		       gen_rtx (CONST_INT, VOIDmode, STRUCT_VALUE_OFFSET))))
+		       GEN_INT (STRUCT_VALUE_OFFSET))))
 #define STRUCT_VALUE_INCOMING \
   (TARGET_ARCH64					\
    ? 0							\
    : gen_rtx (MEM, Pmode,				\
 	      gen_rtx (PLUS, Pmode, frame_pointer_rtx,	\
-		       gen_rtx (CONST_INT, VOIDmode, STRUCT_VALUE_OFFSET))))
+		       GEN_INT (STRUCT_VALUE_OFFSET))))
 
 /* Define the classes of registers for register constraints in the
    machine description.  Also define ranges of constants.
@@ -2120,11 +2120,11 @@ do {									\
     }									\
   else									\
     {									\
-      ASM_OUTPUT_INT (FILE, gen_rtx (CONST_INT, VOIDmode, 0x00000000));	\
-      ASM_OUTPUT_INT (FILE, gen_rtx (CONST_INT, VOIDmode, 0x00000000));	\
-      ASM_OUTPUT_INT (FILE, gen_rtx (CONST_INT, VOIDmode, 0x00000000));	\
-      ASM_OUTPUT_INT (FILE, gen_rtx (CONST_INT, VOIDmode, 0x81C04000));	\
-      ASM_OUTPUT_INT (FILE, gen_rtx (CONST_INT, VOIDmode, 0x00000000));	\
+      ASM_OUTPUT_INT (FILE, GEN_INT (0x00000000));	\
+      ASM_OUTPUT_INT (FILE, GEN_INT (0x00000000));	\
+      ASM_OUTPUT_INT (FILE, GEN_INT (0x00000000));	\
+      ASM_OUTPUT_INT (FILE, GEN_INT (0x81C04000));	\
+      ASM_OUTPUT_INT (FILE, GEN_INT (0x00000000));	\
     }									\
 } while (0)
 
@@ -2176,7 +2176,7 @@ extern struct rtx_def *sparc_builtin_saveregs ();
    that holds the dynamic chain--the previous frame's address.
    ??? -mflat support? */
 #define DYNAMIC_CHAIN_ADDRESS(frame) \
-  gen_rtx (PLUS, Pmode, frame, gen_rtx (CONST_INT, VOIDmode, 14 * UNITS_PER_WORD))
+  gen_rtx (PLUS, Pmode, frame, GEN_INT (14 * UNITS_PER_WORD))
 
 /* The return address isn't on the stack, it is in a register, so we can't
    access it from the current frame pointer.  We can access it from the

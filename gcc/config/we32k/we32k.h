@@ -480,11 +480,11 @@ enum reg_class { NO_REGS, GENERAL_REGS,
 
 #define TRAMPOLINE_TEMPLATE(FILE)					\
 {									\
-  ASM_OUTPUT_SHORT (FILE, gen_rtx (CONST_INT, VOIDmode, 0x844f));	\
+  ASM_OUTPUT_SHORT (FILE, GEN_INT (0x844f));				\
   ASM_OUTPUT_SHORT (FILE, const0_rtx);					\
   ASM_OUTPUT_SHORT (FILE, const0_rtx);					\
-  ASM_OUTPUT_CHAR (FILE, gen_rtx (CONST_INT, VOIDmode, 0x48));		\
-  ASM_OUTPUT_SHORT (FILE, gen_rtx (CONST_INT, VOIDmode, 0x247f));	\
+  ASM_OUTPUT_CHAR (FILE, GEN_INT (0x48));				\
+  ASM_OUTPUT_SHORT (FILE, GEN_INT (0x247f));				\
   ASM_OUTPUT_SHORT (FILE, const0_rtx);					\
   ASM_OUTPUT_SHORT (FILE, const0_rtx);					\
 }

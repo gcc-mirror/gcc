@@ -1,6 +1,6 @@
 /* Subroutines for insn-output.c for AT&T we32000 Family.
    Contributed by John Wehle (john@feith1.uucp)
-   Copyright (C) 1991-1992 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1992, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -20,8 +20,8 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 
-#include <stdio.h>
 #include "config.h"
+#include <stdio.h>
 #include "rtl.h"
 #include "real.h"
 
@@ -85,10 +85,8 @@ output_move_double (operands)
     }
   else if (GET_CODE (operands[1]) == CONST_DOUBLE)
     {
-      lsw_operands[1] = gen_rtx (CONST_INT, SImode,
-				 CONST_DOUBLE_HIGH (operands[1]));
-      operands[1] = gen_rtx (CONST_INT, SImode,
-			     CONST_DOUBLE_LOW (operands[1]));
+      lsw_operands[1] = GEN_INT (CONST_DOUBLE_HIGH (operands[1]));
+      operands[1] = GEN_INT (CONST_DOUBLE_LOW (operands[1]));
     }
   else if (GET_CODE (operands[1]) == CONST_INT)
     {
@@ -122,10 +120,8 @@ output_push_double (operands)
     lsw_operands[0] = adj_offsettable_operand (operands[0], 4);
   else if (GET_CODE (operands[0]) == CONST_DOUBLE)
     {
-      lsw_operands[0] = gen_rtx (CONST_INT, SImode,
-				 CONST_DOUBLE_HIGH (operands[0]));
-      operands[0] = gen_rtx (CONST_INT, SImode,
-			     CONST_DOUBLE_LOW (operands[0]));
+      lsw_operands[0] = GEN_INT (CONST_DOUBLE_HIGH (operands[0]));
+      operands[0] = GEN_INT (CONST_DOUBLE_LOW (operands[0]));
     }
   else if (GET_CODE (operands[0]) == CONST_INT)
     { 
