@@ -12690,6 +12690,18 @@ cp_parser_base_specifier (cp_parser* parser)
 	  break;
 	}
     }
+  /* It is not uncommon to see programs mechanically, errouneously, use
+     the 'typename' keyword to denote (dependent) qualified types
+     as base classes.  */
+  if (cp_lexer_next_token_is_keyword (parser->lexer, RID_TYPENAME))
+    {
+      if (!processing_template_decl)
+	error ("keyword `typename' not allowed outside of templates");
+      else
+	error ("keyword `typename' not allowed in this context "
+	       "(the base class is implicitly a type)");
+      cp_lexer_consume_token (parser->lexer);
+    }
 
   /* Look for the optional `::' operator.  */
   cp_parser_global_scope_opt (parser, /*current_scope_valid_p=*/false);
