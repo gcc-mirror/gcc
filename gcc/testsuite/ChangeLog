@@ -1,3 +1,8 @@
+2000-12-29  Richard Henderson  <rth@redhat.com>
+
+	* gcc.dg/20001117-1.c (__cyg_profile_func_enter): Define.
+	(__cyg_profile_func_exit): Define.
+
 2000-12-29  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* g++.dg/vtgc1.C: New test.
