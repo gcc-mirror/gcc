@@ -1,3 +1,7 @@
+2004-03-10  Ben Elliston  <bje@gnu.org>
+
+	* MAINTAINERS: Update my email address.
+
 2004-03-05  David Edelsohn  <edelsohn@gnu.org>
 
 	* ltconfig: Disable building static libraries if building shared
