@@ -4440,10 +4440,13 @@ builtin_define_std (macro)
 
   /* prepend __ (or maybe just _) if in user's namespace.  */
   memcpy (p, macro, len + 1);
-  if (*p != '_')
-    *--p = '_';
-  if (p[1] != '_' && !ISUPPER (p[1]))
-    *--p = '_';
+  if (!( *p == '_' && (p[1] == '_' || ISUPPER (p[1]))))
+    {
+      if (*p != '_')
+	*--p = '_';
+      if (p[1] != '_')
+	*--p = '_';
+    }
   cpp_define (parse_in, p);
 
   /* If it was in user's namespace...  */
