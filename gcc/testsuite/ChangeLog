@@ -1,3 +1,8 @@
+2003-07-28    <hp@bitrange.com>
+
+	* gcc.dg/Wdeclaration-after-statement-1.c,
+	gcc.dg/Wdeclaration-after-statement-2.c: New tests.
+
 2003-07-28  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.c-torture/compile/20030725-1.c: New test.
