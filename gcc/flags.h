@@ -42,7 +42,7 @@ enum debug_info_level
 {
   DINFO_LEVEL_NONE,	/* Write no debugging info.  */
   DINFO_LEVEL_TERSE,	/* Write minimal info to support tracebacks only.  */
-  DINFO_LEVEL_NORMAL,	/* Write info for all declarations (and line table). */
+  DINFO_LEVEL_NORMAL,	/* Write info for all declarations (and line table).  */
   DINFO_LEVEL_VERBOSE	/* Write normal info plus #define/#undef info.  */
 };
 
@@ -89,7 +89,7 @@ extern int extra_warnings;
 
 /* Nonzero to warn about unused variables, functions et.al.  Use
    set_Wunused() to update the -Wunused-* flags that correspond to the
-   -Wunused option. */
+   -Wunused option.  */
 
 extern void set_Wunused PARAMS ((int setting));
 
@@ -119,7 +119,7 @@ extern int warn_uninitialized;
 
 extern int warn_unknown_pragmas;
 
-/* Nonzero means warn about all declarations which shadow others.   */
+/* Nonzero means warn about all declarations which shadow others.  */
 
 extern int warn_shadow;
 
@@ -132,7 +132,7 @@ extern int warn_switch;
 
 extern int warn_return_type;
 
-/* Warn about functions which might be candidates for attribute noreturn. */
+/* Warn about functions which might be candidates for attribute noreturn.  */
 
 extern int warn_missing_noreturn;
 
@@ -174,15 +174,15 @@ extern int profile_flag;
 
 extern int profile_block_flag;
 
-/* Nonzero if generating code to profile program flow graph arcs. */
+/* Nonzero if generating code to profile program flow graph arcs.  */
 
 extern int profile_arc_flag;
 
-/* Nonzero if generating info for gcov to calculate line test coverage. */
+/* Nonzero if generating info for gcov to calculate line test coverage.  */
 
 extern int flag_test_coverage;
 
-/* Nonzero indicates that branch taken probabilities should be calculated. */
+/* Nonzero indicates that branch taken probabilities should be calculated.  */
 
 extern int flag_branch_probabilities;
 
@@ -266,12 +266,12 @@ extern int flag_unroll_loops;
 extern int flag_unroll_all_loops;
 
 /* Nonzero forces all invariant computations in loops to be moved
-   outside the loop. */
+   outside the loop.  */
 
 extern int flag_move_all_movables;
 
 /* Nonzero forces all general induction variables in loops to be
-   strength reduced. */
+   strength reduced.  */
 
 extern int flag_reduce_all_givs;
 
@@ -408,16 +408,16 @@ extern int flag_schedule_speculative_load;
 extern int flag_schedule_speculative_load_dangerous;
 
 /* flag_branch_on_count_reg means try to replace add-1,compare,branch tupple
-   by a cheaper branch, on a count register. */
+   by a cheaper branch, on a count register.  */
 extern int flag_branch_on_count_reg;
 
 /* This option is set to 1 on -fsingle-precision-constant option which is
    used to convert the floating point constants to single precision 
-   constants. */
+   constants.  */
 
 extern int flag_single_precision_constant;
 
-/* Nonzero means put things in delayed-branch slots if supported. */
+/* Nonzero means put things in delayed-branch slots if supported.  */
 
 extern int flag_delayed_branch;
 
@@ -523,7 +523,7 @@ extern int flag_regmove;
 /* Instrument functions with calls at entry and exit, for profiling.  */
 extern int flag_instrument_function_entry_exit;
 
-/* Perform a peephole pass before sched2. */
+/* Perform a peephole pass before sched2.  */
 extern int flag_peephole2;
 
 /* Try to guess branch probablities.  */

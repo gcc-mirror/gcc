@@ -83,19 +83,19 @@ do {									\
 } while (0)
 
 /* Loop over all registers in REGSET, starting with MIN, setting REGNUM to the
-   register number and executing CODE for all registers that are set. */
+   register number and executing CODE for all registers that are set.  */
 #define EXECUTE_IF_SET_IN_REG_SET(REGSET, MIN, REGNUM, CODE)		\
   EXECUTE_IF_SET_IN_BITMAP (REGSET, MIN, REGNUM, CODE)
 
 /* Loop over all registers in REGSET1 and REGSET2, starting with MIN, setting
    REGNUM to the register number and executing CODE for all registers that are
-   set in the first regset and not set in the second. */
+   set in the first regset and not set in the second.  */
 #define EXECUTE_IF_AND_COMPL_IN_REG_SET(REGSET1, REGSET2, MIN, REGNUM, CODE) \
   EXECUTE_IF_AND_COMPL_IN_BITMAP (REGSET1, REGSET2, MIN, REGNUM, CODE)
 
 /* Loop over all registers in REGSET1 and REGSET2, starting with MIN, setting
    REGNUM to the register number and executing CODE for all registers that are
-   set in both regsets. */
+   set in both regsets.  */
 #define EXECUTE_IF_AND_IN_REG_SET(REGSET1, REGSET2, MIN, REGNUM, CODE) \
   EXECUTE_IF_AND_IN_BITMAP (REGSET1, REGSET2, MIN, REGNUM, CODE)
 
@@ -275,7 +275,7 @@ extern struct obstack flow_obstack;
 #define ENTRY_BLOCK (-1)
 #define EXIT_BLOCK (-2)
 
-/* Special block number not valid for any block. */
+/* Special block number not valid for any block.  */
 #define INVALID_BLOCK (-3)
 
 /* Similarly, block pointers for the edge list.  */
@@ -654,7 +654,7 @@ extern void free_aux_for_edges		PARAMS ((void));
 
 /* This function is always defined so it can be called from the
    debugger, and it is declared extern so we don't get warnings about
-   it being unused. */
+   it being unused.  */
 extern void verify_flow_info		PARAMS ((void));
 extern int flow_loop_outside_edge_p	PARAMS ((const struct loop *, edge));
 

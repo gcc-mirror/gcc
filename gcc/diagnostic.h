@@ -61,7 +61,7 @@ typedef int (*printer_fn) PARAMS ((output_buffer *));
 /* This data structure encapsulates an output_buffer's state.  */
 typedef struct
 {
-  /* The prefix for each new line.   */
+  /* The prefix for each new line.  */
   const char *prefix;
 
   /* The real upper bound of number of characters per line, taking into
@@ -191,7 +191,7 @@ struct diagnostic_context
   */
   void (*begin_diagnostic) PARAMS ((output_buffer *, diagnostic_context *));
 
-  /* This function is called after the diagnostic message is printed.   */
+  /* This function is called after the diagnostic message is printed.  */
   void (*end_diagnostic) PARAMS ((output_buffer *, diagnostic_context *));
 
   /* Hook for front-end extensions.  */

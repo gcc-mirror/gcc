@@ -211,7 +211,7 @@ struct cpp_options
   /* Characters between tab stops.  */
   unsigned int tabstop;
 
-  /* Pending options - -D, -U, -A, -I, -ixxx. */
+  /* Pending options - -D, -U, -A, -I, -ixxx.  */
   struct cpp_pending *pending;
 
   /* File name which deps are being written to.  This is 0 if deps are
@@ -273,7 +273,7 @@ struct cpp_options
      generated files and not errors.  */
   unsigned char print_deps_missing_files;
 
-  /* If true, fopen (deps_file, "a") else fopen (deps_file, "w"). */
+  /* If true, fopen (deps_file, "a") else fopen (deps_file, "w").  */
   unsigned char print_deps_append;
 
   /* Nonzero means print names of header files (-H).  */
@@ -323,7 +323,7 @@ struct cpp_options
      the source-file directory.  */
   unsigned char ignore_srcdir;
 
-  /* Zero means dollar signs are punctuation. */
+  /* Zero means dollar signs are punctuation.  */
   unsigned char dollars_in_ident;
 
   /* Nonzero means warn if undefined identifiers are evaluated in an #if.  */
@@ -378,7 +378,7 @@ struct cpp_callbacks
 };
 
 #define CPP_FATAL_LIMIT 1000
-/* True if we have seen a "fatal" error. */
+/* True if we have seen a "fatal" error.  */
 #define CPP_FATAL_ERRORS(PFILE) (cpp_errors (PFILE) >= CPP_FATAL_LIMIT)
 
 /* Name under which this program was invoked.  */
