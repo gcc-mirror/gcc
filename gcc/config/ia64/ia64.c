@@ -4460,24 +4460,45 @@ emit_insn_group_barriers (insns)
 	      memcpy (rws_sum, rws_insn, sizeof (rws_sum));
 	    }
 
-	  /* A call must end a group, otherwise the assembler might pack
+	  /* A call must end a bundle, otherwise the assembler might pack
 	     it in with a following branch and then the function return
 	     goes to the wrong place.  Do this unconditionally for 
 	     unconditional calls, simply because it (1) looks nicer and
 	     (2) keeps the data structures more accurate for the insns
 	     following the call.  */
+	  /* ??? A call doesn't have to end a bundle if it is followed by
+	     a mutex call or branch.  Two mutex calls/branches can be put in
+	     the same bundle.  */
 
 	  need_barrier = 1;
 	  if (GET_CODE (PATTERN (insn)) == COND_EXEC)
 	    {
 	      rtx next_insn = insn;
+	      enum attr_type type = TYPE_A;
+
 	      do
 		next_insn = next_nonnote_insn (next_insn);
 	      while (next_insn
 		     && GET_CODE (next_insn) == INSN
 		     && (GET_CODE (PATTERN (next_insn)) == USE
 			 || GET_CODE (PATTERN (next_insn)) == CLOBBER));
-	      if (next_insn && GET_CODE (next_insn) != JUMP_INSN)
+
+	      /* A call ends a bundle if there is a stop bit after it,
+		 or if it is followed by a non-B-type instruction.
+		 In the later case, we can elide the stop bit, and get faster
+		 code when the predicate is false.  */
+	      /* ??? The proper solution for this problem is to make gcc
+		 explicitly bundle instructions.  Then we don't need to
+		 emit stop bits to force the assembler to start a new
+		 bundle.  */
+
+	      /* Check the instruction type if it is not a branch or call.  */
+	      if (next_insn && GET_CODE (next_insn) == INSN)
+		type = get_attr_type (next_insn);
+
+	      if (next_insn && GET_CODE (next_insn) != JUMP_INSN
+		  && GET_CODE (next_insn) != CALL_INSN
+		  && type != TYPE_B && type != TYPE_UNKNOWN)
 		need_barrier = 0;
 	    }
 	  if (need_barrier)
