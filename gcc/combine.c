@@ -7430,6 +7430,25 @@ known_cond (x, cond, reg, val)
 	    }
 	}
     }
+  else if (code == SUBREG)
+    {
+      enum machine_mode inner_mode = GET_MODE (SUBREG_REG (x));
+      rtx new, r = known_cond (SUBREG_REG (x), cond, reg, val);
+
+      if (SUBREG_REG (x) != r)
+	{
+	  /* We must simplify subreg here, before we lose track of the
+	     original inner_mode.  */
+	  new = simplify_subreg (GET_MODE (x), r,
+				 inner_mode, SUBREG_BYTE (x));
+	  if (new)
+	    return new;
+	  else
+	    SUBST (SUBREG_REG (x), r);
+	}
+
+      return x;
+    }
 
   fmt = GET_RTX_FORMAT (code);
   for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
