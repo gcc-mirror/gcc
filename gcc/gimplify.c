@@ -828,7 +828,8 @@ voidify_wrapper_expr (tree wrapper, tree temp)
 	  goto restart;
 	}
       /* The C++ frontend already did this for us.  */
-      else if (TREE_CODE (*p) == INIT_EXPR)
+      else if (TREE_CODE (*p) == INIT_EXPR
+	       || TREE_CODE (*p) == TARGET_EXPR)
 	temp = TREE_OPERAND (*p, 0);
       /* If we're returning a dereference, move the dereference
 	 outside the wrapper.  */
