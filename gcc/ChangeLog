@@ -1,3 +1,8 @@
+2002-02-28  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* doc/invoke.texi, doc/standards.texi: Link to
+	gcc-3.1/c99status.html.
+
 2002-02-28  Richard Henderson  <rth@redhat.com>
 
 	* config/ia64/ia64.c (ia64_adjust_cost): All non-MM consumers have
