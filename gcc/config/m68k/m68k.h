@@ -2081,6 +2081,9 @@ do { long l;						\
 
 extern char *output_move_const_into_data_reg ();
 extern char *output_move_simode_const ();
+extern char *output_move_simode ();
+extern char *output_move_himode ();
+extern char *output_move_qimode ();
 extern char *output_move_double ();
 extern char *output_move_const_single ();
 extern char *output_move_const_double ();
