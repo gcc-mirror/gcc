@@ -1,3 +1,13 @@
+2004-05-25  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR target/11572
+	* configure.ac (includedir): Set to "include"
+	except for Darwin.
+	(libext) Set to empty except for Darwin.
+	* configure: Regenerate
+	* Makefile.in: s/libobjc.la/libobjc$(libext).la/g.
+	s/include/$(includedir)/g.
+
 2004-05-25  Daniel Jacobowitz  <drow@false.org>
 
 	* Makefile.in: Add .NOEXPORT.

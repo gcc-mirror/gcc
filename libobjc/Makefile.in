@@ -40,6 +40,9 @@ toolexecdir = @toolexecdir@
 # Toolexecdir is used only by toolexeclibdir
 toolexeclibdir = @toolexeclibdir@
 
+includedir = @includedir@
+libext = @libext@
+
 top_builddir = .
 
 libdir = $(exec_prefix)/lib
@@ -128,7 +131,7 @@ FLAGS_TO_PASS = \
 	"libsubdir=$(libsubdir)" \
 	"tooldir=$(tooldir)"
 
-all: libobjc.la $(OBJC_BOEHM_GC)
+all: libobjc$(libext).la $(OBJC_BOEHM_GC)
 	: $(MAKE) ; exec $(MULTIDO) $(FLAGS_TO_PASS) multi-do DO=all
 
 # User-visible header files.
@@ -252,12 +255,12 @@ $(OBJC_THREAD_FILE)_gc.lo: $(OBJC_THREAD_FILE).c
 
 doc: info dvi html
 
-libobjc.la: $(OBJS)
+libobjc$(libext).la: $(OBJS)
 	$(LIBTOOL_LINK) $(CC) -o $@ $(OBJS) \
 		-rpath $(toolexeclibdir) \
 		-version-info $(LIBOBJC_VERSION)
 
-libobjc_gc.la: $(OBJS_GC)
+libobjc_gc$(libext).la: $(OBJS_GC)
 	$(LIBTOOL_LINK) $(CC) -o $@ $(OBJS_GC) \
 		-rpath $(toolexeclibdir) \
 		-version-info $(LIBOBJC_GC_VERSION)
@@ -311,9 +314,9 @@ install: install-libs install-headers
 
 install-libs: installdirs
 	$(SHELL) $(toplevel_srcdir)/mkinstalldirs $(DESTDIR)$(toolexeclibdir)
-	$(LIBTOOL_INSTALL) $(INSTALL) libobjc.la $(DESTDIR)$(toolexeclibdir);
+	$(LIBTOOL_INSTALL) $(INSTALL) libobjc$(libext).la $(DESTDIR)$(toolexeclibdir);
 	if [ "$(OBJC_BOEHM_GC)" ]; then \
-	  $(LIBTOOL_INSTALL) $(INSTALL) libobjc_gc.la \
+	  $(LIBTOOL_INSTALL) $(INSTALL) libobjc_gc$(libext).la \
 				$(DESTDIR)$(toolexeclibdir);\
 	fi
 	$(MULTIDO) $(FLAGS_TO_PASS) multi-do DO="$@"
@@ -321,16 +324,16 @@ install-libs: installdirs
 
 # Copy Objective C headers to installation include directory.
 install-headers:
-	$(SHELL) $(toplevel_srcdir)/mkinstalldirs $(DESTDIR)$(libsubdir)/include/objc
+	$(SHELL) $(toplevel_srcdir)/mkinstalldirs $(DESTDIR)$(libsubdir)/$(includedir)/objc
 	for file in $(OBJC_H); do \
 	  realfile=$(srcdir)/objc/$${file}; \
-	  $(INSTALL_DATA) $${realfile} $(DESTDIR)$(libsubdir)/include/objc; \
+	  $(INSTALL_DATA) $${realfile} $(DESTDIR)$(libsubdir)/$(includedir)/objc; \
 	done
 
 check uninstall install-strip dist installcheck installdirs:
 
 mostlyclean:
-	-$(LIBTOOL_CLEAN) rm -f libobjc.la libobjc_gc.la *.lo
+	-$(LIBTOOL_CLEAN) rm -f libobjc$(libext).la libobjc_gc$(libext).la *.lo
 	-rm -f runtime-info.h tmp-runtime.s *.o *.lo libobjc* xforward \
 		fflags *.aux *.cp *.dvi *.fn *.info *.ky *.log *.pg \
 		*.toc *.tp *.vr *.html libobj.exp
