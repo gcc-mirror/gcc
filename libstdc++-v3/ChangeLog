@@ -1,3 +1,25 @@
+2001-05-13   Benjamin Kosnik  <bkoz@redhat.com>
+
+	Switch over to new harness.
+	* testsuite_flags.in: Tweaks via Gaby.
+	* testsuite/Makefile.am: Change tool to libstdc++-v3.
+	(EXPECT): Quote directly.
+	(RUNTEST): Same.
+	* configure.in: Output testsuite_flags.
+	* acinclude.m4: Substitute src, bld, and prefix dirs.
+	Remove glibcpp_expect, glibcpp_runtestflags.
+	* Makefile.am (RUNTESTFLAGS): Pass this down to subdirs.
+	* mkcheck.in: Port to new interface.
+	
+	* aclocal.m4: Regerate.
+	* configure: Regnerate.
+	* Makefile.in: Regnerate.
+	* */Makefile.in: Regenerate.
+	
+	* tests_flags.in: Remove.
+	* testsuite/lib/libstdc++.exp: Remove.
+	* testsuite/libstdc++.tests/tests.exp: Remove.
+	
 2001-05-13  Alexandre Oliva  <aoliva@redhat.com>
 
 	* configure.target: Remove detection of AIX pthread multilib, now
@@ -7,6 +29,13 @@
 
 	* mkcheck.in (setup_size_command): Use Berkeley "-B" mode with GNU
 	size.  Add hpux case for HP size.
+
+2001-05-11   Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite_flags.in: New, simplified interface.
+	* testsuite/lib/libstdc++-v3-dg.exp: New test harness.
+	* testsuite/libstdc++-v3.dg: Add.
+	* testsuite/libstdc++-v3.dg/dg.exp: Add.	
 
 2001-05-11   Benjamin Kosnik  <bkoz@redhat.com>
 

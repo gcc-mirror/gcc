@@ -108,6 +108,10 @@ proc libstdc++-v3_target_compile { source dest type options } {
     set cxx_final [concat $cxx_final $cxxlibglossflags]
     set cxx_final [concat $cxx_final $cxxflags]
     set cxx_final [concat $cxx_final $includes]
+
+    # XXX 
+    set cxx_final [concat $cxx_final -static]
+
     lappend options "compiler=$cxx_final";
 
     return [target_compile $source $dest $type $options]

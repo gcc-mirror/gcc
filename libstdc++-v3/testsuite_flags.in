@@ -12,11 +12,11 @@
 print_usage() {
     cat <<EOF
 Usage: 
-    tests_flags --install-includes
-		--build-includes
-		--build-cxx
-		--install-cxx
-		--cxxflags
+    testsuite_flags --install-includes
+		    --build-includes
+		    --build-cxx
+		    --install-cxx
+		    --cxxflags
 EOF
 }
 
@@ -44,7 +44,7 @@ case ${query} in
       echo ${CXX}
       ;;
     --build-cxx)
-      CC_build="@glibcpp_CXX@ -static "
+      CC_build="@glibcpp_CXX@"
       CXX=`echo $CC_build | sed 's/xgcc/g++/g'`
       echo ${CXX}
       ;;

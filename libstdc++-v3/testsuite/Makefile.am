@@ -23,12 +23,15 @@
 
 AUTOMAKE_OPTIONS =  foreign dejagnu
 
-DEJATOOL = libstdc++
+DEJATOOL = libstdc++-v3
 
-EXPECT = @glibcpp_expect@
+EXPECT = `if [ -f @glibcpp_builddir@/../../expect/expect ] ; then \
+            echo @glibcpp_builddir@/../../expect/expect ; \
+          else echo expect ; fi`
 
-RUNTEST = @glibcpp_runtest@
+RUNTEST = `if [ -f @glibcpp_srcdir@/../dejagnu/runtest ] ; then \
+	       echo @glibcpp_srcdir@/../dejagnu/runtest ; \
+	    else echo runtest; fi`
 
-
-
+RUNTESTFLAGS =
 

@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+!/usr/bin/env bash
 
 
 # Script to do automated testing and data collection for various test
@@ -9,16 +9,7 @@
 # has been enabled.
 
 # Invocation 
-# mkcheck [01] (path to build) (path to src) (path to install)
-
-### XXX There are a lot of tests in here for OS-specific stuff.  If we
-###     move to a 'configure.target' method of determining those extra
-###     flags and whatnot, we can take out all those things and source
-###     that file from here.  (Write that file with this in mind...)
-
-### XXX Note that breaking out of this with ^C will not work under
-###     Solaris (at least).  Dunno why.
-
+# mkcheck [01] 
 
 # 1: variables
 #
@@ -26,17 +17,15 @@
 # (0) testing the build binary and headers, or
 # (1) testing the installed binary and headers, or
 WHICH=$1
-if [ "$WHICH"x = 0x ] && [ $# -eq 3 ]; then
+if [ "$WHICH"x = 0x ]; then
   echo "running mkcheck"
   echo "$0: testing the build directory"
-  query="--built-library"
-elif [ "$WHICH"x = 1x ] && [ $# -eq 4 ]; then
+elif [ "$WHICH"x = 1x ]; then
   echo "running mkcheck"
-  echo "$0: testing the install directory $4"
-  query="--installed-library"
+  echo "$0: testing the install directory"
 else
-  echo 'Usage: mkcheck 0 (path to build) (path to src)'
-  echo '       mkcheck 1 (path to build) (path to src) (path to install)'
+  echo 'Usage: mkcheck 0'
+  echo '       mkcheck 1'
   exit 1;
 fi
 
@@ -50,32 +39,32 @@ case $BASH_VERSION in
     *)   ;;   # ??
 esac
 
-# Compute the flags necessary to run the testsuite.
-saved_ifs=$IFS
-# bash 2.01 does the wrong thing with $* if IFS doesn't include space
-if test ${BASH_VERSINFO[1]} = 01 ; then
-    IFS=': '
+BUILD_DIR=@glibcpp_builddir@
+SRC_DIR=@glibcpp_srcdir@
+PREFIX_DIR=@glibcpp_prefixdir@
+if [ "$WHICH"x = 0x ]; then
+  CXX=`$BUILD_DIR/testsuite_flags --build-cxx`
+  INCLUDES=`$BUILD_DIR/testsuite_flags --build-includes`
 else
-    IFS=':'
+  CXX=`$BUILD_DIR/testsuite_flags --install-cxx`
+  INCLUDES=`$BUILD_DIR/testsuite_flags --install-includes`
 fi
-set `../tests_flags ${query} $*` || exit 1
-BUILD_DIR=$1; SRC_DIR=$2; PREFIX_DIR=$3; CXX=$4; CXXFLAGS=$5; INCLUDES=$6; LIBS=$7;
-IFS=$saved_ifs
-
+CXXFLAGS=`$BUILD_DIR/testsuite_flags --cxxflags`
 LIBTOOL="$BUILD_DIR/libtool"
 LTEXE="$LIBTOOL --mode=execute"
-LTCXX="$LIBTOOL --tag=CXX --mode=link $CXX $CXXFLAGS $INCLUDES $LIBS"
+#LTCXX="$LIBTOOL --tag=CXX --mode=link $CXX $CXXFLAGS $INCLUDES"
+LTCXX="$CXX $CXXFLAGS $INCLUDES"
 
-# specific libtool flag(s) to force the use of shared libraries, if any
-SH_FLAG=
+# specific libtool flag(s) to use shared libraries, if any
+SH_FLAG="-Wl,--rpath -Wl,$BUILD_DIR/../../gcc -Wl,--rpath -Wl,$BUILD_DIR/src/.libs"
 
-# specific libtool flag(s) to force the use of static libraries, if any
+# specific libtool flag(s) to use static libraries, if any
 ST_FLAG="-static"
 #ST_FLAG="-all-static"
 
 # Set up the testing directory, which should be in a directory called
 # "testsuite" in the root level of the build directory.
-TEST_DIR='.'
+TEST_DIR="$BUILD_DIR/testsuite"
 # help libtool keep quiet
 if [ ! -d ${TEST_DIR}/.libs ]; then
     mkdir $TEST_DIR/.libs    
@@ -330,6 +319,7 @@ test_file()
     # eventually have to calculate time_t anyhow.  Or 3) just grab two
     # time_t's (no more overhead than grabbing two date(1)'s).
     compiler_invocation="$LTCXX $S_FLAG $SRC_NAME -o $EXENAME"
+    echo $compiler_invocation >> compile.out 2>&1
     COMP_TIME_START=$($TIMER_COMMAND)
     $compiler_invocation >> compile.out 2>&1
     COMP_TIME_END=$($TIMER_COMMAND)
@@ -341,7 +331,7 @@ test_file()
     fi
 
     if [ -f $EXENAME ]; then
-        rm compile.out
+#        rm compile.out
         size_command TEXT
         size_command DATA
         size_command SIZE
@@ -379,8 +369,8 @@ test_file()
     else
         # the file did not compile/link.
         printf "\n" >> $LOG_FILE
-        `cat compile.out >> $LOG_FILE` 
-        rm compile.out
+#        `cat compile.out >> $LOG_FILE` 
+#        rm compile.out
         RESULT="-b"
         TEXT="0"
         DATA="0"
@@ -463,5 +453,3 @@ if [ $TEST_TIME_START -lt $TEST_TIME_END ]; then
 fi
 
 exit 0
-
-
