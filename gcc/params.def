@@ -55,6 +55,17 @@ DEFPARAM (PARAM_MAX_DELAY_SLOT_INSN_SEARCH,
 	  "The maximum number of instructions to consider to fill a delay slot",
 	  100)
 
+/* When trying to fill delay slots, the maximum number of instructions
+   to consider when searching for a block with valid live register
+   information.  Increasing this arbitrarily chosen value means more
+   aggressive optimization, increasing the compile time.  This
+   parameter should be removed when the delay slot code is rewritten
+   to maintain the control-flow graph.  */
+DEFPARAM(PARAM_MAX_DELAY_SLOT_LIVE_SEARCH,
+	 "max-delay-slot-live-search",
+	 "The maximum number of instructions to consider to find accurate live register information",
+	 333)
+
 /*
 Local variables:
 mode:c

@@ -32,6 +32,7 @@ Boston, MA 02111-1307, USA.  */
 #include "resource.h"
 #include "except.h"
 #include "insn-attr.h"
+#include "params.h"
 
 /* This structure is used to record liveness information at the targets or
    fallthrough insns of branches.  We will most likely need the information
@@ -66,7 +67,7 @@ static struct target_info **target_hash_table = NULL;
 static int *bb_ticks;
 
 /* Marks registers possibly live at the current place being scanned by
-   mark_target_live_regs.  Used only by next two function.    */
+   mark_target_live_regs.  Also used by update_live_status.  */
 
 static HARD_REG_SET current_live_regs;
 
@@ -76,7 +77,7 @@ static HARD_REG_SET current_live_regs;
 static HARD_REG_SET pending_dead_regs;
 
 static void update_live_status		PARAMS ((rtx, rtx, void *));
-static int find_basic_block		PARAMS ((rtx));
+static int find_basic_block		PARAMS ((rtx, int));
 static rtx next_insn_no_annul		PARAMS ((rtx));
 static rtx find_dead_or_set_registers	PARAMS ((rtx, struct resources*,
 						rtx*, int, struct resources,
@@ -115,25 +116,38 @@ update_live_status (dest, x, data)
 	CLEAR_HARD_REG_BIT (pending_dead_regs, i);
       }
 }
-/* Find the number of the basic block that starts closest to INSN.  Return -1
-   if we couldn't find such a basic block.  */
+
+/* Find the number of the basic block with correct live register
+   information that starts closest to INSN.  Return -1 if we couldn't
+   find such a basic block or the beginning is more than
+   SEARCH_LIMIT instructions before INSN.  Use SEARCH_LIMIT = -1 for
+   an unlimited search.
+
+   The delay slot filling code destroys the control-flow graph so,
+   instead of finding the basic block containing INSN, we search
+   backwards toward a BARRIER where the live register information is
+   correct.  */
 
 static int
-find_basic_block (insn)
+find_basic_block (insn, search_limit)
      rtx insn;
+     int search_limit;
 {
   int i;
 
   /* Scan backwards to the previous BARRIER.  Then see if we can find a
      label that starts a basic block.  Return the basic block number.  */
-
   for (insn = prev_nonnote_insn (insn);
-       insn && GET_CODE (insn) != BARRIER;
-       insn = prev_nonnote_insn (insn))
+       insn && GET_CODE (insn) != BARRIER && search_limit != 0;
+       insn = prev_nonnote_insn (insn), --search_limit)
     ;
 
+  /* The closest BARRIER is too far away.  */
+  if (search_limit == 0)
+    return -1;
+
   /* The start of the function is basic block zero.  */
-  if (insn == 0)
+  else if (insn == 0)
     return 0;
 
   /* See if any of the upcoming CODE_LABELs start a basic block.  If we reach
@@ -925,7 +939,7 @@ mark_target_live_regs (insns, target, res)
     }
 
   if (b == -1)
-    b = find_basic_block (target);
+    b = find_basic_block (target, MAX_DELAY_SLOT_LIVE_SEARCH);
 
   if (target_hash_table != NULL)
     {
@@ -1294,7 +1308,7 @@ void
 incr_ticks_for_insn (insn)
      rtx insn;
 {
-  int b = find_basic_block (insn);
+  int b = find_basic_block (insn, MAX_DELAY_SLOT_LIVE_SEARCH);
 
   if (b != -1)
     bb_ticks[b]++;
