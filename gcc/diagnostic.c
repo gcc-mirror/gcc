@@ -122,7 +122,7 @@ void (*print_error_function) PARAMS ((const char *)) =
   default_print_error_function;
 
 /* Maximum characters per line in automatic line wrapping mode.
-   Non Zero means don't wrap lines. */
+   Zero means don't wrap lines. */
 
 static int output_maximum_width = 0;
 
