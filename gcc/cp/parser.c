@@ -1891,7 +1891,7 @@ cp_parser_check_for_invalid_template_id (cp_parser* parser,
       if (TYPE_P (type))
 	error ("`%T' is not a template", type);
       else if (TREE_CODE (type) == IDENTIFIER_NODE)
-	error ("`%s' is not a template", IDENTIFIER_POINTER (type));
+	error ("`%E' is not a template", type);
       else
 	error ("invalid template-id");
       /* Remember the location of the invalid "<".  */
