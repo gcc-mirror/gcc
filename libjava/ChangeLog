@@ -1,3 +1,8 @@
+2005-03-16  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* testsuite/libjava.jni/jni.exp (gcj_jni_invocation_test_one): Add
+	lgcc_s to the libraries to link for Darwin.
+
 2005-03-15  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* stacktrace.cc (_Jv_StackTrace::UnwindTraceFn): Protect
@@ -7,7 +12,7 @@
 	(_Jv_StackTrace::non_system_trace_fn): Likewise.
 	* include/java-stack.h (struct _Jv_InterpFrameInfo): Protect with
 	#ifdef INTERPRETER. Also protect declarations that use it.
-	* java/lang/Class.h: Move _Jv_StackTrace friend declaration outside 
+	* java/lang/Class.h: Move _Jv_StackTrace friend declaration outside
 	#ifdef INTERPRETER block.
 
 2005-03-15  Jakub Jelinek  <jakub@redhat.com>
