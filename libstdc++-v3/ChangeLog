@@ -1,3 +1,13 @@
+2003-09-02  Phil Edwards  <phil@codesourcery.com>
+
+	* acinclude.m4 (GLIBCXX_ENABLE_HOSTED):  #define _GLIBCXX_HOSTED
+	appropriately.
+	* config.h.in:  Add _GLIBCXX_HOSTED.
+	* libsupc++/eh_term_handler.cc:  Test it here; initialize
+	__terminate_handler to std::abort if freestanding.
+	* aclocal.m4, configure:  Regenerated.
+	* docs/html/configopts.html:  Document --disable-hosted-libstdcxx.
+
 2003-08-29  Nathan Myers  <ncm@cantrip.org>
 	
 	PR libstdc++/11990	

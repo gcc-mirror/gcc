@@ -146,7 +146,7 @@ options</a></h1>
 
  <dt><code>--enable-libstdcxx-debug  </code></dt>
  <dd><p>Build separate debug libraries in addition to what is normally built.
- 	By default, the debug libraries are compiled with 
+        By default, the debug libraries are compiled with 
         <code> CXXFLAGS='-g3 -O0'</code>
         , are installed in <code>${libdir}/debug</code>, and have the
         same names and versioning information as the non-debug
@@ -271,6 +271,14 @@ options</a></h1>
         In addition, this generated file is used later on (by appending <code>
         --include bits/stdc++.h </code> to CXXFLAGS) when running the
         testsuite.
+     </p>
+ </dd>
+
+ <dt><code>--disable-hosted-libstdcxx  </code></dt>
+ <dd><p>By default, a complete <em>hosted</em> C++ library is built.  The
+        C++ Standard also describes a <em>freestanding</em> environment,
+        in which only a minimal set of headers are provided.  This option
+        builds such an environment.
      </p>
  </dd>
 </dl>

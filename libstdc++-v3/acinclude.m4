@@ -1276,6 +1276,9 @@ dnl
 dnl Sets:
 dnl  is_hosted  (yes/no)
 dnl
+dnl Defines:
+dnl  _GLIBCXX_HOSTED   (always defined, either to 1 or 0)
+dnl
 AC_DEFUN(GLIBCXX_ENABLE_HOSTED, [
   AC_ARG_ENABLE([hosted-libstdcxx],
     AC_HELP_STRING([--disable-hosted-libstdcxx],
@@ -1284,12 +1287,16 @@ AC_DEFUN(GLIBCXX_ENABLE_HOSTED, [
   if test "$enable_hosted_libstdcxx" = no; then
     AC_MSG_NOTICE([Only freestanding libraries will be built])
     is_hosted=no
+    hosted_define=0
     enable_abi_check=no
     enable_libstdcxx_pch=no
   else
     is_hosted=yes
+    hosted_define=1
   fi
   GLIBCXX_CONDITIONAL(GLIBCXX_HOSTED, test $is_hosted = yes)
+  AC_DEFINE_UNQUOTED(_GLIBCXX_HOSTED, $hosted_define,
+    [Define to 1 if a full hosted library is built, or 0 if freestanding.])
 ])
 
 
