@@ -1,3 +1,16 @@
+2004-04-09  Roger Sayle  <roger@eyesopen.com>
+
+	* simplify-rtx.c (mode_signbit_p): New function to check whether
+	an RTX is an immediate constant that represents the most significant
+	bit of a given machine mode.
+	(simplify_unary_operation) <NOT>: Optimize ~(X+C) as X ^ ~C, where
+	C is the sign bit.
+	(simplify_binary_operation) <PLUS>: Optimize (X^C1) + C2 as X^(C1^C2)
+	when C2 is the sign bit.
+	(simplify_binary_operation) <XOR>: Canonicalize X^C as X+C when C
+	is the sign bit.  Optimize (X+C1) ^ C2 as X^(C1^C2) when C1 is the
+	sign bit.
+
 2004-04-09  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* builtins.c (mathfn_built_in): Check TYPE_MAIN_VARIANT, not

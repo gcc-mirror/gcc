@@ -1,3 +1,9 @@
+2004-04-09  Roger Sayle  <roger@eyesopen.com>
+
+	* gcc.c-torture/execute/20040409-1.c: New test case.
+	* gcc.c-torture/execute/20040409-2.c: New test case.
+	* gcc.c-torture/execute/20040409-3.c: New test case.
+
 2004-04-09  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* gcc.dg/20040409-1.c: New test.
