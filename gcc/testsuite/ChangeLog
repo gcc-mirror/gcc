@@ -1,10 +1,12 @@
+2003-08-08  Roger Sayle  <roger@eyesopen.com>
+
+	PR c/11370
+	* gcc.dg/Wunreachable-6.c: New testcase.
+	* gcc.dg/Wunreachable-7.c: New testcase.
+
 2003-07-26  Geoffrey Keating  <geoffk@apple.com>
 
 	* gcc.c-torture/compile/zero-strct-2.c: New test.
-
-2003-08-04  Release Manager
-
-	* GCC 3.3.1 Released.
 
 2003-08-04  Release Manager
 
