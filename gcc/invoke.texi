@@ -126,6 +126,7 @@ in the following sections.
 -Wsign-compare  -Wstrict-prototypes  -Wswitch  -Wsynth
 -Wtemplate-debugging  -Wtraditional  -Wtrigraphs
 -Wundef  -Wuninitialized  -Wunused  -Wwrite-strings
+-Wunknown-pragmas
 @end smallexample
 
 @item Debugging Options
@@ -1399,6 +1400,15 @@ members.
 @cindex template debugging
 When using templates in a C++ program, warn if debugging is not yet
 fully available (C++ only).
+
+@item -Wunknown-pragmas
+@cindex warning for unknown pragmas
+@cindex unknown pragmas, warning
+@cindex pragmas, warning of unknown
+Warn when a #pragma directive is encountered which is not understood by
+GCC.  If this command line option is used, warnings will even be issued
+for unknown pragmas in system header files.  This is not the case if
+the warnings were only enabled by the @samp{-Wall} command line option.
 
 @item -Wall
 All of the above @samp{-W} options combined.  This enables all the

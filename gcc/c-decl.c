@@ -558,6 +558,10 @@ int warn_missing_braces;
 
 int warn_main;
 
+/* Warn about #pragma directives that are not recognised.  */
+
+int warn_unknown_pragmas = 0; /* Tri state variable.  */  
+
 /* Warn about comparison of signed and unsigned values.
    If -1, neither -Wsign-compare nor -Wno-sign-compare has been specified.  */
 
@@ -763,6 +767,12 @@ c_decode_option (p)
     warn_sign_compare = 1;
   else if (!strcmp (p, "-Wno-sign-compare"))
     warn_sign_compare = 0;
+  else if (!strcmp (p, "-Wunknown-pragmas"))
+    /* Set to greater than 1, so that even unknown pragmas in system
+       headers will be warned about.  */
+    warn_unknown_pragmas = 2;
+  else if (!strcmp (p, "-Wno-unknown-pragmas"))
+    warn_unknown_pragmas = 0;
   else if (!strcmp (p, "-Wall"))
     {
       /* We save the value of warn_uninitialized, since if they put
@@ -782,6 +792,8 @@ c_decode_option (p)
       /* We set this to 2 here, but 1 in -Wmain, so -ffreestanding can turn
 	 it off only if it's not explicit.  */
       warn_main = 2;
+      /* Only warn about unknown pragmas that are not in system headers.  */
+      warn_unknown_pragmas = 1;
     }
   else
     return 0;

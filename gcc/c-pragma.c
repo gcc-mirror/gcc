@@ -1,5 +1,5 @@
 /* Handle #pragma, system V.4 style.  Supports #pragma weak and #pragma pack.
-   Copyright (C) 1992 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -18,8 +18,8 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#include <stdio.h>
 #include "config.h"
+#include <stdio.h>
 #include "tree.h"
 #include "except.h"
 #include "function.h"
@@ -65,7 +65,7 @@ handle_pragma_token (string, token)
 	  if (HANDLE_PRAGMA_WEAK)
 	    handle_pragma_weak (state, name, value);
 
-#endif /* HANDLE_PRAMA_WEAK */
+#endif /* HANDLE_PRAGMA_WEAK */
 	}
 
       type = state = ps_start;
@@ -82,7 +82,16 @@ handle_pragma_token (string, token)
 	  else if (strcmp (IDENTIFIER_POINTER (token), "weak") == 0)
 	    type = state = ps_weak;
 	  else
-	    type = state = ps_done;
+	    {
+	      type = state = ps_done;
+
+	      /* Issue a warning message if we have been asked to do so.
+		 Ignoring unknown pragmas in system header file unless          
+		 an explcit -Wunknown-pragmas has been given. */                
+	      if (warn_unknown_pragmas > 1
+		  || (warn_unknown_pragmas && ! in_system_header))
+		warning ("ignoring pragma: %s", string);
+	    }
 	}
       else
 	type = state = ps_done;
