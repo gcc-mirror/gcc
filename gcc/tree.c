@@ -1425,6 +1425,10 @@ real_value_from_int_cst (type, i)
   REAL_VALUE_TYPE d;
 
 #ifdef REAL_ARITHMETIC
+  /* Clear all bits of the real value type so that we can later do
+     bitwise comparisons to see if two values are the same.  */
+  bzero ((char *) &d, sizeof d);
+
   if (! TREE_UNSIGNED (TREE_TYPE (i)))
     REAL_VALUE_FROM_INT (d, TREE_INT_CST_LOW (i), TREE_INT_CST_HIGH (i),
 			 TYPE_MODE (type));
