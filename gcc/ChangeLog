@@ -1,3 +1,9 @@
+2004-01-12  Roger Sayle  <roger@eyesopen.com>
+
+	* builtins.c (expand_builtin_expect_jump): Simplify logic. Handle
+	conditional jumps that drop through to unconditional jumps or the
+	end of the sequence.
+
 2004-01-13  Jan Hubicka  <jh@suse.cz>
 
 	* alias.c (new_alias_set): Construct the alias_set varray.
