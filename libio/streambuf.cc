@@ -220,7 +220,8 @@ streambuf::~streambuf()
 {
   _IO_default_finish(this,0);
 #ifdef _IO_MTSAFE_IO
-  delete _lock;
+  if (this != _IO_stdin && this != _IO_stdout && this != _IO_stderr)
+    delete _lock;
 #endif
 }
 
