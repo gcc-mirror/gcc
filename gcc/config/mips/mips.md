@@ -3040,7 +3040,7 @@ move\\t%0,%z4\\n\\
 }"
   [(set_attr "type"	"multi")
    (set_attr "mode"	"SI")
-   (set_attr "length"	"12")])
+   (set_attr "length"	"28")])
 
 (define_insn "ffsdi2"
   [(set (match_operand:DI 0 "register_operand" "=&d")
@@ -3074,7 +3074,7 @@ move\\t%0,%z4\\n\\
 }"
   [(set_attr "type"	"multi")
    (set_attr "mode"	"DI")
-   (set_attr "length"	"24")])
+   (set_attr "length"	"28")])
 
 
 
@@ -3489,7 +3489,7 @@ move\\t%0,%z4\\n\\
   "@
     sll\t%0,%1,0
     sw\t%1,%0"
-  [(set_attr "type" "darith")
+  [(set_attr "type" "darith,store")
    (set_attr "mode" "SI")
    (set_attr "extended_mips16" "yes,*")])
 
@@ -3500,7 +3500,7 @@ move\\t%0,%z4\\n\\
   "@
     sll\t%0,%1,0
     sh\t%1,%0"
-  [(set_attr "type" "darith")
+  [(set_attr "type" "darith,store")
    (set_attr "mode" "SI")
    (set_attr "extended_mips16" "yes,*")])
 
@@ -3511,7 +3511,7 @@ move\\t%0,%z4\\n\\
   "@
     sll\t%0,%1,0
     sb\t%1,%0"
-  [(set_attr "type" "darith")
+  [(set_attr "type" "darith,store")
    (set_attr "mode" "SI")
    (set_attr "extended_mips16" "yes,*")])
 
@@ -4075,7 +4075,11 @@ move\\t%0,%z4\\n\\
 	(fix:SI (match_operand:DF 1 "register_operand" "f")))
    (clobber (match_scratch:DF 2 "=d"))]
   "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT && !ISA_HAS_TRUNC_W"
-  "trunc.w.d %0,%1,%2"
+  {
+    if (set_nomacro)
+      return ".set\tmacro\n\ttrunc.w.d %0,%1,%2\n\t.set\tmacro";
+    return "trunc.w.d %0,%1,%2";
+  }
   [(set_attr "type"	"fcvt")
    (set_attr "mode"	"DF")
    (set_attr "length"	"36")])
@@ -4106,7 +4110,11 @@ move\\t%0,%z4\\n\\
 	(fix:SI (match_operand:SF 1 "register_operand" "f")))
    (clobber (match_scratch:SF 2 "=d"))]
   "TARGET_HARD_FLOAT && !ISA_HAS_TRUNC_W"
-  "trunc.w.s %0,%1,%2"
+  {
+    if (set_nomacro)
+      return ".set\tmacro\n\ttrunc.w.s %0,%1,%2\n\t.set\tmacro";
+    return "trunc.w.s %0,%1,%2";
+  }
   [(set_attr "type"	"fcvt")
    (set_attr "mode"	"DF")
    (set_attr "length"	"36")])
@@ -4437,7 +4445,8 @@ move\\t%0,%z4\\n\\
   "!TARGET_MIPS16"
   "lwl\t%0,%2"
   [(set_attr "type" "load")
-   (set_attr "mode" "SI")])
+   (set_attr "mode" "SI")
+   (set_attr "hazard" "none")])
 
 (define_insn "mov_lwr"
   [(set (match_operand:SI 0 "register_operand" "=d")
@@ -5636,7 +5645,7 @@ move\\t%0,%z4\\n\\
   operands[4] = const0_rtx;
 
   return \"sll\\t%3,%2,26\\n\\
-\\tbgez\\t%3,1f\\n\\
+\\tbgez\\t%3,1f%#\\n\\
 \\tsll\\t%M0,%L1,%2\\n\\
 \\t%(b\\t3f\\n\\
 \\tmove\\t%L0,%z4%)\\n\\
@@ -5991,7 +6000,7 @@ move\\t%0,%z4\\n\\
   operands[4] = const0_rtx;
 
   return \"sll\\t%3,%2,26\\n\\
-\\tbgez\\t%3,1f\\n\\
+\\tbgez\\t%3,1f%#\\n\\
 \\tsra\\t%L0,%M1,%2\\n\\
 \\t%(b\\t3f\\n\\
 \\tsra\\t%M0,%M1,31%)\\n\\
@@ -6369,7 +6378,7 @@ move\\t%0,%z4\\n\\
   operands[4] = const0_rtx;
 
   return \"sll\\t%3,%2,26\\n\\
-\\tbgez\\t%3,1f\\n\\
+\\tbgez\\t%3,1f%#\\n\\
 \\tsrl\\t%L0,%M1,%2\\n\\
 \\t%(b\\t3f\\n\\
 \\tmove\\t%M0,%z4%)\\n\\
@@ -6988,16 +6997,16 @@ move\\t%0,%z4\\n\\
   if (operands[2] != pc_rtx)
     {
       if (which_alternative == 0)
-	return \"%*b%C0z\\t%1,%2\";
+	return \"b%C0z\\t%1,%2\";
       else
-	return \"%*bt%C0z\\t%2\";
+	return \"bt%C0z\\t%2\";
     }
   else
     {
       if (which_alternative == 0)
-	return \"%*b%N0z\\t%1,%3\";
+	return \"b%N0z\\t%1,%3\";
       else
-	return \"%*bt%N0z\\t%3\";
+	return \"bt%N0z\\t%3\";
     }
 }"
   [(set_attr "type"	"branch")
@@ -7017,16 +7026,16 @@ move\\t%0,%z4\\n\\
   if (operands[2] != pc_rtx)
     {
       if (which_alternative == 0)
-	return \"%*b%C0z\\t%1,%2\";
+	return \"b%C0z\\t%1,%2\";
       else
-	return \"%*bt%C0z\\t%2\";
+	return \"bt%C0z\\t%2\";
     }
   else
     {
       if (which_alternative == 0)
-	return \"%*b%N0z\\t%1,%3\";
+	return \"b%N0z\\t%1,%3\";
       else
-	return \"%*bt%N0z\\t%3\";
+	return \"bt%N0z\\t%3\";
     }
 }"
   [(set_attr "type"	"branch")
@@ -8389,15 +8398,15 @@ move\\t%0,%z4\\n\\
   if (flag_pic && ! TARGET_EMBEDDED_PIC)
     {
       if (get_attr_length (insn) <= 8)
-	return \"%*b\\t%l0\";
+	return \"%*b\\t%l0%/\";
       else
 	{
 	  output_asm_insn (mips_output_load_label (), operands);
-	  return \"%*jr\\t%@%]\";
+	  return \"%*jr\\t%@%/%]\";
 	}
     }
   else
-    return \"%*j\\t%l0\";
+    return \"%*j\\t%l0%/\";
 }"
   [(set_attr "type"	"jump")
    (set_attr "mode"	"none")
@@ -8450,14 +8459,14 @@ move\\t%0,%z4\\n\\
 (define_insn "indirect_jump_internal1"
   [(set (pc) (match_operand:SI 0 "register_operand" "d"))]
   "!(Pmode == DImode)"
-  "%*j\\t%0"
+  "%*j\t%0%/"
   [(set_attr "type"	"jump")
    (set_attr "mode"	"none")])
 
 (define_insn "indirect_jump_internal2"
   [(set (pc) (match_operand:DI 0 "register_operand" "d"))]
   "Pmode == DImode"
-  "%*j\\t%0"
+  "%*j\t%0%/"
   [(set_attr "type"	"jump")
    (set_attr "mode"	"none")])
 
@@ -8501,7 +8510,7 @@ move\\t%0,%z4\\n\\
 	(match_operand:SI 0 "register_operand" "d"))
    (use (label_ref (match_operand 1 "" "")))]
   ""
-  "%*j\\t%0"
+  "%*j\t%0%/"
   [(set_attr "type"	"jump")
    (set_attr "mode"	"none")])
 
@@ -8510,7 +8519,7 @@ move\\t%0,%z4\\n\\
 	(match_operand:DI 0 "register_operand" "d"))
    (use (label_ref (match_operand 1 "" "")))]
   "TARGET_64BIT"
-  "%*j\\t%0"
+  "%*j\t%0%/"
   [(set_attr "type"	"jump")
    (set_attr "mode"	"none")])
 
@@ -8626,7 +8635,7 @@ move\\t%0,%z4\\n\\
    (clobber (reg:SI 31))]
   "TARGET_EMBEDDED_PIC"
   "%(bal\\t%S1\;sll\\t%2,%0,2\\n%~%S1:\;addu\\t%2,%2,$31%)\;\\
-lw\\t%2,%1-%S1(%2)\;addu\\t%2,%2,$31\\n\\t%*j\\t%2"
+lw\\t%2,%1-%S1(%2)\;addu\\t%2,%2,$31\\n\\t%*j\\t%2%/"
   [(set_attr "type"	"jump")
    (set_attr "mode"	"none")
    (set_attr "length"	"24")])
@@ -8643,7 +8652,7 @@ lw\\t%2,%1-%S1(%2)\;addu\\t%2,%2,$31\\n\\t%*j\\t%2"
    (clobber (reg:DI 31))]
   "TARGET_EMBEDDED_PIC"
   "%(bal\\t%S1\;sll\\t%2,%0,3\\n%~%S1:\;daddu\\t%2,%2,$31%)\;\\
-ld\\t%2,%1-%S1(%2)\;daddu\\t%2,%2,$31\\n\\t%*j\\t%2"
+ld\\t%2,%1-%S1(%2)\;daddu\\t%2,%2,$31\\n\\t%*j\\t%2%/"
   [(set_attr "type"	"jump")
    (set_attr "mode"	"none")
    (set_attr "length"	"24")])
@@ -8751,7 +8760,7 @@ ld\\t%2,%1-%S1(%2)\;daddu\\t%2,%2,$31\\n\\t%*j\\t%2"
 (define_insn "return"
   [(return)]
   "mips_can_use_return_insn ()"
-  "%*j\\t$31"
+  "%*j\t$31%/"
   [(set_attr "type"	"jump")
    (set_attr "mode"	"none")])
 
@@ -8761,10 +8770,7 @@ ld\\t%2,%1-%S1(%2)\;daddu\\t%2,%2,$31\\n\\t%*j\\t%2"
   [(use (match_operand 0 "pmode_register_operand" ""))
    (return)]
   ""
-  "*
-{
-  return \"%*j\\t%0\";
-}"
+  "%*j\t%0%/"
   [(set_attr "type"	"jump")
    (set_attr "mode"	"none")])
 
@@ -8827,7 +8833,8 @@ ld\\t%2,%1-%S1(%2)\;daddu\\t%2,%2,$31\\n\\t%*j\\t%2"
 }")
 
 (define_insn "exception_receiver"
-  [(unspec_volatile [(const_int 0)] UNSPEC_EH_RECEIVER)]
+  [(set (reg:SI 28)
+	(unspec_volatile [(const_int 0)] UNSPEC_EH_RECEIVER))]
   "TARGET_ABICALLS && (mips_abi == ABI_32 || mips_abi == ABI_O64)"
   { return mips_restore_gp (operands); }
   [(set_attr "type"   "load")
@@ -8867,8 +8874,8 @@ ld\\t%2,%1-%S1(%2)\;daddu\\t%2,%2,$31\\n\\t%*j\\t%2"
 	 (match_operand 1 "" ""))]
   "TARGET_SIBCALLS && SIBLING_CALL_P (insn)"
   "@
-    %*jr\\t%0
-    %*j\\t%0"
+    %*jr\t%0%/
+    %*j\t%0%/"
   [(set_attr "type" "call")])
 
 (define_expand "sibcall_value"
@@ -8889,8 +8896,8 @@ ld\\t%2,%1-%S1(%2)\;daddu\\t%2,%2,$31\\n\\t%*j\\t%2"
               (match_operand 2 "" "")))]
   "TARGET_SIBCALLS && SIBLING_CALL_P (insn)"
   "@
-    %*jr\\t%1
-    %*j\\t%1"
+    %*jr\t%1%/
+    %*j\t%1%/"
   [(set_attr "type" "call")])
 
 (define_insn "sibcall_value_multiple_internal"
@@ -8902,8 +8909,8 @@ ld\\t%2,%1-%S1(%2)\;daddu\\t%2,%2,$31\\n\\t%*j\\t%2"
 	      (match_dup 2)))]
   "TARGET_SIBCALLS && SIBLING_CALL_P (insn)"
   "@
-    %*jr\\t%1
-    %*j\\t%1"
+    %*jr\t%1%/
+    %*j\t%1%/"
   [(set_attr "type" "call")])
 
 (define_expand "call"
@@ -8922,7 +8929,7 @@ ld\\t%2,%1-%S1(%2)\;daddu\\t%2,%2,$31\\n\\t%*j\\t%2"
 	 (match_operand 1 "" ""))
    (clobber (reg:SI 31))]
   ""
-  "%*jal\\t%0"
+  "%*jal\t%0%/"
   "reload_completed && TARGET_SPLIT_CALLS"
   [(const_int 0)]
   {
@@ -8939,7 +8946,7 @@ ld\\t%2,%1-%S1(%2)\;daddu\\t%2,%2,$31\\n\\t%*j\\t%2"
    (clobber (reg:SI 31))
    (const_int 1)]
   "TARGET_SPLIT_CALLS"
-  "%*jalr\\t%0"
+  "%*jalr\t%0%/"
   [(set_attr "type" "call")])
 
 (define_expand "call_value"
@@ -8960,7 +8967,7 @@ ld\\t%2,%1-%S1(%2)\;daddu\\t%2,%2,$31\\n\\t%*j\\t%2"
               (match_operand 2 "" "")))
    (clobber (reg:SI 31))]
   ""
-  "%*jal\\t%1"
+  "%*jal\t%1%/"
   "reload_completed && TARGET_SPLIT_CALLS"
   [(const_int 0)]
   {
@@ -8979,7 +8986,7 @@ ld\\t%2,%1-%S1(%2)\;daddu\\t%2,%2,$31\\n\\t%*j\\t%2"
    (clobber (reg:SI 31))
    (const_int 1)]
   "TARGET_SPLIT_CALLS"
-  "%*jalr\\t%1"
+  "%*jalr\t%1%/"
   [(set_attr "type" "call")])
 
 (define_insn_and_split "call_value_multiple_internal"
@@ -8991,7 +8998,7 @@ ld\\t%2,%1-%S1(%2)\;daddu\\t%2,%2,$31\\n\\t%*j\\t%2"
 	      (match_dup 2)))
    (clobber (reg:SI 31))]
   ""
-  "%*jal\\t%1"
+  "%*jal\t%1%/"
   "reload_completed && TARGET_SPLIT_CALLS"
   [(const_int 0)]
   {
@@ -9013,7 +9020,7 @@ ld\\t%2,%1-%S1(%2)\;daddu\\t%2,%2,$31\\n\\t%*j\\t%2"
    (clobber (reg:SI 31))
    (const_int 1)]
   "TARGET_SPLIT_CALLS"
-  "%*jalr\\t%1"
+  "%*jalr\t%1%/"
   [(set_attr "type" "call")])
 
 ;; Call subroutine returning any type.
@@ -9099,6 +9106,18 @@ ld\\t%2,%1-%S1(%2)\;daddu\\t%2,%2,$31\\n\\t%*j\\t%2"
   "%(nop%)"
   [(set_attr "type"	"nop")
    (set_attr "mode"	"none")])
+
+;; Like nop, but commented out when outside a .set noreorder block.
+(define_insn "hazard_nop"
+  [(const_int 1)]
+  ""
+  {
+    if (set_noreorder)
+      return "nop";
+    else
+      return "#nop";
+  }
+  [(set_attr "type"	"arith")])
 
 ;; The MIPS chip does not seem to require stack probes.
 ;;
@@ -9509,9 +9528,9 @@ ld\\t%2,%1-%S1(%2)\;daddu\\t%2,%2,$31\\n\\t%*j\\t%2"
   "*
 {
   if (operands[3] != pc_rtx)
-    return \"%*b%C2z\\t%1,%3\";
+    return \"b%C2z\\t%1,%3\";
   else
-    return \"%*b%N2z\\t%1,%4\";
+    return \"b%N2z\\t%1,%4\";
 }"
   [(set_attr "type"	"branch")
    (set_attr "mode"	"none")
@@ -9534,9 +9553,9 @@ ld\\t%2,%1-%S1(%2)\;daddu\\t%2,%2,$31\\n\\t%*j\\t%2"
   "*
 {
   if (operands[3] != pc_rtx)
-    return \"%*b%C2z\\t%1,%3\";
+    return \"b%C2z\\t%1,%3\";
   else
-    return \"%*b%N2z\\t%1,%4\";
+    return \"b%N2z\\t%1,%4\";
 }"
   [(set_attr "type"	"branch")
    (set_attr "mode"	"none")
@@ -9563,9 +9582,9 @@ ld\\t%2,%1-%S1(%2)\;daddu\\t%2,%2,$31\\n\\t%*j\\t%2"
   "*
 {
   if (operands[3] != pc_rtx)
-    return \"%*bt%C2z\\t%3\";
+    return \"bt%C2z\\t%3\";
   else
-    return \"%*bt%N2z\\t%4\";
+    return \"bt%N2z\\t%4\";
 }"
   [(set_attr "type"	"branch")
    (set_attr "mode"	"none")
@@ -9588,9 +9607,9 @@ ld\\t%2,%1-%S1(%2)\;daddu\\t%2,%2,$31\\n\\t%*j\\t%2"
   "*
 {
   if (operands[3] != pc_rtx)
-    return \"%*bt%C2z\\t%3\";
+    return \"bt%C2z\\t%3\";
   else
-    return \"%*bt%N2z\\t%4\";
+    return \"bt%N2z\\t%4\";
 }"
   [(set_attr "type"	"branch")
    (set_attr "mode"	"none")

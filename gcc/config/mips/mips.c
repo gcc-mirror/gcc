@@ -243,13 +243,17 @@ static void save_restore_insns			PARAMS ((int, rtx, long));
 static void mips_gp_insn			PARAMS ((rtx, rtx));
 static void mips16_fp_args			PARAMS ((FILE *, int, int));
 static void build_mips16_function_stub		PARAMS ((FILE *));
-static void mips16_optimize_gp			PARAMS ((rtx));
+static void mips16_optimize_gp			PARAMS ((void));
 static rtx add_constant				PARAMS ((struct constant **,
 							rtx,
 							enum machine_mode));
 static void dump_constants			PARAMS ((struct constant *,
 							rtx));
 static rtx mips_find_symbol			PARAMS ((rtx));
+static void mips16_lay_out_constants		PARAMS ((void));
+static void mips_avoid_hazard			PARAMS ((rtx, rtx, int *,
+							 rtx *, rtx));
+static void mips_avoid_hazards			PARAMS ((void));
 static void mips_reorg				PARAMS ((void));
 static void abort_with_insn			PARAMS ((rtx, const char *))
   ATTRIBUTE_NORETURN;
@@ -335,6 +339,14 @@ struct machine_function GTY(()) {
 
   /* The register to use as the global pointer within this function.  */
   unsigned int global_pointer;
+
+  /* True if mips_adjust_insn_length should ignore an instruction's
+     hazard attribute.  */
+  bool ignore_hazard_length_p;
+
+  /* True if the whole function is suitable for .set noreorder and
+     .set nomacro.  */
+  bool all_noreorder_p;
 };
 
 /* Information about a single argument.  */
@@ -584,6 +596,9 @@ int mips_dbx_regno[FIRST_PSEUDO_REGISTER];
 
 /* An alias set for the GOT.  */
 static int mips_got_alias_set;
+
+/* A copy of the original flag_delayed_branch: see override_options.  */
+static int mips_flag_delayed_branch;
 
 static GTY (()) int mips_output_filename_first_time = 1;
 
@@ -5153,6 +5168,14 @@ override_options ()
   else
     mips16 = 0;
 
+  /* When using explicit relocs, we call dbr_schedule from within
+     mips_reorg.  */
+  if (TARGET_EXPLICIT_RELOCS)
+    {
+      mips_flag_delayed_branch = flag_delayed_branch;
+      flag_delayed_branch = 0;
+    }
+
   real_format_for_mode[SFmode - QFmode] = &mips_single_format;
   real_format_for_mode[DFmode - QFmode] = &mips_double_format;
 #ifdef MIPS_TFMODE_FORMAT
@@ -5163,6 +5186,7 @@ override_options ()
 
   mips_print_operand_punct['?'] = 1;
   mips_print_operand_punct['#'] = 1;
+  mips_print_operand_punct['/'] = 1;
   mips_print_operand_punct['&'] = 1;
   mips_print_operand_punct['!'] = 1;
   mips_print_operand_punct['*'] = 1;
@@ -5478,6 +5502,7 @@ mips_debugger_offset (addr, offset)
    '*'	Turn on both .set noreorder and .set nomacro if filling delay slots
    '!'	Turn on .set nomacro if filling delay slots
    '#'	Print nop if in a .set noreorder section.
+   '/'	Like '#', but does nothing within a delayed branch sequence
    '?'	Print 'l' if we are to use a branch likely instead of normal branch.
    '@'	Print the name of the assembler temporary register (at or $1).
    '.'	Print the name of the register with a hard-wired zero (zero or $0).
@@ -5549,6 +5574,14 @@ print_operand (file, op, letter)
 	case '#':
 	  if (set_noreorder != 0)
 	    fputs ("\n\tnop", file);
+	  break;
+
+	case '/':
+	  /* Print an extra newline so that the delayed insn is separated
+	     from the following ones.  This looks neater and is consistent
+	     with non-nop delayed sequences.  */
+	  if (set_noreorder != 0 && final_sequence == 0)
+	    fputs ("\n\tnop\n", file);
 	  break;
 
 	case '(':
@@ -7073,10 +7106,16 @@ mips_output_function_prologue (file, size)
       fprintf (file, "\n");
     }
 
-  /* Handle the initialization of $gp for SVR4 PIC.  */
   if (TARGET_ABICALLS && !TARGET_NEWABI && cfun->machine->global_pointer > 0)
-    fprintf (file, "\t.set\tnoreorder\n\t.cpload\t%s\n\t.set\treorder\n",
-	     reg_names[PIC_FUNCTION_ADDR_REGNUM]);
+    {
+      /* Handle the initialization of $gp for SVR4 PIC.  */
+      if (!cfun->machine->all_noreorder_p)
+	output_asm_insn ("%(.cpload\t%^%)", 0);
+      else
+	output_asm_insn ("%(.cpload\t%^\n\t%<", 0);
+    }
+  else if (cfun->machine->all_noreorder_p)
+    output_asm_insn ("%(%<", 0);
 }
 
 /* Emit an instruction to move SRC into DEST.  When generating
@@ -7486,6 +7525,14 @@ mips_output_function_epilogue (file, size)
      HOST_WIDE_INT size ATTRIBUTE_UNUSED;
 {
   rtx string;
+
+  if (cfun->machine->all_noreorder_p)
+    {
+      /* Avoid using %>%) since it adds excess whitespace.  */
+      output_asm_insn (".set\tmacro", 0);
+      output_asm_insn (".set\treorder", 0);
+      set_noreorder = set_nomacro = 0;
+    }
 
 #ifndef FUNCTION_NAME_ALREADY_DECLARED
   if (!flag_inhibit_size_directive)
@@ -8893,8 +8940,7 @@ build_mips16_call_stub (retval, fn, arg_size, fp_code)
    generated is correct, so we do not need to catch all cases.  */
 
 static void
-mips16_optimize_gp (first)
-     rtx first;
+mips16_optimize_gp ()
 {
   rtx gpcopy, slot, insn;
 
@@ -8907,7 +8953,7 @@ mips16_optimize_gp (first)
 
   gpcopy = NULL_RTX;
   slot = NULL_RTX;
-  for (insn = first; insn != NULL_RTX; insn = next_active_insn (insn))
+  for (insn = get_insns (); insn != NULL_RTX; insn = next_active_insn (insn))
     {
       rtx set;
 
@@ -8990,7 +9036,7 @@ mips16_optimize_gp (first)
 
 #if 0
   /* ??? FIXME.  Rewrite for new UNSPEC_RELOC stuff.  */
-      for (insn = first; insn != NULL_RTX; insn = next)
+      for (insn = get_insns (); insn != NULL_RTX; insn = next)
 	{
 	  rtx set1, set2;
 
@@ -9059,7 +9105,7 @@ mips16_optimize_gp (first)
      replace all assignments from SLOT to GPCOPY with assignments from
      $28.  */
 
-  for (insn = first; insn != NULL_RTX; insn = next_active_insn (insn))
+  for (insn = get_insns (); insn != NULL_RTX; insn = next_active_insn (insn))
     {
       rtx set;
 
@@ -9236,21 +9282,13 @@ mips_find_symbol (addr)
    PC relative loads that are out of range.  */
 
 static void
-mips_reorg ()
+mips16_lay_out_constants ()
 {
   int insns_len, max_internal_pool_size, pool_size, addr, first_constant_ref;
   rtx first, insn;
   struct constant *constants;
 
-  if (! TARGET_MIPS16)
-    return;
-
   first = get_insns ();
-
-  /* If $gp is used, try to remove stores, and replace loads with
-     copies from $gp.  */
-  if (optimize)
-    mips16_optimize_gp (first);
 
   /* Scan the function looking for PC relative loads which may be out
      of range.  All such loads will either be from the constant table,
@@ -9436,6 +9474,144 @@ mips_reorg ()
      constant table, but we have no way to prevent that.  */
 }
 
+
+/* Subroutine of mips_reorg.  If there is a hazard between INSN
+   and a previous instruction, avoid it by inserting nops after
+   instruction AFTER.
+
+   *DELAYED_REG and *HILO_DELAY describe the hazards that apply at
+   this point.  If *DELAYED_REG is non-null, INSN must wait a cycle
+   before using the value of that register.  *HILO_DELAY counts the
+   number of instructions since the last hilo hazard (that is,
+   the number of instructions since the last mflo or mfhi).
+
+   After inserting nops for INSN, update *DELAYED_REG and *HILO_DELAY
+   for the next instruction.
+
+   LO_REG is an rtx for the LO register, used in dependence checking.  */
+
+static void
+mips_avoid_hazard (after, insn, hilo_delay, delayed_reg, lo_reg)
+     rtx after, insn, *delayed_reg, lo_reg;
+     int *hilo_delay;
+{
+  rtx pattern, set;
+  int nops, ninsns;
+
+  if (!INSN_P (insn))
+    return;
+
+  pattern = PATTERN (insn);
+
+  /* Do not put the whole function in .set noreorder if it contains
+     an asm statement.  We don't know whether there will be hazards
+     between the asm statement and the gcc-generated code.  */
+  if (GET_CODE (pattern) == ASM_INPUT || asm_noperands (pattern) >= 0)
+    cfun->machine->all_noreorder_p = false;
+
+  /* Ignore zero-length instructions (barriers and the like).  */
+  ninsns = get_attr_length (insn) / 4;
+  if (ninsns == 0)
+    return;
+
+  /* Work out how many nops are needed.  Note that we only care about
+     registers that are explicitly mentioned in the instruction's pattern.
+     It doesn't matter that calls use the argument registers or that they
+     clobber hi and lo.  */
+  if (*hilo_delay < 2 && reg_set_p (lo_reg, pattern))
+    nops = 2 - *hilo_delay;
+  else if (*delayed_reg != 0 && reg_referenced_p (*delayed_reg, pattern))
+    nops = 1;
+  else
+    nops = 0;
+
+  /* Insert the nops between this instruction and the previous one.
+     Each new nop takes us further from the last hilo hazard.  */
+  *hilo_delay += nops;
+  while (nops-- > 0)
+    emit_insn_after (gen_hazard_nop (), after);
+
+  /* Set up the state for the next instruction.  */
+  *hilo_delay += ninsns;
+  *delayed_reg = 0;
+  if (INSN_CODE (insn) >= 0)
+    switch (get_attr_hazard (insn))
+      {
+      case HAZARD_NONE:
+	break;
+
+      case HAZARD_HILO:
+	*hilo_delay = 0;
+	break;
+
+      case HAZARD_DELAY:
+	set = single_set (insn);
+	if (set == 0)
+	  abort ();
+	*delayed_reg = SET_DEST (set);
+	break;
+      }
+}
+
+
+/* Go through the instruction stream and insert nops where necessary.
+   See if the whole function can then be put into .set noreorder &
+   .set nomacro.  */
+
+static void
+mips_avoid_hazards ()
+{
+  rtx insn, last_insn, lo_reg, delayed_reg;
+  int hilo_delay, i;
+
+  /* Recalculate instruction lengths without taking nops into account.  */
+  cfun->machine->ignore_hazard_length_p = true;
+  shorten_branches (get_insns ());
+
+  /* The profiler code uses assembler macros.  */
+  cfun->machine->all_noreorder_p = !current_function_profile;
+
+  last_insn = 0;
+  hilo_delay = 2;
+  delayed_reg = 0;
+  lo_reg = gen_rtx_REG (SImode, LO_REGNUM);
+
+  for (insn = get_insns (); insn != 0; insn = NEXT_INSN (insn))
+    if (INSN_P (insn))
+      {
+	if (GET_CODE (PATTERN (insn)) == SEQUENCE)
+	  for (i = 0; i < XVECLEN (PATTERN (insn), 0); i++)
+	    mips_avoid_hazard (last_insn, XVECEXP (PATTERN (insn), 0, i),
+			       &hilo_delay, &delayed_reg, lo_reg);
+	else
+	  mips_avoid_hazard (last_insn, insn, &hilo_delay,
+			     &delayed_reg, lo_reg);
+
+	last_insn = insn;
+      }
+}
+
+
+/* Implement TARGET_MACHINE_DEPENDENT_REORG.  */
+
+static void
+mips_reorg ()
+{
+  if (TARGET_MIPS16)
+    {
+      if (optimize)
+	mips16_optimize_gp ();
+      mips16_lay_out_constants ();
+    }
+  else if (TARGET_EXPLICIT_RELOCS)
+    {
+      if (mips_flag_delayed_branch)
+	dbr_schedule (get_insns (), rtl_dump_file);
+      mips_avoid_hazards ();
+    }
+}
+
+
 /* Return a number assessing the cost of moving a register in class
    FROM to class TO.  The classes are expressed using the enumeration
    values such as `GENERAL_REGS'.  A value of 2 is the default; other
@@ -9551,7 +9727,7 @@ mips_adjust_insn_length (insn, length)
     length += 4;
 
   /* See how many nops might be needed to avoid hardware hazards.  */
-  if (INSN_CODE (insn) >= 0)
+  if (!cfun->machine->ignore_hazard_length_p && INSN_CODE (insn) >= 0)
     switch (get_attr_hazard (insn))
       {
       case HAZARD_NONE:
@@ -9590,6 +9766,8 @@ mips_output_load_label ()
 	return "%[ld\t%@,%%got_page(%0)(%+)\n\tdaddiu\t%@,%@,%%got_ofst(%0)";
 
       default:
+	if (ISA_HAS_LOAD_DELAY)
+	  return "%[lw\t%@,%%got(%0)(%+)%#\n\taddiu\t%@,%@,%%lo(%0)";
 	return "%[lw\t%@,%%got(%0)(%+)\n\taddiu\t%@,%@,%%lo(%0)";
       }
   else
@@ -9709,10 +9887,10 @@ mips_output_conditional_branch (insn,
     case 8:
       /* Just a simple conditional branch.  */
       if (float_p)
-	sprintf (buffer, "%%*b%s%%?\t%%Z2%%1",
+	sprintf (buffer, "%%*b%s%%?\t%%Z2%%1%%/",
 		 inverted_p ? inverted_comp : comp);
       else
-	sprintf (buffer, "%%*b%s%s%%?\t%s%s,%%1",
+	sprintf (buffer, "%%*b%s%s%%?\t%s%s,%%1%%/",
 		 inverted_p ? inverted_comp : comp,
 		 need_z_p ? "z" : "",
 		 op1,
@@ -9930,7 +10108,7 @@ mips_output_division (division, operands)
       if (TARGET_MIPS16)
 	return "bnez\t%2,1f\n\tbreak\t7\n1:";
       else
-	return "bne\t%2,%.,1f\n\t%#break\t7\n1:";
+	return "bne\t%2,%.,1f%#\n\tbreak\t7\n1:";
     }
   return division;
 }
