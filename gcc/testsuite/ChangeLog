@@ -1,3 +1,7 @@
+2003-07-08  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* gcc.c-torture/compile/20030704-1.c: Add a comment.
+
 2003-07-08  Roger Sayle  <roger@eyesopen.com>
 
 	PR c/11370
