@@ -4068,11 +4068,30 @@ set_unique_reg_note (insn, kind, datum)
 {
   rtx note = find_reg_note (insn, kind, NULL_RTX);
 
-  /* Don't add ASM_OPERAND REG_EQUAL/REG_EQUIV notes.
-     It serves no useful purpose and breaks eliminate_regs.  */
-  if ((kind == REG_EQUAL || kind == REG_EQUIV)
-      && GET_CODE (datum) == ASM_OPERANDS)
-    return NULL_RTX;
+  switch (kind)
+    {
+    case REG_EQUAL:
+    case REG_EQUIV:
+      /* Don't add REG_EQUAL/REG_EQUIV notes if the insn
+	 has multiple sets (some callers assume single_set
+	 means the insn only has one set, when in fact it
+	 means the insn only has one * useful * set).  */
+      if (GET_CODE (PATTERN (insn)) == PARALLEL && multiple_sets (insn))
+	{
+	  if (note)
+	    abort ();
+	  return NULL_RTX;
+	}
+
+      /* Don't add ASM_OPERAND REG_EQUAL/REG_EQUIV notes.
+	 It serves no useful purpose and breaks eliminate_regs.  */
+      if (GET_CODE (datum) == ASM_OPERANDS)
+	return NULL_RTX;
+      break;
+
+    default:
+      break;
+    }
 
   if (note)
     {
