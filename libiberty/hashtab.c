@@ -41,6 +41,10 @@ Boston, MA 02111-1307, USA.  */
 #include <stdlib.h>
 #endif
 
+#ifdef HAVE_STRING_H
+#include <string.h>
+#endif
+
 #include <stdio.h>
 
 #include "libiberty.h"

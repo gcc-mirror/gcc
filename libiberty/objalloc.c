@@ -18,6 +18,8 @@ Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 #include "ansidecl.h"
+#include "config.h"
+
 #include "objalloc.h"
 
 /* Get a definition for NULL.  */
@@ -33,9 +35,14 @@ Boston, MA 02111-1307, USA.  */
 #include <stddef.h>
 #endif
 
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#else
 /* For systems with larger pointers than ints, this must be declared.  */
 extern PTR malloc PARAMS ((size_t));
 extern void free PARAMS ((PTR));
+#endif
+
 #endif
 
 /* These routines allocate space for an object.  Freeing allocated

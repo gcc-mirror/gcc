@@ -21,6 +21,9 @@ Boston, MA 02111-1307, USA.  */
 #include "libiberty.h"
 
 #include <stdio.h>
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
 
 /* This variable is set by xatexit if it is called.  This way, xmalloc
    doesn't drag xatexit into the link.  */
