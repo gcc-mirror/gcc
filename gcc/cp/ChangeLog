@@ -1,5 +1,9 @@
 Wed Nov 26 01:11:24 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* typeck2.c (digest_init): Make copies where appropriate.
+
+	* decl2.c (delete_sanity): resolve_offset_ref.
+
 	* except.c (expand_start_catch_block): Fix catching a reference
 	to pointer.
 
