@@ -1,3 +1,8 @@
+2004-06-02  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	PR fortran/15557
+	* gfortran.fortran-torture/execute/data_3.f90: New testcase.
+
 2004-06-01  Richard Hederson  <rth@redhat.com>
 
 	* g++.dg/template/dependent-expr4.C: Use __builtin_offsetof.
