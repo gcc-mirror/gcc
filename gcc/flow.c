@@ -3368,14 +3368,14 @@ calculate_global_regs_live (blocks_in, blocks_out, flags)
 	  IOR_REG_SET (new_live_at_end, sb->global_live_at_start);
 	}
 
+      /* The all-important stack pointer must always be live.  */
+      SET_REGNO_REG_SET (new_live_at_end, STACK_POINTER_REGNUM);
+
       /* Before reload, there are a few registers that must be forced
 	 live everywhere -- which might not already be the case for 
 	 blocks within infinite loops.  */
       if (! reload_completed)
 	{
-	  /* The all-important stack pointer.  */
-	  SET_REGNO_REG_SET (new_live_at_end, STACK_POINTER_REGNUM);
-
 	  /* Any reference to any pseudo before reload is a potential
 	     reference of the frame pointer.  */
 	  SET_REGNO_REG_SET (new_live_at_end, FRAME_POINTER_REGNUM);
