@@ -450,6 +450,52 @@ choose_temp_base ()
   temp_filename_length = strlen (temp_filename);
 }
 
+/* Routine to add variables to the environment.  */
+
+#ifndef HAVE_PUTENV
+
+putenv (str)
+     char *str;
+{
+#ifndef VMS			/* nor about VMS */
+
+  extern char **environ;
+  char **old_environ = environ;
+  char **envp;
+  int num_envs = 0;
+  int name_len = 1;
+  int str_len = strlen (str);
+  char *p = str;
+  int ch;
+
+  while ((ch = *p++) != '\0' && ch != '=')
+    name_len++;
+
+  if (!ch)
+    abort ();
+
+  /* Search for replacing an existing environment variable, and
+     count the number of total environment variables.  */
+  for (envp = old_environ; *envp; envp++)
+    {
+      num_envs++;
+      if (!strncmp (str, *envp, name_len))
+	{
+	  *envp = str;
+	  return;
+	}
+    }
+
+  /* Add a new environment variable */
+  environ = (char **) xmalloc (sizeof (char *) * (num_envs+2));
+  *environ = str;
+  bcopy (old_environ, environ+1, sizeof (char *) * (num_envs+1));
+
+#endif	/* VMS */
+}
+
+#endif	/* HAVE_PUTENV */
+
 /* By default, colon separates directories in a path.  */
 #ifndef PATH_SEPARATOR
 #define PATH_SEPARATOR ':'
@@ -483,10 +529,10 @@ static struct path_prefix cpath, path;
 static char *target_machine = TARGET_MACHINE;
 #endif
 
-/* Name under which we were executed.  Never return that file in our
+/* Names under which we were executed.  Never return one of those files in our
    searches.  */
 
-static char *our_file_name;
+static char *our_file_name, *last_file_name;
 
 /* Search for NAME using prefix list PPREFIX.  We only look for executable
    files. 
@@ -523,14 +569,18 @@ find_a_file (pprefix, name)
       {
 	strcpy (temp, pl->prefix);
 	strcat (temp, name);
-	if (strcmp (temp, our_file_name) != 0 && access (temp, X_OK) == 0)
+	if (strcmp (temp, our_file_name) != 0
+	    && ! (last_file_name != 0 && strcmp (temp, last_file_name) == 0)
+	    && access (temp, X_OK) == 0)
 	  return temp;
 
 #ifdef EXECUTABLE_SUFFIX
 	/* Some systems have a suffix for executable files.
 	   So try appending that.  */
 	strcat (temp, EXECUTABLE_SUFFIX);
-	if (strcmp (temp, our_file_name) != 0 && access (temp, X_OK) == 0)
+	if (strcmp (temp, our_file_name) != 0
+	    && ! (last_file_name != 0 && strcmp (temp, last_file_name) == 0)
+	    && access (temp, X_OK) == 0)
 	  return temp;
 #endif
       }
@@ -662,6 +712,20 @@ main (argc, argv)
 #endif
 
   our_file_name = argv[0];
+
+  /* We must check that we do not call ourselves in an infinite
+     recursion loop. We save the name used for us in the COLLECT_NAME
+     environment variable, first getting the previous value.
+
+     To be fully safe, we need to maintain a list of names that name
+     been used, but, in practice, two names are enough.  */
+
+  last_file_name = getenv ("COLLECT_NAME");
+
+  p = (char *) xcalloc (sizeof (char *),
+			sizeof (our_file_name) + strlen ("COLLECT_NAME=") + 1);
+  sprintf (p, "COLLECT_NAME=%s", our_file_name);
+  putenv (p);
 
   p = (char *) getenv ("COLLECT_GCC_OPTIONS");
   if (p)
@@ -820,7 +884,7 @@ main (argc, argv)
   if (p)
     c_file_name = p;
 
-  *ld1++ = *ld2++ = "ld";
+  *ld1++ = *ld2++ = ld_file_name;
 
   /* Make temp file names. */
   choose_temp_base ();
