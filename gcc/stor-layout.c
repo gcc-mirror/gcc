@@ -518,7 +518,7 @@ layout_record (rec)
   return pending_statics;
 }
 
-/* Lay out a UNION_TYPE type.
+/* Lay out a UNION_TYPE or QUAL_UNION_TYPE type.
    Lay out all the fields, set their positions to zero,
    and compute the size and alignment of the union (maximum of any field).
    Note that if you set the TYPE_ALIGN before calling this
@@ -541,6 +541,12 @@ layout_union (rec)
   register int const_size = 0;
   register tree var_size = 0;
 
+  /* If this is a QUAL_UNION_TYPE, we want to process the fields in
+     the reverse order in building the COND_EXPR that denotes its
+     size.  We reverse them again later.  */
+  if (TREE_CODE (rec) == QUAL_UNION_TYPE)
+    TYPE_FIELDS (rec) = nreverse (TYPE_FIELDS (rec));
+
   for (field = TYPE_FIELDS (rec); field; field = TREE_CHAIN (field))
     {
       /* Enums which are local to this class need not be laid out.  */
@@ -561,17 +567,28 @@ layout_union (rec)
 	union_align = MAX (union_align, TYPE_ALIGN (TREE_TYPE (field)));
 #endif
 
-      /* Set union_size to max (decl_size, union_size).
-	 There are more and less general ways to do this.
-	 Use only CONST_SIZE unless forced to use VAR_SIZE.  */
+      if (TREE_CODE (rec) == UNION_TYPE)
+	{
+	  /* Set union_size to max (decl_size, union_size).
+	     There are more and less general ways to do this.
+	     Use only CONST_SIZE unless forced to use VAR_SIZE.  */
 
-      if (TREE_CODE (DECL_SIZE (field)) == INTEGER_CST)
-	const_size = MAX (const_size, TREE_INT_CST_LOW (DECL_SIZE (field)));
-      else if (var_size == 0)
-	var_size = DECL_SIZE (field);
-      else
-	var_size = size_binop (MAX_EXPR, var_size, DECL_SIZE (field));
-    }
+	  if (TREE_CODE (DECL_SIZE (field)) == INTEGER_CST)
+	    const_size
+	      = MAX (const_size, TREE_INT_CST_LOW (DECL_SIZE (field)));
+	  else if (var_size == 0)
+	    var_size = DECL_SIZE (field);
+	  else
+	    var_size = size_binop (MAX_EXPR, var_size, DECL_SIZE (field));
+	}
+      else if (TREE_CODE (rec) == QUAL_UNION_TYPE)
+	var_size = fold (build (COND_EXPR, sizetype, DECL_QUALIFIER (field),
+				DECL_SIZE (field),
+				var_size ? var_size : integer_zero_node));
+      }
+
+  if (TREE_CODE (rec) == QUAL_UNION_TYPE)
+    TYPE_FIELDS (rec) = nreverse (TYPE_FIELDS (rec));
 
   /* Determine the ultimate size of the union (in bytes).  */
   if (NULL == var_size)
@@ -827,6 +844,7 @@ layout_type (type)
       break;
 
     case UNION_TYPE:
+    case QUAL_UNION_TYPE:
       layout_union (type);
       TYPE_MODE (type) = BLKmode;
       if (TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
@@ -893,6 +911,7 @@ layout_type (type)
   if (TYPE_MODE (type) != BLKmode && TYPE_MODE (type) != VOIDmode
       && (STRICT_ALIGNMENT
 	  || (TREE_CODE (type) != RECORD_TYPE && TREE_CODE (type) != UNION_TYPE
+	      && TREE_CODE (type) != QUAL_UNION_TYPE
 	      && TREE_CODE (type) != ARRAY_TYPE)))
     TYPE_ALIGN (type) = GET_MODE_ALIGNMENT (TYPE_MODE (type));
 
