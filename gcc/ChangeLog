@@ -1,3 +1,9 @@
+2004-02-23  Dale Johannesen  <dalej@apple.com>
+
+	* config/rs6000.md (movsf_hardfloat): Add POWER form of nop.
+	(movdf_hardfloat64):  Ditto.
+	(movdf_softfloat64):  Ditto.
+
 2004-02-23  Fariborz Jahanian <fjahanian@apple.com>
         * config/rs6000/rs6000.c (function_arg): call to
 	rs6000_mixed_function_arg for DFmode moved to allow
