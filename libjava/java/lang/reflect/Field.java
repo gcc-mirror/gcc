@@ -32,6 +32,12 @@ public final class Field extends AccessibleObject implements Member
   // Offset in bytes from the start of declaringClass's fields array.
   private int offset;
 
+  // This is instantiated by Class sometimes, but it uses C++ and
+  // avoids the Java protection check.
+  Field ()
+  {
+  }
+
   public boolean equals (Object fld)
     {
       if (! (fld instanceof Field))

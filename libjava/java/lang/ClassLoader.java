@@ -196,6 +196,7 @@ public abstract class ClassLoader
   }
 
   protected final Class defineClass(String name, byte[] data, int off, int len)
+    throws ClassFormatError
   {
     return defineClass (name, data, off, len, defaultProtectionDomain);
   }
