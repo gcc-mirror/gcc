@@ -1,3 +1,7 @@
+2000-09-06  Alexandre Oliva  <aoliva@redhat.com>
+
+	* configure: Rebuilt with new libtool.m4.
+
 2000-09-01  Benjamin Kosnik  <bkoz@cygnus.com>
 
 	* src/locale-inst.cc: Remove pre-instantiation of unicode
