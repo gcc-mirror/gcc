@@ -1,3 +1,11 @@
+2004-10-25  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* cfgloopmanip.c (loopify): Take two more arguments true_edge
+	and false_edge.
+	* cfgloop.h: Adjust the corresponding prototype.
+	* loop-unswitch.c (unswitch_loop): Adjust a call to loopify.
+	* tree-ssa-loop-manip.c (tree_ssa_loop_version): Likewise.
+
 2004-10-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* dwarf2out.c (rtl_for_decl_location): Avoid segfault if
