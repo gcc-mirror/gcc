@@ -1,5 +1,12 @@
 2001-11-18  Tom Tromey  <tromey@redhat.com>
 
+	* verify.cc (_Jv_BytecodeVerifier::get_ushort): Use `jint' for
+	temporary values.
+	(_Jv_BytecodeVerifier::get_short): Likewise.
+	(_Jv_BytecodeVerifier::get_int): Likewise.
+	(_Jv_BytecodeVerifier::check_return_type): Reverse ordering of
+	`compatible' call.
+
 	* verify.cc (_Jv_BytecodeVerifier::pop_type): Put PC into error
 	message.
 	(_Jv_BytecodeVerifier::pop64): Likewise.
