@@ -22,6 +22,13 @@
    compatibility problems with the base ABI.  This is slightly better
    than duplicating code, however.  */
 
+/* If using C++, references to abort have to be qualified with std::. */
+#if __cplusplus
+#define __gxx_abort std::abort
+#else
+#define __gxx_abort abort
+#endif
+
 /* Pointer encodings, from dwarf2.h.  */
 #define DW_EH_PE_absptr         0x00
 #define DW_EH_PE_omit           0xff
@@ -66,7 +73,7 @@ size_of_encoded_value (unsigned char encoding)
     case DW_EH_PE_udata8:
       return 8;
     }
-  abort ();
+  __gxx_abort ();
 }
 
 /* Given an encoding and an _Unwind_Context, return the base to which
@@ -94,7 +101,7 @@ base_of_encoded_value (unsigned char encoding, struct _Unwind_Context *context)
     case DW_EH_PE_funcrel:
       return _Unwind_GetRegionStart (context);
     }
-  abort ();
+  __gxx_abort ();
 }
 
 /* Load an encoded value from memory at P.  The value is returned in VAL;
@@ -197,7 +204,7 @@ read_encoded_value_with_base (unsigned char encoding, _Unwind_Ptr base,
 	  break;
 
 	default:
-	  abort ();
+	  __gxx_abort ();
 	}
 
       if (result != 0)
