@@ -30,6 +30,7 @@ h8 port			Jeff Law		law@redhat.com
 h8 port			Kazu Hirata		kazu@hxi.com
 hppa port		Jeff Law		law@redhat.com
 hppa port		Dave Anglin		dave.anglin@nrc.ca
+i386 port		Richard Henderson	rth@redhat.com
 i860 port		Jason Eckhardt		jle@redhat.com
 i960 port		Jim Wilson		wilson@redhat.com
 ia64 port		Jim Wilson		wilson@redhat.com
@@ -53,7 +54,6 @@ sh port			Alexandre Oliva		aoliva@redhat.com
 sparc port		Richard Henderson	rth@redhat.com
 sparc port		David S. Miller		davem@redhat.com
 sparc port		Jakub Jelinek		jakub@redhat.com
-x86 ports		Stan Cox		scox@redhat.com
 xstormy16 port		Geoffrey Keating	geoffk@redhat.com
 v850 port		Nick Clifton		nickc@redhat.com
 v850 port		Michael Meissner	meissner@redhat.com
