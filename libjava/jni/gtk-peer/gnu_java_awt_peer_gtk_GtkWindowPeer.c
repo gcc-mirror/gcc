@@ -119,11 +119,11 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkWindowPeer_connectHooks
   gtk_widget_realize (layout);
 
   connect_awt_hook (env, obj, 1, GTK_LAYOUT (layout)->bin_window);
-  
-    gtk_widget_realize (ptr);
+
+  gtk_widget_realize (ptr);
 
   connect_awt_hook (env, obj, 1, GTK_WIDGET (ptr)->window);
-  
+
   gdk_threads_leave ();
 }
 
