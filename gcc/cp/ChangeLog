@@ -1,3 +1,9 @@
+1999-05-20  Mark Mitchell  <mark@codesourcery.com>
+
+	* call.c (build_object_call): Don't look at DECL_NAME for a type.
+	(pt.c): Or CP_TYPE_QUALS for an ERROR_MARK.
+	(typeck.c): Or TYPE_MAIN_VARIANT for a type.
+
 1999-05-20  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* tree.c (lvalue_p_1): A NOP_EXPR can be an lvalue.

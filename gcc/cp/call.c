@@ -2461,7 +2461,11 @@ build_object_call (obj, args)
       return error_mark_node;
     }
 
-  if (DECL_NAME (cand->fn) == ansi_opname [CALL_EXPR])
+  /* Since cand->fn will be a type, not a function, for a conversion
+     function, we must be careful not to unconditionally look at
+     DECL_NAME here.  */
+  if (TREE_CODE (cand->fn) == FUNCTION_DECL
+      && DECL_NAME (cand->fn) == ansi_opname [CALL_EXPR])
     return build_over_call (cand, mem_args, LOOKUP_NORMAL);
 
   obj = convert_like (TREE_VEC_ELT (cand->convs, 0), obj);
