@@ -655,8 +655,8 @@ extern cpp_buffer *cpp_push_buffer	PARAMS ((cpp_reader *,
 extern cpp_buffer *cpp_pop_buffer	PARAMS ((cpp_reader *));
 extern void cpp_scan_buffer		PARAMS ((cpp_reader *, cpp_printer *));
 extern void cpp_scan_buffer_nooutput	PARAMS ((cpp_reader *));
-
-
+extern int cpp_idcmp			PARAMS ((const unsigned char *,
+						 size_t, const char *));
 
 /* In cpphash.c */
 extern int cpp_defined			PARAMS ((cpp_reader *,

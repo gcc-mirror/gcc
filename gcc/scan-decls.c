@@ -191,9 +191,7 @@ scan_decls (pfile, argc, argv)
 	maybe_handle_comma:
 	  if (token != CPP_COMMA)
 	    goto new_statement;
-#if 0
-	handle_comma:
-#endif
+
 	  /* Handle multiple declarators in a single declaration,
 	     as in:  extern char *strcpy (), *strcat (), ... ; */
 	  if (declarator_start == 0)
@@ -202,12 +200,14 @@ scan_decls (pfile, argc, argv)
 	  break;
 	case CPP_NAME:
 	  /* "inline" and "extern" are recognized but skipped */
-	  if (strcmp (pfile->token_buffer, "inline") == 0)
+	  if (!cpp_idcmp (pfile->token_buffer,
+			  CPP_WRITTEN (pfile), "inline"))
 	    {
 	      saw_inline = 1;
 	      CPP_SET_WRITTEN (pfile, start_written);
 	    }
-	  if (strcmp (pfile->token_buffer, "extern") == 0)
+	  else if (!cpp_idcmp (pfile->token_buffer,
+			       CPP_WRITTEN (pfile), "extern"))
 	    {
 	      saw_extern = 1;
 	      CPP_SET_WRITTEN (pfile, start_written);
