@@ -5508,7 +5508,7 @@ compute_section_prefix (unit_die)
   die_checksum (unit_die, &ctx);
   md5_finish_ctx (&ctx, checksum);
 
-  sprintf (name, "%s.", p);
+  sprintf (name, "%s.", base);
   clean_symbol_name (name);
 
   p = name + strlen (name);
