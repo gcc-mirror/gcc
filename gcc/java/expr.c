@@ -1645,6 +1645,7 @@ expand_invoke (opcode, method_ref_index, nargs)
   if (! CLASS_LOADED_P (self_type))
     {
       load_class (self_type, 1);
+      safe_layout_class (self_type);
       if (TREE_CODE (TYPE_SIZE (self_type)) == ERROR_MARK)
 	fatal ("failed to find class '%s'", self_name);
     }
@@ -1816,7 +1817,9 @@ expand_java_field_op (is_static, is_putting, field_ref_index)
 	    }
 	  else
 	    {
-	      if (! DECL_CONSTRUCTOR_P (current_function_decl))
+	      tree cfndecl_name = DECL_NAME (current_function_decl);
+	      if (! DECL_CONSTRUCTOR_P (current_function_decl)
+		  && (cfndecl_name != finit_identifier_node))
 		error_with_decl (field_decl, "assignment to final field `%s' "
 				 "not in constructor");
 	    }

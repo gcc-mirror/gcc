@@ -22,6 +22,20 @@
 	patch_throw_statement, check_thrown_exceptions,
 	patch_conditional_expr): Likewise.
 
+1999-12-17  Tom Tromey  <tromey@cygnus.com>
+
+	* gjavah.c (decode_signature_piece): Print "::" in JArray<>.  This
+	fixes PR gcj/119.
+	(process_file): Use `\n\' at end of each line in string.
+
+Thu Dec 16 00:09:45 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* expr.c (expand_invoke): Layout the loaded class before
+ 	attempting to use it.
+	(expand_java_field_op): Allow final field assignments to take
+ 	place in $finit$.
+	* typeck.c (convert): Return error_mark_node if expr is null. 
+
 1999-12-14  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* class.c (class_depth): Return -1 if the class doesn't load
@@ -47,12 +61,6 @@
 	* typeck.c (lookup_java_method): Take WFLs in method names into
 	account.
 	
-1999-12-17  Tom Tromey  <tromey@cygnus.com>
-
-	* gjavah.c (decode_signature_piece): Print "::" in JArray<>.  This
-	fixes PR gcj/119.
-	(process_file): Use `\n\' at end of each line in string.
-
 Tue Dec 14 14:20:16 1999  Per Bothner  <per@bothner.com>
 
 	* class.c (make_class_data): flag_keep_inline_functions to keep
