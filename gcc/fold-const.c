@@ -3806,30 +3806,25 @@ fold_truthop (code, truth_type, lhs, rhs)
     {
       if (l_const && integer_zerop (l_const) && integer_pow2p (ll_mask))
 	{
-	  if (ll_unsignedp || tree_log2 (ll_mask) + 1 < ll_bitsize)
-	    l_const = ll_mask;
-	else
-	  /* Since ll_arg is a single bit bit mask, we can sign extend
-	     it appropriately with a NEGATE_EXPR.
-	     l_const is made a signed value here, but since for l_const != NULL
-	     lr_unsignedp is not used, we don't need to clear the latter.  */
-	  l_const = fold (build1 (NEGATE_EXPR, TREE_TYPE (ll_arg),
-				  convert (TREE_TYPE (ll_arg), ll_mask)));
+	  /* Do not sign extend the constant here.  The left operand
+	     is either always unsigned or there is a BIT_AND_EXPR that
+	     masks out the extension bits.  */
+	  if (!	(ll_unsignedp || ll_and_mask != 0))
+	    abort ();
+	  l_const = ll_mask;
 	}
       else
 	return 0;
     }
 
+  /* This is analogous to the code for l_const above.  */
   if (rcode != wanted_code)
     {
       if (r_const && integer_zerop (r_const) && integer_pow2p (rl_mask))
 	{
-	  if (rl_unsignedp || tree_log2 (rl_mask) + 1 < rl_bitsize)
-	    r_const = rl_mask;
-	else
-	  /* This is analogous to the code for l_const above.  */
-	  r_const = fold (build1 (NEGATE_EXPR, TREE_TYPE (rl_arg),
-				  convert (TREE_TYPE (rl_arg), rl_mask)));
+	  if (!	(rl_unsignedp || rl_and_mask != 0))
+	    abort ();
+	  r_const = rl_mask;
 	}
       else
 	return 0;
