@@ -1,3 +1,7 @@
+2000-02-20  Tom Tromey  <tromey@cygnus.com>
+
+	* boehm.cc (_Jv_AllocBytes): Clear returned memory.
+
 2000-02-19  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* java/util/zip/ZipEntry.java (setCrc): Fix overflow.
