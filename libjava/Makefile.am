@@ -2073,6 +2073,7 @@ gnu/java/nio/FileChannelImpl.java \
 gnu/java/nio/FloatBufferImpl.java \
 gnu/java/nio/IntBufferImpl.java \
 gnu/java/nio/LongBufferImpl.java \
+gnu/java/nio/MappedByteFileBuffer.java \
 gnu/java/nio/PipeImpl.java \
 gnu/java/nio/SelectionKeyImpl.java \
 gnu/java/nio/SelectorImpl.java \
@@ -2493,6 +2494,7 @@ gnu/java/nio/natFileChannelImpl.cc \
 gnu/java/nio/natFloatBufferImpl.cc \
 gnu/java/nio/natIntBufferImpl.cc \
 gnu/java/nio/natLongBufferImpl.cc \
+gnu/java/nio/natMappedByteFileBuffer.cc \
 gnu/java/nio/natSelectorImpl.cc \
 gnu/java/nio/natShortBufferImpl.cc \
 gnu/java/nio/natSocketChannelImpl.cc \
