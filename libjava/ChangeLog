@@ -1,3 +1,11 @@
+1999-06-10  Bryce McKinlay  <bryce@albatross.co.nz>
+	* java/net/natInetAddress.cc (aton): Fix typos.
+	(lookup): Use a bigger buffer size for gethostbyname_r on all
+	versions of glibc. Updated FIXME comment explaining this.
+	Modified while loops to not set herr = ERANGE to work around glibc 
+	problems. Use user specified hostname in InetAddress result when
+	available (consistent with JDK).
+
 1999-06-10  Warren Levy  <warrenl@cygnus.com>
 
 	* java/io/FileDescriptor.java (FileDescriptor(String, int)):
