@@ -25,7 +25,7 @@
 const char name_01[] = "testsuite/ofstream_members-1.tst";
 const char name_02[] = "testsuite/ofstream_members-1.txt";
 
-// http://sourceware.cygnus.com/ml/libstdc++/2000-06/msg00136.html
+// http://gcc.gnu.org/ml/libstdc++/2000-06/msg00136.html
 bool test00()
 {
   bool test = true;
@@ -53,7 +53,7 @@ bool test00()
 }
 
 
-// http://sourceware.cygnus.com/ml/libstdc++/2000-07/msg00004.html
+// http://gcc.gnu.org/ml/libstdc++/2000-07/msg00004.html
 bool test01()
 {
   bool test = true;

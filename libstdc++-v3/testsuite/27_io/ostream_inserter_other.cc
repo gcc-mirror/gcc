@@ -93,7 +93,7 @@ test02()
 }
 
 // via Brent Verner <brent@rcfile.org>
-// http://sourceware.cygnus.com/ml/libstdc++/2000-06/msg00005.html
+// http://gcc.gnu.org/ml/libstdc++/2000-06/msg00005.html
 int
 test03(void)
 {

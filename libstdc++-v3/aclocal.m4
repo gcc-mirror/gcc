@@ -1196,9 +1196,9 @@ dnl     experimental flags such as -fhonor-std, -fsquangle, -Dfloat=char, etc.
 dnl     Somehow this same set of flags must be passed when [re]building
 dnl     libgcc.
 dnl --disable-cxx-flags passes nothing.
-dnl  +  See http://sourceware.cygnus.com/ml/libstdc++/2000-q2/msg00131.html
-dnl         http://sourceware.cygnus.com/ml/libstdc++/2000-q2/msg00284.html
-dnl         http://sourceware.cygnus.com/ml/libstdc++/2000-q1/msg00035.html
+dnl  +  See http://gcc.gnu.org/ml/libstdc++/2000-q2/msg00131.html
+dnl         http://gcc.gnu.org/ml/libstdc++/2000-q2/msg00284.html
+dnl         http://gcc.gnu.org/ml/libstdc++/2000-q1/msg00035.html
 dnl  +  Usage:  GLIBCPP_ENABLE_CXX_FLAGS(default flags)
 dnl       If "default flags" is an empty string (or "none"), the effect is
 dnl       the same as --disable or --enable=no.

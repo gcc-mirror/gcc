@@ -1,3 +1,22 @@
+2000-12-21  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* acinclude.m4, configure.in, mkcheck.in,
+	testsuite/21_strings/ctor_copy_dtor.cc,
+	testsuite/21_strings/inserters_extractors.cc,
+	testsuite/23_containers/map_operators.cc,
+	testsuite/23_containers/vector_element_access.cc,
+	testsuite/25_algorithms/lower_bound.cc,
+	testsuite/27_io/ifstream_members.cc,
+	testsuite/27_io/istream_extractor_arith.cc,
+	testsuite/27_io/istream_unformatted.cc,
+	testsuite/27_io/ofstream_members.cc,
+	testsuite/27_io/ostream_inserter_char.cc,
+	testsuite/27_io/ostream_inserter_other.cc,
+	testsuite/27_io/ostream_manip.cc, testsuite/27_io/streambuf.cc:
+	Change sourceware.cygnus.com and sources.redhat.com URLs for
+	libstdc++ web pages and list archives to point to gcc.gnu.org
+	* aclocal.m4, configure: Regenerate.
+
 2000-12-21  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* src/Makefile.am (sources): Remove complex.cc, complexf.cc and

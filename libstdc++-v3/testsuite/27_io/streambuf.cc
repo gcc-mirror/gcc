@@ -191,7 +191,7 @@ void test02()
 }
  
 // test03
-// http://sourceware.cygnus.com/ml/libstdc++/2000-q1/msg00151.html
+// http://gcc.gnu.org/ml/libstdc++/2000-q1/msg00151.html
 template<typename charT, typename traits = std::char_traits<charT> >
   class basic_nullbuf : public std::basic_streambuf<charT, traits>
   {

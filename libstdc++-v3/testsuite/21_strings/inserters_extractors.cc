@@ -237,7 +237,7 @@ void test05(int size)
 
 // istringstream/stringbuf extractor properly size buffer based on
 // actual, not allocated contents (string.size() vs. string.capacity()).
-// http://sourceware.cygnus.com/ml/libstdc++/1999-q4/msg00049.html
+// http://gcc.gnu.org/ml/libstdc++/1999-q4/msg00049.html
 void test06(void)
 {
   bool test = true;
@@ -265,7 +265,7 @@ void test06(void)
 #endif
 }
 
-// http://sourceware.cygnus.com/ml/libstdc++/2000-q1/msg00085.html
+// http://gcc.gnu.org/ml/libstdc++/2000-q1/msg00085.html
 // istream::operator>>(string)
 // sets failbit
 // NB: this is a defect in the standard.

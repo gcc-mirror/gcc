@@ -30,7 +30,7 @@ struct A { };
 
 struct B { };
 
-// http://sources.redhat.com/ml/libstdc++/2000-09/msg00002.html
+// http://gcc.gnu.org/ml/libstdc++/2000-09/msg00002.html
 bool test01()
 {
   bool test = true;
