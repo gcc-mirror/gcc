@@ -52,7 +52,7 @@ import java.security.spec.AlgorithmParameterSpec;
  * then provide an entry pointing to this implementation in the master
  * {@link java.security.Provider} class.
  *
- * <p>Implemetations may optionally implement the {@link
+ * <p>Implementations may optionally implement the {@link
  * java.lang.Cloneable} interface.
  *
  * @author Casey Marshall (csm@gnu.org)
