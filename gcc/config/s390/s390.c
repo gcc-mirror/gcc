@@ -73,7 +73,6 @@ static int s390_adjust_priority (rtx, int);
 static int s390_issue_rate (void);
 static int s390_use_dfa_pipeline_interface (void);
 static int s390_first_cycle_multipass_dfa_lookahead (void);
-static int s390_sched_reorder2 (FILE *, int, rtx *, int *, int);
 static bool s390_rtx_costs (rtx, int, int, int *);
 static int s390_address_cost (rtx);
 static void s390_reorg (void);
@@ -132,8 +131,6 @@ static tree s390_build_builtin_va_list (void);
 #define TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE s390_use_dfa_pipeline_interface
 #undef TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD
 #define TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD s390_first_cycle_multipass_dfa_lookahead
-#undef TARGET_SCHED_REORDER2
-#define TARGET_SCHED_REORDER2 s390_sched_reorder2
 
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS s390_rtx_costs
@@ -3823,19 +3820,6 @@ static int
 s390_first_cycle_multipass_dfa_lookahead (void)
 {
   return s390_use_dfa_pipeline_interface () ? 4 : 0;
-}
-
-/* Called after issuing each insn.
-   Triggers default sort algorithm to better slot instructions.  */
-
-static int
-s390_sched_reorder2 (FILE *dump ATTRIBUTE_UNUSED,
-		     int sched_verbose ATTRIBUTE_UNUSED,
-		     rtx *ready ATTRIBUTE_UNUSED,
-		     int *pn_ready ATTRIBUTE_UNUSED,
-		     int clock_var ATTRIBUTE_UNUSED)
-{
-    return s390_issue_rate();
 }
 
 
