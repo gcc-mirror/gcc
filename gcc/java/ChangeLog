@@ -1,3 +1,12 @@
+2000-04-17  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* gjavah.c (print_name_for_stub_or_jni): Don't prefix method names 
+	with a newline, for CNI.
+	(print_stub_or_jni): Print a space or newline before method name for 
+	CNI as well as JNI.
+	(print_cxx_classname): Don't write leading "::" in CNI stub method.
+	(process_file): Include gcj/cni.h if generating CNI stubs.      
+
 2000-04-16  Tom Tromey  <tromey@cygnus.com>
 
 	* gjavah.c (decompile_method): Use print_field_name.
