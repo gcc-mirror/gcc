@@ -1021,6 +1021,15 @@ get_run_time ()
   else
     return (clock() * 1000);
 #else /* not _WIN32 */
+#ifdef _SC_CLK_TCK
+  {
+    static int tick;
+    if (tick == 0)
+      tick = 1000000 / sysconf(_SC_CLK_TCK);
+    times (&tms);
+    return (tms.tms_utime + tms.tms_stime) * tick;
+  }
+#else
 #ifdef USG
   times (&tms);
   return (tms.tms_utime + tms.tms_stime) * (1000000 / HZ);
@@ -1034,6 +1043,7 @@ get_run_time ()
   return (vms_times.proc_user_time + vms_times.proc_system_time) * 10000;
 #endif	/* VMS */
 #endif	/* USG */
+#endif  /* _SC_CLK_TCK */
 #endif	/* _WIN32 */
 #endif	/* __BEOS__ */
 }
