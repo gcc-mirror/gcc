@@ -659,7 +659,13 @@ linenum:
       while (c == ' ' || c == '\t')
 	c = getc (finput);
       if (c == '\n')
-	return c;
+	{
+	  /* Update the name in the top element of input_file_stack.  */
+	  if (input_file_stack)
+	    input_file_stack->name = input_filename;
+
+	  return c;
+	}
       ungetc (c, finput);
 
       token = yylex ();
@@ -710,6 +716,11 @@ linenum:
 	      used_up = 1;
 	    }
 	}
+
+      /* Now that we've pushed or popped the input stack,
+	 update the name in the top element.  */
+      if (input_file_stack)
+	input_file_stack->name = input_filename;
 
       /* If we have handled a `1' or a `2',
 	 see if there is another number to read.  */
