@@ -3,6 +3,10 @@
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
+@node Contributors
+@unnumbered Contributors to GCC
+@cindex contributors
+
 The GCC project would like to thank its many contributors.  Without them the
 project would not have been nearly as successful as it has been.  Any omissions
 in this list are accidental.  Feel free to contact

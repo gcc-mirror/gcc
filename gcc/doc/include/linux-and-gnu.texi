@@ -1,0 +1,102 @@
+@c Copyright (C) 1997, 1998 Free Software Foundation, Inc.
+@c This is part of the GCC manual.
+@c For copying conditions, see the file gcc.texi.
+
+@node GNU/Linux
+@unnumbered Linux and the GNU Project
+
+Many computer users run a modified version of the GNU system every
+day, without realizing it.  Through a peculiar turn of events, the
+version of GNU which is widely used today is more often known as
+``Linux'', and many users are not aware of the extent of its
+connection with the GNU Project.
+
+There really is a Linux; it is a kernel, and these people are using
+it.  But you can't use a kernel by itself; a kernel is useful only as
+part of a whole system.  The system in which Linux is typically used
+is a modified variant of the GNU system---in other words, a Linux-based
+GNU system.
+
+Many users are not fully aware of the distinction between the kernel,
+which is Linux, and the whole system, which they also call ``Linux''.
+The ambiguous use of the name doesn't promote understanding.
+
+Programmers generally know that Linux is a kernel.  But since they
+have generally heard the whole system called ``Linux'' as well, they
+often envisage a history which fits that name.  For example, many
+believe that once Linus Torvalds finished writing the kernel, his
+friends looked around for other free software, and for no particular
+reason most everything necessary to make a Unix-like system was
+already available.
+
+What they found was no accident---it was the GNU system.  The available
+free software added up to a complete system because the GNU Project
+had been working since 1984 to make one.  The GNU Manifesto
+had set forth the goal of developing a free Unix-like system, called
+GNU@.  By the time Linux was written, the system was almost finished.
+
+Most free software projects have the goal of developing a particular
+program for a particular job.  For example, Linus Torvalds set out to
+write a Unix-like kernel (Linux); Donald Knuth set out to write a text
+formatter (TeX); Bob Scheifler set out to develop a window system (X
+Windows).  It's natural to measure the contribution of this kind of
+project by specific programs that came from the project.
+
+If we tried to measure the GNU Project's contribution in this way,
+what would we conclude?  One CD-ROM vendor found that in their ``Linux
+distribution'', GNU software was the largest single contingent, around
+28% of the total source code, and this included some of the essential
+major components without which there could be no system.  Linux itself
+was about 3%.  So if you were going to pick a name for the system
+based on who wrote the programs in the system, the most appropriate
+single choice would be ``GNU''@.
+
+But we don't think that is the right way to consider the question.
+The GNU Project was not, is not, a project to develop specific
+software packages.  It was not a project to develop a C compiler,
+although we did.  It was not a project to develop a text editor,
+although we developed one.  The GNU Project's aim was to develop
+@emph{a complete free Unix-like system}.
+
+Many people have made major contributions to the free software in the
+system, and they all deserve credit.  But the reason it is @emph{a
+system}---and not just a collection of useful programs---is because the
+GNU Project set out to make it one.  We wrote the programs that were
+needed to make a @emph{complete} free system.  We wrote essential but
+unexciting major components, such as the assembler and linker, because
+you can't have a system without them.  A complete system needs more
+than just programming tools, so we wrote other components as well,
+such as the Bourne Again SHell, the PostScript interpreter
+Ghostscript, and the GNU C library.
+
+By the early 90s we had put together the whole system aside from the
+kernel (and we were also working on a kernel, the GNU Hurd, which runs
+on top of Mach).  Developing this kernel has been a lot harder than we
+expected, and we are still working on finishing it.
+
+Fortunately, you don't have to wait for it, because Linux is working
+now.  When Linus Torvalds wrote Linux, he filled the last major gap.
+People could then put Linux together with the GNU system to make a
+complete free system: a Linux-based GNU system (or GNU/Linux system,
+for short).
+
+Putting them together sounds simple, but it was not a trivial job.
+The GNU C library (called glibc for short) needed substantial changes.
+Integrating a complete system as a distribution that would work ``out
+of the box'' was a big job, too.  It required addressing the issue of
+how to install and boot the system---a problem we had not tackled,
+because we hadn't yet reached that point.  The people who developed
+the various system distributions made a substantial contribution.
+
+The GNU Project supports GNU/Linux systems as well as @emph{the}
+GNU system---even with funds.  We funded the rewriting of the
+Linux-related extensions to the GNU C library, so that now they are
+well integrated, and the newest GNU/Linux systems use the current
+library release with no changes.  We also funded an early stage of the
+development of Debian GNU/Linux.
+
+We use Linux-based GNU systems today for most of our work, and we hope
+you use them too.  But please don't confuse the public by using the
+name ``Linux'' ambiguously.  Linux is the kernel, one of the essential
+major components of the system.  The system as a whole is more or less
+the GNU system.
