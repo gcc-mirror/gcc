@@ -401,6 +401,7 @@ static char *predicates[MAX_MAX_OPERANDS];
 static char address_p[MAX_MAX_OPERANDS];
 static enum machine_mode modes[MAX_MAX_OPERANDS];
 static char strict_low[MAX_MAX_OPERANDS];
+static char seen[MAX_MAX_OPERANDS];
 
 static void
 scan_operands (part, this_address_p, this_strict_low)
@@ -422,8 +423,15 @@ scan_operands (part, this_address_p, this_strict_low)
       if (opno > max_opno)
 	max_opno = opno;
       if (max_opno >= MAX_MAX_OPERANDS)
-	error ("Too many operands (%d) in one instruction pattern.\n",
-	       max_opno + 1);
+	{
+	  error ("Too many operands (%d) in instruction pattern %d.\n",
+		 max_opno + 1, next_index_number);
+	  return;
+	}
+      if (seen[opno])
+	error ("Insn pattern %d specified operand number %d more than once.\n",
+	       next_index_number, opno);
+      seen[opno] = 1;
       modes[opno] = GET_MODE (part);
       strict_low[opno] = this_strict_low;
       predicates[opno] = XSTR (part, 1);
@@ -441,8 +449,15 @@ scan_operands (part, this_address_p, this_strict_low)
       if (opno > max_opno)
 	max_opno = opno;
       if (max_opno >= MAX_MAX_OPERANDS)
-	error ("Too many operands (%d) in one instruction pattern.\n",
-	       max_opno + 1);
+	{
+	  error ("Too many operands (%d) in instruction pattern %d.\n",
+		 max_opno + 1, next_index_number);
+	  return;
+	}
+      if (seen[opno])
+	error ("Insn pattern %d specified operand number %d more than once.\n",
+	       next_index_number, opno);
+      seen[opno] = 1;
       modes[opno] = GET_MODE (part);
       strict_low[opno] = 0;
       predicates[opno] = "scratch_operand";
@@ -461,8 +476,15 @@ scan_operands (part, this_address_p, this_strict_low)
       if (opno > max_opno)
 	max_opno = opno;
       if (max_opno >= MAX_MAX_OPERANDS)
-	error ("Too many operands (%d) in one instruction pattern.\n",
-	       max_opno + 1);
+	{
+	  error ("Too many operands (%d) in instruction pattern %d.\n",
+		 max_opno + 1, next_index_number);
+	  return;
+	}
+      if (seen[opno])
+	error ("Insn pattern %d specified operand number %d more than once.\n",
+	       next_index_number, opno);
+      seen[opno] = 1;
       modes[opno] = GET_MODE (part);
       strict_low[opno] = 0;
       predicates[opno] = XSTR (part, 1);
@@ -638,6 +660,7 @@ gen_insn (insn)
   mybzero (address_p, sizeof address_p);
   mybzero (modes, sizeof modes);
   mybzero (strict_low, sizeof strict_low);
+  mybzero (seen, sizeof seen);
 
   for (i = 0; i < XVECLEN (insn, 1); i++)
     scan_operands (XVECEXP (insn, 1, i), 0, 0);
@@ -684,6 +707,11 @@ gen_peephole (peep)
   max_opno = -1;
   mybzero (constraints, sizeof constraints);
   mybzero (op_n_alternatives, sizeof op_n_alternatives);
+  mybzero (predicates, sizeof predicates);
+  mybzero (address_p, sizeof address_p);
+  mybzero (modes, sizeof modes);
+  mybzero (strict_low, sizeof strict_low);
+  mybzero (seen, sizeof seen);
 
   /* Get the number of operands by scanning all the
      patterns of the peephole optimizer.
@@ -744,6 +772,7 @@ gen_expand (insn)
   mybzero (address_p, sizeof address_p);
   mybzero (modes, sizeof modes);
   mybzero (strict_low, sizeof strict_low);
+  mybzero (seen, sizeof seen);
 
   if (XVEC (insn, 1))
     for (i = 0; i < XVECLEN (insn, 1); i++)
@@ -794,6 +823,11 @@ gen_split (split)
 
   mybzero (constraints, sizeof constraints);
   mybzero (op_n_alternatives, sizeof op_n_alternatives);
+  mybzero (predicates, sizeof predicates);
+  mybzero (address_p, sizeof address_p);
+  mybzero (modes, sizeof modes);
+  mybzero (strict_low, sizeof strict_low);
+  mybzero (seen, sizeof seen);
 
   /* Get the number of operands by scanning all the
      patterns of the split patterns.
