@@ -958,8 +958,10 @@ main (argc, argv)
   if (ld_file_name == 0)
     ld_file_name = find_a_file (&path, REAL_LD_FILE_NAME);
 #endif
+  /* Search the compiler directories for `ld'.  We have protection against
+     recursive calls in find_a_file.  */
   if (ld_file_name == 0)
-    ld_file_name = find_a_file (&cpath, full_ld_suffix);
+    ld_file_name = find_a_file (&cpath, ld_suffix);
   /* Search the ordinary system bin directories
      for `ld' (if native linking) or `TARGET-ld' (if cross).  */
   if (ld_file_name == 0)
