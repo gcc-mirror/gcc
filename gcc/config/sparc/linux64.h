@@ -236,6 +236,7 @@ Boston, MA 02111-1307, USA.  */
 %{mv8:-mcpu=v8} %{msupersparc:-mcpu=supersparc} \
 %{m32:-mptr32 -mno-stack-bias \
   %{!mcpu*:%{!mcypress:%{!msparclite:%{!mf930:%{!mf934:%{!mv8:%{!msupersparc:-mcpu=cypress}}}}}}}} \
+%{!m32:%{!mcpu*:-mcpu=ultrasparc}} \
 %{!mno-vis:%{!m32:%{!mcpu=v9:-mvis}}} \
 "
 #endif

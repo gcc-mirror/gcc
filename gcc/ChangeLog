@@ -31,6 +31,11 @@
 	addtf3_hq, subtf3_hq, multf3_hq, divtf3_hq, sqrttf3_hq): Rename from
 	non-_hq patterns.
 
+	* configure.in (sparc64-*-linux*): Use posix threads if enabled.
+	* configure: Rebuilt.
+	* config/sparc/linux64.h: Default to -mcpu=ultrasparc if no
+	-mcpu is given and we're doing 64bit compiles.
+
 Tue Dec  7 19:22:06 1999  Richard Henderson  <rth@cygnus.com>
 
 	* loop.h (struct induction): Add multi_insn_incr.
