@@ -3307,27 +3307,54 @@ esac
 target_cpu_default2=
 case $machine in
 i486-*-*)
-	target_cpu_default2=1
+	target_cpu_default2=TARGET_CPU_DEFAULT_i486
 	;;
 i586-*-*)
 	case $target_alias in
+		k6_2-*)
+			target_cpu_default2=TARGET_CPU_DEFAULT_k6_2
+			;;
+		k6_3-*)
+			target_cpu_default2=TARGET_CPU_DEFAULT_k6_3
+			;;
 		k6-*)
-			target_cpu_default2=4
+			target_cpu_default2=TARGET_CPU_DEFAULT_k6
+			;;
+		pentium_mmx-*)
+			target_cpu_default2=TARGET_CPU_DEFAULT_pentium_mmx
 			;;
 		*)
-			target_cpu_default2=2
+			target_cpu_default2=TARGET_CPU_DEFAULT_pentium
 			;;
 	esac
 	;;
 i686-*-* | i786-*-*)
 	case $target_alias in
-		athlon-*)
-			target_cpu_default2=5
+		athlon_xp-*|athlon_mp-*|athlon_4-*)
+			target_cpu_default2=TARGET_CPU_DEFAULT_athlon_sse
+			;;
+		athlon_tbird-*|athlon-*)
+			target_cpu_default2=TARGET_CPU_DEFAULT_athlon
+			;;
+		pentium2-*)
+			target_cpu_default2=TARGET_CPU_DEFAULT_pentium2
+			;;
+		pentium3-*)
+			target_cpu_default2=TARGET_CPU_DEFAULT_pentium3
+			;;
+		pentium4-*)
+			target_cpu_default2=TARGET_CPU_DEFAULT_pentium4
 			;;
 		*)
-			target_cpu_default2=3
+			target_cpu_default2=TARGET_CPU_DEFAULT_pentiumpro
 			;;
 	esac
+	;;
+x86_64-*-*)
+	# We should have hammer chip here, but it does not exist yet and
+	# thus it is not supported.  Athlon_SSE is probably equivalent feature
+	# wise to hammer from our point of view except for 64bit mode.
+	target_cpu_default2=TARGET_CPU_DEFAULT_athlon_sse
 	;;
 alpha*-*-*)
 	case $machine in
