@@ -5568,6 +5568,21 @@
   [(set_attr "type" "branch")
    (set_attr "length" "4")])
 
+;; Use the PIC register to ensure it's restored after a
+;; call in PIC mode.  This is used for eh returns which
+;; bypass the return stub.
+(define_insn "return_external_pic"
+  [(return)
+   (use (match_operand 0 "register_operand" "r"))
+   (use (reg:SI 2))
+   (clobber (reg:SI 1))]
+  "flag_pic
+   && current_function_calls_eh_return
+   && true_regnum (operands[0]) == PIC_OFFSET_TABLE_REGNUM"
+  "ldsid (%%sr0,%%r2),%%r1\;mtsp %%r1,%%sr0\;be%* 0(%%sr0,%%r2)"
+  [(set_attr "type" "branch")
+   (set_attr "length" "12")])
+
 (define_expand "prologue"
   [(const_int 0)]
   ""
@@ -5590,15 +5605,24 @@
   /* Try to use the trivial return first.  Else use the full
      epilogue.  */
   if (hppa_can_use_return_insn_p ())
-   emit_jump_insn (gen_return ());
+    emit_jump_insn (gen_return ());
   else
     {
       rtx x;
 
       hppa_expand_epilogue ();
       if (flag_pic)
-	x = gen_return_internal_pic (gen_rtx_REG (word_mode,
-						  PIC_OFFSET_TABLE_REGNUM));
+	{
+	  rtx pic = gen_rtx_REG (word_mode, PIC_OFFSET_TABLE_REGNUM);
+
+	  /* EH returns bypass the normal return stub.  Thus, we must do an
+	     interspace branch to return from functions that call eh_return.
+	     This is only a problem for returns from shared code.  */
+	  if (current_function_calls_eh_return)
+	    x = gen_return_external_pic (pic);
+	  else
+	    x = gen_return_internal_pic (pic);
+	}
       else
 	x = gen_return_internal ();
       emit_jump_insn (x);
@@ -5856,18 +5880,19 @@
   [(set_attr "type" "call")
    (set (attr "length")
 ;;       If we're sure that we can either reach the target or that the
-;;	 linker can use a long-branch stub, then the length is 4 bytes.
+;;	 linker can use a long-branch stub, then the length is at most
+;;	 8 bytes.
 ;;
-;;	 For long-calls the length will be either 52 bytes (non-pic)
-;;	 or 68 bytes (pic).  */
+;;	 For long-calls the length will be at most 68 bytes (non-pic)
+;;	 or 84 bytes (pic).  */
 ;;	 Else we have to use a long-call;
       (if_then_else (lt (plus (symbol_ref "total_code_bytes") (pc))
 			(const_int 240000))
-		    (const_int 4)
+		    (const_int 8)
 		    (if_then_else (eq (symbol_ref "flag_pic")
 				      (const_int 0))
-				  (const_int 52)
-				  (const_int 68))))])
+				  (const_int 68)
+				  (const_int 84))))])
 
 (define_insn "call_internal_reg_64bit"
   [(call (mem:SI (match_operand:DI 0 "register_operand" "r"))
@@ -6029,18 +6054,19 @@
   [(set_attr "type" "call")
    (set (attr "length")
 ;;       If we're sure that we can either reach the target or that the
-;;	 linker can use a long-branch stub, then the length is 4 bytes.
+;;	 linker can use a long-branch stub, then the length is at most
+;;	 8 bytes.
 ;;
-;;	 For long-calls the length will be either 52 bytes (non-pic)
-;;	 or 68 bytes (pic).  */
+;;	 For long-calls the length will be at most 68 bytes (non-pic)
+;;	 or 84 bytes (pic).  */
 ;;	 Else we have to use a long-call;
       (if_then_else (lt (plus (symbol_ref "total_code_bytes") (pc))
 			(const_int 240000))
-		    (const_int 4)
+		    (const_int 8)
 		    (if_then_else (eq (symbol_ref "flag_pic")
 				      (const_int 0))
-				  (const_int 52)
-				  (const_int 68))))])
+				  (const_int 68)
+				  (const_int 84))))])
 
 (define_insn "call_value_internal_reg_64bit"
   [(set (match_operand 0 "" "=rf")
@@ -6200,18 +6226,19 @@
   [(set_attr "type" "call")
    (set (attr "length")
 ;;       If we're sure that we can either reach the target or that the
-;;	 linker can use a long-branch stub, then the length is 4 bytes.
+;;	 linker can use a long-branch stub, then the length is at most
+;;	 8 bytes.
 ;;
-;;	 For long-calls the length will be either 52 bytes (non-pic)
-;;	 or 68 bytes (pic).  */
+;;	 For long-calls the length will be at most 68 bytes (non-pic)
+;;	 or 84 bytes (pic).  */
 ;;	 Else we have to use a long-call;
       (if_then_else (lt (plus (symbol_ref "total_code_bytes") (pc))
 			(const_int 240000))
-		    (const_int 4)
+		    (const_int 8)
 		    (if_then_else (eq (symbol_ref "flag_pic")
 				      (const_int 0))
-				  (const_int 52)
-				  (const_int 68))))])
+				  (const_int 68)
+				  (const_int 84))))])
 
 (define_expand "sibcall_value"
   [(parallel [(set (match_operand 0 "" "")
@@ -6258,18 +6285,19 @@
   [(set_attr "type" "call")
    (set (attr "length")
 ;;       If we're sure that we can either reach the target or that the
-;;	 linker can use a long-branch stub, then the length is 4 bytes.
+;;	 linker can use a long-branch stub, then the length is at most
+;;	 8 bytes.
 ;;
-;;	 For long-calls the length will be either 52 bytes (non-pic)
-;;	 or 68 bytes (pic).  */
+;;	 For long-calls the length will be at most 68 bytes (non-pic)
+;;	 or 84 bytes (pic).  */
 ;;	 Else we have to use a long-call;
       (if_then_else (lt (plus (symbol_ref "total_code_bytes") (pc))
 			(const_int 240000))
-		    (const_int 4)
+		    (const_int 8)
 		    (if_then_else (eq (symbol_ref "flag_pic")
 				      (const_int 0))
-				  (const_int 52)
-				  (const_int 68))))])
+				  (const_int 68)
+				  (const_int 84))))])
 
 (define_insn "nop"
   [(const_int 0)]
@@ -7216,16 +7244,12 @@
 ;; restore the PIC register.
 (define_expand "exception_receiver"
   [(const_int 4)]
-  "!TARGET_PORTABLE_RUNTIME && flag_pic"
+  "flag_pic"
   "
 {
-  /* Load the PIC register from the stack slot (in our caller's
-     frame).  */
-  emit_move_insn (pic_offset_table_rtx,
-		  gen_rtx_MEM (SImode,
-			       plus_constant (stack_pointer_rtx, -32)));
-  emit_insn (gen_rtx (USE, VOIDmode, pic_offset_table_rtx));
-  emit_insn (gen_blockage ());
+  /* Restore the PIC register using hppa_pic_save_rtx ().  The
+     PIC register is not saved in the frame in 64-bit ABI.  */
+  emit_move_insn (pic_offset_table_rtx, hppa_pic_save_rtx ());
   DONE;
 }")
 
