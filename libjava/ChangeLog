@@ -1,4 +1,4 @@
-2003-02-03  Andrew Haley  <aph@emcee.cambridge.redhat.com>
+2003-02-03  Andrew Haley  <aph@redhat.com>
 
 	* configure.host (x86_64): Enable interpreter.
 
