@@ -66,8 +66,10 @@ java::lang::System::arraycopy (jobject src, jint src_offset,
   __JArray *src_a = (__JArray *) src;
   __JArray *dst_a = (__JArray *) dst;
   if (src_offset < 0 || dst_offset < 0 || count < 0
-      || src_offset + count > src_a->length
-      || dst_offset + count > dst_a->length)
+      || (unsigned jint) src_offset > (unsigned jint) src_a->length
+      || (unsigned jint) (src_offset + count) > (unsigned jint) src_a->length
+      || (unsigned jint) dst_offset > (unsigned jint) dst_a->length
+      || (unsigned jint) (dst_offset + count) > (unsigned jint) dst_a->length)
     throw new ArrayIndexOutOfBoundsException;
 
   // Do-nothing cases.
