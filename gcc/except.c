@@ -463,7 +463,6 @@ static void start_dynamic_cleanup	PARAMS ((tree, tree));
 static void start_dynamic_handler	PARAMS ((void));
 static void expand_rethrow	PARAMS ((rtx));
 static void output_exception_table_entry	PARAMS ((FILE *, int));
-static int can_throw		PARAMS ((rtx));
 static rtx scan_region		PARAMS ((rtx, int, int *));
 static void eh_regs		PARAMS ((rtx *, rtx *, rtx *, int));
 static void set_insn_eh_region	PARAMS ((rtx *, int));
@@ -2688,12 +2687,11 @@ free_eh_status (f)
 }
 
 /* This section is for the exception handling specific optimization
-   pass.  First are the internal routines, and then the main
-   optimization pass.  */
+   pass.  */
 
 /* Determine if the given INSN can throw an exception.  */
 
-static int
+int
 can_throw (insn)
      rtx insn;
 {

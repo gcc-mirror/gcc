@@ -1,3 +1,9 @@
+2000-05-25  Mark Mitchell  <mark@codesourcery.com>
+
+	* except.h (can_throw): Declare it.
+	* except.c (can_throw): Give it external linkage.
+	* resource.c (find_dead_or_set_registers): Use can_throw.
+	
 2000-05-25  Richard Henderson  <rth@cygnus.com>
 
 	* flow.c (mark_set_1): Don't record conditionally dead memory.
