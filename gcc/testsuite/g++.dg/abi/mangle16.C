@@ -10,5 +10,9 @@ template void f<7>(S<e + 1>);
 template <int I> void g (S<e>) {}
 template void g<7>(S<e>);
 
-// { dg-final { scan-assembler _Z1fILi7EEv1SIXplL1E3ELi1EEE } }
-// { dg-final { scan-assembler _Z1gILi7EEv1SIL1E3EE } }
+template <int I> void h (S<I + 1>) {}
+template void h<7>(S<7 + 1>);
+
+// { dg-final { scan-assembler _Z1fILi7EEv1SILi4EE } }
+// { dg-final { scan-assembler _Z1gILi7EEv1SILi3EE } }
+// { dg-final { scan-assembler _Z1hILi7EEv1SIXplT_Li1EEE } }

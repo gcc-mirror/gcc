@@ -4,7 +4,7 @@ Thu Oct 17 19:12:58 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 2002-10-17  Mark Mitchell  <mark@codesourcery.com>
 
-	* g++.dg/abi/mangle17.C: Adjust.
+	* g++.dg/abi/mangle16.C: Adjust.
 
 	* g++.dg/init/array8.C: New test.
 
