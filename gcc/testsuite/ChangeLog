@@ -1,3 +1,7 @@
+2003-11-10  Waldek Hebisch  <hebisch@math.uni.wroc.pl>
+
+	* gcc.dg/trampoline-1.c: New test.
+
 2003-11-09  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* gcc.c-torture/compile/200031109-1.c: New test.
