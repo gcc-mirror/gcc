@@ -1,5 +1,7 @@
 #! /bin/sh
 # Install modified versions of certain problematic Irix include files.
+# If possible, create a wrapper (see fixinc.wrap) instead of copying files.
+#
 # Copyright (C) 1997 Free Software Foundation, Inc.
 # Contributed by Brendan Kehoe (brendan@cygnus.com).
 #
@@ -59,40 +61,40 @@ echo 'Building fixincludes in ' ${LIB}
 #	ADD ANY OTHERS, the "Making directories:" and symlinks code from
 #	fixinc.svr4 may have to go back in.
 
-# The Irix math.h defines struct exception, which conflicts with
+# This math.h fix is copied from fixinc.wrap.  We want to avoid copying
+# math.h because both math.h and stdlib.h have a declaration for initstate,
+# and this declaration changed between Irix 6.2 and Irix 6.3.  If we copy this
+# file, then the same toolchain can't be shared between 6.2 and 6.3+.
+
+# Some math.h files define struct exception, which conflicts with
 # the class exception defined in the C++ file std/stdexcept.h.  We
 # redefine it to __math_exception.  This is not a great fix, but I
 # haven't been able to think of anything better.
 file=math.h
-base=`basename $file`
-if [ -r ${LIB}/$file ]; then
-  file_to_fix=${LIB}/$file
-else
-  if [ -r ${INPUT}/$file ]; then
-    file_to_fix=${INPUT}/$file
-  else
-    file_to_fix=""
+if [ -r $INPUT/$file ]; then
+  echo Checking $INPUT/$file
+  if grep 'struct exception' $INPUT/$file >/dev/null
+  then
+    echo Fixed $file
+    rm -f $LIB/$file
+    cat <<'__EOF__' >$LIB/$file
+#ifndef _MATH_H_WRAPPER
+#ifdef __cplusplus
+# define exception __math_exception
+#endif
+#include_next <math.h>
+#ifdef __cplusplus
+# undef exception
+#endif
+#define _MATH_H_WRAPPER
+#endif /* _MATH_H_WRAPPER */
+__EOF__
+    # Define _MATH_H_WRAPPER at the end of the wrapper, not the start,
+    # so that if #include_next gets another instance of the wrapper,
+    # this will follow the #include_next chain until we arrive at
+    # the real <math.h>.
+    chmod a+r $LIB/$file
   fi
-fi
-if [ \! -z "$file_to_fix" ]; then
-  echo Checking $file_to_fix
-  sed -e '/struct exception/i\
-#ifdef __cplusplus\
-#define exception __math_exception\
-#endif'\
-      -e '/struct exception/a\
-#ifdef __cplusplus\
-#undef exception\
-#endif' $file_to_fix > /tmp/$base
-  if cmp $file_to_fix /tmp/$base >/dev/null 2>&1; then \
-    true
-  else
-    echo Fixed $file_to_fix
-    rm -f ${LIB}/$file
-    cp /tmp/$base ${LIB}/$file
-    chmod a+r ${LIB}/$file
-  fi
-  rm -f /tmp/$base
 fi
 
 # In limits.h, put #ifndefs around things that are supposed to be defined
