@@ -1,5 +1,5 @@
 // { dg-do run  }
-// { dg-gpp-additional-sources " comdat1-aux.cc" }
+// { dg-additional-sources " comdat1-aux.cc" }
 // { dg-options "-O" }
 // Test that statics in inline functions are unified between
 // translation units.  Currently we handle this by just suppressing

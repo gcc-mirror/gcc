@@ -1,3 +1,55 @@
+2003-06-05  Mark Mitchell  <mark@codesourcery.com>
+
+	* lib/gcc-defs.exp (additional_sources): New variable.
+	(dg-additional-sources): New function.
+	(additional_files): New variable.
+	(dg-additional-files): New function.
+	(dg-additional-files-options): Likewise.
+	* lib/gcc-dg.exp (dg-require-weak): New function.
+	(dg-require-alias): Likewise.
+	(dg-require-gc-sections): Likewise.
+	* lib/target-supports.exp (check_alias_available): Remove testfile
+	parameter.
+	(check_gc_sections_available): New function.
+	* lib/g++-dg.exp (dg-gpp-additional-sources): Remove.
+	(dg-gpp-additional-files): Likewise.
+	* lib/g++.exp (additional_sources): Remove.
+	(additional_files): Likewise.
+	(g++_target_compile): Use dg-additional-files-options.
+	
+	* gcc.dg/special/special.exp: Add "ecos" tests.  Remove complex
+	Tcl logic.
+	* gcc.dg/special/ecos.exp: Remove.
+	* gcc.dg/special/20000419-2.c: Use dg-require-*.
+	* gcc.dg/special/alias-1.c: Likewise.
+	* gcc.dg/special/alias-2.c: Likewise.
+	* gcc.dg/special/gcsec-1.c: Likewise.
+	* gcc.dg/special/weak-1.c: Likewise.
+	* gcc.dg/special/weak-2.c: Likewise.
+	* gcc.dg/special/wkali-1.c: Likewise.
+	* gcc.dg/special/wkali-2.c: Likewise.
+	
+	* g++.dg/special/conpr-2.C: Use dg-additional-*, not
+	dg-gpp-additional-*.
+	* g++.dg/special/conpr-3.C: Likewise.
+	* g++.dg/special/conpr-4.C: Likewise.
+	* g++.old-deja/g++.abi/vtable3a.C: Likewise.
+	* g++.old-deja/g++.abi/vtable3b.C: Likewise.
+	* g++.old-deja/g++.abi/vtable3c.C: Likewise.
+	* g++.old-deja/g++.abi/vtable3d.C: Likewise.
+	* g++.old-deja/g++.abi/vtable3e.C: Likewise.
+	* g++.old-deja/g++.abi/vtable3f.C: Likewise.
+	* g++.old-deja/g++.abi/vtable3g.C: Likewise.
+	* g++.old-deja/g++.abi/vtable3h.C: Likewise.
+	* g++.old-deja/g++.abi/vtable3i.C: Likewise.
+	* g++.old-deja/g++.abi/vtable3j.C: Likewise.
+	* g++.old-deja/g++.oliva/linkage1.C: Likewise.
+	* g++.old-deja/g++.other/comdat1.C: Likewise.
+	* g++.old-deja/g++.other/comdat2.C: Likewise.
+	* g++.old-deja/g++.other/comdat3.C: Likewise.
+	* g++.old-deja/g++.other/ctor1.C: Likewise.
+	* g++.old-deja/g++.pt/instantiate5.C: Likewise.
+
 2003-06-05  Richard Henderson  <rth@redhat.com>
 
 	* gcc.dg/debug/20030605-1.c: New.

@@ -1,5 +1,6 @@
 /* PR 3997 */
 /* { dg-do run } */
+/* { dg-require-alias "" } */
 
 extern void abort (void);
 extern void exit (int);

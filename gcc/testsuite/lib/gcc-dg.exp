@@ -250,3 +250,47 @@ proc gcc-dg-debug-runtest { target_compile trivial opt_opts testcases } {
 	}
     }
 }
+
+# If this target does not support weak symbols, skip this test.
+
+proc dg-require-weak { args } {
+    upvar dg-do-what dg-do-what
+    upvar name name
+
+    set weak_available [ check_weak_available ]
+    if { $weak_available == -1 } {
+	unresolved "$name"
+    }
+    if { $weak_available != 1 } {
+	set dg-do-what [list [lindex $dg_do_what 0] "N" "P"]
+	return
+    }
+}
+
+# If this target does not support the "alias" attribute, skip this
+# test.
+
+proc dg-require-alias { args } {
+    upvar dg-do-what dg-do-what
+    upvar name name
+
+    set alias_available [ check_alias_available ]
+    if { $alias_available == -1 } {
+	unresolved "$name"
+    }
+    if { $alias_available < 2 } {
+	set dg-do-what [list [lindex $dg_do_what 0] "N" "P"]
+	return
+    }
+}
+
+# If this target's linker does not support the --gc-sections flag,
+# skip this test.
+
+proc dg-require-gc-sections { args } {
+    if { ![ check_gc_sections_available ] } {
+	upvar dg-do-what dg-do-what
+	set dg-do-what [list [lindex $dg_do_what 0] "N" "P"]
+	return
+    }
+}

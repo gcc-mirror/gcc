@@ -1,4 +1,4 @@
-# Copyright (C) 2001 Free Software Foundation, Inc.
+# Copyright (C) 2001, 2003 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -163,4 +163,57 @@ if { [info procs runtest_file_p] == "" } then {
 	}
 	return 1
     }
+}
+
+# Record additional sources files that must be compiled along with the
+# main source file.
+
+set additional_sources ""
+
+proc dg-additional-sources { args } {
+    global additional_sources
+    set additional_sources [lindex $args 1]
+}
+
+# Record additional files -- other than source files -- that must be
+# present on the system where the compiler runs.
+
+set additional_files ""
+
+proc dg-additional-files { args } {
+    global additional_files
+    set additional_files [lindex $args 1]
+}
+
+# Return an updated version of OPTIONS that mentions any additional
+# source files registered with dg-additional-sources.  SOURCE is the
+# name of the test case.
+
+proc dg-additional-files-options { options source } {
+    global additional_sources
+    global additional_files
+    set to_download [list]
+    if { $additional_sources != "" } then {
+	if [is_remote host] {
+	    lappend options "additional_flags=$additional_sources"
+	}
+	regsub -all "^| " $additional_sources " [file dirname $source]/" additional_sources
+	if ![is_remote host] {
+	    lappend options "additional_flags=$additional_sources"
+	}
+	set to_download [concat $to_download $additional_sources]
+	set additional_sources ""
+    }
+    if { $additional_files != "" } then { 
+	regsub -all " " $additional_files " [file dirname $source]/" additional_files
+	set to_download [concat $to_download $additional_files]
+	set additional_files ""
+    }
+    if [is_remote host] {
+	foreach file $to_download {
+	    remote_download host $file
+	}
+    }
+
+    return $options
 }

@@ -1,5 +1,5 @@
 // { dg-do run  }
-// { dg-gpp-additional-files "vtable3.h" }
+// { dg-additional-files "vtable3.h" }
 
 // Copyright (C) 2000, 2003 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 4 February 2001 <nathan@codesourcery.com>
