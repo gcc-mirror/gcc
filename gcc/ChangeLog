@@ -1,3 +1,8 @@
+Wed Dec 12 08:35:33 2001  Nicola Pero  <n.pero@mi.flashnet.it>
+
+	* objc/objc-act.c (encode_complete_bitfield): Fixed encoding
+	enumeral types - encode them using 'i'.
+
 2001-12-12  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* doc/extend.texi (Deprecated Features): Deprecate implicit
