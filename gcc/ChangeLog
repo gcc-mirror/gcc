@@ -1,3 +1,7 @@
+Thu Feb 5 13:38:42 PST 1998 Jeff Law  (law@cygnus.com)
+
+	* version.c: Bump for snapshot.
+
 Thu Feb  5 01:45:19 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 	Undo this change (the problem was actually in reload):
 	Fri Jan 23 23:28:59 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
