@@ -1,6 +1,6 @@
 // Components for manipulating sequences of characters -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -425,10 +425,6 @@ namespace std
     basic_string<_CharT, _Traits, _Alloc>::_Rep::
     _M_destroy(const _Alloc& __a) throw ()
     {
-#ifndef _GLIBCXX_FULLY_DYNAMIC_STRING
-      if (this == &_S_empty_rep())
-	return;
-#endif
       const size_type __size = sizeof(_Rep_base) +
 	                       (this->_M_capacity + 1) * sizeof(_CharT);
       _Raw_bytes_alloc(__a).deallocate(reinterpret_cast<char*>(this), __size);
