@@ -1,5 +1,7 @@
 Wed Nov 25 00:07:11 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* Makefile.in (graph.o): Depend on $(RTL_H), not rtl.h.
+
 	* cse.c (fold_rtx): Make autoincrement addressing mode tests be
 	runtime selectable.
 	* expr.c (move_by_pieces): Similarly.
@@ -13,7 +15,8 @@ Wed Nov 25 00:07:11 1998  Jeffrey A Law  (law@cygnus.com)
 	* rtl.h (HAVE_PRE_INCREMENT): Define if not already defined.
 	(HAVE_PRE_DECREMENT): Similarly.
 	(HAVE_POST_INCREMENT, HAVE_POST_DECREMENT): Similarly.
-	sponding changes to all target header files.
+	* Corresponding changes to all target header files.
+	* tm.texi: Update docs for autoinc addressing modes.
 
 Tue Nov 24 20:24:59 1998  Jim Wilson  <wilson@cygnus.com>
 
