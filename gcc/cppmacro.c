@@ -965,6 +965,7 @@ cpp_get_token (pfile, token)
 	  if (node->flags & NODE_BUILTIN)
 	    {
 	      builtin_macro (pfile, token);
+	      pfile->buffer->saved_flags = AVOID_LPASTE;
 	      break;
 	    }
 
