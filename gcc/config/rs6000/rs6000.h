@@ -685,7 +685,8 @@ enum reg_class { NO_REGS, BASE_REGS, GENERAL_REGS, FLOAT_REGS,
 
 #define EXTRA_CONSTRAINT(OP, C)						\
   ((C) == 'Q' ? GET_CODE (OP) == MEM && GET_CODE (XEXP (OP, 0)) == REG	\
-   : (C) == 'R' ? GET_CODE (OP) == SYMBOL_REF && CONSTANT_POOL_ADDRESS_P (OP)\
+   : (C) == 'R' ? (GET_CODE (OP) == SYMBOL_REF				\
+		   && LEGITIMATE_CONSTANT_POOL_ADDRESS_P (OP))		\
    : 0)
 
 /* Given an rtx X being reloaded into a reg required to be
