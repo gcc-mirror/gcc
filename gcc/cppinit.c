@@ -937,16 +937,11 @@ do_includes (pfile, p, scan)
 {
   while (p)
     {
-      cpp_token header;
       struct pending_option *q;
 
-      header.type = CPP_STRING;
-      header.val.str.text = (unsigned char *) p->arg;
-      header.val.str.len = strlen (p->arg);
-
-      /* Use the #include "" search path.  */
-      _cpp_execute_include (pfile, &header, 0, 0);
-      if (scan)
+      /* Later: maybe update this to use the #include "" search path
+	 if cpp_read_file fails.  */
+      if (cpp_read_file (pfile, p->arg) && scan)
 	cpp_scan_buffer_nooutput (pfile);
       q = p->next;
       free (p);
