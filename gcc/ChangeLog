@@ -1,3 +1,13 @@
+1999-10-25  Gavin Romig-Koch  <gavin@cygnus.com>
+
+	* config/mips/mips.h (MIPS_ISA_DEFAULT): Insure it's defined.
+	(MULTILIB_ISA_DEFAULT): New.
+	(MULTILIB_DEFAULTS): Use it.
+	* config/mips/mips.c (): Remove the now unnecessary definition
+	of MIPS_ISA_DEFAULT.
+	* config/mips/elf64.h (MULTILIB_DEFAULTS): Remove the now
+	unnecessary definition.
+
 Mon Oct 25 22:08:35 1999  Richard Earnshaw (rearnsha@arm.com)
 
 	* arm.md (pic_load_addr): Add constraints to operand 1.
