@@ -1,3 +1,8 @@
+1999-08-05  Alexandre Oliva  <oliva@dcc.unicamp.br>
+
+	* new1.C, template8.C: Removed XFAIL.
+	* template3.C: Re-introduced XFAIL.  :-(
+
 1999-08-03  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* ext1.C: New test.

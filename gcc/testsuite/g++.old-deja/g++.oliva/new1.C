@@ -4,7 +4,7 @@
 
 // based on comp.std.c++ post by Alexander Schiemann <aschiem@math.uni-sb.de>
 
-// execution test - XFAIL *-*-*
+// execution test
 
 #include <new>
 

@@ -10,9 +10,9 @@ struct B {
 } b;
 
 template <class T> void foo() {
-  b.bar<T>(); // gets bogus error - bar undeclared - XFAIL *-*-*
-  b.template bar<T>(); // gets bogus error - ditto - XFAIL *-*-*
+  b.bar<T>(); // no longer gets bogus error - bar undeclared
+  b.template bar<T>(); // no longer gets bogus error - ditto
   b.B::bar<T>(); // ok
 }
 
-template void foo<void>(); // gets bogus error - XFAIL *-*-*
+template void foo<void>(); // no longer gets bogus error
