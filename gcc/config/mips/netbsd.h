@@ -38,7 +38,79 @@ Boston, MA 02111-1307, USA.  */
       builtin_assert ("machine=mips");			\
       if (TARGET_LONG64)				\
 	builtin_define ("__LONG64");			\
+							\
+      if (mips_abi == ABI_EABI)				\
+	builtin_define ("__mips_eabi");			\
+      else if (mips_abi == ABI_N32)			\
+	builtin_define ("__mips_n32");			\
+      else if (mips_abi == ABI_64)			\
+	builtin_define ("__mips_n64");			\
+      else if (mips_abi == ABI_O64)			\
+	builtin_define ("__mips_o64");			\
     }							\
+  while (0)
+
+/* The generic MIPS TARGET_CPU_CPP_BUILTINS are incorrect for NetBSD.
+   Specifically, they define too many namespace-invasive macros.  Override
+   them here.  Note this is structured for easy comparison to the version
+   in mips.h.
+
+   FIXME: This probably isn't the best solution.  But in the absense
+   of something better, it will have to do, for now.  */
+
+#undef TARGET_CPU_CPP_BUILTINS
+#define TARGET_CPU_CPP_BUILTINS()				\
+  do								\
+    {								\
+      builtin_assert ("cpu=mips");				\
+      builtin_define ("__mips__");				\
+      builtin_define ("_mips");					\
+								\
+      /* No _R3000 or _R4000.  */				\
+      if (TARGET_64BIT)						\
+	builtin_define ("__mips64");				\
+								\
+      if (TARGET_FLOAT64)					\
+	builtin_define ("__mips_fpr=64");			\
+      else							\
+	builtin_define ("__mips_fpr=32");			\
+								\
+      if (TARGET_MIPS16)					\
+	builtin_define ("__mips16");				\
+								\
+      MIPS_CPP_SET_PROCESSOR ("_MIPS_ARCH", mips_arch_info);	\
+      MIPS_CPP_SET_PROCESSOR ("_MIPS_TUNE", mips_tune_info);	\
+								\
+      if (ISA_MIPS1)						\
+	builtin_define ("__mips=1");				\
+      else if (ISA_MIPS2)					\
+	builtin_define ("__mips=2");				\
+      else if (ISA_MIPS3)					\
+	builtin_define ("__mips=3");				\
+      else if (ISA_MIPS4)					\
+	builtin_define ("__mips=4");				\
+      else if (ISA_MIPS32)					\
+	builtin_define ("__mips=32");				\
+      else if (ISA_MIPS64)					\
+	builtin_define ("__mips=64");				\
+								\
+      if (TARGET_HARD_FLOAT)					\
+	builtin_define ("__mips_hard_float");			\
+      else if (TARGET_SOFT_FLOAT)				\
+	builtin_define ("__mips_soft_float");			\
+								\
+      if (TARGET_SINGLE_FLOAT)					\
+	builtin_define ("__mips_single_float");			\
+								\
+      if (TARGET_BIG_ENDIAN)					\
+	builtin_define ("__MIPSEB__");				\
+      else							\
+	builtin_define ("__MIPSEL__");				\
+								\
+      /* No language dialect defines.  */			\
+								\
+      /* ABIs handled in TARGET_OS_CPP_BUILTINS.  */		\
+    }								\
   while (0)
 
 
@@ -60,16 +132,9 @@ Boston, MA 02111-1307, USA.  */
 /* Extra specs we need.  */
 #undef SUBTARGET_EXTRA_SPECS
 #define SUBTARGET_EXTRA_SPECS						\
-  { "subtarget_endian_default",	SUBTARGET_ENDIAN_DEFAULT_SPEC },	\
   { "netbsd_cpp_spec",		NETBSD_CPP_SPEC },			\
   { "netbsd_link_spec",		NETBSD_LINK_SPEC_ELF },			\
   { "netbsd_entry_point",	NETBSD_ENTRY_POINT },
-
-#if TARGET_ENDIAN_DEFAULT != 0
-#define SUBTARGET_ENDIAN_DEFAULT_SPEC "-D__MIPSEB__"
-#else
-#define SUBTARGET_ENDIAN_DEFAULT_SPEC "-D__MIPSEL__"
-#endif
 
 /* Provide a SUBTARGET_CPP_SPEC appropriate for NetBSD.  */
 
