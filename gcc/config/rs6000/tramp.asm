@@ -104,6 +104,6 @@ FUNC_START(__trampoline_setup)
 	blr
 
 .Labort:
-	bl	FUNC_NAME(abort)
+	bl	JUMP_TARGET(abort)
 FUNC_END(__trampoline_setup)
 
