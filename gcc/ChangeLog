@@ -1,3 +1,7 @@
+Tue Feb  6 07:54:51 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* cse.c (find_best_addr): Fix typo in computing cost.
+
 Mon Feb  5 21:56:16 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* combine.c (nonzero_bits, case PLUS): If pointers extend unsigned
