@@ -275,7 +275,7 @@ extern struct small_memory_info small_memory[(int)SMALL_MEMORY_max];
    enable machine-specific optimizations.
 
    *Do not examine `write_symbols' in this macro!* The debugging
-   options are not supposed to alter the generated code. */
+   options are not supposed to alter the generated code.  */
 
 #define OPTIMIZATION_OPTIONS(LEVEL,SIZE)				\
 {									\
@@ -343,7 +343,7 @@ extern struct small_memory_info small_memory[(int)SMALL_MEMORY_max];
 
 /* Define this as 1 if `char' should by default be signed; else as 0.
 
-   On the NEC V850, loads do sign extension, so make this default. */
+   On the NEC V850, loads do sign extension, so make this default.  */
 #define DEFAULT_SIGNED_CHAR 1
 
 /* Standard register usage.  */
@@ -401,7 +401,7 @@ extern struct small_memory_info small_memory[(int)SMALL_MEMORY_max];
 }
 
 /* If TARGET_NO_APP_REGS is not defined then add r2 and r5 to
-   the pool of fixed registers. See PR 14505. */
+   the pool of fixed registers. See PR 14505.  */
 #define CONDITIONAL_REGISTER_USAGE  \
 {                                                       \
   if (TARGET_NO_APP_REGS)                               \
@@ -461,7 +461,7 @@ enum reg_class
 
 #define N_REG_CLASSES (int) LIM_REG_CLASSES
 
-/* Give names of register classes as strings for dump file.   */
+/* Give names of register classes as strings for dump file.  */
 
 #define REG_CLASS_NAMES \
 { "NO_REGS", "GENERAL_REGS", "ALL_REGS", "LIM_REGS" }
@@ -634,7 +634,7 @@ enum reg_class
    `HARD_FRAME_POINTER_REGNUM' or `STACK_POINTER_REGNUM'.
 
    Do not define this macro if it would be the same as
-   `FRAME_POINTER_REGNUM'. */
+   `FRAME_POINTER_REGNUM'.  */
 #undef  HARD_FRAME_POINTER_REGNUM 
 #define HARD_FRAME_POINTER_REGNUM 29
 
@@ -674,7 +674,7 @@ enum reg_class
          {FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM}}
 
    Note that the elimination of the argument pointer with the stack
-   pointer is specified first since that is the preferred elimination. */
+   pointer is specified first since that is the preferred elimination.  */
 
 #define ELIMINABLE_REGS							\
 {{ FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM },			\
@@ -687,7 +687,7 @@ enum reg_class
    TO-REG.  This macro need only be defined if `ELIMINABLE_REGS' is
    defined, and will usually be the constant 1, since most of the
    cases preventing register elimination are things that the compiler
-   already knows about. */
+   already knows about.  */
 
 #define CAN_ELIMINATE(FROM, TO) \
  ((TO) == STACK_POINTER_REGNUM ? ! frame_pointer_needed : 1)
@@ -695,7 +695,7 @@ enum reg_class
 /* This macro is similar to `INITIAL_FRAME_POINTER_OFFSET'.  It
    specifies the initial difference between the specified pair of
    registers.  This macro must be defined if `ELIMINABLE_REGS' is
-   defined. */
+   defined.  */
 
 #define INITIAL_ELIMINATION_OFFSET(FROM, TO, OFFSET)			\
 {									\
@@ -797,7 +797,7 @@ struct cum_arg { int nbytes; int anonymous_args; };
 /* Define how to find the value returned by a function.
    VALTYPE is the data type of the value (as a tree).
    If the precise function being called is known, FUNC is its FUNCTION_DECL;
-   otherwise, FUNC is 0.   */
+   otherwise, FUNC is 0.  */
    
 #define FUNCTION_VALUE(VALTYPE, FUNC) \
   gen_rtx_REG (TYPE_MODE (VALTYPE), 10)
@@ -1003,7 +1003,7 @@ do {									\
    GO_IF_LEGITIMATE_ADDRESS.
 
    It is always safe for this macro to do nothing.  It exists to recognize
-   opportunities to optimize the output.   */
+   opportunities to optimize the output.  */
 
 #define LEGITIMIZE_ADDRESS(X,OLDX,MODE,WIN)  {}
 
@@ -1068,10 +1068,10 @@ typedef enum
 /* One or more functions to be defined in `varasm.c'.  These
    functions should do jobs analogous to those of `text_section' and
    `data_section', for your additional sections.  Do not define this
-   macro if you do not define `EXTRA_SECTIONS'. */
+   macro if you do not define `EXTRA_SECTIONS'.  */
 #undef	EXTRA_SECTION_FUNCTIONS
 
-/* This could be done a lot more cleanly using ANSI C ... */
+/* This could be done a lot more cleanly using ANSI C....  */
 #define EXTRA_SECTION_FUNCTIONS						\
 void									\
 sdata_section ()							\
@@ -1188,14 +1188,14 @@ zbss_section ()								\
   v850_output_aligned_bss (FILE, DECL, NAME, SIZE, ALIGN)
 
 /* This says how to output the assembler to define a global
-   uninitialized, common symbol. */
+   uninitialized, common symbol.  */
 #undef  ASM_OUTPUT_ALIGNED_COMMON
 #undef  ASM_OUTPUT_COMMON
 #define ASM_OUTPUT_ALIGNED_DECL_COMMON(FILE, DECL, NAME, SIZE, ALIGN) \
      v850_output_common (FILE, DECL, NAME, SIZE, ALIGN)
 
 /* This says how to output the assembler to define a local
-   uninitialized symbol. */
+   uninitialized symbol.  */
 #undef  ASM_OUTPUT_ALIGNED_LOCAL
 #undef  ASM_OUTPUT_LOCAL
 #define ASM_OUTPUT_ALIGNED_DECL_LOCAL(FILE, DECL, NAME, SIZE, ALIGN) \
@@ -1289,11 +1289,11 @@ zbss_section ()								\
 /* Define as C expression which evaluates to nonzero if the tablejump
    instruction expects the table to contain offsets from the address of the
    table.
-   Do not define this if the table should contain absolute addresses. */
+   Do not define this if the table should contain absolute addresses.  */
 #define CASE_VECTOR_PC_RELATIVE 1
 
 /* The switch instruction requires that the jump table immediately follow
-   it. */
+   it.  */
 #define JUMP_TABLES_IN_TEXT_SECTION 1
 
 /* svr4.h defines this assuming that 4 byte alignment is required.  */
