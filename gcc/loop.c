@@ -7559,9 +7559,11 @@ check_dbra_loop (loop, insn_count)
 
 	      /* Save some info needed to produce the new insns.  */
 	      reg = bl->biv->dest_reg;
-	      jump_label = XEXP (SET_SRC (PATTERN (PREV_INSN (loop_end))), 1);
+	      jump_label = XEXP (SET_SRC (single_set (PREV_INSN (loop_end))), 
+				 1);
 	      if (jump_label == pc_rtx)
-		jump_label = XEXP (SET_SRC (PATTERN (PREV_INSN (loop_end))), 2);
+		jump_label = XEXP (SET_SRC (single_set (PREV_INSN (loop_end))),
+				   2);
 	      new_add_val = GEN_INT (-INTVAL (bl->biv->add_val));
 
 	      /* Set start_value; if this is not a CONST_INT, we need

@@ -1,3 +1,8 @@
+2001-07-30  Geoffrey Keating  <geoffk@redhat.com>
+
+	* loop.c (check_dbra_loop): Use single_set to compute
+	jump_label.
+
 2001-07-31  Daniel Berlin  <dan@cgsoftware.com>
 
 	PowerPC reorg and support for powerpc64-*-linux*.
