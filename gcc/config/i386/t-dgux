@@ -1,4 +1,0 @@
-#
-# target makefile for dgux
-#
-EXTRA_PARTS=crtbegin.o crtend.o

@@ -1,3 +1,0 @@
-# The i386 md has all of these taken care of, according to sef.
-LIBGCC1 =
-CROSS_LIBGCC1 =

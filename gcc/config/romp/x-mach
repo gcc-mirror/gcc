@@ -1,5 +1,0 @@
-# Ensure that CPATH is used and suppress lots of warnings.
-CC=hc2 -Hcpp -w
-
-# The default `make' on the RT doesn't define MAKE, so do it here.
-MAKE=make

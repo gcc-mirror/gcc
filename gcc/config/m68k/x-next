@@ -1,9 +1,0 @@
-# Make assignments for compiling on NeXT with their compiler version.
-CC=cc -traditional-cpp
-OLDCC=CC -traditional-cpp
-
-# Specify other dirs of system header files to be fixed.
-OTHER_FIXINCLUDES_DIRS= /LocalDeveloper/Headers
-
-# <limits.h> is sometimes in /usr/include/ansi/limits.h.
-LIMITS_H_TEST = [ -f $(SYSTEM_HEADER_DIR)/limits.h -o -f $(SYSTEM_HEADER_DIR)/ansi/limits.h ]

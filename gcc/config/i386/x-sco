@@ -1,7 +1,0 @@
-RANLIB = :
-RANLIB_TEST = false
-CC = rcc $(RCCFLAGS)
-OLDCC = rcc $(RCCFLAGS)
-RCCFLAGS = -Dunix -Di386 -DM_UNIX -DM_I386 -DNULL=0
-CCLIBFLAGS =
-CLIB = -lmalloc -lPW

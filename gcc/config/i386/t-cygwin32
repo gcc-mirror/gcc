@@ -1,7 +1,0 @@
-LIBGCC1 = libgcc1-asm.a
-CROSS_LIBGCC1 = libgcc1-asm.a
-LIB1ASMSRC = i386/cygwin32.asm
-LIB1ASMFUNCS = _chkstk
-
-winnt.o: $(srcdir)/config/i386/winnt.c
-	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(srcdir)/config/i386/winnt.c

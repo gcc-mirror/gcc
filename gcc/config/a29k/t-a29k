@@ -1,5 +1,0 @@
-LIBGCC1 =
-CROSS_LIBGCC1 =
-
-# We need crt0.o.
-LIBGCC1_TEST =

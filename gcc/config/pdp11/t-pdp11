@@ -1,8 +1,0 @@
-LIBGCC1 = libgcc1.null
-CROSS_LIBGCC1 = libgcc1.null
-
-# forget the libgcc1...
-LIBGCC1_TEST =
-
-TARGET_LIBGCC2_CFLAGS = -O2 -mfloat32
-#LIB2FUNCS_EXTRA =

@@ -1,7 +1,0 @@
-# this is m88k/x-sysv3
-
-# native compiler does not provide alloca
-
-ALLOCA = alloca.o
-
-# end m88k/x-sysv3
