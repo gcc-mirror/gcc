@@ -1236,9 +1236,9 @@ extern const UQItype __clz_tab[];
 									\
     if (SI_TYPE_SIZE <= 32)						\
       {									\
-	__a = __xr < (1<<2*__BITS4)					\
-	  ? (__xr < (1<<__BITS4) ? 0 : __BITS4)				\
-	  : (__xr < (1<<3*__BITS4) ?  2*__BITS4 : 3*__BITS4);		\
+	__a = __xr < ((USItype)1<<2*__BITS4)				\
+	  ? (__xr < ((USItype)1<<__BITS4) ? 0 : __BITS4)		\
+	  : (__xr < ((USItype)1<<3*__BITS4) ?  2*__BITS4 : 3*__BITS4);	\
       }									\
     else								\
       {									\
