@@ -1,3 +1,9 @@
+2002-07-28  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Makefile.in (vmsdbgout.o): Depend on function.h.
+
+	* vmsdbgout.c: Include function.h.
+
 2002-07-28  Alan Modra  <amodra@bigpond.net.au>
 
 	* prefix.c (update_path): Don't strip single `.' path components

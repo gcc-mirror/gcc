@@ -31,6 +31,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "vmsdbg.h"
 #include "debug.h"
 #include "langhooks.h"
+#include "function.h"
 
 /* Difference in seconds between the VMS Epoch and the Unix Epoch */
 static const long long vms_epoch_offset = 3506716800ll;
