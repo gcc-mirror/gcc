@@ -40,23 +40,31 @@ Sun Jan 18 15:57:28 1998  Michael Snyder  <msnyder@cleaver.cygnus.com>
 	* vasprintf.c (int_vasprintf): Increase buffer size for float/double
 	values.
 
-Sat Jan 17 22:32:38 1998  Mumit Khan  <khan@xraylith.wisc.edu>
-                          J.J. VanderHeijden <J.J.vanderHeijden@student.utwente.nl>
+Sat Jan 17 22:28:38 1997  Mumit Khan  <khan@xraylith.wisc.edu>
+			  J.J. VanderHeijden <J.J.vanderHeijden@student.utwente.nl>
 
-        Add mingw32 support.
-        * pexecute.c (pexecute): New function for mingw32. Supports pipes.
-        (pwait): New function for mingw32.
+	Add mingw32 support.
+	* pexecute.c (pexecute): New function for mingw32. Supports pipes.
+	(pwait): New function for mingw32.
 
-        * config.table (i[3456]86-*-mingw32*): Support for i386-mingw32.
-        * config/mt-mingw32: New file.
-        * xmalloc.c (first_break): Not used for mingw32.
-        (xmalloc_set_program_name): Don't use sbrk on mingw32.
-        (xmalloc): Likewise.
-        (xrealloc): Likewise.
+	* config.table (i[3456]86-*-mingw32*): Support for i386-mingw32.
+	* config/mt-mingw32: New file.
+	* xmalloc.c (first_break): Not used for mingw32.
+	(xmalloc_set_program_name): Don't use sbrk on mingw32.
+	(xmalloc): Likewise.
+	(xrealloc): Likewise.
 
-Sat Jan 17 22:25:53 1998  Jeffrey A Law  (law@cygnus.com)
+Sat Jan 17 22:28:05 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* choose-temp.c: Sync with gcc version.
+
+Tue Jan 13 18:34:39 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* Makefile.in (install_to_libdir, install_to_tooldir): Add MULTISUBDIR
+	to all filenames in libdir and tooldir.
+	(distclean): Do MULTICLEAN before deleting Makefile.
+	(stamp-needed, stamp-config): Add MULTISRCTOP to
+	pathname for move-if-change.
 
 Thu Dec  4 17:25:19 1997  Jeffrey A Law  (law@cygnus.com)
 
@@ -131,25 +139,11 @@ Wed Sep 10 12:43:10 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* cplus-dem.c (demangle_fund_type): Change "complex" to "__complex".
 
-Tue Sep  9 19:39:12 1997  Jim Wilson  <wilson@cygnus.com>
-
-	* Makefile.in (install_to_libdir, install_to_tooldir): Add MULTISUBDIR
-	to all filenames in libdir and tooldir.
-
-Fri Sep  5 17:28:50 1997  Jim Wilson  <wilson@cygnus.com>
-
-	* Makefile.in (distclean): Do MULTICLEAN before deleting Makefile.
-
 Fri Sep  5 16:34:42 1997  Andrew Cagney  <cagney@b1.cygnus.com>
 
 	* asprintf.c (asprintf): New file.
 	* Makefile.in (CFILES): Add asprintf.c
 	* functions.def: Ditto.
-
-Wed Sep  3 14:35:52 1997  Jim Wilson  <wilson@cygnus.com>
-
-	* Makefile.in (stamp-needed, stamp-config): Add MULTISRCTOP to
-	pathname for move-if-change.
 
 Thu Aug 28 18:53:34 1997  Andrew Cagney  <cagney@b1.cygnus.com>
 
