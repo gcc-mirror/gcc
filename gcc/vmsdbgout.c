@@ -1725,14 +1725,14 @@ vmsdbgout_abstract_function (decl)
    VMS Debug debugging info.  */
 
 static void
-vmsdbgout_finish (input_filename)
-     const char *input_filename ATTRIBUTE_UNUSED;
+vmsdbgout_finish (main_input_filename)
+     const char *main_input_filename ATTRIBUTE_UNUSED;
 {
   unsigned int i;
   int totsize;
 
   if (write_symbols == VMS_AND_DWARF2_DEBUG)
-    (*dwarf2_debug_hooks.finish) (input_filename);
+    (*dwarf2_debug_hooks.finish) (main_input_filename);
 
   if (debug_info_level == DINFO_LEVEL_NONE)
     return;
