@@ -3,7 +3,7 @@
 #   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
 #   2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 
-timestamp='2003-11-03'
+timestamp='2004-02-16'
 
 # This file is (in principle) common to ALL GNU software.
 # The presence of a machine in this file suggests that SOME GNU software
@@ -363,6 +363,9 @@ case $basic_machine in
 		basic_machine=a29k-amd
 		os=-udi
 		;;
+    	abacus)
+		basic_machine=abacus-unknown
+		;;
 	adobe68k)
 		basic_machine=m68010-adobe
 		os=-scout
@@ -379,6 +382,9 @@ case $basic_machine in
 		;;
 	amd64)
 		basic_machine=x86_64-pc
+		;;
+	amd64-*)
+		basic_machine=x86_64-`echo $basic_machine | sed 's/^[^-]*-//'`
 		;;
 	amdahl)
 		basic_machine=580-amdahl
@@ -438,6 +444,10 @@ case $basic_machine in
 	cray | j90)
 		basic_machine=j90-cray
 		os=-unicos
+		;;
+	cr16c)
+		basic_machine=cr16c-unknown
+		os=-elf
 		;;
 	crds | unos)
 		basic_machine=m68k-crds
@@ -1140,8 +1150,9 @@ case $os in
 	      | -aos* \
 	      | -nindy* | -vxsim* | -vxworks* | -ebmon* | -hms* | -mvs* \
 	      | -clix* | -riscos* | -uniplus* | -iris* | -rtu* | -xenix* \
-	      | -hiux* | -386bsd* | -knetbsd* | -netbsd* | -openbsd* | -kfreebsd* | -freebsd* | -riscix* \
-	      | -lynxos* | -bosx* | -nextstep* | -cxux* | -aout* | -elf* | -oabi* \
+	      | -hiux* | -386bsd* | -knetbsd* | -mirbsd* | -netbsd* | -openbsd* \
+	      | -ekkobsd* | -kfreebsd* | -freebsd* | -riscix* | -lynxos* \
+	      | -bosx* | -nextstep* | -cxux* | -aout* | -elf* | -oabi* \
 	      | -ptx* | -coff* | -ecoff* | -winnt* | -domain* | -vsta* \
 	      | -udi* | -eabi* | -lites* | -ieee* | -go32* | -aux* \
 	      | -chorusos* | -chorusrdb* \
@@ -1152,7 +1163,7 @@ case $os in
 	      | -storm-chaos* | -tops10* | -tenex* | -tops20* | -its* \
 	      | -os2* | -vos* | -palmos* | -uclinux* | -nucleus* \
 	      | -morphos* | -superux* | -rtmk* | -rtmk-nova* | -windiss* \
-	      | -powermax* | -dnix* | -nx6 | -nx7 | -sei*)
+	      | -powermax* | -dnix* | -nx6 | -nx7 | -sei* | -dragonfly*)
 	# Remember, each alternative MUST END IN *, to match a version number.
 		;;
 	-qnx*)
@@ -1214,6 +1225,9 @@ case $os in
 		;;
 	-atheos*)
 		os=-atheos
+		;;
+	-syllable*)
+		os=-syllable
 		;;
 	-386bsd)
 		os=-bsd
