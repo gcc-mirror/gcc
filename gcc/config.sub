@@ -170,10 +170,6 @@ case $basic_machine in
 		basic_machine=ns32k-sequent
 		os=-dynix
 		;;
-	m68k-ccur)
-		basic_machine=m68k-ccur
-		os=-rtu
-		;;
 	convex-c1)
 		basic_machine=c1-convex
 		os=-bsd
@@ -383,6 +379,11 @@ case $basic_machine in
 		;;
         pc532)
 		basic_machine=ns32k-pc532
+		;;
+	pentium-*)
+		# We will change tis to say i586 once there has been
+		# time for various packages to start to recognize that.
+		basic_machine=i486-`echo $basic_machine | sed 's/^[^-]*-//'`
 		;;
 	pn)
 		basic_machine=pn-gould
@@ -659,6 +660,9 @@ case $basic_machine in
 		;;
 	*-dolphin)
 		os=-sysv3
+		;;
+	m68k-ccur)
+		os=-rtu
 		;;
 	m88k-omron*)
 		os=-luna
