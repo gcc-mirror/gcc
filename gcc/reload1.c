@@ -2761,6 +2761,9 @@ set_label_offsets (x, insn, initial_p)
 	  else if (GET_CODE (tem) != PC && GET_CODE (tem) != RETURN)
 	    break;
 	  return;
+
+	default:
+	  break;
 	}
 
       /* If we reach here, all eliminations must be at their initial
@@ -2768,6 +2771,10 @@ set_label_offsets (x, insn, initial_p)
       for (p = reg_eliminate; p < &reg_eliminate[NUM_ELIMINABLE_REGS]; p++)
 	if (p->offset != p->initial_offset)
 	  p->can_eliminate = 0;
+      break;
+      
+    default:
+      break;
     }
 }
 
@@ -3307,6 +3314,9 @@ eliminate_regs (x, mem_mode, insn, storing)
 	}
       else
 	return x;
+      
+    default:
+      break;
     }
 
   /* Process each of our operands recursively.  If any have changed, make a
@@ -3795,6 +3805,9 @@ scan_paradoxical_subregs (x)
 	reg_max_ref_width[REGNO (SUBREG_REG (x))]
 	  = GET_MODE_SIZE (GET_MODE (x));
       return;
+      
+    default:
+      break;
     }
 
   fmt = GET_RTX_FORMAT (code);
@@ -7549,6 +7562,9 @@ count_occurrences (x, find)
     case SET:
       if (SET_DEST (x) == find)
 	return count_occurrences (SET_SRC (x), find);
+      break;
+      
+    default:
       break;
     }
 
