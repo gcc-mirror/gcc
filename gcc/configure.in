@@ -1437,22 +1437,6 @@ case $use_collect2 in
     ;;
 esac
 
-# If we have gas in the build tree, make a link to it.
-if test -f ../gas/Makefile; then
-	rm -f as; $symbolic_link ../gas/as-new$host_exeext as$host_exeext 2>/dev/null
-fi
-
-# If we have nm and objdump in the build tree, make a link to them.
-if test -f ../binutils/Makefile; then
-	rm -f nm; $symbolic_link ../binutils/nm-new$host_exeext nm$host_exeext 2>/dev/null
-	rm -f objdump; $symbolic_link ../binutils/objdump$host_exeext objdump$host_exeext 2>/dev/null
-fi
-
-# If we have ld in the build tree, make a link to it.
-if test -f ../ld/Makefile; then
-	rm -f collect-ld; $symbolic_link ../ld/ld-new$host_exeext collect-ld$host_exeext 2>/dev/null
-fi
-
 # Identify the assembler which will work hand-in-glove with the newly
 # built GCC, so that we can examine its features.  This is the assembler
 # which will be driven by the driver program.
@@ -1478,6 +1462,8 @@ elif test -f $gcc_cv_as_gas_srcdir/configure.in \
   # Single tree build which includes gas.
   in_tree_gas=yes
   _gcc_COMPUTE_GAS_VERSION
+  rm -f as$host_exeext
+  $symbolic_link ../gas/as-new$host_exeext as$host_exeext 2>/dev/null
 fi
 
 if test "x$gcc_cv_as" = x; then
@@ -1566,9 +1552,9 @@ if test -x "$DEFAULT_LINKER"; then
 	gcc_cv_ld="$DEFAULT_LINKER"
 elif test -x "$LD"; then
 	gcc_cv_ld="$LD"
-elif test -x ld$host_exeext; then
+elif test -x collect-ld$host_exeext; then
 	# Build using linker in the current directory.
-	gcc_cv_ld=./ld$host_exeext
+	gcc_cv_ld=./collect-ld$host_exeext
 elif test -f $gcc_cv_ld_gld_srcdir/configure.in \
      && test -f ../ld/Makefile; then
 	# Single tree build which includes ld.
@@ -1586,6 +1572,9 @@ changequote(,)dnl
 	gcc_cv_gld_major_version=`expr "$gcc_cv_gld_version" : "VERSION=\([0-9]*\)"`
 	gcc_cv_gld_minor_version=`expr "$gcc_cv_gld_version" : "VERSION=[0-9]*\.\([0-9]*\)"`
 changequote([,])dnl
+	rm -f collect-ld$host_exeext
+	$symbolic_link ../ld/ld-new$host_exeext collect-ld$host_exeext \
+		2>/dev/null
 fi
 
 if test "x$gcc_cv_ld" = x; then
@@ -1657,26 +1646,51 @@ case $in_tree_ld in
 esac
 
 # Figure out what nm we will be using.
+gcc_cv_binutils_srcdir=`echo $srcdir | sed -e 's,/gcc$,,'`/binutils
 AC_MSG_CHECKING(what nm to use)
+in_tree_nm=no
 if test -x nm$host_exeext; then
 	gcc_cv_nm=./nm$host_exeext
+elif test -f $gcc_cv_binutils_srcdir/configure.in \
+     && test -f ../binutils/Makefile; then
+	# Single tree build which includes binutils.
+	in_tree_nm=yes
+	gcc_cv_nm=./nm$host_exeext
+	rm -f nm$host_exeext
+	$symbolic_link ../binutils/nm-new$host_exeext nm$host_exeext 2>/dev/null
 elif test "x$program_prefix" != xNONE; then
 	gcc_cv_nm=${program_prefix}nm$host_exeext
 else
 	gcc_cv_nm=`echo nm | sed ${program_transform_name}`$host_exeext
 fi
-AC_MSG_RESULT($gcc_cv_nm)
+case $in_tree_nm in
+  yes) AC_MSG_RESULT("newly built nm") ;;
+  no)  AC_MSG_RESULT($gcc_cv_nm) ;;
+esac
 
 # Figure out what objdump we will be using.
 AC_MSG_CHECKING(what objdump to use)
+in_tree_objdump=no
 if test -x objdump$host_exeext; then
 	gcc_cv_objdump=./objdump$host_exeext
+elif test -f $gcc_cv_binutils_srcdir/configure.in \
+     && test -f ../binutils/Makefile; then
+	# Single tree build which includes binutils.
+	in_tree_objdump=yes
+	gcc_cv_objdump=./objdump$host_exeext
+	rm -f objdump$host_exeext
+	$symbolic_link ../binutils/objdump$host_exeext \
+		objdump$host_exeext 2>/dev/null
 elif test "x$program_prefix" != xNONE; then
 	gcc_cv_objdump=${program_prefix}objdump$host_exeext
 else
-	gcc_cv_objdump=`echo objdump | sed ${program_transform_name}`$host_exeext
+	gcc_cv_objdump=`echo objdump | \
+		sed ${program_transform_name}`$host_exeext
 fi
-AC_MSG_RESULT($gcc_cv_objdump)
+case $in_tree_objdump in
+  yes) AC_MSG_RESULT("newly built objdump") ;;
+  no)  AC_MSG_RESULT($gcc_cv_objdump) ;;
+esac
 
 # Figure out what assembler alignment features are present.
 AC_MSG_CHECKING(assembler alignment features)

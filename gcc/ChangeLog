@@ -1,5 +1,12 @@
 2003-04-15  Zack Weinberg  <zack@codesourcery.com>
 
+	* configure.in: Unify the code which creates symlinks to a
+	just-built as, ld, objdump, and nm with the code that detects
+	their presence for purposes of feature tests.
+	* configure: Regenerate.
+
+2003-04-15  Zack Weinberg  <zack@codesourcery.com>
+
 	* varasm.c (output_constant_def): Do not consult
 	CONSTANT_AFTER_FUNCTION_P.  Remove all code predicated on it.
 	(after_function_constants, output_after_function_constants): Delete.
