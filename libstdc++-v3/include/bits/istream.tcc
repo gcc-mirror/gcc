@@ -935,23 +935,8 @@ namespace std
     tellg(void)
     {
       pos_type __ret = pos_type(-1);
-      _M_gcount = 0;
-      sentry __cerb(*this, true);
-      if (__cerb) 
-	{
-	  try 
-	    {
-	     __ret = this->rdbuf()->pubseekoff(0, ios_base::cur, ios_base::in);
-	    }
-	  catch(exception& __fail)
-	    {
-	      // 27.6.1.3 paragraph 1
-	      // Turn this on without causing an ios::failure to be thrown.
-	      this->setstate(ios_base::badbit);
-	      if ((this->exceptions() & ios_base::badbit) != 0)
-		__throw_exception_again;
-	    }
-	}
+      if (!this->fail())
+	__ret = this->rdbuf()->pubseekoff(0, ios_base::cur, ios_base::in);
       return __ret;
     }
 
@@ -962,28 +947,16 @@ namespace std
     seekg(pos_type __pos)
     {
       _M_gcount = 0;
-      sentry __cerb(*this, true);
-      if (__cerb) 
+      if (!this->fail())
 	{
-	  try 
-	    {
 #ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
 // 136.  seekp, seekg setting wrong streams?
-	      pos_type __err = this->rdbuf()->pubseekpos(__pos, ios_base::in);
+	  pos_type __err = this->rdbuf()->pubseekpos(__pos, ios_base::in);
 
 // 129. Need error indication from seekp() and seekg()
-	      if (__err == pos_type(off_type(-1)))
-		this->setstate(ios_base::failbit);
+	  if (__err == pos_type(off_type(-1)))
+	    this->setstate(ios_base::failbit);
 #endif
-	    }
-	  catch(exception& __fail)
-	    {
-	      // 27.6.1.3 paragraph 1
-	      // Turn this on without causing an ios::failure to be thrown.
-	      this->setstate(ios_base::badbit);
-	      if ((this->exceptions() & ios_base::badbit) != 0)
-		__throw_exception_again;
-	    }
 	}
       return *this;
     }
@@ -994,29 +967,17 @@ namespace std
     seekg(off_type __off, ios_base::seekdir __dir)
     {
       _M_gcount = 0;
-      sentry __cerb(*this, true);
-      if (__cerb) 
+      if (!this->fail())
 	{
-	  try 
-	    {
 #ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
 // 136.  seekp, seekg setting wrong streams?
-	      pos_type __err = this->rdbuf()->pubseekoff(__off, __dir, 
-							 ios_base::in);
+	  pos_type __err = this->rdbuf()->pubseekoff(__off, __dir, 
+						     ios_base::in);
 
 // 129. Need error indication from seekp() and seekg()
-	      if (__err == pos_type(off_type(-1)))
-		this->setstate(ios_base::failbit);
+	  if (__err == pos_type(off_type(-1)))
+	    this->setstate(ios_base::failbit);
 #endif
-	    }
-	  catch(exception& __fail)
-	    {
-	      // 27.6.1.3 paragraph 1
-	      // Turn this on without causing an ios::failure to be thrown.
-	      this->setstate(ios_base::badbit);
-	      if ((this->exceptions() & ios_base::badbit) != 0)
-		__throw_exception_again;
-	    }
 	}
       return *this;
     }
