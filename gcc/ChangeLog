@@ -1,3 +1,7 @@
+2003-05-04  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* varasm.c (assemble_variable): Don't use error_with_file_and_line.
+
 2003-05-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* builtins.c (expand_builtin_constant_p, expand_builtin_strlen,
