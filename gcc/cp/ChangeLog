@@ -1,3 +1,11 @@
+2003-10-21  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/11962
+	* typeck.c (build_x_conditional_expr): Handle missing middle
+	operands in templates.
+	* mangle.c (write_expression): Issue errors about attempts to
+	mangle a non-existant middle operator to the ?: operator.
+
 2003-10-21  Robert Bowdidge   <bowdidge@apple.com>
 	* decl.c (cp_finish_decl): Remove clause intended for asm directives 
           in struct or class fields: this code is never executed.

@@ -4284,11 +4284,13 @@ build_x_conditional_expr (tree ifexp, tree op1, tree op2)
 	 IFEXP is type-dependent, even though the eventual type of the
 	 expression doesn't dependent on IFEXP.  */
       if (type_dependent_expression_p (ifexp)
-	  || type_dependent_expression_p (op1)
+	  /* As a GNU extension, the middle operand may be omitted.  */
+	  || (op1 && type_dependent_expression_p (op1))
 	  || type_dependent_expression_p (op2))
 	return build_min_nt (COND_EXPR, ifexp, op1, op2);
       ifexp = build_non_dependent_expr (ifexp);
-      op1 = build_non_dependent_expr (op1);
+      if (op1)
+	op1 = build_non_dependent_expr (op1);
       op2 = build_non_dependent_expr (op2);
     }
 

@@ -1,3 +1,8 @@
+2003-10-21  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/11962
+	* g++.dg/template/cond2.C: New test.
+
 2003-10-20  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* gcc.dg/builtins-28.c: New test.
