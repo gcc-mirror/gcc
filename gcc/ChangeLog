@@ -1,5 +1,17 @@
 2001-03-04  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
 
+	* config/m68hc11/m68hc11.md (tsthi_1): Use cpd for 68HC12.
+	(zero_extendsi split): Simplify and use (zero_extendhi).
+	(*addhi3): Remove 'w' constraint since stack pointer is handled 
+	by (addhi3_sp).
+	(*ashlhi3_2): Operand 2 is clobbered use '+' for its constraint.
+	(*ashlhi3, *ashrhi3, *lshrhi3): Likewise.
+	(*ashrhi3_const): Fix shift by 7.
+	(*lshrsi3_const16): Fix template.
+	(call, call_value): Fix constraint and predicate.
+
+2001-03-04  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
+
 	* config/m68hc11/m68hc11.md (X_REGNUM, D_REGNUM): New constant.
 	(Y_REGNUM, SP_REGNUM, PC_REGNUM, A_REGNUM, B_REGNUM): Likewise.
 	(CC_REGNUM): Likewise.
