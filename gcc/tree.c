@@ -1727,6 +1727,7 @@ save_expr (expr)
      value was computed on both sides of the jump.  So make sure it isn't
      eliminated as dead.  */
   TREE_SIDE_EFFECTS (t) = 1;
+  TREE_READONLY (t) = 1;
   return t;
 }
 
@@ -2173,6 +2174,9 @@ substitute_in_expr (exp, f, r)
 	  if (op0 == TREE_OPERAND (exp, 0))
 	    return exp;
 
+	  if (code == NON_LVALUE_EXPR)
+	    return op0;
+
 	  new = fold (build1 (code, TREE_TYPE (exp), op0));
 	  break;
 
@@ -2488,10 +2492,10 @@ build VPARAMS ((enum tree_code code, tree tt, ...))
   length = TREE_CODE_LENGTH (code);
   TREE_TYPE (t) = tt;
 
-  /* Below, we automatically set TREE_SIDE_EFFECTS and TREE_RAISED for
-     the result based on those same flags for the arguments.  But, if
-     the arguments aren't really even `tree' expressions, we shouldn't
-     be trying to do this.  */
+  /* Below, we automatically set TREE_SIDE_EFFECTS and TREE_READONLY for the
+     result based on those same flags for the arguments.  But if the
+     arguments aren't really even `tree' expressions, we shouldn't be trying
+     to do this.  */
   fro = first_rtl_op (code);
 
   if (length == 2)
@@ -2499,38 +2503,45 @@ build VPARAMS ((enum tree_code code, tree tt, ...))
       /* This is equivalent to the loop below, but faster.  */
       register tree arg0 = va_arg (p, tree);
       register tree arg1 = va_arg (p, tree);
+
       TREE_OPERAND (t, 0) = arg0;
       TREE_OPERAND (t, 1) = arg1;
+      TREE_READONLY (t) = 1;
       if (arg0 && fro > 0)
 	{
 	  if (TREE_SIDE_EFFECTS (arg0))
 	    TREE_SIDE_EFFECTS (t) = 1;
+	  if (!TREE_READONLY (arg0))
+	    TREE_READONLY (t) = 0;
 	}
+
       if (arg1 && fro > 1)
 	{
 	  if (TREE_SIDE_EFFECTS (arg1))
 	    TREE_SIDE_EFFECTS (t) = 1;
+	  if (!TREE_READONLY (arg1))
+	    TREE_READONLY (t) = 0;
 	}
     }
   else if (length == 1)
     {
       register tree arg0 = va_arg (p, tree);
 
-      /* Call build1 for this!  */
+      /* The only one-operand cases we handle here are those with side-effects.
+	 Others are handled with build1.  So don't bother checked if the
+	 arg has side-effects since we'll already have set it.
+
+	 ??? This really should use build1 too.  */
       if (TREE_CODE_CLASS (code) != 's')
 	abort ();
       TREE_OPERAND (t, 0) = arg0;
-      if (fro > 0)
-	{
-	  if (arg0 && TREE_SIDE_EFFECTS (arg0))
-	    TREE_SIDE_EFFECTS (t) = 1;
-	}
     }
   else
     {
       for (i = 0; i < length; i++)
 	{
 	  register tree operand = va_arg (p, tree);
+
 	  TREE_OPERAND (t, i) = operand;
 	  if (operand && fro > i)
 	    {
@@ -2578,11 +2589,15 @@ build1 (code, type, node)
 #endif
 
   TREE_SET_CODE (t, code);
+
   TREE_TYPE (t) = type;
   TREE_COMPLEXITY (t) = 0;
   TREE_OPERAND (t, 0) = node;
-  if (node && first_rtl_op (code) != 0 && TREE_SIDE_EFFECTS (node))
-    TREE_SIDE_EFFECTS (t) = 1;
+  if (node && first_rtl_op (code) != 0)
+    {
+      TREE_SIDE_EFFECTS (t) = TREE_SIDE_EFFECTS (node);
+      TREE_READONLY (t) = TREE_READONLY (node);
+    }
 
   switch (code)
     {
@@ -2597,6 +2612,7 @@ build1 (code, type, node)
       /* All of these have side-effects, no matter what their
 	 operands are.  */
       TREE_SIDE_EFFECTS (t) = 1;
+      TREE_READONLY (t) = 0;
       break;
 
     default:
@@ -3802,12 +3818,25 @@ build_index_type (maxval)
      tree maxval;
 {
   register tree itype = make_node (INTEGER_TYPE);
+  int no_hash = 0;
 
   TREE_TYPE (itype) = sizetype;
   TYPE_PRECISION (itype) = TYPE_PRECISION (sizetype);
-  TYPE_MIN_VALUE (itype) = size_zero_node;
 
-  TYPE_MAX_VALUE (itype) = convert (sizetype, maxval);
+  /* If sizetype is unsigned and the upper bound is negative, use a
+     lower bound of one and an upper bound of zero.  */
+  if (TREE_UNSIGNED (sizetype) && TREE_CODE (maxval) == INTEGER_CST
+      && tree_int_cst_sgn (maxval) < 0)
+    {
+      TYPE_MIN_VALUE (itype) = size_one_node;
+      TYPE_MAX_VALUE (itype) = size_zero_node;
+      no_hash = 1;
+    }
+  else
+    {
+      TYPE_MIN_VALUE (itype) = size_zero_node;
+      TYPE_MAX_VALUE (itype) = convert (sizetype, maxval);
+    }
 
   TYPE_MODE (itype) = TYPE_MODE (sizetype);
   TYPE_SIZE (itype) = TYPE_SIZE (sizetype);
@@ -3815,7 +3844,7 @@ build_index_type (maxval)
   TYPE_ALIGN (itype) = TYPE_ALIGN (sizetype);
   TYPE_USER_ALIGN (itype) = TYPE_USER_ALIGN (sizetype);
 
-  if (host_integerp (maxval, 1))
+  if (!no_hash && host_integerp (maxval, 1))
     return type_hash_canon (tree_low_cst (maxval, 1), itype);
   else
     return itype;

@@ -1,3 +1,16 @@
+Fri Oct 20 17:05:49 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* expr.c (expand_expr, case SAVE_EXPR): Set RTX_UNCHANGING_P on
+	returned MEM.
+	(expand_expr_unaligned, case ARRAY_REF): Check that index is
+	a constant before comparing it; use tree_low_cst.
+	* tree.c (save_expr): Set TREE_READONLY.
+	(substitute_expr): Return inside of NON_LVALUE_EXPR.
+	(build, build1): Set TREE_READONLY if all operands are.
+	(build_index_type): If upper bound is a negative number, lower
+	bound is zero and sizetype is unsigned, use upper bound of one and
+	lower of zero.
+
 2000-10-20  David Edelsohn  <edelsohn@gnu.org>
 
 	* gcc.c (process_command, main): Use "because" instead of
