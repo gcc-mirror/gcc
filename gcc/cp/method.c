@@ -331,7 +331,7 @@ make_alias_for_thunk (tree function)
 void
 use_thunk (tree thunk_fndecl, bool emit_p)
 {
-  tree function, alias;
+  tree a, t, function, alias;
   tree virtual_offset;
   HOST_WIDE_INT fixed_offset, virtual_value;
   bool this_adjusting = DECL_THIS_THUNK_P (thunk_fndecl);
@@ -417,7 +417,20 @@ use_thunk (tree thunk_fndecl, bool emit_p)
   /* The back-end expects DECL_INITIAL to contain a BLOCK, so we
      create one.  */
   DECL_INITIAL (thunk_fndecl) = make_node (BLOCK);
-  BLOCK_VARS (DECL_INITIAL (thunk_fndecl)) = DECL_ARGUMENTS (thunk_fndecl);
+
+  /* Set up cloned argument trees for the thunk.  */
+  t = NULL_TREE;
+  for (a = DECL_ARGUMENTS (function); a; a = TREE_CHAIN (a))
+    {
+      tree x = copy_node (a);
+      TREE_CHAIN (x) = t;
+      DECL_CONTEXT (x) = thunk_fndecl;
+      SET_DECL_RTL (x, NULL_RTX);
+      t = x;
+    }
+  a = nreverse (t);
+  DECL_ARGUMENTS (thunk_fndecl) = a;
+  BLOCK_VARS (DECL_INITIAL (thunk_fndecl)) = a;
   
   if (this_adjusting
       && targetm.asm_out.can_output_mi_thunk (thunk_fndecl, fixed_offset,
@@ -450,24 +463,10 @@ use_thunk (tree thunk_fndecl, bool emit_p)
 	 just makes a call to the real function.  Unfortunately, this
 	 doesn't work for varargs.  */
 
-      tree a, t;
-
       if (varargs_function_p (function))
 	error ("generic thunk code fails for method `%#D' which uses `...'",
 	       function);
 
-      /* Set up cloned argument trees for the thunk.  */
-      t = NULL_TREE;
-      for (a = DECL_ARGUMENTS (function); a; a = TREE_CHAIN (a))
-	{
-	  tree x = copy_node (a);
-	  TREE_CHAIN (x) = t;
-	  DECL_CONTEXT (x) = thunk_fndecl;
-	  SET_DECL_RTL (x, NULL_RTX);
-	  t = x;
-	}
-      a = nreverse (t);
-      DECL_ARGUMENTS (thunk_fndecl) = a;
       DECL_RESULT (thunk_fndecl) = NULL_TREE;
 
       start_function (NULL_TREE, thunk_fndecl, NULL_TREE, SF_PRE_PARSED);

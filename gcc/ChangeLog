@@ -1,3 +1,9 @@
+2004-02-20  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+        PR c++/12007
+	* dbxout.c (dbxout_parms): Check that DECL_RTL and DECL_INCOMING_RTL
+	are set for parameters before outputing debugging information.
+
 2004-02-20  Falk Hueffner  <falk@debian.org>
 
 	PR target/14201
