@@ -36,6 +36,10 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* Be compatible with system stddef.h.  */
 #define SIZE_TYPE "unsigned int"
 
+/* Use atexit for static constructors/destructors, instead of defining
+   our own exit function.  */
+#define HAVE_ATEXIT
+
 #include "m68k.h"
 
 /* See m68k.h.  7 means 68020 with 68881.  */
@@ -375,6 +379,8 @@ do{  if (PREFIX[0] == 'L' && PREFIX[1] == 'I')		\
   else if (CODE == '+') fprintf (FILE, "(%%sp)+");			\
   else if (CODE == '@') fprintf (FILE, "(%%sp)");			\
   else if (CODE == '!') fprintf (FILE, "%%cc");				\
+  else if (CODE == '$') { if (TARGET_68040_ONLY) fprintf (FILE, "s"); } \
+  else if (CODE == '&') { if (TARGET_68040_ONLY) fprintf (FILE, "d"); } \
   else if (GET_CODE (X) == REG)						\
     fprintf (FILE, "%s", reg_names[REGNO (X)]);				\
   else if (GET_CODE (X) == MEM)						\
