@@ -3224,7 +3224,7 @@ fold_range_test (exp)
 		      TREE_TYPE (exp), TREE_OPERAND (exp, 0),
 		      TREE_OPERAND (exp, 1));
 
-      else if (current_function_decl != 0
+      else if (global_bindings_p () == 0
 	       && ! contains_placeholder_p (lhs))
 	{
 	  tree common = save_expr (lhs);
@@ -3902,7 +3902,7 @@ fold (expr)
 	       && (TREE_CODE (arg0) != COND_EXPR
 		   || count_cond (arg0, 25) + count_cond (arg1, 25) <= 25)
 	       && (! TREE_SIDE_EFFECTS (arg0)
-		   || (current_function_decl != 0
+		   || (global_bindings_p () == 0
 		       && ! contains_placeholder_p (arg0))))
 	{
 	  tree test, true_value, false_value;
@@ -3937,7 +3937,7 @@ fold (expr)
 	     in that case.  */
 
 	  if (TREE_CODE (arg0) != SAVE_EXPR && ! TREE_CONSTANT (arg0)
-	      && current_function_decl != 0
+	      && global_bindings_p () == 0
 	      && ((TREE_CODE (arg0) != VAR_DECL
 		   && TREE_CODE (arg0) != PARM_DECL)
 		  || TREE_SIDE_EFFECTS (arg0)))
@@ -3977,7 +3977,7 @@ fold (expr)
 	       && (TREE_CODE (arg1) != COND_EXPR
 		   || count_cond (arg0, 25) + count_cond (arg1, 25) <= 25)
 	       && (! TREE_SIDE_EFFECTS (arg1)
-		   || (current_function_decl != 0
+		   || (global_bindings_p () == 0
 		       && ! contains_placeholder_p (arg1))))
 	{
 	  tree test, true_value, false_value;
@@ -3998,7 +3998,7 @@ fold (expr)
 	    }
 
 	  if (TREE_CODE (arg1) != SAVE_EXPR && ! TREE_CONSTANT (arg0)
-	      && current_function_decl != 0
+	      && global_bindings_p () == 0
 	      && ((TREE_CODE (arg1) != VAR_DECL
 		   && TREE_CODE (arg1) != PARM_DECL)
 		  || TREE_SIDE_EFFECTS (arg1)))
@@ -4543,7 +4543,7 @@ fold (expr)
 	  if (real_onep (arg1))
 	    return non_lvalue (convert (type, arg0));
 	  /* x*2 is x+x */
-	  if (! wins && real_twop (arg1) && current_function_decl != 0
+	  if (! wins && real_twop (arg1) && global_bindings_p () == 0
 	      && ! contains_placeholder_p (arg0))
 	    {
 	      tree arg = save_expr (arg0);
