@@ -1,5 +1,14 @@
 2004-02-18  Ulrich Weigand  <uweigand@de.ibm.com>
 
+	* config/s390/s390.md ("divmodtidi3"): Use canonical RTL.
+	("divmodtisi3"): Likewise.
+	("udivmoddi4", "udivmodtidi3"): Likewise.
+	("divmodsi4", "divmoddisi3"): Likewise.
+	("udivmodsi4", "udivmoddisi3"): Likewise.
+	("udivsi3", "umodsi3"): Likewise.
+
+2004-02-18  Ulrich Weigand  <uweigand@de.ibm.com>
+
 	* config/s390/s390.c (s390_mainpool_start): Delete the main pool
 	placeholder insn when chunkifying the pool.
 
