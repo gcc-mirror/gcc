@@ -1,5 +1,11 @@
 2004-09-08  Ziemowit Laski  <zlaski@apple.com>
 
+	* Make-lang.in (cp/semantics.o): Depend on c-common.h.
+	* semantics.c: Include c-common.h.
+	(finish_compound_stmt): Call objc_clear_super_receiver().
+
+2004-09-08  Ziemowit Laski  <zlaski@apple.com>
+
 	* cp-tree.h (do_poplevel): New prototype.
 	* semantics.c (do_poplevel): Make externally visible.
 
