@@ -2578,7 +2578,7 @@ c_type_hash (const void *p)
       t2 = TYPE_FIELDS (t);
       break;
     default:
-      abort ();
+      gcc_unreachable ();
     }
   for (; t2; t2 = TREE_CHAIN (t2))
     i++;
@@ -3188,8 +3188,8 @@ c_common_nodes_and_builtins (void)
     {									\
       tree decl;							\
 									\
-      if (strncmp (NAME, "__builtin_", strlen ("__builtin_")) != 0)	\
-	abort ();							\
+      gcc_assert (!strncmp (NAME, "__builtin_",				\
+			    strlen ("__builtin_")));			\
 									\
       if (!BOTH_P)							\
 	decl = lang_hooks.builtin_function (NAME, builtin_types[TYPE],	\
@@ -3830,7 +3830,7 @@ c_expand_expr (tree exp, rtx target, enum machine_mode tmode,
       }
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 }
 
@@ -3878,7 +3878,7 @@ boolean_increment (enum tree_code code, tree arg)
       val = build2 (COMPOUND_EXPR, TREE_TYPE (arg), arg, val);
       break;
     default:
-      abort ();
+      gcc_unreachable ();
     }
   TREE_SIDE_EFFECTS (val) = 1;
   return val;
@@ -5111,8 +5111,9 @@ nonnull_check_p (tree args, unsigned HOST_WIDE_INT param_num)
 
   for (; args; args = TREE_CHAIN (args))
     {
-      if (! get_nonnull_operand (TREE_VALUE (args), &arg_num))
-	abort ();
+      bool found = get_nonnull_operand (TREE_VALUE (args), &arg_num);
+
+      gcc_assert (found);
 
       if (arg_num == param_num)
 	return true;
@@ -5356,9 +5357,8 @@ check_function_arguments_recurse (void (*callback)
 		   || TREE_CODE (format_num_expr) == NON_LVALUE_EXPR)
 	      format_num_expr = TREE_OPERAND (format_num_expr, 0);
 
-	    if (TREE_CODE (format_num_expr) != INTEGER_CST
-		|| TREE_INT_CST_HIGH (format_num_expr) != 0)
-	      abort ();
+	    gcc_assert (TREE_CODE (format_num_expr) == INTEGER_CST
+			&& !TREE_INT_CST_HIGH (format_num_expr));
 
 	    format_num = TREE_INT_CST_LOW (format_num_expr);
 
@@ -5619,7 +5619,7 @@ fold_offsetof_1 (tree expr)
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   return size_binop (code, base, off);

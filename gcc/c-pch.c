@@ -129,10 +129,10 @@ pch_init (void)
   if (f == NULL)
     fatal_error ("can't create precompiled header %s: %m", pch_file);
   pch_outfile = f;
-  
-  if (strlen (host_machine) > 255 || strlen (target_machine) > 255
-      || strlen (version_string) > 255)
-    abort ();
+
+  gcc_assert (strlen (host_machine) < 256
+	      && strlen (target_machine) < 256
+	      && strlen (version_string) < 256);
   
   v.host_machine_length = strlen (host_machine);
   v.target_machine_length = strlen (target_machine);
@@ -143,8 +143,7 @@ pch_init (void)
     for (i = 0; i < MATCH_SIZE; i++)
       {
 	v.match[i] = *pch_matching[i].flag_var;
-	if (v.match[i] != *pch_matching[i].flag_var)
-	  abort ();
+	gcc_assert (v.match[i] == *pch_matching[i].flag_var);
       }
   }
   v.pch_init = &pch_init;

@@ -84,8 +84,7 @@ static struct c_gimplify_ctx
 static void
 push_context (void)
 {
-  if (ctxp)
-    abort ();
+  gcc_assert (!ctxp);
   ctxp = (struct c_gimplify_ctx *) xcalloc (1, sizeof (struct c_gimplify_ctx));
   ctxp->bc_id[bc_continue] = get_identifier ("continue");
   ctxp->bc_id[bc_break] = get_identifier ("break");
@@ -94,8 +93,7 @@ push_context (void)
 static void
 pop_context (void)
 {
-  if (!ctxp || ctxp->current_bc_label)
-    abort ();
+  gcc_assert (ctxp && !ctxp->current_bc_label);
   free (ctxp);
   ctxp = NULL;
 }
@@ -275,8 +273,7 @@ begin_bc_block (enum bc_t bc)
 static tree
 finish_bc_block (tree label, tree body)
 {
-  if (label != ctxp->current_bc_label)
-    abort ();
+  gcc_assert (label == ctxp->current_bc_label);
 
   if (TREE_USED (label))
     {

@@ -279,7 +279,7 @@ maybe_apply_pragma_weak (tree decl)
     return;
   /* If it's not a function or a variable, it can't be weak.
      FIXME: what kinds of things are visible outside this file but
-     aren't functions or variables?   Should this be an abort() instead?  */
+     aren't functions or variables?   Should this be an assert instead?  */
   if (TREE_CODE (decl) != FUNCTION_DECL && TREE_CODE (decl) != VAR_DECL)
     return;
 

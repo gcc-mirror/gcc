@@ -261,8 +261,7 @@ define__GNUC__ (void)
 
   while (*v && ! ISDIGIT (*v))
     v++;
-  if (!*v || (v > version_string && v[-1] != '-'))
-    abort ();
+  gcc_assert (*v && (v <= version_string || v[-1] == '-'));
 
   q = v;
   while (ISDIGIT (*v))
@@ -271,8 +270,8 @@ define__GNUC__ (void)
   if (c_dialect_cxx ())
     builtin_define_with_value_n ("__GNUG__", q, v - q);
 
-  if (*v != '.' || !ISDIGIT (v[1]))
-    abort ();
+  gcc_assert (*v == '.' || ISDIGIT (v[1]));
+  
   q = ++v;
   while (ISDIGIT (*v))
     v++;
@@ -280,8 +279,7 @@ define__GNUC__ (void)
 
   if (*v == '.')
     {
-      if (!ISDIGIT (v[1]))
-	abort ();
+      gcc_assert (ISDIGIT (v[1]));
       q = ++v;
       while (ISDIGIT (*v))
 	v++;
@@ -290,8 +288,7 @@ define__GNUC__ (void)
   else
     builtin_define_with_value_n ("__GNUC_PATCHLEVEL__", "0", 1);
 
-  if (*v && *v != ' ' && *v != '-')
-    abort ();
+  gcc_assert (!*v || *v == ' ' || *v == '-');
 }
 
 /* Define macros used by <stdint.h>.  Currently only defines limits
@@ -307,7 +304,7 @@ builtin_define_stdint_macros (void)
   else if (intmax_type_node == integer_type_node)
     intmax_long = 0;
   else
-    abort ();
+    gcc_unreachable ();
   builtin_define_type_max ("__INTMAX_MAX__", intmax_type_node, intmax_long);
 }
 
@@ -617,7 +614,7 @@ builtin_define_type_max (const char *macro, tree type, int is_long)
     case 32:	idx = 4; break;
     case 64:	idx = 6; break;
     case 128:	idx = 8; break;
-    default:    abort ();
+    default:    gcc_unreachable ();
     }
 
   value = values[idx + TYPE_UNSIGNED (type)];

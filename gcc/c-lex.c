@@ -373,7 +373,7 @@ c_lex_with_flags (tree *value, unsigned char *cpp_flags)
 	    break;
 
 	  default:
-	    abort ();
+	    gcc_unreachable ();
 	  }
       }
       break;
@@ -435,7 +435,7 @@ c_lex_with_flags (tree *value, unsigned char *cpp_flags)
     case CPP_HEADER_NAME:
     case CPP_COMMENT:
     case CPP_MACRO_ARG:
-      abort ();
+      gcc_unreachable ();
 
     default:
       *value = NULL_TREE;
@@ -737,12 +737,11 @@ lex_string (const cpp_token *tok, tree *valp, bool objc_string)
 
       if (c_lex_string_translate == -1)
 	{
-	  if (!cpp_interpret_string_notranslate (parse_in, strs, count,
-						 &istr, wide))
-	    /* Assume that, if we managed to translate the string
-	       above, then the untranslated parsing will always
-	       succeed.  */
-	    abort ();
+	  int xlated = cpp_interpret_string_notranslate (parse_in, strs, count,
+							 &istr, wide);
+	  /* Assume that, if we managed to translate the string above,
+	     then the untranslated parsing will always succeed.  */
+	  gcc_assert (xlated);
 	  
 	  if (TREE_STRING_LENGTH (value) != (int)istr.len
 	      || 0 != strncmp (TREE_STRING_POINTER (value), (char *)istr.text,

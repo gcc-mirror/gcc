@@ -2139,8 +2139,7 @@ pp_c_tree_decl_identifier (c_pretty_printer *pp, tree t)
 {
   const char *name;
 
-  if (!DECL_P (t))
-    abort ();
+  gcc_assert (DECL_P (t));
 
   if (DECL_NAME (t))
     name = IDENTIFIER_POINTER (DECL_NAME (t));
