@@ -614,7 +614,7 @@ public class ObjectInputStream extends InputStream
       {
 	SecurityManager sm = System.getSecurityManager ();
 	if (sm != null)
-	  sm.checkPermission (new SerializablePermission ("enableSubtitution"));
+	  sm.checkPermission (new SerializablePermission ("enableSubstitution"));
       }
 
     boolean old_val = this.resolveEnabled;
