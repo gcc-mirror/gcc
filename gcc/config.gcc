@@ -1,5 +1,5 @@
 # GCC build-, host- and target-specific configuration file.
-# Copyright (C) 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
+# Copyright (C) 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 
 #This file is part of GNU CC.
 
@@ -2950,6 +2950,11 @@ sparc-tti-*)
 	xm_file="xm-alloca.h ${xm_file}"
 	xm_defines=USG
 	;;
+sparc64-wrs-vxworks*)
+        tm_file="sparc/sol2.h sparc/elf.h sparc/vxsparc64.h"
+        tmake_file=sparc/t-vxsparc64
+        use_collect2=yes
+        ;;
 sparc-wrs-vxworks* | sparclite-wrs-vxworks*)
 	tm_file=sparc/vxsparc.h
 	tmake_file=sparc/t-vxsparc
