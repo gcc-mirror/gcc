@@ -85,7 +85,6 @@ vec_assert_fail (const char *op, const char *struct_name,
 		 const char *file, size_t line, const char *function)
 {
   internal_error ("vector %s %s domain error, in %s at %s:%u",
-		  struct_name, op, function, function,
-		  trim_filename (file), line);
+		  struct_name, op, function, trim_filename (file), line);
 }
 #endif

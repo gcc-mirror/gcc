@@ -1,6 +1,9 @@
 2004-07-08  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* vec.c (vec_assert_fail): Remove duplicate 'function'.
+
 	* vec.c (vec_p_reserve, vec_o_reserve): Allocation is signed.
+
 	* vec.h (VEC_alloc, VEC_embedded_size, VEC_embedded_init):
 	Allocation is signed.
 	(VEC_reserve): Return flag, allocation is signed.
