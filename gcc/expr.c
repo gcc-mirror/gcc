@@ -5863,6 +5863,12 @@ expand_expr (exp, target, tmode, modifier)
 			     (modifier == EXPAND_INITIALIZER
 			      ? modifier : EXPAND_CONST_ADDRESS));
 
+	  /* If we are going to ignore the result, OP0 will have been set
+	     to const0_rtx, so just return it.  Don't get confused and
+	     think we are taking the address of the constant.  */
+	  if (ignore)
+	    return op0;
+
 	  /* We would like the object in memory.  If it is a constant,
 	     we can have it be statically allocated into memory.  For
 	     a non-constant (REG, SUBREG or CONCAT), we need to allocate some
