@@ -1,3 +1,8 @@
+2004-08-18  Diego Novillo  <dnovillo@redhat.com>
+
+	* tree-ssa-loop.c (pass_loop_init): Add TODO_dump_func.
+	(pass_loop_done): Likewise.
+
 2004-08-18  Andrew Pinski  <apinski@apple.com>
 
 	* config/rs6000/darwin.md: Delete the altivec patterns which are 
