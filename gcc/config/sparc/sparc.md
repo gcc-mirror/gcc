@@ -5067,7 +5067,7 @@
    if (GET_MODE (operands[0]) != FUNCTION_MODE)
     abort ();
 
- if (GET_CODE (XEXP (operands[0], 0)) == LABEL_REF)
+  if (GET_CODE (XEXP (operands[0], 0)) == LABEL_REF)
     {
       /* This is really a PIC sequence.  We want to represent
 	 it as a funny jump so it's delay slots can be filled. 
@@ -5077,18 +5077,22 @@
 	 Why cannot we have delay slots filled if it were a CALL?  */
 
       if (! TARGET_ARCH64 && INTVAL (operands[3]) != 0)
-	emit_jump_insn (gen_rtx (PARALLEL, VOIDmode, gen_rtvec (3,
-				 gen_rtx (SET, VOIDmode, pc_rtx,
-					  XEXP (operands[0], 0)),
-				 operands[3],
-				 gen_rtx (CLOBBER, VOIDmode,
-					  gen_rtx (REG, Pmode, 15)))));
+	emit_jump_insn
+	  (gen_rtx (PARALLEL, VOIDmode,
+		    gen_rtvec (3,
+			       gen_rtx (SET, VOIDmode, pc_rtx,
+					XEXP (operands[0], 0)),
+			       GEN_INT (INTVAL (operands[3]) & 0xfff),
+			       gen_rtx (CLOBBER, VOIDmode,
+					gen_rtx (REG, Pmode, 15)))));
       else
-	emit_jump_insn (gen_rtx (PARALLEL, VOIDmode, gen_rtvec (2,
-				 gen_rtx (SET, VOIDmode, pc_rtx,
-					  XEXP (operands[0], 0)),
-				 gen_rtx (CLOBBER, VOIDmode,
-					  gen_rtx (REG, Pmode, 15)))));
+	emit_jump_insn
+	  (gen_rtx (PARALLEL, VOIDmode,
+		    gen_rtvec (2,
+			       gen_rtx (SET, VOIDmode, pc_rtx,
+					XEXP (operands[0], 0)),
+			       gen_rtx (CLOBBER, VOIDmode,
+					gen_rtx (REG, Pmode, 15)))));
       goto finish_call;
     }
 
@@ -5107,16 +5111,18 @@
 #endif
 
   if (! TARGET_ARCH64 && INTVAL (operands[3]) != 0)
-    emit_call_insn (gen_rtx (PARALLEL, VOIDmode, gen_rtvec (3,
-			     gen_rtx (CALL, VOIDmode, fn_rtx, nregs_rtx),
-			     operands[3],
-			     gen_rtx (CLOBBER, VOIDmode,
-					       gen_rtx (REG, Pmode, 15)))));
+    emit_call_insn
+      (gen_rtx (PARALLEL, VOIDmode,
+		gen_rtvec (3, gen_rtx (CALL, VOIDmode, fn_rtx, nregs_rtx),
+			   GEN_INT (INTVAL (operands[3]) & 0xfff),
+			   gen_rtx (CLOBBER, VOIDmode,
+				    gen_rtx (REG, Pmode, 15)))));
   else
-    emit_call_insn (gen_rtx (PARALLEL, VOIDmode, gen_rtvec (2,
-			     gen_rtx (CALL, VOIDmode, fn_rtx, nregs_rtx),
-			     gen_rtx (CLOBBER, VOIDmode,
-					       gen_rtx (REG, Pmode, 15)))));
+    emit_call_insn
+      (gen_rtx (PARALLEL, VOIDmode,
+		gen_rtvec (2, gen_rtx (CALL, VOIDmode, fn_rtx, nregs_rtx),
+			   gen_rtx (CLOBBER, VOIDmode,
+				    gen_rtx (REG, Pmode, 15)))));
 
  finish_call:
 #if 0
