@@ -1,3 +1,7 @@
+2005-04-04  Alan Modra  <amodra@bigpond.net.au>
+
+	* mf-runtime.c (__mfu_unregister): Warning fix for char unsigned.
+
 2005-03-21  Mike Stump  <mrs@apple.com>
 
 	* mf-heuristics.c: Fix whitespace at end of line.
