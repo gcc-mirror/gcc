@@ -1612,65 +1612,65 @@ $(MD_FILE): $(MD_DEPS)
 	$(MD_CPP) $(MD_CPPFLAGS) $(md_file) | sed 's/^# /; /g' > tmp-$@
 	mv tmp-$@ $@
 
-genconfig : genconfig.o $(HOST_RTL) $(HOST_LIBDEPS)
+genconfig : genconfig.o $(HOST_RTL) $(HOST_PRINT) $(HOST_LIBDEPS)
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o $@ \
-	  genconfig.o $(HOST_RTL) $(HOST_LIBS)
+	  genconfig.o $(HOST_RTL) $(HOST_PRINT) $(HOST_LIBS)
 
 genconfig.o : genconfig.c $(RTL_H) $(build_xm_file) system.h
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/genconfig.c
 
-genflags : genflags.o $(HOST_RTL) $(HOST_LIBDEPS)
+genflags : genflags.o $(HOST_RTL) $(HOST_PRINT) $(HOST_LIBDEPS)
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o $@ \
-	 genflags.o $(HOST_RTL) $(HOST_LIBS)
+	 genflags.o $(HOST_RTL) $(HOST_PRINT) $(HOST_LIBS)
 
 genflags.o : genflags.c $(RTL_H) $(build_xm_file) system.h
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/genflags.c
 
-gencodes : gencodes.o $(HOST_RTL) $(HOST_LIBDEPS)
+gencodes : gencodes.o $(HOST_RTL) $(HOST_PRINT) $(HOST_LIBDEPS)
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o $@ \
-	 gencodes.o $(HOST_RTL) $(HOST_LIBS)
+	 gencodes.o $(HOST_RTL) $(HOST_PRINT) $(HOST_LIBS)
 
 gencodes.o : gencodes.c $(RTL_H) $(build_xm_file) system.h
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/gencodes.c
 
-genemit : genemit.o $(HOST_RTL) $(HOST_LIBDEPS)
+genemit : genemit.o $(HOST_RTL) $(HOST_PRINT) $(HOST_LIBDEPS)
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o $@ \
-	 genemit.o $(HOST_RTL) $(HOST_LIBS)
+	 genemit.o $(HOST_RTL) $(HOST_PRINT) $(HOST_LIBS)
 
 genemit.o : genemit.c $(RTL_H) $(build_xm_file) system.h
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/genemit.c
 
-genopinit : genopinit.o $(HOST_RTL) $(HOST_LIBDEPS)
+genopinit : genopinit.o $(HOST_RTL) $(HOST_PRINT) $(HOST_LIBDEPS)
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o $@ \
-	 genopinit.o $(HOST_RTL) $(HOST_LIBS)
+	 genopinit.o $(HOST_RTL) $(HOST_PRINT) $(HOST_LIBS)
 
 genopinit.o : genopinit.c $(RTL_H) $(build_xm_file) system.h
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/genopinit.c
 
-genrecog : genrecog.o $(HOST_RTL) $(HOST_LIBDEPS)
+genrecog : genrecog.o $(HOST_RTL) $(HOST_PRINT) $(HOST_LIBDEPS)
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o $@ \
-	 genrecog.o $(HOST_RTL) $(HOST_LIBS)
+	 genrecog.o $(HOST_RTL) $(HOST_PRINT) $(HOST_LIBS)
 
 genrecog.o : genrecog.c $(RTL_H) $(build_xm_file) system.h
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/genrecog.c
 
-genextract : genextract.o $(HOST_RTL) $(HOST_LIBDEPS)
+genextract : genextract.o $(HOST_RTL) $(HOST_PRINT) $(HOST_LIBDEPS)
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o $@ \
-	 genextract.o $(HOST_RTL) $(HOST_LIBS)
+	 genextract.o $(HOST_RTL) $(HOST_PRINT) $(HOST_LIBS)
 
 genextract.o : genextract.c $(RTL_H) $(build_xm_file) system.h insn-config.h
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/genextract.c
 
-genpeep : genpeep.o $(HOST_RTL) $(HOST_LIBDEPS)
+genpeep : genpeep.o $(HOST_RTL) $(HOST_PRINT) $(HOST_LIBDEPS)
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o $@ \
-	 genpeep.o $(HOST_RTL) $(HOST_LIBS)
+	 genpeep.o $(HOST_RTL) $(HOST_PRINT) $(HOST_LIBS)
 
 genpeep.o : genpeep.c $(RTL_H) $(build_xm_file) system.h
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/genpeep.c
 
-genattr : genattr.o $(HOST_RTL) $(HOST_LIBDEPS)
+genattr : genattr.o $(HOST_RTL) $(HOST_PRINT) $(HOST_LIBDEPS)
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o $@ \
-	 genattr.o $(HOST_RTL) $(HOST_LIBS)
+	 genattr.o $(HOST_RTL) $(HOST_PRINT) $(HOST_LIBS)
 
 genattr.o : genattr.c $(RTL_H) $(build_xm_file) system.h
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/genattr.c
@@ -1682,9 +1682,9 @@ genattrtab : genattrtab.o $(HOST_RTL) $(HOST_PRINT) $(HOST_RTLANAL) $(HOST_LIBDE
 genattrtab.o : genattrtab.c $(RTL_H)  $(build_xm_file) system.h insn-config.h
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/genattrtab.c
 
-genoutput : genoutput.o $(HOST_RTL) $(HOST_LIBDEPS)
+genoutput : genoutput.o $(HOST_RTL) $(HOST_PRINT) $(HOST_LIBDEPS)
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o $@ \
-	 genoutput.o $(HOST_RTL) $(HOST_LIBS)
+	 genoutput.o $(HOST_RTL) $(HOST_PRINT) $(HOST_LIBS)
 
 genoutput.o : genoutput.c $(RTL_H) $(build_xm_file) system.h
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/genoutput.c
