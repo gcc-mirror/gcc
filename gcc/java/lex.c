@@ -1024,8 +1024,12 @@ java_lex (java_lval)
 	  int seen_exponent = 0;
 	  int fflag = 0;	/* 1 for {f,F}, 0 for {d,D}. FP literal are
 				   double unless specified. */
-	  if (radix != 10)
+
+	  /* It is ok if the radix is 8 because this just means we've
+	     seen a leading `0'.  However, radix==16 is invalid.  */
+	  if (radix == 16)
 	    java_lex_error ("Can't express non-decimal FP literal", 0);
+	  radix = 10;
 
 	  for (;;)
 	    {
