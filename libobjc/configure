@@ -309,7 +309,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS VERSION OBJC_BOEHM_GC toplevel_srcdir build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os target_noncanonical glibcpp_srcdir gcc_version toolexecdir toolexeclibdir libext CC ac_ct_CC EXEEXT OBJEXT CFLAGS AS ac_ct_AS AR ac_ct_AR RANLIB ac_ct_RANLIB INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA LN_S STRIP ac_ct_STRIP LIBTOOL SET_MAKE CPP CPPFLAGS EGREP GTHREAD_FLAGS LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS VERSION OBJC_BOEHM_GC toplevel_srcdir build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os target_noncanonical glibcpp_srcdir gcc_version toolexecdir toolexeclibdir includedirname libext CC ac_ct_CC EXEEXT OBJEXT CFLAGS AS ac_ct_AS AR ac_ct_AR RANLIB ac_ct_RANLIB INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA LN_S STRIP ac_ct_STRIP LIBTOOL SET_MAKE CPP CPPFLAGS EGREP GTHREAD_FLAGS LIBOBJS LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -1572,12 +1572,12 @@ esac
 
 # Figure out if we want to name the include directory and the
 #  library name changes differently.
-includedir=include
+includedirname=include
 libext=
 case "${host}" in
   *-darwin*)
     # Darwin is the only target so far that needs a different include directory.
-    includedir=gnu-runtime;
+    includedirname=include-gnu-runtime
     libext=-gnu
     ;;
 esac
@@ -5627,6 +5627,7 @@ s,@glibcpp_srcdir@,$glibcpp_srcdir,;t t
 s,@gcc_version@,$gcc_version,;t t
 s,@toolexecdir@,$toolexecdir,;t t
 s,@toolexeclibdir@,$toolexeclibdir,;t t
+s,@includedirname@,$includedirname,;t t
 s,@libext@,$libext,;t t
 s,@CC@,$CC,;t t
 s,@ac_ct_CC@,$ac_ct_CC,;t t
