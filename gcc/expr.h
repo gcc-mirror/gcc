@@ -540,7 +540,7 @@ extern void expand_fix PROTO((rtx, rtx, int));
    appropriately for the current target machine.  */
 extern void init_optabs	PROTO((void));
 
-/* Functions from expmed.c:  (/
+/* Functions from expmed.c:  */
 
 /* Arguments MODE, RTX: return an rtx for the negation of that value.
    May emit insns.  */
@@ -581,7 +581,7 @@ extern void convert_move PROTO((rtx, rtx, int));
 /* Convert an rtx to specified machine mode and return the result.  */
 extern rtx convert_to_mode PROTO((enum machine_mode, rtx, int));
 
-/* Emit code to move a block Y to a block X.
+/* Emit code to move a block Y to a block X.  */
 extern void emit_block_move PROTO((rtx, rtx, rtx, int));
 
 /* Copy all or part of a value X into registers starting at REGNO.
