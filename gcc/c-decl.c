@@ -402,7 +402,7 @@ void shadow_tag_warned ();
 
 static tree lookup_tag ();
 static tree lookup_tag_reverse ();
-static tree lookup_name_current_level ();
+tree lookup_name_current_level ();
 static char *redeclaration_error_message ();
 static void layout_array_type ();
 
@@ -2530,7 +2530,7 @@ lookup_name (name)
 
 /* Similar to `lookup_name' but look only at current binding level.  */
 
-static tree
+tree
 lookup_name_current_level (name)
      tree name;
 {
