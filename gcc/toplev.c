@@ -3311,7 +3311,21 @@ rest_of_compilation (decl)
 
   if (optimize > 0)
     {
-      TIMEVAR (combine_time, combine_instructions (insns, max_reg_num ()));
+      int rebuild_jump_labels_after_combine = 0;
+
+      TIMEVAR (combine_time, 
+	       {
+		 rebuild_jump_labels_after_combine = 
+		   combine_instructions (insns, max_reg_num ());
+	       });
+      
+      /* Combining insns may have turned an indirect jump into a
+	 direct jump.  Rebuid the JUMP_LABEL fields of jumping
+	 instructions.  */
+      if (rebuild_jump_labels_after_combine)
+	{
+	  TIMEVAR (jump_time, rebuild_jump_labels (insns));
+	}
 
       /* Dump rtl code after insn combination.  */
 

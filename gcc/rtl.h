@@ -1470,7 +1470,7 @@ extern void remove_unncessary_notes             PARAMS ((void));
 extern void add_clobbers		PARAMS ((rtx, int));
 
 /* In combine.c */
-extern void combine_instructions	PARAMS ((rtx, int));
+extern int combine_instructions	PARAMS ((rtx, int));
 extern int extended_count		PARAMS ((rtx, enum machine_mode, int));
 extern rtx remove_death			PARAMS ((int, rtx));
 #ifdef BUFSIZ

@@ -1,3 +1,13 @@
+2000-02-25  Anthony Green  <green@cygnus.com>
+
+	* toplev.c (rest_of_compilation): Rebuild jump labels if
+	combine_instructions has created a new direct jump.
+	* combine.c (try_combine): Add new_direct_jump_p argument.  Set it
+	when appropriate.
+	(combine_instructions): Call try_combine with new argument.
+	Return non-null value when new direct jump instruction is created.
+	* rtl.h: combine_instructions returns an int.
+
 Fri Feb 25 19:49:08 2000  Jeffrey A Law  (law@cygnus.com)
 
 	* cse.c (cse_insn): Replace the PATTERN of the insn with an new
