@@ -1,3 +1,8 @@
+2000-05-05  Richard Henderson  <rth@cygnus.com>
+
+	* rtlanal.c (reg_overlap_mentioned_p): Treat parallels in the
+	same way emit_group_load does.
+
 2000-05-05 Mark Elbrecht <snowball3@bigfoot.com>
 
 	* toplev.c (output_file_directive): Use IS_DIR_SEPARATOR.
