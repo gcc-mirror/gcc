@@ -3318,8 +3318,7 @@ store_field (target, bitsize, bitpos, mode, exp, value_mode,
 
 /* Given an expression EXP that may be a COMPONENT_REF, a BIT_FIELD_REF,
    or an ARRAY_REF, look for nested COMPONENT_REFs, BIT_FIELD_REFs, or
-   ARRAY_REFs at constant positions and find the ultimate containing object,
-   which we return.
+   ARRAY_REFs and find the ultimate containing object, which we return.
 
    We set *PBITSIZE to the size in bits that we want, *PBITPOS to the
    bit position, and *PUNSIGNEDP to the signedness of the field.
@@ -3352,7 +3351,7 @@ get_inner_reference (exp, pbitsize, pbitpos, poffset, pmode,
 {
   tree size_tree = 0;
   enum machine_mode mode = VOIDmode;
-  tree offset = 0;
+  tree offset = integer_zero_node;
 
   if (TREE_CODE (exp) == COMPONENT_REF)
     {
@@ -3409,14 +3408,11 @@ get_inner_reference (exp, pbitsize, pbitpos, poffset, pmode,
 		}
 	      else
 		abort ();
+
 	      *pbitpos += TREE_INT_CST_LOW (constant);
-	      if (offset)
-		offset = size_binop (PLUS_EXPR, offset,
-				     size_binop (FLOOR_DIV_EXPR, var,
-						 size_int (BITS_PER_UNIT)));
-	      else
-		offset = size_binop (FLOOR_DIV_EXPR, var,
-				     size_int (BITS_PER_UNIT));
+	      offset = size_binop (PLUS_EXPR, offset,
+				   size_binop (FLOOR_DIV_EXPR, var,
+					       size_int (BITS_PER_UNIT)));
 	    }
 	  else if (TREE_CODE (pos) == INTEGER_CST)
 	    *pbitpos += TREE_INT_CST_LOW (pos);
@@ -3424,22 +3420,43 @@ get_inner_reference (exp, pbitsize, pbitpos, poffset, pmode,
 	    {
 	      /* Assume here that the offset is a multiple of a unit.
 		 If not, there should be an explicitly added constant.  */
-	      if (offset)
-		offset = size_binop (PLUS_EXPR, offset,
-				     size_binop (FLOOR_DIV_EXPR, pos,
-						 size_int (BITS_PER_UNIT)));
-	      else
-		offset = size_binop (FLOOR_DIV_EXPR, pos,
-				     size_int (BITS_PER_UNIT));
+	      offset = size_binop (PLUS_EXPR, offset,
+				   size_binop (FLOOR_DIV_EXPR, pos,
+					       size_int (BITS_PER_UNIT)));
 	    }
 	}
 
-      else if (TREE_CODE (exp) == ARRAY_REF
-	       && TREE_CODE (TREE_OPERAND (exp, 1)) == INTEGER_CST
-	       && TREE_CODE (TYPE_SIZE (TREE_TYPE (exp))) == INTEGER_CST)
+      else if (TREE_CODE (exp) == ARRAY_REF)
 	{
-	  *pbitpos += (TREE_INT_CST_LOW (TREE_OPERAND (exp, 1))
-		       * TREE_INT_CST_LOW (TYPE_SIZE (TREE_TYPE (exp))));
+	  /* This code is based on the code in case ARRAY_REF in expand_expr
+	     below.  We assume here that the size of an array element is
+	     always an integral multiple of BITS_PER_UNIT.  */
+
+	  tree index = TREE_OPERAND (exp, 1);
+	  tree domain = TYPE_DOMAIN (TREE_TYPE (TREE_OPERAND (exp, 0)));
+	  tree low_bound
+	    = domain ? TYPE_MIN_VALUE (domain) : integer_zero_node;
+	  tree index_type = TREE_TYPE (index);
+
+	  if (! integer_zerop (low_bound))
+	    index = fold (build (MINUS_EXPR, index_type, index, low_bound));
+
+	  if (TYPE_PRECISION (index_type) != POINTER_SIZE)
+	    {
+	      index = convert (type_for_size (POINTER_SIZE, 0), index);
+	      index_type = TREE_TYPE (index);
+	    }
+
+	  index = fold (build (MULT_EXPR, index_type, index,
+			       TYPE_SIZE (TREE_TYPE (exp))));
+
+	  if (TREE_CODE (index) == INTEGER_CST
+	      && TREE_INT_CST_HIGH (index) == 0)
+	    *pbitpos += TREE_INT_CST_LOW (index);
+	  else
+	    offset = size_binop (PLUS_EXPR, offset,
+				 size_binop (FLOOR_DIV_EXPR, index,
+					     size_int (BITS_PER_UNIT)));
 	}
       else if (TREE_CODE (exp) != NON_LVALUE_EXPR
 	       && ! ((TREE_CODE (exp) == NOP_EXPR
@@ -3462,6 +3479,9 @@ get_inner_reference (exp, pbitsize, pbitpos, poffset, pmode,
       if (mode == BLKmode)
 	mode = VOIDmode;
     }
+
+  if (integer_zerop (offset))
+    offset = 0;
 
   *pmode = mode;
   *poffset = offset;
@@ -4236,136 +4256,146 @@ expand_expr (exp, target, tmode, modifier)
       }
 
     case ARRAY_REF:
-      if (TREE_CODE (TREE_OPERAND (exp, 1)) != INTEGER_CST
-	  || TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
-	{
-	  /* Nonconstant array index or nonconstant element size.
-	     Generate the tree for *(&array+index) and expand that,
-	     except do it in a language-independent way
-	     and don't complain about non-lvalue arrays.
-	     `mark_addressable' should already have been called
-	     for any array for which this case will be reached.  */
+      if (TREE_CODE (TREE_TYPE (TREE_OPERAND (exp, 0))) != ARRAY_TYPE)
+	abort ();
 
-	  /* Don't forget the const or volatile flag from the array element. */
-	  tree variant_type = build_type_variant (type,
-						  TREE_READONLY (exp),
-						  TREE_THIS_VOLATILE (exp));
-	  tree array_adr = build1 (ADDR_EXPR, build_pointer_type (variant_type),
-				   TREE_OPERAND (exp, 0));
-	  tree index = TREE_OPERAND (exp, 1);
-	  tree elt;
-
-	  /* Convert the integer argument to a type the same size as a pointer
-	     so the multiply won't overflow spuriously.  */
-	  if (TYPE_PRECISION (TREE_TYPE (index)) != POINTER_SIZE)
-	    index = convert (type_for_size (POINTER_SIZE, 0), index);
-
-	  /* Don't think the address has side effects
-	     just because the array does.
-	     (In some cases the address might have side effects,
-	     and we fail to record that fact here.  However, it should not
-	     matter, since expand_expr should not care.)  */
-	  TREE_SIDE_EFFECTS (array_adr) = 0;
-
-	  elt = build1 (INDIRECT_REF, type,
-			fold (build (PLUS_EXPR, TYPE_POINTER_TO (variant_type),
-				     array_adr,
-				     fold (build (MULT_EXPR,
-						  TYPE_POINTER_TO (variant_type),
-						  index, size_in_bytes (type))))));
-
-	  /* Volatility, etc., of new expression is same as old expression.  */
-	  TREE_SIDE_EFFECTS (elt) = TREE_SIDE_EFFECTS (exp);
-	  TREE_THIS_VOLATILE (elt) = TREE_THIS_VOLATILE (exp);
-	  TREE_READONLY (elt) = TREE_READONLY (exp);
-
-	  return expand_expr (elt, target, tmode, modifier);
-	}
-
-      /* Fold an expression like: "foo"[2].
-	 This is not done in fold so it won't happen inside &.  */
       {
+	tree array = TREE_OPERAND (exp, 0);
+	tree domain = TYPE_DOMAIN (TREE_TYPE (array));
+	tree low_bound = domain ? TYPE_MIN_VALUE (domain) : integer_zero_node;
+	tree index = TREE_OPERAND (exp, 1);
+	tree index_type = TREE_TYPE (index);
 	int i;
-	tree arg0 = TREE_OPERAND (exp, 0);
-	tree arg1 = TREE_OPERAND (exp, 1);
 
-	if (TREE_CODE (arg0) == STRING_CST
-	    && TREE_CODE (arg1) == INTEGER_CST
-	    && !TREE_INT_CST_HIGH (arg1)
-	    && (i = TREE_INT_CST_LOW (arg1)) < TREE_STRING_LENGTH (arg0))
+	/* Optimize the special-case of a zero lower bound.  */
+	if (! integer_zerop (low_bound))
+	  index = fold (build (MINUS_EXPR, index_type, index, low_bound));
+
+	if (TREE_CODE (index) != INTEGER_CST
+	    || TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
 	  {
-	    if (TREE_TYPE (TREE_TYPE (arg0)) == integer_type_node)
+	    /* Nonconstant array index or nonconstant element size.
+	       Generate the tree for *(&array+index) and expand that,
+	       except do it in a language-independent way
+	       and don't complain about non-lvalue arrays.
+	       `mark_addressable' should already have been called
+	       for any array for which this case will be reached.  */
+
+	    /* Don't forget the const or volatile flag from the array
+	       element. */
+	    tree variant_type = build_type_variant (type,
+						    TREE_READONLY (exp),
+						    TREE_THIS_VOLATILE (exp));
+	    tree array_adr = build1 (ADDR_EXPR,
+				     build_pointer_type (variant_type), array);
+	    tree elt;
+
+	    /* Convert the integer argument to a type the same size as a
+	       pointer so the multiply won't overflow spuriously.  */
+	    if (TYPE_PRECISION (index_type) != POINTER_SIZE)
+	      index = convert (type_for_size (POINTER_SIZE, 0), index);
+
+	    /* Don't think the address has side effects
+	       just because the array does.
+	       (In some cases the address might have side effects,
+	       and we fail to record that fact here.  However, it should not
+	       matter, since expand_expr should not care.)  */
+	    TREE_SIDE_EFFECTS (array_adr) = 0;
+
+	    elt = build1 (INDIRECT_REF, type,
+			  fold (build (PLUS_EXPR,
+				       TYPE_POINTER_TO (variant_type),
+				       array_adr,
+				       fold (build (MULT_EXPR,
+						    TYPE_POINTER_TO (variant_type),
+						    index,
+						    size_in_bytes (type))))));
+
+	    /* Volatility, etc., of new expression is same as old
+	       expression.  */
+	    TREE_SIDE_EFFECTS (elt) = TREE_SIDE_EFFECTS (exp);
+	    TREE_THIS_VOLATILE (elt) = TREE_THIS_VOLATILE (exp);
+	    TREE_READONLY (elt) = TREE_READONLY (exp);
+
+	    return expand_expr (elt, target, tmode, modifier);
+	  }
+
+	/* Fold an expression like: "foo"[2].
+	   This is not done in fold so it won't happen inside &.  */
+
+	if (TREE_CODE (array) == STRING_CST
+	    && TREE_CODE (index) == INTEGER_CST
+	    && !TREE_INT_CST_HIGH (index)
+	    && (i = TREE_INT_CST_LOW (index)) < TREE_STRING_LENGTH (array))
+	  {
+	    if (TREE_TYPE (TREE_TYPE (array)) == integer_type_node)
 	      {
-		exp = build_int_2 (((int *)TREE_STRING_POINTER (arg0))[i], 0);
+		exp = build_int_2 (((int *)TREE_STRING_POINTER (array))[i], 0);
 		TREE_TYPE (exp) = integer_type_node;
 		return expand_expr (exp, target, tmode, modifier);
 	      }
-	    if (TREE_TYPE (TREE_TYPE (arg0)) == char_type_node)
+	    if (TREE_TYPE (TREE_TYPE (array)) == char_type_node)
 	      {
-		exp = build_int_2 (TREE_STRING_POINTER (arg0)[i], 0);
+		exp = build_int_2 (TREE_STRING_POINTER (array)[i], 0);
 		TREE_TYPE (exp) = integer_type_node;
-		return expand_expr (convert (TREE_TYPE (TREE_TYPE (arg0)), exp), target, tmode, modifier);
+		return expand_expr (convert (TREE_TYPE (TREE_TYPE (array)),
+					     exp),
+				    target, tmode, modifier);
+	      }
+	  }
+
+	/* If this is a constant index into a constant array,
+	   just get the value from the array.  Handle both the cases when
+	   we have an explicit constructor and when our operand is a variable
+	   that was declared const.  */
+
+	if (TREE_CODE (array) == CONSTRUCTOR && ! TREE_SIDE_EFFECTS (array))
+	  {
+	    if (TREE_CODE (index) == INTEGER_CST
+		&& TREE_INT_CST_HIGH (index) == 0)
+	      {
+		tree elem = CONSTRUCTOR_ELTS (TREE_OPERAND (exp, 0));
+
+		i = TREE_INT_CST_LOW (index);
+		while (elem && i--)
+		  elem = TREE_CHAIN (elem);
+		if (elem)
+		  return expand_expr (fold (TREE_VALUE (elem)), target,
+				      tmode, modifier);
+	      }
+	  }
+	  
+	else if (optimize >= 1
+		 && TREE_READONLY (array) && ! TREE_SIDE_EFFECTS (array)
+		 && TREE_CODE (array) == VAR_DECL && DECL_INITIAL (array)
+		 && TREE_CODE (DECL_INITIAL (array)) != ERROR_MARK)
+	  {
+	    if (TREE_CODE (index) == INTEGER_CST
+		&& TREE_INT_CST_HIGH (index) == 0)
+	      {
+		tree init = DECL_INITIAL (array);
+
+		i = TREE_INT_CST_LOW (index);
+		if (TREE_CODE (init) == CONSTRUCTOR)
+		  {
+		    tree elem = CONSTRUCTOR_ELTS (init);
+
+		    while (elem && i--)
+		      elem = TREE_CHAIN (elem);
+		    if (elem)
+		      return expand_expr (fold (TREE_VALUE (elem)), target,
+					  tmode, modifier);
+		  }
+		else if (TREE_CODE (init) == STRING_CST
+			 && i < TREE_STRING_LENGTH (init))
+		  {
+		    temp = GEN_INT (TREE_STRING_POINTER (init)[i]);
+		    return convert_to_mode (mode, temp, 0);
+		  }
 	      }
 	  }
       }
 
-      /* If this is a constant index into a constant array,
-	 just get the value from the array.  Handle both the cases when
-	 we have an explicit constructor and when our operand is a variable
-	 that was declared const.  */
-
-      if (TREE_CODE (TREE_OPERAND (exp, 0)) == CONSTRUCTOR
-	  && ! TREE_SIDE_EFFECTS (TREE_OPERAND (exp, 0)))
-	{
-	  tree index = fold (TREE_OPERAND (exp, 1));
-	  if (TREE_CODE (index) == INTEGER_CST
-	      && TREE_INT_CST_HIGH (index) == 0)
-	    {
-	      int i = TREE_INT_CST_LOW (index);
-	      tree elem = CONSTRUCTOR_ELTS (TREE_OPERAND (exp, 0));
-
-	      while (elem && i--)
-		elem = TREE_CHAIN (elem);
-	      if (elem)
-		return expand_expr (fold (TREE_VALUE (elem)), target,
-				    tmode, modifier);
-	    }
-	}
-	  
-      else if (TREE_READONLY (TREE_OPERAND (exp, 0))
-	       && ! TREE_SIDE_EFFECTS (TREE_OPERAND (exp, 0))
-	       && TREE_CODE (TREE_TYPE (TREE_OPERAND (exp, 0))) == ARRAY_TYPE
-	       && TREE_CODE (TREE_OPERAND (exp, 0)) == VAR_DECL
-	       && DECL_INITIAL (TREE_OPERAND (exp, 0))
-	       && optimize >= 1
-	       && (TREE_CODE (DECL_INITIAL (TREE_OPERAND (exp, 0)))
-		   != ERROR_MARK))
-	{
-	  tree index = fold (TREE_OPERAND (exp, 1));
-	  if (TREE_CODE (index) == INTEGER_CST
-	      && TREE_INT_CST_HIGH (index) == 0)
-	    {
-	      int i = TREE_INT_CST_LOW (index);
-	      tree init = DECL_INITIAL (TREE_OPERAND (exp, 0));
-
-	      if (TREE_CODE (init) == CONSTRUCTOR)
-		{
-		  tree elem = CONSTRUCTOR_ELTS (init);
-
-		  while (elem && i--)
-		    elem = TREE_CHAIN (elem);
-		  if (elem)
-		    return expand_expr (fold (TREE_VALUE (elem)), target,
-					tmode, modifier);
-		}
-	      else if (TREE_CODE (init) == STRING_CST
-		       && i < TREE_STRING_LENGTH (init))
-		{
-		  temp = GEN_INT (TREE_STRING_POINTER (init)[i]);
-		  return convert_to_mode (mode, temp, 0);
-		}
-	    }
-	}
       /* Treat array-ref with constant index as a component-ref.  */
 
     case COMPONENT_REF:
