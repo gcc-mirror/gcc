@@ -1498,7 +1498,7 @@ subst_stack_regs_pat (insn, regstack, pat)
 
     case SET:
       {
-	rtx *src1 = (rtx *) NULL_PTR, *src2;
+	rtx *src1 = (rtx *) 0, *src2;
 	rtx src1_note, src2_note;
 	rtx pat_src;
 

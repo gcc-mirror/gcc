@@ -997,7 +997,7 @@ exact_real_inverse (mode, r)
     {
       /* Don't do the optimization if there was an arithmetic error.  */
 fail:
-      set_float_handler (NULL_PTR);
+      set_float_handler (NULL);
       return 0;
     }
   set_float_handler (float_error);
@@ -1040,7 +1040,7 @@ fail:
 #endif
 
   /* Output the reciprocal and return success flag.  */
-  set_float_handler (NULL_PTR);
+  set_float_handler (NULL);
   *r = y.d;
   return 1;
 }

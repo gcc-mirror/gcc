@@ -914,7 +914,7 @@ gcse_main (f, file)
 	       pass, pass > 1 ? "es" : "", max_pass_bytes);
     }
 
-  obstack_free (&gcse_obstack, NULL_PTR);
+  obstack_free (&gcse_obstack, NULL);
   free_reg_set_mem ();
   /* We are finished with alias.  */
   end_alias_analysis ();
@@ -1247,7 +1247,7 @@ static void
 free_reg_set_mem ()
 {
   free (reg_set_table);
-  obstack_free (&reg_set_obstack, NULL_PTR);
+  obstack_free (&reg_set_obstack, NULL);
 }
 
 /* Record REGNO in the reg_set table.  */

@@ -2547,7 +2547,7 @@ implicitly_declare (functionid)
   /* This is a no-op in c-lang.c or something real in objc-actions.c.  */
   maybe_objc_check_decl (decl);
 
-  rest_of_decl_compilation (decl, NULL_PTR, 0, 0);
+  rest_of_decl_compilation (decl, NULL, 0, 0);
 
   if (implicit_warning)
     implicit_decl_warning (functionid);
@@ -3059,23 +3059,23 @@ init_decl_processing ()
   builtin_function ("__builtin_aggregate_incoming_address",
 		    build_function_type (ptr_type_node, NULL_TREE),
 		    BUILT_IN_AGGREGATE_INCOMING_ADDRESS,
-		    BUILT_IN_NORMAL, NULL_PTR);
+		    BUILT_IN_NORMAL, NULL);
 
   /* Hooks for the DWARF 2 __throw routine.  */
   builtin_function ("__builtin_unwind_init",
 		    build_function_type (void_type_node, endlink),
-		    BUILT_IN_UNWIND_INIT, BUILT_IN_NORMAL, NULL_PTR);
+		    BUILT_IN_UNWIND_INIT, BUILT_IN_NORMAL, NULL);
   builtin_function ("__builtin_dwarf_cfa", ptr_ftype_void,
-		    BUILT_IN_DWARF_CFA, BUILT_IN_NORMAL, NULL_PTR);
+		    BUILT_IN_DWARF_CFA, BUILT_IN_NORMAL, NULL);
   builtin_function ("__builtin_dwarf_fp_regnum",
 		    build_function_type (unsigned_type_node, endlink),
-		    BUILT_IN_DWARF_FP_REGNUM, BUILT_IN_NORMAL, NULL_PTR);
+		    BUILT_IN_DWARF_FP_REGNUM, BUILT_IN_NORMAL, NULL);
   builtin_function ("__builtin_init_dwarf_reg_size_table", void_ftype_ptr,
-		    BUILT_IN_INIT_DWARF_REG_SIZES, BUILT_IN_NORMAL, NULL_PTR);
+		    BUILT_IN_INIT_DWARF_REG_SIZES, BUILT_IN_NORMAL, NULL);
   builtin_function ("__builtin_frob_return_addr", ptr_ftype_ptr,
-		    BUILT_IN_FROB_RETURN_ADDR, BUILT_IN_NORMAL, NULL_PTR);
+		    BUILT_IN_FROB_RETURN_ADDR, BUILT_IN_NORMAL, NULL);
   builtin_function ("__builtin_extract_return_addr", ptr_ftype_ptr,
-		    BUILT_IN_EXTRACT_RETURN_ADDR, BUILT_IN_NORMAL, NULL_PTR);
+		    BUILT_IN_EXTRACT_RETURN_ADDR, BUILT_IN_NORMAL, NULL);
   builtin_function
     ("__builtin_eh_return",
      build_function_type (void_type_node,
@@ -3084,7 +3084,7 @@ init_decl_processing ()
 				     tree_cons (NULL_TREE,
 						ptr_type_node,
 						endlink))),
-     BUILT_IN_EH_RETURN, BUILT_IN_NORMAL, NULL_PTR);
+     BUILT_IN_EH_RETURN, BUILT_IN_NORMAL, NULL);
 
   pedantic_lvalues = pedantic;
 
@@ -3179,7 +3179,7 @@ builtin_function (name, type, function_code, class, library_name)
     DECL_BUILT_IN_NONANSI (decl) = 1;
   if (library_name)
     SET_DECL_ASSEMBLER_NAME (decl, get_identifier (library_name));
-  make_decl_rtl (decl, NULL_PTR);
+  make_decl_rtl (decl, NULL);
   pushdecl (decl);
   DECL_BUILT_IN_CLASS (decl) = class;
   DECL_FUNCTION_CODE (decl) = function_code;
@@ -3644,7 +3644,7 @@ finish_decl (decl, init, asmspec_tree)
     {
       /* This is a no-op in c-lang.c or something real in objc-actions.c.  */
       maybe_objc_check_decl (decl);
-      rest_of_decl_compilation (decl, NULL_PTR, DECL_CONTEXT (decl) == 0, 0);
+      rest_of_decl_compilation (decl, NULL, DECL_CONTEXT (decl) == 0, 0);
     }
 
   /* At the end of a declaration, throw away any variable type sizes
@@ -5503,7 +5503,7 @@ finish_struct (t, fieldlist, attributes)
 	      layout_decl (decl, 0);
 	      /* This is a no-op in c-lang.c or something real in objc-actions.c.  */
 	      maybe_objc_check_decl (decl);
-	      rest_of_decl_compilation (decl, NULL_PTR, toplevel, 0);
+	      rest_of_decl_compilation (decl, NULL, toplevel, 0);
 	      if (! toplevel)
 		expand_decl (decl);
 	      --current_binding_level->n_incomplete;

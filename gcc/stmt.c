@@ -1054,11 +1054,11 @@ expand_fixup (tree_label, rtl_label, last_insn)
 	  }
 
         start_sequence ();
-        start = emit_note (NULL_PTR, NOTE_INSN_BLOCK_BEG);
+        start = emit_note (NULL, NOTE_INSN_BLOCK_BEG);
 	if (cfun->x_whole_function_mode_p)
 	  NOTE_BLOCK (start) = block;
-	fixup->before_jump = emit_note (NULL_PTR, NOTE_INSN_DELETED);
-	end = emit_note (NULL_PTR, NOTE_INSN_BLOCK_END);
+	fixup->before_jump = emit_note (NULL, NOTE_INSN_DELETED);
+	end = emit_note (NULL, NOTE_INSN_BLOCK_END);
 	if (cfun->x_whole_function_mode_p)
 	  NOTE_BLOCK (end) = block;
         fixup->context = block;
@@ -2286,7 +2286,7 @@ expand_start_loop (exit_flag)
 
   do_pending_stack_adjust ();
   emit_queue ();
-  emit_note (NULL_PTR, NOTE_INSN_LOOP_BEG);
+  emit_note (NULL, NOTE_INSN_LOOP_BEG);
   emit_label (thisloop->data.loop.start_label);
 
   return thisloop;
@@ -2337,7 +2337,7 @@ void
 expand_loop_continue_here ()
 {
   do_pending_stack_adjust ();
-  emit_note (NULL_PTR, NOTE_INSN_LOOP_CONT);
+  emit_note (NULL, NOTE_INSN_LOOP_CONT);
   emit_label (loop_stack->data.loop.continue_label);
 }
 
@@ -2645,7 +2645,7 @@ expand_end_loop ()
   if (needs_end_jump)
     {
       emit_jump (start_label);
-      emit_note (NULL_PTR, NOTE_INSN_LOOP_END);
+      emit_note (NULL, NOTE_INSN_LOOP_END);
     }
   emit_label (loop_stack->data.loop.end_label);
 
@@ -3272,11 +3272,11 @@ expand_start_bindings_and_block (flags, block)
   /* Create a note to mark the beginning of the block.  */
   if (block_flag)
     {
-      note = emit_note (NULL_PTR, NOTE_INSN_BLOCK_BEG);
+      note = emit_note (NULL, NOTE_INSN_BLOCK_BEG);
       NOTE_BLOCK (note) = block;
     }
   else
-    note = emit_note (NULL_PTR, NOTE_INSN_DELETED);
+    note = emit_note (NULL, NOTE_INSN_DELETED);
 
   /* Make an entry on block_stack for the block we are entering.  */
 
@@ -3297,7 +3297,7 @@ expand_start_bindings_and_block (flags, block)
      fix this is to just insert another instruction here, so that the
      instructions inserted after the last unconditional cleanup are
      never the last instruction.  */
-  emit_note (NULL_PTR, NOTE_INSN_DELETED);
+  emit_note (NULL, NOTE_INSN_DELETED);
   thisblock->data.block.cleanup_ptr = &thisblock->data.block.cleanups;
 
   if (block_stack
@@ -3696,7 +3696,7 @@ expand_end_bindings (vars, mark_ends, dont_jump_in)
 
   if (mark_ends)
     {
-      rtx note = emit_note (NULL_PTR, NOTE_INSN_BLOCK_END);
+      rtx note = emit_note (NULL, NOTE_INSN_BLOCK_END);
       NOTE_BLOCK (note) = NOTE_BLOCK (thisblock->data.block.first_insn);
     }
   else
@@ -4032,7 +4032,7 @@ expand_decl_cleanup (decl, cleanup)
 	     fix this is to just insert another instruction here, so that the
 	     instructions inserted after the last unconditional cleanup are
 	     never the last instruction.  */
-	  emit_note (NULL_PTR, NOTE_INSN_DELETED);
+	  emit_note (NULL, NOTE_INSN_DELETED);
 	  thisblock->data.block.cleanup_ptr = &thisblock->data.block.cleanups;
 	}
     }
@@ -4297,7 +4297,7 @@ expand_start_case (exit_flag, expr, type, printname)
   /* Make sure case_stmt.start points to something that won't
      need any transformation before expand_end_case.  */
   if (GET_CODE (get_last_insn ()) != NOTE)
-    emit_note (NULL_PTR, NOTE_INSN_DELETED);
+    emit_note (NULL, NOTE_INSN_DELETED);
 
   thiscase->data.case_stmt.start = get_last_insn ();
 

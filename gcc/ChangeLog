@@ -1,3 +1,28 @@
+2001-05-01  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* bitmap.c: Change NULL_PTR to NULL or "(rtx*)0".
+	* c-common.c: Likewise.
+	* c-decl.c: Likewise.
+	* combine.c: Likewise.
+	* rs6000.c: Likewise.
+	* except.c: Likewise.
+	* explow.c: Likewise.
+	* expr.c: Likewise.
+	* fold-const.c: Likewise.
+	* function.c: Likewise.
+	* gcc.c: Likewise.
+	* gcse.c: Likewise.
+	* integrate.c: Likewise.
+	* loop.c: Likewise.
+	* objc/objc-act.c: Likewise.
+	* recog.c: Likewise.
+	* reg-stack.c: Likewise.
+	* reload.c: Likewise.
+	* reload1.c: Likewise.
+	* simplify-rtx.c: Likewise.
+	* stmt.c: Likewise.
+	* varasm.c: Likewise.
+
 2001-05-01  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* diagnostic.def: New file.

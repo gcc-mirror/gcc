@@ -1952,7 +1952,7 @@ try_combine (i3, i2, i1, new_direct_jump_p)
 	 isn't mentioned in any SETs in NEWPAT that are field assignments.  */
 
       if (! combinable_i3pat (NULL_RTX, &newpat, i1dest, NULL_RTX,
-			      0, NULL_PTR))
+			      0, (rtx*)0))
 	{
 	  undo_all ();
 	  return 0;
@@ -3029,7 +3029,7 @@ find_split_point (loc, insn)
 	      && GET_CODE (XEXP (SET_SRC (x), 0)) == REG
 	      && (pos = exact_log2 (INTVAL (XEXP (SET_SRC (x), 1)))) >= 7
 	      && GET_CODE (SET_DEST (x)) == REG
-	      && (split = find_single_use (SET_DEST (x), insn, NULL_PTR)) != 0
+	      && (split = find_single_use (SET_DEST (x), insn, (rtx*)0)) != 0
 	      && (GET_CODE (*split) == EQ || GET_CODE (*split) == NE)
 	      && XEXP (*split, 0) == SET_DEST (x)
 	      && XEXP (*split, 1) == const0_rtx)

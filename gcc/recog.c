@@ -115,7 +115,7 @@ recog_memoized_1 (insn)
      rtx insn;
 {
   if (INSN_CODE (insn) < 0)
-    INSN_CODE (insn) = recog (PATTERN (insn), insn, NULL_PTR);
+    INSN_CODE (insn) = recog (PATTERN (insn), insn, 0);
   return INSN_CODE (insn);
 }
 
@@ -268,7 +268,7 @@ insn_invalid_p (insn)
   int icode = recog (pat, insn,
 		     (GET_CODE (pat) == SET
 		      && ! reload_completed && ! reload_in_progress)
-		     ? &num_clobbers : NULL_PTR);
+		     ? &num_clobbers : 0);
   int is_asm = icode < 0 && asm_noperands (PATTERN (insn)) >= 0;
 
   
