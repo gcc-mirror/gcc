@@ -719,7 +719,7 @@ assemble_variable (decl, top_level, at_end)
     {
       error_with_file_and_line (DECL_SOURCE_FILE (decl),
 				DECL_SOURCE_LINE (decl),
-				"storage size of static var `%s' isn't known",
+				"storage size of `%s' isn't known",
 				IDENTIFIER_POINTER (DECL_NAME (decl)));
       return;
     }
