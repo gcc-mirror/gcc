@@ -556,7 +556,8 @@ sort_base_init (t, base_init_list, rbase_ptr, vbase_ptr)
   for (x = TREE_CHAIN (last); x; x = TREE_CHAIN (x))
     {
       tree basetype = TREE_PURPOSE (x);
-      tree binfo = binfo_or_else (basetype, t);
+      tree binfo = (TREE_CODE (basetype) == TREE_VEC
+		    ? basetype : binfo_or_else (basetype, t));
       
       if (binfo == NULL_TREE)
 	/* BASETYPE might be an inaccessible direct base (because it
