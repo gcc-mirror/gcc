@@ -1,3 +1,7 @@
+2003-03-09  DJ Delorie  <dj@redhat.com>
+
+	* config/stormy16/stormy16.h (DWARF_LINE_MIN_INSTR_LENGTH): Revert.
+
 2003-03-09  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.md (fix_truncsfsi2, fix_truncdfsi2, arm_fix_truncsfsi2)
