@@ -1,5 +1,10 @@
 2003-03-31  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c/9936
+	* gcc.dg/20030331-2.c: New test.
+
+2003-03-31  Mark Mitchell  <mark@codesourcery.com>
+
 	PR c++/10278
 	* g++.dg/parse/crash2.C: New test.
 
