@@ -1,3 +1,14 @@
+2004-02-14  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips.h (MASK_DEBUG_[ABEFI], TARGET_DEBUG_[ABEFI]_MODE)
+	(TARGET_MIPS4100, TARGET_MIPS4300, TARGET_MIPS4KC, TARGET_MIPS5KC)
+	(TARGET_SB1, TUNE_SB1, TUNE_SR71K, BIGGEST_MAX_ARGS_IN_REGISTERS)
+	(GO_PRINTF, GO_PRINTF2, GO_DEBUG_RTX, DFMODE_NAN, SFMODE_NAN): Delete.
+	(TARGET_SWITCHES): Remove MASK_DEBUG_[ABEFI].
+	* config/mips/mips.c: Fix some overly-long lines.
+	(SINGLE_WORD_MODE_P, PIC_OFFSET_TABLE_MASK): Delete.
+	(init_cumulative_args): Remove TARGET_DEBUG_E_MODE handling.
+
 2004-02-13  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* configure.ac: Search for as, ld below libexec/gcc.

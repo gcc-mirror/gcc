@@ -73,11 +73,6 @@ enum internal_test {
   ITEST_MAX
 };
 
-/* Return true if it is likely that the given mode will be accessed
-   using only a single instruction.  */
-#define SINGLE_WORD_MODE_P(MODE) \
-  ((MODE) != BLKmode && GET_MODE_SIZE (MODE) <= UNITS_PER_WORD)
-
 /* True if X is an unspec wrapper around a SYMBOL_REF or LABEL_REF.  */
 #define UNSPEC_ADDRESS_P(X)					\
   (GET_CODE (X) == UNSPEC					\
@@ -2999,7 +2994,8 @@ gen_int_relational (enum rtx_code test_code, rtx result, rtx cmp0,
   else
     {
       reg = (invert || eqne_p) ? gen_reg_rtx (mode) : result;
-      convert_move (reg, gen_rtx_fmt_ee (p_info->test_code, mode, cmp0, cmp1), 0);
+      convert_move (reg, gen_rtx_fmt_ee (p_info->test_code,
+					 mode, cmp0, cmp1), 0);
     }
 
   if (test == ITEST_NE)
@@ -3131,7 +3127,8 @@ gen_conditional_branch (rtx *operands, enum rtx_code test_code)
       break;
 
     default:
-      fatal_insn ("bad test", gen_rtx_fmt_ee (test_code, VOIDmode, cmp0, cmp1));
+      fatal_insn ("bad test",
+		  gen_rtx_fmt_ee (test_code, VOIDmode, cmp0, cmp1));
     }
 
   /* Generate the branch.  */
@@ -3145,12 +3142,12 @@ gen_conditional_branch (rtx *operands, enum rtx_code test_code)
       label1 = pc_rtx;
     }
 
-  emit_jump_insn (gen_rtx_SET (VOIDmode, pc_rtx,
-			       gen_rtx_IF_THEN_ELSE (VOIDmode,
-						     gen_rtx_fmt_ee (test_code,
-								     mode,
-								     cmp0, cmp1),
-						     label1, label2)));
+  emit_jump_insn
+    (gen_rtx_SET (VOIDmode, pc_rtx,
+		  gen_rtx_IF_THEN_ELSE (VOIDmode,
+					gen_rtx_fmt_ee (test_code, mode,
+							cmp0, cmp1),
+					label1, label2)));
 }
 
 /* Emit the common code for conditional moves.  OPERANDS is the array
@@ -3233,9 +3230,10 @@ gen_conditional_move (rtx *operands)
 
   emit_insn (gen_rtx_SET (op_mode, operands[0],
 			  gen_rtx_IF_THEN_ELSE (op_mode,
-						gen_rtx_fmt_ee (move_code, VOIDmode,
+						gen_rtx_fmt_ee (move_code,
+								VOIDmode,
 								cmp_reg,
-								CONST0_RTX (SImode)),
+								const0_rtx),
 						operands[2], operands[3])));
 }
 
@@ -3607,23 +3605,6 @@ init_cumulative_args (CUMULATIVE_ARGS *cum, tree fntype,
 {
   static CUMULATIVE_ARGS zero_cum;
   tree param, next_param;
-
-  if (TARGET_DEBUG_E_MODE)
-    {
-      fprintf (stderr,
-	       "\ninit_cumulative_args, fntype = 0x%.8lx", (long)fntype);
-
-      if (!fntype)
-	fputc ('\n', stderr);
-
-      else
-	{
-	  tree ret_type = TREE_TYPE (fntype);
-	  fprintf (stderr, ", fntype code = %s, ret code = %s\n",
-		   tree_code_name[(int)TREE_CODE (fntype)],
-		   tree_code_name[(int)TREE_CODE (ret_type)]);
-	}
-    }
 
   *cum = zero_cum;
   cum->prototype = (fntype && TYPE_ARG_TYPES (fntype));
@@ -6917,7 +6898,6 @@ mips_expand_prologue (void)
    and regs.  */
 
 #define RA_MASK BITMASK_HIGH	/* 1 << 31 */
-#define PIC_OFFSET_TABLE_MASK (1 << (PIC_OFFSET_TABLE_REGNUM - GP_REG_FIRST))
 
 static void
 mips_output_function_epilogue (FILE *file ATTRIBUTE_UNUSED,
@@ -7099,10 +7079,10 @@ mips_expand_epilogue (int sibcall_p)
       /* The mips16 loads the return address into $7, not $31.  */
       if (TARGET_MIPS16 && (cfun->machine->frame.mask & RA_MASK) != 0)
 	emit_jump_insn (gen_return_internal (gen_rtx_REG (Pmode,
-						      GP_REG_FIRST + 7)));
+							  GP_REG_FIRST + 7)));
       else
 	emit_jump_insn (gen_return_internal (gen_rtx_REG (Pmode,
-						      GP_REG_FIRST + 31)));
+							  GP_REG_FIRST + 31)));
     }
 }
 
