@@ -1,3 +1,12 @@
+2005-04-01  Paolo Bonzini  <bonzini@gnu.org>
+	    Jan Hubicka  <jh@suse.cz>
+
+	* config/i386/i386.c (ix86_decompose_address): Look inside SUBREGs
+	to fix addresses involving EBP and ESP.
+	(aligned_operand, legitimate_address_p, ix86_address_cost): Be prepared
+	for SUBREGed registers.
+	(legitimate_address_p): Accept SUBREGed registers.
+
 2005-04-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/19406
