@@ -1,3 +1,15 @@
+2001-11-16  Bernd Schmidt  <bernds@redhat.com>
+
+        * config/i386/i386.c (ix86_expand_sse_comi): Generate setcc by
+	hand; don't use gen_setcc_2.
+	(ix86_expand_builtin): Fix pshufw.
+	* config/i386/i386.md (maskncmpv4sf3, vmmmaskncmpv4sf3): Special
+        case UNORDERED to emit the right assembler instruction.
+	(mmx_pshufw): Lose operand 2.
+	(cvtsi2ss): Fix representation.
+	From Graham Stott:
+	(mmx_clrdi, sse_clrti, stmxcsr, ldmxcsr): Set memory attribute.
+
 2001-11-16  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* doc/include/linux-and-gnu.texi: Remove.
