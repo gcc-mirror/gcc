@@ -1,5 +1,3 @@
-/* h8300 does not have long long */
-/* { dg-do assemble { xfail h8300-*-* } } */
 /* On SPARC64/SPARC-V9 it fails, except with -m32. */
 /* { dg-xfail-if "PR target/9200" { "sparc64-*-*" "sparcv9-*-*" } { "*" } { "-m32" } } */
 /* On regular SPARC it doesn't fail, except with -m64. */
