@@ -82,6 +82,8 @@ static tree handle_no_limit_stack_attribute PARAMS ((tree *, tree, tree, int,
 						     bool *));
 static tree handle_pure_attribute	PARAMS ((tree *, tree, tree, int,
 						 bool *));
+static tree handle_deprecated_attribute	PARAMS ((tree *, tree, tree, int,
+						 bool *));
 static tree handle_vector_size_attribute PARAMS ((tree *, tree, tree, int,
 						  bool *));
 static tree vector_size_helper PARAMS ((tree, tree));
@@ -138,6 +140,8 @@ static const struct attribute_spec c_common_attribute_table[] =
 			      handle_no_limit_stack_attribute },
   { "pure",                   0, 0, true,  false, false,
 			      handle_pure_attribute },
+  { "deprecated",             0, 0, false, false, false,
+			      handle_deprecated_attribute },
   { "vector_size",	      1, 1, false, true, false,
 			      handle_vector_size_attribute },
   { NULL,                     0, 0, false, false, false, NULL }
@@ -1126,6 +1130,67 @@ handle_pure_attribute (node, name, args, flags, no_add_attrs)
     {
       warning ("`%s' attribute ignored", IDENTIFIER_POINTER (name));
       *no_add_attrs = true;
+    }
+
+  return NULL_TREE;
+}
+
+/* Handle a "deprecated" attribute; arguments as in
+   struct attribute_spec.handler.  */
+   
+static tree
+handle_deprecated_attribute (node, name, args, flags, no_add_attrs)
+     tree *node;
+     tree name;
+     tree args ATTRIBUTE_UNUSED;
+     int flags;
+     bool *no_add_attrs;
+{
+  tree type = NULL_TREE;
+  int warn = 0;
+  char *what = NULL;
+  
+  if (DECL_P (*node))
+    {
+      tree decl = *node;
+      type = TREE_TYPE (decl);
+      
+      if (TREE_CODE (decl) == TYPE_DECL
+	  || TREE_CODE (decl) == PARM_DECL
+	  || TREE_CODE (decl) == VAR_DECL
+	  || TREE_CODE (decl) == FUNCTION_DECL
+	  || TREE_CODE (decl) == FIELD_DECL)
+	TREE_DEPRECATED (decl) = 1;
+      else
+	warn = 1;
+    }
+  else if (TYPE_P (*node))
+    {
+      if (!(flags & (int) ATTR_FLAG_TYPE_IN_PLACE))
+	*node = build_type_copy (*node);
+      TREE_DEPRECATED (*node) = 1;
+      type = *node;
+    }
+  else
+    warn = 1;
+  
+  if (warn)
+    {
+      *no_add_attrs = true;
+      if (type && TYPE_NAME (type))
+	{
+	  if (TREE_CODE (TYPE_NAME (type)) == IDENTIFIER_NODE)
+	    what = IDENTIFIER_POINTER (TYPE_NAME (*node));
+	  else if (TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
+		   && DECL_NAME (TYPE_NAME (type)))
+	    what = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (type)));
+	}
+      if (what)
+	warning ("`%s' attribute ignored for `%s'",
+		  IDENTIFIER_POINTER (name), what);
+      else
+	warning ("`%s' attribute ignored", 
+		      IDENTIFIER_POINTER (name));
     }
 
   return NULL_TREE;

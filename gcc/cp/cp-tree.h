@@ -3108,6 +3108,11 @@ extern int warn_overloaded_virtual;
 /* Nonzero means warn about use of multicharacter literals.  */
 extern int warn_multichar;
 
+/* Set by add_implicitly_declared_members() to keep those members from
+   being flagged as deprecated or reported as using deprecated
+   types.  */
+extern int adding_implicit_members;
+
 /* Non-zero means warn if a non-templatized friend function is
    declared in a templatized class. This behavior is warned about with
    flag_guiding_decls in do_friend. */

@@ -407,7 +407,10 @@ build_call (function, parms)
      throw without being declared throw().  */
   nothrow = ((decl && TREE_NOTHROW (decl))
 	     || TYPE_NOTHROW_P (TREE_TYPE (TREE_TYPE (function))));
-  
+
+  if (decl && TREE_DEPRECATED (decl))
+    warn_deprecated_use (decl);
+
   if (decl && DECL_CONSTRUCTOR_P (decl))
     is_constructor = 1;
 

@@ -169,6 +169,11 @@ extern int warn_padded;
 
 extern int warn_disabled_optimization;
 
+/* Nonzero means warn about uses of __attribute__((deprecated)) 
+   declarations.  */
+
+extern int warn_deprecated_decl;
+
 /* Nonzero if generating code to do profiling.  */
 
 extern int profile_flag;

@@ -2926,6 +2926,8 @@ add_implicitly_declared_members (t, cant_have_default_ctor,
   tree virtual_dtor = NULL_TREE;
   tree *f;
 
+  ++adding_implicit_members;
+
   /* Destructor.  */
   if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t) && !TYPE_HAS_DESTRUCTOR (t))
     {
@@ -2984,6 +2986,8 @@ add_implicitly_declared_members (t, cant_have_default_ctor,
     add_method (t, *f, /*error_p=*/0);
   *f = TYPE_METHODS (t);
   TYPE_METHODS (t) = implicit_fns;
+
+  --adding_implicit_members;
 
   return virtual_dtor;
 }

@@ -2199,6 +2199,9 @@ build_component_ref (datum, component, basetype_path, protect)
 	}
     }
 
+  if (TREE_DEPRECATED (field))
+    warn_deprecated_use (field);
+
   /* See if we have to do any conversions so that we pick up the field from the
      right context.  */
   if (DECL_FIELD_CONTEXT (field) != basetype)

@@ -302,6 +302,23 @@ tree anonymous_namespace_name;
    (Zero if we are at namespace scope, one inside the body of a
    function, two inside the body of a function in a local class, etc.)  */
 int function_depth;
+
+/* States indicating how grokdeclarator() should handle declspecs marked
+   with __attribute__((deprecated)).  An object declared as
+   __attribute__((deprecated)) suppresses warnings of uses of other
+   deprecated items.  */
+   
+enum deprecated_states {
+  DEPRECATED_NORMAL,
+  DEPRECATED_SUPPRESS
+};
+
+static enum deprecated_states deprecated_state = DEPRECATED_NORMAL;
+
+/* Set by add_implicitly_declared_members() to keep those members from
+   being flagged as deprecated or reported as using deprecated
+   types.  */
+int adding_implicit_members = 0;
 
 /* For each binding contour we allocate a binding_level structure
    which records the names defined in that contour.
@@ -7161,10 +7178,17 @@ start_decl (declarator, declspecs, initialized, attributes, prefix_attributes)
       used_extern_spec = 1;
     }
 
+  /* An object declared as __attribute__((deprecated)) suppresses
+     warnings of uses of other deprecated items.  */
+  if (lookup_attribute ("deprecated", attributes))
+    deprecated_state = DEPRECATED_SUPPRESS;
+
   attributes = chainon (attributes, prefix_attributes);
 
   decl = grokdeclarator (declarator, declspecs, NORMAL, initialized,
 			 &attributes);
+
+  deprecated_state = DEPRECATED_NORMAL;
 
   if (decl == NULL_TREE || TREE_CODE (decl) == VOID_TYPE)
     return NULL_TREE;
@@ -9991,6 +10015,14 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	return 0;
 
       id = TREE_VALUE (spec);
+
+      /* If the entire declaration is itself tagged as deprecated then
+         suppress reports of deprecated items.  */
+      if (!adding_implicit_members && id && TREE_DEPRECATED (id))
+        {
+	  if (deprecated_state != DEPRECATED_SUPPRESS)
+	    warn_deprecated_use (id);
+        }
 
       if (TREE_CODE (id) == IDENTIFIER_NODE)
 	{

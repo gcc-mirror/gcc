@@ -1882,11 +1882,11 @@ attributes are currently defined for functions on all targets:
 @code{noreturn}, @code{noinline}, @code{pure}, @code{const},
 @code{format}, @code{format_arg}, @code{no_instrument_function},
 @code{section}, @code{constructor}, @code{destructor}, @code{used},
-@code{unused}, @code{weak}, @code{malloc}, and @code{alias}.  Several
-other attributes are defined for functions on particular target systems.
-Other attributes, including @code{section} are supported for variables
-declarations (@pxref{Variable Attributes}) and for types (@pxref{Type
-Attributes}).
+@code{unused}, @code{deprecated}, @code{weak}, @code{malloc}, and
+@code{alias}.  Several other attributes are defined for functions on
+particular target systems.  Other attributes, including @code{section}
+are supported for variables declarations (@pxref{Variable Attributes})
+and for types (@pxref{Type Attributes}).
 
 You may also specify attributes with @samp{__} preceding and following
 each keyword.  This allows you to use them in header files without
@@ -2146,6 +2146,27 @@ This attribute, attached to a function, means that code must be emitted
 for the function even if it appears that the function is not referenced.
 This is useful, for example, when the function is referenced only in
 inline assembly.
+
+@cindex @code{deprecated} attribute.
+@item deprecated
+The @code{deprecated} attribute results in a warning if the function
+is used anywhere in the source file.  This is useful when identifying
+functions that are expected to be removed in a future version of a
+program.  The warning also includes the location of the declaration
+of the deprecated function, to enable users to easily find further
+information about why the function is deprecated, or what they should
+do instead.  Note that the warnings only occurs for uses:
+
+@smallexample
+int old_fn () __attribute__ ((deprecated));
+int old_fn ();
+int (*fn_ptr)() = old_fn;
+@end smallexample
+
+results in a warning on line 3 but not line 2.
+
+The @code{deprecated} attribute can also be used for variables and
+types (@pxref{Variable Attributes}, @pxref{Type Attributes}.)
 
 @item weak
 @cindex @code{weak} attribute
@@ -2760,15 +2781,15 @@ section.
 
 The keyword @code{__attribute__} allows you to specify special
 attributes of variables or structure fields.  This keyword is followed
-by an attribute specification inside double parentheses.  Nine
+by an attribute specification inside double parentheses.  Ten
 attributes are currently defined for variables: @code{aligned},
 @code{mode}, @code{nocommon}, @code{packed}, @code{section},
-@code{transparent_union}, @code{unused}, @code{vector_size}, and
-@code{weak}.  Some other attributes are defined for variables on
-particular target systems.  Other attributes are available for functions
-(@pxref{Function Attributes}) and for types (@pxref{Type Attributes}).
-Other front ends might define more attributes (@pxref{C++
-Extensions,,Extensions to the C++ Language}).
+@code{transparent_union}, @code{unused}, @code{deprecated},
+@code{vector_size}, and @code{weak}.  Some other attributes are defined
+for variables on particular target systems.  Other attributes are
+available for functions (@pxref{Function Attributes}) and for types
+(@pxref{Type Attributes}).  Other front ends might define more
+attributes (@pxref{C++ Extensions,,Extensions to the C++ Language}).
 
 You may also specify attributes with @samp{__} preceding and following
 each keyword.  This allows you to use them in header files without
@@ -2970,6 +2991,26 @@ This attribute, attached to a variable, means that the variable is meant
 to be possibly unused.  GCC will not produce a warning for this
 variable.
 
+@item deprecated
+The @code{deprecated} attribute results in a warning if the variable
+is used anywhere in the source file.  This is useful when identifying
+variables that are expected to be removed in a future version of a
+program.  The warning also includes the location of the declaration
+of the deprecated variable, to enable users to easily find further
+information about why the variable is deprecated, or what they should
+do instead.  Note that the warnings only occurs for uses:
+
+@smallexample
+extern int old_var __attribute__ ((deprecated));
+extern int old_var;
+int new_fn () @{ return old_var; @}
+@end smallexample
+
+results in a warning on line 3 but not line 2.
+
+The @code{deprecated} attribute can also be used for functions and
+types (@pxref{Function Attributes}, @pxref{Type Attributes}.)
+
 @item vector_size (@var{bytes})
 This attribute specifies the vector size for the variable, measured in
 bytes.  For example, the declaration:
@@ -3029,10 +3070,10 @@ packed))}.
 The keyword @code{__attribute__} allows you to specify special
 attributes of @code{struct} and @code{union} types when you define such
 types.  This keyword is followed by an attribute specification inside
-double parentheses.  Four attributes are currently defined for types:
-@code{aligned}, @code{packed}, @code{transparent_union}, and @code{unused}.
-Other attributes are defined for functions (@pxref{Function Attributes}) and
-for variables (@pxref{Variable Attributes}).
+double parentheses.  Five attributes are currently defined for types:
+@code{aligned}, @code{packed}, @code{transparent_union}, @code{unused},
+and @code{deprecated}.  Other attributes are defined for functions
+(@pxref{Function Attributes}) and for variables (@pxref{Variable Attributes}).
 
 You may also specify any one of these attributes with @samp{__}
 preceding and following its keyword.  This allows you to use these
@@ -3214,6 +3255,34 @@ that type, even if the variable appears to do nothing.  This is often
 the case with lock or thread classes, which are usually defined and then
 not referenced, but contain constructors and destructors that have
 nontrivial bookkeeping functions.
+
+@item deprecated
+The @code{deprecated} attribute results in a warning if the type
+is used anywhere in the source file.  This is useful when identifying
+types that are expected to be removed in a future version of a program.
+If possible, the warning also includes the location of the declaration
+of the deprecated type, to enable users to easily find further
+information about why the type is deprecated, or what they should do
+instead.  Note that the warnings only occur for uses and then only
+if the type is being applied to a identifier that itself is not being
+declared as deprecated.
+
+@smallexample
+typedef int T1 __attribute__ ((deprecated));
+T1 x;
+typedef T1 T2;
+T2 y;
+typedef T1 T3 __attribute__ ((deprecated));
+T3 z __attribute__ ((deprecated));
+@end smallexample
+
+results in a warning on line 2 and 3 but not lines 4, 5, or 6.  No
+warning is issued for line 4 because T2 is not explicitly
+deprecated.  Line 5 has no warning because T3 is explicitly
+deprecated.  Similarly for line 6.
+
+The @code{deprecated} attribute can also be used for functions and
+variables (@pxref{Function Attributes}, @pxref{Variable Attributes}.)
 
 @end table
 

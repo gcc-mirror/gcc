@@ -1199,6 +1199,10 @@ build_component_ref (datum, component)
 	    TREE_READONLY (ref) = 1;
 	  if (TREE_THIS_VOLATILE (datum) || TREE_THIS_VOLATILE (subdatum))
 	    TREE_THIS_VOLATILE (ref) = 1;
+
+	  if (TREE_DEPRECATED (subdatum))
+	    warn_deprecated_use (subdatum);
+
 	  datum = ref;
 	}
 
@@ -1414,6 +1418,9 @@ build_external_ref (id, fun)
   tree ref;
   tree decl = lookup_name (id);
   tree objc_ivar = lookup_objc_ivar (id);
+
+  if (decl && TREE_DEPRECATED (decl))
+    warn_deprecated_use (decl);
 
   if (!decl || decl == error_mark_node || C_DECL_ANTICIPATED (decl))
     {
