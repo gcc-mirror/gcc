@@ -27,7 +27,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #undef CPP_SPEC
 #define CPP_SPEC "\
-%{!mcpu*:
+%{!mcpu*: \
   %{mpower: %{!mpower2: -D_ARCH_PWR}} \
   %{mpower2: -D_ARCH_PWR2} \
   %{mpowerpc*: -D_ARCH_PPC} \
