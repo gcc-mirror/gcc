@@ -1,3 +1,7 @@
+Wed Jun 17 08:38:13 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* mn10300.md (andsi3): Fix typo.
+
 Tue Jun 16 22:58:40 1998  Richard Henderson  <rth@cygnus.com>
 
 	* reload1.c (reload_cse_regs): Call bzero instead of looping.
