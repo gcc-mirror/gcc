@@ -519,7 +519,7 @@ vax_rtx_cost (x)
 	  c = 10;		/* 3-4 on VAX 9000, 20-28 on VAX 2 */
 	  break;
 	default:
-	  break;
+	  abort ();
 	}
       break;
     case UDIV:
