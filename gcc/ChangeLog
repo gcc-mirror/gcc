@@ -1,7 +1,15 @@
+2004-06-11  Richard Henderson  <rth@redhat.com>
+
+	* config/alpha/alpha.c (alpha_gimplify_va_arg_1): Remove post_p
+	argument.  Use internal post for call to gimplify_expr.  Tidy
+	rounded type size computation.
+	(alpha_gimplify_va_arg): Use get_formal_tmp_var and
+	get_initialized_tmp_var.
+
 2004-06-11  Andrew Pinski  <pinskia@physics.uc.edu>
 
-	* doc/install.texi (--enable-shared): Update libobjc's shared library status.
-	Remove reference to libf2c.
+	* doc/install.texi (--enable-shared): Update libobjc's shared library
+	status.  Remove reference to libf2c.
 
 2004-06-11  Jason Merrill  <jason@redhat.com>
 

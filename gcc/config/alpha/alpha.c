@@ -6292,24 +6292,10 @@ alpha_va_start (tree valist, rtx nextarg ATTRIBUTE_UNUSED)
 }
 
 static tree
-alpha_gimplify_va_arg_1 (tree type, tree base, tree offset,
-			 tree *pre_p, tree *post_p)
+alpha_gimplify_va_arg_1 (tree type, tree base, tree offset, tree *pre_p)
 {
-  tree type_size, rounded_size, ptr_type, addend, t, addr;
+  tree type_size, ptr_type, addend, t, addr, internal_post;
   bool indirect;
-
-  if (type == error_mark_node
-      || (type_size = TYPE_SIZE_UNIT (TYPE_MAIN_VARIANT (type))) == NULL
-      || TREE_OVERFLOW (type_size))
-    rounded_size = size_zero_node;
-  else
-    rounded_size = fold (build (MULT_EXPR, sizetype,
-				fold (build (TRUNC_DIV_EXPR, sizetype,
-					     fold (build (PLUS_EXPR, sizetype,
-							  type_size,
-							  size_int (7))),
-					     size_int (8))),
-				size_int (8)));
 
   /* If the type could not be passed in registers, skip the block
      reserved for the registers.  */
@@ -6330,22 +6316,20 @@ alpha_gimplify_va_arg_1 (tree type, tree base, tree offset,
       type = ptr_type;
       ptr_type = build_pointer_type (type);
       indirect = true;
-      rounded_size = size_int (UNITS_PER_WORD);
     }
   else if (TREE_CODE (type) == COMPLEX_TYPE)
     {
       tree real_part, imag_part, real_temp;
-      tree post = NULL_TREE;
 
-      real_part = alpha_gimplify_va_arg_1 (TREE_TYPE (type), base, offset,
-					   pre_p, &post);
-      /* Copy the value into a temporary, lest the formal temporary
+      real_part = alpha_gimplify_va_arg_1 (TREE_TYPE (type), base,
+					   offset, pre_p);
+
+      /* Copy the value into a new temporary, lest the formal temporary
 	 be reused out from under us.  */
-      real_temp = get_initialized_tmp_var (real_part, pre_p, &post);
-      append_to_statement_list (post, pre_p);
+      real_temp = get_initialized_tmp_var (real_part, pre_p, NULL);
 
-      imag_part = alpha_gimplify_va_arg_1 (TREE_TYPE (type), base, offset,
-					   pre_p, post_p);
+      imag_part = alpha_gimplify_va_arg_1 (TREE_TYPE (type), base,
+					   offset, pre_p);
 
       return build (COMPLEX_EXPR, type, real_temp, imag_part);
     }
@@ -6366,12 +6350,21 @@ alpha_gimplify_va_arg_1 (tree type, tree base, tree offset,
 	        fold_convert (ptr_type, addend));
   if (indirect)
     addr = build (INDIRECT_REF, type, addr);
-  gimplify_expr (&addr, pre_p, post_p, is_gimple_val, fb_rvalue);
-  append_to_statement_list (*post_p, pre_p);
-  *post_p = NULL;
+  internal_post = NULL;
+  gimplify_expr (&addr, pre_p, &internal_post, is_gimple_val, fb_rvalue);
+  append_to_statement_list (internal_post, pre_p);
 
   /* Update the offset field.  */
-  t = fold_convert (TREE_TYPE (offset), rounded_size);
+  type_size = TYPE_SIZE_UNIT (TYPE_MAIN_VARIANT (type));
+  if (type_size == NULL || TREE_OVERFLOW (type_size))
+    t = size_zero_node;
+  else
+    {
+      t = size_binop (PLUS_EXPR, type_size, size_int (7));
+      t = size_binop (TRUNC_DIV_EXPR, t, size_int (8));
+      t = size_binop (MULT_EXPR, t, size_int (8));
+    }
+  t = fold_convert (TREE_TYPE (offset), t);
   t = build (MODIFY_EXPR, void_type_node, offset,
 	     build (PLUS_EXPR, TREE_TYPE (offset), offset, t));
   gimplify_and_add (t, pre_p);
@@ -6394,20 +6387,17 @@ alpha_gimplify_va_arg (tree valist, tree type, tree *pre_p, tree *post_p)
   offset_field = build (COMPONENT_REF, TREE_TYPE (offset_field),
 			valist, offset_field);
 
-  base = create_tmp_var (TREE_TYPE (base_field), NULL);
-  offset = create_tmp_var (lang_hooks.types.type_for_size (64, 0), NULL);
+  /* Pull the fields of the structure out into temporaries.  Since we never
+     modify the base field, we can use a formal temporary.  Sign-extend the
+     offset field so that it's the proper width for pointer arithmetic.  */
+  base = get_formal_tmp_var (base_field, pre_p);
 
-  /* Pull the fields of the structure out into temporaries.  */
-  t = build (MODIFY_EXPR, void_type_node, base, base_field);
-  gimplify_and_add (t, pre_p);
-
-  t = build (MODIFY_EXPR, void_type_node, offset,
-	     fold_convert (TREE_TYPE (offset), offset_field));
-  gimplify_and_add (t, pre_p);
+  t = fold_convert (lang_hooks.types.type_for_size (64, 0), offset_field);
+  offset = get_initialized_tmp_var (t, pre_p, NULL);
 
   /* Find the value.  Note that this will be a stable indirection, or
      a composite of stable indirections in the case of complex.  */
-  r = alpha_gimplify_va_arg_1 (type, base, offset, pre_p, post_p);
+  r = alpha_gimplify_va_arg_1 (type, base, offset, pre_p);
 
   /* Stuff the offset temporary back into its field.  */
   t = build (MODIFY_EXPR, void_type_node, offset_field,
