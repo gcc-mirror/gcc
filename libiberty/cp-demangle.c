@@ -3277,15 +3277,13 @@ d_print_comp (dpi, dc)
 	d_print_expr_op (dpi, d_left (dc));
       else
 	{
-	  d_append_string_constant (dpi, "((");
+	  d_append_char (dpi, '(');
 	  d_print_cast (dpi, d_left (dc));
 	  d_append_char (dpi, ')');
 	}
       d_append_char (dpi, '(');
       d_print_comp (dpi, d_right (dc));
       d_append_char (dpi, ')');
-      if (d_left (dc)->type == DEMANGLE_COMPONENT_CAST)
-	d_append_char (dpi, ')');
       return;
 
     case DEMANGLE_COMPONENT_BINARY:

@@ -3591,13 +3591,13 @@ hairyfunc5
 # This is from gcc PR 8861
 --format=gnu-v3 --no-params
 _Z1fILi1ELc120EEv1AIXplT_cviLd810000000000000000703DAD7A370C5EEE
-void f<1, 120>(A<(1) + (((int)((double)810000000000000000703DAD7A370C5)))>)
+void f<1, 120>(A<(1) + ((int)((double)810000000000000000703DAD7A370C5))>)
 f<1, 120>
 #
 # This is also from gcc PR 8861
 --format=gnu-v3 --no-params
 _Z1fILi1EEv1AIXplT_cvingLf3f800000EEE
-void f<1>(A<(1) + (((int)(-((float)3f800000))))>)
+void f<1>(A<(1) + ((int)(-((float)3f800000)))>)
 f<1>
 #
 # This is from a libstdc++ debug mode patch.

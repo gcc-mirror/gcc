@@ -1,5 +1,10 @@
 2004-02-24  Ian Lance Taylor  <ian@wasabisystems.com>
 
+	* cp-demangle.c (d_print_comp) [UNARY]: Don't emit extra
+	parentheses around a cast.
+	* testsuite/demangle-expected: Adjust two test cases to match new
+	output.
+
 	* cp-demangle.c (__cxa_demangle): Pass DMGL_PARAMS to d_demangle.
 
 	* cp-demangle.c (d_print_comp) [RESTRICT, VOLATILE, CONST]: Don't
