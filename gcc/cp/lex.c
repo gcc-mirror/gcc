@@ -1365,7 +1365,8 @@ do_scoped_id (token, parsing)
     id = IDENTIFIER_GLOBAL_VALUE (token);
   if (parsing && yychar == YYEMPTY)
     yychar = yylex ();
-  if (! id)
+  if (!id || (TREE_CODE (id) == FUNCTION_DECL
+	      && DECL_ANTICIPATED (id)))
     {
       if (processing_template_decl)
 	{
