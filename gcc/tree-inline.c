@@ -147,8 +147,6 @@ remap_decl (decl, id)
       /* The decl T could be a dynamic array or other variable size type,
 	 in which case some fields need to be remapped because they may
 	 contain SAVE_EXPRs.  */
-      walk_tree (&DECL_SIZE (t), copy_body_r, id, NULL);
-      walk_tree (&DECL_SIZE_UNIT (t), copy_body_r, id, NULL);
       if (TREE_TYPE (t) && TREE_CODE (TREE_TYPE (t)) == ARRAY_TYPE
 	  && TYPE_DOMAIN (TREE_TYPE (t)))
 	{
@@ -1373,6 +1371,9 @@ remap_save_expr (tp, st_, fn, walk_subtrees)
       n = splay_tree_insert (st,
 			     (splay_tree_key) *tp,
 			     (splay_tree_value) t);
+      /* Make sure we don't remap an already-remapped SAVE_EXPR.  */
+      splay_tree_insert (st, (splay_tree_key) t,
+			 (splay_tree_value) error_mark_node);
     }
   else
     /* We've already walked into this SAVE_EXPR, so we needn't do it
