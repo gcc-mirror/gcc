@@ -1,3 +1,10 @@
+2003-03-28  Michael Koch  <konqueror@gmx.de>
+
+	* java/io/FileDescriptor.java
+	(finalize): Throws Throwable, not IOException.
+	* java/io/ObjectOutputStream.java
+	(PutField.put): Doesnt throws anything.
+
 2003­03-28  Michael Koch  <konqueror@gmx.de>
 
 	* java/io/FileOutputStream.java:
