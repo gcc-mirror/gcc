@@ -1,3 +1,12 @@
+2002-07-05  Nathan Sidwell  <nathan@codesourcery.com>
+
+	Repair damage on weak-impared targets caused by my previous patch.
+	* cp-tree.h (import_export_tinfo): Add parameter.
+	* decl2.c (import_export_tinfo): Add parameter, post adjust
+	DECL_COMDAT.
+	* rtti.c (emit_tinfo_decl): DECL_COMDAT is (nearly) always setup by
+	import_export_tinfo.
+
 2002-07-03  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/6944

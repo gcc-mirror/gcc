@@ -2516,12 +2516,14 @@ import_export_decl (decl)
 }
 
 /* Here, we only decide whether or not the tinfo node should be
-   emitted with the vtable.  */
+   emitted with the vtable.  IS_IN_LIBRARY is non-zero iff the
+   typeinfo for TYPE should be in the runtime library.  */
 
 void
-import_export_tinfo (decl, type)
+import_export_tinfo (decl, type, is_in_library)
      tree decl;
      tree type;
+     int is_in_library;
 {
   if (DECL_INTERFACE_KNOWN (decl))
     return;
@@ -2544,6 +2546,13 @@ import_export_tinfo (decl, type)
       DECL_NOT_REALLY_EXTERN (decl) = 1;
       DECL_COMDAT (decl) = 1;
     }
+
+  /* Now override some cases. */
+  if (flag_weak)
+    DECL_COMDAT (decl) = 1;
+  else if (is_in_library)
+    DECL_COMDAT (decl) = 0;
+  
   DECL_INTERFACE_KNOWN (decl) = 1;
 }
 
