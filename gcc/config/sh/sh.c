@@ -501,12 +501,9 @@ prepare_scc_operands (code)
   /* First need a compare insn.  */
   switch (code)
     {
-    default:
     case NE:
       /* It isn't possible to handle this case.  */
       abort ();
-    case EQ:
-      break;
     case LT:
       code = GT;
       break;
@@ -518,6 +515,8 @@ prepare_scc_operands (code)
       break;
     case LEU:
       code = GEU;
+      break;
+    default:
       break;
     }
   if (code != oldcode)

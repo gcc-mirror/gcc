@@ -1,7 +1,3 @@
-Wed Jan 19 21:47:53 2000  J"orn Rennecke <amylaar@cygnus.co.uk>
-
-	* sh.c (prepare_scc_operands): Add EQ case.
-
 Wed Jan 19 20:23:06 2000  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* sh.h (PASS_IN_REG_P): Remove extraneous paranthesis.
@@ -41,9 +37,8 @@ Wed Jan 19 20:23:06 2000  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 Wed Jan 19 19:54:38 2000  J"orn Rennecke <amylaar@cygnus.co.uk>
 
-	* sh.c (prepare_scc_operands): Abort if no compare insn is available.
-	(find_barrier, gen_block_redirect, split_branches): Fix indentation.
-	(calc_live_regs): Likewise.
+	* sh.c (find_barrier, gen_block_redirect): Fix indentation.
+	(split_branches, calc_live_regs): Likewise.
 
 Wed Jan 19 19:12:36 2000  J"orn Rennecke <amylaar@cygnus.co.uk>
 
