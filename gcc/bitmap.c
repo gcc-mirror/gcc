@@ -135,6 +135,19 @@ bitmap_element_allocate ()
   return element;
 }
 
+/* Release any memory allocated by bitmaps.  */
+
+void
+bitmap_release_memory ()
+{
+  bitmap_free = 0;
+  if (bitmap_obstack_init)
+    {
+      bitmap_obstack_init = FALSE;
+      obstack_free (&bitmap_obstack, NULL);
+    }
+}
+
 /* Return nonzero if all bits in an element are zero.  */
 
 static INLINE int
@@ -384,6 +397,107 @@ bitmap_bit_p (head, bit)
   return (ptr->bits[word_num] >> bit_num) & 1;
 }
 
+
+int 
+bitmap_first_set_bit (a)
+     bitmap a;
+{
+  bitmap_element *ptr = a->first;
+  unsigned HOST_WIDE_INT word;
+  unsigned word_num, bit_num;
+
+  if (ptr == NULL)
+    return -1;
+
+#if BITMAP_ELEMENT_WORDS == 2
+  word_num = 0, word = ptr->bits[0];
+  if (word == 0)
+    word_num = 1, word = ptr->bits[1];
+#else
+  for (word_num = 0; word_num < BITMAP_ELEMENT_WORDS; ++word_num)
+    if ((word = ptr->bits[word_num]) != 0)
+      break;
+#endif
+
+  /* Binary search for the first set bit.  */
+  /* ??? It'd be nice to know if ffs or ffsl was available.  */
+
+  bit_num = 0;
+  word = word & -word;
+
+#if HOST_BITS_PER_WIDE_INT > 64
+ #error "Fill out the table."
+#endif
+#if HOST_BITS_PER_WIDE_INT > 32
+  if ((word & 0xffffffff) == 0)
+    word >>= 32, bit_num += 32;
+#endif
+  if ((word & 0xffff) == 0)
+    word >>= 16, bit_num += 16;
+  if ((word & 0xff) == 0)
+    word >>= 8, bit_num += 8;
+  if (word & 0xf0)
+    bit_num += 4;
+  if (word & 0xcc)
+    bit_num += 2;
+  if (word & 0xaa)
+    bit_num += 1;
+
+  return (ptr->indx * BITMAP_ELEMENT_ALL_BITS
+	  + word_num * HOST_BITS_PER_WIDE_INT
+	  + bit_num);
+}
+
+int 
+bitmap_last_set_bit (a)
+     bitmap a;
+{
+  bitmap_element *ptr = a->first;
+  unsigned HOST_WIDE_INT word;
+  unsigned word_num, bit_num;
+
+  if (ptr == NULL)
+    return -1;
+
+  while (ptr->next != NULL)
+    ptr = ptr->next;
+
+#if BITMAP_ELEMENT_WORDS == 2
+  word_num = 1, word = ptr->bits[1];
+  if (word == 0)
+    word_num = 0, word = ptr->bits[0];
+#else
+  for (word_num = BITMAP_ELEMENT_WORDS; word_num-- > 0; )
+    if ((word = ptr->bits[word_num]) != 0)
+      break;
+#endif
+
+  /* Binary search for the last set bit.  */
+
+  bit_num = 0;
+#if HOST_BITS_PER_WIDE_INT > 64
+ #error "Fill out the table."
+#endif
+#if HOST_BITS_PER_WIDE_INT > 32
+  if (word & ~ (unsigned HOST_WIDE_INT) 0xffffffff)
+    word >>= 32, bit_num += 32;
+#endif
+  if (word & 0xffff0000)
+    word >>= 16, bit_num += 16;
+  if (word & 0xff00)
+    word >>= 8, bit_num += 8;
+  if (word & 0xf0)
+    word >>= 4, bit_num += 4;
+  if (word & 0xc)
+    word >>= 2, bit_num += 2;
+  if (word & 0x2)
+    word >>= 1, bit_num += 1;
+
+  return (ptr->indx * BITMAP_ELEMENT_ALL_BITS
+	  + word_num * HOST_BITS_PER_WIDE_INT
+	  + bit_num);
+}
+
 /* Store in bitmap TO the result of combining bitmap FROM1 and FROM2 using
    a specific bit manipulation.  Return true if TO changes.  */
 
@@ -576,6 +690,25 @@ bitmap_ior_and_compl (to, from1, from2)
   bitmap_operation (to, to, &tmp, BITMAP_IOR);
   bitmap_clear (&tmp);
 }
+
+int
+bitmap_union_of_diff (dst, a, b, c)
+     bitmap dst;
+     bitmap a;
+     bitmap b;
+     bitmap c;
+{
+  bitmap_head tmp;
+  int changed;
+
+  tmp.first = tmp.current = 0;
+
+  bitmap_operation (&tmp, b, c, BITMAP_AND_COMPL);
+  changed = bitmap_operation (dst, &tmp, a, BITMAP_IOR);
+  bitmap_clear (&tmp);
+
+  return changed;
+}
 
 /* Initialize a bitmap header.  */
 
@@ -664,53 +797,4 @@ bitmap_print (file, head, prefix, suffix)
 			      comma = ", ";
 			    });
   fputs (suffix, file);
-}
-
-/* Release any memory allocated by bitmaps.  */
-
-void
-bitmap_release_memory ()
-{
-  bitmap_free = 0;
-  if (bitmap_obstack_init)
-    {
-      bitmap_obstack_init = FALSE;
-      obstack_free (&bitmap_obstack, NULL);
-    }
-}
-
-int
-bitmap_union_of_diff (dst, a, b, c)
-     bitmap dst;
-     bitmap a;
-     bitmap b;
-     bitmap c;
-{
-  int changed = 0;
-  bitmap temp = BITMAP_XMALLOC ();
-  
-  bitmap_operation (temp, b, c, BITMAP_AND_COMPL);
-  changed = bitmap_operation (dst, temp, a, BITMAP_IOR);
-  BITMAP_XFREE (temp);
-  return changed;
-}
-
-int 
-bitmap_first_set_bit (a)
-     bitmap a;
-{
-  int i;
-  EXECUTE_IF_SET_IN_BITMAP (a, 0, i, return i;);
-  return -1;
-}
-
-int 
-bitmap_last_set_bit (a)
-     bitmap a;
-{
-  int i;
-  EXECUTE_IF_SET_IN_BITMAP (a, 0, i, ;);
-  if (bitmap_bit_p (a, i))
-    return i;
-  return -1;
 }
