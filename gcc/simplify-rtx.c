@@ -3358,5 +3358,7 @@ void
 cselib_finish ()
 {
   clear_table (0);
+  VARRAY_FREE (reg_values);
+  VARRAY_FREE (used_regs);
   htab_delete (hash_table);
 }
