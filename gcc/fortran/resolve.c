@@ -2493,85 +2493,52 @@ resolve_allocate_expr (gfc_expr * e)
 
 /* Callback function for our mergesort variant.  Determines interval
    overlaps for CASEs. Return <0 if op1 < op2, 0 for overlap, >0 for
-   op1 > op2.  Assumes we're not dealing with the default case.  */
+   op1 > op2.  Assumes we're not dealing with the default case.  
+   We have op1 = (:L), (K:L) or (K:) and op2 = (:N), (M:N) or (M:).
+   There are nine situations to check.  */
 
 static int
 compare_cases (const gfc_case * op1, const gfc_case * op2)
 {
+  int retval;
 
-  if (op1->low == NULL) /* op1 = (:N) */
+  if (op1->low == NULL) /* op1 = (:L)  */
     {
-      if (op2->low == NULL) /* op2 = (:M), so overlap.  */
-        return 0;
-
-      else if (op2->high == NULL) /* op2 = (M:) */
+      /* op2 = (:N), so overlap.  */
+      retval = 0;
+      /* op2 = (M:) or (M:N),  L < M  */
+      if (op2->low != NULL
+	  && gfc_compare_expr (op1->high, op2->low) < 0)
+	retval = -1;
+    }
+  else if (op1->high == NULL) /* op1 = (K:)  */
+    {
+      /* op2 = (M:), so overlap.  */
+      retval = 0;
+      /* op2 = (:N) or (M:N), K > N  */
+      if (op2->high != NULL
+	  && gfc_compare_expr (op1->low, op2->high) > 0)
+	retval = 1;
+    }
+  else /* op1 = (K:L)  */
+    {
+      if (op2->low == NULL)       /* op2 = (:N), K > N  */
+	retval = (gfc_compare_expr (op1->low, op2->high) > 0) ? 1 : 0;
+      else if (op2->high == NULL) /* op2 = (M:), L < M  */
+	retval = (gfc_compare_expr (op1->high, op2->low) < 0) ? -1 : 0;
+      else                        /* op2 = (M:N)  */
         {
+	  retval =  0;
+          /* L < M  */
 	  if (gfc_compare_expr (op1->high, op2->low) < 0)
-	    return -1;  /* N < M */
-	  else
-	    return 0;
-	}
-
-      else /* op2 = (L:M) */
-        {
-	  if (gfc_compare_expr (op1->high, op2->low) < 0)
-	    return -1; /* N < L */
-	  else
-	    return 0;
+	    retval =  -1;
+          /* K > N  */
+	  else if (gfc_compare_expr (op1->low, op2->high) > 0)
+	    retval =  1;
 	}
     }
 
-  else if (op1->high == NULL) /* op1 = (N:) */
-    {
-      if (op2->low == NULL) /* op2 = (:M)  */
-        {
-	  if (gfc_compare_expr (op1->low, op2->high) > 0)
-	    return 1; /* N > M */
-	  else
-	    return 0;
-	}
-
-      else if (op2->high == NULL) /* op2 = (M:), so overlap.  */
-        return 0;
-
-      else /* op2 = (L:M) */
-        {
-	  if (gfc_compare_expr (op1->low, op2->high) > 0)
-	    return 1; /* N > M */
-	  else
-	    return 0;
-	}
-    }
-
-  else /* op1 = (N:P) */
-    {
-      if (op2->low == NULL) /* op2 = (:M)  */
-        {
-	  if (gfc_compare_expr (op1->low, op2->high) > 0)
-	    return 1; /* N > M */
-	  else
-	    return 0;
-	}
-
-      else if (op2->high == NULL) /* op2 = (M:)  */
-        {
-	  if (gfc_compare_expr (op1->high, op2->low) < 0)
-	    return -1; /* P < M */
-	  else
-	    return 0;
-	}
-
-      else /* op2 = (L:M) */
-        {
-	  if (gfc_compare_expr (op1->high, op2->low) < 0)
-	    return -1; /* P < L */
-
-	  if (gfc_compare_expr (op1->low, op2->high) > 0)
-	    return 1; /* N > M */
-
-	  return 0;
-	}
-    }
+  return retval;
 }
 
 
