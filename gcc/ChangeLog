@@ -1,3 +1,8 @@
+1998-01-17  Lee Iverson  <leei@Canada.AI.SRI.COM>
+
+	* reorg.c: #include "expr.h" for rtx prototypes.
+	* Makefile.in (reorg.o): Depend on expr.h
+
 Sat Jan 17 21:28:08 1998  Pieter Nagel <pnagel@epiuse.co.za>
 
 	* Makefile.in (FLAGS_TO_PASS): Pass down gcc_include_dir and
