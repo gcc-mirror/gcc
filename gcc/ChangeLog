@@ -1,3 +1,16 @@
+2003-04-10  Zack Weinberg  <zack@codesourcery.com>
+
+	* tree.c (tree_operand_check_failed): New function.
+	* tree.h (TREE_OPERAND_CHECK, TREE_OPERAND_CHECK_CODE,
+	TREE_RTL_OPERAND_CHECK): New checking macros.
+	(TREE_OPERAND, SAVE_EXPR_CONTEXT, SAVE_EXPR_RTL,
+	RTL_EXPR_SEQUENCE, RTL_EXPR_RTL, WITH_CLEANUP_EXPR_RTL,
+	CONSTRUCTOR_ELTS, LABELED_BLOCK_LABEL, LABELED_BLOCK_BODY,
+	EXIT_BLOCK_RETURN, LOOP_EXPR_BODY, EXPR_WFL_NODE,
+	EXPR_WFL_FILENAME_NODE, EXPR_WFL_FILENAME, TARGET_EXPR_SLOT,
+	TARGET_EXPR_INITIAL, TARGET_EXPR_CLEANUP): Use the new
+	checking macros.
+
 Thu Apr 10 23:52:30 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	PR inline-asm/8803
@@ -94,7 +107,7 @@ Thu Apr 10 23:52:30 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	(sched_analyze_insn): Ditto.  Use anti-dependencies for
 	MOVE_BARRIER and true-dependencies as TRUE_BARRIER.
 	(init_deps_global): Initialize the barrier as NO_BARRIER.
-	
+
 2003-04-09  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* config/ia64/ia64.c (issue_nops_and_insn): Add new parameter.
@@ -135,7 +148,7 @@ Thu Apr 10 23:52:30 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	* config/arm/xscale-elf.h (SUBTARGET_EXTRA_ASM_SPEC): Likewise,
 	but only if -msoft-float is specified pass.  Otherwise pass
 	-mfpu=softvfp.
-	
+
 2003-04-09  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* function.c (purge_addressof): Use free_INSN_LIST_node instead of
@@ -171,7 +184,7 @@ Thu Apr 10 23:52:30 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	* function.c (postponed_insns): New.
 	(purge_addressof_1): Postpone processing of insns if addressofs
 	are not put into stack.
-	(purge_addressof): Process postponed insns.	
+	(purge_addressof): Process postponed insns.
 
 2003-04-08  J"orn Rennecke <joern.rennecke@superh.com>
 
@@ -540,7 +553,7 @@ Mon Apr  7 14:36:24 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	handle_pch.
 	(c_common_write_pch): Call handle_pch.
 	(c_common_read_pch): Don't call start_source_file,
-	or end_source_file.	
+	or end_source_file.
 
 Fri Apr  4 17:43:52 2003  Olivier Hainque <hainque@act-europe.fr>
 
@@ -585,7 +598,7 @@ Fri Apr  4 15:58:52 2003  J"orn Rennecke <joern.rennecke@superh.com>
 	* sh.c (fpscr_set_from_mem): Use ACTUAL_NORMAL_MODE.
 
 2003-04-04  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
-	
+
 	* doc/contrib.texi (Contributors): Add entries for Wolfgang
 	Bangerth, DJ Delorie, Christian Ehrhardt, Christopher Faylor,
 	Nathanael Nerode, Diego Novillo, Hartmut Penner, Volker Reichelt,
@@ -665,7 +678,7 @@ Thu Apr  3 22:27:40 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	(dwarf2out_source_line): Don't do anything if line==0.
 
 	* stor-layout.c (do_type_align): New fn, split out from...
-	(layout_decl): ...here.  Do all alignment calculations for 
+	(layout_decl): ...here.  Do all alignment calculations for
 	FIELD_DECLs here.
 	(update_alignment_for_field): Not here.
 	(start_record_layout, debug_rli): Remove unpadded_align.
@@ -739,7 +752,7 @@ Thu Apr  3 00:31:21 CEST 2003  Jan Hubicka  <jh@suse.cz>
 Thu Apr  3 00:18:49 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (override_options):  Disable red zone by default on i386.
-	(compute_frame_layout, ix86_force_to_memory, ix86_free_from_memory):  
+	(compute_frame_layout, ix86_force_to_memory, ix86_free_from_memory):
 	Do not test TARGET_64BIT together with TARGET_RED_ZONE
 
 2003-04-02  Kazu Hirata  <kazu@cs.umass.edu>
@@ -781,7 +794,7 @@ Thu Apr  3 00:18:49 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	Remove additional cycle in the reservation before retirement.
 	(ppc8540_mfcr, ppc8540_mtcrf, ppc8540_mtjmpr): Add missed
 	reservation of ppc8540_issue.
-	
+
 2003-04-02  Andreas Schwab  <schwab@suse.de>
 
 	* real.c (decode_ieee_single): Fix decoding of SNaN bit.
@@ -1839,7 +1852,7 @@ Mon Mar 24 20:03:03 CET 2003  Jan Hubicka  <jh@suse.cz>
 	operands in case MULT_EXPR of 2003-02-16 patch.
 
 2003-03-20  Daniel Berlin  <dberlin@dberlin.org>
-	Merge changes from new-regalloc-branch 
+	Merge changes from new-regalloc-branch
 
 	From Michael Matz  <matz@suse.de>
 	* df.c (df_ref_record_1): Move init of loc to safe point.
