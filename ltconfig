@@ -1191,7 +1191,6 @@ irix5* | irix6*)
   else
     version_type=irix
   fi
-  version_type=irix
   need_lib_prefix=no
   need_version=no
   soname_spec='${libname}${release}.so$major'
