@@ -1,3 +1,10 @@
+2000-03-20  Richard Henderson  <rth@cygnus.com>
+
+	* calls.c (expand_call): Don't bother generating tail call
+	sequences if there are pending cleanups.  Use
+	expand_start_target_temps/expand_end_target_temps to elide
+	cleanups created during sibcall expansion.
+
 2000-03-20  Geoff Keating  <geoffk@cygnus.com>
 
 	* configure.in: Set $IFS to a value if it doesn't already have one
