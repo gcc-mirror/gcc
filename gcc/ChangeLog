@@ -212,7 +212,6 @@
 	* fold-const.c (tree_expr_nonzero_p): Use get_base_address before
 	assuming an ADDR_EXPR is non-null.
 
->>>>>>> 2.5169
 2004-08-30  Jason Merrill  <jason@redhat.com>
 
 	* gthr-posix.h, gthr-dce.h: Add #pragma weaks.
