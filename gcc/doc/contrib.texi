@@ -162,6 +162,10 @@ other random hacking.
 Michael Cook for libstdc++ cleanup patches to reduce warnings.
 
 @item
+R. Kelley Cook for making GCC buildable from a read-only directory as
+well as other miscellaneous build process and documentation clean-ups.
+
+@item
 Ralf Corsepius for SH testing and minor bugfixing.
 
 @item
