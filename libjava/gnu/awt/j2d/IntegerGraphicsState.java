@@ -187,13 +187,13 @@ public class IntegerGraphicsState extends AbstractGraphicsState
   public void drawOval(int x, int y,
 		       int width, int height)
   {
-    throw new UnsupportedOperationException("not implemented yet");
+    drawArc (x, y, width, height, 0, 360);
   }
   
   public void fillOval(int x, int y,
 		       int width, int height)
   {
-    throw new UnsupportedOperationException("not implemented yet");
+    fillArc (x, y, width, height, 0, 360);
   }
 
   public void drawArc(int x, int y,

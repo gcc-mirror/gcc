@@ -147,6 +147,24 @@ void gnu::gcj::xlib::GC::fillRectangle(jint x, jint y, jint w, jint h)
   // no fast fail
 }
 
+void gnu::gcj::xlib::GC::drawArc(jint x, jint y, jint w, jint h,jint startAngle, jint arcAngle)
+{
+  Display* display = target->getDisplay();
+  ::Display* dpy = (::Display*) (display->display);
+  ::Drawable drawableXID = target->getXID();
+  ::GC gc = (::GC) structure;
+  XDrawArc(dpy, drawableXID, gc, x, y, w, h, startAngle * 64, arcAngle * 64);
+}
+
+void gnu::gcj::xlib::GC::fillArc(jint x, jint y, jint w, jint h,jint startAngle, jint arcAngle)
+{
+  Display* display = target->getDisplay();
+  ::Display* dpy = (::Display*) (display->display);
+  ::Drawable drawableXID = target->getXID();
+  ::GC gc = (::GC) structure;
+  XFillArc(dpy, drawableXID, gc, x, y, w, h, startAngle * 64, arcAngle * 64);
+}
+
 void gnu::gcj::xlib::GC::fillPolygon(jintArray xPoints, jintArray yPoints,
 				     jint nPoints,
 				     jint translateX, jint translateY)
