@@ -485,9 +485,8 @@ add_token (t)
       memcpy (t, feed->input->pos, sizeof (struct token));
       return (feed->input->pos++)->yychar;
     }
-  
-  memcpy (t, &Teosi, sizeof (struct token));
-  return END_OF_SAVED_INPUT;
+
+  return 0;
 }
 
 /* Shift the next token onto the fifo.  */
@@ -1167,12 +1166,27 @@ snarf_method (decl)
   int starting_lineno = lineno;
   const char *starting_filename = input_filename;
   size_t len;
+  int i;
 
   struct unparsed_text *meth;
 
   /* Leave room for the header, then absorb the block.  */
   obstack_blank (&inline_text_obstack, sizeof (struct unparsed_text));
   snarf_block (starting_filename, starting_lineno);
+  /* Add three END_OF_SAVED_INPUT tokens.  We used to provide an
+     infinite stream of END_OF_SAVED_INPUT tokens -- but that can
+     cause the compiler to get stuck in an infinite loop when
+     encountering invalid code.  We need more than one because the
+     parser sometimes peeks ahead several tokens.  */
+  for (i = 0; i < 3; ++i)
+    {
+      size_t point = obstack_object_size (&inline_text_obstack);
+      obstack_blank (&inline_text_obstack, sizeof (struct token));
+      memcpy ((struct token *)
+	      (obstack_base (&inline_text_obstack) + point),
+	      &Teosi,
+	      sizeof (struct token));
+    }
 
   len = obstack_object_size (&inline_text_obstack);
   meth = (struct unparsed_text *) obstack_finish (&inline_text_obstack);
@@ -1223,6 +1237,7 @@ snarf_defarg ()
   size_t point;
   size_t len;
   struct unparsed_text *buf;
+  int i;
   tree arg;
 
   obstack_blank (&inline_text_obstack, sizeof (struct unparsed_text));
@@ -1252,6 +1267,20 @@ snarf_defarg ()
   push_token ((struct token *) (obstack_base (&inline_text_obstack) + point));
   /* This is the documented way to shrink a growing obstack block.  */
   obstack_blank (&inline_text_obstack, - (int) sizeof (struct token));
+  /* Add three END_OF_SAVED_INPUT tokens.  We used to provide an
+     infinite stream of END_OF_SAVED_INPUT tokens -- but that can
+     cause the compiler to get stuck in an infinite loop when
+     encountering invalid code.  We need more than one because the
+     parser sometimes peeks ahead several tokens.  */
+  for (i = 0; i < 3; ++i)
+    {  
+      point = obstack_object_size (&inline_text_obstack);
+      obstack_blank (&inline_text_obstack, sizeof (struct token));
+      memcpy ((struct token *)
+	      (obstack_base (&inline_text_obstack) + point),
+	      &Teosi,
+	      sizeof (struct token));
+    }
 
  done:
   len = obstack_object_size (&inline_text_obstack);
