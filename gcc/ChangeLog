@@ -1,3 +1,9 @@
+2005-03-29  Paul Brook  <paul@codesourcery.com>
+
+	* config/arm/arm-protos.h (arm_dbx_register_number): Add prototype.
+	* config/arm/arm.c (arm_dbx_register_number): New function.
+	* config/arm/arm.h (IS_FPA_REGNUM, DBX_REGISTER_NUMBER): Define.
+
 2005-03-29  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR middle-end/20263
