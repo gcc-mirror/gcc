@@ -1,5 +1,13 @@
 2003-01-09  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/h8300/h8300.md (*extzv_1_r_h8300): Correct the insn
+	length.
+	(*extzv_1_r_h8300hs): Likewise.
+	(*extzv_1_r_inv_h8300): Likewise.
+	(*extzv_1_r_inv_h8300hs): Likewise.
+
+2003-01-09  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/h8300/h8300.h (PREDICATE_CODES): New.
 
 2003-01-09  Kazu Hirata  <kazu@cs.umass.edu>
