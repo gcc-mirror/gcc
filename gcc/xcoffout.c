@@ -462,16 +462,19 @@ xcoffout_declare_function (file, decl, name)
   char *n = name;
   int i;
 
-  for (i = 0; name[i]; ++i)
-    {
-      if (name[i] == '[')
-	{
-	  n = (char *) alloca (i + 1);
-	  strncpy (n, name, i);
-	  n[i] = '\0';
-	  break;
-	}
-    }
+  if (*n == '*')
+    n++;
+  else
+    for (i = 0; name[i]; ++i)
+      {
+	if (name[i] == '[')
+	  {
+	    n = (char *) alloca (i + 1);
+	    strncpy (n, name, i);
+	    n[i] = '\0';
+	    break;
+	  }
+      }
 
   /* Any pending .bi or .ei must occur before the .function pseudo op.
      Otherwise debuggers will think that the function is in the previous
