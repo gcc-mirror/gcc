@@ -3345,20 +3345,17 @@ rest_of_compilation (decl)
     register_life_up_to_date = 0;
 
 #ifdef OPTIMIZE_MODE_SWITCHING
-  if (optimize)
+  timevar_push (TV_GCSE);
+
+  if (optimize_mode_switching (NULL_PTR))
     {
-      timevar_push (TV_GCSE);
-
-      if (optimize_mode_switching (NULL_PTR))
-	{
-	  /* We did work, and so had to regenerate global life information.
-	     Take advantage of this and don't re-recompute register life
-	     information below.  */
-	  register_life_up_to_date = 1;
-	}
-
-      timevar_pop (TV_GCSE);
+      /* We did work, and so had to regenerate global life information.
+	 Take advantage of this and don't re-recompute register life
+	 information below.  */
+      register_life_up_to_date = 1;
     }
+
+  timevar_pop (TV_GCSE);
 #endif
 
 #ifdef INSN_SCHEDULING

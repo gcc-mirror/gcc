@@ -1,3 +1,9 @@
+2000-11-20  Bernd Schmidt  <bernds@redhat.co.uk>
+
+	* toplev.c (rest_of_compilation): Run optimize_mode_switching even
+	if not optimizing.
+	* sh.c (emit_sf_insn, emit_df_insn): Just call emit_insn.
+
 2000-11-19  Richard Henderson  <rth@redhat.com>
 
 	* crtstuff.c (force_to_data): Use array size 1 not 0.
