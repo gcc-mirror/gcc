@@ -1,7 +1,13 @@
+2002-01-22  Richard Henderson  <rth@redhat.com>
+
+	2001-09-25  Andrew Haley  <aph@cambridge.redhat.com>
+	* except.c (sjlj_mark_call_sites): Change address inside sequence.
+
 2002-01-22  Craig Rodrigues  <rodrigc@gcc.gnu.org>
 
 	PR other/5450
-	* config/i386/sysv4.h (CPP_SPEC): Define, and add CPU preprocessor flags.
+	* config/i386/sysv4.h (CPP_SPEC): Define, and add CPU
+	preprocessor flags.
 
 2001-12-11  Richard Henderson  <rth@redhat.com>
 
@@ -25,8 +31,8 @@
 
 2002-01-18  Craig Rodrigues  <rodrigc@gcc.gnu.org>
  
-        * doc/install.texi (hppa*-hp-hpux11): Clarify that GCC 2.95.x cannot
-        be used for bootstrapping GCC 3.0.  Clarify that --enable-threads
+	* doc/install.texi (hppa*-hp-hpux11): Clarify that GCC 2.95.x cannot
+	be used for bootstrapping GCC 3.0.  Clarify that --enable-threads
 	does not work.
 
 2002-01-17  David Edelsohn  <edelsohn@gnu.org>

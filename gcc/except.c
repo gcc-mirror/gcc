@@ -1,6 +1,6 @@
 /* Implements exception handling.
    Copyright (C) 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 
-   1999, 2000, 2001 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
    Contributed by Mike Stump <mrs@cygnus.com>.
 
 This file is part of GNU CC.
@@ -2058,10 +2058,6 @@ sjlj_mark_call_sites (lp_info)
   int last_call_site = -2;
   rtx insn, mem;
 
-  mem = change_address (cfun->eh->sjlj_fc, TYPE_MODE (integer_type_node),
-			plus_constant (XEXP (cfun->eh->sjlj_fc, 0),
-				       sjlj_fc_call_site_ofs));
-
   for (insn = get_insns (); insn ; insn = NEXT_INSN (insn))
     {
       struct eh_region *region;
@@ -2151,6 +2147,9 @@ sjlj_mark_call_sites (lp_info)
 	}
 
       start_sequence ();
+      mem = change_address (cfun->eh->sjlj_fc, TYPE_MODE (integer_type_node),
+			    plus_constant (XEXP (cfun->eh->sjlj_fc, 0),
+				           sjlj_fc_call_site_ofs));
       emit_move_insn (mem, GEN_INT (this_call_site));
       p = get_insns ();
       end_sequence ();
