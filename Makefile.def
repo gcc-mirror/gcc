@@ -107,7 +107,7 @@ target_modules = { module= libtermcap; no_check=true; stage=true;
                    missing=maintainer-clean; };
 target_modules = { module= winsup; };
 target_modules = { module= libgloss; no_check=true; };
-target_modules = { module= libiberty; stage=true; };
+target_modules = { module= libiberty; };
 target_modules = { module= gperf; };
 target_modules = { module= examples; no_check=true; no_install=true; };
 target_modules = { module= libffi; };
