@@ -9614,7 +9614,7 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
      the user explicitly asks us to, all functions.  */
   if (DECL_DECLARED_INLINE_P (decl))
     DECL_INLINE (decl) = 1;
-  if (flag_inline_trees == 2 && !DECL_INLINE (decl))
+  if (flag_inline_trees == 2 && !DECL_INLINE (decl) && funcdef_flag)
     {
       DID_INLINE_FUNC (decl) = 1;
       DECL_INLINE (decl) = 1;
