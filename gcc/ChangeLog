@@ -1,3 +1,17 @@
+2003-03-31  Matt Austern  <austern@apple.com>
+
+	* cpppch.c (struct cpp_savedstate): Add defs and n_defs members.
+	(count_defs): Keep track of number of defs as well as total size.
+	(write_defs): Put every definition in cpp_savedstate's defs array.
+	(comp_hashnode): Define.  Comparison function for qsort.
+	(cpp_write_pch_deps): Sort definitions before writing them.
+	(struct ht_node_list): Define. Like cpp_savedstate but simpler.
+	(collect_ht_nodes): Define.
+	(cpp_valid_state): When verifying that undefined identifiers in
+	the pch file are still undefined, read a sorted list of undefined
+	identifiers, collect all defined identifiers into a sorted list,
+	and walk through both lists to make sure there's no match.
+	
 2003-03-31  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.md (a peephole2): New.
