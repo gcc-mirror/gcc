@@ -3913,12 +3913,14 @@ simplify_rtx (x, op0_mode, last, in_dest)
       /* (plus (xor (and <foo> (const_int pow2 - 1)) <c>) <-c>)
 	 when c is (const_int (pow2 + 1) / 2) is a sign extension of a
 	 bit-field and can be replaced by either a sign_extend or a
-	 sign_extract.  The `and' may be a zero_extend.  */
+	 sign_extract.  The `and' may be a zero_extend and the two
+	 <c>, -<c> constants may be reversed.  */
       if (GET_CODE (XEXP (x, 0)) == XOR
 	  && GET_CODE (XEXP (x, 1)) == CONST_INT
 	  && GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT
 	  && INTVAL (XEXP (x, 1)) == - INTVAL (XEXP (XEXP (x, 0), 1))
-	  && (i = exact_log2 (INTVAL (XEXP (XEXP (x, 0), 1)))) >= 0
+	  && ((i = exact_log2 (INTVAL (XEXP (XEXP (x, 0), 1)))) >= 0
+	      || (i = exact_log2 (INTVAL (XEXP (x, 1)))) >= 0)
 	  && GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT
 	  && ((GET_CODE (XEXP (XEXP (x, 0), 0)) == AND
 	       && GET_CODE (XEXP (XEXP (XEXP (x, 0), 0), 1)) == CONST_INT

@@ -13,6 +13,9 @@ Thu Sep  2 00:43:59 1999  Finn Hakansson  <finn@axis.com>
 
 Thu Sep  2 00:06:43 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* combine.c (simplify_rtx): Recognize another case of a synthesized
+	sign extension.
+
 	* varasm.c (mark_constant_pool): When marking indirect references,
 	only look at SYMBOL_REFs.
 
