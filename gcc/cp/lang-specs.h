@@ -36,12 +36,14 @@ Boston, MA 02111-1307, USA.  */
    /* cc1plus has an integrated ISO C preprocessor.  We should invoke
       the external preprocessor if -save-temps is given.  */
     "%{E|M|MM:cpp0 -lang-c++ -D_GNU_SOURCE %{!no-gcc:-D__GNUG__=%v1}\
+       %{!Wno-deprecated:-D__GXX_DEPRECATED}\
        %{!fno-exceptions:-D__EXCEPTIONS}\
        %{!fno-new-abi:-D__GXX_ABI_VERSION=100}\
        %{ansi:-D__STRICT_ANSI__ -trigraphs -$} %(cpp_options)}\
      %{!E:%{!M:%{!MM:\
        %{save-temps:cpp0 -lang-c++ -D_GNU_SOURCE \
 		    %{!no-gcc:-D__GNUG__=%v1}\
+       		    %{!Wno-deprecated:-D__GXX_DEPRECATED}\
 		    %{!fno-exceptions:-D__EXCEPTIONS}\
 		    %{!fno-new-abi:-D__GXX_ABI_VERSION=100}\
 		    %{ansi:-D__STRICT_ANSI__ -trigraphs -$}\
@@ -49,6 +51,7 @@ Boston, MA 02111-1307, USA.  */
       cc1plus %{save-temps:-fpreprocessed %b.ii}\
               %{!save-temps:%(cpp_options)\
 			    %{!no-gcc:-D__GNUG__=%v1} -D_GNU_SOURCE \
+       			    %{!Wno-deprecated:-D__GXX_DEPRECATED}\
 			    %{!fno-exceptions:-D__EXCEPTIONS}\
 			    %{!fno-new-abi:-D__GXX_ABI_VERSION=100}\
 			    %{ansi:-D__STRICT_ANSI__}}\
