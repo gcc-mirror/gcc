@@ -1,3 +1,8 @@
+2001-05-13  Alexandre Oliva  <aoliva@redhat.com>
+
+	* configure.target: Remove detection of AIX pthread multilib, now
+	obtained from `gcc -v'.
+
 2001-05-13  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* mkcheck.in (setup_size_command): Use Berkeley "-B" mode with GNU
