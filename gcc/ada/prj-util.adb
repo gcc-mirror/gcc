@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision$                              --
+--                            $Revision$
 --                                                                          --
 --             Copyright (C) 2001 Free Software Foundation, Inc.            --
 --                                                                          --
@@ -388,6 +388,7 @@ package body Prj.Util is
       --  Nothing to do for empty strings
 
       if S'Length > 0 then
+
          --  Start on a new line if current line is already longer than
          --  Max_Length.
 
@@ -399,6 +400,7 @@ package body Prj.Util is
          --  cut the remainder in several lines.
 
          while Positive (Column) + S'Last - First > Max_Length loop
+
             --  Try the maximum length possible
 
             Last := First + Max_Length - Positive (Column);
@@ -411,6 +413,7 @@ package body Prj.Util is
 
             --  If we do not find a separator, we output the maximum length
             --  possible.
+
             if Last < First then
                Last := First + Max_Length - Positive (Column);
             end if;
@@ -420,13 +423,11 @@ package body Prj.Util is
             --  Set the beginning of the new remainder
 
             First := Last + 1;
-
          end loop;
 
          --  What is left goes to the buffer, without EOL
 
          Write_Str (S (First .. S'Last));
-
       end if;
    end Write_Str;
 
