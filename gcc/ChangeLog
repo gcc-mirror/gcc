@@ -1,3 +1,7 @@
+Wed Mar  1 12:14:31 MET 2000  Jan Hubicka  <jh@suse.cz>
+
+	* i386.md (mulqi3): New pattern.
+
 2000-02-29  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cpplib.h (CPP_ASSERTION, CPP_STRINGIZE, CPP_TOKPASTE): New
