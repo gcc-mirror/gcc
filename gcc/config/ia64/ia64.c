@@ -6557,13 +6557,44 @@ get_next_important_insn (rtx insn, rtx tail)
   return NULL_RTX;
 }
 
-/* The following function does insn bundling.  Bundling algorithm is
-   based on dynamic programming.  It tries to insert different number of
-   nop insns before/after the real insns.  At the end of EBB, it chooses the
-   best alternative and then, moving back in EBB, inserts templates for
-   the best alternative.  The algorithm is directed by information
-   (changes of simulated processor cycle) created by the 2nd insn
-   scheduling.  */
+/* The following function does insn bundling.  Bundling means
+   inserting templates and nop insns to fit insn groups into permitted
+   templates.  Instruction scheduling uses NDFA (non-deterministic
+   finite automata) encoding informations about the templates and the
+   inserted nops.  Nondeterminism of the automata permits follows
+   all possible insn sequences very fast.
+
+   Unfortunately it is not possible to get information about inserting
+   nop insns and used templates from the automata states.  The
+   automata only says that we can issue an insn possibly inserting
+   some nops before it and using some template.  Therefore insn
+   bundling in this function is implemented by using DFA
+   (deterministic finite automata).  We follows all possible insn
+   sequences by inserting 0-2 nops (that is what the NDFA describe for
+   insn scheduling) before/after each insn being bundled.  We know the
+   start of simulated processor cycle from insn scheduling (insn
+   starting a new cycle has TImode).
+
+   Simple implementation of insn bundling would create enormous
+   number of possible insn sequences satisfying information about new
+   cycle ticks taken from the insn scheduling.  To make the algorithm
+   practical we use dynamic programming.  Each decision (about
+   inserting nops and implicitly about previous decisions) is described
+   by structure bundle_state (see above).  If we generate the same
+   bundle state (key is automaton state after issuing the insns and
+   nops for it), we reuse already generated one.  As consequence we
+   reject some decisions which can not improve the solution and
+   reduce memory for the algorithm.
+
+   When we reach the end of EBB (extended basic block), we choose the
+   best sequence and then, moving back in EBB, insert templates for
+   the best alternative.  The templates are taken from querying
+   automaton state for each insn in chosen bundle states.
+
+   So the algorithm makes two (forward and backward) passes through
+   EBB.  There is an additional forward pass through EBB for Itanium1
+   processor.  This pass inserts more nops to make dependency between
+   a producer insn and MMMUL/MMSHF at least 4 cycles long.  */
 
 static void
 bundling (FILE *dump, int verbose, rtx prev_head_insn, rtx tail)
@@ -6578,6 +6609,7 @@ bundling (FILE *dump, int verbose, rtx prev_head_insn, rtx tail)
   enum attr_type type;
 
   insn_num = 0;
+  /* Count insns in the EBB.  */
   for (insn = NEXT_INSN (prev_head_insn);
        insn && insn != tail;
        insn = NEXT_INSN (insn))
@@ -6590,7 +6622,7 @@ bundling (FILE *dump, int verbose, rtx prev_head_insn, rtx tail)
   initiate_bundle_state_table ();
   index_to_bundle_states = xmalloc ((insn_num + 2)
 				    * sizeof (struct bundle_state *));
-  /* First (forward) pass -- generates states. */
+  /* First (forward) pass -- generation of bundle states. */
   curr_state = get_free_bundle_state ();
   curr_state->insn = NULL;
   curr_state->before_nops_num = 0;
@@ -6604,6 +6636,7 @@ bundling (FILE *dump, int verbose, rtx prev_head_insn, rtx tail)
   state_reset (curr_state->dfa_state);
   index_to_bundle_states [0] = curr_state;
   insn_num = 0;
+  /* Shift cycle mark if it is put on insn which could be ignored.  */
   for (insn = NEXT_INSN (prev_head_insn);
        insn != tail;
        insn = NEXT_INSN (insn))
@@ -6626,6 +6659,7 @@ bundling (FILE *dump, int verbose, rtx prev_head_insn, rtx tail)
 	      break;
 	    }
       }
+  /* Froward pass: generation of bundle states.  */
   for (insn = get_next_important_insn (NEXT_INSN (prev_head_insn), tail);
        insn != NULL_RTX;
        insn = next_insn)
@@ -6645,19 +6679,25 @@ bundling (FILE *dump, int verbose, rtx prev_head_insn, rtx tail)
 	{
 	  pos = curr_state->accumulated_insns_num % 3;
 	  next_state = curr_state->next;
-	  /* Finish the current bundle in order to start a subsequent
-	     asm insn in a new bundle.  */
+	  /* We must fill up the current bundle in order to start a
+	     subsequent asm insn in a new bundle.  Asm insn is always
+	     placed in a separate bundle.  */
 	  only_bundle_end_p
 	    = (next_insn != NULL_RTX
 	       && INSN_CODE (insn) == CODE_FOR_insn_group_barrier
 	       && ia64_safe_type (next_insn) == TYPE_UNKNOWN);
+	  /* We may fill up the current bundle if it is the cycle end
+	     without a group barrier.  */
 	  bundle_end_p
 	    = (only_bundle_end_p || next_insn == NULL_RTX
 	       || (GET_MODE (next_insn) == TImode
 		   && INSN_CODE (insn) != CODE_FOR_insn_group_barrier));
 	  if (type == TYPE_F || type == TYPE_B || type == TYPE_L
 	      || type == TYPE_S
-	      /* We need to insert 2 Nops for cases like M_MII.  */
+	      /* We need to insert 2 nops for cases like M_MII.  To
+		 guarantee issuing all insns on the same cycle for
+		 Itanium 1, we need to issue 2 nops after the first M
+		 insn (MnnMII where n is a nop insn).  */
 	      || (type == TYPE_M && ia64_tune == PROCESSOR_ITANIUM
 		  && !bundle_end_p && pos == 1))
 	    issue_nops_and_insn (curr_state, 2, insn, bundle_end_p,
@@ -6674,6 +6714,10 @@ bundling (FILE *dump, int verbose, rtx prev_head_insn, rtx tail)
 	   curr_state = curr_state->next)
 	if (verbose >= 2 && dump)
 	  {
+	    /* This structure is taken from generated code of the
+	       pipeline hazard recognizer (see file insn-attrtab.c).
+	       Please don't forget to change the structure if a new
+	       automaton is added to .md file.  */
 	    struct DFA_chip
 	    {
 	      unsigned short one_automaton_state;
@@ -6698,12 +6742,18 @@ bundling (FILE *dump, int verbose, rtx prev_head_insn, rtx tail)
 	  }
     }
   if (index_to_bundle_states [insn_num] == NULL)
+    /* We should find a solution because the 2nd insn scheduling has
+       found one.  */
     abort ();
-  /* Finding state with a minimal cost:  */
+  /* Find a state corresponding to the best insn sequence.  */
   best_state = NULL;
   for (curr_state = index_to_bundle_states [insn_num];
        curr_state != NULL;
        curr_state = curr_state->next)
+    /* We are just looking at the states with fully filled up last
+       bundle.  The first we prefer insn sequences with minimal cost
+       then with minimal inserted nops and finally with branch insns
+       placed in the 3rd slots.  */
     if (curr_state->accumulated_insns_num % 3 == 0
 	&& (best_state == NULL || best_state->cost > curr_state->cost
 	    || (best_state->cost == curr_state->cost
@@ -6714,7 +6764,7 @@ bundling (FILE *dump, int verbose, rtx prev_head_insn, rtx tail)
 			&& curr_state->branch_deviation
 			< best_state->branch_deviation)))))
       best_state = curr_state;
-  /* Second (backward) pass: adding nops and templates:  */
+  /* Second (backward) pass: adding nops and templates.  */
   insn_num = best_state->before_nops_num;
   template0 = template1 = -1;
   for (curr_state = best_state;
@@ -6749,9 +6799,17 @@ bundling (FILE *dump, int verbose, rtx prev_head_insn, rtx tail)
 	      : ((struct DFA_chip *) curr_state->dfa_state)->twob_automaton_state),
 	     INSN_UID (insn));
 	}
+      /* Find the position in the current bundle window.  The window can
+	 contain at most two bundles.  Two bundle window means that
+	 the processor will make two bundle rotation.  */
       max_pos = get_max_pos (curr_state->dfa_state);
-      if (max_pos == 6 || (max_pos == 3 && template0 < 0))
+      if (max_pos == 6
+	  /* The following (negative template number) means that the
+	     processor did one bundle rotation.  */
+	  || (max_pos == 3 && template0 < 0))
 	{
+	  /* We are at the end of the window -- find template(s) for
+	     its bundle(s).  */
 	  pos = max_pos;
 	  if (max_pos == 3)
 	    template0 = get_template (curr_state->dfa_state, 3);
@@ -6762,6 +6820,7 @@ bundling (FILE *dump, int verbose, rtx prev_head_insn, rtx tail)
 	    }
 	}
       if (max_pos > 3 && template1 < 0)
+	/* It may happen when we have the stop inside a bundle.  */
 	{
 	  if (pos > 3)
 	    abort ();
@@ -6769,6 +6828,7 @@ bundling (FILE *dump, int verbose, rtx prev_head_insn, rtx tail)
 	  pos += 3;
 	}
       if (!asm_p)
+	/* Emit nops after the current insn.  */
 	for (i = 0; i < curr_state->after_nops_num; i++)
 	  {
 	    nop = gen_nop ();
@@ -6778,18 +6838,26 @@ bundling (FILE *dump, int verbose, rtx prev_head_insn, rtx tail)
 	      abort ();
 	    if (pos % 3 == 0)
 	      {
+		/* We are at the start of a bundle: emit the template
+		   (it should be defined).  */
 		if (template0 < 0)
 		  abort ();
 		b = gen_bundle_selector (GEN_INT (template0));
 		ia64_emit_insn_before (b, nop);
+		/* If we have two bundle window, we make one bundle
+		   rotation.  Otherwise template0 will be undefined
+		   (negative value).  */
 		template0 = template1;
 		template1 = -1;
 	      }
 	  }
+      /* Move the position backward in the window.  Group barrier has
+	 no slot.  Asm insn takes all bundle.  */
       if (INSN_CODE (insn) != CODE_FOR_insn_group_barrier
 	  && GET_CODE (PATTERN (insn)) != ASM_INPUT
 	  && asm_noperands (PATTERN (insn)) < 0)
 	pos--;
+      /* Long insn takes 2 slots.  */
       if (ia64_safe_type (insn) == TYPE_L)
 	pos--;
       if (pos < 0)
@@ -6799,15 +6867,20 @@ bundling (FILE *dump, int verbose, rtx prev_head_insn, rtx tail)
 	  && GET_CODE (PATTERN (insn)) != ASM_INPUT
 	  && asm_noperands (PATTERN (insn)) < 0)
 	{
+	  /* The current insn is at the bundle start: emit the
+	     template.  */
 	  if (template0 < 0)
 	    abort ();
 	  b = gen_bundle_selector (GEN_INT (template0));
 	  ia64_emit_insn_before (b, insn);
 	  b = PREV_INSN (insn);
 	  insn = b;
+	  /* See comment above in analogous place for emiting nops
+	     after the insn.  */
 	  template0 = template1;
 	  template1 = -1;
 	}
+      /* Emit nops after the current insn.  */
       for (i = 0; i < curr_state->before_nops_num; i++)
 	{
 	  nop = gen_nop ();
@@ -6819,6 +6892,8 @@ bundling (FILE *dump, int verbose, rtx prev_head_insn, rtx tail)
 	    abort ();
 	  if (pos % 3 == 0)
 	    {
+	      /* See comment above in analogous place for emiting nops
+		 after the insn.  */
 	      if (template0 < 0)
 		abort ();
 	      b = gen_bundle_selector (GEN_INT (template0));
@@ -6831,7 +6906,11 @@ bundling (FILE *dump, int verbose, rtx prev_head_insn, rtx tail)
 	}
     }
   if (ia64_tune == PROCESSOR_ITANIUM)
-    /* Insert additional cycles for MM-insns: */
+    /* Insert additional cycles for MM-insns (MMMUL and MMSHF).
+       Itanium1 has a strange design, if the distance between an insn
+       and dependent MM-insn is less 4 then we have a 6 additional
+       cycles stall.  So we make the distance equal to 4 cycles if it
+       is less.  */
     for (insn = get_next_important_insn (NEXT_INSN (prev_head_insn), tail);
 	 insn != NULL_RTX;
 	 insn = next_insn)
@@ -6843,11 +6922,16 @@ bundling (FILE *dump, int verbose, rtx prev_head_insn, rtx tail)
 	  abort ();
 	next_insn = get_next_important_insn (NEXT_INSN (insn), tail);
 	if (INSN_UID (insn) < clocks_length && add_cycles [INSN_UID (insn)])
+	  /* We found a MM-insn which needs additional cycles.  */
 	  {
 	    rtx last;
 	    int i, j, n;
 	    int pred_stop_p;
 
+	    /* Now we are searching for a template of the bundle in
+	       which the MM-insn is placed and the position of the
+	       insn in the bundle (0, 1, 2).  Also we are searching
+	       for that there is a stop before the insn.  */
 	    last = prev_active_insn (insn);
 	    pred_stop_p = recog_memoized (last) == CODE_FOR_insn_group_barrier;
 	    if (pred_stop_p)
@@ -6858,17 +6942,27 @@ bundling (FILE *dump, int verbose, rtx prev_head_insn, rtx tail)
 		{
 		  template0 = XINT (XVECEXP (PATTERN (last), 0, 0), 0);
 		  if (template0 == 9)
+		    /* The insn is in MLX bundle.  Change the template
+		       onto MFI because we will add nops before the
+		       insn.  It simplifies subsequent code a lot.  */
 		    PATTERN (last)
 		      = gen_bundle_selector (GEN_INT (2)); /* -> MFI */
 		  break;
 		}
 	      else if (recog_memoized (last) != CODE_FOR_insn_group_barrier)
 		n++;
+	    /* Some check of correctness: the stop is not at the
+	       bundle start, there are no more 3 insns in the bundle,
+	       and the MM-insn is not at the start of bundle with
+	       template MLX.  */
 	    if ((pred_stop_p && n == 0) || n > 2
 		|| (template0 == 9 && n != 0))
 	      abort ();
+	    /* Put nops after the insn in the bundle.  */
 	    for (j = 3 - n; j > 0; j --)
 	      ia64_emit_insn_before (gen_nop (), insn);
+	    /* It takes into account that we will add more N nops
+	       before the insn lately -- please see code below.  */
 	    add_cycles [INSN_UID (insn)]--;
 	    if (!pred_stop_p || add_cycles [INSN_UID (insn)])
 	      ia64_emit_insn_before (gen_insn_group_barrier (GEN_INT (3)),
@@ -6877,13 +6971,15 @@ bundling (FILE *dump, int verbose, rtx prev_head_insn, rtx tail)
 	      add_cycles [INSN_UID (insn)]--;
 	    for (i = add_cycles [INSN_UID (insn)]; i > 0; i--)
 	      {
-		/* Insert .MII bundle.  */
+		/* Insert "MII;" template.  */
 		ia64_emit_insn_before (gen_bundle_selector (GEN_INT (0)),
 				       insn);
 		ia64_emit_insn_before (gen_nop (), insn);
 		ia64_emit_insn_before (gen_nop (), insn);
 		if (i > 1)
 		  {
+		    /* To decrease code size, we use "MI;I;"
+		       template.  */
 		    ia64_emit_insn_before
 		      (gen_insn_group_barrier (GEN_INT (3)), insn);
 		    i--;
@@ -6892,10 +6988,15 @@ bundling (FILE *dump, int verbose, rtx prev_head_insn, rtx tail)
 		ia64_emit_insn_before (gen_insn_group_barrier (GEN_INT (3)),
 				       insn);
 	      }
+	    /* Put the MM-insn in the same slot of a bundle with the
+	       same template as the original one.  */
 	    ia64_emit_insn_before (gen_bundle_selector (GEN_INT (template0)),
 				   insn);
+	    /* To put the insn in the same slot, add necessary number
+	       of nops.  */
 	    for (j = n; j > 0; j --)
 	      ia64_emit_insn_before (gen_nop (), insn);
+	    /* Put the stop if the original bundle had it.  */
 	    if (pred_stop_p)
 	      ia64_emit_insn_before (gen_insn_group_barrier (GEN_INT (3)),
 				     insn);
