@@ -56,7 +56,6 @@ static int lookup_conversions_r (tree, int, int,
 				 tree, tree, tree, tree, tree *, tree *);
 static int look_for_overrides_r (tree, tree);
 static tree lookup_field_queue_p (tree, int, void *);
-static int shared_member_p (tree);
 static tree lookup_field_r (tree, void *);
 static tree dfs_accessible_queue_p (tree, int, void *);
 static tree dfs_accessible_p (tree, void *);
@@ -1025,7 +1024,7 @@ template_self_reference_p (tree type, tree decl)
 
    This function checks that T contains no nonstatic members.  */
 
-static int
+int
 shared_member_p (tree t)
 {
   if (TREE_CODE (t) == VAR_DECL || TREE_CODE (t) == TYPE_DECL \

@@ -4023,6 +4023,7 @@ extern tree adjust_result_of_qualified_name_lookup
                                                 (tree, tree, tree);
 extern tree copied_binfo			(tree, tree);
 extern tree original_binfo			(tree, tree);
+extern int shared_member_p                      (tree);
 
 /* in semantics.c */
 extern void push_deferring_access_checks	(deferring_kind);
