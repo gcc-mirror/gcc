@@ -1126,9 +1126,9 @@ do { \
 /* We have post-inc load and pre-dec,pre-inc store,
    but only for 4 byte vals.  */
 #if 0
-#define HAVE_PRE_DECREMENT
-#define HAVE_PRE_INCREMENT
-#define HAVE_POST_INCREMENT
+#define HAVE_PRE_DECREMENT 1
+#define HAVE_PRE_INCREMENT 1
+#define HAVE_POST_INCREMENT 1
 #endif
 
 /* Recognize any constant value that is a valid address.  */

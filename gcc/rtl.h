@@ -699,6 +699,22 @@ extern char *note_insn_name[];
 #define AUTO_INC_DEC
 #endif
 
+#ifndef HAVE_PRE_INCREMENT
+#define HAVE_PRE_INCREMENT 0
+#endif
+
+#ifndef HAVE_PRE_DECREMENT
+#define HAVE_PRE_DECREMENT 0
+#endif
+
+#ifndef HAVE_POST_INCREMENT
+#define HAVE_POST_INCREMENT 0
+#endif
+
+#ifndef HAVE_POST_DECREMENT
+#define HAVE_POST_DECREMENT 0
+#endif
+
 /* Accessors for RANGE_INFO.  */
 /* For RANGE_{START,END} notes return the RANGE_START note.  */
 #define RANGE_INFO_NOTE_START(INSN) (XEXP (INSN, 0))

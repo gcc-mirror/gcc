@@ -4168,14 +4168,18 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 	  if (v->giv_type == DEST_ADDR
 	      && GET_CODE (v->mult_val) == CONST_INT)
 	    {
-#if defined (HAVE_POST_INCREMENT) || defined (HAVE_PRE_INCREMENT)
-	      if (INTVAL (v->mult_val) == GET_MODE_SIZE (v->mem_mode))
+	      if (HAVE_POST_INCREMENT
+		  && INTVAL (v->mult_val) == GET_MODE_SIZE (v->mem_mode))
 		benefit += add_cost * bl->biv_count;
-#endif
-#if defined (HAVE_POST_DECREMENT) || defined (HAVE_PRE_DECREMENT)
-	      if (-INTVAL (v->mult_val) == GET_MODE_SIZE (v->mem_mode))
+	      else if (HAVE_PRE_INCREMENT
+		       && INTVAL (v->mult_val) == GET_MODE_SIZE (v->mem_mode))
 		benefit += add_cost * bl->biv_count;
-#endif
+	      else if (HAVE_POST_DECREMENT
+		       && -INTVAL (v->mult_val) == GET_MODE_SIZE (v->mem_mode))
+		benefit += add_cost * bl->biv_count;
+	      else if (HAVE_PRE_DECREMENT
+		       && -INTVAL (v->mult_val) == GET_MODE_SIZE (v->mem_mode))
+		benefit += add_cost * bl->biv_count;
 	    }
 #endif
 

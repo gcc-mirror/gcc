@@ -1770,25 +1770,21 @@ auto_inc_dec_reg_p (reg, mode)
      rtx reg;
      enum machine_mode mode;
 {
-#ifdef HAVE_POST_INCREMENT
-  if (memory_address_p (mode, gen_rtx_POST_INC (Pmode, reg)))
+  if (HAVE_POST_INCREMENT
+      && memory_address_p (mode, gen_rtx_POST_INC (Pmode, reg)))
     return 1;
-#endif
 
-#ifdef HAVE_POST_DECREMENT
-  if (memory_address_p (mode, gen_rtx_POST_DEC (Pmode, reg)))
+  if (HAVE_POST_DECREMENT
+      && memory_address_p (mode, gen_rtx_POST_DEC (Pmode, reg)))
     return 1;
-#endif
 
-#ifdef HAVE_PRE_INCREMENT
-  if (memory_address_p (mode, gen_rtx_PRE_INC (Pmode, reg)))
+  if (HAVE_PRE_INCREMENT
+      && memory_address_p (mode, gen_rtx_PRE_INC (Pmode, reg)))
     return 1;
-#endif
 
-#ifdef HAVE_PRE_DECREMENT
-  if (memory_address_p (mode, gen_rtx_PRE_DEC (Pmode, reg)))
+  if (HAVE_PRE_DECREMENT
+      && memory_address_p (mode, gen_rtx_PRE_DEC (Pmode, reg)))
     return 1;
-#endif
 
   return 0;
 }

@@ -1,3 +1,20 @@
+Wed Nov 25 00:07:11 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* cse.c (fold_rtx): Make autoincrement addressing mode tests be
+	runtime selectable.
+	* expr.c (move_by_pieces): Similarly.
+	(move_by_pieces_1, clear_by_pieces, clear_by_pieces_1): Similarly.
+	* flow.c (find_auto_inc): Similarly.
+	(try_pre_increment): Similarly.
+	* loop.c (strength_reduce): Similarly.
+	* regclass.c (auto_inc_dec_reg_p): Similarly.
+	* regmove.c (try_auto_increment): Similarly.
+	(fixup_match_1): Similarly.
+	* rtl.h (HAVE_PRE_INCREMENT): Define if not already defined.
+	(HAVE_PRE_DECREMENT): Similarly.
+	(HAVE_POST_INCREMENT, HAVE_POST_DECREMENT): Similarly.
+	sponding changes to all target header files.
+
 Tue Nov 24 20:24:59 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* configure.in (m68020-*-elf*, m68k-*-elf*): New targets.
