@@ -1,5 +1,10 @@
 2002-02-04  Adam Megacz <adam@xwt.org>
 
+       * configure.in: Corrected mingw case branches; added * before
+         and after.
+
+2002-02-04  Adam Megacz <adam@xwt.org>
+
         * configure.in: Add -lgdi32 -lwsock32 -lws2_32 to libgcj.spec
           if compiling for win32
 
