@@ -62,7 +62,7 @@
 #endif
 
 /* This is for other GNU distributions with internationalized messages.  */
-/* CYGNUS LOCAL: ../intl will handle this for us */
+/* EGCS LOCAL: ../intl will handle this for us */
 #ifdef ENABLE_NLS
 # include <libintl.h>
 #else
@@ -194,7 +194,7 @@ init_syntax_once ()
 #endif /* not emacs */
 
 /* Get the interface, including the syntax bits.  */
-/* CYGNUS LOCAL: call it gnu-regex.h, not regex.h, to avoid name conflicts */
+/* EGCS LOCAL: call it gnu-regex.h, not regex.h, to avoid name conflicts */
 #include "gnu-regex.h"
 
 /* isalpha etc. are used for the character classes.  */
@@ -2210,7 +2210,7 @@ regex_compile (pattern, size, syntax, bufp)
                        the leading `:' and `[' (but set bits for them).  */
                     if (c == ':' && *p == ']')
                       {
-/* CYGNUS LOCAL: Skip this code if we don't have btowc().  btowc() is */
+/* EGCS LOCAL: Skip this code if we don't have btowc().  btowc() is */
 /* defined in the 1994 Amendment 1 to ISO C and may not be present on */
 /* systems where we have wchar.h and wctype.h.   */
 #if defined _LIBC || (defined HAVE_WCTYPE_H && defined HAVE_WCHAR_H && defined HAVE_BTOWC)

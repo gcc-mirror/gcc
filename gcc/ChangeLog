@@ -1,3 +1,7 @@
+2000-11-02  Geoffrey Keating  <geoffk@cygnus.com>
+
+	* fixinc/gnu-regex.c: Change 'CYGNUS LOCAL' to 'EGCS LOCAL'.
+
 Fri Nov  3 13:41:04 2000  Mark P Mitchell  <mark@codesourcery.com>
 
 	* config/mips/iris6.h (SUBTARGET_CC1_SPEC): Remove -static

@@ -170,7 +170,7 @@ CHILL.extraclean:
 CHILL.maintainer-clean:
 	-rm -f ch/TAGS
 	-rm -f ch/chill.info* ch/chill.dvi ch/chill.??s ch/chill.*aux
-# CYGNUS LOCAL: Delete locally created file.
+# Delete locally created file.
 	-rm -f ch/hash.h
 #
 # Stage hooks:
