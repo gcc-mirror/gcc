@@ -1681,17 +1681,29 @@ build_result_decl (fndecl)
 
 /* Called for every element in DECL_FUNCTION_INIT_TEST_TABLE in order
    to emit initialization code for each test flag.  */
-   
+
 static boolean
 emit_init_test_initialization (entry, key)
   struct hash_entry *entry;
   hash_table_key key ATTRIBUTE_UNUSED;
 {
   struct init_test_hash_entry *ite = (struct init_test_hash_entry *) entry;
+  tree klass = build_class_ref ((tree) entry->key);
   expand_decl (ite->init_test_decl);
 
-  expand_expr_stmt (build (MODIFY_EXPR, boolean_type_node, 
-			   ite->init_test_decl, boolean_false_node));
+  /* We initialize the class init check variable by looking at the
+     `state' field of the class to see if it is already initialized.
+     This makes things a bit faster if the class is already
+     initialized, which should be the common case.  */
+  expand_expr_stmt
+    (build (MODIFY_EXPR, boolean_type_node, 
+	    ite->init_test_decl,
+	    build (GE_EXPR, boolean_type_node,
+		   build (COMPONENT_REF, byte_type_node,
+			  build1 (INDIRECT_REF, class_type_node, klass),
+			  lookup_field (&class_type_node,
+					get_identifier ("state"))),
+		   build_int_2 (JV_STATE_DONE, 0))));
 
   return true;
 }
