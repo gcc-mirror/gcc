@@ -3972,7 +3972,7 @@ ignoring option `%s' due to invalid debug level specification",
 
 	      if (da_len > 1 && strncmp (arg, "gdb", da_len) == 0)
 		{
-#if defined (DWARF2_DEBUGGING_INFO) && !defined (LINKER_DOES_NOT_WORK_WITH_DWARF2)
+#ifdef DWARF2_DEBUGGING_INFO
 		  type = DWARF2_DEBUG;
 #else
 #ifdef DBX_DEBUGGING_INFO

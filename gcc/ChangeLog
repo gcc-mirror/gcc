@@ -1,5 +1,22 @@
 2002-04-12  Richard Henderson  <rth@redhat.com>
 
+	* config.gcc (sparcv9-*-solaris2): Default to 32-bit code.
+	(sparc*-*-solaris): Clean up header files.
+	* configure.in (AS_SPARC64_FLAG): Error out if can't find it
+	and plan on generating 64-bit code.
+	* toplev.c (decode_g_option): Remove LINKER_DOES_NOT_WORK_WITH_DWARF2.
+	* config/sparc/sol2-64.h: Delete and reuse for default 64-bit code.
+	* config/sparc/sol2-sld-64.h: Rename ...
+	* config/sparc/sol2-bi.h: ... here.  Remove the bits that checked
+	for AS_SPARC64_FLAG not defined.
+	* config/sparc/sol2-gld-bi.h: New.
+	* config/sparc/sol2-sld.h: Remove.
+	* config/sparc/sol26-sld.h: New.
+	* config/sparc/sol2.h: Tidy comments.
+	* doc/install.texi: Document sparc-solaris configury changes.
+
+2002-04-12  Richard Henderson  <rth@redhat.com>
+
 	* recog.c (offsettable_address_p): Match the logic in adjust_address.
 
 	* config/sparc/sparc.h (LEGITIMIZE_RELOAD_ADDRESS): Handle TFmode
