@@ -3982,7 +3982,7 @@ push_overloaded_decl (decl, forgettable)
     old = decl;
 
   if (doing_global)
-    set_namespace_binding (orig_name, DECL_CONTEXT (decl), old);
+    set_namespace_binding (orig_name, current_namespace, old);
   else
     IDENTIFIER_LOCAL_VALUE (orig_name) = old;
 

@@ -1,5 +1,8 @@
 1998-07-29  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* decl.c (push_overloaded_decl): Use current_namespace instead of
+	DECL_CONTEXT (decl) to determine where we go.
+
 	* decl.c (lookup_name_real): Fix typo.
 
 1998-07-28  Mark Mitchell  <mark@markmitchell.com>
