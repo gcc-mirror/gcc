@@ -1,3 +1,7 @@
+2003-12-19  Kelley Cook  <kelleycook@wideopenwest.com>
+
+	* config.guess: Remove.
+
 2003-12-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/ia64/unwind-ia64.c (ia64_copy_rbs): New function.
