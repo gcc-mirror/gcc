@@ -1757,9 +1757,6 @@ STATIC char	 *local_rindex		__proto((const char *, int));
 
 #ifndef __alpha
 extern char  *sbrk			__proto((int));
-extern PTR_T  malloc			__proto((Size_t));
-extern PTR_T  calloc			__proto((Size_t, Size_t));
-extern PTR_T  realloc			__proto((PTR_T, Size_t));
 extern void   free			__proto((PTR_T));
 #endif
 extern char  *mktemp			__proto((char *));
