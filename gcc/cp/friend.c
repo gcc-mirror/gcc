@@ -405,20 +405,6 @@ do_friend (ctype, declarator, decl, parmdecls, flags, quals, funcdef_flag)
 	  decl = void_type_node;
 	}
     }
-  else if (TREE_CODE (decl) == FUNCTION_DECL
-	   && (MAIN_NAME_P (declarator)
-	       || (IDENTIFIER_LENGTH (declarator) > 10
-		   && IDENTIFIER_POINTER (declarator)[0] == '_'
-		   && IDENTIFIER_POINTER (declarator)[1] == '_'
-		   && strncmp (IDENTIFIER_POINTER (declarator)+2,
-			       "builtin_", 8) == 0)))
-    {
-      /* raw "main", and builtin functions never gets overloaded,
-	 but they can become friends.  */
-      add_friend (current_class_type, decl);
-      DECL_FRIEND_P (decl) = 1;
-      decl = void_type_node;
-    }
   /* A global friend.
      @@ or possibly a friend from a base class ?!?  */
   else if (TREE_CODE (decl) == FUNCTION_DECL)
