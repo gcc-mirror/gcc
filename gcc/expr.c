@@ -5738,13 +5738,14 @@ bc_expand_expr (exp)
 	abort ();
       
 #if 0
-      if (DECL_RTL (exp)->label)
+      if (BYTECODE_LABEL (DECL_RTL (exp)))
 	bc_load_externaddr (DECL_RTL (exp));
       else
 	bc_load_localaddr (DECL_RTL (exp));
 #endif
       if (TREE_PUBLIC (exp))
-	bc_load_externaddr_id (DECL_ASSEMBLER_NAME (exp), DECL_RTL (exp)->offset);
+	bc_load_externaddr_id (DECL_ASSEMBLER_NAME (exp),
+			       BYTECODE_BC_LABEL (DECL_RTL (exp))->offset);
       else
 	bc_load_localaddr (DECL_RTL (exp));
       
@@ -9103,7 +9104,8 @@ bc_load_externaddr (externaddr)
      rtx externaddr;
 {
   bc_emit_bytecode (constP);
-  bc_emit_code_labelref (externaddr->label, externaddr->offset);
+  bc_emit_code_labelref (BYTECODE_LABEL (externaddr),
+			 BYTECODE_BC_LABEL (externaddr)->offset);
 
 #ifdef DEBUG_PRINT_CODE
   fputc ('\n', stderr);
@@ -9144,7 +9146,7 @@ void
 bc_load_localaddr (localaddr)
      rtx localaddr;
 {
-  bc_emit_instruction (localP, (HOST_WIDE_INT) localaddr->offset);
+  bc_emit_instruction (localP, (HOST_WIDE_INT) BYTECODE_BC_LABEL (localaddr)->offset);
 }
 
 
@@ -9154,7 +9156,8 @@ void
 bc_load_parmaddr (parmaddr)
      rtx parmaddr;
 {
-  bc_emit_instruction (argP, (HOST_WIDE_INT) parmaddr->offset / BITS_PER_UNIT);
+  bc_emit_instruction (argP, ((HOST_WIDE_INT) BYTECODE_BC_LABEL (parmaddr)->offset
+			      / BITS_PER_UNIT));
 }
 
 
@@ -9301,7 +9304,8 @@ bc_expand_address (exp)
 
     case FUNCTION_DECL:
 
-      bc_load_externaddr_id (DECL_ASSEMBLER_NAME (exp), DECL_RTL (exp)->offset);
+      bc_load_externaddr_id (DECL_ASSEMBLER_NAME (exp),
+			     BYTECODE_BC_LABEL (DECL_RTL (exp))->offset);
       break;
 
     case PARM_DECL:
@@ -9328,12 +9332,13 @@ bc_expand_address (exp)
     case VAR_DECL:
 
 #if 0
-      if (DECL_RTL (exp)->label)
+      if (BYTECODE_LABEL (DECL_RTL (exp)))
 	bc_load_externaddr (DECL_RTL (exp));
 #endif
 
       if (DECL_EXTERNAL (exp))
-	bc_load_externaddr_id (DECL_ASSEMBLER_NAME (exp), DECL_RTL (exp)->offset);
+	bc_load_externaddr_id (DECL_ASSEMBLER_NAME (exp),
+			       BYTECODE_BC_OFFSET (DECL_RTL (exp)));
       else
 	bc_load_localaddr (DECL_RTL (exp));
 
@@ -9355,7 +9360,7 @@ bc_expand_address (exp)
 	
 	bc_emit_bytecode (constP);
 	r = output_constant_def (exp);
-	bc_emit_code_labelref (r->label, r->offset);
+	bc_emit_code_labelref (BYTECODE_LABEL (r), BYTECODE_BC_LABEL (r)->offset);
 
 #ifdef DEBUG_PRINT_CODE
 	fputc ('\n', stderr);

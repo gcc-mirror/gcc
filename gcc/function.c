@@ -4590,7 +4590,8 @@ bc_expand_function_start (subr, parms_have_cleanups)
   ++nlab;
   name = (char *) obstack_copy0 (&permanent_obstack, label, strlen (label));
   this_function_callinfo = bc_gen_rtx (name, 0, (struct bc_label *) 0);
-  this_function_bytecode = bc_emit_trampoline (this_function_callinfo->label);
+  this_function_bytecode =
+    bc_emit_trampoline (BYTECODE_LABEL (this_function_callinfo));
 }
 
 
@@ -4616,12 +4617,12 @@ bc_expand_function_end ()
 
   /* If this changes also make sure to change bc-interp.h!  */
 
-  bc_emit_const_labeldef (this_function_callinfo->label);
+  bc_emit_const_labeldef (BYTECODE_LABEL (this_function_callinfo));
   bc_emit_const ((char *) &max_stack_depth, sizeof max_stack_depth);
   bc_emit_const ((char *) &local_vars_size, sizeof local_vars_size);
   bc_emit_const_labelref (this_function_bytecode, 0);
   bc_emit_const_labelref (ptrconsts, 0);
-  bc_emit_const_labelref (this_function_calldesc->label, 0);
+  bc_emit_const_labelref (BYTECODE_LABEL (this_function_calldesc), 0);
 }
 
 
