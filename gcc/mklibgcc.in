@@ -363,13 +363,18 @@ for f in $EXTRA_MULTILIB_PARTS; do
     flags=`echo ${ml} | sed -e 's/^[^;]*;//' -e 's/@/ -/g'`;
     case $dir in
     .) out=$f ; t= ;;
-    *) out="$dir/$f" ; t=$dir/ ;;
+    *) out=$dir/$f ; t=$dir/ ;;
+    esac
+    case $out in
+    # Prevent `make' from interpreting $out as a macro assignment
+    *'$(EQ)'*) targ="T_TARGET=$out T_TARGET" ;;
+    *) targ=$out ;;
     esac
 
     echo $out: stmp-dirs
     echo "	$make_compile" \\
     echo '	  LIBGCC2_CFLAGS="$(LIBGCC2_CFLAGS)' $flags '" ' \\
-    echo '	  MULTILIB_CFLAGS="'$flags'"' T=$t $out
+    echo '	  MULTILIB_CFLAGS="'$flags'"' T=$t $targ
 
     all="$all $out"
   done

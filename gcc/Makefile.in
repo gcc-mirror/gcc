@@ -24,6 +24,9 @@
 # uninstall, TAGS, mostlyclean, clean, distclean, maintainer-clean,
 # stage1, stage2, stage3, stage4.
 
+# This is the default target.
+all:
+
 # Suppress smart makes who think they know how to automake Yacc files
 .y.c:
 
@@ -561,6 +564,11 @@ CRT0STUFF_T_CFLAGS =
 
 # "t" or nothing, for building multilibbed versions of, say, crtbegin.o.
 T =
+
+# Should T contain a `=', libgcc.mk will make T_TARGET, setting
+# $(T_TARGET) to the name of the actual target filename.
+T_TARGET =
+T_TARGET : $(T_TARGET)
 
 # End of variables for you to override.
 
