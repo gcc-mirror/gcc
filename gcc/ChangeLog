@@ -1,3 +1,11 @@
+2001-06-11  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* configure.in: Align --help messages.
+	Remove trailing full stops.
+	Consistently use lower case.
+	Fix DWARF 2 spelling.	
+	* configure: Rebuilt.
+	
 2001-06-11  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* c-decl.c (store_parm_decls): When comparing types in an
