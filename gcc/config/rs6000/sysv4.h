@@ -1191,11 +1191,11 @@ do {									\
 
 #define	CPP_SYSV_DEFAULT_SPEC "-D_CALL_SYSV"
 
-#define CPP_ENDIAN_BIG_SPEC "-D_BIG_ENDIAN -D__BIG_ENDIAN__ -Amachine=bigendian"
+#define CPP_ENDIAN_BIG_SPEC "-D_BIG_ENDIAN -D__BIG_ENDIAN__ -Aendian=big"
 
-#define CPP_ENDIAN_LITTLE_SPEC "-D_LITTLE_ENDIAN -D__LITTLE_ENDIAN__ -Amachine=littleendian"
+#define CPP_ENDIAN_LITTLE_SPEC "-D_LITTLE_ENDIAN -D__LITTLE_ENDIAN__ -Aendian=little"
 
-#define CPP_ENDIAN_SOLARIS_SPEC "-D__LITTLE_ENDIAN__ -Amachine=littleendian"
+#define CPP_ENDIAN_SOLARIS_SPEC "-D__LITTLE_ENDIAN__ -Aendian=little"
 
 /* For solaris, don't define _LITTLE_ENDIAN, it conflicts with a header file.  */
 #define	CPP_ENDIAN_SPEC \
