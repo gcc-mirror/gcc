@@ -1,3 +1,7 @@
+2000-02-28  Mo DeJong <mdejong@cygnus.com>
+
+	* libjava.compile/static_inner.java: New file.
+
 2000-02-23  Tom Tromey  <tromey@cygnus.com>
 
 	* libjava.jni/noclass.c: New file.
