@@ -1,3 +1,11 @@
+2001-06-12  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/3089
+	* class.c (dfs_accumulate_vtbl_inits): Always walk down the
+	hierarchy looking for primary bases for a ctor
+	vtable. Recursively call oneself, if we meet our primary via
+	this route and haven't met it yet via inheritance graph order.
+
 2001-06-11  Mark Mitchell  <mark@codesourcery.com>
 
 	* lang-options.h: Emit documentation for -fno-honor-std, not

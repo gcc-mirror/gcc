@@ -1,3 +1,7 @@
+2001-06-12  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* g++.old-deja/g++.abi/vbase4.C: New test.
+
 2001-06-11  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
 
 	* gcc.c-torture/execute/920501-8.x: New file, sprintf() does not
