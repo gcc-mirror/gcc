@@ -1,3 +1,9 @@
+2003-02-28  Geoffrey Keating  <geoffk@apple.com>
+
+	* doc/invoke.texi: Change .pch to .gch.
+	* cppfiles.c (open_file_pch): Likewise.
+	* gcc.c (default_compilers): Likewise.
+
 2003-02-28  Aldy Hernandez  <aldyh@redhat.com>
 
         * floatlib.c: Remove.
