@@ -1612,7 +1612,7 @@ do {                                                                    \
         {						\
 	  fprintf (FILE, "\t.interrupt\t");		\
 	  assemble_name (FILE, NAME);			\
-	  putc ('\b', FILE);				\
+	  putc ('\n', FILE);				\
 	}						\
       ASM_DECLARE_RESULT (FILE, DECL_RESULT (DECL));	\
       ASM_OUTPUT_LABEL(FILE, NAME);			\
