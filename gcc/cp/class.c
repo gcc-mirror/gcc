@@ -2090,7 +2090,8 @@ update_vtable_entry_for_fn (tree t, tree binfo, tree fn, tree* virtuals,
 	  TREE_VALUE (purpose_member
 		      (BINFO_TYPE (virtual_offset),
 		       CLASSTYPE_VBASECLASSES (TREE_TYPE (over_return))));
-      else
+      else if (!same_type_p (TREE_TYPE (over_return),
+			     TREE_TYPE (base_return)))
 	{
 	  /* There was no existing virtual thunk (which takes
 	     precedence).  */

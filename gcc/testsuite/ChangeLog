@@ -1,3 +1,8 @@
+2004-02-29  Mark Mitchell  <mark@codesourcery.com>
+
+	PR debug/12103
+	* g++.dg/debug/crash1.C: New test.
+
 2004-02-27  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	PR c++/14284
