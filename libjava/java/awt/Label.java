@@ -40,6 +40,8 @@ package java.awt;
 
 import java.awt.peer.LabelPeer;
 import java.awt.peer.ComponentPeer;
+import java.io.Serializable;
+import javax.accessibility.Accessible;
 
 /**
   * This component is used for displaying simple text strings that cannot
@@ -48,7 +50,7 @@ import java.awt.peer.ComponentPeer;
   * @author Aaron M. Renn (arenn@urbanophile.com)
   * @author Tom Tromey <tromey@cygnus.com>
   */
-public class Label extends Component implements java.io.Serializable
+public class Label extends Component implements Serializable, Accessible
 {
 
 /*

@@ -291,10 +291,18 @@ getCaretPosition()
   * Sets the caret position to the specified value.
   *
   * @param caretPosition The new caret position.
+  *
+  * @exception IllegalArgumentException If the value supplied for position
+  * is less than zero.
+  *
+  * @since 1.1
   */
 public synchronized void
 setCaretPosition(int caretPosition)
 {
+  if (caretPosition < 0)
+    throw new IllegalArgumentException ();
+  
   TextComponentPeer tcp = (TextComponentPeer)getPeer();
   if (tcp != null)
     tcp.setCaretPosition(caretPosition);

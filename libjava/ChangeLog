@@ -1,3 +1,75 @@
+2003-01-14  Michael Koch  <konqueror@gmx.de>
+
+	* java/awt/Label.java
+	(Label): Implements javax.accessibility.Accessible;
+	* java/awt/List.java
+	(List): Implements javax.accessibility.Accessible;
+	* java/awt/ScrollPane.java
+	(ScrollPane): Implements javax.accessibility.Accessible;
+	* java/awt/Scrollbar.java
+	(Scrollbar): Implements javax.accessibility.Accessible;
+	* java/awt/TextComponent.java
+	(setCaretPosition): Throw exception, documentation added.
+	* java/awt/Toolkit.java:
+	Added some newlines in method documentations.
+	(createButton): Exception documentation added.
+	(createTextField): Exception documentation added.
+	(createLabel): Exception documentation added.
+	(createList): Exception documentation added.
+	(createCheckbox): Exception documentation added.
+	(createScrollbar): Exception documentation added.
+	(createScrollPane): Exception documentation added.
+	(createTextArea): Exception documentation added.
+	(createChoice): Exception documentation added.
+	(createFrame): Exception documentation added.
+	(createWindow): Exception documentation added.
+	(createDialog): Exception documentation added.
+	(createMenuBar): Exception documentation added.
+	(createMenu): Exception documentation added.
+	(createMenuItem): Exception documentation added.
+	(createFileDialog): Exception documentation added.
+	(createCheckboxMenuItem): Exception documentation added.
+	(loadSystemColors): Exception documentation added.
+	(setDynamicLayout): Exception documentation added.
+	(isDynamicLayoutSet): Exception documentation added.
+	(isDynamicLayoutActive): Exception documentation added.
+	(getScreenSize): Exception documentation added.
+	(getScreenResolution): Exception documentation added.
+	(getScreenInsets): Exception documentation added.
+	(getColorModel): Exception documentation added.
+	(getSystemClipboard): Exception documentation added.
+	(getSystemSelection): Exception documentation added.
+	(getMenuShortcutKeyMask): Exception documentation added.
+	(getSystemEventQueue): Exception documentation added.
+	* java/awt/Window.java:
+	Reindented some code.
+	(Window): Centralized implementation, documentation added.
+	(finalize): Documentation added.
+	(hide): Fixed typo in comment.
+	(getWindowListeners): Documentation added.
+	* java/awt/color/ColorSpace.java
+	(toRGB): Documentation added.
+	* java/awt/color/ICC_ColorSpace.java
+	(ICC_ColorSpace): Documentation added.
+	(toRGB): Throw exception, documentation added.
+	(fromRGB): Throw exception, documentation added.
+	(toCIEXYZ): Documentation added.
+	(fromCIEXYZ): Documentation added.
+	(getMinValue): Documentation added.
+	(getMaxValue): Documentation added.
+	* java/awt/geom/Dimension2D.java
+	(clone): Documentation added.
+	* java/awt/geom/GeneralPath.java
+	(clone): Documentation added.
+	* java/awt/geom/Line2D.java
+	(clone): Documentation added.
+	* java/awt/geom/QuadCurve2D.java
+	(clone): Documentation added.
+	* java/awt/image/ColorModel.java
+	(ColorModel): Throw exception, documentation added.
+	* java/awt/image/ImageFilter.java
+	(clone): Doesnt throw CloneNotSupportedException.
+
 2003-01-14  Andrew Haley  <aph@redhat.com>
 
         * java/lang/natRuntime.cc (_load): StackTrace access needs to be

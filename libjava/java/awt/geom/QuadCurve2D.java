@@ -289,6 +289,10 @@ public abstract class QuadCurve2D implements Shape, Cloneable
    * this one.
    *
    * @return the clone
+   *
+   * @exception OutOfMemoryError If there is not enough memory available.
+   *
+   * @since 1.2
    */
   public Object clone()
   {
