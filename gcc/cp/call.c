@@ -2335,16 +2335,16 @@ print_z_candidates (candidates)
       if (TREE_CODE (candidates->fn) == IDENTIFIER_NODE)
 	{
 	  if (TREE_VEC_LENGTH (candidates->convs) == 3)
-	    error ("%s %D(%T, %T, %T) <builtin>", str, candidates->fn,
+	    error ("%s %D(%T, %T, %T) <built-in>", str, candidates->fn,
 		      TREE_TYPE (TREE_VEC_ELT (candidates->convs, 0)),
 		      TREE_TYPE (TREE_VEC_ELT (candidates->convs, 1)),
 		      TREE_TYPE (TREE_VEC_ELT (candidates->convs, 2)));
 	  else if (TREE_VEC_LENGTH (candidates->convs) == 2)
-	    error ("%s %D(%T, %T) <builtin>", str, candidates->fn,
+	    error ("%s %D(%T, %T) <built-in>", str, candidates->fn,
 		      TREE_TYPE (TREE_VEC_ELT (candidates->convs, 0)),
 		      TREE_TYPE (TREE_VEC_ELT (candidates->convs, 1)));
 	  else
-	    error ("%s %D(%T) <builtin>", str, candidates->fn,
+	    error ("%s %D(%T) <built-in>", str, candidates->fn,
 		      TREE_TYPE (TREE_VEC_ELT (candidates->convs, 0)));
 	}
       else if (TYPE_P (candidates->fn))

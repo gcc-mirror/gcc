@@ -1680,7 +1680,7 @@ grokbitfield (declarator, declspecs, width)
 
   if (TREE_CODE (value) == TYPE_DECL)
     {
-      error ("cannot declare `%D' to be a bitfield type", value);
+      error ("cannot declare `%D' to be a bit-field type", value);
       return NULL_TREE;
     }
 
@@ -1690,7 +1690,7 @@ grokbitfield (declarator, declspecs, width)
      check here.  */
   if (TREE_CODE (value) == FUNCTION_DECL)
     {
-      error ("cannot declare bitfield `%D' with function type",
+      error ("cannot declare bit-field `%D' with function type",
 	     DECL_NAME (value));
       return NULL_TREE;
     }
@@ -1706,7 +1706,7 @@ grokbitfield (declarator, declspecs, width)
 
   if (TREE_STATIC (value))
     {
-      error ("static member `%D' cannot be a bitfield", value);
+      error ("static member `%D' cannot be a bit-field", value);
       return NULL_TREE;
     }
   cp_finish_decl (value, NULL_TREE, NULL_TREE, 0);
