@@ -351,14 +351,15 @@ struct mips_arg_info
    CONSTANT_GP
        No fields are valid.
 
-   CONSTANT_RELOC
-       SYMBOL is the relocation UNSPEC and OFFSET is the offset applied
-       to the symbol.
-
    CONSTANT_SYMBOLIC
-       SYMBOL is the referenced symbol and OFFSET is the constant offset.  */
+       SYMBOL is the referenced symbol and OFFSET is the constant offset.
+
+   CONSTANT_RELOC
+       SYMBOL and OFFSET are the same as for CONSTANT_SYMBOLIC.  RELOC is
+       the relocation number.  */
 struct mips_constant_info
 {
+  int reloc;
   rtx symbol;
   HOST_WIDE_INT offset;
 };
@@ -828,8 +829,11 @@ mips_reloc_offset_ok_p (int reloc, HOST_WIDE_INT offset)
 static enum mips_constant_type
 mips_classify_constant (struct mips_constant_info *info, rtx x)
 {
+  enum mips_constant_type type;
+
+  type = CONSTANT_SYMBOLIC;
   info->offset = 0;
-  info->symbol = x;
+
   if (GET_CODE (x) == CONST)
     {
       x = XEXP (x, 0);
@@ -842,14 +846,21 @@ mips_classify_constant (struct mips_constant_info *info, rtx x)
 	  info->offset += INTVAL (XEXP (x, 1));
 	  x = XEXP (x, 0);
 	}
-      info->symbol = x;
 
       if (GET_CODE (x) == UNSPEC
 	  && mips_reloc_offset_ok_p (XINT (x, 1), info->offset))
-	return CONSTANT_RELOC;
+	{
+	  info->reloc = XINT (x, 1);
+	  x = XVECEXP (x, 0, 0);
+	  type = CONSTANT_RELOC;
+	}
     }
+
   if (GET_CODE (x) == SYMBOL_REF || GET_CODE (x) == LABEL_REF)
-    return CONSTANT_SYMBOLIC;
+    {
+      info->symbol = x;
+      return type;
+    }
   return CONSTANT_NONE;
 }
 
@@ -1989,15 +2000,15 @@ mips_delegitimize_address (rtx x)
   if (GET_CODE (x) == MEM
       && GET_CODE (XEXP (x, 0)) == PLUS
       && mips_classify_constant (&c, XEXP (XEXP (x, 0), 1)) == CONSTANT_RELOC
-      && mips_classify_symbol (XVECEXP (c.symbol, 0, 0)) == SYMBOL_GOT_GLOBAL)
-    return XVECEXP (c.symbol, 0, 0);
+      && mips_classify_symbol (c.symbol) == SYMBOL_GOT_GLOBAL)
+    return c.symbol;
 
   if (GET_CODE (x) == PLUS
       && (XEXP (x, 0) == pic_offset_table_rtx
 	  || XEXP (x, 0) == cfun->machine->mips16_gp_pseudo_rtx)
       && mips_classify_constant (&c, XEXP (x, 1)) == CONSTANT_RELOC
-      && mips_classify_symbol (XVECEXP (c.symbol, 0, 0)) == SYMBOL_SMALL_DATA)
-    return plus_constant (XVECEXP (c.symbol, 0, 0), c.offset);
+      && mips_classify_symbol (c.symbol) == SYMBOL_SMALL_DATA)
+    return plus_constant (c.symbol, c.offset);
 
   return x;
 }
@@ -5434,10 +5445,9 @@ print_operand (FILE *file, rtx op, int letter)
 	break;
 
       case CONSTANT_RELOC:
-	reloc = mips_reloc_string (XINT (c.symbol, 1));
+	reloc = mips_reloc_string (c.reloc);
 	fputs (reloc, file);
-	output_addr_const (file, plus_constant (XVECEXP (c.symbol, 0, 0),
-						c.offset));
+	output_addr_const (file, plus_constant (c.symbol, c.offset));
 	while (*reloc != 0)
 	  if (*reloc++ == '(')
 	    fputc (')', file);
