@@ -175,7 +175,6 @@ java::lang::ClassLoader::markClassErrorState0 (java::lang::Class *klass)
   klass->notifyAll ();
 }
 
-
 // This is the findClass() implementation for the System classloader. It is 
 // the only native method in VMClassLoader, so we define it here.
 jclass
@@ -419,24 +418,13 @@ _Jv_RegisterInitiatingLoader (jclass klass, java::lang::ClassLoader *loader)
 }
 
 // This function is called many times during startup, before main() is
-// run.  We do our runtime initialization here the very first time we
-// are called.  At that point in time we know for certain we are
-// running single-threaded, so we don't need to lock when modifying
-// `init'.  CLASSES is NULL-terminated.
+// run.  At that point in time we know for certain we are running 
+// single-threaded, so we don't need to lock when adding classes to the 
+// class chain.  At all other times, the caller should synchronize on
+// Class::class$.
 void
 _Jv_RegisterClasses (jclass *classes)
 {
-  static bool init = false;
-
-  if (! init)
-    {
-      init = true;
-      _Jv_InitThreads ();
-      _Jv_InitGC ();
-      _Jv_InitializeSyncMutex ();
-    }
-
-  JvSynchronize sync (&ClassClass);
   for (; *classes; ++classes)
     {
       jclass klass = *classes;

@@ -60,16 +60,9 @@ details.  */
 #define FieldClass java::lang::reflect::Field::class$
 #define ConstructorClass java::lang::reflect::Constructor::class$
 
-// Some constants we use to look up the class initializer.
-static _Jv_Utf8Const *void_signature = _Jv_makeUtf8Const ("()V", 3);
-static _Jv_Utf8Const *clinit_name = _Jv_makeUtf8Const ("<clinit>", 8);
-static _Jv_Utf8Const *init_name = _Jv_makeUtf8Const ("<init>", 6);
-static _Jv_Utf8Const *finit_name = _Jv_makeUtf8Const ("finit$", 6);
-// The legacy `$finit$' method name, which still needs to be
-// recognized as equivalent to the now prefered `finit$' name.
-static _Jv_Utf8Const *finit_leg_name = _Jv_makeUtf8Const ("$finit$", 7);
-
 
+
+using namespace gcj;
 
 jclass
 java::lang::Class::forName (jstring className, jboolean initialize,
@@ -341,9 +334,7 @@ java::lang::Class::getDeclaredMethods (void)
       if (method->name == NULL
 	  || _Jv_equalUtf8Consts (method->name, clinit_name)
 	  || _Jv_equalUtf8Consts (method->name, init_name)
-	  || _Jv_equalUtf8Consts (method->name, finit_name)
-	  // Backward compatibility hack: match the legacy `$finit$' name
-	  || _Jv_equalUtf8Consts (method->name, finit_leg_name))
+	  || _Jv_equalUtf8Consts (method->name, finit_name))
 	continue;
       numMethods++;
     }
@@ -357,9 +348,7 @@ java::lang::Class::getDeclaredMethods (void)
       if (method->name == NULL
 	  || _Jv_equalUtf8Consts (method->name, clinit_name)
 	  || _Jv_equalUtf8Consts (method->name, init_name)
-	  || _Jv_equalUtf8Consts (method->name, finit_name)
-	  // Backward compatibility hack: match the legacy `$finit$' name
-	  || _Jv_equalUtf8Consts (method->name, finit_leg_name))
+	  || _Jv_equalUtf8Consts (method->name, finit_name))
 	continue;
       java::lang::reflect::Method* rmethod
 	= new java::lang::reflect::Method ();
@@ -522,9 +511,7 @@ java::lang::Class::_getMethods (JArray<java::lang::reflect::Method *> *result,
       if (method->name == NULL
 	  || _Jv_equalUtf8Consts (method->name, clinit_name)
 	  || _Jv_equalUtf8Consts (method->name, init_name)
-	  || _Jv_equalUtf8Consts (method->name, finit_name)
-	  // Backward compatibility hack: match the legacy `$finit$' name
-	  || _Jv_equalUtf8Consts (method->name, finit_leg_name))
+	  || _Jv_equalUtf8Consts (method->name, finit_name))
 	continue;
       // Only want public methods.
       if (! java::lang::reflect::Modifier::isPublic (method->accflags))

@@ -48,6 +48,8 @@ details.  */
 #include <java-interp.h>
 #include <java-threads.h>
 
+using namespace gcj;
+
 // This enum is used to select different template instantiations in
 // the invocation code.
 enum invocation_type
@@ -1501,9 +1503,6 @@ _Jv_JNI_ToReflectedMethod (JNIEnv *env, jclass klass, jmethodID id,
 			   jboolean)
 {
   using namespace java::lang::reflect;
-
-  // FIXME.
-  static _Jv_Utf8Const *init_name = _Jv_makeUtf8Const ("<init>", 6);
 
   jobject result = NULL;
 
