@@ -1,5 +1,5 @@
 /* Compilation switch flag definitions for GNU CC.
-   Copyright (C) 1987, 88, 94-97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 94, 95, 96, 97, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 

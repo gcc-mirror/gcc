@@ -2381,7 +2381,7 @@ find_auto_inc (needed, x, insn)
 	    {
 	      /* We have *p followed sometime later by q = p+size.
 		 Both p and q must be live afterward,
-		 and q is not used between INSN and it's assignment.
+		 and q is not used between INSN and its assignment.
 		 Change it to q = p, ...*q..., q = q+size.
 		 Then fall into the usual case.  */
 	      rtx insns, temp;
@@ -3132,6 +3132,7 @@ print_rtl_with_bb (outf, rtx_first)
      FILE *outf;
      rtx rtx_first;
 {
+  extern int flag_dump_unnumbered;
   register rtx tmp_rtx;
 
   if (rtx_first == 0)
@@ -3196,7 +3197,9 @@ print_rtl_with_bb (outf, rtx_first)
 	  if ((bb = end[INSN_UID (tmp_rtx)]) >= 0)
 	    fprintf (outf, ";; End of basic block %d\n", bb);
 
-	  putc ('\n', outf);
+	  if (! flag_dump_unnumbered
+	      || GET_CODE (tmp_rtx) != NOTE || NOTE_LINE_NUMBER (tmp_rtx) < 0)
+	    putc ('\n', outf);
 	}
     }
 }

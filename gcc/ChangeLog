@@ -1,5 +1,8 @@
 Mon Jun 29 22:12:06 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* Merge from gcc2 June 9, 1998 snapshot.  See ChangeLog.13 for
+	details.
+
 	* pa.c, pa.h, pa.md: Convert to gen_rtx_FOO.
 
 Mon Jun 29 20:12:41 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>

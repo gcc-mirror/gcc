@@ -301,7 +301,7 @@ struct objc_protocol_list {
 
 /*
 ** The class number of this class.  This must be the same for both the 
-** class and it's meta class object
+** class and its meta class object
 */
 #define CLS_GETNUMBER(cls) (__CLS_INFO(cls) >> (HOST_BITS_PER_LONG/2))
 #define CLS_SETNUMBER(cls, num) \

@@ -93,8 +93,9 @@ init_expmed ()
   /* Since we are on the permanent obstack, we must be sure we save this
      spot AFTER we call start_sequence, since it will reuse the rtl it
      makes.  */
-
   free_point = (char *) oballoc (0);
+
+  reg = gen_rtx (REG, word_mode, 10000);
 
   zero_cost = rtx_cost (const0_rtx, 0);
   add_cost = rtx_cost (gen_rtx_PLUS (word_mode, reg, reg), SET);
@@ -2277,7 +2278,8 @@ expand_mult (mode, op0, op1, target, unsignedp)
 	      rtx shift_subtarget = preserve ? 0 : accum;
 	      rtx add_target
 		= (opno == alg.ops - 1 && target != 0 && variant != add_variant
-		  ? target : 0);
+		   && ! preserve)
+		  ? target : 0;
 	      rtx accum_target = preserve ? 0 : accum;
 	      
 	      switch (alg.op[opno])
@@ -2746,6 +2748,7 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
   optab optab1, optab2;
   int op1_is_constant, op1_is_pow2;
   int max_cost, extra_cost;
+  static HOST_WIDE_INT last_div_const = 0;
 
   op1_is_constant = GET_CODE (op1) == CONST_INT;
   op1_is_pow2 = (op1_is_constant
@@ -2855,8 +2858,15 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
   size = GET_MODE_BITSIZE (mode);
 #endif
 
+  /* Only deduct something for a REM if the last divide done was
+     for a different constant.   Then set the constant of the last
+     divide.  */
   max_cost = div_cost[(int) compute_mode]
-    - (rem_flag ? mul_cost[(int) compute_mode] + add_cost : 0);
+    - (rem_flag && ! (last_div_const != 0 && op1_is_constant
+		      && INTVAL (op1) == last_div_const)
+       ? mul_cost[(int) compute_mode] + add_cost : 0);
+
+  last_div_const = ! rem_flag && op1_is_constant ? INTVAL (op1) : 0;
 
   /* Now convert to the best mode to use.  */
   if (compute_mode != mode)

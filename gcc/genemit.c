@@ -778,6 +778,7 @@ from the machine description file `md'.  */\n\n");
   printf ("#include \"insn-config.h\"\n\n");
   printf ("#include \"insn-flags.h\"\n\n");
   printf ("#include \"insn-codes.h\"\n\n");
+  printf ("#include \"reload.h\"\n");
   printf ("extern char *insn_operand_constraint[][MAX_RECOG_OPERANDS];\n\n");
   printf ("extern rtx recog_operand[];\n");
   printf ("#define operands emit_operand\n\n");

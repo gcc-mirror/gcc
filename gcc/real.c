@@ -51,7 +51,7 @@ XFmode and TFmode transcendental functions, can be obtained by ftp from
 netlib.att.com: netlib/cephes.   */
 
 /* Type of computer arithmetic.
-   Only one of DEC, IBM, IEEE, or UNK should get defined.
+   Only one of DEC, IBM, IEEE, C4X, or UNK should get defined.
 
    `IEEE', when REAL_WORDS_BIG_ENDIAN is non-zero, refers generically
    to big-endian IEEE floating-point data structure.  This definition
@@ -75,6 +75,11 @@ netlib.att.com: netlib/cephes.   */
    floating point data structure.  This model currently supports
    no type wider than DFmode.  The IBM conversions were contributed by
    frank@atom.ansto.gov.au (Frank Crawford).
+
+   `C4X' refers specifically to the floating point format used on
+   Texas Instruments TMS320C3x and TMS320C4x digital signal
+   processors.  This supports QFmode (32-bit float, double) and HFmode
+   (40-bit long double) where BITS_PER_BYTE is 32.
 
    If LONG_DOUBLE_TYPE_SIZE = 64 (the default, unless tm.h defines it)
    then `long double' and `double' are both implemented, but they
@@ -686,7 +691,16 @@ ereal_atof (s, t)
 
   switch (t)
     {
+#ifdef C4X
+    case QFmode:
     case HFmode:
+      asctoe53 (s, tem);
+      e53toe (tem, e);
+      break;
+#else
+    case HFmode:
+#endif
+
     case SFmode:
       asctoe24 (s, tem);
       e24toe (tem, e);
@@ -1045,10 +1059,20 @@ real_value_truncate (mode, arg)
       break;
 
     case SFmode:
+#ifndef C4X
     case HFmode:
+#endif
       etoe24 (e, t);
       e24toe (t, t);
       break;
+
+#ifdef C4X
+    case HFmode:
+    case QFmode:
+      etoe53 (e, t);
+      e53toe (t, t);
+      break;
+#endif
 
     case SImode:
       r = etrunci (arg);
@@ -3714,7 +3738,7 @@ toe53 (x, y)
 
 #else /* it's neither DEC nor IBM */
 #ifdef C4X
-/* Convert e-type X to C4X-format double E.  */
+/* Convert e-type X to C4X-format long double E.  */
 
 static void 
 etoe53 (x, e)

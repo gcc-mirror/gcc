@@ -1,5 +1,5 @@
 /* Demangler for GNU C++ 
-   Copyright 1989, 1991, 1994, 1995, 1996, 1997 Free Software Foundation, Inc.
+   Copyright 1989, 91, 94, 95, 96, 97, 1998 Free Software Foundation, Inc.
    Written by James Clark (jjc@jclark.uucp)
    Rewritten by Fred Fish (fnf@cygnus.com) for ARM and Lucid demangling
    
@@ -3128,8 +3128,8 @@ forget_types (work)
      foo__FiR3fooT1T2T1T2
      __ct__3fooFiR3fooT1T2T1T2
 
-   Note that g++ bases it's type numbers starting at zero and counts all
-   previously seen types, while lucid/ARM bases it's type numbers starting
+   Note that g++ bases its type numbers starting at zero and counts all
+   previously seen types, while lucid/ARM bases its type numbers starting
    at one and only considers types after it has seen the 'F' character
    indicating the start of the function args.  For lucid/ARM style, we
    account for this difference by discarding any previously seen types when

@@ -53,6 +53,7 @@ static int indent;
 
 extern char **insn_name_ptr;
 
+int flag_dump_unnumbered = 0;
 /* Print IN_RTX onto OUTFILE.  This is the recursive part of printing.  */
 
 static void
@@ -205,6 +206,9 @@ print_rtx (in_rtx)
 	      fputc (' ', outfile);
 	      DEBUG_PRINT_REG (in_rtx, 0, outfile);
 	    }
+	  else if (flag_dump_unnumbered
+		   && (is_insn || GET_CODE (in_rtx) == NOTE))
+	    fprintf (outfile, "#");
 	  else
 	    fprintf (outfile, " %d", value);
 	}
@@ -227,7 +231,12 @@ print_rtx (in_rtx)
 
       case 'u':
 	if (XEXP (in_rtx, i) != NULL)
-	  fprintf (outfile, " %d", INSN_UID (XEXP (in_rtx, i)));
+	  {
+	    if (flag_dump_unnumbered)
+	      fprintf (outfile, "#");
+	    else
+	      fprintf (outfile, " %d", INSN_UID (XEXP (in_rtx, i)));
+	  }
 	else
 	  fprintf (outfile, " 0");
 	sawclose = 0;
@@ -381,8 +390,13 @@ print_rtl (outf, rtx_first)
       case BARRIER:
 	for (tmp_rtx = rtx_first; NULL != tmp_rtx; tmp_rtx = NEXT_INSN (tmp_rtx))
 	  {
-	    print_rtx (tmp_rtx);
-	    fprintf (outfile, "\n");
+	    if (! flag_dump_unnumbered
+		|| GET_CODE (tmp_rtx) != NOTE
+		|| NOTE_LINE_NUMBER (tmp_rtx) < 0)
+	      {
+		print_rtx (tmp_rtx);
+		fprintf (outfile, "\n");
+	      }
 	  }
 	break;
 
@@ -400,6 +414,10 @@ print_rtl_single (outf, x)
 {
   outfile = outf;
   sawclose = 0;
-  print_rtx (x);
-  putc ('\n', outf);
+  if (! flag_dump_unnumbered
+      || GET_CODE (x) != NOTE || NOTE_LINE_NUMBER (x) < 0)
+    {
+      print_rtx (x);
+      putc ('\n', outf);
+    }
 }

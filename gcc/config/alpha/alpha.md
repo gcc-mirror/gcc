@@ -1177,7 +1177,7 @@
 (define_insn "ashldi3"
   [(set (match_operand:DI 0 "register_operand" "=r,r")
 	(ashift:DI (match_operand:DI 1 "reg_or_0_operand" "rJ,rJ")
-		   (match_operand:DI 2 "reg_or_6bit_operand" "P,rI")))]
+		   (match_operand:DI 2 "reg_or_6bit_operand" "P,rS")))]
   ""
   "*
 {
@@ -1218,7 +1218,7 @@
 (define_insn "lshrdi3"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(lshiftrt:DI (match_operand:DI 1 "reg_or_0_operand" "rJ")
-		     (match_operand:DI 2 "reg_or_6bit_operand" "rI")))]
+		     (match_operand:DI 2 "reg_or_6bit_operand" "rS")))]
   ""
   "srl %r1,%2,%0"
   [(set_attr "type" "shift")])
@@ -1226,7 +1226,7 @@
 (define_insn "ashrdi3"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(ashiftrt:DI (match_operand:DI 1 "reg_or_0_operand" "rJ")
-		     (match_operand:DI 2 "reg_or_6bit_operand" "rI")))]
+		     (match_operand:DI 2 "reg_or_6bit_operand" "rS")))]
   ""
   "sra %r1,%2,%0"
   [(set_attr "type" "shift")])

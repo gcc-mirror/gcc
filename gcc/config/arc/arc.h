@@ -1583,7 +1583,7 @@ do { if ((LOG) != 0) fprintf (FILE, "\t.align %d\n", 1 << (LOG)); } while (0)
    After generation of rtl, the compiler makes no further distinction
    between pointers and any other objects of this machine mode.  */
 /* ??? The arc doesn't have full 32 bit pointers, but making this PSImode has
-   it's own problems (you have to add extendpsisi2 and trucnsipsi2 but how does
+   its own problems (you have to add extendpsisi2 and trucnsipsi2 but how does
    one do it without getting excess code?).  Try to avoid it.  */
 #define Pmode SImode
 

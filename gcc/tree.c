@@ -4950,9 +4950,15 @@ get_set_constructor_bytes (init, buffer, wd_size)
     }
   return non_const_bits;
 }
-
+
 #ifdef ENABLE_CHECKING
-/* Complain if the tree code does not match the expected one.  */
+
+/* Complain if the tree code does not match the expected one.
+   NODE is the tree node in question, CODE is the expected tree code,
+   and FILE and LINE are the filename and line number, respectively,
+   of the line on which the check was done.  If NONFATAL is nonzero,
+   don't abort if the reference is invalid; instead, return 0.
+   If the reference is valid, return NODE.  */
 
 tree
 tree_check (node, code, file, line, nofatal)
@@ -4962,19 +4968,17 @@ tree_check (node, code, file, line, nofatal)
      int line;
      int nofatal;
 {
-  if (TREE_CODE (node) != code)
-    {
-      if (nofatal)
-	return 0;
-      else
-	fatal ("%s:%d: Expect %s, have %s\n", file, line,
-	       tree_code_name[code], tree_code_name[TREE_CODE (node)]);
-    }
-
-  return node;
+  if (TREE_CODE (node) == code)
+    return node;
+  else if (nofatal)
+    return 0;
+  else
+    fatal ("%s:%d: Expect %s, have %s\n", file, line,
+	   tree_code_name[code], tree_code_name[TREE_CODE (node)]);
 }
 
-/* Complain if the class of the tree node does not match.  */
+/* Similar to above, except that we check for a class of tree
+   code, given in CL.  */
 
 tree
 tree_class_check (node, cl, file, line, nofatal)
@@ -4984,18 +4988,16 @@ tree_class_check (node, cl, file, line, nofatal)
      int line;
      int nofatal;
 {
-  if (TREE_CODE_CLASS (TREE_CODE (node)) != cl)
-    {
-      if (nofatal)
-	return 0;
-      else
-	fatal ("%s:%d: Expect '%c', have '%s'\n", file, line,
-	       cl, tree_code_name[TREE_CODE (node)]);
-    }
-
-  return node;
+  if (TREE_CODE_CLASS (TREE_CODE (node)) == cl)
+    return node;
+  else if (nofatal)
+    return 0;
+  else
+    fatal ("%s:%d: Expect '%c', have '%s'\n", file, line,
+	   cl, tree_code_name[TREE_CODE (node)]);
 }
-/* Complain if the node is not an expression. */
+
+/* Likewise, but complain if the tree node is not an expression.  */
 
 tree
 expr_check (node, ignored, file, line, nofatal)

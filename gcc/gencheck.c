@@ -38,10 +38,12 @@ int main (argc, argv)
      char *argv[];
 {
   int i;
+
   switch (argc)
     {
     case 1:
       break;
+
     default:
       usage ();
       exit (1);

@@ -676,12 +676,17 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, ALL_REGS,
 
    For the Alpha, `Q' means that this is a memory operand but not a
    reference to an unaligned location.
+
    `R' is a SYMBOL_REF that has SYMBOL_REF_FLAG set or is the current
-   function.  */
+   function.
+
+   'S' is a 6-bit constant (valid for a shift insn).  */
 
 #define EXTRA_CONSTRAINT(OP, C)				\
-  ((C) == 'Q' ? GET_CODE (OP) == MEM && GET_CODE (XEXP (OP, 0)) != AND \
-   : (C) == 'R' ? current_file_function_operand (OP, Pmode)	\
+  ((C) == 'Q' ? GET_CODE (OP) == MEM && GET_CODE (XEXP (OP, 0)) != AND	\
+   : (C) == 'R' ? current_file_function_operand (OP, Pmode)		\
+   : (C) == 'S' ? (GET_CODE (OP) == CONST_INT				\
+		   && (unsigned HOST_WIDE_INT) INTVAL (OP) < 64)	\
    : 0)
 
 /* Given an rtx X being reloaded into a reg required to be
@@ -1202,38 +1207,8 @@ extern void output_end_prologue ();
    to initialize the "hint" field in the JMP insn.  Note that the hint
    field is PC (new) + 4 * bits 13:0.  */
 
-#define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT)			\
-{									\
-  rtx _temp, _temp1, _addr;						\
-									\
-  _addr = memory_address (Pmode, plus_constant ((TRAMP), 16));		\
-  emit_move_insn (gen_rtx (MEM, Pmode, _addr), (FNADDR));		\
-  _addr = memory_address (Pmode, plus_constant ((TRAMP), 24));		\
-  emit_move_insn (gen_rtx (MEM, Pmode, _addr), (CXT));			\
-									\
-  _temp = force_operand (plus_constant ((TRAMP), 12), NULL_RTX);	\
-  _temp = expand_binop (DImode, sub_optab, (FNADDR), _temp, _temp, 1,	\
-			OPTAB_WIDEN);					\
-  _temp = expand_shift (RSHIFT_EXPR, Pmode, _temp,			\
-			build_int_2 (2, 0), NULL_RTX, 1);		\
-  _temp = expand_and (gen_lowpart (SImode, _temp),			\
-		      GEN_INT (0x3fff), 0); 				\
-									\
-  _addr = memory_address (SImode, plus_constant ((TRAMP), 8));		\
-  _temp1 = force_reg (SImode, gen_rtx (MEM, SImode, _addr));		\
-  _temp1 = expand_and (_temp1, GEN_INT (0xffffc000), NULL_RTX);		\
-  _temp1 = expand_binop (SImode, ior_optab, _temp1, _temp, _temp1, 1,	\
-			 OPTAB_WIDEN);					\
-									\
-  emit_move_insn (gen_rtx (MEM, SImode, _addr), _temp1);		\
-									\
-  emit_library_call (gen_rtx (SYMBOL_REF, Pmode,			\
-			      "__enable_execute_stack"),		\
-		     0, VOIDmode, 1,_addr, Pmode);			\
-									\
-  emit_insn (gen_rtx (UNSPEC_VOLATILE, VOIDmode,			\
-		      gen_rtvec (1, const0_rtx), 0));			\
-}
+#define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT) \
+  alpha_initialize_trampoline (TRAMP, FNADDR, CXT)
 
 /* Attempt to turn on access permissions for the stack.  */
 
@@ -2127,6 +2102,7 @@ do {									\
     }									\
 } while (0)
 
+
 /* Define results of standard character escape sequences.  */
 #define TARGET_BELL 007
 #define TARGET_BS 010

@@ -341,7 +341,9 @@ static char *alternative_name;
 
 int reload_completed = 0;
 
-/* Similarly since PRESERVE_DEATH_INFO_REGNO_P might reference "optimize".  */
+/* Some machines test `optimize' in macros called from rtlanal.c, so we need
+   to define it here.  */
+
 int optimize = 0;
 
 /* Simplify an expression.  Only call the routine if there is something to
@@ -2125,7 +2127,7 @@ expand_units ()
 	  if (unit->needs_range_function)
 	    {
 	      /* Compute the blockage range function and make an attribute
-		 for writing it's value.  */
+		 for writing its value.  */
 	      newexp = operate_exp (RANGE_OP, min_blockage, max_blockage);
 	      newexp = simplify_knowing (newexp, unit->condexp);
 
@@ -4404,8 +4406,7 @@ gen_unit (def)
   unit->condexp = insert_right_side (IOR, unit->condexp, op->condexp, -2, -2);
 }
 
-/* Given a piece of RTX, print a C expression to test it's truth value.
-
+/* Given a piece of RTX, print a C expression to test its truth value.
    We use AND and IOR both for logical and bit-wise operations, so 
    interpret them as logical unless they are inside a comparison expression.
    The first bit of FLAGS will be non-zero in that case.

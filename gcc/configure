@@ -2261,6 +2261,14 @@ for machine in $build $host $target; do
 		    ;;
 		esac
 		;;
+ 	alpha*-*-vxworks*)
+		tm_file="${tm_file} dbx.h alpha/vxworks.h"
+		if  x$gas != xyes 
+		then
+			extra_passes="mips-tfile mips-tdump"
+		fi
+		use_collect2=yes
+		;;
 	alpha*-*-winnt*)
 		tm_file="${tm_file} alpha/win-nt.h"
 		xm_file="${xm_file} config/winnt/xm-winnt.h alpha/xm-winnt.h"
@@ -5139,7 +5147,7 @@ fi
 
 # Figure out what assembler alignment features are present.
 echo $ac_n "checking assembler alignment features""... $ac_c" 1>&6
-echo "configure:5143: checking assembler alignment features" >&5
+echo "configure:5151: checking assembler alignment features" >&5
 gcc_cv_as=
 gcc_cv_as_alignment_features=
 if [ -x as$host_exeext ]; then

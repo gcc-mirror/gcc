@@ -3771,9 +3771,8 @@ simplify_rtx (x, op0_mode, last, in_dest)
 
       /* If we know that the value is already truncated, we can
          replace the TRUNCATE with a SUBREG.  */
-      if (GET_MODE_BITSIZE (GET_MODE (XEXP (x, 0))) <= HOST_BITS_PER_WIDE_INT
-	  && (nonzero_bits (XEXP (x, 0), GET_MODE (XEXP (x, 0)))
-	      &~ GET_MODE_MASK (mode)) == 0)
+      if (num_sign_bit_copies (XEXP (x, 0), GET_MODE (XEXP (x, 0)))
+	  >= GET_MODE_BITSIZE (mode) + 1)
 	return gen_lowpart_for_combine (mode, XEXP (x, 0));
 
       /* A truncate of a comparison can be replaced with a subreg if
@@ -4702,7 +4701,7 @@ simplify_set (x)
      we only care about the low bits of the result.
 
      However, on machines without WORD_REGISTER_OPERATIONS defined, we cannot
-     perform a narrower operation that requested since the high-order bits will
+     perform a narrower operation than requested since the high-order bits will
      be undefined.  On machine where it is defined, this transformation is safe
      as long as M1 and M2 have the same number of words.  */
  
@@ -6953,8 +6952,6 @@ rtx_equal_for_field_assignment_p (x, y)
      rtx x;
      rtx y;
 {
-  rtx last_x, last_y;
-
   if (x == y || rtx_equal_p (x, y))
     return 1;
 
@@ -6976,19 +6973,12 @@ rtx_equal_for_field_assignment_p (x, y)
 		      gen_lowpart_for_combine (GET_MODE (SUBREG_REG (x)), y)))
     return 1;
 
-  last_x = get_last_value (x);
-  last_y = get_last_value (y);
-
-  return ((last_x != 0
-	   && GET_CODE (last_x) != CLOBBER
-	   && rtx_equal_for_field_assignment_p (last_x, y))
-	  || (last_y != 0
-	      && GET_CODE (last_y) != CLOBBER
-	      && rtx_equal_for_field_assignment_p (x, last_y))
-	  || (last_x != 0 && last_y != 0
-	      && GET_CODE (last_x) != CLOBBER
-	      && GET_CODE (last_y) != CLOBBER
-	      && rtx_equal_for_field_assignment_p (last_x, last_y)));
+  /* We used to see if get_last_value of X and Y were the same but that's
+     not correct.  In one direction, we'll cause the assignment to have
+     the wrong destination and in the case, we'll import a register into this
+     insn that might have already have been dead.   So fail if none of the
+     above cases are true.  */
+  return 0;
 }
 
 /* See if X, a SET operation, can be rewritten as a bit-field assignment.
@@ -10160,14 +10150,20 @@ simplify_comparison (code, pop0, pop1)
 	  if (GET_CODE (XEXP (op0, 0)) == SUBREG
 	      && ((mode_width
 		   >= GET_MODE_BITSIZE (GET_MODE (SUBREG_REG (XEXP (op0, 0)))))
-		  || subreg_lowpart_p (XEXP (op0, 0)))
+#ifdef WORD_REGISTER_OPERATIONS
+		  || subreg_lowpart_p (XEXP (op0, 0))
+#endif
+		  )
 	      && GET_CODE (XEXP (op0, 1)) == CONST_INT
 	      && mode_width <= HOST_BITS_PER_WIDE_INT
 	      && (GET_MODE_BITSIZE (GET_MODE (SUBREG_REG (XEXP (op0, 0))))
 		  <= HOST_BITS_PER_WIDE_INT)
 	      && (INTVAL (XEXP (op0, 1)) & ~ mask) == 0
 	      && 0 == (~ GET_MODE_MASK (GET_MODE (SUBREG_REG (XEXP (op0, 0))))
-		       & INTVAL (XEXP (op0, 1))))
+		       & INTVAL (XEXP (op0, 1)))
+	      && INTVAL (XEXP (op0, 1)) != mask
+	      && (INTVAL (XEXP (op0, 1))
+		  != GET_MODE_MASK (GET_MODE (SUBREG_REG (XEXP (op0, 0))))))
 		       
 	    {
 	      op0
