@@ -4727,8 +4727,8 @@ architecture does not allow for this specific SIMD type, gcc will
 produce code that uses 4 @code{SIs}.
 
 The types defined in this manner can be used with a subset of normal C
-operations.  Currently, gcc will allow using the following operators on
-these types: @code{+, -, *, /, unary minus}@.
+operations.  Currently, gcc will allow using the following operators
+on these types: @code{+, -, *, /, unary minus, ^, |, &, ~}@.
 
 The operations behave like C++ @code{valarrays}.  Addition is defined as
 the addition of the corresponding elements of the operands.  For
@@ -4744,9 +4744,10 @@ v4si a, b, c;
 c = a + b;
 @end example
 
-Subtraction, multiplication, and division operate in a similar manner.
-Likewise, the result of using the unary minus operator on a vector type
-is a vector whose elements are the negative value of the corresponding
+Subtraction, multiplication, division, and the logical operations
+operate in a similar manner.  Likewise, the result of using the unary
+minus or complement operators on a vector type is a vector whose
+elements are the negative or complemented values of the corresponding
 elements in the operand.
 
 You can declare variables and use them in function calls and returns, as

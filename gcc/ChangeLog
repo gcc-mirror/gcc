@@ -1,3 +1,8 @@
+2003-12-10  Geoffrey Keating  <geoffk@apple.com>
+
+	* doc/extend.texi (Vector Extensions): Document that bitwise
+	operations also work on vectors.
+
 2003-12-09  Robert Schiele  <rschiele@uni-mannheim.de>
 
 	PR other/10819
