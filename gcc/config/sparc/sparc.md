@@ -4620,7 +4620,7 @@
 	 call-clobbered registers?  We lose this if it is a JUMP_INSN.
 	 Why cannot we have delay slots filled if it were a CALL?  */
 
-      if (! TARGET_V9 && INTVAL (operands[3]) > 0)
+      if (! TARGET_V9 && INTVAL (operands[3]) != 0)
 	emit_jump_insn (gen_rtx (PARALLEL, VOIDmode, gen_rtvec (3,
 				 gen_rtx (SET, VOIDmode, pc_rtx,
 					  XEXP (operands[0], 0)),
@@ -4650,7 +4650,7 @@
   nregs_rtx = const0_rtx;
 #endif
 
-  if (! TARGET_V9 && INTVAL (operands[3]) > 0)
+  if (! TARGET_V9 && INTVAL (operands[3]) != 0)
     emit_call_insn (gen_rtx (PARALLEL, VOIDmode, gen_rtvec (3,
 			     gen_rtx (CALL, VOIDmode, fn_rtx, nregs_rtx),
 			     operands[3],
@@ -4757,6 +4757,35 @@
 }"
   [(set_attr "type" "call_no_delay_slot")])
 
+;; This is a call that may want a structure value.  This is used for
+;; untyped_calls.
+(define_insn ""
+  [(call (mem:SI (match_operand:SI 0 "address_operand" "p"))
+	 (match_operand 1 "" ""))
+   (match_operand 2 "immediate_operand" "")
+   (clobber (reg:SI 15))]
+  ;;- Do not use operand 1 for most machines.
+  "! TARGET_V9 && GET_CODE (operands[2]) == CONST_INT && INTVAL (operands[2]) < 0"
+  "*
+{
+  return \"call %a0,%1\;nop\;nop\";
+}"
+  [(set_attr "type" "call_no_delay_slot")])
+
+;; This is a call that wants a structure value.
+(define_insn ""
+  [(call (mem:SI (match_operand:SI 0 "symbolic_operand" "s"))
+	 (match_operand 1 "" ""))
+   (match_operand 2 "immediate_operand" "")
+   (clobber (reg:SI 15))]
+  ;;- Do not use operand 1 for most machines.
+  "! TARGET_V9 && GET_CODE (operands[2]) == CONST_INT && INTVAL (operands[2]) < 0"
+  "*
+{
+  return \"call %a0,%1\;nop\;nop\";
+}"
+  [(set_attr "type" "call_no_delay_slot")])
+
 (define_expand "call_value"
   ;; Note that this expression is not used for generating RTL.
   ;; All the RTL is generated explicitly below.
@@ -4848,83 +4877,41 @@
   [(set_attr "type" "call")])
 
 (define_expand "untyped_call"
-  [(parallel [(call (match_operand:SI 0 "call_operand" "")
+  [(parallel [(call (match_operand 0 "" "")
 		    (const_int 0))
-	      (match_operand:BLK 1 "memory_operand" "")
-	      (match_operand 2 "" "")
-;; ??? v9: mode is wrong here.
-	      (clobber (reg:SI 15))])]
+	      (match_operand 1 "" "")
+	      (match_operand 2 "" "")])]
   ""
   "
 {
-  operands[1] = change_address (operands[1], DImode, XEXP (operands[1], 0));
+  int i;
+
+  /* Pass constm1 to indicate that it may expect a structure value, but
+     we don't know what size it is.  */
+  emit_call_insn (gen_call (operands[0], const0_rtx, NULL, constm1_rtx));
+
+  for (i = 0; i < XVECLEN (operands[2], 0); i++)
+    {
+      rtx set = XVECEXP (operands[2], 0, i);
+      emit_move_insn (SET_DEST (set), SET_SRC (set));
+    }
+
+  /* The optimizer does not know that the call sets the function value
+     registers we stored in the result block.  We avoid problems by
+     claiming that all hard registers are used and clobbered at this
+     point.  */
+  emit_insn (gen_blockage ());
+
+  DONE;
 }")
 
-;; Make a call followed by two nops in case the function being called
-;; returns a structure value and expects to skip an unimp instruction.
+;; UNSPEC_VOLATILE is considered to use and clobber all hard registers and
+;; all of memory.  This blocks insns from being moved across this point.
 
-(define_insn ""
-  [(call (mem:SI (match_operand:SI 0 "address_operand" "p"))
-	 (const_int 0))
-   (match_operand:DI 1 "memory_operand" "o")
-   (match_operand 2 "" "")
-   (clobber (reg:SI 15))]
-  "! TARGET_V9"
-  "*
-{
-  operands[2] = adj_offsettable_operand (operands[1], 8);
-  return \"call %a0,0\;nop\;nop\;std %%o0,%1\;std %%f0,%2\";
-}"
-  [(set_attr "type" "multi")])
-
-;; Make a call followed by two nops in case the function being called
-;; returns a structure value and expects to skip an unimp instruction.
-
-(define_insn ""
-  [(call (mem:SI (match_operand:SI 0 "symbolic_operand" "s"))
-	 (const_int 0))
-   (match_operand:DI 1 "memory_operand" "o")
-   (match_operand 2 "" "")
-   (clobber (reg:SI 15))]
+(define_insn "blockage"
+  [(unspec_volatile [(const_int 0)] 0)]
   ""
-  "*
-{
-  operands[2] = adj_offsettable_operand (operands[1], 8);
-  return \"call %a0,0\;nop\;nop\;std %%o0,%1\;std %%f0,%2\";
-}"
-  [(set_attr "type" "multi")])
-
-;; V9 version of untyped_call.
-
-(define_insn ""
-  [(call (mem:SI (match_operand:DI 0 "address_operand" "p"))
-	 (const_int 0))
-   (match_operand:DI 1 "memory_operand" "o")
-   (match_operand 2 "" "")
-;; ??? Mode is wrong here, but it must match the define_expand.
-   (clobber (reg:SI 15))]
-  "TARGET_V9"
-  "*
-{
-  operands[2] = adj_offsettable_operand (operands[1], 8);
-  return \"call %a0,0\;nop\;stx %%o0,%1\;stq %%f0,%2\";
-}"
-  [(set_attr "type" "multi")])
-
-(define_insn ""
-  [(call (mem:SI (match_operand:DI 0 "symbolic_operand" "s"))
-	 (const_int 0))
-   (match_operand:DI 1 "memory_operand" "o")
-   (match_operand 2 "" "")
-;; ??? Mode is wrong here, but it must match the define_expand.
-   (clobber (reg:SI 15))]
-  "TARGET_V9"
-  "*
-{
-  operands[2] = adj_offsettable_operand (operands[1], 8);
-  return \"call %a0,0\;nop\;stx %%o0,%1\;stq %%f0,%2\";
-}"
-  [(set_attr "type" "multi")])
+  "")
 
 ;; Prepare to return any type including a structure value.
 
@@ -5047,13 +5034,13 @@
 
 ;; Special trap insn to flush register windows.
 (define_insn "flush_register_windows"
-  [(unspec_volatile [(const_int 0)] 0)]
+  [(unspec_volatile [(const_int 0)] 1)]
   ""
   "* return TARGET_V9 ? \"flushw\" : \"ta 3\";"
   [(set_attr "type" "misc")])
 
 (define_insn "goto_handler_and_restore"
-  [(unspec_volatile [(const_int 0)] 1)]
+  [(unspec_volatile [(const_int 0)] 2)]
   ""
   "jmp %%o0+0\;restore"
   [(set_attr "type" "misc")
@@ -5062,7 +5049,7 @@
 ;; Special pattern for the FLUSH instruction.
 
 (define_insn "flush"
-  [(unspec_volatile [(match_operand 0 "" "")] 2)]
+  [(unspec_volatile [(match_operand 0 "" "")] 3)]
   ""
   "* return TARGET_V9 ? \"flush %a0\" : \"iflush %a0\";"
   [(set_attr "type" "misc")])
