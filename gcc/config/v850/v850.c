@@ -886,23 +886,8 @@ reg_or_0_operand (op, mode)
   else if (GET_CODE (op) == CONST_DOUBLE)
     return CONST_DOUBLE_OK_FOR_G (op);
 
-  else if (GET_CODE (op) == REG)
-    return TRUE;
-
-  else if (GET_CODE (op) == SUBREG)
-    {
-      do {
-	op = SUBREG_REG (op);
-      } while (GET_CODE (op) == SUBREG);
-
-      if (GET_CODE (op) == MEM && !reload_completed)
-	return TRUE;
-
-      else if (GET_CODE (op) == REG)
-	return TRUE;
-    }
-
-  return FALSE;
+  else
+    return register_operand (op, mode);
 }
 
 /* Return true if OP is either a register or a signed five bit integer */
@@ -915,23 +900,8 @@ reg_or_int5_operand (op, mode)
   if (GET_CODE (op) == CONST_INT)
     return CONST_OK_FOR_J (INTVAL (op));
 
-  else if (GET_CODE (op) == REG)
-    return TRUE;
-
-  else if (GET_CODE (op) == SUBREG)
-    {
-      do {
-	op = SUBREG_REG (op);
-      } while (GET_CODE (op) == SUBREG);
-
-      if (GET_CODE (op) == MEM && !reload_completed)
-	return TRUE;
-
-      else if (GET_CODE (op) == REG)
-	return TRUE;
-    }
-
-  return FALSE;
+  else
+    return register_operand (op, mode);
 }
 
 /* Return true if OP is a valid call operand.  */
