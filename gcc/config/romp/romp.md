@@ -980,7 +980,7 @@
 
 ;; Now zero extensions:
 (define_expand "zero_extendhisi2"
-  [(set (match_operand:SI 0 "register_operand" "b")
+  [(set (match_operand:SI 0 "register_operand" "")
 	(zero_extend:SI (match_operand:HI 1 "register_operand" "")))]
   ""
   "")
