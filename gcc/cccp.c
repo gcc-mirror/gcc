@@ -409,8 +409,10 @@ static FILE *pcp_outfile;
    uses requiring them. */
 static int pcp_inside_if;
 
-/* Nonzero means never to include precompiled files. */
-static int no_precomp;
+/* Nonzero means never to include precompiled files.
+   This is 1 since there's no way now to make precompiled files,
+   so it's not worth testing for them.  */
+static int no_precomp = 1;
 
 /* Nonzero means give all the error messages the ANSI standard requires.  */
 
