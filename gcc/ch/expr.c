@@ -3125,7 +3125,7 @@ fold_set_expr (code, op0, op1)
  */
 static tree
 build_compare_set_expr (code, op0, op1)
-     enum chill_tree_code code;
+     enum tree_code code;
      tree op0, op1;
 {
   tree result_type = NULL_TREE;
@@ -3380,7 +3380,7 @@ build_concat_expr (op0, op1)
  */
 static tree
 build_compare_string_expr (code, op0, op1)
-     enum chill_tree_code code;
+     enum tree_code code;
      tree op0, op1;
 {
   if (op0 == NULL_TREE || TREE_CODE (op0) == ERROR_MARK)
@@ -3539,6 +3539,8 @@ compare_int_csts (op, val1, val2)
       if (op == NE_EXPR)
 	result = !result;
       break;
+    default:
+      abort();
     }
   return result;
 }
@@ -3549,7 +3551,7 @@ compare_int_csts (op, val1, val2)
 
 tree
 build_compare_discrete_expr (op, val1, val2)
-     enum chill_tree_code op;
+     enum tree_code op;
      tree val1, val2;
 {
   tree type1 = TREE_TYPE (val1);
@@ -3617,6 +3619,8 @@ build_compare_discrete_expr (op, val1, val2)
 	case NE_EXPR:
 	  tmp = build_compare_expr (EQ_EXPR, val1, val2);
 	  return build_chill_unary_op (TRUTH_NOT_EXPR, tmp);
+	default:
+	  abort();
 	}
     }
   if (TYPE_PRECISION (type1) > TYPE_PRECISION (type2))
@@ -3628,7 +3632,7 @@ build_compare_discrete_expr (op, val1, val2)
 
 tree
 build_compare_expr (op, val1, val2)
-     enum chill_tree_code op;
+     enum tree_code op;
      tree val1, val2;
 {
   tree tmp;

@@ -895,9 +895,9 @@ extern tree build_chill_compound_expr           PROTO((tree));
 extern tree build_chill_descr                   PROTO((tree));
 extern void build_chill_descr_type              PROTO((void));
 extern void build_chill_inttime_type            PROTO((void));
-extern tree build_compare_expr			PROTO((enum chill_tree_code,
+extern tree build_compare_expr			PROTO((enum tree_code,
 						       tree, tree));
-extern tree build_compare_discrete_expr		PROTO((enum chill_tree_code,
+extern tree build_compare_discrete_expr		PROTO((enum tree_code,
 						       tree, tree));
 extern tree check_case_selector                 PROTO((tree));
 extern tree check_case_selector_list            PROTO((tree));
