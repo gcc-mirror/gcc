@@ -1441,7 +1441,8 @@ poplevel (keep, reverse, functionbody)
   /* Remove declarations for all the DECLs in this level.  */
   for (link = decls; link; link = TREE_CHAIN (link))
     {
-      if (leaving_for_scope && TREE_CODE (link) == VAR_DECL)
+      if (leaving_for_scope && TREE_CODE (link) == VAR_DECL
+          && DECL_NAME (link))
 	{
 	  tree outer_binding
 	    = TREE_CHAIN (IDENTIFIER_BINDING (DECL_NAME (link)));
@@ -7843,6 +7844,9 @@ void
 maybe_inject_for_scope_var (decl)
      tree decl;
 {
+  if (!DECL_NAME (decl))
+    return;
+  
   if (current_binding_level->is_for_scope)
     {
       struct binding_level *outer

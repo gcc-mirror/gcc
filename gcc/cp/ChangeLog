@@ -1,3 +1,8 @@
+2000-07-25  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* decl.c (poplevel): Deal with anonymous variables at for scope.
+	(maybe_inject_for_scope_var): Likewise.
+
 2000-07-25  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* decl.c: Remove all signal handling code, now done in toplev.c.
