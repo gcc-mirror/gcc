@@ -1874,8 +1874,9 @@ gfc_conv_intrinsic_len (gfc_se * se, gfc_expr * expr)
       break;
 
     default:
-	if (arg->expr_type == EXPR_VARIABLE && arg->ref == NULL
-	    || (arg->ref->next == NULL && arg->ref->type == REF_ARRAY))
+	if (arg->expr_type == EXPR_VARIABLE 
+	    && (arg->ref == NULL || (arg->ref->next == NULL 
+				     && arg->ref->type == REF_ARRAY)))
 	  {
 	    /* This doesn't catch all cases. 
 	       See http://gcc.gnu.org/ml/fortran/2004-06/msg00165.html

@@ -1,4 +1,4 @@
-2004-05-31  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+2004-06-14  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/15211
 	* trans-intrinsic.c (gfc_conv_intrinsic_len): Deal with arrays
