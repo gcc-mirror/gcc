@@ -1,5 +1,12 @@
 2002-10-03  Michael Koch  <konqueror@gmx.de>
 
+	* java/net/InetAddress.java
+	(class InetAddress): Removed final keyword.
+	(equals): Fixed typo.
+	(getByAddress): New method.
+
+2002-10-03  Michael Koch  <konqueror@gmx.de>
+
 	* java/awt/dnd/Autoscroll.java:
 	New file, merge from Classpath.
 	* java/awt/dnd/DragSourceAdapter.java:
