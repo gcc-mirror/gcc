@@ -1,5 +1,21 @@
 2001-02-08  Richard Henderson  <rth@redhat.com>
 
+	* config/i386/i386.c (ix86_frame_pointer_required): New.
+	(ix86_setup_frame_addresses): New.
+	(struct machine_funciton): Add accesses_prev_frame.
+	* config/i386/i386.h (FRAME_POINTER_REQUIRED): Call
+	ix86_frame_pointer_required.
+	(SUBTARGET_FRAME_POINTER_REQUIRED): New.
+	(SETUP_FRAME_ADDRESSES): New.
+	* config/i386/i386-protos.h: Update.
+	* config/i386/sco5.h (SUBTARGET_FRAME_POINTER_REQUIRED): Rename
+	from FRAME_POINTER_REQUIRED.
+	* config/i386/svr3gas.h: Likewise.
+	* config/i386/sysv3.h: Likewise.
+	* config/i386/v3gas.h: Likewise.
+
+2001-02-08  Richard Henderson  <rth@redhat.com>
+
 	* config/sparc/sparc.c (function_arg_record_value_3): Fix
 	calculation of the number of integer registers required.
 	(function_arg_record_value): Likewise.
@@ -91,19 +107,19 @@ Thu Feb  8 11:21:28 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2001-01-30  Bruce Korb  <bkorb@gnu.org>
 
-        fixinc/fixincl.c(process):  Emit error message only if appropriate :)
-        (load_file): do not rely on load_file_data() to close file pointer
-        fixinc/fixlib.c(load_file_data): do not close passed in file pointer
+	fixinc/fixincl.c(process):  Emit error message only if appropriate :)
+	(load_file): do not rely on load_file_data() to close file pointer
+	fixinc/fixlib.c(load_file_data): do not close passed in file pointer
 	fixinc/inclhack.def(irix_limits_const): add test_text
 
 2001-02-06  Neil Booth  <neil@daikokuya.demon.co.uk>
 
-        * cppexp.c (parse_defined): Improve diagnostics for invalid
-        syntax.
+	* cppexp.c (parse_defined): Improve diagnostics for invalid
+	syntax.
 
 2001-02-06  Neil Booth  <neil@daikokuya.demon.co.uk>
 
-        * cppmacro.c (cpp_get_token): Avoid pasting after a builtin.
+	* cppmacro.c (cpp_get_token): Avoid pasting after a builtin.
 
 2001-02-06  Mark Mitchell  <mark@codesourcery.com>
 
@@ -155,13 +171,13 @@ Mon Feb  5 21:56:16 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 2001-02-05  Chandrakala Chavva  <cchavva@redhat.com>
 
 	* final.c: Move the declaration of profile_label_no to ...
-        * output.h: ... here.
-        * function.c (expand_function_start): Call PROFILE_HOOK.
-        * config/rs6000/aix.h: Define PROFILE_HOOK.
-        * config/rs6000/rs6000-protos.h: output_profile_hook new.
-        * config/rs6000/rs6000.c (output_profile_hook): Define.
-        (output_prolog): Do nothing for ABI_AIX as it is taken care by
-        output_profile_hook.
+	* output.h: ... here.
+	* function.c (expand_function_start): Call PROFILE_HOOK.
+	* config/rs6000/aix.h: Define PROFILE_HOOK.
+	* config/rs6000/rs6000-protos.h: output_profile_hook new.
+	* config/rs6000/rs6000.c (output_profile_hook): Define.
+	(output_prolog): Do nothing for ABI_AIX as it is taken care by
+	output_profile_hook.
 	tm.texi : Explain new macro PROFILE_HOOK.
 
 2001-02-06  Hans-Peter Nilsson  <hp@axis.com>
@@ -176,7 +192,7 @@ Mon Feb  5 21:56:16 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* Makefile.in (gcc_gxx_target_include_dir): Use $(target_alias).
 
 2001-02-05  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
-            David Edelsohn  <edelsohn@gnu.org>
+	    David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.c (rs6000_return_addr): Use PIC 
 	code for AIX, even without flag_pic.
@@ -317,13 +333,13 @@ Sun Feb  4 15:52:44 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2001-02-03  Neil Booth  <neil@daikokuya.demon.co.uk>
 
-        * cpphash.h: Rename _ALIGN POOL_ALIGN.
-        * cpplex.c (new_chunk, _cpp_pool_reserve): Update.  
+	* cpphash.h: Rename _ALIGN POOL_ALIGN.
+	* cpplex.c (new_chunk, _cpp_pool_reserve): Update.  
 
 2001-02-03  Neil Booth  <neil@daikokuya.demon.co.uk>
 
-        * cpphash.h: Rename ALIGN _ALIGN.
-        * cpplex.c (new_chunk, _cpp_pool_reserve): Update.  
+	* cpphash.h: Rename ALIGN _ALIGN.
+	* cpplex.c (new_chunk, _cpp_pool_reserve): Update.  
 
 Fri Feb  2 23:15:29 2001  Christopher Faylor <cgf@cygnus.com>
 
@@ -433,16 +449,16 @@ Fri Feb  2 20:03:50 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2001-02-01  Neil Booth  <neil@daikokuya.demon.co.uk>
 
-        * cpphash.h (struct cpp_buffer): Move saved_flags from cpp_reader.
-        * cpplex.c (_cpp_lex_token): New token picks up the saved flags,
-        and AVOID_LPASTE is cleared on meeting an unescaped newline.
-        * cppmacro.c (builtin_macro): Set builtin flags here.
-        (paste_all_tokens): Preserve AVOID_LPASTE on pasted token.
-        (replace_args): Clarify intent.
-        (cpp_get_token): Macro expansion tokens get the saved flags.
-        Update.
-        * cppmain.c (scan_buffer): Remove now-redundant print.printed
-        check.
+	* cpphash.h (struct cpp_buffer): Move saved_flags from cpp_reader.
+	* cpplex.c (_cpp_lex_token): New token picks up the saved flags,
+	and AVOID_LPASTE is cleared on meeting an unescaped newline.
+	* cppmacro.c (builtin_macro): Set builtin flags here.
+	(paste_all_tokens): Preserve AVOID_LPASTE on pasted token.
+	(replace_args): Clarify intent.
+	(cpp_get_token): Macro expansion tokens get the saved flags.
+	Update.
+	* cppmain.c (scan_buffer): Remove now-redundant print.printed
+	check.
 
 2001-02-01  Jeffrey Oldham  <oldham@codesourcery.com>
 
@@ -520,14 +536,14 @@ Thu Feb  1 07:22:41 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2001-01-31  Neil Booth  <neil@daikokuya.demon.co.uk>
 
-        * cpplib.c (T_ELIF): Move to STDC89, not that it matters.
-        (_cpp_handle_directive): Suggest not using #elif with -Wtraditional.
+	* cpplib.c (T_ELIF): Move to STDC89, not that it matters.
+	(_cpp_handle_directive): Suggest not using #elif with -Wtraditional.
 
 2001-01-31  Neil Booth  <neil@daikokuya.demon.co.uk>
 
-        * cpphash.h (struct cpp_reader): New saved_flags.
-        * cppmacro.c (cpp_get_token): Use saved_flags to remember
-        to avoid a paste after a pasted token.
+	* cpphash.h (struct cpp_reader): New saved_flags.
+	* cppmacro.c (cpp_get_token): Use saved_flags to remember
+	to avoid a paste after a pasted token.
 	  
 2001-01-31  Alexandre Oliva  <aoliva@redhat.com>
 
@@ -568,10 +584,10 @@ Thu Feb  1 07:22:41 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2001-01-30  Neil Booth  <neil@daikokuya.demon.co.uk>
 
-        * c-decl.c (c_expand_body): Check TYPE_SIZE_UNIT (ret_type)
-        is not NULL.
-        * toplev.c (decode_W_option): Update warn_larger_than
-        unconditionally for each processed switch.
+	* c-decl.c (c_expand_body): Check TYPE_SIZE_UNIT (ret_type)
+	is not NULL.
+	* toplev.c (decode_W_option): Update warn_larger_than
+	unconditionally for each processed switch.
 
 2001-01-30  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
@@ -585,7 +601,7 @@ Thu Feb  1 07:22:41 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2001-01-29  lars brinkhoff  <lars@nocrew.org>
 
-        * tm.texi (PUSH_ROUNDING): Remove duplicate lines.
+	* tm.texi (PUSH_ROUNDING): Remove duplicate lines.
 
 2001-01-29  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 	    Jeff Law <law@redhat.com>
@@ -632,8 +648,8 @@ Mon Jan 29 20:38:19 2001  Christopher Faylor <cgf@cygnus.com>
 
 2001-01-29  Neil Booth  <neil@daikokuya.demon.co.uk>
 
-        * cpplib.c (T_BAD_DIRECTIVE): Remove.
-        (_cpp_init_stacks): Loop from 0 to N_DIRECTIVES - 1.
+	* cpplib.c (T_BAD_DIRECTIVE): Remove.
+	(_cpp_init_stacks): Loop from 0 to N_DIRECTIVES - 1.
 
 2001-01-29  Joseph S. Myers  <jsm28@cam.ac.uk>
 
@@ -668,18 +684,18 @@ Mon Jan 29 20:38:19 2001  Christopher Faylor <cgf@cygnus.com>
 
 2001-01-28  Neil Booth  <neil@daikokuya.demon.co.uk>
 
-        * cpphash.c (_cpp_cleanup_hashtable, _cpp_lookup_with_hash)
-        : Don't set fe_value.
-        * cpplib.h (AVOID_LPASTE): New flag. 
-        (struct cpp_hashnode): Remove fe_value.
-        * cpplex.c (cpp_avoid_paste): Don't paste '.' with a number.
-        * cppmacro.c (builtin_macro): Don't set flags here.
-        (replace_args): Set AVOID_LPASTE flag on first token of an
-        argument, and the token following it.
-        (cpp_get_token): Set AVOID_LPASTE flag on first token of a
-        macro expansion, and on the token following it.  Do it for
-        builtins too.
-        * cppmain.c (scan_buffer): Avoid pasting only flagged tokens.
+	* cpphash.c (_cpp_cleanup_hashtable, _cpp_lookup_with_hash)
+	: Don't set fe_value.
+	* cpplib.h (AVOID_LPASTE): New flag. 
+	(struct cpp_hashnode): Remove fe_value.
+	* cpplex.c (cpp_avoid_paste): Don't paste '.' with a number.
+	* cppmacro.c (builtin_macro): Don't set flags here.
+	(replace_args): Set AVOID_LPASTE flag on first token of an
+	argument, and the token following it.
+	(cpp_get_token): Set AVOID_LPASTE flag on first token of a
+	macro expansion, and on the token following it.  Do it for
+	builtins too.
+	* cppmain.c (scan_buffer): Avoid pasting only flagged tokens.
 
 2001-01-27  Richard Henderson  <rth@redhat.com>
 

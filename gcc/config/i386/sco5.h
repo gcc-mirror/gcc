@@ -632,8 +632,8 @@ dtors_section ()							\
     }									\
 }
 
-#undef FRAME_POINTER_REQUIRED
-#define FRAME_POINTER_REQUIRED						\
+#undef SUBTARGET_FRAME_POINTER_REQUIRED
+#define SUBTARGET_FRAME_POINTER_REQUIRED				\
   ((TARGET_ELF) ? 0 : 							\
    (current_function_calls_setjmp || current_function_calls_longjmp))
 
