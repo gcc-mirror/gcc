@@ -1,3 +1,9 @@
+2004-11-26  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* expmed.c (extract_bit_field): When extracting from non-integer mode,
+	force a SUBREG into a register because we may be taking a further
+	SUBREG of it.
+
 2004-11-27  Di-an Jan  <dianj@freeshell.org>
 
 	* doc/contrib.texi (Tim Josling): Remove nesting quotation marks.
