@@ -55,7 +55,7 @@ typedef char * __gnuc_va_list;
 #define va_dcl    int __builtin_va_alist; __va_ellipsis
 #endif
 /* Need alternate code for _MIPS_SIM_ABI64.  */
-#if defined(_MIPS_SIM) && (_MIPS_SIM == _MIPS_SIM_ABI64)
+#if defined(_MIPS_SIM) && (_MIPS_SIM == _MIPS_SIM_ABI64 || _MIPS_SIM == _MIPS_SIM_NABI32)
 #define va_start(__AP)							\
   (__AP = (__gnuc_va_list) __builtin_next_arg ()			\
    + (__builtin_args_info (2) >= 8 ? -8 : 0))
