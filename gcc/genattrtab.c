@@ -89,7 +89,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    `in_struct' (MEM_IN_STRUCT_P): This rtx is fully simplified
       for the insn code currently being processed (see optimize_attrs).
    `integrated' (RTX_INTEGRATED_P): This rtx is permanent and unique
-      (see attr_rtx).  */
+      (see attr_rtx).
+   `volatil' (MEM_VOLATILE_P): During simplify_by_exploding the value of an
+      EQ_ATTR rtx is true if !volatil and false if volatil.  */
 
 
 #include <stdio.h>
@@ -164,6 +166,7 @@ struct attr_desc
   char *name;			/* Name of attribute. */
   struct attr_desc *next;	/* Next attribute. */
   int is_numeric;		/* Values of this attribute are numeric. */
+  int negative_ok;		/* Allow negative numeric values.  */
   int is_const;			/* Attribute value constant for each run.  */
   int is_special;		/* Don't call `write_attr_set'. */
   struct attr_value *first_value; /* First value of this attribute. */
@@ -209,6 +212,9 @@ struct function_unit
   struct function_unit_op *ops;	/* Pointer to first operation type.  */
   int needs_conflict_function;	/* Nonzero if a conflict function required.  */
   rtx default_cost;		/* Conflict cost, if constant.  */
+  rtx max_busy_cost;		/* Maximum conflict cost.  */
+  int min_busy_delay;		/* Minimum conflict cost.  */
+  int max_busy_delay;		/* Maximum conflict cost.  */
 };
 
 /* Listheads of above structures.  */
@@ -295,6 +301,7 @@ static rtx copy_boolean ();
 static void expand_delays ();
 static rtx operate_exp ();
 static void expand_units ();
+static rtx encode_units_mask ();
 static void fill_attr ();
 static rtx substitute_address ();
 static void make_length_attrs ();
@@ -304,6 +311,14 @@ static rtx one_fn ();
 static rtx max_fn ();
 static rtx simplify_cond ();
 static rtx simplify_by_alternatives ();
+static rtx simplify_by_exploding ();
+static int find_and_mark_used_attributes ();
+static void unmark_used_attributes ();
+static int add_values_to_cover ();
+static int increment_current_value ();
+static rtx test_for_current_value ();
+static rtx simplify_with_current_value ();
+static rtx simplify_with_current_value_aux ();
 static void remove_insn_ent ();
 static void insert_insn_ent ();
 static rtx insert_right_side ();
@@ -985,7 +1000,10 @@ check_attr_value (exp, attr)
 
       if (attr == 0 || attr->is_numeric)
 	{
-	  for (p = XSTR (exp, 0); *p; p++)
+	  p = XSTR (exp, 0);
+	  if (attr && attr->negative_ok && *p == '-')
+	    p++;
+	  for (; *p; p++)
 	    if (*p > '9' || *p < '0')
 	      fatal ("Non-numeric value for numeric `%s' attribute",
 		     attr ? attr->name : "internal");
@@ -1611,8 +1629,10 @@ operate_exp (op, left, right)
    construct a number of attributes.
 
    The first produces a function `function_units_used' which is given an
-   insn and produces a mask showing which function units are required for
-   the execution of that insn.
+   insn and produces an encoding showing which function units are required
+   for the execution of that insn.  If the value is non-negative, the insn
+   uses that unit; otherwise, the value is a one's compliment mask of units
+   used.
 
    The second produces a function `result_ready_cost' which is used to
    determine the time that the result of an insn will be ready and hence
@@ -1624,7 +1644,7 @@ operate_exp (op, left, right)
 
    For each unit, a `<name>_unit_ready_cost' function will take an
    insn and give the delay until that unit will be ready with the result
-   and a `<name>_unit_busy_delay' function is given an insn already
+   and a `<name>_unit_conflict_cost' function is given an insn already
    executing on the unit and a candidate to execute and will give the
    cost from the time the executing insn started until the candidate
    can start (ignore limitations on the number of simultaneous insns).  */
@@ -1632,81 +1652,250 @@ operate_exp (op, left, right)
 static void
 expand_units ()
 {
-  struct function_unit *unit;
-  struct function_unit_op *op;
+  struct function_unit *unit, **unit_num;
+  struct function_unit_op *op, **op_array, ***unit_ops;
   rtx unitsmask;
   rtx readycost;
   rtx newexp;
   char *str;
+  int i, j, u, num, nvalues;
 
-  /* Initially, cost and masks are zero.  */
-  unitsmask = readycost = make_numeric_value (0);
+  /* Validate the expressions we were given for the conditions and busy cost.
+     Then make attributes for use in the conflict function.  */
+  for (unit = units; unit; unit = unit->next)
+    for (op = unit->ops; op; op = op->next)
+      {
+	op->condexp = check_attr_test (op->condexp, 0);
+	op->busyexp = check_attr_value (make_canonical (NULL_ATTR,
+							op->busyexp),
+					NULL_ATTR);
+	str = attr_printf (strlen (unit->name) + 11, "*%s_case_%d",
+			   unit->name, op->num);
+	make_internal_attr (str, op->busyexp, 1);
+      }
 
-  /* Set up a conditional for costs and unit mask.  */
+  /* Compute the mask of function units used.  Initially, the unitsmask is
+     zero.   Set up a conditional to compute each unit's contribution.  */
+  unitsmask = make_numeric_value (0);
   newexp = rtx_alloc (IF_THEN_ELSE);
   XEXP (newexp, 2) = make_numeric_value (0);
 
-  /* For each unit, insert its contribution to the above three values.  */
+  /* Merge each function unit into the unit mask attributes.  */
   for (unit = units; unit; unit = unit->next)
     {
-      /* An expression that computes the ready cost for this unit.  */
-      rtx readyexp = rtx_alloc (COND);
-      /* An expression that maps insns to operation number for conflicts.  */
-      rtx caseexp = rtx_alloc (COND);
+      XEXP (newexp, 0) = check_attr_test (unit->condexp, 0);
+      XEXP (newexp, 1) = make_numeric_value (1 << unit->num);
+      unitsmask = operate_exp (OR_OP, unitsmask, newexp);
+    }
 
-      XVEC (readyexp, 0) = rtvec_alloc ((unit->num_opclasses - 1) * 2);
+  /* Simplify the unit mask expression, encode it, and make an attribute
+     for the function_units_used function.  */
+  unitsmask = simplify_by_exploding (unitsmask);
+  unitsmask = encode_units_mask (unitsmask);
+  make_internal_attr ("*function_units_used", unitsmask, 2);
+
+  /* Create an array of ops for each unit.  Add an extra unit for the
+     result_ready_cost function that has the ops of all other units.  */
+  unit_ops = (struct function_unit_op ***)
+    alloca ((num_units + 1) * sizeof (struct function_unit_op **));
+  unit_num = (struct function_unit **)
+    alloca ((num_units + 1) * sizeof (struct function_unit *));
+
+  unit_num[num_units] = unit = (struct function_unit *)
+    alloca (sizeof (struct function_unit));
+  unit->num = num_units;
+  unit->num_opclasses = 0;
+
+  for (unit = units; unit; unit = unit->next)
+    {
+      unit_num[num_units]->num_opclasses += unit->num_opclasses;
+      unit_num[unit->num] = unit;
+      unit_ops[unit->num] = op_array = (struct function_unit_op **)
+	alloca (unit->num_opclasses * sizeof (struct function_unit_op *));
+
+      for (op = unit->ops; op; op = op->next)
+	op_array[op->num] = op;
+    }
+
+  /* Compose the array of ops for the extra unit.  */
+  unit_ops[num_units] = op_array = (struct function_unit_op **)
+    alloca (unit_num[num_units]->num_opclasses
+	    * sizeof (struct function_unit_op *));
+
+  for (unit = units, i = 0; unit; i += unit->num_opclasses, unit = unit->next)
+    bcopy (unit_ops[unit->num], &op_array[i],
+	   unit->num_opclasses * sizeof (struct function_unit_op *));
+
+  /* Compute the ready cost function for each unit by computing the
+     condition for each non-default value.  */
+  for (u = 0; u <= num_units; u++)
+    {
+      rtx orexp;
+      int value;
+
+      unit = unit_num[u];
+      op_array = unit_ops[unit->num];
+      num = unit->num_opclasses;
+
+      /* Sort the array of ops into increasing ready cost order.  */
+      for (i = 0; i < num; i++)
+	for (j = num - 1; j > i; j--)
+	  if (op_array[j-1]->ready < op_array[j]->ready)
+	    {
+	      op = op_array[j];
+	      op_array[j] = op_array[j-1];
+	      op_array[j-1] = op;
+	    }
+
+      /* Determine how many distinct non-default ready cost values there
+	 are.  We use a default ready cost value of 1.  */
+      nvalues = 0; value = 1;
+      for (i = num - 1; i >= 0; i--)
+	if (op_array[i]->ready > value)
+	  {
+	    value = op_array[i]->ready;
+	    nvalues++;
+	  }
+
+      if (nvalues == 0)
+	readycost = make_numeric_value (1);
+      else
+	{
+	  /* Construct the ready cost expression as a COND of each value from
+	     the largest to the smallest.  */
+	  readycost = rtx_alloc (COND);
+	  XVEC (readycost, 0) = rtvec_alloc (nvalues * 2);
+	  XEXP (readycost, 1) = make_numeric_value (1);
+
+	  nvalues = 0; orexp = false_rtx; value = op_array[0]->ready;
+	  for (i = 0; i < num; i++)
+	    {
+	      op = op_array[i];
+	      if (op->ready <= 1)
+		break;
+	      else if (op->ready == value)
+		orexp = insert_right_side (IOR, orexp, op->condexp, -2);
+	      else
+		{
+		  XVECEXP (readycost, 0, nvalues * 2) = orexp;
+		  XVECEXP (readycost, 0, nvalues * 2 + 1)
+		    = make_numeric_value (value);
+		  nvalues++;
+		  value = op->ready;
+		  orexp = op->condexp;
+		}
+	    }
+	  XVECEXP (readycost, 0, nvalues * 2) = orexp;
+	  XVECEXP (readycost, 0, nvalues * 2 + 1) = make_numeric_value (value);
+	}
+
+      /* Make an attribute for the ready_cost function.  Simplifying
+	 further with simplify_by_exploding doesn't win.  */
+      if (u < num_units)
+	str = attr_printf (strlen (unit->name) + 20, "*%s_unit_ready_cost",
+			   unit->name);
+      else
+	str = "*result_ready_cost";
+      make_internal_attr (str, readycost, 0);
+    }
+
+  /* For each unit that requires a conflict cost function, make an attribute
+     that maps insns to the operation number.  */
+  for (unit = units; unit; unit = unit->next)
+    {
+      rtx caseexp;
+
+      if (unit->min_busy_delay == unit->max_busy_delay)
+	continue;
+
+      caseexp = rtx_alloc (COND);
       XVEC (caseexp, 0) = rtvec_alloc ((unit->num_opclasses - 1) * 2);
 
       for (op = unit->ops; op; op = op->next)
 	{
-	  /* Validate the expressions we were given for the conditions
-	     and busy cost.  Then make an attribute for use in the conflict
-	     function.  */
-	  op->condexp = check_attr_test (op->condexp, 0);
-	  op->busyexp = check_attr_value (op->busyexp, NULL_ATTR);
-	  str = attr_printf (strlen (unit->name) + 11, "*%s_case_%d",
-			     unit->name, op->num);
-	  make_internal_attr (str, make_canonical (NULL_ATTR, op->busyexp));
-
-	  /* Make our adjustment to the two COND's being computed.  If we are
-	     the last operation class, place our values into the default of
-	     the COND.  */
+	  /* Make our adjustment to the COND being computed.  If we are the
+	     last operation class, place our values into the default of the
+	     COND.  */
 	  if (op->num == unit->num_opclasses - 1)
 	    {
-	      XEXP (readyexp, 1) = make_numeric_value (op->ready);
 	      XEXP (caseexp, 1) = make_numeric_value (op->num);
 	    }
 	  else
 	    {
-	      XVECEXP (readyexp, 0, op->num * 2) = op->condexp;
-	      XVECEXP (readyexp, 0, op->num * 2 + 1)
-		= make_numeric_value (op->ready);
 	      XVECEXP (caseexp, 0, op->num * 2) = op->condexp;
 	      XVECEXP (caseexp, 0, op->num * 2 + 1)
 		= make_numeric_value (op->num);
 	    }
 	}
 
-      /* Make an attribute for the case number and ready delay.  */
+      /* Simplifying caseexp with simplify_by_exploding doesn't win.  */
       str = attr_printf (strlen (unit->name) + 8, "*%s_cases", unit->name);
       make_internal_attr (str, caseexp, 1);
+    }
+}
 
-      str = attr_printf (strlen (unit->name) + 20, "*%s_unit_ready_cost",
-			 unit->name);
-      make_internal_attr (str, readyexp, 0);
+/* Translate the CONST_STRING expressions in X to change the encoding of
+   value.  On input, the value is a bitmask with a one bit for each unit
+   used; on output, the value is the unit number (zero based) if one
+   and only one unit is used or the one's compliment of the bitmask.  */
 
-      /* Merge this function unit into the ready cost and unit mask
-	 attributes.  */
-      XEXP (newexp, 0) = check_attr_test (unit->condexp, 0);
-      XEXP (newexp, 1) = make_numeric_value (1 << unit->num);
-      unitsmask = operate_exp (OR_OP, unitsmask, newexp);
+static rtx
+encode_units_mask (x)
+     rtx x;
+{
+  register int i;
+  register int j;
+  register enum rtx_code code;
+  register char *fmt;
 
-      XEXP (newexp, 1) = readyexp;
-      readycost = operate_exp (MAX_OP, readycost, newexp);
+  code = GET_CODE (x);
+
+  switch (code)
+    {
+    case CONST_STRING:
+      i = atoi (XSTR (x, 0));
+      if (i < 0)
+	abort (); /* The sign bit encodes a one's compliment mask.  */
+      else if (i != 0 && i == (i & -i))
+	/* Only one bit is set, so yield that unit number.  */
+	for (j = 0; (i >>= 1) != 0; j++)
+	  ;
+      else
+	j = ~i;
+      return attr_rtx (CONST_STRING, attr_printf (4, "%d", j));
+
+    case REG:
+    case QUEUED:
+    case CONST_INT:
+    case CONST_DOUBLE:
+    case SYMBOL_REF:
+    case CODE_LABEL:
+    case PC:
+    case CC0:
+    case EQ_ATTR:
+      return x;
     }
 
-  make_internal_attr ("*function_units_used", unitsmask, 0);
-  make_internal_attr ("*result_ready_cost", readycost, 0);
+  /* Compare the elements.  If any pair of corresponding elements
+     fail to match, return 0 for the whole things.  */
+
+  fmt = GET_RTX_FORMAT (code);
+  for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
+    {
+      switch (fmt[i])
+	{
+	case 'V':
+	case 'E':
+	  for (j = 0; j < XVECLEN (x, i); j++)
+	    XVECEXP (x, i, j) = encode_units_mask (XVECEXP (x, i, j));
+	  break;
+
+	case 'e':
+	  XEXP (x, i) = encode_units_mask (XEXP (x, i));
+	  break;
+	}
+    }
+  return x;
 }
 
 /* Once all attributes and insns have been read and checked, we construct for
@@ -2927,6 +3116,478 @@ simplify_by_alternatives (exp, insn_code, insn_index)
   return simplify_cond (newexp, insn_code, insn_index);
 }
 
+/* An expression where all the unknown terms are EQ_ATTR tests can be
+   rearranged into a COND provided we can enumerate all possible
+   combinations of the unknown values.  The set of combinations become the
+   tests of the COND; the value of the expression given that combination is
+   computed and becomes the corresponding value.  To do this, we must be
+   able to enumerate all values for each attribute used in the expression
+   (currently, we give up if we find a numeric attribute).
+   
+   If the set of EQ_ATTR tests used in an expression tests the value of N
+   different attributes, the list of all possible combinations can be made
+   by walking the N-dimensional attribute space defined by those
+   attributes.  We record each of these as a struct dimension.
+
+   The algorithm relies on sharing EQ_ATTR nodes: if two nodes in an
+   expression are the same, the will also have the same address.  We find
+   all the EQ_ATTR nodes by marking them MEM_VOLATILE_P.  This bit later
+   represents the value of an EQ_ATTR node, so once all nodes are marked,
+   they are also given an initial value of FALSE.
+
+   We then separate the set of EQ_ATTR nodes into dimensions for each
+   attribute and put them on the VALUES list.  Terms are added as needed by
+   `add_values_to_cover' so that all possible values of the attribute are
+   tested.
+
+   Each dimension also has a current value.  This is the node that is
+   currently considered to be TRUE.  If this is one of the nodes added by
+   `add_values_to_cover', all the EQ_ATTR tests in the original expression
+   will be FALSE.  Otherwise, only the CURRENT_VALUE will be true.
+
+   NUM_VALUES is simply the length of the VALUES list and is there for
+   convenience.
+
+   Once the dimensions are created, the algorithm enumerates all possible
+   values and computes the current value of the given expression.  */
+
+struct dimension 
+{
+  struct attr_desc *attr;	/* Attribute for this dimension.  */
+  rtx values;			/* List of attribute values used.  */
+  rtx current_value;		/* Position in the list for the TRUE value.  */
+  int num_values;		/* Length of the values list.  */
+};
+
+/* If EXP is a suitable expression, reorganize it by constructing an
+   equivalent expression that is a COND with the tests being all combinations
+   of attribute values and the values being simple constants.  */
+
+static rtx
+simplify_by_exploding (exp)
+     rtx exp;
+{
+  rtx list = 0, link, condexp, defval;
+  struct dimension *space;
+  rtx *condtest, *condval;
+  int i, j, total, ndim;
+  int most_tests, num_marks, new_marks;
+
+  /* Locate all the EQ_ATTR expressions.  */
+  if (! find_and_mark_used_attributes (exp, &list))
+    {
+      unmark_used_attributes (list, 0, 0);
+      return exp;
+    }
+
+  /* Create an attribute space from the list of used attributes.  For each
+     dimension in the attribute space, record the attribute, list of values
+     used, and number of values used.  Add members to the list of values to
+     cover the domain of the attribute.  This makes the expanded COND form
+     order independent.  */
+
+  ndim = 0;
+  for (link = list; link; link = XEXP (link, 1))
+    ndim++;
+  space = (struct dimension *) alloca (ndim * sizeof (struct dimension));
+
+  total = 1;
+  for (ndim = 0; list; ndim++)
+    {
+      /* Pull the first attribute value from the list and record that
+	 attribute as another dimension in the attribute space.  */
+      char *name = XSTR (XEXP (list, 0), 0);
+      rtx *prev;
+
+      if ((space[ndim].attr = find_attr (name, 0)) == 0
+	  || space[ndim].attr->is_numeric)
+	{
+	  unmark_used_attributes (list, space, ndim);
+	  return exp;
+	}
+
+      /* Add all remaining attribute values that refer to this attribute.  */
+      space[ndim].num_values = 0;
+      space[ndim].values = 0;
+      prev = &list;
+      for (link = list; link; link = *prev)
+	if (! strcmp (XSTR (XEXP (link, 0), 0), name))
+	  {
+	    space[ndim].num_values++;
+	    *prev = XEXP (link, 1);
+	    XEXP (link, 1) = space[ndim].values;
+	    space[ndim].values = link;
+	  }
+	else
+	  prev = &XEXP (link, 1);
+
+      /* Add sufficient members to the list of values to make the list
+	 mutually exclusive and record the total size of the attribute
+	 space.  */
+      total *= add_values_to_cover (&space[ndim]);
+    }
+
+  /* Sort the attribute space so that the attributes go from non-constant
+     to constant and from most values to least values.  */
+  for (i = 0; i < ndim; i++)
+    for (j = ndim - 1; j > i; j--)
+      if ((space[j-1].attr->is_const && !space[j].attr->is_const)
+	  || space[j-1].num_values < space[j].num_values)
+	{
+	  struct dimension tmp;
+	  tmp = space[j];
+	  space[j] = space[j-1];
+	  space[j-1] = tmp;
+	}
+
+  /* Establish the initial current value.  */
+  for (i = 0; i < ndim; i++)
+    space[i].current_value = space[i].values;
+
+  condtest = (rtx *) alloca (total * sizeof (rtx));
+  condval = (rtx *) alloca (total * sizeof (rtx));
+
+  /* Expand the tests and values by iterating over all values in the
+     attribute space.  */
+  for (i = 0;; i++)
+    {
+      condtest[i] = test_for_current_value (space, ndim);
+      condval[i] = simplify_with_current_value (exp, space, ndim);
+      if (! increment_current_value (space, ndim))
+	break;
+    }
+  if (i != total - 1)
+    abort ();
+
+  /* We are now finished with the original expression.  */
+  unmark_used_attributes (0, space, ndim);
+
+  /* Find the most used constant value and make that the default.  */
+  most_tests = -1;
+  for (i = num_marks = 0; i < total; i++)
+    if (GET_CODE (condval[i]) == CONST_STRING
+	&& ! MEM_VOLATILE_P (condval[i]))
+      {
+	/* Mark the unmarked constant value and count how many are marked.  */
+	MEM_VOLATILE_P (condval[i]) = 1;
+	for (j = new_marks = 0; j < total; j++)
+	  if (GET_CODE (condval[j]) == CONST_STRING
+	      && MEM_VOLATILE_P (condval[j]))
+	    new_marks++;
+	if (new_marks - num_marks > most_tests)
+	  {
+	    most_tests = new_marks - num_marks;
+	    defval = condval[i];
+	  }
+	num_marks = new_marks;
+      }
+  /* Clear all the marks.  */
+  for (i = 0; i < total; i++)
+    MEM_VOLATILE_P (condval[i]) = 0;
+
+  /* Give up if nothing is constant.  */
+  if (num_marks == 0)
+    return exp;
+
+  /* Make a COND with the most common constant value the default.  (A more
+     complex method where tests with the same value were combined didn't
+     seem to improve things.)  */
+  condexp = rtx_alloc (COND);
+  XVEC (condexp, 0) = rtvec_alloc ((total - most_tests) * 2);
+  XEXP (condexp, 1) = defval;
+  for (i = j = 0; i < total; i++)
+    if (condval[i] != defval)
+      {
+	XVECEXP (condexp, 0, 2 * j) = condtest[i];
+	XVECEXP (condexp, 0, 2 * j + 1) = condval[i];
+	j++;
+      }
+
+  return condexp;
+}
+
+/* Set the MEM_VOLATILE_P flag for all EQ_ATTR expressions in EXP and
+   verify that EXP can be simplified to a constant term if all the EQ_ATTR
+   tests have known value.  */
+
+static int
+find_and_mark_used_attributes (exp, terms)
+     rtx exp, *terms;
+{
+  int i;
+
+  switch (GET_CODE (exp))
+    {
+    case EQ_ATTR:
+      if (! MEM_VOLATILE_P (exp))
+	{
+	  rtx link = rtx_alloc (EXPR_LIST);
+	  XEXP (link, 0) = exp;
+	  XEXP (link, 1) = *terms;
+	  *terms = link;
+	  MEM_VOLATILE_P (exp) = 1;
+	}
+    case CONST_STRING:
+      return 1;
+
+    case IF_THEN_ELSE:
+      if (! find_and_mark_used_attributes (XEXP (exp, 2), terms))
+	return 0;
+    case IOR:
+    case AND:
+      if (! find_and_mark_used_attributes (XEXP (exp, 1), terms))
+	return 0;
+    case NOT:
+      if (! find_and_mark_used_attributes (XEXP (exp, 0), terms))
+	return 0;
+      return 1;
+
+    case COND:
+      for (i = 0; i < XVECLEN (exp, 0); i++)
+	if (! find_and_mark_used_attributes (XVECEXP (exp, 0, i), terms))
+	  return 0;
+      if (! find_and_mark_used_attributes (XEXP (exp, 1), terms))
+	return 0;
+      return 1;
+    }
+
+  return 0;
+}
+
+/* Clear the MEM_VOLATILE_P flag in all EQ_ATTR expressions on LIST and
+   in the values of the NDIM-dimensional attribute space SPACE.  */
+
+static void
+unmark_used_attributes (list, space, ndim)
+     rtx list;
+     struct dimension *space;
+     int ndim;
+{
+  rtx link, exp;
+  int i;
+
+  for (i = 0; i < ndim; i++)
+    unmark_used_attributes (space[i].values, 0, 0);
+
+  for (link = list; link; link = XEXP (link, 1))
+    {
+      exp = XEXP (link, 0);
+      if (GET_CODE (exp) == EQ_ATTR)
+	MEM_VOLATILE_P (exp) = 0;
+    }
+}
+
+/* Update the attribute dimension DIM so that all values of the attribute
+   are tested.  Return the updated number of values.  */
+
+static int
+add_values_to_cover (dim)
+     struct dimension *dim;
+{
+  struct attr_value *av;
+  rtx exp, link, *prev;
+  int nalt = 0;
+
+  for (av = dim->attr->first_value; av; av = av->next)
+    if (GET_CODE (av->value) == CONST_STRING)
+      nalt++;
+
+  if (nalt < dim->num_values)
+    abort ();
+  else if (nalt == dim->num_values)
+    ; /* Ok.  */
+  else if (nalt * 2 < dim->num_values * 3)
+    {
+      /* Most all the values of the attribute are used, so add all the unused
+	 values.  */
+      prev = &dim->values;
+      for (link = dim->values; link; link = *prev)
+	prev = &XEXP (link, 1);
+
+      for (av = dim->attr->first_value; av; av = av->next)
+	if (GET_CODE (av->value) == CONST_STRING)
+	  {
+	    exp = attr_eq (dim->attr->name, XSTR (av->value, 0));
+	    if (MEM_VOLATILE_P (exp))
+	      continue;
+
+	    link = rtx_alloc (EXPR_LIST);
+	    XEXP (link, 0) = exp;
+	    XEXP (link, 1) = 0;
+	    *prev = link;
+	    prev = &XEXP (link, 1);
+	  }
+      dim->num_values = nalt;
+    }
+  else
+    {
+      rtx orexp = false_rtx;
+
+      /* Very few values are used, so compute a mutually exclusive
+	 expression.  (We could do this for numeric values if that becomes
+	 important.)  */
+      prev = &dim->values;
+      for (link = dim->values; link; link = *prev)
+	{
+	  orexp = insert_right_side (IOR, orexp, XEXP (link, 0), -2);
+	  prev = &XEXP (link, 1);
+	}
+      link = rtx_alloc (EXPR_LIST);
+      XEXP (link, 0) = attr_rtx (NOT, orexp);
+      XEXP (link, 1) = 0;
+      *prev = link;
+      dim->num_values++;
+    }
+  return dim->num_values;
+}
+
+/* Increment the current value for the NDIM-dimensional attribute space SPACE
+   and return FALSE if the increment overflowed.  */
+
+static int
+increment_current_value (space, ndim)
+     struct dimension *space;
+     int ndim;
+{
+  int i;
+
+  for (i = ndim - 1; i >= 0; i--)
+    {
+      if ((space[i].current_value = XEXP (space[i].current_value, 1)) == 0)
+	space[i].current_value = space[i].values;
+      else
+	return 1;
+    }
+  return 0;
+}
+
+/* Construct an expression corresponding to the current value for the
+   NDIM-dimensional attribute space SPACE.  */
+
+static rtx
+test_for_current_value (space, ndim)
+     struct dimension *space;
+     int ndim;
+{
+  int i;
+  rtx exp = true_rtx;
+
+  for (i = 0; i < ndim; i++)
+    exp = insert_right_side (AND, exp, XEXP (space[i].current_value, 0), -2);
+
+  return exp;
+}
+
+/* Given the current value of the NDIM-dimensional attribute space SPACE,
+   set the corresponding EQ_ATTR expressions to that value and reduce
+   the expression EXP as much as possible.  On input [and output], all
+   known EQ_ATTR expressions are set to FALSE.  */
+
+static rtx
+simplify_with_current_value (exp, space, ndim)
+     rtx exp;
+     struct dimension *space;
+     int ndim;
+{
+  int i;
+  rtx x;
+
+  /* Mark each current value as TRUE.  */
+  for (i = 0; i < ndim; i++)
+    {
+      x = XEXP (space[i].current_value, 0);
+      if (GET_CODE (x) == EQ_ATTR)
+	MEM_VOLATILE_P (x) = 0;
+    }
+
+  exp = simplify_with_current_value_aux (exp);
+
+  /* Change each current value back to FALSE.  */
+  for (i = 0; i < ndim; i++)
+    {
+      x = XEXP (space[i].current_value, 0);
+      if (GET_CODE (x) == EQ_ATTR)
+	MEM_VOLATILE_P (x) = 1;
+    }
+}
+
+/* Reduce the expression EXP based on the MEM_VOLATILE_P settings of
+   all EQ_ATTR expressions.  */
+
+static rtx
+simplify_with_current_value_aux (exp)
+     rtx exp;
+{
+  register int i;
+  rtx cond;
+
+  switch (GET_CODE (exp))
+    {
+    case EQ_ATTR:
+      if (MEM_VOLATILE_P (exp))
+	return false_rtx;
+      else
+	return true_rtx;
+    case CONST_STRING:
+      return exp;
+
+    case IF_THEN_ELSE:
+      cond = simplify_with_current_value_aux (XEXP (exp, 0));
+      if (cond == true_rtx)
+	return simplify_with_current_value_aux (XEXP (exp, 1));
+      else if (cond == false_rtx)
+	return simplify_with_current_value_aux (XEXP (exp, 2));
+      else
+	return attr_rtx (IF_THEN_ELSE, cond,
+			 simplify_with_current_value_aux (XEXP (exp, 1)),
+			 simplify_with_current_value_aux (XEXP (exp, 2)));
+
+    case IOR:
+      cond = simplify_with_current_value_aux (XEXP (exp, 1));
+      if (cond == true_rtx)
+	return cond;
+      else if (cond == false_rtx)
+	return simplify_with_current_value_aux (XEXP (exp, 0));
+      else
+	return attr_rtx (IOR, cond,
+			 simplify_with_current_value_aux (XEXP (exp, 0)));
+
+    case AND:
+      cond = simplify_with_current_value_aux (XEXP (exp, 1));
+      if (cond == true_rtx)
+	return simplify_with_current_value_aux (XEXP (exp, 0));
+      else if (cond == false_rtx)
+	return cond;
+      else
+	return attr_rtx (AND, cond,
+			 simplify_with_current_value_aux (XEXP (exp, 0)));
+
+    case NOT:
+      cond = simplify_with_current_value_aux (XEXP (exp, 0));
+      if (cond == true_rtx)
+	return false_rtx;
+      else if (cond == false_rtx)
+	return true_rtx;
+      else
+	return attr_rtx (NOT, cond);
+
+    case COND:
+      for (i = 0; i < XVECLEN (exp, 0); i += 2)
+	{
+	  cond = simplify_with_current_value_aux (XVECEXP (exp, 0, i));
+	  if (cond == true_rtx)
+	    return simplify_with_current_value_aux (XVECEXP (exp, 0, i + 1));
+	  else if (cond == false_rtx)
+	    continue;
+	  else
+	    abort (); /* With all EQ_ATTR's of known value, a case should
+			 have been selected.  */
+	}
+      return simplify_with_current_value_aux (XEXP (exp, 1));
+    }
+  abort ();
+}
+
 /* Clear the MEM_IN_STRUCT_P flag in EXP and its subexpressions.  */
 
 clear_struct_flag (x)
@@ -3297,6 +3958,7 @@ gen_unit (def)
       unit->condexp = false_rtx;
       unit->ops = 0;
       unit->next = units;
+      unit->min_busy_delay = unit->max_busy_delay = XINT (def, 5);
       units = unit;
     }
 
@@ -3322,9 +3984,15 @@ gen_unit (def)
       op->busyexp = attr_rtx (IF_THEN_ELSE, orexp,
 			      make_numeric_value (XINT (def, 5)),
 			      make_numeric_value (0));
+      unit->min_busy_delay = MIN (unit->min_busy_delay, 0);
+      unit->max_busy_delay = MAX (unit->max_busy_delay, XINT (def, 5));
     }
   else
-    op->busyexp = make_numeric_value (XINT (def, 5));
+    {
+      op->busyexp = make_numeric_value (XINT (def, 5));
+      unit->min_busy_delay = MIN (unit->min_busy_delay, XINT (def, 5));
+      unit->max_busy_delay = MAX (unit->max_busy_delay, XINT (def, 5));
+    }
 
   /* Merge our conditional into that of the function unit so we can determine
      which insns are used by the function unit.  */
@@ -4100,25 +4768,16 @@ write_function_unit_info ()
 
   for (unit = units; unit; unit = unit->next)
     {
-      /* See if only one case exists and if there is a constant value for
-	 that case.  If so, we don't need a function.  */
-      str = (char *) alloca (strlen (unit->name) + 10);
-      sprintf (str, "*%s_cases", unit->name);
-      attr = find_attr (str, 0);
-      if (! attr) abort ();
-      value = find_single_value (attr);
-      if (value && GET_CODE (value) == CONST_STRING)
+      /* Record the maximum busy cost.  */
+      unit->max_busy_cost = make_numeric_value (unit->max_busy_delay);
+
+      /* If the minimum and maximum conflict costs are the same, there
+	 is only one value, so we don't need a function.  */
+      if (unit->min_busy_delay == unit->max_busy_delay)
 	{
-	  sprintf (str, "*%s_case_%s", unit->name, XSTR (value, 0));
-	  attr = find_attr (str, 0);
-	  if (! attr) abort ();
-	  value = find_single_value (attr);
-	  if (value && GET_CODE (value) == CONST_STRING)
-	    {
-	      unit->needs_conflict_function = 0;
-	      unit->default_cost = value;
-	      continue;
-	    }
+	  unit->needs_conflict_function = 0;
+	  unit->default_cost = unit->max_busy_cost;
+	  continue;
 	}
 
       /* The function first computes the case from the candidate insn.  */
@@ -4138,6 +4797,7 @@ write_function_unit_info ()
       printf ("    {\n");
 
       /* Write the `switch' statement to get the case value.  */
+      str = (char *) alloca (strlen (unit->name) + 10);
       sprintf (str, "*%s_cases", unit->name);
       case_attr = find_attr (str, 0);
       if (! case_attr) abort ();
@@ -4205,11 +4865,18 @@ write_function_unit_info ()
 
   printf ("struct function_unit_desc function_units[] = {\n");
 
-  for (unit = units; unit; unit = unit->next)
+  /* Write out the descriptions in numeric order, but don't force that order
+     on the list.  Doing so increases the runtime of genattrtab.c.  */
+  for (i = 0; i < num_units; i++)
     {
-      printf ("  {\"%s\", %d, %d, %d, %s, %s_unit_ready_cost, ",
+      for (unit = units; unit; unit = unit->next)
+	if (unit->num == i)
+	  break;
+
+      printf ("  {\"%s\", %d, %d, %d, %s, %s, %s_unit_ready_cost, ",
 	      unit->name, 1 << unit->num, unit->multiplicity,
-	      unit->simultaneity, XSTR (unit->default_cost, 0), unit->name);
+	      unit->simultaneity, XSTR (unit->default_cost, 0),
+	      XSTR (unit->max_busy_cost, 0), unit->name);
 
       if (unit->needs_conflict_function)
 	printf ("%s_unit_conflict_cost", unit->name);
@@ -4302,7 +4969,7 @@ find_attr (name, create)
   attr = (struct attr_desc *) xmalloc (sizeof (struct attr_desc));
   attr->name = attr_string (name, strlen (name));
   attr->first_value = attr->default_val = NULL;
-  attr->is_numeric = attr->is_const = attr->is_special = 0;
+  attr->is_numeric = attr->negative_ok = attr->is_const = attr->is_special = 0;
   attr->next = attrs[index];
   attrs[index] = attr;
 
@@ -4325,7 +4992,8 @@ make_internal_attr (name, value, special)
 
   attr->is_numeric = 1;
   attr->is_const = 0;
-  attr->is_special = special;
+  attr->is_special = (special & 1) != 0;
+  attr->negative_ok = (special & 2) != 0;
   attr->default_val = get_attr_value (value, attr, -2);
 }
 
