@@ -20,4 +20,5 @@ static inline void foo (unsigned long base, unsigned char val)
 int main (void)
 {
   foo (23, 1);
+  return 0;
 }
