@@ -1,3 +1,7 @@
+2003-01-01  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* g++.dg/parse/operator1.C: New test.
+
 2003-01-01  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	* g++.old-deja/g++.jason/ambig3.C: Remove XFAIL.
