@@ -1,3 +1,7 @@
+2004-10-05  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* Makefile.in: Update -Wno-error exceptions for move to build dir.
+
 2004-10-05  Chao-Ying Fu  <fu@mips.com>
 	    Richard Sandiford  <rsandifo@redhat.com>
 

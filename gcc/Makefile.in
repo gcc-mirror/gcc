@@ -188,12 +188,12 @@ GCC_WARN_CFLAGS = $(LOOSE_WARN) $($(@D)-warn) $(NOCOMMON_FLAG) $($@-warn)
 # These files are to have -Werror bypassed in stage2:
 # These are very hard to completely clean due to target complexities.
 gcc.o-warn = -Wno-error
-insn-conditions.o-warn = -Wno-error
+build/insn-conditions.o-warn = -Wno-error
 # Bison-1.75 output often yields (harmless) -Wtraditional warnings
-gengtype-yacc.o-warn = -Wno-error
+build/gengtype-yacc.o-warn = -Wno-error
 c-parse.o-warn = -Wno-error
 # flex output may yield harmless "no previous prototype" warnings
-gengtype-lex.o-warn = -Wno-error
+build/gengtype-lex.o-warn = -Wno-error
 # SYSCALLS.c misses prototypes
 SYSCALLS.c.X-warn = -Wno-strict-prototypes -Wno-error
 # These files need -Wno-error because the gimplifier triggers hard to fix
