@@ -4848,13 +4848,18 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
   [(set_attr "type" "jsr")
    (set_attr "length" "12,*,16")])
 
+;; Need 's' alternative for OSF/1, which implements profiling
+;; via linker tricks.
 (define_insn "*sibcall_osf_1"
-  [(call (mem:DI (match_operand:DI 0 "current_file_function_operand" "R"))
+  [(call (mem:DI (match_operand:DI 0 "current_file_function_operand" "R,s"))
 	 (match_operand 1 "" ""))
    (use (reg:DI 29))]
   "TARGET_ABI_OSF"
-  "br $31,$%0..ng"
-  [(set_attr "type" "jsr")])
+  "@
+   br $31,$%0..ng
+   jmp $31,%0"
+  [(set_attr "type" "jsr")
+   (set_attr "length" "*,8")])
 
 (define_insn "*call_nt_1"
   [(call (mem:DI (match_operand:DI 0 "call_operand" "r,R,s"))
@@ -6802,14 +6807,19 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
   [(set_attr "type" "jsr")
    (set_attr "length" "12,*,16")])
 
+;; Need 's' alternative for OSF/1, which implements profiling
+;; via linker tricks.
 (define_insn "*sibcall_value_osf_1"
   [(set (match_operand 0 "" "")
-	(call (mem:DI (match_operand:DI 1 "current_file_function_operand" "R"))
+	(call (mem:DI (match_operand:DI 1 "current_file_function_operand" "R,s"))
 	      (match_operand 2 "" "")))
    (use (reg:DI 29))]
   "TARGET_ABI_OSF"
-  "br $31,$%1..ng"
-  [(set_attr "type" "jsr")])
+  "@
+   br $31,$%1..ng
+   jmp $31,%1"
+  [(set_attr "type" "jsr")
+   (set_attr "length" "*,8")])
 
 (define_insn "*call_value_nt_1"
   [(set (match_operand 0 "" "")

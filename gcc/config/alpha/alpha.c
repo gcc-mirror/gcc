@@ -839,10 +839,35 @@ current_file_function_operand (op, mode)
      rtx op;
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {
-  return (GET_CODE (op) == SYMBOL_REF
-	  && ! profile_flag && ! profile_block_flag
-	  && (SYMBOL_REF_FLAG (op)
-	      || op == XEXP (DECL_RTL (current_function_decl), 0)));
+  if (GET_CODE (op) != SYMBOL_REF)
+    return 0;
+
+  if (! SYMBOL_REF_FLAG (op)
+      && op != XEXP (DECL_RTL (current_function_decl), 0))
+    return 0;
+
+  return 1;
+}
+
+/* Return 1 if OP is a SYMBOL_REF for which we can make a call via bsr.  */
+
+int
+direct_call_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  /* Must be defined in this file.  */
+  if (! current_file_function_operand (op, mode))
+    return 0;
+
+  /* If profiling is implemented via linker tricks, we can't jump
+     to the nogp alternate entry point.  */
+  /* ??? TARGET_PROFILING_NEEDS_GP isn't really the right test,
+     but is approximately correct for the OSF ABIs.  Don't know
+     what to do for VMS, NT, or UMK.  */
+  if (! TARGET_PROFILING_NEEDS_GP
+      && ! profile_flag && ! profile_block_flag)
+    return 0;
 }
 
 /* Return true if OP is a LABEL_REF, or SYMBOL_REF or CONST referencing
