@@ -31,6 +31,9 @@
 #include "rtl.h"
 #include "ggc.h"
 
+/* For now, keep using the old obstack scheme in the gen* programs.  */
+int ggc_p = 0;
+
 rtx
 ggc_alloc_rtx (nslots)
      int nslots;

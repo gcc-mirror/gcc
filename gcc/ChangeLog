@@ -1,3 +1,63 @@
+Sun Sep  5 00:35:17 1999  Richard Henderson  <rth@cygnus.com>
+	                  Bernd Schmidt <bernds@cygnus.co.uk>
+	                  Mark Mitchell  <mark@codesourcery.com>
+
+	* Makefile.in (ggc-simple.o): Depend on varray.h.
+	(rtl.o): Depend on ggc.h.
+	(genattrtab.o): Depend on ggc.h.
+	(print-tree.o): Likewise.
+	(fold-const.o): Likewise.
+	* emit-rtl.c (sequence_element_free_list): Remove, and all references.
+	(make_insn_raw): Don't cache insns when GC'ing.
+	(emit_insn_before): Likewise.
+	(emit_insn_after): Likewise.
+	(emit_insn): Likewise.
+	(start_sequence): Use xmalloc to allocate the sequence_stack.
+	(end_sequence): Add free to free it.
+	(gen_sequence): Don't cache insns when GC'ing.
+	(clear_emit_caches): Don't use sequence_element_free_list.
+	(init_emit): Use xcalloc, not xmalloc+bzero.
+	* fold-const.c (size_int_wide): Kill the cache, when GC'ing.
+	* function.c (pop_function_context_from): Use free to free the
+	fixup_var_refs_queue.
+	(put_reg_into_stack): Allocate it with xmalloc.
+	* genattrtab.c: Include ggc.h.
+	(operate_exp): Don't use obstack_free when GC'ing.
+	(simplify_cond): Likewise.
+	(simplify_text_exp): Likewise.
+	(optimize_attrs): Likewise.
+	* gengentrtl.c (gendef): Use ggc_alloc_rtx to allocate RTL, when
+	GC'ing.
+	(gencode): Generate a #include for ggc.h.
+	* ggc-callbacks.c (ggc_p): Define it to zero.
+	* ggc-none.c (ggc_p): Likewise.
+	* ggc-simple.c: Include varray.h.
+	(ggc_mark_tree_varray): New function.
+	(ggc_add_tree_varray_root): Likewise.
+	(ggc_mark_tree_varray_ptr): Likewise.
+	* ggc.h (ggc_p): Declare.
+	(varray_head_tag): Likewise.
+	(ggc_add_tree_varray_root): Declare.
+	* print-tree.c (print_node): Don't check for TREE_PERMANENT
+	inconsistencies when GC'ing.
+	* rtl.c: Include ggc.h.
+	(rtvec_alloc): Use ggc_alloc_rtvec when GC'ing.
+	(rtx_alloc): Use ggc_alloc_rtx when GC'ing.
+	(rtx_free): Don't call obstack_free when GC'ing.
+	* toplev.c (rest_of_compilation): Call ggc_collect after every
+	pass, if GC'ing.
+	* tree.c (push_obstacks): Do nothing, if GC'ing.
+	(pop_obstacks_nochange): Likewise.
+	(pop_obstacks): Likewise.
+	(make_node): Use ggc_alloc_tree when GC'ing.
+	(copy_node): Likewise.
+	(get_identifier): Use ggc_alloc_string when GC'ing.
+	(build_string): Likewise.
+	(make_tree_vec): Use ggc_alloc_tree when GC'ing.
+	(tree_cons): Likewise.
+	(build1): Likewise.
+	(type_hash_canon): Don't call obstack_free when GC'ing.
+	
 Sat Sep  4 21:52:32 1999  Richard Henderson  <rth@cygnus.com>
 
 	* haifa-sched.c (schedule_block): Use next_nonnote_insn instead

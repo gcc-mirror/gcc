@@ -23,6 +23,10 @@
 /* Symbols are marked with `ggc' for `gcc gc' so as not to interfere with
    an external gc library that might be linked in.  */
 
+/* Language-specific code defines this variable to be either one (if
+   it wants garbage collection), or zero (if it does not).  */
+extern int ggc_p;
+
 /* These structures are defined in various headers throughout the
    compiler.  However, rather than force everyone who includes this
    header to include all the headers in which they are declared, we
@@ -32,6 +36,7 @@ struct eh_status;
 struct emit_status;
 struct stmt_status;
 struct varasm_status;
+struct varray_head_tag;
 
 /* Startup */
 
@@ -54,6 +59,7 @@ void ggc_add_root PROTO ((void *base, int nelt, int size,
 			   void (*)(void *)));
 void ggc_add_rtx_root PROTO ((struct rtx_def **, int nelt));
 void ggc_add_tree_root PROTO ((union tree_node **, int nelt));
+void ggc_add_tree_varray_root PROTO ((struct varray_head_tag **, int nelt));
 void ggc_del_root PROTO ((void *base));
 
 /* Mark nodes from the gc_add_root callback.  */

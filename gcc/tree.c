@@ -474,8 +474,12 @@ void
 push_obstacks (current, saveable)
      struct obstack *current, *saveable;
 {
-  struct obstack_stack *p
-    = (struct obstack_stack *) obstack_alloc (&obstack_stack_obstack,
+  struct obstack_stack *p;
+
+  if (ggc_p)
+    return;
+
+  p = (struct obstack_stack *) obstack_alloc (&obstack_stack_obstack,
 					      (sizeof (struct obstack_stack)));
 
   p->current = current_obstack;
@@ -495,8 +499,12 @@ push_obstacks (current, saveable)
 void
 push_obstacks_nochange ()
 {
-  struct obstack_stack *p
-    = (struct obstack_stack *) obstack_alloc (&obstack_stack_obstack,
+  struct obstack_stack *p;
+  
+  if (ggc_p)
+    return;
+
+  p = (struct obstack_stack *) obstack_alloc (&obstack_stack_obstack,
 					      (sizeof (struct obstack_stack)));
 
   p->current = current_obstack;
@@ -512,7 +520,12 @@ push_obstacks_nochange ()
 void
 pop_obstacks ()
 {
-  struct obstack_stack *p = obstack_stack;
+  struct obstack_stack *p;
+
+  if (ggc_p)
+    return;
+
+  p = obstack_stack;
   obstack_stack = p->next;
 
   current_obstack = p->current;
@@ -1005,8 +1018,13 @@ make_node (code)
       abort ();
     }
 
-  t = (tree) obstack_alloc (obstack, length);
-  bzero ((PTR) t, length);
+  if (ggc_p)
+    t = ggc_alloc_tree (length);
+  else
+    {
+      t = (tree) obstack_alloc (obstack, length);
+      bzero ((PTR) t, length);
+    }
 
 #ifdef GATHER_STATISTICS
   tree_node_counts[(int)kind]++;
@@ -1119,8 +1137,13 @@ copy_node (node)
 	length += (TREE_VEC_LENGTH (node) - 1) * sizeof (char *);
     }
 
-  t = (tree) obstack_alloc (current_obstack, length);
-  memcpy (t, node, length);
+  if (ggc_p)
+    t = ggc_alloc_tree (length);
+  else
+    {
+      t = (tree) obstack_alloc (current_obstack, length);
+      memcpy (t, node, length);
+    }
 
   /* EXPR_WITH_FILE_LOCATION must keep filename info stored in TREE_CHAIN */
   if (TREE_CODE (node) != EXPR_WITH_FILE_LOCATION)
@@ -1230,7 +1253,10 @@ get_identifier (text)
   id_string_size += len;
 #endif
 
-  IDENTIFIER_POINTER (idp) = obstack_copy0 (&permanent_obstack, text, len);
+  if (ggc_p)
+    IDENTIFIER_POINTER (idp) = ggc_alloc_string (text, len);
+  else
+    IDENTIFIER_POINTER (idp) = obstack_copy0 (&permanent_obstack, text, len);
 
   TREE_CHAIN (idp) = hash_table[hi];
   hash_table[hi] = idp;
@@ -1469,7 +1495,10 @@ build_string (len, str)
 
   register tree s = make_node (STRING_CST);
   TREE_STRING_LENGTH (s) = len;
-  TREE_STRING_POINTER (s) = obstack_copy0 (saveable_obstack, str, len);
+  if (ggc_p)
+    TREE_STRING_POINTER (s) = ggc_alloc_string (str, len);
+  else
+    TREE_STRING_POINTER (s) = obstack_copy0 (saveable_obstack, str, len);
   return s;
 }
 
@@ -1509,8 +1538,13 @@ make_tree_vec (len)
   tree_node_sizes[(int)vec_kind] += length;
 #endif
 
-  t = (tree) obstack_alloc (obstack, length);
-  bzero ((PTR) t, length);
+  if (ggc_p)
+    t = ggc_alloc_tree (length);
+  else
+    {
+      t = (tree) obstack_alloc (obstack, length);
+      bzero ((PTR) t, length);
+    }
 
   TREE_SET_CODE (t, TREE_VEC);
   TREE_VEC_LENGTH (t) = len;
@@ -2011,15 +2045,21 @@ tree_cons (purpose, value, chain)
 #if 0
   register tree node = make_node (TREE_LIST);
 #else
-  register int i;
-  register tree node = (tree) obstack_alloc (current_obstack, sizeof (struct tree_list));
+  register tree node;
+
+  if (ggc_p)
+    node = ggc_alloc_tree (sizeof (struct tree_list));
+  else
+    {
+      node = (tree) obstack_alloc (current_obstack, sizeof (struct tree_list));
+      bzero (node, sizeof (struct tree_common));
+    }
+
 #ifdef GATHER_STATISTICS
   tree_node_counts[(int)x_kind]++;
   tree_node_sizes[(int)x_kind] += sizeof (struct tree_list);
 #endif
 
-  for (i = (sizeof (struct tree_common) / sizeof (int)) - 1; i >= 0; i--)
-    ((int *) node)[i] = 0;
 
   TREE_SET_CODE (node, TREE_LIST);
   if (current_obstack == &permanent_obstack)
@@ -3028,7 +3068,10 @@ build1 (code, type, node)
 
   length = sizeof (struct tree_exp);
 
-  t = (tree) obstack_alloc (obstack, length);
+  if (ggc_p)
+    t = ggc_alloc_tree (length);
+  else
+    t = (tree) obstack_alloc (obstack, length);
   bzero ((PTR) t, length);
 
 #ifdef GATHER_STATISTICS
@@ -3706,7 +3749,8 @@ type_hash_canon (hashcode, type)
   t1 = type_hash_lookup (hashcode, type);
   if (t1 != 0)
     {
-      obstack_free (TYPE_OBSTACK (type), type);
+      if (!ggc_p)
+	obstack_free (TYPE_OBSTACK (type), type);
 #ifdef GATHER_STATISTICS
       tree_node_counts[(int)t_kind]--;
       tree_node_sizes[(int)t_kind] -= sizeof (struct tree_type);

@@ -158,21 +158,18 @@ struct rtx_def const_int_rtx[MAX_SAVED_CONST_INT * 2 + 1];
 /* start_sequence and gen_sequence can make a lot of rtx expressions which are
    shortly thrown away.  We use two mechanisms to prevent this waste:
 
-   First, we keep a list of the expressions used to represent the sequence
-   stack in sequence_element_free_list.
-
-   Second, for sizes up to 5 elements, we keep a SEQUENCE and its associated
-   rtvec for use by gen_sequence.  One entry for each size is sufficient
-   because most cases are calls to gen_sequence followed by immediately
-   emitting the SEQUENCE.  Reuse is safe since emitting a sequence is
-   destructive on the insn in it anyway and hence can't be redone.
+   For sizes up to 5 elements, we keep a SEQUENCE and its associated
+   rtvec for use by gen_sequence.  One entry for each size is
+   sufficient because most cases are calls to gen_sequence followed by
+   immediately emitting the SEQUENCE.  Reuse is safe since emitting a
+   sequence is destructive on the insn in it anyway and hence can't be
+   redone.
 
    We do not bother to save this cached data over nested function calls.
    Instead, we just reinitialize them.  */
 
 #define SEQUENCE_RESULT_SIZE 5
 
-static struct sequence_stack *sequence_element_free_list;
 static rtx sequence_result[SEQUENCE_RESULT_SIZE];
 
 /* During RTL generation, we also keep a list of free INSN rtl codes.  */
@@ -2256,7 +2253,7 @@ make_insn_raw (pattern)
   register rtx insn;
 
   /* If in RTL generation phase, see if FREE_INSN can be used.  */
-  if (free_insn != 0 && rtx_equal_function_value_matters)
+  if (!ggc_p && free_insn != 0 && rtx_equal_function_value_matters)
     {
       insn = free_insn;
       free_insn = NEXT_INSN (free_insn);
@@ -2600,7 +2597,7 @@ emit_insn_before (pattern, before)
 	  insn = XVECEXP (pattern, 0, i);
 	  add_insn_before (insn, before);
 	}
-      if (XVECLEN (pattern, 0) < SEQUENCE_RESULT_SIZE)
+      if (!ggc_p && XVECLEN (pattern, 0) < SEQUENCE_RESULT_SIZE)
 	sequence_result[XVECLEN (pattern, 0)] = pattern;
     }
   else
@@ -2720,7 +2717,7 @@ emit_insn_after (pattern, after)
 	  add_insn_after (insn, after);
 	  after = insn;
 	}
-      if (XVECLEN (pattern, 0) < SEQUENCE_RESULT_SIZE)
+      if (!ggc_p && XVECLEN (pattern, 0) < SEQUENCE_RESULT_SIZE)
 	sequence_result[XVECLEN (pattern, 0)] = pattern;
     }
   else
@@ -2868,7 +2865,7 @@ emit_insn (pattern)
 	  insn = XVECEXP (pattern, 0, i);
 	  add_insn (insn);
 	}
-      if (XVECLEN (pattern, 0) < SEQUENCE_RESULT_SIZE)
+      if (!ggc_p && XVECLEN (pattern, 0) < SEQUENCE_RESULT_SIZE)
 	sequence_result[XVECLEN (pattern, 0)] = pattern;
     }
   else
@@ -3188,14 +3185,7 @@ start_sequence ()
 {
   struct sequence_stack *tem;
 
-  if (sequence_element_free_list)
-    {
-      /* Reuse a previously-saved struct sequence_stack.  */
-      tem = sequence_element_free_list;
-      sequence_element_free_list = tem->next;
-    }
-  else
-    tem = (struct sequence_stack *) permalloc (sizeof (struct sequence_stack));
+  tem = (struct sequence_stack *) xmalloc (sizeof (struct sequence_stack));
 
   tem->next = seq_stack;
   tem->first = first_insn;
@@ -3298,8 +3288,7 @@ end_sequence ()
   seq_rtl_expr = tem->sequence_rtl_expr;
   seq_stack = tem->next;
 
-  tem->next = sequence_element_free_list;
-  sequence_element_free_list = tem;
+  free (tem);
 }
 
 /* Return 1 if currently emitting into a sequence.  */
@@ -3340,14 +3329,18 @@ gen_sequence ()
 	  || (GET_CODE (first_insn) == CALL_INSN
 	      && CALL_INSN_FUNCTION_USAGE (first_insn) == NULL_RTX)))
     {
-      NEXT_INSN (first_insn) = free_insn;
-      free_insn = first_insn;
+      if (!ggc_p)
+	{
+	  NEXT_INSN (first_insn) = free_insn;
+	  free_insn = first_insn;
+	}
       return PATTERN (first_insn);
     }
 
   /* Put them in a vector.  See if we already have a SEQUENCE of the
      appropriate length around.  */
-  if (len < SEQUENCE_RESULT_SIZE && (result = sequence_result[len]) != 0)
+  if (!ggc_p && len < SEQUENCE_RESULT_SIZE 
+      && (result = sequence_result[len]) != 0)
     sequence_result[len] = 0;
   else
     {
@@ -3385,7 +3378,6 @@ clear_emit_caches ()
   int i;
 
   /* Clear the start_sequence/gen_sequence cache.  */
-  sequence_element_free_list = 0;
   for (i = 0; i < SEQUENCE_RESULT_SIZE; i++)
     sequence_result[i] = 0;
   free_insn = 0;
@@ -3418,17 +3410,15 @@ init_emit ()
   f->emit->regno_pointer_flag_length = LAST_VIRTUAL_REGISTER + 101;
 
   f->emit->regno_pointer_flag 
-    = (char *) xmalloc (f->emit->regno_pointer_flag_length);
-  bzero (f->emit->regno_pointer_flag, f->emit->regno_pointer_flag_length);
+    = (char *) xcalloc (f->emit->regno_pointer_flag_length, sizeof (char));
 
   f->emit->regno_pointer_align
-    = (char *) xmalloc (f->emit->regno_pointer_flag_length);
-  bzero (f->emit->regno_pointer_align, f->emit->regno_pointer_flag_length);
+    = (char *) xcalloc (f->emit->regno_pointer_flag_length,
+			sizeof (char));
 
   regno_reg_rtx 
-    = (rtx *) xmalloc (f->emit->regno_pointer_flag_length * sizeof (rtx));
-  bzero ((char *) regno_reg_rtx,
-	 f->emit->regno_pointer_flag_length * sizeof (rtx));
+    = (rtx *) xcalloc (f->emit->regno_pointer_flag_length * sizeof (rtx),
+		       sizeof (rtx));
 
   /* Put copies of all the virtual register rtx into regno_reg_rtx.  */
   init_virtual_regs (f->emit);

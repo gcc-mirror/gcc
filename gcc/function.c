@@ -350,6 +350,7 @@ pop_function_context_from (context)
 {
   struct function *p = outer_function_chain;
   struct var_refs_queue *queue;
+  struct var_refs_queue *next;
 
   current_function = p;
   outer_function_chain = p->next;
@@ -367,9 +368,14 @@ pop_function_context_from (context)
 
   /* Finish doing put_var_into_stack for any of our variables
      which became addressable during the nested function.  */
-  for (queue = p->fixup_var_refs_queue; queue; queue = queue->next)
-    fixup_var_refs (queue->modified, queue->promoted_mode,
-		    queue->unsignedp, 0);
+  for (queue = p->fixup_var_refs_queue; queue; queue = next)
+    {
+      next = queue->next;
+      fixup_var_refs (queue->modified, queue->promoted_mode,
+		      queue->unsignedp, 0);
+      free (queue);
+    }
+  p->fixup_var_refs_queue = 0;
 
   /* Reset variables that have known state during rtx generation.  */
   rtx_equal_function_value_matters = 1;
@@ -1337,20 +1343,13 @@ put_reg_into_stack (function, reg, type, promoted_mode, decl_mode, volatile_p,
     {
       struct var_refs_queue *temp;
 
-      /* Variable is inherited; fix it up when we get back to its function.  */
-      push_obstacks (function->function_obstack,
-		     function->function_maybepermanent_obstack);
-
-      /* See comment in restore_tree_status in tree.c for why this needs to be
-	 on saveable obstack.  */
       temp
-	= (struct var_refs_queue *) savealloc (sizeof (struct var_refs_queue));
+	= (struct var_refs_queue *) xmalloc (sizeof (struct var_refs_queue));
       temp->modified = reg;
       temp->promoted_mode = promoted_mode;
       temp->unsignedp = TREE_UNSIGNED (type);
       temp->next = function->fixup_var_refs_queue;
       function->fixup_var_refs_queue = temp;
-      pop_obstacks ();
     }
   else if (used_p)
     /* Variable is local; fix it up now.  */

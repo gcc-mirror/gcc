@@ -3801,6 +3801,9 @@ rest_of_compilation (decl)
   if (jump_opt_dump)
     dump_rtl (".jump", decl, print_rtl, insns);
 
+  if (ggc_p)
+    ggc_collect ();
+
   /* Perform common subexpression elimination.
      Nonzero value from `cse_main' means that jumps were simplified
      and some code may now be unreachable, so do
@@ -3846,6 +3849,9 @@ rest_of_compilation (decl)
 	print_rtl_graph_with_bb (dump_base_name, ".addressof", insns);
     }
 
+  if (ggc_p)
+    ggc_collect ();
+
   /* Perform global cse.  */
 
   if (optimize > 0 && flag_gcse)
@@ -3870,6 +3876,9 @@ rest_of_compilation (decl)
 	  if (graph_dump_format != no_graph)
 	    print_rtl_graph_with_bb (dump_base_name, ".gcse", insns);
 	}
+
+      if (ggc_p)
+	ggc_collect ();
     }
   /* Move constant computations out of loops.  */
 
@@ -3909,6 +3918,9 @@ rest_of_compilation (decl)
 	  if (graph_dump_format != no_graph)
 	    print_rtl_graph_with_bb (dump_base_name, ".loop", insns);
 	}
+
+      if (ggc_p)
+	ggc_collect ();
     }
 
   if (optimize > 0)
@@ -3953,6 +3965,9 @@ rest_of_compilation (decl)
 	  if (graph_dump_format != no_graph)
 	    print_rtl_graph_with_bb (dump_base_name, ".cse2", insns);
 	}
+
+      if (ggc_p)
+	ggc_collect ();
     }
 
   if (profile_arc_flag || flag_test_coverage || flag_branch_probabilities)
@@ -3972,6 +3987,9 @@ rest_of_compilation (decl)
 	  if (graph_dump_format != no_graph)
 	    print_rtl_graph_with_bb (dump_base_name, ".bp", insns);
 	}
+
+      if (ggc_p)
+	ggc_collect ();
     }
 
   /* We are no longer anticipating cse in this function, at least.  */
@@ -4030,6 +4048,9 @@ rest_of_compilation (decl)
 	print_rtl_graph_with_bb (dump_base_name, ".flow", insns);
     }
 
+  if (ggc_p)
+    ggc_collect ();
+
   /* The first life analysis pass has finished.  From now on we can not
      generate any new pseudos.  */
   no_new_pseudos = 1;
@@ -4048,6 +4069,9 @@ rest_of_compilation (decl)
 	  if (graph_dump_format != no_graph)
 	    print_rtl_graph_with_bb (dump_base_name, ".combine", insns);
 	}
+
+      if (ggc_p)
+	ggc_collect ();
     }
 
   /* Register allocation pre-pass, to reduce number of moves
@@ -4066,6 +4090,9 @@ rest_of_compilation (decl)
 	  if (graph_dump_format != no_graph)
 	    print_rtl_graph_with_bb (dump_base_name, ".regmove", insns);
 	}
+
+      if (ggc_p)
+	ggc_collect ();
     }
 
   /* Print function header into sched dump now
@@ -4089,6 +4116,9 @@ rest_of_compilation (decl)
 	  if (graph_dump_format != no_graph)
 	    print_rtl_graph_with_bb (dump_base_name, ".sched", insns);
 	}
+
+      if (ggc_p)
+	ggc_collect ();
     }
 
   /* Determine if the current function is a leaf before running reload
@@ -4126,6 +4156,9 @@ rest_of_compilation (decl)
 	print_rtl_graph_with_bb (dump_base_name, ".lreg", insns);
     }
 
+  if (ggc_p)
+    ggc_collect ();
+
   if (global_reg_dump)
     open_dump_file (".greg", decl_printable_name (decl, 2));
 
@@ -4144,6 +4177,9 @@ rest_of_compilation (decl)
 
   if (failure)
     goto exit_rest_of_compilation;
+
+  if (ggc_p)
+    ggc_collect ();
 
   /* Do a very simple CSE pass over just the hard registers.  */
   if (optimize > 0)
@@ -4203,6 +4239,9 @@ rest_of_compilation (decl)
 	   find_basic_blocks (insns, max_reg_num (), rtl_dump_file, 1);
 	   life_analysis (insns, max_reg_num (), rtl_dump_file, 1);
 	 });
+
+      if (ggc_p)
+	ggc_collect ();
     }
 
   flow2_completed = 1;
@@ -4256,6 +4295,9 @@ rest_of_compilation (decl)
 	  if (graph_dump_format != no_graph)
 	    print_rtl_graph_with_bb (dump_base_name, ".sched2", insns);
 	}
+
+      if (ggc_p)
+	ggc_collect ();
     }
 
 #ifdef LEAF_REGISTERS
@@ -4297,6 +4339,9 @@ rest_of_compilation (decl)
        if (graph_dump_format != no_graph)
 	 print_rtl_graph_with_bb (dump_base_name, ".mach", insns);
      }
+
+   if (ggc_p)
+     ggc_collect ();
 #endif
 
   /* If a scheduling pass for delayed branches is to be done,
@@ -4317,6 +4362,9 @@ rest_of_compilation (decl)
 	    print_rtl_graph_with_bb (dump_base_name, ".dbr", insns);
 	}
     }
+
+   if (ggc_p)
+     ggc_collect ();
 #endif
 
   /* Shorten branches.  */
@@ -4337,6 +4385,9 @@ rest_of_compilation (decl)
       if (graph_dump_format != no_graph)
 	print_rtl_graph_with_bb (dump_base_name, ".stack", insns);
     }
+
+   if (ggc_p)
+     ggc_collect ();
 #endif
 
   /* Now turn the rtl into assembler code.  */
@@ -4372,6 +4423,9 @@ rest_of_compilation (decl)
 	     /* Release all memory held by regsets now */
 	     regset_release_memory ();
 	   });
+
+   if (ggc_p)
+     ggc_collect ();
 
   /* Write DBX symbols if requested */
 
@@ -4457,6 +4511,10 @@ rest_of_compilation (decl)
   /* We're done with this function.  */
   if (! DECL_DEFER_OUTPUT (decl))
     free_after_compilation (current_function);
+
+  current_function = 0;
+
+  ggc_collect ();
 
   /* The parsing time is all the time spent in yyparse
      *except* what is spent in this function.  */
