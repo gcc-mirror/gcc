@@ -2829,6 +2829,12 @@ stmp-fixinc: fixinc.sh gsyslimits.h specs.ready
 	chmod a+r include/syslimits.h)
 	$(STAMP) stmp-fixinc
 
+# We can't run fixinc (it's being built for a different host), but we still
+# need to install it so that the user can run it when the compiler is
+# installed.
+stmp-install-fixinc: fixinc.sh gsyslimits.h
+	$(STAMP) $@
+
 # Files related to the fixproto script.
 # gen-protos and fix-header are compiled with CC_FOR_BUILD, but they are only
 # used in native and host-x-target builds, so it's safe to link them with
@@ -2909,6 +2915,12 @@ stmp-fixproto: fixhdr.ready fixproto stmp-int-hdrs
 	  $(STAMP) include/fixed; \
 	fi
 	$(STAMP) stmp-fixproto
+
+# We can't run fixproto (it's being built for a different host), but we still
+# need to install it so that the user can run it when the compiler is
+# installed.
+stmp-install-fixproto: fixproto
+	$(STAMP) $@
 #
 # Remake the info files.
 
