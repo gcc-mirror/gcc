@@ -948,10 +948,11 @@ enum x86_64_reg_class
     X86_64_SSEUP_CLASS,
     X86_64_X87_CLASS,
     X86_64_X87UP_CLASS,
+    X86_64_COMPLEX_X87_CLASS,
     X86_64_MEMORY_CLASS
   };
 static const char * const x86_64_reg_class_name[] =
-   {"no", "integer", "integerSI", "sse", "sseSF", "sseDF", "sseup", "x87", "x87up", "no"};
+   {"no", "integer", "integerSI", "sse", "sseSF", "sseDF", "sseup", "x87", "x87up", "cplx87", "no"};
 
 #define MAX_CLASSES 4
 static int classify_argument (enum machine_mode, tree,
@@ -2072,9 +2073,14 @@ merge_classes (enum x86_64_reg_class class1, enum x86_64_reg_class class2)
       || class2 == X86_64_INTEGER_CLASS || class2 == X86_64_INTEGERSI_CLASS)
     return X86_64_INTEGER_CLASS;
 
-  /* Rule #5: If one of the classes is X87 or X87UP class, MEMORY is used.  */
-  if (class1 == X86_64_X87_CLASS || class1 == X86_64_X87UP_CLASS
-      || class2 == X86_64_X87_CLASS || class2 == X86_64_X87UP_CLASS)
+  /* Rule #5: If one of the classes is X87, X87UP, or COMPLEX_X87 class,
+     MEMORY is used.  */
+  if (class1 == X86_64_X87_CLASS
+      || class1 == X86_64_X87UP_CLASS
+      || class1 == X86_64_COMPLEX_X87_CLASS
+      || class2 == X86_64_X87_CLASS
+      || class2 == X86_64_X87UP_CLASS
+      || class2 == X86_64_COMPLEX_X87_CLASS)
     return X86_64_MEMORY_CLASS;
 
   /* Rule #6: Otherwise class SSE is used.  */
@@ -2354,8 +2360,10 @@ classify_argument (enum machine_mode mode, tree type,
       classes[1] = X86_64_SSEDF_CLASS;
       return 2;
     case XCmode:
+      classes[0] = X86_64_COMPLEX_X87_CLASS;
+      return 1;
     case TCmode:
-      /* These modes are larger than 16 bytes.  */
+      /* This modes is larger than 16 bytes.  */
       return 0;
     case V4SFmode:
     case V4SImode:
@@ -2427,6 +2435,8 @@ examine_argument (enum machine_mode mode, tree type, int in_return,
 	if (!in_return)
 	  return 0;
 	break;
+      case X86_64_COMPLEX_X87_CLASS:
+	return in_return ? 2 : 0;
       case X86_64_MEMORY_CLASS:
 	abort ();
       }
@@ -2485,6 +2495,7 @@ construct_container (enum machine_mode mode, tree type, int in_return,
       case X86_64_SSEDF_CLASS:
 	return gen_rtx_REG (mode, SSE_REGNO (sse_regno));
       case X86_64_X87_CLASS:
+      case X86_64_COMPLEX_X87_CLASS:
 	return gen_rtx_REG (mode, FIRST_STACK_REG);
       case X86_64_NO_CLASS:
 	/* Zero sized array, struct or class.  */
@@ -2503,11 +2514,6 @@ construct_container (enum machine_mode mode, tree type, int in_return,
       && (mode == CDImode || mode == TImode || mode == TFmode)
       && intreg[0] + 1 == intreg[1])
     return gen_rtx_REG (mode, intreg[0]);
-  if (n == 4
-      && class[0] == X86_64_X87_CLASS && class[1] == X86_64_X87UP_CLASS
-      && class[2] == X86_64_X87_CLASS && class[3] == X86_64_X87UP_CLASS
-      && mode != BLKmode)
-    return gen_rtx_REG (XCmode, FIRST_STACK_REG);
 
   /* Otherwise figure out the entries of the PARALLEL.  */
   for (i = 0; i < n; i++)
@@ -3070,8 +3076,8 @@ ix86_libcall_value (enum machine_mode mode)
 	case TFmode:
 	  return gen_rtx_REG (mode, FIRST_SSE_REG);
 	case XFmode:
-	  return gen_rtx_REG (mode, FIRST_FLOAT_REG);
 	case XCmode:
+	  return gen_rtx_REG (mode, FIRST_FLOAT_REG);
 	case TCmode:
 	  return NULL;
 	default:
