@@ -4151,9 +4151,10 @@ store_constructor (exp, target, align, cleared, size)
       /* If the constructor has fewer fields than the structure
 	 or if we are initializing the structure to mostly zeros,
 	 clear the whole structure first.  */
-      else if ((list_length (CONSTRUCTOR_ELTS (exp))
-		!= list_length (TYPE_FIELDS (type)))
-	       || mostly_zeros_p (exp))
+      else if (size > 0
+	       && ((list_length (CONSTRUCTOR_ELTS (exp))
+		    != list_length (TYPE_FIELDS (type)))
+		   || mostly_zeros_p (exp)))
 	{
 	  if (! cleared)
 	    clear_storage (target, GEN_INT (size),
@@ -4339,7 +4340,7 @@ store_constructor (exp, target, align, cleared, size)
 	      || 4 * zero_count >= 3 * count)
 	    need_to_clear = 1;
 	}
-      if (need_to_clear)
+      if (need_to_clear && size > 0)
 	{
 	  if (! cleared)
 	    clear_storage (target, GEN_INT (size),
@@ -4519,7 +4520,7 @@ store_constructor (exp, target, align, cleared, size)
 	 bzero/memset), and set the bits we want.  */
        
       /* Check for all zeros.  */
-      if (elt == NULL_TREE)
+      if (elt == NULL_TREE && size > 0)
 	{
 	  if (!cleared)
 	    clear_storage (target, GEN_INT (size),

@@ -1,3 +1,8 @@
+Fri Dec 24 12:34:26 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* expr.c (store_constructor): Don't call clear_storage if size is
+	variable.
+
 1999-12-24  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.in (toplev.o): Depend on loop.h.
