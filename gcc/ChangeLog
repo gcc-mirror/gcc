@@ -1,3 +1,9 @@
+Sat Apr  3 17:05:13 1999  Alexandre Oliva  <oliva@dcc.unicamp.br>
+
+	* inclhack.tpl: insert spaces between `sed -e' and '...'
+	Reported by Kaveh R. Ghazi <ghazi@caip.rutgers.edu>
+	* fixinc/fixincl.sh, fixinc/fixincl.x, fixinc/inclhack.sh: regen 
+	
 Sat Apr  3 14:54:46 1999  Craig Burley  <craig@jcb-sc.com>
 
 	* tree.def (BLOCK): Fix typo in comment.

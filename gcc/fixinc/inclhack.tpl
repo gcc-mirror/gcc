@@ -338,7 +338,7 @@ _IF PROGRAM _env ! =]
   else
     find ${FIND_BASE}/. -type f -print
   fi | \
-    sed -e's;/\./;/;g' -e's;//*;/;g' `
+    sed -e 's;/\./;/;g' -e 's;//*;/;g' `
 [=
 
     _include hackshell =][=
@@ -351,7 +351,7 @@ _IF PROGRAM _env ! =]
   else
     find ${FIND_BASE}/. -type f -print
   fi | \
-    sed -e's;/\./;/;g' -e's;//*;/;g' | \
+    sed -e 's;/\./;/;g' -e 's;//*;/;g' | \
     ${FIXINCL}`"[=
 
 
