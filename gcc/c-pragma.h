@@ -1,5 +1,5 @@
 /* Pragma related interfaces.
-   Copyright (C) 1995, 1998, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -22,9 +22,9 @@ Boston, MA 02111-1307, USA.  */
 #define GCC_C_PRAGMA_H
 
 #ifdef HANDLE_SYSV_PRAGMA
-/* Support #pragma weak iff ASM_WEAKEN_LABEL and ASM_OUTPUT_DEF are
+/* Support #pragma weak iff ASM_WEAKEN_LABEL and ASM_OUTPUT_WEAK_ALIAS are
    defined.  */
-#if defined (ASM_WEAKEN_LABEL) && defined (ASM_OUTPUT_DEF)
+#if defined (ASM_WEAKEN_LABEL) && defined (ASM_OUTPUT_WEAK_ALIAS)
 #define HANDLE_PRAGMA_WEAK SUPPORTS_WEAK
 #endif
 
