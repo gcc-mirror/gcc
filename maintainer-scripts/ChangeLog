@@ -1,3 +1,9 @@
+2003-08-16  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* gcc_release (build_sources): Use two new variables EXPORTTAG and
+	EXPORTDATE to make the extraction of sources more transparent and
+	also allow snapshots (off mainline) without a tag.
+
 2003-08-08  Mark Mitchell  <mark@codesourcery.com>
 
 	* gcc_release: Correct logic for updating version.c.  Put
