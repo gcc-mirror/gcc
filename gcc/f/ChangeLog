@@ -1,3 +1,7 @@
+2001-04-21  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* news.texi: Update release information for 0.5.27.
+
 Thu Apr 19 12:49:24 2001  Mark Mitchell  <mark@codesourcery.com>
 
 	* top.c (ffe_decode_option): Do not permit language-independent
