@@ -1,3 +1,7 @@
+Mon May 29 21:15:00 MET 2000  Philipp Thomas  <pthomas@suse.de>
+
+	* MAINTAINERS: Add self as i18n maintainer
+
 Thu May 18 10:58:13 2000  Jeffrey A Law  (law@cygnus.com)
 
 	* configure.in (hppa*64*-*-*): Do build ld for this configuration.
