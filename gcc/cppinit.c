@@ -1211,7 +1211,6 @@ new_pending_directive (pend, text, handler)
   DEF_OPT("traditional-cpp",	      0,      OPT_traditional_cpp)            \
   DEF_OPT("trigraphs",                0,      OPT_trigraphs)                  \
   DEF_OPT("v",                        0,      OPT_v)                          \
-  DEF_OPT("version",                  0,      OPT_version)                    \
   DEF_OPT("w",                        0,      OPT_w)
 
 #define DEF_OPT(text, msg, code) code,
@@ -1389,26 +1388,15 @@ cpp_handle_option (pfile, argc, argv)
 	case OPT_h:
 	case OPT__help:
 	  print_help ();
-	  CPP_OPTION (pfile, help_only) = 1;
-	  break;
+	  /* fall through */
 	case OPT_target__help:
-	  /* Print if any target specific options. cpplib has none, but
-	     make sure help_only gets set.  */
-	  CPP_OPTION (pfile, help_only) = 1;
-	  break;
-
-	  /* --version inhibits compilation, -version doesn't. -v means
-	     verbose and -version.  Historical reasons, don't ask.  */
 	case OPT__version:
+	  /* Nothing to do for these cases, but we need to be sure
+	     help_only is set.  */
 	  CPP_OPTION (pfile, help_only) = 1;
-	  pfile->print_version = 1;
 	  break;
 	case OPT_v:
 	  CPP_OPTION (pfile, verbose) = 1;
-	  pfile->print_version = 1;
-	  break;
-	case OPT_version:
-	  pfile->print_version = 1;
 	  break;
 
 	case OPT_C:
@@ -1771,15 +1759,6 @@ void
 cpp_post_options (pfile)
      cpp_reader *pfile;
 {
-  if (pfile->print_version)
-    {
-      fprintf (stderr, _("GNU CPP version %s (cpplib)"), version_string);
-#ifdef TARGET_VERSION
-      TARGET_VERSION;
-#endif
-      fputc ('\n', stderr);
-    }
-
   /* Canonicalize in_fname and out_fname.  We guarantee they are not
      NULL, and that the empty string represents stdin / stdout.  */
   if (CPP_OPTION (pfile, in_fname) == NULL

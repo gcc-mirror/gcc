@@ -386,10 +386,6 @@ struct cpp_reader
      preprocessor.  */
   struct spec_nodes spec_nodes;
 
-  /* Whether to print our version number.  Done this way so
-     we don't get it twice for -v -version.  */
-  unsigned char print_version;
-
   /* Whether cpplib owns the hashtable.  */
   unsigned char our_hashtable;
 
