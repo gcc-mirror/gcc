@@ -18,11 +18,6 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
-/* This is the same as pa-hpux.h, except that we generate snake code by
-   default and we have to deal with assembler weirdness. */
-
-#define HP_FP_ARG_DESCRIPTOR_REVERSED
-
 #define TARGET_DEFAULT 0
 
 #include "pa/pa.h"
