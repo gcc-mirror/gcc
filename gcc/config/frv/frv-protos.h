@@ -205,5 +205,18 @@ extern rtx frv_matching_accg_for_acc	(rtx);
 extern void frv_expand_fdpic_call	(rtx *, bool, bool);
 extern rtx frv_gen_GPsym2reg		(rtx, rtx);
 extern void frv_output_dwarf_dtprel	(FILE *, int, rtx);
+extern int frv_legitimate_memory_operand (rtx, enum machine_mode, int);
+
+/* Information about a relocation unspec.  SYMBOL is the relocation symbol
+   (a SYMBOL_REF or LABEL_REF), RELOC is the type of relocation and OFFSET
+   is the constant addend.  */
+struct frv_unspec {
+  rtx symbol;
+  int reloc;
+  HOST_WIDE_INT offset;
+};
+
+extern bool frv_const_unspec_p (rtx, struct frv_unspec *);
+
 #endif
 
