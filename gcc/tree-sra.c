@@ -56,7 +56,6 @@ enum sra_copy_mode { SCALAR_SCALAR, FIELD_SCALAR, SCALAR_FIELD };
 
 /* Local functions.  */
 static inline bool can_be_scalarized_p (tree);
-static inline void insert_edge_copies (tree stmt, basic_block bb);
 static tree create_scalar_copies (tree lhs, tree rhs, enum sra_copy_mode mode);
 static inline void scalarize_component_ref (tree, tree *tp);
 static void scalarize_structures (void);
@@ -556,7 +555,7 @@ find_candidates_for_sra (void)
    has more than one edge, STMT will be replicated for each edge.  Also,
    abnormal edges will be ignored.  */
 
-static inline void
+void
 insert_edge_copies (tree stmt, basic_block bb)
 {
   edge e;

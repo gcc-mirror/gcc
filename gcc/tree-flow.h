@@ -434,7 +434,7 @@ extern void bsi_replace (const block_stmt_iterator *, tree, bool);
 /* Location to track pending stmt for edge insertion.  */
 #define PENDING_STMT(e)	((e)->insns.t)
 
-extern void delete_tree_cfg (void);
+extern void delete_tree_cfg_annotations (void);
 extern void disband_implicit_edges (void);
 extern bool stmt_ends_bb_p (tree);
 extern bool is_ctrl_stmt (tree);
@@ -581,6 +581,9 @@ tree get_value_handle (tree);
 void set_value_handle (tree, tree);
 void debug_value_expressions (tree);
 void print_value_expressions (FILE *, tree);
+
+/* In tree-sra.c  */
+void insert_edge_copies (tree stmt, basic_block bb);
 
 #include "tree-flow-inline.h"
 
