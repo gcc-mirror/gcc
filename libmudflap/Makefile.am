@@ -4,7 +4,7 @@
 ## Free Software Foundation, Inc.
 ##
 
-AUTOMAKE_OPTIONS = 1.3 foreign
+AUTOMAKE_OPTIONS = 1.8 foreign
 MAINT_CHARSET = latin1
 SUBDIRS = testsuite
 
@@ -97,39 +97,6 @@ AM_MAKEFLAGS = \
 	"DESTDIR=$(DESTDIR)"
 
 MAKEOVERRIDES=
-
-# Multilib support variables.
-MULTISRCTOP =
-MULTIBUILDTOP =
-MULTIDIRS =
-MULTISUBDIR =
-MULTIDO = true
-MULTICLEAN = true
-
-# Multilib support.
-.PHONY: all-multi mostlyclean-multi clean-multi distclean-multi \
-	maintainer-clean-multi
-
-all-recursive: all-multi
-install-recursive: install-multi
-mostlyclean-recursive: mostlyclean-multi
-clean-recursive: clean-multi
-distclean-recursive: distclean-multi
-maintainer-clean-recursive: maintainer-clean-multi
-
-all-multi:
-	: $(MAKE) ; exec $(MULTIDO) $(AM_MAKEFLAGS) DO=all multi-do
-install-multi:
-	$(MULTIDO) $(AM_MAKEFLAGS) DO=install multi-do
-mostlyclean-multi:
-	$(MULTICLEAN) $(AM_MAKEFLAGS) DO=mostlyclean multi-clean
-clean-multi:
-	$(MULTICLEAN) $(AM_MAKEFLAGS) DO=clean multi-clean
-distclean-multi:
-	$(MULTICLEAN) $(AM_MAKEFLAGS) DO=distclean multi-clean
-maintainer-clean-multi:
-	$(MULTICLEAN) $(AM_MAKEFLAGS) DO=maintainer-clean multi-clean
-
 
 ## ################################################################
 

@@ -1,5 +1,17 @@
 2005-06-15  Paolo Bonzini  <bonzini@gnu.org>
 
+	* configure.ac: New name of configure.in.  Update
+	AC_INIT, AC_CONFIG_SRCDIR, AC_CONFIG_HEADERS, AC_CONFIG_FILES,
+	AC_OUTPUT, AM_INIT_AUTOMAKE to the preferred style for
+	Autoconf 2.5x and Automake 1.7 or later.
+	* configure.in: Remove.
+	* configure: Regenerate.
+
+	* Makefile.am: Remove useless multilib rules.
+	* Makefile.in: Regenerate.
+
+2005-06-15  Paolo Bonzini  <bonzini@gnu.org>
+
 	* .cvsignore: New file.
 
 2004-06-10  Stephen Crowley  <stephen.crowley@sbcglobal.net>

@@ -37,11 +37,20 @@
    */
 #undef HAVE_AS_SPARC_UA_PCREL
 
+/* Define to 1 if you have the <inttypes.h> header file. */
+#undef HAVE_INTTYPES_H
+
 /* Define if you have the long double type and it is bigger than a double */
 #undef HAVE_LONG_DOUBLE
 
 /* Define to 1 if you have the `memcpy' function. */
 #undef HAVE_MEMCPY
+
+/* Define to 1 if you have the <memory.h> header file. */
+#undef HAVE_MEMORY_H
+
+/* Define to 1 if you have the `mmap' function. */
+#undef HAVE_MMAP
 
 /* Define if mmap with MAP_ANON(YMOUS) works. */
 #undef HAVE_MMAP_ANON
@@ -54,6 +63,30 @@
 
 /* Define if .eh_frame sections should be read-only. */
 #undef HAVE_RO_EH_FRAME
+
+/* Define to 1 if you have the <stdint.h> header file. */
+#undef HAVE_STDINT_H
+
+/* Define to 1 if you have the <stdlib.h> header file. */
+#undef HAVE_STDLIB_H
+
+/* Define to 1 if you have the <strings.h> header file. */
+#undef HAVE_STRINGS_H
+
+/* Define to 1 if you have the <string.h> header file. */
+#undef HAVE_STRING_H
+
+/* Define to 1 if you have the <sys/mman.h> header file. */
+#undef HAVE_SYS_MMAN_H
+
+/* Define to 1 if you have the <sys/stat.h> header file. */
+#undef HAVE_SYS_STAT_H
+
+/* Define to 1 if you have the <sys/types.h> header file. */
+#undef HAVE_SYS_TYPES_H
+
+/* Define to 1 if you have the <unistd.h> header file. */
+#undef HAVE_UNISTD_H
 
 /* Define if the host machine stores words of multi-word integers in
    big-endian order. */

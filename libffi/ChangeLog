@@ -1,5 +1,13 @@
 2005-06-15  Paolo Bonzini  <bonzini@gnu.org>
 
+	* Makefile.am: Remove useless multilib rules.
+	* Makefile.in: Regenerate.
+	* aclocal.m4: Regenerate with automake 1.8.5.
+	* configure.ac: Remove useless multilib configury.
+	* configure: Regenerate.
+
+2005-06-15  Paolo Bonzini  <bonzini@gnu.org>
+
 	* .cvsignore: New file.
 
 2004-06-10  Jakub Jelinek  <jakub@redhat.com>

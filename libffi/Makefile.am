@@ -72,14 +72,6 @@ AM_MAKEFLAGS = \
 
 MAKEOVERRIDES=
 
-# Multilib support variables working around Automake bug.
-MULTISRCTOP =
-MULTIBUILDTOP =
-MULTIDIRS =
-MULTISUBDIR =
-MULTIDO = true
-MULTICLEAN = true
-
 toolexeclib_LTLIBRARIES = libffi.la
 noinst_LTLIBRARIES = libffi_convenience.la
 
@@ -147,6 +139,5 @@ AM_CFLAGS = -Wall -g -fexceptions
 
 libffi_la_LDFLAGS = -release $(VERSION)
 
-INCLUDES = -I. -I$(top_srcdir)/include -Iinclude -I$(top_srcdir)/src
-
-AM_CCASFLAGS = $(INCLUDES)
+AM_CPPFLAGS = -I. -I$(top_srcdir)/include -Iinclude -I$(top_srcdir)/src
+AM_CCASFLAGS = $(AM_CPPFLAGS)

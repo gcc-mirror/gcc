@@ -6,13 +6,6 @@ AC_INIT([libffi], [2.1], [http://gcc.gnu.org/bugs.html])
 AC_CONFIG_HEADERS([fficonfig.h])
 
 AM_ENABLE_MULTILIB(, ..)
-if test a = b; then
-   # This is for automake
-   AC_CONFIG_AUX_DIR([..])
-else
-   # and this is for autoconf
-   AC_CONFIG_AUX_DIRS(${multi_basedir})
- fi
 
 AC_CANONICAL_SYSTEM
 target_alias=${target_alias-$host_alias}

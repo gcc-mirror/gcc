@@ -17,7 +17,7 @@ libtool_VERSION=6:1:0
 AC_SUBST(libtool_VERSION)
 
 # Find the rest of the source tree framework.
-GLIBCXX_TOPREL_CONFIGURE
+AM_ENABLE_MULTILIB(, ..)
 
 # Gets build, host, target, *_vendor, *_cpu, *_os, etc.
 #

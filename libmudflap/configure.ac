@@ -1,12 +1,13 @@
 # Process this file with autoconf to produce a configure script, like so:
 # aclocal && autoconf && autoheader && automake
 
-AC_PREREQ(2.13)
-AC_INIT(mf-runtime.c)
+AC_PREREQ(2.59)
+AC_INIT(libmudflap, 1.0)
+AC_CONFIG_SRCDIR(mf-runtime.c)
 AC_CANONICAL_SYSTEM
-AM_INIT_AUTOMAKE(libmudflap, 1.0)
 
-AC_SUBST(PACKAGE)
+AM_INIT_AUTOMAKE
+
 # For libtool versioning info, format is CURRENT:REVISION:AGE
 libtool_VERSION=1:0:0
 AC_SUBST(libtool_VERSION)
@@ -30,7 +31,7 @@ AM_ENABLE_MULTILIB(, ..)
 target_alias=${target_alias-$target}
 AC_SUBST(target_alias)
 
-AM_CONFIG_HEADER(config.h)
+AC_CONFIG_HEADERS(config.h)
 
 AC_LANG_C
 # The same as in boehm-gc and libstdc++. Have to borrow it from there.
@@ -235,4 +236,5 @@ else
   multilib_arg=
 fi
 
-AC_OUTPUT([Makefile testsuite/Makefile testsuite/mfconfig.exp mf-runtime.h])
+AC_CONFIG_FILES([Makefile testsuite/Makefile testsuite/mfconfig.exp mf-runtime.h])
+AC_OUTPUT
