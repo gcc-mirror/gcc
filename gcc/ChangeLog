@@ -1,3 +1,8 @@
+2001-10-11  Matt Kraai  <kraai@alumni.carnegiemellon.edu>
+
+	* builtins.c (c_strlen): Treat an offset too large for a
+	HOST_WIDE_INT as out of range.
+
 Tue Sep 11 18:57:47 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* basic-block.h (EDGE_CRITICAL): Remove; renumber other flags.
