@@ -561,6 +561,9 @@ namespace std
       _M_get_digits(iter_type __in, iter_type __end) const;
     };
 
+  // This is the size of the buffer passed to _M_extract
+  const int _M_extract_buffer_length = 32;
+
   template<typename _CharT, typename _InIter>
     class num_get : public locale::facet
     {

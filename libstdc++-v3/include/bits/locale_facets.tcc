@@ -282,7 +282,7 @@ namespace std
           // Stage 1: extract and determine the conversion specifier.
           // Assuming leading zeros eliminated, thus the size of 32 for
           // integral types.
-          char __xtrc[32] = {'\0'};
+          char __xtrc[_M_extract_buffer_length] = {'\0'};
           int __base;
           _M_extract(__beg, __end, __io, __err, __xtrc, __base, false);
 
@@ -347,7 +347,7 @@ namespace std
       // Stage 1: extract and determine the conversion specifier.
       // Assuming leading zeros eliminated, thus the size of 32 for
       // integral types.
-      char __xtrc[32]= {'\0'};
+      char __xtrc[_M_extract_buffer_length]= {'\0'};
       int __base;
       _M_extract(__beg, __end, __io, __err, __xtrc, __base, false);
 
@@ -374,7 +374,7 @@ namespace std
       // Stage 1: extract and determine the conversion specifier.
       // Assuming leading zeros eliminated, thus the size of 32 for
       // integral types.
-      char __xtrc[32] = {'\0'};
+      char __xtrc[_M_extract_buffer_length] = {'\0'};
       int __base;
       _M_extract(__beg, __end, __io, __err, __xtrc, __base, false);
 
@@ -402,7 +402,7 @@ namespace std
       // Stage 1: extract and determine the conversion specifier.
       // Assuming leading zeros eliminated, thus the size of 32 for
       // integral types.
-      char __xtrc[32]= {'\0'};
+      char __xtrc[_M_extract_buffer_length]= {'\0'};
       int __base;
       _M_extract(__beg, __end, __io, __err, __xtrc, __base, false);
 
@@ -429,7 +429,7 @@ namespace std
       // Stage 1: extract and determine the conversion specifier.
       // Assuming leading zeros eliminated, thus the size of 32 for
       // integral types.
-      char __xtrc[32]= {'\0'};
+      char __xtrc[_M_extract_buffer_length]= {'\0'};
       int __base;
       _M_extract(__beg, __end, __io, __err, __xtrc, __base, false);
 
@@ -456,7 +456,7 @@ namespace std
       // Stage 1: extract and determine the conversion specifier.
       // Assuming leading zeros eliminated, thus the size of 32 for
       // integral types.
-      char __xtrc[32]= {'\0'};
+      char __xtrc[_M_extract_buffer_length]= {'\0'};
       int __base;
       _M_extract(__beg, __end, __io, __err, __xtrc, __base, false);
 
@@ -483,7 +483,7 @@ namespace std
       // Stage 1: extract and determine the conversion specifier.
       // Assuming leading zeros eliminated, thus the size of 32 for
       // integral types.
-      char __xtrc[32]= {'\0'};
+      char __xtrc[_M_extract_buffer_length]= {'\0'};
       int __base;
       _M_extract(__beg, __end, __io, __err, __xtrc, __base, false);
 
@@ -510,7 +510,7 @@ namespace std
       // Stage 1: extract and determine the conversion specifier.
       // Assuming leading zeros eliminated, thus the size of 32 for
       // integral types.
-      char __xtrc[32] = {'\0'};
+      char __xtrc[_M_extract_buffer_length] = {'\0'};
       int __base;
       _M_extract(__beg, __end, __io, __err, __xtrc, __base, false);
 
@@ -537,7 +537,7 @@ namespace std
       // Stage 1: extract and determine the conversion specifier.
       // Assuming leading zeros eliminated, thus the size of 32 for
       // integral types.
-      char __xtrc[32]= {'\0'};
+      char __xtrc[_M_extract_buffer_length]= {'\0'};
       int __base;
       _M_extract(__beg, __end, __io, __err, __xtrc, __base, false);
 
@@ -564,7 +564,7 @@ namespace std
       // Stage 1: extract and determine the conversion specifier.
       // Assuming leading zeros eliminated, thus the size of 256 for
       // floating-point types.
-      char __xtrc[32]= {'\0'};
+      char __xtrc[_M_extract_buffer_length]= {'\0'};
       int __base;
       _M_extract(__beg, __end, __io, __err, __xtrc, __base, true);
 
@@ -594,7 +594,7 @@ namespace std
       // Stage 1: extract and determine the conversion specifier.
       // Assuming leading zeros eliminated, thus the size of 256 for
       // floating-point types.
-      char __xtrc[32]= {'\0'};
+      char __xtrc[_M_extract_buffer_length]= {'\0'};
       int __base;
       _M_extract(__beg, __end, __io, __err, __xtrc, __base, true);
 
@@ -621,7 +621,7 @@ namespace std
       // Stage 1: extract and determine the conversion specifier.
       // Assuming leading zeros eliminated, thus the size of 256 for
       // floating-point types.
-      char __xtrc[32]= {'\0'};
+      char __xtrc[_M_extract_buffer_length]= {'\0'};
       int __base;
       _M_extract(__beg, __end, __io, __err, __xtrc, __base, true);
 
@@ -645,7 +645,7 @@ namespace std
            ios_base::iostate& __err, long double& __v) const
     {
       // Stage 1: extract
-      char __xtrc[32]= {'\0'};
+      char __xtrc[_M_extract_buffer_length]= {'\0'};
       int __base;
       _M_extract(__beg, __end, __io, __err, __xtrc, __base, true);
 
@@ -691,7 +691,7 @@ namespace std
       // Stage 1: extract and determine the conversion specifier.
       // Assuming leading zeros eliminated, thus the size of 32 for
       // integral types.
-      char __xtrc[32]= {'\0'};
+      char __xtrc[_M_extract_buffer_length]= {'\0'};
       int __base;
       _M_extract(__beg, __end, __io, __err, __xtrc, __base, false);
 

@@ -646,6 +646,12 @@ namespace std
     }
 #endif
 
+  // This interface passes a fixed size buffer. The function cannot handle
+  // input longer than the buffer and sets failbit in that case. This is
+  // not strictly compliant since the input may be valid, but we are stuck
+  // with this ABI on the 3.0 branch. Since leading zeros are discarded all
+  // valid integer input should be OK, only floating point input can exceed
+  // the buffer.
   template<>
     void
     num_get<char, istreambuf_iterator<char> >::
@@ -785,6 +791,14 @@ namespace std
 	    {
 	      // Try first for acceptable digit; record it if found.
 	      __xtrc[__pos++] = __c;
+              if (__pos == _M_extract_buffer_length)
+                {
+                  // XXX This is non-compliant, but our fixed-size
+                  // buffer is full.
+                  __xtrc[_M_extract_buffer_length-1] = '\0';
+		  __err |= ios_base::failbit;
+                  return;
+                }
 	      ++__sep_pos;
 	      __testunits = true;
 	      ++__beg;
@@ -865,6 +879,14 @@ namespace std
           if (__c == __fmt->_M_decimal_point)
             {
               __xtrc[__pos++] = '.';
+              if (__pos == _M_extract_buffer_length)
+                {
+                  // XXX This is non-compliant, but our fixed-size
+                  // buffer is full.
+                  __xtrc[_M_extract_buffer_length-1] = '\0';
+		  __err |= ios_base::failbit;
+                  return;
+                }
               ++__beg;
 	      __c = *__beg;
 
@@ -879,6 +901,14 @@ namespace std
                            && __p < &__lits[__cache_type::_S_udigits + __base]))
                     {
                       __xtrc[__pos++] = __c;
+                      if (__pos == _M_extract_buffer_length)
+                        {
+                          // XXX This is non-compliant, but our fixed-size
+                          // buffer is full.
+                          __xtrc[_M_extract_buffer_length-1] = '\0';
+        		  __err |= ios_base::failbit;
+                          return;
+                        }
                       ++__beg;
 		      __c = *__beg;
                       __testdec = true;
@@ -903,6 +933,14 @@ namespace std
                    || (__c == __lits[__cache_type::_S_Ee]))
                 {
                   __xtrc[__pos++] = __c;
+                  if (__pos == _M_extract_buffer_length)
+                    {
+                      // XXX This is non-compliant, but our fixed-size
+                      // buffer is full.
+                      __xtrc[_M_extract_buffer_length-1] = '\0';
+        		  __err |= ios_base::failbit;
+                      return;
+                    }
                   ++__beg;
 		  __c = *__beg;
 
@@ -913,6 +951,14 @@ namespace std
                           || (__c == __lits[__cache_type::_S_plus]))
                         {
                           __xtrc[__pos++] = __c;
+                          if (__pos == _M_extract_buffer_length)
+                            {
+                              // XXX This is non-compliant, but our fixed-size
+                              // buffer is full.
+                              __xtrc[_M_extract_buffer_length-1] = '\0';
+                		  __err |= ios_base::failbit;
+                              return;
+                            }
                           ++__beg;
 			  __c = *__beg;
                           // whitespace may follow a sign
@@ -939,6 +985,14 @@ namespace std
                                && __p < &__lits[__cache_type::_S_udigits + __base]))
                         {
                           __xtrc[__pos++] = __c;
+                          if (__pos == _M_extract_buffer_length)
+                            {
+                              // XXX This is non-compliant, but our fixed-size
+                              // buffer is full.
+                              __xtrc[_M_extract_buffer_length-1] = '\0';
+                		  __err |= ios_base::failbit;
+                              return;
+                            }
                           ++__beg;
 			  __c = *__beg;
                         }

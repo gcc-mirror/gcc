@@ -1,3 +1,16 @@
+2001-12-10  Philip Martin <philip@codematters.co.uk>
+
+	PR libstdc++/3720
+	* include/bits/locale_facets.h
+	(_M_extract_buffer_length): Add this constant.
+	* include/bits/locale_facet.tcc
+	(do_get): Use _M_extract_buffer_length.
+	* src/locale.cc
+	(_M_extract): Set failbit if buffer gets filled while
+	extracting characters.
+	* testsuite/27_io/istream_extractor_arith.cc
+	(tes12_aux, test12, test13): Add, ported from trunk.
+
 2001-12-09  Edward E. Meyer  <edward.e.meyer@boeing.com>
 
 	PR libstdc++/4622 (copy from trunk 2001-10-31)
