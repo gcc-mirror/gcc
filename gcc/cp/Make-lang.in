@@ -79,8 +79,8 @@ cxxmain.o: cplus-dem.c demangle.h
 	  -DVERSION=\"$(version)\" cxxmain.c
 	rm -f cxxmain.c
 
-$(DEMANGLER_PROG): cxxmain.o underscore.o getopt.o getopt1.o
-	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ \
+$(DEMANGLER_PROG): cxxmain.o underscore.o getopt.o getopt1.o $(LIBDEPS)
+	$(CC) $(ALL_CFLAGS) $(LDFLAGS) $(LIBS) -o $@ \
 	  cxxmain.o underscore.o getopt.o getopt1.o
 
 CXX_SRCS = $(srcdir)/cp/call.c $(srcdir)/cp/decl2.c \
