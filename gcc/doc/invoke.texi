@@ -4233,6 +4233,29 @@ compilation for profile feedback and one for compilation without.  The value
 for compilation with profile feedback needs to be more conservative (higher) in
 order to make tracer effective.
 
+@item ggc-min-expand
+
+GCC uses a garbage collector to manage its own memory allocation.  This
+parameter specifies the minimum percentage by which the garbage
+collector's heap should be allowed to expand between collections.
+Tuning this may improve compilation speed; it has no effect on code
+generation.
+
+The default is 30%.  Setting this parameter to zero causes a full
+collection to occur at every opportunity.  This is extremely slow, but
+can be useful for debugging.
+
+@item ggc-min-heapsize
+
+Minimum size of the garbage collector's heap before it begins bothering
+to collect garbage.  The first collection occurs after the heap expands
+by @option{ggc-min-expand}% beyond @option{ggc-min-heapsize}.  Again,
+tuning this may improve compilation speed, and has no effect on code
+generation.
+
+The default is 4096 (four megabytes).  Setting this parameter very large
+effectively disables garbage collection.
+
 @end table
 @end table
 
