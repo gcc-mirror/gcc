@@ -1,3 +1,8 @@
+2001-05-25  Mark  <mark@codesourcery.com>
+
+	* config/i386/i386.md: Make sure cmpstr peepholes do not 
+	affect liveness information.
+
 2001-05-24  Mark Mitchell  <mark@codesourcery.com>
 
 	* c-typeck.c (digest_init): Issue error messages about 
