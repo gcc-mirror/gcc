@@ -248,7 +248,8 @@ struct tree_opt_pass pass_ccp =
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
   TODO_dump_func | TODO_rename_vars
-    | TODO_ggc_collect | TODO_verify_ssa /* todo_flags_finish */
+    | TODO_ggc_collect | TODO_verify_ssa
+    | TODO_verify_stmts			/* todo_flags_finish */
 };
 
 
@@ -427,7 +428,11 @@ substitute_and_fold (void)
 	      /* If we folded a builtin function, we'll likely
 		 need to rename VDEFs.  */
 	      if (replaced_address || changed)
-		mark_new_vars_to_rename (stmt, vars_to_rename);
+		{
+		  mark_new_vars_to_rename (stmt, vars_to_rename);
+		  if (maybe_clean_eh_stmt (stmt))
+		    tree_purge_dead_eh_edges (bb);
+		}
 	    }
 
 	  if (dump_file && (dump_flags & TDF_DETAILS))
