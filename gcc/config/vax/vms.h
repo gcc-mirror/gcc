@@ -94,7 +94,7 @@ Boston, MA 02111-1307, USA.  */
  * setting of -4 will end up adding them right back again, but don't bother.
  */
 #define MAYBE_VMS_FUNCTION_PROLOGUE(FILE)	\
-{ char *p = current_function_name;		\
+{ const char *p = current_function_name;	\
   int is_main = strcmp ("main", p) == 0;	\
   while (!is_main && *p != '\0')		\
     {						\

@@ -203,9 +203,6 @@ static int check_methods_accessible		PROTO((tree, tree,
 static void encode_aggregate_within		PROTO((tree, int, int,
 					               int, int));
 
-/* We handle printing method names ourselves for ObjC */
-extern char *(*decl_printable_name) ();
-
 /* Misc. bookkeeping */
 
 typedef struct hashed_entry 	*hash;
@@ -8213,7 +8210,7 @@ init_objc ()
   synth_module_prologue ();
 
   /* Change the default error function */
-  decl_printable_name = (char* (*)()) objc_printable_name;
+  decl_printable_name = objc_printable_name;
 }
 
 static void

@@ -1,3 +1,18 @@
+Sun Aug 29 09:36:50 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* tree.c (tree_code_name): Constify a char*.
+
+	* tree.h (tree_code_name, decl_printable_name): Likewise.
+
+	* function.h (struct function): Likewise.
+
+	* toplev.c (decl_name, decl_printable_name): Likewise.
+
+	* vax/vms.h (MAYBE_VMS_FUNCTION_PROLOGUE): Likewise.
+
+	* objc/objc-act.c (decl_printable_name): Remove redundant prototype.
+	(init_objc): Remove function pointer cast.
+
 Sun Aug 29 05:01:17 1999  John David Anglin <dave@hiauly1.hia.nrc.ca>
 
 	* pa.md (interspace_jump): New pattern.
