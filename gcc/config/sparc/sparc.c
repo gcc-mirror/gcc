@@ -8361,6 +8361,7 @@ sparc_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
   epilogue_completed = 1;
   no_new_pseudos = 1;
   current_function_uses_only_leaf_regs = 1;
+  reset_block_changes ();
 
   emit_note (NOTE_INSN_PROLOGUE_END);
 

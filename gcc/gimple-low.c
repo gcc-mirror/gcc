@@ -123,8 +123,6 @@ lower_function_body (void)
     = blocks_nreverse (BLOCK_SUBBLOCKS (data.block));
 
   clear_block_marks (data.block);
-
-  reset_block_changes ();
 }
 
 struct tree_opt_pass pass_lower_cf = 
