@@ -2788,9 +2788,11 @@ extern struct rtx_def *legitimize_pic_address ();
 #define ADDITIONAL_REGISTER_NAMES \
 {{"ccr", SPARC_ICC_REG}, {"cc", SPARC_ICC_REG}}
 
-/* How to renumber registers for dbx and gdb.  */
+/* How to renumber registers for dbx and gdb.  In the flat model, the frame
+   pointer is really %i7.  */
 
-#define DBX_REGISTER_NUMBER(REGNO) (REGNO)
+#define DBX_REGISTER_NUMBER(REGNO) \
+  (TARGET_FLAT && REGNO == FRAME_POINTER_REGNUM ? 31 : REGNO)
 
 /* On Sun 4, this limit is 2048.  We use 1000 to be safe, since the length
    can run past this up to a continuation point.  Once we used 1500, but
@@ -3124,3 +3126,10 @@ extern char *output_return ();
 /* Defined in flags.h, but insn-emit.c does not include flags.h.  */
 
 extern int flag_pic;
+
+/* Before the prologue, the return address is %o7 + 8.  OK, sometimes it's
+   +12, but always using +8 is close enough for frame unwind purposes.
+   Actually, just using %o7 is close enough for unwinding, but %o7+8
+   is something you can return to.  */
+#define INCOMING_RETURN_ADDR_RTX \
+  gen_rtx (PLUS, word_mode, gen_rtx (REG, word_mode, 15), GEN_INT (8))

@@ -183,8 +183,8 @@ Boston, MA 02111-1307, USA.  */
 
 #define POPSECTION_ASM_OP	".popsection"
 
-#define DEBUG_SECTION		".debug_info,0x7000001e,0,0,1"
-#define LINE_SECTION		".debug_line,0x7000001e,0,0,1"
+#define DEBUG_INFO_SECTION	".debug_info,0x7000001e,0,0,1"
+#define DEBUG_LINE_SECTION	".debug_line,0x7000001e,0,0,1"
 #define SFNAMES_SECTION		".debug_sfnames,0x7000001e,0,0,1"
 #define SRCINFO_SECTION		".debug_srcinfo,0x7000001e,0,0,1"
 #define MACINFO_SECTION		".debug_macinfo,0x7000001e,0,0,1"
