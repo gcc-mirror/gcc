@@ -229,7 +229,7 @@ skip_jump_insn (orig_insn)
 
   if (insn
       && GET_CODE (insn) == JUMP_INSN
-      && simplejump_p (insn))
+      && any_uncondjump_p (insn))
     return insn;
 
   return orig_insn;

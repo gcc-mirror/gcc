@@ -294,7 +294,7 @@ find_next_ref (reg, insn)
 	    return insn;
 	  if (GET_CODE (insn) == JUMP_INSN)
 	    {
-	      if (simplejump_p (insn))
+	      if (any_uncondjump_p (insn))
 		next = JUMP_LABEL (insn);
 	      else
 		return 0;

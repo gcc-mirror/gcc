@@ -1,3 +1,23 @@
+2000-05-25  Jan Hubicka  <jh@suse.cz>
+
+	* combine.c (try_combine): Use any_condjump_p, any_uncondjump_p
+	and pc_set at the place of simplejump_p and condjump_p.
+	* cse.c (record_jump_equiv): Likewise.
+	* emit-rtl.c (emit): Likewise.
+	* explow.c (find_next_ref): Likewise.
+	* flow.c (tidy_fallthru_edge): Likewise.
+	(init_propagate_block_info): Likewise.
+	* gcse.c (delete_null_pointer_checks): Likewise.
+	* ifcvt.c (cond_exec_get_condition, noce_get_condition,
+	dead_or_predicable): Likewise.
+	* integrate.c (copy_insn_list): Likewise.
+	* loop.c (scan_loop, verify_dominator, find_and_verify_loops,
+	for_each_insn_in_loop, check_dbra_loop, get_condition,
+	insert_bct, load_mems): Likewise.
+	* resource.c (find_dead_or_set_registers): Likewise.
+	* sibcalls.c (simplejump_p): Likewise.
+	* unroll.c (copy_loop_body, reg_dead_after_loop): Likewise.
+
 2000-05-25  David Edelsohn  <edelsohn@gnu.org>
 
 	* rs6000.c (expand_block_move): Add 64-bit PowerPC doubleword move

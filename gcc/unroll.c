@@ -2124,7 +2124,7 @@ copy_loop_body (copy_start, copy_end, map, exit_label, last_iteration,
 
 	  /* If this used to be a conditional jump insn but whose branch
 	     direction is now known, we must do something special.  */
-	  if (condjump_p (insn) && !simplejump_p (insn) && map->last_pc_value)
+	  if (any_condjump_p (insn) && onlyjump_p (insn) && map->last_pc_value)
 	    {
 #ifdef HAVE_cc0
 	      /* If the previous insn set cc0 for us, delete it.  */
@@ -3281,7 +3281,7 @@ reg_dead_after_loop (loop, reg)
 	    {
 	      if (GET_CODE (PATTERN (insn)) == RETURN)
 		break;
-	      else if (! simplejump_p (insn)
+	      else if (!any_uncondjump_p (insn)
 		       /* Prevent infinite loop following infinite loops.  */
 		       || jump_count++ > 20)
 		return 0;

@@ -472,7 +472,7 @@ find_dead_or_set_registers (target, res, jump_target, jump_count, set, needed)
 	{
 	  if (jump_count++ < 10)
 	    {
-	      if (simplejump_p (this_jump_insn)
+	      if (any_uncondjump_p (this_jump_insn)
 		  || GET_CODE (PATTERN (this_jump_insn)) == RETURN)
 		{
 		  next = JUMP_LABEL (this_jump_insn);
@@ -483,8 +483,7 @@ find_dead_or_set_registers (target, res, jump_target, jump_count, set, needed)
 			*jump_target = JUMP_LABEL (this_jump_insn);
 		    }
 		}
-	      else if (condjump_p (this_jump_insn)
-		       || condjump_in_parallel_p (this_jump_insn))
+	      else if (any_condjump_p (this_jump_insn))
 		{
 		  struct resources target_set, target_res;
 		  struct resources fallthrough_res;

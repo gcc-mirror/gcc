@@ -668,7 +668,7 @@ scan_loop (loop, flags)
       loop_entry_jump = p;
 
       /* Loop entry must be unconditional jump (and not a RETURN)  */
-      if (simplejump_p (p)
+      if (any_uncondjump_p (p)
 	  && JUMP_LABEL (p) != 0
 	  /* Check to see whether the jump actually
 	     jumps out of the loop (meaning it's no loop).
@@ -1074,7 +1074,7 @@ scan_loop (loop, flags)
 		  followed a by barrier then loop end.  */
                && ! (GET_CODE (p) == JUMP_INSN && JUMP_LABEL (p) == loop->top
 		     && NEXT_INSN (NEXT_INSN (p)) == loop_end
-		     && simplejump_p (p)))
+		     && any_uncondjump_p (p)))
 	maybe_never = 1;
       else if (GET_CODE (p) == NOTE)
 	{
@@ -2569,8 +2569,7 @@ verify_dominator (loop)
 	     which we do not have jump target information in the JUMP_LABEL
 	     field (consider ADDR_VEC and ADDR_DIFF_VEC insns), then clear
 	     LOOP->CONT_DOMINATOR.  */
-	  if ((! condjump_p (insn)
-	       && ! condjump_in_parallel_p (insn))
+	  if (! any_condjump_p (insn)
 	      || label == NULL_RTX)
 	    {
 	      loop->cont_dominator = NULL_RTX;
@@ -2666,7 +2665,7 @@ find_and_verify_loops (f, loops)
 	{
 	  rtx label = JUMP_LABEL (insn);
 
-	  if (! condjump_p (insn) && ! condjump_in_parallel_p (insn))
+	  if (! any_condjump_p (insn))
 	    label = NULL_RTX;
 
 	  loop = current_loop;
@@ -2760,7 +2759,8 @@ find_and_verify_loops (f, loops)
 	/* See if this is an unconditional branch outside the loop.  */
 	if (this_loop
 	    && (GET_CODE (PATTERN (insn)) == RETURN
-		|| (simplejump_p (insn)
+		|| (any_uncondjump_p (insn)
+		    && onlyjump_p (insn)
 		    && (uid_loop[INSN_UID (JUMP_LABEL (insn))]
 			!= this_loop)))
 	    && get_max_uid () < max_uid_for_loop)
@@ -2817,8 +2817,7 @@ find_and_verify_loops (f, loops)
 		/* Just ignore jumps to labels that were never emitted.
 		   These always indicate compilation errors.  */
 		&& INSN_UID (JUMP_LABEL (p)) != 0
-		&& condjump_p (p)
-		&& ! simplejump_p (p)
+		&& any_condjump_p (p) && onlyjump_p (p)
 		&& next_real_insn (JUMP_LABEL (p)) == our_next
 		/* If it's not safe to move the sequence, then we
 		   mustn't try.  */
@@ -3757,7 +3756,7 @@ for_each_insn_in_loop (loop, fncall)
 
 	      if (GET_CODE (insn) == JUMP_INSN
 		  && GET_CODE (PATTERN (insn)) != RETURN
-		  && (!condjump_p (insn)
+		  && (!any_condjump_p (insn)
 		      || (JUMP_LABEL (insn) != 0
 			  && JUMP_LABEL (insn) != loop->scan_start
 			  && !loop_insn_first_p (p, JUMP_LABEL (insn)))))
@@ -3778,8 +3777,9 @@ for_each_insn_in_loop (loop, fncall)
          This can be any kind of jump, since we want to know if insns
          will be executed if the loop is executed.  */
 	  && !(JUMP_LABEL (p) == loop->top
-	     && ((NEXT_INSN (NEXT_INSN (p)) == loop->end && simplejump_p (p))
-		 || (NEXT_INSN (p) == loop->end && condjump_p (p)))))
+	     && ((NEXT_INSN (NEXT_INSN (p)) == loop->end
+		  && any_uncondjump_p (p))
+		 || (NEXT_INSN (p) == loop->end && any_condjump_p (p)))))
 	{
 	  rtx label = 0;
 
@@ -7782,6 +7782,8 @@ check_dbra_loop (loop, insn_count)
   comparison = get_condition_for_loop (loop, jump);
   if (comparison == 0)
     return 0;
+  if (!onlyjump_p (jump))
+    return 0;
 
   /* Try to compute whether the compare/branch at the loop end is one or
      two instructions.  */
@@ -9189,19 +9191,21 @@ get_condition (jump, earliest)
 {
   rtx cond;
   int reverse;
+  rtx set;
 
   /* If this is not a standard conditional jump, we can't parse it.  */
   if (GET_CODE (jump) != JUMP_INSN
-      || ! condjump_p (jump) || simplejump_p (jump))
+      || ! any_condjump_p (jump))
     return 0;
+  set = pc_set (jump);
 
-  cond = XEXP (SET_SRC (PATTERN (jump)), 0);
+  cond = XEXP (SET_SRC (set), 0);
 
   /* If this branches to JUMP_LABEL when the condition is false, reverse
      the condition.  */
   reverse
-    = GET_CODE (XEXP (SET_SRC (PATTERN (jump)), 2)) == LABEL_REF
-      && XEXP (XEXP (SET_SRC (PATTERN (jump)), 2), 0) == JUMP_LABEL (jump);
+    = GET_CODE (XEXP (SET_SRC (set), 2)) == LABEL_REF
+      && XEXP (XEXP (SET_SRC (set), 2), 0) == JUMP_LABEL (jump);
 
   return canonicalize_condition (jump, cond, reverse, earliest, NULL_RTX);
 }
@@ -9276,8 +9280,8 @@ insert_bct (loop)
 
   /* Make sure that the last loop insn is a conditional jump.  */
   if (GET_CODE (PREV_INSN (loop_end)) != JUMP_INSN
-      || ! condjump_p (PREV_INSN (loop_end))
-      || simplejump_p (PREV_INSN (loop_end)))
+      || ! onlyjump_p (PREV_INSN (loop_end))
+      || ! any_condjump_p (PREV_INSN (loop_end)))
     {
       if (loop_dump_stream)
 	fprintf (loop_dump_stream,
@@ -9712,9 +9716,9 @@ load_mems (loop)
 	       && ! (GET_CODE (p) == JUMP_INSN 
 		     && JUMP_LABEL (p) == loop->top
 		     && NEXT_INSN (NEXT_INSN (p)) == loop->end
-		     && simplejump_p (p)))
+		     && any_uncondjump_p (p)))
 	{
-	  if (!condjump_p (p))
+	  if (!any_condjump_p (p))
 	    /* Something complicated.  */
 	    maybe_never = 1;
 	  else

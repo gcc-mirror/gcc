@@ -5101,8 +5101,8 @@ delete_null_pointer_checks (f)
 
       /* We only want conditional branches.  */
       if (GET_CODE (last_insn) != JUMP_INSN
-	  || !condjump_p (last_insn)
-	  || simplejump_p (last_insn))
+	  || !any_condjump_p (last_insn)
+	  || !onlyjump_p (last_insn))
 	continue;
 
       /* LAST_INSN is a conditional jump.  Get its condition.  */
