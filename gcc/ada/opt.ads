@@ -104,6 +104,10 @@ package Opt is
    --  GNAT
    --  Set False to disable address clause warnings
 
+   Address_Is_Private : Boolean := False;
+   --  GNAT, GNATBIND
+   --  Set True if package System has the line "type Address is private;"
+
    All_Errors_Mode : Boolean := False;
    --  GNAT
    --  Flag set to force display of multiple errors on a single line and
