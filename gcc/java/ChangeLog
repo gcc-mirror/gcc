@@ -1,3 +1,7 @@
+2001-07-04  Jeffrey Oldham  <oldham@codesourcery.com>
+
+	* jvgenmain.c (do_mangle_classname): End string constant with '\0'.
+
 20010617 Release Manager
 
         * GCC 3.0 Released.
