@@ -5218,12 +5218,12 @@ collect_expansion (buf, end, nargs, arglist)
 	  concat = p;
 	  if (p == limit)
 	    error ("`##' at end of macro definition");
-	} else {
+	} else if (nargs >= 0) {
 	  /* Single #: stringify following argument ref.
 	     Don't leave the # in the expansion.  */
 	  exp_p--;
 	  SKIP_WHITE_SPACE (p);
-	  if (p == limit || ! is_idstart[*p] || nargs <= 0)
+	  if (p == limit || ! is_idstart[*p])
 	    error ("`#' operator is not followed by a macro argument name");
 	  else
 	    stringify = p;
