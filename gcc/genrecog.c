@@ -50,6 +50,7 @@ Boston, MA 02111-1307, USA.  */
 #include "system.h"
 #include "rtl.h"
 #include "obstack.h"
+#include "errors.h"
 
 #define OUTPUT_LABEL(INDENT_STRING, LABEL_NUMBER) \
   printf("%sL%d: ATTRIBUTE_UNUSED_LABEL\n", (INDENT_STRING), (LABEL_NUMBER))
@@ -193,9 +194,7 @@ static void write_tree		PROTO((struct decision *, const char *,
 				       struct decision *, int,
 				       enum routine_type));
 static void change_state	PROTO((const char *, const char *, int));
-void fatal		PVPROTO((const char *, ...))
-  ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
-
+
 /* Construct and return a sequence of decisions
    that will recognize INSN.
 
@@ -1709,28 +1708,6 @@ xmalloc (size)
   return val;
 }
 
-void
-fatal VPROTO ((const char *format, ...))
-{
-#ifndef ANSI_PROTOTYPES
-  const char *format;
-#endif
-  va_list ap;
-
-  VA_START (ap, format);
-
-#ifndef ANSI_PROTOTYPES
-  format = va_arg (ap, const char *);
-#endif
-
-  fprintf (stderr, "genrecog: ");
-  vfprintf (stderr, format, ap);
-  va_end (ap);
-  fprintf (stderr, "\n");
-  fprintf (stderr, "after %d definitions\n", next_index);
-  exit (FATAL_EXIT_CODE);
-}
-
 int
 main (argc, argv)
      int argc;
@@ -1742,6 +1719,7 @@ main (argc, argv)
   FILE *infile;
   register int c;
 
+  progname = "genrecog";
   obstack_init (rtl_obstack);
   recog_tree.first = recog_tree.last = split_tree.first = split_tree.last = 0;
 

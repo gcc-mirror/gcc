@@ -24,15 +24,13 @@ Boston, MA 02111-1307, USA.  */
 #include "system.h"
 #include "rtl.h"
 #include "obstack.h"
+#include "errors.h"
 
 static struct obstack obstack;
 struct obstack *rtl_obstack = &obstack;
 
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
-
-void fatal PVPROTO ((const char *, ...))
-  ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
 
 /* Define this so we can link with print-rtl.o to get debug_rtx function.  */
 char **insn_name_ptr = 0;
@@ -224,27 +222,6 @@ xrealloc (old, size)
   return ptr;
 }
 
-void
-fatal VPROTO ((const char *format, ...))
-{
-#ifndef ANSI_PROTOTYPES
-  const char *format;
-#endif
-  va_list ap;
-
-  VA_START (ap, format);
-
-#ifndef ANSI_PROTOTYPES
-  format = va_arg (ap, const char *);
-#endif
-
-  fprintf (stderr, "genattr: ");
-  vfprintf (stderr, format, ap);
-  va_end (ap);
-  fprintf (stderr, "\n");
-  exit (FATAL_EXIT_CODE);
-}
-
 int
 main (argc, argv)
      int argc;
@@ -268,6 +245,7 @@ main (argc, argv)
   init_range (&all_issue_delay);
   init_range (&all_blockage);
 
+  progname = "genattr";
   obstack_init (rtl_obstack);
 
   if (argc <= 1)

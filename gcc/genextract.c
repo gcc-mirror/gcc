@@ -23,6 +23,7 @@ Boston, MA 02111-1307, USA.  */
 #include "system.h"
 #include "rtl.h"
 #include "obstack.h"
+#include "errors.h"
 #include "insn-config.h"
 
 static struct obstack obstack;
@@ -98,9 +99,7 @@ static struct code_ptr *peepholes;
 static void gen_insn PROTO ((rtx));
 static void walk_rtx PROTO ((rtx, const char *));
 static void print_path PROTO ((char *));
-void fatal PVPROTO ((const char *, ...))
-  ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
-
+
 static void
 gen_insn (insn)
      rtx insn;
@@ -369,27 +368,6 @@ xrealloc (old, size)
   return ptr;
 }
 
-void
-fatal VPROTO ((const char *format, ...))
-{
-#ifndef ANSI_PROTOTYPES
-  const char *format;
-#endif
-  va_list ap;
-
-  VA_START (ap, format);
-
-#ifndef ANSI_PROTOTYPES
-  format = va_arg (ap, const char *);
-#endif
-
-  fprintf (stderr, "genextract: ");
-  vfprintf (stderr, format, ap);
-  va_end (ap);
-  fprintf (stderr, "\n");
-  exit (FATAL_EXIT_CODE);
-}
-
 char *
 xstrdup (input)
   const char *input;
@@ -411,6 +389,7 @@ main (argc, argv)
   struct extraction *p;
   struct code_ptr *link;
 
+  progname = "genextract";
   obstack_init (rtl_obstack);
 
   if (argc <= 1)
