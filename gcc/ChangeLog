@@ -1,5 +1,10 @@
 2000-07-25  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/i386/i386.md (andsi_1+1): Allow HImode.
+	(andsi_1+2): Require q_regs_operand.
+
+2000-07-25  Jakub Jelinek  <jakub@redhat.com>
+
 	* config/i386/i386.md (call_pop): Check operands[0],
 	not operands[1]. Only check SYMBOL_REF_FLAG for a SYMBOL_REF.
 	(call): Likewise.

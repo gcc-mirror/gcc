@@ -1,3 +1,7 @@
+2000-07-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/20000720-1.c: New test.
+
 2000-07-25  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	* g77.f-torture/compile/20000630-2.x: Removed.  Case fixed.
