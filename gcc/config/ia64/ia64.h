@@ -1849,7 +1849,7 @@ do {									\
   case CONST:								\
   case SYMBOL_REF:							\
   case LABEL_REF:							\
-    return COSTS_N_INSNS (2);
+    return COSTS_N_INSNS (3);
 
 /* Like `CONST_COSTS' but applies to nonconstant RTL expressions.  */
 
@@ -1915,19 +1915,6 @@ do {									\
    don't cse function addresses.  */
 
 #define NO_FUNCTION_CSE
-
-/* A C statement (sans semicolon) to update the integer variable COST based on
-   the relationship between INSN that is dependent on DEP_INSN through the
-   dependence LINK.  */
-
-/* ??? Investigate.  */
-/* #define ADJUST_COST(INSN, LINK, DEP_INSN, COST) */
-
-/* A C statement (sans semicolon) to update the integer scheduling
-   priority `INSN_PRIORITY(INSN)'.  */
-
-/* ??? Investigate.  */
-/* #define ADJUST_PRIORITY (INSN) */
 
 
 /* Dividing the output into sections.  */
@@ -2816,13 +2803,43 @@ do {									\
    BRANCH_COST+1 is the default if the machine does not use
    cc0, and 1 if it does use cc0.  */
 /* ??? Investigate.  */
-/* #define MAX_CONDITIONAL_EXECUTE */
+#define MAX_CONDITIONAL_EXECUTE 12
 
-/* Indicate how many instructions can be issued at the same time.  */
+/* A C statement (sans semicolon) to update the integer scheduling
+   priority `INSN_PRIORITY(INSN)'.  */
 
-/* ??? For now, we just schedule to fill bundles.  */
+/* ??? Investigate.  */
+/* #define ADJUST_PRIORITY (INSN) */
 
-#define ISSUE_RATE 3
+/* A C statement (sans semicolon) to update the integer variable COST
+   based on the relationship between INSN that is dependent on
+   DEP_INSN through the dependence LINK.  The default is to make no
+   adjustment to COST.  This can be used for example to specify to
+   the scheduler that an output- or anti-dependence does not incur
+   the same cost as a data-dependence.  */
+
+#define ADJUST_COST(insn,link,dep_insn,cost) \
+  (cost) = ia64_adjust_cost(insn, link, dep_insn, cost)
+
+#define ISSUE_RATE ia64_issue_rate ()
+
+#define MD_SCHED_INIT(DUMP, SCHED_VERBOSE, MAX_READY) \
+  ia64_sched_init (DUMP, SCHED_VERBOSE, MAX_READY)
+
+#define MD_SCHED_REORDER(DUMP, SCHED_VERBOSE, READY, N_READY, CLOCK, CIM) \
+  (CIM) = ia64_sched_reorder (DUMP, SCHED_VERBOSE, READY, &N_READY, 0)
+
+#define MD_SCHED_REORDER2(DUMP, SCHED_VERBOSE, READY, N_READY, CLOCK, CIM) \
+  (CIM) = ia64_sched_reorder2 (DUMP, SCHED_VERBOSE, READY, &N_READY, 1)
+
+#define MD_SCHED_FINISH(DUMP, SCHED_VERBOSE) \
+  ia64_sched_finish (DUMP, SCHED_VERBOSE)
+
+#define MD_SCHED_VARIABLE_ISSUE(DUMP, SCHED_VERBOSE, INSN, CAN_ISSUE_MORE) \
+  ((CAN_ISSUE_MORE)							   \
+   = ia64_variable_issue (DUMP, SCHED_VERBOSE, INSN, CAN_ISSUE_MORE))
+
+extern int ia64_final_schedule;
 
 #define IA64_UNWIND_INFO	1
 #define HANDLER_SECTION fprintf (asm_out_file, "\t.personality\t__ia64_personality_v1\n\t.handlerdata\n");

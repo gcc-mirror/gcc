@@ -42,6 +42,7 @@ Boston, MA 02111-1307, USA.  */
 #include "ggc.h"
 #include "basic-block.h"
 #include "toplev.h"
+#include "sched-int.h"
 
 /* This is used for communication between ASM_OUTPUT_LABEL and
    ASM_OUTPUT_LABELREF.  */
@@ -114,7 +115,7 @@ static void fix_range PARAMS ((const char *));
 static void ia64_add_gc_roots PARAMS ((void));
 static void ia64_init_machine_status PARAMS ((struct function *));
 static void ia64_mark_machine_status PARAMS ((struct function *));
-static void emit_insn_group_barriers PARAMS ((rtx));
+static void emit_insn_group_barriers PARAMS ((FILE *, rtx));
 static void emit_predicate_relation_info PARAMS ((void));
 static int process_set PARAMS ((FILE *, rtx));
 
@@ -127,7 +128,6 @@ static rtx ia64_expand_compare_and_swap PARAMS ((enum machine_mode, int,
 static rtx ia64_expand_lock_test_and_set PARAMS ((enum machine_mode,
 						  tree, rtx));
 static rtx ia64_expand_lock_release PARAMS ((enum machine_mode, tree, rtx));
-
 
 /* Return 1 if OP is a valid operand for the MEM of a CALL insn.  */
 
@@ -2401,6 +2401,14 @@ ia64_hard_regno_rename_ok (from, to)
       || to == current_frame_info.reg_save_ar_lc)
     return 0;
 
+  if (from == current_frame_info.reg_fp
+      || from == current_frame_info.reg_save_b0
+      || from == current_frame_info.reg_save_pr
+      || from == current_frame_info.reg_save_ar_pfs
+      || from == current_frame_info.reg_save_ar_unat
+      || from == current_frame_info.reg_save_ar_lc)
+    return 0;
+
   /* Don't use output registers outside the register frame.  */
   if (OUT_REGNO_P (to) && to >= OUT_REG (current_frame_info.n_output_regs))
     return 0;
@@ -3674,6 +3682,40 @@ ia64_override_options ()
   ia64_add_gc_roots ();
 }
 
+static enum attr_itanium_requires_unit0 ia64_safe_itanium_requires_unit0 PARAMS((rtx));
+static enum attr_itanium_class ia64_safe_itanium_class PARAMS((rtx));
+static enum attr_type ia64_safe_type PARAMS((rtx));
+
+static enum attr_itanium_requires_unit0
+ia64_safe_itanium_requires_unit0 (insn)
+     rtx insn;
+{
+  if (recog_memoized (insn) >= 0)
+    return get_attr_itanium_requires_unit0 (insn);
+  else
+    return ITANIUM_REQUIRES_UNIT0_NO;
+}
+
+static enum attr_itanium_class
+ia64_safe_itanium_class (insn)
+     rtx insn;
+{
+  if (recog_memoized (insn) >= 0)
+    return get_attr_itanium_class (insn);
+  else
+    return ITANIUM_CLASS_UNKNOWN;
+}
+
+static enum attr_type
+ia64_safe_type (insn)
+     rtx insn;
+{
+  if (recog_memoized (insn) >= 0)
+    return get_attr_type (insn);
+  else
+    return TYPE_UNKNOWN;
+}
+
 /* The following collection of routines emit instruction group stop bits as
    necessary to avoid dependencies.  */
 
@@ -3744,6 +3786,9 @@ static void rws_update PARAMS ((struct reg_write_state *, int,
 static int rws_access_regno PARAMS ((int, struct reg_flags, int));
 static int rws_access_reg PARAMS ((rtx, struct reg_flags, int));
 static int rtx_needs_barrier PARAMS ((rtx, struct reg_flags, int));
+static void init_insn_group_barriers PARAMS ((void));
+static int group_barrier_needed_p PARAMS ((rtx));
+static int safe_group_barrier_needed_p PARAMS ((rtx));
 
 /* Update *RWS for REGNO, which is being written by the current instruction,
    with predicate PRED, and associated register flags in FLAGS.  */
@@ -4189,6 +4234,8 @@ rtx_needs_barrier (x, flags, pred)
         case 19: /* fetchadd_acq */
 	case 20: /* mov = ar.bsp */
 	case 21: /* flushrs */
+	case 22: /* bundle selector */
+	case 23: /* cycle display */
           break;
 
 	case 5: /* recip_approx */
@@ -4279,6 +4326,179 @@ rtx_needs_barrier (x, flags, pred)
   return need_barrier;
 }
 
+/* Clear out the state for group_barrier_needed_p at the start of a
+   sequence of insns.  */
+
+static void
+init_insn_group_barriers ()
+{
+  memset (rws_sum, 0, sizeof (rws_sum));
+}
+
+/* Cumulative info for the current instruction group.  */
+struct reg_write_state rws_sum[NUM_REGS];
+
+/* Given the current state, recorded by previous calls to this function,
+   determine whether a group barrier (a stop bit) is necessary before INSN.
+   Return nonzero if so.  */
+
+static int
+group_barrier_needed_p (insn)
+     rtx insn;
+{
+  rtx pat;
+  int need_barrier = 0;
+  struct reg_flags flags;
+
+  memset (&flags, 0, sizeof (flags));
+  switch (GET_CODE (insn))
+    {
+    case NOTE:
+      break;
+
+    case BARRIER:
+      /* A barrier doesn't imply an instruction group boundary.  */
+      break;
+
+    case CODE_LABEL:
+      memset (rws_insn, 0, sizeof (rws_insn));
+      return 1;
+
+    case CALL_INSN:
+      flags.is_branch = 1;
+      flags.is_sibcall = SIBLING_CALL_P (insn);
+      memset (rws_insn, 0, sizeof (rws_insn));
+      need_barrier = rtx_needs_barrier (PATTERN (insn), flags, 0);
+      break;
+
+    case JUMP_INSN:
+      flags.is_branch = 1;
+      /* FALLTHRU */
+
+    case INSN:
+      if (GET_CODE (PATTERN (insn)) == USE
+	  || GET_CODE (PATTERN (insn)) == CLOBBER)
+	/* Don't care about USE and CLOBBER "insns"---those are used to
+	   indicate to the optimizer that it shouldn't get rid of
+	   certain operations.  */
+	break;
+
+      pat = PATTERN (insn);
+
+      /* Ug.  Hack hacks hacked elsewhere.  */
+      switch (recog_memoized (insn))
+	{
+	  /* We play dependency tricks with the epilogue in order
+	     to get proper schedules.  Undo this for dv analysis.  */
+	case CODE_FOR_epilogue_deallocate_stack:
+	  pat = XVECEXP (pat, 0, 0);
+	  break;
+
+	  /* The pattern we use for br.cloop confuses the code above.
+	     The second element of the vector is representative.  */
+	case CODE_FOR_doloop_end_internal:
+	  pat = XVECEXP (pat, 0, 1);
+	  break;
+
+	  /* Doesn't generate code.  */
+	case CODE_FOR_pred_rel_mutex:
+	  return 0;
+
+	default:
+	  break;
+	}
+
+      memset (rws_insn, 0, sizeof (rws_insn));
+      need_barrier = rtx_needs_barrier (pat, flags, 0);
+
+      /* Check to see if the previous instruction was a volatile
+	 asm.  */
+      if (! need_barrier)
+	need_barrier = rws_access_regno (REG_VOLATILE, flags, 0);
+
+      break;
+
+    default:
+      abort ();
+    }
+  return need_barrier;
+}
+
+/* Like group_barrier_needed_p, but do not clobber the current state.  */
+
+static int
+safe_group_barrier_needed_p (insn)
+     rtx insn;
+{
+  struct reg_write_state rws_saved[NUM_REGS];
+  int t;
+  memcpy (rws_saved, rws_sum, NUM_REGS * sizeof *rws_saved);
+  t = group_barrier_needed_p (insn);
+  memcpy (rws_sum, rws_saved, NUM_REGS * sizeof *rws_saved);
+  return t;
+}
+
+/* INSNS is an chain of instructions.  Scan the chain, and insert stop bits
+   as necessary to eliminate dependendencies.  */
+
+static void
+emit_insn_group_barriers (dump, insns)
+     FILE *dump;
+     rtx insns;
+{
+  rtx insn;
+  rtx last_label = 0;
+  int insns_since_last_label = 0;
+
+  init_insn_group_barriers ();
+
+  for (insn = insns; insn; insn = NEXT_INSN (insn))
+    {
+      if (GET_CODE (insn) == CODE_LABEL)
+	{
+	  if (insns_since_last_label)
+	    last_label = insn;
+	  insns_since_last_label = 0;
+	}
+      else if (GET_CODE (insn) == NOTE
+	       && NOTE_LINE_NUMBER (insn) == NOTE_INSN_BASIC_BLOCK)
+	{
+	  if (insns_since_last_label)
+	    last_label = insn;
+	  insns_since_last_label = 0;
+	}
+      else if (GET_CODE (insn) == INSN
+	       && GET_CODE (PATTERN (insn)) == UNSPEC_VOLATILE
+	       && XINT (PATTERN (insn), 1) == 2)
+	{
+	  init_insn_group_barriers ();
+	  last_label = 0;
+	}
+      else if (INSN_P (insn))
+	{
+	  insns_since_last_label = 1;
+
+	  if (group_barrier_needed_p (insn))
+	    {
+	      if (last_label)
+		{
+		  if (dump)
+		    fprintf (dump, "Emitting stop before label %d\n",
+			     INSN_UID (last_label));
+		  emit_insn_before (gen_insn_group_barrier (GEN_INT (3)), last_label);
+		  insn = last_label;
+		}
+	      init_insn_group_barriers ();
+	      last_label = 0;
+	    }
+	}
+    }
+}
+
+static int errata_find_address_regs PARAMS ((rtx *, void *));
+static void errata_emit_nops PARAMS ((rtx));
+static void fixup_errata PARAMS ((void));
+
 /* This structure is used to track some details about the previous insns
    groups so we can determine if it may be necessary to insert NOPs to
    workaround hardware errata.  */
@@ -4290,20 +4510,6 @@ static struct group
 
 /* Index into the last_group array.  */
 static int group_idx;
-
-static void emit_group_barrier_after PARAMS ((rtx));
-static int errata_find_address_regs PARAMS ((rtx *, void *));
-static void errata_emit_nops PARAMS ((rtx));
-
-/* Create a new group barrier, emit it after AFTER, and advance group_idx.  */
-static void
-emit_group_barrier_after (after)
-     rtx after;
-{
-  emit_insn_after (gen_insn_group_barrier (), after);
-  group_idx = (group_idx + 1) % 3;
-  memset (last_group + group_idx, 0, sizeof last_group[group_idx]);
-}
 
 /* Called through for_each_rtx; determines if a hard register that was
    conditionally set in the previous group is used as an address register.
@@ -4395,194 +4601,1246 @@ errata_emit_nops (insn)
     }
   if (for_each_rtx (&real_pat, errata_find_address_regs, NULL))
     {
-      emit_insn_before (gen_insn_group_barrier (), insn);
+      emit_insn_before (gen_insn_group_barrier (GEN_INT (3)), insn);
       emit_insn_before (gen_nop (), insn);
-      emit_insn_before (gen_insn_group_barrier (), insn);
+      emit_insn_before (gen_insn_group_barrier (GEN_INT (3)), insn);
     }
 }
 
-/* INSNS is an chain of instructions.  Scan the chain, and insert stop bits
-   as necessary to eliminate dependendencies.  */
+/* Emit extra nops if they are required to work around hardware errata.  */
 
 static void
-emit_insn_group_barriers (insns)
-     rtx insns;
+fixup_errata ()
 {
-  rtx insn, prev_insn;
-
-  memset (rws_sum, 0, sizeof (rws_sum));
+  rtx insn;
 
   group_idx = 0;
   memset (last_group, 0, sizeof last_group);
 
-  prev_insn = 0;
-  for (insn = insns; insn; insn = NEXT_INSN (insn))
+  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
     {
-      int need_barrier = 0;
-      struct reg_flags flags;
-
+      if (INSN_P (insn) && ia64_safe_type (insn) == TYPE_S)
+	{
+	  group_idx = (group_idx + 1) % 3;
+	  memset (last_group + group_idx, 0, sizeof last_group[group_idx]);
+	}
       if ((TARGET_B_STEP || TARGET_A_STEP) && INSN_P (insn))
 	errata_emit_nops (insn);
+    }
+}
+
+/* Instruction scheduling support.  */
+/* Describe one bundle.  */
 
-      memset (&flags, 0, sizeof (flags));
-      switch (GET_CODE (insn))
+struct bundle
+{
+  /* Zero if there's no possibility of a stop in this bundle other than
+     at the end, otherwise the position of the optional stop bit.  */
+  int possible_stop;
+  /* The types of the three slots.  */
+  enum attr_type t[3];
+  /* The pseudo op to be emitted into the assembler output.  */
+  const char *name;
+};
+
+#define NR_BUNDLES 10
+
+/* A list of all available bundles.  */
+
+static const struct bundle bundle[NR_BUNDLES] =
+{
+  { 2, { TYPE_M, TYPE_I, TYPE_I }, ".mii" },
+  { 1, { TYPE_M, TYPE_M, TYPE_I }, ".mmi" },
+  { 0, { TYPE_M, TYPE_F, TYPE_I }, ".mfi" },
+  { 0, { TYPE_M, TYPE_M, TYPE_F }, ".mmf" },
+#if NR_BUNDLES == 10
+  { 0, { TYPE_B, TYPE_B, TYPE_B }, ".bbb" },
+  { 0, { TYPE_M, TYPE_B, TYPE_B }, ".mbb" },
+#endif
+  { 0, { TYPE_M, TYPE_I, TYPE_B }, ".mib" },
+  { 0, { TYPE_M, TYPE_M, TYPE_B }, ".mmb" },
+  { 0, { TYPE_M, TYPE_F, TYPE_B }, ".mfb" },
+  /* .mfi needs to occur earlier than .mlx, so that we only generate it if
+     it matches an L type insn.  Otherwise we'll try to generate L type
+     nops.  */
+  { 0, { TYPE_M, TYPE_L, TYPE_X }, ".mlx" }
+};
+
+/* Describe a packet of instructions.  Packets consist of two bundles that
+   are visible to the hardware in one scheduling window.  */
+
+struct ia64_packet
+{
+  const struct bundle *t1, *t2;
+  /* Precomputed value of the first split issue in this packet if a cycle
+     starts at its beginning.  */
+  int first_split;
+  /* For convenience, the insn types are replicated here so we don't have
+     to go through T1 and T2 all the time.  */
+  enum attr_type t[6];
+};
+
+/* An array containing all possible packets.  */
+#define NR_PACKETS (NR_BUNDLES * NR_BUNDLES)
+static struct ia64_packet packets[NR_PACKETS];
+
+/* Map attr_type to a string with the name.  */
+
+static const char *type_names[] =
+{
+  "UNKNOWN", "A", "I", "M", "F", "B", "L", "X", "S"
+};
+
+/* Nonzero if we should insert stop bits into the schedule.  */
+int ia64_final_schedule = 0;
+
+static rtx ia64_single_set PARAMS ((rtx));
+static int insn_matches_slot PARAMS ((const struct ia64_packet *, enum attr_type, int, rtx));
+static void ia64_emit_insn_before PARAMS ((rtx, rtx));
+static rtx gen_nop_type PARAMS ((enum attr_type));
+static void finish_last_head PARAMS ((FILE *, int));
+static void rotate_one_bundle PARAMS ((FILE *));
+static void rotate_two_bundles PARAMS ((FILE *));
+static void cycle_end_fill_slots PARAMS ((FILE *));
+static int packet_matches_p PARAMS ((const struct ia64_packet *, int, int *));
+static int get_split PARAMS ((const struct ia64_packet *, int));
+static int find_best_insn PARAMS ((rtx *, enum attr_type *, int,
+				   const struct ia64_packet *, int));
+static void find_best_packet PARAMS ((int *, const struct ia64_packet **,
+				      rtx *, enum attr_type *, int));
+static int itanium_reorder PARAMS ((FILE *, rtx *, rtx *, int));
+static void dump_current_packet PARAMS ((FILE *));
+static void schedule_stop PARAMS ((FILE *));
+
+/* Map a bundle number to its pseudo-op.  */
+
+const char *
+get_bundle_name (b)
+     int b;
+{
+  return bundle[b].name;
+}
+
+/* Compute the slot which will cause a split issue in packet P if the
+   current cycle begins at slot BEGIN.  */
+
+static int
+itanium_split_issue (p, begin)
+     const struct ia64_packet *p;
+     int begin;
+{
+  int type_count[TYPE_S];
+  int i;
+  int split = 6;
+
+  if (begin < 3)
+    {
+      /* Always split before and after MMF.  */
+      if (p->t[0] == TYPE_M && p->t[1] == TYPE_M && p->t[2] == TYPE_F)
+	return 3;
+      if (p->t[3] == TYPE_M && p->t[4] == TYPE_M && p->t[5] == TYPE_F)
+	return 3;
+      /* Always split after MBB and BBB.  */
+      if (p->t[1] == TYPE_B)
+	return 3;
+      /* Split after first bundle in MIB BBB combination.  */
+      if (p->t[2] == TYPE_B && p->t[3] == TYPE_B)
+	return 3;
+    }
+
+  memset (type_count, 0, sizeof type_count);
+  for (i = begin; i < split; i++)
+    {
+      enum attr_type t0 = p->t[i];
+      /* An MLX bundle reserves the same units as an MFI bundle.  */
+      enum attr_type t = (t0 == TYPE_L ? TYPE_F
+			  : t0 == TYPE_X ? TYPE_I
+			  : t0);
+      int max = (t == TYPE_B ? 3 : t == TYPE_F ? 1 : 2);
+      if (type_count[t] == max)
+	return i;
+      type_count[t]++;
+    }
+  return split;
+}
+
+/* Return the maximum number of instructions a cpu can issue.  */
+
+int
+ia64_issue_rate ()
+{
+  return 6;
+}
+
+/* Helper function - like single_set, but look inside COND_EXEC.  */
+
+static rtx
+ia64_single_set (insn)
+     rtx insn;
+{
+  rtx x = PATTERN (insn);
+  if (GET_CODE (x) == COND_EXEC)
+    x = COND_EXEC_CODE (x);
+  if (GET_CODE (x) == SET)
+    return x;
+  return single_set_2 (insn, x);
+}
+
+/* Adjust the cost of a scheduling dependency.  Return the new cost of
+   a dependency LINK or INSN on DEP_INSN.  COST is the current cost.  */
+
+int
+ia64_adjust_cost (insn, link, dep_insn, cost)
+     rtx insn, link, dep_insn;
+     int cost;
+{
+  enum attr_type dep_type;
+  enum attr_itanium_class dep_class;
+  enum attr_itanium_class insn_class;
+  rtx dep_set, set, src, addr;
+
+  if (GET_CODE (PATTERN (insn)) == CLOBBER
+      || GET_CODE (PATTERN (insn)) == USE
+      || GET_CODE (PATTERN (dep_insn)) == CLOBBER
+      || GET_CODE (PATTERN (dep_insn)) == USE
+      /* @@@ Not accurate for indirect calls.  */
+      || GET_CODE (insn) == CALL_INSN
+      || ia64_safe_type (insn) == TYPE_S)
+    return 0;
+
+  if (REG_NOTE_KIND (link) == REG_DEP_OUTPUT
+      || REG_NOTE_KIND (link) == REG_DEP_ANTI)
+    return 0;
+
+  dep_type = ia64_safe_type (dep_insn);
+  dep_class = ia64_safe_itanium_class (dep_insn);
+  insn_class = ia64_safe_itanium_class (insn);
+
+  /* Compares that feed a conditional branch can execute in the same
+     cycle.  */
+  dep_set = ia64_single_set (dep_insn);
+  set = ia64_single_set (insn);
+
+  if (dep_type != TYPE_F
+      && dep_set
+      && GET_CODE (SET_DEST (dep_set)) == REG
+      && PR_REG (REGNO (SET_DEST (dep_set)))
+      && GET_CODE (insn) == JUMP_INSN)
+    return 0;
+
+  if (dep_set && GET_CODE (SET_DEST (dep_set)) == MEM)
+    {
+      /* ??? Can't find any information in the documenation about whether
+	 a sequence
+	   st [rx] = ra
+	   ld rb = [ry]
+	 splits issue.  Assume it doesn't.  */
+      return 0;
+    }
+
+  src = set ? SET_SRC (set) : 0;
+  addr = 0;
+  if (set && GET_CODE (SET_DEST (set)) == MEM)
+    addr = XEXP (SET_DEST (set), 0);
+  else if (set && GET_CODE (src) == MEM)
+    addr = XEXP (src, 0);
+  else if (set && GET_CODE (src) == ZERO_EXTEND
+	   && GET_CODE (XEXP (src, 0)) == MEM)
+    addr = XEXP (XEXP (src, 0), 0);
+  else if (set && GET_CODE (src) == UNSPEC
+	   && XVECLEN (XEXP (src, 0), 0) > 0
+	   && GET_CODE (XVECEXP (src, 0, 0)) == MEM)
+    addr = XEXP (XVECEXP (src, 0, 0), 0);
+  if (addr && GET_CODE (addr) == POST_MODIFY)
+    addr = XEXP (addr, 0);
+
+  set = ia64_single_set (dep_insn);
+
+  if ((dep_class == ITANIUM_CLASS_IALU
+       || dep_class == ITANIUM_CLASS_ILOG
+       || dep_class == ITANIUM_CLASS_LD)
+      && (insn_class == ITANIUM_CLASS_LD
+	  || insn_class == ITANIUM_CLASS_ST))
+    {
+      if (! addr || ! set)
+	abort ();
+      /* This isn't completely correct - an IALU that feeds an address has
+	 a latency of 1 cycle if it's issued in an M slot, but 2 cycles
+	 otherwise.  Unfortunately there's no good way to describe this.  */
+      if (reg_overlap_mentioned_p (SET_DEST (set), addr))
+	return cost + 1;
+    }
+  if ((dep_class == ITANIUM_CLASS_IALU
+       || dep_class == ITANIUM_CLASS_ILOG
+       || dep_class == ITANIUM_CLASS_LD)
+      && (insn_class == ITANIUM_CLASS_MMMUL
+	  || insn_class == ITANIUM_CLASS_MMSHF
+	  || insn_class == ITANIUM_CLASS_MMSHFI))
+    return 3;
+  if (dep_class == ITANIUM_CLASS_FMAC
+      && (insn_class == ITANIUM_CLASS_FMISC
+	  || insn_class == ITANIUM_CLASS_FCVTFX
+	  || insn_class == ITANIUM_CLASS_XMPY))
+    return 7;
+  if ((dep_class == ITANIUM_CLASS_FMAC
+       || dep_class == ITANIUM_CLASS_FMISC
+       || dep_class == ITANIUM_CLASS_FCVTFX
+       || dep_class == ITANIUM_CLASS_XMPY)
+      && insn_class == ITANIUM_CLASS_STF)
+    return 8;
+  if ((dep_class == ITANIUM_CLASS_MMMUL
+       || dep_class == ITANIUM_CLASS_MMSHF
+       || dep_class == ITANIUM_CLASS_MMSHFI)
+      && (insn_class == ITANIUM_CLASS_LD
+	  || insn_class == ITANIUM_CLASS_ST
+	  || insn_class == ITANIUM_CLASS_IALU
+	  || insn_class == ITANIUM_CLASS_ILOG
+	  || insn_class == ITANIUM_CLASS_ISHF))
+    return 4;
+
+  return cost;
+}
+
+/* Describe the current state of the Itanium pipeline.  */
+static struct
+{
+  /* The first slot that is used in the current cycle.  */
+  int first_slot;
+  /* The next slot to fill.  */
+  int cur;
+  /* The packet we have selected for the current issue window.  */
+  const struct ia64_packet *packet;
+  /* The position of the split issue that occurs due to issue width
+     limitations (6 if there's no split issue).  */
+  int split;
+  /* Record data about the insns scheduled so far in the same issue
+     window.  The elements up to but not including FIRST_SLOT belong
+     to the previous cycle, the ones starting with FIRST_SLOT belong
+     to the current cycle.  */
+  enum attr_type types[6];
+  rtx insns[6];
+  int stopbit[6];
+  /* Nonzero if we decided to schedule a stop bit.  */
+  int last_was_stop;
+} sched_data;
+
+/* Temporary arrays; they have enough elements to hold all insns that
+   can be ready at the same time while scheduling of the current block.
+   SCHED_READY can hold ready insns, SCHED_TYPES their types.  */
+static rtx *sched_ready;
+static enum attr_type *sched_types;
+
+/* Determine whether an insn INSN of type ITYPE can fit into slot SLOT
+   of packet P.  */
+
+static int
+insn_matches_slot (p, itype, slot, insn)
+     const struct ia64_packet *p;
+     enum attr_type itype;
+     int slot;
+     rtx insn;
+{
+  enum attr_itanium_requires_unit0 u0;
+  enum attr_type stype = p->t[slot];
+
+  if (insn)
+    {
+      u0 = ia64_safe_itanium_requires_unit0 (insn);
+      if (u0 == ITANIUM_REQUIRES_UNIT0_YES)
 	{
-	case NOTE:
-	  /* For very small loops we can wind up with extra stop bits
-	     inside the loop because of not putting a stop after the
-	     assignment to ar.lc before the loop label.  */
-	  /* ??? Ideally we'd do this for any register used in the first
-	     insn group that's been written recently.  */
-          if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_BEG)
-	    {
-	      need_barrier = rws_access_regno (AR_LC_REGNUM, flags, 0);
-	      if (need_barrier)
-		{
-		  emit_group_barrier_after (insn);
-		  memset (rws_sum, 0, sizeof(rws_sum));
-		  prev_insn = NULL_RTX;
-		}
-	    }
-	  break;
-
-	case CALL_INSN:
-	  flags.is_branch = 1;
-	  flags.is_sibcall = SIBLING_CALL_P (insn);
-	  memset (rws_insn, 0, sizeof (rws_insn));
-	  need_barrier = rtx_needs_barrier (PATTERN (insn), flags, 0);
-
-	  if (need_barrier)
-	    {
-	      /* PREV_INSN null can happen if the very first insn is a
-		 volatile asm.  */
-	      if (prev_insn)
-		emit_group_barrier_after (prev_insn);
-	      memcpy (rws_sum, rws_insn, sizeof (rws_sum));
-	    }
-
-	  /* A call must end a bundle, otherwise the assembler might pack
-	     it in with a following branch and then the function return
-	     goes to the wrong place.  Do this unconditionally for 
-	     unconditional calls, simply because it (1) looks nicer and
-	     (2) keeps the data structures more accurate for the insns
-	     following the call.  */
-	  /* ??? A call doesn't have to end a bundle if it is followed by
-	     a mutex call or branch.  Two mutex calls/branches can be put in
-	     the same bundle.  */
-
-	  need_barrier = 1;
-	  if (GET_CODE (PATTERN (insn)) == COND_EXEC)
-	    {
-	      rtx next_insn = insn;
-	      enum attr_type type = TYPE_A;
-
-	      do
-		next_insn = next_nonnote_insn (next_insn);
-	      while (next_insn
-		     && GET_CODE (next_insn) == INSN
-		     && (GET_CODE (PATTERN (next_insn)) == USE
-			 || GET_CODE (PATTERN (next_insn)) == CLOBBER));
-
-	      /* A call ends a bundle if there is a stop bit after it,
-		 or if it is followed by a non-B-type instruction.
-		 In the later case, we can elide the stop bit, and get faster
-		 code when the predicate is false.  */
-	      /* ??? The proper solution for this problem is to make gcc
-		 explicitly bundle instructions.  Then we don't need to
-		 emit stop bits to force the assembler to start a new
-		 bundle.  */
-
-	      /* Check the instruction type if it is not a branch or call.  */
-	      if (next_insn && GET_CODE (next_insn) == INSN)
-		type = get_attr_type (next_insn);
-
-	      if (next_insn && GET_CODE (next_insn) != JUMP_INSN
-		  && GET_CODE (next_insn) != CALL_INSN
-		  && type != TYPE_B && type != TYPE_UNKNOWN)
-		need_barrier = 0;
-	    }
-	  if (need_barrier)
-	    {
-	      emit_group_barrier_after (insn);
-	      memset (rws_sum, 0, sizeof (rws_sum));
-	      prev_insn = NULL_RTX;
-	    }
-	  else
-	    prev_insn = insn;
-	  break;
-	
-	case JUMP_INSN:
-	  flags.is_branch = 1;
-	  /* FALLTHRU */
-
-	case INSN:
-	  if (GET_CODE (PATTERN (insn)) == USE)
-	    /* Don't care about USE "insns"---those are used to
-	       indicate to the optimizer that it shouldn't get rid of
-	       certain operations.  */
-	    break;
-	  else
-	    {
-	      rtx pat = PATTERN (insn);
-
-	      /* Ug.  Hack hacks hacked elsewhere.  */
-	      switch (recog_memoized (insn))
-		{
-		  /* We play dependency tricks with the epilogue in order
-		     to get proper schedules.  Undo this for dv analysis.  */
-		case CODE_FOR_epilogue_deallocate_stack:
-		  pat = XVECEXP (pat, 0, 0);
-		  break;
-
-		  /* The pattern we use for br.cloop confuses the code above.
-		     The second element of the vector is representative.  */
-		case CODE_FOR_doloop_end_internal:
-		  pat = XVECEXP (pat, 0, 1);
-		  break;
-
-		  /* Doesn't generate code.  */
-		case CODE_FOR_pred_rel_mutex:
-		  continue;
-
-		default:
-		  break;
-		}
-
-	      memset (rws_insn, 0, sizeof (rws_insn));
-	      need_barrier |= rtx_needs_barrier (pat, flags, 0);
-
-	      /* Check to see if the previous instruction was a volatile
-		 asm.  */
-	      if (! need_barrier)
-		need_barrier = rws_access_regno (REG_VOLATILE, flags, 0);
-
-	      if (need_barrier)
-		{
-		  /* PREV_INSN null can happen if the very first insn is a
-		     volatile asm.  */
-		  if (prev_insn)
-		    emit_group_barrier_after (prev_insn);
-		  memcpy (rws_sum, rws_insn, sizeof (rws_sum));
-		}
-	      prev_insn = insn;
-	    }
-	  break;
-
-	case BARRIER:
-	  /* A barrier doesn't imply an instruction group boundary.  */
-	  break;
-
-	case CODE_LABEL:
-	  /* Leave prev_insn alone so the barrier gets generated in front
-	     of the label, if one is needed.  */
-	  break;
-
-	default:
-	  abort ();
+	  int i;
+	  for (i = sched_data.first_slot; i < slot; i++)
+	    if (p->t[i] == stype)
+	      return 0;
 	}
+      if (GET_CODE (insn) == CALL_INSN)
+	{
+	  /* Reject calls in multiway branch packets.  We want to limit
+	     the number of multiway branches we generate (since the branch
+	     predictor is limited), and this seems to work fairly well.
+	     (If we didn't do this, we'd have to add another test here to
+	     force calls into the third slot of the bundle.)  */
+	  if (slot < 3)
+	    {
+	      if (p->t[1] == TYPE_B)
+		return 0;
+	    }
+	  else
+	    {
+	      if (p->t[4] == TYPE_B)
+		return 0;
+	    }
+	}
+    }
+
+  if (itype == stype)
+    return 1;
+  if (itype == TYPE_A)
+    return stype == TYPE_M || stype == TYPE_I;
+  return 0;
+}
+
+/* Like emit_insn_before, but skip cycle_display insns.  This makes the
+   assembly output a bit prettier.  */
+
+static void
+ia64_emit_insn_before (insn, before)
+     rtx insn, before;
+{
+  rtx prev = PREV_INSN (before);
+  if (prev && GET_CODE (prev) == INSN
+      && GET_CODE (PATTERN (prev)) == UNSPEC
+      && XINT (PATTERN (prev), 1) == 23)
+    before = prev;
+  emit_insn_before (insn, before);
+}
+
+/* Generate a nop insn of the given type.  Note we never generate L type
+   nops.  */
+
+static rtx
+gen_nop_type (t)
+     enum attr_type t;
+{
+  switch (t)
+    {
+    case TYPE_M:
+      return gen_nop_m ();
+    case TYPE_I:
+      return gen_nop_i ();
+    case TYPE_B:
+      return gen_nop_b ();
+    case TYPE_F:
+      return gen_nop_f ();
+    case TYPE_X:
+      return gen_nop_x ();
+    default:
+      abort ();
     }
 }
 
+/* When rotating a bundle out of the issue window, insert a bundle selector
+   insn in front of it.  DUMP is the scheduling dump file or NULL.  START
+   is either 0 or 3, depending on whether we want to emit a bundle selector
+   for the first bundle or the second bundle in the current issue window.
+
+   The selector insns are emitted this late because the selected packet can
+   be changed until parts of it get rotated out.  */
+
+static void
+finish_last_head (dump, start)
+     FILE *dump;
+     int start;
+{
+  const struct ia64_packet *p = sched_data.packet;
+  const struct bundle *b = start == 0 ? p->t1 : p->t2;
+  int bundle_type = b - bundle;
+  rtx insn;
+  int i;
+
+  if (! ia64_final_schedule)
+    return;
+
+  for (i = start; sched_data.insns[i] == 0; i++)
+    if (i == start + 3)
+      abort ();
+  insn = sched_data.insns[i];
+
+  if (dump)
+    fprintf (dump, "//    Emitting template before %d: %s\n",
+	     INSN_UID (insn), b->name);
+
+  ia64_emit_insn_before (gen_bundle_selector (GEN_INT (bundle_type)), insn);
+}
+
+/* We can't schedule more insns this cycle.  Fix up the scheduling state
+   and advance FIRST_SLOT and CUR.
+   We have to distribute the insns that are currently found between
+   FIRST_SLOT and CUR into the slots of the packet we have selected.  So
+   far, they are stored successively in the fields starting at FIRST_SLOT;
+   now they must be moved to the correct slots.
+   DUMP is the current scheduling dump file, or NULL.  */
+
+static void
+cycle_end_fill_slots (dump)
+     FILE *dump;
+{
+  const struct ia64_packet *packet = sched_data.packet;
+  int slot, i;
+  enum attr_type tmp_types[6];
+  rtx tmp_insns[6];
+
+  memcpy (tmp_types, sched_data.types, 6 * sizeof (enum attr_type));
+  memcpy (tmp_insns, sched_data.insns, 6 * sizeof (rtx));
+
+  for (i = slot = sched_data.first_slot; i < sched_data.cur; i++)
+    {
+      enum attr_type t = tmp_types[i];
+      if (t != ia64_safe_type (tmp_insns[i]))
+	abort ();
+      while (! insn_matches_slot (packet, t, slot, tmp_insns[i]))
+	{
+	  if (slot > sched_data.split)
+	    abort ();
+	  if (dump)
+	    fprintf (dump, "// Packet needs %s, have %s\n", type_names[packet->t[slot]],
+		     type_names[t]);
+	  sched_data.types[slot] = packet->t[slot];
+	  sched_data.insns[slot] = 0;
+	  sched_data.stopbit[slot] = 0;
+	  slot++;
+	}
+      /* Do _not_ use T here.  If T == TYPE_A, then we'd risk changing the
+	 actual slot type later.  */
+      sched_data.types[slot] = packet->t[slot];
+      sched_data.insns[slot] = tmp_insns[i];
+      sched_data.stopbit[slot] = 0;
+      slot++;
+    }
+
+  /* This isn't right - there's no need to pad out until the forced split;
+     the CPU will automatically split if an insn isn't ready.  */
+#if 0
+  while (slot < sched_data.split)
+    {
+      sched_data.types[slot] = packet->t[slot];
+      sched_data.insns[slot] = 0;
+      sched_data.stopbit[slot] = 0;
+      slot++;
+    }
+#endif
+
+  sched_data.first_slot = sched_data.cur = slot;
+}
+
+/* Bundle rotations, as described in the Itanium optimization manual.
+   We can rotate either one or both bundles out of the issue window.
+   DUMP is the current scheduling dump file, or NULL.  */
+
+static void
+rotate_one_bundle (dump)
+     FILE *dump;
+{
+  if (dump)
+    fprintf (dump, "// Rotating one bundle.\n");
+
+  finish_last_head (dump, 0);
+  if (sched_data.cur > 3)
+    {
+      sched_data.cur -= 3;
+      sched_data.first_slot -= 3;
+      memmove (sched_data.types,
+	       sched_data.types + 3,
+	       sched_data.cur * sizeof *sched_data.types);
+      memmove (sched_data.stopbit,
+	       sched_data.stopbit + 3,
+	       sched_data.cur * sizeof *sched_data.stopbit);
+      memmove (sched_data.insns,
+	       sched_data.insns + 3,
+	       sched_data.cur * sizeof *sched_data.insns);
+    }
+  else
+    {
+      sched_data.cur = 0;
+      sched_data.first_slot = 0;
+    }
+}
+
+static void
+rotate_two_bundles (dump)
+     FILE *dump;
+{
+  if (dump)
+    fprintf (dump, "// Rotating two bundles.\n");
+
+  if (sched_data.cur == 0)
+    return;
+
+  finish_last_head (dump, 0);
+  if (sched_data.cur > 3)
+    finish_last_head (dump, 3);
+  sched_data.cur = 0;
+  sched_data.first_slot = 0;
+}
+
+/* We're beginning a new block.  Initialize data structures as necessary.  */
+
+void
+ia64_sched_init (dump, sched_verbose, max_ready)
+     FILE *dump ATTRIBUTE_UNUSED;
+     int sched_verbose ATTRIBUTE_UNUSED;
+     int max_ready;
+{
+  static int initialized = 0;
+
+  if (! initialized)
+    {
+      int b1, b2, i;
+
+      initialized = 1;
+
+      for (i = b1 = 0; b1 < NR_BUNDLES; b1++)
+	{
+	  const struct bundle *t1 = bundle + b1;
+	  for (b2 = 0; b2 < NR_BUNDLES; b2++, i++)
+	    {
+	      const struct bundle *t2 = bundle + b2;
+
+	      packets[i].t1 = t1;
+	      packets[i].t2 = t2;
+	    }
+	}
+      for (i = 0; i < NR_PACKETS; i++)
+	{
+	  int j;
+	  for (j = 0; j < 3; j++)
+	    packets[i].t[j] = packets[i].t1->t[j];
+	  for (j = 0; j < 3; j++)
+	    packets[i].t[j + 3] = packets[i].t2->t[j];
+	  packets[i].first_split = itanium_split_issue (packets + i, 0);
+	}
+	
+    }
+
+  init_insn_group_barriers ();
+
+  memset (&sched_data, 0, sizeof sched_data);
+  sched_types = (enum attr_type *) xmalloc (max_ready
+					    * sizeof (enum attr_type));
+  sched_ready = (rtx *) xmalloc (max_ready * sizeof (rtx));
+}
+
+/* See if the packet P can match the insns we have already scheduled.  Return
+   nonzero if so.  In *PSLOT, we store the first slot that is available for
+   more instructions if we choose this packet.
+   SPLIT holds the last slot we can use, there's a split issue after it so
+   scheduling beyond it would cause us to use more than one cycle.  */
+
+static int
+packet_matches_p (p, split, pslot)
+     const struct ia64_packet *p;
+     int split;
+     int *pslot;
+{
+  int filled = sched_data.cur;
+  int first = sched_data.first_slot;
+  int i, slot;
+
+  /* First, check if the first of the two bundles must be a specific one (due
+     to stop bits).  */
+  if (first > 0 && sched_data.stopbit[0] && p->t1->possible_stop != 1)
+    return 0;
+  if (first > 1 && sched_data.stopbit[1] && p->t1->possible_stop != 2)
+    return 0;
+
+  for (i = 0; i < first; i++)
+    if (! insn_matches_slot (p, sched_data.types[i], i,
+			     sched_data.insns[i]))
+      return 0;
+  for (i = slot = first; i < filled; i++)
+    {
+      while (slot < split)
+	{
+	  if (insn_matches_slot (p, sched_data.types[i], slot,
+				 sched_data.insns[i]))
+	    break;
+	  slot++;
+	}
+      if (slot == split)
+	return 0;
+      slot++;
+    }
+
+  if (pslot)
+    *pslot = slot;
+  return 1;
+}
+
+/* A frontend for itanium_split_issue.  For a packet P and a slot
+   number FIRST that describes the start of the current clock cycle,
+   return the slot number of the first split issue.  This function
+   uses the cached number found in P if possible.  */
+
+static int
+get_split (p, first)
+     const struct ia64_packet *p;
+     int first;
+{
+  if (first == 0)
+    return p->first_split;
+  return itanium_split_issue (p, first);
+}
+
+/* Given N_READY insns in the array READY, whose types are found in the
+   corresponding array TYPES, return the insn that is best suited to be
+   scheduled in slot SLOT of packet P.  */
+
+static int
+find_best_insn (ready, types, n_ready, p, slot)
+     rtx *ready;
+     enum attr_type *types;
+     int n_ready;
+     const struct ia64_packet *p;
+     int slot;
+{
+  int best = -1;
+  int best_pri = 0;
+  while (n_ready-- > 0)
+    {
+      rtx insn = ready[n_ready];
+      if (! insn)
+	continue;
+      if (best >= 0 && INSN_PRIORITY (ready[n_ready]) < best_pri)
+	break;
+      /* If we have equally good insns, one of which has a stricter
+	 slot requirement, prefer the one with the stricter requirement.  */
+      if (best >= 0 && types[n_ready] == TYPE_A)
+	continue;
+      if (insn_matches_slot (p, types[n_ready], slot, insn))
+	{
+	  best = n_ready;
+	  best_pri = INSN_PRIORITY (ready[best]);
+
+	  /* If there's no way we could get a stricter requirement, stop
+	     looking now.  */
+	  if (types[n_ready] != TYPE_A
+	      && ia64_safe_itanium_requires_unit0 (ready[n_ready]))
+	    break;
+	  break;
+	}
+    }
+  return best;
+}
+
+/* Select the best packet to use given the current scheduler state and the
+   current ready list.
+   READY is an array holding N_READY ready insns; TYPES is a corresponding
+   array that holds their types.  Store the best packet in *PPACKET and the
+   number of insns that can be scheduled in the current cycle in *PBEST.  */
+
+static void
+find_best_packet (pbest, ppacket, ready, types, n_ready)
+     int *pbest;
+     const struct ia64_packet **ppacket;
+     rtx *ready;
+     enum attr_type *types;
+     int n_ready;
+{
+  int first = sched_data.first_slot;
+  int best = 0;
+  int lowest_end = 6;
+  const struct ia64_packet *best_packet;
+  int i;
+
+  for (i = 0; i < NR_PACKETS; i++)
+    {
+      const struct ia64_packet *p = packets + i;
+      int slot;
+      int split = get_split (p, first);
+      int win = 0;
+      int first_slot, last_slot;
+      int b_nops = 0;
+
+      if (! packet_matches_p (p, split, &first_slot))
+	continue;
+
+      memcpy (sched_ready, ready, n_ready * sizeof (rtx));
+
+      win = 0;
+      last_slot = 6;
+      for (slot = first_slot; slot < split; slot++)
+	{
+	  int insn_nr;
+
+	  /* Disallow a degenerate case where the first bundle doesn't
+	     contain anything but NOPs!  */
+	  if (first_slot == 0 && win == 0 && slot == 3)
+	    {
+	      win = -1;
+	      break;
+	    }
+
+	  insn_nr = find_best_insn (sched_ready, types, n_ready, p, slot);
+	  if (insn_nr >= 0)
+	    {
+	      sched_ready[insn_nr] = 0;
+	      last_slot = slot;
+	      win++;
+	    }
+	  else if (p->t[slot] == TYPE_B)
+	    b_nops++;
+	}
+      /* We must disallow MBB/BBB packets if any of their B slots would be
+	 filled with nops.  */
+      if (last_slot < 3)
+	{
+	  if (p->t[1] == TYPE_B && (b_nops || last_slot < 2))
+	    win = -1;
+	}
+      else
+	{
+	  if (p->t[4] == TYPE_B && (b_nops || last_slot < 5))
+	    win = -1;
+	}
+
+      if (win > best
+	  || (win == best && last_slot < lowest_end))
+	{
+	  best = win;
+	  lowest_end = last_slot;
+	  best_packet = p;
+	}
+    }
+  *pbest = best;
+  *ppacket = best_packet;
+}
+
+/* Reorder the ready list so that the insns that can be issued in this cycle
+   are found in the correct order at the end of the list.
+   DUMP is the scheduling dump file, or NULL.  READY points to the start,
+   E_READY to the end of the ready list.  MAY_FAIL determines what should be
+   done if no insns can be scheduled in this cycle: if it is zero, we abort,
+   otherwise we return 0.
+   Return 1 if any insns can be scheduled in this cycle.  */
+
+static int
+itanium_reorder (dump, ready, e_ready, may_fail)
+     FILE *dump;
+     rtx *ready;
+     rtx *e_ready;
+     int may_fail;
+{
+  const struct ia64_packet *best_packet;
+  int n_ready = e_ready - ready;
+  int first = sched_data.first_slot;
+  int i, best, best_split, filled;
+
+  for (i = 0; i < n_ready; i++)
+    sched_types[i] = ia64_safe_type (ready[i]);
+
+  find_best_packet (&best, &best_packet, ready, sched_types, n_ready);
+
+  if (best == 0)
+    {
+      if (may_fail)
+	return 0;
+      abort ();
+    }
+
+  if (dump)
+    {
+      fprintf (dump, "// Selected bundles: %s %s (%d insns)\n",
+	       best_packet->t1->name,
+	       best_packet->t2 ? best_packet->t2->name : NULL, best);
+    }
+
+  best_split = itanium_split_issue (best_packet, first);
+  packet_matches_p (best_packet, best_split, &filled);
+
+  for (i = filled; i < best_split; i++)
+    {
+      int insn_nr;
+
+      insn_nr = find_best_insn (ready, sched_types, n_ready, best_packet, i);
+      if (insn_nr >= 0)
+	{
+	  rtx insn = ready[insn_nr];
+	  memmove (ready + insn_nr, ready + insn_nr + 1,
+		   (n_ready - insn_nr - 1) * sizeof (rtx));
+	  memmove (sched_types + insn_nr, sched_types + insn_nr + 1,
+		   (n_ready - insn_nr - 1) * sizeof (enum attr_type));
+	  ready[--n_ready] = insn;
+	}
+    }
+
+  sched_data.packet = best_packet;
+  sched_data.split = best_split;
+  return 1;
+}
+
+/* Dump information about the current scheduling state to file DUMP.  */
+
+static void
+dump_current_packet (dump)
+     FILE *dump;
+{
+  int i;
+  fprintf (dump, "//    %d slots filled:", sched_data.cur);
+  for (i = 0; i < sched_data.first_slot; i++)
+    {
+      rtx insn = sched_data.insns[i];
+      fprintf (dump, " %s", type_names[sched_data.types[i]]);
+      if (insn)
+	fprintf (dump, "/%s", type_names[ia64_safe_type (insn)]);
+      if (sched_data.stopbit[i])
+	fprintf (dump, " ;;");
+    }
+  fprintf (dump, " :::");
+  for (i = sched_data.first_slot; i < sched_data.cur; i++)
+    {
+      rtx insn = sched_data.insns[i];
+      enum attr_type t = ia64_safe_type (insn);
+      fprintf (dump, " (%d) %s", INSN_UID (insn), type_names[t]);
+    }
+  fprintf (dump, "\n");
+}
+
+/* Schedule a stop bit.  DUMP is the current scheduling dump file, or
+   NULL.  */
+
+static void
+schedule_stop (dump)
+     FILE *dump;
+{
+  const struct ia64_packet *best = sched_data.packet;
+  int i;
+  int best_stop = 6;
+
+  if (dump)
+    fprintf (dump, "// Stop bit, cur = %d.\n", sched_data.cur);
+
+  if (sched_data.cur == 0)
+    {
+      if (dump)
+	fprintf (dump, "//   At start of bundle, so nothing to do.\n");
+
+      rotate_two_bundles (NULL);
+      return;
+    }
+
+  for (i = -1; i < NR_PACKETS; i++)
+    {
+      /* This is a slight hack to give the current packet the first chance.
+	 This is done to avoid e.g. switching from MIB to MBB bundles.  */
+      const struct ia64_packet *p = (i >= 0 ? packets + i : sched_data.packet);
+      int split = get_split (p, sched_data.first_slot);
+      const struct bundle *compare;
+      int next, stoppos;
+
+      if (! packet_matches_p (p, split, &next))
+	continue;
+
+      compare = next > 3 ? p->t2 : p->t1;
+
+      stoppos = 3;
+      if (compare->possible_stop)
+	stoppos = compare->possible_stop;
+      if (next > 3)
+	stoppos += 3;
+
+      if (stoppos < next || stoppos >= best_stop)
+	{
+	  if (compare->possible_stop == 0)
+	    continue;
+	  stoppos = (next > 3 ? 6 : 3);
+	}
+      if (stoppos < next || stoppos >= best_stop)
+	continue;
+
+      if (dump)
+	fprintf (dump, "//   switching from %s %s to %s %s (stop at %d)\n",
+		 best->t1->name, best->t2->name, p->t1->name, p->t2->name,
+		 stoppos);
+
+      best_stop = stoppos;
+      best = p;
+    }
+
+  sched_data.packet = best;
+  cycle_end_fill_slots (dump);
+  while (sched_data.cur < best_stop)
+    {
+      sched_data.types[sched_data.cur] = best->t[sched_data.cur];
+      sched_data.insns[sched_data.cur] = 0;
+      sched_data.stopbit[sched_data.cur] = 0;
+      sched_data.cur++;
+    }
+  sched_data.stopbit[sched_data.cur - 1] = 1;
+  sched_data.first_slot = best_stop;
+
+  if (dump)
+    dump_current_packet (dump);
+}
+
+/* We are about to being issuing insns for this clock cycle.
+   Override the default sort algorithm to better slot instructions.  */
+
+int
+ia64_sched_reorder (dump, sched_verbose, ready, pn_ready, reorder_type)
+     FILE *dump ATTRIBUTE_UNUSED;
+     int sched_verbose ATTRIBUTE_UNUSED;
+     rtx *ready;
+     int *pn_ready;
+     int reorder_type;
+{
+  int n_ready = *pn_ready;
+  rtx *e_ready = ready + n_ready;
+  rtx *insnp;
+  rtx highest;
+
+  if (sched_verbose)
+    {
+      fprintf (dump, "// ia64_sched_reorder (type %d):\n", reorder_type);
+      dump_current_packet (dump);
+    }
+
+  /* First, move all USEs, CLOBBERs and other crud out of the way.  */
+  highest = ready[n_ready - 1];
+  for (insnp = ready; insnp < e_ready; insnp++)
+    if (insnp < e_ready)
+      {
+	rtx insn = *insnp;
+	enum attr_type t = ia64_safe_type (insn);
+	if (t == TYPE_UNKNOWN)
+	  {
+	    highest = ready[n_ready - 1];
+	    ready[n_ready - 1] = insn;
+	    *insnp = highest;
+	    if (group_barrier_needed_p (insn))
+	      {
+		schedule_stop (sched_verbose ? dump : NULL);
+		sched_data.last_was_stop = 1;
+	      }
+	    return 1;
+	  }
+      }
+
+  if (ia64_final_schedule)
+    {
+      int nr_need_stop = 0;
+
+      for (insnp = ready; insnp < e_ready; insnp++)
+	if (safe_group_barrier_needed_p (*insnp))
+	  nr_need_stop++;
+
+      /* Schedule a stop bit if
+          - all insns require a stop bit, or
+          - we are starting a new cycle and _any_ insns require a stop bit.
+         The reason for the latter is that if our schedule is accurate, then
+         the additional stop won't decrease performance at this point (since
+	 there's a split issue at this point anyway), but it gives us more
+         freedom when scheduling the currently ready insns.  */
+      if ((reorder_type == 0 && nr_need_stop)
+	  || (reorder_type == 1 && n_ready == nr_need_stop))
+	{
+	  schedule_stop (sched_verbose ? dump : NULL);
+	  sched_data.last_was_stop = 1;
+	  if (reorder_type == 1)
+	    return 0;
+	}
+      else
+	{
+	  int deleted = 0;
+	  insnp = e_ready;
+	  /* Move down everything that needs a stop bit, preserving relative
+	     order.  */
+	  while (insnp-- > ready + deleted)
+	    while (insnp >= ready + deleted)
+	      {
+		rtx insn = *insnp;
+		if (! safe_group_barrier_needed_p (insn))
+		  break;
+		memmove (ready + 1, ready, (insnp - ready) * sizeof (rtx));
+		*ready = insn;
+		deleted++;
+	      }
+	  n_ready -= deleted;
+	  ready += deleted;
+	  if (deleted != nr_need_stop)
+	    abort ();
+	}
+    }
+
+  if (reorder_type == 0)
+    {
+      if (sched_data.cur == 6)
+	rotate_two_bundles (sched_verbose ? dump : NULL);
+      else if (sched_data.cur >= 3)
+	rotate_one_bundle (sched_verbose ? dump : NULL);
+      sched_data.first_slot = sched_data.cur;
+    }
+
+  return itanium_reorder (sched_verbose ? dump : NULL,
+			  ready, e_ready, reorder_type == 1);
+}
+
+/* Like ia64_sched_reorder, but called after issuing each insn.
+   Override the default sort algorithm to better slot instructions.  */
+
+int
+ia64_sched_reorder2 (dump, sched_verbose, ready, pn_ready, clock_var)
+     FILE *dump ATTRIBUTE_UNUSED;
+     int sched_verbose ATTRIBUTE_UNUSED;
+     rtx *ready;
+     int *pn_ready;
+     int clock_var ATTRIBUTE_UNUSED;
+{
+  if (sched_data.last_was_stop)
+    return 0;
+
+  /* Detect one special case and try to optimize it.
+     If we have 1.M;;MI 2.MIx, and slots 2.1 (M) and 2.2 (I) are both NOPs,
+     then we can get better code by transforming this to 1.MFB;; 2.MIx.  */
+  if (sched_data.first_slot == 1
+      && sched_data.stopbit[0]
+      && ((sched_data.cur == 4
+	   && (sched_data.types[1] == TYPE_M || sched_data.types[1] == TYPE_A)
+	   && (sched_data.types[2] == TYPE_I || sched_data.types[2] == TYPE_A)
+	   && (sched_data.types[3] != TYPE_M && sched_data.types[3] != TYPE_A))
+	  || (sched_data.cur == 3
+	      && (sched_data.types[1] == TYPE_M || sched_data.types[1] == TYPE_A)
+	      && (sched_data.types[2] != TYPE_M && sched_data.types[2] != TYPE_I
+		  && sched_data.types[2] != TYPE_A))))
+      
+    {
+      int i, best;
+      rtx stop = PREV_INSN (sched_data.insns[1]);
+      rtx pat;
+
+      sched_data.stopbit[0] = 0;
+      sched_data.stopbit[2] = 1;
+      if (GET_CODE (stop) != INSN)
+	abort ();
+
+      pat = PATTERN (stop);
+      /* Ignore cycle displays.  */
+      if (GET_CODE (pat) == UNSPEC && XINT (pat, 1) == 23)
+	stop = PREV_INSN (stop);
+      pat = PATTERN (stop);
+      if (GET_CODE (pat) != UNSPEC_VOLATILE
+	  || XINT (pat, 1) != 2
+	  || INTVAL (XVECEXP (pat, 0, 0)) != 1)
+	abort ();
+      XVECEXP (pat, 0, 0) = GEN_INT (3);
+
+      sched_data.types[5] = sched_data.types[3];
+      sched_data.types[4] = sched_data.types[2];
+      sched_data.types[3] = sched_data.types[1];
+      sched_data.insns[5] = sched_data.insns[3];
+      sched_data.insns[4] = sched_data.insns[2];
+      sched_data.insns[3] = sched_data.insns[1];
+      sched_data.stopbit[5] = sched_data.stopbit[4] = sched_data.stopbit[3] = 0;
+      sched_data.cur += 2;
+      sched_data.first_slot = 3;
+      for (i = 0; i < NR_PACKETS; i++)
+	{
+	  const struct ia64_packet *p = packets + i;
+	  if (p->t[0] == TYPE_M && p->t[1] == TYPE_F && p->t[2] == TYPE_B)
+	    {
+	      sched_data.packet = p;
+	      break;
+	    }
+	}
+      rotate_one_bundle (sched_verbose ? dump : NULL);
+
+      best = 6;
+      for (i = 0; i < NR_PACKETS; i++)
+	{
+	  const struct ia64_packet *p = packets + i;
+	  int split = get_split (p, sched_data.first_slot);
+	  int next;
+
+	  /* Disallow multiway branches here.  */
+	  if (p->t[1] == TYPE_B)
+	    continue;
+
+	  if (packet_matches_p (p, split, &next) && next < best)
+	    {
+	      best = next;
+	      sched_data.packet = p;
+	      sched_data.split = split;
+	    }
+	}
+      if (best == 6)
+	abort ();
+    }
+
+  if (*pn_ready > 0)
+    {
+      int more = ia64_sched_reorder (dump, sched_verbose, ready, pn_ready, 1);
+      if (more)
+	return more;
+      /* Did we schedule a stop?  If so, finish this cycle.  */
+      if (sched_data.cur == sched_data.first_slot)
+	return 0;
+    }
+
+  if (sched_verbose)
+    fprintf (dump, "//   Can't issue more this cycle; updating type array.\n");
+
+  cycle_end_fill_slots (sched_verbose ? dump : NULL);
+  if (sched_verbose)
+    dump_current_packet (dump);
+  return 0;
+}
+
+/* We are about to issue INSN.  Return the number of insns left on the
+   ready queue that can be issued this cycle.  */
+
+int
+ia64_variable_issue (dump, sched_verbose, insn, can_issue_more)
+     FILE *dump;
+     int sched_verbose;
+     rtx insn;
+     int can_issue_more ATTRIBUTE_UNUSED;
+{
+  enum attr_type t = ia64_safe_type (insn);
+
+  if (sched_data.last_was_stop)
+    {
+      int t = sched_data.first_slot;
+      if (t == 0)
+	t = 3;
+      ia64_emit_insn_before (gen_insn_group_barrier (GEN_INT (t)), insn);
+      init_insn_group_barriers ();
+      sched_data.last_was_stop = 0;
+    }
+
+  if (t == TYPE_UNKNOWN)
+    {
+      if (sched_verbose)
+	fprintf (dump, "// Ignoring type %s\n", type_names[t]);
+      return 1;
+    }
+
+  /* This is _not_ just a sanity check.  group_barrier_needed_p will update
+     important state info.  Don't delete this test.  */
+  if (ia64_final_schedule
+      && group_barrier_needed_p (insn))
+    abort ();
+
+  sched_data.stopbit[sched_data.cur] = 0;
+  sched_data.insns[sched_data.cur] = insn;
+  sched_data.types[sched_data.cur] = t;
+
+  sched_data.cur++;
+  if (sched_verbose)
+    fprintf (dump, "// Scheduling insn %d of type %s\n",
+	     INSN_UID (insn), type_names[t]);
+
+  if (GET_CODE (insn) == CALL_INSN && ia64_final_schedule)
+    {
+      schedule_stop (sched_verbose ? dump : NULL);
+      sched_data.last_was_stop = 1;
+    }
+
+  return 1;
+}
+
+/* Free data allocated by ia64_sched_init.  */
+
+void
+ia64_sched_finish (dump, sched_verbose)
+     FILE *dump;
+     int sched_verbose;
+{
+  if (sched_verbose)
+    fprintf (dump, "// Finishing schedule.\n");
+  rotate_two_bundles (NULL);
+  free (sched_types);
+  free (sched_ready);
+}
+
 /* Emit pseudo-ops for the assembler to describe predicate relations.
    At present this assumes that we only consider predicate pairs to
    be mutex, and that the assembler can deduce proper values from
@@ -4660,9 +5918,17 @@ ia64_reorg (insns)
   /* Make sure the CFG and global_live_at_start are correct
      for emit_predicate_relation_info.  */
   find_basic_blocks (insns, max_reg_num (), NULL);
-  life_analysis (insns, NULL, 0);
+  life_analysis (insns, NULL, PROP_DEATH_NOTES);
 
-  emit_insn_group_barriers (insns);
+  ia64_final_schedule = 1;
+  schedule_ebbs (rtl_dump_file);
+  ia64_final_schedule = 0;
+
+  /* This relies on the NOTE_INSN_BASIC_BLOCK notes to be in the same
+     place as they were during scheduling.  */
+  emit_insn_group_barriers (rtl_dump_file, insns);
+
+  fixup_errata ();
   emit_predicate_relation_info ();
 }
 

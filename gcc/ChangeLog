@@ -1,3 +1,54 @@
+2000-12-21  Bernd Schmidt  <bernds@redhat.com>
+
+	* Makefile.in (out_object_file): Depend on sched-int.h.
+	* rtl.h (single_set_1): New macro.
+	(single_set_2): Renamed from single_set_1 and extra argument added.
+	* rtlanal.c (single_set_2): Likewise.
+
+	* config/ia64/ia64-protos.h (get_bundle_name, ia64_issue_rate,
+	ia64_adjust_cost, ia64_sched_init, ia64_sched_finish,
+	ia64_sched_reorder, ia64_sched_reorder2, ia64_variable_issue):
+	Declare.
+	* config/ia64/ia64.c: Include "sched-int.h".
+	(hard_regno_rename_ok): Also disallow renaming from the various
+	reg_save_* regs.
+	(ia64_safe_itanium_requiers_unit0, ia64_safe_itanium_class,
+	ia64_safe_type, init_insn_group_barriers, group_barrier_needed_p,
+	safe_group_barrier_needed_p, fixup_errata): New static functions.
+	(rtx_needs_barrier):  Handle bundle selector and cycle display
+	insns.
+	(emit_insn_group_barriers): Accept additional FILE * arg.  All
+	callers changed.  Rework to only generate stop bits between
+	basic blocks that haven't been inserted by scheduling.
+	(struct bundle, struct ia64_packet): New structures.
+	(NR_BUNDLES, NR_PACKETS): New macros.
+	(bundle, packets, type_names): New static arrays.
+	(ia64_final_schedule): New variable.
+	(ia64_single_set, insn_matches_slot, ia64_emit_insn_before,
+	gen_nop_type, finish_last_head, rotate_one_bundle, rotate_two_bundles,
+	cycle_end_fill_slots, packet_matches_p, get_split, find_best_insn,
+	find_best_packet, itanium_reorder, dump_current_packet, schedule_stop):
+	New static functions.
+	(ia64_issue_rate, ia64_sched_init, ia64_sched_reorder,
+	ia64_sched_finish, ia64_sched_reorder2, ia64_variable_issue): New
+	functions.
+	(ia64_reorg): Perform a final scheduling pass.
+	* config/ia64/ia64.h (CONST_COSTS): Slightly increase SYMBOL_REF costs.
+	(MAX_CONDITIONAL_EXECUTE, ADJUST_COST, ISSUE_RATE, MD_SCHED_INIT,
+	MD_SCHED_REORDER, MD_SCHED_REORDER2, MD_SCHED_FINISH,
+	MD_SCHED_VARIABLE_ISSUE): Define macros.
+	(ia64_final_schedule): Declare variable.
+	* config/ia64/ia64.md (attr itanium_class): Add some more classes.
+	(attr type): Account for them.
+	(itanium_requires_unit0): New attribute.
+	(function units): Rewrite.
+	(some splitters): Don't create scheduling barriers here.
+	(gr_spill_internal, gr_restore_internal): Don't predicate the
+	pseudo-op.
+	(nop_m, nop_i, nop_f, nop_b, nop_x, cycle_display, cycle_display_1,
+	bundle_selector): New patterns.
+	(insn_group_barrier): Now has an operand.
+	
 2000-12-21  DJ Delorie  <dj@redhat.com>
 
 	* dwarf2out.c (simple_decl_align_in_bits): new

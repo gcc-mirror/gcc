@@ -1499,7 +1499,8 @@ dependence.o : dependence.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) \
 
 $(out_object_file): $(out_file) $(CONFIG_H) $(TREE_H) $(GGC_H) \
    $(RTL_H) $(REGS_H) hard-reg-set.h real.h insn-config.h conditions.h \
-   insn-flags.h output.h $(INSN_ATTR_H) insn-codes.h system.h toplev.h function.h
+   insn-flags.h output.h $(INSN_ATTR_H) insn-codes.h system.h toplev.h \
+   function.h sched-int.h
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 		$(out_file) $(OUTPUT_OPTION)
 

@@ -860,12 +860,11 @@ insn_dependent_p_1 (x, pat, data)
    will not be used, which we ignore.  */
 
 rtx
-single_set_1 (insn)
-     rtx insn;
+single_set_2 (insn, pat)
+     rtx insn, pat;
 {
   rtx set = NULL;
   int set_verified = 1;
-  rtx pat = PATTERN (insn);
   int i;
 
   if (GET_CODE (pat) == PARALLEL)
