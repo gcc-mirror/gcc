@@ -1,3 +1,10 @@
+2001-05-30  Zack Weinberg  <zackw@stanford.edu>
+
+	* ggc-page.c (size_lookup): Increase minimum allocation size
+	to eight bytes.
+	(ggc_print_statistics): Report size of each bin in bytes, not
+	as its order; there is no longer a direct relationship.
+
 2001-05-31  Jan van Male  <jan.vanmale@fenk.wau.nl>
 
 	* extend.texi: Fix formating of examples, eliminate some
