@@ -3051,6 +3051,7 @@ finish_struct_1 (t, warn_anon)
   tree t_binfo = TYPE_BINFO (t);
   tree access_decls = NULL_TREE;
   int aggregate = 1;
+  int empty = 1;
 
   if (warn_anon && code != UNION_TYPE && ANON_AGGRNAME_P (TYPE_IDENTIFIER (t)))
     pedwarn ("anonymous class type not used to declare any objects");
@@ -3215,7 +3216,10 @@ finish_struct_1 (t, warn_anon)
       GNU_xref_member (current_class_name, x);
 
       if (TREE_CODE (x) == FIELD_DECL)
-	DECL_PACKED (x) |= TYPE_PACKED (t);
+	{
+	  DECL_PACKED (x) |= TYPE_PACKED (t);
+	  empty = 0;
+	}
 
       /* Handle access declarations.  */
       if (TREE_CODE (x) == USING_DECL)
@@ -3767,6 +3771,7 @@ finish_struct_1 (t, warn_anon)
       else
 	fields = vfield;
 #endif
+      empty = 0;
       vfields = chainon (vfields, CLASSTYPE_AS_LIST (t));
     }
 
@@ -3836,17 +3841,21 @@ finish_struct_1 (t, warn_anon)
       /* Don't re-use old size.  */
       DECL_SIZE (base_layout_decl) = NULL_TREE;
     }
+  else if (empty)
+    {
+      /* C++: do not let empty structures exist.  */
+      tree decl = build_lang_field_decl
+	(FIELD_DECL, NULL_TREE, char_type_node);
+      TREE_CHAIN (decl) = TYPE_FIELDS (t);
+      TYPE_FIELDS (t) = decl;
+    }
 
   layout_type (t);
 
   finish_struct_anon (t);
 
-  if (n_baseclasses)
+  if (n_baseclasses || empty)
     TYPE_FIELDS (t) = TREE_CHAIN (TYPE_FIELDS (t));
-
-  /* C++: do not let empty structures exist.  */
-  if (integer_zerop (TYPE_SIZE (t)))
-    TYPE_SIZE (t) = TYPE_SIZE (char_type_node);
 
   /* Set the TYPE_DECL for this type to contain the right
      value for DECL_OFFSET, so that we can use it as part

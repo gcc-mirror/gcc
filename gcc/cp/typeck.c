@@ -1210,7 +1210,8 @@ unsigned_type (type)
     return unsigned_intHI_type_node;
   if (type1 == intQI_type_node)
     return unsigned_intQI_type_node;
-  return type;
+
+  return signed_or_unsigned_type (1, type);
 }
 
 /* Return a signed type the same as TYPE in other respects.  */
@@ -1238,7 +1239,8 @@ signed_type (type)
     return intHI_type_node;
   if (type1 == unsigned_intQI_type_node)
     return intQI_type_node;
-  return type;
+
+  return signed_or_unsigned_type (0, type);
 }
 
 /* Return a type the same as TYPE except unsigned or
@@ -1249,8 +1251,10 @@ signed_or_unsigned_type (unsignedp, type)
      int unsignedp;
      tree type;
 {
-  if (! INTEGRAL_TYPE_P (type))
+  if (! INTEGRAL_TYPE_P (type)
+      || TREE_UNSIGNED (type) == unsignedp)
     return type;
+
   if (TYPE_PRECISION (type) == TYPE_PRECISION (signed_char_type_node))
     return unsignedp ? unsigned_char_type_node : signed_char_type_node;
   if (TYPE_PRECISION (type) == TYPE_PRECISION (integer_type_node)) 
@@ -1445,6 +1449,12 @@ decay_conversion (exp)
 
       type = TREE_TYPE (type);
       code = TREE_CODE (type);
+
+      if (type == unknown_type_node)
+	{
+	  cp_pedwarn ("assuming & on overloaded member function");
+	  return build_unary_op (ADDR_EXPR, exp, 0);
+	}
     }
 
   if (code == REFERENCE_TYPE)
@@ -7018,7 +7028,6 @@ c_expand_return (retval)
   extern tree dtor_label, ctor_label;
   tree result = DECL_RESULT (current_function_decl);
   tree valtype = TREE_TYPE (result);
-  int returns_value = 1;
 
   if (TREE_THIS_VOLATILE (current_function_decl))
     warning ("function declared `noreturn' has a `return' statement");
@@ -7074,20 +7083,20 @@ c_expand_return (retval)
   else if (DECL_CONSTRUCTOR_P (current_function_decl)
 	   && retval != current_class_ptr)
     {
-      error ("return from a constructor: use `this = ...' instead");
+      if (flag_this_is_variable)
+	error ("return from a constructor: use `this = ...' instead");
+      else
+	error ("return from a constructor");
       retval = current_class_ptr;
     }
 
   if (valtype == NULL_TREE || TREE_CODE (valtype) == VOID_TYPE)
     {
       current_function_returns_null = 1;
-      /* We do this here so we'll avoid a warning about how the function
-	 "may or may not return a value" in finish_function.  */
-      returns_value = 0;
-
-      if (retval)
+      if (pedantic || TREE_CODE (TREE_TYPE (retval)) != VOID_TYPE)
 	pedwarn ("`return' with a value, in function returning void");
       expand_return (retval);
+      return;
     }
   /* Add some useful error checking for C++.  */
   else if (TREE_CODE (valtype) == REFERENCE_TYPE)
@@ -7168,143 +7177,56 @@ c_expand_return (retval)
      (3) If an X(X&) constructor is defined, the return
      value must be returned via that.  */
 
-  /* If we're returning in a register, we can't initialize the
-     return value from a TARGET_EXPR.  */
-  if (TREE_CODE (retval) == TARGET_EXPR
-      && TYPE_MAIN_VARIANT (TREE_TYPE (retval)) == TYPE_MAIN_VARIANT (valtype)
-      && ! current_function_returns_struct)
-    retval = expand_target_expr (retval);
-
   if (retval == result
-      /* Watch out for constructors, which "return" aggregates
-	 via initialization, but which otherwise "return" a pointer.  */
       || DECL_CONSTRUCTOR_P (current_function_decl))
+    /* It's already done for us.  */;
+  else if (TYPE_MODE (TREE_TYPE (retval)) == VOIDmode)
     {
-      /* This is just an error--it's already been reported.  */
-      if (TYPE_SIZE (valtype) == NULL_TREE)
-	return;
-
-      if (TYPE_MODE (valtype) != BLKmode
-	  && any_pending_cleanups (1))
-	retval = get_temp_regvar (valtype, retval);
-    }
-  else if (IS_AGGR_TYPE (valtype) && current_function_returns_struct)
-    {
-      expand_aggr_init (result, retval, 0, LOOKUP_ONLYCONVERTING);
-      expand_cleanups_to (NULL_TREE);
-      DECL_INITIAL (result) = NULL_TREE;
+      pedwarn ("return of void value in function returning non-void");
+      expand_expr_stmt (retval);
       retval = 0;
     }
   else
     {
-      if (TYPE_MODE (valtype) == VOIDmode)
-	{
-	  if (TYPE_MODE (TREE_TYPE (result)) != VOIDmode
-	      && warn_return_type)
-	    warning ("return of void value in function returning non-void");
-	  expand_expr_stmt (retval);
-	  retval = 0;
-	  result = 0;
-	}
-      else if (TYPE_MODE (valtype) != BLKmode
-	       && any_pending_cleanups (1))
-	{
-	  retval = get_temp_regvar (valtype, retval);
-	  expand_cleanups_to (NULL_TREE);
-	  result = 0;
-	}
-      else
-	{
-	  /* We already did this above, don't do it again.  */
-	  if (TREE_CODE (valtype) != REFERENCE_TYPE)
-	    retval = convert_for_initialization (result, valtype, retval,
-						 LOOKUP_NORMAL,
-						 "return", NULL_TREE, 0);
-	  DECL_INITIAL (result) = NULL_TREE;
-	}
-      if (retval == error_mark_node)
-	return;
-    }
+      /* We already did this above for refs, don't do it again.  */
+      if (TREE_CODE (valtype) != REFERENCE_TYPE)
+	retval = convert_for_initialization (NULL_TREE, valtype, retval,
+					     LOOKUP_NORMAL,
+					     "return", NULL_TREE, 0);
 
-  emit_queue ();
+      /* We can't initialize a register from a NEW_EXPR.  */
+      if (! current_function_returns_struct
+	  && TREE_CODE (retval) == TARGET_EXPR
+	  && TREE_CODE (TREE_OPERAND (retval, 0)) == NEW_EXPR)
+	retval = build (COMPOUND_EXPR, TREE_TYPE (retval), retval,
+			TREE_OPERAND (retval, 0));
+
+      if (retval == error_mark_node)
+	{
+	  /* Avoid warning about control reaching end of function.  */
+	  expand_null_return ();
+	  return;
+	}
+    }
 
   if (retval != NULL_TREE
       && TREE_CODE_CLASS (TREE_CODE (retval)) == 'd'
       && cond_stack == 0 && loop_stack == 0 && case_stack == 0)
     current_function_return_value = retval;
 
-  if (result)
+  if (ctor_label && TREE_CODE (ctor_label) != ERROR_MARK)
     {
-      /* Everything's great--RETVAL is in RESULT.  */
-      if (original_result_rtx)
-	{
-	  store_expr (result, original_result_rtx, 0);
-	  expand_cleanups_to (NULL_TREE);
-	  use_variable (DECL_RTL (result));
-	  if (ctor_label  && TREE_CODE (ctor_label) != ERROR_MARK)
-	    expand_goto (ctor_label);
-	  else
-	    expand_null_return ();
-	}
-      else if (retval && retval != result)
-	{
-	  /* Clear this out so the later call to decl_function_context
-	     won't end up bombing on us.  */
-	  if (DECL_CONTEXT (result) == error_mark_node)
-	    DECL_CONTEXT (result) = NULL_TREE;
-	  /* Here is where we finally get RETVAL into RESULT.
-	     `expand_return' does the magic of protecting
-	     RESULT from cleanups.  */
-	  retval = fold (build1 (CLEANUP_POINT_EXPR, TREE_TYPE (result),
-				 retval));
-	  /* This part _must_ come second, because expand_return looks for
-	     the INIT_EXPR as the toplevel node only.  :-( */
-	  retval = build (INIT_EXPR, TREE_TYPE (result), result, retval);
-	  TREE_SIDE_EFFECTS (retval) = 1;
-	  expand_return (retval);
-	}
-      else
-	expand_return (result);
-    }
-  else
-    {
-      /* We may still need to put RETVAL into RESULT.  */
-      result = DECL_RESULT (current_function_decl);
-      if (original_result_rtx)
-	{
-	  /* Here we have a named return value that went
-	     into memory.  We can compute RETVAL into that.  */
-	  if (retval)
-	    expand_assignment (result, retval, 0, 0);
-	  else
-	    store_expr (result, original_result_rtx, 0);
-	  result = make_tree (TREE_TYPE (result), original_result_rtx);
-	}
-      else if (ctor_label && TREE_CODE (ctor_label) != ERROR_MARK)
-	{
-	  /* Here RETVAL is CURRENT_CLASS_PTR, so there's nothing to do.  */
-	  expand_goto (ctor_label);
-	}
-      else if (retval)
-	{
-	  /* Here is where we finally get RETVAL into RESULT.
-	     `expand_return' does the magic of protecting
-	     RESULT from cleanups.  */
-	  result = build (INIT_EXPR, TREE_TYPE (result), result, retval);
-	  TREE_SIDE_EFFECTS (result) = 1;
-	  expand_return (result);
-	}
-      else if (TYPE_MODE (TREE_TYPE (result)) != VOIDmode)
-	expand_return (result);
+      /* Here RETVAL is CURRENT_CLASS_PTR, so there's nothing to do.  */
+      expand_goto (ctor_label);
     }
 
-  current_function_returns_value = returns_value;
-
-  /* One way to clear out cleanups that EXPR might
-     generate.  Note that this code will really be
-     dead code, but that is ok--cleanups that were
-     needed were handled by the magic of `return'.  */
-  expand_cleanups_to (NULL_TREE);
+  if (retval && retval != result)
+    {
+      result = build (INIT_EXPR, TREE_TYPE (result), result, retval);
+      TREE_SIDE_EFFECTS (result) = 1;
+    }
+  expand_return (result);
+  current_function_returns_value = 1;
 }
 
 /* Start a C switch statement, testing expression EXP.
