@@ -1,3 +1,8 @@
+2004-06-24  Frank Ch. Eigler  <fche@redhat.com>
+
+	* tree-mudflap.c (mx_register_decls): Add third (type) argument
+	to synthesized __mf_unregister call.
+
 2004-06-24  Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/15239
