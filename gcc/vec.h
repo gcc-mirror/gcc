@@ -287,7 +287,7 @@ static inline TDEF VEC_OP (TDEF,last)					  \
 {									  \
   VEC_ASSERT (vec_ && vec_->num, "last", TDEF);				  \
   									  \
-  return vec_->vec[vec->num - 1];					  \
+  return vec_->vec[vec_->num - 1];					  \
 }									  \
 									  \
 static inline TDEF VEC_OP (TDEF,index)					  \
