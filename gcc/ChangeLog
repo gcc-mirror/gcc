@@ -1,3 +1,9 @@
+2004-08-31  Stephane Carrez  <stcarrez@nerim.fr>
+
+	PR target/15334
+	* config/m68hc11/m68hc11.c (m68hc11_override_options): Disable -fweb
+	because it breaks the 32-bit shift patterns that rely on a match_dup.
+
 2004-08-31  Matt Austern  <austern@apple.com>
 
 	* config/darwin.c (darwin_make_decl_one_only): Allocate section
