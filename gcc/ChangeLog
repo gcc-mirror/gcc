@@ -1,5 +1,9 @@
 2005-03-30  Alan Modra  <amodra@bigpond.net.au>
 
+	* doc/install.texi: Update binutils requirement for powerpc*-linux.
+
+2005-03-30  Alan Modra  <amodra@bigpond.net.au>
+
 	PR target/20203
 	* builtins.c (get_memory_rtx): Expand address exp using EXPAND_NORMAL.
 	Remove convert_memory_address call duplicating that in memory_address.

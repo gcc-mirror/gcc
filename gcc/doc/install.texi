@@ -2232,7 +2232,7 @@ GNU Compiler Collection on your machine.
 @item
 @uref{#powerpc-*-elf,,powerpc-*-elf, powerpc-*-sysv4}
 @item
-@uref{#powerpc-*-linux-gnu*,,powerpc-*-linux-gnu*}
+@uref{#powerpc*-*-linux-gnu*,,powerpc*-*-linux-gnu*}
 @item
 @uref{#powerpc-*-netbsd*,,powerpc-*-netbsd*}
 @item
@@ -3380,10 +3380,10 @@ PowerPC system in big endian mode, running System V.4.
 @html
 <hr />
 @end html
-@heading @anchor{powerpc-*-linux-gnu*}powerpc-*-linux-gnu*
+@heading @anchor{powerpc*-*-linux-gnu*}powerpc*-*-linux-gnu*
 
 You will need
-@uref{ftp://ftp.kernel.org/pub/linux/devel/binutils,,binutils 2.13.90.0.10}
+@uref{ftp://ftp.kernel.org/pub/linux/devel/binutils,,binutils 2.15}
 or newer for a working GCC@.
 
 @html
