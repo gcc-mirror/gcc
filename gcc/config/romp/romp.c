@@ -1413,12 +1413,12 @@ output_fpop (code, op0, op1, op2, insn)
     }
 
   /* If the first and second operands are the same, merge them.  Don't do this
-     for SFmode in general registers because this triggers a bug in the RT fp
-     code.  */
+     for SFmode or SImode in general registers because this triggers a bug in
+     the RT fp code.  */
   if (op1 && rtx_equal_p (op0, op1)
       && code != EQ && code != GE && code != SET
-      && (GET_MODE (op1) != SFmode || GET_CODE (op0) != REG
-	  || FP_REGNO_P (REGNO (op0))))
+      && ((GET_MODE (op1) != SFmode && GET_MODE (op1) != SImode)
+	  || GET_CODE (op0) != REG || FP_REGNO_P (REGNO (op0))))
     {
       op1 = op2;
       op2 = 0;
