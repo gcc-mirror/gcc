@@ -1,5 +1,10 @@
 2003-07-15  Jerry Quinn  <jlquinn@optonline.net>
 
+        * include/bits/basic_string.h:  Document public functions.
+	* docs/doxygen/TODO:  Update c21 todo.
+
+2003-07-15  Jerry Quinn  <jlquinn@optonline.net>
+
 	* include/bits/stl_list.h:  Document more functions.
 	* docs/doxygen/TODO:  Update c23 todo.
 
