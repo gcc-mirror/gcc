@@ -187,21 +187,22 @@ gfc_conv_mpz_to_tree (mpz_t i, int kind)
       else if (sizeof (mp_limb_t) == 2 * sizeof (HOST_WIDE_INT))
 	{
 	  mp_limb_t limb0 = mpz_getlimbn (i, 0);
-	  int count = (sizeof (mp_limb_t) - sizeof (HOST_WIDE_INT)) * CHAR_BIT;
+	  int shift = (sizeof (mp_limb_t) - sizeof (HOST_WIDE_INT)) * CHAR_BIT;
 	  low = limb0;
-	  high = limb0 >> count;
+	  high = limb0 >> shift;
 	}
       else if (sizeof (mp_limb_t) < sizeof (HOST_WIDE_INT))
 	{
+	  int shift = sizeof (mp_limb_t) * CHAR_BIT;
 	  int n, count = sizeof (HOST_WIDE_INT) / sizeof (mp_limb_t);
 	  for (low = n = 0; n < count; ++n)
 	    {
-	      low <<= sizeof (mp_limb_t) * CHAR_BIT;
+	      low <<= shift;
 	      low |= mpz_getlimbn (i, n);
 	    }
-	  for (high = 0; n < 2*count; ++n)
+	  for (high = 0, n = count; n < 2*count; ++n)
 	    {
-	      high <<= sizeof (mp_limb_t) * CHAR_BIT;
+	      high <<= shift;
 	      high |= mpz_getlimbn (i, n);
 	    }
 	}

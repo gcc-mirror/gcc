@@ -1,3 +1,7 @@
+2004-08-24  Richard Henderson  <rth@redhat.com>
+
+	* trans-const.c (gfc_conv_mpz_to_tree): Fix 64-bit shift warning.
+
 2004-08-24  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* resolve.c (merge_argument_lists): Revert unintentionally 
