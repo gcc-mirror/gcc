@@ -2425,7 +2425,7 @@ fi
 		;;
 
 	mips*-*-*)
-		supported_defaults="abi arch float tune"
+		supported_defaults="abi arch float tune divide"
 
 		case ${with_float} in
 		"" | soft | hard)
@@ -2445,6 +2445,15 @@ fi
 			echo "Unknown ABI used in --with-abi=$with_abi" 1>&2
 			exit 1
 			;;
+		esac
+
+		case ${with_divide} in
+		"" | breaks | traps)
+			# OK
+			;;
+		*)
+			echo "Unknown division check type use in --with-divide=$with_divide" 1>&2
+			exit 1
 		esac
 		;;
 
@@ -2687,7 +2696,7 @@ fi
 	esac
 
 	t=
-	all_defaults="abi cpu arch tune schedule float mode fpu"
+	all_defaults="abi cpu arch tune schedule float mode fpu divide"
 	for option in $all_defaults
 	do
 		eval "val=\$with_$option"

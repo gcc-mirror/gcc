@@ -1375,7 +1375,13 @@ mips_idiv_insns (void)
 
   count = 1;
   if (TARGET_CHECK_ZERO_DIV)
-    count += 2;
+    {
+      if (GENERATE_DIVIDE_TRAPS)
+        count++;
+      else
+        count += 2;
+    }
+  
   if (TARGET_FIX_R4000 || TARGET_FIX_R4400)
     count++;
   return count;
@@ -8805,6 +8811,11 @@ mips_output_division (const char *division, rtx *operands)
 	  output_asm_insn (s, operands);
 	  s = "bnez\t%2,1f\n\tbreak\t7\n1:";
 	}
+      else if (GENERATE_DIVIDE_TRAPS)
+        {
+	  output_asm_insn (s, operands);
+	  s = "teq\t%2,%.,7";
+        }
       else
 	{
 	  output_asm_insn ("%(bne\t%2,%.,1f", operands);

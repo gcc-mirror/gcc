@@ -160,7 +160,8 @@ extern const struct mips_cpu_info *mips_tune_info;
 #define MASK_FIX_VR4120	   0x01000000   /* Work around VR4120 errata.  */
 #define MASK_VR4130_ALIGN  0x02000000	/* Perform VR4130 alignment opts.  */
 #define MASK_FP_EXCEPTIONS 0x04000000   /* FP exceptions are enabled.  */
-
+#define MASK_DIVIDE_BREAKS 0x08000000   /* Divide by zero check uses
+                                           break instead of trap. */
 #define MASK_PAIRED_SINGLE 0x10000000   /* Support paired-single FPU.  */
 #define MASK_MIPS3D        0x20000000   /* Support MIPS-3D instructions.  */
 
@@ -222,6 +223,7 @@ extern const struct mips_cpu_info *mips_tune_info;
 #define TARGET_4300_MUL_FIX     ((target_flags & MASK_4300_MUL_FIX) != 0)
 
 #define TARGET_CHECK_ZERO_DIV   ((target_flags & MASK_NO_CHECK_ZERO_DIV) == 0)
+#define TARGET_DIVIDE_TRAPS     ((target_flags & MASK_DIVIDE_BREAKS) == 0)
 
 #define TARGET_BRANCHLIKELY	((target_flags & MASK_BRANCHLIKELY) != 0)
 
@@ -632,6 +634,10 @@ extern const struct mips_cpu_info *mips_tune_info;
      N_("Trap on integer divide by zero")},				\
   {"no-check-zero-division", MASK_NO_CHECK_ZERO_DIV,			\
      N_("Don't trap on integer divide by zero")},			\
+  {"divide-traps", -MASK_DIVIDE_BREAKS,					\
+     N_("Use trap to check for integer divide by zero")},		\
+  {"divide-breaks", MASK_DIVIDE_BREAKS,					\
+     N_("Use break to check for integer divide by zero")},		\
   { "branch-likely",      MASK_BRANCHLIKELY,				\
       N_("Use Branch Likely instructions, overriding default for arch")}, \
   { "no-branch-likely",  -MASK_BRANCHLIKELY,				\
@@ -782,13 +788,19 @@ extern const struct mips_cpu_info *mips_tune_info;
    --with-tune is ignored if -mtune is specified.
    --with-abi is ignored if -mabi is specified.
    --with-float is ignored if -mhard-float or -msoft-float are
-     specified.  */
+     specified.
+   --with-divide is ignored if -mdivide-traps or -mdivide-breaks are
+     specified. */
 #define OPTION_DEFAULT_SPECS \
   {"arch", "%{!march=*:%{mips16:-march=%(VALUE)}%{!mips*:-march=%(VALUE)}}" }, \
   {"tune", "%{!mtune=*:-mtune=%(VALUE)}" }, \
   {"abi", "%{!mabi=*:-mabi=%(VALUE)}" }, \
-  {"float", "%{!msoft-float:%{!mhard-float:-m%(VALUE)-float}}" }
+  {"float", "%{!msoft-float:%{!mhard-float:-m%(VALUE)-float}}" }, \
+  {"divide", "%{!mdivide-traps:%{!mdivide-breaks:-mdivide-%(VALUE)}}" }
 
+
+#define GENERATE_DIVIDE_TRAPS (TARGET_DIVIDE_TRAPS \
+                               && ISA_HAS_COND_TRAP)
 
 #define GENERATE_BRANCHLIKELY   (TARGET_BRANCHLIKELY                    \
 				 && !TARGET_SR71K                       \
