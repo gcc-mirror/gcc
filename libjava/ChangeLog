@@ -1,3 +1,8 @@
+2003-11-18  Tom Tromey  <tromey@redhat.com>
+
+	* jni.cc (_Jv_JNI_GetStringUTFChars): Fail gracefully if string
+	is null.
+
 2003-11-17  Graydon Hoare  <graydon@redhat.com>
 
 	* javax/swing/plaf/basic/BasicDefaults.java: Rewrite to spec.
