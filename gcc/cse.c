@@ -5621,6 +5621,12 @@ record_jump_cond (code, mode, op0, op1, reversed_nonequality)
 	    {
 	      rehash_using_reg (op0);
 	      op0_hash_code = HASH (op0, mode);
+
+	      /* If OP0 is contained in OP1, this changes its hash code
+		 as well.  Faster to rehash than to check, except
+		 for the simple case of a constant.  */
+	      if (! CONSTANT_P (op1))
+		op1_hash_code = HASH (op1,mode);
 	    }
 
 	  op0_elt = insert (op0, NULL_PTR, op0_hash_code, mode);
