@@ -371,7 +371,7 @@ ObjC ObjC++ Var(warn_selector)
 Warn if a selector has multiple methods
 
 Wsequence-point
-C ObjC Var(warn_sequence_point)
+C ObjC C++ ObjC++ Var(warn_sequence_point)
 Warn about possible violations of sequence point rules
 
 Wsign-compare

@@ -1,5 +1,8 @@
 2004-06-27  Andrew Pinski  <pinskia@physics.uc.edu>
 
+	PR c++/15145
+	* c.opt (Wsequence-point): Enable for C++ and ObjC++.
+
 	PR c/14963
 	* c-decl.c (start_decl): Check for null types.
 
