@@ -61,6 +61,17 @@ Boston, MA 02111-1307, USA.  */
        An UNSPEC wrapper around a function's address.  It represents the
        offset of _gp from the start of the function.
 
+   SYMBOL_TLS
+       A thread-local symbol.
+
+   SYMBOL_TLSGD
+   SYMBOL_TLSLDM
+   SYMBOL_DTPREL
+   SYMBOL_GOTTPREL
+   SYMBOL_TPREL
+       UNSPEC wrappers around SYMBOL_TLS, corresponding to the
+       thread-local storage relocation operators.
+
    SYMBOL_64_HIGH
        For a 64-bit symbolic address X, this is the value of
        (%highest(X) << 16) + %higher(X).
@@ -82,6 +93,12 @@ enum mips_symbol_type {
   SYMBOL_GOTOFF_GLOBAL,
   SYMBOL_GOTOFF_CALL,
   SYMBOL_GOTOFF_LOADGP,
+  SYMBOL_TLS,
+  SYMBOL_TLSGD,
+  SYMBOL_TLSLDM,
+  SYMBOL_DTPREL,
+  SYMBOL_GOTTPREL,
+  SYMBOL_TPREL,
   SYMBOL_64_HIGH,
   SYMBOL_64_MID,
   SYMBOL_64_LOW

@@ -236,6 +236,7 @@ static bool mips_valid_base_register_p (rtx, enum machine_mode, int);
 static bool mips_symbolic_address_p (enum mips_symbol_type, enum machine_mode);
 static bool mips_classify_address (struct mips_address_info *, rtx,
 				   enum machine_mode, int);
+static bool mips_cannot_force_const_mem (rtx);
 static int mips_symbol_insns (enum mips_symbol_type);
 static bool mips16_unextended_reference_p (enum machine_mode mode, rtx, rtx);
 static rtx mips_force_temporary (rtx, rtx);
@@ -601,7 +602,7 @@ static const char *mips_hi_relocs[NUM_SYMBOL_TYPES];
 /* Map hard register number to register class */
 const enum reg_class mips_regno_to_class[] =
 {
-  LEA_REGS,	LEA_REGS,	M16_NA_REGS,	M16_NA_REGS,
+  LEA_REGS,	LEA_REGS,	M16_NA_REGS,	V1_REG,
   M16_REGS,	M16_REGS,	M16_REGS,	M16_REGS,
   LEA_REGS,	LEA_REGS,	LEA_REGS,	LEA_REGS,
   LEA_REGS,	LEA_REGS,	LEA_REGS,	LEA_REGS,
@@ -817,6 +818,12 @@ const struct mips_cpu_info mips_cpu_info_table[] = {
 #undef TARGET_EXPAND_BUILTIN
 #define TARGET_EXPAND_BUILTIN mips_expand_builtin
 
+#undef TARGET_HAVE_TLS
+#define TARGET_HAVE_TLS HAVE_AS_TLS
+
+#undef TARGET_CANNOT_FORCE_CONST_MEM
+#define TARGET_CANNOT_FORCE_CONST_MEM mips_cannot_force_const_mem
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 /* Classify symbol X, which must be a SYMBOL_REF or a LABEL_REF.  */
@@ -834,6 +841,9 @@ mips_classify_symbol (rtx x)
     }
 
   gcc_assert (GET_CODE (x) == SYMBOL_REF);
+
+  if (SYMBOL_REF_TLS_MODEL (x))
+    return SYMBOL_TLS;
 
   if (CONSTANT_POOL_ADDRESS_P (x))
     {
@@ -943,7 +953,11 @@ mips_symbolic_constant_p (rtx x, enum mips_symbol_type *symbol_type)
   if (UNSPEC_ADDRESS_P (x))
     *symbol_type = UNSPEC_ADDRESS_TYPE (x);
   else if (GET_CODE (x) == SYMBOL_REF || GET_CODE (x) == LABEL_REF)
-    *symbol_type = mips_classify_symbol (x);
+    {
+      *symbol_type = mips_classify_symbol (x);
+      if (*symbol_type == SYMBOL_TLS)
+	return false;
+    }
   else
     return false;
 
@@ -993,6 +1007,12 @@ mips_symbolic_constant_p (rtx x, enum mips_symbol_type *symbol_type)
     case SYMBOL_GOTOFF_GLOBAL:
     case SYMBOL_GOTOFF_CALL:
     case SYMBOL_GOTOFF_LOADGP:
+    case SYMBOL_TLSGD:
+    case SYMBOL_TLSLDM:
+    case SYMBOL_DTPREL:
+    case SYMBOL_TPREL:
+    case SYMBOL_GOTTPREL:
+    case SYMBOL_TLS:
       return false;
     }
   gcc_unreachable ();
@@ -1090,6 +1110,14 @@ mips_symbolic_address_p (enum mips_symbol_type symbol_type,
       /* The address will have to be loaded from the GOT first.  */
       return false;
 
+    case SYMBOL_TLSGD:
+    case SYMBOL_TLSLDM:
+    case SYMBOL_DTPREL:
+    case SYMBOL_TPREL:
+    case SYMBOL_GOTTPREL:
+    case SYMBOL_TLS:
+      return false;
+
     case SYMBOL_GOTOFF_PAGE:
     case SYMBOL_GOTOFF_GLOBAL:
     case SYMBOL_GOTOFF_CALL:
@@ -1153,6 +1181,33 @@ mips_classify_address (struct mips_address_info *info, rtx x,
     default:
       return false;
     }
+}
+
+/* Return true if X is a thread-local symbol.  */
+
+static bool
+mips_tls_operand_p (rtx x)
+{
+  return GET_CODE (x) == SYMBOL_REF && SYMBOL_REF_TLS_MODEL (x) != 0;
+}
+
+/* Return true if X can not be forced into a constant pool.  */
+
+static int
+mips_tls_symbol_ref_1 (rtx *x, void *data ATTRIBUTE_UNUSED)
+{
+  return mips_tls_operand_p (*x);
+}
+
+/* Return true if X can not be forced into a constant pool.  */
+
+static bool
+mips_cannot_force_const_mem (rtx x)
+{
+  if (! TARGET_HAVE_TLS)
+    return false;
+
+  return for_each_rtx (&x, &mips_tls_symbol_ref_1, 0);
 }
 
 /* Return the number of instructions needed to load a symbol of the
@@ -1223,8 +1278,17 @@ mips_symbol_insns (enum mips_symbol_type type)
     case SYMBOL_64_HIGH:
     case SYMBOL_64_MID:
     case SYMBOL_64_LOW:
+    case SYMBOL_TLSGD:
+    case SYMBOL_TLSLDM:
+    case SYMBOL_DTPREL:
+    case SYMBOL_GOTTPREL:
+    case SYMBOL_TPREL:
       /* Check whether the offset is a 16- or 32-bit value.  */
       return mips_split_p[type] ? 2 : 1;
+
+    case SYMBOL_TLS:
+      /* We don't treat a bare TLS symbol as a constant.  */
+      return 0;
     }
   gcc_unreachable ();
 }
@@ -1521,6 +1585,114 @@ mips_add_offset (rtx temp, rtx reg, HOST_WIDE_INT offset)
   return plus_constant (reg, offset);
 }
 
+/* Emit a call to __tls_get_addr.  SYM is the TLS symbol we are
+   referencing, and TYPE is the symbol type to use (either global
+   dynamic or local dynamic).  V0 is an RTX for the return value
+   location.  The entire insn sequence is returned.  */
+
+static GTY(()) rtx mips_tls_symbol;
+
+static rtx
+mips_call_tls_get_addr (rtx sym, enum mips_symbol_type type, rtx v0)
+{
+  rtx insn, loc, tga, a0;
+
+  a0 = gen_rtx_REG (Pmode, GP_ARG_FIRST);
+
+  if (!mips_tls_symbol)
+    mips_tls_symbol = init_one_libfunc ("__tls_get_addr");
+
+  loc = mips_unspec_address (sym, type);
+
+  start_sequence ();
+
+  emit_insn (gen_rtx_SET (Pmode, a0,
+			  gen_rtx_LO_SUM (Pmode, pic_offset_table_rtx, loc)));
+  tga = gen_rtx_MEM (Pmode, mips_tls_symbol);
+  insn = emit_call_insn (gen_call_value (v0, tga, const0_rtx, const0_rtx));
+  CONST_OR_PURE_CALL_P (insn) = 1;
+  use_reg (&CALL_INSN_FUNCTION_USAGE (insn), v0);
+  use_reg (&CALL_INSN_FUNCTION_USAGE (insn), a0);
+  insn = get_insns ();
+
+  end_sequence ();
+
+  return insn;
+}
+
+/* Generate the code to access LOC, a thread local SYMBOL_REF.  The
+   return value will be a valid address and move_operand (either a REG
+   or a LO_SUM).  */
+
+static rtx
+mips_legitimize_tls_address (rtx loc)
+{
+  rtx dest, insn, v0, v1, tmp1, tmp2, eqv;
+  enum tls_model model;
+
+  v0 = gen_rtx_REG (Pmode, GP_RETURN);
+  v1 = gen_rtx_REG (Pmode, GP_RETURN + 1);
+
+  model = SYMBOL_REF_TLS_MODEL (loc);
+
+  switch (model)
+    {
+    case TLS_MODEL_GLOBAL_DYNAMIC:
+      insn = mips_call_tls_get_addr (loc, SYMBOL_TLSGD, v0);
+      dest = gen_reg_rtx (Pmode);
+      emit_libcall_block (insn, dest, v0, loc);
+      break;
+
+    case TLS_MODEL_LOCAL_DYNAMIC:
+      insn = mips_call_tls_get_addr (loc, SYMBOL_TLSLDM, v0);
+      tmp1 = gen_reg_rtx (Pmode);
+
+      /* Attach a unique REG_EQUIV, to allow the RTL optimizers to
+	 share the LDM result with other LD model accesses.  */
+      eqv = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, const0_rtx),
+			    UNSPEC_TLS_LDM);
+      emit_libcall_block (insn, tmp1, v0, eqv);
+
+      tmp2 = mips_unspec_offset_high (NULL, tmp1, loc, SYMBOL_DTPREL);
+      dest = gen_rtx_LO_SUM (Pmode, tmp2,
+			     mips_unspec_address (loc, SYMBOL_DTPREL));
+      break;
+
+    case TLS_MODEL_INITIAL_EXEC:
+      tmp1 = gen_reg_rtx (Pmode);
+      tmp2 = mips_unspec_address (loc, SYMBOL_GOTTPREL);
+      if (Pmode == DImode)
+	{
+	  emit_insn (gen_tls_get_tp_di (v1));
+	  emit_insn (gen_load_gotdi (tmp1, pic_offset_table_rtx, tmp2));
+	}
+      else
+	{
+	  emit_insn (gen_tls_get_tp_si (v1));
+	  emit_insn (gen_load_gotsi (tmp1, pic_offset_table_rtx, tmp2));
+	}
+      dest = gen_reg_rtx (Pmode);
+      emit_insn (gen_add3_insn (dest, tmp1, v1));
+      break;
+
+    case TLS_MODEL_LOCAL_EXEC:
+
+      if (Pmode == DImode)
+	emit_insn (gen_tls_get_tp_di (v1));
+      else
+	emit_insn (gen_tls_get_tp_si (v1));
+
+      tmp1 = mips_unspec_offset_high (NULL, v1, loc, SYMBOL_TPREL);
+      dest = gen_rtx_LO_SUM (Pmode, tmp1,
+			     mips_unspec_address (loc, SYMBOL_TPREL));
+      break;
+
+    default:
+      abort ();
+    }
+
+  return dest;
+}
 
 /* This function is used to implement LEGITIMIZE_ADDRESS.  If *XLOC can
    be legitimized in a way that the generic machinery might not expect,
@@ -1531,6 +1703,12 @@ bool
 mips_legitimize_address (rtx *xloc, enum machine_mode mode)
 {
   enum mips_symbol_type symbol_type;
+
+  if (mips_tls_operand_p (*xloc))
+    {
+      *xloc = mips_legitimize_tls_address (*xloc);
+      return true;
+    }
 
   /* See if the address can split into a high part and a LO_SUM.  */
   if (mips_symbolic_constant_p (*xloc, &symbol_type)
@@ -1704,6 +1882,12 @@ mips_legitimize_const_move (enum machine_mode mode, rtx dest, rtx src)
   if (GET_CODE (src) == CONST_INT && !TARGET_MIPS16)
     {
       mips_move_integer (dest, INTVAL (src));
+      return;
+    }
+
+  if (mips_tls_operand_p (src))
+    {
+      emit_move_insn (dest, mips_legitimize_tls_address (src));
       return;
     }
 
@@ -4323,6 +4507,7 @@ override_options (void)
 			     GR_REGS);
   mips_char_to_class['e'] = LEA_REGS;
   mips_char_to_class['j'] = PIC_FN_ADDR_REG;
+  mips_char_to_class['v'] = V1_REG;
   mips_char_to_class['y'] = GR_REGS;
   mips_char_to_class['z'] = ST_REGS;
   mips_char_to_class['B'] = COP0_REGS;
@@ -4510,6 +4695,22 @@ override_options (void)
       mips_hi_relocs[SYMBOL_GOTOFF_LOADGP] = "%hi(%neg(%gp_rel(";
       mips_lo_relocs[SYMBOL_GOTOFF_LOADGP] = "%lo(%neg(%gp_rel(";
     }
+
+  /* Thread-local relocation operators.  */
+  mips_lo_relocs[SYMBOL_TLSGD] = "%tlsgd(";
+  mips_lo_relocs[SYMBOL_TLSLDM] = "%tlsldm(";
+  mips_split_p[SYMBOL_DTPREL] = 1;
+  mips_hi_relocs[SYMBOL_DTPREL] = "%dtprel_hi(";
+  mips_lo_relocs[SYMBOL_DTPREL] = "%dtprel_lo(";
+  mips_lo_relocs[SYMBOL_GOTTPREL] = "%gottprel(";
+  mips_split_p[SYMBOL_TPREL] = 1;
+  mips_hi_relocs[SYMBOL_TPREL] = "%tprel_hi(";
+  mips_lo_relocs[SYMBOL_TPREL] = "%tprel_lo(";
+
+  /* We don't have a thread pointer access instruction on MIPS16, or
+     appropriate TLS relocations.  */
+  if (TARGET_MIPS16)
+    targetm.have_tls = false;
 
   /* Default to working around R4000 errata only if the processor
      was selected explicitly.  */

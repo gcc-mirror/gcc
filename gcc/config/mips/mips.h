@@ -1714,6 +1714,7 @@ enum reg_class
   T_REG,			/* mips16 T register ($24) */
   M16_T_REGS,			/* mips16 registers plus T register */
   PIC_FN_ADDR_REG,		/* SVR4 PIC function address register */
+  V1_REG,			/* Register $v1 ($3) used for TLS access.  */
   LEA_REGS,			/* Every GPR except $25 */
   GR_REGS,			/* integer registers */
   FP_REGS,			/* floating point registers */
@@ -1752,6 +1753,7 @@ enum reg_class
   "T_REG",								\
   "M16_T_REGS",								\
   "PIC_FN_ADDR_REG",							\
+  "V1_REG",								\
   "LEA_REGS",								\
   "GR_REGS",								\
   "FP_REGS",								\
@@ -1793,7 +1795,8 @@ enum reg_class
   { 0x01000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000 },	/* mips16 T register */	\
   { 0x010300fc, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000 },	/* mips16 and T regs */ \
   { 0x02000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000 },	/* SVR4 PIC function address register */ \
-  { 0xfdffffff, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000 },	/* Every other GPR */   \
+  { 0x00000008, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000 },	/* only $v1 */ \
+  { 0xfdffffff, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000 },	/* Every other GPR except $25 */   \
   { 0xffffffff, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000 },	/* integer registers */	\
   { 0x00000000, 0xffffffff, 0x00000000, 0x00000000, 0x00000000, 0x00000000 },	/* floating registers*/	\
   { 0x00000000, 0x00000000, 0x00000001, 0x00000000, 0x00000000, 0x00000000 },	/* hi register */	\
@@ -1849,6 +1852,7 @@ extern const enum reg_class mips_regno_to_class[];
 #define GR_REG_CLASS_P(CLASS)						\
   ((CLASS) == GR_REGS || (CLASS) == M16_REGS || (CLASS) == T_REG	\
    || (CLASS) == M16_T_REGS || (CLASS) == M16_NA_REGS			\
+   || (CLASS) == V1_REG							\
    || (CLASS) == PIC_FN_ADDR_REG || (CLASS) == LEA_REGS)
 
 /* This macro is also used later on in the file.  */
@@ -1896,6 +1900,7 @@ extern const enum reg_class mips_regno_to_class[];
    'f'	Floating point registers
    'h'	Hi register
    'l'	Lo register
+   'v'	$v1 only
    'x'	Multiply/divide registers
    'z'	FP Status register
    'B'  Cop0 register
@@ -3030,4 +3035,8 @@ while (0)
 	jal " USER_LABEL_PREFIX #FUNC "\n\
 	" TEXT_SECTION_ASM_OP);
 #endif
+#endif
+
+#ifndef HAVE_AS_TLS
+#define HAVE_AS_TLS 0
 #endif
