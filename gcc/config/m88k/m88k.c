@@ -2650,13 +2650,15 @@ m88k_builtin_saveregs (arglist)
       emit_library_call (chkr_set_right_libfunc, 1, VOIDmode, 3,
 			 block, ptr_mode,
 			 GEN_INT (3 * UNITS_PER_WORD), TYPE_MODE (sizetype),
-			 GEN_INT (MEMORY_USE_RW), QImode);
+			 GEN_INT (MEMORY_USE_RW),
+			 TYPE_MODE (integer_type_node));
       if (fixed < 8)
 	emit_library_call (chkr_set_right_libfunc, 1, VOIDmode, 3,
 			   dest, ptr_mode,
 			   GEN_INT (UNITS_PER_WORD * (8 - fixed)),
 			   TYPE_MODE (sizetype),
-			   GEN_INT (MEMORY_USE_RW), QImode);
+			   GEN_INT (MEMORY_USE_RW),
+			   TYPE_MODE (integer_type_node));
     }
 
   /* Return the address of the va_list constructor, but don't put it in a
