@@ -137,6 +137,9 @@ SYSTEM_HEADER_DIR = /usr/include
 # Control whether to run fixproto.
 STMP_FIXPROTO = stmp-fixproto
 
+# Test to see whether <limits.h> exists in the system header files.
+LIMITS_H_TEST = [ -f $(SYSTEM_HEADER_DIR)/limits.h ]
+
 # There may be a premade insn-attrtab.c for this machine.
 # (You could rebuild it with genattrtab as usual, but it takes a long time.)
 # PREMADE_ATTRTAB is the file name of the file to use.
@@ -679,7 +682,7 @@ enquire.o: $(srcdir)/enquire.c $(GCC_PASSES) stmp-int-hdrs
 
 # Build the version of limits.h that we will install.
 xlimits.h: glimits.h limitx.h limity.h
-	if [ -f $(SYSTEM_HEADER_DIR)/limits.h ] ; then \
+	if $(LIMITS_H_TEST) ; then \
 	  cat $(srcdir)/limitx.h $(srcdir)/glimits.h $(srcdir)/limity.h > tmp-xlimits.h; \
 	else \
 	  cat $(srcdir)/glimits.h > tmp-xlimits.h; \
