@@ -919,6 +919,46 @@ assign_stack_temp (mode, size, keep)
   return p->slot;
 }
 
+/* Assign a temporary of given TYPE.
+   KEEP is as for assign_stack_temp.
+   MEMORY_REQUIRED is 1 if the result must be addressable stack memory;
+   it is 0 if a register is OK. */
+
+rtx
+assign_temp (type, keep, memory_required)
+     tree type;
+     int keep;
+     int memory_required;
+{
+  enum machine_mode mode = TYPE_MODE (type);
+  if (mode == BLKmode || memory_required)
+    {
+      int size = int_size_in_bytes (type);
+      rtx tmp;
+
+      /* Unfortunately, we don't yet know how to allocate variable-sized
+	 temporaries.  However, sometimes we have a fixed upper limit on
+	 the size (which is stored in TYPE_ARRAY_MAX_SIZE) and can use that
+	 instead.  This is the case for Chill variable-sized strings. */
+      if (size == -1 && TREE_CODE (type) == ARRAY_TYPE
+	  && TYPE_ARRAY_MAX_SIZE (type) != NULL_TREE
+	  && TREE_CODE (TYPE_ARRAY_MAX_SIZE (type)) == INTEGER_CST)
+	size = TREE_INT_CST_LOW (TYPE_ARRAY_MAX_SIZE (type));
+
+      tmp = assign_stack_temp (mode, size, keep);
+      MEM_IN_STRUCT_P (tmp) = AGGREGATE_TYPE_P (type);
+      return tmp;
+    }
+  if (mode == VOIDmode)
+    return const0_rtx;
+#ifndef PROMOTE_FOR_CALL_ONLY
+  { int unsignedp = TREE_UNSIGNED (type);
+    mode = promote_mode (type, mode, &unsignedp, 0);
+  }
+#endif
+  return gen_reg_rtx (mode);
+}
+
 /* Combine temporary stack slots which are adjacent on the stack.
 
    This allows for better use of already allocated stack space.  This is only
