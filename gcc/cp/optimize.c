@@ -482,10 +482,9 @@ inlinable_function_p (fn, id)
   else if (varargs_function_p (fn))
     ;
   /* All is well.  We can inline this function.  Traditionally, GCC
-     has refused to inline functions using setjmp or alloca, or
-     functions whose values are returned in a PARALLEL, and a few
-     other such obscure conditions.  We are not equally constrained at
-     the tree level.  */
+     has refused to inline functions using alloca, or functions whose
+     values are returned in a PARALLEL, and a few other such obscure
+     conditions.  We are not equally constrained at the tree level.  */
   else
     inlinable = 1;
 
