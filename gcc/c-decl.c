@@ -4852,7 +4852,7 @@ finish_struct (t, fieldlist)
 	if (pedantic)
 	  pedwarn ((TREE_CODE (t) == UNION_TYPE ? "union defined inside parms"
 		    : "structure defined inside parms"));
-	else
+	else if (! flag_traditional)
 	  warning ((TREE_CODE (t) == UNION_TYPE ? "union defined inside parms"
 		    : "structure defined inside parms"));
       }
