@@ -1,3 +1,8 @@
+2004-09-14  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* testsuite/lib/libstdc++.exp: Use gcc wrapper.exp and call
+	libstdc++_maybe_build_wrapper instead of using local code.
+
 2004-09-08  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* config/linker-map.gnu (GLIBCXX_3.4.3): New, adjust symbol exports.
