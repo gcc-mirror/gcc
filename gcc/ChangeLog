@@ -1,3 +1,13 @@
+Sun Jul 29 21:38:45 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	Suggested by Richard Henderson and Richard Kenner:
+	* combine.c (recog_for_combine): Use the fake recog
+	only if instruction does not match.
+	* rtl.h (NOOP_MOVE_INSN_CODE): New.
+	* rtlanal.c (noop_move_p): Always return 1 for NOOP_MOVE_INSN_CODE.
+
+	* combine.c (try_combine): Discover noop jump as direct jump.
+
 2001-07-29  Daniel Berlin  <dan@cgsoftware.com>
 
 	* df.c (df_rd_global_compute): Add successors to worklist, not

@@ -35,6 +35,10 @@ struct function;
 union tree_node;
 #endif
 
+/* Value used by some passes to "recognize" noop moves as valid instructions.
+ */
+#define NOOP_MOVE_INSN_CODE	INT_MAX
+
 /* Register Transfer Language EXPRESSIONS CODES */
 
 #define RTX_CODE	enum rtx_code

@@ -2763,7 +2763,10 @@ try_combine (i3, i2, i1, new_direct_jump_p)
        BARRIER following it since it may have initially been a
        conditional jump.  It may also be the last nonnote insn.  */
 
-    if (GET_CODE (newpat) == RETURN || any_uncondjump_p (i3))
+    if (GET_CODE (newpat) == RETURN || any_uncondjump_p (i3)
+	|| (GET_CODE (newpat) == SET
+	    && SET_SRC (newpat) == pc_rtx
+	    && SET_DEST (newpat) == pc_rtx))
       {
 	*new_direct_jump_p = 1;
 
@@ -9600,12 +9603,7 @@ recog_for_combine (pnewpat, insn, pnotes)
   old_notes = REG_NOTES (insn);
   REG_NOTES (insn) = 0;
 
-  /* Is the result of combination a valid instruction?
-     Recognize all noop sets, these will be killed by followup pass.  */
-  if (GET_CODE (pat) == SET && set_noop_p (pat))
-    insn_code_number = INT_MAX;
-  else
-    insn_code_number = recog (pat, insn, &num_clobbers_to_add);
+  insn_code_number = recog (pat, insn, &num_clobbers_to_add);
 
   /* If it isn't, there is the possibility that we previously had an insn
      that clobbered some register as a side effect, but the combined
@@ -9630,12 +9628,12 @@ recog_for_combine (pnewpat, insn, pnotes)
       if (pos == 1)
 	pat = XVECEXP (pat, 0, 0);
 
-      /* Recognize all noop sets, these will be killed by followup pass.  */
-      if (GET_CODE (pat) == SET && set_noop_p (pat))
-	insn_code_number = INT_MAX;
-      else
-        insn_code_number = recog (pat, insn, &num_clobbers_to_add);
+      insn_code_number = recog (pat, insn, &num_clobbers_to_add);
     }
+
+  /* Recognize all noop sets, these will be killed by followup pass.  */
+  if (insn_code_number < 0 && GET_CODE (pat) == SET && set_noop_p (pat))
+    insn_code_number = NOOP_MOVE_INSN_CODE, num_clobbers_to_add = 0;
 
   REG_NOTES (insn) = old_notes;
 
