@@ -351,7 +351,8 @@ do {									\
   barrier_align (LABEL_AFTER_BARRIER)
 
 #define LOOP_ALIGN(A_LABEL) \
-  ((! optimize || TARGET_HARVARD || TARGET_SMALLCODE) ? 0 : 2)
+  ((! optimize || TARGET_HARVARD || TARGET_SMALLCODE) \
+   ? 0 : sh_loop_align (A_LABEL))
 
 #define LABEL_ALIGN(A_LABEL) \
 (									\

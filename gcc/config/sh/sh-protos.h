@@ -36,6 +36,7 @@ extern const char *output_far_jump PARAMS ((rtx, rtx));
 extern void machine_dependent_reorg PARAMS ((rtx));
 extern struct rtx_def *sfunc_uses_reg PARAMS ((rtx));
 extern int barrier_align PARAMS ((rtx));
+extern int sh_loop_align PARAMS ((rtx));
 extern int fp_zero_operand PARAMS ((rtx));
 extern int fp_one_operand PARAMS ((rtx));
 extern int fp_int_operand PARAMS ((rtx));

@@ -2786,6 +2786,30 @@ barrier_align (barrier_or_label)
   return CACHE_LOG;
 }
 
+/* If we are inside a phony loop, almost any kind of label can turn up as the
+   first one in the loop.  Aligning a braf label causes incorrect switch
+   destination addresses; we can detect braf labels because they are
+   followed by a BARRIER.
+   Applying loop alignment to small constant or switch tables is a waste
+   of space, so we suppress this too.  */
+int
+sh_loop_align (label)
+     rtx label;
+{
+  rtx next = label;
+
+  do
+    next = next_nonnote_insn (next);
+  while (next && GET_CODE (next) == CODE_LABEL);
+
+  if (! next
+      || GET_RTX_CLASS (GET_CODE (next)) != 'i'
+      || GET_CODE (PATTERN (next)) == ADDR_DIFF_VEC
+      || recog_memoized (next) == CODE_FOR_consttable_2)
+    return 0;
+  return 2;
+}
+
 /* Exported to toplev.c.
 
    Do a final pass over the function, just before delayed branch
