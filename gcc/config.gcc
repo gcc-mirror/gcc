@@ -2745,12 +2745,6 @@ powerpcle-*-eabi*)
 	tmake_file="rs6000/t-ppcgas rs6000/t-ppccomm"
 	extra_headers=ppc-asm.h
 	;;
-powerpcle-*-solaris2*)
-	tm_file="${tm_file} elfos.h svr4.h freebsd-spec.h rs6000/sysv4.h rs6000/sysv4le.h rs6000/sol2.h"
-	xm_defines=POSIX
-	tmake_file="rs6000/t-ppcos rs6000/t-ppccomm"
-	extra_headers=ppc-asm.h
-	;;
 rs6000-ibm-aix3.[01]*)
 	xm_defines=POSIX
 	tm_file="${tm_file} rs6000/aix.h rs6000/aix31.h rs6000/xcoff.h"

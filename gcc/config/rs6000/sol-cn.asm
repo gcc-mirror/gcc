@@ -1,4 +1,4 @@
-# crtn.s for solaris
+# crtn.s for sysv4
 
 #   Copyright (C) 1996 Free Software Foundation, Inc.
 #   Written By Michael Meissner
@@ -65,7 +65,7 @@ _ex_text1:
 	.globl	_ex_range1
 _ex_range1:
 
-# Tail of __init used for static constructors in Solaris
+# Tail of _init used for static constructors
 	.section ".init","ax"
 	lwz	%r0,16(%r1)
 	lwz	%r31,12(%r1)
@@ -73,7 +73,7 @@ _ex_range1:
 	addi	%r1,%r1,16
 	blr
 
-# Tail of __fini used for static destructors in Solaris
+# Tail of _fini used for static destructors
 	.section ".fini","ax"
 	lwz	%r0,16(%r1)
 	lwz	%r31,12(%r1)

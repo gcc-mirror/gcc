@@ -1,4 +1,4 @@
-# Multilibs for a powerpc hosted ELF target (linux, SVR4, solaris)
+# Multilibs for a powerpc hosted ELF target (linux, SVR4)
 
 MULTILIB_OPTIONS	= msoft-float
 MULTILIB_DIRNAMES	= nof
