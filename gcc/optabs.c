@@ -327,6 +327,9 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
      int unsignedp;
      enum optab_methods methods;
 {
+  enum optab_methods next_methods
+    = (methods == OPTAB_LIB || methods == OPTAB_LIB_WIDEN
+       ? OPTAB_WIDEN : methods);
   enum mode_class class;
   enum machine_mode wider_mode;
   register rtx temp;
@@ -483,10 +486,13 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 			   unsignedp ? umul_widen_optab : smul_widen_optab,
 			   op0, op1, NULL_RTX, unsignedp, OPTAB_DIRECT);
 
-      if (GET_MODE_CLASS (mode) == MODE_INT)
-	return gen_lowpart (mode, temp);
-      else
-	return convert_to_mode (mode, temp, unsignedp);
+      if (temp != 0)
+	{
+	  if (GET_MODE_CLASS (mode) == MODE_INT)
+	    return gen_lowpart (mode, temp);
+	  else
+	    return convert_to_mode (mode, temp, unsignedp);
+	}
     }
 
   /* Look for a wider mode of the same class for which we think we
@@ -568,7 +574,11 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 	  rtx x = expand_binop (word_mode, binoptab,
 				operand_subword_force (op0, i, mode),
 				operand_subword_force (op1, i, mode),
-				target_piece, unsignedp, methods);
+				target_piece, unsignedp, next_methods);
+
+	  if (x == 0)
+	    break;
+
 	  if (target_piece != x)
 	    emit_move_insn (target_piece, x);
 	}
@@ -576,14 +586,17 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
       insns = get_insns ();
       end_sequence ();
 
-      if (binoptab->code != UNKNOWN)
-	equiv_value
-	  = gen_rtx (binoptab->code, mode, copy_rtx (op0), copy_rtx (op1));
-      else
-	equiv_value = 0;
+      if (i == GET_MODE_BITSIZE (mode) / BITS_PER_WORD)
+	{
+	  if (binoptab->code != UNKNOWN)
+	    equiv_value
+	      = gen_rtx (binoptab->code, mode, copy_rtx (op0), copy_rtx (op1));
+	  else
+	    equiv_value = 0;
 
-      emit_no_conflict_block (insns, target, op0, op1, equiv_value);
-      return target;
+	  emit_no_conflict_block (insns, target, op0, op1, equiv_value);
+	  return target;
+	}
     }
 
   /* Synthesize double word shifts from single word shifts.  */
@@ -596,7 +609,7 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
       && ashl_optab->handlers[(int) word_mode].insn_code != CODE_FOR_nothing
       && lshr_optab->handlers[(int) word_mode].insn_code != CODE_FOR_nothing)
     {
-      rtx insns, equiv_value;
+      rtx insns, inter, equiv_value;
       rtx into_target, outof_target;
       rtx into_input, outof_input;
       int shift_count, left_shift, outof_word;
@@ -626,26 +639,30 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 
       if (shift_count >= BITS_PER_WORD)
 	{
-	  emit_move_insn (into_target,
-			  expand_binop (word_mode, binoptab,
-					outof_input,
-					GEN_INT (shift_count - BITS_PER_WORD),
-					into_target, unsignedp, methods));
+	  inter = expand_binop (word_mode, binoptab,
+			       outof_input,
+			       GEN_INT (shift_count - BITS_PER_WORD),
+			       into_target, unsignedp, next_methods);
+
+	  if (inter != 0)
+	    emit_move_insn (into_target, inter);
 
 	  /* For a signed right shift, we must fill the word we are shifting
 	     out of with copies of the sign bit.  Otherwise it is zeroed.  */
 	  if (binoptab != ashr_optab)
 	    emit_move_insn (outof_target, CONST0_RTX (word_mode));
-	  else
-	    emit_move_insn (outof_target,
-			    expand_binop (word_mode, binoptab,
-					  outof_input,
-					  GEN_INT (BITS_PER_WORD - 1),
-					  outof_target, unsignedp, methods));
+	  else if (inter != 0)
+	    inter = expand_binop (word_mode, binoptab,
+				  outof_input,
+				  GEN_INT (BITS_PER_WORD - 1),
+				  outof_target, unsignedp, next_methods);
+
+	  if (inter != 0)
+	    emit_move_insn (outof_target, inter);
 	}
       else
 	{
-	  rtx carries, into_temp;
+	  rtx carries;
 	  optab reverse_unsigned_shift, unsigned_shift;
 
 	  /* For a shift of less then BITS_PER_WORD, to compute the carry,
@@ -663,32 +680,42 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 	  carries = expand_binop (word_mode, reverse_unsigned_shift,
 				  outof_input,
 				  GEN_INT (BITS_PER_WORD - shift_count),
-				  0, unsignedp, methods);
+				  0, unsignedp, next_methods);
 
-	  emit_move_insn (outof_target,
-			  expand_binop (word_mode, binoptab,
-					outof_input,
-					op1, outof_target, unsignedp, methods));
-	  into_temp = expand_binop (word_mode, unsigned_shift,
-				    into_input,
-				    op1, 0, unsignedp, methods);
+	  if (carries == 0)
+	    inter = 0;
+	  else
+	    inter = expand_binop (word_mode, binoptab, outof_input,
+				  op1, outof_target, unsignedp, next_methods);
+	  
+	  if (inter != 0)
+	    emit_move_insn (outof_target, inter);
 
-	  emit_move_insn (into_target,
-			  expand_binop (word_mode, ior_optab,
-					carries, into_temp,
-					into_target, unsignedp, methods));
+	  if (inter != 0)
+	    inter = expand_binop (word_mode, unsigned_shift, into_input,
+				  op1, 0, unsignedp, next_methods);
+
+	  if (inter != 0)
+	    inter = expand_binop (word_mode, ior_optab, carries, inter,
+				  into_target, unsignedp, next_methods);
+
+	  if (inter != 0)
+	    emit_move_insn (into_target, inter);
 	}
 
       insns = get_insns ();
       end_sequence ();
 
-      if (binoptab->code != UNKNOWN)
-	equiv_value = gen_rtx (binoptab->code, mode, op0, op1);
-      else
-	equiv_value = 0;
+      if (inter != 0)
+	{
+	  if (binoptab->code != UNKNOWN)
+	    equiv_value = gen_rtx (binoptab->code, mode, op0, op1);
+	  else
+	    equiv_value = 0;
 
-      emit_no_conflict_block (insns, target, op0, op1, equiv_value);
-      return target;
+	  emit_no_conflict_block (insns, target, op0, op1, equiv_value);
+	  return target;
+	}
     }
 
   /* Synthesize double word rotates from single word shifts.  */
@@ -702,6 +729,7 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
       rtx insns, equiv_value;
       rtx into_target, outof_target;
       rtx into_input, outof_input;
+      rtx inter;
       int shift_count, left_shift, outof_word;
 
       /* If TARGET is the same as one of the operands, the REG_EQUAL note
@@ -732,6 +760,7 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 	  /* This is just a word swap.  */
 	  emit_move_insn (outof_target, into_input);
 	  emit_move_insn (into_target, outof_input);
+	  inter = const0_rtx;
 	}
       else
 	{
@@ -758,43 +787,57 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 
 	  into_temp1 = expand_binop (word_mode, unsigned_shift,
 				     outof_input, first_shift_count,
-				     NULL_RTX, unsignedp, methods);
+				     NULL_RTX, unsignedp, next_methods);
 	  into_temp2 = expand_binop (word_mode, reverse_unsigned_shift,
 				     into_input, second_shift_count,
-				     into_target, unsignedp, methods);
-	  emit_move_insn (into_target,
-			  expand_binop (word_mode, ior_optab,
-					into_temp1, into_temp2,
-					into_target, unsignedp, methods));
+				     into_target, unsignedp, next_methods);
+
+	  if (into_temp1 != 0 && into_temp2 != 0)
+	    inter = expand_binop (word_mode, ior_optab, into_temp1, into_temp2,
+				  into_target, unsignedp, next_methods);
+	  else
+	    inter = 0;
+
+	  if (inter != 0)
+	    emit_move_insn (into_target, inter);
 
 	  outof_temp1 = expand_binop (word_mode, unsigned_shift,
 				      into_input, first_shift_count,
-				      NULL_RTX, unsignedp, methods);
+				      NULL_RTX, unsignedp, next_methods);
 	  outof_temp2 = expand_binop (word_mode, reverse_unsigned_shift,
 				      outof_input, second_shift_count,
-				      outof_target, unsignedp, methods);
-	  emit_move_insn (outof_target,
-			  expand_binop (word_mode, ior_optab,
-					outof_temp1, outof_temp2,
-					outof_target, unsignedp, methods));
+				      outof_target, unsignedp, next_methods);
+
+	  if (inter != 0 && outof_temp1 != 0 && outof_temp2 != 0)
+	    inter = expand_binop (word_mode, ior_optab,
+				  outof_temp1, outof_temp2,
+				  outof_target, unsignedp, next_methods);
+
+	  if (inter != 0)
+	    emit_move_insn (outof_target, inter);
 	}
 
       insns = get_insns ();
       end_sequence ();
 
-      if (binoptab->code != UNKNOWN)
-	equiv_value = gen_rtx (binoptab->code, mode, op0, op1);
-      else
-	equiv_value = 0;
+      if (inter != 0)
+	{
+	  if (binoptab->code != UNKNOWN)
+	    equiv_value = gen_rtx (binoptab->code, mode, op0, op1);
+	  else
+	    equiv_value = 0;
 
-      /* We can't make this a no conflict block if this is a word swap,
-	 because the word swap case fails if the input and output values
-	 are in the same register.  */
-      if (shift_count != BITS_PER_WORD)
-	emit_no_conflict_block (insns, target, op0, op1, equiv_value);
-      else
-	emit_insns (insns);
-      return target;
+	  /* We can't make this a no conflict block if this is a word swap,
+	     because the word swap case fails if the input and output values
+	     are in the same register.  */
+	  if (shift_count != BITS_PER_WORD)
+	    emit_no_conflict_block (insns, target, op0, op1, equiv_value);
+	  else
+	    emit_insns (insns);
+
+
+	  return target;
+	}
     }
 
   /* These can be done a word at a time by propagating carries.  */
@@ -843,7 +886,7 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 	  /* Main add/subtract of the input operands.  */
 	  x = expand_binop (word_mode, binoptab,
 			    op0_piece, op1_piece,
-			    target_piece, unsignedp, methods);
+			    target_piece, unsignedp, next_methods);
 	  if (x == 0)
 	    break;
 
@@ -855,7 +898,7 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 					   binoptab == add_optab ? LTU : GTU,
 					   x, op0_piece,
 					   word_mode, 1, normalizep);
-	      if (!carry_out)
+	      if (carry_out == 0)
 		break;
 	    }
 
@@ -865,8 +908,10 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 	      x = expand_binop (word_mode,
 				normalizep == 1 ? binoptab : otheroptab,
 				x, carry_in,
-				target_piece, 1, methods);
-	      if (target_piece != x)
+				target_piece, 1, next_methods);
+	      if (x == 0)
+		break;
+	      else if (target_piece != x)
 		emit_move_insn (target_piece, x);
 
 	      if (i + 1 < nwords)
@@ -878,11 +923,12 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 					         ? LTU : GTU,
 					       x, carry_in,
 					       word_mode, 1, normalizep);
+
 		  /* Logical-ior the two poss. carry together.  */
 		  carry_out = expand_binop (word_mode, ior_optab,
 					    carry_out, carry_tmp,
-					    carry_out, 0, methods);
-		  if (!carry_out)
+					    carry_out, 0, next_methods);
+		  if (carry_out == 0)
 		    break;
 		}
 	    }
@@ -892,9 +938,8 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 
       if (i == GET_MODE_BITSIZE (mode) / BITS_PER_WORD)
 	{
-	  rtx temp;
-	  
-	  temp = emit_move_insn (target, target);
+	  rtx temp = emit_move_insn (target, target);
+
 	  REG_NOTES (temp) = gen_rtx (EXPR_LIST, REG_EQUAL,
 				      gen_rtx (binoptab->code, mode,
 					       copy_rtx (xop0),
@@ -1005,33 +1050,33 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 	  product = expand_binop (mode, smul_widen_optab, op0_low, op1_low,
 				  target, 1, OPTAB_DIRECT);
 	  op0_xhigh = expand_binop (word_mode, lshr_optab, op0_low, wordm1,
-				    NULL_RTX, 1, OPTAB_DIRECT);
+				    NULL_RTX, 1, next_methods);
 	  if (op0_xhigh)
 	    op0_xhigh = expand_binop (word_mode, add_optab, op0_high,
-				      op0_xhigh, op0_xhigh, 0, OPTAB_DIRECT);
+				      op0_xhigh, op0_xhigh, 0, next_methods);
 	  else
 	    {
 	      op0_xhigh = expand_binop (word_mode, ashr_optab, op0_low, wordm1,
-					NULL_RTX, 0, OPTAB_DIRECT);
+					NULL_RTX, 0, next_methods);
 	      if (op0_xhigh)
 		op0_xhigh = expand_binop (word_mode, sub_optab, op0_high,
 					  op0_xhigh, op0_xhigh, 0,
-					  OPTAB_DIRECT);
+					  next_methods);
 	    }
 
 	  op1_xhigh = expand_binop (word_mode, lshr_optab, op1_low, wordm1,
-				    NULL_RTX, 1, OPTAB_DIRECT);
+				    NULL_RTX, 1, next_methods);
 	  if (op1_xhigh)
 	    op1_xhigh = expand_binop (word_mode, add_optab, op1_high,
-				      op1_xhigh, op1_xhigh, 0, OPTAB_DIRECT);
+				      op1_xhigh, op1_xhigh, 0, next_methods);
 	  else
 	    {
 	      op1_xhigh = expand_binop (word_mode, ashr_optab, op1_low, wordm1,
-					NULL_RTX, 0, OPTAB_DIRECT);
+					NULL_RTX, 0, next_methods);
 	      if (op1_xhigh)
 		op1_xhigh = expand_binop (word_mode, sub_optab, op1_high,
 					  op1_xhigh, op1_xhigh, 0,
-					  OPTAB_DIRECT);
+					  next_methods);
 	    }
 	}
 
@@ -1047,28 +1092,31 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 
       if (product && op0_xhigh && op1_xhigh)
 	{
-	  rtx product_piece;
 	  rtx product_high = operand_subword (product, high, 1, mode);
 	  rtx temp = expand_binop (word_mode, binoptab, op0_low, op1_xhigh,
 				   NULL_RTX, 0, OPTAB_DIRECT);
 
-	  if (temp)
+	  if (temp != 0)
+	    temp = expand_binop (word_mode, add_optab, temp, product_high,
+				 product_high, 0, next_methods);
+
+	  if (temp != 0 && temp != product_high)
+	    emit_move_insn (product_high, temp);
+
+	  if (temp != 0)
+	    temp = expand_binop (word_mode, binoptab, op1_low, op0_xhigh, 
+				 NULL_RTX, 0, OPTAB_DIRECT);
+
+	  if (temp != 0)
+	    temp = expand_binop (word_mode, add_optab, temp,
+				 product_high, product_high,
+				 0, next_methods);
+
+	  if (temp != 0 && temp != product_high)
+	    emit_move_insn (product_high, temp);
+
+	  if (temp != 0)
 	    {
-	      product_piece = expand_binop (word_mode, add_optab, temp,
-					    product_high, product_high,
-					    0, OPTAB_LIB_WIDEN);
-	      if (product_piece != product_high)
-		emit_move_insn (product_high, product_piece);
-
-	      temp = expand_binop (word_mode, binoptab, op1_low, op0_xhigh, 
-				   NULL_RTX, 0, OPTAB_DIRECT);
-
-	      product_piece = expand_binop (word_mode, add_optab, temp,
-					    product_high, product_high,
-					    0, OPTAB_LIB_WIDEN);
-	      if (product_piece != product_high)
-		emit_move_insn (product_high, product_piece);
-
 	      temp = emit_move_insn (product, product);
 	      REG_NOTES (temp) = gen_rtx (EXPR_LIST, REG_EQUAL,
 					  gen_rtx (MULT, mode, copy_rtx (op0),
@@ -1096,15 +1144,12 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 
   if (class == MODE_COMPLEX_FLOAT || class == MODE_COMPLEX_INT)
     {
-      rtx real0 = (rtx) 0;
-      rtx imag0 = (rtx) 0;
-      rtx real1 = (rtx) 0;
-      rtx imag1 = (rtx) 0;
-      rtx realr;
-      rtx imagr;
-      rtx res;
+      rtx real0 = 0, imag0 = 0;
+      rtx real1 = 0, imag1 = 0;
+      rtx realr, imagr, res;
       rtx seq;
       rtx equiv_value;
+      int ok = 0;
 
       /* Find the correct mode for the real and imaginary parts */
       enum machine_mode submode
@@ -1139,7 +1184,7 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
       else
 	real1 = op1;
 
-      if (! real0 || ! real1 || ! (imag0 || imag1))
+      if (real0 == 0 || real1 == 0 || ! (imag0 != 0|| imag1 != 0))
 	abort ();
 
       switch (binoptab->code)
@@ -1150,7 +1195,10 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 	  /* (a+ib) - (c+id) = (a-c) + i(b-d) */
 	  res = expand_binop (submode, binoptab, real0, real1,
 			      realr, unsignedp, methods);
-	  if (res != realr)
+
+	  if (res == 0)
+	    break;
+	  else if (res != realr)
 	    emit_move_insn (realr, res);
 
 	  if (imag0 && imag1)
@@ -1163,8 +1211,12 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 	  else
 	    res = imag1;
 
-	  if (res != imagr)
+	  if (res == 0)
+	    break;
+	  else if (res != imagr)
 	    emit_move_insn (imagr, res);
+
+	  ok = 1;
 	  break;
 
 	case MULT:
@@ -1172,34 +1224,47 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 
 	  if (imag0 && imag1)
 	    {
+	      rtx temp1, temp2;
+
 	      /* Don't fetch these from memory more than once.  */
 	      real0 = force_reg (submode, real0);
 	      real1 = force_reg (submode, real1);
 	      imag0 = force_reg (submode, imag0);
 	      imag1 = force_reg (submode, imag1);
 
-	      res = expand_binop (submode, sub_optab,
-				  expand_binop (submode, binoptab, real0,
-						real1, NULL_RTX, unsignedp,
-						methods),
-				  expand_binop (submode, binoptab, imag0,
-						imag1, NULL_RTX, unsignedp,
-						methods),
+	      temp1 = expand_binop (submode, binoptab, real0, real1, NULL_RTX,
+				    unsignedp, methods);
+
+	      temp2 = expand_binop (submode, binoptab, imag0, imag1, NULL_RTX,
+				    unsignedp, methods);
+
+	      if (temp1 == 0 || temp2 == 0)
+		break;
+
+	      res = expand_binop (submode, sub_optab, temp1, temp2,
 				  realr, unsignedp, methods);
 
-	      if (res != realr)
+	      if (res == 0)
+		break;
+	      else if (res != realr)
 		emit_move_insn (realr, res);
 
-	      res = expand_binop (submode, add_optab,
-				  expand_binop (submode, binoptab,
-						real0, imag1,
-						NULL_RTX, unsignedp, methods),
-				  expand_binop (submode, binoptab,
-						real1, imag0,
-						NULL_RTX, unsignedp, methods),
-				  imagr, unsignedp, methods);
-	      if (res != imagr)
+	      temp1 = expand_binop (submode, binoptab, real0, imag1,
+				    NULL_RTX, unsignedp, methods);
+
+	      temp2 = expand_binop (submode, binoptab, real1, imag0,
+				    NULL_RTX, unsignedp, methods);
+
+	      if (temp1 == 0 || temp2 == 0)
+		res = expand_binop (submode, add_optab, temp1, temp2,
+				    imagr, unsignedp, methods);
+
+	      if (res == 0)
+		break;
+	      else if (res != imagr)
 		emit_move_insn (imagr, res);
+
+	      ok = 1;
 	    }
 	  else
 	    {
@@ -1209,25 +1274,33 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 
 	      res = expand_binop (submode, binoptab, real0, real1,
 				  realr, unsignedp, methods);
-	      if (res != realr)
+	      if (res == 0)
+		break;
+	      else if (res != realr)
 		emit_move_insn (realr, res);
 
-	      if (imag0)
+	      if (imag0 != 0)
 		res = expand_binop (submode, binoptab,
 				    real1, imag0, imagr, unsignedp, methods);
 	      else
 		res = expand_binop (submode, binoptab,
 				    real0, imag1, imagr, unsignedp, methods);
-	      if (res != imagr)
+
+	      if (res == 0)
+		break;
+	      else if (res != imagr)
 		emit_move_insn (imagr, res);
+
+	      ok = 1;
 	    }
 	  break;
 
 	case DIV:
 	  /* (a+ib) / (c+id) = ((ac+bd)/(cc+dd)) + i((bc-ad)/(cc+dd)) */
 	  
-	  if (! imag1)
-	    {	/* (a+ib) / (c+i0) = (a/c) + i(b/c) */
+	  if (imag1 == 0)
+	    {
+	      /* (a+ib) / (c+i0) = (a/c) + i(b/c) */
 
 	      /* Don't fetch these from memory more than once.  */
 	      real1 = force_reg (submode, real1);
@@ -1240,7 +1313,9 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 		res = expand_divmod (0, TRUNC_DIV_EXPR, submode,
 				     real0, real1, realr, unsignedp);
 
-	      if (res != realr)
+	      if (res == 0)
+		break;
+	      else if (res != realr)
 		emit_move_insn (realr, res);
 
 	      if (class == MODE_COMPLEX_FLOAT)
@@ -1250,68 +1325,92 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 		res = expand_divmod (0, TRUNC_DIV_EXPR, submode,
 				     imag0, real1, imagr, unsignedp);
 
-	      if (res != imagr)
+	      if (res == 0)
+		break;
+	      else if (res != imagr)
 		emit_move_insn (imagr, res);
-	    }
-	  else			/* Divisor is of complex type */
-	    {			/* X/(a+ib) */
 
+	      ok = 1;
+	    }
+	  else
+	    {
+	      /* Divisor is of complex type:
+		 X/(a+ib) */
 	      rtx divisor;
-	      rtx real_t;
-	      rtx imag_t;
+	      rtx real_t, imag_t;
 	      rtx lhs, rhs;
+	      rtx temp1, temp2;
 	      
 	      /* Don't fetch these from memory more than once.  */
 	      real0 = force_reg (submode, real0);
 	      real1 = force_reg (submode, real1);
-	      if (imag0)
+
+	      if (imag0 != 0)
 		imag0 = force_reg (submode, imag0);
+
 	      imag1 = force_reg (submode, imag1);
 
 	      /* Divisor: c*c + d*d */
-	      divisor = expand_binop (submode, add_optab,
-				      expand_binop (submode, smul_optab,
-						    real1, real1, NULL_RTX,
-						    unsignedp, methods),
-				      expand_binop (submode, smul_optab,
-						    imag1, imag1, NULL_RTX,
-						    unsignedp, methods),
-				      NULL_RTX, unsignedp, methods);
+	      temp1 = expand_binop (submode, smul_optab, real1, real1,
+				    NULL_RTX, unsignedp, methods);
 
-	      if (! imag0)	/* ((a)(c-id))/divisor */
-		{	/* (a+i0) / (c+id) = (ac/(cc+dd)) + i(-ad/(cc+dd)) */
+	      temp2 = expand_binop (submode, smul_optab, imag1, imag1,
+				    NULL_RTX, unsignedp, methods);
+
+	      if (temp1 == 0 || temp2 == 0)
+		break;
+
+	      divisor = expand_binop (submode, add_optab, temp1, temp2,
+				      NULL_RTX, unsignedp, methods);
+	      if (divisor == 0)
+		break;
+
+	      if (imag0 == 0)
+		{
+		  /* ((a)(c-id))/divisor */
+		  /* (a+i0) / (c+id) = (ac/(cc+dd)) + i(-ad/(cc+dd)) */
+
 		  /* Calculate the dividend */
 		  real_t = expand_binop (submode, smul_optab, real0, real1,
 					 NULL_RTX, unsignedp, methods);
 		  
-		  imag_t
-		    = expand_unop (submode, neg_optab,
-				   expand_binop (submode, smul_optab, real0,
-						 imag1, NULL_RTX, unsignedp,
-						 methods),
-				   NULL_RTX, unsignedp);
-		}
-	      else		/* ((a+ib)(c-id))/divider */
-		{
-		  /* Calculate the dividend */
-		  real_t = expand_binop (submode, add_optab,
-					 expand_binop (submode, smul_optab,
-						       real0, real1, NULL_RTX,
-						       unsignedp, methods),
-					 expand_binop (submode, smul_optab,
-						       imag0, imag1, NULL_RTX,
-						       unsignedp, methods),
-					 NULL_RTX, unsignedp, methods);
-		  
-		  imag_t = expand_binop (submode, sub_optab,
-					 expand_binop (submode, smul_optab,
-						       imag0, real1, NULL_RTX,
-						       unsignedp, methods),
-					 expand_binop (submode, smul_optab,
-						       real0, imag1, NULL_RTX,
-						       unsignedp, methods),
+		  imag_t = expand_binop (submode, smul_optab, real0, imag1,
 					 NULL_RTX, unsignedp, methods);
 
+		  if (real_t == 0 || imag_t == 0)
+		    break;
+
+		  imag_t = expand_unop (submode, neg_optab, imag_t,
+					NULL_RTX, unsignedp);
+		}
+	      else
+		{
+		  /* ((a+ib)(c-id))/divider */
+		  /* Calculate the dividend */
+		  temp1 = expand_binop (submode, smul_optab, real0, real1,
+					NULL_RTX, unsignedp, methods);
+
+		  temp2 = expand_binop (submode, smul_optab, imag0, imag1,
+					NULL_RTX, unsignedp, methods);
+
+		  if (temp1 == 0 || temp2 == 0)
+		    break;
+
+		  real_t = expand_binop (submode, add_optab, temp1, temp2,
+					 NULL_RTX, unsignedp, methods);
+		  
+		  temp1 = expand_binop (submode, smul_optab, imag0, real1,
+					NULL_RTX, unsignedp, methods);
+
+		  temp2 = expand_binop (submode, smul_optab, real0, imag1,
+					NULL_RTX, unsignedp, methods);
+
+		  if (temp1 == 0 || temp2 == 0)
+		    imag_t = expand_binop (submode, sub_optab, temp1, temp2,
+					   NULL_RTX, unsignedp, methods);
+
+		  if (real_t == 0 || imag_t == 0)
+		    break;
 		}
 
 	      if (class == MODE_COMPLEX_FLOAT)
@@ -1321,7 +1420,9 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 		res = expand_divmod (0, TRUNC_DIV_EXPR, submode,
 				     real_t, divisor, realr, unsignedp);
 
-	      if (res != realr)
+	      if (res == 0)
+		break;
+	      else if (res != realr)
 		emit_move_insn (realr, res);
 
 	      if (class == MODE_COMPLEX_FLOAT)
@@ -1331,8 +1432,12 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 		res = expand_divmod (0, TRUNC_DIV_EXPR, submode,
 				     imag_t, divisor, imagr, unsignedp);
 
-	      if (res != imagr)
+	      if (res == 0)
+		break;
+	      else if (res != imagr)
 		emit_move_insn (imagr, res);
+
+	      ok = 1;
 	    }
 	  break;
 	  
@@ -1343,15 +1448,18 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
       seq = get_insns ();
       end_sequence ();
 
-      if (binoptab->code != UNKNOWN)
-	equiv_value
-	  = gen_rtx (binoptab->code, mode, copy_rtx (op0), copy_rtx (op1));
-      else
-	equiv_value = 0;
+      if (ok)
+	{
+	  if (binoptab->code != UNKNOWN)
+	    equiv_value
+	      = gen_rtx (binoptab->code, mode, copy_rtx (op0), copy_rtx (op1));
+	  else
+	    equiv_value = 0;
 	  
-      emit_no_conflict_block (seq, target, op0, op1, equiv_value);
+	  emit_no_conflict_block (seq, target, op0, op1, equiv_value);
       
-      return target;
+	  return target;
+	}
     }
 
   /* It can't be open-coded in this mode.
@@ -3068,6 +3176,7 @@ expand_float (to, from, unsignedp)
       /* Look for a usable floating mode FMODE wider than the source and at
 	 least as wide as the target.  Using FMODE will avoid rounding woes
 	 with unsigned values greater than the signed maximum value.  */
+
       for (fmode = GET_MODE (to);  fmode != VOIDmode;
 	   fmode = GET_MODE_WIDER_MODE (fmode))
 	if (GET_MODE_BITSIZE (GET_MODE (from)) < GET_MODE_BITSIZE (fmode)
@@ -3086,10 +3195,11 @@ expand_float (to, from, unsignedp)
 	      rtx temp1;
 	      rtx neglabel = gen_label_rtx ();
 
-	      /* Don't use TARGET if it isn't a register or is a
-		 hard register.  */
+	      /* Don't use TARGET if it isn't a register, is a hard register, 
+		 or is the wrong mode.  */
 	      if (GET_CODE (target) != REG
-		  || REGNO (target) < FIRST_PSEUDO_REGISTER)
+		  || REGNO (target) < FIRST_PSEUDO_REGISTER
+		  || GET_MODE (target) != fmode)
 		target = gen_reg_rtx (fmode);
 
 	      imode = GET_MODE (from);
@@ -3110,15 +3220,16 @@ expand_float (to, from, unsignedp)
 
 	      emit_label (neglabel);
 	      temp = expand_binop (imode, and_optab, from, const1_rtx,
-				   NULL_RTX, 1, 0);
+				   NULL_RTX, 1, OPTAB_LIB_WIDEN);
 	      temp1 = expand_shift (RSHIFT_EXPR, imode, from, integer_one_node,
 				    NULL_RTX, 1);
-	      temp = expand_binop (imode, ior_optab, temp, temp1, temp, 1, 0);
+	      temp = expand_binop (imode, ior_optab, temp, temp1, temp, 1, 
+				   OPTAB_LIB_WIDEN);
 	      expand_float (target, temp, 0);
 
 	      /* Multiply by 2 to undo the shift above.  */
 	      target = expand_binop (fmode, add_optab, target, target,
-				     target, 0, 0);
+				     target, 0, OPTAB_LIB_WIDEN);
 	      do_pending_stack_adjust ();
 	      emit_label (label);
 	      goto done;
@@ -3129,7 +3240,7 @@ expand_float (to, from, unsignedp)
 	 unsigned operand, do it in a pseudo-register.  */
 
       if (GET_MODE (to) != fmode
-	  || GET_CODE (to) != REG || REGNO (to) <= LAST_VIRTUAL_REGISTER)
+	  || GET_CODE (to) != REG || REGNO (to) < FIRST_PSEUDO_REGISTER)
 	target = gen_reg_rtx (fmode);
 
       /* Convert as signed integer to floating.  */
@@ -3141,6 +3252,7 @@ expand_float (to, from, unsignedp)
       do_pending_stack_adjust ();
       emit_cmp_insn (from, const0_rtx, GE, NULL_RTX, GET_MODE (from), 0, 0);
       emit_jump_insn (gen_bge (label));
+
       /* On SCO 3.2.1, ldexp rejects values outside [0.5, 1).
 	 Rather than setting up a dconst_dot_5, let's hope SCO
 	 fixes the bug.  */
@@ -3153,8 +3265,8 @@ expand_float (to, from, unsignedp)
 
       do_pending_stack_adjust ();
       emit_label (label);
+      goto done;
     }
-  else
 #endif
 
   /* No hardware instruction available; call a library rotine to convert from
