@@ -1,4 +1,4 @@
-];; Machine description for the TMS320C[34]x for GNU C compiler
+;; Machine description for the TMS320C[34]x for GNU C compiler
 ;; Copyright (C) 1994-98, 1999 Free Software Foundation, Inc.
 
 ;; Contributed by Michael Hayes (m.hayes@elec.canterbury.ac.nz)
@@ -1599,74 +1599,74 @@
    }")
 
 (define_insn "*addqi3_clobber"
-  [(set (match_operand:QI 0 "reg_operand" "=d,?d,d,c,?c,c")
-        (plus:QI (match_operand:QI 1 "src_operand" "%rR,rS<>,0,rR,rS<>,0")
-                 (match_operand:QI 2 "src_operand" "JR,rS<>,rIm,JR,rS<>,rIm")))
+  [(set (match_operand:QI 0 "reg_operand" "=d,d,?d,c,c,?c")
+        (plus:QI (match_operand:QI 1 "src_operand" "%0,rR,rS<>,0,rR,rS<>")
+                 (match_operand:QI 2 "src_operand" "rIm,JR,rS<>,rIm,JR,rS<>")))
    (clobber (reg:CC_NOOV 21))]
   "valid_operands (PLUS, operands, QImode)"
   "@
+   addi\\t%2,%0
    addi3\\t%2,%1,%0
    addi3\\t%2,%1,%0
    addi\\t%2,%0
    addi3\\t%2,%1,%0
-   addi3\\t%2,%1,%0
-   addi\\t%2,%0"
+   addi3\\t%2,%1,%0"
   [(set_attr "type" "binarycc,binarycc,binarycc,binary,binary,binary")])
 ; Default to int16 data attr.
 
 (define_insn "*addqi3_test"
   [(set (reg:CC_NOOV 21)
-        (compare:CC_NOOV (plus:QI (match_operand:QI 1 "src_operand" "%rR,rS<>,0")
-                                  (match_operand:QI 2 "src_operand" "JR,rS<>,rIm"))
+        (compare:CC_NOOV (plus:QI (match_operand:QI 1 "src_operand" "%0,rR,rS<>")
+                                  (match_operand:QI 2 "src_operand" "rIm,JR,rS<>"))
                          (const_int 0)))
-   (clobber (match_scratch:QI 0 "=d,?d,d"))]
+   (clobber (match_scratch:QI 0 "=d,d,d"))]
   "valid_operands (PLUS, operands, QImode)"
   "@
+   addi\\t%2,%0
    addi3\\t%2,%1,%0
-   addi3\\t%2,%1,%0
-   addi\\t%2,%0"
+   addi3\\t%2,%1,%0"
   [(set_attr "type" "binarycc,binarycc,binarycc")])
 ; Default to int16 data attr.
 
 ; gcc does this in combine.c we just reverse it here
 (define_insn "*cmp_neg"
   [(set (reg:CC_NOOV 21)
-	(compare:CC_NOOV (match_operand:QI 1 "src_operand" "%rR,rS<>,0")
-		         (neg: QI (match_operand:QI 2 "src_operand" "JR,rS<>,g"))))
-   (clobber (match_scratch:QI 0 "=d,?d,d"))]
+	(compare:CC_NOOV (match_operand:QI 1 "src_operand" "%0,rR,rS<>")
+		         (neg: QI (match_operand:QI 2 "src_operand" "g,JR,rS<>"))))
+   (clobber (match_scratch:QI 0 "=d,d,d"))]
   "valid_operands (PLUS, operands, QImode)"
   "@
+   addi\\t%2,%0
    addi3\\t%2,%1,%0
-   addi3\\t%2,%1,%0
-   addi\\t%2,%0"
+   addi3\\t%2,%1,%0"
   [(set_attr "type" "binarycc,binarycc,binarycc")])
   
 (define_peephole
-  [(parallel [(set (match_operand:QI 0 "ext_reg_operand" "=d,?d,d")
-                   (plus:QI (match_operand:QI 1 "src_operand" "%rR,rS<>,0")
-                            (match_operand:QI 2 "src_operand" "JR,rS<>,g")))
+  [(parallel [(set (match_operand:QI 0 "ext_reg_operand" "=d,d,d")
+                   (plus:QI (match_operand:QI 1 "src_operand" "%0,rR,rS<>")
+                            (match_operand:QI 2 "src_operand" "g,JR,rS<>")))
               (clobber (reg:CC_NOOV 21))])
    (set (reg:CC_NOOV 21)
         (compare:CC_NOOV (match_dup 0) (const_int 0)))]
   "valid_operands (PLUS, operands, QImode)"
   "@
+   addi\\t%2,%0
    addi3\\t%2,%1,%0
-   addi3\\t%2,%1,%0
-   addi\\t%2,%0"
+   addi3\\t%2,%1,%0"
   [(set_attr "type" "binarycc,binarycc,binarycc")])
 
 (define_insn "*addqi3_set"
   [(set (reg:CC_NOOV 21)
-        (compare:CC_NOOV (plus:QI (match_operand:QI 1 "src_operand" "%rR,rS<>,0")
-                                  (match_operand:QI 2 "src_operand" "JR,rS<>,rIm"))
+        (compare:CC_NOOV (plus:QI (match_operand:QI 1 "src_operand" "%0,rR,rS<>")
+                                  (match_operand:QI 2 "src_operand" "rIm,JR,rS<>"))
                          (const_int 0)))
-   (set (match_operand:QI 0 "ext_reg_operand" "=d,?d,d")
+   (set (match_operand:QI 0 "ext_reg_operand" "=d,d,d")
         (plus:QI (match_dup 1) (match_dup 2)))]
   "valid_operands (PLUS, operands, QImode)"
   "@
+   addi\\t%2,%0
    addi3\\t%2,%1,%0
-   addi3\\t%2,%1,%0
-   addi\\t%2,%0"
+   addi3\\t%2,%1,%0"
   [(set_attr "type" "binarycc,binarycc,binarycc")])
 ; Default to int16 data attr.
 
@@ -1674,14 +1674,14 @@
 ; where GCC doesn't expect CC to be clobbered or for calculating
 ; addresses during reload.
 (define_insn "addqi3_noclobber"
-  [(set (match_operand:QI 0 "std_reg_operand" "=c,?c,c")
-        (plus:QI (match_operand:QI 1 "src_operand" "%rR,rS<>,0")
-                 (match_operand:QI 2 "src_operand" "JR,rS<>,rIm")))]
+  [(set (match_operand:QI 0 "std_reg_operand" "=c,c,c")
+        (plus:QI (match_operand:QI 1 "src_operand" "%0,rR,rS<>")
+                 (match_operand:QI 2 "src_operand" "rIm,JR,rS<>")))]
   "valid_operands (PLUS, operands, QImode)"
   "@
+   addi\\t%2,%0
    addi3\\t%2,%1,%0
-   addi3\\t%2,%1,%0
-   addi\\t%2,%0"
+   addi3\\t%2,%1,%0"
   [(set_attr "type" "binary,binary,binary")])
 ; Default to int16 data attr.
 
@@ -1703,32 +1703,32 @@
 ; may be allocated to reload the PLUS and thus gen_reload will
 ; emit an add insn that may clobber CC.
 (define_insn "*addqi3_noclobber_reload"
-  [(set (match_operand:QI 0 "general_operand" "=c,?c,c")
-        (plus:QI (match_operand:QI 1 "src_operand" "%rR,rS<>,0")
-                 (match_operand:QI 2 "src_operand" "JR,rS<>,rIm")))]
+  [(set (match_operand:QI 0 "general_operand" "=c,c,c")
+        (plus:QI (match_operand:QI 1 "src_operand" "%0,rR,rS<>")
+                 (match_operand:QI 2 "src_operand" "rIm,JR,rS<>")))]
   "reload_in_progress"
   "@
+   addi\\t%2,%0
    addi3\\t%2,%1,%0
-   addi3\\t%2,%1,%0
-   addi\\t%2,%0"
+   addi3\\t%2,%1,%0"
   [(set_attr "type" "binary,binary,binary")])
 ; Default to int16 data attr.
 
 
 (define_insn "*addqi3_carry_clobber"
-  [(set (match_operand:QI 0 "reg_operand" "=d,?d,d,c,?c,c")
-        (plus:QI (match_operand:QI 1 "src_operand" "%rR,rS<>,0,rR,rS<>,0")
-                 (match_operand:QI 2 "src_operand" "JR,rS<>,rIm,JR,rS<>,rIm")))
+  [(set (match_operand:QI 0 "reg_operand" "=d,d,?d,c,c,?c")
+        (plus:QI (match_operand:QI 1 "src_operand" "%0,rR,rS<>,0,rR,rS<>")
+                 (match_operand:QI 2 "src_operand" "rIm,JR,rS<>,rIm,JR,rS<>")))
    (use (reg:CC_NOOV 21))
    (clobber (reg:CC_NOOV 21))]
   "valid_operands (PLUS, operands, QImode)"
   "@
+   addc\\t%2,%0
    addc3\\t%2,%1,%0
    addc3\\t%2,%1,%0
    addc\\t%2,%0
    addc3\\t%2,%1,%0
-   addc3\\t%2,%1,%0
-   addc\\t%2,%0"
+   addc3\\t%2,%1,%0"
   [(set_attr "type" "binarycc,binarycc,binarycc,binary,binary,binary")])
 ; Default to int16 data attr.
 
@@ -1745,104 +1745,104 @@
   "legitimize_operands (MINUS, operands, QImode);")
 
 (define_insn "*subqi3_clobber"
-  [(set (match_operand:QI 0 "reg_operand" "=d,?d,d,d,c,?c,c,c")
-        (minus:QI (match_operand:QI 1 "src_operand" "rR,rS<>,0,rIm,rR,rS<>,0,rIm")
-                  (match_operand:QI 2 "src_operand" "JR,rS<>,rIm,0,JR,rS<>,rIm,0")))
+  [(set (match_operand:QI 0 "reg_operand" "=d,d,d,?d,c,c,c,?c")
+        (minus:QI (match_operand:QI 1 "src_operand" "0,rIm,rR,rS<>,0,rIm,rR,rS<>")
+                  (match_operand:QI 2 "src_operand" "rIm,0,JR,rS<>,rIm,0,JR,rS<>")))
    (clobber (reg:CC_NOOV 21))]
   "valid_operands (MINUS, operands, QImode)"
   "@
-   subi3\\t%2,%1,%0
-   subi3\\t%2,%1,%0
    subi\\t%2,%0
    subri\\t%1,%0
    subi3\\t%2,%1,%0
    subi3\\t%2,%1,%0
    subi\\t%2,%0
-   subri\\t%1,%0"
+   subri\\t%1,%0
+   subi3\\t%2,%1,%0
+   subi3\\t%2,%1,%0"
   [(set_attr "type" "binarycc,binarycc,binarycc,binarycc,binary,binary,binary,binary")])
 ; Default to int16 data attr.
 
 (define_insn "*subqi3_test"
   [(set (reg:CC_NOOV 21)
-        (compare:CC_NOOV (minus:QI (match_operand:QI 1 "src_operand" "rR,rS<>,0,rIm")
-                                   (match_operand:QI 2 "src_operand" "JR,rS<>,rIm,0"))
+        (compare:CC_NOOV (minus:QI (match_operand:QI 1 "src_operand" "0,rIm,rR,rS<>")
+                                   (match_operand:QI 2 "src_operand" "rIm,0,JR,rS<>"))
                          (const_int 0)))
-   (clobber (match_scratch:QI 0 "=d,?d,d,d"))]
+   (clobber (match_scratch:QI 0 "=d,d,d,?d"))]
   "valid_operands (MINUS, operands, QImode)"
   "@
-   subi3\\t%2,%1,%0
-   subi3\\t%2,%1,%0
    subi\\t%2,%0
-   subri\\t%1,%0"
+   subri\\t%1,%0
+   subi3\\t%2,%1,%0
+   subi3\\t%2,%1,%0"
   [(set_attr "type" "binarycc,binarycc,binarycc,binarycc")])
 ; Default to int16 data attr.
 
 (define_peephole
-  [(parallel [(set (match_operand:QI 0 "ext_reg_operand" "=d,?d,d,d")
-                   (minus:QI (match_operand:QI 1 "src_operand" "rR,rS<>,0,rIm")
-                             (match_operand:QI 2 "src_operand" "JR,rS<>,rIm,0")))
+  [(parallel [(set (match_operand:QI 0 "ext_reg_operand" "=d,d,d,?d")
+                   (minus:QI (match_operand:QI 1 "src_operand" "0,rIm,rR,rS<>")
+                             (match_operand:QI 2 "src_operand" "rIm,0,JR,rS<>")))
               (clobber (reg:CC_NOOV 21))])
    (set (reg:CC_NOOV 21)
         (compare:CC_NOOV (match_dup 0) (const_int 0)))]
   "valid_operands (MINUS, operands, QImode)"
   "@
-   subi3\\t%2,%1,%0
-   subi3\\t%2,%1,%0
    subi\\t%2,%0
-   subri\\t%1,%0"
+   subri\\t%1,%0
+   subi3\\t%2,%1,%0
+   subi3\\t%2,%1,%0"
   [(set_attr "type" "binarycc,binarycc,binarycc,binarycc")])
   
 (define_insn "*subqi3_set"
   [(set (reg:CC_NOOV 21)
-        (compare:CC_NOOV (minus:QI (match_operand:QI 1 "src_operand" "rR,rS<>,0,rIm")
-                                   (match_operand:QI 2 "src_operand" "JR,rS<>,rIm,0"))
+        (compare:CC_NOOV (minus:QI (match_operand:QI 1 "src_operand" "0,rIm,rR,rS<>")
+                                   (match_operand:QI 2 "src_operand" "rIm,0,JR,rS<>"))
                          (const_int 0)))
-   (set (match_operand:QI 0 "ext_reg_operand" "=d,?d,d,d")
+   (set (match_operand:QI 0 "ext_reg_operand" "=d,d,d,?d")
         (minus:QI (match_dup 1)
                   (match_dup 2)))]
   "valid_operands (MINUS, operands, QImode)"
   "@
-   subi3\\t%2,%1,%0
-   subi3\\t%2,%1,%0
    subi\\t%2,%0
-   subri\\t%1,%0"
+   subri\\t%1,%0
+   subi3\\t%2,%1,%0
+   subi3\\t%2,%1,%0"
   [(set_attr "type" "binarycc,binarycc,binarycc,binarycc")])
 ; Default to int16 data attr.
 
 (define_insn "*subqi3_carry_clobber"
-  [(set (match_operand:QI 0 "reg_operand" "=d,?d,d,d,c,?c,c,c")
-        (minus:QI (match_operand:QI 1 "src_operand" "rR,rS<>,0,rIm,rR,rS<>,0,rIm")
-                  (match_operand:QI 2 "src_operand" "JR,rS<>,rIm,0,JR,rS<>,rIm,0")))
+  [(set (match_operand:QI 0 "reg_operand" "=d,d,d,?d,c,c,c,?c")
+        (minus:QI (match_operand:QI 1 "src_operand" "0,rIm,rR,rS<>,0,rIm,rR,rS<>")
+                  (match_operand:QI 2 "src_operand" "rIm,0,JR,rS<>,rIm,0,JR,rS<>")))
    (use (reg:CC_NOOV 21))
    (clobber (reg:CC_NOOV 21))]
   "valid_operands (MINUS, operands, QImode)"
   "@
-   subb3\\t%2,%1,%0
-   subb3\\t%2,%1,%0
    subb\\t%2,%0
    subrb\\t%1,%0
    subb3\\t%2,%1,%0
    subb3\\t%2,%1,%0
    subb\\t%2,%0
-   subrb\\t%1,%0"
+   subrb\\t%1,%0
+   subb3\\t%2,%1,%0
+   subb3\\t%2,%1,%0"
   [(set_attr "type" "binarycc,binarycc,binarycc,binarycc,binary,binary,binary,binary")])
 ; Default to int16 data attr.
 
 (define_insn "*subqi3_carry_set"
   [(set (reg:CC_NOOV 21)
-        (compare:CC_NOOV (minus:QI (match_operand:QI 1 "src_operand" "rR,rS<>,0,rIm")
-                                   (match_operand:QI 2 "src_operand" "JR,rS<>,rIm,0"))
+        (compare:CC_NOOV (minus:QI (match_operand:QI 1 "src_operand" "0,rIm,rR,rS<>")
+                                   (match_operand:QI 2 "src_operand" "rIm,0,JR,rS<>"))
                          (const_int 0)))
-   (set (match_operand:QI 0 "ext_reg_operand" "=d,?d,d,d")
+   (set (match_operand:QI 0 "ext_reg_operand" "=d,d,d,?d")
         (minus:QI (match_dup 1)
                   (match_dup 2)))
    (use (reg:CC_NOOV 21))]
   "valid_operands (MINUS, operands, QImode)"
   "@
-   subb3\\t%2,%1,%0
-   subb3\\t%2,%1,%0
    subb\\t%2,%0
-   subrb\\t%1,%0"
+   subrb\\t%1,%0
+   subb3\\t%2,%1,%0
+   subb3\\t%2,%1,%0"
   [(set_attr "type" "binarycc,binarycc,binarycc,binarycc")])
 ; Default to int16 data attr.
 
@@ -1885,13 +1885,13 @@
   ")
 
 (define_insn "*mulqi3_clobber"
-  [(set (match_operand:QI 0 "reg_operand" "=d,?d,d,c,?c,c")
-        (mult:QI (match_operand:QI 1 "src_operand" "%rR,rS<>,0,rR,rS<>,0")
-                 (match_operand:QI 2 "src_operand" "JR,rS<>,rIm,JR,rS<>,rIm")))
+  [(set (match_operand:QI 0 "reg_operand" "=d,d,?d,c,c,?c")
+        (mult:QI (match_operand:QI 1 "src_operand" "%0,rR,rS<>,0,rR,rS<>")
+                 (match_operand:QI 2 "src_operand" "rIm,JR,rS<>,rIm,JR,rS<>")))
    (clobber (reg:CC_NOOV 21))]
   "valid_operands (MULT, operands, QImode)"
   "*
-  if (which_alternative == 2 || which_alternative == 5)
+  if (which_alternative == 0 || which_alternative == 3)
     {
       if (TARGET_C3X
           && GET_CODE (operands[2]) == CONST_INT
@@ -1907,13 +1907,13 @@
 
 (define_insn "*mulqi3_test"
   [(set (reg:CC_NOOV 21)
-        (compare:CC_NOOV (mult:QI (match_operand:QI 1 "src_operand" "%rR,rS<>,0")
-                                  (match_operand:QI 2 "src_operand" "JR,rS<>,rIm"))
+        (compare:CC_NOOV (mult:QI (match_operand:QI 1 "src_operand" "%0,rR,rS<>")
+                                  (match_operand:QI 2 "src_operand" "rIm,JR,rS<>"))
                          (const_int 0)))
-   (clobber (match_scratch:QI 0 "=d,?d,d"))]
+   (clobber (match_scratch:QI 0 "=d,d,d"))]
   "valid_operands (MULT, operands, QImode)"
   "*
-  if (which_alternative == 2)
+  if (which_alternative == 0)
     {
       if (TARGET_C3X 
           && GET_CODE (operands[2]) == CONST_INT
@@ -1929,15 +1929,15 @@
 
 (define_insn "*mulqi3_set"
   [(set (reg:CC_NOOV 21)
-        (compare:CC_NOOV (mult:QI (match_operand:QI 1 "src_operand" "%rR,rS<>,0")
-                                  (match_operand:QI 2 "src_operand" "JR,rS<>,rIm"))
+        (compare:CC_NOOV (mult:QI (match_operand:QI 1 "src_operand" "%0,rR,rS<>")
+                                  (match_operand:QI 2 "src_operand" "rIm,JR,rS<>"))
                          (const_int 0)))
-   (set (match_operand:QI 0 "ext_reg_operand" "=d,?d,d")
+   (set (match_operand:QI 0 "ext_reg_operand" "=d,d,d")
         (mult:QI (match_dup 1)
                  (match_dup 2)))]
   "valid_operands (MULT, operands, QImode)"
   "*
-  if (which_alternative == 2)
+  if (which_alternative == 0)
     {
       if (TARGET_C3X 
           && GET_CODE (operands[2]) == CONST_INT
@@ -1954,23 +1954,23 @@
 ; The C3x multiply instruction assumes 24-bit signed integer operands
 ; and the 48-bit result is truncated to 32-bits.
 (define_insn "*mulqi3_24_clobber"
-  [(set (match_operand:QI 0 "reg_operand" "=d,?d,d,c,?c,c")
+  [(set (match_operand:QI 0 "reg_operand" "=d,d,?d,c,c,?c")
         (mult:QI
          (sign_extend:QI
-          (and:QI (match_operand:QI 1 "src_operand" "%rR,rS<>,0,rR,rS<>,0")
+          (and:QI (match_operand:QI 1 "src_operand" "%0,rR,rS<>,0,rR,rS<>")
                   (const_int 16777215)))
          (sign_extend:QI
-          (and:QI (match_operand:QI 2 "src_operand" "JR,rS<>,rIm,JR,rS<>,rIm")
+          (and:QI (match_operand:QI 2 "src_operand" "rIm,JR,rS<>,rIm,JR,rS<>")
                   (const_int 16777215)))))
    (clobber (reg:CC_NOOV 21))]
   "TARGET_C3X && valid_operands (MULT, operands, QImode)"
   "@
+   mpyi\\t%2,%0
    mpyi3\\t%2,%1,%0
    mpyi3\\t%2,%1,%0
    mpyi\\t%2,%0
    mpyi3\\t%2,%1,%0
-   mpyi3\\t%2,%1,%0
-   mpyi\\t%2,%0"
+   mpyi3\\t%2,%1,%0"
   [(set_attr "type" "binarycc,binarycc,binarycc,binary,binary,binary")])
 ; Default to int16 data attr.
 
@@ -2096,12 +2096,12 @@
  ")
 
 (define_insn "*smulqi3_highpart_clobber"
-  [(set (match_operand:QI 0 "reg_operand" "=d,?d,d,c,?c,c")
+  [(set (match_operand:QI 0 "reg_operand" "=d,d,?d,c,c,?c")
         (truncate:QI 
          (lshiftrt:HI
           (mult:HI
-           (sign_extend:HI (match_operand:QI 1 "src_operand" "%rR,rS<>,0,rR,rS<>,0"))
-           (sign_extend:HI (match_operand:QI 2 "src_operand" "JR,rS<>,rIm,JR,rS<>,rIm")))
+           (sign_extend:HI (match_operand:QI 1 "src_operand" "%0,rR,rS<>,0,rR,rS<>"))
+           (sign_extend:HI (match_operand:QI 2 "src_operand" "rIm,JR,rS<>,rIm,JR,rS<>")))
       (const_int 32))))
    (clobber (reg:CC_NOOV 21))]
   "! TARGET_C3X && valid_operands (MULT, operands, QImode)"
@@ -2137,11 +2137,11 @@
  ")
 
 (define_insn "*umulqi3_highpart_clobber"
-  [(set (match_operand:QI 0 "reg_operand" "=d,?d,d,c,?c,c")
+  [(set (match_operand:QI 0 "reg_operand" "=d,d,?d,c,c,?c")
         (truncate:QI
          (lshiftrt:HI
           (mult:HI 
-           (zero_extend:HI (match_operand:QI 1 "src_operand" "%rR,rS<>,0,rR,rS<>,0"))
+           (zero_extend:HI (match_operand:QI 1 "src_operand" "%0,rR,rS<>,0,rR,rS<>"))
            (zero_extend:HI (match_operand:QI 2 "lsrc_operand" "JR,rS<>,rLm,JR,rS<>,rLm")))
           (const_int 32))))
    (clobber (reg:CC_NOOV 21))]
@@ -2169,7 +2169,7 @@
 
 
 (define_insn "*andqi3_255_clobber"
-  [(set (match_operand:QI 0 "reg_operand" "=d,?c")
+  [(set (match_operand:QI 0 "reg_operand" "=d,c")
         (and:QI (match_operand:QI 1 "src_operand" "mr,mr")
                 (const_int 255)))
    (clobber (reg:CC 21))]
@@ -2179,7 +2179,7 @@
 
 
 (define_insn "*andqi3_65535_clobber"
-  [(set (match_operand:QI 0 "reg_operand" "=d,?c")
+  [(set (match_operand:QI 0 "reg_operand" "=d,c")
         (and:QI (match_operand:QI 1 "src_operand" "mr,mr")
                 (const_int 65535)))
    (clobber (reg:CC 21))]
@@ -2189,70 +2189,70 @@
 
 
 (define_insn "*andqi3_clobber"
-  [(set (match_operand:QI 0 "reg_operand" "=d,?d,d,d,c,?c,c,c")
-        (and:QI (match_operand:QI 1 "src_operand" "%rR,rS<>,0,0,rR,rS<>,0,0")
-                (match_operand:QI 2 "tsrc_operand" "JR,rS<>,N,rLm,JR,rS<>,N,rLm")))
+  [(set (match_operand:QI 0 "reg_operand" "=d,d,d,?d,c,c,c,?c")
+        (and:QI (match_operand:QI 1 "src_operand" "%0,0,rR,rS<>,0,0,rR,rS<>")
+                (match_operand:QI 2 "tsrc_operand" "N,rLm,JR,rS<>,N,rLm,JR,rS<>")))
    (clobber (reg:CC 21))]
   "valid_operands (AND, operands, QImode)"
   "@
-   and3\\t%2,%1,%0
-   and3\\t%2,%1,%0
    andn\\t%N2,%0
    and\\t%2,%0
    and3\\t%2,%1,%0
    and3\\t%2,%1,%0
    andn\\t%N2,%0
-   and\\t%2,%0"
+   and\\t%2,%0
+   and3\\t%2,%1,%0
+   and3\\t%2,%1,%0"
   [(set_attr "type" "binarycc,binarycc,binarycc,binarycc,binary,binary,binary,binary")
-   (set_attr "data" "int16,uint16,not_uint16,uint16,int16,uint16,not_uint16,uint16")])
+   (set_attr "data" "not_uint16,uint16,int16,uint16,not_uint16,uint16,int16,uint16")])
 
 (define_insn "*andqi3_test"
   [(set (reg:CC 21)
-        (compare:CC (and:QI (match_operand:QI 1 "src_operand" "rR,rS<>,0,r")
-                            (match_operand:QI 2 "tsrc_operand" "JR,rS<>,N,rLm"))
+        (compare:CC (and:QI (match_operand:QI 1 "src_operand" "%0,r,rR,rS<>")
+                            (match_operand:QI 2 "tsrc_operand" "N,rLm,JR,rS<>"))
                     (const_int 0)))
-   (clobber (match_scratch:QI 0 "=X,X,d,X"))]
+   (clobber (match_scratch:QI 0 "=d,X,X,?X"))]
   "valid_operands (AND, operands, QImode)"
   "@
-   tstb3\\t%2,%1
-   tstb3\\t%2,%1
    andn\\t%N2,%0
-   tstb\\t%2,%1"
+   tstb\\t%2,%1
+   tstb3\\t%2,%1
+   tstb3\\t%2,%1"
   [(set_attr "type" "binarycc,binarycc,binarycc,binarycc")
-   (set_attr "data" "int16,uint16,not_uint16,uint16")])
+   (set_attr "data" "not_uint16,uint16,int16,uint16")])
 
 (define_peephole
-  [(parallel [(set (match_operand:QI 0 "ext_reg_operand" "=d,?d,d,d")
-                   (and:QI (match_operand:QI 1 "src_operand" "%rR,rS<>,0,0")
-                           (match_operand:QI 2 "tsrc_operand" "JR,rS<>,N,rLm")))
+  [(parallel [(set (match_operand:QI 0 "ext_reg_operand" "=d,d,d,?d")
+                   (and:QI (match_operand:QI 1 "src_operand" "%0,0,rR,rS<>")
+                           (match_operand:QI 2 "tsrc_operand" "N,rLm,JR,rS<>")))
               (clobber (reg:CC 21))])
    (set (reg:CC 21)
         (compare:CC (match_dup 0) (const_int 0)))]
   "valid_operands (AND, operands, QImode)"
   "@
-   and3\\t%2,%1,%0
-   and3\\t%2,%1,%0
    andn\\t%N2,%0
-   and\\t%2,%0"
+   and\\t%2,%0
+   and3\\t%2,%1,%0
+   and3\\t%2,%1,%0"
   [(set_attr "type" "binarycc,binarycc,binarycc,binarycc")
-   (set_attr "data" "int16,uint16,not_uint16,uint16")])
+   (set_attr "data" "not_uint16,uint16,int16,uint16")])
   
 (define_insn "*andqi3_set"
   [(set (reg:CC 21)
-        (compare:CC (and:QI (match_operand:QI 1 "src_operand" "%rR,rS<>,0,0")
-                            (match_operand:QI 2 "tsrc_operand" "JR,rS<>,N,rLm"))
+        (compare:CC (and:QI (match_operand:QI 1 "src_operand" "%0,0,rR,rS<>")
+                            (match_operand:QI 2 "tsrc_operand" "N,rLm,JR,rS<>"))
                     (const_int 0)))
-   (set (match_operand:QI 0 "ext_reg_operand" "=d,?d,d,d")
+   (set (match_operand:QI 0 "ext_reg_operand" "=d,d,d,?d")
         (and:QI (match_dup 1)
                 (match_dup 2)))]
   "valid_operands (AND, operands, QImode)"
   "@
-   and3\\t%2,%1,%0
-   and3\\t%2,%1,%0
    andn\\t%N2,%0
-   and\\t%2,%0"
+   and\\t%2,%0
+   and3\\t%2,%1,%0
+   and3\\t%2,%1,%0"
   [(set_attr "type" "binarycc,binarycc,binarycc,binarycc")
-   (set_attr "data" "int16,uint16,not_uint16,uint16")])
+   (set_attr "data" "not_uint16,uint16,int16,uint16")])
 
 ;
 ; ANDN
@@ -2261,50 +2261,50 @@
 ; assumes that the code AND does.  We might have to kludge this if
 ; we make valid_operands stricter.
 (define_insn "*andnqi3_clobber"
-  [(set (match_operand:QI 0 "reg_operand" "=d,?d,d,c,?c,c")
-        (and:QI (not:QI (match_operand:QI 2 "lsrc_operand" "JR,rS<>,rLm,JR,rS<>,rLm"))
-                (match_operand:QI 1 "src_operand" "rR,rS<>,0,rR,rS<>,0")))
+  [(set (match_operand:QI 0 "reg_operand" "=d,d,?d,c,c,?c")
+        (and:QI (not:QI (match_operand:QI 2 "lsrc_operand" "rLm,JR,rS<>,rLm,JR,rS<>"))
+                (match_operand:QI 1 "src_operand" "0,rR,rS<>,0,rR,rS<>")))
    (clobber (reg:CC 21))]
   "valid_operands (AND, operands, QImode)"
   "@
+   andn\\t%2,%0
    andn3\\t%2,%1,%0
    andn3\\t%2,%1,%0
    andn\\t%2,%0
    andn3\\t%2,%1,%0
-   andn3\\t%2,%1,%0
-   andn\\t%2,%0"
+   andn3\\t%2,%1,%0"
   [(set_attr "type" "binarycc,binarycc,binarycc,binary,binary,binary")
-   (set_attr "data" "int16,uint16,uint16,int16,uint16,uint16")])
+   (set_attr "data" "uint16,int16,uint16,uint16,int16,uint16")])
 
 (define_insn "*andnqi3_test"
   [(set (reg:CC 21)
-        (compare:CC (and:QI (not:QI (match_operand:QI 2 "lsrc_operand" "JR,rS<>,rLm"))
-                            (match_operand:QI 1 "src_operand" "rR,rS<>,0"))
+        (compare:CC (and:QI (not:QI (match_operand:QI 2 "lsrc_operand" "rLm,JR,rS<>"))
+                            (match_operand:QI 1 "src_operand" "0,rR,rS<>"))
                     (const_int 0)))
-   (clobber (match_scratch:QI 0 "=d,?d,d"))]
+   (clobber (match_scratch:QI 0 "=d,d,d"))]
   "valid_operands (AND, operands, QImode)"
   "@
+   andn\\t%2,%0
    andn3\\t%2,%1,%0
-   andn3\\t%2,%1,%0
-   andn\\t%2,%0"
+   andn3\\t%2,%1,%0"
   [(set_attr "type" "binarycc,binarycc,binarycc")
-   (set_attr "data" "int16,uint16,uint16")])
+   (set_attr "data" "uint16,int16,uint16")])
 
 (define_insn "*andnqi3_set"
   [(set (reg:CC 21)
-        (compare:CC (and:QI (not:QI (match_operand:QI 2 "lsrc_operand" "JR,rS<>,rLm"))
-                            (match_operand:QI 1 "src_operand" "rR,rS<>,0"))
+        (compare:CC (and:QI (not:QI (match_operand:QI 2 "lsrc_operand" "rLm,JR,rS<>"))
+                            (match_operand:QI 1 "src_operand" "0,rR,rS<>"))
                     (const_int 0)))
-   (set (match_operand:QI 0 "ext_reg_operand" "=d,?d,d")
+   (set (match_operand:QI 0 "ext_reg_operand" "=d,d,d")
         (and:QI (not:QI (match_dup 2))
                 (match_dup 1)))]
   "valid_operands (AND, operands, QImode)"
   "@
+   andn\\t%2,%0
    andn3\\t%2,%1,%0
-   andn3\\t%2,%1,%0
-   andn\\t%2,%0"
+   andn3\\t%2,%1,%0"
   [(set_attr "type" "binarycc,binarycc,binarycc")
-   (set_attr "data" "int16,uint16,uint16")])
+   (set_attr "data" "uint16,int16,uint16")])
 
 ;
 ; OR
@@ -2318,78 +2318,78 @@
  "legitimize_operands (IOR, operands, QImode);")
 
 (define_insn "*iorqi3_clobber"
-  [(set (match_operand:QI 0 "reg_operand" "=d,?d,d,c,?c,c")
-        (ior:QI (match_operand:QI 1 "src_operand" "%rR,rS<>,0,rR,rS<>,0")
-                (match_operand:QI 2 "lsrc_operand" "JR,rS<>,rLm,JR,rS<>,rLm")))
+  [(set (match_operand:QI 0 "reg_operand" "=d,d,?d,c,c,?c")
+        (ior:QI (match_operand:QI 1 "src_operand" "%0,rR,rS<>,0,rR,rS<>")
+                (match_operand:QI 2 "lsrc_operand" "rLm,JR,rS<>,rLm,JR,rS<>")))
    (clobber (reg:CC 21))]
   "valid_operands (IOR, operands, QImode)"
   "@
+   or\\t%2,%0
    or3\\t%2,%1,%0
    or3\\t%2,%1,%0
    or\\t%2,%0
    or3\\t%2,%1,%0
-   or3\\t%2,%1,%0
-   or\\t%2,%0"
+   or3\\t%2,%1,%0"
   [(set_attr "type" "binarycc,binarycc,binarycc,binary,binary,binary")
-   (set_attr "data" "int16,uint16,uint16,int16,uint16,uint16")])
+   (set_attr "data" "uint16,int16,uint16,uint16,int16,uint16")])
 
 (define_insn "*iorqi3_test"
   [(set (reg:CC 21)
-        (compare:CC (ior:QI (match_operand:QI 1 "src_operand" "%rR,rS<>,0")
-                            (match_operand:QI 2 "lsrc_operand" "JR,rS<>,rLm"))
+        (compare:CC (ior:QI (match_operand:QI 1 "src_operand" "%0,rR,rS<>")
+                            (match_operand:QI 2 "lsrc_operand" "rLm,JR,rS<>"))
                     (const_int 0)))
-   (clobber (match_scratch:QI 0 "=d,?d,d"))]
+   (clobber (match_scratch:QI 0 "=d,d,d"))]
   "valid_operands (IOR, operands, QImode)"
   "@
+   or\\t%2,%0
    or3\\t%2,%1,%0
-   or3\\t%2,%1,%0
-   or\\t%2,%0"
+   or3\\t%2,%1,%0"
   [(set_attr "type" "binarycc,binarycc,binarycc")
-   (set_attr "data" "int16,uint16,uint16")])
+   (set_attr "data" "uint16,int16,uint16")])
 
 (define_peephole
-  [(parallel [(set (match_operand:QI 0 "ext_reg_operand" "=d,?d,d")
-                   (ior:QI (match_operand:QI 1 "src_operand" "%rR,rS<>,0")
-                           (match_operand:QI 2 "lsrc_operand" "JR,rS<>,rLm")))
+  [(parallel [(set (match_operand:QI 0 "ext_reg_operand" "=d,d,d")
+                   (ior:QI (match_operand:QI 1 "src_operand" "%0,rR,rS<>")
+                           (match_operand:QI 2 "lsrc_operand" "rLm,JR,rS<>")))
               (clobber (reg:CC 21))])
    (set (reg:CC 21)
         (compare:CC (match_dup 0) (const_int 0)))]
   "valid_operands (IOR, operands, QImode)"
   "@
+   or\\t%2,%0
    or3\\t%2,%1,%0
-   or3\\t%2,%1,%0
-   or\\t%2,%0"
+   or3\\t%2,%1,%0"
   [(set_attr "type" "binarycc,binarycc,binarycc")
-   (set_attr "data" "int16,uint16,uint16")])
+   (set_attr "data" "uint16,int16,uint16")])
   
 (define_insn "*iorqi3_set"
   [(set (reg:CC 21)
-        (compare:CC (ior:QI (match_operand:QI 1 "src_operand" "%rR,rS<>,0")
-                            (match_operand:QI 2 "lsrc_operand" "JR,rS<>,rLm"))
+        (compare:CC (ior:QI (match_operand:QI 1 "src_operand" "%0,rR,rS<>")
+                            (match_operand:QI 2 "lsrc_operand" "rLm,JR,rS<>"))
                     (const_int 0)))
-   (set (match_operand:QI 0 "ext_reg_operand" "=d,?d,d")
+   (set (match_operand:QI 0 "ext_reg_operand" "=d,d,d")
         (ior:QI (match_dup 1)
                 (match_dup 2)))]
   "valid_operands (IOR, operands, QImode)"
   "@
+   or\\t%2,%0
    or3\\t%2,%1,%0
-   or3\\t%2,%1,%0
-   or\\t%2,%0"
+   or3\\t%2,%1,%0"
   [(set_attr "type" "binarycc,binarycc,binarycc")
-   (set_attr "data" "int16,uint16,uint16")])
+   (set_attr "data" "uint16,int16,uint16")])
 
 ; This pattern is used for loading symbol references in several parts. 
 (define_insn "iorqi3_noclobber"
-  [(set (match_operand:QI 0 "std_reg_operand" "=c,?c,c")
-        (ior:QI (match_operand:QI 1 "src_operand" "%rR,rS<>,0")
-                (match_operand:QI 2 "lsrc_operand" "JR,rS<>,rLm")))]
+  [(set (match_operand:QI 0 "std_reg_operand" "=c,c,c")
+        (ior:QI (match_operand:QI 1 "src_operand" "%0,rR,rS<>")
+                (match_operand:QI 2 "lsrc_operand" "rLm,JR,rS<>")))]
   "valid_operands (IOR, operands, QImode)"
   "@
+   or\\t%2,%0
    or3\\t%2,%1,%0
-   or3\\t%2,%1,%0
-   or\\t%2,%0"
+   or3\\t%2,%1,%0"
   [(set_attr "type" "binary,binary,binary")
-   (set_attr "data" "int16,uint16,uint16")])
+   (set_attr "data" "uint16,int16,uint16")])
 
 ;
 ; XOR
@@ -2403,50 +2403,50 @@
  "legitimize_operands (XOR, operands, QImode);")
 
 (define_insn "*xorqi3_clobber"
-  [(set (match_operand:QI 0 "reg_operand" "=d,?d,d,c,?c,c")
-        (xor:QI (match_operand:QI 1 "src_operand" "%rR,rS<>,0,rR,rS<>,0")
-                (match_operand:QI 2 "lsrc_operand" "JR,rS<>,rLm,JR,rS<>,rLm")))
+  [(set (match_operand:QI 0 "reg_operand" "=d,d,?d,c,c,?c")
+        (xor:QI (match_operand:QI 1 "src_operand" "%0,rR,rS<>,0,rR,rS<>")
+                (match_operand:QI 2 "lsrc_operand" "rLm,JR,rS<>,rLm,JR,rS<>")))
    (clobber (reg:CC 21))]
   "valid_operands (XOR, operands, QImode)"
   "@
+   xor\\t%2,%0
    xor3\\t%2,%1,%0
    xor3\\t%2,%1,%0
    xor\\t%2,%0
    xor3\\t%2,%1,%0
-   xor3\\t%2,%1,%0
-   xor\\t%2,%0"
+   xor3\\t%2,%1,%0"
   [(set_attr "type" "binarycc,binarycc,binarycc,binary,binary,binary")
-   (set_attr "data" "int16,uint16,uint16,int16,uint16,uint16")])
+   (set_attr "data" "uint16,int16,uint16,uint16,int16,uint16")])
 
 (define_insn "*xorqi3_test"
   [(set (reg:CC 21)
-        (compare:CC (xor:QI (match_operand:QI 1 "src_operand" "%rR,rS<>,0")
-                            (match_operand:QI 2 "lsrc_operand" "JR,rS<>,rLm"))
+        (compare:CC (xor:QI (match_operand:QI 1 "src_operand" "%0,rR,rS<>")
+                            (match_operand:QI 2 "lsrc_operand" "rLm,JR,rS<>"))
                     (const_int 0)))
-   (clobber (match_scratch:QI 0 "=d,?d,d"))]
+   (clobber (match_scratch:QI 0 "=d,d,d"))]
   "valid_operands (XOR, operands, QImode)"
   "@
+   xor\\t%2,%0
    xor3\\t%2,%1,%0
-   xor3\\t%2,%1,%0
-   xor\\t%2,%0"
+   xor3\\t%2,%1,%0"
   [(set_attr "type" "binarycc,binarycc,binarycc")
-   (set_attr "data" "int16,uint16,uint16")])
+   (set_attr "data" "uint16,int16,uint16")])
 
 (define_insn "*xorqi3_set"
   [(set (reg:CC 21)
-        (compare:CC (xor:QI (match_operand:QI 1 "src_operand" "%rR,rS<>,0")
-                            (match_operand:QI 2 "lsrc_operand" "JR,rS<>,rLm"))
+        (compare:CC (xor:QI (match_operand:QI 1 "src_operand" "%0,rR,rS<>")
+                            (match_operand:QI 2 "lsrc_operand" "rLm,JR,rS<>"))
                     (const_int 0)))
-   (set (match_operand:QI 0 "ext_reg_operand" "=d,?d,d")
+   (set (match_operand:QI 0 "ext_reg_operand" "=d,d,d")
         (xor:QI (match_dup 1)
                 (match_dup 2)))]
   "valid_operands (XOR, operands, QImode)"
   "@
+   xor\\t%2,%0
    xor3\\t%2,%1,%0
-   xor3\\t%2,%1,%0
-   xor\\t%2,%0"
+   xor3\\t%2,%1,%0"
   [(set_attr "type" "binarycc,binarycc,binarycc")
-   (set_attr "data" "int16,uint16,uint16")])
+   (set_attr "data" "uint16,int16,uint16")])
 
 ;
 ; LSH/ASH (left)
@@ -2469,53 +2469,53 @@
  "legitimize_operands (ASHIFT, operands, QImode);")
 
 (define_insn "*ashlqi3_clobber"
-  [(set (match_operand:QI 0 "reg_operand" "=d,?d,d,c,?c,c")
-        (ashift:QI (match_operand:QI 1 "src_operand" "rR,rS<>,0,rR,rS<>,0")
-                   (match_operand:QI 2 "src_operand" "JR,rS<>,rIm,JR,rS<>,rIm")))
+  [(set (match_operand:QI 0 "reg_operand" "=d,d,?d,c,c,?c")
+        (ashift:QI (match_operand:QI 1 "src_operand" "0,rR,rS<>,0,rR,rS<>")
+                   (match_operand:QI 2 "src_operand" "rIm,JR,rS<>,rIm,JR,rS<>")))
    (clobber (reg:CC 21))]
   "valid_operands (ASHIFT, operands, QImode)"
   "@
+   ash\\t%2,%0
    ash3\\t%2,%1,%0
    ash3\\t%2,%1,%0
    ash\\t%2,%0
    ash3\\t%2,%1,%0
-   ash3\\t%2,%1,%0
-   ash\\t%2,%0"
+   ash3\\t%2,%1,%0"
   [(set_attr "type" "binarycc,binarycc,binarycc,binary,binary,binary")])
 ; Default to int16 data attr.
 
 (define_insn "*ashlqi3_set"
   [(set (reg:CC 21)
         (compare:CC
-          (ashift:QI (match_operand:QI 1 "src_operand" "rR,rS<>,0")
-                     (match_operand:QI 2 "src_operand" "JR,rS<>,rIm"))
+          (ashift:QI (match_operand:QI 1 "src_operand" "0,rR,rS<>")
+                     (match_operand:QI 2 "src_operand" "rIm,JR,rS<>"))
           (const_int 0)))
-   (set (match_operand:QI 0 "reg_operand" "=d,?d,d")
+   (set (match_operand:QI 0 "reg_operand" "=d,d,d")
         (ashift:QI (match_dup 1)
                    (match_dup 2)))]
   "valid_operands (ASHIFT, operands, QImode)"
   "@
+   ash\\t%2,%0
    ash3\\t%2,%1,%0
-   ash3\\t%2,%1,%0
-   ash\\t%2,%0"
+   ash3\\t%2,%1,%0"
   [(set_attr "type" "binarycc,binarycc,binarycc")])
 ; Default to int16 data attr.
 
 ; This is only used by lshrhi3_reg where we need a LSH insn that will
 ; shift both ways.
 (define_insn "*lshlqi3_clobber"
-  [(set (match_operand:QI 0 "reg_operand" "=d,?d,d,c,?c,c")
-        (ashift:QI (match_operand:QI 1 "src_operand" "rR,rS<>,0,rR,rS<>,0")
-                   (unspec [(match_operand:QI 2 "src_operand" "JR,rS<>,rIm,JR,rS<>,rIm")] 3)))
+  [(set (match_operand:QI 0 "reg_operand" "=d,d,?d,c,c,?c")
+        (ashift:QI (match_operand:QI 1 "src_operand" "0,rR,rS<>,0,rR,rS<>")
+                   (unspec [(match_operand:QI 2 "src_operand" "rIm,JR,rS<>,rIm,JR,rS<>")] 3)))
    (clobber (reg:CC 21))]
   "valid_operands (ASHIFT, operands, QImode)"
   "@
+   lsh\\t%2,%0
    lsh3\\t%2,%1,%0
    lsh3\\t%2,%1,%0
    lsh\\t%2,%0
    lsh3\\t%2,%1,%0
-   lsh3\\t%2,%1,%0
-   lsh\\t%2,%0"
+   lsh3\\t%2,%1,%0"
   [(set_attr "type" "binarycc,binarycc,binarycc,binary,binary,binary")])
 ; Default to int16 data attr.
 
@@ -2608,18 +2608,18 @@
   [(set_attr "type" "binarycc,binarycc")])
 
 (define_insn "*lshrqi3_nonconst_clobber"
-  [(set (match_operand:QI 0 "reg_operand" "=d,?d,d,c,?c,c")
-        (lshiftrt:QI (match_operand:QI 1 "src_operand" "rR,rS<>,0,rR,rS<>,0")
-                     (neg:QI (match_operand:QI 2 "src_operand" "R,rS<>,rm,R,rS<>,rm"))))
+  [(set (match_operand:QI 0 "reg_operand" "=d,d,?d,c,c,?c")
+        (lshiftrt:QI (match_operand:QI 1 "src_operand" "0,rR,rS<>,0,rR,rS<>")
+                     (neg:QI (match_operand:QI 2 "src_operand" "rm,R,rS<>,rm,R,rS<>"))))
    (clobber (reg:CC 21))]
   "valid_operands (LSHIFTRT, operands, QImode)"
   "@
+   lsh\\t%2,%0
    lsh3\\t%2,%1,%0
    lsh3\\t%2,%1,%0
    lsh\\t%2,%0
    lsh3\\t%2,%1,%0
-   lsh3\\t%2,%1,%0
-   lsh\\t%2,%0"
+   lsh3\\t%2,%1,%0"
   [(set_attr "type" "binarycc,binarycc,binarycc,binary,binary,binary")])
 ; Default to int16 data attr.
 
@@ -2671,18 +2671,18 @@
   [(set_attr "type" "binarycc,binarycc")])
 
 (define_insn "*ashrqi3_nonconst_clobber"
-  [(set (match_operand:QI 0 "reg_operand" "=d,?d,d,c,?c,c")
-        (ashiftrt:QI (match_operand:QI 1 "src_operand" "rR,rS<>,0,rR,rS<>,0")
-                     (neg:QI (match_operand:QI 2 "src_operand" "R,rS<>,rm,R,rS<>,rm"))))
+  [(set (match_operand:QI 0 "reg_operand" "=d,d,?d,c,c,?c")
+        (ashiftrt:QI (match_operand:QI 1 "src_operand" "0,rR,rS<>,0,rR,rS<>")
+                     (neg:QI (match_operand:QI 2 "src_operand" "rm,R,rS<>,rm,R,rS<>"))))
    (clobber (reg:CC 21))]
   "valid_operands (ASHIFTRT, operands, QImode)"
   "@
+   ash\\t%2,%0
    ash3\\t%2,%1,%0
    ash3\\t%2,%1,%0
    ash\\t%2,%0
    ash3\\t%2,%1,%0
-   ash3\\t%2,%1,%0
-   ash\\t%2,%0"
+   ash3\\t%2,%1,%0"
   [(set_attr "type" "binarycc,binarycc,binarycc,binary,binary,binary")])
 ; Default to int16 data attr.
 
@@ -3530,43 +3530,43 @@
   "legitimize_operands (PLUS, operands, QFmode);")
 
 (define_insn "*addqf3_clobber"
-  [(set (match_operand:QF 0 "reg_operand" "=f,?f,f")
-        (plus:QF (match_operand:QF 1 "src_operand" "%fR,fS<>,0")
-                 (match_operand:QF 2 "src_operand" "R,fS<>,fHm")))
+  [(set (match_operand:QF 0 "reg_operand" "=f,f,?f")
+        (plus:QF (match_operand:QF 1 "src_operand" "%0,fR,fS<>")
+                 (match_operand:QF 2 "src_operand" "fHm,R,fS<>")))
    (clobber (reg:CC_NOOV 21))]
   "valid_operands (PLUS, operands, QFmode)"
   "@
+   addf\\t%2,%0
    addf3\\t%2,%1,%0
-   addf3\\t%2,%1,%0
-   addf\\t%2,%0"
+   addf3\\t%2,%1,%0"
   [(set_attr "type" "binarycc,binarycc,binarycc")])
 
 (define_insn "*addqf3_test"
   [(set (reg:CC_NOOV 21)
-        (compare:CC_NOOV (plus:QF (match_operand:QF 1 "src_operand" "%fR,fS<>,0")
-                                  (match_operand:QF 2 "src_operand" "R,fS<>,fHm"))
+        (compare:CC_NOOV (plus:QF (match_operand:QF 1 "src_operand" "%0,fR,fS<>")
+                                  (match_operand:QF 2 "src_operand" "fHm,R,fS<>"))
                          (match_operand:QF 3 "fp_zero_operand" "G,G,G")))
-   (clobber (match_scratch:QF 0 "=f,?f,f"))]
+   (clobber (match_scratch:QF 0 "=f,f,?f"))]
   "valid_operands (PLUS, operands, QFmode)"
   "@
+   addf\\t%2,%0
    addf3\\t%2,%1,%0
-   addf3\\t%2,%1,%0
-   addf\\t%2,%0"
+   addf3\\t%2,%1,%0"
   [(set_attr "type" "binarycc,binarycc,binarycc")])
 
 (define_insn "*addqf3_set"
   [(set (reg:CC_NOOV 21)
-        (compare:CC_NOOV (plus:QF (match_operand:QF 1 "src_operand" "%fR,fS<>,0")
-                                  (match_operand:QF 2 "src_operand" "R,fS<>,fHm"))
+        (compare:CC_NOOV (plus:QF (match_operand:QF 1 "src_operand" "%0,fR,fS<>")
+                                  (match_operand:QF 2 "src_operand" "fHm,R,fS<>"))
                          (match_operand:QF 3 "fp_zero_operand" "G,G,G")))
-   (set (match_operand:QF 0 "reg_operand" "=f,?f,f")
+   (set (match_operand:QF 0 "reg_operand" "=f,f,?f")
         (plus:QF (match_dup 1)
                  (match_dup 2)))]
   "valid_operands (PLUS, operands, QFmode)"
   "@
+   addf\\t%2,%0
    addf3\\t%2,%1,%0
-   addf3\\t%2,%1,%0
-   addf\\t%2,%0"
+   addf3\\t%2,%1,%0"
   [(set_attr "type" "binarycc,binarycc,binarycc")])
 
 ;
@@ -3581,46 +3581,46 @@
   "legitimize_operands (MINUS, operands, QFmode);")
 
 (define_insn "*subqf3_clobber"
-   [(set (match_operand:QF 0 "reg_operand" "=f,?f,f,f")
-         (minus:QF (match_operand:QF 1 "src_operand" "fR,fS<>,0,fHm")
-                   (match_operand:QF 2 "src_operand" "R,fS<>,fHm,0")))
+   [(set (match_operand:QF 0 "reg_operand" "=f,f,f,?f")
+         (minus:QF (match_operand:QF 1 "src_operand" "0,fHm,fR,fS<>")
+                   (match_operand:QF 2 "src_operand" "fHm,0,R,fS<>")))
    (clobber (reg:CC_NOOV 21))]
   "valid_operands (MINUS, operands, QFmode)"
   "@
-   subf3\\t%2,%1,%0
-   subf3\\t%2,%1,%0
    subf\\t%2,%0
-   subrf\\t%1,%0"
+   subrf\\t%1,%0
+   subf3\\t%2,%1,%0
+   subf3\\t%2,%1,%0"
   [(set_attr "type" "binarycc,binarycc,binarycc,binarycc")])
 
 (define_insn "*subqf3_test"
   [(set (reg:CC_NOOV 21)
-        (compare:CC_NOOV (minus:QF (match_operand:QF 1 "src_operand" "fR,fS<>,0,fHm")
-                                   (match_operand:QF 2 "src_operand" "R,fS<>,fHm,0"))
+        (compare:CC_NOOV (minus:QF (match_operand:QF 1 "src_operand" "0,fHm,fR,fS<>")
+                                   (match_operand:QF 2 "src_operand" "fHm,0,R,fS<>"))
                          (match_operand:QF 3 "fp_zero_operand" "G,G,G,G")))
-   (clobber (match_scratch:QF 0 "=f,?f,f,f"))]
+   (clobber (match_scratch:QF 0 "=f,f,f,?f"))]
   "valid_operands (MINUS, operands, QFmode)"
   "@
-   subf3\\t%2,%1,%0
-   subf3\\t%2,%1,%0
    subf\\t%2,%0
-   subrf\\t%1,%0"
+   subrf\\t%1,%0
+   subf3\\t%2,%1,%0
+   subf3\\t%2,%1,%0"
   [(set_attr "type" "binarycc,binarycc,binarycc,binarycc")])
 
 (define_insn "*subqf3_set"
   [(set (reg:CC_NOOV 21)
-        (compare:CC_NOOV (minus:QF (match_operand:QF 1 "src_operand" "fR,fS<>,0,fHm")
-                                   (match_operand:QF 2 "src_operand" "R,fS<>,fHm,0"))
+        (compare:CC_NOOV (minus:QF (match_operand:QF 1 "src_operand" "0,fHm,fR,fS<>")
+                                   (match_operand:QF 2 "src_operand" "0,fHm,R,fS<>"))
                          (match_operand:QF 3 "fp_zero_operand" "G,G,G,G")))
-   (set (match_operand:QF 0 "reg_operand" "=f,?f,f,f")
+   (set (match_operand:QF 0 "reg_operand" "=f,f,f,?f")
         (minus:QF (match_dup 1)
                  (match_dup 2)))]
   "valid_operands (MINUS, operands, QFmode)"
   "@
-   subf3\\t%2,%1,%0
-   subf3\\t%2,%1,%0
    subf\\t%2,%0
-   subrf\\t%1,%0"
+   subrf\\t%1,%0
+   subf3\\t%2,%1,%0
+   subf3\\t%2,%1,%0"
   [(set_attr "type" "binarycc,binarycc,binarycc,binarycc")])
 
 ;
@@ -3635,43 +3635,43 @@
   "legitimize_operands (MULT, operands, QFmode);")
 
 (define_insn "*mulqf3_clobber"
-  [(set (match_operand:QF 0 "reg_operand" "=f,?f,f")
-        (mult:QF (match_operand:QF 1 "src_operand" "%fR,fS<>,0")
-                 (match_operand:QF 2 "src_operand" "R,fS<>,fHm")))
+  [(set (match_operand:QF 0 "reg_operand" "=f,f,?f")
+        (mult:QF (match_operand:QF 1 "src_operand" "%0,fR,fS<>")
+                 (match_operand:QF 2 "src_operand" "fHm,R,fS<>")))
    (clobber (reg:CC_NOOV 21))]
   "valid_operands (MULT, operands, QFmode)"
   "@
+   mpyf\\t%2,%0
    mpyf3\\t%2,%1,%0
-   mpyf3\\t%2,%1,%0
-   mpyf\\t%2,%0"
+   mpyf3\\t%2,%1,%0"
   [(set_attr "type" "binarycc,binarycc,binarycc")])
 
 (define_insn "*mulqf3_test"
   [(set (reg:CC_NOOV 21)
-        (compare:CC_NOOV (mult:QF (match_operand:QF 1 "src_operand" "%fR,fS<>,0")
-                                  (match_operand:QF 2 "src_operand" "R,fS<>,fHm"))
+        (compare:CC_NOOV (mult:QF (match_operand:QF 1 "src_operand" "%0,fR,fS<>")
+                                  (match_operand:QF 2 "src_operand" "fHm,R,fS<>"))
                          (match_operand:QF 3 "fp_zero_operand" "G,G,G")))
-   (clobber (match_scratch:QF 0 "=f,?f,f"))]
+   (clobber (match_scratch:QF 0 "=f,f,?f"))]
   "valid_operands (MULT, operands, QFmode)"
   "@
+   mpyf\\t%2,%0
    mpyf3\\t%2,%1,%0
-   mpyf3\\t%2,%1,%0
-   mpyf\\t%2,%0"
+   mpyf3\\t%2,%1,%0"
   [(set_attr "type" "binarycc,binarycc,binarycc")])
 
 (define_insn "*mulqf3_set"
   [(set (reg:CC_NOOV 21)
-        (compare:CC_NOOV (mult:QF (match_operand:QF 1 "src_operand" "%fR,fS<>,0")
-                                  (match_operand:QF 2 "src_operand" "R,fS<>,fHm"))
+        (compare:CC_NOOV (mult:QF (match_operand:QF 1 "src_operand" "%0,fR,fS<>")
+                                  (match_operand:QF 2 "src_operand" "fHm,R,fS<>"))
                          (match_operand:QF 3 "fp_zero_operand" "G,G,G")))
-   (set (match_operand:QF 0 "reg_operand" "=f,?f,f")
+   (set (match_operand:QF 0 "reg_operand" "=f,f,?f")
         (mult:QF (match_dup 1)
                  (match_dup 2)))]
   "valid_operands (MULT, operands, QFmode)"
   "@
+   mpyf\\t%2,%0
    mpyf3\\t%2,%1,%0
-   mpyf3\\t%2,%1,%0
-   mpyf\\t%2,%0"
+   mpyf3\\t%2,%1,%0"
   [(set_attr "type" "binarycc,binarycc,binarycc")])
 
 ;
@@ -3690,23 +3690,23 @@
 (define_insn "*cmpqf"
   [(set (reg:CC 21)
         (compare:CC (match_operand:QF 0 "src_operand" "fR,?fS<>,f")
-                    (match_operand:QF 1 "src_operand" "R,fS<>,fHm")))]
+                    (match_operand:QF 1 "src_operand" "fHm,R,fS<>")))]
   "valid_operands (COMPARE, operands, QFmode)"
   "@
+   cmpf\\t%1,%0
    cmpf3\\t%1,%0
-   cmpf3\\t%1,%0
-   cmpf\\t%1,%0"
+   cmpf3\\t%1,%0"
   [(set_attr "type" "compare,compare,compare")])
 
 (define_insn "*cmpqf_noov"
   [(set (reg:CC_NOOV 21)
         (compare:CC_NOOV (match_operand:QF 0 "src_operand" "fR,?fS<>,f")
-                         (match_operand:QF 1 "src_operand" "R,fS<>,fHm")))]
+                         (match_operand:QF 1 "src_operand" "fHm,R,fS<>")))]
   "valid_operands (COMPARE, operands, QFmode)"
   "@
+   cmpf\\t%1,%0
    cmpf3\\t%1,%0
-   cmpf3\\t%1,%0
-   cmpf\\t%1,%0"
+   cmpf3\\t%1,%0"
   [(set_attr "type" "compare,compare,compare")])
 
 ; Inlined float divide for C4x
@@ -5427,29 +5427,29 @@
 ; ADDF
 ;
 (define_insn "addhf3"
-  [(set (match_operand:HF 0 "reg_operand" "=?h,h")
-        (plus:HF (match_operand:HF 1 "reg_operand" "%h,0")
-                 (match_operand:HF 2 "reg_or_const_operand" "h,H")))
+  [(set (match_operand:HF 0 "reg_operand" "=h,?h")
+        (plus:HF (match_operand:HF 1 "reg_operand" "%0,h")
+                 (match_operand:HF 2 "reg_or_const_operand" "H,h")))
    (clobber (reg:CC_NOOV 21))]
   ""
   "@
-   addf3\\t%2,%1,%0
-   addf\\t%2,%0"
+   addf\\t%2,%0
+   addf3\\t%2,%1,%0"
   [(set_attr "type" "binarycc,binarycc")])
 
 ;
 ; SUBF
 ;
 (define_insn "subhf3"
-  [(set (match_operand:HF 0 "reg_operand" "=?h,h,h")
-        (minus:HF (match_operand:HF 1 "reg_or_const_operand" "h,0,H")
-                  (match_operand:HF 2 "reg_or_const_operand" "h,H,0")))
+  [(set (match_operand:HF 0 "reg_operand" "=h,h,?h")
+        (minus:HF (match_operand:HF 1 "reg_or_const_operand" "0,H,h")
+                  (match_operand:HF 2 "reg_or_const_operand" "H,0,h")))
    (clobber (reg:CC_NOOV 21))]
   ""
   "@
-   subf3\\t%2,%1,%0
    subf\\t%2,%0
-   subrf\\t%1,%0"
+   subrf\\t%1,%0
+   subf3\\t%2,%1,%0"
   [(set_attr "type" "binarycc,binarycc,binarycc")])
 
 ;
@@ -5471,14 +5471,14 @@
   ")
 
 (define_insn "*mulhf3_c40"
-  [(set (match_operand:HF 0 "reg_operand" "=?h,h")
-        (mult:HF (match_operand:HF 1 "reg_operand" "%h,0")
-                 (match_operand:HF 2 "reg_or_const_operand" "h,hH")))
+  [(set (match_operand:HF 0 "reg_operand" "=h,?h")
+        (mult:HF (match_operand:HF 1 "reg_operand" "%0,h")
+                 (match_operand:HF 2 "reg_or_const_operand" "hH,h")))
    (clobber (reg:CC_NOOV 21))]
   ""
   "@
-   mpyf3\\t%2,%1,%0
-   mpyf\\t%2,%0"
+   mpyf\\t%2,%0
+   mpyf3\\t%2,%1,%0"
   [(set_attr "type" "binarycc,binarycc")])
 
 ;
@@ -5813,9 +5813,9 @@
   "legitimize_operands (PLUS, operands, HImode);")
 
 (define_insn "*addhi3_clobber"
-  [(set (match_operand:HI 0 "ext_reg_operand" "=d,?d,d")
-        (plus:HI (match_operand:HI 1 "src_operand" "%rR,rS<>,0")
-                 (match_operand:HI 2 "src_operand" "R,rS<>,rm")))
+  [(set (match_operand:HI 0 "ext_reg_operand" "=d,d,?d")
+        (plus:HI (match_operand:HI 1 "src_operand" "%0,rR,rS<>")
+                 (match_operand:HI 2 "src_operand" "rm,R,rS<>")))
    (clobber (reg:CC_NOOV 21))]
   "valid_operands (PLUS, operands, HImode)"
   "#"
@@ -5851,9 +5851,9 @@
 
 
 (define_insn "*subhi3_clobber"
-  [(set (match_operand:HI 0 "ext_reg_operand" "=d,?d,d")
-        (minus:HI (match_operand:HI 1 "src_operand" "rR,rS<>,0")
-                  (match_operand:HI 2 "src_operand" "R,rS<>,rm")))
+  [(set (match_operand:HI 0 "ext_reg_operand" "=d,d,?d")
+        (minus:HI (match_operand:HI 1 "src_operand" "0,rR,rS<>")
+                  (match_operand:HI 2 "src_operand" "rm,R,rS<>")))
    (clobber (reg:CC_NOOV 21))]
   "valid_operands (MINUS, operands, HImode)"
   "#"
@@ -5888,9 +5888,9 @@
   "legitimize_operands (IOR, operands, HImode);")
 
 (define_insn "*iorhi3_clobber"
-  [(set (match_operand:HI 0 "reg_operand" "=d,?d,d")
-        (ior:HI (match_operand:HI 1 "src_operand" "%rR,rS<>,0")
-                (match_operand:HI 2 "src_operand" "R,rS<>,rm")))
+  [(set (match_operand:HI 0 "reg_operand" "=d,d,?d")
+        (ior:HI (match_operand:HI 1 "src_operand" "%0,rR,rS<>")
+                (match_operand:HI 2 "src_operand" "rm,R,rS<>")))
    (clobber (reg:CC 21))]
   "valid_operands (IOR, operands, HImode)"
   "#"
@@ -5922,9 +5922,9 @@
   "legitimize_operands (AND, operands, HImode);")
 
 (define_insn "*andhi3_clobber"
-  [(set (match_operand:HI 0 "reg_operand" "=d,?d,d")
-        (and:HI (match_operand:HI 1 "src_operand" "%rR,rS<>,0")
-                (match_operand:HI 2 "src_operand" "R,rS<>,rm")))
+  [(set (match_operand:HI 0 "reg_operand" "=d,d,?d")
+        (and:HI (match_operand:HI 1 "src_operand" "%0,rR,rS<>")
+                (match_operand:HI 2 "src_operand" "rm,R,rS<>")))
    (clobber (reg:CC 21))]
   "valid_operands (AND, operands, HImode)"
   "#"
@@ -5957,9 +5957,9 @@
 
 
 (define_insn "*xorhi3_clobber"
-  [(set (match_operand:HI 0 "reg_operand" "=d,?d,d")
-        (xor:HI (match_operand:HI 1 "src_operand" "%rR,rS<>,0")
-                (match_operand:HI 2 "src_operand" "R,rS<>,rm")))
+  [(set (match_operand:HI 0 "reg_operand" "=d,d,?d")
+        (xor:HI (match_operand:HI 1 "src_operand" "%0,rR,rS<>")
+                (match_operand:HI 2 "src_operand" "rm,R,rS<>")))
    (clobber (reg:CC 21))]
   "valid_operands (XOR, operands, HImode)"
   "#"
