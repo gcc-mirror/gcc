@@ -450,24 +450,34 @@ convert_to_reference (reftype, expr, convtype, flags, decl)
 	  tree ttl = TREE_TYPE (reftype);
 	  tree ttr = lvalue_type (expr);
 
-	  if (! real_lvalue_p (expr) && ! TYPE_READONLY (ttl))
+	  /* [dcl.init.ref] says that if an rvalue is used to
+	     initialize a reference, then the reference must be to a
+	     non-volatile const type.  */
+	  if (! real_lvalue_p (expr)
+	      && (!TYPE_READONLY (ttl) || TYPE_VOLATILE (ttl)))
 	    {
-	      if (decl)
-		/* Ensure semantics of [dcl.init.ref] */
-		cp_pedwarn ("initialization of non-const reference `%#T' from rvalue `%T'",
-			    reftype, intype);
+	      char* msg;
+
+	      if (TYPE_VOLATILE (ttl) && decl)
+		msg = "initialization of volatile reference type `%#T'";
+	      else if (TYPE_VOLATILE (ttl))
+		msg = "conversion to volatile reference type `%#T'";
+	      else if (decl)
+		msg = "initialization of non-const reference type `%#T'";
 	      else
-		cp_pedwarn ("conversion to non-const `%T' from rvalue `%T'",
-			    reftype, intype);
+		msg = "conversion to non-const reference type `%#T'";
+
+	      cp_error (msg, reftype);
+	      cp_error ("from rvalue of type `%T'", intype);
 	    }
 	  else if (! (convtype & CONV_CONST))
 	    {
 	      if (! TYPE_READONLY (ttl) && TYPE_READONLY (ttr))
-		cp_pedwarn ("conversion from `%T' to `%T' discards const",
-			    ttr, reftype);
+		cp_error ("conversion from `%T' to `%T' discards const",
+			  ttr, reftype);
 	      else if (! TYPE_VOLATILE (ttl) && TYPE_VOLATILE (ttr))
-		cp_pedwarn ("conversion from `%T' to `%T' discards volatile",
-			    ttr, reftype);
+		cp_error ("conversion from `%T' to `%T' discards volatile",
+			  ttr, reftype);
 	    }
 	}
 

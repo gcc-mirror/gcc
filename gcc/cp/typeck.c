@@ -6808,20 +6808,20 @@ convert_for_assignment (type, rhs, errtype, fndecl, parmnum)
 	  if (! TYPE_READONLY (ttl) && TYPE_READONLY (ttr))
 	    {
 	      if (fndecl)
-		cp_pedwarn ("passing `%T' as argument %P of `%D' discards const",
-			    rhstype, parmnum, fndecl);
+		cp_error ("passing `%T' as argument %P of `%D' discards const",
+			  rhstype, parmnum, fndecl);
 	      else
-		cp_pedwarn ("%s to `%T' from `%T' discards const",
-			    errtype, type, rhstype);
+		cp_error ("%s to `%T' from `%T' discards const",
+			  errtype, type, rhstype);
 	    }
 	  if (! TYPE_VOLATILE (ttl) && TYPE_VOLATILE (ttr))
 	    {
 	      if (fndecl)
-		cp_pedwarn ("passing `%T' as argument %P of `%D' discards volatile",
-			    rhstype, parmnum, fndecl);
+		cp_error ("passing `%T' as argument %P of `%D' discards volatile",
+			  rhstype, parmnum, fndecl);
 	      else
-		cp_pedwarn ("%s to `%T' from `%T' discards volatile",
-			    errtype, type, rhstype);
+		cp_error ("%s to `%T' from `%T' discards volatile",
+			  errtype, type, rhstype);
 	    }
 	}
 
@@ -6874,19 +6874,19 @@ convert_for_assignment (type, rhs, errtype, fndecl, parmnum)
 		  if (string_conv_p (type, rhs, 1))
 		    /* converting from string constant to char *, OK.  */;
 		  else if (fndecl)
-		    cp_pedwarn ("passing `%T' as argument %P of `%D' discards const",
-				rhstype, parmnum, fndecl);
+		    cp_error ("passing `%T' as argument %P of `%D' discards const",
+			      rhstype, parmnum, fndecl);
 		  else
-		    cp_pedwarn ("%s to `%T' from `%T' discards const",
+		    cp_error ("%s to `%T' from `%T' discards const",
 				errtype, type, rhstype);
 		}
 	      else if (! TYPE_VOLATILE (ttl) && TYPE_VOLATILE (ttr))
 		{
 		  if (fndecl)
-		    cp_pedwarn ("passing `%T' as argument %P of `%D' discards volatile",
+		    cp_error ("passing `%T' as argument %P of `%D' discards volatile",
 				rhstype, parmnum, fndecl);
 		  else
-		    cp_pedwarn ("%s to `%T' from `%T' discards volatile",
+		    cp_error ("%s to `%T' from `%T' discards volatile",
 				errtype, type, rhstype);
 		}
 	      else if (TREE_CODE (ttl) == TREE_CODE (ttr)
@@ -6948,20 +6948,20 @@ convert_for_assignment (type, rhs, errtype, fndecl, parmnum)
 	      if (const_parity)
 		{
 		  if (fndecl)
-		    cp_pedwarn ("passing `%T' as argument %P of `%D' discards const",
-				rhstype, parmnum, fndecl);
+		    cp_error ("passing `%T' as argument %P of `%D' discards const",
+			      rhstype, parmnum, fndecl);
 		  else
-		    cp_pedwarn ("%s to `%T' from `%T' discards const",
+		    cp_error ("%s to `%T' from `%T' discards const",
 				errtype, type, rhstype);
 		}
 	      if (volatile_parity)
 		{
 		  if (fndecl)
-		    cp_pedwarn ("passing `%T' as argument %P of `%D' discards volatile",
-				rhstype, parmnum, fndecl);
+		    cp_error ("passing `%T' as argument %P of `%D' discards volatile",
+			      rhstype, parmnum, fndecl);
 		  else
-		    cp_pedwarn ("%s to `%T' from `%T' discards volatile",
-				errtype, type, rhstype);
+		    cp_error ("%s to `%T' from `%T' discards volatile",
+			      errtype, type, rhstype);
 		}
 	      if (unsigned_parity > 0)
 		{

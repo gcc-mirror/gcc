@@ -6883,7 +6883,8 @@ and this notice must be preserved on all copies.
 
 typedef void (*GctNameRefProcedure)(GctNameRef&);
 typedef GctNameRef  (*GctNameRefMapper)(GctNameRef&);
-typedef GctNameRef  (*GctNameRefCombiner)(GctNameRef&, GctNameRef&);
+typedef GctNameRef& (*GctNameRefCombiner)(const GctNameRef&, 
+					  const GctNameRef&);
 typedef int  (*GctNameRefPredicate)(GctNameRef&);
 typedef int  (*GctNameRefComparator)(GctNameRef&, GctNameRef&);
 
@@ -6916,11 +6917,11 @@ public:
                         GctNameRefList();
                         GctNameRefList(GctNameRef& head);
                         GctNameRefList(GctNameRef& head, GctNameRefList& tl);
-                        GctNameRefList(GctNameRefList& a);
+                        GctNameRefList(const GctNameRefList& a);
                         GctNameRefList(Pix p);
                         ~GctNameRefList();
 
-  GctNameRefList&              operator = (GctNameRefList& a);
+  GctNameRefList&              operator = (const GctNameRefList& a);
 
   int                   null();
   int                   valid();
@@ -7003,11 +7004,11 @@ inline void dereference(GctNameRefListNode* p)
 }
 
 
-inline GctNameRefListNode* newGctNameRefListNode(GctNameRef& h)
+inline GctNameRefListNode* newGctNameRefListNode(const GctNameRef& h)
 {
   GctNameRefListNode* p = new GctNameRefListNode;
   p->ref = 1;
-  p->hd = h;
+  p->hd = (GctNameRef&) h;
   return p;
 }
 
@@ -7048,9 +7049,10 @@ inline GctNameRefList::GctNameRefList(GctNameRef& head, GctNameRefList& tl)
   reference(P->tl);
 }
 
-inline GctNameRefList::GctNameRefList(GctNameRefList& a)
+inline GctNameRefList::GctNameRefList(const GctNameRefList& a)
 {
-  reference(a.P);
+  GctNameRefList& gl = (GctNameRefList&) a;
+  reference(gl.P);
   P = a.P;
 }
 
@@ -7151,7 +7153,7 @@ public:
 
 static init_NilGctNameRefListNode NilGctNameRefListNode_initializer;
 
-GctNameRefList& GctNameRefList::operator = (GctNameRefList& a)
+GctNameRefList& GctNameRefList::operator = (const GctNameRefList& a)
 {
   reference(a.P);
   dereference(P);

@@ -12,10 +12,10 @@
 extern "C" void printf (char *, ...); 
 
 struct base {
-	int data_member;
+	mutable int data_member;
 
 	base () {}
-	void function_member ();
+	void function_member () const;
 };
 
 base base_object;
@@ -26,7 +26,7 @@ int call_count = 0;
 
 int main ()
 {
-	base& base_ref = base_returning_function ();
+	const base& base_ref = base_returning_function ();
 
 	base_ref.function_member ();
 	base_ref.function_member ();
@@ -48,6 +48,6 @@ base base_returning_function ()
 	return local_base_object;
 }
 
-void base::function_member ()
+void base::function_member () const
 {
 }

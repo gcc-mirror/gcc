@@ -3297,8 +3297,8 @@ build_over_call (cand, args, flags)
 	  char *p = (dv && dc ? "const and volatile"
 		              : dc ? "const" : dv ? "volatile" : "");
 
-	  cp_pedwarn ("passing `%T' as `this' argument of `%#D' discards %s",
-		      TREE_TYPE (argtype), fn, p);
+	  cp_error ("passing `%T' as `this' argument of `%#D' discards %s",
+		    TREE_TYPE (argtype), fn, p);
 	}
       /* [class.mfct.nonstatic]: If a nonstatic member function of a class
 	 X is called for an object that is not of type X, or of a type
