@@ -20,6 +20,14 @@
 #else
 # if HAVE_STDINT_H
 #  include <stdint.h>
+# else
+typedef unsigned int uint8_t __attribute__((mode(QI)));
+/* This is a blatant hack: on Solaris 2.5, pthread.h defines uint32_t
+   in pthread.h, which we sometimes include.  We protect our
+   definition the same way Solaris 2.5 does, to avoid redefining it.  */
+#  ifndef _UINT32_T
+typedef unsigned int uint32_t __attribute__((mode(SI)));
+#  endif
 # endif
 #endif
 
