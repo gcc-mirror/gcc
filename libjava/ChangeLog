@@ -1,5 +1,11 @@
 2004-06-22  Bryce McKinlay  <mckinlay@redhat.com>
 
+	* gnu/gcj/convert/BytesToUnicode.java (getDecoder): Pass original
+	encoding name to iconv.
+	* gnu/gcj/convert/UnicodeToBytes.java (getEncoder): Likewise.
+
+2004-06-22  Bryce McKinlay  <mckinlay@redhat.com>
+
 	PR libgcj/16134:
 	* gnu/gcj/convert/BytesToUnicode.java (getDecoder): Canonicalize 
 	encoding name before cache lookup. Thanks to Hannes Wallnoefer.
