@@ -8,5 +8,6 @@ int x;
 void
 foo (void)
 {
-  (char) x = 1; /* { dg-warning "lvalue" "cast as lvalue deprecated" } */
+  (char) x = 1; /* { dg-bogus "warning" "warning in place of error" } */
 }
+/* { dg-error "lvalue" "cast as lvalue" { target *-*-* } 11 } */

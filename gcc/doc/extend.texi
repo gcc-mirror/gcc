@@ -429,7 +429,6 @@ extensions, accepted by GCC in C89 mode and in C++.
 * Nested Functions::    As in Algol and Pascal, lexical scoping of functions.
 * Constructing Calls::	Dispatching a call to another function.
 * Typeof::              @code{typeof}: referring to the type of an expression.
-* Lvalues::             Using @samp{?:}, @samp{,} and casts in lvalues.
 * Conditionals::        Omitting the middle operand of a @samp{?:} expression.
 * Long Long::		Double-word integers---@code{long long int}.
 * Complex::             Data types for complex numbers.
@@ -1059,94 +1058,6 @@ typedef typeof(@var{expr}) @var{T};
 
 @noindent
 This will work with all versions of GCC@.
-
-@node Lvalues
-@section Generalized Lvalues
-@cindex compound expressions as lvalues
-@cindex expressions, compound, as lvalues
-@cindex conditional expressions as lvalues
-@cindex expressions, conditional, as lvalues
-@cindex casts as lvalues
-@cindex generalized lvalues
-@cindex lvalues, generalized
-@cindex extensions, @code{?:}
-@cindex @code{?:} extensions
-
-Compound expressions, conditional expressions and casts are allowed as
-lvalues provided their operands are lvalues.  This means that you can take
-their addresses or store values into them.  All these extensions are
-deprecated.
-
-Standard C++ allows compound expressions and conditional expressions
-as lvalues, and permits casts to reference type, so use of this
-extension is not supported for C++ code.
-
-For example, a compound expression can be assigned, provided the last
-expression in the sequence is an lvalue.  These two expressions are
-equivalent:
-
-@smallexample
-(a, b) += 5
-a, (b += 5)
-@end smallexample
-
-Similarly, the address of the compound expression can be taken.  These two
-expressions are equivalent:
-
-@smallexample
-&(a, b)
-a, &b
-@end smallexample
-
-A conditional expression is a valid lvalue if its type is not void and the
-true and false branches are both valid lvalues.  For example, these two
-expressions are equivalent:
-
-@smallexample
-(a ? b : c) = 5
-(a ? b = 5 : (c = 5))
-@end smallexample
-
-A cast is a valid lvalue if its operand is an lvalue.  This extension
-is deprecated.  A simple
-assignment whose left-hand side is a cast works by converting the
-right-hand side first to the specified type, then to the type of the
-inner left-hand side expression.  After this is stored, the value is
-converted back to the specified type to become the value of the
-assignment.  Thus, if @code{a} has type @code{char *}, the following two
-expressions are equivalent:
-
-@smallexample
-(int)a = 5
-(int)(a = (char *)(int)5)
-@end smallexample
-
-An assignment-with-arithmetic operation such as @samp{+=} applied to a cast
-performs the arithmetic using the type resulting from the cast, and then
-continues as in the previous case.  Therefore, these two expressions are
-equivalent:
-
-@smallexample
-(int)a += 5
-(int)(a = (char *)(int) ((int)a + 5))
-@end smallexample
-
-You cannot take the address of an lvalue cast, because the use of its
-address would not work out coherently.  Suppose that @code{&(int)f} were
-permitted, where @code{f} has type @code{float}.  Then the following
-statement would try to store an integer bit-pattern where a floating
-point number belongs:
-
-@smallexample
-*&(int)f = 1;
-@end smallexample
-
-This is quite different from what @code{(int)f = 1} would do---that
-would convert 1 to floating point and store it.  Rather than cause this
-inconsistency, we think it is better to prohibit use of @samp{&} on a cast.
-
-If you really do want an @code{int *} pointer with the address of
-@code{f}, you can simply write @code{(int *)&f}.
 
 @node Conditionals
 @section Conditionals with Omitted Operands
