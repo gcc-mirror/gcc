@@ -189,8 +189,13 @@ public class InvocationEvent extends AWTEvent implements ActiveEvent
         }
     else
       runnable.run();
-    if (notifier != null)
-      notifier.notifyAll();
+
+    Object o = notifier;
+    if (o != null)
+      synchronized(o)
+	{
+	  o.notifyAll();
+	}
   }
 
   /**
