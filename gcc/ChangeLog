@@ -1,3 +1,9 @@
+Tue May 26 18:52:23 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* reload1.c (reload): Get MEM_IN_STRUCT_P and RTX_UNCHANGING_P
+	from reg_equiv_memory_loc; set the latter when changing REG to MEM.
+	(alter_reg): Don't set RTX_UNCHANGING_P for shared slots.
+
 Mon May 25 12:07:12 1998  Hans-Peter Nilsson  <hp@axis.se>
 
 	* cplus-dem.c (MBUF_SIZE): Bumped from 512 to 32767.
