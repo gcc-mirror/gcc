@@ -1,3 +1,7 @@
+Thu Mar  2 13:32:01 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* typeck.c (comptypes): Treat sizetype like its language equivalent.
+
 2000-03-01  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* typeck.c (maybe_warn_about_returning_address_of_local): Reorganize

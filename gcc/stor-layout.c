@@ -1402,6 +1402,7 @@ set_sizetype (type)
 
   /* Make copies of nodes since we'll be setting TYPE_IS_SIZETYPE.  */
   sizetype = copy_node (type);
+  TYPE_DOMAIN (sizetype) = type;
   bitsizetype = make_node (INTEGER_TYPE);
   TYPE_NAME (bitsizetype) = TYPE_NAME (type);
   TYPE_PRECISION (bitsizetype) = precision;
@@ -1430,8 +1431,15 @@ set_sizetype (type)
 
   TYPE_NAME (bitsizetype) = get_identifier ("bit_size_type");
 
+  /* Show is a sizetype, is a main type, and has no pointers to it.  */
   for (i = 0; i < sizeof sizetype_tab / sizeof sizetype_tab[0]; i++)
-    TYPE_IS_SIZETYPE (sizetype_tab[i]) = 1;
+    {
+      TYPE_IS_SIZETYPE (sizetype_tab[i]) = 1;
+      TYPE_MAIN_VARIANT (sizetype_tab[i]) = sizetype_tab[i];
+      TYPE_NEXT_VARIANT (sizetype_tab[i]) = 0;
+      TYPE_POINTER_TO (sizetype_tab[i]) = 0;
+      TYPE_REFERENCE_TO (sizetype_tab[i]) = 0;
+    }
 
   ggc_add_tree_root ((tree *) &sizetype_tab,
 		     sizeof sizetype_tab / sizeof (tree));
