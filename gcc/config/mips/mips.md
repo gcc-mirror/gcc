@@ -315,7 +315,13 @@
 			    (match_operand:DI 2 "arith_operand" "")))
 	      (clobber (match_dup 3))])]
   "!TARGET_DEBUG_G_MODE"
-  "operands[3] = gen_reg_rtx (SImode);")
+  "
+{
+  if (GET_CODE (operands[2]) == CONST_INT && INTVAL (operands[2]) == -32768)
+    operands[2] = force_reg (SImode, operands[2]);
+
+  operands[3] = gen_reg_rtx (SImode);
+}")
 
 (define_insn "adddi3_internal_1"
   [(set (match_operand:DI 0 "register_operand" "=d,&d")
@@ -330,9 +336,9 @@
     ? \"srl\\t%3,%L0,31\;sll\\t%M0,%M0,1\;sll\\t%L0,%L1,1\;addu\\t%M0,%M0,%3\"
     : \"addu\\t%L0,%L1,%L2\;sltu\\t%3,%L0,%L2\;addu\\t%M0,%M1,%M2\;addu\\t%M0,%M0,%3\";
 }"
-  [(set_attr "type"	"darith,darith")
-   (set_attr "mode"	"DI,DI")
-   (set_attr "length"	"4,4")])
+  [(set_attr "type"	"darith")
+   (set_attr "mode"	"DI")
+   (set_attr "length"	"4")])
 
 (define_split
   [(set (match_operand:DI 0 "register_operand" "")
@@ -402,8 +408,8 @@
    addu\\t%L0,%L1,%2\;sltu\\t%3,%L0,%2\;addu\\t%M0,%M1,%3
    move\\t%L0,%L1\;move\\t%M0,%M1
    subu\\t%L0,%L1,%n2\;sltu\\t%3,%L0,%2\;subu\\t%M0,%M1,1\;addu\\t%M0,%M0,%3"
-  [(set_attr "type"	"darith,darith,darith")
-   (set_attr "mode"	"DI,DI,DI")
+  [(set_attr "type"	"darith")
+   (set_attr "mode"	"DI")
    (set_attr "length"	"3,2,4")])
 
 (define_split
@@ -578,8 +584,8 @@
    sltu\\t%3,%L1,%2\;subu\\t%L0,%L1,%2\;subu\\t%M0,%M1,%3
    move\\t%L0,%L1\;move\\t%M0,%M1
    sltu\\t%3,%L1,%2\;subu\\t%L0,%L1,%2\;subu\\t%M0,%M1,1\;subu\\t%M0,%M0,%3"
-  [(set_attr "type"	"darith,darith,darith")
-   (set_attr "mode"	"DI,DI,DI")
+  [(set_attr "type"	"darith")
+   (set_attr "mode"	"DI")
    (set_attr "length"	"3,2,4")])
 
 (define_split
@@ -1158,7 +1164,7 @@ move\\t%0,%z4\\n\\
    %[li\\t%@,%X2\;and\\t%0,%1,%@%]
    %[li\\t%@,%X2\;and\\t%0,%1,%@%]"
   [(set_attr "type"	"arith,arith,multi,multi")
-   (set_attr "mode"	"SI,SI,SI,SI")
+   (set_attr "mode"	"SI")
    (set_attr "length"	"1,1,2,3")])
 
 (define_insn "anddi3"
@@ -1195,7 +1201,7 @@ move\\t%0,%z4\\n\\
    %[li\\t%@,%X2\;or\\t%0,%1,%@%]
    %[li\\t%@,%X2\;or\\t%0,%1,%@%]"
   [(set_attr "type"	"arith,arith,multi,multi")
-   (set_attr "mode"	"SI,SI,SI,SI")
+   (set_attr "mode"	"SI")
    (set_attr "length"	"1,1,2,3")])
 
 (define_insn "iordi3"
@@ -1232,7 +1238,7 @@ move\\t%0,%z4\\n\\
    %[li\\t%@,%X2\;xor\\t%0,%1,%@%]
    %[li\\t%@,%X2\;xor\\t%0,%1,%@%]"
   [(set_attr "type"	"arith,arith,multi,multi")
-   (set_attr "mode"	"SI,SI,SI,SI")
+   (set_attr "mode"	"SI")
    (set_attr "length"	"1,1,2,3")])
 
 (define_insn "xordi3"
@@ -1299,7 +1305,7 @@ move\\t%0,%z4\\n\\
     return mips_move_1word (operands, insn, TRUE);
 }"
   [(set_attr "type"	"arith,load,load")
-   (set_attr "mode"	"SI,SI,SI")
+   (set_attr "mode"	"SI")
    (set_attr "length"	"1,1,2")])
 
 (define_insn "zero_extendqihi2"
@@ -1314,7 +1320,7 @@ move\\t%0,%z4\\n\\
     return mips_move_1word (operands, insn, TRUE);
 }"
   [(set_attr "type"	"arith,load,load")
-   (set_attr "mode"	"HI,HI,HI")
+   (set_attr "mode"	"HI")
    (set_attr "length"	"1,1,2")])
 
 (define_insn "zero_extendqisi2"
@@ -1329,7 +1335,7 @@ move\\t%0,%z4\\n\\
     return mips_move_1word (operands, insn, TRUE);
 }"
   [(set_attr "type"	"arith,load,load")
-   (set_attr "mode"	"SI,SI,SI")
+   (set_attr "mode"	"SI")
    (set_attr "length"	"1,1,2")])
 
 
@@ -1374,8 +1380,8 @@ move\\t%0,%z4\\n\\
 	(sign_extend:SI (match_operand:HI 1 "memory_operand" "R,m")))]
   ""
   "* return mips_move_1word (operands, insn, FALSE);"
-  [(set_attr "type"	"load,load")
-   (set_attr "mode"	"SI,SI")
+  [(set_attr "type"	"load")
+   (set_attr "mode"	"SI")
    (set_attr "length"	"1,2")])
 
 (define_expand "extendqihi2"
@@ -1405,8 +1411,8 @@ move\\t%0,%z4\\n\\
 	(sign_extend:HI (match_operand:QI 1 "memory_operand" "R,m")))]
   ""
   "* return mips_move_1word (operands, insn, FALSE);"
-  [(set_attr "type"	"load,load")
-   (set_attr "mode"	"SI,SI")
+  [(set_attr "type"	"load")
+   (set_attr "mode"	"SI")
    (set_attr "length"	"1,2")])
 
 
@@ -1436,8 +1442,8 @@ move\\t%0,%z4\\n\\
 	(sign_extend:SI (match_operand:QI 1 "memory_operand" "R,m")))]
   ""
   "* return mips_move_1word (operands, insn, FALSE);"
-  [(set_attr "type"	"load,load")
-   (set_attr "mode"	"SI,SI")
+  [(set_attr "type"	"load")
+   (set_attr "mode"	"SI")
    (set_attr "length"	"1,2")])
 
 
@@ -1479,8 +1485,8 @@ move\\t%0,%z4\\n\\
   output_asm_insn (mips_move_1word (xoperands, insn, FALSE), xoperands);
   return \"\";
 }"
-  [(set_attr "type"	"fcvt,fcvt,fcvt,fcvt")
-   (set_attr "mode"	"DF,DF,DF,DF")
+  [(set_attr "type"	"fcvt")
+   (set_attr "mode"	"DF")
    (set_attr "length"	"14,12,13,14")])
 
 
@@ -1518,8 +1524,8 @@ move\\t%0,%z4\\n\\
   output_asm_insn (mips_move_1word (xoperands, insn, FALSE), xoperands);
   return \"\";
 }"
-  [(set_attr "type"	"fcvt,fcvt,fcvt,fcvt")
-   (set_attr "mode"	"SF,SF,SF,SF")
+  [(set_attr "type"	"fcvt")
+   (set_attr "mode"	"SF")
    (set_attr "length"	"14,12,13,14")])
 
 
@@ -1550,8 +1556,8 @@ move\\t%0,%z4\\n\\
 
   return \"mtc1\\t%1,%0%#\;cvt.d.w\\t%0,%0\";
 }"
-  [(set_attr "type"	"fcvt,fcvt,fcvt")
-   (set_attr "mode"	"DF,DF,DF")
+  [(set_attr "type"	"fcvt")
+   (set_attr "mode"	"DF")
    (set_attr "length"	"3,4,3")])
 
 (define_insn "floatsisf2"
@@ -1566,8 +1572,8 @@ move\\t%0,%z4\\n\\
 
   return \"mtc1\\t%1,%0%#\;cvt.s.w\\t%0,%0\";
 }"
-  [(set_attr "type"	"fcvt,fcvt,fcvt")
-   (set_attr "mode"	"SF,SF,SF")
+  [(set_attr "type"	"fcvt")
+   (set_attr "mode"	"SF")
    (set_attr "length"	"3,4,3")])
 
 
@@ -1673,7 +1679,6 @@ move\\t%0,%z4\\n\\
   ""
   "
 {
-  extern rtx force_reg ();
   extern rtx gen_movsi_ulw ();
   extern rtx gen_movsi ();
 
@@ -1751,7 +1756,7 @@ move\\t%0,%z4\\n\\
   return mips_fill_delay_slot (ret, DELAY_LOAD, operands, insn);
 }"
   [(set_attr "type"	"load,load,move,arith")
-   (set_attr "mode"	"SI,SI,SI,SI")
+   (set_attr "mode"	"SI")
    (set_attr "length"	"2,4,1,2")])
 
 (define_insn "movsi_usw"
@@ -1789,8 +1794,8 @@ move\\t%0,%z4\\n\\
 
   return \"usw\\t%z1,%0\";
 }"
-  [(set_attr "type"	"store,store")
-   (set_attr "mode"	"SI,SI")
+  [(set_attr "type"	"store")
+   (set_attr "mode"	"SI")
    (set_attr "length"	"2,4")])
 
 ;; 64-bit integer moves
@@ -1805,7 +1810,7 @@ move\\t%0,%z4\\n\\
   ""
   "* return mips_move_2words (operands, insn); "
   [(set_attr "type"	"move,arith,load,load,store,store,hilo,hilo")
-   (set_attr "mode"	"DI,DI,DI,DI,DI,DI,DI,DI")
+   (set_attr "mode"	"DI")
    (set_attr "length"	"2,4,2,4,2,4,2,2")])
 
 (define_split
@@ -1870,7 +1875,7 @@ move\\t%0,%z4\\n\\
   ""
   "* return mips_move_1word (operands, insn, TRUE);"
   [(set_attr "type"	"move,pic,arith,arith,load,load,store,store,xfer,xfer,move,load,load,store,store,hilo,hilo")
-   (set_attr "mode"	"SI,SI,SI,SI,SI,SI,SI,SI,SI,SI,SI,SI,SI,SI,SI,SI,SI")
+   (set_attr "mode"	"SI")
    (set_attr "length"	"1,4,1,2,1,2,1,2,1,1,1,1,2,1,2,1,1")])
 
 ;; 16-bit Integer moves
@@ -1886,7 +1891,7 @@ move\\t%0,%z4\\n\\
   ""
   "* return mips_move_1word (operands, insn, TRUE);"
   [(set_attr "type"	"move,arith,load,load,store,store,xfer,xfer,move,hilo,hilo")
-   (set_attr "mode"	"HI,HI,HI,HI,HI,HI,HI,HI,HI,HI,HI")
+   (set_attr "mode"	"HI")
    (set_attr "length"	"1,1,1,2,1,2,1,1,1,1,1")])
 
 ;; 8-bit Integer moves
@@ -1902,7 +1907,7 @@ move\\t%0,%z4\\n\\
   ""
   "* return mips_move_1word (operands, insn, TRUE);"
   [(set_attr "type"	"move,arith,load,load,store,store,xfer,xfer,move,hilo,hilo")
-   (set_attr "mode"	"QI,QI,QI,QI,QI,QI,QI,QI,QI,QI,QI")
+   (set_attr "mode"	"QI")
    (set_attr "length"	"1,1,1,2,1,2,1,1,1,1,1")])
 
 
@@ -1914,7 +1919,7 @@ move\\t%0,%z4\\n\\
   ""
   "* return mips_move_1word (operands, insn, FALSE);"
   [(set_attr "type"	"move,xfer,load,load,store,store,xfer,xfer,move,load,load,store,store")
-   (set_attr "mode"	"SF,SF,SF,SF,SF,SF,SF,SF,SF,SF,SF,SF,SF")
+   (set_attr "mode"	"SF")
    (set_attr "length"	"1,1,1,2,1,2,1,1,1,1,2,1,2")])
 
 ;; 64-bit floating point moves
@@ -1925,7 +1930,7 @@ move\\t%0,%z4\\n\\
   ""
   "* return mips_move_2words (operands, insn); "
   [(set_attr "type"	"move,load,load,store,store,load,xfer,xfer,move,load,load,store,store")
-   (set_attr "mode"	"DF,DF,DF,DF,DF,DF,DF,DF,DF,DF,DF,DF,DF")
+   (set_attr "mode"	"DF")
    (set_attr "length"	"1,2,4,2,4,4,2,2,2,2,4,2,4")])
 
 (define_split
@@ -3127,9 +3132,9 @@ move\\t%0,%z4\\n\\
   "@
    xor\\t%0,%1,%2\;sltu\\t%0,%0,1
    xori\\t%0,%1,%2\;sltu\\t%0,%0,1"
- [(set_attr "type"	"arith,arith")
-   (set_attr "mode"	"SI,SI")
-   (set_attr "length"	"2,2")])
+ [(set_attr "type"	"arith")
+   (set_attr "mode"	"SI")
+   (set_attr "length"	"2")])
 
 (define_split
   [(set (match_operand:SI 0 "register_operand" "")
@@ -3191,9 +3196,9 @@ move\\t%0,%z4\\n\\
   "@
     xor\\t%0,%1,%2\;sltu\\t%0,%.,%0
     xori\\t%0,%1,%x2\;sltu\\t%0,%.,%0"
- [(set_attr "type"	"arith,arith")
-   (set_attr "mode"	"SI,SI")
-   (set_attr "length"	"2,2")])
+ [(set_attr "type"	"arith")
+   (set_attr "mode"	"SI")
+   (set_attr "length"	"2")])
 
 (define_split
   [(set (match_operand:SI 0 "register_operand" "")
