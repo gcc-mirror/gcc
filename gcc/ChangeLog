@@ -1,3 +1,19 @@
+Wed Sep 22 17:35:55 1999  Michael Meissner  <meissner@cygnus.com>
+
+	* dwarf2out.c (base_type_die): Use the name __unknown__ if there
+	is no name for the base type, rather than segfault.  If we are
+	writing out a complex integer type, use DW_ATE_lo_user.
+
+	* expr.c (emit_move_insn_1): If we are copying a complex that fits
+	in one word or less (complex char, complex short, or on 64 bit
+	systems complex float) to/from a hard register, copy it through
+	memory instead of dying in gen_{real,imag}part.  If we have a
+	short complex type, prevent inlining since it allocates stack
+	memory.
+
+	* tree.c (build_complex_type): If we are writing dwarf2 output,
+	generate a name for complex integer types.
+
 Wed Sep 22 11:34:08 EDT 1999  Andrew MacLeod  <amacleod@cygnus.com>
 
 	* basic-block.h (add_noreturn_fake_exit_edges): Use correct name.

@@ -6248,9 +6248,15 @@ base_type_die (type)
       || TREE_CODE (type) == VOID_TYPE)
     return 0;
 
-  if (TREE_CODE (name) == TYPE_DECL)
-    name = DECL_NAME (name);
-  type_name = IDENTIFIER_POINTER (name);
+  if (name)
+    {
+      if (TREE_CODE (name) == TYPE_DECL)
+	name = DECL_NAME (name);
+
+      type_name = IDENTIFIER_POINTER (name);
+    }
+  else
+    type_name = "__unknown__";
 
   switch (TREE_CODE (type))
     {
@@ -6284,8 +6290,13 @@ base_type_die (type)
       encoding = DW_ATE_float;
       break;
 
+      /* Dwarf2 doesn't know anything about complex ints, so use
+	 a user defined type for it.  */
     case COMPLEX_TYPE:
-      encoding = DW_ATE_complex_float;
+      if (TREE_CODE (TREE_TYPE (type)) == REAL_TYPE)
+	encoding = DW_ATE_complex_float;
+      else
+	encoding = DW_ATE_lo_user;
       break;
 
     case BOOLEAN_TYPE:

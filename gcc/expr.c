@@ -2630,6 +2630,55 @@ emit_move_insn_1 (x, y)
 	}
       else
 	{
+	  /* If this is a complex value with each part being smaller than a
+	     word, the usual calling sequence will likely pack the pieces into
+	     a single register.  Unfortunately, SUBREG of hard registers only
+	     deals in terms of words, so we have a problem converting input
+	     arguments to the CONCAT of two registers that is used elsewhere
+	     for complex values.  If this is before reload, we can copy it into
+	     memory and reload.  FIXME, we should see about using extract and
+	     insert on integer registers, but complex short and complex char
+	     variables should be rarely used.  */
+	  if (GET_MODE_BITSIZE (mode) < 2*BITS_PER_WORD
+	      && (reload_in_progress | reload_completed) == 0)
+	    {
+	      int packed_dest_p = (REG_P (x) && REGNO (x) < FIRST_PSEUDO_REGISTER);
+	      int packed_src_p  = (REG_P (y) && REGNO (y) < FIRST_PSEUDO_REGISTER);
+
+	      if (packed_dest_p || packed_src_p)
+		{
+		  enum mode_class reg_class = ((class == MODE_COMPLEX_FLOAT)
+					       ? MODE_FLOAT : MODE_INT);
+
+		  enum machine_mode reg_mode = 
+		    mode_for_size (GET_MODE_BITSIZE (mode), reg_class, 1);
+
+		  if (reg_mode != BLKmode)
+		    {
+		      rtx mem = assign_stack_temp (reg_mode,
+						   GET_MODE_SIZE (mode), 0);
+
+		      rtx cmem = change_address (mem, mode, NULL_RTX);
+
+		      current_function->cannot_inline
+			= "function uses short complex types";
+
+		      if (packed_dest_p)
+			{
+			  rtx sreg = gen_rtx_SUBREG (reg_mode, x, 0);
+			  emit_move_insn_1 (cmem, y);
+			  return emit_move_insn_1 (sreg, mem);
+			}
+		      else
+			{
+			  rtx sreg = gen_rtx_SUBREG (reg_mode, y, 0);
+			  emit_move_insn_1 (mem, sreg);
+			  return emit_move_insn_1 (x, cmem);
+			}
+		    }
+		}
+	    }
+
 	  /* Show the output dies here.  This is necessary for pseudos;
 	     hard regs shouldn't appear here except as return values.
 	     We never want to emit such a clobber after reload.  */

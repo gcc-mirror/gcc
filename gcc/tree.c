@@ -4449,6 +4449,40 @@ build_complex_type (component_type)
   if (TYPE_SIZE (t) == 0)
     layout_type (t);
 
+  /* If we are writing Dwarf2 output we need to create a name,
+     since complex is a fundamental type.  */
+  if (write_symbols == DWARF2_DEBUG && ! TYPE_NAME (t))
+    {
+      char *name;
+      if (component_type == char_type_node)
+	name = "complex char";
+      else if (component_type == signed_char_type_node)
+	name = "complex signed char";
+      else if (component_type == unsigned_char_type_node)
+	name = "complex unsigned char";
+      else if (component_type == short_integer_type_node)
+	name = "complex short int";
+      else if (component_type == short_unsigned_type_node)
+	name = "complex short unsigned int";
+      else if (component_type == integer_type_node)
+	name = "complex int";
+      else if (component_type == unsigned_type_node)
+	name = "complex unsigned int";
+      else if (component_type == long_integer_type_node)
+	name = "complex long int";
+      else if (component_type == long_unsigned_type_node)
+	name = "complex long unsigned int";
+      else if (component_type == long_long_integer_type_node)
+	name = "complex long long int";
+      else if (component_type == long_long_unsigned_type_node)
+	name = "complex long long unsigned int";
+      else
+	name = (char *)0;
+
+      if (name)
+	TYPE_NAME (t) = get_identifier (name);
+    }
+
   return t;
 }
 
