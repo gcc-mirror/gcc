@@ -13,16 +13,16 @@ void
 foo (long l, int nfoo)
 {
   printf (ngettext ("%d foo", "%d foos", nfoo), nfoo);
-  printf (ngettext ("%d foo", "%d foos", l), l); /* { dg-warning "int format" "wrong type in conditional expr" } */
-  printf (ngettext ("%d foo", "%ld foos", l), l); /* { dg-warning "int format" "wrong type in conditional expr" } */
-  printf (ngettext ("%ld foo", "%d foos", l), l); /* { dg-warning "int format" "wrong type in conditional expr" } */
+  printf (ngettext ("%d foo", "%d foos", l), l); /* { dg-warning "int" "wrong type in conditional expr" } */
+  printf (ngettext ("%d foo", "%ld foos", l), l); /* { dg-warning "int" "wrong type in conditional expr" } */
+  printf (ngettext ("%ld foo", "%d foos", l), l); /* { dg-warning "int" "wrong type in conditional expr" } */
   /* Should allow one case to have extra arguments.  */
   printf (ngettext ("1 foo", "%d foos", nfoo), nfoo);
   printf (ngettext ("1 foo", "many foos", nfoo), nfoo); /* { dg-warning "too many" "too many args in all branches" } */
   printf (ngettext ("", "%d foos", nfoo), nfoo);
   printf (ngettext ("1 foo", (nfoo > 0) ? "%d foos" : "no foos", nfoo), nfoo);
   printf (ngettext ("%d foo", (nfoo > 0) ? "%d foos" : "no foos", nfoo), nfoo);
-  printf (ngettext ("%ld foo", (nfoo > 0) ? "%d foos" : "no foos", nfoo), nfoo); /* { dg-warning "long int format" "wrong type" } */
-  printf (ngettext ("%d foo", (nfoo > 0) ? "%ld foos" : "no foos", nfoo), nfoo); /* { dg-warning "long int format" "wrong type" } */
-  printf (ngettext ("%d foo", (nfoo > 0) ? "%d foos" : "%ld foos", nfoo), nfoo); /* { dg-warning "long int format" "wrong type" } */
+  printf (ngettext ("%ld foo", (nfoo > 0) ? "%d foos" : "no foos", nfoo), nfoo); /* { dg-warning "long int" "wrong type" } */
+  printf (ngettext ("%d foo", (nfoo > 0) ? "%ld foos" : "no foos", nfoo), nfoo); /* { dg-warning "long int" "wrong type" } */
+  printf (ngettext ("%d foo", (nfoo > 0) ? "%d foos" : "%ld foos", nfoo), nfoo); /* { dg-warning "long int" "wrong type" } */
 }

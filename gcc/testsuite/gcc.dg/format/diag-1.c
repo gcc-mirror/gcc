@@ -12,7 +12,7 @@ foo (double d)
   printf ("%hhf", d); /* { dg-warning "hh" "%hhf warning" } */
   /* This should get a message referring to `ll', not to `q'.  */
   printf ("%llf", d); /* { dg-warning "ll" "%llf warning" } */
-  /* This should get a message referring to `size_t format', not to
-     `unsigned int format' or similar.  */
-  printf ("%zu", d); /* { dg-warning "size_t format" "size_t format warning" } */
+  /* This should get a message referring to 'size_t', not to
+     'unsigned int' or similar.  */
+  printf ("%zu", d); /* { dg-warning "size_t" "size_t format warning" } */
 }

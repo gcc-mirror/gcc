@@ -488,12 +488,10 @@ typedef struct format_wanted_type
   /* Whether the argument, dereferenced once, is read from and so
      must not be a NULL pointer.  */
   int reading_from_flag;
-  /* If warnings should be of the form "field precision is not type int",
-     the name to use (in this case "field precision"), otherwise NULL,
-     for "%s format, %s arg" type messages.  If (in an extension), this
-     is a pointer type, wanted_type_name should be set to include the
-     terminating '*' characters of the type name to give a correct
-     message.  */
+  /* If warnings should be of the form "field precision should have
+     type 'int'", the name to use (in this case "field precision"),
+     otherwise NULL, for "format expects type 'long'" type
+     messages.  */
   const char *name;
   /* The actual parameter to check against the wanted type.  */
   tree param;
@@ -1031,7 +1029,9 @@ static void finish_dollar_format_checking (format_check_results *, int);
 static const format_flag_spec *get_flag_spec (const format_flag_spec *,
 					      int, const char *);
 
-static void check_format_types (format_wanted_type *);
+static void check_format_types (format_wanted_type *, const char *, int);
+static void format_type_warning (const char *, const char *, int, tree,
+				 int, const char *, tree, int);
 
 /* Decode a format type from a string, returning the type, or
    format_type_error if not valid, in which case the caller should print an
@@ -1667,6 +1667,7 @@ check_format_info_main (format_check_results *res,
       const format_char_info *fci = NULL;
       char flag_chars[256];
       int aflag = 0;
+      const char *format_start = format_chars;
       if (*format_chars == 0)
 	{
 	  if (format_chars - orig_format_chars != format_length)
@@ -2255,7 +2256,8 @@ check_format_info_main (format_check_results *res,
 	}
 
       if (first_wanted_type != 0)
-	check_format_types (first_wanted_type);
+	check_format_types (first_wanted_type, format_start,
+			    format_chars - format_start);
 
     }
 }
@@ -2264,7 +2266,8 @@ check_format_info_main (format_check_results *res,
 /* Check the argument types from a single format conversion (possibly
    including width and precision arguments).  */
 static void
-check_format_types (format_wanted_type *types)
+check_format_types (format_wanted_type *types, const char *format_start,
+		    int format_length)
 {
   for (; types != 0; types = types->next)
     {
@@ -2279,6 +2282,7 @@ check_format_types (format_wanted_type *types)
       cur_type = TREE_TYPE (cur_param);
       if (cur_type == error_mark_node)
 	continue;
+      orig_cur_type = cur_type;
       char_type_flag = 0;
       wanted_type = types->wanted_type;
       arg_num = types->arg_num;
@@ -2291,6 +2295,8 @@ check_format_types (format_wanted_type *types)
 
       if (types->pointer_count == 0)
 	wanted_type = lang_hooks.types.type_promotes_to (wanted_type);
+
+      wanted_type = TYPE_MAIN_VARIANT (wanted_type);
 
       STRIP_NOPS (cur_param);
 
@@ -2353,10 +2359,10 @@ check_format_types (format_wanted_type *types)
 	    }
 	  else
 	    {
-	      if (types->pointer_count == 1)
-		warning ("format argument is not a pointer (arg %d)", arg_num);
-	      else
-		warning ("format argument is not a pointer to a pointer (arg %d)", arg_num);
+	      format_type_warning (types->name, format_start, format_length,
+				   wanted_type, types->pointer_count,
+				   types->wanted_type_name, orig_cur_type,
+				   arg_num);
 	      break;
 	    }
 	}
@@ -2364,7 +2370,6 @@ check_format_types (format_wanted_type *types)
       if (i < types->pointer_count)
 	continue;
 
-      orig_cur_type = cur_type;
       cur_type = TYPE_MAIN_VARIANT (cur_type);
 
       /* Check whether the argument type is a character type.  This leniency
@@ -2403,66 +2408,79 @@ check_format_types (format_wanted_type *types)
 	  && char_type_flag)
 	continue;
       /* Now we have a type mismatch.  */
-      {
-	const char *this;
-	const char *that;
-	tree tmp;
-
-	tmp = TYPE_NAME (wanted_type);
-	if (TREE_CODE (tmp) == TYPE_DECL)
-	  tmp = DECL_NAME (tmp);
-	this = IDENTIFIER_POINTER (tmp);
-
-	that = 0;
-	if (TYPE_NAME (orig_cur_type) != 0
-	    && TREE_CODE (orig_cur_type) != INTEGER_TYPE
-	    && !(TREE_CODE (orig_cur_type) == POINTER_TYPE
-		 && TREE_CODE (TREE_TYPE (orig_cur_type)) == INTEGER_TYPE))
-	  {
-	    tmp = TYPE_NAME (orig_cur_type);
-	    if (TREE_CODE (tmp) == TYPE_DECL)
-	      tmp = DECL_NAME (tmp);
-	    if (tmp)
-	      that = IDENTIFIER_POINTER (tmp);
-	  }
-
-	/* A nameless type can't possibly match what the format wants.
-	   So there will be a warning for it.
-	   Make up a string to describe vaguely what it is.  */
-	if (that == 0)
-	  {
-	    if (TREE_CODE (orig_cur_type) == POINTER_TYPE)
-	      that = _("pointer");
-	    else
-	      that = _("different type");
-	  }
-
-	/* Make the warning better in case of mismatch of int vs long.  */
-	if (TREE_CODE (orig_cur_type) == INTEGER_TYPE
-	    && TREE_CODE (wanted_type) == INTEGER_TYPE
-	    && TYPE_PRECISION (orig_cur_type) == TYPE_PRECISION (wanted_type)
-	    && TYPE_NAME (orig_cur_type) != 0
-	    && TREE_CODE (TYPE_NAME (orig_cur_type)) == TYPE_DECL)
-	  that = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (orig_cur_type)));
-
-	if (strcmp (this, that) != 0)
-	  {
-	    /* There may be a better name for the format, e.g. size_t,
-	       but we should allow for programs with a perverse typedef
-	       making size_t something other than what the compiler
-	       thinks.  */
-	    if (types->wanted_type_name != 0
-		&& strcmp (types->wanted_type_name, that) != 0)
-	      this = types->wanted_type_name;
-	    if (types->name != 0)
-	      warning ("%s is not type %s (arg %d)", types->name, this,
-		       arg_num);
-	    else
-	      warning ("%s format, %s arg (arg %d)", this, that, arg_num);
-	  }
-      }
+      format_type_warning (types->name, format_start, format_length,
+			   wanted_type, types->pointer_count,
+			   types->wanted_type_name, orig_cur_type, arg_num);
     }
 }
+
+
+/* Give a warning about a format argument of different type from that
+   expected.  DESCR is a description such as "field precision", or
+   NULL for an ordinary format.  For an ordinary format, FORMAT_START
+   points to where the format starts in the format string and
+   FORMAT_LENGTH is its length.  WANTED_TYPE is the type the argument
+   should have after POINTER_COUNT pointer dereferences.
+   WANTED_NAME_NAME is a possibly more friendly name of WANTED_TYPE,
+   or NULL if the ordinary name of the type should be used.  ARG_TYPE
+   is the type of the actual argument.  ARG_NUM is the number of that
+   argument.  */
+static void
+format_type_warning (const char *descr, const char *format_start,
+		     int format_length, tree wanted_type, int pointer_count,
+		     const char *wanted_type_name, tree arg_type, int arg_num)
+{
+  char *p;
+  /* If ARG_TYPE is a typedef with a misleading name (for example,
+     size_t but not the standard size_t expected by printf %zu), avoid
+     printing the typedef name.  */
+  if (wanted_type_name
+      && TYPE_NAME (arg_type)
+      && TREE_CODE (TYPE_NAME (arg_type)) == TYPE_DECL
+      && DECL_NAME (TYPE_NAME (arg_type))
+      && !strcmp (wanted_type_name,
+		  lang_hooks.decl_printable_name (TYPE_NAME (arg_type), 2)))
+    arg_type = TYPE_MAIN_VARIANT (arg_type);
+  /* The format type and name exclude any '*' for pointers, so those
+     must be formatted manually.  For all the types we currently have,
+     this is adequate, but formats taking pointers to functions or
+     arrays would require the full type to be built up in order to
+     print it with %T.  */
+  p = alloca (pointer_count + 2);
+  if (pointer_count == 0)
+    p[0] = 0;
+  else if (c_dialect_cxx ())
+    {
+      memset (p, '*', pointer_count);
+      p[pointer_count] = 0;
+    }
+  else
+    {
+      p[0] = ' ';
+      memset (p + 1, '*', pointer_count);
+      p[pointer_count + 1] = 0;
+    }
+  if (wanted_type_name)
+    {
+      if (descr)
+	warning ("%s should have type %<%s%s%>, but argument %d has type %qT",
+		 descr, wanted_type_name, p, arg_num, arg_type);
+      else
+	warning ("format %q.*s expects type %<%s%s%>, but argument %d has type %qT",
+		 format_length, format_start, wanted_type_name, p,
+		 arg_num, arg_type);
+    }
+  else
+    {
+      if (descr)
+	warning ("%s should have type %<%T%s%>, but argument %d has type %qT",
+		 descr, wanted_type, p, arg_num, arg_type);
+      else
+	warning ("format %q.*s expects type %<%T%s%>, but argument %d has type %qT",
+		 format_length, format_start, wanted_type, p, arg_num, arg_type);
+    }
+}
+
 
 /* Given a format_char_info array FCI, and a character C, this function
    returns the index into the conversion_specs where that specifier's

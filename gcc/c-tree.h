@@ -23,6 +23,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define GCC_C_TREE_H
 
 #include "c-common.h"
+#include "diagnostic.h"
 
 /* struct lang_identifier is private to c-decl.c, but langhooks.c needs to
    know how big it is.  This is sanity-checked in c-decl.c.  */
@@ -204,6 +205,7 @@ extern tree c_objc_common_truthvalue_conversion (tree expr);
 extern void c_objc_common_finish_file (void);
 extern int defer_fn (tree);
 extern bool c_warn_unused_global_decl (tree);
+extern void c_initialize_diagnostics (diagnostic_context *);
 
 #define c_build_type_variant(TYPE, CONST_P, VOLATILE_P)		  \
   c_build_qualified_type ((TYPE),				  \

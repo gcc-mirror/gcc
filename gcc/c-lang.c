@@ -34,8 +34,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "diagnostic.h"
 #include "c-pretty-print.h"
 
-static void c_initialize_diagnostics (diagnostic_context *);
-
 enum c_language_kind c_language = clk_c;
 
 /* ### When changing hooks, consider if ObjC needs changing too!! ### */
@@ -209,18 +207,6 @@ int
 c_types_compatible_p (tree x, tree y)
 {
     return comptypes (TYPE_MAIN_VARIANT (x), TYPE_MAIN_VARIANT (y));
-}
-static void
-c_initialize_diagnostics (diagnostic_context *context)
-{
-  pretty_printer *base = context->printer;
-  c_pretty_printer *pp = xmalloc (sizeof (c_pretty_printer));
-  memcpy (pp_base (pp), base, sizeof (pretty_printer));
-  pp_c_pretty_printer_init (pp);
-  context->printer = (pretty_printer *) pp;
-
-  /* It is safe to free this object because it was previously malloc()'d.  */
-  free (base);
 }
 
 #include "gtype-c.h"
