@@ -4186,7 +4186,9 @@ int_fits_type_p (c, type)
 {
   /* If the bounds of the type are integers, we can check ourselves.
      Otherwise,. use force_fit_type, which checks against the precision.  */
-  if (TREE_CODE (TYPE_MAX_VALUE (type)) == INTEGER_CST
+  if (TYPE_MAX_VALUE (type) != NULL_TREE
+      && TYPE_MIN_VALUE (type) != NULL_TREE
+      && TREE_CODE (TYPE_MAX_VALUE (type)) == INTEGER_CST
       && TREE_CODE (TYPE_MIN_VALUE (type)) == INTEGER_CST)
     {
       if (TREE_UNSIGNED (type))

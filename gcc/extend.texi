@@ -886,12 +886,25 @@ struct line @{
 @}
 @end example
 
-In standard C, you would have to give @code{contents} a length of 1, which
+In ISO C89, you would have to give @code{contents} a length of 1, which
 means either you waste space or complicate the argument to @code{malloc}.
 
-Static initialization of the zero-length array is not allowed.  A
-warning will be generated for each initializer attempting to initialize
-the zero-length array.
+In ISO C99, you would use a @dfn{flexible array member}, which uses a
+slightly different syntax: leave out the @code{0} and write
+@code{contents[]}.
+
+GCC allows static initialization of the zero-length array if
+the structure is not nested inside another structure.  I.e.
+
+@example
+/* Legal.  */
+struct line x = @{ 4, @{ 'g', 'o', 'o', 'd' @} @};
+
+/* Illegal.  */
+struct bar @{
+  struct line a;
+@} y = @{ @{ 3, @{ 'b', 'a', 'd' @} @} @};
+@end example
 
 @node Variable Length
 @section Arrays of Variable Length

@@ -4498,9 +4498,8 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 		{
 		  /* A zero-length array cannot be represented with an
 		     unsigned index type, which is what we'll get with
-		     build_index_type.  Create a signed range instead.  */
-		  itype = build_range_type (index_type, size,
-					    build_int_2 (-1, -1));
+		     build_index_type.  Create an open-ended range instead.  */
+		  itype = build_range_type (sizetype, size, NULL_TREE);
 		}
 	      else
 		{
@@ -4529,6 +4528,19 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 		    itype = variable_size (itype);
 		  itype = build_index_type (itype);
 		}
+	    }
+	  else if (decl_context == FIELD)
+	    {
+	      /* ??? Need to check somewhere that this is a structure
+		 and not a union, that this field is last, and that 
+		 this structure has at least one other named member.  */
+
+	      if (pedantic && !flag_isoc99 && !in_system_header)
+		pedwarn ("ISO C89 does not support flexible array members");
+
+	      /* ISO C99 Flexible array members are effectively identical
+		 to GCC's zero-length array extension.  */
+	      itype = build_range_type (sizetype, size_zero_node, NULL_TREE);
 	    }
 
 #if 0
