@@ -108,8 +108,7 @@
 
 #if (defined (__a29k__) || defined (_AM29K)) && W_TYPE_SIZE == 32
 #define add_ssaaaa(sh, sl, ah, al, bh, bl) \
-  __asm__ ("add %1,%4,%5
-	addc %0,%2,%3"							\
+  __asm__ ("add %1,%4,%5\n\taddc %0,%2,%3"				\
 	   : "=r" ((USItype) (sh)),					\
 	    "=&r" ((USItype) (sl))					\
 	   : "%r" ((USItype) (ah)),					\
@@ -117,8 +116,7 @@
 	     "%r" ((USItype) (al)),					\
 	     "rI" ((USItype) (bl)))
 #define sub_ddmmss(sh, sl, ah, al, bh, bl) \
-  __asm__ ("sub %1,%4,%5
-	subc %0,%2,%3"							\
+  __asm__ ("sub %1,%4,%5\n\tsubc %0,%2,%3"				\
 	   : "=r" ((USItype) (sh)),					\
 	     "=&r" ((USItype) (sl))					\
 	   : "r" ((USItype) (ah)),					\
@@ -175,8 +173,7 @@ extern UDItype __udiv_qrnnd PARAMS ((UDItype *, UDItype, UDItype, UDItype));
 
 #if defined (__arc__) && W_TYPE_SIZE == 32
 #define add_ssaaaa(sh, sl, ah, al, bh, bl) \
-  __asm__ ("add.f	%1, %4, %5
-	adc	%0, %2, %3"						\
+  __asm__ ("add.f	%1, %4, %5\n\tadc	%0, %2, %3"		\
 	   : "=r" ((USItype) (sh)),					\
 	     "=&r" ((USItype) (sl))					\
 	   : "%r" ((USItype) (ah)),					\
@@ -184,8 +181,7 @@ extern UDItype __udiv_qrnnd PARAMS ((UDItype *, UDItype, UDItype, UDItype));
 	     "%r" ((USItype) (al)),					\
 	     "rIJ" ((USItype) (bl)))
 #define sub_ddmmss(sh, sl, ah, al, bh, bl) \
-  __asm__ ("sub.f	%1, %4, %5
-	sbc	%0, %2, %3"						\
+  __asm__ ("sub.f	%1, %4, %5\n\tsbc	%0, %2, %3"		\
 	   : "=r" ((USItype) (sh)),					\
 	     "=&r" ((USItype) (sl))					\
 	   : "r" ((USItype) (ah)),					\
@@ -206,8 +202,7 @@ UDItype __umulsidi3 (USItype, USItype);
 
 #if defined (__arm__) && W_TYPE_SIZE == 32
 #define add_ssaaaa(sh, sl, ah, al, bh, bl) \
-  __asm__ ("adds	%1, %4, %5
-	adc	%0, %2, %3"						\
+  __asm__ ("adds	%1, %4, %5\n\tadc	%0, %2, %3"		\
 	   : "=r" ((USItype) (sh)),					\
 	     "=&r" ((USItype) (sl))					\
 	   : "%r" ((USItype) (ah)),					\
@@ -215,8 +210,7 @@ UDItype __umulsidi3 (USItype, USItype);
 	     "%r" ((USItype) (al)),					\
 	     "rI" ((USItype) (bl)))
 #define sub_ddmmss(sh, sl, ah, al, bh, bl) \
-  __asm__ ("subs	%1, %4, %5
-	sbc	%0, %2, %3"						\
+  __asm__ ("subs	%1, %4, %5\n\tsbc	%0, %2, %3"		\
 	   : "=r" ((USItype) (sh)),					\
 	     "=&r" ((USItype) (sl))					\
 	   : "r" ((USItype) (ah)),					\
@@ -225,19 +219,19 @@ UDItype __umulsidi3 (USItype, USItype);
 	     "rI" ((USItype) (bl)))
 #define umul_ppmm(xh, xl, a, b) \
 {register USItype __t0, __t1, __t2;					\
-  __asm__ ("%@ Inlined umul_ppmm
-	mov	%2, %5, lsr #16
-	mov	%0, %6, lsr #16
-	bic	%3, %5, %2, lsl #16
-	bic	%4, %6, %0, lsl #16
-	mul	%1, %3, %4
-	mul	%4, %2, %4
-	mul	%3, %0, %3
-	mul	%0, %2, %0
-	adds	%3, %4, %3
-	addcs	%0, %0, #65536
-	adds	%1, %1, %3, lsl #16
-	adc	%0, %0, %3, lsr #16"					\
+  __asm__ ("%@ Inlined umul_ppmm\n"					\
+	   "	mov	%2, %5, lsr #16\n"				\
+	   "	mov	%0, %6, lsr #16\n"				\
+	   "	bic	%3, %5, %2, lsl #16\n"				\
+	   "	bic	%4, %6, %0, lsl #16\n"				\
+	   "	mul	%1, %3, %4\n"					\
+	   "	mul	%4, %2, %4\n"					\
+	   "	mul	%3, %0, %3\n"					\
+	   "	mul	%0, %2, %0\n"					\
+	   "	adds	%3, %4, %3\n"					\
+	   "	addcs	%0, %0, #65536\n"				\
+	   "	adds	%1, %1, %3, lsl #16\n"				\
+	   "	adc	%0, %0, %3, lsr #16"				\
 	   : "=&r" ((USItype) (xh)),					\
 	     "=r" ((USItype) (xl)),					\
 	     "=&r" (__t0), "=&r" (__t1), "=r" (__t2)			\
@@ -277,8 +271,7 @@ UDItype __umulsidi3 (USItype, USItype);
 
 #if defined (__gmicro__) && W_TYPE_SIZE == 32
 #define add_ssaaaa(sh, sl, ah, al, bh, bl) \
-  __asm__ ("add.w %5,%1
-	addx %3,%0"							\
+  __asm__ ("add.w %5,%1\n\taddx %3,%0"					\
 	   : "=g" ((USItype) (sh)),					\
 	     "=&g" ((USItype) (sl))					\
 	   : "%0" ((USItype) (ah)),					\
@@ -286,8 +279,7 @@ UDItype __umulsidi3 (USItype, USItype);
 	     "%1" ((USItype) (al)),					\
 	     "g" ((USItype) (bl)))
 #define sub_ddmmss(sh, sl, ah, al, bh, bl) \
-  __asm__ ("sub.w %5,%1
-	subx %3,%0"							\
+  __asm__ ("sub.w %5,%1\n\tsubx %3,%0"					\
 	   : "=g" ((USItype) (sh)),					\
 	     "=&g" ((USItype) (sl))					\
 	   : "0" ((USItype) (ah)),					\
@@ -316,8 +308,7 @@ UDItype __umulsidi3 (USItype, USItype);
 
 #if defined (__hppa) && W_TYPE_SIZE == 32
 #define add_ssaaaa(sh, sl, ah, al, bh, bl) \
-  __asm__ ("add %4,%5,%1
-	addc %2,%3,%0"							\
+  __asm__ ("add %4,%5,%1\n\taddc %2,%3,%0"				\
 	   : "=r" ((USItype) (sh)),					\
 	     "=&r" ((USItype) (sl))					\
 	   : "%rM" ((USItype) (ah)),					\
@@ -325,8 +316,7 @@ UDItype __umulsidi3 (USItype, USItype);
 	     "%rM" ((USItype) (al)),					\
 	     "rM" ((USItype) (bl)))
 #define sub_ddmmss(sh, sl, ah, al, bh, bl) \
-  __asm__ ("sub %4,%5,%1
-	subb %2,%3,%0"							\
+  __asm__ ("sub %4,%5,%1\n\tsubb %2,%3,%0"				\
 	   : "=r" ((USItype) (sh)),					\
 	     "=&r" ((USItype) (sl))					\
 	   : "rM" ((USItype) (ah)),					\
@@ -357,22 +347,22 @@ UDItype __umulsidi3 (USItype, USItype);
   do {									\
     USItype __tmp;							\
     __asm__ (								\
-       "ldi		1,%0
-	extru,=		%1,15,16,%%r0		; Bits 31..16 zero?
-	extru,tr	%1,15,16,%1		; No.  Shift down, skip add.
-	ldo		16(%0),%0		; Yes.  Perform add.
-	extru,=		%1,23,8,%%r0		; Bits 15..8 zero?
-	extru,tr	%1,23,8,%1		; No.  Shift down, skip add.
-	ldo		8(%0),%0		; Yes.  Perform add.
-	extru,=		%1,27,4,%%r0		; Bits 7..4 zero?
-	extru,tr	%1,27,4,%1		; No.  Shift down, skip add.
-	ldo		4(%0),%0		; Yes.  Perform add.
-	extru,=		%1,29,2,%%r0		; Bits 3..2 zero?
-	extru,tr	%1,29,2,%1		; No.  Shift down, skip add.
-	ldo		2(%0),%0		; Yes.  Perform add.
-	extru		%1,30,1,%1		; Extract bit 1.
-	sub		%0,%1,%0		; Subtract it.
-	" : "=r" (count), "=r" (__tmp) : "1" (x));			\
+       "ldi		1,%0\n"						\
+"	extru,=		%1,15,16,%%r0		; Bits 31..16 zero?\n"	\
+"	extru,tr	%1,15,16,%1		; No.  Shift down, skip add.\n"\
+"	ldo		16(%0),%0		; Yes.  Perform add.\n"	\
+"	extru,=		%1,23,8,%%r0		; Bits 15..8 zero?\n"	\
+"	extru,tr	%1,23,8,%1		; No.  Shift down, skip add.\n"\
+"	ldo		8(%0),%0		; Yes.  Perform add.\n"	\
+"	extru,=		%1,27,4,%%r0		; Bits 7..4 zero?\n"	\
+"	extru,tr	%1,27,4,%1		; No.  Shift down, skip add.\n"\
+"	ldo		4(%0),%0		; Yes.  Perform add.\n"	\
+"	extru,=		%1,29,2,%%r0		; Bits 3..2 zero?\n"	\
+"	extru,tr	%1,29,2,%1		; No.  Shift down, skip add.\n"\
+"	ldo		2(%0),%0		; Yes.  Perform add.\n"	\
+"	extru		%1,30,1,%1		; Extract bit 1.\n"	\
+"	sub		%0,%1,%0		; Subtract it.\n"	\
+	: "=r" (count), "=r" (__tmp) : "1" (x));			\
   } while (0)
 #endif
 
@@ -419,8 +409,7 @@ UDItype __umulsidi3 (USItype, USItype);
 
 #if (defined (__i386__) || defined (__i486__)) && W_TYPE_SIZE == 32
 #define add_ssaaaa(sh, sl, ah, al, bh, bl) \
-  __asm__ ("addl %5,%1
-	adcl %3,%0"							\
+  __asm__ ("addl %5,%1\n\tadcl %3,%0"					\
 	   : "=r" ((USItype) (sh)),					\
 	     "=&r" ((USItype) (sl))					\
 	   : "%0" ((USItype) (ah)),					\
@@ -428,8 +417,7 @@ UDItype __umulsidi3 (USItype, USItype);
 	     "%1" ((USItype) (al)),					\
 	     "g" ((USItype) (bl)))
 #define sub_ddmmss(sh, sl, ah, al, bh, bl) \
-  __asm__ ("subl %5,%1
-	sbbl %3,%0"							\
+  __asm__ ("subl %5,%1\n\tsbbl %3,%0"					\
 	   : "=r" ((USItype) (sh)),					\
 	     "=&r" ((USItype) (sl))					\
 	   : "0" ((USItype) (ah)),					\
@@ -525,9 +513,7 @@ UDItype __umulsidi3 (USItype, USItype);
 #if defined (__M32R__) && W_TYPE_SIZE == 32
 #define add_ssaaaa(sh, sl, ah, al, bh, bl) \
   /* The cmp clears the condition bit.  */ \
-  __asm__ ("cmp %0,%0
-	addx %%5,%1
-	addx %%3,%0"							\
+  __asm__ ("cmp %0,%0\n\taddx %%5,%1\n\taddx %%3,%0"			\
 	   : "=r" ((USItype) (sh)),					\
 	     "=&r" ((USItype) (sl))					\
 	   : "%0" ((USItype) (ah)),					\
@@ -537,9 +523,7 @@ UDItype __umulsidi3 (USItype, USItype);
 	   : "cbit")
 #define sub_ddmmss(sh, sl, ah, al, bh, bl) \
   /* The cmp clears the condition bit.  */ \
-  __asm__ ("cmp %0,%0
-	subx %5,%1
-	subx %3,%0"							\
+  __asm__ ("cmp %0,%0\n\tsubx %5,%1\n\tsubx %3,%0"			\
 	   : "=r" ((USItype) (sh)),					\
 	     "=&r" ((USItype) (sl))					\
 	   : "0" ((USItype) (ah)),					\
@@ -551,8 +535,7 @@ UDItype __umulsidi3 (USItype, USItype);
 
 #if defined (__mc68000__) && W_TYPE_SIZE == 32
 #define add_ssaaaa(sh, sl, ah, al, bh, bl) \
-  __asm__ ("add%.l %5,%1
-	addx%.l %3,%0"							\
+  __asm__ ("add%.l %5,%1\n\taddx%.l %3,%0"				\
 	   : "=d" ((USItype) (sh)),					\
 	     "=&d" ((USItype) (sl))					\
 	   : "%0" ((USItype) (ah)),					\
@@ -560,8 +543,7 @@ UDItype __umulsidi3 (USItype, USItype);
 	     "%1" ((USItype) (al)),					\
 	     "g" ((USItype) (bl)))
 #define sub_ddmmss(sh, sl, ah, al, bh, bl) \
-  __asm__ ("sub%.l %5,%1
-	subx%.l %3,%0"							\
+  __asm__ ("sub%.l %5,%1\n\tsubx%.l %3,%0"				\
 	   : "=d" ((USItype) (sh)),					\
 	     "=&d" ((USItype) (sl))					\
 	   : "0" ((USItype) (ah)),					\
@@ -602,32 +584,32 @@ UDItype __umulsidi3 (USItype, USItype);
 #if !defined(__mcf5200__)
 /* %/ inserts REGISTER_PREFIX, %# inserts IMMEDIATE_PREFIX.  */
 #define umul_ppmm(xh, xl, a, b) \
-  __asm__ ("| Inlined umul_ppmm
-	move%.l	%2,%/d0
-	move%.l	%3,%/d1
-	move%.l	%/d0,%/d2
-	swap	%/d0
-	move%.l	%/d1,%/d3
-	swap	%/d1
-	move%.w	%/d2,%/d4
-	mulu	%/d3,%/d4
-	mulu	%/d1,%/d2
-	mulu	%/d0,%/d3
-	mulu	%/d0,%/d1
-	move%.l	%/d4,%/d0
-	eor%.w	%/d0,%/d0
-	swap	%/d0
-	add%.l	%/d0,%/d2
-	add%.l	%/d3,%/d2
-	jcc	1f
-	add%.l	%#65536,%/d1
-1:	swap	%/d2
-	moveq	%#0,%/d0
-	move%.w	%/d2,%/d0
-	move%.w	%/d4,%/d2
-	move%.l	%/d2,%1
-	add%.l	%/d1,%/d0
-	move%.l	%/d0,%0"						\
+  __asm__ ("| Inlined umul_ppmm\n"					\
+	   "	move%.l	%2,%/d0\n"					\
+	   "	move%.l	%3,%/d1\n"					\
+	   "	move%.l	%/d0,%/d2\n"					\
+	   "	swap	%/d0\n"						\
+	   "	move%.l	%/d1,%/d3\n"					\
+	   "	swap	%/d1\n"						\
+	   "	move%.w	%/d2,%/d4\n"					\
+	   "	mulu	%/d3,%/d4\n"					\
+	   "	mulu	%/d1,%/d2\n"					\
+	   "	mulu	%/d0,%/d3\n"					\
+	   "	mulu	%/d0,%/d1\n"					\
+	   "	move%.l	%/d4,%/d0\n"					\
+	   "	eor%.w	%/d0,%/d0\n"					\
+	   "	swap	%/d0\n"						\
+	   "	add%.l	%/d0,%/d2\n"					\
+	   "	add%.l	%/d3,%/d2\n"					\
+	   "	jcc	1f\n"						\
+	   "	add%.l	%#65536,%/d1\n"					\
+	   "1:	swap	%/d2\n"						\
+	   "	moveq	%#0,%/d0\n"					\
+	   "	move%.w	%/d2,%/d0\n"					\
+	   "	move%.w	%/d4,%/d2\n"					\
+	   "	move%.l	%/d2,%1\n"					\
+	   "	add%.l	%/d1,%/d0\n"					\
+	   "	move%.l	%/d0,%0"					\
 	   : "=g" ((USItype) (xh)),					\
 	     "=g" ((USItype) (xl))					\
 	   : "g" ((USItype) (a)),					\
@@ -653,8 +635,7 @@ UDItype __umulsidi3 (USItype, USItype);
 
 #if defined (__m88000__) && W_TYPE_SIZE == 32
 #define add_ssaaaa(sh, sl, ah, al, bh, bl) \
-  __asm__ ("addu.co %1,%r4,%r5
-	addu.ci %0,%r2,%r3"						\
+  __asm__ ("addu.co %1,%r4,%r5\n\taddu.ci %0,%r2,%r3"			\
 	   : "=r" ((USItype) (sh)),					\
 	     "=&r" ((USItype) (sl))					\
 	   : "%rJ" ((USItype) (ah)),					\
@@ -662,8 +643,7 @@ UDItype __umulsidi3 (USItype, USItype);
 	     "%rJ" ((USItype) (al)),					\
 	     "rJ" ((USItype) (bl)))
 #define sub_ddmmss(sh, sl, ah, al, bh, bl) \
-  __asm__ ("subu.co %1,%r4,%r5
-	subu.ci %0,%r2,%r3"						\
+  __asm__ ("subu.co %1,%r4,%r5\n\tsubu.ci %0,%r2,%r3"			\
 	   : "=r" ((USItype) (sh)),					\
 	     "=&r" ((USItype) (sl))					\
 	   : "rJ" ((USItype) (ah)),					\
@@ -882,8 +862,7 @@ UDItype __umulsidi3 (USItype, USItype);
 
 #if defined (__pyr__) && W_TYPE_SIZE == 32
 #define add_ssaaaa(sh, sl, ah, al, bh, bl) \
-  __asm__ ("addw	%5,%1
-	addwc	%3,%0"							\
+  __asm__ ("addw	%5,%1\n\taddwc	%3,%0"				\
 	   : "=r" ((USItype) (sh)),					\
 	     "=&r" ((USItype) (sl))					\
 	   : "%0" ((USItype) (ah)),					\
@@ -891,8 +870,7 @@ UDItype __umulsidi3 (USItype, USItype);
 	     "%1" ((USItype) (al)),					\
 	     "g" ((USItype) (bl)))
 #define sub_ddmmss(sh, sl, ah, al, bh, bl) \
-  __asm__ ("subw	%5,%1
-	subwb	%3,%0"							\
+  __asm__ ("subw	%5,%1\n\tsubwb	%3,%0"				\
 	   : "=r" ((USItype) (sh)),					\
 	     "=&r" ((USItype) (sl))					\
 	   : "0" ((USItype) (ah)),					\
@@ -914,8 +892,7 @@ UDItype __umulsidi3 (USItype, USItype);
 
 #if defined (__ibm032__) /* RT/ROMP */ && W_TYPE_SIZE == 32
 #define add_ssaaaa(sh, sl, ah, al, bh, bl) \
-  __asm__ ("a %1,%5
-	ae %0,%3"							\
+  __asm__ ("a %1,%5\n\tae %0,%3"					\
 	   : "=r" ((USItype) (sh)),					\
 	     "=&r" ((USItype) (sl))					\
 	   : "%0" ((USItype) (ah)),					\
@@ -923,8 +900,7 @@ UDItype __umulsidi3 (USItype, USItype);
 	     "%1" ((USItype) (al)),					\
 	     "r" ((USItype) (bl)))
 #define sub_ddmmss(sh, sl, ah, al, bh, bl) \
-  __asm__ ("s %1,%5
-	se %0,%3"							\
+  __asm__ ("s %1,%5\n\tse %0,%3"					\
 	   : "=r" ((USItype) (sh)),					\
 	     "=&r" ((USItype) (sl))					\
 	   : "0" ((USItype) (ah)),					\
@@ -935,26 +911,26 @@ UDItype __umulsidi3 (USItype, USItype);
   do {									\
     USItype __m0 = (m0), __m1 = (m1);					\
     __asm__ (								\
-       "s	r2,r2
-	mts	r10,%2
-	m	r2,%3
-	m	r2,%3
-	m	r2,%3
-	m	r2,%3
-	m	r2,%3
-	m	r2,%3
-	m	r2,%3
-	m	r2,%3
-	m	r2,%3
-	m	r2,%3
-	m	r2,%3
-	m	r2,%3
-	m	r2,%3
-	m	r2,%3
-	m	r2,%3
-	m	r2,%3
-	cas	%0,r2,r0
-	mfs	r10,%1"							\
+       "s	r2,r2\n"						\
+"	mts	r10,%2\n"						\
+"	m	r2,%3\n"						\
+"	m	r2,%3\n"						\
+"	m	r2,%3\n"						\
+"	m	r2,%3\n"						\
+"	m	r2,%3\n"						\
+"	m	r2,%3\n"						\
+"	m	r2,%3\n"						\
+"	m	r2,%3\n"						\
+"	m	r2,%3\n"						\
+"	m	r2,%3\n"						\
+"	m	r2,%3\n"						\
+"	m	r2,%3\n"						\
+"	m	r2,%3\n"						\
+"	m	r2,%3\n"						\
+"	m	r2,%3\n"						\
+"	m	r2,%3\n"						\
+"	cas	%0,r2,r0\n"						\
+"	mfs	r10,%1"							\
 	     : "=r" ((USItype) (ph)),					\
 	       "=r" ((USItype) (pl))					\
 	     : "%r" (__m0),						\
@@ -984,9 +960,7 @@ UDItype __umulsidi3 (USItype, USItype);
 #if defined (__sh2__) && W_TYPE_SIZE == 32
 #define umul_ppmm(w1, w0, u, v) \
   __asm__ (								\
-       "dmulu.l	%2,%3
-	sts	macl,%1
-	sts	mach,%0"						\
+       "dmulu.l	%2,%3\n\tsts	macl,%1\n\tsts	mach,%0"		\
 	   : "=r" ((USItype)(w1)),					\
 	     "=r" ((USItype)(w0))					\
 	   : "r" ((USItype)(u)),					\
@@ -998,8 +972,7 @@ UDItype __umulsidi3 (USItype, USItype);
 #if defined (__sparc__) && !defined (__arch64__) && !defined (__sparcv9) \
     && W_TYPE_SIZE == 32
 #define add_ssaaaa(sh, sl, ah, al, bh, bl) \
-  __asm__ ("addcc %r4,%5,%1
-	addx %r2,%3,%0"							\
+  __asm__ ("addcc %r4,%5,%1\n\taddx %r2,%3,%0"				\
 	   : "=r" ((USItype) (sh)),					\
 	     "=&r" ((USItype) (sl))					\
 	   : "%rJ" ((USItype) (ah)),					\
@@ -1008,8 +981,7 @@ UDItype __umulsidi3 (USItype, USItype);
 	     "rI" ((USItype) (bl))					\
 	   __CLOBBER_CC)
 #define sub_ddmmss(sh, sl, ah, al, bh, bl) \
-  __asm__ ("subcc %r4,%5,%1
-	subx %r2,%3,%0"							\
+  __asm__ ("subcc %r4,%5,%1\n\tsubx %r2,%3,%0"				\
 	   : "=r" ((USItype) (sh)),					\
 	     "=&r" ((USItype) (sl))					\
 	   : "rJ" ((USItype) (ah)),					\
@@ -1042,45 +1014,45 @@ UDItype __umulsidi3 (USItype, USItype);
 	   : "r" ((USItype) (u)),					\
 	     "r" ((USItype) (v)))
 #define udiv_qrnnd(q, r, n1, n0, d) \
-  __asm__ ("! Inlined udiv_qrnnd
-	wr	%%g0,%2,%%y	! Not a delayed write for sparclite
-	tst	%%g0
-	divscc	%3,%4,%%g1
-	divscc	%%g1,%4,%%g1
-	divscc	%%g1,%4,%%g1
-	divscc	%%g1,%4,%%g1
-	divscc	%%g1,%4,%%g1
-	divscc	%%g1,%4,%%g1
-	divscc	%%g1,%4,%%g1
-	divscc	%%g1,%4,%%g1
-	divscc	%%g1,%4,%%g1
-	divscc	%%g1,%4,%%g1
-	divscc	%%g1,%4,%%g1
-	divscc	%%g1,%4,%%g1
-	divscc	%%g1,%4,%%g1
-	divscc	%%g1,%4,%%g1
-	divscc	%%g1,%4,%%g1
-	divscc	%%g1,%4,%%g1
-	divscc	%%g1,%4,%%g1
-	divscc	%%g1,%4,%%g1
-	divscc	%%g1,%4,%%g1
-	divscc	%%g1,%4,%%g1
-	divscc	%%g1,%4,%%g1
-	divscc	%%g1,%4,%%g1
-	divscc	%%g1,%4,%%g1
-	divscc	%%g1,%4,%%g1
-	divscc	%%g1,%4,%%g1
-	divscc	%%g1,%4,%%g1
-	divscc	%%g1,%4,%%g1
-	divscc	%%g1,%4,%%g1
-	divscc	%%g1,%4,%%g1
-	divscc	%%g1,%4,%%g1
-	divscc	%%g1,%4,%%g1
-	divscc	%%g1,%4,%0
-	rd	%%y,%1
-	bl,a 1f
-	add	%1,%4,%1
-1:	! End of inline udiv_qrnnd"					\
+  __asm__ ("! Inlined udiv_qrnnd\n"					\
+"	wr	%%g0,%2,%%y	! Not a delayed write for sparclite\n"	\
+"	tst	%%g0\n"							\
+"	divscc	%3,%4,%%g1\n"						\
+"	divscc	%%g1,%4,%%g1\n"						\
+"	divscc	%%g1,%4,%%g1\n"						\
+"	divscc	%%g1,%4,%%g1\n"						\
+"	divscc	%%g1,%4,%%g1\n"						\
+"	divscc	%%g1,%4,%%g1\n"						\
+"	divscc	%%g1,%4,%%g1\n"						\
+"	divscc	%%g1,%4,%%g1\n"						\
+"	divscc	%%g1,%4,%%g1\n"						\
+"	divscc	%%g1,%4,%%g1\n"						\
+"	divscc	%%g1,%4,%%g1\n"						\
+"	divscc	%%g1,%4,%%g1\n"						\
+"	divscc	%%g1,%4,%%g1\n"						\
+"	divscc	%%g1,%4,%%g1\n"						\
+"	divscc	%%g1,%4,%%g1\n"						\
+"	divscc	%%g1,%4,%%g1\n"						\
+"	divscc	%%g1,%4,%%g1\n"						\
+"	divscc	%%g1,%4,%%g1\n"						\
+"	divscc	%%g1,%4,%%g1\n"						\
+"	divscc	%%g1,%4,%%g1\n"						\
+"	divscc	%%g1,%4,%%g1\n"						\
+"	divscc	%%g1,%4,%%g1\n"						\
+"	divscc	%%g1,%4,%%g1\n"						\
+"	divscc	%%g1,%4,%%g1\n"						\
+"	divscc	%%g1,%4,%%g1\n"						\
+"	divscc	%%g1,%4,%%g1\n"						\
+"	divscc	%%g1,%4,%%g1\n"						\
+"	divscc	%%g1,%4,%%g1\n"						\
+"	divscc	%%g1,%4,%%g1\n"						\
+"	divscc	%%g1,%4,%%g1\n"						\
+"	divscc	%%g1,%4,%%g1\n"						\
+"	divscc	%%g1,%4,%0\n"						\
+"	rd	%%y,%1\n"						\
+"	bl,a 1f\n"							\
+"	add	%1,%4,%1\n"						\
+"1:	! End of inline udiv_qrnnd"					\
 	   : "=r" ((USItype) (q)),					\
 	     "=r" ((USItype) (r))					\
 	   : "r" ((USItype) (n1)),					\
@@ -1101,46 +1073,46 @@ UDItype __umulsidi3 (USItype, USItype);
 /* SPARC without integer multiplication and divide instructions.
    (i.e. at least Sun4/20,40,60,65,75,110,260,280,330,360,380,470,490) */
 #define umul_ppmm(w1, w0, u, v) \
-  __asm__ ("! Inlined umul_ppmm
-	wr	%%g0,%2,%%y	! SPARC has 0-3 delay insn after a wr
-	sra	%3,31,%%o5	! Don't move this insn
-	and	%2,%%o5,%%o5	! Don't move this insn
-	andcc	%%g0,0,%%g1	! Don't move this insn
-	mulscc	%%g1,%3,%%g1
-	mulscc	%%g1,%3,%%g1
-	mulscc	%%g1,%3,%%g1
-	mulscc	%%g1,%3,%%g1
-	mulscc	%%g1,%3,%%g1
-	mulscc	%%g1,%3,%%g1
-	mulscc	%%g1,%3,%%g1
-	mulscc	%%g1,%3,%%g1
-	mulscc	%%g1,%3,%%g1
-	mulscc	%%g1,%3,%%g1
-	mulscc	%%g1,%3,%%g1
-	mulscc	%%g1,%3,%%g1
-	mulscc	%%g1,%3,%%g1
-	mulscc	%%g1,%3,%%g1
-	mulscc	%%g1,%3,%%g1
-	mulscc	%%g1,%3,%%g1
-	mulscc	%%g1,%3,%%g1
-	mulscc	%%g1,%3,%%g1
-	mulscc	%%g1,%3,%%g1
-	mulscc	%%g1,%3,%%g1
-	mulscc	%%g1,%3,%%g1
-	mulscc	%%g1,%3,%%g1
-	mulscc	%%g1,%3,%%g1
-	mulscc	%%g1,%3,%%g1
-	mulscc	%%g1,%3,%%g1
-	mulscc	%%g1,%3,%%g1
-	mulscc	%%g1,%3,%%g1
-	mulscc	%%g1,%3,%%g1
-	mulscc	%%g1,%3,%%g1
-	mulscc	%%g1,%3,%%g1
-	mulscc	%%g1,%3,%%g1
-	mulscc	%%g1,%3,%%g1
-	mulscc	%%g1,0,%%g1
-	add	%%g1,%%o5,%0
-	rd	%%y,%1"							\
+  __asm__ ("! Inlined umul_ppmm\n"					\
+"	wr	%%g0,%2,%%y	! SPARC has 0-3 delay insn after a wr\n"\
+"	sra	%3,31,%%o5	! Don't move this insn\n"		\
+"	and	%2,%%o5,%%o5	! Don't move this insn\n"		\
+"	andcc	%%g0,0,%%g1	! Don't move this insn\n"		\
+"	mulscc	%%g1,%3,%%g1\n"						\
+"	mulscc	%%g1,%3,%%g1\n"						\
+"	mulscc	%%g1,%3,%%g1\n"						\
+"	mulscc	%%g1,%3,%%g1\n"						\
+"	mulscc	%%g1,%3,%%g1\n"						\
+"	mulscc	%%g1,%3,%%g1\n"						\
+"	mulscc	%%g1,%3,%%g1\n"						\
+"	mulscc	%%g1,%3,%%g1\n"						\
+"	mulscc	%%g1,%3,%%g1\n"						\
+"	mulscc	%%g1,%3,%%g1\n"						\
+"	mulscc	%%g1,%3,%%g1\n"						\
+"	mulscc	%%g1,%3,%%g1\n"						\
+"	mulscc	%%g1,%3,%%g1\n"						\
+"	mulscc	%%g1,%3,%%g1\n"						\
+"	mulscc	%%g1,%3,%%g1\n"						\
+"	mulscc	%%g1,%3,%%g1\n"						\
+"	mulscc	%%g1,%3,%%g1\n"						\
+"	mulscc	%%g1,%3,%%g1\n"						\
+"	mulscc	%%g1,%3,%%g1\n"						\
+"	mulscc	%%g1,%3,%%g1\n"						\
+"	mulscc	%%g1,%3,%%g1\n"						\
+"	mulscc	%%g1,%3,%%g1\n"						\
+"	mulscc	%%g1,%3,%%g1\n"						\
+"	mulscc	%%g1,%3,%%g1\n"						\
+"	mulscc	%%g1,%3,%%g1\n"						\
+"	mulscc	%%g1,%3,%%g1\n"						\
+"	mulscc	%%g1,%3,%%g1\n"						\
+"	mulscc	%%g1,%3,%%g1\n"						\
+"	mulscc	%%g1,%3,%%g1\n"						\
+"	mulscc	%%g1,%3,%%g1\n"						\
+"	mulscc	%%g1,%3,%%g1\n"						\
+"	mulscc	%%g1,%3,%%g1\n"						\
+"	mulscc	%%g1,0,%%g1\n"						\
+"	add	%%g1,%%o5,%0\n"						\
+"	rd	%%y,%1"							\
 	   : "=r" ((USItype) (w1)),					\
 	     "=r" ((USItype) (w0))					\
 	   : "%rI" ((USItype) (u)),					\
@@ -1150,30 +1122,30 @@ UDItype __umulsidi3 (USItype, USItype);
 /* It's quite necessary to add this much assembler for the sparc.
    The default udiv_qrnnd (in C) is more than 10 times slower!  */
 #define udiv_qrnnd(__q, __r, __n1, __n0, __d) \
-  __asm__ ("! Inlined udiv_qrnnd
-	mov	32,%%g1
-	subcc	%1,%2,%%g0
-1:	bcs	5f
-	 addxcc %0,%0,%0	! shift n1n0 and a q-bit in lsb
-	sub	%1,%2,%1	! this kills msb of n
-	addx	%1,%1,%1	! so this can't give carry
-	subcc	%%g1,1,%%g1
-2:	bne	1b
-	 subcc	%1,%2,%%g0
-	bcs	3f
-	 addxcc %0,%0,%0	! shift n1n0 and a q-bit in lsb
-	b	3f
-	 sub	%1,%2,%1	! this kills msb of n
-4:	sub	%1,%2,%1
-5:	addxcc	%1,%1,%1
-	bcc	2b
-	 subcc	%%g1,1,%%g1
-! Got carry from n.  Subtract next step to cancel this carry.
-	bne	4b
-	 addcc	%0,%0,%0	! shift n1n0 and a 0-bit in lsb
-	sub	%1,%2,%1
-3:	xnor	%0,0,%0
-	! End of inline udiv_qrnnd"					\
+  __asm__ ("! Inlined udiv_qrnnd\n"					\
+"	mov	32,%%g1\n"						\
+"	subcc	%1,%2,%%g0\n"						\
+"1:	bcs	5f\n"							\
+"	 addxcc %0,%0,%0	! shift n1n0 and a q-bit in lsb\n"	\
+"	sub	%1,%2,%1	! this kills msb of n\n"		\
+"	addx	%1,%1,%1	! so this can't give carry\n"		\
+"	subcc	%%g1,1,%%g1\n"						\
+"2:	bne	1b\n"							\
+"	 subcc	%1,%2,%%g0\n"						\
+"	bcs	3f\n"							\
+"	 addxcc %0,%0,%0	! shift n1n0 and a q-bit in lsb\n"	\
+"	b	3f\n"							\
+"	 sub	%1,%2,%1	! this kills msb of n\n"		\
+"4:	sub	%1,%2,%1\n"						\
+"5:	addxcc	%1,%1,%1\n"						\
+"	bcc	2b\n"							\
+"	 subcc	%%g1,1,%%g1\n"						\
+"! Got carry from n.  Subtract next step to cancel this carry.\n"	\
+"	bne	4b\n"							\
+"	 addcc	%0,%0,%0	! shift n1n0 and a 0-bit in lsb\n"	\
+"	sub	%1,%2,%1\n"						\
+"3:	xnor	%0,0,%0\n"						\
+"	! End of inline udiv_qrnnd"					\
 	   : "=&r" ((USItype) (__q)),					\
 	     "=&r" ((USItype) (__r))					\
 	   : "r" ((USItype) (__d)),					\
@@ -1187,11 +1159,11 @@ UDItype __umulsidi3 (USItype, USItype);
 #if ((defined (__sparc__) && defined (__arch64__)) || defined (__sparcv9)) \
     && W_TYPE_SIZE == 64
 #define add_ssaaaa(sh, sl, ah, al, bh, bl)				\
-  __asm__ ("addcc %r4,%5,%1
-  	    add %r2,%3,%0
-  	    bcs,a,pn %%xcc, 1f
-  	    add %0, 1, %0
-  	    1:"								\
+  __asm__ ("addcc %r4,%5,%1\n\t"					\
+   	   "add %r2,%3,%0\n\t"						\
+   	   "bcs,a,pn %%xcc, 1f\n\t"					\
+   	   "add %0, 1, %0\n"						\
+	   "1:"								\
 	   : "=r" ((UDItype)(sh)),				      	\
 	     "=&r" ((UDItype)(sl))				      	\
 	   : "%rJ" ((UDItype)(ah)),				     	\
@@ -1201,11 +1173,11 @@ UDItype __umulsidi3 (USItype, USItype);
 	   __CLOBBER_CC)
 
 #define sub_ddmmss(sh, sl, ah, al, bh, bl) 				\
-  __asm__ ("subcc %r4,%5,%1
-  	    sub %r2,%3,%0
-  	    bcs,a,pn %%xcc, 1f
-  	    sub %0, 1, %0
-  	    1:"								\
+  __asm__ ("subcc %r4,%5,%1\n\t"					\
+   	   "sub %r2,%3,%0\n\t"						\
+   	   "bcs,a,pn %%xcc, 1f\n\t"					\
+   	   "sub %0, 1, %0\n\t"						\
+	   "1:"								\
 	   : "=r" ((UDItype)(sh)),				      	\
 	     "=&r" ((UDItype)(sl))				      	\
 	   : "rJ" ((UDItype)(ah)),				     	\
@@ -1218,27 +1190,27 @@ UDItype __umulsidi3 (USItype, USItype);
   do {									\
 	  UDItype tmp1, tmp2, tmp3, tmp4;				\
 	  __asm__ __volatile__ (					\
-		   "srl %7,0,%3
-		    mulx %3,%6,%1
-		    srlx %6,32,%2
-		    mulx %2,%3,%4
-		    sllx %4,32,%5
-		    srl %6,0,%3
-		    sub %1,%5,%5
-		    srlx %5,32,%5
-		    addcc %4,%5,%4
-		    srlx %7,32,%5
-		    mulx %3,%5,%3
-		    mulx %2,%5,%5
-		    sethi %%hi(0x80000000),%2
-		    addcc %4,%3,%4
-		    srlx %4,32,%4
-		    add %2,%2,%2
-		    movcc %%xcc,%%g0,%2
-		    addcc %5,%4,%5
-		    sllx %3,32,%3
-		    add %1,%3,%1
-		    add %5,%2,%0"					\
+		   "srl %7,0,%3\n\t"					\
+		   "mulx %3,%6,%1\n\t"					\
+		   "srlx %6,32,%2\n\t"					\
+		   "mulx %2,%3,%4\n\t"					\
+		   "sllx %4,32,%5\n\t"					\
+		   "srl %6,0,%3\n\t"					\
+		   "sub %1,%5,%5\n\t"					\
+		   "srlx %5,32,%5\n\t"					\
+		   "addcc %4,%5,%4\n\t"					\
+		   "srlx %7,32,%5\n\t"					\
+		   "mulx %3,%5,%3\n\t"					\
+		   "mulx %2,%5,%5\n\t"					\
+		   "sethi %%hi(0x80000000),%2\n\t"			\
+		   "addcc %4,%3,%4\n\t"					\
+		   "srlx %4,32,%4\n\t"					\
+		   "add %2,%2,%2\n\t"					\
+		   "movcc %%xcc,%%g0,%2\n\t"				\
+		   "addcc %5,%4,%5\n\t"					\
+		   "sllx %3,32,%3\n\t"					\
+		   "add %1,%3,%1\n\t"					\
+		   "add %5,%2,%0"					\
 	   : "=r" ((UDItype)(wh)),					\
 	     "=&r" ((UDItype)(wl)),					\
 	     "=&r" (tmp1), "=&r" (tmp2), "=&r" (tmp3), "=&r" (tmp4)	\
@@ -1252,8 +1224,7 @@ UDItype __umulsidi3 (USItype, USItype);
 
 #if defined (__vax__) && W_TYPE_SIZE == 32
 #define add_ssaaaa(sh, sl, ah, al, bh, bl) \
-  __asm__ ("addl2 %5,%1
-	adwc %3,%0"							\
+  __asm__ ("addl2 %5,%1\n\tadwc %3,%0"					\
 	   : "=g" ((USItype) (sh)),					\
 	     "=&g" ((USItype) (sl))					\
 	   : "%0" ((USItype) (ah)),					\
@@ -1261,8 +1232,7 @@ UDItype __umulsidi3 (USItype, USItype);
 	     "%1" ((USItype) (al)),					\
 	     "g" ((USItype) (bl)))
 #define sub_ddmmss(sh, sl, ah, al, bh, bl) \
-  __asm__ ("subl2 %5,%1
-	sbwc %3,%0"							\
+  __asm__ ("subl2 %5,%1\n\tsbwc %3,%0"					\
 	   : "=g" ((USItype) (sh)),					\
 	     "=&g" ((USItype) (sl))					\
 	   : "0" ((USItype) (ah)),					\
@@ -1444,7 +1414,7 @@ UDItype __umulsidi3 (USItype, USItype);
 #endif
 
 #if !defined (count_leading_zeros)
-static const UQItype __clz_tab[];
+extern const UQItype __clz_tab[];
 #define count_leading_zeros(count, x) \
   do {									\
     UWtype __xr = (x);							\
