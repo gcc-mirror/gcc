@@ -1,3 +1,7 @@
+2001-03-07  Tom Tromey  <tromey@redhat.com>
+
+	* config-lang.in (lang_requires): Define.
+
 Fri Feb 23 15:28:39 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* decl.c (set_block): Set NAMES and BLOCKS from BLOCK.

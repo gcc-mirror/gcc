@@ -40,3 +40,4 @@ stagestuff="jc1\$(exeext) gcj\$(exeext) jvgenmain\$(exeext) gcjh\$(exeext) jv-sc
 target_libs=${libgcj}
 lang_dirs=fastjar
 build_by_default=no
+lang_requires=c++
