@@ -3131,7 +3131,7 @@ A comparison insn sets the condition code, recording the results of both
 signed and unsigned comparison of the given operands.  A separate branch
 insn tests the condition code and branches or not according its value.
 The branch insns come in distinct signed and unsigned flavors.  Many
-common machines, such as the Vax, the 68000 and the 32000, work this
+common machines, such as the VAX, the 68000 and the 32000, work this
 way.
 
 Some machines have distinct signed and unsigned compare instructions, and

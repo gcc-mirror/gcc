@@ -3149,11 +3149,11 @@ v850-*-*)
 	c_target_objs="v850-c.o"
 	cxx_target_objs="v850-c.o"
 	;;
-vax-*-bsd*)			# vaxen running BSD
+vax-*-bsd*)			# VAXen running BSD
 	use_collect2=yes
 	float_format=vax
 	;;
-vax-*-sysv*)			# vaxen running system V
+vax-*-sysv*)			# VAXen running system V
 	tm_file="${tm_file} vax/vaxv.h"
 	xm_defines=POSIX
 	float_format=vax
@@ -3169,16 +3169,16 @@ vax-*-openbsd*)
 	float_format=vax
 	use_collect2=yes
 	;;
-vax-*-ultrix*)			# vaxen running ultrix
+vax-*-ultrix*)			# VAXen running ultrix
 	tm_file="${tm_file} vax/ultrix.h"
 	float_format=vax
 	;;
-vax-*-vms*)			# vaxen running VMS
+vax-*-vms*)			# VAXen running VMS
 	xm_file=vax/xm-vms.h
 	tm_file=vax/vms.h
 	float_format=vax
 	;;
-vax-*-*)			# vax default entry
+vax-*-*)			# VAX default entry
 	float_format=vax
 	;;
 we32k-att-sysv*)

@@ -2958,12 +2958,12 @@ are used as the error message.
 You would use @samp{#error} inside of a conditional that detects a
 combination of parameters which you know the program does not properly
 support.  For example, if you know that the program will not run
-properly on a Vax, you might write
+properly on a VAX, you might write
 
 @example
 @group
 #ifdef __vax__
-#error "Won't work on Vaxen.  See comments at get_last_object."
+#error "Won't work on VAXen.  See comments at get_last_object."
 #endif
 @end group
 @end example

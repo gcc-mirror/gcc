@@ -4404,7 +4404,7 @@ euifrac (x, i, frac)
     {
       /* Long integer overflow: output large integer
 	 and correct fraction.
-	 Note, the BSD microvax compiler says that ~(0UL)
+	 Note, the BSD MicroVAX compiler says that ~(0UL)
 	 is a syntax error.  */
       *i = ~(0L);
       eshift (xi, k);

@@ -587,7 +587,7 @@ cxx_decode_option (argc, argv)
 		{
 		  *lang_f_options[j].variable = lang_f_options[j].on_value;
 		  /* A goto here would be cleaner,
-		     but breaks the vax pcc.  */
+		     but breaks the VAX pcc.  */
 		  found = 1;
 		}
 	      if (p[0] == 'n' && p[1] == 'o' && p[2] == '-'

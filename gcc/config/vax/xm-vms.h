@@ -1,4 +1,4 @@
-/* Configuration for GNU C-compiler for Vax.
+/* Configuration for GNU C-compiler for VAX.
    Copyright (C) 1987, 1994, 1995, 1996, 1997, 2001
    Free Software Foundation, Inc.
 

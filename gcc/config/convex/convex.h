@@ -1144,11 +1144,11 @@ enum reg_class {
     }									\
 }
 
-/* Convex uses Vax or IEEE floats.
+/* Convex uses VAX or IEEE floats.
    Follow the host format. */
 #define TARGET_FLOAT_FORMAT HOST_FLOAT_FORMAT
 
-/* But must prevent real.c from constructing Vax dfloats */
+/* But must prevent real.c from constructing VAX dfloats */
 #define REAL_VALUE_ATOF(X,S) atof (X)
 
 /* Check a `double' value for validity for a particular machine mode.  */

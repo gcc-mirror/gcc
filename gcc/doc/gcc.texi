@@ -909,7 +909,7 @@ convention for structure and union returning.  Use the option
 @option{-mhc-struct-return} to tell GCC to use a convention compatible
 with it.
 
-@cindex Vax calling convention
+@cindex VAX calling convention
 @cindex Ultrix calling convention
 @item
 @opindex fcall-saved

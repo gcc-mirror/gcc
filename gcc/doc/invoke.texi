@@ -3263,14 +3263,14 @@ in many functions.  @strong{It also makes debugging impossible on
 some machines.}
 
 @ifset INTERNALS
-On some machines, such as the Vax, this flag has no effect, because
+On some machines, such as the VAX, this flag has no effect, because
 the standard calling sequence automatically handles the frame pointer
 and nothing is saved by pretending it doesn't exist.  The
 machine-description macro @code{FRAME_POINTER_REQUIRED} controls
 whether a target machine supports this flag.  @xref{Registers}.
 @end ifset
 @ifclear INTERNALS
-On some machines, such as the Vax, this flag has no effect, because
+On some machines, such as the VAX, this flag has no effect, because
 the standard calling sequence automatically handles the frame pointer
 and nothing is saved by pretending it doesn't exist.  The
 machine-description macro @code{FRAME_POINTER_REQUIRED} controls
@@ -5026,7 +5026,7 @@ command with the @option{-V} option.
 
 Earlier we discussed the standard option @option{-b} which chooses among
 different installed compilers for completely different target
-machines, such as Vax vs.@: 68000 vs.@: 80386.
+machines, such as VAX vs.@: 68000 vs.@: 80386.
 
 In addition, each of these target machine types can have its own
 special options, starting with @samp{-m}, to choose among various
@@ -5297,13 +5297,13 @@ The default is 4 for 68HC11 and 2 for 68HC12.
 @subsection VAX Options
 @cindex VAX options
 
-These @samp{-m} options are defined for the Vax:
+These @samp{-m} options are defined for the VAX:
 
 @table @gcctabopt
 @item -munix
 @opindex munix
 Do not output certain jump instructions (@code{aobleq} and so on)
-that the Unix assembler for the Vax cannot handle across long
+that the Unix assembler for the VAX cannot handle across long
 ranges.
 
 @item -mgnu

@@ -708,7 +708,7 @@ simplify_unary_operation (code, mode, op, op_mode)
 	  /* (sign_extend (truncate (minus (label_ref L1) (label_ref L2))))
 	     becomes just the MINUS if its mode is MODE.  This allows
 	     folding switch statements on machines using casesi (such as
-	     the Vax).  */
+	     the VAX).  */
 	  if (GET_CODE (op) == TRUNCATE
 	      && GET_MODE (XEXP (op, 0)) == mode
 	      && GET_CODE (XEXP (op, 0)) == MINUS

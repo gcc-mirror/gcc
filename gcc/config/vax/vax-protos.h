@@ -1,4 +1,4 @@
-/* Definitions of target machine for GNU compiler.  Vax version.
+/* Definitions of target machine for GNU compiler.  VAX version.
    Copyright (C) 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.

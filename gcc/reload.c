@@ -5091,7 +5091,7 @@ update_auto_inc_notes (insn, regno, reloadnum)
 /* Note that we take shortcuts assuming that no multi-reg machine mode
    occurs as part of an address.
    Also, this is not fully machine-customizable; it works for machines
-   such as vaxes and 68000's and 32000's, but other possible machines
+   such as VAXen and 68000's and 32000's, but other possible machines
    could have addressing modes that this does not handle right.  */
 
 static int

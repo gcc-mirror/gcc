@@ -540,7 +540,7 @@ Teemu Torma for thread safe exception handling support.
 
 @item
 Leonard Tower wrote parts of the parser, RTL generator, and RTL
-definitions, and of the Vax machine description.
+definitions, and of the VAX machine description.
 
 @item
 Tom Tromey for internationalization support and his Java work.

@@ -1653,7 +1653,7 @@ output_ascii (file, opcode, max, p, size)
 	}
       else if (in_escape && c >= '0' && c <= '9')
 	{
-	  /* If a digit follows an octal-escape, the Vax assembler fails
+	  /* If a digit follows an octal-escape, the VAX assembler fails
 	     to stop reading the escape after three digits.  Continue to
 	     output the values as an octal-escape until a non-digit is
 	     found.  */
