@@ -37,6 +37,7 @@ Boston, MA 02111-1307, USA.  */
 #include "reload.h"
 #include "tree.h"
 #include "expr.h"
+#include "toplev.h"
 
 /* The maximum number of insns skipped which will be conditionalised if
    possible.  */
@@ -328,7 +329,7 @@ arm_override_options ()
      assume the user has an FPA.
      Note: this does not prevent use of floating point instructions,
      -msoft-float does that.  */
-  if (tune_flags & FL_CO_PROC == 0)
+  if ((tune_flags & FL_CO_PROC) == 0)
     arm_fpu = FP_SOFT3;
 
   arm_fast_multiply = (flags & FL_FAST_MULT) != 0;
@@ -481,8 +482,6 @@ arm_split_constant (code, mode, val, target, source, subtargets)
       || (GET_CODE (target) == REG && GET_CODE (source) == REG
 	  && REGNO (target) != REGNO (source)))
     {
-      rtx temp;
-
       if (arm_gen_constant (code, mode, val, target, source, 1, 0)
 	  > arm_constant_limit + (code != SET))
 	{
@@ -526,7 +525,6 @@ arm_gen_constant (code, mode, val, target, source, subtargets, generate)
      int subtargets;
      int generate;
 {
-  int can_add = 0;
   int can_invert = 0;
   int can_negate = 0;
   int can_negate_initial = 0;
@@ -1059,7 +1057,7 @@ arm_canonicalize_comparison (code, op1)
      enum rtx_code code;
      rtx *op1;
 {
-  HOST_WIDE_INT i = INTVAL (*op1);
+  unsigned HOST_WIDE_INT i = INTVAL (*op1);
 
   switch (code)
     {
@@ -1069,7 +1067,8 @@ arm_canonicalize_comparison (code, op1)
 
     case GT:
     case LE:
-      if (i != (1 << (HOST_BITS_PER_WIDE_INT - 1) - 1)
+      if (i != ((((unsigned HOST_WIDE_INT) 1) << (HOST_BITS_PER_WIDE_INT - 1))
+		- 1)
 	  && (const_ok_for_arm (i+1) || const_ok_for_arm (- (i+1))))
 	{
 	  *op1 = GEN_INT (i+1);
@@ -1079,7 +1078,7 @@ arm_canonicalize_comparison (code, op1)
 
     case GE:
     case LT:
-      if (i != (1 << (HOST_BITS_PER_WIDE_INT - 1))
+      if (i != (((unsigned HOST_WIDE_INT) 1) << (HOST_BITS_PER_WIDE_INT - 1))
 	  && (const_ok_for_arm (i-1) || const_ok_for_arm (- (i-1))))
 	{
 	  *op1 = GEN_INT (i-1);
@@ -1089,7 +1088,7 @@ arm_canonicalize_comparison (code, op1)
 
     case GTU:
     case LEU:
-      if (i != ~0
+      if (i != ~((unsigned HOST_WIDE_INT) 0)
 	  && (const_ok_for_arm (i+1) || const_ok_for_arm (- (i+1))))
 	{
 	  *op1 = GEN_INT (i + 1);
@@ -1467,10 +1466,10 @@ arm_rtx_costs (x, code, outer_code)
 		     || (subcode == MULT
 			 && GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT
 			 && ((INTVAL (XEXP (XEXP (x, 0), 1)) &
-			      (INTVAL (XEXP (XEXP (x, 0), 1)) - 1)) == 0))
+			      (INTVAL (XEXP (XEXP (x, 0), 1)) - 1)) == 0)))
 		    && (REG_OR_SUBREG_REG (XEXP (XEXP (x, 0), 0)))
 		    && ((REG_OR_SUBREG_REG (XEXP (XEXP (x, 0), 1)))
-			|| GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT)))
+			|| GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT))
 		   ? 0 : 4));
 
       return 8;
@@ -1560,6 +1559,9 @@ arm_rtx_costs (x, code, outer_code)
 
 	case SImode:
 	  return (1 + (GET_CODE (XEXP (x, 0)) == MEM ? 10 : 0));
+
+	default:
+	  break;
 	}
       abort ();
 
@@ -2382,7 +2384,7 @@ load_multiple_sequence (operands, nops, regs, base, load_offset)
   int unsorted_regs[4];
   HOST_WIDE_INT unsorted_offsets[4];
   int order[4];
-  int base_reg;
+  int base_reg = -1;
   int i;
 
   /* Can only handle 2, 3, or 4 insns at present, though could be easily
@@ -2585,7 +2587,7 @@ store_multiple_sequence (operands, nops, regs, base, load_offset)
   int unsorted_regs[4];
   HOST_WIDE_INT unsorted_offsets[4];
   int order[4];
-  int base_reg;
+  int base_reg = -1;
   int i;
 
   /* Can only handle 2, 3, or 4 insns at present, though could be easily
@@ -2907,9 +2909,9 @@ arm_gen_movstrqi (operands)
      rtx *operands;
 {
   HOST_WIDE_INT in_words_to_go, out_words_to_go, last_bytes;
-  int i, r;
+  int i;
   rtx src, dst;
-  rtx st_src, st_dst, end_src, end_dst, fin_src, fin_dst;
+  rtx st_src, st_dst, fin_src, fin_dst;
   rtx part_bytes_reg = NULL;
   rtx mem;
   int dst_unchanging_p, dst_in_struct_p, src_unchanging_p, src_in_struct_p;
@@ -3139,6 +3141,7 @@ select_dominance_cc_mode (op, x, y, cond_or)
 	case LEU: return CC_DLEUmode;
 	case GE: return CC_DGEmode;
 	case GEU: return CC_DGEUmode;
+	default: break;
 	}
 
       break;
@@ -3195,6 +3198,9 @@ select_dominance_cc_mode (op, x, y, cond_or)
 
     case GEU:
       return CC_DGEUmode;
+
+    default:
+      break;
     }
 
   abort ();
@@ -3439,7 +3445,6 @@ add_constant (x, mode)
      enum machine_mode mode;
 {
   int i;
-  rtx lab;
   HOST_WIDE_INT offset;
 
   if (mode == SImode && GET_CODE (x) == MEM && CONSTANT_P (XEXP (x, 0))
@@ -3625,6 +3630,7 @@ broken_move (insn)
       rtx dst = SET_DEST (pat);
       int destreg;
       enum machine_mode mode = GET_MODE (dst);
+
       if (dst == pc_rtx)
 	return 0;
 
@@ -3632,6 +3638,8 @@ broken_move (insn)
 	destreg = REGNO (dst);
       else if (GET_CODE (dst) == SUBREG && GET_CODE (SUBREG_REG (dst)) == REG)
 	destreg = REGNO (SUBREG_REG (dst));
+      else
+	return 0;
 
       return fixit (src, mode, destreg);
     }
@@ -3644,7 +3652,6 @@ arm_reorg (first)
 {
   rtx insn;
   int count_size;
-  int regno;
 
 #if 0
   /* The ldr instruction can work with up to a 4k offset, and most constants
@@ -3659,12 +3666,16 @@ arm_reorg (first)
      PC, so to make things simple we restrict all loads for such functions.
      */
   if (TARGET_HARD_FLOAT)
-    for (regno = 16; regno < 24; regno++)
-      if (regs_ever_live[regno])
-	{
-	  count_size = 1000;
-	  break;
-	}
+    {
+      int regno;
+
+      for (regno = 16; regno < 24; regno++)
+	if (regs_ever_live[regno])
+	  {
+	    count_size = 1000;
+	    break;
+	  }
+    }
 #else
   count_size = 1000;
 #endif /* 0 */
@@ -4803,7 +4814,6 @@ output_func_prologue (f, frame_size)
      int frame_size;
 {
   int reg, live_regs_mask = 0;
-  rtx operands[3];
   int volatile_func = (optimize > 0
 		       && TREE_THIS_VOLATILE (current_function_decl));
 
@@ -5153,8 +5163,6 @@ arm_expand_prologue ()
   int reg;
   rtx amount = GEN_INT (-(get_frame_size ()
 			  + current_function_outgoing_args_size));
-  rtx push_insn;
-  int num_regs;
   int live_regs_mask = 0;
   int store_arg_regs = 0;
   int volatile_func = (optimize > 0

@@ -6,6 +6,21 @@ Tue May 26 07:31:04 1998  Richard Earnshaw (rearnsha@arm.com)
 	can't handle.
 	(define_split): Two new splits for above insns.
 
+	* arm.c: Include toplev.h.
+	(arm_override_options): Add parentheses around use of tune_flags.
+	(arm_split_constant): Remove unused variable.
+	(arm_gen_constant, arm_gen_movstrqi, add_constant): Likewise.
+	(output_func_prologue, arm_expand_prologue): Likewise.
+	(arm_canonicalize_comparison): Make I unsigned; rework constants
+	accordignly.  Add missing paratheses around << operation.
+	(arm_rtx_costs): Correctly parenthesise MULT costs.  Add a DEFAULT
+	clause.
+	({load,store}_multiple_sequence): Initialize BASE_REG.
+	(select_dominance_cc_mode): Add DEFAULT clauses.
+	(broken_move): Return zero if the destination is not a register.
+	(arm_reorg): Move unused REGNO declaration into the dead code.
+	* arm.h (CANONICALIZE_COMPARISON): Ensure OP1 is updated.
+
 Mon May 25 22:49:56 PDT 1998 Jeff Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.

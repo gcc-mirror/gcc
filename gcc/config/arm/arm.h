@@ -1759,6 +1759,7 @@ do								\
     {								\
       rtx const_op = OP1;					\
       CODE = arm_canonicalize_comparison ((CODE), &const_op);	\
+      OP1 = const_op;						\
     }								\
 } while (0)
 
