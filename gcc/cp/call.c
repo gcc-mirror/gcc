@@ -4189,9 +4189,11 @@ build_over_call (cand, args, flags)
     }
 
   fn = fold (build_call (fn, converted_args));
-  if (TREE_CODE (TREE_TYPE (fn)) == VOID_TYPE)
+  if (VOID_TYPE_P (TREE_TYPE (fn)))
     return fn;
   fn = require_complete_type (fn);
+  if (fn == error_mark_node)
+    return error_mark_node;
   if (IS_AGGR_TYPE (TREE_TYPE (fn)))
     fn = build_cplus_new (TREE_TYPE (fn), fn);
   return convert_from_reference (fn);
