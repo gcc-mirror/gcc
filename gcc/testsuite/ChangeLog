@@ -1,3 +1,8 @@
+2003-10-31  Josef Zlomek  <zlomekj@suse.cz>
+
+	PR/11640
+	* gcc.c-torture/compile/20031031-1.c: New test.
+
 2003-10-31  Richard Earnshaw  <rearnsha@arm.com>
 
 	* g77.dg/bprob/bprob.exp: Disable test on arm-elf configs.
