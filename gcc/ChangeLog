@@ -1,3 +1,10 @@
+2003-04-23  Roger Sayle  <roger@eyesopen.com>
+
+	PR optimization/10339
+	* builtins.c (expand_builtin_strcmp): Try to emit cmpstrsi insn
+	directly instead of unsafely transforming call into a memcmp.
+	(expand_builtin_strncmp): Likewise.
+
 2003-04-22  Roger Sayle  <roger@eyesopen.com>
 
 	* alias.c (mark_constant_function):  Check for constancy and
