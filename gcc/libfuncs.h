@@ -44,6 +44,7 @@ enum libfunc_index
   LTI_bcmp,
   LTI_memset,
   LTI_bzero,
+  LTI_setbits,
 
   LTI_unwind_resume,
   LTI_eh_personality,
@@ -143,6 +144,9 @@ enum libfunc_index
   LTI_profile_function_entry,
   LTI_profile_function_exit,
 
+  LTI_gcov_flush,
+  LTI_gcov_init,
+
   LTI_MAX
 };
 
@@ -171,6 +175,7 @@ extern GTY(()) rtx libfunc_table[LTI_MAX];
 #define bcmp_libfunc	(libfunc_table[LTI_bcmp])
 #define memset_libfunc	(libfunc_table[LTI_memset])
 #define bzero_libfunc	(libfunc_table[LTI_bzero])
+#define setbits_libfunc	(libfunc_table[LTI_setbits])
 
 #define unwind_resume_libfunc	(libfunc_table[LTI_unwind_resume])
 #define eh_personality_libfunc	(libfunc_table[LTI_eh_personality])
@@ -270,5 +275,8 @@ extern GTY(()) rtx libfunc_table[LTI_MAX];
 
 #define profile_function_entry_libfunc	(libfunc_table[LTI_profile_function_entry])
 #define profile_function_exit_libfunc	(libfunc_table[LTI_profile_function_exit])
+
+#define gcov_flush_libfunc	(libfunc_table[LTI_gcov_flush])
+#define gcov_init_libfunc	(libfunc_table[LTI_gcov_init])
 
 #endif /* GCC_LIBFUNCS_H */

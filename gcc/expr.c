@@ -5450,8 +5450,8 @@ store_constructor (exp, target, cleared, size)
 				 TYPE_MODE (sizetype));
 	    }
 	  else
-	    emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "__setbits"),
-			       LCT_NORMAL, VOIDmode, 4, XEXP (targetx, 0),
+	    emit_library_call (setbits_libfunc, LCT_NORMAL,
+			       VOIDmode, 4, XEXP (targetx, 0),
 			       Pmode, bitlength_rtx, TYPE_MODE (sizetype),
 			       startbit_rtx, TYPE_MODE (sizetype),
 			       endbit_rtx, TYPE_MODE (sizetype));
