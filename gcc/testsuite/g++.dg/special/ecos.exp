@@ -96,7 +96,7 @@ if [string match "*init_priority*" $lines] then {
 } elseif ![string match "" $lines] then {
     fail "initp1.C"
 } else {
-    dg-runtest "$srcdir/$subdir/conpr-1.C" "" "" 
+    dg-runtest "$srcdir/$subdir/initp1.C" "" ""
     file delete $objdir/a.out
 }
 dg-finish

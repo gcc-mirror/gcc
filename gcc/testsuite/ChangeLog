@@ -1,3 +1,7 @@
+2001-08-19  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* g++.dg/special/ecos.exp (initp1.C): Run initp1.C test.
+
 2001-08-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.dg/eh/template1.C: New test.
