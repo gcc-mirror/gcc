@@ -152,7 +152,7 @@ case ${query} in
     --built-library)
       LIBS="${LIB_PATH}/libstdc++.la -no-install -rpath ${GCC_LIB_PATH}"
       if test x@xcompiling@ = x1; then
-        LIBS="${LIBS} -L${CROSS_LIB_PATH}"
+        LIBS="${LIBS} -B${CROSS_LIB_PATH}/"
       fi
     case @target_os@ in
         *cygwin*)  
