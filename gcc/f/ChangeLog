@@ -1,3 +1,12 @@
+2002-02-01  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* bad.def: Remove non-historical reference to version 0.6.
+	* bugs.texi: Ditto.
+	* com.c: Ditto.
+	* ffe.texi: Ditto.
+	* proj.h: Ditto.
+	* g77.texi: Ditto.
+
 2002-01-31  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* g77spec.c (lang_specific_driver): Follow GNU Coding Standards

@@ -359,8 +359,7 @@ for @code{INTEGER*1}, @code{INTEGER*2}, and
 @code{LOGICAL*1}.
 This inspired Craig to add further support,
 even though the resulting support
-would still be incomplete, because version 0.6 is still
-a ways off.
+would still be incomplete.
 
 @item
 David Ronis (@email{ronis@@onsager.chem.mcgill.ca}) inspired
@@ -425,10 +424,6 @@ Email @email{gnu@@gnu.org} for information on funding the FSF.
 
 Another important way to support work on GNU Fortran is to volunteer
 to help out.
-Work is needed on documentation, testing, porting
-to various machines, and in some cases, coding (although major
-changes planned for version 0.6 make it difficult to add manpower to this
-area).
 
 Email @email{@value{email-general}} to volunteer for this work.
 
@@ -3561,10 +3556,7 @@ implementation choices made for the compiler, since those choices
 are explicitly left to the implementation by the published Fortran
 standards.
 GNU Fortran currently tries to be somewhat like a few popular compilers
-(@command{f2c}, Digital (``DEC'') Fortran, and so on), though a cleaner default
-definition along with more
-flexibility offered by command-line options is likely to be offered
-in version 0.6.
+(@command{f2c}, Digital (``DEC'') Fortran, and so on).
 
 This section describes how @command{g77} interprets source lines.
 
@@ -3604,20 +3596,6 @@ for the UNIX @command{expand} command) before doing any other processing, other
 than (currently) noting whether a tab was found on a line and using this
 information to decide how to interpret the length of the line and continued
 constants.
-
-Note that this default behavior probably will change for version 0.6,
-when it will presumably be available via a command-line option.
-The default as of version 0.6 is planned to be a ``pure visual''
-model, where tabs are immediately
-converted to spaces and otherwise have no effect, so the way a typical
-user sees source lines produces a consistent result no matter how the
-spacing in those source lines is actually implemented via tabs, spaces,
-and trailing tabs/spaces before newline.
-Command-line options are likely to be added to specify whether all or
-just-tabbed lines are to be extended to 132 or full input-line length,
-and perhaps even an option will be added to specify the truncated-line
-behavior to which some Digital compilers default (and which affects
-the way continued character/Hollerith constants are interpreted).
 
 @node Short Lines
 @subsection Short Lines
@@ -8879,8 +8857,6 @@ to fund a comprehensive project to create GNU Fortran 95.
 @cindex statements, PARAMETER
 
 @command{g77} doesn't allow intrinsics in @code{PARAMETER} statements.
-This feature is considered to be absolutely vital, even though it
-is not standard-conforming, and is scheduled for version 0.6.
 
 Related to this, @command{g77} doesn't allow non-integral
 exponentiation in @code{PARAMETER} statements, such as
@@ -8984,8 +8960,6 @@ alleviate this problem).
 
 @command{g77} doesn't fully support @code{INTEGER*2}, @code{LOGICAL*1},
 and similar.
-Version 0.6 will provide full support for this very
-popular set of features.
 In the meantime, version 0.5.18 provides rudimentary support
 for them.
 
@@ -9004,7 +8978,6 @@ support (using F90 syntax) as well, and, for most
 machines will result in automatic support of @code{INTEGER*1},
 @code{INTEGER*2}, @code{INTEGER*8}, maybe even @code{REAL*16},
 and so on.
-This is scheduled for version 0.6.
 
 @node Array Bounds Expressions
 @subsection Array Bounds Expressions
@@ -9615,8 +9588,6 @@ item pointed to won't be modified
 
 Probably the best solution for now, but not quite trivial
 to implement in the general case.
-Worth considering after @command{g77} 0.6 is considered
-pretty solid.
 @end itemize
 
 @node Gracefully Handle Sensible Bad Code
@@ -10467,24 +10438,6 @@ useful warnings).
 
 @emph{Note:} Currently, the text of the line and a pointer to the column
 is printed in most @command{g77} diagnostics.
-Probably, as of version 0.6, @command{g77} will
-no longer print the text of the source line, instead printing
-the column number following the file name and line number in
-a form that GNU Emacs recognizes.
-This change is expected to speed up and reduce the memory usage
-of the @command{g77} compiler.
-@c
-@c Say this when it is true -- hopefully 0.6, maybe 0.7 or later.  --burley
-@c
-@c GNU Fortran always tries to compile your program if possible; it never
-@c gratuitously rejects a program whose meaning is clear merely because
-@c (for instance) it fails to conform to a standard.  In some cases,
-@c however, the Fortran standard specifies that certain extensions are
-@c forbidden, and a diagnostic @emph{must} be issued by a conforming
-@c compiler.  The @option{-pedantic} option tells GNU Fortran to issue warnings
-@c in such cases; @option{-pedantic-errors} says to make them errors instead.
-@c This does not mean that @emph{all} non-ANSI constructs get warnings
-@c or errors.
 
 @xref{Warning Options,,Options to Request or Suppress Warnings}, for
 more detail on these and related command-line options.
@@ -11551,8 +11504,6 @@ libraries are installed) after building.
 @section Internals Documentation
 
 Better info on how @command{g77} works and how to port it is needed.
-Much of this should be done only after the redesign planned for
-0.6 is complete.
 
 @xref{Front End}, which contains some information
 on @command{g77} internals.

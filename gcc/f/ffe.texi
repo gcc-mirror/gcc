@@ -11,10 +11,6 @@
 
 This chapter describes some aspects of the design and implementation
 of the @code{g77} front end.
-Much of the information below applies not to current
-releases of @code{g77},
-but to the 0.6 rewrite being designed and implemented
-as of late May, 1999.
 
 To find about things that are ``To Be Determined'' or ``To Be Done'',
 search for the string TBD.
@@ -589,11 +585,6 @@ Preserving case seems necessary to provide more direct access
 to facilities outside of @code{g77}, such as to C or Pascal code.
 
 Names of intrinsics will probably be matchable in any case,
-However, there probably won't be any option to require
-a particular mixed-case appearance of intrinsics
-(as there was for @code{g77} prior to version 0.6),
-because that's painful to maintain,
-and probably nobody uses it.
 
 (How @samp{external SiN; r = sin(x)} would be handled is TBD.
 I think old @code{g77} might already handle that pretty elegantly,

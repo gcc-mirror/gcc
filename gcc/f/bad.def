@@ -660,7 +660,7 @@ FFEBAD_MSG (FFEBAD_QUAD_UNSUPPORTED, FATAL,
 LONG("Quadruple-precision floating-point unsupported -- treating constant at %0 as double-precision")
 SHORT("Quadruple-precision floating-point unsupported"))
 FFEBAD_MSG (FFEBAD_TOO_BIG_INIT, WARN,
-LONG("Initialization of large (%B-unit) aggregate area `%A' at %0 currently very slow and takes lots of memory during g77 compile -- to be improved in 0.6")
+LONG("Initialization of large (%B-unit) aggregate area `%A' at %0 slow and takes lots of memory during g77 compile")
 SHORT("This could take a while (initializing `%A' at %0)..."))
 FFEBAD_MSG (FFEBAD_BLOCKDATA_STMT, FATAL,
 "Statement at %0 invalid in BLOCK DATA program unit at %1")
