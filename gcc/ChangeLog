@@ -1,5 +1,8 @@
 2000-12-22  Bernd Schmidt  <bernds@redhat.co.uk>
 
+	* flow.c (propagate_block): Use flow_delete_insn instead of
+	NOTEifying a dead ADDR_VEC.
+
 	Fri Sep 10 11:43:07 1999  Philip Blundell <pb@futuretv.com>
 	* configure.in, config/arm/linux-oldld.h,
 	config/arm/linux-elf26.h, config/arm/linux-elf.h: Backport latest

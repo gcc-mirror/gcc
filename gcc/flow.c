@@ -2763,17 +2763,8 @@ propagate_block (old, first, last, final, significant, bnum, remove_dead_code)
 			  int i;
 			  for (i = 0; i < len; i++)
 			    LABEL_NUSES (XEXP (XVECEXP (pat, diff_vec_p, i), 0))--;
-			  PUT_CODE (next, NOTE);
-			  NOTE_LINE_NUMBER (next) = NOTE_INSN_DELETED;
-			  NOTE_SOURCE_FILE (next) = 0;
 
-			  if ((next = next_nonnote_insn (label)) != NULL
-			      && GET_CODE (next) == BARRIER)
-			    {
-			      PUT_CODE (next, NOTE);
-			      NOTE_LINE_NUMBER (next) = NOTE_INSN_DELETED;
-			      NOTE_SOURCE_FILE (next) = 0;
-			    }
+			  flow_delete_insn (next);
 			}
 		    }
 		}
