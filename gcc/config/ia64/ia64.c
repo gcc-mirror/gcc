@@ -6816,6 +6816,34 @@ ia64_epilogue_uses (regno)
       return 0;
     }
 }
+
+/* Return true if REGNO is used by the frame unwinder.  */
+
+int
+ia64_eh_uses (regno)
+     int regno;
+{
+  if (! reload_completed)
+    return 0;
+
+  if (current_frame_info.reg_save_b0
+      && regno == current_frame_info.reg_save_b0)
+    return 1;
+  if (current_frame_info.reg_save_pr
+      && regno == current_frame_info.reg_save_pr)
+    return 1;
+  if (current_frame_info.reg_save_ar_pfs
+      && regno == current_frame_info.reg_save_ar_pfs)
+    return 1;
+  if (current_frame_info.reg_save_ar_unat
+      && regno == current_frame_info.reg_save_ar_unat)
+    return 1;
+  if (current_frame_info.reg_save_ar_lc
+      && regno == current_frame_info.reg_save_ar_lc)
+    return 1;
+
+  return 0;
+}
 
 /* For ia64, SYMBOL_REF_FLAG set means that it is a function.
 

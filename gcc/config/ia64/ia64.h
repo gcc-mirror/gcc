@@ -1406,6 +1406,10 @@ do {									\
 
 #define EPILOGUE_USES(REGNO) ia64_epilogue_uses (REGNO)
 
+/* Nonzero for registers used by the exception handling mechanism.  */
+
+#define EH_USES(REGNO) ia64_eh_uses (REGNO)
+
 /* Output at beginning of assembler file.  */
 
 #define ASM_FILE_START(FILE) \
