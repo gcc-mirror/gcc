@@ -58,6 +58,7 @@
 
 	* expr.c (expand_expr): Sign-extend CONST_INT generated from
 	TREE_STRING_POINTER.
+	* fold-const.c (fold): Delete #if 0 ARRAY_REF case.
 
 Tue Mar 19 14:12:32 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
@@ -1619,7 +1620,7 @@ Fri Mar  1 20:59:14 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 	* config/rs6000/rs6000.h (HANDLE_PRAGMA_PACK): Delete.
 	* config/rs6000/darwin.h (HANDLE_SYSV_PRAGMA): Define.
-	* config/rs6000/xcoff.h (COLLET_EXPORT_LIST): Delete.
+	* config/rs6000/xcoff.h (COLLECT_EXPORT_LIST): Delete.
 
 2002-03-01  Kazu Hirata  <kazu@hxi.com>
 
