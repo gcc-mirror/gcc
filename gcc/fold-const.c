@@ -2763,22 +2763,27 @@ make_range (exp, pin_p, plow, phigh)
 	  exp = arg0;
 
 	  /* If this is an unsigned comparison, we also know that EXP is
-	     greater than or equal to zero and less than the maximum value of
-	     the unsigned type.  We base the range tests we make on that fact,
-	     so we record it here so we can parse existing range tests.  */
+	     greater than or equal to zero.  We base the range tests we make
+	     on that fact, so we record it here so we can parse existing
+	     range tests.  */
 	  if (TREE_UNSIGNED (type) && (low == 0 || high == 0))
 	    {
 	      if (! merge_ranges (&n_in_p, &n_low, &n_high, in_p, low, high,
 				  1, convert (type, integer_zero_node),
-				  const_binop (MINUS_EXPR,
-					       convert (type,
-							integer_zero_node),
-					       convert (type,
-							integer_one_node),
-					       0)))
+				  NULL_TREE))
 		break;
 
 	      in_p = n_in_p, low = n_low, high = n_high;
+
+	      /* If the high bound is missing, reverse the range so it
+		 goes from zero to the low bound minus 1.  */
+	      if (high == 0)
+		{
+		  in_p = ! in_p;
+		  high = range_binop (MINUS_EXPR, NULL_TREE, low, 0,
+				      integer_one_node, 0);
+		  low = convert (type, integer_zero_node);
+		}
 	    }
 	  continue;
 
@@ -2819,9 +2824,9 @@ make_range (exp, pin_p, plow, phigh)
 	  if (n_low && n_high && tree_int_cst_lt (n_high, n_low))
 	    {
 	      low = range_binop (PLUS_EXPR, type, n_high, 0,
-				 convert (type, integer_one_node), 0);
+				 integer_one_node, 0);
 	      high = range_binop (MINUS_EXPR, type, n_low, 0,
-				 convert (type, integer_one_node), 0);
+				 integer_one_node, 0);
 	      in_p = ! in_p;
 	    }
 	  else
@@ -2960,17 +2965,21 @@ merge_ranges (pin_p, plow, phigh, in0_p, low0, high0, in1_p, low1, high1)
     {
       /* If they don't overlap, the result is the first range.  If the
 	 second range is a subset of the first, we can't describe this as
-	 a single range.  Otherwise, we go from the start of the first
-	 range to just before the start of the second.  */
+	 a single range unless both ranges end at the same place, in which
+	 case we can ignore the fact that it's a subset.  Otherwise, we go
+	 from the start of the first range to just before the start of the
+	 second.  */
       if (no_overlap)
 	in_p = 1, low = low0, high = high0;
-      else if (subset)
+      else if (subset
+	       && integer_zerop (range_binop (EQ_EXPR, integer_type_node,
+					      high0, 1, high1, 0)))
 	return 0;
       else
 	{
 	  in_p = 1, low = low0;
 	  high = range_binop (MINUS_EXPR, NULL_TREE, low1, 0,
-			      integer_zero_node, 0);
+			      integer_one_node, 0);
 	}
     }
 
