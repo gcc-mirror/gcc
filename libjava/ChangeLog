@@ -1,5 +1,20 @@
 2003-03-18  Michael Koch  <konqueror@gmx.de>
 
+	* java/awt/ScrollPane.java
+	(ScrollPane): Rewrote for new ScrollPaneAdjustable.
+	(getViewportSize): Likewise.
+	(addNotify): Likewise.
+	(removeNotify): Likewise.
+	* java/awt/ScrollPaneAdjustable.java
+	(ScrollPaneAdjustable): No longer extends Scrollbar.
+	* java/beans/beancontext/BeanContextServices.java:
+	Reformated.
+	(getService): Added throws TooManyListenersException;
+	* java/beans/beancontext/BeanContextServicesSupport.java:
+	Reformated.
+
+2003-03-18  Michael Koch  <konqueror@gmx.de>
+
 	* java/io/BufferedOutputStream.java,
 	java/io/DataInput.java,
 	java/io/DataInputStream.java,

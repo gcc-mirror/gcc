@@ -153,8 +153,8 @@ ScrollPane(int scrollbarDisplayPolicy)
 
   if (scrollbarDisplayPolicy != SCROLLBARS_NEVER)
     {
-      hAdjustable = new ScrollPaneAdjustable(Scrollbar.HORIZONTAL);
-      vAdjustable = new ScrollPaneAdjustable(Scrollbar.VERTICAL);
+      hAdjustable = new ScrollPaneAdjustable (this, Scrollbar.HORIZONTAL);
+      vAdjustable = new ScrollPaneAdjustable (this, Scrollbar.VERTICAL);
     }
 
   wheelScrollingEnabled = true;
@@ -215,23 +215,17 @@ getVAdjustable()
   *
   * @return The viewport size.
   */
-public Dimension
-getViewportSize()
+public Dimension getViewportSize ()
 {
-  Dimension viewsize = getSize();
-  Insets insets = getInsets();
-  viewsize.width = viewsize.width - (insets.left + insets.right);
-  viewsize.height = viewsize.height - (insets.top + insets.bottom);
-
-  ScrollPaneAdjustable v = (ScrollPaneAdjustable)getVAdjustable();
-  ScrollPaneAdjustable h = (ScrollPaneAdjustable)getHAdjustable();
-
-  if ((v != null) && v.isVisible())
-    viewsize.width = viewsize.width - v.getSize().width;
-  if ((h != null) && h.isVisible())
-    viewsize.height = viewsize.height - v.getSize().height;
-
-  return(viewsize);
+  Dimension viewsize = getSize ();
+  Insets insets = getInsets ();
+  viewsize.width = (viewsize.width
+                    - (insets.left + insets.right)
+                    - getVScrollbarWidth ());
+  viewsize.height = (viewsize.height
+                     - (insets.top + insets.bottom)
+                     - getHScrollbarHeight ());
+  return viewsize;
 }
 
 /*************************************************************************/
@@ -347,11 +341,7 @@ addNotify()
     return;
 
   setPeer((ComponentPeer)getToolkit().createScrollPane(this));
-
-  if (hAdjustable != null)
-    hAdjustable.addNotify();
-  if (vAdjustable != null)
-    vAdjustable.removeNotify();
+  super.addNotify();
 }
 
 /*************************************************************************/
@@ -362,11 +352,6 @@ addNotify()
 public void
 removeNotify()
 {
-  if (hAdjustable != null)
-    hAdjustable.removeNotify();
-  if (vAdjustable != null)
-    vAdjustable.removeNotify();
-
   super.removeNotify();
 }
 

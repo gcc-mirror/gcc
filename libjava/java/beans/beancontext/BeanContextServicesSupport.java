@@ -131,12 +131,14 @@ public class BeanContextServicesSupport
     this (peer, lcle, true, true);
   }
 
-  public BeanContextServicesSupport (BeanContextServices peer, Locale lcle, boolean dtime)
+  public BeanContextServicesSupport (BeanContextServices peer, Locale lcle,
+                                     boolean dtime)
   {
     this (peer, lcle, dtime, true);
   }
 
-  public BeanContextServicesSupport (BeanContextServices peer, Locale lcle, boolean dtime, boolean visible)
+  public BeanContextServicesSupport (BeanContextServices peer, Locale lcle,
+                                     boolean dtime, boolean visible)
   {
     throw new Error ("Not implemented");
   }
@@ -146,12 +148,14 @@ public class BeanContextServicesSupport
     throw new Error ("Not implemented");
   }
 
-  public boolean addService (Class serviceClass, BeanContextServiceProvider bcsp) 
+  public boolean addService (Class serviceClass, BeanContextServiceProvider bcsp)
   {
     throw new Error ("Not implemented");
   }
 
-  protected boolean addService (Class serviceClass, BeanContextServiceProvider bcsp, boolean fireEvent)
+  protected boolean addService (Class serviceClass,
+                                BeanContextServiceProvider bcsp,
+                                boolean fireEvent)
   {
     throw new Error ("Not implemented");
   }
@@ -167,22 +171,26 @@ public class BeanContextServicesSupport
   {
     throw new Error ("Not implemented");
   }
-  protected void childJustRemovedHook (Object child, BeanContextSupport.BCSChild bcsc)
+  
+  protected void childJustRemovedHook (Object child,
+                                       BeanContextSupport.BCSChild bcsc)
   {
     throw new Error ("Not implemented");
   }
 
-  protected BeanContextSupport.BCSChild createBCSChild (Object targetChild, Object peer) 
+  protected BeanContextSupport.BCSChild createBCSChild (Object targetChild,
+                                                        Object peer) 
   {
     throw new Error ("Not implemented");
   }
 
-  protected BeanContextServicesSupport.BCSSServiceProvider createBCSSServiceProvider (Class sc, BeanContextServiceProvider bcsp)
+  protected BeanContextServicesSupport.BCSSServiceProvider
+  createBCSSServiceProvider (Class sc, BeanContextServiceProvider bcsp)
   {
     throw new Error ("Not implemented");
   }
 
-  protected final void fireServiceAdded (BeanContextServiceAvailableEvent bcssae) 
+  protected final void fireServiceAdded (BeanContextServiceAvailableEvent bcssae)
   {
     throw new Error ("Not implemented");
   }
@@ -192,12 +200,14 @@ public class BeanContextServicesSupport
     throw new Error ("Not implemented");
   }
 
-  protected final void fireServiceRevoked (BeanContextServiceRevokedEvent bcsre) 
+  protected final void
+  fireServiceRevoked (BeanContextServiceRevokedEvent bcsre)
   {
     throw new Error ("Not implemented");
   }
 
-  protected final void fireServiceRevoked (Class serviceClass, boolean revokeNow)
+  protected final void fireServiceRevoked (Class serviceClass,
+                                           boolean revokeNow)
   {
     throw new Error ("Not implemented");
   }
@@ -207,7 +217,8 @@ public class BeanContextServicesSupport
     throw new Error ("Not implemented");
   }
 
-  protected static final BeanContextServicesListener getChildBeanContextServicesListener (Object child) 
+  protected static final BeanContextServicesListener
+  getChildBeanContextServicesListener (Object child) 
   {
     throw new Error ("Not implemented");
   }
@@ -222,7 +233,9 @@ public class BeanContextServicesSupport
     throw new Error ("Not implemented");
   }
 
-  public Object getService (BeanContextChild child, Object requestor, Class serviceClass, Object serviceSelector, BeanContextServiceRevokedListener bcsrl)
+  public Object getService (BeanContextChild child, Object requestor,
+                            Class serviceClass, Object serviceSelector,
+                            BeanContextServiceRevokedListener bcsrl)
     throws TooManyListenersException
   {
     throw new Error ("Not implemented");
@@ -248,17 +261,20 @@ public class BeanContextServicesSupport
     throw new Error ("Not implemented");
   }
 
-  public void releaseService (BeanContextChild child, Object requestor, Object service) 
+  public void releaseService (BeanContextChild child, Object requestor,
+                              Object service)
   {
     throw new Error ("Not implemented");
   }
 
-  public void removeBeanContextServicesListener (BeanContextServicesListener bcsl) 
+  public void
+  removeBeanContextServicesListener (BeanContextServicesListener bcsl)
   {
     throw new Error ("Not implemented");
   }
 
-  public void revokeService (Class serviceClass, BeanContextServiceProvider bcsp, boolean revokeCurrentServicesNow) 
+  public void revokeService (Class serviceClass, BeanContextServiceProvider bcsp,
+                             boolean revokeCurrentServicesNow) 
   {
     throw new Error ("Not implemented");
   }
