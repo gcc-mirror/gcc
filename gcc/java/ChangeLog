@@ -1,3 +1,8 @@
+1998-11-26  Andrew Haley  <aph@viagra.cygnus.co.uk>
+
+	* jcf-parse.c (get_constant): Add braces around computation of 'd'
+	when REAL_ARITHMETIC is not defined.  [Oct 26 fix got overwritten -PB]
+
 1999-02-17  Andrew Haley  <aph@cygnus.com>
 
 	* class.c (build_utf8_ref): Back out broken patch which was
