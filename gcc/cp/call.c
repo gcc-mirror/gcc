@@ -1255,7 +1255,7 @@ add_function_candidate (candidates, fn, arglist, flags)
     }
 
   len = list_length (arglist);
-  convs = make_scratch_vec (len);
+  convs = make_tree_vec (len);
 
   /* 13.3.2 - Viable functions [over.match.viable]
      First, to be a viable function, a candidate function shall have enough
@@ -1372,7 +1372,7 @@ add_conv_candidate (candidates, fn, obj, arglist)
   tree totype = TREE_TYPE (TREE_TYPE (fn));
   tree parmlist = TYPE_ARG_TYPES (TREE_TYPE (totype));
   int i, len = list_length (arglist) + 1;
-  tree convs = make_scratch_vec (len);
+  tree convs = make_tree_vec (len);
   tree parmnode = parmlist;
   tree argnode = arglist;
   int viable = 1;
@@ -1444,7 +1444,7 @@ build_builtin_candidate (candidates, fnname, type1, type2,
   types[0] = type1;
   types[1] = type2;
 
-  convs = make_scratch_vec (args[2] ? 3 : (args[1] ? 2 : 1));
+  convs = make_tree_vec (args[2] ? 3 : (args[1] ? 2 : 1));
 
   for (i = 0; i < 2; ++i)
     {
@@ -2097,7 +2097,7 @@ add_template_candidate_real (candidates, tmpl, explicit_targs,
      unification_kind_t strict;
 {
   int ntparms = DECL_NTPARMS (tmpl);
-  tree targs = make_scratch_vec (ntparms);
+  tree targs = make_tree_vec (ntparms);
   struct z_candidate *cand;
   int i;
   tree fn;

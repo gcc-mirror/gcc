@@ -481,7 +481,7 @@ add_to_template_args (args, extra_args)
   int j;
 
   extra_depth = TMPL_ARGS_DEPTH (extra_args);
-  new_args = make_temp_vec (TMPL_ARGS_DEPTH (args) + extra_depth);
+  new_args = make_tree_vec (TMPL_ARGS_DEPTH (args) + extra_depth);
 
   for (i = 1; i <= TMPL_ARGS_DEPTH (args); ++i)
     SET_TMPL_ARGS_LEVEL (new_args, i, TMPL_ARGS_LEVEL (args, i));
@@ -1463,7 +1463,7 @@ check_explicit_specialization (declarator, decl, template_count, flags)
 		  int i;
 		  tree new_targs;
 
-		  new_targs = make_temp_vec (parm_depth);
+		  new_targs = make_tree_vec (parm_depth);
 		  for (i = arg_depth - parm_depth; i < arg_depth; ++i)
 		    TREE_VEC_ELT (new_targs, i - (arg_depth - parm_depth))
 		      = TREE_VEC_ELT (targs, i);
@@ -3328,7 +3328,7 @@ coerce_template_parms (parms, args, in_decl,
       return error_mark_node;
     }
 
-  new_inner_args = make_temp_vec (nparms);
+  new_inner_args = make_tree_vec (nparms);
   new_args = add_outermost_template_args (args, new_inner_args);
   for (i = 0; i < nparms; i++)
     {
@@ -3753,10 +3753,6 @@ lookup_template_class (d1, arglist, in_decl, context, entering_scope)
       parm_depth = TMPL_PARMS_DEPTH (parmlist);
       arg_depth = TMPL_ARGS_DEPTH (arglist);
 
-      /* We build up the coerced arguments and such on the
-	 momentary_obstack.  */
-      push_momentary ();
-
       if (arg_depth == 1 && parm_depth > 1)
 	{
 	  /* We've been given an incomplete set of template arguments.
@@ -3793,7 +3789,7 @@ lookup_template_class (d1, arglist, in_decl, context, entering_scope)
 	  int i;
 	  int saved_depth = TMPL_ARGS_DEPTH (arglist);
 
-	  tree bound_args = make_temp_vec (parm_depth);
+	  tree bound_args = make_tree_vec (parm_depth);
 	  
 	  for (i = saved_depth,
 		 t = DECL_TEMPLATE_PARMS (template); 
@@ -3874,10 +3870,7 @@ lookup_template_class (d1, arglist, in_decl, context, entering_scope)
 	}
 
       if (found)
-	{
-	  pop_momentary ();
-	  return found;
-	}
+	return found;
 
       /* This type is a "partial instantiation" if any of the template
 	 arguments still inolve template parameters.  Note that we set
@@ -3889,7 +3882,6 @@ lookup_template_class (d1, arglist, in_decl, context, entering_scope)
 	  && !PRIMARY_TEMPLATE_P (template)
 	  && TREE_CODE (CP_DECL_CONTEXT (template)) == NAMESPACE_DECL)
 	{
-	  pop_momentary ();
 	  found = xref_tag_from_type (TREE_TYPE (template),
 				      DECL_NAME (template),
 				      /*globalize=*/1);
@@ -4009,9 +4001,6 @@ lookup_template_class (d1, arglist, in_decl, context, entering_scope)
 
       /* We're done with the permanent obstack, now.  */
       pop_obstacks ();
-      /* We're also done with the momentary allocation we started
-	 above.  */
-      pop_momentary ();
 
       /* Reset the name of the type, now that CLASSTYPE_TEMPLATE_INFO
 	 is set up.  */
@@ -4754,12 +4743,6 @@ instantiate_class_template (type)
   if (TYPE_BEING_DEFINED (type) || TYPE_SIZE (type))
     return type;
 
-  /* We want to allocate temporary vectors of template arguments and
-     template argument expressions on the momentary obstack, not on
-     the expression obstack.  Otherwise, all the space allocated in
-     argument coercion and such is simply lost.  */
-  push_momentary ();
-
   /* Figure out which template is being instantiated.  */
   template = most_general_template (CLASSTYPE_TI_TEMPLATE (type));
   my_friendly_assert (TREE_CODE (template) == TEMPLATE_DECL, 279);
@@ -4787,7 +4770,7 @@ instantiate_class_template (type)
 
        Now, the `S<U>' in `f<int>' is the specialization, not an
        instantiation of the original template.  */
-    goto end;
+    return type;
 
   /* Determine what specialization of the original template to
      instantiate.  */
@@ -4822,8 +4805,7 @@ instantiate_class_template (type)
 		}
 	    }
 	  TYPE_BEING_DEFINED (type) = 1;
-	  type = error_mark_node;
-	  goto end;
+	  return error_mark_node;
 	}
     }
 
@@ -4835,7 +4817,7 @@ instantiate_class_template (type)
   /* If the template we're instantiating is incomplete, then clearly
      there's nothing we can do.  */
   if (TYPE_SIZE (pattern) == NULL_TREE)
-    goto end;
+    return type;
 
   /* If this is a partial instantiation, don't tsubst anything.  We will
      only use this type for implicit typename, so the actual contents don't
@@ -4851,12 +4833,12 @@ instantiate_class_template (type)
       /* Pretend that the type is complete, so that we will look
 	 inside it during name lookup and such.  */
       TYPE_SIZE (type) = integer_zero_node;
-      goto end;
+      return type;
     }
 
   /* If we've recursively instantiated too many templates, stop.  */
   if (! push_tinst_level (type))
-    goto end;
+    return type;
 
   /* Now we're really doing the instantiation.  Mark the type as in
      the process of being defined.  */
@@ -5194,9 +5176,6 @@ instantiate_class_template (type)
   pop_from_top_level ();
   pop_tinst_level ();
 
- end:
-  pop_momentary ();
-
   return type;
 }
 
@@ -5284,7 +5263,7 @@ tsubst_template_arg_vector (t, args, complain)
   if (!need_new)
     return t;
   
-  t = make_temp_vec (len);
+  t = make_tree_vec (len);
   for (i = 0; i < len; i++)
     TREE_VEC_ELT (t, i) = elts[i];
   
@@ -5394,13 +5373,11 @@ tsubst_aggr_type (t, args, complain, in_decl, entering_scope)
 	     and supposing that we are instantiating f<int, double>,
 	     then our ARGS will be {int, double}, but, when looking up
 	     S we only want {double}.  */
-	  push_momentary ();
 	  argvec = tsubst_template_arg_vector (TYPE_TI_ARGS (t), args,
 					       complain);
 
   	  r = lookup_template_class (t, argvec, in_decl, context,
 				     entering_scope);
-	  pop_momentary ();
 
 	  return cp_build_qualified_type_real (r, TYPE_QUALS (t),
 					       complain);
@@ -5517,7 +5494,6 @@ tsubst_decl (t, args, type, in_decl)
 	      : DECL_TI_ARGS (DECL_RESULT (t));
 	    tree full_args;
 	    
-	    push_momentary ();
 	    full_args = tsubst_template_arg_vector (tmpl_args, args,
 						    /*complain=*/1);
 
@@ -5527,7 +5503,6 @@ tsubst_decl (t, args, type, in_decl)
 	    my_friendly_assert (full_args != tmpl_args, 0);
 
 	    spec = retrieve_specialization (t, full_args);
-	    pop_momentary ();
 	    if (spec != NULL_TREE)
 	      {
 		r = spec;
@@ -5676,10 +5651,6 @@ tsubst_decl (t, args, type, in_decl)
 	  {
 	    tree spec;
 
-	    /* Allocate template arguments on the momentary obstack,
-	       in case we don't need to keep them.  */
-	    push_momentary ();
-
 	    /* Calculate the most general template of which R is a
 	       specialization, and the complete set of arguments used to
 	       specialize R.  */
@@ -5695,11 +5666,8 @@ tsubst_decl (t, args, type, in_decl)
 	    if (spec)
 	      {
 		r = spec;
-		pop_momentary ();
 		break;
 	      }
-
-	    pop_momentary ();
 
 	    /* Here, we deal with the peculiar case:
 
@@ -5733,7 +5701,7 @@ tsubst_decl (t, args, type, in_decl)
 		  {
 		    int i;
 
-		    args = make_temp_vec (parms_depth);
+		    args = make_tree_vec (parms_depth);
 		    for (i = 0; i < parms_depth; ++i)
 		      TREE_VEC_ELT (args, i) = 
 			TREE_VEC_ELT (args, i + (args_depth - parms_depth));
@@ -8020,7 +7988,7 @@ try_one_overload (tparms, orig_targs, targs, parm, arg, strict,
      try to deduce a template parameter for the same argument, even though
      there isn't really a conflict.  */
   nargs = TREE_VEC_LENGTH (targs);
-  tempargs = make_scratch_vec (nargs);
+  tempargs = make_tree_vec (nargs);
 
   if (unify (tparms, tempargs, parm, arg, sub_strict) != 0)
     return 0;
@@ -8106,11 +8074,9 @@ try_class_unification (tparms, targs, parm, arg)
      because there are two ways to unify base classes of S<0, 1, 2>
      with S<I, I, I>.  If we kept the already deduced knowledge, we
      would reject the possibility I=1.  */
-  push_momentary ();
-  copy_of_targs = make_temp_vec (TREE_VEC_LENGTH (targs));
+  copy_of_targs = make_tree_vec (TREE_VEC_LENGTH (targs));
   i = unify (tparms, copy_of_targs, CLASSTYPE_TI_ARGS (parm),
 	     CLASSTYPE_TI_ARGS (arg), UNIFY_ALLOW_NONE);
-  pop_momentary ();
   
   /* If unification failed, we're done.  */
   if (i != 0)
@@ -8834,7 +8800,7 @@ get_bindings_real (fn, decl, explicit_args, check_rettype)
      int check_rettype;
 {
   int ntparms = DECL_NTPARMS (fn);
-  tree targs = make_scratch_vec (ntparms);
+  tree targs = make_tree_vec (ntparms);
   tree decl_type;
   tree decl_arg_types;
   int i;
@@ -8934,7 +8900,7 @@ get_class_bindings (tparms, parms, args)
      tree tparms, parms, args;
 {
   int i, ntparms = TREE_VEC_LENGTH (tparms);
-  tree vec = make_temp_vec (ntparms);
+  tree vec = make_tree_vec (ntparms);
 
   args = innermost_args (args);
 
@@ -9969,13 +9935,13 @@ set_mangled_name_for_template_decl (decl)
 
       /* Replace the innermost level of the TARGS with NULL_TREEs to
 	 let tsubst know not to subsitute for those parameters.  */
-      partial_args = make_temp_vec (TREE_VEC_LENGTH (targs));
+      partial_args = make_tree_vec (TREE_VEC_LENGTH (targs));
       for (i = 1; i < TMPL_ARGS_DEPTH (targs); ++i)
 	SET_TMPL_ARGS_LEVEL (partial_args, i,
 			     TMPL_ARGS_LEVEL (targs, i));
       SET_TMPL_ARGS_LEVEL (partial_args,
 			   TMPL_ARGS_DEPTH (targs),
-			   make_temp_vec (DECL_NTPARMS (tmpl)));
+			   make_tree_vec (DECL_NTPARMS (tmpl)));
 
       /* Now, do the (partial) substitution to figure out the
 	 appropriate function type.  */

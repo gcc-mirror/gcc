@@ -3969,7 +3969,6 @@ extern tree hack_decl_function_context 		PROTO((tree));
 extern tree decl_namespace_context 		PROTO((tree));
 extern tree lvalue_type				PROTO((tree));
 extern tree error_type				PROTO((tree));
-extern tree make_temp_vec			PROTO((int));
 extern tree build_ptr_wrapper			PROTO((void *));
 extern tree build_expr_ptr_wrapper		PROTO((void *));
 extern tree build_int_wrapper			PROTO((int));
@@ -3995,7 +3994,6 @@ extern tree cp_build_qualified_type_real        PROTO((tree, int, int));
 
 #define scratchalloc expralloc
 #define build_scratch_list build_expr_list
-#define make_scratch_vec make_temp_vec
 #define push_scratch_obstack push_expression_obstack
 
 /* in typeck.c */

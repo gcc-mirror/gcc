@@ -2517,20 +2517,6 @@ cp_tree_equal (t1, t2)
   return -1;
 }
 
-/* Similar to make_tree_vec, but build on the momentary_obstack.
-   Thus, these vectors are really and truly temporary.  */
-
-tree
-make_temp_vec (len)
-     int len;
-{
-  register tree node;
-  push_expression_obstack ();
-  node = make_tree_vec (len);
-  pop_obstacks ();
-  return node;
-}
-
 /* Build a wrapper around some pointer PTR so we can use it as a tree.  */
 
 tree

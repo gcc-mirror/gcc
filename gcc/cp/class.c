@@ -4850,7 +4850,7 @@ resolve_address_of_overloaded_function (target_type,
 	    continue;
 
 	  /* Try to do argument deduction.  */
-	  targs = make_scratch_vec (DECL_NTPARMS (fn));
+	  targs = make_tree_vec (DECL_NTPARMS (fn));
 	  if (fn_type_unification (fn, explicit_targs, targs,
 				   target_arg_types, NULL_TREE,
 				   DEDUCE_EXACT) != 0)

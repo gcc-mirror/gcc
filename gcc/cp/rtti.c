@@ -1137,11 +1137,8 @@ synthesize_tinfo_fn (fndecl)
   compound_stmt = begin_compound_stmt (/*has_no_scope=*/0);
 
   /* For convenience, we save away the address of the static
-     variable.  Since we will process expression-statements between
-     here and the end of the function, we must call push_momentary to
-     keep ADDR from being overwritten.  */
+     variable.  */
   addr = decay_conversion (tdecl);
-  push_momentary ();
 
   /* If the first word of the array (the vtable) is non-zero, we've already
      initialized the object, so don't do it again.  */
@@ -1193,8 +1190,6 @@ synthesize_tinfo_fn (fndecl)
   tmp = cp_convert (build_pointer_type (type_info_type_node), addr);
   tmp = build_indirect_ref (tmp, 0);
   finish_return_stmt (tmp);
-  /* Undo the call to push_momentary above.  */
-  pop_momentary ();
   /* Finish the function body.  */
   finish_compound_stmt (/*has_no_scope=*/0, compound_stmt);
   expand_body (finish_function (lineno, 0));

@@ -144,10 +144,7 @@ finish_expr_stmt (expr)
 	  cplus_expand_expr_stmt (expr);
 
 	  if (stmts_are_full_exprs_p)
-	    {
-	      expand_end_target_temps ();
-	      clear_momentary ();
-	    }
+	    expand_end_target_temps ();
 	}
     }
 
@@ -368,7 +365,6 @@ finish_do_stmt (cond, do_stmt)
       expand_end_loop ();
     }
 
-  clear_momentary ();
   finish_stmt ();
 }
 
@@ -503,10 +499,6 @@ finish_for_expr (expr, for_stmt)
 {
   if (building_stmt_tree ())
     FOR_EXPR (for_stmt) = expr;
-
-  /* Don't let the tree nodes for EXPR be discarded
-     by clear_momentary during the parsing of the next stmt.  */
-  push_momentary ();
 }
 
 /* Finish the body of a for-statement, which may be given by
@@ -531,8 +523,6 @@ finish_for_stmt (expr, for_stmt)
 	finish_expr_stmt (expr);
       expand_end_loop ();
     }
-
-  pop_momentary ();
 
   if (flag_new_for_scope > 0)
     do_poplevel ();
@@ -605,10 +595,6 @@ finish_switch_cond (cond, switch_stmt)
     c_expand_start_case (boolean_false_node);
 
   push_switch ();
-
-  /* Don't let the tree nodes for COND be discarded by
-     clear_momentary during the parsing of the next stmt.  */
-  push_momentary ();
 }
 
 /* Finish the body of a switch-statement, which may be given by
@@ -623,7 +609,6 @@ finish_switch_stmt (cond, switch_stmt)
     RECHAIN_STMTS (switch_stmt, SWITCH_BODY (switch_stmt));
   else
     expand_end_case (cond);
-  pop_momentary ();
   pop_switch (); 
   do_poplevel ();
   finish_stmt ();
@@ -1295,7 +1280,6 @@ do_pushlevel ()
       emit_line_note (input_filename, lineno);
       clear_last_expr ();
     }
-  push_momentary ();
   if (stmts_are_full_exprs_p)
     {
       pushlevel (0);
@@ -1333,7 +1317,6 @@ do_poplevel ()
 
       t = poplevel (kept_level_p (), 1, 0);
     }
-  pop_momentary ();
   return t;
 }
 
