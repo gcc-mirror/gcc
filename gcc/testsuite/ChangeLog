@@ -1,3 +1,12 @@
+2002-04-13  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* g77.f-torture/execute/980628-4.x,
+	g77.f-torture/execute/980628-5.x,
+	g77.f-torture/execute/980628-6.x, g77.f-torture/execute/alpha2.x,
+	g77.f-torture/execute/auto0.x, g77.f-torture/execute/auto1.x,
+	g77.f-torture/compile/alpha1.x: xfail powerpc-*-* hosted on
+	i[34567]86-*-*.
+
 2002-04-13  David S. Miller  <davem@redhat.com>
 
 	* gcc.c-torture/execute/20020413-1.c: New test.
