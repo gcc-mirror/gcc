@@ -1912,7 +1912,7 @@ copy_loop_body (loop, copy_start, copy_end, map, exit_label, last_iteration,
 		     for the biv was stored in the biv's first struct
 		     induction entry by find_splittable_regs.  */
 
-		  if (regno < max_reg_before_loop
+		  if (regno < ivs->n_regs
 		      && REG_IV_TYPE (ivs, regno) == BASIC_INDUCT)
 		    {
 		      giv_src_reg = REG_IV_CLASS (ivs, regno)->biv->src_reg;
@@ -3591,10 +3591,7 @@ loop_iterations (loop)
     }
   else if (REG_IV_TYPE (ivs, REGNO (iteration_var)) == BASIC_INDUCT)
     {
-      /* When reg_iv_type / reg_iv_info is resized for biv increments
-	 that are turned into givs, reg_biv_class is not resized.
-	 So check here that we don't make an out-of-bounds access.  */
-      if (REGNO (iteration_var) >= max_reg_before_loop)
+      if (REGNO (iteration_var) >= ivs->n_regs)
 	abort ();
 
       /* Grab initial value, only useful if it is a constant.  */
@@ -3609,7 +3606,7 @@ loop_iterations (loop)
       struct induction *v = REG_IV_INFO (ivs, REGNO (iteration_var));
       rtx biv_initial_value;
 
-      if (REGNO (v->src_reg) >= max_reg_before_loop)
+      if (REGNO (v->src_reg) >= ivs->n_regs)
 	abort ();
 
       bl = REG_IV_CLASS (ivs, REGNO (v->src_reg));
@@ -4012,7 +4009,7 @@ remap_split_bivs (loop, x)
       /* If non-reduced/final-value givs were split, then this would also
 	 have to remap those givs also.  */
 #endif
-      if (REGNO (x) < max_reg_before_loop
+      if (REGNO (x) < ivs->n_regs
 	  && REG_IV_TYPE (ivs, REGNO (x)) == BASIC_INDUCT)
 	return REG_IV_CLASS (ivs, REGNO (x))->biv->src_reg;
       break;

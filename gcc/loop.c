@@ -4651,7 +4651,7 @@ check_insn_for_bivs (loop, p, not_every_iteration, maybe_multiple)
 			  not_every_iteration, maybe_multiple);
 	      REG_IV_TYPE (ivs, REGNO (dest_reg)) = BASIC_INDUCT;
 	    }
-	  else if (REGNO (dest_reg) < max_reg_before_loop)
+	  else if (REGNO (dest_reg) < ivs->n_regs)
 	    REG_IV_TYPE (ivs, REGNO (dest_reg)) = NOT_BASIC_INDUCT;
 	}
     }
@@ -7842,7 +7842,7 @@ maybe_eliminate_biv (loop, bl, eliminate_p, threshold, insn_count)
 		{
 		  unsigned int regno = REGNO (SET_DEST (set));
 
-		  if (regno < max_reg_before_loop
+		  if (regno < ivs->n_regs
 		      && REG_IV_TYPE (ivs, regno) == GENERAL_INDUCT
 		      && REG_IV_INFO (ivs, regno)->src_reg == bl->biv->src_reg)
 		    p = last;
@@ -8321,7 +8321,7 @@ record_initial (dest, set, data)
   struct iv_class *bl;
 
   if (GET_CODE (dest) != REG
-      || REGNO (dest) >= max_reg_before_loop
+      || REGNO (dest) >= ivs->n_regs
       || REG_IV_TYPE (ivs, REGNO (dest)) != BASIC_INDUCT)
     return;
 
