@@ -1,3 +1,9 @@
+2003-12-29  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/12774
+	* typeck.c (comp_array_types): Fold non-dependent domains for
+	ABI-1.
+
 2003-12-29  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/13289
