@@ -1,3 +1,17 @@
+2003-05-31  Andreas Jaeger  <aj@suse.de>
+
+	* function.c (trampoline_address): Remove ALLOCATE_TRAMPOLINE
+	usage.
+
+	* doc/tm.texi (Trampolines): Remove ALLOCATE_TRAMPOLINE.
+
+	* config/d30v/d30v.h: Remove traces of ALLOCATE_TRAMPOLINE.
+
+	* system.h: Poison ALLOCATE_TRAMPOLINE.
+
+	* doc/tm.texi (Misc): Remove HANDLE_PRAGMA.
+	* system.h: Poison HANDLE_PRAGMA.
+
 2003-05-31  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* doc/invoke.texi: Update dump file names.
@@ -14,7 +28,7 @@
 	* toplev.c (flag_wrapv): Declare the variable with default false.
 	(lang_independent_options): New option "-fwrapv" to set the above.
 
-	* fold-const.c (extract_muldiv_1): Disable optimization of (2*x)/2 
+	* fold-const.c (extract_muldiv_1): Disable optimization of (2*x)/2
 	as x, when signed arithmetic overflow wraps around.
 	(fold): Optimize "-A - B" as "-B - A" if overflow wraps around.
 	* loop.c (basic_induction_var): Ignore BIVs that rely on undefined
@@ -2876,7 +2890,7 @@ Mon May 12 11:32:53 CEST 2003  Jan Hubicka  <jh@suse.cz>
 		* config/mips/mips.c (mips_symbol_insns): Rework.  Fix handling
 		of unaligned offsets.
 
-	       	* config/mips/mips.c (mips_splittable_symbol_p): Fix handling
+		* config/mips/mips.c (mips_splittable_symbol_p): Fix handling
 		of SYMBOL_GENERAL.
 
 	2003-03-22  Richard Sandiford  <rsandifo@redhat.com>
@@ -3064,7 +3078,7 @@ Mon May 12 11:32:53 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	2003-02-02  Eric Christopher  <echristo@redhat.com>
 
-	       	* config/mips/mips.c (mips_sign_extend): Remove.
+		* config/mips/mips.c (mips_sign_extend): Remove.
 		* config/mips/mips-protos.h: Ditto.
 		* config/mips/mips.md (movdi_internal2_extend): Remove.
 		(extendsidi2): Fix mode of convert_memory_address.
@@ -3152,7 +3166,7 @@ Mon May 12 11:32:53 CEST 2003  Jan Hubicka  <jh@suse.cz>
 		simple_memory_operand, double_memory_operand, mips_check_split,
 		mips_address_cost, pic_address_needs_scratch, mips16_gp_offset,
 		mips16_gp_offset_p, mips16_output_gp_offset,
-	       	mips16_constant_after_function_p, mips16_constant): Remove.
+		mips16_constant_after_function_p, mips16_constant): Remove.
 		(call_insn_operand): Be more fussy about symbolic constants.
 		Use register_operand.
 		(move_operand): Use mips_symbolic_address_p to check symbolic
@@ -3380,7 +3394,7 @@ Mon May 12 11:32:53 CEST 2003  Jan Hubicka  <jh@suse.cz>
 		* cnfig/mips/mips.md (reload_incc): Change destination prediate
 		to fcc_register_operand.  Remove misleading source constraint.
 		Use mips_emit_fcc_reload.
-       		(reload_outcc): Duplicate reload_incc.
+		(reload_outcc): Duplicate reload_incc.
 
 
 2003-04-30  Diego Novillo  <dnovillo@redhat.com>

@@ -5844,17 +5844,12 @@ trampoline_address (function)
 
   /* Allocate run-time space for this trampoline
      (usually in the defining function's stack frame).  */
-#ifdef ALLOCATE_TRAMPOLINE
-  tramp = ALLOCATE_TRAMPOLINE (fp);
-#else
   /* If rounding needed, allocate extra space
      to ensure we have TRAMPOLINE_SIZE bytes left after rounding up.  */
 #define TRAMPOLINE_REAL_SIZE \
   (TRAMPOLINE_SIZE + (TRAMPOLINE_ALIGNMENT / BITS_PER_UNIT) - 1)
   tramp = assign_stack_local_1 (BLKmode, TRAMPOLINE_REAL_SIZE, 0,
 				fp ? fp : cfun);
-#endif
-
   /* Record the trampoline for reuse and note it for later initialization
      by expand_function_end.  */
   if (fp != 0)

@@ -1,3 +1,10 @@
+2003-05-31  Andreas Jaeger  <aj@suse.de>
+
+	* lex.c (ffelex_hash_): Remove HANDLE_PRAGMA and
+	HANDLE_GENERIC_PRAGMA dependend code, remove #if 0 code.
+	(pragma_getc): Removed.
+	(pragma_ungetc): Removed.
+
 2003-05-30  Roger Sayle  <roger@eyesopen.com>
 
 	* com.c (ffecom_init_0): Define built-in functions for tan and atan.
@@ -92,7 +99,7 @@
 
 2003-05-02  Nathan Sidwell  <nathan@codesourcery.com>
 
- 	* lex.c (ffelex_file_pop_): Adjust file_stack member use.
+	* lex.c (ffelex_file_pop_): Adjust file_stack member use.
 	(ffelex_file_push_): Likewise.
 	(ffelex_hash_): Likewise.
 

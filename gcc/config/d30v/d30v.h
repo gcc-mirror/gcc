@@ -1,5 +1,5 @@
 /* Definitions of target machine for Mitsubishi D30V.
-   Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002
+   Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003
    Free Software Foundation, Inc.
    Contributed by Cygnus Solutions.
 
@@ -2023,25 +2023,6 @@ typedef struct machine_function GTY(())
    should be passed to the function when it is called.  */
 #define INITIALIZE_TRAMPOLINE(ADDR, FNADDR, STATIC_CHAIN) \
   d30v_initialize_trampoline (ADDR, FNADDR, STATIC_CHAIN)
-
-/* A C expression to allocate run-time space for a trampoline.  The expression
-   value should be an RTX representing a memory reference to the space for the
-   trampoline.
-
-   If this macro is not defined, by default the trampoline is allocated as a
-   stack slot.  This default is right for most machines.  The exceptions are
-   machines where it is impossible to execute instructions in the stack area.
-   On such machines, you may have to implement a separate stack, using this
-   macro in conjunction with output_function_prologue () and
-   output_function_epilogue ().
-
-   FP points to a data structure, a `struct function', which describes the
-   compilation status of the immediate containing function of the function
-   which the trampoline is for.  Normally (when `ALLOCATE_TRAMPOLINE' is not
-   defined), the stack slot for the trampoline is in the stack frame of this
-   containing function.  Other allocation strategies probably must do something
-   analogous with this information.  */
-/* #define ALLOCATE_TRAMPOLINE(FP) */
 
 /* Implementing trampolines is difficult on many machines because they have
    separate instruction and data caches.  Writing into a stack location fails

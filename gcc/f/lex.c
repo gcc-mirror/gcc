@@ -997,22 +997,6 @@ ffelex_get_directive_line_ (char **text, FILE *finput)
 
    Returns the next character unhandled, which is always newline or EOF.  */
 
-#if defined HANDLE_PRAGMA
-/* Local versions of these macros, that can be passed as function pointers.  */
-static int
-pragma_getc ()
-{
-  return getc (finput);
-}
-
-static void
-pragma_ungetc (arg)
-     int arg;
-{
-  ungetc (arg, finput);
-}
-#endif /* HANDLE_PRAGMA */
-
 static int
 ffelex_hash_ (FILE *finput)
 {
@@ -1041,42 +1025,6 @@ ffelex_hash_ (FILE *finput)
 	      && ((c = getc (finput)) == ' ' || c == '\t' || c == '\n'
 		  || c == EOF))
 	    {
-#if 0	/* g77 doesn't handle pragmas, so ignores them FOR NOW. */
-	      static char buffer [128];
-	      char * buff = buffer;
-
-	      /* Read the pragma name into a buffer.
-		 ISSPACE() may evaluate its argument more than once!  */
-	      while (((c = getc (finput)), ISSPACE(c)))
-		continue;
-
-	      do
-		{
-		  * buff ++ = c;
-		  c = getc (finput);
-		}
-	      while (c != EOF && ! ISSPACE (c) && c != '\n'
-		     && buff < buffer + 128);
-
-	      pragma_ungetc (c);
-
-	      * -- buff = 0;
-#ifdef HANDLE_PRAGMA
-	      if (HANDLE_PRAGMA (pragma_getc, pragma_ungetc, buffer))
-		goto skipline;
-#endif /* HANDLE_PRAGMA */
-#ifdef HANDLE_GENERIC_PRAGMAS
-	      if (handle_generic_pragma (buffer))
-		goto skipline;
-#endif /* !HANDLE_GENERIC_PRAGMAS */
-
-	      /* Issue a warning message if we have been asked to do so.
-		 Ignoring unknown pragmas in system header file unless
-		 an explcit -Wunknown-pragmas has been given. */
-	      if (warn_unknown_pragmas > 1
-		  || (warn_unknown_pragmas && ! in_system_header))
-		warning ("ignoring pragma: %s", token_buffer);
-#endif /* 0 */
 	      goto skipline;
 	    }
 	}
