@@ -3486,7 +3486,7 @@ force_const_mem (mode, x)
       pool->labelno = const_labelno;
       pool->align = align;
       pool->offset = pool_offset;
-      pool->mark = 0;
+      pool->mark = 1;
       pool->next = 0;
 
       if (last_pool == 0)
@@ -3603,7 +3603,7 @@ output_constant_pool (fnname, fndecl)
   /* It is possible for gcc to call force_const_mem and then to later
      discard the instructions which refer to the constant.  In such a
      case we do not need to output the constant.  */
-  if (flag_expensive_optimizations)
+  if (optimize >= 0 && flag_expensive_optimizations)
     mark_constant_pool ();
 
 #ifdef ASM_OUTPUT_POOL_PROLOGUE
@@ -3614,7 +3614,7 @@ output_constant_pool (fnname, fndecl)
     {
       x = pool->constant;
 
-      if (flag_expensive_optimizations && ! pool->mark)
+      if (! pool->mark)
 	continue;
 
       /* See if X is a LABEL_REF (or a CONST referring to a LABEL_REF)
@@ -3687,9 +3687,13 @@ static void
 mark_constant_pool ()
 {
   register rtx insn;
+  struct pool_constant *pool;
 
   if (first_pool == 0)
     return;
+
+  for (pool = first_pool; pool; pool = pool->next)
+    pool->mark = 0;
 
   for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
     if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
