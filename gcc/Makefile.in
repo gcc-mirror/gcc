@@ -1573,7 +1573,7 @@ scan.o: scan.c scan.h hconfig.h
 
 xsys-protos.h: $(GCC_PASSES) $(srcdir)/sys-protos.h deduced.h gen-protos Makefile
 	cat deduced.h $(srcdir)/sys-protos.h > fixtmp.c
-	$(GCC_FOR_TARGET) fixtmp.c -E \
+	$(GCC_FOR_TARGET) fixtmp.c -w -U__SIZE_TYPE__ -U__PTRDIFF_TYPE_ -U__WCHAR_TYPE__ -E \
 	  | sed -e 's/	/ /g' -e 's/ *(/ (/g' -e 's/ [ ]*/ /g' -e 's/( )/()/' \
 	  | ./gen-protos >xsys-protos.h
 	rm -rf fixtmp.c
