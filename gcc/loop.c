@@ -2699,6 +2699,12 @@ invariant_p (x)
       return n_times_set[REGNO (x)] == 0;
 
     case MEM:
+      /* Volatile memory references must be rejected.  Do this before
+	 checking for read-only items, so that volatile read-only items
+	 will be rejected also.  */
+      if (MEM_VOLATILE_P (x))
+	return 0;
+
       /* Read-only items (such as constants in a constant pool) are
 	 invariant if their address is.  */
       if (RTX_UNCHANGING_P (x))
@@ -2706,9 +2712,7 @@ invariant_p (x)
 
       /* If we filled the table (or had a subroutine call), any location
 	 in memory could have been clobbered.  */
-      if (unknown_address_altered
-	  /* Don't mess with volatile memory references.  */
-	  || MEM_VOLATILE_P (x))
+      if (unknown_address_altered)
 	return 0;
 
       /* See if there is any dependence between a store and this load.  */
