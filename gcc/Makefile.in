@@ -1619,7 +1619,7 @@ s-emit : $(md_file) genemit$(build_exeext) $(srcdir)/move-if-change
 
 insn-recog.o : insn-recog.c $(CONFIG_H) $(RTL_H) insn-config.h $(RECOG_H) \
   real.h output.h flags.h $(SYSTEM_H) function.h hard-reg-set.h resource.h \
-  $(TM_P_H) toplev.h
+  $(TM_P_H) toplev.h reload.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c insn-recog.c
 
 insn-recog.c: s-recog ; @true
