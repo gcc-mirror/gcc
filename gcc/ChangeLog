@@ -1,3 +1,7 @@
+2001-05-19  Mark Mitchell  <mark@codesourcery.com>
+
+	* jump.c (mark_jump_label): Tidy previous change.
+
 2001-05-17  Brendan Conoboy <blc@cygnus.com>
 	    Bruce Korb <bkorb@gnu.org>
 
@@ -13,6 +17,8 @@
 
 2001-05-19  Mark Mitchell  <mark@codesourcery.com>
 
+	* jump.c (mark_jump_label): Tidy previous change.
+	
 	* jump.c (jump_optimize_1): Tidy.
 	(mark_jump_label): When changing the label in a LABEL_REF, change
 	update any REG_EQUAL notes as well.
