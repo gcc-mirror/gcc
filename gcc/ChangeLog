@@ -1,3 +1,7 @@
+2002-06-28  Jan Hubicka  <jh@suse.cz>
+
+	* gcse.c (gcse_emit_move_after): Use gen_move_insn to produce the move.
+
 2002-06-28  Stephen Clarke  <stephen.clarke@superh.com>
 
 	* combine.c (combine_simplify_rtx): Pass the mode of the

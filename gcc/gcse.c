@@ -5144,21 +5144,19 @@ gcse_emit_move_after (src, dest, insn)
      rtx src, dest, insn;
 {
   rtx new;
-  rtx set = single_set (insn);
+  rtx set = single_set (insn), set2;
   rtx note;
   rtx eqv;
 
   /* This should never fail since we're creating a reg->reg copy
      we've verified to be valid.  */
 
-  new = emit_insn_after (gen_rtx_SET (VOIDmode, dest, src), insn);
-
-  /* want_to_gcse_p verifies that this move will be valid.  Still this call
-     is mandatory as it may create clobbers required by the pattern.  */
-  if (insn_invalid_p (insn))
-    abort ();
+  new = emit_insn_after (gen_move_insn (dest, src), insn);
 
   /* Note the equivalence for local CSE pass.  */
+  set2 = single_set (new);
+  if (!set2 || !rtx_equal_p (SET_DEST (set2), dest))
+    return new;
   if ((note = find_reg_equal_equiv_note (insn)))
     eqv = XEXP (note, 0);
   else
