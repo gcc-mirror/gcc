@@ -123,14 +123,19 @@ force_fit_type (t, overflow)
      tree t;
      int overflow;
 {
-  HOST_WIDE_INT low = TREE_INT_CST_LOW (t), high = TREE_INT_CST_HIGH (t);
-  register int prec = TYPE_PRECISION (TREE_TYPE (t));
+  HOST_WIDE_INT low, high;
+  register int prec;
 
   if (TREE_CODE (t) != INTEGER_CST)
-    abort ();
+    return overflow;
+
+  low = TREE_INT_CST_LOW (t);
+  high = TREE_INT_CST_HIGH (t);
 
   if (TREE_CODE (TREE_TYPE (t)) == POINTER_TYPE)
     prec = POINTER_SIZE;
+  else
+    prec = TYPE_PRECISION (TREE_TYPE (t));
 
   /* First clear all bits that are beyond the type's precision.  */
 
@@ -3258,7 +3263,7 @@ fold (expr)
 	    {
 	      t = build_int_2 (TREE_STRING_POINTER (arg0)[i], 0);
 	      TREE_TYPE (t) = TREE_TYPE (TREE_TYPE (arg0));
-	      force_fit_type (t);
+	      force_fit_type (t, 0);
 	    }
 	}
       return t;
