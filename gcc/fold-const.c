@@ -2020,7 +2020,7 @@ fold_convert (t, arg1)
 
 	  /* If we are trying to make a sizetype for a small integer, use
 	     size_int to pick up cached types to reduce duplicate nodes.  */
-	  if (TREE_CODE (type) == INTEGER_CST && TYPE_IS_SIZETYPE (type)
+	  if (TREE_CODE (type) == INTEGER_TYPE && TYPE_IS_SIZETYPE (type)
 	      && compare_tree_int (arg1, 10000) < 0)
 	    return size_int_type_wide (TREE_INT_CST_LOW (arg1), type);
 
