@@ -764,6 +764,7 @@ The character escape sequences @samp{\x} and @samp{\a} evaluate as the
 literal characters @samp{x} and @samp{a} respectively.  Without
 @w{@samp{-traditional}}, @samp{\x} is a prefix for the hexadecimal
 representation of a character, and @samp{\a} produces a bell.
+@end itemize
 
 You may wish to use @samp{-fno-builtin} as well as @samp{-traditional}
 if your program uses names that are normally GNU C builtin functions for
