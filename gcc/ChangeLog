@@ -1,3 +1,9 @@
+2005-02-18  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	PR target/20054
+	* config/s390/s390.md ("*llgt_sidi", "*llgt_sidi_split"): Move to
+	before the "*llgt_didi" pattern.
+
 2005-02-18  Jason Merrill  <jason@redhat.com>
 
 	* gimplify.c (gimplify_modify_expr_rhs) [CALL_EXPR]: Revert again.
