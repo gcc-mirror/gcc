@@ -4365,6 +4365,7 @@ find_reloads_address (mode, memrefloc, ad, loc, opnum, type, ind_levels, insn)
      rtx insn;
 {
   register int regno;
+  int removed_and = 0;
   rtx tem;
 
   /* If the address is a register, see if it is a legitimate address and
@@ -4450,12 +4451,22 @@ find_reloads_address (mode, memrefloc, ad, loc, opnum, type, ind_levels, insn)
 	return 0;
     }
 
-  /* The address is not valid.  We have to figure out why.  One possibility
-     is that it is itself a MEM.  This can happen when the frame pointer is
-     being eliminated, a pseudo is not allocated to a hard register, and the
-     offset between the frame and stack pointers is not its initial value.
-     In that case the pseudo will have been replaced by a MEM referring to
-     the stack pointer.  */
+  /* The address is not valid.  We have to figure out why.  First see if
+     we have an outer AND and remove it if so.  Then analyze what's inside.  */
+
+  if (GET_CODE (ad) == AND)
+    {
+      removed_and = 1;
+      loc = &XEXP (ad, 0);
+      ad = *loc;
+    }
+
+  /* One possibility for why the address is invalid is that it is itself
+     a MEM.  This can happen when the frame pointer is being eliminated, a
+     pseudo is not allocated to a hard register, and the offset between the
+     frame and stack pointers is not its initial value.  In that case the
+     pseudo will have been replaced by a MEM referring to the
+     stack pointer.  */
   if (GET_CODE (ad) == MEM)
     {
       /* First ensure that the address in this MEM is valid.  Then, unless
@@ -4472,6 +4483,8 @@ find_reloads_address (mode, memrefloc, ad, loc, opnum, type, ind_levels, insn)
 	  *memrefloc = copy_rtx (*memrefloc);
 	  copy_replacements (tem, XEXP (*memrefloc, 0));
 	  loc = &XEXP (*memrefloc, 0);
+	  if (removed_and)
+	    loc = &XEXP (*loc, 0);
 	}
 
       /* Check similar cases as for indirect addresses as above except
@@ -4492,7 +4505,7 @@ find_reloads_address (mode, memrefloc, ad, loc, opnum, type, ind_levels, insn)
 		       reload_address_base_reg_class, GET_MODE (tem),
 		       VOIDmode, 0,
 		       0, opnum, type);
-	  return 1;
+	  return ! removed_and;
 	}
       else
 	return 0;
@@ -4514,26 +4527,31 @@ find_reloads_address (mode, memrefloc, ad, loc, opnum, type, ind_levels, insn)
 	{
 	  *memrefloc = copy_rtx (*memrefloc);
 	  loc = &XEXP (*memrefloc, 0);
+	  if (removed_and)
+	    loc = &XEXP (*loc, 0);
 	}
+
       if (double_reg_address_ok)
 	{
 	  /* Unshare the sum as well.  */
 	  *loc = ad = copy_rtx (ad);
+
 	  /* Reload the displacement into an index reg.
 	     We assume the frame pointer or arg pointer is a base reg.  */
 	  find_reloads_address_part (XEXP (ad, 1), &XEXP (ad, 1),
 				     reload_address_index_reg_class,
 				     GET_MODE (ad), opnum, type, ind_levels);
+	  return 0;
 	}
       else
 	{
 	  /* If the sum of two regs is not necessarily valid,
 	     reload the sum into a base reg.
 	     That will at least work.  */
-	  find_reloads_address_part (ad, loc, reload_address_base_reg_class,
-				     Pmode, opnum, type, ind_levels);
-	}
-      return 1;
+	find_reloads_address_part (ad, loc, reload_address_base_reg_class,
+				   Pmode, opnum, type, ind_levels);
+	return ! removed_and;
+      }
     }
 
   /* If we have an indexed stack slot, there are three possible reasons why
@@ -4587,7 +4605,7 @@ find_reloads_address (mode, memrefloc, ad, loc, opnum, type, ind_levels, insn)
       find_reloads_address_1 (mode, XEXP (ad, 1), 1, &XEXP (ad, 1), opnum,
 			      type, 0, insn);
 
-      return 1;
+      return 0;
     }
 			   
   else if (GET_CODE (ad) == PLUS && GET_CODE (XEXP (ad, 1)) == CONST_INT
@@ -4612,7 +4630,7 @@ find_reloads_address (mode, memrefloc, ad, loc, opnum, type, ind_levels, insn)
       find_reloads_address_1 (mode, XEXP (ad, 0), 1, &XEXP (ad, 0), opnum,
 			      type, 0, insn);
 
-      return 1;
+      return 0;
     }
 			   
   /* See if address becomes valid when an eliminable register
@@ -4649,12 +4667,14 @@ find_reloads_address (mode, memrefloc, ad, loc, opnum, type, ind_levels, insn)
 	{
 	  *memrefloc = copy_rtx (*memrefloc);
 	  loc = &XEXP (*memrefloc, 0);
+	  if (removed_and)
+	    loc = &XEXP (*loc, 0);
 	}
 
       find_reloads_address_part (ad, loc, reload_address_base_reg_class,
 				 Pmode, opnum, type,
 				 ind_levels);
-      return 1;
+      return ! removed_and;
     }
 
   return find_reloads_address_1 (mode, ad, 0, loc, opnum, type, ind_levels,
