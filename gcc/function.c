@@ -231,8 +231,6 @@ struct insns_for_mem_entry
 
 static rtx assign_stack_local_1 PARAMS ((enum machine_mode, HOST_WIDE_INT,
 					 int, struct function *));
-static rtx assign_stack_temp_for_type PARAMS ((enum machine_mode,
-					       HOST_WIDE_INT, int, tree));
 static struct temp_slot *find_temp_slot_from_address  PARAMS ((rtx));
 static void put_reg_into_stack	PARAMS ((struct function *, rtx, tree,
 					 enum machine_mode, enum machine_mode,
@@ -629,7 +627,7 @@ assign_stack_local (mode, size, align)
 
    TYPE is the type that will be used for the stack slot.  */
 
-static rtx
+rtx
 assign_stack_temp_for_type (mode, size, keep, type)
      enum machine_mode mode;
      HOST_WIDE_INT size;

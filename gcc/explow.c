@@ -1348,7 +1348,7 @@ allocate_dynamic_stack_space (size, target, known_align)
 				    NULL_RTX, 1, OPTAB_WIDEN);
 #endif
 	  emit_cmp_and_jump_insns (available, size, GEU, NULL_RTX, Pmode, 1,
-				   0, space_available);
+				   space_available);
 #ifdef HAVE_trap
 	  if (HAVE_trap)
 	    emit_insn (gen_trap ());
@@ -1564,7 +1564,7 @@ probe_stack_range (first, size)
 
       emit_label (test_lab);
       emit_cmp_and_jump_insns (test_addr, last_addr, CMP_OPCODE,
-			       NULL_RTX, Pmode, 1, 0, loop_lab);
+			       NULL_RTX, Pmode, 1, loop_lab);
       emit_jump (end_lab);
       emit_note (NULL, NOTE_INSN_LOOP_END);
       emit_label (end_lab);

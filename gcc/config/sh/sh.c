@@ -4507,7 +4507,7 @@ sh_va_arg (valist, type)
 						EXPAND_NORMAL),
 				   expand_expr (next_fp_limit, NULL_RTX,
 						Pmode, EXPAND_NORMAL),
-				   GE, const1_rtx, Pmode, 1, 1, lab_false);
+				   GE, const1_rtx, Pmode, 1, lab_false);
 
 	  if (TYPE_ALIGN (type) > BITS_PER_WORD)
 	    {
@@ -4542,7 +4542,7 @@ sh_va_arg (valist, type)
 						EXPAND_NORMAL),
 				   expand_expr (next_o_limit, NULL_RTX,
 						Pmode, EXPAND_NORMAL),
-				   GT, const1_rtx, Pmode, 1, 1, lab_false);
+				   GT, const1_rtx, Pmode, 1, lab_false);
 
 	  tmp = build1 (ADDR_EXPR, pptr_type_node, next_o);
 	  r = expand_expr (tmp, addr_rtx, Pmode, EXPAND_NORMAL);

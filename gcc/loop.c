@@ -7663,7 +7663,7 @@ check_dbra_loop (loop, insn_count)
 	      /* Add new compare/branch insn at end of loop.  */
 	      start_sequence ();
 	      emit_cmp_and_jump_insns (reg, const0_rtx, cmp_code, NULL_RTX,
-				       GET_MODE (reg), 0, 0,
+				       GET_MODE (reg), 0,
 				       XEXP (jump_label, 0));
 	      tem = gen_sequence ();
 	      end_sequence ();

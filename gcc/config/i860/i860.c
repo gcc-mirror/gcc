@@ -2312,7 +2312,7 @@ i860_va_arg (valist, type)
       emit_cmp_and_jump_insns (expand_expr (field, NULL_RTX, 0, 0),
 			       GEN_INT (nparm - incr), GT, const0_rtx,
 			       TYPE_MODE (TREE_TYPE (field)),
-			       TREE_UNSIGNED (field), 0, lab_false);
+			       TREE_UNSIGNED (field), lab_false);
 
       t = fold (build (POSTINCREMENT_EXPR, TREE_TYPE (field), field,
 		       build_int_2 (incr, 0)));

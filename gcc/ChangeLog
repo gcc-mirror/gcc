@@ -1,3 +1,42 @@
+Thu Nov 15 17:57:48 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* alias.c (nonoverlapping_memrefs): Use REGNO_PTR_FRAME_P.
+	* emit-rtl.c (change_address): Fix typo in default alignment.
+	(adjust_address_1): Use mode of NEW, not MODE, when setting size.
+	* expr.c (highest_pow2_factor, case WITH_RECORD_EXPR): New case.
+	* rtl.h (REGNO_PTR_FRAME_P): New macro.
+
+	* expr.c (store_field): Pass tree instead of max size; callers changed.
+	Change handling of alignment.
+	Only copy to_rtx if is TARGET.
+	(expand_expr_unaligned): Delete; callers now use expand_expr.
+	(emit_cmp_insn): No longer take ALIGN parm; all callers changed.
+	(expand_assignment): Change handling of alignment.
+	Only copy to_rtx if was original.
+	(get_inner_reference): No longer return alginment; callers changed.
+	(expand_expr, case COMPONENT_REF): Change handling of alignment.
+	(expand_expr, case ADDR_EXPR): Make copy if not sufficiently aligned.
+	(compare_from_rtx): Delete ALIGN parm; all callers changed.
+	(do_compare_rtx_and_jump): Likewise.
+	* expr.h: Reflect above changes.
+	* tree.h: Likewise.
+	* dwarf2out.c (loc_descriptor_from_tree): Remove ALIGN parameter
+	to get_inner_reference.
+	* except.c: Remove ALIGN parameter in call to emit_cmp_and_jump_insns.
+	* explow.c: Likewise.
+	* loop.c: Likewise.
+	* optabs.c: Likewise.
+	(prepare_cmp_insn): Now static; remove ALIGN parm.  Callers changed.
+	(emit_cmp_and_jump_insns): Remove ALIGN parm; all callers changed.
+	* fold-const.c: Remove PALIGN in calls to get_inner_reference.
+	* function.c (assign_stack_temp_for_type): No longer static.
+	* optabs.h (emit_cmp_insn): Remove ALIGN parm.
+	(prepare_cmp_insn): Delete declaration.
+	* rtl.h (assign_stack_temp_for_type): Add declaration.
+	* config/d30v/d30v.c: Reflect above changes.
+	* config/i860/i860.c, config/ia64/ia64.c: Likewise.
+	* config/rs6000/rs6000.c, config/sh/sh.c: Likewise.
+
 2001-11-15  Stan Shebs  <shebs@apple.com>
 
 	* config/rs6000/rs6000.h: Fix a comment typo.

@@ -1752,8 +1752,8 @@ build_post_landing_pads ()
 		else
 		  emit_cmp_and_jump_insns (cfun->eh->filter,
 					   GEN_INT (c->u.catch.filter),
-					   EQ, NULL_RTX, word_mode,
-					   0, 0, c->label);
+					   EQ, NULL_RTX, word_mode, 0,
+					   c->label);
 	      }
 	  }
 
@@ -1779,8 +1779,7 @@ build_post_landing_pads ()
 
 	  emit_cmp_and_jump_insns (cfun->eh->filter,
 				   GEN_INT (region->u.allowed.filter),
-				   EQ, NULL_RTX, word_mode, 0, 0,
-				   region->label);
+				   EQ, NULL_RTX, word_mode, 0, region->label);
 
 	  /* We delay the generation of the _Unwind_Resume until we generate
 	     landing pads.  We emit a marker here so as to get good control
@@ -2152,8 +2151,7 @@ sjlj_emit_function_enter (dispatch_label)
     NOTE_EXPECTED_VALUE (note) = gen_rtx_EQ (VOIDmode, x, const0_rtx);
 
     emit_cmp_and_jump_insns (x, const0_rtx, NE, 0,
-			     TYPE_MODE (integer_type_node), 0, 0,
-			     dispatch_label);
+			     TYPE_MODE (integer_type_node), 0, dispatch_label);
   }
 #else
   expand_builtin_setjmp_setup (plus_constant (XEXP (fc, 0), sjlj_fc_jbuf_ofs),
@@ -2261,9 +2259,8 @@ sjlj_emit_dispatch_table (dispatch_label, lp_info)
 	  continue;
 	}
 
-      emit_cmp_and_jump_insns (dispatch,
-			       GEN_INT (lp_info[i].dispatch_index), EQ,
-			       NULL_RTX, TYPE_MODE (integer_type_node), 0, 0,
+      emit_cmp_and_jump_insns (dispatch, GEN_INT (lp_info[i].dispatch_index),
+			       EQ, NULL_RTX, TYPE_MODE (integer_type_node), 0,
 			       cfun->eh->region_array[i]->post_landing_pad);
     }
 
