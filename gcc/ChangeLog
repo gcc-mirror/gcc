@@ -1,3 +1,8 @@
+2004-04-20  Josef Zlomek  <zlomekj@suse.cz>
+
+	* var-tracking.c (variable_part_different_p): Variable parts differ
+	when the most recent locations differ.
+
 2004-04-19  James E Wilson  <wilson@specifixinc.com>
 
 	* rtl.h (reg_set_last): Delete declaration.

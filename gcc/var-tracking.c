@@ -1242,6 +1242,12 @@ variable_part_different_p (variable_part *vp1, variable_part *vp2)
 {
   location_chain lc1, lc2;
 
+  if (!((GET_CODE (vp1->cur_loc) == REG
+	 && GET_CODE (vp2->cur_loc) == REG
+	 && REGNO (vp1->cur_loc) == REGNO (vp2->cur_loc))
+	|| rtx_equal_p (vp1->cur_loc, vp2->cur_loc)))
+    return true;
+
   for (lc1 = vp1->loc_chain; lc1; lc1 = lc1->next)
     {
       for (lc2 = vp2->loc_chain; lc2; lc2 = lc2->next)
