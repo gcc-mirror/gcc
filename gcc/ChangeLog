@@ -1,3 +1,21 @@
+2002-08-21  Stan Shebs  <shebs@apple.com>
+
+	* tree.c (finish_vector_type): Fix a typo in a comment.
+	* Makefile.in: Fix "the the" stutters in comments.
+	* genautomata.c: Ditto.
+	* ifcvt.c: Ditto.
+	* regrename.c: Ditto.
+	* config/alpha/alpha.c: Ditto.
+	* config/alpha/vms-crt0-64.c: Ditto.
+	* config/alpha/vms-crt0.c: Ditto.
+	* config/alpha/vms-psxcrt0-64.c: Ditto.
+	* config/alpha/vms-psxcrt0.c: Ditto.
+	* config/d30v/d30v.h: Ditto.
+	* config/fr30/fr30.h: Ditto.
+	* config/rs6000/rs6000.c: Ditto.
+	* config/stormy16/stormy16.h: Ditto.
+	* doc/md.texi: Ditto.
+	
 2002-08-21  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* cppinit.c (remove_dup_nonsys_dirs): Fix warning and return value.

@@ -4225,7 +4225,7 @@ For example:
 
 @end smallexample
 
-Where @var{pathname} is a string that specifies the the location of the file,
+Where @var{pathname} is a string that specifies the location of the file,
 specifies the include file to be in @file{gcc/config/target/filestuff}. The
 directory @file{gcc/config/target} is regarded as the default directory.
 

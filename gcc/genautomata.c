@@ -6870,7 +6870,7 @@ process_state_longest_path_length (state)
 
 #define MAX_DFA_ISSUE_RATE_VAR_NAME "max_dfa_issue_rate"
 
-/* The following function calculates value of the the corresponding
+/* The following function calculates value of the corresponding
    global variable and outputs its declaration.  */
 
 static void

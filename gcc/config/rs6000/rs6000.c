@@ -8572,7 +8572,7 @@ rs6000_emit_cmove (dest, op, true_cond, false_cond)
   /* We're going to try to implement comparions by performing
      a subtract, then comparing against zero.  Unfortunately,
      Inf - Inf is NaN which is not zero, and so if we don't
-     know that the the operand is finite and the comparison
+     know that the operand is finite and the comparison
      would treat EQ different to UNORDERED, we can't do it.  */
   if (! flag_unsafe_math_optimizations
       && code != GT && code != UNGE
