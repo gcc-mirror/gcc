@@ -449,7 +449,7 @@ count(struct __rb_tree_node_base *, struct __rb_tree_node_base *)'
 5.3 What about the STL from SGI?
 
    The [64]STL from SGI is merged into libstdc++-v3 with changes as
-   necessary. Currently release 3.2 is being used. Changes in the STL
+   necessary. Currently release 3.3 is being used. Changes in the STL
    usually produce some weird bugs and lots of changes in the rest of the
    libstd++ source as we scramble to keep up. :-)
    
@@ -521,53 +521,53 @@ count(struct __rb_tree_node_base *, struct __rb_tree_node_base *)'
    
    Comments and suggestions are welcome, and may be sent to [71]Phil
    Edwards or [72]Gabriel Dos Reis.
-   $Id: index.html,v 1.2 2000/05/03 16:11:02 pme Exp $ 
+   $Id: index.html,v 1.3 2000/05/24 18:35:37 pme Exp $ 
 
 References
 
    1. http://sourceware.cygnus.com/libstdc++/
    2. http://sourceware.cygnus.com/libstdc++/faq/index.html
-   3. file://localhost/home0/pedwards/src/egcs/libstdc++-v3/docs/index.html
-   4. file://localhost/home0/pedwards/src/egcs/libstdc++-v3/docs/faq/index.html#1_0
-   5. file://localhost/home0/pedwards/src/egcs/libstdc++-v3/docs/faq/index.html#1_1
-   6. file://localhost/home0/pedwards/src/egcs/libstdc++-v3/docs/faq/index.html#1_2
-   7. file://localhost/home0/pedwards/src/egcs/libstdc++-v3/docs/faq/index.html#1_3
-   8. file://localhost/home0/pedwards/src/egcs/libstdc++-v3/docs/faq/index.html#1_4
-   9. file://localhost/home0/pedwards/src/egcs/libstdc++-v3/docs/faq/index.html#1_5
-  10. file://localhost/home0/pedwards/src/egcs/libstdc++-v3/docs/faq/index.html#1_6
-  11. file://localhost/home0/pedwards/src/egcs/libstdc++-v3/docs/faq/index.html#1_7
-  12. file://localhost/home0/pedwards/src/egcs/libstdc++-v3/docs/faq/index.html#1_8
-  13. file://localhost/home0/pedwards/src/egcs/libstdc++-v3/docs/faq/index.html#2_0
-  14. file://localhost/home0/pedwards/src/egcs/libstdc++-v3/docs/faq/index.html#2_1
-  15. file://localhost/home0/pedwards/src/egcs/libstdc++-v3/docs/faq/index.html#2_2
-  16. file://localhost/home0/pedwards/src/egcs/libstdc++-v3/docs/faq/index.html#2_3
-  17. file://localhost/home0/pedwards/src/egcs/libstdc++-v3/docs/faq/index.html#2_4
-  18. file://localhost/home0/pedwards/src/egcs/libstdc++-v3/docs/faq/index.html#3_0
-  19. file://localhost/home0/pedwards/src/egcs/libstdc++-v3/docs/faq/index.html#3_1
-  20. file://localhost/home0/pedwards/src/egcs/libstdc++-v3/docs/faq/index.html#3_2
-  21. file://localhost/home0/pedwards/src/egcs/libstdc++-v3/docs/faq/index.html#4_0
-  22. file://localhost/home0/pedwards/src/egcs/libstdc++-v3/docs/faq/index.html#4_1
-  23. file://localhost/home0/pedwards/src/egcs/libstdc++-v3/docs/faq/index.html#4_2
-  24. file://localhost/home0/pedwards/src/egcs/libstdc++-v3/docs/faq/index.html#4_3
-  25. file://localhost/home0/pedwards/src/egcs/libstdc++-v3/docs/faq/index.html#4_4
-  26. file://localhost/home0/pedwards/src/egcs/libstdc++-v3/docs/faq/index.html#4_5
-  27. file://localhost/home0/pedwards/src/egcs/libstdc++-v3/docs/faq/index.html#5_0
-  28. file://localhost/home0/pedwards/src/egcs/libstdc++-v3/docs/faq/index.html#5_1
-  29. file://localhost/home0/pedwards/src/egcs/libstdc++-v3/docs/faq/index.html#5_2
-  30. file://localhost/home0/pedwards/src/egcs/libstdc++-v3/docs/faq/index.html#5_3
-  31. file://localhost/home0/pedwards/src/egcs/libstdc++-v3/docs/faq/index.html#5_4
-  32. file://localhost/home0/pedwards/src/egcs/libstdc++-v3/docs/faq/index.html#5_5
-  33. file://localhost/home0/pedwards/src/egcs/libstdc++-v3/docs/faq/index.html#5_6
-  34. file://localhost/home0/pedwards/src/egcs/libstdc++-v3/docs/faq/index.html#5_7
+   3. file://localhost/home0/pedwards/src/egcsworking/libstdc++-v3/docs/index.html
+   4. file://localhost/home0/pedwards/src/egcsworking/libstdc++-v3/docs/faq/index.html#1_0
+   5. file://localhost/home0/pedwards/src/egcsworking/libstdc++-v3/docs/faq/index.html#1_1
+   6. file://localhost/home0/pedwards/src/egcsworking/libstdc++-v3/docs/faq/index.html#1_2
+   7. file://localhost/home0/pedwards/src/egcsworking/libstdc++-v3/docs/faq/index.html#1_3
+   8. file://localhost/home0/pedwards/src/egcsworking/libstdc++-v3/docs/faq/index.html#1_4
+   9. file://localhost/home0/pedwards/src/egcsworking/libstdc++-v3/docs/faq/index.html#1_5
+  10. file://localhost/home0/pedwards/src/egcsworking/libstdc++-v3/docs/faq/index.html#1_6
+  11. file://localhost/home0/pedwards/src/egcsworking/libstdc++-v3/docs/faq/index.html#1_7
+  12. file://localhost/home0/pedwards/src/egcsworking/libstdc++-v3/docs/faq/index.html#1_8
+  13. file://localhost/home0/pedwards/src/egcsworking/libstdc++-v3/docs/faq/index.html#2_0
+  14. file://localhost/home0/pedwards/src/egcsworking/libstdc++-v3/docs/faq/index.html#2_1
+  15. file://localhost/home0/pedwards/src/egcsworking/libstdc++-v3/docs/faq/index.html#2_2
+  16. file://localhost/home0/pedwards/src/egcsworking/libstdc++-v3/docs/faq/index.html#2_3
+  17. file://localhost/home0/pedwards/src/egcsworking/libstdc++-v3/docs/faq/index.html#2_4
+  18. file://localhost/home0/pedwards/src/egcsworking/libstdc++-v3/docs/faq/index.html#3_0
+  19. file://localhost/home0/pedwards/src/egcsworking/libstdc++-v3/docs/faq/index.html#3_1
+  20. file://localhost/home0/pedwards/src/egcsworking/libstdc++-v3/docs/faq/index.html#3_2
+  21. file://localhost/home0/pedwards/src/egcsworking/libstdc++-v3/docs/faq/index.html#4_0
+  22. file://localhost/home0/pedwards/src/egcsworking/libstdc++-v3/docs/faq/index.html#4_1
+  23. file://localhost/home0/pedwards/src/egcsworking/libstdc++-v3/docs/faq/index.html#4_2
+  24. file://localhost/home0/pedwards/src/egcsworking/libstdc++-v3/docs/faq/index.html#4_3
+  25. file://localhost/home0/pedwards/src/egcsworking/libstdc++-v3/docs/faq/index.html#4_4
+  26. file://localhost/home0/pedwards/src/egcsworking/libstdc++-v3/docs/faq/index.html#4_5
+  27. file://localhost/home0/pedwards/src/egcsworking/libstdc++-v3/docs/faq/index.html#5_0
+  28. file://localhost/home0/pedwards/src/egcsworking/libstdc++-v3/docs/faq/index.html#5_1
+  29. file://localhost/home0/pedwards/src/egcsworking/libstdc++-v3/docs/faq/index.html#5_2
+  30. file://localhost/home0/pedwards/src/egcsworking/libstdc++-v3/docs/faq/index.html#5_3
+  31. file://localhost/home0/pedwards/src/egcsworking/libstdc++-v3/docs/faq/index.html#5_4
+  32. file://localhost/home0/pedwards/src/egcsworking/libstdc++-v3/docs/faq/index.html#5_5
+  33. file://localhost/home0/pedwards/src/egcsworking/libstdc++-v3/docs/faq/index.html#5_6
+  34. file://localhost/home0/pedwards/src/egcsworking/libstdc++-v3/docs/faq/index.html#5_7
   35. ftp://sourceware.cygnus.com/pub/libstdc++/libstdc++-2.90.8.tar.gz
-  36. file://localhost/home0/pedwards/src/egcs/libstdc++-v3/docs/17_intro/DESIGN
+  36. file://localhost/home0/pedwards/src/egcsworking/libstdc++-v3/docs/17_intro/DESIGN
   37. http://gcc.gnu.org/
   38. http://gcc.gnu.org/gcc-2.95/buildstat.html
-  39. file://localhost/home0/pedwards/src/egcs/libstdc++-v3/docs/index.html
+  39. file://localhost/home0/pedwards/src/egcsworking/libstdc++-v3/docs/index.html
   40. ftp://sourceware.cygnus.com/pub/libstdc++/libstdc++-2.90.8.tar.gz
-  41. file://localhost/home0/pedwards/src/egcs/libstdc++-v3/docs/index.html
+  41. file://localhost/home0/pedwards/src/egcsworking/libstdc++-v3/docs/index.html
   42. http://www.deja.com/getdoc.xp?AN=469581698&fmt=text
-  43. file://localhost/home0/pedwards/src/egcs/libstdc++-v3/docs/17_intro/contribute.html
+  43. file://localhost/home0/pedwards/src/egcsworking/libstdc++-v3/docs/17_intro/contribute.html
   44. http://www.boost.org/
   45. http://gcc.gnu.org/fom_serv/cache/33.html
   46. mailto:libstdc++@sourceware.cygnus.com
@@ -575,8 +575,8 @@ References
   48. mailto:gdr@egcs.cygnus.com
   49. http://sourceware.cygnus.com/autoconf/
   50. http://sourceware.cygnus.com/automake/
-  51. file://localhost/home0/pedwards/src/egcs/libstdc++-v3/docs/documentation.html
-  52. file://localhost/home0/pedwards/src/egcs/libstdc++-v3/docs/17_intro/RELEASE-NOTES
+  51. file://localhost/home0/pedwards/src/egcsworking/libstdc++-v3/docs/documentation.html
+  52. file://localhost/home0/pedwards/src/egcsworking/libstdc++-v3/docs/17_intro/RELEASE-NOTES
   53. http://www.gnu.org/software/cvs/cvs.html
   54. http://www.cyclic.com/
   55. http://www.xraylith.wisc.edu/~khan/software/gnu-win32/libstdc++-v3.html
@@ -584,8 +584,8 @@ References
   57. http://www.cantrip.org/draft-bugs.txt
   58. http://anubis.dkuug.dk/jtc1/sc22/wg21/
   59. http://gcc.gnu.org/contribute.html
-  60. file://localhost/home0/pedwards/src/egcs/libstdc++-v3/docs/17_intro/contribute.html
-  61. file://localhost/home0/pedwards/src/egcs/libstdc++-v3/docs/faq/index.html#2_4
+  60. file://localhost/home0/pedwards/src/egcsworking/libstdc++-v3/docs/17_intro/contribute.html
+  61. file://localhost/home0/pedwards/src/egcsworking/libstdc++-v3/docs/faq/index.html#2_4
   62. http://sourceware.cygnus.com/ml/libstdc++/1999/msg00080.html
   63. http://sourceware.cygnus.com/ml/libstdc++/1999/msg00084.html
   64. http://www.sgi.com/Technology/STL/
