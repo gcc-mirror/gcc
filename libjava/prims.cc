@@ -675,46 +675,79 @@ _Jv_InitPrimClass (jclass cl, char *cname, char sig, int len)
 }
 
 jclass
-_Jv_FindClassFromSignature (char *sig, java::lang::ClassLoader *loader)
+_Jv_FindClassFromSignature (char *sig, java::lang::ClassLoader *loader,
+			    char **endp)
 {
+  // First count arrays.
+  int array_count = 0;
+  while (*sig == '[')
+    {
+      ++sig;
+      ++array_count;
+    }
+
+  jclass result = NULL;
   switch (*sig)
     {
     case 'B':
-      return JvPrimClass (byte);
+      result = JvPrimClass (byte);
+      break;
     case 'S':
-      return JvPrimClass (short);
+      result = JvPrimClass (short);
+      break;
     case 'I':
-      return JvPrimClass (int);
+      result = JvPrimClass (int);
+      break;
     case 'J':
-      return JvPrimClass (long);
+      result = JvPrimClass (long);
+      break;
     case 'Z':
-      return JvPrimClass (boolean);
+      result = JvPrimClass (boolean);
+      break;
     case 'C':
-      return JvPrimClass (char);
+      result = JvPrimClass (char);
+      break;
     case 'F':
-      return JvPrimClass (float);
+      result = JvPrimClass (float);
+      break;
     case 'D':
-      return JvPrimClass (double);
+      result = JvPrimClass (double);
+      break;
     case 'V':
-      return JvPrimClass (void);
+      result = JvPrimClass (void);
+      break;
     case 'L':
       {
-	int i;
-	for (i = 1; sig[i] && sig[i] != ';'; ++i)
-	  ;
-	_Jv_Utf8Const *name = _Jv_makeUtf8Const (&sig[1], i - 1);
-	return _Jv_FindClass (name, loader);
+	char *save = ++sig;
+	while (*sig && *sig != ';')
+	  ++sig;
+	// Do nothing if signature appears to be malformed.
+	if (*sig == ';')
+	  {
+	    _Jv_Utf8Const *name = _Jv_makeUtf8Const (save, sig - save);
+	    result = _Jv_FindClass (name, loader);
+	  }
+	break;
       }
-    case '[':
-      {
-	jclass klass = _Jv_FindClassFromSignature (&sig[1], loader);
-	if (! klass)
-	  return NULL;
-	return _Jv_GetArrayClass (klass, loader);
-      }
+    default:
+      // Do nothing -- bad signature.
+      break;
     }
 
-  return NULL;			// Placate compiler.
+  if (endp)
+    {
+      // Not really the "end", but the last valid character that we
+      // looked at.
+      *endp = sig;
+    }
+
+  if (! result)
+    return NULL;
+
+  // Find arrays.
+  while (array_count-- > 0)
+    result = _Jv_GetArrayClass (result, loader);
+  return result;
 }
 
 

@@ -46,6 +46,7 @@ details.  */
 #include <java/nio/DirectByteBufferImpl$ReadWrite.h>
 #include <java/util/IdentityHashMap.h>
 #include <gnu/gcj/RawData.h>
+#include <java/lang/ClassNotFoundException.h>
 
 #include <gcj/method.h>
 #include <gcj/field.h>
@@ -1200,8 +1201,8 @@ _Jv_JNI_GetAnyFieldID (JNIEnv *env, jclass clazz,
       for (int i = 0; i <= len; ++i)
 	s[i] = (sig[i] == '/') ? '.' : sig[i];
       jclass field_class = _Jv_FindClassFromSignature ((char *) s, NULL);
-
-      // FIXME: what if field_class == NULL?
+      if (! field_class)
+	throw new java::lang::ClassNotFoundException(JvNewStringUTF(s));
 
       java::lang::ClassLoader *loader = clazz->getClassLoaderInternal ();
       while (clazz != NULL)

@@ -38,6 +38,7 @@ details.  */
 #include <java/lang/Class.h>
 #include <gcj/method.h>
 #include <gnu/gcj/RawData.h>
+#include <java/lang/NoClassDefFoundError.h>
 
 #include <stdlib.h>
 
@@ -235,6 +236,8 @@ _Jv_GetTypesFromSignature (jmethodID method,
   char *ptr = sig->chars();
   int numArgs = 0;
   /* First just count the number of parameters. */
+  // FIXME: should do some validation here, e.g., that there is only
+  // one return type.
   for (; ; ptr++)
     {
       switch (*ptr)
@@ -271,44 +274,26 @@ _Jv_GetTypesFromSignature (jmethodID method,
   jclass* argPtr = elements (args);
   for (ptr = sig->chars(); *ptr != '\0'; ptr++)
     {
-      int num_arrays = 0;
-      jclass type;
-      for (; *ptr == '[';  ptr++)
-	num_arrays++;
-      switch (*ptr)
+      if (*ptr == '(')
+	continue;
+      if (*ptr == ')')
 	{
-	default:
-	  return;
-	case ')':
 	  argPtr = return_type_out;
 	  continue;
-	case '(':
-	  continue;
-	case 'V':
-	case 'B':
-	case 'C':
-	case 'D':
-	case 'F':
-	case 'S':
-	case 'I':
-	case 'J':
-	case 'Z':
-	  type = _Jv_FindClassFromSignature(ptr, loader);
-	  break;
-	case 'L':
-	  type = _Jv_FindClassFromSignature(ptr, loader);
-	  do 
-	    ptr++;
-	  while (*ptr != ';' && ptr[1] != '\0');
-	  break;
 	}
 
-      while (--num_arrays >= 0)
-	type = _Jv_GetArrayClass (type, loader);
+      char *end_ptr;
+      jclass type = _Jv_FindClassFromSignature (ptr, loader, &end_ptr);
+      if (type == NULL)
+	// FIXME: This isn't ideal.
+	throw new java::lang::NoClassDefFoundError (sig->toString());
+
       // ARGPTR can be NULL if we are processing the return value of a
       // call from Constructor.
       if (argPtr)
 	*argPtr++ = type;
+
+      ptr = end_ptr;
     }
   *arg_types_out = args;
 }
