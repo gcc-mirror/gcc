@@ -1,6 +1,6 @@
 // 1999-08-16 bkoz
 
-// Copyright (C) 1999, 2000, 2002, 2003 Free Software Foundation
+// Copyright (C) 1999, 2000, 2002, 2003, 2005 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -31,12 +31,9 @@ test04()
 {
   bool test __attribute__((unused)) = true;
   std::string str_01;
-  const std::string str_02("coltrane playing 'softly as a morning sunrise'");
-  const std::string str_03("coltrane");
   std::string str_tmp;
   const int i_max=250;
 
-  std::ostringstream oss_01(std::ios_base::out);
   std::ostringstream oss_02(str_01, std::ios_base::out);
 
   std::ios_base::iostate statefail;

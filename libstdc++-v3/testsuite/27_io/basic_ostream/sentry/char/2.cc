@@ -1,6 +1,6 @@
 // 2003-02-06  Paolo Carlini  <pcarlini@unitus.it>
 
-// Copyright (C) 2003 Free Software Foundation, Inc.
+// Copyright (C) 2003, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -34,13 +34,15 @@
 #include <testsuite_hooks.h>
 
 // libstdc++/9563
-struct buf: std::streambuf
+struct buf : std::streambuf
 {
   std::ios *io_;
   
-  buf (std::ios *io): io_ (io) { }
+  buf(std::ios *io)
+  : io_(io) { }
   
-  virtual int sync ()
+  virtual int
+  sync()
   {
     io_->setstate (std::ios::failbit);
     return 0;

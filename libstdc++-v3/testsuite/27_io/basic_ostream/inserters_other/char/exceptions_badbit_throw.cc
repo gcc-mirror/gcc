@@ -48,8 +48,8 @@ void test13()
   catch (...)
     { VERIFY(false); }
 
-  VERIFY(stream.rdstate() & ios_base::failbit);
-  VERIFY((stream.rdstate() & ios_base::badbit) == 0);
+  VERIFY( stream.rdstate() & ios_base::failbit );
+  VERIFY( (stream.rdstate() & ios_base::badbit) == 0 );
 }
 
 void test15()
@@ -66,8 +66,8 @@ void test15()
   catch (...)
     { VERIFY(false); }
 
-  VERIFY(stream.rdstate() & ios_base::failbit);
-  VERIFY((stream.rdstate() & ios_base::badbit) == 0);
+  VERIFY( stream.rdstate() & ios_base::failbit );
+  VERIFY( (stream.rdstate() & ios_base::badbit) == 0 );
 }
 
 // libstdc++/9371

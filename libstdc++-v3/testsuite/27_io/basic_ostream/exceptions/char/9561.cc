@@ -1,6 +1,6 @@
 // 2003-03-08  Jerry Quinn  <jlquinn@optonline.net>
 
-// Copyright (C) 2003 Free Software Foundation, Inc.
+// Copyright (C) 2003, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,10 +27,12 @@ struct foobar: std::exception { };
 
 struct buf: std::streambuf
 {
-    virtual int_type overflow (int_type) {
-        throw foobar ();
-        return -1;
-    }
+  virtual int_type
+  overflow(int_type)
+  {
+    throw foobar();
+    return int_type();
+  }
 };
 
 void test01()
@@ -40,22 +42,25 @@ void test01()
 
   buf b;
   std::ostream strm (&b);
-  strm.exceptions (std::ios::badbit);
+  strm.exceptions(std::ios::badbit);
 
-  try {
-    strm << std::endl;
-  }
-  catch (foobar) {
-    // strm should throw foobar and not do anything else
-    VERIFY(strm.bad());
-    return;
-  }
-  catch (...) {
-    VERIFY(false);
-    return;
-  }
+  try
+    {
+      strm << std::endl;
+    }
+  catch(foobar)
+    {
+      // strm should throw foobar and not do anything else
+      VERIFY(strm.bad());
+      return;
+    }
+  catch(...)
+    {
+      VERIFY( false );
+      return;
+    }
 
-  VERIFY(false);
+  VERIFY( false );
 }
 
 int main()

@@ -1,6 +1,6 @@
 // 1999-07-22 bkoz
 
-// Copyright (C) 1994, 1999, 2000, 2003 Free Software Foundation, Inc.
+// Copyright (C) 1994, 1999, 2000, 2003, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -30,13 +30,11 @@ void test01(void)
 
   const char str_lit01[] = "  venice ";
   const std::string str01(" santa barbara ");
-  std::string str02(str_lit01);
   std::string str04;
   std::string str05;
 
   std::ostringstream oss01(str01);
   std::ostringstream oss02;
-  typedef std::ostringstream::traits_type traits_type;
 
   // template<_CharT, _Traits>
   //  basic_ostream<_CharT, _Traits>& ends(basic_ostream<_Char, _Traits>& os)

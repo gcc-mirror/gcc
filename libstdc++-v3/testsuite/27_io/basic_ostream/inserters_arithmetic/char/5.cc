@@ -1,7 +1,7 @@
 // 1999-11-15 Kevin Ediger  <kediger@licor.com>
 // test the floating point inserters (facet num_put)
 
-// Copyright (C) 1999, 2002, 2003 Free Software Foundation, Inc.
+// Copyright (C) 1999, 2002, 2003, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -25,12 +25,12 @@
 #include <limits>
 #include <testsuite_hooks.h>
 
-using namespace std;
-
 void
 test05()
 {
+  using namespace std;
   bool test __attribute__((unused)) = true;
+
   double pi = 3.14159265358979323846;
   ostringstream ostr;
   ostr.precision(20);

@@ -1,4 +1,4 @@
-// Copyright (C) 2003 Free Software Foundation, Inc.
+// Copyright (C) 2003, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -31,32 +31,34 @@
 #include <sstream>
 #include <testsuite_hooks.h>
 
-using namespace std;
-
 void test1()
 {
+  using namespace std;
   bool test __attribute__((unused)) = true;
+
   ostringstream stream;
   stream << static_cast<streambuf*>(NULL);
-  VERIFY(stream.rdstate() & ios_base::badbit);
+  VERIFY( stream.rdstate() & ios_base::badbit );
 }
 
 void test3()
 {
+  using namespace std;
   bool test __attribute__((unused)) = true;
+
   ostringstream stream;
   stream.exceptions(ios_base::badbit);
 	
   try
     {
       stream << static_cast<streambuf*>(NULL);
-      VERIFY(false);
+      VERIFY( false );
     }
   catch (ios_base::failure&)
     {
     }
 
-  VERIFY(stream.rdstate() & ios_base::badbit);
+  VERIFY( stream.rdstate() & ios_base::badbit );
 }
 
 // libstdc++/9371

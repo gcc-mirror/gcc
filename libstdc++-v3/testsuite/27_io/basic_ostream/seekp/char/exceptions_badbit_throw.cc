@@ -1,4 +1,4 @@
-// Copyright (C) 2003, 2004 Free Software Foundation, Inc.
+// Copyright (C) 2003, 2004, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -31,11 +31,11 @@
 #include <testsuite_hooks.h>
 #include <testsuite_io.h>
 
-using namespace std;
-
 void test01()
 {
+  using namespace std;
   bool test __attribute__((unused)) = true;
+
   __gnu_test::fail_streambuf bib;
   ostream stream(&bib);
   stream.exceptions(ios_base::badbit);
@@ -56,13 +56,15 @@ void test01()
     }
   catch (...) 
     {
-      VERIFY(false);
+      VERIFY( false );
     }
 }
 
 void test02()
 {
+  using namespace std;
   bool test __attribute__((unused)) = true;
+
   __gnu_test::fail_streambuf bib;
   ostream stream(&bib);
   stream.exceptions(ios_base::badbit);
@@ -83,7 +85,7 @@ void test02()
     }
   catch (...) 
     {
-      VERIFY(false);
+      VERIFY( false );
     }
 }
 
