@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on intel 80960.
-   Copyright (C) 1992, 1995, 1996, 1997, 1998, 1999
+   Copyright (C) 1992, 1995, 1996, 1997, 1998, 1999, 2000
    Free Software Foundation, Inc.
    Contributed by Steven McGeady, Intel Corp.
    Additional Work by Glenn Colon-Bonet, Jonathan Shapiro, Andy Wilson
@@ -24,6 +24,7 @@ Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
 #include "system.h"
+#include <math.h>
 #include "rtl.h"
 #include "regs.h"
 #include "hard-reg-set.h"
@@ -41,7 +42,7 @@ Boston, MA 02111-1307, USA.  */
 #include "function.h"
 #include "recog.h"
 #include "toplev.h"
-#include <math.h>
+#include "tm_p.h"
 
 /* Save the operands last given to a compare for use when we
    generate a scc or bcc insn.  */
@@ -92,11 +93,10 @@ static int ret_label = 0;
 
 int
 process_pragma (p_getc, p_ungetc, pname)
-     int (*  p_getc) PROTO ((void));
-     void (* p_ungetc) PROTO ((int));
-     char * pname;
+     int (*  p_getc) PARAMS ((void));
+     void (* p_ungetc) PARAMS ((int));
+     const char *pname;
 {
-  int i;
   register int c;
   char buf[20];
   char *s = buf;
@@ -259,7 +259,7 @@ signed_arith_operand (op, mode)
 int
 literal (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return ((GET_CODE (op) == CONST_INT) && INTVAL(op) >= 0 && INTVAL(op) < 32);
 }
@@ -299,7 +299,7 @@ fp_literal(op, mode)
 int
 signed_literal(op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return ((GET_CODE (op) == CONST_INT) && INTVAL(op) > -32 && INTVAL(op) < 32);
 }
@@ -310,7 +310,7 @@ signed_literal(op, mode)
 int
 symbolic_memory_operand (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   if (GET_CODE (op) == SUBREG)
     op = SUBREG_REG (op);
@@ -326,7 +326,7 @@ symbolic_memory_operand (op, mode)
 int
 eq_or_neq (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return (GET_CODE (op) == EQ || GET_CODE (op) == NE);
 }
@@ -348,7 +348,7 @@ arith32_operand (op, mode)
 int
 power2_operand (op,mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   if (GET_CODE (op) != CONST_INT)
     return 0;
@@ -362,7 +362,7 @@ power2_operand (op,mode)
 int
 cmplpower2_operand (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   if (GET_CODE (op) != CONST_INT)
     return 0;
@@ -480,7 +480,7 @@ bitstr (val, s, e)
 enum machine_mode
 select_cc_mode (op, x)
      RTX_CODE op;
-     rtx x;
+     rtx x ATTRIBUTE_UNUSED;
 {
   if (op == GTU || op == LTU || op == GEU || op == LEU)
     return CC_UNSmode;
@@ -623,7 +623,7 @@ emit_move_sequence (operands, mode)
 
 /* Output assembler to move a double word value.  */
 
-char *
+const char *
 i960_output_move_double (dst, src)
      rtx dst, src;
 {
@@ -695,7 +695,7 @@ i960_output_move_double (dst, src)
 
 /* Output assembler to move a double word zero.  */
 
-char *
+const char *
 i960_output_move_double_zero (dst)
      rtx dst;
 {
@@ -711,7 +711,7 @@ i960_output_move_double_zero (dst)
 
 /* Output assembler to move a quad word value.  */
 
-char *
+const char *
 i960_output_move_quad (dst, src)
      rtx dst, src;
 {
@@ -789,7 +789,7 @@ i960_output_move_quad (dst, src)
 
 /* Output assembler to move a quad word zero.  */
 
-char *
+const char *
 i960_output_move_quad_zero (dst)
      rtx dst;
 {
@@ -809,7 +809,7 @@ i960_output_move_quad_zero (dst)
 /* Emit insns to load a constant to non-floating point registers.
    Uses several strategies to try to use as few insns as possible.  */
 
-char *
+const char *
 i960_output_ldconst (dst, src)
      register rtx dst, src;
 {
@@ -1063,7 +1063,7 @@ i960_bypass (insn, op1, op2, cmpbr_flag)
 void
 i960_function_name_declare (file, name, fndecl)
      FILE *file;
-     char *name;
+     const char *name;
      tree fndecl;
 {
   register int i, j;
@@ -1246,6 +1246,11 @@ struct reg_group
   char length;
 };
 
+static int i960_form_reg_groups PARAMS ((int, int, int *, int, struct reg_group *));
+static int i960_reg_group_compare PARAMS ((const void *, const void *));
+static int i960_split_reg_group PARAMS ((struct reg_group *, int, int));
+static void i960_arg_size_and_align PARAMS ((enum machine_mode, tree, int *, int *));
+
 /* The following functions forms the biggest as possible register
    groups with registers in STATE.  REGS contain states of the
    registers in range [start, finish_reg).  The function returns the
@@ -1286,11 +1291,11 @@ i960_form_reg_groups (start_reg, finish_reg, regs, state, reg_groups)
 /* We sort register winodws in descending order by length. */
 static int
 i960_reg_group_compare (group1, group2)
-     void *group1;
-     void *group2;
+     const void *group1;
+     const void *group2;
 {
-  struct reg_group *w1 = group1;
-  struct reg_group *w2 = group2;
+  const struct reg_group *w1 = group1;
+  const struct reg_group *w2 = group2;
 
   if (w1->length > w2->length)
     return -1;
@@ -1394,12 +1399,14 @@ i960_function_prologue (file, size)
 		   ((g->length == 4) ? "q" :
 		    (g->length == 3) ? "t" :
 		    (g->length == 2) ? "l" : ""),
-		   reg_names[g->start_reg], reg_names[l->start_reg]);
+		   reg_names[(unsigned char) g->start_reg],
+		   reg_names[(unsigned char) l->start_reg]);
 	  sprintf (tmpstr, "\tmov%s	%s,%s\n",
 		   ((g->length == 4) ? "q" :
 		    (g->length == 3) ? "t" :
 		    (g->length == 2) ? "l" : ""),
-		   reg_names[l->start_reg], reg_names[g->start_reg]);
+		   reg_names[(unsigned char) l->start_reg],
+		   reg_names[(unsigned char) g->start_reg]);
 	  strcat (epilogue_string, tmpstr);
 	  n_remaining_saved_regs -= g->length;
 	  for (i = 0; i < g->length; i++)
@@ -1607,7 +1614,7 @@ output_function_profiler (file, labelno)
 void
 i960_function_epilogue (file, size)
      FILE *file;
-     unsigned int size;
+     unsigned int size ATTRIBUTE_UNUSED;
 {
   if (i960_leaf_ret_reg >= 0)
     {
@@ -1667,7 +1674,7 @@ i960_function_epilogue (file, size)
 
 /* Output code for a call insn.  */
 
-char *
+const char *
 i960_output_call_insn (target, argsize_rtx, arg_pointer, insn)
      register rtx target, argsize_rtx, arg_pointer, insn;
 {
@@ -1719,7 +1726,7 @@ i960_output_call_insn (target, argsize_rtx, arg_pointer, insn)
 
 /* Output code for a return insn.  */
 
-char *
+const char *
 i960_output_ret_insn (insn)
      register rtx insn;
 {
@@ -1753,7 +1760,7 @@ i960_output_ret_insn (insn)
    opcode to be tacked on an instruction.  This must at least
    return a null string.  */
 
-char *
+const char *
 i960_br_predict_opcode (lab_ref, insn)
      rtx lab_ref, insn;
 {
@@ -1788,7 +1795,7 @@ void
 i960_print_operand (file, x, code)
      FILE *file;
      rtx x;
-     char code;
+     int code;
 {
   enum rtx_code rtxcode = GET_CODE (x);
 
@@ -2065,7 +2072,7 @@ i960_print_operand_addr (file, addr)
 
 int
 legitimate_address_p (mode, addr, strict)
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
      register rtx addr;
      int strict;
 {
@@ -2155,8 +2162,8 @@ legitimate_address_p (mode, addr, strict)
 rtx
 legitimize_address (x, oldx, mode)
      register rtx x;
-     register rtx oldx;
-     enum machine_mode mode;
+     register rtx oldx ATTRIBUTE_UNUSED;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 { 
   if (GET_CODE (x) == SYMBOL_REF)
     {
@@ -2333,7 +2340,7 @@ i960_expr_alignment (x, size)
       break;
 
     case ASHIFT:
-      align = i960_expr_alignment (XEXP (x, 0));
+      align = i960_expr_alignment (XEXP (x, 0), size);
 
       if (GET_CODE (XEXP (x, 1)) == CONST_INT)
 	{
@@ -2347,6 +2354,8 @@ i960_expr_alignment (x, size)
 	       i960_expr_alignment (XEXP (x, 1), size));
 
       align = MIN (align, 16);
+      break;
+    default:
       break;
     }
 
@@ -2468,7 +2477,7 @@ i960_function_arg_advance (cum, mode, type, named)
      CUMULATIVE_ARGS *cum;
      enum machine_mode mode;
      tree type;
-     int named;
+     int named ATTRIBUTE_UNUSED;
 {
   int size, align;
 
@@ -2495,7 +2504,7 @@ i960_function_arg (cum, mode, type, named)
      CUMULATIVE_ARGS *cum;
      enum machine_mode mode;
      tree type;
-     int named;
+     int named ATTRIBUTE_UNUSED;
 {
   rtx ret;
   int size, align;
@@ -2614,9 +2623,9 @@ i960_round_align (align, tsize)
 void
 i960_setup_incoming_varargs (cum, mode, type, pretend_size, no_rtl)
      CUMULATIVE_ARGS *cum;
-     enum machine_mode mode;
-     tree type;
-     int *pretend_size;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
+     tree type ATTRIBUTE_UNUSED;
+     int *pretend_size ATTRIBUTE_UNUSED;
      int no_rtl;
 {
   /* Note: for a varargs fn with only a va_alist argument, this is 0.  */
@@ -2840,7 +2849,7 @@ secondary_reload_class (class, mode, in)
 
 void
 i960_scan_opcode (p)
-     char *p;
+     const char *p;
 {
   switch (*p)
     {

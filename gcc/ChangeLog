@@ -1,3 +1,12 @@
+2000-01-10  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* i960-protos.h: New file.
+
+	* i960.c: Include tm_p.h.  Add static prototypes.  Fix compile
+	time warnings.
+	
+	* i960.h: Move prototypes to i960-protos.h.  Fix compile time warnings.
+
 2000-01-10  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
 
 	* combine.c (expand_field_assignment): Do not discard SUBREGs
