@@ -3884,12 +3884,6 @@ expand_fix (to, from, unsignedp)
 				   GET_MODE (to), from));
     }
       
-  /* Do NOT copy, if "to" is the same as "target".  See
-     expand_float().  It used to cause a bogus "clobber" of the
-     input, causing it's ancestors to be deleted.  Hopefully the call
-     is just unnecessary now, causing extra time in optimization, or
-     some extra instructions.
-     / Hans-Peter.Nilsson@axis.se */ 
   if (target != to)
     {
       if (GET_MODE (to) == GET_MODE (target))
