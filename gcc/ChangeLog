@@ -1,3 +1,9 @@
+2004-03-28  Olga Golovonevsky <olga@il.ibm.com>
+            Dorit Naishlos <dorit@il.ibm.com>
+
+        * config/rs6000/altivec.md: (andvv16qi3, andv8hi3, one_cmplv16qi2,
+        one_cmplv8hi2, one_cmplv4si2, iorv16qi3, iorv8hi3,): New modelling.
+
 2004-03-28  Stephane Carrez  <stcarrez@nerim.fr>
 
 	* config/m68hc11/m68hc11-protos.h (m68hc11_page0_symbol_p): Declare.

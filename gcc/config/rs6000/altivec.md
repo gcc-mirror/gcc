@@ -388,6 +388,22 @@
   "vaddsws %0,%1,%2"
   [(set_attr "type" "vecsimple")])
 
+(define_insn "andv16qi3"
+  [(set (match_operand:V16QI 0 "register_operand" "=v")
+        (and:V16QI (match_operand:V16QI 1 "register_operand" "v")
+                  (match_operand:V16QI 2 "register_operand" "v")))]
+  "TARGET_ALTIVEC"
+  "vand %0,%1,%2"
+  [(set_attr "type" "vecsimple")])
+
+(define_insn "andv8hi3"
+  [(set (match_operand:V8HI 0 "register_operand" "=v")
+        (and:V8HI (match_operand:V8HI 1 "register_operand" "v")
+                  (match_operand:V8HI 2 "register_operand" "v")))]
+  "TARGET_ALTIVEC"
+  "vand %0,%1,%2"
+  [(set_attr "type" "vecsimple")])
+
 (define_insn "andv4si3"
   [(set (match_operand:V4SI 0 "register_operand" "=v")
         (and:V4SI (match_operand:V4SI 1 "register_operand" "v")
@@ -974,6 +990,43 @@
                             (match_operand:V4SI 2 "register_operand" "v"))))]
   "TARGET_ALTIVEC"
   "vnor %0,%1,%2"
+  [(set_attr "type" "vecsimple")])
+  
+(define_insn "one_cmplv16qi2"
+  [(set (match_operand:V16QI 0 "register_operand" "=v")
+        (not:V16QI (match_operand:V16QI 1 "register_operand" "v")))]
+  "TARGET_ALTIVEC"
+  "vnot %0,%1"
+  [(set_attr "type" "vecsimple")])
+  
+(define_insn "one_cmplv8hi2"
+  [(set (match_operand:V8HI 0 "register_operand" "=v")
+        (not:V8HI (match_operand:V8HI 1 "register_operand" "v")))]
+  "TARGET_ALTIVEC"
+  "vnot %0,%1"
+  [(set_attr "type" "vecsimple")])
+  
+(define_insn "one_cmplv4si2"
+  [(set (match_operand:V4SI 0 "register_operand" "=v")
+        (not:V4SI (match_operand:V4SI 1 "register_operand" "v")))]
+  "TARGET_ALTIVEC"
+  "vnot %0,%1"
+  [(set_attr "type" "vecsimple")])
+
+(define_insn "iorv16qi3"
+  [(set (match_operand:V16QI 0 "register_operand" "=v")
+        (ior:V16QI (match_operand:V16QI 1 "register_operand" "v")
+                  (match_operand:V16QI 2 "register_operand" "v")))]
+  "TARGET_ALTIVEC"
+  "vor %0,%1,%2"
+  [(set_attr "type" "vecsimple")])
+
+(define_insn "iorv8hi3"
+  [(set (match_operand:V8HI 0 "register_operand" "=v")
+        (ior:V8HI (match_operand:V8HI 1 "register_operand" "v")
+                  (match_operand:V8HI 2 "register_operand" "v")))]
+  "TARGET_ALTIVEC"
+  "vor %0,%1,%2"
   [(set_attr "type" "vecsimple")])
 
 (define_insn "iorv4si3"
