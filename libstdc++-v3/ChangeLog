@@ -1,3 +1,17 @@
+2004-01-30  Loren J. Rittle  <ljrittle@acm.org>
+
+	* scripts/check_performance: Only compile with $THREAD_FLAG
+	when test is marked to require it.  Allow multiple
+	compilations/executions of marked tests.
+	* testsuite/testsuite_performance.h (report_performance):
+	Report dynamic thread support status.
+	(report_header): Likewise.
+	* testsuite/performance/allocator.cc: Stabilize iteration
+	count.  Support more allocators.  Mark each allocator test to
+	run and report independently.
+	* testsuite/performance/allocator_map_thread.cc: Likewise.
+	* testsuite/performance/allocator_thread.cc: Likewise.
+
 2004-01-29  Stephen M. Webb  <stephen.webb@bregmasoft.com>
 
 	* config/local/generic/c_locale.h: Change ::malloc() to new char[].

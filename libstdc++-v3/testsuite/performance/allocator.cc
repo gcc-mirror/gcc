@@ -38,18 +38,20 @@
 #include <typeinfo>
 #include <sstream>
 #include <ext/mt_allocator.h>
+#include <ext/new_allocator.h>
 #include <ext/malloc_allocator.h>
 #include <cxxabi.h>
 #include <testsuite_performance.h>
 
 using namespace std;
-using __gnu_cxx::malloc_allocator;
 using __gnu_cxx::__mt_alloc;
+using __gnu_cxx::new_allocator;
+using __gnu_cxx::malloc_allocator;
 
 typedef int test_type;
 
 // The number of iterations to be performed.
-int iterations;
+int iterations = 100000;
 
 // The number of values to insert in the container, 32 will cause 5
 // (re)allocations to be performed (sizes 4, 8, 16, 32 and 64)
@@ -83,29 +85,6 @@ template<typename Container>
 
 template<typename Container>
   void
-  calibrate_iterations()
-  {
-    int try_iterations = iterations = 100000;
-    int test_iterations;
-
-    __gnu_test::time_counter timer;
-    timer.start();
-    test_iterations = do_loop<Container>();
-    timer.stop();
-
-    if (try_iterations > test_iterations && test_iterations > iterations)
-      iterations = test_iterations - 100;
-    else
-      {
-	double tics = timer.real_time();
-	double iterpc = test_iterations / tics; //iterations per clock
-	double xtics = 200; // works for linux 2gig x86
-	iterations = static_cast<int>(xtics * iterpc);
-      }
-  }
-
-template<typename Container>
-  void
   test_container(Container obj)
   {
     using namespace __gnu_test;
@@ -130,15 +109,31 @@ template<typename Container>
 // http://gcc.gnu.org/ml/libstdc++/2003-05/msg00231.html
 int main(void)
 {
-  calibrate_iterations<vector<test_type> >();
+#ifdef TEST_B1
   test_container(vector<test_type>());
+#endif
+#ifdef TEST_B2
   test_container(vector<test_type, malloc_allocator<test_type> >());
+#endif
+#ifdef TEST_B3
+  test_container(vector<test_type, new_allocator<test_type> >());
+#endif
+#ifdef TEST_B4
   test_container(vector<test_type, __mt_alloc<test_type> >());
+#endif
 
-  calibrate_iterations<list<test_type> >();
+#ifdef TEST_B5
   test_container(list<test_type>());
+#endif
+#ifdef TEST_B6
   test_container(list<test_type, malloc_allocator<test_type> >());
+#endif
+#ifdef TEST_B7
+  test_container(list<test_type, new_allocator<test_type> >());
+#endif
+#ifdef TEST_B8
   test_container(list<test_type, __mt_alloc<test_type> >());
+#endif
 
   return 0;
 }

@@ -183,6 +183,11 @@ namespace __gnu_test
 
     std::ofstream out(name, std::ios_base::app);
 
+#ifdef __GTHREADS
+    if (__gthread_active_p ())
+      testname.append ("-thread");
+#endif
+
     out.setf(std::ios_base::left);
     out << std::setw(25) << testname << tab;
     out << std::setw(25) << comment << tab;
@@ -208,6 +213,11 @@ namespace __gnu_test
     std::string testname(i, file.end());
 
     std::ofstream out(name, std::ios_base::app);
+
+#ifdef __GTHREADS
+    if (__gthread_active_p ())
+      testname.append ("-thread");
+#endif
 
     out.setf(std::ios_base::left);
     out << std::setw(25) << testname << tab;

@@ -37,17 +37,19 @@
 #include <iostream>
 #include <typeinfo>
 #include <sstream>
-#include <cxxabi.h>
 #include <ext/mt_allocator.h>
+#include <ext/new_allocator.h>
 #include <ext/malloc_allocator.h>
+#include <cxxabi.h>
 #include <testsuite_performance.h>
 
 using namespace std;
-using __gnu_cxx::malloc_allocator;
 using __gnu_cxx::__mt_alloc;
+using __gnu_cxx::new_allocator;
+using __gnu_cxx::malloc_allocator;
 
 // The number of iterations to be performed.
-int iterations;
+int iterations = 25000;
 
 template<typename Container>
   void*
@@ -67,23 +69,6 @@ template<typename Container>
       {
 	// No point allocating all available memory, repeatedly.	
       }
-  }
-
-template<typename Container>
-  void
-  calibrate_iterations()
-  {
-    int try_iterations = iterations = 10000;
-
-    __gnu_test::time_counter timer;
-    timer.start();
-    do_loop<Container>();
-    timer.stop();
-
-    double tics = timer.real_time();
-    double iterpc = iterations / tics; //iterations per clock
-    double xtics = 100; // works for linux 2gig x86
-    iterations = static_cast<int>(xtics * iterpc);
   }
 
 template<typename Container>
@@ -122,11 +107,19 @@ template<typename Container>
 
 int main(void)
 {
-  calibrate_iterations<map<int, int> >();
+#ifdef TEST_T1
   test_container(map<int, int>());
+#endif
+#ifdef TEST_T2
+  test_container(map<int, int, less<const int>, new_allocator<int> >());
+#endif
+#ifdef TEST_T3
   test_container(map<int, int, less<const int>, malloc_allocator<int> >());
+#endif
+#ifdef TEST_T4
   test_container(map<int, int, less<const int>,
                      __mt_alloc< pair<const int, int> > >());
+#endif
 
   return 0;
 }
