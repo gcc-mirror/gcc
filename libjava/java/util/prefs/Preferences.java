@@ -92,11 +92,11 @@ public abstract class Preferences {
      * Default PreferencesFactory class used when the system property
      * "java.util.prefs.PreferencesFactory" is not set.
 	 * <p>
-	 * XXX - Currently set to MemoryBasedPreferencesFactory, should be changed
+	 * XXX - Currently set to MemoryBasedFactory, should be changed
 	 * when FileBasedPreferences backend works.
      */
     private static final String defaultFactoryClass
-        = "gnu.java.util.prefs.MemoryBasedPreferencesFactory";
+        = "gnu.java.util.prefs.MemoryBasedFactory";
 
     /** Permission needed to access system or user root. */
     private static final Permission prefsPermission
@@ -210,18 +210,23 @@ public abstract class Preferences {
                         });
 
             // Still no factory? Use our default.
-            if (factory == null) {
-                try {
-                    Object o = Class.forName(defaultFactoryClass);
-                    factory = (PreferencesFactory) o;
-                } catch (ClassNotFoundException cnfe) {
-                    throw new RuntimeException("Couldn't load default factory"
+            if (factory == null)
+	      {
+                try
+		  {
+                    Class cls = Class.forName (defaultFactoryClass);
+                    factory = (PreferencesFactory) cls.newInstance();
+                  }
+		catch (Exception e)
+		  {
+                    throw new RuntimeException ("Couldn't load default factory"
                         + " '"+ defaultFactoryClass +"'");
                     // XXX - when using 1.4 compatible throwables add cause
-                }
-            }
+                  }
+              }
 
         }
+	
         return factory;
     }
 
