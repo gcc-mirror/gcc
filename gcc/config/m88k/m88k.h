@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler for
    Motorola m88100 in an 88open OCS/BCS environment.
-   Copyright (C) 1988, 92, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1988, 92, 93, 94, 95, 96, 97, 1998 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com).
    Currently maintained by (gcc@dg-rtp.dg.com)
 
@@ -547,7 +547,7 @@ extern char * reg_names[];
     are still no registers to be had for free, but this one must be a GRF
     reg instead of an extended reg, so a preserve register is spilled.  Thus
     the move from extended to GRF is necessitated.  I do not believe this can
-    be 'fixed' through the config/*m88k* files.
+    be 'fixed' through the files in config/m88k.
 
     gcc seems to sometimes make worse use of register allocation -- not counting
     moves -- whenever extended registers are present.  For example in the
