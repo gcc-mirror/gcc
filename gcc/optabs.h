@@ -148,6 +148,8 @@ enum optab_index
   OTI_parity,
   /* Square root */
   OTI_sqrt,
+  /* Sine-Cosine */
+  OTI_sincos,
   /* Sine */
   OTI_sin,
   /* Cosine */
@@ -264,6 +266,7 @@ extern GTY(()) optab optab_table[OTI_MAX];
 #define popcount_optab (optab_table[OTI_popcount])
 #define parity_optab (optab_table[OTI_parity])
 #define sqrt_optab (optab_table[OTI_sqrt])
+#define sincos_optab (optab_table[OTI_sincos])
 #define sin_optab (optab_table[OTI_sin])
 #define cos_optab (optab_table[OTI_cos])
 #define exp_optab (optab_table[OTI_exp])
@@ -385,6 +388,9 @@ extern rtx expand_binop (enum machine_mode, optab, rtx, rtx, rtx, int,
 /* Expand a binary operation with both signed and unsigned forms.  */
 extern rtx sign_expand_binop (enum machine_mode, optab, optab, rtx, rtx,
 			      rtx, int, enum optab_methods);
+
+/* Generate code to perform an operation on one operand with two results.  */
+extern int expand_twoval_unop (optab, rtx, rtx, rtx, int);
 
 /* Generate code to perform an operation on two operands with two results.  */
 extern int expand_twoval_binop (optab, rtx, rtx, rtx, rtx, int);

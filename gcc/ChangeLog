@@ -1,3 +1,37 @@
+2004-04-06  Uros Bizjak  <uros@kss-loka.si>
+
+	* builtins.c: Implement support for sincos function.
+	(expand_builtin_mathfn): Remove BUILT_IN_SIN{,F,L} and
+	BUILT_IN_COS{,F,L}.
+	(expand_builtin_mathfn_3): New function.
+	(expand_builtin): Expand BUILT_IN_SIN{,F,L} and
+	BUILT_IN_COS{,F,L} using expand_builtin_mathfn_3 if
+	flag_unsafe_math_optimization is set.
+
+	* optabs.h (enum optab_index): Add new OTI_sincos.
+	(sincos_optab): Define corresponding macro.
+
+	* optabs.c (init_optabs): Initialize sincos_optab.
+	(expand_twoval_unop): New function.
+
+	* genopinit.c (optabs): Implement sincos_optab using sincos?f3
+	patterns.
+
+	* reg-stack.c (subst_stack_regs_pat): Handle UNSPEC_SINCOS_COS
+	and UNSPEC_SINCOS_SIN.
+
+	* config/i386/i386.md (sincosdf3, sincossf3, *sincosextendsfdf3,
+	sincosxf3): New patterns to implement sincos, sincosf and sincosl
+	built-ins as inline x87 intrinsics. Define splits for
+	sindf2, sinsf2, *sinextendsfdf2, sinxf2, cosdf2,
+	cossf2, *cosextendsfdf2 and cosxf2 patterns from corresponding
+	sincos patterns.
+	(sindf2, sinsf2, sinxf2): Rename to *sindf2, *sinsf2, *sinxf2.
+	(cosdf2, cossf2, cosxf2): Rename to *cosdf2, *cossf2, *cosxf2.
+
+	(UNSPEC_SINCOS_SIN, UNPEC_SINCOS_COS): New unspecs to represent
+	x87's unspec insn.
+
 2004-04-06  Devang Patel  <dpatel@apple.com>
 
 	PR 14467
