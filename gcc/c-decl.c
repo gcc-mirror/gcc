@@ -2930,6 +2930,29 @@ init_decl_processing ()
 						    endlink)),
 		    BUILT_IN_ARGS_INFO, NULL_PTR);
 
+  /* Untyped call and return.  */
+  builtin_function ("__builtin_apply_args",
+		    build_function_type (ptr_type_node, NULL_TREE),
+		    BUILT_IN_APPLY_ARGS, NULL_PTR);
+
+  temp = tree_cons (NULL_TREE,
+		    build_pointer_type (build_function_type (void_type_node,
+							     NULL_TREE)),
+		    tree_cons (NULL_TREE,
+			       ptr_type_node,
+			       tree_cons (NULL_TREE,
+					  integer_type_node,
+					  endlink)));
+  builtin_function ("__builtin_apply",
+		    build_function_type (ptr_type_node, temp),
+		    BUILT_IN_APPLY, NULL_PTR);
+  builtin_function ("__builtin_return",
+		    build_function_type (void_type_node,
+					 tree_cons (NULL_TREE,
+						    ptr_type_node,
+						    endlink)),
+		    BUILT_IN_RETURN, NULL_PTR);
+
   /* Currently under experimentation.  */
   builtin_function ("__builtin_memcpy", memcpy_ftype,
 		    BUILT_IN_MEMCPY, "memcpy");
