@@ -2067,6 +2067,19 @@ ia64_print_operand (file, x, code)
 	return;
       }
 
+    case ',':
+      x = current_insn_predicate;
+      if (x)
+	{
+	  unsigned int regno = REGNO (XEXP (x, 0));
+	  if (GET_CODE (x) == EQ)
+	    regno += 1;
+	  if (code == 'j')
+	    regno ^= 1;
+          fprintf (file, "(%s) ", reg_names [regno]);
+	}
+      return;
+
     default:
       output_operand_lossage ("ia64_print_operand: unknown code");
       return;

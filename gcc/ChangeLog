@@ -1,3 +1,9 @@
+2000-07-24  Richard Henderson  <rth@cygnus.com>
+
+	* config/ia64/ia64.c (ia64_print_operand): Handle "%,".
+	* config/ia64/ia64.h (PRINT_OPERAND_PUNCT_VALID_P): Likewise.
+	* config/ia64/ia64.md (movdi_internal): Use it.
+
 2000-07-24  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cppexp.c: Warn about unary + if -Wtraditional.
