@@ -1340,7 +1340,8 @@ check-gcc-c++:
 	fi
 
 .PHONY: check-c++
-check-c++: check-target-libstdc++-v3 check-gcc-c++
+check-c++:
+	$(MAKE) check-target-libstdc++-v3 check-gcc-c++ NOTPARALLEL=parallel-ok
 
 .PHONY: install-gcc
 install-gcc:
