@@ -6433,6 +6433,9 @@ dubious_conversion_warnings (type, expr, errtype, fndecl, parmnum)
      tree fndecl;
      int parmnum;
 {
+  if (TREE_CODE (type) == REFERENCE_TYPE)
+    type = TREE_TYPE (type);
+  
   /* Issue warnings about peculiar, but legal, uses of NULL.  */
   if (ARITHMETIC_TYPE_P (type) && expr == null_node)
     {
