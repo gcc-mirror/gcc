@@ -2750,7 +2750,8 @@ print_operand (file, x, code)
     case 'r':
       /* In this case we need a register.  Use %g0 if the
 	 operand is const0_rtx.  */
-      if (x == const0_rtx)
+      if (x == const0_rtx
+	  || (GET_MODE (x) != VOIDmode && x == CONST0_RTX (GET_MODE (x))))
 	{
 	  fputs ("%g0", file);
 	  return;
