@@ -340,7 +340,7 @@ static int
 c_disregard_inline_limits (fn)
      tree fn;
 {
-  return DECL_INLINE (fn) && DECL_EXTERNAL (fn);
+  return DECL_DECLARED_INLINE_P (fn) && DECL_EXTERNAL (fn);
 }
 
 static tree inline_forbidden_p PARAMS ((tree *, int *, void *));

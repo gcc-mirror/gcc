@@ -1705,17 +1705,16 @@ struct lang_decl_flags
   unsigned deferred : 1;
   unsigned use_template : 2;
   unsigned nonconverting : 1;
-  unsigned declared_inline : 1;
   unsigned not_really_extern : 1;
   unsigned needs_final_overrider : 1;
   unsigned initialized_in_class : 1;
-
   unsigned pending_inline_p : 1;
+
   unsigned global_ctor_p : 1;
   unsigned global_dtor_p : 1;
   unsigned assignment_operator_p : 1;
   unsigned anticipated_p : 1;
-  /* Three unused bits.  */
+  /* Four unused bits.  */
 
   union {
     /* In a FUNCTION_DECL, VAR_DECL, TYPE_DECL, or TEMPLATE_DECL, this
@@ -2838,7 +2837,7 @@ enum ptrmemfunc_vbit_where_t
    semantics of 'inline'; whether or not the function is inlined is
    controlled by DECL_INLINE.  */
 #define DECL_DECLARED_INLINE_P(NODE) \
-  (DECL_LANG_SPECIFIC (NODE)->decl_flags.declared_inline)
+  (DECL_LANG_SPECIFIC (NODE)->decl_flags.base.declared_inline)
 
 /* DECL_EXTERNAL must be set on a decl until the decl is actually emitted,
    so that assemble_external will work properly.  So we have this flag to

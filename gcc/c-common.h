@@ -338,7 +338,7 @@ extern void mark_stmt_tree                      PARAMS ((void *));
    DECL_LANG_SPECIFIC field.  */
 
 struct c_lang_decl {
-  char dummy;
+  unsigned declared_inline : 1;
 };
 
 /* In a FUNCTION_DECL for which DECL_BUILT_IN does not hold, this is

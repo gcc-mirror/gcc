@@ -1,3 +1,8 @@
+2001-10-08  Richard Henderson  <rth@redhat.com>
+
+	* cp-tree.h (struct lang_decl_flags): Remove declared_inline.
+	(DECL_DECLARED_INLINE_P): Use the bit in struct c_lang_decl.
+
 2001-10-07  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* class.c (build_vtable_entry_ref): Const-ify.
