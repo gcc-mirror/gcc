@@ -1,3 +1,7 @@
+Tue Nov  2 16:57:22 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* cse.c (simplify_plus_minus, check_fold_const): Delete declarations.
+
 Tue Nov  2 09:43:00 1999   Catherine Moore  <clm@cygnus.com>
 
         * Makefile.in (genattrtab): Don't use (HOST_RTLANAL).
