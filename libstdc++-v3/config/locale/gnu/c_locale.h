@@ -75,7 +75,7 @@ namespace std
 #else
 		     _Tv __v, const __c_locale&, int __prec = -1)
     {
-      char* __old = setlocale(LC_ALL, NULL);
+      char* __old = std::setlocale(LC_ALL, NULL);
       char* __sav = static_cast<char*>(std::malloc(std::strlen(__old) + 1));
       if (__sav)
         std::strcpy(__sav, __old);
