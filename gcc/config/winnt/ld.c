@@ -1,5 +1,5 @@
 /* Call Windows NT 3.x linker.
-   Copyright (C) 1994 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1995 Free Software Foundation, Inc.
    Contributed by Douglas B. Rupp (drupp@cs.washington.edu).
 
 This file is part of GNU CC.
@@ -29,6 +29,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* These can be set by command line arguments */
 char *linker_path = 0;
 int verbose = 0;
+int subsystem = 0;
+int entry = 0;
 
 int link_arg_max = -1;
 char **link_args = (char **) 0;
@@ -37,6 +39,9 @@ int link_arg_index = -1;
 char *search_dirs = ".";
 
 static int is_regular_file (char *name);
+
+/* Add the argument contained in STR to the list of arguments to pass to the
+   linker */
 
 static void
 addarg (str)
@@ -61,6 +66,9 @@ addarg (str)
 
   link_args [link_arg_index] = str;
 }
+
+/* Locate the file named in FILE_NAME in the set of paths contained in
+   PATH_VAL */
 
 static char *
 locate_file (file_name, path_val)
@@ -110,6 +118,9 @@ locate_file (file_name, path_val)
   return 0;
 }
 
+/* Given a library name in NAME, i.e. foo.  Look first for libfoo.a and then
+   foo.lib in the set of directories we are allowed to search in */
+
 static char *
 expand_lib (name)
      char *name;
@@ -123,12 +134,22 @@ expand_lib (name)
   lib_path = locate_file (lib, search_dirs);
   if (!lib_path)
     {
-      fprintf (stderr, "Couldn't locate library: %s\n", lib);
-      exit (1);
+      strcpy (lib, name);
+      strcat (lib, ".lib");
+      lib_path = locate_file (lib, search_dirs);
+      if (!lib_path)
+        {
+          fprintf (stderr, 
+                   "Couldn't locate library: lib%s.a or %s.lib\n", name, name);
+          exit (1);
+        }
     }
 
   return lib_path;
 }
+
+/* Check to see if the file named in NAME is a regular file, i.e. not a
+   directory */
 
 static int
 is_regular_file (name)
@@ -140,6 +161,9 @@ is_regular_file (name)
   ret = stat(name, &statbuf);
   return !ret && S_ISREG (statbuf.st_mode);
 }
+
+/* Process the number of args in P_ARGC and contained in ARGV.  Look for
+   special flags, etc. that must be handled for the Microsoft linker */
 
 static void
 process_args (p_argc, argv)
@@ -153,8 +177,15 @@ process_args (p_argc, argv)
       /* -v turns on verbose option here and is passed on to gcc */
       if (! strcmp (argv [i], "-v"))
 	verbose = 1;
+      else if (! strncmp (argv [i], "-subsystem", 10))
+	subsystem = 1;
+      else if (! strncmp (argv [i], "-entry", 6))
+	entry = 1;
     }
 }
+
+/* The main program.  Spawn the Microsoft linker after fixing up the
+   Unix-like flags and args to be what the Microsoft linker wants */
 
 main (argc, argv)
      int argc;
@@ -184,6 +215,8 @@ main (argc, argv)
     }
 
   addarg (linker_path);
+  if (! subsystem) addarg ("-subsystem:console");
+  if (! entry) addarg ("-entry:mainCRTStartup");
 
   for (i = 1; i < argc; i++)
     {
@@ -203,7 +236,6 @@ main (argc, argv)
 	  if (ptr == NULL || strlen (ptr) != 4)
 	    strcat (buff, ".exe");
 	  addarg (buff);
-	  addarg ("-debug:full -debugtype:coff");
 	}
       else if (arg_len > 2 && !strncmp (argv [i], "-L", 2))
 	{
