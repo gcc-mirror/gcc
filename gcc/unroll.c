@@ -234,7 +234,8 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
      struct loop_info *loop_info;
      int strength_reduce_p;
 {
-  int i, j, temp;
+  int i, j;
+  unsigned HOST_WIDE_INT temp;
   int unroll_number = 1;
   rtx copy_start, copy_end;
   rtx insn, sequence, pattern, tem;
