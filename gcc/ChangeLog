@@ -1,5 +1,16 @@
 2005-01-05  Richard Henderson  <rth@redhat.com>
 
+	PR target/11327
+	* config/i386/i386.c (BUILTIN_DESC_SWAP_OPERANDS): New.
+	(bdesc_2arg): Use it.
+	(ix86_expand_binop_builtin): Force operands into registers
+	when optimizing.
+	(ix86_expand_unop_builtin, ix86_expand_unop1_builtin,
+	ix86_expand_sse_compare, ix86_expand_sse_comi, 
+	ix86_expand_builtin): Likewise.
+
+2005-01-05  Richard Henderson  <rth@redhat.com>
+
 	* config/ia64/ia64.c (rtx_needs_barrier): Handle CONST_VECTOR
 	and VEC_SELECT.
 	* config/ia64/vect.md (mulv8qi3): Re-implement with mix_[rl].
