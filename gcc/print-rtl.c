@@ -323,7 +323,7 @@ print_rtx (in_rtx)
 		     print_rtx_head, indent * 2, "");
 	    sawclose = 0;
 	  }
-	fputs ("[ ", outfile);
+	fputs (" [", outfile);
 	if (NULL != XVEC (in_rtx, i))
 	  {
 	    indent += 2;
@@ -338,7 +338,7 @@ print_rtx (in_rtx)
 	if (sawclose)
 	  fprintf (outfile, "\n%s%*s", print_rtx_head, indent * 2, "");
 
-	fputs ("] ", outfile);
+	fputs ("]", outfile);
 	sawclose = 1;
 	indent -= 2;
 	break;
@@ -616,6 +616,7 @@ debug_rtx (x)
      rtx x;
 {
   outfile = stderr;
+  sawclose = 0;
   print_rtx (x);
   fprintf (stderr, "\n");
 }
@@ -652,7 +653,10 @@ debug_rtx_list (x, n)
       }
 
   for (i = count, insn = x; i > 0 && insn != 0; i--, insn = NEXT_INSN (insn))
-    debug_rtx (insn);
+    {
+      debug_rtx (insn);
+      fprintf (stderr, "\n");
+    }
 }
 
 /* Call this function to print an rtx list from START to END inclusive.  */
@@ -664,6 +668,7 @@ debug_rtx_range (start, end)
   while (1)
     {
       debug_rtx (start);
+      fprintf (stderr, "\n");
       if (!start || start == end)
 	break;
       start = NEXT_INSN (start);
