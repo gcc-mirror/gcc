@@ -43,6 +43,8 @@ import java.io.PrintStream;
 public abstract class RemoteServer
 	extends RemoteObject {
 
+private static final long serialVersionUID = -4100238210092549637L;
+
 protected RemoteServer() {
 	super();
 }

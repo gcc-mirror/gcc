@@ -45,8 +45,8 @@ public class LogStream
 	extends PrintStream {
 
 public static final int SILENT = 0;
-public static final int BRIEF = 1;
-public static final int VERBOSE = 2;
+public static final int BRIEF = 10;
+public static final int VERBOSE = 20;
 
 private static PrintStream defStream;
 
