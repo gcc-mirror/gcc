@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *                            $Revision: 1.3 $
+ *                            $Revision$
  *                                                                          *
  *          Copyright (C) 1992-2001, Free Software Foundation, Inc.         *
  *                                                                          *
@@ -1033,11 +1033,13 @@ gnat_to_gnu_entity (gnat_entity, gnu_expr, definition)
 					     STACK_CHECK_MAX_VAR_SIZE))))
 	  update_setjmp_buf (TREE_VALUE (gnu_block_stack));
 
-	/* If this is a public constant and we're not making a VAR_DECL for
-	   it, make one just for export or debugger use.  Likewise if
-	   the address is taken or if the object or type is aliased.  */
+	/* If this is a public constant or we're not optimizing and we're not
+	   making a VAR_DECL for it, make one just for export or debugger
+	   use.  Likewise if the address is taken or if the object or type is
+	   aliased.  */
 	if (definition && TREE_CODE (gnu_decl) == CONST_DECL
 	    && (Is_Public (gnat_entity)
+		|| optimize == 0
 		|| Address_Taken (gnat_entity)
 		|| Is_Aliased (gnat_entity)
 		|| Is_Aliased (Etype (gnat_entity))))
