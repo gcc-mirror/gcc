@@ -1349,9 +1349,11 @@ function_arg (cum, mode, type, named)
 				const0_rtx)));
     }
 
-  /* Long longs won't be split between register and stack */
+  /* Long longs won't be split between register and stack;
+     FP arguments get passed on the stack if they didn't get a register.  */
   else if ((DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS) &&
-	   align_words + RS6000_ARG_SIZE (mode, type, named) > GP_ARG_NUM_REG)
+	   (align_words + RS6000_ARG_SIZE (mode, type, named) > GP_ARG_NUM_REG
+	    || (GET_MODE_CLASS (mode) == MODE_FLOAT && TARGET_HARD_FLOAT)))
     {
       return NULL_RTX;
     }
@@ -1384,6 +1386,9 @@ function_arg_partial_nregs (cum, mode, type, named)
       if (cum->nargs_prototype >= 0)
 	return 0;
     }
+
+  if (GET_MODE_CLASS (mode) == MODE_FLOAT && TARGET_HARD_FLOAT)
+    return 0;
 
   if (cum->words < GP_ARG_NUM_REG
       && GP_ARG_NUM_REG < (cum->words + RS6000_ARG_SIZE (mode, type, named)))

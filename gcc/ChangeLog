@@ -1,3 +1,14 @@
+Wed Nov 26 13:04:46 1997  Michael Meissner  <meissner@cygnus.com>
+
+	(patches originally from Geoffrey Keating)
+	* rs6000.c (function_arg): Excess floating point arguments don't
+	go into GPR registers after exhausting FP registers under the
+	System V.4 ABI.
+	(function_arg_partial_nregs): Ditto.
+
+	* rs6000.md (call insns): If -fPIC or -mrelocatable, add @plt
+	suffix to calls.
+
 Wed Nov 26 13:04:46 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* toplev.c (main): Complain about -gdwarfn.
