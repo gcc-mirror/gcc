@@ -24,6 +24,8 @@
 # include <config.h>
 #endif
 
+#include "ansidecl.h"
+
 #if HAVE_STDLIB_H
 # include <stdlib.h>
 #endif
@@ -55,7 +57,7 @@ putenv (string)
 
   if (name_end)
     {
-      char *name = alloca (name_end - string + 1);
+      char *name = (char *) alloca (name_end - string + 1);
       memcpy (name, string, name_end - string);
       name[name_end - string] = '\0';
       return setenv (name, name_end + 1, 1);
