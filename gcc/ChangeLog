@@ -1,5 +1,8 @@
 2001-11-08  Richard Henderson  <rth@redhat.com>
 
+	* config/fp-bit.h (usi_to_float): Define for US_SOFTWARE_GOFAST
+	case as well.
+
 	* Makefile.in (NM_FOR_TARGET): Single build tree uses nm-new.
 
 2001-11-07  Neil Booth  <neil@daikokuya.demon.co.uk>
