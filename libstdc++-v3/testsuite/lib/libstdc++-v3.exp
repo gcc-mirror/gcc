@@ -1,0 +1,7 @@
+
+# This is the "tool init file" for libstdc++-v3.  There's nothing here.
+# It's simply a placeholder for two reasons.  First, to show where we would
+# put things, in case we ever want to take advantage of the tool init file.
+# Second, to make dejagnu shut up about "WARNING could not find tool init
+# file," which is harmless but tends to scare/confuse people.
+

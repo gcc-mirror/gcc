@@ -30,7 +30,7 @@ void test01()
   typedef std::messages<char>::string_type string_type;
 
   bool test = true;
-  // This is exported through RUNTESTFLAGS in testsuite/Makefile.am.
+  // This is defined through CXXFLAGS in scripts/testsuite_flags[.in].
   const char* dir = LOCALEDIR;
 
   // basic construction
