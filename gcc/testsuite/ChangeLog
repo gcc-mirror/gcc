@@ -1,3 +1,20 @@
+1998-09-12  Alexandre Oliva  <oliva@dcc.unicamp.br>
+
+	* g++.old-deja/g++.other/typedef5.C: check whether typedefs can be
+ 	redefined to the same non-trivial type
+
+	* g++.old-deja/g++.pt/explicit73.C: test for proper
+ 	namespace-qualification of template specializations declared in
+ 	other namespaces
+
+	* g++.old-deja/g++.other/friend4.C: check whether it is possible
+	to declare a subset of the specializations of a template function
+	as friends of specializations of a template class
+
+	* g++.old-deja/g++.pt/explicit71.C: make sure specializations of
+ 	member templates that do not fully specialize the enclosing
+ 	template class are rejected
+
 1998-09-11  Dave Love  <d.love@dl.ac.uk>
 
 	* g77.f-torture/execute/u77-test.f: Fix bad consistency checks.
