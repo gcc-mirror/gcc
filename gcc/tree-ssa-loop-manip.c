@@ -110,8 +110,8 @@ create_iv (tree base, tree step, tree var, struct loop *loop,
 
   stmt = create_phi_node (vb, loop->header);
   SSA_NAME_DEF_STMT (vb) = stmt;
-  add_phi_arg (&stmt, initial, loop_preheader_edge (loop));
-  add_phi_arg (&stmt, va, loop_latch_edge (loop));
+  add_phi_arg (stmt, initial, loop_preheader_edge (loop));
+  add_phi_arg (stmt, va, loop_latch_edge (loop));
 }
 
 /* Add exit phis for the USE on EXIT.  */
@@ -140,7 +140,7 @@ add_exit_phis_edge (basic_block exit, tree use)
   phi = create_phi_node (use, exit);
 
   FOR_EACH_EDGE (e, ei, exit->preds)
-    add_phi_arg (&phi, use, e);
+    add_phi_arg (phi, use, e);
 
   SSA_NAME_DEF_STMT (use) = def_stmt;
 }
@@ -420,7 +420,7 @@ split_loop_exit_edge (edge exit)
       new_name = duplicate_ssa_name (name, NULL);
       new_phi = create_phi_node (new_name, bb);
       SSA_NAME_DEF_STMT (new_name) = new_phi;
-      add_phi_arg (&new_phi, name, exit);
+      add_phi_arg (new_phi, name, exit);
       SET_USE (op_p, new_name);
     }
 }
@@ -672,7 +672,7 @@ lv_adjust_loop_header_phi (basic_block first, basic_block second,
       if (e2)
 	{
 	  tree def = PHI_ARG_DEF (phi2, e2->dest_idx);
-	  add_phi_arg (&phi1, def, e);
+	  add_phi_arg (phi1, def, e);
 	}
     }
 }

@@ -299,7 +299,7 @@ create_edge_and_update_destination_phis (struct redirection_data *rd)
   for (phi = phi_nodes (e->dest); phi; phi = PHI_CHAIN (phi))
     {
       int indx = phi_arg_from_edge (phi, rd->outgoing_edge);
-      add_phi_arg (&phi, PHI_ARG_DEF_TREE (phi, indx), e);
+      add_phi_arg (phi, PHI_ARG_DEF_TREE (phi, indx), e);
     }
 }
 

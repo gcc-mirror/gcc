@@ -589,7 +589,7 @@ adjust_accumulator_values (block_stmt_iterator bsi, tree m, tree a, edge back)
 	if (PHI_RESULT (phi) == a_acc)
 	  break;
 
-      add_phi_arg (&phi, a_acc_arg, back);
+      add_phi_arg (phi, a_acc_arg, back);
     }
 
   if (m_acc)
@@ -598,7 +598,7 @@ adjust_accumulator_values (block_stmt_iterator bsi, tree m, tree a, edge back)
 	if (PHI_RESULT (phi) == m_acc)
 	  break;
 
-      add_phi_arg (&phi, m_acc_arg, back);
+      add_phi_arg (phi, m_acc_arg, back);
     }
 }
 
@@ -736,7 +736,7 @@ eliminate_tail_call (struct tailcall *t)
       if (!phi)
 	continue;
 
-      add_phi_arg (&phi, TREE_VALUE (args), e);
+      add_phi_arg (phi, TREE_VALUE (args), e);
     }
 
   /* Add phi nodes for the call clobbered variables.  */
@@ -766,7 +766,7 @@ eliminate_tail_call (struct tailcall *t)
 	  var_ann (param)->default_def = new_name;
 	  phi = create_phi_node (name, first);
 	  SSA_NAME_DEF_STMT (name) = phi;
-	  add_phi_arg (&phi, new_name, EDGE_SUCC (ENTRY_BLOCK_PTR, 0));
+	  add_phi_arg (phi, new_name, EDGE_SUCC (ENTRY_BLOCK_PTR, 0));
 
 	  /* For all calls the same set of variables should be clobbered.  This
 	     means that there always should be the appropriate phi node except
@@ -774,7 +774,7 @@ eliminate_tail_call (struct tailcall *t)
 	  gcc_assert (EDGE_COUNT (first->preds) <= 2);
 	}
 
-      add_phi_arg (&phi, V_MAY_DEF_OP (v_may_defs, i), e);
+      add_phi_arg (phi, V_MAY_DEF_OP (v_may_defs, i), e);
     }
 
   /* Update the values of accumulators.  */
@@ -884,7 +884,7 @@ tree_optimize_tail_calls_1 (bool opt_tailcalls)
 	      var_ann (param)->default_def = new_name;
 	      phi = create_phi_node (name, first);
 	      SSA_NAME_DEF_STMT (name) = phi;
-	      add_phi_arg (&phi, new_name, EDGE_PRED (first, 0));
+	      add_phi_arg (phi, new_name, EDGE_PRED (first, 0));
 	    }
 	  phis_constructed = true;
 	}
@@ -897,7 +897,7 @@ tree_optimize_tail_calls_1 (bool opt_tailcalls)
 	  add_referenced_tmp_var (tmp);
 
 	  phi = create_phi_node (tmp, first);
-	  add_phi_arg (&phi,
+	  add_phi_arg (phi,
 		       /* RET_TYPE can be a float when -ffast-maths is
 			  enabled.  */
 		       fold_convert (ret_type, integer_zero_node),
@@ -913,7 +913,7 @@ tree_optimize_tail_calls_1 (bool opt_tailcalls)
 	  add_referenced_tmp_var (tmp);
 
 	  phi = create_phi_node (tmp, first);
-	  add_phi_arg (&phi,
+	  add_phi_arg (phi,
 		       /* RET_TYPE can be a float when -ffast-maths is
 			  enabled.  */
 		       fold_convert (ret_type, integer_one_node),

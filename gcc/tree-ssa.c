@@ -96,7 +96,7 @@ flush_pending_stmts (edge e)
        phi = PHI_CHAIN (phi), arg = TREE_CHAIN (arg))
     {
       tree def = TREE_VALUE (arg);
-      add_phi_arg (&phi, def, e);
+      add_phi_arg (phi, def, e);
     }
 
   PENDING_STMT (e) = NULL;

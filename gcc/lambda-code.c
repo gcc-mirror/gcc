@@ -2330,7 +2330,7 @@ perfect_nestify (struct loops *loops,
       def = VEC_pop (tree, phis);
       phiname = VEC_pop (tree, phis);      
       phi = create_phi_node (phiname, preheaderbb);
-      add_phi_arg (&phi, def, EDGE_PRED (preheaderbb, 0));
+      add_phi_arg (phi, def, EDGE_PRED (preheaderbb, 0));
     }       
   flush_pending_stmts (e);
   unmark_all_for_rewrite ();

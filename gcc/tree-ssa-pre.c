@@ -1555,7 +1555,7 @@ insert_aux (basic_block block)
 							 PHI_RESULT (temp));
 			  FOR_EACH_EDGE (pred, ei, block->preds)
 			    {
-			      add_phi_arg (&temp, avail[pred->src->index],
+			      add_phi_arg (temp, avail[pred->src->index],
 					   pred);
 			    }
 			  if (dump_file && (dump_flags & TDF_DETAILS))

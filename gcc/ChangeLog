@@ -1,3 +1,13 @@
+2004-11-25  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* tree-phinodes.c (add_phi_arg): Take "tree" instead of
+	"tree *" as the first argument.
+	* tree-flow.h: Update the prototype of add_phi_arg.
+	* lambda-code.c, tree-cfg.c, tree-into-ssa.c,
+	tree-ssa-loop-ivopts.c, tree-ssa-loop-manip.c, tree-ssa-pre.c,
+	tree-ssa-threadupdate.c, tree-ssa.c, tree-tailcall.c,
+	tree-vectorizer.c: Update all call sites of add_phi_arg.
+
 2004-11-25  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* bitmap.c (bitmap_malloc_alloc, bitmap_malloc_free): Remove.

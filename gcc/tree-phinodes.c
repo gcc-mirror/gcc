@@ -334,30 +334,30 @@ create_phi_node (tree var, basic_block bb)
    PHI points to the reallocated phi node when we return.  */
 
 void
-add_phi_arg (tree *phi, tree def, edge e)
+add_phi_arg (tree phi, tree def, edge e)
 {
   basic_block bb = e->dest;
 
-  gcc_assert (bb == bb_for_stmt (*phi));
+  gcc_assert (bb == bb_for_stmt (phi));
 
   /* We resize PHI nodes upon edge creation.  We should always have
      enough room at this point.  */
-  gcc_assert (PHI_NUM_ARGS (*phi) <= PHI_ARG_CAPACITY (*phi));
+  gcc_assert (PHI_NUM_ARGS (phi) <= PHI_ARG_CAPACITY (phi));
 
   /* We resize PHI nodes upon edge creation.  We should always have
      enough room at this point.  */
-  gcc_assert (e->dest_idx < (unsigned int) PHI_NUM_ARGS (*phi));
+  gcc_assert (e->dest_idx < (unsigned int) PHI_NUM_ARGS (phi));
 
   /* Copy propagation needs to know what object occur in abnormal
      PHI nodes.  This is a convenient place to record such information.  */
   if (e->flags & EDGE_ABNORMAL)
     {
       SSA_NAME_OCCURS_IN_ABNORMAL_PHI (def) = 1;
-      SSA_NAME_OCCURS_IN_ABNORMAL_PHI (PHI_RESULT (*phi)) = 1;
+      SSA_NAME_OCCURS_IN_ABNORMAL_PHI (PHI_RESULT (phi)) = 1;
     }
 
-  SET_PHI_ARG_DEF (*phi, e->dest_idx, def);
-  PHI_ARG_NONZERO (*phi, e->dest_idx) = false;
+  SET_PHI_ARG_DEF (phi, e->dest_idx, def);
+  PHI_ARG_NONZERO (phi, e->dest_idx) = false;
 }
 
 /* Remove the Ith argument from PHI's argument list.  This routine assumes
