@@ -1,3 +1,14 @@
+2004-09-25  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390-protos.h (s390_back_chain_rtx): Add prototype.
+	* config/s390/s390.c (s390_back_chain_rtx): New function.
+	* config/s390/s390.md ("allocate_stack"): Use s390_back_chain_rtx.
+	Call anti_adjust_stack.
+	("restore_stack_block"): Use s390_back_chain_rtx.  Enable pattern
+	only if compiling with back chain.
+	("save_stack_nonlocal", "restore_stack_nonlocal"): Save/restore
+	back chain only if back chain enabled.  Use s390_back_chain_rtx.
+	
 2004-09-25  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* doc/trouble.texi: Remove obsolete information.  Update

@@ -5759,6 +5759,26 @@ s390_return_addr_rtx (int count, rtx frame ATTRIBUTE_UNUSED)
   return gen_rtx_MEM (Pmode, addr);
 }
 
+/* Return an RTL expression representing the back chain stored in
+   the current stack frame.  */
+
+rtx
+s390_back_chain_rtx (void)
+{
+  rtx chain;
+
+  gcc_assert (TARGET_BACKCHAIN || TARGET_KERNEL_BACKCHAIN);
+
+  if (TARGET_BACKCHAIN)
+    chain = stack_pointer_rtx;
+  else
+    chain = plus_constant (stack_pointer_rtx,
+			   STACK_POINTER_OFFSET - UNITS_PER_WORD);
+
+  chain = gen_rtx_MEM (Pmode, chain);
+  return chain;
+}
+
 /* Find first call clobbered register unused in a function.
    This could be used as base register in a leaf function
    or for holding the return address before epilogue.  */
