@@ -4597,6 +4597,10 @@ function_arg_padding (enum machine_mode mode, tree type)
 	return upward;
     }
 
+  /* SFmode parameters are not padded.  */
+  if (TARGET_64BIT && mode == SFmode)
+    return none;
+
   /* Fall back to the default.  */
   return DEFAULT_FUNCTION_ARG_PADDING (mode, type);
 }
@@ -5463,7 +5467,7 @@ rs6000_gimplify_va_arg (tree valist, tree type, tree *pre_p, tree *post_p)
 	{
 	  /* Args grow upward.  */
 	  t = build2 (POSTINCREMENT_EXPR, TREE_TYPE (valist), valist,
-		      build_int_2 (POINTER_SIZE / BITS_PER_UNIT, 0));
+		      size_int (POINTER_SIZE / BITS_PER_UNIT));
 	  t = build1 (NOP_EXPR, build_pointer_type (ptrtype), t);
 	  t = build_fold_indirect_ref (t);
 	  return build_fold_indirect_ref (t);
@@ -5572,12 +5576,11 @@ rs6000_gimplify_va_arg (tree valist, tree type, tree *pre_p, tree *post_p)
       if (n_reg == 2)
 	{
 	  u = build2 (BIT_AND_EXPR, TREE_TYPE (reg), reg,
-		     build_int_2 (n_reg - 1, 0));
+		     size_int (n_reg - 1));
 	  u = build2 (POSTINCREMENT_EXPR, TREE_TYPE (reg), reg, u);
 	}
 
-      t = build_int_2 (8 - n_reg + 1, 0);
-      TREE_TYPE (t) = TREE_TYPE (reg);
+      t = fold_convert (TREE_TYPE (reg), size_int (8 - n_reg + 1));
       t = build2 (GE_EXPR, boolean_type_node, u, t);
       u = build1 (GOTO_EXPR, void_type_node, lab_false);
       t = build3 (COND_EXPR, void_type_node, t, u, NULL_TREE);
@@ -5585,12 +5588,11 @@ rs6000_gimplify_va_arg (tree valist, tree type, tree *pre_p, tree *post_p)
 
       t = sav;
       if (sav_ofs)
-	t = build2 (PLUS_EXPR, ptr_type_node, sav, build_int_2 (sav_ofs, 0));
+	t = build2 (PLUS_EXPR, ptr_type_node, sav, size_int (sav_ofs));
 
-      u = build2 (POSTINCREMENT_EXPR, TREE_TYPE (reg), reg,
-		 build_int_2 (n_reg, 0));
+      u = build2 (POSTINCREMENT_EXPR, TREE_TYPE (reg), reg, size_int (n_reg));
       u = build1 (CONVERT_EXPR, integer_type_node, u);
-      u = build2 (MULT_EXPR, integer_type_node, u, build_int_2 (sav_scale, 0));
+      u = build2 (MULT_EXPR, integer_type_node, u, size_int (sav_scale));
       t = build2 (PLUS_EXPR, ptr_type_node, t, u);
 
       t = build2 (MODIFY_EXPR, void_type_node, addr, t);
@@ -5606,7 +5608,7 @@ rs6000_gimplify_va_arg (tree valist, tree type, tree *pre_p, tree *post_p)
 	{
 	  /* Ensure that we don't find any more args in regs.
 	     Alignment has taken care of the n_reg == 2 case.  */
-	  t = build (MODIFY_EXPR, TREE_TYPE (reg), reg, build_int_2 (8, 0));
+	  t = build (MODIFY_EXPR, TREE_TYPE (reg), reg, size_int (8));
 	  gimplify_and_add (t, pre_p);
 	}
     }
@@ -5617,7 +5619,7 @@ rs6000_gimplify_va_arg (tree valist, tree type, tree *pre_p, tree *post_p)
   t = ovf;
   if (align != 1)
     {
-      t = build2 (PLUS_EXPR, TREE_TYPE (t), t, build_int_2 (align - 1, 0));
+      t = build2 (PLUS_EXPR, TREE_TYPE (t), t, size_int (align - 1));
       t = build2 (BIT_AND_EXPR, TREE_TYPE (t), t, build_int_2 (-align, -1));
     }
   gimplify_expr (&t, pre_p, NULL, is_gimple_val, fb_rvalue);
@@ -5625,7 +5627,7 @@ rs6000_gimplify_va_arg (tree valist, tree type, tree *pre_p, tree *post_p)
   u = build2 (MODIFY_EXPR, void_type_node, addr, t);
   gimplify_and_add (u, pre_p);
 
-  t = build2 (PLUS_EXPR, TREE_TYPE (t), t, build_int_2 (size, 0));
+  t = build2 (PLUS_EXPR, TREE_TYPE (t), t, size_int (size));
   t = build2 (MODIFY_EXPR, TREE_TYPE (ovf), ovf, t);
   gimplify_and_add (t, pre_p);
 

@@ -1,3 +1,9 @@
+2004-07-14  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.c (function_arg_padding): Do not pad SFmode
+	for TARGET_64BIT.
+	(rs6000_gimplify_va_arg): Use size_int instead of build_int_2.
+
 2004-07-14  Roger Sayle  <roger@eyesopen.com>
 
 	* expmed.c (expand_sdiv_pow2): New function to expand signed division
