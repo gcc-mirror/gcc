@@ -1,3 +1,8 @@
+2004-07-08  Geoffrey Keating  <geoffk@apple.com>
+
+	* config/rs6000/darwin-ldouble.c: Correct reference
+	to the Linnainmaa paper.
+
 2004-07-08  Richard Henderson  <rth@redhat.com>
 
 	* config/arc/arc-protos.h (arc_va_arg): Remove.

@@ -35,7 +35,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    754 Floating-Point Arithmetic" by W. Kahan, February 26, 1987.  An
    alternative published reference is "Software for Doubled-Precision
    Floating-Point Computations", by Seppo Linnainmaa, ACM TOMS vol 7
-   no 3, September 1961, pages 272-283.  */
+   no 3, September 1981, pages 272-283.  */
 
 /* Each long double is made up of two IEEE doubles.  The value of the
    long double is the sum of the values of the two parts.  The most
