@@ -381,6 +381,7 @@ java::net::PlainSocketImpl::connect (java::net::SocketAddress *addr,
 	throw new java::net::SocketTimeoutException ( 
 	         JvNewStringUTF("Connect timed out"));
     }
+    else
 #endif
     {
       if (_Jv_connect (fnum, ptr, len) != 0)
