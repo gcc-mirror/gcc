@@ -2375,7 +2375,11 @@ expand_java_field_op (int is_static, int is_putting, int field_ref_index)
   tree new_value = is_putting ? pop_value (field_type) : NULL_TREE;
   tree field_ref;
   int is_error = 0;
-  tree field_decl = lookup_field (&self_type, field_name);
+  tree field_decl;
+  
+  if (! CLASS_LOADED_P (self_type))
+    load_class (self_type, 1);  
+  field_decl = lookup_field (&self_type, field_name);
   if (field_decl == error_mark_node)
     {
       is_error = 1;

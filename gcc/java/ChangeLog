@@ -1,4 +1,10 @@
 2004-06-26  Bryce McKinlay  <mckinlay@redhat.com>
+
+	PR java/15734
+	* expr.c (expand_java_field_op): Ensure that target class for static
+	field access has been loaded.
+
+2004-06-26  Bryce McKinlay  <mckinlay@redhat.com>
 	    Ranjit Mathew  <rmathew@hotmail.com>
 
 	PR java/1207, java/16178
