@@ -221,7 +221,7 @@ output_gcov_string (string, delimiter)
      const char *string;
      long delimiter;
 {
-  long temp;
+  size_t temp;
 
   /* Write a delimiter to indicate that a file name follows.  */
   __write_long (delimiter, bb_file, 4);

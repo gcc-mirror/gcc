@@ -339,7 +339,7 @@ missing_arg (opt_index)
 {
   const char *opt_text = cl_options[opt_index].opt_text;
 
-  switch (opt_index)
+  switch (cl_options[opt_index].opt_code)
     {
     case OPT_Wformat_eq:
     case OPT_d:

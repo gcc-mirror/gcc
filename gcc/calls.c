@@ -4542,7 +4542,7 @@ store_one_arg (arg, argblock, flags, variable_size, reg_parm_stack_space)
 	    parm_align = BITS_PER_UNIT;
 	  else if (excess)
 	    {
-	      int excess_align = (excess & -excess) * BITS_PER_UNIT;
+	      unsigned int excess_align = (excess & -excess) * BITS_PER_UNIT;
 	      parm_align = MIN (parm_align, excess_align);
 	    }
 	}
