@@ -1,4 +1,10 @@
 2003-06-06  Roger Sayle  <roger@eyesopen.com>
+
+	* gcc.dg/builtins-2.c: Add some more tests.
+	* gcc.dg/builtins-18.c: New test case.
+	* gcc.dg/builtins-19.c: New test case.
+
+2003-06-06  Roger Sayle  <roger@eyesopen.com>
 	    Jim Wilson  <wilson@tuliptree.org>
 
 	* gcc.dg/uninit-C.c: Only test TImode on 64-bit platforms.
