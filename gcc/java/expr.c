@@ -2388,9 +2388,7 @@ java_lang_expand_expr (exp, target, tmode, modifier)
 	    FINISH_RECORD_CONSTRUCTOR (temp);
 	    START_RECORD_CONSTRUCTOR (value, array_type);
 	    PUSH_SUPER_VALUE (value, temp);
-	    /* FIXME: build a new `length' here to get it on the right
-	       obstack.  */
-	    PUSH_FIELD_VALUE (value, "length", build_int_2 (ilength, 0));
+	    PUSH_FIELD_VALUE (value, "length", length);
 	    PUSH_FIELD_VALUE (value, "data", init);
 	    FINISH_RECORD_CONSTRUCTOR (value);
 
@@ -2400,7 +2398,7 @@ java_lang_expand_expr (exp, target, tmode, modifier)
 	    DECL_INITIAL (init_decl) = value;
 	    DECL_IGNORED_P (init_decl) = 1;
 	    TREE_READONLY (init_decl) = 1;
-	    make_decl_rtl (init_decl, NULL);
+	    rest_of_decl_compilation (init_decl, NULL, 1, 0);
 	    TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (init_decl)) = 1;
 	    init = build1 (ADDR_EXPR, TREE_TYPE (exp), init_decl);
 	    r = expand_expr (init, target, tmode, modifier);
@@ -2423,7 +2421,7 @@ java_lang_expand_expr (exp, target, tmode, modifier)
 	    DECL_INITIAL (init_decl) = init;
 	    DECL_IGNORED_P (init_decl) = 1;
 	    TREE_READONLY (init_decl) = 1;
-	    make_decl_rtl (init_decl, NULL);
+	    rest_of_decl_compilation (init_decl, NULL, 1, 0);
 	    TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (init_decl)) = 1;
 	    init = init_decl;
 	  }

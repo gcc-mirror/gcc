@@ -1,3 +1,9 @@
+2001-02-04  Tom Tromey  <tromey@redhat.com>
+
+	* expr.c (java_lang_expand_expr): Don't bother recomputing
+	`length'.  Use rest_of_decl_compilation, not make_decl_rtl.
+	Fixes PR java/1866.
+
 2001-02-05  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (process_imports): Save the original name of the import
