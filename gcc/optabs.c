@@ -2148,6 +2148,111 @@ lowpart_subreg_maybe_copy (enum machine_mode omode, rtx val,
   return ret;
 }
 
+/* Expand a floating point absolute value or negation operation via a
+   logical operation on the sign bit.  */
+
+static rtx
+expand_absneg_bit (enum rtx_code code, enum machine_mode mode,
+		   rtx op0, rtx target)
+{
+  const struct real_format *fmt;
+  int bitpos, word, nwords, i;
+  enum machine_mode imode;
+  HOST_WIDE_INT hi, lo;
+  rtx temp, insns;
+
+  /* The format has to have a simple sign bit.  */
+  fmt = REAL_MODE_FORMAT (mode);
+  if (fmt == NULL)
+    return NULL_RTX;
+
+  bitpos = fmt->signbit;
+  if (bitpos < 0)
+    return NULL_RTX;
+
+  /* Don't create negative zeros if the format doesn't support them.  */
+  if (code == NEG && !fmt->has_signed_zero)
+    return NULL_RTX;
+
+  if (GET_MODE_SIZE (mode) <= UNITS_PER_WORD)
+    {
+      imode = int_mode_for_mode (mode);
+      if (imode == BLKmode)
+	return NULL_RTX;
+      word = 0;
+      nwords = 1;
+    }
+  else
+    {
+      imode = word_mode;
+
+      if (FLOAT_WORDS_BIG_ENDIAN)
+	word = (GET_MODE_BITSIZE (mode) - bitpos) / BITS_PER_WORD;
+      else
+	word = bitpos / BITS_PER_WORD;
+      bitpos = bitpos % BITS_PER_WORD;
+      nwords = (GET_MODE_BITSIZE (mode) + BITS_PER_WORD - 1) / BITS_PER_WORD;
+    }
+
+  if (bitpos < HOST_BITS_PER_WIDE_INT)
+    {
+      hi = 0;
+      lo = (HOST_WIDE_INT) 1 << bitpos;
+    }
+  else
+    {
+      hi = (HOST_WIDE_INT) 1 << (bitpos - HOST_BITS_PER_WIDE_INT);
+      lo = 0;
+    }
+  if (code == ABS)
+    lo = ~lo, hi = ~hi;
+
+  if (target == 0 || target == op0)
+    target = gen_reg_rtx (mode);
+
+  if (nwords > 1)
+    {
+      start_sequence ();
+
+      for (i = 0; i < nwords; ++i)
+	{
+	  rtx targ_piece = operand_subword (target, i, 1, mode);
+	  rtx op0_piece = operand_subword_force (op0, i, mode);
+	
+	  if (i == word)
+	    {
+	      temp = expand_binop (imode, code == ABS ? and_optab : xor_optab,
+				   op0_piece,
+				   immed_double_const (lo, hi, imode),
+				   targ_piece, 1, OPTAB_LIB_WIDEN);
+	      if (temp != targ_piece)
+		emit_move_insn (targ_piece, temp);
+	    }
+	  else
+	    emit_move_insn (targ_piece, op0_piece);
+	}
+
+      insns = get_insns ();
+      end_sequence ();
+
+      temp = gen_rtx_fmt_e (code, mode, copy_rtx (op0));
+      emit_no_conflict_block (insns, target, op0, NULL_RTX, temp);
+    }
+  else
+    {
+      temp = expand_binop (imode, code == ABS ? and_optab : xor_optab,
+			   gen_lowpart (imode, op0),
+			   immed_double_const (lo, hi, imode),
+		           gen_lowpart (imode, target), 1, OPTAB_LIB_WIDEN);
+      target = lowpart_subreg_maybe_copy (mode, temp, imode);
+
+      set_unique_reg_note (get_last_insn (), REG_EQUAL,
+			   gen_rtx_fmt_e (code, mode, copy_rtx (op0)));
+    }
+
+  return target;
+}
+
 /* Generate code to perform an operation specified by UNOPTAB
    on operand OP0, with result having machine-mode MODE.
 
@@ -2299,70 +2404,33 @@ expand_unop (enum machine_mode mode, optab unoptab, rtx op0, rtx target,
       return target;
     }
 
-  /* Try negating floating point values by flipping the sign bit.  */
-  if (unoptab->code == NEG && class == MODE_FLOAT
-      && GET_MODE_BITSIZE (mode) <= 2 * HOST_BITS_PER_WIDE_INT)
+  if (unoptab->code == NEG)
     {
-      const struct real_format *fmt = REAL_MODE_FORMAT (mode);
-      enum machine_mode imode = int_mode_for_mode (mode);
-      int bitpos = (fmt != 0) ? fmt->signbit : -1;
-
-      if (imode != BLKmode && bitpos >= 0 && fmt->has_signed_zero)
+      /* Try negating floating point values by flipping the sign bit.  */
+      if (class == MODE_FLOAT)
 	{
-	  HOST_WIDE_INT hi, lo;
-	  rtx last = get_last_insn ();
+	  temp = expand_absneg_bit (NEG, mode, op0, target);
+	  if (temp)
+	    return temp;
+	}
 
-	  /* Handle targets with different FP word orders.  */
-	  if (FLOAT_WORDS_BIG_ENDIAN != WORDS_BIG_ENDIAN)
-	    {
-	      int nwords = GET_MODE_BITSIZE (mode) / BITS_PER_WORD;
-	      int word = nwords - (bitpos / BITS_PER_WORD) - 1;
-	      bitpos = word * BITS_PER_WORD + bitpos % BITS_PER_WORD;
-	    }
-
-	  if (bitpos < HOST_BITS_PER_WIDE_INT)
-	    {
-	      hi = 0;
-	      lo = (HOST_WIDE_INT) 1 << bitpos;
-	    }
-	  else
-	    {
-	      hi = (HOST_WIDE_INT) 1 << (bitpos - HOST_BITS_PER_WIDE_INT);
-	      lo = 0;
-	    }
-	  temp = expand_binop (imode, xor_optab,
-			       gen_lowpart (imode, op0),
-			       immed_double_const (lo, hi, imode),
-			       NULL_RTX, 1, OPTAB_LIB_WIDEN);
-	  if (temp != 0)
-	    {
-	      rtx insn;
-	      if (target == 0)
-		target = gen_reg_rtx (mode);
-	      temp = lowpart_subreg_maybe_copy (mode, temp, imode);
-	      insn = emit_move_insn (target, temp);
-	      set_unique_reg_note (insn, REG_EQUAL,
-				   gen_rtx_fmt_e (NEG, mode,
-						  copy_rtx (op0)));
-	      return target;
-	    }
-	  delete_insns_since (last);
-        }
+      /* If there is no negation pattern, and we have no negative zero,
+	 try subtracting from zero.  */
+      if (!HONOR_SIGNED_ZEROS (mode))
+	{
+	  temp = expand_binop (mode, (unoptab == negv_optab
+				      ? subv_optab : sub_optab),
+			       CONST0_RTX (mode), op0, target,
+			       unsignedp, OPTAB_DIRECT);
+	  if (temp)
+	    return temp;
+	}
     }
 
   /* Try calculating parity (x) as popcount (x) % 2.  */
   if (unoptab == parity_optab)
     {
       temp = expand_parity (mode, op0, target);
-      if (temp)
-	return temp;
-    }
-
-  /* If there is no negation pattern, try subtracting from zero.  */
-  if (unoptab == neg_optab && class == MODE_INT)
-    {
-      temp = expand_binop (mode, sub_optab, CONST0_RTX (mode), op0,
-                           target, unsignedp, OPTAB_DIRECT);
       if (temp)
 	return temp;
     }
@@ -2450,10 +2518,9 @@ expand_unop (enum machine_mode mode, optab unoptab, rtx op0, rtx target,
 	}
     }
 
-  /* If there is no negate operation, try doing a subtract from zero.
-     The US Software GOFAST library needs this.  FIXME: This is *wrong*
-     for floating-point operations due to negative zeros!  */
-  if (unoptab->code == NEG)
+  /* One final attempt at implementing negation via subtraction,
+     this time allowing widening of the operand.  */
+  if (unoptab->code == NEG && !HONOR_SIGNED_ZEROS (mode))
     {
       rtx temp;
       temp = expand_binop (mode,
@@ -2461,7 +2528,7 @@ expand_unop (enum machine_mode mode, optab unoptab, rtx op0, rtx target,
                            CONST0_RTX (mode), op0,
                            target, unsignedp, OPTAB_LIB_WIDEN);
       if (temp)
-	return temp;
+        return temp;
     }
 
   return 0;
@@ -2492,58 +2559,16 @@ expand_abs_nojump (enum machine_mode mode, rtx op0, rtx target,
     return temp;
 
   /* For floating point modes, try clearing the sign bit.  */
-  if (GET_MODE_CLASS (mode) == MODE_FLOAT
-      && GET_MODE_BITSIZE (mode) <= 2 * HOST_BITS_PER_WIDE_INT)
+  if (GET_MODE_CLASS (mode) == MODE_FLOAT)
     {
-      const struct real_format *fmt = REAL_MODE_FORMAT (mode);
-      enum machine_mode imode = int_mode_for_mode (mode);
-      int bitpos = (fmt != 0) ? fmt->signbit : -1;
-
-      if (imode != BLKmode && bitpos >= 0)
-	{
-	  HOST_WIDE_INT hi, lo;
-	  rtx last = get_last_insn ();
-
-	  /* Handle targets with different FP word orders.  */
-	  if (FLOAT_WORDS_BIG_ENDIAN != WORDS_BIG_ENDIAN)
-	    {
-	      int nwords = GET_MODE_BITSIZE (mode) / BITS_PER_WORD;
-	      int word = nwords - (bitpos / BITS_PER_WORD) - 1;
-	      bitpos = word * BITS_PER_WORD + bitpos % BITS_PER_WORD;
-	    }
-
-	  if (bitpos < HOST_BITS_PER_WIDE_INT)
-	    {
-	      hi = 0;
-	      lo = (HOST_WIDE_INT) 1 << bitpos;
-	    }
-	  else
-	    {
-	      hi = (HOST_WIDE_INT) 1 << (bitpos - HOST_BITS_PER_WIDE_INT);
-	      lo = 0;
-	    }
-	  temp = expand_binop (imode, and_optab,
-			       gen_lowpart (imode, op0),
-			       immed_double_const (~lo, ~hi, imode),
-			       NULL_RTX, 1, OPTAB_LIB_WIDEN);
-	  if (temp != 0)
-	    {
-	      rtx insn;
-	      if (target == 0)
-		target = gen_reg_rtx (mode);
-	      temp = lowpart_subreg_maybe_copy (mode, temp, imode);
-	      insn = emit_move_insn (target, temp);
-	      set_unique_reg_note (insn, REG_EQUAL,
-				   gen_rtx_fmt_e (ABS, mode,
-						  copy_rtx (op0)));
-	      return target;
-	    }
-	  delete_insns_since (last);
-	}
+      temp = expand_absneg_bit (ABS, mode, op0, target);
+      if (temp)
+	return temp;
     }
 
   /* If we have a MAX insn, we can do this as MAX (x, -x).  */
-  if (smax_optab->handlers[(int) mode].insn_code != CODE_FOR_nothing)
+  if (smax_optab->handlers[(int) mode].insn_code != CODE_FOR_nothing
+      && !HONOR_SIGNED_ZEROS (mode))
     {
       rtx last = get_last_insn ();
 
@@ -2642,9 +2667,9 @@ expand_copysign (rtx op0, rtx op1, rtx target)
   enum machine_mode mode = GET_MODE (op0);
   const struct real_format *fmt;
   enum machine_mode imode;
-  int bitpos;
+  int bitpos, word, nwords, i, have_abs;
   HOST_WIDE_INT hi, lo;
-  rtx last, temp;
+  rtx temp, insns;
 
   gcc_assert (SCALAR_FLOAT_MODE_P (mode));
   gcc_assert (GET_MODE (op1) == mode);
@@ -2655,27 +2680,40 @@ expand_copysign (rtx op0, rtx op1, rtx target)
   if (temp)
     return temp;
 
-  /* Otherwise, use bit operations to move the sign from one to the other.  */
-  if (GET_MODE_BITSIZE (mode) > 2 * HOST_BITS_PER_WIDE_INT)
-    return NULL_RTX;
-
-  imode = int_mode_for_mode (mode);
-  if (imode == BLKmode)
-    return NULL_RTX;
-
   fmt = REAL_MODE_FORMAT (mode);
-  bitpos = (fmt != 0) ? fmt->signbit : -1;
+  if (fmt == NULL || !fmt->has_signed_zero)
+    return NULL_RTX;
+
+  bitpos = fmt->signbit;
   if (bitpos < 0)
     return NULL_RTX;
 
-  last = get_last_insn ();
-
-  /* Handle targets with different FP word orders.  */
-  if (FLOAT_WORDS_BIG_ENDIAN != WORDS_BIG_ENDIAN)
+  have_abs = false;
+  if (GET_CODE (op0) == CONST_DOUBLE)
     {
-      int nwords = GET_MODE_BITSIZE (mode) / BITS_PER_WORD;
-      int word = nwords - (bitpos / BITS_PER_WORD) - 1;
-      bitpos = word * BITS_PER_WORD + bitpos % BITS_PER_WORD;
+      if (real_isneg (CONST_DOUBLE_REAL_VALUE (op0)))
+	op0 = simplify_unary_operation (ABS, mode, op0, mode);
+      have_abs = true;
+    }
+
+  if (GET_MODE_SIZE (mode) <= UNITS_PER_WORD)
+    {
+      imode = int_mode_for_mode (mode);
+      if (imode == BLKmode)
+	return NULL_RTX;
+      word = 0;
+      nwords = 1;
+    }
+  else
+    {
+      imode = word_mode;
+
+      if (FLOAT_WORDS_BIG_ENDIAN)
+	word = (GET_MODE_BITSIZE (mode) - bitpos) / BITS_PER_WORD;
+      else
+	word = bitpos / BITS_PER_WORD;
+      bitpos = bitpos % BITS_PER_WORD;
+      nwords = (GET_MODE_BITSIZE (mode) + BITS_PER_WORD - 1) / BITS_PER_WORD;
     }
 
   if (bitpos < HOST_BITS_PER_WIDE_INT)
@@ -2689,29 +2727,60 @@ expand_copysign (rtx op0, rtx op1, rtx target)
       lo = 0;
     }
 
-  op0 = expand_binop (imode, and_optab,
-		      gen_lowpart (imode, op0),
-		      immed_double_const (~lo, ~hi, imode),
-		      NULL_RTX, 1, OPTAB_LIB_WIDEN);
-  op1 = expand_binop (imode, and_optab,
-		      gen_lowpart (imode, op1),
-		      immed_double_const (lo, hi, imode),
-		      NULL_RTX, 1, OPTAB_LIB_WIDEN);
-  if (op0 && op1)
+  if (target == 0 || target == op0 || target == op1)
+    target = gen_reg_rtx (mode);
+
+  if (nwords > 1)
     {
-      target = expand_binop (imode, ior_optab, op0, op1, NULL,
-			     1, OPTAB_LIB_WIDEN);
-      if (target)
+      start_sequence ();
+
+      for (i = 0; i < nwords; ++i)
 	{
-	  target = force_reg (imode, target);
-	  target = gen_lowpart (mode, target);
+	  rtx targ_piece = operand_subword (target, i, 1, mode);
+	  rtx op0_piece = operand_subword_force (op0, i, mode);
+	
+	  if (i == word)
+	    {
+	      if (!have_abs)
+		op0_piece = expand_binop (imode, and_optab, op0_piece,
+					  immed_double_const (~lo, ~hi, imode),
+					  NULL_RTX, 1, OPTAB_LIB_WIDEN);
+
+	      op1 = expand_binop (imode, and_optab,
+				  operand_subword_force (op1, i, mode),
+				  immed_double_const (lo, hi, imode),
+				  NULL_RTX, 1, OPTAB_LIB_WIDEN);
+
+	      temp = expand_binop (imode, ior_optab, op0_piece, op1,
+				   targ_piece, 1, OPTAB_LIB_WIDEN);
+	      if (temp != targ_piece)
+		emit_move_insn (targ_piece, temp);
+	    }
+	  else
+	    emit_move_insn (targ_piece, op0_piece);
 	}
+
+      insns = get_insns ();
+      end_sequence ();
+
+      emit_no_conflict_block (insns, target, op0, op1, NULL_RTX);
     }
   else
-    target = NULL_RTX;
+    {
+      op1 = expand_binop (imode, and_optab, gen_lowpart (imode, op1),
+		          immed_double_const (lo, hi, imode),
+		          NULL_RTX, 1, OPTAB_LIB_WIDEN);
 
-  if (!target)
-    delete_insns_since (last);
+      op0 = gen_lowpart (imode, op0);
+      if (!have_abs)
+	op0 = expand_binop (imode, and_optab, op0,
+			    immed_double_const (~lo, ~hi, imode),
+			    NULL_RTX, 1, OPTAB_LIB_WIDEN);
+
+      temp = expand_binop (imode, ior_optab, op0, op1,
+			   gen_lowpart (imode, target), 1, OPTAB_LIB_WIDEN);
+      target = lowpart_subreg_maybe_copy (mode, temp, imode);
+    }
 
   return target;
 }

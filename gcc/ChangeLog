@@ -1,3 +1,16 @@
+2005-01-30  Richard Henderson  <rth@redhat.com>
+
+	PR 19696
+	* optabs.c (expand_absneg_bit): Split out from expand_unop and
+	expand_abs_nojump and generalize.  Use operand_subword and
+	emit_no_conflict_block.  Support large modes.
+	(expand_abs_nojump): Use it.  Use HONOR_SIGNED_ZEROS to fall
+	back to maximum.
+	(expand_unop): Likewise.  Use HONOR_SIGNED_ZEROS to fall back
+	negation to subtraction.
+	(expand_copysign): Check that the format has signed zeros.
+	Use operand_subword and emit_no_conflict_block.  Support large modes.
+
 2005-01-30  Daniel Berlin  <dberlin@dberlin.org>
 
 	Fix PR tree-optimization/19624
