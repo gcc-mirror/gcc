@@ -1,3 +1,10 @@
+2004-09-13  Jan Hubicka  <jh@suse.cz>
+
+	* predict.c (expr_expected_value, strip_builtin_expect): New function.
+	(tree_predict_by_opcode): Use it.
+	(tree_estimate_probability): Add, for now disabled,
+	strip_builtin_expect call.
+
 2004-09-15  James E Wilson  <wilson@specifixinc.com>
 
 	PR target/17455

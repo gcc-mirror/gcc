@@ -897,7 +897,139 @@ guess_outgoing_edge_probabilities (basic_block bb)
   combine_predictions_for_insn (BB_END (bb), bb);
 }
 
+/* Return constant EXPR will likely have at execution time, NULL if unknown. 
+   The function is used by builtin_expect branch predictor so the evidence
+   must come from this construct and additional possible constant folding.
+  
+   We may want to implement more involved value guess (such as value range
+   propagation based prediction), but such tricks shall go to new
+   implementation.  */
 
+static tree
+expr_expected_value (tree expr, bitmap visited)
+{
+  if (TREE_CONSTANT (expr))
+    return expr;
+  else if (TREE_CODE (expr) == SSA_NAME)
+    {
+      tree def = SSA_NAME_DEF_STMT (expr);
+
+      /* If we were already here, break the infinite cycle.  */
+      if (bitmap_bit_p (visited, SSA_NAME_VERSION (expr)))
+	return NULL;
+      bitmap_set_bit (visited, SSA_NAME_VERSION (expr));
+
+      if (TREE_CODE (def) == PHI_NODE)
+	{
+	  /* All the arguments of the PHI node must have the same constant
+	     length.  */
+	  int i;
+	  tree val = NULL, new_val;
+
+	  for (i = 0; i < PHI_NUM_ARGS (def); i++)
+	    {
+	      tree arg = PHI_ARG_DEF (def, i);
+
+	      /* If this PHI has itself as an argument, we cannot
+		 determine the string length of this argument.  However,
+		 if we can find a expectd constant value for the other
+		 PHI args then we can still be sure that this is
+		 likely a constant.  So be optimistic and just
+		 continue with the next argument.  */
+	      if (arg == PHI_RESULT (def))
+		continue;
+
+	      new_val = expr_expected_value (arg, visited);
+	      if (!new_val)
+		return NULL;
+	      if (!val)
+		val = new_val;
+	      else if (!operand_equal_p (val, new_val, false))
+		return NULL;
+	    }
+	  return val;
+	}
+      if (TREE_CODE (def) != MODIFY_EXPR || TREE_OPERAND (def, 0) != expr)
+	return NULL;
+      return expr_expected_value (TREE_OPERAND (def, 1), visited);
+    }
+  else if (TREE_CODE (expr) == CALL_EXPR)
+    {
+      tree decl = get_callee_fndecl (expr);
+      if (!decl)
+	return NULL;
+      if (DECL_BUILT_IN (decl) && DECL_FUNCTION_CODE (decl) == BUILT_IN_EXPECT)
+	{
+	  tree arglist = TREE_OPERAND (expr, 1);
+	  tree val;
+
+	  if (arglist == NULL_TREE
+	      || TREE_CHAIN (arglist) == NULL_TREE)
+	    return NULL; 
+	  val = TREE_VALUE (TREE_CHAIN (TREE_OPERAND (expr, 1)));
+	  if (TREE_CONSTANT (val))
+	    return val;
+	  return TREE_VALUE (TREE_CHAIN (TREE_OPERAND (expr, 1)));
+	}
+    }
+  if (TREE_CODE_CLASS (TREE_CODE (expr)) == '2'
+      || TREE_CODE_CLASS (TREE_CODE (expr)) == '<')
+    {
+      tree op0, op1, res;
+      op0 = expr_expected_value (TREE_OPERAND (expr, 0), visited);
+      if (!op0)
+	return NULL;
+      op1 = expr_expected_value (TREE_OPERAND (expr, 1), visited);
+      if (!op1)
+	return NULL;
+      res = fold (build (TREE_CODE (expr), TREE_TYPE (expr), op0, op1));
+      if (TREE_CONSTANT (res))
+	return res;
+      return NULL;
+    }
+  if (TREE_CODE_CLASS (TREE_CODE (expr)) == '1')
+    {
+      tree op0, res;
+      op0 = expr_expected_value (TREE_OPERAND (expr, 0), visited);
+      if (!op0)
+	return NULL;
+      res = fold (build1 (TREE_CODE (expr), TREE_TYPE (expr), op0));
+      if (TREE_CONSTANT (res))
+	return res;
+      return NULL;
+    }
+  return NULL;
+}
+
+/* Get rid of all builtin_expect calls we no longer need.  */
+static void
+strip_builtin_expect (void)
+{
+  basic_block bb;
+  FOR_EACH_BB (bb)
+    {
+      block_stmt_iterator bi;
+      for (bi = bsi_start (bb); !bsi_end_p (bi); bsi_next (&bi))
+	{
+	  tree stmt = bsi_stmt (bi);
+	  tree fndecl;
+	  tree arglist;
+
+	  if (TREE_CODE (stmt) == MODIFY_EXPR
+	      && TREE_CODE (TREE_OPERAND (stmt, 1)) == CALL_EXPR
+	      && (fndecl = get_callee_fndecl (TREE_OPERAND (stmt, 1)))
+	      && DECL_BUILT_IN (fndecl)
+	      && DECL_FUNCTION_CODE (fndecl) == BUILT_IN_EXPECT
+	      && (arglist = TREE_OPERAND (TREE_OPERAND (stmt, 1), 1))
+	      && TREE_CHAIN (arglist))
+	    {
+	      TREE_OPERAND (stmt, 1) = TREE_VALUE (arglist);
+	      modify_stmt (stmt);
+	    }
+	}
+    }
+}
+
 /* Predict using opcode of the last statement in basic block.  */
 static void
 tree_predict_by_opcode (basic_block bb)
@@ -907,6 +1039,8 @@ tree_predict_by_opcode (basic_block bb)
   tree cond;
   tree op0;
   tree type;
+  tree val;
+  bitmap visited;
 
   if (!stmt || TREE_CODE (stmt) != COND_EXPR)
     return;
@@ -918,6 +1052,17 @@ tree_predict_by_opcode (basic_block bb)
     return;
   op0 = TREE_OPERAND (cond, 0);
   type = TREE_TYPE (op0);
+  visited = BITMAP_XMALLOC ();
+  val = expr_expected_value (cond, visited);
+  BITMAP_XFREE (visited);
+  if (val)
+    {
+      if (integer_zerop (val))
+	predict_edge_def (then_edge, PRED_BUILTIN_EXPECT, NOT_TAKEN);
+      else
+	predict_edge_def (then_edge, PRED_BUILTIN_EXPECT, TAKEN);
+      return;
+    }
   /* Try "pointer heuristic."
      A comparison ptr == 0 is predicted as false.
      Similarly, a comparison ptr1 == ptr2 is predicted as false.  */
@@ -1072,6 +1217,8 @@ tree_estimate_probability (void)
   FOR_EACH_BB (bb)
     combine_predictions_for_bb (dump_file, bb);
 
+  if (0)  /* FIXME: Enable once we are pass down the profile to RTL level.  */
+    strip_builtin_expect ();
   estimate_bb_frequencies (&loops_info);
   free_dominance_info (CDI_POST_DOMINATORS);
   remove_fake_exit_edges ();
