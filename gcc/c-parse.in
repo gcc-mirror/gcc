@@ -652,7 +652,7 @@ primary:
 		  finish_init ();
 
 		  if (pedantic && ! flag_isoc99)
-		    pedwarn ("ISO C89 forbids compound literals");
+		    pedwarn ("ISO C90 forbids compound literals");
 		  $$ = build_compound_literal (type, constructor);
 		}
 	| '(' expr ')'
@@ -1515,7 +1515,7 @@ initlist1:
 initelt:
 	  designator_list '=' initval
 		{ if (pedantic && ! flag_isoc99)
-		    pedwarn ("ISO C89 forbids specifying subobject to initialize"); }
+		    pedwarn ("ISO C90 forbids specifying subobject to initialize"); }
 	| designator initval
 		{ if (pedantic)
 		    pedwarn ("obsolete use of designated initializer without `='"); }
