@@ -1,3 +1,7 @@
+2002-02-02  Tom Tromey  <tromey@redhat.com>
+
+	* Makefile.in: Rebuilt.
+
 2002-02-02  Jason Merrill  <jason@redhat.com>
 
 	* Makefile.am (clean-nat): New target.
