@@ -107,15 +107,15 @@ enable_threads='')
 case x${enable_threads} in
 	x | xno)
 		# No threads
-		thread_file='single'
+		target_thread_file='single'
 		;;
 	xyes)
 		# default
-		thread_file=''
+		target_thread_file=''
 		;;
 	xdecosf1 | xirix | xmach | xos2 | xposix | xpthreads | xsingle | \
 	xsolaris | xwin32 | xdce)
-		thread_file=$enable_threads
+		target_thread_file=$enable_threads
 		;;
 	*)
 		echo "$enable_threads is an unknown thread package" 1>&2
@@ -252,6 +252,8 @@ for machine in $build $host $target; do
 	# Set this if the build machine requires executables to have a
 	# file name suffix.
 	exeext=
+	# Set this to control which thread package will be used.
+	thread_file=
 
 	# Set default cpu_type, tm_file and xm_file so it can be updated in
 	# each machine entry.
@@ -2809,8 +2811,12 @@ if [[ "$host_xm_file" != "$build_xm_file" ]]; then
 	fi
 fi
 
-if [[ x$thread_file = x ]]
-then thread_file='single'
+if [[ x$thread_file = x ]]; then
+	if [[ x$target_thread_file != x ]]; then
+		thread_file=$target_thread_file
+	else
+		thread_file='single'
+	fi
 fi
 
 # Set up the header files.
