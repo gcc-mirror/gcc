@@ -1,3 +1,7 @@
+2001-07-20  Daniel Berlin  <dan@cgsoftware.com>
+
+	* params.def: Change default max inline insns to 100.
+
 2001-06-20  Kelley Cook  <kelley.cook@home.com>
 
 	* doc/install.texi (sparc-sun-solaris*): Add in 4.x assembler bug
