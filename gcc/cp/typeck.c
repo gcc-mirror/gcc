@@ -5969,7 +5969,7 @@ c_expand_asm_operands (tree string, tree outputs, tree inputs, tree clobbers,
   int noutputs = list_length (outputs);
   register int i;
   /* o[I] is the place that output number I should be written.  */
-  register tree *o = (tree *) alloca (noutputs * sizeof (tree));
+  register tree *o = alloca (noutputs * sizeof (tree));
   register tree tail;
 
   /* Record the contents of OUTPUTS before it is modified.  */

@@ -53,8 +53,7 @@ ffetype_new (void)
 {
   ffetype type;
 
-  type = (ffetype) malloc_new_kp (malloc_pool_image (), "ffetype",
-				    sizeof (*type));
+  type = malloc_new_kp (malloc_pool_image (), "ffetype", sizeof (*type));
   type->kinds_ = NULL;
   type->stars_ = NULL;
   type->alignment_ = 0;
@@ -74,9 +73,8 @@ ffetype_set_kind (ffetype base_type, int kind, ffetype type)
       int i;
 
       base_type->kinds_
-	= (ffetype_indexes_) malloc_new_kp (malloc_pool_image (),
-					    "ffetype_indexes_[kinds]",
-					    sizeof (*(base_type->kinds_)));
+	= malloc_new_kp (malloc_pool_image (), "ffetype_indexes_[kinds]",
+			 sizeof (*(base_type->kinds_)));
       for (i = 0; ((size_t) i) < ARRAY_SIZE (base_type->kinds_->type_); ++i)
 	base_type->kinds_->type_[i] = NULL;
     }
@@ -94,9 +92,8 @@ ffetype_set_star (ffetype base_type, int star, ffetype type)
       int i;
 
       base_type->stars_
-	= (ffetype_indexes_) malloc_new_kp (malloc_pool_image (),
-					    "ffetype_indexes_[stars]",
-					    sizeof (*(base_type->stars_)));
+	= malloc_new_kp (malloc_pool_image (), "ffetype_indexes_[stars]",
+			 sizeof (*(base_type->stars_)));
       for (i = 0; ((size_t) i) < ARRAY_SIZE (base_type->stars_->type_); ++i)
 	base_type->stars_->type_[i] = NULL;
     }

@@ -2220,7 +2220,7 @@ maybe_push_to_top_level (int pseudo)
   int need_pop;
 
   timevar_push (TV_NAME_LOOKUP);
-  s = (struct saved_scope *) ggc_alloc_cleared (sizeof (struct saved_scope));
+  s = ggc_alloc_cleared (sizeof (struct saved_scope));
 
   b = scope_chain ? current_binding_level : 0;
 
@@ -4669,8 +4669,7 @@ use_label (tree decl)
       || named_label_uses->label_decl != decl)
     {
       struct named_label_use_list *new_ent;
-      new_ent = ((struct named_label_use_list *)
-		 ggc_alloc (sizeof (struct named_label_use_list)));
+      new_ent = ggc_alloc (sizeof (struct named_label_use_list));
       new_ent->label_decl = decl;
       new_ent->names_in_scope = current_binding_level->names;
       new_ent->binding_level = current_binding_level;
@@ -4707,8 +4706,7 @@ lookup_label (tree id)
   /* Record this label on the list of labels used in this function.
      We do this before calling make_label_decl so that we get the
      IDENTIFIER_LABEL_VALUE before the new label is declared.  */
-  ent = ((struct named_label_list *)
-	 ggc_alloc_cleared (sizeof (struct named_label_list)));
+  ent = ggc_alloc_cleared (sizeof (struct named_label_list));
   ent->old_value = IDENTIFIER_LABEL_VALUE (id);
   ent->next = named_labels;
   named_labels = ent;
@@ -5003,8 +5001,7 @@ static struct cp_switch *switch_stack;
 void
 push_switch (tree switch_stmt)
 {
-  struct cp_switch *p
-    = (struct cp_switch *) xmalloc (sizeof (struct cp_switch));
+  struct cp_switch *p = xmalloc (sizeof (struct cp_switch));
   p->level = current_binding_level;
   p->next = switch_stack;
   p->switch_stmt = switch_stmt;
@@ -13772,8 +13769,7 @@ save_function_data (tree decl)
 		      19990908);
 
   /* Make a copy.  */
-  f = ((struct language_function *)
-       ggc_alloc (sizeof (struct language_function)));
+  f = ggc_alloc (sizeof (struct language_function));
   memcpy (f, cp_function_chain, sizeof (struct language_function));
   DECL_SAVED_FUNCTION_DATA (decl) = f;
 
@@ -14442,8 +14438,7 @@ void
 cxx_push_function_context (struct function * f)
 {
   struct language_function *p
-    = ((struct language_function *)
-       ggc_alloc_cleared (sizeof (struct language_function)));
+    = ggc_alloc_cleared (sizeof (struct language_function));
   f->language = p;
 
   /* It takes an explicit call to expand_body to generate RTL for a

@@ -694,7 +694,7 @@ ffelex_cfelex_ (ffelexToken *xtoken, FILE *finput, int c)
 	      register unsigned bytes_used = (p - q);
 
 	      buffer_length *= 2;
-	      q = (char *)xrealloc (q, buffer_length);
+	      q = xrealloc (q, buffer_length);
 	      p = &q[bytes_used];
 	      r = &q[buffer_length];
 	    }
@@ -754,7 +754,7 @@ ffelex_cfelex_ (ffelexToken *xtoken, FILE *finput, int c)
 		  register unsigned bytes_used = (p - q);
 
 		  buffer_length = bytes_used * 2;
-		  q = (char *)xrealloc (q, buffer_length);
+		  q = xrealloc (q, buffer_length);
 		  p = &q[bytes_used];
 		  r = &q[buffer_length];
 		}
@@ -805,8 +805,7 @@ ffelex_file_pop_ (const char *filename)
 static void
 ffelex_file_push_ (int old_lineno, const char *filename)
 {
-  struct file_stack *p
-    = (struct file_stack *) xmalloc (sizeof (struct file_stack));
+  struct file_stack *p = xmalloc (sizeof (struct file_stack));
 
   input_file_stack->location.line = old_lineno;
   p->next = input_file_stack;
@@ -923,7 +922,7 @@ ffelex_get_directive_line_ (char **text, FILE *finput)
 
   if (buffer_length == 0)
     {
-      directive_buffer = (char *)xmalloc (128);
+      directive_buffer = xmalloc (128);
       buffer_length = 128;
     }
 
@@ -939,8 +938,7 @@ ffelex_get_directive_line_ (char **text, FILE *finput)
 	  register unsigned bytes_used = (p - directive_buffer);
 
 	  buffer_length *= 2;
-	  directive_buffer
-	    = (char *)xrealloc (directive_buffer, buffer_length);
+	  directive_buffer = xrealloc (directive_buffer, buffer_length);
 	  p = &directive_buffer[bytes_used];
 	  buffer_limit = &directive_buffer[buffer_length];
 	}
@@ -1591,8 +1589,7 @@ ffelex_token_new_ (void)
 
   ++ffelex_total_tokens_;
 
-  t = (ffelexToken) malloc_new_ks (malloc_pool_image (),
-				   "FFELEX token", sizeof (*t));
+  t = malloc_new_ks (malloc_pool_image (), "FFELEX token", sizeof (*t));
   t->id_ = ffelex_token_nextid_++;
   return t;
 }

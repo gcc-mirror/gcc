@@ -840,9 +840,8 @@ retrieve_specialization (tree tmpl, tree args)
 static tree
 retrieve_local_specialization (tree tmpl)
 {
-  tree spec = 
-    (tree) htab_find_with_hash (local_specializations, tmpl,
-				htab_hash_pointer (tmpl));
+  tree spec = htab_find_with_hash (local_specializations, tmpl,
+				   htab_hash_pointer (tmpl));
   return spec ? TREE_PURPOSE (spec) : NULL_TREE;
 }
 
@@ -2409,11 +2408,11 @@ process_partial_specialization (tree decl)
 		{
 		  /* We haven't yet initialized TPD2.  Do so now.  */
 		  tpd2.arg_uses_template_parms 
-		    =  (int*) alloca (sizeof (int) * nargs);
+		    = alloca (sizeof (int) * nargs);
 		  /* The number of parameters here is the number in the
 		     main template, which, as checked in the assertion
 		     above, is NARGS.  */
-		  tpd2.parms = (int*) alloca (sizeof (int) * nargs);
+		  tpd2.parms = alloca (sizeof (int) * nargs);
 		  tpd2.level = 
 		    TMPL_PARMS_DEPTH (DECL_TEMPLATE_PARMS (maintmpl));
 		}
@@ -5541,9 +5540,9 @@ static tree
 tsubst_template_arg_vector (tree t, tree args, tsubst_flags_t complain)
 {
   int len = TREE_VEC_LENGTH (t), need_new = 0, i;
-  tree *elts = (tree *) alloca (len * sizeof (tree));
+  tree *elts = alloca (len * sizeof (tree));
   
-  memset ((char *) elts, 0, len * sizeof (tree));
+  memset (elts, 0, len * sizeof (tree));
   
   for (i = 0; i < len; i++)
     {

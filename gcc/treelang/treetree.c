@@ -1124,8 +1124,7 @@ void
 pushlevel (ignore)
      int ignore ATTRIBUTE_UNUSED;
 {
-  struct binding_level *newlevel
-    = (struct binding_level *) xmalloc (sizeof (struct binding_level));
+  struct binding_level *newlevel = xmalloc (sizeof (struct binding_level));
 
   *newlevel = clear_binding_level;
 

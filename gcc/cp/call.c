@@ -1207,8 +1207,7 @@ add_candidate (struct z_candidate **candidates,
 	       tree fn, tree args, tree convs, tree access_path, 
 	       tree conversion_path, int viable)
 {
-  struct z_candidate *cand
-    = (struct z_candidate *) ggc_alloc_cleared (sizeof (struct z_candidate));
+  struct z_candidate *cand = ggc_alloc_cleared (sizeof (struct z_candidate));
 
   cand->fn = fn;
   cand->args = args;

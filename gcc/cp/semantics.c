@@ -155,7 +155,7 @@ void push_deferring_access_checks (deferring_kind deferring)
       deferred_access_free_list = d->next;
     }
   else
-    d = (deferred_access *) ggc_alloc (sizeof (deferred_access));
+    d = ggc_alloc (sizeof (deferred_access));
 
   d->next = deferred_access_stack;
   d->deferred_access_checks = NULL_TREE;

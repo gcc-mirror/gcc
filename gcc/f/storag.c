@@ -416,8 +416,7 @@ ffestorag_new (ffestoragList sl)
 {
   ffestorag s;
 
-  s = (ffestorag) malloc_new_kp (ffe_pool_program_unit (), "ffestorag",
-				 sizeof (*s));
+  s = malloc_new_kp (ffe_pool_program_unit (), "ffestorag", sizeof (*s));
   s->next = (ffestorag) &sl->first;
   s->previous = sl->last;
   s->hook = FFECOM_storageNULL;

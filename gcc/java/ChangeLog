@@ -1,3 +1,8 @@
+2003-07-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* class.c java-tree.h jcf-write.c jvspec.c: Remove unnecessary
+	casts.
+
 2003-07-19  Neil Booth  <neil@daikokuya.co.uk>
 
 	* lang.opt: Don't show -MD_ and -MDD_.

@@ -1,3 +1,7 @@
+2003-07-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* treetree.c: Remove unnecessary casts.
+
 2003-07-15  Neil Booth  <neil@daikokuya.co.uk>
 
 	* lang-options.h: Remove.

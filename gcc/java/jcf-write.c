@@ -386,8 +386,7 @@ static struct chunk *
 alloc_chunk (struct chunk *last, unsigned char *data,
 	     int size, struct obstack *work)
 {
-  struct chunk *chunk = (struct chunk *)
-    obstack_alloc (work, sizeof(struct chunk));
+  struct chunk *chunk = obstack_alloc (work, sizeof(struct chunk));
 
   if (data == NULL && size > 0)
     data = obstack_alloc (work, size);
@@ -434,8 +433,8 @@ append_chunk_copy (unsigned char *data, int size, struct jcf_partial *state)
 static struct jcf_block *
 gen_jcf_label (struct jcf_partial *state)
 {
-  struct jcf_block *block = (struct jcf_block *)
-    obstack_alloc (state->chunk_obstack, sizeof (struct jcf_block));
+  struct jcf_block *block
+    = obstack_alloc (state->chunk_obstack, sizeof (struct jcf_block));
   block->next =	NULL;
   block->linenumber = -1;
   block->pc = UNDEFINED_PC;
@@ -518,8 +517,8 @@ static struct jcf_handler *
 alloc_handler (struct jcf_block *start_label, struct jcf_block *end_label,
 	       struct jcf_partial *state)
 {
-  struct jcf_handler *handler = (struct jcf_handler *)
-    obstack_alloc (state->chunk_obstack, sizeof (struct jcf_handler));
+  struct jcf_handler *handler
+    = obstack_alloc (state->chunk_obstack, sizeof (struct jcf_handler));
   handler->start_label = start_label;
   handler->end_label = end_label;
   handler->handler_label = get_jcf_label_here (state);
@@ -576,8 +575,7 @@ localvar_alloc (tree decl, struct jcf_partial *state)
       ptr = (struct localvar_info**) state->localvars.data + index;
       state->localvars.ptr = (unsigned char *) (ptr + 1 + wide);
     }
-  info = (struct localvar_info *)
-    obstack_alloc (state->chunk_obstack, sizeof (struct localvar_info));
+  info = obstack_alloc (state->chunk_obstack, sizeof (struct localvar_info));
   ptr[0] = info;
   if (wide)
     ptr[1] = (struct localvar_info *)(~0);
@@ -1004,8 +1002,8 @@ static void
 emit_reloc (HOST_WIDE_INT value, int kind,
 	    struct jcf_block *target, struct jcf_partial *state)
 {
-  struct jcf_relocation *reloc = (struct jcf_relocation *)
-    obstack_alloc (state->chunk_obstack, sizeof (struct jcf_relocation));
+  struct jcf_relocation *reloc
+    = obstack_alloc (state->chunk_obstack, sizeof (struct jcf_relocation));
   struct jcf_block *block = state->last_block;
   reloc->next = block->u.relocations;
   block->u.relocations = reloc;
@@ -1582,8 +1580,8 @@ generate_bytecode_insns (tree exp, int target, struct jcf_partial *state)
     case CASE_EXPR:
       {
 	struct jcf_switch_state *sw_state = state->sw_state;
-	struct jcf_relocation *reloc = (struct jcf_relocation *)
-	  obstack_alloc (state->chunk_obstack, sizeof (struct jcf_relocation));
+	struct jcf_relocation *reloc
+	  = obstack_alloc (state->chunk_obstack, sizeof (struct jcf_relocation));
 	HOST_WIDE_INT case_value = TREE_INT_CST_LOW (TREE_OPERAND (exp, 0));
 	reloc->kind = 0;
 	reloc->label = get_jcf_label_here (state);
@@ -1663,8 +1661,8 @@ generate_bytecode_insns (tree exp, int target, struct jcf_partial *state)
 	    HOST_WIDE_INT i;
 	    unsigned HOST_WIDE_INT delta;
 	    /* Copy the chain of relocs into a sorted array. */
-	    struct jcf_relocation **relocs = (struct jcf_relocation **)
-	      xmalloc (sw_state.num_cases * sizeof (struct jcf_relocation *));
+	    struct jcf_relocation **relocs
+	      = xmalloc (sw_state.num_cases * sizeof (struct jcf_relocation *));
 	    /* The relocs arrays is a buffer with a gap.
 	       The assumption is that cases will normally come in "runs". */
 	    int gap_start = 0;
@@ -2669,8 +2667,7 @@ perform_relocations (struct jcf_partial *state)
       unsigned char *old_ptr = old_buffer + old_size;
       if (new_size != old_size)
 	{
-	  chunk->data = (unsigned char *)
-	    obstack_alloc (state->chunk_obstack, new_size);
+	  chunk->data = obstack_alloc (state->chunk_obstack, new_size);
 	  chunk->size = new_size;
 	}
       new_ptr = chunk->data + new_size;

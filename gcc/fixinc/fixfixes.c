@@ -783,7 +783,7 @@ main( argc, argv )
       return EXIT_FAILURE;
     }
 
-  pz_tmptmp = (char*)xmalloc( strlen( argv[4] ) + 5 );
+  pz_tmptmp = xmalloc (strlen (argv[4]) + 5);
   strcpy( pz_tmptmp, argv[4] );
 
   /* Don't lose because "12345678" and "12345678X" map to the same

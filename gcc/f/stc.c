@@ -6748,7 +6748,7 @@ ffestc_R809 (ffelexToken construct_name, ffebld expr, ffelexToken expr_token)
   /* Init block to manage CASE list. */
 
   pool = malloc_pool_new ("Select", ffe_pool_any_unit (), 1024);
-  s = (ffestwSelect) malloc_new_kp (pool, "Select", sizeof (*s));
+  s = malloc_new_kp (pool, "Select", sizeof (*s));
   s->first_rel = (ffestwCase) &s->first_rel;
   s->last_rel = (ffestwCase) &s->first_rel;
   s->first_stmt = (ffestwCase) &s->first_rel;

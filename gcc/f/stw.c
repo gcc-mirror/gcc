@@ -282,8 +282,8 @@ ffestw_init_0 (void)
 {
   ffestw b;
 
-  ffestw_stack_top_ = b = (ffestw) malloc_new_kp (malloc_pool_image (),
-					  "FFESTW stack base", sizeof (*b));
+  ffestw_stack_top_ = b = malloc_new_kp (malloc_pool_image (),
+					 "FFESTW stack base", sizeof (*b));
   b->uses_ = 0;			/* catch if anyone uses, kills, &c this
 				   block. */
   b->next_ = NULL;
@@ -324,7 +324,7 @@ ffestw_new (void)
 {
   ffestw b;
 
-  b = (ffestw) malloc_new_kp (malloc_pool_image (), "FFESTW", sizeof (*b));
+  b = malloc_new_kp (malloc_pool_image (), "FFESTW", sizeof (*b));
   b->uses_ = 1;
 
   return b;

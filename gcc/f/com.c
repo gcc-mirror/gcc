@@ -13787,8 +13787,7 @@ pop_f_function_context (void)
 static void
 push_f_function_context (void)
 {
-  struct f_function *p
-  = (struct f_function *) xmalloc (sizeof (struct f_function));
+  struct f_function *p = xmalloc (sizeof (struct f_function));
 
   push_function_context ();
 
@@ -14216,7 +14215,7 @@ static bool
 ffe_init (void)
 {
 #ifdef IO_BUFFER_SIZE
-  setvbuf (finput, (char *) xmalloc (IO_BUFFER_SIZE), _IOFBF, IO_BUFFER_SIZE);
+  setvbuf (finput, xmalloc (IO_BUFFER_SIZE), _IOFBF, IO_BUFFER_SIZE);
 #endif
 
   ffecom_init_decl_processing ();
@@ -15226,7 +15225,7 @@ open_include_file (char *filename, struct file_name_list *searchptr)
     }
   else
     {
-      dir = (char *) xmalloc (p - filename + 1);
+      dir = xmalloc (p - filename + 1);
       memcpy (dir, filename, p - filename);
       dir[p - filename] = '\0';
       from = p + 1;
@@ -15357,8 +15356,7 @@ read_name_map (const char *dirname)
     if (! strcmp (map_list_ptr->map_list_name, dirname))
       return map_list_ptr->map_list_map;
 
-  map_list_ptr = ((struct file_name_map_list *)
-		  xmalloc (sizeof (struct file_name_map_list)));
+  map_list_ptr = xmalloc (sizeof (struct file_name_map_list));
   map_list_ptr->map_list_name = xstrdup (dirname);
   map_list_ptr->map_list_map = NULL;
 
@@ -15388,8 +15386,7 @@ read_name_map (const char *dirname)
 	    ;
 	  to = read_filename_string (ch, f);
 
-	  ptr = ((struct file_name_map *)
-		 xmalloc (sizeof (struct file_name_map)));
+	  ptr = xmalloc (sizeof (struct file_name_map));
 	  ptr->map_from = from;
 
 	  /* Make the real filename absolute.  */
@@ -15429,7 +15426,7 @@ ffecom_file_ (const char *name)
      early #line directives (when -g is in effect).  */
 
   fp = &instack[++indepth];
-  memset ((char *) fp, 0, sizeof (FILE_BUF));
+  memset (fp, 0, sizeof (FILE_BUF));
   if (name == NULL)
     name = "";
   fp->nominal_fname = fp->fname = name;
@@ -15454,8 +15451,8 @@ ffecom_decode_include_option (const char *dir)
     ignore_srcdir = 1;
   else
     {
-      struct file_name_list *dirtmp = (struct file_name_list *)
-	xmalloc (sizeof (struct file_name_list));
+      struct file_name_list *dirtmp
+	= xmalloc (sizeof (struct file_name_list));
       dirtmp->next = 0;		/* New one goes on the end */
       dirtmp->fname = dir;
       dirtmp->got_name_map = 0;
@@ -15647,7 +15644,7 @@ ffecom_open_include_ (char *name, ffewhereLine l, ffewhereColumn c)
   instack[indepth].column = ffewhere_column_use (c);
 
   fp = &instack[indepth + 1];
-  memset ((char *) fp, 0, sizeof (FILE_BUF));
+  memset (fp, 0, sizeof (FILE_BUF));
   fp->nominal_fname = fp->fname = fname;
   fp->dir = searchptr;
 

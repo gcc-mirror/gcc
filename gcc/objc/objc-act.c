@@ -4475,7 +4475,7 @@ synth_id_with_class_suffix (preamble, ctxt)
     {
       const char *const class_name
 	= IDENTIFIER_POINTER (CLASS_NAME (objc_implementation_context));
-      string = (char *) alloca (strlen (preamble) + strlen (class_name) + 3);
+      string = alloca (strlen (preamble) + strlen (class_name) + 3);
       sprintf (string, "%s_%s", preamble,
 	       IDENTIFIER_POINTER (CLASS_NAME (ctxt)));
     }
@@ -4487,17 +4487,14 @@ synth_id_with_class_suffix (preamble, ctxt)
 	= IDENTIFIER_POINTER (CLASS_NAME (objc_implementation_context));
       const char *const class_super_name
 	= IDENTIFIER_POINTER (CLASS_SUPER_NAME (objc_implementation_context));
-      string = (char *) alloca (strlen (preamble)
-				+ strlen (class_name)
-				+ strlen (class_super_name)
-				+ 3);
+      string = alloca (strlen (preamble) + strlen (class_name)
+		       + strlen (class_super_name) + 3);
       sprintf (string, "%s_%s_%s", preamble, class_name, class_super_name);
     }
   else if (TREE_CODE (ctxt) == PROTOCOL_INTERFACE_TYPE)
     {
       const char *protocol_name = IDENTIFIER_POINTER (PROTOCOL_NAME (ctxt));
-      string
-	= (char *) alloca (strlen (preamble) + strlen (protocol_name) + 3);
+      string = alloca (strlen (preamble) + strlen (protocol_name) + 3);
       sprintf (string, "%s_%s", preamble, protocol_name);
     }
   else
@@ -4619,7 +4616,7 @@ build_keyword_selector (selector)
 	len++;
     }
 
-  buf = (char *) alloca (len + 1);
+  buf = alloca (len + 1);
   /* Start the buffer out as an empty string.  */
   buf[0] = '\0';
 
@@ -5433,8 +5430,8 @@ hash_func (sel_name)
 static void
 hash_init ()
 {
-  nst_method_hash_list = (hash *) ggc_calloc (SIZEHASHTABLE, sizeof (hash));
-  cls_method_hash_list = (hash *) ggc_calloc (SIZEHASHTABLE, sizeof (hash));
+  nst_method_hash_list = ggc_calloc (SIZEHASHTABLE, sizeof (hash));
+  cls_method_hash_list = ggc_calloc (SIZEHASHTABLE, sizeof (hash));
 }
 
 /* WARNING!!!!  hash_enter is called with a method, and will peek
@@ -5450,7 +5447,7 @@ hash_enter (hashlist, method)
   hash obj;
   int slot = hash_func (METHOD_SEL_NAME (method)) % SIZEHASHTABLE;
 
-  obj = (hash) ggc_alloc (sizeof (struct hashed_entry));
+  obj = ggc_alloc (sizeof (struct hashed_entry));
   obj->list = 0;
   obj->next = hashlist[slot];
   obj->key = method;
@@ -5484,7 +5481,7 @@ hash_add_attr (entry, value)
 {
   attr obj;
 
-  obj = (attr) ggc_alloc (sizeof (struct hashed_attribute));
+  obj = ggc_alloc (sizeof (struct hashed_attribute));
   obj->next = entry->list;
   obj->value = value;
 
@@ -6273,7 +6270,7 @@ continue_class (class)
       if (!objc_class_template)
 	build_class_template ();
 
-      imp_entry = (struct imp_entry *) ggc_alloc (sizeof (struct imp_entry));
+      imp_entry = ggc_alloc (sizeof (struct imp_entry));
 
       imp_entry->next = imp_list;
       imp_entry->imp_context = class;
@@ -6369,7 +6366,7 @@ finish_class (class)
     {
       tree decl_specs;
       const char *class_name = IDENTIFIER_POINTER (CLASS_NAME (class));
-      char *string = (char *) alloca (strlen (class_name) + 3);
+      char *string = alloca (strlen (class_name) + 3);
 
       /* extern struct objc_object *_<my_name>; */
 
@@ -7123,8 +7120,8 @@ really_start_method (method, parmlist)
   method_slot++;
 
   /* Make sure this is big enough for any plausible method label.  */
-  buf = (char *) alloca (50 + strlen (sel_name) + strlen (class_name)
-			 + (cat_name ? strlen (cat_name) : 0));
+  buf = alloca (50 + strlen (sel_name) + strlen (class_name)
+		+ (cat_name ? strlen (cat_name) : 0));
 
   OBJC_GEN_METHOD_LABEL (buf, TREE_CODE (method) == INSTANCE_METHOD_DECL,
 			 class_name, cat_name, sel_name, method_slot);
@@ -8061,7 +8058,7 @@ dump_interface (fp, chain)
      declaration is so long that it doesn't fit in the buffer.  The
      code and all the related functions should be rewritten to avoid
      using fixed size buffers.  */
-  char *buf = (char *) xmalloc (1024 * 10);
+  char *buf = xmalloc (1024 * 10);
   const char *my_name = IDENTIFIER_POINTER (CLASS_NAME (chain));
   tree ivar_decls = CLASS_RAW_IVARS (chain);
   tree nst_methods = CLASS_NST_METHODS (chain);
@@ -8187,7 +8184,7 @@ init_objc ()
   gcc_obstack_init (&util_obstack);
   util_firstobj = (char *) obstack_finish (&util_obstack);
 
-  errbuf = (char *) xmalloc (BUFSIZE);
+  errbuf = xmalloc (BUFSIZE);
   hash_init ();
   synth_module_prologue ();
 }
@@ -8367,7 +8364,7 @@ handle_class_ref (chain)
      tree chain;
 {
   const char *name = IDENTIFIER_POINTER (TREE_VALUE (chain));
-  char *string = (char *) alloca (strlen (name) + 30);
+  char *string = alloca (strlen (name) + 30);
   tree decl;
   tree exp;
 
@@ -8417,7 +8414,7 @@ handle_impent (impent)
       const char *const class_name =
 	IDENTIFIER_POINTER (CLASS_NAME (impent->imp_context));
 
-      string = (char *) alloca (strlen (class_name) + 30);
+      string = alloca (strlen (class_name) + 30);
 
       sprintf (string, "%sobjc_class_name_%s",
                (flag_next_runtime ? "." : "__"), class_name);
@@ -8429,7 +8426,7 @@ handle_impent (impent)
       const char *const class_super_name =
         IDENTIFIER_POINTER (CLASS_SUPER_NAME (impent->imp_context));
 
-      string = (char *) alloca (strlen (class_name)
+      string = alloca (strlen (class_name)
 				+ strlen (class_super_name) + 30);
 
       /* Do the same for categories.  Even though no references to

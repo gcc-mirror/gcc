@@ -488,12 +488,12 @@ run_compiles ()
 {
   tFixDesc *p_fixd = fixDescList;
   int fix_ct = FIX_COUNT;
-  regex_t *p_re = (regex_t *) xmalloc (REGEX_COUNT * sizeof (regex_t));
+  regex_t *p_re = xmalloc (REGEX_COUNT * sizeof (regex_t));
 
   /*  Make sure compile_re does not stumble across invalid data */
 
-  memset ( (void*)p_re, '\0', REGEX_COUNT * sizeof (regex_t) );
-  memset ( (void*)&incl_quote_re, '\0', sizeof (regex_t) );
+  memset (p_re, '\0', REGEX_COUNT * sizeof (regex_t));
+  memset (&incl_quote_re, '\0', sizeof (regex_t));
 
   compile_re (incl_quote_pat, &incl_quote_re, 1,
               "quoted include", "run_compiles");
@@ -911,7 +911,7 @@ fix_with_system (p_fixd, pz_fix_file, pz_file_source, pz_temp_file)
               + strlen( pz_file_source )
               + strlen( pz_temp_file );
 
-      pz_cmd = (char*)xmalloc( argsize );
+      pz_cmd = xmalloc (argsize);
 
       strcpy( pz_cmd, pz_orig_dir );
       pz_scan = pz_cmd + strlen( pz_orig_dir );
@@ -970,7 +970,7 @@ fix_with_system (p_fixd, pz_fix_file, pz_file_source, pz_temp_file)
         }
 
       /* Estimated buffer size we will need.  */
-      pz_scan = pz_cmd = (char*)xmalloc( argsize );
+      pz_scan = pz_cmd = xmalloc (argsize);
       /* How much of it do we allot to the program name and its
          arguments.  */
       parg_size = argsize - parg_size;
@@ -1010,7 +1010,7 @@ fix_with_system (p_fixd, pz_fix_file, pz_file_source, pz_temp_file)
 	  while (pz_scan == (char*)NULL)
 	    {
 	      size_t already_filled = pz_scan_save - pz_cmd;
-	      pz_cmd = (char*)xrealloc( pz_cmd, argsize += 100 );
+	      pz_cmd = xrealloc (pz_cmd, argsize += 100);
 	      pz_scan_save = pz_scan = pz_cmd + already_filled;
 	      parg_size += 100;
 	      pz_scan = make_raw_shell_str( pz_scan, pArg,
@@ -1058,9 +1058,8 @@ start_fixer (read_fd, p_fixd, pz_fix_file)
   else
     {
       tSCC z_cmd_fmt[] = "file='%s'\n%s";
-      pz_cmd = (char*) xmalloc (strlen (p_fixd->patch_args[2])
-				+ sizeof( z_cmd_fmt )
-				+ strlen( pz_fix_file ));
+      pz_cmd = xmalloc (strlen (p_fixd->patch_args[2])
+			+ sizeof (z_cmd_fmt) + strlen (pz_fix_file));
       sprintf (pz_cmd, z_cmd_fmt, pz_fix_file, p_fixd->patch_args[2]);
       pz_cmd_save = p_fixd->patch_args[2];
       p_fixd->patch_args[2] = pz_cmd;

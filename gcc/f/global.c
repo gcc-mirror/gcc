@@ -107,8 +107,7 @@ ffeglobal_new_ (ffename n)
 
   assert (n != NULL);
 
-  g = (ffeglobal) malloc_new_ks (malloc_pool_image (), "FFEGLOBAL",
-				 sizeof (*g));
+  g = malloc_new_ks (malloc_pool_image (), "FFEGLOBAL", sizeof (*g));
   g->n = n;
   g->hook = FFECOM_globalNULL;
   g->tick = 0;
@@ -780,10 +779,9 @@ ffeglobal_proc_def_nargs (ffesymbol s, int n_args)
       return;
     }
 
-  g->u.proc.arg_info
-    = (ffeglobalArgInfo_) malloc_new_ks (malloc_pool_image (),
-					 "ffeglobalArgInfo_",
-					 n_args * sizeof (g->u.proc.arg_info[0]));
+  g->u.proc.arg_info = malloc_new_ks (malloc_pool_image (),
+				      "ffeglobalArgInfo_",
+				      n_args * sizeof (g->u.proc.arg_info[0]));
   while (n_args-- > 0)
     g->u.proc.arg_info[n_args].t = NULL;
 }
@@ -1123,10 +1121,9 @@ ffeglobal_proc_ref_nargs (ffesymbol s, int n_args, ffelexToken t)
       return TRUE;
     }
 
-  g->u.proc.arg_info
-    = (ffeglobalArgInfo_) malloc_new_ks (malloc_pool_image (),
-					 "ffeglobalArgInfo_",
-					 n_args * sizeof (g->u.proc.arg_info[0]));
+  g->u.proc.arg_info = malloc_new_ks (malloc_pool_image (),
+				      "ffeglobalArgInfo_",
+				      n_args * sizeof (g->u.proc.arg_info[0]));
   while (n_args-- > 0)
     g->u.proc.arg_info[n_args].t = NULL;
 

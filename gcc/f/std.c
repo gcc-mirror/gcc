@@ -984,8 +984,8 @@ ffestd_subr_copy_easy_ (ffestpInquireIx max)
   ffestpInquireStmt *stmt;
   ffestpInquireIx ix;
 
-  stmt = (ffestpInquireStmt *) malloc_new_kp (ffesta_output_pool,
-				  "FFESTD easy", sizeof (ffestpFile) * max);
+  stmt = malloc_new_kp (ffesta_output_pool, "FFESTD easy",
+			sizeof (ffestpFile) * max);
 
   for (ix = 0; ix < max; ++ix)
     {
@@ -2229,8 +2229,7 @@ ffestd_R909_item (ffebld expr, ffelexToken expr_token)
 
   ffestd_check_item_ ();
 
-  item = (ffestdExprItem_) malloc_new_kp (ffesta_output_pool,
-					  "ffestdExprItem_", sizeof (*item));
+  item = malloc_new_kp (ffesta_output_pool, "ffestdExprItem_", sizeof (*item));
 
   item->next = NULL;
   item->expr = expr;
@@ -2306,8 +2305,7 @@ ffestd_R910_item (ffebld expr, ffelexToken expr_token)
 
   ffestd_check_item_ ();
 
-  item = (ffestdExprItem_) malloc_new_kp (ffesta_output_pool,
-					  "ffestdExprItem_", sizeof (*item));
+  item = malloc_new_kp (ffesta_output_pool, "ffestdExprItem_", sizeof (*item));
 
   item->next = NULL;
   item->expr = expr;
@@ -2366,8 +2364,7 @@ ffestd_R911_item (ffebld expr, ffelexToken expr_token)
 
   ffestd_check_item_ ();
 
-  item = (ffestdExprItem_) malloc_new_kp (ffesta_output_pool,
-					  "ffestdExprItem_", sizeof (*item));
+  item = malloc_new_kp (ffesta_output_pool, "ffestdExprItem_", sizeof (*item));
 
   item->next = NULL;
   item->expr = expr;
@@ -2535,8 +2532,7 @@ ffestd_R923B_item (ffebld expr)
 
   ffestd_check_item_ ();
 
-  item = (ffestdExprItem_) malloc_new_kp (ffesta_output_pool,
-					  "ffestdExprItem_", sizeof (*item));
+  item = malloc_new_kp (ffesta_output_pool, "ffestdExprItem_", sizeof (*item));
 
   item->next = NULL;
   item->expr = expr;

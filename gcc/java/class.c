@@ -148,8 +148,7 @@ add_assume_compiled (const char *ident, int excludep)
 {
   int len;
   assume_compiled_node *parent;
-  assume_compiled_node *node = 
-    xmalloc (sizeof (assume_compiled_node));
+  assume_compiled_node *node = xmalloc (sizeof (assume_compiled_node));
 
   node->ident = xstrdup (ident);
   node->excludep = excludep;
@@ -2157,7 +2156,7 @@ java_treetreehash_find (htab_t ht, tree t)
 {
   struct treetreehash_entry *e;
   hashval_t hv = JAVA_TREEHASHHASH_H (t);
-  e = (struct treetreehash_entry *) htab_find_with_hash (ht, t, hv);
+  e = htab_find_with_hash (ht, t, hv);
   if (e == NULL)
     return NULL;
   else

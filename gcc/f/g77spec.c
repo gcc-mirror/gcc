@@ -219,7 +219,7 @@ append_arg (const char *arg)
       int i;
 
       newargsize = (g77_xargc << 2) + 20;	/* This should handle all. */
-      g77_newargv = (const char **) xmalloc (newargsize * sizeof (char *));
+      g77_newargv = xmalloc (newargsize * sizeof (char *));
 
       /* Copy what has been done so far.  */
       for (i = 0; i < g77_newargc; ++i)

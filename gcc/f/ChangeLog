@@ -1,3 +1,9 @@
+Sat Jul 19 12:03:03 2003  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* com.c data.c expr.c fini.c g77spec.c global.c lab.c lex.c name.c
+	sta.c stc.c std.c storag.c stt.c stw.c symbol.c target.c type.c:
+	Remove unnecessary casts.
+
 Thu Jul 17 06:34:41 2003  Neil Booth  <neil@daikokuya.co.uk>
 
 	* lang-options.h: Remove.
