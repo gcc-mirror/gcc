@@ -66,10 +66,8 @@
 #include <climits>
 #include <cstdlib>
 #include <cstddef>
-#include <new>
 #include <iosfwd>
 #include <bits/stl_pair.h>
-#include <bits/type_traits.h>
 #include <bits/cpp_type_traits.h>
 #include <bits/stl_iterator_base_types.h>
 #include <bits/stl_iterator_base_funcs.h>
@@ -220,7 +218,7 @@ namespace std
       return __a;
     }
 
-  // All of these auxiliary functions serve two purposes.  (1) Replace
+  // All of these auxiliary structs serve two purposes.  (1) Replace
   // calls to copy with memmove whenever possible.  (Memmove, not memcpy,
   // because the input and output ranges are permitted to overlap.)
   // (2) If we're using random access iterators, then write the loop as
@@ -276,7 +274,7 @@ namespace std
       typedef typename iterator_traits<_II>::value_type _ValueTypeI;
       typedef typename iterator_traits<_OI>::value_type _ValueTypeO;
       typedef typename iterator_traits<_II>::iterator_category _Category;
-      const bool __simple = (__is_trivially_copyable<_ValueTypeO>::_M_type
+      const bool __simple = (__is_trivially_copyable<_ValueTypeI>::_M_type
 	                     && __is_pointer<_II>::_M_type
 	                     && __is_pointer<_OI>::_M_type
 			     && __are_same<_ValueTypeI, _ValueTypeO>::_M_type);
@@ -284,37 +282,42 @@ namespace std
       return std::__copy<__simple, _Category>::copy(__first, __last, __result);
     }
 
-  template<typename _InputIterator, typename _OutputIterator>
-    inline _OutputIterator
-    __copy_ni2(_InputIterator __first, _InputIterator __last,
-	       _OutputIterator __result, __true_type)
-    { return _OutputIterator(std::__copy_aux(__first, __last,
-					     __result.base())); }
-
-  template<typename _InputIterator, typename _OutputIterator>
-    inline _OutputIterator
-    __copy_ni2(_InputIterator __first, _InputIterator __last,
-	       _OutputIterator __result, __false_type)
-    { return std::__copy_aux(__first, __last, __result); }
-
-  template<typename _InputIterator, typename _OutputIterator>
-    inline _OutputIterator
-    __copy_ni1(_InputIterator __first, _InputIterator __last,
-	       _OutputIterator __result, __true_type)
+  template<bool, bool>
+    struct __copy_normal
     {
-      typedef typename _Is_normal_iterator<_OutputIterator>::_Normal __Normal;
-      return std::__copy_ni2(__first.base(), __last.base(),
-			     __result, __Normal());
-    }
+      template<typename _II, typename _OI>
+        static _OI
+        copy_n(_II __first, _II __last, _OI __result)
+        { return std::__copy_aux(__first, __last, __result); }
+    };
 
-  template<typename _InputIterator, typename _OutputIterator>
-    inline _OutputIterator
-    __copy_ni1(_InputIterator __first, _InputIterator __last,
-	       _OutputIterator __result, __false_type)
+  template<>
+    struct __copy_normal<true, false>
     {
-      typedef typename _Is_normal_iterator<_OutputIterator>::_Normal __Normal;
-      return std::__copy_ni2(__first, __last, __result, __Normal());
-    }
+      template<typename _II, typename _OI>
+        static _OI
+        copy_n(_II __first, _II __last, _OI __result)
+        { return std::__copy_aux(__first.base(), __last.base(), __result); }
+    };
+
+  template<>
+    struct __copy_normal<false, true>
+    {
+      template<typename _II, typename _OI>
+        static _OI
+        copy_n(_II __first, _II __last, _OI __result)
+        { return _OI(std::__copy_aux(__first, __last, __result.base())); }
+    };
+
+  template<>
+    struct __copy_normal<true, true>
+    {
+      template<typename _II, typename _OI>
+        static _OI
+        copy_n(_II __first, _II __last, _OI __result)
+        { return _OI(std::__copy_aux(__first.base(), __last.base(),
+				     __result.base())); }
+    };
 
   /**
    *  @brief Copies the range [first,last) into result.
@@ -343,8 +346,10 @@ namespace std
 	    typename iterator_traits<_InputIterator>::value_type>)
       __glibcxx_requires_valid_range(__first, __last);
 
-       typedef typename _Is_normal_iterator<_InputIterator>::_Normal __Normal;
-       return std::__copy_ni1(__first, __last, __result, __Normal());
+       const bool __in = __is_normal_iterator<_InputIterator>::_M_type;
+       const bool __out = __is_normal_iterator<_OutputIterator>::_M_type;
+       return std::__copy_normal<__in, __out>::copy_n(__first, __last,
+						      __result);
     }
   
   template<bool, typename>
@@ -394,7 +399,7 @@ namespace std
       typedef typename iterator_traits<_BI1>::value_type _ValueType1;
       typedef typename iterator_traits<_BI2>::value_type _ValueType2;
       typedef typename iterator_traits<_BI1>::iterator_category _Category;
-      const bool __simple = (__is_trivially_copyable<_ValueType2>::_M_type
+      const bool __simple = (__is_trivially_copyable<_ValueType1>::_M_type
 	                     && __is_pointer<_BI1>::_M_type
 	                     && __is_pointer<_BI2>::_M_type
 			     && __are_same<_ValueType1, _ValueType2>::_M_type);
@@ -403,38 +408,44 @@ namespace std
 							       __result);
     }
 
-  template <typename _BI1, typename _BI2>
-    inline _BI2
-    __copy_backward_output_normal_iterator(_BI1 __first, _BI1 __last,
-					   _BI2 __result, __true_type)
-    { return _BI2(std::__copy_backward_aux(__first, __last, __result.base())); }
-
-  template <typename _BI1, typename _BI2>
-    inline _BI2
-    __copy_backward_output_normal_iterator(_BI1 __first, _BI1 __last,
-					   _BI2 __result, __false_type)
-    { return std::__copy_backward_aux(__first, __last, __result); }
-
-  template <typename _BI1, typename _BI2>
-    inline _BI2
-    __copy_backward_input_normal_iterator(_BI1 __first, _BI1 __last,
-					  _BI2 __result, __true_type)
+  template<bool, bool>
+    struct __copy_backward_normal
     {
-      typedef typename _Is_normal_iterator<_BI2>::_Normal __Normal;
-      return std::__copy_backward_output_normal_iterator(__first.base(),
-							 __last.base(),
-							 __result, __Normal());
-    }
+      template<typename _BI1, typename _BI2>
+        static _BI2
+        copy_b_n(_BI1 __first, _BI1 __last, _BI2 __result)
+        { return std::__copy_backward_aux(__first, __last, __result); }
+    };
 
-  template <typename _BI1, typename _BI2>
-    inline _BI2
-    __copy_backward_input_normal_iterator(_BI1 __first, _BI1 __last,
-					  _BI2 __result, __false_type)
+  template<>
+    struct __copy_backward_normal<true, false>
     {
-      typedef typename _Is_normal_iterator<_BI2>::_Normal __Normal;
-      return std::__copy_backward_output_normal_iterator(__first, __last,
-							 __result, __Normal());
-    }
+      template<typename _BI1, typename _BI2>
+        static _BI2
+        copy_b_n(_BI1 __first, _BI1 __last, _BI2 __result)
+        { return std::__copy_backward_aux(__first.base(), __last.base(),
+					  __result); }
+    };
+
+  template<>
+    struct __copy_backward_normal<false, true>
+    {
+      template<typename _BI1, typename _BI2>
+        static _BI2
+        copy_b_n(_BI1 __first, _BI1 __last, _BI2 __result)
+        { return _BI2(std::__copy_backward_aux(__first, __last,
+					       __result.base())); }
+    };
+
+  template<>
+    struct __copy_backward_normal<true, true>
+    {
+      template<typename _BI1, typename _BI2>
+        static _BI2
+        copy_b_n(_BI1 __first, _BI1 __last, _BI2 __result)
+        { return _BI2(std::__copy_backward_aux(__first.base(), __last.base(),
+					       __result.base())); }
+    };
 
   /**
    *  @brief Copies the range [first,last) into result.
@@ -465,9 +476,10 @@ namespace std
 	    typename iterator_traits<_BI2>::value_type>)
       __glibcxx_requires_valid_range(__first, __last);
 
-      typedef typename _Is_normal_iterator<_BI1>::_Normal __Normal;
-      return std::__copy_backward_input_normal_iterator(__first, __last,
-							__result, __Normal());
+      const bool __bi1 = __is_normal_iterator<_BI1>::_M_type;
+      const bool __bi2 = __is_normal_iterator<_BI2>::_M_type;
+      return std::__copy_backward_normal<__bi1, __bi2>::copy_b_n(__first, __last,
+								 __result);
     }
 
   template<bool>

@@ -1,3 +1,16 @@
+2004-07-02  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/type_traits.h (_Is_normal_iterator): Move...
+	* include/bits/cpp_type_traits.h: ... here, renamed to
+	__is_normal_iterator and consistent with the other traits.
+	* include/bits/stl_algobase.h (__copy_ni1, __copy_ni2): Convert
+	to the struct __copy_normal and three specializations.
+	(__copy_backward_output_normal_iterator,
+	__copy_backward_input_normal_iterator): Likewise, convert to
+	the struct __copy_backward_normal and three specializations.
+	(copy, copy_backward): Use the latter.
+	(__copy_aux, __copy_backward_aux): Very minor tweaks.
+
 2004-07-01  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/stl_algobase.h (__copy_trivial): Remove.
