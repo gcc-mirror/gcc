@@ -1,3 +1,7 @@
+1999-04-29  Nathan Sidwell  <nathan@acm.org>
+
+	* streambuf.h (ios::~ios): Use operator delete[] to remove _arrays.
+
 Mon Apr 12 19:22:44 1999  Mumit Khan  <khan@xraylith.wisc.edu>
 
 	* filedoalloc.c (_POSIX_SOURCE): Remove definition.
