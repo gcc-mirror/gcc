@@ -5044,9 +5044,12 @@ choose_reload_regs (insn, avoid_return_reg)
 		    regno = REGNO (equiv);
 		  else if (GET_CODE (equiv) == SUBREG)
 		    {
-		      regno = REGNO (SUBREG_REG (equiv));
-		      if (regno < FIRST_PSEUDO_REGISTER)
-			regno += SUBREG_WORD (equiv);
+		      /* This must be a SUBREG of a hard register.
+			 Make a new REG since this might be used in an
+			 address and not all machines support SUBREGs
+			 there.  */
+		      regno = REGNO (SUBREG_REG (equiv)) + SUBREG_WORD (equiv);
+		      equiv = gen_rtx (REG, reload_mode[r], regno);
 		    }
 		  else
 		    abort ();
