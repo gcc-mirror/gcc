@@ -98,7 +98,7 @@ DEFAULT_LINKER="$with_ld")
 if test x"${DEFAULT_LINKER+set}" = x"set"; then
   if test ! -x "$DEFAULT_LINKER"; then
     AC_MSG_WARN([cannot execute: $DEFAULT_LINKER: check --with-ld or env. var. DEFAULT_LINKER])
-  elif test "GNU" = `$DEFAULT_LINKER -v </dev/null 2>&1 | sed '1s/^GNU.*/GNU/;q'`; then
+  elif $DEFAULT_LINKER -v < /dev/null 2>&1 | grep GNU > /dev/null; then
     gnu_ld_flag=yes
   fi
   AC_DEFINE_UNQUOTED(DEFAULT_LINKER,"$DEFAULT_LINKER")
@@ -116,7 +116,7 @@ DEFAULT_ASSEMBLER="$with_as")
 if test x"${DEFAULT_ASSEMBLER+set}" = x"set"; then
   if test ! -x "$DEFAULT_ASSEMBLER"; then
     AC_MSG_WARN([cannot execute: $DEFAULT_ASSEMBLER: check --with-as or env. var. DEFAULT_ASSEMBLER])
-  elif test "GNU" = `$DEFAULT_ASSEMBLER -v </dev/null 2>&1 | sed '1s/^GNU.*/GNU/;q'`; then
+  elif $DEFAULT_ASSEMBLER -v < /dev/null 2>&1 | grep GNU > /dev/null; then
     gas_flag=yes
   fi
   AC_DEFINE_UNQUOTED(DEFAULT_ASSEMBLER,"$DEFAULT_ASSEMBLER")
@@ -289,7 +289,7 @@ AC_PROG_MAKE_SET
 
 AC_MSG_CHECKING([whether a default assembler was specified])
 if test x"${DEFAULT_ASSEMBLER+set}" = x"set"; then
-    if test x"$with_gas" = x"no"; then
+    if test x"$gas_flag" = x"no"; then
     	AC_MSG_RESULT([yes ($DEFAULT_ASSEMBLER)])
     else
 	AC_MSG_RESULT([yes ($DEFAULT_ASSEMBLER - GNU as)])
@@ -300,7 +300,7 @@ fi
 
 AC_MSG_CHECKING([whether a default linker was specified])
 if test x"${DEFAULT_LINKER+set}" = x"set"; then
-    if test x"$with_gnu_ld" = x"no"; then
+    if test x"$gnu_ld_flag" = x"no"; then
 	AC_MSG_RESULT([yes ($DEFAULT_LINKER)])
     else
 	AC_MSG_RESULT([yes ($DEFAULT_LINKER - GNU ld)])

@@ -1,3 +1,9 @@
+Sat Apr  3 19:21:05 1999  Alexandre Oliva  <oliva@dcc.unicamp.br>
+
+	* configure.in (DEFAULT_LINKER, DEFAULT_ASSEMBLER): Use grep
+	instead of test and sed to check whether they're GNU programs.
+	* configure: Rebuilt.
+
 Sat Apr  3 17:57:35 1999  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* Makefile.in (install-headers-tar, install-headers-cpio): avoid
