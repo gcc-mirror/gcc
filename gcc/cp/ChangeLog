@@ -1,3 +1,8 @@
+2000-08-29  Mark Mitchell  <mark@codesourcery.com>
+
+	* typeck.c (mark_addressable): Remove code that pokes around in
+	RTL.
+
 2000-08-28  Jason Merrill  <jason@redhat.com>
 
 	* lex.c (file_name_nondirectory): Move to toplev.c.

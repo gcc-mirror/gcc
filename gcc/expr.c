@@ -8104,10 +8104,7 @@ expand_expr (exp, target, tmode, modifier)
 		preserve_temp_slots (target);
 		DECL_RTL (slot) = target;
 		if (TREE_ADDRESSABLE (slot))
-		  {
-		    TREE_ADDRESSABLE (slot) = 0;
-		    mark_addressable (slot);
-		  }
+		  put_var_into_stack (slot);
 
 		/* Since SLOT is not known to the called function
 		   to belong to its stack frame, we must build an explicit
@@ -8145,10 +8142,7 @@ expand_expr (exp, target, tmode, modifier)
 		/* If we must have an addressable slot, then make sure that
 		   the RTL that we just stored in slot is OK.  */
 		if (TREE_ADDRESSABLE (slot))
-		  {
-		    TREE_ADDRESSABLE (slot) = 0;
-		    mark_addressable (slot);
-		  }
+		  put_var_into_stack (slot);
 	      }
 	  }
 
