@@ -1,4 +1,4 @@
-/* { dg-do compile { target alpha*-*-osf5* } */
+/* { dg-do compile { target alpha*-*-osf5* } } */
 /* { dg-final { scan-assembler ",Xfoo" } } */
 
 #pragma extern_prefix "X"
