@@ -1,3 +1,9 @@
+2004-03-21  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* pretty-print.c (pp_base_maybe_space): New function.
+	* pretty-print.h (pp_base_maybe_space): Declare.
+	(pp_maybe_space): New macro.
+
 2004-03-21  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.md ("addti3", "subti3"): New insns and splitters.
