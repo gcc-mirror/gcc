@@ -1,5 +1,19 @@
 2004-01-25  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/mmix/mmix-protos.h: Remove the prototype for
+	mmix_setup_incoming_varargs.
+	* config/mmix/mmix.c (TARGET_PROMOTE_FUNCTION_ARGS): New.
+	(TARGET_STRUCT_VALUE_RTX): Likewise.
+	(TARGET_SETUP_INCOMING_VARARGS): Likewise.
+	(mmix_setup_incoming_varargs): Make it static.
+	(mmix_struct_value_rtx): New.
+	* config/mmix/mmix.h (PROMOTE_FUNCTION_ARGS): Remove.
+	Remove a commented-out definition of PROMOTE_FUNCTION_RETURN.
+	(STRUCT_VALUE_REGNUM): Remove.
+	(SETUP_INCOMING_VARARGS): Likewise.
+
+2004-01-25  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/mips/mips-protos.h: Remove the prototypes for
 	mips_setup_incoming_varargs and mips_return_in_memory.
 	* config/mips/mips.c (TARGET_PROMOTE_FUNCTION_ARGS): New.
