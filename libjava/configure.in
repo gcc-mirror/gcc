@@ -772,7 +772,7 @@ AC_CHECK_HEADERS(inttypes.h, [
     AC_DEFINE(HAVE_INTTYPES_H, 1, [Define if <inttypes.h> is available])
     AC_DEFINE(JV_HAVE_INTTYPES_H, 1, [Define if <inttypes.h> is available])
 ])
-AC_HEADER_SYS_WAIT()
+AC_HEADER_SYS_WAIT
 
 AC_CHECK_TYPE([ssize_t], [int])
 
