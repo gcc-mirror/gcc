@@ -21,56 +21,29 @@
 #Boston, MA 02111-1307, USA.
 
 # First parameter is the source directory, second is list of subdirectories
+
 savesrcdir=$1
 savesubdirs=$2
+
+# First ensure the language build subdirectories exist.
+
 for subdir in . $savesubdirs
 do
-	oldsrcdir=$savesrcdir
-
-	rm -f Make-lang
-	touch Make-lang
-
-	# Re-adjust the path
-	case $oldsrcdir in
-	/*)
-		case $subdir in
-		.)
-			srcdir=$oldsrcdir
-			;;
-		*)
-			srcdir=$oldsrcdir/$subdir
-			;;
-		esac
-		;;
-	*)
-		case $subdir in
-		.)
-			;;
-		*)
-			oldsrcdir=../${oldsrcdir}
-			srcdir=$oldsrcdir/$subdir
-			;;
-		esac
-		;;
-	esac
-	mainsrcdir=$oldsrcdir
-	STARTDIR=`pwd`
-	test -d $subdir || mkdir $subdir
-	cd $subdir
-
-	# If this is the top level Makefile, add the language fragments.
-	if [ $subdir = . ]
+	if [ $subdir != . ]
 	then
-		for s in .. $savesubdirs
-		do
-			if [ $s != ".." ]
-			then
-				cat ${mainsrcdir}/$s/Make-lang.in >> Make-lang
-			fi
-		done
+		test -d $subdir || mkdir $subdir
 	fi
+done
 
-	cd $STARTDIR
-done   # end of current-dir SUBDIRS loop
+# Now copy each language's Make-lang.in file to Make-lang.
 
-srcdir=$savesrcdir
+rm -f Make-lang
+touch Make-lang
+
+for subdir in . $savesubdirs
+do
+	if [ $subdir != . ]
+	then
+		cat $savesrcdir/$subdir/Make-lang.in >> Make-lang
+	fi
+done
