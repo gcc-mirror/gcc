@@ -1,5 +1,15 @@
 2003-10-09  Michael Koch  <konqueror@gmx.de>
 
+	* java/rmi/server/RMIClassLoader.java:
+	Removed unused imports, little reformatings.
+	(getClassLoader): New method, implementation was part of old loadCLass
+	method.
+	(loadClass): Simplified by moving functionality to new method and
+	reworking the code a bit.
+	(getClassAnnotation): Merged documentation from classpath.
+
+2003-10-09  Michael Koch  <konqueror@gmx.de>
+
 	* java/math/BigInteger.java
 	(add): Removed unused local variable len.
 
