@@ -1801,7 +1801,7 @@ lookup_destructor (tree object, tree scope, tree dtor_name)
     }
   if (!same_type_p (dtor_type, TYPE_MAIN_VARIANT (object_type)))
     {
-      error ("the type being destroyed is '%T', but the destructor refers to `%T'",
+      error ("the type being destroyed is `%T', but the destructor refers to `%T'",
 	     TYPE_MAIN_VARIANT (object_type), dtor_type);
       return error_mark_node;
     }
