@@ -4534,16 +4534,18 @@
 ;; If it is more than 4096 bytes, we need to probe the stack
 ;; periodically. 
 (define_expand "allocate_stack"
-  [(set (reg:DI 30)
+  [(set (match_operand:DI 0 "register_operand" "=r")
 	(plus:DI (reg:DI 30)
-		 (match_operand:DI 0 "reg_or_cint_operand" "")))]
+		 (match_operand:DI 1 "reg_or_cint_operand" "")))
+   (set (reg:DI 30)
+	(plus:DI (reg:DI 30) (match_dup 1)))]
   ""
   "
 {
-  if (GET_CODE (operands[0]) == CONST_INT
-      && INTVAL (operands[0]) < 32768)
+  if (GET_CODE (operands[1]) == CONST_INT
+      && INTVAL (operands[1]) < 32768)
     {
-      if (INTVAL (operands[0]) >= 4096)
+      if (INTVAL (operands[1]) >= 4096)
 	{
 	  /* We do this the same way as in the prologue and generate explicit
 	     probes.  Then we update the stack by the constant.  */
@@ -4551,14 +4553,14 @@
 	  int probed = 4096;
 
 	  emit_insn (gen_probe_stack (GEN_INT (- probed)));
-	  while (probed + 8192 < INTVAL (operands[0]))
+	  while (probed + 8192 < INTVAL (operands[1]))
 	    emit_insn (gen_probe_stack (GEN_INT (- (probed += 8192))));
 
-	  if (probed + 4096 < INTVAL (operands[0]))
-	    emit_insn (gen_probe_stack (GEN_INT (- INTVAL(operands[0]))));
+	  if (probed + 4096 < INTVAL (operands[1]))
+	    emit_insn (gen_probe_stack (GEN_INT (- INTVAL(operands[1]))));
 	}
 
-      operands[0] = GEN_INT (- INTVAL (operands[0]));
+      operands[1] = GEN_INT (- INTVAL (operands[1]));
     }
   else
     {
@@ -4569,10 +4571,10 @@
       rtx memref;
 
       emit_insn (gen_subdi3 (want, stack_pointer_rtx,
-			     force_reg (Pmode, operands[0])));
+			     force_reg (Pmode, operands[1])));
       emit_insn (gen_adddi3 (tmp, stack_pointer_rtx, GEN_INT (-4096)));
 
-      if (GET_CODE (operands[0]) != CONST_INT)
+      if (GET_CODE (operands[1]) != CONST_INT)
 	{
 	  out_label = gen_label_rtx ();
 	  emit_insn (gen_cmpdi (want, tmp));
@@ -4597,6 +4599,7 @@
 	emit_label (out_label);
 
       emit_move_insn (stack_pointer_rtx, want);
+      emit_move_insn (operands[0], want);
 
       DONE;
     }
