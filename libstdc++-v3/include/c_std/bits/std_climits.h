@@ -31,17 +31,10 @@
 // ISO C++ 14882: 18.2.2  Implementation properties: C library
 //
 
-// Note: This is not a conforming implementation.
-
 #ifndef _CPP_CLIMITS
 #define _CPP_CLIMITS	1
 
 #pragma GCC system_header
-#include <limits.h>
+#include_next <limits.h>
 
 #endif
-
-
-
-
-

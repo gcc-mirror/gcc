@@ -31,15 +31,11 @@
 // ISO C++ 14882: <cwctype>
 //
 
-// Note: This is not a conforming implementation.
-
 #ifndef _CPP_CWCTYPE
 #define _CPP_CWCTYPE 1
 
-#include <bits/std_cwchar.h>
-
 #pragma GCC system_header
-#include <wctype.h>
+#include_next <wctype.h>
 
 // Get rid of those macros defined in <wctype.h> in lieu of real functions.
 #undef iswalnum
@@ -63,34 +59,29 @@
 
 namespace std
 {
+  using ::wint_t; 	  // cwchar
+
   using ::wctype_t;
   using ::wctrans_t;
 
-  extern "C" int iswalnum(wint_t); 
-  extern "C" int iswalpha(wint_t); 
-  extern "C" int iswblank(wint_t); 
-  extern "C" int iswcntrl(wint_t); 
-  extern "C" int iswdigit(wint_t); 
-  extern "C" int iswgraph(wint_t); 
-  extern "C" int iswlower(wint_t); 
-  extern "C" int iswprint(wint_t); 
-  extern "C" int iswpunct(wint_t); 
-  extern "C" int iswspace(wint_t); 
-  extern "C" int iswupper(wint_t); 
-  extern "C" int iswxdigit(wint_t);
-  extern "C" int iswctype(wint_t, wctype_t); 
-  extern "C" wctype_t wctype(const char *); 
-  extern "C" wint_t towlower(wint_t); 
-  extern "C" wint_t towupper(wint_t); 
-  extern "C" wint_t towctrans(wint_t, wctrans_t); 
-  extern "C" wctrans_t wctrans(const char*);
+  using ::iswalnum;
+  using ::iswalpha;
+  using ::iswblank;
+  using ::iswcntrl;
+  using ::iswdigit;
+  using ::iswgraph;
+  using ::iswlower;
+  using ::iswprint;
+  using ::iswprint;
+  using ::iswpunct;
+  using ::iswspace;
+  using ::iswupper;
+  using ::iswxdigit;
+  using ::iswctype;
+  using ::towlower;
+  using ::towupper;
+  using ::towctrans;
+  using ::wctrans;
 }
 
 #endif 
-
-
-
-
-
-
-

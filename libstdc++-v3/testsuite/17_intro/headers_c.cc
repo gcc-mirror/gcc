@@ -67,4 +67,12 @@
   #include <cwctype>
 #endif
 
+// libstdc++/2992
+namespace bar
+{
+  int foo(const char *x)
+  { return strlen(x); }
+};
+
+
 int main() { return 0; }

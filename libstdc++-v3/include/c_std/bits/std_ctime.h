@@ -31,16 +31,11 @@
 // ISO C++ 14882: 20.5  Date and time
 //
 
-// Note: This is not a conforming implementation.
-
 #ifndef _CPP_CTIME
 #define _CPP_CTIME 1
 
-#include <bits/c++config.h>
-#include <bits/std_cstddef.h>
-
 #pragma GCC system_header
-#include <time.h>
+#include_next <time.h>
 
 // Get rid of those macros defined in <time.h> in lieu of real functions.
 #undef clock
@@ -55,19 +50,21 @@
 
 namespace std
 {
+  using ::size_t;	// cstddef
+
   using ::clock_t;
   using ::time_t;
   using ::tm;
 
-  extern "C" clock_t clock(void); 
-  extern "C" double difftime(time_t, time_t); 
-  extern "C" time_t mktime(struct tm*); 
-  extern "C" time_t time(time_t*); 
-  extern "C" char* asctime(const struct tm*); 
-  extern "C" char* ctime(const time_t*); 
-  extern "C" struct tm* gmtime(const time_t*); 
-  extern "C" struct tm* localtime(const time_t*); 
-  extern "C" size_t strftime(char*, size_t, const char*, const struct tm*);
+  using ::clock;
+  using ::difftime;
+  using ::mktime;
+  using ::time;
+  using ::asctime;
+  using ::ctime;
+  using ::gmtime;
+  using ::localtime;
+  using ::strftime;
 }
 
 #endif
