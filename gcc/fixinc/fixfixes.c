@@ -58,10 +58,9 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 #include "fixlib.h"
+#define    GTYPE_SE_CT 1
 
 tSCC zNeedsArg[] = "fixincl error:  `%s' needs %s argument (c_fix_arg[%d])\n";
-
-#define EXIT_BROKEN  3
 
 typedef struct {
     const char*  fix_name;
@@ -73,7 +72,8 @@ typedef struct {
   _FT_( "char_macro_use",   char_macro_use_fix ) \
   _FT_( "format",           format_fix )         \
   _FT_( "machine_name",     machine_name_fix )   \
-  _FT_( "wrap",             wrap_fix )
+  _FT_( "wrap",             wrap_fix )           \
+  _FT_( "gnu_type",         gnu_type_fix )
 
 
 #define FIX_PROC_HEAD( fix ) \
@@ -121,6 +121,60 @@ print_quote( q, text )
           goto quote_done;
         }
     } quote_done:;
+
+  return text;
+}
+
+
+/*
+ *  Emit the GNU standard type wrapped up in such a way that
+ *  this thing can be encountered countless times during a compile
+ *  and not cause even a warning.
+ */
+static const char*
+emit_gnu_type ( text, rm )
+  const char* text;
+  regmatch_t* rm;
+{
+  extern t_gnu_type_map gnu_type_map[];
+  extern int gnu_type_map_ct;
+
+  const char*     pzt  = text + rm[GTYPE_SE_CT].rm_so;
+  t_gnu_type_map* p_tm = gnu_type_map;
+  int   ct = gnu_type_map_ct;
+
+  fwrite (text, rm[0].rm_so, 1, stdout);
+  text += rm[0].rm_eo;
+
+  for (;;)
+    {
+      if (strncmp (pzt, p_tm->pz_type, p_tm->type_name_len) == 0)
+        break;
+
+#ifdef DEBUG
+      if (--ct <= 0)
+        return (const char*)NULL;
+#else
+      if (--ct <= 0)
+        return text;
+#endif
+      p_tm++;
+    }
+
+  /*
+   *  Now print out the reformed typedef
+   */
+  printf ("#ifndef __%s_TYPE__\n"
+          "#define __%s_TYPE__ %s\n"
+          "#endif\n",
+          p_tm->pz_TYPE, p_tm->pz_TYPE, p_tm->pz_gtype );
+
+  printf ("#if !defined(_GCC_%s_T)%s\n"
+          "#define _GCC_%s_T\n"
+          "typedef __%s_TYPE__ %s_t;\n"
+          "#endif\n",
+          p_tm->pz_TYPE, p_tm->pz_cxx_guard,
+          p_tm->pz_TYPE, p_tm->pz_TYPE, p_tm->pz_type);
 
   return text;
 }
@@ -590,6 +644,89 @@ FIX_PROC_HEAD( wrap_fix )
   printf( "\n#endif  /* FIXINC_%s_CHECK */\n", pz_name );
   if (pz_name != z_fixname)
     free( (void*)pz_name );
+}
+
+
+/*
+ *  Search for multiple copies of a regular expression.  Each block
+ *  of matched text is replaced with the format string, as described
+ *  above in `format_write'.
+ */
+FIX_PROC_HEAD( gnu_type_fix )
+{
+  const char* pz_pat;
+  regex_t    re;
+  regmatch_t rm[GTYPE_SE_CT+1];
+
+  {
+    tTestDesc* pTD = p_fixd->p_test_desc;
+    int        ct  = p_fixd->test_ct;
+    for (;;)
+      {
+        if (ct-- <= 0)
+          {
+            fprintf (stderr, zNeedsArg, p_fixd->fix_name, "search text", 1);
+            exit (EXIT_BROKEN);
+          }
+
+        if (pTD->type == TT_EGREP)
+          {
+            pz_pat = pTD->pz_test_text;
+            break;
+          }
+
+        pTD++;
+      }
+  }
+
+  compile_re (pz_pat, &re, 1, "gnu type typedef", "gnu_type_fix");
+
+  while (regexec (&re, text, GTYPE_SE_CT+1, rm, 0) == 0)
+    {
+#ifndef DEBUG
+      text = emit_gnu_type (text, rm);
+#else
+      tSCC z_mismatch[] = "``%s'' mismatched:\n";
+
+      /*
+       *  Make sure we matched *all* subexpressions
+       */
+      if (rm[GTYPE_SE_CT].rm_so == -1)
+        {
+          int i;
+
+          fprintf (stderr, z_mismatch, pz_pat);
+
+          for (i=0; i <= GTYPE_SE_CT; i++)
+            {
+              if (rm[i].rm_so != -1)
+                {
+                  fprintf( stderr, "%4d:  ``", i );
+                  fwrite( text + rm[i].rm_so, rm[i].rm_eo - rm[i].rm_so,
+                          1, stderr );
+                  fputs( "''\n", stderr );
+                }
+              else
+                {
+                  fprintf( stderr, "%4d:  BROKEN\n", i );
+                }
+            }
+          exit (EXIT_BROKEN);
+        }
+
+      text = emit_gnu_type (text, rm);
+      if (text == NULL)
+        {
+          fprintf (stderr, z_mismatch, pz_pat);
+          exit (EXIT_BROKEN);
+        }
+#endif
+    }
+
+  /*
+   *  Dump out the rest of the file
+   */
+  fputs (text, stdout);
 }
 
 
