@@ -1,3 +1,8 @@
+2004-11-07  David Edelsohn  <edelsohn@gnu.org>
+
+	* config-ml.in: Pass FCFLAGS for multilibs, handle GFORTRAN
+	like CC.
+
 2004-11-05  Paolo Bonzini  <bonzini@gnu.org>
 
 	* Makefile.def (host fixincludes): Specify missing targets.
