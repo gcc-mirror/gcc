@@ -44,8 +44,15 @@ import java.awt.Dimension;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.event.ActionEvent;
 import java.awt.event.InputMethodListener;
 import java.awt.event.KeyEvent;
+import java.io.IOException;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
@@ -61,6 +68,7 @@ import javax.swing.JComponent;
 import javax.swing.JViewport;
 import javax.swing.KeyStroke;
 import javax.swing.Scrollable;
+import javax.swing.TransferHandler;
 import javax.swing.UIManager;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
@@ -546,7 +554,92 @@ public abstract class JTextComponent extends JComponent
     {
       parent = p;
     }
+  }
 
+  class DefaultTransferHandler
+    extends TransferHandler
+  {
+    public boolean canImport(JComponent component, DataFlavor[] flavors)
+    {
+      JTextComponent textComponent = (JTextComponent) component;
+      
+      if (! (textComponent.isEnabled()
+	     && textComponent.isEditable()
+	     && flavors != null))
+        return false;
+
+      for (int i = 0; i < flavors.length; ++i)
+	if (flavors[i].equals(DataFlavor.stringFlavor))
+	   return true;
+
+      return false;
+    }
+    
+    public void exportToClipboard(JComponent component, Clipboard clipboard,
+				  int action)
+    {
+      JTextComponent textComponent = (JTextComponent) component;
+      int start = textComponent.getSelectionStart();
+      int end = textComponent.getSelectionEnd();
+
+      if (start == end)
+	return;
+
+      try
+	{
+	  // Copy text to clipboard.
+	  String data = textComponent.getDocument().getText(start, end);
+	  StringSelection selection = new StringSelection(data);
+	  clipboard.setContents(selection, null);
+
+	  // Delete selected text on cut action.
+	  if (action == MOVE)
+	    doc.remove(start, end - start);
+	}
+      catch (BadLocationException e)
+	{
+	  // Ignore this and do nothing.
+	}
+    }
+    
+    public int getSourceActions()
+    {
+      return NONE;
+    }
+
+    public boolean importData(JComponent component, Transferable transferable)
+    {
+      DataFlavor flavor = null;
+      DataFlavor[] flavors = transferable.getTransferDataFlavors();
+
+      if (flavors == null)
+	return false;
+
+      for (int i = 0; i < flavors.length; ++i)
+	if (flavors[i].equals(DataFlavor.stringFlavor))
+	   flavor = flavors[i];
+      
+      if (flavor == null)
+	return false;
+
+      try
+	{
+	  JTextComponent textComponent = (JTextComponent) component;
+	  String data = (String) transferable.getTransferData(flavor);
+	  textComponent.replaceSelection(data);
+	  return true;
+	}
+      catch (IOException e)
+	{
+	  // Ignored.
+	}
+      catch (UnsupportedFlavorException e)
+	{
+	  // Ignored.
+	}
+
+      return false;
+    }
   }
 
   private static final long serialVersionUID = -8796518220218978795L;
@@ -554,8 +647,11 @@ public abstract class JTextComponent extends JComponent
   public static final String DEFAULT_KEYMAP = "default";
   public static final String FOCUS_ACCELERATOR_KEY = "focusAcceleratorKey";
   
+  private static DefaultTransferHandler defaultTransferHandler;
   private static Hashtable keymaps = new Hashtable();
   private Keymap keymap;
+  private char focusAccelerator = '\0';
+  private NavigationFilter navigationFilter;
   
   /**
    * Get a Keymap from the global keymap table, by name.
@@ -875,6 +971,7 @@ public abstract class JTextComponent extends JComponent
       }
     catch (BadLocationException e)
       {
+	// This can never happen.
       }
   }
 
@@ -1368,5 +1465,68 @@ public abstract class JTextComponent extends JComponent
   public void setDragEnabled(boolean enabled)
   {
     dragEnabled = enabled;
+  }
+
+  public void copy()
+  {
+    doTransferAction("copy", TransferHandler.getCopyAction());
+  }
+
+  public void cut()
+  {
+    doTransferAction("cut", TransferHandler.getCutAction());
+  }
+
+  public void paste()
+  {
+    doTransferAction("paste", TransferHandler.getPasteAction());
+  }
+
+  private void doTransferAction(String name, Action action)
+  {
+    // Install default TransferHandler if none set.
+    if (getTransferHandler() == null)
+      {
+	if (defaultTransferHandler == null)
+	  defaultTransferHandler = new DefaultTransferHandler();
+	
+	setTransferHandler(defaultTransferHandler);
+      }
+
+    // Perform action.
+    ActionEvent event = new ActionEvent(this, ActionEvent.ACTION_PERFORMED,
+					action.getValue(Action.NAME).toString());
+    action.actionPerformed(event);
+  }
+
+  public void setFocusAccelerator(char newKey)
+  {
+    if (focusAccelerator == newKey)
+      return;
+
+    char oldKey = focusAccelerator;
+    focusAccelerator = newKey;
+    firePropertyChange(FOCUS_ACCELERATOR_KEY, oldKey, newKey);
+  }
+  
+  public char getFocusAccelerator()
+  {
+    return focusAccelerator;
+  }
+
+  /**
+   * @since 1.4
+   */
+  public NavigationFilter getNavigationFilter()
+  {
+    return navigationFilter;
+  }
+
+  /**
+   * @since 1.4
+   */
+  public void setNavigationFilter(NavigationFilter filter)
+  {
+    navigationFilter = filter;
   }
 }

@@ -60,20 +60,20 @@ public class JCheckBox extends JToggleButton
     contentAreaFilled = false;
   }
   
-    public JCheckBox()
-    {
+  public JCheckBox()
+  {
     super();
     init();
-    }
+  }
 
   public JCheckBox(Action action)
-    {
+  {
     super(action);
     init();
-    }
+  }
 
-    public JCheckBox(Icon icon)
-    { 
+  public JCheckBox(Icon icon)
+  { 
     super(icon);
     init();
   }    
@@ -82,10 +82,10 @@ public class JCheckBox extends JToggleButton
   { 
     super(icon, selected);
     init();
-    }    
+  }    
   
-    public JCheckBox(String text)
-    {
+  public JCheckBox(String text)
+  {
     super(text);
     init();
   }
@@ -94,41 +94,41 @@ public class JCheckBox extends JToggleButton
   {
     super(text, selected);
     init();
-    }
+  }
       
-    public JCheckBox(String text, Icon icon)
-    {
-	super(text, icon);
+  public JCheckBox(String text, Icon icon)
+  {
+    super(text, icon);
     init();
-    }
+  }
 
   public JCheckBox(String text, Icon icon, boolean selected)
   {
     super(text, icon, selected);
     init();
   }
-    
+
   /**
    * Gets the AccessibleContext associated with this JCheckBox.
    */
-    public AccessibleContext getAccessibleContext()
-    {
-	return null;
-    }
+  public AccessibleContext getAccessibleContext()
+  {
+    return null;
+  }
   
   /**
    * Returns a string that specifies the name of the Look and Feel class
    * that renders this component.
    */
-    public String getUIClassID()
-    {
-	return "CheckBoxUI";
-    }
+  public String getUIClassID()
+  {
+    return "CheckBoxUI";
+  }
   
-    protected  String paramString()
-    {
-	return "JCheckBox";
-    }
+  protected  String paramString()
+  {
+    return "JCheckBox";
+  }
 
   public boolean isBorderPaintedFlat()
   {

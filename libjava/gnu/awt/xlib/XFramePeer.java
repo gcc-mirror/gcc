@@ -78,7 +78,7 @@ public class XFramePeer extends XCanvasPeer implements FramePeer
      bounds.  */
   public void setBounds(int x, int y, int width, int height)
   {
-    if (Thread.currentThread() == getXToolkit().eventLoop.eventLoopThread)
+    if (EventQueue.isDispatchThread())
       return;
     
     super.setBounds(x, y, width, height);

@@ -38,7 +38,6 @@
 
 package gnu.java.awt.color;
 
-import java.awt.color.ColorSpace;
 import java.awt.color.ICC_Profile;
 
 

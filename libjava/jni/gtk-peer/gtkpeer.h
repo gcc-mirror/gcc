@@ -147,6 +147,10 @@ struct graphics
 #define AWT_BUTTON2_DOWN_MASK (1 << 11)
 #define AWT_BUTTON3_DOWN_MASK (1 << 12)
 
+#define AWT_BUTTON1_MASK (1 << 4)
+#define AWT_BUTTON2_MASK (1 << 3)
+#define AWT_BUTTON3_MASK (1 << 2)
+
 #define MULTI_CLICK_TIME   250
 /* as opposed to a MULTI_PASS_TIME :) */
 
@@ -460,7 +464,8 @@ extern jmethodID setCursorID;
 extern jmethodID syncAttrsID;
 extern jclass gdkColor;
 extern jmethodID gdkColorID;
-extern JNIEnv *gdk_env;
+
+JNIEnv *gdk_env(void);
 
 extern double dpi_conversion_factor;
 
@@ -479,6 +484,8 @@ void set_visible (GtkWidget *widget, jboolean visible);
 void set_parent (GtkWidget *widget, GtkContainer *parent);
 
 jint keyevent_state_to_awt_mods (GdkEvent *event);
+
+guint awt_keycode_to_keysym (jint keyCode, jint keyLocation);
 
 struct item_event_hook_info
 {

@@ -38,19 +38,12 @@ exception statement from your version. */
 
 package gnu.java.awt.peer;
 
-import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Shape;
 import java.awt.font.TextHitInfo;
 import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
-import java.text.CharacterIterator;
-import java.text.AttributedCharacterIterator;
-import java.text.AttributedString;
-import java.util.Map;
-import java.awt.font.TextAttribute;
-
 
 /**
  * @author Graydon Hoare

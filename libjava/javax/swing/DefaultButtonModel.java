@@ -71,7 +71,7 @@ import javax.swing.event.EventListenerList;
 public class DefaultButtonModel implements ButtonModel, Serializable
 {
   /** DOCUMENT ME! */
-  static final long serialVersionUID = -5342609566534980231L;
+  private static final long serialVersionUID = -5342609566534980231L;
 
   /**
    * Indicates that the button is <em>partially</em> committed to being
@@ -272,7 +272,7 @@ public class DefaultButtonModel implements ButtonModel, Serializable
    *
    * @param e The ItemEvent to fire
    */
-  public void fireItemStateChanged(ItemEvent e)
+  protected void fireItemStateChanged(ItemEvent e)
   {
     ItemListener[] ll = getItemListeners();
 
@@ -288,7 +288,7 @@ public class DefaultButtonModel implements ButtonModel, Serializable
    *
    * @param e The ActionEvent to fire
    */
-  public void fireActionPerformed(ActionEvent e)
+  protected void fireActionPerformed(ActionEvent e)
   {
     ActionListener[] ll = getActionListeners();
 
@@ -301,7 +301,7 @@ public class DefaultButtonModel implements ButtonModel, Serializable
    * has occurred. This happens in response to the any change to a property
    * of the model.
    */
-  public void fireStateChanged()
+  protected void fireStateChanged()
   {
     ChangeListener[] ll = getChangeListeners();
 
@@ -315,7 +315,7 @@ public class DefaultButtonModel implements ButtonModel, Serializable
    * @param stateflag DOCUMENT ME!
    * @param b DOCUMENT ME!
    */
-  protected void changeState(int stateflag, boolean b)
+  private void changeState(int stateflag, boolean b)
   {
     int oldstate = stateMask;
     int newstate;

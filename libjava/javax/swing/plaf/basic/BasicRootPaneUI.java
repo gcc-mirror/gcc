@@ -49,17 +49,17 @@ import javax.swing.plaf.RootPaneUI;
 public class BasicRootPaneUI extends RootPaneUI
   implements PropertyChangeListener
 {
-    public static ComponentUI createUI(JComponent x) 
-    {
-        return new BasicRootPaneUI();
-    }
+  public static ComponentUI createUI(JComponent x) 
+  {
+    return new BasicRootPaneUI();
+  }
 
-    public void installUI(JComponent c)
-    {
-      c.setOpaque(true);
+  public void installUI(JComponent c)
+  {
+    c.setOpaque(true);
     c.setBackground(UIManager.getColor("control"));
-      super.installUI(c);
-    }
+    super.installUI(c);
+  }
 
   public void propertyChange(PropertyChangeEvent event)
   {

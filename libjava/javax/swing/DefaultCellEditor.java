@@ -58,7 +58,7 @@ public class DefaultCellEditor
   extends AbstractCellEditor
   implements TableCellEditor, TreeCellEditor
 {
-  static final long serialVersionUID = 3564035141373880027L;
+  private static final long serialVersionUID = 3564035141373880027L;
 
   /**
    * EditorDelegate

@@ -177,3 +177,47 @@ Java_gnu_java_awt_peer_gtk_GtkFramePeer_nativeSetIconImageFromDecoder
 
   gdk_threads_leave ();
 }
+
+static void
+free_pixbuf_data (guchar *pixels, gpointer data __attribute__((unused)))
+{
+  free(pixels);
+}
+
+JNIEXPORT void JNICALL
+Java_gnu_java_awt_peer_gtk_GtkFramePeer_nativeSetIconImageFromData
+  (JNIEnv *env, jobject obj, jintArray pixelArray, jint width, jint height)
+{
+  void *ptr;
+  GdkPixbuf *pixbuf;
+  jint *pixels;
+  int pixels_length, i;
+  guchar *data;
+
+  ptr = NSA_GET_PTR (env, obj);
+
+  pixels = (*env)->GetIntArrayElements (env, pixelArray, 0);
+  pixels_length = (*env)->GetArrayLength (env, pixelArray);
+
+  data = malloc (sizeof (guchar) * pixels_length);
+  for (i = 0; i < pixels_length; i++)
+    data[i] = (guchar) pixels[i];
+
+  gdk_threads_enter ();
+
+  pixbuf = gdk_pixbuf_new_from_data (data,
+                                     GDK_COLORSPACE_RGB,
+                                     TRUE,
+                                     8,
+                                     width,
+                                     height,
+                                     width*4,
+                                     free_pixbuf_data,
+                                     NULL);
+
+  gtk_window_set_icon (GTK_WINDOW (ptr), pixbuf);
+
+  gdk_threads_leave ();
+
+  (*env)->ReleaseIntArrayElements(env, pixelArray, pixels, 0);
+}

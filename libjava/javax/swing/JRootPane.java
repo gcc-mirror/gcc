@@ -100,7 +100,7 @@ public class JRootPane extends JComponent
     protected RootLayout()
     {
     }
-    
+
     /**
      * DOCUMENT ME!
      *
@@ -230,8 +230,8 @@ public class JRootPane extends JComponent
 	    {
 	      glassPane.setBounds(0, 0, containerSize.width,
 	                          containerSize.height);
-	    contentPane.setBounds(0, 0, containerSize.width,
-	                          containerSize.height);
+	      contentPane.setBounds(0, 0, containerSize.width,
+	                            containerSize.height);
 	    }
 
 	  layeredPane.setSize(containerSize.width, containerSize.height);
@@ -333,6 +333,11 @@ public class JRootPane extends JComponent
   protected Container contentPane;
 
   protected JButton defaultButton;
+
+  /**
+   * @since 1.4
+   */
+  private int windowDecorationStyle = NONE;
   
   /**
    * DOCUMENT ME!
@@ -341,8 +346,20 @@ public class JRootPane extends JComponent
    */
   public void setJMenuBar(JMenuBar m)
   {
+    JLayeredPane jlPane = getLayeredPane();
+    if (menuBar != null)
+      jlPane.remove(menuBar);
     menuBar = m;
-    getLayeredPane().add(menuBar, JLayeredPane.FRAME_CONTENT_LAYER);
+    if (menuBar != null)
+      jlPane.add(menuBar, JLayeredPane.FRAME_CONTENT_LAYER);
+  }
+
+  /**
+   * @deprecated Replaced by <code>setJMenuBar()</code>
+   */
+  public void setMenuBar(JMenuBar m)
+  {
+    setJMenuBar(m);
   }
 
   /**
@@ -353,6 +370,14 @@ public class JRootPane extends JComponent
   public JMenuBar getJMenuBar()
   {
     return menuBar;
+  }
+
+  /**
+   * @deprecated Replaced by <code>getJMenuBar()</code>
+   */
+  public JMenuBar getMenuBar()
+  {
+    return getJMenuBar();
   }
 
   /**
@@ -568,5 +593,33 @@ public class JRootPane extends JComponent
     JButton oldButton = defaultButton;
     defaultButton = newButton;
     firePropertyChange("defaultButton", oldButton, newButton);
+  }
+
+  /**
+   * @since 1.4
+   */
+  public int getWindowDecorationStyle()
+  {
+    return windowDecorationStyle;
+  }
+
+  /**
+   * @since 1.4
+   */
+  public void setWindowDecorationStyle(int style)
+  {
+    if (style != NONE
+	&& style != FRAME
+	&& style != INFORMATION_DIALOG
+	&& style != ERROR_DIALOG
+	&& style != COLOR_CHOOSER_DIALOG
+	&& style != FILE_CHOOSER_DIALOG
+	&& style != QUESTION_DIALOG
+	&& style != WARNING_DIALOG)
+      throw new IllegalArgumentException("invalid style");
+    
+    int oldStyle = windowDecorationStyle;
+    windowDecorationStyle = style;
+    firePropertyChange("windowDecorationStyle", oldStyle, style);
   }
 }

@@ -1,5 +1,5 @@
 /* JComponent.java -- Every component in swing inherits from this class.
-   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -50,6 +50,7 @@ import java.awt.Image;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.dnd.DropTarget;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ContainerEvent;
@@ -72,6 +73,7 @@ import java.util.Locale;
 
 import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
+import javax.accessibility.AccessibleKeyBinding;
 import javax.accessibility.AccessibleRole;
 import javax.accessibility.AccessibleStateSet;
 import javax.swing.border.Border;
@@ -133,6 +135,9 @@ public abstract class JComponent extends Container implements Serializable
     public String getAccessibleDescription() { return null; }
     public AccessibleRole getAccessibleRole() { return null; }
     protected String getBorderTitle(Border value0) { return null; }
+    public String getToolTipText() { return null; }
+    public String getTitledBorderText() { return null; }
+    public AccessibleKeyBinding getAccessibleKeyBinding() { return null; }
   }
 
   /** 
@@ -323,6 +328,8 @@ public abstract class JComponent extends Container implements Serializable
   private InputMap inputMap_whenAncestorOfFocused;
   private InputMap inputMap_whenInFocusedWindow;
   private ActionMap actionMap;
+  /** @since 1.3 */
+  private boolean verifyInputWhenFocusTarget;
   private InputVerifier inputVerifier;
 
   private TransferHandler transferHandler;
@@ -389,6 +396,7 @@ public abstract class JComponent extends Container implements Serializable
   {
     super();
     super.setLayout(new FlowLayout());
+    setDropTarget(new DropTarget());
     defaultLocale = Locale.getDefault();
     debugGraphicsOptions = DebugGraphics.NONE_OPTION;
   }
@@ -421,7 +429,7 @@ public abstract class JComponent extends Container implements Serializable
    * @see #getClientProperties
    * @see #putClientProperty
    */
-  public Object getClientProperty(Object key)
+  public final Object getClientProperty(Object key)
   {
     return getClientProperties().get(key);
   }
@@ -438,7 +446,7 @@ public abstract class JComponent extends Container implements Serializable
    * @see #getClientProperties
    * @see #getClientProperty
    */
-  public void putClientProperty(Object key, Object value)
+  public final void putClientProperty(Object key, Object value)
   {
     getClientProperties().put(key, value);
   }
@@ -1533,7 +1541,23 @@ public abstract class JComponent extends Container implements Serializable
    */
   protected String paramString()
   {
-    return "JComponent";
+    StringBuffer sb = new StringBuffer();
+    sb.append(super.paramString());
+    sb.append(",alignmentX=").append(getAlignmentX());
+    sb.append(",alignmentY=").append(getAlignmentY());
+    sb.append(",border=");
+    if (getBorder() != null)
+      sb.append(getBorder());
+    sb.append(",maximumSize=");
+    if (getMaximumSize() != null)
+      sb.append(getMaximumSize());
+    sb.append(",minimumSize=");
+    if (getMinimumSize() != null)
+      sb.append(getMinimumSize());
+    sb.append(",preferredSize=");
+    if (getPreferredSize() != null)
+      sb.append(getPreferredSize());
+    return sb.toString();
   }
 
   /**
@@ -2092,9 +2116,14 @@ public abstract class JComponent extends Container implements Serializable
    * @see ComponentUI#getTransferHandler
    */
 
-  void setTransferHandler (TransferHandler newHandler)
+  public void setTransferHandler(TransferHandler newHandler)
   {
+    if (transferHandler == newHandler)
+      return;
+
+    TransferHandler oldHandler = transferHandler;
     transferHandler = newHandler;
+    firePropertyChange("transferHandler", oldHandler, newHandler);
   }
 
   /**
@@ -2224,5 +2253,27 @@ public abstract class JComponent extends Container implements Serializable
     InputVerifier oldVerifier = inputVerifier;
     inputVerifier = verifier;
     firePropertyChange("inputVerifier", oldVerifier, verifier);
+  }
+
+  /**
+   * @since 1.3
+   */
+  public boolean getVerifyInputWhenFocusTarget()
+  {
+    return verifyInputWhenFocusTarget;
+  }
+
+  /**
+   * @since 1.3
+   */
+  public void setVerifyInputWhenFocusTarget(boolean verifyInputWhenFocusTarget)
+  {
+    if (this.verifyInputWhenFocusTarget == verifyInputWhenFocusTarget)
+      return;
+
+    this.verifyInputWhenFocusTarget = verifyInputWhenFocusTarget;
+    firePropertyChange("verifyInputWhenFocusTarget",
+		       ! verifyInputWhenFocusTarget,
+		       verifyInputWhenFocusTarget);
   }
 }

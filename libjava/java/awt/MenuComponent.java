@@ -130,7 +130,7 @@ private static final long serialVersionUID = -4536902356223894379L;
    * @see #getAccessibleContext()
    * @serial the accessibility information for this component.
    */
-  private AccessibleContext accessibleContext;
+  AccessibleContext accessibleContext;
 
   /**
    * Was the name of the component set?  This value defaults

@@ -39,7 +39,6 @@ exception statement from your version. */
 package gnu.java.awt.peer.gtk;
 
 import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.Window;
 import java.awt.event.WindowEvent;
@@ -166,10 +165,12 @@ public class GtkWindowPeer extends GtkContainerPeer
 	|| frame_y != awtComponent.getY()
 	|| frame_width != awtComponent.getWidth()
 	|| frame_height != awtComponent.getHeight())
-      setBoundsCallback ((Window) awtComponent,
-			 frame_x, frame_y, frame_width, frame_height);
+      {
+        setBoundsCallback ((Window) awtComponent,
+                           frame_x, frame_y, frame_width, frame_height);
 
-    awtComponent.validate();
+        awtComponent.validate();
+      }
   }
 
   native void nativeSetVisible (boolean b);
@@ -192,7 +193,7 @@ public class GtkWindowPeer extends GtkContainerPeer
 	// Post a WINDOW_OPENED event the first time this window is shown.
 	if (!hasBeenShown)
 	  {
-	    q.postEvent (new WindowEvent ((Window) awtComponent, id,
+	    q().postEvent (new WindowEvent ((Window) awtComponent, id,
 					  opposite));
 	    hasBeenShown = true;
 	  }
@@ -201,12 +202,12 @@ public class GtkWindowPeer extends GtkContainerPeer
       {
 	if (oldState != newState)
 	  {
-	    q.postEvent (new WindowEvent ((Window) awtComponent, id, opposite,
+	    q().postEvent (new WindowEvent ((Window) awtComponent, id, opposite,
 					  oldState, newState));
 	    oldState = newState;
 	  }
       }
     else
-      q.postEvent (new WindowEvent ((Window) awtComponent, id, opposite));
+      q().postEvent (new WindowEvent ((Window) awtComponent, id, opposite));
   }
 }

@@ -1,5 +1,5 @@
 /* DefaultRGHChooserPanel.java --
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -57,7 +57,7 @@ import javax.swing.event.ChangeListener;
  * This is the default RGB panel for the JColorChooser. The color is selected
  * using three sliders that represent the RGB values.
  */
-public class DefaultRGBChooserPanel extends AbstractColorChooserPanel
+class DefaultRGBChooserPanel extends AbstractColorChooserPanel
 {
   /**
    * This class handles the slider value changes for all three sliders.

@@ -2631,11 +2631,9 @@ public class Area implements Shape, Cloneable
 
       double P = (y2 - 2 * y1 + y0);
       double Q = 2 * (y1 - y0);
-      double R = y0;
 
       double A = (x2 - 2 * x1 + x0);
       double B = 2 * (x1 - x0);
-      double C = x0;
 
       double area = (B * P - A * Q) / 3.0;
       return (area);
@@ -2937,12 +2935,10 @@ public class Area implements Shape, Cloneable
       double P = y3 - 3 * y2 + 3 * y1 - y0;
       double Q = 3 * (y2 + y0 - 2 * y1);
       double R = 3 * (y1 - y0);
-      double S = y0;
 
       double A = x3 - 3 * x2 + 3 * x1 - x0;
       double B = 3 * (x2 + x0 - 2 * x1);
       double C = 3 * (x1 - x0);
-      double D = x0;
 
       double area = (B * P - A * Q) / 5.0 + (C * P - A * R) / 2.0
                     + (C * Q - B * R) / 3.0;

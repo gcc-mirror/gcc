@@ -1,5 +1,5 @@
 /* UIManager.java -- 
-   Copyright (C) 2002, 2003, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -94,7 +94,7 @@ public class UIManager implements Serializable
    *
    * @param listener the listener to add
    */
-  public static void addPropertyChangeListener (PropertyChangeListener listener)
+  public static void addPropertyChangeListener(PropertyChangeListener listener)
   {
     // FIXME
   }
@@ -104,7 +104,7 @@ public class UIManager implements Serializable
    *
    * @param listener the listener to remove
    */
-  public static void removePropertyChangeListener (PropertyChangeListener listener)
+  public static void removePropertyChangeListener(PropertyChangeListener listener)
   {
     // FIXME
   }
@@ -116,7 +116,7 @@ public class UIManager implements Serializable
    *
    * @since 1.4
    */
-  public static PropertyChangeListener[] getPropertyChangeListeners ()
+  public static PropertyChangeListener[] getPropertyChangeListeners()
   {
     // FIXME
     throw new Error ("Not implemented");

@@ -49,19 +49,17 @@ import javax.swing.JTree;
  */
 public interface TreeCellEditor extends CellEditor
 {
-	/**
-	 * getTreeCellEditorComponent
-	 * @param tree TODO
-	 * @param value TODO
-	 * @param isSelected TODO
-	 * @param expanded TODO
-	 * @param leaf TODO
-	 * @param row TODO
-	 * @returns TODO
-	 */
-	Component getTreeCellEditorComponent(JTree tree,
-			Object value, boolean isSelected, boolean expanded,
-			boolean leaf, int row);
-
-
-} // TreeCellEditor
+  /**
+   * getTreeCellEditorComponent
+   * @param tree TODO
+   * @param value TODO
+   * @param isSelected TODO
+   * @param expanded TODO
+   * @param leaf TODO
+   * @param row TODO
+   * @return TODO
+   */
+  Component getTreeCellEditorComponent(JTree tree, Object value,
+				       boolean isSelected, boolean expanded,
+				       boolean leaf, int row);
+}

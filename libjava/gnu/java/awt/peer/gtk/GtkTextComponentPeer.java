@@ -38,11 +38,8 @@ exception statement from your version. */
 
 package gnu.java.awt.peer.gtk;
 
-import java.awt.AWTEvent;
-import java.awt.Component;
 import java.awt.Rectangle;
 import java.awt.TextComponent;
-import java.awt.event.KeyEvent;
 import java.awt.event.TextEvent;
 import java.awt.peer.TextComponentPeer;
 
@@ -85,6 +82,6 @@ public class GtkTextComponentPeer extends GtkComponentPeer
 
   protected void postTextEvent ()
   {
-    q.postEvent (new TextEvent (awtComponent, TextEvent.TEXT_VALUE_CHANGED));
+    q().postEvent (new TextEvent (awtComponent, TextEvent.TEXT_VALUE_CHANGED));
   }
 }

@@ -1,5 +1,5 @@
 /* JTabbedPane.java --
-   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -56,10 +56,8 @@ import javax.swing.plaf.TabbedPaneUI;
 import javax.swing.plaf.UIResource;
 
 /**
- * <p>
  * This is a container for components. One component is displayed at a time.
  * Users can switch between components by clicking on tabs.
- * </p>
  * 
  * <p>
  * Tabs can be oriented in several ways. They can be above, below, left and
@@ -520,31 +518,17 @@ public class JTabbedPane extends JComponent implements Serializable,
      *         or equal to title.length.
      */
     public void setDisplayedMnemonicIndex(int index)
-                                   throws IllegalArgumentException
+      throws IllegalArgumentException
     {
       if (index < -1 || title != null && index >= title.length())
 	throw new IllegalArgumentException();
 
-      if (title == null || title.charAt(index) != mnemonicKey)
+      if (title == null || mnemonicKey == 0 || title.charAt(index) != mnemonicKey)
 	index = -1;
 
       underlinedChar = index;
     }
   }
-
-  /** Fired in a PropertyChangeEvent when the "model" property changes. */
-  public static final String MODEL_CHANGED_PROPERTY = "model";
-
-  /**
-   * Fired in a PropertyChangeEvent when the "tabPlacement" property changes.
-   */
-  public static final String TAB_PLACEMENT_CHANGED_PROPERTY = "tabPlacement";
-
-  /**
-   * Fired in a PropertyChangeEvent when the "tabLayoutPolicy" property
-   * changes.
-   */
-  public static final String TAB_LAYOUT_POLICY_CHANGED_PROPERTY = "tabLayoutPolicy";
 
   /** The changeEvent used to fire changes to listeners. */
   protected ChangeEvent changeEvent;
@@ -739,7 +723,7 @@ public class JTabbedPane extends JComponent implements Serializable,
 	this.model.removeChangeListener(changeListener);
 	this.model = model;
 	this.model.addChangeListener(changeListener);
-	firePropertyChange(MODEL_CHANGED_PROPERTY, oldModel, this.model);
+	firePropertyChange("model", oldModel, this.model);
       }
   }
 
@@ -770,8 +754,7 @@ public class JTabbedPane extends JComponent implements Serializable,
       {
 	int oldPlacement = this.tabPlacement;
 	this.tabPlacement = tabPlacement;
-	firePropertyChange(TAB_PLACEMENT_CHANGED_PROPERTY, oldPlacement,
-	                   this.tabPlacement);
+	firePropertyChange("tabPlacement", oldPlacement, this.tabPlacement);
       }
   }
 
@@ -802,8 +785,7 @@ public class JTabbedPane extends JComponent implements Serializable,
       {
 	int oldPolicy = layoutPolicy;
 	layoutPolicy = tabLayoutPolicy;
-	firePropertyChange(TAB_LAYOUT_POLICY_CHANGED_PROPERTY, oldPolicy,
-	                   layoutPolicy);
+	firePropertyChange("tabLayoutPolicy", oldPolicy, layoutPolicy);
       }
   }
 

@@ -165,6 +165,6 @@ Java_gnu_java_awt_peer_gtk_GtkMenuItemPeer_setLabel
 static void
 item_activate (GtkMenuItem *item __attribute__((unused)), jobject peer_obj)
 {
-  (*gdk_env)->CallVoidMethod (gdk_env, peer_obj,
+  (*gdk_env())->CallVoidMethod (gdk_env(), peer_obj,
 			      postMenuActionEventID);
 }

@@ -38,8 +38,6 @@ exception statement from your version. */
 
 package gnu.java.awt.peer.gtk;
 
-import java.awt.Font;
-import java.awt.MenuComponent;
 import java.awt.peer.MenuComponentPeer;
 
 public class GtkMenuComponentPeer extends GtkGenericPeer

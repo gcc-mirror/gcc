@@ -226,7 +226,7 @@ public class DefaultKeyboardFocusManager extends KeyboardFocusManager
         Component focusOwner = getGlobalPermanentFocusOwner ();
 
         if (focusOwner != null)
-        processKeyEvent (focusOwner, (KeyEvent) e);
+          processKeyEvent (focusOwner, (KeyEvent) e);
 
         if (e.isConsumed ())
           return true;

@@ -1,4 +1,4 @@
-/* BasicButtonListener.java
+/* BasicButtonListener.java --
    Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -35,6 +35,7 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package javax.swing.plaf.basic;
 
 import java.awt.event.ActionEvent;
@@ -58,12 +59,19 @@ public class BasicButtonListener
   implements MouseListener, MouseMotionListener, FocusListener, 
              ChangeListener, PropertyChangeListener
 {
+  public BasicButtonListener(AbstractButton b)
+  {
+    // Do nothing here.
+  }
+  
   public void propertyChange(PropertyChangeEvent e)
   {
   }
+  
   protected void checkOpacity(AbstractButton b) 
   {    
   }
+  
   public void focusGained(FocusEvent e) 
   {    
     if (e.getSource() instanceof AbstractButton)
@@ -86,6 +94,7 @@ public class BasicButtonListener
           button.repaint();   
       }
   }
+  
   public void installKeyboardActions(JComponent c)
   {
     c.getActionMap().put("pressed", 
@@ -114,20 +123,25 @@ public class BasicButtonListener
                            }
                        });    
   }
+  
   public void uninstallKeyboardActions(JComponent c)
   {
     c.getActionMap().put("pressed", null);
     c.getActionMap().put("released", null);
   }
+  
   public void stateChanged(ChangeEvent e)
   {
   }
+  
   public void mouseMoved(MouseEvent e)
   {
   }
+  
   public void mouseDragged(MouseEvent e)
   {
   }
+  
   public void mouseClicked(MouseEvent e)
   {
   }
@@ -152,7 +166,6 @@ public class BasicButtonListener
       }
   }
 
-
   /**
    * Accept a mouse release event and set the button's 
    * "pressed" property to <code>true</code>, if the model
@@ -174,7 +187,6 @@ public class BasicButtonListener
           }
       }
   }
-
 
   /**
    * Accept a mouse enter event and set the button's "rollover" property to

@@ -1,5 +1,5 @@
 /* JApplet.java --
-   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -46,7 +46,6 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.LayoutManager;
 import java.awt.event.KeyEvent;
-import java.awt.event.WindowEvent;
 
 import javax.accessibility.AccessibleContext;
 
@@ -55,27 +54,10 @@ public class JApplet extends Applet
 {
   private static final long serialVersionUID = 7269359214497372587L;
   
-  public static final int HIDE_ON_CLOSE = 0;
-  public static final int EXIT_ON_CLOSE = 1;
-  public static final int DISPOSE_ON_CLOSE = 2;
-  public static final int DO_NOTHING_ON_CLOSE = 3;
-  
-  private int close_action = EXIT_ON_CLOSE;
-
   protected JRootPane rootPane;
   protected boolean rootPaneCheckingEnabled;
 
   public JApplet()
-  {
-    frameInit();
-  }
-
-  public JApplet(String title)
-  {
-    frameInit();
-  }
-
-  protected void frameInit()
   {
     super.setLayout(new BorderLayout(1, 1));
     getRootPane(); // will do set/create
@@ -83,10 +65,7 @@ public class JApplet extends Applet
 
   public Dimension getPreferredSize()
   {
-    Dimension d = super.getPreferredSize();
-    System.out.println("JFrame.getPrefSize(): " + d + " , comp="
-                       + getComponentCount() + ", layout=" + getLayout());
-    return d;
+    return super.getPreferredSize();
   }
 
   public void setLayout(LayoutManager manager)
@@ -111,7 +90,7 @@ public class JApplet extends Applet
     return rootPane;
   }
 
-  public void setRootPane(JRootPane root)
+  protected void setRootPane(JRootPane root)
   {
     if (rootPane != null)
       remove(rootPane);
@@ -120,7 +99,7 @@ public class JApplet extends Applet
     add(rootPane, BorderLayout.CENTER);
   }
 
-  public JRootPane createRootPane()
+  protected JRootPane createRootPane()
   {
     return new JRootPane();
   }
@@ -155,11 +134,6 @@ public class JApplet extends Applet
     return null;
   }
 
-  int getDefaultCloseOperation()
-  {
-    return close_action;
-  }
-
   public JMenuBar getJMenuBar()
   {
     return getRootPane().getJMenuBar();
@@ -179,54 +153,10 @@ public class JApplet extends Applet
   {
     super.processKeyEvent(e);
   }
-
-  protected void processWindowEvent(WindowEvent e)
-  {
-    //      System.out.println("PROCESS_WIN_EV-1: " + e);
-    //        super.processWindowEvent(e); 
-    //      System.out.println("PROCESS_WIN_EV-2: " + e);
-    switch (e.getID())
-      {
-      case WindowEvent.WINDOW_CLOSING:
-        {
-	  switch (close_action)
-	    {
-	    case EXIT_ON_CLOSE:
-	      {
-		System.out.println("user requested exit on close");
-		System.exit(1);
-		break;
-	      }
-	    case DISPOSE_ON_CLOSE:
-	      {
-		System.out.println("user requested dispose on close");
-		//dispose();
-		break;
-	      }
-	    case HIDE_ON_CLOSE:
-	    case DO_NOTHING_ON_CLOSE:
-	      break;
-	    }
-	  break;
-        }
-      case WindowEvent.WINDOW_CLOSED:
-      case WindowEvent.WINDOW_OPENED:
-      case WindowEvent.WINDOW_ICONIFIED:
-      case WindowEvent.WINDOW_DEICONIFIED:
-      case WindowEvent.WINDOW_ACTIVATED:
-      case WindowEvent.WINDOW_DEACTIVATED:
-	break;
-      }
-  }
-
+  
   public void remove(Component comp)
   {
     getContentPane().remove(comp);
-  }
-
-  void setDefaultCloseOperation(int operation)
-  {
-    close_action = operation;
   }
 
   protected boolean isRootPaneCheckingEnabled()

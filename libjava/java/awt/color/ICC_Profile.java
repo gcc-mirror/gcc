@@ -316,8 +316,6 @@ public class ICC_Profile implements Serializable
    */
   protected void finalize()
   {
-    header = null;
-    tagTable = null;
   }
 
   /**

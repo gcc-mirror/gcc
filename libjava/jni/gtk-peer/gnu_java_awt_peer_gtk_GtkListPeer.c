@@ -1,5 +1,5 @@
-/* gtklistpeer.c -- Native implementation of GtkListPeer
-   Copyright (C) 1998, 1999, 2004 Free Software Foundation, Inc.
+/* GtkListPeer.c -- implements GtkListPeer's native methods
+   Copyright (C) 1998, 1999, 2003, 2004 Free Software Foundation, Inc.
 
    This file is part of GNU Classpath.
 
@@ -498,12 +498,12 @@ item_highlighted (GtkTreeSelection *selection __attribute__((unused)),
       row = indices ? indices[0] : -1;
 
       if (!path_currently_selected)
-        (*gdk_env)->CallVoidMethod (gdk_env, peer,
+        (*gdk_env())->CallVoidMethod (gdk_env(), peer,
                                     postListItemEventID,
                                     row,
                                     (jint) AWT_ITEM_SELECTED);
       else
-        (*gdk_env)->CallVoidMethod (gdk_env, peer,
+        (*gdk_env())->CallVoidMethod (gdk_env(), peer,
                                     postListItemEventID,
                                     row,
                                     (jint) AWT_ITEM_DESELECTED);

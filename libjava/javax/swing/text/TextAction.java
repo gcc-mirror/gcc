@@ -39,56 +39,73 @@ exception statement from your version. */
 package javax.swing.text;
 
 import java.awt.event.ActionEvent;
+import java.util.ArrayList;
+import java.util.HashSet;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 
 /**
  * TextAction
- * @author	Andrew Selkirk
+ * @author Andrew Selkirk
  */
 public abstract class TextAction extends AbstractAction
 {
-	/**
-	 * Constructor TextAction
-	 * @param name TODO
-	 */
+  /**
+   * Constructor TextAction
+   * @param name TODO
+   */
   public TextAction(String name)
   {
     super(name);
   }
 
-	/**
-	 * getTextComponent
-	 * @param event TODO
-   * @return JTextComponent
-	 */
+  /**
+   * Returns the <code>JTextComponent</code> object associated with the given
+   * <code>ActionEvent</code>. If the source of the event is not a
+   * <code>JTextComponent</code> the currently focused text component is returned.
+   * 
+   * @param event the action event
+   * 
+   * @return the <code>JTextComponent</code>
+   */
   protected final JTextComponent getTextComponent(ActionEvent event)
   {
-    if (event.getSource() != null &&
-        event.getSource() instanceof JTextComponent)
+    if (event.getSource() instanceof JTextComponent)
       return (JTextComponent) event.getSource();
-    else
-      return getFocusedComponent();
+
+    return getFocusedComponent();
   }
 
-	/**
-	 * augmentList
-	 * @param list1 TODO
-	 * @param list2 TODO
-   * @return Action[]
-	 */
+  /**
+   * Creates a new array of <code>Action</code> containing both given arrays.
+   * 
+   * @param list1 the first action array
+   * @param list2 the second action array
+   *
+   * @return the augmented array of actions
+   */
   public static final Action[] augmentList(Action[] list1, Action[] list2)
   {
-		return null; // TODO
+    HashSet actionSet = new HashSet();
+
+    for (int i = 0; i < list1.length; ++i)
+      actionSet.add(list1[i]);
+
+    for (int i = 0; i < list2.length; ++i)
+      actionSet.add(list2[i]);
+
+    ArrayList list = new ArrayList(actionSet);
+    return (Action[]) list.toArray(new Action[actionSet.size()]);
   }
 
-	/**
-	 * getFocusedComponent
-   * @return JTextComponent
-	 */
+  /**
+   * Returns the current focused <code>JTextComponent</code> object.
+   * 
+   * @return the <code>JTextComponent</code>
+   */
   protected final JTextComponent getFocusedComponent()
   {
-		return null; // TODO
+    return null; // TODO
   }
 }

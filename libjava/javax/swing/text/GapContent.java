@@ -35,6 +35,7 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package javax.swing.text;
 
 import java.io.Serializable;
@@ -57,6 +58,7 @@ public class GapContent
 
   public GapContent(int size)
   {
+    buf.append("\n");
   }
 
   public Position createPosition(final int offset) throws BadLocationException

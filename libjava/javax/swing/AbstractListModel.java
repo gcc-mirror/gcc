@@ -54,7 +54,7 @@ import javax.swing.event.ListDataListener;
  */
 public abstract class AbstractListModel implements ListModel, Serializable
 {
-  static final long serialVersionUID = -3285184064379168730L;
+  private static final long serialVersionUID = -3285184064379168730L;
 
   /** List of ListDataListeners called for each change to the list. */
   protected EventListenerList listenerList;
@@ -100,25 +100,12 @@ public abstract class AbstractListModel implements ListModel, Serializable
   protected void fireContentsChanged(Object source, int startIndex,
                                      int endIndex)
   {
-    // Variables
-    ListDataEvent event;
-    ListDataListener[] listeners;
-    ListDataListener listener;
-    int index;
+    ListDataEvent event = new ListDataEvent(source, ListDataEvent.CONTENTS_CHANGED,
+                                            startIndex, endIndex);
+    ListDataListener[] listeners = getListDataListeners();
 
-    // Create Event
-    event = new ListDataEvent(source, ListDataEvent.CONTENTS_CHANGED,
-                              startIndex, endIndex);
-
-    // Get Listeners
-    listeners = getListDataListeners();
-
-    // Process Listeners
-    for (index = 0; index < listeners.length; index++)
-      {
-        listener = (ListDataListener) listeners[index];
-        listener.contentsChanged(event);
-      }
+    for (int index = 0; index < listeners.length; index++)
+      listeners[index].contentsChanged(event);
   }
 
   /**
@@ -134,25 +121,13 @@ public abstract class AbstractListModel implements ListModel, Serializable
    */
   protected void fireIntervalAdded(Object source, int startIndex, int endIndex)
   {
-    // Variables
-    ListDataEvent event;
-    ListDataListener[] listeners;
-    ListDataListener listener;
-    int index;
+    ListDataEvent event =
+      new ListDataEvent(source, ListDataEvent.INTERVAL_ADDED,
+			startIndex, endIndex);
+    ListDataListener[] listeners = getListDataListeners();
 
-    // Create Event
-    event = new ListDataEvent(source, ListDataEvent.INTERVAL_ADDED,
-                              startIndex, endIndex);
-
-    // Get Listeners
-    listeners = getListDataListeners();
-
-    // Process Listeners
-    for (index = 0; index < listeners.length; index++)
-      {
-        listener = listeners[index];
-        listener.intervalAdded(event);
-      }
+    for (int index = 0; index < listeners.length; index++)
+      listeners[index].intervalAdded(event);
   }
 
   /**
@@ -169,25 +144,13 @@ public abstract class AbstractListModel implements ListModel, Serializable
   protected void fireIntervalRemoved(Object source, int startIndex,
                                      int endIndex)
   {
-    // Variables
-    ListDataEvent event;
-    ListDataListener[] listeners;
-    ListDataListener listener;
-    int index;
+    ListDataEvent event =
+      new ListDataEvent(source, ListDataEvent.INTERVAL_REMOVED,
+			startIndex, endIndex);
+    ListDataListener[] listeners = getListDataListeners();
 
-    // Create Event
-    event = new ListDataEvent(source, ListDataEvent.INTERVAL_REMOVED,
-                              startIndex, endIndex);
-
-    // Get Listeners
-    listeners = getListDataListeners();
-
-    // Process Listeners
-    for (index = 0; index < listeners.length; index++)
-      {
-        listener = listeners[index];
-        listener.intervalRemoved(event);
-      }
+    for (int index = 0; index < listeners.length; index++)
+      listeners[index].intervalRemoved(event);
   }
 
   /**

@@ -1,5 +1,5 @@
 /* BasicProgressBarUI.java --
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -103,7 +103,7 @@ public class BasicProgressBarUI extends ProgressBarUI
     {
       // Only need to listen for indeterminate changes.
       // All other things are done on a repaint.
-      if (e.getPropertyName().equals(JProgressBar.INDETERMINATE_CHANGED_PROPERTY))
+      if (e.getPropertyName().equals("inderterminate"))
 	if (((Boolean) e.getNewValue()).booleanValue())
 	  startAnimationTimer();
 	else
@@ -467,7 +467,7 @@ public class BasicProgressBarUI extends ProgressBarUI
   /**
    * This method increments the animation index.
    */
-  public void incrementAnimationIndex()
+  protected void incrementAnimationIndex()
   {
     animationIndex++;
     //numFrames is like string length, it should be named numFrames or something

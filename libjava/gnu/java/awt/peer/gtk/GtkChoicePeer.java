@@ -38,7 +38,6 @@ exception statement from your version. */
 
 package gnu.java.awt.peer.gtk;
 
-import java.awt.AWTEvent;
 import java.awt.Choice;
 import java.awt.event.ItemEvent;
 import java.awt.peer.ChoicePeer;

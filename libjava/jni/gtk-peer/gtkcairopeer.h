@@ -74,6 +74,19 @@ struct graphics2d
   cairo_surface_t *pattern_surface;
   cairo_pattern_t *pattern;
   gboolean debug;
+  enum 
+    { 
+      MODE_DRAWABLE_WITH_RENDER,
+      MODE_DRAWABLE_NO_RENDER,
+      MODE_JAVA_ARRAY
+    } 
+  mode;
+
+  /* Support for MODE_JAVA_ARRAY */
+  jintArray jarray;
+  jint width, height;
+  jint *javabuf;
+  jboolean isCopy;
 };
 
 #endif /* __GTKCAIROPEER_H */

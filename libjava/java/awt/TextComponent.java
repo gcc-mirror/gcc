@@ -46,6 +46,7 @@ import java.text.BreakIterator;
 import java.util.EventListener;
 
 import javax.accessibility.Accessible;
+import javax.accessibility.AccessibleContext;
 import javax.accessibility.AccessibleRole;
 import javax.accessibility.AccessibleState;
 import javax.accessibility.AccessibleStateSet;
@@ -690,6 +691,21 @@ paramString()
     return (TextListener[]) getListeners (TextListener.class);
   }
 
+  /**
+   * Gets the AccessibleContext associated with this <code>TextComponent</code>.
+   * The context is created, if necessary.
+   *
+   * @return the associated context
+   */
+  public AccessibleContext getAccessibleContext()
+  {
+    /* Create the context if this is the first request */
+    if (accessibleContext == null)
+      accessibleContext = new AccessibleAWTTextComponent();
+    return accessibleContext;
+  }
+
+  
   /*******************************/
   // Provide AccessibleAWTTextComponent access to several peer functions that
   // aren't publicly exposed.

@@ -38,8 +38,6 @@ exception statement from your version. */
 
 package gnu.java.awt.peer.gtk;
 
-import java.awt.AWTEvent;
-import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.Graphics;
 import java.awt.Rectangle;
@@ -76,7 +74,7 @@ public class GtkDialogPeer extends GtkWindowPeer
   protected void postExposeEvent (int x, int y, int width, int height)
   {
     if (!isInRepaint)
-      q.postEvent (new PaintEvent (awtComponent, PaintEvent.PAINT,
+      q().postEvent (new PaintEvent (awtComponent, PaintEvent.PAINT,
                                    new Rectangle (x + insets.left, 
                                                   y + insets.top, 
                                                   width, height)));

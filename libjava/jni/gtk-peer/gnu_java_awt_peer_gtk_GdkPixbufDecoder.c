@@ -60,6 +60,8 @@ static JavaVM *vm;
 
 static jmethodID areaPreparedID;
 static jmethodID areaUpdatedID;
+static jmethodID dataOutputWriteID;
+static jmethodID registerFormatID;
 
 static void
 area_prepared (GdkPixbufLoader *loader, 
@@ -193,10 +195,72 @@ Java_gnu_java_awt_peer_gtk_GdkPixbufDecoder_initState
   NSA_SET_PB_PTR (env, obj, loader);
 }
 
+static void
+query_formats (JNIEnv *env, jclass clazz)
+{
+  jobject jformat;
+  GSList *formats, *f;
+  GdkPixbufFormat *format;
+  char **ch, *name;
+
+  jclass formatClass;
+  jmethodID addExtensionID;
+  jmethodID addMimeTypeID;
+
+  formatClass = (*env)->FindClass
+    (env, "gnu/java/awt/peer/gtk/GdkPixbufDecoder$ImageFormatSpec");
+
+  g_assert(formatClass != NULL);
+
+  addExtensionID = (*env)->GetMethodID (env, formatClass, 
+				        "addExtension", 
+					"(Ljava/lang/String;)V");
+
+  addMimeTypeID = (*env)->GetMethodID (env, formatClass, 
+				       "addMimeType", 
+				       "(Ljava/lang/String;)V");
+  
+  formats = gdk_pixbuf_get_formats ();
+
+  for (f = formats; f; f = f->next)
+    {
+      format = (GdkPixbufFormat *) f->data;
+      name = gdk_pixbuf_format_get_name(format);
+
+      jformat = (*env)->CallStaticObjectMethod 
+	(env, clazz, registerFormatID, 				    
+	 (*env)->NewStringUTF(env, name),
+	 (jboolean) gdk_pixbuf_format_is_writable(format));
+
+      g_assert(jformat != NULL);
+      
+      ch = gdk_pixbuf_format_get_extensions(format);
+      while (*ch)
+	{
+	  (*env)->CallVoidMethod (env, jformat, addExtensionID, 
+				  (*env)->NewStringUTF(env, *ch)); 
+	  ++ch;
+	}
+      
+      ch = gdk_pixbuf_format_get_mime_types(format);
+      while (*ch)
+	{
+	  (*env)->CallVoidMethod (env, jformat, addMimeTypeID, 
+				  (*env)->NewStringUTF(env, *ch)); 
+	  ++ch;
+	}
+    }
+  
+  g_slist_free(formats);  
+}
+
+
 JNIEXPORT void JNICALL
 Java_gnu_java_awt_peer_gtk_GdkPixbufDecoder_initStaticState 
   (JNIEnv *env, jclass clazz)
 {
+  jclass dataOutputClass;
+
   (*env)->GetJavaVM(env, &vm);
 
   areaPreparedID = (*env)->GetMethodID (env, clazz, 
@@ -206,6 +270,20 @@ Java_gnu_java_awt_peer_gtk_GdkPixbufDecoder_initStaticState
   areaUpdatedID = (*env)->GetMethodID (env, clazz,
 				       "areaUpdated",
 				       "(IIII[II)V");
+
+  registerFormatID = (*env)->GetStaticMethodID 
+    (env, clazz, 
+     "registerFormat", 
+     "(Ljava/lang/String;Z)"
+     "Lgnu/java/awt/peer/gtk/GdkPixbufDecoder$ImageFormatSpec;");
+
+  
+  dataOutputClass = (*env)->FindClass(env, "java/io/DataOutput");
+  dataOutputWriteID = (*env)->GetMethodID (env, dataOutputClass,
+					     "write", "([B)V");
+
+  query_formats (env, clazz);
+  
   NSA_PB_INIT (env, clazz);
 }
 
@@ -226,6 +304,115 @@ Java_gnu_java_awt_peer_gtk_GdkPixbufDecoder_finish
   gdk_threads_leave (); 
 }
 
+struct stream_save_request
+{
+  JNIEnv *env;
+  jobject *stream;
+};
+
+static gboolean
+save_to_stream(const gchar *buf,
+	       gsize count,
+	       GError **error __attribute__((unused)),
+	       gpointer data)
+{
+  struct stream_save_request *ssr = (struct stream_save_request *)data;
+
+  jbyteArray jbuf;
+  jbyte *cbuf;
+
+  gdk_threads_leave ();
+  jbuf = (*(ssr->env))->NewByteArray ((ssr->env), count);
+  cbuf = (*(ssr->env))->GetByteArrayElements ((ssr->env), jbuf, NULL);
+  memcpy (cbuf, buf, count);
+  (*(ssr->env))->ReleaseByteArrayElements ((ssr->env), jbuf, cbuf, 0);
+  (*(ssr->env))->CallVoidMethod ((ssr->env), *(ssr->stream), 
+				 dataOutputWriteID, jbuf);  
+  gdk_threads_enter ();
+  return TRUE;
+}
+
+
+JNIEXPORT void JNICALL
+Java_gnu_java_awt_peer_gtk_GdkPixbufDecoder_streamImage
+(JNIEnv *env, jclass clazz __attribute__((unused)), 
+ jintArray jarr, jstring jenctype, jint width, jint height, 
+ jboolean hasAlpha, jobject stream)
+{
+  GdkPixbuf* pixbuf;  
+  jint *ints;
+  guchar a, r, g, b, *pix, *p;
+  GError *err = NULL;
+  const char *enctype;
+  int i;
+
+  struct stream_save_request ssr;
+  ssr.stream = &stream;
+  ssr.env = env;
+
+  ints = (*env)->GetIntArrayElements (env, jarr, NULL);
+  pix = g_malloc(width * height * (hasAlpha ? 4 : 3));
+
+  enctype = (*env)->GetStringUTFChars (env, jenctype, NULL);
+  g_assert(enctype != NULL);
+
+  g_assert (pix != NULL);
+  g_assert (ints != NULL);
+
+  p = pix;
+  for (i = 0; i < width*height; ++i)
+    {
+      /* 
+       * Java encodes pixels as integers in a predictable arithmetic order:
+       * 0xAARRGGBB. Since these are jints, JNI has already byte-swapped
+       * them for us if necessary, so they're in "our" endianness, whatever
+       * that is. It uses 4 bytes per pixel whether or not there's an alpha
+       * channel.
+       */
+
+      a = 0xff & (ints[i] >> 24);
+      r = 0xff & (ints[i] >> 16);
+      g = 0xff & (ints[i] >> 8);
+      b = 0xff & ints[i];
+
+      /* 
+       * GDK-pixbuf has a very different storage model:
+       *
+       *  - A different alpha order (alpha after colors).
+       *  - A different packing model (no alpha -> 3-bytes-per-pixel).
+       *  - A different "RGB" order (host memory order, not endian-neutral).
+       */
+
+      *p++ = r;
+      *p++ = g;
+      *p++ = b;
+      if (hasAlpha)
+	*p++ = a;
+    }
+
+  gdk_threads_enter ();
+  pixbuf =  gdk_pixbuf_new_from_data (pix,
+				      GDK_COLORSPACE_RGB,
+				      (gboolean) hasAlpha,
+				      8, width, height, 
+				      width * (hasAlpha ? 4 : 3), /* rowstride */
+				      NULL, NULL);
+  g_assert (pixbuf != NULL);
+
+  g_assert(gdk_pixbuf_save_to_callback (pixbuf,
+					&save_to_stream,
+					&ssr,
+					enctype,
+					&err, NULL));
+
+  g_object_unref (pixbuf);
+
+  gdk_threads_leave ();
+  g_free(pix);
+
+  (*env)->ReleaseStringUTFChars (env, jenctype, enctype);  
+  (*env)->ReleaseIntArrayElements (env, jarr, ints, 0);
+}
 
 JNIEXPORT void JNICALL
 Java_gnu_java_awt_peer_gtk_GdkPixbufDecoder_pumpBytes

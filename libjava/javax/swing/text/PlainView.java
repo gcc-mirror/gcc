@@ -1,5 +1,5 @@
 /* PlainView.java -- 
-   Copyright (C) 2004  Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -45,7 +45,6 @@ import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.awt.Shape;
-
 
 public class PlainView extends View
   implements TabExpander
@@ -93,6 +92,9 @@ public class PlainView extends View
   public Shape modelToView(int position, Shape a, Position.Bias b)
     throws BadLocationException
   {
+    // Ensure metrics are up-to-date.
+    updateMetrics();
+    
     Document document = getDocument();
 
     // Get rectangle of the line containing position.
@@ -115,13 +117,14 @@ public class PlainView extends View
     return rect;
   }
   
-  public void drawLine(int lineIndex, Graphics g, int x, int y)
+  protected void drawLine(int lineIndex, Graphics g, int x, int y)
   {
     try
       {
 	metrics = g.getFontMetrics();
 	// FIXME: Selected text are not drawn yet.
-	drawUnselectedText(g, x, y, 0, getDocument().getLength());
+	Element line = getDocument().getDefaultRootElement().getElement(lineIndex);
+	drawUnselectedText(g, x, y, line.getStartOffset(), line.getEndOffset());
 	//drawSelectedText(g, , , , );
       }
     catch (BadLocationException e)
@@ -150,6 +153,9 @@ public class PlainView extends View
 
   public void paint(Graphics g, Shape s)
   {
+    // Ensure metrics are up-to-date.
+    updateMetrics();
+    
     JTextComponent textComponent = (JTextComponent) getContainer();
 
     g.setFont(textComponent.getFont());
@@ -159,10 +165,18 @@ public class PlainView extends View
     Rectangle rect = s.getBounds();
 
     // FIXME: Text may be scrolled.
-    drawLine(0, g, rect.x, rect.y);
+    Document document = textComponent.getDocument();
+    Element root = document.getDefaultRootElement();
+    int y = rect.y;
+    
+    for (int i = 0; i < root.getElementCount(); i++)
+      {
+	drawLine(i, g, rect.x, y);
+	y += metrics.getHeight();
+      }
   }
 
-  public int getTabSize()
+  protected int getTabSize()
   {
     return 8;
   }

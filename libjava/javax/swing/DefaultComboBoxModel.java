@@ -50,12 +50,13 @@ import java.util.Vector;
  *
  * @author Andrew Selkirk
  * @author Olga Rodimina
+ * @author Robert Schuster
  * @version 1.0
  */
 public class DefaultComboBoxModel extends AbstractListModel
   implements MutableComboBoxModel, Serializable
 {
-  static final long serialVersionUID = 6698657703676921904L;
+  private static final long serialVersionUID = 6698657703676921904L;
 
   /**
    * List containing items in the combo box
@@ -182,13 +183,23 @@ public class DefaultComboBoxModel extends AbstractListModel
    * ListDataEvent to all registered ListDataListeners of the JComboBox. The
    * start and end index of the event is set to -1 to indicate combo box's
    * selection has changed, and not its contents.
+   * 
+   * <p>If the given object is not contained in the combo box list then nothing
+   * happens.</p>
    *
    * @param object item to select in the JComboBox
    */
   public void setSelectedItem(Object object)
   {
-    selectedItem = object;
-    fireContentsChanged(this, -1, -1);
+    
+    /* Updates the selected item only if the given object
+     * is null or in the list (this is how the JDK behaves).
+     */ 
+    if(object == null || list.contains(object)) {
+	selectedItem = object;
+	fireContentsChanged(this, -1, -1);
+    }
+  	
   }
 
   /**

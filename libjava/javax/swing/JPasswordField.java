@@ -47,9 +47,10 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 
 /**
- * JPasswordField
- * @author	Andrew Selkirk
- * @version	1.0
+ * class JPasswordField
+ * 
+ * @author Andrew Selkirk
+ * @version 1.0
  */
 public class JPasswordField extends JTextField
 {
@@ -69,6 +70,7 @@ public class JPasswordField extends JTextField
 
     /**
      * getAccessibleRole
+     * 
      * @return AccessibleRole
      */
     public AccessibleRole getAccessibleRole()
@@ -83,7 +85,7 @@ public class JPasswordField extends JTextField
   private char echoChar = 0;
 
   /**
-   * Constructor JPasswordField
+   * Creates a <code>JPasswordField</code> object.
    */
   public JPasswordField()
   {
@@ -240,7 +242,7 @@ public class JPasswordField extends JTextField
    */
   public char[] getPassword()
   {
-    return null; // TODO
+    return new char[0]; // TODO
   }
 
   /**

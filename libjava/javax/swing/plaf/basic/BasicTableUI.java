@@ -104,45 +104,12 @@ public class BasicTableUI
   {
     Point begin, curr;
 
-    private int getRowForPoint(Point p)
-    {      
-      int y0 = table.getLocation().y;
-      int nrows = table.getRowCount();
-      Dimension gap = table.getInterCellSpacing();
-      int height = table.getRowHeight() + (gap == null ? 0 : gap.height);
-      int y = p.y;
-      for (int i = 0; i < nrows; ++i)
-        {
-          if (0 <= y && y < height)
-            return i;
-          y -= height;
-        }
-      return -1;
-    }
-
-    private int getColForPoint(Point p)
-    {
-      int x0 = table.getLocation().x;
-      int ncols = table.getColumnCount();
-      Dimension gap = table.getInterCellSpacing();
-      TableColumnModel cols = table.getColumnModel();      
-      int x = p.x;
-      for (int i = 0; i < ncols; ++i)
-        {
-          int width = cols.getColumn(i).getWidth() + (gap == null ? 0 : gap.width);
-          if (0 <= x && x < width)
-            return i;
-          x -= width;
-        }
-      return -1;
-    }
-
     private void updateSelection()
     {
       if (table.getRowSelectionAllowed())
         {
-          int lo_row = getRowForPoint(begin);
-          int hi_row  = getRowForPoint(curr);
+          int lo_row = table.rowAtPoint(begin);
+          int hi_row  = table.rowAtPoint(curr);
           ListSelectionModel rowModel = table.getSelectionModel();
           if (lo_row != -1 && hi_row != -1)
             rowModel.setSelectionInterval(lo_row, hi_row);
@@ -150,8 +117,8 @@ public class BasicTableUI
 
       if (table.getColumnSelectionAllowed())
         {
-          int lo_col = getColForPoint(begin);
-          int hi_col = getColForPoint(curr);
+          int lo_col = table.columnAtPoint(begin);
+          int hi_col = table.columnAtPoint(curr);
           ListSelectionModel colModel = table.getColumnModel().getSelectionModel();
           if (lo_col != -1 && hi_col != -1)
             colModel.setSelectionInterval(lo_col, hi_col);
@@ -294,7 +261,7 @@ public class BasicTableUI
     int x = x0;
     int y = y0;
 
-    Dimension gap = table.getInterCellSpacing();
+    Dimension gap = table.getIntercellSpacing();
     int ymax = clip.y + clip.height;
     int xmax = clip.x + clip.width;
 

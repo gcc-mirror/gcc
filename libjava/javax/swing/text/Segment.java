@@ -1,4 +1,4 @@
-/* Segment.java -- 
+/* Segment.java --
    Copyright (C) 2002, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -59,13 +59,13 @@ public class Segment
     this.offset = offset;
     this.count = count;
   }
-    
-    public Object clone()
-    {
+  
+  public Object clone()
+  {
     try
       {
-	    return super.clone();
-	}
+	return super.clone();
+      }
     catch (CloneNotSupportedException e)
       {
 	return null;

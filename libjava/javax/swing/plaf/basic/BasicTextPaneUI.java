@@ -38,23 +38,22 @@ exception statement from your version. */
 
 package javax.swing.plaf.basic;
 
-import java.beans.PropertyChangeEvent;
-
 import javax.swing.JComponent;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.text.Element;
 import javax.swing.text.PlainView;
 import javax.swing.text.View;
 
-public class BasicTextPaneUI extends BasicTextUI
+public class BasicTextPaneUI extends BasicEditorPaneUI
 {
+  public BasicTextPaneUI()
+  {
+    // Do nothing here.
+  }
+
   public static ComponentUI createUI(JComponent comp)
   {
     return new BasicTextPaneUI();
-  }
-
-  public BasicTextPaneUI()
-  {
   }
 
   public View create(Element elem)

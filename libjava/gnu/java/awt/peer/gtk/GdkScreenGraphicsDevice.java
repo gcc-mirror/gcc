@@ -1,5 +1,5 @@
-/* GtkArg.java
-   Copyright (C) 1999 Free Software Foundation, Inc.
+/* GdkScreenGraphicsDevice.java -- information about a screen device
+   Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,24 +38,45 @@ exception statement from your version. */
 
 package gnu.java.awt.peer.gtk;
 
-public class GtkArg
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsConfiguration;
+
+public class GdkScreenGraphicsDevice extends GraphicsDevice
 {
-  String name;
-  Object value;
+  GdkGraphicsEnvironment env;
 
-  public GtkArg (String name, Object value)
+  public GtkToolkit getToolkit()
   {
-    this.name = name;
-    this.value = value;
+    return env.getToolkit();
   }
 
-  public String getName ()
-  {
-    return name;
+  public GdkScreenGraphicsDevice (GdkGraphicsEnvironment e)
+  {    
+    super ();
+    env = e;
   }
 
-  public Object getValue ()
+  public int getType ()
   {
-    return value;
+    return GraphicsDevice.TYPE_RASTER_SCREEN;
+  }
+
+  public String getIDstring ()
+  {
+    // FIXME: query X for this string
+    return "default GDK device ID string";
+  }
+
+  public GraphicsConfiguration[] getConfigurations ()
+  {
+    // FIXME: query X for the list of possible configurations
+    return new GraphicsConfiguration [] { new GdkGraphicsConfiguration(this) };
+  }
+
+  public GraphicsConfiguration getDefaultConfiguration ()
+  {
+    
+    // FIXME: query X for default configuration
+    return new GdkGraphicsConfiguration(this);
   }
 }

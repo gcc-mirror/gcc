@@ -40,8 +40,8 @@ package javax.swing.text;
 
 public interface Position
 {
-    static class Bias
-    {
+  static class Bias
+  {
     public static final Bias Backward = new Bias("backward");
     public static final Bias Forward = new Bias("forward");
 
@@ -56,7 +56,7 @@ public interface Position
     {
       return name;
     }
-    }
+  }
     
-    int getOffset();
+  int getOffset();
 }

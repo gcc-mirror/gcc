@@ -661,7 +661,7 @@ public abstract class AbstractButton extends JComponent
    *
    * @param e The event signifying that the button's model changed state
    */
-  public void fireItemStateChanged(ItemEvent e)
+  protected void fireItemStateChanged(ItemEvent e)
   {
     e.setSource(this);
     ItemListener[] listeners = getItemListeners();
@@ -676,7 +676,7 @@ public abstract class AbstractButton extends JComponent
    *
    * @param e The event signifying that the button's model was clicked
    */
-  public void fireActionPerformed(ActionEvent e)
+  protected void fireActionPerformed(ActionEvent e)
   {
     e.setSource(this);
     ActionListener[] listeners = getActionListeners();
@@ -689,7 +689,7 @@ public abstract class AbstractButton extends JComponent
    * Calls {@link ChangeEvent.stateChanged} on each {@link ChangeListener}
    * in the button's listener list.
    */
-  public void fireStateChanged()
+  protected void fireStateChanged()
   {
     ChangeListener[] listeners = getChangeListeners();
 
@@ -740,10 +740,10 @@ public abstract class AbstractButton extends JComponent
 
     if (old != mne)
       {
-    getModel().setMnemonic(mne);
+	getModel().setMnemonic(mne);
 
 	if (text != null && ! text.equals(""))
-      {
+	  {
 	    // Since lower case char = upper case char for 
 	    // mnemonic, we will convert both text and mnemonic 
 	    // to upper case before checking if mnemonic character occurs
@@ -753,9 +753,9 @@ public abstract class AbstractButton extends JComponent
 	    setDisplayedMnemonicIndex(upperCaseText.indexOf(upperCaseMne));
 	  }
 
-        firePropertyChange(MNEMONIC_CHANGED_PROPERTY, old, mne);
-        revalidate();
-        repaint();
+	firePropertyChange(MNEMONIC_CHANGED_PROPERTY, old, mne);
+	revalidate();
+	repaint();
       }
   }
 
@@ -806,7 +806,7 @@ public abstract class AbstractButton extends JComponent
   public void setRolloverEnabled(boolean r)
   {
     if (rollOverEnabled != r)
-  {
+      {
         rollOverEnabled = r;
         firePropertyChange(ROLLOVER_ENABLED_CHANGED_PROPERTY, !r, r);
         revalidate();
@@ -1450,7 +1450,7 @@ public abstract class AbstractButton extends JComponent
 
         // Set actionCommand to button's text by default if it is not specified
         if (actionCommand != null)
-        setActionCommand((String)(a.getValue(Action.ACTION_COMMAND_KEY)));
+	   setActionCommand((String)(a.getValue(Action.ACTION_COMMAND_KEY)));
 	 else
 	   setActionCommand(getText());
       }
@@ -1509,7 +1509,7 @@ public abstract class AbstractButton extends JComponent
         public void propertyChange(PropertyChangeEvent e)
         {
           Action act = (Action) (e.getSource());	
-	  if (e.getPropertyName().equals(AbstractAction.ENABLED_PROPERTY))
+	  if (e.getPropertyName().equals("enabled"))
 	    setEnabled(act.isEnabled());
 	  else if (e.getPropertyName().equals(Action.NAME))
             setText((String)(act.getValue(Action.NAME)));
@@ -1847,7 +1847,39 @@ public abstract class AbstractButton extends JComponent
    */
   protected String paramString()
   {
-    return "AbstractButton";
+    StringBuffer sb = new StringBuffer();
+    sb.append(super.paramString());
+    sb.append(",defaultIcon=");
+    if (getIcon() != null)
+      sb.append(getIcon());
+    sb.append(",disabledIcon=");
+    if (getDisabledIcon() != null)
+      sb.append(getDisabledIcon());
+    sb.append(",disabledSelectedIcon=");
+    if (getDisabledSelectedIcon() != null)
+      sb.append(getDisabledSelectedIcon());
+    sb.append(",margin=");
+    if (getMargin() != null)
+      sb.append(getMargin());
+    sb.append(",paintBorder=").append(isBorderPainted());
+    sb.append(",paintFocus=").append(isFocusPainted());
+    sb.append(",pressedIcon=");
+    if (getPressedIcon() != null)
+      sb.append(getPressedIcon());
+    sb.append(",rolloverEnabled=").append(isRolloverEnabled());
+    sb.append(",rolloverIcon=");
+    if (getRolloverIcon() != null)
+      sb.append(getRolloverIcon());
+    sb.append(",rolloverSelected=");
+    if (getRolloverSelectedIcon() != null)
+      sb.append(getRolloverSelectedIcon());
+    sb.append(",selectedIcon=");
+    if (getSelectedIcon() != null)
+      sb.append(getSelectedIcon());
+    sb.append(",text=");
+    if (getText() != null)
+      sb.append(getText());
+    return sb.toString();
   }
 
   /**

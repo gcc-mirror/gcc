@@ -1,5 +1,5 @@
 /* Container.java -- parent container class in AWT
-   Copyright (C) 1999, 2000, 2002, 2003, 2004 Free Software Foundation
+   Copyright (C) 1999, 2000, 2002, 2003, 2004, 2005  Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -387,11 +387,14 @@ public class Container extends Component
               layoutMgr.addLayoutComponent(null, comp);
           }
 
-        // Post event to notify of adding the container.
-        ContainerEvent ce = new ContainerEvent(this,
-                                               ContainerEvent.COMPONENT_ADDED,
-                                               comp);
-        getToolkit().getSystemEventQueue().postEvent(ce);
+        if (isShowing ())
+          {
+            // Post event to notify of adding the component.
+            ContainerEvent ce = new ContainerEvent(this,
+                                                   ContainerEvent.COMPONENT_ADDED,
+                                                   comp);
+            getToolkit().getSystemEventQueue().postEvent(ce);
+          }
       }
   }
 
@@ -419,11 +422,14 @@ public class Container extends Component
 
         r.parent = null;
 
-        // Post event to notify of adding the container.
-        ContainerEvent ce = new ContainerEvent(this,
-                                               ContainerEvent.COMPONENT_REMOVED,
-                                               r);
-        getToolkit().getSystemEventQueue().postEvent(ce);
+        if (isShowing ())
+          {
+            // Post event to notify of removing the component.
+            ContainerEvent ce = new ContainerEvent(this,
+                                                   ContainerEvent.COMPONENT_REMOVED,
+                                                   r);
+            getToolkit().getSystemEventQueue().postEvent(ce);
+          }
       }
   }
 
@@ -1046,11 +1052,14 @@ public class Container extends Component
    */
   protected String paramString()
   {
-    String param = super.paramString();
-    if (layoutMgr != null)
-      param = param + ",layout=" + layoutMgr.getClass().getName();
+    if (layoutMgr == null)
+      return super.paramString();
 
-    return param;
+    StringBuffer sb = new StringBuffer();
+    sb.append(super.paramString());
+    sb.append(",layout=");
+    sb.append(layoutMgr.getClass().getName());
+    return sb.toString();
   }
 
   /**

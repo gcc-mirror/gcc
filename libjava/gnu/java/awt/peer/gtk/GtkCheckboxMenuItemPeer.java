@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package gnu.java.awt.peer.gtk;
 
+import java.awt.ItemSelectable;
+import java.awt.event.ItemEvent;
 import java.awt.CheckboxMenuItem;
 import java.awt.peer.CheckboxMenuItemPeer;
 import java.awt.peer.MenuItemPeer;
@@ -54,4 +56,15 @@ public class GtkCheckboxMenuItemPeer extends GtkMenuItemPeer
   }
 
   native public void setState (boolean t);
+
+  protected void postMenuActionEvent ()
+  {
+    CheckboxMenuItem item = (CheckboxMenuItem)awtWidget;
+    q().postEvent (new ItemEvent ((ItemSelectable)awtWidget,
+      ItemEvent.ITEM_STATE_CHANGED,
+      item.getActionCommand(),
+      item.getState() ? ItemEvent.DESELECTED : ItemEvent.SELECTED));
+
+    super.postMenuActionEvent();
+  }
 }

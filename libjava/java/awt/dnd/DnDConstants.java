@@ -1,5 +1,5 @@
 /* DnDConstants.java -- constants for drag-and-drop operations
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -69,4 +69,9 @@ public final class DnDConstants
 
   /** A synonym for {@link #ACTION_LINK}. */
   public static final int ACTION_REFERENCE = ACTION_LINK;
-} // class DnDConstants
+
+  private DnDConstants()
+  {
+    // Do nothing here.
+  }
+}

@@ -118,7 +118,7 @@ public class DefaultListSelectionModel implements Cloneable,
    * @see #isLeadAnchorNotificationEnabled
    * @see #setLeadAnchorNotificationEnabled
    */
-  boolean leadAnchorNotificationEnabled = true;
+  protected boolean leadAnchorNotificationEnabled = true;
 
 
   /**
@@ -520,6 +520,18 @@ public class DefaultListSelectionModel implements Cloneable,
    *
    * @param firstIndex The low index of the changed range
    * @param lastIndex The high index of the changed range
+   */
+  protected void fireValueChanged(int firstIndex, int lastIndex)
+  {
+    fireValueChanged(firstIndex, lastIndex, getValueIsAdjusting());
+  }
+  
+  /**
+   * Fires a {@link ListSelectionEvent} to all the listeners of type {@link
+   * ListSelectionListener} registered with this selection model.
+   *
+   * @param firstIndex The low index of the changed range
+   * @param lastIndex The high index of the changed range
    * @param isAdjusting Whether this change is part of a seqence of adjustments
    * made to the selection, such as during interactive scrolling
    */
@@ -587,5 +599,22 @@ public class DefaultListSelectionModel implements Cloneable,
   public ListSelectionListener[] getListSelectionListeners()
   {
     return (ListSelectionListener[]) getListeners(ListSelectionListener.class);
+  }
+
+  /**
+   * Returns a clone of this object.
+   * <code>listenerList</code> don't gets duplicated.
+   *
+   * @return the cloned object
+   *
+   * @throws CloneNotSupportedException if an error occurs
+   */
+  public Object clone()
+    throws CloneNotSupportedException
+  {
+    DefaultListSelectionModel model =
+      (DefaultListSelectionModel) super.clone();
+    model.sel = (BitSet) sel.clone();
+    return model;
   }
 }

@@ -263,7 +263,7 @@ public class RepaintManager
         && ancestor instanceof JComponent
         && ((JComponent) ancestor).isValidateRoot())
       component = (JComponent) ancestor;
-    
+
     if (invalidComponents.contains(component))
       return;
 

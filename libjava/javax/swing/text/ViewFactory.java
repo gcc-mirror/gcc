@@ -46,5 +46,5 @@ public interface ViewFactory
    *
    * @return a new created view
    */
-    View create (Element elem);
+  View create(Element elem);
 }

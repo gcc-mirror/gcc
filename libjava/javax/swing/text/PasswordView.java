@@ -56,6 +56,16 @@ public class PasswordView extends FieldView
     super(elem);
   }
 
+  /**
+   * Draws one echo character at a given position.
+   *
+   * @param g the <code>Graphics</code> object to draw to
+   * @param x the x-position
+   * @param y the y-position
+   * @param ch the echo character
+   *
+   * @return the next x position right of the drawn character
+   */
   protected int drawEchoCharacter(Graphics g, int x, int y, char ch)
   {
     // Update font metrics.
@@ -79,6 +89,17 @@ public class PasswordView extends FieldView
     return ch;
   }
 
+  /**
+   * Draws selected text at a given position.
+   *
+   * @param g the <code>Graphics</code> object to draw to
+   * @param x the x-position
+   * @param y the y-position
+   * @param p0 the position of the first character to draw
+   * @param p1 the position of the first character not to draw
+   *
+   * @return the next x position right of the drawn character
+   */
   protected int drawSelectedText(Graphics g, int x, int y, int p0, int p1)
     throws BadLocationException
   {
@@ -107,6 +128,17 @@ public class PasswordView extends FieldView
     return x + len * metrics.charWidth(ch);
   }
 
+  /**
+   * Draws unselected text at a given position.
+   *
+   * @param g the <code>Graphics</code> object to draw to
+   * @param x the x-position
+   * @param y the y-position
+   * @param p0 the position of the first character to draw
+   * @param p1 the position of the first character not to draw
+   *
+   * @return the next x position right of the drawn character
+   */
   protected int drawUnselectedText(Graphics g, int x, int y, int p0, int p1)
     throws BadLocationException
   {

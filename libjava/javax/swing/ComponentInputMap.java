@@ -39,17 +39,17 @@ package javax.swing;
 
 
 /**
- * @author	Andrew Selkirk
+ * @author Andrew Selkirk
  * @author Michael Koch
  */
 public class ComponentInputMap extends InputMap
 {
-	/**
+  /**
    * The component to notify.
-	 */
-	private JComponent component;
+   */
+  private JComponent component;
 
-	/**
+  /**
    * Creates <code>ComponentInputMap</code> object that notifies the given
    * component about changes to it.
    *

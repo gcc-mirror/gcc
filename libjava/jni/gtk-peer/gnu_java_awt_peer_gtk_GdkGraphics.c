@@ -133,13 +133,17 @@ Java_gnu_java_awt_peer_gtk_GdkGraphics_connectSignals
   (JNIEnv *env, jobject obj, jobject peer)
 {
   void *ptr;
+  jobject *gref;
+
+  NSA_SET_GLOBAL_REF (env, obj);
+  gref = NSA_GET_GLOBAL_REF (env, obj);
 
   ptr = NSA_GET_PTR (env, peer);
 
   gdk_threads_enter ();
 
   g_signal_connect_after (G_OBJECT (ptr), "realize",
-                          G_CALLBACK (realize_cb), obj);
+                          G_CALLBACK (realize_cb), *gref);
 
   gdk_threads_leave ();
 }
@@ -438,6 +442,12 @@ Java_gnu_java_awt_peer_gtk_GdkGraphics_clearRect
   g = (struct graphics *) NSA_GET_PTR (env, obj);
 
   gdk_threads_enter ();
+
+  if (!g)
+    {
+      gdk_threads_leave ();
+      return;
+    }
   if (GDK_IS_WINDOW (g->drawable))
     {
       w.widget = &widget;
@@ -455,6 +465,8 @@ Java_gnu_java_awt_peer_gtk_GdkGraphics_clearRect
 			  x + g->x_offset, y + g->y_offset, width, height);
       gdk_gc_set_foreground (g->gc, &(saved.foreground));
     }
+
+  gdk_flush ();
   gdk_threads_leave ();
 }
 
@@ -672,7 +684,9 @@ static void realize_cb (GtkWidget *widget __attribute__ ((unused)),
 {
   gdk_threads_leave ();
 
-  (*gdk_env)->CallVoidMethod (gdk_env, peer, initComponentGraphicsID);
+  (*gdk_env())->CallVoidMethod (gdk_env(), peer, initComponentGraphicsID);
+
+  NSA_DEL_GLOBAL_REF (gdk_env(), peer);
 
   gdk_threads_enter ();
 }

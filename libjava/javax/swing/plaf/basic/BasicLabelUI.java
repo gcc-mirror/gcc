@@ -176,12 +176,12 @@ public class BasicLabelUI extends LabelUI implements PropertyChangeListener
     if (icon != null)
       icon.paintIcon(b, g, ir.x, ir.y);
     if (text != null && ! text.equals(""))
-    {
-      if (b.isEnabled())
-        paintEnabledText(b, g, text, tr.x, tr.y + fm.getAscent());
-      else
-        paintDisabledText(b, g, text, tr.x, tr.y + fm.getAscent());
-    }
+      {
+	if (b.isEnabled())
+	  paintEnabledText(b, g, text, tr.x, tr.y + fm.getAscent());
+	else
+	  paintDisabledText(b, g, text, tr.x, tr.y + fm.getAscent());
+      }
     g.setFont(saved_font);
   }
 

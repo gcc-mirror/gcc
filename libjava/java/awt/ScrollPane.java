@@ -43,6 +43,8 @@ import java.awt.peer.ComponentPeer;
 import java.awt.peer.ScrollPanePeer;
 
 import javax.accessibility.Accessible;
+import javax.accessibility.AccessibleContext;
+import javax.accessibility.AccessibleRole;
 
 /**
   * This widget provides a scrollable region that allows a single 
@@ -586,6 +588,28 @@ paramString()
   public void setWheelScrollingEnabled (boolean enable)
   {
     wheelScrollingEnabled = enable;
+  }
+  
+  protected class AccessibleAWTScrollPane extends AccessibleAWTContainer
+  {
+    public AccessibleRole getAccessibleRole()
+    {
+      return AccessibleRole.SCROLL_PANE;
+    }
+  }
+
+  /**
+   * Gets the AccessibleContext associated with this <code>ScrollPane</code>.
+   * The context is created, if necessary.
+   *
+   * @return the associated context
+   */
+  public AccessibleContext getAccessibleContext()
+  {
+    /* Create the context if this is the first request */
+    if (accessibleContext == null)
+      accessibleContext = new AccessibleAWTScrollPane();
+    return accessibleContext;
   }
 } // class ScrollPane 
 

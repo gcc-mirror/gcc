@@ -46,7 +46,6 @@ import java.awt.event.FocusListener;
 import javax.swing.ComboBoxEditor;
 import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
-import javax.swing.plaf.UIResource;
 
 /**
  * This is a component that is responsible for displaying/editting  selected

@@ -1,5 +1,5 @@
 /* BasicScrollBarUI.java --
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -142,13 +142,13 @@ public class BasicScrollBarUI extends ScrollBarUI implements LayoutManager,
      */
     public void propertyChange(PropertyChangeEvent e)
     {
-      if (e.getPropertyName().equals(JScrollBar.MODEL_CHANGED_PROPERTY))
+      if (e.getPropertyName().equals("model"))
         {
 	  ((BoundedRangeModel) e.getOldValue()).removeChangeListener(modelListener);
 	  scrollbar.getModel().addChangeListener(modelListener);
 	  getThumbBounds();
         }
-      else if (e.getPropertyName().equals(JScrollBar.ORIENTATION_CHANGED_PROPERTY))
+      else if (e.getPropertyName().equals("orientation"))
         {
 	  incrButton.removeMouseListener(buttonListener);
 	  decrButton.removeMouseListener(buttonListener);

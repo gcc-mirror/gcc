@@ -50,7 +50,6 @@ import javax.swing.UIDefaults;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
-import javax.swing.plaf.UIResource;
 
 /**
  * This class is renderer for the combo box. 

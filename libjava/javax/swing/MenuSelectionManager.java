@@ -271,10 +271,10 @@ public class MenuSelectionManager
 	MenuElement[] subComponents = ((MenuElement) mouseOverMenuComp)
 	                              .getSubElements();
 
-    for (int i = 0; i < subComponents.length; i++)
-      {
-	  subComponents[i].processMouseEvent(event, path, manager);
-      }
+	for (int i = 0; i < subComponents.length; i++)
+	 {
+	      subComponents[i].processMouseEvent(event, path, manager);
+	 }
 	*/
       }
   }

@@ -1,5 +1,5 @@
 /* PrinterJob.java -- This job is the printer control class
-   Copyright (C) 1999, 2004  Free Software Foundation, Inc.
+   Copyright (C) 1999, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,10 +38,9 @@ exception statement from your version. */
 
 package java.awt.print;
 
-import javax.print.DocFlavor;
+import java.awt.HeadlessException;
+
 import javax.print.PrintService;
-import javax.print.PrintServiceLookup;
-//import javax.print.StreamPrintServiceFactory;
 import javax.print.attribute.PrintRequestAttributeSet;
 
 /**
@@ -61,7 +60,7 @@ public abstract class PrinterJob
    */
   public static PrinterJob getPrinterJob()
   {
-  // FIXME: Need to fix this to load a default implementation instance.
+    // FIXME: Need to fix this to load a default implementation instance.
     return null;
   }
 
@@ -149,7 +148,8 @@ public abstract class PrinterJob
    *
    * @return The modified <code>PageFormat</code>.
    */
-  public abstract PageFormat pageDialog(PageFormat page_format);
+  public abstract PageFormat pageDialog(PageFormat page_format)
+    throws HeadlessException;
 
   /**
    * Prints the pages.
@@ -169,7 +169,8 @@ public abstract class PrinterJob
    * @return <code>false</code> if the user cancels the dialog box,
    * <code>true</code> otherwise.
    */
-  public abstract boolean printDialog();
+  public abstract boolean printDialog()
+    throws HeadlessException;
 
   /**
    * Displays a dialog box to the user which allows the print job
@@ -178,7 +179,8 @@ public abstract class PrinterJob
    * @return <code>false</code> if the user cancels the dialog box,
    * <code>true</code> otherwise.
    */
-  public abstract boolean printDialog(PrintRequestAttributeSet attributes);
+  public abstract boolean printDialog(PrintRequestAttributeSet attributes)
+    throws HeadlessException;
 
   /**
    * This sets the pages that are to be printed.

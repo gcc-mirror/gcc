@@ -51,7 +51,7 @@ import java.io.Serializable;
 public class OverlayLayout
   implements LayoutManager2, Serializable
 {
-  static final long serialVersionUID = 18082829169631543L;
+  private static final long serialVersionUID = 18082829169631543L;
 
 	//-------------------------------------------------------------
 	// Variables --------------------------------------------------

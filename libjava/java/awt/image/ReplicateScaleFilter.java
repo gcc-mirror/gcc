@@ -201,10 +201,10 @@ public class ReplicateScaleFilter extends ImageFilter
                            model, destPixels, 0, destScansize);
     }
 
-    protected byte[] replicatePixels(int srcx, int srcy, int srcw, int srch,
-                                    ColorModel model, byte[] srcPixels,
-                                    int srcOffset, int srcScansize,
-                                    double rx, double ry, int destScansize)
+    private byte[] replicatePixels(int srcx, int srcy, int srcw, int srch,
+                                   ColorModel model, byte[] srcPixels,
+                                   int srcOffset, int srcScansize,
+                                   double rx, double ry, int destScansize)
     {
 	byte[] destPixels =
 	  new byte[(int) Math.ceil(srcw/rx) * (int) Math.ceil(srch/ry)];
@@ -221,10 +221,10 @@ public class ReplicateScaleFilter extends ImageFilter
 	return destPixels;
     }
 
-    protected int[] replicatePixels(int srcx, int srcy, int srcw, int srch,
-                                    ColorModel model, int[] srcPixels,
-                                    int srcOffset, int srcScansize,
-                                    double rx, double ry, int destScansize)
+    private int[] replicatePixels(int srcx, int srcy, int srcw, int srch,
+                                  ColorModel model, int[] srcPixels,
+                                  int srcOffset, int srcScansize,
+                                  double rx, double ry, int destScansize)
     {
 	int[] destPixels =
 	  new int[(int) Math.ceil(srcw/rx) * (int) Math.ceil(srch/ry)];

@@ -45,9 +45,7 @@ Java_gnu_java_awt_peer_gtk_GtkGenericPeer_dispose
 {
   void *ptr;
 
-  /* Remove entries from state tables */
-  NSA_DEL_GLOBAL_REF (env, obj);
-  ptr = NSA_DEL_PTR (env, obj);
+  ptr = NSA_GET_PTR (env, obj);
 
   gdk_threads_enter ();
 
@@ -56,6 +54,17 @@ Java_gnu_java_awt_peer_gtk_GtkGenericPeer_dispose
   gtk_widget_destroy (GTK_WIDGET (ptr));
 
   gdk_threads_leave ();
+
+  /* Remove entries from state tables */
+  NSA_DEL_GLOBAL_REF (env, obj);
+  NSA_DEL_PTR (env, obj);
+
+  /* 
+   * Wake up the main thread, to make sure it re-checks the window
+   * destruction condition. 
+   */
+
+  g_main_context_wakeup (NULL);
 }
 
 JNIEXPORT void JNICALL

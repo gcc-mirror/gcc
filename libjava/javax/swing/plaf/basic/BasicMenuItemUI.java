@@ -619,9 +619,9 @@ public class BasicMenuItemUI extends MenuItemUI
 	                                               textRect.y
 	                                               + fm.getAscent());
 	else
-    BasicGraphicsUtils.drawString(g, text, 0, textRect.x,
-                                  textRect.y + fm.getAscent());
-  }
+	  BasicGraphicsUtils.drawString(g, text, 0, textRect.x,
+	                                textRect.y + fm.getAscent());
+      }
   }
 
   /**
@@ -760,7 +760,7 @@ public class BasicMenuItemUI extends MenuItemUI
     FontMetrics fm = g.getFontMetrics(acceleratorFont);
 
     if (menuItem.isEnabled())
-    g.setColor(acceleratorForeground);
+      g.setColor(acceleratorForeground);
     else
       // FIXME: should fix this to use 'disabledForeground', but its
       // default value in BasicLookAndFeel is null.

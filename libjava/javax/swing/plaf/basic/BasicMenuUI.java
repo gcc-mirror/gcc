@@ -299,7 +299,7 @@ public class BasicMenuUI extends BasicMenuItemUI
        if (i) if this menu is a submenu in some other menu
           (ii) or if this menu is in a menu bar and some other menu in a menu bar was just
                selected. (If nothing was selected, menu should be pressed before
-               it will be selected)      
+               it will be selected)
       */
       JMenu menu = (JMenu) menuItem;
       if (! menu.isTopLevelMenu()
@@ -328,15 +328,15 @@ public class BasicMenuUI extends BasicMenuItemUI
       MenuSelectionManager manager = MenuSelectionManager.defaultManager();
       JMenu menu = (JMenu) menuItem;
       manager.processMouseEvent(e);
-      
+
       // Menu should be displayed when the menu is pressed only if 
       // it is top-level menu
       if (menu.isTopLevelMenu())
         {
 	  if (menu.getPopupMenu().isVisible())
-	      // If menu is visible and menu button was pressed.. 
-	      // then need to cancel the menu
-	      manager.clearSelectedPath();
+	    // If menu is visible and menu button was pressed.. 
+	    // then need to cancel the menu
+	    manager.clearSelectedPath();
 	  else
 	    {
 	      // Display the menu

@@ -1,4 +1,4 @@
-/* ImageIcon.java -- 
+/* ImageIcon.java --
    Copyright (C) 2002, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -57,7 +57,7 @@ public class ImageIcon
   public ImageIcon()
   {
   }
-
+  
   public ImageIcon(String file)
   {
     this(file, file);
@@ -98,12 +98,12 @@ public class ImageIcon
     this.image = Toolkit.getDefaultToolkit().createImage(image.getSource());
     this.description = description;
   }
-
+    
   public ImageObserver getImageObserver()
   {
     return observer;
   }
-
+  
   public void setImageObserver(ImageObserver newObserver)
   {
     observer = newObserver;
@@ -112,6 +112,11 @@ public class ImageIcon
   public Image getImage()
   {
     return image;
+  }
+
+  public void setImage(Image image)
+  {
+    this.image = Toolkit.getDefaultToolkit().createImage(image.getSource());
   }
 
   public String getDescription()

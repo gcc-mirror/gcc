@@ -1,5 +1,5 @@
-/* GtkArgList.java
-   Copyright (C) 1999 Free Software Foundation, Inc.
+/* BasicEditorPaneUI.java -- 
+   Copyright (C) 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -36,40 +36,33 @@ obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
 
-package gnu.java.awt.peer.gtk;
-import java.util.Vector;
+package javax.swing.plaf.basic;
 
-public class GtkArgList extends Vector
+import javax.swing.JComponent;
+import javax.swing.plaf.ComponentUI;
+import javax.swing.text.Element;
+import javax.swing.text.PlainView;
+import javax.swing.text.View;
+
+public class BasicEditorPaneUI extends BasicTextUI
 {
-  void add (GtkArg arg)
+  public static ComponentUI createUI(JComponent comp)
   {
-    addElement (arg);
+    return new BasicEditorPaneUI();
   }
 
-  void add (String name, boolean value)
+  public BasicEditorPaneUI()
   {
-    addElement (new GtkArg (name, Boolean.valueOf(value)));
-  }
-    
-  void add (String name, int value)
-  {
-    addElement (new GtkArg (name, new Integer (value)));
+    // Do nothing here.
   }
 
-  void add (String name, float value)
+  public View create(Element elem)
   {
-    addElement (new GtkArg (name, new Float (value)));
+    return new PlainView(elem);
   }
 
-  void add (String name, Object value)
+  protected String getPropertyPrefix()
   {
-    addElement (new GtkArg (name, value));
-  }
-
-  synchronized void setArgs (GtkComponentPeer cp)
-  {
-    for (int i = 0; i < elementCount; i++)
-      cp.set ((GtkArg)elementData[i]);
+    return "EditorPane";
   }
 }
-  

@@ -1,3 +1,2001 @@
+2005-02-15  Mark Wielaard  <mark@klomp.org>
+
+	* java/awt/BasicStroke.java (hashCode): Check for null dash.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* gnu/java/awt/peer/gtk/GtkArg.java,
+	gnu/java/awt/peer/gtk/GtkArgList.java:
+	Removed.
+
+2005-02-15  Craig Black  <craig.black@aonix.com>
+
+	* gnu/java/awt/peer/gtk/GtkCheckboxMenuItem.java
+	(postMenuActionEvent): Implement to notify ItemListeners.
+	* java/awt/CheckboxMenuItem.java
+	(dispatchEventImpl): Update state on ItemEvent.
+	* java/awt/MenuItem.java
+	(processActionEvent): Retarget event source.
+
+2005-02-15  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* gnu/java/awt/color/ClutProfileConverter.java,
+	gnu/java/awt/peer/ClasspathTextLayoutPeer.java,
+	gnu/java/awt/peer/gtk/GdkFontPeer.java,
+	gnu/java/awt/peer/gtk/GdkGlyphVector.java,
+	gnu/java/awt/peer/gtk/GdkGraphics2D.java,
+	gnu/java/awt/peer/gtk/GdkGraphicsEnvironment.java,
+	gnu/java/awt/peer/gtk/GdkPixbufDecoder.java,
+	gnu/java/awt/peer/gtk/GdkRobotPeer.java,
+	gnu/java/awt/peer/gtk/GdkTextLayout.java,
+	gnu/java/awt/peer/gtk/GtkButtonPeer.java,
+	gnu/java/awt/peer/gtk/GtkCheckboxPeer.java,
+	gnu/java/awt/peer/gtk/GtkChoicePeer.java,
+	gnu/java/awt/peer/gtk/GtkComponentPeer.java,
+	gnu/java/awt/peer/gtk/GtkContainerPeer.java,
+	gnu/java/awt/peer/gtk/GtkDialogPeer.java,
+	gnu/java/awt/peer/gtk/GtkFileDialogPeer.java,
+	gnu/java/awt/peer/gtk/GtkFontPeer.java,
+	gnu/java/awt/peer/gtk/GtkFramePeer.java,
+	gnu/java/awt/peer/gtk/GtkLabelPeer.java,
+	gnu/java/awt/peer/gtk/GtkMenuComponentPeer.java,
+	gnu/java/awt/peer/gtk/GtkMenuItemPeer.java,
+	gnu/java/awt/peer/gtk/GtkScrollPanePeer.java,
+	gnu/java/awt/peer/gtk/GtkTextComponentPeer.java,
+	gnu/java/awt/peer/gtk/GtkToolkit.java,
+	gnu/java/awt/peer/gtk/GtkWindowPeer.java,
+	javax/swing/JPopupMenu.java,
+	javax/swing/JSpinner.java,
+	javax/swing/SortingFocusTraversalPolicy.java,
+	javax/swing/SwingUtilities.java,
+	javax/swing/plaf/basic/BasicComboBoxEditor.java,
+	javax/swing/plaf/basic/BasicComboBoxRenderer.java,
+	javax/swing/tree/DefaultMutableTreeNode.java:
+	Removed unused imports and expanded starred
+	imports.
+
+2005-02-15  Mark Wielaard  <mark@klomp.org>
+
+	* java/awt/AWTKeyStroke.java (getAWTKeyStroke(String)): Throw
+	IllegalArgumentException when the given String is null.
+
+	* javax/swing/KeyStroke.java (getKeyStroke(String)): Return null
+	when given keystoke sequence cannot be parsed.
+
+	* javax/swing/JRootPane.java (setJMenuBar): Remove current menubar
+	if one is installed. Only install the given menubar is not null.
+
+	* javax/swing/JViewport.java (getViewSize): Return an empty
+	Dimension when the view isn't set or preferred component size when
+	no viewSize is set.
+
+	* javax/swing/ViewportLayout.java (preferredLayoutSize): Return an
+	empty Dimension when there is no view set.
+	(minimumLayoutSize): Likewise.
+	(layoutContainer): Don't try to layout when there is no view.
+
+2005-02-15  Anthony Green  <green@redhat.com>
+
+	* jni/gtk-peer/gtk_jawt.c (classpath_jawt_get_drawable,
+	classpath_jawt_lock, classpath_jawt_unlock): New functions.
+	* jawt.c (_Jv_JAWT_Lock, _Jv_JAWT_Unlock): New functions.
+	(_Jv_GetDrawingSurface): Set visualID.
+	(_Jv_FreeDrawingSurfaceInfo): Clear visualID.
+	(JAWT_GetAWT): Set Lock and Unlock.
+	* include/jawt_md.h (struct _JAWT_X11DrawingSurfaceInfo): Add visualID.
+	* include/jawt.h (JAWT_VERSION_1_4, JAWT_LOCK_ERROR,
+	JAWT_LOCK_CLIP_CHANGED, JAWT_LOCK_BOUNDS_CHANGED,
+	JAWT_LOCK_SURFACE_CHANGED): New macros.
+	(struct _JAWT): Add Lock and Unlock.
+
+2005-02-15  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	* jawt.c: New file.
+	* include/jawt.h: Likewise.
+	* include/jawt_md.h: Likewise.
+	* include/Makefile.am (tool_include__HEADERS): Add jawt.h and
+	jawt_md.h files.
+	* jni/classpath/classpath_jawt.h: Likewise.
+	* jni/gtk-peer/gtk_jawt.c: Likewise.
+	* Makefile.am: Build libjawt.so.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* gnu/java/awt/peer/gtk/GdkGraphics2D.java:
+	Merged file header with classpath CVS head.
+	* gnu/java/awt/peer/gtk/GdkPixbufDecoder.java:
+	Merged code formatting with classpath CVS head.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GdkFontPeer.c:
+	Removed debug code.
+	(Java_gnu_java_awt_peer_gtk_GdkFontPeer_getGlyphVector):
+	Handle special JNI strings with 2 '\0' at the end.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GdkGraphics2D.c:
+	Merged file header with classpath CVS head.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkFileDialogPeer.c:
+	Merged code formatting with classpath CVS head.
+
+2005-02-15  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkFileDialogPeer.c (create):
+	Use GTK's built-in file system backend.  Use GTK_RESPONSE_ACCEPT.
+	(handle_response): Use GTK_RESPONSE_ACCEPT.
+
+2005-02-15  Graydon Hoare  <graydon@redhat.com>
+
+	* Makefile.am: Fix library build breakage.
+	* Makefile.in: Regenerate.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* javax/swing/JTabbedPane.java
+	(Page.setDisplayedMnemonicIndex): Handle empty menmonic.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* javax/swing/tree/DefaultMutableTreeNode.java:
+	Reworked Javadocs all over.
+	(getPathToRoot): Fixed direction of result array initialization.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GdkGraphics2D.c:
+	 Fix includes for cairo 0.3.0 snappshot.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkListPeer.c:
+	Merged file header from classpath CVS HEAD.
+
+2005-02-15  Craig Black  <craig.black@aonix.com>
+
+	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_GdkGraphics.c
+	(copyState): Pass a JNI global reference to signal handler.
+	(realize_cb): Use and free JNI global reference.
+	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkChoicePeer.c
+	(create): Pass a JNI global reference to signal handler.
+	(selection_changed): Match declaration.
+	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkGenericPeer.c
+	(dispose): Do not remove entries from state tables until after widget is
+	destroyed.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* java/awt/Container.javai (paramString):
+	If layoutMgr is null just return result of super.paramString().
+	* java/awt/Scrollbar.java: Reformatted.
+	* java/awt/im/InputContext.java (static):
+	Removed redundant initializations.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* javax/swing/ImageIcon.java,
+	javax/swing/UIManager.java,
+	javax/swing/text/EditorKit.java,
+	javax/swing/text/Segment.java:
+	More whitespace cleanups.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* gnu/java/awt/EmbeddedWindow.java,
+	gnu/java/awt/image/ImageDecoder.java,
+	gnu/java/awt/peer/gtk/GtkFileDialogPeer.java,
+	java/awt/DefaultKeyboardFocusManager.java,
+	java/awt/Frame.java,
+	java/awt/image/RGBImageFilter.java,
+	javax/swing/AbstractButton.java,
+	javax/swing/ActionMap.java,
+	javax/swing/ComponentInputMap.java,
+	javax/swing/DefaultDesktopManager.java,
+	javax/swing/ImageIcon.java,
+	javax/swing/InputMap.java,
+	javax/swing/JButton.java,
+	javax/swing/JCheckBox.java,
+	javax/swing/JCheckBoxMenuItem.java,
+	javax/swing/JEditorPane.java,
+	javax/swing/JMenu.java,
+	javax/swing/JMenuItem.java,
+	javax/swing/JOptionPane.java,
+	javax/swing/JRootPane.java,
+	javax/swing/JTable.java,
+	javax/swing/MenuSelectionManager.java,
+	javax/swing/RepaintManager.java,
+	javax/swing/ScrollPaneLayout.java,
+	javax/swing/SortingFocusTraversalPolicy.java,
+	javax/swing/UIManager.java,
+	javax/swing/ViewportLayout.java,
+	javax/swing/plaf/basic/BasicCheckBoxMenuItemUI.java,
+	javax/swing/plaf/basic/BasicInternalFrameUI.java,
+	javax/swing/plaf/basic/BasicLabelUI.java,
+	javax/swing/plaf/basic/BasicListUI.java,
+	javax/swing/plaf/basic/BasicMenuItemUI.java,
+	javax/swing/plaf/basic/BasicMenuUI.java,
+	javax/swing/plaf/basic/BasicOptionPaneUI.java,
+	javax/swing/plaf/basic/BasicRadioButtonMenuItemUI.java,
+	javax/swing/plaf/basic/BasicRootPaneUI.java,
+	javax/swing/plaf/basic/BasicScrollPaneUI.java,
+	javax/swing/plaf/basic/BasicSplitPaneDivider.java,
+	javax/swing/plaf/basic/BasicTextUI.java,
+	javax/swing/table/TableColumnModel.java,
+	javax/swing/text/AbstractDocument.java,
+	javax/swing/text/EditorKit.java,
+	javax/swing/text/Position.java,
+	javax/swing/text/Segment.java,
+	javax/swing/text/StyledEditorKit.java,
+	javax/swing/text/ViewFactory.java:
+	Cleanup whitespace differences to classpath CVS HEAD.
+
+2005-02-15  Graydon Hoare  <graydon@redhat.com>
+
+	* gnu/java/awt/peer/gtk/GdkPixbufDecoder.java:
+	(finalize): Call finish from here.
+	(produce): Not from here.
+	* Makefile.am (gtk_c_source_files): 
+	Remove jni/gtk-peer/gnu_java_awt_peer_gtk_GdkFontMetrics.c.
+	* Makefile.in: Regenerate.
+	* gnu/java/awt/peer/gtk/GdkGraphics2D.java
+	(cairoSetFont):
+	(cairoDrawGdkTextLayout):
+	(cairoDrawString): 
+	(getPeerTextMetrics):
+	(getPeerFontMetrics): Remove.
+	(setFont): Don't call cairoSetFont.
+	(cairoDrawGlyphVector): Accept font peer argument.
+	(drawGlyphVector): Pass font peer to cairoDrawGlyphVector.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GdkGraphics2D.c	
+	(ensure_metrics_cairo):
+	(gnu_java_awt_peer_gtk_GdkGraphics2D_cairoSetFont):
+	(gnu_java_awt_peer_gtk_GdkGraphics2D_cairoDrawString):
+	(gnu_java_awt_peer_gtk_GdkGraphics2D_getPeerFontMetrics):
+	(gnu_java_awt_peer_gtk_GdkGraphics2D_getPeerTextMetrics):
+	(metrics_cairo):
+	(metrics_surface): Remove.
+	(gnu_java_awt_peer_gtk_GdkGraphics2D_cairoDrawGlyphVector):
+	Pass and install font peer.
+
+2005-02-15  Graydon Hoare  <graydon@redhat.com>
+
+	* Makefile.am: Create "split library" structure.
+	* Makefile.in: Regenerate.
+
+2005-02-15  Graydon Hoare  <graydon@redhat.com>
+
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkEvents.c:
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkComponentPeer.c:
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkTextComponentPeer.c:
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkWindowPeer.c:
+	Release GDK lock during upcalls.
+
+2005-02-15  Graydon Hoare  <graydon@redhat.com>
+
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GdkFontMetrics.c: Remove.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GdkFontPeer.c
+	(Java_gnu_java_awt_peer_gtk_GdkFontPeer_getGlyphVector):
+	(Java_gnu_java_awt_peer_gtk_GdkFontPeer_getFontMetrics): 
+	(Java_gnu_java_awt_peer_gtk_GdkFontPeer_getTextMetrics): New methods.	
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GdkGlyphVector.c: Remove.	
+	* gnu/java/awt/peer/gtk/GdkFontPeer.java
+	(getGlyphVector):
+	(getFontMetrics):
+	(getTextMetrics): New native methods.
+	* gnu/java/awt/peer/gtk/GdkFontMetrics.java: Remove native parts.
+	* gnu/java/awt/peer/gtk/GdkGlyphVector.java: Likewise.
+	* Makefile.am: Remove native entries for GdkFontMetrics, GdkGlyphVector.
+	* Makefile.in: Regenerate.
+
+2005-02-15  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* javax/swing/SwingUtilities.java:
+	(getAccessibleAt(java.awt.Component, java.awt.Point)):
+	Implemented and documented.
+	(getAccessibleChild(java.awt.Component, int)): Likewise.
+	(getAccessibleChildrenCount(java.awt.Component)): Likewise.
+	(getAccessibleIndexInParent(java.awt.Component)): Likewise.
+	(getAccessibleStateSet(java.awt.Component)): Likewise.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* javax/swing/SwingUtilities.java
+	(getFontMetrics): Removed.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* java/awt/Container.java
+	(paramString): Implemented.
+	* javax/swing/AbstractButton.java
+	(paramString): Implemented.
+	* javax/swing/JComponent.java
+	(paramString): Implemented.
+	* javax/swing/JMenu.java
+	(paramString): Implemented.
+	* javax/swing/JMenuBar.java
+	(paramString): Implemented.
+	* javax/swing/JMenuItem.java
+	(paramString): Implemented.
+	* javax/swing/JPopupMenu.java
+	(paramString): Implemented.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* javax/swing/JMenu.java
+	(uiClassID): Removed.
+	(JMenu): Set invoker on popup menu.
+	(getUIClassID): Return id directly.
+	(getItemCount): Simply return getMenuComponentCount().
+	Fixed javadoc.
+	(isTopLevelMenu): Simplified.
+	* javax/swing/JMenuItem.java
+	(uiClassID): Removed.
+	(getUIClassID): Return id directly.
+	* javax/swing/JPopupMenu.java
+	(uiClassID): Removed.
+	(JPopupMenu): Always initialize correctly.
+	(getSubElements): Only return components implementing MenuElement
+	interface.
+	(HeavyWeightPopup.hide): Removed.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* java/awt/image/ReplicateScaleFilter.java
+	(replicatePixels): Made private.
+	* javax/swing/colorchooser/DefaultRGBChooserPanel.java
+	(DefaultRGBChooserPanel): Made package private.
+	* javax/swing/colorchooser/DefaultSwatchChooserPanel.java
+	(RecentSwatchPanel): Likewise.
+	* javax/swing/event/MouseInputAdapter.java: Reformatted.
+	(MouseInputAdapter): Made abstract.
+	* javax/swing/tree/DefaultMutableTreeNode.java
+	(random): Removed.
+	(growTree): Likewise.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* java/awt/dnd/DropTarget.java (addDropTargetListener):
+	Clarified comments.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* javax/swing/JComponent.java (getComponentGraphics):
+	Removed accidently commited code.
+
+2005-02-15  Graydon Hoare  <graydon@redhat.com>
+
+	* java/awt/dnd/DropTarget.java
+	(addDropTargetListener): Despite documentation, do not throw.
+	* javax/swing/JComponent.java: Set a default DropTarget.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* javax/swing/AbstractAction.java
+	(ENABLED_PROPERTY): Removed.
+	(setEnabled): Replaced constant with real string.
+	* javax/swing/AbstractButton.java
+	(createActionPropertyChangeListener.propertyChange): Likewise.
+	* javax/swing/JComboBox.java
+	(DEFAULT_MAXIMUM_ROW_COUNT): Made private.
+	(EDITABLE_CHANGED_PROPERTY): Removed.
+	(MAXIMUM_ROW_COUNT_CHANGED_PROPERTY):Likewise.
+	(ENABLED_CHANGED_PROPERTY):Likewise.
+	(RENDERER_CHANGED_PROPERTY):Likewise.
+	(EDITOR_CHANGED_PROPERTY):Likewise.
+	(MODEL_CHANGED_PROPERTY):Likewise.
+	(uiClassID):Likewise.
+	(getUIClassID): Replaced constant with real string.
+	(setModel):Likewise.
+	(setEditable):Likewise.
+	(setMaximumRowCount):Likewise.
+	(setRenderer):Likewise.
+	(setEditor):Likewise.
+	(setEnabled):Likewise.
+	* javax/swing/JLabel.java
+	(DISABLED_ICON_CHANGED_PROPERTY): Removed.
+	(DISPLAYED_MNEMONIC_CHANGED_PROPERTY): Likewise.
+	(DISPLAYED_MNEMONIC_INDEX_CHANGED_PROPERTY): Likewise.
+	(HORIZONTAL_ALIGNMENT_CHANGED_PROPERTY): Likewise.
+	(HORIZONTAL_TEXT_POSITION_CHANGED_PROPERTY): Likewise.
+	(ICON_CHANGED_PROPERTY): Likewise.
+	(ICON_TEXT_GAP_CHANGED_PROPERTY): Likewise.
+	(LABEL_FOR_CHANGED_PROPERTY): Likewise.
+	(TEXT_CHANGED_PROPERTY): Likewise.
+	(VERTICAL_ALIGNMENT_CHANGED_PROPERTY): Likewise.
+	(VERTICAL_TEXT_POSITION_CHANGED_PROPERTY): Likewise.
+	(setText): Replaced constant with real string.
+	(setIcon): Likewise.
+	(setDisabledIcon): Likewise.
+	(setDisplayedMnemonic): Likewise.
+	(setIconTextGap): Likewise.
+	(setVerticalAlignment): Likewise.
+	(setHorizontalAlignment): Likewise.
+	(setVerticalTextPosition): Likewise.
+	(setHorizontalTextPosition): Likewise.
+	(setLabelFor): Replaced constant with real string.
+	Fire property change event after property got changed.
+	* javax/swing/JList.java
+	(CELL_RENDERER_PROPERTY_CHANGED): Likewise.
+	(FIXED_CELL_HEIGHT_PROPERTY_CHANGED): Likewise.
+	(FIXED_CELL_WIDTH_PROPERTY_CHANGED): Likewise.
+	(LAYOUT_ORIENTATION_PROPERTY_CHANGED): Likewise.
+	(MODEL_PROPERTY_CHANGED): Likewise.
+	(PROTOTYPE_CELL_VALUE_PROPERTY_CHANGED): Likewise.
+	(SELECTION_BACKGROUND_PROPERTY_CHANGED): Likewise.
+	(SELECTION_FOREGROUND_PROPERTY_CHANGED): Likewise.
+	(SELECTION_MODEL_PROPERTY_CHANGED): Likewise.
+	(setFixedCellWidth): Reimplemented.
+	(setFixedCellHeight): Exit if new value is identical.
+	Replaced constant with real string.
+	(setSelectionBackground): Likewise.
+	(setSelectionForeground): Likewise.
+	(setPrototypeCellValue): Likewise.
+	(setCellRenderer): Replaced constant with real string.
+	(setModel): Likewise.
+	(setSelectionModel): Likewise.
+	* javax/swing/JMenuBar.java
+	(BORDER_PAINTED_CHANGED_PROPERTY): Removed.
+	(MODEL_CHANGED_PROPERTY): Likewise.
+	(MARGIN_CHANGED_PROPERTY): Likewise.
+	(setBorderPainted): Reimplemented.
+	(setMargin): Likewise.
+	(setSelectionModel): Replaced constant with real string.
+	* javax/swing/JPopupMenu.java
+	(LABEL_CHANGED_PROPERTY): Removed.
+	(VISIBLE_CHANGED_PROPERTY): Likewise.
+	(borderPainted): Likewise.
+	(setLabel): Replaced constant with real string.
+	(setVisible): Exit if new value is identical.
+	Replaced constant with real string.
+	* javax/swing/JProgressBar.java
+	(BORDER_PAINTED_CHANGED_PROPERTY): Removed.
+	(ORIENTATION_CHANGED_PROPERTY): Likewise.
+	(STRING_CHANGED_PROPERTY): Likewise.
+	(STRING_PAINTED_CHANGED_PROPERTY): Likewise.
+	(INDETERMINATE_CHANGED_PROPERTY): Likewise.
+	(setOrientation): Replaced constant with real string.
+	(setStringPainted): Likewise.
+	(setString): Likewise.
+	(setBorderPainted): Likewise.
+	(setIndeterminate): Likewise.
+	* javax/swing/JScrollBar.java
+	(BLOCK_INCREMENT_CHANGED_PROPERTY): Removed.
+	(MODEL_CHANGED_PROPERTY): Likewise.
+	(ORIENTATION_CHANGED_PROPERTY): Likewise.
+	(setOrientation): Replaced constant with real string.
+	(setModel): Likewise.
+	(setUnitIncrement): Likewise.
+	(setBlockIncrement): Likewise.
+	* javax/swing/JScrollPane.java
+	(COLUMN_HEADER_CHANGED_PROPERTY): Removed.
+	(COMPONENT_ORIENTATION_CHANGED_PROPERTY): Likewise.
+	(HORIZONTAL_SCROLLBAR_CHANGED_PROPERTY): Likewise.
+	(HORIZONTAL_SCROLLBAR_POLICY_CHANGED_PROPERTY): Likewise.
+	(LAYOUT_CHANGED_PROPERTY): Likewise.
+	(ROW_HEADER_CHANGED_PROPERTY): Likewise.
+	(VERTICAL_SCROLLBAR_CHANGED_PROPERTY): Likewise.
+	(VERTICAL_SCROLLBAR_POLICY_CHANGED_PROPERTY): Likewise.
+	(VIEWPORT_CHANGED_PROPERTY): Likewise.
+	(VIEWPORT_BORDER_CHANGED_PROPERTY): Likewise.
+	(WHEEL_SCROLLING_ENABLED_CHANGED_PROPERTY): Likewise.
+	(setComponentOrientation): Replaced constant with real string.
+	(setColumnHeader): Likewise.
+	(setHorizontalScrollBar): Likewise.
+	(setHorizontalScrollBarPolicy): Likewise.
+	(setRowHeader): Likewise.
+	(setVerticalScrollBar): Likewise.
+	(setVerticalScrollBarPolicy): Likewise.
+	(setWheelScrollingEnabled): Likewise.
+	(setViewport): Likewise.
+	(setViewportBorder): Likewise.
+	* javax/swing/JSlider.java
+	(INVERTED_CHANGED_PROPERTY): Removed.
+	(LABEL_TABLE_CHANGED_PROPERTY): Likewise.
+	(MAJOR_TICK_SPACING_CHANGED_PROPERTY): Likewise.
+	(MINOR_TICK_SPACING_CHANGED_PROPERTY): Likewise.
+	(MODEL_CHANGED_PROPERTY): Likewise.
+	(ORIENTATION_CHANGED_PROPERTY): Likewise.
+	(PAINT_LABELS_CHANGED_PROPERTY): Likewise.
+	(PAINT_TICKS_CHANGED_PROPERTY): Likewise.
+	(setModel): Replaced constant with real string.
+	(setOrientation): Likewise.
+	(setLabelTable): Likewise.
+	(setInverted): Likewise.
+	(setMajorTickSpacing): Likewise.
+	(setMinorTickSpacing): Likewise.
+	(setPaintTicks): Likewise.
+	(setPaintLabels): Likewise.
+	* javax/swing/JTabbedPane.java
+	(MODEL_CHANGED_PROPERTY): Removed.
+	(TAB_PLACEMENT_CHANGED_PROPERTY): Likewise.
+	(TAB_LAYOUT_POLICY_CHANGED_PROPERTY): Likewise.
+	(setModel): Replaced constant with real string.
+	(setTabPlacement): Likewise.
+	(setTabLayoutPolicy): Likewise.
+	* javax/swing/JToolBar.java
+	(ORIENTATION_CHANGED_PROPERTY): Removed.
+	(FLOATABLE_CHANGED_PROPERTY): Likewise.
+	(BORDER_PAINTED_CHANGED_PROPERTY): Likewise.
+	(MARGIN_CHANGED_PROPERTY): Likewise.
+	(ROLLOVER_CHANGED_PROPERTY): Likewise.
+	(setRollover): Replaced constant with real string.
+	(setMargin): Likewise.
+	(setBorderPainted): Likewise.
+	(setFloatable): Likewise.
+	(setOrientation): Likewise.
+	* javax/swing/plaf/basic/BasicComboBoxUI.java
+	(PropertyChangeHandler.propertyChange): Likewise.
+	* javax/swing/plaf/basic/BasicComboPopup.java
+	(PropertyChangeHandler.propertyChange): Likewise.
+	* javax/swing/plaf/basic/BasicMenuBarUI.java
+	(PropertyChangeHandler.propertyChange): Likewise.
+	* javax/swing/plaf/basic/BasicProgressBarUI.java
+	(PropertyChangeHandler.propertyChange): Likewise.
+	* javax/swing/plaf/basic/BasicScrollBarUI.java
+	(PropertyChangeHandler.propertyChange): Likewise.
+	* javax/swing/plaf/basic/BasicSliderUI.java
+	(PropertyChangeHandler.propertyChange): Likewise.
+	* javax/swing/plaf/basic/BasicTabbedPaneUI.java
+	(PropertyChangeHandler.propertyChange): Likewise.
+	* javax/swing/plaf/basic/BasicToolBarUI.java
+	(PropertyChangeHandler.propertyChange): Likewise.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* javax/swing/DefaultButtonModel.java
+	(changeState): Made private.
+	* javax/swing/DefaultDesktopManager.java
+	(setWasIcon): Fixed second argument to be java.lang.Boolean.
+	* javax/swing/JLayeredPane.java
+	(layerToRange): Made private.
+	(incrLayer): Likewise.
+	(decrLayer): Likewise.
+	* javax/swing/JTable.java
+	(dragEnabled): Likewise.
+	(preferredViewportSize): Renamed from preferredScrollableViewportSize.
+	* javax/swing/KeyStroke.java
+	(Keystroke): Made private.
+	* javax/swing/TransferHandler.java
+	(COMMAND_COPY): Likewise.
+	(COMMAND_CUT): Likewise.
+	(COMMAND_PASTE): Likewise.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* javax/swing/JTextField.java
+	(postActionEvent): Use text in field when actionCommand is null.
+	(getActionCommand): Removed.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* javax/swing/AbstractSet.java: Removed.
+	* Makefile.am: Removed javax/swing/AbstractSet.java.
+	* Makefile.in: Regenerated.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* java/awt/Window.java
+	(AccessibleWindow.getAccessibleStateSet): Fixed method name.
+	* java/awt/dnd/DnDConstants.java
+	(DnDConstants): New private constructor.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* javax/swing/DefaultCellRenderer.java: Removed.
+	* Makefile.am: Removed javax/swing/DefaultCellRenderer.java.
+	* Makefile.in: Regenerated.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* javax/swing/AbstractButton.java
+	(fireItemStateChanged): Made protected.
+	(fireActionPerformed): Likewise.
+	(fireStateChanged): Likewise.
+	* javax/swing/DefaultButtonModel.java
+	(fireItemStateChanged): Likewise.
+	(fireActionPerformed): Likewise.
+	(fireStateChanged): Likewise.
+	* javax/swing/JApplet.java
+	(JApplet): Removed.
+	(frameInit): Likewise.
+	(setRootPane): Made protected.
+	(createRootPane): Likewise.
+	* javax/swing/JComponent.java
+	(getClientProperty): Likewise.
+	(putClientProperty): Likewise.
+	* javax/swing/JEditorPane.java
+	(getContentType): Likewise.
+	(setContentType): Likewise.
+	* javax/swing/JFrame.java
+	(setRootPane): Likewise.
+	(createRootPane): Likewise.
+	* javax/swing/JInternalFrame.java
+	(getFocusCycleRootAncestor): Made final. Added @since tag.
+	(isFocusCycleRoot): Likewise.
+	(getWarningString): Made final.
+	* javax/swing/JScrollBar.java
+	(changeListener): Removed.
+	(changeEvent): Likewise.
+	(createChangeListener): Likewise.
+	(fireStateChanged): Likewise.
+	(addChangeListener): Likewise.
+	(removeChangeListener): Likewise.
+	(getChangeListeners): Likewise.
+	* javax/swing/JScrollPane.java
+	(createViewport): Made protected.
+	* javax/swing/JViewport.java
+	(addImpl): Likewise.
+	(setBorder): New method.
+	* javax/swing/JWindow.java
+	(setRootPane): Made protected.
+	(createRootPane): Likewise.
+	* javax/swing/plaf/basic/BasicButtonUI.java
+	(installListeners): Likewise.
+	(uninstallListeners): Likewise.
+	* javax/swing/plaf/basic/BasicProgressBarUI.java
+	(incrementAnimationIndex): Likewise.
+	* javax/swing/plaf/basic/BasicTabbedPaneUI.java
+	(createLayoutManager): Likewise.
+	* javax/swing/table/DefaultTableCellRenderer.java
+	(firePropertyChange): Likewise.
+	* javax/swing/table/JTableHeader.java
+	(AccessibleJTableHeaderEntry.AccessibleJTableHeaderEntry):
+	New constructor.
+	* javax/swing/text/PlainDocument.java
+	(reindex): Made private.
+	* javax/swing/text/PlainView.java
+	(drawLine): Made protected.
+	(getTabSize): Likewise.
+	* javax/swing/text/View.java
+	(setSize): Removed.
+	(preferenceChanged): New method.
+	(getBreakWeight): Likewise.
+	(breakView): Likewise.
+	(getViewIndex): Likewise.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* javax/swing/JScrollPane.java
+	(ScrollBar): Made class protected.
+	* javax/swing/JSpinner.java
+	(JSpinner): Added @since tag.
+	(listenerList): Removed.
+	* javax/swing/JTable.java
+	(setValueAt): New method.
+	(getColumn): Likewise.
+	* javax/swing/JWindow.java
+	(rootPaneCheckingEnabled): Renamed from checking.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* javax/swing/plaf/basic/BasicTextUI.java
+	(RootView.modelToView): Made it public and return a java.awt.Shape.
+	Handle null subview.
+	(uninstall): Set textComponent to null when its not possible used
+	anymore.
+	* javax/swing/text/View.java
+	(setParent): Use better argument name.
+	(getContainer): Get parent via getParent().
+	(getViewFactory): Likewise.
+	(getAttributes): Get element via getElement().
+	(getStartOffset): Likewise.
+	(getEndOffset): Likewise.
+	(getResizeWeight): New method.
+	(getMaximumSpan): Likewise.
+	(getMinimumSpan): Likewise.
+	(setSize): Likewise.
+	(getGraphics): Likewise.
+
+2005-02-15  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* java/awt/Checkbox.java:
+	(AccessibleAWTCheckbox()): Added public constructor
+	to call superclass.
+	* java/awt/Choice.java:
+	(AccessibleAWTChoice): Added class documentation.
+	(AccessibleAWTChoice()): Added public constructor
+	to call superclass.
+	(AccessibleAWTChoice.getAccessibleAction()): Documented.
+	(AccessibleAWTChoice.getAccessibleRole()): Documented,
+	and changed role to COMBO_BOX.
+	(AccessibleAWTChoice.getAccessibleActionCount()): Documented.
+	(AccessibleAWTChoice.getAccessibleActionDescription(int)): Documented.
+	(AccessibleAWTChoice.doAccessibleAction(int)): Documented.
+
+2005-02-15  Graydon Hoare  <graydon@redhat.com>
+	    Michael Koch  <konqueror@gmx.de>
+
+	* javax/swing/LayoutFocusTraversalPolicy.java,
+	javax/swing/SortingFocusTraversalPolicy.java:
+	New classes.
+	* Makefile.am: Added new classes.
+	* Makefike.in: Regenerated.
+
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* javax/swing/DebugGraphics.java: Mostly implemented.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* javax/swing/SwingUtilities.java
+	(findFocusOwner): New method.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* javax/swing/text/DefaultEditorKit.java
+	(read): Added '\n' after each line.
+	* javax/swing/text/PlainView.java
+	(modelToView): Update metrics.
+	(drawLine): Use offsets from element.
+	(paint): Update metrics. Draw all lines.
+
+2005-02-15  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* java/awt/Checkbox.java:
+	(AccessibleAWTCheckbox): Added class documentation
+	* java/awt/Scrollbar.java:
+	(AccessibleAWTScrollBar): typo corrected and docs added
+	(AccessibleAWTScrollBar.getAccessibleRole()): documented
+	(AccessibleAWTScrollBar.getAccessibleStateSet()): likewise
+	(AccessibleAWTScrollBar.getAccessibleValue()): likewise
+	(AccessibleAWTScrollBar.getCurrentAccessibleValue()): likewise
+	(AccessibleAWTScrollBar.setCurrentAccessibleValue(int)): likewise
+	(AccessibleAWTScrollBar.getMinimumAccessibleValue()): likewise
+	(AccessibleAWTScrollBar.getMaximumAccessibleValue()): likewise
+	(getAccessibleContext()): name of accessible class corrected
+
+2005-02-15  Mark Wielaard  <mark@klomp.org>
+
+	* java/awt/BasicStroke.java (hashCode): Implement.
+	(equals): Document.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* java/awt/print/PrinterJob.java
+	(pageDialog): Throws java.awt.HeadlessException.
+	(printDialog): Likewise.
+
+2005-02-15  Mark Wielaard  <mark@klomp.org>
+
+	* jni/gtk-peer/gtkpeer.h (gdk_env): Fix prototype.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* javax/swing/JTable.java
+	(getValueAt): New method.
+	* javax/swing/table/JTableHeader.java
+	(columnAtPoint): New method.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* javax/swing/JTextField.java
+	(actions): New field.
+	(static): Initalize actions field.
+	(getActions): New method.
+
+2005-02-15  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* java/awt/Checkbox.java:
+	(AccessibleAWTCheckbox): name capitalization corrected
+	and serialization UID added.
+	(AccessibleAWTCheckbox.itemStateChanged(java.awt.event.ItemEvent)):
+	documented.
+	(AccessibleAWTCheckbox.getAccessibleAction()): likewise
+	(AccessibleAWTCheckbox.getAccessibleValue()): likewise
+	(AccessibleAWTCheckbox.getAccessibleActionCount()): likewise
+	(AccessibleAWTCheckbox.getAccessibleActionDescription(int)): likewise
+	(AccessibleAWTCheckbox.doAccessibleAction(int)): likewise
+	(AccessibleAWTCheckbox.getCurrentAccessibleValue()): likewise
+	(AccessibleAWTCheckbox.setCurrentAccessibleValue(int)): likewise
+	(AccessibleAWTCheckbox.getMinimumAccessibleValue()): likewise
+	(AccessibleAWTCheckbox.getMaximumAccessibleValue()): likewise
+	(AccessibleAWTCheckbox.getAccessibleRole()): likewise
+	(AccessibleAWTCheckbox.getAccessibleStateSet()): implemented and
+	documented
+	(getAccessibleContext()): name of accessible class corrected
+
+2005-02-15  Sven de Marothy  <sven@physto.se>
+
+	* java/awt/geom/doc-files/Area-1.png,
+	java/awt/geom/doc-files/Ellipse-1.png,
+	java/awt/geom/doc-files/GeneralPath-1.png:
+	New files.
+
+2005-02-15  Graydon Hoare  <graydon@redhat.com>
+
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkToolkit.c (env_union):
+	Use union to avoid type-punning warning.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* javax/swing/DefaultListSelectionModel.java
+	(clone): New method.
+
+2005-02-15  Mark Wielaard  <mark@klomp.org>
+
+	Reported by Martin Platter <motse@complang.tuwien.ac.at>
+	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkFileDialogPeer.c
+	(Java_gnu_java_awt_peer_gtk_GtkFileDialogPeer_nativeSetFile):
+	Correct method signature of gtkSetFilename.
+
+2005-02-15  Arnaud Vandyck  <avdyk@gnu.org>
+
+	* javax/swing/text/StringContent.java: New file.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* Makefile.am: Added javax/swing/text/StringContent.java.
+	* Makefile.in: Regenerated.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* gnu/java/awt/ClasspathToolkit.java:
+	Import statements reworked.
+	(imageCache): Made it of type java.util.HashMap.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* javax/imageio/stream/MemoryCacheImageInputStream.java:
+	Reworked import statements.
+
+2005-02-15  Graydon Hoare  <graydon@redhat.com>
+
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GThreadNativeMethodRunner.c:
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GdkGlyphVector.c:
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GdkGraphics.c:
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GdkGraphics2D.c:
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkButtonPeer.c:
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkCheckboxPeer.c:
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkChoicePeer.c:
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkClipboard.c:
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkComponentPeer.c:
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkEvents.c:
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkFileDialogPeer.c:
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkListPeer.c:
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMenuItemPeer.c:
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkScrollBarPeer.c:
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkTextComponentPeer.c:
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkWindowPeer.c:
+	Rewrite uses of extern variable to be function calls.
+	* jni/gtk-peer/gtkpeer.h (gdk_env): Change declaration to 
+	function, from extern variable.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkToolkit.c 
+	(gdk_env): Remove variable, add new function.
+	(java_vm): Add new variable.
+	(Java_gnu_java_awt_peer_gtk_GtkToolkit_gtkInit): Initialize
+	java_vm rather than old gdk_env variable.
+
+2005-02-15 David Gilbert <david.gilbert@object-refinery.com>
+
+	* javax/swing/DefaultListModel.java
+	(add): fire correct event,
+	(addElement): corrected interval indices in event,
+	(clear): corrected upper bound for interval, only fire event if
+	list is not empty,
+	(setSize): fire appropriate event.
+
+2005-02-15  Graydon Hoare  <graydon@redhat.com>
+
+	* gnu/awt/xlib/XEventLoop.java: Add non-blocking event mode.
+	* gnu/awt/xlib/XToolkit.java: Likewise.
+	* gnu/gcj/xlib/XAnyEvent.java: Likewise.
+	* gnu/gcj/xlib/natXAnyEvent.cc: Likewise.
+	* gnu/java/awt/ClasspathToolkit.java: Likewise.
+	* gnu/java/awt/peer/gtk/GtkToolkit.java: Likewise.
+	* java/awt/EventQueue.java (getNextEvent): 
+	Adjust event loop to switch to native mode after 100ms.
+	* javax/swing/Timer.java (drainEvents): Reuse Runnable.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkGenericPeer.c
+	(Java_gnu_java_awt_peer_gtk_GtkGenericPeer_dispose): 
+	Wake up event thread.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkToolkit.c
+	(Java_gnu_java_awt_peer_gtk_GtkToolkit_iterateNativeQueue):
+	Adjust event loop to switch to java mode after 100ms.
+
+2005-02-15  Graydon Hoare  <graydon@redhat.com>
+
+	* jni.cc (_Jv_JNI_RegisterNatives): Re-add sync, which was
+	accidentally removed in last change.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMainThread.c,
+	gnu/java/awt/peer/gtk/GtkMainThread.java: Removed.
+
+2005-02-15  Graydon Hoare  <graydon@redhat.com>
+
+	* include/jni.h (_Jv_JNIEnv::bottom_locals): New field.
+	* include/jvm.h (_Jv_FreeJNIEnv): Declare.
+	* java/lang/natThread.cc (finalize_native): Call _Jv_FreeJNIEnv.
+	* jni.cc: Reuse bottom frame between calls, avoid clearing
+	frame when no local references are made.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* javax/swing/UIDefaults.java (UIDefaults):
+	Fixed typo in javadoc (Thanks to Thomas Zander for reporting)
+	Fixed HTML entity and removed a redundant comma.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* javax/swing/text/DefaultEditorKit.java
+	(deinstall): Removed.
+	(install): Likewise.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* javax/swing/UIDefaults.java (put): Handle value of null.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* java/awt/Robot.java,
+	java/awt/Scrollbar.java,
+	java/awt/print/PrinterJob.java,
+	javax/swing/JTable.java,
+	javax/swing/text/AbstractDocument.java:
+	Reworked import statements.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* javax/swing/JEditorPane.java
+	(read): Implemented.
+	(write): Likewise.
+	* javax/swing/text/DefaultEditorKit.java
+	(page): Renamed from page_url. Made private.
+	(editorKit): Renamed from kit. Made private.
+	(ctype): Removed.
+	(JEditorPane): All constructors reimplemented.
+	(getContentType): Use content type from editor kit.
+	(getEditorKit): Return editorKit.
+	(getEditorKitForContentType):Likewise.
+	(getPage): Return page.
+	(setContentType): Reimplemented.
+	(setEditorKit): Likewise.
+	(setEditorKitForContentType): Removed wrong implementation.
+	(setPage): Implemented.
+
+2005-02-15  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkFramePeer.c
+	(nativeSetIconImageFromData): Re-add native implementation.
+
+2005-02-15  David Gilbert  <david.gilbert@object-refinery.com>
+
+	* javax/swing/table/DefaultTableModel.java
+	(DefaultTableModel()): Added Javadocs.
+	(DefaultTableModel(int, int)): Fixed implementation.
+	(DefaultTableModel(Vector, int)): Throw IllegalArgumentException
+	for negative rowCount.
+	(DefaultTableModel(Object[], int)): Added Javadocs.
+	(DefaultTableModel(Vector, Vector)): Likewise.
+	(DefaultTableModel(Object[][], Object[])): Likewise.
+	(getDataVector): Likewise.
+	(setDataVector(Vector, Vector)): Likewise.
+	(setDataVector(Object[][], Object[])): Likewise.
+	(newDataAvailable): Likewise.
+	(newRowsAdded): Likewise.
+	(rowsRemoved): Likewise.
+	(setColumnIdentifiers(Vector)): Allow for null argument.
+	(setColumnIdentifiers(Object[])): Added Javadocs.
+	(setNumRows): Likewise.
+	(setRowCount): Adds new rows if necessary, and sends more specific
+	TableModelEvent.
+	(setColumnCount): Allow for null columnIdentifiers.
+	(addColumn(Object)): Added Javadocs.
+	(addColumn(Object, Vector)): Handle null columnData.
+	(addColumn(Object, Object[])): Handle columnData with more or less
+	entries than rows in the table.
+	(addRow(Vector)): Fire appropriate event.
+	(addRow(Object[])): Added Javadocs.
+	(insertRow(int, Vector)): Fire appropriate event.
+	(insertRow(int, Object[])): Added Javadocs.
+	(moveRow): Reimplemented.
+	(removeRow(int)): Fire appropriate event.
+	(getColumnCount): Allow for null columnIdentifiers.
+	(getColumnName): Now returns empty string when column index is too
+	large.
+	(isCellEditable): Added Javadocs.
+	(getValueAt): Likewise.
+	(setValueAt): Fire more specific event.
+	(convertToVector): Added Javadocs.
+	* javax/swing/table/TableModel.java
+	Added Javadocs.
+
+2005-02-15  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	* libgcj.spec.in (lib): Add -l-javax-imageio.
+
+2005-02-15  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	* gnu/java/awt/peer/gtk/GtkComponentPeer.java: Replace direct
+	references to event queue q with method call q().
+	* gnu/java/awt/peer/gtk/GtkDialogPeer.java: Likewise.
+	* gnu/java/awt/peer/gtk/GtkFramePeer.java: Likewise.
+	* gnu/java/awt/peer/gtk/GtkScrollbarPeer.java: Likewise.
+	* gnu/java/awt/peer/gtk/GtkTextComponentPeer.java: Likewise.
+	* gnu/java/awt/peer/gtk/GtkWindowPeer.java: Likewise.
+	* gnu/java/awt/peer/gtk/GtkGenericPeer.java: Likewise.
+	(q): New method.
+
+2005-02-15  Graydon Hoare  <graydon@redhat.com>
+
+	* gnu/java/awt/ClasspathToolkit.java 
+	(registerImageIOSpis): New method.
+	* gnu/java/awt/image/ImageDecoder.java 
+	(imageDecoder): New constructor using InputStream
+	(startProduction): Handle existing InputStream.
+	* gnu/java/awt/peer/gtk/GdkGraphics2D.java 
+	(findSimpleIntegerArray): Make public and static.
+	(updateBufferedImage): Set each pixel, in a loop.
+	* gnu/java/awt/peer/gtk/GdkPixbufDecoder.java: 
+	Implement ImageIO SPI classes.
+	(createBufferedImage): Rewrite in terms of SPI classes.
+	* gnu/java/awt/peer/gtk/GtkToolkit.java
+	(registerImageIOSpis): New method.
+	* java/lang/reflect/natMethod.cc 
+	(_Jv_CallAnyMethodA): Borrow a patch from aph, applied to trunk, 
+	which lets JNI call interface methods properly.
+	* javax/imageio/ImageIO.java 
+	(WriterFormatFilter.filter): Fix copy-and-paste typos.
+	(WriterMIMETypeFilter.filter): Likewise.
+	(ImageReaderIterator): Pass extension argument through to SPI.
+	(getReadersByFilter): Likewise.
+	(getWritersByFilter): Likewise.
+	(getImageReadersByFormatName): Likewise.
+	(getImageReadersByMIMEType): Likewise.
+	(getImageReadersBySuffix): Likewise.
+	(getImageWritersByFormatName): Likewise.
+	(getImageWritersByMIMEType): Likewise.
+	(getImageWritersBySuffix): Likewise.
+	(read): Implement.
+	(write): Implement.
+	* javax/imageio/ImageReader.java 
+	(progressListeners): Initialize.
+	(setInput): Implement.
+	* javax/imageio/ImageWriter.java
+	(progressListeners): Initialize.
+	(warningListeners): Likewise.
+	(warningLocales): Likewise.
+	(setOutput): Test "isInstance" rather than class equality.
+	* javax/imageio/spi/IIORegistry.java
+	(static): Add reader and writer SPIs.
+	(IIORegistry): Call ClasspathToolkit.registerImageIOSpis.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GdkPixbufDecoder.c
+	(query_formats): New function.
+	(save_to_stream): Likewise.
+	(Java_gnu_java_awt_peer_gtk_GdkPixbufDecoder_streamImage): Likewise.
+
+2005-02-15  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GdkRobotPeer.c (mouseWheel):
+	Call XFlush.
+	(keyPress): Likewise.
+	(keyRelease): Likewise.
+
+2005-02-15  Olga Rodimina  <rodimina@redhat.com>
+
+	* javax/swing/JTable.java
+	(columnAtPoint): New Method. Implemented.
+	(rowAtPoint): Likewise.
+	(countSelections): Fixed few small count errors.
+	(getSelections): Likewise.
+	(setSelectionMode): Set selection mode for column 
+	selection model in addition to row selection model.
+	* javax/swing/plaf/basic/BasicTableUI.java:
+	(getRowForPoint): Removed. Replaced by
+	JTable.rowAtPoint().
+	(getColForPoint): Removed. Replaced by 
+	JTable.columnAtPoint().
+	(updateSelection): Updated to call JTable.columnAtPoint 
+	and JTable.rowAtPoint.
+	* javax/swing/table/DefaultTableColumnModel.java:
+	(getSelectedColumns): Implemented.
+	(getSelectedColumnCount): Implemented.		
+
+2005-02-15  Graydon Hoare  <graydon@redhat.com>
+
+	* Makefile.am 
+	(jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMainThread.c)
+	(gnu/java/awt/peer/gtk/GtkMainThread.java) : Remove.
+	* Makefile.in: Regenerate.
+	* gnu/awt/xlib/XEventLoop.java: Fix to match thread model.
+	* gnu/awt/xlib/XFramePeer.java: Likewise.
+	* gnu/awt/xlib/XToolkit.java: Likewise.
+	* gnu/gcj/xlib/XAnyEvent.java: Likewise.
+	* gnu/gcj/xlib/natXAnyEvent.cc: Likewise.
+	* gnu/java/awt/ClasspathToolkit.java 
+	(nativeQueueEmpty)
+	(wakeNativeQueue)
+	(iterateNativeQueue): New methods.
+	* gnu/java/awt/peer/gtk/GtkMainThread.java: Remove.
+	* gnu/java/awt/peer/gtk/GtkToolkit.java
+	(gtkInit): Absorb from defunct GtkMainThread class.
+	(static): Run gtkInit in static startup block.
+	(GtkToolkit): Remove construction of GtkMainThread and queue.
+	(getSystemEventQueueImpl): Construct queue when requested.
+	(nativeQueueEmpty)
+	(wakeNativeQueue)
+	(iterateNativeQueue): New methods.
+	* java/awt/Component.java (removeNotify): Remove race.
+	* java/awt/EventDispatchThread.java 
+	(EventDispatchThread): Don't start on construction.
+	(run): Remove isInterrupted check.
+	* java/awt/EventQueue.java (shutdown): New flag.
+	(isShutdown): New method checking J2SE shutdown condition.
+	(setShutdown): New method.
+	(getNextEvent): Restructure to use ClasspathToolkit.
+	(postEvent): Activate new thread on posting, wake thread on
+	post of possible shutdown condition event.
+	* java/awt/Frame.java 
+	(Frame): Call noteFrame in all constructors.
+	(fireDummyEvent): New helper method.
+	(addNotify): Fire a dummy event to wake up queue.
+	(removeNotify): Fire a dummy event to wake up queue.
+	(noteFrame): New method.
+	(weakFrames): New static field.
+	(getFrames): Implement.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMainThread.c: 
+	Remove.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkToolkit.c:
+	Move everything from GtkMainThread into this file
+	(Java_gnu_java_awt_peer_gtk_GtkToolkit_iterateNativeQueue)
+	(Java_gnu_java_awt_peer_gtk_GtkToolkit_wakeNativeQueue)
+	(Java_gnu_java_awt_peer_gtk_GtkToolkit_nativeQueueEmpty):
+	New functions to implement single-threaded queue semantics.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* javax/swing/plaf/metal/MetalLookAndFeel.java
+	(getControlTextFont): New method.
+	(getMenuTextFont): Likewise.
+	(getSubTextFont): Likewise.
+	(getSystemTextFont): Likewise.
+	(getUserTextFont): Likewise.
+	(getWindowTitleFont): Likewise.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* javax/swing/text/AbstractDocument.java
+	(documentFilter): New field.
+	(getDocumentFilter): New method.
+	(setDocumentFilter): Likewise.
+	(dump): Likewise.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* javax/swing/JTree.java
+	(DynamicUtilTreeNode.hasChildren): Clarify javadoc.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* javax/swing/text/AbstractDocument.java
+	(AbstractElement.getLength): Fixed off-by-one error.
+	(AbstractElement.children): Made abstract.
+	(AbstractElement.getAllowsChildren): Likewise.
+	(AbstractElement.getElement): Likewise.
+	(AbstractElement.dumpElement): New private method.
+	(AbstractElement.dump): New method.
+	(BranchElememt.getName): Fixed implementation.
+	(BranchElememt.toString): Likewise.
+	(BranchElememt.getElement): Fixed arguments.
+	(LeafElement.getName): Fixed implementation.
+	(LeafElement.toString): Likewise.
+	* javax/swing/text/GapContent.java
+	(GapContent): Put default content into buffer.
+	* javax/swing/text/PlainDocument.java
+	(reindex): Use empty attribute sets instead of null.
+	(createDefaultRoot): Reimplemented.
+	(insertUpdate): Call super method.
+	(removeUpdate): Likewise.
+	(getParagraphElement): Implemented.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* gnu/java/awt/ClasspathToolkit.java
+	(createRobot): Throws java.awt.AWTException.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GdkRobotPeer.c:
+	Added '__attribute__((unused))' to all unused method arguments.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* javax/swing/DefaultBoundedRangeModel.java
+	(fireValueChanged): Fixed off-by-one error.
+
+2005-02-15  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	* Makefile.am (gtk_c_source_files): Add GdkRobotPeer.c.
+	(gtk_awt_peer_sources): Add GdkScreenGraphicsDevice.java and
+	GdkRobotPeer.java.
+	(lib_gnu_java_awt_peer_gtk_la_CFLAGS): Add X flags.
+	(lib_gnu_java_awt_peer_gtk_la_LDFLAGS): Add XTest flags.
+	* gnu/awt/xlib/XToolkit.java (createRobot): New method.
+	* gnu/java/awt/ClasspathToolkit.java (createRobot): New method.
+	* gnu/java/awt/peer/gtk/GdkGraphicsEnvironment.java
+	(getDefaultScreenDevice): Implement.
+	* gnu/java/awt/peer/gtk/GdkRobotPeer.java: New file.
+	* gnu/java/awt/peer/gtk/GdkScreenGraphicsDevice.java: Likewise.
+	* gnu/java/awt/peer/gtk/GtkToolkit.java (createRobot): New method.
+	* java/awt/Robot.java: Implement.
+	* java/awt/peer/RobotPeer.java: Rename parameters.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GdkRobotPeer.c: New file.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkComponentPeer.c
+	(awt_keycode_to_keysym): Make non-static.
+	* jni/gtk-peer/gtkpeer.h (AWT_BUTTON1_MASK, AWT_BUTTON2_MASK,
+	AWT_BUTTON3_MASK): Declare constants.
+	(awt_keycode_to_keysym): Declare.
+
+	* Makefile.am (AM_MAKEFLAGS): Set KEYS variable.
+	* testsuite/libjava.mauve/mauve.exp (test_mauve): If KEYS exists
+	and is non-empty pass its value to "make check".
+	(test_mauve_sim): Likewise.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* javax/imageio/IIOParam.java
+	(setSourceBands): New method.
+	(setSourceSubsampling): Likewise.
+	* javax/imageio/ImageReadParam.java
+	(setDestination): Likewise.
+	(setDestinationBands): Likewise.
+	(setSourceProgressivePasses): Likewise.
+	* javax/imageio/metadata/IIOInvalidTreeException.java
+	(serialVersionUID): New static field.
+	* javax/imageio/metadata/IIOMetadataNode.java
+	(IIOMetadataNode): Don't explicitely implement org.w3c.dom.Node.
+	(parent): Dont initailize with default value explicitely.
+	(Object): Likewise.
+	(removeAttribute): Doesn't throws org.w3c.dom.DOMException.
+	(removeAttributeNode): Likewise.
+	(removeAttributeNS): Likewise.
+	(setAttribute): Likewise.
+	(setAttributeNode): Likewise.
+	(setAttributeNodeNS): Likewise.
+	(setAttributeNS): Likewise.
+	(appendChild): Likewise.
+	(getNodeValue): Likewise.
+	(insertBefore): Likewise.
+	(removeChild): Likewise.
+	(replaceChild): Likewise.
+	(setPrefix): Likewise.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* javax/swing/LookAndFeel.java
+	(getDesktopPropertyValue): New method.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* javax/swing/JTree.java
+	(hasChildren): New instance field.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* javax/swing/JComponent.java
+	(getToolTipText): New method.
+	(getTitledBorderText): Likewise.
+	(getAccessibleKeyBinding): Likewise.
+	(getVerifyInputWhenFocusTarget): Likewise.
+	(setVerifyInputWhenFocusTarget): Likewise.
+	(verifyInputWhenFocusTarget): New instance field.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* javax/swing/DefaultListSelectionModel.java
+	(fireValueChanged): New method.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* javax/swing/DefaultBoundedRangeModel.java:
+	Fixed javadocs all over.
+	(fireStateChanged): Simplified.
+	* javax/swing/BoundedRangeModel.java:
+	Reformatted.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* javax/swing/JRootPane.java
+	(setMenuBar): Added @deprecated tag.
+	(getMenuBar): Likewise.
+	* javax/swing/JTable.java
+	(sizeColumnsToFit): Likewise.
+
+2005-02-15  Paul Jenner  <psj.home@ntlworld.com>
+
+	* javax/swing/ImageIcon.java (setImage): Implemented.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* javax/swing/JTable.java:
+	Removed unused imports.
+
+2005-02-15  Olga Rodimina  <rodimina@redhat.com>
+
+	(prepareRenderer): Get column's index in dataModel instead
+	of column's view index.
+	(getColumnCount): return count of the columns in ColumnModel,
+	not in dataModel.
+	(removeColumn): Implemented.
+	(moveColumm): Likewise.
+	(setRowHeight): throw IllegalArgumentException if height is 
+	less then 1.
+	* javax/swing/table/DefaultTableColumnModel.java: Add javadocs.
+	(DefaultTableColumnModel):Add call to createSelectionModel().
+	(addColumn): Fire columnAdded event to registered listeners.
+	(removeColumn): Fire columnRemoved event to registered listeners.
+	(moveColumn): Fire columnMoved event to registered listeners.
+	(setColumnMargin): Fire ColumnMarginChanged event to registered listeners.
+	(getColumnIndex): Changed parameter name.
+	(setColumnSelectionAllowed): Likewise.
+	(fireColumnAdded): Implemented.
+	(fireColumnRemoved): Likewise.
+	(fireColumnMoved): Likewise.
+	(fireColumnMarginChanged): Likewise.
+	(getListeners): Changed parameter name.
+	(propertyChange): Implemented.
+	(valueChanged): Changed parameter name. 
+	(createSelectionModel): Implemented.	
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* gnu/java/awt/peer/gtk/GtkToolkit.java:
+	Explicitely import used classes.
+	(getLocalGraphicsEnvironment): Simplify.
+	* java/awt/Window.java (Window):
+	Enable code to get the default GraphicsConfiguration.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* javax/swing/plaf/metal/DefaultMetalTheme.java
+	(CONTROL_TEXT_FONT): New static field.
+	(MENU_TEXT_FONT): Likewise.
+	(SUB_TEXT_FONT): Likewise.
+	(SYSTEM_TEXT_FONT): Likewise.
+	(USER_TEXT_FONT): Likewise.
+	(WINDOW_TITLE_FONT): Likewise.
+	(getControlTextFont): New method.
+	(getMenuTextFont): Likewise.
+	(getSubTextFont): Likewise.
+	(getSystemTextFont): Likewise.
+	(getUserTextFont): Likewise.
+	(getWindowTitleFont): Likewise.
+	* javax/swing/plaf/metal/MetalTheme.java
+	(BLACK): Initialize with Color.BLACK.
+	(WHITE): Initialize with Color.WHITE.
+	(getInactiveControlTextColor): Return getControlDisabled().
+	(getMenuDisabledForeground): Return getSecondary3().
+	(getControlTextFont): New abstract method.
+	(getMenuTextFont): Likewise.
+	(getSubTextFont): Likewise.
+	(getSystemTextFont): Likewise.
+	(getUserTextFont): Likewise.
+	(getWindowTitleFont): Likewise.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* javax/swing/JFormattedTextField.java
+	(getFocusLostBehavior): Fixed typo in method name.
+	(setFocusLostBehavior): Likewise.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* javax/swing/TransferHandler.java:
+	Reworked import statements.
+
+2005-02-15  Jerry Quinn  <jlquinn@optonline.net>
+
+	* java/awt/Button.java,
+	java/awt/Canvas.java,
+	java/awt/Checkbox.java,
+	java/awt/CheckboxMenuItem.java,
+	java/awt/Choice.java,
+	java/awt/Dialog.java,
+	java/awt/Frame.java,
+	java/awt/Label.java,
+	java/awt/List.java,
+	java/awt/Menu.java,
+	java/awt/MenuBar.java,
+	java/awt/MenuItem.java,
+	java/awt/PopupMenu.java,
+	java/awt/ScrollPane.java,
+	java/awt/Scrollbar.java,
+	java/awt/TextArea.java,
+	java/awt/Window.java (getAccessibleContext): Clean up comments.
+	Reformat.
+	* java/awt/Button.java,
+	java/awt/Checkbox.java,
+	java/awt/Choice.java,
+	java/awt/Menu.java,
+	java/awt/PopupMenu.java,
+	java/awt/TextArea.java (getAccessibleContext): Only create new
+	accessible once.
+	* java/awt/TextComponent.java (getAccessibleContext): Implement.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* java/awt/Button.java,
+	javax/swing/JApplet.java,
+	javax/swing/JFormattedTextField.java,
+	javax/swing/JWindow.java,
+	javax/swing/JTree.java,
+	javax/swing/plaf/basic/BasicEditorPaneUI.java,
+	javax/swing/plaf/basic/BasicTextPaneUI.java,
+	javax/swing/plaf/basic/BasicTreeUI.java:
+	Reworked import statements.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* Makefile.am: Put javax.imageio into its own library and link it
+	against lib-org-w3c-dom.la to fix bootstrapping.
+	* Makefile.in: Regenerated.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* javax/swing/text/TextAction.java
+	(getTextComponent): Simplified. Added Javadoc.
+	(augmentList): Implemented. Added Javadoc.
+	(getFocusedComponent): Added javadoc.
+
+2005-02-15  Jerry Quinn  <jlquinn@optonline.net>
+
+	* java/awt/Scrollbar.java (AccessibleAWTScrollbar,
+	getAccessibleContext): Implement.
+	* java/awt/ScrollPane.java (AccessibleAWTScrollPane,
+	getAccessibleContext): Implement.
+
+2005-02-15  Jerry Quinn  <jlquinn@optonline.net>
+
+	* java/awt/Dialog.java (AccessibleAWTFrame, getAccessibleContext):
+	Implement.
+	* java/awt/Frame.java (AccessibleAWTFrame, getAccessibleContext):
+	Implement.
+	* java/awt/Window.java (getAccessibleContext): Fix comment.
+	Remove extra import.
+
+2005-02-15  Jerry Quinn  <jlquinn@optonline.net>
+
+	* java/awt/Window.java (AccessibleAWTWindow): Implement.
+	(isActive, isFocused, getAccessibleContext): Implement.
+
+2005-02-15  Jerry Quinn  <jlquinn@optonline.net>
+
+	* java/awt/MenuItem.java (getAccessibleContext): Implement.
+	* java/awt/MenuComponent.java (accessibleContext): Make package
+	visible.
+	* java/awt/CheckboxMenuItem.java (getAccessibleContext,
+	AccessibleAWTCheckboxMenuItem): Implement.
+
+2005-02-15  Jerry Quinn  <jlquinn@optonline.net>
+
+	* java/awt/List.java: Implement AccessibleAWTList,
+	AccessibleAWTListChild.
+
+2005-02-15  Jerry Quinn  <jlquinn@optonline.net>
+
+	* java/awt/Choice.java: Add implements declaration for
+	Accessible.
+
+2005-02-15  Jerry Quinn  <jlquinn@optonline.net>
+
+	* javax/imageio/metadata/IIOInvalidTreeException.java: Use Node
+	instead of Object.
+
+2005-02-15  Jerry Quinn  <jlquinn@optonline.net>
+
+	* javax/imageio/metadata/IIOMetadataNode.java: Add Node to
+	implemented interface list.
+
+2005-02-15  Jerry Quinn  <jlquinn@optonline.net>
+
+	* javax/imageio/metadata/IIOMetadataNode.java: Implement.
+	* javax/imageio/metadata/IIOAttr.java: New class.
+	* javax/imageio/metadata/IIONamedNodeMap.java: New class.
+	* javax/imageio/metadata/IIONodeList.java: New class.
+	* Makefile.am: Added new files.
+	* Makefile.in: Regenerated.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* javax/swing/AbstractAction.java,
+	javax/swing/AbstractCellEditor.java,
+	javax/swing/AbstractListModel.java,
+	javax/swing/DefaultBoundedRangeModel.java,
+	javax/swing/DefaultButtonModel.java,
+	javax/swing/DefaultCellEditor.java,
+	javax/swing/DefaultComboBoxModel.java,
+	javax/swing/DefaultDesktopManager.java,
+	javax/swing/JMenu.java,
+	javax/swing/JSlider.java,
+	javax/swing/KeyStroke.java,
+	javax/swing/OverlayLayout.java,
+	javax/swing/ScrollPaneLayout.java,
+	javax/swing/SizeRequirements.java,
+	javax/swing/ViewportLayout.java:
+	Made serialVersionUID private.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* gnu/java/awt/peer/gtk/GtkComponentPeer.java:
+	Reformatted.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* gnu/java/awt/peer/gtk/GdkGraphics2D.java: More reformatting.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* gnu/java/awt/peer/gtk/GdkGraphics2D.java: Reformatted.
+
+2005-02-15  Jeroen Frijters  <jeroen@frijters.net>
+
+	* java/awt/EventDispatchThread.java,
+	java/awt/Toolkit.java:
+	Don't catch java.lang.ThreadDeath.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* javax/swing/text/PasswordView.java
+	(drawEchoCharacter): Added javadoc.
+	(drawSelectedText): Likewise.
+	(drawUnselectedText): Likewise.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* javax/swing/JRootPane.java
+	(windowDecorationStyle): New field.
+	(setMenuBar): New method.
+	(getMenuBar): Likewise.
+	(getWindowDecorationStyle): Likewise.
+	(setWindowDecorationStyle): Likewise.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* javax/swing/DefaultListSelectionModel.java
+	(leadAnchorNotificationEnabled): Made protected.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* javax/swing/InternalFrameFocusTraversalPolicy.java: New file.
+	* Makefile.am: Added InternalFrameFocusTraversalPolicy.java.
+	* Makefile.in: Regenerated.
+
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* javax/swing/JFormattedTextField.java: Implemented.
+	* javax/swing/JWindow.java
+	(JWindow): New constructors.
+	(initWindow): Renamed from initFrame.
+	* javax/swing/UIDefaults.java
+	(ActiveValue): Made interface static.
+	(LazyValue): Likewise.
+	* javax/swing/plaf/basic/BasicInternalFrameTitlePane.java
+	(TitlePaneLayout.TitlePaneLayout): New constructor.
+	* javax/swing/plaf/basic/BasicSliderUI.java
+	(ChangeHandler): Made public.
+	(FocusHandler): Likewise.
+	(PropertyChangeHandler): Likewise.
+	(ScrollListener): Likewise.
+	* javax/swing/plaf/basic/BasicTabbedPaneUI.java
+	(FocusHandler): Likewise.
+	(MouseHandler): Likewise.
+	* javax/swing/plaf/basic/BasicTextPaneUI.java
+	(BasicTextPaneUI): Extend BasicEditorPaneUI.
+	* javax/swing/plaf/basic/BasicToolBarUI.java
+	(BasicToolBarUI): Simplified. Reworked javadoc.
+	(canDock): Simplified. Make public.
+	(DockingListener): Made public.
+	* javax/swing/text/JTextComponent.java
+	(navigationFilter): New field.
+	(getNavigationFilter): New method.
+	(setNavigationFilter): Likewise.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* javax/swing/plaf/metal/MetalTheme.java
+	(getControlTextColor): Return getControlInfo().
+	(getHighlightedTextColor): Return getControlTextColor().
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* javax/swing/plaf/basic/BasicButtonListener.java
+	(BasicButtonListener): New constructor.
+	* javax/swing/plaf/basic/BasicButtonUI.java
+	(createButtonListener): Usw new BasicButtonListener constructor.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* javax/imageio/event/package.html,
+	javax/imageio/metadata/package.html: New files.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* java/awt/image/MemoryImageSource.java: Reformatted.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* javax/swing/tree/TreeCellEditor.java: Refomatted.
+
+2005-02-15  Jeroen Frijters  <jeroen@frijters.net>
+
+	* java/awt/color/ICC_Profile.java
+	(finalize): Removed pointless field assignments.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* javax/swing/plaf/basic/BasicEditorPaneUI.java: New file.
+	* Makefile.am: Added javax/swing/plaf/basic/BasicEditorPaneUI.java.
+	* Makefile.in: Regenerated.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* javax/swing/text/DefaultStyledDocument.java: New file.
+	* Makefile.am: Added javax/swing/text/DefaultStyledDocument.java.
+	* Makefile.in: Regenerated.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* javax/swing/JFileChooser.java
+	(showDialog): Return CANCEL_OPTION for now.
+	(showOpenDialog): Likewise.
+	(showSaveDialog): Likewise.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* javax/swing/JApplet.java
+	(HIDE_ON_CLOSE): Removed.
+	(EXIT_ON_CLOSE): Likewise.
+	(DISPOSE_ON_CLOSE): Likewise.
+	(DO_NOTHING_ON_CLOSE): Likewise.
+	(close_action): Likewise.
+	(getDefaultCloseOperation): Likewise.
+	(setDefaultCloseOperation): Likewise.
+	(processWindowEvent): Likewise.
+	(getPreferredSize): Simplified.
+	* javax/swing/JInternalFrame.java
+	(setDefaultCloseOperation): Fixed throwing exception on wrong argument
+	value.
+	* javax/swing/JWindow.java
+	(HIDE_ON_CLOSE): Removed.
+	(EXIT_ON_CLOSE): Likewise.
+	(DISPOSE_ON_CLOSE): Likewise.
+	(DO_NOTHING_ON_CLOSE): Likewise.
+	(close_action): Likewise.
+	(processKeyEvent): Likewise.
+	(setDefaultCloseOperation): Likewise.
+	(getPreferredSize): Simplified.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* javax/swing/JTextField.java
+	(getPreferredSize): Re-implemented.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* javax/swing/JLabel.java
+	(setDisplayedMnemonic): Use only upper case characters.
+	(setDisplayedMnemonicIndex): Handle index == -1 and fire
+	PropertyChangeEvent after property got set to the new index.
+
+2005-02-15  Robert Schuster <thebohemian@gmx.net>
+
+	* javax/swing/JComboBox.java:
+	(JComboBox): Removed selection of the
+	first item in the model.
+
+2005-02-15  Robert Schuster <thebohemian@gmx.net>
+
+	* javax/swing/JComboBox.java
+	added support for no item being selected
+	(JComboBox): select first or nothing depending on element count
+	(setModel): cleaned up unneeded "this." usage, added more
+	docs, made exception behavior match that of the JDK
+	(setLighWeightPopupEnabled): removed unneeded "this." usage
+	(setEditable): dito
+	(setMaximumRowCount): dito
+	(setRenderer): dito
+	(setPrototypeDisplayValue): dito
+	(getSelectedItem): simplified, added more user doc
+	(setSelectedIndex): corrected exception behavior, added more user doc
+	(getSelectedIndex): fixed hardcoded dependency on DefaultComboBoxModel,
+	added performance warning to user doc
+	(addItem): fixed exception behavior, added user doc
+	(insertItemAt): dito
+	(removeItem): dito
+	(removeItemAt): dito
+	(removeAll): fixed exception behavior, added user doc, added support
+	for model not being instance of DefaultComboBoxModel
+	(getSelectedItemObjects): simplified
+	(getItemCount): fixed dependency on DefaultComboBoxModel
+	(getItemAt): fixed dependency on MutableComboBoxModel
+	* javax/swing/DefaultComboBoxModel.java:
+	(setSelectedItem): updates selected item only if new
+	value is null or known (match JDK behavior)
+	* javax/swing/plaf/basic/BasicComboBoxUI.java:
+	(paintCurrentValue): renders "" if no item is selected
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* javax/swing/plaf/metal/MetalTheme.java,
+	javax/swing/plaf/metal/DefaultMetalTheme.java:
+	New files.
+	* javax/swing/plaf/metal/MetalLookAndFeel.java
+	* Makefile.am: Added the new files.
+	* Makefile.in: Regenerated.
+
+2005-02-15  Olga Rodimina  <rodimina@redhat.com>
+
+	* javax/swing/JTable.java
+	(editorComp): New field.
+	(JTable): Initialize local variables and call updateUI
+	(selectionBackground): Make protected.
+	(selectionForeground): Likewise.
+	(initializeLocalVars): Create default editors and renderers,
+	initialize editingColumn, editingRow variables.
+	(createDefaultEditors): New Method.
+	(createDefaultRenderers): Likewise.
+	(createDefaultListSelectionModel): Removed
+	(createDefaultSelectionModel): New Method.
+	(createDefaultTableHeader): Likewise
+	(removeColumn): Likewise.
+	(getEditingColumn): Likewise.
+	(setEditingColumn): Likewise.
+	(getEditingRow): Likewise.
+	(setEditingRow): Likewise.
+	(getEditorComponent): Likewise.
+	(isEditing): Likewise.
+	(setDefaultEditor): Likewise.
+	(addColumnSelectionInterval): Likewise.
+	(addRowSelectionInterval): Likewise.
+	(setColumnSelectionInterval): Likewise.
+	(setRowSelectionInterval): Likewise.
+	(removeColumnSelectionInterval): Likewise.
+	(removeRowSelectionInterval): Likewise.
+ 	(isColumnSelected): Likewise.
+	(isRowSelected): Likewise.
+	(isCellSelected): Likewise.
+	(selectAll): Likewise.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* javax/swing/JTable.java
+	(addColumn): New method.
+	(getColumnClass): Likewise.
+	(getColumnName): Likewise.
+
+2005-02-15  Paul Jenner  <psj.home@ntlworld.com>
+
+	* javax/swing/TransferHandler.java
+	(createTransferable): Made protected.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* javax/swing/JTable.java,
+	javax/swing/plaf/basic/BasicTableHeaderUI.java,
+	javax/swing/plaf/basic/BasicTableUI.java:
+	Use fixed get/setIntercellSpacing() methods.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* javax/swing/JTable.java
+	(getIntercellSpacing): Fixed typo in method name.
+	(setIntercellSpacing): Likewise.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* javax/swing/text/JTextComponent.java
+	(focusAccelerator): New variable.
+	(getFocusAccelerator): New method.
+	(setFocusAccelerator): Likewise.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* javax/swing/JComponent.java
+	(setTransferHandler): Made public. Fire property change event.
+	* javax/swing/TransferHandler.java: Implemented.
+	* javax/swing/text/JTextComponent.java
+	(DefaultTransferHandler): New inner class.
+	(defaultTransferHandler): New variable.
+	(copy): New method.
+	(cut): Likewise.
+	(paste): Likewise.
+	(doTransferAction): Likewise.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* javax/swing/JTree.java
+	(collapsePath): New method.
+	(collapseRow): Likewise.
+	(expandPath): Likewise.
+	(expandRow): Likewise.
+	(checkExpandParents): Likewise.
+	(doExpandParents): Likewise.
+	(setExpandedState): Likewise.
+	(makeVisible): Likewise.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* javax/swing/JPasswordField.java: Updated javadocs.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* javax/swing/JLayeredPane.java
+	(getLayer): Fixed return type, made public.
+	(getPosition): Use new getLayer().
+	(SetPosition): Likewise.
+	(getIndexOf): Likewise.
+	(remove): Likewise.
+	* javax/swing/JInternalFrame.java
+	(getLayer): Use new JLayeredPane.getLayer().
+
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* javax/swing/table/TableColumn.java: Added/fixed javadocs over all.
+	(setHeaderValue): Simplified. Do nothing when old value == new value.
+
+2005-02-15  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	* gnu/java/awt/peer/gtk/GdkGraphics.java (setClip): Protect
+	against null clip region.
+	* gnu/java/awt/peer/gtk/GtkFramePeer.java (create): Call
+	gtkWindowSetResizable.
+	(postConfigureEvent): Only revalidate if frame size has changed.
+	* gnu/java/awt/peer/gtk/GtkWindowPeer.java (postConfigureEvent):
+	Only revalidate if frame size has changed.
+	* java/awt/Component.java (reshape): Only repaint and post
+	component events if component is showing.
+	* java/awt/Container.java (addImpl): Only post container event if
+	container is showing.
+	(remove): Likewise.
+	* java/awt/Window.java (setLocationRelativeTo): Implement.
+	(setBoundsCallback): Only post component events if component is
+	showing.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GdkGraphics.c (clearRect):
+	Protect against null graphics structure.  Flush gdk event queue.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* javax/imageio/ImageReader.java,
+	javax/imageio/ImageTranscoder.java,
+	javax/imageio/ImageWriter.java,
+	javax/imageio/spi/ImageInputStreamSpi.java,
+	javax/imageio/spi/ImageOutputStreamSpi.java,
+	javax/imageio/spi/ServiceRegistry.java,
+	javax/imageio/stream/ImageInputStream.java,
+	javax/imageio/stream/ImageOutputStream.java: Updated.
+	* javax/imageio/IIOException.java,
+	javax/imageio/IIOImage.java,
+	javax/imageio/IIOParam.java,
+	javax/imageio/IIOParamController.java,
+	javax/imageio/ImageIO.java,
+	javax/imageio/ImageReadParam.java,
+	javax/imageio/ImageTypeSpecifier.java,
+	javax/imageio/ImageWriteParam.java,
+	javax/imageio/spi/IIORegistry.java,
+	javax/imageio/spi/ImageReaderSpi.java,
+	javax/imageio/spi/ImageWriterSpi.java,
+	javax/imageio/stream/FileCacheImageInputStream.java,
+	javax/imageio/stream/FileCacheImageOutputStream.java,
+	javax/imageio/stream/FileImageInputStream.java,
+	javax/imageio/stream/FileImageOutputStream.java,
+	javax/imageio/stream/ImageInputStreamImpl.java,
+	javax/imageio/stream/ImageOutputStreamImpl.java,
+	javax/imageio/stream/MemoryCacheImageInputStream.java,
+	javax/imageio/stream/MemoryCacheImageOutputStream.java,
+	javax/imageio/event/IIOReadProgressListener.java,
+	javax/imageio/event/IIOReadUpdateListener.java,
+	javax/imageio/event/IIOReadWarningListener.java,
+	javax/imageio/event/IIOWriteProgressListener.java,
+	javax/imageio/event/IIOWriteWarningListener.java,
+	javax/imageio/metadata/IIOMetadata.java,
+	javax/imageio/metadata/IIOMetadataController.java,
+	javax/imageio/metadata/IIOMetadataFormat.java,
+	javax/imageio/metadata/IIOInvalidTreeException.java,
+	javax/imageio/metadata/IIOMetadataFormatImpl.java,
+	javax/imageio/metadata/IIOMetadataNode.java: New files.
+	* Makefile.am (javax_source_files): Added new files
+	* Makefile.in: Regenerated.
+
+2005-02-15  Graydon Hoare  <graydon@redhat.com>
+
+	* gnu/java/awt/peer/gtk/GdkGraphics2D.java: 
+	Rework painting into BufferedImages
+	* gnu/java/awt/peer/gtk/GdkPixbufDecoder.java:
+	Construct BufferedImage with alpha only when alpha is
+	present in colormodel.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GdkGraphics2D.c:
+	Rework painting into client-side jint arrays.
+	* jni/gtk-peer/gtkcairopeer.h: 
+	Likewise.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* javax/swing/DefaultListCellRenderer.java
+	(serialVersionUID): Made private.
+	(getListCellRendererComponent): Set horizontal alignment.
+	* javax/swing/JLabel.java
+	(setVerticalAlignment): Re-implemented.
+	(setHorizontalAlignment): Do nothing if old value = new value.
+	* javax/swing/JList.java
+	(setCellRenderer): Likewise.
+	(setModel): Re-implemented.
+	(setSelectionModel): Likewise.
+
+2005-02-15  David Gilbert <david.gilbert@object-refinery.com>
+
+	* java/awt/Component.java,
+	java/awt/geom/Rectangle2D.java:
+	Javadoc fixes.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* javax/swing/AbstractListModel.java
+	(fireContentsChanged): Simplified.
+	(fireIntervalAdded): Likewise.
+	(fireIntervalRemoved): Likewise.
+	* javax/swing/DefaultSingleSelectionModel.java:
+	Reformatted.
+	(fireStateChanged): Simplified.
+	* javax/swing/JPopupMenu.java
+	(setSelectionModel): Set property.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* java/awt/print/Book.java: Reformatted.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* java/awt/geom/Area.java
+	(QuadSegment.curveArea): Remove unused variables.
+	(CubicSegment.curveArea): Likewise.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* javax/swing/JTree.java
+	(ANCHOR_SELECTION_PATH_PROPERTY): Added @since tag.
+	(LEAD_SELECTION_PATH_PROPERTY): Likewise.
+	(EXPANDS_SELECTED_PATHS_PROPERTY): Likewise.
+	(EXPANDED): New constant.
+	(COLLAPSED): Likewise.
+	(nodeStates): New field.
+	(cellEditor): New method.
+	(cellRenderer): Likewise.
+	(selectionModel): Likewise.
+	(treeModel): Likewise.
+	(scrollPathToVisible): Likewise.
+	(scrollRowToVisible): Likewise.
+	(isCollapsed): Likewise.
+	(isExpanded): Likewise.
+	(clearToggledPaths): Likewise.
+	(getDescendantToggledPaths): Likewise.
+	(hasBeenExpanded): Likewise.
+	(isVisible): Likewise.
+	(isPathEditable): Likewise.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* javax/swing/JLayeredPane.java: Reformatted.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* javax/swing/tree/DefaultMutableTreeNode.java:
+	Completely Revised.
+	* javax/swing/tree/MutableTreeNode.java:
+	Reformatted.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* javax/swing/JFormattedTextField.java
+	(setDocument): Call setDocument of super class. Don't fire property
+	change event.
+
+2005-02-15  Sven de Marothy  <sven@physto.se>
+
+	* java/awt/image/IndexColorModel.java:
+	Add FIXME with respect to alpha handling.
+	(getAlpha): Default to returning opaque pixels. 
+	* java/awt/image/MultiPixelPackedSampleModel.java
+	(MultiPixelPackedSampleModel): Corrected parameters, order of
+	bit shifts and masks, stride length off by one.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* javax/swing/JList.java, javax/swing/JTree.java:
+	Added much new methods and fixed much methods setting bound properties.
+
 2005-02-16  Mark Wielaard  <mark@klomp.org>
 
 	* Makefile.am (gnu_xml_source_files): Removed

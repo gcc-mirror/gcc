@@ -47,23 +47,23 @@ import javax.swing.event.EventListenerList;
 
 /**
  * DefaultSingleSelectionModel
- * @author	Andrew Selkirk
- * @version	1.0
+ *
+ * @author Andrew Selkirk
  */
 public class DefaultSingleSelectionModel
   implements SingleSelectionModel, Serializable
 {
-  static final long serialVersionUID = 3676229404753786004L;
+  private static final long serialVersionUID = 3676229404753786004L;
 
   /**
    * changeEvent
    */
-  protected transient ChangeEvent changeEvent = new ChangeEvent (this);
+  protected transient ChangeEvent changeEvent = new ChangeEvent(this);
 
   /**
    * listenerList
    */
-  protected EventListenerList listenerList= new EventListenerList ();
+  protected EventListenerList listenerList = new EventListenerList();
 
   /**
    * index
@@ -73,15 +73,16 @@ public class DefaultSingleSelectionModel
   /**
    * Constructor DefaultSingleSelectionModel
    */
-  public DefaultSingleSelectionModel ()
+  public DefaultSingleSelectionModel()
   {
+    // Do nothing.
   }
 
   /**
    * getSelectedIndex
    * @return int
    */
-  public int getSelectedIndex ()
+  public int getSelectedIndex()
   {
     return index;
   }
@@ -90,34 +91,28 @@ public class DefaultSingleSelectionModel
    * setSelectedIndex
    * @param index TODO
    */
-  public void setSelectedIndex (int index)
+  public void setSelectedIndex(int index)
   {
-    // Set Data
     this.index = index;
-
-    // Notify Listeners
-    fireStateChanged ();
+    fireStateChanged();
   }
 
   /**
    * clearSelection
    */
-  public void clearSelection ()
+  public void clearSelection()
   {
-    // Set Data
     index = -1;
-
-    // Notify Listeners
-    fireStateChanged ();
+    fireStateChanged();
   }
 
   /**
    * isSelected
    * @return boolean
    */
-  public boolean isSelected ()
+  public boolean isSelected()
   {
-    return (index != -1);
+    return index != -1;
   }
 
   /**
@@ -125,9 +120,9 @@ public class DefaultSingleSelectionModel
    *
    * @param listener the listener to add
    */
-  public void addChangeListener (ChangeListener listener)
+  public void addChangeListener(ChangeListener listener)
   {
-    listenerList.add (ChangeListener.class, listener);
+    listenerList.add(ChangeListener.class, listener);
   }
 
   /**
@@ -135,30 +130,20 @@ public class DefaultSingleSelectionModel
    *
    * @param listener the listener to remove
    */
-  public void removeChangeListener (ChangeListener listener)
+  public void removeChangeListener(ChangeListener listener)
   {
-    listenerList.remove (ChangeListener.class, listener);
+    listenerList.remove(ChangeListener.class, listener);
   }
 
   /**
    * fireStateChanged
    */
-  protected void fireStateChanged ()
+  protected void fireStateChanged()
   {
-    // Variables
-    ChangeListener listener;
-    ChangeListener[] listeners;
-    int index;
+    ChangeListener[] listeners = getChangeListeners();
 
-    // Get Listeners
-    listeners = getChangeListeners ();
-
-    // Process Listeners
-    for (index = 0; index < listeners.length; index++)
-      {
-        listener = listeners [index];
-        listener.stateChanged (changeEvent);
-      }
+    for (int i = 0; i < listeners.length; i++)
+      listeners[i].stateChanged(changeEvent);
   }
 
   /**
@@ -170,9 +155,9 @@ public class DefaultSingleSelectionModel
    *
    * @since 1.3
    */
-  public EventListener[] getListeners (Class listenerClass)
+  public EventListener[] getListeners(Class listenerClass)
   {
-    return listenerList.getListeners (listenerClass);
+    return listenerList.getListeners(listenerClass);
   }
 
   /**
@@ -180,8 +165,8 @@ public class DefaultSingleSelectionModel
    *
    * @since 1.4
    */
-  public ChangeListener[] getChangeListeners ()
+  public ChangeListener[] getChangeListeners()
   {
-    return (ChangeListener[]) getListeners (ChangeListener.class);
+    return (ChangeListener[]) getListeners(ChangeListener.class);
   }
 }

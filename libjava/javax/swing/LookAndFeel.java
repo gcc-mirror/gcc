@@ -58,6 +58,12 @@ public abstract class LookAndFeel
 
   public abstract String getDescription();
 
+  public static Object getDesktopPropertyValue(String systemPropertyName, Object fallbackValue)
+  {
+    Object value = Toolkit.getDefaultToolkit().getDesktopProperty(systemPropertyName);
+    return value != null ? value : fallbackValue;
+  }
+  
   public abstract String getID();
 
   public abstract String getName();
