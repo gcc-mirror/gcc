@@ -891,6 +891,9 @@ gen_highpart (mode, x)
 		/ UNITS_PER_WORD);
 #endif
       if (REGNO (x) < FIRST_PSEUDO_REGISTER
+	  /* integrate.c can't handle parts of a return value register. */
+	  && (! REG_FUNCTION_VALUE_P (x)
+	      || ! rtx_equal_function_value_matters)
 	  /* We want to keep the stack, frame, and arg pointers special.  */
 	  && REGNO (x) != FRAME_POINTER_REGNUM
 #if FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
