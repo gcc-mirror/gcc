@@ -2759,6 +2759,7 @@ build_unary_op (code, xarg, flag)
 	}
       else if (!noconvert)
 	arg = default_conversion (arg);
+      arg = non_lvalue (arg);
       break;
 
     case NEGATE_EXPR:
