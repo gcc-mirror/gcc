@@ -1416,11 +1416,12 @@ s-check : gencheck $(srcdir)/move-if-change
 	$(SHELL) $(srcdir)/move-if-change tmp-check.h tree-check.h
 	touch s-check
 
-gencheck : gencheck.o $(lang_tree_files) $(HOST_LIBDEPS)
+gencheck : gencheck.o $(HOST_LIBDEPS)
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o $@ \
 	 gencheck.o $(HOST_LIBS)
 
-gencheck.o : gencheck.c gencheck.h tree.def $(CONFIG_H) hconfig.h system.h
+gencheck.o : gencheck.c gencheck.h tree.def $(CONFIG_H) hconfig.h system.h \
+             $(lang_tree_files) 
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) \
 	  $(srcdir)/gencheck.c
 
