@@ -1,3 +1,14 @@
+2000-07-10  Richard Henderson  <rth@cygnus.com>
+
+	* config/ia64/ia64.c (got_symbolic_operand): New.
+	(symbolic_operand, move_operand): Revert 0701 change.
+	* config/ia64/ia64.h (PREDICATE_CODES): Update.
+	* config/ia64/ia64-protos.h (got_symbolic_operand): Declare.
+	* config/ia64/ia64.md (movdi): Revert 0701 wrt symbolic_operand;
+	split the offset into a 14-bit low part instead of a 13-bit low part.
+	(load_fptr): Mark the mem as unchanging.
+	(load_symptr): Use got_symbolic_operand.
+
 2000-07-10  Nick Clifton  <nickc@cygnus.com>
 
 	* libgcc2.c (next_stack_level): Cast result of computation to
@@ -143,7 +154,7 @@
 
 2000-07-08  Richard Henderson  <rth@cygnus.com>
 
-        * final.c (final): Do not abort when reg-stack introduces
+	* final.c (final): Do not abort when reg-stack introduces
 	a new insn.
 
 2000-07-08  Zack Weinberg  <zack@wolery.cumb.org>
@@ -475,13 +486,13 @@ Mon Jul  3 21:31:43 2000  Clinton Popetz  <cpopetz@cygnus.com>
 	check_macro_redefinition, save_expansion): New.
 
 	* cpplex.c (skip_block_comment, skip_line_comment, parse_name,
-        parse_string, output_line_command, trigraph_replace,
-        lex_line, cpp_push_buffer, cpp_pop_buffer, cpp_output_tokens,
-        cpp_scan_buffer_nooutput, cpp_scan_buffer, cpp_free_toklist,
-        cpp_idcmp, _cpp_get_directive_token, _cpp_init_input_buffer,
+	parse_string, output_line_command, trigraph_replace,
+	lex_line, cpp_push_buffer, cpp_pop_buffer, cpp_output_tokens,
+	cpp_scan_buffer_nooutput, cpp_scan_buffer, cpp_free_toklist,
+	cpp_idcmp, _cpp_get_directive_token, _cpp_init_input_buffer,
 	_cpp_skip_rest_of_line): Modify.
 
-        (maybe_macroexpand, skip_comment, copy_comment, skip_string,
+	(maybe_macroexpand, skip_comment, copy_comment, skip_string,
 	find_position, null_warning, bump_column, expand_name_space,
 	pedantic_whitespace, _cpp_output_list, _cpp_slice_toklist,
 	_cpp_squeeze_toklist, _cpp_scan_until, _cpp_skip_hspace,
@@ -489,19 +500,19 @@ Mon Jul  3 21:31:43 2000  Clinton Popetz  <cpopetz@cygnus.com>
 	_cpp_prescan): Delete.
 
 	(dump_param_spelling, process_directive, lex_next,
-        is_macro_disabled, stringify_arg, expand_context_stack,
-        output_token, make_string_token, alloc_number_token,
-        special_symbol, duplicate_token, maybe_paste_with_next,
-        can_paste, prevent_macro_expansion, restore_macro_expansion,
-        get_temp_token, release_temp_tokens, quote_string,
-        token_names, token_spellings, _cpp_expand_name_space,
-        _cpp_glue_header_name, _cpp_reserve_name_space,
-        digraph_spellings, trigraph_ok, skip_whitespace, save_comment,
-        placemarker_token, eof_token, cpp_context, macro_args,
-        get_raw_token, parse_arg, parse_args, save_token,
-        push_arg_context, push_macro_context, pop_context,
-        do_pop_context, free_macro_args, _cpp_get_line,
-        _cpp_run_directive): New.
+	is_macro_disabled, stringify_arg, expand_context_stack,
+	output_token, make_string_token, alloc_number_token,
+	special_symbol, duplicate_token, maybe_paste_with_next,
+	can_paste, prevent_macro_expansion, restore_macro_expansion,
+	get_temp_token, release_temp_tokens, quote_string,
+	token_names, token_spellings, _cpp_expand_name_space,
+	_cpp_glue_header_name, _cpp_reserve_name_space,
+	digraph_spellings, trigraph_ok, skip_whitespace, save_comment,
+	placemarker_token, eof_token, cpp_context, macro_args,
+	get_raw_token, parse_arg, parse_args, save_token,
+	push_arg_context, push_macro_context, pop_context,
+	do_pop_context, free_macro_args, _cpp_get_line,
+	_cpp_run_directive): New.
 
 	* cpplib.c (validate_else, parse_include, push_conditional,
 	pass_thru_directive, read_line_number, parse_ifdef,
@@ -777,8 +788,8 @@ Mon Jul  3 00:32:47 2000  Jeffrey A Law  (law@cygnus.com)
 
 2000-06-30  Catherine Moore  <clm@cygnus.com>
  
-        * c-common.c (decl_attributes):  Differentiate between
-        types and type decls for alignment.
+	* c-common.c (decl_attributes):  Differentiate between
+	types and type decls for alignment.
 
 2000-06-30  Nathan Sidwell  <nathan@codesourcery.com>
 
@@ -860,8 +871,8 @@ Mon Jul  3 00:32:47 2000  Jeffrey A Law  (law@cygnus.com)
 
 2000-06-29  Andrew Haley  <aph@cygnus.com>
 
-        * config/ia64/linux.h (JMP_BUF_SIZE): Size is in Pmode units, not
-        bytes: remove the multiply by 8.
+	* config/ia64/linux.h (JMP_BUF_SIZE): Size is in Pmode units, not
+	bytes: remove the multiply by 8.
 
 2000-06-29  Philipp Thomas  <pthomas@suse.de>
 

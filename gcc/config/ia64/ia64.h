@@ -2705,6 +2705,7 @@ do {									\
 
 #define PREDICATE_CODES \
 { "call_operand", {SUBREG, REG, SYMBOL_REF}},				\
+{ "got_symbolic_operand", {SYMBOL_REF, CONST, LABEL_REF}},		\
 { "sdata_symbolic_operand", {SYMBOL_REF, CONST}},			\
 { "symbolic_operand", {SYMBOL_REF, CONST, LABEL_REF}},			\
 { "function_operand", {SYMBOL_REF}},					\

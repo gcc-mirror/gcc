@@ -29,6 +29,7 @@ extern rtx ia64_compare_op0, ia64_compare_op1;
 #ifdef RTX_CODE
 extern int call_operand PARAMS((rtx, enum machine_mode));
 extern int sdata_symbolic_operand PARAMS((rtx, enum machine_mode));
+extern int got_symbolic_operand PARAMS((rtx, enum machine_mode));
 extern int symbolic_operand PARAMS((rtx, enum machine_mode));
 extern int function_operand PARAMS((rtx, enum machine_mode));
 extern int setjmp_operand PARAMS((rtx, enum machine_mode));
