@@ -1,3 +1,9 @@
+Mon Jul 13 18:59:13 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* configure.in (mips-sgi-irix5cross64, mips-sgi-irix5*): Remove
+	HAVE_INTTYPES_H from xm_defines.  Define xm_file to mips/xm-iris5.h.
+	* mips/xm-iris5.h (USG): Delete.
+
 Mon Jul 13 17:18:47 1998  Nick Clifton  <nickc@cygnus.com>
 
 	* cccp.c (main): Add support for parsing --help.

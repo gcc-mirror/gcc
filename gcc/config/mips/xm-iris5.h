@@ -1,9 +1,9 @@
 #include "mips/xm-mips.h"
 
-#define USG
-#define HAVE_VPRINTF
+/* On SGI IRIX 5.3, inttypes.h clashes with sys/types.h, but the clash
+   (when compiled with GCC) is a warning, so configure.in thinks it's OK
+   to use it.  Work around this problem.  */
 
-#define bcopy(a,b,c) memcpy (b,a,c)
-#define bzero(a,b) memset (a,0,b)
-#define bcmp(a,b,c) memcmp (a,b,c)
-
+#ifdef HAVE_INTTYPES_H
+#undef HAVE_INTTYPES_H
+#endif
