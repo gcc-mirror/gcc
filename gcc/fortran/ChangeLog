@@ -1,3 +1,9 @@
+2004-08-26  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* check.c (gfc_check_atan2): New function.
+	* intrinsic.c (add_functions): Use gfc_check_atan2 for ATAN2
+	* intrinsic.h (gfc_check_atan2): Add prototype.
+
 2004-08-25  Richard Henderson  <rth@redhat.com>
 
 	* arith.c (gfc_validate_kind): Add may_fail argument; abort if

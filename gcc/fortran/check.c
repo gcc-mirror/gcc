@@ -514,6 +514,18 @@ gfc_check_associated (gfc_expr * pointer, gfc_expr * target)
 
 
 try
+gfc_check_atan2 (gfc_expr * y, gfc_expr * x)
+{
+  if (type_check (y, 0, BT_REAL) == FAILURE)
+    return FAILURE;
+  if (same_type_check (y, 0, x, 1) == FAILURE)
+    return FAILURE;
+
+  return SUCCESS;
+}
+
+  
+try
 gfc_check_btest (gfc_expr * i, gfc_expr * pos)
 {
 
