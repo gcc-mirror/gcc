@@ -4612,10 +4612,6 @@ init_optabs ()
       fixtrunctab[i][j][1] = fixtrunctab[i][j][0];
 #endif
 
-#ifdef EXTRA_CC_MODES
-  init_mov_optab ();
-#endif
-
   /* Initialize the optabs with the names of the library functions.  */
   init_integral_libfuncs (add_optab, "add", '3');
   init_floating_libfuncs (add_optab, "add", '3');

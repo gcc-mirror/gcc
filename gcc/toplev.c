@@ -153,7 +153,6 @@ extern void finish_parse ();
 extern void init_decl_processing ();
 extern void init_obstacks ();
 extern void init_tree_codes ();
-extern void init_rtl ();
 extern void init_regs ();
 extern void init_optabs ();
 extern void init_stmt ();
@@ -2895,7 +2894,6 @@ compile_file (name)
   init_obstacks ();
   init_tree_codes ();
   name = init_parse (name);
-  init_rtl ();
   init_emit_once (debug_info_level == DINFO_LEVEL_NORMAL
 		  || debug_info_level == DINFO_LEVEL_VERBOSE
 		  || flag_test_coverage

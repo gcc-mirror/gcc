@@ -26,6 +26,27 @@ Boston, MA 02111-1307, USA.  */
 #include "rtl.h"
 #undef abort
 
+#include "real.h"
+
+/* Calculate the format for CONST_DOUBLE.  This depends on the relative
+   widths of HOST_WIDE_INT and REAL_VALUE_TYPE.
+   We only need to go out to e0wwww, since min(HOST_WIDE_INT)==32 and
+   max(LONG_DOUBLE_TYPE_SIZE)==128.
+   This is duplicated in rtl.c.  
+   A number of places assume that there are always at least two 'w'
+   slots in a CONST_DOUBLE, so we provide them even if one would suffice.  */
+#if HOST_BITS_PER_WIDE_INT >= LONG_DOUBLE_TYPE_SIZE
+#define CONST_DOUBLE_FORMAT	"e0ww"
+#elif HOST_BITS_PER_WIDE_INT*2 >= LONG_DOUBLE_TYPE_SIZE
+#define CONST_DOUBLE_FORMAT	"e0ww"
+#elif HOST_BITS_PER_WIDE_INT*3 >= LONG_DOUBLE_TYPE_SIZE
+#define CONST_DOUBLE_FORMAT	"e0www"
+#elif HOST_BITS_PER_WIDE_INT*4 >= LONG_DOUBLE_TYPE_SIZE
+#define CONST_DOUBLE_FORMAT	"e0wwww"
+#else
+#define CONST_DOUBLE_FORMAT	/* nothing - will cause syntax error */
+#endif
+
 
 struct rtx_definition 
 {

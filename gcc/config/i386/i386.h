@@ -2299,10 +2299,7 @@ while (0)
    For the i386, we need separate modes when floating-point equality
    comparisons are being done.  */
 
-#define EXTRA_CC_MODES CCFPEQmode
-
-/* Define the names for the modes specified above.  */
-#define EXTRA_CC_NAMES "CCFPEQ"
+#define EXTRA_CC_MODES CC(CCFPEQmode, "CCFPEQ")
 
 /* Given a comparison code (EQ, NE, etc.) and the first operand of a COMPARE,
    return the mode to be used for the comparison.

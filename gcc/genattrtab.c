@@ -5982,8 +5982,6 @@ main (argc, argv)
       exit (FATAL_EXIT_CODE);
     }
 
-  init_rtl ();
-
   /* Set up true and false rtx's */
   true_rtx = rtx_alloc (CONST_INT);
   XWINT (true_rtx, 0) = 1;

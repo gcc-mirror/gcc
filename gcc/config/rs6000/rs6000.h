@@ -2412,10 +2412,10 @@ do {                                                                    \
    use a mode for the case when we are comparing the results of two
    comparisons.  */
 
-#define EXTRA_CC_MODES CCUNSmode, CCFPmode, CCEQmode
-
-/* Define the names for the modes specified above.  */
-#define EXTRA_CC_NAMES "CCUNS", "CCFP", "CCEQ"
+#define EXTRA_CC_MODES		\
+    CC(CCUNSmode,  "CCUNS")	\
+    CC(CCFPmode,   "CCFP")	\
+    CC(CCEQmode,   "CCEQ")
 
 /* Given a comparison code (EQ, NE, etc.) and the first operand of a COMPARE,
    return the mode to be used for the comparison.  For floating-point, CCFPmode

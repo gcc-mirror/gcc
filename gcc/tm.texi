@@ -4498,26 +4498,23 @@ two places, the @file{md} file and in @code{NOTICE_UPDATE_CC}.
 
 @findex EXTRA_CC_MODES
 @item EXTRA_CC_MODES
-A list of names to be used for additional modes for condition code
-values in registers (@pxref{Jump Patterns}).  These names are added
-to @code{enum machine_mode} and all have class @code{MODE_CC}.  By
-convention, they should start with @samp{CC} and end with @samp{mode}.
+A list of additional modes for condition code values in registers 
+(@pxref{Jump Patterns}).  This macro should expand to a sequence of
+calls of the macro @code{CC} separated by white space.  @code{CC} takes
+two arguments.  The first is the enumeration name of the mode, which
+should begin with @samp{CC} and end with @samp{mode}.  The second is a C
+string giving the printable name of the mode; it should be the same as
+the first argument, but with the trailing @samp{mode} removed.
 
-You should only define this macro if your machine does not use @code{cc0}
-and only if additional modes are required.
+You should only define this macro if additional modes are required.
 
-@findex EXTRA_CC_NAMES
-@item EXTRA_CC_NAMES
-A list of C strings giving the names for the modes listed in
-@code{EXTRA_CC_MODES}.  For example, the Sparc defines this macro and
-@code{EXTRA_CC_MODES} as
-
+A sample definition of @code{EXTRA_CC_MODES} is:
 @smallexample
-#define EXTRA_CC_MODES CC_NOOVmode, CCFPmode, CCFPEmode
-#define EXTRA_CC_NAMES "CC_NOOV", "CCFP", "CCFPE"
+#define EXTRA_CC_MODES            \
+    CC(CC_NOOVmode, "CC_NOOV")    \
+    CC(CCFPmode, "CCFP")          \
+    CC(CCFPEmode, "CCFPE")
 @end smallexample
-
-This macro is not required if @code{EXTRA_CC_MODES} is not defined.
 
 @findex SELECT_CC_MODE
 @item SELECT_CC_MODE (@var{op}, @var{x}, @var{y})

@@ -1889,14 +1889,23 @@ extern int making_const_table;
    CC_Zmode should be used if only the Z flag is set correctly
    CCmode should be used otherwise. */
 
-#define EXTRA_CC_MODES CC_NOOVmode, CC_Zmode, CC_SWPmode, \
-  CCFPmode, CCFPEmode, CC_DNEmode, CC_DEQmode, CC_DLEmode, \
-  CC_DLTmode, CC_DGEmode, CC_DGTmode, CC_DLEUmode, CC_DLTUmode, \
-  CC_DGEUmode, CC_DGTUmode, CC_Cmode
-
-#define EXTRA_CC_NAMES "CC_NOOV", "CC_Z", "CC_SWP", "CCFP", "CCFPE", \
-  "CC_DNE", "CC_DEQ", "CC_DLE", "CC_DLT", "CC_DGE", "CC_DGT", "CC_DLEU", \
-  "CC_DLTU", "CC_DGEU", "CC_DGTU", "CC_C"
+#define EXTRA_CC_MODES		\
+    CC(CC_NOOVmode,  "CC_NOOV")	\
+    CC(CC_Zmode,     "CC_Z")	\
+    CC(CC_SWPmode,   "CC_SWP")	\
+    CC(CCFPmode,     "CCFP")	\
+    CC(CCFPEmode,    "CCFPE")	\
+    CC(CC_DNEmode,   "CC_DNE")	\
+    CC(CC_DEQmode,   "CC_DEQ")	\
+    CC(CC_DLEmode,   "CC_DLE")	\
+    CC(CC_DLTmode,   "CC_DLT")	\
+    CC(CC_DGEmode,   "CC_DGE")	\
+    CC(CC_DGTmode,   "CC_DGT")	\
+    CC(CC_DLEUmode,  "CC_DLEU")	\
+    CC(CC_DLTUmode,  "CC_DLTU")	\
+    CC(CC_DGEUmode,  "CC_DGEU")	\
+    CC(CC_DGTUmode,  "CC_DGTU")	\
+    CC(CC_Cmode,     "CC_C")
 
 #define SELECT_CC_MODE(OP,X,Y)  arm_select_cc_mode ((OP), (X), (Y))
 

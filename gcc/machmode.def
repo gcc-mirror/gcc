@@ -106,11 +106,20 @@ DEF_MACHMODE (BLKmode, "BLK", MODE_RANDOM, 0, 0, VOIDmode)
 
 /* The modes for representing the condition codes come last.  CCmode is
    always defined.  Additional modes for the condition code can be specified
-   in the EXTRA_CC_MODES macro.  Everything but the names of the modes
-   are copied from CCmode.  For these modes, GET_MODE_WIDER_MODE points
-   to the next defined CC mode, if any.  */
+   in the EXTRA_CC_MODES macro.
+   All MODE_CC modes are the same width as SImode and have VOIDmode as their
+   next wider mode.
+*/
 
-DEF_MACHMODE (CCmode, "CC", MODE_CC, 4, 4, VOIDmode)
+#define CC(E, M)  DEF_MACHMODE (E, M, MODE_CC, 4, 4, VOIDmode)
+
+CC (CCmode, "CC")
+
+#ifdef EXTRA_CC_MODES
+EXTRA_CC_MODES
+#endif
+
+#undef CC
 
 /* The symbol Pmode stands for one of the above machine modes (usually SImode).
    The tm file specifies which one.  It is not a distinct mode.  */

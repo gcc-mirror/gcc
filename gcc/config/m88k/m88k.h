@@ -1252,9 +1252,7 @@ extern struct rtx_def *m88k_va_arg ();
 
 /*** Addressing Modes ***/
 
-#define EXTRA_CC_MODES CCEVENmode
-
-#define EXTRA_CC_NAMES "CCEVEN"
+#define EXTRA_CC_MODES CC(CCEVENmode, "CCEVEN")
 
 #define SELECT_CC_MODE(OP,X,Y) CCmode
 

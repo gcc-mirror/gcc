@@ -2787,7 +2787,6 @@ is in class @code{MODE_CC}.  Normally, it will be @code{CCmode}.  If
 additional modes are required (as for the add example mentioned above in
 the Sparc), define the macro @code{EXTRA_CC_MODES} to list the
 additional modes required (@pxref{Condition Code}).  Also define
-@code{EXTRA_CC_NAMES} to list the names of those modes and
 @code{SELECT_CC_MODE} to choose a mode given an operand of a compare.
 
 If it is known during RTL generation that a different mode will be

@@ -41,11 +41,36 @@ Boston, MA 02111-1307, USA.  */
 
 extern struct obstack *rtl_obstack;
 
-/* Indexed by rtx code, gives number of operands for an rtx with that code.
-   Does NOT include rtx header data (code and links).
-   This array is initialized in init_rtl.  */
 
-int rtx_length[NUM_RTX_CODE + 1];
+/* Calculate the format for CONST_DOUBLE.  This depends on the relative
+   widths of HOST_WIDE_INT and REAL_VALUE_TYPE.
+   We only need to go out to e0wwww, since min(HOST_WIDE_INT)==32 and
+   max(LONG_DOUBLE_TYPE_SIZE)==128.
+   This is duplicated in gengenrtl.c.
+   A number of places assume that there are always at least two 'w'
+   slots in a CONST_DOUBLE, so we provide them even if one would suffice.  */
+#if HOST_BITS_PER_WIDE_INT >= LONG_DOUBLE_TYPE_SIZE
+#define CONST_DOUBLE_FORMAT	"e0ww"
+#elif HOST_BITS_PER_WIDE_INT*2 >= LONG_DOUBLE_TYPE_SIZE
+#define CONST_DOUBLE_FORMAT	"e0ww"
+#elif HOST_BITS_PER_WIDE_INT*3 >= LONG_DOUBLE_TYPE_SIZE
+#define CONST_DOUBLE_FORMAT	"e0www"
+#elif HOST_BITS_PER_WIDE_INT*4 >= LONG_DOUBLE_TYPE_SIZE
+#define CONST_DOUBLE_FORMAT	"e0wwww"
+#else
+#define CONST_DOUBLE_FORMAT	/* nothing - will cause syntax error */
+#endif
+
+/* Indexed by rtx code, gives number of operands for an rtx with that code.
+   Does NOT include rtx header data (code and links).  */
+
+#define DEF_RTL_EXPR(ENUM, NAME, FORMAT, CLASS)   sizeof FORMAT - 1 ,
+
+const int rtx_length[NUM_RTX_CODE + 1] = {
+#include "rtl.def"
+};
+
+#undef DEF_RTL_EXPR
 
 /* Indexed by rtx code, gives the name of that kind of rtx, as a C string.  */
 
@@ -64,10 +89,6 @@ const char * const rtx_name[] = {
 
 const char * const mode_name[(int) MAX_MACHINE_MODE + 1] = {
 #include "machmode.def"
-
-#ifdef EXTRA_CC_MODES
-  EXTRA_CC_NAMES,
-#endif
   /* Add an extra field to avoid a core dump if someone tries to convert
      MAX_MACHINE_MODE to a string.   */
   ""
@@ -80,7 +101,7 @@ const char * const mode_name[(int) MAX_MACHINE_MODE + 1] = {
 
 #define DEF_MACHMODE(SYM, NAME, CLASS, SIZE, UNIT, WIDER)  CLASS,
 
-enum mode_class mode_class[(int) MAX_MACHINE_MODE] = {
+const enum mode_class mode_class[(int) MAX_MACHINE_MODE] = {
 #include "machmode.def"
 };
 
@@ -91,7 +112,7 @@ enum mode_class mode_class[(int) MAX_MACHINE_MODE] = {
 
 #define DEF_MACHMODE(SYM, NAME, CLASS, SIZE, UNIT, WIDER)  SIZE,
 
-int mode_size[(int) MAX_MACHINE_MODE] = {
+const int mode_size[(int) MAX_MACHINE_MODE] = {
 #include "machmode.def"
 };
 
@@ -102,7 +123,7 @@ int mode_size[(int) MAX_MACHINE_MODE] = {
 
 #define DEF_MACHMODE(SYM, NAME, CLASS, SIZE, UNIT, WIDER)  UNIT,
 
-int mode_unit_size[(int) MAX_MACHINE_MODE] = {
+const int mode_unit_size[(int) MAX_MACHINE_MODE] = {
 #include "machmode.def"		/* machine modes are documented here */
 };
 
@@ -115,7 +136,7 @@ int mode_unit_size[(int) MAX_MACHINE_MODE] = {
 #define DEF_MACHMODE(SYM, NAME, CLASS, SIZE, UNIT, WIDER)  \
   (unsigned char) WIDER,
 
-unsigned char mode_wider_mode[(int) MAX_MACHINE_MODE] = {
+const unsigned char mode_wider_mode[(int) MAX_MACHINE_MODE] = {
 #include "machmode.def"		/* machine modes are documented here */
 };
 
@@ -126,19 +147,30 @@ unsigned char mode_wider_mode[(int) MAX_MACHINE_MODE] = {
 
 /* Indexed by machine mode, gives mask of significant bits in mode.  */
 
-unsigned HOST_WIDE_INT mode_mask_array[(int) MAX_MACHINE_MODE] = {
+const unsigned HOST_WIDE_INT mode_mask_array[(int) MAX_MACHINE_MODE] = {
 #include "machmode.def"
 };
 
-/* Indexed by mode class, gives the narrowest mode for each class.  */
+/* Indexed by mode class, gives the narrowest mode for each class.
+   The Q modes are always of width 1 (2 for complex) - it is impossible
+   for any mode to be narrower.  */
 
-enum machine_mode class_narrowest_mode[(int) MAX_MODE_CLASS];
+const enum machine_mode class_narrowest_mode[(int) MAX_MODE_CLASS] = {
+    /* MODE_RANDOM */		VOIDmode,
+    /* MODE_INT */		QImode,
+    /* MODE_FLOAT */		QFmode,
+    /* MODE_PARTIAL_INT */	PQImode,
+    /* MODE_CC */		CCmode,
+    /* MODE_COMPLEX_INT */	CQImode,
+    /* MODE_COMPLEX_FLOAT */	QCmode
+};
+			
 
 /* Indexed by rtx code, gives a sequence of operand-types for
    rtx's of that code.  The sequence is a C string in which
    each character describes one operand.  */
 
-const char *rtx_format[] = {
+const char * const rtx_format[] = {
   /* "*" undefined.
          can cause a warning message
      "0" field is unused (or used in a phase-dependent manner)
@@ -901,71 +933,6 @@ read_rtx (infile)
 
   return return_rtx;
 }
-
-/* This is called once per compilation, before any rtx's are constructed.
-   It initializes the vector `rtx_length', the extra CC modes, if any,
-   and computes certain commonly-used modes.  */
-
-void
-init_rtl ()
-{
-  int min_class_size[(int) MAX_MODE_CLASS];
-  enum machine_mode mode;
-  int i;
-
-  for (i = 0; i < NUM_RTX_CODE; i++)
-    rtx_length[i] = strlen (GET_RTX_FORMAT(i));
-
-  /* Make CONST_DOUBLE bigger, if real values are bigger than
-     it normally expects to have room for.
-     Note that REAL_VALUE_TYPE is not defined by default,
-     since tree.h is not included.  But the default dfn as `double'
-     would do no harm.  */
-#ifdef REAL_VALUE_TYPE
-  i = sizeof (REAL_VALUE_TYPE) / sizeof (rtunion) + 2;
-  if (rtx_length[(int) CONST_DOUBLE] < i)
-    {
-      char *s = (char *) xmalloc (i + 1);
-      rtx_length[(int) CONST_DOUBLE] = i;
-      rtx_format[(int) CONST_DOUBLE] = s;
-      *s++ = 'e';
-      *s++ = '0';
-      /* Set the GET_RTX_FORMAT of CONST_DOUBLE to a string
-	 of as many `w's as we now have elements.  Subtract two from
-	 the size to account for the 'e' and the '0'.  */
-      for (i = 2; i < rtx_length[(int) CONST_DOUBLE]; i++)
-	*s++ = 'w';
-      *s++ = 0;
-    }
-#endif
-
-#ifdef EXTRA_CC_MODES
-  for (i = (int) CCmode + 1; i < (int) MAX_MACHINE_MODE; i++)
-    {
-      mode_class[i] = MODE_CC;
-      mode_mask_array[i] = mode_mask_array[(int) CCmode];
-      mode_size[i] = mode_size[(int) CCmode];
-      mode_unit_size[i] = mode_unit_size[(int) CCmode];
-      mode_wider_mode[i - 1] = i;
-      mode_wider_mode[i] = (unsigned char)VOIDmode;
-    }
-#endif
-
-  /* Find the narrowest mode for each class.  */
-
-  for (i = 0; i < (int) MAX_MODE_CLASS; i++)
-    min_class_size[i] = 1000;
-
-  for (mode = VOIDmode; (int) mode < (int) MAX_MACHINE_MODE;
-       mode = (enum machine_mode) ((int) mode + 1))
-    {
-      if (GET_MODE_SIZE (mode) < min_class_size[(int) GET_MODE_CLASS (mode)])
-	{
-	  class_narrowest_mode[(int) GET_MODE_CLASS (mode)] = mode;
-	  min_class_size[(int) GET_MODE_CLASS (mode)] = GET_MODE_SIZE (mode);
-	}
-    }
-}
 
 /* These are utility functions used by fatal-error functions all over the
    code.  rtl.c happens to be linked by all the programs that need them,
@@ -980,7 +947,7 @@ static const char *
 trim_filename (name)
      const char *name;
 {
-  static const char *this_file = __FILE__;
+  static const char this_file[] = __FILE__;
   const char *p = name, *q = this_file;
 
   while (*p == *q && *p != 0 && *q != 0) p++, q++;

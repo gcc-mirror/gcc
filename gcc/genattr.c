@@ -258,8 +258,6 @@ main (argc, argv)
       exit (FATAL_EXIT_CODE);
     }
 
-  init_rtl ();
-
   printf ("/* Generated automatically by the program `genattr'\n\
 from the machine description file `md'.  */\n\n");
 

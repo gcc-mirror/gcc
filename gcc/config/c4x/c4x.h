@@ -1532,11 +1532,7 @@ extern struct rtx_def *c4x_function_arg();
    load instructions after an add, subtract, neg, abs or multiply.
    We must emit a compare insn to check the result against 0.  */
 
-#define EXTRA_CC_MODES CC_NOOVmode
-
-/* Define the names for the modes specified above.  */
-
-#define EXTRA_CC_NAMES "CC_NOOV"
+#define EXTRA_CC_MODES CC(CC_NOOVmode, "CC_NOOV")
 
 /* CC_NOOVmode should be used when the first operand is a PLUS, MINUS, NEG
    or MULT.

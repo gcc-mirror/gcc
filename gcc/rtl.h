@@ -48,13 +48,13 @@ enum rtx_code  {
 #define NUM_RTX_CODE ((int)LAST_AND_UNUSED_RTX_CODE)
 				/* The cast here, saves many elsewhere.  */
 
-extern int rtx_length[];
+extern const int rtx_length[];
 #define GET_RTX_LENGTH(CODE)		(rtx_length[(int) (CODE)])
 
 extern const char * const rtx_name[];
 #define GET_RTX_NAME(CODE)		(rtx_name[(int) (CODE)])
 
-extern const char *rtx_format[];
+extern const char * const rtx_format[];
 #define GET_RTX_FORMAT(CODE)		(rtx_format[(int) (CODE)])
 
 extern const char rtx_class[];
