@@ -21,7 +21,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* Mostly it's like earlier SCO UNIX.  */
 
-#include "i386sco.h"
+#include "i386/sco.h"
 
 /* Use crt1.o as a startup file and crtn.o as a closing file.  */
 
