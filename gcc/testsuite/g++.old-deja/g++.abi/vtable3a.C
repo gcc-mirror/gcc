@@ -10,3 +10,11 @@
 #define C_PARENTS B1, B2
 
 #include "vtable3.h"
+
+/*
+  A = { vptr }
+  B1, B2 = { A }
+  C = { B1, B2 }
+  D = { C }
+  D1 = {
+ */
