@@ -1,6 +1,6 @@
 // 1999-09-20 bkoz
 
-// Copyright (C) 1999, 2000 Free Software Foundation, Inc.
+// Copyright (C) 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -32,26 +32,16 @@
 
 #include <istream>
 
-namespace test {
- 
-#if 0
-  // XXX Should work, but doesn't.
+// { dg-do compile }
+
+namespace test 
+{
   using namespace std;
   typedef short type_t;
   template class basic_istream<type_t, char_traits<type_t> >;
-
-  template
-    const ctype<type_t>& 
-    use_facet<ctype<type_t> >(const locale&);
-
-  typedef istreambuf_iterator<type_t, char_traits<type_t> > traits_t;
-  template 
-    const num_get<type_t, traits_t>& 
-    use_facet<num_get<type_t, traits_t> >(const locale&);
-#endif
-
 } // test
 
-int main() {
+int main() 
+{
   return 0;
 }

@@ -1,4 +1,4 @@
-// Copyright (C) 2001 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -32,21 +32,55 @@
 #include <sys/stat.h>
 #include <testsuite_hooks.h>
 
-// verify that std::filebuf doesn't close files that it didn't open
+const char name_01[] = "filebuf_members-1.tst";
+const char name_02[] = "filebuf_members-1.txt";
+
+// Test member functions.
+void test_01() 
+{
+  bool 			test = true;
+  const char* name_03 = "filebuf_members-3"; // empty file, need to create
+
+  std::filebuf fb_01; // in 
+  std::filebuf fb_02; // out
+  std::filebuf fb_03; // in | out
+
+  // bool is_open()
+  VERIFY( !fb_01.is_open() );
+  VERIFY( !fb_02.is_open() );
+  VERIFY( !fb_03.is_open() );
+
+  // filebuf_type* open(const char* __s, ios_base::openmode __mode)
+  fb_01.open(name_01, std::ios_base::in | std::ios_base::ate);
+  fb_02.open(name_02, std::ios_base::in | std::ios_base::out 
+	     | std::ios_base::trunc);
+  // Try to open two different files without closing the first:
+  // Should keep the old file attached, and disregard attempt to overthrow.
+  fb_02.open(name_03, std::ios_base::in | std::ios_base::out);
+  fb_03.open(name_03, std::ios_base::out | std::ios_base::trunc);
+  VERIFY( fb_01.is_open() );
+  VERIFY( fb_02.is_open() );
+  VERIFY( fb_03.is_open() );
+
+  // filebuf_type* close()
+  fb_01.close();
+  fb_02.close();
+  fb_03.close();
+  VERIFY( !fb_01.is_open() );
+  VERIFY( !fb_02.is_open() );
+  VERIFY( !fb_03.is_open() );
+}
+
+// Verify that std::filebuf doesn't close files that it didn't open
 // when using the following std::filebuf ctor:
 //
 //      std::filebuf(__c_file_type*  __f,
 //                   ios_base::openmode __mode,
 //                   int_type  __s);
 //
-// thanks to "George T. Talbot" <george@moberg.com> for uncovering
+// Thanks to "George T. Talbot" <george@moberg.com> for uncovering
 // this bug/situation. 
-
-const char name_01[] = "filebuf_members-1.tst";
-const char name_02[] = "filebuf_members-1.txt";
-
-int
-test_01()
+void test_02()
 {
   bool test = true;
   int close_num;
@@ -72,17 +106,9 @@ test_01()
   }
   close_num = fclose(f);
   VERIFY( close_num == 0 );
-
-  
-#ifdef DEBUG_ASSERT
-  assert(test);
-#endif
-
-  return test;
 }
 
-int
-test_02()
+void test_03()
 {
   bool test = true;
   int first_fd = ::open(name_01, O_RDONLY);
@@ -93,19 +119,13 @@ test_02()
 
   int second_fd = fb.fd();
 
-  test = first_fd == second_fd;
-
-#ifdef DEBUG_ASSERT
-  assert(test);
-#endif
-
-  return test;
+  VERIFY( first_fd == second_fd );
 }
 
 // libstdc++/2913, libstdc++/4879
 // John Fardo  <jfardo@laurelnetworks.com>, Brad Garcia <garsh@attbi.com>
 void
-test_03()
+test_04()
 {
   signal(SIGPIPE, SIG_IGN);
   
@@ -159,7 +179,9 @@ main()
 {
   test_01();
   test_02();
-
   test_03();
+  test_04();
   return 0;
 }
+
+
