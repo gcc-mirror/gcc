@@ -143,7 +143,7 @@ host_libs="intl mmalloc libiberty opcodes bfd readline tcl tk itcl tix libgui zl
 # know that we are building the simulator.
 # binutils, gas and ld appear in that order because it makes sense to run
 # "make check" in that particular order.
-host_tools="texinfo byacc flex bison binutils gas ld gcc sid sim gdb make patch prms send-pr gprof etc expect dejagnu ash bash bzip2 m4 autoconf automake libtool diff rcs fileutils shellutils time textutils wdiff find uudecode hello tar gzip indent recode release sed utils guile perl gawk findutils gettext zip fastjar"
+host_tools="texinfo byacc flex bison binutils gas ld gcc sid sim gdb make patch prms send-pr gprof etc expect dejagnu ash bash bzip2 m4 autoconf automake libtool diff rcs fileutils shellutils time textutils wdiff find uudecode hello tar gzip indent recode release sed utils guile perl gawk findutils gettext zip fastjar gnattools"
 
 # libgcj represents the runtime libraries only used by gcj.
 libgcj="target-libffi \
@@ -330,6 +330,7 @@ ENABLE_LIBADA=$enableval,
 ENABLE_LIBADA=yes)
 if test "${ENABLE_LIBADA}" != "yes" ; then
   noconfigdirs="$noconfigdirs target-libada"
+  noconfigdirs="$noconfigdirs gnattools"
 fi
 
 # Save it here so that, even in case of --enable-libgcj, if the Java
@@ -358,8 +359,8 @@ no)
     ;;
 "")
     case "${target}" in
-    *-*-linux*)
-        # Enable libmudflap by default in GNU/Linux.
+    *-*-linux*-gnu | *-*-gnu* | *-*-k*bsd*-gnu)
+        # Enable libmudflap by default in GNU and friends.
 	;;
     *-*-freebsd*)
         # Enable libmudflap by default in FreeBSD.
@@ -1420,8 +1421,8 @@ case "${target}" in
   powerpc-*-netware*)
     target_makefile_frag="config/mt-netware"
     ;;
-  *-*-linux*)
-    target_makefile_frag="config/mt-linux"
+  *-*-linux* | *-*-gnu* | *-*-k*bsd*-gnu)
+    target_makefile_frag="config/mt-gnu"
     ;;
   *-*-aix4.[[3456789]]* | *-*-aix[[56789]].*)
     # nm and ar from AIX 4.3 and above require -X32_64 flag to all ar and nm 

@@ -1,3 +1,8 @@
+2004-08-01  Robert Millan  <robertmh@gnu.org>
+
+	* mt-linux: Rename to ...
+	* mt-gnu: ... this.
+
 2004-06-09  Paolo Bonzini  <bonzini@gnu.org>
 
 	* acx.m4 (ACX_PROG_LN): From gcc, modified to
