@@ -1,3 +1,10 @@
+Thu Jun  1 09:37:35 2000  Clinton Popetz  <cpopetz@cygnus.com>
+
+	* config/i386/i386.c (ix86_use_fcomi_compare): Make global.
+	* config/i386/i386-protos.h (ix86_use_fcomi_compare): Declare.
+	* config/i386/i386.md (*fp_jcc_3, *fp_jcc_4): Disable if we
+	will use FCOMI.
+	
 2000-06-01  Richard Henderson  <rth@cygnus.com>
 
 	* Makefile.in (c-decl.o): Depend on $(EXPR_H), not expr.h.

@@ -392,7 +392,6 @@ static void put_condition_code PARAMS ((enum rtx_code, enum machine_mode,
 static enum rtx_code unsigned_comparison PARAMS ((enum rtx_code code));
 static rtx ix86_expand_int_compare PARAMS ((enum rtx_code, rtx, rtx));
 static enum machine_mode ix86_fp_compare_mode PARAMS ((enum rtx_code));
-static int ix86_use_fcomi_compare PARAMS ((enum rtx_code));
 static enum rtx_code ix86_prepare_fp_compare_args PARAMS ((enum rtx_code,
 							   rtx *, rtx *));
 static rtx ix86_expand_compare PARAMS ((enum rtx_code));
@@ -4539,7 +4538,7 @@ ix86_fp_compare_mode (code)
 
 /* Return true if we should use an FCOMI instruction for this fp comparison.  */
 
-static int
+int
 ix86_use_fcomi_compare (code)
      enum rtx_code code;
 {
