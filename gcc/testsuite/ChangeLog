@@ -1,3 +1,7 @@
+2002-02-25  Alan Modra  <amodra@bigpond.net.au>
+
+	* gcc.c-torture/execute/20020225-1.c: New.
+
 2002-02-24  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* testsuite/gcc.dg/cpp/wchar-1.c: New test.
