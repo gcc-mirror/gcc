@@ -1,3 +1,8 @@
+Sun Sep  6 11:17:20 1998  Dave Love  <d.love@dl.ac.uk>
+
+	* config/m68k/x-next (BOOT_LDFLAGS): Define suitably for f771
+	linking.
+
 Sat Sep  5 22:05:25 1998  Richard Henderson  <rth@cygnus.com>
 
 	* alpha.c (alpha_ra_ever_killed): Inspect the topmost sequence,
@@ -117,6 +122,7 @@ Thu Sep  3 18:05:16 1998  David Edelsohn  <edelsohn@mhpcc.edu>
 	(movdf): Remove TARGET_POWERPC64 explicit secondary-reload-like
 	functionality.
 
+>>>>>>> 1.2012
 Thu Sep  3 11:41:40 1998  Robert Lipe   <robertl@dgii.com>
 
 	* fixinc.sco: Borrow code to wrap 'bool' typedefs from tinfo.h
