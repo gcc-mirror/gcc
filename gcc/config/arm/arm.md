@@ -4459,7 +4459,9 @@
   "flag_pic"
   "
 {
-  arm_load_pic_register ();
+  /* r3 is clobbered by set/longjmp, so we can use it as a scratch
+     register.  */
+  arm_load_pic_register (3);
   DONE;
 }")
 
