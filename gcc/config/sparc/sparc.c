@@ -39,9 +39,14 @@ Boston, MA 02111-1307, USA.  */
 
 /* 1 if the caller has placed an "unimp" insn immediately after the call.
    This is used in v8 code when calling a function that returns a structure.
-   v9 doesn't have this.  */
+   v9 doesn't have this.  Be careful to have this test be the same as that
+   used on the call.  */
 
-#define SKIP_CALLERS_UNIMP_P (!TARGET_ARCH64 && current_function_returns_struct)
+#define SKIP_CALLERS_UNIMP_P  \
+(!TARGET_ARCH64 && current_function_returns_struct			\
+ && ! integer_zerop (DECL_SIZE (DECL_RESULT (current_function_decl)))	\
+ && (TREE_CODE (DECL_SIZE (DECL_RESULT (current_function_decl)))	\
+     == INTEGER_CST))
 
 /* Global variables for machine-dependent things.  */
 
