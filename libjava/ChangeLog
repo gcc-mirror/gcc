@@ -1,5 +1,11 @@
 2003-07-26  Ranjit Mathew  <rmathew@hotmail.com>
 
+	* java/lang/Win32Process.java (ConcreteProcess): Surround
+	a command line element with quotes if it contains an
+	embedded space or tab.
+	* java/lang/natWin32Process.cc (startProcess): Do not
+	surround command line elements with quotes here.
+
 	* configure.host: Use -fcheck-references and 
 	-fuse-divide-subroutine for MinGW until we fix
 	win32_exception_handler( ) in win32.cc w.r.t. Win32 
