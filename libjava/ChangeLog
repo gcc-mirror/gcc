@@ -1,3 +1,8 @@
+2002-03-31  Alexandre Oliva  <aoliva@redhat.com>
+
+	* libgcj.spec.in: Override libgcc, not lib.
+	* libgcj-test.spec.in: Likewise.
+
 2002-03-29  Tom Tromey  <tromey@redhat.com>
 
 	* java/net/natPlainDatagramSocketImpl.cc (close): New function.
