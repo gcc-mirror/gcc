@@ -86,6 +86,7 @@ static void java_stack_pop (int);
 static tree build_java_throw_out_of_bounds_exception (tree); 
 static tree build_java_check_indexed_type (tree, tree); 
 static unsigned char peek_opcode_at_pc (struct JCF *, int, int);
+static void promote_arguments (void);
 
 static GTY(()) tree operand_type[59];
 
@@ -2961,6 +2962,8 @@ expand_byte_code (JCF *jcf, tree method)
 	return;
     }
 
+  promote_arguments ();
+
   /* Translate bytecodes.  */
   linenumber_pointer = linenumber_table;
   for (PC = 0; PC < length;)
@@ -3641,6 +3644,30 @@ build_java_empty_stmt (void)
   tree t = build_empty_stmt ();
   CAN_COMPLETE_NORMALLY (t) = 1;
   return t;
+}
+
+/* Promote all args of integral type before generating any code.  */
+
+static void
+promote_arguments (void)
+{
+  int i;
+  tree arg;
+  for (arg = DECL_ARGUMENTS (current_function_decl), i = 0;
+       arg != NULL_TREE;  arg = TREE_CHAIN (arg), i++)
+    {
+      tree arg_type = TREE_TYPE (arg);
+      if (INTEGRAL_TYPE_P (arg_type)
+	  && TYPE_PRECISION (arg_type) < 32)
+	{
+	  tree copy = find_local_variable (i, integer_type_node, -1);
+	  java_add_stmt (build2 (MODIFY_EXPR, integer_type_node,
+				 copy,
+				 fold_convert (integer_type_node, arg)));
+	}
+      if (TYPE_IS_WIDE (arg_type))
+	i++;
+    }
 }
 
 #include "gt-java-expr.h"
