@@ -1,3 +1,8 @@
+2004-04-01  Michael Koch  <konqueror@gmx.de>
+
+	* java/lang/SecurityManager.java
+	(checkAwtEventQueueAccess): Implemented.
+
 2004-04-01  Gary Benson  <gbenson@redhat.com>
 
 	* resolve.cc (_Jv_ResolvePoolEntry): Put field name in exception.
