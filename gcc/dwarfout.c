@@ -80,13 +80,6 @@ extern char *rindex ();
 #define ASM_COMMENT_START ";#"
 #endif
 
-/* Define a macro which, when given a pointer to some BLOCK node, returns
-   a pointer to the FUNCTION_DECL node from which the given BLOCK node
-   was instantiated (as an inline expansion).  This macro needs to be
-   defined properly in tree.h, however for the moment, we just fake it.  */
-
-#define BLOCK_INLINE_FUNCTION(block) 0
-
 /* Define a macro which returns non-zero for any tagged type which is
    used (directly or indirectly) in the specification of either some
    function's return type or some formal parameter of some function.
@@ -1004,6 +997,37 @@ decl_ultimate_origin (decl)
 	{
 	  ret_val = lookahead;
 	  lookahead = DECL_ABSTRACT_ORIGIN (ret_val);
+	}
+      while (lookahead != NULL && lookahead != ret_val);
+      return ret_val;
+    }
+}
+
+/* Determine the "ultimate origin" of a block.  The block may be an
+   inlined instance of an inlined instance of a block which is local
+   to an inline function, so we have to trace all of the way back
+   through the origin chain to find out what sort of node actually
+   served as the original seed for the given block.  */
+
+static tree
+block_ultimate_origin (block)
+     register tree block;
+{
+  register tree immediate_origin = BLOCK_ABSTRACT_ORIGIN (block);
+
+  if (immediate_origin == NULL)
+    return NULL;
+  else
+    {
+      register tree ret_val;
+      register tree lookahead = immediate_origin;
+
+      do
+	{
+	  ret_val = lookahead;
+	  lookahead = (TREE_CODE (ret_val) == BLOCK)
+		       ? BLOCK_ABSTRACT_ORIGIN (ret_val)
+		       : NULL;
 	}
       while (lookahead != NULL && lookahead != ret_val);
       return ret_val;
@@ -2611,9 +2635,11 @@ pure_or_virtual_attribute (func_decl)
 {
   if (DECL_VIRTUAL_P (func_decl))
     {
+#if 0 /* DECL_ABSTRACT_VIRTUAL_P is C++-specific.  */
       if (DECL_ABSTRACT_VIRTUAL_P (func_decl))
         ASM_OUTPUT_DWARF_ATTRIBUTE (asm_out_file, AT_pure_virtual);
       else
+#endif
         ASM_OUTPUT_DWARF_ATTRIBUTE (asm_out_file, AT_virtual);
       ASM_OUTPUT_DWARF_STRING (asm_out_file, "");
     }
@@ -3985,33 +4011,69 @@ static void
 output_block (stmt)
     register tree stmt;
 {
-  register int have_significant_locals = 0;
+  register int must_output_die = 0;
+  register tree origin;
+  register enum tree_code origin_code;
 
   /* Ignore blocks never really used to make RTL.  */
 
   if (! stmt || ! TREE_USED (stmt))
     return;
 
-  /* Determine if this block contains any "significant" local declarations
-     which we need to output DIEs for.  */
+  /* Determine the "ultimate origin" of this block.  This block may be an
+     inlined instance of an inlined instance of inline function, so we
+     have to trace all of the way back through the origin chain to find
+     out what sort of node actually served as the original seed for the
+     creation of the current block.  */
 
-  if (BLOCK_INLINE_FUNCTION (stmt))
-    /* The outer scopes for inlinings *must* always be represented.  */
-    have_significant_locals = 1;
+  origin = block_ultimate_origin (stmt);
+  origin_code = (origin != NULL) ? TREE_CODE (origin) : ERROR_MARK;
+
+  /* Determine if we need to output any Dwarf DIEs at all to represent this
+     block.  */
+
+  if (origin_code == FUNCTION_DECL)
+    /* The outer scopes for inlinings *must* always be represented.  We
+       generate TAG_inlined_subroutine DIEs for them.  (See below.)  */
+    must_output_die = 1;
   else
-    if (debug_info_level > DINFO_LEVEL_TERSE)
-      have_significant_locals = (BLOCK_VARS (stmt) != NULL);
-    else
-      {
-        register tree decl;
+    {
+      /* In the case where the current block represents an inlining of the
+	 "body block" of an inline function, we must *NOT* output any DIE
+	 for this block because we have already output a DIE to represent
+	 the whole inlined function scope and the "body block" of any
+	 function doesn't really represent a different scope according to
+	 ANSI C rules.  So we check here to make sure that this block does
+	 not represent a "body block inlining" before trying to set the
+	 `must_output_die' flag.  */
 
-	for (decl = BLOCK_VARS (stmt); decl; decl = TREE_CHAIN (decl))
-	  if (TREE_CODE (decl) == FUNCTION_DECL && DECL_INITIAL (decl))
+      if (origin != NULL
+	  && origin_code == BLOCK
+	  && ! is_body_block (origin))
+	{
+	  /* Determine if this block directly contains any "significant"
+	     local declarations which we will need to output DIEs for.  */
+
+	  if (debug_info_level > DINFO_LEVEL_TERSE)
+	    /* We are not in terse mode so *any* local declaration counts
+	       as being a "significant" one.  */
+	    must_output_die = (BLOCK_VARS (stmt) != NULL);
+	  else
 	    {
-	      have_significant_locals = 1;
-	      break;
+	      register tree decl;
+
+	      /* We are in terse mode, so only local (nested) function
+	         definitions count as "significant" local declarations.  */
+
+	      for (decl = BLOCK_VARS (stmt); decl; decl = TREE_CHAIN (decl))
+		if (TREE_CODE (decl) == FUNCTION_DECL && DECL_INITIAL (decl))
+		  {
+		    must_output_die = 1;
+		    break;
+		  }
 	    }
-      }
+	}
+    }
 
   /* It would be a waste of space to generate a Dwarf TAG_lexical_block
      DIE for any block which contains no significant local declarations
@@ -4021,11 +4083,11 @@ output_block (stmt)
      a "significant" local declaration gets restricted to include only
      inlined function instances and local (nested) function definitions.  */
 
-  if (have_significant_locals)
+  if (must_output_die)
     {
-      output_die (BLOCK_INLINE_FUNCTION (stmt)
-			? output_inlined_subroutine_die
-			: output_lexical_block_die,
+      output_die ((origin_code == FUNCTION_DECL)
+		    ? output_inlined_subroutine_die
+		    : output_lexical_block_die,
 		  stmt);
       output_decls_for_scope (stmt);
       end_sibling_chain ();
@@ -4046,7 +4108,8 @@ output_decls_for_scope (stmt)
   if (! stmt || ! TREE_USED (stmt))
     return;
 
-  next_block_number++;
+  if (! BLOCK_ABSTRACT (stmt))
+    next_block_number++;
 
   /* Output the DIEs to represent all of the data objects, functions,
      typedefs, and tagged types declared directly within this block
