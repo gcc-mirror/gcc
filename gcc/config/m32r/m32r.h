@@ -784,7 +784,6 @@ M32R_STACK_ALIGN (current_function_outgoing_args_size)
 /* Function argument passing.  */
 
 /* When a prototype says `char' or `short', really pass an `int'.  */
-/* FIXME: revisit */
 #define PROMOTE_PROTOTYPES
 
 /* If defined, the maximum amount of space required for outgoing
@@ -1301,13 +1300,11 @@ m32r_select_cc_mode (OP, X, Y)
 
 /* Define this macro if it is as good or better to call a constant
    function address than to call an address kept in a register.  */
-/* FIXME: revisit */
 #define NO_FUNCTION_CSE
 
 /* Define this macro if it is as good or better for a function to call
    itself with an explicit address than to call an address kept in a
    register.  */
-/* FIXME: revisit */
 #define NO_RECURSIVE_FUNCTION_CSE
 
 /* Enable the register move pass.
