@@ -406,7 +406,7 @@ mark_referenced_resources (x, res, include_delayed_effects)
 	 {
 	   rtx link;
 
-           for (link = CALL_INSN_FUNCTION_USAGE (insn);
+           for (link = CALL_INSN_FUNCTION_USAGE (x);
 		link;
 		link = XEXP (link, 1))
 	     if (GET_CODE (XEXP (link, 0)) == USE)
