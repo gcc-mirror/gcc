@@ -161,7 +161,6 @@ GCC_WARN_CFLAGS = $(LOOSE_WARN) $($(@D)-warn) $(NOCOMMON_FLAG) $($@-warn)
 varasm.o-warn = -Wno-error
 gcc.o-warn = -Wno-error
 insn-conditions.o-warn = -Wno-error
-@out_object_file@-warn = -Wno-error
 # Bison-1.75 output often yields (harmless) -Wtraditional warnings
 gengtype-yacc.o-warn = -Wno-error
 c-parse.o-warn = -Wno-error
