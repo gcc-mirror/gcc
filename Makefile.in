@@ -216,7 +216,7 @@ CC_FOR_TARGET = ` \
       if [ -f $$r/$(TARGET_SUBDIR)/winsup/Makefile ] ; then \
         echo $$r/gcc/xgcc -B$$r/gcc/ -B$$r/$(TARGET_SUBDIR)/newlib/ -B$(build_tooldir)/bin/ -L$$r/$(TARGET_SUBDIR)/winsup -idirafter $$r/$(TARGET_SUBDIR)/newlib/targ-include -idirafter $$s/newlib/libc/include -nostdinc; \
       else \
-        echo $$r/gcc/xgcc -B$$r/gcc/ -B$(build_tooldir)/bin/ -idirafter $$r/$(TARGET_SUBDIR)/newlib/targ-include -idirafter $$s/newlib/libc/include -nostdinc; \
+        echo $$r/gcc/xgcc -B$$r/gcc/ -B$$r/$(TARGET_SUBDIR)/newlib/ -B$(build_tooldir)/bin/ -idirafter $$r/$(TARGET_SUBDIR)/newlib/targ-include -idirafter $$s/newlib/libc/include -nostdinc; \
       fi; \
     else \
       echo $$r/gcc/xgcc -B$$r/gcc/ -B$(build_tooldir)/bin/; \
