@@ -1,4 +1,4 @@
-/* GatheringByteChannel.java -- 
+/* GatheringByteChannel.java --
    Copyright (C) 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -37,11 +37,11 @@ exception statement from your version. */
 
 package java.nio.channels;
 
-import java.nio.ByteBuffer;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
-public interface GatheringByteChannel
-  extends WritableByteChannel
+
+public interface GatheringByteChannel extends WritableByteChannel
 {
   /**
    * Writes a sequence of bytes to this channel from a subsequence of
@@ -59,9 +59,9 @@ public interface GatheringByteChannel
    * @exception NonWritableChannelException If this channel was not opened for
    * writing
    */
-  long write (ByteBuffer[] srcs, int offset, int length)
+  long write(ByteBuffer[] srcs, int offset, int length)
     throws IOException;
-  
+
   /**
    * Writes a sequence of bytes to this channel from the given buffers
    *
@@ -75,5 +75,5 @@ public interface GatheringByteChannel
    * @exception NonWritableChannelException If this channel was not opened for
    * writing
    */
-  long write (ByteBuffer[] srcs) throws IOException;
+  long write(ByteBuffer[] srcs) throws IOException;
 }

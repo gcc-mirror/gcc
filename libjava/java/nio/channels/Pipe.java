@@ -1,4 +1,4 @@
-/* Pipe.java -- 
+/* Pipe.java --
    Copyright (C) 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -41,22 +41,22 @@ import java.io.IOException;
 import java.nio.channels.spi.AbstractSelectableChannel;
 import java.nio.channels.spi.SelectorProvider;
 
+
 /**
  * @author Michael Koch
  * @since 1.4
  */
 public abstract class Pipe
 {
-  public abstract static class SinkChannel
-    extends AbstractSelectableChannel
+  public abstract static class SinkChannel extends AbstractSelectableChannel
     implements WritableByteChannel, GatheringByteChannel
   {
     /**
      * Initializes the channel.
      */
-    protected SinkChannel (SelectorProvider provider)
+    protected SinkChannel(SelectorProvider provider)
     {
-      super (provider);
+      super(provider);
     }
 
     /**
@@ -64,22 +64,21 @@ public abstract class Pipe
      *
      * The only valid operation on this channel is @see SelectionKey.OP_WRITE.
      */
-    public final int validOps ()
+    public final int validOps()
     {
       return SelectionKey.OP_WRITE;
     }
   }
 
-  public abstract static class SourceChannel
-    extends AbstractSelectableChannel
+  public abstract static class SourceChannel extends AbstractSelectableChannel
     implements ReadableByteChannel, ScatteringByteChannel
   {
     /**
      * Initializes the channel.
      */
-    protected SourceChannel (SelectorProvider provider)
+    protected SourceChannel(SelectorProvider provider)
     {
-      super (provider);
+      super(provider);
     }
 
     /**
@@ -87,7 +86,7 @@ public abstract class Pipe
      *
      * The only valid operation on this channel is @see SelectionKey.OP_READ.
      */
-    public final int validOps ()
+    public final int validOps()
     {
       return SelectionKey.OP_READ;
     }
@@ -102,12 +101,12 @@ public abstract class Pipe
 
   /**
    * Opens a pipe.
-   * 
+   *
    * @exception IOException If an error occurs
    */
   public static Pipe open() throws IOException
   {
-    return SelectorProvider.provider ().openPipe();
+    return SelectorProvider.provider().openPipe();
   }
 
   /**
@@ -118,5 +117,5 @@ public abstract class Pipe
   /**
    * Returns a pipe's source channel
    */
-  public abstract Pipe.SourceChannel source();   
+  public abstract Pipe.SourceChannel source();
 }

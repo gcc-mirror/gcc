@@ -1,4 +1,4 @@
-/* ScatteringByteChannel.java -- 
+/* ScatteringByteChannel.java --
    Copyright (C) 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -37,11 +37,11 @@ exception statement from your version. */
 
 package java.nio.channels;
 
-import java.nio.ByteBuffer;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
-public interface ScatteringByteChannel
-  extends ReadableByteChannel
+
+public interface ScatteringByteChannel extends ReadableByteChannel
 {
   /**
    * Reads a sequence of bytes from this channel into a subsequence of the
@@ -59,7 +59,7 @@ public interface ScatteringByteChannel
    * @exception NonReadableChannelException If this channel was not opened for
    * reading
    */
-  long read (ByteBuffer[] srcs, int offset, int length)
+  long read(ByteBuffer[] srcs, int offset, int length)
     throws IOException;
 
   /**
@@ -75,5 +75,5 @@ public interface ScatteringByteChannel
    * @exception NonReadableChannelException If this channel was not opened for
    * reading
    */
-  long read (ByteBuffer[] srcs) throws IOException;
+  long read(ByteBuffer[] srcs) throws IOException;
 }

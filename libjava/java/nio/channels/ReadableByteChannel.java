@@ -1,5 +1,5 @@
-/* ReadableByteChannel.java -- 
-   Copyright (C) 2002 Free Software Foundation, Inc.
+/* ReadableByteChannel.java --
+   Copyright (C) 2002, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -40,10 +40,15 @@ package java.nio.channels;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
+
 public interface ReadableByteChannel extends Channel
 {
   /**
    * Reads a sequence of bytes from this channel into the given buffer
+   *
+   * @param dst the buffer to put the read data into
+   *
+   * @return the numer of bytes read
    *
    * @exception AsynchronousCloseException If another thread closes this
    * channel while the read operation is in progress
@@ -55,5 +60,5 @@ public interface ReadableByteChannel extends Channel
    * @exception NonReadableChannelException If this channel was not opened for
    * reading
    */
-  int read (ByteBuffer dst) throws IOException;
+  int read(ByteBuffer dst) throws IOException;
 }

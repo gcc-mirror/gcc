@@ -1,4 +1,4 @@
-/* ServerSocketChannel.java -- 
+/* ServerSocketChannel.java --
    Copyright (C) 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -35,29 +35,28 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-
 package java.nio.channels;
 
-import java.nio.channels.spi.AbstractSelectableChannel;
-import java.nio.channels.spi.SelectorProvider;
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.nio.channels.spi.AbstractSelectableChannel;
+import java.nio.channels.spi.SelectorProvider;
+
 
 /**
  * @author Michael Koch
  * @since 1.4
  */
-public abstract class ServerSocketChannel
-  extends AbstractSelectableChannel
+public abstract class ServerSocketChannel extends AbstractSelectableChannel
 {
   /**
    * Initializes this channel.
    */
-  protected ServerSocketChannel (SelectorProvider provider)
+  protected ServerSocketChannel(SelectorProvider provider)
   {
-    super (provider);
+    super(provider);
   }
-  
+
   /**
    * Accepts a connection made to this channel's socket.
    *
@@ -72,28 +71,28 @@ public abstract class ServerSocketChannel
    * @exception SecurityException If a security manager has been installed and
    * it does not permit access to the remote endpoint of the new connection.
    */
-  public abstract SocketChannel accept () throws IOException;
-  
+  public abstract SocketChannel accept() throws IOException;
+
   /**
    * Retrieves the channels socket.
    */
-  public abstract ServerSocket socket ();
-    
+  public abstract ServerSocket socket();
+
   /**
    * Opens a server socket channel.
    *
    * @exception IOException If an error occurs
    */
-  public static ServerSocketChannel open () throws IOException
+  public static ServerSocketChannel open() throws IOException
   {
-    return SelectorProvider.provider ().openServerSocketChannel ();
+    return SelectorProvider.provider().openServerSocketChannel();
   }
 
   /**
    * Retrieves the valid operations for this channel.
    */
-  public final int validOps ()
+  public final int validOps()
   {
     return SelectionKey.OP_ACCEPT;
-  } 
+  }
 }

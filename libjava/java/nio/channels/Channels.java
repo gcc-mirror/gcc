@@ -1,4 +1,4 @@
-/* Channels.java -- 
+/* Channels.java --
    Copyright (C) 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -42,20 +42,21 @@ import gnu.java.nio.ChannelOutputStream;
 import gnu.java.nio.InputStreamChannel;
 import gnu.java.nio.OutputStreamChannel;
 import gnu.java.nio.channels.FileChannelImpl;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.Reader;
 import java.io.Writer;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
 
+
 /**
  * @since 1.4
  */
-public final class Channels 
+public final class Channels
 {
   /**
    * Constructs a stream that reads bytes from the given channel.
@@ -70,7 +71,7 @@ public final class Channels
   /**
    * Constructs a stream that writes bytes to the given channel.
    */
-  public static OutputStream newOutputStream(WritableByteChannel ch) 
+  public static OutputStream newOutputStream(WritableByteChannel ch)
   {
     if (ch instanceof FileChannelImpl)
       return newOutputStream((FileChannelImpl) ch);
@@ -78,8 +79,9 @@ public final class Channels
   }
 
   static native FileInputStream newInputStream(FileChannelImpl ch);
+
   static native FileOutputStream newOutputStream(FileChannelImpl ch);
-  
+
   /**
    * Constructs a channel that reads bytes from the given stream.
    */
@@ -93,15 +95,15 @@ public final class Channels
    */
   public static WritableByteChannel newChannel(OutputStream out)
   {
-    return new OutputStreamChannel (out);
+    return new OutputStreamChannel(out);
   }
 
   /**
    * Constructs a reader that decodes bytes from the given channel using the
    * given decoder.
    */
-  public static Reader newReader (ReadableByteChannel ch, CharsetDecoder dec,
-                                  int minBufferCap)
+  public static Reader newReader(ReadableByteChannel ch, CharsetDecoder dec,
+                                 int minBufferCap)
   {
     throw new Error ("not implemented");
   }
@@ -113,17 +115,17 @@ public final class Channels
    * @exception UnsupportedCharsetException If no support for the named charset
    * is available in this instance of the Java virtual machine.
    */
-  public static Reader newReader (ReadableByteChannel ch, String csName)
+  public static Reader newReader(ReadableByteChannel ch, String csName)
   {
-    return newReader (ch, Charset.forName (csName).newDecoder (), -1);
+    return newReader(ch, Charset.forName(csName).newDecoder(), -1);
   }
 
   /**
    * Constructs a writer that encodes characters using the given encoder and
    * writes the resulting bytes to the given channel.
    */
-  public static Writer newWriter (WritableByteChannel ch, CharsetEncoder enc,
-                                  int minBufferCap)
+  public static Writer newWriter(WritableByteChannel ch, CharsetEncoder enc,
+                                 int minBufferCap)
   {
     throw new Error ("not implemented");
   }
@@ -135,9 +137,8 @@ public final class Channels
    * @exception UnsupportedCharsetException If no support for the named charset
    * is available in this instance of the Java virtual machine.
    */
-  public static Writer newWriter (WritableByteChannel ch,
-                                  String csName)
+  public static Writer newWriter(WritableByteChannel ch, String csName)
   {
-    return newWriter (ch, Charset.forName (csName).newEncoder (), -1);
+    return newWriter(ch, Charset.forName(csName).newEncoder(), -1);
   }
 }

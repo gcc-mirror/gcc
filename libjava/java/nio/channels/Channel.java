@@ -1,4 +1,4 @@
-/* Channel.java -- 
+/* Channel.java --
    Copyright (C) 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -38,6 +38,7 @@ exception statement from your version. */
 package java.nio.channels;
 
 import java.io.IOException;
+
 
 public interface Channel
 {

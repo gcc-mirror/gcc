@@ -1,4 +1,4 @@
-/* SelectionKey.java -- 
+/* SelectionKey.java --
    Copyright (C) 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -37,128 +37,128 @@ exception statement from your version. */
 
 package java.nio.channels;
 
+
 /**
  * @author Michael Koch
  * @since 1.4
  */
 public abstract class SelectionKey
 {
-  public static final int OP_ACCEPT  = 16;
+  public static final int OP_ACCEPT = 16;
   public static final int OP_CONNECT = 8;
-  public static final int OP_READ    = 1;
-  public static final int OP_WRITE   = 4;
-    
+  public static final int OP_READ = 1;
+  public static final int OP_WRITE = 4;
   Object attached;
-   
+
   /**
    * Initializes the selection key.
    */
-  protected SelectionKey ()
+  protected SelectionKey()
   {
   }
 
   /**
    * Attaches obj to the key and returns the old attached object.
    */
-  public final Object attach (Object obj)
+  public final Object attach(Object obj)
   {
     Object old = attached;
     attached = obj;
     return old;
   }
-   
+
   /**
    * Returns the object attached to the key.
    */
-  public final Object attachment ()
+  public final Object attachment()
   {
     return attached;
-  }    
+  }
 
   /**
    * Tests if the channel attached to this key is ready to accept
    * a new socket connection.
-   * 
+   *
    * @exception CancelledKeyException If this key has been cancelled
    */
-  public final boolean isAcceptable ()
-  { 
-    return (readyOps () & OP_ACCEPT) != 0;
+  public final boolean isAcceptable()
+  {
+    return (readyOps() & OP_ACCEPT) != 0;
   }
 
   /**
    * Tests whether this key's channel has either finished,
    * or failed to finish, its socket-connection operation.
-   * 
+   *
    * @exception CancelledKeyException If this key has been cancelled
    */
-  public final boolean isConnectable ()
+  public final boolean isConnectable()
   {
-    return (readyOps () & OP_CONNECT) != 0;  
-  }        
-  
+    return (readyOps() & OP_CONNECT) != 0;
+  }
+
   /**
    * Tests if the channel attached to the key is readable.
-   * 
+   *
    * @exception CancelledKeyException If this key has been cancelled
    */
-  public final boolean isReadable ()
+  public final boolean isReadable()
   {
-    return (readyOps () & OP_READ) != 0; 
+    return (readyOps() & OP_READ) != 0;
   }
-  
+
   /**
    * Tests if the channel attached to the key is writable.
    *
    * @exception CancelledKeyException If this key has been cancelled
    */
-  public final boolean isWritable ()
+  public final boolean isWritable()
   {
-    return (readyOps () & OP_WRITE) != 0;
+    return (readyOps() & OP_WRITE) != 0;
   }
 
   /**
    * Requests that the registration of this key's channel with
    * its selector be cancelled.
    */
-  public abstract void cancel (); 
- 
+  public abstract void cancel();
+
   /**
    * return the channel attached to the key.
    */
-  public abstract SelectableChannel channel ();
-  
+  public abstract SelectableChannel channel();
+
   /**
    * Returns the key's interest set.
-   * 
+   *
    * @exception CancelledKeyException If this key has been cancelled
    */
-  public abstract int interestOps ();
-  
+  public abstract int interestOps();
+
   /**
    * Sets this key's interest set to the given value.
-   * 
+   *
    * @exception CancelledKeyException If this key has been cancelled
    * @exception IllegalArgumentException If a bit in the set does not
    * correspond to an operation that is supported by this key's channel,
    * that is, if set &amp; ~(channel().validOps()) != 0
    */
-  public abstract SelectionKey interestOps (int ops);
- 
+  public abstract SelectionKey interestOps(int ops);
+
   /**
    * Tells whether or not this key is valid.
    */
-  public abstract boolean isValid ();
- 
+  public abstract boolean isValid();
+
   /**
    * Retrieves this key's ready-operation set.
-   * 
+   *
    * @exception CancelledKeyException If this key has been cancelled
    */
-  public abstract int readyOps ();
-  
+  public abstract int readyOps();
+
   /**
    * Returns the selector for which this key was created.
    */
-  public abstract Selector selector ();
+  public abstract Selector selector();
 }

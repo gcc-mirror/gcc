@@ -1,4 +1,4 @@
-/* NoConnectionPendingException.java -- 
+/* NoConnectionPendingException.java --
    Copyright (C) 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -36,6 +36,7 @@ obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
 package java.nio.channels;
+
 
 /**
  * @author Michael Koch
