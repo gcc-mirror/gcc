@@ -3021,15 +3021,16 @@ ia64_assemble_integer (x, size, aligned_p)
      int aligned_p;
 {
   if (size == (TARGET_ILP32 ? 4 : 8)
-      && aligned_p
       && !(TARGET_NO_PIC || TARGET_AUTO_PIC)
       && GET_CODE (x) == SYMBOL_REF
       && SYMBOL_REF_FLAG (x))
     {
-      if (TARGET_ILP32)
-	fputs ("\tdata4\t@fptr(", asm_out_file);
-      else
-	fputs ("\tdata8\t@fptr(", asm_out_file);
+      static const char * const directive[2][2] = {
+	  /* 64-bit pointer */  /* 32-bit pointer */
+	{ "\tdata8.ua\t@fptr(", "\tdata4.ua\t@fptr("},	/* unaligned */
+	{ "\tdata8\t@fptr(",    "\tdata4\t@fptr("}	/* aligned */
+      };
+      fputs (directive[aligned_p != 0][TARGET_ILP32 != 0], asm_out_file);
       output_addr_const (asm_out_file, x);
       fputs (")\n", asm_out_file);
       return true;
