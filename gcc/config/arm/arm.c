@@ -172,6 +172,8 @@ static bool arm_cxx_guard_mask_bit (void);
 static tree arm_get_cookie_size (tree);
 static bool arm_cookie_has_size (void);
 static bool arm_cxx_cdtor_returns_this (void);
+static bool arm_cxx_key_method_may_be_inline (void);
+static bool arm_cxx_export_class_data (void);
 static void arm_init_libfuncs (void);
 
 
@@ -295,6 +297,12 @@ static void arm_init_libfuncs (void);
 
 #undef TARGET_CXX_CDTOR_RETURNS_THIS
 #define TARGET_CXX_CDTOR_RETURNS_THIS arm_cxx_cdtor_returns_this
+
+#undef TARGET_CXX_KEY_METHOD_MAY_BE_INLINE
+#define TARGET_CXX_KEY_METHOD_MAY_BE_INLINE arm_cxx_key_method_may_be_inline
+
+#undef TARGET_CXX_EXPORT_CLASS_DATA
+#define TARGET_CXX_EXPORT_CLASS_DATA arm_cxx_export_class_data
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -14204,6 +14212,25 @@ arm_cxx_cdtor_returns_this (void)
   return TARGET_AAPCS_BASED;
 }
 
+/* The EABI says that an inline function may never be the key
+   method.  */
+
+static bool
+arm_cxx_key_method_may_be_inline (void)
+{
+  return !TARGET_AAPCS_BASED;
+}
+
+/* The EABI says that the virtual table, etc., for a class must be
+   exported if it has a key method.  The EABI does not specific the
+   behavior if there is no key method, but there is no harm in
+   exporting the class data in that case too.  */
+
+static bool
+arm_cxx_export_class_data (void)
+{
+  return TARGET_AAPCS_BASED;
+}
 
 void
 arm_set_return_address (rtx source, rtx scratch)

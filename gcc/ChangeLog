@@ -1,3 +1,11 @@
+2004-08-31  Mark Mitchell  <mark@codesourcery.com>
+
+	* target-def.h (TARGET_CXX): Add TARGET_CXX_EXPORT_CLASS_DATA.
+	* target.h (cxx): Add export_class_data.
+	* config/arm/arm.c (arm_cxx_export_class_data): New function.
+	(TARGET_CXX_EXPORT_CLASS_DATA): Use it.
+	* testsuite/g++.dg/ext/visibility/arm1.C: New test.
+
 2004-08-31  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/sh.c (output_branch): Check the insn length possibly

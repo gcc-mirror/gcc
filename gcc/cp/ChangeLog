@@ -1,5 +1,10 @@
 2004-08-31  Mark Mitchell  <mark@codesourcery.com>
 
+	* cp-tree.h (DECL_CONSTRUCTION_VTABLE_P): New macro.
+	* class.c (build_ctor_vtbl_group): Set DECL_CONSTRUCTION_VTABLE_P.
+	* decl2.c (determine_visibility): Honor 
+	TARGET_CXX_EXPORT_CLASS_DATA.
+
  	* class.c (key_method): Rename to ...
 	(determine_key_method): ... this.
 	(finish_struct_1): Adjust accordingly.
