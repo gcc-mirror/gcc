@@ -1382,10 +1382,20 @@ extern struct rtx_def *gen_compare_reg ();
 ( fputs (".bss\t", (FILE)),			\
   assemble_name ((FILE), (NAME)),		\
   fprintf ((FILE), ",%d,%d\n", (SIZE),		\
-	   ((ALIGN) <= 8 ? 0			\
-	    : ((ALIGN) <= 16 ? 1		\
-	       : ((ALIGN) <= 32 ? 2		\
-		  : ((ALIGN <= 64 ? 3 : 4)))))))
+	   (floor_log2 ((ALIGN) / BITS_PER_UNIT))))
+
+/* A C statement (sans semicolon) to output to the stdio stream
+   FILE the assembler definition of uninitialized global DECL named
+   NAME whose size is SIZE bytes and alignment is ALIGN bytes.
+   Try to use asm_output_aligned_bss to implement this macro.  */
+
+#define ASM_OUTPUT_ALIGNED_BSS(FILE, DECL, NAME, SIZE, ALIGN)	\
+  do {								\
+    fputs (".globl ", (FILE));					\
+    assemble_name ((FILE), (NAME));				\
+    fputs ("\n", (FILE));					\
+    ASM_OUTPUT_ALIGNED_LOCAL (FILE, NAME, SIZE, ALIGN);		\
+  } while (0)
 
 /* Output text for an #ident directive.  */
 #define	ASM_OUTPUT_IDENT(FILE, STR)  fprintf(FILE, "\t# %s\n", STR);
