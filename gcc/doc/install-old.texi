@@ -20,18 +20,18 @@ main manual.
 
 @ifnothtml
 @menu
-* Configurations::    Configurations Supported by GNU CC.
+* Configurations::    Configurations Supported by GCC.
 * Cross-Compiler::   Building and installing a cross-compiler.
 * VMS Install::   See below for installation on VMS.
 @end menu
 @end ifnothtml
 
-Here is the procedure for installing GNU CC on a GNU or Unix system.
+Here is the procedure for installing GCC on a GNU or Unix system.
 See @ref{VMS Install}, for VMS systems.
 
 @enumerate
 @item
-If you have chosen a configuration for GNU CC which requires other GNU
+If you have chosen a configuration for GCC which requires other GNU
 tools (such as GAS or the GNU linker) instead of the standard system
 tools, install the required tools in the build directory under the names
 @file{as}, @file{ld} or whatever is appropriate.
@@ -87,18 +87,18 @@ ignored.  So you might as well specify the version if you know it.
 
 See @ref{Configurations}, for a list of supported configuration names and
 notes on many of the configurations.  You should check the notes in that
-section before proceeding any further with the installation of GNU CC@.
+section before proceeding any further with the installation of GCC@.
 
 @end enumerate
 
 @ifnothtml
 @node Configurations, Cross-Compiler, , Old
-@section Configurations Supported by GNU CC
+@section Configurations Supported by GCC
 @end ifnothtml
 @html
-<h2>@anchor{Configurations}Configurations Supported by GNU CC</h2>
+<h2>@anchor{Configurations}Configurations Supported by GCC</h2>
 @end html
-@cindex configurations supported by GNU CC
+@cindex configurations supported by GCC
 
 Here are the possible CPU types:
 
@@ -150,7 +150,7 @@ number is most needed for @samp{sysv3} and @samp{sysv4}, which are often
 treated differently.
 
 @samp{linux-gnu} is the canonical name for the GNU/Linux target; however
-GNU CC will also accept @samp{linux}.  The version of the kernel in use is
+GCC will also accept @samp{linux}.  The version of the kernel in use is
 not relevant on these systems.  A suffix such as @samp{libc1} or @samp{aout}
 distinguishes major versions of the C library; all of the suffixed versions
 are obsolete.
@@ -159,7 +159,7 @@ If you specify an impossible combination such as @samp{i860-dg-vms},
 then you may get an error message from @file{configure}, or it may
 ignore part of the information and do the best it can with the rest.
 @file{configure} always prints the canonical name for the alternative
-that it used.  GNU CC does not support all possible alternatives.
+that it used.  GCC does not support all possible alternatives.
 
 Often a particular model of machine has a name.  Many machine names are
 recognized as aliases for CPU/company combinations.  Thus, the machine
@@ -202,7 +202,7 @@ things you must know:
 
 @table @samp
 @item vax-dec-vms
-See @ref{VMS Install}, for details on how to install GNU CC on VMS@.
+See @ref{VMS Install}, for details on how to install GCC on VMS@.
 @end table
 
 @ifnothtml
@@ -214,7 +214,7 @@ See @ref{VMS Install}, for details on how to install GNU CC on VMS@.
 @end html
 @cindex cross-compiler, installation
 
-GNU CC can function as a cross-compiler for many machines, but not all.
+GCC can function as a cross-compiler for many machines, but not all.
 
 @itemize @bullet
 @item
@@ -226,7 +226,7 @@ if you use the GNU assembler and linker.
 
 @item
 Cross-compilers between machines with different floating point formats
-have not all been made to work.  GNU CC now has a floating point
+have not all been made to work.  GCC now has a floating point
 emulator with which these can work, but each target machine description
 needs to be updated to take advantage of it.
 
@@ -235,8 +235,8 @@ Cross-compilation between machines of different word sizes is
 somewhat problematic and sometimes does not work.
 @end itemize
 
-Since GNU CC generates assembler code, you probably need a
-cross-assembler that GNU CC can run, in order to produce object files.
+Since GCC generates assembler code, you probably need a
+cross-assembler that GCC can run, in order to produce object files.
 If you want to link on other than the target machine, you need a
 cross-linker as well.  You also need header files and libraries suitable
 for the target machine that you can install on the host machine.
@@ -283,7 +283,7 @@ startup files (typically @file{crt@dots{}.o}) for the target machine.
 @end itemize
 
 It is most convenient to do all of these steps on the same host machine,
-since then you can do it all with a single invocation of GNU CC@.  This
+since then you can do it all with a single invocation of GCC@.  This
 requires a suitable cross-assembler and cross-linker.  For some targets,
 the GNU assembler and linker are available.
 
@@ -295,7 +295,7 @@ the GNU assembler and linker are available.
 <h2>Configuring a Cross-Compiler</h2>
 @end html
 
-To build GNU CC as a cross-compiler, you start out by running
+To build GCC as a cross-compiler, you start out by running
 @file{configure}.  Use the @option{--target=@var{target}} to specify the
 target type.  If @file{configure} was unable to correctly identify the
 system you are running on, also specify the @option{--build=@var{build}}
@@ -335,21 +335,21 @@ archive files (linker libraries) in the target machine's format.
 This should be a program to construct a symbol table in an archive file.
 @end table
 
-The installation of GNU CC will find these programs in that directory,
+The installation of GCC will find these programs in that directory,
 and copy or link them to the proper place to for the cross-compiler to
 find them when run later.
 
 The easiest way to provide these files is to build the Binutils package
 and GAS@.  Configure them with the same @option{--host} and @option{--target}
-options that you use for configuring GNU CC, then build and install
+options that you use for configuring GCC, then build and install
 them.  They install their executables automatically into the proper
-directory.  Alas, they do not support all the targets that GNU CC
+directory.  Alas, they do not support all the targets that GCC
 supports.
 
 If you want to install libraries to use with the cross-compiler, such as
 a standard C library, put them in the directory
-@file{/usr/local/@var{target}/lib}; installation of GNU CC copies
-all the files in that subdirectory into the proper place for GNU CC to
+@file{/usr/local/@var{target}/lib}; installation of GCC copies
+all the files in that subdirectory into the proper place for GCC to
 find them and link with them.  Here's an example of copying some
 libraries from a target machine:
 
@@ -398,7 +398,7 @@ quit
 
 If you are cross-compiling a standalone program or a program for an
 embedded system, then you may not need any header files except the few
-that are part of GNU CC (and those of your program).  However, if you
+that are part of GCC (and those of your program).  However, if you
 intend to link your program with a standard C library such as
 @file{libc.a}, then you probably need to compile with the header files
 that go with the library you use.
@@ -426,7 +426,7 @@ will use them.
 Provide the header files before you build the cross-compiler, because
 the build stage actually runs the cross-compiler to produce parts of
 @file{libgcc.a}.  (These are the parts that @emph{can} be compiled with
-GNU CC@.)  Some of them need suitable header files.
+GCC@.)  Some of them need suitable header files.
 
 Here's an example showing how to copy the header files from a target
 machine.  On the target machine, do this:
@@ -457,12 +457,12 @@ Now you can proceed just as for compiling a single-machine compiler
 through the step of building stage 1.
 
 Do not try to build stage 2 for a cross-compiler.  It doesn't work to
-rebuild GNU CC as a cross-compiler using the cross-compiler, because
+rebuild GCC as a cross-compiler using the cross-compiler, because
 that would produce a program that runs on the target machine, not on the
 host.  For example, if you compile a 386-to-68030 cross-compiler with
 itself, the result will not be right either for the 386 (because it was
 compiled into 68030 code) or for the 68030 (because it was configured
-for a 386 as the host).  If you want to compile GNU CC into 68030 code,
+for a 386 as the host).  If you want to compile GCC into 68030 code,
 whether you compile it on a 68030 or with a cross-compiler on a 386, you
 must specify a 68030 as the host when you configure it.
 
@@ -470,25 +470,25 @@ To install the cross-compiler, use @samp{make install}, as usual.
 
 @ifnothtml
 @node VMS Install, , Cross-Compiler, Old
-@section Installing GNU CC on VMS
+@section Installing GCC on VMS
 @end ifnothtml
 @html
-<h2>@anchor{VMS Install}Installing GNU CC on VMS</h2>
+<h2>@anchor{VMS Install}Installing GCC on VMS</h2>
 @end html
 @cindex VMS installation
-@cindex installing GNU CC on VMS
+@cindex installing GCC on VMS
 
-The VMS version of GNU CC is distributed in a backup saveset containing
+The VMS version of GCC is distributed in a backup saveset containing
 both source code and precompiled binaries.
 
 To install the @file{gcc} command so you can use the compiler easily, in
 the same manner as you use the VMS C compiler, you must install the VMS CLD
-file for GNU CC as follows:
+file for GCC as follows:
 
 @enumerate
 @item
 Define the VMS logical names @samp{GNU_CC} and @samp{GNU_CC_INCLUDE}
-to point to the directories where the GNU CC executables
+to point to the directories where the GCC executables
 (@file{gcc-cpp.exe}, @file{gcc-cc1.exe}, etc.) and the C include files are
 kept respectively.  This should be done with the commands:
 
@@ -527,7 +527,7 @@ file.c}, which is equivalent to the command @samp{gcc -v -c file.c} in
 Unix.
 @end enumerate
 
-If you wish to use GNU C++ you must first install GNU CC, and then
+If you wish to use GNU C++ you must first install GCC, and then
 perform the following steps:
 
 @enumerate
@@ -602,7 +602,7 @@ $ install replace sys$common:[syslib]dcltables
 @item
 Type @samp{@@make-gcc} to recompile everything, or submit the file
 @file{make-gcc.com} to a batch queue.  If you wish to build the GNU C++
-compiler as well as the GNU CC compiler, you must first edit
+compiler as well as the GCC compiler, you must first edit
 @file{make-gcc.com} and follow the instructions that appear in the
 comments.
 
@@ -657,10 +657,10 @@ names in each element of the search list must be an actual physical
 device name rather than another rooted logical name).
 
 @item
-@strong{If you are building GNU CC with a previous version of GNU CC,
+@strong{If you are building GCC with a previous version of GCC,
 you also should check to see that you have the newest version of the
-assembler}.  In particular, GNU CC version 2 treats global constant
-variables slightly differently from GNU CC version 1, and GAS version
+assembler}.  In particular, GCC version 2 treats global constant
+variables slightly differently from GCC version 1, and GAS version
 1.38.1 does not have the patches required to work with GCC version 2.
 If you use GAS 1.38.1, then @code{extern const} variables will not have
 the read-only bit set, and the linker will generate warning messages
@@ -668,23 +668,23 @@ about mismatched psect attributes for these variables.  These warning
 messages are merely a nuisance, and can safely be ignored.
 
 @item
-If you want to build GNU CC with the VAX C compiler, you will need to
+If you want to build GCC with the VAX C compiler, you will need to
 make minor changes in @file{make-cccp.com} and @file{make-cc1.com}
 to choose alternate definitions of @code{CC}, @code{CFLAGS}, and
 @code{LIBS}.  See comments in those files.  However, you must
 also have a working version of the GNU assembler (GNU as, aka GAS) as
-it is used as the back end for GNU CC to produce binary object modules
-and is not included in the GNU CC sources.  GAS is also needed to
+it is used as the back end for GCC to produce binary object modules
+and is not included in the GCC sources.  GAS is also needed to
 compile @file{libgcc2} in order to build @file{gcclib} (see above);
 @file{make-l2.com} expects to be able to find it operational in
 @file{gnu_cc:[000000]gnu-as.exe}.
 
-To use GNU CC on VMS, you need the VMS driver programs
+To use GCC on VMS, you need the VMS driver programs
 @file{gcc.exe}, @file{gcc.com}, and @file{gcc.cld}.  They are
 distributed with the VMS binaries (@file{gcc-vms}) rather than the
-GNU CC sources.  GAS is also included in @file{gcc-vms}, as is Bison.
+GCC sources.  GAS is also included in @file{gcc-vms}, as is Bison.
 
-Once you have successfully built GNU CC with VAX C, you should use the
+Once you have successfully built GCC with VAX C, you should use the
 resulting compiler to rebuild itself.  Before doing this, be sure to
 restore the @code{CC}, @code{CFLAGS}, and @code{LIBS} definitions in
 @file{make-cccp.com} and @file{make-cc1.com}.  The second generation
@@ -692,11 +692,11 @@ compiler will be able to take advantage of many optimizations that must
 be suppressed when building with other compilers.
 @end enumerate
 
-Under previous versions of GNU CC, the generated code would occasionally
+Under previous versions of GCC, the generated code would occasionally
 give strange results when linked with the sharable @file{VAXCRTL} library.
 Now this should work.
 
-Even with this version, however, GNU CC itself should not be linked with
+Even with this version, however, GCC itself should not be linked with
 the sharable @file{VAXCRTL}.  The version of @code{qsort} in
 @file{VAXCRTL} has a bug (known to be present in VMS versions V4.6
 through V5.5) which causes the compiler to fail.
@@ -708,6 +708,6 @@ you wish to link the compiler executables with the shareable image
 version of @file{VAXCRTL}, you should edit the file @file{tm.h} (created
 by @file{vmsconfig.com}) to define the macro @code{QSORT_WORKAROUND}.
 
-@code{QSORT_WORKAROUND} is always defined when GNU CC is compiled with
+@code{QSORT_WORKAROUND} is always defined when GCC is compiled with
 VAX C, to avoid a problem in case @file{gcclib.olb} is not yet
 available.

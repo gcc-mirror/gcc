@@ -1,4 +1,4 @@
-# Swedish translation for the GNU CC.
+# Swedish translation for the GCC.
 # Copyright (C) 2000 Free Software Foundation, Inc.
 # Dennis Björklund <db@zigo.dhs.org>, 2000, 2001, 2002.
 #

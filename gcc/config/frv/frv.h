@@ -61,9 +61,9 @@
    Defined in svr4.h.  */
 #undef WORD_SWITCH_TAKES_ARG
 
-/* A C string constant that tells the GNU CC driver program options to pass to
+/* A C string constant that tells the GCC driver program options to pass to
    the assembler.  It can also specify how to translate options you give to GNU
-   CC into options for GNU CC to pass to the assembler.  See the file `sun3.h'
+   CC into options for GCC to pass to the assembler.  See the file `sun3.h'
    for an example of this.
 
    Do not define this macro if it does not need to do anything.
@@ -105,9 +105,9 @@
 #undef  ENDFILE_SPEC
 #define ENDFILE_SPEC "frvend%O%s"
 
-/* A C string constant that tells the GNU CC driver program options to pass to
-   CPP.  It can also specify how to translate options you give to GNU CC into
-   options for GNU CC to pass to the CPP.
+/* A C string constant that tells the GCC driver program options to pass to
+   CPP.  It can also specify how to translate options you give to GCC into
+   options for GCC to pass to the CPP.
 
    Do not define this macro if it does not need to do anything.  */
 
@@ -200,17 +200,17 @@
 #define MASK_DEFAULT_SIMPLE \
   (MASK_GPR_32 | MASK_SOFT_FLOAT)
 
-/* A C string constant that tells the GNU CC driver program options to pass to
-   `cc1'.  It can also specify how to translate options you give to GNU CC into
-   options for GNU CC to pass to the `cc1'.
+/* A C string constant that tells the GCC driver program options to pass to
+   `cc1'.  It can also specify how to translate options you give to GCC into
+   options for GCC to pass to the `cc1'.
 
    Do not define this macro if it does not need to do anything.  */
 /* For ABI compliance, we need to put bss data into the normal data section.  */
 #define CC1_SPEC "%{G*}"
 
-/* A C string constant that tells the GNU CC driver program options to pass to
-   the linker.  It can also specify how to translate options you give to GNU CC
-   into options for GNU CC to pass to the linker.
+/* A C string constant that tells the GCC driver program options to pass to
+   the linker.  It can also specify how to translate options you give to GCC
+   into options for GCC to pass to the linker.
 
    Do not define this macro if it does not need to do anything.
 
@@ -245,7 +245,7 @@
    is an initializer with a subgrouping for each command option.
 
    Each subgrouping contains a string constant, that defines the
-   specification name, and a string constant that used by the GNU CC driver
+   specification name, and a string constant that used by the GCC driver
    program.
 
    Do not define this macro if it does not need to do anything.  */
@@ -536,7 +536,7 @@ extern int target_flags;
 
 
 /* Define this macro if debugging can be performed even without a frame
-   pointer.  If this macro is defined, GNU CC will turn on the
+   pointer.  If this macro is defined, GCC will turn on the
    `-fomit-frame-pointer' option whenever `-O' is specified.  */
 /* Frv needs a specific frame layout that includes the frame pointer */
 
@@ -570,7 +570,7 @@ extern int target_flags;
 
 /* Define this macro to have the value 1 if, in a multiword object, the most
    significant word has the lowest number.  This applies to both memory
-   locations and registers; GNU CC fundamentally assumes that the order of
+   locations and registers; GCC fundamentally assumes that the order of
    words in memory is the same as the order in registers.  This macro need not
    be a constant.  */
 #define WORDS_BIG_ENDIAN 1
@@ -633,7 +633,7 @@ extern int target_flags;
 #define BIGGEST_FIELD_ALIGNMENT 64
 #else
 /* An expression for the alignment of a structure field FIELD if the
-   alignment computed in the usual way is COMPUTED.  GNU CC uses this
+   alignment computed in the usual way is COMPUTED.  GCC uses this
    value instead of the value in `BIGGEST_ALIGNMENT' or
    `BIGGEST_FIELD_ALIGNMENT', if defined, for structure fields only.  */
 #define ADJUST_FIELD_ALIGN(FIELD, COMPUTED) 				\
@@ -705,7 +705,7 @@ extern int target_flags;
    `STRUCTURE_SIZE_BOUNDARY' that way, you must define
    `PCC_BITFIELD_TYPE_MATTERS' to have a nonzero value.
 
-   If your aim is to make GNU CC use the same conventions for laying out
+   If your aim is to make GCC use the same conventions for laying out
    bitfields as are used by another compiler, here is how to investigate what
    the other compiler does.  Compile and run this program:
 
@@ -1035,7 +1035,7 @@ extern int target_flags;
 /* Order of allocation of registers.  */
 
 /* If defined, an initializer for a vector of integers, containing the numbers
-   of hard registers in the order in which GNU CC should prefer to use them
+   of hard registers in the order in which GCC should prefer to use them
    (from most preferred to least).
 
    If this macro is not defined, registers are used lowest numbered first (all
@@ -1953,7 +1953,7 @@ struct machine_function GTY(())
    `INIT_CUMULATIVE_ARGS' is used instead.
 
    The value passed for LIBNAME is always 0, since library routines with
-   special calling conventions are never compiled with GNU CC.  The argument
+   special calling conventions are never compiled with GCC.  The argument
    LIBNAME exists for symmetry with `INIT_CUMULATIVE_ARGS'.  */
 
 #define INIT_CUMULATIVE_INCOMING_ARGS(CUM, FNTYPE, LIBNAME) \
@@ -2069,7 +2069,7 @@ struct machine_function GTY(())
    `fprintf'.
 
    The details of how the address should be passed to `mcount' are determined
-   by your operating system environment, not by GNU CC.  To figure them out,
+   by your operating system environment, not by GCC.  To figure them out,
    compile a small program for profiling using the system's installed C
    compiler and look at the assembler code that results.
 
@@ -2160,7 +2160,7 @@ struct machine_function GTY(())
 
 /* Define this macro if trampolines need a special subroutine to do their work.
    The macro should expand to a series of `asm' statements which will be
-   compiled with GNU CC.  They go in a library function named
+   compiled with GCC.  They go in a library function named
    `__transfer_from_trampoline'.
 
    If you need to avoid executing the ordinary prologue code of a compiled C
@@ -2560,7 +2560,7 @@ __asm__("\n"								\
    default; other values are interpreted relative to that.  */
 
 /* Here are additional macros which do not specify precise relative costs, but
-   only that certain actions are more expensive than GNU CC would ordinarily
+   only that certain actions are more expensive than GCC would ordinarily
    expect.  */
 
 /* We used to default the branch cost to 2, but I changed it to 1, to avoid
@@ -2827,7 +2827,7 @@ do {									\
 /* Macros Controlling Initialization Routines.  */
 
 /* If defined, a C string constant for the assembler operation to identify the
-   following data as initialization code.  If not defined, GNU CC will assume
+   following data as initialization code.  If not defined, GCC will assume
    such a section does not exist.  When you are using special sections for
    initialization and termination functions, this macro also controls how
    `crtstuff.c' and `libgcc2.c' arrange to run the initialization functions.
@@ -3087,7 +3087,7 @@ do {                                                                    \
    knows about and DBX does not, or vice versa.  In such cases, some register
    may need to have one number in the compiler and another for DBX.
 
-   If two registers have consecutive numbers inside GNU CC, and they can be
+   If two registers have consecutive numbers inside GCC, and they can be
    used as a pair to hold a multiword value, then they *must* have consecutive
    numbers after renumbering with `DBX_REGISTER_NUMBER'.  Otherwise, debuggers
    will be unable to access such a pair, because they expect register pairs to
@@ -3100,9 +3100,9 @@ do {                                                                    \
    This declaration is required.  */
 #define DBX_REGISTER_NUMBER(REGNO) (REGNO)
 
-/* A C expression that returns the type of debugging output GNU CC produces
+/* A C expression that returns the type of debugging output GCC produces
    when the user specifies `-g' or `-ggdb'.  Define this if you have arranged
-   for GNU CC to support more than one format of debugging output.  Currently,
+   for GCC to support more than one format of debugging output.  Currently,
    the allowable values are `DBX_DEBUG', `SDB_DEBUG', `DWARF_DEBUG',
    `DWARF2_DEBUG', and `XCOFF_DEBUG'.
 

@@ -1,3 +1,7 @@
+2003-09-27  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* po/sv.po: GNU CC -> GCC.
+
 2003-05-23  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* exgettext: Add "This file is part of GCC".
