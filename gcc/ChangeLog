@@ -1,3 +1,8 @@
+2001-01-23  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* bb-reorder.c (make_reorder_chain_1): Handle case where
+	jump edge goes to the same block as the fallthru edge.
+ 
 2001-01-23  Jim Wilson  <wilson@redhat.com>
 
 	* dwarf2out.c (dwarf2out_line): Make last_file_num be unsigned.
