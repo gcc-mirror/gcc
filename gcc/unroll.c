@@ -2808,7 +2808,7 @@ final_giv_value (v, loop_start, loop_end)
   rtx reg, insn, pattern;
   rtx increment, tem;
   enum rtx_code code;
-  rtx insert_before;
+  rtx insert_before, seq;
 
   bl = reg_biv_class[REGNO (v->src_reg)];
 
@@ -2887,9 +2887,13 @@ final_giv_value (v, loop_start, loop_end)
 		      || REGNO (XEXP (SET_SRC (pattern), 0)) != bl->regno)
 		    abort ();
 		  
+		  start_sequence ();
 		  tem = expand_binop (GET_MODE (tem), sub_optab, tem,
 				      XEXP (SET_SRC (pattern), 1), 0, 0,
 				      OPTAB_LIB_WIDEN);
+		  seq = gen_sequence ();
+		  end_sequence ();
+		  emit_insn_before (seq, insert_before);
 		}
 	    }
 	  
