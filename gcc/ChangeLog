@@ -1,5 +1,16 @@
 2000-12-23  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* builtins.def (BUILT_IN_LABS, BUILT_IN_LLABS, BUILT_IN_IMAXABS):
+	Don't define.
+	* builtins.c (expand_builtin): Don't handle BUILT_IN_LABS,
+	BUILT_IN_LLABS and BUILT_IN_IMAXABS.
+	* c-common.c (c_common_nodes_and_builtins): Use BUILT_IN_ABS for
+	builtin labs, llabs and imaxabs.
+	(expand_tree_builtin): Don't handle BUILT_IN_LABS, BUILT_IN_LLABS
+	and BUILT_IN_IMAXABS.
+
+2000-12-23  Joseph S. Myers  <jsm28@cam.ac.uk>
+
 	* c-common.c (builtin_function_2): New function.
 	(c_common_nodes_and_builtins): Use it to define each pair (foo,
 	__builtin_foo) of builtins in one place.

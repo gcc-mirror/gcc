@@ -5291,13 +5291,13 @@ c_common_nodes_and_builtins ()
 		      BUILT_IN_FABS, BUILT_IN_NORMAL, 0, 0, 0);
   builtin_function_2 ("__builtin_labs", "labs",
 		      long_ftype_long, long_ftype_long,
-		      BUILT_IN_LABS, BUILT_IN_NORMAL, 0, 0, 0);
+		      BUILT_IN_ABS, BUILT_IN_NORMAL, 0, 0, 0);
   builtin_function_2 ("__builtin_llabs", "llabs",
 		      longlong_ftype_longlong, longlong_ftype_longlong,
-		      BUILT_IN_LLABS, BUILT_IN_NORMAL, 0, !flag_isoc99, 0);
+		      BUILT_IN_ABS, BUILT_IN_NORMAL, 0, !flag_isoc99, 0);
   builtin_function_2 ("__builtin_imaxabs", "imaxabs",
 		      intmax_ftype_intmax, intmax_ftype_intmax,
-		      BUILT_IN_IMAXABS, BUILT_IN_NORMAL, 0, !flag_isoc99, 0);
+		      BUILT_IN_ABS, BUILT_IN_NORMAL, 0, !flag_isoc99, 0);
 
   builtin_function ("__builtin_saveregs", ptr_ftype, BUILT_IN_SAVEREGS,
 		    BUILT_IN_NORMAL, NULL_PTR);
@@ -5690,9 +5690,6 @@ expand_tree_builtin (function, params, coerced_params)
   switch (DECL_FUNCTION_CODE (function))
     {
     case BUILT_IN_ABS:
-    case BUILT_IN_LABS:
-    case BUILT_IN_LLABS:
-    case BUILT_IN_IMAXABS:
     case BUILT_IN_FABS:
       if (coerced_params == 0)
 	return integer_zero_node;
