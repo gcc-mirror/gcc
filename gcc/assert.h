@@ -1,5 +1,3 @@
-/* This is GCC's version of assert.h.  */
-/* The previous line is a magic cookie that Makefile greps for.  */
 /* Allow this file to be included multiple times
    with different settings of NDEBUG.  */
 #undef assert
