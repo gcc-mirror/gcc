@@ -32,6 +32,7 @@ Boston, MA 02111-1307, USA.  */
 #include "tsystem.h"
 #include "dwarf2.h"
 #include "unwind.h"
+#define NO_BASE_OF_ENCODED_VALUE
 #include "unwind-pe.h"
 #include "unwind-dw2-fde.h"
 #include "gthr.h"

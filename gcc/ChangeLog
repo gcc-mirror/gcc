@@ -1,3 +1,10 @@
+2001-08-01  Mark Kettenis  <kettenis@gnu.org>
+
+	* unwind-pe.h (base_of_encoded_value, read_encoded_value): Define
+	only if NO_BASE_OF_ENCODED_VALUE isn't defined.
+	* unwind-dw2-fde.c (NO_BASE_OF_ENCODED_VALUE): Define before
+	including "unwind-pe.h".
+
 Wed Aug  1 20:01:42 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* rs6000.md (define_splits): Kill unused constraints.
