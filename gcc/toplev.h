@@ -31,6 +31,7 @@ struct rtx_def;
 #define skip_leading_substring(whole,  part) \
    (strncmp (whole, part, strlen (part)) ? NULL : whole + strlen (part))
 
+extern int toplev_main			PARAMS ((int argc, char **argv));
 extern int read_integral_parameter	PARAMS ((const char *, const char *,
 						const int));
 extern int count_error			PARAMS ((int));
