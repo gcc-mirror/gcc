@@ -1,3 +1,7 @@
+2003-04-28  Mike Stump  <mrs@apple.com>
+
+	* gdbinit.in: Update to reflect new identifier structure.
+
 2003-04-28  Richard Henderson  <rth@redhat.com>
 
 	* config/sparc/sparc.c (print_operand): Add 's' to sign-extend.
