@@ -1657,6 +1657,8 @@ asm_operand_ok (op, constraint)
 	     proper matching constraint, but we can't actually fail
 	     the check if they didn't.  Indicate that results are
 	     inconclusive.  */
+	  while (*constraint >= '0' && *constraint <= '9')
+	    constraint++;
 	  result = -1;
 	  break;
 
@@ -2211,8 +2213,12 @@ preprocess_constraints ()
 
 		case '0': case '1': case '2': case '3': case '4':
 		case '5': case '6': case '7': case '8': case '9':
-		  op_alt[j].matches = c - '0';
-		  recog_op_alt[op_alt[j].matches][j].matched = i;
+		  {
+		    char *end;
+		    op_alt[j].matches = strtoul (p - 1, &end, 10);
+		    recog_op_alt[op_alt[j].matches][j].matched = i;
+		    p = end;
+		  }
 		  break;
 
 		case 'm':
@@ -2364,45 +2370,54 @@ constrain_operands (strict)
 
 	      case '0':  case '1':  case '2':  case '3':  case '4':
 	      case '5':  case '6':  case '7':  case '8':  case '9':
+		{
+		  /* This operand must be the same as a previous one.
+		     This kind of constraint is used for instructions such
+		     as add when they take only two operands.
 
-		/* This operand must be the same as a previous one.
-		   This kind of constraint is used for instructions such
-		   as add when they take only two operands.
+		     Note that the lower-numbered operand is passed first.
 
-		   Note that the lower-numbered operand is passed first.
+		     If we are not testing strictly, assume that this
+		     constraint will be satisfied.  */
 
-		   If we are not testing strictly, assume that this constraint
-		   will be satisfied.  */
-		if (strict < 0)
-		  val = 1;
-		else
-		  {
-		    rtx op1 = recog_data.operand[c - '0'];
-		    rtx op2 = recog_data.operand[opno];
+		  char *end;
+		  int match;
 
-	            /* A unary operator may be accepted by the predicate,
-		       but it is irrelevant for matching constraints.  */
-	            if (GET_RTX_CLASS (GET_CODE (op1)) == '1')
-	              op1 = XEXP (op1, 0);
-	            if (GET_RTX_CLASS (GET_CODE (op2)) == '1')
-	              op2 = XEXP (op2, 0);
+		  match = strtoul (p - 1, &end, 10);
+		  p = end;
 
-		    val = operands_match_p (op1, op2);
-		  }
+		  if (strict < 0)
+		    val = 1;
+		  else
+		    {
+		      rtx op1 = recog_data.operand[match];
+		      rtx op2 = recog_data.operand[opno];
 
-		matching_operands[opno] = c - '0';
-		matching_operands[c - '0'] = opno;
+		      /* A unary operator may be accepted by the predicate,
+			 but it is irrelevant for matching constraints.  */
+		      if (GET_RTX_CLASS (GET_CODE (op1)) == '1')
+			op1 = XEXP (op1, 0);
+		      if (GET_RTX_CLASS (GET_CODE (op2)) == '1')
+			op2 = XEXP (op2, 0);
 
-		if (val != 0)
-		  win = 1;
-		/* If output is *x and input is *--x,
-		   arrange later to change the output to *--x as well,
-		   since the output op is the one that will be printed.  */
-		if (val == 2 && strict > 0)
-		  {
-		    funny_match[funny_match_index].this = opno;
-		    funny_match[funny_match_index++].other = c - '0';
-		  }
+		      val = operands_match_p (op1, op2);
+		    }
+
+		  matching_operands[opno] = match;
+		  matching_operands[match] = opno;
+
+		  if (val != 0)
+		    win = 1;
+
+		  /* If output is *x and input is *--x, arrange later
+		     to change the output to *--x as well, since the
+		     output op is the one that will be printed.  */
+		  if (val == 2 && strict > 0)
+		    {
+		      funny_match[funny_match_index].this = opno;
+		      funny_match[funny_match_index++].other = match;
+		    }
+		}
 		break;
 
 	      case 'p':

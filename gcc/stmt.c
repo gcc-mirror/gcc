@@ -404,6 +404,11 @@ static void expand_nl_goto_receiver	PARAMS ((void));
 static void expand_nl_goto_receivers	PARAMS ((struct nesting *));
 static void fixup_gotos			PARAMS ((struct nesting *, rtx, tree,
 					       rtx, int));
+static bool check_operand_nalternatives	PARAMS ((tree, tree));
+static bool check_unique_operand_names	PARAMS ((tree, tree));
+static tree resolve_operand_names	PARAMS ((tree, tree, tree,
+						 const char **));
+static char *resolve_operand_name_1	PARAMS ((char *, tree, tree));
 static void expand_null_return_1	PARAMS ((rtx));
 static void expand_value_return		PARAMS ((rtx));
 static int tail_recursion_args		PARAMS ((tree, tree));
@@ -1355,14 +1360,6 @@ parse_output_constraint (constraint_p,
      from and written to.  */
   *is_inout = (*p == '+');
 
-  /* Make sure we can specify the matching operand.  */
-  if (*is_inout && operand_num > 9)
-    {
-      error ("output operand constraint %d contains `+'", 
-	     operand_num);
-      return false;
-    }
-
   /* Canonicalize the output constraint so that it begins with `='.  */
   if (p != constraint || is_inout)
     {
@@ -1416,6 +1413,7 @@ parse_output_constraint (constraint_p,
 
       case '0':  case '1':  case '2':  case '3':  case '4':
       case '5':  case '6':  case '7':  case '8':  case '9':
+      case '[':
 	error ("matching constraint not valid in output operand");
 	return false;
 
@@ -1478,7 +1476,7 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
      const char *filename;
      int line;
 {
-  rtvec argvec, constraints;
+  rtvec argvec, constraintvec;
   rtx body;
   int ninputs = list_length (inputs);
   int noutputs = list_length (outputs);
@@ -1492,8 +1490,8 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
   rtx *real_output_rtx = (rtx *) alloca (noutputs * sizeof (rtx));
   enum machine_mode *inout_mode
     = (enum machine_mode *) alloca (noutputs * sizeof (enum machine_mode));
-  const char **output_constraints
-    = alloca (noutputs * sizeof (const char *));
+  const char **constraints
+    = (const char **) alloca ((noutputs + ninputs) * sizeof (const char *));
   /* The insn we have emitted.  */
   rtx insn;
   int old_generating_concat_p = generating_concat_p;
@@ -1504,9 +1502,17 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 
   if (current_function_check_memory_usage)
     {
-      error ("`asm' cannot be used with `-fcheck-memory-usage'");
+      error ("`asm' cannot be used in function where memory usage is checked");
       return;
     }
+
+  if (! check_operand_nalternatives (outputs, inputs))
+    return;
+
+  if (! check_unique_operand_names (outputs, inputs))
+    return;
+
+  string = resolve_operand_names (string, outputs, inputs, constraints);
 
 #ifdef MD_ASM_CLOBBERS
   /* Sometimes we wish to automatically clobber registers across an asm.
@@ -1515,12 +1521,6 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
      the flags register.  */
   MD_ASM_CLOBBERS (clobbers);
 #endif
-
-  if (current_function_check_memory_usage)
-    {
-      error ("`asm' cannot be used in function where memory usage is checked");
-      return;
-    }
 
   /* Count the number of meaningful clobbered registers, ignoring what
      we would ignore later.  */
@@ -1538,43 +1538,10 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 
   last_expr_type = 0;
 
-  /* Check that the number of alternatives is constant across all
-     operands.  */
-  if (outputs || inputs)
-    {
-      tree tmp = TREE_PURPOSE (outputs ? outputs : inputs);
-      int nalternatives = n_occurrences (',', TREE_STRING_POINTER (tmp));
-      tree next = inputs;
-
-      if (nalternatives + 1 > MAX_RECOG_ALTERNATIVES)
-	{
-	  error ("too many alternatives in `asm'");
-	  return;
-	}
-
-      tmp = outputs;
-      while (tmp)
-	{
-	  const char *constraint = TREE_STRING_POINTER (TREE_PURPOSE (tmp));
-
-	  if (n_occurrences (',', constraint) != nalternatives)
-	    {
-	      error ("operand constraints for `asm' differ in number of alternatives");
-	      return;
-	    }
-
-	  if (TREE_CHAIN (tmp))
-	    tmp = TREE_CHAIN (tmp);
-	  else
-	    tmp = next, next = 0;
-	}
-    }
-
   for (i = 0, tail = outputs; tail; tail = TREE_CHAIN (tail), i++)
     {
       tree val = TREE_VALUE (tail);
       tree type = TREE_TYPE (val);
-      const char *constraint;
       bool is_inout;
       bool allows_reg;
       bool allows_mem;
@@ -1588,12 +1555,9 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 	 the worst that happens if we get it wrong is we issue an error
 	 message.  */
 
-      constraint = TREE_STRING_POINTER (TREE_PURPOSE (tail));
-      output_constraints[i] = constraint;
-
       /* Try to parse the output constraint.  If that fails, there's
 	 no point in going further.  */
-      if (!parse_output_constraint (&output_constraints[i],
+      if (!parse_output_constraint (&constraints[i],
 				    i,
 				    ninputs,
 				    noutputs,
@@ -1659,15 +1623,16 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
       return;
     }
 
-  /* Make vectors for the expression-rtx and constraint strings.  */
+  /* Make vectors for the expression-rtx, constraint strings,
+     and named operands.  */
 
   argvec = rtvec_alloc (ninputs);
-  constraints = rtvec_alloc (ninputs);
+  constraintvec = rtvec_alloc (ninputs);
 
   body = gen_rtx_ASM_OPERANDS ((noutputs == 0 ? VOIDmode
 				: GET_MODE (output_rtx[0])),
 			       TREE_STRING_POINTER (string), 
-			       empty_string, 0, argvec, constraints,
+			       empty_string, 0, argvec, constraintvec,
 			       filename, line);
 
   MEM_VOLATILE_P (body) = vol;
@@ -1675,8 +1640,7 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
   /* Eval the inputs and put them into ARGVEC.
      Put their constraints into ASM_INPUTs and store in CONSTRAINTS.  */
 
-  i = 0;
-  for (tail = inputs; tail; tail = TREE_CHAIN (tail))
+  for (i = 0, tail = inputs; tail; tail = TREE_CHAIN (tail), ++i)
     {
       int j;
       int allows_reg = 0, allows_mem = 0;
@@ -1698,9 +1662,8 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 	  return;
 	}
 
-      constraint = TREE_STRING_POINTER (TREE_PURPOSE (tail));
+      orig_constraint = constraint = constraints[i + noutputs];
       c_len = strlen (constraint);
-      orig_constraint = constraint;
 
       /* Make sure constraint has neither `=', `+', nor '&'.  */
 
@@ -1744,28 +1707,30 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 	       operands to memory.  */
 	  case '0':  case '1':  case '2':  case '3':  case '4':
 	  case '5':  case '6':  case '7':  case '8':  case '9':
-	    if (constraint[j] >= '0' + noutputs)
-	      {
-		error
-		  ("matching constraint references invalid operand number");
-		return;
-	      }
+	    {
+	      char *end;
+	      unsigned long match;
 
-	    /* Try and find the real constraint for this dup.  */
-	    if ((j == 0 && c_len == 1)
-		|| (j == 1 && c_len == 2 && constraint[0] == '%'))
-	      {
-		tree o = outputs;
+	      match = strtoul (constraint + j, &end, 10);
+	      if (match >= (unsigned long) noutputs)
+		{
+		  error ("matching constraint references invalid operand number");
+		  return;
+		}
 
-		for (j = constraint[j] - '0'; j > 0; --j)
-		  o = TREE_CHAIN (o);
-
-		constraint = TREE_STRING_POINTER (TREE_PURPOSE (o));
-		c_len = strlen (constraint);
-		j = 0;
-		break;
-	      }
-
+	      /* Try and find the real constraint for this dup.  Only do
+	         this if the matching constraint is the only alternative.  */
+	      if (*end == '\0'
+		  && (j == 0 || (j == 1 && constraint[0] == '%')))
+		{
+		  constraint = constraints[match];
+		  c_len = strlen (constraint);
+		  j = 0;
+	          break;
+		}
+	      else
+		j = end - constraint;
+	    }
 	    /* Fall through.  */
 
 	  case 'p':  case 'r':
@@ -1814,7 +1779,8 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 	  if (allows_reg)
 	    op = force_reg (TYPE_MODE (TREE_TYPE (TREE_VALUE (tail))), op);
 	  else if (!allows_mem)
-	    warning ("asm operand %d probably doesn't match constraints", i);
+	    warning ("asm operand %d probably doesn't match constraints",
+		     i + noutputs);
 	  else if (CONSTANT_P (op))
 	    op = force_const_mem (TYPE_MODE (TREE_TYPE (TREE_VALUE (tail))),
 				  op);
@@ -1843,7 +1809,8 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 	    /* ??? Leave this only until we have experience with what
 	       happens in combine and elsewhere when constraints are
 	       not satisfied.  */
-	    warning ("asm operand %d probably doesn't match constraints", i);
+	    warning ("asm operand %d probably doesn't match constraints",
+		     i + noutputs);
 	}
       generating_concat_p = old_generating_concat_p;
       ASM_OPERANDS_INPUT (body, i) = op;
@@ -1851,7 +1818,6 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
       ASM_OPERANDS_INPUT_CONSTRAINT_EXP (body, i)
 	= gen_rtx_ASM_INPUT (TYPE_MODE (TREE_TYPE (TREE_VALUE (tail))),
 			     orig_constraint);
-      i++;
     }
 
   /* Protect all the operands from the queue now that they have all been
@@ -1870,24 +1836,26 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
   for (i = 0; i < ninout; i++)
     {
       int j = inout_opnum[i];
+      char buffer[16];
 
       ASM_OPERANDS_INPUT (body, ninputs - ninout + i)
 	= output_rtx[j];
+
+      sprintf (buffer, "%d", j);
       ASM_OPERANDS_INPUT_CONSTRAINT_EXP (body, ninputs - ninout + i)
-	= gen_rtx_ASM_INPUT (inout_mode[i], digit_string (j));
+	= gen_rtx_ASM_INPUT (inout_mode[i], ggc_alloc_string (buffer, -1));
     }
 
   generating_concat_p = old_generating_concat_p;
 
   /* Now, for each output, construct an rtx
-     (set OUTPUT (asm_operands INSN OUTPUTNUMBER OUTPUTCONSTRAINT
-			       ARGVEC CONSTRAINTS))
+     (set OUTPUT (asm_operands INSN OUTPUTCONSTRAINT OUTPUTNUMBER
+			       ARGVEC CONSTRAINTS OPNAMES))
      If there is more than one, put them inside a PARALLEL.  */
 
   if (noutputs == 1 && nclobbers == 0)
     {
-      ASM_OPERANDS_OUTPUT_CONSTRAINT (body)
-	= output_constraints[0];
+      ASM_OPERANDS_OUTPUT_CONSTRAINT (body) = constraints[0];
       insn = emit_insn (gen_rtx_SET (VOIDmode, output_rtx[0], body));
     }
 
@@ -1916,8 +1884,7 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 			   gen_rtx_ASM_OPERANDS
 			   (GET_MODE (output_rtx[i]),
 			    TREE_STRING_POINTER (string),
-			    output_constraints[i],
-			    i, argvec, constraints,
+			    constraints[i], i, argvec, constraintvec,
 			    filename, line));
 
 	  MEM_VOLATILE_P (SET_SRC (XVECEXP (body, 0, i))) = vol;
@@ -1970,6 +1937,206 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
       emit_move_insn (real_output_rtx[i], output_rtx[i]);
 
   free_temp_slots ();
+}
+
+/* A subroutine of expand_asm_operands.  Check that all operands have
+   the same number of alternatives.  Return true if so.  */
+
+static bool
+check_operand_nalternatives (outputs, inputs)
+     tree outputs, inputs;
+{
+  if (outputs || inputs)
+    {
+      tree tmp = TREE_PURPOSE (outputs ? outputs : inputs);
+      int nalternatives
+	= n_occurrences (',', TREE_STRING_POINTER (TREE_VALUE (tmp)));
+      tree next = inputs;
+
+      if (nalternatives + 1 > MAX_RECOG_ALTERNATIVES)
+	{
+	  error ("too many alternatives in `asm'");
+	  return false;
+	}
+
+      tmp = outputs;
+      while (tmp)
+	{
+	  const char *constraint
+	    = TREE_STRING_POINTER (TREE_VALUE (TREE_PURPOSE (tmp)));
+
+	  if (n_occurrences (',', constraint) != nalternatives)
+	    {
+	      error ("operand constraints for `asm' differ in number of alternatives");
+	      return false;
+	    }
+
+	  if (TREE_CHAIN (tmp))
+	    tmp = TREE_CHAIN (tmp);
+	  else
+	    tmp = next, next = 0;
+	}
+    }
+
+  return true;
+}
+
+/* A subroutine of expand_asm_operands.  Check that all operand names
+   are unique.  Return true if so.  We rely on the fact that these names
+   are identifiers, and so have been canonicalized by get_identifier,
+   so all we need are pointer comparisons.  */
+
+static bool
+check_unique_operand_names (outputs, inputs)
+     tree outputs, inputs;
+{
+  tree i, j;
+
+  for (i = outputs; i ; i = TREE_CHAIN (i))
+    {
+      tree i_name = TREE_PURPOSE (TREE_PURPOSE (i));
+      if (! i_name)
+	continue;
+
+      for (j = TREE_CHAIN (i); j ; j = TREE_CHAIN (j))
+	if (i_name == TREE_PURPOSE (TREE_PURPOSE (j)))
+	  goto failure;
+    }
+
+  for (i = inputs; i ; i = TREE_CHAIN (i))
+    {
+      tree i_name = TREE_PURPOSE (TREE_PURPOSE (i));
+      if (! i_name)
+	continue;
+
+      for (j = TREE_CHAIN (i); j ; j = TREE_CHAIN (j))
+	if (i_name == TREE_PURPOSE (TREE_PURPOSE (j)))
+	  goto failure;
+      for (j = outputs; j ; j = TREE_CHAIN (j))
+	if (i_name == TREE_PURPOSE (TREE_PURPOSE (j)))
+	  goto failure;
+    }
+
+  return true;
+
+ failure:
+  error ("duplicate asm operand name '%s'",
+	 IDENTIFIER_POINTER (TREE_PURPOSE (TREE_PURPOSE (i))));
+  return false;
+}
+
+/* A subroutine of expand_asm_operands.  Resolve the names of the operands
+   in *POUTPUTS and *PINPUTS to numbers, and replace the name expansions in
+   STRING and in the constraints to those numbers.  */
+
+static tree
+resolve_operand_names (string, outputs, inputs, pconstraints)
+     tree string;
+     tree outputs, inputs;
+     const char **pconstraints;
+{
+  char *buffer = xstrdup (TREE_STRING_POINTER (string));
+  char *p;
+  tree t;
+
+  /* Assume that we will not need extra space to perform the substitution.
+     This because we get to remove '[' and ']', which means we cannot have
+     a problem until we have more than 999 operands.  */
+
+  p = buffer;
+  while ((p = strchr (p, '%')) != NULL)
+    {
+      if (*++p != '[')
+	continue;
+      p = resolve_operand_name_1 (p, outputs, inputs);
+    }
+
+  string = build_string (strlen (buffer), buffer);
+  free (buffer);
+
+  /* Collect output constraints here because it's convenient.
+     There should be no named operands here; this is verified
+     in expand_asm_operand.  */
+  for (t = outputs; t ; t = TREE_CHAIN (t), pconstraints++)
+    *pconstraints = TREE_STRING_POINTER (TREE_VALUE (TREE_PURPOSE (t)));
+
+  /* Substitute [<name>] in input constraint strings.  */
+  for (t = inputs; t ; t = TREE_CHAIN (t), pconstraints++)
+    {
+      const char *c = TREE_STRING_POINTER (TREE_VALUE (TREE_PURPOSE (t)));
+      if (strchr (c, '[') == NULL)
+	*pconstraints = c;
+      else
+	{
+	  p = buffer = xstrdup (c);
+	  while ((p = strchr (p, '[')) != NULL)
+	    p = resolve_operand_name_1 (p, outputs, inputs);
+
+	  *pconstraints = ggc_alloc_string (buffer, -1);
+	  free (buffer);
+	}
+    }
+
+  return string;
+}
+
+/* A subroutine of resolve_operand_names.  P points to the '[' for a
+   potential named operand of the form [<name>].  In place, replace
+   the name and brackets with a number.  Return a pointer to the 
+   balance of the string after substitution.  */
+
+static char *
+resolve_operand_name_1 (p, outputs, inputs)
+     char *p;
+     tree outputs, inputs;
+{
+  char *q;
+  int op;
+  tree t;
+  size_t len;
+
+  /* Collect the operand name.  */
+  q = strchr (p, ']');
+  if (!q)
+    {
+      error ("missing close brace for named operand");
+      return strchr (p, '\0');
+    }
+  len = q - p - 1;
+
+  /* Resolve the name to a number.  */
+  for (op = 0, t = outputs; t ; t = TREE_CHAIN (t), op++)
+    {
+      const char *c = IDENTIFIER_POINTER (TREE_PURPOSE (TREE_PURPOSE (t)));
+      if (strncmp (c, p + 1, len) == 0 && c[len] == '\0')
+	goto found;
+    }
+  for (t = inputs; t ; t = TREE_CHAIN (t), op++)
+    {
+      const char *c = IDENTIFIER_POINTER (TREE_PURPOSE (TREE_PURPOSE (t)));
+      if (strncmp (c, p + 1, len) == 0 && c[len] == '\0')
+	goto found;
+    }
+
+  *q = '\0';
+  error ("undefined named operand '%s'", p + 1);
+  op = 0;
+ found:
+
+  /* Replace the name with the number.  Unfortunately, not all libraries
+     get the return value of sprintf correct, so search for the end of the
+     generated string by hand.  */
+  sprintf (p, "%d", op);
+  p = strchr (p, '\0');
+
+  /* Verify the no extra buffer space assumption.  */
+  if (p > q)
+    abort ();
+
+  /* Shift the rest of the buffer down to fill the gap.  */
+  memmove (p, q + 1, strlen (q + 1) + 1);
+
+  return p;
 }
 
 /* Generate RTL to evaluate the expression EXP

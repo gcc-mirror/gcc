@@ -1302,7 +1302,7 @@ block_alloc (b)
 	      for (i = 1; i < recog_data.n_operands; i++)
 		{
 		  const char *p = recog_data.constraints[i];
-		  int this_match = (requires_inout (p));
+		  int this_match = requires_inout (p);
 
 		  n_matching_alts += this_match;
 		  if (this_match == recog_data.n_alternatives)
@@ -2409,8 +2409,6 @@ requires_inout (p)
       case '=':  case '+':  case '?':
       case '#':  case '&':  case '!':
       case '*':  case '%':
-      case '1':  case '2':  case '3':  case '4': case '5':
-      case '6':  case '7':  case '8':  case '9':
       case 'm':  case '<':  case '>':  case 'V':  case 'o':
       case 'E':  case 'F':  case 'G':  case 'H':
       case 's':  case 'i':  case 'n':
@@ -2429,6 +2427,13 @@ requires_inout (p)
 
       case '0':
 	found_zero = 1;
+	break;
+
+      case '1':  case '2':  case '3':  case '4': case '5':
+      case '6':  case '7':  case '8':  case '9':
+	/* Skip the balance of the matching constraint.  */
+	while (*p >= '0' && *p <= '9')
+	  p++;
 	break;
 
       default:

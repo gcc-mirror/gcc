@@ -1576,16 +1576,23 @@ find_matches (insn, matchp)
 	    matchp->commutative[op_no] = op_no + 1;
 	    matchp->commutative[op_no + 1] = op_no;
 	    break;
+
 	  case '0': case '1': case '2': case '3': case '4':
 	  case '5': case '6': case '7': case '8': case '9':
-	    c -= '0';
-	    if (c < op_no && likely_spilled[(unsigned char) c])
-	      break;
-	    matchp->with[op_no] = c;
-	    any_matches = 1;
-	    if (matchp->commutative[op_no] >= 0)
-	      matchp->with[matchp->commutative[op_no]] = c;
+	    {
+	      char *end;
+	      unsigned long match = strtoul (p - 1, &end, 10);
+	      p = end;
+
+	      if (match < op_no && likely_spilled[match])
+		break;
+	      matchp->with[op_no] = match;
+	      any_matches = 1;
+	      if (matchp->commutative[op_no] >= 0)
+		matchp->with[matchp->commutative[op_no]] = match;
+	    }
 	    break;
+
 	  case 'a': case 'b': case 'c': case 'd': case 'e': case 'f': case 'h':
 	  case 'j': case 'k': case 'l': case 'p': case 'q': case 't': case 'u':
 	  case 'v': case 'w': case 'x': case 'y': case 'z': case 'A': case 'B':

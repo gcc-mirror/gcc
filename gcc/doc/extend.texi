@@ -3382,13 +3382,33 @@ Each operand is described by an operand-constraint string followed by
 the C expression in parentheses.  A colon separates the assembler
 template from the first output operand and another separates the last
 output operand from the first input, if any.  Commas separate the
-operands within each group.  The total number of operands is limited to
-ten or to the maximum number of operands in any instruction pattern in
-the machine description, whichever is greater.
+operands within each group.  The total number of operands is currently
+limited to 30; this limitation may be lifted in some future version of
+GCC.
 
 If there are no output operands but there are input operands, you must
 place two consecutive colons surrounding the place where the output
 operands would go.
+
+As of GCC version 3.1, it is also possible to specify input and output
+operands using symbolic names which can be referenced within the
+assembler code.  These names are specified inside square brackets
+preceding the constraint string, and can be referenced inside the
+assembler code using @code{%[@var{name}]} instead of a percentage sign
+followed by the operand number.  Using named operands the above example
+could look like:
+
+@example
+asm ("fsinx %[angle],%[output]"
+     : [output] "=f" (result)
+     : [angle] "f" (angle));
+@end example
+
+@noindent
+Note that the symbolic operand names have no relation whatsoever to
+other C identifiers.  You may use any name you like, even those of
+existing C symbols, but must ensure that no two operands within the same
+assembler construct use the same symbolic name.
 
 Output operand expressions must be lvalues; the compiler can check this.
 The input operands need not be lvalues.  The compiler cannot check
@@ -3425,10 +3445,10 @@ asm ("combine %2,%0" : "=r" (foo) : "0" (foo), "g" (bar));
 
 @noindent
 The constraint @samp{"0"} for operand 1 says that it must occupy the
-same location as operand 0.  A digit in constraint is allowed only in an
-input operand and it must refer to an output operand.
+same location as operand 0.  A number in constraint is allowed only in
+an input operand and it must refer to an output operand.
 
-Only a digit in the constraint can guarantee that one operand will be in
+Only a number in the constraint can guarantee that one operand will be in
 the same place as another.  The mere fact that @code{foo} is the value
 of both operands is not enough to guarantee that they will be in the
 same place in the generated assembler code.  The following would not
@@ -3445,6 +3465,15 @@ use it for operand 1, but generate the output operand 0 in a different
 register (copying it afterward to @code{foo}'s own address).  Of course,
 since the register for operand 1 is not even mentioned in the assembler
 code, the result will not work, but GCC can't tell that.
+
+As of GCC version 3.1, one may write @code{[@var{name}]} instead of
+the operand number for a matching constraint.  For example:
+
+@example
+asm ("cmoveq %1,%2,%[result]"
+     : [result] "=r"(result)
+     : "r" (test), "r"(new), "[result]"(old));
+@end example
 
 Some instructions clobber specific hard registers.  To describe this,
 write a third colon after the input operands, followed by the names of
