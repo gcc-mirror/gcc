@@ -271,8 +271,7 @@ insert_subset_children (node, data)
    not vice versa.  For example, in C, a store to an `int' can alias a
    structure containing an `int', but not vice versa.  Here, the
    structure would be the SUPERSET and `int' the SUBSET.  This
-   function should be called only once per SUPERSET/SUBSET pair.  At
-   present any given alias set may only be a subset of one superset.  
+   function should be called only once per SUPERSET/SUBSET pair. 
 
    It is illegal for SUPERSET to be zero; everything is implicitly a
    subset of alias set zero.  */
@@ -315,6 +314,48 @@ record_alias_subset (superset, subset)
   /* Enter the SUBSET itself as a child of the SUPERSET.  */
   splay_tree_insert (superset_entry->children, 
 		     (splay_tree_key) subset, 0);
+}
+
+/* Record that component types of TYPE, if any, are part of that type for
+   aliasing purposes.  For record types, we only record component types
+   for fields that are marked addressable.  For array types, we always
+   record the component types, so the front end should not call this
+   function if the individual component aren't addressable.  */
+
+void
+record_component_aliases (type)
+     tree type;
+{
+  int superset = get_alias_set (type);
+  int subset;
+  tree field;
+
+  if (superset == 0)
+    return;
+
+  switch (TREE_CODE (type))
+    {
+    case ARRAY_TYPE:
+    case COMPLEX_TYPE:
+      subset = get_alias_set (TREE_TYPE (type));
+      if (subset != 0)
+	record_alias_subset (superset, subset);
+      break;
+
+    case RECORD_TYPE:
+    case UNION_TYPE:
+    case QUAL_UNION_TYPE:
+      for (field = TYPE_FIELDS (type); field != 0; field = TREE_CHAIN (field))
+	{
+	  subset = get_alias_set (TREE_TYPE (field));
+	  if (TREE_ADDRESSABLE (field) && subset != 0 && subset != superset)
+	    record_alias_subset (superset, subset);
+	}
+      break;
+
+    default:
+      break;
+    }
 }
 
 /* Inside SRC, the source of a SET, find a base address.  */

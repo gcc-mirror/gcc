@@ -1,3 +1,10 @@
+Mon May 22 06:57:49 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* alias.c (record_component_aliases): New function.
+	* tree.h: Clean up some declarations and comments.
+	(record_component_aliases): New declaration.
+	* tree.c (get_alias_set): If type and has alias set, use it.
+
 2000-05-22  Richard Henderson  <rth@cygnus.com>
 
 	* simplify-rtx.c (simplify_ternary_operation): Try to simplify
