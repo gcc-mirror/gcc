@@ -2937,7 +2937,7 @@ lookup_name_current_level (name)
 }
 
 /* Mark ARG for GC.  */
-void 
+static void 
 mark_binding_level (arg)
      void *arg;
 {
