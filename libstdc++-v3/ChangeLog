@@ -1,3 +1,13 @@
+2002-07-03  Jack Reeves  <jackw_reeves@hotmail.com>
+            Kenny Simpson  <theonetruekenny@yahoo.com>
+            Phil Edwards  <pme@gcc.gnu.org>
+
+	PR libstdc++/3946
+	* testsuite/20_util/auto_ptr.cc (test08):  New test.
+	* include/std/std_memory.h (auto_ref_ptr):  Make constructor explicit.
+	(auto_ptr::operator auto_ptr_ref):  Fix typo.
+	General reformatting and doxygenating of the whole file.
+
 2002-07-03  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/7097
