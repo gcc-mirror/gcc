@@ -247,6 +247,7 @@ public class Thread implements Runnable
 	int pri = current.getPriority();
 	priority = (gmax < pri ? gmax : pri);
 	context_class_loader = current.context_class_loader;
+	InheritableThreadLocal.newChildThread(this);
       }
     else
       {

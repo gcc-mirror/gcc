@@ -668,6 +668,7 @@ java/lang/IllegalStateException.java \
 java/lang/IllegalThreadStateException.java \
 java/lang/IncompatibleClassChangeError.java \
 java/lang/IndexOutOfBoundsException.java \
+java/lang/InheritableThreadLocal.java \
 java/lang/InstantiationError.java \
 java/lang/InstantiationException.java \
 java/lang/Integer.java \
@@ -1793,6 +1794,7 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/lang/IllegalThreadStateException.P \
 .deps/java/lang/IncompatibleClassChangeError.P \
 .deps/java/lang/IndexOutOfBoundsException.P \
+.deps/java/lang/InheritableThreadLocal.P \
 .deps/java/lang/InstantiationError.P \
 .deps/java/lang/InstantiationException.P .deps/java/lang/Integer.P \
 .deps/java/lang/InternalError.P .deps/java/lang/InterruptedException.P \

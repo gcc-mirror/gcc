@@ -937,6 +937,7 @@ java/lang/IllegalStateException.java \
 java/lang/IllegalThreadStateException.java \
 java/lang/IncompatibleClassChangeError.java \
 java/lang/IndexOutOfBoundsException.java \
+java/lang/InheritableThreadLocal.java \
 java/lang/InstantiationError.java \
 java/lang/InstantiationException.java \
 java/lang/Integer.java \

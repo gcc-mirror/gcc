@@ -162,6 +162,7 @@ extern "Java"
       class IllegalThreadStateException;
       class IncompatibleClassChangeError;
       class IndexOutOfBoundsException;
+      class InheritableThreadLocal;
       class InstantiationError;
       class InstantiationException;
       class Integer;
