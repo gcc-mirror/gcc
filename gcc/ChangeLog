@@ -1,3 +1,8 @@
+2002-05-07  Jason Merrill  <jason@redhat.com>
+
+	* dwarf2out.c (rtl_for_decl_location): Don't try to extract a
+	constant value from DECL_INITIAL.
+
 2002-05-07  Richard Henderson  <rth@redhat.com>
 
 	PR c++/6212

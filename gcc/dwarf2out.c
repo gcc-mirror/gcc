@@ -8942,6 +8942,10 @@ rtl_for_decl_location (decl)
 	    rtl = gen_rtx_CONST_STRING (VOIDmode, TREE_STRING_POINTER (init));
 	}
 
+#if 0
+      /* We mustn't actually emit anything here, as we might not get a
+         chance to emit any symbols we refer to.  For the release, don't
+         try to get this right.  */
       if (rtl == NULL)
 	{
 	  rtl = expand_expr (DECL_INITIAL (decl), NULL_RTX, VOIDmode,
@@ -8951,6 +8955,7 @@ rtl_for_decl_location (decl)
 	  if (rtl && GET_CODE (rtl) == MEM)
 	    rtl = NULL;
 	}
+#endif
     }
 
 #ifdef ASM_SIMPLIFY_DWARF_ADDR
