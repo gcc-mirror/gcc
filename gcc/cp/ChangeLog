@@ -1,3 +1,31 @@
+Thu Apr  4 13:33:10 1996  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+	* typeck.c (mark_addressable, convert_for_assignment,
+	convert_for_initialization, pointer_int_sum, pointer_diff,
+	unary_complex_lvalue): Add prototypes wrapped by PROTO.
+	(convert_sequence): #if 0 fn decl, since definition also is.
+
+Thu Apr  4 11:00:53 1996  Mike Stump  <mrs@cygnus.com>
+
+	* rtti.c (build_dynamic_cast): Make sure we strip qualifiers on
+	cast to pointer types for type searching.
+
+Wed Apr  3 17:10:57 1996  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+	* typeck.c (get_delta_difference): Use cp_error, not error, in the
+	case where BINFO == 0.
+
+Wed Apr  3 12:01:02 1996  Mike Stump  <mrs@cygnus.com>
+
+	* call.c (build_method_call): Fix wording of error messages so
+	constructors come out right.
+
+Tue Apr  2 16:06:59 1996  Bob Manson  <manson@charmed.cygnus.com>
+
+	* decl.c (push_overloaded_decl): Don't warn about hidden
+	constructors when both the type and the function are declared
+	in a system header file.
+
 Mon Apr  1 09:03:13 1996  Bob Manson  <manson@charmed.cygnus.com>
 
 	* class.c (finish_struct_1): Propagate the TYPE_PACKED

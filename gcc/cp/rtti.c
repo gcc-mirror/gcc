@@ -196,7 +196,7 @@ build_dynamic_cast (type, expr)
 	goto fail;
       if (TREE_CODE (TREE_TYPE (exprtype)) != RECORD_TYPE)
 	goto fail;
-      if (TYPE_SIZE (TREE_TYPE (exprtype)) == 0)
+      if (TYPE_SIZE (TREE_TYPE (exprtype)) == NULL_TREE)
 	goto fail;
       if (TREE_READONLY (TREE_TYPE (exprtype)) &&
 	  ! TYPE_READONLY (TREE_TYPE (type)))
@@ -205,9 +205,11 @@ build_dynamic_cast (type, expr)
 	break;
       /* else fall through */
     case REFERENCE_TYPE:
-      if (TREE_CODE (TREE_TYPE (type)) == RECORD_TYPE
-	  && TYPE_SIZE (TREE_TYPE (type)) != NULL_TREE)
-	break;
+      if (TREE_CODE (TREE_TYPE (type)) != RECORD_TYPE)
+	goto fail;
+      if (TYPE_SIZE (TREE_TYPE (type)) == NULL_TREE)
+	goto fail;
+      break;
       /* else fall through */
     default:
       goto fail;
@@ -230,7 +232,7 @@ build_dynamic_cast (type, expr)
 	goto fail;
       if (TREE_CODE (TREE_TYPE (exprtype)) != RECORD_TYPE)
 	goto fail;
-      if (TYPE_SIZE (TREE_TYPE (exprtype)) == 0)
+      if (TYPE_SIZE (TREE_TYPE (exprtype)) == NULL_TREE)
 	goto fail;
       if (TREE_READONLY (TREE_TYPE (exprtype)) &&
 	  ! TYPE_READONLY (TREE_TYPE (type)))
@@ -308,10 +310,7 @@ build_dynamic_cast (type, expr)
 	  else
 	    td1 = build_typeid (expr);
 	  
-	  if (tc == POINTER_TYPE)
-	    td2 = get_typeid (TREE_TYPE (type));
-	  else
-	    td2 = get_typeid (TYPE_MAIN_VARIANT (TREE_TYPE (type)));
+	  td2 = get_typeid (TYPE_MAIN_VARIANT (TREE_TYPE (type)));
 
           elems = tree_cons (NULL_TREE, td2,
             tree_cons (NULL_TREE, build_int_2 (1, 0),

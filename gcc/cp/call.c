@@ -433,13 +433,6 @@ convert_harshness (type, parmtype, parm)
 	      == TYPE_MAIN_VARIANT (type_promotes_to (parmtype)))
 	    {
 	      h.code = PROMO_CODE;
-#if 0 /* What purpose does this serve?  -jason */
-	      /* A char, short, wchar_t, etc., should promote to an int if
-		 it can handle it, otherwise to an unsigned.  So we'll make
-		 an unsigned.  */
-	      if (type != integer_type_node)
-		h.int_penalty = 1;
-#endif
 	    }
 	  else
 	    h.code = STD_CODE;
@@ -475,10 +468,6 @@ convert_harshness (type, parmtype, parm)
     }
 
   /* Convert arrays which have not previously been converted.  */
-#if 0
-  if (codel == ARRAY_TYPE)
-    codel = POINTER_TYPE;
-#endif
   if (coder == ARRAY_TYPE)
     {
       coder = POINTER_TYPE;
@@ -1104,36 +1093,9 @@ ideal_candidate (candidates, n_candidates, len)
      list for the last argument is the intersection of all the best-liked
      functions.  */
 
-#if 0
-  for (i = 0; i < len; i++)
-    {
-      qsort (candidates, n_candidates, sizeof (struct candidate),
-	     rank_for_overload);
-      best_code = cp[-1].h.code;
-
-      /* To find out functions that are worse than that represented
-	 by BEST_CODE, we can't just do a comparison like h.code>best_code.
-	 The total harshness for the "best" fn may be 8|8 for two args, and
-	 the harshness for the next-best may be 8|2.  If we just compared,
-	 that would be checking 8>10, which would lead to the next-best
-	 being disqualified.  What we actually want to do is get rid
-	 of functions that are definitely worse than that represented
-	 by best_code, i.e. those which have bits set higher than the
-	 highest in best_code.  Sooooo, what we do is clear out everything
-	 represented by best_code, and see if we still come up with something
-	 higher.  If so (e.g., 8|8 vs 8|16), it'll disqualify it properly.  */
-      for (j = n_candidates-2; j >= 0; j--)
-	if ((candidates[j].h.code & ~best_code) > best_code)
-	  candidates[j].h.code = EVIL_CODE;
-    }
-
-  if (cp[-1].h.code & EVIL_CODE)
-    return NULL;
-#else
   qsort (candidates, n_candidates, sizeof (struct candidate),
 	 rank_for_overload);
   best_code = cp[-1].h.code;
-#endif
 
   /* If they're at least as good as each other, do an arg-by-arg check.  */
   if (! strictly_better (cp[-1].h.code, cp[-2].h.code))
@@ -1608,9 +1570,6 @@ build_method_call (instance, name, parms, basetype_path, flags)
   register tree function, fntype, value_type;
   register tree basetype, save_basetype;
   register tree baselink, result, parmtypes, parm;
-#if 0
-  register tree method_name;
-#endif
   tree last;
   int pass;
   tree access = access_public_node;
@@ -1620,6 +1579,7 @@ build_method_call (instance, name, parms, basetype_path, flags)
   enum vtable_needs need_vtbl = not_needed;
 
   char *name_kind;
+  tree save_name = name;
   int ever_seen = 0;
   tree instance_ptr = NULL_TREE;
   int all_virtual = flag_all_virtual;
@@ -1747,7 +1707,7 @@ build_method_call (instance, name, parms, basetype_path, flags)
       else if (basetype_path)
 	{
 	  basetype = BINFO_TYPE (basetype_path);
-	  if (name == DECL_NAME (TYPE_NAME (basetype)))
+	  if (name == TYPE_IDENTIFIER (basetype))
 	    name = ctor_identifier;
 	}
       else if (IDENTIFIER_HAS_TYPE_VALUE (name))
@@ -1961,6 +1921,9 @@ build_method_call (instance, name, parms, basetype_path, flags)
 	}
     }
 
+  if (save_name == ctor_identifier)
+    save_name = TYPE_IDENTIFIER (basetype);
+
   if (TYPE_SIZE (complete_type (basetype)) == 0)
     {
       /* This is worth complaining about, I think.  */
@@ -1969,15 +1932,6 @@ build_method_call (instance, name, parms, basetype_path, flags)
     }
 
   save_basetype = TYPE_MAIN_VARIANT (basetype);
-
-#if 0
-  if (all_virtual == 1
-      && (! strncmp (IDENTIFIER_POINTER (name), OPERATOR_METHOD_FORMAT,
-		     OPERATOR_METHOD_LENGTH)
-	  || instance_ptr == NULL_TREE
-	  || (TYPE_OVERLOADS_METHOD_CALL_EXPR (basetype) == 0)))
-    all_virtual = 0;
-#endif
 
   last = NULL_TREE;
   for (parmtypes = NULL_TREE, parm = parms; parm; parm = TREE_CHAIN (parm))
@@ -2187,12 +2141,6 @@ build_method_call (instance, name, parms, basetype_path, flags)
 		  && ! DECL_STATIC_FUNCTION_P (function))
 		continue;
 
-#if 0
-	      if (pass == 0
-		  && DECL_ASSEMBLER_NAME (function) == method_name)
-		goto found;
-#endif
-
 	      if (pass > 0)
 		{
 		  tree these_parms = parms;
@@ -2254,10 +2202,10 @@ build_method_call (instance, name, parms, basetype_path, flags)
 	      TREE_CHAIN (last) = void_list_node;
 	      if (flags & LOOKUP_GLOBAL)
 		cp_error ("no global or member function `%D(%A)' defined",
-			  name, parmtypes);
+			  save_name, parmtypes);
 	      else
 		cp_error ("no member function `%T::%D(%A)' defined",
-			  save_basetype, name, TREE_CHAIN (parmtypes));
+			  save_basetype, save_name, TREE_CHAIN (parmtypes));
 	      return error_mark_node;
 	    }
 	  continue;
@@ -2282,7 +2230,7 @@ build_method_call (instance, name, parms, basetype_path, flags)
 		    {
 		      TREE_CHAIN (last) = void_list_node;
 		      cp_error ("call of overloaded %s `%D(%A)' is ambiguous",
-				name_kind, name, TREE_CHAIN (parmtypes));
+				name_kind, save_name, TREE_CHAIN (parmtypes));
 		      print_n_candidates (candidates, n_candidates);
 		    }
 		  return error_mark_node;
@@ -2304,7 +2252,7 @@ build_method_call (instance, name, parms, basetype_path, flags)
 	    {
 	      if (flags & LOOKUP_COMPLAIN)
 		cp_error ("ambiguous type conversion requested for %s `%D'",
-			  name_kind, name);
+			  name_kind, save_name);
 	      return error_mark_node;
 	    }
 	  else
@@ -2349,7 +2297,7 @@ build_method_call (instance, name, parms, basetype_path, flags)
 		  TREE_CHAIN (last) = void_list_node;
 		  cp_error ("no matching function for call to `%T::%D (%A)%V'",
 			    TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (instance_ptr))),
-			    name, TREE_CHAIN (parmtypes),
+			    save_name, TREE_CHAIN (parmtypes),
 			    TREE_TYPE (TREE_TYPE (instance_ptr)));
 		  TREE_CHAIN (last) = NULL_TREE;
 		  print_candidates (found_fns);
@@ -2362,7 +2310,7 @@ build_method_call (instance, name, parms, basetype_path, flags)
 	  if ((flags & (LOOKUP_SPECULATIVELY|LOOKUP_COMPLAIN))
 	      == LOOKUP_COMPLAIN)
 	    {
-	      cp_error ("%T has no method named %D", save_basetype, name);
+	      cp_error ("%T has no method named %D", save_basetype, save_name);
 	      return error_mark_node;
 	    }
 	  return NULL_TREE;
@@ -2428,7 +2376,7 @@ build_method_call (instance, name, parms, basetype_path, flags)
   if (IS_SIGNATURE (basetype) && static_call_context)
     {
       cp_error ("cannot call signature member function `%T::%D' without signature pointer/reference",
-		basetype, name);
+		basetype, save_name);
       return error_mark_node;
 	}
   else if (IS_SIGNATURE (basetype))
@@ -2574,47 +2522,6 @@ build_method_call (instance, name, parms, basetype_path, flags)
       parms = tree_cons (NULL_TREE, instance_ptr,
 			 convert_arguments (NULL_TREE, TREE_CHAIN (TYPE_ARG_TYPES (fntype)), TREE_CHAIN (parms), function, LOOKUP_NORMAL));
     }
-
-#if 0
-  /* Constructors do not overload method calls.  */
-  else if (TYPE_OVERLOADS_METHOD_CALL_EXPR (basetype)
-	   && name != TYPE_IDENTIFIER (basetype)
-	   && (TREE_CODE (function) != FUNCTION_DECL
-	       || strncmp (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (function)),
-			   OPERATOR_METHOD_FORMAT,
-			   OPERATOR_METHOD_LENGTH))
-  	   && (may_be_remote (basetype) || instance != C_C_D))
-    {
-      tree fn_as_int;
-
-      parms = TREE_CHAIN (parms);
-
-      if (!all_virtual && TREE_CODE (function) == FUNCTION_DECL)
-	fn_as_int = build_unary_op (ADDR_EXPR, function, 0);
-      else
-	fn_as_int = convert (TREE_TYPE (default_conversion (function)), DECL_VINDEX (function));
-      if (all_virtual == 1)
-	fn_as_int = convert (integer_type_node, fn_as_int);
-
-      result = build_opfncall (METHOD_CALL_EXPR, LOOKUP_NORMAL, instance, fn_as_int, parms);
-
-      if (result == NULL_TREE)
-	{
-	  compiler_error ("could not overload `operator->()(...)'");
-	  return error_mark_node;
-	}
-      else if (result == error_mark_node)
-	return error_mark_node;
-
-#if 0
-      /* Do this if we want the result of operator->() to inherit
-	 the type of the function it is subbing for.  */
-      TREE_TYPE (result) = value_type;
-#endif
-
-      return result;
-    }
-#endif
 
   if (parms == error_mark_node
       || (parms && TREE_CHAIN (parms) == error_mark_node))

@@ -40,15 +40,17 @@ extern void warning ();
 #include "flags.h"
 #include "output.h"
 
-int mark_addressable ();
-static tree convert_for_assignment ();
-/* static */ tree convert_for_initialization ();
+int mark_addressable PROTO((tree));
+static tree convert_for_assignment PROTO((tree, tree, char*, tree, int));
+/* static */ tree convert_for_initialization PROTO((tree, tree, tree, int, char*, tree, int));
 extern tree shorten_compare ();
 extern void binary_op_error ();
-static tree pointer_int_sum ();
-static tree pointer_diff ();
+static tree pointer_int_sum PROTO((enum tree_code, register tree, register tree));
+static tree pointer_diff PROTO((register tree, register tree));
+#if 0
 static tree convert_sequence ();
-/* static */ tree unary_complex_lvalue ();
+#endif
+/* static */ tree unary_complex_lvalue PROTO((enum tree_code, tree));
 static tree get_delta_difference PROTO((tree, tree, int));
 
 extern rtx original_result_rtx;
@@ -5065,13 +5067,15 @@ build_compound_expr (list)
 		break_out_cleanups (TREE_VALUE (list)), rest);
 }
 
-tree build_static_cast (type, expr)
+tree
+build_static_cast (type, expr)
    tree type, expr;
 {
   return build_c_cast (type, expr, 0);
 }
 
-tree build_reinterpret_cast (type, expr)
+tree
+build_reinterpret_cast (type, expr)
    tree type, expr;
 {
   tree intype = TREE_TYPE (expr);
@@ -5117,7 +5121,8 @@ tree build_reinterpret_cast (type, expr)
   return build_c_cast (type, expr, 0);
 }
 
-tree build_const_cast (type, expr)
+tree
+build_const_cast (type, expr)
    tree type, expr;
 {
   tree intype = TREE_TYPE (expr);
@@ -5948,7 +5953,7 @@ get_delta_difference (from, to, force)
 	}
       if (binfo == 0)
 	{
-	  error ("cannot convert pointer to member of type %T to unrelated pointer to member of type %T", from, to);
+	  cp_error ("cannot convert pointer to member of type %T to unrelated pointer to member of type %T", from, to);
 	  return delta;
 	}
       if (TREE_VIA_VIRTUAL (binfo))
