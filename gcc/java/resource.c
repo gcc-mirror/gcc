@@ -56,10 +56,7 @@ static GTY(()) rtx registerResource_libfunc;
 static int Jr_count = 0;
 
 void
-compile_resource_data (name, buffer, length)
-     char *name;
-     const char *buffer;
-     int length;
+compile_resource_data (char *name, const char *buffer, int length)
 {
   tree rtype, field = NULL_TREE, data_type, rinit, data, decl;
   char buf[60];
@@ -102,7 +99,7 @@ compile_resource_data (name, buffer, length)
 }
 
 void
-write_resource_constructor ()
+write_resource_constructor (void)
 {
   tree init_name, init_type, init_decl;
   tree iter;
@@ -134,7 +131,7 @@ write_resource_constructor ()
   for (iter = nreverse (resources); iter != NULL_TREE;
        iter = TREE_CHAIN (iter))
     {
-      char *name = IDENTIFIER_POINTER (DECL_NAME (TREE_VALUE (iter)));
+      const char *name = IDENTIFIER_POINTER (DECL_NAME (TREE_VALUE (iter)));
       emit_library_call (registerResource_libfunc, 0, VOIDmode, 1,
 			 gen_rtx (SYMBOL_REF, Pmode, name),
 			 Pmode);
@@ -160,9 +157,7 @@ write_resource_constructor ()
    compiled Java resource, which is accessed by the runtime using
    NAME.  */
 void
-compile_resource_file (name, filename)
-     char *name;
-     const char *filename;
+compile_resource_file (char *name, const char *filename)
 {
   struct stat stat_buf;
   int fd;
@@ -190,7 +185,7 @@ compile_resource_file (name, filename)
 }
 
 void
-init_resource_processing ()
+init_resource_processing (void)
 {
   registerResource_libfunc =
     gen_rtx_SYMBOL_REF (Pmode, "_Jv_RegisterResource");
