@@ -858,18 +858,7 @@ namespace std
        *  @return  Reference to this string.
        */
       basic_string&
-      assign(const basic_string& __str)
-      {
-	if (_M_rep() != __str._M_rep())
-	  {
-	    // XXX MT
-	    const allocator_type __a = this->get_allocator();
-	    _CharT* __tmp = __str._M_rep()->_M_grab(__a, __str.get_allocator());
-	    _M_rep()->_M_dispose(__a);
-	    _M_data(__tmp);
-	  }
-	return *this;
-      }
+      assign(const basic_string& __str);
 
       /**
        *  @brief  Set value to a substring of a string.

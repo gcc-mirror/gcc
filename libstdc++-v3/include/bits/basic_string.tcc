@@ -242,6 +242,22 @@ namespace std
   template<typename _CharT, typename _Traits, typename _Alloc>
     basic_string<_CharT, _Traits, _Alloc>&
     basic_string<_CharT, _Traits, _Alloc>::
+    assign(const basic_string& __str)
+    {
+      if (_M_rep() != __str._M_rep())
+	{
+	  // XXX MT
+	  const allocator_type __a = this->get_allocator();
+	  _CharT* __tmp = __str._M_rep()->_M_grab(__a, __str.get_allocator());
+	  _M_rep()->_M_dispose(__a);
+	  _M_data(__tmp);
+	}
+      return *this;
+    }
+
+  template<typename _CharT, typename _Traits, typename _Alloc>
+    basic_string<_CharT, _Traits, _Alloc>&
+    basic_string<_CharT, _Traits, _Alloc>::
     assign(const _CharT* __s, size_type __n)
     {
       __glibcxx_requires_string_len(__s, __n);
