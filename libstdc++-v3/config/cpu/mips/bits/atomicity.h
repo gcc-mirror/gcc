@@ -75,31 +75,4 @@ __atomic_add (volatile _Atomic_word *__mem, int __val)
      : "memory");
 }
 
-static inline int
-__attribute__ ((unused))
-__compare_and_swap (volatile long int *__p, long int __oldval,
-		    long int __newval)
-{
-  long int __ret;
-
-  __asm__ __volatile__
-    ("/* Inline compare & swap */\n\t"
-     "1:\n\t"
-     "ll	%0,%4\n\t"
-     ".set	push\n"
-     ".set	noreorder\n\t"
-     "bne	%0,%2,2f\n\t"
-     "move	%0,%3\n\t"
-     ".set	pop\n\t"
-     "sc	%0,%1\n\t"
-     "beqz	%0,1b\n"
-     "2:\n\t"
-     "/* End compare & swap */"
-     : "=&r" (__ret), "=m" (*__p)
-     : "r" (__oldval), "r" (__newval), "m" (*__p)
-     : "memory");
-
-  return __ret;
-}
-
 #endif /* atomicity.h */

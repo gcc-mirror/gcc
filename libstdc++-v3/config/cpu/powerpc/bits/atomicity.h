@@ -69,28 +69,6 @@ __atomic_add (volatile _Atomic_word *__mem, int __val)
 	: "cr0", "memory");
 }
 
-static inline int
-__attribute__ ((__unused__))
-__compare_and_swap (volatile long *__p, long int __oldval, long int __newval)
-{
-  int __res;
-  __asm__ __volatile__ (
-	"/* Inline compare & swap */\n"
-	"0:\t"
-	"lwarx    %0,0,%1  \n\t"
-	"sub%I2c. %0,%0,%2 \n\t"
-	"cntlzw   %0,%0 \n\t"
-	"bne-     1f \n\t"
-	"stwcx.   %3,0,%1 \n\t"
-	"bne-     0b \n"
-	"1:\n\t"
-	"/* End compare & swap */"
-	: "=&b"(__res)
-	: "r"(__p), "Ir"(__oldval), "r"(__newval)
-	: "cr0", "memory");
-  return __res >> 5;
-}
-
 static inline long
 __attribute__ ((__unused__))
 __always_swap (volatile long *__p, long int __newval)

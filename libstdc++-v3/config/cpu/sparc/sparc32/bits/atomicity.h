@@ -76,33 +76,4 @@ __atomic_add (volatile _Atomic_word* __mem, int __val)
 		       : "memory");
 }
 
-static int
-__attribute__ ((__unused__))
-__compare_and_swap (volatile long *__p, long __oldval, long __newval)
-{
-  static unsigned char __lock;
-  long __ret, __tmp;
-
-  __asm__ __volatile__("1:	ldstub	[%1], %0\n\t"
-		       "	cmp	%0, 0\n\t"
-		       "	bne	1b\n\t"
-		       "	 nop"
-		       : "=&r" (__tmp)
-		       : "r" (&__lock)
-		       : "memory");
-  if (*__p != __oldval)
-    __ret = 0;
-  else
-    {
-      *__p = __newval;
-      __ret = 1;
-    }
-  __asm__ __volatile__("stb	%%g0, [%0]"
-		       : /* no outputs */
-		       : "r" (&__lock)
-		       : "memory");
-
-  return __ret;
-}
-
 #endif /* atomicity.h */

@@ -67,27 +67,4 @@ __atomic_add (volatile _Atomic_word* __mem, int __val)
 		       : "memory");
 }
 
-static inline int
-__attribute__ ((__unused__))
-__compare_and_swap (volatile long *__p, long __oldval, long __newval)
-{
-  register int __tmp;
-  register long __tmp2;
-
-  __asm__ __volatile__("1:	ldx	[%4], %0\n\t"
-		       "	mov	%2, %1\n\t"
-		       "	cmp	%0, %3\n\t"
-		       "	bne,a,pn %%xcc, 2f\n\t"
-		       "	 mov	0, %0\n\t"
-		       "	casx	[%4], %0, %1\n\t"
-		       "	sub	%0, %1, %0\n\t"
-		       "	brnz,pn	%0, 1b\n\t"
-		       "	 mov	1, %0\n\t"
-		       "2:"
-		       : "=&r" (__tmp), "=&r" (__tmp2)
-		       : "r" (__newval), "r" (__oldval), "r" (__p)
-		       : "memory");
-  return __tmp;
-}
-
 #endif /* atomicity.h */
