@@ -1199,6 +1199,58 @@ convert_move (to, from, unsignedp)
       return;
     }
 
+  if (from_mode == TImode && to_mode == DImode)
+    {
+#ifdef HAVE_trunctidi2
+      if (HAVE_trunctidi2)
+	{
+	  emit_unop_insn (CODE_FOR_trunctidi2, to, from, UNKNOWN);
+	  return;
+	}
+#endif
+      convert_move (to, force_reg (from_mode, from), unsignedp);
+      return;
+    }
+
+  if (from_mode == TImode && to_mode == SImode)
+    {
+#ifdef HAVE_trunctisi2
+      if (HAVE_trunctisi2)
+	{
+	  emit_unop_insn (CODE_FOR_trunctisi2, to, from, UNKNOWN);
+	  return;
+	}
+#endif
+      convert_move (to, force_reg (from_mode, from), unsignedp);
+      return;
+    }
+
+  if (from_mode == TImode && to_mode == HImode)
+    {
+#ifdef HAVE_trunctihi2
+      if (HAVE_trunctihi2)
+	{
+	  emit_unop_insn (CODE_FOR_trunctihi2, to, from, UNKNOWN);
+	  return;
+	}
+#endif
+      convert_move (to, force_reg (from_mode, from), unsignedp);
+      return;
+    }
+
+  if (from_mode == TImode && to_mode == QImode)
+    {
+#ifdef HAVE_trunctiqi2
+      if (HAVE_trunctiqi2)
+	{
+	  emit_unop_insn (CODE_FOR_trunctiqi2, to, from, UNKNOWN);
+	  return;
+	}
+#endif
+      convert_move (to, force_reg (from_mode, from), unsignedp);
+      return;
+    }
+
   /* Handle truncation of volatile memrefs, and so on;
      the things that couldn't be truncated directly,
      and for which there was no special instruction.  */
