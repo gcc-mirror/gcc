@@ -144,33 +144,33 @@ extern int target_flags;
    An empty string NAME is used to identify the default VALUE.  */
 
 #define TARGET_SWITCHES \
-  {{"snake", MASK_SNAKE},		\
-   {"nosnake", -MASK_SNAKE},		\
-   {"pa-risc-1-0", -MASK_SNAKE},		\
-   {"pa-risc-1-1", MASK_SNAKE},		\
-   {"disable-fpregs", MASK_DISABLE_FPREGS},	\
-   {"no-disable-fpregs", -MASK_DISABLE_FPREGS},	\
-   {"no-space-regs", MASK_NO_SPACE_REGS},	\
-   {"space-regs", -MASK_NO_SPACE_REGS},		\
-   {"jump-in-delay", MASK_JUMP_IN_DELAY},	\
-   {"no-jump-in-delay", -MASK_JUMP_IN_DELAY},	\
-   {"space", MASK_SPACE},		\
-   {"no-space", -MASK_SPACE},		\
-   {"disable-indexing", MASK_DISABLE_INDEXING},	\
-   {"no-disable-indexing", -MASK_DISABLE_INDEXING},\
-   {"portable-runtime", MASK_PORTABLE_RUNTIME},	\
-   {"no-portable-runtime", -MASK_PORTABLE_RUNTIME},\
-   {"gas", MASK_GAS},		\
-   {"no-gas", -MASK_GAS},		\
-   {"soft-float", MASK_SOFT_FLOAT},		\
-   {"no-soft-float", -MASK_SOFT_FLOAT},	\
-   {"long-load-store", MASK_LONG_LOAD_STORE},	\
-   {"no-long-load-store", -MASK_LONG_LOAD_STORE},\
-   {"fast-indirect-calls", MASK_FAST_INDIRECT_CALLS},\
-   {"no-fast-indirect-calls", -MASK_FAST_INDIRECT_CALLS},\
-   {"big-switch", MASK_BIG_SWITCH},	\
-   {"no-big-switch", -MASK_BIG_SWITCH},	\
-   {"linker-opt", 0},		\
+  {{"snake", MASK_SNAKE, "Generate PA1.1 code"},			\
+   {"nosnake", -MASK_SNAKE, "Do not generate PA1.1 code"},		\
+   {"pa-risc-1-0", -MASK_SNAKE, "Do not generate PA1.1 code"},		\
+   {"pa-risc-1-1", MASK_SNAKE, "Generate PA1.1 code"},			\
+   {"disable-fpregs", MASK_DISABLE_FPREGS, "Disable FP regs"},		\
+   {"no-disable-fpregs", -MASK_DISABLE_FPREGS, "Do not disable FP regs"},\
+   {"no-space-regs", MASK_NO_SPACE_REGS, "Disable space regs"},		\
+   {"space-regs", -MASK_NO_SPACE_REGS, "Do not disable space regs"},	\
+   {"jump-in-delay", MASK_JUMP_IN_DELAY, "Put jumps in call delay slots"},\
+   {"no-jump-in-delay", -MASK_JUMP_IN_DELAY, "Do not put jumps in call delay slots"},	\
+   {"space", MASK_SPACE, "Optimize for code space"},			\
+   {"no-space", -MASK_SPACE, "Do not optimize for code space"},		\
+   {"disable-indexing", MASK_DISABLE_INDEXING, "Disable indexed addressing"},\
+   {"no-disable-indexing", -MASK_DISABLE_INDEXING, "Do not disable indexed addressing"},\
+   {"portable-runtime", MASK_PORTABLE_RUNTIME, "Use portable calling conventions"},	\
+   {"no-portable-runtime", -MASK_PORTABLE_RUNTIME, "Do not use portable calling conventions"},\
+   {"gas", MASK_GAS, "Assume code will be assembled by GAS"},		\
+   {"no-gas", -MASK_GAS, "Do not assume code will be assembled by GAS"},		\
+   {"soft-float", MASK_SOFT_FLOAT, "Use software floating point"},		\
+   {"no-soft-float", -MASK_SOFT_FLOAT, "Do not use software floating point"},	\
+   {"long-load-store", MASK_LONG_LOAD_STORE, "Emit long load/store sequences"},	\
+   {"no-long-load-store", -MASK_LONG_LOAD_STORE, "Do not emit long load/store sequences"},\
+   {"fast-indirect-calls", MASK_FAST_INDIRECT_CALLS, "Generate fast indirect calls"},\
+   {"no-fast-indirect-calls", -MASK_FAST_INDIRECT_CALLS, "Do not generate fast indirect calls"},\
+   {"big-switch", MASK_BIG_SWITCH, "Generate code for huge switch statements"},	\
+   {"no-big-switch", -MASK_BIG_SWITCH, "Do not generate code for huge switch statements"},	\
+   {"linker-opt", 0, "Enable linker optimizations"},		\
    { "", TARGET_DEFAULT | TARGET_CPU_DEFAULT}}
 
 #ifndef TARGET_DEFAULT
@@ -183,7 +183,7 @@ extern int target_flags;
 
 #define TARGET_OPTIONS			\
 {					\
-  { "schedule=",	&pa_cpu_string }\
+  { "schedule=",	&pa_cpu_string, "Specify CPU for scheduling purposes" }\
 }
 
 #define OVERRIDE_OPTIONS override_options ()
