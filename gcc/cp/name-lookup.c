@@ -1,5 +1,5 @@
 /* Definitions for C++ name lookup routines.
-   Copyright (C) 2003 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004 Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@integrable-solutions.net>
 
 This file is part of GCC.
@@ -3789,14 +3789,19 @@ qualified_lookup_using_namespace (tree name, tree scope, cxx_binding *result,
       seen = tree_cons (scope, NULL_TREE, seen);
       if (binding)
         result = ambiguous_decl (name, result, binding, flags);
-      if (!result->value && !result->type)
-	/* Consider using directives.  */
-	for (usings = DECL_NAMESPACE_USING (scope); usings;
-	     usings = TREE_CHAIN (usings))
-	  /* If this was a real directive, and we have not seen it.  */
-	  if (!TREE_INDIRECT_USING (usings)
-	      && !purpose_member (TREE_PURPOSE (usings), seen))
-	    todo = tree_cons (TREE_PURPOSE (usings), NULL_TREE, todo);
+
+      /* Consider strong using directives always, and non-strong ones
+	 if we haven't found a binding yet.  ??? Shouldn't we consider
+	 non-strong ones if the initial RESULT is non-NULL, but the
+	 binding in the given namespace is?  */
+      for (usings = DECL_NAMESPACE_USING (scope); usings;
+	   usings = TREE_CHAIN (usings))
+	/* If this was a real directive, and we have not seen it.  */
+	if (!TREE_INDIRECT_USING (usings)
+	    && ((!result->value && !result->type)
+		|| is_associated_namespace (scope, TREE_PURPOSE (usings)))
+	    && !purpose_member (TREE_PURPOSE (usings), seen))
+	  todo = tree_cons (TREE_PURPOSE (usings), NULL_TREE, todo);
       if (todo)
 	{
 	  scope = TREE_PURPOSE (todo);
