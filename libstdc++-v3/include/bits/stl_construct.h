@@ -60,89 +60,85 @@
 #ifndef _CPP_BITS_STL_CONSTRUCT_H
 #define _CPP_BITS_STL_CONSTRUCT_H 1
 
+#include <bits/type_traits.h>
 #include <new>
 
 namespace std
 {
-
-// construct and destroy.  These functions are not part of the C++ standard,
-// and are provided for backward compatibility with the HP STL. We also
-// provide internal names _Construct and _Destroy that can be used within
-// the library, so that standard-conforming pieces don't have to rely on
-// non-standard extensions.
-
-// Internal names
-
-template <class _T1, class _T2>
-inline void _Construct(_T1* __p, const _T2& __value) {
-new ((void*) __p) _T1(__value);
-}
+  /**
+   * Invoke an allocated object's constructor with an initializer.
+   *
+   * This function is not part of the C++ standard but is used internally
+   * within the library.
+   */
+  template <class _T1, class _T2>
+    inline void
+    _Construct(_T1* __p, const _T2& __value)
+    { new (static_cast<void*>(__p)) _T1(__value); }
   
-template <class _T1>
-inline void _Construct(_T1* __p) {
-  new ((void*) __p) _T1();
-}
+  /**
+   * Invoke an allocated object's constructor without an initializer.
+   *
+   * This function is not part of the C++ standard but is used internally
+   * within the library.
+   */
+  template <class _T1>
+    inline void
+    _Construct(_T1* __p)
+    { new (static_cast<void*>(__p)) _T1(); }
 
-template <class _Tp>
-inline void _Destroy(_Tp* __pointer) {
-  __pointer->~_Tp();
-}
+  /**
+   * Destroy a range of objects with nontrivial destructors.  
+   *
+   * This is a helper function used only by _Destroy().
+   */
+  template <class _ForwardIterator>
+    inline void
+    __destroy_aux(_ForwardIterator __first, _ForwardIterator __last, __false_type)
+    { for ( ; __first != __last; ++__first) _Destroy(&*__first); }
+
+  /**
+   * Destroy a range of objects with trivial destructors.  Since the destructors
+   * are trivial, there's nothing to do and hopefully this function will be
+   * entirely optimized away.
+   *
+   * This is a helper function used only by _Destroy().
+   */
+  template <class _ForwardIterator> 
+    inline void
+    __destroy_aux(_ForwardIterator, _ForwardIterator, __true_type)
+    { }
+
+  /**
+   * Destroy the object pointed to by a pointer type.
+   *
+   * This function is not part of the C++ standard but is used internally
+   * within the library.
+   */
+  template <class _Tp>
+    inline void
+    _Destroy(_Tp* __pointer)
+    { __pointer->~_Tp(); }
   
-template <class _ForwardIterator>
-void
-__destroy_aux(_ForwardIterator __first, _ForwardIterator __last, __false_type)
-{
-  for ( ; __first != __last; ++__first)
-    destroy(&*__first);
-}
+  /**
+   * Destroy a range of objects.  If the value_type of the object has
+   * a trivial destructor, the compiler should optimize all of this
+   * away, otherwise the objects' destructors must be invoked.
+   *
+   * This function is not part of the C++ standard but is used internally
+   * within the library.
+   */
+  template <class _ForwardIterator>
+    inline void
+    _Destroy(_ForwardIterator __first, _ForwardIterator __last)
+    {
+      typedef typename iterator_traits<_ForwardIterator>::value_type
+                       _Value_type;
+      typedef typename __type_traits<_Value_type>::has_trivial_destructor
+                       _Has_trivial_destructor;
 
-template <class _ForwardIterator> 
-inline void __destroy_aux(_ForwardIterator, _ForwardIterator, __true_type) {}
-
-template <class _ForwardIterator, class _Tp>
-inline void 
-__destroy(_ForwardIterator __first, _ForwardIterator __last, _Tp*)
-{
-  typedef typename __type_traits<_Tp>::has_trivial_destructor
-          _Trivial_destructor;
-  __destroy_aux(__first, __last, _Trivial_destructor());
-}
-
-template <class _ForwardIterator>
-inline void _Destroy(_ForwardIterator __first, _ForwardIterator __last) {
-  __destroy(__first, __last, __value_type(__first));
-}
-
-inline void _Destroy(char*, char*) {}
-inline void _Destroy(int*, int*) {}
-inline void _Destroy(long*, long*) {}
-inline void _Destroy(float*, float*) {}
-inline void _Destroy(double*, double*) {}
-inline void _Destroy(wchar_t*, wchar_t*) {}
-
-// --------------------------------------------------
-// Old names from the HP STL.
-
-template <class _T1, class _T2>
-inline void construct(_T1* __p, const _T2& __value) {
-  _Construct(__p, __value);
-}
-
-template <class _T1>
-inline void construct(_T1* __p) {
-  _Construct(__p);
-}
-
-template <class _Tp>
-inline void destroy(_Tp* __pointer) {
-  _Destroy(__pointer);
-}
-
-template <class _ForwardIterator>
-inline void destroy(_ForwardIterator __first, _ForwardIterator __last) {
-  _Destroy(__first, __last);
-}
-
+      __destroy_aux(__first, __last, _Has_trivial_destructor());
+    }
 } // namespace std
 
 #endif /* _CPP_BITS_STL_CONSTRUCT_H */
