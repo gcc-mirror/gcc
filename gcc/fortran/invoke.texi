@@ -148,8 +148,6 @@ by type.  Explanations are in the following sections.
 -fpackderived  -frepack-arrays}
 @end table
 
-@c man end
-
 @menu
 * Fortran Dialect Options::  Controlling the variant of Fortran language
                              compiled.

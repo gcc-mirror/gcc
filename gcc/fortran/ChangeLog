@@ -1,3 +1,8 @@
+2004-07-04  Matthias Klose  <doko@debian.org>
+
+	* Make-lang.in: Generate and install gfortran man page.
+	* invoke.texi: Remove extra '@c man end'.
+
 2004-07-04  Richard Henderson  <rth@redhat.com>
 
 	* f95-lang.c (gfc_mark_addressable): Don't put_var_into_stack.
