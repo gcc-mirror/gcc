@@ -1,5 +1,10 @@
 2005-03-08  Julian Brown  <julian@codesourcery.com>
 
+	* Revert patch from 2005-03-08 for causing bootstrap failure on
+	ppc-darwin.
+
+2005-03-08  Julian Brown  <julian@codesourcery.com>
+
 	* decl.c (finish_method): Give methods once-only linkage.
 
 2005-03-07  Ranjit Mathew  <rmathew@hotmail.com>
