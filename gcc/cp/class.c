@@ -1136,6 +1136,7 @@ add_method (type, fields, method)
   else 
     {
       int len;
+      int slot;
       tree method_vec;
 
       if (!CLASSTYPE_METHOD_VEC (type))
@@ -1157,27 +1158,20 @@ add_method (type, fields, method)
       len = TREE_VEC_LENGTH (method_vec);
 
       if (DECL_NAME (method) == constructor_name (type))
-	{
-	  /* A new constructor or destructor.  Constructors go in 
-	     slot 0; destructors go in slot 1.  */
-	  int slot 
-	    = DESTRUCTOR_NAME_P (DECL_ASSEMBLER_NAME (method)) ? 1 : 0;
-
-	  TREE_VEC_ELT (method_vec, slot)
-	    = build_overload (method, TREE_VEC_ELT (method_vec, slot));
-	}
+	/* A new constructor or destructor.  Constructors go in 
+	   slot 0; destructors go in slot 1.  */
+	slot = DESTRUCTOR_NAME_P (DECL_ASSEMBLER_NAME (method)) ? 1 : 0;
       else
 	{
-	  int i;
-
 	  /* See if we already have an entry with this name.  */
-	  for (i = 2; i < len; ++i)
-	    if (!TREE_VEC_ELT (method_vec, i)
-		|| (DECL_NAME (OVL_CURRENT (TREE_VEC_ELT (method_vec, i))) 
+	  for (slot = 2; slot < len; ++slot)
+	    if (!TREE_VEC_ELT (method_vec, slot)
+		|| (DECL_NAME (OVL_CURRENT (TREE_VEC_ELT (method_vec, 
+							  slot))) 
 		    == DECL_NAME (method)))
 	      break;
 		
-	  if (i == len)
+	  if (slot == len)
 	    {
 	      /* We need a bigger method vector.  */
 	      tree new_vec = make_method_vec (2 * len);
@@ -1188,76 +1182,8 @@ add_method (type, fields, method)
 	      len = 2 * len;
 	      method_vec = CLASSTYPE_METHOD_VEC (type) = new_vec;
 	    }
-	  else if (template_class_depth (type))
-	    /* TYPE is a template class.  Don't issue any errors now;
-	       wait until instantiation time to complain.  */
-	      ;
-	  else
-	    {
-	      tree fns;
 
-	      /* Check to see if we've already got this method.  */
-	      for (fns = TREE_VEC_ELT (method_vec, i);
-		   fns;
-		   fns = OVL_NEXT (fns))
-		{
-		  tree fn = OVL_CURRENT (fns);
-		 
-		  if (TREE_CODE (fn) != TREE_CODE (method))
-		    continue;
-
-		  if (TREE_CODE (method) != TEMPLATE_DECL)
-		    {
-		      /* [over.load] Member function declarations with the
-			 same name and the same parameter types cannot be
-			 overloaded if any of them is a static member
-			 function declaration.  */
-		      if (DECL_STATIC_FUNCTION_P (fn)
-			  != DECL_STATIC_FUNCTION_P (method))
-			{
-			  tree parms1 = TYPE_ARG_TYPES (TREE_TYPE (fn));
-			  tree parms2 = TYPE_ARG_TYPES (TREE_TYPE (method));
-
-			  if (! DECL_STATIC_FUNCTION_P (fn))
-			    parms1 = TREE_CHAIN (parms1);
-			  else
-			    parms2 = TREE_CHAIN (parms2);
-
-			  if (compparms (parms1, parms2))
-			    cp_error ("`%#D' and `%#D' cannot be overloaded",
-				      fn, method);
-			}
-
-		      /* Since this is an ordinary function in a
-			 non-template class, it's mangled name can be
-			 used as a unique identifier.  This technique
-			 is only an optimization; we would get the
-			 same results if we just used decls_match
-			 here.  */
-		      if (DECL_ASSEMBLER_NAME (fn) 
-			  != DECL_ASSEMBLER_NAME (method))
-			continue;
-		    }
-		  else if (!decls_match (fn, method))
-		    continue;
-
-		  /* There has already been a declaration of this
-		     method or member template.  */
-		  cp_error_at ("`%D' has already been declared in `%T'", 
-			       method, type);
-
-		  /* We don't call duplicate_decls here to merege the
-		     declarations because that will confuse things if
-		     the methods have inline definitions In
-		     particular, we will crash while processing the
-		     definitions.  */
-		  return;
-		}
-	    }
-
-	  if (TREE_VEC_ELT (method_vec, i))
-	    /* We found a match.  */;
-	  else if (DECL_CONV_FN_P (method))
+	  if (DECL_CONV_FN_P (method) && !TREE_VEC_ELT (method_vec, slot))
 	    {
 	      /* Type conversion operators have to come before
 		 ordinary methods; add_conversions depends on this to
@@ -1265,42 +1191,107 @@ add_method (type, fields, method)
 		 necessary, we slide some of the vector elements up.
 		 In theory, this makes this algorithm O(N^2) but we
 		 don't expect many conversion operators.  */
-	      for (i = 2; i < len; ++i)
+	      for (slot = 2; slot < len; ++slot)
 		{
-		  tree fn = TREE_VEC_ELT (method_vec, i);
-
+		  tree fn = TREE_VEC_ELT (method_vec, slot);
+  
 		  if (!fn)
 		    /* There are no more entries in the vector, so we
 		       can insert the new conversion operator here.  */
 		    break;
-		  
-		  if (! DECL_CONV_FN_P (OVL_CURRENT (fn)))
-		    /* We can insert the new function right at the Ith
-		       position.  */
+  		  
+		  if (!DECL_CONV_FN_P (OVL_CURRENT (fn)))
+		    /* We can insert the new function right at the
+		       SLOTth position.  */
 		    break;
 		}
-
-	      if (!TREE_VEC_ELT (method_vec, i))
+  
+	      if (!TREE_VEC_ELT (method_vec, slot))
 		/* There is nothing in the Ith slot, so we can avoid
 		   moving anything.  */
 		; 
 	      else
 		{
 		  /* We know the last slot in the vector is empty
-		     because we know that at this point there's room for
-		     a new function.  */
-		  bcopy ((PTR) &TREE_VEC_ELT (method_vec, i),
-			 (PTR) &TREE_VEC_ELT (method_vec, i + 1),
-			 (len - i - 1) * sizeof (tree));
-		  TREE_VEC_ELT (method_vec, i) = NULL_TREE;
+		     because we know that at this point there's room
+		     for a new function.  */
+		  bcopy ((PTR) &TREE_VEC_ELT (method_vec, slot),
+			 (PTR) &TREE_VEC_ELT (method_vec, slot + 1),
+			 (len - slot - 1) * sizeof (tree));
+		  TREE_VEC_ELT (method_vec, slot) = NULL_TREE;
 		}
 	    }
-
-	  /* Actually insert the new method.  */
-	  TREE_VEC_ELT (method_vec, i) 
-	    = build_overload (method, TREE_VEC_ELT (method_vec, i));
 	}
       
+      if (template_class_depth (type))
+	/* TYPE is a template class.  Don't issue any errors now; wait
+	   until instantiation time to complain.  */
+	  ;
+      else
+	{
+	  tree fns;
+
+	  /* Check to see if we've already got this method.  */
+	  for (fns = TREE_VEC_ELT (method_vec, slot);
+	       fns;
+	       fns = OVL_NEXT (fns))
+	    {
+	      tree fn = OVL_CURRENT (fns);
+		 
+	      if (TREE_CODE (fn) != TREE_CODE (method))
+		continue;
+
+	      if (TREE_CODE (method) != TEMPLATE_DECL)
+		{
+		  /* [over.load] Member function declarations with the
+		     same name and the same parameter types cannot be
+		     overloaded if any of them is a static member
+		     function declaration.  */
+		  if (DECL_STATIC_FUNCTION_P (fn)
+		      != DECL_STATIC_FUNCTION_P (method))
+		    {
+		      tree parms1 = TYPE_ARG_TYPES (TREE_TYPE (fn));
+		      tree parms2 = TYPE_ARG_TYPES (TREE_TYPE (method));
+
+		      if (! DECL_STATIC_FUNCTION_P (fn))
+			parms1 = TREE_CHAIN (parms1);
+		      else
+			parms2 = TREE_CHAIN (parms2);
+
+		      if (compparms (parms1, parms2))
+			cp_error ("`%#D' and `%#D' cannot be overloaded",
+				  fn, method);
+		    }
+
+		  /* Since this is an ordinary function in a
+		     non-template class, it's mangled name can be used
+		     as a unique identifier.  This technique is only
+		     an optimization; we would get the same results if
+		     we just used decls_match here.  */
+		  if (DECL_ASSEMBLER_NAME (fn) 
+		      != DECL_ASSEMBLER_NAME (method))
+		    continue;
+		}
+	      else if (!decls_match (fn, method))
+		continue;
+
+	      /* There has already been a declaration of this method
+		 or member template.  */
+	      cp_error_at ("`%D' has already been declared in `%T'", 
+			   method, type);
+
+	      /* We don't call duplicate_decls here to merge the
+		 declarations because that will confuse things if the
+		 methods have inline definitions In particular, we
+		 will crash while processing the definitions.  */
+	      return;
+	    }
+	}
+
+      /* Actually insert the new method.  */
+      TREE_VEC_ELT (method_vec, slot) 
+	= build_overload (method, TREE_VEC_ELT (method_vec, slot));
+
       if (TYPE_BINFO_BASETYPES (type) && CLASSTYPE_BASELINK_VEC (type))
 	{
 	  /* ??? May be better to know whether these can be extended?  */
@@ -5115,7 +5106,6 @@ resolve_address_of_overloaded_function (target_type,
       for (fns = overload; fns; fns = OVL_CHAIN (fns))
 	{
 	  tree fn = OVL_FUNCTION (fns);
-	  tree fn_arg_types;
 	  tree instantiation;
 	  tree instantiation_type;
 	  tree targs;
@@ -5134,7 +5124,7 @@ resolve_address_of_overloaded_function (target_type,
 	  targs = make_scratch_vec (DECL_NTPARMS (fn));
 	  if (fn_type_unification (fn, explicit_targs, targs,
 				   target_arg_types, NULL_TREE,
-				   DEDUCE_EXACT, NULL_TREE) != 0)
+				   DEDUCE_EXACT) != 0)
 	    /* Argument deduction failed.  */
 	    continue;
 

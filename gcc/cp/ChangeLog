@@ -1,3 +1,30 @@
+1999-02-19  Mark Mitchell  <mark@markmitchell.com>
+
+	* cp-tree.h (CLASSTYPE_METHOD_VEC): Adjust comment.
+	(fn_type_unification): Adjust prototype.
+	(lookup_fnfields_1): Declare.
+	* call.c (add_template_candidate_real): Adjust call to
+	fn_type_unification.
+	* class.c (add_method): Don't allow duplicate declarations of
+	constructors or destructors.
+	(resolve_address_of_overloaded_function): Remove unused variable.
+	Adjust call to fn_type_unification.
+	* decl.c (grokfndecl): Be more robust in the face of illegal
+	specializations.
+	* decl2.c (check_classfn): Remove hokey handling of member
+	templates.
+	* pt.c (determine_specialization): Improve comments.  Adjust to
+	handle template argument deduction as per the standard.
+	(check_explicit_specialization): Fix comment spacing.  Handle
+	type-conversion operators correctly.  Improve error-recovery.
+	(fn_type_unification): Remove EXTRA_FN_ARG parameter.
+	(get_bindings_real): Simplify handling of static members.
+	* search.c (lookup_fnfields_1): Make it have external linkage.
+	* typeck.c (compparms): Fix comment.
+	(build_unary_op): Don't try to figure out which template
+	specialization is being referred to when when the address-of
+	operator is used with a template function.
+	
 Thu Feb 18 23:40:01 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* cp-tree.h (lvalue_or_else): Qualify a char* with the `const'

@@ -1185,15 +1185,12 @@ common_base_type (tt1, tt2)
 
 /* Subroutines of `comptypes'.  */
 
-/* Return 1 if two parameter type lists PARMS1 and PARMS2
-   are equivalent in the sense that functions with those parameter types
-   can have equivalent types.
-   If either list is empty, we win.
-   Otherwise, the two lists must be equivalent, element by element.
+/* Return 1 if two parameter type lists PARMS1 and PARMS2 are
+   equivalent in the sense that functions with those parameter types
+   can have equivalent types.  The two lists must be equivalent,
+   element by element.
 
-   C++: See comment above about TYPE1, TYPE2.
-
-   STRICT is no longer used.  */
+   C++: See comment above about TYPE1, TYPE2.  */
 
 int
 compparms (parms1, parms2)
@@ -4559,30 +4556,7 @@ build_unary_op (code, xarg, noconvert)
 	  return build1 (ADDR_EXPR, unknown_type_node, arg);
 	}
 
-      if (TREE_CODE (arg) == TEMPLATE_ID_EXPR)
-	{
-	  tree targs;
-	  tree fn;
-	  
-	  /* We don't require a match here; it's possible that the
-	     context (like a cast to a particular type) will resolve
-	     the particular choice of template.  */
-	  fn = determine_specialization (arg,
-					 NULL_TREE,
-					 &targs, 
-					 0, 
-					 0);
-
-	  if (fn)
-	    {
-	      fn = instantiate_template (fn, targs);
-	      mark_addressable (fn);
-	      return build_unary_op (ADDR_EXPR, fn, 0);
-	    }
-
-	  return build1 (ADDR_EXPR, unknown_type_node, arg);
-	}
-      else if (type_unknown_p (arg))
+      if (type_unknown_p (arg))
 	return build1 (ADDR_EXPR, unknown_type_node, arg);
 
       /* Handle complex lvalues (when permitted)
