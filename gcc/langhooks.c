@@ -153,8 +153,12 @@ lhd_tree_inlining_walk_subtrees (tp,subtrees,func,data,htab)
 
 int
 lhd_tree_inlining_cannot_inline_tree_fn (fnp)
-     tree *fnp ATTRIBUTE_UNUSED;
+     tree *fnp;
 {
+  if (optimize == 0
+      && lookup_attribute ("always_inline", DECL_ATTRIBUTES (*fnp)) == NULL)
+    return 1;
+
   return 0;
 }
 
@@ -164,8 +168,11 @@ lhd_tree_inlining_cannot_inline_tree_fn (fnp)
 
 int
 lhd_tree_inlining_disregard_inline_limits (fn)
-     tree fn ATTRIBUTE_UNUSED;
+     tree fn;
 {
+  if (lookup_attribute ("always_inline", DECL_ATTRIBUTES (fn)) != NULL)
+    return 1;
+
   return 0;
 }
 

@@ -59,6 +59,9 @@ int
 c_disregard_inline_limits (fn)
      tree fn;
 {
+  if (lookup_attribute ("always_inline", DECL_ATTRIBUTES (fn)) != NULL)
+    return 1;
+
   return DECL_DECLARED_INLINE_P (fn) && DECL_EXTERNAL (fn);
 }
 
@@ -141,6 +144,10 @@ c_cannot_inline_tree_fn (fnp)
 {
   tree fn = *fnp;
   tree t;
+
+  if (optimize == 0
+      && lookup_attribute ("always_inline", DECL_ATTRIBUTES (fn)) == NULL)
+    return 1;
 
   if (! function_attribute_inlinable_p (fn))
     {

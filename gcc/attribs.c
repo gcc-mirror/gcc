@@ -51,6 +51,8 @@ static tree handle_noreturn_attribute	PARAMS ((tree *, tree, tree, int,
 						 bool *));
 static tree handle_noinline_attribute	PARAMS ((tree *, tree, tree, int,
 						 bool *));
+static tree handle_always_inline_attribute PARAMS ((tree *, tree, tree, int,
+						    bool *));
 static tree handle_used_attribute	PARAMS ((tree *, tree, tree, int,
 						 bool *));
 static tree handle_unused_attribute	PARAMS ((tree *, tree, tree, int,
@@ -109,6 +111,8 @@ static const struct attribute_spec c_common_attribute_table[] =
 			      handle_noreturn_attribute },
   { "noinline",               0, 0, true,  false, false,
 			      handle_noinline_attribute },
+  { "always_inline",          0, 0, true,  false, false,
+			      handle_always_inline_attribute },
   { "used",                   0, 0, true,  false, false,
 			      handle_used_attribute },
   { "unused",                 0, 0, false, false, false,
@@ -554,6 +558,31 @@ handle_noinline_attribute (node, name, args, flags, no_add_attrs)
 {
   if (TREE_CODE (*node) == FUNCTION_DECL)
     DECL_UNINLINABLE (*node) = 1;
+  else
+    {
+      warning ("`%s' attribute ignored", IDENTIFIER_POINTER (name));
+      *no_add_attrs = true;
+    }
+
+  return NULL_TREE;
+}
+
+/* Handle a "always_inline" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_always_inline_attribute (node, name, args, flags, no_add_attrs)
+     tree *node;
+     tree name;
+     tree args ATTRIBUTE_UNUSED;
+     int flags ATTRIBUTE_UNUSED;
+     bool *no_add_attrs;
+{
+  if (TREE_CODE (*node) == FUNCTION_DECL)
+    {
+      /* Do nothing else, just set the attribute.  We'll get at
+	 it later with lookup_attribute.  */
+    }
   else
     {
       warning ("`%s' attribute ignored", IDENTIFIER_POINTER (name));
@@ -1431,3 +1460,4 @@ strip_attrs (specs_attrs)
 
   return specs;
 }
+
