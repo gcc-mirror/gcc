@@ -860,6 +860,43 @@ can_combine_p (insn, i3, pred, succ, pdest, psrc)
 
 	  switch (GET_CODE (elt))
 	    {
+	    /* This is important to combine floating point insns
+	       for the SH4 port.  */
+	    case USE:
+	      /* Combining an isolated USE doesn't make sense.
+		 We depend here on combinable_i3_pat to reject them.  */
+	      /* The code below this loop only verifies that the inputs of
+		 the SET in INSN do not change.  We call reg_set_between_p
+		 to verify that the REG in the USE does not change betweeen
+		 I3 and INSN.
+		 If the USE in INSN was for a pseudo register, the matching
+		 insn pattern will likely match any register; combining this
+		 with any other USE would only be safe if we knew that the
+		 used registers have identical values, or if there was
+		 something to tell them apart, e.g. different modes.  For
+		 now, we forgo such compilcated tests and simply disallow
+		 combining of USES of pseudo registers with any other USE.  */
+	      if (GET_CODE (XEXP (elt, 0)) == REG
+		  && GET_CODE (PATTERN (i3)) == PARALLEL)
+		{
+		  rtx i3pat = PATTERN (i3);
+		  int i = XVECLEN (i3pat, 0) - 1;
+		  int regno = REGNO (XEXP (elt, 0));
+		  do
+		    {
+		      rtx i3elt = XVECEXP (i3pat, 0, i);
+		      if (GET_CODE (i3elt) == USE
+			  && GET_CODE (XEXP (i3elt, 0)) == REG
+			  && (REGNO (XEXP (i3elt, 0)) == regno
+			      ? reg_set_between_p (XEXP (elt, 0),
+						   PREV_INSN (insn), i3)
+			      : regno >= FIRST_PSEUDO_REGISTER))
+			return 0;
+		    }
+		  while (--i >= 0);
+		}
+	      break;
+
 	      /* We can ignore CLOBBERs.  */
 	    case CLOBBER:
 	      break;
