@@ -1,3 +1,8 @@
+Tue Jun  8 05:47:48 1999  Richard Earnshaw (rearnsha@arm.com)
+
+	* optabs.c (expand_cmplxdiv_wide): Use expand_abs to get the absolute
+	values.
+
 Mon Jun  7 22:30:37 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* fixinc/inclhack.def (avoid_bool): Also catch
