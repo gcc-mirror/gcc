@@ -4810,6 +4810,10 @@ override_options ()
   if (mips_isa_string == 0)
     mips_isa = MIPS_ISA_DEFAULT;
 
+  else if (mips_isa_string != 0
+	   && mips_arch_string != 0)
+      warning ("The -march option is incompatible to -mipsN and therefore ignored.");
+
   else if (ISDIGIT (*mips_isa_string))
     {
       mips_isa = atoi (mips_isa_string);
@@ -4938,7 +4942,7 @@ override_options ()
       mips_cpu = mips_parse_cpu (mips_cpu_string);
       if (mips_cpu == PROCESSOR_DEFAULT)
 	{
-	  error ("bad value (%s) for -mcpu= switch", mips_arch_string);
+	  error ("bad value (%s) for -mcpu= switch", mips_cpu_string);
 	  mips_cpu_string = "default";
 	}
       mips_arch = mips_cpu;
@@ -5031,19 +5035,6 @@ override_options ()
 	  mips_tune_string = "default";
 	}
     }
-
-  if ((mips_arch == PROCESSOR_R3000 && (mips_isa != 1))
-      || (mips_arch == PROCESSOR_R4KC && mips_isa != 32)
-      || ((mips_arch == PROCESSOR_R5KC
-	   || mips_arch == PROCESSOR_R20KC) && mips_isa != 64)
-      || (mips_arch == PROCESSOR_R6000 && mips_isa != 1 && mips_isa != 2)
-      || ((mips_arch == PROCESSOR_R4000
-	   || mips_arch == PROCESSOR_R4100
-	   || mips_arch == PROCESSOR_R4300
-	   || mips_arch == PROCESSOR_R4600
-	   || mips_arch == PROCESSOR_R4650)
-	  && mips_isa != 1 && mips_isa != 2 && mips_isa != 3))
-    error ("-march=%s does not support -mips%d", mips_arch_string, mips_isa);
 
   /* make sure sizes of ints/longs/etc. are ok */
   if (! ISA_HAS_64BIT_REGS)
