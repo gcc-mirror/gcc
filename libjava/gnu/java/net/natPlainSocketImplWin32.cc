@@ -346,14 +346,14 @@ gnu::java::net::PlainSocketImpl::close()
 
 // Write a byte to the socket.
 void
-gnu::java::net::PlainSocketImpl::write(jint b)
+gnu::java::net::PlainSocketImpl$SocketOutputStream::write(jint b)
 {
   jbyte d =(jbyte) b;
   int r = 0;
 
   while (r != 1)
     {
-      r = ::send (fnum, (char*) &d, 1, 0);
+      r = ::send (this$0->fnum, (char*) &d, 1, 0);
       if (r == -1)
         {
           DWORD dwErr = WSAGetLastError();
@@ -376,7 +376,8 @@ gnu::java::net::PlainSocketImpl::write(jint b)
 
 // Write some bytes to the socket.
 void
-gnu::java::net::PlainSocketImpl::write(jbyteArray b, jint offset, jint len)
+gnu::java::net::PlainSocketImpl$SocketOutputStream::write(jbyteArray b, 
+  jint offset, jint len)
 {
   if (! b)
     throw new ::java::lang::NullPointerException;
@@ -387,7 +388,7 @@ gnu::java::net::PlainSocketImpl::write(jbyteArray b, jint offset, jint len)
   int written = 0;
   while (len > 0)
     {
-      int r = ::send (fnum, (char*) bytes, len, 0);
+      int r = ::send (this$0->fnum, (char*) bytes, len, 0);
 
       if (r == -1)
         {
@@ -479,16 +480,17 @@ error:
 
 // Read a single byte from the socket.
 jint
-gnu::java::net::PlainSocketImpl::read(void)
+gnu::java::net::PlainSocketImpl$SocketInputStream::read(void)
 {
   jbyte b;
-  doRead(fnum, &b, 1, timeout);
+  doRead(this$0->fnum, &b, 1, this$0->timeout);
   return b & 0xFF;
 }
 
 // Read count bytes into the buffer, starting at offset.
 jint
-gnu::java::net::PlainSocketImpl::read(jbyteArray buffer, jint offset, jint count)
+gnu::java::net::PlainSocketImpl$SocketInputStream::read(jbyteArray buffer,
+  jint offset, jint count)
 {
   if (! buffer)
     throw new ::java::lang::NullPointerException;
@@ -501,7 +503,7 @@ gnu::java::net::PlainSocketImpl::read(jbyteArray buffer, jint offset, jint count
   jbyte *bytes = elements (buffer) + offset;
 
   // Read the socket.
-  return doRead(fnum, bytes, count, timeout);
+  return doRead(this$0->fnum, bytes, count, this$0->timeout);
 }
 
 // How many bytes are available?

@@ -1,3 +1,21 @@
+2003-09-24  Bryce McKinlay  <bryce@mckinlay.net.nz>
+
+	* gnu/java/net/PlainSocketImpl.java (read): Remove declaration.
+	(write): Likewise.
+	(SocketInputStream): Declare `read' and `write' methods native.
+	Remove implementations which called back into PlainSocketImpl.
+	Remove unneccessary overridden methods.
+	* gnu/java/net/natPlainSocketImplNoNet.cc (read): Move implementation 
+	to inner class PlainSocketImpl.SocketInputStream.
+	(write): Likewise.
+	* gnu/java/net/natPlainSocketImplPosix.cc: As above.
+	* gnu/java/net/natPlainSocketImplWin32.cc: As above.
+	* gnu/java/net/SocketInputStream.java: Remove unused file.
+	* gnu/java/net/SocketOutputStream.java: Likewise.
+	* Makefile.am: Build CNI headers for PlainSocketImpl.SocketInputStream
+	and SocketOutputStream.
+	* Makefile.in: Rebuilt.
+
 2003-09-23  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* java/lang/System.java: Add GCJ LOCAL note about encoding aliases.
