@@ -53,6 +53,7 @@ Boston, MA 02111-1307, USA.  */
 static void pa_init_machine_status PARAMS ((struct function *));
 static void pa_mark_machine_status PARAMS ((struct function *));
 static void pa_free_machine_status PARAMS ((struct function *));
+static inline rtx force_mode PARAMS ((enum machine_mode, rtx));
 static void pa_combine_instructions PARAMS ((rtx));
 static int pa_can_combine_p PARAMS ((rtx, rtx, rtx, int, rtx, rtx, rtx));
 static int forward_branch_p PARAMS ((rtx));
@@ -948,7 +949,7 @@ hppa_legitimize_address (x, oldx, mode)
 	reg2 = force_reg (Pmode, force_operand (reg2, 0));
 
       /* Figure out what the base and index are.  */
-	 
+
       if (GET_CODE (reg1) == REG
 	  && REG_POINTER (reg1))
 	{
@@ -1039,13 +1040,13 @@ hppa_legitimize_address (x, oldx, mode)
 
       /* Add the result to our base register and return.  */
       return force_reg (Pmode, gen_rtx_PLUS (Pmode, base, reg1));
-      
+
     }
 
   /* Uh-oh.  We might have an address for x[n-100000].  This needs
      special handling to avoid creating an indexed memory address
      with x-100000 as the base.
-    
+
      If the constant part is small enough, then it's still safe because
      there is a guard page at the beginning and end of the data segment.
 
@@ -1074,7 +1075,7 @@ hppa_legitimize_address (x, oldx, mode)
 		      (const (plus (symbol_ref) (const_int))))
 
 	     Where const_int is small.  In that case the const
-	     expression is a valid pointer for indexing. 
+	     expression is a valid pointer for indexing.
 
 	     If const_int is big, but can be divided evenly by shadd_const
 	     and added to (reg).  This allows more scaled indexed addresses.  */
@@ -1173,11 +1174,27 @@ hppa_address_cost (X)
   return 4;
 }
 
+/* Ensure mode of ORIG, a REG rtx, is MODE.  Returns either ORIG or a
+   new rtx with the correct mode.  */
+static inline rtx
+force_mode (mode, orig)
+     enum machine_mode mode;
+     rtx orig;
+{
+  if (mode == GET_MODE (orig))
+    return orig;
+
+  if (REGNO (orig) >= FIRST_PSEUDO_REGISTER)
+    abort ();
+
+  return gen_rtx_REG (mode, REGNO (orig));
+}
+
 /* Emit insns to move operands[1] into operands[0].
 
    Return 1 if we have written out everything that needs to be done to
    do the move.  Otherwise, return 0 and the caller will emit the move
-   normally. 
+   normally.
 
    Note SCRATCH_REG may not be in the proper mode depending on how it
    will be used.  This routine is resposible for creating a new copy
@@ -1237,7 +1254,7 @@ emit_move_sequence (operands, mode, scratch_reg)
     operand1 = gen_rtx_MEM (GET_MODE (operand1), tem);
 
   /* Handle secondary reloads for loads/stores of FP registers from
-     REG+D addresses where D does not fit in 5 bits, including 
+     REG+D addresses where D does not fit in 5 bits, including
      (subreg (mem (addr))) cases.  */
   if (fp_reg_operand (operand0, mode)
       && ((GET_CODE (operand1) == MEM
@@ -1253,7 +1270,7 @@ emit_move_sequence (operands, mode, scratch_reg)
       /* SCRATCH_REG will hold an address and maybe the actual data.  We want
 	 it in WORD_MODE regardless of what mode it was originally given
 	 to us.  */
-      scratch_reg = gen_rtx_REG (word_mode, REGNO (scratch_reg));
+      scratch_reg = force_mode (word_mode, scratch_reg);
 
       /* D might not fit in 14 bits either; for such cases load D into
 	 scratch reg.  */
@@ -1285,7 +1302,7 @@ emit_move_sequence (operands, mode, scratch_reg)
       /* SCRATCH_REG will hold an address and maybe the actual data.  We want
 	 it in WORD_MODE regardless of what mode it was originally given
 	 to us.  */
-      scratch_reg = gen_rtx_REG (word_mode, REGNO (scratch_reg));
+      scratch_reg = force_mode (word_mode, scratch_reg);
 
       /* D might not fit in 14 bits either; for such cases load D into
 	 scratch reg.  */
@@ -1323,7 +1340,7 @@ emit_move_sequence (operands, mode, scratch_reg)
       /* SCRATCH_REG will hold an address and maybe the actual data.  We want
 	 it in WORD_MODE regardless of what mode it was originally given
 	 to us.  */
-      scratch_reg = gen_rtx_REG (word_mode, REGNO (scratch_reg));
+      scratch_reg = force_mode (word_mode, scratch_reg);
 
       /* Force the constant into memory and put the address of the
 	 memory location into scratch_reg.  */
@@ -1354,9 +1371,9 @@ emit_move_sequence (operands, mode, scratch_reg)
 	{
 	  /* We are reloading the address into the scratch register, so we
 	     want to make sure the scratch register is a full register.  */
-	  scratch_reg = gen_rtx_REG (word_mode, REGNO (scratch_reg));
+	  scratch_reg = force_mode (word_mode, scratch_reg);
 
-	  emit_move_insn (scratch_reg, XEXP (XEXP (operand1, 0), 1));	
+	  emit_move_insn (scratch_reg, XEXP (XEXP (operand1, 0), 1));
 	  emit_move_insn (scratch_reg, gen_rtx_fmt_ee (GET_CODE (XEXP (operand1,
 								        0)),
 						       Pmode,
@@ -1368,8 +1385,8 @@ emit_move_sequence (operands, mode, scratch_reg)
 	     we want to load it in the same width as the original MEM,
 	     which must be the same as the width of the ultimate destination,
 	     OPERAND0.  */
-	  scratch_reg = gen_rtx_REG (GET_MODE (operand0), REGNO (scratch_reg));
-	  
+	  scratch_reg = force_mode (GET_MODE (operand0), scratch_reg);
+
 	  emit_move_insn (scratch_reg, gen_rtx_MEM (GET_MODE (operand0),
 						    scratch_reg));
 	}
@@ -1377,7 +1394,8 @@ emit_move_sequence (operands, mode, scratch_reg)
 	{
 	  /* We want to load the scratch register using the same mode as
 	     the ultimate destination.  */
-	  scratch_reg = gen_rtx_REG (GET_MODE (operand0), REGNO (scratch_reg));
+	  scratch_reg = force_mode (GET_MODE (operand0), scratch_reg);
+
 	  emit_move_insn (scratch_reg, operand1);
 	}
 
@@ -1464,7 +1482,7 @@ emit_move_sequence (operands, mode, scratch_reg)
 		  /* SCRATCH_REG will hold an address and maybe the actual
 		     data.  We want it in WORD_MODE regardless of what mode it
 		     was originally given to us.  */
-		  scratch_reg = gen_rtx_REG (word_mode, REGNO (scratch_reg));
+		  scratch_reg = force_mode (word_mode, scratch_reg);
 		}
 	      else if (flag_pic)
 		scratch_reg = gen_reg_rtx (Pmode);
@@ -1487,7 +1505,7 @@ emit_move_sequence (operands, mode, scratch_reg)
 		  /* Force the function label into memory.  */
 		  temp = force_const_mem (mode, operand1);
 		}
-		
+
 
 	      /* Get the address of the memory location.  PIC-ify it if
 		 necessary.  */
@@ -1522,7 +1540,7 @@ emit_move_sequence (operands, mode, scratch_reg)
 		  /* TEMP will hold an address and maybe the actual
 		     data.  We want it in WORD_MODE regardless of what mode it
 		     was originally given to us.  */
-		  temp = gen_rtx_REG (word_mode, REGNO (temp));
+		  temp = force_mode (word_mode, temp);
 		}
 	      else
 		temp = gen_reg_rtx (Pmode);
@@ -1561,13 +1579,13 @@ emit_move_sequence (operands, mode, scratch_reg)
 		  /* TEMP will hold an address and maybe the actual
 		     data.  We want it in WORD_MODE regardless of what mode it
 		     was originally given to us.  */
-		  temp = gen_rtx_REG (word_mode, REGNO (temp));
+		  temp = force_mode (word_mode, temp);
 		}
 	      else
 		temp = gen_reg_rtx (mode);
 
 	      /* Loading a SYMBOL_REF into a register makes that register
-		 safe to be used as the base in an indexed address. 
+		 safe to be used as the base in an indexed address.
 
 		 Don't mark hard registers though.  That loses.  */
 	      if (GET_CODE (operand0) == REG
@@ -1633,7 +1651,7 @@ emit_move_sequence (operands, mode, scratch_reg)
 							       operands[0],
 							       0)));
 	    }
-	
+
 	  return 1;
 	}
     }
@@ -2060,10 +2078,10 @@ output_move_double (operands)
 	can create such insns.
 
 	mem in this case will be either register indirect or register
-	indirect plus a valid offset. 
+	indirect plus a valid offset.
 
 	register -> register move where REGNO(dst) == REGNO(src + 1)
-	someone (Tim/Tege?) claimed this can happen for parameter loads. 
+	someone (Tim/Tege?) claimed this can happen for parameter loads.
 
      Handle mem -> register case first.  */
   if (optype0 == REGOP
@@ -2180,7 +2198,7 @@ find_addr_reg (addr)
    OPERANDS[2] is a register for temporary storage.
    OPERANDS[4] is the size as a CONST_INT
    OPERANDS[3] is a register for temporary storage.
-   OPERANDS[5] is the alignment safe to use, as a CONST_INT. 
+   OPERANDS[5] is the alignment safe to use, as a CONST_INT.
    OPERANDS[6] is another temporary register.   */
 
 const char *
@@ -2590,7 +2608,7 @@ remove_useless_addtr_insns (insns, check_notes)
 	      fcmp_count++;
 	      continue;
 	    }
-	    
+
 	  tmp = PATTERN (insn);
 	  /* If this is an fbranch instruction, bump the fbranch counter.  */
 	  if (GET_CODE (tmp) == SET
@@ -3050,7 +3068,7 @@ hppa_expand_prologue ()
 	  /* Prevent register spills from being scheduled before the
 	     stack pointer is raised.  Necessary as we will be storing
 	     registers using the frame pointer as a base register, and
-	     we happen to set fp before raising sp.  */ 
+	     we happen to set fp before raising sp.  */
 	  emit_insn (gen_blockage ());
 	}
       /* no frame pointer needed.  */
@@ -3314,13 +3332,13 @@ hppa_expand_epilogue ()
      restores are finished.  */
   emit_insn (gen_blockage ());
 
-  /* Reset stack pointer (and possibly frame pointer).  The stack 
+  /* Reset stack pointer (and possibly frame pointer).  The stack
      pointer is initially set to fp + 64 to avoid a race condition.  */
   if (frame_pointer_needed)
     {
       rtx delta = GEN_INT (-64);
       FRP (set_reg_plus_d (STACK_POINTER_REGNUM, FRAME_POINTER_REGNUM, 64));
-      FRP (emit_insn (gen_pre_load (frame_pointer_rtx, 
+      FRP (emit_insn (gen_pre_load (frame_pointer_rtx,
 				    stack_pointer_rtx,
 				    delta)));
     }
@@ -3859,7 +3877,7 @@ pa_adjust_insn_length (insn, length)
       else
 	return 0;
     }
-  /* Jumps inside switch tables which have unfilled delay slots 
+  /* Jumps inside switch tables which have unfilled delay slots
      also need adjustment.  */
   else if (GET_CODE (insn) == JUMP_INSN
 	   && simplejump_p (insn)
@@ -4703,7 +4721,7 @@ secondary_reload_class (class, mode, in)
         is_symbolic = 0;
         break;
     }
-  
+
   if (!flag_pic
       && is_symbolic
       && read_only_operand (in, VOIDmode))
@@ -4763,7 +4781,7 @@ hppa_builtin_saveregs ()
   if (TARGET_64BIT)
     {
       int i, off;
-      
+
       /* Adjust for varargs/stdarg differences.  */
       if (argadj)
 	offset = plus_constant (current_function_arg_offset_rtx, -argadj);
@@ -4847,7 +4865,7 @@ hppa_va_arg (valist, type)
         {
           t = build (PLUS_EXPR, TREE_TYPE (valist), valist,
                      build_int_2 (2 * UNITS_PER_WORD - 1, 0));
-          t = build (BIT_AND_EXPR, TREE_TYPE (t), t, 
+          t = build (BIT_AND_EXPR, TREE_TYPE (t), t,
                      build_int_2 (-2 * UNITS_PER_WORD, -1));
           t = build (MODIFY_EXPR, TREE_TYPE (valist), valist, t);
           TREE_SIDE_EFFECTS (t) = 1;
@@ -4865,7 +4883,7 @@ hppa_va_arg (valist, type)
   /* "Large" types are passed by reference.  */
   if (size > 8)
     {
-      t = build (PREDECREMENT_EXPR, TREE_TYPE (valist), valist, 
+      t = build (PREDECREMENT_EXPR, TREE_TYPE (valist), valist,
 		 build_int_2 (POINTER_SIZE / BITS_PER_UNIT, 0));
       TREE_SIDE_EFFECTS (t) = 1;
 
@@ -4888,7 +4906,7 @@ hppa_va_arg (valist, type)
 
       t = build (MODIFY_EXPR, TREE_TYPE (valist), valist, t);
       TREE_SIDE_EFFECTS (t) = 1;
-      
+
       ofs = (8 - size) % 4;
       if (ofs)
 	{
@@ -5104,7 +5122,7 @@ output_cbranch (operands, nullify, length, negated, insn)
 	/* Now restore the value of %r1 in the delay slot.  We're not
 	   optimizing so we know nothing else can be in the delay slot.  */
 	return "ldw -16(%%r30),%%r1";
-	
+
       default:
 	abort ();
     }
@@ -6404,7 +6422,7 @@ output_parallel_addb (operands, length)
    It is also used to avoid filling the delay slot of a jump which
    immediately follows a call since the jump can usually be eliminated
    completely by modifying RP in the delay slot of the call.  */
-   
+
 int
 following_call (insn)
      rtx insn;
@@ -6454,10 +6472,10 @@ following_call (insn)
    Reorg and the final jump pass can then optimize these branches and
    fill their delay slots.  We end up with smaller, more efficient code.
 
-   The jump instructions within the table are special; we must be able 
+   The jump instructions within the table are special; we must be able
    to identify them during assembly output (if the jumps don't get filled
    we need to emit a nop rather than nullifying the delay slot)).  We
-   identify jumps in switch tables by marking the SET with DImode. 
+   identify jumps in switch tables by marking the SET with DImode.
 
    We also surround the jump table itself with BEGIN_BRTAB and END_BRTAB
    insns.  This serves two purposes, first it prevents jump.c from
@@ -6753,7 +6771,7 @@ pa_combine_instructions (insns)
 		      || (GET_CODE (floater) == INSN
 			  && (GET_CODE (PATTERN (floater)) == USE
 			      || GET_CODE (PATTERN (floater)) == CLOBBER)))
-			
+
 		    continue;
 
 		  /* Anything except a regular INSN will stop our search.  */
@@ -6913,7 +6931,7 @@ int
 insn_refs_are_delayed (insn)
      rtx insn;
 {
-  return ((GET_CODE (insn) == INSN 
+  return ((GET_CODE (insn) == INSN
 	   && GET_CODE (PATTERN (insn)) != SEQUENCE
 	   && GET_CODE (PATTERN (insn)) != USE
 	   && GET_CODE (PATTERN (insn)) != CLOBBER
@@ -6924,7 +6942,7 @@ insn_refs_are_delayed (insn)
    if the parameter has any component that is passed in memory.
 
    This is new code and will be pushed to into the net sources after
-   further testing. 
+   further testing.
 
    ??? We might want to restructure this so that it looks more like other
    ports.  */
@@ -6965,7 +6983,7 @@ function_arg (cum, mode, type, named, incoming)
      particularly in their handling of FP registers.  We might
      be able to cleverly share code between them, but I'm not
      going to bother in the hope that splitting them up results
-     in code that is more easily understood. 
+     in code that is more easily understood.
 
      The 64bit code probably is very wrong for structure passing.  */
   if (TARGET_64BIT)
@@ -6978,7 +6996,7 @@ function_arg (cum, mode, type, named, incoming)
 	 varies based on the size of the target word.  */
       gpr_reg_base = 26 - cum->words;
       fpr_reg_base = 32 + cum->words;
-	  
+
       /* If the argument is more than a word long, then we need to align
 	 the base registers.  Same caveats as above.  */
       if (FUNCTION_ARG_SIZE (mode, type) > 1)
@@ -7002,7 +7020,7 @@ function_arg (cum, mode, type, named, incoming)
 	    {
 	      rtx loc[8];
 	      int i, offset = 0, ub;
-              ub = FUNCTION_ARG_SIZE (mode, type); 
+              ub = FUNCTION_ARG_SIZE (mode, type);
 	      ub = MIN (ub,
 			MAX (0, max_arg_words - cum->words - (cum->words & 1)));
 	      gpr_reg_base -= (cum->words & 1);
@@ -7130,7 +7148,7 @@ function_arg_partial_nregs (cum, mode, type, named)
   if (cum->words + offset + FUNCTION_ARG_SIZE (mode, type) <= max_arg_words)
     /* Arg fits fully into registers. */
     return 0;
-  else if (cum->words + offset >= max_arg_words) 
+  else if (cum->words + offset >= max_arg_words)
     /* Arg fully on the stack. */
     return 0;
   else
@@ -7174,7 +7192,7 @@ mark_deferred_plabels (arg)
 /* Called to register all of our global variables with the garbage
    collector.  */
 
-static void 
+static void
 pa_add_gc_roots ()
 {
   ggc_add_rtx_root (&hppa_compare_op0, 1);

@@ -1,3 +1,8 @@
+2001-04-14  Alan Modra  <amodra@one.net.au>
+
+	* pa.c (force_mode): New function.
+	(emit_move_sequence): Use it instead of generating new rtx_REGs.
+
 2001-04-13  Jim Wilson  <wilson@redhat.com>
 
 	* config/ia64/ia64.c (ia64_expand_epilogue): Emit alloc if sibcall_p.
