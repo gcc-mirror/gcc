@@ -1,3 +1,9 @@
+2003-11-19  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* config/arc/arc-protos.h: Update to C90 prototypes.
+	* config/arc/arc.c: Likewise.
+	* config/arc/initfini.c: Likewise.
+
 2003-11-19  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* stmt.c (expand_goto): Memory clobbers added.
