@@ -1,3 +1,8 @@
+2004-08-02  Roger Sayle  <roger@eyesopen.com>
+
+	* fold-const.c (fold) <TRUNC_MOD_EXPR>: The transformation "X % -Y"
+	-> "X % Y" is only valid for TRUNC_MOD_EXPR.
+
 2004-08-02  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* vec.h (DEF_VEC_P): Add proper cast to uses of vec_o_reserve and

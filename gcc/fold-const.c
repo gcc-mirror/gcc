@@ -7624,8 +7624,9 @@ fold (tree expr)
 			       fold_convert (type, arg0), mask));
 	}
 
-      /* X % -C is the same as X % C (for all rounding moduli).  */
-      if (!TYPE_UNSIGNED (type)
+      /* X % -C is the same as X % C.  */
+      if (code == TRUNC_MOD_EXPR
+	  && !TYPE_UNSIGNED (type)
 	  && TREE_CODE (arg1) == INTEGER_CST
 	  && TREE_INT_CST_HIGH (arg1) < 0
 	  && !flag_trapv
@@ -7634,8 +7635,9 @@ fold (tree expr)
 	return fold (build2 (code, type, fold_convert (type, arg0),
 			     fold_convert (type, negate_expr (arg1))));
 
-      /* X % -Y is the same as X % Y (for all rounding moduli).  */
-      if (!TYPE_UNSIGNED (type)
+      /* X % -Y is the same as X % Y.  */
+      if (code == TRUNC_MOD_EXPR
+	  && !TYPE_UNSIGNED (type)
 	  && TREE_CODE (arg1) == NEGATE_EXPR
 	  && !flag_trapv)
 	return fold (build2 (code, type, fold_convert (type, arg0),
