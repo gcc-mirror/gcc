@@ -1,3 +1,11 @@
+2001-12-19  Tom Tromey  <tromey@redhat.com>
+
+	* java/awt/FlowLayout.java (FlowLayout(), FlowLayout(int)): Set
+	gaps to 5.
+	(FlowLayout(int,int,int)): Use methods to set fields.
+	(getSize): Skip invisible components.
+	(layoutContainer): Skip invisible components.
+
 2001-12-19  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* include/jvm.h (_Jv_BuildGCDescr): Declare unconditionally.
