@@ -4673,7 +4673,7 @@ add_AT_die_ref (dw_die_ref die, enum dwarf_attribute attr_kind, dw_die_ref targ_
 }
 
 /* Add an AT_specification attribute to a DIE, and also make the back
-   pointer from the specification to the definition. */
+   pointer from the specification to the definition.  */
 
 static inline void
 add_AT_specification (dw_die_ref die, dw_die_ref targ_die)
@@ -11848,7 +11848,7 @@ setup_namespace_context (tree thing, dw_die_ref context_die)
 {
   tree context = DECL_P (thing) ? DECL_CONTEXT (thing) : TYPE_CONTEXT (thing);
   if (context && TREE_CODE (context) == NAMESPACE_DECL)
-    /* Force out the namespace. */
+    /* Force out the namespace.  */
     context_die = force_namespace_die (context);
 
   return context_die;
@@ -11879,7 +11879,7 @@ declare_in_namespace (tree thing, dw_die_ref context_die)
     }
 }
 
-/* Generate a DIE for a namespace or namespace alias */
+/* Generate a DIE for a namespace or namespace alias.  */
 
 static void
 gen_namespace_die (tree decl)
@@ -11887,10 +11887,10 @@ gen_namespace_die (tree decl)
   dw_die_ref context_die = setup_namespace_context (decl, comp_unit_die);
 
   /* Namespace aliases have a DECL_ABSTRACT_ORIGIN of the namespace
-     they are an alias of.*/
+     they are an alias of. */
   if (DECL_ABSTRACT_ORIGIN (decl) == NULL)
     {
-      /* Output a real namespace */
+      /* Output a real namespace.  */
       dw_die_ref namespace_die
 	= new_die (DW_TAG_namespace, context_die, decl);
       add_name_and_src_coords_attributes (namespace_die, decl);
@@ -11898,13 +11898,13 @@ gen_namespace_die (tree decl)
     }
   else
     {
-      /* Output a namespace alias */
+      /* Output a namespace alias.  */
 
-      /* Force out the namespace we are an alias of, if necessary */
+      /* Force out the namespace we are an alias of, if necessary.  */
       dw_die_ref origin_die
 	= force_namespace_die (DECL_ABSTRACT_ORIGIN (decl));
 
-      /* Now create the namespace alias DIE. */
+      /* Now create the namespace alias DIE.  */
       dw_die_ref namespace_die
 	= new_die (DW_TAG_imported_declaration, context_die, decl);
       add_name_and_src_coords_attributes (namespace_die, decl);
@@ -12670,7 +12670,7 @@ prune_unused_types_mark (dw_die_ref die, int dokids)
       prune_unused_types_walk_attribs (die);
 
       /* If this node is a specification,
-         also mark the definition, if it exists. */
+         also mark the definition, if it exists.  */
       if (get_AT_flag (die, DW_AT_declaration) && die->die_definition)
         prune_unused_types_mark (die->die_definition, 1);
     }

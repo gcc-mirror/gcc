@@ -31,7 +31,7 @@ struct cfg_hooks
 
   /* Basic CFG manipulation.  */
 
-  /* Return new basic block */
+  /* Return new basic block.  */
   basic_block (*create_basic_block) (void *head, void *end, basic_block after);
 
   /* Redirect edge E to the given basic block B and update underlying program

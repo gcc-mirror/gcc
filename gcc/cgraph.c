@@ -268,7 +268,7 @@ cgraph_mark_needed_node (struct cgraph_node *node)
   cgraph_mark_reachable_node (node);
 }
 
-/* Record call from CALLER to CALLEE  */
+/* Record call from CALLER to CALLEE.  */
 
 struct cgraph_edge *
 cgraph_record_call (tree caller, tree callee)

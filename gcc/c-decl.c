@@ -125,7 +125,7 @@ static GTY(()) struct stmt_tree_s c_stmt_tree;
 
 static GTY(()) tree c_scope_stmt_stack;
 
-/* State saving variables. */
+/* State saving variables.  */
 int c_in_iteration_stmt;
 int c_in_case_stmt;
 
@@ -541,7 +541,7 @@ poplevel (int keep, int dummy ATTRIBUTE_UNUSED, int functionbody)
   tree decl;
   tree p;
 
-  /* The following line does not use |= due to a bug in HP's C compiler */
+  /* The following line does not use |= due to a bug in HP's C compiler.  */
   scope->function_body = scope->function_body | functionbody;
 
   if (keep == KEEP_MAYBE)
@@ -1335,7 +1335,7 @@ duplicate_decls (tree newdecl, tree olddecl, int different_binding_level,
 	 Currently, it can only be defined in the prototype.  */
       COPY_DECL_ASSEMBLER_NAME (olddecl, newdecl);
 
-      /* If either declaration has a nondefault visibility, use it. */
+      /* If either declaration has a nondefault visibility, use it.  */
       if (DECL_VISIBILITY (olddecl) != VISIBILITY_DEFAULT)
 	{
 	  if (DECL_VISIBILITY (newdecl) != VISIBILITY_DEFAULT
@@ -1425,7 +1425,7 @@ duplicate_decls (tree newdecl, tree olddecl, int different_binding_level,
 	{
 	  if (TREE_USED (olddecl)
 	      /* In unit-at-a-time mode we never inline re-defined extern
-	         inline functions. */
+	         inline functions.  */
 	      && !flag_unit_at_a_time)
 	    (*debug_hooks->outlining_inline_function) (olddecl);
 
@@ -2775,7 +2775,7 @@ finish_decl (tree decl, tree init, tree asmspec_tree)
 		    || TREE_CODE (decl) == FIELD_DECL))
     objc_check_decl (decl);
 
-  /* Deduce size of array from initialization, if not already known */
+  /* Deduce size of array from initialization, if not already known.  */
   if (TREE_CODE (type) == ARRAY_TYPE
       && TYPE_DOMAIN (type) == 0
       && TREE_CODE (decl) != TYPE_DECL)
@@ -5089,7 +5089,7 @@ finish_struct (tree t, tree fieldlist, tree attributes)
 
   layout_type (t);
 
-  /* Delete all zero-width bit-fields from the fieldlist */
+  /* Delete all zero-width bit-fields from the fieldlist.  */
   {
     tree *fieldlistp = &fieldlist;
     while (*fieldlistp)
@@ -5105,7 +5105,7 @@ finish_struct (tree t, tree fieldlist, tree attributes)
   TYPE_FIELDS (t) = fieldlist;
 
   /* If there are lots of fields, sort so we can look through them fast.
-    We arbitrarily consider 16 or more elts to be "a lot".  */
+     We arbitrarily consider 16 or more elts to be "a lot".  */
 
   {
     int len = 0;

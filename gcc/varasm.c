@@ -1135,7 +1135,7 @@ assemble_start_function (tree decl, const char *fnname)
       maybe_assemble_visibility (decl);
     }
 
-  /* Do any machine/system dependent processing of the function name */
+  /* Do any machine/system dependent processing of the function name.  */
 #ifdef ASM_DECLARE_FUNCTION_NAME
   ASM_DECLARE_FUNCTION_NAME (asm_out_file, fnname, current_function_decl);
 #else

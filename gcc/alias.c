@@ -692,7 +692,7 @@ record_component_aliases (tree type)
     case RECORD_TYPE:
     case UNION_TYPE:
     case QUAL_UNION_TYPE:
-      /* Recursively record aliases for the base classes, if there are any */
+      /* Recursively record aliases for the base classes, if there are any.  */
       if (TYPE_BINFO (type) != NULL && TYPE_BINFO_BASETYPES (type) != NULL)
 	{
 	  int i;

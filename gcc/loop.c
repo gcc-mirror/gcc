@@ -5654,7 +5654,7 @@ record_biv (struct loop *loop, struct induction *v, rtx insn, rtx dest_reg,
       /* Set initial value to the reg itself.  */
       bl->initial_value = dest_reg;
       bl->final_value = 0;
-      /* We haven't seen the initializing insn yet */
+      /* We haven't seen the initializing insn yet.  */
       bl->init_insn = 0;
       bl->init_set = 0;
       bl->initial_test = 0;

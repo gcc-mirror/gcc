@@ -7990,7 +7990,7 @@ bypass_jumps (FILE *file)
   if (file)
     dump_flow_info (file);
 
-  /* Return if there's nothing to do, or it is too expensive  */
+  /* Return if there's nothing to do, or it is too expensive.  */
   if (n_basic_blocks <= 1 || is_too_expensive (_ ("jump bypassing disabled")))
     return 0;
 
