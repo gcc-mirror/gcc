@@ -105,7 +105,7 @@ extern int target_flags;
 #define BITS_BIG_ENDIAN 1
 
 /* Define this if most significant byte of a word is the lowest numbered.  */
-/* That is true on the hp9k8.  */
+/* That is true on the HP-PA.  */
 #define BYTES_BIG_ENDIAN 1
 
 /* Define this if most significant word of a multiword number is lowest
