@@ -1,6 +1,10 @@
+2002-10-24  Zack Weinberg  <zack@codesourcery.com>
+
+	* tree.def: Delete mention of nonexistent ARRAY_TYPE fields.
+
 2002-10-24  Ulrich Weigand  <uweigand@de.ibm.com>
 
-	* config/s390/s390.h: Rework comments; re-sort target macro definitions 
+	* config/s390/s390.h: Rework comments; re-sort target macro definitions
 	according to the sequence they are defined in the manual.
 	(POINTER_BOUNDARY): Remove.
 
@@ -23,8 +27,8 @@
 
 2002-10-24  Richard Henderson  <rth@redhat.com>
 
-        PR opt/7944
-        * reload.c (find_reloads_toplev): Mode of X is not important
+	PR opt/7944
+	* reload.c (find_reloads_toplev): Mode of X is not important
 	when simplifying subregs of constants.
 
 2002-10-24  Richard Sandiford  <rsandifo@redhat.com>

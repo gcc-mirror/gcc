@@ -199,8 +199,6 @@ DEFTREECODE (FILE_TYPE, "file_type", 't', 0)
    TREE_TYPE		  Type of an array element.
    TYPE_DOMAIN		  Type to index by.
 			    Its range of values specifies the array length.
-   TYPE_SEP		  Expression for units from one elt to the next.
-   TYPE_SEP_UNIT	  Number of bits in a unit for previous.
  The field TYPE_POINTER_TO (TREE_TYPE (array_type)) is always nonzero
  and holds the type to coerce a value of that array type to in C.
  TYPE_STRING_FLAG indicates a string (in contrast to an array of chars)
