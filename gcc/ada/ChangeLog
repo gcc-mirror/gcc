@@ -1,3 +1,9 @@
+2004-04-28  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* Makefile.in: Add target macro definitions for s390*-linux*.
+	* system-linux-s390.ads: New file.
+	* system-linux-s390x.ads: New file.
+
 2004-04-28  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* gnat_ugn.texi: Correct argument to @setfilename.
