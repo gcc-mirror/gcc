@@ -1,5 +1,10 @@
 2003-06-09  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* configure.in: Remove references to host_truncate_target.
+	* configure: Regenerate.
+	* config.gcc: Remove references to truncate_target,
+	host_truncate_target.
+
 	* Makefile.in, configure.in, config/m68hc11/t-m68hc11-gas:
 	Replace "build_canonical" with build, "host_canonical" with host.
 	* configure.in: Use GCC_TOPLEV_SUBDIRS.

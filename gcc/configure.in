@@ -980,7 +980,6 @@ build_exeext=
 host_xm_file=
 host_xm_defines=
 host_xmake_file=
-host_truncate_target=
 host_exeext=
 
 # Decode the host machine, then the target machine.
@@ -1177,11 +1176,6 @@ xm_file="ansidecl.h ${xm_file}"
 # --------
 # UNSORTED
 # --------
-
-# Truncate the target if necessary
-if test x$host_truncate_target != x; then
-	target=`echo $target | sed -e 's/\(..............\).*/\1/'`
-fi
 
 # Get the version trigger filename from the toplevel
 if test "${with_gcc_version_trigger+set}" = set; then
@@ -3196,11 +3190,6 @@ echo "Links are now set up to build a ${str1}compiler for ${target}$str4" 1>&2
 if test "x$str2" != x || test "x$str3" != x
 then
 	echo " ${str2}${str3}." 1>&2
-fi
-
-# Truncate the target if necessary
-if test x$host_truncate_target != x; then
-	target=`echo $target | sed -e 's/\(..............\).*/\1/'`
 fi
 
 # Configure the subdirectories
