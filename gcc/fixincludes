@@ -674,10 +674,10 @@ if [ -r ${LIB}/$file ]; then
   -e 's/char \*	malloc/void \*	malloc/g' \
   -e 's/char \*	realloc/void \*	realloc/g' \
   -e 's/int	exit/void	exit/g' \
-  -e '/[ 	]size_t[ 	]*;/i\
+  -e '/typedef[ 	a-zA-Z_]*[ 	]size_t[ 	]*;/i\
 #ifndef _GCC_SIZE_T\
 #define _GCC_SIZE_T' \
-  -e '/[ 	]size_t[ 	]*;/a\
+  -e '/typedef[ 	a-zA-Z_]*[ 	]size_t[ 	]*;/a\
 #endif' \
       ${LIB}/$file > ${LIB}/${file}.sed
   rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
