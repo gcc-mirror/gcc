@@ -114,8 +114,6 @@ static int build_primary_vtable (tree, tree);
 static int build_secondary_vtable (tree);
 static void finish_vtbls (tree);
 static void modify_vtable_entry (tree, tree, tree, tree, tree *);
-static tree delete_duplicate_fields_1 (tree, tree);
-static void delete_duplicate_fields (tree);
 static void finish_struct_bits (tree);
 static int alter_access (tree, tree, tree);
 static void handle_using_decl (tree, tree);
@@ -956,106 +954,6 @@ add_method (tree type, tree method, int error_p)
 }
 
 /* Subroutines of finish_struct.  */
-
-/* Look through the list of fields for this struct, deleting
-   duplicates as we go.  This must be recursive to handle
-   anonymous unions.
-
-   FIELD is the field which may not appear anywhere in FIELDS.
-   FIELD_PTR, if non-null, is the starting point at which
-   chained deletions may take place.
-   The value returned is the first acceptable entry found
-   in FIELDS.
-
-   Note that anonymous fields which are not of UNION_TYPE are
-   not duplicates, they are just anonymous fields.  This happens
-   when we have unnamed bitfields, for example.  */
-
-static tree
-delete_duplicate_fields_1 (tree field, tree fields)
-{
-  tree x;
-  tree prev = 0;
-  if (DECL_NAME (field) == 0)
-    {
-      if (! ANON_AGGR_TYPE_P (TREE_TYPE (field)))
-	return fields;
-
-      for (x = TYPE_FIELDS (TREE_TYPE (field)); x; x = TREE_CHAIN (x))
-	fields = delete_duplicate_fields_1 (x, fields);
-      return fields;
-    }
-  else
-    {
-      for (x = fields; x; prev = x, x = TREE_CHAIN (x))
-	{
-	  if (DECL_NAME (x) == 0)
-	    {
-	      if (! ANON_AGGR_TYPE_P (TREE_TYPE (x)))
-		continue;
-	      TYPE_FIELDS (TREE_TYPE (x))
-		= delete_duplicate_fields_1 (field, TYPE_FIELDS (TREE_TYPE (x)));
-	      if (TYPE_FIELDS (TREE_TYPE (x)) == 0)
-		{
-		  if (prev == 0)
-		    fields = TREE_CHAIN (fields);
-		  else
-		    TREE_CHAIN (prev) = TREE_CHAIN (x);
-		}
-	    }
-	  else if (TREE_CODE (field) == USING_DECL)
-	    /* A using declaration is allowed to appear more than
-	       once.  We'll prune these from the field list later, and
-	       handle_using_decl will complain about invalid multiple
-	       uses.  */
-	    ;
-	  else if (DECL_NAME (field) == DECL_NAME (x))
-	    {
-	      if (TREE_CODE (field) == CONST_DECL
-		  && TREE_CODE (x) == CONST_DECL)
-		cp_error_at ("duplicate enum value `%D'", x);
-	      else if (TREE_CODE (field) == CONST_DECL
-		       || TREE_CODE (x) == CONST_DECL)
-		cp_error_at ("duplicate field `%D' (as enum and non-enum)",
-			     x);
-	      else if (DECL_DECLARES_TYPE_P (field)
-		       && DECL_DECLARES_TYPE_P (x))
-		{
-		  if (same_type_p (TREE_TYPE (field), TREE_TYPE (x)))
-		    continue;
-		  cp_error_at ("duplicate nested type `%D'", x);
-		}
-	      else if (DECL_DECLARES_TYPE_P (field)
-		       || DECL_DECLARES_TYPE_P (x))
-		{
-		  /* Hide tag decls.  */
-		  if ((TREE_CODE (field) == TYPE_DECL
-		       && DECL_ARTIFICIAL (field))
-		      || (TREE_CODE (x) == TYPE_DECL
-			  && DECL_ARTIFICIAL (x)))
-		    continue;
-		  cp_error_at ("duplicate field `%D' (as type and non-type)",
-			       x);
-		}
-	      else
-		cp_error_at ("duplicate member `%D'", x);
-	      if (prev == 0)
-		fields = TREE_CHAIN (fields);
-	      else
-		TREE_CHAIN (prev) = TREE_CHAIN (x);
-	    }
-	}
-    }
-  return fields;
-}
-
-static void
-delete_duplicate_fields (tree fields)
-{
-  tree x;
-  for (x = fields; x && TREE_CHAIN (x); x = TREE_CHAIN (x))
-    TREE_CHAIN (x) = delete_duplicate_fields_1 (x, TREE_CHAIN (x));
-}
 
 /* Change the access of FDECL to ACCESS in T.  Return 1 if change was
    legit, otherwise return 0.  */
@@ -2580,10 +2478,6 @@ finish_struct_anon (tree t)
 		      || TYPE_ANONYMOUS_P (TREE_TYPE (elt))))
 		continue;
 
-	      if (constructor_name_p (DECL_NAME (elt), t))
-		cp_pedwarn_at ("ISO C++ forbids member `%D' with same name as enclosing class",
-			       elt);
-
 	      if (TREE_CODE (elt) != FIELD_DECL)
 		{
 		  cp_pedwarn_at ("`%#D' invalid; an anonymous union can only have non-static data members",
@@ -2959,9 +2853,6 @@ check_field_decls (tree t, tree *access_decls,
   tree *next;
   int has_pointers;
   int any_default_members;
-
-  /* First, delete any duplicate fields.  */
-  delete_duplicate_fields (TYPE_FIELDS (t));
 
   /* Assume there are no access declarations.  */
   *access_decls = NULL_TREE;

@@ -2730,6 +2730,37 @@ push_class_level_binding (tree name, tree x)
   if (TYPE_BEING_DEFINED (current_class_type))
     check_template_shadow (x);
 
+  /* [class.mem]
+
+     If T is the name of a class, then each of the following shall
+     have a name different from T:
+
+     -- every static data member of class T;
+
+     -- every member of class T that is itself a type;
+
+     -- every enumerator of every member of class T that is an
+	enumerated type;
+
+     -- every member of every anonymous union that is a member of
+	class T.
+
+     (Non-static data members were also forbidden to have the same
+     name as T until TC1.)  */
+  if ((TREE_CODE (x) == VAR_DECL
+       || TREE_CODE (x) == CONST_DECL
+       || (TREE_CODE (x) == TYPE_DECL
+	   && !DECL_SELF_REFERENCE_P (x))
+       /* A data member of an anonymous union.  */
+       || (TREE_CODE (x) == FIELD_DECL
+	   && DECL_CONTEXT (x) != current_class_type))
+      && DECL_NAME (x) == constructor_name (current_class_type))
+    {
+      error ("`%D' has the same name as the class in which it is declared",
+	     x);
+      POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, false);
+    }
+
   /* If this declaration shadows a declaration from an enclosing
      class, then we will need to restore IDENTIFIER_CLASS_VALUE when
      we leave this class.  Record the shadowed declaration here.  */

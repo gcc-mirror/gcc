@@ -1,3 +1,21 @@
+2004-02-15  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/13971
+	* call.c (build_conditional_expr): Handle conversions between
+	class types which result in differently cv-qualified type
+	variants.
+
+	PR c++/14086
+	* class.c (delete_duplicate_fields_1): Remove.
+	(delete_duplicate_fields): Likewise.
+	(finish_struct_anon): Remove check for members with the same name
+	as their enclosing class.
+	(check_field_decls): Do not call duplicate_fields.
+	* decl.c (grokdeclarator): Remove check for static data members
+	with the same name as their enclosing class.
+	* name-lookup.c (push_class_level_binding): Check for members with
+	the same name as their enclosing class.
+
 2004-02-15  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	PR c++/14085

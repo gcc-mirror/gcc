@@ -3065,23 +3065,37 @@ build_conditional_expr (tree arg1, tree arg2, tree arg3)
 	{
 	  arg2 = convert_like (conv2, arg2);
 	  arg2 = convert_from_reference (arg2);
-	  if (!same_type_p (TREE_TYPE (arg2), arg3_type)
-	      && CLASS_TYPE_P (arg3_type))
-	    /* The types need to match if we're converting to a class type.
-	       If not, we don't care about cv-qual mismatches, since
-	       non-class rvalues are not cv-qualified.  */
-	    abort ();
 	  arg2_type = TREE_TYPE (arg2);
 	}
       else if (conv3 && !ICS_BAD_FLAG (conv3))
 	{
 	  arg3 = convert_like (conv3, arg3);
 	  arg3 = convert_from_reference (arg3);
-	  if (!same_type_p (TREE_TYPE (arg3), arg2_type)
-	      && CLASS_TYPE_P (arg2_type))
-	    abort ();
 	  arg3_type = TREE_TYPE (arg3);
 	}
+
+      /* If, after the conversion, both operands have class type,
+	 treat the cv-qualification of both operands as if it were the
+	 union of the cv-qualification of the operands.  
+
+	 The standard is not clear about what to do in this
+	 circumstance.  For example, if the first operand has type
+	 "const X" and the second operand has a user-defined
+	 conversion to "volatile X", what is the type of the second
+	 operand after this step?  Making it be "const X" (matching
+	 the first operand) seems wrong, as that discards the
+	 qualification without actuall performing a copy.  Leaving it
+	 as "volatile X" seems wrong as that will result in the
+	 conditional expression failing altogether, even though,
+	 according to this step, the one operand could be converted to
+	 the type of the other.  */
+      if ((conv2 || conv3)
+	  && CLASS_TYPE_P (arg2_type)
+	  && TYPE_QUALS (arg2_type) != TYPE_QUALS (arg3_type))
+	arg2_type = arg3_type = 
+	  cp_build_qualified_type (arg2_type,
+				   TYPE_QUALS (arg2_type)
+				   | TYPE_QUALS (arg3_type));
     }
 
   /* [expr.cond]
@@ -3165,16 +3179,15 @@ build_conditional_expr (tree arg1, tree arg2, tree arg3)
      We need to force the lvalue-to-rvalue conversion here for class types,
      so we get TARGET_EXPRs; trying to deal with a COND_EXPR of class rvalues
      that isn't wrapped with a TARGET_EXPR plays havoc with exception
-     regions.
-
-     We use ocp_convert rather than build_user_type_conversion because the
-     latter returns NULL_TREE on failure, while the former gives an error.  */
+     regions.  */
 
   arg2 = force_rvalue (arg2);
-  arg2_type = TREE_TYPE (arg2);
+  if (!CLASS_TYPE_P (arg2_type))
+    arg2_type = TREE_TYPE (arg2);
 
   arg3 = force_rvalue (arg3);
-  arg3_type = TREE_TYPE (arg3);
+  if (!CLASS_TYPE_P (arg2_type))
+    arg3_type = TREE_TYPE (arg3);
 
   if (arg2 == error_mark_node || arg3 == error_mark_node)
     return error_mark_node;
@@ -3261,7 +3274,7 @@ build_conditional_expr (tree arg1, tree arg2, tree arg3)
   /* Expand both sides into the same slot, hopefully the target of the
      ?: expression.  We used to check for TARGET_EXPRs here, but now we
      sometimes wrap them in NOP_EXPRs so the test would fail.  */
-  if (!lvalue_p && IS_AGGR_TYPE (TREE_TYPE (result)))
+  if (!lvalue_p && CLASS_TYPE_P (TREE_TYPE (result)))
     result = get_target_expr (result);
   
   /* If this expression is an rvalue, but might be mistaken for an

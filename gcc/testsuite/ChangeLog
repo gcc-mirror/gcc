@@ -1,3 +1,11 @@
+2004-02-15  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/13971
+	* g++.dg/expr/cond4.C: New test.
+
+	PR c++/14086
+	* g++.dg/lookup/crash2.C: New test.
+
 2004-02-14  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR c++/14116

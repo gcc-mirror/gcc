@@ -8274,13 +8274,6 @@ grokdeclarator (tree declarator,
 
 	    if (staticp)
 	      {
-		/* [class.mem] forbids static data members with the
-		   same name as the enclosing class.  Non-static data
-		   members are checked in check_field_decls.  */
-		if (constructor_name_p (declarator, current_class_type))
-		  pedwarn ("ISO C++ forbids static data member `%D' with same name as enclosing class",
-			   declarator);
-		  
 		/* C++ allows static class members.  All other work
 		   for this is done by grokfield.  */
 		decl = build_lang_decl (VAR_DECL, declarator, type);
