@@ -1,3 +1,134 @@
+2000-08-04  Rodney Brown  <RodneyBrown@pmsc.com>
+
+	* alias.c (mark_constant_function): Use INSN_P.
+	(init_alias_analysis): Likewise.
+	* combine.c (combine_instructions): Use INSN_P.
+	(can_combine_p): Likewise.
+	(try_combine): Likewise.
+	(distribute_notes): Likewise.
+	(distribute_links): Likewise.
+	* cse.c (cse_around_loop): Use INSN_P.
+	(invalidate_skipped_block): Likewise.
+	(cse_set_around_loop): Likewise.
+	(cse_end_of_basic_block): Likewise.
+	(delete_trivially_dead_insns): Likewise.
+	* emit-rtl.c (unshare_all_rtl_again): Use INSN_P.
+	(unshare_all_rtl_1): Likewise.
+	(next_cc0_user): Likewise.
+	(try_split make_insn_raw): Likewise.
+	(remove_unnecessary_notes): Likewise.
+	* final.c (shorten_branches): Use INSN_P.
+	(leaf_renumber_regs): Likewise.
+	(leaf_renumber_regs_insn): Likewise.
+	* flow.c (find_label_refs): Use INSN_P.
+	(verify_wide_reg): Likewise.
+	(notice_stack_pointer_modification): Likewise.
+	(count_or_remove_death_notes): Likewise.
+	(verify_flow_info): Likewise.
+	(clear_log_links): Likewise.
+	* function.c (fixup_var_refs_insns): Use INSN_P.
+	(compute_insns_for_mem): Likewise.
+	* gcse.c (alloc_gcse_mem): Use INSN_P.
+	(compute_sets): Likewise.
+	(compute_hash_table): Likewise.
+	(classic_gcse): Likewise.
+	(cprop): Likewise.
+	(insert_insn_end_bb): Likewise.
+	(delete_null_pointer_checks_1): Likewise.
+	* global.c (expand_preferences): Use INSN_P.
+	(build_insn_chain): Likewise.
+	* graph.c (node_data): Use INSN_P.
+	* haifa-sched.c (priority): Use INSN_P.
+	(rm_line_notes): Likewise.
+	(rm_other_notes): Likewise.
+	(find_insn_reg_weight): Likewise.
+	(init_target_units): Likewise.
+	(schedule_block): Likewise.
+	(compute_block_forward_dependences): Likewise.
+	(debug_dependencies): Likewise.
+	(set_priorities): Likewise.
+	* integrate.c (function_cannot_inline_p): Use INSN_P.
+	(save_parm_insns): Likewise.
+	(copy_insn_list): Likewise.
+	* jump.c (mark_all_labels): Use INSN_P.
+	(never_reached_warning): Likewise.
+	* lcm.c (optimize_mode_switching): Use INSN_P.
+	* local-alloc.c (validate_equiv_mem): Use INSN_P.
+	(memref_used_between_p): Likewise.
+	(update_equiv_regs): Likewise.
+	(block_alloc): Likewise.
+	(no_conflict_p): Likewise.
+	* loop.c (scan_loop): Use INSN_P.
+	(find_and_verify_loops): Likewise.
+	(count_loop_regs_set): Likewise.
+	(loop_reg_used_before_p): Likewise.
+	(strength_reduce): Likewise.
+	(recombine_givs): Likewise.
+	(check_dbra_loop): Likewise.
+	(load_mems): Likewise.
+	(try_copy_prop): Likewise.
+	* print-rtl.c (print_rtx): Use INSN_P.
+	* recog.c (find_single_use): Use INSN_P.
+	* reg-stack.c (stack_regs_mentioned): Use INSN_P.
+	(next_flags_user): Likewise.
+	(swap_rtx_condition): Likewise.
+	* regmove.c (mark_flags_life_zones): Use INSN_P.
+	(optimize_reg_copy_1): Likewise.
+	(optimize_reg_copy_2): Likewise.
+	(optimize_reg_copy_3): Likewise.
+	(reg_is_remote_constant_p): Likewise.
+	(fixup_match_2): Likewise.
+	(regmove_optimize): Likewise.
+	(fixup_match_1): Likewise.
+	* regrename.c (build_def_use): Use INSN_P.
+	(replace_reg_in_block): Likewise.
+	(consider_use): Likewise.
+	* reload.c (find_equiv_reg): Use INSN_P.
+	* reload1.c (reload): Use INSN_P.
+	(maybe_fix_stack_asms): Likewise.
+	(calculate_needs_all_insns): Likewise.
+	(reload_as_needed): Likewise.
+	(emit_output_reload_insns): Likewise.
+	(delete_address_reloads_1): Likewise.
+	(reload_cse_regs_1): Likewise.
+	(reload_combine): Likewise.
+	(reload_cse_move2add): Likewise.
+	* reorg.c (redundant_insn): Use INSN_P.
+	(dbr_schedule): Likewise.
+	* resource.c (find_dead_or_set_registers): Use INSN_P.
+	(mark_target_live_regs): Likewise.
+	* rtlanal.c (reg_used_between_p): Use INSN_P.
+	(reg_referenced_between_p): Likewise.
+	(reg_set_between_p): Likewise.
+	(reg_set_p): Likewise.
+	(single_set): Likewise.
+	(multiple_sets): Likewise.
+	(find_last_value): Likewise.
+	(reg_set_last): Likewise.
+	(find_reg_note): Likewise.
+	(find_regno_note): Likewise.
+	* sibcall.c (sequence_uses_addressof): Use INSN_P.
+	* simplify-rtx.c (cselib_process_insn): Use INSN_P.
+	* ssa.c (find_evaluations): Use INSN_P.
+	(rename_block): Likewise.
+	(rename_equivalent_regs): Likewise.
+	* unroll.c (loop_find_equiv_value): Use INSN_P.
+	(set_dominates_use): Likewise.
+	* varasm.c (mark_constant_pool): Use INSN_P.
+	(mark_constants): Likewise.
+	* config/alpha/alpha.c (alpha_does_function_need_gp): Use INSN_P.
+	(alphaev4_next_group): Likewise.
+	(alphaev5_next_group): Likewise.
+	* config/c4x/c4x.c (c4x_process_after_reload): Use INSN_P.
+	(c4x_rptb_rpts_p): Likewise.
+	* config/mips/mips.c (mips16_optimize_gp): Use INSN_P.
+	* config/rs6000/rs6000.c (uses_TOC): Use INSN_P.
+	(rs6000_adjust_priority): Likewise.
+	* config/sh/sh.c (sh_loop_align): Use INSN_P.
+	(machine_dependent_reorg): Likewise.
+	(split_branches): Likewise.
+	* config/tahoe/tahoe.c (tahoe_cmp_check): Use INSN_P.
+
 Fri Aug  4 11:43:49 2000  John Wehle  (john@feith.com)
 
 	* combine.c (recog_for_combine): Remove the old notes

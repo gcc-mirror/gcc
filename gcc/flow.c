@@ -570,7 +570,7 @@ find_label_refs (f, lvl)
   rtx insn;
 
   for (insn = f; insn; insn = NEXT_INSN (insn))
-    if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
+    if (INSN_P (insn))
       {
 	rtx note;
 
@@ -2708,7 +2708,7 @@ verify_wide_reg (regno, head, end)
 {
   while (1)
     {
-      if (GET_RTX_CLASS (GET_CODE (head)) == 'i'
+      if (INSN_P (head)
 	  && for_each_rtx (&PATTERN (head), verify_wide_reg_1, &regno))
 	return;
       if (head == end)
@@ -2990,7 +2990,7 @@ notice_stack_pointer_modification (f)
 
   for (insn = f; insn; insn = NEXT_INSN (insn))
     {
-      if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
+      if (INSN_P (insn))
 	{
 	  /* Check if insn modifies the stack pointer.  */
 	  note_stores (PATTERN (insn), notice_stack_pointer_modification_1,
@@ -6330,7 +6330,7 @@ count_or_remove_death_notes (blocks, kill)
 
       for (insn = bb->head; ; insn = NEXT_INSN (insn))
 	{
-	  if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
+	  if (INSN_P (insn))
 	    {
 	      rtx *pprev = &REG_NOTES (insn);
 	      rtx link = *pprev;
@@ -6642,7 +6642,7 @@ verify_flow_info ()
 	    }
 	}
 
-      if (GET_RTX_CLASS (GET_CODE (x)) == 'i'
+      if (INSN_P (x)
 	  && GET_CODE (x) == JUMP_INSN
 	  && returnjump_p (x) && ! condjump_p (x)
 	  && ! (NEXT_INSN (x) && GET_CODE (NEXT_INSN (x)) == BARRIER))
@@ -7938,7 +7938,7 @@ clear_log_links (insns)
   int b;
 
   for (i = insns; i; i = NEXT_INSN (i))
-    if (GET_RTX_CLASS (GET_CODE (i)) == 'i')
+    if (INSN_P (i))
       LOG_LINKS (i) = 0;
 
   for (b = 0; b < n_basic_blocks; b++)

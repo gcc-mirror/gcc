@@ -856,7 +856,7 @@ find_single_use (dest, insn, ploc)
   for (next = next_nonnote_insn (insn);
        next != 0 && GET_CODE (next) != CODE_LABEL;
        next = next_nonnote_insn (next))
-    if (GET_RTX_CLASS (GET_CODE (next)) == 'i' && dead_or_set_p (next, dest))
+    if (INSN_P (next) && dead_or_set_p (next, dest))
       {
 	for (link = LOG_LINKS (next); link; link = XEXP (link, 1))
 	  if (XEXP (link, 0) == insn)

@@ -211,7 +211,7 @@ function_cannot_inline_p (fndecl)
       for (ninsns = 0, insn = get_first_nonparm_insn ();
 	   insn && ninsns < max_insns;
 	   insn = NEXT_INSN (insn))
-	if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
+	if (INSN_P (insn))
 	  ninsns++;
 
       if (ninsns >= max_insns)
@@ -480,7 +480,7 @@ save_parm_insns (insn, first_nonparm_insn)
       if (insn == first_nonparm_insn)
 	in_nonparm_insns = 1;
 
-      if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
+      if (INSN_P (insn))
 	{
 	  /* Record what interesting things happen to our parameters.  */
 	  note_stores (PATTERN (insn), note_modified_parmregs, NULL);
@@ -1577,7 +1577,7 @@ copy_insn_list (insns, map, static_chain_value)
      are valid across the entire function.  */
   map->const_age++;
   for (insn = insns; insn; insn = NEXT_INSN (insn))
-    if (GET_RTX_CLASS (GET_CODE (insn)) == 'i'
+    if (INSN_P (insn)
 	&& map->insn_map[INSN_UID (insn)]
 	&& REG_NOTES (insn))
       {

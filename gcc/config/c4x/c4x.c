@@ -2353,7 +2353,7 @@ c4x_process_after_reload (first)
   for (insn = first; insn; insn = NEXT_INSN (insn))
     {
       /* Look for insn.  */
-      if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
+      if (INSN_P (insn))
 	{
 	  int insn_code_number;
 	  rtx old;
@@ -4696,13 +4696,13 @@ c4x_rptb_rpts_p (insn, op)
   insn = next_nonnote_insn (insn);
 
   /* This should be our first insn in the loop.  */
-  if (GET_RTX_CLASS (GET_CODE (insn)) != 'i')
+  if (! INSN_P (insn))
     return 0;
 
   /* Skip any notes.  */
   insn = next_nonnote_insn (insn);
 
-  if (GET_RTX_CLASS (GET_CODE (insn)) != 'i')
+  if (! INSN_P (insn))
     return 0;
 
   if (recog_memoized (insn) != CODE_FOR_rptb_end)

@@ -1833,8 +1833,7 @@ mark_constant_function ()
   /* Determine if this is a constant function.  */
 
   for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
-    if (GET_RTX_CLASS (GET_CODE (insn)) == 'i'
-	&& nonlocal_reference_p (insn))
+    if (INSN_P (insn) && nonlocal_reference_p (insn))
       return;
 
   /* Mark the function.  */
@@ -1979,7 +1978,7 @@ init_alias_analysis ()
       /* Walk the insns adding values to the new_reg_base_value array.  */
       for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
 	{
-	  if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
+	  if (INSN_P (insn))
 	    {
 	      rtx note, set;
 

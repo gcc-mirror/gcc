@@ -1631,7 +1631,7 @@ redundant_insn (insn, target, delay_list)
       if (GET_CODE (trial) == CODE_LABEL)
 	return 0;
 
-      if (GET_RTX_CLASS (GET_CODE (trial)) != 'i')
+      if (! INSN_P (trial))
 	continue;
 
       pat = PATTERN (trial);
@@ -3594,7 +3594,7 @@ dbr_schedule (first, file)
       next = NEXT_INSN (insn);
 
       if (GET_CODE (insn) == INSN && GET_CODE (PATTERN (insn)) == USE
-	  && GET_RTX_CLASS (GET_CODE (XEXP (PATTERN (insn), 0))) == 'i')
+	  && INSN_P (XEXP (PATTERN (insn), 0)))
 	next = delete_insn (insn);
     }
 

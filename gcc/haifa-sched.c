@@ -3132,7 +3132,7 @@ priority (insn)
   int this_priority;
   rtx link;
 
-  if (GET_RTX_CLASS (GET_CODE (insn)) != 'i')
+  if (! INSN_P (insn))
     return 0;
 
   if ((this_priority = INSN_PRIORITY (insn)) == 0)
@@ -4415,8 +4415,7 @@ rm_line_notes (bb)
 
   get_bb_head_tail (bb, &head, &tail);
 
-  if (head == tail
-      && (GET_RTX_CLASS (GET_CODE (head)) != 'i'))
+  if (head == tail && (! INSN_P (head)))
     return;
 
   next_tail = NEXT_INSN (tail);
@@ -4597,8 +4596,7 @@ rm_other_notes (head, tail)
   rtx next_tail;
   rtx insn;
 
-  if (head == tail
-      && (GET_RTX_CLASS (GET_CODE (head)) != 'i'))
+  if (head == tail && (! INSN_P (head)))
     return;
 
   next_tail = NEXT_INSN (tail);
@@ -4644,7 +4642,7 @@ find_insn_reg_weight (b)
       rtx x;
 
       /* Handle register life information.  */
-      if (GET_RTX_CLASS (GET_CODE (insn)) != 'i')
+      if (! INSN_P (insn))
 	continue;
 
       /* Increment weight for each register born here.  */
@@ -4819,7 +4817,7 @@ init_target_units ()
 
   for (insn = get_last_insn (); insn; insn = PREV_INSN (insn))
     {
-      if (GET_RTX_CLASS (GET_CODE (insn)) != 'i')
+      if (! INSN_P (insn))
 	continue;
 
       unit = insn_unit (insn);
@@ -5811,7 +5809,7 @@ schedule_block (bb, rgn_n_insns)
 
      FIXME: Probably the same thing should be done with REG_SAVE_NOTEs
      referencing NOTE_INSN_SETJMP at the end of the block.  */
-  if (GET_RTX_CLASS (GET_CODE (head)) == 'i')
+  if (INSN_P (head))
     {
       rtx note;
 
@@ -5834,8 +5832,7 @@ schedule_block (bb, rgn_n_insns)
 
   /* If the only insn left is a NOTE or a CODE_LABEL, then there is no need
      to schedule this block.  */
-  if (head == tail
-      && (GET_RTX_CLASS (GET_CODE (head)) != 'i'))
+  if (head == tail && (! INSN_P (head)))
     return (sched_n_insns);
 
   /* Debug info.  */
@@ -5900,12 +5897,12 @@ schedule_block (bb, rgn_n_insns)
     {
       rtx next;
 
-      if (GET_RTX_CLASS (GET_CODE (insn)) != 'i')
+      if (! INSN_P (insn))
 	continue;
       next = NEXT_INSN (insn);
 
       if (INSN_DEP_COUNT (insn) == 0
-	  && (SCHED_GROUP_P (next) == 0 || GET_RTX_CLASS (GET_CODE (next)) != 'i'))
+	  && (SCHED_GROUP_P (next) == 0 || ! INSN_P (next)))
 	ready[n_ready++] = insn;
       if (!(SCHED_GROUP_P (insn)))
 	target_n_insns++;
@@ -5925,13 +5922,12 @@ schedule_block (bb, rgn_n_insns)
 	src_next_tail = NEXT_INSN (tail);
 	src_head = head;
 
-	if (head == tail
-	    && (GET_RTX_CLASS (GET_CODE (head)) != 'i'))
+	if (head == tail && (! INSN_P (head)))
 	  continue;
 
 	for (insn = src_head; insn != src_next_tail; insn = NEXT_INSN (insn))
 	  {
-	    if (GET_RTX_CLASS (GET_CODE (insn)) != 'i')
+	    if (! INSN_P (insn))
 	      continue;
 
 	    if (!CANT_MOVE (insn)
@@ -5949,7 +5945,7 @@ schedule_block (bb, rgn_n_insns)
 		if (INSN_DEP_COUNT (insn) == 0
 		    && (! next
 			|| SCHED_GROUP_P (next) == 0
-			|| GET_RTX_CLASS (GET_CODE (next)) != 'i'))
+			|| ! INSN_P (next)))
 		  ready[n_ready++] = insn;
 	      }
 	  }
@@ -6213,7 +6209,7 @@ compute_block_forward_dependences (bb)
   next_tail = NEXT_INSN (tail);
   for (insn = head; insn != next_tail; insn = NEXT_INSN (insn))
     {
-      if (GET_RTX_CLASS (GET_CODE (insn)) != 'i')
+      if (! INSN_P (insn))
 	continue;
 
       insn = group_leader (insn);
@@ -6599,7 +6595,7 @@ debug_dependencies ()
 	      rtx link;
 	      int unit, range;
 
-	      if (GET_RTX_CLASS (GET_CODE (insn)) != 'i')
+	      if (! INSN_P (insn))
 		{
 		  int n;
 		  fprintf (dump, ";;   %6d ", INSN_UID (insn));
@@ -6659,8 +6655,7 @@ set_priorities (bb)
   get_bb_head_tail (bb, &head, &tail);
   prev_head = PREV_INSN (head);
 
-  if (head == tail
-      && (GET_RTX_CLASS (GET_CODE (head)) != 'i'))
+  if (head == tail && (! INSN_P (head)))
     return 0;
 
   n_insn = 0;

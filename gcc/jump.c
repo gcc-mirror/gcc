@@ -855,7 +855,7 @@ mark_all_labels (f, cross_jump)
   rtx insn;
 
   for (insn = f; insn; insn = NEXT_INSN (insn))
-    if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
+    if (INSN_P (insn))
       {
 	if (GET_CODE (insn) == CALL_INSN
 	    && GET_CODE (PATTERN (insn)) == CALL_PLACEHOLDER)
@@ -3095,7 +3095,7 @@ never_reached_warning (avoided_insn)
 	    two_avoided_lines |= (NOTE_LINE_NUMBER (a_line_note)
 				  != NOTE_LINE_NUMBER (insn));
 	}
-      else if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
+      else if (INSN_P (insn))
 	contains_insn = 1;
     }
   if (two_avoided_lines && contains_insn)

@@ -6306,12 +6306,11 @@ cse_around_loop (loop_start)
 	     && NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_END);
        insn = NEXT_INSN (insn))
     {
-      if (GET_RTX_CLASS (GET_CODE (insn)) == 'i'
+      if (INSN_P (insn)
 	  && (GET_CODE (PATTERN (insn)) == SET
 	      || GET_CODE (PATTERN (insn)) == CLOBBER))
 	cse_set_around_loop (PATTERN (insn), insn, loop_start);
-      else if (GET_RTX_CLASS (GET_CODE (insn)) == 'i'
-	       && GET_CODE (PATTERN (insn)) == PARALLEL)
+      else if (INSN_P (insn) && GET_CODE (PATTERN (insn)) == PARALLEL)
 	for (i = XVECLEN (PATTERN (insn), 0) - 1; i >= 0; i--)
 	  if (GET_CODE (XVECEXP (PATTERN (insn), 0, i)) == SET
 	      || GET_CODE (XVECEXP (PATTERN (insn), 0, i)) == CLOBBER)
@@ -6371,7 +6370,7 @@ invalidate_skipped_block (start)
   for (insn = start; insn && GET_CODE (insn) != CODE_LABEL;
        insn = NEXT_INSN (insn))
     {
-      if (GET_RTX_CLASS (GET_CODE (insn)) != 'i')
+      if (! INSN_P (insn))
 	continue;
 
       if (GET_CODE (insn) == CALL_INSN)
@@ -6471,7 +6470,7 @@ cse_set_around_loop (x, insn, loop_start)
 		    rtx q;
 		    rtx cse_check_loop_start_value = SET_SRC (x);
 		    for (q = p; q != loop_start; q = NEXT_INSN (q))
-		      if (GET_RTX_CLASS (GET_CODE (q)) == 'i')
+		      if (INSN_P (q))
 			note_stores (PATTERN (q),
 				     cse_check_loop_start,
 				     &cse_check_loop_start_value);
@@ -6543,8 +6542,7 @@ cse_end_of_basic_block (insn, data, follow_jumps, after_loop, skip_blocks)
   rtx p = insn, q;
   int nsets = 0;
   int low_cuid = INSN_CUID (insn), high_cuid = INSN_CUID (insn);
-  rtx next =
-    GET_RTX_CLASS (GET_CODE (insn)) == 'i' ? insn : next_real_insn (insn);
+  rtx next = INSN_P (insn) ? insn : next_real_insn (insn);
   int path_size = data->path_size;
   int path_entry = 0;
   int i;
@@ -6602,8 +6600,7 @@ cse_end_of_basic_block (insn, data, follow_jumps, after_loop, skip_blocks)
 
       /* A PARALLEL can have lots of SETs in it,
 	 especially if it is really an ASM_OPERANDS.  */
-      if (GET_RTX_CLASS (GET_CODE (p)) == 'i'
-	  && GET_CODE (PATTERN (p)) == PARALLEL)
+      if (INSN_P (p) && GET_CODE (PATTERN (p)) == PARALLEL)
 	nsets += XVECLEN (PATTERN (p), 0);
       else if (GET_CODE (p) != NOTE)
 	nsets += 1;
@@ -7270,7 +7267,7 @@ delete_trivially_dead_insns (insns, nreg)
      insn in the function.   We must not skip that insn or we may end
      up deleting code that is not really dead.   */
   insn = get_last_insn ();
-  if (GET_RTX_CLASS (GET_CODE (insn)) != 'i')
+  if (! INSN_P (insn))
     insn = prev_real_insn (insn);
 
   for (; insn; insn = prev)
@@ -7331,7 +7328,7 @@ delete_trivially_dead_insns (insns, nreg)
 	  else if (GET_CODE (SET_DEST (PATTERN (insn))) == CC0
 		   && ! side_effects_p (SET_SRC (PATTERN (insn)))
 		   && ((tem = next_nonnote_insn (insn)) == 0
-		       || GET_RTX_CLASS (GET_CODE (tem)) != 'i'
+		       || ! INSN_P (tem)
 		       || ! reg_referenced_p (cc0_rtx, PATTERN (tem))))
 	    ;
 #endif
@@ -7363,7 +7360,7 @@ delete_trivially_dead_insns (insns, nreg)
 		else if (GET_CODE (SET_DEST (elt)) == CC0
 			 && ! side_effects_p (SET_SRC (elt))
 			 && ((tem = next_nonnote_insn (insn)) == 0
-			     || GET_RTX_CLASS (GET_CODE (tem)) != 'i'
+			     || ! INSN_P (tem)
 			     || ! reg_referenced_p (cc0_rtx, PATTERN (tem))))
 		  ;
 #endif

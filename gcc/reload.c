@@ -6309,7 +6309,7 @@ find_equiv_reg (goal, insn, class, other, reload_reg_p, goalreg, mode)
 	return 0;
 #endif
 
-      if (GET_RTX_CLASS (GET_CODE (p)) == 'i')
+      if (INSN_P (p))
 	{
 	  pat = PATTERN (p);
 

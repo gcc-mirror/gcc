@@ -284,7 +284,7 @@ mark_flags_life_zones (flags)
 	     alive, death, birth.  This lets more important info
 	     overwrite the mode of lesser info.  */
 
-	  if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
+	  if (INSN_P (insn))
 	    {
 #ifdef HAVE_cc0
 	      /* In the cc0 case, death is not marked in reg notes,
@@ -414,7 +414,7 @@ optimize_reg_copy_1 (insn, dest, src)
       if (flag_exceptions && GET_CODE (p) == CALL_INSN)
 	break;
 
-      if (GET_RTX_CLASS (GET_CODE (p)) != 'i')
+      if (! INSN_P (p))
 	continue;
 
       if (reg_set_p (src, p) || reg_set_p (dest, p)
@@ -599,7 +599,7 @@ optimize_reg_copy_2 (insn, dest, src)
       if (flag_exceptions && GET_CODE (p) == CALL_INSN)
 	break;
 
-      if (GET_RTX_CLASS (GET_CODE (p)) != 'i')
+      if (! INSN_P (p))
 	continue;
 
       set = single_set (p);
@@ -611,7 +611,7 @@ optimize_reg_copy_2 (insn, dest, src)
 
 	  /* Set to stop at next insn.  */
 	  for (q = insn; q != NEXT_INSN (p); q = NEXT_INSN (q))
-	    if (GET_RTX_CLASS (GET_CODE (q)) == 'i')
+	    if (INSN_P (q))
 	      {
 		if (reg_mentioned_p (dest, PATTERN (q)))
 		  PATTERN (q) = replace_rtx (PATTERN (q), dest, src);
@@ -673,7 +673,7 @@ optimize_reg_copy_3 (insn, dest, src)
       if (flag_exceptions && GET_CODE (p) == CALL_INSN)
 	return;
 
-      if (GET_RTX_CLASS (GET_CODE (p)) != 'i')
+      if (! INSN_P (p))
 	continue;
     }
   if (! p)
@@ -709,7 +709,7 @@ optimize_reg_copy_3 (insn, dest, src)
   subreg = gen_rtx_SUBREG (old_mode, src_reg, 0);
   while (p = NEXT_INSN (p), p != insn)
     {
-      if (GET_RTX_CLASS (GET_CODE (p)) != 'i')
+      if (! INSN_P (p))
 	continue;
 
       /* Make a tenative change.  */
@@ -884,7 +884,7 @@ reg_is_remote_constant_p (reg, insn, first)
     {
       rtx s;
 
-      if (GET_RTX_CLASS (GET_CODE (p)) != 'i')
+      if (! INSN_P (p))
 	continue;
       s = single_set (p);
       if (s != 0
@@ -952,7 +952,7 @@ fixup_match_2 (insn, dst, src, offset, regmove_dump_file)
       if (flag_exceptions && GET_CODE (p) == CALL_INSN)
 	break;
 
-      if (GET_RTX_CLASS (GET_CODE (p)) != 'i')
+      if (! INSN_P (p))
         continue;
 
       if (find_regno_note (p, REG_DEAD, REGNO (dst)))
@@ -991,7 +991,7 @@ fixup_match_2 (insn, dst, src, offset, regmove_dump_file)
 		  if (GET_CODE (p) == CODE_LABEL
 		      || GET_CODE (p) == JUMP_INSN)
 		    break;
-		  if (GET_RTX_CLASS (GET_CODE (p)) != 'i')
+		  if (! INSN_P (p))
 		    continue;
 		  if (reg_overlap_mentioned_p (dst, PATTERN (p)))
 		    {
@@ -1005,7 +1005,7 @@ fixup_match_2 (insn, dst, src, offset, regmove_dump_file)
 		  if (GET_CODE (p) == CODE_LABEL
 		      || GET_CODE (p) == JUMP_INSN)
 		    break;
-		  if (GET_RTX_CLASS (GET_CODE (p)) != 'i')
+		  if (! INSN_P (p))
 		    continue;
 		  if (reg_overlap_mentioned_p (dst, PATTERN (p)))
 		    {
@@ -1225,7 +1225,7 @@ regmove_optimize (f, nregs, regmove_dump_file)
 
   for (insn = get_last_insn (); insn; insn = PREV_INSN (insn))
     {
-      if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
+      if (INSN_P (insn))
 	{
 	  int op_no, match_no;
 	  int success = 0;
@@ -1384,7 +1384,7 @@ regmove_optimize (f, nregs, regmove_dump_file)
 		  if (flag_exceptions && GET_CODE (p) == CALL_INSN)
 		    break;
 
-		  if (GET_RTX_CLASS (GET_CODE (p)) != 'i')
+		  if (! INSN_P (p))
 		    continue;
 
 		  length++;
@@ -1669,7 +1669,7 @@ fixup_match_1 (insn, set, src, src_subreg, dst, backward, operand_number,
       if (flag_exceptions && GET_CODE (p) == CALL_INSN)
 	break;
 
-      if (GET_RTX_CLASS (GET_CODE (p)) != 'i')
+      if (! INSN_P (p))
 	continue;
 
       length++;
@@ -1723,7 +1723,7 @@ fixup_match_1 (insn, set, src, src_subreg, dst, backward, operand_number,
 		      break;
 		    }
 
-		  if (GET_RTX_CLASS (GET_CODE (q)) != 'i')
+		  if (! INSN_P (q))
 		    continue;
 		  if (reg_overlap_mentioned_p (src, PATTERN (q))
 		      || reg_set_p (src, q))
@@ -1859,8 +1859,7 @@ fixup_match_1 (insn, set, src, src_subreg, dst, backward, operand_number,
 	  /* emit_insn_after_with_line_notes has no
 	     return value, so search for the new insn.  */
 	  insn = p;
-	  while (GET_RTX_CLASS (GET_CODE (insn)) != 'i'
-		 || PATTERN (insn) != pat)
+	  while (! INSN_P (insn) || PATTERN (insn) != pat)
 	    insn = PREV_INSN (insn);
 
 	  REG_NOTES (insn) = notes;
@@ -1899,7 +1898,7 @@ fixup_match_1 (insn, set, src, src_subreg, dst, backward, operand_number,
 		  break;
 		}
 
-	      if (GET_RTX_CLASS (GET_CODE (q)) != 'i')
+	      if (! INSN_P (q))
 		continue;
 	      s_length2++;
 	      if (reg_set_p (src, q))
@@ -1964,7 +1963,7 @@ fixup_match_1 (insn, set, src, src_subreg, dst, backward, operand_number,
 	  if (flag_exceptions && GET_CODE (q) == CALL_INSN)
 	    break;
 
-	  if (GET_RTX_CLASS (GET_CODE (q)) != 'i')
+	  if (! INSN_P (q))
 	    continue;
 	  if (src != inc_dest && (reg_overlap_mentioned_p (src, PATTERN (q))
 				  || reg_set_p (src, q)))

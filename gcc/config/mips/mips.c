@@ -8699,7 +8699,7 @@ mips16_optimize_gp (first)
     {
       rtx set;
 
-      if (GET_RTX_CLASS (GET_CODE (insn)) != 'i')
+      if (! INSN_P (insn))
 	continue;
 
       set = PATTERN (insn);
@@ -8798,10 +8798,10 @@ mips16_optimize_gp (first)
 	  if (next == NULL_RTX)
 	    break;
 
-	  if (GET_RTX_CLASS (GET_CODE (insn)) != 'i')
+	  if (! INSN_P (insn))
 	    continue;
 
-	  if (GET_RTX_CLASS (GET_CODE (next)) != 'i')
+	  if (! INSN_P (next))
 	    continue;
 
 	  set1 = PATTERN (insn);
@@ -8854,7 +8854,7 @@ mips16_optimize_gp (first)
     {
       rtx set;
 
-      if (GET_RTX_CLASS (GET_CODE (insn)) != 'i')
+      if (! INSN_P (insn))
 	continue;
 
       set = PATTERN (insn);

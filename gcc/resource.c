@@ -452,7 +452,7 @@ find_dead_or_set_registers (target, res, jump_target, jump_count, set, needed)
 	      /* If INSN is a USE made by update_block, we care about the
 		 underlying insn.  Any registers set by the underlying insn
 		 are live since the insn is being done somewhere else.  */
-	      if (GET_RTX_CLASS (GET_CODE (XEXP (PATTERN (insn), 0))) == 'i')
+	      if (INSN_P (XEXP (PATTERN (insn), 0)))
 		mark_set_resources (XEXP (PATTERN (insn), 0), res, 0,
 				    MARK_SRC_DEST_CALL);
 
@@ -991,7 +991,7 @@ mark_target_live_regs (insns, target, res)
 	  /* If this insn is a USE made by update_block, we care about the
 	     underlying insn.  */
 	  if (GET_CODE (insn) == INSN && GET_CODE (PATTERN (insn)) == USE
-	      && GET_RTX_CLASS (GET_CODE (XEXP (PATTERN (insn), 0))) == 'i')
+	      && INSN_P (XEXP (PATTERN (insn), 0)))
 	      real_insn = XEXP (PATTERN (insn), 0);
 
 	  if (GET_CODE (real_insn) == CALL_INSN)

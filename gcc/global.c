@@ -835,7 +835,7 @@ expand_preferences ()
      where this wins are reg-reg copies.  */
 
   for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
-    if (GET_RTX_CLASS (GET_CODE (insn)) == 'i'
+    if (INSN_P (insn)
 	&& (set = single_set (insn)) != 0
 	&& GET_CODE (SET_DEST (set)) == REG
 	&& reg_allocno[REGNO (SET_DEST (set))] >= 0)
@@ -1798,7 +1798,7 @@ build_insn_chain (first)
 	  c->insn = first;
 	  c->block = b;
 
-	  if (GET_RTX_CLASS (GET_CODE (first)) == 'i')
+	  if (INSN_P (first))
 	    {
 	      rtx link;
 
@@ -1820,7 +1820,7 @@ build_insn_chain (first)
 	  else
 	    COPY_REG_SET (&c->live_throughout, live_relevant_regs);
 
-	  if (GET_RTX_CLASS (GET_CODE (first)) == 'i')
+	  if (INSN_P (first))
 	    {
 	      rtx link;
 
@@ -1845,8 +1845,7 @@ build_insn_chain (first)
       if (b == n_basic_blocks)
 	{
 	  for (first = NEXT_INSN (first) ; first; first = NEXT_INSN (first))
-	    if (GET_RTX_CLASS (GET_CODE (first)) == 'i'
-		&& GET_CODE (PATTERN (first)) != USE)
+	    if (INSN_P (first) && GET_CODE (PATTERN (first)) != USE)
 	      abort ();
 	  break;
 	}

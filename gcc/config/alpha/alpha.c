@@ -4174,7 +4174,7 @@ alpha_does_function_need_gp ()
   pop_topmost_sequence ();
 
   for (; insn; insn = NEXT_INSN (insn))
-    if (GET_RTX_CLASS (GET_CODE (insn)) == 'i'
+    if (INSN_P (insn)
 	&& GET_CODE (PATTERN (insn)) != USE
 	&& GET_CODE (PATTERN (insn)) != CLOBBER)
       {
@@ -5453,7 +5453,7 @@ alphaev4_next_group (insn, pin_use, plen)
 
   len = in_use = 0;
 
-  if (GET_RTX_CLASS (GET_CODE (insn)) != 'i'
+  if (! INSN_P (insn)
       || GET_CODE (PATTERN (insn)) == CLOBBER
       || GET_CODE (PATTERN (insn)) == USE)
     goto next_and_done;
@@ -5518,7 +5518,7 @@ alphaev4_next_group (insn, pin_use, plen)
     next:
       insn = next_nonnote_insn (insn);
 
-      if (!insn || GET_RTX_CLASS (GET_CODE (insn)) != 'i')
+      if (!insn || ! INSN_P (insn))
 	goto done;
 
       /* Let Haifa tell us where it thinks insn group boundaries are.  */
@@ -5553,7 +5553,7 @@ alphaev5_next_group (insn, pin_use, plen)
 
   len = in_use = 0;
 
-  if (GET_RTX_CLASS (GET_CODE (insn)) != 'i'
+  if (! INSN_P (insn)
       || GET_CODE (PATTERN (insn)) == CLOBBER
       || GET_CODE (PATTERN (insn)) == USE)
     goto next_and_done;
@@ -5651,7 +5651,7 @@ alphaev5_next_group (insn, pin_use, plen)
     next:
       insn = next_nonnote_insn (insn);
 
-      if (!insn || GET_RTX_CLASS (GET_CODE (insn)) != 'i')
+      if (!insn || ! INSN_P (insn))
 	goto done;
 
       /* Let Haifa tell us where it thinks insn group boundaries are.  */

@@ -89,7 +89,7 @@ print_rtx (in_rtx)
       return;
     }
 
-  is_insn = (GET_RTX_CLASS (GET_CODE (in_rtx)) == 'i');
+  is_insn = (INSN_P (in_rtx));
 
   /* When printing in VCG format we write INSNs, NOTE, LABEL, and BARRIER
      in separate nodes and therefore have to handle them special here.  */

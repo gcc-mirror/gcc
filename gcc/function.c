@@ -1647,7 +1647,7 @@ fixup_var_refs_insns (var, promoted_mode, unsignedp, insn, toplevel, ht)
       rtx set, prev, prev_set;
       rtx note;
 
-      if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
+      if (INSN_P (insn))
 	{
 	  /* Remember the notes in case we delete the insn.  */
 	  note = REG_NOTES (insn);
@@ -3248,7 +3248,7 @@ compute_insns_for_mem (insns, last_insn, ht)
 
   for (ifmwi.pass = 0; ifmwi.pass < 2; ++ifmwi.pass)
     for (insn = insns; insn != last_insn; insn = NEXT_INSN (insn))
-      if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
+      if (INSN_P (insn))
 	{
 	  ifmwi.insn = insn;
 	  for_each_rtx (&insn, insns_for_mem_walk, &ifmwi);

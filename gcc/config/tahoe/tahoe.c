@@ -543,7 +543,7 @@ tahoe_cmp_check (insn, op, max)
 	&& (INTVAL (op) < 0 || INTVAL (op) > max))
       return 0;
 
-  if (GET_RTX_CLASS (GET_CODE (next)) == 'i')
+  if (INSN_P (next))
     {
       next = PATTERN (next);
       if (GET_CODE (next) == SET

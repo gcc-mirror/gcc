@@ -1061,7 +1061,7 @@ optimize_mode_switching (file)
 	       insn != NULL && insn != NEXT_INSN (BLOCK_END (bb));
 	       insn = NEXT_INSN (insn))
 	    {
-	      if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
+	      if (INSN_P (insn))
 		{
 		  int mode = MODE_NEEDED (e, insn);
 		  rtx link;
