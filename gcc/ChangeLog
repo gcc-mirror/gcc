@@ -1,3 +1,12 @@
+Fri Sep 11 23:55:54 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
+
+	* flow.c (mark_set_1): Recognize multi-register structure return
+	values in CALL insns.
+	(mark_used_regs): Likewise.
+	(count_reg_sets_1): Likewise.
+	(count_reg_references):	Likewise.
+	* rtlanal.c (note_stores): Likewise.
+
 Fri Sep 11 22:57:55 1998  Eric Dumazet  <dumazet@cosmosbay.com>
 
 	* config/i386/sco5.h (ASM_WEAKEN_LABEL): Defined as in svr4.h.

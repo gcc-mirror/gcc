@@ -2133,6 +2133,19 @@ mark_set_1 (needed, dead, x, insn, significant)
   register int regno;
   register rtx reg = SET_DEST (x);
 
+  /* Some targets place small structures in registers for
+     return values of functions.  We have to detect this
+     case specially here to get correct flow information.  */
+  if (GET_CODE (reg) == PARALLEL
+      && GET_MODE (reg) == BLKmode)
+    {
+      register int i;
+
+      for (i = XVECLEN (reg, 0) - 1; i >= 0; i--)
+	  mark_set_1 (needed, dead, XVECEXP (reg, 0, i), insn, significant);
+      return;
+    }
+
   /* Modifying just one hardware register of a multi-reg value
      or just a byte field of a register
      does not mean the value from before this insn is now dead.
@@ -2794,15 +2807,17 @@ mark_used_regs (needed, live, x, final, insn)
 	/* If this is a store into a register,
 	   recursively scan the value being stored.  */
 
-	if (GET_CODE (testreg) == REG
-	    && (regno = REGNO (testreg), regno != FRAME_POINTER_REGNUM)
+	if ((GET_CODE (testreg) == PARALLEL
+	     && GET_MODE (testreg) == BLKmode)
+	    || (GET_CODE (testreg) == REG
+		&& (regno = REGNO (testreg), regno != FRAME_POINTER_REGNUM)
 #if FRAME_POINTER_REGNUM != HARD_FRAME_POINTER_REGNUM
-	    && regno != HARD_FRAME_POINTER_REGNUM
+		&& regno != HARD_FRAME_POINTER_REGNUM
 #endif
 #if FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
-	    && ! (regno == ARG_POINTER_REGNUM && fixed_regs[regno])
+		&& ! (regno == ARG_POINTER_REGNUM && fixed_regs[regno])
 #endif
-	    )
+		))
 	  /* We used to exclude global_regs here, but that seems wrong.
 	     Storing in them is like storing in mem.  */
 	  {
@@ -4043,6 +4058,15 @@ count_reg_sets_1 (x)
 	 || GET_CODE (reg) == STRICT_LOW_PART)
     reg = XEXP (reg, 0);
 
+  if (GET_CODE (reg) == PARALLEL
+      && GET_MODE (reg) == BLKmode)
+    {
+      register int i;
+      for (i = XVECLEN (reg, 0) - 1; i >= 0; i--)
+	count_reg_sets_1 (XVECEXP (reg, 0, i));
+      return;
+    }
+
   if (GET_CODE (reg) == REG)
     {
       regno = REGNO (reg);
@@ -4175,7 +4199,9 @@ count_reg_references (x)
 	/* If this is a store into a register,
 	   recursively scan the value being stored.  */
 
-	if (GET_CODE (testreg) == REG)
+	if ((GET_CODE (testreg) == PARALLEL
+	     && GET_MODE (testreg) == BLKmode)
+	    || GET_CODE (testreg) == REG)
 	  {
 	    count_reg_references (SET_SRC (x));
 	    if (mark_dest)
