@@ -1,3 +1,7 @@
+Sat Oct  3 19:01:03 1998  Richard Henderson  <rth@cygnus.com>
+
+	* alpha/linux.h (CPP_PREDEFINES): Define __alpha__ for imake.
+
 Sat Oct  3 14:42:19 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* PROJECTS: Remove template friends.
