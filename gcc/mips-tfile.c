@@ -898,13 +898,10 @@ enum alloc_type {
    pages.  On systems with a BSD malloc that define USE_MALLOC, the
    MAX_CLUSTER_PAGES should be 1 less than a power of two, since malloc
    adds its overhead, and rounds up to the next power of 2.  Pages are
-   linked together via a linked list.
-
-   If PAGE_SIZE is > 4096, the string length in the shash_t structure
-   can't be represented (assuming there are strings > 4096 bytes).  */
+   linked together via a linked list.  */
 
 #ifndef PAGE_SIZE
-#define PAGE_SIZE 4096		/* size of varray pages */
+#define PAGE_SIZE 32768		/* size of varray pages */
 #endif
 
 #define PAGE_USIZE ((Size_t) PAGE_SIZE)
