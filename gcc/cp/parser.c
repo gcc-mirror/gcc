@@ -7754,7 +7754,7 @@ cp_parser_type_parameter (cp_parser* parser)
 
   /* Look for a keyword to tell us what kind of parameter this is.  */
   token = cp_parser_require (parser, CPP_KEYWORD, 
-			     "expected `class', `typename', or `template'");
+			     "`class', `typename', or `template'");
   if (!token)
     return error_mark_node;
 
@@ -13992,7 +13992,7 @@ cp_parser_single_declaration (cp_parser* parser,
   parser->qualifying_scope = NULL_TREE;
   parser->object_scope = NULL_TREE;
   /* Look for a trailing `;' after the declaration.  */
-  if (!cp_parser_require (parser, CPP_SEMICOLON, "expected `;'")
+  if (!cp_parser_require (parser, CPP_SEMICOLON, "`;'")
       && cp_parser_committed_to_tentative_parse (parser))
     cp_parser_skip_to_end_of_block_or_statement (parser);
   /* If it worked, set *FRIEND_P based on the DECL_SPECIFIERS.  */

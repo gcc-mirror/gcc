@@ -1,3 +1,10 @@
+2003-03-06  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/9188
+	* parser.c (cp_parser_type_parameter): Remove redundant `expect'
+	in error message.
+	(cp_parser_single_declaration): Likewise.
+
 2003-03-05  Jason Merrill  <jason@redhat.com>
 
 	PR c++/9440
