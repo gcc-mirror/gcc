@@ -4105,6 +4105,18 @@ store_field (target, bitsize, bitpos, mode, exp, value_mode,
     {
       rtx temp = expand_expr (exp, NULL_RTX, VOIDmode, 0);
 
+      /* If BITSIZE is narrower than the size of the type of EXP
+	 we will be narrowing TEMP.  Normally, what's wanted are the
+	 low-order bits.  However, if EXP's type is a record and this is
+	 big-endian machine, we want the upper BITSIZE bits.  */
+      if (BYTES_BIG_ENDIAN && GET_MODE_CLASS (GET_MODE (temp)) == MODE_INT
+	  && bitsize < GET_MODE_BITSIZE (GET_MODE (temp))
+	  && TREE_CODE (TREE_TYPE (exp)) == RECORD_TYPE)
+	temp = expand_shift (RSHIFT_EXPR, GET_MODE (temp), temp,
+			     size_int (GET_MODE_BITSIZE (GET_MODE (temp))
+				       - bitsize),
+			     temp, 1);
+
       /* Unless MODE is VOIDmode or BLKmode, convert TEMP to
 	 MODE.  */
       if (mode != VOIDmode && mode != BLKmode
@@ -5595,6 +5607,18 @@ expand_expr (exp, target, tmode, modifier)
 				     unsignedp, target, ext_mode, ext_mode,
 				     alignment,
 				     int_size_in_bytes (TREE_TYPE (tem)));
+
+	    /* If the result is a record type and BITSIZE is narrower than
+	       the mode of OP0, an integral mode, and this is a big endian
+	       machine, we must put the field into the high-order bits.  */
+	    if (TREE_CODE (type) == RECORD_TYPE && BYTES_BIG_ENDIAN
+		&& GET_MODE_CLASS (GET_MODE (op0)) == MODE_INT
+		&& bitsize < GET_MODE_BITSIZE (GET_MODE (op0)))
+	      op0 = expand_shift (LSHIFT_EXPR, GET_MODE (op0), op0,
+				  size_int (GET_MODE_BITSIZE (GET_MODE (op0))
+					    - bitsize),
+				  op0, 1);
+
 	    if (mode == BLKmode)
 	      {
 		rtx new = assign_stack_temp (ext_mode,
