@@ -30,7 +30,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "insn-codes.h"
 
 static rtx break_out_memory_refs	PROTO((rtx));
-static rtx convert_memory_address	PROTO((rtx));
 
 /* Return an rtx for the sum of X and the integer C.
 
@@ -294,31 +293,46 @@ break_out_memory_refs (x)
 #ifdef POINTERS_EXTEND_UNSIGNED
 
 /* Given X, a memory address in ptr_mode, convert it to an address
-   in Pmode.  We take advantage of the fact that pointers are not
-   allowed to overflow by commuting arithmetic operations over
-   conversions so that address arithmetic insns can be used.  */
+   in Pmode, or vice versa (TO_MODE says which way).  We take advantage of
+   the fact that pointers are not allowed to overflow by commuting arithmetic
+   operations over conversions so that address arithmetic insns can be
+   used.  */
 
-static rtx
-convert_memory_address (x)
+rtx
+convert_memory_address (to_mode, x)
+     enum machine_mode to_mode;
      rtx x;
 {
+  rtx temp;
+
   switch (GET_CODE (x))
     {
     case CONST_INT:
     case CONST_DOUBLE:
-    case LABEL_REF:
-    case SYMBOL_REF:
-    case CONST:
       return x;
+
+    case LABEL_REF:
+      return gen_rtx (LABEL_REF, to_mode, XEXP (x, 0));
+
+    case SYMBOL_REF:
+      temp = gen_rtx (SYMBOL_REF, to_mode, XSTR (x, 0));
+      SYMBOL_REF_FLAG (temp) = SYMBOL_REF_FLAG (x);
+      return temp;
 
     case PLUS:
     case MULT:
-      return gen_rtx (GET_CODE (x), Pmode, 
-		      convert_memory_address (XEXP (x, 0)),
-		      convert_memory_address (XEXP (x, 1)));
+      return gen_rtx (GET_CODE (x), to_mode, 
+		      convert_memory_address (to_mode, XEXP (x, 0)),
+		      convert_memory_address (to_mode, XEXP (x, 1)));
+
+    case CONST:
+      return gen_rtx (CONST, to_mode, 
+		      convert_memory_address (to_mode, XEXP (x, 0)));
 
     default:
-      return convert_modes (Pmode, ptr_mode, x, POINTERS_EXTEND_UNSIGNED);
+      return convert_modes (to_mode,
+			    to_mode == ptr_mode ? Pmode : ptr_mode,
+			    x, POINTERS_EXTEND_UNSIGNED);
     }
 }
 #endif
@@ -375,7 +389,7 @@ memory_address (mode, x)
 
 #ifdef POINTERS_EXTEND_UNSIGNED
   if (GET_MODE (x) == ptr_mode)
-    x = convert_memory_address (x);
+    x = convert_memory_address (Pmode, x);
 #endif
 
   /* By passing constant addresses thru registers
