@@ -723,7 +723,6 @@ static unsigned lookup_filename ();
 #define SFNAMES_ENTRY_LABEL_FMT	".L_F%u"
 #endif
 
-
 /* Definitions of defaults for various types of primitive assembly language
    output operations.  These may be overridden from within the tm.h file,
    but typically, that is unecessary.  */
@@ -971,10 +970,10 @@ restart:
 	{
 	  addr_const_to_string (buf1, XEXP (x, 0));
 	  strcat (str, buf1);
-	  if (INTVAL (XEXP (x, 0)) >= 0)
+	  if (INTVAL (XEXP (x, 1)) >= 0)
 	    strcat (str, "+");
 	  addr_const_to_string (buf1, XEXP (x, 1));
-	  strcat (str, buf2);
+	  strcat (str, buf1);
 	}
       break;
 
@@ -1841,6 +1840,28 @@ block_ultimate_origin (block)
       return ret_val;
     }
 }
+
+/* Get the class to which DECL belongs, if any.  In g++, the DECL_CONTEXT
+   of a virtual function may refer to a base class, so we check the 'this'
+   parameter.  */
+
+tree
+decl_class_context (decl)
+     tree decl;
+{
+  tree context = NULL_TREE;
+  if (TREE_CODE (decl) != FUNCTION_DECL
+      || ! DECL_VIRTUAL_P (decl))
+    context = DECL_CONTEXT (decl);
+  else
+    context = TYPE_MAIN_VARIANT
+      (TREE_TYPE (TREE_VALUE (TYPE_ARG_TYPES (TREE_TYPE (decl)))));
+
+  if (context && TREE_CODE_CLASS (TREE_CODE (context)) != 't')
+    context = NULL_TREE;
+
+  return context;
+}
 
 /**************** DIE internal representation constturction *******************/
 
@@ -2134,6 +2155,45 @@ get_AT_low_pc (die)
   return low_pc;
 }
 
+/* Return the value of the flag attribute designated by ATTR_KIND, or -1
+   if it is not present.  */
+inline int
+get_AT_flag (die, attr_kind)
+     register dw_die_ref die;
+     register enum dwarf_attribute attr_kind;
+{
+  register dw_attr_ref a;
+  if (die != NULL)
+    {
+      for (a = die->die_attr; a != NULL; a = a->dw_attr_next)
+	{
+	  if (a->dw_attr == attr_kind
+	      && a->dw_attr_val.val_class == dw_val_class_flag)
+	    return a->dw_attr_val.v.val_flag;
+	}
+    }
+  return -1;
+}
+
+/* Return the value of the unsigned attribute designated by ATTR_KIND, or 0
+   if it is not present.  */
+inline unsigned
+get_AT_unsigned (die, attr_kind)
+     register dw_die_ref die;
+     register enum dwarf_attribute attr_kind;
+{
+  register dw_attr_ref a;
+  if (die != NULL)
+    {
+      for (a = die->die_attr; a != NULL; a = a->dw_attr_next)
+	{
+	  if (a->dw_attr == attr_kind
+	      && a->dw_attr_val.val_class == dw_val_class_unsigned_const)
+	    return a->dw_attr_val.v.val_unsigned;
+	}
+    }
+  return 0;
+}
 
 /* Return the "high pc" attribute value, typically associated with
    a subprogram DIE.  Return null if the "high pc" attribute is
@@ -2918,9 +2978,8 @@ size_of_line_info ()
 	    }
 	}
     }
-  /* Set address register instruction.  */
-  size += 1 + size_of_uleb128 (1 + PTR_SIZE)
-    + 1 + PTR_SIZE;
+  /* Advance pc instruction.  */
+  size += 1 + 2;
   /* End of line number info. marker.  */
   size += 1 + size_of_uleb128 (1) + 1;
   return size;
@@ -3893,13 +3952,13 @@ output_aranges ()
 	       ASM_COMMENT_START);
     }
   fputc ('\n', asm_out_file);
-  ASM_OUTPUT_DWARF_ADDR (asm_out_file, TEXT_BEGIN_LABEL);
+  ASM_OUTPUT_DWARF_ADDR (asm_out_file, TEXT_SECTION);
   if (flag_verbose_asm)
     {
       fprintf (asm_out_file, "\t%s Address", ASM_COMMENT_START);
     }
   fputc ('\n', asm_out_file);
-  ASM_OUTPUT_DWARF_DELTA4 (asm_out_file, TEXT_END_LABEL, TEXT_BEGIN_LABEL);
+  ASM_OUTPUT_DWARF_DELTA4 (asm_out_file, TEXT_END_LABEL, TEXT_SECTION);
   if (flag_verbose_asm)
     {
       fprintf (asm_out_file, "%s Length", ASM_COMMENT_START);
@@ -4057,14 +4116,14 @@ output_line_info ()
   fputc ('\n', asm_out_file);
   ASM_OUTPUT_DWARF_DATA1 (asm_out_file, DW_LNE_set_address);
   fputc ('\n', asm_out_file);
-  ASM_OUTPUT_DWARF_ADDR (asm_out_file, TEXT_BEGIN_LABEL);
+  ASM_OUTPUT_DWARF_ADDR (asm_out_file, TEXT_SECTION);
   fputc ('\n', asm_out_file);
 
   /* Generate the line number to PC correspondence table, encoded as
      a series of state machine operations.  */
   current_file = 1;
   current_line = 1;
-  strcpy (prev_line_label, TEXT_BEGIN_LABEL);
+  strcpy (prev_line_label, TEXT_SECTION);
   for (lt_index = 1; lt_index < line_info_table_in_use; ++lt_index)
     {
       ASM_OUTPUT_DWARF_DATA1 (asm_out_file, DW_LNS_fixed_advance_pc);
@@ -4131,18 +4190,16 @@ output_line_info ()
       strcpy (prev_line_label, line_label);
     }
 
-  ASM_OUTPUT_DWARF_DATA1 (asm_out_file, 0);
+  ASM_OUTPUT_DWARF_DATA1 (asm_out_file, DW_LNS_fixed_advance_pc);
   if (flag_verbose_asm)
     {
-      fprintf (asm_out_file, "\t%s DW_LNE_set_address", ASM_COMMENT_START);
+      fprintf (asm_out_file, "\t%s DW_LNS_fixed_advance_pc",
+	       ASM_COMMENT_START);
     }
   fputc ('\n', asm_out_file);
-  output_uleb128 (1 + PTR_SIZE);
+  ASM_OUTPUT_DWARF_DELTA2 (asm_out_file, TEXT_END_LABEL, prev_line_label);
   fputc ('\n', asm_out_file);
-  ASM_OUTPUT_DWARF_DATA1 (asm_out_file, DW_LNE_set_address);
-  fputc ('\n', asm_out_file);
-  ASM_OUTPUT_DWARF_ADDR (asm_out_file, TEXT_END_LABEL);
-  fputc ('\n', asm_out_file);
+
   /* Output the marker for the end of the line number info.  */
   ASM_OUTPUT_DWARF_DATA1 (asm_out_file, 0);
   if (flag_verbose_asm)
@@ -4453,16 +4510,24 @@ modified_type_die (type, is_const_type, is_volatile_type, context_die)
 
   if (code != ERROR_MARK)
     {
+      type = build_type_variant (type, is_const_type, is_volatile_type);
+
+      mod_type_die = lookup_type_die (type);
+      if (mod_type_die)
+	return mod_type_die;
+
       if (is_const_type)
 	{
 	  mod_type_die = new_die (DW_TAG_const_type, context_die);
-	  sub_die = modified_type_die (type,
-				       0, is_volatile_type, context_die);
+	  sub_die = modified_type_die
+	    (build_type_variant (type, 0, is_volatile_type),
+	     0, is_volatile_type, context_die);
 	}
       else if (is_volatile_type)
 	{
 	  mod_type_die = new_die (DW_TAG_volatile_type, context_die);
-	  sub_die = modified_type_die (type, 0, 0, context_die);
+	  sub_die = modified_type_die
+	    (TYPE_MAIN_VARIANT (type), 0, 0, context_die);
 	}
       else if (code == POINTER_TYPE)
 	{
@@ -4519,6 +4584,7 @@ modified_type_die (type, is_const_type, is_volatile_type, context_die)
     {
       add_AT_die_ref (mod_type_die, DW_AT_type, sub_die);
     }
+  equate_type_number_to_die (type, mod_type_die);
   return mod_type_die;
 }
 
@@ -5495,21 +5561,6 @@ add_bit_size_attribute (die, decl)
 		   (unsigned) TREE_INT_CST_LOW (DECL_SIZE (decl)));
 }
 
-inline void
-add_member_attribute (die, context)
-     register dw_die_ref die;
-     register tree context;
-{
-  register dw_die_ref type_die;
-
-  /* Generate this attribute only for members in C++.  */
-  if (context != NULL && is_tagged_type (context))
-    {
-      type_die = lookup_type_die (context);
-      add_AT_die_ref (die, DW_AT_member, type_die);
-    }
-}
-
 /* If the compiled language is GNU C, then add a 'prototyped'
    attribute, if arg types are given for the parameters of a function.  */
 inline void
@@ -5545,8 +5596,8 @@ add_abstract_origin_attribute (die, origin)
   add_AT_die_ref (die, DW_AT_abstract_origin, origin_die);
 }
 
-/* If the compiled source program is  C++, define the pure_virtual
-   attribute.  */
+/* We do not currently support the pure_virtual attribute.  */
+
 inline void
 add_pure_or_virtual_attribute (die, func_decl)
      register dw_die_ref die;
@@ -5554,15 +5605,7 @@ add_pure_or_virtual_attribute (die, func_decl)
 {
   if (DECL_VIRTUAL_P (func_decl))
     {
-      if ((strcmp (language_string, "GNU C++") == 0)
-	  && (DECL_VIRTUAL_P (func_decl)))
-	{
-	  add_AT_unsigned (die, DW_AT_virtuality, DW_VIRTUALITY_pure_virtual);
-	}
-      else
-	{
-	  add_AT_unsigned (die, DW_AT_virtuality, DW_VIRTUALITY_virtual);
-	}
+      add_AT_unsigned (die, DW_AT_virtuality, DW_VIRTUALITY_virtual);
     }
 }
 
@@ -5699,23 +5742,13 @@ type_tag (type)
       /* Find the IDENTIFIER_NODE for the type name.  */
       if (TREE_CODE (TYPE_NAME (type)) == IDENTIFIER_NODE)
 	t = TYPE_NAME (type);
-#if 0
+
       /* The g++ front end makes the TYPE_NAME of *each* tagged type point to 
          a TYPE_DECL node, regardless of whether or not a `typedef' was
-         involved.  This is distinctly different from what the gcc front-end
-         does.  It always makes the TYPE_NAME for each tagged type be either
-         NULL (signifying an anonymous tagged type) or else a pointer to an
-         IDENTIFIER_NODE.  Obviously, we would like to generate correct Dwarf 
-         for both C and C++, but given this inconsistency in the TREE
-         representation of tagged types for C and C++ in the GNU front-ends,
-         we cannot support both languages correctly unless we introduce some
-         front-end specific code here, and rms objects to that, so we can
-         only generate correct Dwarf for one of these two languages.  C is
-         more important, so for now we'll do the right thing for C and let
-         g++ go fish.  */
+         involved.  */
       else if (TREE_CODE (TYPE_NAME (type)) == TYPE_DECL)
 	t = DECL_NAME (TYPE_NAME (type));
-#endif
+
       /* Now get the name as a string, or invent one.  */
       if (t != 0)
 	{
@@ -5770,10 +5803,13 @@ gen_array_type_die (type, context_die)
      register dw_die_ref context_die;
 {
   register dw_die_ref scope_die = scope_die_for_type (type, context_die);
-  register dw_die_ref array_die = new_die (DW_TAG_array_type, scope_die);
+  register dw_die_ref array_die = lookup_type_die (type);
   register tree element_type;
-  /* TODO: why a member_attribute under an array?
-     member_attribute (array_die, TYPE_CONTEXT (type)); */
+
+  if (array_die)
+    return;
+
+  array_die  = new_die (DW_TAG_array_type, scope_die);
 #if 0
   /* We default the array ordering.  SDB will probably do
      the right things even if DW_AT_ordering is not present.  It's not even
@@ -5811,10 +5847,11 @@ gen_set_type_die (type, context_die)
      register tree type;
      register dw_die_ref context_die;
 {
-  register dw_die_ref type_die;
+  register dw_die_ref type_die = lookup_type_die (type);
+  if (type_die)
+    return;
   type_die = new_die (DW_TAG_set_type, scope_die_for_type (type, context_die));
   equate_type_number_to_die (type, type_die);
-  add_member_attribute (type_die, TYPE_CONTEXT (type));
   add_type_attribute (type_die, TREE_TYPE (type), 0, 0, context_die);
 }
 
@@ -5832,7 +5869,6 @@ gen_entry_point_die (decl, context_die)
   else
     {
       add_name_and_src_coords_attributes (decl_die, decl);
-      add_member_attribute (decl_die, DECL_CONTEXT (decl));
       add_type_attribute (decl_die, TREE_TYPE (TREE_TYPE (decl)),
 			  0, 0, context_die);
     }
@@ -5904,7 +5940,6 @@ gen_enumeration_type_die (type, is_complete, context_die)
 			  scope_die_for_type (type, context_die));
       equate_type_number_to_die (type, type_die);
       add_name_attribute (type_die, type_tag (type));
-      add_member_attribute (type_die, TYPE_CONTEXT (type));
     }
   if (is_complete)
     {
@@ -5963,6 +5998,8 @@ gen_formal_parameter_die (node, context_die)
 			      TREE_READONLY (node),
 			      TREE_THIS_VOLATILE (node),
 			      context_die);
+	  if (DECL_ARTIFICIAL (node))
+	    add_AT_flag (parm_die, DW_AT_artificial, 1);
 	}
       if (DECL_ABSTRACT (node))
 	{
@@ -6028,6 +6065,7 @@ gen_formal_types_die (function_or_method_type, context_die)
   register tree formal_type = NULL;
   register tree first_parm_type = TYPE_ARG_TYPES (function_or_method_type);
 
+#if 0
   /* In the case where we are generating a formal types list for a C++
      non-static member function type, skip over the first thing on the
      TYPE_ARG_TYPES list because it only represents the type of the hidden
@@ -6038,6 +6076,7 @@ gen_formal_types_die (function_or_method_type, context_die)
      DW_TAG_subroutine_type DIE.  */
   if (TREE_CODE (function_or_method_type) == METHOD_TYPE)
     first_parm_type = TREE_CHAIN (first_parm_type);
+#endif
 
   /* Make our first pass over the list of formal parameter types and output a 
      DW_TAG_formal_parameter DIE for each one.  */
@@ -6086,10 +6125,28 @@ gen_subprogram_die (decl, context_die)
   register tree fn_arg_types;
   register tree outer_scope;
   register tree label;
+  dw_die_ref old_die = lookup_decl_die (decl);
 
   if (origin != NULL)
     {
       add_abstract_origin_attribute (subr_die, origin);
+    }
+  else if (old_die)
+    {
+      if (get_AT_flag (old_die, DW_AT_declaration) != 1)
+	abort ();
+      add_AT_die_ref (subr_die, DW_AT_specification, old_die);
+      if (DECL_NAME (decl))
+	{
+	  register unsigned file_index
+	    = lookup_filename (DECL_SOURCE_FILE (decl));
+	  if (get_AT_unsigned (old_die, DW_AT_decl_file) != file_index)
+	    add_AT_unsigned (subr_die, DW_AT_decl_file, file_index);
+	  if (get_AT_unsigned (old_die, DW_AT_decl_line)
+	      != DECL_SOURCE_LINE (decl))
+	    add_AT_unsigned
+	      (subr_die, DW_AT_decl_line, DECL_SOURCE_LINE (decl));
+	}
     }
   else
     {
@@ -6104,11 +6161,17 @@ gen_subprogram_die (decl, context_die)
 	}
       type = TREE_TYPE (decl);
       add_prototyped_attribute (subr_die, type);
-      add_member_attribute (subr_die, DECL_CONTEXT (decl));
       add_type_attribute (subr_die, TREE_TYPE (type), 0, 0, context_die);
       add_pure_or_virtual_attribute (subr_die, decl);
+
+      /* The first time we see a member function, it is in the context of
+         the class to which it belongs.  We make sure of this by emitting
+         the class first.  The next time is the definition, which is
+         handled above.  The two may come from the same source text.  */
+      if (! DECL_INITIAL (decl))
+	add_AT_flag (subr_die, DW_AT_declaration, 1);
     }
-  if (DECL_ABSTRACT (decl))
+  if (DECL_ABSTRACT (decl) || ! DECL_INITIAL (decl))
     {
       equate_decl_number_to_die (decl, subr_die);
     }
@@ -6254,21 +6317,39 @@ gen_variable_die (decl, context_die)
 {
   register tree origin = decl_ultimate_origin (decl);
   register dw_die_ref var_die = new_die (DW_TAG_variable, context_die);
-  if (TREE_PUBLIC (decl) || DECL_EXTERNAL (decl))
-    {
-      add_AT_flag (var_die, DW_AT_external, 1);
-    }
+  dw_die_ref old_die = lookup_decl_die (decl);
+  
   if (origin != NULL)
     {
       add_abstract_origin_attribute (var_die, origin);
     }
+  else if (old_die)
+    {
+      if (get_AT_flag (old_die, DW_AT_declaration) != 1)
+	abort ();
+      add_AT_die_ref (var_die, DW_AT_specification, old_die);
+      if (DECL_NAME (decl))
+	{
+	  register unsigned file_index
+	    = lookup_filename (DECL_SOURCE_FILE (decl));
+	  if (get_AT_unsigned (old_die, DW_AT_decl_file) != file_index)
+	    add_AT_unsigned (var_die, DW_AT_decl_file, file_index);
+	  if (get_AT_unsigned (old_die, DW_AT_decl_line)
+	      != DECL_SOURCE_LINE (decl))
+	    add_AT_unsigned
+	      (var_die, DW_AT_decl_line, DECL_SOURCE_LINE (decl));
+	}
+    }
   else
     {
       add_name_and_src_coords_attributes (var_die, decl);
-      add_member_attribute (var_die, DECL_CONTEXT (decl));
       add_type_attribute (var_die, TREE_TYPE (decl),
 			  TREE_READONLY (decl),
 			  TREE_THIS_VOLATILE (decl), context_die);
+      if (TREE_PUBLIC (decl) || DECL_EXTERNAL (decl))
+	{
+	  add_AT_flag (var_die, DW_AT_external, 1);
+	}
     }
   if (DECL_ABSTRACT (decl))
     {
@@ -6276,7 +6357,13 @@ gen_variable_die (decl, context_die)
     }
   else if (!DECL_EXTERNAL (decl))
     {
+      equate_decl_number_to_die (decl, var_die);
       add_location_or_const_value_attribute (var_die, decl);
+    }
+  else if (decl_class_context (decl))
+    {
+      equate_decl_number_to_die (decl, var_die);
+      add_AT_flag (var_die, DW_AT_declaration, 1);
     }
 }
 
@@ -6369,7 +6456,6 @@ gen_field_die (decl, context_die)
 {
   register dw_die_ref decl_die = new_die (DW_TAG_member, context_die);
   add_name_and_src_coords_attributes (decl_die, decl);
-  add_member_attribute (decl_die, DECL_CONTEXT (decl));
   add_type_attribute (decl_die, member_declared_type (decl),
 		      TREE_READONLY (decl), TREE_THIS_VOLATILE (decl),
 		      context_die);
@@ -6392,9 +6478,11 @@ gen_pointer_type_die (type, context_die)
      register tree type;
      register dw_die_ref context_die;
 {
-  register dw_die_ref ptr_die = new_die (DW_TAG_pointer_type, context_die);
+  register dw_die_ref ptr_die = lookup_type_die (type);
+  if (ptr_die)
+    return;
+  ptr_die = new_die (DW_TAG_pointer_type, context_die);
   equate_type_number_to_die (type, ptr_die);
-  add_member_attribute (ptr_die, TYPE_CONTEXT (type));
   add_type_attribute (ptr_die, TREE_TYPE (type), 0, 0, context_die);
 }
 
@@ -6407,9 +6495,11 @@ gen_reference_type_die (type, context_die)
      register tree type;
      register dw_die_ref context_die;
 {
-  register dw_die_ref ref_die = new_die (DW_TAG_reference_type, context_die);
+  register dw_die_ref ref_die = lookup_type_die (type);
+  if (ref_die)
+    return;
+  ref_die = new_die (DW_TAG_reference_type, context_die);
   equate_type_number_to_die (type, ref_die);
-  add_member_attribute (ref_die, TYPE_CONTEXT (type));
   add_type_attribute (ref_die, TREE_TYPE (type), 0, 0, context_die);
 }
 
@@ -6419,12 +6509,13 @@ gen_ptr_to_mbr_type_die (type, context_die)
      register tree type;
      register dw_die_ref context_die;
 {
-  register dw_die_ref ptr_die = new_die (DW_TAG_ptr_to_member_type,
-					 context_die);
+  register dw_die_ref ptr_die = lookup_type_die (type);
+  if (ptr_die)
+    return;
+  ptr_die = new_die (DW_TAG_ptr_to_member_type, context_die);
   equate_type_number_to_die (type, ptr_die);
-  add_member_attribute (ptr_die, TYPE_CONTEXT (type));
   add_AT_die_ref (ptr_die, DW_AT_containing_type,
-	      lookup_type_die (TYPE_OFFSET_BASETYPE (type)));
+		  lookup_type_die (TYPE_OFFSET_BASETYPE (type)));
   add_type_attribute (ptr_die, TREE_TYPE (type), 0, 0, context_die);
 }
 
@@ -6434,20 +6525,15 @@ gen_compile_unit_die (main_input_filename)
      register char *main_input_filename;
 {
   char producer[250];
-  char full_src_name[1024];
   char *wd = getpwd ();
 
   comp_unit_die = new_die (DW_TAG_compile_unit, NULL);
 
-  /* MIPS/SGI requires the full pathname of the input file.  */
-  if (main_input_filename[0] == '/')
+  add_name_attribute (comp_unit_die, main_input_filename);
+
+  if (wd)
     {
-      add_name_attribute (comp_unit_die, main_input_filename);
-    }
-  else
-    {
-      sprintf (full_src_name, "%s/%s", wd, main_input_filename);
-      add_name_attribute (comp_unit_die, full_src_name);
+      add_AT_string (comp_unit_die, DW_AT_comp_dir, wd);
     }
 
   sprintf (producer, "%s %s", language_string, version_string);
@@ -6461,7 +6547,7 @@ gen_compile_unit_die (main_input_filename)
      information in the object file, we add a -g to the producer string.  */
   if (write_symbols != NO_DEBUG)
     {
-       strcpy (producer, " -g");
+       strcat (producer, " -g");
     }
 
 #endif
@@ -6483,12 +6569,8 @@ gen_compile_unit_die (main_input_filename)
     {
       add_AT_unsigned (comp_unit_die, DW_AT_language, DW_LANG_C89);
     }
-  add_AT_lbl_id (comp_unit_die, DW_AT_low_pc, TEXT_BEGIN_LABEL);
+  add_AT_lbl_id (comp_unit_die, DW_AT_low_pc, TEXT_SECTION);
   add_AT_lbl_id (comp_unit_die, DW_AT_high_pc, TEXT_END_LABEL);
-  if (wd)
-    {
-      add_AT_string (comp_unit_die, DW_AT_comp_dir, wd);
-    }
   if (debug_info_level >= DINFO_LEVEL_NORMAL)
     {
       add_AT_section_offset (comp_unit_die, DW_AT_stmt_list, LINE_SECTION);
@@ -6505,10 +6587,12 @@ gen_string_type_die (type, context_die)
      register tree type;
      register dw_die_ref context_die;
 {
-  register dw_die_ref type_die;
+  register dw_die_ref type_die = lookup_type_die (type);
+  if (type_die)
+    return;
   type_die = new_die (DW_TAG_string_type,
 		      scope_die_for_type (type, context_die));
-  add_member_attribute (type_die, TYPE_CONTEXT (type));
+  equate_type_number_to_die (type, type_die);
 
   /* Fudge the string length attribute for now.  */
 
@@ -6524,7 +6608,6 @@ gen_member_die (type, context_die)
      register dw_die_ref context_die;
 {
   register tree normal_member;
-  register tree vec_base;
   register tree first_func_member;
   register tree func_member;
   /* If this is not an incomplete type, output descriptions of each of its
@@ -6549,25 +6632,11 @@ gen_member_die (type, context_die)
     }
 
   /* Now output info about the function members (if any).  */
-  vec_base = TYPE_METHODS (type);
-  if (vec_base)
+  for (func_member = TYPE_METHODS (type);
+       func_member;
+       func_member = TREE_CHAIN (func_member))
     {
-      first_func_member = TREE_VEC_ELT (vec_base, 0);
-      /* This isn't documented, but the first element of the vector of member 
-         functions can be NULL in cases where the class type in question
-         didn't have either a constructor or a destructor declared for it.
-         We have to make allowances for that here.  */
-      if (first_func_member == NULL)
-	{
-	  first_func_member = TREE_VEC_ELT (vec_base, 1);
-	}
-
-      for (func_member = first_func_member;
-	   func_member;
-	   func_member = TREE_CHAIN (func_member))
-	{
-	  gen_decl_die (func_member, context_die);
-	}
+      gen_decl_die (func_member, context_die);
     }
 }
 
@@ -6587,7 +6656,6 @@ gen_struct_or_union_type_die (type, is_complete, context_die)
 			  scope_die_for_type (type, context_die));
       equate_type_number_to_die (type, type_die);
       add_name_attribute (type_die, type_tag (type));
-      add_member_attribute (type_die, TYPE_CONTEXT (type));
     }
 
   /* If this type has been completed, then give it a byte_size attribute and
@@ -6612,10 +6680,12 @@ gen_subroutine_type_die (type, context_die)
      register dw_die_ref context_die;
 {
   register tree return_type = TREE_TYPE (type);
-  register dw_die_ref subr_die = new_die (DW_TAG_subroutine_type, context_die);
+  register dw_die_ref subr_die = lookup_type_die (type);
+  if (subr_die)
+    return;
+  subr_die = new_die (DW_TAG_subroutine_type, context_die);
   equate_type_number_to_die (type, subr_die);
   add_prototyped_attribute (subr_die, type);
-  add_member_attribute (subr_die, TYPE_CONTEXT (type));
   add_type_attribute (subr_die, return_type, 0, 0, context_die);
   gen_formal_types_die (type, context_die);
 }
@@ -6637,7 +6707,6 @@ gen_typedef_die (decl, context_die)
   else
     {
       add_name_and_src_coords_attributes (type_die, decl);
-      add_member_attribute (type_die, DECL_CONTEXT (decl));
       add_type_attribute (type_die, TREE_TYPE (decl),
 			  TREE_READONLY (decl),
 			  TREE_THIS_VOLATILE (decl),
@@ -7002,11 +7071,24 @@ gen_decl_die (decl, context_die)
 
     case FUNCTION_DECL:
       /* If we are in terse mode, don't output any DIEs to represent mere
-         function declarations.  */
-      if (DECL_INITIAL (decl) == NULL_TREE)
+         function declarations, unless they are class members.  */
+      if (DECL_INITIAL (decl) == NULL_TREE && DECL_CONTEXT (decl) == NULL_TREE)
 	{
 	  break;
 	}
+      /* Before we describe the FUNCTION_DECL itself, make sure that we have
+         described its context.  */
+      origin = decl_class_context (decl);
+      if (origin && ! decl_ultimate_origin (decl))
+	{
+	  dw_die_ref old_die;
+	  gen_type_die (origin, context_die);
+	  /* We may have just generated the DIE we need; let's check.  */
+	  old_die = lookup_decl_die (decl);
+	  if (old_die && get_AT_flag (old_die, DW_AT_declaration) != 1)
+	    break;
+	}
+
       /* Before we describe the FUNCTION_DECL itself, make sure that we have
          described its return type.  */
       gen_type_die (TREE_TYPE (TREE_TYPE (decl)), context_die);
@@ -7048,11 +7130,9 @@ gen_decl_die (decl, context_die)
          TYPE_DECL node for each complete tagged type, each array type, and
          each function type node created) the g++ front end generates a
          _named_ TYPE_DECL node for each tagged type node created.
-         Unfortunately, these g++ TYPE_DECL nodes cause us to output many
-         superfluous and unnecessary DW_TAG_typedef DIEs here.  When g++ is
-         fixed to stop generating these superfluous named TYPE_DECL nodes,
-         the superfluous DW_TAG_typedef DIEs will likewise cease.  */
-      if (DECL_NAME (decl))
+	 These TYPE_DECLs have DECL_ARTIFICIAL set, so we know not to
+	 generate a DW_TAG_typedef DIE for them.  */
+      if (DECL_NAME (decl) && ! DECL_ARTIFICIAL (decl))
 	{
 	  /* Output a DIE to represent the typedef itself.  */
 	  gen_typedef_die (decl, context_die);
@@ -7072,6 +7152,19 @@ gen_decl_die (decl, context_die)
       if (debug_info_level <= DINFO_LEVEL_TERSE)
 	{
 	  break;
+	}
+
+      /* Before we describe the VAR_DECL itself, make sure that we have
+         described its context.  */
+      origin = decl_class_context (decl);
+      if (origin && ! decl_ultimate_origin (decl))
+	{
+	  dw_die_ref old_die;
+	  gen_type_die (origin, context_die);
+	  /* We may have just generated the DIE we need; let's check.  */
+	  old_die = lookup_decl_die (decl);
+	  if (old_die && get_AT_flag (old_die, DW_AT_declaration) != 1)
+	    break;
 	}
 
       /* Output any DIEs that are needed to specify the type of this data
@@ -7624,6 +7717,7 @@ dwarfout_init (asm_out_file, main_input_filename)
   fde_table_allocated = FDE_TABLE_INCREMENT;
   fde_table_in_use = 0;
 
+#if 0
   /* Output a starting label for the .text section.  */
   fputc ('\n', asm_out_file);
   ASM_OUTPUT_SECTION (asm_out_file, TEXT_SECTION);
@@ -7643,6 +7737,7 @@ dwarfout_init (asm_out_file, main_input_filename)
   fputc ('\n', asm_out_file);
   ASM_OUTPUT_SECTION (asm_out_file, BSS_SECTION);
   ASM_OUTPUT_LABEL (asm_out_file, BSS_BEGIN_LABEL);
+#endif
 
   /* Generate the initial DIE for the .debug section.  Note that the (string) 
      value given in the DW_AT_name attribute of the DW_TAG_compile_unit DIE
@@ -7675,6 +7770,7 @@ dwarfout_finish ()
   ASM_OUTPUT_SECTION (asm_out_file, TEXT_SECTION);
   ASM_OUTPUT_LABEL (asm_out_file, TEXT_END_LABEL);
 
+#if 0
   /* Output a terminator label for the .data section.  */
   fputc ('\n', asm_out_file);
   ASM_OUTPUT_SECTION (asm_out_file, DATA_SECTION);
@@ -7689,6 +7785,7 @@ dwarfout_finish ()
   fputc ('\n', asm_out_file);
   ASM_OUTPUT_SECTION (asm_out_file, BSS_SECTION);
   ASM_OUTPUT_LABEL (asm_out_file, BSS_END_LABEL);
+#endif
 
   /* Output the abbreviation table.  */
   fputc ('\n', asm_out_file);
