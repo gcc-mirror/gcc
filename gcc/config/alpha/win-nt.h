@@ -20,6 +20,9 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
+#undef TARGET_DEFAULT
+#define TARGET_DEFAULT (MASK_FP | MASK_FPREGS | MASK_WINDOWS_NT)
+
 /* Names to predefine in the preprocessor for this target machine.  */
 
 #undef CPP_PREDEFINES

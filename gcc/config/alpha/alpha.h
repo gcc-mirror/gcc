@@ -20,12 +20,6 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 
-/* Names to predefine in the preprocessor for this target machine.  */
-
-#define CPP_PREDEFINES "\
--Dunix -D__osf__ -D__alpha -D__alpha__ -D_LONGLONG -DSYSTYPE_BSD  \
--D_SYSTYPE_BSD -Asystem(unix) -Asystem(xpg4) -Acpu(alpha) -Amachine(alpha)"
-
 /* Write out the correct language type definition for the header files.  
    Unless we have assembler language, write out the symbols for C.  */
 #define CPP_SPEC "\
@@ -44,18 +38,6 @@ Boston, MA 02111-1307, USA.  */
 
 #define SIGNED_CHAR_SPEC "%{funsigned-char:-D__CHAR_UNSIGNED__}"
 
-/* Under OSF4, -p and -pg require -lprof1, and -lprof1 requires -lpdf.  */
-
-#define LIB_SPEC "%{p:-lprof1 -lpdf} %{pg:-lprof1 -lpdf} %{a:-lprof2} -lc"
-
-/* Pass "-G 8" to ld because Alpha's CC does.  Pass -O3 if we are
-   optimizing, -O1 if we are not.  Pass -shared, -non_shared or
-   -call_shared as appropriate.  Also pass -pg.  */
-#define LINK_SPEC  \
-  "-G 8 %{O*:-O3} %{!O*:-O1} %{static:-non_shared} \
-   %{!static:%{shared:-shared} %{!shared:-call_shared}} %{pg} %{taso} \
-   %{rpath*}"
-
 #define WORD_SWITCH_TAKES_ARG(STR)		\
  (!strcmp (STR, "rpath") || !strcmp (STR, "include")	\
   || !strcmp (STR, "imacros") || !strcmp (STR, "aux-info") \
@@ -63,15 +45,8 @@ Boston, MA 02111-1307, USA.  */
   || !strcmp (STR, "iwithprefix") || !strcmp (STR, "iwithprefixbefore") \
   || !strcmp (STR, "isystem"))
 
-#define STARTFILE_SPEC  \
-  "%{!shared:%{pg:gcrt0.o%s}%{!pg:%{p:mcrt0.o%s}%{!p:crt0.o%s}}}"
-
 /* Print subsidiary information on the compiler version in use.  */
 #define TARGET_VERSION
-
-/* Define the location for the startup file on OSF/1 for Alpha.  */
-
-#define MD_STARTFILE_PREFIX "/usr/lib/cmplrs/cc/"
 
 /* Run-time compilation parameters selecting different hardware subsets.  */
 
@@ -1504,8 +1479,8 @@ extern void alpha_init_expanders ();
 
 /* Define as C expression which evaluates to nonzero if the tablejump
    instruction expects the table to contain offsets from the address of the
-   table.
-   Do not define this if the table should contain absolute addresses. */
+   table.  Do not define this if the table should contain absolute addresses.
+
    On the Alpha, the table is really GP-relative, not relative to the PC
    of the table, but we pretend that it is PC-relative; this should be OK,
    but we should try to find some better way sometime.  */
@@ -1745,24 +1720,6 @@ extern void alpha_init_expanders ();
       }
 
 /* Control the assembler format that we output.  */
-
-/* Output at beginning of assembler file.  */
-
-#define ASM_FILE_START(FILE)					\
-{								\
-  alpha_write_verstamp (FILE);					\
-  fprintf (FILE, "\t.set noreorder\n");				\
-  fprintf (FILE, "\t.set volatile\n");                          \
-  fprintf (FILE, "\t.set noat\n");				\
-  if (TARGET_SUPPORT_ARCH)					\
-    fprintf (FILE, "\t.arch %s\n",				\
-             alpha_cpu == PROCESSOR_EV6 ? "ev6"			\
-	     : (alpha_cpu == PROCESSOR_EV5			\
-		? (TARGET_MAX ? "pca56" : TARGET_BWX ? "ev56" : "ev5") \
-		: "ev4"));					\
-								\
-  ASM_OUTPUT_SOURCE_FILENAME (FILE, main_input_filename);	\
-}
 
 /* Output to assembler file text saying following lines
    may contain character constants, extra white space, comments, etc.  */
@@ -2282,47 +2239,6 @@ do {							\
 
 #define PUT_SDB_EPILOGUE_END(NAME)
 
-/* No point in running CPP on our assembler output.  */
-#if ((TARGET_DEFAULT | TARGET_CPU_DEFAULT) & MASK_GAS) != 0
-/* Don't pass -g to GNU as, because some versions don't accept this option.  */
-#define ASM_SPEC "%{malpha-as:-g} -nocpp %{pg}"
-#else
-/* In OSF/1 v3.2c, the assembler by default does not output file names which
-   causes mips-tfile to fail.  Passing -g to the assembler fixes this problem.
-   ??? Strictly speaking, we need -g only if the user specifies -g.  Passing
-   it always means that we get slightly larger than necessary object files
-   if the user does not specify -g.  If we don't pass -g, then mips-tfile
-   will need to be fixed to work in this case.  Pass -O0 since some
-   optimization are broken and don't help us anyway.  */
-#define ASM_SPEC "%{!mgas:-g} -nocpp %{pg} -O0"
-#endif
-
-/* Specify to run a post-processor, mips-tfile after the assembler
-   has run to stuff the ecoff debug information into the object file.
-   This is needed because the Alpha assembler provides no way
-   of specifying such information in the assembly file.  */
-
-#if ((TARGET_DEFAULT | TARGET_CPU_DEFAULT) & MASK_GAS) != 0
-
-#define ASM_FINAL_SPEC "\
-%{malpha-as: %{!mno-mips-tfile: \
-	\n mips-tfile %{v*: -v} \
-		%{K: -I %b.o~} \
-		%{!K: %{save-temps: -I %b.o~}} \
-		%{c:%W{o*}%{!o*:-o %b.o}}%{!c:-o %U.o} \
-		%{.s:%i} %{!.s:%g.s}}}"
-
-#else
-#define ASM_FINAL_SPEC "\
-%{!mgas: %{!mno-mips-tfile: \
-	\n mips-tfile %{v*: -v} \
-		%{K: -I %b.o~} \
-		%{!K: %{save-temps: -I %b.o~}} \
-		%{c:%W{o*}%{!o*:-o %b.o}}%{!c:-o %U.o} \
-		%{.s:%i} %{!.s:%g.s}}}"
-
-#endif
-
 /* Macros for mips-tfile.c to encapsulate stabs in ECOFF, and for
    mips-tdump.c to print them out.
 
@@ -2343,10 +2259,10 @@ do {							\
 
 #define ALIGN_SYMTABLE_OFFSET(OFFSET) (((OFFSET) + 7) & ~7)
 
-/* The system headers under OSF/1 are C++-aware.  */
-#define NO_IMPLICIT_EXTERN_C
-
 /* The linker will stick __main into the .init section.  */
 #define HAS_INIT_SECTION
 #define LD_INIT_SWITCH "-init"
 #define LD_FINI_SWITCH "-fini"
+
+/* The system headers under Alpha systems are generally C++-aware.  */
+#define NO_IMPLICIT_EXTERN_C

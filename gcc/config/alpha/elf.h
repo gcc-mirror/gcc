@@ -19,63 +19,41 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.    */
 
-/* This is used on Alpha platforms that use the ELF format.
-   Currently only GNU/Linux uses this. */
-
-#undef TARGET_VERSION
-#define TARGET_VERSION fprintf (stderr, " (Alpha GNU/Linux with ELF)");
-
 #undef OBJECT_FORMAT_COFF
 #undef EXTENDED_COFF
 #define OBJECT_FORMAT_ELF
 
-#define SDB_DEBUGGING_INFO
+#define DBX_DEBUGGING_INFO
+
+#undef PREFERRED_DEBUGGING_TYPE
+#define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
 
 #undef ASM_FINAL_SPEC
 
-#undef CPP_PREDEFINES
-#define CPP_PREDEFINES "\
--D__alpha -D__alpha__ -D__linux__ -D__linux -D_LONGLONG -Dlinux -Dunix \
--Asystem(linux) -Acpu(alpha) -Amachine(alpha) -D__ELF__"
-
 #undef LINK_SPEC
-#ifdef USE_GNULIBC_1
 #define LINK_SPEC "-m elf64alpha -G 8 %{O*:-O3} %{!O*:-O1}	\
   %{shared:-shared}						\
   %{!shared:							\
     %{!static:							\
       %{rdynamic:-export-dynamic}				\
-      %{!dynamic-linker:-dynamic-linker /lib/ld.so.1}}		\
+      %{!dynamic-linker:-dynamic-linker " ELF_DYNAMIC_LINKER "}}\
     %{static:-static}}"
-#else
-#define LINK_SPEC "-m elf64alpha -G 8 %{O*:-O3} %{!O*:-O1}	\
-  %{shared:-shared}						\
-  %{!shared:							\
-    %{!static:							\
-      %{rdynamic:-export-dynamic}				\
-      %{!dynamic-linker:-dynamic-linker /lib/ld-linux.so.2}}	\
-    %{static:-static}}"
-#endif
-
-#ifndef USE_GNULIBC_1
-#undef DEFAULT_VTABLE_THUNKS
-#define DEFAULT_VTABLE_THUNKS 1
-#endif
 
 /* Output at beginning of assembler file.  */
-
 #undef ASM_FILE_START
 #define ASM_FILE_START(FILE)					\
 {								\
   alpha_write_verstamp (FILE);					\
   output_file_directive (FILE, main_input_filename);		\
-  fprintf (FILE, "\t.version\t\"01.01\"\n");			\
   fprintf (FILE, "\t.set noat\n");				\
+  fprintf (FILE, "\t.set noreorder\n");                         \
+  if (TARGET_BWX | TARGET_MAX | TARGET_CIX)			\
+    {								\
+      fprintf (FILE, "\t.arch %s\n",				\
+               (alpha_cpu == PROCESSOR_EV6 ? "ev6"		\
+                : TARGET_MAX ? "pca56" : "ev56"));		\
+    }								\
 }
-
-#define ASM_OUTPUT_SOURCE_LINE(STREAM, LINE)				\
-  alpha_output_lineno (STREAM, LINE)
-extern void alpha_output_lineno ();
 
 extern void output_file_directive ();
 
@@ -100,11 +78,9 @@ do {				 				\
 #endif
 
 /* Allow #sccs in preprocessor.  */
-
 #define SCCS_DIRECTIVE
 
 /* Output #ident as a .ident.  */
-
 #define ASM_OUTPUT_IDENT(FILE, NAME) \
   fprintf (FILE, "\t%s\t\"%s\"\n", IDENT_ASM_OP, NAME);
 
@@ -473,26 +449,24 @@ do {									 \
    escape sequence like \377 would count as four bytes.
 
    If your target assembler doesn't support the .string directive, you
-   should define this to zero.
-*/
+   should define this to zero.  */
 
 #define STRING_LIMIT	((unsigned) 256)
-
 #define STRING_ASM_OP	".string"
 
-/*
- * We always use gas here, so we don't worry about ECOFF assembler problems.
- */
+/* GAS is the only Alpha/ELF assembler.  */
 #undef TARGET_GAS
 #define TARGET_GAS	(1)
 
-#undef PREFERRED_DEBUGGING_TYPE
-#define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
+/* Provide a STARTFILE_SPEC appropriate for ELF.  Here we add the
+   (even more) magical crtbegin.o file which provides part of the
+   support for getting C++ file-scope static object constructed before
+   entering `main'. 
 
-/* Provide a STARTFILE_SPEC appropriate for GNU/Linux.  Here we add
-   the GNU/Linux magical crtbegin.o file (see crtstuff.c) which
-   provides part of the support for getting C++ file-scope static
-   object constructed before entering `main'. */
+   Don't bother seeing crtstuff.c -- there is absolutely no hope of
+   getting that file to understand multiple GPs.  GNU Libc provides a
+   hand-coded version that is used on Linux; it could be copied here
+   if there is ever a need. */
    
 #undef	STARTFILE_SPEC
 #define STARTFILE_SPEC \
@@ -500,12 +474,14 @@ do {									 \
      %{pg:gcrt1.o%s} %{!pg:%{p:gcrt1.o%s} %{!p:crt1.o%s}}}\
    crti.o%s crtbegin.o%s"
 
-/* Provide a ENDFILE_SPEC appropriate for GNU/Linux.  Here we tack on
-   the GNU/Linux magical crtend.o file (see crtstuff.c) which
-   provides part of the support for getting C++ file-scope static
-   object constructed before entering `main', followed by a normal
-   GNU/Linux "finalizer" file, `crtn.o'.  */
+/* Provide a ENDFILE_SPEC appropriate for ELF.  Here we tack on the
+   magical crtend.o file which provides part of the support for
+   getting C++ file-scope static object constructed before entering
+   `main', followed by a normal ELF "finalizer" file, `crtn.o'.  */
 
 #undef	ENDFILE_SPEC
 #define ENDFILE_SPEC \
   "crtend.o%s crtn.o%s"
+
+/* We support #pragma.  */
+#define HANDLE_SYSV_PRAGMA

@@ -1,3 +1,32 @@
+Tue Dec 23 03:53:21 1997  Richard Henderson  <rth@cygnus.com>
+	
+	* alpha.h (CPP_PREDEFINES, LIB_SPEC, LINK_SPEC, STARTFILE_SPEC,
+	MD_STARTFILE_PREFIX, ASM_FILE_START, ASM_SPEC, ASM_FINAL_SPEC):
+	Move OSF/1 specific defines out.
+	* alpha/elf.h (TARGET_VERSION, CPP_PREDEFINES, DEFAULT_VTABLE_THUNKS):
+	Move Linux specific defines out.
+	(LINK_SPEC): Genericize.
+	(ASM_FILE_START): Emit .arch if using more than the base insn set.
+	(ASM_OUTPUT_SOURCE_LINE): Remove; identical to alpha.h version.
+	(SDB_DEBUGGING_INFO): Remove; gas can't handle it.
+	(HANDLE_SYSV_PRAGMA): Define.
+	* alpha/osf.h: New file.
+	* alpha/linux.h: Split.  Retain file-format independant defines.
+	Import Linux bits from elf.h.
+	(CPP_PREDEFINES): Take a file-format specific SUB_CPP_PREDEFINES
+	(FUNCTION_PROFILER): _mcount takes its address in $28.
+	(MD_EXEC_PREFIX, MD_STARTFILE_PREFIX): Remove undef.
+	* alpha/linux-ecoff.h: New file.
+	* alpha/linux-elf.h: New file.
+	* alpha/vms.h (LIB_SPEC, LINK_SPEC): Copy from osf.h.
+	* alpha/win-nt.h (TARGET_DEFAULT): Define.
+	* configure.in (alpha*-*-osf*, alpha*-*-linux*) [tm_file]:
+	Add new headers as appropriate.
+	
+	* configure.in (alpha*): Enable Haifa by default.
+	(*-*-winnt3*): Change to winnt*, since we're not v3 specific.
+	* configure: Rebuild.
+	
 Tue Dec 23 03:14:54 1997  Richard Henderson  <rth@cygnus.com>
 
 	* Makefile.in (clean): Remove the stages with their objects here ...
