@@ -1024,13 +1024,6 @@ yylex ()
     {
     case EOF:
       end_of_file = 1;
-      if (! global_bindings_p ())
-	{
-	  yyerror ("parse error");
-	  token_buffer[0] = '}';
-	  value = '}';
-	  break;
-	}
       token_buffer[0] = 0;
       value = ENDFILE;
       break;
