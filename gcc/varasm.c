@@ -3463,7 +3463,14 @@ initializer_constant_valid_p (tree value, tree endtype)
 
     case ADDR_EXPR:
     case FDESC_EXPR:
-      return staticp (TREE_OPERAND (value, 0)) ? TREE_OPERAND (value, 0) : 0;
+      value = staticp (TREE_OPERAND (value, 0));
+      /* "&(*a).f" is like unto pointer arithmetic.  If "a" turns out to
+	 be a constant, this is old-skool offsetof-like nonsense.  */
+      if (value
+	  && TREE_CODE (value) == INDIRECT_REF
+	  && TREE_CONSTANT (TREE_OPERAND (value, 0)))
+	return null_pointer_node;
+      return value;
 
     case VIEW_CONVERT_EXPR:
     case NON_LVALUE_EXPR:
@@ -3565,16 +3572,17 @@ initializer_constant_valid_p (tree value, tree endtype)
 	  /* Since GCC guarantees that string constants are unique in the
 	     generated code, a subtraction between two copies of the same
 	     constant string is absolute.  */
-	  if (valid0 && TREE_CODE (valid0) == STRING_CST &&
-	      valid1 && TREE_CODE (valid1) == STRING_CST &&
-	      TREE_STRING_POINTER (valid0) == TREE_STRING_POINTER (valid1))
+	  if (valid0 && TREE_CODE (valid0) == STRING_CST
+	      && valid1 && TREE_CODE (valid1) == STRING_CST
+	      && operand_equal_p (valid0, valid1, 1))
 	    return null_pointer_node;
 	}
 
-      /* Support differences between labels.  */
+      /* Support narrowing differences.  */
       if (INTEGRAL_TYPE_P (endtype))
 	{
 	  tree op0, op1;
+
 	  op0 = TREE_OPERAND (value, 0);
 	  op1 = TREE_OPERAND (value, 1);
 
@@ -3609,11 +3617,25 @@ initializer_constant_valid_p (tree value, tree endtype)
 	      op1 = inner;
 	    }
 
-	  if (TREE_CODE (op0) == ADDR_EXPR
-	      && TREE_CODE (TREE_OPERAND (op0, 0)) == LABEL_DECL
-	      && TREE_CODE (op1) == ADDR_EXPR
-	      && TREE_CODE (TREE_OPERAND (op1, 0)) == LABEL_DECL)
-	    return null_pointer_node;
+	  op0 = initializer_constant_valid_p (op0, endtype);
+	  op1 = initializer_constant_valid_p (op1, endtype);
+
+	  /* Both initializers must be known.  */
+	  if (op0 && op1)
+	    {
+	      if (op0 == op1)
+		return null_pointer_node;
+
+	      /* Support differences between labels.  */
+	      if (TREE_CODE (op0) == LABEL_DECL
+		  && TREE_CODE (op1) == LABEL_DECL)
+		return null_pointer_node;
+
+	      if (TREE_CODE (op0) == STRING_CST
+		  && TREE_CODE (op1) == STRING_CST
+		  && operand_equal_p (op0, op1, 1))
+		return null_pointer_node;
+	    }
 	}
       break;
 

@@ -1,5 +1,13 @@
 2004-08-30  Richard Henderson  <rth@redhat.com>
 
+	* c-typeck.c (build_unary_op): Don't expand ADDR_EXPR of a 
+	COMPONENT_REF to pointer arithmetic.
+	* varasm.c (initializer_constant_valid_p): Allow "&(*c).f", for
+	constant "c" as a valid constant initializer.  Allow narrowing of
+	differences against the same base object, for any base object.
+
+2004-08-30  Richard Henderson  <rth@redhat.com>
+
 	* expr.c (expand_expr_addr_expr): New.
 	(expand_expr_real_1) <case ADDR_EXPR>: Use it.
 
