@@ -5776,7 +5776,8 @@ store_parm_decls ()
 		 with that declared for the arg.  */
 	      if (! comptypes (DECL_ARG_TYPE (parm), TREE_VALUE (type)))
 		{
-		  if (TREE_TYPE (parm) == TREE_VALUE (type))
+		  if (TYPE_MAIN_VARIANT (TREE_TYPE (parm))
+		      == TYPE_MAIN_VARIANT (TREE_VALUE (type)))
 		    {
 		      /* Adjust argument to match prototype.  E.g. a previous
 			 `int foo(float);' prototype causes
