@@ -652,9 +652,9 @@ T =
 .SUFFIXES: .in .def
 
 Makefile: $(srcdir)/Makefile.in config.status $(srcdir)/version.c \
-   $(xmake_file) $(tmake_file) \
-   $(LANG_MAKEFILES)
-	$(SHELL) $(srcdir)/configure.frag $(srcdir) "$(SUBDIRS)"
+   $(xmake_file) $(tmake_file) $(LANG_MAKEFILES)
+	$(SHELL) $(srcdir)/configure.frag $(srcdir) "$(SUBDIRS)" \
+		"$(xmake_file)" "$(tmake_file)"
 	cp config.status config.run
 	$(SHELL) config.run
 	rm -f config.run
@@ -2050,7 +2050,7 @@ clean: mostlyclean bytecode.clean lang.clean
 distclean: clean bytecode.distclean lang.distclean
 	-rm -f tm.h config.h config2.h tconfig.h hconfig.h md cstamp-h
 	-rm -f config.status config.run config.cache config.bak
-	-rm -f Make-lang Make-hooks
+	-rm -f Make-lang Make-hooks Make-host Make-target
 	-rm -f Makefile specs.h options.h *.oaux
 	-rm -fr stage1 stage2 stage3 stage4
 	-rm -f */stage1 */stage2 */stage3 */stage4 */include
