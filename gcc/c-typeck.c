@@ -4780,9 +4780,12 @@ push_string (string)
 /* Push a member name on the stack.  Printed as '.' STRING.  */
 
 static void
-push_member_name (string)
-     char *string;
+push_member_name (decl)
+     tree decl;
+     
 {
+  char *string
+    = DECL_NAME (decl) ? IDENTIFIER_POINTER (DECL_NAME (decl)) : "<anonymous>";
   PUSH_SPELLING (SPELLING_MEMBER, string, u.s);
 }
 
@@ -5519,7 +5522,7 @@ push_init_level (implicit)
       else
 	{
 	  constructor_type = TREE_TYPE (constructor_fields);
-	  push_member_name (IDENTIFIER_POINTER (DECL_NAME (constructor_fields)));
+	  push_member_name (constructor_fields);
 	}
     }
   else if (TREE_CODE (constructor_type) == ARRAY_TYPE)
@@ -6258,7 +6261,7 @@ process_init_element (value)
 
 	  if (value)
 	    {
-	      push_member_name (IDENTIFIER_POINTER (DECL_NAME (constructor_fields)));
+	      push_member_name (constructor_fields);
 	      output_init_element (value, fieldtype, constructor_fields, 1);
 	      RESTORE_SPELLING_DEPTH (constructor_depth);
 	    }
@@ -6315,7 +6318,7 @@ process_init_element (value)
 
 	  if (value)
 	    {
-	      push_member_name (IDENTIFIER_POINTER (DECL_NAME (constructor_fields)));
+	      push_member_name (constructor_fields);
 	      output_init_element (value, fieldtype, constructor_fields, 1);
 	      RESTORE_SPELLING_DEPTH (constructor_depth);
 	    }
