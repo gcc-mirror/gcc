@@ -2774,6 +2774,9 @@ push_template_decl_real (tree decl, int is_friend)
   int is_partial;
   int new_template_p = 0;
 
+  if (decl == error_mark_node)
+    return decl;
+
   /* See if this is a partial specialization.  */
   is_partial = (DECL_IMPLICIT_TYPEDEF_P (decl)
 		&& TREE_CODE (TREE_TYPE (decl)) != ENUMERAL_TYPE
@@ -7381,6 +7384,7 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
     case PARM_DECL:
       r = retrieve_local_specialization (t);
       my_friendly_assert (r != NULL, 20020903);
+      mark_used (r);
       return r;
 
     case CONST_DECL:

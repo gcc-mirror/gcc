@@ -1,4 +1,13 @@
-2004-02-19  Mark Mitchell  <mark@codesourcery.com>
+2004-02-20  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/13927
+	* g++.dg/other/error8.C: Remove XFAIL markers.
+
+	PR c++/14173
+	* g++.dg/ext/packed5.C: New test.
+
+	PR c++/14199
+	* g++.dg/warn/Wunused-5.C: New test.
 
 	PR c++/14186
 	* g++.dg/lookup/member1.C: New test.
