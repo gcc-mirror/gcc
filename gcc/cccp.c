@@ -1215,6 +1215,7 @@ static void make_assertion PROTO((char *, char *));
 static struct file_name_list *new_include_prefix PROTO((struct file_name_list *, char *, char *, char *));
 static void append_include_chain PROTO((struct file_name_list *, struct file_name_list *));
 
+static int quote_string_for_make PROTO((char *, char *));
 static void deps_output PROTO((char *, int));
 
 static void fatal PRINTF_PROTO_1((char *, ...)) __attribute__ ((noreturn));
@@ -9950,6 +9951,67 @@ append_include_chain (first, last)
   last_include = last;
 }
 
+/* Place into DST a representation of the file named SRC that is suitable
+   for `make'.  Do not null-terminate DST.  Return its length.  */
+static int
+quote_string_for_make (dst, src)
+     char *dst;
+     char *src;
+{
+  char *p = src;
+  int i = 0;
+  for (;;)
+    {
+      char c = *p++;
+      switch (c)
+	{
+	case '\0':
+	case ' ':
+	case '\t':
+	  {
+	    /* GNU make uses a weird quoting scheme for white space.
+	       A space or tab preceded by 2N+1 backslashes represents
+	       N backslashes followed by space; a space or tab
+	       preceded by 2N backslashes represents N backslashes at
+	       the end of a file name; and backslashes in other
+	       contexts should not be doubled.  */
+	    char *q;
+	    for (q = p - 1; src < q && q[-1] == '\\';  q--)
+	      {
+		if (dst)
+		  dst[i] = '\\';
+		i++;
+	      }
+	  }
+	  if (!c)
+	    return i;
+	  if (dst)
+	    dst[i] = '\\';
+	  i++;
+	  goto ordinary_char;
+	  
+	case '$':
+	  if (dst)
+	    dst[i] = c;
+	  i++;
+	  /* Fall through.  This can mishandle things like "$(" but
+	     there's no easy fix.  */
+	default:
+	ordinary_char:
+	  /* This can mishandle characters in the string "\0\n%*?[\\~";
+	     exactly which chars are mishandled depends on the `make' version.
+	     We know of no portable solution for this;
+	     even GNU make 3.76.1 doesn't solve the problem entirely.
+	     (Also, '\0' is mishandled due to our calling conventions.)  */
+	  if (dst)
+	    dst[i] = c;
+	  i++;
+	  break;
+	}
+    }
+}
+
+
 /* Add output to `deps_buffer' for the -M switch.
    STRING points to the text to be output.
    SPACER is ':' for targets, ' ' for dependencies.  */
@@ -9959,7 +10021,7 @@ deps_output (string, spacer)
      char *string;
      int spacer;
 {
-  int size = strlen (string);
+  int size = quote_string_for_make ((char *) 0, string);
 
   if (size == 0)
     return;
@@ -9984,7 +10046,7 @@ deps_output (string, spacer)
     deps_buffer[deps_size++] = ' ';
     deps_column++;
   }
-  bcopy (string, &deps_buffer[deps_size], size);
+  quote_string_for_make (&deps_buffer[deps_size], string);
   deps_size += size;
   deps_column += size;
   if (spacer == ':') {
