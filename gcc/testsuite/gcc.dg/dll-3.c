@@ -1,6 +1,7 @@
 /* Ensure dllexport overrides dllimport.  */
 
 /* { dg-do compile { target arm*-*-pe* } } */
+/* { dg-do compile { target thumb*-*-pe* } } */
 
 __declspec (dllimport) int foo1 ();
 __declspec (dllexport) int foo1 ();
