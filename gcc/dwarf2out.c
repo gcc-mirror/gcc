@@ -2322,23 +2322,6 @@ static unsigned arange_table_in_use;
    arange_table.  */
 #define ARANGE_TABLE_INCREMENT 64
 
-/* A pointer to the base of a list of pending types which we haven't
-   generated DIEs for yet, but which we will have to come back to
-   later on.  */
-
-static tree *pending_types_list;
-
-/* Number of elements currently allocated for the pending_types_list.  */
-static unsigned pending_types_allocated;
-
-/* Number of elements of pending_types_list currently in use.  */
-static unsigned pending_types;
-
-/* Size (in elements) of increments by which we may expand the pending
-   types list.  Actually, a single hunk of space of this size should
-   be enough for most typical programs.	 */
-#define PENDING_TYPES_INCREMENT 64
-
 /* A pointer to the base of a list of incomplete types which might be
    completed at some later time.  */
 
@@ -2511,8 +2494,6 @@ static void gen_set_type_die		PROTO((tree, dw_die_ref));
 #if 0
 static void gen_entry_point_die		PROTO((tree, dw_die_ref));
 #endif
-static void pend_type			PROTO((tree));
-static void output_pending_types_for_scope PROTO((dw_die_ref));
 static void gen_inlined_enumeration_type_die PROTO((tree, dw_die_ref));
 static void gen_inlined_structure_type_die PROTO((tree, dw_die_ref));
 static void gen_inlined_union_type_die	PROTO((tree, dw_die_ref));
@@ -4153,8 +4134,8 @@ add_child_die (die, child_die)
     }
 }
 
-/* Move CHILD, which must be a child of PARENT, to the front of
-   PARENT's list of children.  */
+/* Move CHILD, which must be a child of PARENT or the DIE for which PARENT
+   is the specification, to the front of PARENT's list of children.  */
 
 static void
 splice_child_die (parent, child)
@@ -4165,9 +4146,14 @@ splice_child_die (parent, child)
   /* We want the declaration DIE from inside the class, not the
      specification DIE at toplevel.  */
   if (child->die_parent != parent)
-    child = get_AT_ref (child, DW_AT_specification);
+    {
+      dw_die_ref tmp = get_AT_ref (child, DW_AT_specification);
+      if (tmp)
+	child = tmp;
+    }
 
-  if (parent == NULL || child == NULL || child->die_parent != parent)
+  if (child->die_parent != parent
+      && child->die_parent != get_AT_ref (parent, DW_AT_specification))
     abort ();
 
   for (p = &(parent->die_child); *p; p = &((*p)->die_sib))
@@ -7954,45 +7940,6 @@ gen_entry_point_die (decl, context_die)
 }
 #endif
 
-/* Remember a type in the pending_types_list.  */
-
-static void
-pend_type (type)
-     register tree type;
-{
-  if (pending_types == pending_types_allocated)
-    {
-      pending_types_allocated += PENDING_TYPES_INCREMENT;
-      pending_types_list
-	= (tree *) xrealloc (pending_types_list,
-			     sizeof (tree) * pending_types_allocated);
-    }
-
-  pending_types_list[pending_types++] = type;
-}
-
-/* Output any pending types (from the pending_types list) which we can output
-   now (taking into account the scope that we are working on now).
-
-   For each type output, remove the given type from the pending_types_list
-   *before* we try to output it.  */
-
-static void
-output_pending_types_for_scope (context_die)
-     register dw_die_ref context_die;
-{
-  register tree type;
-
-  while (pending_types)
-    {
-      --pending_types;
-      type = pending_types_list[pending_types];
-      gen_type_die (type, context_die);
-      if (!TREE_ASM_WRITTEN (type))
-	abort ();
-    }
-}
-
 /* Remember a type in the incomplete_types_list.  */
 
 static void
@@ -9054,16 +9001,9 @@ gen_struct_or_union_type_die (type, context_die)
   else
     remove_AT (type_die, DW_AT_declaration);
 
-  /* If we're not in the right context to be defining this type, defer to
-     avoid tricky recursion.  */
-  if (TYPE_SIZE (type) && decl_scope_depth > 0 && scope_die == comp_unit_die)
-    {
-      add_AT_flag (type_die, DW_AT_declaration, 1);
-      pend_type (type);
-    }
   /* If this type has been completed, then give it a byte_size attribute and
      then give a list of members.  */
-  else if (complete)
+  if (complete)
     {
       /* Prevent infinite recursion in cases where the type of some member of 
          this type is expressed in terms of this type itself.  */
@@ -9548,14 +9488,14 @@ gen_decl_die (decl, context_die)
 	     have described its return type.  */
 	  gen_type_die (TREE_TYPE (TREE_TYPE (decl)), context_die);
 
+	  /* And its virtual context.  */
+	  if (DECL_VINDEX (decl) != NULL_TREE)
+	    gen_type_die (DECL_CONTEXT (decl), context_die);
+
 	  /* And its containing type.  */
 	  origin = decl_class_context (decl);
 	  if (origin != NULL_TREE)
 	    gen_type_die_for_member (origin, decl, context_die);
-
-	  /* And its virtual context.  */
-	  if (DECL_VINDEX (decl) != NULL_TREE)
-	    gen_type_die (DECL_CONTEXT (decl), context_die);
 	}
 
       /* Now output a DIE to represent the function itself.  */
@@ -9575,7 +9515,7 @@ gen_decl_die (decl, context_die)
          inline function) we have to generate a special (abbreviated)
          DW_TAG_structure_type, DW_TAG_union_type, or DW_TAG_enumeration_type 
          DIE here.  */
-      if (TYPE_DECL_IS_STUB (decl) && DECL_ABSTRACT_ORIGIN (decl) != NULL_TREE)
+      if (TYPE_DECL_IS_STUB (decl) && decl_ultimate_origin (decl) != NULL_TREE)
 	{
 	  gen_tagged_type_instantiation_die (TREE_TYPE (decl), context_die);
 	  break;
@@ -9789,7 +9729,6 @@ dwarf2out_decl (decl)
     }
 
   gen_decl_die (decl, context_die);
-  output_pending_types_for_scope (comp_unit_die);
 }
 
 /* Output a marker (i.e. a label) for the beginning of the generated code for
