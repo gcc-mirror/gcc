@@ -1,3 +1,9 @@
+2003-01-26  Daniel Jacobowitz  <drow@mvista.com>
+
+	* hashtab.c (htab_create_alloc_ex): New function.
+	(hatab_set_functions_ex): New function.
+	(htab_delete, htab_expand): Support alternate allocation functions.
+
 2003-01-24  Christopher Faylor  <cgf@redhat.com>
 
 	* configure.in: Remove special pex-cygwin consideration.

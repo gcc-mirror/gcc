@@ -1,5 +1,5 @@
 /* An expandable hash tables datatype.  
-   Copyright (C) 1999, 2000, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2002, 2003 Free Software Foundation, Inc.
    Contributed by Vladimir Makarov (vmakarov@cygnus.com).
 
 This program is free software; you can redistribute it and/or modify
@@ -76,10 +76,16 @@ typedef PTR (*htab_alloc) PARAMS ((size_t, size_t));
 /* We also need a free() routine.  */
 typedef void (*htab_free) PARAMS ((PTR));
 
+/* Memory allocation and deallocation; variants which take an extra
+   argument.  */
+typedef PTR (*htab_alloc_with_arg) PARAMS ((void *, size_t, size_t));
+typedef void (*htab_free_with_arg) PARAMS ((void *, void *));
+
 /* Hash tables are of the following type.  The structure
    (implementation) of this type is not needed for using the hash
    tables.  All work with hash table should be executed only through
-   functions mentioned below. */
+   functions mentioned below.  The size of this structure is subject to
+   change.  */
 
 struct htab GTY(())
 {
@@ -115,6 +121,11 @@ struct htab GTY(())
   /* Pointers to allocate/free functions.  */
   htab_alloc alloc_f;
   htab_free free_f;
+
+  /* Alternate allocate/free functions, which take an extra argument.  */
+  PTR GTY((skip (""))) alloc_arg;
+  htab_alloc_with_arg alloc_with_arg_f;
+  htab_free_with_arg free_with_arg_f;
 };
 
 typedef struct htab *htab_t;
@@ -128,9 +139,19 @@ extern htab_t	htab_create_alloc	PARAMS ((size_t, htab_hash,
 						 htab_eq, htab_del,
 						 htab_alloc, htab_free));
 
+extern htab_t	htab_create_alloc_ex	PARAMS ((size_t, htab_hash,
+						    htab_eq, htab_del,
+						    PTR, htab_alloc_with_arg,
+						    htab_free_with_arg));
+
 /* Backward-compatibility functions.  */
 extern htab_t htab_create PARAMS ((size_t, htab_hash, htab_eq, htab_del));
 extern htab_t htab_try_create PARAMS ((size_t, htab_hash, htab_eq, htab_del));
+
+extern void	htab_set_functions_ex	PARAMS ((htab_t, htab_hash,
+						 htab_eq, htab_del,
+						 PTR, htab_alloc_with_arg,
+						 htab_free_with_arg));
 
 extern void	htab_delete	PARAMS ((htab_t));
 extern void	htab_empty	PARAMS ((htab_t));
