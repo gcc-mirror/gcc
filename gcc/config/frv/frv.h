@@ -2781,7 +2781,7 @@ do {                                                                    \
   { "frv_load_operand",			{ REG, SUBREG, MEM }},		\
   { "gpr_no_subreg_operand",		{ REG }},			\
   { "gpr_or_fpr_operand",		{ REG, SUBREG }},		\
-  { "gpr_or_int12_operand",		{ REG, SUBREG, CONST_INT }},	\
+  { "gpr_or_int12_operand",		{ REG, SUBREG, CONST_INT, CONST }},	\
   { "gpr_fpr_or_int12_operand",		{ REG, SUBREG, CONST_INT }},	\
   { "gpr_or_int10_operand",		{ REG, SUBREG, CONST_INT }},	\
   { "gpr_or_int_operand",		{ REG, SUBREG, CONST_INT }},	\
