@@ -1,3 +1,149 @@
+2004-11-06  Mark Wielaard  <mark@klomp.org>
+
+	* Makefile.am: Add new javax.imageio files.
+	* Makefile.in: Regenerated.
+
+2004-11-06  Michael Koch  <konqueror@gmx.de>
+
+	* javax/imageio/event/IIOReadProgressListener.java,
+        javax/imageio/event/IIOReadUpdateListener.java,
+	javax/imageio/event/IIOReadWarningListener.java,
+	javax/imageio/event/IIOWriteProgressListener.java,
+	javax/imageio/event/IIOWriteWarningListener.java,
+	javax/imageio/metadata/IIOMetadataFormat.java,
+	javax/imageio/stream/FileCacheImageInputStream.java,
+	javax/imageio/stream/FileCacheImageOutputStream.java,
+	javax/imageio/stream/ImageInputStreamImpl.java:
+	Import cleanup.
+	* javax/imageio/metadata/package.html: New file.
+
+2004-11-06  Michael Koch  <konqueror@gmx.de>
+
+	* javax/imageio/spi/ImageReaderSpi.java
+	(isOwnReader): New method.
+	* javax/imageio/spi/ImageWriterSpi.java
+	(isOwnWriter): Likewise.
+
+2004-11-06  Michael Koch  <konqueror@gmx.de>
+
+	* javax/imageio/ImageWriter.java
+	(convertImageMetadata): New abstract method.
+	(convertStreamMetadata): Likewise.
+	(write): Likewise.
+	* javax/imageio/stream/FileCacheImageInputStream.java
+	(close): Fixed setting of stream to null.
+	(checkStreamClosed): Throws IOException.
+
+2004-11-06  Michael Koch  <konqueror@gmx.de>
+
+	* javax/imageio/stream/FileCacheImageInputStream.java,
+	javax/imageio/stream/FileCacheImageOutputStream.java,
+	javax/imageio/stream/FileImageInputStream.java,
+	javax/imageio/stream/FileImageOutputStream.java,
+	javax/imageio/stream/MemoryCacheImageInputStream.java,
+	javax/imageio/stream/MemoryCacheImageOutputStream.java:
+	New files.
+
+2004-11-06  Michael Koch  <konqueror@gmx.de>
+
+	* javax/imageio/metadata/IIOInvalidTreeException.java,
+	javax/imageio/metadata/IIOMetadataFormatImpl.java,
+	javax/imageio/metadata/IIOMetadataNode.java:
+	New stub files.
+
+2004-11-06  Michael Koch  <konqueror@gmx.de>
+
+	* javax/imageio/stream/ImageInputStreamImpl.java,
+	javax/imageio/stream/ImageOutputStreamImpl.java:
+	New files.
+
+2004-11-06  Michael Koch  <konqueror@gmx.de>
+
+	* javax/imageio/ImageIO.java:
+	Added much new methods.
+
+2004-11-06  Michael Koch  <konqueror@gmx.de>
+
+	* javax/imageio/ImageReader.java,
+	javax/imageio/ImageWriter.java,
+	javax/imageio/spi/ImageWriterSpi.java:
+	Add SOME new methods.
+
+2004-11-06  Michael Koch  <konqueror@gmx.de>
+
+	* javax/imageio/IIOParam.java,
+	javax/imageio/ImageReadParam.java,
+	javax/imageio/ImageReader.java,
+	javax/imageio/ImageWriter.java:
+	Mostly implemented.
+	* javax/imageio/spi/ImageReaderSpi.java,
+	javax/imageio/spi/ImageWriterSpi.java:
+	New files.
+
+2004-11-06  Michael Koch  <konqueror@gmx.de>
+
+	* javax/imageio/ImageWriteParam.java,
+	javax/imageio/metadata/IIOMetadataFormat.java:
+	Implemented.
+
+2004-11-06  Michael Koch  <konqueror@gmx.de>
+
+	* javax/imageio/ImageTypeSpecifier.java:
+	Mostly implemented.
+
+2004-11-06  Michael Koch  <konqueror@gmx.de>
+
+	* javax/imageio/metadata/IIOMetadata.java:
+	Mostly implemented.
+
+2004-11-06  Michael Koch  <konqueror@gmx.de>
+
+	* javax/imageio/IIOImage.java,
+	javax/imageio/ImageReadParam.java,
+	javax/imageio/metadata/IIOMetadataController.java,
+	javax/imageio/metadata/IIOMetadataFormat.java:
+	New files.
+	* javax/imageio/stream/ImageOutputStream.java:
+	Implemented.
+
+2004-11-06  Michael Koch  <konqueror@gmx.de>
+
+	* javax/imageio/IIOParam.java,
+	javax/imageio/IIOParamController.java,
+	javax/imageio/ImageTypeSpecifier.java,
+	javax/imageio/ImageWriteParam.java,
+	javax/imageio/metadata/IIOMetadata.java:
+	New files.
+	* javax/imageio/ImageTranscoder.java:
+	Implemented.
+
+2004-11-06  Michael Koch  <konqueror@gmx.de>
+
+	* javax/imageio/spi/ImageInputStreamSpi.java,
+	javax/imageio/spi/ImageOutputStreamSpi.java:
+	Reworked import startments.
+	* javax/imageio/spi/ServiceRegistry.java:
+	Reworked import startments. Fixed XHTML in javadocs.
+	(ServiceRegistry): Added @param tag to javadoc.
+	* javax/imageio/stream/ImageInputStream.java
+	(mark): Doesn't throws IOException;
+
+2004-11-06  Michael Koch  <konqueror@gmx.de>
+
+	* javax/imageio/ImageIO.java:
+	New file.
+
+2004-11-06  Michael Koch  <konqueror@gmx.de>
+
+	* javax/imageio/spi/IIORegistry.java
+	(static): Don't register ImageReaderSpi.class and
+	ImageWriterSpi.class yet.
+
+2004-11-06  Michael Koch  <konqueror@gmx.de>
+
+	* javax/imageio/spi/IIORegistry.java:
+	New file.
+
 2004-11-06  Noa Resare  <noa@resare.com>
 
 	* java/net/Socket.java (getPort): Return 0 instead of -1 on

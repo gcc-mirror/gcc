@@ -1944,24 +1944,47 @@ am__libgcj_la_SOURCES_DIST = prims.cc jni.cc exception.cc resolve.cc \
 	javax/crypto/spec/RC2ParameterSpec.java \
 	javax/crypto/spec/RC5ParameterSpec.java \
 	javax/crypto/spec/SecretKeySpec.java \
-	javax/imageio/IIOException.java javax/imageio/ImageReader.java \
+	javax/imageio/IIOException.java javax/imageio/IIOImage.java \
+	javax/imageio/IIOParam.java \
+	javax/imageio/IIOParamController.java \
+	javax/imageio/ImageIO.java javax/imageio/ImageReadParam.java \
+	javax/imageio/ImageReader.java \
 	javax/imageio/ImageTranscoder.java \
+	javax/imageio/ImageTypeSpecifier.java \
+	javax/imageio/ImageWriteParam.java \
 	javax/imageio/ImageWriter.java \
 	javax/imageio/event/IIOReadProgressListener.java \
 	javax/imageio/event/IIOReadUpdateListener.java \
 	javax/imageio/event/IIOReadWarningListener.java \
 	javax/imageio/event/IIOWriteProgressListener.java \
 	javax/imageio/event/IIOWriteWarningListener.java \
+	javax/imageio/metadata/IIOInvalidTreeException.java \
+	javax/imageio/metadata/IIOMetadata.java \
+	javax/imageio/metadata/IIOMetadataController.java \
+	javax/imageio/metadata/IIOMetadataFormat.java \
+	javax/imageio/metadata/IIOMetadataFormatImpl.java \
+	javax/imageio/metadata/IIOMetadataNode.java \
 	javax/imageio/spi/IIOServiceProvider.java \
+	javax/imageio/spi/IIORegistry.java \
 	javax/imageio/spi/ImageInputStreamSpi.java \
 	javax/imageio/spi/ImageOutputStreamSpi.java \
+	javax/imageio/spi/ImageReaderSpi.java \
 	javax/imageio/spi/ImageReaderWriterSpi.java \
 	javax/imageio/spi/ImageTranscoderSpi.java \
 	javax/imageio/spi/RegisterableService.java \
 	javax/imageio/spi/ServiceRegistry.java \
+	javax/imageio/spi/ImageWriterSpi.java \
+	javax/imageio/stream/FileCacheImageInputStream.java \
+	javax/imageio/stream/FileCacheImageOutputStream.java \
+	javax/imageio/stream/FileImageInputStream.java \
+	javax/imageio/stream/FileImageOutputStream.java \
 	javax/imageio/stream/IIOByteBuffer.java \
 	javax/imageio/stream/ImageInputStream.java \
+	javax/imageio/stream/ImageInputStreamImpl.java \
 	javax/imageio/stream/ImageOutputStream.java \
+	javax/imageio/stream/ImageOutputStreamImpl.java \
+	javax/imageio/stream/MemoryCacheImageInputStream.java \
+	javax/imageio/stream/MemoryCacheImageOutputStream.java \
 	javax/naming/directory/Attribute.java \
 	javax/naming/directory/AttributeInUseException.java \
 	javax/naming/directory/AttributeModificationException.java \
@@ -3192,23 +3215,44 @@ am__objects_13 = javax/accessibility/Accessible.lo \
 	javax/crypto/spec/RC2ParameterSpec.lo \
 	javax/crypto/spec/RC5ParameterSpec.lo \
 	javax/crypto/spec/SecretKeySpec.lo \
-	javax/imageio/IIOException.lo javax/imageio/ImageReader.lo \
-	javax/imageio/ImageTranscoder.lo javax/imageio/ImageWriter.lo \
+	javax/imageio/IIOException.lo javax/imageio/IIOImage.lo \
+	javax/imageio/IIOParam.lo javax/imageio/IIOParamController.lo \
+	javax/imageio/ImageIO.lo javax/imageio/ImageReadParam.lo \
+	javax/imageio/ImageReader.lo javax/imageio/ImageTranscoder.lo \
+	javax/imageio/ImageTypeSpecifier.lo \
+	javax/imageio/ImageWriteParam.lo javax/imageio/ImageWriter.lo \
 	javax/imageio/event/IIOReadProgressListener.lo \
 	javax/imageio/event/IIOReadUpdateListener.lo \
 	javax/imageio/event/IIOReadWarningListener.lo \
 	javax/imageio/event/IIOWriteProgressListener.lo \
 	javax/imageio/event/IIOWriteWarningListener.lo \
+	javax/imageio/metadata/IIOInvalidTreeException.lo \
+	javax/imageio/metadata/IIOMetadata.lo \
+	javax/imageio/metadata/IIOMetadataController.lo \
+	javax/imageio/metadata/IIOMetadataFormat.lo \
+	javax/imageio/metadata/IIOMetadataFormatImpl.lo \
+	javax/imageio/metadata/IIOMetadataNode.lo \
 	javax/imageio/spi/IIOServiceProvider.lo \
+	javax/imageio/spi/IIORegistry.lo \
 	javax/imageio/spi/ImageInputStreamSpi.lo \
 	javax/imageio/spi/ImageOutputStreamSpi.lo \
+	javax/imageio/spi/ImageReaderSpi.lo \
 	javax/imageio/spi/ImageReaderWriterSpi.lo \
 	javax/imageio/spi/ImageTranscoderSpi.lo \
 	javax/imageio/spi/RegisterableService.lo \
 	javax/imageio/spi/ServiceRegistry.lo \
+	javax/imageio/spi/ImageWriterSpi.lo \
+	javax/imageio/stream/FileCacheImageInputStream.lo \
+	javax/imageio/stream/FileCacheImageOutputStream.lo \
+	javax/imageio/stream/FileImageInputStream.lo \
+	javax/imageio/stream/FileImageOutputStream.lo \
 	javax/imageio/stream/IIOByteBuffer.lo \
 	javax/imageio/stream/ImageInputStream.lo \
+	javax/imageio/stream/ImageInputStreamImpl.lo \
 	javax/imageio/stream/ImageOutputStream.lo \
+	javax/imageio/stream/ImageOutputStreamImpl.lo \
+	javax/imageio/stream/MemoryCacheImageInputStream.lo \
+	javax/imageio/stream/MemoryCacheImageOutputStream.lo \
 	javax/naming/directory/Attribute.lo \
 	javax/naming/directory/AttributeInUseException.lo \
 	javax/naming/directory/AttributeModificationException.lo \
@@ -5699,24 +5743,48 @@ javax/crypto/spec/RC2ParameterSpec.java \
 javax/crypto/spec/RC5ParameterSpec.java \
 javax/crypto/spec/SecretKeySpec.java \
 javax/imageio/IIOException.java \
+javax/imageio/IIOImage.java \
+javax/imageio/IIOParam.java \
+javax/imageio/IIOParamController.java \
+javax/imageio/ImageIO.java \
+javax/imageio/ImageReadParam.java \
 javax/imageio/ImageReader.java \
 javax/imageio/ImageTranscoder.java \
+javax/imageio/ImageTypeSpecifier.java \
+javax/imageio/ImageWriteParam.java \
 javax/imageio/ImageWriter.java \
 javax/imageio/event/IIOReadProgressListener.java \
 javax/imageio/event/IIOReadUpdateListener.java \
 javax/imageio/event/IIOReadWarningListener.java \
 javax/imageio/event/IIOWriteProgressListener.java \
 javax/imageio/event/IIOWriteWarningListener.java \
+javax/imageio/metadata/IIOInvalidTreeException.java \
+javax/imageio/metadata/IIOMetadata.java \
+javax/imageio/metadata/IIOMetadataController.java \
+javax/imageio/metadata/IIOMetadataFormat.java \
+javax/imageio/metadata/IIOMetadataFormatImpl.java \
+javax/imageio/metadata/IIOMetadataNode.java \
 javax/imageio/spi/IIOServiceProvider.java \
+javax/imageio/spi/IIORegistry.java \
 javax/imageio/spi/ImageInputStreamSpi.java \
 javax/imageio/spi/ImageOutputStreamSpi.java \
+javax/imageio/spi/ImageReaderSpi.java \
 javax/imageio/spi/ImageReaderWriterSpi.java \
 javax/imageio/spi/ImageTranscoderSpi.java \
 javax/imageio/spi/RegisterableService.java \
 javax/imageio/spi/ServiceRegistry.java \
+javax/imageio/spi/ImageWriterSpi.java \
+javax/imageio/stream/FileCacheImageInputStream.java \
+javax/imageio/stream/FileCacheImageOutputStream.java \
+javax/imageio/stream/FileImageInputStream.java \
+javax/imageio/stream/FileImageOutputStream.java \
 javax/imageio/stream/IIOByteBuffer.java \
 javax/imageio/stream/ImageInputStream.java \
+javax/imageio/stream/ImageInputStreamImpl.java \
 javax/imageio/stream/ImageOutputStream.java \
+javax/imageio/stream/ImageOutputStreamImpl.java \
+javax/imageio/stream/MemoryCacheImageInputStream.java \
+javax/imageio/stream/MemoryCacheImageOutputStream.java \
 javax/naming/directory/Attribute.java \
 javax/naming/directory/AttributeInUseException.java \
 javax/naming/directory/AttributeModificationException.java \
@@ -12938,9 +13006,23 @@ javax/imageio/$(DEPDIR)/$(am__dirstamp):
 	@: > javax/imageio/$(DEPDIR)/$(am__dirstamp)
 javax/imageio/IIOException.lo: javax/imageio/$(am__dirstamp) \
 	javax/imageio/$(DEPDIR)/$(am__dirstamp)
+javax/imageio/IIOImage.lo: javax/imageio/$(am__dirstamp) \
+	javax/imageio/$(DEPDIR)/$(am__dirstamp)
+javax/imageio/IIOParam.lo: javax/imageio/$(am__dirstamp) \
+	javax/imageio/$(DEPDIR)/$(am__dirstamp)
+javax/imageio/IIOParamController.lo: javax/imageio/$(am__dirstamp) \
+	javax/imageio/$(DEPDIR)/$(am__dirstamp)
+javax/imageio/ImageIO.lo: javax/imageio/$(am__dirstamp) \
+	javax/imageio/$(DEPDIR)/$(am__dirstamp)
+javax/imageio/ImageReadParam.lo: javax/imageio/$(am__dirstamp) \
+	javax/imageio/$(DEPDIR)/$(am__dirstamp)
 javax/imageio/ImageReader.lo: javax/imageio/$(am__dirstamp) \
 	javax/imageio/$(DEPDIR)/$(am__dirstamp)
 javax/imageio/ImageTranscoder.lo: javax/imageio/$(am__dirstamp) \
+	javax/imageio/$(DEPDIR)/$(am__dirstamp)
+javax/imageio/ImageTypeSpecifier.lo: javax/imageio/$(am__dirstamp) \
+	javax/imageio/$(DEPDIR)/$(am__dirstamp)
+javax/imageio/ImageWriteParam.lo: javax/imageio/$(am__dirstamp) \
 	javax/imageio/$(DEPDIR)/$(am__dirstamp)
 javax/imageio/ImageWriter.lo: javax/imageio/$(am__dirstamp) \
 	javax/imageio/$(DEPDIR)/$(am__dirstamp)
@@ -12965,6 +13047,30 @@ javax/imageio/event/IIOWriteProgressListener.lo:  \
 javax/imageio/event/IIOWriteWarningListener.lo:  \
 	javax/imageio/event/$(am__dirstamp) \
 	javax/imageio/event/$(DEPDIR)/$(am__dirstamp)
+javax/imageio/metadata/$(am__dirstamp):
+	@$(mkdir_p) javax/imageio/metadata
+	@: > javax/imageio/metadata/$(am__dirstamp)
+javax/imageio/metadata/$(DEPDIR)/$(am__dirstamp):
+	@$(mkdir_p) javax/imageio/metadata/$(DEPDIR)
+	@: > javax/imageio/metadata/$(DEPDIR)/$(am__dirstamp)
+javax/imageio/metadata/IIOInvalidTreeException.lo:  \
+	javax/imageio/metadata/$(am__dirstamp) \
+	javax/imageio/metadata/$(DEPDIR)/$(am__dirstamp)
+javax/imageio/metadata/IIOMetadata.lo:  \
+	javax/imageio/metadata/$(am__dirstamp) \
+	javax/imageio/metadata/$(DEPDIR)/$(am__dirstamp)
+javax/imageio/metadata/IIOMetadataController.lo:  \
+	javax/imageio/metadata/$(am__dirstamp) \
+	javax/imageio/metadata/$(DEPDIR)/$(am__dirstamp)
+javax/imageio/metadata/IIOMetadataFormat.lo:  \
+	javax/imageio/metadata/$(am__dirstamp) \
+	javax/imageio/metadata/$(DEPDIR)/$(am__dirstamp)
+javax/imageio/metadata/IIOMetadataFormatImpl.lo:  \
+	javax/imageio/metadata/$(am__dirstamp) \
+	javax/imageio/metadata/$(DEPDIR)/$(am__dirstamp)
+javax/imageio/metadata/IIOMetadataNode.lo:  \
+	javax/imageio/metadata/$(am__dirstamp) \
+	javax/imageio/metadata/$(DEPDIR)/$(am__dirstamp)
 javax/imageio/spi/$(am__dirstamp):
 	@$(mkdir_p) javax/imageio/spi
 	@: > javax/imageio/spi/$(am__dirstamp)
@@ -12974,10 +13080,15 @@ javax/imageio/spi/$(DEPDIR)/$(am__dirstamp):
 javax/imageio/spi/IIOServiceProvider.lo:  \
 	javax/imageio/spi/$(am__dirstamp) \
 	javax/imageio/spi/$(DEPDIR)/$(am__dirstamp)
+javax/imageio/spi/IIORegistry.lo: javax/imageio/spi/$(am__dirstamp) \
+	javax/imageio/spi/$(DEPDIR)/$(am__dirstamp)
 javax/imageio/spi/ImageInputStreamSpi.lo:  \
 	javax/imageio/spi/$(am__dirstamp) \
 	javax/imageio/spi/$(DEPDIR)/$(am__dirstamp)
 javax/imageio/spi/ImageOutputStreamSpi.lo:  \
+	javax/imageio/spi/$(am__dirstamp) \
+	javax/imageio/spi/$(DEPDIR)/$(am__dirstamp)
+javax/imageio/spi/ImageReaderSpi.lo:  \
 	javax/imageio/spi/$(am__dirstamp) \
 	javax/imageio/spi/$(DEPDIR)/$(am__dirstamp)
 javax/imageio/spi/ImageReaderWriterSpi.lo:  \
@@ -12992,19 +13103,46 @@ javax/imageio/spi/RegisterableService.lo:  \
 javax/imageio/spi/ServiceRegistry.lo:  \
 	javax/imageio/spi/$(am__dirstamp) \
 	javax/imageio/spi/$(DEPDIR)/$(am__dirstamp)
+javax/imageio/spi/ImageWriterSpi.lo:  \
+	javax/imageio/spi/$(am__dirstamp) \
+	javax/imageio/spi/$(DEPDIR)/$(am__dirstamp)
 javax/imageio/stream/$(am__dirstamp):
 	@$(mkdir_p) javax/imageio/stream
 	@: > javax/imageio/stream/$(am__dirstamp)
 javax/imageio/stream/$(DEPDIR)/$(am__dirstamp):
 	@$(mkdir_p) javax/imageio/stream/$(DEPDIR)
 	@: > javax/imageio/stream/$(DEPDIR)/$(am__dirstamp)
+javax/imageio/stream/FileCacheImageInputStream.lo:  \
+	javax/imageio/stream/$(am__dirstamp) \
+	javax/imageio/stream/$(DEPDIR)/$(am__dirstamp)
+javax/imageio/stream/FileCacheImageOutputStream.lo:  \
+	javax/imageio/stream/$(am__dirstamp) \
+	javax/imageio/stream/$(DEPDIR)/$(am__dirstamp)
+javax/imageio/stream/FileImageInputStream.lo:  \
+	javax/imageio/stream/$(am__dirstamp) \
+	javax/imageio/stream/$(DEPDIR)/$(am__dirstamp)
+javax/imageio/stream/FileImageOutputStream.lo:  \
+	javax/imageio/stream/$(am__dirstamp) \
+	javax/imageio/stream/$(DEPDIR)/$(am__dirstamp)
 javax/imageio/stream/IIOByteBuffer.lo:  \
 	javax/imageio/stream/$(am__dirstamp) \
 	javax/imageio/stream/$(DEPDIR)/$(am__dirstamp)
 javax/imageio/stream/ImageInputStream.lo:  \
 	javax/imageio/stream/$(am__dirstamp) \
 	javax/imageio/stream/$(DEPDIR)/$(am__dirstamp)
+javax/imageio/stream/ImageInputStreamImpl.lo:  \
+	javax/imageio/stream/$(am__dirstamp) \
+	javax/imageio/stream/$(DEPDIR)/$(am__dirstamp)
 javax/imageio/stream/ImageOutputStream.lo:  \
+	javax/imageio/stream/$(am__dirstamp) \
+	javax/imageio/stream/$(DEPDIR)/$(am__dirstamp)
+javax/imageio/stream/ImageOutputStreamImpl.lo:  \
+	javax/imageio/stream/$(am__dirstamp) \
+	javax/imageio/stream/$(DEPDIR)/$(am__dirstamp)
+javax/imageio/stream/MemoryCacheImageInputStream.lo:  \
+	javax/imageio/stream/$(am__dirstamp) \
+	javax/imageio/stream/$(DEPDIR)/$(am__dirstamp)
+javax/imageio/stream/MemoryCacheImageOutputStream.lo:  \
 	javax/imageio/stream/$(am__dirstamp) \
 	javax/imageio/stream/$(DEPDIR)/$(am__dirstamp)
 javax/naming/directory/$(am__dirstamp):
@@ -17407,10 +17545,24 @@ mostlyclean-compile:
 	-rm -f javax/crypto/spec/SecretKeySpec.lo
 	-rm -f javax/imageio/IIOException.$(OBJEXT)
 	-rm -f javax/imageio/IIOException.lo
+	-rm -f javax/imageio/IIOImage.$(OBJEXT)
+	-rm -f javax/imageio/IIOImage.lo
+	-rm -f javax/imageio/IIOParam.$(OBJEXT)
+	-rm -f javax/imageio/IIOParam.lo
+	-rm -f javax/imageio/IIOParamController.$(OBJEXT)
+	-rm -f javax/imageio/IIOParamController.lo
+	-rm -f javax/imageio/ImageIO.$(OBJEXT)
+	-rm -f javax/imageio/ImageIO.lo
+	-rm -f javax/imageio/ImageReadParam.$(OBJEXT)
+	-rm -f javax/imageio/ImageReadParam.lo
 	-rm -f javax/imageio/ImageReader.$(OBJEXT)
 	-rm -f javax/imageio/ImageReader.lo
 	-rm -f javax/imageio/ImageTranscoder.$(OBJEXT)
 	-rm -f javax/imageio/ImageTranscoder.lo
+	-rm -f javax/imageio/ImageTypeSpecifier.$(OBJEXT)
+	-rm -f javax/imageio/ImageTypeSpecifier.lo
+	-rm -f javax/imageio/ImageWriteParam.$(OBJEXT)
+	-rm -f javax/imageio/ImageWriteParam.lo
 	-rm -f javax/imageio/ImageWriter.$(OBJEXT)
 	-rm -f javax/imageio/ImageWriter.lo
 	-rm -f javax/imageio/event/IIOReadProgressListener.$(OBJEXT)
@@ -17423,26 +17575,60 @@ mostlyclean-compile:
 	-rm -f javax/imageio/event/IIOWriteProgressListener.lo
 	-rm -f javax/imageio/event/IIOWriteWarningListener.$(OBJEXT)
 	-rm -f javax/imageio/event/IIOWriteWarningListener.lo
+	-rm -f javax/imageio/metadata/IIOInvalidTreeException.$(OBJEXT)
+	-rm -f javax/imageio/metadata/IIOInvalidTreeException.lo
+	-rm -f javax/imageio/metadata/IIOMetadata.$(OBJEXT)
+	-rm -f javax/imageio/metadata/IIOMetadata.lo
+	-rm -f javax/imageio/metadata/IIOMetadataController.$(OBJEXT)
+	-rm -f javax/imageio/metadata/IIOMetadataController.lo
+	-rm -f javax/imageio/metadata/IIOMetadataFormat.$(OBJEXT)
+	-rm -f javax/imageio/metadata/IIOMetadataFormat.lo
+	-rm -f javax/imageio/metadata/IIOMetadataFormatImpl.$(OBJEXT)
+	-rm -f javax/imageio/metadata/IIOMetadataFormatImpl.lo
+	-rm -f javax/imageio/metadata/IIOMetadataNode.$(OBJEXT)
+	-rm -f javax/imageio/metadata/IIOMetadataNode.lo
+	-rm -f javax/imageio/spi/IIORegistry.$(OBJEXT)
+	-rm -f javax/imageio/spi/IIORegistry.lo
 	-rm -f javax/imageio/spi/IIOServiceProvider.$(OBJEXT)
 	-rm -f javax/imageio/spi/IIOServiceProvider.lo
 	-rm -f javax/imageio/spi/ImageInputStreamSpi.$(OBJEXT)
 	-rm -f javax/imageio/spi/ImageInputStreamSpi.lo
 	-rm -f javax/imageio/spi/ImageOutputStreamSpi.$(OBJEXT)
 	-rm -f javax/imageio/spi/ImageOutputStreamSpi.lo
+	-rm -f javax/imageio/spi/ImageReaderSpi.$(OBJEXT)
+	-rm -f javax/imageio/spi/ImageReaderSpi.lo
 	-rm -f javax/imageio/spi/ImageReaderWriterSpi.$(OBJEXT)
 	-rm -f javax/imageio/spi/ImageReaderWriterSpi.lo
 	-rm -f javax/imageio/spi/ImageTranscoderSpi.$(OBJEXT)
 	-rm -f javax/imageio/spi/ImageTranscoderSpi.lo
+	-rm -f javax/imageio/spi/ImageWriterSpi.$(OBJEXT)
+	-rm -f javax/imageio/spi/ImageWriterSpi.lo
 	-rm -f javax/imageio/spi/RegisterableService.$(OBJEXT)
 	-rm -f javax/imageio/spi/RegisterableService.lo
 	-rm -f javax/imageio/spi/ServiceRegistry.$(OBJEXT)
 	-rm -f javax/imageio/spi/ServiceRegistry.lo
+	-rm -f javax/imageio/stream/FileCacheImageInputStream.$(OBJEXT)
+	-rm -f javax/imageio/stream/FileCacheImageInputStream.lo
+	-rm -f javax/imageio/stream/FileCacheImageOutputStream.$(OBJEXT)
+	-rm -f javax/imageio/stream/FileCacheImageOutputStream.lo
+	-rm -f javax/imageio/stream/FileImageInputStream.$(OBJEXT)
+	-rm -f javax/imageio/stream/FileImageInputStream.lo
+	-rm -f javax/imageio/stream/FileImageOutputStream.$(OBJEXT)
+	-rm -f javax/imageio/stream/FileImageOutputStream.lo
 	-rm -f javax/imageio/stream/IIOByteBuffer.$(OBJEXT)
 	-rm -f javax/imageio/stream/IIOByteBuffer.lo
 	-rm -f javax/imageio/stream/ImageInputStream.$(OBJEXT)
 	-rm -f javax/imageio/stream/ImageInputStream.lo
+	-rm -f javax/imageio/stream/ImageInputStreamImpl.$(OBJEXT)
+	-rm -f javax/imageio/stream/ImageInputStreamImpl.lo
 	-rm -f javax/imageio/stream/ImageOutputStream.$(OBJEXT)
 	-rm -f javax/imageio/stream/ImageOutputStream.lo
+	-rm -f javax/imageio/stream/ImageOutputStreamImpl.$(OBJEXT)
+	-rm -f javax/imageio/stream/ImageOutputStreamImpl.lo
+	-rm -f javax/imageio/stream/MemoryCacheImageInputStream.$(OBJEXT)
+	-rm -f javax/imageio/stream/MemoryCacheImageInputStream.lo
+	-rm -f javax/imageio/stream/MemoryCacheImageOutputStream.$(OBJEXT)
+	-rm -f javax/imageio/stream/MemoryCacheImageOutputStream.lo
 	-rm -f javax/naming/AuthenticationException.$(OBJEXT)
 	-rm -f javax/naming/AuthenticationException.lo
 	-rm -f javax/naming/AuthenticationNotSupportedException.$(OBJEXT)
@@ -20686,24 +20872,48 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@javax/crypto/spec/$(DEPDIR)/RC5ParameterSpec.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/crypto/spec/$(DEPDIR)/SecretKeySpec.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/imageio/$(DEPDIR)/IIOException.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/imageio/$(DEPDIR)/IIOImage.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/imageio/$(DEPDIR)/IIOParam.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/imageio/$(DEPDIR)/IIOParamController.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/imageio/$(DEPDIR)/ImageIO.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/imageio/$(DEPDIR)/ImageReadParam.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/imageio/$(DEPDIR)/ImageReader.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/imageio/$(DEPDIR)/ImageTranscoder.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/imageio/$(DEPDIR)/ImageTypeSpecifier.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/imageio/$(DEPDIR)/ImageWriteParam.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/imageio/$(DEPDIR)/ImageWriter.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/imageio/event/$(DEPDIR)/IIOReadProgressListener.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/imageio/event/$(DEPDIR)/IIOReadUpdateListener.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/imageio/event/$(DEPDIR)/IIOReadWarningListener.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/imageio/event/$(DEPDIR)/IIOWriteProgressListener.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/imageio/event/$(DEPDIR)/IIOWriteWarningListener.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/imageio/metadata/$(DEPDIR)/IIOInvalidTreeException.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/imageio/metadata/$(DEPDIR)/IIOMetadata.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/imageio/metadata/$(DEPDIR)/IIOMetadataController.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/imageio/metadata/$(DEPDIR)/IIOMetadataFormat.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/imageio/metadata/$(DEPDIR)/IIOMetadataFormatImpl.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/imageio/metadata/$(DEPDIR)/IIOMetadataNode.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/imageio/spi/$(DEPDIR)/IIORegistry.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/imageio/spi/$(DEPDIR)/IIOServiceProvider.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/imageio/spi/$(DEPDIR)/ImageInputStreamSpi.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/imageio/spi/$(DEPDIR)/ImageOutputStreamSpi.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/imageio/spi/$(DEPDIR)/ImageReaderSpi.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/imageio/spi/$(DEPDIR)/ImageReaderWriterSpi.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/imageio/spi/$(DEPDIR)/ImageTranscoderSpi.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/imageio/spi/$(DEPDIR)/ImageWriterSpi.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/imageio/spi/$(DEPDIR)/RegisterableService.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/imageio/spi/$(DEPDIR)/ServiceRegistry.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/imageio/stream/$(DEPDIR)/FileCacheImageInputStream.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/imageio/stream/$(DEPDIR)/FileCacheImageOutputStream.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/imageio/stream/$(DEPDIR)/FileImageInputStream.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/imageio/stream/$(DEPDIR)/FileImageOutputStream.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/imageio/stream/$(DEPDIR)/IIOByteBuffer.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/imageio/stream/$(DEPDIR)/ImageInputStream.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/imageio/stream/$(DEPDIR)/ImageInputStreamImpl.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/imageio/stream/$(DEPDIR)/ImageOutputStream.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/imageio/stream/$(DEPDIR)/ImageOutputStreamImpl.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/imageio/stream/$(DEPDIR)/MemoryCacheImageInputStream.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/imageio/stream/$(DEPDIR)/MemoryCacheImageOutputStream.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/naming/$(DEPDIR)/AuthenticationException.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/naming/$(DEPDIR)/AuthenticationNotSupportedException.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/naming/$(DEPDIR)/BinaryRefAddr.Plo@am__quote@
@@ -22393,6 +22603,7 @@ clean-libtool:
 	-rm -rf javax/crypto/spec/.libs javax/crypto/spec/_libs
 	-rm -rf javax/imageio/.libs javax/imageio/_libs
 	-rm -rf javax/imageio/event/.libs javax/imageio/event/_libs
+	-rm -rf javax/imageio/metadata/.libs javax/imageio/metadata/_libs
 	-rm -rf javax/imageio/spi/.libs javax/imageio/spi/_libs
 	-rm -rf javax/imageio/stream/.libs javax/imageio/stream/_libs
 	-rm -rf javax/naming/.libs javax/naming/_libs
@@ -22980,6 +23191,8 @@ distclean-generic:
 	-rm -f javax/imageio/$(am__dirstamp)
 	-rm -f javax/imageio/event/$(DEPDIR)/$(am__dirstamp)
 	-rm -f javax/imageio/event/$(am__dirstamp)
+	-rm -f javax/imageio/metadata/$(DEPDIR)/$(am__dirstamp)
+	-rm -f javax/imageio/metadata/$(am__dirstamp)
 	-rm -f javax/imageio/spi/$(DEPDIR)/$(am__dirstamp)
 	-rm -f javax/imageio/spi/$(am__dirstamp)
 	-rm -f javax/imageio/stream/$(DEPDIR)/$(am__dirstamp)
@@ -23084,7 +23297,7 @@ clean-am: clean-binPROGRAMS clean-generic clean-libtool clean-local \
 
 distclean: distclean-recursive
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
-	-rm -rf ./$(DEPDIR) gnu/awt/$(DEPDIR) gnu/awt/j2d/$(DEPDIR) gnu/awt/xlib/$(DEPDIR) gnu/classpath/$(DEPDIR) gnu/gcj/$(DEPDIR) gnu/gcj/convert/$(DEPDIR) gnu/gcj/io/$(DEPDIR) gnu/gcj/runtime/$(DEPDIR) gnu/gcj/xlib/$(DEPDIR) gnu/java/awt/$(DEPDIR) gnu/java/awt/image/$(DEPDIR) gnu/java/awt/peer/$(DEPDIR) gnu/java/awt/peer/gtk/$(DEPDIR) gnu/java/beans/$(DEPDIR) gnu/java/beans/editors/$(DEPDIR) gnu/java/beans/info/$(DEPDIR) gnu/java/io/$(DEPDIR) gnu/java/lang/$(DEPDIR) gnu/java/lang/reflect/$(DEPDIR) gnu/java/locale/$(DEPDIR) gnu/java/math/$(DEPDIR) gnu/java/net/$(DEPDIR) gnu/java/net/protocol/core/$(DEPDIR) gnu/java/net/protocol/file/$(DEPDIR) gnu/java/net/protocol/gcjlib/$(DEPDIR) gnu/java/net/protocol/http/$(DEPDIR) gnu/java/net/protocol/jar/$(DEPDIR) gnu/java/nio/$(DEPDIR) gnu/java/nio/channels/$(DEPDIR) gnu/java/nio/charset/$(DEPDIR) gnu/java/rmi/$(DEPDIR) gnu/java/rmi/dgc/$(DEPDIR) gnu/java/rmi/registry/$(DEPDIR) gnu/java/rmi/rmic/$(DEPDIR) gnu/java/rmi/server/$(DEPDIR) gnu/java/security/$(DEPDIR) gnu/java/security/action/$(DEPDIR) gnu/java/security/der/$(DEPDIR) gnu/java/security/provider/$(DEPDIR) gnu/java/security/util/$(DEPDIR) gnu/java/security/x509/$(DEPDIR) gnu/java/text/$(DEPDIR) gnu/java/util/$(DEPDIR) gnu/java/util/prefs/$(DEPDIR) gnu/regexp/$(DEPDIR) java/applet/$(DEPDIR) java/awt/$(DEPDIR) java/awt/color/$(DEPDIR) java/awt/datatransfer/$(DEPDIR) java/awt/dnd/$(DEPDIR) java/awt/dnd/peer/$(DEPDIR) java/awt/event/$(DEPDIR) java/awt/font/$(DEPDIR) java/awt/geom/$(DEPDIR) java/awt/im/$(DEPDIR) java/awt/im/spi/$(DEPDIR) java/awt/image/$(DEPDIR) java/awt/image/renderable/$(DEPDIR) java/awt/peer/$(DEPDIR) java/awt/print/$(DEPDIR) java/beans/$(DEPDIR) java/beans/beancontext/$(DEPDIR) java/io/$(DEPDIR) java/lang/$(DEPDIR) java/lang/ref/$(DEPDIR) java/lang/reflect/$(DEPDIR) java/math/$(DEPDIR) java/net/$(DEPDIR) java/nio/$(DEPDIR) java/nio/channels/$(DEPDIR) java/nio/channels/spi/$(DEPDIR) java/nio/charset/$(DEPDIR) java/nio/charset/spi/$(DEPDIR) java/rmi/$(DEPDIR) java/rmi/activation/$(DEPDIR) java/rmi/dgc/$(DEPDIR) java/rmi/registry/$(DEPDIR) java/rmi/server/$(DEPDIR) java/security/$(DEPDIR) java/security/acl/$(DEPDIR) java/security/cert/$(DEPDIR) java/security/interfaces/$(DEPDIR) java/security/spec/$(DEPDIR) java/sql/$(DEPDIR) java/text/$(DEPDIR) java/util/$(DEPDIR) java/util/jar/$(DEPDIR) java/util/logging/$(DEPDIR) java/util/prefs/$(DEPDIR) java/util/regex/$(DEPDIR) java/util/zip/$(DEPDIR) javax/accessibility/$(DEPDIR) javax/crypto/$(DEPDIR) javax/crypto/interfaces/$(DEPDIR) javax/crypto/spec/$(DEPDIR) javax/imageio/$(DEPDIR) javax/imageio/event/$(DEPDIR) javax/imageio/spi/$(DEPDIR) javax/imageio/stream/$(DEPDIR) javax/naming/$(DEPDIR) javax/naming/directory/$(DEPDIR) javax/naming/event/$(DEPDIR) javax/naming/ldap/$(DEPDIR) javax/naming/spi/$(DEPDIR) javax/net/$(DEPDIR) javax/net/ssl/$(DEPDIR) javax/print/$(DEPDIR) javax/print/attribute/$(DEPDIR) javax/print/attribute/standard/$(DEPDIR) javax/print/event/$(DEPDIR) javax/security/auth/$(DEPDIR) javax/security/auth/callback/$(DEPDIR) javax/security/auth/login/$(DEPDIR) javax/security/auth/x500/$(DEPDIR) javax/security/cert/$(DEPDIR) javax/security/sasl/$(DEPDIR) javax/sql/$(DEPDIR) javax/swing/$(DEPDIR) javax/swing/border/$(DEPDIR) javax/swing/colorchooser/$(DEPDIR) javax/swing/event/$(DEPDIR) javax/swing/filechooser/$(DEPDIR) javax/swing/plaf/$(DEPDIR) javax/swing/plaf/basic/$(DEPDIR) javax/swing/plaf/metal/$(DEPDIR) javax/swing/table/$(DEPDIR) javax/swing/text/$(DEPDIR) javax/swing/text/html/$(DEPDIR) javax/swing/text/html/parser/$(DEPDIR) javax/swing/tree/$(DEPDIR) javax/swing/undo/$(DEPDIR) javax/transaction/$(DEPDIR) javax/transaction/xa/$(DEPDIR) jni/classpath/$(DEPDIR) jni/gtk-peer/$(DEPDIR) org/ietf/jgss/$(DEPDIR) org/w3c/dom/$(DEPDIR) org/w3c/dom/ranges/$(DEPDIR) org/w3c/dom/traversal/$(DEPDIR) org/xml/sax/$(DEPDIR) org/xml/sax/ext/$(DEPDIR) org/xml/sax/helpers/$(DEPDIR) sysdep/$(DEPDIR)
+	-rm -rf ./$(DEPDIR) gnu/awt/$(DEPDIR) gnu/awt/j2d/$(DEPDIR) gnu/awt/xlib/$(DEPDIR) gnu/classpath/$(DEPDIR) gnu/gcj/$(DEPDIR) gnu/gcj/convert/$(DEPDIR) gnu/gcj/io/$(DEPDIR) gnu/gcj/runtime/$(DEPDIR) gnu/gcj/xlib/$(DEPDIR) gnu/java/awt/$(DEPDIR) gnu/java/awt/image/$(DEPDIR) gnu/java/awt/peer/$(DEPDIR) gnu/java/awt/peer/gtk/$(DEPDIR) gnu/java/beans/$(DEPDIR) gnu/java/beans/editors/$(DEPDIR) gnu/java/beans/info/$(DEPDIR) gnu/java/io/$(DEPDIR) gnu/java/lang/$(DEPDIR) gnu/java/lang/reflect/$(DEPDIR) gnu/java/locale/$(DEPDIR) gnu/java/math/$(DEPDIR) gnu/java/net/$(DEPDIR) gnu/java/net/protocol/core/$(DEPDIR) gnu/java/net/protocol/file/$(DEPDIR) gnu/java/net/protocol/gcjlib/$(DEPDIR) gnu/java/net/protocol/http/$(DEPDIR) gnu/java/net/protocol/jar/$(DEPDIR) gnu/java/nio/$(DEPDIR) gnu/java/nio/channels/$(DEPDIR) gnu/java/nio/charset/$(DEPDIR) gnu/java/rmi/$(DEPDIR) gnu/java/rmi/dgc/$(DEPDIR) gnu/java/rmi/registry/$(DEPDIR) gnu/java/rmi/rmic/$(DEPDIR) gnu/java/rmi/server/$(DEPDIR) gnu/java/security/$(DEPDIR) gnu/java/security/action/$(DEPDIR) gnu/java/security/der/$(DEPDIR) gnu/java/security/provider/$(DEPDIR) gnu/java/security/util/$(DEPDIR) gnu/java/security/x509/$(DEPDIR) gnu/java/text/$(DEPDIR) gnu/java/util/$(DEPDIR) gnu/java/util/prefs/$(DEPDIR) gnu/regexp/$(DEPDIR) java/applet/$(DEPDIR) java/awt/$(DEPDIR) java/awt/color/$(DEPDIR) java/awt/datatransfer/$(DEPDIR) java/awt/dnd/$(DEPDIR) java/awt/dnd/peer/$(DEPDIR) java/awt/event/$(DEPDIR) java/awt/font/$(DEPDIR) java/awt/geom/$(DEPDIR) java/awt/im/$(DEPDIR) java/awt/im/spi/$(DEPDIR) java/awt/image/$(DEPDIR) java/awt/image/renderable/$(DEPDIR) java/awt/peer/$(DEPDIR) java/awt/print/$(DEPDIR) java/beans/$(DEPDIR) java/beans/beancontext/$(DEPDIR) java/io/$(DEPDIR) java/lang/$(DEPDIR) java/lang/ref/$(DEPDIR) java/lang/reflect/$(DEPDIR) java/math/$(DEPDIR) java/net/$(DEPDIR) java/nio/$(DEPDIR) java/nio/channels/$(DEPDIR) java/nio/channels/spi/$(DEPDIR) java/nio/charset/$(DEPDIR) java/nio/charset/spi/$(DEPDIR) java/rmi/$(DEPDIR) java/rmi/activation/$(DEPDIR) java/rmi/dgc/$(DEPDIR) java/rmi/registry/$(DEPDIR) java/rmi/server/$(DEPDIR) java/security/$(DEPDIR) java/security/acl/$(DEPDIR) java/security/cert/$(DEPDIR) java/security/interfaces/$(DEPDIR) java/security/spec/$(DEPDIR) java/sql/$(DEPDIR) java/text/$(DEPDIR) java/util/$(DEPDIR) java/util/jar/$(DEPDIR) java/util/logging/$(DEPDIR) java/util/prefs/$(DEPDIR) java/util/regex/$(DEPDIR) java/util/zip/$(DEPDIR) javax/accessibility/$(DEPDIR) javax/crypto/$(DEPDIR) javax/crypto/interfaces/$(DEPDIR) javax/crypto/spec/$(DEPDIR) javax/imageio/$(DEPDIR) javax/imageio/event/$(DEPDIR) javax/imageio/metadata/$(DEPDIR) javax/imageio/spi/$(DEPDIR) javax/imageio/stream/$(DEPDIR) javax/naming/$(DEPDIR) javax/naming/directory/$(DEPDIR) javax/naming/event/$(DEPDIR) javax/naming/ldap/$(DEPDIR) javax/naming/spi/$(DEPDIR) javax/net/$(DEPDIR) javax/net/ssl/$(DEPDIR) javax/print/$(DEPDIR) javax/print/attribute/$(DEPDIR) javax/print/attribute/standard/$(DEPDIR) javax/print/event/$(DEPDIR) javax/security/auth/$(DEPDIR) javax/security/auth/callback/$(DEPDIR) javax/security/auth/login/$(DEPDIR) javax/security/auth/x500/$(DEPDIR) javax/security/cert/$(DEPDIR) javax/security/sasl/$(DEPDIR) javax/sql/$(DEPDIR) javax/swing/$(DEPDIR) javax/swing/border/$(DEPDIR) javax/swing/colorchooser/$(DEPDIR) javax/swing/event/$(DEPDIR) javax/swing/filechooser/$(DEPDIR) javax/swing/plaf/$(DEPDIR) javax/swing/plaf/basic/$(DEPDIR) javax/swing/plaf/metal/$(DEPDIR) javax/swing/table/$(DEPDIR) javax/swing/text/$(DEPDIR) javax/swing/text/html/$(DEPDIR) javax/swing/text/html/parser/$(DEPDIR) javax/swing/tree/$(DEPDIR) javax/swing/undo/$(DEPDIR) javax/transaction/$(DEPDIR) javax/transaction/xa/$(DEPDIR) jni/classpath/$(DEPDIR) jni/gtk-peer/$(DEPDIR) org/ietf/jgss/$(DEPDIR) org/w3c/dom/$(DEPDIR) org/w3c/dom/ranges/$(DEPDIR) org/w3c/dom/traversal/$(DEPDIR) org/xml/sax/$(DEPDIR) org/xml/sax/ext/$(DEPDIR) org/xml/sax/helpers/$(DEPDIR) sysdep/$(DEPDIR)
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-libtool distclean-local distclean-tags
@@ -23114,7 +23327,7 @@ installcheck-am:
 maintainer-clean: maintainer-clean-recursive
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
 	-rm -rf $(top_srcdir)/autom4te.cache
-	-rm -rf ./$(DEPDIR) gnu/awt/$(DEPDIR) gnu/awt/j2d/$(DEPDIR) gnu/awt/xlib/$(DEPDIR) gnu/classpath/$(DEPDIR) gnu/gcj/$(DEPDIR) gnu/gcj/convert/$(DEPDIR) gnu/gcj/io/$(DEPDIR) gnu/gcj/runtime/$(DEPDIR) gnu/gcj/xlib/$(DEPDIR) gnu/java/awt/$(DEPDIR) gnu/java/awt/image/$(DEPDIR) gnu/java/awt/peer/$(DEPDIR) gnu/java/awt/peer/gtk/$(DEPDIR) gnu/java/beans/$(DEPDIR) gnu/java/beans/editors/$(DEPDIR) gnu/java/beans/info/$(DEPDIR) gnu/java/io/$(DEPDIR) gnu/java/lang/$(DEPDIR) gnu/java/lang/reflect/$(DEPDIR) gnu/java/locale/$(DEPDIR) gnu/java/math/$(DEPDIR) gnu/java/net/$(DEPDIR) gnu/java/net/protocol/core/$(DEPDIR) gnu/java/net/protocol/file/$(DEPDIR) gnu/java/net/protocol/gcjlib/$(DEPDIR) gnu/java/net/protocol/http/$(DEPDIR) gnu/java/net/protocol/jar/$(DEPDIR) gnu/java/nio/$(DEPDIR) gnu/java/nio/channels/$(DEPDIR) gnu/java/nio/charset/$(DEPDIR) gnu/java/rmi/$(DEPDIR) gnu/java/rmi/dgc/$(DEPDIR) gnu/java/rmi/registry/$(DEPDIR) gnu/java/rmi/rmic/$(DEPDIR) gnu/java/rmi/server/$(DEPDIR) gnu/java/security/$(DEPDIR) gnu/java/security/action/$(DEPDIR) gnu/java/security/der/$(DEPDIR) gnu/java/security/provider/$(DEPDIR) gnu/java/security/util/$(DEPDIR) gnu/java/security/x509/$(DEPDIR) gnu/java/text/$(DEPDIR) gnu/java/util/$(DEPDIR) gnu/java/util/prefs/$(DEPDIR) gnu/regexp/$(DEPDIR) java/applet/$(DEPDIR) java/awt/$(DEPDIR) java/awt/color/$(DEPDIR) java/awt/datatransfer/$(DEPDIR) java/awt/dnd/$(DEPDIR) java/awt/dnd/peer/$(DEPDIR) java/awt/event/$(DEPDIR) java/awt/font/$(DEPDIR) java/awt/geom/$(DEPDIR) java/awt/im/$(DEPDIR) java/awt/im/spi/$(DEPDIR) java/awt/image/$(DEPDIR) java/awt/image/renderable/$(DEPDIR) java/awt/peer/$(DEPDIR) java/awt/print/$(DEPDIR) java/beans/$(DEPDIR) java/beans/beancontext/$(DEPDIR) java/io/$(DEPDIR) java/lang/$(DEPDIR) java/lang/ref/$(DEPDIR) java/lang/reflect/$(DEPDIR) java/math/$(DEPDIR) java/net/$(DEPDIR) java/nio/$(DEPDIR) java/nio/channels/$(DEPDIR) java/nio/channels/spi/$(DEPDIR) java/nio/charset/$(DEPDIR) java/nio/charset/spi/$(DEPDIR) java/rmi/$(DEPDIR) java/rmi/activation/$(DEPDIR) java/rmi/dgc/$(DEPDIR) java/rmi/registry/$(DEPDIR) java/rmi/server/$(DEPDIR) java/security/$(DEPDIR) java/security/acl/$(DEPDIR) java/security/cert/$(DEPDIR) java/security/interfaces/$(DEPDIR) java/security/spec/$(DEPDIR) java/sql/$(DEPDIR) java/text/$(DEPDIR) java/util/$(DEPDIR) java/util/jar/$(DEPDIR) java/util/logging/$(DEPDIR) java/util/prefs/$(DEPDIR) java/util/regex/$(DEPDIR) java/util/zip/$(DEPDIR) javax/accessibility/$(DEPDIR) javax/crypto/$(DEPDIR) javax/crypto/interfaces/$(DEPDIR) javax/crypto/spec/$(DEPDIR) javax/imageio/$(DEPDIR) javax/imageio/event/$(DEPDIR) javax/imageio/spi/$(DEPDIR) javax/imageio/stream/$(DEPDIR) javax/naming/$(DEPDIR) javax/naming/directory/$(DEPDIR) javax/naming/event/$(DEPDIR) javax/naming/ldap/$(DEPDIR) javax/naming/spi/$(DEPDIR) javax/net/$(DEPDIR) javax/net/ssl/$(DEPDIR) javax/print/$(DEPDIR) javax/print/attribute/$(DEPDIR) javax/print/attribute/standard/$(DEPDIR) javax/print/event/$(DEPDIR) javax/security/auth/$(DEPDIR) javax/security/auth/callback/$(DEPDIR) javax/security/auth/login/$(DEPDIR) javax/security/auth/x500/$(DEPDIR) javax/security/cert/$(DEPDIR) javax/security/sasl/$(DEPDIR) javax/sql/$(DEPDIR) javax/swing/$(DEPDIR) javax/swing/border/$(DEPDIR) javax/swing/colorchooser/$(DEPDIR) javax/swing/event/$(DEPDIR) javax/swing/filechooser/$(DEPDIR) javax/swing/plaf/$(DEPDIR) javax/swing/plaf/basic/$(DEPDIR) javax/swing/plaf/metal/$(DEPDIR) javax/swing/table/$(DEPDIR) javax/swing/text/$(DEPDIR) javax/swing/text/html/$(DEPDIR) javax/swing/text/html/parser/$(DEPDIR) javax/swing/tree/$(DEPDIR) javax/swing/undo/$(DEPDIR) javax/transaction/$(DEPDIR) javax/transaction/xa/$(DEPDIR) jni/classpath/$(DEPDIR) jni/gtk-peer/$(DEPDIR) org/ietf/jgss/$(DEPDIR) org/w3c/dom/$(DEPDIR) org/w3c/dom/ranges/$(DEPDIR) org/w3c/dom/traversal/$(DEPDIR) org/xml/sax/$(DEPDIR) org/xml/sax/ext/$(DEPDIR) org/xml/sax/helpers/$(DEPDIR) sysdep/$(DEPDIR)
+	-rm -rf ./$(DEPDIR) gnu/awt/$(DEPDIR) gnu/awt/j2d/$(DEPDIR) gnu/awt/xlib/$(DEPDIR) gnu/classpath/$(DEPDIR) gnu/gcj/$(DEPDIR) gnu/gcj/convert/$(DEPDIR) gnu/gcj/io/$(DEPDIR) gnu/gcj/runtime/$(DEPDIR) gnu/gcj/xlib/$(DEPDIR) gnu/java/awt/$(DEPDIR) gnu/java/awt/image/$(DEPDIR) gnu/java/awt/peer/$(DEPDIR) gnu/java/awt/peer/gtk/$(DEPDIR) gnu/java/beans/$(DEPDIR) gnu/java/beans/editors/$(DEPDIR) gnu/java/beans/info/$(DEPDIR) gnu/java/io/$(DEPDIR) gnu/java/lang/$(DEPDIR) gnu/java/lang/reflect/$(DEPDIR) gnu/java/locale/$(DEPDIR) gnu/java/math/$(DEPDIR) gnu/java/net/$(DEPDIR) gnu/java/net/protocol/core/$(DEPDIR) gnu/java/net/protocol/file/$(DEPDIR) gnu/java/net/protocol/gcjlib/$(DEPDIR) gnu/java/net/protocol/http/$(DEPDIR) gnu/java/net/protocol/jar/$(DEPDIR) gnu/java/nio/$(DEPDIR) gnu/java/nio/channels/$(DEPDIR) gnu/java/nio/charset/$(DEPDIR) gnu/java/rmi/$(DEPDIR) gnu/java/rmi/dgc/$(DEPDIR) gnu/java/rmi/registry/$(DEPDIR) gnu/java/rmi/rmic/$(DEPDIR) gnu/java/rmi/server/$(DEPDIR) gnu/java/security/$(DEPDIR) gnu/java/security/action/$(DEPDIR) gnu/java/security/der/$(DEPDIR) gnu/java/security/provider/$(DEPDIR) gnu/java/security/util/$(DEPDIR) gnu/java/security/x509/$(DEPDIR) gnu/java/text/$(DEPDIR) gnu/java/util/$(DEPDIR) gnu/java/util/prefs/$(DEPDIR) gnu/regexp/$(DEPDIR) java/applet/$(DEPDIR) java/awt/$(DEPDIR) java/awt/color/$(DEPDIR) java/awt/datatransfer/$(DEPDIR) java/awt/dnd/$(DEPDIR) java/awt/dnd/peer/$(DEPDIR) java/awt/event/$(DEPDIR) java/awt/font/$(DEPDIR) java/awt/geom/$(DEPDIR) java/awt/im/$(DEPDIR) java/awt/im/spi/$(DEPDIR) java/awt/image/$(DEPDIR) java/awt/image/renderable/$(DEPDIR) java/awt/peer/$(DEPDIR) java/awt/print/$(DEPDIR) java/beans/$(DEPDIR) java/beans/beancontext/$(DEPDIR) java/io/$(DEPDIR) java/lang/$(DEPDIR) java/lang/ref/$(DEPDIR) java/lang/reflect/$(DEPDIR) java/math/$(DEPDIR) java/net/$(DEPDIR) java/nio/$(DEPDIR) java/nio/channels/$(DEPDIR) java/nio/channels/spi/$(DEPDIR) java/nio/charset/$(DEPDIR) java/nio/charset/spi/$(DEPDIR) java/rmi/$(DEPDIR) java/rmi/activation/$(DEPDIR) java/rmi/dgc/$(DEPDIR) java/rmi/registry/$(DEPDIR) java/rmi/server/$(DEPDIR) java/security/$(DEPDIR) java/security/acl/$(DEPDIR) java/security/cert/$(DEPDIR) java/security/interfaces/$(DEPDIR) java/security/spec/$(DEPDIR) java/sql/$(DEPDIR) java/text/$(DEPDIR) java/util/$(DEPDIR) java/util/jar/$(DEPDIR) java/util/logging/$(DEPDIR) java/util/prefs/$(DEPDIR) java/util/regex/$(DEPDIR) java/util/zip/$(DEPDIR) javax/accessibility/$(DEPDIR) javax/crypto/$(DEPDIR) javax/crypto/interfaces/$(DEPDIR) javax/crypto/spec/$(DEPDIR) javax/imageio/$(DEPDIR) javax/imageio/event/$(DEPDIR) javax/imageio/metadata/$(DEPDIR) javax/imageio/spi/$(DEPDIR) javax/imageio/stream/$(DEPDIR) javax/naming/$(DEPDIR) javax/naming/directory/$(DEPDIR) javax/naming/event/$(DEPDIR) javax/naming/ldap/$(DEPDIR) javax/naming/spi/$(DEPDIR) javax/net/$(DEPDIR) javax/net/ssl/$(DEPDIR) javax/print/$(DEPDIR) javax/print/attribute/$(DEPDIR) javax/print/attribute/standard/$(DEPDIR) javax/print/event/$(DEPDIR) javax/security/auth/$(DEPDIR) javax/security/auth/callback/$(DEPDIR) javax/security/auth/login/$(DEPDIR) javax/security/auth/x500/$(DEPDIR) javax/security/cert/$(DEPDIR) javax/security/sasl/$(DEPDIR) javax/sql/$(DEPDIR) javax/swing/$(DEPDIR) javax/swing/border/$(DEPDIR) javax/swing/colorchooser/$(DEPDIR) javax/swing/event/$(DEPDIR) javax/swing/filechooser/$(DEPDIR) javax/swing/plaf/$(DEPDIR) javax/swing/plaf/basic/$(DEPDIR) javax/swing/plaf/metal/$(DEPDIR) javax/swing/table/$(DEPDIR) javax/swing/text/$(DEPDIR) javax/swing/text/html/$(DEPDIR) javax/swing/text/html/parser/$(DEPDIR) javax/swing/tree/$(DEPDIR) javax/swing/undo/$(DEPDIR) javax/transaction/$(DEPDIR) javax/transaction/xa/$(DEPDIR) jni/classpath/$(DEPDIR) jni/gtk-peer/$(DEPDIR) org/ietf/jgss/$(DEPDIR) org/w3c/dom/$(DEPDIR) org/w3c/dom/ranges/$(DEPDIR) org/w3c/dom/traversal/$(DEPDIR) org/xml/sax/$(DEPDIR) org/xml/sax/ext/$(DEPDIR) org/xml/sax/helpers/$(DEPDIR) sysdep/$(DEPDIR)
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 

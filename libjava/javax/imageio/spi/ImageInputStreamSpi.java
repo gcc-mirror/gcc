@@ -40,8 +40,8 @@ package javax.imageio.spi;
 
 import java.io.File;
 import java.io.IOException;
-import javax.imageio.stream.ImageInputStream;
 
+import javax.imageio.stream.ImageInputStream;
 
 /**
  * An abstract superclass for service providers that create

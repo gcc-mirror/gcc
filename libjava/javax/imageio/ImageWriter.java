@@ -1,5 +1,5 @@
 /* ImageWriter.java -- Encodes raster images.
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,10 +38,352 @@ exception statement from your version. */
 
 package javax.imageio;
 
+import java.awt.Dimension;
+import java.io.IOException;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Locale;
+
+import javax.imageio.event.IIOWriteProgressListener;
+import javax.imageio.event.IIOWriteWarningListener;
+import javax.imageio.metadata.IIOMetadata;
+
+import javax.imageio.spi.ImageWriterSpi;
+
 public abstract class ImageWriter
   implements ImageTranscoder
 {
-  // FIXME: Incomplete. This class is merely present in order to allow
-  // compilation of the javax.imageio.spi package, for which GNU
-  // Classpath does provide an implementation.
+  private boolean aborted;
+  
+  protected Locale[] availableLocales;
+  protected Locale locale;
+  protected ImageWriterSpi originatingProvider;
+  protected Object output;
+  protected List progressListeners;
+  protected List warningListeners;
+  protected List warningLocales;
+
+  protected ImageWriter(ImageWriterSpi originatingProvider)
+  {
+    this.originatingProvider = originatingProvider;
+  }
+
+  private void checkOutputSet()
+  {
+    if (output == null)
+      throw new IllegalStateException("no output set");
+  }
+  
+  public void abort()
+  {
+    aborted = true;
+  }
+
+  protected boolean abortRequested()
+  {
+    return aborted;
+  }
+
+  public void addIIOWriteProgressListener(IIOWriteProgressListener listener)
+  {
+    if (listener == null)
+      return;
+    
+    progressListeners.add(listener);
+  }
+  
+  public void addIIOWriteWarningListener (IIOWriteWarningListener listener)
+  {
+    if (listener == null)
+      return;
+    
+    warningListeners.add(listener);
+  }
+
+  public boolean canInsertEmpty(int imageIndex)
+    throws IOException
+  {
+    checkOutputSet();
+    return false;
+  }
+
+  public boolean canInsertImage(int imageIndex)
+    throws IOException
+  {
+    checkOutputSet();
+    return false;
+  }
+
+  public boolean canRemoveImage(int imageIndex)
+    throws IOException
+  {
+    checkOutputSet();
+    return false;
+  }
+
+  public boolean canReplaceImageMetadata(int imageIndex)
+    throws IOException
+  {
+    checkOutputSet();
+    return false;
+  }
+
+  public boolean canReplacePixels(int imageIndex)
+    throws IOException
+  {
+    checkOutputSet();
+    return false;
+  }
+
+  public boolean canReplaceStreamMetadata()
+    throws IOException
+  {
+    checkOutputSet();
+    return false;
+  }
+
+  public boolean canWriteEmpty()
+    throws IOException
+  {
+    checkOutputSet();
+    return false;
+  }
+
+  public boolean canWriteRasters()
+  {
+    return false;
+  }
+
+  public boolean canWriteSequence()
+  {
+    return false;
+  }
+
+  protected void clearAbortRequest()
+  {
+    aborted = false;
+  }
+  
+  public abstract IIOMetadata convertImageMetadata (IIOMetadata inData,
+		                                    ImageTypeSpecifier imageType,
+				                    ImageWriteParam param);
+
+  public abstract IIOMetadata convertStreamMetadata (IIOMetadata inData,
+					             ImageWriteParam param);
+
+  public void dispose()
+  {
+    // The default implementation is empty. Subclasses have to overwrite it.
+  }
+  
+  public Locale[] getAvailableLocales()
+  {
+    return availableLocales;
+  }
+
+  public abstract IIOMetadata getDefaultImageMetadata (ImageTypeSpecifier imageType, ImageWriteParam param);
+
+  public abstract IIOMetadata getDefaultStreamMetadata (ImageWriteParam param);
+
+  public ImageWriteParam getDefaultWriteParam()
+  {
+    return new ImageWriteParam(getLocale());
+  }
+
+  public Locale getLocale()
+  {
+    return locale;
+  }
+
+  public int getNumThumbnailsSupported (ImageTypeSpecifier imageType, ImageWriteParam param,
+		                        IIOMetadata streamMetadata, IIOMetadata imageMetadata)
+  {
+    return 0;
+  }
+
+  public ImageWriterSpi getOriginatingProvider()
+  {
+    return originatingProvider;
+  }
+
+  public Object getOutput()
+  {
+    return output;
+  }
+
+  public Dimension[] getPreferredThumbnailSizes (ImageTypeSpecifier imageType,
+		                                 ImageWriteParam param,
+						 IIOMetadata streamMetadata,
+						 IIOMetadata imageMetadata)
+  {
+    return null;
+  }
+
+  protected void processImageComplete()
+  {
+    Iterator it = progressListeners.iterator();
+
+    while (it.hasNext())
+      {
+	IIOWriteProgressListener listener = (IIOWriteProgressListener) it.next();
+	listener.imageComplete(this);
+      }
+  }
+
+  protected void processImageProgress(float percentageDone)
+  {
+    Iterator it = progressListeners.iterator();
+
+    while (it.hasNext())
+      {
+	IIOWriteProgressListener listener = (IIOWriteProgressListener) it.next();
+	listener.imageProgress(this, percentageDone);
+      }
+  }
+
+  protected void processImageStarted(int imageIndex)
+  {
+    Iterator it = progressListeners.iterator();
+
+    while (it.hasNext())
+      {
+	IIOWriteProgressListener listener = (IIOWriteProgressListener) it.next();
+	listener.imageStarted(this, imageIndex);
+      }
+  }
+
+  protected void processThumbnailComplete()
+  {
+    Iterator it = progressListeners.iterator();
+
+    while (it.hasNext())
+      {
+	IIOWriteProgressListener listener = (IIOWriteProgressListener) it.next();
+	listener.thumbnailComplete(this);
+      }
+  }
+
+  protected void processThumbnailProgress(float percentageDone)
+  {
+    Iterator it = progressListeners.iterator();
+
+    while (it.hasNext())
+      {
+	IIOWriteProgressListener listener = (IIOWriteProgressListener) it.next();
+	listener.thumbnailProgress(this, percentageDone);
+      }
+  }
+
+  protected void processThumbnailStarted(int imageIndex, int thumbnailIndex)
+  {
+    Iterator it = progressListeners.iterator();
+
+    while (it.hasNext())
+      {
+	IIOWriteProgressListener listener = (IIOWriteProgressListener) it.next();
+	listener.thumbnailStarted(this, imageIndex, thumbnailIndex);
+      }
+  }
+
+  protected void processWarningOccurred(int imageIndex, String warning)
+  {
+    Iterator it = warningListeners.iterator();
+
+    while (it.hasNext())
+      {
+	IIOWriteWarningListener listener = (IIOWriteWarningListener) it.next();
+	listener.warningOccurred(this, imageIndex, warning);
+      }
+  }
+
+  protected void processWriteAborted() 
+  {
+    Iterator it = progressListeners.iterator();
+
+    while (it.hasNext())
+      {
+	IIOWriteProgressListener listener = (IIOWriteProgressListener) it.next();
+	listener.writeAborted(this);
+      }
+  }
+
+  public void removeAllIIOWriteProgressListeners()
+  {
+    progressListeners.clear();
+  }
+
+  public void removeAllIIOWriteWarningListeners()
+  {
+    progressListeners.clear();
+  }
+  
+  public void removeIIOWriteProgressListener (IIOWriteProgressListener listener) 
+  {
+    if (listener == null)
+      return;
+    
+    progressListeners.remove(listener);
+  }
+  
+  public void removeIIOWriteWarningListener (IIOWriteWarningListener listener)
+  {
+    if (listener == null)
+      return;
+    
+    warningListeners.remove(listener);
+  }
+  
+  public void reset()
+  {
+    setOutput(null);
+    setLocale(null);
+    removeAllIIOWriteWarningListeners();
+    removeAllIIOWriteProgressListeners();
+    clearAbortRequest();
+  }
+  
+  public void setLocale(Locale locale)
+  {
+    if (locale != null)
+      {
+	// Check if its a valid locale.
+	boolean found = false;
+
+	if (availableLocales != null)
+	  for (int i = availableLocales.length - 1; i >= 0; --i)
+	    if (availableLocales[i].equals(locale))
+	      found = true;
+
+	if (! found)
+	  throw new IllegalArgumentException("looale not available");
+      }
+
+    this.locale = locale;
+  }
+
+  public void setOutput(Object output)
+  {
+    if (output != null)
+      {
+	// Check if its a valid output object.
+	boolean found = false;
+	Class[] types = null;
+
+	if (originatingProvider != null)
+	  types = originatingProvider.getOutputTypes();
+	
+	if (types != null)
+	  for (int i = types.length - 1; i >= 0; --i)
+	    if (types[i].equals(output.getClass()))
+	      found = true;
+
+	if (! found)
+	  throw new IllegalArgumentException("output type not available");
+      }
+
+    this.output = output;
+  }
+
+  public abstract void write (IIOMetadata streamMetadata, IIOImage image, ImageWriteParam param)
+    throws IOException;
 }

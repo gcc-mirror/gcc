@@ -1,4 +1,4 @@
-/* IIOReadProgressListener.java --
+/* FileCacheImageOutputStream.java --
    Copyright (C) 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -36,20 +36,58 @@ obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
 
-package javax.imageio.event;
+package javax.imageio.stream;
 
-import java.util.EventListener;
+import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
 
-import javax.imageio.ImageReader;
-
-public interface IIOReadWarningListener extends EventListener
+/**
+ * @author Michael Koch (konqueror@gmx.de)
+ */
+public class FileCacheImageOutputStream
 {
-  /**
-   * Reports the occurrence of a non-fatal error in decoding.
-   * Decoding will continue after this method is called.
-   *
-   * @param source the <code>ImageReader</code> object calling this method
-   * @param warning the warning
-   */
-  void warningOccurred(ImageReader source, String warning);
+  private OutputStream stream;
+  private File cacheDir;
+  
+  public FileCacheImageOutputStream(OutputStream stream, File cacheDir)
+    throws IOException
+  {
+    super();
+    this.stream = stream;
+    // FIXME: We do not support caching yet.
+    this.cacheDir = cacheDir;
+  }
+
+  public void close()
+    throws IOException
+  {
+    if (stream != null)
+      {
+	stream.close();
+	stream = null;
+      }
+  }
+
+  private void checkStreamClosed()
+    throws IOException
+  {
+    if (stream == null)
+      throw new IOException("stream closed");
+  }
+
+  public boolean isCached()
+  {
+    return true;
+  }
+
+  public boolean isCachedFile()
+  {
+    return true;
+  }
+  
+  public boolean isCachedMemory()
+  {
+    return false;
+  }
 }

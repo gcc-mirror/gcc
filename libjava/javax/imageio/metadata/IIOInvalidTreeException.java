@@ -1,4 +1,4 @@
-/* IIOReadProgressListener.java --
+/* IIOInvalidTreeException.java --
    Copyright (C) 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -36,20 +36,28 @@ obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
 
-package javax.imageio.event;
+package javax.imageio.metadata;
 
-import java.util.EventListener;
+import javax.imageio.IIOException;
 
-import javax.imageio.ImageReader;
-
-public interface IIOReadWarningListener extends EventListener
+public class IIOInvalidTreeException extends IIOException
 {
-  /**
-   * Reports the occurrence of a non-fatal error in decoding.
-   * Decoding will continue after this method is called.
-   *
-   * @param source the <code>ImageReader</code> object calling this method
-   * @param warning the warning
-   */
-  void warningOccurred(ImageReader source, String warning);
+  protected /*Node*/ Object offendingNode;
+
+  public IIOInvalidTreeException(String message, /*Node*/ Object offendingNode)
+  {
+    super(message);
+    this.offendingNode = offendingNode;
+  }
+
+  public IIOInvalidTreeException(String message, Throwable cause, /*Node*/ Object offendingNode)
+  {
+    super(message, cause);
+    this.offendingNode = offendingNode;
+  }
+
+  public /*Node*/ Object getOffendingNode()
+  {
+    return offendingNode;
+  }
 }

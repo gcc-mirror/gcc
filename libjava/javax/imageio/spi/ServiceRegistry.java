@@ -38,9 +38,19 @@ exception statement from your version. */
 
 package javax.imageio.spi;
 
-import java.util.*;
 import gnu.classpath.ServiceFactory;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.IdentityHashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Set;
 
 /**
  * A registry for service providers.
@@ -100,6 +110,8 @@ public class ServiceRegistry
   /**
    * Constructs a <code>ServiceRegistry</code> for the specified
    * service categories.
+   * 
+   * @param categories the categories to support
    *
    * @throws IllegalArgumentException if <code>categories</code> is
    * <code>null</code>, or if its {@link Iterator#next()} method
@@ -141,7 +153,7 @@ public class ServiceRegistry
    * might make sense to install only the frequently needed service
    * providers on the local machine. More exotic providers can be put
    * onto a server; the server will only be contacted when no suitable
-   * service could be found locally.
+   * service could be found locally.</p>
    *
    * <p><b>Security considerations:</b> Any loaded service providers
    * are loaded through the specified ClassLoader, or the system
@@ -150,7 +162,7 @@ public class ServiceRegistry
    * the current {@link java.security.AccessControlContext} gets
    * recorded. This captured security context will determine the
    * permissions when services get loaded via the <code>next()</code>
-   * method of the returned <code>Iterator</code>.
+   * method of the returned <code>Iterator</code>.</p>
    *
    * @param spi the service provider interface which must be
    * implemented by any loaded service providers.
@@ -474,7 +486,7 @@ public class ServiceRegistry
    * invoked in order to inform the provider about the removal from
    * this registry. If <code>provider</code> implements several
    * service categories, <code>onDeregistration</code> gets called
-   * multiple times.
+   * multiple times.</p>
    *
    * @param provider the service provider to be de-registered.
    *

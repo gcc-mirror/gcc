@@ -626,8 +626,7 @@ public interface ImageInputStream
   void seek(long pos)
     throws IOException;
 
-  void mark()
-    throws IOException;
+  void mark();
 
   void reset()
     throws IOException;
