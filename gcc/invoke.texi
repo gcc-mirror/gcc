@@ -5177,13 +5177,10 @@ Enable the use of assembler directives only GAS understands.
 
 @item -mschedule=@var{cpu type}
 Schedule code according to the constraints for the machine type
-@var{cpu type}.  The choices for @var{cpu type} are @samp{700} for
-7@var{n}0 machines, @samp{7100} for 7@var{n}5 machines, and @samp{7100LC}
-for 7@var{n}2 machines.  @samp{7100} is the default for @var{cpu type}.
-
-Note the @samp{7100LC} scheduling information is incomplete and using
-@samp{7100LC} often leads to bad schedules.  For now it's probably best
-to use @samp{7100} instead of @samp{7100LC} for the 7@var{n}2 machines.
+@var{cpu type}.  The choices for @var{cpu type} are @samp{700} 
+@samp{7100}, @samp{7100LC}, and @samp{7200}.  Refer to 
+@file{/usr/lib/sched.models} on an HP-UX system to determine the
+proper scheduling option for your machine.
 
 @item -mlinker-opt
 Enable the optimization pass in the HPUX linker.  Note this makes symbolic
