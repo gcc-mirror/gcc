@@ -1085,13 +1085,13 @@ i[34567]86-sequent-ptx2* | i[34567]86-sequent-sysv3*)
 	;;
 i[34567]86-sequent-ptx4* | i[34567]86-sequent-sysv4*)
 	xm_file="xm-alloca.h ${xm_file}"
+	tm_file=i386/ptx4-i.h
 	if test x$gas = xyes
 	then
-		tm_file="${tm_file} usegas.h"
+		tm_file="usegas.h ${tm_file}"
 	fi
 	xm_defines="USG POSIX SMALL_ARG_MAX"
 	xmake_file=x-svr4
-	tm_file=i386/ptx4-i.h
 	tmake_file=t-svr4
 	extra_parts="crtbegin.o crtend.o"
 	install_headers_dir=install-headers-cpio

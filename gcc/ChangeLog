@@ -1,3 +1,7 @@
+2002-02-14  Janis Johnson  <janis187@us.ibm.com>
+
+	* config.gcc (i*86-sequent-sysv4): Fix setting of tm_file.
+
 2002-02-13  Jeroen Dobbelaere  <jeroen.dobbelaere@acunia.com>
 
 	* config/arm/linux-elf.h (CPLUSPLUS_CPP_SPEC): Define.
