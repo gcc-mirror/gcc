@@ -124,7 +124,7 @@ procedure Gnatsym is
    procedure Parse_Cmd_Line is
    begin
       loop
-         case GNAT.Command_Line.Getopt ("c C q r: s: v V:") is
+         case GNAT.Command_Line.Getopt ("c C q r: R s: v V:") is
             when ASCII.NUL =>
                exit;
 
@@ -140,6 +140,9 @@ procedure Gnatsym is
             when 'r' =>
                Reference_Symbol_File_Name :=
                  new String'(GNAT.Command_Line.Parameter);
+
+            when 'R' =>
+               Symbol_Policy := Restricted;
 
             when 's' =>
                Symbol_File_Name := new String'(GNAT.Command_Line.Parameter);
@@ -183,10 +186,11 @@ procedure Gnatsym is
    begin
       Write_Line ("gnatsym [options] object_file {object_file}");
       Write_Eol;
-      Write_Line ("   -c       Compliant policy");
-      Write_Line ("   -C       Controlled policy");
+      Write_Line ("   -c       Compliant symbol policy");
+      Write_Line ("   -C       Controlled symbol policy");
       Write_Line ("   -q       Quiet mode");
       Write_Line ("   -r<ref>  Reference symbol file name");
+      Write_Line ("   -R       Restricted symbol policy");
       Write_Line ("   -s<sym>  Symbol file name");
       Write_Line ("   -v       Verbose mode");
       Write_Line ("   -V<ver>  Version");

@@ -344,7 +344,7 @@ link:
 else
 
 link: $(EXEC_DIR)/$(EXEC) archive-objects
-$(EXEC_DIR)/$(EXEC): $(OBJ_FILES)
+$(EXEC_DIR)/$(EXEC): $(OBJECTS)
 	@$(display) $(LINKER) -o $(EXEC_DIR)/$(EXEC) $(OBJ_DIR)/$(MAIN_OBJECT) $(LDFLAGS) $(FLDFLAGS)
 	@$(LINKER) -o $(EXEC_DIR)/$(EXEC) $(OBJ_DIR)/$(MAIN_OBJECT) $(LDFLAGS) $(FLDFLAGS)
 endif

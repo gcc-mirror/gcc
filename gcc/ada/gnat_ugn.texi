@@ -280,10 +280,10 @@ Switches for gcc
 * Output and Error Message Control::
 * Warning Message Control::
 * Debugging and Assertion Control::
-* Run-Time Checks::
-* Stack Overflow Checking::
 * Validity Checking::
 * Style Checking::
+* Run-Time Checks::
+* Stack Overflow Checking::
 * Using gcc for Syntax Checking::
 * Using gcc for Semantic Checking::
 * Compiling Ada 83 Programs::
@@ -3631,10 +3631,10 @@ describe the switches in more detail in functionally grouped sections.
 * Output and Error Message Control::
 * Warning Message Control::
 * Debugging and Assertion Control::
-* Run-Time Checks::
-* Stack Overflow Checking::
 * Validity Checking::
 * Style Checking::
+* Run-Time Checks::
+* Stack Overflow Checking::
 * Using gcc for Syntax Checking::
 * Using gcc for Semantic Checking::
 * Compiling Ada 83 Programs::
@@ -12435,6 +12435,8 @@ The @code{Library_Dir} attribute has a string value that designates the path
 (absolute or relative) of the directory where the library will reside.
 It must designate an existing directory, and this directory must be
 different from the project's object directory. It also needs to be writable.
+The directory should only be used for one library; the reason is that all
+files contained in this directory may be deleted by the Project Manager.
 
 If both @code{Library_Name} and @code{Library_Dir} are specified and
 are legal, then the project file defines a library project.  The optional
@@ -13757,6 +13759,10 @@ These file names are considered to be regular expressions, so for instance
 specifying @file{source*.adb} is the same as giving every file in the current
 directory whose name starts with @file{source} and whose extension is
 @file{adb}.
+
+You shouldn't specify any directory name, just base names. @command{gnatxref}
+and @command{gnatfind} will be able to locate these files by themselves using
+the source path. If you specify directories, no result is produced.
 
 @end table
 

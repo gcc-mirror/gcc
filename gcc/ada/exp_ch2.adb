@@ -519,8 +519,9 @@ package body Exp_Ch2 is
       P_Comp_Ref :=
         Make_Selected_Component (Loc,
           Prefix =>
-            Unchecked_Convert_To (Parm_Type,
-              New_Reference_To (Addr_Ent, Loc)),
+            Make_Explicit_Dereference (Loc,
+              Unchecked_Convert_To (Parm_Type,
+                New_Reference_To (Addr_Ent, Loc))),
           Selector_Name =>
             New_Reference_To (Entry_Component (Ent_Formal), Loc));
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -88,7 +88,7 @@ pragma Pure (Unsigned_Types);
    --  Types used for packed array conversions
 
    subtype Bytes_F is Packed_Bytes4 (1 .. Float'Size / 8);
-   --  Type used in implementation of Is_Negative instrinsic (see Exp_Intr)
+   --  Type used in implementation of Is_Negative intrinsic (see Exp_Intr)
 
    function Shift_Left
      (Value  : Short_Short_Unsigned;

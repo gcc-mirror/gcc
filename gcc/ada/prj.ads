@@ -172,8 +172,8 @@ package Prj is
 
    type Lib_Kind is (Static, Dynamic, Relocatable);
 
-   type Policy is (Autonomous, Compliant, Controlled);
-   --  See explaination about this type in package Symbol
+   type Policy is (Autonomous, Compliant, Controlled, Restricted);
+   --  See explaination about this type in package Symbols
 
    type Symbol_Record is record
       Symbol_File   : Name_Id := No_Name;

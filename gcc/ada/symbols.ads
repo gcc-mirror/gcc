@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2003 Free Software Foundation, Inc.               --
+--          Copyright (C) 2003-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -44,8 +44,12 @@ package Symbols is
       --  all symbols are already found in the reference file or with an
       --  incremented minor ID, if not.
 
-       Controlled);
+       Controlled,
       --  Fail if symbols are not the same as those in the reference file
+
+      Restricted);
+      --  Restrict the symbols to those in the symbol file. Fail if some
+      --  symbols in the symbol file are not exported from the object files.
 
    type Symbol_Kind is (Data, Proc);
    --  To distinguish between the different kinds of symbols

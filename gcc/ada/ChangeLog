@@ -1,3 +1,184 @@
+2004-06-11  Vincent Celier  <celier@gnat.com>
+
+	* mlib-tgt-vms-alpha.adb (Build_Dynamic_Library): Issue switch -R to
+	gnatsym, when symbol policy is Restricted.
+
+	* mlib-tgt-vms-ia64.adb (Build_Dynamic_Library): Issue switch -R to
+	gnatsym, when symbol policy is Restricted.
+
+	* symbols-vms-alpha.adb (Initialize): When symbol policy is Restricted,
+	read the symbol file.
+	(Finalize): Fail in symbol policy Restricted if a symbol in the original
+	symbol file is not in the object files. Do not create a new symbol file
+	when symbol policy is Restricted.
+
+	* gnatbind.adb (Gnatbind): Initialize Snames, because Snames is used
+	in Scng.
+
+	* gnatsym.adb (Parse_Vmd_Line): Process new switch -R for symbol policy
+	Restricted.
+	(Usage): Line for new switch -R
+
+	* make.adb (Initialize): When the platform is not VMS, add the
+	directory where gnatmake is invoked in the front of the path, if
+	gnatmake is invoked with directory information.  Change the Scan_Args
+	while loop to a for loop.
+	(Recursive_Compute_Depth): Remove parameter Visited. Improve efficiency:
+	if Depth is equal or greater than the proposed depth, there is nothing
+	to do.
+	(Initialize): Call Recursive_Compute_Depth with initial Depth equal to 1
+	instead of 0.
+
+	* prj.ads: Add new symbol policy Restricted.
+
+	* prj-dect.adb (Parse_Case_Construction): Call End_Case_Construction
+	with the new parameters Check_All_Labels and Case_Location.
+
+	* prj-nmsc.adb (Ada_Check): Process new symbol policy Restricted
+	(Library_Symbol_File needs to be defined).
+
+	* prj-strt.adb (End_Case_Construction): New parameters Check_All_Labels
+	and Case_Location If Check_All_Labels is True, check that all values of
+	the string type are used, and output warning(s) if they are not.
+
+	* prj-strt.ads (End_Case_Construction): New parameters Check_All_Labels
+	and Case_Location.
+
+	* gnat_ugn.texi: Reorder subclauses in menus "Switches for gcc"
+
+	* gnat_ugn.texi: Update documentation about the library directory in
+	Library Projects.
+
+	* makegpr.adb (Display_Command): In verbose mode, also display the
+	value of the CPATH env var, when the compiler is gcc.
+	(Initialize): Change the Scan_Args while loop to a for loop
+	(Compile_Individual_Sources): Change directory to object directory
+	before compilations.
+
+	* symbols.ads: New symbol policy Restricted.
+
+2004-06-11  Olivier Hainque  <hainque@act-europe.fr>
+
+	* a-except.adb (Raise_After_Setup family): Remove. The responsibility
+	is now taken care of internally in the Exception_Propagation package
+	and does not require clients assistance any more.
+
+	* a-exexpr.adb (Is_Setup_And_Not_Propagated,
+	Set_Setup_And_Not_Propagated, and Clear_Setup_And_Not_Propagated): New
+	functions. Helpers to maintain a predicate required in the handling of
+	occurrence transfer between tasks.
+	This is now handled internally and does not require clients assistance
+	for the setup/propagate separation anymore.
+	(Setup_Exception, Propagate_Exception): Simplify the Private_Data
+	allocation strategy, handle the Setup_And_Not_Propagated predicate and
+	document.
+
+	* s-taenca.adb (Check_Exception): Use raise_with_msg instead of
+	raise_after_setup, now that everything is handled internally within the
+	setup/propagation engine.
+
+2004-06-11  Hristian Kirtchev  <kirtchev@gnat.com>
+
+	* exp_ch6.adb (Expand_Inlined_Call): Add function Formal_Is_Used_Once.
+	Add additional conditions for the case of an actual being a simple
+	name or literal. Improve inlining by preventing the generation
+	of temporaries with a short lifetime (one use).
+
+2004-06-11  Hristian Kirtchev  <kirtchev@gnat.com>
+
+	PR ada/15587
+
+	* einfo.ads: Minor comment updates for Has_Completion and
+	E_Constant list of flags.
+
+	* sem_ch3.adb (Analyze_Object_Declaration): Full constant declarations
+	and constant redeclarations now set the Has_Completion flag of their
+	defining identifiers.
+
+	* sem_ch7.adb (Analyze_Package_Spec): Add procedure
+	Inspect_Deferred_Constant_Completion.
+	Used to detect private deferred constants that have not been completed
+	either by a constant redeclaration or pragma Import. Emits error message
+	"constant declaration requires initialization expression".
+
+	* sem_prag.adb (Process_Import_Or_Interface): An Import pragma now
+	completes a deferred constant.
+
+2004-06-11  Geert Bosch  <bosch@gnat.com>
+
+	* eval_fat.adb (Decompose_Int): Fix rounding of negative numbers.
+
+	* s-fatgen.adb (Gradual_Scaling): Correct off-by-one error in
+	calculating exponent for scaling denormal numbers.
+	(Leading_Part): Properly raise Constraint_Error for zero or negative
+	Adjustment.
+	(Remainder): Properly raise Constraint_Error for zero divisor.
+
+2004-06-11  Thomas Quinot  <quinot@act-europe.fr>
+
+	* sem_util.adb: Minor reformatting.
+
+	* exp_ch2.adb (Expand_Entry_Parameter): Generate an explicit
+	dereference when accessing the entry parameter record.
+	(Check_Array_Type): Always check for possible implicit dereference.
+	(maybe_implicit_dereference): Rename to check_no_implicit_derefence.
+	Abort if a pointer is still present (denoting that an implicit
+	dereference was left in the tree by the front-end).
+
+	* sem_attr.adb (Expand_Entry_Parameter): Generate an explicit
+	dereference when accessing the entry parameter record.
+	(Check_Array_Type): Always check for possible implicit dereference.
+	(maybe_implicit_dereference): Rename to check_no_implicit_derefence.
+	Abort if a pointer is still present (denoting that an implicit
+	dereference was left in the tree by the front-end).
+
+2004-06-11  Emmanuel Briot  <briot@act-europe.fr>
+
+	* g-debpoo.adb (Deallocate, Dereference): Add prefix "error:" to error
+	message, like the compiler itself does. Easier to parse the output.
+
+	* g-debpoo.ads: (Allocate, Deallocate, Dereference): Add comments.
+
+	* gnat_ugn.texi (gnatxref, gnatfind): Clarify that source names should
+	be base names, and not includes directories.
+
+2004-06-11  Arnaud Charlet  <charlet@act-europe.fr>
+
+	* Makefile.generic ($(EXEC)): Depend on $(OBJECTS), not $(OBJ_FILES),
+	so that dependencies are properly taken into account by make.
+
+2004-06-11  Arnaud Charlet  <charlet@act-europe.fr>
+
+	PR ada/15622
+	* s-unstyp.ads, s-maccod.ads, sem_ch8.adb, s-auxdec.ads,
+	exp_intr.adb, s-auxdec-vms_64.ads: Fix typo: instrinsic -> intrinsic
+
+2004-06-11  Jerome Guitton  <guitton@act-europe.fr>
+
+	* Makefile.in (install-gnatlib): install target-specific run-time files.
+
+	* Make-lang.in: Remove obsolete targets.
+
+2004-06-11  Ed Schonberg  <schonberg@gnat.com>
+
+	* par-ch12.adb (P_Generic): Add scope before analyzing subprogram
+	specification, to catch misuses of program unit names.
+
+	* sem_res.adb (Resolve_Type_Conversion): Do not emit warnings on
+	superfluous conversions in an instance.
+
+2004-06-11  Ed Schonberg  <schonberg@gnat.com>
+
+	PR ada/15403
+
+	* sem_ch12.adb (Save_References): If operator node has been folded to
+	enumeration literal, associated_node must be discarded.
+
+2004-06-11  Jose Ruiz  <ruiz@act-europe.fr>
+
+	* s-stchop-vxworks.adb: Add required pragma Convention to
+	Task_Descriptor because it is updated by a C function.
+
 2004-06-08  Arnaud Charlet  <charlet@act-europe.fr>
 
 	PR ada/15568

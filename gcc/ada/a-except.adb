@@ -331,20 +331,6 @@ package body Ada.Exceptions is
    --  exception occurrence referenced by the Current_Excep in the TSD.
    --  Abort is deferred before the raise call.
 
-   procedure Raise_With_Msg (E : Exception_Id; Setup : Boolean);
-   pragma No_Return (Raise_With_Msg);
-   --  Similar to above, with an extra parameter to indicate wether
-   --  Setup_Exception has been called already.
-
-   procedure Raise_After_Setup (E : Exception_Id);
-   pragma No_Return (Raise_After_Setup);
-   pragma Export (C, Raise_After_Setup, "__gnat_raise_after_setup");
-   --  Wrapper to Raise_With_Msg and Setup set to True.
-   --
-   --  This is called by System.Tasking.Entry_Calls.Check_Exception when an
-   --  exception has occured during an entry call. The exception to propagate
-   --  has been setup and initialized via Transfer_Occurrence in this case.
-
    procedure Raise_With_Location_And_Msg
      (E : Exception_Id;
       F : Big_String_Ptr;
@@ -993,13 +979,11 @@ package body Ada.Exceptions is
    -- Raise_With_Msg --
    --------------------
 
-   procedure Raise_With_Msg (E : Exception_Id; Setup : Boolean) is
+   procedure Raise_With_Msg (E : Exception_Id) is
       Excep : constant EOA := Get_Current_Excep.all;
 
    begin
-      if not Setup then
-         Exception_Propagation.Setup_Exception (Excep, Excep);
-      end if;
+      Exception_Propagation.Setup_Exception (Excep, Excep);
 
       Excep.Exception_Raised := False;
       Excep.Id               := E;
@@ -1009,20 +993,6 @@ package body Ada.Exceptions is
       Abort_Defer.all;
       Raise_Current_Excep (E);
    end Raise_With_Msg;
-
-   procedure Raise_With_Msg (E : Exception_Id) is
-   begin
-      Raise_With_Msg (E, Setup => False);
-   end Raise_With_Msg;
-
-   -----------------------
-   -- Raise_After_Setup --
-   -----------------------
-
-   procedure Raise_After_Setup (E : Exception_Id) is
-   begin
-      Raise_With_Msg (E, Setup => True);
-   end Raise_After_Setup;
 
    --------------------------------------
    -- Calls to Run-Time Check Routines --

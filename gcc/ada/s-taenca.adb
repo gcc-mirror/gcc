@@ -154,7 +154,7 @@ package body System.Tasking.Entry_Calls is
       use type Ada.Exceptions.Exception_Id;
 
       procedure Internal_Raise (X : Ada.Exceptions.Exception_Id);
-      pragma Import (C, Internal_Raise, "__gnat_raise_after_setup");
+      pragma Import (C, Internal_Raise, "__gnat_raise_with_msg");
 
       E : constant Ada.Exceptions.Exception_Id :=
             Entry_Call.Exception_To_Raise;

@@ -279,12 +279,6 @@ gnatbind$(exeext): ada/b_gnatb.o $(CONFIG_H) $(GNATBIND_OBJS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ ada/b_gnatb.o $(GNATBIND_OBJS) \
 	     $(LIBS) $(SYSLIBS)
 
-install-rts-zfp: force
-	$(MAKE) -C ada  $(FLAGS_TO_PASS) install-rts RTS_NAME=zfp
-
-install-rts-ravenscar: force
-	$(MAKE) -C ada  $(FLAGS_TO_PASS) install-rts RTS_NAME=ravenscar
-
 # use cross-gcc
 gnat-cross: force
 	make $(GNAT1_ADA_OBJS) CC="gcc -B../stage1/" CFLAGS="-S -gnatp" \

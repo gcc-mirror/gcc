@@ -1250,8 +1250,8 @@ package Einfo is
 --    Has_Completion (Flag26)
 --       Present in all entities that require a completion (functions,
 --       procedures, private types, limited private types, incomplete types,
---       and packages that require a body). Set if the completion has been
---       encountered and analyzed.
+--       constants and packages that require a body). The flag is set if the
+--       completion has been encountered and analyzed.
 
 --    Has_Completion_In_Body (Flag71)
 --       Present in  "Taft amendment types" that is to say incomplete types
@@ -4142,6 +4142,7 @@ package Einfo is
    --    Has_Alignment_Clause          (Flag46)
    --    Has_Atomic_Components         (Flag86)
    --    Has_Biased_Representation     (Flag139)
+   --    Has_Completion                (Flag26)   (constants only)
    --    Has_Size_Clause               (Flag29)
    --    Has_Volatile_Components       (Flag87)
    --    Is_Atomic                     (Flag85)

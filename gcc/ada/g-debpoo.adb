@@ -1095,7 +1095,7 @@ package body GNAT.Debug_Pools is
          if Pool.Raise_Exceptions then
             raise Freeing_Not_Allocated_Storage;
          else
-            Put ("Freeing not allocated storage, at ");
+            Put ("error: Freeing not allocated storage, at ");
             Put_Line (Pool.Stack_Trace_Depth, null,
                       Deallocate_Label'Address,
                       Code_Address_For_Deallocate_End);
@@ -1106,7 +1106,7 @@ package body GNAT.Debug_Pools is
          if Pool.Raise_Exceptions then
             raise Freeing_Deallocated_Storage;
          else
-            Put ("Freeing already deallocated storage, at ");
+            Put ("error: Freeing already deallocated storage, at ");
             Put_Line (Pool.Stack_Trace_Depth, null,
                       Deallocate_Label'Address,
                       Code_Address_For_Deallocate_End);
@@ -1225,7 +1225,7 @@ package body GNAT.Debug_Pools is
          if Pool.Raise_Exceptions then
             raise Accessing_Not_Allocated_Storage;
          else
-            Put ("Accessing not allocated storage, at ");
+            Put ("error: Accessing not allocated storage, at ");
             Put_Line (Pool.Stack_Trace_Depth, null,
                       Dereference_Label'Address,
                       Code_Address_For_Dereference_End);
@@ -1238,7 +1238,7 @@ package body GNAT.Debug_Pools is
             if Pool.Raise_Exceptions then
                raise Accessing_Deallocated_Storage;
             else
-               Put ("Accessing deallocated storage, at ");
+               Put ("error: Accessing deallocated storage, at ");
                Put_Line
                  (Pool.Stack_Trace_Depth, null,
                   Dereference_Label'Address,

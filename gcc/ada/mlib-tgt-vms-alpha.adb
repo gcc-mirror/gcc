@@ -438,6 +438,10 @@ package body MLib.Tgt is
          when Controlled =>
             Last_Argument := Last_Argument + 1;
             Arguments (Last_Argument) := new String'("-C");
+
+         when Restricted =>
+            Last_Argument := Last_Argument + 1;
+            Arguments (Last_Argument) := new String'("-R");
       end case;
 
       --  Add each relevant object file

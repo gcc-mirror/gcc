@@ -1209,7 +1209,44 @@ package body Prj.Nmsc is
                   end;
                end if;
 
-               if not Lib_Symbol_File.Default then
+               if not Lib_Symbol_Policy.Default then
+                  declare
+                     Value : constant String :=
+                               To_Lower
+                                 (Get_Name_String (Lib_Symbol_Policy.Value));
+
+                  begin
+                     if Value = "autonomous" or else Value = "default" then
+                        Data.Symbol_Data.Symbol_Policy := Autonomous;
+
+                     elsif Value = "compliant" then
+                        Data.Symbol_Data.Symbol_Policy := Compliant;
+
+                     elsif Value = "controlled" then
+                        Data.Symbol_Data.Symbol_Policy := Controlled;
+
+                     elsif Value = "restricted" then
+                        Data.Symbol_Data.Symbol_Policy := Restricted;
+
+                     else
+                        Error_Msg
+                          (Project,
+                           "illegal value for Library_Symbol_Policy",
+                           Lib_Symbol_Policy.Location);
+                     end if;
+                  end;
+               end if;
+
+               if Lib_Symbol_File.Default then
+                  if Data.Symbol_Data.Symbol_Policy = Restricted then
+                     Error_Msg
+                       (Project,
+                        "Library_Symbol_File needs to be defined when " &
+                        "symbol policy is Restricted",
+                        Lib_Symbol_Policy.Location);
+                  end if;
+
+               else
                   Data.Symbol_Data.Symbol_File := Lib_Symbol_File.Value;
 
                   Get_Name_String (Lib_Symbol_File.Value);
@@ -1245,33 +1282,10 @@ package body Prj.Nmsc is
                   end if;
                end if;
 
-               if not Lib_Symbol_Policy.Default then
-                  declare
-                     Value : constant String :=
-                               To_Lower
-                                 (Get_Name_String (Lib_Symbol_Policy.Value));
-
-                  begin
-                     if Value = "autonomous" or else Value = "default" then
-                        Data.Symbol_Data.Symbol_Policy := Autonomous;
-
-                     elsif Value = "compliant" then
-                        Data.Symbol_Data.Symbol_Policy := Compliant;
-
-                     elsif Value = "controlled" then
-                        Data.Symbol_Data.Symbol_Policy := Controlled;
-
-                     else
-                        Error_Msg
-                          (Project,
-                           "illegal value for Library_Symbol_Policy",
-                           Lib_Symbol_Policy.Location);
-                     end if;
-                  end;
-               end if;
-
                if Lib_Ref_Symbol_File.Default then
-                  if Data.Symbol_Data.Symbol_Policy /= Autonomous then
+                  if Data.Symbol_Data.Symbol_Policy = Compliant
+                    or else Data.Symbol_Data.Symbol_Policy = Controlled
+                  then
                      Error_Msg
                        (Project,
                         "a reference symbol file need to be defined",

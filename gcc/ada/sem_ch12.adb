@@ -9531,7 +9531,6 @@ package body Sem_Ch12 is
                   --  inlining.
 
                   Rewrite (N, New_Copy (N2));
-                  Set_Associated_Node (N, N2);
                   Set_Analyzed (N, False);
                end if;
             end if;

@@ -392,7 +392,10 @@ package body Makegpr is
       First_Source : Other_Source_Id);
    --  ??? needs comment
 
-   procedure Display_Command (Name : String; Path : String_Access);
+   procedure Display_Command
+     (Name  : String;
+      Path  : String_Access;
+      CPATH : String_Access := null);
    --  Display the command for a spawned process, if in Verbose_Mode or
    --  not in Quiet_Output.
 
@@ -1625,6 +1628,7 @@ package body Makegpr is
    is
       Source  : Other_Source := Other_Sources.Table (Source_Id);
       Success : Boolean;
+      CPATH   : String_Access := null;
 
    begin
       --  If the compiler is not know yet, get its path name
@@ -1808,11 +1812,18 @@ package body Makegpr is
 
       Add_Search_Directories (Data, Source.Language);
 
+      --  Set CPATH, if compiler is GCC
+
+      if Compiler_Is_Gcc (Source.Language) then
+         CPATH := Current_Include_Paths (Source.Language);
+      end if;
+
       --  And invoke the compiler
 
       Display_Command
-        (Compiler_Names (Source.Language).all,
-         Compiler_Paths (Source.Language));
+        (Name  => Compiler_Names (Source.Language).all,
+         Path  => Compiler_Paths (Source.Language),
+         CPATH => CPATH);
 
       Spawn
         (Compiler_Paths (Source.Language).all,
@@ -1880,6 +1891,10 @@ package body Makegpr is
 
       Get_Imported_Directories (Main_Project, Data);
       Projects.Table (Main_Project) := Data;
+
+      --  Compilation will occur in the object directory
+
+      Change_Dir (Get_Name_String (Data.Object_Directory));
 
       if not Data.Sources_Present then
          if Ada_Is_A_Language then
@@ -2238,7 +2253,11 @@ package body Makegpr is
    -- Display_Command --
    ---------------------
 
-   procedure Display_Command (Name : String; Path : String_Access) is
+   procedure Display_Command
+     (Name  : String;
+      Path  : String_Access;
+      CPATH : String_Access := null)
+   is
    begin
       --  Only display the command in Verbose Mode (-v) or when
       --  not in Quiet Output (no -q).
@@ -2247,6 +2266,11 @@ package body Makegpr is
          --  In Verbose Mode output the full path of the spawned process
 
          if Verbose_Mode then
+            if CPATH /= null then
+               Write_Str  ("CPATH = ");
+               Write_Line (CPATH.all);
+            end if;
+
             Write_Str (Path.all);
 
          else
@@ -2584,8 +2608,6 @@ package body Makegpr is
    ----------------
 
    procedure Initialize is
-      Next_Arg : Positive;
-
    begin
       --  Do some necessary package initializations
 
@@ -2605,13 +2627,10 @@ package body Makegpr is
       Add_Str_To_Name_Buffer ("compiler_command");
       Name_Compiler_Command := Name_Find;
 
-      Next_Arg := 1;
-
       --  Get the command line arguments
 
-      Scan_Args : while Next_Arg <= Argument_Count loop
+      Scan_Args : for Next_Arg in 1 .. Argument_Count loop
          Scan_Arg (Argument (Next_Arg));
-         Next_Arg := Next_Arg + 1;
       end loop Scan_Args;
 
       --  Fail if command line ended with "-P"

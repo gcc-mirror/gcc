@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -200,7 +200,15 @@ package body Ch12 is
          Set_Specification (Gen_Decl, P_Package (Pf_Spcn));
       else
          Gen_Decl := New_Node (N_Generic_Subprogram_Declaration, Gen_Sloc);
+
          Set_Specification (Gen_Decl, P_Subprogram_Specification);
+
+         if Nkind (Defining_Unit_Name (Specification (Gen_Decl)))
+           = N_Defining_Program_Unit_Name
+           and then Scope.Last > 0
+         then
+            Error_Msg_SP ("child unit allowed only at library level");
+         end if;
          TF_Semicolon;
       end if;
 

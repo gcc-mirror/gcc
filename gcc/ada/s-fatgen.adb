@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -302,12 +302,12 @@ package body System.Fat_Gen is
       Ex : UI := Adjustment;
 
    begin
-      if Adjustment < T'Machine_Emin then
+      if Adjustment < T'Machine_Emin - 1 then
          Y  := 2.0 ** T'Machine_Emin;
          Y1 := Y;
          Ex := Ex - T'Machine_Emin;
 
-         while Ex <= 0 loop
+         while Ex < 0 loop
             Y := T'Machine (Y / 2.0);
 
             if Y = 0.0 then
@@ -336,6 +336,9 @@ package body System.Fat_Gen is
    begin
       if Radix_Digits >= T'Machine_Mantissa then
          return X;
+
+      elsif Radix_Digits <= 0 then
+         raise Constraint_Error;
 
       else
          L := Exponent (X) - Radix_Digits;
@@ -433,6 +436,10 @@ package body System.Fat_Gen is
       P_Even   : Boolean;
 
    begin
+      if Y = 0.0 then
+         raise Constraint_Error;
+      end if;
+
       if X > 0.0 then
          Sign_X :=  1.0;
          Arg := X;

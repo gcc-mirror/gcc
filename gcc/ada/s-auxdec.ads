@@ -459,7 +459,7 @@ private
    --  convention C so that the critical parameters are passed by reference.
    --  Without this, the parameters are passed by copy, creating load/store
    --  race conditions. We also inline them, since this seems more in the
-   --  spirit of the original (hardware instrinsic) routines.
+   --  spirit of the original (hardware intrinsic) routines.
 
    pragma Convention (C, Clear_Interlocked);
    pragma Inline_Always (Clear_Interlocked);
