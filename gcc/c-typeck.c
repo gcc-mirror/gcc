@@ -860,6 +860,10 @@ type_lists_compatible_p (tree args1, tree args2, int flags)
 	  if (c_type_promotes_to (TREE_VALUE (args1)) != TREE_VALUE (args1))
 	    return 0;
 	}
+      /* If one of the lists has an error marker, ignore this arg.  */
+      else if (TREE_CODE (TREE_VALUE (args1)) == ERROR_MARK
+	       || TREE_CODE (TREE_VALUE (args2)) == ERROR_MARK)
+	;
       else if (! (newval = comptypes (TYPE_MAIN_VARIANT (TREE_VALUE (args1)),
 				      TYPE_MAIN_VARIANT (TREE_VALUE (args2)),
 				      flags)))
