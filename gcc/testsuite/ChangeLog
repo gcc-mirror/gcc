@@ -6,6 +6,10 @@
 
 2005-01-01  Geoffrey Keating  <geoffk@geoffk.org>
 
+	* g++.dg/ext/visibility/fvisibility-override1.C: Test using
+	'hidden' and 'default' for better portability.
+	* g++.dg/ext/visibility/fvisibility-override2.C: Likewise.
+
 	* g++.old-deja/g++.abi/cxa_vec.C: Add -flat_namespace on Darwin
 	6 and 7.
 	* g++.old-deja/g++.brendan/new3.C: Likewise.

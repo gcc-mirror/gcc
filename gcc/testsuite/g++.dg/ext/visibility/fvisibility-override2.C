@@ -2,11 +2,11 @@
 /* { dg-do compile } */
 /* { dg-require-visibility "" } */
 /* { dg-options "-fvisibility=hidden" } */
-/* { dg-final { scan-assembler "\\.internal.*Foo.methodEv" } } */
+/* { dg-final { scan-not-hidden "Foo.methodEv" } } */
 
 class Foo
 {
-  __attribute__ ((visibility ("internal"))) void method();
+  __attribute__ ((visibility ("default"))) void method();
 };
 
 void Foo::method() { }
