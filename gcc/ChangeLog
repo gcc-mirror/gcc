@@ -1,3 +1,9 @@
+2003-12-22  Geoffrey Keating  <geoffk@apple.com>
+
+	* config/rs6000/rs6000.md: Change many instances of '!
+	TARGET_POWERPC64' to 'TARGET_32BIT' when the pattern being guarded
+	was guarded only because it changed CR0 or the carry bit in XER.
+
 2003-12-23  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR optimization/13394
