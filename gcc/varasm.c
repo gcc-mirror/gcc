@@ -4361,11 +4361,12 @@ output_constructor (exp, size)
      tree exp;
      int size;
 {
+  tree type = TREE_TYPE (exp);
   register tree link, field = 0;
-  HOST_WIDE_INT min_index = 0;
+  tree min_index = 0;
   /* Number of bytes output or skipped so far.
      In other words, current position within the constructor.  */
-  int total_bytes = 0;
+  HOST_WIDE_INT total_bytes = 0;
   /* Non-zero means BYTE contains part of a byte, to be output.  */
   int byte_buffer_in_use = 0;
   register int byte = 0;
@@ -4373,13 +4374,12 @@ output_constructor (exp, size)
   if (HOST_BITS_PER_WIDE_INT < BITS_PER_UNIT)
     abort ();
 
-  if (TREE_CODE (TREE_TYPE (exp)) == RECORD_TYPE)
-    field = TYPE_FIELDS (TREE_TYPE (exp));
+  if (TREE_CODE (type) == RECORD_TYPE)
+    field = TYPE_FIELDS (type);
 
-  if (TREE_CODE (TREE_TYPE (exp)) == ARRAY_TYPE
-      && TYPE_DOMAIN (TREE_TYPE (exp)) != 0)
-    min_index
-      = TREE_INT_CST_LOW (TYPE_MIN_VALUE (TYPE_DOMAIN (TREE_TYPE (exp))));
+  if (TREE_CODE (type) == ARRAY_TYPE
+      && TYPE_DOMAIN (type) != 0)
+    min_index = TYPE_MIN_VALUE (TYPE_DOMAIN (type));
 
   /* As LINK goes through the elements of the constant,
      FIELD goes through the structure fields, if the constant is a structure.
@@ -4398,17 +4398,14 @@ output_constructor (exp, size)
       tree val = TREE_VALUE (link);
       tree index = 0;
 
-      /* the element in a union constructor specifies the proper field.  */
+      /* The element in a union constructor specifies the proper field
+	 or index.  */
+      if ((TREE_CODE (type) == RECORD_TYPE || TREE_CODE (type) == UNION_TYPE
+	   || TREE_CODE (type) == QUAL_UNION_TYPE)
+	  && TREE_PURPOSE (link) != 0)
+	field = TREE_PURPOSE (link);
 
-      if (TREE_CODE (TREE_TYPE (exp)) == RECORD_TYPE
-	  || TREE_CODE (TREE_TYPE (exp)) == UNION_TYPE)
-	{
-	  /* if available, use the type given by link */
-	  if (TREE_PURPOSE (link) != 0)
-	    field = TREE_PURPOSE (link);
-	}
-
-      if (TREE_CODE (TREE_TYPE (exp)) == ARRAY_TYPE)
+      else if (TREE_CODE (type) == ARRAY_TYPE)
 	index = TREE_PURPOSE (link);
 
       /* Eliminate the marker that makes a cast not be an lvalue.  */
@@ -4418,10 +4415,11 @@ output_constructor (exp, size)
       if (index && TREE_CODE (index) == RANGE_EXPR)
 	{
 	  register int fieldsize
-	    = int_size_in_bytes (TREE_TYPE (TREE_TYPE (exp)));
-	  HOST_WIDE_INT lo_index = TREE_INT_CST_LOW (TREE_OPERAND (index, 0));
-	  HOST_WIDE_INT hi_index = TREE_INT_CST_LOW (TREE_OPERAND (index, 1));
+	    = int_size_in_bytes (TREE_TYPE (type));
+	  HOST_WIDE_INT lo_index = tree_low_cst (TREE_OPERAND (index, 0), 0);
+	  HOST_WIDE_INT hi_index = tree_low_cst (TREE_OPERAND (index, 1), 0);
 	  HOST_WIDE_INT index;
+
 	  for (index = lo_index; index <= hi_index; index++)
 	    {
 	      /* Output the element's initial value.  */
@@ -4441,12 +4439,11 @@ output_constructor (exp, size)
 	  register int fieldsize;
 	  /* Since this structure is static,
 	     we know the positions are constant.  */
-	  HOST_WIDE_INT bitpos = field ? int_byte_position (field) : 0;
+	  HOST_WIDE_INT pos = field ? int_byte_position (field) : 0;
 
 	  if (index != 0)
-	    bitpos
-	      = (tree_low_cst (TYPE_SIZE_UNIT (TREE_TYPE (val)), 1)
-		* (tree_low_cst (index, 0) - min_index));
+	    pos = (tree_low_cst (TYPE_SIZE_UNIT (TREE_TYPE (val)), 1)
+		   * (tree_low_cst (index, 0) - tree_low_cst (min_index, 0)));
 
 	  /* Output any buffered-up bit-fields preceding this element.  */
 	  if (byte_buffer_in_use)
@@ -4459,31 +4456,24 @@ output_constructor (exp, size)
 	  /* Advance to offset of this element.
 	     Note no alignment needed in an array, since that is guaranteed
 	     if each element has the proper size.  */
-	  if ((field != 0 || index != 0) && bitpos != total_bytes)
+	  if ((field != 0 || index != 0) && pos != total_bytes)
 	    {
-	      assemble_zeros (bitpos - total_bytes);
-	      total_bytes = bitpos;
+	      assemble_zeros (pos - total_bytes);
+	      total_bytes = pos;
 	    }
-          else if (field != 0 && DECL_PACKED (field))
-            {
-               /* Some assemblers automaticallly align a datum according to
-                  its size if no align directive is specified.  The datum,
-                  however, may be declared with 'packed' attribute, so we
-                  have to disable such a feature.  */
 
-               ASM_OUTPUT_ALIGN (asm_out_file, 0);
-            }
+          else if (field != 0 && DECL_PACKED (field))
+	    /* Some assemblers automaticallly align a datum according to its
+	       size if no align directive is specified.  The datum, however,
+	       may be declared with 'packed' attribute, so we have to disable
+	       such a feature.  */
+	    ASM_OUTPUT_ALIGN (asm_out_file, 0);
 
 	  /* Determine size this element should occupy.  */
 	  if (field)
-	    {
-	      if (TREE_CODE (DECL_SIZE_UNIT (field)) != INTEGER_CST)
-		abort ();
-
-	      fieldsize = TREE_INT_CST_LOW (DECL_SIZE_UNIT (field));
-	    }
+	    fieldsize = tree_low_cst (DECL_SIZE_UNIT (field), 1);
 	  else
-	    fieldsize = int_size_in_bytes (TREE_TYPE (TREE_TYPE (exp)));
+	    fieldsize = int_size_in_bytes (TREE_TYPE (type));
 
 	  /* Output the element's initial value.  */
 	  if (val == 0)
@@ -4544,8 +4534,8 @@ output_constructor (exp, size)
 	      int this_time;
 	      int shift;
 	      HOST_WIDE_INT value;
-	      int next_byte = next_offset / BITS_PER_UNIT;
-	      int next_bit = next_offset % BITS_PER_UNIT;
+	      HOST_WIDE_INT next_byte = next_offset / BITS_PER_UNIT;
+	      HOST_WIDE_INT next_bit = next_offset % BITS_PER_UNIT;
 
 	      /* Advance from byte to byte
 		 within this element when necessary.  */
@@ -4566,6 +4556,7 @@ output_constructor (exp, size)
 		     first (of the bits that are significant)
 		     and put them into bytes from the most significant end.  */
 		  shift = end_offset - next_offset - this_time;
+
 		  /* Don't try to take a bunch of bits that cross
 		     the word boundary in the INTEGER_CST. We can
 		     only select bits from the LOW or HIGH part
@@ -4579,9 +4570,7 @@ output_constructor (exp, size)
 
 		  /* Now get the bits from the appropriate constant word.  */
 		  if (shift < HOST_BITS_PER_WIDE_INT)
-		    {
-		      value = TREE_INT_CST_LOW (val);
-		    }
+		    value = TREE_INT_CST_LOW (val);
 		  else if (shift < 2 * HOST_BITS_PER_WIDE_INT)
 		    {
 		      value = TREE_INT_CST_HIGH (val);
@@ -4589,6 +4578,7 @@ output_constructor (exp, size)
 		    }
 		  else
 		    abort ();
+
 		  /* Get the result. This works only when:
 		     1 <= this_time <= HOST_BITS_PER_WIDE_INT.  */
 		  byte |= (((value >> shift)
@@ -4628,16 +4618,19 @@ output_constructor (exp, size)
 			    & (((HOST_WIDE_INT) 2 << (this_time - 1)) - 1))
 			   << next_bit);
 		}
+
 	      next_offset += this_time;
 	      byte_buffer_in_use = 1;
 	    }
 	}
     }
+
   if (byte_buffer_in_use)
     {
       ASM_OUTPUT_BYTE (asm_out_file, byte);
       total_bytes++;
     }
+
   if (total_bytes < size)
     assemble_zeros (size - total_bytes);
 }

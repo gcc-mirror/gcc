@@ -1,3 +1,13 @@
+Tue Aug 29 22:09:59 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* expr.c (store_constructor): Allow variable bounds of array type.
+	(expand_expr): Don't blow up if type is ERROR_MARK.
+	* varasm.c (output_constructor): Don't access lower bound of array
+	type unless need it if index is supplied (so it can be a variable
+	if no index is supplied).
+	Use tree_low_cst; use HOST_WIDE_INT for sizes; change BITPOS to POS.
+	Other minor cleanups.
+
 2000-08-29  J. David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* Makefile.in: Revamp handling of cflags to allow different WARN_CFLAGS
