@@ -1,6 +1,6 @@
 /* Expands front end tree to back end RTL for GNU C-Compiler
    Copyright (C) 1987, 1988, 1989, 1991, 1992, 1993, 1994, 1995, 1996, 1997,
-   1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   1998, 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -586,11 +586,14 @@ assign_stack_local_1 (mode, size, align, function)
      address relative to the frame pointer.  */
   if (function == cfun && virtuals_instantiated)
     addr = plus_constant (frame_pointer_rtx,
+			  trunc_int_for_mode
 			  (frame_offset + bigend_correction
-			   + STARTING_FRAME_OFFSET));
+			   + STARTING_FRAME_OFFSET, Pmode));
   else
     addr = plus_constant (virtual_stack_vars_rtx,
-			  function->x_frame_offset + bigend_correction);
+			  trunc_int_for_mode
+			  (function->x_frame_offset + bigend_correction,
+			   Pmode));
 
 #ifndef FRAME_GROWS_DOWNWARD
   function->x_frame_offset += size;

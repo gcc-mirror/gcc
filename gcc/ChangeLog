@@ -1,3 +1,8 @@
+2003-02-26  Alexandre Oliva  <aoliva@redhat.com>
+
+	* function.c (assign_stack_local_1): Truncate constant added to
+	frame_pointer_rtx or virtual_stack_vars_rtx for Pmode.
+
 2003-02-26  David Edelsohn  <edelsohn@gnu.org>
 
 	* config.gcc: Add power4 to PowerPC with_cpu list.
