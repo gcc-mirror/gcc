@@ -1,4 +1,4 @@
-/* Copyright (C) 1997 Free Software Foundation, Inc.
+/* Copyright (C) 1997, 2001 Free Software Foundation, Inc.
 This file is part of GNU Fortran libU77 library.
 
 This library is free software; you can redistribute it and/or modify it
@@ -39,14 +39,20 @@ typedef RETSIGTYPE (*sig_type)();
 
 #ifdef KR_headers
 extern sig_type signal();
+#else
+#include <signal.h>
+typedef int (*sig_proc)(int);
+#endif
 
+#ifndef SIG_ERR
+#define SIG_ERR ((sig_type) -1)
+#endif
+
+#ifdef KR_headers
 integer G77_alarm_0 (seconds, proc)
      integer *seconds;
      sig_type proc;
 #else
-#include <signal.h>
-typedef int (*sig_proc)(int);
-
 integer G77_alarm_0 (integer *seconds, sig_proc proc)
 #endif
 {
