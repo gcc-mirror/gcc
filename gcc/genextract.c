@@ -510,7 +510,7 @@ from the machine description file `md'.  */\n\n");
       /* The vector in the insn says how many operands it has.
 	 And all it contains are operands.  In fact, the vector was
 	 created just for the sake of this function.  */
-      printf ("      for (i = XVECLEN (pat, 0); i >= 0; i--)\n");
+      printf ("      for (i = XVECLEN (pat, 0) - 1; i >= 0; i--)\n");
       printf ("          ro[i] = XVECEXP (pat, 0, i);\n");
       printf ("      break;\n\n");
     }

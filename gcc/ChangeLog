@@ -1,3 +1,7 @@
+Fri Feb 13 12:18:40 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* genextract.c (main): Fix typo.
+
 Fri Feb 13 08:41:49 1998  Robert Lipe	<robertl@dgii.com>
 
 	* c-lang.c (finish_file): Bracket declaration of static_ctors, 
