@@ -3143,7 +3143,7 @@ extern int integer_nonzerop (tree);
 /* staticp (tree x) is nonzero if X is a reference to data allocated
    at a fixed address in memory.  */
 
-extern int staticp (tree);
+extern bool staticp (tree);
 
 /* save_expr (EXP) returns an expression equivalent to EXP
    but it can be used multiple times within context CTX
