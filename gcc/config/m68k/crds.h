@@ -4,7 +4,7 @@
    Written by Gary E. Miller
    bug reports to Gary_Edmunds_Miller@cup.portal.com
 
-   Copyright (C) 1987 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1993 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -168,9 +168,9 @@ bss_section ()								\
 
 #undef ASM_OUTPUT_DOUBLE
 #define ASM_OUTPUT_DOUBLE(FILE,VALUE)  \
-do { union { double f; long l[2];} tem;			\
-     tem.f = (VALUE);					\
-     fprintf (FILE, "\t.long 0x%x, 0x%x\n", tem.l[0], tem.l[1]);	\
+do { long l[2];						\
+     REAL_VALUE_TO_TARGET_DOUBLE (VALUE, l);		\
+     fprintf (FILE, "\t.long 0x%x, 0x%x\n", l[0], l[1]);	\
    } while (0)
 
 /*unos has no .skip :-( */
@@ -300,18 +300,21 @@ do { union { double f; long l[2];} tem;			\
 	   && (i = standard_sun_fpa_constant_p (X)))			\
     fprintf (FILE, "%%%d", i & 0x1ff);					\
   else if (GET_CODE (X) == CONST_DOUBLE && GET_MODE (X) == SFmode)	\
-    { union { double d; int i[2]; } u;					\
-      union { float f; int i; } u1;					\
-      u.i[0] = CONST_DOUBLE_LOW (X); u.i[1] = CONST_DOUBLE_HIGH (X);	\
-      u1.f = u.d;							\
+    { REAL_VALUE_TYPE r; long l;					\
+      REAL_VALUE_FROM_CONST_DOUBLE (r, X);				\
       if (CODE == 'f')							\
-	ASM_OUTPUT_FLOAT_OPERAND (FILE, u1.f);				\
+	ASM_OUTPUT_FLOAT_OPERAND (CODE, FILE, r);			\
       else								\
-        fprintf (FILE, "$0x%x", u1.i); }				\
+        { REAL_VALUE_TO_TARGET_SINGLE (r, l);				\
+          fprintf (FILE, "$0x%x", l); } }				\
+  else if (GET_CODE (X) == CONST_DOUBLE && GET_MODE (X) == XFmode)	\
+    { REAL_VALUE_TYPE r;						\
+      REAL_VALUE_FROM_CONST_DOUBLE (r, X);				\
+      ASM_OUTPUT_LONG_DOUBLE_OPERAND (FILE, r); }			\
   else if (GET_CODE (X) == CONST_DOUBLE && GET_MODE (X) != DImode)	\
-    { union { double d; int i[2]; } u;					\
-      u.i[0] = CONST_DOUBLE_LOW (X); u.i[1] = CONST_DOUBLE_HIGH (X);	\
-      ASM_OUTPUT_DOUBLE_OPERAND (FILE, u.d); }				\
+    { REAL_VALUE_TYPE r;						\
+      REAL_VALUE_FROM_CONST_DOUBLE (r, X);				\
+      ASM_OUTPUT_DOUBLE_OPERAND (FILE, r); }				\
   else { putc ('$', FILE); output_addr_const (FILE, X); }}
 
 /* Note that this contains a kludge that knows that the only reason
