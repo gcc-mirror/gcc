@@ -90,7 +90,7 @@ in the following sections.
 @item Overall Options
 @xref{Overall Options,,Options Controlling the Kind of Output}.
 @smallexample
--c  -S  -E  -o @var{file}  -pipe  -pass-exit-codes  -v  --help  -x @var{language}
+-c  -S  -E  -o @var{file}  -pipe  -pass-exit-codes  -v  --target-help  --help  -x @var{language}
 @end smallexample
 
 @item C Language Options
@@ -646,6 +646,10 @@ invoked by @code{gcc}, so that they can display the command line options
 they accept.  If the @code{-W} option is also specified then command
 line options which have no documentation associated with them will also
 be displayed.
+
+@item --target-help
+Print (on the standard output) a description of target specific command
+line options for each tool.
 @end table
 
 @node Invoking G++
