@@ -1,3 +1,8 @@
+Wed Aug 27 16:08:43 1997  Jim Wilson  <wilson@cygnus.com>
+
+	* config/alpha/elf.h (DEFAULT_VTABLE_THUNKS): New. Defined as 1
+	if USE_GNULIBC_1 is not defined.
+
 Wed Aug 27 15:49:12 1997  Richard Henderson  <rth@cygnus.com>
 
 	* alpha/elf.h (LINK_SPEC): Conditionalize on USE_GNULIBC_1.

@@ -57,6 +57,11 @@ Currently only Linux uses this. */
     %{static:-static}}"
 #endif
 
+#ifndef USE_GNULIBC_1
+#undef DEFAULT_VTABLE_THUNKS
+#define DEFAULT_VTABLE_THUNKS 1
+#endif
+
 /* Output at beginning of assembler file.  */
 
 #undef ASM_FILE_START
