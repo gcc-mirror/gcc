@@ -1,3 +1,10 @@
+2003-12-02  Geoffrey Keating  <geoffk@geoffk.org>
+
+	* df.c (df_uses_record) <MEM>: The argument of a MEM is read-only,
+	never read-write.
+	<REG>: Delete incorrect comment.
+	<SET>: Remove 'use_flags' variable.
+
 2003-12-03  David Edelsohn  <edelsohn@gnu.org>
 
 	* function.c (assign_parms): Make sure parm PARALLEL combined
