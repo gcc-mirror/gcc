@@ -93,6 +93,13 @@ Boston, MA 02111-1307, USA.  */
 
 #define LPREFIX "L"
 
+/* These are used by -fbranch-probabilities */
+#define HOT_TEXT_SECTION_NAME "__TEXT,__text,regular,pure_instructions"
+#define NORMAL_TEXT_SECTION_NAME "__TEXT,__text,regular,pure_instructions"
+#define UNLIKELY_EXECUTED_TEXT_SECTION_NAME \ 
+                              "__TEXT,__unlikely,regular,pure_instructions"
+#define SECTION_FORMAT_STRING ".section %s\n\t.align 2\n" 
+
 /* Assembler pseudos to introduce constants of various size.  */
 
 #define ASM_BYTE_OP "\t.byte\t"
