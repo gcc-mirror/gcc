@@ -4817,16 +4817,9 @@ new_die (tag_value, parent_die)
      register enum dwarf_tag tag_value;
      register dw_die_ref parent_die;
 {
-  register dw_die_ref die = (dw_die_ref) xmalloc (sizeof (die_node));
+  register dw_die_ref die = (dw_die_ref) xcalloc (1, sizeof (die_node));
 
   die->die_tag = tag_value;
-  die->die_abbrev = 0;
-  die->die_offset = 0;
-  die->die_child = NULL;
-  die->die_parent = NULL;
-  die->die_sib = NULL;
-  die->die_attr = NULL;
-  die->die_symbol = NULL;
 
   if (parent_die != NULL)
     add_child_die (parent_die, die);
@@ -6060,6 +6053,8 @@ output_die (die)
 	case dw_val_class_die_ref:
 	  if (AT_ref_external (a))
 	    output_symbolic_ref (AT_ref (a));
+	  else if (AT_ref (a)->die_offset == 0)
+	    abort ();
 	  else
 	    ASM_OUTPUT_DWARF_DATA (asm_out_file, AT_ref (a)->die_offset);
 	  break;
