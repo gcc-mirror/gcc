@@ -56,7 +56,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define LIB_SPEC "-lc -lsim -lc -lhandlers-sim -lhal"
 
 #undef STARTFILE_SPEC
-#define STARTFILE_SPEC "crt1-sim%O%s crti%O%s crtbegin%O%s _vectors%O%s"
+#define STARTFILE_SPEC \
+  "crt1-sim%O%s crt0%O%s crti%O%s crtbegin%O%s _vectors%O%s"
 
 #undef ENDFILE_SPEC
 #define ENDFILE_SPEC "crtend%O%s crtn%O%s"  
@@ -91,3 +92,24 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
       XTENSA_DECLARE_FUNCTION_SIZE(FILE, FNAME, DECL);		\
     }								\
   while (0)
+
+/* Search for headers in $tooldir/arch/include and for libraries and
+   startfiles in $tooldir/arch/lib.  */
+#define GCC_DRIVER_HOST_INITIALIZATION \
+do \
+{ \
+  char *tooldir, *archdir; \
+  tooldir = concat (tooldir_base_prefix, spec_machine, \
+		    dir_separator_str, NULL); \
+  if (!IS_ABSOLUTE_PATH (tooldir)) \
+    tooldir = concat (standard_exec_prefix, spec_machine, dir_separator_str, \
+		      spec_version, dir_separator_str, tooldir, NULL); \
+  archdir = concat (tooldir, "arch", dir_separator_str, NULL); \
+  add_prefix (&startfile_prefixes, \
+	      concat (archdir, "lib", dir_separator_str, NULL), \
+	      "GCC", PREFIX_PRIORITY_LAST, 0, 1); \
+  add_prefix (&include_prefixes, archdir, \
+	      "GCC", PREFIX_PRIORITY_LAST, 0, 0); \
+  } \
+while (0)
+
