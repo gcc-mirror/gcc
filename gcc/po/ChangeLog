@@ -1,3 +1,17 @@
+2000-09-12  Philipp Thomas  <pthomas@suse.de>
+
+	* Makefile.in.in (stamp-check-pot): New target used for
+	checking POTFILES.
+	* gcc.pot: Regenerated.
+	* cat-tbl-id.c: Likewise.
+
+2000-09-12  Philipp Thomas  <pthomas@suse.de>
+
+	* POTFILES.in: Remove c-gperf.h, c-iterate.c,
+	cp/hash.h, cp/input.c, c-parse.h and cppulp.c.
+	* gcc.pot: Regenerated.
+	* cat-id-tbl.c: Likewise.
+
 2000-07-13  Nick Clifton  <nickc@cygnus.com>
 
  	* POTFILES.in: Add new gcc files.
