@@ -202,7 +202,12 @@ typedef struct basic_block_def {
 
   /* Expected number of executions: calculated in profile.c.  */
   int count;
+ 
+  /* Expected frequency.  Normalized to be in range 0 to BB_FREQ_MAX.  */
+  int frequency;
 } *basic_block;
+ 
+#define BB_FREQ_MAX 10000
 
 /* Number of basic blocks in the current function.  */
 

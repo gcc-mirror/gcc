@@ -1,3 +1,11 @@
+Wed Jun 20 19:08:18 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* predict.c (estimate_loops_at_level, propagate_freq
+	estimate_bb_frequencies, count_to_freqs): New functions.
+	(estimate_probability): Call estimate_bb_frequencies.
+	* basic-block.h (basic_block_def): Add field "freq".
+	(BB_FREQ_MAX): New constant.
+
 Wed Jun 20 17:02:50 2001  J"orn Rennecke <amylaar@redhat.com>
 
 	* sh.c (barrier_align): Don't ask for alignment when seeing a
