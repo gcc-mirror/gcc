@@ -1,3 +1,9 @@
+2003-12-10  Nick Clifton  <nickc@redhat.com>
+
+	* config.gcc (arm-linux): Include linux.h in tm_file so that
+	LINUX_TARGET_OS_CPP_BUILTINS is defined.
+	* config/arm/linux-elf.h (LIB_SPEC): Protect the definition.
+
 2003-12-09  James E Wilson  <wilson@specifixinc.com>
 
 	* rtl.def (CODE_LABEL, NOTE): Correct operand numbers in comments.
