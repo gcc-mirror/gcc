@@ -1777,7 +1777,8 @@ noce_process_if_block (ce_info)
 	  || reg_overlap_mentioned_p (x, cond)
 	  || reg_overlap_mentioned_p (x, a)
 	  || reg_overlap_mentioned_p (x, SET_SRC (set_b))
-	  || modified_between_p (x, if_info.cond_earliest, NEXT_INSN (jump)))
+	  || modified_between_p (SET_SRC (set_b),
+				 PREV_INSN (if_info.cond_earliest), jump))
 	insn_b = set_b = NULL_RTX;
     }
   b = (set_b ? SET_SRC (set_b) : x);
