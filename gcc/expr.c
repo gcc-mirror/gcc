@@ -3845,6 +3845,7 @@ expand_expr (exp, target, tmode, modifier)
 
   /* Ensure we reference a volatile object even if value is ignored.  */
   if (ignore && TREE_THIS_VOLATILE (exp)
+      && TREE_CODE (exp) != FUNCTION_DECL
       && mode != VOIDmode && mode != BLKmode)
     {
       target = gen_reg_rtx (mode);
