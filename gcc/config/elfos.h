@@ -1,6 +1,6 @@
 /* elfos.h  --  operating system specific defines to be used when
    targeting GCC for some generic ELF system
-   Copyright (C) 1991, 1994, 1995, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1994, 1995, 1999, 2000 Free Software Foundation, Inc.
    Based on svr4.h contributed by Ron Guilmette (rfg@netcom.com).
 
 This file is part of GNU CC.
@@ -426,7 +426,8 @@ do {								\
       else								\
 	data_section ();						\
     }									\
-  else if (TREE_CODE (DECL) == VAR_DECL)				\
+  else if (TREE_CODE (DECL) == VAR_DECL					\
+	   || TREE_CODE (DECL) == CONSTRUCTOR)				\
     {									\
       if ((flag_pic && RELOC)						\
 	  || !TREE_READONLY (DECL) || TREE_SIDE_EFFECTS (DECL)		\

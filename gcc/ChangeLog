@@ -1,3 +1,9 @@
+2000-04-11  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
+
+	* config/elfos.h (SELECT_SECTION): Decide whether to use a data or
+	const section to output a CONSTRUCTOR based on the same conditions
+	used for VAR_DECLs.
+
 Mon Apr  3 02:31:32 2000  Jeffrey A Law  (law@cygnus.com)
 
 	2000-01-20  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
