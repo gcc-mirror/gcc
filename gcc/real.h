@@ -89,7 +89,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 /* **** Start of software floating point emulator interface macros **** */
 
 /* Support 80-bit extended real XFmode if LONG_DOUBLE_TYPE_SIZE
-   has been defined to be 96 in the tm.h machine file. */
+   has been defined to be 96 in the tm.h machine file.  */
 #if (MAX_LONG_DOUBLE_TYPE_SIZE == 96)
 #define REAL_IS_NOT_DOUBLE
 #define REAL_ARITHMETIC
@@ -113,7 +113,7 @@ typedef struct {
 
 #if HOST_FLOAT_FORMAT != TARGET_FLOAT_FORMAT
 /* If no XFmode support, then a REAL_VALUE_TYPE is 64 bits wide
-   but it is not necessarily a host machine double. */
+   but it is not necessarily a host machine double.  */
 #define REAL_IS_NOT_DOUBLE
 typedef struct {
   HOST_WIDE_INT r[(7 + sizeof (HOST_WIDE_INT))/(sizeof (HOST_WIDE_INT))];
@@ -121,7 +121,7 @@ typedef struct {
 #define REAL_VALUE_TYPE realvaluetype
 #else
 /* If host and target formats are compatible, then a REAL_VALUE_TYPE
-   is actually a host machine double. */
+   is actually a host machine double.  */
 #define REAL_VALUE_TYPE double
 #endif
 
@@ -140,7 +140,7 @@ extern unsigned int significand_size	PARAMS ((enum machine_mode));
 #define REAL_ARITHMETIC(value, code, d1, d2) \
   earith (&(value), (code), &(d1), &(d2))
 
-/* Declare functions in real.c. */
+/* Declare functions in real.c.  */
 extern void earith		PARAMS ((REAL_VALUE_TYPE *, int,
 				       REAL_VALUE_TYPE *, REAL_VALUE_TYPE *));
 extern REAL_VALUE_TYPE etrunci	PARAMS ((REAL_VALUE_TYPE));
@@ -185,7 +185,7 @@ extern REAL_VALUE_TYPE ereal_from_double PARAMS ((HOST_WIDE_INT *));
 /* Convert a floating-point value to integer, rounding toward zero.  */
 #define REAL_VALUE_FIX(x) (efixi (x))
 /* Convert a floating-point value to unsigned integer, rounding
-   toward zero. */
+   toward zero.  */
 #define REAL_VALUE_UNSIGNED_FIX(x) (efixui (x))
 
 /* Convert ASCII string S to floating point in mode M.
@@ -207,7 +207,7 @@ extern REAL_VALUE_TYPE ereal_from_double PARAMS ((HOST_WIDE_INT *));
 #define REAL_VALUE_FROM_UNSIGNED_INT(d, lo, hi, mode) \
   ereal_from_uint (&d, lo, hi, mode)
 
-/* IN is a REAL_VALUE_TYPE.  OUT is an array of longs. */
+/* IN is a REAL_VALUE_TYPE.  OUT is an array of longs.  */
 #if (INTEL_EXTENDED_IEEE_FORMAT != 0) && (MAX_LONG_DOUBLE_TYPE_SIZE == 128)
 #define REAL_VALUE_TO_TARGET_LONG_DOUBLE(IN, OUT) (etarldouble ((IN), (OUT)))
 #else
@@ -219,20 +219,20 @@ extern REAL_VALUE_TYPE ereal_from_double PARAMS ((HOST_WIDE_INT *));
 #endif
 #define REAL_VALUE_TO_TARGET_DOUBLE(IN, OUT) (etardouble ((IN), (OUT)))
 
-/* IN is a REAL_VALUE_TYPE.  OUT is a long. */
+/* IN is a REAL_VALUE_TYPE.  OUT is a long.  */
 #define REAL_VALUE_TO_TARGET_SINGLE(IN, OUT) ((OUT) = etarsingle ((IN)))
 
-/* Inverse of REAL_VALUE_TO_TARGET_DOUBLE. */
+/* Inverse of REAL_VALUE_TO_TARGET_DOUBLE.  */
 #define REAL_VALUE_UNTO_TARGET_DOUBLE(d)  (ereal_unto_double (d))
 
-/* Inverse of REAL_VALUE_TO_TARGET_SINGLE. */
+/* Inverse of REAL_VALUE_TO_TARGET_SINGLE.  */
 #define REAL_VALUE_UNTO_TARGET_SINGLE(f)  (ereal_unto_float (f))
 
 /* d is an array of HOST_WIDE_INT that holds a double precision
-   value in the target computer's floating point format. */
+   value in the target computer's floating point format.  */
 #define REAL_VALUE_FROM_TARGET_DOUBLE(d)  (ereal_from_double (d))
 
-/* f is a HOST_WIDE_INT containing a single precision target float value. */
+/* f is a HOST_WIDE_INT containing a single precision target float value.  */
 #define REAL_VALUE_FROM_TARGET_SINGLE(f)  (ereal_from_float (f))
 
 /* Conversions to decimal ASCII string.  */
@@ -318,7 +318,7 @@ do {									\
 #endif
 #endif /* HOST_FLOAT_FORMAT == TARGET_FLOAT_FORMAT */
 
-/* In this configuration, double and long double are the same. */
+/* In this configuration, double and long double are the same.  */
 #ifndef REAL_VALUE_TO_TARGET_LONG_DOUBLE
 #define REAL_VALUE_TO_TARGET_LONG_DOUBLE(a, b) REAL_VALUE_TO_TARGET_DOUBLE (a, b)
 #endif
@@ -356,7 +356,7 @@ do {									\
 #endif
 
 /* Convert a floating-point value to unsigned integer, rounding
-   toward zero. */
+   toward zero.  */
 #ifndef REAL_VALUE_UNSIGNED_FIX
 #define REAL_VALUE_UNSIGNED_FIX(x) ((unsigned int) (x))
 #endif
@@ -370,7 +370,7 @@ extern double ldexp PARAMS ((double, int));
 /* Convert the string X to a floating-point value.  */
 #ifndef REAL_VALUE_ATOF
 #if 1
-/* Use real.c to convert decimal numbers to binary, ... */
+/* Use real.c to convert decimal numbers to binary, ...  */
 #define REAL_VALUE_ATOF(x, s) ereal_atof (x, s)
 /* Could use ereal_atof here for hexadecimal floats too, but real_hex_to_f
    is OK and it uses faster native fp arithmetic.  */
@@ -416,22 +416,22 @@ extern REAL_VALUE_TYPE real_value_truncate PARAMS ((enum machine_mode,
   ? (float) (x) : (x))
 #endif
 
-/* Determine whether a floating-point value X is infinite. */
+/* Determine whether a floating-point value X is infinite.  */
 #ifndef REAL_VALUE_ISINF
 #define REAL_VALUE_ISINF(x) (target_isinf (x))
 #endif
 
-/* Determine whether a floating-point value X is a NaN. */
+/* Determine whether a floating-point value X is a NaN.  */
 #ifndef REAL_VALUE_ISNAN
 #define REAL_VALUE_ISNAN(x) (target_isnan (x))
 #endif
 
-/* Determine whether a floating-point value X is negative. */
+/* Determine whether a floating-point value X is negative.  */
 #ifndef REAL_VALUE_NEGATIVE
 #define REAL_VALUE_NEGATIVE(x) (target_negative (x))
 #endif
 
-/* Determine whether a floating-point value X is minus 0. */
+/* Determine whether a floating-point value X is minus 0.  */
 #ifndef REAL_VALUE_MINUS_ZERO
 #define REAL_VALUE_MINUS_ZERO(x) ((x) == 0 && REAL_VALUE_NEGATIVE (x))
 #endif

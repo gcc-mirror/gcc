@@ -123,7 +123,7 @@ extern void ggc_mark_rtvec_children	PARAMS ((struct rtvec_def *));
 
 /* A GC implementation must provide these functions.  */
 
-/* Initialize the garbage collector.   */
+/* Initialize the garbage collector.  */
 extern void init_ggc		PARAMS ((void));
 extern void init_stringpool	PARAMS ((void));
 

@@ -277,7 +277,7 @@ extern int skip_evaluation;
 extern int dollars_in_ident;
 
 /* Nonzero means allow type mismatches in conditional expressions;
-   just make their values `void'.   */
+   just make their values `void'.  */
 
 extern int flag_cond_mismatch;
 

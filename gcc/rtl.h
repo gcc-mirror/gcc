@@ -32,7 +32,7 @@ struct function;
 #undef PC /* Likewise.  */
 
 /* Value used by some passes to "recognize" noop moves as valid
- instructions. */
+ instructions.  */
 #define NOOP_MOVE_INSN_CODE	INT_MAX
 
 /* Register Transfer Language EXPRESSIONS CODES */
@@ -91,9 +91,9 @@ typedef struct
    the value of the corresponding attribute is unknown.  */
 typedef struct
 {
-  HOST_WIDE_INT alias;		/* Memory alias set. */
-  tree decl;			/* decl corresponding to MEM. */
-  rtx offset;			/* Offset from start of DECL, as CONST_INT. */
+  HOST_WIDE_INT alias;		/* Memory alias set.  */
+  tree decl;			/* decl corresponding to MEM.  */
+  rtx offset;			/* Offset from start of DECL, as CONST_INT.  */
   rtx size;			/* Size in bytes, as a CONST_INT.  */
   unsigned int align;		/* Alignment of MEM in bytes.  */
 } mem_attrs;
@@ -169,7 +169,7 @@ struct rtx_def
      from the target of a branch.  Valid from reorg until end of compilation;
      cleared before used.
      1 in an INSN if this insn is dead code.  Valid only during
-     dead-code elimination phase; cleared before use. */
+     dead-code elimination phase; cleared before use.  */
   unsigned int in_struct : 1;
   /* 1 if this rtx is used.  This is used for copying shared structure.
      See `unshare_all_rtl'.
@@ -415,10 +415,10 @@ extern void rtvec_check_failed_bounds PARAMS ((rtvec, int,
 #define SIBLING_CALL_P(INSN) ((INSN)->jump)
 
 /* 1 if insn is a branch that should not unconditionally execute its
-   delay slots, i.e., it is an annulled branch.   */
+   delay slots, i.e., it is an annulled branch.  */
 #define INSN_ANNULLED_BRANCH_P(INSN) ((INSN)->unchanging)
 
-/* 1 if insn is a dead code.  Valid only for dead-code elimination phase. */
+/* 1 if insn is a dead code.  Valid only for dead-code elimination phase.  */
 #define INSN_DEAD_CODE_P(INSN) ((INSN)->in_struct)
 
 /* 1 if insn is in a delay slot and is from the target of the branch.  If
@@ -698,7 +698,7 @@ enum insn_note
 
   /* Generated whenever a duplicate line number note is output.  For example,
      one is output after the end of an inline function, in order to prevent
-     the line containing the inline call from being counted twice in gcov. */
+     the line containing the inline call from being counted twice in gcov.  */
   NOTE_INSN_REPEATED_LINE_NUMBER,
 
   /* Start/end of a live range region, where pseudos allocated on the stack
@@ -709,7 +709,7 @@ enum insn_note
   /* Record which registers are currently live.  Uses NOTE_LIVE_INFO.  */
   NOTE_INSN_LIVE,
 
-  /* Record the struct for the following basic block.  Uses NOTE_BASIC_BLOCK. */
+  /* Record the struct for the following basic block.  Uses NOTE_BASIC_BLOCK.  */
   NOTE_INSN_BASIC_BLOCK,
 
   /* Record the expected value of a register at a location.  Uses
@@ -1090,10 +1090,10 @@ extern unsigned int subreg_regno 	PARAMS ((rtx));
 /* For RANGE_{START,END} notes, a unique # to identify this range.  */
 #define RANGE_INFO_UNIQUE(INSN) XCINT (INSN, 5, RANGE_INFO)
 
-/* For RANGE_{START,END} notes, the basic block # the range starts with. */
+/* For RANGE_{START,END} notes, the basic block # the range starts with.  */
 #define RANGE_INFO_BB_START(INSN) XCINT (INSN, 6, RANGE_INFO)
 
-/* For RANGE_{START,END} notes, the basic block # the range ends with. */
+/* For RANGE_{START,END} notes, the basic block # the range ends with.  */
 #define RANGE_INFO_BB_END(INSN) XCINT (INSN, 7, RANGE_INFO)
 
 /* For RANGE_{START,END} notes, the loop depth the range is in.  */
@@ -1129,7 +1129,7 @@ extern unsigned int subreg_regno 	PARAMS ((rtx));
 #define RANGE_REG_DEATHS(INSN,N) XINT (XCVECEXP (INSN, 2, N, RANGE_INFO), 4)
 
 /* Whether the original value is needed to be copied into the range register at
-   the start of the range. */
+   the start of the range.  */
 #define RANGE_REG_COPY_FLAGS(INSN,N) XINT (XCVECEXP (INSN, 2, N, RANGE_INFO), 5)
 
 /* # of insns the register copy is live over.  */
@@ -1530,7 +1530,7 @@ extern rtx const_tiny_rtx[3][(int) MAX_MACHINE_MODE];
    hard frame pointer and the automatic variables are separated by an amount
    that cannot be determined until after register allocation.  We can assume
    that in this case ELIMINABLE_REGS will be defined, one action of which
-   will be to eliminate FRAME_POINTER_REGNUM into HARD_FRAME_POINTER_REGNUM. */
+   will be to eliminate FRAME_POINTER_REGNUM into HARD_FRAME_POINTER_REGNUM.  */
 #ifndef HARD_FRAME_POINTER_REGNUM
 #define HARD_FRAME_POINTER_REGNUM FRAME_POINTER_REGNUM
 #endif
@@ -1771,7 +1771,7 @@ extern void never_reached_warning	PARAMS ((rtx));
 extern void purge_line_number_notes	PARAMS ((rtx));
 extern void copy_loop_headers		PARAMS ((rtx));
 
-/* In emit-rtl.c. */
+/* In emit-rtl.c.  */
 extern int max_reg_num				PARAMS ((void));
 extern int max_label_num			PARAMS ((void));
 extern int get_first_label_num			PARAMS ((void));
@@ -1824,7 +1824,7 @@ extern void dump_combine_stats		PARAMS ((FILE *));
 extern void dump_combine_total_stats	PARAMS ((FILE *));
 #endif
 
-/* In sched.c. */
+/* In sched.c.  */
 #ifdef BUFSIZ
 extern void schedule_insns		PARAMS ((FILE *));
 extern void schedule_ebbs		PARAMS ((FILE *));

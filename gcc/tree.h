@@ -116,7 +116,7 @@ extern tree built_in_decls[(int) END_BUILTINS];
    so all nodes have these fields.
 
    See the accessor macros, defined below, for documentation of the
-   fields.   */
+   fields.  */
 
 struct tree_common
 {

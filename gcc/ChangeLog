@@ -1,3 +1,18 @@
+2001-10-11  Kazu Hirata  <kazu@hxi.com>
+
+	* basic-block.h: Fix formatting.
+	* bitmap.h: Likewise.
+	* cpplib.h: Likewise.
+	* c-tree.h: Likewise.
+	* diagnostic.h: Likewise.
+	* flags.h: Likewise.
+	* ggc.h: Likewise.
+	* longlong.h: Likewise.
+	* real.h: Likewise.
+	* reload.h: Likewise.
+	* rtl.h: Likewise.
+	* tree.h: Likewise.
+
 2001-10-10  Richard Henderson  <rth@redhat.com>
 
 	* c-parse.in (asm_operand): Allow named operands.

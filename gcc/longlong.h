@@ -585,7 +585,7 @@ UDItype __umulsidi3 (USItype, USItype);
 	     "1" ((USItype) (al)),					\
 	     "g" ((USItype) (bl)))
 
-/* The '020, '030, '040 and CPU32 have 32x32->64 and 64/32->32q-32r. */
+/* The '020, '030, '040 and CPU32 have 32x32->64 and 64/32->32q-32r.  */
 #if defined (__mc68020__) || defined(mc68020) \
 	|| defined(__mc68030__) || defined(mc68030) \
 	|| defined(__mc68040__) || defined(mc68040) \
@@ -654,7 +654,7 @@ UDItype __umulsidi3 (USItype, USItype);
 #endif /* not mcf5200 */
 #endif /* not mc68020 */
 
-/* The '020, '030, '040 and '060 have bitfield insns. */
+/* The '020, '030, '040 and '060 have bitfield insns.  */
 #if defined (__mc68020__) || defined(mc68020) \
 	|| defined(__mc68030__) || defined(mc68030) \
 	|| defined(__mc68040__) || defined(mc68040) \
@@ -1184,7 +1184,7 @@ UDItype __umulsidi3 (USItype, USItype);
 	   : "r" ((USItype) (__d)),					\
 	     "1" ((USItype) (__n1)),					\
 	     "0" ((USItype) (__n0)) : "g1" __AND_CLOBBER_CC)
-#define UDIV_TIME (3+7*32)	/* 7 instructions/iteration. 32 iterations. */
+#define UDIV_TIME (3+7*32)	/* 7 instructions/iteration. 32 iterations.  */
 #endif /* __sparclite__ */
 #endif /* __sparc_v8__ */
 #endif /* sparc32 */
@@ -1377,7 +1377,7 @@ UDItype __umulsidi3 (USItype, USItype);
     __x1 += __ll_highpart (__x0);/* this can't give carry */		\
     __x1 += __x2;		/* but this indeed can */		\
     if (__x1 < __x2)		/* did we get it? */			\
-      __x3 += __ll_B;		/* yes, add it in the proper pos. */	\
+      __x3 += __ll_B;		/* yes, add it in the proper pos.  */	\
 									\
     (w1) = __x3 + __ll_highpart (__x1);					\
     (w0) = __ll_lowpart (__x1) * __ll_B + __ll_lowpart (__x0);		\
