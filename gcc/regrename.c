@@ -1,5 +1,5 @@
 /* Register renaming for the GNU compiler.
-   Copyright (C) 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2002, 2003, 2004  Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -1339,15 +1339,19 @@ find_oldest_value_reg (enum reg_class class, rtx reg, struct value_data *vd)
     {
       enum machine_mode oldmode = vd->e[i].mode;
       rtx new;
+      unsigned int last;
 
-    if (TEST_HARD_REG_BIT (reg_class_contents[class], i)
-	&& (new = maybe_mode_change (oldmode, vd->e[regno].mode, mode, i,
-				     regno)))
-      {
-	ORIGINAL_REGNO (new) = ORIGINAL_REGNO (reg);
-        REG_ATTRS (new) = REG_ATTRS (reg);
-	return new;
-      }
+      for (last = i; last < i + HARD_REGNO_NREGS (i, mode); last++)
+	if (!TEST_HARD_REG_BIT (reg_class_contents[class], last))
+	  return NULL_RTX;
+
+      if (new = maybe_mode_change (oldmode, vd->e[regno].mode, mode, i,
+				   regno))
+	{
+	  ORIGINAL_REGNO (new) = ORIGINAL_REGNO (reg);
+	  REG_ATTRS (new) = REG_ATTRS (reg);
+	  return new;
+	}
     }
 
   return NULL_RTX;
