@@ -2677,10 +2677,9 @@ build_array_from_name (type, type_wfl, name, ret_name)
     {
       name = get_identifier (&more_dims [string]);
 
-      /* If type already is a reference on an array, get the base type */
-      if ((TREE_CODE (type) == POINTER_TYPE) && 
-	  TYPE_ARRAY_P (TREE_TYPE (type)))
-	type = TREE_TYPE (type);
+      /* If we have a pointer, use its type */
+      if (TREE_CODE (type) == POINTER_TYPE)
+        type = TREE_TYPE (type);
 
       /* Building the first dimension of a primitive type uses this
          function */
@@ -6103,14 +6102,14 @@ resolve_field_access (qual_wfl, field_decl, field_type)
     }
   /* We might have been trying to resolve field.method(). In which
      case, the resolution is over and decl is the answer */
-  else if (DECL_P (decl) && IDENTIFIER_LOCAL_VALUE (DECL_NAME (decl)) == decl)
+  else if (JDECL_P (decl) && IDENTIFIER_LOCAL_VALUE (DECL_NAME (decl)) == decl)
     field_ref = decl;
-  else if (DECL_P (decl))
+  else if (JDECL_P (decl))
     {
       int static_final_found = 0;
       if (!type_found)
 	type_found = DECL_CONTEXT (decl);
-      is_static = DECL_P (decl) && FIELD_STATIC (decl);
+      is_static = JDECL_P (decl) && FIELD_STATIC (decl);
       if (FIELD_FINAL (decl) 
 	  && JPRIMITIVE_TYPE_P (TREE_TYPE (decl))
 	  && DECL_LANG_SPECIFIC (decl)
@@ -6175,7 +6174,7 @@ resolve_qualified_expression_name (wfl, found_decl, where_found, type_found)
 	case NEW_CLASS_EXPR:
 	  /* If the access to the function call is a non static field,
 	     build the code to access it. */
-	  if (DECL_P (decl) && !FIELD_STATIC (decl))
+	  if (JDECL_P (decl) && !FIELD_STATIC (decl))
 	    {
 	      decl = maybe_access_field (decl, *where_found, 
 					 DECL_CONTEXT (decl));
@@ -6236,7 +6235,7 @@ resolve_qualified_expression_name (wfl, found_decl, where_found, type_found)
 	case ARRAY_REF:
 	  /* If the access to the function call is a non static field,
 	     build the code to access it. */
-	  if (DECL_P (decl) && !FIELD_STATIC (decl))
+	  if (JDECL_P (decl) && !FIELD_STATIC (decl))
 	    {
 	      decl = maybe_access_field (decl, *where_found, type);
 	      if (decl == error_mark_node)
@@ -7880,7 +7879,7 @@ java_complete_lhs (node)
 	    patch_assignment (node, wfl_op1, wfl_op2);
 
 	  /* Now, we still mark the lhs as initialized */
-	  if (DECL_P (TREE_OPERAND (node, 0)))
+	  if (JDECL_P (TREE_OPERAND (node, 0)))
 	    INITIALIZED_P (TREE_OPERAND (node, 0)) = 1;
 
 	  return error_mark_node;
@@ -8320,7 +8319,7 @@ static int
 check_final_assignment (lvalue, wfl)
      tree lvalue, wfl;
 {
-  if (DECL_P (lvalue) && FIELD_FINAL (lvalue) &&
+  if (JDECL_P (lvalue) && FIELD_FINAL (lvalue) &&
       DECL_NAME (current_function_decl) != clinit_identifier_node)
     {
       parse_error_context 
@@ -8377,7 +8376,7 @@ patch_assignment (node, wfl_op1, wfl_op2)
   EXPR_WFL_LINECOL (wfl_operator) = EXPR_WFL_LINECOL (node);
 
   /* Lhs can be a named variable */
-  if (DECL_P (lvalue))
+  if (JDECL_P (lvalue))
     {
       INITIALIZED_P (lvalue) = 1;
       lhs_type = TREE_TYPE (lvalue);
@@ -9488,9 +9487,9 @@ patch_unaryop (node, wfl_op)
     case PREINCREMENT_EXPR:
       /* 15.14.2 Prefix Decrement Operator -- */
     case PREDECREMENT_EXPR:
-      if (!DECL_P (op) && !((TREE_CODE (op) == INDIRECT_REF 
-			     || TREE_CODE (op) == COMPONENT_REF) 
-			    && JPRIMITIVE_TYPE_P (TREE_TYPE (op))))
+      if (!JDECL_P (op) && !((TREE_CODE (op) == INDIRECT_REF 
+			      || TREE_CODE (op) == COMPONENT_REF) 
+			     && JPRIMITIVE_TYPE_P (TREE_TYPE (op))))
 	{
 	  tree lvalue;
 	  /* Before screaming, check that we're not in fact trying to
@@ -10291,7 +10290,7 @@ build_new_loop (loop_body)
        COMPOUND_EXPR		(loop main body)
          EXIT_EXPR		(this order is for while/for loops.
          LABELED_BLOCK_EXPR      the order is reversed for do loops)
-           LABEL_DECL           (continue occurding here branche at the 
+           LABEL_DECL           (a continue occuring here branches at the 
            BODY			 end of this labeled block)
        INCREMENT		(if any)
 
@@ -10482,6 +10481,16 @@ patch_bc_statement (node)
   /* Find the statement we're targeting. */
   target_stmt = LABELED_BLOCK_BODY (bc_label);
 
+  /* Target loop is slightly burrowed in the case of a for loop, it
+     appears at the first sight to be a block. */
+  if (TREE_CODE (target_stmt) == BLOCK)
+    {
+      tree sub = BLOCK_SUBBLOCKS (target_stmt);
+      if (sub && TREE_CODE (sub) == COMPOUND_EXPR && TREE_OPERAND (sub, 1)
+	  && TREE_CODE (TREE_OPERAND (sub, 1)) == LOOP_EXPR)
+	target_stmt = TREE_OPERAND (sub, 1);
+    }
+
   /* 14.13 The break Statement */
   if (IS_BREAK_STMT_P (node))
     {
@@ -10490,7 +10499,7 @@ patch_bc_statement (node)
          while/do/for/switch */
       if (is_unlabeled &&
 	  !(TREE_CODE (target_stmt) == LOOP_EXPR        /* do/while/for */
-	    || TREE_CODE (target_stmt) == SWITCH_EXPR)) /* switch FIXME */
+	    || TREE_CODE (target_stmt) == SWITCH_EXPR)) /* switch */
 	{
 	  parse_error_context (wfl_operator, 
 			       "`break' must be in loop or switch");
@@ -10501,18 +10510,21 @@ patch_bc_statement (node)
 	EXIT_BLOCK_LABELED_BLOCK (node) = bc_label;
     }
   /* 14.14 The continue Statement */
-  /* The continue statement must always target a loop */
+  /* The continue statement must always target a loop, unnamed or not. */
   else 
-    {
+    { 
       if (TREE_CODE (target_stmt) != LOOP_EXPR) /* do/while/for */
 	{
 	  parse_error_context (wfl_operator, "`continue' must be in loop");
 	  return error_mark_node;
 	}
       /* Everything looks good. We can fix the `continue' jump to go
-         at the place in the loop were the continue is. The continue
-	 is the current labeled block, by construction. */
-      EXIT_BLOCK_LABELED_BLOCK (node) = bc_label = ctxp->current_labeled_block;
+	 at the place in the loop were the continue is.  For unlabeled
+	 continue, the continuation point is the current labeled
+	 block, by construction. */
+      if (is_unlabeled)
+	EXIT_BLOCK_LABELED_BLOCK (node) = 
+	  bc_label = ctxp->current_labeled_block;
     }
 
   CAN_COMPLETE_NORMALLY (bc_label) = 1;

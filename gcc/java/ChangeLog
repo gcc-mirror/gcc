@@ -1,3 +1,12 @@
+Mon Feb  8 11:50:50 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.h: DECL_P renamed JDECL_P.
+        * parse.y: DECL_P replaced by JDECL_P.
+        (build_array_from_name): Always use pointer's type.
+        (patch_bc_statement): Extra code to search continue target in a
+        for loop. Fixed comments. Continue target is current loop when
+        unlabeled.
+
 1999-02-05  Andrew Haley  <aph@cygnus.com>
 
 	* class.c (make_class_data): The superclass of an interface should
