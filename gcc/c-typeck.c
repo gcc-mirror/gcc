@@ -3356,6 +3356,14 @@ readonly_warning (arg, string)
   char buf[80];
   strcpy (buf, string);
 
+  /* Forbid assignments to iterators.  */
+  if (TREE_CODE (TREE_OPERAND (arg, 0)) == VAR_DECL
+      && ITERATOR_P (TREE_OPERAND (arg, 0)))
+    {
+      strcat (buf, " of iterator `%s'");
+      pedwarn (buf, IDENTIFIER_POINTER (DECL_NAME (TREE_OPERAND (arg, 1))));
+    }
+
   if (TREE_CODE (arg) == COMPONENT_REF)
     {
       if (TYPE_READONLY (TREE_TYPE (TREE_OPERAND (arg, 0))))
