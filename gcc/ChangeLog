@@ -1,3 +1,10 @@
+Sat Feb 13 23:29:42 1999  Richard Henderson  <rth@cygnus.com>
+
+	* loop.c (combine_givs_used_by_other): Delete.
+	(combine_givs_benefit_from): Delete.
+	(combine_givs): Deny combination of givs only used once.  Simplify
+	code with the death of combine_givs_benefit_from.
+
 Sun Feb 14 11:24:05 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
  	* loop.c (scan_loop): Call reg_in_basic_block_p before

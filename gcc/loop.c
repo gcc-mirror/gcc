@@ -6768,42 +6768,6 @@ cmp_combine_givs_stats (x, y)
   return d;
 }
 
-/* If one of these givs is a DEST_REG that was used once by the other giv,
-   this is actually a single use.  Return 0 if this is not the case,
-   -1 if g1 is the DEST_REG involved, and 1 if it was g2.  */
-
-static int
-combine_givs_used_by_other (g1, g2)
-     struct induction *g1, *g2;
-{
-  if (g1->giv_type == DEST_REG
-      && VARRAY_RTX (reg_single_usage, REGNO (g1->dest_reg)) != 0
-      && VARRAY_RTX (reg_single_usage, REGNO (g1->dest_reg)) != const0_rtx
-      && reg_mentioned_p (g1->dest_reg, PATTERN (g2->insn)))
-    return -1;
-
-  if (g2->giv_type == DEST_REG
-      && VARRAY_RTX (reg_single_usage, REGNO (g2->dest_reg)) != 0
-      && VARRAY_RTX (reg_single_usage, REGNO (g2->dest_reg)) != const0_rtx
-      && reg_mentioned_p (g2->dest_reg, PATTERN (g1->insn)))
-    return 1;
-
-  return 0;
-}
- 
-static int
-combine_givs_benefit_from (g1, g2)
-     struct induction *g1, *g2;
-{
-  int tmp = combine_givs_used_by_other (g1, g2);
-  if (tmp < 0)
-    return 0;
-  else if (tmp > 0)
-    return g2->benefit - g1->benefit;
-  else
-    return g2->benefit;
-}
-
 /* Check all pairs of givs for iv_class BL and see if any can be combined with
    any other.  If so, point SAME to the giv combined with and set NEW_REG to
    be an expression (in terms of the other giv's DEST_REG) equivalent to the
@@ -6813,6 +6777,9 @@ static void
 combine_givs (bl)
      struct iv_class *bl;
 {
+  /* Additional benefit to add for being combined multiple times.  */
+  const int extra_benefit = 3;
+
   struct induction *g1, *g2, **giv_array;
   int i, j, k, giv_count;
   struct combine_givs_stats *stats;
@@ -6840,13 +6807,27 @@ combine_givs (bl)
   for (i = 0; i < giv_count; i++)
     {
       int this_benefit;
+      rtx single_use;
 
       g1 = giv_array[i];
+      stats[i].giv_number = i;
+
+      /* If a DEST_REG GIV is used only once, do not allow it to combine
+	 with anything, for in doing so we will gain nothing that cannot
+	 be had by simply letting the GIV with which we would have combined
+	 to be reduced on its own.  The losage shows up in particular with 
+	 DEST_ADDR targets on hosts with reg+reg addressing, though it can
+	 be seen elsewhere as well.  */
+      if (g1->giv_type == DEST_REG
+	  && (single_use = VARRAY_RTX (reg_single_usage, REGNO (g1->dest_reg)))
+	  && single_use != const0_rtx)
+	continue;
 
       this_benefit = g1->benefit;
       /* Add an additional weight for zero addends.  */
       if (g1->no_const_addval)
 	this_benefit += 1;
+
       for (j = 0; j < giv_count; j++)
 	{
 	  rtx this_combine;
@@ -6856,12 +6837,9 @@ combine_givs (bl)
 	      && (this_combine = combine_givs_p (g1, g2)) != NULL_RTX)
 	    {
 	      can_combine[i*giv_count + j] = this_combine;
-	      this_benefit += combine_givs_benefit_from (g1, g2);
-	      /* Add an additional weight for being reused more times.  */
-	      this_benefit += 3;
+	      this_benefit += g2->benefit + extra_benefit;
 	    }
 	}
-      stats[i].giv_number = i;
       stats[i].total_benefit = this_benefit;
     }
 
@@ -6908,7 +6886,7 @@ restart:
 	      g1->combined_with++;
 	      g1->lifetime += g2->lifetime;
 
-	      g1_add_benefit += combine_givs_benefit_from (g1, g2);
+	      g1_add_benefit += g2->benefit;
 
 	      /* ??? The new final_[bg]iv_value code does a much better job
 		 of finding replaceable giv's, and hence this code may no
@@ -6922,11 +6900,7 @@ restart:
 		{
 		  int m = stats[l].giv_number;
 		  if (can_combine[m*giv_count + j])
-		    {
-		      /* Remove additional weight for being reused.  */
-		      stats[l].total_benefit -= 3 + 
-			combine_givs_benefit_from (giv_array[m], g2);
-		    }
+		    stats[l].total_benefit -= g2->benefit + extra_benefit;
 		}
 
 	      if (loop_dump_stream)
@@ -6944,11 +6918,7 @@ restart:
 	    {
 	      int m = stats[j].giv_number;
 	      if (can_combine[m*giv_count + j])
-		{
-		  /* Remove additional weight for being reused.  */
-		  stats[j].total_benefit -= 3 + 
-		    combine_givs_benefit_from (giv_array[m], g1);
-		}
+		stats[j].total_benefit -= g1->benefit + extra_benefit;
 	    }
 
 	  g1->benefit += g1_add_benefit;
