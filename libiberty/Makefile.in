@@ -111,7 +111,6 @@ FLAGS_TO_PASS = \
 	"INSTALL_PROGRAM=$(INSTALL_PROGRAM)" \
 	"LDFLAGS=$(LDFLAGS)" \
 	"LOADLIBES=$(LOADLIBES)" \
-	"PICFLAG=$(PICFLAG)" \
 	"RANLIB=$(RANLIB)" \
 	"SHELL=$(SHELL)"
 
@@ -132,7 +131,7 @@ INCDIR=$(srcdir)/$(MULTISRCTOP)../include
 
 COMPILE.c = $(CC) -c $(LIBCFLAGS) -I. -I$(INCDIR) $(HDEFINES)
 .c.o:
-	test -z "$(PICFLAG)" || \
+	test x"$(enable_shared)" != xyes || \
 	  $(COMPILE.c) $(PICFLAG) $< -o pic/$@
 	$(COMPILE.c) $<
 
@@ -268,7 +267,7 @@ $(RULE2): $(REQUIRED_OFILES) $(HOST_OFILES)
 	$(RANLIB) $(TARGETLIB)
 
 stamp-picdir:
-	if [ -n "$(PICFLAG)" ] && [ ! -d pic ]; then \
+	if [ x"$(enable_shared)" = xyes ] && [ ! -d pic ]; then \
 	  mkdir pic; \
 	else true; fi
 	touch stamp-picdir
