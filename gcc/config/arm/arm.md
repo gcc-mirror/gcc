@@ -5239,7 +5239,7 @@
 
 (define_insn "*ldmsi_postinc4"
   [(match_parallel 0 "load_multiple_operation"
-    [(set (match_operand:SI 1 "s_register_operand" "+r")
+    [(set (match_operand:SI 1 "s_register_operand" "=r")
 	  (plus:SI (match_operand:SI 2 "s_register_operand" "1")
 		   (const_int 16)))
      (set (match_operand:SI 3 "arm_hard_register_operand" "")
@@ -5258,7 +5258,7 @@
 
 (define_insn "*ldmsi_postinc3"
   [(match_parallel 0 "load_multiple_operation"
-    [(set (match_operand:SI 1 "s_register_operand" "+r")
+    [(set (match_operand:SI 1 "s_register_operand" "=r")
 	  (plus:SI (match_operand:SI 2 "s_register_operand" "1")
 		   (const_int 12)))
      (set (match_operand:SI 3 "arm_hard_register_operand" "")
@@ -5275,7 +5275,7 @@
 
 (define_insn "*ldmsi_postinc2"
   [(match_parallel 0 "load_multiple_operation"
-    [(set (match_operand:SI 1 "s_register_operand" "+r")
+    [(set (match_operand:SI 1 "s_register_operand" "=r")
 	  (plus:SI (match_operand:SI 2 "s_register_operand" "1")
 		   (const_int 8)))
      (set (match_operand:SI 3 "arm_hard_register_operand" "")
@@ -5361,7 +5361,7 @@
 
 (define_insn "*stmsi_postinc4"
   [(match_parallel 0 "store_multiple_operation"
-    [(set (match_operand:SI 1 "s_register_operand" "+r")
+    [(set (match_operand:SI 1 "s_register_operand" "=r")
 	  (plus:SI (match_operand:SI 2 "s_register_operand" "1")
 		   (const_int 16)))
      (set (mem:SI (match_dup 2))
@@ -5380,7 +5380,7 @@
 
 (define_insn "*stmsi_postinc3"
   [(match_parallel 0 "store_multiple_operation"
-    [(set (match_operand:SI 1 "s_register_operand" "+r")
+    [(set (match_operand:SI 1 "s_register_operand" "=r")
 	  (plus:SI (match_operand:SI 2 "s_register_operand" "1")
 		   (const_int 12)))
      (set (mem:SI (match_dup 2))
@@ -5397,7 +5397,7 @@
 
 (define_insn "*stmsi_postinc2"
   [(match_parallel 0 "store_multiple_operation"
-    [(set (match_operand:SI 1 "s_register_operand" "+r")
+    [(set (match_operand:SI 1 "s_register_operand" "=r")
 	  (plus:SI (match_operand:SI 2 "s_register_operand" "1")
 		   (const_int 8)))
      (set (mem:SI (match_dup 2))
