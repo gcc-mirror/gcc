@@ -8852,21 +8852,17 @@ unify (tparms, targs, parm, arg, strict)
 	    return 0;
 	  else if (targ)
 	    return 1;
-	}
 
-      /* Make sure that ARG is not a variable-sized array.  (Note that
-	 were talking about variable-sized arrays (like `int[n]'),
-	 rather than arrays of unknown size (like `int[]').)  We'll
-	 get very confused by such a type since the bound of the array
-	 will not be computable in an instantiation.  Besides, such
-	 types are not allowed in ISO C++, so we can do as we please
-	 here.  */
-      if (TREE_CODE (arg) == ARRAY_TYPE 
-	  && !uses_template_parms (arg)
-	  && TYPE_DOMAIN (arg)
-	  && (TREE_CODE (TYPE_MAX_VALUE (TYPE_DOMAIN (arg)))
-	      != INTEGER_CST))
-	return 1;
+	  /* Make sure that ARG is not a variable-sized array.  (Note
+	     that were talking about variable-sized arrays (like
+	     `int[n]'), rather than arrays of unknown size (like
+	     `int[]').)  We'll get very confused by such a type since
+	     the bound of the array will not be computable in an
+	     instantiation.  Besides, such types are not allowed in
+	     ISO C++, so we can do as we please here.  */
+	  if (variably_modified_type_p (arg))
+	    return 1;
+	}
 
       TREE_VEC_ELT (targs, idx) = arg;
       return 0;
