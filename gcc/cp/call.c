@@ -1095,7 +1095,6 @@ add_function_candidate (candidates, fn, arglist, flags)
   tree parmnode = parmlist;
   tree argnode = arglist;
   int viable = 1;
-  struct z_candidate *cand;
 
   /* The `this' and `in_chrg' arguments to constructors are not considered
      in overload resolution.  */
@@ -1183,7 +1182,6 @@ add_conv_candidate (candidates, fn, obj, arglist)
   tree parmnode = parmlist;
   tree argnode = arglist;
   int viable = 1;
-  struct z_candidate *cand;
   int flags = LOOKUP_NORMAL;
 
   for (i = 0; i < len; ++i)
@@ -1243,7 +1241,6 @@ build_builtin_candidate (candidates, fnname, type1, type2,
 {
   tree t, convs;
   int viable = 1, i;
-  struct z_candidate *cand;
   tree types[2];
 
   types[0] = type1;

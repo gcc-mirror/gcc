@@ -5684,7 +5684,7 @@ type_unification (tparms, targs, parms, args, targs_in,
 	return 1;
 
       explicit_mask = alloca (sizeof (int) * TREE_VEC_LENGTH (targs));
-      bzero (explicit_mask, sizeof(int) * TREE_VEC_LENGTH (targs));
+      bzero ((char *) explicit_mask, sizeof(int) * TREE_VEC_LENGTH (targs));
 
       for (i = 0; 
 	   i < TREE_VEC_LENGTH (arg_vec) 

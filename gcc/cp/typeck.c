@@ -6220,7 +6220,7 @@ build_x_modify_expr (lhs, modifycode, rhs)
 
 int
 language_lvalue_valid (exp)
-     tree exp;
+     tree exp ATTRIBUTE_UNUSED;
 {
   return 1;
 }
