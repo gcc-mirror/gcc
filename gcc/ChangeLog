@@ -1,5 +1,7 @@
 2002-09-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* m68hc11.md (addhi_sp): Fix uninitialized variable bug.
+
 	* c4x-c.c, c4x.c, darwin.c, i370-c.c, m32r.c: Include tm_p.h
 	instead of the *-protos.h file directly.
 	* t-c4x, t-i370, t-v850: Depend on $(TM_P_H).
