@@ -1,4 +1,4 @@
-// Build don't link
+// Build don't link:
 // From: Klaus-Georg Adams <Klaus-Georg.Adams@chemie.uni-karlsruhe.de> 
 // Reported against EGCS snaps 98/06/28.
 // Special g++ Options: -O -Wall  -fgcse -frerun-loop-opt
