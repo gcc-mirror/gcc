@@ -1,3 +1,7 @@
+2000-02-24  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* g++.old-deja/g++.other/sizeof5.C: New test.
+
 2000-02-23  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.old-deja/g++.pt/memtemp79.C: Fixed. Remove XFAIL.
