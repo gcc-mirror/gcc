@@ -2659,14 +2659,18 @@ information.
 @cindex common blocks
 @cindex equivalence areas
 @cindex missing debug features
-Support for this option in Fortran programs is incomplete.
+Support for this option in Fortran programs was incomplete up till
+version 0.5.26 of @code{g77}.
 In particular, names of variables and arrays in common blocks
-or that are storage-associated via @code{EQUIVALENCE} are
+or that are storage-associated via @code{EQUIVALENCE} were
 unavailable to the debugger.
 
 However, version 0.5.19 of @code{g77} does provide this information
 in a rudimentary way, as controlled by the
 @samp{-fdebug-kludge} option.
+
+Because version 0.5.26 of @code{g77} enables full debug information
+of COMMON BLOCK and EQUIVALENCE items, this option has been disabled.
 
 @xref{Code Gen Options,,Options for Code Generation Conventions},
 for more information.
@@ -3215,6 +3219,10 @@ language mode, so temporarily switching to the C language mode to display the
 information is suggested.
 Use @samp{set language c} and @samp{set language fortran} to accomplish this.
 
+As of version 0.5.26 of @code{g77} this option has been disabled, as the
+compiler is now able to emit correct and complete debug information
+for COMMON BLOCK and EQUIVALENCE items.
+
 For example:
 
 @smallexample
@@ -3261,7 +3269,9 @@ which might make some programs noticeably larger.
 (and its negative form).
 Current plans call for this to happen when published versions of @code{g77}
 and @code{gdb} exist that provide proper access to debugging information on
-@code{COMMON} and @code{EQUIVALENCE} members.
+@code{COMMON} and @code{EQUIVALENCE} members.  This is believed to have
+happened as of version 0.5.26 of @code{g77}, so that this option has been
+disabled starting with this release.
 
 @cindex -femulate-complex option
 @cindex options, -femulate-complex
@@ -8842,6 +8852,10 @@ This kludge will be removed in a future version of @code{g77} that,
 in conjunction with a contemporary version of @code{gdb},
 properly supports Fortran-language debugging, including access
 to members of @code{COMMON} areas.)
+
+Version 0.5.26 of @code{g77} is believed to provide correct and
+complete debug information for COMMON BLOCK and EQUIVALENCE items -
+hence the @samp{-fdebug-kludge} option has been disabled.
 
 @xref{Code Gen Options,,Options for Code Generation Conventions},
 for information on the @samp{-fdebug-kludge} option.

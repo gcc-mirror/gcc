@@ -307,9 +307,9 @@ ffe_decode_option (argc, argv)
       else if (strcmp (&opt[2], "no-zeros") == 0)
 	ffe_set_is_zeros (FALSE);
       else if (strcmp (&opt[2], "debug-kludge") == 0)
-	ffe_set_is_debug_kludge (TRUE);
+	warning ("%s disabled, use normal debugging flags", opt);
       else if (strcmp (&opt[2], "no-debug-kludge") == 0)
-	ffe_set_is_debug_kludge (FALSE);
+	warning ("%s disabled, use normal debugging flags", opt);
       else if (strcmp (&opt[2], "onetrip") == 0)
 	ffe_set_is_onetrip (TRUE);
       else if (strcmp (&opt[2], "no-onetrip") == 0)
