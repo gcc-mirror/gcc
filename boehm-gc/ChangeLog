@@ -1,4 +1,3 @@
-<<<<<<< ChangeLog
 2000-04-26  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcconfig.h (SPARC): Define ALIGNMENT to 8 for 64bit SPARC.
