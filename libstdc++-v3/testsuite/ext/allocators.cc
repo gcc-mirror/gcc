@@ -22,25 +22,23 @@
 
 #include <cstdlib>
 #include <memory>
-#include <ext/pool_allocator.h>
+//#include <ext/pool_allocator.h>
 #include <ext/debug_allocator.h>
 #include <ext/malloc_allocator.h>
 #include <testsuite_hooks.h>
 
-using __gnu_cxx::__malloc_alloc;
-using __gnu_cxx::__debug_alloc;
-using __gnu_cxx::__pool_alloc;
+using __gnu_cxx::malloc_allocator;
+using __gnu_cxx::debug_allocator;
 
-template class __malloc_alloc<3>;
-template class __debug_alloc<__malloc_alloc<3> >;
+
+template class malloc_allocator<int>;
+template class debug_allocator<malloc_allocator<int> >;
+
+#if 0
+using __gnu_cxx::__pool_alloc;
 template class __pool_alloc<true, 3>;
 template class __pool_alloc<false, 3>;
-
-struct big
-{
-  long f[15];
-};
-
+#endif
 
 bool         new_called;
 bool         delete_called;
@@ -69,31 +67,39 @@ void check_allocator()
   delete_called = false;
   requested = 0;
 
-  std::__allocator<big, Alloc>   a;
-  big *p = a.allocate(10);
+  Alloc  a;
+  typename Alloc::pointer p = a.allocate(10);
   if (uses_global_new_and_delete)  
     VERIFY( requested >= (10 * 15 * sizeof(long)) );
 
-  // Touch the far end of supposedly-allocated memory to check that we got
-  // all of it.  Why "3"?  Because it's my favorite integer between e and pi.
-  p[9].f[14] = 3;
   VERIFY( new_called == uses_global_new_and_delete );
-  a.deallocate(p,10);
+  a.deallocate(p, 10);
   VERIFY( delete_called == uses_global_new_and_delete );
 }
 
 // These just help tracking down error messages.
-void test01() { check_allocator<__malloc_alloc<3>, false>(); }
-void test02() { check_allocator<__debug_alloc<__malloc_alloc<3> >, false>(); }
-void test03() { check_allocator<__pool_alloc<true, 3>, true>(); }
-void test04() { check_allocator<__pool_alloc<false, 3>, true>(); }
+void test01() 
+{ check_allocator<malloc_allocator<int>, false>(); }
+
+void test02() 
+{ check_allocator<debug_allocator<malloc_allocator<int> >, false>(); }
+
+#if 0
+void test03() 
+{ check_allocator<__pool_alloc<true, 3>, true>(); }
+
+void test04() 
+{ check_allocator<__pool_alloc<false, 3>, true>(); }
+#endif
 
 int main()
 {
   test01();
   test02();
+#if 0
   test03();
   test04();
+#endif
   return 0;
 }
 

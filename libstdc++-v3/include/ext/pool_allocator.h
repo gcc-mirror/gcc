@@ -44,15 +44,14 @@
  *  This file is a GNU extension to the Standard C++ Library.
  *  You should only include this header if you are using GCC 3 or later.
  */
-
 #ifndef _POOL_ALLOCATOR_H
 #define _POOL_ALLOCATOR_H 1
 
+#include <new>
 #include <bits/functexcept.h>
 #include <bits/stl_threads.h>
 #include <bits/atomicity.h>
 #include <bits/allocator_traits.h>
-#include <ext/new_allocator.h>
 
 namespace __gnu_cxx
 {
@@ -65,9 +64,9 @@ namespace __gnu_cxx
    *  when in default high-speed pool mode).
    *
    *  Important implementation properties:
-   *  0. If globally mandated, then allocate objects from __new_alloc
+   *  0. If globally mandated, then allocate objects from new
    *  1. If the clients request an object of size > _S_max_bytes, the resulting
-   *     object will be obtained directly from __new_alloc
+   *     object will be obtained directly from new
    *  2. In all other cases, we allocate an object of size exactly
    *     _S_round_up(requested_size).  Thus the client has enough size
    *     information that we can return the object to the proper free list
@@ -201,7 +200,7 @@ namespace __gnu_cxx
               ((_Obj*)(void*)_S_start_free)->_M_free_list_link = *__free_list;
               *__free_list = (_Obj*)(void*)_S_start_free;
             }
-          _S_start_free = (char*) __new_alloc::allocate(__bytes_to_get);
+          _S_start_free = new char[__bytes_to_get];
           if (_S_start_free == 0)
             {
               size_t __i;
@@ -226,7 +225,7 @@ namespace __gnu_cxx
                     }
                 }
               _S_end_free = 0;        // In case of exception.
-              _S_start_free = (char*)__new_alloc::allocate(__bytes_to_get);
+              _S_start_free = new char[__bytes_to_get];
               // This should either throw an exception or remedy the situation.
               // Thus we assume it succeeded.
             }
@@ -291,7 +290,7 @@ namespace __gnu_cxx
 	}
 
       if ((__n > (size_t) _S_max_bytes) || (_S_force_new > 0))
-	__ret = __new_alloc::allocate(__n);
+	__ret = new char[__n];
       else
 	{
 	  _Obj* volatile* __free_list = _S_free_list + _S_freelist_index(__n);
@@ -318,7 +317,7 @@ namespace __gnu_cxx
     __pool_alloc<__threads, __inst>::deallocate(void* __p, size_t __n)
     {
       if ((__n > (size_t) _S_max_bytes) || (_S_force_new > 0))
-	__new_alloc::deallocate(__p, __n);
+	delete [] __p;
       else
 	{
 	  _Obj* volatile* __free_list = _S_free_list + _S_freelist_index(__n);

@@ -48,92 +48,58 @@
 #ifndef _DEBUG_ALLOCATOR_H
 #define _DEBUG_ALLOCATOR_H 1
 
-#include <bits/allocator_traits.h>
+#include <memory>
 
 namespace __gnu_cxx
 {
   /**
-   *  @if maint
-   *  An adaptor for an underlying allocator (_Alloc) to check the size
-   *  arguments for debugging.
+   *  @brief  A meta-allocator with debugging bits, as per [20.4].
    *
-   *  "There is some evidence that this can confuse Purify." - SGI comment
+   *  This is precisely the allocator defined in the C++ Standard. 
+   *    - all allocation calls operator new
+   *    - all deallocation calls operator delete
    *
-   *  This adaptor is "SGI" style.  The _Alloc parameter must also be "SGI".
-   *  @endif
    *  (See @link Allocators allocators info @endlink for more.)
    */
   template<typename _Alloc>
-    class __debug_alloc
+    class debug_allocator
     {
+    public:
+      typedef typename _Alloc::size_type       	size_type;
+      typedef typename _Alloc::difference_type	difference_type;
+      typedef typename _Alloc::pointer       	pointer;
+      typedef typename _Alloc::const_pointer    const_pointer;
+      typedef typename _Alloc::reference       	reference;
+      typedef typename _Alloc::const_reference  const_reference;
+      typedef typename _Alloc::value_type       value_type;
+
     private:
       // Size of space used to store size.  Note that this must be
       // large enough to preserve alignment.
-      enum {_S_extra = 8};
+      const size_t 		_M_extra;
+      
+      _Alloc			_M_allocator;
 
     public:
-      static void*
-      allocate(size_t __n)
+      debug_allocator() : _M_extra(8) { }
+
+      pointer
+      allocate(size_type __n, std::allocator<void>::const_pointer = 0)
       {
-        char* __result = (char*)_Alloc::allocate(__n + (int) _S_extra);
-        *(size_t*)__result = __n;
-        return __result + (int) _S_extra;
+        pointer __result = _M_allocator.allocate(__n + _M_extra);
+        *__result = __n;
+        return __result + _M_extra;
       }
 
-      static void
-      deallocate(void* __p, size_t __n)
+      void
+      deallocate(pointer __p, size_type __n)
       {
-        char* __real_p = (char*)__p - (int) _S_extra;
-        if (*(size_t*)__real_p != __n)
+        pointer __real_p = __p - _M_extra;
+        if (*__real_p != __n)
           abort();
-        _Alloc::deallocate(__real_p, __n + (int) _S_extra);
+        _M_allocator.deallocate(__real_p, __n + _M_extra);
       }
     };
-
-  //@{
-  /** Comparison operators for all of the predifined SGI-style allocators.
-   *  This ensures that __allocator<malloc_alloc> (for example) will work
-   *  correctly.  As required, all allocators compare equal.
-   */
-  template<typename _Alloc>
-    inline bool
-    operator==(const __debug_alloc<_Alloc>&, const __debug_alloc<_Alloc>&)
-    { return true; }
-
-  template<typename _Alloc>
-    inline bool
-    operator!=(const __debug_alloc<_Alloc>&, const __debug_alloc<_Alloc>&)
-    { return false; }
-  //@}
 } // namespace __gnu_cxx
-
-namespace std
-{
-  //@{
-  /// Versions for the predefined "SGI" style allocators.
-  template<typename _Tp, typename _Alloc>
-    struct _Alloc_traits<_Tp, __gnu_cxx::__debug_alloc<_Alloc> >
-    {
-      static const bool _S_instanceless = true;
-      typedef __gnu_cxx::__debug_alloc<_Alloc>		base_alloc_type;
-      typedef __simple_alloc<_Tp, base_alloc_type>	_Alloc_type;
-      typedef __allocator<_Tp, base_alloc_type>		allocator_type;
-    };
-  //@}
-
-  //@{
-  /// Versions for the __allocator adaptor used with the predefined
-  /// "SGI" style allocators.
-  template<typename _Tp, typename _Tp1, typename _Alloc>
-    struct _Alloc_traits<_Tp, __allocator<_Tp1,
-					  __gnu_cxx::__debug_alloc<_Alloc> > >
-    {
-      static const bool _S_instanceless = true;
-      typedef __gnu_cxx::__debug_alloc<_Alloc>		base_alloc_type;
-      typedef __simple_alloc<_Tp, base_alloc_type>	_Alloc_type;
-      typedef __allocator<_Tp, base_alloc_type>		allocator_type;
-    };
-  //@}
-} // namespace std
 
 #endif

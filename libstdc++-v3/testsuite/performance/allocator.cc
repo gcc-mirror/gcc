@@ -61,7 +61,7 @@
 #include <testsuite_performance.h>
 
 using namespace std;
-using __gnu_cxx::__malloc_alloc;
+using __gnu_cxx::malloc_allocator;
 using __gnu_cxx::__mt_alloc;
 
 /*
@@ -155,7 +155,7 @@ test_ints_malloc_alloc(int iterations)
   tstart();
   for(int i = 0; i < iterations; i++)
   {
-    vector<int, __malloc_alloc<0> > v1;
+    vector<int, malloc_allocator<int> > v1;
 
     for(int j = 0; j < insert_values; j++)
     {
@@ -173,7 +173,7 @@ test_ints_mt_alloc(int iterations)
   tstart();
   for(int i = 0; i < iterations; i++)
   {
-    vector<int, __mt_alloc<0> > v1;
+    vector<int, __mt_alloc<int> > v1;
 
     for(int j = 0; j < insert_values; j++)
     {

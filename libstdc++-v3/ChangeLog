@@ -1,3 +1,18 @@
+2003-12-23  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/ext/new_allocator.h (new_allocator): Proper allocator class.
+	(__new_alloc): Delete.
+	* include/ext/malloc_allocator.h (malloc_allocator): Same.
+	(__malloc_alloc): Delete.
+ 	* include/ext/mt_allocator.h: Same, but weakly.
+ 	* include/ext/debug_allocator.h: Convert to the new style.
+	* include/ext/pool_allocator.h: Use global new and delete directly.
+	* include/backward/alloc.h: Don't inject malloc_allocator, or
+	debug_allocator.	
+	* testsuite/ext/allocators.cc: Minimal fixups for usage of new
+	classes.  Comment out tests with __pool_alloc for now.
+	* testsuite/performance/allocator.cc: Same.
+
 2003-12-22  Matt Austern  <austern@apple.com>
 
 	* include/bits/stl_bvector.h (_Bvector_alloc_base): Eliminate.
