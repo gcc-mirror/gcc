@@ -1,3 +1,8 @@
+2002-09-04  Dale Johannesen  <dalej@apple.com>
+
+	* varasm.c (struct rtx_const, decode_rtx_const):
+	Make veclo and vechi fields not share storage.
+
 Thu Sep  5 00:34:33 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* loop.c (scan_loop): Don't mark separate insns out of a libcall

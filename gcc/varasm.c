@@ -2167,8 +2167,10 @@ struct rtx_const GTY(())
     } GTY ((tag ("0"))) di;
 
     /* The max vector size we have is 8 wide.  This should be enough.  */
-    HOST_WIDE_INT veclo[16];
-    HOST_WIDE_INT vechi[16];
+    struct rtx_const_vec {
+      HOST_WIDE_INT veclo;
+      HOST_WIDE_INT vechi; 
+    } GTY ((tag ("2"))) vec[16];
   } GTY ((desc ("%1.kind >= RTX_INT"), descbits ("1"))) un;
 };
 
@@ -2980,13 +2982,13 @@ decode_rtx_const (mode, x, value)
 	    elt = CONST_VECTOR_ELT (x, i);
 	    if (GET_MODE_CLASS (mode) == MODE_VECTOR_INT)
 	      {
-		value->un.veclo[i] = (HOST_WIDE_INT) INTVAL (elt);
-		value->un.vechi[i] = 0;
+		value->un.vec[i].veclo = (HOST_WIDE_INT) INTVAL (elt);
+		value->un.vec[i].vechi = 0;
 	      }
 	    else if (GET_MODE_CLASS (mode) == MODE_VECTOR_FLOAT)
 	      {
-		value->un.veclo[i] = (HOST_WIDE_INT) CONST_DOUBLE_LOW (elt);
-		value->un.vechi[i] = (HOST_WIDE_INT) CONST_DOUBLE_HIGH (elt);
+		value->un.vec[i].veclo = (HOST_WIDE_INT) CONST_DOUBLE_LOW (elt);
+		value->un.vec[i].vechi = (HOST_WIDE_INT) CONST_DOUBLE_HIGH (elt);
 	      }
 	    else
 	      abort ();
