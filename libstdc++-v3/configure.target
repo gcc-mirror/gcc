@@ -118,31 +118,14 @@ esac
 # THIS TABLE IS SORTED.  KEEP IT THAT WAY.
 
 case "${target}" in
-   arm*-*-aout | arm*-*-elf)
-     # Assume newlib
-     os_include_dir=config/os/newlib
-     ATOMICITYH=$cpu_include_dir
-     ;;
    *-*-aix*)
      ATOMICITYH=$os_include_dir
-     ;;
-   *-*-freebsd*)
-     ATOMICITYH=$cpu_include_dir
      ;;
    *-*-irix*)
      ATOMICITYH=$os_include_dir
      ;;
-   *-*-linux*)
-     ATOMICITYH=$cpu_include_dir
-     ;;
-   *-*-netbsd*)
-     ATOMICITYH=$cpu_include_dir
-     ;;
-   sparc*-*-*)
-     ATOMICITYH=$cpu_include_dir
-     ;;
    *)
-     ATOMICITYH="config/cpu/generic"
+     ATOMICITYH=$cpu_include_dir
      ;;
 esac
 

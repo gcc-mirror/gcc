@@ -21,7 +21,7 @@
 ## Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 ## USA.
 
-## $Id: Makefile.am,v 1.57 2000/12/10 20:51:22 apbianco Exp $
+## $Id: Makefile.am,v 1.58 2000/12/15 00:55:02 bkoz Exp $
 
 AUTOMAKE_OPTIONS = 1.3 gnits
 MAINT_CHARSET = latin1
@@ -233,6 +233,8 @@ myincludep = $(prefix)/include/g++-@libstdcxx_interface@
 endif
 endif
 
+targetincludep = @gxx_target_include_dir@
+
 # We have our own special, ridiculously complicated installation routine
 # here, as automake/autoconf is currently brain-damaged when it comes
 # to installing sub-directories of headers. In particular, we want to
@@ -253,6 +255,7 @@ myinstalldirs:
 	if test -z "$(MULTISUBDIR)"; then \
 	$(mkinstalldirs) $(DESTDIR)$(myincludep)/bits; \
 	$(mkinstalldirs) $(DESTDIR)$(myincludep)/ext; \
+	$(mkinstalldirs) $(DESTDIR)$(targetincludep)/bits; \
 	fi
 
 # NB: As libio_headers may be empty, need this to make sure bash doesn't
@@ -284,8 +287,8 @@ myinstallheaders:
 	  $(INSTALL_DATA) $(src_incdir)/std/$$i $(myincludep); \
 	done; \
 	for i in $(build_headers); do \
-        echo "$(INSTALL_DATA) $(bld_incdir)/$$i $(myincludep)/bits/"; \
-	  $(INSTALL_DATA) $(bld_incdir)/$$i $(myincludep)/bits/; \
+        echo "$(INSTALL_DATA) $(bld_incdir)/$$i $(targetincludep)/bits/"; \
+	  $(INSTALL_DATA) $(bld_incdir)/$$i $(targetincludep)/bits/; \
 	done; \
 	libio_headers_install='$(libio_headers)'; \
 	for i in $$libio_headers_install; do \
