@@ -929,6 +929,20 @@ insert_regs (x, classp, modified)
 	  return 1;
 	}
     }
+
+  /* If X is a SUBREG, we will likely be inserting the inner register in the
+     table.  If that register doesn't have an assigned quantity number at
+     this point but does later, the insertion that we will be doing now will
+     not be accessible because its hash code will have changed.  So assign
+     a quantity number now.  */
+
+  else if (GET_CODE (x) == SUBREG && GET_CODE (SUBREG_REG (x)) == REG
+	   && ! REGNO_QTY_VALID_P (REGNO (SUBREG_REG (x))))
+    {
+      insert_regs (SUBREG_REG (x), 0, 0);
+      mention_regs (SUBREG_REG (x));
+      return 1;
+    }
   else
     return mention_regs (x);
 }
@@ -2549,9 +2563,23 @@ find_comparison_args (code, parg1, parg2)
 
       else if (GET_RTX_CLASS (GET_CODE (arg1)) == '<')
 	{
-	  if (code == NE || (code == LT && STORE_FLAG_VALUE == -1))
+	  if (code == NE
+	      || (GET_MODE_CLASS (GET_MODE (arg1)) == MODE_INT
+		  && code == LT && STORE_FLAG_VALUE == -1)
+#ifdef FLOAT_STORE_FLAG_VALUE
+	      || (GET_MODE_CLASS (GET_MODE (arg1)) == MODE_FLOAT
+		  && FLOAT_STORE_FLAG_VALUE < 0)
+#endif
+	      )
 	    x = arg1;
-	  else if (code == EQ || (code == GE && STORE_FLAG_VALUE == -1))
+	  else if (code == EQ
+		   || (GET_MODE_CLASS (GET_MODE (arg1)) == MODE_INT
+		       && code == GE && STORE_FLAG_VALUE == -1)
+#ifdef FLOAT_STORE_FLAG_VALUE
+		   || (GET_MODE_CLASS (GET_MODE (arg1)) == MODE_FLOAT
+		       && FLOAT_STORE_FLAG_VALUE < 0)
+#endif
+		   )
 	    x = arg1, reverse_code = 1;
 	}
 
@@ -2586,10 +2614,16 @@ find_comparison_args (code, parg1, parg2)
 		 for STORE_FLAG_VALUE, also look at LT and GE operations.  */
 	      || ((code == NE
 		   || (code == LT
-		       && inner_mode != VOIDmode
+		       && GET_MODE_CLASS (inner_mode) == MODE_INT
 		       && GET_MODE_BITSIZE (inner_mode) <= HOST_BITS_PER_INT
 		       && (STORE_FLAG_VALUE
-			   & (1 << (GET_MODE_BITSIZE (inner_mode) - 1)))))
+			   & (1 << (GET_MODE_BITSIZE (inner_mode) - 1))))
+#ifdef FLOAT_STORE_FLAG_VALUE
+		   || (code == LT
+		       && GET_MODE_CLASS (inner_mode) == MODE_FLOAT
+		       && FLOAT_STORE_FLAG_VALUE < 0)
+#endif
+		   )
 		  && GET_RTX_CLASS (GET_CODE (p->exp)) == '<'))
 	    {
 	      x = p->exp;
@@ -2597,10 +2631,16 @@ find_comparison_args (code, parg1, parg2)
 	    }
 	  else if ((code == EQ
 		    || (code == GE
-			&& inner_mode != VOIDmode
+			&& GET_MODE_CLASS (inner_mode) == MODE_INT
 			&& GET_MODE_BITSIZE (inner_mode) <= HOST_BITS_PER_INT
 			&& (STORE_FLAG_VALUE
-			    & (1 << (GET_MODE_BITSIZE (inner_mode) - 1)))))
+			    & (1 << (GET_MODE_BITSIZE (inner_mode) - 1))))
+#ifdef FLOAT_STORE_FLAG_VALUE
+		    || (code == GE
+			&& GET_MODE_CLASS (inner_mode) == MODE_FLOAT
+			&& FLOAT_STORE_FLAG_VALUE < 0)
+#endif
+		    )
 		   && GET_RTX_CLASS (GET_CODE (p->exp)) == '<')
 	    {
 	      reverse_code = 1;
@@ -4175,11 +4215,9 @@ fold_rtx (x, insn)
       break;
 
     case SUBREG:
-      /* If this is a single word of a multi-word value, see if we previously
-	 assigned a value to that word.  */
-      if (GET_MODE_SIZE (mode) <= UNITS_PER_WORD
-	  && GET_MODE_SIZE (GET_MODE (SUBREG_REG (x))) > UNITS_PER_WORD
-	  && (new = lookup_as_function (x, CONST_INT)) != 0)
+      /* See if we previously assigned a constant value to this SUBREG.  */
+      if ((new = lookup_as_function (x, CONST_INT)) != 0
+	  || (new = lookup_as_function (x, CONST_DOUBLE)) != 0)
 	return new;
 
       /* If this is a paradoxical SUBREG, we can't do anything with
@@ -4598,6 +4636,15 @@ fold_rtx (x, insn)
       if (const_arg0 == 0 || const_arg1 == 0)
 	{
 	  struct table_elt *p0, *p1;
+	  rtx true = const_true_rtx, false = const0_rtx;
+
+#ifdef FLOAT_STORE_FLAG_VALUE
+	  if (GET_MODE_CLASS (mode))
+	    {
+	      true = immed_real_const_1 (FLOAT_STORE_FLAG_VALUE, mode);
+	      false = CONST0_RTX (mode);
+	    }
+#endif
 
 	  code = find_comparison_args (code, &folded_arg0, &folded_arg1);
 	  const_arg0 = equiv_constant (folded_arg0);
@@ -4636,9 +4683,9 @@ fold_rtx (x, insn)
 		      || GET_CODE (folded_arg0) == CONST))
 		{
 		  if (code == EQ)
-		    return const0_rtx;
+		    return false;
 		  else if (code == NE)
-		    return const_true_rtx;
+		    return true;
 		}
 
 	      /* See if the two operands are the same.  We don't do this
@@ -4661,7 +4708,7 @@ fold_rtx (x, insn)
 			  && p0->first_same_value == p1->first_same_value)))
 		return ((code == EQ || code == LE || code == GE
 			 || code == LEU || code == GEU)
-			? const_true_rtx : const0_rtx);
+			? true : false);
 
 	      /* If FOLDED_ARG0 is a register, see if the comparison we are
 		 doing now is either the same as we did before or the reverse
@@ -4684,7 +4731,7 @@ fold_rtx (x, insn)
 				  == qty_comparison_qty[qty]))))
 		    return (comparison_dominates_p (qty_comparison_code[qty],
 						    code)
-			    ? const_true_rtx : const0_rtx);
+			    ? true : false);
 		}
 	    }
 	}
@@ -4706,20 +4753,29 @@ fold_rtx (x, insn)
 	      int sign_bitnum = GET_MODE_BITSIZE (mode_arg0) - 1;
 	      int has_sign = (HOST_BITS_PER_INT >= sign_bitnum
 			      && (INTVAL (inner_const) & (1 << sign_bitnum)));
+	      rtx true = const_true_rtx, false = const0_rtx;
+
+#ifdef FLOAT_STORE_FLAG_VALUE
+	      if (GET_MODE_CLASS (mode))
+		{
+		  true = immed_real_const_1 (FLOAT_STORE_FLAG_VALUE, mode);
+		  false = CONST0_RTX (mode);
+		}
+#endif
 
 	      switch (code)
 		{
 		case EQ:
-		  return const0_rtx;
+		  return false;
 		case NE:
-		  return const_true_rtx;
+		  return true;
 		case LT:  case LE:
 		  if (has_sign)
-		    return const_true_rtx;
+		    return true;
 		  break;
 		case GT:  case GE:
 		  if (has_sign)
-		    return const0_rtx;
+		    return false;
 		  break;
 		}
 	    }
@@ -4728,6 +4784,11 @@ fold_rtx (x, insn)
       new = simplify_relational_operation (code, mode_arg0,
 					   const_arg0 ? const_arg0 : folded_arg0,
 					   const_arg1 ? const_arg1 : folded_arg1);
+#ifdef FLOAT_STORE_FLAG_VALUE
+      if (new != 0 && GET_MODE_CLASS (mode) == MODE_FLOAT)
+	new = ((new == const0_rtx) ? CONST0_RTX (mode)
+	       : immed_real_const_1 (FLOAT_STORE_FLAG_VALUE, mode));
+#endif
       break;
 
     case '2':
@@ -6323,7 +6384,7 @@ cse_insn (insn, in_libcall_block)
 	if (GET_CODE (dest) == STRICT_LOW_PART)
 	  dest = SUBREG_REG (XEXP (dest, 0));
 
-	if (GET_CODE (dest) == REG)
+	if (GET_CODE (dest) == REG || GET_CODE (dest) == SUBREG)
 	  /* Registers must also be inserted into chains for quantities.  */
 	  if (insert_regs (dest, sets[i].src_elt, 1))
 	    /* If `insert_regs' changes something, the hash code must be
