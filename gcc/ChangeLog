@@ -1,3 +1,11 @@
+2004-01-22  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR target/13713
+	PR target/13324
+	* pa.md (movstrsi_prereload, movstrsi_postreload, movstrdi_prereload,
+	movstrdi_postreload, clrstrsi_prereload, clrstrsi_postreload,
+	clrstrdi_prereload, clrstrdi_postreload): Fix constraints.
+
 2004-01-22  Daniel Jacobowitz  <drow@mvista.com>
 
 	* config/arm/arm.c: Include "debug.h".
