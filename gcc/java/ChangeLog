@@ -1,3 +1,8 @@
+2001-03-23  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* gjavah.c (cxx_keywords): Update from the definitive list in cp/lex.c.
+	* lex.c (cxx_keywords): Likewise.
+
 2001-03-21  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* gjavah.c (process_file): Mark interface definitions with 
