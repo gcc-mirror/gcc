@@ -60,7 +60,7 @@
   while (0)
 
 /* If -m4align is ever re-enabled then add this line to the definition of CPP_SPEC
-   %{!m4align:-D__MCORE_ALIGN_8__} %{m4align:-D__MCORE__ALIGN_4__} */
+   %{!m4align:-D__MCORE_ALIGN_8__} %{m4align:-D__MCORE__ALIGN_4__}.  */
 #undef  CPP_SPEC
 #define CPP_SPEC "%{m210:%{mlittle-endian:%ethe m210 does not have little endian support}}"
 
@@ -78,16 +78,16 @@
    many architecture specific files (other architectures...).  */
 extern int target_flags;
 
-#define HARDLIT_BIT	   (1 << 0) /* Build in-line literals using 2 insns */
-#define ALIGN8_BIT	   (1 << 1) /* Max alignment goes to 8 instead of 4 */
-#define DIV_BIT		   (1 << 2) /* Generate divide instructions */
-#define RELAX_IMM_BIT	   (1 << 3) /* Arbitrary immediates in and, or, tst */
-#define W_FIELD_BIT	   (1 << 4) /* Generate bit insv/extv using SImode */
-#define	OVERALIGN_FUNC_BIT (1 << 5) /* Align functions to 4 byte boundary */
-#define CGDATA_BIT	   (1 << 6) /* Generate callgraph data */
-#define SLOW_BYTES_BIT     (1 << 7) /* Slow byte access */
-#define LITTLE_END_BIT     (1 << 8) /* Generate little endian code */
-#define M340_BIT           (1 << 9) /* Generate code for the m340 */
+#define HARDLIT_BIT	   (1 << 0) /* Build in-line literals using 2 insns.  */
+#define ALIGN8_BIT	   (1 << 1) /* Max alignment goes to 8 instead of 4.  */
+#define DIV_BIT		   (1 << 2) /* Generate divide instructions.  */
+#define RELAX_IMM_BIT	   (1 << 3) /* Arbitrary immediates in and, or, tst.  */
+#define W_FIELD_BIT	   (1 << 4) /* Generate bit insv/extv using SImode.  */
+#define	OVERALIGN_FUNC_BIT (1 << 5) /* Align functions to 4 byte boundary.  */
+#define CGDATA_BIT	   (1 << 6) /* Generate callgraph data.  */
+#define SLOW_BYTES_BIT     (1 << 7) /* Slow byte access.  */
+#define LITTLE_END_BIT     (1 << 8) /* Generate little endian code.  */
+#define M340_BIT           (1 << 9) /* Generate code for the m340.  */
 
 #define TARGET_DEFAULT     \
  (HARDLIT_BIT | ALIGN8_BIT | DIV_BIT | RELAX_IMM_BIT | M340_BIT | LITTLE_END_BIT)
@@ -314,7 +314,7 @@ extern int mcore_stack_increment;
 	ap		arg pointer (doesn't really exist, always eliminated)
 	c               c bit
 	fp		frame pointer (doesn't really exist, always eliminated)
-	x19		two control registers  */
+	x19		two control registers.  */
 
 /* Number of actual hardware registers.
    The hardware registers are assigned numbers for the compiler
@@ -327,12 +327,12 @@ extern int mcore_stack_increment;
 
 #define FIRST_PSEUDO_REGISTER 20
 
-#define R1_REG  1	/* where literals are forced */
-#define LK_REG	15	/* overloaded on general register */
-#define AP_REG  16	/* fake arg pointer register */
-/* RBE: mcore.md depends on CC_REG being set to 17 */
-#define CC_REG	17	/* can't name it C_REG */
-#define FP_REG  18	/* fake frame pointer register */
+#define R1_REG  1	/* Where literals are forced.  */
+#define LK_REG	15	/* Overloaded on general register.  */
+#define AP_REG  16	/* Fake arg pointer register.  */
+/* RBE: mcore.md depends on CC_REG being set to 17.  */
+#define CC_REG	17	/* Can't name it C_REG.  */
+#define FP_REG  18	/* Fake frame pointer register.  */
 
 /* Specify the registers used for certain standard purposes.
    The values of these macros are register numbers.  */
@@ -460,7 +460,7 @@ extern int mcore_stack_increment;
 
 /* The MCore has only general registers. There are
    also some special purpose registers: the T bit register, the
-   procedure Link and the Count Registers */
+   procedure Link and the Count Registers.  */
 enum reg_class
 {
   NO_REGS,
@@ -625,14 +625,6 @@ extern const enum reg_class reg_class_from_letter[];
    makes the stack pointer a smaller address.  */
 #define STACK_GROWS_DOWNWARD  
 
-/* Define this if the nominal address of the stack frame
-   is at the high-address end of the local variables;
-   that is, each additional local variable allocated
-   goes at a more negative offset in the frame.  */
-/* We don't define this, because the MCore does not support
-   addresses with negative offsets.  */
-/* #define FRAME_GROWS_DOWNWARD */
-
 /* Offset within stack frame to start allocating local variables at.
    If FRAME_GROWS_DOWNWARD, this is the offset to the END of the
    first local allocated.  Otherwise, it is the offset to the BEGINNING
@@ -668,18 +660,6 @@ extern const enum reg_class reg_class_from_letter[];
 /* Don't default to pcc-struct-return, because gcc is the only compiler, and
    we want to retain compatibility with older gcc versions.  */
 #define DEFAULT_PCC_STRUCT_RETURN 0
-
-/* how we are going to return big values */
-/*
- * #define RETURN_IN_MEMORY(TYPE) \
- *   (TYPE_MODE (TYPE) == BLKmode \
- *    || ((TREE_CODE (TYPE) == RECORD_TYPE || TREE_CODE(TYPE) == UNION_TYPE) \
- *        && !(TYPE_MODE (TYPE) == SImode \
- * 	    || (TYPE_MODE (TYPE) == BLKmode \
- * 		&& TYPE_ALIGN (TYPE) == BITS_PER_WORD \
- * 		&& int_size_in_bytes (TYPE) == UNITS_PER_WORD))))
- */ 
-
 
 /* How many registers to use for struct return.  */
 #define	RETURN_IN_MEMORY(TYPE) (int_size_in_bytes (TYPE) > 2 * UNITS_PER_WORD)
@@ -939,11 +919,6 @@ extern const enum reg_class reg_class_from_letter[];
    for the index in the tablejump instruction.  */
 #define CASE_VECTOR_MODE SImode
 
-/* Define this if the tablejump instruction expects the table
-   to contain offsets from the address of the table.
-   Do not define this if the table should contain absolute addresses.  */
-/* #define CASE_VECTOR_PC_RELATIVE */
-
 /* 'char' is signed by default.  */
 #define DEFAULT_SIGNED_CHAR  0
 
@@ -1030,11 +1005,9 @@ extern const enum reg_class reg_class_from_letter[];
    ASM_DECLARE_OBJECT_NAME and then switch back to the original section
    afterwards.  */
 #define SWITCH_SECTION_FUNCTION					\
-static void switch_to_section PARAMS ((enum in_section, tree));	\
+static void switch_to_section (enum in_section, tree);		\
 static void							\
-switch_to_section (section, decl)				\
-     enum in_section section;					\
-     tree decl;							\
+switch_to_section (enum in_section section, tree decl)		\
 {								\
   switch (section)						\
     {								\
