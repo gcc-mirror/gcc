@@ -5277,8 +5277,8 @@ sh_insn_length_adjustment (insn)
   return 0;
 }
 
-/* Return TRUE if X references a SYMBOL_REF whose symbol doesn't have
-   @GOT or @GOTOFF.  */
+/* Return TRUE if X references a SYMBOL_REF or LABEL_REF whose symbol
+   isn't protected by a PIC unspec.  */
 int
 nonpic_symbol_mentioned_p (x)
      rtx x;
@@ -5286,7 +5286,7 @@ nonpic_symbol_mentioned_p (x)
   register const char *fmt;
   register int i;
 
-  if (GET_CODE (x) == SYMBOL_REF)
+  if (GET_CODE (x) == SYMBOL_REF || GET_CODE (x) == LABEL_REF)
     return 1;
 
   if (GET_CODE (x) == UNSPEC
