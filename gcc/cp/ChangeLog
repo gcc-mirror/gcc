@@ -1,3 +1,8 @@
+Thu Mar 19 19:01:48 1998  Mark Mitchell  <mmitchell@usa.net>
+
+	* pt.c (tsubst): Clear DECL_PENDING_INLINE_INFO for new
+	FUNCTION_DECLs.
+
 Thu Mar 19 11:51:58 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl.c (make_implicit_typename): Lose useless code.
