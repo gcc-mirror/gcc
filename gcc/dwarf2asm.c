@@ -720,10 +720,38 @@ dw2_asm_output_delta_sleb128 VPARAMS ((const char *lab1 ATTRIBUTE_UNUSED,
   VA_CLOSE (ap);
 }
 
+static int mark_indirect_pool_entry PARAMS ((splay_tree_node, void *));
+static void mark_indirect_pool PARAMS ((PTR arg));
 static rtx dw2_force_const_mem PARAMS ((rtx));
 static int dw2_output_indirect_constant_1 PARAMS ((splay_tree_node, void *));
 
 static splay_tree indirect_pool;
+
+#if defined(HAVE_GAS_HIDDEN) && defined(SUPPORTS_ONE_ONLY)
+# define USE_LINKONCE_INDIRECT 1
+#else
+# define USE_LINKONCE_INDIRECT 0
+#endif
+
+/* Mark all indirect constants for GC.  */
+
+static int
+mark_indirect_pool_entry (node, data)
+     splay_tree_node node;
+     void* data ATTRIBUTE_UNUSED;
+{
+  ggc_mark_nonnull_tree ((tree) node->value);
+  return 0;
+}
+
+/* Mark all indirect constants for GC.  */
+
+static void
+mark_indirect_pool (arg)
+     PTR arg ATTRIBUTE_UNUSED;
+{
+  splay_tree_foreach (indirect_pool, mark_indirect_pool_entry, NULL);
+}
 
 /* Put X, a SYMBOL_REF, in memory.  Return a SYMBOL_REF to the allocated
    memory.  Differs from force_const_mem in that a single pool is used for
@@ -735,35 +763,56 @@ dw2_force_const_mem (x)
      rtx x;
 {
   splay_tree_node node;
-  const char *const_sym;
+  tree decl;
 
   if (! indirect_pool)
-    indirect_pool = splay_tree_new (splay_tree_compare_pointers, NULL, NULL);
+    {
+      indirect_pool = splay_tree_new (splay_tree_compare_pointers, NULL, NULL);
+      ggc_add_root (&indirect_pool, 1, sizeof indirect_pool, mark_indirect_pool);
+    }
 
   if (GET_CODE (x) != SYMBOL_REF)
     abort ();
   node = splay_tree_lookup (indirect_pool, (splay_tree_key) XSTR (x, 0));
   if (node)
-    const_sym = (const char *) node->value;
+    decl = (tree) node->value;
   else
     {
-      extern int const_labelno;
-      char label[32];
       tree id;
 
-      ASM_GENERATE_INTERNAL_LABEL (label, "LC", const_labelno);
-      ++const_labelno;
-      const_sym = ggc_strdup (label);
+      if (USE_LINKONCE_INDIRECT)
+	{
+	  char *ref_name = alloca (strlen (XSTR (x, 0) + sizeof "DW.ref."));
+
+	  sprintf (ref_name, "DW.ref.%s", XSTR (x, 0));
+	  id = get_identifier (ref_name);
+	  decl = build_decl (VAR_DECL, id, ptr_type_node);
+	  DECL_ARTIFICIAL (decl) = 1;
+	  DECL_INITIAL (decl) = decl;
+	  make_decl_one_only (decl);
+	}
+      else
+	{
+	  extern int const_labelno;
+	  char label[32];
+
+	  ASM_GENERATE_INTERNAL_LABEL (label, "LC", const_labelno);
+	  ++const_labelno;
+	  id = get_identifier (label);
+	  decl = build_decl (VAR_DECL, id, ptr_type_node);
+	  DECL_ARTIFICIAL (decl) = 1;
+	  DECL_INITIAL (decl) = decl;
+	}
 
       id = maybe_get_identifier (XSTR (x, 0));
       if (id)
 	TREE_SYMBOL_REFERENCED (id) = 1;
 
       splay_tree_insert (indirect_pool, (splay_tree_key) XSTR (x, 0),
-			 (splay_tree_value) const_sym);
+			 (splay_tree_value) decl);
     }
 
-  return gen_rtx_SYMBOL_REF (Pmode, const_sym);
+  return XEXP (DECL_RTL (decl), 0);
 }
 
 /* A helper function for dw2_output_indirect_constants called through
@@ -774,14 +823,14 @@ dw2_output_indirect_constant_1 (node, data)
      splay_tree_node node;
      void* data ATTRIBUTE_UNUSED;
 {
-  const char *label, *sym;
+  const char *sym;
   rtx sym_ref;
 
-  label = (const char *) node->value;
   sym = (const char *) node->key;
   sym_ref = gen_rtx_SYMBOL_REF (Pmode, sym);
-
-  ASM_OUTPUT_LABEL (asm_out_file, label);
+  if (USE_LINKONCE_INDIRECT)
+    fprintf (asm_out_file, "\t.hidden DW.ref.%s\n", sym);
+  assemble_variable ((tree) node->value, 1, 1, 1);
   assemble_integer (sym_ref, POINTER_SIZE / BITS_PER_UNIT, POINTER_SIZE, 1);
 
   return 0;
@@ -792,19 +841,8 @@ dw2_output_indirect_constant_1 (node, data)
 void
 dw2_output_indirect_constants ()
 {
-  if (! indirect_pool)
-    return;
-
-  /* Assume that the whole reason we're emitting these symbol references
-     indirectly is that they contain dynamic relocations, and are thus
-     read-write.  If there was no possibility of a dynamic relocation, we
-     might as well have used a direct relocation.  */
-  data_section ();
-
-  /* Everything we're emitting is a pointer.  Align appropriately.  */
-  assemble_align (POINTER_SIZE);
-
-  splay_tree_foreach (indirect_pool, dw2_output_indirect_constant_1, NULL);
+  if (indirect_pool)
+    splay_tree_foreach (indirect_pool, dw2_output_indirect_constant_1, NULL);
 }
 
 /* Like dw2_asm_output_addr_rtx, but encode the pointer as directed.  */
