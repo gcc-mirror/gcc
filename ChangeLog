@@ -1,3 +1,9 @@
+2003-01-09  Christian Cornelssen  <ccorn@cs.tu-berlin.de>
+
+	* Makefile.tpl (BASE_FLAGS_TO_PASS): Also pass DESTDIR.
+	(install-info, dir.info): Prepend $(DESTDIR) to $(infodir).
+	* Makefile.in: Regenerate.
+
 2003-01-08  Chris Demetriou  <cgd@broadcom.com>
 
 	* config.guess: Update to 2003-01-03 version.
