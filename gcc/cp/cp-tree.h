@@ -21,6 +21,7 @@ Boston, MA 02111-1307, USA.  */
 
 #include "c-common.h"
 #include "function.h"
+#include "varray.h"
 
 #ifndef _CP_TREE_H
 #define _CP_TREE_H
@@ -390,6 +391,37 @@ enum cp_tree_index
     CPTI_ABORT_FNDECL,
     CPTI_GLOBAL_DELETE_FNDECL,
 
+    CPTI_ACCESS_DEFAULT,
+    CPTI_ACCESS_PUBLIC,
+    CPTI_ACCESS_PROTECTED,
+    CPTI_ACCESS_PRIVATE,
+    CPTI_ACCESS_DEFAULT_VIRTUAL,
+    CPTI_ACCESS_PUBLIC_VIRTUAL,
+    CPTI_ACCESS_PROTECTED_VIRTUAL,
+    CPTI_ACCESS_PRIVATE_VIRTUAL,
+
+    CPTI_CTOR_IDENTIFIER,
+    CPTI_DELTA2_IDENTIFIER,
+    CPTI_DELTA_IDENTIFIER,
+    CPTI_DTOR_IDENTIFIER,
+    CPTI_IN_CHARGE_IDENTIFIER,
+    CPTI_INDEX_IDENTIFIER,
+    CPTI_NELTS_IDENTIFIER,
+    CPTI_THIS_IDENTIFIER,
+    CPTI_PFN_IDENTIFIER,
+    CPTI_PFN_OR_DELTA2_IDENTIFIER,
+    CPTI_VPTR_IDENTIFIER,
+
+    CPTI_LANG_NAME_C,
+    CPTI_LANG_NAME_CPLUSPLUS,
+    CPTI_LANG_NAME_JAVA,
+
+    CPTI_EMPTY_EXCEPT_SPEC,
+    CPTI_NULL,
+    CPTI_JCLASS,
+    CPTI_MINUS_ONE,
+    CPTI_TERMINATE,
+
     CPTI_MAX
 };
 
@@ -432,6 +464,129 @@ extern tree cp_global_trees[CPTI_MAX];
 #define tinfo_fn_type			cp_global_trees[CPTI_TINFO_FN_TYPE]
 #define abort_fndecl			cp_global_trees[CPTI_ABORT_FNDECL]
 #define global_delete_fndecl		cp_global_trees[CPTI_GLOBAL_DELETE_FNDECL]
+
+/* Define the sets of attributes that member functions and baseclasses
+   can have.  These are sensible combinations of {public,private,protected}
+   cross {virtual,non-virtual}.  */
+
+#define access_default_node             cp_global_trees[CPTI_ACCESS_DEFAULT]
+#define access_public_node              cp_global_trees[CPTI_ACCESS_PUBLIC]
+#define access_protected_node           cp_global_trees[CPTI_ACCESS_PROTECTED]
+#define access_private_node             cp_global_trees[CPTI_ACCESS_PRIVATE]
+#define access_default_virtual_node     cp_global_trees[CPTI_ACCESS_DEFAULT_VIRTUAL]
+#define access_public_virtual_node      cp_global_trees[CPTI_ACCESS_PUBLIC_VIRTUAL]
+#define access_protected_virtual_node   cp_global_trees[CPTI_ACCESS_PROTECTED_VIRTUAL]
+#define access_private_virtual_node     cp_global_trees[CPTI_ACCESS_PRIVATE_VIRTUAL]
+
+/* We cache these tree nodes so as to call get_identifier less
+   frequently.  */
+
+#define ctor_identifier                 cp_global_trees[CPTI_CTOR_IDENTIFIER]
+#define delta2_identifier               cp_global_trees[CPTI_DELTA2_IDENTIFIER]
+#define delta_identifier                cp_global_trees[CPTI_DELTA_IDENTIFIER]
+#define dtor_identifier                 cp_global_trees[CPTI_DTOR_IDENTIFIER]
+#define in_charge_identifier            cp_global_trees[CPTI_IN_CHARGE_IDENTIFIER]
+#define index_identifier                cp_global_trees[CPTI_INDEX_IDENTIFIER]
+#define nelts_identifier                cp_global_trees[CPTI_NELTS_IDENTIFIER]
+#define this_identifier                 cp_global_trees[CPTI_THIS_IDENTIFIER]
+#define pfn_identifier                  cp_global_trees[CPTI_PFN_IDENTIFIER]
+#define pfn_or_delta2_identifier        cp_global_trees[CPTI_PFN_OR_DELTA2_IDENTIFIER]
+#define vptr_identifier                 cp_global_trees[CPTI_VPTR_IDENTIFIER]
+
+#define lang_name_c                     cp_global_trees[CPTI_LANG_NAME_C]
+#define lang_name_cplusplus             cp_global_trees[CPTI_LANG_NAME_CPLUSPLUS]
+#define lang_name_java                  cp_global_trees[CPTI_LANG_NAME_JAVA]
+
+/* Exception specifier used for throw().  */
+#define empty_except_spec               cp_global_trees[CPTI_EMPTY_EXCEPT_SPEC]
+
+/* The node for `__null'.  */
+#define null_node                       cp_global_trees[CPTI_NULL]
+
+/* If non-NULL, a POINTER_TYPE equivalent to (java::lang::Class*). */
+#define jclass_node                     cp_global_trees[CPTI_JCLASS]
+
+/* A node for `(int) -1'.  */
+#define minus_one_node                  cp_global_trees[CPTI_MINUS_ONE]
+
+/* The declaration for `std::terminate'.  */
+#define terminate_node                  cp_global_trees[CPTI_TERMINATE]
+
+/* Global state.  */
+
+struct saved_scope {
+  struct binding_level *old_binding_level;
+  tree old_bindings;
+  tree old_namespace;
+  struct saved_scope *prev;
+  tree class_name, class_type;
+  tree access_specifier;
+  tree function_decl;
+  struct binding_level *class_bindings;
+  varray_type lang_base;
+  tree *lang_stack;
+  tree lang_name;
+  tree x_function_parms;
+  tree template_parms;
+  HOST_WIDE_INT x_processing_template_decl;
+  tree x_previous_class_type;
+  tree x_previous_class_values;
+  int x_processing_specialization;
+  int x_processing_explicit_instantiation;
+  char *firstobj;
+};
+
+/* The current open namespace.  */
+
+#define current_namespace scope_chain->old_namespace
+
+/* IDENTIFIER_NODE: name of current class */
+
+#define current_class_name scope_chain->class_name
+
+/* _TYPE: the type of the current class */
+
+#define current_class_type scope_chain->class_type
+
+/* When parsing a class definition, the access specifier most recently
+   given by the user, or, if no access specifier was given, the
+   default value appropriate for the kind of class (i.e., struct,
+   class, or union).  */
+
+#define current_access_specifier scope_chain->access_specifier
+
+/* Pointer to the top of the language name stack.  */
+
+#define current_lang_stack scope_chain->lang_stack
+#define current_lang_base scope_chain->lang_base
+#define current_lang_name scope_chain->lang_name
+
+/* Parsing a function declarator leaves a list of parameter names
+   or a chain or parameter decls here.  */
+
+#define current_function_parms scope_chain->x_function_parms
+#define current_template_parms scope_chain->template_parms
+
+#define processing_template_decl scope_chain->x_processing_template_decl
+#define processing_specialization scope_chain->x_processing_specialization
+#define processing_explicit_instantiation scope_chain->x_processing_explicit_instantiation
+
+/* _TYPE: the previous type that was a class */
+
+#define previous_class_type scope_chain->x_previous_class_type
+
+/* This is a copy of the class_shadowed list of the previous class
+   binding contour when at global scope.  It's used to reset
+   IDENTIFIER_CLASS_VALUEs when entering another class scope (i.e. a
+   cache miss).  */
+
+#define previous_class_values scope_chain->x_previous_class_values
+
+/* The low-water mark on the class-cache obstack.  */
+
+#define class_cache_firstobj scope_chain->firstobj
+
+extern struct saved_scope *scope_chain;
 
 /* Global state pertinent to the current function.  */
 
@@ -562,12 +717,12 @@ struct language_function
 #define in_function_try_handler cp_function_chain->in_function_try_handler
 
 extern tree current_function_return_value;
-extern tree current_namespace;
 extern tree global_namespace;
 
 extern tree ridpointers[];
 extern tree ansi_opname[];
 extern tree ansi_assopname[];
+extern tree null_pointer_node;
 
 /* Nonzero means `$' can be in an identifier.  */
 
@@ -2377,19 +2532,11 @@ extern tree type_for_size                       PROTO((unsigned, int));
 extern int c_get_alias_set                      PROTO((tree));
 
 /* in decl{2}.c */
-extern tree this_identifier;
-extern tree ctor_identifier, dtor_identifier;
-extern tree pfn_identifier;
-extern tree index_identifier;
-extern tree delta_identifier;
-extern tree delta2_identifier;
-extern tree pfn_or_delta2_identifier;
-extern tree tag_identifier;
-extern tree vt_off_identifier;
-extern tree empty_except_spec;
-
 /* A node that is a list (length 1) of error_mark_nodes.  */
 extern tree error_mark_list;
+
+/* A list of virtual function tables we must make sure to write out.  */
+extern tree pending_vtables;
 
 /* Node for "pointer to (virtual) function".
    This may be distinct from ptr_type_node so gdb can distinguish them.  */
@@ -2399,8 +2546,6 @@ extern tree error_mark_list;
 
 /* For building calls to `delete'.  */
 extern tree integer_two_node, integer_three_node;
-
-extern tree null_node;
 
 extern tree anonymous_namespace_name;
 
@@ -2416,9 +2561,6 @@ typedef enum unification_kind_t {
   DEDUCE_EXACT
 } unification_kind_t;
 
-extern tree current_template_parms;
-extern HOST_WIDE_INT processing_template_decl;
-
 /* The template currently being instantiated, and where the instantiation
    was triggered.  */
 struct tinst_level
@@ -2433,22 +2575,7 @@ extern void maybe_print_template_context	PROTO ((void));
 
 /* in class.c */
 
-/* When parsing a class definition, the access specifier most recently
-   given by the user, or, if no access specifier was given, the
-   default value appropriate for the kind of class (i.e., struct,
-   class, or union).  */
-extern tree current_access_specifier;
-
-extern tree current_class_name;
-extern tree current_class_type;
-extern tree previous_class_type;
 extern int current_class_depth;
-
-extern tree current_lang_name;
-extern tree lang_name_cplusplus, lang_name_c, lang_name_java;
-
-/* The low-water mark on the class-cache obstack.  */
-extern char *class_cache_firstobj;
 
 /* Points to the name of that function. May not be the DECL_NAME
    of CURRENT_FUNCTION_DECL due to overloading */
@@ -2634,20 +2761,6 @@ extern tree global_base_init_list;
     && MAIN_NAME_P (DECL_NAME (NODE)))
 
 
-/* Define the sets of attributes that member functions and baseclasses
-   can have.  These are sensible combinations of {public,private,protected}
-   cross {virtual,non-virtual}.  */
-
-/* in class.c.  */
-extern tree access_default_node; /* 0 */
-extern tree access_public_node; /* 1 */
-extern tree access_protected_node; /* 2 */
-extern tree access_private_node; /* 3 */
-extern tree access_default_virtual_node; /* 4 */
-extern tree access_public_virtual_node; /* 5 */
-extern tree access_protected_virtual_node; /* 6 */
-extern tree access_private_virtual_node; /* 7 */
-
 /* Things for handling inline functions.  */
 
 struct pending_inline
@@ -2714,9 +2827,6 @@ extern int flag_honor_std;
 extern int at_eof;
 
 enum overload_flags { NO_SPECIAL = 0, DTOR_FLAG, OP_FLAG, TYPENAME_FLAG };
-
-/* The following two can be derived from the previous one */
-extern tree current_class_name;	/* IDENTIFIER_NODE: name of current class */
 
 /* Some macros for char-based bitfields.  */
 #define B_SET(a,x) (a[x>>3] |= (1 << (x&7)))
@@ -3321,6 +3431,7 @@ extern void synthesize_method			PROTO((tree));
 extern tree get_id_2				PROTO((const char *, tree));
 
 /* in pt.c */
+extern void init_pt                             PROTO ((void));
 extern void check_template_shadow		PROTO ((tree));
 extern tree innermost_args			PROTO ((tree));
 extern tree tsubst				PROTO ((tree, tree, int, tree));
@@ -3377,8 +3488,6 @@ extern void print_candidates                    PROTO((tree));
 extern int instantiate_pending_templates        PROTO((void));
 extern tree tsubst_default_argument             PROTO((tree, tree, tree));
 
-extern int processing_specialization;
-extern int processing_explicit_instantiation;
 extern int processing_template_parmlist;
 
 /* in repo.c */

@@ -40,8 +40,8 @@ Boston, MA 02111-1307, USA.  */
 #include "except.h"
 #include "toplev.h"
 #include "rtl.h"
-#include "varray.h"
 #include "defaults.h"
+#include "ggc.h"
 
 /* The type of functions taking a tree, and some additional data, and
    returning an int.  */
@@ -51,9 +51,6 @@ extern struct obstack permanent_obstack;
 
 extern int lineno;
 extern char *input_filename;
-
-tree current_template_parms;
-HOST_WIDE_INT processing_template_decl;
 
 /* The PENDING_TEMPLATES is a TREE_LIST of templates whose
    instantiations have been deferred, either because their definitions
@@ -68,8 +65,6 @@ static tree *template_tail = &pending_templates;
 static tree maybe_templates;
 static tree *maybe_template_tail = &maybe_templates;
 
-int processing_specialization;
-int processing_explicit_instantiation;
 int processing_template_parmlist;
 static int template_header_count;
 
@@ -223,6 +218,16 @@ static void tsubst_default_arguments PROTO((tree));
 /* The number of levels of template parameters given by NODE.  */
 #define TMPL_PARMS_DEPTH(NODE) \
   (TREE_INT_CST_HIGH (TREE_PURPOSE (NODE)))
+
+/* Called once to initialize pt.c.  */
+
+void
+init_pt ()
+{
+  ggc_add_tree_root (&pending_templates, 1);
+  ggc_add_tree_root (&maybe_templates, 1);
+  ggc_add_tree_root (&saved_trees, 1);
+}
 
 /* Do any processing required when DECL (a member template declaration
    using TEMPLATE_PARAMETERS as its innermost parameter list) is

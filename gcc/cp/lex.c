@@ -37,6 +37,7 @@ Boston, MA 02111-1307, USA.  */
 #include "c-pragma.h"
 #include "toplev.h"
 #include "output.h"
+#include "ggc.h"
 
 #ifdef MULTIBYTE_CHARS
 #include "mbchar.h"
@@ -173,6 +174,17 @@ static tree this_filename_time;
 
 /* Array for holding counts of the numbers of tokens seen.  */
 extern int *token_count;
+
+/* When we see a default argument in a method declaration, we snarf it as
+   text using snarf_defarg.  When we get up to namespace scope, we then go
+   through and parse all of them using do_pending_defargs.  Since yacc
+   parsers are not reentrant, we retain defargs state in these two
+   variables so that subsequent calls to do_pending_defargs can resume
+   where the previous call left off.  */
+
+static tree defarg_fns;
+static tree defarg_parm;
+
 
 /* Return something to represent absolute declarators containing a *.
    TARGET is the absolute declarator that the * contains.
@@ -874,6 +886,14 @@ init_parse (filename)
 
   token_count = init_cpp_parse ();
   interface_unknown = 1;
+
+  ggc_add_tree_root (ansi_opname, LAST_CPLUS_TREE_CODE);
+  ggc_add_tree_root (ansi_assopname, LAST_CPLUS_TREE_CODE);
+  ggc_add_tree_root (ridpointers, RID_MAX);
+  ggc_add_tree_root (&defarg_fns, 1);
+  ggc_add_tree_root (&defarg_parm, 1);
+  ggc_add_tree_root (&this_filename_time, 1);
+  ggc_add_tree_root (&filename_times, 1);
 
   return filename;
 }
@@ -1821,16 +1841,6 @@ maybe_snarf_defarg ()
     do_snarf_defarg = 1;
 }
 
-/* When we see a default argument in a method declaration, we snarf it as
-   text using snarf_defarg.  When we get up to namespace scope, we then go
-   through and parse all of them using do_pending_defargs.  Since yacc
-   parsers are not reentrant, we retain defargs state in these two
-   variables so that subsequent calls to do_pending_defargs can resume
-   where the previous call left off.  */
-
-tree defarg_fns;
-tree defarg_parm;
-
 tree
 snarf_defarg ()
 {
@@ -2717,8 +2727,6 @@ handle_cp_pragma (pname)
 
   if (! strcmp (pname, "vtable"))
     {
-      extern tree pending_vtables;
-
       /* More follows: it must be a string constant (class name).  */
       token = real_yylex ();
       if (token != STRING || TREE_CODE (yylval.ttype) != STRING_CST)

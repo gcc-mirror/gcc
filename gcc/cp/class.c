@@ -31,6 +31,7 @@ Boston, MA 02111-1307, USA.  */
 #include "output.h"
 #include "toplev.h"
 #include "splay-tree.h"
+#include "ggc.h"
 
 #include "obstack.h"
 #define obstack_chunk_alloc xmalloc
@@ -71,19 +72,8 @@ typedef struct class_stack_node {
 static int current_class_stack_size;
 static class_stack_node_t current_class_stack;
 
-/* The following two can be derived from the previous one */
-tree current_class_name;	/* IDENTIFIER_NODE: name of current class */
-tree current_class_type;	/* _TYPE: the type of the current class */
-tree current_access_specifier;
-tree previous_class_type;	/* _TYPE: the previous type that was a class */
-tree previous_class_values;	/* TREE_LIST: copy of the class_shadowed list
-				   when leaving an outermost class scope.  */
-
 /* The obstack on which the cached class declarations are kept.  */
 static struct obstack class_cache_obstack;
-/* The first object allocated on that obstack.  We can use
-   obstack_free with tis value to free the entire obstack.  */
-char *class_cache_firstobj;
 
 struct base_info;
 
@@ -136,29 +126,6 @@ static tree build_vtable_entry_for_fn PROTO((tree, tree));
 static tree build_vtbl_initializer PROTO((tree));
 static int count_fields PROTO((tree));
 static int add_fields_to_vec PROTO((tree, tree, int));
-
-/* Way of stacking language names.  */
-tree *current_lang_base, *current_lang_stack;
-int current_lang_stacksize;
-
-/* Names of languages we recognize.  */
-tree lang_name_c, lang_name_cplusplus, lang_name_java;
-tree current_lang_name;
-
-/* When layout out an aggregate type, the size of the
-   basetypes (virtual and non-virtual) is passed to layout_record
-   via this node.  */
-static tree base_layout_decl;
-
-/* Constants used for access control.  */
-tree access_default_node; /* 0 */
-tree access_public_node; /* 1 */
-tree access_protected_node; /* 2 */
-tree access_private_node; /* 3 */
-tree access_default_virtual_node; /* 4 */
-tree access_public_virtual_node; /* 5 */
-tree access_protected_virtual_node; /* 6 */
-tree access_private_virtual_node; /* 7 */
 
 /* Variables shared between class.c and call.c.  */
 
@@ -779,8 +746,6 @@ build_vtable (binfo, type)
   SET_BINFO_NEW_VTABLE_MARKED (binfo);
   return decl;
 }
-
-extern tree signed_size_zero_node;
 
 /* Give TYPE a new virtual function table which is initialized
    with a skeleton-copy of its original initialization.  The only
@@ -4488,10 +4453,6 @@ init_class_processing ()
     = (class_stack_node_t) xmalloc (current_class_stack_size 
 				    * sizeof (struct class_stack_node));
 
-  current_lang_stacksize = 10;
-  current_lang_base = (tree *)xmalloc(current_lang_stacksize * sizeof (tree));
-  current_lang_stack = current_lang_base;
-
   access_default_node = build_int_2 (0, 0);
   access_public_node = build_int_2 (1, 0);
   access_protected_node = build_int_2 (2, 0);
@@ -4500,10 +4461,6 @@ init_class_processing ()
   access_public_virtual_node = build_int_2 (5, 0);
   access_protected_virtual_node = build_int_2 (6, 0);
   access_private_virtual_node = build_int_2 (7, 0);
-
-  /* Keep these values lying around.  */
-  base_layout_decl = build_lang_decl (FIELD_DECL, NULL_TREE, error_mark_node);
-  TREE_TYPE (base_layout_decl) = make_node (RECORD_TYPE);
 
   gcc_obstack_init (&class_obstack);
 }
@@ -4736,13 +4693,13 @@ push_lang_context (name)
      tree name;
 {
   *current_lang_stack++ = current_lang_name;
-  if (current_lang_stack >= current_lang_base + current_lang_stacksize)
+  if (current_lang_stack - &VARRAY_TREE (current_lang_base, 0)
+      >= (ptrdiff_t) VARRAY_SIZE (current_lang_base))
     {
-      current_lang_base
-	= (tree *)xrealloc (current_lang_base,
-			    sizeof (tree) * (current_lang_stacksize + 10));
-      current_lang_stack = current_lang_base + current_lang_stacksize;
-      current_lang_stacksize += 10;
+      size_t old_size = VARRAY_SIZE (current_lang_base);
+
+      VARRAY_GROW (current_lang_base, old_size + 10);
+      current_lang_stack = &VARRAY_TREE (current_lang_base, old_size);
     }
 
   if (name == lang_name_cplusplus)
@@ -4781,6 +4738,9 @@ push_lang_context (name)
 void
 pop_lang_context ()
 {
+  /* Clear the current entry so that garbage collector won't hold on
+     to it.  */
+  *current_lang_stack = NULL_TREE;
   current_lang_name = *--current_lang_stack;
   if (current_lang_name == lang_name_cplusplus
       || current_lang_name == lang_name_java)

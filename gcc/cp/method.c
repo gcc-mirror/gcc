@@ -41,6 +41,7 @@ Boston, MA 02111-1307, USA.  */
 #include "hard-reg-set.h"
 #include "flags.h"
 #include "toplev.h"
+#include "ggc.h"
 
 /* TREE_LIST of the current inline functions that need to be
    processed.  */
@@ -98,11 +99,31 @@ static void build_mangled_name_for_type_with_Gcode PROTO((tree, int));
 # define OB_FINISH() (obstack_1grow (&scratch_obstack, '\0'))
 # define OB_LAST() (obstack_next_free (&scratch_obstack)[-1])
 
+/* type tables for K and B type compression */
+static varray_type btypelist;
+static varray_type ktypelist;
+
+/* number of each type seen */
+static size_t maxbtype;
+static size_t maxktype;
+
+/* Array of types seen so far in top-level call to `build_mangled_name'.
+   Allocated and deallocated by caller.  */
+static varray_type typevec;
+
+/* Number of types interned by `build_mangled_name' so far.  */
+static size_t maxtype;
+
+/* Called once to initialize method.c.  */
+
 void
 init_method ()
 {
   gcc_obstack_init (&scratch_obstack);
   scratch_firstobj = (char *)obstack_alloc (&scratch_obstack, 0);
+  ggc_add_tree_varray_root (&btypelist, 1);
+  ggc_add_tree_varray_root (&ktypelist, 1);
+  ggc_add_tree_varray_root (&typevec, 1);
 }
 
 /* This must be large enough to hold any printed integer or floating-point
@@ -172,24 +193,6 @@ do_inline_function_hair (type, friend_list)
 
 /* Here is where overload code starts.  */
 
-/* type tables for K and B type compression */
-static tree *btypelist = NULL;
-static tree *ktypelist = NULL;
-static int maxbsize = 0;
-static int maxksize = 0;
-
-/* number of each type seen */
-static int maxbtype = 0;
-static int maxktype = 0;
-
-/* Array of types seen so far in top-level call to `build_mangled_name'.
-   Allocated and deallocated by caller.  */
-static tree *typevec = NULL;
-static int  typevec_size;
-
-/* Number of types interned by `build_mangled_name' so far.  */
-static int maxtype = 0;
-
 /* Nonzero if we should not try folding parameter types.  */
 static int nofold;
 
@@ -205,10 +208,8 @@ start_squangling ()
       nofold = 0;
       maxbtype = 0;
       maxktype = 0;
-      maxbsize = 50;
-      maxksize = 50;
-      btypelist = (tree *)xmalloc (sizeof (tree) * maxbsize);
-      ktypelist = (tree *)xmalloc (sizeof (tree) * maxksize);
+      VARRAY_TREE_INIT (btypelist, 50, "btypelist");
+      VARRAY_TREE_INIT (ktypelist, 50, "ktypelist");
     }
 }
 
@@ -217,16 +218,10 @@ end_squangling ()
 {
   if (flag_do_squangling)
     {
-      if (ktypelist)
-        free (ktypelist);
-      if (btypelist)
-        free (btypelist);
-      maxbsize = 0;
-      maxksize = 0;
+      VARRAY_FREE (ktypelist);
+      VARRAY_FREE (btypelist);
       maxbtype = 0;
       maxktype = 0;
-      ktypelist = NULL;
-      btypelist = NULL;
     }
 }
 
@@ -303,7 +298,7 @@ static __inline int
 old_backref_index (type)
      tree type;
 {
-  int tindex = 0;
+  size_t tindex;
 
   if (! is_back_referenceable_type (type))
     return -1;
@@ -311,7 +306,7 @@ old_backref_index (type)
   /* The entry for this parm is at maxtype-1, so don't look there for
      something to repeat.  */
   for (tindex = 0; tindex < maxtype - 1; ++tindex)
-    if (same_type_p (typevec[tindex], type))
+    if (same_type_p (VARRAY_TREE (typevec, tindex), type))
       break;
 
   if (tindex == maxtype - 1)
@@ -425,7 +420,7 @@ check_ktype (node, add)
      tree node;
      int add;
 {
-  int x;
+  size_t x;
   tree localnode = node;
 
   if (ktypelist == NULL)
@@ -434,20 +429,19 @@ check_ktype (node, add)
   if (TREE_CODE (node) == TYPE_DECL)
     localnode = TREE_TYPE (node);
 
-  for (x=0; x < maxktype; x++)
+  for (x = 0; x < maxktype; x++)
     {
-      if (same_type_p (localnode, ktypelist[x]))
+      if (same_type_p (localnode, VARRAY_TREE (ktypelist, x)))
         return x;
     }
   /* Didn't find it, so add it here.  */
   if (add)
     {
-      if (maxksize <= maxktype)
-        {
-          maxksize = maxksize* 3 / 2;
-          ktypelist = (tree *)xrealloc (ktypelist, sizeof (tree) * maxksize);
-        }
-      ktypelist[maxktype++] = localnode;
+      if (VARRAY_SIZE (ktypelist) <= maxktype)
+	VARRAY_GROW (ktypelist, 
+		     VARRAY_SIZE (ktypelist) * 3 / 2);
+      VARRAY_TREE (ktypelist, maxktype) = localnode;
+      maxktype++;
     }
   return -1;
 }
@@ -1166,8 +1160,9 @@ build_mangled_name (parmtypes, begin, end)
 	  if (old_style_repeats)
 	    {
 	      /* Every argument gets counted.  */
-	      my_friendly_assert (maxtype < typevec_size, 387);
-	      typevec[maxtype++] = parmtype;
+	      my_friendly_assert (maxtype < VARRAY_SIZE (typevec), 387);
+	      VARRAY_TREE (typevec, maxtype) = parmtype;
+	      maxtype++;
 	    }
 
 	  if (last_type && same_type_p (parmtype, last_type))
@@ -1261,7 +1256,7 @@ static int
 check_btype (type) 
      tree type;
 {
-  int x;
+  size_t x;
 
   if (btypelist == NULL)
     return 0;
@@ -1270,7 +1265,7 @@ check_btype (type)
     return 0;
 
   for (x = 0; x < maxbtype; x++) 
-    if (same_type_p (type, btypelist[x]))
+    if (same_type_p (type, VARRAY_TREE (btypelist, x)))
       {
 	OB_PUTC ('B');
 	icat (x);
@@ -1279,15 +1274,14 @@ check_btype (type)
 	return 1 ;
       }
 
-  if (maxbsize <= maxbtype) 
-    {
-      /* Enlarge the table.  */
-      maxbsize = maxbsize * 3 / 2;
-      btypelist = (tree *)xrealloc (btypelist, sizeof (tree) * maxbsize); 
-    }
-  
+  if (VARRAY_SIZE (btypelist) <= maxbtype) 
+    /* Enlarge the table.  */
+    VARRAY_GROW (btypelist,
+		 VARRAY_SIZE (btypelist) * 3 / 2);
+
   /* Register the TYPE.  */
-  btypelist[maxbtype++] = type;
+  VARRAY_TREE (btypelist, maxbtype) = type;
+  maxbtype++;
 
   return 0;
 }
@@ -1638,12 +1632,12 @@ build_decl_overload_real (dname, parms, ret_type, tparms, targs,
       if (!flag_do_squangling)
         {
 	  /* Allocate typevec array.  */
+	  size_t typevec_size = list_length (parms);
           maxtype = 0;
-	  typevec_size = list_length (parms);
 	  if (!for_method && current_namespace != global_namespace)
 	    /* The namespace of a global function needs one slot.  */
 	    typevec_size++;
-          typevec = (tree *)alloca (typevec_size * sizeof (tree));
+	  VARRAY_TREE_INIT (typevec, typevec_size, "typevec");
         }
       nofold = 0;
 
@@ -1655,8 +1649,9 @@ build_decl_overload_real (dname, parms, ret_type, tparms, targs,
 
           if (!flag_do_squangling) 
 	    {
-	      my_friendly_assert (maxtype < typevec_size, 387);
-	      typevec[maxtype++] = this_type;
+	      my_friendly_assert (maxtype < VARRAY_SIZE (typevec), 387);
+	      VARRAY_TREE (typevec, maxtype) = this_type;
+	      maxtype++;
 	    }
 
 	  if (TREE_CHAIN (parms))
@@ -1671,15 +1666,16 @@ build_decl_overload_real (dname, parms, ret_type, tparms, targs,
 	  if (current_namespace != global_namespace
 	      && !flag_do_squangling)
 	    {
-	      my_friendly_assert (maxtype < typevec_size, 387);
-	      typevec[maxtype++] = current_namespace;
+	      my_friendly_assert (maxtype < VARRAY_SIZE (typevec), 387);
+	      VARRAY_TREE (typevec, maxtype) = current_namespace;
+	      maxtype++;
 	    }
 	  build_mangled_name (parms, 0, 0);
 	}
 
       if (!flag_do_squangling)
 	/* Deallocate typevec array.  */
-	typevec = NULL;
+	VARRAY_FREE (typevec);
     }
 
   if (ret_type != NULL_TREE && for_method != 2)

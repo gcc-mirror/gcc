@@ -1,3 +1,120 @@
+1999-09-05  Mark Mitchell  <mark@codesourcery.com>
+
+	Get ready for garbage collection.
+	* Makefile.in (CXX_TREE_H): Add varray.h
+	(lex.o): Depend on ggc.h.
+	(decl.o): Likewise.
+	(decl2.o): Likewise.
+	(method.o): Likewise.
+	(search.o): Likewise.
+	(pt.o): Likewise.
+	(repo.o): Likewise.
+	* clas.c: Include ggc.h.
+	(current_class_name): Remove.
+	(current_class_type): Likewise.
+	(current_access_specifier): Likewise.
+	(previous_class_type): Likewise.
+	(previous_class_values): Likewise.
+	(class_cache_firstobj): Likewise.
+	(current_lang_base): Likewise.
+	(current_lang_stack): Likewise.
+	(current_lang_stacksize): Likewise.
+	(lang_name_c): Likewise.
+	(lang_name_cplusplus): Likewise.
+	(lang_name_java): Likewise.
+	(current_lang_name): Likewise.
+	(base_layout_decl): Likewise.
+	(access_default_node): Likewise.
+	(access_public_node): Likewise.
+	(access_protected_node): Likewise.
+	(access_private_node): Likewise.
+	(access_default_virtual_node): Likewise.
+	(access_public_virtual_node): Likewise.
+	(access_protected_virtual_node): Likewise.
+	(access_private_virtual_node): Likewise.
+	(signed_zero_node): Likewise.
+	(init_class_processing): Don't build base_layout_decl.
+	(push_lang_context): Adjust now that current_lang_base is a varray.
+	(pop_lang_context): Likewise.
+	* cp-tree.h: Include varray.h.
+	(cp_global_trees): Add access_default, access_public,
+	access_protected, access_private, access_default_virtual,
+	access_public_virtual, access_protected_virtual,
+	access_private_virtual, ctor_identifier, delta2_identifier, 
+	delta_identifier, dtor_identifier, in_charge_identifier,
+	index_identifier, nelts_identifier, this_identifier,
+	pfn_identifier, pfn_or_delta2_identifier, vptr_identifier,
+	lang_name_c, lang_name_cplusplus, lang_name_java,
+	empty_except_spec, null, jclass, minus_one, terminate.
+	(saved_scope): Move here from decl.c.  Define globals in terms of
+	saved_scope: current_namespace, current_class_name,
+	current_class_type, current_access_specifier, current_lang_stack,
+	current_lang_base, current_lang_name, current_function_parms,
+	current_template_parms, processing_template_decl,
+	processing_specialization, processing_explicit_instantiation,
+	previous_class_type, previous_class_values, class_cache_firstobj.
+	(scope_chain): New variable.
+	(init_pt): New function.
+	* decl.c (current_namespace): Remove.
+	(this_identifier, in_charge_identifier, ctor_identifier): Likewise.
+	(dtor_identifier, pfn_identifier, index_identifier): Likewise.
+	(delta_identifier, delta2_identifier): Likewise.
+	(pfn_or_delta2_identifier, tag_identifier): Likewise
+	(vt_off_identifier, empty_except_spec, null_node): Likewise.
+	(current_function_parms, current_lang_base): Remove.
+	(current_lang_stack, previous_class_values): Remove.
+	(class_binding_level): Macroize.
+	(saved_scope): Remove.
+	(current_saved_scope): Rename to scope_chain.
+	(mark_saved_scope): Adjust for new scope structure.
+	(maybe_push_to_top_level): Likewise.
+	(pop_from_top_level): Likewise.
+	(duplicate_decls): Adjust now that current_lang_base is a varray.
+	(build_typename_type): Call ggc_add_tree_hash_table_root.
+	(init_decl_processing): Call init_pt.  Call push_to_top_level to
+	set up globals.  Add GC roots.
+	(xref_basetypes): Adjust now that current_lang_base is a varray.
+	* decl.h (this_identifier): Remove.
+	(in_charge_identifier): Likewise.
+	* decl2.c: Don't include varray.h.
+	(current_namespace): Remove.
+	(init_decl2): Add GC roots.
+	* except.c (Terminate): Remove. 
+	(init_exception_processing): Use terminate_node instead.
+	(build_terminate_handler): Likewise.
+	* init.c (nc_nelts_field_id): Remove.
+	(minus_one): Likewise.
+	(init_init_processing): Use minus_one_node and nelts_identifier
+	instead.  Add GC roots.
+	(jclass_node): Remove.
+	(build_new_1): Use nelts_identifier.
+	(build_vec_init): Likewise.
+	(build_vec_delete): Likewise.
+	* lex.c: Include ggc.h.
+	(defarg_fn): Move declaration early.
+	(defarg_parms): Likewise.
+	(init_parse): Add GC roots.
+	(handle_cp_pragma): Remove redundant declaration of
+	pending_vtables.
+	* method.c: Include ggc.h.
+	(btypelist): Make it a varray.  All uses changed.
+	(ktypelist): Likewise.
+	(init_method): Add GC roots.
+	* pt.c: Don't include varray.h.  Include ggc.h.
+	(current_template_parms): Remove.
+	(processing_template_decl): Likewise.
+	(processing_specialization): Likewise.
+	(processing_explicit_instantiation): Likewise.
+	(init_pt): New function.
+	* repo.c: Include ggc.h.
+	(init_repo): Add GC roots.
+	* search.c: Don't include varray.h.
+	(_vptr_name): Remove.
+	(lookup_field_1): Use vtpr_identifier instead.
+	(expand_indirect_vtbls_init): Remove redundant declaration of
+	in_charge_identifier.
+	(init_search_processing): Use vptr_identifier.
+	
 1999-09-05  Richard Henderson  <rth@cygnus.com>
             Bernd Schmidt <bernds@cygnus.co.uk>
             Mark Mitchell  <mark@codesourcery.com>

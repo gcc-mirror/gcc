@@ -55,7 +55,6 @@ extern int current_class_depth;
 
 extern tree static_ctors, static_dtors;
 
-extern tree current_namespace;
 extern tree global_namespace;
 
 extern int (*valid_lang_attribute) PROTO ((tree, tree, tree, tree));
@@ -294,6 +293,7 @@ tree unsigned_type_node;
 
 tree ptr_type_node;
 tree va_list_type_node;
+tree null_pointer_node;
 
 /* Indicates that there is a type value in some namespace, although
    that is not necessarily in scope at the moment.  */
@@ -324,19 +324,6 @@ static int only_namespace_names;
    original location.  */
 
 #define original_result_rtx cp_function_chain->x_result_rtx
-
-/* C++: Keep these around to reduce calls to `get_identifier'.
-   Identifiers for `this' in member functions and the auto-delete
-   parameter for destructors.  */
-tree this_identifier, in_charge_identifier;
-tree ctor_identifier, dtor_identifier;
-/* Used in pointer to member functions, in vtables, and in sigtables.  */
-tree pfn_identifier, index_identifier, delta_identifier, delta2_identifier;
-tree pfn_or_delta2_identifier, tag_identifier;
-tree vt_off_identifier;
-
-/* Exception specifier used for throw().  */
-tree empty_except_spec;
 
 struct named_label_list
 {
@@ -375,15 +362,9 @@ tree static_aggregates;
 
 /* -- end of C++ */
 
-/* Two expressions that are constants with value zero.
-   The first is of type `int', the second of type `void *'.  */
+/* An expression of type `int' for the constant zero.  */
 
 tree integer_zero_node;
-tree null_pointer_node;
-
-/* The value for __null (NULL), namely, a zero of an integer type with
-   the same number of bits as a pointer.  */
-tree null_node;
 
 /* A node for the integer constants 1, 2, and 3.  */
 
@@ -398,23 +379,13 @@ static tree enum_next_value;
 
 static int enum_overflow;
 
-/* Parsing a function declarator leaves a list of parameter names
-   or a chain or parameter decls here.  */
-
-tree last_function_parms;
-
 /* Parsing a function declarator leaves here a chain of structure
    and enum types declared in the parmlist.  */
 
 static tree last_function_parm_tags;
 
-/* After parsing the declarator that starts a function definition,
-   `start_function' puts here the list of parameter names or chain of decls.
-   `store_parm_decls' finds it here.  */
-
-static tree current_function_parms;
-
 /* Similar, for last_function_parm_tags.  */
+tree last_function_parms;
 static tree current_function_parm_tags;
 
 /* A list (chain of TREE_LIST nodes) of all LABEL_DECLs in the function
@@ -462,10 +433,6 @@ extern int flag_huge_objects;
    .common instead of .data at the expense of not flagging multiple
    definitions.  */
 extern int flag_conserve_space;
-
-/* Pointers to the base and current top of the language name stack.  */
-
-extern tree *current_lang_base, *current_lang_stack;
 
 /* C and C++ flags are in decl2.c.  */
 
@@ -479,11 +446,6 @@ extern tree *current_lang_base, *current_lang_stack;
 /* Flag used when debugging spew.c */
 
 extern int spew_debug;
-
-/* This is a copy of the class_shadowed list of the previous class binding
-   contour when at global scope.  It's used to reset IDENTIFIER_CLASS_VALUEs
-   when entering another class scope (i.e. a cache miss).  */
-extern tree previous_class_values;
 
 /* A expression of value 0 with the same precision as a sizetype
    node, but signed.  */
@@ -645,7 +607,7 @@ struct binding_level
 
 /* The binding level of the current class, if any.  */
 
-static struct binding_level *class_binding_level;
+#define class_binding_level scope_chain->class_bindings
 
 /* A chain of binding_level structures awaiting reuse.  */
 
@@ -2432,28 +2394,9 @@ pop_nested_namespace (ns)
    local-value slots of all identifiers, so that only the global values
    are at all visible.  Simply setting current_binding_level to the global
    scope isn't enough, because more binding levels may be pushed.  */
-struct saved_scope {
-  struct binding_level *old_binding_level;
-  tree old_bindings;
-  tree old_namespace;
-  struct saved_scope *prev;
-  tree class_name, class_type;
-  tree access_specifier;
-  tree function_decl;
-  struct binding_level *class_bindings;
-  tree *lang_base, *lang_stack, lang_name;
-  int lang_stacksize;
-  tree last_function_parms;
-  tree template_parms;
-  HOST_WIDE_INT processing_template_decl;
-  tree previous_class_type, previous_class_values;
-  int processing_specialization;
-  int processing_explicit_instantiation;
-  char *class_cache_firstobj;
-};
-static struct saved_scope *current_saved_scope;
+struct saved_scope *scope_chain;
 
-/* Mark ARG (which is really a struct saved_scoipe **) for GC.  */
+/* Mark ARG (which is really a struct saved_scope **) for GC.  */
 
 static void
 mark_saved_scope (arg)
@@ -2471,14 +2414,12 @@ mark_saved_scope (arg)
       ggc_mark_tree (t->access_specifier);
       ggc_mark_tree (t->function_decl);
       if (t->lang_base)
-	ggc_mark_tree (*t->lang_base);
-      if (t->lang_stack)
-	ggc_mark_tree (*t->lang_stack);
+	ggc_mark_tree_varray (t->lang_base);
       ggc_mark_tree (t->lang_name);
-      ggc_mark_tree (t->last_function_parms);
+      ggc_mark_tree (t->x_function_parms);
       ggc_mark_tree (t->template_parms);
-      ggc_mark_tree (t->previous_class_type);
-      ggc_mark_tree (t->previous_class_values);
+      ggc_mark_tree (t->x_previous_class_type);
+      ggc_mark_tree (t->x_previous_class_values);
       t = t->prev;
     }
 }
@@ -2543,15 +2484,16 @@ void
 maybe_push_to_top_level (pseudo)
      int pseudo;
 {
-  extern int current_lang_stacksize;
   struct saved_scope *s
     = (struct saved_scope *) xmalloc (sizeof (struct saved_scope));
-  struct binding_level *b = current_binding_level;
+  struct binding_level *b;
   tree old_bindings = NULL_TREE;
+
+  b = scope_chain ? current_binding_level : 0;
 
   push_function_context_to (NULL_TREE);
 
-  if (previous_class_type)
+  if (scope_chain && previous_class_type)
     old_bindings = store_bindings (previous_class_values, old_bindings);
 
   /* Have to include global_binding_level, because class-level decls
@@ -2577,35 +2519,19 @@ maybe_push_to_top_level (pseudo)
       for (t = b->type_shadowed; t; t = TREE_CHAIN (t))
 	SET_IDENTIFIER_TYPE_VALUE (TREE_PURPOSE (t), TREE_VALUE (t));
     }
-
-  s->old_binding_level = current_binding_level;
+  if (scope_chain)
+    *s = *scope_chain;
+  s->old_binding_level = scope_chain ? current_binding_level : 0;
+  s->old_bindings = old_bindings;
+  s->prev = scope_chain;
+  scope_chain = s;
   current_binding_level = b;
-
-  s->old_namespace = current_namespace;
-  s->class_name = current_class_name;
-  s->class_type = current_class_type;
-  s->access_specifier = current_access_specifier;
-  s->function_decl = current_function_decl;
-  s->class_bindings = class_binding_level;
-  s->lang_stack = current_lang_stack;
-  s->lang_base = current_lang_base;
-  s->lang_stacksize = current_lang_stacksize;
-  s->lang_name = current_lang_name;
-  s->last_function_parms = last_function_parms;
-  s->template_parms = current_template_parms;
-  s->processing_template_decl = processing_template_decl;
-  s->previous_class_type = previous_class_type;
-  s->previous_class_values = previous_class_values;
-  s->class_cache_firstobj = class_cache_firstobj;
-  s->processing_specialization = processing_specialization;
-  s->processing_explicit_instantiation = processing_explicit_instantiation;
 
   current_class_name = current_class_type = NULL_TREE;
   current_function_decl = NULL_TREE;
   class_binding_level = (struct binding_level *)0;
-  current_lang_stacksize = 10;
-  current_lang_stack = current_lang_base
-    = (tree *) xmalloc (current_lang_stacksize * sizeof (tree));
+  VARRAY_TREE_INIT (current_lang_base, 10, "current_lang_base");
+  current_lang_stack = &VARRAY_TREE (current_lang_base, 0);
   current_lang_name = lang_name_cplusplus;
   strict_prototype = strict_prototypes_lang_cplusplus;
   named_labels = NULL_TREE;
@@ -2616,10 +2542,6 @@ maybe_push_to_top_level (pseudo)
   current_template_parms = NULL_TREE;
   processing_template_decl = 0;
   current_namespace = global_namespace;
-
-  s->prev = current_saved_scope;
-  s->old_bindings = old_bindings;
-  current_saved_scope = s;
 
   push_obstacks (&permanent_obstack, &permanent_obstack);
 }
@@ -2633,8 +2555,7 @@ push_to_top_level ()
 void
 pop_from_top_level ()
 {
-  extern int current_lang_stacksize;
-  struct saved_scope *s = current_saved_scope;
+  struct saved_scope *s = scope_chain;
   tree t;
 
   /* Clear out class-level bindings cache.  */
@@ -2643,8 +2564,9 @@ pop_from_top_level ()
 
   pop_obstacks ();
 
-  current_binding_level = s->old_binding_level;
-  current_saved_scope = s->prev;
+  VARRAY_FREE (current_lang_base);
+
+  scope_chain = s->prev;
   for (t = s->old_bindings; t; )
     {
       tree save = t;
@@ -2654,34 +2576,16 @@ pop_from_top_level ()
 	  SET_IDENTIFIER_TYPE_VALUE (id, TREE_VEC_ELT (t, 1));
 	  IDENTIFIER_BINDING (id) = TREE_VEC_ELT (t, 2);
 	  IDENTIFIER_CLASS_VALUE (id) = TREE_VEC_ELT (t, 3);
-	}
+ 	}
       t = TREE_CHAIN (t);
       TREE_CHAIN (save) = free_binding_vecs;
       free_binding_vecs = save;
     }
-  current_namespace = s->old_namespace;
-  current_class_name = s->class_name;
-  current_class_type = s->class_type;
-  current_access_specifier = s->access_specifier;
-  current_function_decl = s->function_decl;
-  class_binding_level = s->class_bindings;
-  free (current_lang_base);
-  current_lang_base = s->lang_base;
-  current_lang_stack = s->lang_stack;
-  current_lang_name = s->lang_name;
-  current_lang_stacksize = s->lang_stacksize;
+
   if (current_lang_name == lang_name_cplusplus)
     strict_prototype = strict_prototypes_lang_cplusplus;
   else if (current_lang_name == lang_name_c)
     strict_prototype = strict_prototypes_lang_c;
-  last_function_parms = s->last_function_parms;
-  current_template_parms = s->template_parms;
-  processing_template_decl = s->processing_template_decl;
-  previous_class_type = s->previous_class_type;
-  previous_class_values = s->previous_class_values;
-  processing_specialization = s->processing_specialization;
-  processing_explicit_instantiation = s->processing_explicit_instantiation;
-  class_cache_firstobj = s->class_cache_firstobj;
 
   free (s);
 
@@ -3410,7 +3314,8 @@ duplicate_decls (newdecl, olddecl)
 	  /* extern "C" int foo ();
 	     int foo () { bar (); }
 	     is OK.  */
-	  if (current_lang_stack == current_lang_base)
+	  if (current_lang_stack
+	      == &VARRAY_TREE (current_lang_base, 0))
 	    DECL_LANGUAGE (newdecl) = DECL_LANGUAGE (olddecl);
 	  else
 	    {
@@ -5490,10 +5395,14 @@ build_typename_type (context, name, fullname, base_type)
 
   push_obstacks (&permanent_obstack, &permanent_obstack);
 
-  if (!ht.table
-      && !hash_table_init (&ht, &hash_newfunc, &typename_hash, 
-			   &typename_compare))
-    fatal ("virtual memory exhausted");
+  if (!ht.table)
+    {
+      static struct hash_table *h = &ht;
+      if (!hash_table_init (&ht, &hash_newfunc, &typename_hash, 
+			    &typename_compare))
+	fatal ("virtual memory exhausted");
+      ggc_add_tree_hash_table_root (&h, 1);
+    }
 
   /* The FULLNAME needs to exist for the life of the hash table, i.e.,
      for the entire compilation.  */
@@ -6092,14 +6001,6 @@ signal_catch (sig)
   my_friendly_abort (0);
 }
 
-#if 0
-/* Unused -- brendan 970107 */
-/* Array for holding types considered "built-in".  These types
-   are output in the module in which `main' is defined.  */
-static tree *builtin_type_tdescs_arr;
-static int builtin_type_tdescs_len, builtin_type_tdescs_max;
-#endif
-
 /* Push the declarations of builtin types into the namespace.
    RID_INDEX, if < RID_MAX is the index of the builtin type
    in the array RID_POINTERS.  NAME is the name used when looking
@@ -6245,14 +6146,13 @@ init_decl_processing ()
 
   cp_parse_init ();
   init_decl2 ();
+  init_pt ();
 
-  /* Create the global per-function variables.  */
-  push_function_context_to (NULL_TREE);
+  /* Create the global variables.  */
+  push_to_top_level ();
 
   /* Enter the global namespace. */
   my_friendly_assert (global_namespace == NULL_TREE, 375);
-  my_friendly_assert (current_lang_name == NULL_TREE, 375);
-  current_lang_name = lang_name_cplusplus;
   push_namespace (get_identifier ("::"));
   global_namespace = current_namespace;
   current_lang_name = NULL_TREE;
@@ -6704,7 +6604,6 @@ init_decl_processing ()
   ggc_add_tree_root (c_global_trees, sizeof c_global_trees / sizeof(tree));
   ggc_add_tree_root (cp_global_trees, sizeof cp_global_trees / sizeof(tree));
   ggc_add_tree_root (&char_type_node, 1);
-  ggc_add_tree_root (&current_function_decl, 1);
   ggc_add_tree_root (&error_mark_node, 1);
   ggc_add_tree_root (&integer_type_node, 1);
   ggc_add_tree_root (&integer_three_node, 1);
@@ -6712,31 +6611,37 @@ init_decl_processing ()
   ggc_add_tree_root (&integer_one_node, 1);
   ggc_add_tree_root (&integer_zero_node, 1);
   ggc_add_tree_root (&signed_size_zero_node, 1);
-  ggc_add_tree_root (&named_labels, 1);
-  ggc_add_tree_root (&null_pointer_node, 1);
   ggc_add_tree_root (&size_one_node, 1);
   ggc_add_tree_root (&size_zero_node, 1);
   ggc_add_tree_root (&unsigned_type_node, 1);
+  ggc_add_tree_root (&ptr_type_node, 1);
+  ggc_add_tree_root (&null_pointer_node, 1);
+  ggc_add_tree_root (&va_list_type_node, 1);
   ggc_add_tree_root (&void_type_node, 1);
   ggc_add_root (&global_binding_level, 1, sizeof global_binding_level,
 		mark_binding_level);
-  ggc_add_root (&current_saved_scope, 1, sizeof current_saved_scope,
-		&mark_saved_scope);
+  ggc_add_root (&scope_chain, 1, sizeof scope_chain, &mark_saved_scope);
   ggc_add_tree_root (&static_ctors, 1);
   ggc_add_tree_root (&static_dtors, 1);
+  ggc_add_tree_root (&lastiddecl, 1);
 
   ggc_add_tree_root (&enum_next_value, 1);
-  ggc_add_tree_root (&last_function_parms, 1);
   ggc_add_tree_root (&last_function_parm_tags, 1);
   ggc_add_tree_root (&current_function_return_value, 1);
   ggc_add_tree_root (&current_function_parms, 1);
   ggc_add_tree_root (&current_function_parm_tags, 1);
+  ggc_add_tree_root (&last_function_parms, 1);
   ggc_add_tree_root (&error_mark_list, 1);
-  ggc_add_tree_root (&void_list_node, 1);
+
   ggc_add_tree_root (&global_namespace, 1);
-  ggc_add_tree_root (&current_namespace, 1);
   ggc_add_tree_root (&global_type_node, 1);
   ggc_add_tree_root (&anonymous_namespace_name, 1);
+
+  ggc_add_tree_root (&got_object, 1);
+  ggc_add_tree_root (&got_scope, 1);
+
+  ggc_add_tree_root (&current_lang_name, 1);
+  ggc_add_tree_root (&static_aggregates, 1);
 }
 
 /* Function to print any language-specific context for an error message.  */
@@ -12644,7 +12549,8 @@ xref_basetypes (code_type_node, name, ref, binfo)
 	    }
 
 	  if (TYPE_FOR_JAVA (basetype)
-	      && current_lang_stack == current_lang_base)
+	      && (current_lang_stack 
+		  == &VARRAY_TREE (current_lang_base, 0)))
 	    TYPE_FOR_JAVA (ref) = 1;
 
 	  /* Note that the BINFO records which describe individual
