@@ -1,3 +1,8 @@
+Tue Dec 29 11:33:25 1998  Richard Henderson  <rth@cygnus.com>
+
+	* gcc.c-torture/execute/bcp-1.c (bad10): Rename from opt3.
+	(opt3): Rename from opt4 and disable.
+
 1998-12-20  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* g++.old-deja/g++.pt/ptrmem5.C: New test.
