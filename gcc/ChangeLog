@@ -1,5 +1,14 @@
 2003-10-06  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config/mips/mips.md (*lowsi): Renamed from lowsi.
+	(*lowdi): Likewise lowdi.
+	(*lowsi_mips16, *lowdi_mips16): New patterns.
+	* config/mips/mips.c (mips_const_insns, mips_output_move): Remove
+	mips16 CONSTANT_RELOC handling.
+	(mips_delegitimize_address): Adjust for new sdata representation.
+
+2003-10-06  Richard Sandiford  <rsandifo@redhat.com>
+
 	* config/mips/mips.c (mips_arg_info): If MUST_PASS_IN_STACK,
 	skip any remaining register arguments.
 

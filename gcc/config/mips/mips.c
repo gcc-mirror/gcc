@@ -1202,6 +1202,8 @@ mips_address_insns (rtx x, enum machine_mode mode)
       return factor;
 
     case ADDRESS_LO_SUM:
+      return (TARGET_MIPS16 ? factor * 2 : factor);
+
     case ADDRESS_CONST_INT:
       return factor;
 
@@ -1250,12 +1252,8 @@ mips_const_insns (rtx x)
 	  return 0;
 
 	case CONSTANT_GP:
-	  return 1;
-
 	case CONSTANT_RELOC:
-	  /* When generating mips16 code, we need to set the destination to
-	     $0 and then add in the signed offset.  See mips_output_move.  */
-	  return (TARGET_MIPS16 ? 3 : 1);
+	  return 1;
 
 	case CONSTANT_SYMBOLIC:
 	  return mips_symbol_insns (mips_classify_symbol (c.symbol));
@@ -2013,12 +2011,11 @@ mips_delegitimize_address (rtx x)
       && mips_classify_symbol (c.symbol) == SYMBOL_GOT_GLOBAL)
     return c.symbol;
 
-  if (GET_CODE (x) == PLUS
-      && (XEXP (x, 0) == pic_offset_table_rtx
-	  || XEXP (x, 0) == cfun->machine->mips16_gp_pseudo_rtx)
-      && mips_classify_constant (&c, XEXP (x, 1)) == CONSTANT_RELOC
-      && mips_classify_symbol (c.symbol) == SYMBOL_SMALL_DATA)
-    return plus_constant (c.symbol, c.offset);
+  if (GET_CODE (x) == LO_SUM
+      && XEXP (x, 0) == (TARGET_MIPS16
+			 ? cfun->machine->mips16_gp_pseudo_rtx
+			 : pic_offset_table_rtx))
+    return XEXP (x, 1);
 
   return x;
 }
@@ -2721,7 +2718,7 @@ mips_output_move (rtx dest, rtx src)
 	  return "move\t%0,%1";
 
 	case CONSTANT_RELOC:
-	  return (TARGET_MIPS16 ? "li\t%0,0\n\taddiu\t%0,%1" : "li\t%0,%1");
+	  return "li\t%0,%1";
 
 	case CONSTANT_SYMBOLIC:
 	  return (dbl_p ? "dla\t%0,%a1" : "la\t%0,%a1");
