@@ -1,3 +1,10 @@
+2004-09-14  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/m32r/m32r.md, config/m68k/m68kelf.h,
+	config/mcore/mcore.md, config/rs6000/linux64.h,
+	config/rs6000/rs6000.c, config/sparc/sparc.c: Fix comment
+	typos.
+
 2004-09-13  James E Wilson  <wilson@specifixinc.com>
 
 	* Makefile.in (GEN_PROTOS_OBJS): Add $(BUILD_ERRORS).

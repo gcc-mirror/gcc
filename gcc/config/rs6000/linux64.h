@@ -258,7 +258,7 @@ extern int dot_symbols;
    than a doubleword should be padded upward or downward.  You could
    reasonably assume that they follow the normal rules for structure
    layout treating the parameter area as any other block of memory,
-   then map the reg param area to registers.  ie. pad updard.
+   then map the reg param area to registers.  i.e. pad upward.
    Setting both of the following defines results in this behavior.
    Setting just the first one will result in aggregates that fit in a
    doubleword being padded downward, and others being padded upward.

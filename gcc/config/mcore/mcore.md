@@ -3157,7 +3157,7 @@
 }")
 
 ; experimental - do the constant folding ourselves.  note that this isn't
-;   re-applied like we'd really want.  ie., four ands collapse into two
+;   re-applied like we'd really want.  i.e., four ands collapse into two
 ;   instead of one.  this is because peepholes are applied as a sliding
 ;   window.  the peephole does not generate new rtl's, but instead slides
 ;   across the rtl's generating machine instructions.  it would be nice
