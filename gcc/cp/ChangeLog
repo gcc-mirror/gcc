@@ -1,3 +1,8 @@
+2001-07-11  Mark Mitchell  <mark@codesourcery.com>
+
+	* semantics.c (finish_asm_stmt): Mark the output operands
+	to an asm addressable, if necessary.
+
 2001-07-11  Ben Elliston  <bje@redhat.com>
 
 	* Revert this change -- there is a subtle bug.

@@ -1292,6 +1292,164 @@ expand_asm (body)
   last_expr_type = 0;
 }
 
+/* Parse the output constraint pointed to by *CONSTRAINT_P.  It is the
+   OPERAND_NUMth output operand, indexed from zero.  There are NINPUTS
+   inputs and NOUTPUTS outputs to this extended-asm.  Upon return,
+   *ALLOWS_MEM will be TRUE iff the constraint allows the use of a
+   memory operand.  Similarly, *ALLOWS_REG will be TRUE iff the
+   constraint allows the use of a register operand.  And, *IS_INOUT
+   will be true if the operand is read-write, i.e., if it is used as
+   an input as well as an output.  If *CONSTRAINT_P is not in
+   canonical form, it will be made canonical.  (Note that `+' will be
+   rpelaced with `=' as part of this process.)
+
+   Returns TRUE if all went well; FALSE if an error occurred.  */
+
+bool
+parse_output_constraint (constraint_p, 
+			 operand_num,
+			 ninputs,
+			 noutputs,
+			 allows_mem, 
+			 allows_reg, 
+			 is_inout)
+     const char **constraint_p;
+     int operand_num;
+     int ninputs;
+     int noutputs;
+     bool *allows_mem;
+     bool *allows_reg;
+     bool *is_inout;
+{
+  const char *constraint = *constraint_p;
+  const char *p;
+
+  /* Assume the constraint doesn't allow the use of either a register
+     or memory.  */
+  *allows_mem = false;
+  *allows_reg = false;
+
+  /* Allow the `=' or `+' to not be at the beginning of the string,
+     since it wasn't explicitly documented that way, and there is a
+     large body of code that puts it last.  Swap the character to
+     the front, so as not to uglify any place else.  */
+  p = strchr (constraint, '=');
+  if (!p)
+    p = strchr (constraint, '+');
+
+  /* If the string doesn't contain an `=', issue an error
+     message.  */
+  if (!p)
+    {
+      error ("output operand constraint lacks `='");
+      return false;
+    }
+
+  /* If the constraint begins with `+', then the operand is both read
+     from and written to.  */
+  *is_inout = (*p == '+');
+
+  /* Make sure we can specify the matching operand.  */
+  if (*is_inout && operand_num > 9)
+    {
+      error ("output operand constraint %d contains `+'", 
+	     operand_num);
+      return false;
+    }
+
+  /* Canonicalize the output constraint so that it begins with `='.  */
+  if (p != constraint || is_inout)
+    {
+      char *buf;
+      size_t c_len = strlen (constraint);
+
+      if (p != constraint)
+	warning ("output constraint `%c' for operand %d is not at the beginning",
+		 *p, operand_num);
+
+      /* Make a copy of the constraint.  */
+      buf = alloca (c_len + 1);
+      strcpy (buf, constraint);
+      /* Swap the first character and the `=' or `+'.  */
+      buf[p - constraint] = buf[0];
+      /* Make sure the first character is an `='.  (Until we do this,
+	 it might be a `+'.)  */
+      buf[0] = '=';
+      /* Replace the constraint with the canonicalized string.  */
+      *constraint_p = ggc_alloc_string (buf, c_len);
+      constraint = *constraint_p;
+    }
+
+  /* Loop through the constraint string.  */
+  for (p = constraint + 1; *p; ++p)
+    switch (*p)
+      {
+      case '+':
+      case '=':
+	error ("operand constraint contains '+' or '=' at illegal position.");
+	return false;
+	
+      case '%':
+	if (operand_num + 1 == ninputs + noutputs)
+	  {
+	    error ("`%%' constraint used with last operand");
+	    return false;
+	  }
+	break;
+
+      case 'V':  case 'm':  case 'o':
+	*allows_mem = true;
+	break;
+
+      case '?':  case '!':  case '*':  case '&':  case '#':
+      case 'E':  case 'F':  case 'G':  case 'H':
+      case 's':  case 'i':  case 'n':
+      case 'I':  case 'J':  case 'K':  case 'L':  case 'M':
+      case 'N':  case 'O':  case 'P':  case ',':
+	break;
+
+      case '0':  case '1':  case '2':  case '3':  case '4':
+      case '5':  case '6':  case '7':  case '8':  case '9':
+	error ("matching constraint not valid in output operand");
+	return false;
+
+      case '<':  case '>':
+	/* ??? Before flow, auto inc/dec insns are not supposed to exist,
+	   excepting those that expand_call created.  So match memory
+	   and hope.  */
+	*allows_mem = true;
+	break;
+
+      case 'g':  case 'X':
+	*allows_reg = true;
+	*allows_mem = true;
+	break;
+	
+      case 'p': case 'r':
+	*allows_reg = true;
+	break;
+
+      default:
+	if (!ISALPHA (*p))
+	  break;
+	if (REG_CLASS_FROM_LETTER (*p) != NO_REGS)
+	  *allows_reg = true;
+#ifdef EXTRA_CONSTRAINT
+	else
+	  {
+	    /* Otherwise we can't assume anything about the nature of
+	       the constraint except that it isn't purely registers.
+	       Treat it like "g" and hope for the best.  */
+	    *allows_reg = true;
+	    *allows_mem = true;
+	  }
+#endif
+	break;
+      }
+
+  return true;
+}
+
 /* Generate RTL for an asm statement with arguments.
    STRING is the instruction template.
    OUTPUTS is a list of output arguments (lvalues); INPUTS a list of inputs.
@@ -1411,15 +1569,12 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
       tree val = TREE_VALUE (tail);
       tree type = TREE_TYPE (val);
       const char *constraint;
-      char *p;
-      int c_len;
-      int j;
-      int is_inout = 0;
-      int allows_reg = 0;
-      int allows_mem = 0;
+      bool is_inout;
+      bool allows_reg;
+      bool allows_mem;
 
       /* If there's an erroneous arg, emit no insn.  */
-      if (TREE_TYPE (val) == error_mark_node)
+      if (type == error_mark_node)
 	return;
 
       /* Make sure constraint has `=' and does not have `+'.  Also, see
@@ -1429,119 +1584,17 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 
       constraint = TREE_STRING_POINTER (TREE_PURPOSE (tail));
       output_constraints[i] = constraint;
-      c_len = strlen (constraint);
 
-      /* Allow the `=' or `+' to not be at the beginning of the string,
-	 since it wasn't explicitly documented that way, and there is a
-	 large body of code that puts it last.  Swap the character to
-	 the front, so as not to uglify any place else.  */
-      switch (c_len)
-	{
-	default:
-	  if ((p = strchr (constraint, '=')) != NULL)
-	    break;
-	  if ((p = strchr (constraint, '+')) != NULL)
-	    break;
-	case 0:
-	  error ("output operand constraint lacks `='");
-	  return;
-	}
-      j = p - constraint;
-      is_inout = *p == '+';
-
-      if (j || is_inout)
-	{
-	  /* Have to throw away this constraint string and get a new one.  */
-	  char *buf = alloca (c_len + 1);
-	  buf[0] = '=';
-	  if (j)
-	    memcpy (buf + 1, constraint, j);
-	  memcpy (buf + 1 + j, p + 1, c_len - j);  /* not -j-1 - copy null */
-	  constraint = ggc_alloc_string (buf, c_len);
-	  output_constraints[i] = constraint;
-
-	  if (j)
-	    warning (
-		"output constraint `%c' for operand %d is not at the beginning",
-		*p, i);
-	}
-
-      /* Make sure we can specify the matching operand.  */
-      if (is_inout && i > 9)
-	{
-	  error ("output operand constraint %d contains `+'", i);
-	  return;
-	}
-
-      for (j = 1; j < c_len; j++)
-	switch (constraint[j])
-	  {
-	  case '+':
-	  case '=':
-	    error ("operand constraint contains '+' or '=' at illegal position.");
-	    return;
-
-	  case '%':
-	    if (i + 1 == ninputs + noutputs)
-	      {
-		error ("`%%' constraint used with last operand");
-		return;
-	      }
-	    break;
-
-	  case '?':  case '!':  case '*':  case '&':  case '#':
-	  case 'E':  case 'F':  case 'G':  case 'H':
-	  case 's':  case 'i':  case 'n':
-	  case 'I':  case 'J':  case 'K':  case 'L':  case 'M':
-	  case 'N':  case 'O':  case 'P':  case ',':
-	    break;
-
-	  case '0':  case '1':  case '2':  case '3':  case '4':
-	  case '5':  case '6':  case '7':  case '8':  case '9':
-	    error ("matching constraint not valid in output operand");
-	    break;
-
-	  case 'V':  case 'm':  case 'o':
-	    allows_mem = 1;
-	    break;
-
-	  case '<':  case '>':
-          /* ??? Before flow, auto inc/dec insns are not supposed to exist,
-             excepting those that expand_call created.  So match memory
-	     and hope.  */
-	    allows_mem = 1;
-	    break;
-
-	  case 'g':  case 'X':
-	    allows_reg = 1;
-	    allows_mem = 1;
-	    break;
-
-	  case 'p': case 'r':
-	    allows_reg = 1;
-	    break;
-
-	  default:
-	    if (! ISALPHA (constraint[j]))
-	      {
-		error ("invalid punctuation `%c' in constraint",
-		       constraint[j]);
-		return;
-	      }
-	    if (REG_CLASS_FROM_LETTER (constraint[j]) != NO_REGS)
-	      allows_reg = 1;
-#ifdef EXTRA_CONSTRAINT
-	    else
-	      {
-		/* Otherwise we can't assume anything about the nature of
-		   the constraint except that it isn't purely registers.
-		   Treat it like "g" and hope for the best.  */
-		allows_reg = 1;
-		allows_mem = 1;
-	      }
-#endif
-	    break;
-	  }
+      /* Try to parse the output constraint.  If that fails, there's
+	 no point in going further.  */
+      if (!parse_output_constraint (&output_constraints[i],
+				    i,
+				    ninputs,
+				    noutputs,
+				    &allows_mem,
+				    &allows_reg,
+				    &is_inout))
+	return;
 
       /* If an output operand is not a decl or indirect ref and our constraint
 	 allows a register, make a temporary to act as an intermediate.
