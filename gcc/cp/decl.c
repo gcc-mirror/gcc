@@ -13782,6 +13782,8 @@ finish_function (lineno, flags)
     }
   else
     {
+      /* Clear out memory we no longer need.  */
+      free_after_parsing (current_function);
       /* Since we never call rest_of_compilation, we never clear
 	 CURRENT_FUNCTION.  Do so explicitly.  */
       free_after_compilation (current_function);
