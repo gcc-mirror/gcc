@@ -72,78 +72,11 @@ Boston, MA 02111-1307, USA.  */
 
 #define ENDFILE_SPEC "crtfini.o%s"
 
-/* Run-time compilation parameters selecting different hardware subsets.  */
-
-extern int target_flags;
-
-/* Mangle all user symbols for the specified cpu.
-   ARC's can be shipped in which a collection of cpus are coupled together.
-   Each CPU may be different in some way, and thus we may need to distinguish
-   code compiled for one to ensure it isn't linked with code compiled for
-   another.  */
-#define TARGET_MASK_MANGLE_CPU 1
-#define TARGET_MANGLE_CPU (target_flags & TARGET_MASK_MANGLE_CPU)
-
-#if 0
-/* Mangle libgcc symbols by adding a suffix for the specified cpu.  */
-#define TARGET_MASK_MANGLE_CPU_LIBGCC 2
-#define TARGET_MANGLE_CPU_LIBGCC (target_flags & TARGET_MASK_MANGLE_CPU_LIBGCC)
-#endif
-
-/* Align loops to 32 byte boundaries (cache line size).  */
-#define TARGET_MASK_ALIGN_LOOPS 4
-#define TARGET_ALIGN_LOOPS (target_flags & TARGET_MASK_ALIGN_LOOPS)
-
-/* Big Endian.  */
-#define TARGET_MASK_BIG_ENDIAN 8
-#define TARGET_BIG_ENDIAN (target_flags & TARGET_MASK_BIG_ENDIAN)
-
-/* Turn off conditional execution optimization,
-   so we can see how well it does, or in case it's buggy.  */
-#define TARGET_MASK_NO_COND_EXEC 0x10
-#define TARGET_NO_COND_EXEC (target_flags & TARGET_MASK_NO_COND_EXEC)
-
-/* Macro to define tables used to set the flags.
-   This is a list in braces of pairs in braces,
-   each pair being { "NAME", VALUE }
-   where VALUE is the bits to set or minus the bits to clear.
-   An empty string NAME is used to identify the default VALUE.  */
-
-#define TARGET_SWITCHES \
-{ \
-    { "mangle-cpu",		TARGET_MASK_MANGLE_CPU },		\
-    { "no-mangle-cpu",		-TARGET_MASK_MANGLE_CPU },		\
-/*  { "mangle-cpu-libgcc",	TARGET_MASK_MANGLE_CPU_LIBGCC }, */	\
-/*  { "no-mangle-cpu-libgcc",	-TARGET_MASK_MANGLE_CPU_LIBGCC }, */	\
-    { "align-loops",		TARGET_MASK_ALIGN_LOOPS },		\
-    { "no-align-loops",		-TARGET_MASK_ALIGN_LOOPS },		\
-    { "big-endian",		TARGET_MASK_BIG_ENDIAN },		\
-    { "little-endian",		-TARGET_MASK_BIG_ENDIAN },		\
-    { "no-cond-exec",		TARGET_MASK_NO_COND_EXEC },		\
-    SUBTARGET_SWITCHES							\
-    { "", TARGET_DEFAULT }						\
-}
-
-#define TARGET_DEFAULT (0)
-
-#define SUBTARGET_SWITCHES
-
 /* Instruction set characteristics.
    These are internal macros, set by the appropriate -mcpu= option.  */
 
 /* Nonzero means the cpu has a barrel shifter.  */
 #define TARGET_SHIFTER 0
-
-extern const char *arc_cpu_string;
-extern const char *arc_text_string,*arc_data_string,*arc_rodata_string;
-
-#define TARGET_OPTIONS \
-{					\
-  { "cpu=",	&arc_cpu_string, 0},	\
-  { "text=",	&arc_text_string, 0},	\
-  { "data=",	&arc_data_string, 0},	\
-  { "rodata=",	&arc_rodata_string, 0},	\
-}
 
 /* Which cpu we're compiling for.  */
 extern int arc_cpu_type;

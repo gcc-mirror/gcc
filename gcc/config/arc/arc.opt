@@ -1,0 +1,34 @@
+malign-loops
+Target Undocumented Report Mask(ALIGN_LOOPS)
+
+mbig-endian
+Target Undocumented Report RejectNegative Mask(BIG_ENDIAN)
+
+mlittle-endian
+Target Undocumented Report RejectNegative InverseMask(BIG_ENDIAN)
+
+mmangle-cpu
+Target Report Mask(MANGLE_CPU)
+Prepend the name of the cpu to all public symbol names
+
+; mmangle-cpu-libgcc
+; Target Undocumented Mask(MANGLE_CPU_LIBGC)
+
+mno-cond-exec
+Target Undocumented Report RejectNegative Mask(NO_COND_EXEC)
+
+mcpu=
+Target RejectNegative Joined
+-mcpu=CPU	Compile code for ARC variant CPU
+
+mtext=
+Target RejectNegative Joined
+-mtext=SECTION	Put functions in SECTION
+
+mdata=
+Target RejectNegative Joined
+-mdata=SECTION	Put data in SECTION
+
+mrodata=
+Target RejectNegative Joined
+-mrodata=SECTION	Put read-only data in SECTION

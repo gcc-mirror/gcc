@@ -43,8 +43,8 @@ Boston, MA 02111-1307, USA.  */
 #include "target.h"
 #include "target-def.h"
 
-/* Which cpu we're compiling for (NULL(=base), ???).  */
-const char *arc_cpu_string;
+/* Which cpu we're compiling for.  */
+static const char *arc_cpu_string = "base";
 int arc_cpu_type;
 
 /* Name of mangle string to add to symbols to separate code compiled for each
@@ -57,9 +57,9 @@ rtx arc_compare_op0, arc_compare_op1;
 
 /* Name of text, data, and rodata sections, as specified on command line.
    Selected by -m{text,data,rodata} flags.  */
-const char *arc_text_string = ARC_DEFAULT_TEXT_SECTION;
-const char *arc_data_string = ARC_DEFAULT_DATA_SECTION;
-const char *arc_rodata_string = ARC_DEFAULT_RODATA_SECTION;
+static const char *arc_text_string = ARC_DEFAULT_TEXT_SECTION;
+static const char *arc_data_string = ARC_DEFAULT_DATA_SECTION;
+static const char *arc_rodata_string = ARC_DEFAULT_RODATA_SECTION;
 
 /* Name of text, data, and rodata sections used in varasm.c.  */
 const char *arc_text_section;
@@ -86,6 +86,7 @@ static int arc_ccfsm_target_label;
    arc_print_operand.  */
 static int last_insn_set_cc_p;
 static int current_insn_set_cc_p;
+static bool arc_handle_option (size_t, const char *, int);
 static void record_cc_ref (rtx);
 static void arc_init_reg_tables (void);
 static int get_arc_condition_code (rtx);
@@ -126,6 +127,9 @@ static bool arc_pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode,
 #undef TARGET_ASM_EXTERNAL_LIBCALL
 #define TARGET_ASM_EXTERNAL_LIBCALL arc_external_libcall
 
+#undef TARGET_HANDLE_OPTION
+#define TARGET_HANDLE_OPTION arc_handle_option
+
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS arc_rtx_costs
 #undef TARGET_ADDRESS_COST
@@ -150,6 +154,38 @@ static bool arc_pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode,
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
+/* Implement TARGET_HANDLE_OPTION.  */
+
+static bool
+arc_handle_option (size_t code, const char *arg, int value ATTRIBUTE_UNUSED)
+{
+  switch (code)
+    {
+    case OPT_mcpu_:
+      if (strcmp (arg, "base") == 0 || ARC_EXTENSION_CPU (arg))
+	{
+	  arc_cpu_string = arg;
+	  return true;
+	}
+      return false;
+
+    case OPT_mtext_:
+      arc_text_string = arg;
+      return true;
+
+    case OPT_mdata_:
+      arc_data_string = arg;
+      return true;
+
+    case OPT_mrodata_:
+      arc_rodata_string = arg;
+      return true;
+
+    default:
+      return true;
+    }
+}
+
 /* Called by OVERRIDE_OPTIONS to initialize various things.  */
 
 void
@@ -157,24 +193,6 @@ arc_init (void)
 {
   char *tmp;
   
-  if (arc_cpu_string == 0
-      || !strcmp (arc_cpu_string, "base"))
-    {
-      /* Ensure we have a printable value for the .cpu pseudo-op.  */
-      arc_cpu_string = "base";
-      arc_cpu_type = 0;
-      arc_mangle_cpu = NULL;
-    }
-  else if (ARC_EXTENSION_CPU (arc_cpu_string))
-    ; /* nothing to do */
-  else
-    {
-      error ("bad value (%s) for -mcpu switch", arc_cpu_string);
-      arc_cpu_string = "base";
-      arc_cpu_type = 0;
-      arc_mangle_cpu = NULL;
-    }
-
   /* Set the pseudo-ops for the various standard sections.  */
   arc_text_section = tmp = xmalloc (strlen (arc_text_string) + sizeof (ARC_SECTION_FORMAT) + 1);
   sprintf (tmp, ARC_SECTION_FORMAT, arc_text_string);
