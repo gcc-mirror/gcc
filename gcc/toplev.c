@@ -77,7 +77,9 @@ VMS_fopen (fname, type)
 
 extern int rtx_equal_function_value_matters;
 
+#if ! (defined (VMS) && defined (OS2))
 extern char **environ;
+#endif
 extern char *version_string, *language_string;
 
 extern void init_lex ();
@@ -2933,8 +2935,8 @@ main (argc, argv, envp)
 	      /* If more than one debugging type is supported,
 		 you must define PREFERRED_DEBUGGING_TYPE
 		 to choose a format in a system-dependent way.  */
-#if 1 < (defined (DBX_DEBUGGING_INFO) + defined (SDB_DEBUGGING_INFO) \
-	 + defined (DWARF_DEBUGGING_INFO) + defined (XCOFF_DEBUGGING_INFO))
+	      /* This is one long line cause VAXC can't handle a \-newline.  */
+#if 1 < (defined (DBX_DEBUGGING_INFO) + defined (SDB_DEBUGGING_INFO) + defined (DWARF_DEBUGGING_INFO) + defined (XCOFF_DEBUGGING_INFO))
 #ifdef PREFERRED_DEBUGGING_TYPE
 	      if (!strncmp (str, "ggdb", len))
 		write_symbols = PREFERRED_DEBUGGING_TYPE;
