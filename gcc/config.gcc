@@ -2223,17 +2223,15 @@ fi
 		for which in cpu tune; do
 			# See if it matches any of the entries in arm-cores.def
 			eval "val=\$with_$which"
-			[ x"$val" = x ] && val=unset
-			for opt in `sed -e '/ARM_CORE/!d' \
-			  -e 's/ARM_CORE(\([^,]*\),.*$/\1/' \
-			  ${srcdir}/config/arm/arm-cores.def` unset .
-			do
-				[ x$opt = x"$val" ] && break
-			done
-			if [ $opt = . ]; then
-				echo "Unknown CPU used in --with-$which=$val" 1>&2
-				exit 1
-			  
+			if [ x"$val" = x ] \
+			    || grep "^ARM_CORE($val," \
+				    ${srcdir}/config/arm/arm-cores.def \
+				    > /dev/null; then
+			  # Ok
+			  true
+			else
+			  echo "Unknown CPU used in --with-$which=$val" 1>&2
+			  exit 1
 			fi
 		done
 
