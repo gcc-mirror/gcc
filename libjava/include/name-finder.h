@@ -17,7 +17,10 @@ details.  */
 #include <jvm.h>
 
 #include <sys/types.h>
+
+#ifdef HAVE_SYS_WAIT_H
 #include <sys/wait.h>
+#endif
 
 #include <string.h>
 #include <stdio.h>

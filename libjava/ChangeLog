@@ -1,3 +1,7 @@
+2002-02-06  Adam Megacz <adam@xwt.org>
+
+	* name-finder.h: don't #include sys/wait.h unless HAVE_SYS_WAIT_H
+	
 2002-02-06  Anthony Green  <green@redhat.com>
 
 	* java/net/natPlainSocketImpl.cc: Fix DISABLE_JAVA_NET targets.
