@@ -380,6 +380,12 @@ extern int current_function_has_nonlocal_label;
 
 extern int current_function_contains_functions;
 
+/* Nonzero if function being compiled doesn't modify the stack pointer
+   (ignoring the prologue and epilogue).  This is only valid after
+   life_analysis has run. */
+
+extern int current_function_sp_is_unchanging;
+
 /* Nonzero if the current function returns a pointer type */
 
 extern int current_function_returns_pointer;

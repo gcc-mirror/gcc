@@ -106,7 +106,10 @@ Boston, MA 02111-1307, USA.  */
 
    life_analysis fills in certain vectors containing information about
    register usage: reg_n_refs, reg_n_deaths, reg_n_sets, reg_live_length,
-   reg_n_calls_crosses and reg_basic_block.  */
+   reg_n_calls_crosses and reg_basic_block.
+
+   life_analysis sets current_function_sp_is_unchanging if the function
+   doesn't modify the stack pointer.  */
 
 #include "config.h"
 #include "system.h"
@@ -289,6 +292,7 @@ static void init_regset_vector		PROTO ((regset *, int,
 static void count_reg_sets_1		PROTO ((rtx));
 static void count_reg_sets		PROTO ((rtx));
 static void count_reg_references	PROTO ((rtx));
+static void notice_stack_pointer_modification PROTO ((rtx, rtx));
 
 /* Find basic blocks of the current function.
    F is the first insn of the function and NREGS the number of register numbers
@@ -1221,9 +1225,28 @@ noop_move_p (insn)
   return 0;
 }
 
+static void
+notice_stack_pointer_modification (x, pat)
+     rtx x;
+     rtx pat ATTRIBUTE_UNUSED;
+{
+  if (x == stack_pointer_rtx
+      /* The stack pointer is only modified indirectly as the result
+	 of a push until later in flow.  See the comments in rtl.texi
+	 regarding Embedded Side-Effects on Addresses.  */
+      || (GET_CODE (x) == MEM
+	  && (GET_CODE (XEXP (x, 0)) == PRE_DEC
+	      || GET_CODE (XEXP (x, 0)) == PRE_INC
+	      || GET_CODE (XEXP (x, 0)) == POST_DEC
+	      || GET_CODE (XEXP (x, 0)) == POST_INC)
+	  && XEXP (XEXP (x, 0), 0) == stack_pointer_rtx))
+    current_function_sp_is_unchanging = 0;
+}
+
 /* Record which insns refer to any volatile memory
    or for any reason can't be deleted just because they are dead stores.
-   Also, delete any insns that copy a register to itself.  */
+   Also, delete any insns that copy a register to itself.
+   And see if the stack pointer is modified.  */
 static void
 record_volatile_insns (f)
      rtx f;
@@ -1264,6 +1287,11 @@ record_volatile_insns (f)
 	      NOTE_SOURCE_FILE (insn) = 0;
 	    }
 	}
+
+      /* Check if insn modifies the stack pointer.  */
+      if ( current_function_sp_is_unchanging
+	   && GET_RTX_CLASS (GET_CODE (insn)) == 'i')
+	note_stores (PATTERN (insn), notice_stack_pointer_modification);
     }
 }
 
@@ -1279,7 +1307,8 @@ mark_regs_live_at_end (set)
   if (! EXIT_IGNORE_STACK
       || (! FRAME_POINTER_REQUIRED
 	  && ! current_function_calls_alloca
-	  && flag_omit_frame_pointer))
+	  && flag_omit_frame_pointer)
+      || current_function_sp_is_unchanging)
 #endif
     /* If exiting needs the right stack value,
        consider the stack pointer live at the end of the function.  */
@@ -1375,6 +1404,11 @@ life_analysis_1 (f, nregs)
   basic_block_significant
     = (regset *) alloca (n_basic_blocks * sizeof (regset));
   init_regset_vector (basic_block_significant, n_basic_blocks, &flow_obstack);
+
+  /* Assume that the stack pointer is unchanging if alloca hasn't been used.
+     This will be cleared by record_volatile_insns if it encounters an insn
+     which modifies the stack pointer.  */
+  current_function_sp_is_unchanging = !current_function_calls_alloca;
 
   record_volatile_insns (f);
 
