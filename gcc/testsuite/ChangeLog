@@ -1,6 +1,6 @@
 2005-02-03  Andrew Pinski  <pinskia@physics.uc.edu>
 
-	PR tree-opt/19763
+	PR tree-opt/19736
 	* gcc.c-torture/compile/pr19736.c: New test.
 
 2005-02-03  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
