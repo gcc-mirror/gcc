@@ -2903,16 +2903,35 @@ print_rtl_with_bb (outf, rtx_first)
 	{
 	  if ((bb = start[INSN_UID (tmp_rtx)]) >= 0)
 	    {
-	      fprintf (outf, ";; Start of basic block %d, registers live:",
-		       bb);
+	      int pos = 18;
+
+	      if (PREV_INSN (tmp_rtx) != 0
+		  && end[INSN_UID (PREV_INSN (tmp_rtx))] >= 0)
+		fprintf (outf, " start");
+	      else
+		fprintf (outf, ";; Start");
+
+	      fprintf (outf, " of basic block %d.\n;; Registers live:", bb);
 
 	      EXECUTE_IF_SET_IN_REG_SET (basic_block_live_at_start[bb], 0, i,
 					 {
+					   if (pos > 65)
+					     {
+					       fprintf (outf, "\n;;\t");
+					       pos = 10;
+					     }
+
 					   fprintf (outf, " %d", i);
+					   pos += (i >= 100 ? 4 : 3);
 					   if (i < FIRST_PSEUDO_REGISTER)
-					     fprintf (outf, " [%s]",
-						      reg_names[i]);
+					     {
+					       fprintf (outf, " [%s]",
+							reg_names[i]);
+					       pos += (strlen (reg_names[i])
+						       + 3);
+					     }
 					 });
+	      putc ('\n', outf);
 	      putc ('\n', outf);
 	    }
 
@@ -2924,11 +2943,17 @@ print_rtl_with_bb (outf, rtx_first)
 	    fprintf (outf, ";; Insn is in multiple basic blocks\n");
 
 	  print_rtl_single (outf, tmp_rtx);
+	  putc ('\n', outf);
 
 	  if ((bb = end[INSN_UID (tmp_rtx)]) >= 0)
-	    fprintf (outf, ";; End of basic block %d\n", bb);
-
-	  putc ('\n', outf);
+	    {
+	      fprintf (outf, "\n;; End of basic block %d", bb);
+	      if (NEXT_INSN (tmp_rtx) != 0
+		  && start[INSN_UID (NEXT_INSN (tmp_rtx))] >= 0)
+		fprintf (outf, ";");
+	      else
+		fprintf (outf, ".\n");
+	    }
 	}
     }
 }
