@@ -10446,6 +10446,10 @@ fold_relational_const (enum tree_code code, tree type, tree op0, tree op1)
 tree
 build_fold_addr_expr_with_type (tree t, tree ptrtype)
 {
+  /* The size of the object is not relevant when talking about its address.  */
+  if (TREE_CODE (t) == WITH_SIZE_EXPR)
+    t = TREE_OPERAND (t, 0);
+
   if (TREE_CODE (t) == INDIRECT_REF)
     {
       t = TREE_OPERAND (t, 0);

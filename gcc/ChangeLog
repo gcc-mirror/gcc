@@ -1,3 +1,14 @@
+2004-09-01  Richard Henderson  <rth@redhat.com>
+
+	PR middle-end/17258
+	* calls.c (initialize_argument_information): Tighten pass-through
+	conditions for pass-by-reference.  Remove dead TARGET_EXPR code.
+	Use build_fold_addr_expr.
+	(emit_library_call_value_1): Use build_fold_addr_expr.  Remove code
+	that assumes ADDR_EXPR allocates stack space.
+	* fold-const.c (build_fold_addr_expr_with_type): Look through
+	WITH_SIZE_EXPR.
+
 2004-09-01  Dan Nicolaescu  <dann@ics.uci.edu>
 
 	* gengenrtl.c (gendef): Use rtx_alloc, don't do PUT_CODE.
