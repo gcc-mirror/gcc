@@ -1,3 +1,7 @@
+2000-11-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* reload1.c (set_label_offsets): Go inside of PARALLELs.
+
 2000-11-12  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* invoke.texi: Clean up option summary.
