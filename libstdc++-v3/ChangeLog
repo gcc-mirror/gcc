@@ -1,3 +1,14 @@
+2004-10-17  Dhruv Matani  <dhruvbird@gmx.net>
+	    Paolo Carlini  <pcarlini@suse.de>
+		
+	* include/ext/bitmap_allocator.h: Change unsigned int -> size_t: this
+	makes the code 64-bit correct and also fixes (together with using at
+	the beginning a bitmap 2 * size_t bytes wide) alignment issues: now
+	8 is guaranteed, easily tunable to 16 via _BALLOC_ALIGN_BYTES.
+	Fix pthread-rope7.cc fail by nulling out __mini_vector<> destructor.
+	* src/bitmap_allocator.cc: Change to size_t.
+	* config/linker-map.gnu: Adjust.
+
 2004-10-16  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/tr1/array: Don't use layout_type.

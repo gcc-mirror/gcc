@@ -54,6 +54,10 @@
 // itself(to debug the allocator itself).
 //#define _BALLOC_SANITY_CHECK
 
+// The constant in the expression below is the alignment required in
+// bytes.
+#define _BALLOC_ALIGN_BYTES 8
+
 #if defined _BALLOC_SANITY_CHECK
 #include <cassert>
 #define _BALLOC_ASSERT(_EXPR) assert(_EXPR)
@@ -238,6 +242,7 @@ namespace __gnu_cxx
 			  _M_end_of_storage(0)
 	{ }
 
+#if 0
 	~__mini_vector()
 	{
 	  if (this->_M_start)
@@ -246,6 +251,7 @@ namespace __gnu_cxx
 			       - this->_M_start);
 	    }
 	}
+#endif
 
 	size_type
 	size() const throw()
@@ -370,7 +376,7 @@ namespace __gnu_cxx
     enum 
       { 
 	bits_per_byte = 8, 
-	bits_per_block = sizeof(unsigned int) * bits_per_byte 
+	bits_per_block = sizeof(size_t) * bits_per_byte 
       };
 
     template<typename _ForwardIterator, typename _Tp, typename _Compare>
@@ -419,7 +425,7 @@ namespace __gnu_cxx
       { return (__ap.second - __ap.first) + 1; }
 
     template<typename _AddrPair>
-      inline size_t 
+      inline size_t
       __num_bitmaps(_AddrPair __ap)
       { return __num_blocks(__ap) / bits_per_block; }
 
@@ -477,8 +483,8 @@ namespace __gnu_cxx
 	typedef typename balloc::__mini_vector<_Block_pair> _BPVector;
 	typedef typename _BPVector::difference_type _Counter_type;
 
-	unsigned int* _M_pbitmap;
-	unsigned int _M_data_offset;
+	size_t* _M_pbitmap;
+	_Counter_type _M_data_offset;
 
       public:
 	_Ffit_finder() : _M_pbitmap(0), _M_data_offset(0)
@@ -487,10 +493,11 @@ namespace __gnu_cxx
 	bool 
 	operator()(_Block_pair __bp) throw()
 	{
-	  // Set the _rover to the last unsigned integer, which is the
-	  // bitmap to the first free block. Thus, the bitmaps are in exact
-	  // reverse order of the actual memory layout. So, we count down
-	  // the bimaps, which is the same as moving up the memory.
+	  // Set the _rover to the last physical location bitmap,
+	  // which is the bitmap which belongs to the first free
+	  // block. Thus, the bitmaps are in exact reverse order of
+	  // the actual memory layout. So, we count down the bimaps,
+	  // which is the same as moving up the memory.
 
 	  // If the used count stored at the start of the Bit Map headers
 	  // is equal to the number of Objects that the current Block can
@@ -499,13 +506,12 @@ namespace __gnu_cxx
 	  _Counter_type __diff = 
 	    __gnu_cxx::balloc::__num_bitmaps(__bp);
 
-	  if (*reinterpret_cast<unsigned int*>
-	      (reinterpret_cast<char*>(__bp.first) - (sizeof(unsigned int) * 
-						      (__diff+1)))
+	  if (*(reinterpret_cast<size_t*>
+		(__bp.first) - (__diff + 1))
 	      == __gnu_cxx::balloc::__num_blocks(__bp))
 	    return false;
 
-	  unsigned int* __rover = reinterpret_cast<unsigned int*>(__bp.first) - 1;
+	  size_t* __rover = reinterpret_cast<size_t*>(__bp.first) - 1;
 
 	  for (_Counter_type __i = 0; __i < __diff; ++__i)
 	    {
@@ -521,11 +527,11 @@ namespace __gnu_cxx
 	}
 
     
-	unsigned int*
+	size_t*
 	_M_get() const throw()
 	{ return _M_pbitmap; }
 
-	unsigned int
+	_Counter_type
 	_M_offset() const throw()
 	{ return _M_data_offset * bits_per_block; }
       };
@@ -542,19 +548,19 @@ namespace __gnu_cxx
 	typedef _Tp pointer;
     
 	_BPVector& _M_vbp;
-	unsigned int* _M_curr_bmap;
-	unsigned int* _M_last_bmap_in_block;
+	size_t* _M_curr_bmap;
+	size_t* _M_last_bmap_in_block;
 	_Index_type _M_curr_index;
     
       public:
 	// Use the 2nd parameter with care. Make sure that such an
 	// entry exists in the vector before passing that particular
 	// index to this ctor.
-	_Bitmap_counter(_BPVector& Rvbp, int __index = -1) : _M_vbp(Rvbp)
+	_Bitmap_counter(_BPVector& Rvbp, long __index = -1) : _M_vbp(Rvbp)
 	{ this->_M_reset(__index); }
     
 	void 
-	_M_reset(int __index = -1) throw()
+	_M_reset(long __index = -1) throw()
 	{
 	  if (__index == -1)
 	    {
@@ -564,10 +570,10 @@ namespace __gnu_cxx
 	    }
 
 	  _M_curr_index = __index;
-	  _M_curr_bmap = reinterpret_cast<unsigned int*>
+	  _M_curr_bmap = reinterpret_cast<size_t*>
 	    (_M_vbp[_M_curr_index].first) - 1;
-
-	  _BALLOC_ASSERT(__index <= (int)_M_vbp.size() - 1);
+	  
+	  _BALLOC_ASSERT(__index <= (long)_M_vbp.size() - 1);
 	
 	  _M_last_bmap_in_block = _M_curr_bmap
 	    - ((_M_vbp[_M_curr_index].second 
@@ -579,7 +585,7 @@ namespace __gnu_cxx
 	// function ONLY those values that are known to be correct,
 	// otherwise this will mess up big time.
 	void
-	_M_set_internal_bitmap(unsigned int* __new_internal_marker) throw()
+	_M_set_internal_bitmap(size_t* __new_internal_marker) throw()
 	{ _M_curr_bmap = __new_internal_marker; }
     
 	bool
@@ -601,7 +607,7 @@ namespace __gnu_cxx
 	  return *this;
 	}
     
-	unsigned int*
+	size_t*
 	_M_get() const throw()
 	{ return _M_curr_bmap; }
     
@@ -609,50 +615,51 @@ namespace __gnu_cxx
 	_M_base() const throw()
 	{ return _M_vbp[_M_curr_index].first; }
 
-	unsigned int 
+	_Index_type
 	_M_offset() const throw()
 	{
 	  return bits_per_block
-	    * ((reinterpret_cast<unsigned int*>(this->_M_base()) 
+	    * ((reinterpret_cast<size_t*>(this->_M_base()) 
 		- _M_curr_bmap) - 1);
 	}
     
-	unsigned int
+	_Index_type
 	_M_where() const throw()
 	{ return _M_curr_index; }
       };
 
     inline void 
-    __bit_allocate(unsigned int* __pbmap, unsigned int __pos) throw()
+    __bit_allocate(size_t* __pbmap, size_t __pos) throw()
     {
-      unsigned int __mask = 1 << __pos;
+      size_t __mask = 1 << __pos;
       __mask = ~__mask;
       *__pbmap &= __mask;
     }
   
     inline void 
-    __bit_free(unsigned int* __pbmap, unsigned int __pos) throw()
+    __bit_free(size_t* __pbmap, size_t __pos) throw()
     {
-      unsigned int __mask = 1 << __pos;
+      size_t __mask = 1 << __pos;
       *__pbmap |= __mask;
     }
   } // namespace balloc
 
   // Generic Version of the bsf instruction.
-  inline unsigned int 
-  _Bit_scan_forward(register unsigned int __num)
-  { return static_cast<unsigned int>(__builtin_ctz(__num)); }
+  inline size_t 
+  _Bit_scan_forward(size_t __num)
+  { return static_cast<size_t>(__builtin_ctzl(__num)); }
 
   class free_list
   {
-    typedef unsigned int* value_type;
+    typedef size_t* value_type;
     typedef balloc::__mini_vector<value_type> vector_type;
     typedef vector_type::iterator iterator;
 
     struct _LT_pointer_compare
     {
       bool
-      operator()(const unsigned int* __pui, const unsigned int __cui) const throw()
+      operator()(const size_t* __pui, 
+		 const size_t __cui) const throw()
       { return *__pui < __cui; }
     };
 
@@ -662,9 +669,9 @@ namespace __gnu_cxx
     static vector_type _S_free_list;
     
     void
-    _M_validate(unsigned int* __addr) throw()
+    _M_validate(size_t* __addr) throw()
     {
-      const unsigned int __max_size = 64;
+      const vector_type::size_type __max_size = 64;
       if (_S_free_list.size() >= __max_size)
 	{
 	  // Ok, the threshold value has been reached.  We determine
@@ -696,10 +703,10 @@ namespace __gnu_cxx
     }
 
     bool 
-    _M_should_i_give(unsigned int __block_size, 
-		     unsigned int __required_size) throw()
+    _M_should_i_give(size_t __block_size, 
+		     size_t __required_size) throw()
     {
-      const unsigned int __max_wastage_percentage = 36;
+      const size_t __max_wastage_percentage = 36;
       if (__block_size >= __required_size && 
 	  (((__block_size - __required_size) * 100 / __block_size)
 	   < __max_wastage_percentage))
@@ -710,20 +717,19 @@ namespace __gnu_cxx
 
   public:
     inline void 
-    _M_insert(unsigned int* __addr) throw()
+    _M_insert(size_t* __addr) throw()
     {
 #if defined __GTHREADS
       _Auto_Lock __bfl_lock(&_S_bfl_mutex);
 #endif
       // Call _M_validate to decide what should be done with
       // this particular free list.
-      this->_M_validate(reinterpret_cast<unsigned int*>
-			(reinterpret_cast<char*>(__addr) 
-			 - sizeof(unsigned int)));
+      this->_M_validate(reinterpret_cast<size_t*>(__addr) - 1);
+      // See discussion as to why this is 1!
     }
     
-    unsigned int*
-    _M_get(unsigned int __sz) throw(std::bad_alloc);
+    size_t*
+    _M_get(size_t __sz) throw(std::bad_alloc);
 
     // This function just clears the internal Free List, and gives back
     // all the memory to the OS.
@@ -771,7 +777,7 @@ namespace __gnu_cxx
 	};
 
     private:
-      template<unsigned int _BSize, unsigned int _AlignSize>
+      template<size_t _BSize, size_t _AlignSize>
         struct aligned_size
 	{
 	  enum
@@ -783,7 +789,8 @@ namespace __gnu_cxx
 
       struct _Alloc_block
       {
-	char __M_unused[aligned_size<sizeof(value_type), 8>::value];
+	char __M_unused[aligned_size<sizeof(value_type),
+			_BALLOC_ALIGN_BYTES>::value];
       };
 
 
@@ -824,17 +831,16 @@ namespace __gnu_cxx
 	_S_check_for_free_blocks();
 #endif
 
-	const unsigned int __num_bitmaps = _S_block_size / balloc::bits_per_block;
-	const unsigned int __size_to_allocate = sizeof(unsigned int)
+	const size_t __num_bitmaps = _S_block_size / balloc::bits_per_block;
+	const size_t __size_to_allocate = sizeof(size_t) 
 	  + _S_block_size * sizeof(_Alloc_block) 
-	  + __num_bitmaps * sizeof(unsigned int);
+	  + __num_bitmaps * sizeof(size_t);
 
-	unsigned int* __temp = 
-	  reinterpret_cast<unsigned int*>(this->_M_get(__size_to_allocate));
+	size_t* __temp = 
+	  reinterpret_cast<size_t*>
+	  (this->_M_get(__size_to_allocate));
 	*__temp = 0;
-	// ++__temp;
-	__temp = reinterpret_cast<unsigned int*>
-	  (reinterpret_cast<char*>(__temp) + sizeof(unsigned int));
+	++__temp;
 
 	// The Header information goes at the Beginning of the Block.
 	_Block_pair __bp = 
@@ -847,10 +853,10 @@ namespace __gnu_cxx
 	// Fill the Vector with this information.
 	_S_mem_blocks.push_back(__bp);
 
-	unsigned int __bit_mask = 0; // 0 Indicates all Allocated.
+	size_t __bit_mask = 0; // 0 Indicates all Allocated.
 	__bit_mask = ~__bit_mask; // 1 Indicates all Free.
 
-	for (unsigned int __i = 0; __i < __num_bitmaps; ++__i)
+	for (size_t __i = 0; __i < __num_bitmaps; ++__i)
 	  __temp[__i] = __bit_mask;
 
 	_S_block_size *= 2;
@@ -858,7 +864,7 @@ namespace __gnu_cxx
 
 
       static _BPVector _S_mem_blocks;
-      static unsigned int _S_block_size;
+      static size_t _S_block_size;
       static __gnu_cxx::balloc::
       _Bitmap_counter<_Alloc_block*> _S_last_request;
       static typename _BPVector::size_type _S_last_dealloc_index;
@@ -918,7 +924,7 @@ namespace __gnu_cxx
 		// Search was successful. Ok, now mark the first bit from
 		// the right as 0, meaning Allocated. This bit is obtained
 		// by calling _M_get() on __fff.
-		unsigned int __nz_bit = _Bit_scan_forward(*__fff._M_get());
+		size_t __nz_bit = _Bit_scan_forward(*__fff._M_get());
 		balloc::__bit_allocate(__fff._M_get(), __nz_bit);
 
 		_S_last_request._M_reset(__bpi - _S_mem_blocks.begin());
@@ -926,10 +932,10 @@ namespace __gnu_cxx
 		// Now, get the address of the bit we marked as allocated.
 		pointer __ret = reinterpret_cast<pointer>
 		  (__bpi->first + __fff._M_offset() + __nz_bit);
-		unsigned int* __puse_count = reinterpret_cast<unsigned int*>
-		  (reinterpret_cast<char*>
-		   (__bpi->first) - (sizeof(unsigned int) * 
-				     (__gnu_cxx::balloc::__num_bitmaps(*__bpi)+1)));
+		size_t* __puse_count = 
+		  reinterpret_cast<size_t*>
+		  (__bpi->first) 
+		  - (__gnu_cxx::balloc::__num_bitmaps(*__bpi) + 1);
 		
 		++(*__puse_count);
 		return __ret;
@@ -950,18 +956,16 @@ namespace __gnu_cxx
 
 	// _S_last_request holds a pointer to a valid bit map, that
 	// points to a free block in memory.
-	unsigned int __nz_bit = _Bit_scan_forward(*_S_last_request._M_get());
+	size_t __nz_bit = _Bit_scan_forward(*_S_last_request._M_get());
 	balloc::__bit_allocate(_S_last_request._M_get(), __nz_bit);
 
 	pointer __ret = reinterpret_cast<pointer>
 	  (_S_last_request._M_base() + _S_last_request._M_offset() + __nz_bit);
 
-	unsigned int* __puse_count = reinterpret_cast<unsigned int*>
-	  (reinterpret_cast<char*>
-	   (_S_mem_blocks[_S_last_request._M_where()].first)
-	   - (sizeof(unsigned int) * 
-	      (__gnu_cxx::balloc::
-	       __num_bitmaps(_S_mem_blocks[_S_last_request._M_where()])+1)));
+	size_t* __puse_count = reinterpret_cast<size_t*>
+	  (_S_mem_blocks[_S_last_request._M_where()].first)
+	  - (__gnu_cxx::balloc::
+	     __num_bitmaps(_S_mem_blocks[_S_last_request._M_where()]) + 1);
 
 	++(*__puse_count);
 	return __ret;
@@ -982,7 +986,7 @@ namespace __gnu_cxx
 	typedef typename _BPVector::difference_type _Difference_type;
 
 	_Difference_type __diff;
-	int __displacement;
+	long __displacement;
 
 	_BALLOC_ASSERT(_S_last_dealloc_index >= 0);
 
@@ -1000,10 +1004,12 @@ namespace __gnu_cxx
 	else
 	  {
 	    _Iterator _iter = 
-	      __gnu_cxx::balloc::__find_if(_S_mem_blocks.begin(), 
-					   _S_mem_blocks.end(), 
-					   __gnu_cxx::balloc::
-					   _Inclusive_between<_Alloc_block*>(__real_p));
+	      __gnu_cxx::balloc::
+	      __find_if(_S_mem_blocks.begin(), 
+			_S_mem_blocks.end(), 
+			__gnu_cxx::balloc::
+			_Inclusive_between<_Alloc_block*>(__real_p));
+
 	    _BALLOC_ASSERT(_iter != _S_mem_blocks.end());
 
 	    __diff = _iter - _S_mem_blocks.begin();
@@ -1012,17 +1018,16 @@ namespace __gnu_cxx
 	  }
 
 	// Get the position of the iterator that has been found.
-	const unsigned int __rotate = __displacement % balloc::bits_per_block;
-	unsigned int* __bitmapC = 
-	  reinterpret_cast<unsigned int*>(_S_mem_blocks[__diff].first) - 1;
+	const size_t __rotate = __displacement % balloc::bits_per_block;
+	size_t* __bitmapC = 
+	  reinterpret_cast<size_t*>
+	  (_S_mem_blocks[__diff].first) - 1;
 	__bitmapC -= (__displacement / balloc::bits_per_block);
       
 	balloc::__bit_free(__bitmapC, __rotate);
-	unsigned int* __puse_count = reinterpret_cast<unsigned int*>
-		  (reinterpret_cast<char*>
-		   (_S_mem_blocks[__diff].first)
-		   - (sizeof(unsigned int) * 
-		      (__gnu_cxx::balloc::__num_bitmaps(_S_mem_blocks[__diff])+1)));
+	size_t* __puse_count = reinterpret_cast<size_t*>
+	  (_S_mem_blocks[__diff].first)
+	  - (__gnu_cxx::balloc::__num_bitmaps(_S_mem_blocks[__diff]) + 1);
 	
 	_BALLOC_ASSERT(*__puse_count != 0);
 
@@ -1143,7 +1148,8 @@ namespace __gnu_cxx
     bitmap_allocator<_Tp>::_S_mem_blocks;
 
   template<typename _Tp>
-    unsigned int bitmap_allocator<_Tp>::_S_block_size = balloc::bits_per_block;
+    size_t bitmap_allocator<_Tp>::_S_block_size = 
+    2 * balloc::bits_per_block;
 
   template<typename _Tp>
     typename __gnu_cxx::bitmap_allocator<_Tp>::_BPVector::size_type 
