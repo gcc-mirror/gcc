@@ -107,6 +107,7 @@ extern struct rtx_def *create_TOC_reference PARAMS ((rtx));
 extern void rs6000_emit_eh_toc_restore PARAMS ((rtx));
 extern void rs6000_emit_move PARAMS ((rtx, rtx, enum machine_mode));
 extern rtx rs6000_legitimize_address PARAMS ((rtx, rtx, enum machine_mode));
+extern int rs6000_legitimate_address PARAMS ((enum machine_mode, rtx, int));
 extern void rs6000_select_rtx_section PARAMS ((enum machine_mode, rtx));
 extern rtx rs6000_return_addr PARAMS ((int, rtx));
 extern void rs6000_output_symbol_ref PARAMS ((FILE*, rtx));
