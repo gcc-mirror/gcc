@@ -1,3 +1,8 @@
+2000-02-16  Nick Clifton  <nickc@cygnus.com>
+
+	* emit-rtl.c (emit_insn): Move RTL check into make_insn_raw.
+	(make_insn_raw): Move RTL check here.
+
 2000-02-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* version.c: Include gansidecl.h and version.h.
