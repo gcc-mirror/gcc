@@ -1,3 +1,8 @@
+Thu Jun 17 13:28:30 1999  David O'Brien <obrien@FreeBSD.org>
+
+	* i386/freebsd-elf.h (FUNCTION_PROFILER): labels are not needed and
+	the reference to `mcount' was not correct for the ELF on FreeBSD.
+
 Thu Jun 17 02:54:30 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* emit-rtl.c (operand_subword): Tighten checks for when it is safe
