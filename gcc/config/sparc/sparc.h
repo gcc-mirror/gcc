@@ -545,6 +545,11 @@ extern int target_flags;
 #define MASK_V8PLUS 0x2000000
 #define TARGET_V8PLUS (target_flags & MASK_V8PLUS)                            
 
+/* Force a the fastest alignment on structures to take advantage of
+   faster copies.  */
+#define MASK_FASTER_STRUCTS 0x4000000
+#define TARGET_FASTER_STRUCTS (target_flags & MASK_FASTER_STRUCTS)
+
 /* TARGET_HARD_MUL: Use hardware multiply instructions but not %y.
    TARGET_HARD_MUL32: Use hardware multiply instructions with rd %y
    to get high 32 bits.  False in V8+ or V9 because multiply stores
@@ -603,6 +608,8 @@ extern int target_flags;
     {"64", MASK_64BIT,					"Use 64-bit ABI" }, \
     {"stack-bias", MASK_STACK_BIAS,			"Use stack bias" }, \
     {"no-stack-bias", -MASK_STACK_BIAS,			"Do not use stack bias" }, \
+    {"faster-structs", MASK_FASTER_STRUCTS,			"Use structs on stronger alignment for double-word copies" }, \
+    {"no-faster-structs", -MASK_FASTER_STRUCTS,		"Do not use structs on stronger alignment for double-word copies" }, \
     SUBTARGET_SWITCHES			\
     { "", TARGET_DEFAULT, ""}}
 
@@ -798,6 +805,23 @@ if (TARGET_ARCH64				\
 
 /* The best alignment to use in cases where we have a choice.  */
 #define FASTEST_ALIGNMENT 64
+
+/* Define this macro as an expression for the alignment of a structure
+   (given by STRUCT as a tree node) if the alignment computed in the
+   usual way is COMPUTED and the alignment explicitly specified was
+   SPECIFIED.
+
+   The default is to use SPECIFIED if it is larger; otherwise, use
+   the smaller of COMPUTED and `BIGGEST_ALIGNMENT' */
+#define ROUND_TYPE_ALIGN(STRUCT, COMPUTED, SPECIFIED)	\
+ (TARGET_FASTER_STRUCTS ?				\
+  ((TREE_CODE (STRUCT) == RECORD_TYPE			\
+    || TREE_CODE (STRUCT) == UNION_TYPE                 \
+    || TREE_CODE (STRUCT) == QUAL_UNION_TYPE)           \
+   && TYPE_FIELDS (STRUCT) != 0                         \
+     ? MAX (MAX ((COMPUTED), (SPECIFIED)), BIGGEST_ALIGNMENT) \
+     : MAX ((COMPUTED), (SPECIFIED)))			\
+   :  MAX ((COMPUTED), (SPECIFIED)))
 
 /* Make strings word-aligned so strcpy from constants will be faster.  */
 #define CONSTANT_ALIGNMENT(EXP, ALIGN)  \

@@ -365,6 +365,17 @@
     (eq_attr "type" "store,fpstore"))
   2 1)
 
+(define_function_unit "sparclite86x_branch" 1 0
+  (and (eq_attr "cpu" "sparclite86x")
+    (eq_attr "type" "branch"))
+  1 1)
+
+;; integer multiply insns 
+(define_function_unit "sparclite86x_shift" 1 0
+  (and (eq_attr "cpu" "sparclite86x")
+    (eq_attr "type" "shift"))
+  1 1)
+
 (define_function_unit "fp_alu" 1 0
   (and (ior (eq_attr "cpu" "hypersparc") (eq_attr "cpu" "sparclite86x"))
     (eq_attr "type" "fp,fpmove,fpcmp"))
@@ -7884,12 +7895,23 @@
 
 ;; Special pattern for the FLUSH instruction.
 
+; We do SImode and DImode versions of this to quiet down genrecog's complaints
+; of the define_insn otherwise missing a mode.  We make "flush", aka
+; gen_flush, the default one since sparc_initialize_trampoline uses
+; it on SImode mem values.
+
 (define_insn "flush"
-  [(unspec_volatile [(mem (match_operand 0 "address_operand" "p"))] 4)]
+  [(unspec_volatile [(match_operand:SI 0 "memory_operand" "m")] 3)]
   ""
-  "* return TARGET_V9 ? \"flush\\t%a0\" : \"iflush\\t%a0\";"
-  [(set_attr "type" "misc")
-   (set_attr "length" "1")])
+  "* return TARGET_V9 ? \"flush %f0\" : \"iflush %f0\";"
+  [(set_attr "type" "misc")])
+
+(define_insn "flushdi"
+  [(unspec_volatile [(match_operand:DI 0 "memory_operand" "m")] 3)]
+  ""
+  "* return TARGET_V9 ? \"flush %f0\" : \"iflush %f0\";"
+  [(set_attr "type" "misc")])
+
 
 ;; find first set.
 

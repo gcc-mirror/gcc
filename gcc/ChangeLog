@@ -1,3 +1,14 @@
+1999-11-30  Brendan Kehoe  <brendan@cygnus.com>
+
+	* sparc.h (MASK_FASTER_STRUCTS, TARGET_FASTER_STRUCTS): Define.
+	(TARGET_SWITCHES): Add -mfaster-structs/-mno-faster-structs flags.
+	(ROUND_TYPE_ALIGN): Use better value of -mfaster-structs.
+	* sparc.md (sparclite86x_branch, sparclite86x_shift): New function
+	units for the sparclite86x chip.
+	(flush): Revert October 14th change; add SImode specifically.
+	(flushdi): Copy of flush, but DImode, to avoid genrecog warnings.
+	* invoke.texi: Document it.
+
 Tue Nov 30 14:58:14 1999  Nick Clifton  <nickc@cygnus.com>
 
 	* config/mn10200/mn10200.h (PREDICATE_CODES): Add
