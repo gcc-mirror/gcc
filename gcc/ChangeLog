@@ -1,3 +1,12 @@
+2003-03-12  Bob Wilson  <bob.wilson@acm.org>
+
+	Backport from mainline:
+	2003-03-12  Bob Wilson  <bob.wilson@acm.org>
+
+	* config/xtensa/xtensa.md (adddi3): Don't clobber source operand used
+	to detect carry.
+	(subdi3): Reorder emitted instructions.
+
 2003-03-12  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR c/9928

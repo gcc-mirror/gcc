@@ -97,6 +97,7 @@
   ""
   "
 {
+  rtx srclo;
   rtx dstlo = gen_lowpart (SImode, operands[0]);
   rtx src1lo = gen_lowpart (SImode, operands[1]);
   rtx src2lo = gen_lowpart (SImode, operands[2]);
@@ -105,9 +106,21 @@
   rtx src1hi = gen_highpart (SImode, operands[1]);
   rtx src2hi = gen_highpart (SImode, operands[2]);
 
+  /* Either source can be used for overflow checking, as long as it's
+     not clobbered by the first addition.  */
+  if (!rtx_equal_p (dstlo, src1lo))
+    srclo = src1lo;
+  else if (!rtx_equal_p (dstlo, src2lo))
+    srclo = src2lo;
+  else
+    {
+      srclo = gen_reg_rtx (SImode);
+      emit_move_insn (srclo, src1lo);
+    }
+
   emit_insn (gen_addsi3 (dstlo, src1lo, src2lo));
   emit_insn (gen_addsi3 (dsthi, src1hi, src2hi));
-  emit_insn (gen_adddi_carry (dsthi, dstlo, src2lo));
+  emit_insn (gen_adddi_carry (dsthi, dstlo, srclo));
   DONE;
 }")
 
@@ -209,9 +222,9 @@
   rtx src1hi = gen_highpart (SImode, operands[1]);
   rtx src2hi = gen_highpart (SImode, operands[2]);
 
-  emit_insn (gen_subsi3 (dstlo, src1lo, src2lo));
   emit_insn (gen_subsi3 (dsthi, src1hi, src2hi));
   emit_insn (gen_subdi_carry (dsthi, src1lo, src2lo));
+  emit_insn (gen_subsi3 (dstlo, src1lo, src2lo));
   DONE;
 }")
 
