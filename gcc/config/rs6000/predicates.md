@@ -677,24 +677,15 @@
   (match_code "smin,smax,umin,umax"))
 
 ;; Return 1 if OP is a comparison operation that is valid for a branch
-;; instruction.  We only check the opcode against the mode of the CC value.
+;; instruction.  We check the opcode against the mode of the CC value.
+;; validate_condition_mode is an assertion.
 (define_predicate "branch_comparison_operator"
-  (match_code "eq,ne,le,lt,ge,gt,leu,ltu,geu,gtu,unordered,ordered,unge,unle")
-{
-  enum rtx_code code = GET_CODE (op);
-  enum machine_mode cc_mode;
-
-  if (!COMPARISON_P (op))
-    return 0;
-
-  cc_mode = GET_MODE (XEXP (op, 0));
-  if (GET_MODE_CLASS (cc_mode) != MODE_CC)
-    return 0;
-
-  validate_condition_mode (code, cc_mode);
-
-  return 1;
-})
+  (and (match_code "eq,ne,le,lt,ge,gt,leu,ltu,geu,gtu,unordered,ordered,unge,unle")
+       (and (match_operand 0 "comparison_operator")
+	    (and (match_test "GET_MODE_CLASS (GET_MODE (XEXP (op, 0))) == MODE_CC")
+		 (match_test "validate_condition_mode (GET_CODE (op),
+						       GET_MODE (XEXP (op, 0))),
+			      1")))))
 
 ;; Return 1 if OP is a comparison operation that is valid for an SCC insn --
 ;; it must be a positive comparison.

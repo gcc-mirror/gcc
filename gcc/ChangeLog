@@ -1,3 +1,8 @@
+2005-03-03  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/predicates.md (branch_comparison_operator):
+	Convert from C block to conditional format.
+
 2005-03-03  Jan Hubicka  <jh@suse.cz>
 
 	* tree-dfa.c (add_referenced_var): Don't walk initializer of external
