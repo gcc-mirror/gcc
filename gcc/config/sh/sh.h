@@ -1548,8 +1548,13 @@ extern struct rtx_def *sh_builtin_saveregs ();
    On the SH, it's only one instruction.  */
 /* #define SLOW_ZERO_EXTEND */
 
-/* Nonzero if access to memory by bytes is slow and undesirable.  */
-#define SLOW_BYTE_ACCESS 0
+/* Nonzero if access to memory by bytes is no faster than for words.  */
+#define SLOW_BYTE_ACCESS 1
+
+/* Force sizeof(bool) == 1 to maintain binary compatibility; otherwise, the
+   change in SLOW_BYTE_ACCESS would have changed it to 4.  */
+
+#define BOOL_TYPE_SIZE (flag_new_abi ? INT_TYPE_SIZE : CHAR_TYPE_SIZE)
 
 /* We assume that the store-condition-codes instructions store 0 for false
    and some other value for true.  This is the value stored for true.  */
