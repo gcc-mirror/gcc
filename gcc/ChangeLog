@@ -1,3 +1,21 @@
+2000-12-13  Bruce Korb  <bkorb@gnu.org>
+
+	* fixinc/Makefile.in(*): substantial rewrite to accommodate systems
+	that cannot handle bi-directional pipes, viz. BeOS and DOS.
+	* fixinc/fixlib.h(IGNORE_ARG): new macro
+	(STATIC): define for all of fixinc to use
+	* fixinc/fixfixes.c(*): eliminate unused arg warnings
+	* fixinc/fixtests.c(*): ditto
+	* fixinc/fixincl.c(start_fixer): chain_open now uses const arg list
+	* fixinc/gnu-regex.c: reorder some includes to avoid _GNU_SOURCE
+	warning.  Also, eliminate the ``#ifdef emacs'' stuff.
+	(re_syntax_options): make global as it is declared so.
+	* fixinc/mkfixinc.sh: process the argument list more consistently
+	(beos/msdosdjgpp): set TARGETS to twoprocess vs. oneprocess
+	* fixinc/procopen.c(globals): include "fixlib.h" for std defs
+	* fixinc/server.c(globals): ditto
+	* fixinc/server.h(defines): ditto
+
 2000-12-13  Neil Booth  <neil@daikokuya.demon.co.uk>
 
         * tradcpp.c (special_symbol): Improve test for definedness,

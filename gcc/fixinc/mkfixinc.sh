@@ -1,39 +1,30 @@
 #! /bin/sh
 
+if [ $# -ne 2 ]
+then
+  echo "Usage: $0 <build-mach-triplet> <target-mach-triplet>"
+  exit 1
+fi
+
 build=$1
 machine=$2
-
-if [ -z "$build" ]
-then
-	echo No target system name given
-	exit 1
-fi
-
-#  If we don't get two arguments, then assume both arguments
-#  are the same
-#
-if [ -z "$machine" ]
-then
-	machine="$build"
-fi
-
 target=../fixinc.sh
 
 echo constructing ${target} for $machine to run on $build
 fixincludes="${machine}"
 
-# Choose fix build method by build system
+# Choose one or two-process fix methodology.  Systems that cannot handle
+# bi-directional pipes must use the twoprocess method.
+#
 case $build in
-	i?86-*-msdosdjgpp* )
-		MAKE="${MAKE} -f ${srcdir}/Makefile.DOS srcdir=${srcdir}"
-		;;
-
+	i?86-*-msdosdjgpp* | \
 	*-*-beos* )
-		MAKE="${MAKE} -f ${srcdir}/Makefile.BEOS srcdir=${srcdir}"
+		MAKE="${MAKE} TARGETS=twoprocess"
+		CFLAGS="${CFLAGS} -DSEPARATE_FIX_PROC"
 		;;
 
 	* )
-		MAKE="${MAKE} -f Makefile"
+		MAKE="${MAKE} TARGETS=oneprocess"
 		;;
 esac
 

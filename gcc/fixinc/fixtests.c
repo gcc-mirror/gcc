@@ -72,6 +72,7 @@ TEST_FOR_FIX_PROC_HEAD( machine_name_test )
   regex_t *label_re, *name_re;
   regmatch_t match[2];
   tCC *base, *limit;
+  IGNORE_ARG(fname);
 
   mn_get_regexps(&label_re, &name_re, "machine_name_test");
 
