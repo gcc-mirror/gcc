@@ -1,5 +1,8 @@
 Thu Jan  1 10:49:12 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* emit-rtl.c (operand_subword): Correctly handle extracting a word
+	from a CONST_DOUBLE for 16bit targets with !WORDS_BIG_ENDIAN.
+
 	* mn10200.md (tstxx, cmpxx): Use "nonimmediate_operand" as predicate
 	for first argument.
 
