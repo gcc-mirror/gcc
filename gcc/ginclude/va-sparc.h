@@ -116,7 +116,7 @@ enum __va_type_classes {
 };
 
 #endif
-#define va_end(pvar)
+#define va_end(pvar)	((void)0)
 
 /* Avoid errors if compiling GCC v2 with GCC v1.  */
 #if __GNUC__ == 1

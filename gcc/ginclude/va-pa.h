@@ -44,6 +44,6 @@ typedef double *__gnuc_va_list;
 #ifndef va_end
 void va_end (__gnuc_va_list);		/* Defined in libgcc.a */
 #endif
-#define va_end(AP)
+#define va_end(AP)	((void)0)
 
 #endif /* defined (_STDARG_H) || defined (_VARARGS_H) */

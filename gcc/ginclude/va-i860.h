@@ -93,7 +93,7 @@ enum {
 
 void va_end (__gnuc_va_list);		/* Defined in libgcc.a */
 #endif
-#define va_end(__va)
+#define va_end(__va)	((void) 0)
 
 #define __NUM_PARM_FREGS	8
 #define __NUM_PARM_IREGS	12

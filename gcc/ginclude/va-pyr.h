@@ -125,6 +125,6 @@ __extension__								\
 })
 
 void va_end (__gnuc_va_list);		/* Defined in libgcc.a */
-#define va_end(_X)
+#define va_end(_X)	((void)0)
 
 #endif /* defined (_STDARG_H) || defined (_VARARGS_H) */

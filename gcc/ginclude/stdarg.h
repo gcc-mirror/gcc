@@ -70,7 +70,7 @@ typedef void *__gnuc_va_list;
 
 #undef va_end
 void va_end (__gnuc_va_list);		/* Defined in libgcc.a */
-#define va_end(AP)
+#define va_end(AP)	((void)0)
 
 /* We cast to void * and then to TYPE * because this avoids
    a warning about increasing the alignment requirement.  */

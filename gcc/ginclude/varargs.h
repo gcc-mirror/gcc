@@ -84,7 +84,7 @@ typedef void *__gnuc_va_list;
 
 #define va_start(AP)  AP=(char *) &__builtin_va_alist
 
-#define va_end(AP)
+#define va_end(AP)	((void)0)
 
 #if defined(sysV68)
 #define __va_rounded_size(TYPE)  \
