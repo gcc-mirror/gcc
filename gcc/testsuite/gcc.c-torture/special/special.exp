@@ -40,6 +40,7 @@ dg-init
 if { [istarget rs6000-*-aix*]
      || [istarget powerpc*-*-aix*]
      || [istarget arm*-*-*]
+     || [istarget strongarm*-*-*]
      || [istarget fr30-*-*]
 } {
     set extra_flags ""
