@@ -151,6 +151,7 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
 	    saw_speclang = 1;
 	  else if (((argv[i][2] == '\0'
 		     && (char *)strchr ("bBVDUoeTuIYmLiA", argv[i][1]) != NULL)
+		    || strcmp (argv[i], "-Xlinker") == 0
 		    || strcmp (argv[i], "-Tdata") == 0))
 	    quote = argv[i];
 	  else if (library != 0 && ((argv[i][2] == '\0'

@@ -1,3 +1,7 @@
+2001-08-08  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* g++spec.c (lang_specific_driver): Quote argument after `-Xlinker'.
+
 2001-08-07  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/3820
