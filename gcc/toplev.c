@@ -97,10 +97,10 @@ extern tree last_assemble_variable_decl;
 extern void reg_alloc PARAMS ((void));
 
 static void general_init PARAMS ((char *));
-static bool parse_options_and_default_flags PARAMS ((int, char **));
-static void do_compile PARAMS ((int));
+static void parse_options_and_default_flags PARAMS ((int, char **));
+static void do_compile PARAMS ((void));
 static void process_options PARAMS ((void));
-static void lang_independent_init PARAMS ((int));
+static void backend_init PARAMS ((void));
 static int lang_dependent_init PARAMS ((const char *));
 static void init_asm_output PARAMS ((const char *));
 static void finalize PARAMS ((void));
@@ -4723,6 +4723,12 @@ general_init (argv0)
   /* Initialize the diagnostics reporting machinery, so option parsing
      can give warnings and errors.  */
   diagnostic_initialize (global_dc);
+
+  /* Initialize the garbage-collector, string pools and tree type hash
+     table.  */
+  init_ggc ();
+  init_stringpool ();
+  init_ttree ();
 }
 
 /* Parse command line options and set default flag values, called
@@ -4731,7 +4737,7 @@ general_init (argv0)
    and identifier hashtables etc. are not initialized yet.
 
    Return non-zero to suppress compiler back end initialization.  */
-static bool
+static void
 parse_options_and_default_flags (argc, argv)
      int argc;
      char **argv;
@@ -4968,10 +4974,6 @@ parse_options_and_default_flags (argc, argv)
 
   if (flag_really_no_inline == 2)
     flag_really_no_inline = flag_no_inline;
-
-  /* All command line options have been parsed; allow the front end to
-     perform consistency checks, etc.  */
-  return (*lang_hooks.post_options) ();
 }
 
 /* Process the options that have been parsed.  */
@@ -5151,21 +5153,10 @@ process_options ()
       flag_trapping_math = 1;
 }
 
-/* Language-independent initialization, before language-dependent
-   initialization.  */
+/* Initialize the compiler back end.  */
 static void
-lang_independent_init (no_backend)
-     int no_backend;
+backend_init ()
 {
-  /* Initialize the garbage-collector, and string pools.  */
-  init_ggc ();
-
-  init_stringpool ();
-  init_ttree ();
-
-  if (no_backend)
-    return;
-
   /* init_emit_once uses reg_raw_mode and therefore must be called
      after init_regs which initialized reg_raw_mode.  */
   init_regs ();
@@ -5305,11 +5296,18 @@ finalize ()
 
 /* Initialize the compiler, and compile the input file.  */
 static void
-do_compile (no_backend)
-     int no_backend;
+do_compile ()
 {
+  /* All command line options have been parsed; allow the front end to
+     perform consistency checks, etc.  */
+  bool no_backend = (*lang_hooks.post_options) ();
+
   /* The bulk of command line switch processing.  */
   process_options ();
+
+  /* If an error has already occurred, give up.  */
+  if (errorcount)
+    return;
 
   if (aux_base_name)
     /*NOP*/;
@@ -5320,7 +5318,6 @@ do_compile (no_backend)
       aux_base_name = name;
       strip_off_ending (name, strlen (name));
     }
-  
   else
     aux_base_name = "gccaux";
 
@@ -5329,9 +5326,9 @@ do_compile (no_backend)
   init_timevar ();
   timevar_start (TV_TOTAL);
 
-  /* Language-independent initialization.  Also sets up GC, identifier
-     hashes etc., and the back-end if requested.  */
-  lang_independent_init (no_backend);
+  /* Set up the back-end if requested.  */
+  if (!no_backend)
+    backend_init ();
 
   /* Language-dependent initialization.  Returns true on success.  */
   if (lang_dependent_init (filename))
@@ -5356,18 +5353,16 @@ toplev_main (argc, argv)
      int argc;
      char **argv;
 {
-  bool no_backend;
-
   /* Initialization of GCC's environment, and diagnostics.  */
   general_init (argv[0]);
 
   /* Parse the options and do minimal processing; basically just
      enough to default flags appropriately.  */
-  no_backend = parse_options_and_default_flags (argc, argv);
+  parse_options_and_default_flags (argc, argv);
 
   /* Exit early if we can (e.g. -help).  */
-  if (!errorcount && !exit_after_options)
-    do_compile (no_backend);
+  if (!exit_after_options)
+    do_compile ();
 
   if (errorcount || sorrycount)
     return (FATAL_EXIT_CODE);

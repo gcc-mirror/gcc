@@ -1,3 +1,14 @@
+2002-08-14  Neil Booth  <neil@daikokuya.co.uk>
+
+	* toplev.c (parse_options_and_default_flags): Don't call
+	post_options here.
+	(general_init): Initialize GC, pools and tree hash here,
+	instead of lang_independent_init.
+	(lang_independent_init): Rename backend_init.
+	(do_compile): Call post_options hook; exit early if there
+	have been errors after switch processing.
+	(toplev_main): Update.
+
 2002-08-14  Gabriel Dos Reis  <gdr@nerim.net>
 
 	* c-pretty-print.h: Guard against multiple inclusion.
