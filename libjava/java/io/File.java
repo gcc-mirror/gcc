@@ -29,13 +29,13 @@ public class File implements Serializable, Comparable
   public boolean canRead ()
   {
     checkRead();
-    return access (READ);
+    return _access (READ);
   }
 
   public boolean canWrite ()
   {
     checkWrite();
-    return access (WRITE);
+    return _access (WRITE);
   }
   
   private native boolean performCreate() throws IOException;
@@ -71,7 +71,7 @@ public class File implements Serializable, Comparable
   public boolean exists ()
   {
     checkRead();
-    return access (EXISTS);
+    return _access (EXISTS);
   }
 
   public File (String p)
@@ -209,20 +209,20 @@ public class File implements Serializable, Comparable
   public boolean isDirectory ()
   {
     checkRead();
-    return stat (DIRECTORY);
+    return _stat (DIRECTORY);
   }
 
   public boolean isFile ()
   {
     checkRead();
-    return stat (ISFILE);
+    return _stat (ISFILE);
   }
 
   /** @since 1.2 */
   public boolean isHidden()
   {
     checkRead();
-    return stat (ISHIDDEN);
+    return _stat (ISHIDDEN);
   }
 
   public long lastModified ()
@@ -566,8 +566,11 @@ public class File implements Serializable, Comparable
   private final static int LENGTH = 1;
   
   private final native long attr (int query);
-  private final native boolean access (int query);
-  private final native boolean stat (int query);
+  // On OSF1 V5.0, `stat' is a macro.  It is easiest to use the name
+  // `_stat' instead.  We do the same thing for `_access' just in
+  // case.
+  private final native boolean _access (int query);
+  private final native boolean _stat (int query);
 
   private static final long serialVersionUID = 301077366599181567L;
 }
