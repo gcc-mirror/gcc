@@ -250,7 +250,13 @@ package body Interfaces.C.Strings is
       Check  : Boolean := True)
    is
    begin
-      Update (Item, Offset, To_C (Str), Check);
+      --  Note: in RM 95, the Append_Nul => False parameter is omitted. But
+      --  this has the unintended consequence of truncating the string after
+      --  an update. As discussed in Ada 2005 AI-242, this was unintended,
+      --  and should be corrected. Since this is a clear error, it seems
+      --  appropriate to apply the correction in Ada 95 mode as well.
+
+      Update (Item, Offset, To_C (Str, Append_Nul => False), Check);
    end Update;
 
    -----------
