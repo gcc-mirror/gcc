@@ -202,7 +202,7 @@ do {									\
 
 %type <ttype> scspec SCSPEC STATIC TYPESPEC TYPE_QUAL maybe_volatile
 %type <ttype> initdecls notype_initdecls initdcl notype_initdcl init
-%type <ttype> simple_asm_expr maybeasm asmdef asm_stmt asm_argument
+%type <ttype> simple_asm_expr maybeasm asm_stmt asm_argument
 %type <ttype> asm_operands nonnull_asm_operands asm_operand asm_clobbers
 %type <ttype> maybe_attribute attributes attribute attribute_list attrib
 %type <ttype> any_word
