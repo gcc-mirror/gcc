@@ -2,14 +2,9 @@ class A
 {
 }
 
-public class Scope3
+public class pr174
 {
-  public static void main(String args[])
-  {
-    new Scope3();
-  }
-
-  public Scope3()
+  public pr174()
   {
     A a = new A();
   }

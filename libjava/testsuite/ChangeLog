@@ -1,3 +1,9 @@
+2000-03-15  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* libjava.compile/pr172.java: Correct classname to match file name.
+	* libjava.compile/pr174.java: ditto. Remove superfluous main()
+	method.
+
 2000-03-14  Tom Tromey  <tromey@cygnus.com>
 
 	* libjava.compile/PR140.java: New file, for PR gcj/140.
