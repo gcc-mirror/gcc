@@ -3518,15 +3518,6 @@ The option @samp{-dt} causes a debugging dump of the RTL code after
 this pass.  This dump file's name is made by appending @samp{.cse2} to
 the input file name.
 
-@cindex register allocation, stupid
-@cindex stupid register allocation
-@item
-Stupid register allocation is performed at this point in a
-nonoptimizing compilation.  It does a little data flow analysis as
-well.  When stupid register allocation is in use, the next pass
-executed is the reloading pass; the others in between are skipped.
-The source file is @file{stupid.c}.
-
 @cindex data flow analysis
 @cindex analysis, data flow
 @cindex basic blocks
