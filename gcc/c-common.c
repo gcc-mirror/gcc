@@ -3797,25 +3797,25 @@ walk_stmt_tree (tp, func, data)
   if (result)
     return result;
 
-  /* Even if we didn't, FUNC may have decided that there was nothing
-     interesting below this point in the tree.  */
-  if (!walk_subtrees)
-    return NULL_TREE;
-
   /* FUNC may have modified the tree, recheck that we're looking at a
      statement node.  */
   code = TREE_CODE (*tp);
   if (!statement_code_p (code))
     return NULL_TREE;
 
-  /* Walk over all the sub-trees of this operand.  Statement nodes never
-     contain RTL, and we needn't worry about TARGET_EXPRs.  */
-  len = TREE_CODE_LENGTH (code);
+  /* Visit the subtrees unless FUNC decided that there was nothing
+     interesting below this point in the tree.  */
+  if (walk_subtrees)
+    {
+      /* Walk over all the sub-trees of this operand.  Statement nodes
+	 never contain RTL, and we needn't worry about TARGET_EXPRs.  */
+      len = TREE_CODE_LENGTH (code);
 
-  /* Go through the subtrees.  We need to do this in forward order so
-     that the scope of a FOR_EXPR is handled properly.  */
-  for (i = 0; i < len; ++i)
-    WALK_SUBTREE (TREE_OPERAND (*tp, i));
+      /* Go through the subtrees.  We need to do this in forward order so
+	 that the scope of a FOR_EXPR is handled properly.  */
+      for (i = 0; i < len; ++i)
+	WALK_SUBTREE (TREE_OPERAND (*tp, i));
+    }
 
   /* Finally visit the chain.  This can be tail-recursion optimized if
      we write it this way.  */
