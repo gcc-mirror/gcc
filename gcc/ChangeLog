@@ -1,5 +1,16 @@
 2000-04-26  Richard Henderson  <rth@cygnus.com>
 
+	* flow.c (mark_set_1): New arguments code and flags; update all
+	callers.  Track regno_first and regno_last; do HARD_REGNO_NREGS
+	test in one place.  Tidy flags tests.  Don't bias REG_N_REFS by
+	loop_depth when optimizing for size.  Do new_dead update after
+	emitting REG_UNUSED notes.  Merge mark_set_reg code.
+	(mark_set_reg): Remove.
+	(propagate_one_insn): Use mark_set_1 for call-clobbered registers;
+	arrange to not emit REG_UNUSED notes.
+
+2000-04-26  Richard Henderson  <rth@cygnus.com>
+
 	* flow.c (find_auto_inc): Use pbi->bb instead of BLOCK_FOR_INSN.
 	* ssa.c (convert_from_ssa): Don't run compute_bb_for_insn.
 
