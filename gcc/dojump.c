@@ -160,6 +160,12 @@ do_jump (exp, if_false_label, if_true_label)
       break;
 #endif
 
+    case UNSAVE_EXPR:
+      do_jump (TREE_OPERAND (exp, 0), if_false_label, if_true_label);
+      TREE_OPERAND (exp, 0)
+	= (*lang_hooks.unsave_expr_now) (TREE_OPERAND (exp, 0));
+      break;
+
     case NOP_EXPR:
       if (TREE_CODE (TREE_OPERAND (exp, 0)) == COMPONENT_REF
           || TREE_CODE (TREE_OPERAND (exp, 0)) == BIT_FIELD_REF
