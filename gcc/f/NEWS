@@ -66,10 +66,10 @@ about previous `g77' versions up-to-date.
 the mainline, development version of `g77' within `egcs') is available
 at `http://egcs.cygnus.com/onlinedocs/g77_news.html'.
 
-   The following information was last updated on 1999-05-26:
+   The following information was last updated on 1999-06-04:
 
-In 0.5.25 (`EGCS' 1.2) versus `EGCS' 1.1.2:
-===========================================
+In 0.5.25, `GCC' 2.95 (`EGCS' 1.2) versus `EGCS' 1.1.2:
+=======================================================
 
   1. `g77' no longer generates bad code for assignments, or other
      conversions, of `REAL' or `COMPLEX' constant expressions to type
@@ -105,6 +105,10 @@ In 0.5.25 (`EGCS' 1.2) versus `EGCS' 1.1.2:
    * The new `-fbounds-check' option causes `g77' to compile run-time
      bounds checks of array subscripts, as well as of substring start
      and end points.
+
+   * `libg2c' now supports building as multilibbed library, which
+     provides better support for systems that require options such as
+     `-mieee' to work properly.
 
    * Source file names with the suffixes `.FOR' and `.FPP' now are
      recognized by `g77' as if they ended in `.for' and `.fpp',
