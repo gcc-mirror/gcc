@@ -1,3 +1,7 @@
+2001-01-09  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* decl2.c (lang_decode_option): Handle -Wformat=2.
+
 2001-01-08  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* cp-tree.h (lang_decl_flags): Rename defined_in_class to
