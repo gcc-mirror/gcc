@@ -267,9 +267,7 @@ public class ObjectOutputStream extends OutputStream
 	Class clazz = obj.getClass ();
 	ObjectStreamClass osc = ObjectStreamClass.lookup (clazz);
 	if (osc == null)
-	  throw new NotSerializableException ("The class "
-					      + clazz.getName ()
-					      + " is not Serializable");
+	  throw new NotSerializableException (clazz.getName ());
 
 	if (clazz.isArray ())
 	{
@@ -334,9 +332,7 @@ public class ObjectOutputStream extends OutputStream
 	  break;
 	}
 
-	throw new NotSerializableException ("Instances of the class "
-					    + clazz.getName ()
-					    + " are not Serializable");
+	throw new NotSerializableException (clazz.getName ());
       } // end pseudo-loop
     }
     catch (IOException e)
