@@ -5605,8 +5605,9 @@ emit_reload_insns (insn)
 	      && spill_reg_store[reload_spill_index[REGNO (oldequiv)]] != 0
 	      && dead_or_set_p (insn, reload_in[j])
 	      /* This is unsafe if operand occurs more than once in current
-	     insn.  Perhaps some occurrences weren't reloaded.  */
-	      && count_occurrences (PATTERN (insn), reload_in[j]) == 1)
+		 insn.  Perhaps some occurrences weren't reloaded.  */
+	      && count_occurrences (PATTERN (insn), reload_in[j]) == 1
+	      && spill_reg_store[spill_reg_order[REGNO (oldequiv)]] != 0)
 	    delete_output_reload
 	      (insn, j, spill_reg_store[spill_reg_order[REGNO (oldequiv)]]);
 
