@@ -115,7 +115,6 @@ static void delete_duplicate_fields PARAMS ((tree));
 static void finish_struct_bits PARAMS ((tree));
 static int alter_access PARAMS ((tree, tree, tree));
 static void handle_using_decl PARAMS ((tree, tree));
-static int strictly_overrides PARAMS ((tree, tree));
 static void check_for_override PARAMS ((tree, tree));
 static tree dfs_modify_vtables PARAMS ((tree, void *));
 static tree modify_all_vtables PARAMS ((tree, int *, tree));
@@ -2588,24 +2587,6 @@ modify_all_vtables (t, vfuns_p, virtuals)
     }
   
   return virtuals;
-}
-
-/* Here, we already know that they match in every respect.
-   All we have to check is where they had their declarations.
-
-   Return nonzero iff FNDECL1 is declared in a class which has a
-   proper base class containing FNDECL2.  We don't care about
-   ambiguity or accessibility.  */
-
-static int 
-strictly_overrides (fndecl1, fndecl2)
-     tree fndecl1, fndecl2;
-{
-  base_kind kind;
-  
-  return (lookup_base (DECL_CONTEXT (fndecl1), DECL_CONTEXT (fndecl2),
-		       ba_ignore | ba_quiet, &kind)
-	  && kind != bk_same_type);
 }
 
 /* Get the base virtual function declarations in T that have the
