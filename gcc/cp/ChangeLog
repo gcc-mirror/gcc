@@ -1,3 +1,8 @@
+2003-03-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/9336
+	* decl2.c (lookup_arg_dependent): Handle error_mark_node.
+
 2003-03-13  Mark Mitchell  <mark@codesourcery.com>
 
 	* call.c (initialize_reference): Remove bogus assertion.

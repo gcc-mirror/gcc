@@ -4421,6 +4421,9 @@ lookup_arg_dependent (name, fns, args)
   struct arg_lookup k;
   tree fn = NULL_TREE;
 
+  if (fns == error_mark_node)
+    fns = NULL_TREE;
+
   timevar_push (TV_NAME_LOOKUP);
   k.name = name;
   k.functions = fns;
