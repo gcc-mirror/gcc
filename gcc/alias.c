@@ -110,7 +110,7 @@ static bool nonoverlapping_component_refs_p (tree, tree);
 static tree decl_for_component_ref (tree);
 static rtx adjust_offset_for_component_ref (tree, rtx);
 static int nonoverlapping_memrefs_p (rtx, rtx);
-static int write_dependence_p (rtx, rtx, int);
+static int write_dependence_p (rtx, rtx, int, int);
 
 static int nonlocal_mentioned_p_1 (rtx *, void *);
 static int nonlocal_mentioned_p (rtx);
@@ -2202,10 +2202,11 @@ canon_true_dependence (rtx mem, enum machine_mode mem_mode, rtx mem_addr,
 }
 
 /* Returns nonzero if a write to X might alias a previous read from
-   (or, if WRITEP is nonzero, a write to) MEM.  */
+   (or, if WRITEP is nonzero, a write to) MEM.  If CONSTP is non-zero,
+   honor the RTX_UNCHANGING_P flags on X and MEM.  */
 
 static int
-write_dependence_p (rtx mem, rtx x, int writep)
+write_dependence_p (rtx mem, rtx x, int writep, int constp)
 {
   rtx x_addr, mem_addr;
   rtx fixed_scalar;
@@ -2224,15 +2225,18 @@ write_dependence_p (rtx mem, rtx x, int writep)
   if (DIFFERENT_ALIAS_SETS_P (x, mem))
     return 0;
 
-  /* Unchanging memory can't conflict with non-unchanging memory.  */
-  if (RTX_UNCHANGING_P (x) != RTX_UNCHANGING_P (mem))
-    return 0;
+  if (constp)
+    {
+      /* Unchanging memory can't conflict with non-unchanging memory.  */
+      if (RTX_UNCHANGING_P (x) != RTX_UNCHANGING_P (mem))
+	return 0;
 
-  /* If MEM is an unchanging read, then it can't possibly conflict with
-     the store to X, because there is at most one store to MEM, and it must
-     have occurred somewhere before MEM.  */
-  if (! writep && RTX_UNCHANGING_P (mem))
-    return 0;
+      /* If MEM is an unchanging read, then it can't possibly conflict with
+	 the store to X, because there is at most one store to MEM, and it
+	 must have occurred somewhere before MEM.  */
+      if (! writep && RTX_UNCHANGING_P (mem))
+	return 0;
+    }
 
   if (nonoverlapping_memrefs_p (x, mem))
     return 0;
@@ -2273,7 +2277,7 @@ write_dependence_p (rtx mem, rtx x, int writep)
 int
 anti_dependence (rtx mem, rtx x)
 {
-  return write_dependence_p (mem, x, /*writep=*/0);
+  return write_dependence_p (mem, x, /*writep=*/0, /*constp*/1);
 }
 
 /* Output dependence: X is written after store in MEM takes place.  */
@@ -2281,7 +2285,16 @@ anti_dependence (rtx mem, rtx x)
 int
 output_dependence (rtx mem, rtx x)
 {
-  return write_dependence_p (mem, x, /*writep=*/1);
+  return write_dependence_p (mem, x, /*writep=*/1, /*constp*/1);
+}
+
+/* Unchanging anti dependence: Like anti_dependence but ignores
+   the UNCHANGING_RTX_P property on const variable references.  */
+
+int
+unchanging_anti_dependence (rtx mem, rtx x)
+{
+  return write_dependence_p (mem, x, /*writep=*/0, /*constp*/0);
 }
 
 /* A subroutine of nonlocal_mentioned_p, returns 1 if *LOC mentions
