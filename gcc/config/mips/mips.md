@@ -5274,8 +5274,7 @@ dsrl\t%3,%3,1\n\
   return mips_output_move (operands[0], operands[1]);
 }
   [(set_attr "type"	"xfer,fpload")
-   (set_attr "mode"	"SF")
-   (set_attr "length"	"4")])
+   (set_attr "mode"	"SF")])
 
 ;; Load the high word of operand 0 from operand 1, preserving the value
 ;; in the low word.
@@ -5290,8 +5289,7 @@ dsrl\t%3,%3,1\n\
   return mips_output_move (operands[0], operands[1]);
 }
   [(set_attr "type"	"xfer,fpload")
-   (set_attr "mode"	"SF")
-   (set_attr "length"	"4")])
+   (set_attr "mode"	"SF")])
 
 ;; Store the high word of operand 1 in operand 0.  The corresponding
 ;; low-word move is done in the normal way.
@@ -5305,8 +5303,7 @@ dsrl\t%3,%3,1\n\
   return mips_output_move (operands[0], operands[1]);
 }
   [(set_attr "type"	"xfer,fpstore")
-   (set_attr "mode"	"SF")
-   (set_attr "length"	"4")])
+   (set_attr "mode"	"SF")])
 
 ;; Insn to initialize $gp for n32/n64 abicalls.  Operand 0 is the offset
 ;; of _gp from the start of this function.  Operand 1 is the incoming
