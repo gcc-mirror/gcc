@@ -1,5 +1,12 @@
 2001-05-03  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
 
+	* config/m68hc11/m68hc11.md ("bitcmpqi"): New pattern for bitb
+	instruction.
+	("bitcmpqi2"): New pattern for bit-extract and test.
+	("bitcmphi"): New pattern for bitb/bita instructions.
+
+2001-05-03  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
+
 	* config/m68hc11/m68hc11.h (STATIC_CHAIN_REGNUM): Use soft z register
 	instead of _.d1.
 	(INITIALIZE_TRAMPOLINE): Call it.
