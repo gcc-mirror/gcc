@@ -1,3 +1,8 @@
+2004-07-19  Maciej W. Rozycki  <macro@linux-mips.org>
+
+	* config/mips/mips.md (mulsidi3_32bit_r4000): Fix the clobber list.
+	(umulsidi3_32bit_r4000): Likewise.
+
 2004-07-19  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* vec.h: Propagate location information properly.
