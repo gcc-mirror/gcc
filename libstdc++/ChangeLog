@@ -1,3 +1,8 @@
+Sat Jan 30 08:05:46 1999 Mumit Khan  <khan@xraylith.wisc.edu>
+
+	* config/x86-interix.ml: New file.
+	* configure.in (i[3456]86-*-interix*): Add shared library support.
+
 1999-01-13  Ulrich Drepper  <drepper@cygnus.com>
 
 	* configure.in: Test for "ln -s" and set LN_S in generated Makefile.
