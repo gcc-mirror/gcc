@@ -172,12 +172,21 @@ namespace std
     class messages_byname;
 
   template<typename _Facet>
+    bool
+    has_facet(const locale& __loc) throw();
+
+  template<typename _Facet>
     const _Facet&
     use_facet(const locale& __loc);
 
   template<typename _Facet>
-    bool
-    has_facet(const locale& __loc) throw();
+    inline const _Facet&
+    __check_facet(const _Facet* __f)
+    { 
+      if (!__f)
+	__throw_bad_cast(); 
+      return *__f;
+    }
 } // namespace std
 
 #endif

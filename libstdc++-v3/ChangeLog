@@ -1,3 +1,32 @@
+2003-05-12  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/std/std_fstream.h (basic_filebuf::_M_codecvt): Add
+	cached member.
+	* include/bits/fstream.tcc (basic_filebuf::basic_filebuf):
+	Initialize _M_codecvt.
+	(basic_filebuf::imbue): Same.
+	(basic_filebuf::showmanyc): Use it.
+	(basic_filebuf::underflow): Use it.
+	(basic_filebuf::_M_convert_to_external): Use it.
+	(basic_filebuf::seekoff): Use it.
+	(basic_filebuf::imbue): Use it, tweaks.
+	* include/bits/localefwd.h (__check_facet): New.
+	* include/bits/locale_classes.h: Tweaks.
+	* include/bits/locale_facets.tcc: Tweaks.	
+	* include/bits/basic_ios.h (basic_ios::_M_check_facet): Remove.
+	_M_fctype to _M_ctype, _M_fnumput to _M_num_put, _M_fnumget to
+	_M_num_get. Change _M_check_facet to __check_facet. Tweaks.
+	* include/bits/basic_ios.tcc: Same.	
+	* include/bits/istream.tcc: Same.
+	* include/bits/ostream.tcc: Same.
+	* include/std/std_streambuf.h: Same.
+	* testsuite/27_io/basic_filebuf/imbue/char/2.cc: New.
+	* testsuite/27_io/basic_filebuf/imbue/char/3.cc: New.
+	* testsuite/27_io/basic_filebuf/imbue/wchar_t/1.cc: New.
+	* testsuite/27_io/basic_filebuf/imbue/wchar_t/2.cc: New.
+	* testsuite/27_io/basic_filebuf/imbue/wchar_t/3.cc: New.
+	* testsuite/27_io/basic_filebuf/imbue/wchar_t/9322.cc: New.
+	
 2003-05-12  Paolo Carlini  <pcarlini@unitus.it>
 
 	* testsuite/27_io/basic_filebuf/sgetc/char/1.cc: Remove

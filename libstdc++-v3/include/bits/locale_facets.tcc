@@ -67,7 +67,16 @@ namespace std
     }
 
   template<typename _Facet>
-    const _Facet&
+    inline bool
+    has_facet(const locale& __loc) throw()
+    {
+      size_t __i = _Facet::id._M_id();
+      const locale::facet** __facets = __loc._M_impl->_M_facets;
+      return (__i < __loc._M_impl->_M_facets_size && __facets[__i]);
+    }
+
+  template<typename _Facet>
+    inline const _Facet&
     use_facet(const locale& __loc)
     {
       size_t __i = _Facet::id._M_id();
@@ -75,15 +84,6 @@ namespace std
       if (!(__i < __loc._M_impl->_M_facets_size && __facets[__i]))
         __throw_bad_cast();
       return static_cast<const _Facet&>(*__facets[__i]);
-    }
-
-  template<typename _Facet>
-    bool
-    has_facet(const locale& __loc) throw()
-    {
-      size_t __i = _Facet::id._M_id();
-      const locale::facet** __facets = __loc._M_impl->_M_facets;
-      return (__i < __loc._M_impl->_M_facets_size && __facets[__i]);
     }
 
 
