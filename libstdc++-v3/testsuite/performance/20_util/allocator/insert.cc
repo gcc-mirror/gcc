@@ -154,22 +154,28 @@ int main(void)
 
   typedef less<test_type> compare_type;
 #ifdef TEST_B9
+  iterations = 50000;
   test_container(map<test_type, test_type, compare_type, m_alloc_type>());
 #endif
 #ifdef TEST_B10
+  iterations = 50000;
   test_container(map<test_type, test_type, compare_type, n_alloc_type>());
 #endif
 #ifdef TEST_B11
+  iterations = 50000;
   test_container(map<test_type, test_type, compare_type, so_alloc_type>());
 #endif
 
 #ifdef TEST_B12
+  iterations = 50000;
   test_container(set<test_type, compare_type, m_alloc_type>());
 #endif
 #ifdef TEST_B13
+  iterations = 50000;
   test_container(set<test_type, compare_type, n_alloc_type>());
 #endif
 #ifdef TEST_B14
+  iterations = 50000;
   test_container(set<test_type, compare_type, so_alloc_type>());
 #endif
 

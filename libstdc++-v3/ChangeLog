@@ -1,3 +1,7 @@
+2004-02-04  Loren J. Rittle  <ljrittle@acm.org>
+
+	* testsuite/performance/20_util/allocator/insert.cc (main): Tweak.
+
 2004-02-04  Felix Yen  <fwy@alumni.brown.edu>
 
 	* testsuite/performance/20_util/producer_consumer.cc: New.
