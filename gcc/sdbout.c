@@ -462,6 +462,34 @@ plain_type_1 (type)
     case INTEGER_TYPE:
       {
 	int size = int_size_in_bytes (type) * BITS_PER_UNIT;
+
+	/* Carefully distinguish all the standard types of C,
+	   without messing up if the language is not C.
+	   Note that we check only for the names that contain spaces;
+	   other names might occur by coincidence in other languages.  */
+	if (TYPE_NAME (type) != 0
+	    && TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
+	    && DECL_NAME (TYPE_NAME (type)) != 0
+	    && TREE_CODE (DECL_NAME (TYPE_NAME (type))) == IDENTIFIER_NODE)
+	  {
+	    char *name = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (type)));
+
+	    if (!strcmp (name, "unsigned char"))
+	      return T_UCHAR;
+	    if (!strcmp (name, "signed char"))
+	      return T_CHAR;
+	    if (!strcmp (name, "unsigned int"))
+	      return T_UINT;
+	    if (!strcmp (name, "short int"))
+	      return T_SHORT;
+	    if (!strcmp (name, "short unsigned int"))
+	      return T_USHORT;
+	    if (!strcmp (name, "long int"))
+	      return T_LONG;
+	    if (!strcmp (name, "long unsigned int"))
+	      return T_ULONG;
+	  }
+
 	if (size == CHAR_TYPE_SIZE)
 	  return (TREE_UNSIGNED (type) ? T_UCHAR : T_CHAR);
 	if (size == SHORT_TYPE_SIZE)
