@@ -928,11 +928,9 @@ gimplify_return_expr (tree stmt, tree *pre_p)
   tree ret_expr = TREE_OPERAND (stmt, 0);
   tree result_decl, result;
 
-  if (!ret_expr || TREE_CODE (ret_expr) == RESULT_DECL)
+  if (!ret_expr || TREE_CODE (ret_expr) == RESULT_DECL
+      || ret_expr == error_mark_node)
     return GS_ALL_DONE;
-
-  if (ret_expr == error_mark_node)
-    return GS_ERROR;
 
   if (VOID_TYPE_P (TREE_TYPE (TREE_TYPE (current_function_decl))))
     result_decl = NULL_TREE;
