@@ -456,7 +456,7 @@ public class DecimalFormat extends NumberFormat
 	    exponent = (long) Math.floor (Math.log(number) / Math.log(10));
 	    if (minimumIntegerDigits > 0)
 	      exponent -= minimumIntegerDigits - 1;
-	    baseNumber = (long) (number / Math.pow(10.0, exponent));
+	    baseNumber = (number / Math.pow(10.0, exponent));
 	  }
 	else
 	  baseNumber = number;
@@ -871,22 +871,22 @@ public class DecimalFormat extends NumberFormat
 
   public void setMaximumFractionDigits (int newValue)
   {
-    maximumFractionDigits = Math.min(newValue, 340);
+    super.setMaximumFractionDigits(Math.min(newValue, 340));
   }
 
   public void setMaximumIntegerDigits (int newValue)
   {
-    maximumIntegerDigits = Math.min(newValue, 309);
+    super.setMaximumIntegerDigits(Math.min(newValue, 309));
   }
 
   public void setMinimumFractionDigits (int newValue)
   {
-    minimumFractionDigits = Math.min(newValue, 340);
+    super.setMinimumFractionDigits(Math.min(newValue, 340));
   }
 
   public void setMinimumIntegerDigits (int newValue)
   {
-    minimumIntegerDigits = Math.min(newValue, 309);
+    super.setMinimumIntegerDigits(Math.min(newValue, 309));
   }
 
   public void setMultiplier (int newValue)
