@@ -1802,8 +1802,6 @@ expand_units ()
 
   for (unit = units; unit; unit = unit->next)
     {
-      rtx min_issue = make_numeric_value (unit->issue_delay.min);
-
       unit->condexp = check_attr_test (unit->condexp, 0);
 
       for (op = unit->ops; op; op = op->next)
