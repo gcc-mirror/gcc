@@ -4927,8 +4927,7 @@ pre_insert_copy_insn (expr, insn)
   if (!set)
     abort ();
 
-  new_insn = emit_insn_after (gen_rtx_SET (VOIDmode, reg, SET_DEST (set)),
-			      insn);
+  new_insn = emit_insn_after (gen_move_insn (reg, SET_DEST (set)), insn);
 
   /* Keep block number table up to date.  */
   set_block_for_new_insns (new_insn, bb);
