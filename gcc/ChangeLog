@@ -1,3 +1,7 @@
+Tue Mar 23 11:20:03 1999  Per Bothner  <bothner@cygnus.com>
+
+	* tree.c (first_rtl_op, has_cleanups):  Handle GOTO_SUBROUTINE_EXPR.
+
 Tue Mar 23 09:00:39 1999  Nick Clifton  <nickc@cygnus.com>
 
 	* config/arm/riscix1.h (SUBTARGET_SWITCHES): Add doc string.
