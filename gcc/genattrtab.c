@@ -4765,6 +4765,21 @@ write_attr_get (struct attr_desc *attr)
      switch we will generate.  */
   common_av = find_most_used (attr);
 
+  /* Write out prototype of function.  */
+  if (!attr->is_numeric)
+    printf ("extern enum attr_%s ", attr->name);
+  else if (attr->unsigned_p)
+    printf ("extern unsigned int ");
+  else
+    printf ("extern int ");
+  /* If the attribute name starts with a star, the remainder is the name of
+     the subroutine to use, instead of `get_attr_...'.  */
+  if (attr->name[0] == '*')
+    printf ("%s (rtx);\n", &attr->name[1]);
+  else
+    printf ("get_attr_%s (%s);\n", attr->name,
+	    (attr->is_const ? "void" : "rtx"));
+
   /* Write out start of function, then all values with explicit `case' lines,
      then a `default', then the value with the most uses.  */
   if (!attr->is_numeric)

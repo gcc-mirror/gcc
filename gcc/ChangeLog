@@ -1,3 +1,11 @@
+2003-07-05  Andreas Jaeger  <aj@suse.de>
+
+	* genattrtab.c (write_attr_get): Revert part of last patch to
+	always write out a prototype.
+
+	* genemit.c (gen_split): Readd lost unused attributes in last
+	patch.
+
 2003-07-05  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* cfgloopmanip.c (force_single_succ_latches): Force latch to be
