@@ -1,3 +1,15 @@
+2004-11-26  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR java/18305
+	* decl.c (end_java_method): Call
+	attach_init_test_initialization_flags on all the init_decls.
+	* parse.y (attach_init_test_initialization_flags): Move to ...
+	* expr.c (attach_init_test_initialization_flags): here and
+	support BIND_EXPR also.
+	* java-tree.h (attach_init_test_initialization_flags): Prototype.
+	* jcf-parse.c (parse_class_file): Don't disable class init
+	optimization.
+
 2004-11-25  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* gjavah.c, jcf-dump.c, jv-scan.c, jvspec.c: Avoid ` as left quote

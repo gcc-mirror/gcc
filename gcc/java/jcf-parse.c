@@ -827,10 +827,6 @@ parse_class_file (void)
   file_start_location = input_location;
   (*debug_hooks->start_source_file) (input_line, input_filename);
 
-  /* Currently we always have to emit calls to _Jv_InitClass when
-     compiling from class files.  */
-  always_initialize_class_p = 1;
-
   gen_indirect_dispatch_tables (current_class);
 
   java_mark_class_local (current_class);

@@ -1935,6 +1935,39 @@ pop_arguments (tree arg_types)
   abort ();
 }
 
+/* Attach to PTR (a block) the declaration found in ENTRY. */
+
+int
+attach_init_test_initialization_flags (void **entry, void *ptr)
+{
+  tree block = (tree)ptr;
+  struct treetreehash_entry *ite = (struct treetreehash_entry *) *entry;
+
+  if (block != error_mark_node)
+    {
+      if (TREE_CODE (block) == BIND_EXPR)
+        {
+	  tree body = BIND_EXPR_BODY (block);
+	  TREE_CHAIN (ite->value) = BIND_EXPR_VARS (block);
+	  BIND_EXPR_VARS (block) = ite->value;
+	  body = build2 (COMPOUND_EXPR, void_type_node,
+			 build1 (DECL_EXPR, void_type_node, ite->value), body);
+	  BIND_EXPR_BODY (block) = body;
+	}
+      else
+	{
+	  tree body = BLOCK_SUBBLOCKS (block);
+	  TREE_CHAIN (ite->value) = BLOCK_EXPR_DECLS (block);
+	  BLOCK_EXPR_DECLS (block) = ite->value;
+	  body = build2 (COMPOUND_EXPR, void_type_node,
+			 build1 (DECL_EXPR, void_type_node, ite->value), body);
+	  BLOCK_SUBBLOCKS (block) = body;
+        }
+      
+    }
+  return true;
+}
+
 /* Build an expression to initialize the class CLAS.
    if EXPR is non-NULL, returns an expression to first call the initializer
    (if it is needed) and then calls EXPR. */
