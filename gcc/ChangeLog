@@ -1,3 +1,20 @@
+2002-02-23  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.md (load_toc_aix_{si,di}): Use
+	gpc_reg_operand constraint.
+
+2002-02-23  Alan Modra  <amodra@bigpond.net.au>
+
+	* config/rs6000/rs6000.c (num_insns_constant): Fix formatting.
+	Simplify comparison of `low'.
+	(add_operand): Fix formatting.
+	(non_add_cint_operand): Use CONST_OK_FOR_LETTER_P.
+	(rs6000_stack_info): Remove redundant test setting push_p.
+	(output_toc): Fix formatting.
+	* config/rs6000/rs6000.md (boolsi3, boolcsi3 splitters): Use
+	cc_reg_not_cr0_operand constraint.
+	(booldi3, boolcdi3 splitters): Same.
+
 2002-02-23  Aldy Hernandez  <aldyh@redhat.com>
 
         * config/rs6000/altivec.h: Add extra level of parentheses on casts.

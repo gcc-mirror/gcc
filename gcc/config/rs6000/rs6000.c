@@ -1080,7 +1080,7 @@ num_insns_constant (op, mode)
 
       REAL_VALUE_FROM_CONST_DOUBLE (rv, op);
       REAL_VALUE_TO_TARGET_SINGLE (rv, l);
-      return num_insns_constant_wide ((HOST_WIDE_INT)l);
+      return num_insns_constant_wide ((HOST_WIDE_INT) l);
     }
 
   else if (GET_CODE (op) == CONST_DOUBLE)
@@ -1110,10 +1110,10 @@ num_insns_constant (op, mode)
 
       else
 	{
-	  if (high == 0 && (low & 0x80000000) == 0)
+	  if (high == 0 && low >= 0)
 	    return num_insns_constant_wide (low);
 
-	  else if (high == -1 && (low & 0x80000000) != 0)
+	  else if (high == -1 && low < 0)
 	    return num_insns_constant_wide (low);
 
 	  else if (mask64_operand (op, mode))
@@ -1312,8 +1312,8 @@ add_operand (op, mode)
     enum machine_mode mode;
 {
   if (GET_CODE (op) == CONST_INT)
-    return (CONST_OK_FOR_LETTER_P (INTVAL(op), 'I')
-	    || CONST_OK_FOR_LETTER_P (INTVAL(op), 'L'));
+    return (CONST_OK_FOR_LETTER_P (INTVAL (op), 'I')
+	    || CONST_OK_FOR_LETTER_P (INTVAL (op), 'L'));
 
   return gpc_reg_operand (op, mode);
 }
@@ -1326,8 +1326,8 @@ non_add_cint_operand (op, mode)
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return (GET_CODE (op) == CONST_INT
-	  && (unsigned HOST_WIDE_INT) (INTVAL (op) + 0x8000) >= 0x10000
-	  && ! CONST_OK_FOR_LETTER_P (INTVAL (op), 'L'));
+	  && !CONST_OK_FOR_LETTER_P (INTVAL (op), 'I')
+	  && !CONST_OK_FOR_LETTER_P (INTVAL (op), 'L'));
 }
 
 /* Return 1 if the operand is a non-special register or a constant that
@@ -7878,8 +7878,7 @@ rs6000_stack_info ()
     info_ptr->push_p = 1;
 
   else if (abi == ABI_V4)
-    info_ptr->push_p = (total_raw_size > info_ptr->fixed_size
-			|| info_ptr->calls_p);
+    info_ptr->push_p = total_raw_size > info_ptr->fixed_size;
 
   else
     info_ptr->push_p = (frame_pointer_needed
@@ -10210,7 +10209,7 @@ output_toc (file, x, labelno, mode)
 	  if (TARGET_MINIMAL_TOC)
 	    fputs (DOUBLE_INT_ASM_OP, file);
 	  else
-	    fprintf (file, "\t.tc ID_%lx_%lx[TC],", (long)high, (long)low);
+	    fprintf (file, "\t.tc ID_%lx_%lx[TC],", (long) high, (long) low);
 	  fprintf (file, "0x%lx%08lx\n", (long) high, (long) low);
 	  return;
 	}
@@ -10222,7 +10221,7 @@ output_toc (file, x, labelno, mode)
 		fputs ("\t.long ", file);
 	      else
 		fprintf (file, "\t.tc ID_%lx_%lx[TC],",
-			 (long)high, (long)low);
+			 (long) high, (long) low);
 	      fprintf (file, "0x%lx,0x%lx\n", (long) high, (long) low);
 	    }
 	  else
