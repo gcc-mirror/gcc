@@ -1451,6 +1451,14 @@ build_array_ref (array, index)
     tree ar = default_conversion (array);
     tree ind = default_conversion (index);
 
+    /* Do the same warning check as above, but only on the part that's
+       syntactically the index and only if it is also semantically
+       the index.  */
+    if (warn_char_subscripts
+	&& TREE_CODE (TREE_TYPE (index)) == INTEGER_TYPE
+	&& TYPE_MAIN_VARIANT (TREE_TYPE (index)) == char_type_node)
+      warning ("subscript has type `char'");
+
     /* Put the integer in IND to simplify error checking.  */
     if (TREE_CODE (TREE_TYPE (ar)) == INTEGER_TYPE)
       {
