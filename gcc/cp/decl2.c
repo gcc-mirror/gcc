@@ -2856,11 +2856,17 @@ get_guard (decl)
 	guard_type = integer_type_node;
 
       guard = build_decl (VAR_DECL, sname, guard_type);
-      TREE_PUBLIC (guard) = 1;
+      
+      /* The guard should have the same linkage as what it guards. */
+      TREE_PUBLIC (guard) = TREE_PUBLIC (decl);
+      TREE_STATIC (guard) = TREE_STATIC (decl);
+      DECL_COMMON (guard) = DECL_COMMON (decl);
+      DECL_ONE_ONLY (guard) = DECL_ONE_ONLY (decl);
+      if (TREE_PUBLIC (decl))
+        DECL_WEAK (guard) = DECL_WEAK (decl);
+      
       DECL_ARTIFICIAL (guard) = 1;
-      TREE_STATIC (guard) = 1;
       TREE_USED (guard) = 1;
-      DECL_COMMON (guard) = 1;
       pushdecl_top_level (guard);
       cp_finish_decl (guard, NULL_TREE, NULL_TREE, 0);
     }
