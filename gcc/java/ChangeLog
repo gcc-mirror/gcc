@@ -127,6 +127,15 @@
 	Include flags.h.
 	* jv-scan.c (pedantic): New global.
 
+2000-10-31  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.y (outer_field_access_p): Inherited fields aren't
+	consider outer fields.
+	(maybe_build_thisn_access_method): Use
+	PURE_INNER_CLASS_TYPE_P instead of INNER_CLASS_TYPE_P.
+	(resolve_expression_name): Trigger an error if a static field
+	is being accessed as an outer field.
+
 2000-10-29  Alexandre Petit-Bianco  <apbianco@cygnus.com>
  
 	* Make-lang.in (LIBGCJ_ZIP_FILE): Define with `$(prefix)'.
@@ -151,6 +160,11 @@
 	(maybe_use_access_method): Handle call to methods unrelated to the
 	current class. Fixed comment.
 	Fixes gcj/361.
+
+2000-10-24  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+       * parse.h (INNER_ENCLOSING_SCOPE_CHECK): Check inherited type in
+       scope.
 
 2000-10-24  Tom Tromey  <tromey@cygnus.com>
 
