@@ -1842,6 +1842,54 @@ typedef struct rs6000_args
     goto LABEL;							\
 }
 
+/* The register number of the register used to address a table of
+   static data addresses in memory.  In some cases this register is
+   defined by a processor's "application binary interface" (ABI).
+   When this macro is defined, RTL is generated for this register
+   once, as with the stack pointer and frame pointer registers.  If
+   this macro is not defined, it is up to the machine-dependent files
+   to allocate such a register (if necessary).  */
+
+/* #define PIC_OFFSET_TABLE_REGNUM */
+
+/* Define this macro if the register defined by
+   `PIC_OFFSET_TABLE_REGNUM' is clobbered by calls.  Do not define
+   this macro if `PPIC_OFFSET_TABLE_REGNUM' is not defined. */
+
+/* #define PIC_OFFSET_TABLE_REG_CALL_CLOBBERED */
+
+/* By generating position-independent code, when two different
+   programs (A and B) share a common library (libC.a), the text of
+   the library can be shared whether or not the library is linked at
+   the same address for both programs.  In some of these
+   environments, position-independent code requires not only the use
+   of different addressing modes, but also special code to enable the
+   use of these addressing modes.
+
+   The `FINALIZE_PIC' macro serves as a hook to emit these special
+   codes once the function is being compiled into assembly code, but
+   not before.  (It is not done before, because in the case of
+   compiling an inline function, it would lead to multiple PIC
+   prologues being included in functions which used inline functions
+   and were compiled to assembly language.)  */
+
+/* #define FINALIZE_PIC */
+
+/* Current PIC register used by the V4 code */
+extern struct rtx_def *rs6000_pic_register;
+
+
+/* A C expression that is nonzero if X is a legitimate immediate
+   operand on the target machine when generating position independent
+   code.  You can assume that X satisfies `CONSTANT_P', so you need
+   not check this.  You can also assume FLAG_PIC is true, so you need
+   not check it either.  You need not define this macro if all
+   constants (including `SYMBOL_REF') can be immediate operands when
+   generating position independent code.  */
+
+/* #define LEGITIMATE_PIC_OPERAND_P (X) */
+
+
 /* Define this if some processing needs to be done immediately before
    emitting code for an insn.  */
 
@@ -2769,6 +2817,7 @@ do {									\
   {"reg_or_neg_short_operand", {SUBREG, REG, CONST_INT}},	\
   {"reg_or_u_short_operand", {SUBREG, REG, CONST_INT}},		\
   {"reg_or_cint_operand", {SUBREG, REG, CONST_INT}},		\
+  {"got_operand", {SYMBOL_REF, CONST, LABEL_REF}},		\
   {"easy_fp_constant", {CONST_DOUBLE}},				\
   {"reg_or_mem_operand", {SUBREG, MEM, REG}},			\
   {"lwa_operand", {SUBREG, MEM, REG}},				\
@@ -2804,7 +2853,8 @@ do {									\
    (no need to use the default) */
 #define MACHINE_issue_rate
 
-/* General optimization flags.  */
+/* General flags.  */
+extern int flag_pic;
 extern int optimize;
 extern int flag_expensive_optimizations;
 
@@ -2824,6 +2874,7 @@ extern int reg_or_short_operand ();
 extern int reg_or_neg_short_operand ();
 extern int reg_or_u_short_operand ();
 extern int reg_or_cint_operand ();
+extern int got_operand ();
 extern int num_insns_constant ();
 extern int easy_fp_constant ();
 extern int volatile_mem_operand ();
