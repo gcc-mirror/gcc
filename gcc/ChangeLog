@@ -1,5 +1,11 @@
 Wed Nov 26 13:04:46 1997  Michael Meissner  <meissner@cygnus.com>
 
+	* rs6000.c (output_function_profiler): Put label address in r0, and
+	store LR in 4(sp) for System V/eabi.
+
+	* rs6000.h (ASM_OUTPUT_REG_{PUSH,POP}): Keep stack aligned to 16
+	byte boundary, and maintain stack backchain.
+
 	(patches originally from Geoffrey Keating)
 	* rs6000.c (function_arg): Excess floating point arguments don't
 	go into GPR registers after exhausting FP registers under the
