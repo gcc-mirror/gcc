@@ -5632,6 +5632,8 @@ rotate_one_bundle (dump)
       memmove (sched_data.insns,
 	       sched_data.insns + 3,
 	       sched_data.cur * sizeof *sched_data.insns);
+      sched_data.packet
+	= &packets[(sched_data.packet->t2 - bundle) * NR_BUNDLES];
     }
   else
     {
