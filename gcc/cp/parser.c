@@ -3709,7 +3709,7 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p)
 	    /* Otherwise, try the pseudo-destructor-name production.  */
 	    else
 	      {
-		tree s;
+		tree s = NULL_TREE;
 		tree type;
 
 		/* Parse the pseudo-destructor-name.  */
