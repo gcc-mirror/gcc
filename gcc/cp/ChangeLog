@@ -1,3 +1,8 @@
+1998-07-28  Mark Mitchell  <mark@markmitchell.com>
+
+	* friend.c (is_friend): Be lenient with member functions to deal
+	with nested friends.
+
 1998-07-28  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* class.c (finish_struct_1): Convert integer_zero_node to

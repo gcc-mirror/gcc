@@ -77,8 +77,15 @@ is_friend (type, supplicant)
 		     friendship.  This is bogus in general since two
 		     specializations of a template with non-type
 		     template parameters may have the same type, but
-		     be different.  */
-		  if (flag_guiding_decls 
+		     be different.  
+
+		     Temporarily, we are also more lenient to deal
+		     with nested friend functions, for which there can
+		     be more than one FUNCTION_DECL, despite being the
+		     same function.  When that's fixed, the
+		     FUNCTION_MEMBER_P bit can go.  */
+		  if ((flag_guiding_decls 
+		       || DECL_FUNCTION_MEMBER_P (supplicant))
 		      && comptypes (TREE_TYPE (supplicant),
 				    TREE_TYPE (TREE_VALUE (friends)), 1))
 		    return 1;
