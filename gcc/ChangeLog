@@ -1,3 +1,10 @@
+Thu Jul 12 16:48:54 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* flow.c (find_basic_blocks_1): Do not emit NOP after call.
+
+	* flow.c (outgoing_edges_match): Return early if condition reversal
+	failed.
+
 2001-07-06  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips.c (print_operand): Extend '%D' to memory operands.
