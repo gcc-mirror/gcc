@@ -17,7 +17,7 @@ typedef struct {
   __va_greg * __va_next_stack;		/* next extended word on stack */
 } __gnuc_va_list;
 #else
-#ifndef __svr4__
+#if ! defined (__svr4__) && ! defined (__linux__)
 /* This has to be a char * to be compatible with Sun.
    i.e., we have to pass a `va_list' to vsprintf.  */
 typedef char * __gnuc_va_list;
