@@ -1,3 +1,9 @@
+2003-10-14  Jason Merrill  <jason@redhat.com>
+
+	PR c/11885
+	* stor-layout.c (update_alignment_for_field): Packed non-bit-fields 
+	get byte alignment.
+
 2003-10-14  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* fixinc/inclhack.def (alpha_pthread_gcc): New fix.

@@ -711,6 +711,9 @@ update_alignment_for_field (rli, field, known_align)
       desired_align = DECL_ALIGN (field);
       user_align = DECL_USER_ALIGN (field);
     }
+  else if (!DECL_BIT_FIELD_TYPE (field))
+    /* Even packed non-bit-fields get byte alignment.  */
+    desired_align = MAX (desired_align, BITS_PER_UNIT);
 
   /* Some targets (i.e. i386, VMS) limit struct field alignment
      to a lower boundary than alignment of variables unless
