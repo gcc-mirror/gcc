@@ -1,3 +1,20 @@
+2004-01-04  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/12226
+	* testsuite/27_io/basic_filebuf/4.cc: Remove use of invalid copy
+	constructor.
+	* testsuite/27_io/basic_fstream/4.cc: Likewise.
+	* testsuite/27_io/basic_ifstream/4.cc: Likewise.
+	* testsuite/27_io/basic_ios/4.cc: Likewise.
+	* testsuite/27_io/basic_iostream/4.cc: Likewise.
+	* testsuite/27_io/basic_istream/4.cc: Likewise.
+	* testsuite/27_io/basic_istingstream/4.cc: Likewise.
+	* testsuite/27_io/basic_ofstream/4.cc: Likewise.
+	* testsuite/27_io/basic_ostream/4.cc: Likewise.
+	* testsuite/27_io/basic_ostringstream/4.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/5.cc: Likewise.
+	* testsuite/27_io/basic_stringstream/4.cc: Likewise.
+
 2004-01-04  Paolo Carlini  <pcarlini@suse.de>
 
 	* config/locale/generic/numeric_members.cc (_M_initialize_numpunct):

@@ -30,7 +30,7 @@ void test01()
   typedef std::ios_base base_type;
   
   std::stringbuf buf;
-  const test_type& obj = test_type(&buf);
+  const test_type& obj = *new test_type(&buf);
   const base_type* base __attribute__((unused)) = &obj;
 }
 
