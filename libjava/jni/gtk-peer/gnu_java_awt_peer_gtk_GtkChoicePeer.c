@@ -41,8 +41,9 @@ exception statement from your version. */
 
 static void connect_choice_item_selectable_hook (JNIEnv *env, 
 						 jobject peer_obj, 
-						 GtkItem *item, 
-						 jobject item_obj);
+						 GtkItem *menuitem, 
+						 const char *label);
+
 JNIEXPORT void JNICALL 
 Java_gnu_java_awt_peer_gtk_GtkChoicePeer_create 
   (JNIEnv *env, jobject obj)
@@ -101,14 +102,13 @@ Java_gnu_java_awt_peer_gtk_GtkChoicePeer_append
       label = (*env)->GetStringUTFChars (env, item, NULL);
 
       menuitem = gtk_menu_item_new_with_label (label);
-
-      (*env)->ReleaseStringUTFChars (env, item, label);
-
       gtk_menu_append (menu, menuitem);
       gtk_widget_show (menuitem);
 
       connect_choice_item_selectable_hook (env, obj, 
-					   GTK_ITEM (menuitem), item);
+					   GTK_ITEM (menuitem), label);
+
+      (*env)->ReleaseStringUTFChars (env, item, label);
     }
   
   if (need_set_history)
@@ -139,7 +139,8 @@ Java_gnu_java_awt_peer_gtk_GtkChoicePeer_add
   menuitem = gtk_menu_item_new_with_label (label);
   gtk_menu_insert (GTK_MENU (menu), menuitem, index);
   gtk_widget_show (menuitem);
-  connect_choice_item_selectable_hook (env, obj, GTK_ITEM (menuitem), item);
+
+  connect_choice_item_selectable_hook (env, obj, GTK_ITEM (menuitem), label);
 
   if (need_set_history)
     gtk_option_menu_set_history (GTK_OPTION_MENU (ptr), 0);
@@ -155,14 +156,19 @@ Java_gnu_java_awt_peer_gtk_GtkChoicePeer_remove
 {
   void *ptr;
   GtkContainer *menu;
+  GtkWidget *menuitem;
   GList *children;
 
   ptr = NSA_GET_PTR (env, obj);
 
   gdk_threads_enter ();
+
   menu = GTK_CONTAINER (gtk_option_menu_get_menu (GTK_OPTION_MENU (ptr)));
   children = gtk_container_children (menu);
-  gtk_container_remove (menu, GTK_WIDGET (g_list_nth (children, index)->data));
+  menuitem = GTK_WIDGET (g_list_nth (children, index)->data);
+  gtk_container_remove (menu, menuitem);
+  gtk_widget_destroy (menuitem);
+
   gdk_threads_leave ();
 }
 
@@ -179,38 +185,49 @@ Java_gnu_java_awt_peer_gtk_GtkChoicePeer_select
   gdk_threads_leave ();
 }
 
-
 static void
 item_activate (GtkItem *item __attribute__((unused)),
 	       struct item_event_hook_info *ie)
 {
   gdk_threads_leave ();
+
+  jstring label = (*gdk_env)->NewStringUTF (gdk_env, ie->label);
   (*gdk_env)->CallVoidMethod (gdk_env, ie->peer_obj,
-			      postItemEventID,
-			      ie->item_obj,
+			      choicePostItemEventID,
+			      label,
 			      (jint) AWT_ITEM_SELECTED);
   gdk_threads_enter ();
 }
 
 static void
-connect_choice_item_selectable_hook (JNIEnv *env, jobject peer_obj, 
-				     GtkItem *item, jobject item_obj)
+item_removed (gpointer data, 
+	      GClosure gc __attribute__((unused)))
+{
+  struct item_event_hook_info *ie = data;
+
+  free (ie->label);
+  free (ie);
+}
+
+static void
+connect_choice_item_selectable_hook (JNIEnv *env, 
+				     jobject peer_obj, 
+				     GtkItem *menuitem, 
+				     const char *label)
 {
   struct item_event_hook_info *ie;
   jobject *peer_objGlobPtr;
-  jobject *item_objGlobPtr;
 
   ie = (struct item_event_hook_info *) 
     malloc (sizeof (struct item_event_hook_info));
 
   peer_objGlobPtr = NSA_GET_GLOBAL_REF (env, peer_obj);
   g_assert (peer_objGlobPtr);
-  item_objGlobPtr = NSA_GET_GLOBAL_REF (env, item_obj);
-  g_assert (item_objGlobPtr);
 
   ie->peer_obj = *peer_objGlobPtr;
-  ie->item_obj = *item_objGlobPtr;
+  ie->label = strdup (label);
 
-  g_signal_connect (G_OBJECT (item), "activate", 
-		      GTK_SIGNAL_FUNC (item_activate), ie);
+  g_signal_connect_data (G_OBJECT (menuitem), "activate", 
+		      GTK_SIGNAL_FUNC (item_activate), ie,
+		      (GClosureNotify) item_removed, 0);
 }

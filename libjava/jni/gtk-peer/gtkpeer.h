@@ -395,6 +395,7 @@ extern jmethodID postExposeEventID;
 extern jmethodID postKeyEventID;
 extern jmethodID postFocusEventID;
 extern jmethodID postAdjustmentEventID;
+extern jmethodID choicePostItemEventID;
 extern jmethodID postItemEventID;
 extern jmethodID postListItemEventID;
 extern jmethodID postTextEventID;
@@ -424,7 +425,7 @@ jint keyevent_state_to_awt_mods (GdkEvent *event);
 struct item_event_hook_info
 {
   jobject peer_obj;
-  jobject item_obj;
+  const char *label;
 };
 
 #endif /* __GTKPEER_H */

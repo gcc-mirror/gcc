@@ -171,7 +171,15 @@ add(String item)
     }
 
   if (i == 0)
-    select (0);
+  {
+    selectedIndex = 0;
+    // We must generate an ItemEvent here
+    Toolkit.getDefaultToolkit().getSystemEventQueue().postEvent (
+      new ItemEvent ((ItemSelectable)this, 
+                     ItemEvent.ITEM_STATE_CHANGED,
+                     getItem(0),
+                     ItemEvent.SELECTED));
+  }
 }
 
 /*************************************************************************/
@@ -223,7 +231,15 @@ insert(String item, int index)
     }
 
   if (getItemCount () == 1 || selectedIndex >= index)
+  {
     select (0);
+    // We must generate an ItemEvent here
+    Toolkit.getDefaultToolkit().getSystemEventQueue().postEvent (
+      new ItemEvent ((ItemSelectable)this, 
+                     ItemEvent.ITEM_STATE_CHANGED,
+                     getItem(0),
+                     ItemEvent.SELECTED));
+  }
 }
 
 /*************************************************************************/
@@ -265,8 +281,16 @@ remove(int index)
       cp.remove (index);
     }
 
-  if (index == selectedIndex)
+  if ((index == selectedIndex) && (getItemCount() > 0))
+  {
     select (0);
+    // We must generate an ItemEvent here
+    Toolkit.getDefaultToolkit().getSystemEventQueue().postEvent (
+      new ItemEvent ((ItemSelectable)this, 
+                     ItemEvent.ITEM_STATE_CHANGED,
+                     getItem(0),
+                     ItemEvent.SELECTED));
+  }
   else if (selectedIndex > index)
     --selectedIndex;
 }
@@ -281,11 +305,27 @@ removeAll()
 {
   int count = getItemCount();
 
-  for (int i = 0; i < count; i++)
+  if (count <= 0)
+    return;
+  
+  ChoicePeer cp = (ChoicePeer) peer;
+
+  // Select the first item to prevent an spurious ItemEvent to be generated
+  if (cp != null)
     {
-      // Always remove 0.
-      remove(0);
+      cp.select (0);
+      selectedIndex = 0; // Just to keep consistent
     }
+
+  for (int i = (count - 1); i >= 0; i--)
+    {
+      // Always remove the last to avoid generation of ItemEvents.
+      pItems.removeElementAt(i);
+      if (cp != null)
+        cp.remove (i);
+    }
+
+  selectedIndex = -1;
 }
 
 /*************************************************************************/
