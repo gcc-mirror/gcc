@@ -29,6 +29,7 @@ with Checks;   use Checks;
 with Einfo;    use Einfo;
 with Elists;   use Elists;
 with Errout;   use Errout;
+with Exp_Aggr; use Exp_Aggr;
 with Exp_Ch7;  use Exp_Ch7;
 with Exp_Ch11; use Exp_Ch11;
 with Exp_Tss;  use Exp_Tss;
@@ -3706,8 +3707,14 @@ package body Exp_Util is
             New_Exp := Make_Reference (Loc, E);
          end if;
 
-         if Nkind (E) = N_Aggregate and then Expansion_Delayed (E) then
-            Set_Expansion_Delayed (E, False);
+         if Is_Delayed_Aggregate (E) then
+            if Nkind (E) = N_Qualified_Expression then
+               Set_Expansion_Delayed (Expression (E), False);
+               Set_Analyzed (Expression (E), False);
+            else
+               Set_Expansion_Delayed (E, False);
+            end if;
+
             Set_Analyzed (E, False);
          end if;
 

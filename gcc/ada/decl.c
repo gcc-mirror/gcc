@@ -390,11 +390,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	   stored discriminant.  Also use Original_Record_Component
 	   if the record has a private extension.  */
 
-	if ((Base_Type (gnat_record) == gnat_record
-             || Ekind (Scope (gnat_entity)) == E_Private_Subtype
-	     || Ekind (Scope (gnat_entity)) == E_Record_Subtype_With_Private
-	     || Ekind (Scope (gnat_entity)) == E_Record_Type_With_Private)
-	    && Present (Original_Record_Component (gnat_entity))
+	if (Present (Original_Record_Component (gnat_entity))
 	    && Original_Record_Component (gnat_entity) != gnat_entity)
 	  {
 	    gnu_decl
@@ -2577,7 +2573,6 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	      && Present (Discriminant_Constraint (gnat_entity)))
 	    {
 	      Entity_Id gnat_field;
-	      Entity_Id gnat_root_type;
 	      tree gnu_field_list = 0;
 	      tree gnu_pos_list
 		= compute_field_positions (gnu_orig_type, NULL_TREE,
@@ -2586,41 +2581,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	      tree gnu_subst_list
 		= substitution_list (gnat_entity, gnat_base_type, NULL_TREE,
 				     definition);
-	      bool possibly_overlapping_fields = false;
 	      tree gnu_temp;
 
-	      /* If this is a derived type, we may be seeing fields from any
-		 original records, so add those positions and discriminant
-		 substitutions to our lists.  */
-	      for (gnat_root_type = gnat_base_type;
-		   Underlying_Type (Etype (gnat_root_type)) != gnat_root_type;
-		   gnat_root_type = Underlying_Type (Etype (gnat_root_type)))
-		{
-		  gnu_pos_list
-		    = compute_field_positions
-		      (gnat_to_gnu_type (Etype (gnat_root_type)),
-		       gnu_pos_list, size_zero_node, bitsize_zero_node,
-		       BIGGEST_ALIGNMENT);
-
-		  if (Present (Parent_Subtype (gnat_root_type)))
-		    {
-		      gnu_subst_list
-			= substitution_list (Parent_Subtype (gnat_root_type),
-					     Empty, gnu_subst_list,
-					     definition);
-
-		      /* If there's a _Parent field, it may overlap the
-			 fields we have that appear to be in this record but
-			 actually are from the parent.  So make note of that
-			 fact and later we'll make a UNION_TYPE instead of
-			 a RECORD_TYPE, since the latter may not have
-			 overlapping fields.  */
-		      possibly_overlapping_fields = true;
-		    }
-		}
-
-	      gnu_type = make_node (possibly_overlapping_fields
-				    ? UNION_TYPE : RECORD_TYPE);
+	      gnu_type = make_node (RECORD_TYPE);
 	      TYPE_NAME (gnu_type) = gnu_entity_id;
 	      TYPE_STUB_DECL (gnu_type)
 		= create_type_decl (NULL_TREE, gnu_type, NULL, false, false,
@@ -2629,8 +2592,13 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 
 	      for (gnat_field = First_Entity (gnat_entity);
 		   Present (gnat_field); gnat_field = Next_Entity (gnat_field))
-		if (Ekind (gnat_field) == E_Component
-		    || Ekind (gnat_field) == E_Discriminant)
+		if ((Ekind (gnat_field) == E_Component
+		     || Ekind (gnat_field) == E_Discriminant)
+		    && (Underlying_Type (Scope (Original_Record_Component
+						(gnat_field)))
+			== gnat_base_type)
+		    && (No (Corresponding_Discriminant (gnat_field))
+			|| !Is_Tagged_Type (gnat_base_type)))
 		  {
 		    tree gnu_old_field
 		      = gnat_to_gnu_entity
@@ -2723,6 +2691,16 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		    gnu_field_list = gnu_field;
 		    save_gnu_tree (gnat_field, gnu_field, false);
 		  }
+
+	      /* Now go through the entities again looking for Itypes that
+		 we have not elaborated but should (e.g., Etypes of fields
+		 that have Original_Components).  */
+	      for (gnat_field = First_Entity (gnat_entity);
+		   Present (gnat_field); gnat_field = Next_Entity (gnat_field))
+		if ((Ekind (gnat_field) == E_Discriminant
+		     || Ekind (gnat_field) == E_Component)
+		    && !present_gnu_tree (Etype (gnat_field)))
+		  gnat_to_gnu_entity (Etype (gnat_field), NULL_TREE, 0);
 
 	      finish_record_type (gnu_type, nreverse (gnu_field_list),
 				  true, false);

@@ -3013,6 +3013,8 @@ gnat_to_gnu (Node_Id gnat_node)
 	/* ??? It is wrong to evaluate the type now, but there doesn't
 	   seem to be any other practical way of doing it.  */
 
+	gcc_assert (!Expansion_Delayed (gnat_node));
+
 	gnu_aggr_type = gnu_result_type
 	  = get_unpadded_type (Etype (gnat_node));
 
@@ -5460,6 +5462,12 @@ assoc_to_constructor (Node_Id gnat_assoc, tree gnu_type)
       /* The expander is supposed to put a single component selector name
 	 in every record component association */
       gcc_assert (No (Next (gnat_field)));
+
+      /* Ignore fields that have Corresponding_Discriminants since we'll
+	 be setting that field in the parent.  */
+      if (Present (Corresponding_Discriminant (Entity (gnat_field)))
+	  && Is_Tagged_Type (Scope (Entity (gnat_field))))
+	continue;
 
       /* Before assigning a value in an aggregate make sure range checks
 	 are done if required.  Then convert to the type of the field.  */

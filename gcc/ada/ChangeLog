@@ -1,5 +1,25 @@
 2005-03-17  Eric Botcazou  <ebotcazou@adacore.com>
 
+	PR ada/19408
+	PR ada/19900
+	Backport from mainline:
+
+	2005-03-15  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+	* exp_util.adb (Remove_Side_Effects): Properly test for
+	Expansion_Delayed and handle case when it's inside an
+	N_Qualified_Expression.
+	* decl.c (gnat_to_gnu_entity, case E_Component): Always look at
+	Original_Record_Component if Present and not the entity.
+	(gnat_to_gnu_entity, case E_Record_Subtype): Rework handling of subtype
+	of tagged extension types by not making field for components that are
+	inside the parent.
+	* trans.c (gnat_to_gnu, case N_Aggregate): Verify that
+	Expansion_Delayed is False.
+	(assoc_to_constructor): Ignore fields that have a
+	Corresponding_Discriminant.
+    
+2005-03-17  Eric Botcazou  <ebotcazou@adacore.com>
+
 	PR ada/19140
 	Backport from mainline:
 
