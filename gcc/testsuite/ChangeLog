@@ -1,3 +1,8 @@
+2003-10-01  Kelley Cook  <kelleycook@wideopenwest.com>
+
+	* gcc.dg/Wold-style-definition-2.c: New testcase.
+	* gcc.dg/wtr-func-def-1.c: Modify to reflect new warning.
+
 2003-09-29  Richard Henderson  <rth@redhat.com>
 
         * g++.dg/init/array10.C: Add dg-options.

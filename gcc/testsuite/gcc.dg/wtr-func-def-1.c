@@ -143,21 +143,21 @@ f_impl3(int f)
   return 0;
 }
 
-/* Test that we don't warn about stdarg functions.  */
+/* Test stdarg functions.  */
 
 f_stdarg1(const char *s, ...)
-{
+{ /* { dg-warning "traditional C rejects ISO C style" } */
   return 0;
 }
 
 void f_stdarg2(const char *s, ...)
-{
+{ /* { dg-warning "traditional C rejects ISO C style" } */
   return;
 }
 
 extern void f_stdarg3(const char *, ...);
 void f_stdarg3(const char *s, ...)
-{
+{ /* { dg-warning "traditional C rejects ISO C style" } */
   return;
 }
 

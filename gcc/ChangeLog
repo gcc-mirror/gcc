@@ -1,3 +1,8 @@
+2003-10-01  Kelley Cook  <kelleycook@wideopenwest.com>
+
+	PR C/12466
+	* c-parse.in (parmlist_2): Mark declaration with an ellipsis as ISO C.
+
 2003-10-01  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* config/mips/xm-iris5.h: Remove, unnecessary.

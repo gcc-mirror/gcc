@@ -2561,13 +2561,16 @@ parmlist_2:  /* empty */
 		     tries to verify that BUILT_IN_NEXT_ARG is being used
 		     correctly.  */
 		  error ("ISO C requires a named argument before `...'");
+		  parsing_iso_function_signature = true;
 		}
 	| parms
 		{ $$ = get_parm_info (1);
 		  parsing_iso_function_signature = true;
 		}
 	| parms ',' ELLIPSIS
-		{ $$ = get_parm_info (0); }
+		{ $$ = get_parm_info (0);
+		  parsing_iso_function_signature = true;
+		}
 	;
 
 parms:
