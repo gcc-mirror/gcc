@@ -960,7 +960,9 @@ if [ -r ${LIB}/$file ]; then
       -e 's@ _VA_LIST_));@ __gnuc_va_list));@' \
       -e 's@ va_list@ __va_list__@' \
       -e 's@\*va_list@*__va_list__@' \
+      -e 's@_NEED___VA_LIST@_NEED___Va_LIST@' \
       -e 's@VA_LIST@DUMMY_VA_LIST@' \
+      -e 's@_NEED___Va_LIST@_NEED___VA_LIST@' \
     ${LIB}/$file >> ${LIB}/${file}.sed
   
   rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
