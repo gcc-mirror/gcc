@@ -1,3 +1,8 @@
+Thu Feb 11 21:25:51 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+ 
+ 	* parse.y (valid_builtin_assignconv_identity_widening_p): Got rid
+ 	of an ancient workaround.
+
 Wed Feb 10 23:27:33 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* jvspec.c (xmalloc): Kill the prototype.  It does not belong
