@@ -1901,7 +1901,7 @@ canon_hash (x, mode)
 
     case SYMBOL_REF:
       hash
-	+= ((unsigned) SYMBOL_REF << 7) + (unsigned HOST_WIDE_INT) XEXP (x, 0);
+	+= ((unsigned) SYMBOL_REF << 7) + (unsigned HOST_WIDE_INT) XSTR (x, 0);
       return hash;
 
     case MEM:
@@ -2078,8 +2078,10 @@ exp_equiv_p (x, y, validate, equal_values)
       return INTVAL (x) == INTVAL (y);
 
     case LABEL_REF:
-    case SYMBOL_REF:
       return XEXP (x, 0) == XEXP (y, 0);
+
+    case SYMBOL_REF:
+      return XSTR (x, 0) == XSTR (y, 0);
 
     case REG:
       {
