@@ -7959,12 +7959,14 @@ expand_expr (exp, target, tmode, modifier)
       op0 = expand_expr (TREE_OPERAND (exp, 0), NULL_RTX, mode, modifier);
 
       /* If the input and output modes are both the same, we are done.
-	 Otherwise, if neither mode is BLKmode and both are within a word, we
-	 can use gen_lowpart.  If neither is true, make sure the operand is
-	 in memory and convert the MEM to the new mode.  */
+	 Otherwise, if neither mode is BLKmode and both are integral and within
+	 a word, we can use gen_lowpart.  If neither is true, make sure the
+	 operand is in memory and convert the MEM to the new mode.  */
       if (TYPE_MODE (type) == GET_MODE (op0))
 	;
       else if (TYPE_MODE (type) != BLKmode && GET_MODE (op0) != BLKmode
+	       && GET_MODE_CLASS (GET_MODE (op0)) == MODE_INT
+	       && GET_MODE_CLASS (TYPE_MODE (type)) == MODE_INT
 	       && GET_MODE_SIZE (TYPE_MODE (type)) <= UNITS_PER_WORD
 	       && GET_MODE_SIZE (GET_MODE (op0)) <= UNITS_PER_WORD)
 	op0 = gen_lowpart (TYPE_MODE (type), op0);
