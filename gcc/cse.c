@@ -6450,7 +6450,8 @@ cse_process_notes (x, object)
       return x;
 
     case MEM:
-      XEXP (x, 0) = cse_process_notes (XEXP (x, 0), x);
+      validate_change (x, &XEXP (x, 0),
+		       cse_process_notes (XEXP (x, 0), x), 0);
       return x;
 
     case EXPR_LIST:
