@@ -608,6 +608,27 @@ fcc_reg_operand (op, mode)
 #endif
 }
 
+/* Nonzero if OP is a floating point condition code fcc0 register.  */
+
+int
+fcc0_reg_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  /* This can happen when recog is called from combine.  Op may be a MEM.
+     Fail instead of calling abort in this case.  */
+  if (GET_CODE (op) != REG)
+    return 0;
+
+  if (mode != VOIDmode && mode != GET_MODE (op))
+    return 0;
+  if (mode == VOIDmode
+      && (GET_MODE (op) != CCFPmode && GET_MODE (op) != CCFPEmode))
+    return 0;
+
+  return REGNO (op) == SPARC_FCC_REG;
+}
+
 /* Nonzero if OP is an integer or floating point condition code register.  */
 
 int
@@ -878,10 +899,33 @@ noov_compare_op (op, mode)
   if (GET_RTX_CLASS (code) != '<')
     return 0;
 
-  if (GET_MODE (XEXP (op, 0)) == CC_NOOVmode)
+  if (GET_MODE (XEXP (op, 0)) == CC_NOOVmode
+      || GET_MODE (XEXP (op, 0)) == CCX_NOOVmode)
     /* These are the only branches which work with CC_NOOVmode.  */
     return (code == EQ || code == NE || code == GE || code == LT);
   return 1;
+}
+
+/* Return 1 if this is a 64-bit comparison operator.  This allows the use of
+   MATCH_OPERATOR to recognize all the branch insns.  */
+
+int
+noov_compare64_op (op, mode)
+    register rtx op;
+    enum machine_mode mode ATTRIBUTE_UNUSED;
+{
+  enum rtx_code code = GET_CODE (op);
+
+  if (! TARGET_V9)
+    return 0;
+
+  if (GET_RTX_CLASS (code) != '<')
+    return 0;
+
+  if (GET_MODE (XEXP (op, 0)) == CCX_NOOVmode)
+    /* These are the only branches which work with CCX_NOOVmode.  */
+    return (code == EQ || code == NE || code == GE || code == LT);
+  return (GET_MODE (XEXP (op, 0)) == CCXmode);
 }
 
 /* Nonzero if OP is a comparison operator suitable for use in v9
@@ -4996,25 +5040,43 @@ sparc_va_arg (valist, type)
    INSN, if set, is the insn.  */
 
 char *
-output_cbranch (op, label, reversed, annul, noop, insn)
-     rtx op;
+output_cbranch (op, dest, label, reversed, annul, noop, insn)
+     rtx op, dest;
      int label;
      int reversed, annul, noop;
      rtx insn;
 {
-  static char string[32];
+  static char string[50];
   enum rtx_code code = GET_CODE (op);
   rtx cc_reg = XEXP (op, 0);
   enum machine_mode mode = GET_MODE (cc_reg);
-  static char v8_labelno[] = "%lX";
-  static char v9_icc_labelno[] = "%%icc, %lX";
-  static char v9_xcc_labelno[] = "%%xcc, %lX";
-  static char v9_fcc_labelno[] = "%%fccX, %lY";
-  char *labelno;
-  const char *branch;
-  int labeloff, spaces = 8;
+  const char *labelno, *branch;
+  int spaces = 8, far;
+  char *p;
 
-  if (reversed)
+  /* v9 branches are limited to +-1MB.  If it is too far away,
+     change
+
+     bne,pt %xcc, .LC30
+
+     to
+
+     be,pn %xcc, .+12
+     nop
+     ba .LC30
+
+     and
+
+     fbne,a,pn %fcc2, .LC29
+
+     to
+
+     fbe,pt %fcc2, .+16
+     nop
+     ba .LC29  */
+
+  far = get_attr_length (insn) >= 3;
+  if (reversed ^ far)
     {
       /* Reversal of FP compares takes care -- an ordered compare
 	 becomes an unordered compare and vice versa.  */
@@ -5097,7 +5159,7 @@ output_cbranch (op, label, reversed, annul, noop, insn)
 	  branch = "be";
 	  break;
 	case GE:
-	  if (mode == CC_NOOVmode)
+	  if (mode == CC_NOOVmode || mode == CCX_NOOVmode)
 	    branch = "bpos";
 	  else
 	    branch = "bge";
@@ -5109,7 +5171,7 @@ output_cbranch (op, label, reversed, annul, noop, insn)
 	  branch = "ble";
 	  break;
 	case LT:
-	  if (mode == CC_NOOVmode)
+	  if (mode == CC_NOOVmode || mode == CCX_NOOVmode)
 	    branch = "bneg";
 	  else
 	    branch = "bl";
@@ -5133,54 +5195,89 @@ output_cbranch (op, label, reversed, annul, noop, insn)
       strcpy (string, branch);
     }
   spaces -= strlen (branch);
+  p = strchr (string, '\0');
 
   /* Now add the annulling, the label, and a possible noop.  */
-  if (annul)
+  if (annul && ! far)
     {
-      strcat (string, ",a");
+      strcpy (p, ",a");
+      p += 2;
       spaces -= 2;
     }
 
   if (! TARGET_V9)
-    {
-      labeloff = 2;
-      labelno = v8_labelno;
-    }
+    labelno = "";
   else
     {
       rtx note;
+      int v8 = 0;
 
-      if (insn && (note = find_reg_note (insn, REG_BR_PRED, NULL_RTX)))
+      if (! far && insn && INSN_ADDRESSES_SET_P ())
 	{
-	  strcat (string,
-		  INTVAL (XEXP (note, 0)) & ATTR_FLAG_likely ? ",pt" : ",pn");
-	  spaces -= 3;
+	  int delta = (INSN_ADDRESSES (INSN_UID (dest))
+		       - INSN_ADDRESSES (INSN_UID (insn)));
+	  /* Leave some instructions for "slop".  */
+	  if (delta < -260000 || delta >= 260000)
+	    v8 = 1;
 	}
 
-      labeloff = 9;
       if (mode == CCFPmode || mode == CCFPEmode)
 	{
-	  labeloff = 10;
-	  labelno = v9_fcc_labelno;
+	  static char v9_fcc_labelno[] = "%%fccX, ";
 	  /* Set the char indicating the number of the fcc reg to use.  */
-	  labelno[5] = REGNO (cc_reg) - SPARC_FIRST_V9_FCC_REG + '0';
+	  v9_fcc_labelno[5] = REGNO (cc_reg) - SPARC_FIRST_V9_FCC_REG + '0';
+	  labelno = v9_fcc_labelno;
+	  if (v8)
+	    {
+	      if (REGNO (cc_reg) == SPARC_FCC_REG)
+		labelno = "";
+	      else
+		abort ();
+	    }
 	}
       else if (mode == CCXmode || mode == CCX_NOOVmode)
-	labelno = v9_xcc_labelno;
+	{
+	  labelno = "%%xcc, ";
+	  if (v8)
+	    abort ();
+	}
       else
-	labelno = v9_icc_labelno;
+	{
+	  labelno = "%%icc, ";
+	  if (v8)
+	    labelno = "";
+	}
+
+      if (*labelno && insn && (note = find_reg_note (insn, REG_BR_PRED, NULL_RTX)))
+	{
+	  strcpy (p,
+		  (((INTVAL (XEXP (note, 0)) & ATTR_FLAG_likely) != 0) ^ far)
+		  ? ",pt" : ",pn");
+	  p += 3;
+	  spaces -= 3;
+	}
     }
+  if (spaces > 0)
+    *p++ = '\t';
+  else
+    *p++ = ' ';
+  strcpy (p, labelno);
+  p = strchr (p, '\0');
+  if (far)
+    {
+      strcpy (p, ".+12\n\tnop\n\tb\t");
+      if (annul || noop)
+        p[3] = '6';
+      p += 13;
+    }
+  *p++ = '%';
+  *p++ = 'l';
   /* Set the char indicating the number of the operand containing the
      label_ref.  */
-  labelno[labeloff] = label + '0';
-  if (spaces > 0)
-    strcat (string, "\t");
-  else
-    strcat (string, " ");
-  strcat (string, labelno);
-
+  *p++ = label + '0';
+  *p = '\0';
   if (noop)
-    strcat (string, "\n\tnop");
+    strcpy (p, "\n\tnop");
 
   return string;
 }
@@ -5338,22 +5435,45 @@ sparc_emit_float_lib_cmp (x, y, comparison)
    NOOP is non-zero if we have to follow this branch by a noop.  */
 
 char *
-output_v9branch (op, reg, label, reversed, annul, noop, insn)
-     rtx op;
+output_v9branch (op, dest, reg, label, reversed, annul, noop, insn)
+     rtx op, dest;
      int reg, label;
      int reversed, annul, noop;
      rtx insn;
 {
-  static char string[20];
+  static char string[50];
   enum rtx_code code = GET_CODE (op);
   enum machine_mode mode = GET_MODE (XEXP (op, 0));
-  static char labelno[] = "%X, %lX";
   rtx note;
-  int spaces = 8;
+  int far;
+  char *p;
+
+  /* branch on register are limited to +-128KB.  If it is too far away,
+     change
+     
+     brnz,pt %g1, .LC30
+     
+     to
+     
+     brz,pn %g1, .+12
+     nop
+     ba,pt %xcc, .LC30
+     
+     and
+     
+     brgez,a,pn %o1, .LC29
+     
+     to
+     
+     brlz,pt %o1, .+16
+     nop
+     ba,pt %xcc, .LC29  */
+
+  far = get_attr_length (insn) >= 3;
 
   /* If not floating-point or if EQ or NE, we can just reverse the code.  */
-  if (reversed)
-    code = reverse_condition (code), reversed = 0;
+  if (reversed ^ far)
+    code = reverse_condition (code);
 
   /* Only 64 bit versions of these instructions exist.  */
   if (mode != DImode)
@@ -5365,62 +5485,90 @@ output_v9branch (op, reg, label, reversed, annul, noop, insn)
     {
     case NE:
       strcpy (string, "brnz");
-      spaces -= 4;
       break;
 
     case EQ:
       strcpy (string, "brz");
-      spaces -= 3;
       break;
 
     case GE:
       strcpy (string, "brgez");
-      spaces -= 5;
       break;
 
     case LT:
       strcpy (string, "brlz");
-      spaces -= 4;
       break;
 
     case LE:
       strcpy (string, "brlez");
-      spaces -= 5;
       break;
 
     case GT:
       strcpy (string, "brgz");
-      spaces -= 4;
       break;
 
     default:
       abort ();
     }
 
+  p = strchr (string, '\0');
+
   /* Now add the annulling, reg, label, and nop.  */
-  if (annul)
+  if (annul && ! far)
     {
-      strcat (string, ",a");
-      spaces -= 2;
+      strcpy (p, ",a");
+      p += 2;
     }
 
   if (insn && (note = find_reg_note (insn, REG_BR_PRED, NULL_RTX)))
     {
-      strcat (string,
-	      INTVAL (XEXP (note, 0)) & ATTR_FLAG_likely ? ",pt" : ",pn");
-      spaces -= 3;
+      strcpy (p,
+	      (((INTVAL (XEXP (note, 0)) & ATTR_FLAG_likely) != 0) ^ far)
+	      ? ",pt" : ",pn");
+      p += 3;
     }
 
-  labelno[1] = reg + '0';
-  labelno[6] = label + '0';
-  if (spaces > 0)
-    strcat (string, "\t");
-  else
-    strcat (string, " ");
-  strcat (string, labelno);
+  *p = p < string + 8 ? '\t' : ' ';
+  p++;
+  *p++ = '%';
+  *p++ = '0' + reg;
+  *p++ = ',';
+  *p++ = ' ';
+  if (far)
+    {
+      int veryfar = 1, delta;
+
+      if (INSN_ADDRESSES_SET_P ())
+	{
+	  delta = (INSN_ADDRESSES (INSN_UID (dest))
+		   - INSN_ADDRESSES (INSN_UID (insn)));
+	  /* Leave some instructions for "slop".  */
+	  if (delta >= -260000 && delta < 260000)
+	    veryfar = 0;
+	}
+
+      strcpy (p, ".+12\n\tnop\n\t");
+      if (annul || noop)
+        p[3] = '6';
+      p += 11;
+      if (veryfar)
+	{
+	  strcpy (p, "b\t");
+	  p += 2;
+	}
+      else
+	{
+	  strcpy (p, "ba,pt\t%%xcc, ");
+	  p += 13;
+	}
+    }
+  *p++ = '%';
+  *p++ = 'l';
+  *p++ = '0' + label;
+  *p = '\0';
 
   if (noop)
-    strcat (string, "\n\tnop");
+    strcpy (p, "\n\tnop");
 
   return string;
 }

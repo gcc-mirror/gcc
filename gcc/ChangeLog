@@ -1,3 +1,22 @@
+2002-03-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/5626
+	* config/sparc/sparc.md (normal_branch, inverted_branch,
+	normal_fp_branch, inverted_fp_branch, normal_fpe_branch,
+	inverted_fp_branch): Adjust calls to output_cbranch.
+	Set length attribute.
+	(normal_int_branch_sp64, inverted_int_branch_sp64): Adjust calls to
+	output_v9branch.  Set length attribute.
+	* config/sparc/sparc.c (fcc0_reg_operand, noov_compare64_op): New
+	predicates.
+	(noov_compare_op): Handle CCX_NOOVmode the same way as CC_NOOVmode.
+	(output_cbranch): Likewise.  Handle far branches.
+	(output_v9branch): Handle far branches.
+	* config/sparc/sparc-protos.h (output_cbranch, output_v9branch):
+	Adjust prototypes.
+	* config/sparc/sparc.h (PREDICATE_CODES): Add fcc0_reg_operand and
+	noov_compare64_op predicates.
+
 2002-03-13  Jason Merrill  <jason@redhat.com>
 
 	* gthr-posix.h (__gthread_active_p): Move __gthread_active_ptr
