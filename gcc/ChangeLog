@@ -1,3 +1,11 @@
+2003-12-23  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* config/mips/mips.c (override_options): Use `inform' instead
+	of `warning' for -g -mabi=32 and native assembler.
+
+	* config/mips/t-iris6 (CRTSTUFF_T_CFLAGS, TARGET_LIBGCC2_CFLAGS):
+	Don't pass -Wno-error.
+
 2003-12-23  David Edelsohn  <edelsohn@gnu.org>
 
 	* function.c (assign_parms): Update max_parm_reg and

@@ -4663,10 +4663,10 @@ override_options (void)
 	  /* Adapt wording to IRIX version: IRIX 5 only had a single ABI,
 	     so -mabi=32 isn't usually specified.  */
 	  if (TARGET_IRIX5)
-	    warning ("-g is only supported using GNU as,");
+	    inform ("-g is only supported using GNU as,");
 	  else
-	    warning ("-g is only supported using GNU as with -mabi=32,");
-	  warning ("-g option disabled");
+	    inform ("-g is only supported using GNU as with -mabi=32,");
+	  inform ("-g option disabled");
 	  write_symbols = NO_DEBUG;
 	}
     }
