@@ -1,3 +1,8 @@
+2004-04-01  Gary Benson  <gbenson@redhat.com>
+
+	* resolve.cc (_Jv_ResolvePoolEntry): Put field name in exception.
+	(_Jv_SearchMethodInClass): Likewise.
+
 2004-03-26  Peter Moon  <peterm@miraculum.com>
 
 	* java/text/NumberFormat.java: Fix spelling of setCurrency

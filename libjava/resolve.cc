@@ -1,6 +1,6 @@
 // resolve.cc - Code for linking and resolving classes and pool entries.
 
-/* Copyright (C) 1999, 2000, 2001, 2002, 2003 Free Software Foundation
+/* Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004 Free Software Foundation
 
    This file is part of libgcj.
 
@@ -185,7 +185,14 @@ _Jv_ResolvePoolEntry (jclass klass, int index)
 		}
 	      else
 		{
-		  throw new java::lang::IllegalAccessError;
+		  java::lang::StringBuffer *sb
+		    = new java::lang::StringBuffer ();
+		  sb->append(klass->getName());
+		  sb->append(JvNewStringLatin1(": "));
+		  sb->append(cls->getName());
+		  sb->append(JvNewStringLatin1("."));
+		  sb->append(_Jv_NewStringUtf8Const (field_name));
+		  throw new java::lang::IllegalAccessError(sb->toString());
 		}
 	    }
 	}
@@ -343,7 +350,16 @@ _Jv_SearchMethodInClass (jclass cls, jclass klass,
       if (_Jv_CheckAccess (klass, cls, method->accflags))
 	return method;
       else
-	throw new java::lang::IllegalAccessError;
+	{
+	  java::lang::StringBuffer *sb = new java::lang::StringBuffer();
+	  sb->append(klass->getName());
+	  sb->append(JvNewStringLatin1(": "));
+	  sb->append(cls->getName());
+	  sb->append(JvNewStringLatin1("."));
+	  sb->append(_Jv_NewStringUTF(method_name->data));
+	  sb->append(_Jv_NewStringUTF(method_signature->data));
+	  throw new java::lang::IllegalAccessError (sb->toString());
+	}
     }
   return 0;
 }
