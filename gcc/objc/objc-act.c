@@ -73,6 +73,7 @@ Boston, MA 02111-1307, USA.  */
 #include "tree-iterator.h"
 #include "libfuncs.h"
 #include "hashtab.h"
+#include "langhooks-def.h"
 
 #define OBJC_VOID_AT_END	void_list_node
 
@@ -835,6 +836,27 @@ objc_is_class_id (tree type)
 {
   return OBJC_TYPE_NAME (type) == objc_class_id;
 }
+
+
+int
+objc_types_compatible_p (tree type1, tree type2)
+{
+
+  if (objc_is_object_ptr (type1) || objc_is_object_ptr (type2)
+      || objc_is_class_name (type1) || objc_is_class_name (type2))
+    {
+      return lhd_types_compatible_p (type1, type2);
+    }
+  else
+    {
+#ifdef OBJCPLUS
+      return cxx_types_compatible_p (type1, type2);
+#else
+      return c_types_compatible_p (type1, type2);
+#endif
+    }
+}
+
 
 /* Return 1 if LHS and RHS are compatible types for assignment or
    various other operations.  Return 0 if they are incompatible, and
