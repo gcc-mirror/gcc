@@ -1,3 +1,11 @@
+Thu Oct 28 20:59:47 1999  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
+
+	* config/i386/sol2gas.h: I had installed the wrong version of Sept
+	22's patch in the release branch.  Fixed.
+	* configure.in: Likewise.
+	* configure: Rebuilt.
+	Reported by Jason Beardsley <jbeardsley@origin.ea.com>
+
 Sun Oct 24 23:54:10 PDT 1999 Jeff Law  (law@cygnus.com)
 
 	* gcc-2.95.2 Released.
