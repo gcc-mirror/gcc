@@ -1,4 +1,4 @@
-Wed Feb 11 21:44:40 1998  Robert Lipe	<robertl@dgii.com>
+Fri Feb 13 08:41:49 1998  Robert Lipe	<robertl@dgii.com>
 
 	* c-lang.c (finish_file): Bracket declaration of static_ctors, 
 	static_dtors.
