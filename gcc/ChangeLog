@@ -1,5 +1,20 @@
 2005-03-21  Roger Sayle  <roger@eyesopen.com>
 
+	PR middle-end/20539
+	* fold-const.c (fold_binary): Fix type mismatch between
+	TRUTH_{AND,OR,XOR}_EXPR nodes an their operands' types.
+	(fold_binary) <TRUTH_XOR_EXPR>: Avoid calling invert_truthvalue
+	for non-truth-valued expressions.
+
+	* c-common.c (c_common_truthvalue_conversion): Handle ERROR_MARK
+	and FUNCTION_DECL in the main switch.
+	<TRUTH_ANDIF_EXPR, TRUTH_ORIF_EXPR, TRUTH_AND_EXPR, TRUTH_OR_EXPR,
+	TRUTH_XOR_EXPR>: When changing the result type of these tree nodes,
+	we also need to convert their operands to match.
+	<TRUTH_NOT_EXPR>: Likewise.
+
+2005-03-21  Roger Sayle  <roger@eyesopen.com>
+
 	PR middle-end/20557
 	* bb-reorder.c (duplicate_computed_gotos): Use can_duplicate_block_p
 	to determine whether a block can be duplicated, rather than test

@@ -1,3 +1,10 @@
+2005-03-21  Roger Sayle  <roger@eyesopen.com>
+
+	PR middle-end/20539
+	* gcc.c-torture/compile/pr13066-1.c: New test case.
+	* gcc.c-torture/compile/pr20539-1.c: Likewise.
+	* g++.dg/opt/pr13066-1.C: Likewise.
+
 2005-03-21  Paolo Carlini  <pcarlini@suse.de>
 
 	PR c++/20147	
