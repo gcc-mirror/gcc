@@ -77,10 +77,7 @@ extern int target_flags;
 
 #define OVERRIDE_OPTIONS						\
 {									\
-  extern int dollars_in_ident;						\
   init_convex ();							\
-  /* To compile system header files, allow $ in identifiers even if -ansi */ \
-  dollars_in_ident = 1;							\
   if ((target_flags & 077) != ((TARGET_DEFAULT | TARGET_CPU_DEFAULT) & 077)) \
     target_flags &= ~ (TARGET_DEFAULT | TARGET_CPU_DEFAULT);		\
   if (target_flags & 001)						\
@@ -416,10 +413,6 @@ extern int target_flags;
 /* Use /path/libgcc.a instead of -lgcc, makes bootstrap work more smoothly. */
 
 #define LINK_LIBGCC_SPECIAL_1
-
-/* Allow $ in identifiers. */
-
-#define DOLLARS_IN_IDENTIFIERS 2
 
 /* Since IEEE support was added to gcc, most things seem to like it
    better if we disable exceptions and check afterward for infinity. */
