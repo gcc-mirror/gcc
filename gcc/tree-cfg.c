@@ -3151,7 +3151,9 @@ verify_expr (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
   if (TYPE_P (t))
     *walk_subtrees = 0;
   
-  /* Check operand N for being valid GIMPLE and give error MSG if not.  */
+  /* Check operand N for being valid GIMPLE and give error MSG if not. 
+     We check for constants explicitly since they are not considered
+     gimple invariants if they overflowed.  */
 #define CHECK_OP(N, MSG) \
   do { if (TREE_CODE_CLASS (TREE_CODE (TREE_OPERAND (t, N))) != 'c'	\
          && !is_gimple_val (TREE_OPERAND (t, N)))			\
@@ -3300,24 +3302,8 @@ verify_expr (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
     case BIT_IOR_EXPR:
     case BIT_XOR_EXPR:
     case BIT_AND_EXPR:
-      x = TREE_OPERAND (t, 0);
-      /* We check for constants explicitly since they are not considered
-	 gimple invariants if they overflowed.  */
-      if (TREE_CODE_CLASS (TREE_CODE (x)) != 'c'
-	  && !is_gimple_val (x))
-	{
-	  error ("Invalid operand to binary operator");
-	  return x;
-	}
-      x = TREE_OPERAND (t, 1);
-      /* We check for constants explicitly since they are not considered
-	 gimple invariants if they overflowed.  */
-      if (TREE_CODE_CLASS (TREE_CODE (x)) != 'c'
-	  && !is_gimple_val (x))
-	{
-	  error ("Invalid operand to binary operator");
-	  return x;
-	}
+      CHECK_OP (0, "Invalid operand to binary operator");
+      CHECK_OP (1, "Invalid operand to binary operator");
       break;
 
     default:
