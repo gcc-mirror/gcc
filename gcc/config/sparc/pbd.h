@@ -150,10 +150,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define ASM_OUTPUT_ADDR_VEC_ELT(FILE, VALUE)  \
   fprintf (FILE, "\t.word .L%d\n", VALUE)
 
-/* Underscores are not used on Unicom PBD coff systems. */
-/* This currently seems to only be needed for libgcc2.a */
-#define NO_UNDERSCORES
-
 /* Output assembler code to FILE to increment profiler label # LABELNO
    for profiling a function entry.  */
 
