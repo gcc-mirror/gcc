@@ -1,3 +1,10 @@
+2003-07-25  Tom Tromey  <tromey@redhat.com>
+
+	* java/io/natFileDescriptorPosix.cc (write): Try again on EINTR.
+	(write): Likewise.
+	(read): Likewise.
+	(read): Likewise.
+
 2003-07-25  Mark Wielaard  <mark@klomp.org>
 
 	* java/lang/natRuntime.cc (_load): Add library name to
