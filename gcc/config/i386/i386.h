@@ -730,10 +730,9 @@ extern int x86_prefetch_sse;
 
 #define BIGGEST_ALIGNMENT 128
 
-/* Decide whether a variable of mode MODE must be 128 bit aligned.  */
+/* Decide whether a variable of mode MODE should be 128 bit aligned.  */
 #define ALIGN_MODE_128(MODE) \
- ((MODE) == XFmode || (MODE) == TFmode || ((MODE) == TImode) \
-  || (MODE) == V4SFmode	|| (MODE) == V4SImode)
+ ((MODE) == XFmode || (MODE) == TFmode || SSE_REG_MODE_P (MODE))
 
 /* The published ABIs say that doubles should be aligned on word
    boundaries, so lower the aligment for structure fields unless
@@ -1006,6 +1005,17 @@ do {									\
      || (MODE) == CQImode || (MODE) == CHImode || (MODE) == CSImode	\
      || (MODE) == CDImode						\
      || (TARGET_64BIT && ((MODE) == TImode || (MODE) == CTImode)))
+
+/* Return true for modes passed in SSE registers.  */
+#define SSE_REG_MODE_P(MODE) \
+ ((MODE) == TImode || (MODE) == V16QImode				\
+   || (MODE) == V8HImode || (MODE) == V2DFmode || (MODE) == V2DImode	\
+   || (MODE) == V4SFmode || (MODE) == V4SImode)
+
+/* Return true for modes passed in MMX registers.  */
+#define MMX_REG_MODE_P(MODE) \
+ ((MODE) == V8QImode || (MODE) == V4HImode || (MODE) == V2SImode	\
+   || (MODE) == V2SFmode)
 
 /* Value is 1 if hard register REGNO can hold a value of machine-mode MODE.  */
 
