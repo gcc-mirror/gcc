@@ -35,9 +35,10 @@ extern void print_operand PARAMS ((FILE *, rtx, int));
 extern void final_prescan_insn PARAMS ((rtx, rtx *, int));
 extern int do_movsi PARAMS ((rtx[]));
 extern void notice_update_cc PARAMS ((rtx, rtx));
-extern const char *output_logical_op PARAMS ((enum machine_mode, int, rtx *));
+extern const char *output_logical_op PARAMS ((enum machine_mode, rtx *));
 extern unsigned int compute_logical_op_length PARAMS ((enum machine_mode,
-						       enum rtx_code, rtx *));
+						       rtx *));
+extern int compute_logical_op_cc PARAMS ((enum machine_mode, rtx *));
 extern int expand_a_shift PARAMS ((enum machine_mode, int, rtx[]));
 extern int expand_a_rotate PARAMS ((enum rtx_code, rtx[]));
 extern int fix_bit_operand PARAMS ((rtx *, int, enum rtx_code));

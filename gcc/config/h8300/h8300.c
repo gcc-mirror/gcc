@@ -1487,11 +1487,12 @@ bit_operator (x, mode)
 }
 
 const char *
-output_logical_op (mode, code, operands)
+output_logical_op (mode, operands)
      enum machine_mode mode;
-     int code;
      rtx *operands;
 {
+  /* Figure out the logical op that we need to perform.  */
+  enum rtx_code code = GET_CODE (operands[3]);
   /* Pretend that every byte is affected if both operands are registers.  */
   unsigned HOST_WIDE_INT intval =
     (unsigned HOST_WIDE_INT) ((GET_CODE (operands[2]) == CONST_INT)
@@ -1629,11 +1630,12 @@ output_logical_op (mode, code, operands)
 }
 
 unsigned int
-compute_logical_op_length (mode, code, operands)
+compute_logical_op_length (mode, operands)
      enum machine_mode mode;
-     enum rtx_code code;
      rtx *operands;
 {
+  /* Figure out the logical op that we need to perform.  */
+  enum rtx_code code = GET_CODE (operands[3]);
   /* Pretend that every byte is affected if both operands are registers.  */
   unsigned HOST_WIDE_INT intval =
     (unsigned HOST_WIDE_INT) ((GET_CODE (operands[2]) == CONST_INT)
@@ -1737,6 +1739,55 @@ compute_logical_op_length (mode, code, operands)
       abort ();
     }
   return length;
+}
+
+int
+compute_logical_op_cc (mode, operands)
+     enum machine_mode mode;
+     rtx *operands;
+{
+  /* Figure out the logical op that we need to perform.  */
+  enum rtx_code code = GET_CODE (operands[3]);
+  /* Pretend that every byte is affected if both operands are registers.  */
+  unsigned HOST_WIDE_INT intval =
+    (unsigned HOST_WIDE_INT) ((GET_CODE (operands[2]) == CONST_INT)
+			      ? INTVAL (operands[2]) : 0x55555555);
+  /* The determinant of the algorithm.  If we perform an AND, 0
+     affects a bit.  Otherwise, 1 affects a bit.  */
+  unsigned HOST_WIDE_INT det = (code != AND) ? intval : ~intval;
+  /* Condition code.  */
+  enum attr_cc cc = CC_CLOBBER;
+
+  switch (mode)
+    {
+    case HImode:
+      /* First, see if we can finish with one insn.  */
+      if ((TARGET_H8300H || TARGET_H8300S)
+	  && ((det & 0x00ff) != 0)
+	  && ((det & 0xff00) != 0))
+	{
+	  cc = CC_SET_ZNV;
+	}
+      break;
+    case SImode:
+      /* First, see if we can finish with one insn.
+
+	 If code is either AND or XOR, we exclude two special cases,
+	 0xffffff00 and 0xffff00ff, because insns like sub.w or not.w
+	 can do a better job.  */
+      if ((TARGET_H8300H || TARGET_H8300S)
+	  && ((det & 0x0000ffff) != 0)
+	  && ((det & 0xffff0000) != 0)
+	  && (code == IOR || det != 0xffffff00)
+	  && (code == IOR || det != 0xffff00ff))
+	{
+	  cc = CC_SET_ZNV;
+	}
+      break;
+    default:
+      abort ();
+    }
+  return cc;
 }
 
 /* Shifts.
