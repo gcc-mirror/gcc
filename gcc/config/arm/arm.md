@@ -332,10 +332,16 @@
    cmp%?\\t%0, #%n1"
 [(set_attr "conds" "set")])
 
-(define_insn "*addsi3_compareneg"
-  [(set (reg:CC 24)
-	(compare:CC (match_operand:SI 1 "s_register_operand" "r,r")
-		    (neg:SI (match_operand:SI 2 "arm_add_operand" "rI,L"))))
+;; The next four insns work because they compare the result with one of
+;; the operands, and we know that the use of the condition code is
+;; either GEU or LTU, so we can use the carry flag from the addition
+;; instead of doing the compare a second time.
+(define_insn "*addsi3_compare_op1"
+  [(set (reg:CC_C 24)
+	(compare:CC_C
+	 (plus:SI (match_operand:SI 1 "s_register_operand" "r,r")
+		  (match_operand:SI 2 "arm_add_operand" "rI,L"))
+	 (match_dup 1)))
    (set (match_operand:SI 0 "s_register_operand" "=r,r")
 	(plus:SI (match_dup 1) (match_dup 2)))]
   ""
@@ -343,6 +349,80 @@
    add%?s\\t%0, %1, %2
    sub%?s\\t%0, %1, #%n2"
 [(set_attr "conds" "set")])
+
+(define_insn "*addsi3_compare_op2"
+  [(set (reg:CC_C 24)
+	(compare:CC_C
+	 (plus:SI (match_operand:SI 1 "s_register_operand" "r,r")
+		  (match_operand:SI 2 "arm_add_operand" "rI,L"))
+	 (match_dup 2)))
+   (set (match_operand:SI 0 "s_register_operand" "=r,r")
+	(plus:SI (match_dup 1) (match_dup 2)))]
+  ""
+  "@
+   add%?s\\t%0, %1, %2
+   sub%?s\\t%0, %1, #%n2"
+[(set_attr "conds" "set")])
+
+(define_insn "*compare_addsi2_op0"
+  [(set (reg:CC_C 24)
+	(compare:CC_C
+	 (plus:SI (match_operand:SI 0 "s_register_operand" "r,r")
+		  (match_operand:SI 1 "arm_add_operand" "rI,L"))
+	 (match_dup 0)))]
+  ""
+  "@
+   cmn%?\\t%0, %1
+   cmp%?\\t%0, #%n1"
+[(set_attr "conds" "set")])
+
+(define_insn "*compare_addsi2_op1"
+  [(set (reg:CC_C 24)
+	(compare:CC_C
+	 (plus:SI (match_operand:SI 0 "s_register_operand" "r,r")
+		  (match_operand:SI 1 "arm_add_operand" "rI,L"))
+	 (match_dup 1)))]
+  ""
+  "@
+   cmn%?\\t%0, %1
+   cmp%?\\t%0, #%n1"
+[(set_attr "conds" "set")])
+
+(define_insn "*addsi3_carryin"
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
+	(plus:SI (ltu:SI (reg:CC_C 24) (const_int 0))
+		 (plus:SI (match_operand:SI 1 "s_register_operand" "r")
+			  (match_operand:SI 2 "arm_rhs_operand" "rI"))))]
+  ""
+  "adc%?\\t%0, %1, %2"
+[(set_attr "conds" "use")])
+
+(define_insn "*addsi3_carryin_alt1"
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
+	(plus:SI (plus:SI (match_operand:SI 1 "s_register_operand" "r")
+			  (match_operand:SI 2 "arm_rhs_operand" "rI"))
+		 (ltu:SI (reg:CC_C 24) (const_int 0))))]
+  ""
+  "adc%?\\t%0, %1, %2"
+[(set_attr "conds" "use")])
+
+(define_insn "*addsi3_carryin_alt2"
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
+	(plus:SI (plus:SI (ltu:SI (reg:CC_C 24) (const_int 0))
+			  (match_operand:SI 1 "s_register_operand" "r"))
+		 (match_operand:SI 2 "arm_rhs_operand" "rI")))]
+  ""
+  "adc%?\\t%0, %1, %2"
+[(set_attr "conds" "use")])
+
+(define_insn "*addsi3_carryin_alt3"
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
+	(plus:SI (plus:SI (ltu:SI (reg:CC_C 24) (const_int 0))
+			  (match_operand:SI 2 "arm_rhs_operand" "rI"))
+		 (match_operand:SI 1 "s_register_operand" "r")))]
+  ""
+  "adc%?\\t%0, %1, %2"
+[(set_attr "conds" "use")])
 
 (define_insn "incscc"
   [(set (match_operand:SI 0 "s_register_operand" "=r,r")
@@ -2906,8 +2986,8 @@
 
 (define_insn "*ldmsi"
   [(match_parallel 0 "load_multiple_operation"
-                   [(set (match_operand:SI 1 "s_register_operand" "=r")
-                         (mem:SI (match_operand:SI 2 "s_register_operand" "r")))])]
+    [(set (match_operand:SI 1 "s_register_operand" "=r")
+	  (mem:SI (match_operand:SI 2 "s_register_operand" "r")))])]
   ""
   "*
 {
@@ -2980,8 +3060,8 @@
 
 (define_insn "*stmsi"
   [(match_parallel 0 "store_multiple_operation"
-                   [(set (mem:SI (match_operand:SI 2 "s_register_operand" "r"))
-                         (match_operand:SI 1 "s_register_operand" "r"))])]
+    [(set (mem:SI (match_operand:SI 2 "s_register_operand" "r"))
+	  (match_operand:SI 1 "s_register_operand" "r"))])]
   ""
   "*
 {
@@ -4267,10 +4347,10 @@
 	 (if_then_else:SI
 	  (match_operator 4 "comparison_operator"
 	   [(match_operand:SI 0 "s_register_operand" "r,r,r,r")
-	    (match_operand:SI 1 "arm_rhs_operand" "rI,L,rI,L")])
+	    (match_operand:SI 1 "arm_add_operand" "rI,L,rI,L")])
 	  (match_operator:SI 5 "comparison_operator"
 	   [(match_operand:SI 2 "s_register_operand" "r,r,r,r")
-	    (match_operand:SI 3 "arm_rhs_operand" "rI,rI,L,L")])
+	    (match_operand:SI 3 "arm_add_operand" "rI,rI,L,L")])
 	  (const_int 1))
 	 (const_int 0)))]
   ""
