@@ -1646,7 +1646,7 @@
   [(set_attr "conds" "set")]
 )
 
-(define_insn "*ne_zeroextractsi"
+(define_insn_and_split "*ne_zeroextractsi"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
 	(ne:SI (zero_extract:SI
 		(match_operand:SI 1 "s_register_operand" "r")
@@ -1659,11 +1659,110 @@
        && INTVAL (operands[2]) > 0 
        && INTVAL (operands[2]) + (INTVAL (operands[3]) & 1) <= 8
        && INTVAL (operands[2]) + INTVAL (operands[3]) <= 32)"
-  "*
+  "#"
+  "TARGET_ARM
+   && (INTVAL (operands[3]) >= 0 && INTVAL (operands[3]) < 32
+       && INTVAL (operands[2]) > 0 
+       && INTVAL (operands[2]) + (INTVAL (operands[3]) & 1) <= 8
+       && INTVAL (operands[2]) + INTVAL (operands[3]) <= 32)"
+  [(parallel [(set (reg:CC_NOOV CC_REGNUM)
+		   (compare:CC_NOOV (and:SI (match_dup 1) (match_dup 2))
+				    (const_int 0)))
+	      (set (match_dup 0) (and:SI (match_dup 1) (match_dup 2)))])
+   (set (match_dup 0)
+	(if_then_else:SI (eq (reg:CC_NOOV CC_REGNUM) (const_int 0))
+			 (match_dup 0) (const_int 1)))]
+  "
   operands[2] = GEN_INT (((1 << INTVAL (operands[2])) - 1)
-			 << INTVAL (operands[3]));
-  output_asm_insn (\"ands\\t%0, %1, %2\", operands);
-  return \"movne\\t%0, #1\";
+			 << INTVAL (operands[3])); 
+  "
+  [(set_attr "conds" "clob")
+   (set_attr "length" "8")]
+)
+
+(define_insn_and_split "*ne_zeroextractsi_shifted"
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
+	(ne:SI (zero_extract:SI
+		(match_operand:SI 1 "s_register_operand" "r")
+		(match_operand:SI 2 "const_int_operand" "n")
+		(const_int 0))
+	       (const_int 0)))
+   (clobber (reg:CC CC_REGNUM))]
+  "TARGET_ARM"
+  "#"
+  "TARGET_ARM"
+  [(parallel [(set (reg:CC_NOOV CC_REGNUM)
+		   (compare:CC_NOOV (ashift:SI (match_dup 1) (match_dup 2))
+				    (const_int 0)))
+	      (set (match_dup 0) (ashift:SI (match_dup 1) (match_dup 2)))])
+   (set (match_dup 0)
+	(if_then_else:SI (eq (reg:CC_NOOV CC_REGNUM) (const_int 0))
+			 (match_dup 0) (const_int 1)))]
+  "
+  operands[2] = GEN_INT (32 - INTVAL (operands[2]));
+  "
+  [(set_attr "conds" "clob")
+   (set_attr "length" "8")]
+)
+
+(define_insn_and_split "*ite_ne_zeroextractsi"
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
+	(if_then_else:SI (ne (zero_extract:SI
+			      (match_operand:SI 1 "s_register_operand" "r")
+			      (match_operand:SI 2 "const_int_operand" "n")
+			      (match_operand:SI 3 "const_int_operand" "n"))
+			     (const_int 0))
+			 (match_operand:SI 4 "arm_not_operand" "rIK")
+			 (const_int 0)))
+   (clobber (reg:CC CC_REGNUM))]
+  "TARGET_ARM
+   && (INTVAL (operands[3]) >= 0 && INTVAL (operands[3]) < 32
+       && INTVAL (operands[2]) > 0 
+       && INTVAL (operands[2]) + (INTVAL (operands[3]) & 1) <= 8
+       && INTVAL (operands[2]) + INTVAL (operands[3]) <= 32)"
+  "#"
+  "TARGET_ARM
+   && (INTVAL (operands[3]) >= 0 && INTVAL (operands[3]) < 32
+       && INTVAL (operands[2]) > 0 
+       && INTVAL (operands[2]) + (INTVAL (operands[3]) & 1) <= 8
+       && INTVAL (operands[2]) + INTVAL (operands[3]) <= 32)"
+  [(parallel [(set (reg:CC_NOOV CC_REGNUM)
+		   (compare:CC_NOOV (and:SI (match_dup 1) (match_dup 2))
+				    (const_int 0)))
+	      (set (match_dup 0) (and:SI (match_dup 1) (match_dup 2)))])
+   (set (match_dup 0)
+	(if_then_else:SI (eq (reg:CC_NOOV CC_REGNUM) (const_int 0))
+			 (match_dup 0) (match_dup 4)))]
+  "
+  operands[2] = GEN_INT (((1 << INTVAL (operands[2])) - 1)
+			 << INTVAL (operands[3])); 
+  "
+  [(set_attr "conds" "clob")
+   (set_attr "length" "8")]
+)
+
+(define_insn_and_split "*ite_ne_zeroextractsi_shifted"
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
+	(if_then_else:SI (ne (zero_extract:SI
+			      (match_operand:SI 1 "s_register_operand" "r")
+			      (match_operand:SI 2 "const_int_operand" "n")
+			      (const_int 0))
+			     (const_int 0))
+			 (match_operand:SI 3 "arm_not_operand" "rIK")
+			 (const_int 0)))
+   (clobber (reg:CC CC_REGNUM))]
+  "TARGET_ARM"
+  "#"
+  "TARGET_ARM"
+  [(parallel [(set (reg:CC_NOOV CC_REGNUM)
+		   (compare:CC_NOOV (ashift:SI (match_dup 1) (match_dup 2))
+				    (const_int 0)))
+	      (set (match_dup 0) (ashift:SI (match_dup 1) (match_dup 2)))])
+   (set (match_dup 0)
+	(if_then_else:SI (eq (reg:CC_NOOV CC_REGNUM) (const_int 0))
+			 (match_dup 0) (match_dup 3)))]
+  "
+  operands[2] = GEN_INT (32 - INTVAL (operands[2]));
   "
   [(set_attr "conds" "clob")
    (set_attr "length" "8")]

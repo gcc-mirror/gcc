@@ -1,3 +1,11 @@
+2004-05-16  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/10982
+	* arm.md (ne_zeroextractsi): Convert to insn-and-split.
+	(ne_zeroextractsi_shifted): New pattern.
+	(ite_ne_zeroextractsi): New pattern.
+	(ite_ne_zeroextractsi_shifted): New pattern.
+
 2004-05-15  Steven Bosscher  <stevenb@suse.de>
 
 	* c-gimplify.c (c_genericize):
