@@ -3817,11 +3817,13 @@ subst (x, from, to, in_dest, unique_copy)
 	  /* Simplify our comparison, if possible.  */
 	  new_code = simplify_comparison (old_code, &op0, &op1);
 
-#if !defined (HAVE_cc0) && defined (EXTRA_CC_MODES)
+#ifdef EXTRA_CC_MODES
 	  /* If this machine has CC modes other than CCmode, check to see
 	     if we need to use a different CC mode here.  */
 	  compare_mode = SELECT_CC_MODE (new_code, op0, op1);
+#endif /* EXTRA_CC_MODES */
 
+#if !defined (HAVE_cc0) && defined (EXTRA_CC_MODES)
 	  /* If the mode changed, we have to change SET_DEST, the mode
 	     in the compare, and the mode in the place SET_DEST is used.
 	     If SET_DEST is a hard register, just build new versions with
