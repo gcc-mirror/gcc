@@ -1,5 +1,8 @@
 2001-03-01  Bernd Schmidt  <bernds@redhat.com>
 
+	* reload1.c (eliminate_regs_in_insn): Restrict the special case
+	code not to try to optimize adds with anything but a REG destination.
+
 	* sched-int.h (struct haifa_insn_data): Add new member priority_known.
 	(INSN_PRIORITY_KNOWN): New accessor macro.
 	* haifa-sched.c (priority): Use it instead of testing priority against
