@@ -329,6 +329,9 @@ struct cpp_options
   /* Nonzero means process the ISO trigraph sequences.  */
   unsigned char trigraphs;
 
+  /* Nonzero means process the ISO digraph sequences.  */
+  unsigned char digraphs;
+
   /* Nonzero means print the names of included files rather than the
      preprocessed output.  1 means just the #include "...", 2 means
      #include <...> as well.  */
