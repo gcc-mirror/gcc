@@ -365,7 +365,7 @@ remove_edge (edge e)
     {
       if (tmp == e)
 	{
-	  VEC_ordered_remove (edge, src->succs, ei.index);
+	  VEC_unordered_remove (edge, src->succs, ei.index);
 	  found = true;
 	  break;
 	}
@@ -380,7 +380,7 @@ remove_edge (edge e)
     {
       if (tmp == e)
 	{
-	  VEC_ordered_remove (edge, dest->preds, ei.index);
+	  VEC_unordered_remove (edge, dest->preds, ei.index);
 	  found = true;
 	  break;
 	}
@@ -407,7 +407,7 @@ redirect_edge_succ (edge e, basic_block new_succ)
     {
       if (tmp == e)
 	{
-	  VEC_ordered_remove (edge, e->dest->preds, ei.index);
+	  VEC_unordered_remove (edge, e->dest->preds, ei.index);
 	  found = true;
 	  break;
 	}
@@ -465,7 +465,7 @@ redirect_edge_pred (edge e, basic_block new_pred)
     {
       if (tmp == e)
 	{
-	  VEC_ordered_remove (edge, e->src->succs, ei.index);
+	  VEC_unordered_remove (edge, e->src->succs, ei.index);
 	  found = true;
 	  break;
 	}
