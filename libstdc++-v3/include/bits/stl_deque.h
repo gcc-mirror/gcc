@@ -332,107 +332,12 @@ namespace __gnu_norm
     return __x + __n;
   }
   
-  
-  /// @if maint Primary default version.  @endif
   /**
    *  @if maint
-   *  Deque base class.  It has two purposes.  First, its constructor
-   *  and destructor allocate (but don't initialize) storage.  This makes
-   *  %exception safety easier.  Second, the base class encapsulates all of
-   *  the differences between SGI-style allocators and standard-conforming
-   *  allocators.  (See allocator.h for more on this topic.)  There are two
-   *  versions:  this ordinary one, and the space-saving specialization for
-   *  instanceless allocators.
-   *  @endif
-  */
-  template<typename _Tp, typename _Alloc, bool __is_static>
-    class _Deque_alloc_base
-  {
-  public:
-    typedef typename _Alloc_traits<_Tp,_Alloc>::allocator_type allocator_type;
-    allocator_type get_allocator() const { return _M_node_allocator; }
-  
-    _Deque_alloc_base(const allocator_type& __a)
-      : _M_node_allocator(__a), _M_map_allocator(__a),
-        _M_map(0), _M_map_size(0)
-    {}
-    
-  protected:
-    typedef typename _Alloc_traits<_Tp*, _Alloc>::allocator_type
-            _Map_allocator_type;
-  
-    _Tp*
-    _M_allocate_node()
-    {
-      return _M_node_allocator.allocate(__deque_buf_size(sizeof(_Tp)));
-    }
-  
-    void
-    _M_deallocate_node(_Tp* __p)
-    {
-      _M_node_allocator.deallocate(__p, __deque_buf_size(sizeof(_Tp)));
-    }
-  
-    _Tp**
-    _M_allocate_map(size_t __n) 
-      { return _M_map_allocator.allocate(__n); }
-  
-    void
-    _M_deallocate_map(_Tp** __p, size_t __n) 
-      { _M_map_allocator.deallocate(__p, __n); }
-  
-    allocator_type       _M_node_allocator;
-    _Map_allocator_type  _M_map_allocator;
-    _Tp**                _M_map;
-    size_t               _M_map_size;
-  };
-  
-  /// @if maint Specialization for instanceless allocators.  @endif
-  template<typename _Tp, typename _Alloc>
-    class _Deque_alloc_base<_Tp, _Alloc, true>
-  {
-  public:
-    typedef typename _Alloc_traits<_Tp,_Alloc>::allocator_type allocator_type;
-    allocator_type get_allocator() const { return allocator_type(); }
-  
-    _Deque_alloc_base(const allocator_type&)
-      : _M_map(0), _M_map_size(0)
-    {}
-    
-  protected:
-    typedef typename _Alloc_traits<_Tp,_Alloc>::_Alloc_type  _Node_alloc_type;
-    typedef typename _Alloc_traits<_Tp*,_Alloc>::_Alloc_type _Map_alloc_type;
-  
-    _Tp*
-    _M_allocate_node()
-    {
-      return _Node_alloc_type::allocate(__deque_buf_size(sizeof(_Tp)));
-    }
-  
-    void
-    _M_deallocate_node(_Tp* __p)
-    {
-      _Node_alloc_type::deallocate(__p, __deque_buf_size(sizeof(_Tp)));
-    }
-  
-    _Tp**
-    _M_allocate_map(size_t __n) 
-      { return _Map_alloc_type::allocate(__n); }
-  
-    void
-    _M_deallocate_map(_Tp** __p, size_t __n) 
-      { _Map_alloc_type::deallocate(__p, __n); }
-  
-    _Tp**   _M_map;
-    size_t  _M_map_size;
-  };
-  
-  
-  /**
-   *  @if maint
-   *  Deque base class.  Using _Alloc_traits in the instantiation of the parent
-   *  class provides the compile-time dispatching mentioned in the parent's
-   *  docs.  This class provides the unified face for %deque's allocation.
+   *  Deque base class.  This class provides the unified face for %deque's
+   *  allocation.  This class's constructor and destructor allocate and
+   *  deallocate (but do not initialize) storage.  This makes %exception
+   *  safety easier.
    *
    *  Nothing in this class ever constructs or destroys an actual Tp element.
    *  (Deque handles that itself.)  Only/All memory management is performed
@@ -441,30 +346,56 @@ namespace __gnu_norm
   */
   template<typename _Tp, typename _Alloc>
     class _Deque_base
-    : public _Deque_alloc_base<_Tp,_Alloc,
-                                _Alloc_traits<_Tp, _Alloc>::_S_instanceless>
+    : public _Alloc
   {
   public:
-    typedef _Deque_alloc_base<_Tp,_Alloc,
-                               _Alloc_traits<_Tp, _Alloc>::_S_instanceless>
-            _Base;
-    typedef typename _Base::allocator_type             allocator_type;
+    typedef _Alloc                                     allocator_type;
+    allocator_type get_allocator() const
+      { return *static_cast<const _Alloc*>(this); }
+
     typedef _Deque_iterator<_Tp,_Tp&,_Tp*>             iterator;
     typedef _Deque_iterator<_Tp,const _Tp&,const _Tp*> const_iterator;
   
     _Deque_base(const allocator_type& __a, size_t __num_elements)
-      : _Base(__a), _M_start(), _M_finish()
+      : _Alloc(__a), _M_start(), _M_finish()
       { _M_initialize_map(__num_elements); }
     _Deque_base(const allocator_type& __a) 
-      : _Base(__a), _M_start(), _M_finish() {}
+      : _Alloc(__a), _M_start(), _M_finish() {}
     ~_Deque_base();    
+
+  protected:
+    typedef typename _Alloc::template rebind<_Tp*>::other _Map_alloc_type;
+    _Map_alloc_type _M_get_map_allocator() const
+      { return _Map_alloc_type(this->get_allocator()); }
+
+    _Tp*
+    _M_allocate_node()
+    {
+      return _Alloc::allocate(__deque_buf_size(sizeof(_Tp)));
+    }
   
+    void
+    _M_deallocate_node(_Tp* __p)
+    {
+      _Alloc::deallocate(__p, __deque_buf_size(sizeof(_Tp)));
+    }
+  
+    _Tp**
+    _M_allocate_map(size_t __n) 
+      { return _M_get_map_allocator().allocate(__n); }
+  
+    void
+    _M_deallocate_map(_Tp** __p, size_t __n) 
+      { _M_get_map_allocator().deallocate(__p, __n); }
+
   protected:
     void _M_initialize_map(size_t);
     void _M_create_nodes(_Tp** __nstart, _Tp** __nfinish);
     void _M_destroy_nodes(_Tp** __nstart, _Tp** __nfinish);
     enum { _S_initial_map_size = 8 };
   
+    _Tp** _M_map;
+    size_t _M_map_size;
     iterator _M_start;
     iterator _M_finish;
   };
@@ -670,9 +601,7 @@ namespace __gnu_norm
     using _Base::_M_deallocate_map;
   
     /** @if maint
-     *  A total of four data members accumulated down the heirarchy.  If the
-     *  _Alloc type requires separate instances, then two of them will also be
-     *  included in each deque.
+     *  A total of four data members accumulated down the heirarchy.
      *  @endif
     */
     using _Base::_M_map;

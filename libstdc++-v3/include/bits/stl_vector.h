@@ -67,70 +67,6 @@
 
 namespace __gnu_norm
 {
-  /// @if maint Primary default version.  @endif
-  /**
-   *  @if maint
-   *  See bits/stl_deque.h's _Deque_alloc_base for an explanation.
-   *  @endif
-  */
-  template<typename _Tp, typename _Allocator, bool _IsStatic>
-    class _Vector_alloc_base
-    {
-    public:
-      typedef typename _Alloc_traits<_Tp, _Allocator>::allocator_type
-      allocator_type;
-
-      allocator_type
-      get_allocator() const { return _M_data_allocator; }
-  
-      _Vector_alloc_base(const allocator_type& __a)
-      : _M_data_allocator(__a), _M_start(0), _M_finish(0), _M_end_of_storage(0)
-      { }
-  
-    protected:
-      allocator_type _M_data_allocator;
-      _Tp*           _M_start;
-      _Tp*           _M_finish;
-      _Tp*           _M_end_of_storage;
-  
-      _Tp*
-      _M_allocate(size_t __n) { return _M_data_allocator.allocate(__n); }
-  
-      void
-      _M_deallocate(_Tp* __p, size_t __n)
-      { if (__p) _M_data_allocator.deallocate(__p, __n); }
-    };
-  
-  /// @if maint Specialization for instanceless allocators.  @endif
-  template<typename _Tp, typename _Allocator>
-    class _Vector_alloc_base<_Tp, _Allocator, true>
-    {
-    public:
-      typedef typename _Alloc_traits<_Tp, _Allocator>::allocator_type
-             allocator_type;
-  
-      allocator_type
-      get_allocator() const { return allocator_type(); }
-      
-      _Vector_alloc_base(const allocator_type&)
-      : _M_start(0), _M_finish(0), _M_end_of_storage(0)
-      { }
-  
-    protected:
-      _Tp* _M_start;
-      _Tp* _M_finish;
-      _Tp* _M_end_of_storage;
-  
-      typedef typename _Alloc_traits<_Tp, _Allocator>::_Alloc_type _Alloc_type;
-      
-      _Tp*
-      _M_allocate(size_t __n) { return _Alloc_type::allocate(__n); }
-  
-      void
-      _M_deallocate(_Tp* __p, size_t __n) { _Alloc_type::deallocate(__p, __n);}
-    };
-  
-  
   /**
    *  @if maint
    *  See bits/stl_deque.h's _Deque_base for an explanation.
@@ -138,20 +74,19 @@ namespace __gnu_norm
   */
   template<typename _Tp, typename _Alloc>
     struct _Vector_base
-    : public _Vector_alloc_base<_Tp, _Alloc,
-                                _Alloc_traits<_Tp, _Alloc>::_S_instanceless>
+    : public _Alloc
     {
     public:
-      typedef _Vector_alloc_base<_Tp, _Alloc,
-				 _Alloc_traits<_Tp, _Alloc>::_S_instanceless>
-         _Base;
-      typedef typename _Base::allocator_type allocator_type;
+      typedef _Alloc allocator_type;
+
+      allocator_type
+      get_allocator() const { return *static_cast<const _Alloc*>(this); }
 
       _Vector_base(const allocator_type& __a)
-      : _Base(__a) { }
+      : _Alloc(__a), _M_start(0), _M_finish(0), _M_end_of_storage(0) { }
       
       _Vector_base(size_t __n, const allocator_type& __a)
-      : _Base(__a)
+      : _Alloc(__a)
       {
 	this->_M_start = this->_M_allocate(__n);
 	this->_M_finish = this->_M_start;
@@ -161,6 +96,18 @@ namespace __gnu_norm
       ~_Vector_base() 
       { _M_deallocate(this->_M_start,
 		      this->_M_end_of_storage - this->_M_start); }
+
+    public:
+      _Tp*           _M_start;
+      _Tp*           _M_finish;
+      _Tp*           _M_end_of_storage;
+  
+      _Tp*
+      _M_allocate(size_t __n) { return _Alloc::allocate(__n); }
+  
+      void
+      _M_deallocate(_Tp* __p, size_t __n)
+      { if (__p) _Alloc::deallocate(__p, __n); }
     };
   
   
@@ -209,8 +156,7 @@ namespace __gnu_norm
     protected:
       /** @if maint
        *  These two functions and three data members are all from the
-       *  top-most base class, which varies depending on the type of
-       *  %allocator.  They should be pretty self-explanatory, as
+       *  base class.  They should be pretty self-explanatory, as
        *  %vector uses a simple contiguous allocation scheme.  @endif
        */
       using _Base::_M_allocate;
@@ -347,8 +293,7 @@ namespace __gnu_norm
 	}
   
       /// Get a copy of the memory allocation object.
-      allocator_type
-      get_allocator() const { return _Base::get_allocator(); }
+      using _Base::get_allocator;
       
       // iterators
       /**

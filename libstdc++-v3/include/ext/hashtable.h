@@ -77,7 +77,6 @@ using std::size_t;
 using std::ptrdiff_t;
 using std::forward_iterator_tag;
 using std::input_iterator_tag;
-using std::_Alloc_traits;
 using std::_Construct;
 using std::_Destroy;
 using std::distance;
@@ -242,10 +241,14 @@ private:
   typedef _Hashtable_node<_Val> _Node;
 
 public:
-  typedef typename _Alloc_traits<_Val,_Alloc>::allocator_type allocator_type;
+  typedef _Alloc allocator_type;
   allocator_type get_allocator() const { return _M_node_allocator; }
 private:
-  typename _Alloc_traits<_Node, _Alloc>::allocator_type _M_node_allocator;
+  typedef typename _Alloc::template rebind<_Node>::other _Node_Alloc;
+  typedef typename _Alloc::template rebind<_Node*>::other _Nodeptr_Alloc;
+  typedef vector<_Node*, _Nodeptr_Alloc> _Vector_type;
+
+  _Node_Alloc _M_node_allocator;
   _Node* _M_get_node() { return _M_node_allocator.allocate(1); }
   void _M_put_node(_Node* __p) { _M_node_allocator.deallocate(__p, 1); }
 
@@ -253,7 +256,7 @@ private:
   hasher                _M_hash;
   key_equal             _M_equals;
   _ExtractKey           _M_get_key;
-  vector<_Node*,_Alloc> _M_buckets;
+  _Vector_type          _M_buckets;
   size_type             _M_num_elements;
 
 public:
@@ -876,8 +879,7 @@ void hashtable<_Val,_Key,_HF,_Ex,_Eq,_All>
   if (__num_elements_hint > __old_n) {
     const size_type __n = _M_next_size(__num_elements_hint);
     if (__n > __old_n) {
-      vector<_Node*, _All> __tmp(__n, (_Node*)(0),
-                                 _M_buckets.get_allocator());
+      _Vector_type __tmp(__n, (_Node*)(0), _M_buckets.get_allocator());
       try {
         for (size_type __bucket = 0; __bucket < __old_n; ++__bucket) {
           _Node* __first = _M_buckets[__bucket];
