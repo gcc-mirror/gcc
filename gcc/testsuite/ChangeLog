@@ -1,3 +1,14 @@
+2004-07-12  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/5402
+	* g++.dg/lookup/name-clash1.C: New test.
+
+	PR c++/9777
+	* g++.dg/lookup/name-clash2.C: New test.
+
+	PR c++/12102
+	* g++.dg/lookup/name-clash3.C: New test.
+
 2004-07-12  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	* g++.dg/lookup/new2.C: New test.
