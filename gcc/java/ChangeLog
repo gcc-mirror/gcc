@@ -1,3 +1,9 @@
+2002-03-20  Nic Ferrier  <nferrier@tapsellferrier.co.uk>
+
+       	* gcj.texi: @code{gcj} becomes @command{gcj}. 
+	@code{gcc} becomes @command{gcc}. 
+        GcjRaw changed to gnu.gcc.RawData.
+	
 2002-03-20  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* decl.c (start_java_method): Use new hook.
