@@ -1,3 +1,8 @@
+Mon Feb 28 12:53:57 MET 2000 Jan Hubicka  <jh@suse.cz>
+
+	* calls.c (expand_call): Attempt to combine stack adjustments with
+	pending stack adjustments.
+
 Mon Feb 28 11:34:43 2000  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* loop.c (reg_in_basic_block_p): Don't abort when falling through
