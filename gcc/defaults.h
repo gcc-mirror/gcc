@@ -133,6 +133,22 @@ do { fprintf (FILE, "\t%s\t", ASM_LONG);				\
 #endif
 #endif
 
+/* If the target supports weak symbols, define TARGET_ATTRIBUTE_WEAK to
+   provide a weak attribute.  Else define it to nothing. 
+
+   This would normally belong in gansidecl.h, but SUPPORTS_WEAK is
+   not available at that time.
+
+   Note, this is only for use by target files which we know are to be
+   compiled by GCC.  */
+#ifndef TARGET_ATTRIBUTE_WEAK
+# if SUPPORTS_WEAK
+#  define TARGET_ATTRIBUTE_WEAK __attribute__ ((weak))
+# else
+#  define TARGET_ATTRIBUTE_WEAK
+# endif
+#endif
+
 /* If we have a definition of INCOMING_RETURN_ADDR_RTX, assume that
    the rest of the DWARF 2 frame unwind support is also provided.  */
 #if !defined (DWARF2_UNWIND_INFO) && defined (INCOMING_RETURN_ADDR_RTX)
