@@ -6384,12 +6384,12 @@ init_decl_processing ()
   else
     {
       vtable_entry_type = make_aggr_type (RECORD_TYPE);
-      fields[0] = build_lang_decl (FIELD_DECL, delta_identifier,
-				   delta_type_node);
-      fields[1] = build_lang_decl (FIELD_DECL, index_identifier,
-				   delta_type_node);
-      fields[2] = build_lang_decl (FIELD_DECL, pfn_identifier,
-				   ptr_type_node);
+      fields[0] = build_decl (FIELD_DECL, delta_identifier,
+			      delta_type_node);
+      fields[1] = build_decl (FIELD_DECL, index_identifier,
+			      delta_type_node);
+      fields[2] = build_decl (FIELD_DECL, pfn_identifier,
+			      ptr_type_node);
       finish_builtin_type (vtable_entry_type, VTBL_PTR_TYPE, fields, 2,
 			   double_type_node);
 
@@ -9031,24 +9031,24 @@ build_ptrmemfunc_type (type)
     {
       u = make_aggr_type (UNION_TYPE);
       SET_IS_AGGR_TYPE (u, 0);
-      fields[0] = build_lang_decl (FIELD_DECL, pfn_identifier, type);
-      fields[1] = build_lang_decl (FIELD_DECL, delta2_identifier,
-				   delta_type_node);
+      fields[0] = build_decl (FIELD_DECL, pfn_identifier, type);
+      fields[1] = build_decl (FIELD_DECL, delta2_identifier,
+			      delta_type_node);
       finish_builtin_type (u, "__ptrmemfunc_type", fields, 1, ptr_type_node);
       TYPE_NAME (u) = NULL_TREE;
 
-      fields[0] = build_lang_decl (FIELD_DECL, delta_identifier,
-				   delta_type_node);
-      fields[1] = build_lang_decl (FIELD_DECL, index_identifier,
-				   delta_type_node);
-      fields[2] = build_lang_decl (FIELD_DECL, pfn_or_delta2_identifier, u);
+      fields[0] = build_decl (FIELD_DECL, delta_identifier,
+			      delta_type_node);
+      fields[1] = build_decl (FIELD_DECL, index_identifier,
+			      delta_type_node);
+      fields[2] = build_decl (FIELD_DECL, pfn_or_delta2_identifier, u);
       finish_builtin_type (t, "__ptrmemfunc_type", fields, 2, ptr_type_node);
     }
   else
     {
-      fields[0] = build_lang_decl (FIELD_DECL, pfn_identifier, type);
-      fields[1] = build_lang_decl (FIELD_DECL, delta_identifier,
-				   delta_type_node);
+      fields[0] = build_decl (FIELD_DECL, pfn_identifier, type);
+      fields[1] = build_decl (FIELD_DECL, delta_identifier,
+			      delta_type_node);
       finish_builtin_type (t, "__ptrmemfunc_type", fields, 1, ptr_type_node);
     }
 
@@ -11411,7 +11411,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	      }
 	    else
 	      {
-		decl = build_lang_decl (FIELD_DECL, declarator, type);
+		decl = build_decl (FIELD_DECL, declarator, type);
 		if (RIDBIT_SETP (RID_MUTABLE, specbits))
 		  {
 		    DECL_MUTABLE_P (decl) = 1;

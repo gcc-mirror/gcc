@@ -1,5 +1,34 @@
 2000-05-23  Mark Mitchell  <mark@codesourcery.com>
 
+	* cp-tree.h (lang_decl_flags): Rename mutable_flag to uninlinable
+	and bitfield to tinfo_fn_p.
+	(DECL_TINFO_FN_P): Adjust.
+	(SET_DECL_TINFO_FN_P): Likewise.
+	(DECL_MUTABLE_P): Likewise.
+	(DECL_C_BIT_FIELD): Likewise.
+	(SET_DECL_C_BIT_FIELD): Likewise.
+	(CLEAR_DECL_C_BIT_FIELD): Likewise.
+	(DECL_UNINLINABLE): Likewise.
+	* class.c (alter_access): Call retrofit_lang_decl if ncessary.
+	(handle_using_decl): Remove assertion.
+	(build_vtbl_or_vbase_field): Use build_decl, not build_lang_decl,
+	to build FIELD_DECLs.
+	(build_base_field): Likewise.
+	(layout_class_type): Likewise.
+	* decl.c (init_decl_processing): Likewise.
+	(build_ptrmemfunc_type): Likewise.
+	(grokdeclarator): Likewise.
+	* decl2.c (grok_x_components): Likewise.
+	* except.c (call_eh_info): Likewise.
+	* init.c (init_init_processing): Likewise.
+	* rtti.c (expand_class_desc): Likewise.
+	(create_pseudo_type_info): Likewise.
+	(get_vmi_pseudo_type_info): Likewise.
+	(create_tinfo_types): Likewise.
+	* ptree.c (print_lang_decl): Adjust.
+	* typeck.c (build_component_ref): Don't check DECL_LANG_SPECIFIC
+	before checking DECL_MUTABLE_P.
+	
 	* decl2.c (maybe_retrofit_in_chrg): Don't create in-charge
 	parameters for template functions.
 	* pt.c (tsubst_decl): Make sure we call maybe_retrofit_in_chrg for

@@ -32,16 +32,17 @@ print_lang_decl (file, node, indent)
      tree node;
      int indent;
 {
-  if (!DECL_LANG_SPECIFIC (node))
-    return;
-  /* A FIELD_DECL only has the flags structure, which we aren't displaying
-     anyways.  */
-  if (DECL_MUTABLE_P (node))
-    {
-      indent_to (file, indent + 3);
-      fprintf (file, " mutable ");
-    }
   if (TREE_CODE (node) == FIELD_DECL)
+    {
+      if (DECL_MUTABLE_P (node))
+	{
+	  indent_to (file, indent + 3);
+	  fprintf (file, " mutable ");
+	}
+      return;
+    }
+
+  if (!DECL_LANG_SPECIFIC (node))
     return;
   indent_to (file, indent + 3);
   if (TREE_CODE (node) == FUNCTION_DECL

@@ -2242,7 +2242,7 @@ build_component_ref (datum, component, basetype_path, protect)
       /* A field is const (volatile) if the enclosing object, or the
 	 field itself, is const (volatile).  But, a mutable field is
 	 not const, even within a const object.  */
-      if (DECL_LANG_SPECIFIC (field) && DECL_MUTABLE_P (field))
+      if (DECL_MUTABLE_P (field))
 	type_quals &= ~TYPE_QUAL_CONST;
       field_type = cp_build_qualified_type (field_type, type_quals);
     }

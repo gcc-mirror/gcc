@@ -68,7 +68,7 @@ void init_init_processing ()
   /* Define the structure that holds header information for
      arrays allocated via operator new.  */
   BI_header_type = make_aggr_type (RECORD_TYPE);
-  fields[0] = build_lang_decl (FIELD_DECL, nelts_identifier, sizetype);
+  fields[0] = build_decl (FIELD_DECL, nelts_identifier, sizetype);
 
   /* Use the biggest alignment supported by the target to prevent operator
      new from returning misaligned pointers. */
