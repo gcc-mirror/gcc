@@ -1,3 +1,8 @@
+2004-06-15  Richard Henderson  <rth@redhat.com>
+
+	* gcc.dg/i386-ssetype-1.c: Remove XFAIL.
+	* gcc.dg/i386-ssetype-3.c: Remove XFAIL.
+
 2004-06-15  Jeff Law  <law@redhat.com>
 
 	* gcc.dg/tree-ssa/20040615-1.c: New test.

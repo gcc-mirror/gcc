@@ -4,8 +4,7 @@
 /* { dg-final { scan-assembler "andnps\[^\\n\]*magic" } } */
 /* { dg-final { scan-assembler "xorps\[^\\n\]*magic" } } */
 /* { dg-final { scan-assembler "orps\[^\\n\]*magic" } } */
-/* ??? All of the backend patters are WAY too fragile.  */
-/* { dg-final { scan-assembler-not "movdqa" { xfail *-*-* } } } */
+/* { dg-final { scan-assembler-not "movdqa" } } */
 /* { dg-final { scan-assembler "movaps\[^\\n\]*magic" } } */
 
 /* Verify that we generate proper instruction with memory operand.  */
