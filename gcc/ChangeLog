@@ -1,9 +1,17 @@
+1998-12-03  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* pdp11.h (TARGET_40_PLUS): Fix typo.
+
+Thu Dec  3 11:48:32 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* local-alloc.c (block_alloc): Slightly retune heuristic to widen 
+	qty lifetimes.
+
 Thu Dec  3 22:30:18 1998  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* alias.c (addr_side_effect_eval): New function.
 	(memrefs_conflict_p): Use it.
 	* rtl.h (addr_side_effect_eval): Prototype it.
-
 
 1998-12-02  Joseph S. Myers  <jsm28@cam.ac.uk>
 

@@ -108,7 +108,7 @@ extern int target_flags;
 #define TARGET_NO_AC0		(! TARGET_AC0)
 
 #define TARGET_45		(target_flags & 8)
-#define TARGET_40_PLUS		((target_flags & 4) || (target_flags))
+#define TARGET_40_PLUS		((target_flags & 4) || (target_flags & 8))
 #define TARGET_10		(! TARGET_40_PLUS)
 
 #define TARGET_BCOPY_BUILTIN	(! (target_flags & 16))
