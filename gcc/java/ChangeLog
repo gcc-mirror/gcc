@@ -1,3 +1,8 @@
+1999-09-03  Tom Tromey  <tromey@cygnus.com>
+
+	* parse.y (strip_out_static_field_access_decl): Return operand if
+	it satisfies JDECL_P.
+
 1999-09-02  Tom Tromey  <tromey@cygnus.com>
 
 	* gjavah.c (decode_signature_piece): Emit "::" in JArray<>.
