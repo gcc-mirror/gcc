@@ -2016,7 +2016,8 @@ try_combine (rtx i3, rtx i2, rtx i1, int *new_direct_jump_p)
   insn_code_number = recog_for_combine (&newpat, i3, &new_i3_notes);
 
   /* If the result isn't valid, see if it is a PARALLEL of two SETs where
-     the second SET's destination is a register that is unused.  In that case,
+     the second SET's destination is a register that is unused and isn't
+     marked as an instruction that might trap in an EH region.  In that case,
      we just need the first SET.   This can occur when simplifying a divmod
      insn.  We *must* test for this case here because the code below that
      splits two independent SETs doesn't handle this case correctly when it
@@ -2032,37 +2033,42 @@ try_combine (rtx i3, rtx i2, rtx i1, int *new_direct_jump_p)
     {
       rtx set0 = XVECEXP (newpat, 0, 0);
       rtx set1 = XVECEXP (newpat, 0, 1);
-  
+      rtx note;
+
       if (((GET_CODE (SET_DEST (set1)) == REG
-            && find_reg_note (i3, REG_UNUSED, SET_DEST (set1)))
-          || (GET_CODE (SET_DEST (set1)) == SUBREG
-              && find_reg_note (i3, REG_UNUSED, SUBREG_REG (SET_DEST (set1)))))
-          && ! side_effects_p (SET_SRC (set1)))
-        {
-          newpat = set0;
-          insn_code_number = recog_for_combine (&newpat, i3, &new_i3_notes);
-        }
-  
+	    && find_reg_note (i3, REG_UNUSED, SET_DEST (set1)))
+	   || (GET_CODE (SET_DEST (set1)) == SUBREG
+	       && find_reg_note (i3, REG_UNUSED, SUBREG_REG (SET_DEST (set1)))))
+	  && (!(note = find_reg_note (i3, REG_EH_REGION, NULL_RTX))
+	      || INTVAL (XEXP (note, 0)) <= 0)
+	  && ! side_effects_p (SET_SRC (set1)))
+	{
+	  newpat = set0;
+	  insn_code_number = recog_for_combine (&newpat, i3, &new_i3_notes);
+	}
+
       else if (((GET_CODE (SET_DEST (set0)) == REG
-                && find_reg_note (i3, REG_UNUSED, SET_DEST (set0)))
-                || (GET_CODE (SET_DEST (set0)) == SUBREG
-                    && find_reg_note (i3, REG_UNUSED,
-                                      SUBREG_REG (SET_DEST (set0)))))
-              && ! side_effects_p (SET_SRC (set0)))
-        {
-          newpat = set1;
-          insn_code_number = recog_for_combine (&newpat, i3, &new_i3_notes);
-    
-          if (insn_code_number >= 0)
-            {
-              /* If we will be able to accept this, we have made a
-                 change to the destination of I3.  This requires us to
-                 do a few adjustments.  */
-            
-              PATTERN (i3) = newpat;
-              adjust_for_new_dest (i3);
-            }
-        }
+		 && find_reg_note (i3, REG_UNUSED, SET_DEST (set0)))
+		|| (GET_CODE (SET_DEST (set0)) == SUBREG
+		    && find_reg_note (i3, REG_UNUSED,
+				      SUBREG_REG (SET_DEST (set0)))))
+	       && (!(note = find_reg_note (i3, REG_EH_REGION, NULL_RTX))
+		   || INTVAL (XEXP (note, 0)) <= 0)
+	       && ! side_effects_p (SET_SRC (set0)))
+	{
+	  newpat = set1;
+	  insn_code_number = recog_for_combine (&newpat, i3, &new_i3_notes);
+
+	  if (insn_code_number >= 0)
+	    {
+	      /* If we will be able to accept this, we have made a
+		 change to the destination of I3.  This requires us to
+		 do a few adjustments.  */
+
+	      PATTERN (i3) = newpat;
+	      adjust_for_new_dest (i3);
+	    }
+	}
     }
 
   /* If we were combining three insns and the result is a simple SET
