@@ -477,7 +477,7 @@ DEF_VEC_MALLOC_P (bitmap);
 /* Verify that all name tags have different points to sets.
    This algorithm takes advantage of the fact that every variable with the
    same name tag must have the same points-to set. 
-   So we check a single variable for each name tag, and verify that it's
+   So we check a single variable for each name tag, and verify that its
    points-to set is different from every other points-to set for other name
    tags.  */
 
