@@ -272,7 +272,7 @@ cp_dump_tree (void* dump_info, tree t)
 	    {
 	      tree base_binfo = BINFO_BASETYPE (TYPE_BINFO (t), i);
 	      dump_child ("base", BINFO_TYPE (base_binfo));
-	      if (TREE_VIA_VIRTUAL (base_binfo)) 
+	      if (BINFO_VIRTUAL_P (base_binfo)) 
 		dump_string (di, "virtual");
 	      dump_access (di, base_binfo);
 	    }

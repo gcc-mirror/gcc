@@ -909,7 +909,7 @@ dfs_class_hint_mark (tree binfo, void *data)
   tree basetype = BINFO_TYPE (binfo);
   int *hint = (int *) data;
   
-  if (TREE_VIA_VIRTUAL (binfo))
+  if (BINFO_VIRTUAL_P (binfo))
     {
       if (CLASSTYPE_MARKED (basetype))
         *hint |= 1;
@@ -1062,7 +1062,7 @@ get_pseudo_ti_init (tree type, tree var_desc, bool *non_public_p)
               if (TREE_VEC_ELT (base_accesses, ix) == access_public_node)
                 flags |= 2;
               tinfo = get_tinfo_ptr (BINFO_TYPE (base_binfo));
-	      if (TREE_VIA_VIRTUAL (base_binfo))
+	      if (BINFO_VIRTUAL_P (base_binfo))
 		{
 		   /* We store the vtable offset at which the virtual
        		      base offset can be found.  */
@@ -1200,7 +1200,7 @@ get_pseudo_ti_desc (tree type)
 	  
 	  if (num_bases == 1
 	      && TREE_VEC_ELT (base_accesses, 0) == access_public_node
-	      && !TREE_VIA_VIRTUAL (base_binfo)
+	      && !BINFO_VIRTUAL_P (base_binfo)
 	      && integer_zerop (BINFO_OFFSET (base_binfo)))
 	    /* single non-virtual public.  */
 	    return si_class_desc_type_node;

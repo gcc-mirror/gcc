@@ -203,7 +203,7 @@ struct tree_common GTY(())
        TREE_STATIC in
            VAR_DECL, FUNCTION_DECL, CONSTRUCTOR, ADDR_EXPR
        TREE_VIA_VIRTUAL in
-           TREE_LIST or TREE_BINFO
+           TREE_BINFO
        TREE_CONSTANT_OVERFLOW in
            INTEGER_CST, REAL_CST, COMPLEX_CST, VECTOR_CST
        TREE_SYMBOL_REFERENCED in
@@ -737,11 +737,6 @@ extern void tree_operand_check_failed (int, enum tree_code,
 /* In an expr node (usually a conversion) this means the node was made
    implicitly and should not lead to any sort of warning.  */
 #define TREE_NO_WARNING(NODE) ((NODE)->common.nowarning_flag)
-
-/* Nonzero for a TREE_LIST or TREE_BINFO node means that the derivation
-   chain is via a `virtual' declaration.  */
-#define TREE_VIA_VIRTUAL(NODE) \
-  (TREE_CHECK2 (NODE, TREE_LIST, TREE_BINFO)->common.static_flag)
 
 /* In an INTEGER_CST, REAL_CST, COMPLEX_CST, or VECTOR_CST this means
    there was an overflow in folding.  This is distinct from
@@ -1596,6 +1591,20 @@ struct tree_type GTY(())
    describing the binfo properties of D as a base type for C.
    Thus, given a pointer to class C, one can get a pointer to the binfo
    of D acting as a basetype for C by looking at C's binfo's basetypes.  */
+
+/* BINFO specific flags.  */
+
+/* Nonzero means that the derivation chain is via a `virtual' declaration.  */
+#define BINFO_VIRTUAL_P(NODE) (TREE_BINFO_CHECK (NODE)->common.static_flag)
+
+/* Flags for language dependent use.  */
+#define BINFO_MARKED(NODE) TREE_LANG_FLAG_0(TREE_BINFO_CHECK(NODE))
+#define BINFO_FLAG_1(NODE) TREE_LANG_FLAG_1(TREE_BINFO_CHECK(NODE))
+#define BINFO_FLAG_2(NODE) TREE_LANG_FLAG_2(TREE_BINFO_CHECK(NODE))
+#define BINFO_FLAG_3(NODE) TREE_LANG_FLAG_3(TREE_BINFO_CHECK(NODE))
+#define BINFO_FLAG_4(NODE) TREE_LANG_FLAG_4(TREE_BINFO_CHECK(NODE))
+#define BINFO_FLAG_5(NODE) TREE_LANG_FLAG_5(TREE_BINFO_CHECK(NODE))
+#define BINFO_FLAG_6(NODE) TREE_LANG_FLAG_6(TREE_BINFO_CHECK(NODE))
 
 /* The actual data type node being inherited in this basetype.  */
 #define BINFO_TYPE(NODE) TREE_TYPE (TREE_BINFO_CHECK(NODE))

@@ -747,6 +747,8 @@ list.  Implicitly declared functions (including default constructors,
 copy constructors, assignment operators, and destructors) will appear on
 this list as well.
 
+@c under reconstruction 2004-07-01, FIXME:Nathan Sidwell
+[Binfos are being redesigned, this information is in a state of flux.]
 Every class has an associated @dfn{binfo}, which can be obtained with
 @code{TYPE_BINFO}.  Binfos are used to represent base-classes.  The
 binfo given by @code{TYPE_BINFO} is the degenerate case, whereby every

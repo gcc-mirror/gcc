@@ -257,7 +257,7 @@ dequeue_and_dump (dump_info_p di)
 
       dump_child ("type", BINFO_TYPE (t));
 
-      if (TREE_VIA_VIRTUAL (t))
+      if (BINFO_VIRTUAL_P (t))
 	dump_string (di, "virt");
 
       dump_int (di, "bases", n_bases);

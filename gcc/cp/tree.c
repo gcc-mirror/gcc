@@ -612,7 +612,7 @@ copy_base_binfos (tree binfo, tree t, tree prev)
 	  BINFO_INHERITANCE_CHAIN (new_binfo) = binfo;
 	  BINFO_DEPENDENT_BASE_P (new_binfo) = 1;
 	}
-      else if (TREE_VIA_VIRTUAL (base_binfo))
+      else if (BINFO_VIRTUAL_P (base_binfo))
 	new_binfo = binfo_for_vbase (BINFO_TYPE (base_binfo), t);
       
       if (!new_binfo)
@@ -621,10 +621,10 @@ copy_base_binfos (tree binfo, tree t, tree prev)
 				  base_binfo, NULL_TREE,
 				  BINFO_VIRTUALS (base_binfo));
 	  prev = copy_base_binfos (new_binfo, t, prev);
-	  if (TREE_VIA_VIRTUAL (base_binfo))
+	  if (BINFO_VIRTUAL_P (base_binfo))
 	    {
 	      VEC_quick_push (tree, CLASSTYPE_VBASECLASSES (t), new_binfo);
-	      TREE_VIA_VIRTUAL (new_binfo) = 1;
+	      BINFO_VIRTUAL_P (new_binfo) = 1;
 	      BINFO_INHERITANCE_CHAIN (new_binfo) = TYPE_BINFO (t);
 	    }
 	  else

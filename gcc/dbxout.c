@@ -1704,12 +1704,12 @@ dbxout_type (tree type, int full)
 	    if (use_gnu_debug_info_extensions)
 	      {
 		have_used_extensions = 1;
-                putc (TREE_VIA_VIRTUAL (child) ? '1' : '0', asmfile);
+                putc (BINFO_VIRTUAL_P (child) ? '1' : '0', asmfile);
                 putc (access == access_public_node ? '2' :
                       (access == access_protected_node ? '1' :'0'),
                       asmfile);
 		CHARS (2);
-		if (TREE_VIA_VIRTUAL (child)
+		if (BINFO_VIRTUAL_P (child)
 		    && strcmp (lang_hooks.name, "GNU C++") == 0)
 		  /* For a virtual base, print the (negative) offset within
 		     the vtable where we must look to find the necessary

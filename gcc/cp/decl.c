@@ -9033,9 +9033,9 @@ xref_tag_from_type (tree old, tree id, int globalize)
 /* REF is a type (named NAME), for which we have just seen some
    baseclasses.  BASE_LIST is a list of those baseclasses; the
    TREE_PURPOSE is an access_* node, and the TREE_VALUE is the type of
-   the base-class.  TREE_VIA_VIRTUAL indicates virtual
-   inheritance. CODE_TYPE_NODE indicates whether REF is a class,
-   struct, or union.  */
+   the base-class.  Non-NULL TREE_TYPE indicates virtual inheritance.
+   CODE_TYPE_NODE indicates whether REF is a class, struct, or
+   union.  */
 
 void
 xref_basetypes (tree ref, tree base_list)
@@ -9088,7 +9088,7 @@ xref_basetypes (tree ref, tree base_list)
       for (i = 0; base_list; base_list = TREE_CHAIN (base_list))
 	{
 	  tree access = TREE_PURPOSE (base_list);
-	  int via_virtual = TREE_VIA_VIRTUAL (base_list);
+	  int via_virtual = TREE_TYPE (base_list) != NULL_TREE;
 	  tree basetype = TREE_VALUE (base_list);
 	  tree base_binfo;
 	  
@@ -9141,7 +9141,7 @@ xref_basetypes (tree ref, tree base_list)
 	  TREE_VEC_ELT (accesses, i) = access;
 	  /* This flag will be in the binfo of the base type, we must
 	     clear it after copying the base binfos.  */
-	  TREE_VIA_VIRTUAL (base_binfo) = via_virtual;
+	  BINFO_VIRTUAL_P (base_binfo) = via_virtual;
 	  
 	  SET_CLASSTYPE_MARKED (basetype);
 	  
@@ -9211,7 +9211,7 @@ xref_basetypes (tree ref, tree base_list)
       CLEAR_CLASSTYPE_MARKED (basetype);
       if (CLASS_TYPE_P (basetype))
 	{
-	  TREE_VIA_VIRTUAL (TYPE_BINFO (basetype)) = 0;
+	  BINFO_VIRTUAL_P (TYPE_BINFO (basetype)) = 0;
 	  BINFO_DEPENDENT_BASE_P (TYPE_BINFO (basetype)) = 0;
 	}
     }

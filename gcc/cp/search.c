@@ -197,7 +197,7 @@ lookup_base_r (tree binfo, tree base, base_access access,
 
       bk = lookup_base_r (base_binfo, base,
 		    	  access,
-			  is_virtual || TREE_VIA_VIRTUAL (base_binfo),
+			  is_virtual || BINFO_VIRTUAL_P (base_binfo),
 			  binfo_ptr);
 
       switch (bk)
@@ -376,7 +376,7 @@ dynamic_cast_base_recurse (tree subtype, tree binfo, bool is_via_virtual,
         continue;
       rval = dynamic_cast_base_recurse
              (subtype, base_binfo,
-              is_via_virtual || TREE_VIA_VIRTUAL (base_binfo), offset_ptr);
+              is_via_virtual || BINFO_VIRTUAL_P (base_binfo), offset_ptr);
       if (worst == -2)
         worst = rval;
       else if (rval >= 0)
@@ -2493,7 +2493,7 @@ binfo_from_vbase (tree binfo)
 {
   for (; binfo; binfo = BINFO_INHERITANCE_CHAIN (binfo))
     {
-      if (TREE_VIA_VIRTUAL (binfo))
+      if (BINFO_VIRTUAL_P (binfo))
 	return binfo;
     }
   return NULL_TREE;
@@ -2509,7 +2509,7 @@ binfo_via_virtual (tree binfo, tree limit)
   for (; binfo && (!limit || !same_type_p (BINFO_TYPE (binfo), limit));
        binfo = BINFO_INHERITANCE_CHAIN (binfo))
     {
-      if (TREE_VIA_VIRTUAL (binfo))
+      if (BINFO_VIRTUAL_P (binfo))
 	return binfo;
     }
   return NULL_TREE;
@@ -2524,7 +2524,7 @@ copied_binfo (tree binfo, tree here)
 {
   tree result = NULL_TREE;
   
-  if (TREE_VIA_VIRTUAL (binfo))
+  if (BINFO_VIRTUAL_P (binfo))
     {
       tree t;
 
@@ -2588,7 +2588,7 @@ original_binfo (tree binfo, tree here)
   
   if (BINFO_TYPE (binfo) == BINFO_TYPE (here))
     result = here;
-  else if (TREE_VIA_VIRTUAL (binfo))
+  else if (BINFO_VIRTUAL_P (binfo))
     result = (CLASSTYPE_VBASECLASSES (BINFO_TYPE (here))
 	      ? binfo_for_vbase (BINFO_TYPE (binfo), BINFO_TYPE (here))
 	      : NULL_TREE);

@@ -1,3 +1,14 @@
+2004-07-06  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* tree.h (TREE_VIA_VIRTUAL): Rename to ...
+	(BINFO_VIRTUAL_P): ... here. Require TREE_BINFO only.
+	(BINFO_MARKED, BINFO_FLAG_[16]): New binfo flags.
+	* dbxout.c (dbxout_type): Use BINFO_VIRTUAL_P.
+	* dwarf2out.c (add_data_member_location_attribute): Likewise.
+	(gen_inheritance_die): Likewise.
+	* tree-dump.c (deque_and_dump): Likewise.
+	* doc/c-tree.texi (Binfos): Add under reconstruction note.
+
 2004-07-06  Steven Bosscher  <stevenb@suse.de>
 
 	* config/mcore/mcore.c (TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE):

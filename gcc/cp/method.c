@@ -542,7 +542,7 @@ do_build_copy_constructor (tree fndecl)
       for (i = 0; i < n_bases; ++i)
 	{
 	  tree binfo = TREE_VEC_ELT (binfos, i);
-	  if (TREE_VIA_VIRTUAL (binfo))
+	  if (BINFO_VIRTUAL_P (binfo))
 	    continue; 
 
 	  member_init_list 
