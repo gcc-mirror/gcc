@@ -556,11 +556,10 @@ changequote([,])dnl
 		tm_file="${tm_file} alpha/alpha32.h interix.h alpha/alpha-interix.h"
 
 		# GAS + IEEE_CONFORMANT+IEEE (no inexact);
-		#  see alpha.h for bitmasks
-		#target_cpu_default=$((4+8+16))
+		#target_cpu_default="MASK_GAS|MASK_IEEE_CONFORMANT|MASK_IEEE"
 
-		# GAS + IEEE_CONFORMANT; see alpha.h for bitmasks
-		target_cpu_default=$((4+8))
+		# GAS + IEEE_CONFORMANT
+		target_cpu_default="MASK_GAS|MASK_IEEE_CONFORMANT"
 
 		xm_file="alpha/xm-alpha-interix.h xm-interix.h"
 		xmake_file="x-interix alpha/t-pe"
