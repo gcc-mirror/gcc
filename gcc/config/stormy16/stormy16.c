@@ -1023,8 +1023,13 @@ stormy16_expand_epilogue ()
 
   /* Pop the stack for the locals.  */
   if (layout.locals_size)
-    emit_addhi3_postreload (stack_pointer_rtx, stack_pointer_rtx,
-			    GEN_INT (- layout.locals_size));
+    {
+      if (frame_pointer_needed && layout.sp_minus_fp == layout.locals_size)
+	emit_move_insn (stack_pointer_rtx, hard_frame_pointer_rtx);
+      else
+	emit_addhi3_postreload (stack_pointer_rtx, stack_pointer_rtx,
+				GEN_INT (- layout.locals_size));
+    }
 
   /* Restore any call-saved registers.  */
   for (regno = FIRST_PSEUDO_REGISTER - 1; regno >= 0; regno--)
@@ -1262,18 +1267,21 @@ stormy16_initialize_trampoline (addr, fnaddr, static_chain)
   rtx reg_fnaddr = gen_reg_rtx (HImode);
   rtx reg_addr_mem;
 
-  reg_addr_mem = gen_rtx_MEM (HImode, gen_rtx_POST_INC (Pmode, reg_addr));
+  reg_addr_mem = gen_rtx_MEM (HImode, reg_addr);
     
   emit_move_insn (reg_addr, addr);
   emit_move_insn (temp, GEN_INT (0x3130 | STATIC_CHAIN_REGNUM));
   emit_move_insn (reg_addr_mem, temp);
+  emit_insn (gen_addhi3 (reg_addr, reg_addr, const2_rtx));
   emit_move_insn (temp, static_chain);
   emit_move_insn (reg_addr_mem, temp);
+  emit_insn (gen_addhi3 (reg_addr, reg_addr, const2_rtx));
   emit_move_insn (reg_fnaddr, fnaddr);
   emit_move_insn (temp, reg_fnaddr);
   emit_insn (gen_andhi3 (temp, temp, GEN_INT (0xFF)));
   emit_insn (gen_iorhi3 (temp, temp, GEN_INT (0x0200)));
   emit_move_insn (reg_addr_mem, temp);
+  emit_insn (gen_addhi3 (reg_addr, reg_addr, const2_rtx));
   emit_insn (gen_lshrhi3 (reg_fnaddr, reg_fnaddr, GEN_INT (8)));
   emit_move_insn (reg_addr_mem, reg_fnaddr);
 }

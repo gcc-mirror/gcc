@@ -1785,7 +1785,7 @@ enum reg_class
 
    If the static chain is passed in memory, these macros should not be defined;
    instead, the next two macros should be defined.  */
-#define STATIC_CHAIN_REGNUM 12
+#define STATIC_CHAIN_REGNUM 1
 /* #define STATIC_CHAIN_INCOMING_REGNUM */
 
 /* If the static chain is passed in memory, these macros provide rtx giving
