@@ -1,3 +1,10 @@
+2003-02-14  Mark Wielaard  <mark@klomp.org>
+
+	* libjava.mauve/mauve.exp (mauve_compute_uses): Add inner class
+	object files by changing all occurances of $ to ^.
+	(test_mauve): Replace ^ with $ for class file names and quote
+	them with "'"s.
+
 2003-02-13  Tom Tromey  <tromey@redhat.com>
 
 	* libjava.mauve/xfails: Added entries for an unimplemented Class

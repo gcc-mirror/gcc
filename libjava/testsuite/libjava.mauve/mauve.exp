@@ -46,6 +46,12 @@ proc mauve_compute_uses {aName} {
     foreach file $ufiles {
       set file [file rootname $file].o
       lappend uses($item) $file
+      # Now add all inner classes
+      foreach inner [glob -nocomplain [file rootname $file]$*.class] {
+	# Prevent excessive escaping by replacing $ with a ^ in the .o name
+	set inner [string map {$ ^} [file rootname $inner]].o
+	lappend uses($item) $inner
+      }
     }
   }
 
@@ -179,9 +185,10 @@ proc test_mauve {} {
     foreach obj $uses($file) {
       if {! [file exists $obj]} then {
 	verbose "compiling $obj for test of $class"
-	set srcfile [file rootname $obj].class
+	# The .class file does contain a $, but we can quote it between "'"s.
+	set srcfile [string map {^ $} [file rootname $obj]].class
 	set x [libjava_prune_warnings \
-		 [target_compile [pwd]/$srcfile $obj object $compile_args]]
+		 [libjava_tcompile '[pwd]/$srcfile' $obj object $compile_args]]
 	if {$x != ""} then {
 	  fail "Compile $obj for $class"
 	  set ok 0
@@ -196,7 +203,7 @@ proc test_mauve {} {
     }
 
     set x [libjava_prune_warnings \
-	     [target_compile [concat $uses($file) $objlist] \
+	     [libjava_tcompile [concat $uses($file) $objlist] \
 		$Executable executable $link_args]]
     if {$x != ""} then {
       set proc_ok 0
