@@ -98,8 +98,8 @@ do {									\
 /* Allocate a register set with oballoc.  */
 #define OBSTACK_ALLOC_REG_SET(OBSTACK) BITMAP_OBSTACK_ALLOC (OBSTACK)
 
-/* Allocate a register set with alloca.  */
-#define ALLOCA_REG_SET() BITMAP_ALLOCA ()
+/* Initialize a register set.  Returns the new register set.  */
+#define INITIALIZE_REG_SET(HEAD) bitmap_initialize (&HEAD)
 
 /* Do any cleanup needed on a regset when it is no longer used.  */
 #define FREE_REG_SET(REGSET) BITMAP_FREE(REGSET)

@@ -1764,8 +1764,9 @@ build_insn_chain (first)
   struct insn_chain **p = &reload_insn_chain;
   struct insn_chain *prev = 0;
   int b = 0;
+  regset_head live_relevant_regs_head;
 
-  live_relevant_regs = ALLOCA_REG_SET ();
+  live_relevant_regs = INITIALIZE_REG_SET (live_relevant_regs_head);
 
   for (; first; first = NEXT_INSN (first))
     {

@@ -6631,13 +6631,15 @@ schedule_region (rgn)
   int bb;
   int rgn_n_insns = 0;
   int sched_rgn_n_insns = 0;
+  regset_head reg_pending_sets_head;
+  regset_head reg_pending_clobbers_head;
 
   /* Set variables for the current region.  */
   current_nr_blocks = RGN_NR_BLOCKS (rgn);
   current_blocks = RGN_BLOCKS (rgn);
 
-  reg_pending_sets = ALLOCA_REG_SET ();
-  reg_pending_clobbers = ALLOCA_REG_SET ();
+  reg_pending_sets = INITIALIZE_REG_SET (reg_pending_sets_head);
+  reg_pending_clobbers = INITIALIZE_REG_SET (reg_pending_clobbers_head);
   reg_pending_sets_all = 0;
 
   /* Initializations for region data dependence analyisis.  */

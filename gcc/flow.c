@@ -2643,9 +2643,10 @@ update_life_info (blocks, extent, prop_flags)
      int prop_flags;
 {
   regset tmp;
+  regset_head tmp_head;
   int i;
 
-  tmp = ALLOCA_REG_SET ();
+  tmp = INITIALIZE_REG_SET (tmp_head);
 
   /* For a global update, we go through the relaxation process again.  */
   if (extent != UPDATE_LIFE_LOCAL)
@@ -2949,10 +2950,12 @@ calculate_global_regs_live (blocks_in, blocks_out, flags)
 {
   basic_block *queue, *qhead, *qtail, *qend;
   regset tmp, new_live_at_end;
+  regset_head tmp_head;
+  regset_head new_live_at_end_head;
   int i;
 
-  tmp = ALLOCA_REG_SET ();
-  new_live_at_end = ALLOCA_REG_SET ();
+  tmp = INITIALIZE_REG_SET (tmp_head);
+  new_live_at_end = INITIALIZE_REG_SET (new_live_at_end_head);
 
   /* Create a worklist.  Allocate an extra slot for ENTRY_BLOCK, and one
      because the `head == tail' style test for an empty queue doesn't 
@@ -3177,7 +3180,9 @@ propagate_block (bb, old, significant, flags)
   register rtx insn;
   rtx prev;
   regset live;
+  regset_head live_head;
   regset dead;
+  regset_head dead_head;
 
   /* Find the loop depth for this block.  Ignore loop level changes in the
      middle of the basic block -- for register allocation purposes, the 
@@ -3185,8 +3190,8 @@ propagate_block (bb, old, significant, flags)
      not in the loop pre-header or post-trailer.  */
   loop_depth = bb->loop_depth;
 
-  dead = ALLOCA_REG_SET ();
-  live = ALLOCA_REG_SET ();
+  dead = INITIALIZE_REG_SET (live_head);
+  live = INITIALIZE_REG_SET (dead_head);
 
   cc0_live = 0;
 

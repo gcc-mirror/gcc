@@ -1,3 +1,13 @@
+2000-03-05  Mark Mitchell  <mark@codesourcery.com>
+
+	* basic-block.h (ALLOCA_REG_SET): Remove.
+	(INITIALIZE_REG_SET): New macro.
+	* flow.c (update_life_info): Use it.
+	(calculate_global_regs_live): Likewise.
+	(propagate_block): Likewise.
+	* global.c (build_insn_chain): Likewise.
+	* haifa-sched.c (schedule_region): Likewise.
+
 2000-03-05  Stephane Carrez  <stcarrez@worldnet.fr>
 
 	* dwarf2out.c (UNALIGNED_WORD_ASM_OP): Support 2 bytes pointer.
