@@ -1,3 +1,7 @@
+2002-03-14  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc.c-torture/execute/20020314-1.c: New test.
+
 2002-03-14  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.dg/warn/Wunused-1.C: New test.
