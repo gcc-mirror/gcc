@@ -1,5 +1,7 @@
 Thu Nov 13 11:41:42 1997  Jeffrey A Law  (law@cygnus.com)
 
+        * m68k/x-next (OTHER_FIXINCLUDES_DIRS): Include /NextDeveloper/Headers.
+
 	* confiugre.in: Tweak NCR entries.
 	* configure: Rebuilt.
 
