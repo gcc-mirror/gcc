@@ -192,6 +192,12 @@ static void report_file_and_line PROTO ((const char *, int, int));
 static void vnotice PROTO ((FILE *, const char *, va_list));
 static void mark_file_stack PROTO ((void *));
 
+static void decode_d_option PROTO ((const char *));
+static int  decode_f_option PROTO ((const char *));
+static int  decode_W_option PROTO ((const char *));
+static int  decode_g_option PROTO ((const char *));
+static unsigned independent_decode_option PROTO ((int, char **, unsigned));
+
 static void print_version PROTO((FILE *, const char *));
 static int print_single_switch PROTO((FILE *, int, int, const char *,
 				      const char *, const char *,
@@ -279,6 +285,9 @@ int stack_reg_dump = 0;
 #ifdef MACHINE_DEPENDENT_REORG
 int mach_dep_reorg_dump = 0;
 #endif
+static int flag_print_mem = 0;
+static int version_flag = 0;
+static char * filename = 0;
 enum graph_dump_types graph_dump_format;
 
 /* Name for output file of assembly code, specified with -o.  */
@@ -767,27 +776,27 @@ static struct
 } *da,
 debug_args[] =
 {
-  { "g",    NO_DEBUG, DEFAULT_GDB_EXTENSIONS,
+  { "",       NO_DEBUG, DEFAULT_GDB_EXTENSIONS,
     "Generate default debug format output" },
-  { "ggdb", NO_DEBUG, 1, "Generate default extended debug format output" },
+  { "gdb",    NO_DEBUG, 1, "Generate default extended debug format output" },
 #ifdef DBX_DEBUGGING_INFO
-  { "gstabs",  DBX_DEBUG, 0, "Generate STABS format debug output" },
-  { "gstabs+", DBX_DEBUG, 1, "Generate extended STABS format debug output" },
+  { "stabs",  DBX_DEBUG, 0, "Generate STABS format debug output" },
+  { "stabs+", DBX_DEBUG, 1, "Generate extended STABS format debug output" },
 #endif
 #ifdef DWARF_DEBUGGING_INFO
-  { "gdwarf",  DWARF_DEBUG, 0, "Generate DWARF-1 format debug output"},
-  { "gdwarf+", DWARF_DEBUG, 1,
+  { "dwarf",  DWARF_DEBUG, 0, "Generate DWARF-1 format debug output"},
+  { "dwarf+", DWARF_DEBUG, 1,
     "Generated extended DWARF-1 format debug output" },
 #endif
 #ifdef DWARF2_DEBUGGING_INFO
-  { "gdwarf-2", DWARF2_DEBUG, 0, "Enable DWARF-2 debug output" },
+  { "dwarf-2", DWARF2_DEBUG, 0, "Enable DWARF-2 debug output" },
 #endif
 #ifdef XCOFF_DEBUGGING_INFO
-  { "gxcoff",  XCOFF_DEBUG, 0, "Generate XCOFF format debug output" },
-  { "gxcoff+", XCOFF_DEBUG, 1, "Generate extended XCOFF format debug output" },
+  { "xcoff",  XCOFF_DEBUG, 0, "Generate XCOFF format debug output" },
+  { "xcoff+", XCOFF_DEBUG, 1, "Generate extended XCOFF format debug output" },
 #endif
 #ifdef SDB_DEBUGGING_INFO
-  { "gcoff", SDB_DEBUG, 0, "Generate COFF format debug output" },
+  { "coff", SDB_DEBUG, 0, "Generate COFF format debug output" },
 #endif
   { 0, 0, 0, 0 }
 };
@@ -1095,40 +1104,10 @@ documented_lang_options[] =
   { "-Wno-undef", "" },
   { "-Wwrite-strings", "Mark strings as 'const char *'"},
   { "-Wno-write-strings", "" },
-
-  /* These are for languages with USE_CPPLIB.  */
-  /* These options are already documented in cpplib.c */
-  { "--help", "" },
-  { "-A", "" },
-  { "-D", "" },
-  { "-I", "" },
-#if USE_CPPLIB
-  { "-MD", "Print dependencies to FILE.d" },
-  { "-MMD", "Print dependencies to FILE.d" },
-  { "-M", "Print dependencies to stdout" },
-  { "-MM", "Print dependencies to stdout" },
-#endif /* USE_CPPLIB */
-  { "-U", "" },
-  { "-H", "" },
-  { "-idirafter", "" },
-  { "-imacros", "" },
-  { "-include", "" },
-  { "-iprefix", "" },
-  { "-isystem", "" },
-  { "-iwithprefix", "" },
-  { "-iwithprefixbefore", "" },
-  { "-lang-c", "" },
-  { "-lang-c89", "" },
-  { "-lang-c++", "" },
-  { "-remap", "" },
-  { "-nostdinc", "" },
-  { "-nostdinc++", "" },
-  { "-trigraphs", "" },
-  { "-undef", "" },
   
 #define DEFINE_LANG_NAME(NAME) { NULL, NAME },
   
-  /* These are for obj c.  */
+  /* These are for Objective C.  */
   DEFINE_LANG_NAME ("Objective C")
   
   { "-lang-objc", "" },
@@ -1911,16 +1890,16 @@ error VPROTO((const char *msgid, ...))
   va_end (ap);
 }
 
-/* Report a fatal error at the current line number.   Allow a front end to
+/* Report a fatal error at the current line number.  Allow a front end to
    intercept the message.  */
 
-static void (*fatal_function) PROTO((const char *, va_list));
+static void (*fatal_function) PROTO ((const char *, va_list));
 
 /* Set the function to call when a fatal error occurs.  */
 
 void
 set_fatal_function (f)
-     void (*f) PROTO((const char *, va_list));
+     void (*f) PROTO ((const char *, va_list));
 {
   fatal_function = f;
 }
@@ -4516,7 +4495,7 @@ display_help ()
   for (i = NUM_ELEM (debug_args); i--;)
     {
       if (debug_args[i].description != NULL)
-	printf ("  -%-22s %s\n", debug_args[i].arg, debug_args[i].description);
+	printf ("  -g%-21s %s\n", debug_args[i].arg, debug_args[i].description);
     }
   
   printf ("  -aux-info <file>        Emit declaration info into <file>.X\n");
@@ -4636,74 +4615,569 @@ display_help ()
 	}
     }
 }
+
+/* Parse a -d... comand line switch.  */
 
-/* Compare the user specified 'option' with the language
-   specific 'lang_option'.  Return true if they match, or
-   if 'option' is a viable prefix of 'lang_option'.  */
+static void
+decode_d_option (arg)
+     const char * arg;
+{
+  while (* arg)
+    switch (* arg ++)
+      {
+      case 'a':
+	branch_prob_dump = 1;
+	combine_dump = 1;
+#ifdef DELAY_SLOTS
+	dbr_sched_dump = 1;
+#endif
+	flow_dump = 1;
+	flow2_dump = 1;
+	global_reg_dump = 1;
+	jump_opt_dump = 1;
+	addressof_dump = 1;
+	jump2_opt_dump = 1;
+	local_reg_dump = 1;
+	loop_dump = 1;
+	regmove_dump = 1;
+	rtl_dump = 1;
+	cse_dump = 1;
+	cse2_dump = 1;
+	gcse_dump = 1;
+	sched_dump = 1;
+	sched2_dump = 1;
+#ifdef STACK_REGS
+	stack_reg_dump = 1;
+#endif
+#ifdef MACHINE_DEPENDENT_REORG
+	mach_dep_reorg_dump = 1;
+#endif
+	peephole2_dump = 1;
+	break;
+      case 'A':
+	flag_debug_asm = 1;
+	break;
+      case 'b':
+	branch_prob_dump = 1;
+	break;
+      case 'c':
+	combine_dump = 1;
+	break;
+#ifdef DELAY_SLOTS
+      case 'd':
+	dbr_sched_dump = 1;
+	break;
+#endif
+      case 'f':
+	flow_dump = 1;
+	break;
+      case 'F':
+	addressof_dump = 1;
+	break;
+      case 'g':
+	global_reg_dump = 1;
+	break;
+      case 'G':
+	gcse_dump = 1;
+	break;
+      case 'j':
+	jump_opt_dump = 1;
+	break;
+      case 'J':
+	jump2_opt_dump = 1;
+	break;
+#ifdef STACK_REGS		    
+      case 'k':
+	stack_reg_dump = 1;
+	break;
+#endif
+      case 'l':
+	local_reg_dump = 1;
+	break;
+      case 'L':
+	loop_dump = 1;
+	break;
+      case 'm':
+	flag_print_mem = 1;
+	break;
+#ifdef MACHINE_DEPENDENT_REORG
+      case 'M':
+	mach_dep_reorg_dump = 1;
+	break;
+#endif
+      case 'p':
+	flag_print_asm_name = 1;
+	break;
+      case 'r':
+	rtl_dump = 1;
+	break;
+      case 'R':
+	sched2_dump = 1;
+	break;
+      case 's':
+	cse_dump = 1;
+	break;
+      case 'S':
+	sched_dump = 1;
+	break;
+      case 't':
+	cse2_dump = 1;
+	break;
+      case 'N':
+	regmove_dump = 1;
+	break;
+      case 'v':
+	graph_dump_format = vcg;
+	break;
+      case 'w':
+	flow2_dump = 1;
+	break;
+      case 'x':
+	rtl_dump_and_exit = 1;
+	break;
+      case 'y':
+	set_yydebug (1);
+	break;
+      case 'z':
+	peephole2_dump = 1;
+	break;
+      case 'D':	/* These are handled by the preprocessor.  */
+      case 'I':
+	break;
+      default:
+	warning ("unrecognised gcc debugging option: %c", arg[-1]);
+	break;
+      }
+}
+
+/* Parse a -f... comand line switch.  ARG is the value after the -f.
+   It is safe to access 'ARG - 2' to generate the full switch name.
+   Return the number of strings consumed.  */
 
 static int
-check_lang_option (option, lang_option)
-     const char * option;
-     const char * lang_option;
+decode_f_option (arg)
+     const char * arg;
 {
-  lang_independent_options * indep_options;
-  int    len;
-  long    k;
-  const char * space;
-  
-  /* Ignore NULL entries.  */
-  if (option == NULL || lang_option == NULL)
+  int j;
+
+  /* Search for the option in the table of binary f options.  */
+  for (j = sizeof (f_options) / sizeof (f_options[0]); j--;)
+    {
+      if (!strcmp (arg, f_options[j].string))
+	{
+	  *f_options[j].variable = f_options[j].on_value;
+	  return 1;
+	}
+    
+      if (arg[0] == 'n' && arg[1] == 'o' && arg[2] == '-'
+	  && ! strcmp (arg + 3, f_options[j].string))
+	{
+	  *f_options[j].variable = ! f_options[j].on_value;
+	  return 1;
+	}
+    }
+
+  if (!strncmp (arg, "inline-limit-", 13)
+      || !strncmp (arg, "inline-limit=", 13))
+    inline_max_insns =
+      read_integral_parameter (arg + 13, arg - 2, inline_max_insns);
+#ifdef INSN_SCHEDULING
+  else if (!strncmp (arg, "sched-verbose=", 14))
+    fix_sched_param ("verbose", (char *)(arg + 14));
+#endif
+  else if (!strncmp (arg, "fixed-", 6))
+    fix_register ((char *)(arg + 6), 1, 1);
+  else if (!strncmp (arg, "call-used-", 10))
+    fix_register ((char *)(arg + 10), 0, 1);
+  else if (!strncmp (arg, "call-saved-", 11))
+    fix_register ((char *)(arg + 11), 0, 0);
+  else if (!strncmp (arg, "align-loops=", 12))
+    align_loops = read_integral_parameter (arg + 12, arg - 2, align_loops);
+  else if (!strncmp (arg, "align-functions=", 16))
+    align_functions =
+      read_integral_parameter (arg + 16, arg - 2, align_functions);
+  else if (!strncmp (arg, "align-jumps=", 12))
+    align_jumps = read_integral_parameter (arg + 12, arg - 2, align_jumps);
+  else if (!strncmp (arg, "align-labels=", 13))
+    align_labels = read_integral_parameter (arg + 13, arg - 2, align_labels);
+  else if (!strcmp (arg, "preprocessed"))
+    /* Recognise this switch but do nothing.  This prevents warnings
+       about an unrecognised switch if cpplib has not been linked in.  */
+    ;
+  else
     return 0;
 
-  if ((space = strchr (lang_option, ' ')) != NULL)
-    len = space - lang_option;
-  else
-    len = strlen (lang_option);
+  return 1;
+}
+
+/* Parse a -W... comand line switch.  ARG is the value after the -W.
+   It is safe to access 'ARG - 2' to generate the full switch name.
+   Return the number of strings consumed.  */
+static int
+decode_W_option (arg)
+     const char * arg;
+{
+  int j;
   
-  /* If they do not match to the first n characters then fail.  */
-  if (strncmp (option, lang_option, len) != 0)
-    return 0;
-  
-  /* Do not accept a lang option, if it matches a normal -f or -W
-     option.  Chill defines a -fpack, but we want to support
-     -fpack-struct.  */
-  
-  /* An exact match is OK  */
-  if ((int) strlen (option) == len)
-    return 1;
-  
-  /* If it is not an -f or -W option allow the match */
-  if (option[0] != '-')
-    return 1;
-  
-  switch (option[1])
+  /* Search for the option in the table of binary W options.  */
+
+  for (j = sizeof (W_options) / sizeof (W_options[0]); j--;)
     {
-    case 'f': indep_options = f_options; break;
-    case 'W': indep_options = W_options; break;
-    default:  return 1;
-    }
-  
-  /* The option is a -f or -W option.
-     Skip past the prefix and search for the remainder in the
-     appropriate table of options.  */
-  option += 2;
-  
-  if (option[0] == 'n' && option[1] == 'o' && option[2] == '-')
-    option += 3;
-  
-  for (k = NUM_ELEM (indep_options); k--;)
-    {
-      if (!strcmp (option, indep_options[k].string))
+      if (!strcmp (arg, W_options[j].string))
 	{
-	  /* The option matched a language independent option,
-	     do not allow the language specific match.  */
+	  *W_options[j].variable = W_options[j].on_value;
+	  return 1;
+	}
+
+      if (arg[0] == 'n' && arg[1] == 'o' && arg[2] == '-'
+	  && ! strcmp (arg + 3, W_options[j].string))
+	{
+	  *W_options[j].variable = ! W_options[j].on_value;
+	  return 1;
+	}
+    }
+
+  if (!strncmp (arg, "id-clash-", 9))
+    {
+      const int id_clash_val = read_integral_parameter (arg + 9, arg - 2, -1);
+      
+      if (id_clash_val != -1)
+	{
+	  id_clash_len = id_clash_val;
+	  warn_id_clash = 1;
+	}
+    }
+  else if (!strncmp (arg, "larger-than-", 12))
+    {
+      const int larger_than_val =
+	read_integral_parameter (arg + 12, arg - 2, -1);
+      if (larger_than_val != -1)
+	{
+	  larger_than_size = larger_than_val;
+	  warn_larger_than = 1;
+	}
+    }
+  else
+    return 0;
+
+  return 1;
+}
+
+/* Parse a -g... comand line switch.  ARG is the value after the -g.
+   It is safe to access 'ARG - 2' to generate the full switch name.
+   Return the number of strings consumed.  */
+static int
+decode_g_option (arg)
+     const char * arg;
+{
+  unsigned level;
+  /* A lot of code assumes write_symbols == NO_DEBUG if the
+     debugging level is 0 (thus -gstabs1 -gstabs0 would lose track
+     of what debugging type has been selected).  This records the
+     selected type.  It is an error to specify more than one
+     debugging type.  */
+  static enum debug_info_type selected_debug_type = NO_DEBUG;
+  /* Non-zero if debugging format has been explicitly set.
+     -g and -ggdb don't explicitly set the debugging format so
+     -gdwarf -g3 is equivalent to -gdwarf3.  */
+  static int type_explicitly_set_p = 0;
+  /* Indexed by enum debug_info_type.  */
+  static const char * debug_type_names[] =
+  {
+    "none", "stabs", "coff", "dwarf-1", "dwarf-2", "xcoff"
+  };
+  
+  /* The maximum admissible debug level value.  */
+  static const unsigned max_debug_level = 3;
+  
+  /* Look up ARG in the table.  */
+  for (da = debug_args; da->arg; da++)
+    {
+      const int da_len = strlen (da->arg);
+
+      if (da_len == 0 || ! strncmp (arg, da->arg, da_len))
+	{
+	  enum debug_info_type type = da->debug_type;
+	  const char * p = arg + da_len;
 	  
-	  return 0;
+	  if (*p && (*p < '0' || *p > '9'))
+	    continue;
+	  
+	  /* A debug flag without a level defaults to level 2.
+	     Note we do not want to call read_integral_parameter
+	     for that case since it will call atoi which 
+	     will return zero.
+	     
+	     ??? We may want to generalize the interface to 
+	     read_integral_parameter to better handle this case
+	     if this case shows up often.  */
+	  if (*p)
+	    level = read_integral_parameter (p, 0, max_debug_level + 1);
+	  else
+	    level = 2;
+	  
+	  if (da_len > 1 && *p && !strncmp (arg, "dwarf", da_len))
+	    {
+	      error ("use -gdwarf -g%d for DWARF v1, level %d",
+		     level, level);
+	      if (level == 2)
+		error ("use -gdwarf-2   for DWARF v2");
+	    }
+	  
+	  if (level > max_debug_level)
+	    {
+	      warning ("\
+ignoring option `%s' due to invalid debug level specification",
+		       arg - 2);
+	      level = debug_info_level;
+	    }
+
+	  if (type == NO_DEBUG)
+	    {
+	      type = PREFERRED_DEBUGGING_TYPE;
+	      
+	      if (da_len > 1 && strncmp (arg, "gdb", da_len) == 0)
+		{
+#if defined (DWARF2_DEBUGGING_INFO) && !defined (LINKER_DOES_NOT_WORK_WITH_DWARF2)
+		  type = DWARF2_DEBUG;
+#else
+#ifdef DBX_DEBUGGING_INFO
+		  type = DBX_DEBUG;
+#endif
+#endif
+		}
+	    }
+	  
+	  if (type == NO_DEBUG)
+	    warning ("`%s' not supported by this configuration of GCC",
+		     arg - 2);
+
+	  /* Does it conflict with an already selected type?  */
+	  if (type_explicitly_set_p
+	      /* -g/-ggdb don't conflict with anything */
+	      && da->debug_type != NO_DEBUG
+	      && type != selected_debug_type)
+	    warning ("`%s' ignored, conflicts with `-g%s'",
+		     arg - 2, debug_type_names[(int) selected_debug_type]);
+	  else
+	    {
+	      /* If the format has already been set, -g/-ggdb
+		 only change the debug level.  */
+	      if (type_explicitly_set_p && da->debug_type == NO_DEBUG)
+		; /* don't change debugging type */
+	      else
+		{
+		  selected_debug_type = type;
+		  type_explicitly_set_p = da->debug_type != NO_DEBUG;
+		}
+	      
+	      write_symbols = (level == 0
+			       ? NO_DEBUG
+			       : selected_debug_type);
+	      use_gnu_debug_info_extensions = da->use_extensions_p;
+	      debug_info_level = (enum debug_info_level) level;
+	    }
+	  
+	  break;
 	}
     }
   
-  /* The option matches the start of the langauge specific option
-     and it is not an exact match for a language independent option.  */
+  if (! da->arg)
+    warning ("`%s' not supported by this configuration of GCC", arg - 2);
+
+  return 1;
+}
+
+/* Decode the first argument in the argv as a language-independent option.
+   Return the number of strings consumed.  'strings_processed' is the
+   number of strings that have already been decoded in a language
+   specific fashion before this function was invoked.  */
+   
+static unsigned
+independent_decode_option (argc, argv, strings_processed)
+     int argc;
+     char ** argv;
+     unsigned strings_processed ATTRIBUTE_UNUSED;
+{
+  char * arg = argv[0];
+  
+  if (arg[0] != '-' || arg[1] == 0)
+    {
+      if (arg[0] == '+')
+	return 0;
+      
+      filename = arg;
+
+      return 1;
+    }
+
+  arg ++;
+  
+  if (!strcmp (arg, "-help"))
+    {
+      display_help ();
+      exit (0);
+    }
+
+  if (* arg == 'Y')
+    arg ++;
+  
+  switch (* arg)
+    {
+    default:
+      return 0;
+      
+    case 'O':
+      /* Already been treated in main (). Do nothing.  */
+      break;
+	  
+    case 'm':
+      set_target_switch (arg + 1);
+      break;
+
+    case 'f':
+      return decode_f_option (arg + 1);
+	    
+    case 'g':
+      return decode_g_option (arg + 1);
+
+    case 'd':
+      if (!strcmp (arg, "dumpbase"))
+	{
+	  if (argc == 1)
+	    return 0;
+	  
+	  dump_base_name = argv[1];
+	  return 2;
+	}
+      else
+	decode_d_option (arg + 1);
+      break;
+
+    case 'p':
+      if (!strcmp (arg, "pedantic"))
+	pedantic = 1;
+      else if (!strcmp (arg, "pedantic-errors"))
+	flag_pedantic_errors = pedantic = 1;
+      else if (arg[1] == 0)
+	profile_flag = 1;
+      else
+	return 0;
+      break;
+
+    case 'q':
+      if (!strcmp (arg, "quiet"))
+	quiet_flag = 1;
+      else
+	return 0;
+      break;
+
+    case 'v':
+      if (!strcmp (arg, "version"))
+	version_flag = 1;
+      else
+	return 0;
+      break;
+
+    case 'w':
+      if (arg[1] == 0)
+	inhibit_warnings = 1;
+      else
+	return 0;
+      break;
+
+    case 'W':
+      if (arg[1] == 0)
+	{
+	  extra_warnings = 1;
+	  /* We save the value of warn_uninitialized, since if they put
+	     -Wuninitialized on the command line, we need to generate a
+	     warning about not using it without also specifying -O.  */
+	  if (warn_uninitialized != 1)
+	    warn_uninitialized = 2;
+	}
+      else
+	return decode_W_option (arg + 1);
+      break;
+	  
+    case 'a':
+      if (arg[1] == 0)
+	{
+#if !defined (BLOCK_PROFILER) || !defined (FUNCTION_BLOCK_PROFILER)
+	  warning ("`-a' option (basic block profile) not supported");
+#else
+	  profile_block_flag = (profile_block_flag < 2) ? 1 : 3;
+#endif
+	}
+      else if (!strcmp (arg, "ax"))
+	{
+#if !defined (FUNCTION_BLOCK_PROFILER_EXIT) || !defined (BLOCK_PROFILER) || !defined (FUNCTION_BLOCK_PROFILER)
+	  warning ("`-ax' option (jump profiling) not supported");
+#else
+	  profile_block_flag = (!profile_block_flag 
+				|| profile_block_flag == 2) ? 2 : 3;
+#endif
+	}
+      else if (!strncmp (arg, "aux-info", 8))
+	{
+	  flag_gen_aux_info = 1;
+	  if (arg[8] == '\0')
+	    {
+	      if (argc == 1)
+		return 0;
+	      
+	      aux_info_file_name = argv[1];
+	      return 2;
+	    }
+	  else
+	    aux_info_file_name = arg + 8;
+	}
+      else
+	return 0;
+      break;
+
+    case 'o':
+      if (arg[1] == 0)
+	{
+	  if (argc == 1)
+	    return 0;
+	  
+	  asm_file_name = argv[1];
+	  return 2;
+	}
+      return 0;
+
+    case 'G':
+      {
+	int g_switch_val;
+	int return_val;
+	    
+	if (arg[1] == 0)
+	  {
+	    if (argc == 1)
+	      return 0;
+	    
+	    g_switch_val = read_integral_parameter (argv[1], 0, -1);
+	    return_val = 2;
+	  }
+	else
+	  {
+	    g_switch_val = read_integral_parameter (arg + 1, 0, -1);
+	    return_val = 1;
+	  }
+	    
+	if (g_switch_val == -1)
+	  return_val = 0;
+	else
+	  {
+	    g_switch_set = TRUE;
+	    g_switch_value = g_switch_val;
+	  }
+	    
+	return return_val;
+      }
+    }
+  
   return 1;
 }
 
@@ -4719,9 +5193,6 @@ main (argc, argv)
      char **argv;
 {
   register int i;
-  char *filename = 0;
-  int flag_print_mem = 0;
-  int version_flag = 0;
   char *p;
 
   /* save in case md file wants to emit args as a comment.  */
@@ -4872,480 +5343,30 @@ main (argc, argv)
   /* Initialize register usage now so switches may override.  */
   init_reg_sets ();
 
-  for (i = 1; i < argc; i++)
+  /* Perform normal command line switch decoding.  */
+  for (i = 1; i < argc;)
     {
-      size_t j;
+      unsigned lang_processed;
+      unsigned indep_processed;
       
-      /* If this is a language-specific option,
-	 decode it in a language-specific way.  */
-      for (j = NUM_ELEM (documented_lang_options); j--;)
-	if (check_lang_option (argv[i], documented_lang_options[j].option))
-	  break;
-      
-      if (j != (size_t)-1)
-	{
-	  /* If the option is valid for *some* language,
-	     treat it as valid even if this language doesn't understand it.  */
-	  int strings_processed = lang_decode_option (argc - i, argv + i);
-	  
-	  if (!strcmp (argv[i], "--help"))
-	    {
-	      display_help ();
-	      return (0);
-	    }
-	  
-	  if (strings_processed != 0)
-	    i += strings_processed - 1;
-	}
-      else if (argv[i][0] == '-' && argv[i][1] != 0)
-	{
-	  register char *str = argv[i] + 1;
-	  if (str[0] == 'Y')
-	    str++;
+      /* Give the language a chance to decode the option for itself.  */
+      lang_processed = lang_decode_option (argc - i, argv + i);
+ 
+      /* Now see if the option also has a language independent meaning.
+	 Some options are both language specific and language independent,
+	 eg --help.  It is possible that there might be options that should
+	 only be decoded in a language independent way if the were not
+	 decoded in a langauge specific way, which is why 'lang_processed'
+	 is passed in.  */
+      indep_processed = independent_decode_option (argc - i, argv + i, lang_processed);
 
-	  if (str[0] == 'm')
-	    set_target_switch (&str[1]);
-	  else if (!strcmp (str, "dumpbase"))
-	    {
-	      dump_base_name = argv[++i];
-	    }
-	  else if (str[0] == 'd')
-	    {
-	      register char *p = &str[1];
-	      while (*p)
-		switch (*p++)
-		  {
- 		  case 'a':
-		    branch_prob_dump = 1;
- 		    combine_dump = 1;
-#ifdef DELAY_SLOTS
- 		    dbr_sched_dump = 1;
-#endif
- 		    flow_dump = 1;
- 		    flow2_dump = 1;
- 		    global_reg_dump = 1;
- 		    jump_opt_dump = 1;
- 		    addressof_dump = 1;
- 		    jump2_opt_dump = 1;
- 		    local_reg_dump = 1;
- 		    loop_dump = 1;
-		    regmove_dump = 1;
- 		    rtl_dump = 1;
- 		    cse_dump = 1, cse2_dump = 1;
-		    gcse_dump = 1;
- 		    sched_dump = 1;
- 		    sched2_dump = 1;
-#ifdef STACK_REGS
-		    stack_reg_dump = 1;
-#endif
-#ifdef MACHINE_DEPENDENT_REORG
-		    mach_dep_reorg_dump = 1;
-#endif
-		    peephole2_dump = 1;
-		    break;
-		  case 'A':
-		    flag_debug_asm = 1;
-		    break;
-		  case 'b':
-		    branch_prob_dump = 1;
-		    break;
-		  case 'c':
-		    combine_dump = 1;
-		    break;
-#ifdef DELAY_SLOTS
-		  case 'd':
-		    dbr_sched_dump = 1;
-		    break;
-#endif
-		  case 'f':
-		    flow_dump = 1;
-		    break;
-		  case 'F':
-		    addressof_dump = 1;
-		    break;
-		  case 'g':
-		    global_reg_dump = 1;
-		    break;
-		  case 'G':
-		    gcse_dump = 1;
-		    break;
-		  case 'j':
-		    jump_opt_dump = 1;
-		    break;
-		  case 'J':
-		    jump2_opt_dump = 1;
-		    break;
-#ifdef STACK_REGS		    
-		  case 'k':
-		    stack_reg_dump = 1;
-		    break;
-#endif
-		  case 'l':
-		    local_reg_dump = 1;
-		    break;
-		  case 'L':
-		    loop_dump = 1;
-		    break;
-		  case 'm':
-		    flag_print_mem = 1;
-		    break;
-#ifdef MACHINE_DEPENDENT_REORG
-		  case 'M':
-		    mach_dep_reorg_dump = 1;
-		    break;
-#endif
-		  case 'p':
-		    flag_print_asm_name = 1;
-		    break;
-		  case 'r':
-		    rtl_dump = 1;
-		    break;
-		  case 'R':
-		    sched2_dump = 1;
-		    break;
-		  case 's':
-		    cse_dump = 1;
-		    break;
-		  case 'S':
-		    sched_dump = 1;
-		    break;
-		  case 't':
-		    cse2_dump = 1;
-		    break;
-		  case 'N':
-		    regmove_dump = 1;
-		    break;
-		  case 'v':
-		    graph_dump_format = vcg;
-		    break;
-		  case 'w':
-		    flow2_dump = 1;
-		    break;
-		  case 'x':
-		    rtl_dump_and_exit = 1;
-		    break;
-		  case 'y':
-		    set_yydebug (1);
-		    break;
-		  case 'z':
-		    peephole2_dump = 1;
-		    break;
-		  case 'D':	/* these are handled by the preprocessor */
-		  case 'I':
-		    break;
-		  default:
-		    warning ("unrecognised gcc debugging option: %c", p[-1]);
-		    break;
-		  }
-	    }
-	  else if (str[0] == 'f')
-	    {
-	      register char *p = &str[1];
-	      int found = 0;
-
-	      /* Some kind of -f option.
-		 P's value is the option sans `-f'.
-		 Search for it in the table of options.  */
-
-	      for (j = 0;
-		   !found && j < sizeof (f_options) / sizeof (f_options[0]);
-		   j++)
-		{
-		  if (!strcmp (p, f_options[j].string))
-		    {
-		      *f_options[j].variable = f_options[j].on_value;
-		      /* A goto here would be cleaner,
-			 but breaks the vax pcc.  */
-		      found = 1;
-		    }
-		  if (p[0] == 'n' && p[1] == 'o' && p[2] == '-'
-		      && ! strcmp (p+3, f_options[j].string))
-		    {
-		      *f_options[j].variable = ! f_options[j].on_value;
-		      found = 1;
-		    }
-		}
-
-	      if (found)
-		;
-	      else if (!strncmp (p, "inline-limit-", 13)
-		       || !strncmp (p, "inline-limit=", 13))
-	        inline_max_insns =
-		  read_integral_parameter (p + 13, p - 2, inline_max_insns);
-#ifdef INSN_SCHEDULING
-	      else if (!strncmp (p, "sched-verbose=",14))
-		fix_sched_param("verbose",&p[14]);
-#endif
-	      else if (!strncmp (p, "fixed-", 6))
-		fix_register (&p[6], 1, 1);
-	      else if (!strncmp (p, "call-used-", 10))
-		fix_register (&p[10], 0, 1);
-	      else if (!strncmp (p, "call-saved-", 11))
-		fix_register (&p[11], 0, 0);
-	      else if (!strncmp (p, "align-loops=", 12))
-		align_loops = read_integral_parameter (p + 12, p - 2,
-						       align_loops);
-	      else if (!strncmp (p, "align-functions=", 16))
-		align_functions = read_integral_parameter (p + 16, p - 2,
-						       align_functions);
-	      else if (!strncmp (p, "align-jumps=", 12))
-		align_jumps = read_integral_parameter (p + 12, p - 2,
-						       align_jumps);
-	      else if (!strncmp (p, "align-labels=", 13))
-		align_labels = read_integral_parameter (p + 13, p - 2,
-							align_labels);
-	      else
-		error ("Invalid option `%s'", argv[i]);
-	    }
-	  else if (str[0] == 'O')
-	    {
-	      /* Already been treated above. Do nothing.  */
-	    }
-	  else if (!strcmp (str, "pedantic"))
-	    pedantic = 1;
-	  else if (!strcmp (str, "pedantic-errors"))
-	    flag_pedantic_errors = pedantic = 1;
-	  else if (!strcmp (str, "quiet"))
-	    quiet_flag = 1;
-	  else if (!strcmp (str, "version"))
-	    version_flag = 1;
-	  else if (!strcmp (str, "w"))
-	    inhibit_warnings = 1;
-	  else if (!strcmp (str, "W"))
-	    {
-	      extra_warnings = 1;
-	      /* We save the value of warn_uninitialized, since if they put
-		 -Wuninitialized on the command line, we need to generate a
-		 warning about not using it without also specifying -O.  */
-	      if (warn_uninitialized != 1)
-		warn_uninitialized = 2;
-	    }
-	  else if (str[0] == 'W')
-	    {
-	      register char *p = &str[1];
-	      int found = 0;
-
-	      /* Some kind of -W option.
-		 P's value is the option sans `-W'.
-		 Search for it in the table of options.  */
-
-	      for (j = 0;
-		   !found && j < sizeof (W_options) / sizeof (W_options[0]);
-		   j++)
-		{
-		  if (!strcmp (p, W_options[j].string))
-		    {
-		      *W_options[j].variable = W_options[j].on_value;
-		      /* A goto here would be cleaner,
-			 but breaks the vax pcc.  */
-		      found = 1;
-		    }
-		  if (p[0] == 'n' && p[1] == 'o' && p[2] == '-'
-		      && ! strcmp (p+3, W_options[j].string))
-		    {
-		      *W_options[j].variable = ! W_options[j].on_value;
-		      found = 1;
-		    }
-		}
-
-	      if (found)
-		;
-	      else if (!strncmp (p, "id-clash-", 9))
-		{
-		  const int id_clash_val
-		    = read_integral_parameter (p + 9, p - 2, -1);
-		  if (id_clash_val != -1)
-		    {
-		      id_clash_len = id_clash_val;
-		      warn_id_clash = 1;
-		    }
-		}
-	      else if (!strncmp (p, "larger-than-", 12))
-		{
-		  const int larger_than_val
-		    = read_integral_parameter (p + 12, p - 2, -1);
-		  if (larger_than_val != -1)
-		    {
-		      larger_than_size = larger_than_val;
-		      warn_larger_than = 1;
-		    }
-		}
-	      else
-		error ("Invalid option `%s'", argv[i]);
-	    }
-	  else if (!strcmp (str, "p"))
-	    {
-	      profile_flag = 1;
-	    }
-	  else if (!strcmp (str, "a"))
-	    {
-#if !defined (BLOCK_PROFILER) || !defined (FUNCTION_BLOCK_PROFILER)
-	      warning ("`-a' option (basic block profile) not supported");
-#else
-              profile_block_flag = (profile_block_flag < 2) ? 1 : 3;
-#endif
-	    }
-	  else if (!strcmp (str, "ax"))
-	    {
-#if !defined (FUNCTION_BLOCK_PROFILER_EXIT) || !defined (BLOCK_PROFILER) || !defined (FUNCTION_BLOCK_PROFILER)
-	      warning ("`-ax' option (jump profiling) not supported");
-#else
-	      profile_block_flag = (!profile_block_flag 
-	                               || profile_block_flag == 2) ? 2 : 3;
-#endif
-	    }
-	  else if (str[0] == 'g')
-	    {
-	      unsigned level;
-	      /* A lot of code assumes write_symbols == NO_DEBUG if the
-		 debugging level is 0 (thus -gstabs1 -gstabs0 would lose track
-		 of what debugging type has been selected).  This records the
-		 selected type.  It is an error to specify more than one
-		 debugging type.  */
-	      static enum debug_info_type selected_debug_type = NO_DEBUG;
-	      /* Non-zero if debugging format has been explicitly set.
-		 -g and -ggdb don't explicitly set the debugging format so
-		 -gdwarf -g3 is equivalent to -gdwarf3.  */
-	      static int type_explicitly_set_p = 0;
-	      /* Indexed by enum debug_info_type.  */
-	      static const char *debug_type_names[] =
-	      {
-		"none", "stabs", "coff", "dwarf-1", "dwarf-2", "xcoff"
-	      };
-
-	      /* The maximum admissible debug level value.  */
-	      static const unsigned max_debug_level = 3;
-
-	      /* Look up STR in the table.  */
-	      for (da = debug_args; da->arg; da++)
-		{
-		  const int da_len = strlen (da->arg);
-
-		  if (! strncmp (str, da->arg, da_len))
-		    {
-		      enum debug_info_type type = da->debug_type;
-		      const char *p = str + da_len;
-
-		      if (*p && (*p < '0' || *p > '9'))
-			continue;
-		      
-		      /* A debug flag without a level defaults to level 2.
-			 Note we do not want to call read_integral_parameter
-			 for that case since it will call atoi which 
-			 will return zero.
-
-			 ??? We may want to generalize the interface to 
-			 read_integral_parameter to better handle this case
-			 if this case shows up often.  */
-		      if (*p)
-			level = read_integral_parameter (p, 0,
-							 max_debug_level + 1);
-		      else
-			level = 2;
-
-		      if (da_len > 1 && *p && !strncmp (str, "gdwarf", da_len))
-			{
-			  error ("use -gdwarf -g%d for DWARF v1, level %d",
-				 level, level);
-			  if (level == 2)
-			    error ("use -gdwarf-2   for DWARF v2");
-			}
-
-		      if (level > max_debug_level)
-			{
-			  warning ("ignoring option `%s' due to invalid debug level specification",
-				   str - 1);
-			  level = debug_info_level;
-			}
-
-		      if (type == NO_DEBUG)
-			{
-			  type = PREFERRED_DEBUGGING_TYPE;
-			  if (da_len > 1 && strncmp (str, "ggdb", da_len) == 0)
-			    {
-#if defined (DWARF2_DEBUGGING_INFO) && !defined (LINKER_DOES_NOT_WORK_WITH_DWARF2)
-			      type = DWARF2_DEBUG;
-#else
-#ifdef DBX_DEBUGGING_INFO
-			      type = DBX_DEBUG;
-#endif
-#endif
-			    }
-			}
-
-		      if (type == NO_DEBUG)
-			warning ("`-%s' not supported by this configuration of GCC",
-				 str);
-
-		      /* Does it conflict with an already selected type?  */
-		      if (type_explicitly_set_p
-			  /* -g/-ggdb don't conflict with anything */
-			  && da->debug_type != NO_DEBUG
-			  && type != selected_debug_type)
-			warning ("`-%s' ignored, conflicts with `-g%s'",
-				 str, debug_type_names[(int) selected_debug_type]);
-		      else
-			{
-			  /* If the format has already been set, -g/-ggdb
-			     only change the debug level.  */
-			  if (type_explicitly_set_p
-			      && da->debug_type == NO_DEBUG)
-			    ; /* don't change debugging type */
-			  else
-			    {
-			      selected_debug_type = type;
-			      type_explicitly_set_p = da->debug_type != NO_DEBUG;
-			    }
-			  write_symbols = (level == 0
-					   ? NO_DEBUG
-					   : selected_debug_type);
-			  use_gnu_debug_info_extensions = da->use_extensions_p;
-			  debug_info_level = (enum debug_info_level) level;
-			}
-		      break;
-		    }
-		}
-	      if (! da->arg)
-		warning ("`-%s' not supported by this configuration of GCC",
-			 str);
-	    }
-	  else if (!strcmp (str, "o"))
-	    {
-	      asm_file_name = argv[++i];
-	    }
-	  else if (str[0] == 'G')
-	    {
-	      const int g_switch_val = (str[1] != '\0') ?
-	                               read_integral_parameter(str + 1, 0, -1) :
-			               read_integral_parameter(argv[++i], 0, -1);
-	      
-	      if (g_switch_val != -1)
-	        {
-		  g_switch_set = TRUE;
-		  g_switch_value = g_switch_val;
-		}
-	      else
-	        {
-		  error("Invalid option `-%s'",str);
-		}
-	    }
-	  else if (!strncmp (str, "aux-info", 8))
-	    {
-	      flag_gen_aux_info = 1;
-	      aux_info_file_name = (str[8] != '\0' ? str+8 : argv[++i]);
-	    }
-	  else if (!strcmp (str, "-help"))
-	    {
-	      display_help ();
-	      return (0);
-	    }
-	  else
-	    error ("Invalid option `%s'", argv[i]);
-	}
-      else if (argv[i][0] == '+')
-	error ("Invalid option `%s'", argv[i]);
+      if (lang_processed || indep_processed)
+	i += lang_processed > indep_processed ? lang_processed : indep_processed;
       else
-	filename = argv[i];
+	{
+	  error ("Invalid option `%s'", argv[i]);
+	  i++;
+	}
     }
 
   /* Checker uses the frame pointer.  */

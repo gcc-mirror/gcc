@@ -1,3 +1,23 @@
+Mon Sep 20 14:43:37 1999  Nick Clifton  <nickc@cygnus.com>
+
+	* toplev.c (progname): Make 'const char *'
+	(flag_print_mem): Move out of main.
+	(version_flag): Move out of main.
+	(filename): Move out of main.
+	(debug_args): Remove g prefix from options.
+	(documented_lang_options): Remove cpplib specific options.
+	(display_help): Add g prefix to debug options.
+	(check_lang_option): Delete this function.
+	(decode_d_option): New function: Decode -d... option.
+	(decode_f_option): New function: Decode -f... option.
+	(decode_W_option): New function: Decode -W... option.
+	(decode_g_option): New function: Decode -g... option.
+	(independent_decode_option): New function: Decode a language
+	independent command line option.
+	(main): Invoke lang_decode_option and then
+	independent_decode_option on each command line option in
+	turn. 
+
 Mon Sep 20 05:41:36 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* flow.c (merge_blocks_move_predecessor_nojumps): New function.
