@@ -305,9 +305,7 @@ add_equal_note (seq, target, code, op0, op1)
   else
     note = gen_rtx_fmt_ee (code, GET_MODE (target), copy_rtx (op0), copy_rtx (op1));
 
-  REG_NOTES (XVECEXP (seq, 0, XVECLEN (seq, 0) - 1))
-    = gen_rtx_EXPR_LIST (REG_EQUAL, note,
-			 REG_NOTES (XVECEXP (seq, 0, XVECLEN (seq, 0) - 1)));
+  set_unique_reg_note (XVECEXP (seq, 0, XVECLEN (seq, 0) - 1), REG_EQUAL, note);
 
   return 1;
 }
@@ -990,12 +988,11 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 	    {
 	      rtx temp = emit_move_insn (target, target);
 
-	      REG_NOTES (temp)
-		= gen_rtx_EXPR_LIST (REG_EQUAL,
-				     gen_rtx_fmt_ee (binoptab->code, mode,
-						     copy_rtx (xop0),
-						     copy_rtx (xop1)),
-				     REG_NOTES (temp));
+	      set_unique_reg_note (temp,
+	      			   REG_EQUAL,
+				   gen_rtx_fmt_ee (binoptab->code, mode,
+						   copy_rtx (xop0),
+						   copy_rtx (xop1)));
 	    }
 	  return target;
 	}
@@ -1173,12 +1170,11 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 	      if (mov_optab->handlers[(int) mode].insn_code != CODE_FOR_nothing)
 		{
 		  temp = emit_move_insn (product, product);
-		  REG_NOTES (temp)
-		    = gen_rtx_EXPR_LIST (REG_EQUAL,
-					 gen_rtx_fmt_ee (MULT, mode,
-							 copy_rtx (op0),
-							 copy_rtx (op1)),
-					 REG_NOTES (temp));
+		  set_unique_reg_note (temp,
+		  		       REG_EQUAL,
+				       gen_rtx_fmt_ee (MULT, mode,
+						       copy_rtx (op0),
+						       copy_rtx (op1)));
 		}
 	      return product;
 	    }
@@ -2545,8 +2541,7 @@ emit_no_conflict_block (insns, target, op0, op1, equiv)
     {
       last = emit_move_insn (target, target);
       if (equiv)
-	REG_NOTES (last)
-	  = gen_rtx_EXPR_LIST (REG_EQUAL, equiv, REG_NOTES (last));
+	set_unique_reg_note (last, REG_EQUAL, equiv);
     }
   else
     last = get_last_insn ();
@@ -2659,8 +2654,7 @@ emit_libcall_block (insns, target, result, equiv)
   last = emit_move_insn (target, result);
   if (mov_optab->handlers[(int) GET_MODE (target)].insn_code
       != CODE_FOR_nothing)
-    REG_NOTES (last) = gen_rtx_EXPR_LIST (REG_EQUAL, copy_rtx (equiv),
-					  REG_NOTES (last));
+    set_unique_reg_note (last, REG_EQUAL, copy_rtx (equiv));
 
   if (prev == 0)
     first = get_insns ();
@@ -3945,12 +3939,11 @@ expand_fix (to, from, unsignedp)
 	    {
 	      /* Make a place for a REG_NOTE and add it.  */
 	      insn = emit_move_insn (to, to);
-	      REG_NOTES (insn)
-		= gen_rtx_EXPR_LIST (REG_EQUAL,
-				     gen_rtx_fmt_e (UNSIGNED_FIX,
-						    GET_MODE (to),
-						    copy_rtx (from)),
-				     REG_NOTES (insn));
+	      set_unique_reg_note (insn,
+	                           REG_EQUAL,
+				   gen_rtx_fmt_e (UNSIGNED_FIX,
+						  GET_MODE (to),
+						  copy_rtx (from)));
 	    }
 	  return;
 	}
