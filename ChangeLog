@@ -1,3 +1,14 @@
+2001-05-03  Alexandre Oliva  <aoliva@redhat.com>
+
+	* configure.in (noconfigdirs) [*-cygwin*, *-mingw*, *-beos]: Disable
+	libgcj.
+
+2001-05-03  Alexandre Oliva  <aoliva@redhat.com>
+
+	* Makefile.in (AS_FOR_TARGET, LD_FOR_TARGET, NM_FOR_TARGET): If
+	gcc/xgcc is built, use -print-prog-name to find out the program
+	name to use.
+
 2001-04-26  Alexandre Oliva  <aoliva@redhat.com>
 
 	* configure.in (noconfigdirs): Don't reset it from scratch in the
