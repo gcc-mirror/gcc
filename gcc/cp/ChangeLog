@@ -1,6 +1,8 @@
 1999-05-31  Mark Mitchell  <mark@codesourcery.com>
 
-	* tree.c (cp_build_qualified_type_real): Rework ARRAY_TYPE
+	* tree.c (build_cplus_array_type_1): Use push_obstacks_nochange
+	and friends rather than messing with current_obstack directly.
+	(cp_build_qualified_type_real): Rework ARRAY_TYPE
 	allocation to match practice throughout the rest of the 
 	compiler.
 
