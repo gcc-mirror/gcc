@@ -3059,7 +3059,7 @@ PREFIX(regex_compile) (ARG_PREFIX(pattern), ARG_PREFIX(size), syntax, bufp)
 				    /* First compare the hashing value.  */
 				    if (symb_table[2 * elem] == hash
 					&& c1 == extra[symb_table[2 * elem + 1]]
-					&& memcmp (str,
+					&& memcmp (char_str,
 						   &extra[symb_table[2 * elem + 1]
 							 + 1], c1) == 0)
 				      {
@@ -3079,7 +3079,7 @@ PREFIX(regex_compile) (ARG_PREFIX(pattern), ARG_PREFIX(size), syntax, bufp)
 				       in the table.  */
 				    idx += 1 + extra[idx];
 				    /* Adjust for the alignment.  */
-				    idx = (idx + 3) & ~4;
+				    idx = (idx + 3) & ~3;
 
 				    str[0] = (wchar_t) idx + 4;
 				  }

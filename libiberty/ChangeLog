@@ -1,3 +1,9 @@
+2001-08-12  Isamu Hasegawa  <isamu@yamato.ibm.com>
+
+	* regex.c (wcs_regex_compile): Use appropriate string
+	to compare with collating element.
+	Fix the padding for the alignment.
+
 2001-08-10  Andrew Cagney  <ac131313@redhat.com>
 
 	* lbasename.c (lbasename): Change function definition to return a
