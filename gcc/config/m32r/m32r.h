@@ -1,4 +1,4 @@
-/* Definitions of target machine for GNU compiler, for the M32R/D cpu.
+/* Definitions of target machine for GNU compiler, Mitsubishi M32R cpu.
    Copyright (C) 1996, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
@@ -22,7 +22,7 @@ Boston, MA 02111-1307, USA.  */
 - longlong.h?
 */
 
-/* FIXME: Create elf.h and have svr4.h include it.  */
+/* ??? Create elf.h and have svr4.h include it.  */
 #include "svr4.h"
 
 #undef SWITCH_TAKES_ARG
@@ -703,7 +703,7 @@ M32R_STACK_ALIGN (current_function_outgoing_args_size)
 
    Do not define this macro unless there is no other way to get the
    return address from the stack.  */
-/* FIXME: revisit */
+/* ??? revisit */
 /* #define RETURN_ADDRESS_POINTER_REGNUM */
 
 /* Register in which static-chain is passed to a function.  This must
@@ -886,7 +886,7 @@ M32R_STACK_ALIGN (current_function_outgoing_args_size)
  ? gen_rtx (REG, (MODE), ROUND_ADVANCE_CUM ((CUM), (MODE), (TYPE)))	\
  : 0)
 
-/* FIXME: Quick hack to try to get varargs working the normal way.  */
+/* ??? Quick hack to try to get varargs working the normal way.  */
 #define FUNCTION_INCOMING_ARG(CUM, MODE, TYPE, NAMED) \
 (((! current_function_varargs || (NAMED))				\
   && PASS_IN_REG_P ((CUM), (MODE), (TYPE), (NAMED)))			\
@@ -1061,7 +1061,7 @@ m32r_output_function_epilogue (FILE, SIZE)
 	jmp r6
 	nop
 
-   FIXME: Need addr32 support.
+   ??? Need addr32 support.
 */
 
 /* Length in bytes of the trampoline for entering a nested function.  */
@@ -1224,7 +1224,7 @@ m32r_select_cc_mode (OP, X, Y)
 
 /* Return non-zero if SELECT_CC_MODE will never return MODE for a
    floating point inequality comparison.  */
-#define REVERSIBLE_CC_MODE(MODE) 1 /*FIXME*/
+#define REVERSIBLE_CC_MODE(MODE) 1 /*???*/
 
 /* Costs.  */
 
