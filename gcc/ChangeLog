@@ -1,5 +1,9 @@
 2000-02-05  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* longlong.h [sparc] (udiv_qrnnd): Avoid stringifying macro arg.
+
+2000-02-05  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* Makefile.in (c-common.o): Depend on $(EXPR_H).
 
 	* c-common.c: Include expr.h.
