@@ -1,3 +1,7 @@
+2004-02-27  Ziemowit Laski  <zlaski@apple.com>
+
+	* tree.c (pod_type_p): Treat VECTOR_TYPEs as PODs.
+
 2004-02-26  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/14278
