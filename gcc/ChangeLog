@@ -1,3 +1,9 @@
+2004-08-23  Daniel Jacobowitz  <dan@debian.org>
+
+	* ggc-zone.c (struc alloc_chunk): Rearrange flag bits and SIZE.
+	Remove TYPECODE.
+	(ggc_alloc_zone_1): Mark TYPE as unused.  Don't save it in the chunk.
+
 2004-08-23  Eric Christopher  <echristo@redhat.com>
 
 	* defaults.h (VECTOR_MODE_SUPPORTED_P): Remove macro.
