@@ -9464,14 +9464,17 @@ operations.  This is the default.
 @itemx -mno-paired-single
 @opindex mpaired-single
 @opindex mno-paired-single
-Use (do not use) the paired single instructions.
+Use (do not use) paired-single floating-point instructions.
+@xref{MIPS Paired-Single Support}.  This option can only be used
+when generating 64-bit code and requires hardware floating-point
+support to be enabled.
 
 @itemx -mips3d
 @itemx -mno-mips3d
 @opindex mips3d
 @opindex mno-mips3d
-Use (do not use) the MIPS-3D ASE.  The option @option{-mips3d} implies
-@option{-mpaired-single}.
+Use (do not use) the MIPS-3D ASE.  @xref{MIPS-3D Built-in Functions}.
+The option @option{-mips3d} implies @option{-mpaired-single}.
 
 @item -mint64
 @opindex mint64

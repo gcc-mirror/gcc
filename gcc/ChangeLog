@@ -1,3 +1,11 @@
+2004-10-05  Chao-Ying Fu  <fu@mips.com>
+	    Richard Sandiford  <rsandifo@redhat.com>
+
+	* doc/invoke.texi (-mpaired-single): Link to the new description of the
+	built-in functions.  Document dependencies.
+	(-mips3d): Add link here too.
+	* doc/extend.texi (MIPS Paired-Single Support): New section.
+
 2004-10-04  Chao-ying Fu  <fu@mips.com>
 
 	* config/mips/mips.h (UNITS_PER_SIMD_WORD): Define.
