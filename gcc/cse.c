@@ -7697,6 +7697,7 @@ cse_process_notes (x, object)
 
     case SIGN_EXTEND:
     case ZERO_EXTEND:
+    case SUBREG:
       {
 	rtx new = cse_process_notes (XEXP (x, 0), object);
 	/* We don't substitute VOIDmode constants into these rtx,
