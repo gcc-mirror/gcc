@@ -2229,23 +2229,22 @@ namespace std
     bool
     __verify_grouping(const basic_string<_CharT>& __grouping, 
 		      basic_string<_CharT>& __grouping_tmp)
-    {         
-      int __i = 0;
-      int __j = 0;
-      const int __len = __grouping.size();
-      const int __n = __grouping_tmp.size();
+    { 
+      const size_t __n = __grouping_tmp.size() - 1;
+      const size_t __min = std::min(__n, __grouping.size() - 1);
+      size_t __i = __n;
       bool __test = true;
-      
+
       // Parsed number groupings have to match the
       // numpunct::grouping string exactly, starting at the
       // right-most point of the parsed sequence of elements ...
-      while (__test && __i < __n - 1)
-	for (__j = 0; __test && __j < __len && __i < __n - 1; ++__j,++__i)
-	  __test &= __grouping[__j] == __grouping_tmp[__n - __i - 1];
+      for (size_t __j = 0; __j < __min && __test; --__i, ++__j)
+	__test = __grouping_tmp[__i] == __grouping[__j];
+      for (; __i && __test; --__i)
+	__test = __grouping_tmp[__i] == __grouping[__min];
       // ... but the last parsed grouping can be <= numpunct
       // grouping.
-      __j == __len ? __j = 0 : __j;
-      __test &= __grouping[__j] >= __grouping_tmp[__n - __i - 1];
+      __test &= __grouping_tmp[0] <= __grouping[__min];
       return __test;
     }
 
