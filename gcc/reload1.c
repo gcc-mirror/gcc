@@ -410,6 +410,14 @@ init_reload ()
   if (HAVE_reload_inti)
     reload_in_optab[(int) TImode] = CODE_FOR_reload_inti;
 #endif
+#ifdef HAVE_reload_inqf
+  if (HAVE_reload_inqf)
+    reload_in_optab[(int) QFmode] = CODE_FOR_reload_inqf;
+#endif
+#ifdef HAVE_reload_inhf
+  if (HAVE_reload_inhf)
+    reload_in_optab[(int) HFmode] = CODE_FOR_reload_inhf;
+#endif
 #ifdef HAVE_reload_insf
   if (HAVE_reload_insf)
     reload_in_optab[(int) SFmode] = CODE_FOR_reload_insf;
@@ -446,6 +454,14 @@ init_reload ()
 #ifdef HAVE_reload_outti
   if (HAVE_reload_outti)
     reload_out_optab[(int) TImode] = CODE_FOR_reload_outti;
+#endif
+#ifdef HAVE_reload_outqf
+  if (HAVE_reload_outqf)
+    reload_out_optab[(int) QFmode] = CODE_FOR_reload_outqf;
+#endif
+#ifdef HAVE_reload_outhf
+  if (HAVE_reload_outhf)
+    reload_out_optab[(int) HFmode] = CODE_FOR_reload_outhf;
 #endif
 #ifdef HAVE_reload_outsf
   if (HAVE_reload_outsf)
