@@ -1,3 +1,15 @@
+Thu Oct  8 06:00:19 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* typeck.c (unsigned_type): Only return TItype nodes when
+	HOST_BITS_PER_WIDE_INT is >= 64 bits.
+	(signed_type): Similarly.
+	* decl.c (intTI_type_node, unsigned_intTI_type_node): Only declare
+	when HOST_BITS_PER_WIDE_INT is >= 64 bits.
+	(init_decl_processing): Only create TItype nodes when
+	HOST_BITS_PER_WIDE_INT is >= 64 bits.
+	* cp-tree.h (intTI_type_node, unsigned_intTI_type_node): Only declare
+	when HOST_BITS_PER_WIDE_INT is >= 64 bits.
+
 Wed Oct  7 12:32:44 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.in (hash.h): Add -L KR-C -F ', 0, 0' flags to gperf.
