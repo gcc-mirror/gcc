@@ -1,3 +1,7 @@
+Mon Feb  3 16:01:17 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	* i386.c (ix86_expand_int_movcc):  Fix setcc sign bit case.
+
 Mon Feb  3 01:30:11 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* regclass.c (cannot_change_mode_set_regs): Correct argument order.
