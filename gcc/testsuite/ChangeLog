@@ -1,3 +1,7 @@
+2004-04-06  Paul Brook  <paul@codesourcery.com>
+
+	* README.gcc: Remove obsolete contraint on testcases.
+
 2004-04-05  Paul Brook  <paul@codesourcery.com>
 
 	PR2123

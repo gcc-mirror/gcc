@@ -77,10 +77,6 @@ For IEEE FP specific tests, put them in execute/ieee.
 
 For execution tests, put them in execute.
 
-Always use abort() for runtime failures, and exit(0) for success.
-The testing harness is set up to watch for these and do something appropriate
-(when necessary) for target boards.
-
 If a test does not fit into the torture framework, use the dg framework.
 
 
