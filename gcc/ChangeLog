@@ -1,3 +1,10 @@
+2001-08-24  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.c (rs6000_initialize_trampoline): Function
+	descriptor members are pointer size, not constant 4.
+	* config/rs6000/rs6000.md (define_splits): Remove more unused
+	constraints.
+
 2001-08-24  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* sparc.h (ASM_OUTPUT_BYTE): Fix format specifier warning.
