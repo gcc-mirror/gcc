@@ -1270,9 +1270,6 @@ add_method (type, fields, method)
 		}
 	    }
 
-	  /* Create RTL for the METHOD.  */
-	  make_decl_rtl (method, NULL_PTR, 1);
-
 	  /* Actually insert the new method.  */
 	  TREE_VEC_ELT (method_vec, i) 
 	    = build_overload (method, TREE_VEC_ELT (method_vec, i));
