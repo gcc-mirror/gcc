@@ -1,3 +1,20 @@
+Tue Sep 12 01:51:38 MET DST 2000  Jan Hubicka  <jh@suse.cz>
+
+	* i386.md (add?i_3, add?i_5): New.
+	(add?i_4): Rename from add?i_3;  Fix compare pattern.
+	(sub?i_3, xor?i_3, ior?i_3): New.
+
+	* genrecog.c (write_tree): Output code to clear insn_extract cache.
+	* genattrtab.c (write_attr_case): Gen call to extract_insn_cache
+	instead of extract_insn and extract_constrain_insn_cache instead of
+	extract_insn and constrain_operands.
+	* recog.c (extract_insn_cached, extract_constrain_insn_cached):
+	New functions.
+	(extract_insn): Clear which_alternative.
+	(constrain_operands): Set which_alternative to -1 when failed.
+	* recog.h (extract_constrain_insn_cached, extract_insn_cached):
+	Declare.
+
 2000-09-11  Matthew Hiller  <hiller@redhat.com>
 
 	* config/h8300/h8300.md (movstrictqi): Changed constraint modifier

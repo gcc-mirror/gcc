@@ -2189,6 +2189,9 @@ peephole2%s (x0, insn, _pmatch_len)\n\
 
   printf ("  %s tem ATTRIBUTE_UNUSED;\n", IS_SPLIT (type) ? "rtx" : "int");
 
+  if (!subfunction)
+    printf ("  recog_data.insn = NULL_RTX;\n");
+
   if (head->first)
     write_tree (head, "", type, 1);
   else

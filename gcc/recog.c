@@ -2045,6 +2045,31 @@ adj_offsettable_operand (op, offset)
   abort ();
 }
 
+/* Like extract_insn, but save insn extracted and don't extract again, when
+   called again for the same insn expecting that recog_data still contain the
+   valid information.  This is used primary by gen_attr infrastructure that
+   often does extract insn again and again.  */
+void
+extract_insn_cached (insn)
+     rtx insn;
+{
+  if (recog_data.insn == insn && INSN_CODE (insn) >= 0)
+    return;
+  extract_insn (insn);
+  recog_data.insn = insn;
+}
+/* Do cached extract_insn, constrain_operand and complain about failures.
+   Used by insn_attrtab.  */
+void
+extract_constrain_insn_cached (insn)
+     rtx insn;
+{
+  extract_insn_cached (insn);
+  if (which_alternative == -1
+      && !constrain_operands (reload_completed))
+    fatal_insn_not_found (insn);
+}
+
 /* Analyze INSN and fill in recog_data.  */
 
 void
@@ -2056,9 +2081,11 @@ extract_insn (insn)
   int noperands;
   rtx body = PATTERN (insn);
 
+  recog_data.insn = NULL;
   recog_data.n_operands = 0;
   recog_data.n_alternatives = 0;
   recog_data.n_dups = 0;
+  which_alternative = -1;
 
   switch (GET_CODE (body))
     {
@@ -2592,6 +2619,7 @@ constrain_operands (strict)
       which_alternative++;
     }
 
+  which_alternative = -1;
   /* If we are about to reject this, but we are not to test strictly,
      try a very loose test.  Only return failure if it fails also.  */
   if (strict == 0)
