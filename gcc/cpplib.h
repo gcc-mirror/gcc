@@ -1,5 +1,5 @@
 /* Definitions for CPP library.
-   Copyright (C) 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996, 1997 Free Software Foundation, Inc.
    Written by Per Bothner, 1994-95.
 
 This program is free software; you can redistribute it and/or modify it
@@ -431,6 +431,9 @@ struct cpp_options {
   /* Nonzero means try to imitate old fashioned non-ANSI preprocessor.  */
   char traditional;
 
+  /* Nonzero for the 1989 C Standard, including corrigenda and amendments.  */
+  char c89;
+
   /* Nonzero means give all the error messages the ANSI standard requires.  */
   char pedantic;
 
@@ -492,6 +495,7 @@ struct cpp_options {
 };
 
 #define CPP_TRADITIONAL(PFILE) (CPP_OPTIONS(PFILE)-> traditional)
+#define CPP_C89(PFILE) (CPP_OPTIONS(PFILE)->c89)
 #define CPP_PEDANTIC(PFILE) (CPP_OPTIONS (PFILE)->pedantic)
 #define CPP_PRINT_DEPS(PFILE) (CPP_OPTIONS (PFILE)->print_deps)
 
