@@ -1,3 +1,44 @@
+1997-09-04 16:11  Ulrich Drepper  <drepper@cygnus.com>
+
+	* Makefile.in (STDIO_OBJECTS): Lose feof.o and ferror.o.  Add getc.o
+	and putc.o.
+	(stmp-libio, stmp-libiostream, stmp-io, stmp-streamlib): New rules.
+
+	(iostream.list): Depend upon stmp-stdio.  Add the entries
+	from stdio.list to iostream.list.
+	(stmp-stdio): New name for what was the stdio/stdio.list rule.
+	All it now does is cd down into stdio and build stdio.list.
+
+	* clearerr.c: Add copyright and lock stream before use.
+	* feof.c: Likewise.
+	* ferror.c: Likewise.
+	* fgetc.c: Likewise.
+	* fputc.c: Likewise.
+	* freopen.c: Likewise.
+	* fseek.c: Likewise.
+	* getc.c: Likewise.
+	* getchar.c: Likewise.
+	* putc.c: Likewise.
+	* putchar.c: Likewise.
+	* rewind.c: Likewise.
+
+	* setbuf.c: Update copyright.
+	* setlinebuf.c: Likewise.
+	* vscanf.c: Likewise.
+
+	* fileno.c: Define alias fileno_unlocked.  Update copyright.
+
+	* clearerr_u.c: New file.  Implement clearerr_unlocked function.
+	* feof_u.c: New file.  Implement feof_unlocked function.
+	* ferror_u.c: New file.  Implement ferror_unlocked function.
+	* fputc_u.c: New file.  Implement fputc_unlocked function.
+	* getc_u.c: New file.  Implement getc_unclocked function.
+	* getchar_u.c: New file.  Implement getchar_unclocked function.
+	* putc_u.c: New file.  Implement putc_unclocked function.
+	* putchar_u.c: New file.  Implement putchar_unclocked function.
+
+	* vsnprintf.c: Rewrite according to ISO C 9X draft.
+
 Thu May  1 11:03:45 1997  Brendan Kehoe  <brendan@lisa.cygnus.com>
 
 	* stdio.h (TMP_MAX): Wrap it with #ifndef for now, since it can

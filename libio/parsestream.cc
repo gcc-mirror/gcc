@@ -137,7 +137,7 @@ general_parsebuf::general_parsebuf(streambuf *buf, int delete_arg_buf)
     delete_buf = delete_arg_buf;
     sbuf = buf;
     int buf_size = 128;
-    char* buffer = ALLOC_BUF(buf_size);
+    char* buffer = (char*)malloc(buf_size);
     setb(buffer, buffer+buf_size, 1);
 //    setg(buffer, buffer, buffer);
 }

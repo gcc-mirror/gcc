@@ -1,4 +1,4 @@
-/* 
+/*
 Copyright (C) 1991, 1992, 1993, 1994 Free Software Foundation
 
 This file is part of the GNU IO Library.  This library is free
@@ -153,6 +153,14 @@ the executable file might be covered by the GNU General Public License. */
 
 struct _IO_jump_t;  struct _IO_FILE;
 
+/* Handle lock.  */
+#ifdef _IO_MTSAFE_IO
+# include <stdio-lock.h>
+#else
+typedef void _IO_lock_t;
+#endif
+
+
 struct _IO_marker {
   struct _IO_marker *_next;
   struct _IO_FILE *_sbuf;
@@ -196,20 +204,22 @@ struct _IO_FILE {
   char *_IO_save_end; /* Pointer to end of non-current get area. */
 
   struct _IO_marker *_markers;
-  
+
   struct _IO_FILE *_chain;
-  
+
   int _fileno;
   int _blksize;
   _IO_off_t _offset;
-  
+
 #define __HAVE_COLUMN /* temporary */
   /* 1+column number of pbase(); 0 is unknown. */
   unsigned short _cur_column;
   char _unused;
   char _shortbuf[1];
-  
+
   /*  char* _save_gptr;  char* _save_egptr; */
+
+  _IO_lock_t *_lock;
 };
 
 #ifndef __cplusplus
@@ -222,6 +232,26 @@ extern struct _IO_FILE_plus _IO_stdin_, _IO_stdout_, _IO_stderr_;
 #define _IO_stdout ((_IO_FILE*)(&_IO_stdout_))
 #define _IO_stderr ((_IO_FILE*)(&_IO_stderr_))
 
+
+/* Define the user-visible type, with user-friendly member names.  */
+typedef struct
+{
+  _IO_ssize_t (*read) __P ((struct _IO_FILE *, void *, _IO_ssize_t));
+  _IO_ssize_t (*write) __P ((struct _IO_FILE *, const void *, _IO_ssize_t));
+  _IO_fpos_t (*seek) __P ((struct _IO_FILE *, _IO_off_t, int));
+  int (*close) __P ((struct _IO_FILE *));
+} _IO_cookie_io_functions_t;
+
+/* Special file type for fopencookie function.  */
+struct _IO_cookie_file
+{
+  struct _IO_FILE file;
+  const void *vtable;
+  void *cookie;
+  _IO_cookie_io_functions_t io_functions;
+};
+
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -230,25 +260,46 @@ extern int __underflow __P((_IO_FILE*));
 extern int __uflow __P((_IO_FILE*));
 extern int __overflow __P((_IO_FILE*, int));
 
-#define _IO_getc(_fp) \
+#define _IO_getc_unlocked(_fp) \
        ((_fp)->_IO_read_ptr >= (_fp)->_IO_read_end ? __uflow(_fp) \
 	: *(unsigned char*)(_fp)->_IO_read_ptr++)
-#define _IO_peekc(_fp) \
+#define _IO_peekc_unlocked(_fp) \
        ((_fp)->_IO_read_ptr >= (_fp)->_IO_read_end \
 	  && __underflow(_fp) == EOF ? EOF \
 	: *(unsigned char*)(_fp)->_IO_read_ptr)
 
-#define _IO_putc(_ch, _fp) \
+#define _IO_putc_unlocked(_ch, _fp) \
    (((_fp)->_IO_write_ptr >= (_fp)->_IO_write_end) \
     ? __overflow(_fp, (unsigned char)(_ch)) \
     : (unsigned char)(*(_fp)->_IO_write_ptr++ = (_ch)))
 
-#define _IO_feof(__fp) (((__fp)->_flags & _IO_EOF_SEEN) != 0)
-#define _IO_ferror(__fp) (((__fp)->_flags & _IO_ERR_SEEN) != 0)
+#define _IO_feof_unclocked(__fp) (((__fp)->_flags & _IO_EOF_SEEN) != 0)
+#define _IO_ferror_unlocked(__fp) (((__fp)->_flags & _IO_ERR_SEEN) != 0)
+
+extern int _IO_getc __P ((_IO_FILE *__fp));
+extern int _IO_putc __P ((int __c, _IO_FILE *__fp));
+extern int _IO_feof __P ((_IO_FILE *__fp));
+extern int _IO_ferror __P ((_IO_FILE *__fp));
+
+extern int _IO_peekc_locked __P ((_IO_FILE *__fp));
 
 /* This one is for Emacs. */
 #define _IO_PENDING_OUTPUT_COUNT(_fp)	\
 	((_fp)->_IO_write_ptr - (_fp)->_IO_write_base)
+
+extern void _IO_flockfile __P ((_IO_FILE *));
+extern void _IO_funlockfile __P ((_IO_FILE *));
+extern int _IO_ftrylockfile __P ((_IO_FILE *));
+
+#ifndef _IO_MTSAFE_IO
+# define _IO_flockfile(_fp) /**/
+# define _IO_funlockfile(_fp) /**/
+# define _IO_ftrylockfile(_fp) /**/
+# define _IO_cleanup_region_start(_fct, _fp) /**/
+# define _IO_cleanup_region_end(_Doit) /**/
+#endif /* !_IO_MTSAFE_IO */
+
+#define _IO_peekc(_fp) _IO_peekc_locked (_fp)
 
 extern int _IO_vfscanf __P((_IO_FILE*, const char*, _IO_va_list, int*));
 extern int _IO_vfprintf __P((_IO_FILE*, const char*, _IO_va_list));

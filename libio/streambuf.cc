@@ -213,7 +213,7 @@ streambuf::streambuf(int flags)
 #endif
 }
 
-streambuf::~streambuf() { _IO_default_finish(this); }
+streambuf::~streambuf() { _IO_default_finish(this,0); }
 
 streampos
 streambuf::seekoff(streamoff, _seek_dir, int /*=ios::in|ios::out*/)

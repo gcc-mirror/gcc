@@ -138,7 +138,7 @@ class ios : public _ios_fields {
 	bin = _IOS_BIN, // Deprecated - ANSI uses ios::binary.
 	binary = _IOS_BIN };
     enum seek_dir { beg, cur, end};
-    // ANSI: typedef enum seek_dir seekdir; etc
+    typedef enum seek_dir seekdir;
     // NOTE: If adding flags here, before to update ios::bitalloc().
     enum { skipws=_IO_SKIPWS,
 	   left=_IO_LEFT, right=_IO_RIGHT, internal=_IO_INTERNAL,

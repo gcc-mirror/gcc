@@ -1,4 +1,4 @@
-/* Copyright (C) 1993, 1996, 1997 Free Software Foundation, Inc.
+/* Copyright (C) 1993, 1995, 1996, 1997 Free Software Foundation, Inc.
    This file is part of the GNU IO Library.
 
    This library is free software; you can redistribute it and/or
@@ -24,23 +24,14 @@
    General Public License.  */
 
 #include "libioP.h"
+#include "stdio.h"
+
+#undef getc_unlocked
 
 int
-_IO_ungetc (c, fp)
-     int c;
-     _IO_FILE *fp;
+getc_unlocked (fp)
+     FILE *fp;
 {
-  int result;
   CHECK_FILE (fp, EOF);
-  if (c == EOF)
-    return EOF;
-  _IO_cleanup_region_start ((void (*) __P ((void *))) _IO_funlockfile, fp);
-  _IO_flockfile (fp);
-  result = _IO_sputbackc (fp, (unsigned char) c);
-  _IO_cleanup_region_end (1);
-  return result;
+  return _IO_getc_unlocked (fp);
 }
-
-#ifdef weak_alias
-weak_alias (_IO_ungetc, ungetc)
-#endif

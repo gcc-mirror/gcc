@@ -1,7 +1,180 @@
+Fri Sep  5 09:58:43 1997  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+	* Makefile.in (iostream.list): Instead of adding stdio.list, add
+	STDIO_WRAP_OBJECTS.
+	(iostream.list): Lose dependency on stmp-stdio, not necessary for
+	our stuff.  The stdio stuff is present here just for uniformity
+	with glibc.
+
+Thu Sep  4 17:26:22 1997  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+	* parsestream.cc (general_parsebuf): Cast return of malloc to char*.
+
+1997-09-04 16:11  Ulrich Drepper  <drepper@cygnus.com>
+
+	Change compared to version initially intended to in:
+	* strops.c (_IO_str_count): Still use _IO_write_ptr, not
+	_IO_write_end, for now.
+
+	* iofeof.c, ioferror.c, iofflush_u.c, iogetc.c, ioputc.c, peekc.c,
+	stdio-lock.h: New files.
+
+	* include: New dir.
+	* include/empty.h: New header.
+
+	* filedoalloc.c: Update and reformat copyright.
+	Don't use DEFUN.
+	Use __set_errno throughout the code to support multi-threaded
+	programs.
+	Correct layout to follow the Coding Standard.
+	Add casts to prevent warnings.
+	* fileops.c: Likewise.
+	* genops.c: Likewise.
+	* iofclose.c: Likewise.
+	* iofdopen.c: Likewise.
+	* iofflush.c: Likewise.
+	* iofgetpos.c: Likewise.
+	* iofgets.c: Likewise.
+	* iofopen.c: Likewise.
+	* iofprintf.c: Likewise.
+	* iofputs.c: Likewise.
+	* iofread.c: Likewise.
+	* iofsetpos.c: Likewise.
+	* ioftell.c: Likewise.
+	* iofwrite.c: Likewise.
+	* iogetdelim.c: Likewise.
+	* iogetline.c: Likewise.
+	* iogets.c: Likewise.
+	* iopadn.c: Likewise.
+	* iopopen.c: Likewise.
+	* ioputs.c: Likewise.
+	* ioseekoff.c: Likewise.
+	* iosetbuffer.c: Likewise.
+	* iosetvbuf.c: Likewise.
+	* iosprintf.c: Likewise.
+	* ioungetc.c: Likewise.
+	* iovsprintf.c: Likewise.
+	* iovsscanf.c: Likewise.
+	* libio.h: Likewise.
+	* libioP.h: Likewise.
+	* stdfiles.c: Likewise.
+	* strfile.h: Likewise.
+	* strops.c: Likewise.
+
+	* Makefile.in (IO_OBJECTS): Add peekc.o, iogetc.o, ioputc.o,
+	iofeof.o, and ioferror.o.
+	(iostream.list): Depend upon stmp-stdio.  Add the entries
+	from stdio.list to iostream.list.
+	(stmp-stdio): New name for what was the stdio/stdio.list rule.
+	All it now does is cd down into stdio and build stdio.list.
+
+	* configure.in (ALL): Add libiostream.a.
+
+	* libio.h [_IO_MTSFE_IO]: Include header declaring locking code.
+	Otherwise define opaque _IO_lock_t.
+	Define _IO_cookie_file.
+	Rename _IO_getc to _IO_getc_unlocked, _IO_peekc to _IO_peekc_unlocked,
+	_IO_putc to _IO_putc_unlocked, _IO_feof to _IO_feof_unclocked, and
+	_IO_ferror to _IO_ferror_unlocked.
+	Add prototypes for _IO_getc, _IO_putc, _IO_feof, _IO_ferror,
+	and _IO_peekc_locked.
+	Add declarations for _IO_flockfile, _IO_funlockfile, and
+	_IO_ftrylockfile.  If !_IO_MTSAFE_IO define _IO_flockfile,
+	_IO_funlockfile, _IO_ftrylockfile, _IO_cleanup_region_start, and
+	_IO_cleanup_region_end as empty macros.
+
+	* libioP.h: Change type of finish function to take an additional int
+	argument and change declaration of finish functions.
+	Add prototypes for _IO_seekoff and _IO_seekpos.
+	If _G_HAVE_MMAP is defined use stream buffers allocated with mmap.
+	Redefine FREE_BUF and ALLOC_BUF macros to help in both situations.
+	(FILEBUF_LITERAL): If we compile for a thread-safe library also
+	initialize lock member.
+
+	* filedoalloc.c: Take care for systems already defining _POSIX_SOURCE.
+	Keep name space clean on systems which require this.
+	(_IO_file_doallocate): Adopt ALLOC_BUF call for changed semantic.
+
+	* fileops.c: Keep name space clean on systems which require this.
+	(_IO_file_attach): Don't fail if seek failed because it's used on a
+	pipe.
+	(_IO_file_underflow): Update buffer pointers before calling `read'
+	since the `read' might not return anymore.
+	(_IO_file_overflow): If stream allows no writes set error flag.
+	(_IO_seekoff): Make sure that after flushing the file pointer in
+	the underlying file is exact.
+	(_IO_file_read): Don't restart `read' syscall if it return EINTR.
+	This violates POSIX.
+	(_IO_file_write): Likewise for `write'.
+	(_IO_cleanup): Install as exit handler in glibc.
+
+	* genops.c (_IO_setb): Correctly use FREE_BUF.
+	(_IO_default_doallocate): Correctly use ALLOC_BUF.
+	(_IO_init): Initialize lock in stream structure.
+	(_IO_default_finish): Destroy lock.
+	(_IO_get_column): Don't compile since it's not needed.
+	(_IO_nobackup_default): Likewise.
+
+	* iopopen.c: Take care for systems already defining _POSIX_SOURCE.
+	Correct _IO_fork and _IO_dup2 prototypes.
+
+	* iofclose.c: Acquire lock before starting the work.
+	* iofflush.c: Likewise.
+	* iofgetpos.c: Likewise.
+	* iofgets.c: Likewise.
+	* iofputs.c: Likewise.
+	* iofread.c: Likewise.
+	* iofsetpos.c: Likewise.
+	* ioftell.c: Likewise.
+	* iofwrite.c: Likewise.
+	* iogetdelim.c: Likewise.
+	* iogets.c: Likewise.
+	* ioputs.c: Likewise.
+	* iosetbuffer.c: Likewise.
+	* iosetvbuf.c: Likewise.
+	* ioungetc.c: Likewise.
+
+	* iofdopen.c: Create and initialize lock for new stream.
+	* iofopen.c: Likewise.
+	* iopopen.c (_IO_popen): Likewise.
+	* iovsprintf.c: Likewise.
+	* iovsscanf.c: Likewise.
+
+	* genops.c: Make weak aliases for various functions.
+	* iofclose.c: Likewise.
+	* iofdopen.c: Likewise.
+	* iofflush.c: Likewise.
+	* iofgetpos.c: Likewise.
+	* iofgets.c: Likewise.
+	* iofopen.c: Likewise.
+	* iofputs.c: Likewise.
+	* iofread.c: Likewise.
+	* iofsetpos.c: Likewise.
+	* ioftell.c: Likewise.
+	* iofwrite.c: Likewise.
+	* iogetdelim.c: Likewise.
+	* iogets.c: Likewise.
+	* ioputs.c: Likewise.
+	* iosetbuffer.c: Likewise.
+	* iosetvbuf.c: Likewise.
+	* ioungetc.c: Likewise.
+	* iovsprintf.c: Likewise.
+	* iovsscanf.c: Likewise.
+
+	* iofflush_u.c: New file.  fflush_unlocked implementation.
+
+	* iostream.h [_G_HAVE_LONG_DOUBLE_IO]: Declare real long double
+	output operator.
+
+	* peekc.c: New file.  Implement _IO_peekc_locked function.
+
+	* stdfiles.c: If we compile for a thread-safe library also define
+	lock variable.
+
 Tue Aug 26 12:24:01 1997  H.J. Lu  (hjl@gnu.ai.mit.edu)
 
-        * testsuite/Makefile.in (check): Don't depend on site.exp.
-        (just-check): Depend on site.exp.
+	* testsuite/Makefile.in (check): Don't depend on site.exp.
+	(just-check): Depend on site.exp.
 
 Wed Aug 20 02:01:34 1997  Jason Merrill  <jason@yorick.cygnus.com>
 

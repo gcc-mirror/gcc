@@ -24,23 +24,15 @@
    General Public License.  */
 
 #include "libioP.h"
+#include "stdio.h"
+
+#undef fputc_unlocked
 
 int
-_IO_ungetc (c, fp)
+fputc_unlocked (c, fp)
      int c;
      _IO_FILE *fp;
 {
-  int result;
   CHECK_FILE (fp, EOF);
-  if (c == EOF)
-    return EOF;
-  _IO_cleanup_region_start ((void (*) __P ((void *))) _IO_funlockfile, fp);
-  _IO_flockfile (fp);
-  result = _IO_sputbackc (fp, (unsigned char) c);
-  _IO_cleanup_region_end (1);
-  return result;
+  return _IO_putc_unlocked (c, fp);
 }
-
-#ifdef weak_alias
-weak_alias (_IO_ungetc, ungetc)
-#endif
