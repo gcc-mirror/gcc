@@ -332,6 +332,7 @@ discard_useless_values (void **x, void *info ATTRIBUTE_UNUSED)
 
   if (v->locs == 0)
     {
+      CSELIB_VAL_PTR (v->u.val_rtx) = NULL;
       htab_clear_slot (hash_table, x);
       unchain_one_value (v);
       n_useless_values--;
