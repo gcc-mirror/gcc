@@ -1942,8 +1942,7 @@ std_expand_builtin_va_arg (valist, type)
 
   /* Compute the rounded size of the type.  */
   align = PARM_BOUNDARY / BITS_PER_UNIT;
-  rounded_size = (((TREE_INT_CST_LOW (TYPE_SIZE (type)) / BITS_PER_UNIT
-		    + align - 1) / align) * align);
+  rounded_size = (((int_size_in_bytes (type) + align - 1) / align) * align);
 
   /* Get AP.  */
   addr_tree = valist;
