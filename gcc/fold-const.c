@@ -3238,11 +3238,13 @@ fold (expr)
 	      if (! TREE_UNSIGNED (type)
 		  && TREE_INT_CST_HIGH (arg0) < 0)
 		{
-		  if (TREE_INT_CST_LOW (arg0) == 0)
-		    t = build_int_2 (0, - TREE_INT_CST_HIGH (arg0));
-		  else
-		    t = build_int_2 (- TREE_INT_CST_LOW (arg0),
-				     ~ TREE_INT_CST_HIGH (arg0));
+		  HOST_WIDE_INT low, high;
+		  int overflow = neg_double (TREE_INT_CST_LOW (arg0),
+					     TREE_INT_CST_HIGH (arg0),
+					     &low, &high);
+		  t = build_int_2 (low, high);
+		  TREE_TYPE (t) = type;
+		  force_fit_type (t, overflow);
 		}
 	    }
 	  else if (TREE_CODE (arg0) == REAL_CST)
