@@ -1,3 +1,16 @@
+2002-10-09  Zack Weinberg  <zack@codesourcery.com>
+
+	PR c/7353
+	* c-decl.c (start_decl): Unconditionally issue error for
+	'typedef foo = bar'.
+	(finish_decl): Remove special case for TYPE_DECL with initializer.
+
+	* doc/extend.texi: Delete "Naming Types" section.  Change all
+	cross-references to that section to refer to "Typeof" instead.
+	Add the useful safe-max()-macro example from "Naming Types" to
+	"Typeof", rewritten using that extension.  Add some compatibility
+	notes to "Typeof."
+
 2002-10-09  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* loop.c: Revert 2002-08-15 change.

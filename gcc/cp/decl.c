@@ -7290,14 +7290,8 @@ start_decl (declarator, declspecs, initialized, attributes, prefix_attributes)
     switch (TREE_CODE (decl))
       {
       case TYPE_DECL:
-	/* typedef foo = bar  means give foo the same type as bar.
-	   We haven't parsed bar yet, so `cp_finish_decl' will fix that up.
-	   Any other case of an initialization in a TYPE_DECL is an error.  */
-	if (pedantic || list_length (declspecs) > 1)
-	  {
-	    error ("typedef `%D' is initialized", decl);
-	    initialized = 0;
-	  }
+	error ("typedef `%D' is initialized", decl);
+	initialized = 0;
 	break;
 
       case FUNCTION_DECL:
@@ -8156,12 +8150,6 @@ cp_finish_decl (decl, init, asmspec_tree, flags)
   /* Take care of TYPE_DECLs up front.  */
   if (TREE_CODE (decl) == TYPE_DECL)
     {
-      if (init && DECL_INITIAL (decl))
-	{
-	  /* typedef foo = bar; store the type of bar as the type of foo.  */
-	  TREE_TYPE (decl) = type = TREE_TYPE (init);
-	  DECL_INITIAL (decl) = init = NULL_TREE;
-	}
       if (type != error_mark_node
 	  && IS_AGGR_TYPE (type) && DECL_NAME (decl))
 	{
@@ -11364,9 +11352,6 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 
       bad_specifiers (decl, "type", virtualp, quals != NULL_TREE,
 		      inlinep, friendp, raises != NULL_TREE);
-
-      if (initialized)
-	error ("typedef declaration includes an initializer");
 
       return decl;
     }

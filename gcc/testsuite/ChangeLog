@@ -1,3 +1,8 @@
+2002-10-09  Zack Weinberg  <zack@codesourcery.com>
+
+	* g++.dg/ext/typedef-init.C: New test.
+	* gcc.dg/typedef-init.c: New test.
+
 2002-10-09  Neil Booth  <neil@daikokuya.co.uk>
 
 	* gcc.dg/cpp/paste13.c: New test.
