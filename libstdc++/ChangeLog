@@ -1,3 +1,9 @@
+2000-8-4  David E O'Brien  <obrien@FreeBSD.org>
+
+	* std/mask_array.h (mask_array): Rename template type
+	parameter to avoid conflicts with ctype.h on BSD systems.
+	* std/slice_array.h (slice_array): Likewise.
+
 2000-07-17  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* std/valarray_array.h(__valarray_sum): Make inline.

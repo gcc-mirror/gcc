@@ -34,55 +34,55 @@
 
 extern "C++" {
 
-template<typename _T>
+template<typename _Tp>
 class slice_array
 {
 public:
-    typedef _T value_type;
+    typedef _Tp value_type;
     
-    void operator=   (const valarray<_T>&) const;
-    void operator*=  (const valarray<_T>&) const;
-    void operator/=  (const valarray<_T>&) const;
-    void operator%=  (const valarray<_T>&) const;
-    void operator+=  (const valarray<_T>&) const;
-    void operator-=  (const valarray<_T>&) const;
-    void operator^=  (const valarray<_T>&) const;
-    void operator&=  (const valarray<_T>&) const;
-    void operator|=  (const valarray<_T>&) const;
-    void operator<<= (const valarray<_T>&) const;
-    void operator>>= (const valarray<_T>&) const;
-    void operator= (const _T &);
+    void operator=   (const valarray<_Tp>&) const;
+    void operator*=  (const valarray<_Tp>&) const;
+    void operator/=  (const valarray<_Tp>&) const;
+    void operator%=  (const valarray<_Tp>&) const;
+    void operator+=  (const valarray<_Tp>&) const;
+    void operator-=  (const valarray<_Tp>&) const;
+    void operator^=  (const valarray<_Tp>&) const;
+    void operator&=  (const valarray<_Tp>&) const;
+    void operator|=  (const valarray<_Tp>&) const;
+    void operator<<= (const valarray<_Tp>&) const;
+    void operator>>= (const valarray<_Tp>&) const;
+    void operator= (const _Tp &);
     
     template<class _Dom>
-    void operator=   (const _Expr<_Dom,_T>&) const;
+    void operator=   (const _Expr<_Dom,_Tp>&) const;
     template<class _Dom>
-    void operator*=  (const _Expr<_Dom,_T>&) const;
+    void operator*=  (const _Expr<_Dom,_Tp>&) const;
     template<class _Dom>
-    void operator/=  (const _Expr<_Dom,_T>&) const;
+    void operator/=  (const _Expr<_Dom,_Tp>&) const;
     template<class _Dom>
-    void operator%=  (const _Expr<_Dom,_T>&) const;
+    void operator%=  (const _Expr<_Dom,_Tp>&) const;
     template<class _Dom>
-    void operator+=  (const _Expr<_Dom,_T>&) const;
+    void operator+=  (const _Expr<_Dom,_Tp>&) const;
     template<class _Dom>
-    void operator-=  (const _Expr<_Dom,_T>&) const;
+    void operator-=  (const _Expr<_Dom,_Tp>&) const;
     template<class _Dom>
-    void operator^=  (const _Expr<_Dom,_T>&) const;
+    void operator^=  (const _Expr<_Dom,_Tp>&) const;
     template<class _Dom>
-    void operator&=  (const _Expr<_Dom,_T>&) const;
+    void operator&=  (const _Expr<_Dom,_Tp>&) const;
     template<class _Dom>
-    void operator|=  (const _Expr<_Dom,_T>&) const;
+    void operator|=  (const _Expr<_Dom,_Tp>&) const;
     template<class _Dom>
-    void operator<<= (const _Expr<_Dom,_T>&) const;
+    void operator<<= (const _Expr<_Dom,_Tp>&) const;
     template<class _Dom>
-    void operator>>= (const _Expr<_Dom,_T>&) const;
+    void operator>>= (const _Expr<_Dom,_Tp>&) const;
     
 private:
-    friend class valarray<_T>;
-    slice_array(_Array<_T>, const slice&);
+    friend class valarray<_Tp>;
+    slice_array(_Array<_Tp>, const slice&);
     
     const size_t     _M_sz;
     const size_t     _M_stride;
-    const _Array<_T> _M_array;
+    const _Array<_Tp> _M_array;
     
     // this constructor is implemented since we need to return a value.
     slice_array (const slice_array&);
@@ -92,8 +92,8 @@ private:
     slice_array& operator= (const slice_array&);
 };
 
-template<typename _T>
-inline slice_array<_T>::slice_array (_Array<_T> __a, const slice& __s)
+template<typename _Tp>
+inline slice_array<_Tp>::slice_array (_Array<_Tp> __a, const slice& __s)
         : _M_sz (__s.size ()), _M_stride (__s.stride ()),
           _M_array (__a.begin () + __s.start ()) {}
 
@@ -101,34 +101,34 @@ template<typename _Tp>
 inline slice_array<_Tp>::slice_array(const slice_array<_Tp>& a)
         : _M_sz(a._M_sz), _M_stride(a._M_stride), _M_array(a._M_array) {}
 
-template<typename _T>
+template<typename _Tp>
 inline void
-slice_array<_T>::operator= (const _T& __t) 
+slice_array<_Tp>::operator= (const _Tp& __t) 
 { __valarray_fill (_M_array, _M_sz, _M_stride, __t); }
 
-template<typename _T>
+template<typename _Tp>
 inline void
-slice_array<_T>::operator= (const valarray<_T>& __v) const
-{ __valarray_copy (_Array<_T> (__v), _M_array, _M_sz, _M_stride); }
+slice_array<_Tp>::operator= (const valarray<_Tp>& __v) const
+{ __valarray_copy (_Array<_Tp> (__v), _M_array, _M_sz, _M_stride); }
 
-template<typename _T>
+template<typename _Tp>
 template<class _Dom>
 inline void
-slice_array<_T>::operator= (const _Expr<_Dom,_T>& __e) const
+slice_array<_Tp>::operator= (const _Expr<_Dom,_Tp>& __e) const
 { __valarray_copy (__e, _M_sz, _M_array, _M_stride); }
 
 #undef _DEFINE_VALARRAY_OPERATOR
 #define _DEFINE_VALARRAY_OPERATOR(op, name)				\
-template<typename _T>							\
+template<typename _Tp>							\
 inline void								\
-slice_array<_T>::operator op##= (const valarray<_T>& __v) const		\
+slice_array<_Tp>::operator op##= (const valarray<_Tp>& __v) const		\
 {									\
-  _Array_augmented_##name (_M_array, _M_sz, _M_stride, _Array<_T> (__v));\
+  _Array_augmented_##name (_M_array, _M_sz, _M_stride, _Array<_Tp> (__v));\
 }									\
 									\
-template<typename _T> template<class _Dom>				\
+template<typename _Tp> template<class _Dom>				\
 inline void								\
-slice_array<_T>::operator op##= (const _Expr<_Dom,_T>& __e) const	\
+slice_array<_Tp>::operator op##= (const _Expr<_Dom,_Tp>& __e) const	\
 {									\
     _Array_augmented_##name (_M_array, _M_stride, __e, _M_sz);		\
 }
