@@ -9387,7 +9387,7 @@ that are different from @option{-I}.
 This target hook returns @code{true} if it is safe to use a local alias
 for a virtual function @var{fndecl} when constructing thunks,
 @code{false} otherwise. By default, the hook returns @code{true} for all
-functions, if a target supports aliases (ie. defines
+functions, if a target supports aliases (i.e. defines
 @code{ASM_OUTPUT_DEF}), @code{false} otherwise,
 @end deftypefn
 
