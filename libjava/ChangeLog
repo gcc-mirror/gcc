@@ -1,3 +1,11 @@
+2003-11-26  Guilhem Lavaux  <guilhem@kaffe.org>
+	    Mark Wielaard  <mark@klomp.org>
+
+	* java/net/URLStreamHandler (parseUrl): Fixed URL parsing
+	('@' should be checked to distinguish port from userinfo).
+	(toExternalForm): Add @ userInfo if necessary.
+
+
 2003-11-26  Michael Koch  <konqueror@gmx.de>
 
 	* java/net/DatagramSocket.java
