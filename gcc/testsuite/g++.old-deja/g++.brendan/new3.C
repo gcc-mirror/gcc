@@ -1,4 +1,5 @@
 // { dg-do run { xfail powerpc-ibm-aix* } }
+// { dg-options "-flat_namespace" { target *-*-darwin[67]* } }
 // GROUPS passed operator-new
 #include <stdio.h>
 #include <stdlib.h>
