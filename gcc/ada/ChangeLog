@@ -1,3 +1,7 @@
+2001-12-04  Geert bosch <bosch@gnat.com>
+
+	* einfo.h, nmake.adb, nmake.ads, sinfo.h treeprs.ads: Regenerate.
+
 2001-12-04  Geert Bosch  <bosch@gnat.com>
 
 	* Makefile.in (update-sources): New target. 
