@@ -163,6 +163,7 @@ extern const char *mips_abi_string;	/* for -mabi={32,n32,64} */
 extern const char *mips_entry_string;	/* for -mentry */
 extern const char *mips_no_mips16_string;/* for -mno-mips16 */
 extern const char *mips_explicit_type_size_string;/* for -mexplicit-type-size */
+extern const char *mips_cache_flush_func;/* for -mflush-func= and -mno-flush-func */
 extern int mips_split_addresses;	/* perform high/lo_sum support */
 extern int dslots_load_total;		/* total # load related delay slots */
 extern int dslots_load_filled;		/* # filled load delay slots */
@@ -625,6 +626,10 @@ extern void		sbss_section PARAMS ((void));
       N_("Don't use MIPS16 instructions")},				\
   { "explicit-type-size", &mips_explicit_type_size_string,		\
       NULL},								\
+  { "no-flush-func", &mips_cache_flush_func,				\
+      N_("Don't call any cache flush functions")},			\
+  { "flush-func=", &mips_cache_flush_func,				\
+      N_("Specify cache flush function")},				\
 }
 
 /* This is meant to be redefined in the host dependent files.  */
@@ -2832,10 +2837,11 @@ typedef struct mips_args {
   /* Flush both caches.  We need to flush the data cache in case	    \
      the system has a write-back cache.  */				    \
   /* ??? Should check the return value for errors.  */			    \
-  emit_library_call (gen_rtx_SYMBOL_REF (Pmode, CACHE_FLUSH_FUNC),	    \
-		     0, VOIDmode, 3, addr, Pmode,			    \
-		     GEN_INT (TRAMPOLINE_SIZE), TYPE_MODE (integer_type_node),\
-		     GEN_INT (3), TYPE_MODE (integer_type_node));	    \
+  if (mips_cache_flush_func && mips_cache_flush_func[0])		    \
+    emit_library_call (gen_rtx_SYMBOL_REF (Pmode, mips_cache_flush_func),   \
+		       0, VOIDmode, 3, addr, Pmode,			    \
+		       GEN_INT (TRAMPOLINE_SIZE), TYPE_MODE (integer_type_node),\
+		       GEN_INT (3), TYPE_MODE (integer_type_node));	    \
 }
 
 /* Addressing modes, and classification of registers for them.  */

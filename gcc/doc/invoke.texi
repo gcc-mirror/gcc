@@ -462,7 +462,7 @@ in the following sections.
 -m4650  -msingle-float  -mmad @gol
 -mstats  -EL  -EB  -G @var{num}  -nocpp @gol
 -mabi=32  -mabi=n32  -mabi=64  -mabi=eabi @gol
--mfix7000  -mno-crt0}
+-mfix7000  -mno-crt0 -mflush-func=@var{func} -mno-flush-func}
 
 @emph{i386 and x86-64 Options}
 @gccoptlist{
@@ -7431,6 +7431,17 @@ occurs in the following two instructions.
 @item -no-crt0
 @opindex no-crt0
 Do not include the default crt0.
+
+@item -mflush-func=@var{func}
+@itemx -mno-flush-func
+@opindex mflush-func
+Specifies the function to call to flush the I and D caches, or to not
+call any such function.  If called, the function must take the same
+arguments as the common @code{_flush_func()}, that is, the address of the
+memory range for which the cache is being flushed, the size of the
+memory range, and the number 3 (to flush both caches).  The default
+depends on the target gcc was configured for, but commonly is either
+@samp{_flush_func} or @samp{__cpu_flush}.
 @end table
 
 @ifset INTERNALS

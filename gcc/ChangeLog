@@ -1,3 +1,11 @@
+2001-10-31  DJ Delorie  <dj@redhat.com>
+
+	* config/mips/mips.h (mips_cache_flush_func): Prototype.
+	(TARGET_OPTIONS): Support -mflush-func= and -mno-flush-func.
+	(INITIALIZE_TRAMPOLINE): Use mips_cache_flush_func if nonzero.
+	* config/mips/mips.c (mips_cache_flush_func): New.
+	* doc/invoke.texi: Document the new options.
+
 2001-10-31  Hans-Peter Nilsson  <hp@axis.com>
 
 	* config.gcc (cris-*-linux*, tm_file): Rearrange order.
