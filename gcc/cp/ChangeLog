@@ -1,3 +1,7 @@
+2002-03-21  Aldy Hernandez  <aldyh@redhat.com>
+
+        * tree.c (cp_cannot_inline_tree_fn): Same.
+
 2002-03-20  Jason Merrill  <jason@redhat.com>
 
 	PR c++/2136
