@@ -4272,12 +4272,15 @@ store_expr (tree exp, rtx target, int call_param_p)
    * how many scalar fields are set to non-constant values,
      and place it in  *P_NC_ELTS; and
    * how many scalar fields in total are in CTOR,
-     and place it in *P_ELT_COUNT.  */
+     and place it in *P_ELT_COUNT.
+   * if a type is a union, and the initializer from the constructor
+     is not the largest element in the union, then set *p_must_clear.  */
 
 static void
 categorize_ctor_elements_1 (tree ctor, HOST_WIDE_INT *p_nz_elts,
 			    HOST_WIDE_INT *p_nc_elts,
-			    HOST_WIDE_INT *p_elt_count)
+			    HOST_WIDE_INT *p_elt_count,
+			    bool *p_must_clear)
 {
   HOST_WIDE_INT nz_elts, nc_elts, elt_count;
   tree list;
@@ -4307,11 +4310,11 @@ categorize_ctor_elements_1 (tree ctor, HOST_WIDE_INT *p_nz_elts,
 	{
 	case CONSTRUCTOR:
 	  {
-	    HOST_WIDE_INT nz = 0, nc = 0, count = 0;
-	    categorize_ctor_elements_1 (value, &nz, &nc, &count);
+	    HOST_WIDE_INT nz = 0, nc = 0, ic = 0;
+	    categorize_ctor_elements_1 (value, &nz, &nc, &ic, p_must_clear);
 	    nz_elts += mult * nz;
 	    nc_elts += mult * nc;
-	    elt_count += mult * count;
+	    elt_count += mult * ic;
 	  }
 	  break;
 
@@ -4356,6 +4359,36 @@ categorize_ctor_elements_1 (tree ctor, HOST_WIDE_INT *p_nz_elts,
 	}
     }
 
+  if (!*p_must_clear
+      && (TREE_CODE (TREE_TYPE (ctor)) == UNION_TYPE
+	  || TREE_CODE (TREE_TYPE (ctor)) == QUAL_UNION_TYPE))
+    {
+      tree init_sub_type;
+
+      /* We don't expect more than one element of the union to be
+	 initialized.  Not sure what we should do otherwise... */
+      list = CONSTRUCTOR_ELTS (ctor);
+      gcc_assert (TREE_CHAIN (list) == NULL);
+
+      init_sub_type = TREE_TYPE (TREE_VALUE (list));
+
+      /* ??? We could look at each element of the union, and find the
+	 largest element.  Which would avoid comparing the size of the
+	 initialized element against any tail padding in the union.
+	 Doesn't seem worth the effort...  */
+      if (simple_cst_equal (TYPE_SIZE (TREE_TYPE (ctor)), 
+			    TYPE_SIZE (init_sub_type)) == 1)
+	{
+	  /* And now we have to find out if the element itself is fully
+	     constructed.  E.g. for union { struct { int a, b; } s; } u
+	     = { .s = { .a = 1 } }.  */
+	  if (elt_count != count_type_elements (init_sub_type))
+	    *p_must_clear = true;
+	}
+      else
+	*p_must_clear = true;
+    }
+
   *p_nz_elts += nz_elts;
   *p_nc_elts += nc_elts;
   *p_elt_count += elt_count;
@@ -4364,12 +4397,15 @@ categorize_ctor_elements_1 (tree ctor, HOST_WIDE_INT *p_nz_elts,
 void
 categorize_ctor_elements (tree ctor, HOST_WIDE_INT *p_nz_elts,
 			  HOST_WIDE_INT *p_nc_elts,
-			  HOST_WIDE_INT *p_elt_count)
+			  HOST_WIDE_INT *p_elt_count,
+			  bool *p_must_clear)
 {
   *p_nz_elts = 0;
   *p_nc_elts = 0;
   *p_elt_count = 0;
-  categorize_ctor_elements_1 (ctor, p_nz_elts, p_nc_elts, p_elt_count);
+  *p_must_clear = false;
+  categorize_ctor_elements_1 (ctor, p_nz_elts, p_nc_elts, p_elt_count,
+			      p_must_clear);
 }
 
 /* Count the number of scalars in TYPE.  Return -1 on overflow or
@@ -4459,8 +4495,12 @@ mostly_zeros_p (tree exp)
 
     {
       HOST_WIDE_INT nz_elts, nc_elts, count, elts;
+      bool must_clear;
 
-      categorize_ctor_elements (exp, &nz_elts, &nc_elts, &count);
+      categorize_ctor_elements (exp, &nz_elts, &nc_elts, &count, &must_clear);
+      if (must_clear)
+	return 1;
+
       elts = count_type_elements (TREE_TYPE (exp));
 
       return nz_elts < elts / 4;

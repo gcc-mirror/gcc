@@ -2599,11 +2599,12 @@ gimplify_init_constructor (tree *expr_p, tree *pre_p,
 
 	categorize_ctor_elements (ctor, &num_nonzero_elements,
 				  &num_nonconstant_elements,
-				  &num_ctor_elements);
+				  &num_ctor_elements, &cleared);
 
 	/* If a const aggregate variable is being initialized, then it
 	   should never be a lose to promote the variable to be static.  */
 	if (num_nonconstant_elements == 0
+	    && num_nonzero_elements > 1
 	    && TREE_READONLY (object)
 	    && TREE_CODE (object) == VAR_DECL)
 	  {
@@ -2685,7 +2686,6 @@ gimplify_init_constructor (tree *expr_p, tree *pre_p,
 	num_type_elements = count_type_elements (TREE_TYPE (ctor));
 
 	/* If there are "lots" of zeros, then block clear the object first.  */
-	cleared = false;
 	if (num_type_elements - num_nonzero_elements > CLEAR_RATIO
 	    && num_nonzero_elements < num_type_elements/4)
 	  cleared = true;
