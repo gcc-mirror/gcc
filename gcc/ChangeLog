@@ -1,3 +1,8 @@
+2002-07-29  David Edelsohn  <edelsohn@gnu.org>
+
+	* varasm.c (assemble_variable): Narrow test for uninitialized
+	without BSS target support.
+
 2002-07-29  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* profile.c: Add file comment describing the overall algorithm and
