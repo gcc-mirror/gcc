@@ -585,23 +585,26 @@ AC_DEFUN(GLIBCXX_CONFIGURE_TESTSUITE, [
 
     # Look for setenv, so that extended locale tests can be performed.
     GLIBCXX_CHECK_STDLIB_DECL_AND_LINKAGE_3(setenv)
+
+    if test $enable_symvers = no; then
+      enable_abi_check=no
+    else
+      case "$host" in
+        *-*-cygwin*)
+          enable_abi_check=no ;;
+        *)
+          enable_abi_check=yes ;;
+      esac
+    fi
+  else
+    # Only build this as native, since automake does not understand
+    # CXX_FOR_BUILD.
+    enable_abi_check=no
   fi
 
   # Export file names for ABI checking.
   baseline_dir="$glibcxx_srcdir/config/abi/${abi_baseline_pair}\$(MULTISUBDIR)"
   AC_SUBST(baseline_dir)
-
-  # Determine if checking the ABI is desirable.
-  if test $enable_symvers = no || test $is_hosted = no; then
-    enable_abi_check=no
-  else
-    case "$host" in
-      *-*-cygwin*)
-        enable_abi_check=no ;;
-      *)
-        enable_abi_check=yes ;;
-    esac
-  fi
 
   GLIBCXX_CONDITIONAL(GLIBCXX_TEST_WCHAR_T, test $enable_wchar_t = yes)
   GLIBCXX_CONDITIONAL(GLIBCXX_TEST_ABI, test $enable_abi_check = yes)

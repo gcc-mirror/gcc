@@ -1,3 +1,12 @@
+2003-09-10  Daniel Jacobowitz  <drow@mvista.com>
+	    Andreas Jaeger <aj@suse.de>
+
+	PR libstdc++/12189
+	* acinclude.m4 (GLIBCXX_CONFIGURE_TESTSUITE): Don't build
+	abi_check if cross compiling.
+	* aclocal.m4: Regenerated.
+	* configure: Regenerated.
+
 2003-09-10  Jeffrey D. Oldham  <oldham@codesourcery.com>
 
 	* libsupc++/vec.cc (__cxa_vec_new2): If the allocator returns
