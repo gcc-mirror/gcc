@@ -1,3 +1,25 @@
+2004-11-18  Paul Brook  <paul@codesourcery.com>
+
+	* config/arm/arm.c (target_float_switch): New variable..
+	(arm_override_options): Use TARGET_DEFAULT_FLOAT_ABI and
+	target_float_switch.
+	* config/arm/arm.h (target_float_switch): Declare.
+	(ARM_FLAG_SOFT_FLOAT): Remove.
+	(TARGET_SWITCHES): Remove hard-float and soft-float.
+	(TARGET_OPTIONS): Add hard-float and soft-float.
+	(TARGET_DEFAULT_FLOAT_ABI): Define.
+	* config/arm/coff.h (TARGET_DEFAULT_FLOAT_ABI): Define
+	(TARGET_DEFAULT): Don't use ARM_FLAG_SOFT_FLOAT.
+	* config/arm/elf.h: Don't use ARM_FLAG_SOFT_FLOAT.
+	* config/arm/netbsd-elf.h: Ditto.
+	* config/arm/netbsd.h: Ditto.
+	* config/arm/pe.h: Ditto.
+	* config/arm/unknown-elf.h: Ditto.
+	* config/arm/wince-pe.h: Ditto.
+	* config/arm/linux-elf.h (TARGET_DEFAULT_FLOAT_ABI): Define.
+	* config/arm/semi.h (TARGET_DEFAULT_FLOAT_ABI): Define.
+	* config/arm/semiaof.h (TARGET_DEFAULT_FLOAT_ABI): Define.
+
 2004-11-18  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* config/rs6000/altivec.md (VI, VF, V): New mode macros.
