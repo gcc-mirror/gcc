@@ -5590,12 +5590,18 @@ group_case_nodes (head)
   while (node)
     {
       rtx lb = next_real_insn (label_rtx (node->code_label));
+      rtx lb2;
       case_node_ptr np = node;
 
       /* Try to group the successors of NODE with NODE.  */
       while (((np = np->right) != 0)
 	     /* Do they jump to the same place?  */
-	     && next_real_insn (label_rtx (np->code_label)) == lb
+	     && ((lb2 = next_real_insn (label_rtx (np->code_label))) == lb
+		 || (lb != 0 && lb2 != 0
+		     && simplejump_p (lb)
+		     && simplejump_p (lb2)
+		     && rtx_equal_p (SET_SRC (PATTERN (lb)),
+				     SET_SRC (PATTERN (lb2)))))
 	     /* Are their ranges consecutive?  */
 	     && tree_int_cst_equal (np->low,
 				    fold (build (PLUS_EXPR,
