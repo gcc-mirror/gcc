@@ -63,8 +63,14 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    the frame pointer (because the return address will get smashed).  */
 
 #define OVERRIDE_OPTIONS \
-  do { if (profile_flag || profile_block_flag)	\
-	 flag_omit_frame_pointer = 0, flag_pic = 0; } while (0)
+{						\
+  if (profile_flag || profile_block_flag)	\
+    flag_omit_frame_pointer = 0, flag_pic = 0;	\
+  SUBTARGET_OVERRIDE_OPTIONS			\
+  }
+
+/* This is meant to be redefined in the host dependent files */
+#define SUBTARGET_OVERRIDE_OPTIONS
 
 /* These compiler options take an argument.  We ignore -target for now.  */
 
@@ -152,9 +158,13 @@ extern int target_flags;
 /*  {"no-frw", -256}, */	\
 /*  {"frw-compat", 256+512}, */	\
 /*  {"no-frw-compat", -(256+512)}, */ \
+    SUBTARGET_SWITCHES		\
     { "", TARGET_DEFAULT}}
 
 #define TARGET_DEFAULT 3
+
+/* This is meant to be redefined in the host dependent files */
+#define SUBTARGET_SWITCHES
 
 /* target machine storage layout */
 
