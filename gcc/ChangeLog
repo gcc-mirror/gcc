@@ -1,3 +1,10 @@
+2002-11-26  Jason Thorpe  <thorpej@wasabisystems.com>
+
+	* config/rs6000/rs6000.h (RS6000_CPU_CPP_ENDIAN_BUILTINS): New.
+	* config/rs6000/rs6000-c.c (rs6000_cpu_cpp_builtins): Use
+	RS6000_CPU_CPP_ENDIAN_BUILTINS.         
+	* config/rs6000/netbsd.h (RS6000_CPU_CPP_ENDIAN_BUILTINS): Redefine.
+
 2002-11-26  Hartmut Penner  <hpenner@de.ibm.com>
 
 	* config/s390/s390.md (literal_pool_64, literal_pool_31 ): New

@@ -479,6 +479,26 @@ extern int rs6000_default_long_calls;
 /* Target #defines.  */
 #define TARGET_CPU_CPP_BUILTINS() \
   rs6000_cpu_cpp_builtins (pfile)
+
+/* This is used by rs6000_cpu_cpp_builtins to indicate the byte order
+   we're compiling for.  Some configurations may need to override it.  */
+#define RS6000_CPU_CPP_ENDIAN_BUILTINS()	\
+  do						\
+    {						\
+      if (BYTES_BIG_ENDIAN)			\
+	{					\
+	  builtin_define ("__BIG_ENDIAN__");	\
+	  builtin_define ("_BIG_ENDIAN");	\
+	  builtin_assert ("machine=bigendian");	\
+	}					\
+      else					\
+	{					\
+	  builtin_define ("__LITTLE_ENDIAN__");	\
+	  builtin_define ("_LITTLE_ENDIAN");	\
+	  builtin_assert ("machine=littleendian"); \
+	}					\
+    }						\
+  while (0)
 
 /* Target machine storage layout.  */
 
