@@ -592,6 +592,7 @@ do_unwind (inner_throw_label)
   temp = gen_reg_rtx (Pmode);
   emit_move_insn (temp, inner_throw_label);
   emit_move_insn (return_val_rtx, plus_constant (temp, -8));
+  emit_insn (gen_rtx (USE, VOIDmode, gen_rtx (REG, SImode, 31)));
   easy_expand_asm ("ret");
   easy_expand_asm ("restore");
   emit_barrier ();

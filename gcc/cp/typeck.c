@@ -1792,7 +1792,8 @@ build_component_ref (datum, component, basetype_path, protect)
        hierarchy, the compiler will abort (because vptr lookups are
        not supposed to be ambiguous.  */
     field = CLASSTYPE_VFIELD (basetype);
-  else if (TREE_CODE (component) == FIELD_DECL)
+  else if (TREE_CODE (component) == FIELD_DECL
+	   || TREE_CODE (component) == TYPE_DECL)
     {
       field = component;
     }
@@ -4829,16 +4830,14 @@ build_conditional_expr (ifexp, op1, op2)
 	pedwarn ("ANSI C++ forbids conditional expr with only one void side");
       result_type = void_type_node;
     }
+  else if (code1 == POINTER_TYPE && null_ptr_cst_p (op2))
+    result_type = qualify_type (type1, type2);
+  else if (code2 == POINTER_TYPE && null_ptr_cst_p (op1))
+    result_type = qualify_type (type2, type1);
   else if (code1 == POINTER_TYPE && code2 == POINTER_TYPE)
     {
       if (comp_target_types (type1, type2, 1))
 	result_type = common_type (type1, type2);
-      else if (integer_zerop (op1) && TREE_TYPE (type1) == void_type_node
-	       && TREE_CODE (orig_op1) != NOP_EXPR)
-	result_type = qualify_type (type2, type1);
-      else if (integer_zerop (op2) && TREE_TYPE (type2) == void_type_node
-	       && TREE_CODE (orig_op2) != NOP_EXPR)
-	result_type = qualify_type (type1, type2);
       else if (TYPE_MAIN_VARIANT (TREE_TYPE (type1)) == void_type_node)
 	{
 	  if (pedantic && TREE_CODE (type2) == FUNCTION_TYPE)
@@ -4883,20 +4882,12 @@ build_conditional_expr (ifexp, op1, op2)
     }
   else if (code1 == POINTER_TYPE && code2 == INTEGER_TYPE)
     {
-      if (!integer_zerop (op2))
-	pedwarn ("pointer/integer type mismatch in conditional expression");
-      else
-	op2 = null_pointer_node;
-
+      pedwarn ("pointer/integer type mismatch in conditional expression");
       result_type = type1;
     }
   else if (code2 == POINTER_TYPE && code1 == INTEGER_TYPE)
     {
-      if (!integer_zerop (op1))
-	pedwarn ("pointer/integer type mismatch in conditional expression");
-      else
-	op1 = null_pointer_node;
-
+      pedwarn ("pointer/integer type mismatch in conditional expression");
       result_type = type2;
     }
 
@@ -6376,7 +6367,7 @@ convert_for_assignment (type, rhs, errtype, fndecl, parmnum)
 	      return error_mark_node;
 	    }
 
-	  if (ctt < 0)
+	  if (ctt < 0 && TYPE_MAIN_VARIANT (ttl) != TYPE_MAIN_VARIANT (ttr))
 	    cp_pedwarn ("converting `%T' to `%T' is a contravariance violation",
 			rhstype, type);
 
@@ -7269,6 +7260,10 @@ comp_ptr_ttypes_real (to, from, constp)
       if (TREE_CODE (to) != TREE_CODE (from))
 	return 0;
 
+      if (TREE_CODE (from) == OFFSET_TYPE
+	  && TYPE_OFFSET_BASETYPE (from) == TYPE_OFFSET_BASETYPE (to))
+	  continue;
+
       /* Const and volatile mean something different for function types,
 	 so the usual checks are not appropriate.  */
       if (TREE_CODE (to) != FUNCTION_TYPE && TREE_CODE (to) != METHOD_TYPE)
@@ -7298,4 +7293,27 @@ comp_ptr_ttypes (to, from)
      tree to, from;
 {
   return comp_ptr_ttypes_real (to, from, 1);
+}
+
+/* Returns 1 if to and from are (possibly multi-level) pointers to the same
+   type or inheritance-related types, regardless of cv-quals.  */
+
+int
+ptr_reasonably_similar (to, from)
+     tree to, from;
+{
+  for (; ; to = TREE_TYPE (to), from = TREE_TYPE (from))
+    {
+      if (TREE_CODE (to) != TREE_CODE (from))
+	return 0;
+
+      if (TREE_CODE (from) == OFFSET_TYPE
+	  && comptypes (TYPE_OFFSET_BASETYPE (to),
+			TYPE_OFFSET_BASETYPE (from), -1))
+	continue;
+
+      if (TREE_CODE (to) != POINTER_TYPE)
+	return comptypes
+	  (TYPE_MAIN_VARIANT (to), TYPE_MAIN_VARIANT (from), -1);
+    }
 }

@@ -673,8 +673,8 @@ init_lex ()
   TREE_TYPE (signature_type_node) = signature_type_node;
   ridpointers[(int) RID_SIGNATURE] = signature_type_node;
 
-  null_pointer_node = build_int_2 (0, 0);
-  ridpointers[RID_NULL] = null_pointer_node;
+  null_node = build_int_2 (0, 0);
+  ridpointers[RID_NULL] = null_node;
 
   opname_tab[(int) COMPONENT_REF] = "->";
   opname_tab[(int) MEMBER_REF] = "->*";
@@ -1691,6 +1691,9 @@ cons_up_default_function (type, full_name, kind)
   
   if (fn == void_type_node)
     return fn;
+
+  if (kind > 2)
+    SET_DECL_ARTIFICIAL (TREE_CHAIN (DECL_ARGUMENTS (fn)));
 
 #if 0
   if (processing_template_defn)

@@ -3261,7 +3261,7 @@ expand_vec_init (decl, base, maxindex, init, from_array)
   tree type = TREE_TYPE (TREE_TYPE (base));
   tree size;
 
-  maxindex = convert (integer_type_node, maxindex);
+  maxindex = convert (ptrdiff_type_node, maxindex);
   if (maxindex == error_mark_node)
     return error_mark_node;
 
@@ -3318,7 +3318,7 @@ expand_vec_init (decl, base, maxindex, init, from_array)
 		  goto done_init;
 		}
 
-	      iterator = get_temp_regvar (integer_type_node,
+	      iterator = get_temp_regvar (ptrdiff_type_node,
 					  build_int_2 (host_i, 0));
 	      init = NULL_TREE;
 	      goto init_by_default;
@@ -3340,7 +3340,7 @@ expand_vec_init (decl, base, maxindex, init, from_array)
     {
       tree itype;
 
-      iterator = get_temp_regvar (integer_type_node, maxindex);
+      iterator = get_temp_regvar (ptrdiff_type_node, maxindex);
 
     init_by_default:
 
@@ -3424,7 +3424,7 @@ expand_vec_init (decl, base, maxindex, init, from_array)
 			   build (PLUS_EXPR, build_pointer_type (type), base2, size), 0, 0);
       expand_loop_continue_here ();
       expand_exit_loop_if_false (0, build (NE_EXPR, boolean_type_node,
-					   build (PREDECREMENT_EXPR, integer_type_node, iterator, integer_one_node), minus_one));
+					   build (PREDECREMENT_EXPR, ptrdiff_type_node, iterator, integer_one_node), minus_one));
 
       if (obey_regdecls)
 	{

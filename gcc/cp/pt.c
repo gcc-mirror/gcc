@@ -1240,6 +1240,8 @@ instantiate_class_template (type)
   TYPE_HAS_CONVERSION (type) = TYPE_HAS_CONVERSION (pattern);
   TYPE_USES_COMPLEX_INHERITANCE (type)
     = TYPE_USES_COMPLEX_INHERITANCE (pattern);
+  TYPE_USES_MULTIPLE_INHERITANCE (type)
+    = TYPE_USES_MULTIPLE_INHERITANCE (pattern);
   TYPE_USES_VIRTUAL_BASECLASSES (type)
     = TYPE_USES_VIRTUAL_BASECLASSES (pattern);
   TYPE_PACKED (type) = TYPE_PACKED (pattern);
@@ -1627,8 +1629,10 @@ tsubst (t, args, nargs, in_decl)
 	if (TREE_STATIC (r))
 	  DECL_ASSEMBLER_NAME (r)
 	    = build_static_name (DECL_CONTEXT (r), DECL_NAME (r));
-	DECL_INITIAL (r) = tsubst_expr
-	  (DECL_INITIAL (t), args, nargs, in_decl);
+
+	/* Don't try to expand the initializer until someone tries to use
+	   this variable; otherwise we run into circular dependencies.  */
+	DECL_INITIAL (r) = NULL_TREE;
 
 	DECL_RTL (r) = 0;
 	DECL_SIZE (r) = 0;
@@ -3283,6 +3287,14 @@ instantiate_decl (d)
 	import_export_decl (d);
     }
 
+  /* We need to set up DECL_INITIAL regardless of pattern_defined if the
+     variable is a static const initialized in the class body.  */
+  if (TREE_CODE (d) == VAR_DECL
+      && ! DECL_INITIAL (d) && DECL_INITIAL (pattern))
+    DECL_INITIAL (d) = tsubst_expr
+      (DECL_INITIAL (pattern), &TREE_VEC_ELT (args, 0),
+       TREE_VEC_LENGTH (args), tmpl);
+
   if (! pattern_defined
       || (TREE_CODE (d) == FUNCTION_DECL && ! DECL_INLINE (d)
 	  && (! DECL_INTERFACE_KNOWN (d)
@@ -3307,6 +3319,12 @@ instantiate_decl (d)
   DECL_TEMPLATE_INFO (pattern) = NULL_TREE;
   td = tsubst (pattern, &TREE_VEC_ELT (args, 0), TREE_VEC_LENGTH (args), tmpl);
   DECL_TEMPLATE_INFO (pattern) = save_ti;
+
+  /* And set up DECL_INITIAL, since tsubst doesn't.  */
+  if (TREE_CODE (td) == VAR_DECL)
+    DECL_INITIAL (td) = tsubst_expr
+      (DECL_INITIAL (pattern), &TREE_VEC_ELT (args, 0),
+       TREE_VEC_LENGTH (args), tmpl);
 
   /* Convince duplicate_decls to use the DECL_ARGUMENTS from the new decl.  */
   if (TREE_CODE (d) == FUNCTION_DECL)

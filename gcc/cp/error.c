@@ -1547,7 +1547,7 @@ args_as_string (p, v)
   OB_INIT ();
   for (; p; p = TREE_CHAIN (p))
     {
-      dump_type (TREE_TYPE (TREE_VALUE (p)), v);
+      dump_type (error_type (TREE_VALUE (p)), v);
       if (TREE_CHAIN (p))
 	OB_PUTS (", ");
     }
