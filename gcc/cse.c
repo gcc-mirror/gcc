@@ -3224,7 +3224,7 @@ simplify_binary_operation (code, mode, op0, op1)
 	case DIV:
 #ifndef REAL_INFINITY
 	  if (f1 == 0)
-	    abort ();
+	    return 0;
 #endif
 	  value = f0 / f1;
 	  break;
