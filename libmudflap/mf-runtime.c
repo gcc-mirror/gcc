@@ -778,6 +778,12 @@ void __mf_fini ()
 {
   TRACE ("__mf_fini\n");
   __mfu_report ();
+
+#ifndef PIC
+/* Since we didn't populate the tree for allocations in constructors
+   before __mf_init, we cannot check destructors after __mf_fini.  */
+  __mf_opts.mudflap_mode = mode_nop;
+#endif
 }
 
 
