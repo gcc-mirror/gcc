@@ -38,7 +38,11 @@ inline int
 _Jv_CondWait (_Jv_ConditionVariable_t *cv, _Jv_Mutex_t *mu,
 	      jlong millis, jint nanos)
 {
-  return coop_condition_variable_wait (cv, mu, millis * 1000 + nanos / 1000);
+  long micros = millis * 1000 + nanos / 1000;
+  // Don't round to 0 inappropriately.
+  if (! micros && (millis || nanos))
+    micros = 1;
+  return coop_condition_variable_wait (cv, mu, micros);
 }
 
 inline int

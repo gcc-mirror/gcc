@@ -214,6 +214,9 @@ java::lang::Thread::sleep (jlong millis, jint nanos)
   if (millis < 0 || nanos < 0 || nanos > 999999)
     _Jv_Throw (new IllegalArgumentException);
 
+  if (millis == 0 && nanos == 0)
+    ++nanos;
+
   Thread *current = currentThread ();
   if (current->isInterrupted ())
     _Jv_Throw (new InterruptedException);

@@ -1,3 +1,10 @@
+1999-08-17  Tom Tromey  <tromey@cygnus.com>
+
+	* java/lang/natThread.cc (sleep): Turn 0 millis and 0 nanos into 1
+	nano.
+	* include/quick-threads.h (_Jv_CondWait): Don't round to 0
+	inappropriately.
+
 1999-08-16  Tom Tromey  <tromey@cygnus.com>
 
 	* configure: Rebuilt.
