@@ -671,7 +671,8 @@ static const char *trad_capable_cpp =
 
 static const char *cpp_unique_options =
 "%{C:%{!E:%eGNU C does not support -C without using -E}}\
- %{!Q:-quiet} %{nostdinc*} %{C} %{v} %{I*} %{P} %{$} %I\
+ %{CC:%{!E:%eGNU C does not support -CC without using -E}}\
+ %{!Q:-quiet} %{nostdinc*} %{C} %{CC} %{v} %{I*} %{P} %{$} %I\
  %{MD:-MD %W{!o: %b.d}%W{o*:%.d%*}}\
  %{MMD:-MMD %W{!o: %b.d}%W{o*:%.d%*}}\
  %{M} %{MM} %W{MF*} %{MG} %{MP} %{MQ*} %{MT*}\
@@ -917,6 +918,7 @@ static const struct option_map option_map[] =
    {"--bootclasspath", "-fbootclasspath=", "aj"},
    {"--CLASSPATH", "-fclasspath=", "aj"},
    {"--comments", "-C", 0},
+   {"--comments-in-macros", "-CC", 0},
    {"--compile", "-c", 0},
    {"--debug", "-g", "oj"},
    {"--define-macro", "-D", "aj"},

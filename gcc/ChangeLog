@@ -1,3 +1,35 @@
+2002-04-06  Jason Thorpe  <thorpej@wasabisystems.com>
+
+	* cppinit.c (cpp_create_reader): Initialize
+	discard_comments_in_macro_exp.
+	(COMMAND_LINE_OPTIONS): Add "-CC" option.
+	(cpp_handle_option): Handle "-CC" option.
+	* cpplex.c (save_comment): If saving a C++ comment in
+	a directive, convert it to a C comment.
+	(_cpp_lex_direct): Pass second comment start character to
+	save_comment to indicate comment type.
+	* cpplib.c (_cpp_handle_directive): If processing
+	a "#define" directive and discard_comments_in_macro_exp
+	is false,  re-enable saving of comments.
+	(lex_macro_node): If discard_comments_in_macro_exp is false,
+	discard any comments before the macro identifier.
+	* cpplib.h (struct cpp_options): Add discard_comments_in_macro_exp
+	member.
+	* cppmacro.c (cpp_get_token): If expanding a macro while
+	processing a directive, discard any comments we might encounter.
+	(parse_params): If discard_comments_in_macro_exp is false,
+	ignore comments in the macro parameter list.
+	* gcc.c (cpp_unique_options): Add "-CC" option.
+	(option_map): Map "--comments-in-macros" to "-CC".
+	* doc/cppopts.texi: Document "-CC" option.
+	* f/lang-specs.h: Add "-CC" option.
+	* testsuite/gcc.dg/cpp/maccom1.c: New test.
+	* testsuite/gcc.dg/cpp/maccom2.c: New test.
+	* testsuite/gcc.dg/cpp/maccom3.c: New test.
+	* testsuite/gcc.dg/cpp/maccom4.c: New test.
+	* testsuite/gcc.dg/cpp/maccom5.c: New test.
+	* testsuite/gcc.dg/cpp/maccom6.c: New test.
+
 2002-04-06  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	PR middle-end/6180

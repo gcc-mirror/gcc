@@ -33,7 +33,8 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
   {".r", "@ratfor", 0},
   {"@ratfor",
    "%{C:%{!E:%eGNU C does not support -C without using -E}}\
-    ratfor %{C} %{v} %i %{E:%W{o*}} %{!E: %{!pipe:-o %g.f} |\n\
+    %{CC:%{!E:%eGNU C does not support -CC without using -E}}\
+    ratfor %{C} %{CC} %{v} %i %{E:%W{o*}} %{!E: %{!pipe:-o %g.f} |\n\
     f771 %{!pipe:%g.f} %(cc1_options) %{I*} %{!fsyntax-only:%(invoke_as)}}", 0},
   {".f",   "@f77", 0},
   {".for", "@f77", 0},

@@ -255,6 +255,10 @@ struct cpp_options
   /* Nonzero means don't copy comments into the output file.  */
   unsigned char discard_comments;
 
+  /* Nonzero means don't copy comments into the output file during
+     macro expansion.  */
+  unsigned char discard_comments_in_macro_exp;
+
   /* Nonzero means process the ISO trigraph sequences.  */
   unsigned char trigraphs;
 

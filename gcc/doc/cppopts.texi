@@ -527,6 +527,19 @@ For example, comments appearing at the start of what would be a
 directive line have the effect of turning that line into an ordinary
 source line, since the first token on the line is no longer a @samp{#}.
 
+@item -CC
+Do not discard comments, including during macro expansion.  This is
+like @option{-C}, except that comments contained within macros are
+also passed through to the output file where the macro is expanded.
+
+In addition to the side-effects of the @option{-C} option, the
+@option{-CC} option causes all C++-style comments inside a macro
+to be converted to C-style comments.  This is to prevent later use
+of that macro from inadvertently commenting out the remainer of
+the source line.
+
+The @option{-CC} option is generally used to support lint comments.
+
 @item -gcc
 @opindex gcc
 Define the macros @sc{__gnuc__}, @sc{__gnuc_minor__} and
