@@ -3,9 +3,6 @@
 /* This does it mostly for us.  */
 #include <i386/linux.h>
 
-#undef STACK_BOUNDARY
-#define STACK_BOUNDARY 64       /* glibc2's crt ensures this */
-
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES GNU_CPP_PREDEFINES("i386")
 
