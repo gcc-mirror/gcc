@@ -1,3 +1,7 @@
+2001-06-26  Felix Natter  <f.natter@ndh.net>
+
+	* docs/html/17_intro/porting-howto.html:  Fixed some errors.
+
 2001-06-26  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/bits/stl_iterator.h (istream_iterator::operator->): Fix
