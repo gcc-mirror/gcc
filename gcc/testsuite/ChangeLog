@@ -1,3 +1,7 @@
+2003-07-22  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* g++.dg/ext/flexary1.C: New test.
+	
 2003-07-22  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/10793
