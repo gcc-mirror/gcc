@@ -40,7 +40,7 @@ package java.sql;
 /**
  * @since 1.4
  */
-interface ParameterMetaData 
+public interface ParameterMetaData 
 {
   int parameterNoNulls = 0;
 

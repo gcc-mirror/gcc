@@ -37,7 +37,7 @@ exception statement from your version. */
 
 package java.sql;
 
-interface DatabaseMetaData 
+public interface DatabaseMetaData 
 {
   /**
    * It is unknown whether or not the procedure returns a result.
