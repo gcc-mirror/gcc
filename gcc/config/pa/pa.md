@@ -911,7 +911,7 @@
 
 ;; Load or store with base-register modification.
 
-(define_insn ""
+(define_insn "pre_ldwm"
   [(set (match_operand:SI 3 "register_operand" "=r")
 	(mem:SI (plus:SI (match_operand:SI 1 "register_operand" "0")
 			 (match_operand:SI 2 "pre_cint_operand" ""))))
@@ -927,7 +927,7 @@
   [(set_attr "type" "load")
    (set_attr "length" "1")])
 
-(define_insn ""
+(define_insn "pre_stwm"
   [(set (mem:SI (plus:SI (match_operand:SI 1 "register_operand" "0")
 			 (match_operand:SI 2 "pre_cint_operand" "")))
 	(match_operand:SI 3 "reg_or_0_operand" "rM"))
@@ -939,6 +939,38 @@
   if (INTVAL (operands[2]) < 0)
     return \"stwm %r3,%2(0,%0)\";
   return \"stws,mb %r3,%2(0,%0)\";
+}"
+  [(set_attr "type" "store")
+   (set_attr "length" "1")])
+
+(define_insn "post_ldwm"
+  [(set (match_operand:SI 3 "register_operand" "r")
+	(mem:SI (match_operand:SI 1 "register_operand" "0")))
+   (set (match_operand:SI 0 "register_operand" "=r")
+	(plus:SI (match_dup 1) 
+		 (match_operand:SI 2 "post_cint_operand" "")))]
+  ""
+  "*
+{
+  if (INTVAL (operands[2]) > 0)
+    return \"ldwm %2(0,%0),%3\";
+  return \"ldws,ma %2(0,%0),%3\";
+}"
+  [(set_attr "type" "load")
+   (set_attr "length" "1")])
+
+(define_insn "post_stwm"
+  [(set (mem:SI (match_operand:SI 1 "register_operand" "0"))
+	(match_operand:SI 3 "reg_or_0_operand" "rM"))
+   (set (match_operand:SI 0 "register_operand" "=r")
+	(plus:SI (match_dup 1) 
+		 (match_operand:SI 2 "post_cint_operand" "")))]
+  ""
+  "*
+{
+  if (INTVAL (operands[2]) > 0)
+    return \"stwm %r3,%2(0,%0)\";
+  return \"stws,ma %r3,%2(0,%0)\";
 }"
   [(set_attr "type" "store")
    (set_attr "length" "1")])
@@ -1003,6 +1035,22 @@
   "@
    addil L'%G1,%%r27
    ldil L'%G1,%0\;add %0,%%r27,%0"
+  [(set_attr "type" "binary,binary")
+   (set_attr "length" "1,2")])
+
+;; This is for use in the prologue/epilogue code.  We need it 
+;; to add large constants to a stack pointer or frame pointer.
+;; Because of the additional %r1 pressure, we probably do not
+;; want to use this in general code, so make it available
+;; only after reload.
+(define_insn "add_high_const"
+  [(set (match_operand:SI 0 "register_operand" "=!a,*r")
+	(plus (match_operand:SI 1 "register_operand" "r,r")
+	      (high:SI (match_operand 2 "const_int_operand" ""))))]
+  "reload_completed"
+  "@
+   addil L'%G2,%1
+   ldil L'%G2,%0\;add %0,%1,%0"
   [(set_attr "type" "binary,binary")
    (set_attr "length" "1,2")])
 
@@ -2511,6 +2559,12 @@
 }")
 
 ;; Unconditional and other jump instructions.
+
+(define_insn "return"
+  [(return)]
+  "hppa_can_use_return_insn_p ()"
+  "bv%* 0(%%r2)"
+  [(set_attr "type" "branch")])
 
 (define_insn "jump"
   [(set (pc) (label_ref (match_operand 0 "" "")))]
