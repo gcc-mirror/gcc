@@ -915,7 +915,7 @@ const struct attribute_spec ix86_attribute_table[];
 static bool ix86_function_ok_for_sibcall (tree, tree);
 static tree ix86_handle_cdecl_attribute (tree *, tree, tree, int, bool *);
 static tree ix86_handle_regparm_attribute (tree *, tree, tree, int, bool *);
-static int ix86_value_regno (enum machine_mode);
+static int ix86_value_regno (enum machine_mode, tree);
 static bool contains_128bit_aligned_vector_p (tree);
 static rtx ix86_struct_value_rtx (tree, int);
 static bool ix86_ms_bitfield_layout_p (tree);
@@ -1645,19 +1645,27 @@ const struct attribute_spec ix86_attribute_table[] =
 static bool
 ix86_function_ok_for_sibcall (tree decl, tree exp)
 {
+  tree func;
+
   /* If we are generating position-independent code, we cannot sibcall
      optimize any indirect call, or a direct call to a global function,
      as the PLT requires %ebx be live.  */
   if (!TARGET_64BIT && flag_pic && (!decl || TREE_PUBLIC (decl)))
     return false;
 
+  if (decl)
+    func = decl;
+  else
+    func = NULL;
+
   /* If we are returning floats on the 80387 register stack, we cannot
      make a sibcall from a function that doesn't return a float to a
      function that does or, conversely, from a function that does return
      a float to a function that doesn't; the necessary stack adjustment
      would not be executed.  */
-  if (STACK_REG_P (ix86_function_value (TREE_TYPE (exp)))
-      != STACK_REG_P (ix86_function_value (TREE_TYPE (DECL_RESULT (cfun->decl)))))
+  if (STACK_REG_P (ix86_function_value (TREE_TYPE (exp), func))
+      != STACK_REG_P (ix86_function_value (TREE_TYPE (DECL_RESULT (cfun->decl)),
+					   cfun->decl)))
     return false;
 
   /* If this call is indirect, we'll need to be able to use a call-clobbered
@@ -2037,7 +2045,22 @@ init_cumulative_args (CUMULATIVE_ARGS *cum,  /* Argument info to initialize */
     }
   if ((!fntype && !libname)
       || (fntype && !TYPE_ARG_TYPES (fntype)))
-    cum->maybe_vaarg = 1;
+    cum->maybe_vaarg = true;
+
+  /* For local functions, pass SFmode (and DFmode for SSE2) arguments
+     in SSE registers even for 32-bit mode and not just 3, but up to
+     8 SSE arguments in registers.  */
+  if (!TARGET_64BIT && !cum->maybe_vaarg && !cum->fastcall
+      && cum->sse_nregs == SSE_REGPARM_MAX && fndecl
+      && TARGET_SSE_MATH && flag_unit_at_a_time && !profile_flag)
+    {
+      struct cgraph_local_info *i = cgraph_local_info (fndecl);
+      if (i && i->local)
+	{
+	  cum->sse_nregs = 8;
+	  cum->float_in_sse = true;
+	}
+    }
 
   if (TARGET_DEBUG_ARG)
     fprintf (stderr, ", nregs=%d )\n", cum->nregs);
@@ -2728,6 +2751,14 @@ function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 	    }
 	  break;
 
+	case DFmode:
+	  if (!TARGET_SSE2)
+	    break;
+	case SFmode:
+	  if (!cum->float_in_sse)
+	    break;
+	  /* FALLTHRU */
+
 	case TImode:
 	case V16QImode:
 	case V8HImode:
@@ -2849,6 +2880,13 @@ function_arg (CUMULATIVE_ARGS *cum, enum machine_mode orig_mode,
 	    ret = gen_rtx_REG (mode, regno);
 	  }
 	break;
+      case DFmode:
+	if (!TARGET_SSE2)
+	  break;
+      case SFmode:
+	if (!cum->float_in_sse)
+	  break;
+	/* FALLTHRU */
       case TImode:
       case V16QImode:
       case V8HImode:
@@ -3040,7 +3078,7 @@ ix86_function_value_regno_p (int regno)
    If the precise function being called is known, FUNC is its FUNCTION_DECL;
    otherwise, FUNC is 0.  */
 rtx
-ix86_function_value (tree valtype)
+ix86_function_value (tree valtype, tree func)
 {
   enum machine_mode natmode = type_natural_mode (valtype);
 
@@ -3056,7 +3094,7 @@ ix86_function_value (tree valtype)
       return ret;
     }
   else
-    return gen_rtx_REG (TYPE_MODE (valtype), ix86_value_regno (natmode));
+    return gen_rtx_REG (TYPE_MODE (valtype), ix86_value_regno (natmode, func));
 }
 
 /* Return false iff type is returned in memory.  */
@@ -3158,23 +3196,36 @@ ix86_libcall_value (enum machine_mode mode)
 	}
     }
   else
-    return gen_rtx_REG (mode, ix86_value_regno (mode));
+    return gen_rtx_REG (mode, ix86_value_regno (mode, NULL));
 }
 
 /* Given a mode, return the register to use for a return value.  */
 
 static int
-ix86_value_regno (enum machine_mode mode)
+ix86_value_regno (enum machine_mode mode, tree func)
 {
-  /* Floating point return values in %st(0).  */
-  if (GET_MODE_CLASS (mode) == MODE_FLOAT && TARGET_FLOAT_RETURNS_IN_80387)
-    return FIRST_FLOAT_REG;
+  gcc_assert (!TARGET_64BIT);
+
   /* 16-byte vector modes in %xmm0.  See ix86_return_in_memory for where
      we prevent this case when sse is not available.  */
   if (mode == TImode || (VECTOR_MODE_P (mode) && GET_MODE_SIZE (mode) == 16))
     return FIRST_SSE_REG;
-  /* Everything else in %eax.  */
-  return 0;
+
+  /* Most things go in %eax, except (unless -mno-fp-ret-in-387) fp values.  */
+  if (GET_MODE_CLASS (mode) != MODE_FLOAT || !TARGET_FLOAT_RETURNS_IN_80387)
+    return 0;
+
+  /* Floating point return values in %st(0), except for local functions when
+     SSE math is enabled.  */
+  if (func && SSE_FLOAT_MODE_P (mode) && TARGET_SSE_MATH
+      && flag_unit_at_a_time)
+    {
+      struct cgraph_local_info *i = cgraph_local_info (func);
+      if (i && i->local)
+	return FIRST_SSE_REG;
+    }
+
+  return FIRST_FLOAT_REG;
 }
 
 /* Create the va_list data type.  */
