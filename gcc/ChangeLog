@@ -4,6 +4,9 @@
 
 2000-05-31  Richard Henderson  <rth@cygnus.com>
 
+	* ifcvt.c (merge_if_block): Be prepared for JOIN to have no 
+	remaining edges.
+	(find_if_block): Allow THEN with no outgoing edges.
 	* flow.c (merge_blocks_nomove): Remove a barrier not following
 	a jump as well.
 

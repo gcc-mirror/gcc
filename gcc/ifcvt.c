@@ -1356,8 +1356,10 @@ merge_if_block (test_bb, then_bb, else_bb, join_bb)
   /* The JOIN block may have had quite a number of other predecessors too.
      Since we've already merged the TEST, THEN and ELSE blocks, we should
      have only one remaining edge from our if-then-else diamond.  If there
-     is more than one remaining edge, it must come from elsewhere.  */
-  else if (join_bb->pred->pred_next == NULL)
+     is more than one remaining edge, it must come from elsewhere.  There
+     may be zero incoming edges if the THEN block didn't actually join 
+     back up (as with a call to abort).  */
+  else if (join_bb->pred == NULL || join_bb->pred->pred_next == NULL)
     {
       /* We can merge the JOIN.  */
       if (combo_bb->global_live_at_end)
@@ -1459,15 +1461,29 @@ find_if_block (test_bb, then_edge, else_edge)
   if (then_bb->pred->pred_next != NULL_EDGE)
     return FALSE;
 
-  /* The THEN block of an IF-THEN combo must have exactly one successor.  */
-  if (then_succ == NULL_EDGE
-      || then_succ->succ_next != NULL_EDGE
-      || (then_succ->flags & EDGE_COMPLEX))
+  /* The THEN block of an IF-THEN combo must have zero or one successors.  */
+  if (then_succ != NULL_EDGE
+      && (then_succ->succ_next != NULL_EDGE
+          || (then_succ->flags & EDGE_COMPLEX)))
     return FALSE;
+
+  /* If the THEN block has no successors, conditional execution can still
+     make a conditional call.  Don't do this unless the ELSE block has
+     only one incoming edge -- the CFG manipulation is too ugly otherwise.  */
+  if (then_succ == NULL)
+    {
+      if (else_bb->pred->pred_next == NULL_EDGE)
+	{
+	  join_bb = else_bb;
+	  else_bb = NULL_BLOCK;
+	}
+      else
+	return FALSE;
+    }
 
   /* If the THEN block's successor is the other edge out of the TEST block,
      then we have an IF-THEN combo without an ELSE.  */
-  if (then_succ->dest == else_bb)
+  else if (then_succ->dest == else_bb)
     {
       join_bb = else_bb;
       else_bb = NULL_BLOCK;
