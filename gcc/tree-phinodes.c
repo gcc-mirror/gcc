@@ -202,6 +202,7 @@ make_phi_node (tree var, int len)
   memset (phi, 0, size);
   TREE_SET_CODE (phi, PHI_NODE);
   PHI_ARG_CAPACITY (phi) = len;
+  TREE_TYPE (phi) = TREE_TYPE (var);
   if (TREE_CODE (var) == SSA_NAME)
     SET_PHI_RESULT (phi, var);
   else

@@ -1,3 +1,76 @@
+2004-07-22  Diego Novillo  <dnovillo@redhat.com>
+
+	* tree-into-ssa.c (set_livein_block): Fix typo in comment.
+	(rewrite_ssa_into_ssa): Start iterating over SSA names at 1.
+	Release SSA names that have been re-renamed.
+	* tree-phinodes.c (make_phi_node): Set same TREE_TYPE as the
+	variable.
+	* tree-ssa-alias.c (init_alias_info): If aliases have been
+	computed before, clear existing alias information.
+	(create_name_tags): Do no fixup PT_ANYTHING pointers.
+	If the new name tag for a pointer is different than the one it
+	had before, mark the old tag for renaming.
+	(replace_may_alias): New function.
+	(group_aliases): Call it.
+	(setup_pointers_and_addressables): Always call get_tmt_for.
+	(maybe_create_global_var): Don't create .GLOBAL_VAR more than
+	once.
+	(set_pt_anything): New local function.
+	(set_pt_malloc): New local function.
+	(merge_pointed_to_info): Don't merge pointed-to variables from
+	the original pointer if the destination is pointing to an
+	unknown location.
+	(add_pointed_to_expr): Call set_pt_anything and set_pt_malloc.
+	(add_pointed_to_var): Do not add a variable to the points-to
+	set if the pointer is already pointing to anywhere.
+	(collect_points_to_info_r): If the defining statement is a PHI
+	node, only merge pointed-to information if the argument has
+	already been visited.
+	(get_tmt_for): Only create a new tag if the pointer didn't
+	have one already.
+	(dump_alias_info): Emit more information.
+	(dump_points_to_info_for): Likewise.
+	* tree-ssa-dom.c (redirect_edges_and_update_ssa_graph): Don't
+	try to get the annotation of an SSA_NAME.
+	* tree-ssa-operands.c (add_stmt_operand): Only check for empty
+	alias sets when checking is enabled.
+	* tree-ssa-pre.c (need_eh_cleanup): New local variable.
+	(eliminate): Mark basic blocks that will need
+	EH information cleaned up.
+	(init_pre): Split ENTRY_BLOCK->0 if block 0 has more than one
+	predecessor.
+	Initialize need_eh_cleanup.
+	(fini_pre): Call tree_purge_all_dead_eh_edges and
+	cleanup_tree_cfg if needed.
+	Free need_eh_cleanup.
+	* tree-ssa.c (verify_ssa_name): New function.
+	(verify_def): Call it.
+	Re-arrange to avoid printing too many error messages.
+	(verify_use): Likewise.
+	(verify_phi_args): Likewise.
+	(verify_flow_insensitive_alias_info): New function.
+	(verify_flow_sensitive_alias_info): New function.
+	(verify_alias_info): New function.
+	(verify_ssa): Call verify_alias_info.
+	Clear TREE_VISITED on all the SSA_NAMEs before scanning the
+	program.
+	Re-arrange to avoid printing too many error messages.
+	* tree-ssanames.c (make_ssa_name): Clear
+	SSA_NAME_IN_FREE_LIST.
+	(release_ssa_name): Never release a default definition.
+	(release_defs): New function.
+	* tree.h: Declare it.
+	* tree-ssa-dce.c (remove_dead_stmt): Call it.
+
+2004-07-22  Diego Novillo  <dnovillo@redhat.com>
+
+	* tree-ssa.c (walk_use_def_chains_1): Add new argument IS_DFS.
+	If true, do a depth-first search.  Do a breadht-first search,
+	otherwise.
+	(walk_use_def_chains): Add new argument IS_DFS.
+	Update all users.
+	* tree-flow.h (walk_use_def_chains): Update prototype.
+
 2004-07-22  Hans-Peter Nilsson  <hp@axis.com>
 
 	* config/cris/cris.md: Tweak formatting.

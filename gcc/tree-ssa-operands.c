@@ -1386,8 +1386,10 @@ add_stmt_operand (tree *var_p, tree stmt, int flags, voperands_t prev_vops)
 
 	  /* The variable is aliased.  Add its aliases to the virtual
 	     operands.  */
+#if defined ENABLE_CHECKING
 	  if (VARRAY_ACTIVE_SIZE (aliases) == 0)
 	    abort ();
+#endif
 
 	  if (flags & opf_is_def)
 	    {

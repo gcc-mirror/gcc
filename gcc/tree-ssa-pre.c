@@ -307,6 +307,10 @@ static alloc_pool binary_node_pool;
 static alloc_pool unary_node_pool;
 static alloc_pool reference_node_pool;
 
+/* Set of blocks with statements that have had its EH information
+   cleaned up.  */
+static bitmap need_eh_cleanup;
+
 /* The phi_translate_table caches phi translations for a given
    expression and predecessor.  */
 
@@ -1891,6 +1895,16 @@ eliminate (void)
 		  pre_stats.eliminations++;
 		  propagate_tree_value (rhs_p, sprime);
 		  modify_stmt (stmt);
+
+		  /* If we removed EH side effects from the statement, clean
+		     its EH information.  */
+		  if (maybe_clean_eh_stmt (stmt))
+		    {
+		      bitmap_set_bit (need_eh_cleanup,
+				      bb_for_stmt (stmt)->index);
+		      if (dump_file && (dump_flags & TDF_DETAILS))
+			fprintf (dump_file, "  Removed EH side effects.\n");
+		    }
 		}
 	    }
         }
@@ -1909,6 +1923,18 @@ init_pre (void)
   connect_infinite_loops_to_exit ();
   vn_init ();
   memset (&pre_stats, 0, sizeof (pre_stats));
+
+  /* If block 0 has more than one predecessor, it means that its PHI
+     nodes will have arguments coming from block -1.  This creates
+     problems for several places in PRE that keep local arrays indexed
+     by block number.  To prevent this, we split the edge coming from
+     ENTRY_BLOCK_PTR (FIXME, if ENTRY_BLOCK_PTR had an index number
+     different than -1 we wouldn't have to hack this.  tree-ssa-dce.c
+     needs a similar change).  */
+  if (ENTRY_BLOCK_PTR->succ->dest->pred->pred_next)
+    if (!(ENTRY_BLOCK_PTR->succ->flags & EDGE_ABNORMAL))
+      split_edge (ENTRY_BLOCK_PTR->succ);
+
   FOR_ALL_BB (bb)
     bb->aux = xcalloc (1, sizeof (struct bb_value_sets));
 
@@ -1926,7 +1952,8 @@ init_pre (void)
   binary_node_pool = create_alloc_pool ("Binary tree nodes", tsize, 30);
   tsize = tree_size (build1 (NEGATE_EXPR, void_type_node, NULL_TREE));
   unary_node_pool = create_alloc_pool ("Unary tree nodes", tsize, 30);
-  tsize = tree_size (build (COMPONENT_REF, void_type_node, NULL_TREE, NULL_TREE, NULL_TREE));
+  tsize = tree_size (build (COMPONENT_REF, void_type_node, NULL_TREE,
+			    NULL_TREE, NULL_TREE));
   reference_node_pool = create_alloc_pool ("Reference tree nodes", tsize, 30);
   FOR_ALL_BB (bb)
     {
@@ -1935,6 +1962,8 @@ init_pre (void)
       TMP_GEN (bb) = bitmap_set_new ();
       AVAIL_OUT (bb) = bitmap_set_new ();
     }
+
+  need_eh_cleanup = BITMAP_XMALLOC ();
 }
 
 
@@ -1962,6 +1991,14 @@ fini_pre (void)
 
   free_dominance_info (CDI_POST_DOMINATORS);
   vn_delete ();
+
+  if (bitmap_first_set_bit (need_eh_cleanup) >= 0)
+    {
+      tree_purge_all_dead_eh_edges (need_eh_cleanup);
+      cleanup_tree_cfg ();
+    }
+
+  BITMAP_XFREE (need_eh_cleanup);
 }
 
 

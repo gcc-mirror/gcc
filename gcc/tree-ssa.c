@@ -102,35 +102,68 @@ ssa_redirect_edge (edge e, basic_block dest)
 }
 
 
-/* Return true if the definition of SSA_NAME at block BB is malformed.
+/* Return true if SSA_NAME is malformed and mark it visited.
 
-   STMT is the statement where SSA_NAME is created.
-
-   DEFINITION_BLOCK is an array of basic blocks indexed by SSA_NAME version
-      numbers.  If DEFINITION_BLOCK[SSA_NAME_VERSION] is set, it means that the
-      block in that array slot contains the definition of SSA_NAME.  */
+   IS_VIRTUAL is true if this SSA_NAME was found inside a virtual
+      operand.  */
 
 static bool
-verify_def (basic_block bb, basic_block *definition_block, tree ssa_name,
-	    tree stmt)
+verify_ssa_name (tree ssa_name, bool is_virtual)
 {
-  bool err = false;
+  TREE_VISITED (ssa_name) = 1;
 
   if (TREE_CODE (ssa_name) != SSA_NAME)
     {
       error ("Expected an SSA_NAME object");
-      debug_generic_stmt (ssa_name);
-      debug_generic_stmt (stmt);
+      return true;
     }
+
+  if (SSA_NAME_IN_FREE_LIST (ssa_name))
+    {
+      error ("Found an SSA_NAME that had been released into the free pool");
+      return true;
+    }
+
+  if (is_virtual && is_gimple_reg (ssa_name))
+    {
+      error ("Found a virtual definition for a GIMPLE register");
+      return true;
+    }
+
+  if (!is_virtual && !is_gimple_reg (ssa_name))
+    {
+      error ("Found a real definition for a non-register");
+      return true;
+    }
+
+  return false;
+}
+
+
+/* Return true if the definition of SSA_NAME at block BB is malformed.
+
+   STMT is the statement where SSA_NAME is created.
+
+   DEFINITION_BLOCK is an array of basic blocks indexed by SSA_NAME
+      version numbers.  If DEFINITION_BLOCK[SSA_NAME_VERSION] is set,
+      it means that the block in that array slot contains the
+      definition of SSA_NAME.
+
+   IS_VIRTUAL is true if SSA_NAME is created by a V_MAY_DEF or a
+      V_MUST_DEF.  */
+
+static bool
+verify_def (basic_block bb, basic_block *definition_block, tree ssa_name,
+	    tree stmt, bool is_virtual)
+{
+  if (verify_ssa_name (ssa_name, is_virtual))
+    goto err;
 
   if (definition_block[SSA_NAME_VERSION (ssa_name)])
     {
       error ("SSA_NAME created in two different blocks %i and %i",
 	     definition_block[SSA_NAME_VERSION (ssa_name)]->index, bb->index);
-      fprintf (stderr, "SSA_NAME: ");
-      debug_generic_stmt (ssa_name);
-      debug_generic_stmt (stmt);
-      err = true;
+      goto err;
     }
 
   definition_block[SSA_NAME_VERSION (ssa_name)] = bb;
@@ -138,16 +171,22 @@ verify_def (basic_block bb, basic_block *definition_block, tree ssa_name,
   if (SSA_NAME_DEF_STMT (ssa_name) != stmt)
     {
       error ("SSA_NAME_DEF_STMT is wrong");
-      fprintf (stderr, "SSA_NAME: ");
-      debug_generic_stmt (ssa_name);
       fprintf (stderr, "Expected definition statement:\n");
       debug_generic_stmt (SSA_NAME_DEF_STMT (ssa_name));
       fprintf (stderr, "\nActual definition statement:\n");
       debug_generic_stmt (stmt);
-      err = true;
+      goto err;
     }
 
-  return err;
+  return false;
+
+err:
+  fprintf (stderr, "while verifying SSA_NAME ");
+  print_generic_expr (stderr, ssa_name, 0);
+  fprintf (stderr, " in statement\n");
+  debug_generic_stmt (stmt);
+
+  return true;
 }
 
 
@@ -160,16 +199,22 @@ verify_def (basic_block bb, basic_block *definition_block, tree ssa_name,
 
    CHECK_ABNORMAL is true if the caller wants to check whether this use
       is flowing through an abnormal edge (only used when checking PHI
-      arguments).  */
+      arguments).
+
+   IS_VIRTUAL is true if SSA_NAME is created by a V_MAY_DEF or a
+      V_MUST_DEF.  */
 
 static bool
 verify_use (basic_block bb, basic_block def_bb, tree ssa_name,
-	    tree stmt, bool check_abnormal)
+	    tree stmt, bool check_abnormal, bool is_virtual)
 {
   bool err = false;
 
-  if (IS_EMPTY_STMT (SSA_NAME_DEF_STMT (ssa_name)))
-    ; /* Nothing to do.  */
+  err = verify_ssa_name (ssa_name, is_virtual);
+
+  if (IS_EMPTY_STMT (SSA_NAME_DEF_STMT (ssa_name))
+      && var_ann (SSA_NAME_VAR (ssa_name))->default_def == ssa_name)
+    ; /* Default definitions have empty statements.  Nothing to do.  */
   else if (!def_bb)
     {
       error ("Missing definition");
@@ -193,7 +238,7 @@ verify_use (basic_block bb, basic_block def_bb, tree ssa_name,
   if (err)
     {
       fprintf (stderr, "for SSA_NAME: ");
-      debug_generic_stmt (ssa_name);
+      debug_generic_expr (ssa_name);
       fprintf (stderr, "in statement:\n");
       debug_generic_stmt (stmt);
     }
@@ -229,8 +274,9 @@ verify_phi_args (tree phi, basic_block bb, basic_block *definition_block)
       e = PHI_ARG_EDGE (phi, i);
 
       if (TREE_CODE (op) == SSA_NAME)
-	err |= verify_use (e->src, definition_block[SSA_NAME_VERSION (op)], op,
-			   phi, e->flags & EDGE_ABNORMAL);
+	err = verify_use (e->src, definition_block[SSA_NAME_VERSION (op)], op,
+			  phi, e->flags & EDGE_ABNORMAL,
+			  !is_gimple_reg (PHI_RESULT (phi)));
 
       if (e->dest != bb)
 	{
@@ -257,6 +303,7 @@ verify_phi_args (tree phi, basic_block bb, basic_block *definition_block)
 	{
 	  fprintf (stderr, "PHI argument\n");
 	  debug_generic_stmt (op);
+	  goto error;
 	}
 
       e->aux = (void *) 2;
@@ -269,10 +316,12 @@ verify_phi_args (tree phi, basic_block bb, basic_block *definition_block)
 	  error ("No argument flowing through edge %d->%d\n", e->src->index,
 		 e->dest->index);
 	  err = true;
+	  goto error;
 	}
       e->aux = (void *) 0;
     }
 
+error:
   if (err)
     {
       fprintf (stderr, "for PHI node\n");
@@ -284,17 +333,195 @@ verify_phi_args (tree phi, basic_block bb, basic_block *definition_block)
 }
 
 
+static void
+verify_flow_insensitive_alias_info (void)
+{
+  size_t i;
+  tree var;
+  bitmap visited = BITMAP_XMALLOC ();
+
+  for (i = 0; i < num_referenced_vars; i++)
+    {
+      var_ann_t ann;
+
+      var = referenced_var (i);
+      ann = var_ann (var);
+
+      if (ann->mem_tag_kind == TYPE_TAG || ann->mem_tag_kind == NAME_TAG)
+	{
+	  size_t j;
+	  varray_type may_aliases = ann->may_aliases;
+
+	  for (j = 0; may_aliases && j < VARRAY_ACTIVE_SIZE (may_aliases); j++)
+	    {
+	      tree alias = VARRAY_TREE (may_aliases, j);
+
+	      bitmap_set_bit (visited, var_ann (alias)->uid);
+
+	      if (!may_be_aliased (alias))
+		{
+		  error ("Non-addressable variable inside an alias set.");
+		  debug_variable (alias);
+		  goto err;
+		}
+	    }
+	}
+    }
+
+  for (i = 0; i < num_referenced_vars; i++)
+    {
+      var_ann_t ann;
+
+      var = referenced_var (i);
+      ann = var_ann (var);
+
+      if (ann->mem_tag_kind == NOT_A_TAG
+	  && ann->is_alias_tag
+	  && !bitmap_bit_p (visited, ann->uid))
+	{
+	  error ("Addressable variable that is an alias tag but is not in any alias set.");
+	  goto err;
+	}
+    }
+
+  BITMAP_XFREE (visited);
+  return;
+
+err:
+  debug_variable (var);
+  internal_error ("verify_flow_insensitive_alias_info failed.");
+}
+
+
+static void
+verify_flow_sensitive_alias_info (void)
+{
+  size_t i;
+  tree ptr;
+
+  for (i = 1; i < num_ssa_names; i++)
+    {
+      var_ann_t ann;
+      struct ptr_info_def *pi;
+
+      ptr = ssa_name (i);
+      ann = var_ann (SSA_NAME_VAR (ptr));
+      pi = SSA_NAME_PTR_INFO (ptr);
+
+      /* We only care for pointers that are actually referenced in the
+	 program.  */
+      if (!TREE_VISITED (ptr) || !POINTER_TYPE_P (TREE_TYPE (ptr)))
+	continue;
+
+      /* RESULT_DECL is special.  If it's a GIMPLE register, then it
+	 is only written-to only once in the return statement.
+	 Otherwise, aggregate RESULT_DECLs may be written-to more than
+	 once in virtual operands.  */
+      if (TREE_CODE (SSA_NAME_VAR (ptr)) == RESULT_DECL
+	  && is_gimple_reg (ptr))
+	continue;
+
+      if (pi == NULL)
+	continue;
+
+      if (pi->is_dereferenced && !pi->name_mem_tag && !ann->type_mem_tag)
+	{
+	  error ("Dereferenced pointers should have a name or a type tag");
+	  goto err;
+	}
+
+      if (pi->pt_anything && (pi->pt_malloc || pi->pt_vars))
+	{
+	  error ("Pointers that point to anything should not point to malloc or other vars");
+	  goto err;
+	}
+      
+      if (pi->pt_malloc && pi->pt_vars)
+	{
+	  error ("Pointers pointing to malloc get a unique tag and cannot point to other vars");
+	  goto err;
+	}
+
+      if (pi->name_mem_tag
+	  && !pi->pt_malloc
+	  && (pi->pt_vars == NULL
+	      || bitmap_first_set_bit (pi->pt_vars) < 0))
+	{
+	  error ("Pointers with a memory tag, should have points-to sets or point to malloc");
+	  goto err;
+	}
+
+      if (pi->value_escapes_p
+	  && pi->name_mem_tag
+	  && !is_call_clobbered (pi->name_mem_tag))
+	{
+	  error ("Pointer escapes but its name tag is not call-clobbered.");
+	  goto err;
+	}
+
+      if (pi->name_mem_tag && pi->pt_vars)
+	{
+	  size_t j;
+
+	  for (j = i + 1; j < num_ssa_names; j++)
+	    {
+	      tree ptr2 = ssa_name (j);
+	      struct ptr_info_def *pi2 = SSA_NAME_PTR_INFO (ptr2);
+
+	      if (!POINTER_TYPE_P (TREE_TYPE (ptr2)))
+		continue;
+
+	      if (pi2
+		  && pi2->name_mem_tag
+		  && pi2->pt_vars
+		  && bitmap_first_set_bit (pi2->pt_vars) >= 0
+		  && pi->name_mem_tag != pi2->name_mem_tag
+		  && bitmap_equal_p (pi->pt_vars, pi2->pt_vars))
+		{
+		  error ("Two pointers with different name tags and identical points-to sets");
+		  debug_variable (ptr2);
+		  goto err;
+		}
+	    }
+	}
+    }
+
+  return;
+
+err:
+  debug_variable (ptr);
+  internal_error ("verify_flow_sensitive_alias_info failed.");
+}
+
+
+/* Verify the consistency of aliasing information.  */
+
+static void
+verify_alias_info (void)
+{
+  if (aliases_computed_p)
+    {
+      verify_flow_sensitive_alias_info ();
+      verify_flow_insensitive_alias_info ();
+    }
+}
+
+
 /* Verify common invariants in the SSA web.
    TODO: verify the variable annotations.  */
 
 void
 verify_ssa (void)
 {
-  bool err = false;
+  size_t i;
   basic_block bb;
   basic_block *definition_block = xcalloc (num_ssa_names, sizeof (basic_block));
 
   timevar_push (TV_TREE_SSA_VERIFY);
+
+  /* Keep track of SSA names present in the IL.  */
+  for (i = 1; i < num_ssa_names; i++)
+    TREE_VISITED (ssa_name (i)) = 0;
 
   calculate_dominance_info (CDI_DOMINATORS);
 
@@ -306,7 +533,9 @@ verify_ssa (void)
       block_stmt_iterator bsi;
 
       for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
-	err |= verify_def (bb, definition_block, PHI_RESULT (phi), phi);
+	if (verify_def (bb, definition_block, PHI_RESULT (phi), phi,
+			!is_gimple_reg (PHI_RESULT (phi))))
+	  goto err;
 
       for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
 	{
@@ -323,47 +552,33 @@ verify_ssa (void)
 
 	  v_may_defs = V_MAY_DEF_OPS (ann);
 	  if (ann->makes_aliased_stores && NUM_V_MAY_DEFS (v_may_defs) == 0)
-	    error ("Makes aliased stores, but no V_MAY_DEFS");
+	    {
+	      error ("Statement makes aliased stores, but has no V_MAY_DEFS");
+	      debug_generic_stmt (stmt);
+	      goto err;
+	    }
 	    
 	  for (j = 0; j < NUM_V_MAY_DEFS (v_may_defs); j++)
 	    {
 	      tree op = V_MAY_DEF_RESULT (v_may_defs, j);
-	      if (is_gimple_reg (op))
-		{
-		  error ("Found a virtual definition for a GIMPLE register");
-		  debug_generic_stmt (op);
-		  debug_generic_stmt (stmt);
-		  err = true;
-		}
-	      err |= verify_def (bb, definition_block, op, stmt);
+	      if (verify_def (bb, definition_block, op, stmt, true))
+		goto err;
 	    }
           
 	  v_must_defs = STMT_V_MUST_DEF_OPS (stmt);
 	  for (j = 0; j < NUM_V_MUST_DEFS (v_must_defs); j++)
 	    {
 	      tree op = V_MUST_DEF_OP (v_must_defs, j);
-	      if (is_gimple_reg (op))
-		{
-		  error ("Found a virtual must-def for a GIMPLE register");
-		  debug_generic_stmt (op);
-		  debug_generic_stmt (stmt);
-		  err = true;
-		}
-	      err |= verify_def (bb, definition_block, op, stmt);
+	      if (verify_def (bb, definition_block, op, stmt, true))
+		goto err;
 	    }
 
 	  defs = DEF_OPS (ann);
 	  for (j = 0; j < NUM_DEFS (defs); j++)
 	    {
 	      tree op = DEF_OP (defs, j);
-	      if (TREE_CODE (op) == SSA_NAME && !is_gimple_reg (op))
-		{
-		  error ("Found a real definition for a non-GIMPLE register");
-		  debug_generic_stmt (op);
-		  debug_generic_stmt (stmt);
-		  err = true;
-		}
-	      err |= verify_def (bb, definition_block, op, stmt);
+	      if (verify_def (bb, definition_block, op, stmt, false))
+		goto err;
 	    }
 	}
     }
@@ -384,17 +599,16 @@ verify_ssa (void)
 	    {
 	      error ("AUX pointer initialized for edge %d->%d\n", e->src->index,
 		      e->dest->index);
-	      err = true;
+	      goto err;
 	    }
 	}
 
       /* Verify the arguments for every PHI node in the block.  */
       for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
-	err |= verify_phi_args (phi, bb, definition_block);
+	if (verify_phi_args (phi, bb, definition_block))
+	  goto err;
 
-      /* Now verify all the uses and vuses in every statement of the block. 
-
-	 Remember, the RHS of a V_MAY_DEF is a use as well.  */
+      /* Now verify all the uses and vuses in every statement of the block.  */
       for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
 	{
 	  tree stmt = bsi_stmt (bsi);
@@ -408,58 +622,40 @@ verify_ssa (void)
 	  for (j = 0; j < NUM_VUSES (vuses); j++)
 	    {
 	      tree op = VUSE_OP (vuses, j);
-
-	      if (is_gimple_reg (op))
-		{
-		  error ("Found a virtual use for a GIMPLE register");
-		  debug_generic_stmt (op);
-		  debug_generic_stmt (stmt);
-		  err = true;
-		}
-	      err |= verify_use (bb, definition_block[SSA_NAME_VERSION (op)],
-				 op, stmt, false);
+	      if (verify_use (bb, definition_block[SSA_NAME_VERSION (op)],
+			      op, stmt, false, true))
+		goto err;
 	    }
 
 	  v_may_defs = V_MAY_DEF_OPS (ann);
 	  for (j = 0; j < NUM_V_MAY_DEFS (v_may_defs); j++)
 	    {
 	      tree op = V_MAY_DEF_OP (v_may_defs, j);
-
-	      if (is_gimple_reg (op))
-		{
-		  error ("Found a virtual use for a GIMPLE register");
-		  debug_generic_stmt (op);
-		  debug_generic_stmt (stmt);
-		  err = true;
-		}
-	      err |= verify_use (bb, definition_block[SSA_NAME_VERSION (op)],
-				 op, stmt, false);
+	      if (verify_use (bb, definition_block[SSA_NAME_VERSION (op)],
+			      op, stmt, false, true))
+		goto err;
 	    }
 
 	  uses = USE_OPS (ann);
 	  for (j = 0; j < NUM_USES (uses); j++)
 	    {
 	      tree op = USE_OP (uses, j);
-
-	      if (TREE_CODE (op) == SSA_NAME && !is_gimple_reg (op))
-		{
-		  error ("Found a real use of a non-GIMPLE register");
-		  debug_generic_stmt (op);
-		  debug_generic_stmt (stmt);
-		  err = true;
-		}
-	      err |= verify_use (bb, definition_block[SSA_NAME_VERSION (op)],
-				 op, stmt, false);
+	      if (verify_use (bb, definition_block[SSA_NAME_VERSION (op)],
+			      op, stmt, false, false))
+		goto err;
 	    }
 	}
     }
 
+  /* Finally, verify alias information.  */
+  verify_alias_info ();
+
   free (definition_block);
-
   timevar_pop (TV_TREE_SSA_VERIFY);
+  return;
 
-  if (err)
-    internal_error ("verify_ssa failed.");
+err:
+  internal_error ("verify_ssa failed.");
 }
 
 
@@ -598,12 +794,20 @@ tree_ssa_useless_type_conversion (tree expr)
 
 
 /* Internal helper for walk_use_def_chains.  VAR, FN and DATA are as
-   described in walk_use_def_chains.  VISITED is a bitmap used to mark
-   visited SSA_NAMEs to avoid infinite loops.  */
+   described in walk_use_def_chains.
+   
+   VISITED is a bitmap used to mark visited SSA_NAMEs to avoid
+      infinite loops.
+
+   IS_DFS is true if the caller wants to perform a depth-first search
+      when visiting PHI nodes.  A DFS will visit each PHI argument and
+      call FN after each one.  Otherwise, all the arguments are
+      visited first and then FN is called with each of the visited
+      arguments in a separate pass.  */
 
 static bool
 walk_use_def_chains_1 (tree var, walk_use_def_chains_fn fn, void *data,
-		       bitmap visited)
+		       bitmap visited, bool is_dfs)
 {
   tree def_stmt;
 
@@ -617,49 +821,65 @@ walk_use_def_chains_1 (tree var, walk_use_def_chains_fn fn, void *data,
   if (TREE_CODE (def_stmt) != PHI_NODE)
     {
       /* If we reached the end of the use-def chain, call FN.  */
-      return (*fn) (var, def_stmt, data);
+      return fn (var, def_stmt, data);
     }
   else
     {
       int i;
 
-      /* Otherwise, follow use-def links out of each PHI argument and call
-	 FN after visiting each one.  */
+      /* When doing a breadth-first search, call FN before following the
+	 use-def links for each argument.  */
+      if (!is_dfs)
+	for (i = 0; i < PHI_NUM_ARGS (def_stmt); i++)
+	  if (fn (PHI_ARG_DEF (def_stmt, i), def_stmt, data))
+	    return true;
+
+      /* Follow use-def links out of each PHI argument.  */
       for (i = 0; i < PHI_NUM_ARGS (def_stmt); i++)
 	{
 	  tree arg = PHI_ARG_DEF (def_stmt, i);
 	  if (TREE_CODE (arg) == SSA_NAME
-	      && walk_use_def_chains_1 (arg, fn, data, visited))
-	    return true;
-	  
-	  if ((*fn) (arg, def_stmt, data))
+	      && walk_use_def_chains_1 (arg, fn, data, visited, is_dfs))
 	    return true;
 	}
+
+      /* When doing a depth-first search, call FN after following the
+	 use-def links for each argument.  */
+      if (is_dfs)
+	for (i = 0; i < PHI_NUM_ARGS (def_stmt); i++)
+	  if (fn (PHI_ARG_DEF (def_stmt, i), def_stmt, data))
+	    return true;
     }
+  
   return false;
 }
   
 
 
-/* Walk use-def chains starting at the SSA variable VAR.  Call function FN
-   at each reaching definition found.  FN takes three arguments: VAR, its
-   defining statement (DEF_STMT) and a generic pointer to whatever state
-   information that FN may want to maintain (DATA).  FN is able to stop the 
-   walk by returning true, otherwise in order to continue the walk, FN 
-   should return false.  
+/* Walk use-def chains starting at the SSA variable VAR.  Call
+   function FN at each reaching definition found.  FN takes three
+   arguments: VAR, its defining statement (DEF_STMT) and a generic
+   pointer to whatever state information that FN may want to maintain
+   (DATA).  FN is able to stop the walk by returning true, otherwise
+   in order to continue the walk, FN should return false.  
 
    Note, that if DEF_STMT is a PHI node, the semantics are slightly
-   different.  For each argument ARG of the PHI node, this function will:
+   different.  The first argument to FN is no longer the original
+   variable VAR, but the PHI argument currently being examined.  If FN
+   wants to get at VAR, it should call PHI_RESULT (PHI).
 
-	1- Walk the use-def chains for ARG.
-	2- Call (*FN) (ARG, PHI, DATA).
+   If IS_DFS is true, this function will:
 
-   Note how the first argument to FN is no longer the original variable
-   VAR, but the PHI argument currently being examined.  If FN wants to get
-   at VAR, it should call PHI_RESULT (PHI).  */
+	1- walk the use-def chains for all the PHI arguments, and,
+	2- call (*FN) (ARG, PHI, DATA) on all the PHI arguments.
+
+   If IS_DFS is false, the two steps above are done in reverse order
+   (i.e., a breadth-first search).  */
+
 
 void
-walk_use_def_chains (tree var, walk_use_def_chains_fn fn, void *data)
+walk_use_def_chains (tree var, walk_use_def_chains_fn fn, void *data,
+                     bool is_dfs)
 {
   tree def_stmt;
 
@@ -677,10 +897,11 @@ walk_use_def_chains (tree var, walk_use_def_chains_fn fn, void *data)
   else
     {
       bitmap visited = BITMAP_XMALLOC ();
-      walk_use_def_chains_1 (var, fn, data, visited);
+      walk_use_def_chains_1 (var, fn, data, visited, is_dfs);
       BITMAP_XFREE (visited);
     }
 }
+
 
 /* Replaces VAR with REPL in memory reference expression *X in
    statement STMT.  */
