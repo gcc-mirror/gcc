@@ -5186,7 +5186,9 @@ check_for_full_enumeration_handling (type)
   bytes_needed = (size + HOST_BITS_PER_CHAR) / HOST_BITS_PER_CHAR;
 
   if (size > 0 && size < 600000
-      /* We deliberately use malloc here - not xmalloc.  */
+      /* We deliberately use malloc here, not xmalloc, so that we can suppress
+	 this optimization if we don't have enough memory rather than 
+	 aborting, as xmalloc would do.  */
       && (cases_seen = (unsigned char *) malloc (bytes_needed)) != NULL)
     {
       long i;
