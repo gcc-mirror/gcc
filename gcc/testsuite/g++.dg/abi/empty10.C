@@ -1,4 +1,4 @@
-// { dg-do run }
+// { dg-do run { target i?86-*-* } }
 // { dg-options "-fabi-version=0 -w" }
 
 struct E {};

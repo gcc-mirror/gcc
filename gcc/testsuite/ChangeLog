@@ -1,3 +1,7 @@
+2002-11-26  Mark Mitchell  <mark@codesourcery.com>
+
+	* g++.dg/abi/empty10.C: Don't run on non-x86 targets.
+
 2002-11-25  Mark Mitchell  <mark@codesourcery.com>
 
 	* testsuite/g++.dg/abi/empty11.C: New test.
