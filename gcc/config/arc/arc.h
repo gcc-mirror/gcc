@@ -520,7 +520,7 @@ extern enum reg_class arc_regno_reg_class[FIRST_PSEUDO_REGISTER];
 /* ??? This currently isn't used.  Waiting for PIC.  */
 #if 0
 #define EXTRA_CONSTRAINT(VALUE, C) \
-((C) == 'R' ? (SYMBOL_REF_FLAG (VALUE) || GET_CODE (VALUE) == LABEL_REF) \
+((C) == 'R' ? (SYMBOL_REF_FUNCTION_P (VALUE) || GET_CODE (VALUE) == LABEL_REF) \
  : 0)
 #endif
 
