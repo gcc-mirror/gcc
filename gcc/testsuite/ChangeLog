@@ -1,3 +1,9 @@
+2003-12-16  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/9043
+	* g++.dg/abi/mangle20-1.C: New test.
+	* g++.dg/abi/mangle20-2.C: New test.
+
 2003-12-16  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/13275

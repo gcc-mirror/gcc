@@ -5982,47 +5982,34 @@ check_static_variable_definition (tree decl, tree type)
 tree
 compute_array_index_type (tree name, tree size)
 {
+  tree type = TREE_TYPE (size);
   tree itype;
 
-  /* If this involves a template parameter, it will be a constant at
-     instantiation time, but we don't know what the value is yet.
-     Even if no template parameters are involved, we may an expression
-     that is not a constant; we don't even simplify `1 + 2' when
-     processing a template.  */
-  if (processing_template_decl)
+  /* The array bound must be an integer type.  */
+  if (!dependent_type_p (type) && !INTEGRAL_TYPE_P (type))
     {
-      /* Resolve a qualified reference to an enumerator or static
-	 const data member of ours.  */
-      if (TREE_CODE (size) == SCOPE_REF
-	  && TREE_OPERAND (size, 0) == current_class_type)
-	{
-	  tree t = lookup_field (current_class_type,
-				 TREE_OPERAND (size, 1), 0, false);
-	  if (t)
-	    size = t;
-	}
-
-      return build_index_type (build_min (MINUS_EXPR, sizetype,
-					  size, integer_one_node));
+      if (name)
+	error ("size of array `%D' has non-integral type `%T'", name, type);
+      else
+	error ("size of array has non-integral type `%T'", type);
+      size = integer_one_node;
+      type = TREE_TYPE (size);
     }
+
+  if (abi_version_at_least (2)
+      /* We should only handle value dependent expressions specially.  */
+      ? value_dependent_expression_p (size)
+      /* But for abi-1, we handled all instances in templates. This
+	 effects the manglings produced.  */
+      : processing_template_decl)
+    return build_index_type (build_min (MINUS_EXPR, sizetype,
+					size, integer_one_node));
 
   /* The size might be the result of a cast.  */
   STRIP_TYPE_NOPS (size);
 
   /* It might be a const variable or enumeration constant.  */
   size = decl_constant_value (size);
-
-  /* The array bound must be an integer type.  */
-  if (TREE_CODE (TREE_TYPE (size)) != INTEGER_TYPE
-      && TREE_CODE (TREE_TYPE (size)) != ENUMERAL_TYPE
-      && TREE_CODE (TREE_TYPE (size)) != BOOLEAN_TYPE)
-    {
-      if (name)
-	error ("size of array `%D' has non-integer type", name);
-      else
-	error ("size of array has non-integer type");
-      size = integer_one_node;
-    }
 
   /* Normally, the array-bound will be a constant.  */
   if (TREE_CODE (size) == INTEGER_CST)
@@ -6065,38 +6052,36 @@ compute_array_index_type (tree name, tree size)
       else
 	error ("size of array is not an integral constant-expression");
     }
-
-  /* Compute the index of the largest element in the array.  It is
-     one less than the number of elements in the array.  */
-  itype
-    = fold (cp_build_binary_op (MINUS_EXPR,
-				cp_convert (ssizetype, size),
-				cp_convert (ssizetype,
-					    integer_one_node)));
-
-  /* Check for variable-sized arrays.  We allow such things as an
-     extension, even though they are not allowed in ANSI/ISO C++.  */
-  if (!TREE_CONSTANT (itype))
+  else if (pedantic)
     {
-      if (pedantic)
-	{
-	  if (name)
-	    pedwarn ("ISO C++ forbids variable-size array `%D'",
-			name);
-	  else
-	    pedwarn ("ISO C++ forbids variable-size array");
-	}
-
-      /* Create a variable-sized array index type.  */
-      itype = variable_size (itype);
+      if (name)
+	pedwarn ("ISO C++ forbids variable-size array `%D'", name);
+      else
+	pedwarn ("ISO C++ forbids variable-size array");
     }
-  /* Make sure that there was no overflow when creating to a signed
-     index type.  (For example, on a 32-bit machine, an array with
-     size 2^32 - 1 is too big.)  */
-  else if (TREE_OVERFLOW (itype))
+
+  if (processing_template_decl && !TREE_CONSTANT (size))
+    /* A variable sized array.  */
+    itype = build_min (MINUS_EXPR, sizetype, size, integer_one_node);
+  else
     {
-      error ("overflow in array dimension");
-      TREE_OVERFLOW (itype) = 0;
+      /* Compute the index of the largest element in the array.  It is
+     	 one less than the number of elements in the array.  */
+      itype
+	= fold (cp_build_binary_op (MINUS_EXPR,
+				    cp_convert (ssizetype, size),
+				    cp_convert (ssizetype, integer_one_node)));
+      if (!TREE_CONSTANT (itype))
+	/* A variable sized array. */
+	itype = variable_size (itype);
+      /* Make sure that there was no overflow when creating to a signed
+     	 index type.  (For example, on a 32-bit machine, an array with
+     	 size 2^32 - 1 is too big.)  */
+      else if (TREE_OVERFLOW (itype))
+	{
+	  error ("overflow in array dimension");
+	  TREE_OVERFLOW (itype) = 0;
+	}
     }
 
   /* Create and return the appropriate index type.  */

@@ -2242,7 +2242,20 @@ write_array_type (const tree type)
 	  write_unsigned_number (tree_low_cst (max, 1));
 	}
       else
-	write_expression (TREE_OPERAND (max, 0));
+	{
+	  max = TREE_OPERAND (max, 0);
+	  if (!abi_version_at_least (2))
+	    {
+	      /* value_dependent_expression_p presumes nothing is
+	         dependent when PROCESSING_TEMPLATE_DECL is zero.  */
+	      ++processing_template_decl;
+	      if (!value_dependent_expression_p (max))
+		G.need_abi_warning = 1;
+	      --processing_template_decl;
+	    }
+	  write_expression (max);
+	}
+      
     }
   write_char ('_');
   write_type (TREE_TYPE (type));
