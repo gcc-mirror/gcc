@@ -1,5 +1,9 @@
 2004-02-03  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/13925
+	* decl.c (start_function): Do not call pushdecl for any
+	instantiation or specialization of a primary template.
+
 	PR c++/14002
 	* semantics.c (finish_id_expression): Do not return an
 	IDENTIFIER_NODE when lookup finds a PARM_DECL.
