@@ -10,13 +10,20 @@
 #	 c++ interface to gc.a
 # cord/de - builds dumb editor based on cords.
 ABI_FLAG= 
+# ABI_FLAG should be the cc flag that specifies the ABI.  On most
+# platforms this will be the empty string.  Possible values:
+# +DD64 for 64-bit executable on HP/UX.
+# -n32, -n64, -o32 for SGI/MIPS ABIs.
+
+AS_ABI_FLAG=$(ABI_FLAG)
+# ABI flag for assembler.  On HP/UX this is +A64 for 64 bit
+# executables.
+
 CC=cc $(ABI_FLAG)
 CXX=g++ $(ABI_FLAG)
-AS=as $(ABI_FLAG)
+AS=as $(AS_ABI_FLAG)
 #  The above doesn't work with gas, which doesn't run cpp.
 #  Define AS as `gcc -c -x assembler-with-cpp' instead.
-#  Under Irix 6, you will have to specify the ABI (-o32, -n32, or -64)
-#  if you use something other than the default ABI on your machine.
 
 # Redefining srcdir allows object code for the nonPCR version of the collector
 # to be generated in different directories.
@@ -54,12 +61,15 @@ HOSTCFLAGS=$(CFLAGS)
 #   gc.h before performing thr_ or dl* or GC_ operations.)
 #   Must also define -D_REENTRANT.
 # -DGC_SOLARIS_PTHREADS enables support for Solaris pthreads.
-#   Define SOLARIS_THREADS as well.
+#   (Internally this define GC_SOLARIS_THREADS as well.)
 # -DGC_IRIX_THREADS enables support for Irix pthreads.  See README.irix.
 # -DGC_HPUX_THREADS enables support for HP/UX 11 pthreads.
 #   Also requires -D_REENTRANT or -D_POSIX_C_SOURCE=199506L. See README.hp.
 # -DGC_LINUX_THREADS enables support for Xavier Leroy's Linux threads.
 #   see README.linux.  -D_REENTRANT may also be required.
+# -DGC_OSF1_THREADS enables support for Tru64 pthreads.  Untested.
+# -DGC_FREEBSD_THREADS enables support for FreeBSD pthreads.  Untested.
+#   Appeared to run into some underlying thread problems.
 # -DALL_INTERIOR_POINTERS allows all pointers to the interior
 #   of objects to be recognized.  (See gc_priv.h for consequences.)
 #   Alternatively, GC_all_interior_pointers can be set at process
@@ -191,8 +201,8 @@ HOSTCFLAGS=$(CFLAGS)
 #   15% or so.
 # -DUSE_3DNOW_PREFETCH causes the collector to issue AMD 3DNow style
 #   prefetch instructions.  Same restrictions as USE_I686_PREFETCH.
-#   UNTESTED!!
-# -DGC_USE_LD_WRAP in combination with the gld flags listed in README.linux
+#   Minimally tested.  Didn't appear to be an obvious win on a K6-2/500.
+# -DGC_USE_LD_WRAP in combination with the old flags listed in README.linux
 #   causes the collector some system and pthread calls in a more transparent
 #   fashion than the usual macro-based approach.  Requires GNU ld, and
 #   currently probably works only with Linux.
@@ -242,7 +252,8 @@ SRCS= $(CSRCS) mips_sgi_mach_dep.s rs6000_mach_dep.s alpha_mach_dep.s \
     include/gc_local_alloc.h include/private/dbg_mlc.h \
     include/private/specific.h powerpc_macosx_mach_dep.s \
     include/leak_detector.h include/gc_amiga_redirects.h \
-    include/gc_pthread_redirects.h $(CORD_SRCS)
+    include/gc_pthread_redirects.h ia64_save_regs_in_stack.s \
+    $(CORD_SRCS)
 
 DOC_FILES= README.QUICK doc/README.Mac doc/README.MacOSX doc/README.OS2 \
 	doc/README.amiga doc/README.cords doc/debugging.html \
@@ -435,6 +446,9 @@ mach_dep.o: $(srcdir)/mach_dep.c $(srcdir)/mips_sgi_mach_dep.s $(srcdir)/mips_ul
 	./if_mach SPARC SUNOS4 $(AS) -o mach_dep.o $(srcdir)/sparc_sunos4_mach_dep.s
 	./if_mach SPARC OPENBSD $(AS) -o mach_dep.o $(srcdir)/sparc_sunos4_mach_dep.s
 	./if_mach SPARC NETBSD $(AS) -o mach_dep.o $(srcdir)/sparc_netbsd_mach_dep.s
+	./if_mach IA64 HPUX as $(AS_ABI_FLAG) -o ia64_save_regs_in_stack.o $(srcdir)/ia64_save_regs_in_stack.s
+	./if_mach IA64 HPUX $(CC) -c -o mach_dep1.o $(SPECIALCFLAGS) $(srcdir)/mach_dep.c
+	./if_mach IA64 HPUX ld -r -o mach_dep.o mach_dep1.o ia64_save_regs_in_stack.o
 	./if_not_there mach_dep.o $(CC) -c $(SPECIALCFLAGS) $(srcdir)/mach_dep.c
 
 mark_rts.o: $(srcdir)/mark_rts.c $(UTILS)
