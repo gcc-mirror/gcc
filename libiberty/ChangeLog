@@ -1,3 +1,7 @@
+2004-11-29  Matt Kraai  <kraai@alumni.cmu.edu>
+
+	* pex-unix.c: Fix the spelling of longjmp.
+
 2004-11-23  Ian Lance Taylor  <ian@wasabisystems.com>
 
 	PR other/18623
