@@ -7522,6 +7522,11 @@ tsubst_expr (t, args, complain, in_decl)
       finish_label_stmt (DECL_NAME (LABEL_STMT_LABEL (t)));
       break;
 
+    case FILE_STMT:
+      input_filename = FILE_STMT_FILENAME (t);
+      add_stmt (build_nt (FILE_STMT, FILE_STMT_FILENAME_NODE (t)));
+      break;
+
     case GOTO_STMT:
       prep_stmt (t);
       tmp = GOTO_DESTINATION (t);
