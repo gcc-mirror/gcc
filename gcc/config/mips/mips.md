@@ -9779,21 +9779,19 @@ ld\\t%2,%1-%S1(%2)\;daddu\\t%2,%2,$31\\n\\t%*j\\t%2"
 
 ;; This is used in compiling the unwind routines.
 (define_expand "eh_return"
-  [(use (match_operand 0 "general_operand" ""))
-   (use (match_operand 1 "general_operand" ""))]
+  [(use (match_operand 0 "general_operand" ""))]
   ""
   "
 {
   enum machine_mode gpr_mode = TARGET_64BIT ? DImode : SImode;
 
-  if (GET_MODE (operands[1]) != gpr_mode)
-    operands[1] = convert_to_mode (gpr_mode, operands[1], 0);
+  if (GET_MODE (operands[0]) != gpr_mode)
+    operands[0] = convert_to_mode (gpr_mode, operands[0], 0);
   if (TARGET_64BIT)
-    emit_insn (gen_eh_set_lr_di (operands[1]));
+    emit_insn (gen_eh_set_lr_di (operands[0]));
   else
-    emit_insn (gen_eh_set_lr_si (operands[1]));
+    emit_insn (gen_eh_set_lr_si (operands[0]));
 
-  emit_move_insn (EH_RETURN_STACKADJ_RTX, operands[0]);
   DONE;
 }")
 

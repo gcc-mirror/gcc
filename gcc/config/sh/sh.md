@@ -7311,18 +7311,16 @@ mov.l\\t1f,r0\\n\\
 }")
 
 (define_expand "eh_return"
-  [(use (match_operand 0 "register_operand" ""))
-   (use (match_operand 1 "register_operand" ""))]
+  [(use (match_operand 0 "register_operand" ""))]
   ""
 {
-  rtx tmp, sa = operands[0], ra = operands[1];
+  rtx tmp, ra = operands[0];
 
   if (TARGET_SHMEDIA64)
     emit_insn (gen_eh_set_ra_di (ra));
   else
     emit_insn (gen_eh_set_ra_si (ra));
 
-  emit_move_insn (EH_RETURN_STACKADJ_RTX, sa);
   DONE;
 })
 

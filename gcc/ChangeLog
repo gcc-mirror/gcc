@@ -1,3 +1,26 @@
+2003-05-11  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* except.c (EH_RETURN_STACKADJ_RTX): Do not define.
+	(EH_RETURN_HANDLER_RTX): Likewise.
+	(expand_builtin_eh_return): Do not copy stack adjustment
+	if EH_RETURN_STACKADJ_RTX is not defined.
+	(expand_eh_return): Likewise.  Also, do not pass stack
+	adjustment as argument to the eh_return pattern.
+	* except.h (MUST_USE_SJLJ_EXCEPTIONS): Do not define just
+	because EH_RETURN_STACKADJ_RTX is not defined.
+	* unwind-dw.c (uw_update_context_1): If EH_RETURN_STACKADJ_RTX
+	is not defined, treat stack pointer like a regular register.
+	(uw_init_context_1): Set up fake initial stack pointer register.
+	(uw_install_context_1): Do not compute stack adjustment if
+	EH_RETURN_STACKADJ_RTX is not defined.
+
+	* config/i386/i386.md ("eh_return"): Remove first argument.
+	* config/mips/mips.md ("eh_return"): Likewise.
+	* config/rs6000/rs6000.md ("eh_return"): Likewise.
+	* config/sh/sh.md ("eh_return"): Likewise.
+
+	* config/s390/s390.h (EH_RETURN_STACKADJ_RTX): Remove.
+
 2003-05-10  Alexander Aganichev  <aaganichev@yandex.ru>
 
 	* config/i386/i386.h (MODES_TIEABLE_P): Fix typo.
