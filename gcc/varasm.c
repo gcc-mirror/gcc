@@ -3619,6 +3619,9 @@ output_constructor (exp, size)
 
 #ifdef HANDLE_SYSV_PRAGMA
 
+/* Support #pragma weak by default if WEAK_ASM_OP is defined.  */
+#if defined (HANDLE_PRAGMA_WEAK) || (defined (WEAK_ASM_OP) && defined (SET_ASM_OP))
+
 /* Output asm to handle ``#pragma weak'' */
 void
 handle_pragma_weak (what, asm_out_file, name, value)
@@ -3656,5 +3659,7 @@ handle_pragma_weak (what, asm_out_file, name, value)
   else if (! (what == ps_done || what == ps_start))
     warning ("malformed `#pragma weak'");
 }
+
+#endif /* HANDLE_PRAGMA_WEAK or (WEAK_ASM_OP and SET_ASM_OP) */
 
 #endif /* HANDLE_SYSV_PRAGMA */
