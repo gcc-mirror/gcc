@@ -2266,10 +2266,16 @@ fi
 			# See if it matches any of the entries in arm-cores.def
 			eval "val=\$with_$which"
 			if [ x"$val" = x ] \
-			    || grep "^ARM_CORE($val," \
+			    || grep "^ARM_CORE(\"$val\"," \
 				    ${srcdir}/config/arm/arm-cores.def \
 				    > /dev/null; then
 			  # Ok
+			  new_val=`grep "^ARM_CORE(\"$val\"," \
+				${srcdir}/config/arm/arm-cores.def | \
+				sed -e 's/^[^,]*,[ 	]*//' | \
+				sed -e 's/,.*$//'`
+			  eval "with_$which=$new_val"
+			echo "For $val real value is $new_val"
 			  true
 			else
 			  echo "Unknown CPU used in --with-$which=$val" 1>&2

@@ -83,8 +83,8 @@ extern char arm_arch_name[];
 /* The various ARM cores.  */
 enum processor_type
 {
-#define ARM_CORE(NAME, ARCH, FLAGS, COSTS) \
-  NAME,
+#define ARM_CORE(NAME, IDENT, ARCH, FLAGS, COSTS) \
+  IDENT,
 #include "arm-cores.def"
 #undef ARM_CORE
   /* Used to indicate that no processor has been specified.  */
@@ -93,8 +93,8 @@ enum processor_type
 
 enum target_cpus
 {
-#define ARM_CORE(NAME, ARCH, FLAGS, COSTS) \
-  TARGET_CPU_##NAME,
+#define ARM_CORE(NAME, IDENT, ARCH, FLAGS, COSTS) \
+  TARGET_CPU_##IDENT,
 #include "arm-cores.def"
 #undef ARM_CORE
   TARGET_CPU_generic
