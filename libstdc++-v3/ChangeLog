@@ -1,3 +1,9 @@
+2002-11-28  Phil Edwards  <pme@gcc.gnu.org>
+
+	PR libstdc++/8716
+	* testsuite/21_strings/ctor_copy_dtor.cc (test05):  Also test
+	the NULL-pointer, zero-size case.
+
 2002-11-28  Jonathan Wakely  <redi@gcc.gnu.org>
 	* docs/html/faq/index.html: Add tip about a namespace for extensions.
 
