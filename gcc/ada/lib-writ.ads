@@ -256,7 +256,7 @@ package Lib.Writ is
    --  has been able to determine with respect to restrictions violations.
    --  The format is:
 
-   --    R <<restriction-characters>> space <<restriction-param-id-entries>>
+   --    R <<restriction-characters>> <<restriction-param-id-entries>>
 
    --      The first parameter is a string of characters that records
    --      information regarding restrictions that do not take parameter
@@ -283,8 +283,9 @@ package Lib.Writ is
    --      has "v", which is not permitted, since these restrictions
    --      are partition-wide.
 
-   --  Following a space, the second parameter refers to restriction
-   --  identifiers for which a parameter is given.
+   --  The second parameter, which immediately follows the first (with
+   --  no separating space) gives restriction information for identifiers
+   --  for which a parameter is given.
 
    --      The parameter is a string of entries, one for each value in
    --      Restrict.All_Parameter_Restrictions. Each entry has two

@@ -4881,17 +4881,28 @@ package body Sem_Util is
                           or else Sloc (S) = Standard_Location)
                        and then Is_Overloadable (S)
                      then
-                        Error_Msg_Name_1 := Chars (S);
-                        Error_Msg_Sloc := Sloc (S);
-                        Error_Msg_NE
-                          ("missing argument for parameter & " &
-                             "in call to % declared #", N, Formal);
+                        if No (Actuals)
+                          and then
+                           (Nkind (Parent (N)) = N_Procedure_Call_Statement
+                             or else
+                           (Nkind (Parent (N)) = N_Function_Call
+                             or else
+                           Nkind (Parent (N)) = N_Parameter_Association))
+                        then
+                           Set_Etype (N, Etype (S));
+                        else
+                           Error_Msg_Name_1 := Chars (S);
+                           Error_Msg_Sloc := Sloc (S);
+                           Error_Msg_NE
+                             ("missing argument for parameter & " &
+                                "in call to % declared #", N, Formal);
+                        end if;
 
                      elsif Is_Overloadable (S) then
                         Error_Msg_Name_1 := Chars (S);
 
-                        --  Point to type derivation that
-                        --  generated the operation.
+                        --  Point to type derivation that generated the
+                        --  operation.
 
                         Error_Msg_Sloc := Sloc (Parent (S));
 
@@ -6358,7 +6369,22 @@ package body Sem_Util is
                 or else
               Ekind (Entity (Expr)) = E_Generic_Procedure)
          then
-            Error_Msg_N ("found procedure name instead of function!", Expr);
+            if Ekind (Expec_Type) = E_Access_Subprogram_Type then
+               Error_Msg_N
+                 ("found procedure name, possibly missing Access attribute!",
+                   Expr);
+            else
+               Error_Msg_N ("found procedure name instead of function!", Expr);
+            end if;
+
+         elsif Nkind (Expr) = N_Function_Call
+           and then Ekind (Expec_Type) = E_Access_Subprogram_Type
+           and then Etype (Designated_Type (Expec_Type)) = Etype (Expr)
+           and then No (Parameter_Associations (Expr))
+         then
+               Error_Msg_N
+                 ("found function name, possibly missing Access attribute!",
+                   Expr);
 
          --  catch common error: a prefix or infix operator which is not
          --  directly visible because the type isn't.

@@ -134,9 +134,6 @@ begin
    Write_Switch_Char ("c");
    Write_Line ("Check syntax and semantics only (no code generation)");
 
-   Write_Switch_Char ("C");
-   Write_Line ("Compress names in external names and debug info tables");
-
    --  Line for -gnatd switch
 
    Write_Switch_Char ("d?");

@@ -2352,6 +2352,13 @@ package body Exp_Util is
 
    function Is_Possibly_Unaligned_Slice (P : Node_Id) return Boolean is
    begin
+      --  ??? GCC3 will eventually handle strings with arbitrary alignments,
+      --  but for now the following check must be disabled.
+
+      --  if get_gcc_version >= 3 then
+      --     return False;
+      --  end if;
+
       if Is_Entity_Name (P)
         and then Is_Object (Entity (P))
         and then Present (Renamed_Object (Entity (P)))

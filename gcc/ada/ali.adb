@@ -991,10 +991,6 @@ package body ALI is
                end case;
             end loop;
 
-            --  Skip separating space
-
-            Checkc (' ');
-
             --  Acquire information for parameter restrictions
 
             for RP in All_Parameter_Restrictions loop

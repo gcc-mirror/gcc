@@ -940,10 +940,6 @@ package body Lib.Writ is
          end if;
       end loop;
 
-      --  A separating space
-
-      Write_Info_Char (' ');
-
       --  And now the information for the parameter restrictions
 
       for RP in All_Parameter_Restrictions loop

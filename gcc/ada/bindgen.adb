@@ -80,6 +80,88 @@ package body Bindgen is
      Table_Increment      => 200,
      Table_Name           => "IS_Pragma_Settings");
 
+   ----------------------
+   -- Run-Time Globals --
+   ----------------------
+
+   --  This section documents the global variables that are passed to the
+   --  run time from the generated binder file. The call that is made is
+   --  to the routine Set_Globals, which has the following spec:
+
+   --   procedure Set_Globals
+   --     (Main_Priority            : Integer;
+   --      Time_Slice_Value         : Integer;
+   --      WC_Encoding              : Character;
+   --      Locking_Policy           : Character;
+   --      Queuing_Policy           : Character;
+   --      Task_Dispatching_Policy  : Character;
+   --      Restrictions             : System.Address;
+   --      Interrupt_States         : System.Address;
+   --      Num_Interrupt_States     : Integer;
+   --      Unreserve_All_Interrupts : Integer;
+   --      Exception_Tracebacks     : Integer;
+   --      Zero_Cost_Exceptions     : Integer);
+
+   --  Main_Priority is the priority value set by pragma Priority in the
+   --  main program. If no such pragma is present, the value is -1.
+
+   --  Time_Slice_Value is the time slice value set by pragma Time_Slice
+   --  in the main program, or by the use of a -Tnnn parameter for the
+   --  binder (if both are present, the binder value overrides). The
+   --  value is in milliseconds. A value of zero indicates that time
+   --  slicing should be suppressed. If no pragma is present, and no
+   --  -T switch was used, the value is -1.
+
+   --  WC_Encoding shows the wide character encoding method used for
+   --  the main program. This is one of the encoding letters defined
+   --  in System.WCh_Con.WC_Encoding_Letters.
+
+   --  Locking_Policy is a space if no locking policy was specified
+   --  for the partition. If a locking policy was specified, the value
+   --  is the upper case first character of the locking policy name,
+   --  for example, 'C' for Ceiling_Locking.
+
+   --  Queuing_Policy is a space if no queuing policy was specified
+   --  for the partition. If a queuing policy was specified, the value
+   --  is the upper case first character of the queuing policy name
+   --  for example, 'F' for FIFO_Queuing.
+
+   --  Task_Dispatching_Policy is a space if no task dispatching policy
+   --  was specified for the partition. If a task dispatching policy
+   --  was specified, the value is the upper case first character of
+   --  the policy name, e.g. 'F' for FIFO_Within_Priorities.
+
+   --  Restrictions is the address of a null-terminated string specifying the
+   --  restrictions information for the partition. The format is identical to
+   --  that of the parameter string found on R lines in ali files (see Lib.Writ
+   --  spec in lib-writ.ads for full details). The difference is that in this
+   --  context the values are the cumulative ones for the entire partition.
+
+   --  Interrupt_States is the address of a string used to specify the
+   --  cumulative results of Interrupt_State pragmas used in the partition.
+   --  The length of this string is determined by the last interrupt for which
+   --  such a pragma is given (the string will be a null string if no pragmas
+   --  were used). If pragma were present the entries apply to the interrupts
+   --  in sequence from the first interrupt, and are set to one of four
+   --  possible settings: 'n' for not specified, 'u' for user, 'r' for
+   --  run time, 's' for system, see description of Interrupt_State pragma
+   --  for further details.
+
+   --  Num_Interrupt_States is the length of the Interrupt_States string.
+   --  It will be set to zero if no Interrupt_State pragmas are present.
+
+   --  Unreserve_All_Interrupts is set to one if at least one unit in the
+   --  partition had a pragma Unreserve_All_Interrupts, and zero otherwise.
+
+   --  Exception_Tracebacks is set to one if the -E parameter was present
+   --  in the bind and to zero otherwise. Note that on some targets exception
+   --  tracebacks are provided by default, so a value of zero for this
+   --  parameter does not necessarily mean no trace backs are available.
+
+   --  Zero_Cost_Exceptions is set to one if zero cost exceptions are used for
+   --  this partition, and to zero if longjmp/setjmp exceptions are used.
+   --  the use of zero
+
    -----------------------
    -- Local Subprograms --
    -----------------------

@@ -52,7 +52,6 @@ with Snames;   use Snames;
 with Stand;    use Stand;
 with Stringt;  use Stringt;
 with Tbuild;   use Tbuild;
-with Ttypes;   use Ttypes;
 with Uintp;    use Uintp;
 with Validsw;  use Validsw;
 
@@ -181,16 +180,6 @@ package body Exp_Ch5 is
       --  an object. Such objects can be aliased to parameters (unlike local
       --  array references).
 
-      function Possible_Unaligned_Slice (Arg : Node_Id) return Boolean;
-      --  Returns True if Arg (either the left or right hand side of the
-      --  assignment) is a slice that could be unaligned wrt the array type.
-      --  This is true if Arg is a component of a packed record, or is
-      --  a record component to which a component clause applies. This
-      --  is a little pessimistic, but the result of an unnecessary
-      --  decision that something is possibly unaligned is only to
-      --  generate a front end loop, which is not so terrible.
-      --  It would really be better if backend handled this ???
-
       -----------------------
       -- Apply_Dereference --
       -----------------------
@@ -241,60 +230,6 @@ package body Exp_Ch5 is
             or else (Nkind (Exp) = N_Slice
                        and then Is_Non_Local_Array (Prefix (Exp)));
       end Is_Non_Local_Array;
-
-      ------------------------------
-      -- Possible_Unaligned_Slice --
-      ------------------------------
-
-      function Possible_Unaligned_Slice (Arg : Node_Id) return Boolean is
-      begin
-         --  No issue if this is not a slice, or else strict alignment
-         --  is not required in any case.
-
-         if Nkind (Arg) /= N_Slice
-           or else not Target_Strict_Alignment
-         then
-            return False;
-         end if;
-
-         --  No issue if the component type is a byte or byte aligned
-
-         declare
-            Array_Typ : constant Entity_Id := Etype (Arg);
-            Comp_Typ  : constant Entity_Id := Component_Type (Array_Typ);
-            Pref      : constant Node_Id   := Prefix (Arg);
-
-         begin
-            if Known_Alignment (Array_Typ) then
-               if Alignment (Array_Typ) = 1 then
-                  return False;
-               end if;
-
-            elsif Known_Component_Size (Array_Typ) then
-               if Component_Size (Array_Typ) = 1 then
-                  return False;
-               end if;
-
-            elsif Known_Esize (Comp_Typ) then
-               if Esize (Comp_Typ) <= System_Storage_Unit then
-                  return False;
-               end if;
-            end if;
-
-            --  No issue if this is not a selected component
-
-            if Nkind (Pref) /= N_Selected_Component then
-               return False;
-            end if;
-
-            --  Else we test for a possibly unaligned component
-
-            return
-              Is_Packed (Etype (Pref))
-                or else
-              Present (Component_Clause (Entity (Selector_Name (Pref))));
-         end;
-      end Possible_Unaligned_Slice;
 
       --  Determine if Lhs, Rhs are formal arrays or nonlocal arrays
 
@@ -528,8 +463,8 @@ package body Exp_Ch5 is
 
       elsif Is_Bit_Packed_Array (L_Type)
         or else Is_Bit_Packed_Array (R_Type)
-        or else Possible_Unaligned_Slice (Lhs)
-        or else Possible_Unaligned_Slice (Rhs)
+        or else Is_Possibly_Unaligned_Slice (Lhs)
+        or else Is_Possibly_Unaligned_Slice (Rhs)
       then
          Loop_Required := True;
 

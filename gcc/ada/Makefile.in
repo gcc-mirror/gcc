@@ -1861,27 +1861,18 @@ rts-zfp: force
 	   RTS_NAME=zfp RTS_SRCS="$(HIE_SOURCES)" \
 	   RTS_TARGET_PAIRS="$(HIE_NONE_TARGET_PAIRS)" \
 	   COMPILABLE_SOURCES="$(COMPILABLE_HIE_SOURCES)" 
-	-$(GNATMAKE) -Prts-zfp/zfp.gpr --GCC="../../../xgcc -B../../../"
+	$(GNATMAKE) -Prts-zfp/zfp.gpr --GCC="../../../xgcc -B../../../"
 	cd rts-zfp/adalib/ ; $(AR) r libgnat.a *.o
 	$(RM) rts-zfp/adalib/*.o
 	$(CHMOD) a-wx rts-zfp/adalib/*.ali
 	$(CHMOD) a-wx rts-zfp/adalib/libgnat.a
-
-rts-none: force
-	$(MAKE) $(FLAGS_TO_PASS) prepare-rts \
-	   RTS_NAME=none RTS_SRCS="$(HIE_SOURCES)" \
-	   RTS_TARGET_PAIRS="$(HIE_NONE_TARGET_PAIRS)" \
-	   COMPILABLE_SOURCES="$(COMPILABLE_HIE_SOURCES)" 
-	-$(GNATMAKE) -Prts-none/none.gpr --GCC="../../../xgcc -B../../../"
-	$(RM) rts-none/adalib/*.o
-	$(CHMOD) a-wx rts-none/adalib/*.ali
 
 rts-ravenscar: force
 	$(MAKE)  $(FLAGS_TO_PASS) prepare-rts \
 	   RTS_NAME=ravenscar RTS_SRCS="$(RAVEN_SOURCES)" \
 	   RTS_TARGET_PAIRS="$(HIE_RAVEN_TARGET_PAIRS)" \
 	   COMPILABLE_SOURCES="$(COMPILABLE_RAVEN_SOURCES)" 
-	-$(GNATMAKE) -Prts-ravenscar/ravenscar.gpr \
+	$(GNATMAKE) -Prts-ravenscar/ravenscar.gpr \
 	   --GCC="../../../xgcc -B../../../"
 	cd rts-ravenscar/adalib/ ; $(AR) r libgnat.a *.o
 	$(RM) rts-ravenscar/adalib/*.o

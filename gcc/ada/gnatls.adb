@@ -87,10 +87,10 @@ procedure Gnatls is
    Print_Unit       : Boolean := True;
    Print_Source     : Boolean := True;
    Print_Object     : Boolean := True;
-   --  Flags controlling the form of the outpout
+   --  Flags controlling the form of the output
 
-   Dependable       : Boolean := False;  --  flag -d
-   Also_Predef      : Boolean := False;
+   Dependable  : Boolean := False;  --  flag -d
+   Also_Predef : Boolean := False;
 
    Unit_Start   : Integer;
    Unit_End     : Integer;
@@ -132,14 +132,14 @@ procedure Gnatls is
    --  updated to the full file name if available.
 
    function Corresponding_Sdep_Entry (A : ALI_Id; U : Unit_Id) return Sdep_Id;
-   --  Give the Sdep entry corresponding to the unit U in ali record A.
+   --  Give the Sdep entry corresponding to the unit U in ali record A
 
    procedure Output_Object (O : File_Name_Type);
    --  Print out the name of the object when requested
 
    procedure Output_Source (Sdep_I : Sdep_Id);
    --  Print out the name and status of the source corresponding to this
-   --  sdep entry
+   --  sdep entry.
 
    procedure Output_Status (FS : File_Status; Verbose : Boolean);
    --  Print out FS either in a coded form if verbose is false or in an
@@ -152,10 +152,10 @@ procedure Gnatls is
    --  Reset Print flags properly when selective output is chosen
 
    procedure Scan_Ls_Arg (Argv : String; And_Save : Boolean);
-   --  Scan and process lser specific arguments. Argv is a single argument.
+   --  Scan and process lser specific arguments. Argv is a single argument
 
    procedure Usage;
-   --  Print usage message.
+   --  Print usage message
 
    -----------------
    -- Add_Lib_Dir --
@@ -279,10 +279,12 @@ procedure Gnatls is
 
       --  Verify is output is not wider than maximum number of columns
 
-      Too_Long := Verbose_Mode or else
-        (Max_Unit_Length + Max_Src_Length + Max_Obj_Length) > Max_Column;
+      Too_Long :=
+        Verbose_Mode
+          or else
+            (Max_Unit_Length + Max_Src_Length + Max_Obj_Length) > Max_Column;
 
-      --  Set start and end of columns.
+      --  Set start and end of columns
 
       Object_Start := 1;
       Object_End   := Object_Start - 1;
@@ -817,10 +819,9 @@ begin
    Namet.Initialize;
    Csets.Initialize;
 
-   --  Use low level argument routines to avoid dragging in the secondary stack
+   --  Loop to scan out arguments
 
    Next_Arg := 1;
-
    Scan_Args : while Next_Arg < Arg_Count loop
       declare
          Next_Argv : String (1 .. Len_Arg (Next_Arg));
@@ -956,6 +957,7 @@ begin
    end loop;
 
    Find_General_Layout;
+
    for Id in ALIs.First .. ALIs.Last loop
       declare
          Last_U : Unit_Id;
@@ -993,7 +995,7 @@ begin
                end if;
             end loop;
 
-            --  Print out list of dependable units
+            --  Print out list of units on which this unit depends (D lines)
 
             if Dependable and then Print_Source then
                if Verbose_Mode then

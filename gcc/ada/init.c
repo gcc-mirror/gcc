@@ -39,6 +39,10 @@
     installed by this file are used to handle resulting signals that come
     from these probes failing (i.e. touching protected pages) */
 
+/* This file should be kept synchronized with 2sinit.ads, 2sinit.adb, and
+   5zinit.adb. All these files implement the required functionality for
+   different targets. */
+
 /* The following include is here to meet the published VxWorks requirement
    that the __vxworks header appear before any other include. */
 #ifdef __vxworks
@@ -153,6 +157,9 @@ __gnat_get_interrupt_state (int intrup)
    referenced from the runtime, which may be in a shared library, and the
    binder file is not in the shared library. Global references across library
    boundaries like this are not handled correctly in all systems.  */
+
+/* For detailed description of the parameters to this routine, see the
+   section titled Run-Time Globals in package Bindgen (bindgen.adb) */
 
 void
 __gnat_set_globals (int main_priority,
@@ -363,6 +370,7 @@ __gnat_initialize (void)
    exclude this case in the above test.  */
 
 #include <signal.h>
+#include <setjmp.h>
 #include <sys/siginfo.h>
 
 static void __gnat_error_handler (int, siginfo_t *, struct sigcontext *);
@@ -440,7 +448,48 @@ __gnat_error_handler (int sig, siginfo_t *sip, struct sigcontext *context)
   if (mstate != 0)
     *mstate = *context;
 
-  Raise_From_Signal_Handler (exception, (char *) msg);
+  /* We are now going to raise the exception corresponding to the signal we
+     caught, which may eventually end up resuming the application code if the
+     exception is handled.
+
+     When the exception is handled, merely arranging for the *exception*
+     handler's context (stack pointer, program counter, other registers, ...)
+     to be installed is *not* enough to let the kernel think we've left the
+     *signal* handler.  This has annoying implications if an alternate stack
+     has been setup for this *signal* handler, because the kernel thinks we
+     are still running on that alternate stack even after the jump, which
+     causes trouble at least as soon as another signal is raised.
+
+     We deal with this by forcing a "local" longjmp within the signal handler
+     below, forcing the "on alternate stack" indication to be reset (kernel
+     wise) on the way.  If no alternate stack has been setup, this should be a
+     neutral operation. Otherwise, we will be in a delicate situation for a
+     short while because we are going to run the exception propagation code
+     within the alternate stack area (that is, with the stack pointer inside
+     the alternate stack bounds), but with the corresponding flag off from the
+     kernel's standpoint.  We expect this to be ok as long as the propagation
+     code does not trigger a signal itself, which is expected.
+
+     ??? A better approach would be to at least delay this operation until the
+     last second, that is, until just before we jump to the exception handler,
+     if any.  */
+  {
+    jmp_buf handler_jmpbuf;
+
+    if (setjmp (handler_jmpbuf) != 0)
+      Raise_From_Signal_Handler (exception, (char *) msg);
+    else
+      {
+	/* Arrange for the "on alternate stack" flag to be reset.  See the
+	   comments around "jmp_buf offsets" in /usr/include/setjmp.h.  */
+	struct sigcontext * handler_context
+	  = (struct sigcontext *) & handler_jmpbuf;
+
+	handler_context->sc_onstack = 0;
+	
+	longjmp (handler_jmpbuf, 1);
+      }
+  }
 }
 
 void
@@ -461,11 +510,12 @@ __gnat_install_handler (void)
      we want this to happen for tasks also.  */
 
   static char sig_stack [8*1024];
-  /* 8K allocated here because 4K is not enough for the GCC/ZCX scheme.  */
+  /* 8K is a mininum to be able to propagate an exception using the GCC/ZCX
+     scheme.  */
 
   struct sigaltstack ss;
 
-  ss.ss_sp = (void *) & sig_stack;
+  ss.ss_sp = (void *) sig_stack;
   ss.ss_size = sizeof (sig_stack);
   ss.ss_flags = 0;
 

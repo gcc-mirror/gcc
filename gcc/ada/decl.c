@@ -5366,7 +5366,7 @@ components_to_record (tree gnu_record_type,
 					  ? TYPE_SIZE (gnu_record_type) : 0),
 					 (all_rep_and_size
 					  ? bitsize_zero_node : 0),
-					 1);
+					 0);
 
 	  DECL_INTERNAL_P (gnu_field) = 1;
 	  DECL_QUALIFIER (gnu_field) = gnu_qual;
@@ -5397,7 +5397,7 @@ components_to_record (tree gnu_record_type,
 	    = create_field_decl (gnu_var_name, gnu_union_type, gnu_record_type,
 				 packed,
 				 all_rep ? TYPE_SIZE (gnu_union_type) : 0,
-				 all_rep ? bitsize_zero_node : 0, 1);
+				 all_rep ? bitsize_zero_node : 0, 0);
 
 	  DECL_INTERNAL_P (gnu_union_field) = 1;
 	  TREE_CHAIN (gnu_union_field) = gnu_field_list;

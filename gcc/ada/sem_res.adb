@@ -801,6 +801,22 @@ package body Sem_Res is
          Require_Entity (N);
       end if;
 
+      --  If the context expects a value, and the name is a procedure,
+      --  this is most likely a missing 'Access. Do not try to resolve
+      --  the parameterless call, error will be caught when the outer
+      --  call is analyzed.
+
+      if Is_Entity_Name (N)
+        and then Ekind (Entity (N)) = E_Procedure
+        and then not Is_Overloaded (N)
+        and then
+         (Nkind (Parent (N)) = N_Parameter_Association
+            or else Nkind (Parent (N)) = N_Function_Call
+            or else Nkind (Parent (N)) = N_Procedure_Call_Statement)
+      then
+         return;
+      end if;
+
       --  Rewrite as call if overloadable entity that is (or could be, in
       --  the overloaded case) a function call. If we know for sure that
       --  the entity is an enumeration literal, we do not rewrite it.
