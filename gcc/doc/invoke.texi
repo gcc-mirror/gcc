@@ -504,7 +504,8 @@ in the following sections.
 -mno-portable-runtime  -mno-soft-float @gol
 -mno-space-regs  -msoft-float  -mpa-risc-1-0 @gol
 -mpa-risc-1-1  -mpa-risc-2-0  -mportable-runtime @gol
--mschedule=@var{cpu-type}  -mspace-regs  -msio  -mwsio}
+-mschedule=@var{cpu-type}  -mspace-regs  -msio  -mwsio @gol
+-nolibdld  -static  -threads}
 
 @emph{Intel 960 Options}
 @gccoptlist{-m@var{cpu-type}  -masm-compat  -mclean-linkage @gol
@@ -4367,10 +4368,10 @@ function or the name of the data item determines the section's name
 in the output file.
 
 Use these options on systems where the linker can perform optimizations
-to improve locality of reference in the instruction space.  HPPA
-processors running HP-UX and SPARC processors running Solaris 2 have
-linkers with such optimizations.  Other systems using the ELF object format
-as well as AIX may have these optimizations in the future.
+to improve locality of reference in the instruction space.  Most systems
+using the ELF object format and SPARC processors running Solaris 2 have
+linkers with such optimizations.  AIX may have these optimizations in
+the future.
 
 Only use these options when there are significant benefits from doing
 so.  When you specify these options, the assembler and linker will
@@ -8576,6 +8577,30 @@ symbol-difference or pc-relative calls should be relatively small.
 However, an indirect call is used on 32-bit ELF systems in pic code
 and it is quite long.
 
+@item -nolibdld
+@opindex nolibdld
+Suppress the generation of link options to search libdld.sl when the
+@option{-static} option is specified on HP-UX 10 and later.
+
+@item -static
+@opindex static
+The HP-UX implementation of setlocale in libc has a dependency on
+libdld.sl.  There isn't an archive version of libdld.sl.  Thus,
+when the @option{-static} option is specified, special link options
+are needed to resolve this dependency.
+
+On HP-UX 10 and later, the GCC driver adds the necessary options to
+link with libdld.sl when the @option{-static} option is specified.
+This causes the resulting binary to be dynamic.  On the 64-bit port,
+the linkers generate dynamic binaries by default in any case.  The
+@option{-nolibdld} option can be used to prevent the GCC driver from
+adding these link options.
+
+@item -threads
+@opindex threads
+Add support for multithreading with the @dfn{dce thread} library
+under HP-UX.  This option sets flags for both the preprocessor and
+linker.
 @end table
 
 @node Intel 960 Options

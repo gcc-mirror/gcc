@@ -1,3 +1,19 @@
+2003-04-11  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* doc/install.texi (hppa): Update links for HP-UX patches.  Revise
+	notes on linker selection and configuration for 64-bit HP-UX port.
+	* doc/invoke.texi (hppa): Remove hppa text from description for
+	-ffunction-sections and -fdata-sections.  Document -static, -nolibdld
+	and -threads options.
+
+	* pa-hpux10.h (LIB_SPEC): Add link options to resolve dependency of
+	libc.a on libdld.sl when -static is specified and -nolibdld is not
+	specified.
+	* pa64-hpux.h (LIB_SPEC): Likewise.
+	* pa-hpux11.h (LIB_SPEC): Likewise.
+	(LINK_SPEC): Add __gcc_plt_call as an undefined symbol when -shared
+	is not specified.
+
 2003-04-11  Zack Weinberg  <zack@codesourcery.com>
 
 	* config/darwin-c.c (darwin_pragma_unused): Use lookup_name,
