@@ -14939,7 +14939,11 @@ ix86_rtx_costs (x, code, outer_code, total)
 	*total = 3;
       else if (TARGET_64BIT && !x86_64_zero_extended_value (x))
 	*total = 2;
-      else if (flag_pic && SYMBOLIC_CONST (x))
+      else if (flag_pic && SYMBOLIC_CONST (x)
+	       && (!TARGET_64BIT
+		   || (!GET_CODE (x) != LABEL_REF
+		       && (GET_CODE (x) != SYMBOL_REF
+		           || !SYMBOL_REF_FLAG (x)))))
 	*total = 1;
       else
 	*total = 0;
@@ -14962,7 +14966,7 @@ ix86_rtx_costs (x, code, outer_code, total)
 	    /* Start with (MEM (SYMBOL_REF)), since that's where
 	       it'll probably end up.  Add a penalty for size.  */
 	    *total = (COSTS_N_INSNS (1)
-		      + (flag_pic != 0)
+		      + (flag_pic != 0 && !TARGET_64BIT)
 		      + (mode == SFmode ? 0 : mode == DFmode ? 1 : 2));
 	    break;
 	  }
