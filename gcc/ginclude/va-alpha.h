@@ -13,7 +13,7 @@
 
 /* In VMS, __gnuc_va_list is simply char *; on OSF, it's a structure.  */
 
-#ifdef VMS
+#ifdef __VMS__
 typedef char *__gnuc_va_list;
 #else
 
@@ -38,7 +38,7 @@ typedef struct {
 /* varargs support */
 #define va_alist __builtin_va_alist
 #define va_dcl	 int __builtin_va_alist;...
-#ifdef VMS
+#ifdef __VMS__
 #define va_start(pvar) ((pvar) = __builtin_saveregs ())
 #else
 #define va_start(pvar) ((pvar) = * (__gnuc_va_list *) __builtin_saveregs ())
@@ -51,7 +51,7 @@ typedef struct {
 /* Call __builtin_next_arg even though we aren't using its value, so that
    we can verify that firstarg is correct.  */
 
-#ifdef VMS
+#ifdef __VMS__
 #define va_start(pvar, firstarg)				\
   (__builtin_next_arg (firstarg),				\
    (pvar) = __builtin_saveregs ())
@@ -109,7 +109,7 @@ enum {
   (((sizeof (__type) + __extension__ sizeof (long long) - 1)   \
     / __extension__ sizeof (long long)) * __extension__ sizeof (long long))
 
-#ifdef VMS
+#ifdef __VMS__
 #define va_arg(__va, __type)						\
 (*(((__va) += __va_tsize (__type)),					\
    (__type *)(void *)((__va) - __va_tsize (__type))))
