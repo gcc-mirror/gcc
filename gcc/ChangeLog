@@ -1,3 +1,26 @@
+2000-09-11  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cppfiles.c: Move all default-#defines to top of file.
+	(open_include_file): Replace by lookup_include_file.
+	(read_with_read, read_file): Merged into read_include_file.
+	(stack_include_file, purge_cache): New functions.
+	(close_cached_fd): Delete.
+	(lookup_include_file, read_include_file, _cpp_pop_file_buffer): 
+	Cache the in-memory buffer, not the file descriptor.
+
+	* cpphash.h (struct include_file): Add buffer, st, refcnt,
+	mapped fields.
+	(xcnew): New utility macro.
+	(DO_NOT_REREAD, NEVER_REREAD): Move up by struct include_file.
+	* cpplib.h (struct cpp_buffer): Remove mapped field.
+
+2000-09-11  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cpplex.c (parse_string): Accept backslash space newline as a
+	line continuation.
+	(lex_line): Likewise.
+	(_cpp_get_token): Remove hard limit on macro nesting.
+
 2000-09-12  Philipp Thomas  <pthomas@suse.de>
 
 	* aclocal.m4 (AM_WITH_NLS): Don't force use of included gettext.

@@ -1,3 +1,7 @@
+2000-09-11  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* gcc.dg/cpp/backslash.c: New test.
+
 2000-09-11  Alexandre Oliva  <aoliva@redhat.com>
 
 	* gcc.c-torture/execute/20000910-1.c: New test.

@@ -43,6 +43,22 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 # define O_BINARY 0
 #endif
 
+#ifndef INCLUDE_LEN_FUDGE
+# define INCLUDE_LEN_FUDGE 0
+#endif
+
+/* If errno is inspected immediately after a system call fails, it will be
+   nonzero, and no error number will ever be zero.  */
+#ifndef ENOENT
+# define ENOENT 0
+#endif
+#ifndef ENOTDIR
+# define ENOTDIR 0
+#endif
+#ifndef ENOMEM
+# define ENOMEM 0
+#endif
+
 /* Suppress warning about function macros used w/o arguments in traditional
    C.  It is unlikely that glibc's strcmp macro helps this file at all.  */
 #undef strcmp
@@ -57,22 +73,16 @@ static struct file_name_list *actual_directory
 static struct include_file *find_include_file
 				PARAMS ((cpp_reader *, const char *,
 					 struct file_name_list *));
-static struct include_file *open_include_file
+static struct include_file *lookup_include_file
 				PARAMS ((cpp_reader *, const char *));
 static int read_include_file	PARAMS ((cpp_reader *, struct include_file *));
-static ssize_t read_with_read	PARAMS ((cpp_buffer *, int, ssize_t));
-static ssize_t read_file	PARAMS ((cpp_buffer *, int, ssize_t));
-
+static int stack_include_file	PARAMS ((cpp_reader *, struct include_file *));
+static void purge_cache 	PARAMS ((struct include_file *));
 static void destroy_include_file_node	PARAMS ((splay_tree_value));
-static int close_cached_fd		PARAMS ((splay_tree_node, void *));
 static int report_missing_guard		PARAMS ((splay_tree_node, void *));
 
 #if 0
 static void hack_vms_include_specification PARAMS ((char *));
-#endif
-
-#ifndef INCLUDE_LEN_FUDGE
-#define INCLUDE_LEN_FUDGE 0
 #endif
 
 /* We use a splay tree to store information about all the include
@@ -87,24 +97,9 @@ destroy_include_file_node (v)
   struct include_file *f = (struct include_file *)v;
   if (f)
     {
-      if (f->fd != -1)
-	close (f->fd);
+      purge_cache (f);
       free (f);
     }
-}
-
-static int
-close_cached_fd (n, dummy)
-     splay_tree_node n;
-     void *dummy ATTRIBUTE_UNUSED;
-{
-  struct include_file *f = (struct include_file *)n->value;
-  if (f && f->fd != -1)
-    {
-      close (f->fd);
-      f->fd = -1;
-    }
-  return 0;
 }
 
 void
@@ -124,48 +119,24 @@ _cpp_cleanup_includes (pfile)
   splay_tree_delete (pfile->all_include_files);
 }
 
-/* Given a filename, look it up and possibly open it.  If the file
-   does not exist, return NULL.  If the file does exist but doesn't
-   need to be reread, return an include_file entry with fd == -1.
-   If it needs to be (re)read, return an include_file entry with
-   fd a file descriptor open on the file. */
+/* Given a file name, look it up in the cache; if there is no entry,
+   create one.  Returns 0 if the file doesn't exist or is
+   inaccessible, otherwise the cache entry.  */
 
 static struct include_file *
-open_include_file (pfile, filename)
+lookup_include_file (pfile, filename)
      cpp_reader *pfile;
      const char *filename;
-{
+{     
   splay_tree_node nd;
   struct include_file *file = 0;
   int fd;
+  struct stat st;
 
-  nd = splay_tree_lookup (pfile->all_include_files,
-			  (splay_tree_key) filename);
+  nd = splay_tree_lookup (pfile->all_include_files, (splay_tree_key) filename);
 
   if (nd)
-    {
-      if (nd->value == 0)
-	return 0;
-
-      file = (struct include_file *)nd->value;
-
-      if (DO_NOT_REREAD (file))
-	{
-	  if (file->fd != -1)
-	    {
-	      close (file->fd);
-	      file->fd = -1;
-	    }
-	  return file;
-	}
-
-      /* File descriptors are cached for files that might be reread.  */
-      if (file->fd != -1)
-	{
-	  lseek (file->fd, 0, SEEK_SET);
-	  return file;
-	}
-    }
+    return (struct include_file *)nd->value;
 
   /* We used to open files in nonblocking mode, but that caused more
      problems than it solved.  Do take care not to acquire a
@@ -180,67 +151,224 @@ open_include_file (pfile, filename)
      ourselves.
 
      Special case: the empty string is translated to stdin.  */
- retry:
 
   if (filename[0] == '\0')
     fd = 0;
   else
     fd = open (filename, O_RDONLY|O_NOCTTY|O_BINARY, 0666);
-
   if (fd == -1)
-    {
-#ifdef EACCES
-      if (errno == EACCES)
-	{
-	  cpp_error (pfile, "included file \"%s\" exists but is not readable",
-		     filename);
-	}
-#endif
-      if (0
-#ifdef EMFILE
-	  || errno == EMFILE
-#endif
-#ifdef ENFILE
-	  || errno == ENFILE
-#endif
-	  )
-	{
-	  /* Too many files open.  Close all cached file descriptors and
-	     try again.  */
-	  splay_tree_foreach (pfile->all_include_files, close_cached_fd, 0);
-	  goto retry;
-	}
+    goto fail;
 
-      /* Nonexistent or inaccessible file.  Create a negative node for it.  */
-      if (nd)
-	{
-	  cpp_ice (pfile,
-		   "node for '%s' exists, open failed, error '%s', value %lx\n",
-		   filename, strerror (errno), nd->value);
-	  destroy_include_file_node (nd->value);
-	}
-      splay_tree_insert (pfile->all_include_files,
-			 (splay_tree_key) xstrdup (filename), 0);
-      return 0;
-    }
-
-  /* If we haven't seen this file before, create a positive node for it.  */
-  if (!nd)
-    {
-      file = xnew (struct include_file);
-      file->cmacro = 0;
-      file->include_count = 0;
-      file->sysp = 0;
-      file->foundhere = 0;
-      file->name = xstrdup (filename);
-      splay_tree_insert (pfile->all_include_files,
-			 (splay_tree_key) file->name,
-			 (splay_tree_value) file);
-    }
-
+  if (fstat (fd, &st) < 0)
+    goto fail;
+  
+  file = xcnew (struct include_file);
+  file->name = xstrdup (filename);
+  file->st = st;
   file->fd = fd;
-  file->date = (time_t) -1;
+
+  /* If the file is plain and zero length, mark it never-reread now.  */
+  if (S_ISREG (st.st_mode) && st.st_size == 0)
+    file->cmacro = NEVER_REREAD;
+
+  splay_tree_insert (pfile->all_include_files,
+		     (splay_tree_key) file->name, (splay_tree_value) file);
   return file;
+
+ fail:
+
+  /* Don't issue an error message if the file doesn't exist.  */
+  if (errno != ENOENT && errno != ENOTDIR)
+    cpp_error_from_errno (pfile, filename);
+
+  /* Create a negative node for this path.  */
+  splay_tree_insert (pfile->all_include_files,
+		     (splay_tree_key) xstrdup (filename), 0);
+  return 0;
+}
+
+/* Place the file referenced by INC into a new buffer on PFILE's stack.
+   Return 1 if successful, 0 if not.  */
+
+static int
+stack_include_file (pfile, inc)
+     cpp_reader *pfile;
+     struct include_file *inc;
+{
+  cpp_buffer *fp;
+
+  if (DO_NOT_REREAD (inc))
+    return 0;
+
+  if (inc->buffer == NULL)
+    if (read_include_file (pfile, inc) == 0)
+      return 0;
+
+  fp = cpp_push_buffer (pfile, NULL, 0);
+  if (fp == 0)
+    return 0;
+
+  fp->inc = inc;
+  fp->nominal_fname = inc->name;
+  fp->buf = inc->buffer;
+  fp->rlimit = fp->buf + inc->st.st_size;
+  fp->cur = fp->buf;
+  fp->lineno = 1;
+  fp->line_base = fp->buf;
+
+  /* The ->actual_dir field is only used when ignore_srcdir is not in effect;
+     see do_include */
+  if (!CPP_OPTION (pfile, ignore_srcdir))
+    fp->actual_dir = actual_directory (pfile, inc->name);
+
+  fp->inc->refcnt++;
+  pfile->include_depth++;
+  pfile->input_stack_listing_current = 0;
+  if (pfile->cb.enter_file)
+    (*pfile->cb.enter_file) (pfile);
+  return 1;
+}
+
+/* Read the file referenced by INC into the file cache.
+
+   If fd points to a plain file, we might be able to mmap it; we can
+   definitely allocate the buffer all at once.  If fd is a pipe or
+   terminal, we can't do either.  If fd is something weird, like a
+   block device or a directory, we don't want to read it at all.
+
+   Unfortunately, different systems use different st.st_mode values
+   for pipes: some have S_ISFIFO, some S_ISSOCK, some are buggy and
+   zero the entire struct stat except a couple fields.  Hence we don't
+   even try to figure out what something is, except for plain files,
+   directories, and block devices.
+
+   FIXME: Flush file cache and try again if we run out of memory.  */
+
+static int
+read_include_file (pfile, inc)
+     cpp_reader *pfile;
+     struct include_file *inc;
+{
+  ssize_t size, offset, count;
+  U_CHAR *buf;
+#if MMAP_THRESHOLD
+  static int pagesize = -1;
+#endif
+
+  if (S_ISREG (inc->st.st_mode))
+    {
+      /* off_t might have a wider range than ssize_t - in other words,
+	 the max size of a file might be bigger than the address
+	 space.  We can't handle a file that large.  (Anyone with
+	 a single source file bigger than 2GB needs to rethink
+	 their coding style.)  Some systems (e.g. AIX 4.1) define
+	 SSIZE_MAX to be much smaller than the actual range of the
+	 type.  Use INTTYPE_MAXIMUM unconditionally to ensure this
+	 does not bite us.  */
+      if (inc->st.st_size > INTTYPE_MAXIMUM (ssize_t))
+	{
+	  cpp_error (pfile, "%s is too large", inc->name);
+	  goto fail;
+	}
+      size = inc->st.st_size;
+
+#if MMAP_THRESHOLD
+      if (pagesize == -1)
+	pagesize = getpagesize ();
+
+      if (size / pagesize >= MMAP_THRESHOLD)
+	{
+	  buf = (U_CHAR *) mmap (0, size, PROT_READ, MAP_PRIVATE, inc->fd, 0);
+	  if (buf == (U_CHAR *)-1)
+	    goto perror_fail;
+	  inc->mapped = 1;
+	}
+      else
+#endif
+	{
+	  buf = (U_CHAR *) xmalloc (size);
+	  offset = 0;
+	  while (offset < size)
+	    {
+	      count = read (inc->fd, buf + offset, size - offset);
+	      if (count < 0)
+		goto perror_fail;
+	      if (count == 0)
+		{
+		  cpp_warning (pfile, "%s is shorter than expected", inc->name);
+		  break;
+		}
+	      offset += count;
+	    }
+	  inc->mapped = 0;
+	}
+    }
+  else if (S_ISBLK (inc->st.st_mode))
+    {
+      cpp_error (pfile, "%s is a block device", inc->name);
+      goto fail;
+    }
+  else if (S_ISDIR (inc->st.st_mode))
+    {
+      cpp_error (pfile, "%s is a directory", inc->name);
+      goto fail;
+    }
+  else
+    {
+      /* 8 kilobytes is a sensible starting size.  It ought to be
+	 bigger than the kernel pipe buffer, and it's definitely
+	 bigger than the majority of C source files.  */
+      size = 8 * 1024;
+
+      buf = (U_CHAR *) xmalloc (size);
+      offset = 0;
+      while ((count = read (inc->fd, buf + offset, size - offset)) > 0)
+	{
+	  offset += count;
+	  if (offset == size)
+	    buf = xrealloc (buf, (size *= 2));
+	}
+      if (count < 0)
+	goto perror_fail;
+
+      if (offset == 0)
+	{
+	  free (buf);
+	  return 0;
+	}
+
+      if (offset < size)
+	buf = xrealloc (buf, offset);
+      inc->st.st_size = offset;
+    }
+
+  close (inc->fd);
+  inc->buffer = buf;
+  inc->fd = -1;
+  return 1;
+
+ perror_fail:
+  cpp_error_from_errno (pfile, inc->name);
+ fail:
+  /* Do not try to read this file again.  */
+  close (inc->fd);
+  inc->fd = -1;
+  inc->cmacro = NEVER_REREAD;
+  return 0;
+}
+
+static void
+purge_cache (inc)
+     struct include_file *inc;
+{
+  if (inc->buffer)
+    {
+      if (inc->mapped)
+	munmap ((caddr_t) inc->buffer, inc->st.st_size);
+      else
+	free ((PTR) inc->buffer);
+      inc->buffer = NULL;
+    }
 }
 
 /* Return 1 if the file named by FNAME has been included before in
@@ -282,8 +410,7 @@ cpp_included (pfile, fname)
 
 /* Search for include file FNAME in the include chain starting at
    SEARCH_START.  Return 0 if there is no such file (or it's un-openable),
-   otherwise an include_file structure, possibly with a file descriptor
-   open on the file.  */
+   otherwise an include_file structure.  */
 
 static struct include_file *
 find_include_file (pfile, fname, search_start)
@@ -296,7 +423,7 @@ find_include_file (pfile, fname, search_start)
   struct include_file *file;
 
   if (fname[0] == '/')
-    return open_include_file (pfile, fname);
+    return lookup_include_file (pfile, fname);
       
   /* Search directory path for the file.  */
   name = (char *) alloca (strlen (fname) + pfile->max_include_len
@@ -310,7 +437,7 @@ find_include_file (pfile, fname, search_start)
       if (CPP_OPTION (pfile, remap))
 	name = remap_filename (pfile, name, path);
 
-      file = open_include_file (pfile, name);
+      file = lookup_include_file (pfile, name);
       if (file)
 	{
 	  file->sysp = path->sysp;
@@ -321,9 +448,9 @@ find_include_file (pfile, fname, search_start)
   return 0;
 }
 
-/* #line uses this to save artificial file names.  We have to try
-   opening the file because an all_include_files entry is always
-   either + or -, there's no 'I don't know' value.  */
+/* #line uses this to save artificial file names.  We have to stat the
+   file because an all_include_files entry is always either + or -,
+   there's no 'I don't know' value.  */
 const char *
 _cpp_fake_include (pfile, fname)
      cpp_reader *pfile;
@@ -335,7 +462,14 @@ _cpp_fake_include (pfile, fname)
 
   file = find_include_file (pfile, fname, CPP_OPTION (pfile, quote_include));
   if (file)
-    return file->name;
+    {
+      if (file->fd > 0)
+	{
+	  close (file->fd);
+	  file->fd = -1;
+	}
+      return file->name;
+    }
 
   name = xstrdup (fname);
   _cpp_simplify_pathname (name);
@@ -453,31 +587,28 @@ _cpp_execute_include (pfile, f, len, no_reinclude, search_start, angle_brackets)
 
   if (inc)
     {
-      if (inc->fd == -1)
-	return;
-
       /* For -M, add the file to the dependencies on its first inclusion. */
       if (!inc->include_count && PRINT_THIS_DEP (pfile, angle_brackets))
 	deps_add_dep (pfile->deps, inc->name);
       inc->include_count++;
 
-      /* Handle -H option.  */
-      if (CPP_OPTION (pfile, print_include_names))
-	{
-	  cpp_buffer *fp = CPP_BUFFER (pfile);
-	  while ((fp = CPP_PREV_BUFFER (fp)) != NULL)
-	    putc ('.', stderr);
-	  fprintf (stderr, " %s\n", inc->name);
-	}
-
       /* Actually process the file.  */
-      if (no_reinclude)
-	inc->cmacro = NEVER_REREAD;
-  
-      if (read_include_file (pfile, inc))
+      if (stack_include_file (pfile, inc))
 	{
 	  if (angle_brackets)
 	    pfile->system_include_depth++;
+
+	  if (no_reinclude)
+	    inc->cmacro = NEVER_REREAD;
+
+	  /* Handle -H option.  */
+	  if (CPP_OPTION (pfile, print_include_names))
+	    {
+	      cpp_buffer *fp = CPP_BUFFER (pfile);
+	      while ((fp = CPP_PREV_BUFFER (fp)) != NULL)
+		putc ('.', stderr);
+	      fprintf (stderr, " %s\n", inc->name);
+	    }
 	}
       return;
     }
@@ -552,23 +683,13 @@ _cpp_compare_file_date (pfile, f, len, angle_brackets)
   
   if (!inc)
     return -1;
-  if (inc->fd >= 0)
+  if (inc->fd > 0)
     {
-      struct stat source;
-      
-      if (fstat (inc->fd, &source) < 0)
-        {
-          close (inc->fd);
-          inc->fd = -1;
-          return -1;
-        }
-      inc->date = source.st_mtime;
       close (inc->fd);
       inc->fd = -1;
     }
-  if (inc->date == (time_t)-1 || current_include->date == (time_t)-1)
-    return -1;
-  return inc->date > current_include->date;
+    
+  return inc->st.st_mtime > current_include->st.st_mtime;
 }
 
 
@@ -584,7 +705,7 @@ cpp_read_file (pfile, fname)
   if (fname == NULL)
     fname = "";
 
-  f = open_include_file (pfile, fname);
+  f = lookup_include_file (pfile, fname);
 
   if (f == NULL)
     {
@@ -592,188 +713,7 @@ cpp_read_file (pfile, fname)
       return 0;
     }
 
-  return read_include_file (pfile, f);
-}
-
-/* Read the file referenced by INC into a new buffer on PFILE's stack.
-   Return 1 if successful, 0 if not.  */
-
-static int
-read_include_file (pfile, inc)
-     cpp_reader *pfile;
-     struct include_file *inc;
-{
-  struct stat st;
-  ssize_t length;
-  cpp_buffer *fp;
-  int fd = inc->fd;
-
-  fp = cpp_push_buffer (pfile, NULL, 0);
-
-  if (fp == 0)
-    goto push_fail;
-
-  if (fd < 0 || fstat (fd, &st) < 0)
-    goto perror_fail;
-  
-  /* These must be set right away.  */
-  inc->date = st.st_mtime;
-  fp->inc = inc;
-  fp->nominal_fname = inc->name;
-
-  /* If fd points to a plain file, we might be able to mmap it; we can
-     definitely allocate the buffer all at once.  If fd is a pipe or
-     terminal, we can't do either.  If fd is something weird, like a
-     block device or a directory, we don't want to read it at all.
-
-     Unfortunately, different systems use different st.st_mode values
-     for pipes: some have S_ISFIFO, some S_ISSOCK, some are buggy and
-     zero the entire struct stat except a couple fields.  Hence we don't
-     even try to figure out what something is, except for plain files,
-     directories, and block devices.  */
-
-  if (S_ISREG (st.st_mode))
-    {
-      ssize_t st_size;
-
-      /* off_t might have a wider range than ssize_t - in other words,
-	 the max size of a file might be bigger than the address
-	 space.  We can't handle a file that large.  (Anyone with
-	 a single source file bigger than 2GB needs to rethink
-	 their coding style.)  Some systems (e.g. AIX 4.1) define
-	 SSIZE_MAX to be much smaller than the actual range of the
-	 type.  Use INTTYPE_MAXIMUM unconditionally to ensure this
-	 does not bite us.  */
-      if (st.st_size > INTTYPE_MAXIMUM (ssize_t))
-	{
-	  cpp_error (pfile, "%s is too large", inc->name);
-	  goto fail;
-	}
-      st_size = st.st_size;
-      length = read_file (fp, fd, st_size);
-      if (length == -1)
-	goto perror_fail;
-      if (length < st_size)
-	cpp_warning (pfile, "%s is shorter than expected\n", inc->name);
-    }
-  else if (S_ISBLK (st.st_mode))
-    {
-      cpp_error (pfile, "%s is a block device", inc->name);
-      goto fail;
-    }
-  else if (S_ISDIR (st.st_mode))
-    {
-      cpp_error (pfile, "%s is a directory", inc->name);
-      goto fail;
-    }
-  else
-    {
-      /* 8 kilobytes is a sensible starting size.  It ought to be
-	 bigger than the kernel pipe buffer, and it's definitely
-	 bigger than the majority of C source files.  */
-      length = read_with_read (fp, fd, 8 * 1024);
-      if (length == -1)
-	goto perror_fail;
-    }
-
-  if (length == 0)
-    inc->cmacro = NEVER_REREAD;
-
-  fp->rlimit = fp->buf + length;
-  fp->cur = fp->buf;
-  fp->lineno = 1;
-  fp->line_base = fp->buf;
-
-  /* The ->actual_dir field is only used when ignore_srcdir is not in effect;
-     see do_include */
-  if (!CPP_OPTION (pfile, ignore_srcdir))
-    fp->actual_dir = actual_directory (pfile, inc->name);
-
-  pfile->include_depth++;
-  pfile->input_stack_listing_current = 0;
-  if (pfile->cb.enter_file)
-    (*pfile->cb.enter_file) (pfile);
-  return 1;
-
- perror_fail:
-  cpp_error_from_errno (pfile, inc->name);
-  /* Do not try to read this file again.  */
-  if (fd != -1)
-    close (fd);
-  inc->fd = -1;
-  inc->cmacro = NEVER_REREAD;
- fail:
-  cpp_pop_buffer (pfile);
- push_fail:
-  return 0;
-}
-
-static ssize_t
-read_file (fp, fd, size)
-     cpp_buffer *fp;
-     int fd;
-     ssize_t size;
-{
-  static int pagesize = -1;
-
-  if (size == 0)
-    return 0;
-
-  if (pagesize == -1)
-    pagesize = getpagesize ();
-
-#if MMAP_THRESHOLD
-  if (size / pagesize >= MMAP_THRESHOLD)
-    {
-      const U_CHAR *result
-	= (const U_CHAR *) mmap (0, size, PROT_READ, MAP_PRIVATE, fd, 0);
-      if (result != (const U_CHAR *)-1)
-	{
-	  fp->buf = result;
-	  fp->mapped = 1;
-	  return size;
-	}
-    }
-  /* If mmap fails, try read.  If there's really a problem, read will
-     fail too.  */
-#endif
-
-  return read_with_read (fp, fd, size);
-}
-
-static ssize_t
-read_with_read (fp, fd, size)
-     cpp_buffer *fp;
-     int fd;
-     ssize_t size;
-{
-  ssize_t offset, count;
-  U_CHAR *buf;
-
-  buf = (U_CHAR *) xmalloc (size);
-  offset = 0;
-  while ((count = read (fd, buf + offset, size - offset)) > 0)
-    {
-      offset += count;
-      if (offset == size)
-	buf = xrealloc (buf, (size *= 2));
-    }
-  if (count < 0)
-    {
-      free (buf);
-      return -1;
-    }
-  if (offset == 0)
-    {
-      free (buf);
-      return 0;
-    }
-
-  if (offset < size)
-    buf = xrealloc (buf, offset);
-  fp->buf = buf;
-  fp->mapped = 0;
-  return offset;
+  return stack_include_file (pfile, f);
 }
 
 /* Do appropriate cleanup when a file buffer is popped off the input
@@ -797,21 +737,9 @@ _cpp_pop_file_buffer (pfile, buf)
     }
   pfile->input_stack_listing_current = 0;
 
-  /* Discard file buffer.  XXX Would be better to cache these instead
-     of the file descriptors.  */
-#ifdef HAVE_MMAP_FILE
-  if (buf->mapped)
-    munmap ((caddr_t) buf->buf, buf->rlimit - buf->buf);
-  else
-#endif
-    free ((PTR) buf->buf);
-
-  /* If the file will not be included again, close it.  */
-  if (DO_NOT_REREAD (inc))
-    {
-      close (inc->fd);
-      inc->fd = -1;
-    }
+  inc->refcnt--;
+  if (inc->refcnt == 0 && DO_NOT_REREAD (inc))
+    purge_cache (inc);
 }
 
 /* The file_name_map structure holds a mapping of file names for a

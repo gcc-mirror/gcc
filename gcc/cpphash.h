@@ -115,11 +115,23 @@ struct include_file
   const struct file_name_list *foundhere;
 				/* location in search path where file was
 				   found, for #include_next */
-  int fd;			/* file descriptor possibly open on file */
+  const unsigned char *buffer;	/* pointer to cached file contents */
+  struct stat st;		/* copy of stat(2) data for file */
+  int fd;			/* fd open on file (short term storage only) */
   unsigned short include_count;	/* number of times file has been read */
-  unsigned short sysp;		/* file is a system header */
-  time_t  date;                 /* modification date of file, if known */
+  unsigned short refcnt;	/* number of stacked buffers using this file */
+  unsigned char sysp;		/* file is a system header */
+  unsigned char mapped;		/* file buffer is mmapped */
 };
+
+/* The cmacro works like this: If it's NULL, the file is to be
+   included again.  If it's NEVER_REREAD, the file is never to be
+   included again.  Otherwise it is a macro hashnode, and the file is
+   to be included again if the macro is not defined.  */
+#define NEVER_REREAD ((const cpp_hashnode *)-1)
+#define DO_NOT_REREAD(inc) \
+((inc)->cmacro && \
+ ((inc)->cmacro == NEVER_REREAD || (inc)->cmacro->type != T_VOID))
 
 /* Special nodes - identifiers with predefined significance.
    Note that the array length of dirs[] must be kept in sync with
@@ -132,16 +144,6 @@ struct spec_nodes
   cpp_hashnode *n__VA_ARGS__;		/* C99 vararg macros */
   cpp_hashnode *dirs[19];		/* 19 directives counting #sccs */
 };
-
-
-/* The cmacro works like this: If it's NULL, the file is to be
-   included again.  If it's NEVER_REREAD, the file is never to be
-   included again.  Otherwise it is a macro hashnode, and the file is
-   to be included again if the macro is not defined.  */
-#define NEVER_REREAD ((const cpp_hashnode *)-1)
-#define DO_NOT_REREAD(inc) \
-((inc)->cmacro && \
- ((inc)->cmacro == NEVER_REREAD || (inc)->cmacro->type != T_VOID))
 
 /* Character classes.
    If the definition of `numchar' looks odd to you, please look up the
@@ -293,6 +295,7 @@ extern void _cpp_init_internal_pragmas PARAMS ((cpp_reader *));
 
 /* Utility routines and macros.  */
 #define xnew(T)		(T *) xmalloc (sizeof(T))
+#define xcnew(T)	(T *) xcalloc (1, sizeof(T))
 #define xnewvec(T, N)	(T *) xmalloc (sizeof(T) * (N))
 #define xcnewvec(T, N)	(T *) xcalloc (N, sizeof(T))
 #define xobnew(O, T)	(T *) obstack_alloc (O, sizeof(T))
