@@ -57,6 +57,7 @@ static tree vect_get_vec_def_for_operand (tree, tree);
 static tree vect_init_vector (tree, tree);
 static void vect_finish_stmt_generation 
   (tree stmt, tree vec_stmt, block_stmt_iterator *bsi);
+static void update_vuses_to_preheader (tree, struct loop*);
 
 /* Utility function dealing with loop peeling (not peeling itself).  */
 static void vect_generate_tmps_on_preheader 
@@ -304,11 +305,6 @@ vect_create_data_ref_ptr (tree stmt, block_stmt_iterator *bsi, tree offset,
   tree vect_ptr_type;
   tree vect_ptr;
   tree tag;
-  v_may_def_optype v_may_defs = STMT_V_MAY_DEF_OPS (stmt);
-  v_must_def_optype v_must_defs = STMT_V_MUST_DEF_OPS (stmt);
-  vuse_optype vuses = STMT_VUSE_OPS (stmt);
-  int nvuses, nv_may_defs, nv_must_defs;
-  int i;
   tree new_temp;
   tree vec_stmt;
   tree new_stmt_list = NULL_TREE;
@@ -348,37 +344,13 @@ vect_create_data_ref_ptr (tree stmt, block_stmt_iterator *bsi, tree offset,
   add_referenced_tmp_var (vect_ptr);
   
   
-  /** (2) Handle aliasing information of the new vector-pointer:  **/
+  /** (2) Add aliasing information to the new vector-pointer:
+          (The points-to info (SSA_NAME_PTR_INFO) may be defined later.)  **/
   
   tag = STMT_VINFO_MEMTAG (stmt_info);
   gcc_assert (tag);
   get_var_ann (vect_ptr)->type_mem_tag = tag;
   get_var_ann (vect_ptr)->subvars = STMT_VINFO_SUBVARS (stmt_info);
-
-  /* Mark for renaming all aliased variables
-     (i.e, the may-aliases of the type-mem-tag).  */
-  nvuses = NUM_VUSES (vuses);
-  nv_may_defs = NUM_V_MAY_DEFS (v_may_defs);
-  nv_must_defs = NUM_V_MUST_DEFS (v_must_defs);
-
-  for (i = 0; i < nvuses; i++)
-    {
-      tree use = VUSE_OP (vuses, i);
-      if (TREE_CODE (use) == SSA_NAME)
-        bitmap_set_bit (vars_to_rename, var_ann (SSA_NAME_VAR (use))->uid);
-    }
-  for (i = 0; i < nv_may_defs; i++)
-    {
-      tree def = V_MAY_DEF_RESULT (v_may_defs, i);
-      if (TREE_CODE (def) == SSA_NAME)
-        bitmap_set_bit (vars_to_rename, var_ann (SSA_NAME_VAR (def))->uid);
-    }
-  for (i = 0; i < nv_must_defs; i++)
-    {
-      tree def = V_MUST_DEF_RESULT (v_must_defs, i);
-      if (TREE_CODE (def) == SSA_NAME)
-        bitmap_set_bit (vars_to_rename, var_ann (SSA_NAME_VAR (def))->uid);
-    }
 
 
   /** (3) Calculate the initial address the vector-pointer, and set
@@ -405,7 +377,13 @@ vect_create_data_ref_ptr (tree stmt, block_stmt_iterator *bsi, tree offset,
   /** (4) Handle the updating of the vector-pointer inside the loop: **/
 
   if (only_init) /* No update in loop is required.  */
-    return vect_ptr_init;
+    {
+      /* Copy the points-to information if it exists. */
+      if (STMT_VINFO_PTR_INFO (stmt_info))
+        duplicate_ssa_name_ptr_info (vect_ptr_init,
+                                     STMT_VINFO_PTR_INFO (stmt_info));
+      return vect_ptr_init;
+    }
 
   idx = vect_create_index_for_vector_ref (loop_vinfo);
 
@@ -436,6 +414,9 @@ vect_create_data_ref_ptr (tree stmt, block_stmt_iterator *bsi, tree offset,
   bsi_insert_before (bsi, vec_stmt, BSI_SAME_STMT);
   data_ref_ptr = TREE_OPERAND (vec_stmt, 0);
 
+  /* Copy the points-to information if it exists. */
+  if (STMT_VINFO_PTR_INFO (stmt_info))
+    duplicate_ssa_name_ptr_info (data_ref_ptr, STMT_VINFO_PTR_INFO (stmt_info));
   return data_ref_ptr;
 }
 
@@ -865,6 +846,8 @@ vectorizable_store (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
   enum machine_mode vec_mode;
   tree dummy;
   enum dr_alignment_support alignment_support_cheme;
+  v_may_def_optype v_may_defs;
+  int nv_may_defs, i;
 
   /* Is vectorizable store? */
 
@@ -921,6 +904,20 @@ vectorizable_store (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
   /* Arguments are ready. create the new vector stmt.  */
   *vec_stmt = build2 (MODIFY_EXPR, vectype, data_ref, vec_oprnd1);
   vect_finish_stmt_generation (stmt, *vec_stmt, bsi);
+
+  /* Copy the V_MAY_DEFS representing the aliasing of the original array
+     element's definition to the vector's definition then update the
+     defining statement.  The original is being deleted so the same
+     SSA_NAMEs can be used.  */
+  copy_virtual_operands (*vec_stmt, stmt);
+  v_may_defs = STMT_V_MAY_DEF_OPS (*vec_stmt);
+  nv_may_defs = NUM_V_MAY_DEFS (v_may_defs);
+	    
+  for (i = 0; i < nv_may_defs; i++)
+    {
+      tree ssa_name = V_MAY_DEF_RESULT (v_may_defs, i);
+      SSA_NAME_DEF_STMT (ssa_name) = *vec_stmt;
+    }
 
   return true;
 }
@@ -1023,6 +1020,7 @@ vectorizable_load (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
       new_temp = make_ssa_name (vec_dest, new_stmt);
       TREE_OPERAND (new_stmt, 0) = new_temp;
       vect_finish_stmt_generation (stmt, new_stmt, bsi);
+      copy_virtual_operands (new_stmt, stmt);
     }
   else if (alignment_support_cheme == dr_unaligned_software_pipeline)
     {
@@ -1060,6 +1058,8 @@ vectorizable_load (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
       new_bb = bsi_insert_on_edge_immediate (pe, new_stmt);
       gcc_assert (!new_bb);
       msq_init = TREE_OPERAND (new_stmt, 0);
+      copy_virtual_operands (new_stmt, stmt);
+      update_vuses_to_preheader (new_stmt, loop);
 
 
       /* <2> Create lsq = *(floor(p2')) in the loop  */ 
@@ -1074,6 +1074,7 @@ vectorizable_load (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
       TREE_OPERAND (new_stmt, 0) = new_temp;
       vect_finish_stmt_generation (stmt, new_stmt, bsi);
       lsq = TREE_OPERAND (new_stmt, 0);
+      copy_virtual_operands (new_stmt, stmt);
 
 
       /* <3> */
@@ -1092,9 +1093,12 @@ vectorizable_load (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
 	  gcc_assert (!new_bb);
 	  magic = TREE_OPERAND (new_stmt, 0);
 
-	  /* Since we have just created a CALL_EXPR, we may need to
-	     rename call-clobbered variables.  */
-	  mark_call_clobbered_vars_to_rename ();
+	  /* The result of the CALL_EXPR to this builtin is determined from
+	     the value of the parameter and no global variables are touched
+	     which makes the builtin a "const" function.  Requiring the
+	     builtin to have the "const" attribute makes it unnecessary
+	     to call mark_call_clobbered_vars_to_rename.  */
+	  gcc_assert (TREE_READONLY (builtin_decl));
 	}
       else
 	{
@@ -1265,6 +1269,84 @@ vect_generate_tmps_on_preheader (loop_vec_info loop_vinfo,
   *ratio_name_ptr = ratio_name;
     
   return;  
+}
+
+
+/* Function update_vuses_to_preheader.
+
+   Input:
+   STMT - a statement with potential VUSEs.
+   LOOP - the loop whose preheader will contain STMT.
+
+   It's possible to vectorize a loop even though an SSA_NAME from a VUSE
+   appears to be defined in a V_MAY_DEF in another statement in a loop.
+   One such case is when the VUSE is at the dereference of a __restricted__
+   pointer in a load and the V_MAY_DEF is at the dereference of a different
+   __restricted__ pointer in a store.  Vectorization may result in
+   copy_virtual_uses being called to copy the problematic VUSE to a new
+   statement that is being inserted in the loop preheader.  This procedure
+   is called to change the SSA_NAME in the new statement's VUSE from the
+   SSA_NAME updated in the loop to the related SSA_NAME available on the
+   path entering the loop.
+
+   When this function is called, we have the following situation:
+
+        # vuse <name1>
+        S1: vload
+    do {
+        # name1 = phi < name0 , name2>
+
+        # vuse <name1>
+        S2: vload
+
+        # name2 = vdef <name1>
+        S3: vstore
+
+    }while...
+
+   Stmt S1 was created in the loop preheader block as part of misaligned-load
+   handling. This function fixes the name of the vuse of S1 from 'name1' to
+   'name0'.  */
+
+static void
+update_vuses_to_preheader (tree stmt, struct loop *loop)
+{
+  basic_block header_bb = loop->header;
+  edge preheader_e = loop_preheader_edge (loop);
+  vuse_optype vuses = STMT_VUSE_OPS (stmt);
+  int nvuses = NUM_VUSES (vuses);
+  int i;
+
+  for (i = 0; i < nvuses; i++)
+    {
+      tree ssa_name = VUSE_OP (vuses, i);
+      tree def_stmt = SSA_NAME_DEF_STMT (ssa_name);
+      tree name_var = SSA_NAME_VAR (ssa_name);
+      basic_block bb = bb_for_stmt (def_stmt);
+
+      /* For a use before any definitions, def_stmt is a NOP_EXPR.  */
+      if (!IS_EMPTY_STMT (def_stmt)
+	  && flow_bb_inside_loop_p (loop, bb))
+        {
+          /* If the block containing the statement defining the SSA_NAME
+             is in the loop then it's necessary to find the definition
+             outside the loop using the PHI nodes of the header.  */
+	  tree phi;
+	  bool updated = false;
+
+	  for (phi = phi_nodes (header_bb); phi; phi = TREE_CHAIN (phi))
+	    {
+	      if (SSA_NAME_VAR (PHI_RESULT (phi)) == name_var)
+		{
+		  SET_VUSE_OP (vuses, i, 
+			       PHI_ARG_DEF (phi, preheader_e->dest_idx));
+		  updated = true;
+		  break;
+		}
+	    }
+	  gcc_assert (updated);
+	}
+    }
 }
 
 

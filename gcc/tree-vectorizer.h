@@ -178,6 +178,7 @@ typedef struct _stmt_vec_info {
 
   /* Aliasing information.  */
   tree memtag;
+  struct ptr_info_def *ptr_info;
   subvar_t subvars;
 
   /** The following fields are used to store the information about 
@@ -220,7 +221,8 @@ typedef struct _stmt_vec_info {
 #define STMT_VINFO_VEC_STMT(S)            (S)->vectorized_stmt
 #define STMT_VINFO_DATA_REF(S)            (S)->data_ref_info
 #define STMT_VINFO_MEMTAG(S)              (S)->memtag
-#define STMT_VINFO_SUBVARS(S)              (S)->subvars
+#define STMT_VINFO_PTR_INFO(S)            (S)->ptr_info
+#define STMT_VINFO_SUBVARS(S)             (S)->subvars
 #define STMT_VINFO_VECT_DR_BASE_ADDRESS(S)(S)->base_address
 #define STMT_VINFO_VECT_INIT_OFFSET(S)    (S)->initial_offset
 #define STMT_VINFO_VECT_STEP(S)           (S)->step

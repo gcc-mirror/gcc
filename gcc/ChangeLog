@@ -1,3 +1,29 @@
+2005-03-29  Keith Besaw  <kbesaw@us.ibm.com>
+
+	* tree-ssanames.c (duplicate_ssa_name_ptr_info): New function.
+	(duplicate_ssa_name): Call duplicate_ssa_name_ptr_info.
+	* tree-vect-analyze.c (vect_object_analysis): additional parm
+	pass back a "struct ptr_info_def *" with the points-to info.
+	(vect_analyze_data_refs): set the STMT_VINFO_PTR_INFO for the
+	statement using info returned from vect_object_analysis.
+	* tree-vect-transform.c (update_vuses_to_preheader): New function.
+	(vect_create_data_ref_ptr): Remove updates to vars_to_rename
+	for virtual uses and defs when creating a replacement vector
+	reference.  Call duplicate_ssa_name_ptr_info to define points-to
+	info for vector pointer replacement using STMT_VINFO_PTR_INFO.
+	(vectorizable_store): copy_virtual_operands and update
+	definition statements.
+	(vectorizable_load): copy_virtual_operands.  Remove call to
+	mark_call_clobbered_vars_to_rename for call to "const" builtin.
+	* tree-vectorizer.c (vectorize_loops): Remove calls to
+	rewrite_into_ssa and bitmap_clear (vars_to_rename).
+	(new_stmt_vec_info): initialize STMT_VINFO_PTR_INFO for stmt.
+	* tree-vectorizer.h (_stmt_vec_info): add field ptr_info and
+	define macro STMT_VINFO_PTR_INFO for use in accessing.
+	* tree.h add export of duplicate_ssa_name_ptr_info.
+	* rs6000.c (altivec_init_builtins): Declare builtin function
+	__builtin_altivec_mask_for_load to be "const".
+
 2005-03-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/20622

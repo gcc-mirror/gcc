@@ -680,7 +680,7 @@ builtin_function (const char *name,
 		  int function_code,
 		  enum built_in_class class,
 		  const char *library_name,
-		  tree attrs ATTRIBUTE_UNUSED)
+		  tree attrs)
 {
   tree decl = build_decl (FUNCTION_DECL, get_identifier (name), type);
   DECL_EXTERNAL (decl) = 1;
@@ -691,6 +691,17 @@ builtin_function (const char *name,
   pushdecl (decl);
   DECL_BUILT_IN_CLASS (decl) = class;
   DECL_FUNCTION_CODE (decl) = function_code;
+
+  /* Possibly apply some default attributes to this built-in function.  */
+  if (attrs)
+    {
+      /* FORNOW the only supported attribute is "const".  If others need
+         to be supported then see the more general solution in procedure
+         builtin_function in c-decl.c  */
+      if (lookup_attribute ( "const", attrs ))
+        TREE_READONLY (decl) = 1;
+    }
+
   return decl;
 }
 

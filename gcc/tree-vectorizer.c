@@ -1167,6 +1167,7 @@ new_stmt_vec_info (tree stmt, loop_vec_info loop_vinfo)
   STMT_VINFO_VEC_STMT (res) = NULL;
   STMT_VINFO_DATA_REF (res) = NULL;
   STMT_VINFO_MEMTAG (res) = NULL;
+  STMT_VINFO_PTR_INFO (res) = NULL;
   STMT_VINFO_SUBVARS (res) = NULL;
   STMT_VINFO_VECT_DR_BASE_ADDRESS (res) = NULL;
   STMT_VINFO_VECT_INIT_OFFSET (res) = NULL_TREE;
@@ -1618,7 +1619,5 @@ vectorize_loops (struct loops *loops)
       loop->aux = NULL;
     }
 
-  rewrite_into_ssa (false);
   rewrite_into_loop_closed_ssa (NULL); /* FORNOW */
-  bitmap_clear (vars_to_rename);
 }
