@@ -1,5 +1,10 @@
 2004-11-26  Alexandre Oliva  <aoliva@redhat.com>
 
+	* config/frv/frv-protos.h: Guard ifcvt functions declarations with
+	BB_HEAD, not BLOCK_HEAD.
+
+2004-11-26  Alexandre Oliva  <aoliva@redhat.com>
+
 	* config/frv/frv.c (frv_ifcvt_modify_insn): Don't leave alone
 	scratch insns that set a register live at the join point.
 
