@@ -331,12 +331,13 @@ find_basic_blocks (f, nregs, file, live_reachable_p)
 	    || (GET_RTX_CLASS (code) == 'i'
 		&& (prev_code == JUMP_INSN
 		    || (prev_code == CALL_INSN
-			&& (nonlocal_label_list != 0 || eh_region)
-			&& ! in_libcall_block)
+			&& (nonlocal_label_list != 0 || eh_region))
 		    || prev_code == BARRIER)))
 	  i++;
 
-	if (code == CALL_INSN && find_reg_note (insn, REG_RETVAL, NULL_RTX))
+	/* We change the code of the CALL_INSN, so that it won't start a
+	   new block.  */
+	if (code == CALL_INSN && in_libcall_block)
 	  code = INSN;
 
 	if (code != NOTE)
@@ -456,8 +457,7 @@ find_basic_blocks_1 (f, nonlocal_label_list, live_reachable_p)
 	       || (GET_RTX_CLASS (code) == 'i'
 		   && (prev_code == JUMP_INSN
 		       || (prev_code == CALL_INSN
-			   && (nonlocal_label_list != 0 || eh_note)
-			   && ! in_libcall_block)
+			   && (nonlocal_label_list != 0 || eh_note))
 		       || prev_code == BARRIER)))
 	{
 	  basic_block_head[++i] = insn;
@@ -518,6 +518,11 @@ find_basic_blocks_1 (f, nonlocal_label_list, live_reachable_p)
 	active_eh_region[INSN_UID (insn)] = 
                                         NOTE_BLOCK_NUMBER (XEXP (eh_note, 0));
       BLOCK_NUM (insn) = i;
+
+      /* We change the code of the CALL_INSN, so that it won't start a
+	 new block.  */
+      if (code == CALL_INSN && in_libcall_block)
+	code = INSN;
 
       if (code != NOTE)
 	prev_code = code;
