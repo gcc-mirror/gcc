@@ -41,12 +41,3 @@ Boston, MA 02111-1307, USA.  */
 	%{!dynamic-linker:-dynamic-linker /usr/libexec/ld-elf.so.1}} \
     %{static:-Bstatic}} \
   %{symbolic:-Bsymbolic}"
-
-/* Grrr... x86-64.h gets this wrong and it shouldn't be trying to set this
-   policy...  Restore to the FreeBSD/i386 setting.  */
-/* Don't default to pcc-struct-return for IA-32 ELF code, because we need to
-   retain compatibility with older FreeBSD/i386 ELF gcc versions (even though
-   the SVR4 ABI for the i386 says that records and unions are returned in
-   memory).  */
-#undef  DEFAULT_PCC_STRUCT_RETURN
-#define DEFAULT_PCC_STRUCT_RETURN 0

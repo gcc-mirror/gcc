@@ -1,3 +1,10 @@
+2002-01-25  David O'Brien  <obrien@FreeBSD.org>
+
+	* config/i386/x86-64.h (DEFAULT_PCC_STRUCT_RETURN): Do not overide
+	default setting.
+	* config/i386/freebsd64.h (DEFAULT_PCC_STRUCT_RETURN): Do not override
+	existing setting.
+
 2002-01-25  Geoffrey Keating  <geoffk@redhat.com>
 
 	* dbxout.c (dbxout_init): Use assemble_name rather than just
