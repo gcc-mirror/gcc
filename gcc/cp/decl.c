@@ -290,15 +290,6 @@ tree static_aggregates;
 
 tree integer_two_node, integer_three_node;
 
-/* While defining an enum type, this is 1 plus the last enumerator
-   constant value.  */
-
-static tree enum_next_value;
-
-/* Nonzero means that there was overflow computing enum_next_value.  */
-
-static int enum_overflow;
-
 /* Parsing a function declarator leaves here a chain of structure
    and enum types declared in the parmlist.  */
 
@@ -6336,7 +6327,6 @@ init_decl_processing ()
   ggc_add_tree_root (&static_dtors, 1);
   ggc_add_tree_root (&lastiddecl, 1);
 
-  ggc_add_tree_root (&enum_next_value, 1);
   ggc_add_tree_root (&last_function_parm_tags, 1);
   ggc_add_tree_root (&current_function_return_value, 1);
   ggc_add_tree_root (&current_function_parms, 1);
@@ -12328,6 +12318,8 @@ start_enum (name)
     {
       cp_error ("multiple definition of `%#T'", enumtype);
       cp_error_at ("previous definition here", enumtype);
+      /* Clear out TYPE_VALUES, and start again.  */
+      TYPE_VALUES (enumtype) = NULL_TREE;
     }
   else
     {
@@ -12337,10 +12329,6 @@ start_enum (name)
 
   if (current_class_type)
     TREE_ADDRESSABLE (b->tags) = 1;
-
-  /* We don't copy this value because build_enumerator needs to do it.  */
-  enum_next_value = integer_zero_node;
-  enum_overflow = 0;
 
   GNU_xref_decl (current_function_decl, enumtype);
   return enumtype;
@@ -12371,6 +12359,14 @@ finish_enum (enumtype)
 	  /* The TREE_VALUE is a CONST_DECL for this enumeration
 	     constant.  */
 	  decl = TREE_VALUE (pair);
+
+	  /* [dcl.enum]
+
+	     Following the closing brace of an enum-specifier, each
+	     enumerator has the type of its enumeration.  Prior to the
+	     closing brace, the type of each enumerator is the type of
+	     its initializing value.  */
+	  TREE_TYPE (decl) = enumtype;
 
 	  /* The DECL_INITIAL will be NULL if we are processing a
 	     template declaration and this enumeration constant had no
@@ -12474,101 +12470,131 @@ finish_enum (enumtype)
 }
 
 /* Build and install a CONST_DECL for an enumeration constant of the
-   enumeration type TYPE whose NAME and VALUE (if any) are provided.
+   enumeration type ENUMTYPE whose NAME and VALUE (if any) are provided.
    Assignment of sequential values by default is handled here.  */
 
-tree
-build_enumerator (name, value, type)
+void
+build_enumerator (name, value, enumtype)
      tree name;
      tree value;
-     tree type;
+     tree enumtype;
 {
-  tree decl, result;
+  tree decl;
   tree context;
+  tree type;
+  tree values;
 
   /* Remove no-op casts from the value.  */
   if (value)
     STRIP_TYPE_NOPS (value);
 
- if (! processing_template_decl)
-   {
-     /* Validate and default VALUE.  */
-     if (value != NULL_TREE)
-       {
-	 if (TREE_READONLY_DECL_P (value))
-	   value = decl_constant_value (value);
+  if (! processing_template_decl)
+    {
+      /* Validate and default VALUE.  */
+      if (value != NULL_TREE)
+	{
+	  if (TREE_READONLY_DECL_P (value))
+	    value = decl_constant_value (value);
 
-	 if (TREE_CODE (value) == INTEGER_CST)
-	   {
-	     value = default_conversion (value);
-	     constant_expression_warning (value);
-	   }
-	 else
-	   {
-	     cp_error ("enumerator value for `%D' not integer constant", name);
-	     value = NULL_TREE;
-	   }
-       }
+	  if (TREE_CODE (value) == INTEGER_CST)
+	    {
+	      value = default_conversion (value);
+	      constant_expression_warning (value);
+	    }
+	  else
+	    {
+	      cp_error ("enumerator value for `%D' not integer constant", name);
+	      value = NULL_TREE;
+	    }
+	}
 
-     /* Default based on previous value.  */
-     if (value == NULL_TREE && ! processing_template_decl)
-       {
-	 value = enum_next_value;
-	 if (enum_overflow)
-	   cp_error ("overflow in enumeration values at `%D'", name);
-       }
+      /* Default based on previous value.  */
+      if (value == NULL_TREE && ! processing_template_decl)
+	{
+	  tree prev_value;
 
-     /* Remove no-op casts from the value.  */
-     if (value)
-       STRIP_TYPE_NOPS (value);
+	  if (TYPE_VALUES (enumtype))
+	    {
+	      /* The next value is the previous value ... */
+	      prev_value = DECL_INITIAL (TREE_VALUE (TYPE_VALUES (enumtype)));
+	      /* ... plus one.  */
+	      value = build_binary_op_nodefault (PLUS_EXPR,
+						 prev_value,
+						 integer_one_node,
+						 PLUS_EXPR);
+	      
+	      if (tree_int_cst_lt (value, prev_value))
+		cp_error ("overflow in enumeration values at `%D'", name);
+	    }
+	  else
+	    value = integer_zero_node;
+	}
+
+      /* Remove no-op casts from the value.  */
+      if (value)
+	STRIP_TYPE_NOPS (value);
 #if 0
-     /* To fix MAX_VAL enum consts. (bkoz)  */
-     TREE_TYPE (value) = integer_type_node;
+      /* To fix MAX_VAL enum consts. (bkoz)  */
+      TREE_TYPE (value) = integer_type_node;
 #endif
-   }
+    }
 
- /* We always have to copy here; not all INTEGER_CSTs are unshared.
-    Even in other cases, we will later (in finish_enum) be setting the
-    type of VALUE.  */
- if (value != NULL_TREE)
-   value = copy_node (value);
+  /* We always have to copy here; not all INTEGER_CSTs are unshared.
+     Even in other cases, we will later (in finish_enum) be setting
+     the type of VALUE.  But, we don't need to make a copy if this
+     VALUE is one of the enumeration constants for this same
+     enumeration type.  */
+  for (values = TYPE_VALUES (enumtype); values; values = TREE_CHAIN (values))
+    if (TREE_VALUE (values) == value)
+      break;
+  /* If we didn't break out of the loop, then we do need a copy.  */
+  if (!values && value)
+    value = copy_node (value);
 
   /* C++ associates enums with global, function, or class declarations.  */
- 
- context = current_scope ();
- if (context && context == current_class_type)
-   /* This enum declaration is local to the class.  */
-   decl = build_lang_decl (CONST_DECL, name, type);
- else
-   /* It's a global enum, or it's local to a function.  (Note local to
+  context = current_scope ();
+
+  /* Build the actual enumeration constant.  Note that the enumeration
+    constants have the type of their initializers until the
+    enumeration is complete:
+
+      [ dcl.enum ]
+
+      Following the closing brace of an enum-specifier, each enumer-
+      ator has the type of its enumeration.  Prior to the closing
+      brace, the type of each enumerator is the type of its
+      initializing value.
+
+    In finish_enum we will reset the type.  Of course, if we're
+    processing a template, there may be no value.   */
+  type = value ? TREE_TYPE (value) : NULL_TREE;
+
+  if (context && context == current_class_type)
+    /* This enum declaration is local to the class.  We need the full
+      lang_decl so that we can record DECL_CLASS_CONTEXT, for example.  */
+    decl = build_lang_decl (CONST_DECL, name, type);
+  else
+    /* It's a global enum, or it's local to a function.  (Note local to
       a function could mean local to a class method.  */
-   decl = build_decl (CONST_DECL, name, type);
+    decl = build_decl (CONST_DECL, name, type);
 
- DECL_CONTEXT (decl) = FROB_CONTEXT (context);
- DECL_INITIAL (decl) = value;
- TREE_READONLY (decl) = 1;
+  DECL_CONTEXT (decl) = FROB_CONTEXT (context);
+  DECL_INITIAL (decl) = value;
+  TREE_READONLY (decl) = 1;
 
- if (context && context == current_class_type)
-   /* In something like `struct S { enum E { i = 7 }; };' we put `i'
+  if (context && context == current_class_type)
+    /* In something like `struct S { enum E { i = 7 }; };' we put `i'
       on the TYPE_FIELDS list for `S'.  (That's so that you can say
       things like `S::i' later.)  */
-   finish_member_declaration (decl);
- else
-   {
-     pushdecl (decl);
-     GNU_xref_decl (current_function_decl, decl);
-   }
+    finish_member_declaration (decl);
+  else
+    {
+      pushdecl (decl);
+      GNU_xref_decl (current_function_decl, decl);
+    }
 
- if (! processing_template_decl)
-   {
-     /* Set basis for default for next value.  */
-     enum_next_value = build_binary_op_nodefault (PLUS_EXPR, value,
-						  integer_one_node, PLUS_EXPR);
-     enum_overflow = tree_int_cst_lt (enum_next_value, value);
-   }
-
-  result = tree_cons (name, decl, NULL_TREE);
-  return result;
+  /* Add this enumeration constant to the list for this type.  */
+  TYPE_VALUES (enumtype) = tree_cons (name, decl, TYPE_VALUES (enumtype));
 }
 
 

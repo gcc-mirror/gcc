@@ -9737,8 +9737,7 @@ tsubst_enum (tag, newtag, args)
   for (e = TYPE_VALUES (tag); e; e = TREE_CHAIN (e))
     {
       tree value;
-      tree elt;
-
+      
       /* Note that in a template enum, the TREE_VALUE is the
 	 CONST_DECL, not the corresponding INTEGER_CST.  */
       value = tsubst_expr (DECL_INITIAL (TREE_VALUE (e)), 
@@ -9749,14 +9748,7 @@ tsubst_enum (tag, newtag, args)
       set_current_access_from_decl (TREE_VALUE (e));
 
       /* Actually build the enumerator itself.  */
-      elt = build_enumerator (TREE_PURPOSE (e), value, newtag); 
-
-      /* We save the enumerators we have built so far in the
-	 TYPE_VALUES so that if the enumeration constants for
-	 subsequent enumerators involve those for previous ones,
-	 tsubst_copy will be able to find them.  */
-      TREE_CHAIN (elt) = TYPE_VALUES (newtag);
-      TYPE_VALUES (newtag) = elt;
+      build_enumerator (TREE_PURPOSE (e), value, newtag); 
     }
 
   finish_enum (newtag);
