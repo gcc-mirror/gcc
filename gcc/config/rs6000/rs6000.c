@@ -1,6 +1,6 @@
 /* Subroutines used for code generation on IBM RS/6000.
    Copyright (C) 1991, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 
-   2000, 2001 Free Software Foundation, Inc.
+   2000, 2001, 2002 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
 This file is part of GNU CC.
@@ -3240,6 +3240,16 @@ static const struct builtin_description bdesc_3arg[] =
   { MASK_ALTIVEC, CODE_FOR_altivec_vsldoi_4sf, "__builtin_altivec_vsldoi_4sf", ALTIVEC_BUILTIN_VSLDOI_4SF },
 };
 
+/* DST operations: void foo (void *, const int, const char).  */
+
+static const struct builtin_description bdesc_dst[] =
+{
+  { MASK_ALTIVEC, CODE_FOR_altivec_dst, "__builtin_altivec_dst", ALTIVEC_BUILTIN_DST },
+  { MASK_ALTIVEC, CODE_FOR_altivec_dstt, "__builtin_altivec_dstt", ALTIVEC_BUILTIN_DSTT },
+  { MASK_ALTIVEC, CODE_FOR_altivec_dstst, "__builtin_altivec_dstst", ALTIVEC_BUILTIN_DSTST },
+  { MASK_ALTIVEC, CODE_FOR_altivec_dststt, "__builtin_altivec_dststt", ALTIVEC_BUILTIN_DSTSTT }
+};
+
 /* Simple binary operations: VECc = foo (VECa, VECb).  */
 
 static const struct builtin_description bdesc_2arg[] =
@@ -3410,7 +3420,7 @@ altivec_expand_unop_builtin (icode, arglist, target)
 
   /* If we got invalid arguments bail out before generating bad rtl.  */
   if (arg0 == error_mark_node)
-    return target;
+    return NULL_RTX;
 
   if (target == 0
       || GET_MODE (target) != tmode
@@ -3444,7 +3454,7 @@ altivec_expand_binop_builtin (icode, arglist, target)
 
   /* If we got invalid arguments bail out before generating bad rtl.  */
   if (arg0 == error_mark_node || arg1 == error_mark_node)
-    return target;
+    return NULL_RTX;
 
   if (target == 0
       || GET_MODE (target) != tmode
@@ -3485,7 +3495,7 @@ altivec_expand_ternop_builtin (icode, arglist, target)
   if (arg0 == error_mark_node
       || arg1 == error_mark_node
       || arg2 == error_mark_node)
-    return target;
+    return NULL_RTX;
 
   if (target == 0
       || GET_MODE (target) != tmode
@@ -3516,9 +3526,9 @@ altivec_expand_builtin (exp, target)
   enum insn_code icode;
   tree fndecl = TREE_OPERAND (TREE_OPERAND (exp, 0), 0);
   tree arglist = TREE_OPERAND (exp, 1);
-  tree arg0, arg1;
-  rtx op0, op1, pat;
-  enum machine_mode tmode, mode0, mode1;
+  tree arg0, arg1, arg2;
+  rtx op0, op1, op2, pat;
+  enum machine_mode tmode, mode0, mode1, mode2;
   unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
   
   switch (fcode)
@@ -3622,9 +3632,8 @@ altivec_expand_builtin (exp, target)
 	op1 = copy_to_mode_reg (mode1, op1);
 
       pat = GEN_FCN (icode) (op0, op1);
-      if (! pat)
-	return 0;
-      emit_insn (pat);
+      if (pat)
+	emit_insn (pat);
       return NULL_RTX;
 
     case ALTIVEC_BUILTIN_ST_INTERNAL_8hi:
@@ -3642,9 +3651,8 @@ altivec_expand_builtin (exp, target)
 	op1 = copy_to_mode_reg (mode1, op1);
 
       pat = GEN_FCN (icode) (op0, op1);
-      if (! pat)
-	return 0;
-      emit_insn (pat);
+      if (pat)
+	emit_insn (pat);
       return NULL_RTX;
 
     case ALTIVEC_BUILTIN_ST_INTERNAL_4si:
@@ -3662,9 +3670,8 @@ altivec_expand_builtin (exp, target)
 	op1 = copy_to_mode_reg (mode1, op1);
 
       pat = GEN_FCN (icode) (op0, op1);
-      if (! pat)
-	return 0;
-      emit_insn (pat);
+      if (pat)
+	emit_insn (pat);
       return NULL_RTX;
 
     case ALTIVEC_BUILTIN_ST_INTERNAL_4sf:
@@ -3682,11 +3689,102 @@ altivec_expand_builtin (exp, target)
 	op1 = copy_to_mode_reg (mode1, op1);
 
       pat = GEN_FCN (icode) (op0, op1);
+      if (pat)
+	emit_insn (pat);
+      return NULL_RTX;
+
+    case ALTIVEC_BUILTIN_MFVSCR:
+      icode = CODE_FOR_altivec_mfvscr;
+      tmode = insn_data[icode].operand[0].mode;
+
+      if (target == 0
+	  || GET_MODE (target) != tmode
+	  || ! (*insn_data[icode].operand[0].predicate) (target, tmode))
+	target = gen_reg_rtx (tmode);
+      
+      pat = GEN_FCN (icode) (target);
       if (! pat)
 	return 0;
       emit_insn (pat);
+      return target;
+
+    case ALTIVEC_BUILTIN_MTVSCR:
+      icode = CODE_FOR_altivec_mtvscr;
+      arg0 = TREE_VALUE (arglist);
+      op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
+      mode0 = insn_data[icode].operand[0].mode;
+
+      /* If we got invalid arguments bail out before generating bad rtl.  */
+      if (arg0 == error_mark_node)
+	return NULL_RTX;
+
+      if (! (*insn_data[icode].operand[0].predicate) (op0, mode0))
+	op0 = copy_to_mode_reg (mode0, op0);
+
+      pat = GEN_FCN (icode) (op0);
+      if (pat)
+	emit_insn (pat);
+      return NULL_RTX;
+      
+    case ALTIVEC_BUILTIN_DSSALL:
+      emit_insn (gen_altivec_dssall ());
+      return NULL_RTX;
+
+    case ALTIVEC_BUILTIN_DSS:
+      icode = CODE_FOR_altivec_dss;
+      arg0 = TREE_VALUE (arglist);
+      op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
+      mode0 = insn_data[icode].operand[0].mode;
+
+      /* If we got invalid arguments bail out before generating bad rtl.  */
+      if (arg0 == error_mark_node)
+	return NULL_RTX;
+
+      if (! (*insn_data[icode].operand[0].predicate) (op0, mode0))
+	op0 = copy_to_mode_reg (mode0, op0);
+
+      emit_insn (gen_altivec_dss (op0));
       return NULL_RTX;
     }
+
+  /* Handle DST variants.  */
+  d = (struct builtin_description *) bdesc_dst;
+  for (i = 0; i < sizeof (bdesc_dst) / sizeof *d; i++, d++)
+    if (d->code == fcode)
+      {
+	arg0 = TREE_VALUE (arglist);
+	arg1 = TREE_VALUE (TREE_CHAIN (arglist));
+	arg2 = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist)));
+	op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
+	op1 = expand_expr (arg1, NULL_RTX, VOIDmode, 0);
+	op2 = expand_expr (arg2, NULL_RTX, VOIDmode, 0);
+	mode0 = insn_data[d->icode].operand[0].mode;
+	mode1 = insn_data[d->icode].operand[1].mode;
+	mode2 = insn_data[d->icode].operand[2].mode;
+
+	/* Invalid arguments, bail out before generating bad rtl.  */
+	if (arg0 == error_mark_node
+	    || arg1 == error_mark_node
+	    || arg2 == error_mark_node)
+	  return NULL_RTX;
+
+	if (! (*insn_data[d->icode].operand[0].predicate) (op0, mode0))
+	  op0 = copy_to_mode_reg (mode0, op0);
+	if (! (*insn_data[d->icode].operand[1].predicate) (op1, mode1))
+	  op1 = copy_to_mode_reg (mode1, op1);
+
+	if (GET_CODE (op2) != CONST_INT || INTVAL (op2) > 3)
+	  {
+	    error ("argument 3 of `%s' must be a 2-bit literal", d->name);
+	    return NULL_RTX;
+	  }
+
+	pat = GEN_FCN (d->icode) (op0, op1, op2);
+	if (pat != 0)
+	  emit_insn (pat);
+
+	return NULL_RTX;
+      }
 
   /* Handle simple unary operations.  */
   d = (struct builtin_description *) bdesc_1arg;
@@ -3699,6 +3797,14 @@ altivec_expand_builtin (exp, target)
   for (i = 0; i < sizeof (bdesc_2arg) / sizeof *d; i++, d++)
     if (d->code == fcode)
       return altivec_expand_binop_builtin (d->icode, arglist, target);
+
+  /* LVS* are funky.  We initialized them differently.  */
+  if (fcode == ALTIVEC_BUILTIN_LVSL)
+    return altivec_expand_binop_builtin (CODE_FOR_altivec_lvsl,
+					 arglist, target);
+  if (fcode == ALTIVEC_BUILTIN_LVSR)
+    return altivec_expand_binop_builtin (CODE_FOR_altivec_lvsr,
+					 arglist, target);
 
   /* Handle simple ternary operations.  */
   d = (struct builtin_description *) bdesc_3arg;
@@ -3746,6 +3852,7 @@ altivec_init_builtins (void)
   tree endlink = void_list_node;
 
   tree pint_type_node = build_pointer_type (integer_type_node);
+  tree pvoid_type_node = build_pointer_type (void_type_node);
   tree pshort_type_node = build_pointer_type (short_integer_type_node);
   tree pchar_type_node = build_pointer_type (char_type_node);
   tree pfloat_type_node = build_pointer_type (float_type_node);
@@ -3820,6 +3927,15 @@ altivec_init_builtins (void)
     = build_function_type (V8HI_type_node,
 			   tree_cons (NULL_TREE, V16QI_type_node, endlink));
 
+  /* void foo (void *, int, char/literal).  */
+  tree void_ftype_pvoid_int_char
+    = build_function_type (void_type_node,
+			   tree_cons (NULL_TREE, pvoid_type_node,
+				      tree_cons (NULL_TREE, integer_type_node,
+						 tree_cons (NULL_TREE,
+							    char_type_node,
+							    endlink))));
+
   /* void foo (int *, V4SI).  */
   tree void_ftype_pint_v4si
     = build_function_type (void_type_node,
@@ -3844,6 +3960,30 @@ altivec_init_builtins (void)
 			   tree_cons (NULL_TREE, pfloat_type_node,
 				      tree_cons (NULL_TREE, V4SF_type_node,
 						 endlink)));
+
+  /* void foo (V4SI).  */
+  tree void_ftype_v4si
+    = build_function_type (void_type_node,
+			   tree_cons (NULL_TREE, V4SI_type_node,
+				      endlink));
+
+  /* void foo (char).  */
+  tree void_ftype_qi
+    = build_function_type (void_type_node,
+			   tree_cons (NULL_TREE, char_type_node,
+				      endlink));
+
+  /* void foo (void).  */
+  tree void_ftype_void
+    = build_function_type (void_type_node,
+			   tree_cons (NULL_TREE, void_type_node,
+				      endlink));
+
+  /* vshort foo (void).  */
+  tree v8hi_ftype_void
+    = build_function_type (V8HI_type_node,
+			   tree_cons (NULL_TREE, void_type_node,
+				      endlink));
 
   tree v4si_ftype_v4si_v4si
     = build_function_type (V4SI_type_node,
@@ -4045,6 +4185,12 @@ altivec_init_builtins (void)
 				      tree_cons (NULL_TREE, V16QI_type_node,
 						 endlink)));
 
+  tree v16qi_ftype_int_pvoid
+    = build_function_type (V16QI_type_node,
+			   tree_cons (NULL_TREE, integer_type_node,
+				      tree_cons (NULL_TREE, pvoid_type_node,
+						 endlink)));
+
   tree int_ftype_v8hi_v8hi
     = build_function_type (integer_type_node,
 			   tree_cons (NULL_TREE, V8HI_type_node,
@@ -4059,6 +4205,12 @@ altivec_init_builtins (void)
   def_builtin (MASK_ALTIVEC, "__builtin_altivec_st_internal_8hi", void_ftype_pshort_v8hi, ALTIVEC_BUILTIN_ST_INTERNAL_8hi);
   def_builtin (MASK_ALTIVEC, "__builtin_altivec_ld_internal_16qi", v16qi_ftype_pchar, ALTIVEC_BUILTIN_LD_INTERNAL_16qi);
   def_builtin (MASK_ALTIVEC, "__builtin_altivec_st_internal_16qi", void_ftype_pchar_v16qi, ALTIVEC_BUILTIN_ST_INTERNAL_16qi);
+  def_builtin (MASK_ALTIVEC, "__builtin_altivec_mtvscr", void_ftype_v4si, ALTIVEC_BUILTIN_MTVSCR);
+  def_builtin (MASK_ALTIVEC, "__builtin_altivec_mfvscr", v8hi_ftype_void, ALTIVEC_BUILTIN_MFVSCR);
+  def_builtin (MASK_ALTIVEC, "__builtin_altivec_dssall", void_ftype_void, ALTIVEC_BUILTIN_DSSALL);
+  def_builtin (MASK_ALTIVEC, "__builtin_altivec_dss", void_ftype_qi, ALTIVEC_BUILTIN_DSS);
+  def_builtin (MASK_ALTIVEC, "__builtin_altivec_lvsl", v16qi_ftype_int_pvoid, ALTIVEC_BUILTIN_LVSL);
+  def_builtin (MASK_ALTIVEC, "__builtin_altivec_lvsr", v16qi_ftype_int_pvoid, ALTIVEC_BUILTIN_LVSR);
 
   /* Add the simple ternary operators.  */
   d = (struct builtin_description *) bdesc_3arg;
@@ -4152,6 +4304,11 @@ altivec_init_builtins (void)
 
       def_builtin (d->mask, d->name, type, d->code);
     }
+
+  /* Add the DST variants.  */
+  d = (struct builtin_description *) bdesc_dst;
+  for (i = 0; i < sizeof (bdesc_dst) / sizeof *d; i++, d++)
+    def_builtin (d->mask, d->name, void_ftype_pvoid_int_char, d->code);
 
   /* Add the simple binary operators.  */
   d = (struct builtin_description *) bdesc_2arg;
