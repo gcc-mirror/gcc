@@ -3,7 +3,6 @@ $flnm = f$enviroment("PROCEDURE")     ! get current procedure name
 $set default 'f$parse(flnm,,,"DEVICE")''f$parse(flnm,,,"DIRECTORY")'
 $!
 $ v=f$verify(0)
-$set symbol/scope=(nolocal,noglobal)
 $!
 $! CAUTION: If you want to link gcc-cc1 to the sharable image library
 $! VAXCRTL, see the notes in gcc.texinfo (or INSTALL) first.
@@ -17,29 +16,36 @@ $!	   After a successful build, restore those items and rebuild with gcc.
 $
 $!	C compiler
 $!
-$ CC	:=	gcc
-$! CC	:=	cc	!uncomment for VAXC
-$ BISON	:=	bison
-$ RENAME	:=	rename/new_vers
-$ LINK	:=	link
-$ EDIT :=	edit
+$ CC	=	"gcc"
+$! CC	=	"cc"	!uncomment for VAXC
+$ BISON	=	"bison"
+$ BISON_FLAGS=	"/Define/Verbose"
+$ RENAME=	"rename/New_Version"
+$ LINK	=	"link"
+$ EDIT	=	"edit"
+$ SEARCH=	"search"
+$ echo	=	"write sys$output"
 $!
 $!	Compiler options
 $!
-$ CFLAGS =	"/noVerbose/Debug/CC1=""-mpcc-alignment"""
+$ CFLAGS =	"/Debug/noVerbos/CC1=""-mpcc-alignment"""
 $! CFLAGS =	"/noOpt"		!uncomment for VAXC
 $ CINCL1 =	"/Incl=[]"			!stage 1 -I flags
 $ CINCL2 =	"/Incl=([],[.ginclude])"	!stage 2,3,... flags
 $!
 $!	Link options
 $!
-$ LDFLAGS :=	/nomap
+$ LDFLAGS =	"/noMap"
 $!
 $!	Link libraries
 $!
-$ LIBS :=	gnu_cc:[000000]gcclib.olb/libr,sys$library:vaxcrtl.olb/libr
-$! LIBS :=	alloca.obj,sys$library:vaxcrtl.olb/Libr   !uncomment for VAXC
-$!
+$ LIBS = "gnu_cc:[000000]gcclib.olb/Libr,sys$library:vaxcrtl.olb/Libr"
+$! LIBS = "alloca.obj,sys$library:vaxcrtl.olb/Libr"	!uncomment for VAXC
+$
+$!!!!!!!
+$!	Nothing beyond this point should need any local configuration changes.
+$!!!!!!!
+$
 $!
 $!  First we figure out what needs to be done.  This is sort of like a limited
 $! make facility - the command line options specify exactly what components
@@ -107,7 +113,6 @@ $goto loop
 $!
 $done:
 $if DO_DEFAULT.eq.1 then DO_CC1 = 1
-$echo := write sys$Output
 $echo "This command file will now perform the following actions:
 $if DO_LINK.eq.1 then goto link_only
 $if DO_ALL.eq.1 then echo "   Compile all language specific object modules."
@@ -173,7 +178,7 @@ $ if f$search("alloca.obj").nes."" then -  !does .obj exist? is it up to date?
     if f$cvtime(f$file_attributes("alloca.obj","RDT")).gts.-
        f$cvtime(f$file_attributes("alloca.c","RDT")) then  goto skip_alloca
 $set verify
-$ 'CC 'CFLAGS /define="STACK_DIRECTION=(-1)" alloca.c
+$ 'CC''CFLAGS'/Define="STACK_DIRECTION=(-1)" alloca.c
 $!'f$verify(0)
 $skip_alloca:
 $!
@@ -201,8 +206,8 @@ $! First build a couple of header files from the machine description
 $! These are used by many of the source modules, so we build them now.
 $!
 $set verify
-$ 'CC 'CFLAGS rtl.C
-$ 'CC 'CFLAGS obstack.C
+$ 'CC''CFLAGS' rtl.C
+$ 'CC''CFLAGS' obstack.C
 $!'f$verify(0)
 $! Generate insn-attr.h
 $	call generate insn-attr.h
@@ -212,9 +217,9 @@ $	call generate insn-config.h
 $!
 $call compile independent.opt "rtl,obstack,insn-attrtab"
 $!
-$	call generate insn-attrtab.c "rtlanal,"
+$	call generate insn-attrtab.c "rtlanal.obj,"
 $set verify
-$ 'CC 'CFLAGS insn-attrtab.c
+$ 'CC''CFLAGS' insn-attrtab.c
 $!'f$verify(0)
 $	endif
 $!
@@ -290,8 +295,8 @@ $! CAUTION: If you want to link gcc-cc1* to the sharable image library
 $! VAXCRTL, see the notes in gcc.texinfo (or INSTALL) first.
 $!
 $set verify
-$ link 'LDFLAGS' /exe=gcc-'compilername'  version.opt/opt, -
-	  'compilername'-objs.opt/opt, independent.opt/opt, -
+$ 'LINK''LDFLAGS'/Exe=gcc-'compilername'.exe  version.opt/Opt,-
+	  'compilername'-objs.opt/Opt,independent.opt/Opt,-
 	  'LIBS'
 $!'f$verify(0)
 $goto cloop
@@ -337,16 +342,16 @@ $	if (f$cvtime(f$file_attributes("''flnm'.Y","RDT")).les. -
 		then goto no_bison
 $yes_bison:
 $set verify
-$	 'BISON' /define /verbose 'flnm'.y
+$	 'BISON''BISON_FLAGS' 'flnm'.y
 $	 'RENAME' 'flnm'_tab.c 'flnm'.c
 $	 'RENAME' 'flnm'_tab.h 'flnm'.h
-$       if flnm.eqs."cp-parse"
-$       then            ! fgrep '#define YYEMPTY' cp-parse.c >>cp-parse.h
-$               open/append jfile$ cp-parse.h
-$               search/exact/output=jfile$ cp-parse.c "#define YYEMPTY"
-$               close jfile$
-$       endif
 $!'f$verify(0)
+$	if flnm.eqs."cp-parse"
+$	then		! fgrep '#define YYEMPTY' cp-parse.c >>cp-parse.h
+$		open/Append jfile$ cp-parse.h
+$		'SEARCH'/Exact/Output=jfile$ cp-parse.c "#define YYEMPTY"
+$		close jfile$
+$	endif
 $no_bison:
 $	 echo " (Ignore any warning about not finding file ""bison.simple"".)"
 $	endif
@@ -354,7 +359,7 @@ $!
 $if f$extract(0,5,flnm).eqs."insn-" then call generate 'flnm'.c
 $!
 $set verify
-$ 'CC 'CFLAGS 'flnm'.c
+$ 'CC''CFLAGS' 'flnm'.c
 $!'f$verify(0)
 $goto loop1
 $!
@@ -384,8 +389,8 @@ $	exit 1
 $	endif
 $root1=f$parse(f$extract(5,255,p1),,,"NAME")
 $	set verify
-$ 'CC 'CFLAGS GEN'root1'.C
-$ link 'LDFLAGS' GEN'root1',rtl,obstack,'p2' -
+$ 'CC''CFLAGS' GEN'root1'.C
+$ 'LINK''LDFLAGS' GEN'root1'.OBJ,rtl.obj,obstack.obj,'p2' -
 	  'LIBS'
 $!	'f$verify(0)
 $!
@@ -409,8 +414,8 @@ $	exit 1
 $	endif
 $root1=f$parse(f$extract(3,255,p1),,,"NAME")
 $	set verify
-$ 'CC 'CFLAGS BI-'root1'.C
-$ link 'LDFLAGS' BI-'root1','p2' -
+$ 'CC''CFLAGS' BI-'root1'.C
+$ 'LINK''LDFLAGS' BI-'root1'.OBJ,'p2' -
 	  'LIBS'
 $!	'f$verify(0)
 $!
