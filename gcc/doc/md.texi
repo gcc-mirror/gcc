@@ -3835,6 +3835,15 @@ second operand.  If a machine only supports a constant as the second
 operand, only patterns that match a constant in the second operand need
 be supplied.
 
+@item
+For associative operators, a sequence of operators will always chain
+to the left; for instance, only the left operand of an integer @code{plus}
+can itself be a @code{plus}.  @code{and}, @code{ior}, @code{xor},
+@code{plus}, @code{mult}, @code{smin}, @code{smax}, @code{umin}, and
+@code{umax} are associative when applied to integers, and sometimes to
+floating-point.
+
+@item
 @cindex @code{neg}, canonicalization of
 @cindex @code{not}, canonicalization of
 @cindex @code{mult}, canonicalization of

@@ -1,3 +1,7 @@
+2004-02-16  Geoffrey Keating  <geoffk@apple.com>
+
+	* gcc.c-torture/compile/20040216-1.c: New.
+
 2004-02-16  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	* g++.dg/tc1/dr101.C, g++.dg/tc1/dr135.C, g++.dg/tc1/dr142.C,
