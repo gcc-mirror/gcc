@@ -1,5 +1,9 @@
 2004-03-17  Ian Lance Taylor  <ian@wasabisystems.com>
 
+	* pex-unix.c (pexecute): Use vfork instead of fork, with
+	appropriate changes to make this safe.
+	* pex-common.h (STDERR_FILE_NO): Define.
+
 	* Makefile.in: Clean up REQUIRED_OFILES and CONFIGURED_OFILES for
 	an 80 column screen.  Run maint-deps.
 
