@@ -1,3 +1,9 @@
+2005-04-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/20076
+	* tree-inline.c (inline_forbidden_p_1): Prevent inlining functions
+	that call __builtin_return or __builtin_apply_args.
+
 2005-04-05  Andrew MacLeod  <amacleod@redhat.com>
 
 	* lambda-code.c (lambda_loopnest_to_gcc_loopnest): Use update_stmt.
