@@ -700,14 +700,15 @@ bitmap_and_compl (bitmap dst, bitmap a, bitmap b)
     dst->indx = dst->current->indx;
 }
 
-/* A &= ~B */
+/* A &= ~B. Returns true if A changes */
 
-void
+bool
 bitmap_and_compl_into (bitmap a, bitmap b)
 {
   bitmap_element *a_elt = a->first;
   bitmap_element *b_elt = b->first;
   bitmap_element *next;
+  BITMAP_WORD changed = 0;
 
   gcc_assert (a != b);
   while (a_elt && b_elt)
@@ -724,9 +725,11 @@ bitmap_and_compl_into (bitmap a, bitmap b)
 
 	  for (ix = BITMAP_ELEMENT_WORDS; ix--;)
 	    {
-	      BITMAP_WORD r = a_elt->bits[ix] & ~b_elt->bits[ix];
+	      BITMAP_WORD cleared = a_elt->bits[ix] & b_elt->bits[ix];
+	      BITMAP_WORD r = a_elt->bits[ix] ^ cleared;
 
 	      a_elt->bits[ix] = r;
+	      changed |= cleared;
 	      ior |= r;
 	    }
 	  next = a_elt->next;
@@ -738,6 +741,7 @@ bitmap_and_compl_into (bitmap a, bitmap b)
     }
   gcc_assert (!a->current == !a->first);
   gcc_assert (!a->current || a->indx == a->current->indx);
+  return changed != 0;
 }
 
 /* DST = A | B.  Return true if DST changes.  */

@@ -102,7 +102,7 @@ extern bool bitmap_intersect_compl_p (bitmap, bitmap);
 extern void bitmap_and (bitmap, bitmap, bitmap);
 extern void bitmap_and_into (bitmap, bitmap);
 extern void bitmap_and_compl (bitmap, bitmap, bitmap);
-extern void bitmap_and_compl_into (bitmap, bitmap);
+extern bool bitmap_and_compl_into (bitmap, bitmap);
 extern bool bitmap_ior (bitmap, bitmap, bitmap);
 extern bool bitmap_ior_into (bitmap, bitmap);
 extern void bitmap_xor (bitmap, bitmap, bitmap);
