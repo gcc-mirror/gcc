@@ -435,6 +435,13 @@ restore_tree_status (p, context)
      past the nested function's end.  */
   obstack_free (function_maybepermanent_obstack, maybepermanent_firstobj);
 
+  /* If we were compiling a toplevel function, we can free this space now.  */
+  if (context == NULL_TREE)
+    {
+      obstack_free (&temporary_obstack, temporary_firstobj);
+      obstack_free (&momentary_obstack, momentary_function_firstobj);
+    }
+
   /* If we were compiling a toplevel function that we don't actually want
      to save anything from, return the obstack to the pool.  */
   if (context == NULL_TREE
@@ -4640,6 +4647,12 @@ dump_tree_statistics ()
 #else
   fprintf (stderr, "(No per-node statistics)\n");
 #endif
+  print_obstack_statistics ("permanent_obstack", &permanent_obstack);
+  print_obstack_statistics ("maybepermanent_obstack", &maybepermanent_obstack);
+  print_obstack_statistics ("temporary_obstack", &temporary_obstack);
+  print_obstack_statistics ("momentary_obstack", &momentary_obstack);
+  print_obstack_statistics ("temp_decl_obstack", &temp_decl_obstack);
+  print_inline_obstack_statistics ();
   print_lang_statistics ();
 }
 
