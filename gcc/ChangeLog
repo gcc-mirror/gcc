@@ -1,3 +1,8 @@
+Thu Oct  8 17:00:18 1998  Richard Henderson  <rth@cygnus.com>
+
+	* flow.c (find_basic_blocks): Correctly determine when a call
+	is within an exception region.
+
 Thu Oct  8 17:15:04 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* Makefile.in (cpplib.o): Use unlibsubdir.
