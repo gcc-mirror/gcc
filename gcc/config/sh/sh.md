@@ -9447,7 +9447,7 @@ mov.l\\t1f,r0\\n\\
 	(sign_extract:SI (match_operand:QI 1 "unaligned_load_operand" "")
 			 (match_operand 2 "const_int_operand" "")
 			 (match_operand 3 "const_int_operand" "")))]
-  ""
+  "TARGET_SH4A_ARCH"
 {
   if (TARGET_SH4A_ARCH
       && INTVAL (operands[2]) == 32
@@ -9467,7 +9467,7 @@ mov.l\\t1f,r0\\n\\
 	(zero_extract:SI (match_operand:QI 1 "unaligned_load_operand" "")
 			 (match_operand 2 "const_int_operand" "")
 			 (match_operand 3 "const_int_operand" "")))]
-  ""
+  "TARGET_SH4A_ARCH"
 {
   if (TARGET_SH4A_ARCH
       && INTVAL (operands[2]) == 32
