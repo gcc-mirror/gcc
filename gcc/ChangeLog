@@ -1,3 +1,12 @@
+2002-05-26  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* alias.c: Fix formatting.
+	* attribs.c: Likewise.
+	* bb-reorder.c: Likewise.
+	* bitmap.c: Likewise.
+	* bitmap.h: Likewise.
+	* builtins.c: Likewise.
+
 Sun May 26 14:00:44 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* reload.c (find_valid_class): Accept new argument DEST,

@@ -236,7 +236,7 @@ bitmap_clear (head)
       bitmap_free = element;
     }
 
-  head->first = head->current =  0;
+  head->first = head->current = 0;
 }
 
 /* Copy a bitmap to another bitmap.  */
@@ -397,7 +397,7 @@ bitmap_bit_p (head, bit)
 /* Return the bit number of the first set bit in the bitmap, or -1
    if the bitmap is empty.  */
 
-int 
+int
 bitmap_first_set_bit (a)
      bitmap a;
 {
@@ -450,7 +450,7 @@ bitmap_first_set_bit (a)
 /* Return the bit number of the last set bit in the bitmap, or -1
    if the bitmap is empty.  */
 
-int 
+int
 bitmap_last_set_bit (a)
      bitmap a;
 {
