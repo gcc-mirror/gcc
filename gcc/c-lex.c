@@ -1879,6 +1879,7 @@ yylex ()
     case '-':
     case '&':
     case '|':
+    case ':':
     case '<':
     case '>':
     case '*':
@@ -1956,8 +1957,28 @@ yylex ()
 	      c = RSHIFT;
 	      goto combine;
 	    }
-	else if ((c == '-') && (c1 == '>'))
-	  { value = POINTSAT; goto done; }
+	else
+	  switch (c)
+	    {
+	    case '-':
+	      if (c1 == '>')
+		{ value = POINTSAT; goto done; }
+	      break;
+	    case ':':
+	      if (c1 == '>')
+		{ value = ']'; goto done; }
+	      break;
+	    case '<':
+	      if (c1 == '%')
+		{ value = '{'; goto done; }
+	      if (c1 == ':')
+		{ value = '['; goto done; }
+	      break;
+	    case '%':
+	      if (c1 == '>')
+		{ value = '}'; goto done; }
+	      break;
+	    }
 	ungetc (c1, finput);
 	token_buffer[1] = 0;
 
