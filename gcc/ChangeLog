@@ -1,5 +1,7 @@
 2003-04-03  Jason Merrill  <jason@redhat.com>
 
+	* Makefile.in (unstrap): Also remove stage_last.
+
 	* dwarf2out.c (lookup_filename): Don't check for "<internal>".
 	(dwarf2out_source_line): Don't do anything if line==0.
 
