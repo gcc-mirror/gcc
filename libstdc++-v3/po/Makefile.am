@@ -53,7 +53,7 @@ all-local-yes: $(LOCALE_OUT)
 check: check-@USE_NLS@
 check-no:
 check-yes:
-	$(mkinstalldirs) $(locale_builddir) 
+	@$(mkinstalldirs) $(locale_builddir) 
 	@catalogs='$(LOCALE_OUT)'; \
 	for cat in $$catalogs; do \
 	  cat=`basename $$cat`; \

@@ -18,7 +18,7 @@
 #
 #   cpu_include_dir        CPU-specific directory, defaults to cpu/generic
 #                          if cpu/host_cpu doesn't exist.  This is
-#                          used to set ATOMICITYH.
+#                          used to set atomicity_include_dir.
 #
 #   os_include_dir         OS-specific directory, defaults to os/generic.
 #
@@ -32,7 +32,7 @@
 #
 #   fpos_include_dir       directory for definition of fpos template
 #
-#   ATOMICITYH             location of atomicity.h,
+#   atomicity_include_dir  location of atomicity.h,
 #                          defaults to cpu_include_dir
 #
 # It possibly modifies the following variables:
@@ -43,8 +43,8 @@
 #
 #   port_specific_symbol_files
 #                          whitespace-seperated list of files containing
-#                              additional symbols to export from the shared
-#                              library, when symbol versioning is in use
+#                          additional symbols to export from the shared
+#                          library, when symbol versioning is in use
 #
 #
 # If the defaults will not work for your platform, you need only change the
@@ -109,7 +109,7 @@ esac
 # default choices for those if they haven't been explicitly set
 # already.  
 cpu_include_dir="cpu/${try_cpu}"
-ATOMICITYH=$cpu_include_dir
+atomicity_include_dir=$cpu_include_dir
 abi_baseline_pair=${try_cpu}-${host_os}
 
 
@@ -125,14 +125,14 @@ case "${host_os}" in
     # os/aix/atomicity.h works on earlier versions of AIX 4.*, so we
     # explicitly duplicate the directory for 4.[<3].
     os_include_dir="os/aix"
-    ATOMICITYH="os/aix"
+    atomicity_include_dir="os/aix"
     OPT_LDFLAGS="-Wl,-G"
     ;;
   aix4.*)
-    ATOMICITYH="os/aix"
+    atomicity_include_dir="os/aix"
     ;;
   aix*)
-    ATOMICITYH="cpu/generic"
+    atomicity_include_dir="cpu/generic"
     ;;
   bsd*)
     # Plain BSD attempts to share FreeBSD files.
@@ -157,17 +157,21 @@ case "${host_os}" in
   irix[1-6] | irix[1-5].* | irix6.[0-4]*)
     # This is known to work on at least IRIX 5.2 and 6.3.
     os_include_dir="os/irix/irix5.2"
-    ATOMICITYH=$os_include_dir
+    atomicity_include_dir=$os_include_dir
     ;;
   irix6.5*)
     os_include_dir="os/irix/irix6.5"
-    ATOMICITYH=$os_include_dir
+    atomicity_include_dir=$os_include_dir
     ;;
   mingw32*)
     os_include_dir="os/mingw32"
     ;;
   netbsd*)
     os_include_dir="os/bsd/netbsd"
+    ;;
+  qnx6.[12]*)
+    os_include_dir="os/qnx/qnx6.1"
+    c_model=c
     ;;
   solaris2.5*)
     os_include_dir="os/solaris/solaris2.5"
@@ -181,10 +185,6 @@ case "${host_os}" in
   windiss*)
     os_include_dir="os/windiss"
     ;;
-  qnx6.[12]*)
-    os_include_dir="os/qnx/qnx6.1"
-    c_model=c
-    ;;
   *)
     os_include_dir="os/generic"
     ;;
@@ -195,7 +195,7 @@ esac
 # THIS TABLE IS SORTED.  KEEP IT THAT WAY.
 case "${host}" in
   mips*-*-linux*)
-    ATOMICITYH="cpu/mips"
+    atomicity_include_dir="cpu/mips"
     ;;
   x86_64-*-linux*)
     abi_baseline_pair="x86_64-linux-gnu"

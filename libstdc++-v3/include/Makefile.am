@@ -21,13 +21,11 @@
 ## Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 ## USA.
 
-AUTOMAKE_OPTIONS = 1.3 cygnus
 MAINT_CHARSET = latin1
 
 mkinstalldirs = $(SHELL) $(toplevel_srcdir)/mkinstalldirs
 
 # Cross compiler and multilib support.
-CXX = @glibcxx_CXX@
 glibcxx_srcdir=@glibcxx_srcdir@
 glibcxx_builddir=@glibcxx_builddir@
 
