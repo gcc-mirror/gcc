@@ -606,7 +606,7 @@ case "${target}" in
     ;;
   alpha*-*-linux*)
     # newlib is not 64 bit ready
-    noconfigdirs="$noconfigdirs target-newlib target-libgloss"
+    noconfigdirs="$noconfigdirs target-newlib target-libgloss ${libgcj}"
     # linux has rx in libc
     skipdirs="$skipdirs target-librx"
     ;;
@@ -741,10 +741,6 @@ case "${target}" in
   i[3456]86-*-go32* | i[3456]-*-msdosdjgpp*)
     # but don't build gdb
     noconfigdirs="$noconfigdirs gdb target-libg++ ${libstdcxx_version} target-librx ${libgcj}"
-    ;;
-  i[3456]86-*-linux*)
-    # linux has rx in libc
-    skipdirs="$skipdirs target-librx"
     ;;
   *-*-linux*)
     noconfigdirs="${libgcj}"
@@ -959,6 +955,9 @@ case "${target}" in
     configdirs="$configdirs grez"
     noconfigdirs="${libgcj}"
     ;;    
+  *-*-*)
+    noconfigdirs="${libgcj}"
+    ;;
 esac
 
 # If we aren't building newlib, then don't build libgloss, since libgloss
