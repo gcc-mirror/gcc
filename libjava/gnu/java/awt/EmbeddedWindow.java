@@ -40,11 +40,13 @@ package gnu.java.awt;
 
 import gnu.classpath.Configuration;
 import gnu.java.awt.peer.EmbeddedWindowPeer;
+import gnu.java.security.action.SetAccessibleAction;
 
 import java.awt.Component;
 import java.awt.Frame;
 import java.awt.Toolkit;
 import java.lang.reflect.Field;
+import java.security.AccessController;
 
 /**
  * Represents an AWT window that can be embedded into another
@@ -88,13 +90,15 @@ public class EmbeddedWindow extends Frame
 
     if (! (tk instanceof EmbeddedWindowSupport))
       throw new UnsupportedOperationException
-        ("Embedded windows are not supported by the current peers: " + tk.getClass());
+        ("Embedded windows are not supported by the current peers: "
+	 + tk.getClass());
 
     // Circumvent the package-privateness of the AWT internal
     // java.awt.Component.peer member variable.
     try
       {
 	Field peerField = Component.class.getDeclaredField("peer");
+	AccessController.doPrivileged(new SetAccessibleAction(peerField));
 	peerField.set(this, ((EmbeddedWindowSupport) tk).createEmbeddedWindow (this));
       }
     catch (IllegalAccessException e)
