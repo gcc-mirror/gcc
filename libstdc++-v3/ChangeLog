@@ -1,3 +1,7 @@
+2000-11-21  Mark Mitchell  <mark@codesourcery.com>
+
+	* porting.texi: New file.
+
 2000-11-21  Branko Cibej  <brankoe@xbc.nu>
 
         * config/os/solaris/solaris2.6/bits/os_defines.h: Define
