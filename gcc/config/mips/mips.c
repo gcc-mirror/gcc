@@ -2347,9 +2347,9 @@ mips_rtx_costs (rtx x, int code, int outer_code, int *total)
         *total = COSTS_N_INSNS (12);
       else if (TUNE_MIPS3900)
         *total = COSTS_N_INSNS (2);
-      else if (TUNE_MIPS5400 || TUNE_MIPS5500 || TUNE_SB1)
-        *total = COSTS_N_INSNS ((mode == DImode) ? 4 : 3);
-      else if (TUNE_MIPS7000)
+      else if (TUNE_MIPS5400 || TUNE_SB1)
+        *total = COSTS_N_INSNS (mode == DImode ? 4 : 3);
+      else if (TUNE_MIPS5500 || TUNE_MIPS7000)
         *total = COSTS_N_INSNS (mode == DImode ? 9 : 5);
       else if (TUNE_MIPS9000)
         *total = COSTS_N_INSNS (mode == DImode ? 8 : 3);

@@ -1,3 +1,14 @@
+2004-05-06  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/5500.md (ir_vr55_store): Set latency to 0.
+	(ir_vr55_hilo): Split into...
+	(ir_vr55_mfhilo, ir_vr55_mthilo): ...these new reservations.
+	(ir_vr55_imul_si, ir_vr55_imadd): Change latency to 5.
+	(ir_vr55_imul_di): Change latency to 9.  Reserve vr55_mac for 4 cycles.
+	Add various multiplication bypasses.
+	* config/mips/mips.c (mips_rtx_costs): Adjust VR5500 costs for integer
+	multiplication.
+
 2004-05-06  Uros Bizjak  <uros@kss-loka.si>
 
 	* config/i386/i386.md (*fscalexf4): Correct insn "mode"
