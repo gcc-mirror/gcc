@@ -1420,7 +1420,7 @@ gen_highpart (mode, x)
   return result;
 }
 
-/* Like gen_highpart_mode, but accept mode of EXP operand in case EXP can
+/* Like gen_highpart, but accept mode of EXP operand in case EXP can
    be VOIDmode constant.  */
 rtx
 gen_highpart_mode (outermode, innermode, exp)
