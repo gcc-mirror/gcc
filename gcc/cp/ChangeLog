@@ -1,3 +1,11 @@
+1999-02-13  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl.c (grokfndecl): Return NULL_TREE instead of error_mark_node.
+	(grokdeclarator): Don't expect error_mark_node from grokfndecl.
+
+	* pt.c (maybe_process_partial_specialization): Complain about
+	'template <>' on non-specialization.
+
 1999-02-10  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl.c (grokdeclarator): Catch wierd declarators.

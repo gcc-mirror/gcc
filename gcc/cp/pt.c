@@ -688,6 +688,8 @@ maybe_process_partial_specialization (type)
       else if (CLASSTYPE_TEMPLATE_INSTANTIATION (type))
 	cp_error ("specialization of `%T' after instantiation", type);
     }
+  else if (processing_specialization)
+    cp_error ("explicit specialization of non-template `%T'", type);
 }
 
 /* Retrieve the specialization (in the sense of [temp.spec] - a
