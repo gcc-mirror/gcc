@@ -1,4 +1,8 @@
 2003-03-09  Paolo Carlini  <pcarlini@unitus.it>
+
+	* config/io/basic_file_stdio.cc: include <unistd.h>.
+
+2003-03-09  Paolo Carlini  <pcarlini@unitus.it>
             Nathan Myers  <ncm@cantrip.org>
 
 	PR libstdc++/7744
