@@ -1236,21 +1236,6 @@ fix = {
 
 
 /*
- *  Some IRIX header files contain the string "//"
- */
-fix = {
-    hackname = irix_multiline_cmnt;
-    files    = sys/types.h;
-
-    sed   = "s@type of the result@type of the result */@";
-    sed   = "s@of the sizeof@/* of the sizeof@";
-    test_text =
-    "/* we check the type of the result\n"
-    "// of the sizeof something.  This is a bad test :-( */";
-};
-
-
-/*
  * Fixing ISC fmod declaration
  */
 fix = {

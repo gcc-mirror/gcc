@@ -2,6 +2,8 @@
 
 	* fixinc/fixtests.c(double_slash): obsolete
 	(else_endif_label): likewise
+	* fixinc/inclhack.def(irix_multiline_cmnt): obsolete
+	* fixinc/fixincl.x: regen
 
 2000-07-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
