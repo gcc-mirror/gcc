@@ -1,5 +1,8 @@
 2003-07-23  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/11517
+	* g++.dg/expr/cond2.C: New test.
+	
 	PR optimization/10679
 	* g++.dg/opt/inline4.C: New test.
 

@@ -3663,7 +3663,7 @@ build_unary_op (enum tree_code code, tree xarg, int noconvert)
       break;
 
     case TRUTH_NOT_EXPR:
-      arg = cp_convert (boolean_type_node, arg);
+      arg = perform_implicit_conversion (boolean_type_node, arg);
       val = invert_truthvalue (arg);
       if (arg != error_mark_node)
 	return val;

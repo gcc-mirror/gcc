@@ -3072,16 +3072,13 @@ build_conditional_expr (tree arg1, tree arg2, tree arg3)
   
      The first expr ession is implicitly converted to bool (clause
      _conv_).  */
-  arg1 = cp_convert (boolean_type_node, arg1);
+  arg1 = perform_implicit_conversion (boolean_type_node, arg1);
 
   /* If something has already gone wrong, just pass that fact up the
      tree.  */
-  if (arg1 == error_mark_node 
-      || arg2 == error_mark_node 
-      || arg3 == error_mark_node 
-      || TREE_TYPE (arg1) == error_mark_node
-      || TREE_TYPE (arg2) == error_mark_node
-      || TREE_TYPE (arg3) == error_mark_node)
+  if (error_operand_p (arg1)
+      || error_operand_p (arg2)
+      || error_operand_p (arg3))
     return error_mark_node;
 
   /* [expr.cond]
@@ -3333,6 +3330,8 @@ build_conditional_expr (tree arg1, tree arg2, tree arg3)
     {
       result_type = composite_pointer_type (arg2_type, arg3_type, arg2,
 					    arg3, "conditional expression");
+      if (result_type == error_mark_node)
+	return error_mark_node;
       arg2 = perform_implicit_conversion (result_type, arg2);
       arg3 = perform_implicit_conversion (result_type, arg3);
     }
