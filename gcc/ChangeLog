@@ -1,5 +1,10 @@
 2004-01-30  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* genconfig.c (main): Have CC0_P check its operand even on a
+	target without cc0.
+
+2004-01-30  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/alpha/alpha.c: Remove mentions of deprecates macros
 	in comments, remove some target-independent comments about target
 	macros, and/or add minimal function comments for target hook
