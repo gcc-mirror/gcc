@@ -1,6 +1,6 @@
 /* Threads compatibility routines for libgcc2 and libobjc.  */
 /* Compile this one with gcc.  */
-/* Copyright (C) 2004 Free Software Foundation, Inc.
+/* Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -64,6 +64,7 @@ typedef struct {
 #pragma weak pthread_getspecific
 #pragma weak pthread_setspecific
 #pragma weak pthread_create
+#pragma weak pthread_cancel
 #pragma weak pthread_self
 
 #pragma weak pthread_mutex_lock
@@ -105,7 +106,7 @@ static inline int
 __gthread_active_p (void)
 {
   static void *const __gthread_active_ptr 
-    = __extension__ (void *) &pthread_create;
+    = __extension__ (void *) &pthread_cancel;
   return __gthread_active_ptr != 0;
 }
 
