@@ -1,3 +1,7 @@
+2003-03-04  Neil Booth  <neil@daikokuya.co.uk>
+
+	* Make-lang.in: Update.
+
 2003-03-03  Jason Merrill  <jason@redhat.com>
 
 	* decl.c (finish_enum): Do set the type in a template. Simplify.
