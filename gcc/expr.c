@@ -2162,61 +2162,26 @@ move_block_to_reg (regno, x, nregs, mode)
 }
 
 /* Copy all or part of a BLKmode value X out of registers starting at REGNO.
-   The number of registers to be filled is NREGS.  SIZE indicates the number
-   of bytes in the object X.  */
+   The number of registers to be filled is NREGS.  */
 
 void
-move_block_from_reg (regno, x, nregs, size)
+move_block_from_reg (regno, x, nregs)
      int regno;
      rtx x;
      int nregs;
-     int size;
 {
   int i;
-#ifdef HAVE_store_multiple
-  rtx pat;
-  rtx last;
-#endif
-  enum machine_mode mode;
 
   if (nregs == 0)
     return;
-
-  /* If SIZE is that of a mode no bigger than a word, just use that
-     mode's store operation.  */
-  if (size <= UNITS_PER_WORD
-      && (mode = mode_for_size (size * BITS_PER_UNIT, MODE_INT, 0)) != BLKmode)
-    {
-      emit_move_insn (adjust_address (x, mode, 0), gen_rtx_REG (mode, regno));
-      return;
-    }
-
-  /* Blocks smaller than a word on a BYTES_BIG_ENDIAN machine must be aligned
-     to the left before storing to memory.  Note that the previous test
-     doesn't handle all cases (e.g. SIZE == 3).  */
-  if (size < UNITS_PER_WORD && BYTES_BIG_ENDIAN)
-    {
-      rtx tem = operand_subword (x, 0, 1, BLKmode);
-      rtx shift;
-
-      if (tem == 0)
-	abort ();
-
-      shift = expand_shift (LSHIFT_EXPR, word_mode,
-			    gen_rtx_REG (word_mode, regno),
-			    build_int_2 ((UNITS_PER_WORD - size)
-					 * BITS_PER_UNIT, 0), NULL_RTX, 0);
-      emit_move_insn (tem, shift);
-      return;
-    }
 
   /* See if the machine can do this with a store multiple insn.  */
 #ifdef HAVE_store_multiple
   if (HAVE_store_multiple)
     {
-      last = get_last_insn ();
-      pat = gen_store_multiple (x, gen_rtx_REG (word_mode, regno),
-				GEN_INT (nregs));
+      rtx last = get_last_insn ();
+      rtx pat = gen_store_multiple (x, gen_rtx_REG (word_mode, regno),
+				    GEN_INT (nregs));
       if (pat)
 	{
 	  emit_insn (pat);

@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler, for ROMP chip.
-   Copyright (C) 1989, 1991, 1993, 1995, 1996, 1998, 1999, 2000, 2001, 2002
-   Free Software Foundation, Inc.
+   Copyright (C) 1989, 1991, 1993, 1995, 1996, 1998, 1999, 2000, 2001, 2002,
+   2003 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@nyu.edu)
 
 This file is part of GNU CC.
@@ -662,7 +662,7 @@ struct rt_cargs {int gregs, fregs; };
 	   gen_rtx_MEM (BLKmode,					\
 			plus_constant (virtual_incoming_args_rtx,	\
 				       first_reg_offset * 4)), 		\
-	   4 - first_reg_offset, (4 - first_reg_offset) * UNITS_PER_WORD); \
+	   4 - first_reg_offset);					\
       PRETEND_SIZE = (4 - first_reg_offset) * UNITS_PER_WORD;		\
     }									\
 }

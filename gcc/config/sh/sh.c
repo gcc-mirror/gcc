@@ -1,6 +1,6 @@
 /* Output routines for GCC for Hitachi / SuperH SH.
-   Copyright (C) 1993, 1994, 1995, 1997, 1997, 1998, 1999, 2000, 2001, 2002, 2003
-   Free Software Foundation, Inc.
+   Copyright (C) 1993, 1994, 1995, 1997, 1997, 1998, 1999, 2000, 2001, 2002,
+   2003 Free Software Foundation, Inc.
    Contributed by Steve Chamberlain (sac@cygnus.com).
    Improved by Jim Wilson (wilson@cygnus.com). 
 
@@ -5606,7 +5606,7 @@ sh_builtin_saveregs ()
     move_block_from_reg (BASE_ARG_REG (SImode) + first_intreg,
 			 adjust_address (regbuf, BLKmode,
 					 n_floatregs * UNITS_PER_WORD),
-			 n_intregs, n_intregs * UNITS_PER_WORD);
+			 n_intregs);
 
   if (TARGET_SHMEDIA)
     /* Return the address of the regbuf.  */

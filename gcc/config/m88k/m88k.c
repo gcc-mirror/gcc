@@ -1,6 +1,6 @@
 /* Subroutines for insn-output.c for Motorola 88000.
    Copyright (C) 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
-   2001, 2002 Free Software Foundation, Inc. 
+   2001, 2002, 2003 Free Software Foundation, Inc. 
    Contributed by Michael Tiemann (tiemann@mcc.com)
    Currently maintained by (gcc@dg-rtp.dg.com)
 
@@ -2594,8 +2594,7 @@ m88k_builtin_saveregs ()
   if (fixed < 8)
     move_block_from_reg (2 + fixed,
 			 adjust_address (addr, Pmode, fixed * UNITS_PER_WORD),
-			 8 - fixed,
-			 UNITS_PER_WORD * (8 - fixed));
+			 8 - fixed);
 
   /* Return the address of the save area, but don't put it in a
      register.  This fails when not optimizing and produces worse code

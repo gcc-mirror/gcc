@@ -4815,7 +4815,7 @@ mips_setup_incoming_varargs (cum, mode, type, no_rtl)
 	    MEM_SET_IN_STRUCT_P (mem, 1);
 
 	  move_block_from_reg (local_cum.num_gprs + GP_ARG_FIRST, mem,
-			       gp_saved, gp_saved * UNITS_PER_WORD);
+			       gp_saved);
 	}
       if (fp_saved > 0)
 	{
