@@ -1325,7 +1325,7 @@ vec_vcmpgtuw (vector unsigned int a1, vector unsigned int a2)
 /* vec_vcmpgtsh */
 
 inline vector signed short
-vec_cmpgtsh (vector signed short a1, vector signed short a2)
+vec_vcmpgtsh (vector signed short a1, vector signed short a2)
 {
   return (vector signed short) __builtin_altivec_vcmpgtsh ((vector signed short) a1, (vector signed short) a2);
 }
@@ -3350,6 +3350,14 @@ vec_vmuleuh (vector unsigned short a1, vector unsigned short a2)
   return (vector unsigned int) __builtin_altivec_vmuleuh ((vector signed short) a1, (vector signed short) a2);
 }
 
+/* vec_vmulesb */
+
+inline vector signed short
+vec_vmulesb (vector signed char a1, vector signed char a2)
+{
+  return (vector signed short) __builtin_altivec_vmuleub ((vector signed char) a1, (vector signed char) a2);
+}
+
 /* vec_vmuleub */
 inline vector unsigned short
 vec_vmuleub (vector unsigned char a1, vector unsigned char a2)
@@ -3868,7 +3876,7 @@ vec_perm (vector unsigned char a1, vector unsigned char a2, vector unsigned char
 }
 
 inline vector bool char
-vec_perm (vector bool char a1, vector bool char a2, vector bool char a3)
+vec_perm (vector bool char a1, vector bool char a2, vector unsigned char a3)
 {
   return (vector bool char) __builtin_altivec_vperm_4si ((vector signed int) a1, (vector signed int) a2, (vector signed char) a3);
 }
@@ -5978,7 +5986,7 @@ vec_sum4s (vector signed short a1, vector signed int a2)
 /* vec_vsum4shs */
 
 inline vector signed int
-vec_vsum4shss (vector signed short a1, vector signed int a2)
+vec_vsum4shs (vector signed short a1, vector signed int a2)
 {
   return (vector signed int) __builtin_altivec_vsum4shs ((vector signed short) a1, (vector signed int) a2);
 }
@@ -7242,12 +7250,6 @@ vec_any_ge (vector signed char a1, vector signed char a2)
 }
 
 inline int
-vec_any_ge (vector bool char a1, vector bool char a2)
-{
-  return __builtin_altivec_vcmpgtub_p (__CR6_LT_REV, (vector signed char) a2, (vector signed char) a1);
-}
-
-inline int
 vec_any_ge (vector bool char a1, vector unsigned char a2)
 {
   return __builtin_altivec_vcmpgtub_p (__CR6_LT_REV, (vector signed char) a2, (vector signed char) a1);
@@ -7284,12 +7286,6 @@ vec_any_ge (vector signed short a1, vector signed short a2)
 }
 
 inline int
-vec_any_ge (vector bool short a1, vector bool short a2)
-{
-  return __builtin_altivec_vcmpgtuh_p (__CR6_LT_REV, (vector signed short) a2, (vector signed short) a1);
-}
-
-inline int
 vec_any_ge (vector bool short a1, vector unsigned short a2)
 {
   return __builtin_altivec_vcmpgtuh_p (__CR6_LT_REV, (vector signed short) a2, (vector signed short) a1);
@@ -7323,12 +7319,6 @@ inline int
 vec_any_ge (vector signed int a1, vector signed int a2)
 {
   return __builtin_altivec_vcmpgtsw_p (__CR6_LT_REV, (vector signed int) a2, (vector signed int) a1);
-}
-
-inline int
-vec_any_ge (vector bool int a1, vector bool int a2)
-{
-  return __builtin_altivec_vcmpgtuw_p (__CR6_LT_REV, (vector signed int) a2, (vector signed int) a1);
 }
 
 inline int
@@ -8345,12 +8335,12 @@ __ch (__bin_args_eq (vector float, (a1), vector float, (a2)), \
 #define vec_vcmpgtsw(a1, a2) \
 __ch (__bin_args_eq (vector signed int, (a1), vector signed int, (a2)), \
       ((vector signed int) __builtin_altivec_vcmpgtsw ((vector signed int) (a1), (vector signed int) (a2))), \
-  __builtin_altivec_compiletime_error ("vec_abs"))
+  __builtin_altivec_compiletime_error ("vec_vcmpgtsw"))
 
 #define vec_vcmpgtuw(a1, a2) \
 __ch (__bin_args_eq (vector unsigned int, (a1), vector unsigned int, (a2)), \
       ((vector signed int) __builtin_altivec_vcmpgtuw ((vector signed int) (a1), (vector signed int) (a2))), \
-  __builtin_altivec_compiletime_error ("vec_abs"))
+  __builtin_altivec_compiletime_error ("vec_vcmpgtuw"))
 
 #define vec_vcmpgtsh(a1, a2) \
 __ch (__bin_args_eq (vector signed short, (a1), vector signed short, (a2)), \
@@ -9061,7 +9051,7 @@ __builtin_altivec_compiletime_error ("vec_vminuh"))))
 #define vec_vminsb(a1, a2) \
 __ch (__bin_args_eq (vector signed char, (a1), vector signed char, (a2)), \
       ((vector signed char) __builtin_altivec_vminsb ((vector signed char) (a1), (vector signed char) (a2))), \
-__builtin_altivec_compiletime_error ("vec_abs"))
+__builtin_altivec_compiletime_error ("vec_vminsb"))
 
 #define vec_vminub(a1, a2) \
 __ch (__bin_args_eq (vector signed char, (a1), vector unsigned char, (a2)), \
@@ -9112,7 +9102,7 @@ __builtin_altivec_compiletime_error ("vec_vmsumuhm"))
 #define vec_vmsummbm(a1, a2, a3) \
 __ch (__tern_args_eq (vector signed char, (a1), vector unsigned char, (a2), vector signed int, (a3)), \
       ((vector signed int) __builtin_altivec_vmsummbm ((vector signed char) (a1), (vector signed char) (a2), (vector signed int) (a3))), \
-__builtin_altivec_compiletime_error ("vec_abs"))
+__builtin_altivec_compiletime_error ("vec_vmsummbm"))
 
 #define vec_vmsumubm(a1, a2, a3) \
 __ch (__tern_args_eq (vector unsigned char, (a1), vector unsigned char, (a2), vector unsigned int, (a3)), \
@@ -9222,8 +9212,8 @@ __ch (__bin_args_eq (vector unsigned char, (a1), vector unsigned char, (a2)), \
 __builtin_altivec_compiletime_error ("vec_vmuloub"))
 
 #define vec_nmsub(a1, a2, a3) \
-__ch (__tern_args_eq (vector float, ((a1)), vector float, ((a2)) , vector float, ((a3))), \
-      ((vector float) __builtin_altivec_vnmsubfp ((vector float) ((a1)), (vector float) ((a2)), (vector float)((a3)))), \
+__ch (__tern_args_eq (vector float, (a1), vector float, (a2), vector float, (a3)), \
+      ((vector float) __builtin_altivec_vnmsubfp ((vector float) (a1), (vector float) (a2), (vector float) (a3))), \
     __builtin_altivec_compiletime_error ("vec_nmsub"))
 
 #define vec_nor(a1, a2) \
@@ -9331,7 +9321,7 @@ __builtin_altivec_compiletime_error ("vec_vpkuhum")))
 
 #define vec_packpx(a1, a2) \
 __ch (__bin_args_eq (vector unsigned int, (a1), vector unsigned int, (a2)), \
-  (vector pixel) __builtin_altivec_vpkpx ((vector signed int) (a1), (vector signed int) (a2)), \
+  ((vector pixel) __builtin_altivec_vpkpx ((vector signed int) (a1), (vector signed int) (a2))), \
 __builtin_altivec_compiletime_error ("vec_packpx"))
 
 #define vec_packs(a1, a2) \
