@@ -12892,20 +12892,26 @@ do_merge_string_cste (cste, string, string_len, after)
      const char *string;
      int string_len, after;
 {
-  int len = TREE_STRING_LENGTH (cste) + string_len;
   const char *old = TREE_STRING_POINTER (cste);
+  int old_len = TREE_STRING_LENGTH (cste);
+  int len = old_len + string_len;
+  char *new;
+  
+  cste = make_node (STRING_CST);
   TREE_STRING_LENGTH (cste) = len;
-  TREE_STRING_POINTER (cste) = obstack_alloc (expression_obstack, len+1);
+  new = TREE_STRING_POINTER (cste) = obstack_alloc (expression_obstack, len+1);
+
   if (after)
     {
-      strcpy (TREE_STRING_POINTER (cste), string);
-      strcat (TREE_STRING_POINTER (cste), old);
+      memcpy (new, string, string_len);
+      memcpy (&new [string_len], old, old_len);
     }
   else
     {
-      strcpy (TREE_STRING_POINTER (cste), old);
-      strcat (TREE_STRING_POINTER (cste), string);
+      memcpy (new, old, old_len);
+      memcpy (&new [old_len], string, string_len);
     }
+  new [len] = '\0';
   return cste;
 }
 
