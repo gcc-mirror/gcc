@@ -1,3 +1,8 @@
+2004-11-26  James A. Morrison  <phython@gcc.gnu.org>
+
+	PR target/18510
+	* doc/extend.texi (SPARC VIS Built-in Functions): New section.
+
 2004-11-26  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* cfgrtl.c (try_redirect_by_replacing_jump): Speed up the
