@@ -207,6 +207,7 @@ dump_type (t, v)
       break;
 
     case TYPE_DECL:
+    case TEMPLATE_DECL:
       dump_decl (t, v);
       break;
 
@@ -227,58 +228,6 @@ dump_type (t, v)
     case BOOLEAN_TYPE:
       dump_readonly_or_volatile (t, after);
       OB_PUTID (TYPE_IDENTIFIER (t));
-      break;
-
-      /* A substituted template template parameter.  Default template 
-	 argument handling are different from dump_decl.  */
-    case TEMPLATE_DECL:
-      {
-	tree orig_args = DECL_TEMPLATE_PARMS (t);
-	tree args;
-	int i; 
-	for (args = orig_args = nreverse (orig_args); 
-	     args;
-	     args = TREE_CHAIN (args))
-	  {
-	    int len = TREE_VEC_LENGTH (TREE_VALUE (args));
-
-	    OB_PUTS ("template <");
-	    for (i = 0; i < len; i++)
-	      {
-		tree arg = TREE_VEC_ELT (TREE_VALUE (args), i);
-		tree defval = TREE_PURPOSE (arg);
-		arg = TREE_VALUE (arg);
-		if (TREE_CODE (arg) == TYPE_DECL)
-		  {
-		    if (DECL_NAME (arg))
-		      {
-			OB_PUTS ("class ");
-			OB_PUTID (DECL_NAME (arg));
-		      }
-		    else
-		      OB_PUTS ("class");
-		  }
-		else
-		  dump_decl (arg, 1);
-		
-		if (defval)
-		  {
-		    OB_PUTS (" = ");
-		    if (TREE_CODE (arg) == TYPE_DECL)
-		      dump_type (defval, 1);
-		    else
-		      dump_expr (defval, 1);
-		  }
-		
-		OB_PUTC2 (',', ' ');
-	      }
-	    if (len != 0)
-	      OB_UNPUT (2);
-	    OB_PUTC2 ('>', ' ');
-	  }
-	nreverse(orig_args);
-	dump_type (TREE_TYPE (t), v);
-      }
       break;
 
     case TEMPLATE_TEMPLATE_PARM:
@@ -837,7 +786,10 @@ dump_decl (t, v)
 		if (defval)
 		  {
 		    OB_PUTS (" = ");
-		    dump_decl (defval, 1);
+		    if (TREE_CODE (arg) == TYPE_DECL)
+		      dump_type (defval, 1);
+		    else
+		      dump_decl (defval, 1);
 		  }
 		
 		OB_PUTC2 (',', ' ');
