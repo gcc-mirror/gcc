@@ -42,6 +42,16 @@
 #  include <sys/table.h>
 #endif
 
+#include <sys/types.h>
+
+#if HAVE_SYS_PARAM_H
+#include <sys/param.h>
+#endif
+
+#if HAVE_SYS_SYSCTL_H
+#include <sys/sysctl.h>
+#endif
+
 #include "libiberty.h"
 
 /* Return the total amount of physical memory.  */
@@ -95,6 +105,18 @@ physmem_total ()
 	if (0 <= kbytes)
 	  return kbytes * 1024.0;
       }
+  }
+#endif
+
+#if HAVE_SYSCTL && defined HW_PHYSMEM
+  { /* This works on *bsd and darwin.  */
+    unsigned int physmem;
+    size_t len = sizeof(physmem);
+    static int mib[2] = {CTL_HW, HW_PHYSMEM};
+
+    if (sysctl(mib, ARRAY_SIZE(mib), &physmem, &len, NULL, 0) == 0
+	&& len == sizeof (physmem))
+      return (double)physmem;
   }
 #endif
 
@@ -155,6 +177,18 @@ physmem_available ()
 	if (0 <= pages && 0 <= pagesize)
 	  return pages * pagesize;
       }
+  }
+#endif
+
+#if HAVE_SYSCTL && defined HW_USERMEM
+  { /* This works on *bsd and darwin.  */
+    unsigned int usermem;
+    size_t len = sizeof(usermem);
+    static int mib[2] = {CTL_HW, HW_USERMEM};
+
+    if (sysctl(mib, ARRAY_SIZE(mib), &usermem, &len, NULL, 0) == 0
+	&& len == sizeof (usermem))
+      return (double)usermem;
   }
 #endif
 

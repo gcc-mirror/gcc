@@ -1,3 +1,11 @@
+2003-02-22  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+	    Richard Earnshaw  <rearnsha@arm.com>
+	    Geoffrey Keating  <geoffk@apple.com>
+	
+	* configure.in: Check for sys/sysctl.h and sysctl.
+	* physmem.c: Add support for *bsd and darwin.
+	* Makefile.in: Generate depedency for physmem.o.
+
 2003-02-21  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* physmem.c (physmem_total) [HAVE_GETSYSINFO]: Use getsysinfo on
