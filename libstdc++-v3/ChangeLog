@@ -1,3 +1,8 @@
+2002-03-09  Paolo Carlini  <pcarlini@unitus.it>
+
+	* include/bits/locale_facets.tcc (collate::do_transform):
+	Rewrite to fix problems with long transformed strings.
+
 2002-03-08  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* c_locale_generic.cc: Move to...
