@@ -3935,6 +3935,24 @@ specified on its command line and create an export list for the linker.
 Define this macro for systems like AIX, where the linker discards
 object files that are not referenced from @code{main} and uses export
 lists.
+
+@findex COLLECT2_HOST_INITIALIZATION
+@item COLLECT2_HOST_INITIALIZATION
+If defined, a C statement (sans semicolon) that performs host-dependent
+initialization when @code{collect2} is being initialized.
+
+@findex GCC_DRIVER_HOST_INITIALIZATION
+@item GCC_DRIVER_HOST_INITIALIZATION
+If defined, a C statement (sans semicolon) that performs host-dependent
+initialization when a compilation driver is being initialized.
+
+@findex UPDATE_PATH_HOST_CANONICALIZE
+@item UPDATE_PATH_HOST_CANONICALIZE (@var{path}, @var{key})
+If defined, a C statement (sans semicolon) that performs host-dependent
+canonicalization when a path used in a compilation driver or preprocessor is
+canonicalized. @var{path} is the path to be canonicalized, and @var{key} is
+a translation prefix when its value isn't @code{NULL}. If the C statement
+does canonicalize @var{path}, the new path should be returned.
 @end table
 
 @findex bzero
