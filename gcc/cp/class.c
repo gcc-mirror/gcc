@@ -170,7 +170,6 @@ static void dump_vtt (tree, tree);
 static void dump_thunk (FILE *, int, tree);
 static tree build_vtable (tree, tree, tree);
 static void initialize_vtable (tree, tree);
-static void initialize_array (tree, tree);
 static void layout_nonempty_base_or_field (record_layout_info,
 						   tree, tree, splay_tree);
 static tree end_of_class (tree, int);
@@ -6681,18 +6680,8 @@ initialize_vtable (tree binfo, tree inits)
 
   layout_vtable_decl (binfo, list_length (inits));
   decl = get_vtbl_decl_for_binfo (binfo);
-  initialize_array (decl, inits);
+  initialize_artificial_var (decl, inits);
   dump_vtable (BINFO_TYPE (binfo), binfo, decl);
-}
-
-/* Initialize DECL (a declaration for a namespace-scope array) with
-   the INITS.  */
-
-static void
-initialize_array (tree decl, tree inits)
-{
-  DECL_INITIAL (decl) = build_constructor (NULL_TREE, inits);
-  cp_finish_decl (decl, DECL_INITIAL (decl), NULL_TREE, 0);
 }
 
 /* Build the VTT (virtual table table) for T.
@@ -6731,7 +6720,7 @@ build_vtt (tree t)
 				 
   /* Now, build the VTT object itself.  */
   vtt = build_vtable (t, get_vtt_name (t), type);
-  initialize_array (vtt, inits);
+  initialize_artificial_var (vtt, inits);
   /* Add the VTT to the vtables list.  */
   TREE_CHAIN (vtt) = TREE_CHAIN (CLASSTYPE_VTABLES (t));
   TREE_CHAIN (CLASSTYPE_VTABLES (t)) = vtt;
@@ -7018,7 +7007,7 @@ build_ctor_vtbl_group (tree binfo, tree t)
 
   /* Initialize the construction vtable.  */
   CLASSTYPE_VTABLES (t) = chainon (CLASSTYPE_VTABLES (t), vtbl);
-  initialize_array (vtbl, inits);
+  initialize_artificial_var (vtbl, inits);
   dump_vtable (t, binfo, vtbl);
 }
 

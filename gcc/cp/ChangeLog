@@ -1,3 +1,12 @@
+2004-08-30  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (initialize_artificial_var): Declare.
+	* decl.c (initialize_artifical_var): New function.
+	* class.c (initialize_array): Remove.
+	(initialize_vtable): Use initialize_artificial_var.
+	(build_vtt): Likewise.
+	(build_ctor_vtbl_group): Likewise.
+
 2004-08-30  Richard Henderson  <rth@redhat.com>
 
 	* class.c (build_base_path): Use build_address directly.
