@@ -36,6 +36,9 @@
 /* Get Single Unix Specification semantics */
 #undef _XOPEN_SOURCE_EXTENDED
 
+/* Solaris extensions */
+#undef __EXTENSIONS__
+
 /* Get 64-bit file size support */
 #undef _FILE_OFFSET_BITS
 
