@@ -3670,6 +3670,10 @@ changequote([,])dnl
 		;;
 	vax-*-ultrix*)			# vaxen running ultrix
 		tm_file="${tm_file} vax/ultrix.h"
+		if test x$GCC = xyes
+		then
+			xmake_file=vax/x-vax-gcc
+		fi
 		use_collect2=yes
 		float_format=vax
 		;;
