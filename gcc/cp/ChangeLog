@@ -24,20 +24,6 @@
 	* decl.c (BINDING_LEVEL): Add parenthesis.
 	(DEF_OPERATOR): Likewise.
 
-	* errors.c (print_scope_operator): Add parenthesis.
-	(print_left_paren): Likewise.
-	(print_right_paren): Likewise.
-	(print_left_bracket): Likewise.
-	(print_right_bracket): Likewise.
-	(print_template_argument_list_start): Likewise.
-	(print_template_argument_list_end): Likewise.
-	(print_non_consecutive_character): Likewise.
-	(print_tree_identifier): Likewise.
-	(print_identifier): Likewise.
-	(NEXT_CODE): Uppercase macro parameter.
-	(ident_fndecl): Delete unused.
-	(GLOBAL_THING): Likewise.
-
 	* mangle.c (MANGLE_TRACE): Add parenthesis.
 	(MANGLE_TRACE_TREE): Likewise.
 	(write_signed_number): Likewise.
