@@ -292,6 +292,7 @@ static void mips_output_mi_thunk (FILE *, tree, HOST_WIDE_INT,
 static int symbolic_expression_p (rtx);
 static void mips_select_rtx_section (enum machine_mode, rtx,
 				     unsigned HOST_WIDE_INT);
+static void mips_function_rodata_section (tree);
 static bool mips_in_small_data_p (tree);
 static int mips_fpr_return_fields (tree, tree *);
 static bool mips_return_in_msb (tree);
@@ -722,6 +723,8 @@ const struct mips_cpu_info mips_cpu_info_table[] = {
 #define TARGET_ASM_FUNCTION_EPILOGUE mips_output_function_epilogue
 #undef TARGET_ASM_SELECT_RTX_SECTION
 #define TARGET_ASM_SELECT_RTX_SECTION mips_select_rtx_section
+#undef TARGET_ASM_FUNCTION_RODATA_SECTION
+#define TARGET_ASM_FUNCTION_RODATA_SECTION mips_function_rodata_section
 
 #undef TARGET_SCHED_REORDER
 #define TARGET_SCHED_REORDER mips_sched_reorder
@@ -6572,6 +6575,42 @@ mips_select_rtx_section (enum machine_mode mode, rtx x,
       else
 	mergeable_constant_section (mode, align, 0);
     }
+}
+
+/* Implement TARGET_ASM_FUNCTION_RODATA_SECTION.
+
+   The complication here is that, with the combination TARGET_ABICALLS
+   && !TARGET_GPWORD, jump tables will use absolute addresses, and should
+   therefore not be included in the read-only part of a DSO.  Handle such
+   cases by selecting a normal data section instead of a read-only one.
+   The logic apes that in default_function_rodata_section.  */
+
+static void
+mips_function_rodata_section (tree decl)
+{
+  if (!TARGET_ABICALLS || TARGET_GPWORD)
+    default_function_rodata_section (decl);
+  else if (decl && DECL_SECTION_NAME (decl))
+    {
+      const char *name = TREE_STRING_POINTER (DECL_SECTION_NAME (decl));
+      if (DECL_ONE_ONLY (decl) && strncmp (name, ".gnu.linkonce.t.", 16) == 0)
+	{
+	  char *rname = ASTRDUP (name);
+	  rname[14] = 'd';
+	  named_section_real (rname, SECTION_LINKONCE | SECTION_WRITE, decl);
+	}
+      else if (flag_function_sections && flag_data_sections
+	       && strncmp (name, ".text.", 6) == 0)
+	{
+	  char *rname = ASTRDUP (name);
+	  memcpy (rname + 1, "data", 4);
+	  named_section_flags (rname, SECTION_WRITE);
+	}
+      else
+	data_section ();
+    }
+  else
+    data_section ();
 }
 
 /* Implement TARGET_IN_SMALL_DATA_P.  Return true if it would be safe to
