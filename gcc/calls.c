@@ -944,6 +944,7 @@ expand_call (exp, target, ignore)
   for (p = actparms, argpos = 0; p; p = TREE_CHAIN (p), i += inc, argpos++)
     {
       tree type = TREE_TYPE (TREE_VALUE (p));
+      int unsignedp;
       enum machine_mode mode;
 
       args[i].tree_value = TREE_VALUE (p);
@@ -1036,20 +1037,13 @@ expand_call (exp, target, ignore)
 	}
 
       mode = TYPE_MODE (type);
+      unsignedp = TREE_UNSIGNED (type);
 
 #ifdef PROMOTE_FUNCTION_ARGS
-      /* Compute the mode in which the arg is actually to be extended to.  */
-      if (TREE_CODE (type) == INTEGER_TYPE || TREE_CODE (type) == ENUMERAL_TYPE
-	  || TREE_CODE (type) == BOOLEAN_TYPE || TREE_CODE (type) == CHAR_TYPE
-	  || TREE_CODE (type) == REAL_TYPE || TREE_CODE (type) == POINTER_TYPE
-	  || TREE_CODE (type) == OFFSET_TYPE)
-	{
-	  int unsignedp = TREE_UNSIGNED (type);
-	  PROMOTE_MODE (mode, unsignedp, type);
-	  args[i].unsignedp = unsignedp;
-	}
+      mode = promote_mode (type, mode, &unsignedp, 1);
 #endif
 
+      args[i].unsignedp = unsignedp;
       args[i].mode = mode;
       args[i].reg = FUNCTION_ARG (args_so_far, mode, type,
 				  argpos < n_named_args);
@@ -1983,25 +1977,15 @@ expand_call (exp, target, ignore)
   if (GET_CODE (target) == REG
       && GET_MODE (target) != TYPE_MODE (TREE_TYPE (exp)))
     {
-      enum machine_mode mode = TYPE_MODE (TREE_TYPE (exp));
-      int unsignedp = TREE_UNSIGNED (TREE_TYPE (exp));
+      tree type = TREE_TYPE (exp);
+      int unsignedp = TREE_UNSIGNED (type);
 
-      if (TREE_CODE (TREE_TYPE (exp)) == INTEGER_TYPE
-	  || TREE_CODE (TREE_TYPE (exp)) == ENUMERAL_TYPE
-	  || TREE_CODE (TREE_TYPE (exp)) == BOOLEAN_TYPE
-	  || TREE_CODE (TREE_TYPE (exp)) == CHAR_TYPE
-	  || TREE_CODE (TREE_TYPE (exp)) == REAL_TYPE
-	  || TREE_CODE (TREE_TYPE (exp)) == POINTER_TYPE
-	  || TREE_CODE (TREE_TYPE (exp)) == OFFSET_TYPE)
-	{
-	  PROMOTE_MODE (mode, unsignedp, TREE_TYPE (exp));
-	}
-
-      /* If we didn't promote as expected, something is wrong.  */
-      if (mode != GET_MODE (target))
+      /* If we don't promote as expected, something is wrong.  */
+      if (GET_MODE (target)
+	  != promote_mode (type, TYPE_MODE (type), &unsignedp, 1))
 	abort ();
 
-      target = gen_rtx (SUBREG, TYPE_MODE (TREE_TYPE (exp)), target, 0);
+      target = gen_rtx (SUBREG, TYPE_MODE (type), target, 0);
       SUBREG_PROMOTED_VAR_P (target) = 1;
       SUBREG_PROMOTED_UNSIGNED_P (target) = unsignedp;
     }
