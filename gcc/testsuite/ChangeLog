@@ -1,5 +1,6 @@
 1998-04-19  Dave Love  <d.love@dl.ac.uk>
 
+	* g77.f-torture/compile/980419-2.f (main): New test.
 	* g77.f-torture/compile/970125-0.f: New test.
 	* g77.f-torture/compile/980419-1.f: New test.
 
