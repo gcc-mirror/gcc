@@ -106,8 +106,7 @@ require_complete_type (value)
     type = TREE_TYPE (value);
 
   /* First, detect a valid value with a complete type.  */
-  if (TYPE_SIZE (type) != 0
-      && TYPE_SIZE (type) != size_zero_node)
+  if (TYPE_SIZE (type) && !integer_zerop (TYPE_SIZE (type)))
     return value;
 
   /* If we see X::Y, we build an OFFSET_TYPE which has
@@ -177,7 +176,7 @@ complete_type_or_else (type, value)
   if (type == error_mark_node)
     /* We already issued an error.  */
     return NULL_TREE;
-  else if (!TYPE_SIZE (type) || TYPE_SIZE (type) == size_zero_node)
+  else if (!TYPE_SIZE (type) || integer_zerop (TYPE_SIZE (type)))
     {
       incomplete_type_error (value, type);
       return NULL_TREE;
