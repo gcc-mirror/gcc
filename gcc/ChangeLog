@@ -1,3 +1,7 @@
+2000-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/i386.md (truncxfsf2_2): Fix predicate.
+
 2000-11-27  Jim Wilson  <wilson@redhat.com>
 
 	* reload1.c (reload): Use HOST_WIDE_INT for old_frame_size.
