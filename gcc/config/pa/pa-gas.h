@@ -19,7 +19,3 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #undef TARGET_DEFAULT
 #define TARGET_DEFAULT 0x88		/* TARGET_GAS + TARGET_JUMP_IN_DELAY */
-
-#define DBX_DEBUGGING_INFO
-#undef DEFAULT_GDB_EXTENSIONS
-#define DEFAULT_GDB_EXTENSIONS 1
