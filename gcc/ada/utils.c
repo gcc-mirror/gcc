@@ -1814,13 +1814,6 @@ end_subprog_body ()
   if (function_nesting_depth > 1)
     ggc_pop_context ();
 
-#if 0
-  /* If we're sure this function is defined in this file then mark it
-     as such */
-  if (TREE_ASM_WRITTEN (current_function_decl))
-    mark_fn_defined_in_this_file (current_function_decl);
-#endif
-
   /* Throw away any VAR_DECLs we made for OUT parameters; they must
      not be seen when we call this function and will be in
      unallocated memory anyway.  */

@@ -586,21 +586,8 @@ static void
 gnat_adjust_rli (rli)
      record_layout_info rli ATTRIBUTE_UNUSED;
 {
-#if 0
-  /* This code seems to have no actual effect; record_align should already
+  /* This function has no actual effect; record_align should already
      reflect the largest alignment desired by a field.  jason 2003-04-01  */
-  unsigned int record_align = rli->unpadded_align;
-  tree field;
-
-  /* If any fields have variable size, we need to force the record to be at
-     least as aligned as the alignment of that type.  */
-  for (field = TYPE_FIELDS (rli->t); field; field = TREE_CHAIN (field))
-    if (TREE_CODE (DECL_SIZE_UNIT (field)) != INTEGER_CST)
-      record_align = MAX (record_align, DECL_ALIGN (field));
-
-  if (TYPE_PACKED (rli->t))
-    rli->record_align = record_align;
-#endif
 }
 
 /* Make a TRANSFORM_EXPR to later expand GNAT_NODE into code.  */
