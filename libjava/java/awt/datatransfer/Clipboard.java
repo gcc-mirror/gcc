@@ -103,6 +103,8 @@ getName()
   * Returns the contents of the clipboard.
   *
   * @param requestor The object requesting the contents.
+  *
+  * @exception IllegalStateException If the clipboard is currently unavailable
   */
 public synchronized Transferable
 getContents(Object requestor)
@@ -120,6 +122,8 @@ getContents(Object requestor)
   *
   * @param contents The new clipboard contents.
   * @param owner The new clipboard owner
+  *
+  * @exception IllegalStateException If the clipboard is currently unavailable
   */
 public synchronized void
 setContents(Transferable contents, ClipboardOwner owner)

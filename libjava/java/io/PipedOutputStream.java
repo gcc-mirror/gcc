@@ -97,7 +97,7 @@ public class PipedOutputStream extends OutputStream
     */
   public void connect(PipedInputStream sink) throws IOException
   {
-    if (sink != null)
+    if (this.sink != null || sink.source != null)
       throw new IOException ("Already connected");
     sink.connect(this);
   }

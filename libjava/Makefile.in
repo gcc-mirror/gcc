@@ -1096,6 +1096,7 @@ java/rmi/server/LogStream.java \
 java/rmi/server/ObjID.java \
 java/rmi/server/Operation.java \
 java/rmi/server/RMIClassLoader.java \
+java/rmi/server/RMIClassLoaderSpi.java \
 java/rmi/server/RMIClientSocketFactory.java \
 java/rmi/server/RMIFailureHandler.java \
 java/rmi/server/RMIServerSocketFactory.java \
@@ -3164,6 +3165,7 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/rmi/server/LoaderHandler.P .deps/java/rmi/server/LogStream.P \
 .deps/java/rmi/server/ObjID.P .deps/java/rmi/server/Operation.P \
 .deps/java/rmi/server/RMIClassLoader.P \
+.deps/java/rmi/server/RMIClassLoaderSpi.P \
 .deps/java/rmi/server/RMIClientSocketFactory.P \
 .deps/java/rmi/server/RMIFailureHandler.P \
 .deps/java/rmi/server/RMIServerSocketFactory.P \

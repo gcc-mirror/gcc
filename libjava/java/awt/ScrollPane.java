@@ -113,6 +113,8 @@ private Point scrollPosition = new Point(0, 0);
 /**
   * Initializes a new instance of <code>ScrollPane</code> with a default
   * scrollbar policy of <code>SCROLLBARS_AS_NEEDED</code>.
+  *
+  * @exception HeadlessException If GraphicsEnvironment.isHeadless() is true.
   */
 public
 ScrollPane()
@@ -128,10 +130,15 @@ ScrollPane()
   *
   * @param scrollbarDisplayPolicy When to display scrollbars, which must
   * be one of the constants defined in this class.
+  *
+  * @exception HeadlessException If GraphicsEnvironment.isHeadless() is true.
   */
 public
 ScrollPane(int scrollbarDisplayPolicy)
 {
+  if (GraphicsEnvironment.isHeadless ())
+    throw new HeadlessException ();
+
   this.scrollbarDisplayPolicy = scrollbarDisplayPolicy;
 
   if (scrollbarDisplayPolicy != SCROLLBARS_ALWAYS

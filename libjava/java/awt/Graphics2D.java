@@ -38,6 +38,7 @@ package java.awt;
 
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
+import java.awt.image.BufferedImageOp;
 import java.awt.image.RenderedImage;
 import java.awt.image.ImageObserver;
 import java.awt.image.renderable.RenderableImage;
@@ -74,7 +75,7 @@ public abstract class Graphics2D extends Graphics
 				    ImageObserver obs);
 
   public abstract void drawImage(BufferedImage image,
-				 BufferedImage op,
+				 BufferedImageOp op,
 				 int x,
 				 int y);
 

@@ -41,42 +41,35 @@ package java.awt.datatransfer;
 import java.util.Map;
 
 /**
-  * This interface maps between native platform type names and DataFlavors.
-  *
-  * @author Aaron M. Renn (arenn@urbanophile.com)
-  */
+ * This interface maps between native platform type names and DataFlavors.
+ *
+ * @author Aaron M. Renn (arenn@urbanophile.com)
+ */
 public interface FlavorMap
 {
+  /**
+   * Maps the specified <code>DataFlavor</code> objects to the native
+   * data type name.  The returned <code>Map</code> has keys that are
+   * the data flavors and values that are strings.  The returned map
+   * may be modified.  This can be useful for implementing nested mappings.
+   *
+   * @param flavors An array of data flavors to map
+   *                or null for all data flavors.
+   *
+   * @return A <code>Map</code> of native data types.
+   */
+  public abstract Map getNativesForFlavors (DataFlavor[] flavors);
 
-/**
-  * Maps the specified <code>DataFlavor</code> objects to the native
-  * data type name.  The returned <code>Map</code> has keys that are
-  * the data flavors and values that are strings.  The returned map
-  * may be modified.  This can be useful for implementing nested mappings.
-  *
-  * @param flavors An array of data flavors to map
-  *                or null for all data flavors.
-  *
-  * @return A <code>Map</code> of native data types.
-  */
-public abstract Map
-getNativesForFlavors(DataFlavor[] flavors);
-
-/*************************************************************************/
-
-/**
-  * Maps the specified native type names to <code>DataFlavor</code>'s.
-  * The returned <code>Map</code> has keys that are strings and values
-  * that are <code>DataFlavor</code>'s.  The returned map may be
-  * modified.  This can be useful for implementing nested mappings.
-  *
-  * @param natives An array of native types to map
-  *                or null for all native types.
-  *
-  * @return A <code>Map</code> of data flavors.
-  */
-public abstract Map
-getFlavorsForNatives(String[] natives);
-
-} // interface FlavorMap
-
+  /**
+   * Maps the specified native type names to <code>DataFlavor</code>'s.
+   * The returned <code>Map</code> has keys that are strings and values
+   * that are <code>DataFlavor</code>'s.  The returned map may be
+   * modified.  This can be useful for implementing nested mappings.
+   *
+   * @param natives An array of native types to map
+   *                or null for all native types.
+   *
+   * @return A <code>Map</code> of data flavors.
+   */
+  public abstract Map getFlavorsForNatives (String[] natives);
+}

@@ -64,6 +64,7 @@ public final class AlphaComposite implements Composite
       return size() > MAX_CACHE_SIZE;
     }
   };
+
   public static final int CLEAR = 1;
   public static final int SRC = 2;
   public static final int DST = 9;
@@ -88,6 +89,7 @@ public final class AlphaComposite implements Composite
   public static final AlphaComposite SrcAtop = getInstance(SRC_ATOP);
   public static final AlphaComposite DstAtop = getInstance(DST_ATOP);
   public static final AlphaComposite Xor = getInstance(XOR);
+  
   private final int rule;
   private final float alpha;
   private AlphaComposite(int rule, float alpha)
@@ -95,10 +97,32 @@ public final class AlphaComposite implements Composite
     this.rule = rule;
     this.alpha = alpha;
   }
+
+  /**
+   * Creates an AlphaComposite object with the specified rule.
+   *
+   * @param rule The compositing rule.
+   *
+   * @exception IllegalArgumentException If rule is not one of the following:
+   * CLEAR, SRC, DST, SRC_OVER, DST_OVER, SRC_IN, DST_IN, SRC_OUT, DST_OUT,
+   * SRC_ATOP, DST_ATOP, or XOR.
+   */
   public static AlphaComposite getInstance(int rule)
   {
     return getInstance(rule, 1);
   }
+  
+  /**
+   * Creates an AlphaComposite object with the specified rule and the constant
+   * alpha to multiply with the alpha of the source. The source is multiplied
+   * with the specified alpha before being composited with the destination.
+   *
+   * @param rule The compositing rule.
+   *
+   * @exception IllegalArgumentException If rule is not one of the following:
+   * CLEAR, SRC, DST, SRC_OVER, DST_OVER, SRC_IN, DST_IN, SRC_OUT, DST_OUT,
+   * SRC_ATOP, DST_ATOP, or XOR.
+   */
   public static AlphaComposite getInstance(int rule, float alpha)
   {
     if (rule < CLEAR || rule > XOR || ! (alpha >= 0 && alpha <= 1))

@@ -84,9 +84,11 @@ private ActionListener action_listeners;
  * Constructors
  */
 
-/*
+/**
  * Initializes a new instance of <code>TextField</code> that is empty
  * and has one column.
+ *
+ * @exception HeadlessException If GraphicsEnvironment.isHeadless() is true,
  */
 public
 TextField()
@@ -102,6 +104,8 @@ TextField()
   * length of the text string.
   *
   * @param text The text to display in the field.
+  *
+  * @exception HeadlessException If GraphicsEnvironment.isHeadless() is true,
   */
 public
 TextField(String text)
@@ -116,6 +120,8 @@ TextField(String text)
   * and has the specified number of columns.
   *
   * @param columns The number of columns in the text field.
+  *
+  * @exception HeadlessException If GraphicsEnvironment.isHeadless() is true,
   */
 public
 TextField(int columns)
@@ -131,12 +137,17 @@ TextField(int columns)
   *
   * @param text The text to display in the field.
   * @param columns The number of columns in the field.
+  *
+  * @exception HeadlessException If GraphicsEnvironment.isHeadless() is true,
   */
 public
 TextField(String text, int columns)
 {
   super(text);
   this.columns = columns;
+
+  if (GraphicsEnvironment.isHeadless())
+    throw new HeadlessException ();
 }
 
 /*************************************************************************/

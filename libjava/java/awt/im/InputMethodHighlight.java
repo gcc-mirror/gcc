@@ -178,7 +178,7 @@ public class InputMethodHighlight
    * @return the style map
    * @since 1.3
    */
-  public Map getSytle()
+  public Map getStyle()
   {
     return style;
   }

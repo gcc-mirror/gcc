@@ -130,6 +130,12 @@ public abstract class DragGestureRecognizer implements Serializable
     throw new Error("not implemented");
   }
 
+  /**
+   * Register a new DragGestureListener.
+   *
+   * @exception TooManyListenersException If a DragGestureListener has already
+   * been added.
+   */
   public void addDragGestureListener(DragGestureListener dgl)
     throws TooManyListenersException
   {

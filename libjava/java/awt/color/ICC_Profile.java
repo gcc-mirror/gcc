@@ -245,7 +245,7 @@ public class ICC_Profile implements Serializable
     write(new FileOutputStream(filename));
   }
 
-  public void write(OutputStream out)
+  public void write(OutputStream out) throws IOException
   {
     throw new Error("not implemented");
   }

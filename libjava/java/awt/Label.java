@@ -99,6 +99,8 @@ private String text;
 
 /**
   * Initializes a new instance of <code>Label</code> with no text.
+  *
+  * @exception HeadlessException If GraphicsEnvironment.isHeadless() is true.
   */
 public
 Label()
@@ -113,6 +115,8 @@ Label()
   * text that is aligned to the left.
   *
   * @param text The text of the label.
+  *
+  * @exception HeadlessException If GraphicsEnvironment.isHeadless() is true.
   */
 public
 Label(String text)
@@ -130,12 +134,17 @@ Label(String text)
   * @param alignment The desired alignment for the text in this label,
   * which must be one of <code>LEFT</code>, <code>CENTER</code>, or
   * <code>RIGHT</code>.
+  *
+  * @exception HeadlessException If GraphicsEnvironment.isHeadless() is true.
   */
 public
 Label(String text, int alignment)
 {
   setAlignment (alignment);
   setText (text);
+
+  if (GraphicsEnvironment.isHeadless())
+    throw new HeadlessException ();
 }
 
 /*************************************************************************/

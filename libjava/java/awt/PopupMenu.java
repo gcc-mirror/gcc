@@ -65,6 +65,9 @@ private static final long serialVersionUID = -4620452533522760060L;
 
 /**
   * Initializes a new instance of <code>PopupMenu</code>.
+  *
+  * @exception HeadlessException If GraphicsEnvironment.isHeadless()
+  * returns true.
   */
 public
 PopupMenu()
@@ -78,11 +81,17 @@ PopupMenu()
   * label.
   *
   * @param label The label for this popup menu.
+  *
+  * @exception HeadlessException If GraphicsEnvironment.isHeadless()
+  * returns true.
   */
 public
 PopupMenu(String label)
 {
   super(label);
+
+  if (GraphicsEnvironment.isHeadless())
+    throw new HeadlessException ();
 }
 
 /*************************************************************************/

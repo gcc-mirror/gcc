@@ -1,4 +1,4 @@
-/* Copyright (C) 2000, 2002  Free Software Foundation
+/* Copyright (C) 2000, 2002, 2003  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -24,6 +24,7 @@ import java.awt.Stroke;
 import java.awt.geom.AffineTransform;
 import java.awt.image.ImageObserver;
 import java.awt.image.BufferedImage;
+import java.awt.image.BufferedImageOp;
 import java.awt.image.RenderedImage;
 import java.awt.image.renderable.RenderableImage;
 import java.text.AttributedCharacterIterator;
@@ -459,7 +460,7 @@ public class Graphics2DImpl extends Graphics2D implements Cloneable
     throw new UnsupportedOperationException(msg);
   }
   
-  public void drawImage(BufferedImage image, BufferedImage op, int x, int y)
+  public void drawImage(BufferedImage image, BufferedImageOp op, int x, int y)
   {
     throw new UnsupportedOperationException("not implemented yet");  
   }

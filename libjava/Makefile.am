@@ -1336,6 +1336,7 @@ java/rmi/server/LogStream.java \
 java/rmi/server/ObjID.java \
 java/rmi/server/Operation.java \
 java/rmi/server/RMIClassLoader.java \
+java/rmi/server/RMIClassLoaderSpi.java \
 java/rmi/server/RMIClientSocketFactory.java \
 java/rmi/server/RMIFailureHandler.java \
 java/rmi/server/RMIServerSocketFactory.java \

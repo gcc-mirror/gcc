@@ -133,11 +133,14 @@ public class Cursor implements java.io.Serializable
    * type.
    *
    * @param type The cursor type.
+   *
+   * @exception IllegalArgumentException If the specified cursor type is invalid
    */
   public Cursor(int type)
   {
     if (type < 0 || type >= PREDEFINED_COUNT)
       throw new IllegalArgumentException ("invalid cursor " + type);
+
     this.type = type;
     // FIXME: lookup and set name?
   }
@@ -171,9 +174,20 @@ public class Cursor implements java.io.Serializable
     return predefined[type];
   }
 
+  /**
+   * Retrieves the system specific custom Cursor named Cursor names are,
+   * for example: "Invalid.16x16".
+   *
+   * @exception AWTException
+   * @exception HeadlessException If GraphicsEnvironment.isHeadless()
+   * returns true.
+   */
   public static Cursor getSystemCustomCursor(String name)
                                       throws AWTException
   {
+    if (GraphicsEnvironment.isHeadless())
+      throw new HeadlessException ();
+
     // FIXME
     return null;
   }

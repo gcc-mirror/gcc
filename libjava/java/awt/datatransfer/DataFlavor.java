@@ -281,6 +281,7 @@ DataFlavor(Class representationClass, String humanPresentableName)
   *
   * @exception IllegalArgumentException If the representation class
   * specified cannot be loaded.
+  * @exception ClassNotFoundException If the class is not loaded.
   */
 public
 DataFlavor(String mimeType, String humanPresentableName, 
@@ -504,6 +505,8 @@ setHumanPresentableName(String humanPresentableName)
   *
   * @return <code>true</code> if the MIME type is equal to this object's
   * MIME type, <code>false</code> otherwise.
+  *
+  * @exception NullPointerException If mimeType is null.
   */
 public final boolean
 isMimeTypeEqual(String mimeType)
@@ -652,6 +655,10 @@ isFlavorJavaFileListType()
   * Returns a copy of this object.
   *
   * @return A copy of this object.
+  *
+  * @exception CloneNotSupportedException If the object's class does not support
+  * the Cloneable interface. Subclasses that override the clone method can also
+  * throw this exception to indicate that an instance cannot be cloned.
   */
 public Object
 clone()
@@ -813,6 +820,8 @@ normalizeMimeType(String type)
   * Serialize this class.
   *
   * @param stream The <code>ObjectOutput</code> stream to serialize to.
+  *
+  * @exception IOException If an error occurs.
   */
 public void
 writeExternal(ObjectOutput stream) throws IOException
@@ -826,6 +835,10 @@ writeExternal(ObjectOutput stream) throws IOException
   * De-serialize this class.
   *
   * @param stream The <code>ObjectInput</code> stream to deserialize from.
+  *
+  * @exception IOException If an error ocurs.
+  * @exception ClassNotFoundException If the class for an object being restored
+  * cannot be found.
   */
 public void
 readExternal(ObjectInput stream) throws IOException, ClassNotFoundException
@@ -950,6 +963,10 @@ selectBestTextFlavor(DataFlavor[] availableFlavors)
   *
   * @param transferable The <code>Transferable</code> for which a text
   *                     <code>Reader</code> is requested.
+  *
+  * @exception IllegalArgumentException If the representation class is not one
+  * of the seven listed above or the Transferable has null data.
+  * @exception NullPointerException If the Transferable is null.
   * @exception UnsupportedFlavorException when the transferable doesn't
   * support this <code>DataFlavor</code>. Or if the representable class
   * isn't a (subclass of) <code>Reader</code>, <code>String</code>,
