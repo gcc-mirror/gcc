@@ -1,3 +1,9 @@
+Mon Jan 26 01:44:12 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* h8300.c (print_operand): Handle CONST_DOUBLE for 'e', 'f', and
+	the default case.
+	(get_shift_alg): Fix typo.
+
 Sun Jan 25 22:22:04 1998  Richard Henderson  <rth@cygnus.com>
 
 	* alpha.c (alpha_expand_block_move): Copy ADDRESSOF to reg.
