@@ -35,7 +35,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* If EXTRA_CONSTRAINT is defined, then the 'S'
    constraint in REG_CLASS_FROM_LETTER will no longer work, and various
    asm statements that need 'S' for class SIREG will break.  */
- #error EXTRA_CONSTRAINT conflicts with S constraint letter
+ error EXTRA_CONSTRAINT conflicts with S constraint letter
+/* The previous line used to be #error, but some compilers barf
+   even if the conditional was untrue.  */
 #endif
 
 #define AT_BP(mode) (gen_rtx (MEM, (mode), frame_pointer_rtx))
