@@ -6647,9 +6647,9 @@ output_toc (file, x, labelno)
      a TOC reference to an unknown section.  Thus, for vtables only,
      we emit the TOC reference to reference the symbol and not the
      section.  */
-  if (! strncmp ("_vt.", name, 4))
+  if (strncmp ("_vt.", name, 4) == 0)
     {
-      assemble_name (file, name);
+      RS6000_OUTPUT_BASENAME (file, name);
       if (offset < 0)
 	fprintf (file, "%d", offset);
       else if (offset > 0)
