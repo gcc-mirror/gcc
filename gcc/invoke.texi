@@ -413,7 +413,11 @@ in the following sections.
 -mrelax  -mh -ms -mint32  -malign-300
 
 @emph{SH Options}
--m1  -m2  -m3  -m3e  -mb  -ml  -mdalign -mrelax
+-m1  -m2  -m3  -m3e
+-m4-nofpu  -m4-single-only  -m4-single  -m4
+-mb  -ml  -mdalign  -mrelax
+-mbigtable  -mfmovd  -mhitachi  -mnomacsave
+-misize  -mpadstruct  -mspace
 
 @emph{System V Options}
 -Qy  -Qn  -YP,@var{paths}  -Ym,@var{dir}
@@ -6657,6 +6661,20 @@ Generate code for the SH3.
 @item -m3e
 Generate code for the SH3e.
 
+@item -m4-nofpu
+Generate code for the SH4 without a floating-point unit.
+
+@item -m4-single-only
+Generate code for the SH4 with a floating-point unit that only
+supports single-precision arithmentic.
+
+@item -m4-single
+Generate code for the SH4 assuming the floating-point unit is in
+single-precision mode by default.
+
+@item -m4
+Generate code for the SH4.
+
 @item -mb
 Compile code for the processor in big endian mode.
 
@@ -6671,6 +6689,30 @@ not work unless you recompile it first with -mdalign.
 @item -mrelax
 Shorten some address references at link time, when possible; uses the
 linker option @samp{-relax}.
+
+@item -mbigtable
+Use 32-bit offsets in @code{switch} tables.  The default is to use
+16-bit offsets.
+
+@item -mfmovd
+Enable the use of the instruction @code{fmovd}.
+
+@item -mhitachi
+Comply with the calling conventions defined by Hitachi.
+
+@item -mnomacsave
+Mark the @code{MAC} register as call-clobbered, even if
+@code{-mhitachi} is given.
+
+@item -misize
+Dump instruction size and location in the assembly code.
+
+@item -mpadstruct
+This option is deprecated.  It pads structures to multiple of 4 bytes,
+which is incompatible with the SH ABI.
+
+@item -mspace
+Optimize for space instead of speed.  Implied by @code{-Os}.
 @end table
 
 @node System V Options

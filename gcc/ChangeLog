@@ -1,3 +1,9 @@
+2000-08-22  Alexandre Oliva  <aoliva@redhat.com>
+
+	* invoke.texi (SH Options): Document -m4-nofpu,
+	-m4-single-only, -m4-single, -m4, -mbigtable, -mfmovd,
+	-mhitachi, -mnomacsave, -misize, -mpadstruct, -mspace.
+
 2000-08-22  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* c-common.c (check_format_info): Give the 'some locales' warning
