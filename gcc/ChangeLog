@@ -1,5 +1,7 @@
 2004-11-05  James E Wilson  <wilson@specifixinc.com>
 
+	* invoke.texi (-fno-guess-branch-probability): Rewrite.
+
 	* config/ia64/ia64.c (rtx_needs_barrier, case UNSPEC_GR_SPILL): Change
 	1 to UNSPEC_GR_SPILL.
 

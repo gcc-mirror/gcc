@@ -4758,19 +4758,17 @@ other, a few use both.
 
 @item -fno-guess-branch-probability
 @opindex fno-guess-branch-probability
-Do not guess branch probabilities using a randomized model.
+Do not guess branch probabilities using heuristics.
 
-Sometimes GCC will opt to use a randomized model to guess branch
-probabilities, when none are available from either profiling feedback
-(@option{-fprofile-arcs}) or @samp{__builtin_expect}.  This means that
-different runs of the compiler on the same program may produce different
-object code.
-
-In a hard real-time system, people don't want different runs of the
-compiler to produce code that has different behavior; minimizing
-non-determinism is of paramount import.  This switch allows users to
-reduce non-determinism, possibly at the expense of inferior
-optimization.
+GCC will use heuristics to guess branch probabilities if they are
+not provided by profiling feedback (@option{-fprofile-arcs}).  These
+heuristics are based on the control flow graph.  If some branch probabilities
+are specified by @samp{__builtin_expect}, then the heuristics will be
+used to guess branch probabilities for the rest of the control flow graph,
+taking the @samp{__builtin_expect} info into account.  The interactions
+between the heuristics and @samp{__builtin_expect} can be complex, and in
+some cases, it may be useful to disable the heuristics so that the effects
+of @samp{__builtin_expect} are easier to understand.
 
 The default is @option{-fguess-branch-probability} at levels
 @option{-O}, @option{-O2}, @option{-O3}, @option{-Os}.
