@@ -85,7 +85,7 @@ static struct z_candidate *add_function_candidate
 	(struct z_candidate **, tree, tree, tree, tree, tree, int);
 static tree implicit_conversion (tree, tree, tree, int);
 static tree standard_conversion (tree, tree, tree);
-static tree reference_binding (tree, tree, tree, int, bool *);
+static tree reference_binding (tree, tree, tree, int, bool);
 static tree non_reference (tree);
 static tree build_conv (enum tree_code, tree, tree);
 static bool is_subseq (tree, tree);
@@ -1111,14 +1111,12 @@ direct_reference_binding (tree type, tree conv)
    purposes of reference binding.  For lvalue binding, either pass a
    reference type to FROM or an lvalue expression to EXPR.  If the
    reference will be bound to a temporary, NEED_TEMPORARY_P is set for
-   the conversion returned.  If non-NULL,
-   *REF_BOUND_DIRECTLY_TO_RVALUE_P is set to true if and only if the
-   conversion sequence returned binds the reference directly to an
-   rvalue.  */
+   the conversion returned.  REF_IS_VAR is true iff the reference is
+   a variable (rather than, say, a parameter declaration).  */
 
 static tree
 reference_binding (tree rto, tree rfrom, tree expr, int flags,
-		   bool *ref_bound_directly_to_rvalue_p)
+		   bool ref_is_var)
 {
   tree conv = NULL_TREE;
   tree to = TREE_TYPE (rto);
@@ -1126,10 +1124,6 @@ reference_binding (tree rto, tree rfrom, tree expr, int flags,
   bool related_p;
   bool compatible_p;
   cp_lvalue_kind lvalue_p = clk_none;
-
-  /* Assume that the reference is not bound directly to an rvalue.  */
-  if (ref_bound_directly_to_rvalue_p)
-    *ref_bound_directly_to_rvalue_p = false;
 
   if (TREE_CODE (to) == FUNCTION_TYPE && expr && type_unknown_p (expr))
     {
@@ -1234,15 +1228,23 @@ reference_binding (tree rto, tree rfrom, tree expr, int flags,
      -- The reference is bound to the object represented by the rvalue
         or to a sub-object within that object.  
 
-     In this case, the implicit conversion sequence is supposed to be
-     same as we would obtain by generating a temporary.  Fortunately,
-     if the types are reference compatible, then this is either an
-     identity conversion or the derived-to-base conversion, just as
-     for direct binding.  */
-  if (CLASS_TYPE_P (from) && compatible_p)
+     -- A temporary of type "cv1 T2" [sic] is created, and a
+        constructor is called to copy the entire rvalue object into
+        the temporary.  The reference is bound to the temporary or to
+        a sub-object within the temporary
+	
+     In general, we choose the first alternative, since it avoids the
+     copy.  However, if REF_IS_VAR is true, then we cannot do that; we
+     need to bind the reference to a temporary that wil live as long
+     as the reference itself.
+
+     In the first alternative, the implicit conversion sequence is
+     supposed to be same as we would obtain by generating a temporary.
+     Fortunately, if the types are reference compatible, then this is
+     either an identity conversion or the derived-to-base conversion,
+     just as for direct binding.  */
+  if (CLASS_TYPE_P (from) && compatible_p && !ref_is_var)
     {
-      if (ref_bound_directly_to_rvalue_p)
-	*ref_bound_directly_to_rvalue_p = true;
       conv = build1 (IDENTITY_CONV, from, expr);
       return direct_reference_binding (rto, conv);
     }
@@ -1297,8 +1299,7 @@ implicit_conversion (tree to, tree from, tree expr, int flags)
   complete_type (to);
 
   if (TREE_CODE (to) == REFERENCE_TYPE)
-    conv = reference_binding (to, from, expr, flags, 
-			      /*ref_bound_directly_to_rvalue_p=*/NULL);
+    conv = reference_binding (to, from, expr, flags, /*ref_is_var=*/false);
   else
     conv = standard_conversion (to, from, expr);
 
@@ -5847,13 +5848,13 @@ tree
 initialize_reference (tree type, tree expr, tree decl)
 {
   tree conv;
-  bool ref_bound_directly_to_rvalue_p;
+  bool ref_bound_directly_to_rvalue_p = false;
 
   if (type == error_mark_node || error_operand_p (expr))
     return error_mark_node;
 
   conv = reference_binding (type, TREE_TYPE (expr), expr, LOOKUP_NORMAL,
-			    &ref_bound_directly_to_rvalue_p);
+			    decl != NULL_TREE);
   if (!conv || ICS_BAD_FLAG (conv))
     {
       error ("could not convert `%E' to `%T'", expr, type);

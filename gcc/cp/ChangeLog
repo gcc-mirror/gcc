@@ -1,5 +1,10 @@
 2003-03-06  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/9965
+	* call.c (reference_binding): Add ref_is_var parameter.
+	(implicit_conversion): Adjust call to reference_binding.
+	(initialize_reference): Likewise.
+
 	PR c++/9400
 	* decl.c (pushdecl): Don't check for shadowing of DECL_ARTIFICIAL
 	PARM_DECLs.
