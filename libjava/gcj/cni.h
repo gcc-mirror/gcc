@@ -2,7 +2,7 @@
 // This file describes the Cygnus Native Interface, CNI.
 // It provides a nicer interface to many of the things in gcj/javaprims.h.
 
-/* Copyright (C) 1998, 1999  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2002  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -129,6 +129,12 @@ extern inline java::lang::Thread*
 JvAttachCurrentThread (jstring name, java::lang::ThreadGroup* group)
 {
   return _Jv_AttachCurrentThread (name, group);
+}
+
+extern inline java::lang::Thread*
+JvAttachCurrentThreadAsDaemon (jstring name, java::lang::ThreadGroup* group)
+{
+  return _Jv_AttachCurrentThreadAsDaemon (name, group);
 }
 
 extern inline jint
