@@ -3789,7 +3789,8 @@ simplify_gen_subreg (enum machine_mode outermode, rtx op,
   if (newx)
     return newx;
 
-  if (GET_CODE (op) == SUBREG || GET_MODE (op) == VOIDmode)
+  if (GET_CODE (op) == SUBREG || GET_MODE (op) == VOIDmode
+      || (REG_P (op) && REGNO (op) < FIRST_PSEUDO_REGISTER))
     return NULL_RTX;
 
   return gen_rtx_SUBREG (outermode, op, byte);
