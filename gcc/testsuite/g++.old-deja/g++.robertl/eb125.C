@@ -7,7 +7,7 @@ void test<class BOX> (test_box *);   // ERROR - illegal code
 
 class test_square
     {
-    friend void test<class BOX> (test_box *);
+      friend void test<class BOX> (test_box *); // ERROR - does not match
     }
 
 

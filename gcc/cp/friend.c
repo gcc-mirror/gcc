@@ -70,21 +70,22 @@ is_friend (type, supplicant)
 		  if (TREE_VALUE (friends) == NULL_TREE)
 		    continue;
 
-		  if (TREE_CODE (TREE_VALUE (friends)) == TEMPLATE_DECL)
-		    {
-		      if (is_specialization_of (supplicant, 
-						TREE_VALUE (friends)))
-			return 1;
+		  if (supplicant == TREE_VALUE (friends))
+		    return 1;
 
-		      continue;
-		    }
+		  /* With -fguiding-decls we are more lenient about
+		     friendship.  This is bogus in general since two
+		     specializations of a template with non-type
+		     template parameters may have the same type, but
+		     be different.  */
+		  if (flag_guiding_decls 
+		      && comptypes (TREE_TYPE (supplicant),
+				    TREE_TYPE (TREE_VALUE (friends)), 1))
+		    return 1;
 
-		  /* FIXME: The use of comptypes here is bogus, since
-		     two specializations of a template with non-type
-		     parameters may have the same type, but be
-		     different.  */
-		  if (comptypes (TREE_TYPE (supplicant),
-				 TREE_TYPE (TREE_VALUE (friends)), 1))
+		  if (TREE_CODE (TREE_VALUE (friends)) == TEMPLATE_DECL
+		      && is_specialization_of (supplicant, 
+					       TREE_VALUE (friends)))
 		    return 1;
 		}
 	      break;
@@ -253,6 +254,21 @@ make_friend_class (type, friend_type)
 	     IDENTIFIER_POINTER (TYPE_IDENTIFIER (friend_type)));
       return;
     }
+
+  if (CLASSTYPE_TEMPLATE_SPECIALIZATION (friend_type)) 
+    {
+      /* [temp.friend]
+	 
+	 Friend declarations shall not declare partial
+	 specializations.  
+
+         Note that CLASSTYPE_TEMPLATE_SPECIALIZATION is not set for
+	 full specializations.  */ 
+      cp_error ("partial specialization `%T' declared `friend'",
+		friend_type);
+      return;
+    }
+
   if (processing_template_decl > template_class_depth (type))
     /* If the TYPE is a template then it makes sense for it to be
        friends with itself; this means that each instantiation is
@@ -407,9 +423,7 @@ do_friend (ctype, declarator, decl, parmdecls, flags, quals, funcdef_flag)
 
 	 Note that because classes all wind up being top-level
 	 in their scope, their friend wind up in top-level scope as well.  */
-      DECL_ASSEMBLER_NAME (decl)
-	= build_decl_overload (declarator, TYPE_ARG_TYPES (TREE_TYPE (decl)),
-			       TREE_CODE (TREE_TYPE (decl)) == METHOD_TYPE);
+      set_mangled_name_for_decl (decl);
       DECL_ARGUMENTS (decl) = parmdecls;
       if (funcdef_flag)
 	DECL_CLASS_CONTEXT (decl) = current_class_type;
@@ -417,20 +431,17 @@ do_friend (ctype, declarator, decl, parmdecls, flags, quals, funcdef_flag)
       if (! DECL_USE_TEMPLATE (decl))
 	{
 	  /* We can call pushdecl here, because the TREE_CHAIN of this
-	     FUNCTION_DECL is not needed for other purposes.  Don't do this
-	     for a template instantiation.  */
-	  if (!is_friend_template)
-	    {  
-	      /* However, we don't call pushdecl() for a friend
-		 function of a template class, since in general,
-		 such a declaration depends on template
-		 parameters.  Instead, we call pushdecl when the
-		 class is instantiated.  */
-	      if (template_class_depth (current_class_type) == 0)
-		decl = pushdecl (decl);
-	    }
+	     FUNCTION_DECL is not needed for other purposes.  Don't do
+	     this for a template instantiation.  However, we don't
+	     call pushdecl() for a friend function of a template
+	     class, since in general, such a declaration depends on
+	     template parameters.  Instead, we call pushdecl when the
+	     class is instantiated.  */
+	  if (!is_friend_template
+	      && template_class_depth (current_class_type) == 0)
+	    decl = pushdecl (decl);
 	  else 
-	    decl = push_template_decl (decl); 
+	    decl = push_template_decl_real (decl, /*is_friend=*/1); 
 
 	  if (! funcdef_flag && ! flag_guiding_decls && ! is_friend_template
 	      && current_template_parms && uses_template_parms (decl))

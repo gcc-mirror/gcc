@@ -1,3 +1,126 @@
+1998-07-27  Mark Mitchell  <mark@markmitchell.com>
+
+	* cp-tree.h (TI_USES_TEMPLATE_PARMS): Remove.
+	(build_template_decl_overload): Remove.
+	(set_mangled_name_for_decl): New function.
+	(innermost_args): Remove is_spec parameter.
+	(most_specialized, most_specialized_class): Remove declarations.
+	(lookup_template_class): Add entering_scope parameter.
+	(maybe_process_partial_specialization): New function.
+	(finish_template_decl): Likewise.
+	(finish_template_type): Likewise.  
+	* class.c (finish_struct): Clean up processing of member template
+	specializations.
+	* decl.c (pushtag): Fix	formatting.
+	(lookup_tag): Improve handling of pseudo-global levels.
+	(make_typename_type): Adjust call to lookup_template_class.
+	(shadow_tag): Use maybe_process_partial_specialization.
+	(xref_tag): Improve handling of member friends.  
+	(start_function): Call push_nested_class before
+	push_template_decl.  Don't call push_template_decl for
+	specializations.
+	* decl2.c (grok_x_components): Don't call xref_tag for
+	template instantiations.  Handle UNION_TYPEs like RECORD_TYPEs.
+	(grokclassfn): Use set_mangled_name_for_decl.
+	(arg_assoc_class): Adjust call to innermost_args.
+	(mark_used): Don't call instantiate_decl for a TEMPLATE_DECL.
+	* error.c (dump_function_name): Improve printing of template
+	function names.
+	* friend.c (is_friend): Don't compare types of decls to determine
+	friendship, unless flag_guiding_decls.
+	(make_friend_class): Partial specializations cannot be friends.  
+	(do_friend): Use set_mangled_name_for_decl.  Call
+	push_template_decl_real instead of push_template_decl.
+	* method.c (build_decl_overload_real): Remove prototype.  Give it
+	external linkage.
+	(build_overload_identififer): Adjust call to innermost_args.
+	(build_template_decl_overload): Remove.
+	(set_mangled_name_for_decl): New function.
+	* parse.y (.finish_template_type): New non-terminal.
+	(template_def): Use finish_template_decl.  Use template_extdef
+	instead of extdef.
+	(template_extdef, template_datadef): New non-terminals, containing
+	only those rules for things which can be templates.
+	(datadef): Tidy.
+	(template_type, self_template_type): Use .finish_template_type.
+	(named_class_head): Use maybe_process_partial_specialization.
+	* pt.c (mangle_class_name_for_template): Remove context parameter.
+	(get_class_bindings): Remove outer_args parameter.
+	(complete_template_args): Remove.
+	(add_outermost_template_args): New function.
+	(register_specialization): Return the specialization.
+	(unregister_specialization): New function.
+	(tsubst_template_parms): Likewise.
+	(most_specialized, most_specialized_class): Prototype here as
+	static. 
+	(original_template): Rename to most_general_template.
+	(tsubst_template_parms): New function.
+	(set_mangled_name_for_template_decl): Likewise.
+	(TMPL_ARGS_DEPTH): New macro.
+	(TMPL_ARGS_HAVE_MULTIPLE_LEVELS): Adjust.
+	(TMPL_ARGS_LEVEL): New macro.
+	(SET_TMPL_ARGS_LEVEL): Likewise.
+	(TMPL_ARG): Likewise.
+	(SET_TMPL_ARG): Likewise.
+	(TMPL_ARGS_DEPTH): Likewise.
+	(finish_member_template_decl): Use finish_template_decl.
+	(maybe_process_partial_specialization): New function, split out
+	from tsubst.
+	(inline_needs_template_parms): Use TMPL_PARMS_DEPTH.
+	(maybe_begin_member_template_processing): Use new macros.
+	(is_member_template): Likewise.
+	(is_member_template_class): Likewise.
+	(add_to_template_args): Likewise.  Deal with multiple levels of
+	args. 
+	(maybe_process_partial_specialization): New function.
+	(retrieve_specialization): Add consistency check.
+	(determine_specialization): Return full argument list.
+	(check_explicit_specialization): Tweak friend handling.  Use full
+	argument lists.  Simplify.
+	(current_template_args): Use new macros.
+	(push_template_decl_real): Change ill-named mainargs to specargs.
+	Check that a partial specialization actually specializes at least
+	one parameter.   Improve friend handling.  Modify for full
+	template arguments.
+	(classtype_mangled_name): Don't mangle the names of
+	specializations. 
+	(lookup_template_class): Add entering_scope parameter.  Use it to
+	avoid finding a template type when an instantiation is required.
+	Simplify.  Use full template arguments.
+	(tsubst_friend_function): Use unregister_specialization.  Use new
+	macros.  Use full template arguments.
+	(tsubst_friend_class): Substitute, using tsubst_template_parms,
+	into the template parameters before passing them to
+	redeclare_class_template.
+	(instantiate_class_template): Simplify.  Use full template
+	arguments.  Adjust calls to get_class_bindings.  Use
+	SET_IDENTIFIER_TYPE_VALUE where needed.  Improve friend handling.
+	(innermost_args): Use new macros.
+	(tsubst_aggr_type): New function, split out from tsubst.
+	(tsubst): Use tsubst_aggr_type, tsubst_template_parms, new calling
+	conventions for lookup_tmeplate_class.  Refine handling of partial
+	instantiations.   Remove calls to complete_template_args.
+	Simplify.  Add consistency checks.  Use set_mangled_name_for_decl
+	and set_mangled_name_for_template_decl.
+	(tsubst_copy): Use tsubst_aggr_type.
+	(instantiate_template): Use full template arguments.
+	(more_specialized): Improve formatting.
+	(more_specialized_class): Adjust calls to get_class_bindings.
+	(get_bindings_real): Don't call complete_template_args.
+	(most_specialized): Don't overwrite input; create a new list.
+	(most_specialized_class): Use most_general_template.
+	(regenerate_decl_from_template): Use unregister_specialization.
+	Use full template arguments.  
+	(instantiate_decl): Use full template arguments.
+	(set_mangled_name_for_template_decl): New function.
+	* semantics.c (begin_class_definition): Use
+	maybe_process_partial_specialization.
+	(finish_member_class_template): New function.
+	(finish_template_decl): Likewise.
+	(finish_template_type): Likewise.  
+	(typeck.c): Don't crash after issuing a compiler_error.
+	* Makefile.in (CONFLICTS): Adjust; we removed a s/r conflict.
+	
 1998-07-27  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* typeck2.c (build_functional_cast): Handle default-initialization.

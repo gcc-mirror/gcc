@@ -1,4 +1,5 @@
 // Build don't link:
+// Special g++ Options:
 
 template <class T>
 struct A

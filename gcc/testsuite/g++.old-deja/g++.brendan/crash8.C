@@ -6,7 +6,7 @@ class Elvis
 } ;
 
 template<int a>
-class Elvis<0>// ERROR - .*
-{ // ERROR - 
+class Elvis<0>
+{ // ERROR - incorrect number of parameters
    int geta() { return a ; }
 } ;

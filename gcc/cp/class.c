@@ -4458,49 +4458,21 @@ finish_struct (t, list_of_fieldlists, attributes, warn_anon)
   /* Now, figure out which member templates we're specializing.  */
   for (x = specializations; x != NULL_TREE; x = TREE_CHAIN (x))
     {
-      tree spec_args;
-      tree fn;
       int pending_specialization;
 
-      if (uses_template_parms (t))
-	/* If t is a template class, and x is a specialization, then x
-	   is itself really a template.  Due to the vagaries of the
-	   parser, however, we will have a handle to a function
-	   declaration, rather than the template declaration, at this
-	   point.  */
-	{
-	  my_friendly_assert (DECL_TEMPLATE_INFO (x) != NULL_TREE, 0);
-	  my_friendly_assert (DECL_TI_TEMPLATE (x) != NULL_TREE, 0);
-	  fn = DECL_TI_TEMPLATE (x);
-	}
-      else
-	fn = x;
-
-      /* We want the specialization arguments, which will be the
-	 innermost ones.  */
-      if (DECL_TI_ARGS (fn) && TREE_CODE (DECL_TI_ARGS (fn)) == TREE_VEC)
-	spec_args 
-	  = TREE_VEC_ELT (DECL_TI_ARGS (fn), 0);
-      else
-	spec_args = DECL_TI_ARGS (fn);
-      
       pending_specialization 
-	= TI_PENDING_SPECIALIZATION_FLAG (DECL_TEMPLATE_INFO (fn));
+	= TI_PENDING_SPECIALIZATION_FLAG (DECL_TEMPLATE_INFO (x));
       check_explicit_specialization 
-	(lookup_template_function (DECL_NAME (fn), spec_args),
-	 fn, 0, 1 | (8 * pending_specialization));
-      TI_PENDING_SPECIALIZATION_FLAG (DECL_TEMPLATE_INFO (fn)) = 0;
+	(lookup_template_function (DECL_NAME (x), DECL_TI_ARGS (x)),
+	 x, 0, 1 | (8 * pending_specialization));
+      TI_PENDING_SPECIALIZATION_FLAG (DECL_TEMPLATE_INFO (x)) = 0;
 
       /* Now, the assembler name will be correct for fn, so we
 	 make its RTL.  */
-      DECL_RTL (fn) = 0;
-      make_decl_rtl (fn, NULL_PTR, 1);
-
-      if (x != fn)
-	{
-	  DECL_RTL (x) = 0;
-	  make_decl_rtl (x, NULL_PTR, 1);
-	}
+      DECL_RTL (x) = 0;
+      make_decl_rtl (x, NULL_PTR, 1);
+      DECL_RTL (DECL_TI_TEMPLATE (x)) = 0;
+      make_decl_rtl (DECL_TI_TEMPLATE (x), NULL_PTR, 1);
     }
 
   if (current_class_type)

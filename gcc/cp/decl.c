@@ -2339,8 +2339,8 @@ pushtag (name, type, globalize)
 		 class scope.  In the friend case, push_template_decl
 		 will already have put the friend into global scope,
 		 if appropriate.  */ 
-	      if (!globalize && b->pseudo_global &&
-		  b->level_chain->parm_flag == 2)
+	      if (!globalize && b->pseudo_global
+		  && b->level_chain->parm_flag == 2)
 		{
 		  pushdecl_with_scope (CLASSTYPE_TI_TEMPLATE (type),
 				       b->level_chain);
@@ -4455,6 +4455,9 @@ lookup_tag (form, name, binding_level, thislevel_only)
      int thislevel_only;
 {
   register struct binding_level *level;
+  /* Non-zero if, we should look past a pseudo-global level, even if
+     THISLEVEL_ONLY.  */
+  int allow_pseudo_global = 1;
 
   for (level = binding_level; level; level = level->level_chain)
     {
@@ -4472,7 +4475,19 @@ lookup_tag (form, name, binding_level, thislevel_only)
 	/* XXX: is this a real lookup, considering using-directives etc. ??? */
 	for (tail = current_namespace; 1; tail = CP_DECL_CONTEXT (tail))
 	  {
-	    tree old = BINDING_TYPE (binding_for_name (name, tail));
+	    tree old = binding_for_name (name, tail);
+
+	    /* If we just skipped past a pseudo global level, even
+	       though THISLEVEL_ONLY, and we find a template class
+	       declaration, then we use the _TYPE node for the
+	       template.  See the example below.  */
+	    if (thislevel_only && !allow_pseudo_global
+		&& old && BINDING_VALUE (old) 
+		&& DECL_CLASS_TEMPLATE_P (BINDING_VALUE (old)))
+	      old = TREE_TYPE (BINDING_VALUE (old));
+	    else 
+	      old = BINDING_TYPE (old);
+
 	    /* If it has an original type, it is a typedef, and we
 	       should not return it.  */
 	    if (old && DECL_ORIGINAL_TYPE (TYPE_NAME (old)))
@@ -4509,16 +4524,24 @@ lookup_tag (form, name, binding_level, thislevel_only)
 	  }
       if (thislevel_only && ! level->tag_transparent)
 	{
-	  if (level->pseudo_global)
+	  if (level->pseudo_global && allow_pseudo_global)
 	    {
-	      tree t = IDENTIFIER_CLASS_VALUE (name);
-	      if (t && DECL_CLASS_TEMPLATE_P (t))
-		return TREE_TYPE (t);
-	      t = IDENTIFIER_NAMESPACE_VALUE (name);
-	      if (t && DECL_CLASS_TEMPLATE_P (t))
-		return TREE_TYPE (t);
+	      /* We must deal with cases like this:
+		 
+	           template <class T> struct S;
+		   template <class T> struct S {};
+		   
+		 When looking up `S', for the second declaration, we
+		 would like to find the first declaration.  But, we
+		 are in the pseudo-global level created for the
+		 template parameters, rather than the (surrounding)
+		 namespace level.  Thus, we keep going one more level,
+		 even though THISLEVEL_ONLY is non-zero.  */
+	      allow_pseudo_global = 0;
+	      continue;
 	    }
-	  return NULL_TREE;
+	  else
+	    return NULL_TREE;
 	}
       if (current_class_type && level->level_chain->namespace_p)
 	{
@@ -4730,7 +4753,8 @@ make_typename_type (context, name)
 	    }
 
 	  return lookup_template_class (t, TREE_OPERAND (fullname, 1),
-					NULL_TREE, context);
+					NULL_TREE, context, 
+					/*entering_scope=*/0);
 	}
       else
 	{
@@ -6207,18 +6231,7 @@ shadow_tag (declspecs)
 	{
 	  my_friendly_assert (TYPE_MAIN_DECL (value) != NULL_TREE, 261);
 
-	  if (IS_AGGR_TYPE (value) && CLASSTYPE_USE_TEMPLATE (value))
-	    {
-	      if (CLASSTYPE_IMPLICIT_INSTANTIATION (value)
-		  && TYPE_SIZE (value) == NULL_TREE)
-		{
-		  SET_CLASSTYPE_TEMPLATE_SPECIALIZATION (value);
-		  if (processing_template_decl)
-		    push_template_decl (TYPE_MAIN_DECL (value));
-		}
-	      else if (CLASSTYPE_TEMPLATE_INSTANTIATION (value))
-		cp_error ("specialization after instantiation of `%T'", value);
-	    }
+	  maybe_process_partial_specialization (value);
 
 	  t = value;
 	  ok_code = code;
@@ -10241,9 +10254,16 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	      {
 		tree t = NULL_TREE;
 		if (decl && DECL_NAME (decl))
-		  t = do_friend (ctype, declarator, decl,
-				 last_function_parms, flags, quals,
-				 funcdef_flag);
+		  {
+		    if (template_class_depth (current_class_type) == 0)
+		      decl 
+			= check_explicit_specialization 
+			(declarator, decl,
+			 template_count, 2 * (funcdef_flag != 0) + 4);
+		    t = do_friend (ctype, declarator, decl,
+				   last_function_parms, flags, quals,
+				   funcdef_flag);
+		  }
 		if (t && funcdef_flag)
 		  return t;
 		
@@ -11321,37 +11341,66 @@ xref_tag (code_type_node, name, binfo, globalize)
       if (t && TYPE_CONTEXT (t) && got_type)
 	ref = t;
       else
-	{
-	  /* If we know we are defining this tag, only look it up in
-	     this scope and don't try to find it as a type.  */
-	  ref = lookup_tag (code, name, b, 1);
-	}
+	/* If we know we are defining this tag, only look it up in
+	   this scope and don't try to find it as a type.  */
+	ref = lookup_tag (code, name, b, 1);
     }
   else
     {
-      if (t)
-	ref = t;
-      else
-        ref = lookup_tag (code, name, b, 0);
+      if (current_class_type 
+	  && template_class_depth (current_class_type) 
+	  && (processing_template_decl 
+	      > template_class_depth (current_class_type)))
+      /* Since GLOBALIZE is non-zero, we are not looking at a
+	 definition of this tag.  Since, in addition, we are currently
+	 processing a (member) template declaration of a template
+	 class, we don't want to do any lookup at all; consider:
 
-      if (! ref)
+	   template <class X>
+	   struct S1
+
+	   template <class U>
+	   struct S2
+	   { template <class V>
+	     friend struct S1; };
+	   
+	 Here, the S2::S1 declaration should not be confused with the
+	 outer declaration.  In particular, the inner version should
+	 have a template parameter of level 2, not level 1.  This
+	 would be particularly important if the member declaration
+	 were instead:
+
+	   template <class V = U> friend struct S1;
+
+	 say, when we should tsubst into `U' when instantiating S2.  */
+	ref = NULL_TREE;
+      else 
 	{
-	  /* Try finding it as a type declaration.  If that wins, use it.  */
-	  ref = lookup_name (name, 1);
-
-	  if (ref != NULL_TREE
-	      && processing_template_decl
-	      && DECL_CLASS_TEMPLATE_P (ref)
-	      && template_class_depth (current_class_type) == 0)
-	    /* Since GLOBALIZE is true, we're declaring a global
-	       template, so we want this type.  */
-	    ref = DECL_RESULT (ref);
-
-	  if (ref && TREE_CODE (ref) == TYPE_DECL
-	      && TREE_CODE (TREE_TYPE (ref)) == code)
-	    ref = TREE_TYPE (ref);
+	  if (t)
+	    ref = t;
 	  else
-	    ref = NULL_TREE;
+	    ref = lookup_tag (code, name, b, 0);
+	  
+	  if (! ref)
+	    {
+	      /* Try finding it as a type declaration.  If that wins,
+		 use it.  */ 
+	      ref = lookup_name (name, 1);
+
+	      if (ref != NULL_TREE
+		  && processing_template_decl
+		  && DECL_CLASS_TEMPLATE_P (ref)
+		  && template_class_depth (current_class_type) == 0)
+		/* Since GLOBALIZE is true, we're declaring a global
+	       template, so we want this type.  */
+		ref = DECL_RESULT (ref);
+
+	      if (ref && TREE_CODE (ref) == TYPE_DECL
+		  && TREE_CODE (TREE_TYPE (ref)) == code)
+		ref = TREE_TYPE (ref);
+	      else
+		ref = NULL_TREE;
+	    }
 	}
     }
 
@@ -12121,13 +12170,24 @@ start_function (declspecs, declarator, attrs, pre_parsed_p)
      (This does not mean `static' in the C sense!)  */
   TREE_STATIC (decl1) = 1;
 
+  /* Set up current_class_type, and enter the scope of the class, if
+     appropriate.  */
+  if (ctype)
+    push_nested_class (ctype, 1);
+  else if (DECL_STATIC_FUNCTION_P (decl1))
+    push_nested_class (DECL_CONTEXT (decl1), 2);
+
+  /* We must call push_template_decl after current_class_type is set
+     up.  (If we are processing inline definitions after exiting a
+     class scope, current_class_type will be NULL_TREE until set above
+     by push_nested_class.)  */
+  if (processing_template_decl)
+    decl1 = push_template_decl (decl1);
+
   /* Record the decl so that the function name is defined.
      If we already have a decl for this name, and it is a FUNCTION_DECL,
      use the old decl.  */
-
-  if (processing_template_decl)
-    decl1 = push_template_decl (decl1);
-  else if (pre_parsed_p == 0)
+  if (!processing_template_decl && pre_parsed_p == 0)
     {
       /* A specialization is not used to guide overload resolution.  */
       if ((flag_guiding_decls 
@@ -12207,8 +12267,6 @@ start_function (declspecs, declarator, attrs, pre_parsed_p)
 
   if (ctype)
     {
-      push_nested_class (ctype, 1);
-
       /* If we're compiling a friend function, neither of the variables
 	 current_class_ptr nor current_class_type will have values.  */
       if (! doing_friend)
@@ -12241,10 +12299,8 @@ start_function (declspecs, declarator, attrs, pre_parsed_p)
     }
   else
     {
-      if (DECL_STATIC_FUNCTION_P (decl1))
-	push_nested_class (DECL_CONTEXT (decl1), 2);
-      else
-	push_memoized_context (0, 1);
+      if (!DECL_STATIC_FUNCTION_P (decl1))
+	push_memoized_context (NULL_TREE, 1);
       current_class_ptr = current_class_ref = NULL_TREE;
     }
 
@@ -13185,7 +13241,8 @@ start_method (declspecs, declarator)
   if (flag_default_inline)
     DECL_INLINE (fndecl) = 1;
 
-  if (processing_template_decl)
+  /* We process method specializations in finish_struct_1.  */
+  if (processing_template_decl && !DECL_TEMPLATE_SPECIALIZATION (fndecl))
     fndecl = push_template_decl (fndecl);
 
   /* We read in the parameters on the maybepermanent_obstack,

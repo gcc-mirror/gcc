@@ -1042,91 +1042,75 @@ dump_function_name (t)
   else
     dump_decl (name, 0);
 
-  if (DECL_LANG_SPECIFIC (t) && DECL_USE_TEMPLATE (t))
+  if (DECL_LANG_SPECIFIC (t) && DECL_USE_TEMPLATE (t) 
+      && DECL_TEMPLATE_INFO (t)
+      && (DECL_TEMPLATE_SPECIALIZATION (t) 
+	  || TREE_CODE (DECL_TI_TEMPLATE (t)) != TEMPLATE_DECL
+	  || DECL_TEMPLATE_SPECIALIZATION (DECL_TI_TEMPLATE (t))
+	  || PRIMARY_TEMPLATE_P (DECL_TI_TEMPLATE (t))))
     {
       tree args = DECL_TEMPLATE_INFO (t) ? DECL_TI_ARGS (t) : NULL_TREE; 
+      OB_PUTC ('<');
 
-      if (args != NULL_TREE
-	  && DECL_CONTEXT (t) != NULL_TREE
-	  && uses_template_parms (DECL_CONTEXT (t))
-	  /* This next clause checks that there is only one level of
-	     template arguments.  In that case, they are the
-	     arguments for the class context.  */
-	  && (TREE_CODE (args) == TREE_LIST
-	      || (TREE_CODE (args) == TREE_VEC 
-		  && TREE_VEC_ELT (args, 0) != NULL_TREE
-		  && TREE_CODE (TREE_VEC_ELT (args, 0)) != TREE_VEC)))
-	/* We have something like this:
-	   
-	   template <class T> struct S { void f(); };
-	   
-	   and we are printing S<int>::f().  This is a template
-	   instantiation, but we don't print anything after the f.  */
-	;
-      else
+      /* Be careful only to print things when we have them, so as not
+	 to crash producing error messages.  */
+      if (args)
 	{
-	  OB_PUTC ('<');
-
-	  /* Be careful only to print things when we have them, so as not
-	     to crash producing error messages.  */
-	  if (args)
+	  if (TREE_CODE (args) == TREE_LIST)
 	    {
-	      if (TREE_CODE (args) == TREE_LIST)
+	      tree arg;
+	      int need_comma = 0;
+	      
+	      for (arg = args; arg; arg = TREE_CHAIN (arg))
 		{
-		  tree arg;
-		  int need_comma = 0;
-
-		  for (arg = args; arg; arg = TREE_CHAIN (arg))
-		    {
-		      tree a = TREE_VALUE (arg);
-
-		      if (need_comma)
-			OB_PUTS (", ");
-
-		      if (a)
-			{
-			  if (TREE_CODE_CLASS (TREE_CODE (a)) == 't'
-			      || TREE_CODE (a) == TEMPLATE_DECL)
-			    dump_type (a, 0);
-			  else
-			    dump_expr (a, 0);
-			}
+		  tree a = TREE_VALUE (arg);
 		  
-		      need_comma = 1;
-		    }
-		}
-	      else if (TREE_CODE (args) == TREE_VEC)
-		{
-		  int i;
-		  int need_comma = 0;
-
-		  if (TREE_VEC_LENGTH (args) > 0
-		      && TREE_CODE (TREE_VEC_ELT (args, 0)) == TREE_VEC)
-		    args = TREE_VEC_ELT (args, 
-					 TREE_VEC_LENGTH (args) - 1);
-
-		  for (i = 0; i < TREE_VEC_LENGTH (args); i++)
-		    {
-		      tree a = TREE_VEC_ELT (args, i);
-
-		      if (need_comma)
-			OB_PUTS (", ");
-
-		      if (a)
-			{
-			  if (TREE_CODE_CLASS (TREE_CODE (a)) == 't'
-			      || TREE_CODE (a) == TEMPLATE_DECL)
-			    dump_type (a, 0);
-			  else
-			    dump_expr (a, 0);
-			}
+		  if (need_comma)
+		    OB_PUTS (", ");
 		  
-		      need_comma = 1;
+		  if (a)
+		    {
+		      if (TREE_CODE_CLASS (TREE_CODE (a)) == 't'
+			  || TREE_CODE (a) == TEMPLATE_DECL)
+			dump_type (a, 0);
+		      else
+			dump_expr (a, 0);
 		    }
+		  
+		  need_comma = 1;
 		}
 	    }
-	  OB_PUTC ('>');
+	  else if (TREE_CODE (args) == TREE_VEC)
+	    {
+	      int i;
+	      int need_comma = 0;
+	      
+	      if (TREE_VEC_LENGTH (args) > 0
+		  && TREE_CODE (TREE_VEC_ELT (args, 0)) == TREE_VEC)
+		args = TREE_VEC_ELT (args, 
+				     TREE_VEC_LENGTH (args) - 1);
+	      
+	      for (i = 0; i < TREE_VEC_LENGTH (args); i++)
+		{
+		  tree a = TREE_VEC_ELT (args, i);
+		  
+		  if (need_comma)
+		    OB_PUTS (", ");
+		  
+		  if (a)
+		    {
+		      if (TREE_CODE_CLASS (TREE_CODE (a)) == 't'
+			  || TREE_CODE (a) == TEMPLATE_DECL)
+			dump_type (a, 0);
+		      else
+			dump_expr (a, 0);
+		    }
+		  
+		  need_comma = 1;
+		}
+	    }
 	}
+      OB_PUTC ('>');
     }
 }
 

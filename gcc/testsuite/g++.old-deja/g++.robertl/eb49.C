@@ -1,5 +1,5 @@
 // Build don't link:
-// excess errors test - XFAIL *-*-*
+// excess errors test
 
 // Here we declare ::S
 typedef struct s1 *S;
