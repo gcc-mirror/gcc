@@ -54,7 +54,7 @@
 extern "C++" {
 class istream; class ostream;
 
-// #include <iterator.h>
+#include <iterator>
 
 template <class charT, class traits = string_char_traits<charT> >
 class basic_string
@@ -110,12 +110,10 @@ public:
   typedef const charT* const_pointer;
   typedef pointer iterator;
   typedef const_pointer const_iterator;
-#if 0
   typedef reverse_iterator<iterator, value_type,
                            reference, difference_type> reverse_iterator;
   typedef reverse_iterator<const_iterator, value_type, const_reference,
                            difference_type> const_reverse_iterator;
-#endif
   static const size_type npos = static_cast<size_type>(-1);
 
 private:
@@ -157,6 +155,9 @@ public:
   template<class InputIterator>
     basic_string(InputIterator begin, InputIterator end,
 		 Allocator& = Allocator());
+#else
+  basic_string(const_iterator begin, const_iterator end)
+    : dat (nilRep.grab ()) { assign (begin, end); }
 #endif
 
   ~basic_string ()
@@ -176,6 +177,9 @@ public:
 #if 0
   template<class InputIterator>
     basic_string& append(InputIterator first, InputIterator last);
+#else
+  basic_string& append(const_iterator first, const_iterator last)
+    { return replace (length (), 0, first, last - first); }
 #endif
 
   basic_string& assign (const basic_string& str, size_type pos = 0,
@@ -190,6 +194,9 @@ public:
 #if 0
   template<class InputIterator>
     basic_string& assign(InputIterator first, InputIterator last);
+#else
+  basic_string& assign(const_iterator first, const_iterator last)
+    { return replace (0, npos, first, last - first); }
 #endif
 
   basic_string& operator= (const charT* s)
@@ -220,6 +227,9 @@ public:
 #if 0
   template<class InputIterator>
     void insert(iterator p, InputIterator first, InputIterator last);
+#else
+  void insert(iterator p, const_iterator first, const_iterator last)
+    { size_type pos = p - begin(); insert (pos, first, last - first); }
 #endif
 
   basic_string& remove (size_type pos = 0, size_type n = npos)
@@ -250,6 +260,10 @@ public:
   template<class InputIterator>
     basic_string& replace(iterator i1, iterator i2,
 			  InputIterator j1, InputIterator j2);
+#else
+  basic_string& replace(iterator i1, iterator i2,
+			const_iterator j1, const_iterator j2)
+    { return replace (i1, i2, j1, j2 - j1); }
 #endif
 
 private:
@@ -351,14 +365,12 @@ public:
   const_iterator begin () const { return &(*rep ())[0]; }
   const_iterator end () const { return &(*rep ())[length ()]; }
 
-#if 0
   reverse_iterator       rbegin() { return reverse_iterator (end ()); }
   const_reverse_iterator rbegin() const
     { return const_reverse_iterator (end ()); }
   reverse_iterator       rend() { return reverse_iterator (begin ()); }
   const_reverse_iterator rend() const
-    { return const reverse_iterator (begin ()); }
-#endif
+    { return const_reverse_iterator (begin ()); }
 
 private:
   void alloc (size_type size, bool save);

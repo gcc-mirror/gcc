@@ -53,7 +53,7 @@ MOSTLYCLEAN_JUNK = *stmp-* tlib*.a *.s *.ii stdlist piclist
 CLEAN_JUNK = $(LIBS)
 
 # Remove these for public releases.
-CXXFLAGS = -g -O -Wpointer-arith -Wnested-externs -Woverloaded-virtual -Wbad-function-cast -Winline -Wwrite-strings
+CXXFLAGS = -g -O -Wpointer-arith -Wnested-externs -Woverloaded-virtual -Wbad-function-cast -Winline -Wwrite-strings -Weffc++
 CFLAGS = -g -O -Wpointer-arith -Wnested-externs
 
 .PHONY: libs
@@ -292,7 +292,7 @@ stuff:
 	$(MAKE) clean
 	$(MAKE) -C ../libio c++clean
 	$(MAKE) -C ../libg++ clean
-	$(MAKE) check
+	$(MAKE) $(MAKEFLAGS) check
 	$(MAKE) -C ../libio check
 	$(MAKE) -C ../libg++ check
 

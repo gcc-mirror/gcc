@@ -1,3 +1,14 @@
+Mon Aug 25 14:26:45 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* Makefile.in (CXXFLAGS): Add -Weffc++.
+
+Sat Aug 23 21:25:37 1997  Mark Mitchell  <mmitchell@usa.net>
+
+	* bastring.h: Enable reverse_iterator and its ilk.
+
+	* bastring.h: Provide specializations of member function templates
+	for const_iterator.
+
 Wed Jul 30 10:59:00 1997  Benjamin Kosnik  <bkoz@rhino.cygnus.com>
 
 	* stlinst.cc: Add instantiation file for 
