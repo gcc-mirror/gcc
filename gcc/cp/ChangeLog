@@ -1,5 +1,11 @@
 2003-01-06  Mark Mitchell  <mark@codesourcery.com>
 
+	* pt.c (retrieve_local_specialization): Revert 2003-01-05 change.
+	(hash_local_specialization): New function.
+	(register_local_specialization): Revert 2003-01-05 change.
+	(instantiate_decl): Use hash_local_specialization when creating
+	the local_specializations table.
+	
 	* decl2.c (mark_used): Do not synthesize thunks.
 
 	* class.c (layout_class_type): Correct handling of unnamed
