@@ -1,3 +1,10 @@
+2003-09-10  Anthony Green  <green@redhat.com>
+
+	* gnu/java/net/natPlainDatagramSocketImplWin32.cc (peekData):
+	Specify full name when referencing ::java::net::InetAddress.
+	* gnu/java/net/natPlainSocketImplWin32.cc (accept): Ditto.
+	Fix argument type.
+
 2003-09-10  Michael Koch  <konqueror@gmx.de>
 
 	* acconfig.h (__NO_MATH_INLINES): Removed.

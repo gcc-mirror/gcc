@@ -235,7 +235,7 @@ gnu::java::net::PlainDatagramSocketImpl::peekData(::java::net::DatagramPacket *p
   else
     throw new ::java::net::SocketException (JvNewStringUTF ("invalid family"));
 
-  p->setAddress (new InetAddress (raddr, NULL));
+  p->setAddress (new ::java::net::InetAddress (raddr, NULL));
   p->setPort (rport);
   p->setLength ((jint) retlen);
   return rport;

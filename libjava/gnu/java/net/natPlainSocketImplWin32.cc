@@ -228,7 +228,7 @@ gnu::java::net::PlainSocketImpl::listen (jint backlog)
 }
 
 void
-gnu::java::net::PlainSocketImpl::accept (::java::net::PlainSocketImpl *s)
+gnu::java::net::PlainSocketImpl::accept (gnu::java::net::PlainSocketImpl *s)
 {
   union SockAddr u;
   socklen_t addrlen = sizeof(u);
@@ -312,7 +312,7 @@ gnu::java::net::PlainSocketImpl::accept (::java::net::PlainSocketImpl *s)
 
   s->fnum = new_socket;
   s->localport = localport;
-  s->address = new InetAddress (raddr, NULL);
+  s->address = new ::java::net::InetAddress (raddr, NULL);
   s->port = rport;
   return;
 
