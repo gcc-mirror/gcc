@@ -122,7 +122,7 @@ init_expmed ()
   shift_cost[0] = 0;
   shiftadd_cost[0] = shiftsub_cost[0] = add_cost;
 
-  for (m = 1; m < BITS_PER_WORD; m++)
+  for (m = 1; m < MAX_BITS_PER_WORD; m++)
     {
       shift_cost[m] = shiftadd_cost[m] = shiftsub_cost[m] = 32000;
 
