@@ -1,3 +1,13 @@
+1999-12-29  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* cse.c (free_element, get_element): Remove unused prototypes.
+
+	* fold-const.c (extract_muldiv): Initialize variables `op0' and
+	`op1'.
+
+	* jump.c (invert_exp): Add explicit braces to avoid ambiguous
+	`else' clauses.
+
 Wed Dec 29 12:44:54 1999  Donald Lindsay  <dlindsay@cygnus.com>
 
 	* configure.in,configure: case arm for mn10200-*-* now sets
