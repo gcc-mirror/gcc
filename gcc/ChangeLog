@@ -1,3 +1,7 @@
+Mon Sep 21 22:31:14 PDT 1998 Jeff Law  (law@cygnus.com)
+
+	* version.c: Bump for snapshot.
+
 Mon Sep 21 22:48:09 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* configure.in: Recognize i[34567]86-*-openbsd* and handle it like
