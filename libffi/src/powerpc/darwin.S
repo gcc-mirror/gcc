@@ -1,6 +1,6 @@
 /* -----------------------------------------------------------------------
    darwin.S - Copyright (c) 2000 John Hornkvist
-   
+
    PowerPC Assembly glue.
 
    Permission is hereby granted, free of charge, to any person obtaining
@@ -23,7 +23,7 @@
    OTHER DEALINGS IN THE SOFTWARE.
    ----------------------------------------------------------------------- */
 
-#define LIBFFI_ASM	
+#define LIBFFI_ASM
 #include <ffi.h>
 #define JUMPTARGET(name) name
 #define L(x) x
@@ -37,59 +37,59 @@
 .text
 	.align 2
 _ffi_call_DARWIN:
-LFB0:	
+LFB0:
 	mr      r12,r8		/* We only need r12 until the call,
-				so it doesn't have to be saved...  */
-LFB1:	
+				   so it doesn't have to be saved...  */
+LFB1:
 	/* Save the old stack pointer as AP.  */
 	mr	r8,r1
-LCFI0:	
+LCFI0:
 	/* Allocate the stack space we need.  */
-	stwux	r1,r1,r4	
-	
+	stwux	r1,r1,r4
+
 	/* Save registers we use.  */
 	mflr	r9
 
-	stw	r28,-16(r8)	
+	stw	r28,-16(r8)
 	stw	r29,-12(r8)
 	stw	r30, -8(r8)
 	stw	r31, -4(r8)
 
-	stw	r9,  8(r8)	
+	stw	r9,  8(r8)
 	stw	r2, 20(r1)
-LCFI1:	
+LCFI1:
 
 	/* Save arguments over call...  */
 	mr	r31,r5	/* flags,  */
 	mr	r30,r6	/* rvalue,  */
 	mr	r29,r7	/* function address,  */
 	mr	r28,r8	/* our AP.  */
-LCFI2:		
+LCFI2:
 	/* Call ffi_prep_args.  */
 	mr	r4,r1
 	li	r9,0
-	
+
 	mtctr	r12 // r12 holds address of _ffi_prep_args
-	bctrl 
+	bctrl
 	lwz     r2,20(r1)
 
-	/* Now do the call.  */
-	/* Set up cr1 with bits 4-7 of the flags.  */
+	/* Now do the call.
+	   Set up cr1 with bits 4-7 of the flags.  */
 	mtcrf	0x40,r31
 	/* Get the address to call into CTR.  */
 	mtctr	r29
-	/* Load all those argument registers.  */
-        // We have set up a nice stack frame, just load it into registers.
-        lwz     r3, 20+(1*4)(r1)
-        lwz     r4, 20+(2*4)(r1)
-        lwz     r5, 20+(3*4)(r1)
-        lwz     r6, 20+(4*4)(r1)
-        nop
+	/* Load all those argument registers.
+	   We have set up a nice stack frame, just load it into registers.  */
+	lwz     r3, 20+(1*4)(r1)
+	lwz     r4, 20+(2*4)(r1)
+	lwz     r5, 20+(3*4)(r1)
+	lwz     r6, 20+(4*4)(r1)
+	nop
 	lwz     r7, 20+(5*4)(r1)
-        lwz     r8, 20+(6*4)(r1)
-        lwz     r9, 20+(7*4)(r1)
-        lwz     r10,20+(8*4)(r1)
-		
+	lwz     r8, 20+(6*4)(r1)
+	lwz     r9, 20+(7*4)(r1)
+	lwz     r10,20+(8*4)(r1)
+
 L1:
 	/* Load all the FP registers.  */
 	bf	6,L2 // 2f + 0x18
@@ -104,20 +104,20 @@ L1:
 	lfd	f8,-16-(6*8)(r28)
 	nop
 	lfd     f9,-16-(5*8)(r28)
-        lfd     f10,-16-(4*8)(r28)
+	lfd     f10,-16-(4*8)(r28)
 	lfd     f11,-16-(3*8)(r28)
 	lfd     f12,-16-(2*8)(r28)
 	nop
 	lfd     f13,-16-(1*8)(r28)
 
-L2:	
-	mr	r12,r29 // Put the target address in r12 as specified.
+L2:
+	mr	r12,r29 /* Put the target address in r12 as specified.  */
 	mtctr  r12
 	nop
 	nop
 	/* Make the call.  */
 	bctrl
-        
+
 	/* Now, deal with the return value.  */
 	mtcrf	0x01,r31
 
@@ -147,7 +147,7 @@ L(fp_return_value):
 L(float_return_value):
 	stfs	f1,0(r30)
 	b	L(done_return_value)
-LFE1:	
+LFE1:
 /* END(_ffi_call_DARWIN)  */
 
 /* Provide a null definition of _ffi_call_AIX.  */
@@ -193,26 +193,25 @@ LASFDE1:
 	.set	L$set$4,LCFI0-LFB1
 	.long	L$set$4
 	.byte	0xd	; DW_CFA_def_cfa_register
-	.byte	0x08	; uleb128 0x08 
+	.byte	0x08	; uleb128 0x08
 	.byte	0x4	; DW_CFA_advance_loc4
 	.set	L$set$5,LCFI1-LCFI0
 	.long	L$set$5
 	.byte   0x11    ; DW_CFA_offset_extended_sf
 	.byte	0x41	; uleb128 0x41
 	.byte   0x7e    ; sleb128 -2
-	.byte	0x9f	; DW_CFA_offset, column 0x1f 
-	.byte	0x1	; uleb128 0x1 
+	.byte	0x9f	; DW_CFA_offset, column 0x1f
+	.byte	0x1	; uleb128 0x1
 	.byte	0x9e	; DW_CFA_offset, column 0x1e
 	.byte	0x2	; uleb128 0x2
-	.byte	0x9d	; DW_CFA_offset, column 0x1d 
-	.byte	0x3	; uleb128 0x3 
-	.byte	0x9c	; DW_CFA_offset, column 0x1c 
+	.byte	0x9d	; DW_CFA_offset, column 0x1d
+	.byte	0x3	; uleb128 0x3
+	.byte	0x9c	; DW_CFA_offset, column 0x1c
 	.byte	0x4	; uleb128 0x4
-	.byte	0x4	; DW_CFA_advance_loc4 
+	.byte	0x4	; DW_CFA_advance_loc4
 	.set	L$set$6,LCFI2-LCFI1
 	.long	L$set$6
-	.byte	0xd	; DW_CFA_def_cfa_register 
-	.byte	0x1c	; uleb128 0x1c 
+	.byte	0xd	; DW_CFA_def_cfa_register
+	.byte	0x1c	; uleb128 0x1c
 	.align 2
 LEFDE1:
-	

@@ -1,4 +1,10 @@
 2003-09-18  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* src/powerpc/darwin.S: Cleanup whitespaces, comment formatting.
+	* src/powerpc/darwin_closure.S: Likewise.
+	* src/powerpc/ffi_darwin.c: Likewise.
+
+2003-09-18  Andreas Tobler  <a.tobler@schweiz.ch>
 	    David Edelsohn  <edelsohn@gnu.org>
 
 	* src/types.c (double): Add AIX and Darwin to the right TYPEDEF.
