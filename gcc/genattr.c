@@ -1,5 +1,5 @@
 /* Generate attribute information (insn-attr.h) from machine description.
-   Copyright (C) 1991, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1994, 1996 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
 This file is part of GNU CC.
@@ -274,14 +274,6 @@ from the machine description file `md'.  */\n\n");
 
   /* For compatibility, define the attribute `alternative', which is just
      a reference to the variable `which_alternative'.  */
-
-  printf("#ifndef PROTO\n");
-  printf("#if defined (USE_PROTOTYPES) ? USE_PROTOTYPES : defined (__STDC__)\n");
-  printf("#define PROTO(ARGS) ARGS\n");
-  printf("#else\n");
-  printf("#define PROTO(ARGS) ()\n");
-  printf("#endif\n");
-  printf("#endif\n");
 
   printf ("#define HAVE_ATTR_alternative\n");
   printf ("#define get_attr_alternative(insn) which_alternative\n");
