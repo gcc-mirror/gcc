@@ -1,5 +1,10 @@
 2003-09-04  Eric Christopher  <echristo@redhat.com>
 
+	* targhooks.c (default_return_in_memory): Fix typo
+	in last checkin.
+
+2003-09-04  Eric Christopher  <echristo@redhat.com>
+
 	* targhooks.c (default_return_in_memory): Fix default
 	definition.
 

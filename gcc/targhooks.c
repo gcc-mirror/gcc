@@ -107,7 +107,7 @@ bool
 default_return_in_memory (tree type,
 			  tree fntype ATTRIBUTE_UNUSED)
 {
-  return (TYPE_MODE (TYPE) == BLKmode);
+  return (TYPE_MODE (type) == BLKmode);
 }
 
 rtx
