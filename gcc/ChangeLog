@@ -1,3 +1,8 @@
+2005-01-20  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* tree-cfg.c (tree_verify_flow_info): Check that a nonlocal
+	label is first in a sequence of labels.
+
 2005-01-20  Janis Johnson  <janis187@us.ibm.com>
 	    Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
