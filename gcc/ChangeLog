@@ -1,5 +1,8 @@
 Sun Mar  1 05:50:25 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* tree.c (build_reference_type): Handle obstacks like
+ 	build_pointer_type.
+
 	* Makefile.in (tmp-gcc.xtar): Renamed from gcc.xtar.
 	(gcc.xtar.gz): Deleted; merged with `dist'.
 	(diff): Create gcc-$(oldversion)-$(version).diff.
