@@ -929,7 +929,7 @@ switch (get_attr_cc (INSN))						\
    This is currently only used to support section attributes.  */
 
 #define ASM_OUTPUT_SECTION_NAME(FILE, NAME) \
-   fprintf (FILE, ".section\t\"%s\"\n", NAME)
+   fprintf (FILE, ".section\t%s\n", NAME)
 
 /* This is how to output the definition of a user-level label named NAME,
    such as the label on a static function or variable NAME.  */
