@@ -1932,7 +1932,7 @@ ix86_expand_epilogue ()
 	{
 	  xops[0] = frame_pointer_rtx;
 	  xops[1] = stack_pointer_rtx;
-	  emit_move_insn (xops[1], xops[0]); /* final ignores this */
+	  emit_move_insn (xops[1], xops[0]);
 /*	  output_asm_insn (AS2 (mov%L2,%0,%2), xops);*/
 	  emit_insn (gen_pop (xops[0]));
 /*	  output_asm_insn ("pop%L0 %0", xops);*/
@@ -1982,11 +1982,11 @@ ix86_expand_epilogue ()
 /*	  output_asm_insn ("jmp %*%0", xops);*/
 	}
       else
-	emit_jump_insn (gen_return_internal ());
+	emit_jump_insn (gen_return_pop_internal (xops[1]));
 /*	  output_asm_insn ("ret %1", xops);*/
     }
   else
-/*    output_asm_insn ("ret", xops);*/;
+/*    output_asm_insn ("ret", xops);*/
  emit_jump_insn (gen_return_internal ());
 }
 
