@@ -7583,8 +7583,8 @@ altivec_init_builtins (void)
     = build_function_type (V8HI_type_node, void_list_node);
   tree void_ftype_void
     = build_function_type (void_type_node, void_list_node);
-  tree void_ftype_qi
-    = build_function_type_list (void_type_node, char_type_node, NULL_TREE);
+  tree void_ftype_int
+    = build_function_type_list (void_type_node, integer_type_node, NULL_TREE);
 
   tree v16qi_ftype_long_pcvoid
     = build_function_type_list (V16QI_type_node,
@@ -7655,7 +7655,7 @@ altivec_init_builtins (void)
   def_builtin (MASK_ALTIVEC, "__builtin_altivec_mtvscr", void_ftype_v4si, ALTIVEC_BUILTIN_MTVSCR);
   def_builtin (MASK_ALTIVEC, "__builtin_altivec_mfvscr", v8hi_ftype_void, ALTIVEC_BUILTIN_MFVSCR);
   def_builtin (MASK_ALTIVEC, "__builtin_altivec_dssall", void_ftype_void, ALTIVEC_BUILTIN_DSSALL);
-  def_builtin (MASK_ALTIVEC, "__builtin_altivec_dss", void_ftype_qi, ALTIVEC_BUILTIN_DSS);
+  def_builtin (MASK_ALTIVEC, "__builtin_altivec_dss", void_ftype_int, ALTIVEC_BUILTIN_DSS);
   def_builtin (MASK_ALTIVEC, "__builtin_altivec_lvsl", v16qi_ftype_long_pcvoid, ALTIVEC_BUILTIN_LVSL);
   def_builtin (MASK_ALTIVEC, "__builtin_altivec_lvsr", v16qi_ftype_long_pcvoid, ALTIVEC_BUILTIN_LVSR);
   def_builtin (MASK_ALTIVEC, "__builtin_altivec_lvebx", v16qi_ftype_long_pcvoid, ALTIVEC_BUILTIN_LVEBX);
