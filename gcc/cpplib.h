@@ -351,6 +351,9 @@ struct cpp_options
   /* -fleading_underscore sets this to "_".  */
   const char *user_label_prefix;
 
+  /* The language we're preprocessing.  */
+  enum c_lang lang;
+
   /* Non-0 means -v, so print the full set of include dirs.  */
   unsigned char verbose;
 
@@ -363,12 +366,6 @@ struct cpp_options
   /* Nonzero means handle #import, for objective C.  */
   unsigned char objc;
 
-  /* Nonzero means this is an assembly file, so ignore unrecognized
-     directives and the "# 33" form of #line, both of which are
-     probably comments.  Also, permit unbalanced ' strings (again,
-     likely to be in comments).  */
-  unsigned char lang_asm;
-
   /* Nonzero means don't copy comments into the output file.  */
   unsigned char discard_comments;
 
@@ -377,6 +374,9 @@ struct cpp_options
 
   /* Nonzero means process the ISO digraph sequences.  */
   unsigned char digraphs;
+
+  /* Nonzero means to allow hexadecimal floats and LL suffixes.  */
+  unsigned char extended_numbers;
 
   /* Nonzero means print the names of included files rather than the
      preprocessed output.  1 means just the #include "...", 2 means
@@ -446,9 +446,6 @@ struct cpp_options
 
   /* Nonzero means warn if undefined identifiers are evaluated in an #if.  */
   unsigned char warn_undef;
-
-  /* Nonzero for the 1989 C Standard, including corrigenda and amendments.  */
-  unsigned char c89;
 
   /* Nonzero for the 1999 C Standard, including corrigenda and amendments.  */
   unsigned char c99;

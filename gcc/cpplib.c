@@ -293,7 +293,7 @@ _cpp_handle_directive (pfile, indented)
 	 skipped conditional groups.  Complain about this form if
 	 we're being pedantic, but not if this is regurgitated input
 	 (preprocessed or fed back in by the C++ frontend).  */
-      if (! buffer->was_skipping  && !CPP_OPTION (pfile, lang_asm))
+      if (! buffer->was_skipping && CPP_OPTION (pfile, lang) != CLK_ASM)
 	{
 	  dir = &dtable[T_LINE];
 	  _cpp_push_token (pfile, &dname, &pfile->directive_pos);
@@ -354,7 +354,7 @@ _cpp_handle_directive (pfile, indented)
 	 source: we don't know where the comments are, and # may
 	 introduce assembler pseudo-ops.  Don't complain about invalid
 	 directives in skipped conditional groups (6.10 p4).  */
-      if (CPP_OPTION (pfile, lang_asm))
+      if (CPP_OPTION (pfile, lang) == CLK_ASM)
 	{
 	  /* Output the # and lookahead token for the assembler.  */
 	  _cpp_push_token (pfile, &dname, &pfile->directive_pos);

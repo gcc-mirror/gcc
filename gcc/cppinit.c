@@ -431,10 +431,11 @@ set_lang (pfile, lang)
 {
   struct cpp_pending *pend = CPP_OPTION (pfile, pending);
 
-  /* Default to zero.  */
-  CPP_OPTION (pfile, lang_asm) = 0;
+  /* Defaults.  */
+  CPP_OPTION (pfile, lang) = lang;
   CPP_OPTION (pfile, objc) = 0;
   CPP_OPTION (pfile, cplusplus) = 0;
+  CPP_OPTION (pfile, extended_numbers) = 1; /* Allowed in GNU C and C99.  */
 
   switch (lang)
     {
@@ -444,7 +445,6 @@ set_lang (pfile, lang)
       CPP_OPTION (pfile, dollars_in_ident) = 1;
       CPP_OPTION (pfile, cplusplus_comments) = 1;
       CPP_OPTION (pfile, digraphs) = 1;
-      CPP_OPTION (pfile, c89) = 0;
       CPP_OPTION (pfile, c99) = 1;
       new_pending_directive (pend, "__STDC_VERSION__=199901L", cpp_define);
       break;
@@ -453,7 +453,6 @@ set_lang (pfile, lang)
       CPP_OPTION (pfile, dollars_in_ident) = 1;
       CPP_OPTION (pfile, cplusplus_comments) = 1;
       CPP_OPTION (pfile, digraphs) = 1;
-      CPP_OPTION (pfile, c89) = 1;
       CPP_OPTION (pfile, c99) = 0;
       break;
 
@@ -465,8 +464,8 @@ set_lang (pfile, lang)
       CPP_OPTION (pfile, dollars_in_ident) = 0;
       CPP_OPTION (pfile, cplusplus_comments) = 0;
       CPP_OPTION (pfile, digraphs) = lang == CLK_STDC94;
-      CPP_OPTION (pfile, c89) = 1;
       CPP_OPTION (pfile, c99) = 0;
+      CPP_OPTION (pfile, extended_numbers) = 0;
       new_pending_directive (pend, "__STRICT_ANSI__", cpp_define);
       break;
     case CLK_STDC99:
@@ -474,7 +473,6 @@ set_lang (pfile, lang)
       CPP_OPTION (pfile, dollars_in_ident) = 0;
       CPP_OPTION (pfile, cplusplus_comments) = 1;
       CPP_OPTION (pfile, digraphs) = 1;
-      CPP_OPTION (pfile, c89) = 0;
       CPP_OPTION (pfile, c99) = 1;
       new_pending_directive (pend, "__STRICT_ANSI__", cpp_define);
       new_pending_directive (pend, "__STDC_VERSION__=199901L", cpp_define);
@@ -489,7 +487,6 @@ set_lang (pfile, lang)
       CPP_OPTION (pfile, dollars_in_ident) = 1;
       CPP_OPTION (pfile, cplusplus_comments) = 1;
       CPP_OPTION (pfile, digraphs) = 1;
-      CPP_OPTION (pfile, c89) = 0;
       CPP_OPTION (pfile, c99) = 0;
       CPP_OPTION (pfile, objc) = 1;
       new_pending_directive (pend, "__OBJC__", cpp_define);
@@ -503,7 +500,6 @@ set_lang (pfile, lang)
       CPP_OPTION (pfile, dollars_in_ident) = lang == CLK_GNUCXX;
       CPP_OPTION (pfile, cplusplus_comments) = 1;
       CPP_OPTION (pfile, digraphs) = 1;
-      CPP_OPTION (pfile, c89) = 0;
       CPP_OPTION (pfile, c99) = 0;
       new_pending_directive (pend, "__cplusplus", cpp_define);
       break;
@@ -514,9 +510,7 @@ set_lang (pfile, lang)
       CPP_OPTION (pfile, dollars_in_ident) = 0;	/* Maybe not?  */
       CPP_OPTION (pfile, cplusplus_comments) = 1;
       CPP_OPTION (pfile, digraphs) = 0; 
-     CPP_OPTION (pfile, c89) = 0;
       CPP_OPTION (pfile, c99) = 0;
-      CPP_OPTION (pfile, lang_asm) = 1;
       new_pending_directive (pend, "__ASSEMBLER__", cpp_define);
       break;
     }
@@ -979,7 +973,7 @@ cpp_start_read (pfile, fname)
     CPP_OPTION (pfile, warn_traditional) = 0;
 
   /* Do not warn about invalid token pasting if -lang-asm.  */
-  if (CPP_OPTION (pfile, lang_asm))
+  if (CPP_OPTION (pfile, lang) == CLK_ASM)
     CPP_OPTION (pfile, warn_paste) = 0;
 
   /* Set this if it hasn't been set already. */

@@ -205,9 +205,7 @@ parse_number (pfile, tok)
 
       if (CPP_WTRADITIONAL (pfile) && sufftab[i].u)
 	cpp_warning (pfile, "traditional C rejects the `U' suffix");
-      if (CPP_OPTION (pfile, c89)
-	  && sufftab[i].l == 2
-	  && pfile->spec_nodes.n__STRICT_ANSI__->type == NT_MACRO)
+      if (sufftab[i].l == 2 && !CPP_OPTION (pfile, extended_numbers))
 	SYNTAX_ERROR ("too many 'l' suffixes in integer constant");
     }
   

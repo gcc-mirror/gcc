@@ -673,7 +673,7 @@ parse_string (pfile, token, terminator)
 	  /* In assembly language, silently terminate string and
 	     character literals at end of line.  This is a kludge
 	     around not knowing where comments are.  */
-	  if (CPP_OPTION (pfile, lang_asm) && terminator != '>')
+	  if (CPP_OPTION (pfile, lang) == CLK_ASM && terminator != '>')
 	    break;
 
 	  /* Character constants and header names may not extend over
@@ -1007,11 +1007,9 @@ _cpp_lex_token (pfile, result)
 	      && !CPP_IN_SYSTEM_HEADER (pfile))
 	    break;
 
-	  /* We silently allow C++ comments in system headers,
-	     irrespective of conformance mode, because lots of
-	     broken systems do that and trying to clean it up in
-	     fixincludes is a nightmare.  */
-	  if (CPP_OPTION (pfile, c89) && CPP_PEDANTIC (pfile)
+	  /* Warn about comments only if pedantically GNUC89, and not
+	     in system headers.  */
+	  if (CPP_OPTION (pfile, lang) == CLK_GNUC89 && CPP_PEDANTIC (pfile)
 	      && ! buffer->warned_cplusplus_comments)
 	    {
 	      cpp_pedwarn (pfile,
