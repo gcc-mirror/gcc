@@ -1,3 +1,11 @@
+1999-09-23  Tom Tromey  <tromey@cygnus.com>
+
+	* prims.cc (main_init): New function.
+	(JvRunMain): Call it.
+	(_Jv_RunMain): Likewise.
+	Include <signal.h>.
+	(main_init): Ignore SIGPIPE.  Fixes PR 51.
+
 1999-09-22  Tom Tromey  <tromey@cygnus.com>
 
 	* libgcj.spec.in: Use `jc1' spec, not `cc1' spec.
