@@ -53,8 +53,6 @@ extern int mmix_local_regno (int);
 extern int mmix_dbx_register_number (int);
 extern int mmix_use_simple_return (void);
 extern void mmix_make_decl_one_only (tree);
-extern int mmix_function_arg_pass_by_reference
-  (const CUMULATIVE_ARGS *, enum machine_mode, tree, int);
 extern rtx mmix_function_outgoing_value (tree, tree);
 extern int mmix_function_value_regno_p (int);
 extern int mmix_data_alignment (tree, int);

@@ -3722,22 +3722,17 @@ register to be used by the caller for this argument; likewise
 @code{FUNCTION_INCOMING_ARG}, for the called function.
 @end defmac
 
-@defmac FUNCTION_ARG_PASS_BY_REFERENCE (@var{cum}, @var{mode}, @var{type}, @var{named})
-A C expression that indicates when an argument must be passed by reference.
-If nonzero for an argument, a copy of that argument is made in memory and a
+@deftypefn {Target Hook} bool TARGET_PASS_BY_REFERENCE (CUMULATIVE_ARGS *@var{cum}, enum machine_mode @var{mode}, tree @var{type}, bool @var{named})
+This target hook should return @code{true} if an argument at the 
+position indicated by @var{cum} should be passed by reference.  This
+predicate is queried after target independent reasons for being 
+passed by reference, such as @code{TREE_ADDRESSABLE (type)}.
+
+If the hook returns true, a copy of that argument is made in memory and a
 pointer to the argument is passed instead of the argument itself.
 The pointer is passed in whatever way is appropriate for passing a pointer
 to that type.
-
-On machines where @code{REG_PARM_STACK_SPACE} is not defined, a suitable
-definition of this macro might be
-@smallexample
-#define FUNCTION_ARG_PASS_BY_REFERENCE\
-(CUM, MODE, TYPE, NAMED)  \
-  targetm.calls.must_pass_in_stack (MODE, TYPE)
-@end smallexample
-@c this is *still* too long.  --mew 5feb93
-@end defmac
+@end deftypefn
 
 @defmac FUNCTION_ARG_CALLEE_COPIES (@var{cum}, @var{mode}, @var{type}, @var{named})
 If defined, a C expression that indicates when it is the called function's

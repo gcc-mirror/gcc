@@ -171,6 +171,8 @@ static bool iq2000_rtx_costs          (rtx, int, int, int *);
 static int  iq2000_address_cost       (rtx);
 static void iq2000_select_section     (tree, int, unsigned HOST_WIDE_INT);
 static bool iq2000_return_in_memory   (tree, tree);
+static bool iq2000_pass_by_reference  (CUMULATIVE_ARGS *, enum machine_mode,
+				       tree, bool);
 
 #undef  TARGET_INIT_BUILTINS
 #define TARGET_INIT_BUILTINS 		iq2000_init_builtins
@@ -194,6 +196,8 @@ static bool iq2000_return_in_memory   (tree, tree);
 
 #undef  TARGET_RETURN_IN_MEMORY
 #define TARGET_RETURN_IN_MEMORY		iq2000_return_in_memory
+#undef  TARGET_PASS_BY_REFERENCE
+#define TARGET_PASS_BY_REFERENCE	iq2000_pass_by_reference
 
 #undef  TARGET_SETUP_INCOMING_VARARGS
 #define TARGET_SETUP_INCOMING_VARARGS	iq2000_setup_incoming_varargs
@@ -2471,13 +2475,11 @@ iq2000_function_value (tree valtype, tree func ATTRIBUTE_UNUSED)
   return gen_rtx_REG (mode, reg);
 }
 
-/* The implementation of FUNCTION_ARG_PASS_BY_REFERENCE.  Return
-   nonzero when an argument must be passed by reference.  */
+/* Return true when an argument must be passed by reference.  */
 
-int
-function_arg_pass_by_reference (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
-				enum machine_mode mode, tree type,
-				int named ATTRIBUTE_UNUSED)
+static bool
+iq2000_pass_by_reference (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+			  tree type, bool named ATTRIBUTE_UNUSED)
 {
   int size;
 

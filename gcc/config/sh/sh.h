@@ -1826,8 +1826,8 @@ struct sh_args {
      used to pass arguments, if the arguments didn't have to be passed
      by reference.  */
     int byref_regs;
-  /* Set by SHCOMPACT_BYREF if the current argument is to be passed by
-     reference.  */
+  /* Set as by shcompact_byref if the current argument is to be passed
+     by reference.  */
     int byref;
 
   /* call_cookie is a bitmask used by call expanders, as well as
@@ -2032,31 +2032,6 @@ struct sh_args {
                             this should be the other way round...
    foo (float a, __complex float b); a: fr5 b.real: fr4 b.imag: fr7  */
 #define FUNCTION_ARG_SCmode_WART 1
-
-/* Whether an argument must be passed by reference.  On SHcompact, we
-   pretend arguments wider than 32-bits that would have been passed in
-   registers are passed by reference, so that an SHmedia trampoline
-   loads them into the full 64-bits registers.  */
-#define FUNCTION_ARG_PASS_BY_REFERENCE(CUM,MODE,TYPE,NAMED) \
-  (targetm.calls.must_pass_in_stack ((MODE), (TYPE)) \
-   || SHCOMPACT_BYREF ((CUM), (MODE), (TYPE), (NAMED)))
-
-#define SHCOMPACT_BYREF(CUM, MODE, TYPE, NAMED) \
-  ((CUM).byref								\
-   = (TARGET_SHCOMPACT							\
-      && (CUM).arg_count[(int) SH_ARG_INT] < NPARM_REGS (SImode)	\
-      && (! (NAMED) || GET_SH_ARG_CLASS (MODE) == SH_ARG_INT		\
-	  || (GET_SH_ARG_CLASS (MODE) == SH_ARG_FLOAT			\
-	      && ((CUM).arg_count[(int) SH_ARG_FLOAT]			\
- 		  >= NPARM_REGS (SFmode))))				\
-      && ((MODE) == BLKmode ? int_size_in_bytes (TYPE)			\
-	  : GET_MODE_SIZE (MODE)) > 4				       	\
-      && ! SHCOMPACT_FORCE_ON_STACK ((MODE), (TYPE))			\
-      && ! SH5_WOULD_BE_PARTIAL_NREGS ((CUM), (MODE),			\
-				       (TYPE), (NAMED)))		\
-      ? ((MODE) == BLKmode ? int_size_in_bytes (TYPE)			\
-	 : GET_MODE_SIZE (MODE))					\
-      : 0)
 
 /* If an argument of size 5, 6 or 7 bytes is to be passed in a 64-bit
    register in SHcompact mode, it must be padded in the most

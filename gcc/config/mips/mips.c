@@ -290,6 +290,8 @@ static void mips_setup_incoming_varargs (CUMULATIVE_ARGS *, enum machine_mode,
 					 tree, int *, int);
 static tree mips_build_builtin_va_list (void);
 static tree mips_gimplify_va_arg_expr (tree, tree, tree *, tree *);
+static bool mips_pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode mode,
+				    tree, bool);
 
 #if TARGET_IRIX
 static void irix_asm_named_section_1 (const char *, unsigned int,
@@ -744,6 +746,8 @@ const struct mips_cpu_info mips_cpu_info_table[] = {
 #define TARGET_STRICT_ARGUMENT_NAMING mips_strict_argument_naming
 #undef TARGET_MUST_PASS_IN_STACK
 #define TARGET_MUST_PASS_IN_STACK must_pass_in_stack_var_size
+#undef TARGET_PASS_BY_REFERENCE
+#define TARGET_PASS_BY_REFERENCE mips_pass_by_reference
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -4045,8 +4049,7 @@ mips_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p, tree *post_p)
   tree addr;
   bool indirect;
 
-  indirect
-    = function_arg_pass_by_reference (NULL, TYPE_MODE (type), type, 0);
+  indirect = pass_by_reference (NULL, TYPE_MODE (type), type, 0);
 
   if (indirect)
     type = build_pointer_type (type);
@@ -7321,13 +7324,12 @@ mips_function_value (tree valtype, tree func ATTRIBUTE_UNUSED,
   return gen_rtx_REG (mode, GP_RETURN);
 }
 
-/* The implementation of FUNCTION_ARG_PASS_BY_REFERENCE.  Return
-   nonzero when an argument must be passed by reference.  */
+/* Return nonzero when an argument must be passed by reference.  */
 
-int
-function_arg_pass_by_reference (const CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
-				enum machine_mode mode, tree type,
-				int named ATTRIBUTE_UNUSED)
+static bool
+mips_pass_by_reference (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
+			enum machine_mode mode, tree type,
+			bool named ATTRIBUTE_UNUSED)
 {
   if (mips_abi == ABI_EABI)
     {
@@ -7337,7 +7339,11 @@ function_arg_pass_by_reference (const CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
       if (type == NULL_TREE || mode == DImode || mode == DFmode)
 	return 0;
 
-      size = int_size_in_bytes (type);
+      if (type)
+        size = int_size_in_bytes (type);
+      else
+	size = GET_MODE_SIZE (mode);
+
       return size == -1 || size > UNITS_PER_WORD;
     }
   else

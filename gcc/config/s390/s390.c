@@ -81,6 +81,8 @@ static tree s390_build_builtin_va_list (void);
 static tree s390_gimplify_va_arg (tree, tree, tree *, tree *);
 static bool s390_function_ok_for_sibcall (tree, tree);
 static bool s390_call_saved_register_used (tree);
+static bool s390_pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode mode,
+				    tree, bool);
 
 #undef  TARGET_ASM_ALIGNED_HI_OP
 #define TARGET_ASM_ALIGNED_HI_OP "\t.word\t"
@@ -155,6 +157,8 @@ static bool s390_call_saved_register_used (tree);
 #define TARGET_PROMOTE_FUNCTION_ARGS hook_bool_tree_true
 #undef TARGET_PROMOTE_FUNCTION_RETURN
 #define TARGET_PROMOTE_FUNCTION_RETURN hook_bool_tree_true
+#undef TARGET_PASS_BY_REFERENCE
+#define TARGET_PASS_BY_REFERENCE s390_pass_by_reference
 
 #undef TARGET_FUNCTION_OK_FOR_SIBCALL
 #define TARGET_FUNCTION_OK_FOR_SIBCALL s390_function_ok_for_sibcall
@@ -6324,8 +6328,10 @@ s390_function_arg_integer (enum machine_mode mode, tree type)
    all other structures (and complex numbers) are passed by
    reference.  */
 
-int
-s390_function_arg_pass_by_reference (enum machine_mode mode, tree type)
+static bool
+s390_pass_by_reference (CUMULATIVE_ARGS *ca ATTRIBUTE_UNUSED,
+			enum machine_mode mode, tree type,
+			bool named ATTRIBUTE_UNUSED)
 {
   int size = s390_function_arg_size (mode, type);
   if (size > 8)
@@ -6354,11 +6360,7 @@ void
 s390_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 			   tree type, int named ATTRIBUTE_UNUSED)
 {
-  if (s390_function_arg_pass_by_reference (mode, type))
-    {
-      cum->gprs += 1;
-    }
-  else if (s390_function_arg_float (mode, type))
+  if (s390_function_arg_float (mode, type))
     {
       cum->fprs += 1;
     }
@@ -6394,9 +6396,6 @@ rtx
 s390_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode, tree type,
 		   int named ATTRIBUTE_UNUSED)
 {
-  if (s390_function_arg_pass_by_reference (mode, type))
-      return 0;
-
   if (s390_function_arg_float (mode, type))
     {
       if (cum->fprs + 1 > (TARGET_64BIT? 4 : 2))
@@ -6652,7 +6651,7 @@ s390_gimplify_va_arg (tree valist, tree type, tree *pre_p,
 
   size = int_size_in_bytes (type);
 
-  if (s390_function_arg_pass_by_reference (TYPE_MODE (type), type))
+  if (pass_by_reference (NULL, TYPE_MODE (type), type, false))
     {
       if (TARGET_DEBUG_ARG)
 	{
@@ -7364,7 +7363,7 @@ s390_call_saved_register_used (tree argument_list)
       if (! (mode = TYPE_MODE (TREE_TYPE (parameter))))
 	abort();
 
-      if (s390_function_arg_pass_by_reference (mode, type))
+      if (pass_by_reference (&cum, mode, type, true))
  	{
  	  mode = Pmode;
  	  type = build_pointer_type (type);

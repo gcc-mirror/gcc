@@ -1130,10 +1130,6 @@ CUMULATIVE_ARGS;
 
 #define CALLER_SAVE_PROFITABLE(REFS,CALLS) 0
 
-/* Never pass data by reference.  */
-
-#define FUNCTION_ARG_PASS_BY_REFERENCE(CUM, MODE, TYPE, NAMED) 0
-
 #define FUNCTION_ARG_PARTIAL_NREGS(CUM, MODE, TYPE, NAMED) 0
 
 /* 1 if N is a possible register number for function argument passing.  */

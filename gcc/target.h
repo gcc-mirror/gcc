@@ -448,6 +448,13 @@ struct gcc_target
     rtx (*struct_value_rtx) (tree fndecl, int incoming);
     bool (*return_in_memory) (tree type, tree fndecl);
     bool (*return_in_msb) (tree type);
+
+    /* Return true if a parameter must be passed by reference.  TYPE may
+       be null if this is a libcall.  CA may be null if this query is
+       from __builtin_va_arg.  */
+    bool (*pass_by_reference) (CUMULATIVE_ARGS *ca, enum machine_mode mode,
+			       tree type, bool named_arg);
+
     rtx (*expand_builtin_saveregs) (void);
     /* Returns pretend_argument_size.  */
     void (*setup_incoming_varargs) (CUMULATIVE_ARGS *ca, enum machine_mode mode,

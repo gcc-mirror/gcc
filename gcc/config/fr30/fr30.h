@@ -694,9 +694,6 @@ enum reg_class
 #define FUNCTION_ARG_PARTIAL_NREGS(CUM, MODE, TYPE, NAMED) 	\
   fr30_function_arg_partial_nregs (CUM, MODE, TYPE, NAMED)
 
-#define FUNCTION_ARG_PASS_BY_REFERENCE(CUM, MODE, TYPE, NAMED) \
-  targetm.calls.must_pass_in_stack (MODE, TYPE)
-
 /* A C statement (sans semicolon) for initializing the variable CUM for the
    state at the beginning of the argument list.  The variable has type
    `CUMULATIVE_ARGS'.  The value of FNTYPE is the tree node for the data type

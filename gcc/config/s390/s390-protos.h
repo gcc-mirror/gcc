@@ -96,7 +96,6 @@ extern rtx s390_load_got (void);
 #endif /* RTX_CODE */
 
 #ifdef TREE_CODE
-extern int s390_function_arg_pass_by_reference (enum machine_mode, tree);
 extern void s390_function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode,
 				       tree, int);
 #ifdef RTX_CODE

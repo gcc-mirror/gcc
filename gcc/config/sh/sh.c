@@ -282,6 +282,8 @@ static bool sh_strict_argument_naming (CUMULATIVE_ARGS *);
 static bool sh_pretend_outgoing_varargs_named (CUMULATIVE_ARGS *);
 static tree sh_build_builtin_va_list (void);
 static tree sh_gimplify_va_arg_expr (tree, tree, tree *, tree *);
+static bool sh_pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode,
+				  tree, bool);
 
 
 /* Initialize the GCC target structure.  */
@@ -438,6 +440,8 @@ static tree sh_gimplify_va_arg_expr (tree, tree, tree *, tree *);
 #define TARGET_PRETEND_OUTGOING_VARARGS_NAMED sh_pretend_outgoing_varargs_named
 #undef TARGET_MUST_PASS_IN_STACK
 #define TARGET_MUST_PASS_IN_STACK must_pass_in_stack_var_size
+#undef TARGET_PASS_BY_REFERENCE
+#define TARGET_PASS_BY_REFERENCE sh_pass_by_reference
 
 #undef TARGET_BUILD_BUILTIN_VA_LIST
 #define TARGET_BUILD_BUILTIN_VA_LIST sh_build_builtin_va_list
@@ -6502,6 +6506,51 @@ sh_promote_prototypes (tree type)
   if (! type)
     return 1;
   return ! sh_attr_renesas_p (type);
+}
+
+/* Whether an argument must be passed by reference.  On SHcompact, we
+   pretend arguments wider than 32-bits that would have been passed in
+   registers are passed by reference, so that an SHmedia trampoline
+   loads them into the full 64-bits registers.  */
+
+static int
+shcompact_byref (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+		 tree type, bool named)
+{
+  unsigned HOST_WIDE_INT size;
+
+  if (type)
+    size = int_size_in_bytes (type);
+  else
+    size = GET_MODE_SIZE (mode);
+
+  if (cum->arg_count[SH_ARG_INT] < NPARM_REGS (SImode)
+      && (!named
+	  || GET_SH_ARG_CLASS (mode) == SH_ARG_INT
+	  || (GET_SH_ARG_CLASS (mode) == SH_ARG_FLOAT
+	      && cum->arg_count[SH_ARG_FLOAT] >= NPARM_REGS (SFmode)))
+      && size > 4
+      && !SHCOMPACT_FORCE_ON_STACK (mode, type)
+      && !SH5_WOULD_BE_PARTIAL_NREGS (*cum, mode, type, named))
+    return size;
+  else
+    return 0;
+}
+
+static bool
+sh_pass_by_reference (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+		      tree type, bool named)
+{
+  if (targetm.calls.must_pass_in_stack (mode, type))
+    return true;
+
+  if (TARGET_SHCOMPACT)
+    {
+      cum->byref = shcompact_byref (cum, mode, type, named);
+      return cum->byref != 0;
+    }
+
+  return false;
 }
 
 /* Define where to put the arguments to a function.

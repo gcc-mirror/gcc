@@ -1901,9 +1901,6 @@ struct machine_function GTY(())
 
 /* extern int frv_function_arg_partial_nregs (CUMULATIVE_ARGS, int, Tree, int);  */
 
-#define FUNCTION_ARG_PASS_BY_REFERENCE(CUM, MODE, TYPE, NAMED)		\
-  frv_function_arg_pass_by_reference (&CUM, MODE, TYPE, NAMED)
-
 /* If defined, a C expression that indicates when it is the called function's
    responsibility to make a copy of arguments passed by invisible reference.
    Normally, the caller makes a copy and passes the address of the copy to the
