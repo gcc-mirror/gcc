@@ -3578,7 +3578,7 @@ extern int enforce_access                       PARAMS ((tree, tree));
 extern tree convert_default_arg                 PARAMS ((tree, tree, tree, int));
 extern tree convert_arg_to_ellipsis             PARAMS ((tree));
 extern tree build_x_va_arg                      PARAMS ((tree, tree));
-extern tree convert_type_from_ellipsis          PARAMS ((tree));
+extern tree cxx_type_promotes_to		PARAMS ((tree));
 extern int is_properly_derived_from             PARAMS ((tree, tree));
 extern tree initialize_reference                PARAMS ((tree, tree));
 extern tree strip_top_quals                     PARAMS ((tree));

@@ -58,6 +58,7 @@ extern void lhd_print_error_function PARAMS ((struct diagnostic_context *,
 extern void lhd_set_decl_assembler_name PARAMS ((tree));
 extern bool lhd_warn_unused_global_decl PARAMS ((tree));
 extern void lhd_incomplete_type_error PARAMS ((tree, tree));
+extern tree lhd_type_promotes_to PARAMS ((tree));
 
 /* Declarations of default tree inlining hooks.  */
 tree lhd_tree_inlining_walk_subtrees		PARAMS ((tree *, int *,
@@ -161,6 +162,7 @@ int lhd_tree_dump_type_quals			PARAMS ((tree));
    so we create a compile-time error instead.  */
 #define LANG_HOOKS_MAKE_TYPE make_node
 #define LANG_HOOKS_INCOMPLETE_TYPE_ERROR lhd_incomplete_type_error
+#define LANG_HOOKS_TYPE_PROMOTES_TO lhd_type_promotes_to
 
 #define LANG_HOOKS_FOR_TYPES_INITIALIZER { \
   LANG_HOOKS_MAKE_TYPE, \
@@ -169,6 +171,7 @@ int lhd_tree_dump_type_quals			PARAMS ((tree));
   LANG_HOOKS_UNSIGNED_TYPE, \
   LANG_HOOKS_SIGNED_TYPE, \
   LANG_HOOKS_SIGNED_OR_UNSIGNED_TYPE, \
+  LANG_HOOKS_TYPE_PROMOTES_TO, \
   LANG_HOOKS_INCOMPLETE_TYPE_ERROR \
 }
 

@@ -4026,24 +4026,27 @@ build_x_va_arg (expr, type)
   return build_va_arg (expr, type);
 }
 
-/* TYPE has been given to va_arg. Apply the default conversions which would
-   have happened when passed via ellipsis. Return the promoted type, or
-   NULL_TREE, if there is no change.  */
+/* TYPE has been given to va_arg.  Apply the default conversions which
+   would have happened when passed via ellipsis.  Return the promoted
+   type, or the passed type if there is no change.  */
 
 tree
-convert_type_from_ellipsis (type)
+cxx_type_promotes_to (type)
      tree type;
 {
   tree promote;
-  
+
   if (TREE_CODE (type) == ARRAY_TYPE)
-    promote = build_pointer_type (TREE_TYPE (type));
-  else if (TREE_CODE (type) == FUNCTION_TYPE)
-    promote = build_pointer_type (type);
-  else
-    promote = type_promotes_to (type);
+    return build_pointer_type (TREE_TYPE (type));
+
+  if (TREE_CODE (type) == FUNCTION_TYPE)
+    return build_pointer_type (type);
+
+  promote = type_promotes_to (type);
+  if (same_type_p (type, promote))
+    promote = type;
   
-  return same_type_p (type, promote) ? NULL_TREE : promote;
+  return promote;
 }
 
 /* ARG is a default argument expression being passed to a parameter of

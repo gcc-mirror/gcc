@@ -97,6 +97,12 @@ struct lang_hooks_for_types
      according to UNSIGNEDP.  */
   tree (*signed_or_unsigned_type) PARAMS ((int, tree));
 
+  /* Given a type, apply default promotions to unnamed function
+     arguments and return the new type.  Return the same type if no
+     change.  Required by any language that supports variadic
+     arguments.  The default hook aborts.  */
+  tree (*type_promotes_to) PARAMS ((tree));
+
   /* This routine is called in tree.c to print an error message for
      invalid use of an incomplete type.  VALUE is the expression that
      was used (or 0 if that isn't known) and TYPE is the type that was

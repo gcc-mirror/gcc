@@ -178,6 +178,14 @@ lhd_clear_binding_stack ()
     poplevel (0, 0, 0);
 }
 
+/* Type promotion for variable arguments.  */
+tree
+lhd_type_promotes_to (type)
+     tree type ATTRIBUTE_UNUSED;
+{
+  abort ();
+}
+
 /* Invalid use of an incomplete type.  */
 void
 lhd_incomplete_type_error (value, type)

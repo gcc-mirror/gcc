@@ -102,6 +102,8 @@ static void c_post_options PARAMS ((void));
 #define LANG_HOOKS_SIGNED_OR_UNSIGNED_TYPE c_common_signed_or_unsigned_type
 #undef LANG_HOOKS_INCOMPLETE_TYPE_ERROR
 #define LANG_HOOKS_INCOMPLETE_TYPE_ERROR c_incomplete_type_error
+#undef LANG_HOOKS_TYPE_PROMOTES_TO
+#define LANG_HOOKS_TYPE_PROMOTES_TO c_type_promotes_to
 
 /* ### When changing hooks, consider if ObjC needs changing too!! ### */
 
