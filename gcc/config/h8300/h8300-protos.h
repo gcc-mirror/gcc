@@ -74,8 +74,6 @@ extern int h8300_tiny_data_p PARAMS ((tree));
 extern void h8300_init_once PARAMS ((void));
 extern void asm_file_start PARAMS ((FILE *));
 extern void asm_file_end PARAMS ((FILE *));
-extern int ok_for_bclr PARAMS ((HOST_WIDE_INT));
-extern int small_power_of_two PARAMS ((HOST_WIDE_INT));
 extern int initial_offset PARAMS ((int, int));
 
 #ifdef GCC_C_PRAGMA_H

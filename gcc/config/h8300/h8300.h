@@ -429,8 +429,6 @@ enum reg_class {
   (TARGET_H8300H || TARGET_H8300S			\
    ? (VALUE) == -1 || (VALUE) == -2 || (VALUE) == -4	\
    : (VALUE) == -1 || (VALUE) == -2)
-#define CONST_OK_FOR_O(VALUE) (ok_for_bclr (VALUE))
-#define CONST_OK_FOR_P(VALUE) (small_power_of_two (VALUE))
 
 #define CONST_OK_FOR_LETTER_P(VALUE, C)		\
   ((C) == 'I' ? CONST_OK_FOR_I (VALUE) :	\
@@ -439,8 +437,6 @@ enum reg_class {
    (C) == 'L' ? CONST_OK_FOR_L (VALUE) :	\
    (C) == 'M' ? CONST_OK_FOR_M (VALUE) :	\
    (C) == 'N' ? CONST_OK_FOR_N (VALUE) :	\
-   (C) == 'O' ? CONST_OK_FOR_O (VALUE) :	\
-   (C) == 'P' ? CONST_OK_FOR_P (VALUE) :	\
    0)
 
 /* Similar, but for floating constants, and defining letters G and H.
