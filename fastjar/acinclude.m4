@@ -2,7 +2,7 @@ sinclude(../config/accross.m4)
 
 dnl Define MKDIR_TAKES_ONE_ARG if mkdir accepts only one argument instead
 dnl of the usual 2.
-AC_DEFUN(gcc_AC_FUNC_MKDIR_TAKES_ONE_ARG,
+AC_DEFUN([gcc_AC_FUNC_MKDIR_TAKES_ONE_ARG],
 [AC_CACHE_CHECK([if mkdir takes one argument], gcc_cv_mkdir_takes_one_arg,
 [AC_TRY_COMPILE([
 #include <sys/types.h>
