@@ -1,5 +1,22 @@
 2000-07-20  Tom Tromey  <tromey@cygnus.com>
 
+	* Makefile.in: Rebuilt.
+	* Makefile.am (awt_java_source_files): Updated for new files.
+	* java/awt/Adjustable.java (HORIZONTAL, VERTICAL): Set values.
+	* java/awt/Label.java: New file.
+	* java/awt/Rectangle.java (Rectangle): Extend Rectangle2D.
+	(createIntersection, createUnion, getBounds2D): New methods.
+	* java/awt/Scrollbar.java: New file.
+	* java/awt/Shape.java: Updated to 1.2.
+	* java/awt/geom/AffineTransform.java: New file.
+	* java/awt/geom/Ellipse2D.java: New file.
+	* java/awt/geom/NoninvertibleTransformException.java: New file.
+	* java/awt/geom/PathIterator.java: New file.
+	* java/awt/geom/Rectangle2D.java: New file.
+	* java/awt/geom/RectangularShape.java: New file.
+	* java/awt/geom/Point2D.java (Double, Float): New inner classes.
+	* java/awt/geom/IllegalPathStateException.java: New file.
+	
 	* scripts/showval.java: New file.
 
 	* scripts/classes.pl (scan): Print inner classes properly.

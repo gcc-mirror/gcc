@@ -1,4 +1,4 @@
-/* Copyright (C) 1999  Free Software Foundation
+/* Copyright (C) 1999, 2000  Free Software Foundation
 
    This file is part of libjava.
 
@@ -7,11 +7,11 @@ Libjava License.  Please consult the file "LIBJAVA_LICENSE" for
 details.  */
 
 package java.awt;
+import java.awt.geom.*;
 
 /* Status:  Mostly complete. Some of the Java2D stuff is commented out. */
 
-// FIXME: Should extend Rectangle2D for 1.2 implementation
-public class Rectangle implements Cloneable, Shape
+public class Rectangle extends Rectangle2D implements Cloneable, Shape
 {
   public int x;
   public int y;
@@ -149,6 +149,12 @@ public class Rectangle implements Cloneable, Shape
   public Point getLocation()
   {
     return new Point(x,y);
+  }
+
+  public PathIterator getPathIterator (AffineTransform t)
+  {
+    // FIXME
+    return null;
   }
 
   public Dimension getSize()
@@ -307,25 +313,32 @@ public class Rectangle implements Cloneable, Shape
   }
 
   // Commented out until we have Rectangle2D
-  /*
   public Rectangle2D createIntersection(Rectangle2D r)
   {
+    // FIXME: maybe we should consider returning a Rectangle or
+    // Rectangle2D.Float depending on type of R.
+    Rectangle2D.Double res = new Rectangle2D.Double ();
+    intersect (this, r, res);
+    return res;
   }
 
   public Rectangle2D createUnion(Rectangle2D r)
   {
+    // FIXME: maybe we should consider returning a Rectangle or
+    // Rectangle2D.Float depending on type of R.
+    Rectangle2D.Double res = new Rectangle2D.Double ();
+    union (this, r, res);
+    return res;
   }
 
   public Rectangle2D getBounds2D()
   {
+    return new Rectangle (x, y, width, height);
   }
-  */
 
   public String toString()
   {
     return getClass().getName() + "[x=" + x + ",y=" + y + ",width=" + width + 
            ",height=" + height + "]";
   }
-
-
 }
