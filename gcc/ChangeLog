@@ -1,5 +1,10 @@
 2004-02-18  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/h8300/h8300.md: Move movsf patterns into one section
+	of the file.
+
+2004-02-18  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* cfgloop.h, cfgloopanal.c, cpplex.c, except.h, loop-init.c,
 	loop-unroll.c, scan-decls.c, scan.h, stor-layout.c,
 	xcoffout.c, xcoffout.h, config/arm/mmintrin.h,
