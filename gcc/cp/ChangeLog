@@ -1,3 +1,14 @@
+1999-03-25  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* typeck.c (common_type): Handle cv-qual unification for pointers
+	to members.
+
+	* decl.c (unqualified_namespace_lookup): Return error_mark_node
+	on error.
+	(lookup_name_real): Set LOOKUP_COMPLAIN when *not* parsing.
+	* lex.c (do_identifier): If we got error_mark_node, call
+	lookup_name again.
+
 1999-03-24  Martin von Löwis  <loewis@informatik.hu-berlin.de>
 
 	* class.c (finish_struct_1): Always reset TYPE_FIELDS for empty
