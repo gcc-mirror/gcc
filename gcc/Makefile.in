@@ -3529,29 +3529,62 @@ restrap:
 	$(MAKE) unstrap
 	$(MAKE) $(REMAKEFLAGS) bootstrap
 
-# Compare the object files in the current directory with those in the
-# stage2 directory.
-# ./ avoids bug in some versions of tail.
-slowcompare slowcompare3 slowcompare4 slowcompare-lean slowcompare3-lean slowcompare4-lean: force
+# These targets compare the object files in the current directory with
+# those in a stage directory.  We need to skip the first N bytes of
+# each object file.  The "slow" mechanism assumes nothing special
+# about cmp and uses the tail command to skip.  ./ avoids a bug in
+# some versions of tail.  The "gnu" targets use gnu cmp (diffutils
+# v2.4 or later), to avoid running tail and the overhead of twice
+# copying each object file.  Likewise, the "fast" targets use the skip
+# parameter of cmp available on some systems to accomplish the same
+# thing.  An exit status of 1 is precisely the result we're looking
+# for (other values mean other problems).
+slowcompare slowcompare3 slowcompare4 slowcompare-lean slowcompare3-lean slowcompare4-lean \
+fastcompare fastcompare3 fastcompare4 fastcompare-lean fastcompare3-lean fastcompare4-lean \
+ gnucompare  gnucompare3  gnucompare4  gnucompare-lean  gnucompare3-lean  gnucompare4-lean: force
 	-rm -f .bad_compare
-	case "$@" in slowcompare | slowcompare-lean ) stage=2 ;; * ) stage=`echo $@ | sed -e 's,^slowcompare\([0-9][0-9]*\).*,\1,'` ;; esac; \
+	case "$@" in *compare | *compare-lean ) stage=2 ;; * ) stage=`echo $@ | sed -e 's,^[a-z]*compare\([0-9][0-9]*\).*,\1,'` ;; esac; \
 	for file in *$(objext); do \
-	  tail +16c ./$$file > tmp-foo1; \
-	  tail +16c stage$$stage/$$file > tmp-foo2 \
-	    && (cmp tmp-foo1 tmp-foo2 > /dev/null 2>&1 || echo $$file differs >> .bad_compare) || true; \
-	done
-	case "$@" in slowcompare | slowcompare-lean ) stage=2 ;; * ) stage=`echo $@ | sed -e 's,^slowcompare\([0-9][0-9]*\).*,\1,'` ;; esac; \
-	for dir in tmp-foo $(SUBDIRS); do \
-	  if [ "`echo $$dir/*$(objext)`" != "$$dir/*$(objext)" ] ; then \
-	    for file in $$dir/*$(objext); do \
+	  case "$@" in \
+	    slowcompare* ) \
 	      tail +16c ./$$file > tmp-foo1; \
 	      tail +16c stage$$stage/$$file > tmp-foo2 \
 	        && (cmp tmp-foo1 tmp-foo2 > /dev/null 2>&1 || echo $$file differs >> .bad_compare) || true; \
+	      ;; \
+	    fastcompare* ) \
+	      cmp $$file stage$$stage/$$file 16 16 > /dev/null 2>&1; \
+	      test $$? -eq 1 && echo $$file differs >> .bad_compare || true; \
+	      ;; \
+	    gnucompare* ) \
+	      cmp --ignore-initial=16 $$file stage$$stage/$$file > /dev/null 2>&1; \
+	      test $$? -eq 1 && echo $$file differs >> .bad_compare || true; \
+	      ;; \
+	  esac ; \
+	done
+	case "$@" in *compare | *compare-lean ) stage=2 ;; * ) stage=`echo $@ | sed -e 's,^[a-z]*compare\([0-9][0-9]*\).*,\1,'` ;; esac; \
+	for dir in tmp-foo $(SUBDIRS); do \
+	  if [ "`echo $$dir/*$(objext)`" != "$$dir/*$(objext)" ] ; then \
+	    for file in $$dir/*$(objext); do \
+	      case "$@" in \
+		slowcompare* ) \
+		  tail +16c ./$$file > tmp-foo1; \
+		  tail +16c stage$$stage/$$file > tmp-foo2 \
+		    && (cmp tmp-foo1 tmp-foo2 > /dev/null 2>&1 || echo $$file differs >> .bad_compare) || true; \
+		  ;; \
+		fastcompare* ) \
+		  cmp $$file stage$$stage/$$file 16 16 > /dev/null 2>&1; \
+		  test $$? -eq 1 && echo $$file differs >> .bad_compare || true; \
+		  ;; \
+		gnucompare* ) \
+		  cmp --ignore-initial=16 $$file stage$$stage/$$file > /dev/null 2>&1; \
+		  test $$? -eq 1 && echo $$file differs >> .bad_compare || true; \
+		  ;; \
+	      esac ; \
 	    done; \
 	  else true; fi; \
 	done
 	-rm -f tmp-foo*
-	case "$@" in slowcompare | slowcompare-lean ) stage=2 ;; * ) stage=`echo $@ | sed -e 's,^slowcompare\([0-9][0-9]*\).*,\1,'` ;; esac; \
+	case "$@" in *compare | *compare-lean ) stage=2 ;; * ) stage=`echo $@ | sed -e 's,^[a-z]*compare\([0-9][0-9]*\).*,\1,'` ;; esac; \
 	if [ -f .bad_compare ]; then \
 	  echo "Bootstrap comparison failure!"; \
 	  cat .bad_compare; \
@@ -3560,38 +3593,6 @@ slowcompare slowcompare3 slowcompare4 slowcompare-lean slowcompare3-lean slowcom
 	  case "$@" in \
 	    *-lean ) rm -rf stage$$stage ;; \
 	    *) ;; \
-	  esac; true; \
-	fi
-
-# Compare the object files in the current directory with those in the
-# stage2 directory.  Use gnu cmp (diffutils v2.4 or later) to avoid
-# running tail and the overhead of twice copying each object file.
-# An exit status of 1 is precisely the result we're looking for (other
-# values mean other problems).
-gnucompare gnucompare3 gnucompare4 gnucompare-lean gnucompare3-lean gnucompare4-lean: force
-	-rm -f .bad_compare
-	case "$@" in gnucompare | gnucompare-lean ) stage=2 ;; * ) stage=`echo $@ | sed -e 's,^gnucompare\([0-9][0-9]*\).*,\1,'` ;; esac; \
-	for file in *$(objext); do \
-	  cmp --ignore-initial=16 $$file stage$$stage/$$file > /dev/null 2>&1; \
-	  test $$? -eq 1 && echo $$file differs >> .bad_compare || true; \
-	done
-	case "$@" in gnucompare | gnucompare-lean ) stage=2 ;; * ) stage=`echo $@ | sed -e 's,^gnucompare\([0-9][0-9]*\).*,\1,'` ;; esac; \
-	for dir in tmp-foo $(SUBDIRS); do \
-	  if [ "`echo $$dir/*$(objext)`" != "$$dir/*$(objext)" ] ; then \
-	    for file in $$dir/*$(objext); do \
-	      cmp --ignore-initial=16 $$file stage$$stage/$$file > /dev/null 2>&1; \
-	      test $$? -eq 1 && echo $$file differs >> .bad_compare || true; \
-	    done; \
-	  else true; fi; \
-	done
-	case "$@" in gnucompare | gnucompare-lean ) stage=2 ;; * ) stage=`echo $@ | sed -e 's,^gnucompare\([0-9][0-9]*\).*,\1,'` ;; esac; \
-	if [ -f .bad_compare ]; then \
-	  echo "Bootstrap comparison failure!"; \
-	  cat .bad_compare; \
-	  exit 1; \
-	else \
-	  case "$@" in \
-	    *-lean ) rm -rf stage$$stage ;; \
 	  esac; true; \
 	fi
 
