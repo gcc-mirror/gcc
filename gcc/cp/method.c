@@ -1,6 +1,6 @@
 /* Handle the hair of processing (but not expanding) inline functions.
    Also manage function and variable name overloading.
-   Copyright (C) 1987, 89, 92-96, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1987, 89, 92-97, 1998 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
    This file is part of GNU CC.
@@ -31,28 +31,15 @@ Boston, MA 02111-1307, USA.  */
 
 /* Handle method declarations.  */
 #include "config.h"
-#include <stdio.h>
+#include "system.h
 #include "tree.h"
 #include "cp-tree.h"
 #include "obstack.h"
-#include <ctype.h>
 #include "rtl.h"
 #include "expr.h"
 #include "output.h"
 #include "hard-reg-set.h"
 #include "flags.h"
-
-#ifdef HAVE_STRING_H
-#include <string.h>
-#else
-#ifdef HAVE_STRINGS_H
-#include <strings.h>
-#endif
-#endif
-
-#ifdef NEED_DECLARATION_INDEX
-extern char *index ();
-#endif
 
 /* TREE_LIST of the current inline functions that need to be
    processed.  */
@@ -351,6 +338,9 @@ issue_nrepeats (lasttype)
             process_overload_item (lasttype, FALSE);
             nrepeats = 0;
             return;
+
+          default:
+            break;
         }
     }
   OB_PUTC ('n');
@@ -1088,6 +1078,9 @@ check_btype (node)
     case VOID_TYPE:
     case BOOLEAN_TYPE:
       return 0;         /* don't compress single char basic types */
+
+    default:
+      break;
     }
 
   node = TYPE_MAIN_VARIANT (node);
@@ -1156,6 +1149,9 @@ process_overload_item (parmtype, extra_Gcode)
     more:
       build_mangled_name (TREE_TYPE (parmtype), 0, 0);
       return;
+      break;
+
+    default:
       break;
     }
   

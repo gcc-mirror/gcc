@@ -1,5 +1,5 @@
 # Makefile for GNU C++ compiler.
-#   Copyright (C) 1987, 88, 90-4, 1995 Free Software Foundation, Inc.
+#   Copyright (C) 1987, 88, 90-5, 1998 Free Software Foundation, Inc.
 
 #This file is part of GNU CC.
 
@@ -244,7 +244,7 @@ call.o : call.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h
 friend.o : friend.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h $(RTL_H)
 init.o : init.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h $(RTL_H) \
   $(srcdir)/../expr.h ../insn-codes.h
-method.o : method.c $(CONFIG_H) $(CXX_TREE_H)
+method.o : method.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../system.h
 cvt.o : cvt.c $(CONFIG_H) $(CXX_TREE_H)
 search.o : search.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../stack.h $(srcdir)/../flags.h
 tree.o : tree.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h
