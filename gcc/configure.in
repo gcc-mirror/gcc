@@ -3871,6 +3871,46 @@ AC_ARG_ENABLE(nls,
 AM_GNU_GETTEXT
 XGETTEXT="AWK='$AWK' \$(SHELL) \$(top_srcdir)/exgettext $XGETTEXT"
 
+# Windows32 Registry support for specifying GCC installation paths.
+AC_ARG_ENABLE(win32-registry,
+[  --disable-win32-registry
+                          Disable lookup of installation paths in the
+                         Registry on Windows hosts.
+  --enable-win32-registry Enable registry lookup (default).
+  --enable-win32-registry=KEY
+                          Use KEY instead of GCC version as the last portion
+                         of the registry key.],,)
+
+AC_MSG_CHECKING(whether windows registry support is requested)
+if test x$enable_win32_registry != xno; then
+  AC_DEFINE(ENABLE_WIN32_REGISTRY)
+  AC_MSG_RESULT(yes)
+else
+  AC_MSG_RESULT(no)
+fi
+
+# Check if user specified a different registry key.
+case x${enable_win32_registry} in
+x | xyes)
+  # default.
+  gcc_cv_win32_registry_key="$VERSION"
+  ;;
+xno)
+  # no registry lookup.
+  gcc_cv_win32_registry_key=''
+  ;;
+*)
+  # user-specified key.
+  gcc_cv_win32_registry_key="$enable_win32_registry"
+  ;;
+esac
+
+if test x$enable_win32_registry != xno; then
+  AC_MSG_CHECKING(registry key on windows hosts)
+  AC_DEFINE_UNQUOTED(WIN32_REGISTRY_KEY, "$gcc_cv_win32_registry_key")
+  AC_MSG_RESULT($gcc_cv_win32_registry_key)
+fi
+
 # Get an absolute path to the GCC top-level source directory
 holddir=`pwd`
 cd $srcdir

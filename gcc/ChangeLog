@@ -1,3 +1,14 @@
+Sat Aug 14 15:04:06 1999  Mumit Khan  <khan@xraylith.wisc.edu>
+
+	* configure.in: Handle --disable/enable-win32-registry.
+	* install.texi: Document --disable/enable-win32-registry.
+	* acconfig.h (ENABLE_WIN32_REGISTRY): New macro.
+	(WIN32_REGISTRY_KEY): New macro.
+	* prefix.c: Use to enable/disable win32-specific code.
+	(lookup_key): Use versioned key.
+	* configure: Regenerate.
+	* config.in: Likewise.
+
 Fri Aug 13 17:41:55 1999  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* cpplib.c (read_line_number): New fn, split out of...
