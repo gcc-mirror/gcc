@@ -7211,7 +7211,9 @@ bundling (FILE *dump, int verbose, rtx prev_head_insn, rtx tail)
 		      = gen_bundle_selector (const2_rtx); /* -> MFI */
 		  break;
 		}
-	      else if (recog_memoized (last) != CODE_FOR_insn_group_barrier)
+	      else if (recog_memoized (last) != CODE_FOR_insn_group_barrier
+		       && (ia64_safe_itanium_class (last)
+			   != ITANIUM_CLASS_IGNORE))
 		n++;
 	    /* Some check of correctness: the stop is not at the
 	       bundle start, there are no more 3 insns in the bundle,
