@@ -1,3 +1,9 @@
+2003-06-12  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* gcse.c (fis_get_condition): Make it a global function.
+	* reload1.c (reload_cse_move2add): Detect implicit sets.
+	* rtl.h: Add a prototype for fis_get_condition.
+
 2003-06-11  Richard Henderson  <rth@redhat.com>
 
 	* stmt.c (expand_asm_operands): Don't warn for memories with

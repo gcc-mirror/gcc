@@ -611,7 +611,6 @@ static int load_killed_in_block_p    PARAMS ((basic_block, int, rtx, int));
 static void canon_list_insert        PARAMS ((rtx, rtx, void *));
 static int cprop_insn		PARAMS ((rtx, int));
 static int cprop		PARAMS ((int));
-static rtx fis_get_condition	PARAMS ((rtx));
 static void find_implicit_sets	PARAMS ((void));
 static int one_cprop_pass	PARAMS ((int, int, int));
 static bool constprop_register	PARAMS ((rtx, rtx, rtx, int));
@@ -4610,7 +4609,7 @@ cprop (alter_jumps)
    recording the value of *every* register scaned by canonicalize_condition,
    but this would require some code reorganization.  */
 
-static rtx
+rtx
 fis_get_condition (jump)
      rtx jump;
 {

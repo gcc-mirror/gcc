@@ -2168,6 +2168,7 @@ extern rtx expand_mult_highpart		PARAMS ((enum machine_mode, rtx,
 
 /* In gcse.c */
 extern bool can_copy_p			PARAMS ((enum machine_mode));
+extern rtx fis_get_condition		PARAMS ((rtx));
 #ifdef BUFSIZ
 extern int gcse_main			PARAMS ((rtx, FILE *));
 extern int bypass_jumps			PARAMS ((FILE *));
