@@ -49,12 +49,3 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define S_ISREG(m) (((m)&S_IFMT) == S_IFREG)
 #define S_ISDIR(m) (((m)&S_IFMT) == S_IFDIR)
 
-#define access	   _access
-#define close	   _close
-#define dup	   _dup
-#define mktemp	   _mktemp
-#define open	   _open
-#define read	   _read
-#define write	   _write
-#define chmod      _chmod
-#define setjmp     _setjmp
