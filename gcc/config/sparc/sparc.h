@@ -42,9 +42,16 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define CC1_SPEC "%{sun4:} %{target:}"
 
+#if 0
+/* ??? This fails because REAL_VALUE_TYPE is `double' making it impossible to
+   represent and output `long double' constants.  This causes problems during
+   a bootstrap with enquire/float.h, and hence must be disabled for now.
+   To fix, we need to implement code for TFmode just like the existing XFmode
+   support in real.[ch].  */
 /* Sparc ABI says that long double is 4 words.  */
 
 #define LONG_DOUBLE_TYPE_SIZE 128
+#endif
 
 #define PTRDIFF_TYPE "int"
 #define SIZE_TYPE "int"
