@@ -10590,7 +10590,10 @@ cp_parser_init_declarator (cp_parser* parser,
   if (member_p)
     {
       if (pop_p)
-	pop_scope (scope);
+	{
+	  pop_scope (scope);
+	  pop_p = false;
+	}
       decl = grokfield (declarator, decl_specifiers,
 			initializer, /*asmspec=*/NULL_TREE,
 			/*attributes=*/NULL_TREE);

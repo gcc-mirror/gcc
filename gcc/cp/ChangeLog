@@ -1,5 +1,8 @@
 2004-11-24  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/18586
+	* parser.c (cp_parser_init_declarator): Do not pop scope twice.
+
 	PR c++/18530
 	* cp-tree.h (CTOR_NAME): Remove.
 	(DTOR_NAME): Remove.
