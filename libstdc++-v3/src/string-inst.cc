@@ -102,5 +102,5 @@ namespace std
 
   template
     void
-    __destroy_aux<S*>(S*, S*, _Bool<false>);
+    __destroy_aux<S*>(S*, S*, __false_type);
 } // namespace std

@@ -233,13 +233,13 @@ namespace std
   template 
     string* 
     __uninitialized_fill_n_aux<string*, size_t, string>
-    (string*, size_t, string const &, _Bool<false>);
+    (string*, size_t, string const &, __false_type);
 
   template 
     string* 
     __uninitialized_copy_aux<vector<string>::const_iterator, string *>
     (vector<string>::const_iterator, vector<string>::const_iterator, 
-     string*, _Bool<false>);
+     string*, __false_type);
 
   template
     void 
