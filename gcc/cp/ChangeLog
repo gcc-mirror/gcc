@@ -1,3 +1,14 @@
+Wed Nov  5 23:52:50 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* except.c (call_eh_info): Split out...
+	(push_eh_info): From here.
+	(expand_builtin_throw): Use it.
+	(expand_start_catch_block): Move region start back.
+
+Sun Nov  2 15:04:12 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* class.c (build_vbase_path): Propagate the result type properly.
+
 1997-11-01  Brendan Kehoe  <brendan@lisa.cygnus.com>
 
 	* lex.c (FILE_NAME_NONDIRECTORY): Delete macro.
