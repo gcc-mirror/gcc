@@ -1175,7 +1175,7 @@ extern double atof();
 
 /* Check a `double' value for validity for a particular machine mode.  */
 #define CHECK_FLOAT_VALUE(MODE, D, OVERFLOW) \
-   overflow = check_float_value (MODE, &D, OVERFLOW)
+   OVERFLOW = check_float_value (MODE, &D, OVERFLOW)
 
 /* Tell final.c how to eliminate redundant test instructions.  */
 
