@@ -9,8 +9,6 @@
 
 #define INTEGER_ARG  5
 
-typedef __SIZE_TYPE__ size_t;
-
 extern void abort(void);
 
 void foo(char *name, double d, double e, double f, int g)
@@ -21,14 +19,7 @@ void foo(char *name, double d, double e, double f, int g)
 
 void bar(char *name, ...)
 {
-  size_t size;
-  void *arguments;
-
-  size = sizeof(char *) + 3 * sizeof(double) + sizeof(int);
-
-  arguments = __builtin_apply_args();
-
-  __builtin_apply(foo, arguments, size);
+  __builtin_apply(foo, __builtin_apply_args(), 64);
 }
 
 int main(void)
