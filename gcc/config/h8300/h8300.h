@@ -80,6 +80,13 @@ extern int target_flags;
 #define TARGET_H8300	(! TARGET_H8300H)
 #define TARGET_H8300H	(target_flags & 4096)
 
+/* Align structures on the h8/300h the same way as the h8/300.  Specifically,
+   32 bit and larger values in structures are aligned on 16 bit boundaries.
+   This is all the hardware requires, but the default is 32 bits for the 300h.
+   ??? Now watch someone add hardware floating point requiring 32 bit
+   alignment.  */
+#define TARGET_ALIGN_STRUCT_300 (target_flags & 8192)
+
 /* Macro to define tables used to set the flags.
    This is a list in braces of pairs in braces,
    each pair being { "NAME", VALUE }
@@ -96,7 +103,7 @@ extern int target_flags;
     {"rtl-dump",2048},		\
     {"h",4096},			\
     {"no-h",-4096},		\
-    {"exp",8192},		\
+    {"align-struct-300",8192},	\
     { "", TARGET_DEFAULT}}
 
 /* Do things that must be done once at start up.  */
@@ -177,16 +184,21 @@ do {				\
 #define FUNCTION_BOUNDARY 16
 
 /* Alignment of field after `int : 0' in a structure.  */
+/* One can argue this should be 32 for -mint32, but since 32 bit ints only
+   need 16 bit alignment, this is left as is so that -mint32 doesn't change
+   structure layouts.  */
 #define EMPTY_FIELD_BOUNDARY 16
 
 /* A bitfield declared as `int' forces `int' alignment for the struct.  */
 #define PCC_BITFIELD_TYPE_MATTERS  0
 
-/* No data type wants to be aligned rounder than this.  */
+/* No data type wants to be aligned rounder than this.
+   32 bit values are aligned as such on the 300h for speed.  */
 #define BIGGEST_ALIGNMENT (TARGET_H8300H ? 32 : 16)
 
 /* No structure field wants to be aligned rounder than this.  */
-#define BIGGEST_FIELD_ALIGNMENT (TARGET_H8300H ? 32 : 16)
+#define BIGGEST_FIELD_ALIGNMENT \
+((TARGET_H8300H && ! TARGET_ALIGN_STRUCT_300) ? 32 : 16)
 
 /* The stack goes in 16/32 bit lumps.  */
 #define STACK_BOUNDARY (TARGET_H8300 ? 16 : 32)
