@@ -25,7 +25,7 @@ global srcdir subdir
 
 global cxx_options
 
-set cxx_options " -lstdc++"
+set cxx_options " -shared-libgcc -lstdc++"
 
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.cc]] $cxx_options ""
 

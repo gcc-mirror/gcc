@@ -1,3 +1,8 @@
+2005-01-12  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* testsuite/libffi.special/special.exp (cxx_options): Add
+	-shared-libgcc.
+
 2004-12-31  Richard Henderson  <rth@redhat.com>
 
 	* src/types.c (FFI_AGGREGATE_TYPEDEF): Remove.
