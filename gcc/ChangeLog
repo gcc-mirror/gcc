@@ -1,3 +1,7 @@
+Fri Oct 24 13:23:04 1997  Doug Evans  <devans@canuck.cygnus.com>
+
+	* sparc/sparc.h (ASM_SPEC): Delete asm_arch.
+
 Fri Oct 24 13:19:40 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* mn10300.c (symbolic_operand, legitimize_address): New functions.
