@@ -52,8 +52,10 @@ echo "Pass 1: Updating autoconf and bison generated files"
 # makes sense to drop into the tree, but it isn't CVS-controlled.
 X=`for i in \`find . -name configure.in -o -name '*.y'\`
 do
-	D=\`dirname $i\`/CVS
-	[ -f $i -a  -d $D ]  && echo $i
+    D=\`dirname $i\`/CVS
+    if [ -f $i -a -d $D ]; then 
+        echo $i
+    fi
 done`
 cvs -q update $X
 
@@ -63,21 +65,22 @@ cvs -q update ${1+"$@"}
 
 echo "Pass 3: Fixing local tree"
 # Please also update the FAQ accordingly if you change the list of
-# files below.
+# files below. Note that generated files should be touched only
+# after the corresponding *.y files.
 touch `find . -name configure -print`
 touch `find texinfo -name Makefile.in -print`
 touch `find texinfo -name \*.pot -print`
 touch `find texinfo -name \*.gmo -print`
 for f in gcc/c-parse.y \
+	 gcc/c-parse.h \
+	 gcc/c-parse.c \
 	 gcc/cstamp-h.in \
 	 gcc/c-gperf.h \
-	 gcc/c-parse.c \
-	 gcc/c-parse.h \
 	 gcc/cexp.c \
 	 gcc/cp/parse.c \
 	 gcc/cp/parse.h \
-	 gcc/objc/objc-parse.c \
 	 gcc/objc/objc-parse.y \
+	 gcc/objc/objc-parse.c \
 	 gcc/java/parse.h \
 	 gcc/java/parse.c \
 	 gcc/java/parse-scan.c \

@@ -1,3 +1,8 @@
+1999-01-25  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* egcs_update: Use "if" instead of "&&".  Touch generated files
+ 	only after the corresponding *.y files.
+
 1999-01-19  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* egcs_update: Do not use xargs, but a backquote construct.
