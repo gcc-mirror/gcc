@@ -196,8 +196,6 @@ extern int avr_asm_only_p;
     1,1,/*  STACK */				\
     1,1 /* arg pointer */  }
 
-#define NON_SAVING_SETJMP 0
-
 #define REG_ALLOC_ORDER {			\
     24,25,					\
     18,19,					\

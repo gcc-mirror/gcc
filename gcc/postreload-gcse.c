@@ -712,17 +712,9 @@ record_opr_changes (rtx insn)
   if (CALL_P (insn))
     {
       unsigned int regno;
-      bool clobbers_all = false;
-
-#ifdef NON_SAVING_SETJMP
-      if (NON_SAVING_SETJMP
-	  && find_reg_note (insn, REG_SETJMP, NULL_RTX))
-	clobbers_all = true;
-#endif
 
       for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
-	if (clobbers_all
-	    || TEST_HARD_REG_BIT (regs_invalidated_by_call, regno))
+	if (TEST_HARD_REG_BIT (regs_invalidated_by_call, regno))
 	  record_last_reg_set_info (insn, regno);
 
       if (! CONST_OR_PURE_CALL_P (insn))

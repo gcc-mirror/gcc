@@ -2126,16 +2126,8 @@ compute_hash_table_work (struct hash_table *table)
 
 	  if (CALL_P (insn))
 	    {
-	      bool clobbers_all = false;
-#ifdef NON_SAVING_SETJMP
-	      if (NON_SAVING_SETJMP
-		  && find_reg_note (insn, REG_SETJMP, NULL_RTX))
-		clobbers_all = true;
-#endif
-
 	      for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
-		if (clobbers_all
-		    || TEST_HARD_REG_BIT (regs_invalidated_by_call, regno))
+		if (TEST_HARD_REG_BIT (regs_invalidated_by_call, regno))
 		  record_last_reg_set_info (insn, regno);
 
 	      mark_call (insn);
@@ -5784,16 +5776,8 @@ compute_store_table (void)
 
 	  if (CALL_P (insn))
 	    {
-	      bool clobbers_all = false;
-#ifdef NON_SAVING_SETJMP
-	      if (NON_SAVING_SETJMP
-		  && find_reg_note (insn, REG_SETJMP, NULL_RTX))
-		clobbers_all = true;
-#endif
-
 	      for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
-		if (clobbers_all
-		    || TEST_HARD_REG_BIT (regs_invalidated_by_call, regno))
+		if (TEST_HARD_REG_BIT (regs_invalidated_by_call, regno))
 		  {
 		    last_set_in[regno] = INSN_UID (insn);
 		    SET_BIT (reg_set_in_block[bb->index], regno);
@@ -5817,16 +5801,8 @@ compute_store_table (void)
 
 	  if (CALL_P (insn))
 	    {
-	      bool clobbers_all = false;
-#ifdef NON_SAVING_SETJMP
-	      if (NON_SAVING_SETJMP
-		  && find_reg_note (insn, REG_SETJMP, NULL_RTX))
-		clobbers_all = true;
-#endif
-
 	      for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
-		if (clobbers_all
-		    || TEST_HARD_REG_BIT (regs_invalidated_by_call, regno))
+		if (TEST_HARD_REG_BIT (regs_invalidated_by_call, regno))
 		  already_set[regno] = 1;
 	    }
 
@@ -5841,16 +5817,8 @@ compute_store_table (void)
 	  note_stores (pat, reg_clear_last_set, last_set_in);
 	  if (CALL_P (insn))
 	    {
-	      bool clobbers_all = false;
-#ifdef NON_SAVING_SETJMP
-	      if (NON_SAVING_SETJMP
-		  && find_reg_note (insn, REG_SETJMP, NULL_RTX))
-		clobbers_all = true;
-#endif
-
 	      for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
-		if ((clobbers_all
-		     || TEST_HARD_REG_BIT (regs_invalidated_by_call, regno))
+		if (TEST_HARD_REG_BIT (regs_invalidated_by_call, regno)
 		    && last_set_in[regno] == INSN_UID (insn))
 		  last_set_in[regno] = 0;
 	    }

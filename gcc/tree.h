@@ -3648,9 +3648,11 @@ extern rtx emit_line_note (location_t);
 
 /* In calls.c */
 
-/* Nonzero if this is a call to a `const' function.  */
+/* Nonzero if this is a call to a function whose return value depends
+   solely on its arguments, has no side effects, and does not read
+   global memory.  */
 #define ECF_CONST		1
-/* Nonzero if this is a call to a `volatile' function.  */
+/* Nonzero if this call will never return.  */
 #define ECF_NORETURN		2
 /* Nonzero if this is a call to malloc or a related function.  */
 #define ECF_MALLOC		4
@@ -3660,21 +3662,18 @@ extern rtx emit_line_note (location_t);
 #define ECF_NOTHROW		16
 /* Nonzero if this is a call to setjmp or a related function.  */
 #define ECF_RETURNS_TWICE	32
-/* Nonzero if this is a call to `longjmp'.  */
-#define ECF_LONGJMP		64
-/* Nonzero if this is a syscall that makes a new process in the image of
-   the current one.  */
-#define ECF_SIBCALL		128
+/* Nonzero if this call replaces the current stack frame.  */
+#define ECF_SIBCALL		64
 /* Nonzero if this is a call to "pure" function (like const function,
    but may read memory.  */
-#define ECF_PURE		256
+#define ECF_PURE		128
 /* Nonzero if this is a call to a function that returns with the stack
    pointer depressed.  */
-#define ECF_SP_DEPRESSED	512
+#define ECF_SP_DEPRESSED	256
 /* Nonzero if this call is known to always return.  */
-#define ECF_ALWAYS_RETURN	1024
+#define ECF_ALWAYS_RETURN	512
 /* Create libcall block around the call.  */
-#define ECF_LIBCALL_BLOCK	2048
+#define ECF_LIBCALL_BLOCK	1024
 
 extern int flags_from_decl_or_type (tree);
 extern int call_expr_flags (tree);

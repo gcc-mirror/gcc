@@ -1926,14 +1926,6 @@ use_register_for_decl (tree decl)
   if (DECL_ARTIFICIAL (decl))
     return true;
 
-#ifdef NON_SAVING_SETJMP
-  /* Protect variables not declared "register" from setjmp.  */
-  if (NON_SAVING_SETJMP
-      && current_function_calls_setjmp
-      && !DECL_REGISTER (decl))
-    return false;
-#endif
-
   return (optimize || DECL_REGISTER (decl));
 }
 
