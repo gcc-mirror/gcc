@@ -1,3 +1,39 @@
+2004-09-08  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* gcse.c (INSN_CUID, insert_set_in_table, find_avail_set,
+	cprop_insn, do_local_cprop, local_cprop_pass, find_bypass_set,
+	process_insert_insn, insert_insn_end_bb, pre_insert_copy_insn,
+	hoist_code, extract_mentioned_regs_helper, compute_store_table,
+	insert_store): Use gcc_assert and gcc_unreachable.
+	* ggc-common.c (ggc_splay_alloc, ggc_splay_dont_free,
+	gt_pch_note_object, gt_pch_note_reorder, relocate_ptrs,
+	ggc_record_overhead): Likewise.
+	* ggc-page.c (alloc_page, free_page, ggc_set_mark, ggc_marked_p,
+	init_ggc, ggc_push_context, ggc_recalculate_in_use_p,
+	ggc_pop_context, clear_marks, validate_free_objects,
+	ggc_pch_read): Likewise.
+	* ggc-zone.c (ggc_allocated_p, free_chunk, ggc_set_mark,
+	ggc_marked_p, ggc_get_size, init_ggc, destroy_ggc_zone,
+	ggc_push_context, check_cookies, ggc_collect,
+	ggc_print_statistics): Likewise.
+	* gimple-low.c (lower_function_body, lower_stmt,
+	lower_bind_expr): Likewise.
+	* gimplify.c (gimple_tree_eq, push_gimplify_context,
+	pop_gimplify_context, gimple_pop_condition, create_tmp_var,
+	declare_tmp_vars, gimple_add_tmp_var, annotate_all_with_locus,
+	mostly_copy_tree_r, gimplify_return_expr, gimplify_switch_expr,
+	gimplify_case_label_expr, gimplify_exit_block_expr,
+	canonicalize_component_ref, gimplify_compound_lval,
+	gimplify_self_mod_expr, gimplify_call_expr,
+	gimplify_init_ctor_eval, gimplify_init_constructor,
+	gimplify_modify_expr, gimplify_save_expr, gimplify_target_expr,
+	gimplify_expr, check_pointer_types_r,
+	force_gimple_operand): Likewise.
+	* global.c (global_alloc, build_insn_chain): Likewise.
+	* graph.c (clean_graph_dump_file,
+	finish_graph_dump_file): Likewise.
+	gcov-io.c (gcov_open): Use GCOV_CHECK.
+
 2004-09-09  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/frv/frv.c (acc_operand, accg_operand): Use REGNO.
@@ -5,7 +41,8 @@
 2004-09-09  Jan Hubicka  <jh@suse.cz>
 
 	middle-end/17128
-	* tree-inline.c (expand_call_inline): Make overactive sanity check happy.
+	* tree-inline.c (expand_call_inline): Make overactive sanity check
+	happy.
 
 2004-09-09  Jan Hubicka  <jh@suse.cz>
 
@@ -6796,7 +6833,7 @@
 	* config/i386/xmmintrin.h: Include <mm_malloc.h>.
 
 2004-08-03  H.J. Lu  <hongjiu.lu@intel.com>
-	    Tanguy Fautr√É  <tfautre@pandora.be>
+	    Tanguy Fautr√  <tfautre@pandora.be>
 
 	* config/i386/pmm_malloc.h: New file.
 

@@ -74,8 +74,7 @@ gcov_open (const char *name, int mode)
   s_flock.l_pid = getpid ();
 #endif
   
-  if (gcov_var.file)
-    abort ();
+  GCOV_CHECK (!gcov_var.file);
   gcov_var.start = 0;
   gcov_var.offset = gcov_var.length = 0;
   gcov_var.overread = -1u;

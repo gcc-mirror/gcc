@@ -368,8 +368,7 @@ ggc_allocated_p (const void *p)
   struct alloc_chunk *chunk;
   chunk = (struct alloc_chunk *) ((char *)p - CHUNK_OVERHEAD);
 #ifdef COOKIE_CHECKING
-  if (chunk->magic != CHUNK_MAGIC)
-    abort ();
+  gcc_assert (chunk->magic == CHUNK_MAGIC);
 #endif
   if (chunk->type == 1)
     return true;  
@@ -578,13 +577,11 @@ free_chunk (struct alloc_chunk *chunk, size_t size, struct alloc_zone *zone)
   size_t bin = 0;
 
   bin = SIZE_BIN_DOWN (size);
-  if (bin == 0)
-    abort ();
+  gcc_assert (bin);
   if (bin > NUM_FREE_BINS)
     bin = 0;
 #ifdef COOKIE_CHECKING
-  if (chunk->magic != CHUNK_MAGIC && chunk->magic != DEADCHUNK_MAGIC)
-    abort ();
+  gcc_assert (chunk->magic == CHUNK_MAGIC || chunk->magic == DEADCHUNK_MAGIC);
   chunk->magic = DEADCHUNK_MAGIC;
 #endif
   chunk->u.next_free = zone->free_chunks[bin];
@@ -830,8 +827,7 @@ ggc_set_mark (const void *p)
 
   chunk = (struct alloc_chunk *) ((char *)p - CHUNK_OVERHEAD);
 #ifdef COOKIE_CHECKING
-  if (chunk->magic != CHUNK_MAGIC)
-    abort ();
+  gcc_assert (chunk->magic == CHUNK_MAGIC);
 #endif
   if (chunk->mark)
     return 1;
@@ -854,8 +850,7 @@ ggc_marked_p (const void *p)
 
   chunk = (struct alloc_chunk *) ((char *)p - CHUNK_OVERHEAD);
 #ifdef COOKIE_CHECKING
-  if (chunk->magic != CHUNK_MAGIC)
-    abort ();
+  gcc_assert (chunk->magic == CHUNK_MAGIC);
 #endif
   return chunk->mark;
 }
@@ -869,8 +864,7 @@ ggc_get_size (const void *p)
 
   chunk = (struct alloc_chunk *) ((char *)p - CHUNK_OVERHEAD);
 #ifdef COOKIE_CHECKING
-  if (chunk->magic != CHUNK_MAGIC)
-    abort ();
+  gcc_assert (chunk->magic == CHUNK_MAGIC);
 #endif
   if (chunk->large)
     return chunk->size * 1024;
@@ -895,8 +889,7 @@ init_ggc (void)
   G.lg_pagesize = exact_log2 (G.pagesize);
 #ifdef HAVE_MMAP_DEV_ZERO
   G.dev_zero_fd = open ("/dev/zero", O_RDONLY);
-  if (G.dev_zero_fd == -1)
-    abort ();
+  gcc_assert (G.dev_zero_fd != -1);
 #endif
 
 #if 0
@@ -920,8 +913,7 @@ init_ggc (void)
 	   can't get something useful, give up.  */
 
 	p = alloc_anon (NULL, G.pagesize, &main_zone);
-	if ((size_t)p & (G.pagesize - 1))
-	  abort ();
+	gcc_assert (!((size_t)p & (G.pagesize - 1)));
       }
 
     /* We have a good page, might as well hold onto it...  */
@@ -953,13 +945,11 @@ destroy_ggc_zone (struct alloc_zone * dead_zone)
   struct alloc_zone *z;
 
   for (z = G.zones; z && z->next_zone != dead_zone; z = z->next_zone)
-    /* Just find that zone.  */ ;
+    /* Just find that zone.  */
+    continue;
 
-#ifdef ENABLE_CHECKING
   /* We should have found the zone in the list.  Anything else is fatal.  */
-  if (!z)
-    abort ();
-#endif
+  gcc_assert (z);
 
   /* z is dead, baby. z is dead.  */
   z->dead= true;
@@ -975,8 +965,7 @@ ggc_push_context (void)
   for (zone = G.zones; zone; zone = zone->next_zone)
     ++(zone->context_depth);
   /* Die on wrap.  */
-  if (main_zone.context_depth >= HOST_BITS_PER_LONG)
-    abort ();
+  gcc_assert (main_zone.context_depth < HOST_BITS_PER_LONG);
 }
 
 /* Decrement the `GC context'.  All objects allocated since the
@@ -1204,8 +1193,8 @@ check_cookies (void)
 	      struct alloc_chunk *end = (struct alloc_chunk *)(p->page + G.pagesize);
 	      do
 		{
-		  if (chunk->magic != CHUNK_MAGIC && chunk->magic != DEADCHUNK_MAGIC)
-		    abort ();
+		  gcc_assert (chunk->magic == CHUNK_MAGIC
+			      || chunk->magic == DEADCHUNK_MAGIC);
 		  chunk = (struct alloc_chunk *)(chunk->u.data + chunk->size);
 		}
 	      while (chunk < end);
@@ -1334,8 +1323,7 @@ ggc_collect (void)
 	  printf ("Zone `%s' is dead and will be freed.\n", dead_zone->name);
 
 	  /* The zone must be empty.  */
-	  if (dead_zone->allocated != 0)
-	    abort ();
+	  gcc_assert (!dead_zone->allocated);
 
 	  /* Unchain the dead zone, release all its pages and free it.  */
 	  zone->next_zone = zone->next_zone->next_zone;
@@ -1415,10 +1403,7 @@ ggc_print_statistics (void)
 	      in_use += p->bytes - CHUNK_OVERHEAD;
 	      chunk = (struct alloc_chunk *) p->page;
 	      overhead += CHUNK_OVERHEAD;
-	      if (!chunk->type)
-		abort ();
-	      if (chunk->mark)
-		abort ();
+	      gcc_assert (chunk->type && !chunk->mark);
 	      continue;
 	    }
 
@@ -1429,8 +1414,7 @@ ggc_print_statistics (void)
 	      overhead += CHUNK_OVERHEAD;
 	      if (chunk->type)
 		in_use += chunk->size;
-	      if (chunk->mark)
-		abort ();
+	      gcc_assert (!chunk->mark);
 	    }
 	}
       fprintf (stderr, "%20s %10lu%c %10lu%c %10lu%c\n",
@@ -1439,8 +1423,7 @@ ggc_print_statistics (void)
 	       SCALE (in_use), LABEL (in_use),
 	       SCALE (overhead), LABEL (overhead));
 
-      if (in_use != zone->allocated)
-	abort ();
+      gcc_assert (in_use == zone->allocated);
 
       total_overhead += overhead;
       total_allocated += zone->allocated;

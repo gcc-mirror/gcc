@@ -469,12 +469,12 @@ global_alloc (FILE *file)
 	&& (! current_function_has_nonlocal_label
 	    || REG_N_CALLS_CROSSED (i) == 0))
       {
-	if (reg_renumber[i] < 0 && reg_may_share[i] && reg_allocno[reg_may_share[i]] >= 0)
+	if (reg_renumber[i] < 0
+	    && reg_may_share[i] && reg_allocno[reg_may_share[i]] >= 0)
 	  reg_allocno[i] = reg_allocno[reg_may_share[i]];
 	else
 	  reg_allocno[i] = max_allocno++;
-	if (REG_LIVE_LENGTH (i) == 0)
-	  abort ();
+	gcc_assert (REG_LIVE_LENGTH (i));
       }
     else
       reg_allocno[i] = -1;
@@ -1886,14 +1886,15 @@ build_insn_chain (rtx first)
 	 the previous real insn is a JUMP_INSN.  */
       if (b == EXIT_BLOCK_PTR)
 	{
-	  for (first = NEXT_INSN (first) ; first; first = NEXT_INSN (first))
-	    if (INSN_P (first)
-		&& GET_CODE (PATTERN (first)) != USE
-		&& ! ((GET_CODE (PATTERN (first)) == ADDR_VEC
-		       || GET_CODE (PATTERN (first)) == ADDR_DIFF_VEC)
-		      && prev_real_insn (first) != 0
-		      && JUMP_P (prev_real_insn (first))))
-	      abort ();
+#ifdef ENABLE_CHECKING
+	  for (first = NEXT_INSN (first); first; first = NEXT_INSN (first))
+	    gcc_assert (!INSN_P (first)
+			|| GET_CODE (PATTERN (first)) == USE
+			|| ((GET_CODE (PATTERN (first)) == ADDR_VEC
+			     || GET_CODE (PATTERN (first)) == ADDR_DIFF_VEC)
+			    && prev_real_insn (first) != 0
+			    && JUMP_P (prev_real_insn (first))));
+#endif
 	  break;
 	}
     }
