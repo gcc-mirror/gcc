@@ -57,7 +57,7 @@ case "${target}" in
 		 frags="linux.mt linuxaxp1.mt mtsafe.mt" ;;
   *-linux-gnulibc1)
 		 frags=linuxlibc1.mt ;;
-  *-linux-gnu)   frags="linux.mt mtsafe.mt" ;;
+  *-linux-gnu*)  frags="linux.mt mtsafe.mt" ;;
   *-sco3.2v[45]*)   frags=sco4.mt ;;
   *-isc*)        frags=isc.mt ;;
   *-netware*)    frags=netware.mt ;;
@@ -104,7 +104,7 @@ case "${target}" in
     cp ${srcdir}/config/linuxaxp1-libc-lock.h libc-lock.h
     cp ${srcdir}/config/linuxaxp1-stdio-lock.h stdio-lock.h
     ;;
-  *-linux-gnu)
+  *-linux-gnu*)
     # We have a correct libc-lock.h in glibc 2.1 but not all glibc 2.0.
     # Create a wrapper if necessary.
     (echo "#include <bits/libc-lock.h>" | ${CC-cc} -E -) >/dev/null 2>&1 ||
