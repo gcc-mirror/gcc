@@ -1,5 +1,11 @@
 2001-05-24  Tom Tromey  <tromey@redhat.com>
 
+	* java/lang/natString.cc (init): Throw
+	ArrayIndexOutOfBoundsException.
+	(getChars): Likewise.
+	(getBytes): Likewise.
+	(valueOf): Likewise.
+
 	* configure.in: Only allow hash synchronization when POSIX threads
 	are enabled.
 	* java/lang/natObject.cc (alloc_heavy): Properly find `init' field
