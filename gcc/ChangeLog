@@ -1,3 +1,8 @@
+2001-07-18  Jeff Sturm  <jsturm@one-point.com>
+
+	* dwarf2out.c (dwarf2out_abstract_function): Don't emit
+	in-class declaration at -g1.  Fixes c++/2814.
+
 2001-07-18  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* defaults.h (ASM_OUTPUT_WEAK_ALIAS): Check for ASM_WEAKEN_LABEL.
