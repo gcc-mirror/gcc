@@ -431,21 +431,11 @@ store_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
     {
       if (GET_MODE (op0) != fieldmode)
 	{
-	  if (GET_CODE (op0) == SUBREG)
-	    {
-	      /* Else we've got some float mode source being extracted
-		 into a different float mode destination -- this
-		 combination of subregs results in Severe Tire
-		 Damage.  */
-	      gcc_assert (GET_MODE (SUBREG_REG (op0)) == fieldmode
-			  || GET_MODE_CLASS (fieldmode) == MODE_INT
-			  || GET_MODE_CLASS (fieldmode) == MODE_PARTIAL_INT);
-	      op0 = SUBREG_REG (op0);
-	    }
-	  if (REG_P (op0))
-	    op0 = gen_rtx_SUBREG (fieldmode, op0, byte_offset);
-	  else
+	  if (MEM_P (op0))
 	    op0 = adjust_address (op0, fieldmode, offset);
+	  else
+	    op0 = simplify_gen_subreg (fieldmode, op0, GET_MODE (op0),
+				       byte_offset);
 	}
       emit_move_insn (op0, value);
       return value;
