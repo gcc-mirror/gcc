@@ -50,8 +50,14 @@ import gnu.classpath.Configuration;
  */
 
 /**
+ * Unless the application installs its own SocketImplFactory, this is the
+ * default socket implemetation that will be used.  It simply uses a
+ * combination of Java and native routines to implement standard BSD
+ * style sockets of family AF_INET and types SOCK_STREAM and SOCK_DGRAM
+ *
  * @author Per Bothner <bothner@cygnus.com>
  * @author Nic Ferrier <nferrier@tapsellferrier.co.uk>
+ * @author Aaron M. Renn <arenn@urbanophile.com>
  */
 class PlainSocketImpl extends SocketImpl
 {
@@ -96,71 +102,23 @@ class PlainSocketImpl extends SocketImpl
   // localAddress cache
   InetAddress localAddress;
 
-  public native void setOption(int optID, Object value) throws SocketException;
-
-  public native Object getOption(int optID) throws SocketException;
-
-  public native void shutdownInput () throws IOException;
-
-  public native void shutdownOutput () throws IOException;
-
-  protected native void create (boolean stream)  throws IOException;
-
-  protected void connect (String host, int port) throws IOException
-  {
-    connect (new InetSocketAddress (InetAddress.getByName(host), port), 0);
-  }
-
-  protected void connect (InetAddress host, int port) throws IOException
-  {
-    connect (new InetSocketAddress (host, port), 0);
-  }
-
-  protected native void connect (SocketAddress addr, int timeout)
-    throws IOException;
-
-  protected native void bind (InetAddress host, int port) throws IOException;
-
-  protected native void listen (int backlog) throws IOException;
-
-  private native void accept (PlainSocketImpl s) throws IOException;
-
-  protected void accept (SocketImpl s) throws IOException
-  {
-    accept((PlainSocketImpl) s);
-  }
-
-  protected native int available() throws IOException;
-
-  protected native void close () throws IOException;
-
-  protected native void sendUrgentData(int data)
-    throws IOException;
-
-  // Stream handling.
-
-  /** A cached copy of the in stream for reading from the socket.  */
+  /**
+   * A cached copy of the in stream for reading from the socket.
+   */
   private InputStream in;
 
-  /** A cached copy of the out stream for writing to the socket.  */
+  /**
+   * A cached copy of the out stream for writing to the socket.
+   */
   private OutputStream out;
 
-
-  // The native read methods.
-
-  native int read() throws IOException;
-
-  native int read(byte[] buffer, int offset, int count)
-    throws IOException;
-
-
-  // The native write methods.
-
-  native void write(int c) throws IOException;
-
-  native void write(byte[] buffer, int offset, int count)
-    throws IOException;
-
+  /**
+   * Default do nothing constructor
+   */
+  public PlainSocketImpl()
+  {
+  }
+  
   protected void finalize() throws Throwable
   {
     synchronized (this)
@@ -178,21 +136,190 @@ class PlainSocketImpl extends SocketImpl
     super.finalize();
   }
 
-  /** @return the input stream attached to the socket.
+  /**
+   * Sets the specified option on a socket to the passed in object.  For
+   * options that take an integer argument, the passed in object is an
+   * Integer.  The option_id parameter is one of the defined constants in
+   * this interface.
+   *
+   * @param option_id The identifier of the option
+   * @param val The value to set the option to
+   *
+   * @exception SocketException If an error occurs
    */
-  protected InputStream getInputStream() throws IOException
+  public native void setOption(int optID, Object value) throws SocketException;
+
+  /**
+   * Returns the current setting of the specified option.  The Object returned
+   * will be an Integer for options that have integer values.  The option_id
+   * is one of the defined constants in this interface.
+   *
+   * @param option_id The option identifier
+   *
+   * @return The current value of the option
+   *
+   * @exception SocketException If an error occurs
+   */
+  public native Object getOption(int optID) throws SocketException;
+
+  public native void shutdownInput () throws IOException;
+
+  public native void shutdownOutput () throws IOException;
+
+  /**
+   * Creates a new socket that is not bound to any local address/port and
+   * is not connected to any remote address/port.  This will be created as
+   * a stream socket if the stream parameter is true, or a datagram socket
+   * if the stream parameter is false.
+   *
+   * @param stream true for a stream socket, false for a datagram socket
+   */
+  protected native void create (boolean stream)  throws IOException;
+
+  /**
+   * Connects to the remote hostname and port specified as arguments.
+   *
+   * @param hostname The remote hostname to connect to
+   * @param port The remote port to connect to
+   *
+   * @exception IOException If an error occurs
+   */
+  protected void connect (String host, int port) throws IOException
+  {
+    connect (new InetSocketAddress (InetAddress.getByName(host), port), 0);
+  }
+
+  /**
+   * Connects to the remote address and port specified as arguments.
+   *
+   * @param addr The remote address to connect to
+   * @param port The remote port to connect to
+   *
+   * @exception IOException If an error occurs
+   */
+  protected void connect (InetAddress host, int port) throws IOException
+  {
+    connect (new InetSocketAddress (host, port), 0);
+  }
+
+  protected native void connect (SocketAddress addr, int timeout)
+    throws IOException;
+
+  /**
+   * Binds to the specified port on the specified addr.  Note that this addr
+   * must represent a local IP address.  **** How bind to INADDR_ANY? ****
+   *
+   * @param addr The address to bind to
+   * @param port The port number to bind to
+   *
+   * @exception IOException If an error occurs
+   */
+  protected native void bind (InetAddress host, int port) throws IOException;
+
+  /**
+   * Starts listening for connections on a socket. The queuelen parameter
+   * is how many pending connections will queue up waiting to be serviced
+   * before being accept'ed.  If the queue of pending requests exceeds this
+   * number, additional connections will be refused.
+   *
+   * @param queuelen The length of the pending connection queue
+   * 
+   * @exception IOException If an error occurs
+   */
+  protected native void listen (int backlog) throws IOException;
+
+  private native void accept (PlainSocketImpl s) throws IOException;
+
+  /**
+   * Accepts a new connection on this socket and returns in in the 
+   * passed in SocketImpl.
+   *
+   * @param impl The SocketImpl object to accept this connection.
+   */
+  protected void accept (SocketImpl s) throws IOException
+  {
+    accept((PlainSocketImpl) s);
+  }
+
+  /**
+   * Returns the number of bytes that the caller can read from this socket
+   * without blocking. 
+   *
+   * @return The number of readable bytes before blocking
+   *
+   * @exception IOException If an error occurs
+   */
+  protected native int available() throws IOException;
+
+  /**
+   * Closes the socket.  This will cause any InputStream or OutputStream
+   * objects for this Socket to be closed as well.
+   * <p>
+   * Note that if the SO_LINGER option is set on this socket, then the
+   * operation could block.
+   *
+   * @exception IOException If an error occurs
+   */
+  protected native void close () throws IOException;
+
+  protected native void sendUrgentData(int data)
+    throws IOException;
+
+  native int read() throws IOException;
+
+  /**
+   * Internal method used by SocketInputStream for reading data from
+   * the connection.  Reads up to len bytes of data into the buffer
+   * buf starting at offset bytes into the buffer.
+   *
+   * @return The actual number of bytes read or -1 if end of stream.
+   *
+   * @exception IOException If an error occurs
+   */
+  native int read(byte[] buffer, int offset, int count)
+    throws IOException;
+
+  native void write(int c) throws IOException;
+
+  /**
+   * Internal method used by SocketOuputStream for writing data to
+   * the connection.  Writes up to len bytes of data from the buffer
+   * buf starting at offset bytes into the buffer.
+   *
+   * @exception IOException If an error occurs
+   */
+  native void write(byte[] buffer, int offset, int count)
+    throws IOException;
+
+  /**
+   * Returns an InputStream object for reading from this socket.  This will
+   * be an instance of SocketInputStream.
+   *
+   * @return An input stream attached to the socket.
+   *
+   * @exception IOException If an error occurs
+   */
+  protected synchronized InputStream getInputStream() throws IOException
   {
     if (in == null)
       in = new SocketInputStream();
+    
     return in;
   }
 
-  /** @return the output stream attached to the socket.
+  /**
+   * Returns an OutputStream object for writing to this socket.  This will
+   * be an instance of SocketOutputStream.
+   *
+   * @return An output stream attached to the socket.
+   *
+   * @exception IOException If an error occurs
    */
-  protected OutputStream getOutputStream() throws IOException
+  protected synchronized OutputStream getOutputStream() throws IOException
   {
     if (out == null)
       out = new SocketOutputStream();
+    
     return out;
   }
 
