@@ -3521,7 +3521,18 @@ find_as_inner_class (enclosing, name, cl)
 	  acc = merge_qualified_name (acc, 
 				      EXPR_WFL_NODE (TREE_PURPOSE (qual)));
 	  BUILD_PTR_FROM_NAME (ptr, acc);
-	  decl = do_resolve_class (NULL_TREE, ptr, NULL_TREE, cl);
+
+	  /* Don't try to resolve ACC as a class name if it follows
+	     the current package name. We don't want to pick something
+	     that's accidentally there: for example `a.b.c' in package
+	     `a.b' shouldn't trigger loading `a' if it's there by
+	     itself. */
+	  if (ctxp->package
+	      && strstr (IDENTIFIER_POINTER (ctxp->package),
+			 IDENTIFIER_POINTER (acc)))
+	    decl = NULL;
+	  else
+	    decl = do_resolve_class (NULL_TREE, ptr, NULL_TREE, cl);
 	}
 
       /* A NULL qual and a decl means that the search ended
