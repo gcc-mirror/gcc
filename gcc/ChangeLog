@@ -1,3 +1,9 @@
+Sat Sep 18 01:07:21 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* pa.h (INSN_SETS_ARE_DELAYED): Delete.
+	* pa.c (insn_refs_are_delayed): Renamed from
+	insn_sets_and_refs_are_delayed.
+
 Fri Sep 17 15:19:01 1999  Mark Mitchell  <mark@codesourcery.com>
 
 	* functiion.h (struct function): Add x_whole_function_mode_p.
