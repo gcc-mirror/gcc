@@ -1,3 +1,10 @@
+2001-05-24  Benjamin Kosnik  <bkoz@redhat.com>
+
+	libstdc++/2830
+	* testsuite/21_strings/inserters_extractors.cc (test09): New test.
+	* include/bits/ostream.tcc: Format to match istream.tcc.
+	(operator<<(basic_ostream __out, const basic_string __s)): Fix.
+	
 2001-05-24  Phil Edwards  <pme@sources.redhat.com>
 
 	* libsupc++/eh_alloc.cc (__cxa_allocate_exception):  Qualify
