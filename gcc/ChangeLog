@@ -1,3 +1,16 @@
+Sat Feb 13 05:32:00 1999  Richard Earnshaw (rearnsha@arm.com)
+
+	* arm.md: Use gen_rtx_FOO instead of gen_rtx (FOO, ...).
+	* arm.h: Likewise.
+	* arm.c: Likewise.
+
+	* arm.h (TARGET_OPTIONS): Reformat for clarity.
+	(GO_IF_LEGITIMATE_ADDRESS): When generating PIC, references to symbols
+	in the constant pool aren't valid.
+	(LEGITIMATE_PIC_OPERAND_P): Likewise.
+
+	* arm.c: Include "system.h", not stdio.h and string.h.
+
 Fri Feb 12 13:06:28 1999  Jim Wilson  <wilson@cygnus.com>
 
 	* stmt.c (expand_return): Return if optimize_tail_recursion succeeded.
