@@ -1,3 +1,38 @@
+2003-05-13  Michael Koch  <konqueror@gmx.de>
+
+	* gnu/java/nio/ByteBufferImpl.java
+	(ByteBufferImpl): All constructors revised.
+	(slice): Reimplemented.
+	(duplicate): Reimplemented.
+	(asReadOnlyBuffer): Reimplemented.
+	* java/nio/ByteBuffer.java:
+	Reformatted.
+	(array_offset): Renamed from "offset" to match all other buffer
+	classes.
+	(ByteBuffer): All constructors revised.
+	(allocateDirect): Implemented.
+	(allocate): New implementation, documentation reworked.
+	(wrap): Likewise.
+	(get): Documentation reworked.
+	(put): New implementation, documentation reworked.
+	(hasArray): Documentation reworked.
+	(arrayOffset): Likewise.
+	(hashCode): Likewise.
+	(equals): Likewise.
+	(compareTo): Likewise.
+	(order): Likewise.
+	(compact): Likewise.
+	(isDirect): Likewise.
+	(slice): Likewise.
+	(duplicate): Likewise.
+	(asReadOnlyBuffer): Likewise.
+	* Makefile.am
+	(ordinary_java_source_files):
+	Added gnu/java/nio/DirectByteBufferImpl.java.
+	(nat_source_files):
+	Added gnu/java/nio/natDirectByteBufferImpl.cc.
+	* Makefile.in: Regenerated.
+
 2003-05-12  Michael Koch  <konqueror@gmx.de>
 
 	* gnu/java/nio/ByteBufferImpl.java: Reformatted.

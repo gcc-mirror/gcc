@@ -53,19 +53,16 @@ import java.nio.ShortBuffer;
 public final class ByteBufferImpl extends ByteBuffer
 {
   private boolean readOnly;
-  
-  public ByteBufferImpl (int cap, int off, int lim)
-  {
-    super (cap, lim, off, 0);
-    this.backing_buffer = new byte [cap];
-    readOnly = false;
-  }
 
-  public ByteBufferImpl (byte[] array, int offset, int length)
+  ByteBufferImpl (int capacity)
   {
-    super (array.length, length, offset, 0);
-    this.backing_buffer = array;
-    readOnly = false;
+    this (new byte [capacity], 0, capacity, capacity, 0, -1, false);
+  }
+  
+  ByteBufferImpl (byte[] buffer, int offset, int capacity, int limit, int position, int mark, boolean readOnly)
+  {
+    super (buffer, offset, capacity, limit, position, mark);
+    this.readOnly = readOnly;
   }
   
   public ByteBufferImpl (ByteBufferImpl copy)
@@ -117,19 +114,17 @@ public final class ByteBufferImpl extends ByteBuffer
   
   public ByteBuffer slice ()
   {
-    return new ByteBufferImpl (this);
+    return new ByteBufferImpl (backing_buffer, array_offset + position (), remaining (), remaining (), 0, -1, isReadOnly ());
   }
   
   public ByteBuffer duplicate ()
   {
-    return new ByteBufferImpl (this);
+    return new ByteBufferImpl (backing_buffer, array_offset, capacity (), limit (), position (), mark, isReadOnly ());
   }
   
   public ByteBuffer asReadOnlyBuffer ()
   {
-    ByteBufferImpl a = new ByteBufferImpl (this);
-    a.readOnly = true;
-    return a;
+    return new ByteBufferImpl (backing_buffer, array_offset, capacity (), limit (), position (), mark, true);
   }
   
   public ByteBuffer compact ()

@@ -2100,6 +2100,7 @@ gnu/java/nio/ByteBufferImpl.java \
 gnu/java/nio/CharBufferImpl.java \
 gnu/java/nio/CharViewBufferImpl.java \
 gnu/java/nio/DatagramChannelImpl.java \
+gnu/java/nio/DirectByteBufferImpl.java \
 gnu/java/nio/DoubleBufferImpl.java \
 gnu/java/nio/DoubleViewBufferImpl.java \
 gnu/java/nio/FileChannelImpl.java \
@@ -2561,6 +2562,7 @@ gnu/gcj/runtime/natSharedLibLoader.cc \
 gnu/gcj/runtime/natStackTrace.cc \
 gnu/gcj/runtime/natStringBuffer.cc \
 gnu/gcj/runtime/natVMClassLoader.cc \
+gnu/java/nio/natDirectByteBufferImpl.cc \
 gnu/java/nio/natFileChannelImpl.cc \
 gnu/java/nio/natMappedByteFileBuffer.cc \
 gnu/java/nio/natSelectorImpl.cc \
