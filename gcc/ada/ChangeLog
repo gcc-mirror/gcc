@@ -1,5 +1,8 @@
 2001-12-23  Florian Weimer  <fw@deneb.enyo.de>
 
+	* gnat-style.texi (Declarations and Types): Remove ancient style
+	rule which was mandated by code generation issues.
+	
 	* gnat-style.texi (header): Add @dircategory, @direntry.
 	(title page): Remove date.
 	(general) Add @./@: where approriate, and two spaces after the

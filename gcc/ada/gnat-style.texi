@@ -6,7 +6,7 @@
 @c                                                                            o
 @c                      G N A T   C O D I N G   S T Y L E                     o
 @c                                                                            o
-@c                               $Revision: 1.3 $
+@c                               $Revision: 1.4 $
 @c                                                                            o
 @c          Copyright (C) 1992-2001 Ada Core Technologies, Inc.               o
 @c                                                                            o
@@ -46,7 +46,7 @@
 @sp 10
 @title GNAT Coding Style
 @subtitle A guide for GNAT developers
-@subtitle Document revision level $Revision: 1.3 $
+@subtitle Document revision level $Revision: 1.4 $
 @author Ada Core Technologies, Inc.
 @end titlepage
 @raisesections
@@ -280,11 +280,6 @@ Related groups of declarations may be preceded by a header comment.
 @item
 All local subprograms in a subprogram or package body should be declared
 before the first local subprogram body. 
-
-@item
-Do not declare discriminated record types where the discriminant is used
-for constraining an unconstrained array type.  (Discriminated
-records for a variant part are allowed.)
 
 @item
 Don't declare local entities that hide global entities.
