@@ -34,15 +34,14 @@ Boston, MA 02111-1307, USA.  */
 #define streq(a,b) (strcmp (a, b) == 0)
 #endif
 
-static int  pop_data_area          PARAMS ((v850_data_area));
-static int  push_data_area         PARAMS ((v850_data_area));
-static void mark_current_function_as_interrupt PARAMS ((void));
+static int  pop_data_area          (v850_data_area);
+static int  push_data_area         (v850_data_area);
+static void mark_current_function_as_interrupt (void);
 
 /* Push a data area onto the stack.  */
 
 static int
-push_data_area (data_area)
-     v850_data_area data_area;
+push_data_area (v850_data_area data_area)
 {
   data_area_stack_element * elem;
 
@@ -62,8 +61,7 @@ push_data_area (data_area)
 /* Remove a data area from the stack.  */
 
 static int
-pop_data_area (data_area)
-     v850_data_area data_area;
+pop_data_area (v850_data_area data_area)
 {
   if (data_area_stack == NULL)
     warning ("#pragma GHS endXXXX found without previous startXXX");
@@ -87,7 +85,7 @@ pop_data_area (data_area)
 /* Set the machine specific 'interrupt' attribute on the current function.  */
 
 static void
-mark_current_function_as_interrupt ()
+mark_current_function_as_interrupt (void)
 {
   tree name;
   
@@ -113,8 +111,7 @@ mark_current_function_as_interrupt ()
 /* Support for GHS pragmata.  */
 
 void
-ghs_pragma_section (pfile)
-     cpp_reader *pfile ATTRIBUTE_UNUSED;
+ghs_pragma_section (cpp_reader * pfile ATTRIBUTE_UNUSED)
 {
   int repeat;
 
@@ -193,8 +190,7 @@ ghs_pragma_section (pfile)
 }
 
 void
-ghs_pragma_interrupt (pfile)
-     cpp_reader *pfile ATTRIBUTE_UNUSED;
+ghs_pragma_interrupt (cpp_reader * pfile ATTRIBUTE_UNUSED)
 {
   tree x;
   
@@ -205,8 +201,7 @@ ghs_pragma_interrupt (pfile)
 }
 
 void
-ghs_pragma_starttda (pfile)
-     cpp_reader *pfile ATTRIBUTE_UNUSED;
+ghs_pragma_starttda (cpp_reader * pfile ATTRIBUTE_UNUSED)
 {
   tree x;
   
@@ -217,8 +212,7 @@ ghs_pragma_starttda (pfile)
 }
 
 void
-ghs_pragma_startsda (pfile)
-     cpp_reader *pfile ATTRIBUTE_UNUSED;
+ghs_pragma_startsda (cpp_reader * pfile ATTRIBUTE_UNUSED)
 {
   tree x;
   
@@ -229,8 +223,7 @@ ghs_pragma_startsda (pfile)
 }
 
 void
-ghs_pragma_startzda (pfile)
-     cpp_reader *pfile ATTRIBUTE_UNUSED;
+ghs_pragma_startzda (cpp_reader * pfile ATTRIBUTE_UNUSED)
 {
   tree x;
   
@@ -241,8 +234,7 @@ ghs_pragma_startzda (pfile)
 }
 
 void
-ghs_pragma_endtda (pfile)
-     cpp_reader *pfile ATTRIBUTE_UNUSED;
+ghs_pragma_endtda (cpp_reader * pfile ATTRIBUTE_UNUSED)
 {
   tree x;
   
@@ -253,8 +245,7 @@ ghs_pragma_endtda (pfile)
 }
 
 void
-ghs_pragma_endsda (pfile)
-     cpp_reader *pfile ATTRIBUTE_UNUSED;
+ghs_pragma_endsda (cpp_reader * pfile ATTRIBUTE_UNUSED)
 {
   tree x;
   
@@ -265,8 +256,7 @@ ghs_pragma_endsda (pfile)
 }
 
 void
-ghs_pragma_endzda (pfile)
-     cpp_reader *pfile ATTRIBUTE_UNUSED;
+ghs_pragma_endzda (cpp_reader * pfile ATTRIBUTE_UNUSED)
 {
   tree x;
   

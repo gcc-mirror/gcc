@@ -1,3 +1,8 @@
+2003-10-04  Nathanael Nerode  <neroden@gcc.gnu.org>
+        
+	* config/v850/v850-c.c, config/v850/v850-protos.h, config/v850/v850.c:
+	Convert to ISO C90 function declarations and definitions.
+
 2003-10-04  Zack Weinberg  <zack@codesourcery.com>
 
 	* libfuncs.h
