@@ -446,7 +446,7 @@ namespace std
     // NB: There is no accessor for _M_index because it may be used
     // before the constructor is run; the effect of calling a member
     // function (even an inline) would be undefined.
-    mutable size_t 	_M_index;
+    mutable size_t 		_M_index;
 
     // Last id number assigned
     static _Atomic_word 	_S_highwater;   

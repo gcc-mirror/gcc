@@ -1,3 +1,30 @@
+2002-02-11   Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/bits/stl_algo (__stl_threshold): Declare external.	
+	(__stl_chunk_size): Same.
+	* include/bits/stl_bvector.h (__WORD_BIT): Same.
+	* include/bits/stl_tree.h (_S_rb_tree_red): Same.
+	(_S_rb_tree_black): Same.
+	* src/stl-inst.cc (__stl_threshold): Define.
+	(__stl_chunk_size): Same.
+	(__WORD_BIT): Same.
+	(_S_rb_tree_red): Same.
+	(_S_rb_tree_black): Same.
+	
+	* config/io/basic_file_libio.h (__basic_file): Add declarations.
+	* include/bits/basic_file.h: Remove.
+	* config/io/c_io_stdio.h: Remove _GLIBCPP_BASIC_FILE_ENCAPSULATION
+	Declare generic types, specialization.
+        * config/io/basic_file_stdio.cc: Definitions.   
+	* config/io/c_io_libio.h: Remove _GLIBCPP_BASIC_FILE_INHERITANCE.
+	Declare generic types.
+	* include/Makefile.am (bits_headers): Remove basic_file.h.
+	(extra_target_headers): Change basic_file_model.h to basic_file.h.
+	(stamp-target): Same.
+
+	* include/bits/stl_alloc.h: Tweaks.
+	* include/bits/localefwd.h: Same.	
+
 2002-02-11  Aaron W LaFramboise  <AWLaFramboise@aol.com>
 
 	* include/bits/locale_facets.tcc (collate::do_hash): Fix.
@@ -17,7 +44,7 @@
 	generate, generate_n, remove_copy, remove_copy_if, remove, remove_if,
 	unique, unique_copy, reverse, reverse_copy):  Doxygenate.
 
-2002-02-08   Benjamin Kosnik  <bkoz@redhat.com>
+2002-02-08  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/bits/locale_facets.h
 	(numpunct<_CharT>::_M_initialize_numpunct): Remove definition.

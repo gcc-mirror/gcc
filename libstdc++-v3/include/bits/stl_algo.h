@@ -1775,7 +1775,7 @@ __result, __binary_pred, _IterType());
       }
     }
 
-  const int __stl_threshold = 16;
+  extern const int __stl_threshold;
 
   // sort() and its auxiliary functions.
 
@@ -2060,7 +2060,7 @@ __result, __binary_pred, _IterType());
 	    __comp);
     }
 
-  const int __stl_chunk_size = 7;
+  extern const int __stl_chunk_size;
 
   template<typename _RandomAccessIter, typename _Distance>
     void

@@ -34,7 +34,6 @@ glibcpp_builddir=@glibcpp_builddir@
 bits_srcdir = ${glibcpp_srcdir}/include/bits
 bits_builddir = ./bits
 bits_headers = \
-	${bits_srcdir}/basic_file.h \
 	${bits_srcdir}/basic_ios.h \
 	${bits_srcdir}/basic_ios.tcc \
 	${bits_srcdir}/basic_string.h \
@@ -278,7 +277,7 @@ target_headers = \
 	${glibcpp_srcdir}/@CPU_LIMITS_INC_SRCDIR@/cpu_limits.h 
 # These extra_target_headers files are all built with ad hoc naming rules.
 extra_target_headers = \
-	${target_builddir}/basic_file_model.h \
+	${target_builddir}/basic_file.h \
 	${target_builddir}/c++config.h \
 	${target_builddir}/c++io.h \
 	${target_builddir}/c++locale.h \
@@ -360,7 +359,7 @@ stamp-target: ${target_headers} ${target_builddir}
 	@cd ${target_builddir} ;\
 	if [ ! -f stamp-target ]; then \
 	  @LN_S@ ${target_headers} . || true ;\
-	  @LN_S@ ${glibcpp_srcdir}/@BASIC_FILE_H@ basic_file_model.h || true ;\
+	  @LN_S@ ${glibcpp_srcdir}/@BASIC_FILE_H@ basic_file.h || true ;\
 	  @LN_S@ ${glibcpp_srcdir}/@CSTDIO_H@ c++io.h || true ;\
 	  @LN_S@ ${glibcpp_srcdir}/@CLOCALE_H@ c++locale.h || true ;\
 	  @LN_S@ ${glibcpp_srcdir}/@CMESSAGES_H@ messages_members.h || true ;\
