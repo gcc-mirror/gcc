@@ -1,3 +1,8 @@
+2001-01-30  Herman A.J. ten Brugge  <Haj.Ten.Brugge@net.HCC.nl>
+
+	* regmove.c (try_auto_increment): Change REG_DEAD into REG_UNUSED
+	when register dies in the insn.
+
 2001-01-30  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* diagnostic.c (fatal): Fix word wrap.
