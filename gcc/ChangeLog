@@ -1,3 +1,8 @@
+Thu May 24 19:47:19 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* simplify-rtx.c (simplify_subreg): Fix CONCAT simplification;
+	fix hard register simplification.
+
 Thu May 24 00:15:17 2001  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* sparc/sol2.h (CPLUSPLUS_CPP_SPEC): Add all of CPP_SPEC instead
