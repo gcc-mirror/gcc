@@ -3321,7 +3321,7 @@ reload_as_needed (first, live_known)
   for (i = 0; i < NUM_ELIMINABLE_REGS; i++)
     {
       INITIAL_ELIMINATION_OFFSET (reg_eliminate[i].from, reg_eliminate[i].to,
-				  reg_eliminate[i].initial_offset)
+				  reg_eliminate[i].initial_offset);
       reg_eliminate[i].previous_offset
 	= reg_eliminate[i].offset = reg_eliminate[i].initial_offset;
     }
