@@ -829,7 +829,7 @@ help ()
   printf ("  -v, --verbose           Print extra information while running\n");
   printf ("\n");
   printf ("For bug reporting instructions, please see:\n");
-  printf ("%s.\n", GCCBUGURL);
+  printf ("%s.\n", bug_report_url);
   exit (0);
 }
 
