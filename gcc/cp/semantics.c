@@ -1815,7 +1815,7 @@ begin_class_definition (t)
   if (t == error_mark_node
       || ! IS_AGGR_TYPE (t))
     {
-      t = make_lang_type (RECORD_TYPE);
+      t = make_aggr_type (RECORD_TYPE);
       pushtag (make_anon_name (), t, 0);
     }
 
@@ -1880,7 +1880,7 @@ begin_class_definition (t)
   
   if (TYPE_BEING_DEFINED (t))
     {
-      t = make_lang_type (TREE_CODE (t));
+      t = make_aggr_type (TREE_CODE (t));
       pushtag (TYPE_IDENTIFIER (t), t, 0);
     }
   maybe_process_partial_specialization (t);
@@ -2223,7 +2223,7 @@ finish_typeof (expr)
     {
       tree t;
 
-      t = make_lang_type (TYPEOF_TYPE);
+      t = make_aggr_type (TYPEOF_TYPE);
       TYPE_FIELDS (t) = expr;
 
       return t;

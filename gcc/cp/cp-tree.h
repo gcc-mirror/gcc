@@ -3743,6 +3743,7 @@ extern tree build_lang_decl			PROTO((enum tree_code, tree, tree));
 extern void retrofit_lang_decl			PROTO((tree));
 extern void copy_lang_decl			PROTO((tree));
 extern tree cp_make_lang_type			PROTO((enum tree_code));
+extern tree make_aggr_type			PROTO((enum tree_code));
 extern void dump_time_statistics		PROTO((void));
 extern void compiler_error			PVPROTO((const char *, ...))
   ATTRIBUTE_PRINTF_1;

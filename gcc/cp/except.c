@@ -195,7 +195,7 @@ call_eh_info ()
 
       /* struct cp_eh_info.  This must match exception.cc.  Note that this
 	 type is not pushed anywhere.  */
-      t1= make_lang_type (RECORD_TYPE);
+      t1= make_aggr_type (RECORD_TYPE);
       fields[0] = build_lang_decl (FIELD_DECL, 
                     get_identifier ("handler_label"), ptr_type_node);
       fields[1] = build_lang_decl (FIELD_DECL, 
@@ -209,7 +209,7 @@ call_eh_info ()
       finish_builtin_type (t1, "eh_context", fields, 3, ptr_type_node);
       t1 = build_pointer_type (t1);
 
-      t1= make_lang_type (RECORD_TYPE);
+      t1= make_aggr_type (RECORD_TYPE);
       fields[0] = build_lang_decl (FIELD_DECL, 
                     get_identifier ("match_function"), ptr_type_node);
       fields[1] = build_lang_decl (FIELD_DECL, 
@@ -219,7 +219,7 @@ call_eh_info ()
       /* N.B.: The fourth field LEN is expected to be
 	 the number of fields - 1, not the total number of fields.  */
       finish_builtin_type (t1, "__eh_info", fields, 2, ptr_type_node);
-      t = make_lang_type (RECORD_TYPE);
+      t = make_aggr_type (RECORD_TYPE);
       fields[0] = build_lang_decl (FIELD_DECL, 
 				   get_identifier ("eh_info"), t1);
       fields[1] = build_lang_decl (FIELD_DECL, get_identifier ("value"),

@@ -1560,7 +1560,7 @@ copy_template_template_parm (t)
   tree template = TYPE_NAME (t);
   tree t2;
 
-  t2 = make_lang_type (TEMPLATE_TEMPLATE_PARM);
+  t2 = make_aggr_type (TEMPLATE_TEMPLATE_PARM);
   template = copy_node (template);
   copy_lang_decl (template);
 
