@@ -275,6 +275,7 @@ typedef long ssize_t;
 #ifdef _BSD_RUNE_T_
 #if !defined (_ANSI_SOURCE) && !defined (_POSIX_SOURCE)
 typedef _BSD_RUNE_T_ rune_t;
+#define _BSD_WCHAR_T_DEFINED_
 #if defined (__FreeBSD__)
 /* Why is this file so hard to maintain properly?  In constrast to
    the comment above regarding BSD/386 1.1, on FreeBSD for as long
