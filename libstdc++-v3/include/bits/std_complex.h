@@ -40,6 +40,7 @@
 #pragma GCC system_header
 
 #include <bits/c++config.h>
+#include <bits/cpp_type_traits.h>
 #include <bits/std_cmath.h>
 #include <bits/std_sstream.h>
 
@@ -417,12 +418,39 @@ namespace std
     arg(const complex<_Tp>& __z)
     { return atan2(__z.imag(), __z.real()); }
 
+  // 26.2.7/5: norm(__z) returns the squared magintude of __z.
+  //     As defined, norm() is -not- a norm is the common mathematical
+  //     sens used in numerics.  The helper class _Norm_helper<> tries to
+  //     distinguish between builtin floating point and the rest, so as
+  //     to deliver an answer as close as possible to the real value.
+  template<bool>
+    struct _Norm_helper
+    {
+      template<typename _Tp>
+        static inline _Tp _S_do_it(const complex<_Tp>& __z)
+        {
+          const _Tp __x = __z.real();
+          const _Tp __y = __z.imag();
+          return __x * __x + __y * __y;
+        }
+    };
+
+  template<>
+    struct _Norm_helper<true>
+    {
+      template<typename _Tp>
+        static inline _Tp _S_do_it(const complex<_Tp>& __z)
+        {
+          _Tp __res = abs(__z);
+          return __res * __res;
+        }
+    };
+  
   template<typename _Tp>
     inline _Tp
     norm(const complex<_Tp>& __z)
     {
-      _Tp __res = abs(__z);
-      return __res * __res;
+      return _Norm_helper<__is_floating<_Tp>::_M_type>::_S_do_it(__z);
     }
 
   template<typename _Tp>
