@@ -1919,7 +1919,9 @@ stmt:
 		    }
 		}
 	| GOTO '*' expr ';'
-		{ stmt_count++;
+		{ if (pedantic)
+		    pedwarn ("ANSI C forbids `goto *expr;'");
+		  stmt_count++;
 		  emit_line_note ($<filename>-1, $<lineno>0);
 		  expand_computed_goto (convert (ptr_type_node, $3)); }
 	| ';'
@@ -2018,6 +2020,8 @@ label:	  CASE expr_no_commas ':'
 		  register tree label
 		    = build_decl (LABEL_DECL, NULL_TREE, NULL_TREE);
 
+		  if (pedantic)
+		    pedwarn ("ANSI C forbids case ranges");
 		  stmt_count++;
 
 		  if (value1 != error_mark_node && value2 != error_mark_node)
