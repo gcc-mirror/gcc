@@ -93,13 +93,35 @@ namespace std
     __use_cache(const locale& __loc);
 
   template<>
-    const __numpunct_cache<char>&
-    __use_cache(const locale& __loc);
+    inline const __numpunct_cache<char>&
+    __use_cache(const locale& __loc)
+    {
+      size_t __i = numpunct<char>::id._M_id();
+      const locale::facet** __caches = __loc._M_impl->_M_caches;
+      if (!__caches[__i])
+	{
+	  __numpunct_cache<char>* __tmp = new __numpunct_cache<char>;
+	  __tmp->_M_cache(__loc);
+	  __loc._M_impl->_M_install_cache(__tmp, __i);
+	}
+      return static_cast<const __numpunct_cache<char>&>(*__caches[__i]);
+    }
 
 #ifdef _GLIBCPP_USE_WCHAR_T
   template<>
-    const __numpunct_cache<wchar_t>&
-    __use_cache(const locale& __loc);
+    inline const __numpunct_cache<wchar_t>&
+    __use_cache(const locale& __loc)
+    {
+      size_t __i = numpunct<wchar_t>::id._M_id();
+      const locale::facet** __caches = __loc._M_impl->_M_caches;
+      if (!__caches[__i])
+	{
+	  __numpunct_cache<wchar_t>* __tmp = new __numpunct_cache<wchar_t>;
+	  __tmp->_M_cache(__loc);
+	  __loc._M_impl->_M_install_cache(__tmp, __i);
+	}
+      return static_cast<const __numpunct_cache<wchar_t>&>(*__caches[__i]);
+    }
 #endif
 
   // Stage 1: Determine a conversion specifier.

@@ -1,3 +1,9 @@
+2003-06-27  Jerry Quinn  <jlquinn@optonline.net>
+
+	* src/locale.cc (__use_cache<numpunct>): Move from here ...
+	* include/bits/locale_facets.tcc (__use_cache<numpunct>): To
+	here.
+
 2003-06-30  Paolo Carlini  <pcarlini@unitus.it>
 
 	* include/bits/stl_algobase.h: Fully qualify standard
