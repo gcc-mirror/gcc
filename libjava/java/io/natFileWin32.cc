@@ -1,6 +1,6 @@
-// natFileWin32.cc - Native part of File class.
+// natFileWin32.cc - Native part of File class for Win32.
 
-/* Copyright (C) 1998, 1999  Red Hat, Inc.
+/* Copyright (C) 1998, 1999, 2001  Red Hat, Inc.
 
    This file is part of libgcj.
 
@@ -25,12 +25,10 @@ details.  */
 #include <java/lang/System.h>
 
 jboolean
-java::io::File::access (jstring canon, jint query)
+java::io::File::access (jint query)
 {
-  if (! canon)
-    return false;
   char buf[MAX_PATH];
-  jsize total = JvGetStringUTFRegion (canon, 0, canon->length(), buf);
+  jsize total = JvGetStringUTFRegion (path, 0, path->length(), buf);
   // FIXME?
   buf[total] = '\0';
 
@@ -48,14 +46,14 @@ java::io::File::access (jstring canon, jint query)
 }
 
 jboolean
-java::io::File::stat (jstring canon, jint query)
+java::io::File::stat (jint query)
 {
-  if (! canon)
-    return false;
   char buf[MAX_PATH];
-  jsize total = JvGetStringUTFRegion (canon, 0, canon->length(), buf);
+  jsize total = JvGetStringUTFRegion (path, 0, path->length(), buf);
   // FIXME?
   buf[total] = '\0';
+
+  // FIXME: Need to handle ISHIDDEN query.
 
   JvAssert (query == DIRECTORY || query == ISFILE);
 
@@ -70,12 +68,10 @@ java::io::File::stat (jstring canon, jint query)
 }
 
 jlong
-java::io::File::attr (jstring canon, jint query)
+java::io::File::attr (jint query)
 {
-  if (! canon)
-    return false;
   char buf[MAX_PATH];
-  jsize total = JvGetStringUTFRegion (canon, 0, canon->length(), buf);
+  jsize total = JvGetStringUTFRegion (path, 0, path->length(), buf);
   // FIXME?
   buf[total] = '\0';
 
@@ -128,12 +124,12 @@ java::io::File::isAbsolute (void)
 }
 
 jstringArray
-java::io::File::performList (jstring canon, FilenameFilter *filter)
+java::io::File::performList (java::io::FilenameFilter *filter, 
+			     java::io::FileFilter *fileFilter, 
+			     java::lang::Class *result_type)
 {
-  if (! canon)
-    return NULL;
   char buf[MAX_PATH];
-  jsize total = JvGetStringUTFRegion (canon, 0, canon->length(), buf);
+  jsize total = JvGetStringUTFRegion (path, 0, path->length(), buf);
   // FIXME?
   strcpy(&buf[total], "\\*.*");
 
@@ -142,16 +138,28 @@ java::io::File::performList (jstring canon, FilenameFilter *filter)
   if (handle == INVALID_HANDLE_VALUE)
     return NULL;
 
-  java::util::Vector *vec = new java::util::Vector ();
+  java::util::ArrayList *list = new java::util::ArrayList ();
 
   do
     {
       if (strcmp (data.cFileName, ".") && strcmp (data.cFileName, ".."))
         {
           jstring name = JvNewStringUTF (data.cFileName);
-          if (! filter || (filter && filter->accept(this, name)))
-            vec->addElement (name);
-        }
+
+	  if (filter && ! filter->accept(this, name))
+	    continue;
+
+	  if (result_type == &java::io::File::class$)
+            {
+	      java::io::File *file = new java::io::File (this, name);
+	      if (fileFilter && ! fileFilter->accept(file))
+		continue;
+
+	      list->add(file);
+	    }
+	  else
+	    list->add(name);
+	}
     }
   while (FindNextFile (handle, &data));
 
@@ -160,7 +168,7 @@ java::io::File::performList (jstring canon, FilenameFilter *filter)
 
   FindClose (handle);
 
-  jobjectArray ret = JvNewObjectArray (vec->size(), canon->getClass(), NULL);
+  jobjectArray ret = JvNewObjectArray (vec->size(), path->getClass(), NULL);
   vec->copyInto (ret);
   return reinterpret_cast<jstringArray> (ret);
 }
@@ -174,6 +182,20 @@ java::io::File::performMkdir (void)
   buf[total] = '\0';
 
   return (CreateDirectory(buf, NULL)) ? true : false;
+}
+
+jboolean
+java::io::File::performSetReadOnly (void)
+{
+  // PLEASE IMPLEMENT ME
+  return false;
+}
+
+JArray< ::java::io::File *>*
+java::io::File::performListRoots ()
+{
+  // PLEASE IMPLEMENT ME
+  return NULL;
 }
 
 jboolean
@@ -192,10 +214,24 @@ java::io::File::performRenameTo (File *dest)
 }
 
 jboolean
-java::io::File::performDelete (jstring canon)
+java::io::File::performSetLastModified (jlong time)
+{
+  // PLEASE IMPLEMENT ME
+  return false;
+}
+
+jboolean
+java::io::File::performCreate (void)
+{
+  // PLEASE IMPLEMENT ME
+  return false;
+}
+
+jboolean
+java::io::File::performDelete ()
 {
   char buf[MAX_PATH];
-  jsize total = JvGetStringUTFRegion(canon, 0, canon->length(), buf);
+  jsize total = JvGetStringUTFRegion(path, 0, path->length(), buf);
   // FIXME?
   buf[total] = '\0';
 
@@ -207,4 +243,14 @@ java::io::File::performDelete (jstring canon)
     return (RemoveDirectory (buf)) ? true : false;
   else
     return (DeleteFile (buf)) ? true : false;
+}
+
+void
+java::io::File::init_native ()
+{
+  separator = JvNewStringLatin1 ("\\");
+  pathSeparator = JvNewStringLatin1 (";");
+  tmpdir = JvNewStringLatin1 ("C:\\temp"); // FIXME?
+  maxPathLen = MAX_PATH;
+  caseSensitive = false;
 }
