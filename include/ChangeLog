@@ -1,3 +1,7 @@
+2000-05-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* demangle.h (demangler_engine): Constify.
+
 Thu May  4 17:15:26 2000  Philippe De Muyter  <phdm@macqel.be>
 
 	* sort.h (sys/types.h): File included unconditionnaly.
