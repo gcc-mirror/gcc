@@ -11360,8 +11360,8 @@ static const struct builtin_description bdesc_2arg[] =
   IWMMXT_BUILTIN (ussubv4hi3, "wsubhus", WSUBUSH)
   IWMMXT_BUILTIN (ussubv2si3, "wsubwus", WSUBUSW)
   IWMMXT_BUILTIN (mulv4hi3, "wmulul", WMULUL)
-  IWMMXT_BUILTIN (smulv4hi3_highpart, "wmulsh", WMULSH)
-  IWMMXT_BUILTIN (umulv4hi3_highpart, "wmuluh", WMULUH)
+  IWMMXT_BUILTIN (smulv4hi3_highpart, "wmulsm", WMULSM)
+  IWMMXT_BUILTIN (umulv4hi3_highpart, "wmulum", WMULUM)
   IWMMXT_BUILTIN (eqv8qi3, "wcmpeqb", WCMPEQB)
   IWMMXT_BUILTIN (eqv4hi3, "wcmpeqh", WCMPEQH)
   IWMMXT_BUILTIN (eqv2si3, "wcmpeqw", WCMPEQW)
@@ -11991,9 +11991,9 @@ arm_expand_builtin (tree exp,
     case ARM_BUILTIN_SETWCX:
       arg0 = TREE_VALUE (arglist);
       arg1 = TREE_VALUE (TREE_CHAIN (arglist));
-      op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
-      op1 = force_reg (SImode, expand_expr (arg1, NULL_RTX, VOIDmode, 0));
-      emit_insn (gen_iwmmxt_tmcr (op0, op1));
+      op0 = force_reg (SImode, expand_expr (arg0, NULL_RTX, VOIDmode, 0));
+      op1 = expand_expr (arg1, NULL_RTX, VOIDmode, 0);
+      emit_insn (gen_iwmmxt_tmcr (op1, op0));
       return 0;
 
     case ARM_BUILTIN_GETWCX:
