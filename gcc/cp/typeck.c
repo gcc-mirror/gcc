@@ -1021,7 +1021,7 @@ comp_target_types (ttl, ttr, nptrs)
 {
   ttl = TYPE_MAIN_VARIANT (ttl);
   ttr = TYPE_MAIN_VARIANT (ttr);
-  if (ttl == ttr)
+  if (same_type_p (ttl, ttr))
     return 1;
 
   if (TREE_CODE (ttr) != TREE_CODE (ttl))
