@@ -1,3 +1,13 @@
+Wed Aug  1 20:01:42 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* rs6000.md (define_splits): Kill unused constraints.
+
+Wed Aug  1 20:02:12 CEST 2001 Graham Stott  <grahams@redhat.com>
+			      Jan Hubicka  <jh@suse.cz>
+
+	* function.c (thread_prologue_and_epilogue_insns): Kill code
+	dealing with non-existent CFG.
+
 2001-08-01  Kazu Hirata  <kazu@hxi.com>
 
 	* alias.c: Fix comment formatting.

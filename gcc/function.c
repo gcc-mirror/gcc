@@ -7211,20 +7211,14 @@ thread_prologue_and_epilogue_insns (f)
       seq = gen_sequence ();
       end_sequence ();
 
-      /* If optimization is off, and perhaps in an empty function,
-	 the entry block will have no successors.  */
-      if (ENTRY_BLOCK_PTR->succ)
-	{
-	  /* Can't deal with multiple successsors of the entry block.  */
-	  if (ENTRY_BLOCK_PTR->succ->succ_next)
-	    abort ();
+      /* Can't deal with multiple successsors of the entry block
+         at the moment.  Function should always have at least one
+         entry point.  */
+      if (!ENTRY_BLOCK_PTR->succ || ENTRY_BLOCK_PTR->succ->succ_next)
+	abort ();
 
-	  insert_insn_on_edge (seq, ENTRY_BLOCK_PTR->succ);
-	  inserted = 1;
-	}
-      else
-	set_block_for_new_insns (emit_insn_after (seq, f),
-		       		 ENTRY_BLOCK_PTR->succ);
+      insert_insn_on_edge (seq, ENTRY_BLOCK_PTR->succ);
+      inserted = 1;
     }
 #endif
 
