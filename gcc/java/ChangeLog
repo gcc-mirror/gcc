@@ -1,3 +1,11 @@
+2004-02-26  Andrew Haley  <aph@redhat.com>
+
+	PR java/14231:
+	* parse.y (check_interface_throws_clauses): Check for
+	!METHOD_INVISIBLE (iface_method).
+	* class.c (layout_class_methods): Check for CLASS_INTERFACE as
+	well as CLASS_ABSTRACT.
+	
 2004-02-25  Per Bothner  <per@bothner.com>
 
 	* parse.y (build_assertion):  If we're in an inner class, create the
