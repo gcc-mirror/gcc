@@ -1,3 +1,7 @@
+2003-04-14  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	* doc/contrib.texi (Contributors): Correct my entry.
+
 2003-04-13  Roger Sayle  <roger@eyesopen.com>
 
 	* tree.h (DECL_BUILT_IN_NONANSI): Remove.
