@@ -1,5 +1,8 @@
 2004-09-10  Geoffrey Keating  <geoffk@apple.com>
 
+	* gcc/config/rs6000/rs6000.c (print_operand): Use fputs instead
+	of fprintf for register names.
+	
 	* output.h (unlikely_section_label): Delete declaration.
 	(unlikely_text_section_name): Likewise.
 	* varasm.c (unlikely_section_label_printed): Make static.
