@@ -823,6 +823,20 @@ load_inner_classes (tree cur_class)
 }
 
 static void
+duplicate_class_warning (const char *filename)
+{
+  location_t warn_loc;
+#ifdef USE_MAPPED_LOCATION
+  linemap_add (&line_table, LC_RENAME, 0, filename, 0);
+  warn_loc = linemap_line_start (&line_table, 0, 1);
+#else
+  warn_loc.file = filename;
+  warn_loc.line = 0;
+#endif
+  warning ("%Hduplicate class will only be compiled once", &warn_loc);
+}
+
+static void
 parse_class_file (void)
 {
   tree method;
@@ -1124,19 +1138,7 @@ java_parse_file (int set_yydebug ATTRIBUTE_UNUSED)
 	  /* Exclude file that we see twice on the command line. */
 	     
 	  if (IS_A_COMMAND_LINE_FILENAME_P (node))
-	    {
-	      location_t warn_loc;
-#ifdef USE_MAPPED_LOCATION
-	      linemap_add (&line_table, LC_RENAME, 0,
-			   IDENTIFIER_POINTER (node), 0);
-	      warn_loc = linemap_line_start (&line_table, 0, 1);
-#else
-	      warn_loc.file = IDENTIFIER_POINTER (node);
-	      warn_loc.line = 0;
-#endif
-	      warning ("%Hsource file seen twice on command line and "
-		       "will be compiled only once", &warn_loc);
-	    }
+	    duplicate_class_warning (IDENTIFIER_POINTER (node));
 	  else
 	    {
 	      tree file_decl = build_decl (TRANSLATION_UNIT_DECL, node, NULL);
@@ -1214,6 +1216,12 @@ java_parse_file (int set_yydebug ATTRIBUTE_UNUSED)
 	  jcf_parse (current_jcf);
 	  DECL_SOURCE_LOCATION (node) = file_start_location;
 	  TYPE_JCF (current_class) = current_jcf;
+	  if (CLASS_FROM_CURRENTLY_COMPILED_P (current_class))
+	    {
+	      /* We've already compiled this class.  */
+	      duplicate_class_warning (filename);
+	      continue;
+	    }
 	  CLASS_FROM_CURRENTLY_COMPILED_P (current_class) = 1;
 	  TREE_TYPE (node) = current_class;
 	}
@@ -1236,10 +1244,6 @@ java_parse_file (int set_yydebug ATTRIBUTE_UNUSED)
 	  linemap_add (&line_table, LC_LEAVE, false, NULL, 0);
 #endif
 	  parse_zip_file_entries ();
-	  /*
-	  for (each entry)
-	    CLASS_FROM_CURRENTLY_COMPILED_P (current_class) = 1;
-	  */
 	}
       else
 	{
@@ -1382,6 +1386,15 @@ parse_zip_file_entries (void)
 	    FREE (class_name);
 	    current_jcf = TYPE_JCF (class);
 	    output_class = current_class = class;
+
+	    if (CLASS_FROM_CURRENTLY_COMPILED_P (current_class))
+	      {
+	        /* We've already compiled this class.  */
+		duplicate_class_warning (current_jcf->filename);
+		break;
+	      }
+	    
+	    CLASS_FROM_CURRENTLY_COMPILED_P (current_class) = 1;
 
 	    if (TYPE_DUMMY (class))
 	      {
