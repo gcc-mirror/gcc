@@ -162,38 +162,41 @@ extern varray_type varray_grow	PROTO((varray_type, size_t));
 
 #define VARRAY_SIZE(VA)	((VA)->num_elements)
 
-/* Check for VARRAY_xxx macros being in bound, return N for use as an
-   index.  */
-#ifdef ENABLE_CHECKING
-#define VARRAY_CHECK(VA, N)						\
-((((size_t)(N) < (VA)->num_elements)					\
-  ? 0									\
-  : (fatal ("Virtual array %s element %ld out of bounds, at %s:%d",	\
-	    (VA)->name, (long)(N), __FILE__, __LINE__), 0)),		\
- (N))
+/* Check for VARRAY_xxx macros being in bound.  */
+#if defined ENABLE_CHECKING && (__GNUC__ > 2 || __GNUC_MINOR__ > 6)
+extern void varray_check_failed PROTO ((varray_type, size_t,
+					const char *, int,
+					const char *)) ATTRIBUTE_NORETURN;
+#define VARRAY_CHECK(VA, N, T)					\
+(*({ varray_type _va = VA;					\
+     size_t _n = N; 						\
+     if (_n >= _va->num_elements)				\
+       varray_check_failed (_va, _n, __FILE__, __LINE__,	\
+			    __PRETTY_FUNCTION__);		\
+     &_va->data.T[_n]; }))
 #else
-#define VARRAY_CHECK(VA, N) (N)
+#define VARRAY_CHECK(VA, N, T) ((VA)->data.T[N])
 #endif
 
-#define VARRAY_CHAR(VA, N)	((VA)->data.c[ VARRAY_CHECK (VA, N) ])
-#define VARRAY_UCHAR(VA, N)	((VA)->data.uc[ VARRAY_CHECK (VA, N) ])
-#define VARRAY_SHORT(VA, N)	((VA)->data.s[ VARRAY_CHECK (VA, N) ])
-#define VARRAY_USHORT(VA, N)	((VA)->data.us[ VARRAY_CHECK (VA, N) ])
-#define VARRAY_INT(VA, N)	((VA)->data.i[ VARRAY_CHECK (VA, N) ])
-#define VARRAY_UINT(VA, N)	((VA)->data.u[ VARRAY_CHECK (VA, N) ])
-#define VARRAY_LONG(VA, N)	((VA)->data.l[ VARRAY_CHECK (VA, N) ])
-#define VARRAY_ULONG(VA, N)	((VA)->data.ul[ VARRAY_CHECK (VA, N) ])
-#define VARRAY_WIDE_INT(VA, N)	((VA)->data.hint[ VARRAY_CHECK (VA, N) ])
-#define VARRAY_UWIDE_INT(VA, N)	((VA)->data.uhint[ VARRAY_CHECK (VA, N) ])
-#define VARRAY_GENERIC_PTR(VA,N) ((VA)->data.generic[ VARRAY_CHECK (VA, N) ])
-#define VARRAY_CHAR_PTR(VA,N)	((VA)->data.cptr[ VARRAY_CHECK (VA, N) ])
-#define VARRAY_RTX(VA, N)	((VA)->data.rtx[ VARRAY_CHECK (VA, N) ])
-#define VARRAY_RTVEC(VA, N)	((VA)->data.rtvec[ VARRAY_CHECK (VA, N) ])
-#define VARRAY_TREE(VA, N)	((VA)->data.tree[ VARRAY_CHECK (VA, N) ])
-#define VARRAY_BITMAP(VA, N)	((VA)->data.bitmap[ VARRAY_CHECK (VA, N) ])
-#define VARRAY_SCHED(VA, N)	((VA)->data.sched[ VARRAY_CHECK (VA, N) ])
-#define VARRAY_REG(VA, N)	((VA)->data.reg[ VARRAY_CHECK (VA, N) ])
-#define VARRAY_CONST_EQUIV(VA, N) ((VA)->data.const_equiv[VARRAY_CHECK (VA, N)])
-#define VARRAY_BB(VA, N)	((VA)->data.bb[ VARRAY_CHECK (VA, N) ])
+#define VARRAY_CHAR(VA, N)		VARRAY_CHECK (VA, N, c)
+#define VARRAY_UCHAR(VA, N)		VARRAY_CHECK (VA, N, uc)
+#define VARRAY_SHORT(VA, N)		VARRAY_CHECK (VA, N, s)
+#define VARRAY_USHORT(VA, N)		VARRAY_CHECK (VA, N, us)
+#define VARRAY_INT(VA, N)		VARRAY_CHECK (VA, N, i)
+#define VARRAY_UINT(VA, N)		VARRAY_CHECK (VA, N, u)
+#define VARRAY_LONG(VA, N)		VARRAY_CHECK (VA, N, l)
+#define VARRAY_ULONG(VA, N)		VARRAY_CHECK (VA, N, ul)
+#define VARRAY_WIDE_INT(VA, N)		VARRAY_CHECK (VA, N, hint)
+#define VARRAY_UWIDE_INT(VA, N)		VARRAY_CHECK (VA, N, uhint)
+#define VARRAY_GENERIC_PTR(VA,N)	VARRAY_CHECK (VA, N, generic)
+#define VARRAY_CHAR_PTR(VA,N)		VARRAY_CHECK (VA, N, cptr)
+#define VARRAY_RTX(VA, N)		VARRAY_CHECK (VA, N, rtx)
+#define VARRAY_RTVEC(VA, N)		VARRAY_CHECK (VA, N, rtvec)
+#define VARRAY_TREE(VA, N)		VARRAY_CHECK (VA, N, tree)
+#define VARRAY_BITMAP(VA, N)		VARRAY_CHECK (VA, N, bitmap)
+#define VARRAY_SCHED(VA, N)		VARRAY_CHECK (VA, N, sched)
+#define VARRAY_REG(VA, N)		VARRAY_CHECK (VA, N, reg)
+#define VARRAY_CONST_EQUIV(VA, N)	VARRAY_CHECK (VA, N, const_equiv)
+#define VARRAY_BB(VA, N)		VARRAY_CHECK (VA, N, bb)
 
 #endif /* _VARRAY_H_ */

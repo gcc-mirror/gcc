@@ -68,3 +68,24 @@ varray_grow (va, n)
 
   return va;
 }
+
+/* Check the bounds of a varray access.  */
+
+#if defined ENABLE_CHECKING && (__GNUC__ > 2 || __GNUC_MINOR__ > 6)
+
+extern void error PVPROTO ((const char *, ...))	ATTRIBUTE_PRINTF_1;
+
+void
+varray_check_failed (va, n, file, line, function)
+     varray_type va;
+     size_t n;
+     const char *file;
+     int line;
+     const char *function;
+{
+  error("Virtual array %s[%lu]: element %lu out of bounds",
+	va->name, (unsigned long) va->num_elements, (unsigned long) n);
+  fancy_abort (file, line, function);
+}
+
+#endif

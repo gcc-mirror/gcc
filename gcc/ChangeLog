@@ -1,3 +1,47 @@
+1999-08-25 22:10 -0700  Zack Weinberg  <zack@bitmover.com>
+
+	* system.h: Don't redefine abort or trim_filename.
+	* rtl.h: Define abort to fancy_abort (__FILE__, __LINE__, 0)
+	or fancy_abort (__FILE__, __LINE__, __FUNCTION__) depending on
+	whether or not __FUNCTION__ is available.
+	* tree.h: Duplicate rtl.h's definition of abort, for files
+	that don't include rtl.h.  Delete all code to perform type
+	checking with a compiler other than GCC.
+	* varray.h: Delete all code to perform type checking with a
+	compiler other than GCC.  Make VARRAY_CHECK() always evaluate
+	its arguments exactly once, using a statement expression.
+	Adjust the VARRAY_<type> accessor macros to match.
+	* toplev.h (fatal_insn, fatal_insn_not_found): Kill.
+	(_fatal_insn, _fatal_insn_not_found): New fns, take info on
+	caller's location.  Define fatal_insn and fatal_insn_not_found
+	as macros that use _fatal_insn and _fatal_insn_not_found.
+	(fancy_abort, trim_filename): Kill prototypes.
+
+	* rtl.c (trim_filename): Move here from toplev.c.
+	(fancy_abort): New function.
+	(DIR_SEPARATOR): Provide default definition.
+	* tree.c (tree_check_failed, tree_class_check_failed): Go
+	through fancy_abort.
+	(tree_check, tree_class_check, cst_or_constructor_check,
+	expr_check): Delete.
+	* varray.c (varray_check_failed): New function.
+	* toplev.c (fatal_insn, fatal_insn_not_found): Replace with
+	_fatal_insn and _fatal_insn_not_found.  Go through
+	fancy_abort.
+	(trim_filename, fancy_abort): Delete.
+
+	* builtins.c (expand_builtin_args_info): Report ICE with abort.
+	* except.c (start_catch_handler): Report ICE with error/abort
+	combo.
+	* final.c (output_operand_lossage): Likewise.
+	* flow.c (verify_flow_info): Likewise.
+
+	* gcc.c: Prototype fatal.
+	* gengenrtl.c: Undef abort after including rtl.h not system.h.
+	* genattr.c, genattrtab.c, genemit.c, genextract.c,
+	genflags.c, genopinit.c, genoutput.c, genpeep.c, genrecog.c:
+	Don't define fancy_abort.
+
 Wed Aug 25 17:56:59 1999  Richard Henderson  <rth@cygnus.com>
 
 	* optabs.c (emit_cmp_and_jump_insns): Be more thorough in

@@ -121,7 +121,6 @@ char **insn_name_ptr = 0;
 
 void fatal PVPROTO ((const char *, ...))
   ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
-void fancy_abort PROTO((void)) ATTRIBUTE_NORETURN;
 
 /* enough space to reserve for printing out ints */
 #define MAX_DIGITS (HOST_BITS_PER_INT * 3 / 10 + 3)
@@ -5926,15 +5925,6 @@ fatal VPROTO ((const char *format, ...))
   va_end (ap);
   fprintf (stderr, "\n");
   exit (FATAL_EXIT_CODE);
-}
-
-/* More 'friendly' abort that prints the line and file.
-   config.h can #define abort fancy_abort if you like that sort of thing.  */
-
-void
-fancy_abort ()
-{
-  fatal ("Internal gcc abort.");
 }
 
 /* Determine if an insn has a constant number of delay slots, i.e., the

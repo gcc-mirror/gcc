@@ -41,11 +41,27 @@ extern void fatal_io_error		PROTO ((const char *))
   ATTRIBUTE_NORETURN;
 extern void pfatal_with_name		PROTO ((const char *))
   ATTRIBUTE_NORETURN;
-extern void fatal_insn_not_found	PROTO ((struct rtx_def *))
+extern void _fatal_insn_not_found	PROTO ((struct rtx_def *,
+						const char *, int,
+						const char *))
   ATTRIBUTE_NORETURN;
-extern void fatal_insn			PVPROTO ((const char *,
-						  struct rtx_def *, ...))
-  ATTRIBUTE_PRINTF(1, 3) ATTRIBUTE_NORETURN;
+extern void _fatal_insn			PROTO ((const char *,
+						struct rtx_def *,
+						const char *, int,
+						const char *))
+  ATTRIBUTE_NORETURN;
+
+#if defined __GNUC__ && (__GNUC__ > 2 || __GNUC_MINOR__ > 6)
+#define fatal_insn(msgid, insn) \
+	_fatal_insn (msgid, insn, __FILE__, __LINE__, __PRETTY_FUNCTION__)
+#define fatal_insn_not_found(insn) \
+	_fatal_insn_not_found (insn, __FILE__, __LINE__, __PRETTY_FUNCTION__)
+#else
+#define fatal_insn(msgid, insn) \
+	_fatal_insn (msgid, insn, __FILE__, __LINE__, 0)
+#define fatal_insn_not_found(insn) \
+	_fatal_insn_not_found (insn, __FILE__, __LINE__, 0)
+#endif
 extern void warning			PVPROTO ((const char *, ...))
 						ATTRIBUTE_PRINTF_1;
 extern void error			PVPROTO ((const char *, ...))
@@ -100,8 +116,6 @@ extern int do_float_handler PROTO((void (*) (PTR), PTR));
 extern void output_quoted_string	PROTO ((FILE *, const char *));
 extern void output_file_directive	PROTO ((FILE *, const char *));
 #endif
-
-extern void fancy_abort			PROTO ((void)) ATTRIBUTE_NORETURN;
 extern void do_abort			PROTO ((void)) ATTRIBUTE_NORETURN;
 extern void botch			PROTO ((const char *))
   ATTRIBUTE_NORETURN;
@@ -111,8 +125,6 @@ extern void fnotice			PROTO ((FILE *, const char *, ...))
   ATTRIBUTE_PRINTF_2;
 #endif
 
-#undef trim_filename
-extern const char *trim_filename	PROTO ((const char *));
 extern int wrapup_global_declarations   PROTO ((union tree_node **, int));
 extern void check_global_declarations   PROTO ((union tree_node **, int));
 extern int errorcount;

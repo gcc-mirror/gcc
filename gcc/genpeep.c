@@ -48,7 +48,6 @@ struct link
 
 void fatal PVPROTO ((const char *, ...))
   ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
-void fancy_abort PROTO((void)) ATTRIBUTE_NORETURN;
 
 static int max_opno;
 
@@ -431,15 +430,6 @@ fatal VPROTO ((const char *format, ...))
   exit (FATAL_EXIT_CODE);
 }
 
-/* More 'friendly' abort that prints the line and file.
-   config.h can #define abort fancy_abort if you like that sort of thing.  */
-
-void
-fancy_abort ()
-{
-  fatal ("Internal gcc abort.");
-}
-
 int
 main (argc, argv)
      int argc;
