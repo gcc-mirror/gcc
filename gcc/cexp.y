@@ -767,13 +767,6 @@ parse_escape (string_ptr)
     case 0:
       (*string_ptr)--;
       return 0;
-    case '^':
-      c = *(*string_ptr)++;
-      if (c == '\\')
-	c = parse_escape (string_ptr);
-      if (c == '?')
-	return 0177;
-      return (c & 0200) | (c & 037);
       
     case '0':
     case '1':
