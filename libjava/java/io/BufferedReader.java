@@ -1,5 +1,5 @@
 /* BufferedReader.java
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004
      Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -87,6 +87,11 @@ public class BufferedReader extends Reader
   // The JCL book specifies the default buffer size as 8K characters.
   // This is package-private because it is used by LineNumberReader.
   static final int DEFAULT_BUFFER_SIZE = 8192;
+
+  /**
+   * The line buffer for <code>readLine</code>.
+   */
+  private StringBuffer sbuf = null;
 
   /**
     * Create a new <code>BufferedReader</code> that will read from the 
@@ -439,7 +444,7 @@ public class BufferedReader extends Reader
     int i = lineEnd(limit);
     if (i < limit)
       {
-	String str = new String(buffer, pos, i - pos);
+	String str = String.valueOf(buffer, pos, i - pos);
 	pos = i + 1;
 	// If the last char in the buffer is a '\r', we must remember
 	// to check if the next char to be read after the buffer is refilled
@@ -450,7 +455,10 @@ public class BufferedReader extends Reader
 	    pos++;
 	return str;
       }
-    StringBuffer sbuf = new StringBuffer(200);
+    if (sbuf == null)
+      sbuf = new StringBuffer(200);
+    else
+      sbuf.setLength(0);
     sbuf.append(buffer, pos, i - pos);
     pos = i;
     // We only want to return null when no characters were read before
