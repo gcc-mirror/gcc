@@ -41,6 +41,8 @@ static rtx mask_rtx			PROTO((enum machine_mode, int,
 static rtx lshift_value			PROTO((enum machine_mode, rtx,
 					       int, int));
 static rtx extract_split_bit_field	PROTO((rtx, int, int, int, int));
+static void do_cmp_and_jump		PROTO((rtx, rtx, enum rtx_code,
+					       enum machine_mode, rtx));
 
 #define CEIL(x,y) (((x) + (y) - 1) / (y))
 
@@ -3029,9 +3031,8 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 			rtx t1;
 
 			t1 = copy_to_mode_reg (compute_mode, op0);
-			emit_cmp_insn (t1, const0_rtx, GE, 
-				       NULL_RTX, compute_mode, 0, 0);
-			emit_jump_insn (gen_bge (label));
+			do_cmp_and_jump (t1, const0_rtx, GE,
+					 compute_mode, label);
 			expand_inc (t1, GEN_INT (abs_d - 1));
 			emit_label (label);
 			quotient = expand_shift (RSHIFT_EXPR, compute_mode, t1,
@@ -3257,13 +3258,10 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 	       Save that for later.  */
 	    rtx tem;
 	    rtx label = gen_label_rtx ();
-	    emit_cmp_insn (remainder, const0_rtx, EQ, NULL_RTX,
-			   compute_mode, 0, 0);
-	    emit_jump_insn (gen_beq (label));
+	    do_cmp_and_jump (remainder, const0_rtx, EQ, compute_mode, label);
 	    tem = expand_binop (compute_mode, xor_optab, op0, op1,
 				NULL_RTX, 0, OPTAB_WIDEN);
-	    emit_cmp_insn (tem, const0_rtx, GE, NULL_RTX, compute_mode, 0, 0);
-	    emit_jump_insn (gen_bge (label));
+	    do_cmp_and_jump (tem, const0_rtx, GE, compute_mode, label);
 	    expand_dec (quotient, const1_rtx);
 	    expand_inc (remainder, op1);
 	    emit_label (label);
@@ -3284,11 +3282,8 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 	  label3 = gen_label_rtx ();
 	  label4 = gen_label_rtx ();
 	  label5 = gen_label_rtx ();
-	  emit_cmp_insn (op1, const0_rtx, LT, NULL_RTX, compute_mode, 0, 0);
-	  emit_jump_insn (gen_blt (label2));
-	  emit_cmp_insn (adjusted_op0, const0_rtx, LT, NULL_RTX,
-			 compute_mode, 0, 0);
-	  emit_jump_insn (gen_blt (label1));
+	  do_cmp_and_jump (op1, const0_rtx, LT, compute_mode, label2);
+	  do_cmp_and_jump (adjusted_op0, const0_rtx, LT, compute_mode, label1);
 	  tem = expand_binop (compute_mode, sdiv_optab, adjusted_op0, op1,
 			      quotient, 0, OPTAB_LIB_WIDEN);
 	  if (tem != quotient)
@@ -3300,9 +3295,7 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 	  emit_jump_insn (gen_jump (label4));
 	  emit_barrier ();
 	  emit_label (label2);
-	  emit_cmp_insn (adjusted_op0, const0_rtx, GT, NULL_RTX,
-			 compute_mode, 0, 0);
-	  emit_jump_insn (gen_bgt (label3));
+	  do_cmp_and_jump (adjusted_op0, const0_rtx, GT, compute_mode, label3);
 	  tem = expand_binop (compute_mode, sdiv_optab, adjusted_op0, op1,
 			      quotient, 0, OPTAB_LIB_WIDEN);
 	  if (tem != quotient)
@@ -3342,9 +3335,7 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 		  {
 		    rtx lab;
 		    lab = gen_label_rtx ();
-		    emit_cmp_insn (t2, const0_rtx, EQ, NULL_RTX,
-				   compute_mode, 0, 0);
-		    emit_jump_insn (gen_beq (lab));
+		    do_cmp_and_jump (t2, const0_rtx, EQ, compute_mode, lab);
 		    expand_inc (t1, const1_rtx);
 		    emit_label (lab);
 		    quotient = t1;
@@ -3383,9 +3374,8 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 		/* This could be computed with a branch-less sequence.
 		   Save that for later.  */
 		rtx label = gen_label_rtx ();
-		emit_cmp_insn (remainder, const0_rtx, EQ, NULL_RTX,
-			       compute_mode, 0, 0);
-		emit_jump_insn (gen_beq (label));
+		do_cmp_and_jump (remainder, const0_rtx, EQ,
+				 compute_mode, label);
 		expand_inc (quotient, const1_rtx);
 		expand_dec (remainder, op1);
 		emit_label (label);
@@ -3402,9 +3392,8 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 	      adjusted_op0 = copy_to_mode_reg (compute_mode, op0);
 	      label1 = gen_label_rtx ();
 	      label2 = gen_label_rtx ();
-	      emit_cmp_insn (adjusted_op0, const0_rtx, NE, NULL_RTX,
-			     compute_mode, 0, 0);
-	      emit_jump_insn (gen_bne (label1));
+	      do_cmp_and_jump (adjusted_op0, const0_rtx, NE,
+			       compute_mode, label1);
 	      emit_move_insn  (quotient, const0_rtx);
 	      emit_jump_insn (gen_jump (label2));
 	      emit_barrier ();
@@ -3444,9 +3433,7 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 		  {
 		    rtx lab;
 		    lab = gen_label_rtx ();
-		    emit_cmp_insn (t2, const0_rtx, EQ, NULL_RTX,
-				   compute_mode, 0, 0);
-		    emit_jump_insn (gen_beq (lab));
+		    do_cmp_and_jump (t2, const0_rtx, EQ, compute_mode, lab);
 		    expand_inc (t1, const1_rtx);
 		    emit_label (lab);
 		    quotient = t1;
@@ -3485,14 +3472,11 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 		   Save that for later.  */
 		rtx tem;
 		rtx label = gen_label_rtx ();
-		emit_cmp_insn (remainder, const0_rtx, EQ, NULL_RTX,
-			       compute_mode, 0, 0);
-		emit_jump_insn (gen_beq (label));
+		do_cmp_and_jump (remainder, const0_rtx, EQ,
+				 compute_mode, label);
 		tem = expand_binop (compute_mode, xor_optab, op0, op1,
 				    NULL_RTX, 0, OPTAB_WIDEN);
-		emit_cmp_insn (tem, const0_rtx, LT, NULL_RTX,
-			       compute_mode, 0, 0);
-		emit_jump_insn (gen_blt (label));
+		do_cmp_and_jump (tem, const0_rtx, LT, compute_mode, label);
 		expand_inc (quotient, const1_rtx);
 		expand_dec (remainder, op1);
 		emit_label (label);
@@ -3513,12 +3497,9 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 	      label3 = gen_label_rtx ();
 	      label4 = gen_label_rtx ();
 	      label5 = gen_label_rtx ();
-	      emit_cmp_insn (op1, const0_rtx, LT, NULL_RTX,
-			     compute_mode, 0, 0);
-	      emit_jump_insn (gen_blt (label2));
-	      emit_cmp_insn (adjusted_op0, const0_rtx, GT, NULL_RTX,
-			     compute_mode, 0, 0);
-	      emit_jump_insn (gen_bgt (label1));
+	      do_cmp_and_jump (op1, const0_rtx, LT, compute_mode, label2);
+	      do_cmp_and_jump (adjusted_op0, const0_rtx, GT,
+			       compute_mode, label1);
 	      tem = expand_binop (compute_mode, sdiv_optab, adjusted_op0, op1,
 				  quotient, 0, OPTAB_LIB_WIDEN);
 	      if (tem != quotient)
@@ -3530,9 +3511,8 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 	      emit_jump_insn (gen_jump (label4));
 	      emit_barrier ();
 	      emit_label (label2);
-	      emit_cmp_insn (adjusted_op0, const0_rtx, LT, NULL_RTX,
-			     compute_mode, 0, 0);
-	      emit_jump_insn (gen_blt (label3));
+	      do_cmp_and_jump (adjusted_op0, const0_rtx, LT,
+			       compute_mode, label3);
 	      tem = expand_binop (compute_mode, sdiv_optab, adjusted_op0, op1,
 				  quotient, 0, OPTAB_LIB_WIDEN);
 	      if (tem != quotient)
@@ -3598,8 +3578,7 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 	    tem = plus_constant (op1, -1);
 	    tem = expand_shift (RSHIFT_EXPR, compute_mode, tem,
 				build_int_2 (1, 0), NULL_RTX, 1);
-	    emit_cmp_insn (remainder, tem, LEU, NULL_RTX, compute_mode, 0, 0);
-	    emit_jump_insn (gen_bleu (label));
+	    do_cmp_and_jump (remainder, tem, LEU, compute_mode, label);
 	    expand_inc (quotient, const1_rtx);
 	    expand_dec (remainder, op1);
 	    emit_label (label);
@@ -3624,8 +3603,7 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 	    abs_op1 = expand_abs (compute_mode, op1, NULL_RTX, 0, 0);
 	    tem = expand_shift (LSHIFT_EXPR, compute_mode, abs_rem,
 				build_int_2 (1, 0), NULL_RTX, 1);
-	    emit_cmp_insn (tem, abs_op1, LTU, NULL_RTX, compute_mode, 0, 0);
-	    emit_jump_insn (gen_bltu (label));
+	    do_cmp_and_jump (tem, abs_op1, LTU, compute_mode, label);
 	    tem = expand_binop (compute_mode, xor_optab, op0, op1,
 				NULL_RTX, 0, OPTAB_WIDEN);
 	    mask = expand_shift (RSHIFT_EXPR, compute_mode, tem,
@@ -4329,4 +4307,77 @@ emit_store_flag_force (target, code, op0, op1, mode, unsignedp, normalizep)
   emit_label (label);
 
   return target;
+}
+
+/* Perform possibly multi-word comparison and conditional jump to LABEL
+   if ARG1 OP ARG2 true where ARG1 and ARG2 are of mode MODE
+
+   The algorithm is based on the code in expr.c:do_jump.
+
+   Note that this does not perform a general comparison.  Only variants
+   generated within expmed.c are correctly handled, others abort (but could
+   be handled if needed).  */
+
+static void
+do_cmp_and_jump (arg1, arg2, op, mode, label)
+     rtx arg1, arg2, label;
+    enum rtx_code op;
+    enum machine_mode mode;
+{
+  /* If this mode is an integer too wide to compare properly,
+     compare word by word.  Rely on cse to optimize constant cases.  */
+
+  if (GET_MODE_CLASS (mode) == MODE_INT && !can_compare_p (mode))
+    {
+      rtx label2 = gen_label_rtx ();
+
+      switch (op)
+	{
+	case LTU:
+	  do_jump_by_parts_greater_rtx (mode, 1, arg2, arg1, label2, label);
+	  break;
+
+	case LEU:
+	  do_jump_by_parts_greater_rtx (mode, 1, arg1, arg2, label, label2);
+	  break;
+
+	case LT:
+	  do_jump_by_parts_greater_rtx (mode, 0, arg2, arg1, label2, label);
+	  break;
+
+	case GT:
+	  do_jump_by_parts_greater_rtx (mode, 0, arg1, arg2, label2, label);
+	  break;
+
+	case GE:
+	  do_jump_by_parts_greater_rtx (mode, 0, arg2, arg1, label, label2);
+	  break;
+
+	  /* do_jump_by_parts_equality_rtx compares with zero.  Luckily
+	     that's the only equality operations we do */
+	case EQ:
+	  if (arg2 != const0_rtx || mode != GET_MODE(arg1))
+	    abort();
+	  do_jump_by_parts_equality_rtx (arg1, label2, label);
+	  break;
+
+	case NE:
+	  if (arg2 != const0_rtx || mode != GET_MODE(arg1))
+	    abort();
+	  do_jump_by_parts_equality_rtx (arg1, label, label2);
+	  break;
+
+	default:
+	  abort();
+	}
+
+      emit_label (label2);
+    }
+  else
+    {
+      emit_cmp_insn(arg1, arg2, op, NULL_RTX, mode, 0, 0);
+      if (bcc_gen_fctn[(int) op] == 0)
+	abort ();
+      emit_jump_insn ((*bcc_gen_fctn[(int) op]) (label));
+    }
 }
