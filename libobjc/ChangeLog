@@ -1,3 +1,12 @@
+Thu Jul 10 10:27:43 2003  Nicola Pero  <n.pero@mi.flashnet.it>
+
+	libobjc/9969
+	* sendmsg.c (get_imp): Fixed rare threading problem.
+	(__objc_responds_to): Similar fixes.
+	(objc_msg_lookup): Similar fixes.
+	(__objc_init_install_dtable): Lock the runtime before checking if the
+	table is installed.
+	
 2003-05-23  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* hash.c, init.c, libobjc.def, libobjc_entry.c, linking.m,
