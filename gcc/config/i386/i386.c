@@ -15496,15 +15496,14 @@ x86_output_mi_thunk (file, thunk, delta, vcall_offset, function)
       output_asm_insn ("mov{l}\t{%0, %1|%1, %0}", xops);
     }
 
-  xops[0] = DECL_RTL (function);
+  xops[0] = XEXP (DECL_RTL (function), 0);
   if (TARGET_64BIT)
     {
       if (!flag_pic || (*targetm.binds_local_p) (function))
 	output_asm_insn ("jmp\t%P0", xops);
       else
 	{
-	  tmp = XEXP (xops[0], 0);
-	  tmp = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, tmp), UNSPEC_GOTPCREL);
+	  tmp = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, xops[0]), UNSPEC_GOTPCREL);
 	  tmp = gen_rtx_CONST (Pmode, tmp);
 	  tmp = gen_rtx_MEM (QImode, tmp);
 	  xops[0] = tmp;

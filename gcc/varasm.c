@@ -183,7 +183,6 @@ static void asm_output_aligned_bss
 static bool asm_emit_uninitialised	PARAMS ((tree, const char*,
 						 unsigned HOST_WIDE_INT,
 						 unsigned HOST_WIDE_INT));
-static void resolve_unique_section	PARAMS ((tree, int, int));
 static void mark_weak                   PARAMS ((tree));
 
 enum in_section { no_section, in_text, in_data, in_named
@@ -460,7 +459,7 @@ named_section (decl, name, reloc)
 
 /* If required, set DECL_SECTION_NAME to a unique name.  */
 
-static void
+void
 resolve_unique_section (decl, reloc, flag_function_or_data_sections)
      tree decl;
      int reloc ATTRIBUTE_UNUSED;

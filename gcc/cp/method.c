@@ -351,6 +351,53 @@ thunk_adjust (tree ptr, bool this_adjusting,
   return ptr;
 }
 
+static GTY (()) int thunk_labelno;
+
+/* Create a static alias to function.  */
+
+static tree
+make_alias_for_thunk (tree function)
+{
+  tree alias;
+  char buf[256];
+
+  ASM_GENERATE_INTERNAL_LABEL (buf, "LTHUNK", thunk_labelno);
+  thunk_labelno++;
+  alias = build_decl (FUNCTION_DECL, get_identifier (buf),
+		      TREE_TYPE (function));
+  DECL_LANG_SPECIFIC (alias) = DECL_LANG_SPECIFIC (function);
+  cxx_dup_lang_specific_decl (alias);
+  DECL_CONTEXT (alias) = NULL;
+  TREE_READONLY (alias) = TREE_READONLY (function);
+  TREE_THIS_VOLATILE (alias) = TREE_THIS_VOLATILE (function);
+  TREE_PUBLIC (alias) = 0;
+  DECL_INTERFACE_KNOWN (alias) = 1;
+  DECL_NOT_REALLY_EXTERN (alias) = 1;
+  DECL_THIS_STATIC (alias) = 1;
+  DECL_SAVED_FUNCTION_DATA (alias) = NULL;
+  DECL_DESTRUCTOR_P (alias) = 0;
+  DECL_CONSTRUCTOR_P (alias) = 0;
+  DECL_CLONED_FUNCTION (alias) = NULL_TREE;
+  DECL_EXTERNAL (alias) = 0;
+  DECL_ARTIFICIAL (alias) = 1;
+  DECL_NO_STATIC_CHAIN (alias) = 1;
+  DECL_PENDING_INLINE_P (alias) = 0;
+  DECL_INLINE (alias) = 0;
+  DECL_DECLARED_INLINE_P (alias) = 0;
+  DECL_DEFERRED_FN (alias) = 0;
+  DECL_USE_TEMPLATE (alias) = 0;
+  DECL_TEMPLATE_INSTANTIATED (alias) = 0;
+  DECL_TEMPLATE_INFO (alias) = NULL;
+  DECL_INITIAL (alias) = error_mark_node;
+  TREE_ADDRESSABLE (alias) = 1;
+  TREE_USED (alias) = 1;
+  SET_DECL_ASSEMBLER_NAME (alias, DECL_NAME (alias));
+  TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (alias)) = 1;
+  if (!flag_syntax_only)
+    assemble_alias (alias, DECL_ASSEMBLER_NAME (function));
+  return alias;
+}
+
 /* Emit the definition of a C++ multiple inheritance or covariant
    return vtable thunk.  If EMIT_P is nonzero, the thunk is emitted
    immediately.  */
@@ -358,7 +405,7 @@ thunk_adjust (tree ptr, bool this_adjusting,
 void
 use_thunk (tree thunk_fndecl, bool emit_p)
 {
-  tree function;
+  tree function, alias;
   tree virtual_offset;
   HOST_WIDE_INT fixed_offset, virtual_value;
   bool this_adjusting = DECL_THIS_THUNK_P (thunk_fndecl);
@@ -385,6 +432,12 @@ use_thunk (tree thunk_fndecl, bool emit_p)
   TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (function)) = 1;
   if (!emit_p)
     return;
+
+#ifdef ASM_OUTPUT_DEF
+  alias = make_alias_for_thunk (function);
+#else
+  alias = function;
+#endif
 
   fixed_offset = THUNK_FIXED_OFFSET (thunk_fndecl);
   virtual_offset = THUNK_VIRTUAL_OFFSET (thunk_fndecl);
@@ -415,6 +468,21 @@ use_thunk (tree thunk_fndecl, bool emit_p)
 
   push_to_top_level ();
 
+#ifdef ASM_OUTPUT_DEF
+  if (targetm.have_named_sections)
+    {
+      resolve_unique_section (function, 0, flag_function_sections);
+
+      if (DECL_SECTION_NAME (function) != NULL && DECL_ONE_ONLY (function))
+	{
+	  resolve_unique_section (thunk_fndecl, 0, flag_function_sections);
+
+	  /* Output the thunk into the same section as function.  */
+	  DECL_SECTION_NAME (thunk_fndecl) = DECL_SECTION_NAME (function);
+	}
+    }
+#endif
+
   /* The back-end expects DECL_INITIAL to contain a BLOCK, so we
      create one.  */
   DECL_INITIAL (thunk_fndecl) = make_node (BLOCK);
@@ -422,7 +490,7 @@ use_thunk (tree thunk_fndecl, bool emit_p)
   
   if (this_adjusting
       && targetm.asm_out.can_output_mi_thunk (thunk_fndecl, fixed_offset,
-					      virtual_value, function))
+					      virtual_value, alias))
     {
       const char *fnname;
       current_function_decl = thunk_fndecl;
@@ -434,7 +502,7 @@ use_thunk (tree thunk_fndecl, bool emit_p)
       assemble_start_function (thunk_fndecl, fnname);
 
       targetm.asm_out.output_mi_thunk (asm_out_file, thunk_fndecl,
-				       fixed_offset, virtual_value, function);
+				       fixed_offset, virtual_value, alias);
 
       assemble_end_function (thunk_fndecl, fnname);
       current_function_decl = 0;
@@ -486,7 +554,7 @@ use_thunk (tree thunk_fndecl, bool emit_p)
       for (a = TREE_CHAIN (a); a; a = TREE_CHAIN (a))
 	t = tree_cons (NULL_TREE, a, t);
       t = nreverse (t);
-      t = build_call (function, t);
+      t = build_call (alias, t);
       if (!this_adjusting)
 	t = thunk_adjust (t, /*this_adjusting=*/0,
 			  fixed_offset, virtual_offset);
@@ -1054,3 +1122,5 @@ skip_artificial_parms_for (tree fn, tree list)
     list = TREE_CHAIN (list);
   return list;
 }
+
+#include "gt-cp-method.h"

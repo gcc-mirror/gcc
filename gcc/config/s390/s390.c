@@ -6480,13 +6480,16 @@ s390_output_mi_thunk (file, thunk, delta, vcall_offset, function)
      HOST_WIDE_INT vcall_offset;
      tree function;
 {
-  rtx op[9];
+  rtx op[10];
+  int nonlocal = 0;
 
   /* Operand 0 is the target function.  */
   op[0] = XEXP (DECL_RTL (function), 0);
   if (flag_pic && !SYMBOL_REF_LOCAL_P (op[0]))
     {
-      op[0] = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, op[0]), 113);
+      nonlocal = 1;
+      op[0] = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, op[0]),
+			      TARGET_64BIT ? 113 : flag_pic == 2 ? 112 : 110);
       op[0] = gen_rtx_CONST (Pmode, op[0]);
     }
 
@@ -6510,6 +6513,9 @@ s390_output_mi_thunk (file, thunk, delta, vcall_offset, function)
   op[6] = NULL_RTX;
   op[7] = NULL_RTX;
   op[8] = NULL_RTX;
+
+  /* Operand 9 can be used for temporary register.  */
+  op[9] = NULL_RTX;
 
   /* Generate code.  */
   if (TARGET_64BIT)
@@ -6641,14 +6647,39 @@ s390_output_mi_thunk (file, thunk, delta, vcall_offset, function)
 
       /* Jump to target.  */
       op[8] = gen_label_rtx ();
+
       if (!flag_pic)
 	output_asm_insn ("l\t%4,%8-%5(%4)", op);
-      else
+      else if (!nonlocal)
 	output_asm_insn ("a\t%4,%8-%5(%4)", op);
+      /* We cannot call through .plt, since .plt requires %r12 loaded.  */
+      else if (flag_pic == 1)
+	{
+	  output_asm_insn ("a\t%4,%8-%5(%4)", op);
+	  output_asm_insn ("l\t%4,%0(%4)", op);
+	}
+      else if (flag_pic == 2)
+	{
+	  op[9] = gen_rtx_REG (Pmode, 0);
+	  output_asm_insn ("l\t%9,%8-4-%5(%4)", op);
+	  output_asm_insn ("a\t%4,%8-%5(%4)", op);
+	  output_asm_insn ("ar\t%4,%9", op);
+	  output_asm_insn ("l\t%4,0(%4)", op);
+	}
+
       output_asm_insn ("br\t%4", op);
 
       /* Output literal pool.  */
       output_asm_insn (".align\t4", op);
+
+      if (nonlocal && flag_pic == 2)
+	output_asm_insn (".long\t%0", op);
+      if (nonlocal)
+	{
+	  op[0] = gen_rtx_SYMBOL_REF (Pmode, "_GLOBAL_OFFSET_TABLE_");
+	  SYMBOL_REF_FLAGS (op[0]) = SYMBOL_FLAG_LOCAL;
+	}
+
       (*targetm.asm_out.internal_label) (file, "L", CODE_LABEL_NUMBER (op[8]));
       if (!flag_pic)
 	output_asm_insn (".long\t%0", op);
