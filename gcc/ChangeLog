@@ -1,3 +1,13 @@
+2005-01-17  Richard Henderson  <rth@redhat.com>
+
+	* config/i386/sse.md (smaxv4sf3_finite, sse_vmsmaxv4sf3_finite,
+	sminv4sf3_finite, sse_vmsminv4sf3_finite, smaxv2df3_finite,
+	sse2_vmsmaxv2df3_finite, sminv2df3_finite,
+	sse2_vmsminv2df3_finite): New.
+	(smaxv4sf3, sse_vmsmaxv4sf3, sminv4sf3, sse_vmsminv4sf3, smaxv2df3,
+	sse2_vmsmaxv2df3, sminv2df3, sse2_vmsminv2df3): Remove commutative.
+	Force op1 into register.
+
 2005-01-17  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* Makefile.in (STAGEMOVESTUFF): Stage all the stamp files to prevent
