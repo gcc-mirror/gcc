@@ -1,5 +1,10 @@
 2001-10-25  Robert Dewar <dewar@gnat.com>
 
+	* sem_ch8.adb (Analyze_Package_Renaming): Skip analysis if Name 
+        is Error. Similar change for other renaming cases.
+
+2001-10-25  Robert Dewar <dewar@gnat.com>
+
 	* s-atacco.ads: Add pragma Inline_Always for functions.
 	Fix header format. Add copyright 2001
 
