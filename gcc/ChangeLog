@@ -1,3 +1,8 @@
+2001-12-05  William Cohen  <wcohen@redhat.com>
+
+	* config/arm/arm.h (THUMB_FUNCTION_PROFILER): Correct typo in
+	instruction.
+
 2001-12-05  Daniel Berlin  <dan@cgsoftware.com>
 
 	* config/rs6000/rs6000.h (enum rs6000_builtins): Add more altivec
