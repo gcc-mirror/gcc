@@ -63,6 +63,8 @@ struct operand_alternative
   unsigned int decmem_ok:1;
   /* Nonzero if '>' was found in the constraint string.  */
   unsigned int incmem_ok:1;
+  /* Nonzero if 'p' was found in the constraint string.  */
+  unsigned int is_address:1;
   /* Nonzero if 'X' was found in the constraint string, or if the constraint
      string for this alternative was empty.  */
   unsigned int anything_ok:1;
