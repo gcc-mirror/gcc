@@ -104,7 +104,7 @@ in the following sections.
 @smallexample
 -fall-virtual  -fdollars-in-identifiers  -felide-constructors
 -fenum-int-equiv  -fexternal-templates  -ffor-scope  
--fno-for-scope  -fhandle-signatures  -fmemoize-lookups  
+-fno-for-scope  -fhandle-signatures -fhonor-std -fmemoize-lookups  
 -fname-mangling-version-@var{n}  -fno-default-inline  
 -fno-gnu-keywords -fnonnull-objects -fguiding-decls
 -foperator-names  -fno-optional-diags -fstrict-prototype  -fthis-is-variable
@@ -1020,6 +1020,13 @@ Recognize the @code{signature} and @code{sigof} keywords for specifying
 abstract types.  The default (@samp{-fno-handle-signatures}) is not to
 recognize them.  @xref{C++ Signatures, Type Abstraction using
 Signatures}.
+
+@item -fhonor-std
+Treat the @code{namespace std} as a namespace, instead of ignoring
+it. For compatibility with earlier versions of g++, the compiler will,
+by default, ignore @code{namespace-declarations},
+@code{using-declarations}, @code{using-directives}, and
+@code{namespace-names}, if they involve @code{std}.
 
 @item -fhuge-objects
 Support virtual function calls for objects that exceed the size
