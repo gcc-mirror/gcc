@@ -32,6 +32,10 @@ Boston, MA 02111-1307, USA.  */
 #include <ctype.h>
 #include "objc/objc-api.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 #define _C_CONST	'r'
 #define _C_IN		'n'
 #define _C_INOUT	'N'
@@ -95,5 +99,9 @@ void objc_layout_structure_get_info (struct objc_struct_layout *layout,
                                      unsigned int *offset,
                                      unsigned int *align,
                                      const char **type);
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
 #endif /* __encoding_INCLUDE_GNU */

@@ -1,3 +1,16 @@
+2004-06-24  Andrew Pinski  <apinski@apple.com>
+
+	* objc/encoding.h: Wrap the functions with extern "C" for C++
+	mode. 
+	* objc/hash.h: Likewise.
+	* objc/objc-api.h: Likewise.
+	* objc/objc-list.h: Likewise.
+	* objc/runtime.h: Likewise.
+	* objc/sarray.h: Likewise.
+	* objc/thr.h: Likewise.
+	* objc/typedstream.h: Likewise.
+
+
 2004-06-21  Nick Clifton  <nickc@redhat.com>
 
 	* encoding.c (BITS_PER_UNIT): Define if a definition is not

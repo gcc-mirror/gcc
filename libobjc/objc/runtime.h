@@ -42,6 +42,11 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #include "objc/hash.h"		/* hash structures */
 #include "objc/objc-list.h"	/* linear lists */
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
+
 extern void __objc_add_class_to_hash(Class);   /* (objc-class.c) */
 extern void __objc_init_selector_tables(void); /* (objc-sel.c) */
 extern void __objc_init_class_tables(void);    /* (objc-class.c) */
@@ -84,6 +89,11 @@ BOOL __objc_responds_to (id object, SEL sel); /* for internal use only! */
 SEL  __sel_register_typed_name (const char*, const char*, 
 				struct objc_selector*, BOOL is_const);
 extern void __objc_generate_gc_type_description (Class);
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
+
 
 #endif /* not __objc_runtime_INCLUDE_GNU */
 

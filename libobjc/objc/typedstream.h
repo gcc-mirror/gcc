@@ -31,6 +31,11 @@ Boston, MA 02111-1307, USA.  */
 #include "objc/hash.h"
 #include <stdio.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
+
 typedef int (*objc_typed_read_func)(void*, char*, int);
 typedef int (*objc_typed_write_func)(void*, const char*, int);
 typedef int (*objc_typed_flush_func)(void*);
@@ -128,5 +133,10 @@ void objc_close_typed_stream (TypedStream* stream);
 
 BOOL objc_end_of_typed_stream (TypedStream* stream);
 void objc_flush_typed_stream (TypedStream* stream);
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
+
 
 #endif /* not __typedstream_INCLUDE_GNU */
