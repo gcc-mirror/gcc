@@ -54,12 +54,15 @@ namespace __gnu_cxx
       enc_filebuf(state_type& __state)
       : std::basic_filebuf<_CharT, enc_char_traits<_CharT> >()
       {
-	// Set state type to something useful.
-	// Something more than copyconstructible is needed here, so
-	// require default and copy constructible + assignment operator.
-	__glibcxx_class_requires(state_type, _SGIAssignableConcept);
 	this->_M_state_beg = __state;
 	this->_M_state_beg._M_init();
-      };
+      }
+
+    private:
+      // concept requirements:
+      // Set state type to something useful.
+      // Something more than copyconstructible is needed here, so
+      // require default and copy constructible + assignment operator.
+      __glibcxx_class_requires(state_type, _SGIAssignableConcept)
     };
 } // namespace __gnu_cxx

@@ -1,3 +1,7 @@
+2004-05-18  Jonathan Wakely  <redi@gcc.gnu.org>
+
+	* include/ext/enc_filebuf.h: Move concept-check macro to class scope.
+
 2004-05-17  Jonathan Wakely  <redi@gcc.gnu.org>
 
 	* include/bits/boost_concept_check.h: Fix old attribute syntax.
