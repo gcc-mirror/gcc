@@ -3322,8 +3322,6 @@ typedef enum unification_kind_t {
 #define TINST_LINE(NODE) EXPR_WFL_LINENO (NODE)
 #define TINST_FILE(NODE) EXPR_WFL_FILENAME (NODE)
 
-extern void maybe_print_template_context	PARAMS ((void));
-
 /* in class.c */
 
 extern int current_class_depth;
@@ -4112,6 +4110,7 @@ extern const char *lang_decl_name		PARAMS ((tree, int));
 extern const char *cp_file_of			PARAMS ((tree));
 extern int cp_line_of				PARAMS ((tree));
 extern const char *language_to_string           PARAMS ((enum languages, int));
+extern void print_instantiation_context         PARAMS ((void));
 
 /* in except.c */
 extern void init_exception_processing		PARAMS ((void));
@@ -4295,6 +4294,9 @@ extern int instantiate_pending_templates        PARAMS ((void));
 extern tree tsubst_default_argument             PARAMS ((tree, tree, tree));
 extern tree most_general_template		PARAMS ((tree));
 extern tree get_mostly_instantiated_function_type PARAMS ((tree, tree *, tree *));
+extern int problematic_instantiation_changed    PARAMS ((void));
+extern void record_last_problematic_instantiation PARAMS ((void));
+extern tree current_instantiation               PARAMS ((void));
 extern int processing_template_parmlist;
 
 /* in repo.c */

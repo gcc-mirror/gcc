@@ -301,7 +301,7 @@ pt.o : pt.c $(CXX_TREE_H) decl.h $(PARSE_H) lex.h \
   $(srcdir)/../toplev.h $(GGC_H) $(RTL_H) \
   $(srcdir)/../except.h $(HTAB_H)
 error.o : error.c $(CXX_TREE_H) \
-  $(srcdir)/../toplev.h
+  $(srcdir)/../toplev.h $(srcdir)/../diagnostic.h
 errfn.o : errfn.c $(CXX_TREE_H) \
   $(srcdir)/../toplev.h
 repo.o : repo.c $(CXX_TREE_H) \

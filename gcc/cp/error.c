@@ -25,6 +25,7 @@ Boston, MA 02111-1307, USA.  */
 #include "cp-tree.h"
 #include "obstack.h"
 #include "toplev.h"
+#include "diagnostic.h"
 
 typedef const char *cp_printer ();
 
@@ -95,6 +96,19 @@ static void dump_template_bindings PARAMS ((tree, tree));
 static void dump_scope PARAMS ((tree, enum tree_string_flags));
 static void dump_template_parms PARAMS ((tree, int, enum tree_string_flags));
 
+static const char *function_category PARAMS ((tree));
+static void maybe_print_instantiation_context PARAMS ((output_buffer *));
+static void print_instantiation_full_context PARAMS ((output_buffer *));
+static void print_instantiation_partial_context PARAMS ((output_buffer *, tree,
+                                                         const char *, int));
+static void cp_diagnostic_starter PARAMS ((output_buffer *,
+                                           diagnostic_context *));
+static void cp_diagnostic_finalizer PARAMS ((output_buffer *,
+                                             diagnostic_context *));
+static void cp_print_error_function PARAMS ((output_buffer *,
+                                             diagnostic_context *));
+
+
 #define A args_to_string
 #define C code_to_string
 #define D decl_to_string
@@ -137,6 +151,9 @@ init_error ()
 {
   gcc_obstack_init (&scratch_obstack);
   scratch_firstobj = (char *)obstack_alloc (&scratch_obstack, 0);
+
+  lang_diagnostic_starter = cp_diagnostic_starter;
+  lang_diagnostic_finalizer = cp_diagnostic_finalizer;
 }
 
 /* Dump a scope, if deemed necessary.  */
@@ -2412,4 +2429,156 @@ cv_to_string (p, v)
   OB_FINISH ();
 
   return (char *)obstack_base (&scratch_obstack);
+}
+
+static void
+cp_diagnostic_starter (buffer, dc)
+     output_buffer *buffer;
+     diagnostic_context *dc;
+{
+  report_problematic_module (buffer);
+  cp_print_error_function (buffer, dc);
+  maybe_print_instantiation_context (buffer);
+  output_set_prefix (buffer,
+                     context_as_prefix (diagnostic_file_location (dc),
+                                        diagnostic_line_location (dc),
+                                        diagnostic_is_warning (dc)));
+}
+
+static void
+cp_diagnostic_finalizer (buffer, dc)
+     output_buffer *buffer;
+     diagnostic_context *dc __attribute__ ((__unused__));
+{
+  output_destroy_prefix (buffer);
+}
+
+/* Print current function onto BUFFER, in the process of reporting
+   a diagnostic message.  Called from cp_diagnostic_starter.  */
+static void
+cp_print_error_function (buffer, dc)
+     output_buffer *buffer;
+     diagnostic_context *dc;
+{
+  if (error_function_changed ())
+    {
+      char *prefix = diagnostic_file_location (dc)
+        ? file_name_as_prefix (diagnostic_file_location (dc))
+        : NULL;
+      output_state os;
+
+      os = output_buffer_state (buffer);
+      output_set_prefix (buffer, prefix);
+      
+      if (current_function_decl == NULL)
+        {
+          output_add_string (buffer, "At global scope:");
+          output_add_newline (buffer);
+        }
+      else
+        output_printf
+          (buffer, "In %s `%s':\n", function_category (current_function_decl),
+           (*decl_printable_name) (current_function_decl, 2));
+
+      record_last_error_function ();
+      output_destroy_prefix (buffer);
+      output_buffer_state (buffer) = os;
+    }
+}
+
+/* Returns a description of FUNCTION using standard terminology.  */
+static const char *
+function_category (fn)
+     tree fn;
+{
+  if (DECL_FUNCTION_MEMBER_P (fn))
+    {
+      if (DECL_STATIC_FUNCTION_P (fn))
+        return "static member function";
+      else if (DECL_COPY_CONSTRUCTOR_P (fn))
+        return "copy constructor";
+      else if (DECL_CONSTRUCTOR_P (fn))
+        return "constructor";
+      else if (DECL_DESTRUCTOR_P (fn))
+        return "destructor";
+      else
+        return "member function";
+    }
+  else
+    return "function";
+}
+
+/* Report the full context of a current template instantiation,
+   onto BUFFER.  */
+static void
+print_instantiation_full_context (buffer)
+     output_buffer *buffer;
+{
+  tree p = current_instantiation ();
+  int line = lineno;
+  const char *file = input_filename;
+
+  if (p)
+    {
+      if (current_function_decl != TINST_DECL (p)
+	  && current_function_decl != NULL_TREE)
+	/* We can get here during the processing of some synthesized
+	   method.  Then, TINST_DECL (p) will be the function that's causing
+	   the synthesis.  */
+	;
+      else
+	{
+	  if (current_function_decl == TINST_DECL (p))
+	    /* Avoid redundancy with the the "In function" line.  */;
+	  else 
+	    output_verbatim (buffer, "%s: In instantiation of `%s':\n", file,
+                             decl_as_string (TINST_DECL (p),
+                                             TS_DECL_TYPE | TS_FUNC_NORETURN));
+	  
+	  line = TINST_LINE (p);
+	  file = TINST_FILE (p);
+	  p = TREE_CHAIN (p);
+	}
+    }
+  
+  print_instantiation_partial_context (buffer, p, file, line);
+}
+
+/* Same as above but less verbose.  */
+static void
+print_instantiation_partial_context (buffer, t, file, line)
+     output_buffer *buffer;
+     tree t;
+     const char *file;
+     int line;
+{
+  for (; t; t = TREE_CHAIN (t))
+    {
+      output_verbatim
+        (buffer, "%s:%d:   instantiated from `%s'\n", file, line,
+         decl_as_string (TINST_DECL (t), TS_DECL_TYPE | TS_FUNC_NORETURN));
+      line = TINST_LINE (t);
+      file = TINST_FILE (t);
+    }
+  output_verbatim (buffer, "%s:%d:   instantiated from here\n", file, line);
+}
+
+/* Called from cp_thing to print the template context for an error.  */
+static void
+maybe_print_instantiation_context (buffer)
+     output_buffer *buffer;
+{
+  if (!problematic_instantiation_changed () || current_instantiation () == 0)
+    return;
+
+  record_last_problematic_instantiation ();
+  print_instantiation_full_context (buffer);
+}
+
+/* Report the bare minimum context of a template instantiation.  */
+void
+print_instantiation_context ()
+{
+  print_instantiation_partial_context
+    (diagnostic_buffer, current_instantiation (), input_filename, lineno);
 }
