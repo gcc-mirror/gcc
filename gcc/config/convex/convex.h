@@ -1168,20 +1168,17 @@ bss_section ()								\
 #define SET_DECL_VINDEX(DECL, INDEX) \
   (DECL_VINDEX (DECL) = (INDEX))
 
+#if 0 /* collect2.c should no longer need these.  */
 /* Defs for compiling collect2.c in -pcc mode during bootstrap. */
 
 #ifdef COLLECT
 
-#ifdef __STDC__
+#ifndef __STDC__
 
-#define HAVE_STRERROR
-
-#else
-
-#define vfprintf(file,fmt,args) _doprnt (fmt, args, file)
 #define WTERMSIG(x) (((union wait *) &(x))->w_termsig)
 #define WEXITSTATUS(x) (((union wait *) &(x))->w_retcode)
 
 #endif
 
 #endif /* COLLECT */
+#endif /* 0 */
