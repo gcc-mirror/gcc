@@ -92,11 +92,17 @@
 /* Define if you have the rindex function.  */
 #undef HAVE_RINDEX
 
+/* Define if you have the strchr function.  */
+#undef HAVE_STRCHR
+
 /* Define if you have the setrlimit function.  */
 #undef HAVE_SETRLIMIT
 
 /* Define if you have the strerror function.  */
 #undef HAVE_STRERROR
+
+/* Define if you have the strrchr function.  */
+#undef HAVE_STRRCHR
 
 /* Define if you have the strtoul function.  */
 #undef HAVE_STRTOUL

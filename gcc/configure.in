@@ -181,7 +181,7 @@ AC_CACHE_VAL(gcc_cv_header_inttypes_h,
 AC_MSG_RESULT($gcc_cv_header_inttypes_h)
 
 AC_CHECK_FUNCS(strtoul bsearch strerror putenv popen vprintf bcopy bzero bcmp \
-	index rindex kill getrlimit setrlimit atoll atoq sysconf)
+	index rindex strchr strrchr kill getrlimit setrlimit atoll atoq sysconf)
 
 GCC_FUNC_PRINTF_PTR
 

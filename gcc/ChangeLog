@@ -1,5 +1,17 @@
 Mon Apr 20 14:48:29 1998  Michael Meissner  <meissner@cygnus.com>
 
+	* configure.in (AC_CHECK_FUNCS): Check for strchr and strrchr.
+	* configure: Regenerate.
+	* config.in: Add #undef's for strchr and strrchr.
+
+	* protoize.c (toplevel): If we have rindex, but not strrchr, map
+	rindex to strrchr.
+	(file_could_be_converted): Use strrchr, not rindex since rindex is
+	not defined on Linux systems when _POSIX_SOURCE is defined.
+	(file_normally_convertible): Ditto.
+	(process_aux_info_file): Ditto.
+	(main): Ditto.
+
 	* rs6000.md (mov{sf,df} define_splits): When splitting a move of
 	a constant to an integer register, don't split the insns that do
 	the simple AND and OR operations, rather just split each word, and

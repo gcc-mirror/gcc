@@ -74,6 +74,16 @@ Boston, MA 02111-1307, USA.  */
 #include <setjmp.h>
 #include "gansidecl.h"
 
+/* Some systems like Linux don't declare rindex if _POSIX_SOURCE is declared,
+   but it normally does declare it.  This means that configure thinks we don't
+   need to declare it.  Favor using strrchr if it is available.  */
+
+#ifndef HAVE_STRRCHR
+#ifdef  HAVE_RINDEX
+#define strrchr rindex
+#endif
+#endif
+
 /* Include getopt.h for the sake of getopt_long.
    We don't need the declaration of getopt, and it could conflict
    with something from a system header file, so effectively nullify that.  */
@@ -897,7 +907,7 @@ file_could_be_converted (const char *path)
     char *dir_last_slash;
 
     strcpy (dir_name, path);
-    dir_last_slash = rindex (dir_name, '/');
+    dir_last_slash = strrchr (dir_name, '/');
     if (dir_last_slash)
       *dir_last_slash = '\0';
     else
@@ -931,7 +941,7 @@ file_normally_convertible (const char *path)
     char *dir_last_slash;
 
     strcpy (dir_name, path);
-    dir_last_slash = rindex (dir_name, '/');
+    dir_last_slash = strrchr (dir_name, '/');
     if (dir_last_slash)
       *dir_last_slash = '\0';
     else
@@ -2370,7 +2380,7 @@ start_over: ;
 	char *dir_end;
 	aux_info_relocated_name = xmalloc (base_len + (p-invocation_filename));
 	strcpy (aux_info_relocated_name, base_source_filename);
-	dir_end = rindex (aux_info_relocated_name, '/');
+	dir_end = strrchr (aux_info_relocated_name, '/');
 	if (dir_end)
 	  dir_end++;
 	else
@@ -4575,7 +4585,7 @@ main (argc, argv)
   int c;
   const char *params = "";
 
-  pname = rindex (argv[0], '/');
+  pname = strrchr (argv[0], '/');
   pname = pname ? pname+1 : argv[0];
 
   cwd_buffer = getpwd ();
