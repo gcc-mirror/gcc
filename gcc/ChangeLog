@@ -54,6 +54,9 @@ Sat Jan 17 21:24:16 1998  David T. McWherter <dtm@waterw.com>
 
 Sat Jan 17 21:16:19 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* acconfig.h (NEED_DECLARATION_ATOL): New declaration to check for.
+	* rtl.c (atol): Only provide the declaration if NEED_DECLARATION_ATOL.
+
 	* rtl.c (read_rtx): Initialize list_rtx to NULL, not NULL_RTX.
 
 	* loop.c (find_and_verify_loops): When attempting to move insns from

@@ -40,7 +40,7 @@ Boston, MA 02111-1307, USA.  */
 
 extern struct obstack *rtl_obstack;
 
-#if HOST_BITS_PER_WIDE_INT != HOST_BITS_PER_INT
+#ifdef NEED_DECLARATION_ATOL
 extern long atol();
 #endif
 
