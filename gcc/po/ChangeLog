@@ -1,5 +1,12 @@
 2000-09-12  Philipp Thomas  <pthomas@suse.de>
 
+	* POTFILES.in: Remove yet more files caught by the new
+	checking target.
+	* gcc.pot: Regenerated.
+	* cat-id-tbl.c: Likewise.
+
+2000-09-12  Philipp Thomas  <pthomas@suse.de>
+
 	* Makefile.in.in (stamp-check-pot): Don't use $@ in rule.
 
 2000-09-12  Philipp Thomas  <pthomas@suse.de>
