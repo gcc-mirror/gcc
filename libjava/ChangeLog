@@ -1,5 +1,9 @@
 2004-11-16  Michael Koch  <konqueror@gmx.de>
 
+	* java/util/Currency.java (cache): Fix modifier order.
+
+2004-11-16  Michael Koch  <konqueror@gmx.de>
+
 	* java/io/BufferedReader.java,
 	java/io/FileInputStream.java,
 	java/io/FileOutputStream.java,

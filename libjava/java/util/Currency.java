@@ -100,7 +100,7 @@ public final class Currency
    * @see #readResolve()
    * @serial ignored.
    */
-  private transient static Map cache;
+  private static transient Map cache;
 
   /**
    * Instantiates the cache.
