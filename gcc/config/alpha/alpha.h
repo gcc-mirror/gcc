@@ -1310,7 +1310,8 @@ extern char *current_function_name;
       return COSTS_N_INSNS (6);				\
     else if (GET_CODE (XEXP (X, 0)) == MULT		\
 	     && const48_operand (XEXP (XEXP (X, 0), 1), VOIDmode)) \
-      return 2 + rtx_cost (XEXP (XEXP (X, 0), 0)) + rtx_cost (XEXP (X, 1)); \
+      return (2 + rtx_cost (XEXP (XEXP (X, 0), 0), OUTER_CODE)	\
+	      + rtx_cost (XEXP (X, 1), OUTER_CODE));	\
     break;						\
   case MULT:						\
     if (GET_MODE_CLASS (GET_MODE (X)) == MODE_FLOAT)	\
