@@ -1,3 +1,26 @@
+2002-10-20  Roger Sayle  <roger@eyesopen.com>
+
+	PR c/761
+	* toplev.c (flag_unsafe_profile_arcs): Remove.
+	(flag_bounded_pointers): Remove.
+	(flag_bounds_check): Correct comments.
+	(lang_independent_options): Remove -funsafe-profile-arcs and
+	-fbounded-pointers.  Correct -fbounds-check comments.
+
+	* flags.h: Correct flag_schedule_interblock comments.
+	(flag_bounded_pointers): Remove prototype.
+	(flag_bounds_check): Correct comments.
+
+	* c-opts.c (c_common_init_options): No need to mark
+	flag_bounds_check as unspecified.
+	(c_common_post_options): And no need to set it from
+	flag_bounded_pointers if its still unspecified.
+
+	* doc/invoke.texi: Fix some overfull hboxes in "make dvi".
+	Document --version, -feliminate-dwarf-2-dups, -fno-sched-interblock,
+	-fno-sched-spec, -fsched-spec-load, -fsched-spec-load-dangerous,
+	-fsched-verbose=n, -fno-branch-count-reg and -fbounds-check.
+
 2002-10-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
             Mark Mitchell  <mark@codesourcery.com>
 

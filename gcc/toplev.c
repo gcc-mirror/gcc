@@ -375,11 +375,6 @@ int profile_flag = 0;
 
 int profile_arc_flag = 0;
 
-/* Nonzero if we should not attempt to generate thread-safe
-   code to profile program flow graph arcs.  */
-
-int flag_unsafe_profile_arcs = 0;
-
 /* Nonzero if generating info for gcov to calculate line test coverage.  */
 
 int flag_test_coverage = 0;
@@ -863,19 +858,10 @@ int flag_peephole2 = 0;
 /* This will try to guess branch probabilities.  */
 int flag_guess_branch_prob = 0;
 
-/* -fbounded-pointers causes gcc to compile pointers as composite
-   objects occupying three words: the pointer value, the base address
-   of the referent object, and the address immediately beyond the end
-   of the referent object.  The base and extent allow us to perform
-   runtime bounds checking.  -fbounded-pointers implies -fcheck-bounds.  */
-int flag_bounded_pointers = 0;
-
 /* -fcheck-bounds causes gcc to generate array bounds checks.
-   For C, C++: defaults to value of flag_bounded_pointers.
-   For ObjC: defaults to off.
+   For C, C++, ObjC: defaults to off.
    For Java: defaults to on.
-   For Fortran: defaults to off.
-   For CHILL: defaults to off.  */
+   For Fortran: defaults to off.  */
 int flag_bounds_check = 0;
 
 /* This will attempt to merge constant section constants, if 1 only
@@ -1104,8 +1090,6 @@ static const lang_independent_options f_options[] =
    N_("Support synchronous non-call exceptions") },
   {"profile-arcs", &profile_arc_flag, 1,
    N_("Insert arc based program profiling code") },
-  {"unsafe-profile-arcs", &flag_unsafe_profile_arcs, 1,
-   N_("Avoid thread safety profiling overhead") },
   {"test-coverage", &flag_test_coverage, 1,
    N_("Create data files needed by gcov") },
   {"branch-probabilities", &flag_branch_probabilities, 1,
@@ -1190,10 +1174,8 @@ static const lang_independent_options f_options[] =
    N_("Allow math optimizations that may violate IEEE or ANSI standards") },
   {"signaling-nans", &flag_signaling_nans, 1,
    N_("Disable optimizations observable by IEEE signaling NaNs") },
-  {"bounded-pointers", &flag_bounded_pointers, 1,
-   N_("Compile pointers as triples: value, base & end") },
   {"bounds-check", &flag_bounds_check, 1,
-   N_("Generate code to check bounds before dereferencing pointers and arrays") },
+   N_("Generate code to check bounds before indexing arrays") },
   {"single-precision-constant", &flag_single_precision_constant, 1,
    N_("Convert floating point constant to single precision constant") },
   {"time-report", &time_report, 1,

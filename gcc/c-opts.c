@@ -515,9 +515,6 @@ c_common_init_options (lang)
   warn_pointer_arith = (lang == clk_cplusplus);
   if (lang == clk_c)
     warn_sign_compare = -1;
-
-  /* Mark as "unspecified" (see c_common_post_options).  */
-  flag_bounds_check = -1;
 }
 
 /* Handle one command-line option in (argc, argv).
@@ -1373,10 +1370,6 @@ c_common_post_options ()
 	  flag_inline_functions = 0;
 	}
     }
-
-  /* If still "unspecified", make it match -fbounded-pointers.  */
-  if (flag_bounds_check == -1)
-    flag_bounds_check = flag_bounded_pointers;
 
   /* Special format checking options don't work without -Wformat; warn if
      they are used.  */
