@@ -46,6 +46,16 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 struct gcc_target
 {
+  /* Functions that output assembler for the target.  */
+  struct asm_out
+  {
+    /* Output the assembler code for entry to a function.  */
+    void (* function_prologue) PARAMS ((FILE *, HOST_WIDE_INT));
+
+    /* Output the assembler code for function exit.  */
+    void (* function_epilogue) PARAMS ((FILE *, HOST_WIDE_INT));
+  } asm_out;
+
   /* Given two decls, merge their attributes and return the result.  */
   tree (* merge_decl_attributes) PARAMS ((tree, tree));
 

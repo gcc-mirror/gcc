@@ -106,6 +106,12 @@ static int	 arm_valid_type_attribute_p	PARAMS ((tree, tree,
 							 tree, tree));
 static int	 arm_valid_decl_attribute_p	PARAMS ((tree, tree,
 							 tree, tree));
+static void	 arm_output_function_epilogue	PARAMS ((FILE *,
+							 HOST_WIDE_INT));
+static void	 arm_output_function_prologue	PARAMS ((FILE *,
+							 HOST_WIDE_INT));
+static void	 thumb_output_function_prologue PARAMS ((FILE *,
+							 HOST_WIDE_INT));
 static int	 arm_comp_type_attributes	PARAMS ((tree, tree));
 static void	 arm_set_default_type_attributes	PARAMS ((tree));
 #undef Hint
@@ -129,6 +135,12 @@ static void	 arm_set_default_type_attributes	PARAMS ((tree));
 #else
 #  define TARGET_VALID_DECL_ATTRIBUTE arm_valid_decl_attribute_p
 #endif
+
+#undef TARGET_ASM_FUNCTION_PROLOGUE
+#define TARGET_ASM_FUNCTION_PROLOGUE arm_output_function_prologue
+
+#undef TARGET_ASM_FUNCTION_EPILOGUE
+#define TARGET_ASM_FUNCTION_EPILOGUE arm_output_function_epilogue
 
 #undef TARGET_COMP_TYPE_ATTRIBUTES
 #define TARGET_COMP_TYPE_ATTRIBUTES arm_comp_type_attributes
@@ -7313,12 +7325,18 @@ arm_poke_function_name (stream, name)
 /* Place some comments into the assembler stream
    describing the current function.  */
 
-void
-output_arm_prologue (f, frame_size)
+static void
+arm_output_function_prologue (f, frame_size)
      FILE * f;
-     int frame_size;
+     HOST_WIDE_INT frame_size;
 {
   unsigned long func_type;
+
+  if (!TARGET_ARM)
+    {
+      thumb_output_function_prologue (f, frame_size);
+      return;
+    }
   
   /* Sanity check.  */
   if (arm_ccfsm_state || arm_target_insn)
@@ -7637,9 +7655,10 @@ arm_output_epilogue (really_return)
   return "";
 }
 
-void
-output_func_epilogue (frame_size)
-     int frame_size;
+static void
+arm_output_function_epilogue (file, frame_size)
+     FILE *file ATTRIBUTE_UNUSED;
+     HOST_WIDE_INT frame_size;
 {
   if (TARGET_THUMB)
     {
@@ -9892,9 +9911,10 @@ thumb_expand_epilogue ()
     emit_insn (gen_blockage ());
 }
 
-void
-output_thumb_prologue (f)
+static void
+thumb_output_function_prologue (f, size)
      FILE * f;
+     HOST_WIDE_INT size ATTRIBUTE_UNUSED;
 {
   int live_regs_mask = 0;
   int high_regs_pushed = 0;

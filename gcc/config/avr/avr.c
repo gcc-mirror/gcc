@@ -60,6 +60,8 @@ static int    io_address_p         PARAMS ((rtx x, int size));
 void          debug_hard_reg_set   PARAMS ((HARD_REG_SET set));
 static int    avr_valid_type_attribute PARAMS ((tree, tree, tree, tree));
 static int    avr_valid_decl_attribute PARAMS ((tree, tree, tree, tree));
+static void   avr_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
+static void   avr_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 
 /* Allocate registers from r25 to r8 for parameters for function calls */
 #define FIRST_CUM_REG 26
@@ -171,6 +173,10 @@ static const struct mcu_type_s avr_mcu_types[] = {
 int avr_case_values_threshold = 30000;
 
 /* Initialize the GCC target structure.  */
+#undef TARGET_ASM_FUNCTION_PROLOGUE
+#define TARGET_ASM_FUNCTION_PROLOGUE avr_output_function_prologue
+#undef TARGET_ASM_FUNCTION_EPILOGUE
+#define TARGET_ASM_FUNCTION_EPILOGUE avr_output_function_epilogue
 #undef TARGET_VALID_DECL_ATTRIBUTE
 #define TARGET_VALID_DECL_ATTRIBUTE avr_valid_decl_attribute
 
@@ -538,10 +544,10 @@ out_set_stack_ptr (file, before, after)
 
 /* Output function prologue */
 
-void
-function_prologue (file, size)
+static void
+avr_output_function_prologue (file, size)
      FILE *file;
-     int size;
+     HOST_WIDE_INT size;
 {
   int reg;
   int interrupt_func_p;
@@ -675,10 +681,10 @@ function_prologue (file, size)
 
 /* Output function epilogue */
 
-void
-function_epilogue (file, size)
+static void
+avr_output_function_epilogue (file, size)
      FILE *file;
-     int size;
+     HOST_WIDE_INT size;
 {
   int reg;
   int interrupt_func_p;

@@ -1092,8 +1092,6 @@ typedef struct m68hc11_args
 #define EXPAND_BUILTIN_VA_ARG(valist, type) \
   m68hc11_va_arg (valist, type)
 
-#define FUNCTION_EPILOGUE(FILE, SIZE)	m68hc11_function_epilogue(FILE, SIZE)
-
 /* For an arg passed partly in registers and partly in memory,
    this is the number of registers used.
    For args passed entirely in registers or entirely in memory, zero.

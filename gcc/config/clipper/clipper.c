@@ -31,14 +31,17 @@ Boston, MA 02111-1307, USA.  */
 #include "output.h"
 #include "insn-attr.h"
 #include "tree.h"
+#include "expr.h"
 #include "c-tree.h"
 #include "function.h"
-#include "expr.h"
 #include "flags.h"
 #include "recog.h"
 #include "tm_p.h"
 #include "target.h"
 #include "target-def.h"
+
+static void clipper_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
+static void clipper_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 
 extern char regs_ever_live[];
 
@@ -47,6 +50,10 @@ extern int frame_pointer_needed;
 static int frame_size;
 
 /* Initialize the GCC target structure.  */
+#undef TARGET_ASM_FUNCTION_PROLOGUE
+#define TARGET_ASM_FUNCTION_PROLOGUE clipper_output_function_prologue
+#undef TARGET_ASM_FUNCTION_EPILOGUE
+#define TARGET_ASM_FUNCTION_EPILOGUE clipper_output_function_epilogue
 
 struct gcc_target target = TARGET_INITIALIZER;
 
@@ -84,10 +91,10 @@ clipper_frame_size (lsize)
    can run with misaligned stack -> subq $4,sp / add $4,sp on entry and exit
    can be omitted.  */
 
-void
-output_function_prologue (file, lsize)
+static void
+clipper_output_function_prologue (file, lsize)
      FILE *file;
-     int lsize;				/* size for locals */
+     HOST_WIDE_INT lsize;			/* size for locals */
 {
   int i, offset;
   int size;
@@ -138,10 +145,10 @@ output_function_prologue (file, lsize)
     }
 }
 
-void
-output_function_epilogue (file, size)
+static void
+clipper_output_function_epilogue (file, size)
      FILE *file;
-     int size ATTRIBUTE_UNUSED;
+     HOST_WIDE_INT size ATTRIBUTE_UNUSED;
 {
   int i, offset;
 

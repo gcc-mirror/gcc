@@ -54,6 +54,8 @@ static void push PARAMS ((FILE *, int));
 static void pop PARAMS ((FILE *, int));
 static const char *cond_string PARAMS ((enum rtx_code));
 static int h8300_valid_decl_attribute PARAMS ((tree, tree, tree, tree));
+static void h8300_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
+static void h8300_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 
 /* CPU_TYPE, says what cpu we're compiling for.  */
 int cpu_type;
@@ -97,6 +99,11 @@ const char *h8_push_op, *h8_pop_op, *h8_mov_op;
 /* Initialize the GCC target structure.  */
 #undef TARGET_VALID_DECL_ATTRIBUTE
 #define TARGET_VALID_DECL_ATTRIBUTE h8300_valid_decl_attribute
+
+#undef TARGET_ASM_FUNCTION_PROLOGUE
+#define TARGET_ASM_FUNCTION_PROLOGUE h8300_output_function_prologue
+#undef TARGET_ASM_FUNCTION_EPILOGUE
+#define TARGET_ASM_FUNCTION_EPILOGUE h8300_output_function_epilogue
 
 struct gcc_target target = TARGET_INITIALIZER;
 
@@ -271,10 +278,10 @@ pop (file, rn)
 
 /* Output assembly language code for the function prologue.  */
 
-void
-function_prologue (file, size)
+static void
+h8300_output_function_prologue (file, size)
      FILE *file;
-     int size;
+     HOST_WIDE_INT size;
 {
   int fsize = round_frame_size (size);
   int idx;
@@ -382,10 +389,10 @@ function_prologue (file, size)
 
 /* Output assembly language code for the function epilogue.  */
 
-void
-function_epilogue (file, size)
+static void
+h8300_output_function_epilogue (file, size)
      FILE *file;
-     int size;
+     HOST_WIDE_INT size;
 {
   int fsize = round_frame_size (size);
   int idx;

@@ -158,8 +158,6 @@ extern union tree_node *rs6000_build_va_list PARAMS ((void));
 extern int first_reg_to_save PARAMS ((void));
 extern int first_fp_reg_to_save PARAMS ((void));
 extern rs6000_stack_t *rs6000_stack_info PARAMS ((void));
-extern void output_prolog PARAMS ((FILE *, int));
-extern void output_epilog PARAMS ((FILE *, int));
 extern void output_ascii PARAMS ((FILE *, const char *, int));
 extern void rs6000_gen_section_name PARAMS ((char **, const char *,
 					     const char *));

@@ -86,7 +86,7 @@ enum m88k_instruction {
 enum processor_type {
   PROCESSOR_M88100,
   PROCESSOR_M88110,
-  PROCESSOR_M88000,
+  PROCESSOR_M88000
 };
 
 /* Recast the cpu class to be the cpu attribute.  */
@@ -1046,9 +1046,6 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
 #define EXPAND_BUILTIN_VA_ARG(valist, type) \
   m88k_va_arg (valist, type)
 
-/* Generate the assembly code for function entry. */
-#define FUNCTION_PROLOGUE(FILE, SIZE) m88k_begin_prologue(FILE, SIZE)
-
 /* Perform special actions at the point where the prologue ends.  */
 #define FUNCTION_END_PROLOGUE(FILE) m88k_end_prologue(FILE)
 
@@ -1082,9 +1079,6 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
    functions that have frame pointers.
    No definition is equivalent to always zero.  */
 #define EXIT_IGNORE_STACK (1)
-
-/* Generate the assembly code for function exit. */
-#define FUNCTION_EPILOGUE(FILE, SIZE) m88k_end_epilogue(FILE, SIZE)
 
 /* Perform special actions at the point where the epilogue begins.  */
 #define FUNCTION_BEGIN_EPILOGUE(FILE) m88k_begin_epilogue(FILE)

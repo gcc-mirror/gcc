@@ -664,11 +664,6 @@ struct cum_arg
 #define FUNCTION_ARG(CUM, MODE, TYPE, NAMED) \
   function_arg (&CUM, MODE, TYPE, NAMED)
 
-/* Generate assembly output for the start of a function.  */
-
-#define FUNCTION_PROLOGUE(FILE, SIZE) \
-  function_prologue (FILE, SIZE)
-
 /* Output assembler code to FILE to increment profiler label # LABELNO
    for profiling a function entry.  */
 
@@ -709,14 +704,6 @@ struct cum_arg
    No definition is equivalent to always zero.  */
 
 #define EXIT_IGNORE_STACK 0
-
-/* This macro generates the assembly code for function exit,
-   on machines that need it.  If FUNCTION_EPILOGUE is not defined
-   then individual return instructions are generated for each
-   return statement.  Args are same as for FUNCTION_PROLOGUE.  */
-
-#define FUNCTION_EPILOGUE(FILE, SIZE) \
-  function_epilogue (FILE, SIZE)
 
 /* Output assembler code for a block containing the constant parts
    of a trampoline, leaving space for the variable parts.  

@@ -1162,16 +1162,6 @@ extern struct dsp16xx_frame_info current_frame_info;
 #define FUNCTION_ARG_REGNO_P(N)   \
   ((N) == REG_Y || (N) == REG_YL || (N) == REG_PROD || (N) == REG_PRODL)
 
-/* This macro generates the assembly code for function entry.
-   FILE is a stdio stream to output the code to.
-   SIZE is an int: how many units of temporary storage to allocate.
-   Refer to the array `regs_ever_live' to determine which registers
-   to save; `regs_ever_live[I]' is nonzero if register number I
-   is ever used in the function.  This macro is responsible for
-   knowing which registers should not be saved even if used. */
-
-#define FUNCTION_PROLOGUE(FILE, SIZE)     function_prologue(FILE, SIZE)
-
 /* Output assembler code to FILE to increment profiler label # LABELNO
    for profiling a function entry. */
 
@@ -1210,18 +1200,6 @@ extern struct dsp16xx_frame_info current_frame_info;
 
 #define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT)			\
   internal_error ("Trampolines not yet implemented");
-
-/* This macro generates the assembly code for function exit,
-   on machines that need it.  If FUNCTION_EPILOGUE is not defined
-   then individual return instructions are generated for each
-   return statement.  Args are same as for FUNCTION_PROLOGUE.
-
-   The function epilogue should not depend on the current stack pointer!
-   It should use the frame pointer only.  This is mandatory because
-   of alloca; we also take advantage of it to omit stack adjustments
-   before returning. */
-
-#define FUNCTION_EPILOGUE(FILE, SIZE)   function_epilogue(FILE, SIZE)
 
 /* A C expression which is nonzero if a function must have and use a
    frame pointer. If its value is nonzero the functions will have a

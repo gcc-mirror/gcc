@@ -624,6 +624,13 @@ static int ix86_comp_type_attributes PARAMS ((tree, tree));
 #undef TARGET_COMP_TYPE_ATTRIBUTES
 #define TARGET_COMP_TYPE_ATTRIBUTES ix86_comp_type_attributes
 
+#if defined (OSF_OS) || defined (TARGET_OSF1ELF)
+   static void ix86_osf_output_function_prologue PARAMS ((FILE *,
+							  HOST_WIDE_INT));
+#  undef TARGET_ASM_FUNCTION_PROLOGUE
+#  define TARGET_ASM_FUNCTION_PROLOGUE ix86_osf_output_function_prologue
+#endif
+
 struct gcc_target target = TARGET_INITIALIZER;
 
 /* Sometimes certain combinations of command options do not make
@@ -930,6 +937,105 @@ ix86_valid_type_attribute_p (type, attributes, identifier, args)
 
   return 0;
 }
+
+#if defined (OSF_OS) || defined (TARGET_OSF1ELF)
+
+/* Generate the assembly code for function entry.  FILE is a stdio
+   stream to output the code to.  SIZE is an int: how many units of
+   temporary storage to allocate.
+
+   Refer to the array `regs_ever_live' to determine which registers to
+   save; `regs_ever_live[I]' is nonzero if register number I is ever
+   used in the function.  This function is responsible for knowing
+   which registers should not be saved even if used.
+
+   We override it here to allow for the new profiling code to go before
+   the prologue and the old mcount code to go after the prologue (and
+   after %ebx has been set up for ELF shared library support).  */
+
+static void
+ix86_osf_output_function_prologue (file, size)
+     FILE *file;
+     HOST_WIDE_INT size;
+{
+  char *prefix = "";
+  char *lprefix = LPREFIX;
+  int labelno = profile_label_no;
+
+#ifdef OSF_OS
+
+  if (TARGET_UNDERSCORES)
+    prefix = "_";
+
+  if (profile_flag && OSF_PROFILE_BEFORE_PROLOGUE)
+    {
+      if (!flag_pic && !HALF_PIC_P ())
+	{
+	  fprintf (file, "\tmovl $%sP%d,%%edx\n", lprefix, labelno);
+	  fprintf (file, "\tcall *%s_mcount_ptr\n", prefix);
+	}
+
+      else if (HALF_PIC_P ())
+	{
+	  rtx symref;
+
+	  HALF_PIC_EXTERNAL ("_mcount_ptr");
+	  symref = HALF_PIC_PTR (gen_rtx_SYMBOL_REF (Pmode,
+						     "_mcount_ptr"));
+
+	  fprintf (file, "\tmovl $%sP%d,%%edx\n", lprefix, labelno);
+	  fprintf (file, "\tmovl %s%s,%%eax\n", prefix,
+		   XSTR (symref, 0));
+	  fprintf (file, "\tcall *(%%eax)\n");
+	}
+
+      else
+	{
+	  static int call_no = 0;
+
+	  fprintf (file, "\tcall %sPc%d\n", lprefix, call_no);
+	  fprintf (file, "%sPc%d:\tpopl %%eax\n", lprefix, call_no);
+	  fprintf (file, "\taddl $_GLOBAL_OFFSET_TABLE_+[.-%sPc%d],%%eax\n",
+		   lprefix, call_no++);
+	  fprintf (file, "\tleal %sP%d@GOTOFF(%%eax),%%edx\n",
+		   lprefix, labelno);
+	  fprintf (file, "\tmovl %s_mcount_ptr@GOT(%%eax),%%eax\n",
+		   prefix);
+	  fprintf (file, "\tcall *(%%eax)\n");
+	}
+    }
+
+#else  /* !OSF_OS */
+
+  if (profile_flag && OSF_PROFILE_BEFORE_PROLOGUE)
+    {
+      if (!flag_pic)
+	{
+	  fprintf (file, "\tmovl $%sP%d,%%edx\n", lprefix, labelno);
+	  fprintf (file, "\tcall *%s_mcount_ptr\n", prefix);
+	}
+
+      else
+	{
+	  static int call_no = 0;
+
+	  fprintf (file, "\tcall %sPc%d\n", lprefix, call_no);
+	  fprintf (file, "%sPc%d:\tpopl %%eax\n", lprefix, call_no);
+	  fprintf (file, "\taddl $_GLOBAL_OFFSET_TABLE_+[.-%sPc%d],%%eax\n",
+		   lprefix, call_no++);
+	  fprintf (file, "\tleal %sP%d@GOTOFF(%%eax),%%edx\n",
+		   lprefix, labelno);
+	  fprintf (file, "\tmovl %s_mcount_ptr@GOT(%%eax),%%eax\n",
+		   prefix);
+	  fprintf (file, "\tcall *(%%eax)\n");
+	}
+    }
+#endif /* !OSF_OS */
+
+  function_prologue (file, size);
+}
+
+#endif  /* OSF_OS || TARGET_OSF1ELF */
 
 /* Return 0 if the attributes for two types are incompatible, 1 if they
    are compatible, and 2 if they are nearly compatible (which causes a

@@ -19,6 +19,7 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
+#define VMS_TARGET 0
 
 /* Names to predefine in the preprocessor for this target machine.  */
 
@@ -452,31 +453,6 @@ enum reg_class { NO_REGS, ALL_REGS, LIM_REG_CLASSES };
 
 #define FUNCTION_ARG(CUM, MODE, TYPE, NAMED) 0
 
-/* This macro generates the assembly code for function entry.
-   FILE is a stdio stream to output the code to.
-   SIZE is an int: how many units of temporary storage to allocate,
-   adjusted by STARTING_FRAME_OFFSET to accommodate vms.h.
-   Refer to the array `regs_ever_live' to determine which registers
-   to save; `regs_ever_live[I]' is nonzero if register number I
-   is ever used in the function.  This macro is responsible for
-   knowing which registers should not be saved even if used.  */
-
-#define FUNCTION_PROLOGUE(FILE, SIZE)     \
-{ register int regno;						\
-  register int mask = 0;					\
-  register int size = SIZE - STARTING_FRAME_OFFSET;		\
-  extern char call_used_regs[];					\
-  for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)	\
-    if (regs_ever_live[regno] && !call_used_regs[regno])	\
-       mask |= 1 << regno;					\
-  fprintf (FILE, "\t.word 0x%x\n", mask);			\
-  MAYBE_VMS_FUNCTION_PROLOGUE(FILE)				\
-  if ((size) >= 64) fprintf (FILE, "\tmovab %d(sp),sp\n", -size);\
-  else if (size) fprintf (FILE, "\tsubl2 $%d,sp\n", (size)); }
-
-/* vms.h redefines this.  */
-#define MAYBE_VMS_FUNCTION_PROLOGUE(FILE)
-
 /* Output assembler code to FILE to increment profiler label # LABELNO
    for profiling a function entry.  */
 
@@ -509,13 +485,6 @@ enum reg_class { NO_REGS, ALL_REGS, LIM_REG_CLASSES };
    No definition is equivalent to always zero.  */
 
 #define EXIT_IGNORE_STACK 1
-
-/* This macro generates the assembly code for function exit,
-   on machines that need it.  If FUNCTION_EPILOGUE is not defined
-   then individual return instructions are generated for each
-   return statement.  Args are same as for FUNCTION_PROLOGUE.  */
-
-/* #define FUNCTION_EPILOGUE(FILE, SIZE)  */
 
 /* Store in the variable DEPTH the initial difference between the
    frame pointer reg contents and the stack pointer reg contents,

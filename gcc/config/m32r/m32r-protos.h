@@ -29,8 +29,6 @@ extern void   m32r_init_expanders		PARAMS ((void));
 extern unsigned m32r_compute_frame_size		PARAMS ((int));
 extern int    m32r_first_insn_address		PARAMS ((void));
 extern void   m32r_expand_prologue		PARAMS ((void));
-extern void   m32r_output_function_prologue	PARAMS ((FILE *, int));
-extern void   m32r_output_function_epilogue	PARAMS ((FILE *, int));
 extern void   m32r_finalize_pic			PARAMS ((void));
 extern void   m32r_asm_file_start		PARAMS ((FILE *));
 extern void   m32r_sched_init 			PARAMS ((FILE *, int));

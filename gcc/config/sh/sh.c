@@ -154,10 +154,14 @@ static void mark_use PARAMS ((rtx, rtx *));
 static HOST_WIDE_INT rounded_frame_size PARAMS ((int));
 static rtx mark_constant_pool_use PARAMS ((rtx));
 static int sh_valid_decl_attribute PARAMS ((tree, tree, tree, tree));
+static void sh_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_VALID_DECL_ATTRIBUTE
 #define TARGET_VALID_DECL_ATTRIBUTE sh_valid_decl_attribute
+
+#undef TARGET_ASM_FUNCTION_EPILOGUE
+#define TARGET_ASM_FUNCTION_EPILOGUE sh_output_function_epilogue
 
 struct gcc_target target = TARGET_INITIALIZER;
 
@@ -4194,10 +4198,10 @@ sh_need_epilogue ()
 
 /* Clear variables at function end.  */
 
-void
-function_epilogue (stream, size)
-     FILE *stream ATTRIBUTE_UNUSED;
-     int size ATTRIBUTE_UNUSED;
+static void
+sh_output_function_epilogue (file, size)
+     FILE *file ATTRIBUTE_UNUSED;
+     HOST_WIDE_INT size ATTRIBUTE_UNUSED;
 {
   trap_exit = pragma_interrupt = pragma_trapa = pragma_nosave_low_regs = 0;
   sh_need_epilogue_known = 0;

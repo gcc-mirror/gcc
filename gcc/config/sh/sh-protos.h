@@ -116,7 +116,6 @@ extern void output_file_start PARAMS ((FILE *));
 extern void sh_expand_prologue PARAMS ((void));
 extern void sh_expand_epilogue PARAMS ((void));
 extern int sh_need_epilogue PARAMS ((void));
-extern void function_epilogue PARAMS ((FILE *, int));
 extern int initial_elimination_offset PARAMS ((int, int));
 extern int fldi_ok PARAMS ((void));
 

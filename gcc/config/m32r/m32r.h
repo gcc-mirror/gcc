@@ -1190,33 +1190,11 @@ M32R_STACK_ALIGN (current_function_outgoing_args_size)
    init_emit, once for each function, before code is generated.  */
 #define INIT_EXPANDERS m32r_init_expanders ()
 
-/* This macro generates the assembly code for function entry.
-   FILE is a stdio stream to output the code to.
-   SIZE is an int: how many units of temporary storage to allocate.
-   Refer to the array `regs_ever_live' to determine which registers
-   to save; `regs_ever_live[I]' is nonzero if register number I
-   is ever used in the function.  This macro is responsible for
-   knowing which registers should not be saved even if used.  */
-#define FUNCTION_PROLOGUE(FILE, SIZE) \
-m32r_output_function_prologue (FILE, SIZE)
-
 /* EXIT_IGNORE_STACK should be nonzero if, when returning from a function,
    the stack pointer does not matter.  The value is tested only in
    functions that have frame pointers.
    No definition is equivalent to always zero.  */
 #define EXIT_IGNORE_STACK 1
-
-/* This macro generates the assembly code for function exit,
-   on machines that need it.  If FUNCTION_EPILOGUE is not defined
-   then individual return instructions are generated for each
-   return statement.  Args are same as for FUNCTION_PROLOGUE.
-
-   The function epilogue should not depend on the current stack pointer!
-   It should use the frame pointer only.  This is mandatory because
-   of alloca; we also take advantage of it to omit stack adjustments
-   before returning.  */
-#define FUNCTION_EPILOGUE(FILE, SIZE) \
-m32r_output_function_epilogue (FILE, SIZE)
 
 /* Output assembler code to FILE to increment profiler label # LABELNO
    for profiling a function entry.  */

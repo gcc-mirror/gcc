@@ -550,51 +550,6 @@ enum reg_class { NO_REGS, R2, R0_1, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLA
 
 #define DEFAULT_CALLER_SAVES
 
-
-/* This macro generates the assembly code for function entry.
-   FILE is a stdio stream to output the code to.
-   SIZE is an int: how many units of temporary storage to allocate.
-   Refer to the array `regs_ever_live' to determine which registers
-   to save; `regs_ever_live[I]' is nonzero if register number I
-   is ever used in the function.  This macro is responsible for
-   knowing which registers should not be saved even if used.  */
-
-
-#define FUNCTION_PROLOGUE(FILE, SIZE) {   \
-  if (flag_verbose_asm)						\
-    {								\
-      int regno, regs_used = 0;					\
-      fprintf (FILE, "\t; registers used: ");			\
-      for (regno = 0; regno < 14; regno++)			\
-	if (regs_ever_live[regno])				\
-	  {							\
-	    fprintf (FILE, " %s", reg_names[regno]);		\
-	    regs_used++;					\
-	  }							\
-      if (regs_used == 0)					\
-	fprintf (FILE, "(none)");			 	\
-    }								\
-  if (SIZE > 0)							\
-    {								\
-      fprintf (FILE, "\n\t%s\tr15,%d",				\
-	       (SIZE <= 16 ? "sisp" : "sim"), SIZE);		\
-      if (flag_verbose_asm)					\
-	fprintf (FILE, "  ; reserve local-variable space");	\
-    }								\
-  if (frame_pointer_needed)					\
-    {								\
-      fprintf(FILE, "\n\tpshm\tr14,r14");			\
-      if (flag_verbose_asm)					\
-	fprintf (FILE, "  ; push old frame");			\
-      fprintf (FILE, "\n\tlr\tr14,r15");			\
-      if (flag_verbose_asm)					\
-	fprintf (FILE, "  ; set new frame");			\
-    }								\
-  fprintf (FILE, "\n");					 	\
-  program_counter = 0;						\
-  jmplbl_ndx = -1;						\
-}
-
 /************* 1750: PROFILER HANDLING NOT YET DONE !!!!!!! *************/
 /* Output assembler code to FILE to increment profiler label # LABELNO
    for profiling a function entry.  */
@@ -618,38 +573,6 @@ enum reg_class { NO_REGS, R2, R0_1, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLA
    No definition is equivalent to always zero.  */
 
 #define EXIT_IGNORE_STACK 0
-
-/* This macro generates the assembly code for function exit,
-   on machines that need it.  If FUNCTION_EPILOGUE is not defined
-   then individual return instructions are generated for each
-   return statement.  Args are same as for FUNCTION_PROLOGUE.
-
-   The function epilogue should not depend on the current stack pointer!
-   It should use the frame pointer only.  This is mandatory because
-   of alloca; we also take advantage of it to omit stack adjustments
-   before returning. */
-
-#define FUNCTION_EPILOGUE(FILE, SIZE) {			\
-  if (frame_pointer_needed)					\
-    {								\
-      fprintf (FILE, "\tlr\tr15,r14");				\
-      if (flag_verbose_asm)					\
-        fprintf (FILE, "  ; set stack ptr to frame ptr");	\
-      fprintf (FILE, "\n\tpopm\tr14,r14");			\
-      if (flag_verbose_asm)					\
-        fprintf (FILE, "  ; restore previous frame ptr");	\
-      fprintf (FILE, "\n");					\
-    }								\
-  if (SIZE > 0)							\
-    {								\
-      fprintf (FILE, "\t%s\tr15,%d",				\
-	       (SIZE <= 16 ? "aisp" : "aim"), SIZE);		\
-      if (flag_verbose_asm)					\
-	fprintf (FILE, "  ; free up local-var space");		\
-      fprintf (FILE, "\n");					\
-    }								\
-  fprintf (FILE, "\turs\tr15\n\n");				\
-}
 
 /* If the memory address ADDR is relative to the frame pointer,
    correct it to be relative to the stack pointer instead.

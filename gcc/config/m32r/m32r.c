@@ -64,10 +64,17 @@ static void  block_move_call			PARAMS ((rtx, rtx, rtx));
 static int   m32r_is_insn			PARAMS ((rtx));
 static int   m32r_valid_decl_attribute		PARAMS ((tree, tree,
 							 tree, tree));
+static void  m32r_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
+static void  m32r_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_VALID_DECL_ATTRIBUTE
 #define TARGET_VALID_DECL_ATTRIBUTE m32r_valid_decl_attribute
+
+#undef TARGET_ASM_FUNCTION_PROLOGUE
+#define TARGET_ASM_FUNCTION_PROLOGUE m32r_output_function_prologue
+#undef TARGET_ASM_FUNCTION_EPILOGUE
+#define TARGET_ASM_FUNCTION_EPILOGUE m32r_output_function_epilogue
 
 struct gcc_target target = TARGET_INITIALIZER;
 
@@ -1962,10 +1969,10 @@ m32r_expand_prologue ()
    Note, if this is changed, you need to mirror the changes in
    m32r_compute_frame_size which calculates the prolog size.  */
 
-void
+static void
 m32r_output_function_prologue (file, size)
      FILE * file;
-     int    size;
+     HOST_WIDE_INT size;
 {
   enum m32r_function_type fn_type = m32r_compute_function_type (current_function_decl);
 
@@ -1992,10 +1999,10 @@ m32r_output_function_prologue (file, size)
 /* Do any necessary cleanup after a function to restore stack, frame,
    and regs. */
 
-void
+static void
 m32r_output_function_epilogue (file, size)
      FILE * file;
-     int    size ATTRIBUTE_UNUSED;
+     HOST_WIDE_INT size ATTRIBUTE_UNUSED;
 {
   int regno;
   int noepilogue = FALSE;

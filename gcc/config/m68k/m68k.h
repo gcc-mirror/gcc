@@ -1050,9 +1050,6 @@ extern enum reg_class regno_reg_class[];
 		      : GET_MODE_SIZE (MODE))))  		\
  ? 2 - (CUM) / 4 : 0)
 
-/* Generate the assembly code for function entry. */
-#define FUNCTION_PROLOGUE(FILE, SIZE) output_function_prologue(FILE, SIZE)
-
 /* Output assembler code to FILE to increment profiler label # LABELNO
    for profiling a function entry.  */
 
@@ -1228,9 +1225,6 @@ while(0)
 
 #define EXIT_IGNORE_STACK 1
 
-/* Generate the assembly code for function exit. */
-#define FUNCTION_EPILOGUE(FILE, SIZE) output_function_epilogue (FILE, SIZE)
-  
 /* This is a hook for other tm files to change.  */
 /* #define FUNCTION_EXTRA_EPILOGUE(FILE, SIZE) */
 

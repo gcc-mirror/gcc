@@ -29,7 +29,6 @@ extern int    arm_regno_class 		PARAMS ((int));
 extern void   arm_finalize_pic		PARAMS ((int));
 extern int    arm_volatile_func		PARAMS ((void));
 extern const char * arm_output_epilogue	PARAMS ((int));
-extern void   output_func_epilogue	PARAMS ((int));
 extern void   arm_expand_prologue	PARAMS ((void));
 /* Used in arm.md, but defined in output.c.  */
 extern void   assemble_align		PARAMS ((int)); 
@@ -123,7 +122,6 @@ extern const char * arithmetic_instr	PARAMS ((rtx, int));
 extern void   output_ascii_pseudo_op	PARAMS ((FILE *, const unsigned char *, int));
 extern const char * output_return_instruction PARAMS ((rtx, int, int));
 extern void   arm_poke_function_name	PARAMS ((FILE *, char *));
-extern void   output_arm_prologue	PARAMS ((FILE *, int));
 extern void   arm_print_operand		PARAMS ((FILE *, rtx, int));
 extern void   arm_print_operand_address	PARAMS ((FILE *, rtx));
 extern void   arm_final_prescan_insn	PARAMS ((rtx));
@@ -160,7 +158,6 @@ extern void   thumb_expand_epilogue	PARAMS ((void));
 extern int    is_called_in_ARM_mode	PARAMS ((tree));
 #endif
 extern int    thumb_shiftable_const	PARAMS ((unsigned HOST_WIDE_INT));
-extern void   output_thumb_prologue	PARAMS ((FILE *));
 #ifdef RTX_CODE
 extern void   thumb_final_prescan_insn	PARAMS ((rtx));
 extern const char * thumb_load_double_from_address

@@ -50,8 +50,14 @@ static void output_fpops PARAMS ((FILE *));
 static void init_fpops PARAMS ((void));
 static int memory_offset_in_range_p PARAMS ((rtx, enum machine_mode, int, int));
 static unsigned int hash_rtx PARAMS ((rtx));
+static void romp_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
+static void romp_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 
 /* Initialize the GCC target structure.  */
+#undef TARGET_ASM_FUNCTION_PROLOGUE
+#define TARGET_ASM_FUNCTION_PROLOGUE romp_output_function_prologue
+#undef TARGET_ASM_FUNCTION_EPILOGUE
+#define TARGET_ASM_FUNCTION_EPILOGUE romp_output_function_epilogue
 
 struct gcc_target target = TARGET_INITIALIZER;
 
@@ -1078,14 +1084,14 @@ romp_pushes_stack ()
    word for static link, as many words as required for general register
    save area, plus 2 words for each FP reg 2-7 that must be saved.  */
 
-void
-output_prolog (file, size)
+static void
+romp_output_function_prologue (file, size)
      FILE *file;
-     int size;
+     HOST_WIDE_INT size;
 {
   int first_reg;
   int reg_save_offset;
-  int fp_save = size + current_function_outgoing_args_size;
+  HOST_WIDE_INT fp_save = size + current_function_outgoing_args_size;
 
   init_fpops ();
 
@@ -1133,7 +1139,7 @@ output_prolog (file, size)
 }
 
 /* Output the offset information used by debuggers.
-   This is the exactly the total_size value of output_epilog
+   This is the exactly the total_size value of output_function_epilogue()
    which is added to the frame pointer. However the value in the debug
    table is encoded in a space-saving way as follows:
 
@@ -1188,17 +1194,17 @@ output_encoded_offset (file, reg_offset)
 
 /* Write function epilogue.  */
 
-void
-output_epilog (file, size)
+static void
+romp_output_function_epilogue (file, size)
      FILE *file;
-     int size;
+     HOST_WIDE_INT size;
 {
   int first_reg = first_reg_to_save();
   int pushes_stack = romp_pushes_stack ();
   int reg_save_offset = - ((16 - first_reg) + 1 + 4 + 4) * 4;
-  int total_size = (size + romp_sa_size ()
-		    + current_function_outgoing_args_size);
-  int fp_save = size + current_function_outgoing_args_size;
+  HOST_WIDE_INT total_size = (size + romp_sa_size ()
+			      + current_function_outgoing_args_size);
+  HOST_WIDE_INT fp_save = size + current_function_outgoing_args_size;
   int long_frame = total_size >= 32768;
   rtx insn = get_last_insn ();
   int write_code = 1;

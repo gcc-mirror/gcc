@@ -70,8 +70,10 @@ static int m68hc11_valid_type_attribute_p PARAMS((tree, tree,
 						  tree, tree));
 
 void create_regs_rtx PARAMS ((void));
+static void m68hc11_add_gc_roots PARAMS ((void));
 
 static void asm_print_register PARAMS ((FILE *, int));
+static void m68hc11_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 
 rtx m68hc11_soft_tmp_reg;
 
@@ -202,13 +204,14 @@ const char *m68hc11_regparm_string;
 const char *m68hc11_reg_alloc_order;
 const char *m68hc11_soft_reg_count;
 
-static void m68hc11_add_gc_roots PARAMS ((void));
-
 static int nb_soft_regs;
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_VALID_TYPE_ATTRIBUTE
 #define TARGET_VALID_TYPE_ATTRIBUTE m68hc11_valid_type_attribute_p
+
+#undef TARGET_ASM_FUNCTION_EPILOGUE
+#define TARGET_ASM_FUNCTION_EPILOGUE m68hc11_output_function_epilogue
 
 struct gcc_target target = TARGET_INITIALIZER;
 
@@ -1529,10 +1532,10 @@ m68hc11_total_frame_size ()
   return size;
 }
 
-void
-m68hc11_function_epilogue (out, size)
+static void
+m68hc11_output_function_epilogue (out, size)
      FILE *out ATTRIBUTE_UNUSED;
-     int size ATTRIBUTE_UNUSED;
+     HOST_WIDE_INT size ATTRIBUTE_UNUSED;
 {
   /* We catch the function epilogue generation to have a chance
      to clear the z_replacement_completed flag.  */

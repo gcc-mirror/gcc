@@ -1217,11 +1217,6 @@ extern int current_function_anonymous_args;
 
 #define EXIT_IGNORE_STACK 1
 
-/* Generate the assembly code for function exit
-   Just dump out any accumulated constant table.  */
-
-#define FUNCTION_EPILOGUE(STREAM, SIZE)  function_epilogue ((STREAM), (SIZE))
-
 /* 
    On the SH, the trampoline looks like
    2 0002 D202     	   	mov.l	l2,r2

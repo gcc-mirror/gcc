@@ -392,7 +392,8 @@ extern double (atof) ();
 /* Hexadecimal floating constant input for use with host computer's
    fp arithmetic.  */
 #ifndef REAL_VALUE_HTOF
-extern REAL_VALUE_TYPE real_hex_to_f PARAMS ((char *, enum machine_mode));
+extern REAL_VALUE_TYPE real_hex_to_f PARAMS ((const char *,
+					      enum machine_mode));
 #define REAL_VALUE_HTOF(s,m) real_hex_to_f(s,m)
 #endif
 

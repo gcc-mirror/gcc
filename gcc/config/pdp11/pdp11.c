@@ -52,8 +52,14 @@ int current_first_parm_offset;
 
 static rtx find_addr_reg PARAMS ((rtx)); 
 static const char *singlemove_string PARAMS ((rtx *)); 
+static void pdp11_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
+static void pdp11_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 
 /* Initialize the GCC target structure.  */
+#undef TARGET_ASM_FUNCTION_PROLOGUE
+#define TARGET_ASM_FUNCTION_PROLOGUE pdp11_output_function_prologue
+#undef TARGET_ASM_FUNCTION_EPILOGUE
+#define TARGET_ASM_FUNCTION_EPILOGUE pdp11_output_function_epilogue
 
 struct gcc_target target = TARGET_INITIALIZER;
 
@@ -102,23 +108,43 @@ expand_shift_operand (op, mode)
    knowing which registers should not be saved even if used.  
 */
 
-void 
-output_function_prologue(stream, size)
-  FILE *stream;
-  int size;
-{							       
-    int fsize = ((size) + 1) & ~1;      				
-    int regno;
+#ifdef TWO_BSD
 
+static void
+pdp11_output_function_prologue (stream, size)
+     FILE *stream;
+     HOST_WIDE_INT size;
+{							       
+  fprintf (stream, "\tjsr	r5, csv\n");
+  if (size)
+    {
+      fprintf (stream, "\t/*abuse empty parameter slot for locals!*/\n");
+      if (size > 2)
+	fprintf(stream, "\tsub $%d, sp\n", size - 2);
+
+    }
+}
+
+#else  /* !TWO_BSD */
+
+static void
+pdp11_output_function_prologue (stream, size)
+     FILE *stream;
+     HOST_WIDE_INT size;
+{							       
+    HOST_WIDE_INT fsize = ((size) + 1) & ~1;
+    int regno;
     int via_ac = -1;
-    
-    fprintf (stream, "\n\t;	/* function prologue %s*/\n", current_function_name);		
+
+    fprintf (stream,
+	     "\n\t;	/* function prologue %s*/\n", current_function_name);
 
     /* if we are outputting code for main, 
        the switch FPU to right mode if TARGET_FPU */
     if (MAIN_NAME_P (DECL_NAME (current_function_decl)) && TARGET_FPU)
     {
-	fprintf(stream, "\t;/* switch cpu to double float, single integer */\n");
+	fprintf(stream,
+		"\t;/* switch cpu to double float, single integer */\n");
 	fprintf(stream, "\tsetd\n");
 	fprintf(stream, "\tseti\n\n");
     }
@@ -176,6 +202,8 @@ output_function_prologue(stream, size)
     fprintf (stream, "\t;/* end of prologue */\n\n");		
 }
 
+#endif /* !TWO_BSD */
+
 /*
    The function epilogue should not depend on the current stack pointer!
    It should use the frame pointer only.  This is mandatory because
@@ -195,13 +223,25 @@ output_function_prologue(stream, size)
 
    maybe as option if you want to generate code for kernel mode? */
 
+#ifdef TWO_BSD
 
-void 
-output_function_epilogue(stream, size)
-  FILE *stream;
-  int size;
+static void
+pdp11_output_function_epilogue (stream, size)
+     FILE *stream;
+     HOST_WIDE_INT size ATTRIBUTE_UNUSED;
 {								
-    int fsize = ((size) + 1) & ~1;      				
+  fprintf (stream, "\t/* SP ignored by cret? */\n");
+  fprintf (stream, "\tjmp cret\n");
+}
+
+#else  /* !TWO_BSD */
+
+static void
+pdp11_output_function_epilogue (stream, size)
+     FILE *stream;
+     HOST_WIDE_INT size;
+{								
+    HOST_WIDE_INT fsize = ((size) + 1) & ~1;
     int i, j, k;
 
     int via_ac;
@@ -299,6 +339,8 @@ output_function_epilogue(stream, size)
     fprintf (stream, "\trts pc\n");					
     fprintf (stream, "\t;/* end of epilogue*/\n\n\n");		
 }
+
+#endif /* !TWO_BSD */
 	
 /* Return the best assembler insn template
    for moving operands[1] into operands[0] as a fullword.  */

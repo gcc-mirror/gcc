@@ -1551,16 +1551,6 @@ typedef struct rs6000_args
    argument is passed depends on whether or not it is a named argument.  */
 #define STRICT_ARGUMENT_NAMING 1
 
-/* This macro generates the assembly code for function entry.
-   FILE is a stdio stream to output the code to.
-   SIZE is an int: how many units of temporary storage to allocate.
-   Refer to the array `regs_ever_live' to determine which registers
-   to save; `regs_ever_live[I]' is nonzero if register number I
-   is ever used in the function.  This macro is responsible for
-   knowing which registers should not be saved even if used.  */
-
-#define FUNCTION_PROLOGUE(FILE, SIZE) output_prolog (FILE, SIZE)
-
 /* Output assembler code to FILE to increment profiler label # LABELNO
    for profiling a function entry.  */
 
@@ -1585,18 +1575,6 @@ typedef struct rs6000_args
    || (current_function_calls_eh_return				\
        && TARGET_AIX						\
        && (REGNO) == TOC_REGISTER))
-
-/* This macro generates the assembly code for function exit,
-   on machines that need it.  If FUNCTION_EPILOGUE is not defined
-   then individual return instructions are generated for each
-   return statement.  Args are same as for FUNCTION_PROLOGUE.
-
-   The function epilogue should not depend on the current stack pointer!
-   It should use the frame pointer only.  This is mandatory because
-   of alloca; we also take advantage of it to omit stack adjustments
-   before returning.  */
-
-#define FUNCTION_EPILOGUE(FILE, SIZE) output_epilog (FILE, SIZE)
 
 /* TRAMPOLINE_TEMPLATE deleted */
 

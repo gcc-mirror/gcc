@@ -2584,23 +2584,6 @@ typedef struct mips_args {
 		: GET_MODE_ALIGNMENT(MODE)))
 
 
-/* This macro generates the assembly code for function entry.
-   FILE is a stdio stream to output the code to.
-   SIZE is an int: how many units of temporary storage to allocate.
-   Refer to the array `regs_ever_live' to determine which registers
-   to save; `regs_ever_live[I]' is nonzero if register number I
-   is ever used in the function.  This macro is responsible for
-   knowing which registers should not be saved even if used.  */
-
-#define FUNCTION_PROLOGUE(FILE, SIZE) function_prologue(FILE, SIZE)
-
-/* This macro generates the assembly code for function exit,
-   on machines that need it.  If FUNCTION_EPILOGUE is not defined
-   then individual return instructions are generated for each
-   return statement.  Args are same as for FUNCTION_PROLOGUE.  */
-
-#define FUNCTION_EPILOGUE(FILE, SIZE) function_epilogue(FILE, SIZE)
-
 /* Tell prologue and epilogue if register REGNO should be saved / restored.  */
 
 #define MUST_SAVE_REGISTER(regno) \
