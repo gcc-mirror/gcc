@@ -1,3 +1,25 @@
+2004-03-01  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips-protos.h (enum mips_symbol_type): Move from mips.h.
+	(NUM_SYMBOL_TYPES): Likewise.
+	(SYMBOL_64_HIGH, SYMBOL_64_MID, SYMBOL_64_LOW): New symbol types.
+	(mips_unspec_address): Declare.
+	(mips_gotoff_page, mips_gotoff_global): Delete.
+	* config/mips/mips.h (PREDICATE_CODES): Add general_symbolic_operand.
+	* config/mips/mips.c (enum mips_symbol_type, NUM_SYMBOL_TYPES): Delete.
+	(mips_symbolic_constant_p, mips_symbolic_address_p)
+	(mips_symbol_insns): Handle new symbol types.
+	(general_symbolic_operand): New predicate.
+	(mips_unspec_address): Make extern.
+	(mips_gotoff_page, mips_gotoff_global): Delete.
+	(override_options): Allow -mabi=64 -mno-abicalls -mexplicit-relocs.
+	Handle new symbol types.
+	* config/mips/mips.md (*lea_high64, *lea64): New patterns.
+	(*xgot_hi[sd]i, *xgot_lo[sd]i, *got_disp[sd]i, *got_disp[sd]i): Call
+	mips_unspec_address directly.
+	* doc/invoke.texi: Remove the -mabi=64 -mno-abicalls exception from
+	the documentation of -mexplicit-relocs.
+
 2004-03-01  Jeff Law  <law@redhat.com>
 
 	* fold-const.c (fold): An equality comparison of a non-weak object
