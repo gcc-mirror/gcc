@@ -1136,6 +1136,9 @@ unroll_loop (loop, insn_count, strength_reduce_p)
   /* And whether the loop has been preconditioned.  */
   loop_info->preconditioned = loop_preconditioned;
 
+  /* Remember whether it was preconditioned for the second loop pass. */
+  NOTE_PRECONDITIONED (loop->end) = loop_preconditioned;
+
   /* For each biv and giv, determine whether it can be safely split into
      a different variable for each unrolled copy of the loop body.
      We precalculate and save this info here, since computing it is

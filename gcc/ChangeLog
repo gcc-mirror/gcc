@@ -1,3 +1,9 @@
+2002-10-07  Dale Johannesen  <dalej@apple.com>
+	* rtl.h:  Add NOTE_PRECONDITIONED.
+	* unroll.c:  Set it.
+	* loop.c:  Set loop_info->preconditioned from it.
+	* doloop.c:  Permit doloop treatment when loop_info->preconditoned.
+
 2002-10-07  Richard Henderson  <rth@redhat.com>
 
 	* config/i960/i960.c (i960_setup_incoming_varargs): Create a
