@@ -21,7 +21,7 @@
 
 /* Driver configuration.  */
 
-#undef SWITCH_TAKES_ARG
+#undef  SWITCH_TAKES_ARG
 #define SWITCH_TAKES_ARG(CHAR)						\
   (DEFAULT_SWITCH_TAKES_ARG (CHAR) || (CHAR) == 'G')
 
@@ -38,28 +38,26 @@
 #define TARGET_CPU_CPP_BUILTINS()               \
   do                                            \
     {                                           \
-     builtin_define ("__iq2000__"); \
-     builtin_assert ("cpu=iq2000"); \
-     builtin_assert ("machine=iq2000"); \
+      builtin_define ("__iq2000__"); 		\
+      builtin_assert ("cpu=iq2000"); 		\
+      builtin_assert ("machine=iq2000");	\
     }                                           \
   while (0)
 
-
 extern int	target_flags;
 
-#define MASK_GPOPT         0x00000008   /* Optimize for global pointer */
-#define MASK_EMBEDDED_DATA 0x00008000   /* Reduce RAM usage, not fast code */
+#define MASK_GPOPT         0x00000008   /* Optimize for global pointer.  */
+#define MASK_EMBEDDED_DATA 0x00008000   /* Reduce RAM usage, not fast code.  */
 #define MASK_UNINIT_CONST_IN_RODATA \
                            0x00800000   /* Store uninitialized
-                                           consts in rodata */
+                                           consts in rodata.  */
 
 /* Macros used in the machine description to test the flags.  */
 
 #define TARGET_STATS		0
 
-					/* for embedded systems, optimize for
-					   reduced RAM space instead of for
-					   fastest code.  */
+/* For embedded systems, optimize for reduced RAM space instead of for
+   fastest code.  */
 #define TARGET_EMBEDDED_DATA	(target_flags & MASK_EMBEDDED_DATA)
 
 #define TARGET_DEBUG_MODE	(target_flags & 0)
@@ -134,23 +132,15 @@ extern int	target_flags;
 
 /* Storage Layout.  */
 
-#define BITS_BIG_ENDIAN 0
-
-#define BYTES_BIG_ENDIAN 1 
-
-#define WORDS_BIG_ENDIAN 1
-
-#define LIBGCC2_WORDS_BIG_ENDIAN 1
-
-#define BITS_PER_WORD 32
-
-#define MAX_BITS_PER_WORD 64
-
-#define UNITS_PER_WORD 4
-
-#define MIN_UNITS_PER_WORD 4
-
-#define POINTER_SIZE 32
+#define BITS_BIG_ENDIAN 		0
+#define BYTES_BIG_ENDIAN 		1 
+#define WORDS_BIG_ENDIAN 		1
+#define LIBGCC2_WORDS_BIG_ENDIAN	1
+#define BITS_PER_WORD 			32
+#define MAX_BITS_PER_WORD 		64
+#define UNITS_PER_WORD 			4
+#define MIN_UNITS_PER_WORD 		4
+#define POINTER_SIZE 			32
 
 /* Define this macro if it is advisable to hold scalars in registers
    in a wider mode than that declared by the program.  In such cases,
@@ -177,7 +167,7 @@ extern int	target_flags;
 
 #define BIGGEST_ALIGNMENT 64
 
-#undef DATA_ALIGNMENT
+#undef  DATA_ALIGNMENT
 #define DATA_ALIGNMENT(TYPE, ALIGN)					\
   ((((ALIGN) < BITS_PER_WORD)						\
     && (TREE_CODE (TYPE) == ARRAY_TYPE					\
@@ -201,27 +191,16 @@ extern int	target_flags;
 
 /* Layout of Source Language Data Types.  */
 
-#define INT_TYPE_SIZE 32
-
-#define MAX_INT_TYPE_SIZE 32
-
-#define SHORT_TYPE_SIZE 16
-
-#define LONG_TYPE_SIZE 32
-
-#define LONG_LONG_TYPE_SIZE 64
-
-#define CHAR_TYPE_SIZE BITS_PER_UNIT
-
-#define FLOAT_TYPE_SIZE 32
-
-#define DOUBLE_TYPE_SIZE 64
-
-#define LONG_DOUBLE_TYPE_SIZE 64
-
-#define DEFAULT_SIGNED_CHAR 1
-
-#define MAX_WCHAR_TYPE_SIZE MAX_INT_TYPE_SIZE
+#define INT_TYPE_SIZE 		32
+#define SHORT_TYPE_SIZE 	16
+#define LONG_TYPE_SIZE 		32
+#define LONG_LONG_TYPE_SIZE 	64
+#define CHAR_TYPE_SIZE		BITS_PER_UNIT
+#define FLOAT_TYPE_SIZE 	32
+#define DOUBLE_TYPE_SIZE 	64
+#define LONG_DOUBLE_TYPE_SIZE	64
+#define DEFAULT_SIGNED_CHAR	1
+#define MAX_WCHAR_TYPE_SIZE	32
 
 
 /* Register Basics.  */
@@ -255,15 +234,15 @@ extern int	target_flags;
 #define HARD_REGNO_NREGS(REGNO, MODE)   \
   ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
 
-#define HARD_REGNO_MODE_OK(REGNO, MODE) 				\
- ((REGNO_REG_CLASS (REGNO) == GR_REGS)					\
-  ? ((REGNO) & 1) == 0 || GET_MODE_SIZE (MODE) <= 4     		\
+#define HARD_REGNO_MODE_OK(REGNO, MODE) 			\
+ ((REGNO_REG_CLASS (REGNO) == GR_REGS)				\
+  ? ((REGNO) & 1) == 0 || GET_MODE_SIZE (MODE) <= 4     	\
   : ((REGNO) & 1) == 0 || GET_MODE_SIZE (MODE) == 4)
 
-#define MODES_TIEABLE_P(MODE1, MODE2)					\
-  ((GET_MODE_CLASS (MODE1) == MODE_FLOAT ||				\
-    GET_MODE_CLASS (MODE1) == MODE_COMPLEX_FLOAT)			\
-   == (GET_MODE_CLASS (MODE2) == MODE_FLOAT ||				\
+#define MODES_TIEABLE_P(MODE1, MODE2)				\
+  ((GET_MODE_CLASS (MODE1) == MODE_FLOAT ||			\
+    GET_MODE_CLASS (MODE1) == MODE_COMPLEX_FLOAT)		\
+   == (GET_MODE_CLASS (MODE2) == MODE_FLOAT ||			\
        GET_MODE_CLASS (MODE2) == MODE_COMPLEX_FLOAT))
 
 #define AVOID_CCMODE_COPIES
@@ -273,28 +252,28 @@ extern int	target_flags;
 
 enum reg_class
 {
-  NO_REGS,			/* no registers in set */
-  GR_REGS,			/* integer registers */
-  ALL_REGS,			/* all registers */
-  LIM_REG_CLASSES		/* max value + 1 */
+  NO_REGS,			/* No registers in set.  */
+  GR_REGS,			/* Integer registers.  */
+  ALL_REGS,			/* All registers.  */
+  LIM_REG_CLASSES		/* Max value + 1.  */
 };
 
 #define GENERAL_REGS GR_REGS
 
 #define N_REG_CLASSES (int) LIM_REG_CLASSES
 
-#define REG_CLASS_NAMES							\
-{									\
-  "NO_REGS",								\
-  "GR_REGS",								\
-  "ALL_REGS"								\
+#define REG_CLASS_NAMES						\
+{								\
+  "NO_REGS",							\
+  "GR_REGS",							\
+  "ALL_REGS"							\
 }
 
-#define REG_CLASS_CONTENTS						\
-{									\
-  { 0x00000000, 0x00000000 },	/* no registers */	\
-  { 0xffffffff, 0x00000000 },	/* integer registers */	\
-  { 0xffffffff, 0x00000001 }	/* all registers */	\
+#define REG_CLASS_CONTENTS					\
+{								\
+  { 0x00000000, 0x00000000 },	/* No registers,  */		\
+  { 0xffffffff, 0x00000000 },	/* Integer registers.  */	\
+  { 0xffffffff, 0x00000001 }	/* All registers.  */		\
 }
 
 #define REGNO_REG_CLASS(REGNO) \
@@ -305,22 +284,22 @@ enum reg_class
 #define INDEX_REG_CLASS NO_REGS
 
 #define REG_CLASS_FROM_LETTER(C) \
-  ((C) == 'd' ? GR_REGS : \
-   (C) == 'b' ? ALL_REGS : \
-   (C) == 'y' ? GR_REGS : \
+  ((C) == 'd' ? GR_REGS :        \
+   (C) == 'b' ? ALL_REGS :       \
+   (C) == 'y' ? GR_REGS :        \
    NO_REGS)
 
 #define REGNO_OK_FOR_INDEX_P(regno)	0
 
-#define PREFERRED_RELOAD_CLASS(X,CLASS)					\
-  ((CLASS) != ALL_REGS							\
-   ? (CLASS)								\
-   : ((GET_MODE_CLASS (GET_MODE (X)) == MODE_FLOAT			\
-       || GET_MODE_CLASS (GET_MODE (X)) == MODE_COMPLEX_FLOAT)		\
-      ? (GR_REGS)				\
-      : ((GET_MODE_CLASS (GET_MODE (X)) == MODE_INT			\
-	  || GET_MODE (X) == VOIDmode)					\
-	 ? (GR_REGS)				\
+#define PREFERRED_RELOAD_CLASS(X,CLASS)				\
+  ((CLASS) != ALL_REGS						\
+   ? (CLASS)							\
+   : ((GET_MODE_CLASS (GET_MODE (X)) == MODE_FLOAT		\
+       || GET_MODE_CLASS (GET_MODE (X)) == MODE_COMPLEX_FLOAT)	\
+      ? (GR_REGS)						\
+      : ((GET_MODE_CLASS (GET_MODE (X)) == MODE_INT		\
+	  || GET_MODE (X) == VOIDmode)				\
+	 ? (GR_REGS)						\
 	 : (CLASS))))
 
 #define SMALL_REGISTER_CLASSES 0
@@ -346,8 +325,7 @@ enum reg_class
 
    `N'	is used for constants 0xffffnnnn or 0xnnnnffff
 
-   `O'	is a 5 bit zero-extended integer.
-*/
+   `O'	is a 5 bit zero-extended integer.  */
 
 #define CONST_OK_FOR_LETTER_P(VALUE, C)					\
   ((C) == 'I' ? ((unsigned HOST_WIDE_INT) ((VALUE) + 0x8000) < 0x10000)	\
@@ -412,18 +390,12 @@ enum reg_class
 
 /* Register That Address the Stack Frame.  */
 
-#define STACK_POINTER_REGNUM (GP_REG_FIRST + 29)
-
-#define FRAME_POINTER_REGNUM (GP_REG_FIRST + 1)
-
-#define HARD_FRAME_POINTER_REGNUM \
-  (GP_REG_FIRST + 27)
-
-#define ARG_POINTER_REGNUM GP_REG_FIRST
-
-#define RETURN_ADDRESS_POINTER_REGNUM RAP_REG_NUM
-
-#define STATIC_CHAIN_REGNUM (GP_REG_FIRST + 2)
+#define STACK_POINTER_REGNUM 		(GP_REG_FIRST + 29)
+#define FRAME_POINTER_REGNUM 		(GP_REG_FIRST + 1)
+#define HARD_FRAME_POINTER_REGNUM 	(GP_REG_FIRST + 27)
+#define ARG_POINTER_REGNUM 		GP_REG_FIRST
+#define RETURN_ADDRESS_POINTER_REGNUM	RAP_REG_NUM
+#define STATIC_CHAIN_REGNUM 		(GP_REG_FIRST + 2)
 
 
 /* Eliminating the Frame Pointer and the Arg Pointer.  */
@@ -471,39 +443,40 @@ enum reg_class
 /* Function Arguments in Registers.  */
 
 #define FUNCTION_ARG(CUM, MODE, TYPE, NAMED) \
-  function_arg( &CUM, MODE, TYPE, NAMED)
+  function_arg (& CUM, MODE, TYPE, NAMED)
 
 #define FUNCTION_ARG_PARTIAL_NREGS(CUM, MODE, TYPE, NAMED) \
-  function_arg_partial_nregs (&CUM, MODE, TYPE, NAMED)
+  function_arg_partial_nregs (& CUM, MODE, TYPE, NAMED)
 
 #define FUNCTION_ARG_PASS_BY_REFERENCE(CUM, MODE, TYPE, NAMED)		\
-  function_arg_pass_by_reference (&CUM, MODE, TYPE, NAMED)
+  function_arg_pass_by_reference (& CUM, MODE, TYPE, NAMED)
 
 #define FUNCTION_ARG_CALLEE_COPIES(CUM, MODE, TYPE, NAMED)		\
   ((NAMED) && FUNCTION_ARG_PASS_BY_REFERENCE (CUM, MODE, TYPE, NAMED))
 
 #define MAX_ARGS_IN_REGISTERS 8
 
-typedef struct iq2000_args {
-  int gp_reg_found;		/* whether a gp register was found yet */
-  unsigned int arg_number;	/* argument number */
-  unsigned int arg_words;	/* # total words the arguments take */
-  unsigned int fp_arg_words;	/* # words for FP args (IQ2000_EABI only) */
-  int last_arg_fp;		/* nonzero if last arg was FP (EABI only) */
-  int fp_code;			/* Mode of FP arguments */
-  unsigned int num_adjusts;	/* number of adjustments made */
+typedef struct iq2000_args
+{
+  int gp_reg_found;		/* Whether a gp register was found yet.  */
+  unsigned int arg_number;	/* Argument number.  */
+  unsigned int arg_words;	/* # total words the arguments take.  */
+  unsigned int fp_arg_words;	/* # words for FP args (IQ2000_EABI only).  */
+  int last_arg_fp;		/* Nonzero if last arg was FP (EABI only).  */
+  int fp_code;			/* Mode of FP arguments.  */
+  unsigned int num_adjusts;	/* Number of adjustments made.  */
 				/* Adjustments made to args pass in regs.  */
-  struct rtx_def *adjust[MAX_ARGS_IN_REGISTERS*2];
+  struct rtx_def * adjust[MAX_ARGS_IN_REGISTERS * 2];
 } CUMULATIVE_ARGS;
 
 /* Initialize a variable CUM of type CUMULATIVE_ARGS
    for a call to a function whose data type is FNTYPE.
    For a library call, FNTYPE is 0.  */
 #define INIT_CUMULATIVE_ARGS(CUM,FNTYPE,LIBNAME,INDIRECT)		\
-  init_cumulative_args (&CUM, FNTYPE, LIBNAME)				\
+  init_cumulative_args (& CUM, FNTYPE, LIBNAME)				\
 
 #define FUNCTION_ARG_ADVANCE(CUM, MODE, TYPE, NAMED)			\
-  function_arg_advance (&CUM, MODE, TYPE, NAMED)
+  function_arg_advance (& CUM, MODE, TYPE, NAMED)
 
 #define FUNCTION_ARG_PADDING(MODE, TYPE)				\
   (! BYTES_BIG_ENDIAN							\
@@ -641,24 +614,24 @@ typedef struct iq2000_args {
 /* Addressing Modes.  */
 
 #define CONSTANT_ADDRESS_P(X)						\
-  ((GET_CODE (X) == LABEL_REF || GET_CODE (X) == SYMBOL_REF		\
+  (   (GET_CODE (X) == LABEL_REF || GET_CODE (X) == SYMBOL_REF		\
     || GET_CODE (X) == CONST_INT || GET_CODE (X) == HIGH		\
     || (GET_CODE (X) == CONST)))
 
 #define MAX_REGS_PER_ADDRESS 1
 
 #ifdef REG_OK_STRICT
-#define GO_IF_LEGITIMATE_ADDRESS(MODE, X, ADDR)	\
-{						\
-  if (iq2000_legitimate_address_p (MODE, X, 1))	\
-    goto ADDR;					\
-}
+#define GO_IF_LEGITIMATE_ADDRESS(MODE, X, ADDR)		\
+  {							\
+    if (iq2000_legitimate_address_p (MODE, X, 1))	\
+      goto ADDR;					\
+  }
 #else
-#define GO_IF_LEGITIMATE_ADDRESS(MODE, X, ADDR)	\
-{						\
-  if (iq2000_legitimate_address_p (MODE, X, 0))	\
-    goto ADDR;					\
-}
+#define GO_IF_LEGITIMATE_ADDRESS(MODE, X, ADDR)		\
+  {							\
+    if (iq2000_legitimate_address_p (MODE, X, 0))	\
+      goto ADDR;					\
+  }
 #endif
 
 #define REG_OK_FOR_INDEX_P(X) 0
@@ -675,7 +648,7 @@ typedef struct iq2000_args {
 
 #define LEGITIMIZE_ADDRESS(X,OLDX,MODE,WIN)				\
 {									\
-  register rtx xinsn = (X);						\
+  rtx xinsn = (X);							\
 									\
   if (TARGET_DEBUG_B_MODE)						\
     {									\
@@ -694,10 +667,10 @@ typedef struct iq2000_args {
 									\
   if (GET_CODE (xinsn) == PLUS)						\
     {									\
-      register rtx xplus0 = XEXP (xinsn, 0);				\
-      register rtx xplus1 = XEXP (xinsn, 1);				\
-      register enum rtx_code code0 = GET_CODE (xplus0);			\
-      register enum rtx_code code1 = GET_CODE (xplus1);			\
+      rtx xplus0 = XEXP (xinsn, 0);					\
+      rtx xplus1 = XEXP (xinsn, 1);					\
+      enum rtx_code code0 = GET_CODE (xplus0);				\
+      enum rtx_code code1 = GET_CODE (xplus1);				\
 									\
       if (code0 != REG && code1 == REG)					\
 	{								\
@@ -736,149 +709,6 @@ typedef struct iq2000_args {
 
 /* Describing Relative Costs of Operations.  */
 
-#define CONST_COSTS(X,CODE,OUTER_CODE)					\
-  case CONST_INT:							\
-    return 0;								\
-									\
-  case LABEL_REF:							\
-    return COSTS_N_INSNS (2);						\
-									\
-  case CONST:								\
-    {									\
-      rtx offset = const0_rtx;						\
-      rtx symref = eliminate_constant_term (XEXP (X, 0), &offset);	\
-									\
-      if (GET_CODE (symref) == LABEL_REF)				\
-	return COSTS_N_INSNS (2);					\
-									\
-      if (GET_CODE (symref) != SYMBOL_REF)				\
-	return COSTS_N_INSNS (4);					\
-									\
-      /* let's be paranoid....  */					\
-      if (INTVAL (offset) < -32768 || INTVAL (offset) > 32767)		\
-	return COSTS_N_INSNS (2);					\
-									\
-      return COSTS_N_INSNS (SYMBOL_REF_FLAG (symref) ? 1 : 2);		\
-    }									\
-									\
-  case SYMBOL_REF:							\
-    return COSTS_N_INSNS (SYMBOL_REF_FLAG (X) ? 1 : 2);			\
-									\
-  case CONST_DOUBLE:							\
-    {									\
-      rtx high, low;							\
-      split_double (X, &high, &low);					\
-      return COSTS_N_INSNS ((high == CONST0_RTX (GET_MODE (high))	\
-			     || low == CONST0_RTX (GET_MODE (low)))	\
-			    ? 2 : 4);					\
-    }
-
-#define RTX_COSTS(X,CODE,OUTER_CODE)					\
-  case MEM:								\
-    {									\
-      int num_words = (GET_MODE_SIZE (GET_MODE (X)) > UNITS_PER_WORD) ? 2 : 1; \
-      if (simple_memory_operand (X, GET_MODE (X)))			\
-	return COSTS_N_INSNS (num_words);				\
-									\
-      return COSTS_N_INSNS (2*num_words);				\
-    }									\
-									\
-  case FFS:								\
-    return COSTS_N_INSNS (6);						\
-									\
-  case NOT:								\
-    return COSTS_N_INSNS (GET_MODE (X) == DImode && 2); 		\
-									\
-  case AND:								\
-  case IOR:								\
-  case XOR:								\
-    if (GET_MODE (X) == DImode)						\
-      return COSTS_N_INSNS (2);						\
-									\
-    break;								\
-									\
-  case ASHIFT:								\
-  case ASHIFTRT:							\
-  case LSHIFTRT:							\
-    if (GET_MODE (X) == DImode)						\
-      return COSTS_N_INSNS ((GET_CODE (XEXP (X, 1)) == CONST_INT) ? 4 : 12); \
-									\
-    break;								\
-									\
-  case ABS:								\
-    {									\
-      enum machine_mode xmode = GET_MODE (X);				\
-      if (xmode == SFmode || xmode == DFmode)				\
-	return COSTS_N_INSNS (1);					\
-									\
-      return COSTS_N_INSNS (4);						\
-    }									\
-									\
-  case PLUS:								\
-  case MINUS:								\
-    {									\
-      enum machine_mode xmode = GET_MODE (X);				\
-      if (xmode == SFmode || xmode == DFmode)				\
-	{								\
-	   return COSTS_N_INSNS (6);					\
-	}								\
-									\
-      if (xmode == DImode)						\
-	return COSTS_N_INSNS (4);					\
-									\
-      break;								\
-    }									\
-									\
-  case NEG:								\
-    if (GET_MODE (X) == DImode)						\
-      return 4;								\
-									\
-    break;								\
-									\
-  case MULT:								\
-    {									\
-      enum machine_mode xmode = GET_MODE (X);				\
-      if (xmode == SFmode)						\
-	{								\
-	    return COSTS_N_INSNS (7);					\
-	}								\
-									\
-      if (xmode == DFmode)						\
-	{								\
-	    return COSTS_N_INSNS (8);					\
-	}								\
-									\
-	return COSTS_N_INSNS (10);					\
-    }									\
-									\
-  case DIV:								\
-  case MOD:								\
-    {									\
-      enum machine_mode xmode = GET_MODE (X);				\
-      if (xmode == SFmode)						\
-	{								\
-	    return COSTS_N_INSNS (23);					\
-	}								\
-									\
-      if (xmode == DFmode)						\
-	{								\
-	    return COSTS_N_INSNS (36);					\
-	}								\
-    }									\
-    /* fall through */							\
-									\
-  case UDIV:								\
-  case UMOD:								\
-      return COSTS_N_INSNS (69);					\
-									\
-  case SIGN_EXTEND:							\
-    return COSTS_N_INSNS (2);						\
-									\
-  case ZERO_EXTEND:							\
-    return COSTS_N_INSNS (1);
-
-#define ADDRESS_COST(ADDR) (REG_P (ADDR) ? 1 : iq2000_address_cost (ADDR))
-
 #define REGISTER_MOVE_COST(MODE, FROM, TO)	2
 
 #define MEMORY_MOVE_COST(MODE,CLASS,TO_P)	\
@@ -899,9 +729,9 @@ typedef struct iq2000_args {
 
 /* Dividing the output into sections.  */
 
-#define TEXT_SECTION_ASM_OP	"\t.text"	/* instructions */
+#define TEXT_SECTION_ASM_OP	"\t.text"	/* Instructions.  */
 
-#define DATA_SECTION_ASM_OP	"\t.data"	/* large data */
+#define DATA_SECTION_ASM_OP	"\t.data"	/* Large data.  */
 
 
 /* The Overall Framework of an Assembler File.  */
@@ -915,13 +745,9 @@ typedef struct iq2000_args {
 
 /* Output and Generation of Labels.  */
 
-#undef ASM_OUTPUT_INTERNAL_LABEL
-#define ASM_OUTPUT_INTERNAL_LABEL(STREAM,PREFIX,NUM)			\
-  fprintf (STREAM, "%s%s%d:\n", LOCAL_LABEL_PREFIX, PREFIX, NUM)
-
 #undef ASM_GENERATE_INTERNAL_LABEL
 #define ASM_GENERATE_INTERNAL_LABEL(LABEL,PREFIX,NUM)			\
-  sprintf ((LABEL), "*%s%s%ld", (LOCAL_LABEL_PREFIX), (PREFIX), (long)(NUM))
+  sprintf ((LABEL), "*%s%s%ld", (LOCAL_LABEL_PREFIX), (PREFIX), (long) (NUM))
 
 #define GLOBAL_ASM_OP "\t.globl\t"
 
@@ -989,7 +815,6 @@ typedef struct iq2000_args {
 #define DBR_OUTPUT_SEQEND(STREAM)					\
 do									\
   {									\
-    dslots_jump_filled++;						\
     fputs ("\n", STREAM);						\
   }									\
 while (0)
@@ -1002,11 +827,13 @@ while (0)
 /* Output of dispatch tables.  */
 
 #define ASM_OUTPUT_ADDR_DIFF_ELT(STREAM, BODY, VALUE, REL)		\
-do {									\
-  fprintf (STREAM, "\t%s\t%sL%d\n",					\
-	   Pmode == DImode ? ".dword" : ".word",			\
-	   LOCAL_LABEL_PREFIX, VALUE);					\
-} while (0)
+  do									\
+    {									\
+      fprintf (STREAM, "\t%s\t%sL%d\n",					\
+	       Pmode == DImode ? ".dword" : ".word",			\
+	       LOCAL_LABEL_PREFIX, VALUE);				\
+    }									\
+  while (0)
 
 #define ASM_OUTPUT_ADDR_VEC_ELT(STREAM, VALUE)				\
   fprintf (STREAM, "\t%s\t%sL%d\n",					\
@@ -1089,19 +916,19 @@ extern char	call_used_regs[];
 /* Comparison type.  */
 enum cmp_type
 {
-  CMP_SI,				/* compare four byte integers */
-  CMP_DI,				/* compare eight byte integers */
-  CMP_SF,				/* compare single precision floats */
-  CMP_DF,				/* compare double precision floats */
-  CMP_MAX				/* max comparison type */
+  CMP_SI,				/* Compare four byte integers.  */
+  CMP_DI,				/* Compare eight byte integers.  */
+  CMP_SF,				/* Compare single precision floats.  */
+  CMP_DF,				/* Compare double precision floats.  */
+  CMP_MAX				/* Max comparison type.  */
 };
 
 /* Types of delay slot.  */
 enum delay_type
 {
-  DELAY_NONE,				/* no delay slot */
-  DELAY_LOAD,				/* load from memory delay */
-  DELAY_FCMP				/* delay after doing c.<xx>.{d,s} */
+  DELAY_NONE,				/* No delay slot.  */
+  DELAY_LOAD,				/* Load from memory delay.  */
+  DELAY_FCMP				/* Delay after doing c.<xx>.{d,s}.  */
 };
 
 /* Which processor to schedule for.  */
@@ -1114,36 +941,15 @@ enum processor_type
 };
 
 /* Recast the cpu class to be the cpu attribute.  */
-#define iq2000_cpu_attr ((enum attr_cpu)iq2000_tune)
-
-extern char iq2000_print_operand_punct[];	/* print_operand punctuation chars */
-extern int num_source_filenames;	/* current .file # */
-extern int iq2000_branch_likely;		/* emit 'l' after br (branch likely) */
-extern struct rtx_def *branch_cmp[2];	/* operands for compare */
-extern enum cmp_type branch_type;	/* what type of branch to use */
-extern enum processor_type iq2000_arch;   /* which cpu to codegen for */
-extern enum processor_type iq2000_tune;   /* which cpu to schedule for */
-extern int iq2000_isa;			/* architectural level */
-extern const char *iq2000_cpu_string;	/* for -mcpu=<xxx> */
-extern const char *iq2000_arch_string;    /* for -march=<xxx> */
-extern int dslots_load_total;		/* total # load related delay slots */
-extern int dslots_load_filled;		/* # filled load delay slots */
-extern int dslots_jump_total;		/* total # jump related delay slots */
-extern int dslots_jump_filled;		/* # filled jump delay slots */
-extern int dslots_number_nops;		/* # of nops needed by previous insn */
-extern int num_refs[3];			/* # 1/2/3 word references */
-extern struct rtx_def *iq2000_load_reg;	/* register to check for load delay */
-extern struct rtx_def *iq2000_load_reg2;	/* 2nd reg to check for load delay */
-extern struct rtx_def *iq2000_load_reg3;	/* 3rd reg to check for load delay */
-extern struct rtx_def *iq2000_load_reg4;	/* 4th reg to check for load delay */
+#define iq2000_cpu_attr ((enum attr_cpu) iq2000_tune)
 
 /* Functions to change what output section we are using.  */
 extern void		rdata_section (void);
 extern void		sdata_section (void);
-extern void		sbss_section (void);
+extern void		sbss_section  (void);
 
-#define BITMASK_UPPER16	((unsigned long)0xffff << 16)	/* 0xffff0000 */
-#define BITMASK_LOWER16	((unsigned long)0xffff)		/* 0x0000ffff */
+#define BITMASK_UPPER16	((unsigned long) 0xffff << 16)	/* 0xffff0000 */
+#define BITMASK_LOWER16	((unsigned long) 0xffff)	/* 0x0000ffff */
 
 
 #define GENERATE_BRANCHLIKELY  (ISA_HAS_BRANCHLIKELY)
@@ -1262,10 +1068,10 @@ extern void		sbss_section (void);
 
 #ifndef STACK_ARGS_ADJUST
 #define STACK_ARGS_ADJUST(SIZE)						\
-{									\
-  if (SIZE.constant < 4 * UNITS_PER_WORD)				\
-    SIZE.constant = 4 * UNITS_PER_WORD;					\
-}
+  {									\
+    if (SIZE.constant < 4 * UNITS_PER_WORD)				\
+      SIZE.constant = 4 * UNITS_PER_WORD;				\
+  }
 #endif
 
 
@@ -1333,24 +1139,15 @@ extern void		sbss_section (void);
 #endif
 
 #if 1
-#define GO_PRINTF(x)	fprintf(stderr, (x))
-#define GO_PRINTF2(x,y)	fprintf(stderr, (x), (y))
-#define GO_DEBUG_RTX(x) debug_rtx(x)
+#define GO_PRINTF(x)	fprintf (stderr, (x))
+#define GO_PRINTF2(x,y)	fprintf (stderr, (x), (y))
+#define GO_DEBUG_RTX(x) debug_rtx (x)
 
 #else
 #define GO_PRINTF(x)
 #define GO_PRINTF2(x,y)
 #define GO_DEBUG_RTX(x)
 #endif
-
-/* Specify the tree operation to be used to convert reals to integers.  */
-#define IMPLICIT_FIX_EXPR FIX_ROUND_EXPR
-
-/* This is the kind of divide that is easiest to do in the general case.  */
-#define EASY_DIV_EXPR TRUNC_DIV_EXPR
-
-/* Define this if zero-extension is slow (more than one real instruction).  */
-#define SLOW_ZERO_EXTEND
 
 /* If defined, modifies the length assigned to instruction INSN as a
    function of the context in which it is used.  LENGTH is an lvalue
@@ -1372,7 +1169,7 @@ extern void		sbss_section (void);
 /* How to tell the debugger about changes of source files.  */
 
 #ifndef SET_FILE_NUMBER
-#define SET_FILE_NUMBER() ++num_source_filenames
+#define SET_FILE_NUMBER() ++ num_source_filenames
 #endif
 
 /* This is how to output a note the debugger telling it the line number
@@ -1382,28 +1179,41 @@ extern void		sbss_section (void);
 #define LABEL_AFTER_LOC(STREAM)
 #endif
 
-/* Handle certain cpp directives used in header files on sysV.  */
-#define SCCS_DIRECTIVE
-
 
 /* Default to -G 8 */
 #ifndef IQ2000_DEFAULT_GVALUE
 #define IQ2000_DEFAULT_GVALUE 8
 #endif
 
-#define SDATA_SECTION_ASM_OP	"\t.sdata"	/* small data */
+#define SDATA_SECTION_ASM_OP	"\t.sdata"	/* Small data.  */
 
-/* Given a decl node or constant node, choose the section to output it in
-   and select that section.  */
-
-#undef  TARGET_ASM_SELECT_SECTION
-#define TARGET_ASM_SELECT_SECTION  iq2000_select_section
 
 /* See iq2000_expand_prologue's use of loadgp for when this should be
    true.  */
 
 #define DONT_ACCESS_GBLS_AFTER_EPILOGUE 0
 
+/* List of all IQ2000 punctuation characters used by print_operand.  */
+extern char iq2000_print_operand_punct[256];
+
+/* The target cpu for optimization and scheduling.  */
+extern enum processor_type iq2000_tune;
+
+/* Which instruction set architecture to use.  */
+extern int iq2000_isa;
+
+/* Cached operands, and operator to compare for use in set/branch/trap
+   on condition codes.  */
+extern rtx branch_cmp[2];
+
+/* What type of branch to use.  */
+extern enum cmp_type branch_type;
+
+/* Strings to hold which cpu and instruction set architecture to use.  */
+extern const char * iq2000_cpu_string;	  /* For -mcpu=<xxx>.  */
+extern const char * iq2000_arch_string;   /* For -march=<xxx>.  */
+
+
 
 enum iq2000_builtins
 {
