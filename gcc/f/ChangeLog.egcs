@@ -1,3 +1,8 @@
+Sun Sep 28 01:47:17 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* Make-lang.in (G77_FLAGS_TO_PASS): Pass down RANLIB, RANLIB_TEST
+	and AR instead of the _FOR_TARGET versions.
+
 Tue Sep 23 00:39:57 1997  Alexandre Oliva <oliva@dcc.unicamp.br>
 
 	* Make-lang.in: install.texi was renamed to g77install.texi
