@@ -4643,20 +4643,25 @@ assemble_alias (decl, target)
 }
 
 /* Emit an assembler directive to set symbol for DECL visibility to
-   VISIBILITY_TYPE.  */
+   the visibility type VIS, which must not be VISIBILITY_DEFAULT.  */
 
 void
-default_assemble_visibility (decl, visibility_type)
+default_assemble_visibility (decl, vis)
      tree decl;
-     const char *visibility_type ATTRIBUTE_UNUSED;
+     int vis;
 {
-  const char *name;
+  static const char * const visibility_types[] = {
+    NULL, "internal", "hidden", "protected"
+  };
+
+  const char *name, *type;
 
   name = (* targetm.strip_name_encoding)
 	 (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)));
+  type = visibility_types[vis];
 
 #ifdef HAVE_GAS_HIDDEN
-  fprintf (asm_out_file, "\t.%s\t%s\n", visibility_type, name);
+  fprintf (asm_out_file, "\t.%s\t%s\n", type, name);
 #else
   warning ("visibility attribute not supported in this configuration; ignored");
 #endif
@@ -4668,13 +4673,10 @@ static void
 maybe_assemble_visibility (decl)
      tree decl;
 {
-  tree visibility = lookup_attribute ("visibility", DECL_ATTRIBUTES (decl));
-  if (visibility)
-    {
-      const char *type
-	= TREE_STRING_POINTER (TREE_VALUE (TREE_VALUE (visibility)));
-      (* targetm.asm_out.visibility) (decl, type);
-    }
+  enum symbol_visibility vis = decl_visibility (decl);
+
+  if (vis != VISIBILITY_DEFAULT)
+    (* targetm.asm_out.visibility) (decl, vis);
 }
 
 /* Returns 1 if the target configuration supports defining public symbols
@@ -4773,6 +4775,31 @@ decl_tls_model (decl)
     kind = flag_tls_default;
 
   return kind;
+}
+
+enum symbol_visibility
+decl_visibility (decl)
+     tree decl;
+{
+  tree attr = lookup_attribute ("visibility", DECL_ATTRIBUTES (decl));
+
+  if (attr)
+    {
+      const char *which = TREE_STRING_POINTER (TREE_VALUE (TREE_VALUE (attr)));
+
+      if (strcmp (which, "default") == 0)
+	return VISIBILITY_DEFAULT;
+      if (strcmp (which, "internal") == 0)
+	return VISIBILITY_INTERNAL;
+      if (strcmp (which, "hidden") == 0)
+	return VISIBILITY_HIDDEN;
+      if (strcmp (which, "protected") == 0)
+	return VISIBILITY_PROTECTED;
+
+      abort ();
+    }
+
+  return VISIBILITY_DEFAULT;
 }
 
 /* Select a set of attributes for section NAME based on the properties

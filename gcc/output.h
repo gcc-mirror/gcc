@@ -253,7 +253,7 @@ extern void assemble_constant_align	PARAMS ((tree));
 
 extern void assemble_alias		PARAMS ((tree, tree));
 
-extern void default_assemble_visibility	PARAMS ((tree, const char *));
+extern void default_assemble_visibility	PARAMS ((tree, int));
 
 /* Output a string of literal assembler code
    for an `asm' keyword used between functions.  */
