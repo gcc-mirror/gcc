@@ -46,6 +46,7 @@ Boston, MA 02111-1307, USA.  */
 #include "real.h"
 #include "langhooks.h"
 #include "basic-block.h"
+#include "ra.h"
 
 int code_for_indirect_jump_scratch = CODE_FOR_indirect_jump_scratch;
 
@@ -189,7 +190,7 @@ static void output_stack_adjust PARAMS ((int, rtx, int, rtx (*) (rtx)));
 static rtx frame_insn PARAMS ((rtx));
 static rtx push PARAMS ((int));
 static void pop PARAMS ((int));
-static void push_regs PARAMS ((HARD_REG_SET *));
+static void push_regs PARAMS ((HARD_REG_SET *, int));
 static int calc_live_regs PARAMS ((HARD_REG_SET *));
 static void mark_use PARAMS ((rtx, rtx *));
 static HOST_WIDE_INT rounded_frame_size PARAMS ((int));
@@ -4658,17 +4659,36 @@ pop (rn)
 /* Generate code to push the regs specified in the mask.  */
 
 static void
-push_regs (mask)
+push_regs (mask, interrupt_handler)
      HARD_REG_SET *mask;
+     int interrupt_handler;
 {
   int i;
+  int skip_fpscr = 0;
 
   /* Push PR last; this gives better latencies after the prologue, and
      candidates for the return delay slot when there are no general
      registers pushed.  */
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-    if (i != PR_REG && TEST_HARD_REG_BIT (*mask, i))
-      push (i);
+    {
+      /* If this is an interrupt handler, and the SZ bit varies,
+	 and we have to push any floating point register, we need
+	 to switch to the correct precision first.  */
+      if (i == FIRST_FP_REG && interrupt_handler && TARGET_FMOVD
+	  && hard_regs_intersect_p (mask, &reg_class_contents[DF_REGS]))
+	{
+	  HARD_REG_SET unsaved;
+
+	  push (FPSCR_REG);
+	  COMPL_HARD_REG_SET(unsaved, *mask);
+	  fpscr_set_from_mem (NORMAL_MODE (FP_MODE), unsaved);
+	  skip_fpscr = 1;
+	}
+      if (i != PR_REG
+	  && (i != FPSCR_REG || ! skip_fpscr)
+	  && TEST_HARD_REG_BIT (*mask, i))
+	push (i);
+    }
   if (TEST_HARD_REG_BIT (*mask, PR_REG))
     push (PR_REG);
 }
@@ -4693,8 +4713,11 @@ calc_live_regs (live_regs_mask)
 
   for (count = 0; 32 * count < FIRST_PSEUDO_REGISTER; count++)
     CLEAR_HARD_REG_SET (*live_regs_mask);
+  if (TARGET_SH4 && TARGET_FMOVD && interrupt_handler
+      && regs_ever_live[FPSCR_REG])
+    target_flags &= ~FPU_SINGLE_BIT;
   /* If we can save a lot of saves by switching to double mode, do that.  */
-  if (TARGET_SH4 && TARGET_FMOVD && TARGET_FPU_SINGLE)
+  else if (TARGET_SH4 && TARGET_FMOVD && TARGET_FPU_SINGLE)
     for (count = 0, reg = FIRST_FP_REG; reg <= LAST_FP_REG; reg += 2)
       if (regs_ever_live[reg] && regs_ever_live[reg+1]
 	  && (! call_used_regs[reg] || (interrupt_handler && ! pragma_trapa))
@@ -4911,7 +4934,7 @@ sh_expand_prologue ()
   d = calc_live_regs (&live_regs_mask);
   /* ??? Maybe we could save some switching if we can move a mode switch
      that already happens to be at the function start into the prologue.  */
-  if (target_flags != save_flags)
+  if (target_flags != save_flags && ! current_function_interrupt)
     emit_insn (gen_toggle_sz ());
     
   if (TARGET_SH5)
@@ -5068,7 +5091,7 @@ sh_expand_prologue ()
 	abort ();
     }
   else
-    push_regs (&live_regs_mask);
+    push_regs (&live_regs_mask, current_function_interrupt);
 
   if (flag_pic && regs_ever_live[PIC_OFFSET_TABLE_REGNUM])
     {
@@ -5102,7 +5125,7 @@ sh_expand_prologue ()
 		 (GEN_INT (-SHMEDIA_REGS_STACK_ADJUST ())));
     }
 
-  if (target_flags != save_flags)
+  if (target_flags != save_flags && ! current_function_interrupt)
     {
       rtx insn = emit_insn (gen_toggle_sz ());
 
@@ -5143,6 +5166,7 @@ sh_expand_epilogue ()
 
   int save_flags = target_flags;
   int frame_size;
+  int fpscr_deferred = 0;
 
   d = calc_live_regs (&live_regs_mask);
 
@@ -5188,7 +5212,7 @@ sh_expand_epilogue ()
 
   /* Pop all the registers.  */
 
-  if (target_flags != save_flags)
+  if (target_flags != save_flags && ! current_function_interrupt)
     emit_insn (gen_toggle_sz ());
   if (TARGET_SH5)
     {
@@ -5341,11 +5365,17 @@ sh_expand_epilogue ()
     {
       int j = (FIRST_PSEUDO_REGISTER - 1) - i;
 
-      if (j != PR_REG && TEST_HARD_REG_BIT (live_regs_mask, j))
+      if (j == FPSCR_REG && current_function_interrupt && TARGET_FMOVD
+	  && hard_regs_intersect_p (&live_regs_mask,
+				    &reg_class_contents[DF_REGS]))
+	fpscr_deferred = 1;
+      else if (j != PR_REG && TEST_HARD_REG_BIT (live_regs_mask, j))
 	pop (j);
+      if (j == FIRST_FP_REG && fpscr_deferred)
+	pop (FPSCR_REG);
     }
  finish:
-  if (target_flags != save_flags)
+  if (target_flags != save_flags && ! current_function_interrupt)
     emit_insn (gen_toggle_sz ());
   target_flags = save_flags;
 
