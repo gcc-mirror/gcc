@@ -487,6 +487,10 @@ Wed Apr 24 21:38:36 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* g++.old-deja/g++.law/bit-fields2.C: Skip on mmix-knuth-mmixware.
 
+Thu Mar 28 16:38:09 2002  Jeffrey A Law  (law@redhat.com)
+
+	* gcc.c-torture/execute/20020328-1.c: New test.
+
 2002-03-27  Richard Henderson  <rth@redhat.com>
 
 	* g++.dg/ext/instantiate1.C: Use scan-assembler, not link errors.
