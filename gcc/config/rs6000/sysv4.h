@@ -1138,7 +1138,7 @@ do {						\
 %{mcall-freebsd: %(lib_freebsd) } \
 %{mcall-linux: %(lib_linux) } \
 %{mcall-netbsd: %(lib_netbsd) } \
-%{!mads: %{!myellowknife: %{!mmvme: %{!msim: %{!mcall-freebsd: %%{!mcall-linux: %{!mcall-netbsd: %(lib_default) }}}}}}}"
+%{!mads: %{!myellowknife: %{!mmvme: %{!msim: %{!mcall-freebsd: %{!mcall-linux: %{!mcall-netbsd: %(lib_default) }}}}}}}"
 
 #define LIB_DEFAULT_SPEC ""
 

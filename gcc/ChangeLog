@@ -1,3 +1,7 @@
+2001-11-21  H.J. Lu <hjl@gnu.org>
+
+	* config/rs6000/sysv4.h (LIB_SPEC): Fix a typo.
+
 2001-11-21  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* s390.c (s390_va_arg): Eliminate ALIGN parameter in call to
