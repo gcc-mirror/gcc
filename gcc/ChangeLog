@@ -1,5 +1,9 @@
 2004-11-27  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/i386/linux64.h (REG_NAME): Define.
+
+2004-11-27  Jakub Jelinek  <jakub@redhat.com>
+
 	* fold-const.c (extract_muldiv_1) <case ABS_EXPR>: If ctype is
 	unsigned and type signed, build ABS_EXPR with signed_type (ctype)
 	and only afterwards convert to ctype.
