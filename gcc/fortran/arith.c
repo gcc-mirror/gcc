@@ -106,17 +106,20 @@ int gfc_index_integer_kind;
    It's easily implemented with a few calls though.  */
 
 void
-gfc_mpfr_to_mpz(mpz_t z, mpfr_t x)
+gfc_mpfr_to_mpz (mpz_t z, mpfr_t x)
 {
   mp_exp_t e;
 
   e = mpfr_get_z_exp (z, x);
+  /* MPFR 2.0.1 (included with GMP 4.1) has a bug whereby mpfr_get_z_exp
+     may set the sign of z incorrectly.  Work around that here.  */
+  if (mpfr_sgn (x) != mpz_sgn (z))
+    mpz_neg (z, z);
+
   if (e > 0)
     mpz_mul_2exp (z, z, e);
   else
     mpz_tdiv_q_2exp (z, z, -e);
-  if (mpfr_sgn (x) < 0)
-    mpz_neg (z, z);
 }
 
 
