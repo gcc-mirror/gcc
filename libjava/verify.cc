@@ -50,6 +50,7 @@ private:
   struct state;
   struct type;
   struct subr_info;
+  struct linked_utf8;
 
   // The current PC.
   int PC;
@@ -92,6 +93,34 @@ private:
   jclass current_class;
   // This method.
   _Jv_InterpMethod *current_method;
+
+  // A linked list of utf8 objects we allocate.  This is really ugly,
+  // but without this our utf8 objects would be collected.
+  linked_utf8 *utf8_list;
+
+  struct linked_utf8
+  {
+    _Jv_Utf8Const *val;
+    linked_utf8 *next;
+  };
+
+  _Jv_Utf8Const *make_utf8_const (char *s, int len)
+  {
+    _Jv_Utf8Const *val = _Jv_makeUtf8Const (s, len);
+    _Jv_Utf8Const *r = (_Jv_Utf8Const *) _Jv_Malloc (sizeof (_Jv_Utf8Const)
+						     + val->length
+						     + 1);
+    r->length = val->length;
+    r->hash = val->hash;
+    memcpy (r->data, val->data, val->length + 1);
+
+    linked_utf8 *lu = (linked_utf8 *) _Jv_Malloc (sizeof (linked_utf8));
+    lu->val = r;
+    lu->next = utf8_list;
+    utf8_list = lu;
+
+    return r;
+  }
 
   // This enum holds a list of tags for all the different types we
   // need to handle.  Reference types are treated specially by the
@@ -632,8 +661,13 @@ private:
 	{
 	  if (local_semantics)
 	    {
-	      key = unsuitable_type;
-	      changed = true;
+	      // If we already have an `unsuitable' type, then we
+	      // don't need to change again.
+	      if (key != unsuitable_type)
+		{
+		  key = unsuitable_type;
+		  changed = true;
+		}
 	    }
 	  else
 	    verify_fail ("unmergeable type");
@@ -1640,8 +1674,7 @@ private:
 	while (*p != ';')
 	  ++p;
 	++p;
-	// FIXME!  This will get collected!
-	_Jv_Utf8Const *name = _Jv_makeUtf8Const (start, p - start);
+	_Jv_Utf8Const *name = make_utf8_const (start, p - start);
 	return type (name);
       }
 
@@ -2604,6 +2637,7 @@ public:
     states = NULL;
     flags = NULL;
     jsr_ptrs = NULL;
+    utf8_list = NULL;
   }
 
   ~_Jv_BytecodeVerifier ()
@@ -2614,6 +2648,13 @@ public:
       _Jv_Free (flags);
     if (jsr_ptrs)
       _Jv_Free (jsr_ptrs);
+    while (utf8_list != NULL)
+      {
+	linked_utf8 *n = utf8_list->next;
+	_Jv_Free (utf8_list->val);
+	_Jv_Free (utf8_list);
+	utf8_list = n;
+      }
   }
 };
 
