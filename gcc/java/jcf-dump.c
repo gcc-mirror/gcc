@@ -1,7 +1,7 @@
 /* Program to dump out a Java(TM) .class file.
    Functionally similar to Sun's javap.
 
-   Copyright (C) 1996, 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -902,7 +902,7 @@ DEFUN(main, (argc, argv),
       usage ();
     }
 
-  jcf_path_seal ();
+  jcf_path_seal (verbose);
 
   if (flag_print_main)
     {

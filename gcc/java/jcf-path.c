@@ -1,6 +1,6 @@
 /* Handle CLASSPATH, -classpath, and path searching.
 
-   Copyright (C) 1998, 1999, 2000  Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001  Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -311,9 +311,11 @@ jcf_path_include_arg (path)
 }
 
 /* We `seal' the path by linking everything into one big list.  Then
-   we provide a way to iterate through the sealed list.  */
+   we provide a way to iterate through the sealed list.  If PRINT is
+   true then we print the final class path to stderr.  */
 void
-jcf_path_seal ()
+jcf_path_seal (print)
+     int print;
 {
   int do_system = 1;
   struct entry *secondary;
@@ -351,6 +353,21 @@ jcf_path_seal ()
     }
   else
     free_entry (&sys_dirs);
+
+  if (print)
+    {
+      struct entry *ent;
+      fprintf (stderr, "Class path starts here:\n");
+      for (ent = sealed; ent; ent = ent->next)
+	{
+	  fprintf (stderr, "    %s", ent->name);
+	  if ((ent->flags & FLAG_SYSTEM))
+	    fprintf (stderr, " (system)");
+	  if ((ent->flags & FLAG_ZIP))
+	    fprintf (stderr, " (zip)");
+	  fprintf (stderr, "\n");
+	}
+    }
 }
 
 void *

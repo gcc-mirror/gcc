@@ -1,6 +1,6 @@
 /* Utility macros to read Java(TM) .class files and byte codes.
 
-   Copyright (C) 1996, 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -273,7 +273,7 @@ extern void jcf_path_init PARAMS ((void));
 extern void jcf_path_classpath_arg PARAMS ((const char *));
 extern void jcf_path_CLASSPATH_arg PARAMS ((const char *));
 extern void jcf_path_include_arg PARAMS ((const char *));
-extern void jcf_path_seal PARAMS ((void));
+extern void jcf_path_seal PARAMS ((int));
 extern void *jcf_path_start PARAMS ((void));
 extern void *jcf_path_next PARAMS ((void *));
 extern char *jcf_path_name PARAMS ((void *));
