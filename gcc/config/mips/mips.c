@@ -208,7 +208,7 @@ int mips_abi;
 /* Strings to hold which cpu and instruction set architecture to use.  */
 char *mips_cpu_string;		/* for -mcpu=<xxx> */
 char *mips_isa_string;		/* for -mips{1,2,3,4} */
-char *mips_abi_string;		/* for -mabi={o32,32,n32,n64,64,eabi} */
+char *mips_abi_string;		/* for -mabi={32,n32,64,eabi} */
 
 /* Whether we are generating mips16 code.  This is a synonym for
    TARGET_MIPS16, and exists for use as an attribute.  */
@@ -4031,13 +4031,11 @@ override_options ()
   /* Get the ABI to use.  Currently this code is only used for Irix 6.  */
   if (mips_abi_string == (char *) 0)
     mips_abi = MIPS_ABI_DEFAULT;
-  else if (! strcmp (mips_abi_string, "32")
-	   || ! strcmp (mips_abi_string, "o32"))
+  else if (! strcmp (mips_abi_string, "32"))
     mips_abi = ABI_32;
   else if (! strcmp (mips_abi_string, "n32"))
     mips_abi = ABI_N32;
-  else if (! strcmp (mips_abi_string, "64")
-	   || ! strcmp (mips_abi_string, "n64"))
+  else if (! strcmp (mips_abi_string, "64"))
     mips_abi = ABI_64;
   else if (! strcmp (mips_abi_string, "eabi"))
     mips_abi = ABI_EABI;
