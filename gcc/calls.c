@@ -593,10 +593,11 @@ expand_call (exp, target, ignore)
 	  if (TREE_READONLY (fndecl) && ! TREE_THIS_VOLATILE (fndecl)
 	      && TYPE_MODE (TREE_TYPE (exp)) != VOIDmode)
 	    is_const = 1;
+
+	  if (TREE_THIS_VOLATILE (fndecl))
+	    is_volatile = 1;
 	}
     }
-
-  is_volatile = TYPE_VOLATILE (TREE_TYPE (TREE_TYPE (p)));
 
 #ifdef REG_PARM_STACK_SPACE
 #ifdef MAYBE_REG_PARM_STACK_SPACE
