@@ -49,6 +49,12 @@ Wed Oct 15 10:06:29 1997  Richard Henderson  <rth@cygnus.com>
 	* libI77/fio.h: Include <string.h> if STDC_HEADERS.
 	* libU77/chmod_.c: Likewise.
 
+1997-10-03  Dave Love  <d.love@dl.ac.uk>
+
+	* configure.in: Check for tempnam (best because it obeys TMPDIR).
+	* libI77/open.c: Use it.
+	* libI77/err.c: New message # 132.
+
 Tue Sep 30 00:41:39 1997  Craig Burley  <burley@gnu.ai.mit.edu>
 
 	Do a better job of printing the offending FORMAT string
@@ -571,12 +577,6 @@ Thu Oct 31 22:27:45 1996  Craig Burley  <burley@gnu.ai.mit.edu>
 	
 	* libI77/Version.c: Use <stdio.h>, not "stdio.h".
 	* libF77/Version.c: Likewise.
-
-1997-10-03  Dave Love  <d.love@dl.ac.uk>
-
-	* configure.in: Check for tempnam (best because it obeys TMPDIR).
-	* libI77/open.c: Use it.
-	* libI77/err.c: New message # 132.
 
 Wed Aug 28 13:25:29 1996  Dave Love  <d.love@dl.ac.uk>
 
