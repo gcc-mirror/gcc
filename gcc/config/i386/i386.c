@@ -64,6 +64,7 @@ struct processor_costs i386_cost = {	/* 386 specific costs */
   1,					/* cost of multiply per each bit set */
   23,					/* cost of a divide/mod */
   15,					/* "large" insn */
+  4,					/* cost for loading QImode using movzbl */
   {2, 4, 2},				/* cost of loading integer registers
 					   in QImode, HImode and SImode.
 					   Relative to reg-reg move (2). */
@@ -83,6 +84,7 @@ struct processor_costs i486_cost = {	/* 486 specific costs */
   1,					/* cost of multiply per each bit set */
   40,					/* cost of a divide/mod */
   15,					/* "large" insn */
+  4,					/* cost for loading QImode using movzbl */
   {2, 4, 2},				/* cost of loading integer registers
 					   in QImode, HImode and SImode.
 					   Relative to reg-reg move (2). */
@@ -102,6 +104,7 @@ struct processor_costs pentium_cost = {
   0,					/* cost of multiply per each bit set */
   25,					/* cost of a divide/mod */
   8,					/* "large" insn */
+  6,					/* cost for loading QImode using movzbl */
   {2, 4, 2},				/* cost of loading integer registers
 					   in QImode, HImode and SImode.
 					   Relative to reg-reg move (2). */
@@ -121,6 +124,7 @@ struct processor_costs pentiumpro_cost = {
   0,					/* cost of multiply per each bit set */
   17,					/* cost of a divide/mod */
   8,					/* "large" insn */
+  2,					/* cost for loading QImode using movzbl */
   {4, 4, 4},				/* cost of loading integer registers
 					   in QImode, HImode and SImode.
 					   Relative to reg-reg move (2). */
@@ -140,6 +144,7 @@ struct processor_costs k6_cost = {
   0,					/* cost of multiply per each bit set */
   18,					/* cost of a divide/mod */
   8,					/* "large" insn */
+  3,					/* cost for loading QImode using movzbl */
   {4, 5, 4},				/* cost of loading integer registers
 					   in QImode, HImode and SImode.
 					   Relative to reg-reg move (2). */
