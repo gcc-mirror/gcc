@@ -3455,33 +3455,6 @@ which.
 @c above is overfull.  not sure what to do.  --mew 5feb93  did
 @c something, not sure if it looks good.  --mew 10feb93
 
-@defmac MAYBE_REG_PARM_STACK_SPACE
-@defmacx FINAL_REG_PARM_STACK_SPACE (@var{const_size}, @var{var_size})
-Define these macros in addition to the one above if functions might
-allocate stack space for arguments even when their values are passed
-in registers.  These should be used when the stack space allocated
-for arguments in registers is not a simple constant independent of the
-function declaration.
-
-The value of the first macro is the size, in bytes, of the area that
-we should initially assume would be reserved for arguments passed in registers.
-
-The value of the second macro is the actual size, in bytes, of the area
-that will be reserved for arguments passed in registers.  This takes two
-arguments: an integer representing the number of bytes of fixed sized
-arguments on the stack, and a tree representing the number of bytes of
-variable sized arguments on the stack.
-
-When these macros are defined, @code{REG_PARM_STACK_SPACE} will only be
-called for libcall functions, the current function, or for a function
-being called when it is known that such stack space must be allocated.
-In each case this value can be easily computed.
-
-When deciding whether a called function needs such stack space, and how
-much space to reserve, GCC uses these two macros instead of
-@code{REG_PARM_STACK_SPACE}.
-@end defmac
-
 @defmac OUTGOING_REG_PARM_STACK_SPACE
 Define this if it is the responsibility of the caller to allocate the area
 reserved for arguments passed in registers.
