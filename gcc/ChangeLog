@@ -1,3 +1,10 @@
+2003-05-12  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* cfgloopanal.c (num_loop_insns, average_num_loop_insns): Count only
+	real insns.
+	* loop-unroll.c (unroll_loop_runtime_iterations): Remove superfluous
+	condition.
+
 2003-05-11  Neil Booth  <neil@cat.daikokuya.co.uk>
 
 	* doc/cpp.texi: Fix typos.
