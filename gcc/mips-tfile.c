@@ -5512,12 +5512,12 @@ free_thead (ptr)
 
 /* Output an error message and exit */
 
-/*VARARGS*/
 void
-fatal VPARAMS ((const char *format, ...))
+fatal (const char *format, ...)
 {
-  VA_OPEN (ap, format);
-  VA_FIXEDARG (ap, const char *, format);
+  va_list ap;
+  
+  va_start (ap, format);
 
   if (line_number > 0)
     fprintf (stderr, "%s, %s:%ld ", progname, input_name, line_number);
@@ -5525,7 +5525,7 @@ fatal VPARAMS ((const char *format, ...))
     fprintf (stderr, "%s:", progname);
 
   vfprintf (stderr, format, ap);
-  VA_CLOSE (ap);
+  va_end (ap);
   fprintf (stderr, "\n");
   if (line_number > 0)
     fprintf (stderr, "line:\t%s\n", cur_line_start);
@@ -5534,12 +5534,12 @@ fatal VPARAMS ((const char *format, ...))
   exit (1);
 }
 
-/*VARARGS*/
 void
-error VPARAMS ((const char *format, ...))
+error (const char *format, ...)
 {
-  VA_OPEN (ap, format);
-  VA_FIXEDARG (ap, char *, format);
+  va_list ap;
+  
+  va_start (ap, format);
 
   if (line_number > 0)
     fprintf (stderr, "%s, %s:%ld ", progname, input_name, line_number);
@@ -5552,7 +5552,7 @@ error VPARAMS ((const char *format, ...))
     fprintf (stderr, "line:\t%s\n", cur_line_start);
 
   had_errors++;
-  VA_CLOSE (ap);
+  va_end (ap);
 
   saber_stop ();
 }

@@ -713,15 +713,14 @@ gen_lowpart_SUBREG (mode, reg)
 
 /*VARARGS2*/
 rtx
-gen_rtx VPARAMS ((enum rtx_code code, enum machine_mode mode, ...))
+gen_rtx (enum rtx_code code, enum machine_mode mode, ...)
 {
   int i;		/* Array indices...			*/
   const char *fmt;	/* Current rtx's format...		*/
   rtx rt_val;		/* RTX to return to caller...		*/
+  va_list p;
 
-  VA_OPEN (p, mode);
-  VA_FIXEDARG (p, enum rtx_code, code);
-  VA_FIXEDARG (p, enum machine_mode, mode);
+  va_start (p, mode);
 
   switch (code)
     {
@@ -795,7 +794,7 @@ gen_rtx VPARAMS ((enum rtx_code code, enum machine_mode mode, ...))
       break;
     }
 
-  VA_CLOSE (p);
+  va_end (p);
   return rt_val;
 }
 
@@ -807,13 +806,13 @@ gen_rtx VPARAMS ((enum rtx_code code, enum machine_mode mode, ...))
 
 /*VARARGS1*/
 rtvec
-gen_rtvec VPARAMS ((int n, ...))
+gen_rtvec (int n, ...)
 {
   int i, save_n;
   rtx *vector;
+  va_list p;
 
-  VA_OPEN (p, n);
-  VA_FIXEDARG (p, int, n);
+  va_start (p, n);
 
   if (n == 0)
     return NULL_RTVEC;		/* Don't allocate an empty rtvec...	*/
@@ -825,7 +824,7 @@ gen_rtvec VPARAMS ((int n, ...))
 
   /* The definition of VA_* in K&R C causes `n' to go out of scope.  */
   save_n = n;
-  VA_CLOSE (p);
+  va_end (p);
 
   return gen_rtvec_v (save_n, vector);
 }

@@ -32,14 +32,14 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 /* Issue an ISO C99 pedantic warning MSGID.  */
 
 void
-pedwarn_c99 VPARAMS ((const char *msgid, ...))
+pedwarn_c99 (const char *msgid, ...)
 {
   diagnostic_info diagnostic;
-  VA_OPEN (ap, msgid);
-  VA_FIXEDARG (ap, const char *, msgid);
-
+  va_list ap;
+  
+  va_start (ap, msgid);
   diagnostic_set_info (&diagnostic, msgid, &ap, input_filename, input_line,
                        flag_isoc99 ? pedantic_error_kind () : DK_WARNING);
   report_diagnostic (&diagnostic);
-  VA_CLOSE (ap);
+  va_end (ap);
 }

@@ -1500,14 +1500,14 @@ break_out_target_exprs (t)
    current line number.  */
 
 tree
-build_min_nt VPARAMS ((enum tree_code code, ...))
+build_min_nt (enum tree_code code, ...)
 {
   register tree t;
   register int length;
   register int i;
+  va_list p;
 
-  VA_OPEN (p, code);
-  VA_FIXEDARG (p, enum tree_code, code);
+  va_start (p, code);
 
   t = make_node (code);
   length = TREE_CODE_LENGTH (code);
@@ -1519,7 +1519,7 @@ build_min_nt VPARAMS ((enum tree_code code, ...))
       TREE_OPERAND (t, i) = x;
     }
 
-  VA_CLOSE (p);
+  va_end (p);
   return t;
 }
 
@@ -1527,15 +1527,14 @@ build_min_nt VPARAMS ((enum tree_code code, ...))
    line-number.  */
 
 tree
-build_min VPARAMS ((enum tree_code code, tree tt, ...))
+build_min (enum tree_code code, tree tt, ...)
 {
   register tree t;
   register int length;
   register int i;
+  va_list p;
 
-  VA_OPEN (p, tt);
-  VA_FIXEDARG (p, enum tree_code, code);
-  VA_FIXEDARG (p, tree, tt);
+  va_start (p, tt);
 
   t = make_node (code);
   length = TREE_CODE_LENGTH (code);
@@ -1548,7 +1547,7 @@ build_min VPARAMS ((enum tree_code code, tree tt, ...))
       TREE_OPERAND (t, i) = x;
     }
 
-  VA_CLOSE (p);
+  va_end (p);
   return t;
 }
 

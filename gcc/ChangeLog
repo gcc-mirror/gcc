@@ -1,3 +1,39 @@
+2003-05-17  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* builtins.c (validate_arglist): Eliminate libiberty VA_ macros,
+	always use stdarg.
+	* c-errors.c (pedwarn_c99): Likewise.
+	* c-format.c (status_warning): Likewise.
+	* c-semantics.c (build_stmt): Likewise.
+	* calls.c (emit_library_call, emit_library_call_value): Likewise.
+	* collect2.c (notice, fatal_perror, fatal, error): Likewise.
+	* cpperror.c (cpp_error, cpp_error_with_line): Likewise.
+	* diagnostic.c (build_message_string, output_printf,
+	output_verbatim, verbatim, inform, warning, pedwarn, error, sorry,
+	fatal_error, internal_error, warning_with_decl, pedwarn_with_decl,
+	error_with_decl, fnotice): Likewise.
+	* dwarf2asm.c (dw2_asm_output_data, dw2_asm_output_delta,
+	dw2_asm_output_offset, dw2_asm_output_pcrel, dw2_asm_output_addr,
+	dw2_asm_output_addr_rtx, dw2_asm_output_nstring,
+	dw2_asm_output_data_uleb128, dw2_asm_output_data_sleb128,
+	dw2_asm_output_delta_uleb128, dw2_asm_output_delta_sleb128,
+	dw2_asm_output_encoded_addr_rtx): Likewise.
+	* emit-rtl.c (gen_rtx, gen_rtvec): Likewise.
+	* errors.c (warning, error, fatal, internal_error): Likewise.
+	* final.c (output_operand_lossage, asm_fprintf): Likewise.
+	* fix-header.c (fatal): Likewise.
+	* gcc.c (fatal, error, notice): Likewise.
+	* gcov.c (fnotice): Likewise.
+	* genattrtab.c (attr_rtx, attr_printf): Likewise.
+	* gengtype.c (error_at_line, xasprintf, oprintf): Likewise.
+	* gensupport.c (message_with_line): Likewise.
+	* mips-tfile.c (fatal, error): Likewise.
+	* protoize.c (notice): Likewise.
+	* ra-debug.c (ra_debug_msg): Likewise.
+	* read-rtl.c (fatal_with_file_and_line): Likewise.
+	* rtl-error.c (error_for_asm, warning_for_asm): Likewise.
+	* tree.c (build, build_nt, build_function_type_list): Likewise.
+
 2003-05-17  Neil Booth  <neil@daikokuya.co.uk>
 
 	* defaults.h (TARGET_CPU_CPP_BUILTINS, CPP_PREDEFINES): Remove.

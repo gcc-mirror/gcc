@@ -360,29 +360,28 @@ collect_exit (status)
 
 /* Notify user of a non-error.  */
 void
-notice VPARAMS ((const char *msgid, ...))
+notice (const char *msgid, ...)
 {
-  VA_OPEN (ap, msgid);
-  VA_FIXEDARG (ap, const char *, msgid);
-
+  va_list ap;
+  
+  va_start (ap, msgid);
   vfprintf (stderr, _(msgid), ap);
-  VA_CLOSE (ap);
+  va_end (ap);
 }
 
 /* Die when sys call fails.  */
 
 void
-fatal_perror VPARAMS ((const char * msgid, ...))
+fatal_perror (const char * msgid, ...)
 {
   int e = errno;
-
-  VA_OPEN (ap, msgid);
-  VA_FIXEDARG (ap, const char *, msgid);
-
+  va_list ap;
+  
+  va_start (ap, msgid);
   fprintf (stderr, "collect2: ");
   vfprintf (stderr, _(msgid), ap);
   fprintf (stderr, ": %s\n", xstrerror (e));
-  VA_CLOSE (ap);
+  va_end (ap);
 
   collect_exit (FATAL_EXIT_CODE);
 }
@@ -390,15 +389,15 @@ fatal_perror VPARAMS ((const char * msgid, ...))
 /* Just die.  */
 
 void
-fatal VPARAMS ((const char * msgid, ...))
+fatal (const char * msgid, ...)
 {
-  VA_OPEN (ap, msgid);
-  VA_FIXEDARG (ap, const char *, msgid);
+  va_list ap;
   
+  va_start (ap, msgid);
   fprintf (stderr, "collect2: ");
   vfprintf (stderr, _(msgid), ap);
   fprintf (stderr, "\n");
-  VA_CLOSE (ap);
+  va_end (ap);
 
   collect_exit (FATAL_EXIT_CODE);
 }
@@ -406,15 +405,15 @@ fatal VPARAMS ((const char * msgid, ...))
 /* Write error message.  */
 
 void
-error VPARAMS ((const char * msgid, ...))
+error (const char * msgid, ...)
 {
-  VA_OPEN (ap, msgid);
-  VA_FIXEDARG (ap, const char *, msgid);
-
+  va_list ap;
+  
+  va_start (ap, msgid);
   fprintf (stderr, "collect2: ");
   vfprintf (stderr, _(msgid), ap);
   fprintf (stderr, "\n");
-  VA_CLOSE(ap);
+  va_end(ap);
 }
 
 /* In case obstack is linked in, and abort is defined to fancy_abort,

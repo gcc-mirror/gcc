@@ -128,14 +128,12 @@ _cpp_begin_message (pfile, code, line, column)
 
 /* Print an error at the location of the previously lexed token.  */
 void
-cpp_error VPARAMS ((cpp_reader * pfile, int level, const char *msgid, ...))
+cpp_error (cpp_reader * pfile, int level, const char *msgid, ...)
 {
   unsigned int line, column;
-
-  VA_OPEN (ap, msgid);
-  VA_FIXEDARG (ap, cpp_reader *, pfile);
-  VA_FIXEDARG (ap, int, level);
-  VA_FIXEDARG (ap, const char *, msgid);
+  va_list ap;
+  
+  va_start (ap, msgid);
 
   if (pfile->buffer)
     {
@@ -159,26 +157,23 @@ cpp_error VPARAMS ((cpp_reader * pfile, int level, const char *msgid, ...))
   if (_cpp_begin_message (pfile, level, line, column))
     v_message (msgid, ap);
 
-  VA_CLOSE (ap);
+  va_end (ap);
 }
 
 /* Print an error at a specific location.  */
 void
-cpp_error_with_line VPARAMS ((cpp_reader *pfile, int level,
-			      unsigned int line, unsigned int column,
-			      const char *msgid, ...))
+cpp_error_with_line (cpp_reader *pfile, int level,
+		     unsigned int line, unsigned int column,
+		     const char *msgid, ...)
 {
-  VA_OPEN (ap, msgid);
-  VA_FIXEDARG (ap, cpp_reader *, pfile);
-  VA_FIXEDARG (ap, int, level);
-  VA_FIXEDARG (ap, unsigned int, line);
-  VA_FIXEDARG (ap, unsigned int, column);
-  VA_FIXEDARG (ap, const char *, msgid);
+  va_list ap;
+  
+  va_start (ap, msgid);
 
   if (_cpp_begin_message (pfile, level, line, column))
     v_message (msgid, ap);
 
-  VA_CLOSE (ap);
+  va_end (ap);
 }
 
 void

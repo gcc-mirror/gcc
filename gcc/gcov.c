@@ -362,14 +362,13 @@ main (argc, argv)
 }
 
 static void
-fnotice VPARAMS ((FILE *file, const char *msgid, ...))
+fnotice (FILE *file, const char *msgid, ...)
 {
-  VA_OPEN (ap, msgid);
-  VA_FIXEDARG (ap, FILE *, file);
-  VA_FIXEDARG (ap, const char *, msgid);
-
+  va_list ap;
+  
+  va_start (ap, msgid);
   vfprintf (file, _(msgid), ap);
-  VA_CLOSE (ap);
+  va_end (ap);
 }
 
 /* More 'friendly' abort that prints the line and file.

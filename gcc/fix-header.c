@@ -1355,11 +1355,11 @@ v_fatal (str, ap)
 }
 
 static void
-fatal VPARAMS ((const char *str, ...))
+fatal (const char *str, ...)
 {
-  VA_OPEN (ap, str);
-  VA_FIXEDARG (ap, const char *, str);
-
+  va_list ap;
+  
+  va_start (ap, str);
   v_fatal (str, ap);
-  VA_CLOSE (ap);
+  va_end (ap);
 }

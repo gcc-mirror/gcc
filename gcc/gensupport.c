@@ -107,17 +107,17 @@ static void process_include PARAMS ((rtx, int));
 static char *save_string PARAMS ((const char *, int));
 
 void
-message_with_line VPARAMS ((int lineno, const char *msg, ...))
+message_with_line (int lineno, const char *msg, ...)
 {
-  VA_OPEN (ap, msg);
-  VA_FIXEDARG (ap, int, lineno);
-  VA_FIXEDARG (ap, const char *, msg);
+  va_list ap;
+  
+  va_start (ap, msg);
 
   fprintf (stderr, "%s:%d: ", read_rtx_filename, lineno);
   vfprintf (stderr, msg, ap);
   fputc ('\n', stderr);
 
-  VA_CLOSE (ap);
+  va_end (ap);
 }
 
 /* Make a version of gen_rtx_CONST_INT so that GEN_INT can be used in

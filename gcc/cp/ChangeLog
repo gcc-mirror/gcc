@@ -1,3 +1,10 @@
+2003-05-17  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* error.c (cp_error_at, cp_warning_at, cp_pedwarn_at): Eliminate
+	libiberty VA_ macros, always use stdarg.
+	* rtti.c (create_pseudo_type_info): Likewise.
+	* tree.c (build_min_nt, build_min): Likewise.
+
 2003-05-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* ptree.c (cxx_print_type, cxx_print_xnode): Use string

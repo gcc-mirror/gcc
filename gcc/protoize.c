@@ -513,13 +513,13 @@ static char * saved_repl_write_ptr;
 
 /* Translate and output an error message.  */
 static void
-notice VPARAMS ((const char *msgid, ...))
+notice (const char *msgid, ...)
 {
-  VA_OPEN (ap, msgid);
-  VA_FIXEDARG (ap, const char *, msgid);
-
+  va_list ap;
+  
+  va_start (ap, msgid);
   vfprintf (stderr, _(msgid), ap);
-  VA_CLOSE (ap);
+  va_end (ap);
 }
 
 

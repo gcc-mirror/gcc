@@ -193,14 +193,14 @@ finish_stmt_tree (t)
    in the grammar.  */
 
 tree
-build_stmt VPARAMS ((enum tree_code code, ...))
+build_stmt (enum tree_code code, ...)
 {
   tree t;
   int length;
   int i;
-
-  VA_OPEN (p, code);
-  VA_FIXEDARG (p, enum tree_code, code);
+  va_list p;
+  
+  va_start (p, code);
 
   t = make_node (code);
   length = TREE_CODE_LENGTH (code);
@@ -209,7 +209,7 @@ build_stmt VPARAMS ((enum tree_code code, ...))
   for (i = 0; i < length; i++)
     TREE_OPERAND (t, i) = va_arg (p, tree);
 
-  VA_CLOSE (p);
+  va_end (p);
   return t;
 }
 
