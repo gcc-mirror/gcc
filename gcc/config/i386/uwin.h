@@ -29,6 +29,7 @@ Boston, MA 02111-1307, USA.  */
 
 #define STANDARD_INCLUDE_COMPONENT "UWIN"
 #define SYSTEM_INCLUDE_DIR "/usr/gnu/include"
+#undef MD_STARTFILE_PREFIX
 #define MD_STARTFILE_PREFIX "/usr/gnu/lib/"
 
 #undef CPP_PREDEFINES

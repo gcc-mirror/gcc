@@ -59,6 +59,7 @@ Boston, MA 02111-1307, USA.
 
 /* Predefined macros (independent of processor type). */
 
+#undef CPP_PREDEFINES
 #define CPP_PREDEFINES "-Dpsos"
 
 
