@@ -2134,7 +2134,8 @@ sched_analyze_insn (x, insn, loop_note)
       prev_dep_insn = insn;
       dep_insn = PREV_INSN (insn);
       while (GET_CODE (dep_insn) == INSN
-	     && GET_CODE (PATTERN (dep_insn)) == USE)
+	     && GET_CODE (PATTERN (dep_insn)) == USE
+	     && GET_CODE (XEXP (PATTERN (dep_insn), 0)) == REG)
 	{
 	  SCHED_GROUP_P (prev_dep_insn) = 1;
 
