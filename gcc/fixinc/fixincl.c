@@ -147,9 +147,11 @@ pid_t process_chain_head = (pid_t) -1;
 const char incl_quote_pat[] = "^[ \t]*#[ \t]*include[ \t]*\"[^/]";
 regex_t incl_quote_re;
 
-char *load_file (const char *pzFile);
-void process (char *data, const char *file);
-void run_compiles (void);
+char *load_file (const char *);
+void process (char *, const char *);
+void run_compiles ();
+void wait_for_pid( pid_t, int );
+void initialize ();
 
 #include "fixincl.x"
 
@@ -164,8 +166,6 @@ main (argc, argv)
 {
   static const char gnu_lib_mark[] =
     "This file is part of the GNU C Library";
-  static const char var_not_found[] =
-    "fixincl ERROR:  %s environment variable not defined\n";
 
 #ifndef NO_BOGOSITY_LIMITS
 # define BOGUS_LIMIT    MINIMUM_MAXIMUM_LINES
@@ -211,6 +211,113 @@ main (argc, argv)
       fputs ("fixincl ERROR:  too many command line arguments\n", stderr);
       exit (EXIT_FAILURE);
     }
+
+  initialize ();
+
+#ifndef NO_BOGOSITY_LIMITS
+  /*  Some systems only allow so many calls to fork(2).
+      This is inadequate for this program.  Consequently,
+      we must let a grandfather process spawn children
+      that then spawn all the processes that do the real work.
+      */
+  for (;;)
+    {
+      file_name_ct = 0;
+
+      {
+        char *pz_buf = file_name_buf;
+
+        /* Only the parent process can read from stdin without confusing
+           the world. (How does the child tell the parent to skip
+           forward?  Pipes and files behave differently.)  */
+
+        while (  (file_name_ct < BOGUS_LIMIT)
+              && (pz_buf < (file_name_buf + NAME_TABLE_SIZE - MAXPATHLEN)))
+          {
+            if (fgets (pz_buf, MAXPATHLEN, stdin) == (char *) NULL)
+              break;
+            while (isspace (*pz_buf))
+              pz_buf++;
+            if ((*pz_buf == '\0') || (*pz_buf == '#'))
+              continue;
+            apz_names[file_name_ct++] = pz_buf;
+            pz_buf += strlen (pz_buf);
+            while (isspace (pz_buf[-1]))
+              pz_buf--;
+            *pz_buf++ = '\0';
+          }
+      }
+
+      /*  IF we did not get any files this time thru
+          THEN we must be done.  */
+      if (file_name_ct == 0)
+        return EXIT_SUCCESS;
+
+      {
+        pid_t child = fork ();
+        if (child == NULLPROCESS)
+          break;
+
+        if (child == NOPROCESS)
+          {
+            fprintf (stderr, "Error %d (%s) forking in main\n",
+                     errno, strerror (errno));
+            exit (EXIT_FAILURE);
+          }
+
+        wait_for_pid( child, file_name_ct );
+      }
+    }
+#else
+#error "NON-BOGUS LIMITS NOT SUPPORTED?!?!"
+#endif
+
+  /*
+     Here we are the child of the grandparent process.  The parent
+     of all the little fixup processes.  We ignore the deaths of
+     our children.  */
+
+  signal (SIGCLD,  SIG_IGN);
+
+#ifdef DEBUG
+  fprintf (stderr, "Child start  --  processing %d files\n",
+           file_name_ct);
+#endif
+
+  /*  For every file specified in stdandard in
+      (except as throttled for bogus reasons)...
+      */
+  for (loop_ct = 0; loop_ct < file_name_ct; loop_ct++)
+    {
+      char *pz_data;
+      char *pz_file_name = apz_names[loop_ct];
+
+      if (access (pz_file_name, R_OK) != 0)
+        {
+          int erno = errno;
+          fprintf (stderr, "Cannot access %s from %s\n\terror %d (%s)\n",
+                   pz_file_name, getcwd ((char *) NULL, MAXPATHLEN),
+                   erno, strerror (erno));
+        }
+      else if (pz_data = load_file (pz_file_name), (pz_data != (char *) NULL))
+        {
+          if (strstr (pz_data, gnu_lib_mark) == (char *) NULL)
+            process (pz_data, pz_file_name);
+          free ((void *) pz_data);
+        }
+    }
+
+  return EXIT_SUCCESS;
+}
+
+
+/* * * * * * * * * * * * */
+
+void
+initialize()
+{
+  static const char var_not_found[] =
+    "fixincl ERROR:  %s environment variable not defined\n";
 
   {
     static const char var[] = "TARGET_MACHINE";
@@ -264,110 +371,74 @@ main (argc, argv)
   signal (SIGALRM, SIG_IGN);
   signal (SIGTERM, SIG_IGN);
 
-#ifndef NO_BOGOSITY_LIMITS
-  /*  Some systems only allow so many calls to fork(2).
-      This is inadequate for this program.  Consequently,
-      we must let a grandfather process spawn children
-      that then spawn all the processes that do the real work.
-      */
-  for (;;)
-    {
-      char *pz_buf;
-      pid_t child;
+  /*
+     Make sure that if we opened a server process, we close it now.
+     This is the grandparent process.  We don't need the server anymore
+     and our children should make their own.  */
 
-      /* Only the parent process can read from stdin without confusing
-         the world. (How does the child tell the parent to skip
-         forward?  Pipes and files behave differently.)  */
-      file_name_ct = 0;
-      pz_buf = file_name_buf;
-      while (  (file_name_ct < BOGUS_LIMIT)
-            && (pz_buf < (file_name_buf + NAME_TABLE_SIZE - MAXPATHLEN)))
-        {
-          if (fgets (pz_buf, MAXPATHLEN, stdin) == (char *) NULL)
-            break;
-          while (isspace (*pz_buf))
-            pz_buf++;
-          if ((*pz_buf == '\0') || (*pz_buf == '#'))
-            continue;
-          apz_names[file_name_ct++] = pz_buf;
-          pz_buf += strlen (pz_buf);
-          while (isspace (pz_buf[-1]))
-            pz_buf--;
-          *pz_buf++ = '\0';
-        }
+  close_server ();
+  (void)wait ( (int*)NULL );
+}
 
-      /*  IF we did not get any files this time thru
-          THEN we must be done.  */
-      if (file_name_ct == 0)
-        return EXIT_SUCCESS;
+/* * * * * * * * * * * * *
+ 
+   wait_for_pid  -  Keep calling `wait(2)' until it returns
+   the process id we are looking for.  Not every system has
+   `waitpid(2)'.  We also ensure that the children exit with success. */
 
-      child = fork ();
-      if (child == NULLPROCESS)
-        break;
-
-      if (child == NOPROCESS)
-        {
-          fprintf (stderr, "Error %d (%s) forking in main\n",
-                   errno, strerror (errno));
-          exit (EXIT_FAILURE);
-        }
-#ifndef DEBUG
-      {
-        int status;
-        (void)wait (&status);
-      }
-#else
-      fprintf (stderr, "Waiting for %d to complete %d files\n",
-               child, file_name_ct);
-
-      {
-        int status;
-        pid_t dead_kid = wait (&status);
-
-        if (dead_kid != child)
-          fprintf (stderr, "fixincl woke up from a strange child %d (not %d)\n",
-                   dead_kid, child);
-        else
-          fprintf (stderr, "child finished %d files %s\n", file_name_ct,
-                   status ? strerror (status & 0xFF) : "ok");
-      }
-#endif
-    }
-#else
-#error "NON-BOGUS LIMITS NOT SUPPORTED?!?!"
-#endif
-
-  signal (SIGCLD,  SIG_IGN);
-
+void
+wait_for_pid( pid_t child, int file_name_ct )
+{
 #ifdef DEBUG
-  fprintf (stderr, "Child start  --  processing %d files\n",
-           file_name_ct);
+  fprintf (stderr, "Waiting for %d to complete %d files\n",
+           child, file_name_ct);
 #endif
 
-  /*  For every file specified in stdandard in
-      (except as throttled for bogus reasons)...
-      */
-  for (loop_ct = 0; loop_ct < file_name_ct; loop_ct++)
-    {
-      char *pz_data;
-      char *pz_file_name = apz_names[loop_ct];
+  for (;;) {
+    int status;
+    pid_t dead_kid = wait (&status);
 
-      if (access (pz_file_name, R_OK) != 0)
-        {
-          int erno = errno;
-          fprintf (stderr, "Cannot access %s from %s\n\terror %d (%s)\n",
-                   pz_file_name, getcwd ((char *) NULL, MAXPATHLEN),
-                   erno, strerror (erno));
-        }
-      else if (pz_data = load_file (pz_file_name), (pz_data != (char *) NULL))
-        {
-          if (strstr (pz_data, gnu_lib_mark) == (char *) NULL)
-            process (pz_data, pz_file_name);
-          free ((void *) pz_data);
-        }
-    }
+    if (dead_kid == child)
+      {
+        if (! WIFEXITED( status ))
+          {
+            fprintf (stderr, "child process %d is hung on signal %d\n",
+                     child, WSTOPSIG( status ));
+            exit (EXIT_FAILURE);
+          }
+        if (WEXITSTATUS( status ) != 0)
+          {
+            fprintf (stderr, "child process %d exited with status %d\n",
+                     child, WEXITSTATUS( status ));
+            exit (EXIT_FAILURE);
+          }
+#ifdef DEBUG
+        fprintf (stderr, "child finished %d files %s\n", file_name_ct,
+                 status ? strerror (status & 0xFF) : "ok");
+#endif
+        break; /* normal child completion */
+      }
 
-  return EXIT_SUCCESS;
+    /*
+       IF there is an error, THEN see if it is retryable.
+       If it is not retryable, then break out of this loop.  */
+    if (dead_kid == NOPROCESS)
+      {
+        switch (errno) {
+        case EINTR:
+        case EAGAIN:
+          break;
+
+        default:
+          fprintf (stderr, "Error %d (%s) waiting for %d to finish\n",
+                   errno, strerror( errno ), child );
+          /* FALLTHROUGH */
+
+        case ECHILD: /* no children to wait for?? */
+          return;
+        }
+      }
+  } done_waiting:;
 }
 
 
@@ -475,6 +546,12 @@ run_compiles ()
                REGEX_COUNT * sizeof (regex_t));
       exit (EXIT_FAILURE);
     }
+
+  /*  Make sure re_compile_pattern does not stumble across invalid
+      data */
+
+  memset ( (void*)p_re, '\0', REGEX_COUNT * sizeof (regex_t) );
+  memset ( (void*)&incl_quote_re, '\0', sizeof (regex_t) );
 
   /*  The patterns we search for are all egrep patterns.
       In the shell version of this program, we invoke egrep

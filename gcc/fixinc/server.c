@@ -178,14 +178,17 @@ load_data (fp)
  *  Make certain the server process is dead, close the 
  *  pipes to it and from it, finally NULL out the file pointers
  */
-static void
+void
 close_server ()
 {
-  kill ((pid_t) server_id, SIGKILL);
-  server_id = NULLPROCESS;
-  fclose (server_pair.pf_read);
-  fclose (server_pair.pf_write);
-  server_pair.pf_read = server_pair.pf_write = (FILE *) NULL;
+  if (server_id != NULLPROCESS)
+    {
+      kill ((pid_t) server_id, SIGKILL);
+      server_id = NULLPROCESS;
+      fclose (server_pair.pf_read);
+      fclose (server_pair.pf_write);
+      server_pair.pf_read = server_pair.pf_write = (FILE *) NULL;
+    }
 }
 
 /*
