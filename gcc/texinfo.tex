@@ -1,5 +1,5 @@
 %% TeX macros to handle Texinfo files.
-%% $Id: texinfo.tex,v 2.202 1997/06/04 21:46:06 karl Exp $
+%% $Id: texinfo.tex,v 2.202 1997/06/04 21:47:40 karl Exp karl $
 
 %  Copyright (C) 1985, 86, 88, 90, 91, 92, 93,
 %                94, 95, 96, 97 Free Software Foundation, Inc.
@@ -36,7 +36,7 @@
 
 % This automatically updates the version number based on RCS.
 \def\deftexinfoversion$#1: #2 ${\def\texinfoversion{#2}}
-\deftexinfoversion$Revision: 2.200 $
+\deftexinfoversion$Revision: 2.202 $
 \message{Loading texinfo package [Version \texinfoversion]:}
 
 % If in a .fmt file, print the version number
@@ -1338,12 +1338,24 @@ where each line of input produces a line of output.}
 \else{\tclose{\ttsl\look}}\fi
 \else{\tclose{\ttsl\look}}\fi}
 
-% @url, @uref, @email.  Quotes do not seem necessary.
+% @url, @email.  Quotes do not seem necessary.
 \let\url=\code % perhaps include a hypertex \special eventually
-\let\uref=\code
 % rms does not like the angle brackets --karl, 17may97.
 %\def\email#1{$\langle${\tt #1}$\rangle$}
 \let\email=\code
+
+% @uref (abbreviation for `urlref') takes an optional second argument
+% specifying the text to display.  First (mandatory) arg is the url.
+% 
+\def\uref#1{\urefxxx #1,,\finish}
+\def\urefxxx#1,#2,#3\finish{%
+  \setbox0 = \hbox{\ignorespaces #2}%
+  \ifdim\wd0 > 0pt
+    \unhbox0\ (\code{#1})%
+  \else
+    \code{#1}%
+  \fi
+}
 
 % Check if we are currently using a typewriter font.  Since all the
 % Computer Modern typewriter fonts have zero interword stretch (and
@@ -2089,7 +2101,7 @@ July\or August\or September\or October\or November\or December\fi
 \global\colcount=0\relax}}
 }
 
-\def\setmultitablespacing{% test to see if user has set \multitablelinespace.
+\def\setultitablespacing{% test to see if user has set \multitablelinespace.
 % If so, do nothing. If not, give it an appropriate dimension based on
 % current baselineskip.
 \ifdim\multitablelinespace=0pt
