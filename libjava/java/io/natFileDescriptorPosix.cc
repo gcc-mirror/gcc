@@ -125,15 +125,17 @@ java::io::FileDescriptor::write (jint b)
   while (r != 1)
     {
       r = ::write (fd, &d, 1);
-      if (java::lang::Thread::interrupted())
-	{
-	  InterruptedIOException *iioe
-	    = new InterruptedIOException (JvNewStringLatin1 ("write interrupted"));
-	  iioe->bytesTransferred = r == -1 ? 0 : r;
-	  throw iioe;
+      if (r == -1)
+        {
+	  if (java::lang::Thread::interrupted())
+	    {
+	      InterruptedIOException *iioe
+		= new InterruptedIOException (JvNewStringLatin1 (strerror (errno)));
+	      iioe->bytesTransferred = r == -1 ? 0 : r;
+	      throw iioe;
+	    }	    
+	  throw new IOException (JvNewStringLatin1 (strerror (errno)));
 	}
-      else if (r == -1)
-	throw new IOException (JvNewStringLatin1 (strerror (errno)));
     }
 }
 
@@ -150,18 +152,19 @@ java::io::FileDescriptor::write (jbyteArray b, jint offset, jint len)
   while (len > 0)
     {
       int r = ::write (fd, bytes, len);
-      if (r != -1)
-	written += r;
-      if (java::lang::Thread::interrupted())
-	{
-	  InterruptedIOException *iioe
-	    = new InterruptedIOException (JvNewStringLatin1 ("write interrupted"));
-	  iioe->bytesTransferred = written;
-	  throw iioe;
+      if (r == -1)
+        {
+	  if (java::lang::Thread::interrupted())
+	    {
+	      InterruptedIOException *iioe
+		= new InterruptedIOException (JvNewStringLatin1 (strerror (errno)));
+	      iioe->bytesTransferred = written;
+	      throw iioe;
+	    }
+	  throw new IOException (JvNewStringLatin1 (strerror (errno)));
 	}
-      else if (r == -1)
-	throw new IOException (JvNewStringLatin1 (strerror (errno)));
 
+      written += r;
       len -= r;
       bytes += r;
     }
@@ -222,15 +225,17 @@ java::io::FileDescriptor::read (void)
   int r = ::read (fd, &b, 1);
   if (r == 0)
     return -1;
-  if (java::lang::Thread::interrupted())
+  if (r == -1)
     {
-      InterruptedIOException *iioe
-	= new InterruptedIOException (JvNewStringLatin1 ("read interrupted"));
-      iioe->bytesTransferred = r == -1 ? 0 : r;
-      throw iioe;
+      if (java::lang::Thread::interrupted())
+	{
+	  InterruptedIOException *iioe
+	    = new InterruptedIOException (JvNewStringLatin1 (strerror (errno)));
+	  iioe->bytesTransferred = r == -1 ? 0 : r;
+	  throw iioe;
+	}
+      throw new IOException (JvNewStringLatin1 (strerror (errno)));
     }
-  else if (r == -1)
-    throw new IOException (JvNewStringLatin1 (strerror (errno)));
   return b & 0xFF;
 }
 
@@ -246,15 +251,17 @@ java::io::FileDescriptor::read (jbyteArray buffer, jint offset, jint count)
   int r = ::read (fd, bytes, count);
   if (r == 0)
     return -1;
-  if (java::lang::Thread::interrupted())
-    {
-      InterruptedIOException *iioe
-	= new InterruptedIOException (JvNewStringLatin1 ("read interrupted"));
-      iioe->bytesTransferred = r == -1 ? 0 : r;
-      throw iioe;
+  if (r == -1)
+    {    
+      if (java::lang::Thread::interrupted())
+	{
+	  InterruptedIOException *iioe
+	    = new InterruptedIOException (JvNewStringLatin1 (strerror (errno)));
+	  iioe->bytesTransferred = r == -1 ? 0 : r;
+	  throw iioe;
+	}
+      throw new IOException (JvNewStringLatin1 (strerror (errno)));
     }
-  else if (r == -1)
-    throw new IOException (JvNewStringLatin1 (strerror (errno)));
   return r;
 }
 

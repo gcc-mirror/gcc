@@ -263,7 +263,7 @@ _Jv_ThreadInterrupt (_Jv_Thread_t *data)
   data->thread_obj->interrupt_flag = true;
 
   // Interrupt blocking system calls using a signal.
-//  pthread_kill (data->thread, INTR);
+  pthread_kill (data->thread, INTR);
   
   pthread_cond_signal (&data->wait_cond);
   
