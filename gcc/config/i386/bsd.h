@@ -20,7 +20,7 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* Include common aspects of all 386 Unix assemblers.  */
-#include "unx386.h"
+#include "i386/unix.h"
 
 /* Use the Sequent Symmetry assembler syntax.  */
 
@@ -30,7 +30,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* Prefix for internally generated assembler labels.  If we aren't using
    underscores, we are using prefix `.'s to identify labels that should
-   be ignored, as in `i386gas.h' --karl@cs.umb.edu  */
+   be ignored, as in `i386/gas.h' --karl@cs.umb.edu  */
 #ifdef NO_UNDERSCORES
 #define LPREFIX ".L"
 #else
