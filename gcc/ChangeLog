@@ -1,3 +1,7 @@
+2005-02-21  Stan Cox  <scox@redhat.com>
+
+	* config/iq2000/iq2000.h (DWARF_FRAME_RETURN_COLUMN): Change to 31.
+
 2005-02-21  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree-cfg.c (fold_cond_expr_cond): New.
