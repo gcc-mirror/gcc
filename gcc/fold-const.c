@@ -1274,8 +1274,6 @@ split_tree (in, code, conp, litp, negate_p)
      tree *conp, *litp;
      int negate_p;
 {
-  tree orig_in = in;
-  tree type = TREE_TYPE (in);
   tree var = 0;
 
   *conp = 0;
@@ -1353,8 +1351,6 @@ associate_trees (t1, t2, code, type)
      enum tree_code code;
      tree type;
 {
-  tree tem;
-
   if (t1 == 0)
     return t2;
   else if (t2 == 0)
@@ -4276,8 +4272,6 @@ extract_muldiv (t, c, code, wide_type)
 		? wide_type : type);
   tree t1, t2;
   int same_p = tcode == code;
-  int cancel_p
-    = (code == MULT_EXPR && tcode == EXACT_DIV_EXPR)  || tcode == MULT_EXPR;
   tree op0, op1;
 
   /* Don't deal with constants of zero here; they confuse the code below.  */
