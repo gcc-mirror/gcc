@@ -560,11 +560,6 @@ extern const char *_cpp_default_encoding (void);
 
 /* Utility routines and macros.  */
 #define DSC(str) (const uchar *)str, sizeof str - 1
-#define xnew(T)		(T *) xmalloc (sizeof(T))
-#define xcnew(T)	(T *) xcalloc (1, sizeof(T))
-#define xnewvec(T, N)	(T *) xmalloc (sizeof(T) * (N))
-#define xcnewvec(T, N)	(T *) xcalloc (N, sizeof(T))
-#define xobnew(O, T)	(T *) obstack_alloc (O, sizeof(T))
 
 /* These are inline functions instead of macros so we can get type
    checking.  */

@@ -662,7 +662,7 @@ save_comment (cpp_reader *pfile, cpp_token *token, const unsigned char *from,
 void
 _cpp_init_tokenrun (tokenrun *run, unsigned int count)
 {
-  run->base = xnewvec (cpp_token, count);
+  run->base = XNEWVEC (cpp_token, count);
   run->limit = run->base + count;
   run->next = NULL;
 }
@@ -673,7 +673,7 @@ next_tokenrun (tokenrun *run)
 {
   if (run->next == NULL)
     {
-      run->next = xnew (tokenrun);
+      run->next = XNEW (tokenrun);
       run->next->prev = run;
       _cpp_init_tokenrun (run->next, 250);
     }

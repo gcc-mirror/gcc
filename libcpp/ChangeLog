@@ -1,5 +1,13 @@
+2004-07-24  Bernardo Innocenti  <bernie@develer.com>
+
+	* internal.h (xnew, xcnew, xnewvec, xcnewvec, xobnew): Remove.
+	* directives.c: Use XNEW-family macros from libiberty.
+	* lex.c: Likewise.
+	* macro.c: Likewise.
+	* cpplib.h (cpp_deps_style): Export enum with name.
+
 2004-07-23  Matthias Klose  <doko@debian.org> 
- 
+
 	init.c (init_library): Use PACKAGE for the text domain. 
 
 2004-07-16  Andris Pavenis  <pavenis@latnet.lv>

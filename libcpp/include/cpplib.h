@@ -231,6 +231,9 @@ extern enum cpp_token_fld_kind cpp_token_val_index (cpp_token *tok);
 typedef unsigned CPPCHAR_SIGNED_T cppchar_t;
 typedef CPPCHAR_SIGNED_T cppchar_signed_t;
 
+/* Style of header dependencies to generate.  */
+enum cpp_deps_style { DEPS_NONE = 0, DEPS_USER, DEPS_SYSTEM };
+
 /* This structure is nested inside struct cpp_reader, and
    carries all the options visible to the command line.  */
 struct cpp_options
@@ -378,7 +381,7 @@ struct cpp_options
   struct
   {
     /* Style of header dependencies to generate.  */
-    enum {DEPS_NONE = 0, DEPS_USER, DEPS_SYSTEM } style;
+    enum cpp_deps_style style;
 
     /* Assume missing files are generated files.  */
     bool missing_files;
