@@ -1066,6 +1066,14 @@ changequote([,])dnl
 	i370-*-mvs*)
 		;;
 changequote(,)dnl
+	i[34567]86-*-elf*)
+changequote([,])dnl
+		xm_file="${xm_file} xm-svr4.h i386/xm-sysv4.h"
+		tm_file=i386/i386elf.h
+		tmake_file=i386/t-i386elf
+		xmake_file=x-svr4
+		;;
+changequote(,)dnl
 	i[34567]86-ibm-aix*)		# IBM PS/2 running AIX
 changequote([,])dnl
                 if test x$gas = xyes
