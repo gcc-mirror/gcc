@@ -969,8 +969,10 @@ void
 clear_reg_alias_info (reg)
      rtx reg;
 {
-  if (REGNO (reg) < reg_known_value_size)
-    reg_known_value[REGNO (reg)] = reg;
+  unsigned int regno = REGNO (reg);
+
+  if (regno < reg_known_value_size && regno >= FIRST_PSEUDO_REGISTER)
+    reg_known_value[regno] = reg;
 }
 
 /* Returns a canonical version of X, from the point of view alias
