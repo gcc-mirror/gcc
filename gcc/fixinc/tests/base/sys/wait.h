@@ -4,7 +4,7 @@
 /* bos325, */
 struct rusage;
 extern pid_t wait3();
-/* pid_t wait3(int *, int, struct rusage *); */
+	/* pid_t wait3(int *, int, struct rusage *); */
 #endif  /* AIX_SYSWAIT_CHECK */
 
 

@@ -123,7 +123,7 @@ do
     :
 
   else
-    diff -c $f ${TESTBASE}/$f >&2
+    diff -c $f ${TESTBASE}/$f >&2 || :
     exitok=false
   fi
 done

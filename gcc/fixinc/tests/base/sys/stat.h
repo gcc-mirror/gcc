@@ -16,7 +16,7 @@ extern int fchmod(int, mode_t);
 extern "C" {
 #endif /* __cplusplus */
 static int	stat(const char *__f, struct stat *__p) {
-return __stat32(__f, __p);
+	return __stat32(__f, __p);
 }
 #if __cplusplus
  }
@@ -27,13 +27,20 @@ return __stat32(__f, __p);
 extern "C" {
 #endif /* __cplusplus */
 static int	stat(__f, __p)
-char *__f;
-struct stat *__p;
+	char *__f;
+	struct stat *__p;
 {
-return __stat32(__f, __p);
+	return __stat32(__f, __p);
 }
 #if __cplusplus
  }
 #endif /* __cplusplus */
 #endif
 #endif  /* SCO_STATIC_FUNC_CHECK */
+
+
+#if defined( VXWORKS_NEEDS_VXWORKS_CHECK )
+#include </dev/null> /* ULONG */
+# define	__INCstath <sys/stat.h>
+#include <types/vxTypesOld.h>
+#endif  /* VXWORKS_NEEDS_VXWORKS_CHECK */
