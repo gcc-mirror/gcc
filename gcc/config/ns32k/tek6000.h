@@ -1,7 +1,7 @@
 /* Definitions of target machine for GNU compiler.
    Generic Tektronix 6000 series NS32000 version.
    See ns32k/tek6100.h and ns32k/tek6200.h, which include this file.
-   Copyright (C) 1990 Free Software Foundation, Inc.
+   Copyright (C) 1990, 2000 Free Software Foundation, Inc.
    Created by Snoopy  (sopwith.uucp!snoopy).
    Based on work by Mark Mason (mason@reed.bitnet,
    pyramid!unify!mason@uunet.uu.net) and Keith Packard.
@@ -109,7 +109,7 @@ Boston, MA 02111-1307, USA.  */
 #undef LABEL_ALIGN_AFTER_BARRIER
 
 /* Assembler pseudo-op for shared data segment. */
-#define SHARED_SECTION_ASM_OP ".shdata"
+#define SHARED_SECTION_ASM_OP "\t.shdata"
 
 #ifdef UTEK_ASM
 #undef  FUNCTION_PROLOGUE

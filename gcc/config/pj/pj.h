@@ -1054,7 +1054,7 @@ struct pj_args
 #define ASM_APP_OFF             ""
 #define FILE_ASM_OP             "\t.file\n"
 
-#define SET_ASM_OP              ".set"
+#define SET_ASM_OP              "\t.set\t"
 
 /* How to change between sections.  */
 
@@ -1080,7 +1080,7 @@ do { fputs (current_function_varargs || current_function_stdarg         \
    `-fno-common' is passed, otherwise `ASM_OUTPUT_COMMON' will be
    used.  */
 
-#define BSS_SECTION_ASM_OP      ".section\t.bss"
+#define BSS_SECTION_ASM_OP      "\t.section\t.bss"
 
 /* Like `ASM_OUTPUT_BSS' except takes the required alignment as a
    separate, explicit argument.  If you define this macro, it is used

@@ -347,7 +347,7 @@ do {								\
   DECL_SECTION_NAME (DECL) = build_string (len, string);	\
 } while (0)
 
-#define INT_ASM_OP ".dword"
+#define INT_ASM_OP "\t.dword\t"
 /* A C statement (sans semicolon) to output an element in the table of
    global constructors.  */
 #define ASM_OUTPUT_CONSTRUCTOR(FILE,NAME)				\
@@ -378,8 +378,8 @@ do {								\
    different pseudo-op names for these, they may be overridden in the
    file which includes this one.  */
 
-#define TYPE_ASM_OP	".type"
-#define SIZE_ASM_OP	".size"
+#define TYPE_ASM_OP	"\t.type\t"
+#define SIZE_ASM_OP	"\t.size\t"
 
 /* This is how we tell the assembler that a symbol is weak.  */
 
