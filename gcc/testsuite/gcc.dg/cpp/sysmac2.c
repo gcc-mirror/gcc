@@ -8,17 +8,11 @@
 
 /* Source: Neil Booth, 15 Jan 2001.  */
 
+#include "syshdr.h"
+
 #define uint 1U
 #define fl 1.0f
 #define ld 1.0L
-
-# 16 "system.h" 1 3 		/* { dg-warning "followed by integer" }  */
-
-#define sys_uint 1U
-#define sys_fl 1.0f
-#define sys_ld 1.0L
-
-# 22 "sysmac2.c" 2
 
 int
 main ()
