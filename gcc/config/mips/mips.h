@@ -299,32 +299,12 @@ while (0)
 
 #define OPTIMIZATION_OPTIONS(LEVEL)					\
 {									\
-  flag_no_function_cse			= TRUE;				\
-  flag_gnu_linker			= FALSE;			\
-									\
   if (LEVEL)								\
     {									\
       flag_omit_frame_pointer		= TRUE;				\
-      flag_delayed_branch		= TRUE;				\
-      flag_thread_jumps			= TRUE;				\
       flag_schedule_insns_after_reload	= TRUE;				\
     }									\
-									\
-  if (LEVEL >= 2)							\
-    {									\
-      flag_strength_reduce		= TRUE;				\
-      flag_cse_follow_jumps		= TRUE;				\
-      flag_expensive_optimizations	= TRUE;				\
-      flag_rerun_cse_after_loop		= TRUE;				\
-      flag_schedule_insns		= TRUE;				\
-    }									\
-									\
-  if (LEVEL >= 3)							\
-    {									\
-      flag_inline_functions		= TRUE;				\
-    }									\
 }
-
 
 
 /* Complain about missing specs and predefines that should be defined in each

@@ -128,24 +128,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #undef  FUNCTION_PROFILER
 #define FUNCTION_PROFILER(FILE, LABELNO) fprintf (FILE, "\tcall _mcount\n")
 
-/* Some machines may desire to change what optimizations are
-   performed for various optimization levels.   This macro, if
-   defined, is executed once just after the optimization level is
-   determined and before the remainder of the command options have
-   been parsed.  Values set in this macro are used as the default
-   values for the other command line options.
-
-   LEVEL is the optimization level specified; 2 if -O2 is
-   specified, 1 if -O is specified, and 0 if neither is specified.  */
-
-#define OPTIMIZATION_OPTIONS(LEVEL)					\
-{									\
-  flag_gnu_linker = FALSE;						\
-									\
-  if (LEVEL >= 3)							\
-    flag_inline_functions = TRUE;					\
-}
-
 /* A C expression that is 1 if the RTX X is a constant which is a
    valid address.  On most machines, this can be defined as
    `CONSTANT_P (X)', but a few machines are more restrictive in
