@@ -545,6 +545,11 @@ reload (first, global, dumpfile)
   register rtx insn;
   register struct elim_table *ep;
 
+  /* The two pointers used to track the true location of the memory used
+     for label offsets.  */
+  char *real_known_ptr = NULL_PTR;
+  int (*real_at_ptr)[NUM_ELIMINABLE_REGS];
+
   int something_changed;
   int something_needs_reloads;
   int something_needs_elimination;
@@ -751,13 +756,17 @@ reload (first, global, dumpfile)
   num_labels = max_label_num () - get_first_label_num ();
 
   /* Allocate the tables used to store offset information at labels.  */
-  offsets_known_at = (char *) alloca (num_labels);
-  offsets_at
+  /* We used to use alloca here, but the size of what it would try to
+     allocate would occasionally cause it to exceed the stack limit and
+     cause a core dump.  */
+  real_known_ptr = xmalloc (num_labels);
+  real_at_ptr
     = (int (*)[NUM_ELIMINABLE_REGS])
-      alloca (num_labels * NUM_ELIMINABLE_REGS * sizeof (int));
+    xmalloc (num_labels * NUM_ELIMINABLE_REGS * sizeof (int));
 
-  offsets_known_at -= get_first_label_num ();
-  offsets_at -= get_first_label_num ();
+  offsets_known_at = real_known_ptr - get_first_label_num ();
+  offsets_at
+    = (int (*)[NUM_ELIMINABLE_REGS]) (real_at_ptr - get_first_label_num ());
 
   /* Alter each pseudo-reg rtx to contain its hard reg number.
      Assign stack slots to the pseudos that lack hard regs or equivalents.
@@ -789,7 +798,11 @@ reload (first, global, dumpfile)
       break;
 
   if (i == max_regno && num_eliminable == 0 && ! caller_save_needed)
-    return;
+    {
+      free (real_known_ptr);
+      free (real_at_ptr);
+      return;
+    }
 #endif
 
   /* Compute the order of preference for hard registers to spill.
@@ -2153,6 +2166,11 @@ reload (first, global, dumpfile)
   /* Indicate that we no longer have known memory locations or constants.  */
   reg_equiv_constant = 0;
   reg_equiv_memory_loc = 0;
+
+  if (real_known_ptr)
+    free (real_known_ptr);
+  if (real_at_ptr)
+    free (real_at_ptr);
 
   if (scratch_list)
     free (scratch_list);
