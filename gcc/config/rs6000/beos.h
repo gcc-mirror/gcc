@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for BeOS.
-   Copyright (C) 1997, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1997, 2000, 2001, 2002 Free Software Foundation, Inc.
    Contributed by Fred Fish (fnf@cygnus.com), based on aix41.h
    from David Edelsohn (edelsohn@npac.syr.edu).
 
@@ -106,3 +106,9 @@ Boston, MA 02111-1307, USA.  */
 /* Struct alignments are done on 4 byte boundaries for all types.  */
 #undef BIGGEST_FIELD_ALIGNMENT
 #define BIGGEST_FIELD_ALIGNMENT 32
+
+/* STANDARD_INCLUDE_DIR is the equivalent of "/usr/include" on UNIX.  */
+#define STANDARD_INCLUDE_DIR	"/boot/develop/headers/posix"
+
+/* SYSTEM_INCLUDE_DIR is the location for system specific, non-POSIX headers.  */
+#define SYSTEM_INCLUDE_DIR	"/boot/develop/headers/be"

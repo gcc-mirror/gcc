@@ -1,5 +1,9 @@
+# Under VMS, directory names cannot contain dots.
 version=`echo $(gcc_version) | sed -e 's/\./_/g'`
 
+# Rules for linker and compiler wrappers.  These are only useful on
+# a VMS host.
+EXTRA_PROGRAMS=ld.exe decc.exe
 vms-ld.o : $(srcdir)/config/alpha/vms-ld.c
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
 ld.exe : vms-ld.o
@@ -10,9 +14,6 @@ vms-cc.o : $(srcdir)/config/alpha/vms-cc.c
 decc.exe : vms-cc.o
 	$(CC) -o $@ vms-cc.o ../libiberty/libiberty.a
 
-EXTRA_PROGRAMS=ld.exe decc.exe
-USE_COLLECT2=
-
 # These extra parts can only be compiled on a VMS host and are only needed
-# on a VMS target.
+# on a VMS target.  The rules are in t-vms.
 VMS_EXTRA_PARTS=vcrt0.o pcrt0.o

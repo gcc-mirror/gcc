@@ -1,8 +1,0 @@
-# These are host overrides for Interix 3.x
-
-# Interix 3.x has a single rooted file system, so LIBGCC2_INCLUDES
-# SYSTEM_HEADER_DIR no longer need to be set
-
-LIBGCC2_INCLUDES =
-
-SYSTEM_HEADER_DIR = /usr/include

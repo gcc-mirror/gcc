@@ -425,7 +425,7 @@ alpha-*-interix)
 	target_cpu_default="MASK_GAS|MASK_IEEE_CONFORMANT"
 
 	xm_defines=POSIX
-	xm_file="alpha/xm-alpha-interix.h xm-interix.h"
+	xm_file="alpha/xm-alpha-interix.h"
 	tmake_file="alpha/t-alpha t-interix alpha/t-interix alpha/t-ieee"
 	if test x$enable_threads = xyes ; then
 		thread_file='posix'
@@ -968,7 +968,7 @@ hppa*-*-lites*)
 	;;
 hppa*-*-mpeix*)
 	tm_file="${tm_file} pa/pa32-regs.h pa/long_double.h pa/som.h pa/pa-mpeix.h"
-	xmake_file=pa/x-pa-mpeix
+	tmake_file=pa/t-mpeix
 	echo "You must use gas. Assuming it is already installed."
 	gas=yes
 	install_headers_dir=install-headers-tar
@@ -1103,7 +1103,6 @@ i[34567]86-*-beoself* | i[34567]86-*-beos*)
 	xm_defines=POSIX
 	tmake_file='i386/t-beos i386/t-crtpic'
 	tm_file="${tm_file} i386/att.h dbxelf.h elfos.h svr4.h i386/beos-elf.h"
-	xmake_file=i386/x-beos
 	extra_parts='crtbegin.o crtend.o'
 	;;
 i[34567]86-*-bsdi* | i[34567]86-*-bsd386*)
@@ -1218,7 +1217,7 @@ i[34567]86-go32-msdos | i[34567]86-*-go32*)
 i[34567]86-pc-msdosdjgpp*)
 	xm_file=i386/xm-djgpp.h
 	tm_file=i386/djgpp.h
-	xmake_file=i386/x-djgpp
+	tmake_file=i386/t-djgpp
 	gnu_ld=yes
 	gas=yes
 	exeext=.exe
@@ -1353,7 +1352,6 @@ i[34567]86-*-udk*)      # Intel x86 on SCO UW/OSR5 Dev Kit
 	install_headers_dir=install-headers-cpio
 	;;
 i[34567]86-*-osf1*)		# Intel 80386's running OSF/1 1.3+
-	xm_file=i386/xm-osf1elf.h
 	xm_defines='POSIX USE_C_ALLOCA SMALL_ARG_MAX'
 	if test x$stabs = xyes
 	then
@@ -1443,11 +1441,11 @@ i[34567]86-*-uwin*)
 	;;
 i[34567]86-*-interix3*)
 	tm_file="i386/i386-interix.h i386/i386-interix3.h interix.h interix3.h"
-	xm_file="i386/xm-i386-interix.h xm-interix.h"
+	xm_file="i386/xm-i386-interix.h"
 	xm_defines=POSIX
-	tmake_file="i386/t-interix"
+	tmake_file="t-interix i386/t-interix"
 	extra_objs=interix.o
-	xmake_file="x-interix x-interix3"
+	xmake_file="x-interix"
 	if test x$enable_threads = xyes ; then
 		thread_file='posix'
 	fi
@@ -1457,7 +1455,7 @@ i[34567]86-*-interix3*)
 	;;
 i[34567]86-*-interix*)
 	tm_file="i386/i386-interix.h interix.h"
-	xm_file="i386/xm-i386-interix.h xm-interix.h"
+	xm_file="i386/xm-i386-interix.h"
 	xm_defines=POSIX
 	tmake_file="t-interix i386/t-interix"
 	extra_objs=interix.o
@@ -2009,7 +2007,7 @@ m88k-dolphin-sysv3*)
 	xm_defines=POSIX
 	tm_file=m88k/dolph.h
 	extra_parts="crtbegin.o crtend.o"
-	xmake_file=m88k/x-dolph
+	tmake_file=m88k/t-dolph
 	if test x$gas = xyes
 	then
 		tmake_file=m88k/t-m88k-gas
@@ -2019,7 +2017,7 @@ m88k-tektronix-sysv3)
 	xm_defines=POSIX
 	tm_file=m88k/tekXD88.h
 	extra_parts="crtbegin.o crtend.o"
-	xmake_file=m88k/x-tekXD88
+	tmake_file=m88k/t-tekXD88
 	if test x$gas = xyes
 	then
 		tmake_file=m88k/t-m88k-gas
@@ -2625,7 +2623,6 @@ powerpc64-*-linux*)
 powerpc-*-beos*)
 	tm_file="${tm_file} rs6000/aix.h rs6000/beos.h rs6000/xcoff.h"
 	xm_defines=POSIX
-	xm_file=rs6000/xm-beos.h
 	tmake_file=rs6000/t-beos
 	extra_headers=
 	;;
@@ -2633,11 +2630,6 @@ powerpc-*-darwin*)
 	tm_file="${tm_file} darwin.h rs6000/darwin.h"
 	tm_p_file="${tm_p_file} darwin-protos.h"
 	tmake_file=rs6000/t-darwin
-	xmake_file=rs6000/x-darwin
-	# Override the usual setting, since Apple's GCC has lame bugs
-	# and can't handle the initializers.  Someday the bugs will be
-	# fixed and we can get rid of this silliness.
-	xm_defines="HAVE_DESIGNATED_INITIALIZERS=0"
 	extra_objs="darwin.o"
 	c_target_objs="darwin-c.o"
 	cxx_target_objs="darwin-c.o"

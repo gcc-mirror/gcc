@@ -1,14 +1,3 @@
-# These are host overrides
-# From config dir
-
-RANLIB = :
-RANLIB_TEST = false
-SHELL = sh
-
 # Existing CC/GCC may not define -D__INTERIX, so need this here.
 # Since we want to configure with _ALL_SOURCE, we need to build that way too
 X_CFLAGS= -D__INTERIX -D_ALL_SOURCE
-
-LIBGCC2_INCLUDES = -idirafter $${INTERIX_ROOT}/usr/include
-# Headers come from a funny place
-SYSTEM_HEADER_DIR=$${INTERIX_ROOT}/usr/include
