@@ -1,3 +1,10 @@
+Wed May 26 03:54:33 1999  Melissa O'Neill <oneill@cs.sfu.ca>
+
+	* fixinc/fixincl.c: (WIFSIGNALED): Define if not already defined.
+	(WTERMSIG, WIFEXITED, WEXITSTATUS, WIFSTOPPED, WSTOPSIG): Likewise.
+	(S_IRUSR, S_IWUSR, S_IXUSR, S_IRGRP, S_IWGRP, S_IXGRP): Likewise.
+	(S_IROTH, S_IWOTH, S_IXOTH, S_IRWXU, S_IRWXG, S_IRWXO): Likewise.
+
 Wed May 26 02:19:31 1999  Philip Blundell  <pb@nexus.co.uk>
 
 	* arm.h (NEED_PLT_GOT): Fix mistake in last change.

@@ -29,6 +29,28 @@ Boston, MA 02111-1307, USA.  */
 #include <sys/stat.h>
 #ifdef HAVE_SYS_WAIT_H
 #include <sys/wait.h>
+#else
+ /* These definitions really belong in ../system.h, which we should be
+    using, (and some of them are), but for now they're here... */
+# ifndef WIFSIGNALED
+#  define WIFSIGNALED(S) (((S) & 0xff) != 0 && ((S) & 0xff) != 0x7f)
+# endif
+# ifndef WTERMSIG
+#  define WTERMSIG(S) ((S) & 0x7f)
+# endif
+# ifndef WIFEXITED
+#  define WIFEXITED(S) (((S) & 0xff) == 0)
+# endif
+# ifndef WEXITSTATUS
+#  define WEXITSTATUS(S) (((S) & 0xff00) >> 8)
+# endif
+# ifndef WIFSTOPPED
+#  define WIFSTOPPED(status)	((status) & 0100)
+# endif
+# ifndef WSTOPSIG
+#  define WSTOPSIG(status) \
+	((int)(WIFSTOPPED(status) ? (((status) >> 8) & 0177) : -1))
+# endif
 #endif
 #include <signal.h>
 #include <stdio.h>
@@ -42,6 +64,40 @@ Boston, MA 02111-1307, USA.  */
 #include <fcntl.h>
 #endif
 #include <ctype.h>
+
+/* These definitions really belong in ../system.h, which we should be
+   using, but for now they're here... */
+#ifndef S_IRUSR			
+# ifdef S_IREAD
+#  define S_IRUSR  S_IREAD	/* read permission, owner */
+#  define S_IWUSR  S_IWRITE	/* write permission, owner */
+#  define S_IXUSR  S_IEXEC	/* execute/search permission, owner */
+# else
+#  define S_IRUSR  0000400	/* read permission, owner */
+#  define S_IWUSR  0000200	/* write permission, owner */
+#  define S_IXUSR  0000100	/* execute/search permission, owner */
+# endif
+#endif
+#ifndef S_IRGRP
+# define S_IRGRP  0000040	/* read permission, group */
+# define S_IWGRP  0000020	/* write permission, group */
+# define S_IXGRP  0000010	/* execute/search permission, group */
+#endif
+#ifndef S_IROTH
+# define S_IROTH  0000004	/* read permission, other */
+# define S_IWOTH  0000002	/* write permission, other */
+# define S_IXOTH  0000001	/* execute/search permission, group */
+#endif
+#ifndef S_IRWXU
+# define S_IRWXU  0000700	/* read, write, execute permission, owner */
+# define S_IRWXG  0000070	/* read, write, execute permission, group */
+# define S_IRWXO  0000007	/* read, write, execute permission, other */
+#endif
+
+/* Test if something is a normal file.  */
+#ifndef S_ISREG
+#define S_ISREG(m) (((m) & S_IFMT) == S_IFREG)
+#endif
 
 #include "gnu-regex.h"
 #include "server.h"
