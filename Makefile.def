@@ -268,7 +268,6 @@ dependencies = { module=configure-gdb; on=configure-sim; };
 dependencies = { module=all-gdb; on=all-libiberty; };
 dependencies = { module=all-gdb; on=all-opcodes; };
 dependencies = { module=all-gdb; on=all-bfd; };
-dependencies = { module=all-gdb; on=all-mmalloc; };
 dependencies = { module=all-gdb; on=all-readline; };
 dependencies = { module=all-gdb; on=all-bison; };
 dependencies = { module=all-gdb; on=all-byacc; };

@@ -1,3 +1,10 @@
+2004-08-12  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* src-release: Stop distributing mmalloc with gdb (which doesn't
+	use it).
+	* Makefile.def: GDB doesn't depend on mmalloc anymore.
+	* Makefile.in: Regenerate.
+
 2004-08-09  Mark Mitchell  <mark@codesourcery.com>
 
 	* configure.in (arm*-*-eabi*): New target.
