@@ -1,5 +1,14 @@
 2000-11-30  Bernd Schmidt  <bernds@redhat.co.uk>
 
+	2000-09-01  Jim Wilson  <wilson@cygnus.com>
+	* loop.c (check_final_value): Check for biv use before checking for
+	giv use.  Check for both biv and giv uses.  Always set last_giv_use
+	if there is a giv use.
+
+	2000-09-29  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+	* loop.c (check_final_value): A GIV is not replaceable if used
+	before set.
+
 	Sun Oct 10 13:28:48 1999  Bernd Schmidt  <bernds@redhat.co.uk>
 	* loop.c (find_and_verify_loops): When looking for a BARRIER, don't
 	use one before a jump table.

@@ -5692,6 +5692,7 @@ check_final_value (v, loop_start, loop_end, n_iterations)
         or all uses follow that insn in the same basic block),
      - its final value can be calculated (this condition is different
        than the one above in record_giv)
+     - it's not used before it's set
      - no assignments to the biv occur during the giv's lifetime.  */
 
 #if 0
@@ -5703,7 +5704,7 @@ check_final_value (v, loop_start, loop_end, n_iterations)
   if ((final_value = final_giv_value (v, loop_start, loop_end, n_iterations))
       && (v->always_computable || last_use_this_basic_block (v->dest_reg, v->insn)))
     {
-      int biv_increment_seen = 0;
+      int biv_increment_seen = 0, before_giv_insn = 0;
       rtx p = v->insn;
       rtx last_giv_use;
 
@@ -5733,26 +5734,35 @@ check_final_value (v, loop_start, loop_end, n_iterations)
 	{
 	  p = NEXT_INSN (p);
 	  if (p == loop_end)
-	    p = NEXT_INSN (loop_start);
+	    {
+	      before_giv_insn = 1;
+	      p = NEXT_INSN (loop_start);
+	    }
 	  if (p == v->insn)
 	    break;
 
 	  if (GET_CODE (p) == INSN || GET_CODE (p) == JUMP_INSN
 	      || GET_CODE (p) == CALL_INSN)
 	    {
-	      if (biv_increment_seen)
+	      /* It is possible for the BIV increment to use the GIV if we
+		 have a cycle.  Thus we must be sure to check each insn for
+		 both BIV and GIV uses, and we must check for BIV uses
+		 first.  */
+
+	      if (! biv_increment_seen
+		  && reg_set_p (v->src_reg, PATTERN (p)))
+		biv_increment_seen = 1;
+
+	      if (reg_mentioned_p (v->dest_reg, PATTERN (p)))
 		{
-		  if (reg_mentioned_p (v->dest_reg, PATTERN (p)))
+		  if (biv_increment_seen || before_giv_insn)
 		    {
 		      v->replaceable = 0;
 		      v->not_replaceable = 1;
 		      break;
 		    }
+		  last_giv_use = p;
 		}
-	      else if (reg_set_p (v->src_reg, PATTERN (p)))
-		biv_increment_seen = 1;
-	      else if (reg_mentioned_p (v->dest_reg, PATTERN (p)))
-		last_giv_use = p;
 	    }
 	}
       
