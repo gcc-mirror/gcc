@@ -928,7 +928,9 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
      So too extracting a subword value in
      the least significant part of the register.  */
 
-  if ((GET_CODE (op0) == REG
+  if (((GET_CODE (op0) == REG
+	&& TRULY_NOOP_TRUNCATION (GET_MODE_BITSIZE (mode),
+				  GET_MODE_BITSIZE (GET_MODE (op0))))
        || (GET_CODE (op0) == MEM
 	   && (! SLOW_UNALIGNED_ACCESS
 	       || (offset * BITS_PER_UNIT % bitsize == 0
