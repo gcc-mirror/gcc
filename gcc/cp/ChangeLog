@@ -1,3 +1,13 @@
+1998-08-19  Mark Mitchell  <mark@markmitchell.com>
+
+	* cp-tree.h (ansi_null_node): New variable.
+	* decl.c (ansi_null_node): New variable.
+	(init_decl_processing): Initialize its type.
+	* lex.c (init_parse): Initialize its value.  Use ansi_null_node
+	for null_node in non-ANSI mode.
+	* typeck.c (build_binary_op_nodefault): Use ansi_null_node in
+	place of null_node to avoid spurious errors.
+	
 1998-08-17  Mark Mitchell  <mark@markmitchell.com>
 
 	* cp-tree.h (enter_scope_of): New function.
