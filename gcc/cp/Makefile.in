@@ -194,14 +194,15 @@ parse.o : $(PARSE_C) $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h lex.h
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(BIG_SWITCHFLAG) \
   `echo $(PARSE_C) | sed 's,^\./,,'`
 
+CONFLICTS = expect 5 shift/reduce confict and 38 reduce/reduce conflicts.
 $(PARSE_H) : $(PARSE_C)
 $(PARSE_C) : $(srcdir)/parse.y
-	@echo expect 5 shift/reduce confict and 39 reduce/reduce conflicts.
+	@echo $(CONFLICTS)
 	cd $(srcdir); $(BISON) $(BISONFLAGS) -d -o parse.c parse.y
 	cd $(srcdir); grep '^#define[ 	]*YYEMPTY' parse.c >>parse.h
 #$(PARSE_C) $(PARSE_H) : stamp-parse ; @true
 #stamp-parse: $(srcdir)/parse.y
-#	@echo expect 1 shift/reduce confict and 39 reduce/reduce conflicts.
+#	@echo $(CONFLICTS)
 #	$(BISON) $(BISONFLAGS) -d $(srcdir)/parse.y
 #	grep '^#define[ 	]*YYEMPTY' y.tab.c >>y.tab.h
 #	$(srcdir)/../move-if-change y.tab.c $(PARSE_C)

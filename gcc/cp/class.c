@@ -240,7 +240,7 @@ build_vbase_path (code, type, expr, path, alias_this)
 		    {
 		      null_expr = build1 (NOP_EXPR, TYPE_POINTER_TO (last_virtual), integer_zero_node);
 		      expr = build (COND_EXPR, TYPE_POINTER_TO (last_virtual),
-				    build (EQ_EXPR, integer_type_node, expr,
+				    build (EQ_EXPR, boolean_type_node, expr,
 					   integer_zero_node),
 				    null_expr, nonnull_expr);
 		    }
@@ -323,7 +323,7 @@ build_vbase_path (code, type, expr, path, alias_this)
 	    expr = save_expr (expr);
 
 	  return build (COND_EXPR, type,
-			build (EQ_EXPR, integer_type_node, expr, integer_zero_node),
+			build (EQ_EXPR, boolean_type_node, expr, integer_zero_node),
 			null_expr,
 			build (code, type, expr, offset));
 	}
@@ -490,11 +490,12 @@ build_vfn_ref (ptr_to_instptr, instance, idx)
     return aref;
   else
     {
-      *ptr_to_instptr
-	= build (PLUS_EXPR, TREE_TYPE (*ptr_to_instptr),
-		 *ptr_to_instptr,
-		 convert (ptrdiff_type_node,
-			  build_component_ref (aref, delta_identifier, 0, 0)));
+      if (ptr_to_instptr)
+	*ptr_to_instptr
+	  = build (PLUS_EXPR, TREE_TYPE (*ptr_to_instptr),
+		   *ptr_to_instptr,
+		   convert (ptrdiff_type_node,
+			    build_component_ref (aref, delta_identifier, 0, 0)));
       return build_component_ref (aref, pfn_identifier, 0, 0);
     }
 }
@@ -2020,6 +2021,7 @@ duplicate_tag_error (t)
      tree t;
 {
   cp_error ("redefinition of `%#T'", t);
+  cp_error_at ("previous definition here", t);
 
   /* Pretend we haven't defined this type.  */
 

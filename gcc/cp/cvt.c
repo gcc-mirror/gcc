@@ -903,6 +903,7 @@ convert_to_aggr (type, expr, msgp, protect)
   parmlist = tree_cons (NULL_TREE, integer_zero_node, parmlist);
   parmtypes = tree_cons (NULL_TREE, TYPE_POINTER_TO (basetype), parmtypes);
 
+#if 0
   method_name = build_decl_overload (name, parmtypes, 1);
 
   /* constructors are up front.  */
@@ -936,6 +937,7 @@ convert_to_aggr (type, expr, msgp, protect)
 	}
       fndecl = DECL_CHAIN (fndecl);
     }
+#endif
 
   /* No exact conversion was found.  See if an approximate
      one will do.  */
@@ -1548,7 +1550,7 @@ build_type_conversion (code, xtype, expr, for_sure)
 	    {
 	      cp_error ("ambiguous conversion from `%T' to `%T'", basetype,
 			xtype);
-	      cp_error ("  candidate conversion functions include `%T' and `%T'",
+	      cp_error ("  candidate conversions include `%T' and `%T'",
 			TREE_VALUE (winner), TREE_VALUE (conv));
 	      return NULL_TREE;
 	    }
@@ -1564,6 +1566,101 @@ build_type_conversion (code, xtype, expr, for_sure)
   return NULL_TREE;
 }
 
+/* Convert the given EXPR to one of a group of types suitable for use in an
+   expression.  DESIRES is a combination of various WANT_* flags (q.v.)
+   which indicates which types are suitable.  If COMPLAIN is 1, complain
+   about ambiguity; otherwise, the caller will deal with it.  */
+
+tree
+build_expr_type_conversion (desires, expr, complain)
+     int desires;
+     tree expr;
+     int complain;
+{
+  tree basetype = TREE_TYPE (expr);
+  tree conv;
+  tree winner = NULL_TREE;
+
+  if (TREE_CODE (basetype) == OFFSET_TYPE)
+    {
+      expr = resolve_offset_ref (expr);
+      basetype = TREE_TYPE (expr);
+    }
+
+  if (! IS_AGGR_TYPE (basetype))
+    switch (TREE_CODE (basetype))
+      {
+      case INTEGER_TYPE:
+	if ((desires & WANT_NULL) && TREE_CODE (expr) == INTEGER_CST
+	    && integer_zerop (expr))
+	  return expr;
+	/* else fall through... */
+
+      case BOOLEAN_TYPE:
+	return (desires & WANT_INT) ? expr : NULL_TREE;
+      case ENUMERAL_TYPE:
+	return (desires & WANT_ENUM) ? expr : NULL_TREE;
+      case REAL_TYPE:
+	return (desires & WANT_FLOAT) ? expr : NULL_TREE;
+      case POINTER_TYPE:
+	return (desires & WANT_POINTER) ? expr : NULL_TREE;
+	
+      case FUNCTION_TYPE:
+      case ARRAY_TYPE:
+	return (desires & WANT_POINTER) ? default_conversion (expr)
+     	                                : NULL_TREE;
+      default:
+	return NULL_TREE;
+      }
+
+  if (! TYPE_HAS_CONVERSION (basetype))
+    return NULL_TREE;
+
+  for (conv = lookup_conversions (basetype); conv; conv = TREE_CHAIN (conv))
+    {
+      int win = 0;
+
+      if (winner && TREE_PURPOSE (winner) == TREE_PURPOSE (conv))
+	continue;
+
+      switch (TREE_CODE (TREE_VALUE (conv)))
+	{
+	case BOOLEAN_TYPE:
+	case INTEGER_TYPE:
+	  win = (desires & WANT_INT); break;
+	case ENUMERAL_TYPE:
+	  win = (desires & WANT_ENUM); break;
+	case REAL_TYPE:
+	  win = (desires & WANT_FLOAT); break;
+	case POINTER_TYPE:
+	  win = (desires & WANT_POINTER); break;
+	}
+
+      if (win)
+	{
+	  if (winner)
+	    {
+	      if (complain)
+		{
+		  cp_error ("ambiguous default type conversion from `%T'",
+			    basetype);
+		  cp_error ("  candidate conversions include `%T' and `%T'",
+			    TREE_VALUE (winner), TREE_VALUE (conv));
+		}
+	      return error_mark_node;
+	    }
+	  else
+	    winner = conv;
+	}
+    }
+
+  if (winner)
+    return build_type_conversion_1 (TREE_VALUE (winner), basetype, expr,
+				    TREE_PURPOSE (winner), 1);
+
+  return NULL_TREE;
+}
+
 /* Must convert two aggregate types to non-aggregate type.
    Attempts to find a non-ambiguous, "best" type conversion.
 
@@ -1575,143 +1672,122 @@ build_default_binary_type_conversion (code, arg1, arg2)
      enum tree_code code;
      tree *arg1, *arg2;
 {
-  tree type1 = TREE_TYPE (*arg1);
-  tree type2 = TREE_TYPE (*arg2);
+  switch (code)
+    {
+    case MULT_EXPR:
+    case TRUNC_DIV_EXPR:
+    case CEIL_DIV_EXPR:
+    case FLOOR_DIV_EXPR:
+    case ROUND_DIV_EXPR:
+    case EXACT_DIV_EXPR:
+      *arg1 = build_expr_type_conversion (WANT_ARITH | WANT_ENUM, *arg1, 0);
+      *arg2 = build_expr_type_conversion (WANT_ARITH | WANT_ENUM, *arg2, 0);
+      break;
 
-  if (TREE_CODE (type1) == REFERENCE_TYPE
-      || TREE_CODE (type1) == POINTER_TYPE)
-    type1 = TREE_TYPE (type1);
-  if (TREE_CODE (type2) == REFERENCE_TYPE
-      || TREE_CODE (type2) == POINTER_TYPE)
-    type2 = TREE_TYPE (type2);
+    case TRUNC_MOD_EXPR:
+    case FLOOR_MOD_EXPR:
+    case LSHIFT_EXPR:
+    case RSHIFT_EXPR:
+    case BIT_AND_EXPR:
+    case BIT_XOR_EXPR:
+    case BIT_IOR_EXPR:
+      *arg1 = build_expr_type_conversion (WANT_INT | WANT_ENUM, *arg1, 0);
+      *arg2 = build_expr_type_conversion (WANT_INT | WANT_ENUM, *arg2, 0);
+      break;
 
-  if (TREE_CODE (TYPE_NAME (type1)) != TYPE_DECL)
-    {
-      tree decl = typedecl_for_tag (type1);
-      if (decl)
-	error ("type conversion nonexistent for type `%s'",
-	       IDENTIFIER_POINTER (DECL_NAME (decl)));
-      else
-	error ("type conversion nonexistent for non-C++ type");
-      return 0;
-    }
-  if (TREE_CODE (TYPE_NAME (type2)) != TYPE_DECL)
-    {
-      tree decl = typedecl_for_tag (type2);
-      if (decl)
-	error ("type conversion nonexistent for type `%s'",
-	       IDENTIFIER_POINTER (decl));
-      else
-	error ("type conversion nonexistent for non-C++ type");
-      return 0;
-    }
+    case PLUS_EXPR:
+      {
+	tree a1, a2, p1, p2;
+	int wins;
 
-  if (!IS_AGGR_TYPE (type1) || !TYPE_HAS_CONVERSION (type1))
-    {
-      if (!IS_AGGR_TYPE (type2) || !TYPE_HAS_CONVERSION (type2))
-	cp_error ("no conversion from `%T' and `%T' to types with default `%O' ",
-		  type1, type2, code);
-      else
-	cp_error ("no conversion from `%T' to type with default `%O'",
-		  type1, code);
-      return 0;
-    }
-  else if (!IS_AGGR_TYPE (type2) || !TYPE_HAS_CONVERSION (type2))
-    {
-      cp_error ("no conversion from `%T' to type with default `%O'",
-		type2, code);
-      return 0;
-    }
+	a1 = build_expr_type_conversion (WANT_ARITH | WANT_ENUM, *arg1, 0);
+	a2 = build_expr_type_conversion (WANT_ARITH | WANT_ENUM, *arg2, 0);
+	p1 = build_expr_type_conversion (WANT_POINTER, *arg1, 0);
+	p2 = build_expr_type_conversion (WANT_POINTER, *arg2, 0);
 
-  if (code == TRUTH_ANDIF_EXPR
-      || code == TRUTH_ORIF_EXPR)
-    {
+	wins = (a1 && a2) + (a1 && p2) + (p1 && a2);
+
+	if (wins > 1)
+	  error ("ambiguous default type conversion for `operator +'");
+
+	if (a1 && a2)
+	  *arg1 = a1, *arg2 = a2;
+	else if (a1 && p2)
+	  *arg1 = a1, *arg2 = p2;
+	else
+	  *arg1 = p1, *arg2 = a2;
+	break;
+      }
+
+    case MINUS_EXPR:
+      {
+	tree a1, a2, p1, p2;
+	int wins;
+
+	a1 = build_expr_type_conversion (WANT_ARITH | WANT_ENUM, *arg1, 0);
+	a2 = build_expr_type_conversion (WANT_ARITH | WANT_ENUM, *arg2, 0);
+	p1 = build_expr_type_conversion (WANT_POINTER, *arg1, 0);
+	p2 = build_expr_type_conversion (WANT_POINTER, *arg2, 0);
+
+	wins = (a1 && a2) + (p1 && p2) + (p1 && a2);
+
+	if (wins > 1)
+	  error ("ambiguous default type conversion for `operator -'");
+
+	if (a1 && a2)
+	  *arg1 = a1, *arg2 = a2;
+	else if (p1 && p2)
+	  *arg1 = p1, *arg2 = p2;
+	else
+	  *arg1 = p1, *arg2 = a2;
+	break;
+      }
+
+    case GT_EXPR:
+    case LT_EXPR:
+    case GE_EXPR:
+    case LE_EXPR:
+    case EQ_EXPR:
+    case NE_EXPR:
+      {
+	tree a1, a2, p1, p2;
+	int wins;
+
+	a1 = build_expr_type_conversion (WANT_ARITH | WANT_ENUM, *arg1, 0);
+	a2 = build_expr_type_conversion (WANT_ARITH | WANT_ENUM, *arg2, 0);
+	p1 = build_expr_type_conversion (WANT_POINTER | WANT_NULL, *arg1, 0);
+	p2 = build_expr_type_conversion (WANT_POINTER | WANT_NULL, *arg2, 0);
+
+	wins = (a1 && a2) + (p1 && p2);
+
+	if (wins > 1)
+	  cp_error ("ambiguous default type conversion for `%O'", code);
+
+	if (a1 && a2)
+	  *arg1 = a1, *arg2 = a2;
+	else
+	  *arg1 = p1, *arg2 = p2;
+	break;
+      }
+
+    case TRUTH_ANDIF_EXPR:
+    case TRUTH_ORIF_EXPR:
       *arg1 = convert (boolean_type_node, *arg1);
       *arg2 = convert (boolean_type_node, *arg2);
-    }
-  else if (TYPE_HAS_INT_CONVERSION (type1))
-    {
-      if (TYPE_HAS_REAL_CONVERSION (type1))
-	cp_pedwarn ("ambiguous type conversion for type `%T', defaulting to int",
-		    type1);
-      *arg1 = build_type_conversion (code, integer_type_node, *arg1, 1);
-      *arg2 = build_type_conversion (code, integer_type_node, *arg2, 1);
-    }
-  else if (TYPE_HAS_REAL_CONVERSION (type1))
-    {
-      *arg1 = build_type_conversion (code, double_type_node, *arg1, 1);
-      *arg2 = build_type_conversion (code, double_type_node, *arg2, 1);
-    }
-  else
-    {
-      *arg1 = build_type_conversion (code, ptr_type_node, *arg1, 1);
-      if (*arg1 == error_mark_node)
-	error ("ambiguous pointer conversion");
-      *arg2 = build_type_conversion (code, ptr_type_node, *arg2, 1);
-      if (*arg1 != error_mark_node && *arg2 == error_mark_node)
-	error ("ambiguous pointer conversion");
-    }
-  if (*arg1 == 0)
-    {
-      if (*arg2 == 0 && type1 != type2)
-	cp_error ("default type conversion for types `%T' and `%T' failed",
-		  type1, type2);
-      else
-	cp_error ("default type conversion for type `%T' failed", type1);
-      return 0;
-    }
-  else if (*arg2 == 0)
-    {
-      cp_error ("default type conversion for type `%T' failed", type2);
-      return 0;
-    }
-  return 1;
-}
+      break;
 
-/* Must convert an aggregate type to non-aggregate type.
-   Attempts to find a non-ambiguous, "best" type conversion.
-
-   Return 1 on success, 0 on failure.
-
-   The type of the argument is expected to be of aggregate type here.
-
-   @@ What are the real semantics of this supposed to be??? */
-int
-build_default_unary_type_conversion (code, arg)
-     enum tree_code code;
-     tree *arg;
-{
-  tree type = TREE_TYPE (*arg);
-
-  if (! TYPE_HAS_CONVERSION (type))
-    {
-      cp_error ("type conversion required for type `%T'", type);
-      return 0;
+    default:
+      *arg1 = NULL_TREE;
+      *arg2 = NULL_TREE;
     }
 
-  if (code == TRUTH_NOT_EXPR)
-    *arg = convert (boolean_type_node, *arg);
-  else if (TYPE_HAS_INT_CONVERSION (type))
-    {
-      if (TYPE_HAS_REAL_CONVERSION (type))
-	cp_pedwarn ("ambiguous type conversion for type `%T', defaulting to int",
-		    type);
-      *arg = build_type_conversion (code, integer_type_node, *arg, 1);
-    }
-  else if (TYPE_HAS_REAL_CONVERSION (type))
-    *arg = build_type_conversion (code, double_type_node, *arg, 1);
-  else
-    {
-      *arg = build_type_conversion (code, ptr_type_node, *arg, 1);
-      if (*arg == error_mark_node)
-	error ("ambiguous pointer conversion");
-    }
-  if (*arg == NULL_TREE)
-    {
-      cp_error ("default type conversion for type `%T' failed", type);
-      return 0;
-    }
-  return 1;
+  if (*arg1 == error_mark_node || *arg2 == error_mark_node)
+    cp_error ("ambiguous default type conversion for `%O'", code);
+
+  if (*arg1 && *arg2)
+    return 1;
+
+  return 0;
 }
 
 /* Implements integral promotion (4.1) and float->double promotion. */

@@ -1074,8 +1074,10 @@ unary_expr:
 	            {
 		      tree t = TREE_VALUE ($2);
 		      if (t != NULL_TREE
-			  && TREE_CODE (TREE_TYPE (t)) == FUNCTION_TYPE)
-			pedwarn ("ANSI C++ forbids using sizeof() on a function");
+			  && ((TREE_TYPE (t)
+			      && TREE_CODE (TREE_TYPE (t)) == FUNCTION_TYPE)
+			      || is_overloaded_fn (t)))
+			pedwarn ("ANSI C++ forbids taking the sizeof a function type");
 		    }
 		  $$ = c_sizeof (TREE_TYPE ($2)); }
 	| SIZEOF '(' type_id ')'  %prec HYPERUNARY
@@ -1142,7 +1144,7 @@ new_initializer:
 	   syntactically valid but semantically invalid.  */
 	| '=' init
 		{
-		  if (flag_ansi)
+		  if (pedantic)
 		    pedwarn ("ANSI C++ forbids initialization of new expression with `='");
 		  $$ = $2;
 		}
@@ -1169,7 +1171,7 @@ cast_expr:
 		{ 
 		  tree init = build_nt (CONSTRUCTOR, NULL_TREE,
 					nreverse ($3)); 
-		  if (flag_ansi)
+		  if (pedantic)
 		    pedwarn ("ANSI C++ forbids constructor-expressions");
 		  /* Indicate that this was a GNU C constructor expression.  */
 		  TREE_HAS_CONSTRUCTOR (init) = 1;
@@ -1289,7 +1291,6 @@ unqualified_id:
 
 expr_or_declarator:
 	  notype_unqualified_id
-	| notype_qualified_id
 	| '*' expr_or_declarator %prec UNARY
 		{ $$ = build_parse_node (INDIRECT_REF, $2); }
 	| '&' expr_or_declarator %prec UNARY
@@ -1301,9 +1302,6 @@ expr_or_declarator:
 direct_notype_declarator:
 	  complex_direct_notype_declarator
 	| notype_unqualified_id
-	| notype_qualified_id
-		{ push_nested_class (TREE_TYPE (OP0 ($$)), 3);
-		  TREE_COMPLEXITY ($$) = current_class_depth; }
 	| '(' expr_or_declarator ')'
 		{ $$ = finish_decl_parsing ($2); }
 	;
@@ -1360,7 +1358,7 @@ primary:
 		  $<ttype>$ = expand_start_stmt_expr (); }
 	  compstmt ')'
 		{ tree rtl_exp;
-		  if (flag_ansi)
+		  if (pedantic)
 		    pedwarn ("ANSI C++ forbids braced-groups within expressions");
 		  rtl_exp = expand_end_stmt_expr ($<ttype>2);
 		  /* The statements have side effects, so the group does.  */
@@ -1554,7 +1552,7 @@ primary:
 	| object unqualified_id  %prec UNARY
 		{ got_object = NULL_TREE;
 		  $$ = build_component_ref ($$, $2, NULL_TREE, 1); }
-	| object qualified_id %prec UNARY
+	| object overqualified_id %prec UNARY
 		{ got_object = NULL_TREE;
 		  $$ = build_object_ref ($$, OP0 ($2), OP1 ($2)); }
 	| object unqualified_id '(' nonnull_exprlist ')'
@@ -1589,7 +1587,7 @@ primary:
 					  (LOOKUP_NORMAL|LOOKUP_AGGR));
 #endif
 		}
-	| object qualified_id '(' nonnull_exprlist ')'
+	| object overqualified_id '(' nonnull_exprlist ')'
 		{
 		  got_object = NULL_TREE;
 		  if (IS_SIGNATURE (IDENTIFIER_TYPE_VALUE (OP0 ($2))))
@@ -1601,7 +1599,7 @@ primary:
 		  else
 		    $$ = build_scoped_method_call ($$, OP0 ($2), OP1 ($2), $4);
 		}
-	| object qualified_id LEFT_RIGHT
+	| object overqualified_id LEFT_RIGHT
 		{
 		  got_object = NULL_TREE;
 		  if (IS_SIGNATURE (IDENTIFIER_TYPE_VALUE (OP0 ($2))))
@@ -1617,8 +1615,9 @@ primary:
 	| object '~' TYPESPEC LEFT_RIGHT
 		{
 		  got_object = NULL_TREE;
-		  if (TREE_CODE (TREE_TYPE ($1)) 
-		      != TREE_CODE (TREE_TYPE (IDENTIFIER_GLOBAL_VALUE ($3))))
+		  if (IDENTIFIER_GLOBAL_VALUE ($3)
+		      && (TREE_CODE (TREE_TYPE ($1)) 
+			  != TREE_CODE (TREE_TYPE (IDENTIFIER_GLOBAL_VALUE ($3)))))
 		    cp_error ("`%E' is not of type `%T'", $1, $3);
 		  $$ = convert (void_type_node, $1);
 		}
@@ -1654,7 +1653,7 @@ primary_no_id:
 		    }
 		  $<ttype>$ = expand_start_stmt_expr (); }
 	  compstmt ')'
-		{ if (flag_ansi)
+		{ if (pedantic)
 		    pedwarn ("ANSI C++ forbids braced-groups within expressions");
 		  $$ = expand_end_stmt_expr ($<ttype>2); }
 	| primary_no_id '(' nonnull_exprlist ')'
@@ -1816,6 +1815,8 @@ typed_declspecs1:
 		{ $$ = decl_tree_cons (NULL_TREE, $2, $$); }
 	| typespec reserved_declspecs	%prec HYPERUNARY
 		{ $$ = decl_tree_cons (NULL_TREE, $$, $2); }
+	| typespec reserved_typespecquals reserved_declspecs
+		{ $$ = decl_tree_cons (NULL_TREE, $$, chainon ($2, $3)); }
 	| declmods typespec reserved_declspecs
 		{ $$ = decl_tree_cons (NULL_TREE, $2, chainon ($3, $$)); }
 	| declmods typespec reserved_typespecquals
@@ -1902,11 +1903,11 @@ typespec: structsp
 	| complete_type_name
 	| TYPEOF '(' expr ')'
 		{ $$ = TREE_TYPE ($3);
-		  if (flag_ansi)
+		  if (pedantic)
 		    pedwarn ("ANSI C++ forbids `typeof'"); }
 	| TYPEOF '(' type_id ')'
 		{ $$ = groktypename ($3);
-		  if (flag_ansi)
+		  if (pedantic)
 		    pedwarn ("ANSI C++ forbids `typeof'"); }
 	| SIGOF '(' expr ')'
 		{ tree type = TREE_TYPE ($3);
@@ -2763,7 +2764,7 @@ new_type_id:
 	   non-constant dimension.  */
 	| '(' type_id ')' '[' expr ']'
 		{
-		  if (flag_ansi)
+		  if (pedantic)
 		    pedwarn ("ANSI C++ forbids array dimensions with parenthesized type in new");
 		  $$ = build_parse_node (ARRAY_REF, TREE_VALUE ($2), $5);
 		  $$ = build_decl_list (TREE_PURPOSE ($2), $$);
@@ -2905,6 +2906,9 @@ complex_direct_notype_declarator:
 		{ $$ = build_parse_node (ARRAY_REF, $$, $3); }
 	| direct_notype_declarator '[' ']'
 		{ $$ = build_parse_node (ARRAY_REF, $$, NULL_TREE); }
+	| notype_qualified_id
+		{ push_nested_class (TREE_TYPE (OP0 ($$)), 3);
+		  TREE_COMPLEXITY ($$) = current_class_depth; }
 	;
 
 qualified_id:
@@ -3107,7 +3111,7 @@ errstmt:  error ';'
 maybe_label_decls:
 	  /* empty */
 	| label_decls
-		{ if (flag_ansi)
+		{ if (pedantic)
 		    pedwarn ("ANSI C++ forbids label declarations"); }
 	;
 
@@ -3323,7 +3327,7 @@ simple_stmt:
 		  register tree label
 		    = build_decl (LABEL_DECL, NULL_TREE, NULL_TREE);
 
-		  if (flag_ansi)
+		  if (pedantic)
 		    pedwarn ("ANSI C++ forbids range expressions in switch statement");
 		  if (value1 != error_mark_node
 		      && value2 != error_mark_node)

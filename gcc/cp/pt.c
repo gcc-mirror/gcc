@@ -755,6 +755,8 @@ uses_template_parms (t)
     case REFERENCE_TYPE:
       return uses_template_parms (TREE_TYPE (t));
     case RECORD_TYPE:
+      if (TYPE_PTRMEMFUNC_FLAG (t))
+	return uses_template_parms (TYPE_PTRMEMFUNC_FN_TYPE (t));
     case UNION_TYPE:
       if (!TYPE_NAME (t))
 	return 0;
@@ -1153,9 +1155,8 @@ tsubst (t, args, nargs, in_decl)
       && type != integer_type_node
       && type != void_type_node
       && type != char_type_node)
-    type = cp_build_type_variant (tsubst (type, args, nargs, in_decl),
-				 TYPE_READONLY (type),
-				 TYPE_VOLATILE (type));
+    type = tsubst (type, args, nargs, in_decl);
+
   switch (TREE_CODE (t))
     {
     case RECORD_TYPE:
@@ -1679,12 +1680,16 @@ instantiate_template (tmpl, targ_ptr)
   my_friendly_assert (TREE_CODE (tmpl) == TEMPLATE_DECL, 283);
   len = TREE_VEC_LENGTH (DECL_TEMPLATE_PARMS (tmpl));
 
+  i = len;
+  while (i--)
+    targ_ptr[i] = copy_to_permanent (targ_ptr[i]);
+
   for (fndecl = DECL_TEMPLATE_INSTANTIATIONS (tmpl);
        fndecl; fndecl = TREE_CHAIN (fndecl))
     {
       tree *t1 = &TREE_VEC_ELT (TREE_PURPOSE (fndecl), 0);
       for (i = len - 1; i >= 0; i--)
-	if (t1[i] != targ_ptr[i])
+	if (simple_cst_equal (t1[i], targ_ptr[i]) <= 0)
 	  goto no_match;
 
       /* Here, we have a match.  */
@@ -2036,6 +2041,15 @@ type_unification (tparms, targs, parms, args, nsubsts, subr)
 	return 1;
       if (arg == unknown_type_node)
 	return 1;
+
+      if (! uses_template_parms (parm)
+	  && TREE_CODE_CLASS (TREE_CODE (arg)) != 't')
+	{
+	  if (can_convert_arg (parm, TREE_TYPE (arg), arg))
+	    continue;
+	  return 1;
+	}
+	
 #if 0
       if (TREE_CODE (arg) == VAR_DECL)
 	arg = TREE_TYPE (arg);

@@ -1664,13 +1664,10 @@ set_nested_typename (decl, classname, name, type)
     type_decl = build_decl (TYPE_DECL, nested, type);
     DECL_NESTED_TYPENAME (type_decl) = nested;
     SET_DECL_ARTIFICIAL (type_decl);
-#ifdef DWARF_DEBUGGING_INFO
-    /* Mark the TYPE_DECL node created just above as a
-       gratuitous one so that dwarfout.c will know not to
-       generate a TAG_typedef DIE for it.  */
-    if (write_symbols == DWARF_DEBUG)
-      DECL_IGNORED_P (type_decl) = 1;
-#endif /* DWARF_DEBUGGING_INFO */
+    /* Mark the TYPE_DECL node created just above as a gratuitous one so that
+       dwarfout.c will know not to generate a TAG_typedef DIE for it, and
+       sdbout.c won't try to output a .def for "::foo".  */
+    DECL_IGNORED_P (type_decl) = 1;
 
     /* Remove this when local classes are fixed.  */
     SET_IDENTIFIER_TYPE_VALUE (nested, type);
@@ -2447,21 +2444,16 @@ duplicate_decls (newdecl, olddecl)
       TREE_TYPE (newdecl) = TREE_TYPE (olddecl) = newtype;
 
       /* Lay the type out, unless already done.  */
-      if (oldtype != TREE_TYPE (newdecl))
-	{
-	  if (TREE_TYPE (newdecl) != error_mark_node)
-	    layout_type (TREE_TYPE (newdecl));
-	  if (TREE_CODE (newdecl) != FUNCTION_DECL
-	      && TREE_CODE (newdecl) != TYPE_DECL
-	      && TREE_CODE (newdecl) != CONST_DECL
-	      && TREE_CODE (newdecl) != TEMPLATE_DECL)
-	    layout_decl (newdecl, 0);
-	}
-      else
-	{
-	  /* Since the type is OLDDECL's, make OLDDECL's size go with.  */
-	  DECL_SIZE (newdecl) = DECL_SIZE (olddecl);
-	}
+      if (oldtype != TREE_TYPE (newdecl)
+	  && TREE_TYPE (newdecl) != error_mark_node)
+	layout_type (TREE_TYPE (newdecl));
+
+      if (TREE_CODE (newdecl) == VAR_DECL
+	  || TREE_CODE (newdecl) == PARM_DECL
+	  || TREE_CODE (newdecl) == RESULT_DECL
+	  || TREE_CODE (newdecl) == FIELD_DECL
+	  || TREE_CODE (newdecl) == TYPE_DECL)
+	layout_decl (newdecl, 0);
 
       /* Merge the type qualifiers.  */
       if (TREE_READONLY (newdecl))
@@ -7660,7 +7652,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 
       if (TREE_CODE (type) == REAL_TYPE)
 	error ("short, signed or unsigned invalid for `%s'", name);
-      else if (TREE_CODE (type) != INTEGER_TYPE || type == wchar_type_node)
+      else if (TREE_CODE (type) != INTEGER_TYPE)
 	error ("long, short, signed or unsigned invalid for `%s'", name);
       else if (RIDBIT_SETP (RID_LONG, specbits)
 	       && RIDBIT_SETP (RID_SHORT, specbits))
@@ -7780,6 +7772,11 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 	  error ("non-object member `%s' cannot be declared `mutable'", name);
 	  RIDBIT_RESET (RID_MUTABLE, specbits);
 	}
+      else if (constp)
+	{
+	  error ("const `%s' cannot be declared `mutable'", name);
+	  RIDBIT_RESET (RID_MUTABLE, specbits);
+	}
       else if (staticp)
 	{
 	  error ("static `%s' cannot be declared `mutable'", name);
@@ -7820,7 +7817,8 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
     }
 
   /* Give error if `virtual' is used outside of class declaration.  */
-  if (virtualp && current_class_name == NULL_TREE)
+  if (virtualp
+      && (current_class_name == NULL_TREE || decl_context != FIELD))
     {
       error ("virtual outside class declaration");
       virtualp = 0;
@@ -7972,14 +7970,20 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 	{
 	  if (decl_context == FIELD)
 	    {
-	      tree tmp = TREE_OPERAND (declarator, 0);
-	      register int op = IDENTIFIER_OPNAME_P (tmp);
+	      tree tmp = NULL_TREE;
+	      register int op = 0;
+
+	      if (declarator)
+		{
+		  tmp = TREE_OPERAND (declarator, 0);
+		  op = IDENTIFIER_OPNAME_P (tmp);
+		}
 	      error ("storage class specified for %s `%s'",
 		     IS_SIGNATURE (current_class_type)
 		     ? (op
 			? "signature member operator"
 			: "signature member function")
-		     : (op ? "member operator" : "structure field"),
+		     : (op ? "member operator" : "field"),
 		     op ? operator_name_string (tmp) : name);
 	    }
 	  else
@@ -8092,6 +8096,8 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 	  {
 	    register tree itype = NULL_TREE;
 	    register tree size = TREE_OPERAND (declarator, 1);
+	    /* The index is a signed object `sizetype' bits wide.  */
+	    tree index_type = signed_type (sizetype);
 
 	    declarator = TREE_OPERAND (declarator, 0);
 
@@ -8181,8 +8187,6 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 			cp_error ("size of array `%D' is negative", dname);
 			size = integer_one_node;
 		      }
-		    itype = build_index_type (size_binop (MINUS_EXPR, size,
-							  integer_one_node));
 		  }
 		else
 		  {
@@ -8194,15 +8198,20 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 			else
 			  cp_pedwarn ("ANSI C++ forbids variable-size array");
 		      }
-		  dont_grok_size:
-		    itype =
-		      build_binary_op (MINUS_EXPR, size, integer_one_node, 1);
 		    /* Make sure the array size remains visibly nonconstant
-		       even if it is (eg) a const variable with known value.  */
+		       even if it is (eg) a const variable with known value. */
 		    size_varies = 1;
-		    itype = variable_size (itype);
-		    itype = build_index_type (itype);
 		  }
+
+	      dont_grok_size:
+		itype =
+		  fold (build_binary_op (MINUS_EXPR,
+					 convert (index_type, size),
+					 convert (index_type,
+						  integer_one_node), 1));
+		if (! TREE_CONSTANT (itype))
+		  itype = variable_size (itype);
+		itype = build_index_type (itype);
 		resume_momentary (yes);
 	      }
 
@@ -8262,10 +8271,14 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 	    if (inner_decl && TREE_CODE (inner_decl) == SCOPE_REF)
 	      inner_decl = TREE_OPERAND (inner_decl, 1);
 
+	    /* Pick up type qualifiers which should be applied to `this'.  */
+	    quals = TREE_OPERAND (declarator, 2);
+
 	    /* Say it's a definition only for the CALL_EXPR
 	       closest to the identifier.  */
 	    funcdecl_p =
-	      inner_decl && TREE_CODE (inner_decl) == IDENTIFIER_NODE;
+	      inner_decl && (TREE_CODE (inner_decl) == IDENTIFIER_NODE
+			     || TREE_CODE (inner_decl) == BIT_NOT_EXPR);
 
 	    if (ctype == NULL_TREE
 		&& decl_context == FIELD
@@ -8289,14 +8302,9 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 		       may not be static.  */
 		    if (staticp == 2)
 		      error ("destructor cannot be static member function");
-		    if (TYPE_READONLY (type))
+		    if (quals)
 		      {
-			error ("destructors cannot be declared `const'");
-			return void_type_node;
-		      }
-		    if (TYPE_VOLATILE (type))
-		      {
-			error ("destructors cannot be declared `volatile'");
+			error ("destructors cannot be declared `const' or `volatile'");
 			return void_type_node;
 		      }
 		    if (decl_context == FIELD)
@@ -8320,16 +8328,11 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 			pedwarn ("constructors cannot be declared virtual");
 			virtualp = 0;
 		      }
-		    if (TYPE_READONLY (type))
+		    if (quals)
 		      {
-			error ("constructors cannot be declared `const'");
+			error ("constructors cannot be declared `const' or `volatile'");
 			return void_type_node;
  		      }
-		    if (TYPE_VOLATILE (type))
-		      {
-			error ("constructors cannot be declared `volatile'");
-			return void_type_node;
-		      }
 		    {
 		      RID_BIT_TYPE tmp_bits;
 		      bcopy ((void*)&specbits, (void*)&tmp_bits, sizeof(RID_BIT_TYPE));
@@ -8358,19 +8361,21 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 		if (decl_context == FIELD)
 		  staticp = 0;
 	      }
-	    else if (friendp && virtualp)
+	    else if (friendp)
 	      {
-		/* Cannot be both friend and virtual.  */
-		error ("virtual functions cannot be friends");
-		RIDBIT_RESET (RID_FRIEND, specbits);
-		friendp = 0;
+		if (initialized)
+		  error ("can't initialize friend function `%s'", name);
+		if (virtualp)
+		  {
+		    /* Cannot be both friend and virtual.  */
+		    error ("virtual functions cannot be friends");
+		    RIDBIT_RESET (RID_FRIEND, specbits);
+		    friendp = 0;
+		  }
 	      }
 
 	    if (decl_context == NORMAL && friendp)
 	      error ("friend declaration not in class definition");
-
-	    /* Pick up type qualifiers which should be applied to `this'.  */
-	    quals = TREE_OPERAND (declarator, 2);
 
 	    /* Traditionally, declaring return type float means double.  */
 
@@ -8836,13 +8841,28 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
       /* Special case: "friend class foo" looks like a TYPENAME context.  */
       if (friendp)
 	{
-	  /* A friendly class?  */
-	  if (current_class_type)
-	    make_friend_class (current_class_type, TYPE_MAIN_VARIANT (type));
-	  else
-	    error("trying to make class `%s' a friend of global scope",
-		  TYPE_NAME_STRING (type));
-	  type = void_type_node;
+	  if (volatilep)
+	    {
+	      cp_error ("`volatile' specified for friend class declaration");
+	      volatilep = 0;
+	    }
+	  if (inlinep)
+	    {
+	      cp_error ("`inline' specified for friend class declaration");
+	      inlinep = 0;
+	    }
+
+	  /* Only try to do this stuff if we didn't already give up.  */
+	  if (type != integer_type_node)
+	    {
+	      /* A friendly class?  */
+	      if (current_class_type)
+		make_friend_class (current_class_type, TYPE_MAIN_VARIANT (type));
+	      else
+		error ("trying to make class `%s' a friend of global scope",
+		       TYPE_NAME_STRING (type));
+	      type = void_type_node;
+	    }
 	}
       else if (quals)
 	{
@@ -8878,7 +8898,9 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 
   if (TYPE_MAIN_VARIANT (type) == void_type_node && decl_context != PARM)
     {
-      if (TREE_CODE (declarator) == IDENTIFIER_NODE)
+      if (! declarator)
+	error ("unnamed variable or field declared void");
+      else if (TREE_CODE (declarator) == IDENTIFIER_NODE)
 	{
 	  if (IDENTIFIER_OPNAME_P (declarator))
 #if 0				/* How could this happen? */
@@ -8921,6 +8943,11 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 	  type = build_pointer_type (type);
 	else if (TREE_CODE (type) == OFFSET_TYPE)
 	  type = build_pointer_type (type);
+	else if (type == void_type_node && declarator)
+	  {
+	    error ("declaration of `%s' as void", name);
+	    return NULL_TREE;
+	  }
 
 	decl = build_decl (PARM_DECL, declarator, type);
 
@@ -9030,7 +9057,10 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 	else if (TYPE_SIZE (type) == NULL_TREE && !staticp
 		 && (TREE_CODE (type) != ARRAY_TYPE || initialized == 0))
 	  {
-	    cp_error ("field `%D' has incomplete type", declarator);
+	    if (declarator)
+	      cp_error ("field `%D' has incomplete type", declarator);
+	    else
+	      cp_error ("name `%T' has incomplete type", type);
 
 	    /* If we're instantiating a template, tell them which
 	       instantiation made the field's type be incomplete.  */
@@ -9301,6 +9331,11 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 			  decl);
 	        staticp = 0;
 		RIDBIT_RESET (RID_STATIC, specbits);
+	      }
+	    if (RIDBIT_SETP (RID_REGISTER, specbits) && TREE_STATIC (decl))
+	      {
+		cp_error ("static member `%D' declared `register'", decl);
+		RIDBIT_RESET (RID_REGISTER, specbits);
 	      }
 	    if (RIDBIT_SETP (RID_EXTERN, specbits))
 	      {
@@ -9583,7 +9618,8 @@ grokparms (first_parm, funcdef_flag)
 		      any_init++;
 		      if (TREE_CODE (init) == SAVE_EXPR)
 			PARM_DECL_EXPR (init) = 1;
-		      else if (TREE_CODE (init) == VAR_DECL)
+		      else if (TREE_CODE (init) == VAR_DECL
+			       || TREE_CODE (init) == PARM_DECL)
 			{
 			  if (IDENTIFIER_LOCAL_VALUE (DECL_NAME (init)))
 			    {
@@ -10656,6 +10692,8 @@ start_function (declspecs, declarator, raises, pre_parsed_p)
   original_result_rtx = NULL_RTX;
   current_function_obstack_index = 0;
   current_function_obstack_usage = 0;
+  base_init_insns = NULL_RTX;
+  protect_list = NULL_TREE;
 
   clear_temp_name ();
 
@@ -10751,7 +10789,7 @@ start_function (declspecs, declarator, raises, pre_parsed_p)
 	  if (TREE_TYPE (TREE_TYPE (decl1)) != integer_type_node)
 	    {
 	      if (pedantic || warn_return_type)
-		warning ("return type for `main' changed to integer type");
+		pedwarn ("return type for `main' changed to integer type");
 	      TREE_TYPE (decl1) = fntype = default_function_type;
 	    }
 	  warn_about_return_type = 0;
@@ -10795,6 +10833,10 @@ start_function (declspecs, declarator, raises, pre_parsed_p)
       DECL_RESULT (decl1) = build_decl (RESULT_DECL, 0, TREE_TYPE (fntype));
     }
 
+  if (TYPE_LANG_SPECIFIC (TREE_TYPE (fntype))
+      && CLASSTYPE_ABSTRACT_VIRTUALS (TREE_TYPE (fntype)))
+    abstract_virtuals_error (decl1, TREE_TYPE (fntype));
+
   if (warn_about_return_type)
     warning ("return-type defaults to `int'");
 
@@ -10824,14 +10866,19 @@ start_function (declspecs, declarator, raises, pre_parsed_p)
 	DECL_EXTERNAL (decl1) = current_extern_inline;
       DECL_INTERFACE_KNOWN (decl1) = 1;
     }
+  else if (current_extern_inline)
+    {
+      /* `extern inline' acts like a declaration except for
+	 defining how to inline.  So set DECL_EXTERNAL in that case.  */
+      DECL_EXTERNAL (decl1) = 1;
+      DECL_INTERFACE_KNOWN (decl1) = 1;
+    }
   else
     {
       /* This is a definition, not a reference.
-	 So normally clear DECL_EXTERNAL.
-	 However, `extern inline' acts like a declaration except for
-	 defining how to inline.  So set DECL_EXTERNAL in that case.  */
-      DECL_EXTERNAL (decl1) = current_extern_inline;
-
+	 So clear DECL_EXTERNAL.  */
+      DECL_EXTERNAL (decl1) = 0;
+      
       if (DECL_INLINE (decl1) && (DECL_FUNCTION_MEMBER_P (decl1)
 				  || DECL_TEMPLATE_INSTANTIATION (decl1)))
 	/* We know nothing yet */;
@@ -11423,6 +11470,7 @@ finish_function (lineno, call_poplevel, nested)
 
       if (DECL_CONSTRUCTOR_P (current_function_decl))
 	{
+	  end_protect_partials ();
 	  expand_label (ctor_label);
 	  ctor_label = NULL_TREE;
 
@@ -11502,6 +11550,8 @@ finish_function (lineno, call_poplevel, nested)
 
       if (mark != get_last_insn ())
 	reorder_insns (next_insn (mark), get_last_insn (), last_parm_insn);
+
+      end_protect_partials ();
 
       /* This is where the body of the constructor ends.  */
       expand_label (ctor_label);
@@ -11643,8 +11693,14 @@ finish_function (lineno, call_poplevel, nested)
   /* Run the optimizers and output the assembler code for this function.  */
   rest_of_compilation (fndecl);
 
-  if (DECL_DEFER_OUTPUT (fndecl))
-    mark_inline_for_output (fndecl);
+  if (DECL_SAVED_INSNS (fndecl) && ! TREE_ASM_WRITTEN (fndecl))
+    {
+      /* Set DECL_EXTERNAL so that assemble_external will be called as
+         necessary.  We'll clear it again in import_export_inline.  */
+      if (TREE_PUBLIC (fndecl))
+	DECL_EXTERNAL (fndecl) = 1;
+      mark_inline_for_output (fndecl);
+    }
 
   if (ctype && TREE_ASM_WRITTEN (fndecl))
     note_debug_info_needed (ctype);
@@ -12121,7 +12177,9 @@ struct cp_function
   tree shadowed_labels;
   tree ctor_label;
   tree dtor_label;
+  tree protect_list;
   rtx result_rtx;
+  rtx base_init_insns;
   struct cp_function *next;
   struct binding_level *binding_level;
 };
@@ -12156,6 +12214,8 @@ push_cp_function_context (toplev)
   p->just_assigned_this = current_function_just_assigned_this;
   p->parms_stored = current_function_parms_stored;
   p->result_rtx = original_result_rtx;
+  p->base_init_insns = base_init_insns;
+  p->protect_list = protect_list;
 }
 
 /* Restore the variables used during compilation of a C++ function.  */
@@ -12197,10 +12257,12 @@ pop_cp_function_context (toplev)
   current_binding_level = p->binding_level;
   ctor_label = p->ctor_label;
   dtor_label = p->dtor_label;
+  protect_list = p->protect_list;
   current_function_assigns_this = p->assigns_this;
   current_function_just_assigned_this = p->just_assigned_this;
   current_function_parms_stored = p->parms_stored;
   original_result_rtx = p->result_rtx;
+  base_init_insns = p->base_init_insns;
 
   free (p);
 }

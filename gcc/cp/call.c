@@ -593,6 +593,15 @@ can_convert (to, from)
   return h.code < USER_CODE;
 }
 
+int
+can_convert_arg (to, from, arg)
+     tree to, from, arg;
+{
+  struct harshness_code h;
+  h = convert_harshness (to, from, arg);
+  return h.code < USER_CODE;
+}
+
 #ifdef DEBUG_MATCHING
 static char *
 print_harshness (h)
@@ -2371,9 +2380,12 @@ build_method_call (instance, name, parms, basetype_path, flags)
   assemble_external (function);
 
 #if 0
+  /* Is it a synthesized method that needs to be synthesized?  */
   if (DECL_ARTIFICIAL (function) && ! flag_no_inline
       && DECL_SAVED_INSNS (function) == 0
-      && ! TREE_ASM_WRITTEN (function))
+      && ! TREE_ASM_WRITTEN (function)
+      /* Kludge: don't synthesize for default args.  */
+      && current_function_decl)
     synthesize_method (function);
 #endif
 

@@ -1740,6 +1740,9 @@ make_deep_copy (t)
     case ARRAY_TYPE:
       return build_array_type (make_deep_copy (TREE_TYPE (t)),
 			       make_deep_copy (TYPE_DOMAIN (t)));
+    case INTEGER_TYPE:
+      return build_index_type (make_deep_copy (TYPE_MAX_VALUE (t)));
+
     case OFFSET_TYPE:
       return build_offset_type (make_deep_copy (TYPE_OFFSET_BASETYPE (t)),
 				make_deep_copy (TREE_TYPE (t)));
@@ -1749,6 +1752,7 @@ make_deep_copy (t)
 	 build_function_type
 	 (make_deep_copy (TREE_TYPE (t)),
 	  make_deep_copy (TREE_CHAIN (TYPE_ARG_TYPES (t)))));
+
     case RECORD_TYPE:
       if (TYPE_PTRMEMFUNC_P (t))
 	return build_ptrmemfunc_type
