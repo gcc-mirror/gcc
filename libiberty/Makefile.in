@@ -1,6 +1,6 @@
 #
 # Makefile
-#   Copyright (C) 1990, 91-99, 2000, 2001, 2002, 2003
+#   Copyright (C) 1990, 91-99, 2000, 2001, 2002, 2003, 2004
 #   Free Software Foundation
 #
 # This file is part of the libiberty library.
@@ -130,7 +130,7 @@ COMPILE.c = $(CC) -c @DEFS@ $(LIBCFLAGS) -I. -I$(INCDIR) $(HDEFINES) @ac_libiber
 CFILES = alloca.c argv.c asprintf.c atexit.c				\
 	basename.c bcmp.c bcopy.c bsearch.c bzero.c			\
 	calloc.c choose-temp.c clock.c concat.c cp-demangle.c		\
-	 cplus-dem.c							\
+	cp-demint.c cplus-dem.c						\
 	dyn-string.c							\
 	fdmatch.c ffs.c fibheap.c floatformat.c fnmatch.c		\
 	getcwd.c getopt.c getopt1.c getpagesize.c getpwd.c getruntime.c	\
@@ -158,7 +158,7 @@ CFILES = alloca.c argv.c asprintf.c atexit.c				\
 
 # These are always included in the library.  The first four are listed
 # first and by compile time to optimize parallel builds.
-REQUIRED_OFILES = regex.o cplus-dem.o cp-demangle.o md5.o		\
+REQUIRED_OFILES = regex.o cplus-dem.o cp-demangle.o cp-demint.o md5.o	\
 	alloca.o argv.o							\
 	choose-temp.o concat.o						\
 	dyn-string.o							\
@@ -428,8 +428,11 @@ choose-temp.o: config.h $(INCDIR)/ansidecl.h $(INCDIR)/libiberty.h
 clock.o: config.h
 concat.o: config.h $(INCDIR)/ansidecl.h $(INCDIR)/libiberty.h
 copysign.o: $(INCDIR)/ansidecl.h
-cp-demangle.o: config.h $(INCDIR)/ansidecl.h $(INCDIR)/demangle.h \
-	$(INCDIR)/dyn-string.h $(INCDIR)/getopt.h $(INCDIR)/libiberty.h
+cp-demangle.o: config.h $(INCDIR)/ansidecl.h $(srcdir)/cp-demangle.h \
+	$(INCDIR)/demangle.h $(INCDIR)/dyn-string.h $(INCDIR)/getopt.h \
+	$(INCDIR)/libiberty.h
+cp-demint.o: config.h $(INCDIR)/ansidecl.h $(srcdir)/cp-demangle.h \
+	$(INCDIR)/demangle.h $(INCDIR)/libiberty.h
 cplus-dem.o: config.h $(INCDIR)/ansidecl.h $(INCDIR)/demangle.h \
 	$(INCDIR)/libiberty.h $(INCDIR)/safe-ctype.h
 dyn-string.o: config.h $(INCDIR)/ansidecl.h $(INCDIR)/dyn-string.h \
@@ -450,8 +453,8 @@ hashtab.o: config.h $(INCDIR)/ansidecl.h $(INCDIR)/hashtab.h \
 	$(INCDIR)/libiberty.h
 hex.o: $(INCDIR)/ansidecl.h $(INCDIR)/libiberty.h \
 	$(INCDIR)/safe-ctype.h
-lbasename.o: $(INCDIR)/ansidecl.h $(INCDIR)/libiberty.h \
-	$(INCDIR)/safe-ctype.h $(INCDIR)/filenames.h
+lbasename.o: $(INCDIR)/ansidecl.h $(INCDIR)/filenames.h \
+	$(INCDIR)/libiberty.h $(INCDIR)/safe-ctype.h
 lrealpath.o: config.h $(INCDIR)/ansidecl.h $(INCDIR)/libiberty.h
 make-relative-prefix.o: config.h $(INCDIR)/ansidecl.h \
 	$(INCDIR)/libiberty.h

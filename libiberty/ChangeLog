@@ -1,3 +1,49 @@
+2004-01-12  Ian Lance Taylor  <ian@wasabisystems.com>
+
+	* cp-demangle.c: Include "cp-demangle.h".  If IN_GLIBCPP_V3 is
+	defined, rename some functions which are to become static via
+	#define.
+	(CP_STATIC_IF_GLIBCPP_V3): Define.
+	(struct d_operator_info): Move definition to cp-demangle.h, and
+	rename to demangle_operator_info.  Change all uses.
+	(enum d_builtin_type_print): Move definition to cp-demangle.h.
+	(struct d_builtin_type_info): Move definition to cp-demangle.h,
+	and rename to demangle_builtin_type_info.  Change all uses.
+	(enum d_comp_type): Move definition to include/demangle.h, and
+	rename to demangle_component_type, and change all enums to start
+	with DEMANGLE_COMPONENT_ instead of D_.  Change all uses.
+	(struct d_comp): Move definition to include/demangle.h, and rename
+	to demangle_component.  Change all uses.
+	(struct d_info): Move definition to cp-demangle.h.
+	(cplus_demangle_fill_name): New function.
+	(cplus_demangle_fill_extended_operator): New function.
+	(cplus_demangle_fill_ctor): New function.
+	(cplus_demangle_fill_dtor): New function.
+	(d_make_empty): Remove type parameter.  Change all callers.
+	(d_make_name): Use cplus_demangle_fill_name.
+	(d_make_extended_operator): Use
+	cplus_demangle_fill_extended_operator.
+	(d_make_ctor): Use cplus_demangle_fill_ctor.
+	(d_make_dtor): Use cplus_demangle_fill_dtor.
+	(cplus_demangle_mangled_name): Rename from d_mangled_name.  Make
+	non-static by default.  Change all callers.
+	(cplus_demangle_operators): Rename from d_operators.  Change all
+	uses.  Make non-static by default.  Add sentinel at end of array.
+	(d_operator_name): Adjust initialization of high for new sentinel
+	in cplus_demangle_operators.
+	(cplus_demangle_builtin_types): Rename from d_builtin_types.
+	Change all uses.  Make non-static by default.  Change initializer
+	to use D_BUILTIN_TYPE_COUNT instead of magic number 26.
+	(cplus_demangle_type): Rename from d_type.  Make non-static by
+	default.  Change all callers.
+	(cplus_demangle_init_info): Rename from d_init_info.  Make
+	non-static by default.  Change all callers.
+	* cp-demangle.h: New file.
+	* cp-demint.c: New file.
+	* Makefile.in: Rebuild dependencies.
+	(CFILES): Add cp-demint.c.
+	(REQUIRED_OFILES): Add cp-demint.o.
+
 2004-01-09  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* configure.in:  Rename file to ...
