@@ -856,6 +856,8 @@ make_node (code)
 
     case 'd':
       if (code != FUNCTION_DECL)
+      DECL_IN_SYSTEM_HEADER (t) =
+	in_system_header && (obstack == &permanent_obstack);
 	DECL_ALIGN (t) = 1;
       DECL_SOURCE_LINE (t) = lineno;
       DECL_SOURCE_FILE (t) = (input_filename) ? input_filename : "<built-in>";

@@ -287,6 +287,8 @@ print_node (file, prefix, node, indent)
     fputs (" asm_written", file);
   if (TREE_USED (node))
     fputs (" used", file);
+  if (TREE_RAISES (node))
+    fputs (" raises", file);
   if (TREE_PERMANENT (node))
     fputs (" permanent", file);
   if (TREE_PUBLIC (node))
@@ -331,6 +333,8 @@ print_node (file, prefix, node, indent)
 	fputs (" from_inline", file);
       if (DECL_IGNORED_P (node))
 	fputs (" ignored", file);
+      if (DECL_IN_SYSTEM_HEADER (node))
+	fputs (" in_system_header", file);
       if (DECL_LANG_FLAG_0 (node))
 	fputs (" decl_0", file);
       if (DECL_LANG_FLAG_1 (node))
