@@ -14,8 +14,8 @@ while (<>)
       for (1..7)
 	{
 	  $_ = <>;
-	  s/^--- [^\t]+\t/--- $full\t/;
-          s/^\+\+\+ [^\t]+\t/\+\+\+ $full\t/;
+	  s/^([-+*]{3}) [^\t]+\t/$1 $full\t/
+	    unless m{ /dev/null\t};
 	  print;
 	}
     }

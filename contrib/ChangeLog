@@ -1,3 +1,11 @@
+2000-04-28  Jason Merrill  <jason@casey.cygnus.com>
+
+	* index-prop: Use a single pattern.  Also support *** cdiffs.
+
+2000-04-28  Pavel Roskin <pavel_roskin@geocities.com>
+
+	* index-prop: Don't change /dev/null.
+
 2000-04-27  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* gcc_update: Refer to GCC and gcc_update instead of egcs and
