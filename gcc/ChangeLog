@@ -1,5 +1,12 @@
 2003-03-10  Aldy Hernandez  <aldyh@redhat.com>
 
+        * config/rs6000/spe.h: Define __ev64_*64__ to use single element
+        vectors.
+        (__ev_convert_u64): Remove macro.  Define as inline.
+        (__ev_convert_s64): Same.
+
+2003-03-10  Aldy Hernandez  <aldyh@redhat.com>
+
         * config/rs6000/rs6000.h (DWARF_FRAME_REGISTERS): Define.
         (rs6000_stack_t): Add spe_64bit_regs_used.
 
