@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for Motorola 68000 family.
-   Copyright (C) 1987, 1993, 1994, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1993, 1994, 1995, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1783,11 +1783,11 @@ init_68881_table ()
   REAL_VALUE_TYPE r;
   enum machine_mode mode;
 
-  mode = DFmode;
+  mode = SFmode;
   for (i = 0; i < 7; i++)
     {
       if (i == 6)
-        mode = SFmode;
+        mode = DFmode;
       r = REAL_VALUE_ATOF (strings_68881[i], mode);
       values_68881[i] = r;
     }
