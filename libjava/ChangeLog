@@ -1,5 +1,9 @@
 2004-07-17  Michael Koch  <konqueror@gmx.de>
 
+	* java/security/Security.java: Fixed javadocs all over.
+
+2004-07-17  Michael Koch  <konqueror@gmx.de>
+
 	* gnu/java/awt/EmbeddedWindow.java
 	(static): Removed.
 	(addNotify): Set peer via reflection.
