@@ -1,5 +1,8 @@
 2004-07-16  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* class.c (finish_struct_bits): Use for loop.
+	(propagate_binfo_offsets): Do primary binfo outside of loop.
+
 	PR c++/16583
 	* dump.c (cp_dump_tree): Don't dump the bases if there's no
 	binfo.
