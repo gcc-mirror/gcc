@@ -336,7 +336,7 @@ setgid\0setpgid\0setsid\0setuid\0sleep\0sysconf\0tcgetpgrp\0tcsetpgrp\0\
 ttyname\0unlink\0write\0" },
   { CONTINUED, POSIX2_SYMBOL, "getopt\0" },
   { CONTINUED, XOPEN_EXTENDED_SYMBOL,
-      "lockf\0gethostid\0gethostname\0readlink\0" },
+      "lockf\0gethostid\0gethostname\0readlink\0symlink\0" },
 
   { "utime.h", POSIX1_SYMBOL, "utime\0" },
 

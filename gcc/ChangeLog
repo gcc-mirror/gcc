@@ -1,3 +1,7 @@
+Wed Sep  2 14:16:49 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* fix-header.c (symlink): Treat like readlink.
+
 Wed Sep  2 19:30:06 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* dwarfout.c (fundamental_type_code): Encode 32 bit floats/doubles
