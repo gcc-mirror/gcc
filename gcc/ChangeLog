@@ -1,3 +1,9 @@
+1999-11-24  Andreas Jaeger  <aj@suse.de>
+
+	* config/mips/linux.h (TARGET_VERSION): Added.
+	(HANDLE_SYSV_PRAGMA): Added.
+	(DEFAULT_VTABLE_THUNKS): Added.
+
 Wed Nov 24 14:12:15 MET 1999  Jan Hubicka  <hubicka@freesoft.cz>
 
 	* local-alloc.c (qty): New structure and static variable.
