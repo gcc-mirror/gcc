@@ -374,6 +374,7 @@ coverage_counter_alloc (unsigned counter, unsigned num)
 
       ASM_GENERATE_INTERNAL_LABEL (buf, "LPBX", counter + 1);
       ctr_labels[counter] = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (buf));
+      SYMBOL_REF_FLAGS (ctr_labels[counter]) = SYMBOL_FLAG_LOCAL;
     }
   fn_b_ctrs[counter] = fn_n_ctrs[counter];
   fn_n_ctrs[counter] += num;

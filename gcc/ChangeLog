@@ -1,5 +1,21 @@
 2004-01-05  Richard Sandiford  <rsandifo@redhat.com>
 
+	PR target/12945
+	* coverage.c (coverage_counter_alloc): Set SYMBOL_FLAG_LOCAL for
+	for counter labels.
+	* config/mips/mips.c (INTERNAL_SYMBOL_P): Delete.
+	(mips_classify_symbol): Always treat SYMBOL_REF_FLAG as indicating
+	string constants if TARGET_MIPS16.  Use SYMBOL_REF_DECL to check
+	the binding of decl symbols, otherwise check SYMBOL_REF_LOCAL_P.
+	(mips_symbol_insns): Don't trust the local/global classification.
+	(m16_usym8_4, m16_usym5_4): Same mips16 change as mips_classify_symbol.
+	(override_options): Make -mabicalls -fno-unit-at-a-time imply
+	-mno-explicit-relocs.
+	(mips_encode_section_info): Don't use SYMBOL_REF_FLAG to distinguish
+	between local and global symbols.
+
+2004-01-05  Richard Sandiford  <rsandifo@redhat.com>
+
 	* config/mips/mips-protos.h (mips_dangerous_for_la25_p): Declare.
 	(mips_preferred_reload_class): Declare.
 	* config/mips/mips.h (DANGEROUS_FOR_LA25_P): Replace with function.
