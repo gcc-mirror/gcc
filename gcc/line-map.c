@@ -25,6 +25,9 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #include "line-map.h"
 #include "intl.h"
 
+static void trace_include
+  PARAMS ((const struct line_maps *, const struct line_map *));
+
 /* Initialize a line map set.  */
 
 void
@@ -35,6 +38,7 @@ init_line_maps (set)
   set->allocated = 0;
   set->used = 0;
   set->last_listed = -1;
+  set->trace_includes = false;
 }
 
 /* Free a line map set.  */
@@ -136,8 +140,11 @@ add_line_map (set, reason, sysp, from_line, to_file, to_line)
     map->included_from = map[-1].included_from;
   else if (reason == LC_LEAVE)
     map->included_from = INCLUDED_FROM (set, map - 1)->included_from;
-
   set->used++;
+
+  if (reason == LC_ENTER && set->trace_includes)
+    trace_include (set, map);
+
   return map;
 }
 
@@ -206,4 +213,18 @@ print_containing_files (set, map)
     }
 
   fputs (":\n", stderr);
+}
+
+/* Print an include trace, for e.g. the -H option of the preprocessor.  */
+
+static void
+trace_include (set, map)
+     const struct line_maps *set;
+     const struct line_map *map;
+{
+  const struct line_map *m;
+
+  for (m = map; !MAIN_FILE_P (m); m = INCLUDED_FROM (set, m))
+    putc ('.', stderr);
+  fprintf (stderr, " %s\n", map->to_file);
 }

@@ -313,18 +313,8 @@ stack_include_file (pfile, inc)
     }
 
   if (pfile->buffer)
-    {
-      /* We don't want MI guard advice for the main file.  */
-      inc->include_count++;
-
-      /* Handle -H option.  */
-      if (CPP_OPTION (pfile, print_include_names))
-	{
-	  for (fp = pfile->buffer; fp; fp = fp->prev)
-	    putc ('.', stderr);
-	  fprintf (stderr, " %s\n", inc->name);
-	}
-    }
+    /* We don't want MI guard advice for the main file.  */
+    inc->include_count++;
 
   /* Push a buffer.  */
   fp = cpp_push_buffer (pfile, inc->buffer, inc->st.st_size, BUF_FILE, 0);
