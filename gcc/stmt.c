@@ -6370,26 +6370,23 @@ emit_case_nodes (index, node, default_label, index_type)
 	    }
 	  else if (!low_bound && !high_bound)
 	    {
-	      /* Instead of doing two branches, emit
-		 (index-low) <= (high-low).  */
-	      tree new_bound = fold (build (MINUS_EXPR, index_type, node->high,
-					    node->low));
-	      rtx new_index;
-	      
+	      /* Widen LOW and HIGH to the same width as INDEX.  */
+	      tree type = type_for_mode (mode, unsignedp);
+	      tree low = build1 (CONVERT_EXPR, type, node->low);
+	      tree high = build1 (CONVERT_EXPR, type, node->high);
+	      rtx new_index, new_bound;
+
+	      /* Instead of doing two branches, emit one unsigned branch for
+		 (index-low) > (high-low).  */
 	      new_index = expand_binop (mode, sub_optab, index,
-				        convert_modes (mode, imode,
-					  expand_expr (node->low, NULL_RTX,
-						       mode, 0),
-					  unsignedp),
+					expand_expr (low, NULL_RTX, mode, 0),
 				        NULL_RTX, unsignedp, OPTAB_WIDEN);
+	      new_bound = expand_expr (fold (build (MINUS_EXPR, type,
+						    high, low)),
+				       NULL_RTX, mode, 0);
 				
-	      emit_cmp_and_jump_insns (new_index,
-				       convert_modes (mode, imode,
-					 expand_expr (new_bound, NULL_RTX,
-						      mode, 0),
-					 unsignedp),
-				       GT, NULL_RTX, mode, 1, 0,
-				       default_label);
+	      emit_cmp_and_jump_insns (new_index, new_bound, GT, NULL_RTX,
+				       mode, 1, 0, default_label);
 	    }
 
 	  emit_jump (label_rtx (node->code_label));

@@ -1,3 +1,8 @@
+2001-07-11  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* stmt.c (emit_case_nodes): Widen high and low instead of new_bound
+	and low to get correct sign extension in low+high test.
+
 2001-07-11  Janis Johnson <janis@us.ibm.com>
 
 	* gcov.c (arcdata): Use gcov_type to fix branch percentage
