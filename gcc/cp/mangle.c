@@ -1564,8 +1564,11 @@ write_builtin_type (type)
 		    /* Couldn't find this type.  */
 		    abort ();
 		}
-	      type = t;
-	      goto iagain;
+	      else
+		{
+		  type = t;
+		  goto iagain;
+		}
 	    }
 	}
       break;
