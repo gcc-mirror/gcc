@@ -811,6 +811,7 @@ merge_trees (oldh, addh)
 		      split->test_elt_zero_wide = 0;
 		      split->tests = 0;
 		      split->pred = -1;
+		      split->dupno = -1;
 		    }
 
 		  if (add->insn_code_number >= 0 || add->opno >= 0)
@@ -836,6 +837,7 @@ merge_trees (oldh, addh)
 		      split->test_elt_zero_wide = 0;
 		      split->tests = 0;
 		      split->pred = -1;
+		      split->dupno = -1;
 		    }
 		}
 
