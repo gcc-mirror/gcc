@@ -60,8 +60,8 @@ typedef struct fibnode
   fibheapkey_t key;
   void *data;
 #ifdef __GNUC__
-  unsigned long int degree : 31;
-  unsigned long int mark : 1;
+  __extension__ unsigned long int degree : 31;
+  __extension__ unsigned long int mark : 1;
 #else
   unsigned int degree : 31;
   unsigned int mark : 1;

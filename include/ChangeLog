@@ -1,3 +1,8 @@
+2003-12-19  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* include/fibheap.h (fibnode): Use __extension__ for
+	bit-fields mark and degree if __GNUC__.
+
 2003-12-18  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* include/fibheap.h (fibnode): Use unsigned long int for
