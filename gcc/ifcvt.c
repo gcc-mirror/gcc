@@ -1829,7 +1829,7 @@ noce_process_if_block (ce_info)
       || (SMALL_REGISTER_CLASSES
 	  && REGNO (x) < FIRST_PSEUDO_REGISTER))
     {
-      if (no_new_pseudos)
+      if (no_new_pseudos || GET_MODE (x) == BLKmode)
 	return FALSE;
       x = gen_reg_rtx (GET_MODE (GET_CODE (x) == STRICT_LOW_PART
 				 ? XEXP (x, 0) : x));
