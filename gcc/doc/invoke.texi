@@ -1597,7 +1597,7 @@ Instantiations of these templates may be mangled incorrectly.
 @opindex Wctor-dtor-privacy
 Warn when a class seems unusable, because all the constructors or
 destructors in a class are private and the class has no friends or
-public static member functions.  This warning is enabled by default.
+public static member functions.
 
 @item -Wnon-virtual-dtor @r{(C++ only)}
 @opindex Wnon-virtual-dtor
