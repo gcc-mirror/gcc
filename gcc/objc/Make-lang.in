@@ -35,7 +35,7 @@
 # - making any compiler driver (eg: g++)
 # - the compiler proper (eg: cc1plus)
 # - define the names for selecting the language in LANGUAGES.
-
+#
 # Extra flags to pass to recursive makes.
 OBJC_FLAGS_TO_PASS = \
 	"OBJC_FOR_BUILD=$(OBJC_FOR_BUILD)" \
@@ -48,7 +48,7 @@ OBJC_FLAGS_TO_PASS = \
 # Actual names to use when installing a cross-compiler.
 #OBJC_CROSS_NAME = `t='$(program_transform_cross_name)'; echo c++ | sed $$t`
 
-
+#
 # Define the names for selecting Objective-C in LANGUAGES.
 OBJC objc: cc1obj objc-runtime
 OBJECTIVE-C objective-c: cc1obj objc-runtime
@@ -208,7 +208,7 @@ libobjc.dll: libobjc_s.a $(srcdir)/objc/libobjc_entry.o
 	$(DLLTOOL) --dllname libobjc.dll --def $(srcdir)/objc/libobjc.def \
 		--output-lib libobjc.a
 
-
+#
 # Build hooks:
 
 objc.all.build:
@@ -219,7 +219,7 @@ objc.rest.encap:
 objc.info:
 objc.dvi:
 
-
+#
 # Install hooks:
 # cc1obj is installed elsewhere as part of $(COMPILERS).
 
@@ -250,7 +250,7 @@ objc.install-info:
 objc.install-man:
 
 objc.uninstall:
-
+#
 # Clean hooks:
 # A lot of the ancillary files are deleted by the main makefile.
 # We just have to delete files specific to us.
@@ -270,7 +270,7 @@ objc.maintainer-clean:
 	-rm -f objc/objc-parse.y
 	-rm -f objc/objc-parse.c objc/objc-parse.output
 
-
+#
 # Stage hooks:
 
 objc.stage1:
@@ -290,7 +290,7 @@ objc.stage4:
 	-mv cc1obj$(exeext) stage4
 	-mv libobjc.a stage4
 
-
+#
 # Maintenance hooks:
 
 # This target creates the files that can be rebuilt, but go in the
