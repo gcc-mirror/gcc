@@ -6797,19 +6797,19 @@ finish_function (nested)
       setjmp_protect_args ();
     }
 
-#ifdef DEFAULT_MAIN_RETURN
   if (! strcmp (IDENTIFIER_POINTER (DECL_NAME (fndecl)), "main"))
     {
       if (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (fndecl)))
 	  != integer_type_node)
-	warning_with_decl (fndecl, "return type of `%s' is not `int'");
+	pedwarn_with_decl (fndecl, "return type of `%s' is not `int'");
       else
 	{
+#ifdef DEFAULT_MAIN_RETURN
 	  /* Make it so that `main' always returns success by default.  */
 	  DEFAULT_MAIN_RETURN;
+#endif
 	}
     }
-#endif
 
   /* Generate rtl for function exit.  */
   expand_function_end (input_filename, lineno, 0);
