@@ -1,3 +1,7 @@
+Wed Jun 24 01:01:23 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* g77spec.c (lang_specific_driver): Revert last change.
+
 Mon Jun 22 23:12:05 1998  H.J. Lu  (hjl@gnu.org)
 
 	* Make-lang.in (G77STAGESTUFF): Add g77.c.
