@@ -2494,7 +2494,9 @@ finish_struct_methods (t, fn_fields, nonprivate_method)
 
 	      for (x = *testp; x; x = DECL_CHAIN (x))
 		{
-		  if (DECL_NAME (fn_fields) == ansi_opname[(int) DELETE_EXPR])
+		  if (DECL_NAME (fn_fields) == ansi_opname[(int) DELETE_EXPR]
+		      || DECL_NAME (fn_fields)
+		         == ansi_opname[(int) VEC_DELETE_EXPR])
 		    {
 		      /* ANSI C++ June 5 1992 WP 12.5.5.1 */
 		      cp_error_at ("`%D' overloaded", fn_fields);
@@ -4149,8 +4151,10 @@ finish_struct (t, list_of_fieldlists, warn_anon)
   else if (flag_dossier && ! CLASSTYPE_DOSSIER (t))
     build_t_desc (t, 1);
 
+#if 0
   if (TYPE_NAME (t) && TYPE_IDENTIFIER (t))
     undo_template_name_overload (TYPE_IDENTIFIER (t), 1);
+#endif
   if (current_class_type)
     popclass (0);
   else
@@ -4426,10 +4430,7 @@ pushclass (type, modify)
 	current_function_decl = NULL_TREE;
 
       if (TREE_CODE (type) == UNINSTANTIATED_P_TYPE)
-        {
-          declare_uninstantiated_type_level ();
-	  overload_template_name (current_class_name, 0);
-        }
+	declare_uninstantiated_type_level ();
       else if (type != previous_class_type || current_class_depth > 1)
 	{
 	  build_mi_matrix (type);
@@ -4456,6 +4457,9 @@ pushclass (type, modify)
 	    }
 	  unuse_fields (type);
 	}
+
+      if (IDENTIFIER_TEMPLATE (TYPE_IDENTIFIER (type)))
+	overload_template_name (current_class_name, 0);
 
       for (tags = CLASSTYPE_TAGS (type); tags; tags = TREE_CHAIN (tags))
 	{
@@ -4513,9 +4517,9 @@ popclass (modify)
 	  TREE_NONLOCAL_FLAG (TREE_VALUE (tags)) = 0;
 	  tags = TREE_CHAIN (tags);
 	}
+      if (IDENTIFIER_TEMPLATE (TYPE_IDENTIFIER (current_class_type)))
+	undo_template_name_overload (current_class_name, 0);
     }
-  if (TREE_CODE (current_class_type) == UNINSTANTIATED_P_TYPE)
-    undo_template_name_overload (current_class_name, 0);
 
   poplevel_class ();
 
@@ -4583,7 +4587,12 @@ push_nested_class (type, modify)
      tree type;
      int modify;
 {
-  tree context = DECL_CONTEXT (TYPE_NAME (type));
+  tree context;
+
+  if (type == error_mark_node || ! IS_AGGR_TYPE (type))
+    return;
+  
+  context = DECL_CONTEXT (TYPE_NAME (type));
 
   if (context && TREE_CODE (context) == RECORD_TYPE)
     push_nested_class (context, 2);

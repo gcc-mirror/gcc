@@ -720,8 +720,16 @@ convert_to_reference (decl, reftype, expr, fndecl, parmnum,
     {
       /* When casting an lvalue to a reference type, just convert into
 	 a pointer to the new type and deference it.  This is allowed
-	 by San Diego WP section 5.2.8 paragraph 9, though perhaps it
+	 by San Diego WP section 5.2.9 paragraph 12, though perhaps it
 	 should be done directly (jason).  (int &)ri ---> *(int*)&ri */
+
+      /* B* bp; A& ar = (A&)bp; is legal, but it's probably not what they
+         meant.  */
+      if (form == POINTER_TYPE
+	  && (comptypes (TREE_TYPE (intype), type, strict)))
+	cp_warning ("casting `%T' to `%T' does not dereference pointer",
+		    intype, reftype);
+	  
       rval = build_unary_op (ADDR_EXPR, expr, 0);
       if (rval != error_mark_node)
 	rval = convert_force (build_pointer_type (TREE_TYPE (reftype)), rval);
@@ -744,6 +752,7 @@ convert_to_reference (decl, reftype, expr, fndecl, parmnum,
       
       /* Definitely need to go through a constructor here.  */
       if (TYPE_HAS_CONSTRUCTOR (type)
+	  && ! CLASSTYPE_ABSTRACT_VIRTUALS (type)
 	  && (rval = build_method_call
 	      (NULL_TREE, constructor_name_full (type),
 	       build_tree_list (NULL_TREE, expr), TYPE_BINFO (type),

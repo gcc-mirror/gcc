@@ -2673,10 +2673,7 @@ build_scoped_method_call (exp, scopes, name, parms)
 	{
 	  /* Explicit call to destructor.  */
 	  name = TREE_OPERAND (name, 0);
-	  if (TREE_TYPE (decl) !=
-	      (IDENTIFIER_CLASS_VALUE (name)
-	       ? IDENTIFIER_CLASS_TYPE_VALUE (name)
-	       : IDENTIFIER_TYPE_VALUE (name)))
+	  if (name != constructor_name (TREE_TYPE (decl)))
 	    {
 	      cp_error
 		("qualified type `%T' does not match destructor type `%T'",
@@ -2808,6 +2805,10 @@ build_method_call (instance, name, parms, basetype_path, flags)
       /* If it doesn't work, two argument delete must work */
       TREE_CHAIN (parms) = save_last;
     }
+  /* We already know whether it's needed or not for vec delete.  */
+  else if (name == ansi_opname[(int) VEC_DELETE_EXPR]
+	   && ! TYPE_VEC_DELETE_TAKES_SIZE (TREE_TYPE (instance)))
+    TREE_CHAIN (parms) = NULL_TREE;
 
   if (TREE_CODE (name) == BIT_NOT_EXPR)
     {

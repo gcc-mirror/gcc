@@ -1059,17 +1059,18 @@ It is ambiguous whether @code{class T} should be parsed as the
 declaration of a template type parameter named @code{T} or an unnamed
 constant parameter of type @code{class T}.  Section 14.6, paragraph 3 of
 the January '94 working paper states that the first interpretation is
-the correct one.  This ambiguity results in four reduce/reduce conflicts.
+the correct one.  This ambiguity results in two reduce/reduce conflicts.
 
-2) Between @code{primary} and @code{typename} for code like @samp{int()}
+2) Between @code{primary} and @code{type_id} for code like @samp{int()}
 in places where both can be accepted, such as the argument to
 @code{sizeof}.  Section 8.1 of the pre-San Diego working paper specifies
 that these ambiguous constructs will be interpreted as @code{typename}s.
-This ambiguity results in six reduce/reduce conflicts.
+This ambiguity results in six reduce/reduce conflicts between
+@samp{absdcl} and @samp{functional_cast}.
 
-3) Between @code{primary}/@code{functional_cast} and
-@code{expr_or_declarator}/@code{complex_direct_notype_declarator}, for
-various token strings.  This situation occurs in code looking like
+3) Between @code{functional_cast} and
+@code{complex_direct_notype_declarator}, for various token strings.
+This situation occurs in code looking like
 
 @example
 int (*a);
@@ -1078,11 +1079,23 @@ int (*a);
 This code is ambiguous; it could be a declaration of the variable
 @samp{a} as a pointer to @samp{int}, or it could be a functional cast of
 @samp{*a} to @samp{int}.  Section 6.8 specifies that the former
-interpretation is correct.  This ambiguity results in 12 reduce/reduce
-conflicts.  Ack.
+interpretation is correct.  This ambiguity results in 7 reduce/reduce
+conflicts.  Another aspect of this ambiguity is code like 'int (x[2]);',
+which is resolved at the '[' and accounts for 6 reduce/reduce conflicts
+between @samp{direct_notype_declarator} and
+@samp{primary}/@samp{overqualified_id}.  Finally, there are 4 r/r
+conflicts between @samp{expr_or_declarator} and @samp{primary} over code
+like 'int (a);', which could probably be resolved but would also
+probably be more trouble than it's worth.  In all, this situation
+accounts for 17 conflicts.  Ack!
 
-4) Between @code{after_type_declarator} and @code{parm}, for the token
-@code{TYPENAME}.  This occurs in (as one example) code like
+The second case above is responsible for the failure to parse 'LinppFile
+ppfile (String (argv[1]), &outs, argc, argv);' (from Rogue Wave
+Math.h++) as an object declaration, and must be fixed so that it does
+not resolve until later.
+
+4) Indirectly between @code{after_type_declarator} and @code{parm}, for
+type names.  This occurs in (as one example) code like
 
 @example
 typedef int foo, bar;
@@ -1093,11 +1106,12 @@ class A @{
 
 What is @code{bar} inside the class definition?  We currently interpret
 it as a @code{parm}, as does Cfront, but IBM xlC interprets it as an
-@code{after_type_declarator}.  I suspect that xlC is correct, in light
+@code{after_type_declarator}.  I believe that xlC is correct, in light
 of 7.1p2, which says "The longest sequence of @i{decl-specifiers} that
 could possibly be a type name is taken as the @i{decl-specifier-seq} of
 a @i{declaration}."  However, it seems clear that this rule must be
-violated in the case of constructors, so...
+violated in the case of constructors.  This ambiguity accounts for 8
+conflicts.
 
 Unlike the others, this ambiguity is not recognized by the Working Paper.
 

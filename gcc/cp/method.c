@@ -840,27 +840,22 @@ build_decl_overload (dname, parms, for_method)
 {
   char *name = IDENTIFIER_POINTER (dname);
 
-  if (dname == ansi_opname[(int) NEW_EXPR]
-      && parms != NULL_TREE
-      && TREE_CODE (parms) == TREE_LIST
-      && TREE_VALUE (parms) == sizetype
-      && TREE_CHAIN (parms) == void_list_node)
-    return get_identifier ("__builtin_new");
-  else if (dname == ansi_opname[(int) DELETE_EXPR]
-	   && parms != NULL_TREE
-	   && TREE_CODE (parms) == TREE_LIST
-	   && TREE_VALUE (parms) == ptr_type_node
-	   && TREE_CHAIN (parms) == void_list_node)
-    return get_identifier ("__builtin_delete");
-  else if (dname == ansi_opname[(int) DELETE_EXPR]
-	   && parms != NULL_TREE
-	   && TREE_CODE (parms) == TREE_LIST
-	   && TREE_VALUE (parms) == ptr_type_node
-	   && TREE_CHAIN (parms) != NULL_TREE
-	   && TREE_CODE (TREE_CHAIN (parms)) == TREE_LIST
-	   && TREE_VALUE (TREE_CHAIN (parms)) == sizetype
-	   && TREE_CHAIN (TREE_CHAIN (parms)) == void_list_node)
-    return get_identifier ("__builtin_delete");
+  /* member operators new and delete look like methods at this point.  */
+  if (! for_method && parms != NULL_TREE && TREE_CODE (parms) == TREE_LIST)
+    {
+      if (TREE_VALUE (parms) == sizetype
+	  && TREE_CHAIN (parms) == void_list_node)
+	{
+	  if (dname == ansi_opname[(int) NEW_EXPR])
+	    return get_identifier ("__builtin_new");
+	  else if (dname == ansi_opname[(int) VEC_NEW_EXPR])
+	    return get_identifier ("__builtin_vec_new");
+	}
+      else if (dname == ansi_opname[(int) DELETE_EXPR])
+	return get_identifier ("__builtin_delete");
+      else if (dname == ansi_opname[(int) VEC_DELETE_EXPR])
+	return get_identifier ("__builtin_vec_delete");
+    }
 
   OB_INIT ();
   if (for_method != 2)
@@ -1112,19 +1107,19 @@ build_opfncall (code, flags, xarg1, xarg2, arg3)
       try_second = 0;
       break;
 
+    case VEC_NEW_EXPR:
     case NEW_EXPR:
       {
-	fnname = ansi_opname[(int) NEW_EXPR];
+	tree args = tree_cons (NULL_TREE, xarg2, arg3);
+	fnname = ansi_opname[(int) code];
 	if (flags & LOOKUP_GLOBAL)
-	  return build_overload_call (fnname, tree_cons (NULL_TREE, xarg2, arg3),
-				      flags & LOOKUP_COMPLAIN,
+	  return build_overload_call (fnname, args, flags & LOOKUP_COMPLAIN,
 				      (struct candidate *)0);
 
 	rval = build_method_call
 	  (build_indirect_ref (build1 (NOP_EXPR, xarg1, error_mark_node),
 			       "new"),
-	   fnname, tree_cons (NULL_TREE, xarg2, arg3),
-	   NULL_TREE, flags);
+	   fnname, args, NULL_TREE, flags);
 	if (rval == error_mark_node)
 	  /* User might declare fancy operator new, but invoke it
 	     like standard one.  */
@@ -1136,13 +1131,13 @@ build_opfncall (code, flags, xarg1, xarg2, arg3)
       }
       break;
 
+    case VEC_DELETE_EXPR:
     case DELETE_EXPR:
       {
-	fnname = ansi_opname[(int) DELETE_EXPR];
+	fnname = ansi_opname[(int) code];
 	if (flags & LOOKUP_GLOBAL)
 	  return build_overload_call (fnname,
-				      tree_cons (NULL_TREE, xarg1,
-						 build_tree_list (NULL_TREE, xarg2)),
+				      build_tree_list (NULL_TREE, xarg1),
 				      flags & LOOKUP_COMPLAIN,
 				      (struct candidate *)0);
 
@@ -1151,7 +1146,7 @@ build_opfncall (code, flags, xarg1, xarg2, arg3)
 				       error_mark_node),
 			       NULL_PTR),
 	   fnname, tree_cons (NULL_TREE, xarg1,
-			      build_tree_list (NULL_TREE, xarg2)),
+			       build_tree_list (NULL_TREE, xarg2)),
 	   NULL_TREE, flags);
 	/* This happens when the user mis-declares `operator delete'.
 	   Should now be impossible.  */
