@@ -1,3 +1,9 @@
+Thu Feb 19 10:36:48 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* typeck2.c (process_init_constructor): Sorry about non-trivial
+	labeled initializers.
+	* parse.y (initlist): Reenable labeled initializers.
+
 Thu Feb 19 10:15:55 1998  Kriang Lerdsuwanakij  <lerdsuwa@scf.usc.edu>
 
 	* pt.c (coerce_template_parms) Add a new parameter, is_tmpl_parm,
