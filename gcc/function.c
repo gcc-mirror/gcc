@@ -4990,7 +4990,6 @@ pad_to_arg_alignment (offset_ptr, boundary, alignment_pad)
 
   alignment_pad->var = NULL_TREE;
   alignment_pad->constant = 0;
-  /* END CYGNUS LOCAL */
 
   if (boundary > BITS_PER_UNIT)
     {
