@@ -715,7 +715,7 @@ __gnat_error_handler (sig)
       msg = "unhandled signal";
     }
 
-  mstate = (*Get_Machine_State_Addr)();
+  mstate = (*Get_Machine_State_Addr) ();
   if (mstate)
     {
       mstate->eip = info->eip;
@@ -1130,7 +1130,7 @@ __gnat_error_handler (sig, code, sc)
       msg = "unhandled signal";
     }
 
-  mstate = (*Get_Machine_State_Addr)();
+  mstate = (*Get_Machine_State_Addr) ();
   if (mstate != 0)
     memcpy ((void *) mstate, (const void *) sc, sizeof (sigcontext_t));
 

@@ -836,7 +836,7 @@ __gnat_file_time_name (char *name)
   time_t ret = 0;
   HANDLE h = CreateFile (name, GENERIC_READ, FILE_SHARE_READ, 0,
 			 OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, 0);
- 
+
   if (h != INVALID_HANDLE_VALUE)
     {
       ret = win32_filetime (h);
@@ -961,7 +961,7 @@ __gnat_set_file_time_name (char *name, time_t time_stamp)
     FILETIME ft_time;
     unsigned long long ull_time;
   } t_write;
-  
+
   HANDLE h  = CreateFile (name, GENERIC_WRITE, FILE_SHARE_WRITE, NULL,
 			  OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS,
 			  NULL);
