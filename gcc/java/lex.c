@@ -544,9 +544,10 @@ java_peek_unicode (void)
 {
   int unicode_escape_p;
   java_lexer *lex = ctxp->lexer;
+  int next;
+
   if (lex->avail_unicode)
     return lex->next_unicode;
-  int next;
 
   next = java_read_unicode (lex, &unicode_escape_p);
 

@@ -1,3 +1,10 @@
+2004-10-16  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* expr.c (expr_add_location): Move declaration to before all
+	statements.
+	* parse.y (java_expand_classes): Ditto.
+	* lex.c (java_peek_unicode): Ditto.
+
 2004-10-16  Ranjit Mathew  <rmathew@hotmail.com>
 
 	* check-init.c: Use %<, %> and %q for quoting in diagnostics,
