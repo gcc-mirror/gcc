@@ -1,5 +1,10 @@
 2002-07-21  Richard Henderson  <rth@redhat.com>
 
+	* unroll.c (find_splittable_givs): Do not split DEST_ADDR givs
+	that are not unrolled completely.
+
+2002-07-21  Richard Henderson  <rth@redhat.com>
+
 	* loop.h (LOOP_AUTO_UNROLL): Rename from LOOP_FIRST_PASS.
 	* loop.c (strength_reduce): Update.
 	* toplev.c (rest_of_compilation): Do unrolling in the first

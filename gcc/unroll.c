@@ -2864,105 +2864,7 @@ find_splittable_givs (loop, bl, unroll_type, increment, unroll_number)
 		  v->dest_reg = v->same->dest_reg;
 		  v->shared = 1;
 		}
-	      else if (unroll_type != UNROLL_COMPLETELY)
-		{
-		  /* If not completely unrolling the loop, then create a new
-		     register to hold the split value of the DEST_ADDR giv.
-		     Emit insn to initialize its value before loop start.  */
-
-		  rtx tem = gen_reg_rtx (v->mode);
-		  struct induction *same = v->same;
-		  rtx new_reg = v->new_reg;
-		  record_base_value (REGNO (tem), v->add_val, 0);
-
-		  /* If the address giv has a constant in its new_reg value,
-		     then this constant can be pulled out and put in value,
-		     instead of being part of the initialization code.  */
-
-		  if (GET_CODE (new_reg) == PLUS
-		      && GET_CODE (XEXP (new_reg, 1)) == CONST_INT)
-		    {
-		      v->dest_reg
-			= plus_constant (tem, INTVAL (XEXP (new_reg, 1)));
-
-		      /* Only succeed if this will give valid addresses.
-			 Try to validate both the first and the last
-			 address resulting from loop unrolling, if
-			 one fails, then can't do const elim here.  */
-		      if (verify_addresses (v, giv_inc, unroll_number))
-			{
-			  /* Save the negative of the eliminated const, so
-			     that we can calculate the dest_reg's increment
-			     value later.  */
-			  v->const_adjust = -INTVAL (XEXP (new_reg, 1));
-
-			  new_reg = XEXP (new_reg, 0);
-			  if (loop_dump_stream)
-			    fprintf (loop_dump_stream,
-				     "Eliminating constant from giv %d\n",
-				     REGNO (tem));
-			}
-		      else
-			v->dest_reg = tem;
-		    }
-		  else
-		    v->dest_reg = tem;
-
-		  /* If the address hasn't been checked for validity yet, do so
-		     now, and fail completely if either the first or the last
-		     unrolled copy of the address is not a valid address
-		     for the instruction that uses it.  */
-		  if (v->dest_reg == tem
-		      && ! verify_addresses (v, giv_inc, unroll_number))
-		    {
-		      for (v2 = v->next_iv; v2; v2 = v2->next_iv)
-			if (v2->same_insn == v)
-			  v2->same_insn = 0;
-
-		      if (loop_dump_stream)
-			fprintf (loop_dump_stream,
-				 "Invalid address for giv at insn %d\n",
-				 INSN_UID (v->insn));
-		      continue;
-		    }
-
-		  v->new_reg = new_reg;
-		  v->same = same;
-
-		  /* We set this after the address check, to guarantee that
-		     the register will be initialized.  */
-		  v->unrolled = 1;
-
-		  /* To initialize the new register, just move the value of
-		     new_reg into it.  This is not guaranteed to give a valid
-		     instruction on machines with complex addressing modes.
-		     If we can't recognize it, then delete it and emit insns
-		     to calculate the value from scratch.  */
-		  loop_insn_hoist (loop, gen_rtx_SET (VOIDmode, tem,
-						      copy_rtx (v->new_reg)));
-		  if (recog_memoized (PREV_INSN (loop->start)) < 0)
-		    {
-		      rtx sequence, ret;
-
-		      /* We can't use bl->initial_value to compute the initial
-			 value, because the loop may have been preconditioned.
-			 We must calculate it from NEW_REG.  */
-		      delete_related_insns (PREV_INSN (loop->start));
-
-		      start_sequence ();
-		      ret = force_operand (v->new_reg, tem);
-		      if (ret != tem)
-			emit_move_insn (tem, ret);
-		      sequence = get_insns ();
-		      end_sequence ();
-		      loop_insn_hoist (loop, sequence);
-
-		      if (loop_dump_stream)
-			fprintf (loop_dump_stream,
-				 "Invalid init insn, rewritten.\n");
-		    }
-		}
-	      else
+	      else if (unroll_type == UNROLL_COMPLETELY)
 		{
 		  v->dest_reg = value;
 
@@ -2981,6 +2883,8 @@ find_splittable_givs (loop, bl, unroll_type, increment, unroll_number)
 		      continue;
 		    }
 		}
+	      else
+		continue;
 
 	      /* Store the value of dest_reg into the insn.  This sharing
 		 will not be a problem as this insn will always be copied
