@@ -1,3 +1,8 @@
+2004-09-21  Bud Davis  <bdavis9659@comcast.net>
+
+	PR fortran/17286
+	* gfortran.dg/pr17286.f90: New test.
+
 2004-09-20  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/17530
