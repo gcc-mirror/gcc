@@ -1,3 +1,7 @@
+Thu Oct 31  Dale Johannesen  <dalej@apple.com>
+
+	* config/rs6000/darwin.h:  Enable -falign-xxx options.
+
 Thu Oct 31 18:08:00 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (override_options): Set defaults for flag_omit_frame_pointer,
