@@ -1,3 +1,9 @@
+2003-05-21  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	* libmath/stubs.c (hypot, hypotf, hypotl): Don't divide by
+	zero.
+	Update copyright year.
+
 2003-05-21  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* include/bits/stl_alloc.h (__default_alloc_template::_S_chunk_alloc):

@@ -1,6 +1,6 @@
 /* Stub definitions for libmath subpart of libstdc++. */
 
-/* Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+/* Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
 
    This file is part of the GNU ISO C++ Library.  This library is free
    software; you can redistribute it and/or modify it under the
@@ -108,6 +108,8 @@ float
 hypotf(float x, float y)
 {
   float s = fabsf(x) + fabsf(y);
+  if (s == 0.0F)
+    return s;
   x /= s; y /= s;
   return s * sqrtf(x * x + y * y);
 }
@@ -118,6 +120,8 @@ double
 hypot(double x, double y)
 {
   double s = fabs(x) + fabs(y);
+  if (s == 0.0)
+    return s;
   x /= s; y /= s;
   return s * sqrt(x * x + y * y);
 }
@@ -128,6 +132,8 @@ long double
 hypotl(long double x, long double y)
 {
   long double s = fabsl(x) + fabsl(y);
+  if (s == 0.0L)
+    return s;
   x /= s; y /= s;
   return s * sqrtl(x * x + y * y);
 }
