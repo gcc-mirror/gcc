@@ -1,3 +1,8 @@
+2001-03-28  Richard Henderson  <rth@redhat.com>
+
+	* Makefile.in (cs-tconfig.h): Depend on CONFIG_H, not GCONFIG_H.
+	Use ALL_CFLAGS not HOST_CFLAGS for sjlj detection.
+
 2001-03-28  Jim Wilson  <wilson@redhat.com>
 
 	* config/ia64/ia64.md (movtf): Change DImode to TFmode in calls to
