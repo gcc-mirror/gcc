@@ -2088,17 +2088,25 @@ should be the maximum value of @code{HARD_REGNO_NREGS (@var{regno},
 This macro helps control the handling of multiple-word values
 in the reload pass.
 
-@item CLASS_CANNOT_CHANGE_SIZE
-If defined, a C expression for a class that contains registers which the
-compiler must always access in a mode that is the same size as the mode
-in which it loaded the register.
+@item CLASS_CANNOT_CHANGE_MODE
+If defined, a C expression for a class that contains registers for
+which the compiler may not change modes arbitrarily.
+
+@item CLASS_CANNOT_CHANGE_MODE_P(@var{from}, @var{to})
+A C expression that is true if, for a register in
+@code{CLASS_CANNOT_CHANGE_MODE}, the requested mode punning is illegal.
 
 For the example, loading 32-bit integer or floating-point objects into
 floating-point registers on the Alpha extends them to 64-bits.
 Therefore loading a 64-bit object and then storing it as a 32-bit object
 does not store the low-order 32-bits, as would be the case for a normal
-register.  Therefore, @file{alpha.h} defines this macro as
-@code{FLOAT_REGS}.
+register.  Therefore, @file{alpha.h} defines @code{CLASS_CANNOT_CHANGE_MODE}
+as @code{FLOAT_REGS} and @code{CLASS_CANNOT_CHANGE_MODE_P} restricts
+mode changes to same-size modes.
+
+Compare this to IA-64, which extends floating-point values to 82-bits,
+and stores 64-bit integers in a different format than 64-bit doubles.
+Therefore @code{CLASS_CANNOT_CHANGE_MODE_P} is always true.
 @end table
 
 Three other special macros describe which operands fit which constraint

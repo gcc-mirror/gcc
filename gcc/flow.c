@@ -5263,11 +5263,13 @@ mark_used_regs (pbi, x, cond, insn)
       break;
 
     case SUBREG:
+#ifdef CLASS_CANNOT_CHANGE_MODE
       if (GET_CODE (SUBREG_REG (x)) == REG
 	  && REGNO (SUBREG_REG (x)) >= FIRST_PSEUDO_REGISTER
-	  && (GET_MODE_SIZE (GET_MODE (x))
-	      != GET_MODE_SIZE (GET_MODE (SUBREG_REG (x)))))
-	REG_CHANGES_SIZE (REGNO (SUBREG_REG (x))) = 1;
+	  && CLASS_CANNOT_CHANGE_MODE_P (GET_MODE (x),
+					 GET_MODE (SUBREG_REG (x))))
+	REG_CHANGES_MODE (REGNO (SUBREG_REG (x))) = 1;
+#endif
 
       /* While we're here, optimize this case.  */
       x = SUBREG_REG (x);
@@ -5310,12 +5312,14 @@ mark_used_regs (pbi, x, cond, insn)
 	       || GET_CODE (testreg) == SIGN_EXTRACT
 	       || GET_CODE (testreg) == SUBREG)
 	  {
+#ifdef CLASS_CANNOT_CHANGE_MODE
 	    if (GET_CODE (testreg) == SUBREG
 		&& GET_CODE (SUBREG_REG (testreg)) == REG
 		&& REGNO (SUBREG_REG (testreg)) >= FIRST_PSEUDO_REGISTER
-		&& (GET_MODE_SIZE (GET_MODE (testreg))
-		    != GET_MODE_SIZE (GET_MODE (SUBREG_REG (testreg)))))
-	      REG_CHANGES_SIZE (REGNO (SUBREG_REG (testreg))) = 1;
+		&& CLASS_CANNOT_CHANGE_MODE_P (GET_MODE (SUBREG_REG (testreg)),
+					       GET_MODE (testreg)))
+	      REG_CHANGES_MODE (REGNO (SUBREG_REG (testreg))) = 1;
+#endif
 
 	    /* Modifying a single register in an alternate mode
 	       does not use any of the old value.  But these other

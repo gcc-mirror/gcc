@@ -737,12 +737,12 @@ gen_lowpart_common (mode, x)
 	       /* integrate.c can't handle parts of a return value register. */
 	       && (! REG_FUNCTION_VALUE_P (x)
 		   || ! rtx_equal_function_value_matters)
-#ifdef CLASS_CANNOT_CHANGE_SIZE
-	       && ! (GET_MODE_SIZE (mode) != GET_MODE_SIZE (GET_MODE (x))
+#ifdef CLASS_CANNOT_CHANGE_MODE
+	       && ! (CLASS_CANNOT_CHANGE_MODE_P (mode, GET_MODE (x))
 		     && GET_MODE_CLASS (GET_MODE (x)) != MODE_COMPLEX_INT
 		     && GET_MODE_CLASS (GET_MODE (x)) != MODE_COMPLEX_FLOAT
 		     && (TEST_HARD_REG_BIT
-			 (reg_class_contents[(int) CLASS_CANNOT_CHANGE_SIZE],
+			 (reg_class_contents[(int) CLASS_CANNOT_CHANGE_MODE],
 			  REGNO (x))))
 #endif
 	       /* We want to keep the stack, frame, and arg pointers

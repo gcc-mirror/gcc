@@ -1759,17 +1759,6 @@ extern enum reg_class reg_class_from_letter[];
  ? ((GET_MODE_SIZE (MODE) + 8 - 1) / 8)					\
  : ((GET_MODE_SIZE (MODE) + 4 - 1) / 4))
 
-/* If defined, a C expression for a class that contains registers which the
-   compiler must always access in a mode that is the same size as the mode in
-   which it loaded the register.
-
-   For the example, loading 32-bit integer or floating-point objects into
-   floating-point registers on the Alpha extends them to 64-bits.  Therefore
-   loading a 64-bit object and then storing it as a 32-bit object does not
-   store the low-order 32-bits, as would be the case for a normal register.
-   Therefore, `alpha.h' defines this macro as `FLOAT_REGS'.  */
-/* #define CLASS_CANNOT_CHANGE_SIZE */
-
 /* A C expression that defines the machine-dependent operand constraint letters
    (`I', `J', `K', .. 'P') that specify particular ranges of integer values.
    If C is one of those letters, the expression should check that VALUE, an

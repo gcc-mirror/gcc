@@ -140,10 +140,10 @@ struct qty
 
   short phys_reg;
 
-  /* Nonzero if this quantity has been used in a SUBREG that changes
-     its size.  */
+  /* Nonzero if this quantity has been used in a SUBREG in some
+     way that is illegal.  */
 
-  char changes_size;
+  char changes_mode;
 
 };
 
@@ -301,7 +301,7 @@ alloc_qty (regno, mode, size, birth)
   qty[qtyno].min_class = reg_preferred_class (regno);
   qty[qtyno].alternate_class = reg_alternate_class (regno);
   qty[qtyno].n_refs = REG_N_REFS (regno);
-  qty[qtyno].changes_size = REG_CHANGES_SIZE (regno);
+  qty[qtyno].changes_mode = REG_CHANGES_MODE (regno);
 }
 
 /* Main entry point of this file.  */
@@ -1795,8 +1795,8 @@ update_qty_class (qtyno, reg)
   if (reg_class_subset_p (rclass, qty[qtyno].alternate_class))
     qty[qtyno].alternate_class = rclass;
 
-  if (REG_CHANGES_SIZE (reg))
-    qty[qtyno].changes_size = 1;
+  if (REG_CHANGES_MODE (reg))
+    qty[qtyno].changes_mode = 1;
 }
 
 /* Handle something which alters the value of an rtx REG.
@@ -1997,10 +1997,10 @@ find_free_reg (class, mode, qtyno, accept_call_clobbered, just_try_suggested,
   SET_HARD_REG_BIT (used, FRAME_POINTER_REGNUM);
 #endif
 
-#ifdef CLASS_CANNOT_CHANGE_SIZE
-  if (qty[qtyno].changes_size)
+#ifdef CLASS_CANNOT_CHANGE_MODE
+  if (qty[qtyno].changes_mode)
     IOR_HARD_REG_SET (used,
-		      reg_class_contents[(int) CLASS_CANNOT_CHANGE_SIZE]);
+		      reg_class_contents[(int) CLASS_CANNOT_CHANGE_MODE]);
 #endif
 
   /* Normally, the registers that can be used for the first register in

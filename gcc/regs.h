@@ -55,7 +55,8 @@ typedef struct reg_info_def
   int live_length;		/* # of instructions (REG n) is live */
   int calls_crossed;		/* # of calls (REG n) is live across */
   int basic_block;		/* # of basic blocks (REG n) is used in */
-  char changes_size;		/* whether (SUBREG (REG n)) changes size */
+  char changes_mode;		/* whether (SUBREG (REG n)) exists and 
+				   is illegal.  */
 } reg_info;
 
 extern varray_type reg_n_info;
@@ -80,10 +81,11 @@ extern varray_type reg_n_info;
 #define REG_N_DEATHS(N) (VARRAY_REG (reg_n_info, N)->deaths)
 
 /* Indexed by N; says whether a pseudo register N was ever used
-   within a SUBREG that changes the size of the reg.  Some machines prohibit
-   such objects to be in certain (usually floating-point) registers.  */
+   within a SUBREG that changes the mode of the reg in some way
+   that is illegal for a given class (usually floating-point)
+   of registers.  */
 
-#define REG_CHANGES_SIZE(N) (VARRAY_REG (reg_n_info, N)->changes_size)
+#define REG_CHANGES_MODE(N) (VARRAY_REG (reg_n_info, N)->changes_mode)
 
 /* Get the number of consecutive words required to hold pseudo-reg N.  */
 

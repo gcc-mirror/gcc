@@ -1,3 +1,38 @@
+2000-06-13  Richard Henderson  <rth@cygnus.com>
+
+	* combine.c (subst): Use CLASS_CANNOT_CHANGE_MODE and
+	CLASS_CANNOT_CHANGE_MODE_P instead of CLASS_CANNOT_CHANGE_SIZE
+	and hard-coded tests.
+	(simplify_set): Likewise.
+	(gen_lowpart_for_combine): Likewise.
+	* emit-rtl.c (gen_lowpart_common): Likewise.
+	* global.c (find_reg): Likewise.
+	* local-alloc.c (find_free_reg): Likewise.
+	* recog.c (register_operand): Likewise.
+	* regclass.c (init_reg_sets_1): Likewise.
+	(record_operand_costs, regclass): Likewise.
+	* reload.c (push_reload): Likewise.
+	* reload1.c (choose_reload_regs): Likewise.
+	* flow.c (mark_used_regs): Conditionally set REG_CHANGES_MODE.
+	* local-alloc.c (struct qty): Rename changes_size to changes_mode.
+	Update all references.
+	* regs.h (struct reg_info_def): Likewise.
+	(REG_CHANGES_MODE): Rename from REG_CHANGES_SIZE.
+	* tm.texi (CLASS_CANNOT_CHANGE_MODE): Document.
+	(CLASS_CANNOT_CHANGE_MODE_P): Likewise.
+
+	* config/alpha/alpha.h (CLASS_CANNOT_CHANGE_MODE): Rename.
+	(CLASS_CANNOT_CHANGE_MODE_P): New.
+	* config/mips/mips.h: Likewise.
+	* config/pa/pa32-regs.h: Likewise.
+	* config/pa/pa64-regs.h: Likewise.
+	* config/rs6000/rs6000.h: Likewise.
+	* config/sh/sh.h: Likewise.
+	* config/ia64/ia64.h (CLASS_CANNOT_CHANGE_MODE): New.
+	(CLASS_CANNOT_CHANGE_MODE_P): New.
+	* config/avr/avr.h (CLASS_CANNOT_CHANGE_SIZE): Remove dead code.
+	* config/d30v/d30v.h: Likewise.
+
 2000-06-13  J. David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* configure.in: Add AC_TYPE_GETGROUPS test.

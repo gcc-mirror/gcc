@@ -825,9 +825,14 @@ extern enum reg_class reg_class_from_letter[];
      ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
 
 /* If defined, gives a class of registers that cannot be used as the
-   operand of a SUBREG that changes the size of the object.  */
+   operand of a SUBREG that changes the mode of the object illegally.  */
 
-#define CLASS_CANNOT_CHANGE_SIZE	DF_REGS
+#define CLASS_CANNOT_CHANGE_MODE        DF_REGS
+
+/* Defines illegal mode changes for CLASS_CANNOT_CHANGE_MODE.  */
+
+#define CLASS_CANNOT_CHANGE_MODE_P(FROM,TO) \
+  (GET_MODE_SIZE (FROM) != GET_MODE_SIZE (TO))
 
 /* Stack layout; function entry, exit and calling.  */
 

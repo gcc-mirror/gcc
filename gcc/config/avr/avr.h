@@ -848,22 +848,6 @@ enum reg_class {
    This macro helps control the handling of multiple-word values in
    the reload pass.  */
 
-#undef CLASS_CANNOT_CHANGE_SIZE
-/* `CLASS_CANNOT_CHANGE_SIZE'
-   If defined, a C expression for a class that contains registers
-   which the compiler must always access in a mode that is the same
-   size as the mode in which it loaded the register.
-
-   For the example, loading 32-bit integer or floating-point objects
-   into floating-point registers on the Alpha extends them to 64-bits.
-   Therefore loading a 64-bit object and then storing it as a 32-bit
-   object does not store the low-order 32-bits, as would be the case
-   for a normal register.  Therefore, `alpha.h' defines this macro as
-   `FLOAT_REGS'.
-
-   Three other special macros describe which operands fit which
-   constraint letters.  */
-
 #define CONST_OK_FOR_LETTER_P(VALUE, C)				\
   ((C) == 'I' ? (VALUE) >= 0 && (VALUE) <= 63 :			\
    (C) == 'J' ? (VALUE) <= 0 && (VALUE) >= -63:			\

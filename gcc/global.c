@@ -999,10 +999,10 @@ find_reg (num, losers, alt_regs_p, accept_call_clobbered, retrying)
 
   IOR_HARD_REG_SET (used1, allocno[num].hard_reg_conflicts);
 
-#ifdef CLASS_CANNOT_CHANGE_SIZE
-  if (REG_CHANGES_SIZE (allocno[num].reg))
+#ifdef CLASS_CANNOT_CHANGE_MODE
+  if (REG_CHANGES_MODE (allocno[num].reg))
     IOR_HARD_REG_SET (used1,
-		      reg_class_contents[(int) CLASS_CANNOT_CHANGE_SIZE]);
+		      reg_class_contents[(int) CLASS_CANNOT_CHANGE_MODE]);
 #endif
 
   /* Try each hard reg to see if it fits.  Do this in two passes.
@@ -1189,10 +1189,10 @@ find_reg (num, losers, alt_regs_p, accept_call_clobbered, retrying)
 	      /* Don't use a reg no good for this pseudo.  */
 	      && ! TEST_HARD_REG_BIT (used2, regno)
 	      && HARD_REGNO_MODE_OK (regno, mode)
-#ifdef CLASS_CANNOT_CHANGE_SIZE
-	      && ! (REG_CHANGES_SIZE (allocno[num].reg)
+#ifdef CLASS_CANNOT_CHANGE_MODE
+	      && ! (REG_CHANGES_MODE (allocno[num].reg)
 		    && (TEST_HARD_REG_BIT
-			(reg_class_contents[(int) CLASS_CANNOT_CHANGE_SIZE],
+			(reg_class_contents[(int) CLASS_CANNOT_CHANGE_MODE],
 			 regno)))
 #endif
 	      )
