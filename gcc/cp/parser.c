@@ -6953,7 +6953,8 @@ cp_parser_simple_declaration (cp_parser* parser,
        T t;
 
      where "T" should name a type -- but does not.  */
-  if (cp_parser_parse_and_diagnose_invalid_type_name (parser))
+  if (!decl_specifiers.type
+      && cp_parser_parse_and_diagnose_invalid_type_name (parser))
     {
       /* If parsing tentatively, we should commit; we really are
 	 looking at a declaration.  */
@@ -12880,6 +12881,13 @@ cp_parser_member_specification_opt (cp_parser* parser)
 	  break;
 
 	default:
+	  /* Accept #pragmas at class scope.  */
+	  if (token->type == CPP_PRAGMA)
+	    {
+	      cp_lexer_handle_pragma (parser->lexer);
+	      break;
+	    }
+
 	  /* Otherwise, the next construction must be a
 	     member-declaration.  */
 	  cp_parser_member_declaration (parser);
@@ -12963,7 +12971,8 @@ cp_parser_member_declaration (cp_parser* parser)
   prefix_attributes = decl_specifiers.attributes;
   decl_specifiers.attributes = NULL_TREE;
   /* Check for an invalid type-name.  */
-  if (cp_parser_parse_and_diagnose_invalid_type_name (parser))
+  if (!decl_specifiers.type
+      && cp_parser_parse_and_diagnose_invalid_type_name (parser))
     return;
   /* If there is no declarator, then the decl-specifier-seq should
      specify a type.  */
