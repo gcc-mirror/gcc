@@ -1254,6 +1254,9 @@ parse_output_constraint (const char **constraint_p, int operand_num,
 	break;
       }
 
+  if (*is_inout && !*allows_reg)
+    warning ("read-write constraint does not allow a register");
+
   return true;
 }
 
@@ -1269,6 +1272,7 @@ parse_input_constraint (const char **constraint_p, int input_num,
   const char *orig_constraint = constraint;
   size_t c_len = strlen (constraint);
   size_t j;
+  bool saw_match = false;
 
   /* Assume the constraint doesn't allow the use of either
      a register or memory.  */
@@ -1319,6 +1323,8 @@ parse_input_constraint (const char **constraint_p, int input_num,
 	{
 	  char *end;
 	  unsigned long match;
+
+	  saw_match = true;
 
 	  match = strtoul (constraint + j, &end, 10);
 	  if (match >= (unsigned long) noutputs)
@@ -1383,6 +1389,9 @@ parse_input_constraint (const char **constraint_p, int input_num,
 #endif
 	break;
       }
+
+  if (saw_match && !*allows_reg)
+    warning ("matching constraint does not allow a register");
 
   return true;
 }

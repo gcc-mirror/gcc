@@ -1,3 +1,13 @@
+2003-12-19  Jason Merrill  <jason@redhat.com>
+
+	* tree.c (get_unwidened): Decide whether to narrow a bitfield
+	reference based on TYPE_SIZE, not TYPE_PRECISION.
+
+	* stmt.c (parse_output_constraint): Warn about in-out constraint
+	that doesn't allow a register.
+	(parse_input_constraint): Warn about matching constraint that
+	doesn't allow a register.
+
 2003-12-19  James E Wilson  <wilson@specifixinc.com>
 
 	* flow.c (mark_set_regs, case PARALLEL): Scan loop forwards.
@@ -27,10 +37,12 @@
 	decimal formats.
 
 2003-12-19  Stuart Hastings  <stuart@apple.com>
+
 	* gcc/config/i386/i386.c (ix86_expand_call, x86_output_mi_thunk):
 	Trivial fixes for i386.c on Darwin/x86.
 	
 2003-12-19  Fariborz Jahanian <fjahanian@apple.com>
+
         * config/rs6000/rs6000.c (legitimate_lo_sum_address_p): Add code to
         recognize macho-style lo_sum adrress patterns.
 

@@ -24,6 +24,8 @@
 
 	PR c++/13371
 	* typeck.c (build_modify_expr): Stabilize lhs if we're narrowing.
+	* cvt.c (convert_to_void): Don't warn about the RHS of a comma
+	being useless if TREE_NO_UNUSED_WARNING is set.
 
 2003-12-18  Richard Henderson  <rth@redhat.com>
 
