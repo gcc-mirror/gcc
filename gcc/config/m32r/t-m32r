@@ -41,14 +41,16 @@ $(T)crtfini.o: $(srcdir)/config/m32r/initfini.c $(GCC_PASSES) $(CONFIG_H)
 	-o $(T)crtfini.o 
 m32rx:
 	mkdir $@
+m32r2:
+	mkdir $@
 
 # -mmodel={small,medium} requires separate libraries.
 # We don't build libraries for the large model, instead we use the medium
 # libraries.  The only difference is that the large model can handle jumps
 # more than 26 signed bits away.
 
-MULTILIB_OPTIONS = mmodel=small/mmodel=medium m32r/m32rx
-MULTILIB_DIRNAMES = small medium m32r m32rx
+MULTILIB_OPTIONS = mmodel=small/mmodel=medium m32r/m32rx/m32r2 
+MULTILIB_DIRNAMES = small medium m32r m32rx m32r2
 MULTILIB_MATCHES = mmodel?medium=mmodel?large
 
 # Set MULTILIB_EXTRA_OPTS so shipped libraries have small data in .sdata and

@@ -1,3 +1,12 @@
+2003-12-09  Kazuhiro Inaoka <inaoka.kazuhiro@renesas.com>
+
+	* config/m32r/m32r.h: Add support for m32r2 processor.  Including
+	a new command line option -m32r2 to select it.
+	* config/m32r/m32r.c: Add support for the new processor variant.
+	* config/m32r/m32r.md: Likewise.
+	* config/m32r/t-m32r: Add m32r2 multilibs.
+	* doc/invoke.texi: Document the new command line switch.
+
 2003-12-08  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* defaults.h (LOCAL_REGNO): Give the default definition.
