@@ -1930,9 +1930,9 @@ $(HOST_PREFIX_1):
 	touch $(HOST_PREFIX_1)
 
 $(HOST_PREFIX_1)ggc-none.o: ggc-none.c
-       rm -f $(HOST_PREFIX)ggc-none.c
-       sed -e 's/config[.]h/hconfig.h/' $(srcdir)/ggc-none.c > $(HOST_PREFIX)ggc-none.c
-       $(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(HOST_PREFIX)ggc-none.c
+	rm -f $(HOST_PREFIX)ggc-none.c
+	sed -e 's/config[.]h/hconfig.h/' $(srcdir)/ggc-none.c > $(HOST_PREFIX)ggc-none.c
+	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(HOST_PREFIX)ggc-none.c
 
 
 #
