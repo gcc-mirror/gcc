@@ -1,3 +1,7 @@
+2004-10-25  James E Wilson  <wilson@specifixinc.com>
+
+	* doc/invoke.texi (-fcrossjumping): Not enabled at -O.
+
 2004-10-25  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	PR c/16667
