@@ -1,3 +1,8 @@
+Tue Apr  2 06:47:40 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* stor-layout.c (layout_type, case ARRAY_TYPE): Give one-element array
+	the same mode as its component.
+
 2002-04-02  Richard Henderson  <rth@redhat.com>
 
 	PR opt/190

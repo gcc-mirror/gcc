@@ -1584,8 +1584,13 @@ layout_type (type)
 	    && (TYPE_MODE (TREE_TYPE (type)) != BLKmode
 		|| TYPE_NO_FORCE_BLK (TREE_TYPE (type))))
 	  {
-	    TYPE_MODE (type)
-	      = mode_for_size_tree (TYPE_SIZE (type), MODE_INT, 1);
+	    /* One-element arrays get the component type's mode.  */
+	    if (simple_cst_equal (TYPE_SIZE (type),
+				  TYPE_SIZE (TREE_TYPE (type))))
+	      TYPE_MODE (type) = TYPE_MODE (TREE_TYPE (type));
+	    else
+	      TYPE_MODE (type)
+		= mode_for_size_tree (TYPE_SIZE (type), MODE_INT, 1);
 
 	    if (TYPE_MODE (type) != BLKmode
 		&& STRICT_ALIGNMENT && TYPE_ALIGN (type) < BIGGEST_ALIGNMENT
