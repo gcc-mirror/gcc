@@ -8,4 +8,4 @@
 
 #pragma redefine_extname foo bar
 extern int foo(void);
-void *p = (void *)foo;
+int (*p)(void) = foo;
