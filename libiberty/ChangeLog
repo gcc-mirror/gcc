@@ -1,3 +1,8 @@
+2000-05-16  Horst von Brand <vonbrand@sleipnir.valparaiso.cl>
+
+        * hashtab.c (hash_pointer): Delete low-order bits which are
+	probably zero, also eliminate a warning on alpha.
+
 2000-05-15  David Edelsohn  <edelsohn@gnu.org>
 
 	* Makefile.in: Change "pic" to depend on $(PICFLAG), not

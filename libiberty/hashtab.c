@@ -104,7 +104,7 @@ static hashval_t
 hash_pointer (p)
      const void *p;
 {
-  return (hashval_t) p;
+  return (hashval_t) ((long)p >> 3);
 }
 
 /* Returns non-zero if P1 and P2 are equal.  */
