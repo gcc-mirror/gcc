@@ -27,6 +27,7 @@ mcore			Nick Clifton		nickc@redhat.com
 			Jim Dein		jdein@windriver.com
 mn10200 port		Jeff Law		law@cygnus.com
 mn10300 port		Jeff Law		law@cygnus.com
+mn10300 port		Alexandre Oliva		aoliva@cygnus.com
 hppa port		Jeff Law		law@cygnus.com
 m68k port (?)		Jeff Law		law@cygnus.com
 m68k-motorola-sysv port	Philippe De Muyter	phdm@macqel.be
