@@ -4073,6 +4073,7 @@ main (argc, argv, envp)
 		      p = str + strlen (da->arg);
 		      if (*p && (*p < '0' || *p > '9'))
 			continue;
+		      len = p - str;
 		      q = p;
 		      while (*q && (*q >= '0' && *q <= '9'))
 			q++;
