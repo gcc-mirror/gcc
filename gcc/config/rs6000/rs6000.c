@@ -39,6 +39,10 @@ Boston, MA 02111-1307, USA.  */
 #include "except.h"
 #include "function.h"
 
+#if HAVE_STDLIB_H
+# include <stdlib.h>
+#endif
+
 #ifndef TARGET_NO_PROTOTYPE
 #define TARGET_NO_PROTOTYPE 0
 #endif
@@ -157,7 +161,7 @@ void
 rs6000_override_options (default_cpu)
      char *default_cpu;
 {
-  int i, j;
+  size_t i, j;
   struct rs6000_cpu_select *ptr;
 
   /* Simplify the entries below by making a mask for any POWER
@@ -241,7 +245,7 @@ rs6000_override_options (default_cpu)
 	    MASK_POWERPC | MASK_SOFT_FLOAT | MASK_NEW_MNEMONICS,
 	    POWER_MASKS | POWERPC_OPT_MASKS | MASK_POWERPC64}};
 
-  int ptt_size = sizeof (processor_target_table) / sizeof (struct ptt);
+  size_t ptt_size = sizeof (processor_target_table) / sizeof (struct ptt);
 
   int multiple = TARGET_MULTIPLE;	/* save current -mmultiple/-mno-multiple status */
   int string   = TARGET_STRING;		/* save current -mstring/-mno-string status */
@@ -337,7 +341,7 @@ rs6000_file_start (file, default_cpu)
      FILE *file;
      char *default_cpu;
 {
-  int i;
+  size_t i;
   char buffer[80];
   char *start = buffer;
   struct rs6000_cpu_select *ptr;
@@ -1187,22 +1191,22 @@ init_cumulative_args (cum, fntype, libname, incoming)
    For the AIX ABI structs are always stored left shifted in their
    argument slot.  */
 
-enum direction
+int
 function_arg_padding (mode, type)
      enum machine_mode mode;
      tree type;
 {
   if (type != 0 && AGGREGATE_TYPE_P (type))
-    return upward;
+    return (int)upward;
 
   /* This is the default definition.  */
   return (! BYTES_BIG_ENDIAN
-          ? upward
+          ? (int)upward
           : ((mode == BLKmode
               ? (type && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
                  && int_size_in_bytes (type) < (PARM_BOUNDARY / BITS_PER_UNIT))
               : GET_MODE_BITSIZE (mode) < PARM_BOUNDARY)
-             ? downward : upward));
+             ? (int)downward : (int)upward));
 }
 
 /* If defined, a C expression that gives the alignment boundary, in bits,
@@ -2221,6 +2225,9 @@ rs6000_replace_regno (x, from, reg)
 	}
 
       return x;
+
+    default:
+      break;
     }
 
   fmt = GET_RTX_FORMAT (GET_CODE (x));
@@ -3875,7 +3882,6 @@ output_epilog (file, size)
   rtx insn = get_last_insn ();
   int sp_reg = 1;
   int sp_offset = 0;
-  int i;
 
   /* If the last insn was a BARRIER, we don't have to write anything except
      the trace table.  */
@@ -4946,9 +4952,6 @@ rs6000_longcall_ref (call_ref)
      rtx call_ref;
 {
   char *call_name;
-  int len;
-  char *p;
-  rtx reg1, reg2;
   tree node;
 
   if (GET_CODE (call_ref) != SYMBOL_REF)

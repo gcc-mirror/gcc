@@ -1,3 +1,30 @@
+Wed Mar 25 16:09:01 1998  Michael Meissner  <meissner@cygnus.com>
+
+	* rs6000.h (FUNCTION_ARG_PADDING): Cast result to be enum
+	direction.
+	(function_arg_padding): Declare.
+
+	* rs6000.c: Include stdlib.h if we have it.
+	(function_arg_padding): Change return type to int, cast enum's to
+	int.
+
+	(From Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>)
+	* rs6000.c (rs6000_override_options): Change type of `i', `j' and
+	`ptt_size' from int to size_t.
+	(rs6000_file_start): Likewise for `i'.
+	(rs6000_replace_regno): Add default case in enumeration switch.
+	(output_epilog): Remove unused variable `i'.
+	(rs6000_longcall_ref): Remove unused variables `len', `p', `reg1'
+	and `reg2'.
+ 
+	* rs6000.h (ADDITIONAL_REGISTER_NAMES): Add missing braces around
+	initializer.
+	(get_issue_rate, non_logical_cint_operand): Add prototype.
+	(rs6000_output_load_toc_table): Ditto.
+ 
+	* rs6000.md (udivmodsi4): Add explicit braces to avoid ambiguous
+	`else'.
+ 
 Wed Mar 25 02:39:01 1998  Paul Eggert  <eggert@twinsun.com>
 
 	* configure.in (i[[34567]]86-*-solaris2*, powerpcle-*-solaris2*,
