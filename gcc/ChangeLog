@@ -1,3 +1,8 @@
+2004-10-30  Geoffrey Keating  <geoffk@apple.com>
+
+	* doc/invoke.texi (Darwin Options): Improve description of
+	how the subtype is chosen.
+
 2004-10-30  Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/18096
