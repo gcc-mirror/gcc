@@ -744,9 +744,19 @@ branch_prob (f, dump_file)
 	      tablejump = pattern;
 	    else if (GET_CODE (pattern) == RETURN)
 	      dest = num_blocks - 1;
+	    else if (GET_CODE (pattern) != SET)
+	      abort ();
 	    else if ((tem = SET_SRC (pattern))
 		     && GET_CODE (tem) == LABEL_REF)
 	      dest = label_to_bb[CODE_LABEL_NUMBER (XEXP (tem, 0))];
+	    /* Recognize HPPA table jump entry.  This code is similar to
+	       the code above in the PARALLEL case.  */
+	    else if (GET_CODE (tem) == PLUS
+		     && GET_CODE (XEXP (tem, 0)) == MEM
+		     && GET_CODE (XEXP (XEXP (tem, 0), 0)) == PLUS
+		     && GET_CODE (XEXP (XEXP (XEXP (tem, 0), 0), 0)) == PC
+		     && GET_CODE (XEXP (tem, 1)) == LABEL_REF)
+	      dest = label_to_bb[CODE_LABEL_NUMBER (XEXP (XEXP (tem, 1), 0))];
 	    else
 	      {
 		rtx label_ref;

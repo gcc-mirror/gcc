@@ -1,5 +1,8 @@
 Tue Mar 31 16:57:33 1998  Jim Wilson  <wilson@cygnus.com>
 
+	* profile.c (branch_prob): Add code to recognize HPPA tablejump entry
+	branch.
+
 	* toplev.c (rest_of__compilation): Call init_recog_no_volatile at end.
 
 Mon Mar 30 13:11:05 1998  Stan Cox  <scox@cygnus.com>
