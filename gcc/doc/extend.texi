@@ -1069,7 +1069,8 @@ This will work with all versions of GCC@.
 
 Compound expressions, conditional expressions and casts are allowed as
 lvalues provided their operands are lvalues.  This means that you can take
-their addresses or store values into them.
+their addresses or store values into them.  All these extensions are
+deprecated.
 
 Standard C++ allows compound expressions and conditional expressions
 as lvalues, and permits casts to reference type, so use of this

@@ -1,3 +1,12 @@
+2003-11-08  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* c-typeck.c (pedantic_lvalue_warning): Deprecate compound
+	expressions as lvalues.
+	(internal_build_compound_expr): Remove special handling for
+	non-pedantic case.
+	* doc/extend.texi: Document that all extended lvalues are now
+	deprecated.
+
 2003-11-07  Geoffrey Keating  <geoffk@apple.com>
 
 	PR 11654
