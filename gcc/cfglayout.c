@@ -412,6 +412,7 @@ fixup_reorder_chain ()
 		    {
 		      e_fall->flags &= ~EDGE_FALLTHRU;
 		      e_taken->flags |= EDGE_FALLTHRU;
+		      update_br_prob_note (bb);
 		      e = e_fall, e_fall = e_taken, e_taken = e;
 		    }
 		}
@@ -423,6 +424,7 @@ fixup_reorder_chain ()
 		{
 		  e_fall->flags &= ~EDGE_FALLTHRU;
 		  e_taken->flags |= EDGE_FALLTHRU;
+		  update_br_prob_note (bb);
 		  continue;
 		}
 	    }

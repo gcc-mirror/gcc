@@ -2204,9 +2204,7 @@ hash_scan_set (pat, insn, set_p)
 		    && REGNO (src) >= FIRST_PSEUDO_REGISTER
 		    && can_copy_p [GET_MODE (dest)]
 		    && REGNO (src) != regno)
-		   || GET_CODE (src) == CONST_INT
-		   || GET_CODE (src) == SYMBOL_REF
-		   || GET_CODE (src) == CONST_DOUBLE)
+		   || CONSTANT_P (src))
 	       /* A copy is not available if its src or dest is subsequently
 		  modified.  Here we want to search from INSN+1 on, but
 		  oprs_available_p searches from INSN on.  */
@@ -4155,8 +4153,7 @@ cprop_insn (bb, insn, alter_jumps)
       src = SET_SRC (pat);
 
       /* Constant propagation.  */
-      if (GET_CODE (src) == CONST_INT || GET_CODE (src) == CONST_DOUBLE
-	  || GET_CODE (src) == SYMBOL_REF)
+      if (CONSTANT_P (src))
 	{
 	  /* Handle normal insns first.  */
 	  if (GET_CODE (insn) == INSN

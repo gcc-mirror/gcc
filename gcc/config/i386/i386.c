@@ -4349,8 +4349,10 @@ ix86_expand_epilogue (style)
 }
 
 /* Extract the parts of an RTL expression that is a valid memory address
-   for an instruction.  Return false if the structure of the address is
-   grossly off.  */
+   for an instruction.  Return 0 if the structure of the address is
+   grossly off.  Return -1 if the address contains ASHIFT, so it is not
+   strictly valid, but still used for computing length of lea instruction.
+   */
 
 static int
 ix86_decompose_address (addr, out)
@@ -4362,6 +4364,7 @@ ix86_decompose_address (addr, out)
   rtx disp = NULL_RTX;
   HOST_WIDE_INT scale = 1;
   rtx scale_rtx = NULL_RTX;
+  int retval = 1;
 
   if (GET_CODE (addr) == REG || GET_CODE (addr) == SUBREG)
     base = addr;
@@ -4402,7 +4405,7 @@ ix86_decompose_address (addr, out)
 	  disp = op1;
 	}
       else
-	return FALSE;
+	return 0;
     }
   else if (GET_CODE (addr) == MULT)
     {
@@ -4417,11 +4420,12 @@ ix86_decompose_address (addr, out)
       index = XEXP (addr, 0);
       tmp = XEXP (addr, 1);
       if (GET_CODE (tmp) != CONST_INT)
-	return FALSE;
+	return 0;
       scale = INTVAL (tmp);
       if ((unsigned HOST_WIDE_INT) scale > 3)
-	return FALSE;
+	return 0;
       scale = 1 << scale;
+      retval = -1;
     }
   else
     disp = addr;			/* displacement */
@@ -4430,7 +4434,7 @@ ix86_decompose_address (addr, out)
   if (scale_rtx)
     {
       if (GET_CODE (scale_rtx) != CONST_INT)
-	return FALSE;
+	return 0;
       scale = INTVAL (scale_rtx);
     }
 
@@ -4471,7 +4475,7 @@ ix86_decompose_address (addr, out)
   out->disp = disp;
   out->scale = scale;
 
-  return TRUE;
+  return retval;
 }
 
 /* Return cost of the memory address x.
@@ -4684,7 +4688,7 @@ legitimate_address_p (mode, addr, strict)
       debug_rtx (addr);
     }
 
-  if (! ix86_decompose_address (addr, &parts))
+  if (ix86_decompose_address (addr, &parts) <= 0)
     {
       reason = "decomposition failed";
       goto report_error;

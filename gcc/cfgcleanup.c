@@ -177,6 +177,7 @@ try_simplify_condjump (cbranch_block)
 						    jump_dest_block);
   cbranch_jump_edge->flags |= EDGE_FALLTHRU;
   cbranch_fallthru_edge->flags &= ~EDGE_FALLTHRU;
+  update_br_prob_note (cbranch_block);
 
   /* Delete the block with the unconditional jump, and clean up the mess.  */
   flow_delete_block (jump_block);
@@ -521,7 +522,11 @@ try_forward_edges (mode, b)
 	      edge t;
 
 	      first->count -= edge_count;
+	      if (first->count < 0)
+		first->count = 0;
 	      first->frequency -= edge_frequency;
+	      if (first->frequency < 0)
+		first->frequency = 0;
 	      if (first->succ->succ_next)
 		{
 		  edge e;
@@ -535,9 +540,11 @@ try_forward_edges (mode, b)
 		    prob = edge_frequency * REG_BR_PROB_BASE / first->frequency;
 		  else
 		    prob = 0;
+		  if (prob > t->probability)
+		    prob = t->probability;
 		  t->probability -= prob;
 		  prob = REG_BR_PROB_BASE - prob;
-		  if (prob == 0)
+		  if (prob <= 0)
 		    {
 		      first->succ->probability = REG_BR_PROB_BASE;
 		      first->succ->succ_next->probability = 0;
@@ -546,6 +553,7 @@ try_forward_edges (mode, b)
 		    for (e = first->succ; e; e = e->succ_next)
 		      e->probability = ((e->probability * REG_BR_PROB_BASE)
 					/ (double) prob);
+		  update_br_prob_note (first);
 		}
 	      else
 		{
@@ -558,8 +566,10 @@ try_forward_edges (mode, b)
 		    n++;
 		  t = first->succ;
 		 }
-	      t->count -= edge_count;
 
+	      t->count -= edge_count;
+	      if (t->count < 0)
+		t->count = 0;
 	      first = t->dest;
 	    }
 	  while (first != target);
@@ -745,6 +755,7 @@ merge_blocks (e, b, c, mode)
   /* If B has a fallthru edge to C, no need to move anything.  */
   if (e->flags & EDGE_FALLTHRU)
     {
+      int b_index = b->index, c_index = c->index;
       /* We need to update liveness in case C already has broken liveness
 	 or B ends by conditional jump to next instructions that will be
 	 removed.  */
@@ -756,7 +767,7 @@ merge_blocks (e, b, c, mode)
 
       if (rtl_dump_file)
 	fprintf (rtl_dump_file, "Merged %d and %d without moving.\n",
-		 b->index, c->index);
+                 b_index, c_index);
 
       return true;
     }
@@ -1147,32 +1158,30 @@ outgoing_edges_match (mode, bb1, bb2)
 	 we will only have one branch prediction bit to work with.  Thus
 	 we require the existing branches to have probabilities that are
 	 roughly similar.  */
-      /* ??? We should use bb->frequency to allow merging in infrequently
-	 executed blocks, but at the moment it is not available when
-	 cleanup_cfg is run.  */
-      if (match && !optimize_size)
+      if (match
+	  && !optimize_size
+	  && bb1->frequency > BB_FREQ_MAX / 1000
+	  && bb2->frequency > BB_FREQ_MAX / 1000)
 	{
-	  rtx note1, note2;
-	  int prob1, prob2;
+	  int prob2;
 
-	  note1 = find_reg_note (bb1->end, REG_BR_PROB, 0);
-	  note2 = find_reg_note (bb2->end, REG_BR_PROB, 0);
+	  if (b1->dest == b2->dest)
+	    prob2 = b2->probability;
+	  else
+	    /* Do not use f2 probability as f2 may be forwarded.  */
+	    prob2 = REG_BR_PROB_BASE - b2->probability;
 
-	  if (note1 && note2)
+	  /* Fail if the difference in probabilities is
+	     greater than 5%.  */
+	  if (abs (b1->probability - prob2) > REG_BR_PROB_BASE / 20)
 	    {
-	      prob1 = INTVAL (XEXP (note1, 0));
-	      prob2 = INTVAL (XEXP (note2, 0));
-	      if (reverse)
-		prob2 = REG_BR_PROB_BASE - prob2;
+	      if (rtl_dump_file)
+		fprintf (rtl_dump_file,
+			 "Outcomes of branch in bb %i and %i differs to much (%i %i)\n",
+			 bb1->index, bb2->index, b1->probability, prob2);
 
-	      /* Fail if the difference in probabilities is
-		 greater than 5%.  */
-	      if (abs (prob1 - prob2) > REG_BR_PROB_BASE / 20)
-		return false;
+	      return false;
 	    }
-
-	  else if (note1 || note2)
-	    return false;
 	}
 
       if (rtl_dump_file && match)
@@ -1259,7 +1268,6 @@ try_crossjump_to_edge (mode, e1, e2)
   edge s;
   rtx last;
   rtx label;
-  rtx note;
 
   /* Search backward through forwarder blocks.  We don't need to worry
      about multiple entry or chained forwarders, as they will be optimized
@@ -1356,8 +1364,14 @@ try_crossjump_to_edge (mode, e1, e2)
       if (FORWARDER_BLOCK_P (s2->dest))
 	{
 	  s2->dest->succ->count -= s2->count;
+	  if (s2->dest->succ->count < 0)
+	    s2->dest->succ->count = 0;
 	  s2->dest->count -= s2->count;
 	  s2->dest->frequency -= EDGE_FREQUENCY (s);
+	  if (s2->dest->frequency < 0)
+	    s2->dest->frequency = 0;
+	  if (s2->dest->count < 0)
+	    s2->dest->count = 0;
 	}
 
       if (!redirect_to->frequency && !src1->frequency)
@@ -1369,9 +1383,7 @@ try_crossjump_to_edge (mode, e1, e2)
 	     / (redirect_to->frequency + src1->frequency));
     }
 
-  note = find_reg_note (redirect_to->end, REG_BR_PROB, 0);
-  if (note)
-    XEXP (note, 0) = GEN_INT (BRANCH_EDGE (redirect_to)->probability);
+  update_br_prob_note (redirect_to);
 
   /* Edit SRC1 to go to REDIRECT_TO at NEWPOS1.  */
 
