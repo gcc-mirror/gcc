@@ -1,3 +1,27 @@
+2003-04-01  David Mosberger <davidm@hpl.hp.com>
+
+        * config/ia64/crti.asm: Clean up trailing whitespace.
+        Remove trailing hashes (#) from identifiers.
+
+        * config/ia64/crtn.asm: Ditto.
+
+        * config/ia64/crtend.asm: Remove trailing hashes (#) from
+        identifiers.
+        (__do_global_ctors_aux): Align to 32-byte boundary.  Add unwind
+        directives.  Drop explicit bundling---it just makes the code
+        harder to read.  Don't save/restore gp needlessly.
+
+        * config/ia64/crtbegin.asm: Remove trailing hashes (#) from
+        identifiers (they're only needed if the identifier would clash
+        with a register name otherwise).
+        (__do_global_dtors_aux): Align to 32-byte boundary. Add unwind
+        directives.  Drop explicit bundling---it just makes the code
+        harder to read.
+        (__do_jv_register_classes): Ditto.
+        (.fini_array): Remove "progbits" (newer
+        assemblers don't like wrong section-types).
+        (.init_array): Ditto.
+
 2003-04-01  Roger Sayle  <roger@eyesopen.com>
 
 	PR fortran/9974
