@@ -1,6 +1,10 @@
+2002-05-14  Richard Henderson  <rth@redhat.com>
+
+	* config/i386/i386.c (ix86_save_reg): Make regno unsigned.
+	(ix86_safe_length, ix86_safe_length_prefix, ix86_safe_memory): Kill.
+
 2002-05-14  Neil Booth  <neil@daikokuya.demon.co.uk>
 
-config:
 	* arm/arm.h (TARGET_CPU_CPP_BUILTINS): Define.
 	(CPP_SPEC): Update.
 	(CPP_APCS_PC_SPEC, CPP_APCS_PC_DEFAULT_SPEC,
