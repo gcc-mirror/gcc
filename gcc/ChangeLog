@@ -1,3 +1,8 @@
+2002-02-14  Alexandre Oliva  <aoliva@redhat.com>
+
+	* function.c (assign_parms): Demote promoted argument passed by
+	transparent reference.
+
 2001-02-14	Joel Sherrill <joel@OARcorp.com>
 
 	* config/arm/rtems-elf.h, config/h8300/rtems.h: Removed redundant
