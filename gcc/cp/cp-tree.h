@@ -2586,7 +2586,7 @@ extern void expand_start_early_try_stmts	PROTO((void));
 extern void store_parm_decls			PROTO((void));
 extern void store_return_init			PROTO((tree, tree));
 extern void finish_function			PROTO((int, int, int));
-extern tree start_method			PROTO((tree, tree));
+extern tree start_method			PROTO((tree, tree, tree));
 extern tree finish_method			PROTO((tree));
 extern void hack_incomplete_structures		PROTO((tree));
 extern tree maybe_build_cleanup_and_delete	PROTO((tree));

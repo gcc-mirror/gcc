@@ -709,8 +709,10 @@ component_constructor_declarator:
    reduce/reduce conflict introduced by these rules.  */
 fn.def2:
 	  declmods component_constructor_declarator
-		{ tree specs = strip_attrs ($1);
-		  $$ = start_method (specs, $2);
+		{ tree specs, attrs;
+		  split_specs_attrs ($1, &specs, &attrs);
+		  attrs = build_tree_list (attrs, NULL_TREE);
+		  $$ = start_method (specs, $2, attrs);
 		 rest_of_mdef:
 		  if (! $$)
 		    YYERROR1;
@@ -718,20 +720,26 @@ fn.def2:
 		    yychar = YYLEX;
 		  reinit_parse_for_method (yychar, $$); }
 	| component_constructor_declarator
-		{ $$ = start_method (NULL_TREE, $1); goto rest_of_mdef; }
+		{ $$ = start_method (NULL_TREE, $1, NULL_TREE); 
+		  goto rest_of_mdef; }
 	| typed_declspecs declarator
-		{ tree specs = strip_attrs ($1.t);
-		  $$ = start_method (specs, $2); goto rest_of_mdef; }
+		{ tree specs, attrs;
+		  split_specs_attrs ($1.t, &specs, &attrs);
+		  $$ = start_method (specs, $2, attrs); goto rest_of_mdef; }
 	| declmods notype_declarator
-		{ tree specs = strip_attrs ($1);
-		  $$ = start_method (specs, $2); goto rest_of_mdef; }
+		{ tree specs, attrs;
+		  split_specs_attrs ($1, &specs, &attrs);
+		  $$ = start_method (specs, $2, attrs); goto rest_of_mdef; }
 	| notype_declarator
-		{ $$ = start_method (NULL_TREE, $$); goto rest_of_mdef; }
+		{ $$ = start_method (NULL_TREE, $$, NULL_TREE); 
+		  goto rest_of_mdef; }
 	| declmods constructor_declarator
-		{ tree specs = strip_attrs ($1);
-		  $$ = start_method (specs, $2); goto rest_of_mdef; }
+		{ tree specs, attrs;
+		  split_specs_attrs ($1, &specs, &attrs);
+		  $$ = start_method (specs, $2, attrs); goto rest_of_mdef; }
 	| constructor_declarator
-		{ $$ = start_method (NULL_TREE, $$); goto rest_of_mdef; }
+		{ $$ = start_method (NULL_TREE, $$, NULL_TREE); 
+		  goto rest_of_mdef; }
 	;
 
 return_id:
