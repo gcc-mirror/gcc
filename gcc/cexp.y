@@ -28,6 +28,7 @@ Boston, MA 02111-1307, USA.
 #include "config.h"
 #include "system.h"
 #include <setjmp.h>
+#include "gansidecl.h"
 /* #define YYDEBUG 1 */
 
 #ifdef HAVE_LIMITS_H
@@ -35,6 +36,7 @@ Boston, MA 02111-1307, USA.
 #endif
 
 #ifdef MULTIBYTE_CHARS
+#include "mbchar.h"
 #include <locale.h>
 #endif
 
@@ -113,13 +115,11 @@ struct arglist {
 
 #if defined (__STDC__) && defined (HAVE_VPRINTF)
 # include <stdarg.h>
-# define VA_START(va_list, var) va_start (va_list, var)
 # define PRINTF_ALIST(msg) char *msg, ...
 # define PRINTF_DCL(msg)
 # define PRINTF_PROTO(ARGS, m, n) PROTO (ARGS) __attribute__ ((format (__printf__, m, n)))
 #else
 # include <varargs.h>
-# define VA_START(va_list, var) va_start (va_list)
 # define PRINTF_ALIST(msg) msg, va_alist
 # define PRINTF_DCL(msg) char *msg; va_dcl
 # define PRINTF_PROTO(ARGS, m, n) () __attribute__ ((format (__printf__, m, n)))
@@ -681,23 +681,18 @@ yylex ()
     {
       register HOST_WIDE_INT result = 0;
       register int num_chars = 0;
+      int chars_seen = 0;
       unsigned width = MAX_CHAR_TYPE_SIZE;
       int max_chars;
-      char *token_buffer;
-
-      if (wide_flag)
-	{
-	  width = MAX_WCHAR_TYPE_SIZE;
 #ifdef MULTIBYTE_CHARS
-	  max_chars = MB_CUR_MAX;
-#else
-	  max_chars = 1;
+      int longest_char = local_mb_cur_max ();
+      char *token_buffer = (char *) alloca (longest_char);
+      (void) local_mbtowc (NULL_PTR, NULL_PTR, 0);
 #endif
-	}
-      else
-	max_chars = MAX_LONG_TYPE_SIZE / width;
 
-      token_buffer = (char *) alloca (max_chars + 1);
+      max_chars = MAX_LONG_TYPE_SIZE / width;
+      if (wide_flag)
+	width = MAX_WCHAR_TYPE_SIZE;
 
       while (1)
 	{
@@ -706,44 +701,96 @@ yylex ()
 	  if (c == '\'' || c == EOF)
 	    break;
 
+	  ++chars_seen;
 	  if (c == '\\')
 	    {
 	      c = parse_escape (&lexptr, mask);
 	    }
+	  else
+	    {
+#ifdef MULTIBYTE_CHARS
+	      wchar_t wc;
+	      int i;
+	      int char_len = -1;
+	      for (i = 1; i <= longest_char; ++i)
+		{
+		  token_buffer[i - 1] = c;
+		  char_len = local_mbtowc (& wc, token_buffer, i);
+		  if (char_len != -1)
+		    break;
+		  c = *lexptr++;
+		}
+	      if (char_len > 1)
+		{
+		  /* mbtowc sometimes needs an extra char before accepting */
+		  if (char_len < i)
+		    lexptr--;
+		  if (! wide_flag)
+		    {
+		      /* Merge character into result; ignore excess chars.  */
+		      for (i = 1; i <= char_len; ++i)
+			{
+			  if (i > max_chars)
+			    break;
+			  if (width < HOST_BITS_PER_INT)
+			    result = (result << width)
+			      | (token_buffer[i - 1]
+				 & ((1 << width) - 1));
+			  else
+			    result = token_buffer[i - 1];
+			}
+		      num_chars += char_len;
+		      continue;
+		    }
+		}
+	      else
+		{
+		  if (char_len == -1)
+		    warning ("Ignoring invalid multibyte character");
+		}
+	      if (wide_flag)
+		c = wc;
+#endif /* ! MULTIBYTE_CHARS */
+	    }
 
-	  num_chars++;
+	  if (wide_flag)
+	    {
+	      if (chars_seen == 1) /* only keep the first one */
+		result = c;
+	      continue;
+	    }
 
 	  /* Merge character into result; ignore excess chars.  */
+	  num_chars++;
 	  if (num_chars <= max_chars)
 	    {
-	      if (width < HOST_BITS_PER_WIDE_INT)
-		result = (result << width) | c;
+	      if (width < HOST_BITS_PER_INT)
+		result = (result << width) | (c & ((1 << width) - 1));
 	      else
 		result = c;
-	      token_buffer[num_chars - 1] = c;
 	    }
 	}
 
-      token_buffer[num_chars] = 0;
-
       if (c != '\'')
 	error ("malformatted character constant");
-      else if (num_chars == 0)
+      else if (chars_seen == 0)
 	error ("empty character constant");
       else if (num_chars > max_chars)
 	{
 	  num_chars = max_chars;
 	  error ("character constant too long");
 	}
-      else if (num_chars != 1 && ! traditional)
+      else if (chars_seen != 1 && ! traditional)
 	warning ("multi-character character constant");
 
       /* If char type is signed, sign-extend the constant.  */
       if (! wide_flag)
 	{
 	  int num_bits = num_chars * width;
-
-	  if (lookup ((U_CHAR *) "__CHAR_UNSIGNED__",
+	  if (num_bits == 0)
+	    /* We already got an error; avoid invalid shift.  */
+	    yylval.integer.value = 0;
+	  else if (lookup ((U_CHAR *) "__CHAR_UNSIGNED__",
 		      sizeof ("__CHAR_UNSIGNED__") - 1, -1)
 	      || ((result >> (num_bits - 1)) & 1) == 0)
 	    yylval.integer.value
@@ -756,22 +803,6 @@ yylex ()
 	}
       else
 	{
-#ifdef MULTIBYTE_CHARS
-	  /* Set the initial shift state and convert the next sequence.  */
-	  result = 0;
-	  /* In all locales L'\0' is zero and mbtowc will return zero,
-	     so don't use it.  */
-	  if (num_chars > 1
-	      || (num_chars == 1 && token_buffer[0] != '\0'))
-	    {
-	      wchar_t wc;
-	      (void) mbtowc (NULL_PTR, NULL_PTR, 0);
-	      if (mbtowc (& wc, token_buffer, num_chars) == num_chars)
-		result = wc;
-	      else
-		pedwarn ("Ignoring invalid multibyte character");
-	    }
-#endif
 	  yylval.integer.value = result;
 	}
     }
