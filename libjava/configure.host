@@ -70,7 +70,6 @@ case "${host}" in
 	;;
   powerpc*-*)
 	libgcj_interpreter=yes
-	libgcj_sjlj=yes
 	;;
   sparc-*)
         ;;

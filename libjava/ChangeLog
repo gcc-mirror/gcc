@@ -1,3 +1,10 @@
+2001-05-18  Andrew Haley  <aph@cambridge.redhat.com>
+
+	* include/dwarf2-signal.h: New file.	
+	* configure.in (SYSDEP_SOURCES): Add dwarf2-signal.h for PPC.
+	* configure.host (EXCEPTIONSPEC): Don't use sjlj on PPC.
+        * configure: Rebuilt.
+
 2001-05-21  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* configure.in: Update boehm-gc include dir for new GC version.
