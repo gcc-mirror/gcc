@@ -1,3 +1,8 @@
+2000-08-09  Tom Tromey  <tromey@cygnus.com>
+
+	* parse.y (patch_switch_statement): Disallow `long' in switch
+	expressions.  Fixes PR gcj/310.
+
 2000-08-15  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* decl.c (finit_leg_identifier_node): New global.
