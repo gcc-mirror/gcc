@@ -1,3 +1,11 @@
+2003-06-23  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* genrecog.c (pred_table): Remove the entry for
+	mode_independent_operand.
+	* recog.c (next_insns_test_no_inequality): Remove.
+	(mode_independent_operand): Likewise.
+	* recog.h: Remove the prototype for mode_independent_operand.
+
 2003-06-22  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.c (output_simode_bld): Use rotxl.l to

@@ -727,34 +727,6 @@ next_insn_tests_no_inequality (insn)
 	   || GET_CODE (next) == CALL_INSN)
 	  && ! inequality_comparisons_p (PATTERN (next)));
 }
-
-#if 0  /* This is useless since the insn that sets the cc's
-	  must be followed immediately by the use of them.  */
-/* Return 1 if the CC value set up by INSN is not used.  */
-
-int
-next_insns_test_no_inequality (insn)
-     rtx insn;
-{
-  rtx next = NEXT_INSN (insn);
-
-  for (; next != 0; next = NEXT_INSN (next))
-    {
-      if (GET_CODE (next) == CODE_LABEL
-	  || GET_CODE (next) == BARRIER)
-	return 1;
-      if (GET_CODE (next) == NOTE)
-	continue;
-      if (inequality_comparisons_p (PATTERN (next)))
-	return 0;
-      if (sets_cc0_p (PATTERN (next)) == 1)
-	return 1;
-      if (! reg_mentioned_p (cc0_rtx, PATTERN (next)))
-	return 1;
-    }
-  return 1;
-}
-#endif
 #endif
 
 /* This is used by find_single_use to locate an rtx that contains exactly one
@@ -2055,30 +2027,6 @@ mode_dependent_address_p (addr)
   /* Label `win' might (not) be used via GO_IF_MODE_DEPENDENT_ADDRESS.  */
  win: ATTRIBUTE_UNUSED_LABEL
   return 1;
-}
-
-/* Return 1 if OP is a general operand
-   other than a memory ref with a mode dependent address.  */
-
-int
-mode_independent_operand (op, mode)
-     enum machine_mode mode;
-     rtx op;
-{
-  rtx addr;
-
-  if (! general_operand (op, mode))
-    return 0;
-
-  if (GET_CODE (op) != MEM)
-    return 1;
-
-  addr = XEXP (op, 0);
-  GO_IF_MODE_DEPENDENT_ADDRESS (addr, lose);
-  return 1;
-  /* Label `lose' might (not) be used via GO_IF_MODE_DEPENDENT_ADDRESS.  */
- lose: ATTRIBUTE_UNUSED_LABEL
-  return 0;
 }
 
 /* Like extract_insn, but save insn extracted and don't extract again, when

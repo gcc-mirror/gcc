@@ -212,9 +212,7 @@ static const struct pred_table
   {"indirect_operand", {SUBREG, MEM}},
   {"comparison_operator", {EQ, NE, LE, LT, GE, GT, LEU, LTU, GEU, GTU,
 			   UNORDERED, ORDERED, UNEQ, UNGE, UNGT, UNLE,
-			   UNLT, LTGT}},
-  {"mode_independent_operand", {CONST_INT, CONST_DOUBLE, CONST, SYMBOL_REF,
-				LABEL_REF, SUBREG, REG, MEM, ADDRESSOF}}
+			   UNLT, LTGT}}
 };
 
 #define NUM_KNOWN_PREDS ARRAY_SIZE (preds)
