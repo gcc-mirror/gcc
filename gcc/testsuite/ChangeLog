@@ -1,3 +1,7 @@
+2002-02-28  Richard Henderson  <rth@redhat.com>
+
+	* g++.dg/opt/vtgc1.C: Adjust patterns for ia64.
+
 2002-02-26  Alexandre Oliva  <aoliva@redhat.com>
 
 	* gcc.dg/debug/20020224-1.c: New.
