@@ -1,3 +1,8 @@
+Thu Feb 18 13:15:56 1999  Marc Espie <espie@cvs.openbsd.org>
+
+	* i386/openbsd.h: New file, originally from netbsd.
+	* i386/xm-openbsd.h: New file.
+
 1999-02-17 14:49 -0500  Zack Weinberg  <zack@rabi.columbia.edu>
 
 	* Makefile.in: Correct dependencies for cpplib object files.
