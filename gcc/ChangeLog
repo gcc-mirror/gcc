@@ -1,3 +1,22 @@
+2003-10-15  Roger Sayle  <roger@eyesopen.com>
+
+	* builtins.c (fold_builtin_memcpy, fold_builtin_mempcpy,
+	fold_builtin_memmove, fold_builtin_strcpy, fold_builtin_strncpy,
+	fold_builtin_memcmp, fold_builtin_strcmp, fold_builtin_strncmp):
+	New functions.
+	(expand_builtin_memcpy): Use integer_zerop instead of testing
+	host_integerp and tree_low_cst directly.  Move misapplied hunk
+	for optimization wher SRC and DEST point to the same location.
+	(expand_builtin_mempcpy): From here.
+	(expand_builtin_memmove): Use integer_zerop instead of testing
+	host_integerp and tree_low_cst_directly.
+	(expand_builtin_memset): Likewise.
+	(expand_builtin_memcmp): Likewise (and for integer_onep).
+	(expand_builtin_strncmp): Likewise.
+	(fold_builtin): Call the appropriate fold_builtin_foo functions
+	to optimize memcpy, mempcpy, memmove, strcpy, strncpy, memcmp,
+	strcmp and strncmp.
+
 2003-10-15  Geoffrey Keating  <geoffk@apple.com>
 
 	* config/darwin-protos.h (machopic_non_lazy_ptr_name): Delete
@@ -11,8 +30,8 @@
 	
 2003-10-15  Gábor Lóki  <alga@rgai.hu>
 
-	* fold-const.c (tree_swap_operands_p): disables
-	some features when optimizing for size.
+	* fold-const.c (tree_swap_operands_p): Disable some features
+	when optimizing for size.
 
 2003-10-15  David Daney  <ddaney@avtrex.com>
 

@@ -157,6 +157,14 @@ static tree fold_builtin_trunc (tree);
 static tree fold_builtin_floor (tree);
 static tree fold_builtin_ceil (tree);
 static tree fold_builtin_bitop (tree);
+static tree fold_builtin_memcpy (tree);
+static tree fold_builtin_mempcpy (tree);
+static tree fold_builtin_memmove (tree);
+static tree fold_builtin_strcpy (tree);
+static tree fold_builtin_strncpy (tree);
+static tree fold_builtin_memcmp (tree);
+static tree fold_builtin_strcmp (tree);
+static tree fold_builtin_strncmp (tree);
 
 /* Return the alignment in bits of EXP, a pointer valued expression.
    But don't return more than MAX_ALIGN no matter what.
@@ -2474,10 +2482,18 @@ expand_builtin_memcpy (tree arglist, rtx target, enum machine_mode mode)
 	return 0;
 
       /* If the LEN parameter is zero, return DEST.  */
-      if (host_integerp (len, 1) && tree_low_cst (len, 1) == 0)
+      if (integer_zerop (len))
 	{
 	  /* Evaluate and ignore SRC in case it has side-effects.  */
 	  expand_expr (src, const0_rtx, VOIDmode, EXPAND_NORMAL);
+	  return expand_expr (dest, target, mode, EXPAND_NORMAL);
+	}
+
+      /* If SRC and DEST are the same (and not volatile), return DEST.  */
+      if (operand_equal_p (src, dest, 0))
+	{
+	  /* Evaluate and ignore LEN in case it has side-effects.  */
+	  expand_expr (len, const0_rtx, VOIDmode, EXPAND_NORMAL);
 	  return expand_expr (dest, target, mode, EXPAND_NORMAL);
 	}
 
@@ -2597,14 +2613,6 @@ expand_builtin_mempcpy (tree arglist, rtx target, enum machine_mode mode,
 	  return expand_expr (dest, target, mode, EXPAND_NORMAL);
 	}
 
-      /* If SRC and DEST are the same (and not volatile), return DEST.  */
-      if (operand_equal_p (src, dest, 0))
-	{
-	  /* Evaluate and ignore LEN in case it has side-effects.  */
-	  expand_expr (len, const0_rtx, VOIDmode, EXPAND_NORMAL);
-	  return expand_expr (dest, target, mode, EXPAND_NORMAL);
-	}
-
       /* If either SRC is not a pointer type, don't do this
          operation in-line.  */
       if (src_align == 0)
@@ -2675,7 +2683,7 @@ expand_builtin_memmove (tree arglist, rtx target, enum machine_mode mode)
 	return 0;
 
       /* If the LEN parameter is zero, return DEST.  */
-      if (host_integerp (len, 1) && tree_low_cst (len, 1) == 0)
+      if (integer_zerop (len))
 	{
 	  /* Evaluate and ignore SRC in case it has side-effects.  */
 	  expand_expr (src, const0_rtx, VOIDmode, EXPAND_NORMAL);
@@ -2975,7 +2983,7 @@ expand_builtin_memset (tree arglist, rtx target, enum machine_mode mode)
 	return 0;
 
       /* If the LEN parameter is zero, return DEST.  */
-      if (host_integerp (len, 1) && tree_low_cst (len, 1) == 0)
+      if (integer_zerop (len))
 	{
 	  /* Evaluate and ignore VAL in case it has side-effects.  */
 	  expand_expr (val, const0_rtx, VOIDmode, EXPAND_NORMAL);
@@ -3098,7 +3106,7 @@ expand_builtin_memcmp (tree exp ATTRIBUTE_UNUSED, tree arglist, rtx target,
   len = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist)));
 
   /* If the len parameter is zero, return zero.  */
-  if (host_integerp (len, 1) && tree_low_cst (len, 1) == 0)
+  if (integer_zerop (len))
     {
       /* Evaluate and ignore arg1 and arg2 in case they have
          side-effects.  */
@@ -3131,7 +3139,7 @@ expand_builtin_memcmp (tree exp ATTRIBUTE_UNUSED, tree arglist, rtx target,
 
   /* If len parameter is one, return an expression corresponding to
      (*(const unsigned char*)arg1 - (const unsigned char*)arg2).  */
-  if (host_integerp (len, 1) && tree_low_cst (len, 1) == 1)
+  if (integer_onep (len))
     {
       tree cst_uchar_node = build_type_variant (unsigned_char_type_node, 1, 0);
       tree cst_uchar_ptr_node = build_pointer_type (cst_uchar_node);
@@ -3392,7 +3400,7 @@ expand_builtin_strncmp (tree exp, rtx target, enum machine_mode mode)
   arg3 = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist)));
 
   /* If the len parameter is zero, return zero.  */
-  if (host_integerp (arg3, 1) && tree_low_cst (arg3, 1) == 0)
+  if (integer_zerop (arg3))
     {
       /* Evaluate and ignore arg1 and arg2 in case they have
 	 side-effects.  */
@@ -6190,6 +6198,260 @@ fold_builtin_exponent (tree exp, const REAL_VALUE_TYPE *value)
   return 0;
 }
 
+/* Fold function call to builtin memcpy.  Return
+   NULL_TREE if no simplification can be made.  */
+
+static tree
+fold_builtin_memcpy (tree exp)
+{
+  tree arglist = TREE_OPERAND (exp, 1);
+  tree dest, src, len;
+
+  if (!validate_arglist (arglist,
+			 POINTER_TYPE, POINTER_TYPE, INTEGER_TYPE, VOID_TYPE))
+    return 0;
+
+  dest = TREE_VALUE (arglist);
+  src = TREE_VALUE (TREE_CHAIN (arglist));
+  len = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist)));
+
+  /* If the LEN parameter is zero, return DEST.  */
+  if (integer_zerop (len))
+    return omit_one_operand (TREE_TYPE (exp), dest, src);
+
+  /* If SRC and DEST are the same (and not volatile), return DEST.  */
+  if (operand_equal_p (src, dest, 0))
+    return omit_one_operand (TREE_TYPE (exp), dest, len);
+
+  return 0;
+}
+
+/* Fold function call to builtin mempcpy.  Return
+   NULL_TREE if no simplification can be made.  */
+
+static tree
+fold_builtin_mempcpy (tree exp)
+{
+  tree arglist = TREE_OPERAND (exp, 1);
+  tree dest, src, len;
+
+  if (!validate_arglist (arglist,
+			 POINTER_TYPE, POINTER_TYPE, INTEGER_TYPE, VOID_TYPE))
+    return 0;
+
+  dest = TREE_VALUE (arglist);
+  src = TREE_VALUE (TREE_CHAIN (arglist));
+  len = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist)));
+
+  /* If the LEN parameter is zero, return DEST.  */
+  if (integer_zerop (len))
+    return omit_one_operand (TREE_TYPE (exp), dest, src);
+
+  /* If SRC and DEST are the same (and not volatile), return DEST+LEN.  */
+  if (operand_equal_p (src, dest, 0))
+    {
+      tree temp = convert (TREE_TYPE (dest), len);
+      temp = fold (build (PLUS_EXPR, TREE_TYPE (dest), dest, len));
+      return convert (TREE_TYPE (exp), temp);
+    }
+
+  return 0;
+}
+
+/* Fold function call to builtin memmove.  Return
+   NULL_TREE if no simplification can be made.  */
+
+static tree
+fold_builtin_memmove (tree exp)
+{
+  tree arglist = TREE_OPERAND (exp, 1);
+  tree dest, src, len;
+
+  if (!validate_arglist (arglist,
+			 POINTER_TYPE, POINTER_TYPE, INTEGER_TYPE, VOID_TYPE))
+    return 0;
+
+  dest = TREE_VALUE (arglist);
+  src = TREE_VALUE (TREE_CHAIN (arglist));
+  len = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist)));
+
+  /* If the LEN parameter is zero, return DEST.  */
+  if (integer_zerop (len))
+    return omit_one_operand (TREE_TYPE (exp), dest, src);
+
+  /* If SRC and DEST are the same (and not volatile), return DEST.  */
+  if (operand_equal_p (src, dest, 0))
+    return omit_one_operand (TREE_TYPE (exp), dest, len);
+
+  return 0;
+}
+
+/* Fold function call to builtin strcpy.  Return
+   NULL_TREE if no simplification can be made.  */
+
+static tree
+fold_builtin_strcpy (tree exp)
+{
+  tree arglist = TREE_OPERAND (exp, 1);
+  tree dest, src;
+
+  if (!validate_arglist (arglist,
+			 POINTER_TYPE, POINTER_TYPE, VOID_TYPE))
+    return 0;
+
+  dest = TREE_VALUE (arglist);
+  src = TREE_VALUE (TREE_CHAIN (arglist));
+
+  /* If SRC and DEST are the same (and not volatile), return DEST.  */
+  if (operand_equal_p (src, dest, 0))
+    return convert (TREE_TYPE (exp), dest);
+
+  return 0;
+}
+
+/* Fold function call to builtin strncpy.  Return
+   NULL_TREE if no simplification can be made.  */
+
+static tree
+fold_builtin_strncpy (tree exp)
+{
+  tree arglist = TREE_OPERAND (exp, 1);
+  tree dest, src, len;
+
+  if (!validate_arglist (arglist,
+			 POINTER_TYPE, POINTER_TYPE, INTEGER_TYPE, VOID_TYPE))
+    return 0;
+
+  dest = TREE_VALUE (arglist);
+  src = TREE_VALUE (TREE_CHAIN (arglist));
+  len = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist)));
+
+  /* If the LEN parameter is zero, return DEST.  */
+  if (integer_zerop (len))
+    return omit_one_operand (TREE_TYPE (exp), dest, src);
+
+  return 0;
+}
+
+/* Fold function call to builtin memcmp.  Return
+   NULL_TREE if no simplification can be made.  */
+
+static tree
+fold_builtin_memcmp (tree exp)
+{
+  tree arglist = TREE_OPERAND (exp, 1);
+  tree arg1, arg2, len;
+
+  if (!validate_arglist (arglist,
+			 POINTER_TYPE, POINTER_TYPE, INTEGER_TYPE, VOID_TYPE))
+    return 0;
+
+  arg1 = TREE_VALUE (arglist);
+  arg2 = TREE_VALUE (TREE_CHAIN (arglist));
+  len = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist)));
+
+  /* If the LEN parameter is zero, return zero.  */
+  if (integer_zerop (len))
+    {
+      tree temp = omit_one_operand (TREE_TYPE (exp), integer_zero_node, arg2);
+      return omit_one_operand (TREE_TYPE (exp), temp, arg1);
+    }
+
+  /* If ARG1 and ARG2 are the same (and not volatile), return zero.  */
+  if (operand_equal_p (arg1, arg2, 0))
+    return omit_one_operand (TREE_TYPE (exp), integer_zero_node, len);
+
+  return 0;
+}
+
+/* Fold function call to builtin strcmp.  Return
+   NULL_TREE if no simplification can be made.  */
+
+static tree
+fold_builtin_strcmp (tree exp)
+{
+  tree arglist = TREE_OPERAND (exp, 1);
+  tree arg1, arg2;
+  const char *p1, *p2;
+
+  if (!validate_arglist (arglist,
+			 POINTER_TYPE, POINTER_TYPE, VOID_TYPE))
+    return 0;
+
+  arg1 = TREE_VALUE (arglist);
+  arg2 = TREE_VALUE (TREE_CHAIN (arglist));
+
+  /* If ARG1 and ARG2 are the same (and not volatile), return zero.  */
+  if (operand_equal_p (arg1, arg2, 0))
+    return convert (TREE_TYPE (exp), integer_zero_node);
+
+  p1 = c_getstr (arg1);
+  p2 = c_getstr (arg2);
+
+  if (p1 && p2)
+    {
+      tree temp;
+      const int i = strcmp (p1, p2);
+      if (i < 0)
+	temp = integer_minus_one_node;
+      else if (i > 0)
+	temp = integer_one_node;
+      else
+	temp = integer_zero_node;
+      return convert (TREE_TYPE (exp), temp);
+    }
+
+  return 0;
+}
+
+/* Fold function call to builtin strncmp.  Return
+   NULL_TREE if no simplification can be made.  */
+
+static tree
+fold_builtin_strncmp (tree exp)
+{
+  tree arglist = TREE_OPERAND (exp, 1);
+  tree arg1, arg2, len;
+  const char *p1, *p2;
+
+  if (!validate_arglist (arglist,
+			 POINTER_TYPE, POINTER_TYPE, INTEGER_TYPE, VOID_TYPE))
+    return 0;
+
+  arg1 = TREE_VALUE (arglist);
+  arg2 = TREE_VALUE (TREE_CHAIN (arglist));
+  len = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist)));
+
+  /* If the LEN parameter is zero, return zero.  */
+  if (integer_zerop (len))
+    {
+      tree temp = omit_one_operand (TREE_TYPE (exp), integer_zero_node, arg2);
+      return omit_one_operand (TREE_TYPE (exp), temp, arg1);
+    }
+
+  /* If ARG1 and ARG2 are the same (and not volatile), return zero.  */
+  if (operand_equal_p (arg1, arg2, 0))
+    return omit_one_operand (TREE_TYPE (exp), integer_zero_node, len);
+
+  p1 = c_getstr (arg1);
+  p2 = c_getstr (arg2);
+
+  if (host_integerp (len, 1) && p1 && p2)
+    {
+      tree temp;
+      const int i = strncmp (p1, p2, tree_low_cst (len, 1));
+      if (i < 0)
+	temp = integer_minus_one_node;
+      else if (i > 0)
+	temp = integer_one_node;
+      else
+	temp = integer_zero_node;
+      return convert (TREE_TYPE (exp), temp);
+    }
+
+  return 0;
+}
+
 /* Used by constant folding to eliminate some builtin calls early.  EXP is
    the CALL_EXPR of a call to a builtin function.  */
 
@@ -6584,6 +6846,30 @@ fold_builtin (tree exp)
     case BUILT_IN_PARITYL:
     case BUILT_IN_PARITYLL:
       return fold_builtin_bitop (exp);
+
+    case BUILT_IN_MEMCPY:
+      return fold_builtin_memcpy (exp);
+
+    case BUILT_IN_MEMPCPY:
+      return fold_builtin_mempcpy (exp);
+
+    case BUILT_IN_MEMMOVE:
+      return fold_builtin_memmove (exp);
+
+    case BUILT_IN_STRCPY:
+      return fold_builtin_strcpy (exp);
+
+    case BUILT_IN_STRNCPY:
+      return fold_builtin_strncpy (exp);
+
+    case BUILT_IN_MEMCMP:
+      return fold_builtin_memcmp (exp);
+
+    case BUILT_IN_STRCMP:
+      return fold_builtin_strcmp (exp);
+
+    case BUILT_IN_STRNCMP:
+      return fold_builtin_strncmp (exp);
 
     default:
       break;
