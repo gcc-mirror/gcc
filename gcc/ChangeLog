@@ -1,5 +1,14 @@
 2001-01-03  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* configure.in: Check for the mktemp command.
+	* configure: Regenerate.
+	* gccbug.in: Use a separate temporary file $TEMP0 for one use of
+	$TEMP.  Create temporary files with mktemp, if available at
+	configure time; otherwise use set -C.  Remove temporary files
+	before exit.
+
+2001-01-03  Joseph S. Myers  <jsm28@cam.ac.uk>
+
 	* configure.in: Require at least texinfo 4.0.  Check for whether
 	Pod::Man is sufficiently recent to regenerate GCC manpages.
 	* configure:  Regenerate.

@@ -1,6 +1,6 @@
 #!/bin/sh
 # Submit a problem report to a GNATS site.
-# Copyright (C) 1993, 2000 Free Software Foundation, Inc.
+# Copyright (C) 1993, 2000, 2001 Free Software Foundation, Inc.
 # Contributed by Brendan Kehoe (brendan@cygnus.com), based on a
 # version written by Heinz G. Seidl (hgs@cygnus.com).
 #
@@ -77,9 +77,30 @@ else
   fi
 fi
 
-TEMP=$TMPDIR/p$$
-BAD=$TMPDIR/pbad$$
-REF=$TMPDIR/pf$$
+if [ @have_mktemp_command@ = yes ]; then
+	TEMP0=`mktemp $TMPDIR/poXXXXXX` || exit 1
+	TEMP=`mktemp $TMPDIR/pXXXXXX` || exit 1
+	BAD=`mktemp $TMPDIR/pbadXXXXXX` || exit 1
+	REF=`mktemp $TMPDIR/pfXXXXXX` || exit 1
+else
+	TEMP0=$TMPDIR/po$$
+	TEMP=$TMPDIR/p$$
+	BAD=$TMPDIR/pbad$$
+	REF=$TMPDIR/pf$$
+	# set -C _may_ use O_EXCL, but it need not.
+	set -C
+	bad_temp=0
+	: > $TEMP0 || bad_temp=1
+	: > $TEMP || bad_temp=1
+	: > $BAD || bad_temp=1
+	: > $REF || bad_temp=1
+	if [ $bad_temp = 1 ]; then
+		rm -f $TEMP0 $TEMP $BAD $REF
+		exit 1;
+	fi
+	set +C
+fi
+REMOVE_TEMP="rm -f $TEMP0 $TEMP $BAD $REF"
 
 # find a user name
 if [ "$LOGNAME" = "" ]; then
@@ -101,9 +122,9 @@ elif [ -f $HOME/.fullname ]; then
 else
   # Must use temp file due to incompatibilities in quoting behavior
   # and to protect shell metacharacters in the expansion of $LOGNAME
-  $PASSWD | grep "^$LOGNAME:" | awk -F: '{print $5}' | sed -e 's/,.*//' > $TEMP
-  ORIGINATOR="`cat $TEMP`"
-  rm -f $TEMP
+  $PASSWD | grep "^$LOGNAME:" | awk -F: '{print $5}' | sed -e 's/,.*//' > $TEMP0
+  ORIGINATOR="`cat $TEMP0`"
+  rm -f $TEMP0
 fi
 
 if [ -n "$ORGANIZATION" ]; then
@@ -146,32 +167,33 @@ SEVERITY_C=
 while [ $# -gt 0 ]; do
   case "$1" in
     -r) ;; 		# Ignore for backward compat.
-    -t | --to) if [ $# -eq 1 ]; then echo "$USAGE"; exit 1; fi
+    -t | --to) if [ $# -eq 1 ]; then echo "$USAGE"; $REMOVE_TEMP; exit 1; fi
 	shift ; GNATS_ADDR="$1"
 	EXPLICIT_GNATS_ADDR=true
         ;;
-    -f | --file) if [ $# -eq 1 ]; then echo "$USAGE"; exit 1; fi
+    -f | --file) if [ $# -eq 1 ]; then echo "$USAGE"; $REMOVE_TEMP; exit 1; fi
 	shift ; IN_FILE="$1"
 	if [ "$IN_FILE" != "-" -a ! -r "$IN_FILE" ]; then
 	  echo "$COMMAND: cannot read $IN_FILE"
+	  $REMOVE_TEMP
 	  exit 1
 	fi
 	;;
     -b | --batch) BATCH=true ;;
-    -c | --cc) if [ $# -eq 1 ]; then echo "$USAGE"; exit 1; fi
+    -c | --cc) if [ $# -eq 1 ]; then echo "$USAGE"; $REMOVE_TEMP; exit 1; fi
 	shift ; CC="$1"
 	;;
-    -s | --severity) if [ $# -eq 1 ]; then echo "$USAGE"; exit 1; fi
+    -s | --severity) if [ $# -eq 1 ]; then echo "$USAGE"; $REMOVE_TEMP; exit 1; fi
 	shift ; SEVERITY_C="$1"
 	;;
     -p | -P | --print) PRINT=true ;;
     -L | --list) FORMAT=norm ;;
     -l | -CL | --lisp) FORMAT=lisp ;;
     --request-id) REQUEST_ID=true ;;
-    -h | --help) echo "$USAGE"; exit 0 ;;
-    -V | --version) echo "$VERSION"; exit 0 ;;
-    -*) echo "$USAGE" ; exit 1 ;;
-    *) echo "$USAGE" ; exit 1
+    -h | --help) echo "$USAGE"; $REMOVE_TEMP; exit 0 ;;
+    -V | --version) echo "$VERSION"; $REMOVE_TEMP; exit 0 ;;
+    -*) echo "$USAGE" ; $REMOVE_TEMP; exit 1 ;;
+    *) echo "$USAGE" ; $REMOVE_TEMP; exit 1
  esac
  shift
 done
@@ -182,6 +204,7 @@ CATEGORIES="c++ c debug fortran java libf2c libgcj libobjc libstdc++ middle-end 
 case "$FORMAT" in
   lisp) echo "$CATEGORIES" | \
         awk 'BEGIN {printf "( "} {printf "(\"%s\") ",$0} END {printf ")\n"}'
+	$REMOVE_TEMP
         exit 0
         ;;
   norm) l=`echo "$CATEGORIES" | \
@@ -193,6 +216,7 @@ case "$FORMAT" in
         awk 'BEGIN {print "Known categories:"; i = 0 }
           { printf ("%-'$l'.'$l's", $0); if ((++i % '$c') == 0) { print "" } }
             END { print ""; }'
+	$REMOVE_TEMP
         exit 0
         ;;
 esac
@@ -213,8 +237,8 @@ FIX_C='<how to correct or work around the problem, if known (multiple lines)>'
 
 # Catch some signals. ($xs kludge needed by Sun /bin/sh)
 xs=0
-trap 'rm -f $REF $TEMP; exit $xs' 0
-trap 'echo "$COMMAND: Aborting ..."; rm -f $REF $TEMP; xs=1; exit' 1 3 13 15
+trap '$REMOVE_TEMP; exit $xs' 0
+trap 'echo "$COMMAND: Aborting ..."; $REMOVE_TEMP; xs=1; exit' 1 3 13 15
 
 # If they told us to use a specific file, then do so.
 if [ -n "$IN_FILE" ]; then
@@ -458,6 +482,7 @@ while [ -z "$REQUEST_ID" ]; do
       a*)
 	if [ -z "$BATCH" ]; then
 	  echo "$COMMAND: the problem report remains in $BAD and is not sent."
+	  REMOVE_TEMP="rm -f $TEMP0 $TEMP $REF"
 	  mv $TEMP $BAD
         else
 	  echo "$COMMAND: the problem report is not sent."
@@ -518,6 +543,7 @@ else
   echo "$COMMAND: mysterious mail failure."
   if [ -z "$BATCH" ]; then
     echo "$COMMAND: the problem report remains in $BAD and is not sent."
+    REMOVE_TEMP="rm -f $TEMP0 $TEMP $REF"
     mv $REF $BAD
   else
     echo "$COMMAND: the problem report is not sent."
