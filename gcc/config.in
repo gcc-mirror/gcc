@@ -573,9 +573,6 @@
 /* Define if your assembler mis-optimizes .eh_frame data. */
 #undef USE_AS_TRADITIONAL_FORMAT
 
-/* Define if gcc should use -lunwind. */
-#undef USE_LIBUNWIND_EXCEPTIONS
-
 /* Define to 1 if the 'long long' (or '__int64') is wider than 'long' but
    still efficiently supported by the host hardware. */
 #undef USE_LONG_LONG_FOR_WIDEST_FAST_INT

@@ -23,6 +23,8 @@ LIBGCC1_TEST =
 # We do not want to include the EH stuff that linux uses, we want to use
 # the HP-UX libunwind library.
 
+T_CFLAGS += -DUSE_LIBUNWIND_EXCEPTIONS
+
 LIB2ADDEH =
 
 SHLIB_EXT = .so

@@ -1114,20 +1114,10 @@ AC_ARG_ENABLE(sjlj-exceptions,
 AC_DEFINE_UNQUOTED(CONFIG_SJLJ_EXCEPTIONS, $sjlj,
   [Define 0/1 to force the choice for exception handling model.])])
 
-if test x$host = x$target; then
-   AC_CHECK_LIB(unwind, main, use_libunwind_default=yes, use_libunwind_default=no)
-else
-   use_libunwind_default=no
-fi
-# Use libunwind based exception handling.
-AC_ARG_ENABLE(libunwind-exceptions,
-[  --enable-libunwind-exceptions  force use libunwind for exceptions],
-use_libunwind_exceptions=$enableval,
-use_libunwind_exceptions=$use_libunwind_default)
-if test x"$use_libunwind_exceptions" = xyes; then
-   AC_DEFINE(USE_LIBUNWIND_EXCEPTIONS, 1,
-	[Define if gcc should use -lunwind.])
-fi
+# For platforms with the unwind ABI which includes an unwind library,
+# libunwind, we can choose to use the system libunwind.
+AC_ARG_WITH(system-libunwind,
+[  --with-system-libunwind use installed libunwind])
 
 # --------------------------------------------------------
 # Build, host, and target specific configuration fragments
