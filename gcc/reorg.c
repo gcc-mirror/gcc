@@ -379,11 +379,13 @@ mark_referenced_resources (x, res, include_delayed_effects)
 	  rtx insn = PREV_INSN (x);
 	  rtx sequence = 0;
 	  int seq_size = 0;
+	  rtx next = NEXT_INSN (x);
 	  int i;
 
 	  /* If we are part of a delay slot sequence, point at the SEQUENCE. */
 	  if (NEXT_INSN (insn) != x)
 	    {
+	      next = NEXT_INSN (NEXT_INSN (insn));
 	      sequence = PATTERN (NEXT_INSN (insn));
 	      seq_size = XVECLEN (sequence, 0);
 	      if (GET_CODE (sequence) != SEQUENCE)
@@ -403,6 +405,18 @@ mark_referenced_resources (x, res, include_delayed_effects)
 	  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
 	    if (global_regs[i])
 	      SET_HARD_REG_BIT (res->regs, i);
+
+	  /* Check for a NOTE_INSN_SETJMP.  If it exists, then we must
+	     assume that this call can need any register.
+
+	     This is done to be more conservative about how we handle setjmp.
+	     We assume that they both use and set all registers.  Using all
+	     registers ensures that a register will not be considered dead
+	     just because it crosses a setjmp call.  A register should be
+	     considered dead only if the setjmp call returns non-zero.  */
+	  if (next && GET_CODE (next) == NOTE
+	      && NOTE_LINE_NUMBER (next) == NOTE_INSN_SETJMP)
+	    SET_HARD_REG_SET (res->regs);
 
 	  {
 	    rtx link;
