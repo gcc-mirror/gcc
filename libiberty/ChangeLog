@@ -1,3 +1,8 @@
+2003-10-02  Daniel Jacobowitz  <drow@mvista.com>
+
+	* strerror.c: Revert last change.  Declare static sys_nerr
+	and sys_errlist using different names.
+
 2003-10-01  Daniel Jacobowitz  <drow@mvista.com>
 
 	* strerror.c: Don't provide or reference sys_errlist if
