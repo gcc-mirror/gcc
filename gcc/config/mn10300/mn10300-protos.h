@@ -28,10 +28,14 @@ extern void mn10300_va_start PARAMS ((int, tree, rtx));
 extern struct rtx_def *legitimize_address PARAMS ((rtx, rtx, enum machine_mode));
 extern void print_operand PARAMS ((FILE *, rtx, int));
 extern void print_operand_address PARAMS ((FILE *, rtx));
+extern void mn10300_print_reg_list PARAMS ((FILE *, int));
+extern int mn10300_get_live_callee_saved_regs PARAMS ((void));
+extern void mn10300_gen_multiple_store PARAMS ((int));
 extern void notice_update_cc PARAMS ((rtx, rtx));
 extern enum reg_class secondary_reload_class PARAMS ((enum reg_class,
 						      enum machine_mode, rtx));
 extern char *output_tst PARAMS ((rtx, rtx));
+extern int store_multiple_operation PARAMS ((rtx, enum machine_mode));
 extern int symbolic_operand PARAMS ((rtx, enum machine_mode));
 extern int call_address_operand PARAMS ((rtx, enum machine_mode));
 extern int impossible_plus_operand PARAMS ((rtx, enum machine_mode));

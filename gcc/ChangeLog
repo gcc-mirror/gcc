@@ -1,3 +1,17 @@
+2000-12-05  Richard Sandiford  <r.sandiford@redhat.com>
+
+	* config/mn10300/mn10300.c (mn10300_print_reg_list): Added.
+	(mn10300_get_live_callee_saved_regs): Likewise.
+	(mn10300_gen_multiple_store): Likewise.
+	(store_multiple_operation): Likewise.
+	(expand_prologue): Use mn10300_gen_multiple_store().
+	* config/mn10300/mn10300-protos.h (mn10300_print_reg_list): Added.
+	(mn10300_get_live_callee_saved_regs): Likewise.
+	(mn10300_gen_multiple_store): Likewise.
+	(store_multiple_operation): Likewise.
+	* config/mn10300/mn10300.md (store_movm): Use a MATCH_PARALLEL
+	tied to store_multiple_operation().
+
 Tue Dec  5 20:09:14 2000  Jeffrey A Law  (law@cygnus.com)
 
 	* builtins.c (expand_builtin_setjmp_setup): Set
