@@ -31,7 +31,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* Return an rtx for the sum of X and the integer C.
 
-   This fucntion should be used via the `plus_constant' macro.  */
+   This function should be used via the `plus_constant' macro.  */
 
 rtx
 plus_constant_wide (x, c)

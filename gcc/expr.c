@@ -1357,7 +1357,7 @@ emit_block_move (x, y, size, align)
 	  if (code != CODE_FOR_nothing
 	      /* We don't need MODE to be narrower than BITS_PER_HOST_WIDE_INT
 		 here because if SIZE is less than the mode mask, as it is
-		 returned by the macro, it will definately be less than the
+		 returned by the macro, it will definitely be less than the
 		 actual mode mask.  */
 	      && (unsigned) INTVAL (size) <= GET_MODE_MASK (mode)
 	      && (insn_operand_predicate[(int) code][0] == 0
@@ -3122,7 +3122,7 @@ force_operand (value, target)
       return expand_binop (GET_MODE (value), binoptab, tmp,
 			   force_operand (op2, NULL_RTX),
 			   target, 0, OPTAB_LIB_WIDEN);
-      /* We give UNSIGNEP = 0 to expand_binop
+      /* We give UNSIGNEDP = 0 to expand_binop
 	 because the only operations we are expanding here are signed ones.  */
     }
   return value;
@@ -3974,7 +3974,7 @@ expand_expr (exp, target, tmode, modifier)
 	op0 = expand_expr (tem, NULL_RTX, VOIDmode, EXPAND_SUM);
 
 	/* If this is a constant, put it into a register if it is a
-	   legimate constant and memory if it isn't.  */
+	   legitimate constant and memory if it isn't.  */
 	if (CONSTANT_P (op0))
 	  {
 	    enum machine_mode mode = TYPE_MODE (TREE_TYPE (tem));
@@ -7139,7 +7139,7 @@ compare_from_rtx (op0, op1, code, unsignedp, mode, size, align)
      unsigned comparison since zero-extension is cheaper than sign
      extension and comparisons with zero are done as unsigned.  This is
      the case even on machines that can do fast sign extension, since
-     zero-extension is easier to combinen with other operations than
+     zero-extension is easier to combine with other operations than
      sign-extension is.  If we are comparing against a constant, we must
      convert it to what it would look like unsigned.  */
   if ((code == EQ || code == NE) && ! unsignedp
