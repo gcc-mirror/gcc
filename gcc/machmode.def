@@ -45,6 +45,7 @@ Boston, MA 02111-1307, USA.  */
    MODE_PARTIAL_INT - PQImode, PHImode, PSImode and PDImode
    MODE_CC - modes used for representing the condition code in a register
    MODE_COMPLEX_INT, MODE_COMPLEX_FLOAT - complex number
+   MODE_VECTOR_INT, MODE_VECTOR_FLOAT - vector
    MODE_RANDOM - anything else
 
    Fourth argument is the relative size of the object, in bytes.
@@ -99,6 +100,33 @@ DEF_MACHMODE (CSImode, "CSI", MODE_COMPLEX_INT, 8, 4, CDImode)
 DEF_MACHMODE (CDImode, "CDI", MODE_COMPLEX_INT, 16, 8, CTImode)
 DEF_MACHMODE (CTImode, "CTI", MODE_COMPLEX_INT, 32, 16, COImode)
 DEF_MACHMODE (COImode, "COI", MODE_COMPLEX_INT, 64, 32, VOIDmode)
+
+/* Vector modes.  */
+/* There are no V1xx vector modes.  These are equivalent to normal non-vector
+   modes.  */
+DEF_MACHMODE (V2QImode, "V2QI", MODE_VECTOR_INT, 2, 1, VOIDmode)
+DEF_MACHMODE (V2HImode, "V2HI", MODE_VECTOR_INT, 4, 2, VOIDmode)
+DEF_MACHMODE (V2SImode, "V2SI", MODE_VECTOR_INT, 8, 4, VOIDmode)
+DEF_MACHMODE (V2DImode, "V2DI", MODE_VECTOR_INT, 16, 8, VOIDmode)
+
+DEF_MACHMODE (V4QImode, "V4QI", MODE_VECTOR_INT, 4, 1, VOIDmode)
+DEF_MACHMODE (V4HImode, "V4HI", MODE_VECTOR_INT, 8, 2, VOIDmode)
+DEF_MACHMODE (V4SImode, "V4SI", MODE_VECTOR_INT, 16, 4, VOIDmode)
+DEF_MACHMODE (V4DImode, "V4DI", MODE_VECTOR_INT, 32, 8, VOIDmode)
+
+DEF_MACHMODE (V8QImode, "V8QI", MODE_VECTOR_INT, 8, 1, VOIDmode)
+DEF_MACHMODE (V8HImode, "V8HI", MODE_VECTOR_INT, 16, 2, VOIDmode)
+DEF_MACHMODE (V8SImode, "V8SI", MODE_VECTOR_INT, 32, 4, VOIDmode)
+DEF_MACHMODE (V8DImode, "V8DI", MODE_VECTOR_INT, 64, 8, VOIDmode)
+
+DEF_MACHMODE (V2SFmode, "V2SF", MODE_VECTOR_FLOAT, 8, 4, VOIDmode)
+DEF_MACHMODE (V2DFmode, "V2DF", MODE_VECTOR_FLOAT, 16, 8, VOIDmode)
+
+DEF_MACHMODE (V4SFmode, "V4SF", MODE_VECTOR_FLOAT, 16, 4, VOIDmode)
+DEF_MACHMODE (V4DFmode, "V4DF", MODE_VECTOR_FLOAT, 32, 8, VOIDmode)
+
+DEF_MACHMODE (V8SFmode, "V8SF", MODE_VECTOR_FLOAT, 32, 4, VOIDmode)
+DEF_MACHMODE (V8DFmode, "V8DF", MODE_VECTOR_FLOAT, 64, 8, VOIDmode)
 
 /* BLKmode is used for structures, arrays, etc.
    that fit no more specific mode.  */

@@ -42,7 +42,9 @@ extern const char * const mode_name[];
 #define GET_MODE_NAME(MODE)		(mode_name[(int) (MODE)])
 
 enum mode_class { MODE_RANDOM, MODE_INT, MODE_FLOAT, MODE_PARTIAL_INT, MODE_CC,
-		  MODE_COMPLEX_INT, MODE_COMPLEX_FLOAT, MAX_MODE_CLASS};
+		  MODE_COMPLEX_INT, MODE_COMPLEX_FLOAT,
+		  MODE_VECTOR_INT, MODE_VECTOR_FLOAT,
+		  MAX_MODE_CLASS};
 
 /* Get the general kind of object that mode MODE represents
    (integer, floating, complex, etc.)  */
@@ -54,17 +56,24 @@ extern const enum mode_class mode_class[];
 #define INTEGRAL_MODE_P(MODE)			\
   (GET_MODE_CLASS (MODE) == MODE_INT		\
    || GET_MODE_CLASS (MODE) == MODE_PARTIAL_INT \
-   || GET_MODE_CLASS (MODE) == MODE_COMPLEX_INT)
+   || GET_MODE_CLASS (MODE) == MODE_COMPLEX_INT \
+   || GET_MODE_CLASS (MODE) == MODE_VECTOR_INT)
 
 /* Nonzero if MODE is a floating-point mode.  */
 #define FLOAT_MODE_P(MODE)		\
   (GET_MODE_CLASS (MODE) == MODE_FLOAT	\
-   || GET_MODE_CLASS (MODE) == MODE_COMPLEX_FLOAT)
+   || GET_MODE_CLASS (MODE) == MODE_COMPLEX_FLOAT \
+   || GET_MODE_CLASS (MODE) == MODE_VECTOR_FLOAT)
 
 /* Nonzero if MODE is a complex mode.  */
 #define COMPLEX_MODE_P(MODE)			\
   (GET_MODE_CLASS (MODE) == MODE_COMPLEX_INT	\
    || GET_MODE_CLASS (MODE) == MODE_COMPLEX_FLOAT)
+
+/* Nonzero if MODE is a vector mode.  */
+#define VECTOR_MODE_P(MODE)			\
+  (GET_MODE_CLASS (MODE) == MODE_VECTOR_INT	\
+   || GET_MODE_CLASS (MODE) == MODE_VECTOR_FLOAT)
 
 /* Get the size in bytes of an object of mode MODE.  */
 

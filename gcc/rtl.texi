@@ -29,6 +29,7 @@ form uses nested parentheses to indicate the pointers in the internal form.
 * Arithmetic::        Expressions representing arithmetic on other expressions.
 * Comparisons::       Expressions representing comparison of expressions.
 * Bit Fields::        Expressions representing bitfields in memory or reg.
+* Vector Operations:: Expressions involving vector datatypes.
 * Conversions::       Extending, truncating, floating or fixing.
 * RTL Declarations::  Declaring volatility, constancy, etc.
 * Side Effects::      Expressions for storing in registers, etc.
@@ -1347,6 +1348,30 @@ item minus the number of bits set by the @code{high} code
 @item (minus:@var{m} @var{x} @var{y})
 Like @code{plus} but represents subtraction.
 
+@findex ss_plus
+@cindex RTL addition with signed saturation
+@item (ss_plus:@var{m} @var{x} @var{y})
+
+Like @code{plus}, but using signed saturation in case of an overflow.
+
+@findex us_plus
+@cindex RTL addition with unsigned saturation
+@item (us_plus:@var{m} @var{x} @var{y})
+
+Like @code{plus}, but using unsigned saturation in case of an overflow.
+
+@findex ss_minus
+@cindex RTL addition with signed saturation
+@item (ss_minus:@var{m} @var{x} @var{y})
+
+Like @code{minus}, but using signed saturation in case of an overflow.
+
+@findex us_minus
+@cindex RTL addition with unsigned saturation
+@item (us_minus:@var{m} @var{x} @var{y})
+
+Like @code{minus}, but using unsigned saturation in case of an overflow.
+
 @findex compare
 @cindex RTL comparison
 @item (compare:@var{m} @var{x} @var{y})
@@ -1695,6 +1720,52 @@ bit field.  The same sequence of bits are extracted, but they
 are filled to an entire word with zeros instead of by sign-extension.
 @end table
 
+@node Vector Operations
+@section Vector Operations
+@cindex vector operations
+
+All normal rtl expressions can be used with vector modes; they are
+interpreted as operating on each part of the vector independently.
+Additionally, there are a few new expressions to describe specific vector
+operations.
+
+@table @code
+@findex vec_merge
+@item (vec_merge:@var{m} @var{vec1} @var{vec2} @var{items})
+This describes a merge operation between two vectors.  The result is a vector
+of mode @var{m}; its elements are selected from either @var{vec1} or
+@var{vec2}.  Which elements are selected is described by @var{items}, which
+is a bit mask represented by a @code{const_int}; a zero bit indicates the
+corresponding element in the result vector is taken from @var{vec2} while
+a set bit indicates it is taken from @var{vec1}.
+
+@findex vec_select
+@item (vec_select:@var{m} @var{vec1} @var{selection})
+This describes an operation that selects parts of a vector.  @var{vec1} is
+the source vector, @var{selection} is a @code{parallel} that contains a
+@code{const_int} for each of the subparts of the result vector, giving the
+number of the source subpart that should be stored into it.
+
+@findex vec_concat
+@item (vec_concat:@var{m} @var{vec1} @var{vec2})
+Describes a vector concat operation.  The result is a concatenation of the
+vectors @var{vec1} and @var{vec2}; its length is the sum of the lengths of
+the two inputs.
+
+@findex vec_const
+@item (vec_const:@var{m} @var{subparts})
+This describes a constant vector.  @var{subparts} is a @code{parallel} that
+contains a constant for each of the subparts of the vector.
+
+@findex vec_duplicate
+@item (vec_duplicate:@var{m} @var{vec})
+This operation converts a small vector into a larger one by duplicating the
+input values.  The output vector mode must have the same submodes as the
+input vector mode, and the number of output parts must be an integer multiple
+of the number of input parts.
+
+@end table
+
 @node Conversions
 @section Conversions
 @cindex conversions
@@ -1746,6 +1817,20 @@ and @var{x} a floating point value of a mode narrower than @var{m}.
 Represents the result of truncating the value @var{x}
 to machine mode @var{m}.  @var{m} must be a fixed-point mode
 and @var{x} a fixed-point value of a mode wider than @var{m}.
+
+@findex ss_truncate
+@item (ss_truncate:@var{m} @var{x})
+Represents the result of truncating the value @var{x}
+to machine mode @var{m}, using signed saturation in the case of
+overflow.  Both @var{m} and the mode of @var{x} must be fixed-point
+modes.
+
+@findex us_truncate
+@item (us_truncate:@var{m} @var{x})
+Represents the result of truncating the value @var{x}
+to machine mode @var{m}, using unsigned saturation in the case of
+overflow.  Both @var{m} and the mode of @var{x} must be fixed-point
+modes.
 
 @findex float_truncate
 @item (float_truncate:@var{m} @var{x})
