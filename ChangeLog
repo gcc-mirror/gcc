@@ -1,3 +1,7 @@
+Thu Dec 11 23:30:51 1997  Fred Fish  <fnf@ninemoons.com>
+
+	* config.guess: Add BeOS support.
+
 Wed Dec  3 07:55:59 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* configure (gxx_include_dir): Fix thinko.
