@@ -4421,7 +4421,7 @@ build_user_type_conversion_1 (totype, expr, flags)
     (USER_CONV,
      (DECL_CONSTRUCTOR_P (cand->fn)
       ? totype : non_reference (TREE_TYPE (TREE_TYPE (cand->fn)))),
-     NULL_TREE, cand->fn, cand->convs, cand->basetype_path);
+     expr, cand->fn, cand->convs, cand->basetype_path);
   ICS_USER_FLAG (cand->second_conv) = 1;
   if (cand->viable == -1)
     ICS_BAD_FLAG (cand->second_conv) = 1;
@@ -4671,6 +4671,14 @@ build_new_op (code, flags, arg1, arg2, arg3)
       || arg2 == error_mark_node
       || arg3 == error_mark_node)
     return error_mark_node;
+
+  /* This can happen if a template takes all non-type parameters, e.g.
+     undeclared_template<1, 5, 72>a;  */
+  if (code == LT_EXPR && TREE_CODE (arg1) == TEMPLATE_DECL)
+    {
+      cp_error ("`%D' must be declared before use", arg1);
+      return error_mark_node;
+    }
 
   if (code == MODIFY_EXPR)
     {
