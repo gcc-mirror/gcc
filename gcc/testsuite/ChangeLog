@@ -1,3 +1,7 @@
+2005-02-01  Janis Johnson  <janis187@us.ibm.com>
+
+	* gcc.dg/ppc64-abi-3.c: Add xfail for error checks.
+
 2005-02-01  Richard Henderson  <rth@redhat.com>
 
 	* gcc.c-torture/execute/ieee/copysign1.c: Special case sizeof
