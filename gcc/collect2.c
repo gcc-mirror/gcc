@@ -1,7 +1,7 @@
 /* Collect static initialization info into data structures that can be
    traversed by C++ initialization and finalization routines.
    Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000 Free Software Foundation, Inc.
+   1999, 2000, 2001 Free Software Foundation, Inc.
    Contributed by Chris Smith (csmith@convex.com).
    Heavily modified by Michael Meissner (meissner@cygnus.com),
    Per Bothner (bothner@cygnus.com), and John Gilmore (gnu@cygnus.com).
@@ -850,7 +850,6 @@ main (argc, argv)
   FILE *outf;
 #ifdef COLLECT_EXPORT_LIST
   FILE *exportf;
-  FILE *importf;
 #endif
   const char *ld_file_name;
   const char *p;
@@ -1219,7 +1218,8 @@ main (argc, argv)
 	}
       else if ((p = strrchr (arg, '.')) != (char *) 0
 	       && (strcmp (p, ".o") == 0 || strcmp (p, ".a") == 0
-		   || strcmp (p, ".so") == 0 || strcmp (p, ".lo") == 0))
+		   || strcmp (p, ".so") == 0 || strcmp (p, ".lo") == 0
+		   || strcmp (p, ".obj") == 0))
 	{
 	  if (first_file)
 	    {
@@ -2664,13 +2664,16 @@ scan_libraries (prog_name)
 #ifdef OBJECT_FORMAT_COFF
 
 #if defined(EXTENDED_COFF)
+
 #   define GCC_SYMBOLS(X)	(SYMHEADER(X).isymMax + SYMHEADER(X).iextMax)
 #   define GCC_SYMENT		SYMR
 #   define GCC_OK_SYMBOL(X)	((X).st == stProc || (X).st == stGlobal)
 #   define GCC_SYMINC(X)	(1)
 #   define GCC_SYMZERO(X)	(SYMHEADER(X).isymMax)
 #   define GCC_CHECK_HDR(X)	(PSYMTAB(X) != 0)
+
 #else
+
 #   define GCC_SYMBOLS(X)	(HEADER(ldptr).f_nsyms)
 #   define GCC_SYMENT		SYMENT
 #   define GCC_OK_SYMBOL(X) \
@@ -2683,9 +2686,18 @@ scan_libraries (prog_name)
      (((X).n_sclass == C_EXT) && ((X).n_scnum == N_UNDEF))
 #   define GCC_SYMINC(X)	((X).n_numaux+1)
 #   define GCC_SYMZERO(X)	0
+
+/* 0757 = U803XTOCMAGIC (AIX 4.3) and 0767 = U64_TOCMAGIC (AIX V5) */
+#ifdef _AIX51
+#   define GCC_CHECK_HDR(X) \
+     ((HEADER (X).f_magic == U802TOCMAGIC && ! aix64_flag) \
+      || (HEADER (X).f_magic == 0767 && aix64_flag))
+#else
 #   define GCC_CHECK_HDR(X) \
      ((HEADER (X).f_magic == U802TOCMAGIC && ! aix64_flag) \
       || (HEADER (X).f_magic == 0757 && aix64_flag))
+#endif
+
 #endif
 
 extern char *ldgetname ();
@@ -2913,12 +2925,18 @@ if (debug) fprintf (stderr, "found: %s\n", lib_buf);
 static const char *aix_std_libs[] = {
   "/unix",
   "/lib/libc.a",
+  "/lib/libm.a",
   "/lib/libc_r.a",
+  "/lib/libm_r.a",
   "/usr/lib/libc.a",
+  "/usr/lib/libm.a",
   "/usr/lib/libc_r.a",
+  "/usr/lib/libm_r.a",
   "/usr/lib/threads/libc.a",
   "/usr/ccs/lib/libc.a",
+  "/usr/ccs/lib/libm.a",
   "/usr/ccs/lib/libc_r.a",
+  "/usr/ccs/lib/libm_r.a",
   NULL
 };
 
