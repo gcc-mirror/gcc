@@ -7099,6 +7099,10 @@ ix86_cc_mode (code, op0, op1)
 	return CCNOmode;
       else
 	return CCGCmode;
+      /* strcmp pattern do (use flags) and combine may ask us for proper
+	 mode.  */
+    case USE:
+      return CCmode;
     default:
       abort ();
     }
