@@ -1,5 +1,13 @@
 2000-05-02  Zack Weinberg  <zack@wolery.cumb.org>
 
+	* aclocal.m4 (gcc_AC_CHECK_PROG_VER): New macro.
+	* configure.in: Look for makeinfo in the unified tree, then
+	for a system makeinfo which is sufficiently new.
+	* Makefile.in: If configure says makeinfo is too old, don't
+	build or install Info documentation.
+
+2000-05-02  Zack Weinberg  <zack@wolery.cumb.org>
+
 	* cpphash.c (collect_params): Fix off-by-one error.
 	(dump_hash_helper): Dump all four macro nodetypes.
 

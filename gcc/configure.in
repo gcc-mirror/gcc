@@ -383,6 +383,30 @@ AC_CHECK_HEADER(pthread.h, [have_pthread_h=yes], [have_pthread_h=])
 # See if GNAT has been installed
 AC_CHECK_PROG(gnat, gnatbind, yes, no)
 
+# Do we have a single-tree copy of texinfo?
+if test -f $srcdir/../texinfo/Makefile.in; then
+  MAKEINFO='$(objdir)/../texinfo/makeinfo/makeinfo'
+  gcc_cv_prog_makeinfo_modern=yes
+  AC_MSG_RESULT([Using makeinfo from the unified source tree.])
+else
+  # See if makeinfo has been installed and is modern enough
+  # that we can use it.
+  gcc_AC_CHECK_PROG_VER(MAKEINFO, makeinfo, --version,
+  [GNU texinfo.* \([0-9][0-9.]*\)],
+  [3.1[2-9] | 3.[2-9][0-9] | 4.* | 1.6[89] | 1.7[0-9]])
+fi
+
+if test $gcc_cv_prog_makeinfo_modern = no; then
+  AC_MSG_WARN([
+*** Makeinfo is missing or too old.
+*** Info documentation will not be built or installed.])
+  BUILD_INFO=
+  INSTALL_INFO=
+else
+  BUILD_INFO=info		AC_SUBST(BUILD_INFO)
+  INSTALL_INFO=install-info	AC_SUBST(INSTALL_INFO)
+fi
+
 # See if the stage1 system preprocessor understands the ANSI C
 # preprocessor stringification operator.
 AC_C_STRINGIZE
