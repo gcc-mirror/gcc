@@ -1,5 +1,7 @@
 2000-01-26  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
 
+	* gcc.dg/unused-2.c: New test.
+
 	* gcc.dg/conv-1.c: New test.
 
 2000-01-24  Mark Mitchell  <mark@codesourcery.com>
