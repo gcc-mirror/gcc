@@ -1,5 +1,9 @@
 2001-01-18  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* g++.old-deja/g++.abi/vbase1.C: New test.
+
+2001-01-18  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* g++.old-deja/g++.pt/crash65.C: New test.
 
 2001-01-18  Neil Booth  <neil@daikokuya.demon.co.uk>
