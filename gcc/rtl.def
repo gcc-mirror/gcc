@@ -325,6 +325,16 @@ DEF_RTL_EXPR(SET_ATTR_ALTERNATIVE, "set_attr_alternative", "sE", 'x')
    attribute name and the second is the comparison value.  */
 DEF_RTL_EXPR(EQ_ATTR, "eq_attr", "ss", 'x')
 
+/* A conditional expression which is true if the specified flag is
+   true for the insn being scheduled in reorg.
+
+   genattr.c defines the following flags which can be tested by
+   (attr_flag "foo") expressions in eligible_for_delay.
+
+   forward, backward, very_likely, likely, very_unlikely, and unlikely.  */
+
+DEF_RTL_EXPR (ATTR_FLAG, "attr_flag", "s", 'x')
+
 /* ----------------------------------------------------------------------
    Expression types used for things in the instruction chain.
 
