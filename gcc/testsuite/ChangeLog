@@ -1,4 +1,8 @@
-	2004-09-17  Matt Austern  <austern@apple.com>
+2004-09-21  Mark Mitchell  <mark@codesourcery.com>
+
+	* gcc.dg/pragma-re-3.c: New test.
+
+2004-09-17  Matt Austern  <austern@apple.com>
 
 	PR c++/15049
 	* g++.dg/other/anon3.C: New.
