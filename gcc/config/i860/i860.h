@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler, for Intel 860.
    Copyright (C) 1989, 1991, 1993, 1995, 1996, 1997, 1998, 1999, 2000,
-   2001, 2002 Free Software Foundation, Inc.
+   2001, 2002, 2003 Free Software Foundation, Inc.
    Hacked substantially by Ron Guilmette (rfg@monkeys.com) to cater to
    the whims of the System V Release 4 assembler.
 
@@ -27,8 +27,12 @@ Boston, MA 02111-1307, USA.  */
 
 
 /* Names to predefine in the preprocessor for this target machine.  */
-
-#define CPP_PREDEFINES "-Di860 -Dunix -Asystem=unix -Asystem=svr4 -Acpu=i860 -Amachine=i860"
+#define TARGET_CPU_CPP_BUILTINS()               \
+do {                                            \
+        builtin_define ("i860");                \
+        builtin_assert ("cpu=i860");            \
+        builtin_assert ("machine=i860");        \
+} while (0)
 
 /* Print subsidiary information on the compiler version in use.  */
 #define TARGET_VERSION fprintf (stderr, " (i860)");
@@ -572,8 +576,8 @@ struct cumulative_args { int ints, floats; };
   (VALIST) = i860_build_va_list ()
 
 /* Implement `va_start' for varargs and stdarg.  */
-#define EXPAND_BUILTIN_VA_START(stdarg, valist, nextarg) \
-  i860_va_start (stdarg, valist, nextarg)
+#define EXPAND_BUILTIN_VA_START(valist, nextarg) \
+  i860_va_start (valist, nextarg)
 
 /* Implement `va_arg'.  */
 #define EXPAND_BUILTIN_VA_ARG(valist, type) \
@@ -885,23 +889,6 @@ struct cumulative_args { int ints, floats; };
    but a CALL with constant address is cheap.  */
 #define NO_FUNCTION_CSE
 
-/* Compute the cost of computing a constant rtl expression RTX
-   whose rtx-code is CODE.  The body of this macro is a portion
-   of a switch statement.  If the code is computed here,
-   return it with a return statement.  Otherwise, break from the switch.  */
-
-#define CONST_COSTS(RTX,CODE, OUTER_CODE)			\
-  case CONST_INT:						\
-    if (INTVAL (RTX) == 0)					\
-      return 0;							\
-    if (INTVAL (RTX) < 0x2000 && INTVAL (RTX) >= -0x2000) return 1; \
-  case CONST:							\
-  case LABEL_REF:						\
-  case SYMBOL_REF:						\
-    return 4;							\
-  case CONST_DOUBLE:						\
-    return 6;
-
 /* Specify the cost of a branch insn; roughly the number of extra insns that
    should be added to avoid a branch.
 
@@ -958,19 +945,6 @@ struct cumulative_args { int ints, floats; };
 
 #define ASM_DOUBLE "\t.double"
 
-/* Output at beginning of assembler file.  */
-/* The .file command should always begin the output.  */
-
-#define ASM_FILE_START(FILE)
-#if 0
-#define ASM_FILE_START(FILE)					\
-  do { output_file_directive ((FILE), main_input_filename);	\
-       if (optimize) ASM_FILE_START_1 (FILE);			\
-     } while (0)
-#endif
-
-#define ASM_FILE_START_1(FILE)
-
 /* Output to assembler file text saying following lines
    may contain character constants, extra white space, comments, etc.  */
 
@@ -1008,28 +982,13 @@ struct cumulative_args { int ints, floats; };
 #define ASM_OUTPUT_LABEL(FILE,NAME)	\
   do { assemble_name (FILE, NAME); fputs (":\n", FILE); } while (0)
 
-/* This is how to output a command to make the user-level label named NAME
-   defined for reference from other files.  */
-
-#define ASM_GLOBALIZE_LABEL(FILE,NAME)					\
-  do { fputs (".globl ", FILE);					\
-	assemble_name (FILE, NAME);					\
-	fputs ("\n", FILE);						\
-  } while (0)
-
 /* The prefix to add to user-visible assembler symbols.
 
-   This definition is overridden in i860v4.h because under System V
+   This definition is overridden in i860/sysv4.h because under System V
    Release 4, user-level symbols are *not* prefixed with underscores in
    the generated assembly code.  */
 
 #define USER_LABEL_PREFIX "_"
-
-/* This is how to output an internal numbered label where
-   PREFIX is the class of label and NUM is the number within the class.  */
-
-#define ASM_OUTPUT_INTERNAL_LABEL(FILE,PREFIX,NUM)	\
-  fprintf (FILE, ".%s%d:\n", PREFIX, NUM)
 
 /* This is how to output an internal numbered label which
    labels a jump table.  */
@@ -1037,7 +996,7 @@ struct cumulative_args { int ints, floats; };
 #undef ASM_OUTPUT_CASE_LABEL
 #define ASM_OUTPUT_CASE_LABEL(FILE, PREFIX, NUM, JUMPTABLE)		\
 do { ASM_OUTPUT_ALIGN ((FILE), 2);					\
-     ASM_OUTPUT_INTERNAL_LABEL ((FILE), PREFIX, NUM);			\
+     (*targetm.asm_out.internal_label) ((FILE), PREFIX, NUM);		\
    } while (0)
 
 /* Output at the end of a jump table.  */
