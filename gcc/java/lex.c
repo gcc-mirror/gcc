@@ -128,8 +128,8 @@ java_init_lex (finput, encoding)
   CPC_INITIALIZER_LIST (ctxp) = CPC_STATIC_INITIALIZER_LIST (ctxp) =
     CPC_INSTANCE_INITIALIZER_LIST (ctxp) = NULL_TREE;
 
-  memset ((PTR) ctxp->modifier_ctx, 0, sizeof (ctxp->modifier_ctx));
-  memset ((PTR) current_jcf, 0, sizeof (JCF));
+  memset (ctxp->modifier_ctx, 0, sizeof (ctxp->modifier_ctx));
+  memset (current_jcf, 0, sizeof (JCF));
   ctxp->current_parsed_class = NULL;
   ctxp->package = NULL_TREE;
 #endif
@@ -196,12 +196,11 @@ java_allocate_new_line ()
 
   if (!ctxp->c_line)
     {
-      ctxp->c_line = (struct java_line *)xmalloc (sizeof (struct java_line));
+      ctxp->c_line = xmalloc (sizeof (struct java_line));
       ctxp->c_line->max = JAVA_LINE_MAX;
-      ctxp->c_line->line = (unicode_t *)xmalloc 
-	(sizeof (unicode_t)*ctxp->c_line->max);
+      ctxp->c_line->line = xmalloc (sizeof (unicode_t)*ctxp->c_line->max);
       ctxp->c_line->unicode_escape_p = 
-	  (char *)xmalloc (sizeof (char)*ctxp->c_line->max);
+	xmalloc (sizeof (char)*ctxp->c_line->max);
       ctxp->c_line->white_space_only = 0;
     }
 
@@ -226,7 +225,7 @@ java_new_lexer (finput, encoding)
      FILE *finput;
      const char *encoding;
 {
-  java_lexer *lex = (java_lexer *) xmalloc (sizeof (java_lexer));
+  java_lexer *lex = xmalloc (sizeof (java_lexer));
   int enc_error = 0;
 
   lex->finput = finput;
@@ -522,9 +521,9 @@ java_store_unicode (l, c, unicode_escape_p)
   if (l->size == l->max)
     {
       l->max += JAVA_LINE_MAX;
-      l->line = (unicode_t *) xrealloc (l->line, sizeof (unicode_t)*l->max);
-      l->unicode_escape_p = (char *) xrealloc (l->unicode_escape_p, 
-					       sizeof (char)*l->max);
+      l->line = xrealloc (l->line, sizeof (unicode_t)*l->max);
+      l->unicode_escape_p = xrealloc (l->unicode_escape_p, 
+				      sizeof (char)*l->max);
     }
   l->line [l->size] = c;
   l->unicode_escape_p [l->size++] = unicode_escape_p;

@@ -1,3 +1,20 @@
+2002-11-14  Jens-Michael Hoffmann  <jensmh@gmx.de>
+
+	* buffer.c: Remove unnecessary casts.
+	* check-init.c: Likewise.
+	* class.c: Likewise.
+	* constants.c: Likewise.
+	* decl.c: Likewise.
+	* except.c: Likewise.
+	* gjavah.c: Likewise.
+	* jcf-io.c: Likewise.
+	* jcf-parse.c: Likewise.
+	* jcf-path.c: Likewise.
+	* jvspec.c: Likewise.
+	* lang.c: Likewise.
+	* lex.c: Likewise.
+	* verify.c: Likewise.
+
 2002-11-06  Tom Tromey  <tromey@redhat.com>
 
 	* gjavah.c (print_stub_or_jni): Include JNIEXPORT and JNICALL in

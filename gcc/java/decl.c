@@ -1183,7 +1183,7 @@ static struct binding_level *
 make_binding_level ()
 {
   /* NOSTRICT */
-  return (struct binding_level *) xmalloc (sizeof (struct binding_level));
+  return xmalloc (sizeof (struct binding_level));
 }
 
 void
@@ -1778,7 +1778,7 @@ start_java_method (fndecl)
 
   i = DECL_MAX_LOCALS(fndecl) + DECL_MAX_STACK(fndecl);
   decl_map = make_tree_vec (i);
-  type_map = (tree *) xrealloc (type_map, i * sizeof (tree));
+  type_map = xrealloc (type_map, i * sizeof (tree));
 
 #if defined(DEBUG_JAVA_BINDING_LEVELS)
   fprintf (stderr, "%s:\n", lang_printable_name (fndecl, 2));
