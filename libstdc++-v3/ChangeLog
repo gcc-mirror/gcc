@@ -10,6 +10,7 @@
 	* acinclude.m4 (GLIBCPP_COMPILER_VERSION): Fix typo.
 	(GLIBCPP_ENABLE_SHADOW): Do a less gross hack.
 	* aclocal.m4: Regenerate.
+	* mkcheck.in (INC_PATH): Tweak. 
 	
 	* configure.in: Enable long long by default.
 	* configure: Regenerate.
