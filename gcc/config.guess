@@ -436,17 +436,21 @@ EOF
 	# The BFD linker knows what the default object file format is, so
 	# first see if it will tell us.
 	ld_help_string=`ld --help 2>&1`
-	if echo "$ld_help_string" | grep >/dev/null 2>&1 "supported emulations: i.86linux"; then
-	  echo "${UNAME_MACHINE}-pc-linux-gnuaout" ; exit 0
-	elif echo "$ld_help_string" | grep >/dev/null 2>&1 "supported emulations: i.86coff"; then
-	  echo "${UNAME_MACHINE}-pc-linux-gnucoff" ; exit 0
-	elif echo $ld_help_string | grep >/dev/null 2>&1 "supported emulations:sparclinux"; then
-	  echo "${UNAME_MACHINE}-unknown-linux-gnuaout" ; exit 0
-	elif echo "$ld_help_string" | grep >/dev/null 2>&1 "supported emulations: m68klinux"; then
-	  echo "${UNAME_MACHINE}-unknown-linux-gnuaout" ; exit 0
-	elif echo "$ld_help_string" | grep >/dev/null 2>&1 "supported emulations: elf32ppc"; then
-	  echo "powerpc-unknown-linux-gnu" ; exit 0
-	elif test "${UNAME_MACHINE}" = "alpha" ; then
+	ld_supported_emulations=`echo $ld_help_string
+			 | sed -ne '/supported emulations:/!d
+				    s/[ 	][ 	]*/ /g
+				    s/.*supported emulations: *//
+				    s/ .*//
+				    p'`
+        case "$ld_supported_emulations" in
+	  i?86linux)  echo "${UNAME_MACHINE}-pc-linux-gnuaout"      ; exit 0 ;;
+	  i?86coff)   echo "${UNAME_MACHINE}-pc-linux-gnucoff"      ; exit 0 ;;
+	  sparclinux) echo "${UNAME_MACHINE}-unknown-linux-gnuaout" ; exit 0 ;;
+	  m68klinux)  echo "${UNAME_MACHINE}-unknown-linux-gnuaout" ; exit 0 ;;
+	  elf32ppc)   echo "powerpc-unknown-linux-gnu"              ; exit 0 ;;
+	esac
+
+	if test "${UNAME_MACHINE}" = "alpha" ; then
 	  echo alpha-unknown-linux-gnu ; exit 0
 	elif test "${UNAME_MACHINE}" = "mips" ; then
 	  cat >dummy.c <<EOF
@@ -468,9 +472,12 @@ EOF
 	else
 	  # Either a pre-BFD a.out linker (linux-gnuoldld)
 	  # or one that does not give us useful --help.
-	  # Gcc wants to distinguish between linux-gnuoldld and linux-gnuaout.
-	  test ! -d /usr/lib/ldscripts/. \
-	    && echo "${UNAME_MACHINE}-pc-linux-gnuoldld" && exit 0
+	  # GCC wants to distinguish between linux-gnuoldld and linux-gnuaout.
+	  # If ld does not provide *any* "supported emulations:"
+	  # that means it is gnuoldld.
+	  echo "$ld_help_string" | grep >/dev/null 2>&1 "supported emulations:"
+	  test $? != 0 && echo "${UNAME_MACHINE}-pc-linux-gnuoldld" && exit 0
+
 	  case "${UNAME_MACHINE}" in
 	  i?86)
 	    VENDOR=pc;
