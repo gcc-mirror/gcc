@@ -60,6 +60,18 @@ fix = {
 
 
 /*
+ * Tru64 UNIX V4.0F/V5.1 <standards.h> defines _NO_PROTO and _NONSTD_TYPES
+ * correctly for GCC, but strict_ansi_not breaks it.
+ */
+fix = {
+    hackname = AAA_standards;
+    files    = standards.h;
+    select   = 'GNU and MIPS C compilers define __STDC__ differently';
+    replace; /* empty replacement -> no fixing the file */
+};
+
+
+/*
  *  This file on SunOS 4 has a very large macro.  When the sed loop
  *  tries pull it in, it overflows the pattern space size of the SunOS
  *  sed (GNU sed does not have this problem).  Since the file does not
@@ -86,7 +98,7 @@ fix = {
 /* And now, the real fixes, replacement text fixes first: */
 
 /*
- *  Completely replace &lt;_int_varargs.h&gt; with a file that includes gcc's
+ *  Completely replace <_int_varargs.h> with a file that includes gcc's
  *  stdarg.h or varargs.h files as appropriate on DG/UX
  */
 fix = {
@@ -105,7 +117,7 @@ fix = {
 */
 
 \#ifndef ___int_features_h
-\#include &lt;sys/_int_features.h&gt;
+\#include <sys/_int_features.h>
 \#endif
 
 \#if !(defined(_VA_LIST) || defined(_VA_LIST_))
