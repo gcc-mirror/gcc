@@ -1,3 +1,16 @@
+2004-05-07  Aldy Hernandez  <aldyh@redhat.com>
+
+	* config/rs6000/rs6000-protos.h (rs6000_hard_regno_mode_ok_p):
+	Declare.
+
+	* config/rs6000/rs6000.c (rs6000_hard_regno_mode_ok_p): New.
+	(rs6000_hard_regno_mode_ok): New.
+	(rs6000_init_hard_regno_mode_ok): New.
+	(rs6000_override_options): Call rs6000_init_hard_regno_mode_ok.
+
+	* config/rs6000/rs6000.h (HARD_REGNO_NREGS): Use precomputed
+	result.
+
 2004-05-07  Ziemowit Laski  <zlaski@apple.com>
 
 	* config/rs6000/altivec.h (vector, pixel, bool): Do not
