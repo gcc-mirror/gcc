@@ -1945,6 +1945,25 @@ simplify_rhs_and_lookup_avail_expr (struct dom_walk_data *walk_data,
 		  tree type = TREE_TYPE (TREE_OPERAND (stmt, 0));
 		  tree t;
 
+		  /* If we care about correct floating point results, then
+		     don't fold x + c1 - c2.  Note that we need to take both
+		     the codes and the signs to figure this out.  */
+		  if (FLOAT_TYPE_P (type)
+		      && !flag_unsafe_math_optimizations
+		      && (rhs_def_code == PLUS_EXPR
+			  || rhs_def_code == MINUS_EXPR))
+		    {
+		      bool neg = false;
+
+		      neg ^= (rhs_code == MINUS_EXPR);
+		      neg ^= (rhs_def_code == MINUS_EXPR);
+		      neg ^= real_isneg (TREE_REAL_CST_PTR (outer_const));
+		      neg ^= real_isneg (TREE_REAL_CST_PTR (def_stmt_op1));
+
+		      if (neg)
+			goto dont_fold_assoc;
+		    }
+
 		  /* Ho hum.  So fold will only operate on the outermost
 		     thingy that we give it, so we have to build the new
 		     expression in two pieces.  This requires that we handle
@@ -1979,6 +1998,7 @@ simplify_rhs_and_lookup_avail_expr (struct dom_walk_data *walk_data,
 		}
 	    }
 	}
+ dont_fold_assoc:;
     }
 
   /* Transform TRUNC_DIV_EXPR and TRUNC_MOD_EXPR into RSHIFT_EXPR
