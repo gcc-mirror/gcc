@@ -1,3 +1,7 @@
+2003-01-20  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* gcc.c-torture/execute/20030120-1.c: New.
+
 2003-01-19  Paolo Carlini  <pcarlini@unitus.it>
 
 	* g++.old-deja/g++.pt/typename13.C: Remove XFAIL.
