@@ -203,7 +203,8 @@ gcov_exit (void)
 	    }
 	  
 	  /* Merge execution counts for each function.  */
-	  for (f_ix = gi_ptr->n_functions, fi_ptr = gi_ptr->functions; f_ix--;
+	  for (f_ix = gi_ptr->n_functions, fi_ptr = gi_ptr->functions;
+	       f_ix--;
 	       fi_ptr = (const struct gcov_fn_info *)
 		 ((const char *) fi_ptr + fi_stride))
 	    {
@@ -211,18 +212,16 @@ gcov_exit (void)
 	      length = gcov_read_unsigned ();
 
 	      /* Check function */
-	      if (tag != GCOV_TAG_FUNCTION)
+	      if (tag != GCOV_TAG_FUNCTION
+		  || gcov_read_unsigned () != fi_ptr->ident
+		  || gcov_read_unsigned () != fi_ptr->checksum)
 		{
 		read_mismatch:;
 		  fprintf (stderr, "profiling:%s:Merge mismatch for %s\n",
 			   gi_ptr->filename,
-			   fi_ptr ? fi_ptr->name : "summaries");
+			   f_ix + 1 ? "function" : "summaries");
 		  goto read_fatal;
 		}
-
-	      if (strcmp (gcov_read_string (), fi_ptr->name)
-		  || gcov_read_unsigned () != fi_ptr->checksum)
-		goto read_mismatch;
 
 	      for (c_ix = t_ix = 0; t_ix != GCOV_COUNTERS; t_ix++)
 		if ((1 << t_ix) & gi_ptr->ctr_mask)
@@ -284,9 +283,8 @@ gcov_exit (void)
       if (!summary_pos)
 	memset (&program, 0, sizeof (program));
 
-      fi_ptr = 0;
-      
       /* Merge the summaries.  */
+      f_ix = ~0u;
       for (t_ix = c_ix = 0,
 	     cs_obj = object.ctrs, cs_tobj = this_object.ctrs,
 	     cs_prg = program.ctrs, cs_tprg = this_program.ctrs,
@@ -346,7 +344,7 @@ gcov_exit (void)
 	{
 	  /* Announce function.  */
 	  base = gcov_write_tag (GCOV_TAG_FUNCTION);
-	  gcov_write_string (fi_ptr->name);
+	  gcov_write_unsigned (fi_ptr->ident);
 	  gcov_write_unsigned (fi_ptr->checksum);
 	  gcov_write_length (base);
 

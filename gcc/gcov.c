@@ -168,6 +168,7 @@ typedef struct function_info
 {
   /* Name of function.  */
   char *name;
+  unsigned ident;
   unsigned checksum;
 
   /* Array of basic blocks.  */
@@ -744,21 +745,23 @@ read_graph_file ()
       unsigned tag = gcov_read_unsigned ();
       unsigned length = gcov_read_unsigned ();
       unsigned long base = gcov_position ();
-      
+
       if (tag == GCOV_TAG_FUNCTION)
 	{
 	  char *function_name;
-	  unsigned checksum, lineno;
+	  unsigned ident, checksum, lineno;
 	  source_t *src;
 	  function_t *probe, *prev;
 
-	  function_name = xstrdup (gcov_read_string ());
+	  ident = gcov_read_unsigned ();
 	  checksum = gcov_read_unsigned ();
+	  function_name = xstrdup (gcov_read_string ());
 	  src = find_source (gcov_read_string ());
 	  lineno = gcov_read_unsigned ();
 	  
 	  fn = (function_t *)xcalloc (1, sizeof (function_t));
 	  fn->name = function_name;
+	  fn->ident = ident;
 	  fn->checksum = checksum;
 	  fn->src = src;
 	  fn->line = lineno;
@@ -1015,7 +1018,7 @@ read_count_file ()
 	program_count++;
       else if (tag == GCOV_TAG_FUNCTION)
 	{
-	  const char *function_name = gcov_read_string ();
+	  unsigned ident = gcov_read_unsigned ();
 	  struct function_info *fn_n = functions;
 
 	  for (fn = fn ? fn->next : NULL; ; fn = fn->next)
@@ -1026,11 +1029,11 @@ read_count_file ()
 		fn_n = NULL;
 	      else
 		{
-		  fnotice (stderr, "%s:unknown function `%s'\n",
-			   da_file_name, function_name);
+		  fnotice (stderr, "%s:unknown function `%u'\n",
+			   da_file_name, ident);
 		  break;
 		}
-	      if (!strcmp (fn->name, function_name))
+	      if (fn->ident == ident)
 		break;
 	    }
 

@@ -222,6 +222,7 @@ gcov_write_counter (gcov_type value)
 }
 #endif /* IN_LIBGCOV */
 
+#if !IN_LIBGCOV
 /* Write STRING to coverage file.  Sets error flag on file
    error, overflow flag on overflow */
 
@@ -254,6 +255,7 @@ gcov_write_string (const char *string)
       memcpy (buffer + 4 + length, &pad, rem);
     }
 }
+#endif
 
 /* Write a tag TAG and reserve space for the record length. Return a
    value to be used for gcov_write_length.  */
@@ -396,6 +398,7 @@ gcov_read_counter ()
    buffer, or NULL on empty string. You must copy the string before
    calling another gcov function.  */
 
+#if !IN_LIBGCOV
 GCOV_LINKAGE const char *
 gcov_read_string ()
 {
@@ -407,6 +410,7 @@ gcov_read_string ()
   length += 4 - (length & 3);
   return (const char *) gcov_read_bytes (length);
 }
+#endif
 
 GCOV_LINKAGE void
 gcov_read_summary (struct gcov_summary *summary)
