@@ -3065,7 +3065,10 @@ store_one_arg (arg, argblock, may_be_alloca, variable_size, fndecl,
      but PCC has one, so this will avoid some problems.  */
   emit_queue ();
 
-  /* Free any temporary slots made in processing this argument.  */
+  /* Free any temporary slots made in processing this argument.  Show
+     that we might have taken the address of something and pushed that
+     as an operand.  */
+  preserve_temp_slots (NULL_RTX);
   free_temp_slots ();
   pop_temp_slots ();
 
