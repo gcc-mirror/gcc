@@ -5136,10 +5136,16 @@ expand_expr (exp, target, tmode, modifier)
 	    if (TYPE_SIZE (type) == 0
 		|| TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
 	      abort ();
+
 	    temp = assign_stack_temp (BLKmode,
 				      (TREE_INT_CST_LOW (TYPE_SIZE (type))
 				       + BITS_PER_UNIT - 1)
 				      / BITS_PER_UNIT, 0);
+	    MEM_IN_STRUCT_P (temp)
+	      = (TREE_CODE (type) == RECORD_TYPE
+		 || TREE_CODE (type) == UNION_TYPE
+		 || TREE_CODE (type) == QUAL_UNION_TYPE
+		 || TREE_CODE (type) == ARRAY_TYPE);
 	  }
 	else
 	  temp = gen_reg_rtx (mode);
