@@ -1,3 +1,12 @@
+2000-11-23  Marek Michalkiewicz  <marekm@linux.org.pl>
+
+	* config/avr/avr.md: Document UNSPEC usage.
+	(*tablejump_rjmp, *tablejump_lib, *tablejump_enh, *tablejump):
+	Make operand 0 input only, clobber it.  Use UNSPEC, not a bogus
+	MEM for program memory word reference.  Do not add the label to
+	the table index in each of the asm output templates, instead ...
+	(casesi): ... do it in RTL.  Adjust to match the above change.
+
 2000-12-02  Bernd Schmidt  <bernds@redhat.co.uk>
 
 	* c-common.c (PTRDIFF_TYPE): Provide default here, ...
