@@ -1,3 +1,10 @@
+2004-10-28  Dorit Naishlos <dorit@il.ibm.com>
+
+	PR other/18172
+	* gcc.dg/vect/vect-20.c: Use 'signed char' instaed of 'char'. Remove 
+	unused variables.
+	* gcc.dg/vect/vect-22.c: Likewise.
+
 2004-10-28  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/i386-rotate-1.c: New test.
