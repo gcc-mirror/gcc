@@ -5389,7 +5389,7 @@ alpha_gp_save_rtx ()
 {
   rtx r = get_hard_reg_initial_val (DImode, 29);
   if (GET_CODE (r) != MEM)
-    r = gen_mem_addressof (r, NULL_TREE);
+    r = gen_mem_addressof (r, NULL_TREE, /*rescan=*/true);
   return r;
 }
 

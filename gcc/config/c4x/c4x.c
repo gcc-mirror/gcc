@@ -5017,7 +5017,7 @@ c4x_expand_builtin (exp, target, subtarget, mode, ignore)
 	break;
       arg0 = TREE_VALUE (arglist);
       if (TREE_CODE (arg0) == VAR_DECL || TREE_CODE (arg0) == PARM_DECL)
-	put_var_into_stack (arg0);
+	put_var_into_stack (arg0, /*rescan=*/true);
       r0 = expand_expr (arg0, NULL_RTX, QFmode, 0);
       r0 = protect_from_queue (r0, 0);
       if (register_operand (r0, QFmode))

@@ -1,3 +1,13 @@
+2003-03-24  Mark Mitchell  <mark@codesourcery.com>
+
+	* function.c (put_var_into_stack): Change bool parameter to int.
+	(gen_mem_addressof): Likewise.
+	* rtl.h (gen_mem_addressof): Likewise.
+	* tree.h (put_var_into_stack): Likewise.
+	* config/alpha/alpha.c (alpha_gp_save_rtx): Adjust call to
+	gen_mem_addressof or put_var_into_stack.
+	* config/c4x/c4x.c (c4x_expand_builtin): Likewise.
+
 2003-03-24  Andreas Schwab  <schwab@suse.de>
 
 	* config/ia64/ia64.c (spill_tfmode_operand): Adjust calls to
