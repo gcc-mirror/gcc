@@ -4397,6 +4397,18 @@ extract_muldiv (t, c, code, wide_type)
       break;
 
     case CONVERT_EXPR:  case NON_LVALUE_EXPR:  case NOP_EXPR:
+      /* If op0 is an expression, and is unsigned, and the type is
+	 smaller than ctype, then we cannot widen the expression.  */
+      if ((TREE_CODE_CLASS (TREE_CODE (op0)) == '<'
+	   || TREE_CODE_CLASS (TREE_CODE (op0)) == '1'
+	   || TREE_CODE_CLASS (TREE_CODE (op0)) == '2'
+	   || TREE_CODE_CLASS (TREE_CODE (op0)) == 'e')
+	  && TREE_UNSIGNED (TREE_TYPE (op0))
+	  && ! TYPE_IS_SIZETYPE (TREE_TYPE (op0))
+	  && (GET_MODE_SIZE (TYPE_MODE (ctype))
+              > GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (op0)))))
+	break;
+
       /* Pass the constant down and see if we can make a simplification.  If
 	 we can, replace this expression with the inner simplification for
 	 possible later conversion to our or some other type.  */
@@ -4413,7 +4425,7 @@ extract_muldiv (t, c, code, wide_type)
     case MIN_EXPR:  case MAX_EXPR:
       /* If widening the type changes the signedness, then we can't perform
 	 this optimization as that changes the result.  */
-      if (ctype != type && TREE_UNSIGNED (ctype) != TREE_UNSIGNED (type))
+      if (TREE_UNSIGNED (ctype) != TREE_UNSIGNED (type))
 	break;
 
       /* MIN (a, b) / 5 -> MIN (a / 5, b / 5)  */
@@ -4581,8 +4593,7 @@ extract_muldiv (t, c, code, wide_type)
 	 this since it will change the result if the original computation
 	 overflowed.  */
       if ((! TREE_UNSIGNED (ctype)
-	   || (TREE_CODE (ctype) == INTEGER_TYPE
-	       && TYPE_IS_SIZETYPE (ctype)))
+	   || TYPE_IS_SIZETYPE (ctype))
 	  && ((code == MULT_EXPR && tcode == EXACT_DIV_EXPR)
 	      || (tcode == MULT_EXPR
 		  && code != TRUNC_MOD_EXPR && code != CEIL_MOD_EXPR
