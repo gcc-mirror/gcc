@@ -1,3 +1,9 @@
+2004-09-08  Bryce McKinlay  <mckinlay@redhat.com>
+
+	* configure.ac (AC_CONFIG_COMMANDS): Don't create subdirectories and
+	.d files.
+	* configure: Rebuilt.
+
 2004-09-04  Mohan Embar  <gnustuff@thisiscool.com>
 
 	* java/net/natNetworkInterfaceWin32.cc (getRealNetworkInterfaces):
