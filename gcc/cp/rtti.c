@@ -413,6 +413,7 @@ get_tinfo_decl (type)
       TREE_STATIC (d) = 1;
       DECL_EXTERNAL (d) = 1;
       TREE_PUBLIC (d) = 1;
+      comdat_linkage (d);
       DECL_ASSEMBLER_NAME (d) = DECL_NAME (d);
       cp_finish_decl (d, NULL_TREE, NULL_TREE, 0);
 
@@ -1918,6 +1919,11 @@ emit_tinfo_decl (decl_ptr, data)
   TREE_TYPE (DECL_NAME (tinfo_decl)) = NULL_TREE;
   
   if (!DECL_NEEDED_P (tinfo_decl))
+    return 0;
+  if (TREE_CODE (tinfo_type) == RECORD_TYPE && TYPE_POLYMORPHIC_P (tinfo_type)
+      && !CLASSTYPE_VTABLE_NEEDS_WRITING (tinfo_type))
+    /* A polymorphic type only needs its type_info emitted when the vtable
+       is.  */
     return 0;
   create_tinfo_types ();
   decl = synthesize_tinfo_var (tinfo_type, DECL_ASSEMBLER_NAME (tinfo_decl));

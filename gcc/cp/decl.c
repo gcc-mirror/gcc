@@ -1764,9 +1764,8 @@ vtype_decl_p (t, data)
      void *data ATTRIBUTE_UNUSED;
 {
   return (TREE_CODE (t) == TYPE_DECL
-	  && TREE_TYPE (t) != error_mark_node
-	  && TYPE_LANG_SPECIFIC (TREE_TYPE (t))
-	  && CLASSTYPE_VSIZE (TREE_TYPE (t)));
+	  && TREE_CODE (TREE_TYPE (t)) == RECORD_TYPE
+	  && TYPE_POLYMORPHIC_P (TREE_TYPE (t)));
 }
 
 /* Return the declarations that are members of the namespace NS.  */
