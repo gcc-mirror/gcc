@@ -1,5 +1,11 @@
 2000-11-18  Richard Henderson  <rth@redhat.com>
 
+	* lib/c-torture.exp (TORTURE_OPTIONS): Remove -fssa.
+	* lib/f-torture.exp (TORTURE_OPTIONS): Likewise.
+	* lib/gcc-dg.exp (TORTURE_OPTIONS): Likewise.
+
+2000-11-18  Richard Henderson  <rth@redhat.com>
+
 	* gcc.c-torture/execute/20001009-2.c (foo): Rename from main.
 	(main): New.  Exit cleanly.
 
