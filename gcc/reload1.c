@@ -4288,9 +4288,13 @@ choose_reload_regs (insn, avoid_return_reg)
   COPY_HARD_REG_SET (save_reload_reg_used_in_op_addr,
 		     reload_reg_used_in_op_addr);
 
-  /* Try first with inheritance, then turning it off.  */
+  /* If -O, try first with inheritance, then turning it off.
+     If not -O, don't do inheritance.
+     Using inheritance when not optimizing leads to paradoxes
+     with fp on the 68k: fp numbers (not NaNs) fail to be equal to themselves
+     because one side of the comparison might be inherited.  */
 
-  for (inheritance = 1; inheritance >= 0; inheritance--)
+  for (inheritance = optimize > 0; inheritance >= 0; inheritance--)
     {
       /* Process the reloads in order of preference just found.
 	 Beyond this point, subregs can be found in reload_reg_rtx.
@@ -4763,7 +4767,8 @@ emit_reload_insns (insn)
 	     register.  */
 
 	  if (reload_secondary_reload[j] >= 0
-	      && reload_secondary_icode[j] == CODE_FOR_nothing)
+	      && reload_secondary_icode[j] == CODE_FOR_nothing
+	      && optimize)
 	    oldequiv
 	      = find_equiv_reg (old, insn,
 				reload_reg_class[reload_secondary_reload[j]],
@@ -4778,7 +4783,7 @@ emit_reload_insns (insn)
 	     or has yet to be emitted, in which case it doesn't matter
 	     because we will use this equiv reg right away.  */
 
-	  if (oldequiv == 0
+	  if (oldequiv == 0 && optimize
 	      && (GET_CODE (old) == MEM
 		  || (GET_CODE (old) == REG
 		      && REGNO (old) >= FIRST_PSEUDO_REGISTER
