@@ -80,6 +80,13 @@
 .Ldtore = .-.LCTOC1
 	.long	__DTOR_END__			/* end of .dtor section */
 
+.Linit = .-.LCTOC1
+	.long	.Linit_p			/* address of variable to say we've been called */
+
+	.data
+.Linit_p:
+	.long	0
+
 	.text
 .Lptr:
 	.long	.LCTOC1-.Laddr			/* PC relative pointer to .got2 */
@@ -92,9 +99,14 @@ FUNC_START(__eabi)
 	lwz	11,(.Lptr-.Laddr)(12)		/* linker generated address of .LCTOC1 */
 	add	11,11,12			/* correct to real pointer */
 	lwz	12,.Ltable(11)			/* get linker's idea of where .Laddr is */
+	lwz	10,.Linit(11)			/* address of init flag */
 	subf.	12,12,11			/* calculate difference */
 	mtlr	0				/* restore link register */
-	bc	4,2,.Lreloc			/* skip if we need to relocate */
+	lwzx	9,10,12				/* done flag */
+	cmplwi	2,9,0				/* init flag != 0? */
+	bnelr	2				/* return now, if we've been called already */
+	stwx	1,10,12				/* store a non-zero value in the done flag */
+	bne	0,.Lreloc			/* skip if we need to relocate */
 
 /* Only load up register 2 if there is a .got section */
 
