@@ -198,7 +198,7 @@ static int rand_type = TYPE_3;
 static int rand_deg = DEG_3;
 static int rand_sep = SEP_3;
 
-static long int *end_ptr = &randtbl[ARRAY_SIZE (randtbl)];
+static long int *end_ptr = &randtbl[sizeof(randtbl) / sizeof(randtbl[0])];
 
 /* Initialize the random number generator based on the given seed.  If the
    type is the trivial no-state-information type, just remember the seed.
