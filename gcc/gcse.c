@@ -577,7 +577,6 @@ static int one_cprop_pass	     PROTO ((int, int));
 
 static void alloc_pre_mem	     PROTO ((int, int));
 static void free_pre_mem	      PROTO ((void));
-static void compute_pre_local_properties PROTO ((void));
 static void compute_pre_avinout       PROTO ((void));
 static void compute_pre_antinout      PROTO ((void));
 static void compute_pre_pavinout      PROTO ((void));
@@ -4000,78 +3999,6 @@ free_pre_mem ()
   free (pre_transpout);
 }
 
-/* Compute the local properties of each recorded expression.
-   Local properties are those that are defined by the block, irrespective
-   of other blocks.
-
-   An expression is transparent in a block if its operands are not modified
-   in the block.
-
-   An expression is computed (locally available) in a block if it is computed
-   at least once and expression would contain the same value if the
-   computation was moved to the end of the block.
-
-   An expression is locally anticipatable in a block if it is computed at
-   least once and expression would contain the same value if the computation
-   was moved to the beginning of the block.  */
-
-static void
-compute_pre_local_properties ()
-{
-  int i;
-
-  sbitmap_vector_ones (pre_transp, n_basic_blocks);
-  sbitmap_vector_zero (pre_comp, n_basic_blocks);
-  sbitmap_vector_zero (pre_antloc, n_basic_blocks);
-
-  for (i = 0; i < expr_hash_table_size; i++)
-    {
-      struct expr *expr;
-
-      for (expr = expr_hash_table[i]; expr != NULL; expr = expr->next_same_hash)
-	{
-	  struct occr *occr;
-	  int indx = expr->bitmap_index;
-
-	  /* The expression is transparent in this block if it is not killed.
-	     We start by assuming all are transparent [none are killed], and then
-	     reset the bits for those that are.  */
-
-	  compute_transp (expr->expr, indx, pre_transp, 0);
-
-	  /* The occurrences recorded in antic_occr are exactly those that
-	     we want to set to non-zero in ANTLOC.  */
-
-	  for (occr = expr->antic_occr; occr != NULL; occr = occr->next)
-	    {
-	      int bb = BLOCK_NUM (occr->insn);
-	      SET_BIT (pre_antloc[bb], indx);
-
-	      /* While we're scanning the table, this is a good place to
-		 initialize this.  */
-	      occr->deleted_p = 0;
-	    }
-
-	  /* The occurrences recorded in avail_occr are exactly those that
-	     we want to set to non-zero in COMP.  */
-
-	  for (occr = expr->avail_occr; occr != NULL; occr = occr->next)
-	    {
-	      int bb = BLOCK_NUM (occr->insn);
-	      SET_BIT (pre_comp[bb], indx);
-
-	      /* While we're scanning the table, this is a good place to
-		 initialize this.  */
-	      occr->copied_p = 0;
-	    }
-
-	  /* While we're scanning the table, this is a good place to
-	     initialize this.  */
-	  expr->reaching_reg = 0;
-	}
-    }
-}
-
 /* Compute expression availability at entrance and exit of each block.  */
 
 static void
@@ -4337,7 +4264,7 @@ compute_pre_ppinout ()
 static void
 compute_pre_data ()
 {
-  compute_pre_local_properties ();
+  compute_local_properties (pre_transp, pre_comp, pre_antloc, 0);
   compute_pre_avinout ();
   compute_pre_antinout ();
   compute_pre_pavinout ();
