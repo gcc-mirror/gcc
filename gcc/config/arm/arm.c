@@ -3018,7 +3018,7 @@ thumb_find_work_register (int live_regs_mask)
     return LAST_ARG_REGNUM;
 
   /* Look for a pushed register.  */
-  for (reg = 0; reg < LAST_LO_REGNUM; reg++)
+  for (reg = LAST_LO_REGNUM; reg >=0; reg--)
     if (live_regs_mask & (1 << reg))
       return reg;
 
@@ -8733,7 +8733,7 @@ thumb_compute_save_reg_mask (void)
     }
 
   if (flag_pic && !TARGET_SINGLE_PIC_BASE)
-    mask |= PIC_OFFSET_TABLE_REGNUM;
+    mask |= (1 << PIC_OFFSET_TABLE_REGNUM);
   if (TARGET_SINGLE_PIC_BASE)
     mask &= ~(1 << arm_pic_register);
 
