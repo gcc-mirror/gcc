@@ -74,7 +74,7 @@ rtx tail_recursion_label_list;
 
 static int can_delete_note_p		PARAMS ((rtx));
 static int can_delete_label_p		PARAMS ((rtx));
-static void commit_one_edge_insertion	PARAMS ((edge));
+static void commit_one_edge_insertion	PARAMS ((edge, int));
 static bool try_redirect_by_replacing_jump PARAMS ((edge, basic_block));
 static rtx last_loop_beg_note		PARAMS ((rtx));
 static bool back_edge_of_syntactic_loop_p PARAMS ((basic_block, basic_block));
@@ -178,6 +178,26 @@ delete_insn (insn)
   return next;
 }
 
+/* Like delete_insn but also purge dead edges from BB.  */
+rtx
+delete_insn_and_edges (insn)
+     rtx insn;
+{
+  rtx x;
+  bool purge = false;
+
+  if (basic_block_for_insn
+      && INSN_P (insn)
+      && (unsigned int)INSN_UID (insn) < basic_block_for_insn->num_elements
+      && BLOCK_FOR_INSN (insn)
+      && BLOCK_FOR_INSN (insn)->end == insn)
+    purge = true;
+  x = delete_insn (insn);
+  if (purge)
+    purge_dead_edges (BLOCK_FOR_INSN (insn));
+  return x;
+}
+
 /* Unlink a chain of insns between START and FINISH, leaving notes
    that must be paired.  */
 
@@ -202,6 +222,24 @@ delete_insn_chain (start, finish)
 	break;
       start = next;
     }
+}
+
+/* Like delete_insn but also purge dead edges from BB.  */
+void
+delete_insn_chain_and_edges (first, last)
+     rtx first, last;
+{
+  bool purge = false;
+
+  if (basic_block_for_insn
+      && INSN_P (last)
+      && (unsigned int)INSN_UID (last) < basic_block_for_insn->num_elements
+      && BLOCK_FOR_INSN (last)
+      && BLOCK_FOR_INSN (last)->end == last)
+    purge = true;
+  delete_insn_chain (first, last);
+  if (purge)
+    purge_dead_edges (BLOCK_FOR_INSN (last));
 }
 
 /* Create a new basic block consisting of the instructions between HEAD and END
@@ -1271,8 +1309,9 @@ insert_insn_on_edge (pattern, e)
 /* Update the CFG for the instructions queued on edge E.  */
 
 static void
-commit_one_edge_insertion (e)
+commit_one_edge_insertion (e, watch_calls)
      edge e;
+     int watch_calls;
 {
   rtx before = NULL_RTX, after = NULL_RTX, insns, tmp, last;
   basic_block bb;
@@ -1281,61 +1320,82 @@ commit_one_edge_insertion (e)
   insns = e->insns;
   e->insns = NULL_RTX;
 
-  /* Figure out where to put these things.  If the destination has
-     one predecessor, insert there.  Except for the exit block.  */
-  if (e->dest->pred->pred_next == NULL
-      && e->dest != EXIT_BLOCK_PTR)
+  /* Special case -- avoid inserting code between call and storing
+     its return value.  */
+  if (watch_calls && (e->flags & EDGE_FALLTHRU) && !e->dest->pred->pred_next
+      && e->src != ENTRY_BLOCK_PTR
+      && GET_CODE (e->src->end) == CALL_INSN)
     {
+      rtx next = next_nonnote_insn (e->src->end);
+
+      after = e->dest->head;
+      /* The first insn after the call may be a stack pop, skip it.  */
+      while (next
+	     && keep_with_call_p (next))
+        {
+          after = next;
+	  next = next_nonnote_insn (next);
+	}
       bb = e->dest;
-
-      /* Get the location correct wrt a code label, and "nice" wrt
-	 a basic block note, and before everything else.  */
-      tmp = bb->head;
-      if (GET_CODE (tmp) == CODE_LABEL)
-	tmp = NEXT_INSN (tmp);
-      if (NOTE_INSN_BASIC_BLOCK_P (tmp))
-	tmp = NEXT_INSN (tmp);
-      if (tmp == bb->head)
-	before = tmp;
-      else
-	after = PREV_INSN (tmp);
     }
-
-  /* If the source has one successor and the edge is not abnormal,
-     insert there.  Except for the entry block.  */
-  else if ((e->flags & EDGE_ABNORMAL) == 0
-	   && e->src->succ->succ_next == NULL
-	   && e->src != ENTRY_BLOCK_PTR)
+  if (!before && !after)
     {
-      bb = e->src;
+      /* Figure out where to put these things.  If the destination has
+         one predecessor, insert there.  Except for the exit block.  */
+      if (e->dest->pred->pred_next == NULL && e->dest != EXIT_BLOCK_PTR)
+	{
+	  bb = e->dest;
 
-      /* It is possible to have a non-simple jump here.  Consider a target
-	 where some forms of unconditional jumps clobber a register.  This
-	 happens on the fr30 for example.
+	  /* Get the location correct wrt a code label, and "nice" wrt
+	     a basic block note, and before everything else.  */
+	  tmp = bb->head;
+	  if (GET_CODE (tmp) == CODE_LABEL)
+	    tmp = NEXT_INSN (tmp);
+	  if (NOTE_INSN_BASIC_BLOCK_P (tmp))
+	    tmp = NEXT_INSN (tmp);
+	  if (tmp == bb->head)
+	    before = tmp;
+	  else if (tmp)
+	    after = PREV_INSN (tmp);
+	  else
+	    after = get_last_insn ();
+	}
 
-	 We know this block has a single successor, so we can just emit
-	 the queued insns before the jump.  */
-      if (GET_CODE (bb->end) == JUMP_INSN)
-	for (before = bb->end;
-	     GET_CODE (PREV_INSN (before)) == NOTE
-	     && NOTE_LINE_NUMBER (PREV_INSN (before)) == NOTE_INSN_LOOP_BEG;
-	     before = PREV_INSN (before))
-	  ;
+      /* If the source has one successor and the edge is not abnormal,
+         insert there.  Except for the entry block.  */
+      else if ((e->flags & EDGE_ABNORMAL) == 0
+	       && e->src->succ->succ_next == NULL
+	       && e->src != ENTRY_BLOCK_PTR)
+	{
+	  bb = e->src;
+
+	  /* It is possible to have a non-simple jump here.  Consider a target
+	     where some forms of unconditional jumps clobber a register.  This
+	     happens on the fr30 for example.
+
+	     We know this block has a single successor, so we can just emit
+	     the queued insns before the jump.  */
+	  if (GET_CODE (bb->end) == JUMP_INSN)
+	    for (before = bb->end;
+		 GET_CODE (PREV_INSN (before)) == NOTE
+		 && NOTE_LINE_NUMBER (PREV_INSN (before)) ==
+		 NOTE_INSN_LOOP_BEG; before = PREV_INSN (before))
+	      ;
+	  else
+	    {
+	      /* We'd better be fallthru, or we've lost track of what's what.  */
+	      if ((e->flags & EDGE_FALLTHRU) == 0)
+		abort ();
+
+	      after = bb->end;
+	    }
+	}
+      /* Otherwise we must split the edge.  */
       else
 	{
-	  /* We'd better be fallthru, or we've lost track of what's what.  */
-	  if ((e->flags & EDGE_FALLTHRU) == 0)
-	    abort ();
-
+	  bb = split_edge (e);
 	  after = bb->end;
 	}
-    }
-
-  /* Otherwise we must split the edge.  */
-  else
-    {
-      bb = split_edge (e);
-      after = bb->end;
     }
 
   /* Now that we've found the spot, do the insertion.  */
@@ -1352,13 +1412,12 @@ commit_one_edge_insertion (e)
     {
       /* ??? Remove all outgoing edges from BB and add one for EXIT.
          This is not currently a problem because this only happens
-	 for the (single) epilogue, which already has a fallthru edge
-	 to EXIT.  */
+         for the (single) epilogue, which already has a fallthru edge
+         to EXIT.  */
 
       e = bb->succ;
       if (e->dest != EXIT_BLOCK_PTR
-	  || e->succ_next != NULL
-	  || (e->flags & EDGE_FALLTHRU) == 0)
+	  || e->succ_next != NULL || (e->flags & EDGE_FALLTHRU) == 0)
 	abort ();
 
       e->flags &= ~EDGE_FALLTHRU;
@@ -1395,7 +1454,39 @@ commit_edge_insertions ()
 	{
 	  next = e->succ_next;
 	  if (e->insns)
-	    commit_one_edge_insertion (e);
+	    commit_one_edge_insertion (e, false);
+	}
+
+      if (++i >= n_basic_blocks)
+	break;
+      bb = BASIC_BLOCK (i);
+    }
+}
+
+/* Update the CFG for all queued instructions, taking special care of inserting
+   code on edges between call and storing its return value.  */
+
+void
+commit_edge_insertions_watch_calls ()
+{
+  int i;
+  basic_block bb;
+
+#ifdef ENABLE_CHECKING
+  verify_flow_info ();
+#endif
+
+  i = -1;
+  bb = ENTRY_BLOCK_PTR;
+  while (1)
+    {
+      edge e, next;
+
+      for (e = bb->succ; e; e = next)
+	{
+	  next = e->succ_next;
+	  if (e->insns)
+	    commit_one_edge_insertion (e, true);
 	}
 
       if (++i >= n_basic_blocks)
@@ -1649,7 +1740,7 @@ verify_flow_info ()
   for (i = n_basic_blocks - 1; i >= 0; i--)
     {
       basic_block bb = BASIC_BLOCK (i);
-      int has_fallthru = 0;
+      int n_fallthru = 0, n_eh = 0, n_call = 0, n_abnormal = 0, n_branch = 0;
       edge e;
       rtx note;
 
@@ -1705,7 +1796,18 @@ verify_flow_info ()
 	  last_visited [e->dest->index + 2] = bb;
 
 	  if (e->flags & EDGE_FALLTHRU)
-	    has_fallthru = 1;
+	    n_fallthru++;
+
+	  if ((e->flags & ~EDGE_DFS_BACK) == 0)
+	    n_branch++;
+
+	  if (e->flags & EDGE_ABNORMAL_CALL)
+	    n_call++;
+
+	  if (e->flags & EDGE_EH)
+	    n_eh++;
+	  else if (e->flags & EDGE_ABNORMAL)
+	    n_abnormal++;
 
 	  if ((e->flags & EDGE_FALLTHRU)
 	      && e->src != ENTRY_BLOCK_PTR
@@ -1753,7 +1855,51 @@ verify_flow_info ()
 	  edge_checksum[e->dest->index + 2] += (size_t) e;
 	}
 
-      if (!has_fallthru)
+      if (n_eh && !find_reg_note (bb->end, REG_EH_REGION, NULL_RTX))
+	{
+	  error ("Missing REG_EH_REGION note in the end of bb %i", bb->index);
+	  err = 1;
+	}
+      if (n_branch
+	  && (GET_CODE (bb->end) != JUMP_INSN
+	      || (n_branch > 1 && (any_uncondjump_p (bb->end)
+				   || any_condjump_p (bb->end)))))
+	{
+	  error ("Too many outgoing branch edges from bb %i", bb->index);
+	  err = 1;
+	}
+      if (n_fallthru && any_uncondjump_p (bb->end))
+	{
+	  error ("Fallthru edge after unconditional jump %i", bb->index);
+	  err = 1;
+	}
+      if (n_branch != 1 && any_uncondjump_p (bb->end))
+	{
+	  error ("Wrong amount of branch edges after unconditional jump %i", bb->index);
+	  err = 1;
+	}
+      if (n_branch != 1 && any_condjump_p (bb->end)
+	  && JUMP_LABEL (bb->end) != BASIC_BLOCK (bb->index + 1)->head)
+	{
+	  error ("Wrong amount of branch edges after conditional jump %i", bb->index);
+	  err = 1;
+	}
+      if (n_call && GET_CODE (bb->end) != CALL_INSN)
+	{
+	  error ("Call edges for non-call insn in bb %i", bb->index);
+	  err = 1;
+	}
+      if (n_abnormal
+	  && (GET_CODE (bb->end) != CALL_INSN && n_call != n_abnormal)
+	  && (GET_CODE (bb->end) != JUMP_INSN
+	      || any_condjump_p (bb->end)
+	      || any_uncondjump_p (bb->end)))
+	{
+	  error ("Abnormal edges for no purpose in bb %i", bb->index);
+	  err = 1;
+	}
+	
+      if (!n_fallthru)
 	{
 	  rtx insn;
 

@@ -276,6 +276,9 @@ struct propagate_block_info
   int flags;
 };
 
+/* Number of dead insns removed.  */
+static int ndead;
+
 /* Maximum length of pbi->mem_set_list before we start dropping
    new elements on the floor.  */
 #define MAX_MEM_SET_LIST_LEN	100
@@ -290,7 +293,7 @@ static void mark_reg			PARAMS ((rtx, void *));
 static void mark_regs_live_at_end	PARAMS ((regset));
 static int set_phi_alternative_reg      PARAMS ((rtx, int, int, void *));
 static void calculate_global_regs_live	PARAMS ((sbitmap, sbitmap, int));
-static void propagate_block_delete_insn PARAMS ((basic_block, rtx));
+static void propagate_block_delete_insn PARAMS ((rtx));
 static rtx propagate_block_delete_libcall PARAMS ((rtx, rtx));
 static int insn_dead_p			PARAMS ((struct propagate_block_info *,
 						 rtx, int, rtx));
@@ -448,7 +451,6 @@ life_analysis (f, file, flags)
   /* Always remove no-op moves.  Do this before other processing so
      that we don't have to keep re-scanning them.  */
   delete_noop_moves (f);
-  purge_all_dead_edges (false);
 
   /* Some targets can emit simpler epilogues if they know that sp was
      not ever modified during the function.  After reload, of course,
@@ -623,7 +625,7 @@ verify_local_live_at_start (new_live_at_start, bb)
    Including PROP_REG_INFO does not properly refresh regs_ever_live
    unless the caller resets it to zero.  */
 
-void
+int
 update_life_info (blocks, extent, prop_flags)
      sbitmap blocks;
      enum update_life_extent extent;
@@ -634,6 +636,7 @@ update_life_info (blocks, extent, prop_flags)
   int i;
 
   tmp = INITIALIZE_REG_SET (tmp_head);
+  ndead = 0;
 
   timevar_push ((extent == UPDATE_LIFE_LOCAL || blocks)
 		? TV_LIFE_UPDATE : TV_LIFE);
@@ -743,11 +746,14 @@ update_life_info (blocks, extent, prop_flags)
     }
   timevar_pop ((extent == UPDATE_LIFE_LOCAL || blocks)
 	       ? TV_LIFE_UPDATE : TV_LIFE);
+  if (ndead && rtl_dump_file)
+    fprintf (rtl_dump_file, "deleted %i dead insns\n", ndead);
+  return ndead;
 }
 
 /* Update life information in all blocks where BB_DIRTY is set.  */
 
-void
+int
 update_life_info_in_dirty_blocks (extent, prop_flags)
      enum update_life_extent extent;
      int prop_flags;
@@ -755,6 +761,7 @@ update_life_info_in_dirty_blocks (extent, prop_flags)
   sbitmap update_life_blocks = sbitmap_alloc (n_basic_blocks);
   int block_num;
   int n = 0;
+  int ndead;
 
   sbitmap_zero (update_life_blocks);
   for (block_num = 0; block_num < n_basic_blocks; block_num++)
@@ -765,9 +772,10 @@ update_life_info_in_dirty_blocks (extent, prop_flags)
       }
 
   if (n)
-    update_life_info (update_life_blocks, extent, prop_flags);
+    ndead = update_life_info (update_life_blocks, extent, prop_flags);
 
   sbitmap_free (update_life_blocks);
+  return ndead;
 }
 
 /* Free the variables allocated by find_basic_blocks.
@@ -796,13 +804,14 @@ free_basic_block_vars (keep_head_end_p)
 
 /* Delete any insns that copy a register to itself.  */
 
-void
+int
 delete_noop_moves (f)
      rtx f ATTRIBUTE_UNUSED;
 {
   int i;
   rtx insn, next;
   basic_block bb;
+  int nnoops = 0;
 
   for (i = 0; i < n_basic_blocks; i++)
     {
@@ -829,14 +838,14 @@ delete_noop_moves (f)
 		  XEXP (retval_note, 0) = new_libcall_insn;
 		}
 
-	      /* Do not call delete_insn here since that may change
-	         the basic block boundaries which upsets some callers.  */
-	      PUT_CODE (insn, NOTE);
-	      NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
-	      NOTE_SOURCE_FILE (insn) = 0;
+	      delete_insn_and_edges (insn);
+	      nnoops++;
 	    }
 	}
     }
+  if (nnoops && rtl_dump_file)
+    fprintf (rtl_dump_file, "deleted %i noop moves", nnoops);
+  return nnoops;
 }
 
 /* Delete any jump tables never referenced.  We can't delete them at the
@@ -1483,12 +1492,11 @@ allocate_reg_life_data ()
 /* Delete dead instructions for propagate_block.  */
 
 static void
-propagate_block_delete_insn (bb, insn)
-     basic_block bb;
+propagate_block_delete_insn (insn)
      rtx insn;
 {
   rtx inote = find_reg_note (insn, REG_LABEL, NULL_RTX);
-  bool purge = false;
+  basic_block bb = BLOCK_FOR_INSN (insn);
 
   /* If the insn referred to a label, and that label was attached to
      an ADDR_VEC, it's safe to delete the ADDR_VEC.  In fact, it's
@@ -1526,15 +1534,13 @@ propagate_block_delete_insn (bb, insn)
 	  for (i = 0; i < len; i++)
 	    LABEL_NUSES (XEXP (XVECEXP (pat, diff_vec_p, i), 0))--;
 
-	  delete_insn (next);
+	  delete_insn_and_edges (next);
+	  ndead++;
 	}
     }
 
-  if (bb->end == insn)
-    purge = true;
-  delete_insn (insn);
-  if (purge)
-    purge_dead_edges (bb);
+  delete_insn_and_edges (insn);
+  ndead++;
 }
 
 /* Delete dead libcalls for propagate_block.  Return the insn
@@ -1547,7 +1553,8 @@ propagate_block_delete_libcall ( insn, note)
   rtx first = XEXP (note, 0);
   rtx before = PREV_INSN (first);
 
-  delete_insn_chain (first, insn);
+  delete_insn_chain_and_edges (first, insn);
+  ndead++;
   return before;
 }
 
@@ -1608,7 +1615,7 @@ propagate_one_insn (pbi, insn)
       if (libcall_is_dead)
 	prev = propagate_block_delete_libcall ( insn, note);
       else
-	propagate_block_delete_insn (pbi->bb, insn);
+	propagate_block_delete_insn (insn);
 
       return prev;
     }
@@ -3940,7 +3947,7 @@ try_pre_increment_1 (pbi, insn)
     {
       /* We have found a suitable auto-increment and already changed
 	 insn Y to do it.  So flush this increment instruction.  */
-      propagate_block_delete_insn (pbi->bb, insn);
+      propagate_block_delete_insn (insn);
 
       /* Count a reference to this reg for the increment insn we are
 	 deleting.  When a reg is incremented, spilling it is worse,

@@ -55,7 +55,6 @@ static void flow_dfs_compute_reverse_finish
   PARAMS ((depth_first_search_ds));
 static void remove_fake_successors	PARAMS ((basic_block));
 static bool need_fake_edge_p		PARAMS ((rtx));
-static bool keep_with_call_p		PARAMS ((rtx));
 
 /* Return true if the block has no effect and only forwards control flow to
    its single destination.  */
@@ -210,32 +209,6 @@ need_fake_edge_p (insn)
 	      && asm_noperands (insn) != -1
 	      && MEM_VOLATILE_P (XVECEXP (PATTERN (insn), 0, 0)))
 	  || GET_CODE (PATTERN (insn)) == ASM_INPUT);
-}
-
-/* Return true if INSN should be kept in the same block as a preceding call.
-   This is done for a single-set whose destination is a fixed register or
-   whose source is the function return value.  This is a helper function for
-   flow_call_edges_add.  */
-
-static bool
-keep_with_call_p (insn)
-     rtx insn;
-{
-  rtx set;
-
-  if (INSN_P (insn) && (set = single_set (insn)) != NULL)
-    {
-      if (GET_CODE (SET_DEST (set)) == REG
-	  && fixed_regs[REGNO (SET_DEST (set))]
-	  && general_operand (SET_SRC (set), VOIDmode))
-	return true;
-      if (GET_CODE (SET_SRC (set)) == REG
-	  && FUNCTION_VALUE_REGNO_P (REGNO (SET_SRC (set)))
-	  && GET_CODE (SET_DEST (set)) == REG
-	  && REGNO (SET_DEST (set)) >= FIRST_PSEUDO_REGISTER)
-	return true;
-    }
-  return false;
 }
 
 /* Add fake edges to the function exit for any non constant and non noreturn

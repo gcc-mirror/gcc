@@ -1510,7 +1510,6 @@ try_optimize_cfg (mode)
   bool changed_overall = false;
   bool changed;
   int iterations = 0;
-  sbitmap blocks;
 
   if (mode & CLEANUP_CROSSJUMP)
     add_noreturn_fake_exit_edges ();
@@ -1673,11 +1672,6 @@ try_optimize_cfg (mode)
   if (mode & CLEANUP_CROSSJUMP)
     remove_fake_edges ();
 
-  if ((mode & CLEANUP_UPDATE_LIFE) && changed_overall)
-    update_life_info_in_dirty_blocks (UPDATE_LIFE_GLOBAL,
-				      PROP_DEATH_NOTES | PROP_SCAN_DEAD_CODE
-				      | PROP_KILL_DEAD_CODE | PROP_LOG_LINKS);
-
   for (i = 0; i < n_basic_blocks; i++)
     BASIC_BLOCK (i)->aux = NULL;
 
@@ -1720,9 +1714,39 @@ cleanup_cfg (mode)
   bool changed = false;
 
   timevar_push (TV_CLEANUP_CFG);
-  changed = delete_unreachable_blocks ();
-  if (try_optimize_cfg (mode))
-    delete_unreachable_blocks (), changed = true;
+  if (delete_unreachable_blocks ())
+    {
+      changed = true;
+      /* We've possibly created trivially dead code.  Cleanup it right
+	 now to introduce more oppurtunities for try_optimize_cfg.  */
+      if (!(mode & (CLEANUP_UPDATE_LIFE | CLEANUP_PRE_SIBCALL))
+	  && !reload_completed)
+	delete_trivially_dead_insns (get_insns(), max_reg_num ());
+    }
+  while (try_optimize_cfg (mode))
+    {
+      delete_unreachable_blocks (), changed = true;
+      if (mode & CLEANUP_UPDATE_LIFE)
+	{
+	  /* Cleaning up CFG introduces more oppurtunities for dead code
+	     removal that in turn may introduce more oppurtunities for
+	     cleaning up the CFG.  */
+	  if (!update_life_info_in_dirty_blocks (UPDATE_LIFE_GLOBAL,
+						 PROP_DEATH_NOTES
+						 | PROP_SCAN_DEAD_CODE
+						 | PROP_KILL_DEAD_CODE
+						 | PROP_LOG_LINKS))
+	    break;
+	}
+      else if (!(mode & CLEANUP_PRE_SIBCALL) && !reload_completed)
+	{
+	  if (!delete_trivially_dead_insns (get_insns(), max_reg_num ()))
+	    break;
+	}
+      else
+	break;
+      delete_dead_jumptables ();
+    }
 
   /* Kill the data we won't maintain.  */
   free_EXPR_LIST_list (&label_value_list);
