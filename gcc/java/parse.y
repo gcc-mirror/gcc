@@ -7200,7 +7200,11 @@ static void
 end_artificial_method_body (mdecl)
      tree mdecl;
 {
-  BLOCK_EXPR_BODY (DECL_FUNCTION_BODY (mdecl)) = exit_block ();
+  /* exit_block modifies DECL_FUNCTION_BODY (current_function_decl).
+     It has to be evaluated first. (if mdecl is current_function_decl,
+     we have an undefined behavior if no temporary variable is used.) */
+  tree b = exit_block ();
+  BLOCK_EXPR_BODY (DECL_FUNCTION_BODY (mdecl)) = b;
   exit_block ();
 }
 

@@ -1,3 +1,8 @@
+2000-12-15  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.y (end_artificial_method_body): Fixed undefined behavior.
+	Credits go to rth for finding it.
+
 2000-12-13  Mike Stump  <mrs@wrs.com>
 
 	* parse.y (check_static_final_variable_assignment_flag): Fix spelling.
