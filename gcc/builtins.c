@@ -4458,7 +4458,7 @@ expand_builtin_expect_jump (tree exp, rtx if_false_label, rtx if_true_label)
   if (TREE_CODE (TREE_TYPE (arg1)) == INTEGER_TYPE
       && (integer_zerop (arg1) || integer_onep (arg1)))
     {
-      rtx insn, drop_through_label;
+      rtx insn, drop_through_label, temp;
 
       /* Expand the jump insns.  */
       start_sequence ();
@@ -4511,13 +4511,15 @@ expand_builtin_expect_jump (tree exp, rtx if_false_label, rtx if_true_label)
 
 		  if (next && GET_CODE (next) == JUMP_INSN
 		      && any_uncondjump_p (next))
-		    next = XEXP (SET_SRC (pc_set (next)), 0);
+		    temp = XEXP (SET_SRC (pc_set (next)), 0);
+		  else
+		    temp = next;
 
-		  /* NEXT is either a CODE_LABEL, NULL_RTX or something
+		  /* TEMP is either a CODE_LABEL, NULL_RTX or something
 		     else that can't possibly match either target label.  */
-		  if (next == if_false_label)
+		  if (temp == if_false_label)
 		    taken = 1;
-		  else if (next == if_true_label)
+		  else if (temp == if_true_label)
 		    taken = 0;
 		}
 	      else if (then_dest == pc_rtx)
@@ -4527,11 +4529,13 @@ expand_builtin_expect_jump (tree exp, rtx if_false_label, rtx if_true_label)
 
 		  if (next && GET_CODE (next) == JUMP_INSN
 		      && any_uncondjump_p (next))
-		    next = XEXP (SET_SRC (pc_set (next)), 0);
+		    temp = XEXP (SET_SRC (pc_set (next)), 0);
+		  else
+		    temp = next;
 
-		  if (next == if_false_label)
+		  if (temp == if_false_label)
 		    taken = 0;
-		  else if (next == if_true_label)
+		  else if (temp == if_true_label)
 		    taken = 1;
 		}
 
