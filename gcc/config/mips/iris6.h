@@ -102,6 +102,11 @@ Boston, MA 02111-1307, USA.  */
 #undef PREFERRED_DEBUGGING_TYPE
 #define PREFERRED_DEBUGGING_TYPE DWARF_DEBUG
 
+/* The size in bytes of a DWARF field indicating an offset or length
+   relative to a debug info section, specified to be 4 bytes in the DWARF-2
+   specification.  The SGI/MIPS ABI defines it to be the same as PTR_SIZE.  */
+#define DWARF_OFFSET_SIZE PTR_SIZE
+
 #undef MACHINE_TYPE
 #define MACHINE_TYPE "SGI running IRIX 6.x"
 
@@ -321,6 +326,21 @@ dtors_section ()							\
   } while (0)
 
 #endif
+
+/* A C statement to output something to the assembler file to switch to section
+   NAME for object DECL which is either a FUNCTION_DECL, a VAR_DECL or
+   NULL_TREE.  */
+
+#define ASM_OUTPUT_SECTION_NAME(F, DECL, NAME)				\
+do {									\
+  extern FILE *asm_out_text_file;					\
+  if ((DECL) && TREE_CODE (DECL) == FUNCTION_DECL)			\
+    fprintf (asm_out_text_file, "\t.section %s,1,6,4,4\n", (NAME));	\
+  else if ((DECL) && TREE_READONLY (DECL))				\
+    fprintf (F, "\t.section %s,1,2,0,8\n", (NAME));			\
+  else									\
+    fprintf (F, "\t.section %s,1,3,0,8\n", (NAME));			\
+} while (0)
 
 /* Stuff for constructors.  End here.  */
 
