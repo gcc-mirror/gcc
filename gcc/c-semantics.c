@@ -56,6 +56,7 @@ static tree find_reachable_label_1	PARAMS ((tree *, int *, void *));
 static tree find_reachable_label	PARAMS ((tree));
 static bool expand_unreachable_if_stmt	PARAMS ((tree));
 static tree expand_unreachable_stmt	PARAMS ((tree, int));
+static void genrtl_do_stmt_1		PARAMS ((tree, tree));
 
 /* Create an empty statement tree rooted at T.  */
 
@@ -463,14 +464,13 @@ genrtl_while_stmt (t)
   expand_end_loop ();
 }
 
-/* Generate the RTL for T, which is a DO_STMT.  */
+/* Generate the RTL for a DO_STMT with condition COND and loop BODY
+   body.  This is reused for expanding unreachable WHILE_STMTS.  */
 
-void
-genrtl_do_stmt (t)
-     tree t;
+static void
+genrtl_do_stmt_1 (cond, body)
+     tree cond, body;
 {
-  tree cond = DO_COND (t);
-
   /* Recognize the common special-case of do { ... } while (0) and do
      not emit the loop widgetry in this case.  In particular this
      avoids cluttering the rtl with dummy loop notes, which can affect
@@ -479,7 +479,7 @@ genrtl_do_stmt (t)
   if (!cond || integer_zerop (cond))
     {
       expand_start_null_loop ();
-      expand_stmt (DO_BODY (t));
+      expand_stmt (body);
       expand_end_null_loop ();
     }
   else if (integer_nonzerop (cond))
@@ -488,7 +488,7 @@ genrtl_do_stmt (t)
       emit_line_note (input_filename, input_line);
       expand_start_loop (1);
 
-      expand_stmt (DO_BODY (t));
+      expand_stmt (body);
 
       emit_line_note (input_filename, input_line);
       expand_end_loop ();
@@ -499,7 +499,7 @@ genrtl_do_stmt (t)
       emit_line_note (input_filename, input_line);
       expand_start_loop_continue_elsewhere (1);
 
-      expand_stmt (DO_BODY (t));
+      expand_stmt (body);
 
       expand_loop_continue_here ();
       cond = expand_cond (cond);
@@ -507,6 +507,15 @@ genrtl_do_stmt (t)
       expand_exit_loop_if_false (0, cond);
       expand_end_loop ();
     }
+}
+
+/* Generate the RTL for T, which is a DO_STMT.  */
+
+void
+genrtl_do_stmt (t)
+     tree t;
+{
+  genrtl_do_stmt_1 (DO_COND (t), DO_BODY (t));
 }
 
 /* Build the node for a return statement and return it.  */
@@ -1058,6 +1067,13 @@ expand_unreachable_stmt (t, warn)
 	  if (expand_unreachable_if_stmt (t))
 	    return TREE_CHAIN (t);
 	  break;
+
+	case WHILE_STMT:
+	  /* If the start of a while statement is unreachable, there is
+	     no need to rotate the loop, instead the WHILE_STMT can be
+	     expanded like a DO_STMT.  */
+	  genrtl_do_stmt_1 (WHILE_COND (t), WHILE_BODY (t));
+	  return TREE_CHAIN (t);
 
 	case COMPOUND_STMT:
 	  {

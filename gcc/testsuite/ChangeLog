@@ -1,3 +1,7 @@
+2003-05-29  Roger Sayle  <roger@eyesopen.com>
+
+	* gcc.dg/duff-4.c: New test case.
+
 2003-05-27  David Billinghurst (David.Billinghurst@riotinto.com)
 
 	PR fortran/10843
