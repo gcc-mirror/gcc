@@ -1,3 +1,25 @@
+2004-09-22  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* aclocal.m4: Import AM_PROG_CC_C_O and AM_AUX_DIR_EXPAND.
+	* configure.ac: Call AM_PROG_CC_C_O instead of AC_PROG_CC_C_O.
+	Create build and doc directories along with the language directories.
+	Don't create doc directory separately.
+	* configure: Regenerate.
+	* Makefile.in: Create all object and executables files built
+	with the build compiler in a build/ directory.
+	(genobjnames): Add missing build objects.
+	(STAGESTUFF): Don't stage the gen* programs.
+	(ggc-none.o): Define dependencies for the target compiler.
+	(build-print-rtl.o): Rename to build/print-rtl.o.
+	(build-errors.o): Rename to build/errors.o.
+	(build-varray.o): Rename to build/varray.o.
+	(maintainerclean): Delete the contents of the build directory.
+	($(genobjs): %.o): Explicitly use -o.
+	(build/insn-conditions.o): Delete specfic rule to use generic rule.
+	(build/gengtype-lex.o): Likewise.
+	(build/gengtype-yacc.o): Likewise.
+	(build/gcov-iov.o): Likewise.
+
 2004-09-22  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* vec.h (VEC_space): Return true if there _is_ space.
