@@ -1041,7 +1041,7 @@ data_transfer_init (int read_flag)
 
   if (read_flag)
     {
-      if (ioparm.eor != 0 && advance_status == ADVANCE_NO)
+      if (ioparm.eor != 0 && advance_status != ADVANCE_NO)
 	generate_error (ERROR_MISSING_OPTION,
 			"EOR specification requires an ADVANCE specification of NO");
 
