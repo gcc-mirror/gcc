@@ -372,7 +372,7 @@ int reload_completed = 0;
    They won't actually be used.  */
 
 rtx frame_pointer_rtx, hard_frame_pointer_rtx, stack_pointer_rtx;
-rtx arg_pointer_rtx;
+rtx arg_pointer_rtx, pic_offset_table_rtx;
 
 static rtx attr_rtx		PVPROTO((enum rtx_code, ...));
 #ifdef HAVE_VPRINTF
