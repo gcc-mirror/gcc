@@ -1,3 +1,7 @@
+2003-08-21  Mark Mitchell  <mark@codesourcery.com>
+
+	* gcc_build: Fix handling of -t option.  Add -x option.
+
 2003-07-31  Matt Kraai  <kraai@alumni.cmu.edu>
 
 	* texi2pod.pl: Remove extra line.
