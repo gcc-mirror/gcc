@@ -1,4 +1,11 @@
 2004-09-02  Benjamin Kosnik  <bkoz@redhat.com>
+            Leland Wang  <llwang@infor.org>
+	
+	PR libstdc++/17259
+	* include/ext/ropeimpl.h (rope::_S_compare): Use
+	_Rope_constants::_S_leaf.
+
+2004-09-02  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/16848
 	* include/Makefile.am (ext_headers): Remove demangle.h.
