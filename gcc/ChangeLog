@@ -1,5 +1,7 @@
 2005-02-01  Janis Johnson  <janis187@us.ibm.com>
 
+	* doc/sourcebuild.texi (Test directives): Fix formatting.
+
 	* doc/sourcebuild.texi (Test directives): Describe selector
 	expressions.
 
