@@ -1104,7 +1104,7 @@ attrib:
 		{ $$ = build_tree_list ($1, build_tree_list (NULL_TREE, $3)); }
 	| any_word '(' IDENTIFIER ',' nonnull_exprlist ')'
 		{ $$ = build_tree_list ($1, tree_cons (NULL_TREE, $3, $5)); }
-	| any_word '(' nonnull_exprlist ')'
+	| any_word '(' exprlist ')'
 		{ $$ = build_tree_list ($1, $3); }
 	;
 
