@@ -1,3 +1,10 @@
+2003-06-13  Doug Evans  <dje@sebabeach.org>
+
+	Remove some build warnings.
+	* config/m32r/initfini.c (__CTOR_LIST__,__DTOR_LIST__): No longer
+	static.
+	(__do_global_ctors,__do_global_dtors): Ditto.
+
 2003-06-12  Richard Henderson  <rth@redhat.com>
 
 	PR middle-end/10557
