@@ -1,3 +1,8 @@
+Wed Jul  1 17:23:23 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* regmove.c (fixup_match_2): Check that P has RTX_CLASS 'i' before
+	using its PATTERN.
+
 Wed Jul  1 05:04:41 1998  Richard Henderson  <rth@cygnus.com>
 
 	* expr.c (emit_group_load, emit_group_store): Rewrite considering
