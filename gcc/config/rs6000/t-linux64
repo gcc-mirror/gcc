@@ -2,7 +2,15 @@
 CRTSTUFF_T_CFLAGS_S =
 TARGET_LIBGCC2_CFLAGS =
 
-EXTRA_MULTILIB_PARTS=crtbegin.o crtend.o crtbeginS.o crtendS.o crtbeginT.o
+EXTRA_MULTILIB_PARTS=crtbegin.o crtend.o crtbeginS.o crtendS.o crtbeginT.o \
+			crtsavres.o
+
+# ld provides these functions as needed.
+crtsavres.S:
+	echo >crtsavres.S
+
+$(T)crtsavres.o: crtsavres.S
+	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) -c crtsavres.S -o $(T)crtsavres.o
 
 # Modify the shared lib version file
 SHLIB_MKMAP_OPTS = -v dotsyms=1
