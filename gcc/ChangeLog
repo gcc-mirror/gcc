@@ -1,3 +1,9 @@
+2004-12-10  Devang Patel  <dpatel@apple.com>
+
+	PR 18732
+	* gcc.c (main): Do not break out of loop when error is reported while
+	processing one source file.
+	
 2004-12-10  Diego Novillo  <dnovillo@redhat.com>
 
 	* tree-into-ssa.c (REWRITE_THIS_STMT): Define.
