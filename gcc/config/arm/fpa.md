@@ -22,43 +22,80 @@
 ;; the Free Software Foundation, 59 Temple Place - Suite 330,
 ;; Boston, MA 02111-1307, USA.
 
-;;--------------------------------------------------------------------
+;; FPA automaton.
+(define_automaton "armfp")
+
 ;; Floating point unit (FPA)
-;;--------------------------------------------------------------------
-(define_function_unit "fpa" 1 0 (and (eq_attr "fpu" "fpa")
-				     (eq_attr "type" "fdivx")) 71 69)
+(define_cpu_unit "fpa" "armfp")
 
-(define_function_unit "fpa" 1 0 (and (eq_attr "fpu" "fpa")
-				     (eq_attr "type" "fdivd")) 59 57)
+; The fpa10 doesn't really have a memory read unit, but it can start
+; to speculatively execute the instruction in the pipeline, provided
+; the data is already loaded, so pretend reads have a delay of 2 (and
+; that the pipeline is infinite).
+(define_cpu_unit "fpa_mem" "arm")
 
-(define_function_unit "fpa" 1 0 (and (eq_attr "fpu" "fpa")
-				     (eq_attr "type" "fdivs")) 31 29)
+(define_insn_reservation "fdivx" 71
+  (and (eq_attr "fpu" "fpa")
+       (eq_attr "type" "fdivx"))
+  "core+fpa*69")
 
-(define_function_unit "fpa" 1 0 (and (eq_attr "fpu" "fpa")
-				     (eq_attr "type" "fmul")) 9 7)
+(define_insn_reservation "fdivd" 59
+  (and (eq_attr "fpu" "fpa")
+       (eq_attr "type" "fdivd"))
+  "core+fpa*57")
 
-(define_function_unit "fpa" 1 0 (and (eq_attr "fpu" "fpa")
-				     (eq_attr "type" "ffmul")) 6 4)
+(define_insn_reservation "fdivs" 31
+  (and (eq_attr "fpu" "fpa")
+       (eq_attr "type" "fdivs"))
+  "core+fpa*29")
 
-(define_function_unit "fpa" 1 0 (and (eq_attr "fpu" "fpa")
-				     (eq_attr "type" "farith")) 4 2)
+(define_insn_reservation "fmul" 9
+  (and (eq_attr "fpu" "fpa")
+       (eq_attr "type" "fmul"))
+  "core+fpa*7")
 
-(define_function_unit "fpa" 1 0 (and (eq_attr "fpu" "fpa")
-				     (eq_attr "type" "ffarith")) 2 2)
+(define_insn_reservation "ffmul" 6
+  (and (eq_attr "fpu" "fpa")
+       (eq_attr "type" "ffmul"))
+  "core+fpa*4")
 
-(define_function_unit "fpa" 1 0 (and (eq_attr "fpu" "fpa")
-				     (eq_attr "type" "r_2_f")) 5 3)
+(define_insn_reservation "farith" 4
+  (and (eq_attr "fpu" "fpa")
+       (eq_attr "type" "farith"))
+  "core+fpa*2")
 
-(define_function_unit "fpa" 1 0 (and (eq_attr "fpu" "fpa")
-				     (eq_attr "type" "f_2_r")) 1 2)
+(define_insn_reservation "ffarith" 2
+  (and (eq_attr "fpu" "fpa")
+       (eq_attr "type" "ffarith"))
+  "core+fpa*2")
 
-; The fpa10 doesn't really have a memory read unit, but it can start to
-; speculatively execute the instruction in the pipeline, provided the data
-; is already loaded, so pretend reads have a delay of 2 (and that the
-; pipeline is infinite).
+(define_insn_reservation "r_2_f" 5
+  (and (eq_attr "fpu" "fpa")
+       (eq_attr "type" "r_2_f"))
+  "core+fpa*3")
 
-(define_function_unit "fpa_mem" 1 0 (and (eq_attr "fpu" "fpa")
-					 (eq_attr "type" "f_load")) 3 1)
+(define_insn_reservation "f_2_r" 1
+  (and (eq_attr "fpu" "fpa")
+       (eq_attr "type" "f_2_r"))
+  "core+fpa*2")
+
+(define_insn_reservation "f_load" 3
+  (and (eq_attr "fpu" "fpa") (eq_attr "type" "f_load"))
+  "fpa_mem+core*3")
+
+(define_insn_reservation "f_store" 4
+  (and (eq_attr "fpu" "fpa") (eq_attr "type" "f_store"))
+  "core*4")
+
+(define_insn_reservation "r_mem_f" 6
+  (and (eq_attr "model_wbuf" "no")
+    (and (eq_attr "fpu" "fpa") (eq_attr "type" "r_mem_f")))
+  "core*6")
+
+(define_insn_reservation "f_mem_r" 7
+  (and (eq_attr "fpu" "fpa") (eq_attr "type" "f_mem_r"))
+  "core*7")
+
 
 (define_insn "*addsf3_fpa"
   [(set (match_operand:SF          0 "s_register_operand" "=f,f")

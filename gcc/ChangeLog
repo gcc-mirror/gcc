@@ -1,3 +1,24 @@
+2003-06-02  Ben Elliston  <bje@wasabisystems.com>
+
+	* config/arm/arm.c (arm_use_dfa_pipeline_interface): Declare.
+	(TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE): Define if not already defined.
+	(arm_use_dfa_pipeline_interface): Implement.
+	* config/arm/arm.md (arm): New automaton.
+	(write_buf): Remove function units; new cpu unit.
+	(write_blockage): Remove function units; new cpu unit.
+	(core): Remove function units; new cpu unit.
+	(r_mem_f_wbuf): New instruction reservation.
+	(store1_wbuf, store2_wbuf, store3_wbuf, store4_wbuf): Likewise.
+	(store1_ldsched, store2, store3, store4): Likewise.
+	(load_ldsched, load_ldsched_xscale, load_or_store): Likewise.
+	(mult, mult_ldsched, mult_ldsched_strongarm): Likewise.
+	(multi_cycle, single_cycle): Likewise.
+	* config/arm/fpa.md (armfp): New automaton.
+	(fpa): Remove function units; new cpu unit.
+	(fpa_mem): Remove function unit; new cpu unit.
+	(fdivx, fdivd, fdivs, fmul, ffmul, farith, ffarith): New reservations.
+	(r_2_f, f_2_r, f_load, f_store, r_mem_f, f_mem_r): Likewise.
+
 2003-06-01  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* builtin-attrs.def (ATTR_ASM_FPRINTF): New.
