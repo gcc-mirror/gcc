@@ -6317,6 +6317,13 @@ cse_insn (insn, in_libcall_block)
 	 simplified result, which may not necessarily be valid.  */
       src_folded = fold_rtx (src, insn);
 
+#if 0
+      /* ??? This caused bad code to be generated for the m68k port with -O2.
+	 Suppose src is (CONST_INT -1), and that after truncation src_folded
+	 is (CONST_INT 3).  Suppose src_folded is then used for src_const.
+	 At the end we will add src and src_const to the same equivalence
+	 class.  We now have 3 and -1 on the same equivalence class.  This
+	 causes later instructions to be mis-optimized.  */
       /* If storing a constant in a bitfield, pre-truncate the constant
 	 so we will be able to record it later.  */
       if (GET_CODE (SET_DEST (sets[i].rtl)) == ZERO_EXTRACT
@@ -6332,6 +6339,7 @@ cse_insn (insn, in_libcall_block)
 	      = GEN_INT (INTVAL (src) & (((HOST_WIDE_INT) 1
 					  << INTVAL (width)) - 1));
 	}
+#endif
 
       /* Compute SRC's hash code, and also notice if it
 	 should not be recorded at all.  In that case,
