@@ -221,8 +221,8 @@ for chapter in $chapters; do
          display "FAIL:	$i"
          failed="${failed}${i} "
       else
-         echo "PASS: $i" >> $dir/acats.sum
-         echo "PASS: $i" >> $dir/acats.log
+         echo "PASS:	$i" >> $dir/acats.sum
+         echo "PASS:	$i" >> $dir/acats.log
          countok=`expr $countok + 1`
       fi
       clean_dir
