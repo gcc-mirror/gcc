@@ -1,3 +1,8 @@
+Mon May 18 12:20:27 1998  Brendan Kehoe  <brendan@cygnus.com>
+
+	* pt.c (redeclare_class_template): Say where the original definition
+	of the template-parameter's default argument appeared.
+
 Mon May 18 03:00:57 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* call.c (build_over_call): Tweak empty class handling.
