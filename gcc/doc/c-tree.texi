@@ -523,13 +523,32 @@ in the array.
 
 @item RECORD_TYPE
 Used to represent @code{struct} and @code{class} types, as well as
-pointers to member functions.  If @code{TYPE_PTRMEMFUNC_P} holds, then
-this type is a pointer-to-member type.  In that case, the
-@code{TYPE_PTRMEMFUNC_FN_TYPE} is a @code{POINTER_TYPE} pointing to a
-@code{METHOD_TYPE}.  The @code{METHOD_TYPE} is the type of a function
-pointed to by the pointer-to-member function.  If
-@code{TYPE_PTRMEMFUNC_P} does not hold, this type is a class type.  For
-more information, see @pxref{Classes}.
+pointers to member functions and similar constructs in other languages.
+@code{TYPE_FIELDS} contains the items contained in this type, each of
+which can be a @code{FIELD_DECL}, @code{VAR_DECL}, @code{CONST_DECL}, or
+@code{TYPE_DECL}.  You may not make any assumptions about the ordering
+of the fields in the type or whether one or more of them overlap.  If
+@code{TYPE_PTRMEMFUNC_P} holds, then this type is a pointer-to-member
+type.  In that case, the @code{TYPE_PTRMEMFUNC_FN_TYPE} is a
+@code{POINTER_TYPE} pointing to a @code{METHOD_TYPE}.  The
+@code{METHOD_TYPE} is the type of a function pointed to by the
+pointer-to-member function.  If @code{TYPE_PTRMEMFUNC_P} does not hold,
+this type is a class type.  For more information, see @pxref{Classes}.
+
+@item UNION_TYPE
+Used to represent @code{union} types.  Similar to @code{RECORD_TYPE}
+except that all @code{FIELD_DECL} nodes in @code{TYPE_FIELD} start at
+bit position zero.
+
+@item QUAL_UNION_TYPE
+Used to represent part of a variant record in Ada.  Similar to
+@code{UNION_TYPE} except that each @code{FIELD_DECL} has a
+@code{DECL_QUALIFIER} field, which contains a boolean expression that
+indicates whether the field is present in the object.  The type will only
+have one field, so each field's @code{DECL_QUALIFIER} is only evaluated
+if none of the expressions in the previous fields in @code{TYPE_FIELDS}
+are nonzero.  Normally these expressions will reference a field in the
+outer object using a @code{PLACEHOLDER_EXPR}.
 
 @item UNKNOWN_TYPE
 This node is used to represent a type the knowledge of which is
@@ -556,9 +575,6 @@ base-class.
 Used to represent the @code{__typeof__} extension.  The
 @code{TYPE_FIELDS} is the expression the type of which is being
 represented.
-
-@item UNION_TYPE
-Used to represent @code{union} types.  For more information, @pxref{Classes}.
 @end table
 
 There are variables whose values represent some of the basic types.

@@ -1,5 +1,8 @@
 Wed Dec  5 16:03:04 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* doc/c-tree.texi (RECORD_TYPE, UNION_TYPE): Expand on definition.
+	(QUAL_UNION_TYPE): New type.
+
 	* varasm.c (output_constant, case ERROR_MARK): New case.
 
 	* attribs.c (handle_no_check_memory_usage_atribute): Deleted.
