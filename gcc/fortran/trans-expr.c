@@ -1292,20 +1292,15 @@ gfc_conv_structure (gfc_se * se, gfc_expr * expr, int init)
       /* Evaluate the expression for this component.  */
       if (init)
 	{
-	  switch (c->expr->expr_type)
+	  if (cm->dimension)
 	    {
-	    case EXPR_ARRAY:
 	      arraytype = TREE_TYPE (cm->backend_decl);
 	      cse.expr = gfc_conv_array_initializer (arraytype, c->expr);
-	      break;
-
-	    case EXPR_STRUCTURE:
-	      gfc_conv_structure (&cse, c->expr, 1);
-	      break;
-
-	    default:
-	      gfc_conv_expr (&cse, c->expr);
 	    }
+	  else if (cm->ts.type == BT_DERIVED)
+	    gfc_conv_structure (&cse, c->expr, 1);
+	  else
+	    gfc_conv_expr (&cse, c->expr);
 	}
       else
 	{
