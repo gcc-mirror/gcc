@@ -1439,12 +1439,10 @@ build_scoped_method_call (exp, scopes, name, parms)
 	cp_error ("type of `%E' does not match destructor type `%T' (type was `%T')",
 		  exp, basetype, type);
       name = TREE_OPERAND (name, 0);
-      if (IDENTIFIER_HAS_TYPE_VALUE (name))
-	name = IDENTIFIER_TYPE_VALUE (name);
-      if (basetype != name)
-	cp_error ("qualified type `%T' does not match destructor type `%T'",
+      if (basetype != get_type_value (name))
+	cp_error ("qualified type `%T' does not match destructor name `~%T'",
 		  basetype, name);
-      return void_zero_node;
+      return convert (void_type_node, exp);
     }
 
   if (! is_aggr_typedef (basename, 1))
@@ -1472,15 +1470,16 @@ build_scoped_method_call (exp, scopes, name, parms)
 	{
 	  /* Explicit call to destructor.  */
 	  name = TREE_OPERAND (name, 0);
-	  if (name != constructor_name (TREE_TYPE (decl)))
+	  if (! (name == constructor_name (TREE_TYPE (decl))
+		 || TREE_TYPE (decl) == get_type_value (name)))
 	    {
 	      cp_error
-		("qualified type `%T' does not match destructor type `%T'",
+		("qualified type `%T' does not match destructor name `~%T'",
 		 TREE_TYPE (decl), name);
 	      return error_mark_node;
 	    }
 	  if (! TYPE_HAS_DESTRUCTOR (TREE_TYPE (decl)))
-	    return void_zero_node;
+	    return convert (void_type_node, exp);
 	  
 	  return build_delete (TREE_TYPE (decl), decl, integer_two_node,
 			       LOOKUP_NORMAL|LOOKUP_NONVIRTUAL|LOOKUP_DESTRUCTOR,
@@ -1962,6 +1961,10 @@ build_method_call (instance, name, parms, basetype_path, flags)
 	  TREE_CALLS_NEW (instance_ptr) = 1;
 	  instance = build_indirect_ref (instance_ptr, NULL_PTR);
 
+#if 0
+	  /* This breaks initialization of a reference from a new
+             expression of a different type.  And it doesn't appear to
+             serve its original purpose any more, either.  jason 10/12/94 */
 	  /* If it's a default argument initialized from a ctor, what we get
 	     from instance_ptr will match the arglist for the FUNCTION_DECL
 	     of the constructor.  */
@@ -1970,6 +1973,7 @@ build_method_call (instance, name, parms, basetype_path, flags)
 	      && TREE_CALLS_NEW (TREE_VALUE (TREE_OPERAND (TREE_VALUE (parms), 1))))
 	    parms = build_tree_list (NULL_TREE, instance_ptr);
 	  else
+#endif
 	    parms = tree_cons (NULL_TREE, instance_ptr, parms);
 	}
     }
