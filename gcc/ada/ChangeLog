@@ -1,3 +1,9 @@
+2003-04-30  Laurent Guerby <guerby@acm.org>
+
+	PR ada/10546 
+	* 5iosinte.ads: Increase pthread_cond_t size to match recent
+	LinuxThread and NPTL version.
+	
 2003-03-31   Geert Bosch <bosch@gnat.com>
 
         PR ada/10020
