@@ -1,3 +1,9 @@
+2005-02-11  Richard Henderson  <rth@redhat.com>
+
+	PR c++/19632
+        * pt.c (get_mostly_instantiated_function_type): Save and restore
+        flag_access_control instead of push/pop_access_scope.
+
 2005-02-10  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/19755

@@ -11693,7 +11693,7 @@ get_mostly_instantiated_function_type (tree decl)
     ;
   else
     {
-      int i;
+      int i, save_access_control;
       tree partial_args;
 
       /* Replace the innermost level of the TARGS with NULL_TREEs to
@@ -11706,12 +11706,10 @@ get_mostly_instantiated_function_type (tree decl)
 			   TMPL_ARGS_DEPTH (targs),
 			   make_tree_vec (DECL_NTPARMS (tmpl)));
 
-      /* Make sure that we can see identifiers, and compute access
-	 correctly.  We can just use the context of DECL for the
-	 partial substitution here.  It depends only on outer template
-	 parameters, regardless of whether the innermost level is
-	 specialized or not.  */
-      push_access_scope (decl);
+      /* Disable access control as this function is used only during
+	 name-mangling.  */
+      save_access_control = flag_access_control;
+      flag_access_control = 0;
 
       ++processing_template_decl;
       /* Now, do the (partial) substitution to figure out the
@@ -11726,7 +11724,7 @@ get_mostly_instantiated_function_type (tree decl)
       TREE_VEC_LENGTH (partial_args)--;
       tparms = tsubst_template_parms (tparms, partial_args, tf_error);
 
-      pop_access_scope (decl);
+      flag_access_control = save_access_control;
     }
 
   return fn_type;
