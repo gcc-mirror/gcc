@@ -97,7 +97,12 @@ int size_directive_output;
 tree last_assemble_variable_decl;
 
 /* Nonzero if at least one function definition has been seen.  */
+
 static int function_defined;
+
+/* Any weak symbol declarations waiting to be emitted.  */
+
+static tree weak_decls;
 
 struct addr_const;
 struct constant_descriptor;
@@ -3911,12 +3916,13 @@ output_constructor (exp, size)
     assemble_zeros (size - total_bytes);
 }
 
-
-#ifdef HANDLE_SYSV_PRAGMA
-
 /* Support #pragma weak by default if WEAK_ASM_OP and ASM_OUTPUT_DEF
    are defined.  */
-#if defined (WEAK_ASM_OP) && defined (ASM_OUTPUT_DEF)
+#if !defined (HANDLE_PRAGMA_WEAK) && defined (WEAK_ASM_OP) && defined (ASM_OUTPUT_DEF)
+#define HANDLE_PRAGMA_WEAK 1
+#endif
+
+#if defined (HANDLE_SYSV_PRAGMA) && defined (HANDLE_PRAGMA_WEAK)
 
 /* See c-pragma.c for an identical definition.  */
 enum pragma_state
@@ -3943,21 +3949,77 @@ handle_pragma_weak (what, asm_out_file, name, value)
 {
   if (what == ps_name || what == ps_value)
     {
-      fprintf (asm_out_file, "\t%s\t", WEAK_ASM_OP);
-
-      if (output_bytecode)
-	BC_OUTPUT_LABELREF (asm_out_file, name);
-      else
-	ASM_OUTPUT_LABELREF (asm_out_file, name);
-
-      fputc ('\n', asm_out_file);
-      if (what == ps_value)
-	ASM_OUTPUT_DEF (asm_out_file, name, value);
+      weak_decls = perm_tree_cons (what == ps_value ? value : NULL_TREE,
+				   name, weak_decls);
     }
   else if (! (what == ps_done || what == ps_start))
     warning ("malformed `#pragma weak'");
 }
 
-#endif /* HANDLE_PRAGMA_WEAK or (WEAK_ASM_OP and SET_ASM_OP) */
+#endif /* HANDLE_SYSV_PRAGMA && HANDLE_PRAGMA_WEAK */
 
-#endif /* WEAK_ASM_OP && ASM_OUTPUT_DEF */
+/* Declare DECL to be a weak symbol.  */
+
+void
+declare_weak (decl)
+     tree decl;
+{
+  if (! TREE_PUBLIC (decl))
+    error_with_decl (decl, "weak declaration of `%s' must be public");
+  else
+    weak_decls = perm_tree_cons (NULL_TREE, DECL_ASSEMBLER_NAME (decl),
+				 weak_decls);
+}
+
+/* Emit any pending weak declarations.  */
+
+void
+weak_finish ()
+{
+#ifdef HANDLE_PRAGMA_WEAK
+  if (HANDLE_PRAGMA_WEAK)
+    {
+      tree t;
+      for (t = weak_decls; t; t = TREE_CHAIN (t))
+	{
+	  tree decl = TREE_VALUE (t);
+	  char *name = XSTR (XEXP (DECL_RTL (decl), 0), 0);
+
+	  fprintf (asm_out_file, "\t%s\t", WEAK_ASM_OP);
+
+	  if (output_bytecode)
+	    BC_OUTPUT_LABELREF (asm_out_file, name);
+	  else
+	    ASM_OUTPUT_LABELREF (asm_out_file, name);
+
+	  fputc ('\n', asm_out_file);
+	}
+    }
+#endif
+}
+
+void
+assemble_alias (decl, target)
+     tree decl, target;
+{
+#ifdef ASM_OUTPUT_DEF
+  char *name;
+
+  make_decl_rtl (decl, (char*)0, 1);
+  name = XSTR (XEXP (DECL_RTL (decl), 0), 0);
+
+  /* Make name accessible from other files, if appropriate.  */
+
+  if (TREE_PUBLIC (decl))
+    {
+      if (output_bytecode)
+	BC_GLOBALIZE_LABEL (asm_out_file, name);
+      else
+	ASM_GLOBALIZE_LABEL (asm_out_file, name);
+    }
+
+  ASM_OUTPUT_DEF (asm_out_file, name, IDENTIFIER_POINTER (target));
+#else
+  warning ("alias definitions not supported in this configuration");
+#endif
+}
