@@ -1230,11 +1230,12 @@ begin_class_definition (t)
       t = make_lang_type (TREE_CODE (t));
       pushtag (TYPE_IDENTIFIER (t), t, 0);
     }
-  if (processing_template_decl && TYPE_CONTEXT (t)
-      && TREE_CODE (TYPE_CONTEXT (t)) != NAMESPACE_DECL
+  maybe_process_partial_specialization (t);
+  if (processing_template_decl
+      && ! CLASSTYPE_TEMPLATE_SPECIALIZATION (t)
+      && TYPE_CONTEXT (t) && TYPE_P (TYPE_CONTEXT (t))
       && ! current_class_type)
     push_template_decl (TYPE_STUB_DECL (t));
-  maybe_process_partial_specialization (t);
   pushclass (t, 0);
   TYPE_BEING_DEFINED (t) = 1;
   /* Reset the interface data, at the earliest possible

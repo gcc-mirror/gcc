@@ -4946,6 +4946,8 @@ handle_class_head (aggr, scope, id)
 {
   if (TREE_CODE (id) == TYPE_DECL)
     return id;
+  if (DECL_CLASS_TEMPLATE_P (id))
+    return DECL_TEMPLATE_RESULT (id);
 
   if (scope)
     cp_error ("`%T' does not have a nested type named `%D'", scope, id);
