@@ -585,7 +585,7 @@ do_build_copy_constructor (fndecl)
 	    continue;
 
 	  init = build (COMPONENT_REF,
-	                build_qualified_type (TREE_TYPE (field), cvquals),
+	                cp_build_qualified_type (TREE_TYPE (field), cvquals),
 	                init, field);
 	  init = build_tree_list (NULL_TREE, init);
 
