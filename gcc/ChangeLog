@@ -1,3 +1,13 @@
+2003-10-13  Matt Kraai <kraai@alumni.cmu.edu>
+
+	PR target/11949
+	Backport from mainline:
+
+	2003-05-05  Aldy Hernandez  <aldyh@redhat.com>
+
+	* testsuite/gcc.c-torture/compile/simd-6.c: New.
+	* c-typeck.c (digest_init): Handle arrays of vector constants.
+
 2003-10-11  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR optimization/12544
