@@ -1661,7 +1661,7 @@ maybe_dummy_object (tree type, tree* binfop)
 
   if (current_class_type
       && (binfo = lookup_base (current_class_type, type,
-			       ba_ignore | ba_quiet, NULL)))
+			       ba_unique | ba_quiet, NULL)))
     context = current_class_type;
   else
     {

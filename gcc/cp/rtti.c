@@ -524,7 +524,7 @@ build_dynamic_cast_1 (tree type, tree expr)
     tree binfo;
 
     binfo = lookup_base (TREE_TYPE (exprtype), TREE_TYPE (type),
-			 ba_not_special, NULL);
+			 ba_check, NULL);
 
     if (binfo)
       {

@@ -711,9 +711,9 @@ standard_conversion (tree to, tree from, tree expr)
 		  _class.derived_) of D.  If B is an inaccessible
 		  (clause _class.access_) or ambiguous
 		  (_class.member.lookup_) base class of D, a program
-		  that necessitates this conversion is ill-formed.  */
-	       /* Therefore, we use DERIVED_FROM_P, and not
-		  ACCESSIBLY_UNIQUELY_DERIVED_FROM_P, in this test.  */
+		  that necessitates this conversion is ill-formed.
+	          Therefore, we use DERIVED_FROM_P, and do not check
+	          access or uniqueness.  */
 	       && DERIVED_FROM_P (TREE_TYPE (to), TREE_TYPE (from)))
 	{
 	  from = 
@@ -4051,7 +4051,7 @@ enforce_access (tree basetype_path, tree decl)
 {
   gcc_assert (TREE_CODE (basetype_path) == TREE_BINFO);
   
-  if (!accessible_p (basetype_path, decl))
+  if (!accessible_p (basetype_path, decl, true))
     {
       if (TREE_PRIVATE (decl))
 	cp_error_at ("%q+#D is private", decl);
@@ -4670,7 +4670,7 @@ build_over_call (struct z_candidate *cand, int flags)
 				       1);
       /* Check that the base class is accessible.  */
       if (!accessible_base_p (TREE_TYPE (argtype), 
-			      BINFO_TYPE (cand->conversion_path)))
+			      BINFO_TYPE (cand->conversion_path), true))
 	error ("%qT is not an accessible base of %qT",
 	       BINFO_TYPE (cand->conversion_path),
 	       TREE_TYPE (argtype));
@@ -4678,7 +4678,7 @@ build_over_call (struct z_candidate *cand, int flags)
          will be to the derived class, not the base declaring fn. We
          must convert from derived to base.  */
       base_binfo = lookup_base (TREE_TYPE (TREE_TYPE (converted_arg)),
-				TREE_TYPE (parmtype), ba_ignore, NULL);
+				TREE_TYPE (parmtype), ba_unique, NULL);
       converted_arg = build_base_path (PLUS_EXPR, converted_arg,
 				       base_binfo, 1);
       

@@ -56,7 +56,7 @@ error_not_base_type (tree basetype, tree type)
 tree
 binfo_or_else (tree base, tree type)
 {
-  tree binfo = lookup_base (type, base, ba_ignore, NULL);
+  tree binfo = lookup_base (type, base, ba_unique, NULL);
 
   if (binfo == error_mark_node)
     return NULL_TREE;

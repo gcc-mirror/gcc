@@ -436,7 +436,7 @@ convert_to_base (tree object, tree type, bool check_access)
   tree binfo;
 
   binfo = lookup_base (TREE_TYPE (object), type, 
-		       check_access ? ba_check : ba_ignore, 
+		       check_access ? ba_check : ba_unique, 
 		       NULL);
   if (!binfo || binfo == error_mark_node)
     return error_mark_node;
@@ -526,7 +526,7 @@ build_vtbl_ref_1 (tree instance, tree idx)
   if (fixed_type && !cdtorp)
     {
       tree binfo = lookup_base (fixed_type, basetype,
-				ba_ignore|ba_quiet, NULL);
+				ba_unique | ba_quiet, NULL);
       if (binfo)
 	vtbl = unshare_expr (BINFO_VTABLE (binfo));
     }
@@ -4392,13 +4392,17 @@ warn_about_ambiguous_bases (tree t)
   tree binfo;
   tree base_binfo;
 
+  /* If there are no repeated bases, nothing can be ambiguous.  */
+  if (!CLASSTYPE_REPEATED_BASE_P (t))
+    return;
+  
   /* Check direct bases.  */
   for (binfo = TYPE_BINFO (t), i = 0;
        BINFO_BASE_ITERATE (binfo, i, base_binfo); ++i)
     {
       basetype = BINFO_TYPE (base_binfo);
 
-      if (!lookup_base (t, basetype, ba_ignore | ba_quiet, NULL))
+      if (!lookup_base (t, basetype, ba_unique | ba_quiet, NULL))
 	warning ("direct base %qT inaccessible in %qT due to ambiguity",
 		 basetype, t);
     }
@@ -4410,7 +4414,7 @@ warn_about_ambiguous_bases (tree t)
       {
 	basetype = BINFO_TYPE (binfo);
 	
-	if (!lookup_base (t, basetype, ba_ignore | ba_quiet, NULL))
+	if (!lookup_base (t, basetype, ba_unique | ba_quiet, NULL))
 	  warning ("virtual base %qT inaccessible in %qT due to ambiguity",
 		   basetype, t);
       }
