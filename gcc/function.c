@@ -103,11 +103,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    compiler passes.  */
 int current_function_is_leaf;
 
-/* Nonzero if function being compiled doesn't contain any instructions
-   that can throw an exception.  This is set prior to final.  */
-
-int current_function_nothrow;
-
 /* Nonzero if function being compiled doesn't modify the stack pointer
    (ignoring the prologue and epilogue).  This is only valid after
    life_analysis has run.  */

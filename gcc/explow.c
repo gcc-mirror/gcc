@@ -1110,11 +1110,11 @@ update_nonlocal_goto_save_area (void)
    frame, thus causing a crash if a longjmp unwinds to it.  */
 
 void
-optimize_save_area_alloca (rtx insns)
+optimize_save_area_alloca (void)
 {
   rtx insn;
 
-  for (insn = insns; insn; insn = NEXT_INSN(insn))
+  for (insn = get_insns (); insn; insn = NEXT_INSN(insn))
     {
       rtx note;
 

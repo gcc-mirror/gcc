@@ -2406,7 +2406,7 @@ dwarf2out_begin_prologue (unsigned int line ATTRIBUTE_UNUSED,
   fde->dw_fde_end = NULL;
   fde->dw_fde_cfi = NULL;
   fde->funcdef_number = current_function_funcdef_no;
-  fde->nothrow = current_function_nothrow;
+  fde->nothrow = TREE_NOTHROW (current_function_decl);
   fde->uses_eh_lsda = cfun->uses_eh_lsda;
   fde->all_throwers_are_sibcalls = cfun->all_throwers_are_sibcalls;
 

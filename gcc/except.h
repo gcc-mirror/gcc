@@ -99,7 +99,7 @@ extern bool can_throw_internal (rtx);
 extern bool can_throw_external_1 (int);
 extern bool can_throw_external (rtx);
 
-/* Set current_function_nothrow and cfun->all_throwers_are_sibcalls.  */
+/* Set TREE_NOTHROW and cfun->all_throwers_are_sibcalls.  */
 extern void set_nothrow_function_flags (void);
 
 /* After initial rtl generation, call back to finish generating
