@@ -1,3 +1,9 @@
+2004-02-09  James E Wilson  <wilson@specifixinc.com>
+
+	PR libstdc++/5625
+	* libsuspc++/eh_personality.cc (PERSONALITY_FUNCTION): Use
+	__builtin_extend_pointer.
+
 2004-02-09  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/14072

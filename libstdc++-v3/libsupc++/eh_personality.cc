@@ -443,8 +443,10 @@ PERSONALITY_FUNCTION (int version,
 	}
     }
 
+  /* For targets with pointers smaller than the word size, we must extend the
+     pointer, and this extension is target dependent.  */
   _Unwind_SetGR (context, __builtin_eh_return_data_regno (0),
-		 (_Unwind_Ptr) &xh->unwindHeader);
+		 __builtin_extend_pointer (&xh->unwindHeader));
   _Unwind_SetGR (context, __builtin_eh_return_data_regno (1),
 		 handler_switch_value);
   _Unwind_SetIP (context, landing_pad);
