@@ -1329,10 +1329,10 @@ reload (first, global, dumpfile)
 		     need only in the smallest class in which it
 		     is required.  */
 
-		  bcopy (insn_needs.other.regs[0], basic_needs,
-			 sizeof basic_needs);
-		  bcopy (insn_needs.other.groups, basic_groups,
-			 sizeof basic_groups);
+		  bcopy ((char *) insn_needs.other.regs[0],
+			 (char *) basic_needs, sizeof basic_needs);
+		  bcopy ((char *) insn_needs.other.groups,
+			 (char *) basic_groups, sizeof basic_groups);
 
 		  for (i = 0; i < N_REG_CLASSES; i++)
 		    {
