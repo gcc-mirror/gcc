@@ -23,6 +23,7 @@
 #include <locale>
 #include <testsuite_hooks.h>
 
+#ifdef _GLIBCPP_USE_WCHAR_T
 // libstdc++/9828
 void test01()
 {
@@ -37,9 +38,12 @@ void test01()
   np.put(stream, wcout, ' ', static_cast<long>(10));
   VERIFY( stream.str() == "10" );
 }
+#endif
 
 int main()
 {
+#ifdef _GLIBCPP_USE_WCHAR_T
   test01();
+#endif
   return 0;
 }
