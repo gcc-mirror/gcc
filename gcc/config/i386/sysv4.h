@@ -165,9 +165,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define JUMP_TABLES_IN_TEXT_SECTION
 
-#define WEAK_ASM_OP ".weak"
-#define DEF_ASM_OP  ".set"
-
 /* Biggest alignment that any structure field can require on this
    machine, in bits.  If packing is in effect, this can be smaller than
    normal.  */
