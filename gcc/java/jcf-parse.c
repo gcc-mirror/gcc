@@ -1000,9 +1000,6 @@ java_parse_file ()
 
 	  int len = strlen (list);
 
-	  if (*list != '/' && filename_count > 0)
-	    obstack_grow (&temporary_obstack, "./", 2);
-
 	  obstack_grow0 (&temporary_obstack, list, len);
 	  value = obstack_finish (&temporary_obstack);
 
