@@ -30,3 +30,4 @@ main(){
 
 /* Should have no more than two ifs left after straightening.  */
 /* { dg-final { scan-tree-dump-times "if " 2 "phiopt1"} } */
+/* { dg-final { cleanup-tree-dump "phiopt1" } } */

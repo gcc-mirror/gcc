@@ -14,5 +14,4 @@ foo (unsigned int a)
 /* There should be no casts to a _Bool since we can use the temporary
    holding (a>>5)&1 directly.  */
 /* { dg-final { scan-tree-dump-times "\\(_Bool\\)" 0 "forwprop1"} } */
-                                                                                
-
+/* { dg-final { cleanup-tree-dump "forwprop1" } } */

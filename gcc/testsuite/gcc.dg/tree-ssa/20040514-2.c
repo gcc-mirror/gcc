@@ -15,3 +15,4 @@ foo2 (distance, i, j)
 /* { dg-final { scan-tree-dump-times "ABS_EXPR " 1 "dom3"} } */
 /* { dg-final { scan-tree-dump-times "if " 0 "dom3"} } */
 
+/* { dg-final { cleanup-tree-dump "dom3" } } */

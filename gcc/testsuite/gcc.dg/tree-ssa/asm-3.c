@@ -28,3 +28,5 @@ void test(void)
 
 /* In particular, hardreg should *not* appear in the call to bar.  */
 /* { dg-final { scan-tree-dump-times "bar \[(\]t\[)\]" 1 "optimized" } } */
+
+/* { dg-final { cleanup-tree-dump "optimized" } } */

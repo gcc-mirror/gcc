@@ -23,4 +23,5 @@ rs6000_emit_prologue (int i, rs6000_stack_t *info)
    commutative operands correctly.  */
 /* { dg-final { scan-tree-dump-times "\\+" 1 "dom3"} } */
  
+/* { dg-final { cleanup-tree-dump "dom3" } } */
 

@@ -33,4 +33,4 @@ void foo(const int * __restrict__ zr_in,
 
 
 /* { dg-final { scan-tree-dump-times "Applying if-conversion" 1 "ifcvt" } } */
-
+/* { dg-final { cleanup-tree-dump "ifcvt" } } */

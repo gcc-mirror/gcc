@@ -17,4 +17,5 @@ main (int argc)
   foo2 (a);
 }
 /* We should sink the first a = b + c calculation into the else branch  */
-/* { dg-final { scan-tree-dump-times "Sunk statements:1" 1 "sink"} } */
+/* { dg-final { scan-tree-dump-times "Sunk statements:1" 1 "sink" } } */
+/* { dg-final { cleanup-tree-dump "sink" } } */

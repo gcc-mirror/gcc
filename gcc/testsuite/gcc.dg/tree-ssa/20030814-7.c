@@ -39,3 +39,4 @@ mark_constant_function (void)
    This if we find current_function_decl used as an argument, then
    we have failed.  */
 /* { dg-final { scan-tree-dump-times "\\(current_function_decl\\)" 0 "dom3"} } */
+/* { dg-final { cleanup-tree-dump "dom3" } } */

@@ -35,3 +35,5 @@ void xxx(void)
 
 /* { dg-final { scan-tree-dump-times "1700" 1 "vars" } } */
 /* { dg-final { scan-tree-dump-times "iter" 0 "vars" } } */
+
+/* { dg-final { cleanup-tree-dump "vars" } } */

@@ -11,3 +11,4 @@ foo (int align)
 /* We should have optimized away the mod operator before we genericized
    the code.  */
 /* { dg-final { scan-tree-dump-times "%" 0 "generic"} } */
+/* { dg-final { cleanup-tree-dump "generic" } } */

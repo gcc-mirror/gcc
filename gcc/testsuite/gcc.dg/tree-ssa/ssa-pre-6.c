@@ -11,3 +11,4 @@ int main(int x)
 /* We should eliminate one evaluation of x + 1 along the x = 2 path,
    causing one elimination.  */
 /* { dg-final { scan-tree-dump-times "Eliminated:1" 1 "pre"} } */
+/* { dg-final { cleanup-tree-dump "pre" } } */
