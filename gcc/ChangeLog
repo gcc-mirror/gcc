@@ -1,6 +1,6 @@
 2004-02-23  James E Wilson  <wilson@specifixinc.com>
 
-	* calls.c (preompute_arguments): Update comment.
+	* calls.c (precompute_arguments): Update comment.
 
 2004-02-23  Kazu Hirata  <kazu@cs.umass.edu>
 
