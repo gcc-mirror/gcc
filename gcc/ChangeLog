@@ -1,3 +1,7 @@
+2003-11-21  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* doc/.cvsignore: Delete.
+
 2003-11-21  Daniel Berlin  <dberlin@dberlin.org>
 	    David Edelsohn  <edelsohn@gnu.org>
 
@@ -3304,7 +3308,7 @@
 
 	* config/i386/i386.c (x86_this_parameter): Fix typo.
 
-2003-10-11  Jan Hubicka  <jh@suse.cz>
+203-10-11  Jan Hubicka  <jh@suse.cz>
 
 	* Makefile.in (web.o): New.
 	* web.c: New file.

@@ -1,3 +1,7 @@
+2003-11-21  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* .cvsignore: Delete.
+
 2003-11-21  Andreas Schwab  <schwab@suse.de>
 
 	* 55system.ads: Set ZCX_By_Default and GCC_ZCX_Support to True.

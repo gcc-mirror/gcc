@@ -1,3 +1,7 @@
+2003-11-21  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* .cvsignore: Delete.
+
 2003-10-30  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* Makefile.am (my_make_i_flags): Add $(srcdir) and update comment
