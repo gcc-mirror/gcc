@@ -1,3 +1,7 @@
+2002-02-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* mklibgcc.in: Don't use GNU make extension.
+
 2002-02-28  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* c-parse.in (STATIC): New terminal.
