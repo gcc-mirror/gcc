@@ -236,6 +236,7 @@ do { char dstr[30];							\
    fprintf (STREAM, "\t.space\t%d\n", NBYTES)
 
 /* Align output to a power of two.  Horrible /bin/as.  */
+#ifndef ASM_OUTPUT_ALIGN  
 #define ASM_OUTPUT_ALIGN(STREAM, POWER)  \
   do                                                           \
     {                                                          \
@@ -245,7 +246,9 @@ do { char dstr[30];							\
 	fprintf (STREAM, "\t.even\n");                         \
       else if (amount != 1)                                    \
 	fprintf (STREAM, "\t.align\t%d\n", amount - 4);        \
-    } while (0)
+    }							       \
+  while (0)
+#endif
 
 /* Output a common block */
 #ifndef ASM_OUTPUT_COMMON
