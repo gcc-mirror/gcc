@@ -1,6 +1,6 @@
 // 2001-04-06 gdr
 
-// Copyright (C) 2001 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,8 +27,8 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-// { dg-do compile { xfail *-*-linux-gnu *-*-freebsd5* } }
-// { dg-excess-errors "" { target *-*-linux-gnu *-*-freebsd5* } }
+// { dg-do compile { xfail *-*-linux-gnu } }
+// { dg-excess-errors "" { target *-*-linux-gnu } }
 
 #include <math.h>
 
