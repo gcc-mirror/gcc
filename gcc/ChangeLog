@@ -1,3 +1,8 @@
+1999-12-14  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* loop.c (check_dbra_loop): Can't reverse a biv that has
+	maybe_multiple set.
+
 1999-12-14  Nick Clifton  <nickc@cygnus.com>
 
 	* config/arm/arm.c: Add support for -mcpu=arm720 command line
