@@ -42,10 +42,6 @@ case $machine in
         fixincludes=fixinc.svr4
         ;;
 
-    i?86-*-openbsd*)
-        fixincludes=fixinc.wrap
-        ;;
-
     i?86-sequent-ptx* | i?86-sequent-sysv[34]*)
         fixincludes=fixinc.ptx
         ;;

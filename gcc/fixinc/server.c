@@ -183,6 +183,7 @@ static void
 server_setup ()
 {
   static int atexit_done = 0;
+  char buff [MAXPATHLEN + 1];
   
   if (atexit_done++ == 0)
     atexit (close_server);
@@ -196,7 +197,8 @@ server_setup ()
 
   fputs ("trap : 1\n", server_pair.pf_write);
   fflush (server_pair.pf_write);
-  p_cur_dir = getcwd ((char *) NULL, MAXPATHLEN + 1);
+  getcwd (buff, MAXPATHLEN + 1);
+  p_cur_dir = xstrdup (buff);
 }
 
 /*
