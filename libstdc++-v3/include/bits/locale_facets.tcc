@@ -938,20 +938,25 @@ namespace std
 	  switch (__which)
 		{
 		case money_base::symbol:
-		  if (__io.flags() & ios_base::showbase)
+		  if (__io.flags() & ios_base::showbase || __i < 2 ||
+		      __i == 2 && static_cast<part>(__p.field[3]) != money_base::none)
 		    {
-		      // Symbol is required.
+		      // According to 22.2.6.1.2.2, symbol is required if
+		      // (__io.flags() & ios_base::showbase), otherwise is optional
+		      // and consumed only if other characters are needed to complete
+		      // the format.
 		      const string_type __symbol = __intl ? __mpt.curr_symbol()
 						    	 : __mpf.curr_symbol();
 		      size_type __len = __symbol.size();
-		      size_type __i = 0;
+		      size_type __j = 0;
 		      while (__beg != __end 
-			     && __i < __len && __symbol[__i] == __c)
+			     && __j < __len && __symbol[__j] == __c)
 			{
 			  __c = *(++__beg);
-			  ++__i;
+			  ++__j;
 			}
-		      if (__i != __len)
+		      // When (__io.flags() & ios_base::showbase) symbol is required.
+		      if (__j != __len && (__io.flags() & ios_base::showbase))
 			__testvalid = false;
 		    }
 		  break;
