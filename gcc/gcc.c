@@ -580,8 +580,8 @@ static int n_compilers;
 static struct compiler default_compilers[] =
 {
   /* Add lists of suffixes of known languages here.  If those languages
-     were no present when we built the driver, we will hit these copies
-     and given a more meaningful error than "file not used since
+     were not present when we built the driver, we will hit these copies
+     and be given a more meaningful error than "file not used since
      linking is not done".  */
   {".cc", "#C++"}, {".cxx", "#C++"}, {".cpp", "#C++"}, {".c++", "#C++"},
   {".C", "#C++"}, {".ads", "#Ada"}, {".adb", "#Ada"}, {".ada", "#Ada"},
@@ -2118,7 +2118,7 @@ execute ()
   for (n_commands = 1, i = 0; i < argbuf_index; i++)
     if (strcmp (argbuf[i], "|") == 0)
       {				/* each command.  */
-#if defined (__MSDOS__) || (defined (_WIN32) && ! defined (__CYGWIN32__)) || defined (OS2)
+#if defined (__MSDOS__) || (defined (_WIN32) && ! defined (__CYGWIN32__)) || defined (OS2) || defined (VMS)
         fatal ("-pipe not supported");
 #endif
 	argbuf[i] = 0;	/* termination of command args.  */
