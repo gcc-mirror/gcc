@@ -1,3 +1,7 @@
+2003-03-12  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* pa.c (pa_init_builtins): Fix warning.
+
 2003-03-12  Richard Henderson  <rth@redhat.com>
 
 	PR opt/8178
