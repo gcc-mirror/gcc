@@ -2002,35 +2002,30 @@ namespace std
       while (__nmatches > 1)
 	{
 	  // Find smallest matching string.
-	  size_t __minlen = 10;
-	  for (size_t __i2 = 0; __i2 < __nmatches; ++__i2)
+	  size_t __minlen = __traits_type::length(__names[__matches[0]]);
+	  for (size_t __i2 = 1; __i2 < __nmatches; ++__i2)
 	    __minlen = std::min(__minlen,
 			      __traits_type::length(__names[__matches[__i2]]));
+	  ++__pos;
 	  ++__beg;
 	  if (__pos < __minlen && __beg != __end)
-	    {
-	      ++__pos;
-	      for (size_t __i3 = 0; __i3 < __nmatches; ++__i3)
-		{
-		  __name = __names[__matches[__i3]];
-		  if (__name[__pos] != *__beg)
-		    __matches[__i3] = __matches[--__nmatches];
-		}
-	    }
+	    for (size_t __i3 = 0; __i3 < __nmatches;)
+	      {
+		__name = __names[__matches[__i3]];
+		if (__name[__pos] != *__beg)
+		  __matches[__i3] = __matches[--__nmatches];
+		else
+		  ++__i3;
+	      }
 	  else
 	    break;
 	}
 
       if (__nmatches == 1)
 	{
-	  // If there was only one match, the first compare is redundant.
-	  if (__pos == 0)
-	    {
-	      ++__pos;
-	      ++__beg;
-	    }
-
 	  // Make sure found name is completely extracted.
+	  ++__pos;
+	  ++__beg;
 	  __name = __names[__matches[0]];
 	  const size_t __len = __traits_type::length(__name);
 	  while (__pos < __len && __beg != __end && __name[__pos] == *__beg)
