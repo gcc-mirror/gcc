@@ -2671,7 +2671,6 @@ var_element (gfc_data_variable * new)
 {
   match m;
   gfc_symbol *sym;
-  gfc_common_head *t;
 
   memset (new, '\0', sizeof (gfc_data_variable));
 
