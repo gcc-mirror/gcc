@@ -7418,6 +7418,14 @@ if_then_else_cond (x, ptrue, pfalse)
 	   || ((cond0 = get_last_value (x)) != 0 && CONSTANT_P (cond0)))
     ;
 
+  /* If we're in BImode, canonicalize on 0 and STORE_FLAG_VALUE, as that
+     will be least confusing to the rest of the compiler.  */
+  else if (mode == BImode)
+    {
+      *ptrue = GEN_INT (STORE_FLAG_VALUE), *pfalse = const0_rtx;
+      return x;
+    }
+
   /* If X is known to be either 0 or -1, those are the true and
      false values when testing X.  */
   else if (x == constm1_rtx || x == const0_rtx
