@@ -1006,7 +1006,7 @@ i[34567]86-ncr-sysv4*)		# NCR 3000 - ix86 running system V.4
 	then
 		tm_file=i386/sysv4gdb.h
 	else
-		tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h svr4.h i386/sysv4.h"
+		tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h svr4.h i386/sysv4.h i386/sysv4-cpp.h"
 	fi
 	extra_parts="crtbegin.o crtend.o"
 	tmake_file=i386/t-crtpic
@@ -1031,7 +1031,7 @@ i[34567]86-sequent-sysv*)	# would otherwise be caught by i?86-*-sysv*
 	exit 1
 	;;
 i[34567]86-wrs-vxworks*)
-	tm_file="${tm_file} i386/unix.h i386/bsd.h i386/gas.h i386/gstabs.h i386/i386-aout.h i386/vxi386.h"
+	tm_file="${tm_file} i386/unix.h i386/bsd.h i386/gas.h i386/gstabs.h i386/vxi386.h"
 	thread_file='vxworks'
 	;;
 i[34567]86-*-aout*)
@@ -1230,7 +1230,7 @@ i[34567]86-*-sysv5*)           # Intel x86 on System V Release 5
        ;;
 i[34567]86-*-sysv4*)		# Intel 80386's running system V.4
 	xm_defines="POSIX SMALL_ARG_MAX"
-	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h svr4.h i386/sysv4.h"
+	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h svr4.h i386/sysv4.h i386/sysv4-cpp.h"
 	if test x$stabs = xyes
 	then
 		tm_file="${tm_file} dbx.h"

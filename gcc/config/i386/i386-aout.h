@@ -23,9 +23,4 @@ Boston, MA 02111-1307, USA.  */
 
 #define TARGET_VERSION fprintf (stderr, " (80386, BSD a.out syntax)"); 
 
-/* Specify predefined symbols in preprocessor.  */
-
-#undef CPP_PREDEFINES
-#define CPP_PREDEFINES ""
-
 /* end of i386-aout.h */

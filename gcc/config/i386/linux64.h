@@ -23,11 +23,24 @@ Boston, MA 02111-1307, USA.  */
 
 #define TARGET_VERSION fprintf (stderr, " (x86-64 Linux/ELF)");
 
-#undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-D__ELF__ -Dunix -D__gnu_linux__ -Dlinux -Asystem(posix)"
+#define TARGET_OS_CPP_BUILTINS()				\
+  do								\
+    {								\
+	builtin_define_std ("linux");				\
+	builtin_define_std ("unix");				\
+	builtin_define ("__gnu_linux__");			\
+	builtin_define ("__ELF__");				\
+	builtin_assert ("system=posix");			\
+	if (flag_pic)						\
+	  {							\
+	    builtin_define ("__PIC__");				\
+	    builtin_define ("__pic__");				\
+	  }							\
+    }								\
+  while (0)
 
 #undef CPP_SPEC
-#define CPP_SPEC "%{fPIC:-D__PIC__ -D__pic__} %{fpic:-D__PIC__ -D__pic__} %{posix:-D_POSIX_SOURCE} %{pthread:-D_REENTRANT}"
+#define CPP_SPEC "%{posix:-D_POSIX_SOURCE} %{pthread:-D_REENTRANT}"
 
 /* Provide a LINK_SPEC.  Here we provide support for the special GCC
    options -static and -shared, which allow us to link things in one
