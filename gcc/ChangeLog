@@ -1,3 +1,18 @@
+2004-07-05  Josef Zlomek  <zlomekj@suse.cz>
+
+	* var-tracking.c: Fix some comments.
+	(frame_stack_adjust): New.
+	(vt_stack_adjustments): Init stack_adjust of entry block to
+	minus stack adjustment of function prologue.
+	(adjust_stack_reference): Do not adjust if adjustment == 0.
+	(compute_bb_dataflow): Use plus_constant instead of gen_rtx_PLUS.
+	(emit_notes_in_bb): Likewise.
+	(vt_add_function_parameters): Do not adjust locations of
+	function arguments.
+	(vt_initialize): Compute the stack adjustment of function
+	prologue and offset the initial "location" of frame_base_decl
+	from the stack pointer after prologue.
+
 2004-07-04  Richard Henderson  <rth@redhat.com>
 
 	* function.c (struct assign_parm_data_all): New.
