@@ -1,5 +1,8 @@
 Sun Mar 29 00:47:32 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* except.c (do_unwind): Delete dead function.
+	(easy_expand_asm): Likewise.
+
 	* cvt.c (build_conversion_type_1): Delete dead function.
 
 	* cp-tree.h (push_expression_obstack): Declare.

@@ -42,21 +42,11 @@ tree builtin_return_address_fndecl;
 
 /* A couple of backend routines from m88k.c */
 
-static void easy_expand_asm PROTO((char *));
 static void push_eh_cleanup PROTO((void));
-static void do_unwind PROTO((rtx));
 static rtx do_function_call PROTO((tree, tree, tree));
 static tree build_eh_type_type PROTO((tree));
 static tree build_eh_type PROTO((tree));
 static void expand_end_eh_spec PROTO((tree));
-
-static void
-easy_expand_asm (str)
-     char *str;
-{
-  expand_asm (build_string (strlen (str)+1, str));
-}
-
 
 #if 0
 /* This is the startup, and finish stuff per exception table.  */
@@ -652,92 +642,6 @@ expand_end_catch_block ()
   /* This the closing } in the `if (eq) {' of the documentation.  */
   emit_label (pop_label_entry (&false_label_stack));
 }
-
-/* unwind the stack.  */
-
-static void
-do_unwind (inner_throw_label)
-     rtx inner_throw_label;
-{
-#if defined (SPARC_STACK_ALIGN) /* was sparc */
-  /* This doesn't work for the flat model sparc, nor does it need to
-     as the default unwinder is only used to unwind non-flat frames.  */
-  tree fcall;
-  tree params;
-  rtx next_pc;
-  rtx temp;
-
-  /* Call to  __builtin_return_address. */
-  params = expr_tree_cons (NULL_TREE, integer_zero_node, NULL_TREE);
-  fcall = build_function_call (builtin_return_address_fndecl, params);
-  next_pc = expand_expr (fcall, NULL_RTX, Pmode, 0);
-  /* In the return, the new pc is pc+8, as the value coming in is
-     really the address of the call insn, not the next insn.  */
-  temp = gen_reg_rtx (Pmode);
-  emit_move_insn (temp, inner_throw_label);
-  emit_move_insn (next_pc, plus_constant (temp, -8));
-  emit_insn (gen_rtx (USE, VOIDmode, gen_rtx (REG, SImode, 31)));
-  easy_expand_asm ("ret");
-  easy_expand_asm ("restore");
-  emit_barrier ();
-#endif
-#if defined (ARM_FRAME_RTX)  /* was __arm */
-  if (flag_omit_frame_pointer)
-    sorry ("this implementation of exception handling requires a frame pointer");
-
-  emit_move_insn (stack_pointer_rtx,
-		  gen_rtx (MEM, Pmode, plus_constant (hard_frame_pointer_rtx, -8)));
-  emit_move_insn (hard_frame_pointer_rtx,
-		  gen_rtx (MEM, Pmode, plus_constant (hard_frame_pointer_rtx, -12)));
-#endif
-#if defined (TARGET_88000) /* was m88k */
-  rtx temp_frame = frame_pointer_rtx;
-
-  temp_frame = memory_address (Pmode, temp_frame);
-  temp_frame = copy_to_reg (gen_rtx (MEM, Pmode, temp_frame));
-
-  /* hopefully this will successfully pop the frame! */
-  emit_move_insn (frame_pointer_rtx, temp_frame);
-  emit_move_insn (stack_pointer_rtx, frame_pointer_rtx);
-  emit_move_insn (arg_pointer_rtx, frame_pointer_rtx);
-  emit_insn (gen_add2_insn (stack_pointer_rtx, gen_rtx (CONST_INT, VOIDmode,
-						     (HOST_WIDE_INT)m88k_debugger_offset (stack_pointer_rtx, 0))));
-
-#if 0
-  emit_insn (gen_add2_insn (arg_pointer_rtx, gen_rtx (CONST_INT, VOIDmode,
-						   -(HOST_WIDE_INT)m88k_debugger_offset (arg_pointer_rtx, 0))));
-
-  emit_move_insn (stack_pointer_rtx, arg_pointer_rtx);
-
-  emit_insn (gen_add2_insn (stack_pointer_rtx, gen_rtx (CONST_INT, VOIDmode,
-						     (HOST_WIDE_INT)m88k_debugger_offset (arg_pointer_rtx, 0))));
-#endif
-#endif
-#if ! defined (TARGET_88000) && ! defined (ARM_FRAME_RTX) && ! defined (SPARC_STACK_ALIGN)
-#if 0
-  tree fcall;
-  rtx next_pc;
-#endif
-  tree params;
-
-#if 0
-  /* I would like to do this here, but the move below doesn't seem to work.  */
-  /* Call to  __builtin_return_address.  */
-  params = expr_tree_cons (NULL_TREE, integer_zero_node, NULL_TREE);
-  fcall = build_function_call (builtin_return_address_fndecl, params);
-  next_pc = expand_expr (fcall, NULL_RTX, Pmode, 0);
-
-  emit_move_insn (next_pc, inner_throw_label);
-  /* So, for now, just pass throw label to stack unwinder.  */
-#endif
-  params = expr_tree_cons (NULL_TREE, make_tree (ptr_type_node,
-					    inner_throw_label), NULL_TREE);
-  
-  do_function_call (Unwind, params, NULL_TREE);
-  emit_barrier ();
-#endif
-}
-
 
 /* An exception spec is implemented more or less like:
 
