@@ -493,34 +493,21 @@
 ;;; Experimental conditional move
 
 (define_insn "cmov"
-  [(set (match_operand:SI 0 "register_operand" "=r,r")
-        (if_then_else:SI
+  [(set (match_operand:SI 0 "register_operand" "=r,r,r,r")
+	(if_then_else:SI
 	 (match_operator 5 "comparison_operator"
-                         [(match_operand:SI 3 "register_operand" "r,r")
-			  (match_operand:SI 4 "arith5_operand" "rL,rL")])
-         (match_operand:SI 1 "arith11_operand" "0,rI")
-         (match_operand:SI 2 "arith11_operand" "rI,0")))]
+			 [(match_operand:SI 3 "register_operand" "r,r,r,r")
+			  (match_operand:SI 4 "arith5_operand" "rL,rL,rL,rL")])
+	 (match_operand:SI 1 "arith11_operand" "0,0,r,I")
+	 (match_operand:SI 2 "arith11_operand" "r,I,0,0")))]
   ""
-  "*
-{
-  output_asm_insn (\"com%I4clr,%S5 %4,%3,0\", operands);
-  if (which_alternative == 0)
-    {
-      if (GET_CODE (operands[2]) == CONST_INT)
-	return \"ldi %2,%0\";
-      else 
-	return \"copy %2,%0\";
-    }
-  else
-    {
-      if (GET_CODE (operands[1]) == CONST_INT)
-	return \"ldi %1,%0\";
-      else 
-	return \"copy %1,%0\";
-    }
-}"
-  [(set_attr "type" "multi,multi")
-   (set_attr "length" "2,2")])
+  "@
+   com%I4clr,%S5 %4,%3,0\;copy %2,%0
+   com%I4clr,%S5 %4,%3,0\;ldi %2,%0
+   com%I4clr,%S5 %4,%3,0\;copy %1,%0
+   com%I4clr,%S5 %4,%3,0\;ldi %1,%0"
+  [(set_attr "type" "multi,multi,multi,multi")
+   (set_attr "length" "2,2,2,2")])
 
 ;; Conditional Branches
 
