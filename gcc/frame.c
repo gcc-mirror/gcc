@@ -221,7 +221,7 @@ count_fdes (fde *this_fde)
   for (count = 0; this_fde->length != 0; this_fde = next_fde (this_fde))
     {
       /* Skip CIEs and linked once FDE entries.  */
-      if (this_fde->CIE_delta == 0 || this_fde->pc_range == 0)
+      if (this_fde->CIE_delta == 0 || this_fde->pc_begin == 0)
 	continue;
 
       ++count;
@@ -241,7 +241,7 @@ add_fdes (fde *this_fde, fde **array, size_t *i_ptr,
   for (; this_fde->length != 0; this_fde = next_fde (this_fde))
     {
       /* Skip CIEs and linked once FDE entries.  */
-      if (this_fde->CIE_delta == 0 || this_fde->pc_range == 0)
+      if (this_fde->CIE_delta == 0 || this_fde->pc_begin == 0)
 	continue;
 
       fde_insert (array, i++, this_fde);
