@@ -640,16 +640,29 @@
 	    (match_operand 1 "const_int_operand" ""))]
   "ISA_HAS_COND_TRAP"
 {
-  mips_gen_conditional_trap (operands);
-  DONE;
+  if (operands[1] == const0_rtx)
+    {
+      mips_gen_conditional_trap (operands);
+      DONE;
+    }
+  else
+    FAIL;
 })
 
 (define_insn ""
   [(trap_if (match_operator 0 "trap_cmp_op"
-                            [(match_operand:SI 1 "reg_or_0_operand" "d")
-                             (match_operand:SI 2 "nonmemory_operand" "dI")])
+                            [(match_operand:SI 1 "reg_or_0_operand" "dJ")
+                             (match_operand:SI 2 "arith_operand" "dI")])
 	    (const_int 0))]
   "ISA_HAS_COND_TRAP"
+  "t%C0\t%z1,%z2")
+
+(define_insn ""
+  [(trap_if (match_operator 0 "trap_cmp_op"
+                            [(match_operand:DI 1 "reg_or_0_operand" "dJ")
+                             (match_operand:DI 2 "arith_operand" "dI")])
+	    (const_int 0))]
+  "TARGET_64BIT && ISA_HAS_COND_TRAP"
   "t%C0\t%z1,%z2")
 
 ;;

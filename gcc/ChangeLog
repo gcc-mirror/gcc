@@ -1,3 +1,10 @@
+2003-08-19  Chris Demetriou  <cgd@broadcom.com>
+
+	* config/mips/mips.md: Adjust SI-mode "trap_if" instruction
+	to use better predicates and constraints.  Define new
+	instruction to handle "trap_if" with DI-mode arguments.
+	(conditional_trap): FAIL if trap code is not 0.
+
 2003-08-19  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* config/i386/i386.c (legitimate_pic_address_disp_p): Change the
