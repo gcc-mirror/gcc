@@ -977,6 +977,9 @@ struct lang_decl_func GTY(())
   unsigned int fixed_ctor : 1;
   unsigned int init_calls_this : 1;
   unsigned int strictfp : 1;
+  unsigned int invisible : 1;	/* Set for methods we generate
+				   internally but which shouldn't be
+				   written to the .class file.  */
 };
 
 struct treetreehash_entry GTY(())
@@ -1071,6 +1074,12 @@ struct lang_type GTY(())
 #define JCF_u4 unsigned long
 #define JCF_u2 unsigned short
 
+/* Possible values to pass to lookup_argument_method_generic.  */
+#define SEARCH_INTERFACE      1
+#define SEARCH_SUPER          2
+#define SEARCH_ONLY_INTERFACE 4
+#define SEARCH_VISIBLE        8
+
 extern void java_parse_file (int);
 extern bool java_mark_addressable (tree);
 extern tree java_type_for_mode (enum machine_mode, int);
@@ -1084,7 +1093,7 @@ extern tree lookup_class (tree);
 extern tree lookup_java_constructor (tree, tree);
 extern tree lookup_java_method (tree, tree, tree);
 extern tree lookup_argument_method (tree, tree, tree);
-extern tree lookup_argument_method2 (tree, tree, tree);
+extern tree lookup_argument_method_generic (tree, tree, tree, int);
 extern int has_method (tree, tree);
 extern tree promote_type (tree);
 extern tree get_constant (struct JCF*, int);
@@ -1302,6 +1311,7 @@ extern void init_resource_processing (void);
 #define METHOD_NATIVE(DECL) (DECL_LANG_SPECIFIC(DECL)->u.f.native)
 #define METHOD_ABSTRACT(DECL) DECL_LANG_FLAG_5 (DECL)
 #define METHOD_STRICTFP(DECL) (DECL_LANG_SPECIFIC (DECL)->u.f.strictfp)
+#define METHOD_INVISIBLE(DECL) (DECL_LANG_SPECIFIC (DECL)->u.f.invisible)
 
 #define JAVA_FILE_P(NODE) TREE_LANG_FLAG_2 (NODE)
 #define CLASS_FILE_P(NODE) TREE_LANG_FLAG_3 (NODE)

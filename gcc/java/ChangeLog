@@ -1,3 +1,30 @@
+2003-08-11  Tom Tromey  <tromey@redhat.com>
+
+	* parse.y (java_check_regular_methods): Typo fixes.  Call
+	check_interface_throws_clauses.  Use
+	check_concrete_throws_clauses.
+	(check_interface_throws_clauses): New function.
+	(check_concrete_throws_clauses): New function.
+	(hack_is_accessible_p): New function.
+	(find_most_specific_methods_list): Added FIXME.
+	* typeck.c (lookup_do): Use `flags' argument to decide what to
+	do.  Reimplemented.
+	(lookup_argument_method_generic): New function.
+	(lookup_argument_method2): Removed.
+	* jcf.h (ACC_INVISIBLE): New define.
+	* jcf-write.c (generate_classfile): Skip invisible methods.
+	* class.c (add_miranda_methods): New function.
+	(layout_class_methods): Use it.
+	(get_access_flags_from_decl): Use ACC_INVISIBLE.
+	* java-tree.h (METHOD_INVISIBLE): New define.
+	(lang_decl_func) [invisible]: New field.
+	(lookup_argument_method_generic): Declare.
+	(SEARCH_INTERFACE): New define.
+	(SEARCH_SUPER): Likewise.
+	(SEARCH_ONLY_INTERFACE): Likewise.
+	(SEARCH_VISIBLE): Likewise.
+	(lookup_argument_method2): Removed declaration.
+
 2003-08-05  Tom Tromey  <tromey@redhat.com>
 
 	Fix for PR java/11600:
