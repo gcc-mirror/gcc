@@ -534,7 +534,8 @@ cat > conftest.java << 'END'
 public class conftest { }
 END
 use_fuse=yes
-$GCJ -fuse-divide-subroutine -fsyntax-only conftest.java || use_fuse=no
+$GCJ -fuse-divide-subroutine -fsyntax-only conftest.java > /dev/null 2>&1 \
+   || use_fuse=no
 rm -f conftest.java
 if test "$use_fuse" = no; then
    DIVIDESPEC=
