@@ -1,3 +1,10 @@
+Tue Sep 14 21:47:06 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* cse.c (FIXED_BASE_PLUS_P): Do not consider referneces to
+	arg_pointer_rtx fixed if the argument pointer register is
+	not fixed.
+	(NONZERO_BASE_PLUS_P): Likewise.
+
 Tue Sep 14 20:26:02 1999  Richard Henderson  <rth@cygnus.com>
 
 	* rtl.def (match_insn, match_insn2): Remove match_insn; rename
