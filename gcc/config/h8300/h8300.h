@@ -1005,7 +1005,7 @@ struct cum_arg
    return it with a return statement.  Otherwise, break from the switch.  */
 
 #define DEFAULT_RTX_COSTS(RTX, CODE, OUTER_CODE) \
-  return (const_costs (RTX, CODE));
+  return (const_costs (RTX, CODE, OUTER_CODE));
 
 #define BRANCH_COST 0
 

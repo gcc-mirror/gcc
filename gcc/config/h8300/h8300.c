@@ -872,9 +872,10 @@ function_arg (cum, mode, type, named)
 /* Return the cost of the rtx R with code CODE.  */
 
 int
-const_costs (r, c)
+const_costs (r, c, outer_code)
      rtx r;
      enum rtx_code c;
+     enum rtx_code outer_code;
 {
   switch (c)
     {
@@ -882,15 +883,16 @@ const_costs (r, c)
       switch (INTVAL (r))
 	{
 	case 0:
+	  return 0;
 	case 1:
 	case 2:
 	case -1:
 	case -2:
-	  return 0;
+	  return 0 + (outer_code == SET);
 	case 4:
 	case -4:
 	  if (TARGET_H8300H || TARGET_H8300S)
-	    return 0;
+	    return 0 + (outer_code == SET);
 	  else
 	    return 1;
 	default:
