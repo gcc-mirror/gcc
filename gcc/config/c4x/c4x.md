@@ -377,10 +377,12 @@
 		(const_string "false")))
 
 /* Disable ldp because the c4x contains a bug. The ldp insn modifies
-   the dp register when the insn is anulled or not.  */
+   the dp register when the insn is anulled or not.
+   Also disable autoincrement insns because of a silicon bug.  */
 (define_attr "in_annul_slot_3" "false,true"
-  (if_then_else (and (eq_attr "cpu" "c4x")
-		     (eq_attr "type" "!jump,call,rets,jmpc,db,dbc,repeat,repeat_top,laj,push,pop,ldp,multi"))
+  (if_then_else (and (and (eq_attr "cpu" "c4x")
+		          (eq_attr "type" "!jump,call,rets,jmpc,db,dbc,repeat,repeat_top,laj,push,pop,ldp,multi"))
+		     (eq_attr "onlyreg_nomod" "true"))
 		(const_string "true")
 		(const_string "false")))
 
@@ -5133,7 +5135,8 @@
   "! TARGET_C3X"
   "*
    if (final_sequence)
-     return \"laj%U0\\t%C0\";
+     return c4x_check_laj_p (insn)
+	 ? \"nop\\n\\tlaj%U0\\t%C0\" : \"laj%U0\\t%C0\";
    else
      return \"call%U0\\t%C0\";"
   [(set_attr "type" "laj")])
@@ -5181,7 +5184,8 @@
   "! TARGET_C3X"
   "*
    if (final_sequence)
-     return \"laj%U1\\t%C1\";
+     return c4x_check_laj_p (insn)
+	 ? \"nop\\n\\tlaj%U1\\t%C1\" : \"laj%U1\\t%C1\";
    else
      return \"call%U1\\t%C1\";"
   [(set_attr "type" "laj")])

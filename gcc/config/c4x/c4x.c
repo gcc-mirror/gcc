@@ -186,6 +186,7 @@ static int c4x_arn_reg_operand PARAMS ((rtx, enum machine_mode, unsigned int));
 static int c4x_arn_mem_operand PARAMS ((rtx, enum machine_mode, unsigned int));
 static void c4x_check_attribute PARAMS ((const char *, tree, tree, tree *));
 static int c4x_parse_pragma PARAMS ((const char *, tree *, tree *));
+static int c4x_r11_set_p PARAMS ((rtx));
 
 /* Called to register all of our global variables with the garbage
    collector.  */
@@ -1558,15 +1559,7 @@ c4x_check_legit_addr (mode, addr, strict)
 	  return 1;
 
 	if (GET_CODE (op1) == CONST)
-	  {
-	    addr = XEXP (op1, 0);
-	    
-	    if (GET_CODE (addr) == PLUS
-		&& (GET_CODE (XEXP (addr, 0)) == SYMBOL_REF
-		    || GET_CODE (XEXP (addr, 0)) == LABEL_REF)
-		&& GET_CODE (XEXP (addr, 1)) == CONST_INT)
-	      return 1;
-	  }
+	  return 1;
 	return 0;
       }
       break;
@@ -2432,8 +2425,9 @@ c4x_immed_float_constant (op)
   if (GET_CODE (op) != CONST_DOUBLE)
     return 0;
 
-  if (GET_CODE (XEXP (op, 0)) == MEM)
-    return 0;
+  /* Do not check if the CONST_DOUBLE is in memory. If there is a MEM
+     present this only means that a MEM rtx has been generated. It does
+     not mean the rtx is really in memory.  */
 
   return GET_MODE (op) == QFmode || GET_MODE (op) == HFmode;
 }
@@ -2835,14 +2829,9 @@ c4x_U_constraint (op)
      rtx op;
 {
   /* Don't allow direct addressing to an arbitrary constant.  */
-  if (GET_CODE (op) == CONST
-      && GET_CODE (XEXP (op, 0)) == PLUS
-      && (GET_CODE (XEXP (XEXP (op, 0), 0)) == SYMBOL_REF
-	  || GET_CODE (XEXP (XEXP (op, 0), 0)) == LABEL_REF)
-      && GET_CODE (XEXP (XEXP (op, 0), 1)) == CONST_INT)
-    return 1;
-
-  return GET_CODE (op) == SYMBOL_REF || GET_CODE (op) == LABEL_REF;
+  return GET_CODE (op) == CONST
+	 || GET_CODE (op) == SYMBOL_REF
+	 || GET_CODE (op) == LABEL_REF;
 }
 
 
@@ -3228,14 +3217,10 @@ symbolic_address_operand (op, mode)
 {
   switch (GET_CODE (op))
     {
+    case CONST:
     case SYMBOL_REF:
     case LABEL_REF:
       return 1;
-    case CONST:
-      op = XEXP (op, 0);
-      return ((GET_CODE (XEXP (op, 0)) == SYMBOL_REF
-	       || GET_CODE (XEXP (op, 0)) == LABEL_REF)
-	      && GET_CODE (XEXP (op, 1)) == CONST_INT);
     default:
       return 0;
     }
@@ -4717,6 +4702,75 @@ c4x_rptb_rpts_p (insn, op)
     return 1;
 
   return (GET_CODE (op) == CONST_INT) && TARGET_RPTS_CYCLES (INTVAL (op));
+}
+
+
+/* Check if register r11 is used as the destination of an insn.  */
+
+static int
+c4x_r11_set_p(x)
+    rtx x;
+{
+  RTX_CODE code;
+  rtx set;
+  int i, j;
+  const char *fmt;
+
+  if (x == 0)
+    return 0;
+
+  code = GET_CODE (x);
+  if (code == INSN && GET_CODE (PATTERN (x)) == SEQUENCE)
+    x = XVECEXP (PATTERN (x), 0, XVECLEN (PATTERN (x), 0) - 1);
+
+  if (code == INSN && (set = single_set (x)))
+    return c4x_r11_set_p (SET_DEST (set));
+
+  if (code == REG && REGNO (x) == R11_REGNO)
+    return 1;
+
+  fmt = GET_RTX_FORMAT (GET_CODE (x));
+  for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
+    {
+      if (fmt[i] == 'e')
+	{
+          if (c4x_r11_set_p (XEXP (x, i)))
+	    return 1;
+	}
+      else if (fmt[i] == 'E')
+        for (j = XVECLEN (x, i) - 1; j >= 0; j--)
+          if (c4x_r11_set_p (XVECEXP (x, i, j)))
+	    return 1;
+    }
+  return 0;
+}
+
+
+/* The c4x sometimes has a problem when the insn before the laj insn
+   sets the r11 register.  Check for this situation.  */
+
+int
+c4x_check_laj_p (insn)
+     rtx insn;
+{
+  insn = prev_nonnote_insn (insn);
+
+  /* If this is the start of the function no nop is needed.  */
+  if (insn == 0)
+    return 0;
+
+  /* If the previous insn is a code label we have to insert a nop. This
+     could be a jump or table jump. We can find the normal jumps by
+     scanning the function but this will not find table jumps.  */
+  if (GET_CODE (insn) == CODE_LABEL)
+    return 1;
+
+  /* If the previous insn sets register r11 we have to insert a nop.  */
+  if (c4x_r11_set_p (insn))
+    return 1;
+
+  /* No nop needed.  */
+  return 0;
 }
 
 

@@ -121,6 +121,8 @@ extern int c4x_rptb_nop_p PARAMS ((rtx));
 
 extern int c4x_rptb_rpts_p PARAMS ((rtx, rtx));
 
+extern int c4x_check_laj_p PARAMS ((rtx));
+
 extern int c4x_autoinc_operand PARAMS ((rtx, enum machine_mode));
 
 extern int any_operand PARAMS ((rtx, enum machine_mode));
