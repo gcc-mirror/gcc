@@ -1159,6 +1159,7 @@ record_reg_classes (n_alts, n_ops, ops, modes, constraints, insn)
 	  const char *p = constraints[i];
 	  rtx op = ops[i];
 	  enum machine_mode mode = modes[i];
+	  int allows_addr = 0;
 	  int allows_mem = 0;
 	  int win = 0;
 	  unsigned char c;
@@ -1262,7 +1263,11 @@ record_reg_classes (n_alts, n_ops, ops, modes, constraints, insn)
 	      case '!':  case '#':  case '&':
 	      case '0':  case '1':  case '2':  case '3':  case '4':
 	      case '5':  case '6':  case '7':  case '8':  case '9':
+		break;
+
 	      case 'p':
+		allows_addr = 1;
+		win = address_operand (op, GET_MODE (op));
 		break;
 
 	      case 'm':  case 'o':  case 'V':
@@ -1393,7 +1398,10 @@ record_reg_classes (n_alts, n_ops, ops, modes, constraints, insn)
 	  if (GET_CODE (op) == REG && REGNO (op) >= FIRST_PSEUDO_REGISTER)
 	    {
 	      if (classes[i] == NO_REGS)
-		alt_fail = 1;
+		{
+		  if (! allows_addr)
+		    alt_fail = 1;
+		}
 	      else
 		{
 		  struct costs *pp = &this_op_costs[i];
@@ -1443,7 +1451,7 @@ record_reg_classes (n_alts, n_ops, ops, modes, constraints, insn)
 	  /* The only other way this alternative can be used is if this is a
 	     constant that could be placed into memory.  */
 
-	  else if (CONSTANT_P (op) && allows_mem)
+	  else if (CONSTANT_P (op) && (allows_addr || allows_mem))
 	    alt_cost += MEMORY_MOVE_COST (mode, classes[i], 1);
 	  else
 	    alt_fail = 1;

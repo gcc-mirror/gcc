@@ -1,3 +1,7 @@
+Thu Feb 18 20:44:21 1999  David Edelsohn  <edelsohn@mhpcc.edu>
+
+	* regclass.c (record_reg_classes): Correctly handle 'p' constraint.
+
 Thu Feb 18 19:59:37 1999  Marc Espie <espie@cvs.openbsd.org>
 
 	* configure.in :Handle OpenBSD platforms.
