@@ -281,9 +281,9 @@ add_equal_note (seq, target, code, op0, op1)
    of logical operations, but not right shifts.  */
 
 static rtx
-widen_operand (op, mode, unsignedp, no_extend)
+widen_operand (op, mode, oldmode, unsignedp, no_extend)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode, oldmode;
      int unsignedp;
      int no_extend;
 {
@@ -295,7 +295,7 @@ widen_operand (op, mode, unsignedp, no_extend)
   if (! no_extend
       || GET_MODE (op) == VOIDmode
       || (GET_CODE (op) == SUBREG && SUBREG_PROMOTED_VAR_P (op)))
-    return convert_to_mode (mode, op, unsignedp);
+    return convert_modes (mode, oldmode, op, unsignedp);
 
   /* If MODE is no wider than a single word, we return a paradoxical
      SUBREG.  */
@@ -525,10 +525,10 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 		&& class == MODE_INT)
 	      no_extend = 1;
 
-	    xop0 = widen_operand (xop0, wider_mode, unsignedp, no_extend);
+	    xop0 = widen_operand (xop0, wider_mode, mode, unsignedp, no_extend);
 
 	    /* The second operand of a shift must always be extended.  */
-	    xop1 = widen_operand (xop1, wider_mode, unsignedp,
+	    xop1 = widen_operand (xop1, wider_mode, mode, unsignedp,
 				  no_extend && binoptab != ashl_optab
 				  && binoptab != lshl_optab);
 
@@ -1423,10 +1423,11 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 		  && class == MODE_INT)
 		no_extend = 1;
 
-	      xop0 = widen_operand (xop0, wider_mode, unsignedp, no_extend);
+	      xop0 = widen_operand (xop0, wider_mode, mode,
+				    unsignedp, no_extend);
 
 	      /* The second operand of a shift must always be extended.  */
-	      xop1 = widen_operand (xop1, wider_mode, unsignedp,
+	      xop1 = widen_operand (xop1, wider_mode, mode, unsignedp,
 				    no_extend && binoptab != ashl_optab
 				    && binoptab != lshl_optab);
 
@@ -1622,10 +1623,10 @@ expand_twoval_binop (binoptab, op0, op1, targ0, targ1, unsignedp)
 	      register rtx t1 = gen_reg_rtx (wider_mode);
 
 	      if (expand_twoval_binop (binoptab,
-				       convert_to_mode (wider_mode, op0,
-							unsignedp),
-				       convert_to_mode (wider_mode, op1,
-							unsignedp),
+				       convert_modes (wider_mode, mode, op0,
+						      unsignedp),
+				       convert_modes (wider_mode, mode, op1,
+						      unsignedp),
 				       t0, t1, unsignedp))
 		{
 		  convert_move (targ0, t0, unsignedp);
@@ -1734,7 +1735,7 @@ expand_unop (mode, unoptab, op0, target, unsignedp)
 	       the narrow operand, as long as we will truncate the
 	       results to the same narrowness.  */
 
-	    xop0 = widen_operand (xop0, wider_mode, unsignedp,
+	    xop0 = widen_operand (xop0, wider_mode, mode, unsignedp,
 				  (unoptab == neg_optab
 				   || unoptab == one_cmpl_optab)
 				  && class == MODE_INT);
@@ -1875,7 +1876,7 @@ expand_unop (mode, unoptab, op0, target, unsignedp)
 		 the narrow operand, as long as we will truncate the
 		 results to the same narrowness.  */
 
-	      xop0 = widen_operand (xop0, wider_mode, unsignedp,
+	      xop0 = widen_operand (xop0, wider_mode, mode, unsignedp,
 				    (unoptab == neg_optab
 				     || unoptab == one_cmpl_optab)
 				    && class == MODE_INT);
@@ -1998,7 +1999,7 @@ expand_complex_abs (mode, op0, target, unsignedp)
 	{
 	  rtx xop0 = op0;
 
-	  xop0 = convert_to_mode (wider_mode, xop0, unsignedp);
+	  xop0 = convert_modes (wider_mode, mode, xop0, unsignedp);
 	  temp = expand_complex_abs (wider_mode, xop0, NULL_RTX, unsignedp);
 
 	  if (temp)
@@ -2073,7 +2074,7 @@ expand_complex_abs (mode, op0, target, unsignedp)
 	{
 	  rtx xop0 = op0;
 
-	  xop0 = convert_to_mode (wider_mode, xop0, unsignedp);
+	  xop0 = convert_modes (wider_mode, mode, xop0, unsignedp);
 
 	  temp = expand_complex_abs (wider_mode, xop0, NULL_RTX, unsignedp);
 
@@ -2558,8 +2559,8 @@ emit_cmp_insn (x, y, comparison, size, mode, unsignedp, align)
 	    {
 	      x = protect_from_queue (x, 0);
 	      y = protect_from_queue (y, 0);
-	      x = convert_to_mode (wider_mode, x, unsignedp);
-	      y = convert_to_mode (wider_mode, y, unsignedp);
+	      x = convert_modes (wider_mode, mode, x, unsignedp);
+	      y = convert_modes (wider_mode, mode, y, unsignedp);
 	      emit_cmp_insn (x, y, comparison, NULL_RTX,
 			     wider_mode, unsignedp, align);
 	      return;
