@@ -1,3 +1,7 @@
+2001-10-23  Tom Tromey  <tromey@redhat.com>
+
+	* java/io/BufferedWriter.java (localFlush): Don't synchronize.
+
 2001-10-23  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* prims.cc (_Jv_Abort): Always print error message using fprintf,

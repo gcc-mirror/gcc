@@ -216,15 +216,13 @@ public class BufferedWriter extends Writer
       }
   }
 
+  // This should only be called with the lock held.
   private final void localFlush () throws IOException
   {
     if (count > 0)
       {
-	synchronized (lock)
-	  {
-	    out.write(buffer, 0, count);
-	    count = 0;
-	  }
+	out.write(buffer, 0, count);
+	count = 0;
       }
   }
 
