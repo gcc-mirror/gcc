@@ -1627,8 +1627,8 @@ check_annul_list_true_false (annul_true_p, delay_list)
         {
           rtx trial = XEXP (temp, 0);
  
-          if ((annul_true && INSN_FROM_TARGET_P (trial))
-	      || (!annul_true && !INSN_FROM_TARGET_P (trial)))
+          if ((annul_true_p && INSN_FROM_TARGET_P (trial))
+	      || (!annul_true_p && !INSN_FROM_TARGET_P (trial)))
 	    return 0;
         }
     }
