@@ -952,7 +952,12 @@ can_combine_p (insn, i3, pred, succ, pdest, psrc)
 	 insns.  Eliminate this problem by not combining with such an insn.
 
 	 Also, on some machines we don't want to extend the life of a hard
-	 register.  */
+	 register.
+
+	 This is the same test done in can_combine except that we don't test
+	 if SRC is a CALL operation to permit a hard register with
+	 SMALL_REGISTER_CLASSES, and that we have to take all_adjacent
+	 into account.  */
 
       if (GET_CODE (src) == REG
 	  && ((REGNO (dest) < FIRST_PSEUDO_REGISTER
