@@ -285,15 +285,20 @@ install:
 	  INSTALLDIR=$(libsubdir); \
 	fi; \
 	INSTALLLINKDIR=$(libsubdir); \
-	if [ $${INSTALLLINKDIR}$(MULTISUBDIR) = $${INSTALLDIR} ]; \
-	then \
+	if [ $${INSTALLLINKDIR}$(MULTISUBDIR) = $${INSTALLDIR}$(MULTISUBDIR) ]; then \
 	  RELINSTALLDIR=; \
 	elif [ x$(MULTISUBDIR) = x ]; then \
-	  RELINSTALLDIR=../../../; \
-	elif [ "x`echo $(MULTISUBDIR) | sed s,[a-z],,g`" = "x/" ]; then \
-	  RELINSTALLDIR=../../../../; \
+	  if [ $(build_alias) = $(target_alias) ]; then \
+	    RELINSTALLDIR=../../../; \
+	  else \
+	    RELINSTALLDIR=../../../../$(target_alias)/lib/; \
+	  fi; \
 	else \
-	  RELINSTALLDIR=$${INSTALLDIR}/; \
+	  if [ $(build_alias) = $(target_alias) ]; then \
+	    RELINSTALLDIR=../../..`echo $(MULTISUBDIR) | sed -e 's,/[^/]*,/..,g'`$(MULTISUBDIR)/; \
+	  else \
+	    RELINSTALLDIR=../../../..`echo $(MULTISUBDIR) | sed -e 's,/[^/]*,/..,g'`/$(target_alias)/lib$(MULTISUBDIR)/; \
+	  fi; \
 	fi; \
 	if [ $(build_alias) != $(target_alias) ]; then \
 	  case $$RELINSTALLDIR in \
