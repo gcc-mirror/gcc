@@ -497,6 +497,7 @@ init_stmt_for_function ()
 {
   /* We are not currently within any block, conditional, loop or case.  */
   block_stack = 0;
+  stack_block_stack = 0;
   loop_stack = 0;
   case_stack = 0;
   cond_stack = 0;
