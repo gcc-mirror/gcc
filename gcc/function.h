@@ -145,6 +145,7 @@ struct function
   int last_linenum;
   char *last_filename;
   char *regno_pointer_flag;
+  char *regno_pointer_align;
   int regno_pointer_flag_length;
   rtx *regno_reg_rtx;
 
