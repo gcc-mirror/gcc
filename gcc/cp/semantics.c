@@ -2935,62 +2935,12 @@ expand_or_defer_fn (tree fn)
   if (flag_syntax_only)
     return;
 
-  if (flag_unit_at_a_time && cgraph_global_info_ready)
-    abort ();
+  /* Compute the appropriate object-file linkage for inline functions.  */
+  if (DECL_DECLARED_INLINE_P (fn))
+    import_export_decl (fn);
 
-  if (flag_unit_at_a_time && !cgraph_global_info_ready)
-    {
-      if (at_eof)
-	{
-	  /* Compute the appropriate object-file linkage for inline
-	     functions.  */
-	  if (DECL_DECLARED_INLINE_P (fn))
-	    import_export_decl (fn);
-	  cgraph_finalize_function (fn, DECL_SAVED_TREE (fn));
-	}
-      else
-	{
-	  if (!DECL_EXTERNAL (fn))
-	    {
-	      DECL_NOT_REALLY_EXTERN (fn) = 1;
-	      DECL_EXTERNAL (fn) = 1;
-	    }
-	  /* Remember this function.  In finish_file we'll decide if
-	     we actually need to write this function out.  */
-	  defer_fn (fn);
-	  /* Let the back-end know that this function exists.  */
-	  (*debug_hooks->deferred_inline_function) (fn);
-	}
-      return;
-    }
-
-
-  /* If possible, avoid generating RTL for this function.  Instead,
-     just record it as an inline function, and wait until end-of-file
-     to decide whether to write it out or not.  */
-  if (/* We have to generate RTL if it's not an inline function.  */
-      (DECL_INLINE (fn) || DECL_COMDAT (fn))
-      /* Or if we have to emit code for inline functions anyhow.  */
-      && !flag_keep_inline_functions
-      /* Or if we actually have a reference to the function.  */
-      && !DECL_NEEDED_P (fn))
-    {
-      /* Set DECL_EXTERNAL so that assemble_external will be called as
-	 necessary.  We'll clear it again in finish_file.  */
-      if (!DECL_EXTERNAL (fn))
-	{
-	  DECL_NOT_REALLY_EXTERN (fn) = 1;
-	  DECL_EXTERNAL (fn) = 1;
-	}
-      /* Remember this function.  In finish_file we'll decide if
-	 we actually need to write this function out.  */
-      defer_fn (fn);
-      /* Let the back-end know that this function exists.  */
-      (*debug_hooks->deferred_inline_function) (fn);
-      return;
-    }
-
-  expand_body (fn);
+  /* Expand or defer, at the whim of the compilation unit manager.  */
+  cgraph_finalize_function (fn, DECL_SAVED_TREE (fn));
 }
 
 /* Helper function for walk_tree, used by finish_function to override all
