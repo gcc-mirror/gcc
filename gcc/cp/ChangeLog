@@ -1,5 +1,9 @@
 2003-03-06  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/9400
+	* decl.c (pushdecl): Don't check for shadowing of DECL_ARTIFICIAL
+	PARM_DECLs.
+
 	PR c++/9791
 	* class.c (get_basefndecls): Use lookup_fnfields_1.
 
