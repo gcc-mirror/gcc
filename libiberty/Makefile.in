@@ -210,6 +210,8 @@ stamp-h: config.in config.status
 config.status: $(srcdir)/configure $(srcdir)/config.table
 	$(SHELL) ./config.status --recheck
 
+$(REQUIRED_OFILES) $(EXTRA_OFILES) $(LIBOBJS): stamp-picdir
+
 alloca.o: config.h
 atexit.o: config.h
 argv.o: config.h alloca-conf.h $(INCDIR)/libiberty.h
