@@ -217,8 +217,8 @@ make_friend_class (type, friend_type)
     is_template_friend = 1;
   else if (same_type_p (type, friend_type))
     {
-      pedwarn ("class `%s' is implicitly friends with itself",
-	       TYPE_NAME_STRING (type));
+      cp_pedwarn ("class `%T' is implicitly friends with itself",
+	          type);
       return;
     }
   else
