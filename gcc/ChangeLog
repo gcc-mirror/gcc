@@ -1,3 +1,12 @@
+2004-08-09  Geoffrey Keating  <geoffk@apple.com>
+
+	* ggc-common.c (ggc_rlimit_bound): Don't check RSS limit.
+	Check DATA limit only if there's no AS limit.  Ignore insanely
+	low DATA limits.
+	(ggc_min_heapsize_heuristic): Don't divide AS or RSS limits by 8,
+	but take care that the AS limit isn't overrun.
+	* doc/invoke.texi: Update documentation of min-heapsize parameter.
+
 2004-08-09  Jeff Law  <law@redhat.com>
 
 	* Makefile.in (OBJC-common): Add tree-ssa-threadupdate.c

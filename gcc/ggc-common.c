@@ -669,30 +669,34 @@ mmap_gt_pch_use_address (void *base, size_t size, int fd, size_t offset)
 }
 #endif /* HAVE_MMAP_FILE */
 
-/* Modify the bound based on rlimits.  Keep the smallest number found.  */
+/* Modify the bound based on rlimits.  */
 static double
 ggc_rlimit_bound (double limit)
 {
 #if defined(HAVE_GETRLIMIT)
   struct rlimit rlim;
-# ifdef RLIMIT_RSS
-  if (getrlimit (RLIMIT_RSS, &rlim) == 0
-      && rlim.rlim_cur != (rlim_t) RLIM_INFINITY
-      && rlim.rlim_cur < limit)
-    limit = rlim.rlim_cur;
-# endif
-# ifdef RLIMIT_DATA
-  if (getrlimit (RLIMIT_DATA, &rlim) == 0
-      && rlim.rlim_cur != (rlim_t) RLIM_INFINITY
-      && rlim.rlim_cur < limit)
-    limit = rlim.rlim_cur;
-# endif
-# ifdef RLIMIT_AS
+# if defined (RLIMIT_AS)
+  /* RLIMIT_AS is what POSIX says is the limit on mmap.  Presumably
+     any OS which has RLIMIT_AS also has a working mmap that GCC will use.  */
   if (getrlimit (RLIMIT_AS, &rlim) == 0
       && rlim.rlim_cur != (rlim_t) RLIM_INFINITY
       && rlim.rlim_cur < limit)
     limit = rlim.rlim_cur;
-# endif
+# elif defined (RLIMIT_DATA)
+  /* ... but some older OSs bound mmap based on RLIMIT_DATA, or we
+     might be on an OS that has a broken mmap.  (Others don't bound
+     mmap at all, apparently.)  */
+  if (getrlimit (RLIMIT_DATA, &rlim) == 0
+      && rlim.rlim_cur != (rlim_t) RLIM_INFINITY
+      && rlim.rlim_cur < limit
+      /* Darwin has this horribly bogus default setting of
+	 RLIMIT_DATA, to 6144Kb.  No-one notices because RLIMIT_DATA
+	 appears to be ignored.  Ignore such silliness.  If a limit
+	 this small was actually effective for mmap, GCC wouldn't even
+	 start up.  */
+      && rlim.rlim_cur >= 8 * 1024 * 1024)
+    limit = rlim.rlim_cur;
+# endif /* RLIMIT_AS or RLIMIT_DATA */
 #endif /* HAVE_GETRLIMIT */
 
   return limit;
@@ -721,20 +725,39 @@ ggc_min_expand_heuristic (void)
 int
 ggc_min_heapsize_heuristic (void)
 {
-  double min_heap_kbytes = physmem_total();
+  double phys_kbytes = physmem_total();
+  double limit_kbytes = ggc_rlimit_bound (phys_kbytes * 2);
 
-  /* Adjust for rlimits.  */
-  min_heap_kbytes = ggc_rlimit_bound (min_heap_kbytes);
-
-  min_heap_kbytes /= 1024; /* Convert to Kbytes.  */
+  phys_kbytes /= 1024; /* Convert to Kbytes.  */
+  limit_kbytes /= 1024;
 
   /* The heuristic is RAM/8, with a lower bound of 4M and an upper
      bound of 128M (when RAM >= 1GB).  */
-  min_heap_kbytes /= 8;
-  min_heap_kbytes = MAX (min_heap_kbytes, 4 * 1024);
-  min_heap_kbytes = MIN (min_heap_kbytes, 128 * 1024);
+  phys_kbytes /= 8;
 
-  return min_heap_kbytes;
+#if defined(HAVE_GETRLIMIT) && defined (RLIMIT_RSS)
+  /* Try not to overrun the RSS limit while doing garbage collection.  
+     The RSS limit is only advisory, so no margin is subtracted.  */
+ {
+   struct rlimit rlim;
+   if (getrlimit (RLIMIT_RSS, &rlim) == 0
+       && rlim.rlim_cur != (rlim_t) RLIM_INFINITY)
+     phys_kbytes = MIN (phys_kbytes, rlim.rlim_cur / 1024);
+ }
+# endif
+
+  /* Don't blindly run over our data limit; do GC at least when the
+     *next* GC would be within 16Mb of the limit.  If GCC does hit the
+     data limit, compilation will fail, so this tries to be
+     conservative.  */
+  limit_kbytes = MAX (0, limit_kbytes - 16 * 1024);
+  limit_kbytes = (limit_kbytes * 100) / (110 + ggc_min_expand_heuristic());
+  phys_kbytes = MIN (phys_kbytes, limit_kbytes);
+
+  phys_kbytes = MAX (phys_kbytes, 4 * 1024);
+  phys_kbytes = MIN (phys_kbytes, 128 * 1024);
+
+  return phys_kbytes;
 }
 
 void
