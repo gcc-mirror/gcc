@@ -1458,7 +1458,9 @@ parse_output_constraint (constraint_p,
    STRING is the instruction template.
    OUTPUTS is a list of output arguments (lvalues); INPUTS a list of inputs.
    Each output or input has an expression in the TREE_VALUE and
-   a constraint-string in the TREE_PURPOSE.
+   and a tree list in TREE_PURPOSE which in turn contains a constraint
+   name in TREE_VALUE (or NULL_TREE) and a constraint string 
+   in TREE_PURPOSE.
    CLOBBERS is a list of STRING_CST nodes each naming a hard register
    that is clobbered by this insn.
 
