@@ -1,3 +1,10 @@
+2004-10-27  Andreas Krebbel  <krebbel@de.ibm.com>
+	    patch originally created by Kelley Cook  <kcook@gcc.gnu.org>
+
+	PR middle-end/14684
+	* opts.c (OPT_fprofile_generate): Default to -funroll-loops 
+	to match -fprofile-use.
+
 2004-10-27  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/rs6000/rs6000.c: Fix a comment typo.
