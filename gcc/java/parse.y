@@ -7468,7 +7468,11 @@ create_artificial_method (tree class, int flags, tree type,
   mdecl = make_node (FUNCTION_TYPE);
   TREE_TYPE (mdecl) = type;
   TYPE_ARG_TYPES (mdecl) = args;
-  mdecl = add_method (class, flags, name, build_java_signature (mdecl));
+  /* We used to compute the signature of MDECL here and then use
+     add_method(), but that failed because our caller might modify
+     the type of the returned method, which trashes the cache in
+     get_type_from_signature().  */
+  mdecl = add_method_1 (class, flags, name, mdecl);
   java_parser_context_restore_global ();
   DECL_ARTIFICIAL (mdecl) = 1;
   return mdecl;

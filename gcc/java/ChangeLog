@@ -1,3 +1,8 @@
+2004-09-25  Tom Tromey  <tromey@redhat.com>
+
+	PR java/17500:
+	* parse.y (create_artificial_method): Use add_method_1.
+
 2004-09-25  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* expr.c, jcf-dump.c, parse-scan.y, parse.y: Fix
