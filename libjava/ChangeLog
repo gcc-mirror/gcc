@@ -1,5 +1,10 @@
 2004-10-25  Tom Tromey  <tromey@redhat.com>
 
+	* java/util/ResourceBundle.java (tryBundle): Use
+	Class.isAssignableFrom rather than catching ClassCastException.
+
+2004-10-25  Tom Tromey  <tromey@redhat.com>
+
 	* gnu/java/text/WordBreakIterator.java (WordBreakIterator): Don't
 	initialize `iter'.
 	* gnu/java/text/SentenceBreakIterator.java

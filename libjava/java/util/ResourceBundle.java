@@ -473,12 +473,18 @@ public abstract class ResourceBundle
           rbClass = Class.forName(localizedName);
         else
           rbClass = classloader.loadClass(localizedName);
-        bundle = (ResourceBundle) rbClass.newInstance();
+	// Note that we do the check up front instead of catching
+	// ClassCastException.  The reason for this is that some crazy
+	// programs (Eclipse) have classes that do not extend
+	// ResourceBundle but that have the same name as a property
+	// bundle; in fact Eclipse relies on ResourceBundle not
+	// instantiating these classes.
+	if (ResourceBundle.class.isAssignableFrom(rbClass))
+	  bundle = (ResourceBundle) rbClass.newInstance();
       }
     catch (IllegalAccessException ex) {}
     catch (InstantiationException ex) {}
     catch (ClassNotFoundException ex) {}
-    catch (ClassCastException ex) {}
 
     if (bundle == null)
       {
