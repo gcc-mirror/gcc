@@ -1,3 +1,7 @@
+2000-12-03  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* gcc.c-torture/execute/20001203-1.c: New test.
+
 2000-12-03  Neil Booth  <neilb@earthling.net>
 
         * gcc.dg/cpp/macro6.c: New test cases.
