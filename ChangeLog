@@ -1,3 +1,7 @@
+2004-07-16  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* maintainer-scripts/gcc_release: Revert yesterday's change.
+
 2004-07-16  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* MAINTAINERS: Add myself to write-after-approval.
