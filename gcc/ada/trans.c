@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *                            $Revision: 1.4 $
+ *                            $Revision: 1.5 $
  *                                                                          *
  *          Copyright (C) 1992-2001, Free Software Foundation, Inc.         *
  *                                                                          *
@@ -1797,7 +1797,7 @@ tree_transform (gnat_node)
 	   we need to make sure it gets executed after the LHS.  */
 	gnu_lhs = gnat_to_gnu (Left_Opnd (gnat_node));
 	clear_last_expr ();
-	gnu_rhs_side = expand_start_stmt_expr ();
+	gnu_rhs_side = expand_start_stmt_expr (1);
 	gnu_rhs = gnat_to_gnu (Right_Opnd (gnat_node));
 	expand_end_stmt_expr (gnu_rhs_side);
 	gnu_result_type = get_unpadded_type (Etype (gnat_node));
