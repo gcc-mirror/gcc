@@ -1,3 +1,11 @@
+2000-03-28  Neil Booth  <NeilB@earthling.net>
+
+        * (cpplex.c) _cpp_read_and_prescan.  Mark end of input buffer with
+	'\\' rather than a null character, so nulls are not special.  Fix
+	"\\\n" handling in end-of-buffer conditions.  Use trigraph map to
+	speed trigraph conversion.
+        (_cpp_init_input_buffer) Initialize trigraph map.
+
 2000-03-27  Alan Modra  <alan@linuxcare.com.au>
 
 	* config/i386/i386.c (output_387_binary_op): Correct intel
