@@ -14353,6 +14353,8 @@ lang_mark_tree (t)
 	  ggc_mark_tree (ld->decl_flags.context);
 	  if (TREE_CODE (t) != NAMESPACE_DECL)
 	    ggc_mark_tree (ld->decl_flags.u.template_info);
+	  else
+	    mark_binding_level (&NAMESPACE_LEVEL (t));
 	  if (CAN_HAVE_FULL_LANG_DECL_P (t))
 	    {
 	      ggc_mark_tree (ld->main_decl_variant);
