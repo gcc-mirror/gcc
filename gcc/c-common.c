@@ -1357,7 +1357,7 @@ overflow_warning (value)
 	   && TREE_OVERFLOW (value))
     {
       TREE_OVERFLOW (value) = 0;
-      warning ("floating-pointer overflow in expression");
+      warning ("floating point overflow in expression");
     }
 }
 
