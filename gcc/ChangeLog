@@ -1,3 +1,8 @@
+Thu Aug 26 09:46:16 1999  Nick Clifton  <nickc@cygnus.com>
+
+	* dwarf2out.c (mem_loc_descriptor): Accept LABEL_REFs as well
+	as SYMBOL_REFs.
+
 1999-08-25 22:10 -0700  Zack Weinberg  <zack@bitmover.com>
 
 	* system.h: Don't redefine abort or trim_filename.
