@@ -1,3 +1,8 @@
+2003-10-05  Andrew Pinski  <apinski@apple.com>
+	* config/darwin.c (machopic_non_lazy_ptr_name): Fix off by one
+	errors in memcpy destinations.
+	(machopic_stub_name): Likewise.
+
 2003-10-05  Andrew Pinski <apinski@apple.com>
 
 	* config/darwin.c (machopic_non_lazy_ptr_name): 
