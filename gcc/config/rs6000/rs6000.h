@@ -2316,6 +2316,7 @@ toc_section ()						\
   {"easy_fp_constant", {CONST_DOUBLE}},				\
   {"reg_or_mem_operand", {SUBREG, MEM, REG}},			\
   {"lwa_operand", {SUBREG, MEM, REG}},				\
+  {"low_32_bit_operand", {CONST_DOUBLE, CONST_INT}},		\
   {"fp_reg_or_mem_operand", {SUBREG, MEM, REG}},		\
   {"mem_or_easy_const_operand", {SUBREG, MEM, CONST_DOUBLE}},	\
   {"add_operand", {SUBREG, REG, CONST_INT}},			\
