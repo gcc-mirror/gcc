@@ -1,5 +1,5 @@
 /* Calendar.java --
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -398,10 +398,10 @@ public abstract class Calendar implements Serializable, Cloneable
    * The version of the serialized data on the stream.
    * <dl><dt>0 or not present</dt>
    * <dd> JDK 1.1.5 or later.</dd>
-   * <dl><dt>1</dt>
+   * <dt>1</dt>
    * <dd>JDK 1.1.6 or later.  This always writes a correct `time' value
    * on the stream, as well as the other fields, to be compatible with
-   * earlier versions</dd>
+   * earlier versions</dd></dl>
    * @since JDK1.1.6
    * @serial
    */
