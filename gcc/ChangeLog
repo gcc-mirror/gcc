@@ -1,3 +1,9 @@
+Tue Dec 23 12:56:46 1997 Paul Eggert <eggert@twinsun.com>:
+
+	* genattrtab.c (main): Check HAVE_{G,S}ETRLIMIT in addition to
+	RLIMIT_STACK.  This maintains consistency with the recent, similar
+	patch to cccp.c and toplev.c.
+
 Tue Dec 23 05:17:28 1997  Richard Henderson  <rth@cygnus.com>
 
 	* genattrtab.c (expand_units): For large nr opclasses, expand
