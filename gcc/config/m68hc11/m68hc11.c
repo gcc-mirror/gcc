@@ -1,5 +1,6 @@
 /* Subroutines for code generation on Motorola 68HC11 and 68HC12.
-   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004
+   Free Software Foundation, Inc.
    Contributed by Stephane Carrez (stcarrez@nerim.fr)
 
 This file is part of GCC.
@@ -83,6 +84,7 @@ static void m68hc11_asm_out_constructor (rtx, int);
 static void m68hc11_asm_out_destructor (rtx, int);
 static void m68hc11_file_start (void);
 static void m68hc11_encode_section_info (tree, rtx, int);
+static const char *m68hc11_strip_name_encoding (const char* str);
 static unsigned int m68hc11_section_type_flags (tree, const char*, int);
 static int autoinc_mode (rtx);
 static int m68hc11_make_autoinc_notes (rtx *, void *);
@@ -270,6 +272,9 @@ static int nb_soft_regs;
 #define TARGET_STRUCT_VALUE_RTX m68hc11_struct_value_rtx
 #undef TARGET_RETURN_IN_MEMORY
 #define TARGET_RETURN_IN_MEMORY m68hc11_return_in_memory
+
+#undef TARGET_STRIP_NAME_ENCODING
+#define TARGET_STRIP_NAME_ENCODING m68hc11_strip_name_encoding
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -1047,6 +1052,9 @@ m68hc11_indirect_p (rtx operand, enum machine_mode mode)
       rtx op = XEXP (operand, 0);
       int addr_mode;
 
+      if (m68hc11_page0_symbol_p (op))
+        return 1;
+
       if (symbolic_memory_operand (op, mode))
 	return TARGET_M6812;
 
@@ -1263,6 +1271,28 @@ m68hc11_initialize_trampoline (rtx tramp, rtx fnaddr, rtx cxt)
 
 /* Declaration of types.  */
 
+/* Handle an "tiny_data" attribute; arguments as in
+   struct attribute_spec.handler.  */
+static tree
+m68hc11_handle_page0_attribute (tree *node, tree name,
+                                tree args ATTRIBUTE_UNUSED,
+                                int flags ATTRIBUTE_UNUSED, bool *no_add_attrs)
+{
+  tree decl = *node;
+
+  if (TREE_STATIC (decl) || DECL_EXTERNAL (decl))
+    {
+      DECL_SECTION_NAME (decl) = build_string (6, ".page0");
+    }
+  else
+    {
+      warning ("`%s' attribute ignored", IDENTIFIER_POINTER (name));
+      *no_add_attrs = true;
+    }
+
+  return NULL_TREE;
+}
+
 const struct attribute_spec m68hc11_attribute_table[] =
 {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler } */
@@ -1270,6 +1300,7 @@ const struct attribute_spec m68hc11_attribute_table[] =
   { "trap",      0, 0, false, true,  true,  m68hc11_handle_fntype_attribute },
   { "far",       0, 0, false, true,  true,  m68hc11_handle_fntype_attribute },
   { "near",      0, 0, false, true,  true,  m68hc11_handle_fntype_attribute },
+  { "page0",     0, 0, false, false, false, m68hc11_handle_page0_attribute },
   { NULL,        0, 0, false, false, false, NULL }
 };
 
@@ -1298,6 +1329,51 @@ m68hc11_handle_fntype_attribute (tree *node, tree name,
 
   return NULL_TREE;
 }
+/* Undo the effects of the above.  */
+
+static const char *
+m68hc11_strip_name_encoding (const char *str)
+{
+  return str + (*str == '*' || *str == '@' || *str == '&');
+}
+
+static void
+m68hc11_encode_label (tree decl)
+{
+  const char *str = XSTR (XEXP (DECL_RTL (decl), 0), 0);
+  int len = strlen (str);
+  char *newstr = alloca (len + 2);
+
+  newstr[0] = '@';
+  strcpy (&newstr[1], str);
+
+  XSTR (XEXP (DECL_RTL (decl), 0), 0) = ggc_alloc_string (newstr, len + 1);
+}
+
+/* Return 1 if this is a symbol in page0  */
+int
+m68hc11_page0_symbol_p (rtx x)
+{
+  switch (GET_CODE (x))
+    {
+    case SYMBOL_REF:
+      return XSTR (x, 0) != 0 && XSTR (x, 0)[0] == '@';
+
+    case CONST:
+      return m68hc11_page0_symbol_p (XEXP (x, 0));
+
+    case PLUS:
+      if (!m68hc11_page0_symbol_p (XEXP (x, 0)))
+        return 0;
+
+      return GET_CODE (XEXP (x, 1)) == CONST_INT
+        && INTVAL (XEXP (x, 1)) < 256
+        && INTVAL (XEXP (x, 1)) >= 0;
+
+    default:
+      return 0;
+    }
+}
 
 /* We want to recognize trap handlers so that we handle calls to traps
    in a special manner (by issuing the trap).  This information is stored
@@ -1310,6 +1386,13 @@ m68hc11_encode_section_info (tree decl, rtx rtl, int first ATTRIBUTE_UNUSED)
   int trap_handler;
   int is_far = 0;
   
+  if (TREE_CODE (decl) == VAR_DECL)
+    {
+      if (lookup_attribute ("page0", DECL_ATTRIBUTES (decl)) != 0)
+        m68hc11_encode_label (decl);
+      return;
+    }
+
   if (TREE_CODE (decl) != FUNCTION_DECL)
     return;
 

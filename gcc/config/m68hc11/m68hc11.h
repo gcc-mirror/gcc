@@ -879,7 +879,9 @@ extern enum reg_class m68hc11_tmp_regs_class;
 		 && VALUE == CONST0_RTX (GET_MODE (VALUE))) : 0) 
 
 /* 'U' represents certain kind of memory indexed operand for 68HC12.
-   and any memory operand for 68HC11.  */
+   and any memory operand for 68HC11.
+   'R' represents indexed addressing mode or access to page0 for 68HC11.
+   For 68HC12, it represents any memory operand.  */
 #define EXTRA_CONSTRAINT(OP, C)                         \
 ((C) == 'U' ? m68hc11_small_indexed_indirect_p (OP, GET_MODE (OP)) \
  : (C) == 'Q' ? m68hc11_symbolic_p (OP, GET_MODE (OP)) \
