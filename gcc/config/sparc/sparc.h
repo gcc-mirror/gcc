@@ -2213,6 +2213,18 @@ extern struct rtx_def *sparc_builtin_saveregs ();
    : gen_rtx (MEM, Pmode,			\
 	      memory_address (Pmode, plus_constant (frame, 15 * UNITS_PER_WORD))))
 
+/* Before the prologue, the return address is %o7 + 8.  OK, sometimes it's
+   +12, but always using +8 is close enough for frame unwind purposes.
+   Actually, just using %o7 is close enough for unwinding, but %o7+8
+   is something you can return to.  */
+#define INCOMING_RETURN_ADDR_RTX \
+  gen_rtx (PLUS, word_mode, gen_rtx (REG, word_mode, 15), GEN_INT (8))
+
+/* The offset from the incoming value of %sp to the top of the stack frame
+   for the current function.  On sparc64, we have to account for the stack
+   bias if present.  */
+#define INCOMING_FRAME_SP_OFFSET SPARC_STACK_BIAS
+
 #define DOESNT_NEED_UNWINDER (! TARGET_FLAT)
 
 /* Addressing modes, and classification of registers for them.  */
@@ -3187,16 +3199,3 @@ extern char *output_return ();
 /* Defined in flags.h, but insn-emit.c does not include flags.h.  */
 
 extern int flag_pic;
-
-/* Before the prologue, the return address is %o7 + 8.  OK, sometimes it's
-   +12, but always using +8 is close enough for frame unwind purposes.
-   Actually, just using %o7 is close enough for unwinding, but %o7+8
-   is something you can return to.  */
-#define INCOMING_RETURN_ADDR_RTX \
-  gen_rtx (PLUS, word_mode, gen_rtx (REG, word_mode, 15), GEN_INT (8))
-
-/* The offset from the incoming value of %sp to the top of the stack frame
-   for the current function.  On sparc64, we have to account for the stack
-   bias if present.  */
-
-#define INCOMING_FRAME_SP_OFFSET SPARC_STACK_BIAS
