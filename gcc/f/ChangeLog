@@ -1,3 +1,8 @@
+2004-02-29  Roger Sayle  <roger@eyesopen.com>
+
+	* parse.c (ffe_parse_file): Handle the case that main_input_filename
+	is NULL.
+
 2004-02-24  Michael Matz  <matz@suse.de>
 
 	* Make-lang.in (sta.o-warn): Delete.
