@@ -1,3 +1,9 @@
+Sun Sep  5 09:31:56 1999  Richard Henderson  <rth@cygnus.com>
+	                  Bernd Schmidt <bernds@cygnus.co.uk>
+
+	* integrate.c (function_cannot_inline_p): Do not inline
+	functions with forced labels.
+
 Sun Sep  5 00:35:17 1999  Richard Henderson  <rth@cygnus.com>
 	                  Bernd Schmidt <bernds@cygnus.co.uk>
 	                  Mark Mitchell  <mark@codesourcery.com>
