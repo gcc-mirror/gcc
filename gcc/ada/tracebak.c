@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *           Copyright (C) 2000-2004 Ada Core Technologies, Inc.            *
+ *           Copyright (C) 2000-2005 Ada Core Technologies, Inc.            *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -191,9 +191,9 @@ extern void (*Unlock_Task) (void);
 
   */
 
-/*------------------------------ PPC AIX -------------------------------*/
+/*--------------------------- PPC AIX/Darwin ----------------------------*/
 
-#if defined (_AIX)
+#if (defined (__ppc__) && ((defined (_AIX) || defined (__APPLE__))))
 
 #define USE_GENERIC_UNWINDER
 
