@@ -188,10 +188,16 @@ cplus_expand_expr (exp, target, tmode, modifier)
 	  }
 	else
 	  {
-	    /* We don't yet handle pointer-to-member functions this
-	       way.  */
-	    my_friendly_abort (0);
-	    return 0;
+	    tree delta;
+	    tree idx;
+	    tree pfn;
+	    tree delta2;
+
+	    expand_ptrmemfunc_cst (exp, &delta, &idx, &pfn, &delta2);
+
+	    return expand_expr (build_ptrmemfunc1 (type, delta, idx,
+						   pfn, delta2),
+				target, tmode, modifier);
 	  }
       }
 

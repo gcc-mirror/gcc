@@ -85,7 +85,7 @@ cp_convert_to_pointer (type, expr)
 	  return error_mark_node;
 	}
 
-      rval = build_type_conversion (CONVERT_EXPR, type, expr, 1);
+      rval = build_type_conversion (type, expr, 1);
       if (rval)
 	{
 	  if (rval == error_mark_node)
@@ -177,9 +177,7 @@ cp_convert_to_pointer (type, expr)
 	    }
 	}
 
-      if (TREE_CODE (type) == POINTER_TYPE
-	  && TREE_CODE (TREE_TYPE (type)) == OFFSET_TYPE
-	  && TREE_CODE (TREE_TYPE (intype)) == OFFSET_TYPE)
+      if (TYPE_PTRMEM_P (type) && TYPE_PTRMEM_P (intype))
 	{
 	  tree b1 = TYPE_OFFSET_BASETYPE (TREE_TYPE (type));
 	  tree b2 = TYPE_OFFSET_BASETYPE (TREE_TYPE (intype));
@@ -432,7 +430,7 @@ convert_to_reference (reftype, expr, convtype, flags, decl)
       /* Look for a user-defined conversion to lvalue that we can use.  */
 
       rval_as_conversion
-	= build_type_conversion (CONVERT_EXPR, reftype, expr, 1);
+	= build_type_conversion (reftype, expr, 1);
 
       if (rval_as_conversion && rval_as_conversion != error_mark_node
 	  && real_lvalue_p (rval_as_conversion))
@@ -735,7 +733,7 @@ ocp_convert (type, expr, convtype, flags)
       if (IS_AGGR_TYPE (intype))
 	{
 	  tree rval;
-	  rval = build_type_conversion (CONVERT_EXPR, type, e, 1);
+	  rval = build_type_conversion (type, e, 1);
 	  if (rval)
 	    return rval;
 	  if (flags & LOOKUP_COMPLAIN)
@@ -762,7 +760,7 @@ ocp_convert (type, expr, convtype, flags)
       if (IS_AGGR_TYPE (TREE_TYPE (e)))
 	{
 	  tree rval;
-	  rval = build_type_conversion (CONVERT_EXPR, type, e, 1);
+	  rval = build_type_conversion (type, e, 1);
 	  if (rval)
 	    return rval;
 	  else
@@ -948,8 +946,7 @@ convert_force (type, expr, convtype)
    (jason 8/9/95)  */
 
 tree
-build_type_conversion (code, xtype, expr, for_sure)
-     enum tree_code code ATTRIBUTE_UNUSED;
+build_type_conversion (xtype, expr, for_sure)
      tree xtype, expr;
      int for_sure;
 {

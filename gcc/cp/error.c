@@ -1621,8 +1621,17 @@ dump_expr (t, nop)
 	      dump_unary_op ("&", pfn, 0);
 	      break;
 	    }
-	  if (TREE_CODE (idx) == INTEGER_CST
-	      && TREE_INT_CST_HIGH (idx) == 0)
+	  else if (TREE_CODE (idx) == INTEGER_CST
+		   && tree_int_cst_equal (idx, integer_zero_node))
+	    {
+	      /* A NULL pointer-to-member constant.  */
+	      OB_PUTS ("((");
+	      dump_type (TREE_TYPE (t), 0);
+	      OB_PUTS (") 0)");
+	      break;
+	    }
+	  else if (TREE_CODE (idx) == INTEGER_CST
+		   && TREE_INT_CST_HIGH (idx) == 0)
 	    {
 	      tree virtuals;
 	      unsigned HOST_WIDE_INT n;

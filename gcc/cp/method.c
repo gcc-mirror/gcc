@@ -739,9 +739,6 @@ build_overload_value (type, value, in_template)
       return;
     }
 
-  if (TYPE_PTRMEMFUNC_P (type))
-    type = TYPE_PTRMEMFUNC_FN_TYPE (type);
-
   switch (TREE_CODE (type))
     {
     case INTEGER_TYPE:
@@ -818,46 +815,6 @@ build_overload_value (type, value, in_template)
 	return;
       }
     case POINTER_TYPE:
-      if (TREE_CODE (TREE_TYPE (type)) == METHOD_TYPE
-	  && TREE_CODE (value) != ADDR_EXPR)
-	{
-	  if (TREE_CODE (value) == CONSTRUCTOR)
-	    {
-	      /* This is dangerous code, crack built up pointer to members.  */
-	      tree args = CONSTRUCTOR_ELTS (value);
-	      tree a1 = TREE_VALUE (args);
-	      tree a2 = TREE_VALUE (TREE_CHAIN (args));
-	      tree a3 = CONSTRUCTOR_ELTS (TREE_VALUE (TREE_CHAIN (TREE_CHAIN (args))));
-	      a3 = TREE_VALUE (a3);
-	      STRIP_NOPS (a3);
-	      if (TREE_CODE (a1) == INTEGER_CST
-		  && TREE_CODE (a2) == INTEGER_CST)
-		{
-		  build_overload_int (a1, in_template);
-		  OB_PUTC ('_');
-		  build_overload_int (a2, in_template);
-		  OB_PUTC ('_');
-		  if (TREE_CODE (a3) == ADDR_EXPR)
-		    {
-		      a3 = TREE_OPERAND (a3, 0);
-		      if (TREE_CODE (a3) == FUNCTION_DECL)
-			{
-			  numeric_output_need_bar = 0;
-			  build_overload_identifier (DECL_ASSEMBLER_NAME (a3));
-			  return;
-			}
-		    }
-		  else if (TREE_CODE (a3) == INTEGER_CST)
-		    {
-		      OB_PUTC ('i');
-		      build_overload_int (a3, in_template);
-		      return;
-		    }
-		}
-	    }
-	  sorry ("template instantiation with pointer to method that is too complex");
-	  return;
-	}
       if (TREE_CODE (value) == INTEGER_CST)
 	{
 	  build_overload_int (value, in_template);
@@ -893,6 +850,35 @@ build_overload_value (type, value, in_template)
 	my_friendly_abort (71);
       break; /* not really needed */
 
+    case RECORD_TYPE:
+      {
+	tree delta;
+	tree idx;
+	tree pfn;
+	tree delta2;
+
+	my_friendly_assert (TYPE_PTRMEMFUNC_P (type), 0);
+	my_friendly_assert (TREE_CODE (value) == PTRMEM_CST, 0);
+
+	expand_ptrmemfunc_cst (value, &delta, &idx, &pfn, &delta2);
+	build_overload_int (delta, in_template);
+	OB_PUTC ('_');
+	build_overload_int (idx, in_template);
+	OB_PUTC ('_');
+	if (pfn)
+	  {
+	    numeric_output_need_bar = 0;
+	    build_overload_identifier (DECL_ASSEMBLER_NAME
+				       (PTRMEM_CST_MEMBER (value)));
+	  }
+	else
+	  {
+	    OB_PUTC ('i');
+	    build_overload_int (delta2, in_template);
+	  }
+      }
+      break;
+      
     default:
       sorry ("conversion of %s as template parameter",
 	     tree_code_name [(int) TREE_CODE (type)]);

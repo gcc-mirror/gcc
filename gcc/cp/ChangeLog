@@ -1,3 +1,36 @@
+1999-03-22  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (TYPE_PTRMEMFUNC_P): Use TYPE_PTRMEMFUNC_FLAG.
+	Document internals of pointer-to-member-functions.
+	(DELTA2_FROM_PTRMEMFUNC): Make it call delta2_from_ptrmemfunc.
+	(PFN_FROM_PTRMEMFUNC): Similarly.
+	(build_type_conversion): Remove unused parameter.
+	(build_ptrmemfunc1): Declare.
+	(expand_ptrmemfunc_cst): New function.
+	(delta2_from_ptrmemfunc): Likewise.
+	(pfn_from_ptrmemfunc): Likewise.
+	* cvt.c (cp_convert_to_pointer): Remove unused parameter to
+	build_type_conversion.  Use TYPE_PTRMEM_P for readability.
+	(convert_to_reference): Remove unused parameter to
+	build_type_conversion.
+	(ocp_convert): Likewise.
+	(build_user_type_conversion): Likewise.
+	* error.c (dump_expr): Handle NULL pointer-to-member functions.
+	* expr.c (cplus_expand_expr): Handle PTRMEM_CSTs for functions.
+	* method.c (build_overload_value): Don't go splitting CONSTRUCTORs
+	open when handling pointer-to-member functions.
+	* pt.c (convert_nontype_argument): Clean up error messages.  Be
+	more stringent with pointers-to-members.
+	* typeck.c (build_ptrmemfunc1): Don't declare.  Make it global.
+	(build_unary_op): Tidy ever-so-slightly.
+	(build_conditional_expr): Remove extra parameter to
+	build_type_conversion.
+	(build_ptrmemfunc): Build PTRMEM_CSTs if we know what function
+	we're using.
+	(expand_ptrmemfunc_cst): Define.
+	(delta2_from_ptrmemfunc): Likewise.
+	(pfn_from_ptrmemfunc): Likewise.
+	
 1999-03-19  Mark Mitchell  <mark@codesourcery.com>
 
 	* init.c (build_member_call): Handle template-id expressions
