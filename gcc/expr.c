@@ -8593,6 +8593,10 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	   make sure it's marked as used by this function.   */
 	emit_insn (gen_rtx (USE, VOIDmode, hard_frame_pointer_rtx));
 
+	/* Mark the static chain as clobbered here so life information
+	   doesn't get messed up for it.  */
+	emit_insn (gen_rtx (CLOBBER, VOIDmode, static_chain_rtx));
+
 	/* Now put in the code to restore the frame pointer, and argument
 	   pointer, if needed.  The code below is from expand_end_bindings
 	   in stmt.c; see detailed documentation there.  */
