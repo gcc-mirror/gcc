@@ -1,5 +1,7 @@
 Fri Mar 17 11:51:34 2000  Jim Wilson  <wilson@cygnus.com>
 
+	* config/ia64/ia64.md (mix4right_3op): Swap %1 and %2 in template.
+
 	* config/ia64/ia64-protos.h, config/ia64/ia64.c, config/ia64/ia64.h,
 	config/ia64/ia64.md, config/ia64/xm-ia64.h: Fix copyrights again.
 
