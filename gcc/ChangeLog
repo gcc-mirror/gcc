@@ -1,3 +1,10 @@
+2001-06-12  Richard Henderson  <rth@redhat.com>
+
+	* dwarf2asm.c (size_of_encoded_value): New function.
+	* dwarf2asm.h: Declare it.
+	* except.c (output_function_exception_table): Align the TType
+	array only as wide as the encoding.
+
 2001-05-12  Zack Weinberg  <zackw@stanford.edu>
 
 	* extend.texi: Document #pragma GCC java_exceptions.

@@ -3612,6 +3612,7 @@ output_function_exception_table ()
 #endif
   int have_tt_data;
   int funcdef_number;
+  int tt_format_size;
 
   /* Not all functions need anything.  */
   if (! cfun->uses_eh_lsda)
@@ -3634,8 +3635,19 @@ output_function_exception_table ()
   have_tt_data = (VARRAY_ACTIVE_SIZE (cfun->eh->ttype_data) > 0
 		  || VARRAY_ACTIVE_SIZE (cfun->eh->ehspec_data) > 0);
 
-  if (have_tt_data)
-    assemble_eh_align (GET_MODE_ALIGNMENT (ptr_mode));
+  /* Indicate the format of the @TType entries.  */
+  if (! have_tt_data)
+    tt_format = DW_EH_PE_omit;
+  else
+    {
+      tt_format = ASM_PREFERRED_EH_DATA_FORMAT (/*code=*/0, /*global=*/1);
+#ifdef HAVE_AS_LEB128
+      ASM_GENERATE_INTERNAL_LABEL (ttype_label, "LLSDATT", funcdef_number);
+#endif
+      tt_format_size = size_of_encoded_value (tt_format);
+
+      assemble_eh_align (tt_format_size * BITS_PER_UNIT);
+    }
 
   ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "LLSDA", funcdef_number);
 
@@ -3653,16 +3665,6 @@ output_function_exception_table ()
 
   /* @LPStart pointer would go here.  */
 
-  /* Indicate the format of the @TType entries.  */
-  if (! have_tt_data)
-    tt_format = DW_EH_PE_omit;
-  else
-    {
-      tt_format = ASM_PREFERRED_EH_DATA_FORMAT (/*code=*/0, /*global=*/1);
-#ifdef HAVE_AS_LEB128
-      ASM_GENERATE_INTERNAL_LABEL (ttype_label, "LLSDATT", funcdef_number);
-#endif
-    }
   dw2_asm_output_data (1, tt_format, "@TType format (%s)",
 		       eh_data_format_name (tt_format));
 
@@ -3685,14 +3687,14 @@ output_function_exception_table ()
       ASM_OUTPUT_LABEL (asm_out_file, ttype_after_disp_label);
 #else
       /* Ug.  Alignment queers things.  */
-      unsigned int before_disp, after_disp, last_disp, disp, align;
+      unsigned int before_disp, after_disp, last_disp, disp;
 
-      align = POINTER_SIZE / BITS_PER_UNIT;
       before_disp = 1 + 1;
       after_disp = (1 + size_of_uleb128 (call_site_len)
 		    + call_site_len
 		    + VARRAY_ACTIVE_SIZE (cfun->eh->action_record_data)
-		    + VARRAY_ACTIVE_SIZE (cfun->eh->ttype_data) * align);
+		    + (VARRAY_ACTIVE_SIZE (cfun->eh->ttype_data)
+		       * tt_format_size));
 
       disp = after_disp;
       do
@@ -3702,8 +3704,8 @@ output_function_exception_table ()
 	  last_disp = disp;
 	  disp_size = size_of_uleb128 (disp);
 	  pad = before_disp + disp_size + after_disp;
-	  if (pad % align)
-	    pad = align - (pad % align);
+	  if (pad % tt_format_size)
+	    pad = tt_format_size - (pad % tt_format_size);
 	  else
 	    pad = 0;
 	  disp = after_disp + pad;
@@ -3751,7 +3753,7 @@ output_function_exception_table ()
 			 (i ? NULL : "Action record table"));
 
   if (have_tt_data)
-    assemble_eh_align (GET_MODE_ALIGNMENT (ptr_mode));
+    assemble_eh_align (tt_format_size * BITS_PER_UNIT);
 
   i = VARRAY_ACTIVE_SIZE (cfun->eh->ttype_data);
   while (i-- > 0)
