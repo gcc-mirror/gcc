@@ -1,3 +1,7 @@
+Mon Jun 29 22:12:06 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* pa.c, pa.h, pa.md: Convert to gen_rtx_FOO.
+
 Mon Jun 29 20:12:41 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
         * Makefile.in (fix-header): Don't needlessly depend on cpperror.o.
