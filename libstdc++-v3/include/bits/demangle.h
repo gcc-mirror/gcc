@@ -40,10 +40,10 @@
 #define _GLIBCXX_DEMANGLER_DOUT(cntrl, data)
 #define _GLIBCXX_DEMANGLER_DOUT_ENTERING(x)
 #define _GLIBCXX_DEMANGLER_DOUT_ENTERING2(x)
-#define _GLIBCXX_DEMANGLER_RETURN \
-    return M_result
-#define _GLIBCXX_DEMANGLER_RETURN2 \
-    return M_result
+#define _GLIBCXX_DEMANGLER_DOUT_ENTERING3(x)
+#define _GLIBCXX_DEMANGLER_RETURN return M_result
+#define _GLIBCXX_DEMANGLER_RETURN2 return M_result
+#define _GLIBCXX_DEMANGLER_RETURN3
 #define _GLIBCXX_DEMANGLER_FAILURE \
     do { M_result = false; return false; } while(0)
 #else
@@ -192,6 +192,28 @@ namespace __gnu_cxx
 	part_of_substitution(void) const
 	{ return M_part_of_substitution; }
 
+#if _GLIBCXX_DEMANGLER_CWDEBUG
+	friend std::ostream& operator<<(std::ostream& os, qualifier const& qual)
+	{
+	  os << (char)qual.M_qualifier1;
+	  if (qual.M_qualifier1 == vendor_extension ||
+	      qual.M_qualifier1 == array ||
+	      qual.M_qualifier1 == pointer_to_member)
+	    os << " [" << qual.M_optional_type << ']';
+	  else if (qual.M_qualifier1 == 'K' ||
+		   qual.M_qualifier1 == 'V' ||
+		   qual.M_qualifier1 == 'r')
+	  {
+	    if (qual.M_qualifier2)
+	    {
+	      os << (char)qual.M_qualifier2;
+	      if (qual.M_qualifier3)
+		os << (char)qual.M_qualifier3;
+	    }
+	  }
+	  return os;
+	}
+#endif
       };
 
     template<typename Allocator>
@@ -201,7 +223,7 @@ namespace __gnu_cxx
 	  string_type;
 
       private:
-	bool M_printing_suppressed;
+	mutable bool M_printing_suppressed;
 	std::vector<qualifier<Allocator>, Allocator> M_qualifier_starts;
 	session<Allocator>& M_demangler;
 
@@ -240,7 +262,7 @@ namespace __gnu_cxx
 	void
 	decode_qualifiers(string_type& prefix,
 	    		  string_type& postfix,
-			  bool member_function_pointer_qualifiers);
+			  bool member_function_pointer_qualifiers) const;
 
 	bool
 	suppressed(void) const
@@ -254,6 +276,23 @@ namespace __gnu_cxx
 	size(void) const
 	{ return M_qualifier_starts.size(); }
 
+#if _GLIBCXX_DEMANGLER_CWDEBUG
+	friend std::ostream& operator<<(std::ostream& os, qualifier_list const& list)
+	{
+	  typename std::vector<qualifier<Allocator>, Allocator>::const_iterator
+	      iter = list.M_qualifier_starts.begin();
+	  if (iter != list.M_qualifier_starts.end())
+	  {
+	    os << "{ " << *iter;
+	    while (++iter != list.M_qualifier_starts.end())
+	      os << ", " << *iter;
+	    os << " }";
+	  }
+	  else
+	    os << "{ }";
+	  return os;
+	}
+#endif
       };
 
     template<typename Allocator>
@@ -1377,10 +1416,11 @@ namespace __gnu_cxx
       qualifier_list<Allocator>::decode_qualifiers(
 	  string_type& prefix,
 	  string_type& postfix,
-	  bool member_function_pointer_qualifiers = false)
+	  bool member_function_pointer_qualifiers = false) const
       {
+	_GLIBCXX_DEMANGLER_DOUT_ENTERING3("decode_qualifiers");
 	for(typename std::vector<qualifier<Allocator>, Allocator>::
-	    reverse_iterator iter = M_qualifier_starts.rbegin();
+	    const_reverse_iterator iter = M_qualifier_starts.rbegin();
 	    iter != M_qualifier_starts.rend();)
 	{
 	  if (!member_function_pointer_qualifiers
@@ -1442,6 +1482,7 @@ namespace __gnu_cxx
 	    ++iter;
 	}
 	M_printing_suppressed = false;
+	_GLIBCXX_DEMANGLER_RETURN3;
       }
 
     //
@@ -1451,8 +1492,7 @@ namespace __gnu_cxx
 	  string_type& prefix, string_type& postfix,
 	  qualifier_list<Allocator>* qualifiers)
       {
-	_GLIBCXX_DEMANGLER_DOUT_ENTERING2
-	    (qualifiers ? "decode_type" : "decode_type[with qualifiers]");
+	_GLIBCXX_DEMANGLER_DOUT_ENTERING2("decode_type");
 	++M_inside_type;
 	bool recursive_template_param_or_substitution_call;
 	if (!(recursive_template_param_or_substitution_call = qualifiers))

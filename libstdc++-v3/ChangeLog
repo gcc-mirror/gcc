@@ -1,3 +1,18 @@
+2003-11-07  Carlo Wood  <carlo@alinoe.com>
+
+        * include/bits/demangle.h
+	(qualifier_list<Allocator>::decode_qualifiers(string_type&,
+	string_type&, bool) const): Made const.
+	(qualifier_list<Allocator>::M_printing_suppressed): Added mutable.
+	(_GLIBCXX_DEMANGLER_DOUT_ENTERING3, _GLIBCXX_DEMANGLER_RETURN3,
+	std::ostream& operator<<(std::ostream&, qualifier const&),
+	std::ostream& operator<<(std::ostream&, qualifier_list const&),
+	qualifier_list<Allocator>::decode_qualifiers(string_type&,
+	string_type&, bool) const,
+	session<Allocator>::decode_type_with_postfix(string_type&,
+	string_type&, qualifier_list<Allocator>*))
+	Added and/or changed debug-only hooks and code.
+
 2003-11-04  Jeffrey D. Oldham  <oldham@codesourcery.com>
 
 	* libsupc++/vec.cc (__cxa_vec_delete2): If given a NULL pointer,
