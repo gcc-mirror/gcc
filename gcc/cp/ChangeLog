@@ -1,3 +1,18 @@
+Mon Sep 29 11:05:54 1997  Alexandre Oliva  <oliva@dcc.unicamp.br>
+
+	* lang-options.h: new -Wold-style-cast flag.
+	* cp-tree.h (warn_old_style_cast): new variable.
+	* decl2.c (warn_old_style_cast): ditto.
+	(lang_decode_option): support -Wold-style-cast.
+	(reparse_absdcl_as_casts): produce old-style-cast warning.
+
+Mon Sep 29 09:20:53 1997  Benjamin Kosnik  <bkoz@rhino.cygnus.com>
+
+	* decl.c (cp_finish_decl): Allow expand_aggr_init to set
+ 	TREE_USED, reset value based on already_used.
+
+	* init.c (expand_member_init): Revert change.
+	
 Mon Sep 29 08:57:53 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* cp-tree.h, decl.c, decl2.c, pt.c:

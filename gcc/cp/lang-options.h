@@ -111,3 +111,5 @@ Boston, MA 02111-1307, USA.  */
   "-Wno-effc++",
   "-Wsign-promo",
   "-Wno-sign-promo",
+  "-Wold-style-cast",
+  "-Wno-old-style-cast",

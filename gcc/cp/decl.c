@@ -6299,6 +6299,7 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
   int temporary = allocation_temporary_p ();
   char *asmspec = NULL;
   int was_readonly = 0;
+  int already_used = 0;
 
   /* If this is 0, then we did not change obstacks.  */
   if (! decl)
@@ -6858,6 +6859,7 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
 	    {
 	      /* Compute and store the initial value.  */
 	      expand_decl_init (decl);
+       	      already_used = TREE_USED (decl) || TREE_USED (type);
 
 	      if (init || TYPE_NEEDS_CONSTRUCTING (type))
 		{
@@ -6870,10 +6872,15 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
 		 was initialized was ever used.  Don't do this if it has a
 		 destructor, so we don't complain about the 'resource
 		 allocation is initialization' idiom.  */
+
 	      if (TYPE_NEEDS_CONSTRUCTING (type)
+		  && ! already_used
 		  && cleanup == NULL_TREE
 		  && DECL_NAME (decl))
 		TREE_USED (decl) = 0;
+
+	      if (already_used)
+		TREE_USED (decl) = 1;
 	    }
 
 	  /* Cleanup any temporaries needed for the initial value.  */

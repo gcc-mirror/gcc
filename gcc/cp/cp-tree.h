@@ -257,6 +257,10 @@ extern int warn_sign_promo;
 
 extern int warn_extern_inline;
 
+/* Non-zero means warn when an old-style cast is used.  */
+
+extern int warn_old_style_cast;
+
 /* Nonzero means to treat bitfields as unsigned unless they say `signed'.  */
 
 extern int flag_signed_bitfields;
