@@ -1380,6 +1380,8 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
       i = decode_reg_name (regname);
       if (i >= 0 || i == -4)
 	++nclobbers;
+      else if (i == -2)
+	error ("unknown register name `%s' in `asm'", regname);
     }
 
   last_expr_type = 0;
@@ -1569,8 +1571,7 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 		  continue;
 		}
 
-	      error ("unknown register name `%s' in `asm'", regname);
-	      return;
+	      /* Ignore unknown register, error already signalled.  */
 	    }
 
 	  /* Use QImode since that's guaranteed to clobber just one reg.  */
