@@ -772,9 +772,14 @@ incoming_reg (start, count)
 {
   int i;
 
+  /* We only use 16 argument registers, so truncate at the end of the
+     area.  */
+  if (start + count > 16)
+    count = 16 - start;
+
   if (! TARGET_NO_REUSE_ARGS)
     /* Mark all the used registers as not fixed and saved over calls.  */
-    for (i = R_AR (start); i < R_AR (16) && i < R_AR (start + count); i++)
+    for (i = R_AR (start); i < R_AR (start + count); i++)
       {
 	fixed_regs[i] = call_used_regs[i] = call_fixed_regs[i] = 0;
 	CLEAR_HARD_REG_BIT (fixed_reg_set, i);
