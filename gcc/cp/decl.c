@@ -10836,7 +10836,10 @@ build_enumerator (name, value)
      /* We have to always copy here; not all INTEGER_CSTs are unshared,
 	and there's no wedding ring. Look at size_int()...*/
      value = copy_node (value);
+#if 0
+     /* To fix MAX_VAL enum consts. (bkoz)  */
      TREE_TYPE (value) = integer_type_node;
+#endif
    }
 
   /* C++ associates enums with global, function, or class declarations.  */

@@ -487,18 +487,6 @@ FIELD_DECLs
 @end display
 
 
-@item DECL_NESTED_TYPENAME
-Holds the fully qualified type name.  Example, Base::Derived.
-
-Has values of:
-
-	IDENTIFIER_NODEs
-
-What things can this be used on:
-
-	TYPE_DECLs
-
-
 @item DECL_NAME
 
 Has values of:
