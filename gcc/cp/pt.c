@@ -3266,52 +3266,6 @@ redeclare_class_template (tree type, tree parms)
     }
 }
 
-/* Return true if non-dependent expressions EXPR contains within it a
-   cast expression with a dependent argument.  */
-
-static bool
-contains_dependent_cast_p (tree expr)
-{
-  switch (TREE_CODE (expr))
-    {
-    case CAST_EXPR:
-    case REINTERPRET_CAST_EXPR:
-    case STATIC_CAST_EXPR:
-    case DYNAMIC_CAST_EXPR:
-    case CONST_CAST_EXPR:
-      {
-	tree op = TREE_OPERAND (expr, 0);
-
-	if (op && (type_dependent_expression_p (op)
-		   || value_dependent_expression_p (op)))
-	  return true;
-      }
-      break;
-
-    case TREE_LIST:
-      /* The operands of a CALL_EXPR are held as a list.  */
-      for (; expr; expr = TREE_CHAIN (expr))
-	if (contains_dependent_cast_p (TREE_VALUE (expr)))
-	  return true;
-      return false;
-
-    default:
-      break;
-    }
-
-  if (IS_EXPR_CODE_CLASS (TREE_CODE_CLASS (TREE_CODE (expr))))
-    {
-      int ix;
-  
-      for (ix = TREE_CODE_LENGTH (TREE_CODE (expr)); ix--;)
-	if (TREE_OPERAND (expr, ix)
-	    && contains_dependent_cast_p (TREE_OPERAND (expr, ix)))
-	  return true;
-    }
-  
-  return false;
-}
-
 /* Simplify EXPR if it is a non-dependent expression.  Returns the
    (possibly simplified) expression.  */
 
@@ -3327,8 +3281,7 @@ fold_non_dependent_expr (tree expr)
      as two declarations of the same function, for example.  */
   if (processing_template_decl
       && !type_dependent_expression_p (expr)
-      && !value_dependent_expression_p (expr)
-      && !contains_dependent_cast_p (expr))
+      && !value_dependent_expression_p (expr))
     {
       HOST_WIDE_INT saved_processing_template_decl;
 
@@ -12090,6 +12043,7 @@ value_dependent_expression_p (tree expression)
     {
       switch (TREE_CODE_CLASS (TREE_CODE (expression)))
 	{
+	case tcc_reference:
 	case tcc_unary:
 	  return (value_dependent_expression_p 
 		  (TREE_OPERAND (expression, 0)));
@@ -12113,7 +12067,6 @@ value_dependent_expression_p (tree expression)
 		return true;
 	    return false;
 	  }
-	case tcc_reference:
 	case tcc_statement:
 	  /* These cannot be value dependent.  */
 	  return false;
