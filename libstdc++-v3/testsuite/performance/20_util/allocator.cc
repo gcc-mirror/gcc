@@ -35,6 +35,9 @@
 
 #include <vector>
 #include <list>
+#include <map>
+#include <deque>
+#include <set>
 #include <typeinfo>
 #include <sstream>
 #include <ext/mt_allocator.h>
@@ -44,9 +47,6 @@
 #include <testsuite_performance.h>
 
 using namespace std;
-using __gnu_cxx::__mt_alloc;
-using __gnu_cxx::new_allocator;
-using __gnu_cxx::malloc_allocator;
 
 typedef int test_type;
 
@@ -61,18 +61,27 @@ int iterations = 100000;
 // should probably be investigated in more detail.
 int insert_values = 128;
 
+template<typename TestType>
+  struct value_type : public pair<TestType, TestType>
+  {
+    value_type() : pair<TestType, TestType>(0, 0) { }
+
+    inline value_type operator++() { return ++this->first, *this; }
+    inline operator TestType() const { return this->first; }
+  };
+
 template<typename Container>
   int
-  do_loop()
+  do_loop(Container& obj)
   {
     int test_iterations = 0;
     try
       {
-	Container obj;
+	value_type<test_type> test_value;
 	while (test_iterations < iterations)
 	  {
 	    for (int j = 0; j < insert_values; ++j)
-	      obj.push_back(test_iterations);
+	      obj.insert(obj.end(), ++test_value);
 	    ++test_iterations;
 	  }
       }
@@ -94,7 +103,7 @@ template<typename Container>
     resource_counter resource;
     clear_counters(time, resource);
     start_counters(time, resource);
-    int test_iterations = do_loop<Container>();
+    int test_iterations = do_loop(obj);
     stop_counters(time, resource);
  
     std::ostringstream comment;
@@ -109,30 +118,59 @@ template<typename Container>
 // http://gcc.gnu.org/ml/libstdc++/2003-05/msg00231.html
 int main(void)
 {
+  typedef __gnu_cxx::malloc_allocator<test_type> m_alloc_type;
+  typedef __gnu_cxx::new_allocator<test_type> n_alloc_type;
+  typedef __gnu_cxx::__mt_alloc<test_type> so_alloc_type;
+
+#ifdef TEST_B0
+  test_container(vector<test_type, m_alloc_type>());
+#endif
 #ifdef TEST_B1
-  test_container(vector<test_type>());
+  test_container(vector<test_type, n_alloc_type>());
 #endif
 #ifdef TEST_B2
-  test_container(vector<test_type, malloc_allocator<test_type> >());
-#endif
-#ifdef TEST_B3
-  test_container(vector<test_type, new_allocator<test_type> >());
-#endif
-#ifdef TEST_B4
-  test_container(vector<test_type, __mt_alloc<test_type> >());
+  test_container(vector<test_type, so_alloc_type>());
 #endif
 
-#ifdef TEST_B5
-  test_container(list<test_type>());
+#ifdef TEST_B3
+  test_container(list<test_type, m_alloc_type>());
 #endif
+#ifdef TEST_B4
+  test_container(list<test_type, n_alloc_type>());
+#endif
+#ifdef TEST_B5
+  test_container(list<test_type, so_alloc_type>());
+#endif
+
 #ifdef TEST_B6
-  test_container(list<test_type, malloc_allocator<test_type> >());
+  test_container(deque<test_type, m_alloc_type>());
 #endif
 #ifdef TEST_B7
-  test_container(list<test_type, new_allocator<test_type> >());
+  test_container(deque<test_type, n_alloc_type>());
 #endif
 #ifdef TEST_B8
-  test_container(list<test_type, __mt_alloc<test_type> >());
+  test_container(deque<test_type, so_alloc_type>());
+#endif
+
+  typedef less<test_type> compare_type;
+#ifdef TEST_B9
+  test_container(map<test_type, test_type, compare_type, m_alloc_type>());
+#endif
+#ifdef TEST_B10
+  test_container(map<test_type, test_type, compare_type, n_alloc_type>());
+#endif
+#ifdef TEST_B11
+  test_container(map<test_type, test_type, compare_type, so_alloc_type>());
+#endif
+
+#ifdef TEST_B12
+  test_container(set<test_type, compare_type, m_alloc_type>());
+#endif
+#ifdef TEST_B13
+  test_container(set<test_type, compare_type, n_alloc_type>());
+#endif
+#ifdef TEST_B14
+  test_container(set<test_type, compare_type, so_alloc_type>());
 #endif
 
   return 0;
