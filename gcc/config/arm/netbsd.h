@@ -97,6 +97,11 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
   fprintf(STREAM, "\tbl\tmcount\n");					    \
 }
 
+/* On the ARM `@' introduces a comment, so we must use something else
+   for .type directives.  */
+#undef TYPE_OPERAND_FMT
+#define TYPE_OPERAND_FMT "%%%s"
+
 /* VERY BIG NOTE : Change of structure alignment for RiscBSD.
    There are consequences you should be aware of...
 
