@@ -280,10 +280,7 @@ fi)
 # Pass with a value to specify a thread package
 AC_ARG_ENABLE(threads,
 [  --enable-threads        enable thread usage for target GCC.
-  --enable-threads=LIB    use LIB thread package for target GCC.],
-if test x$enable_threads = xno; then
-	enable_threads=''
-fi,
+  --enable-threads=LIB    use LIB thread package for target GCC.],,
 enable_threads='')
 
 enable_threads_flag=$enable_threads
@@ -4429,10 +4426,11 @@ if test -f ../ld/Makefile; then
 #	fi
 fi
 
-# Figure out what assembler alignment features are present.
-AC_MSG_CHECKING(assembler alignment features)
+# Figure out what assembler we will be using.
+AC_MSG_CHECKING(what assembler to use)
 gcc_cv_as=
-gcc_cv_as_alignment_features=
+gcc_cv_gas_major_version=
+gcc_cv_gas_minor_version=
 gcc_cv_as_gas_srcdir=`echo $srcdir | sed -e 's,/gcc$,,'`/gas
 if test -x "$DEFAULT_ASSEMBLER"; then
 	gcc_cv_as="$DEFAULT_ASSEMBLER"
@@ -4456,21 +4454,9 @@ changequote(,)dnl
 	gcc_cv_gas_major_version=`expr "$gcc_cv_gas_version" : "VERSION=\([0-9]*\)"`
 	gcc_cv_gas_minor_version=`expr "$gcc_cv_gas_version" : "VERSION=[0-9]*\.\([0-9]*\)"`
 changequote([,])dnl
-	if test x$gcc_cv_gas_major_version != x -a x$gcc_cv_gas_minor_version != x; then
-		# Gas version 2.6 and later support for .balign and .p2align.
-		# bytes to skip when using .p2align.
-		if test "$gcc_cv_gas_major_version" -eq 2 -a "$gcc_cv_gas_minor_version" -ge 6 -o "$gcc_cv_gas_major_version" -gt 2; then
-			gcc_cv_as_alignment_features=".balign and .p2align"
-			AC_DEFINE(HAVE_GAS_BALIGN_AND_P2ALIGN)
-		fi
-		# Gas version 2.8 and later support specifying the maximum
-		# bytes to skip when using .p2align.
-		if test "$gcc_cv_gas_major_version" -eq 2 -a "$gcc_cv_gas_minor_version" -ge 8 -o "$gcc_cv_gas_major_version" -gt 2; then
-			gcc_cv_as_alignment_features=".p2align including maximum skip"
-			AC_DEFINE(HAVE_GAS_MAX_SKIP_P2ALIGN)
-		fi
-	fi
-elif test x$host = x$target; then
+fi
+
+if test "x$gcc_cv_as" = x -a x$host = x$target; then
 	# Native build.
 	# Search the same directories that the installed compiler will
 	# search.  Else we may find the wrong assembler and lose.  If we
@@ -4522,7 +4508,39 @@ elif test x$host = x$target; then
 		fi
 	done
 fi
-if test x$gcc_cv_as != x; then
+if test x$gcc_cv_gas_major_version != x -a x$gcc_cv_gas_minor_version != x; then
+  AC_MSG_RESULT("newly built gas")
+else
+  AC_MSG_RESULT($gcc_cv_as)
+fi
+
+# Figure out what nm we will be using.
+AC_MSG_CHECKING(what nm to use)
+if test -x nm$host_exeext; then
+	gcc_cv_nm=./nm$host_exeext
+elif test x$host = x$target; then
+	# Native build.
+	gcc_cv_nm=nm$host_exeext
+fi
+AC_MSG_RESULT($gcc_cv_nm)
+
+# Figure out what assembler alignment features are present.
+AC_MSG_CHECKING(assembler alignment features)
+gcc_cv_as_alignment_features=
+if test x$gcc_cv_gas_major_version != x -a x$gcc_cv_gas_minor_version != x; then
+	# Gas version 2.6 and later support for .balign and .p2align.
+	# bytes to skip when using .p2align.
+	if test "$gcc_cv_gas_major_version" -eq 2 -a "$gcc_cv_gas_minor_version" -ge 6 -o "$gcc_cv_gas_major_version" -gt 2; then
+		gcc_cv_as_alignment_features=".balign and .p2align"
+		AC_DEFINE(HAVE_GAS_BALIGN_AND_P2ALIGN)
+	fi
+	# Gas version 2.8 and later support specifying the maximum
+	# bytes to skip when using .p2align.
+	if test "$gcc_cv_gas_major_version" -eq 2 -a "$gcc_cv_gas_minor_version" -ge 8 -o "$gcc_cv_gas_major_version" -gt 2; then
+		gcc_cv_as_alignment_features=".p2align including maximum skip"
+		AC_DEFINE(HAVE_GAS_MAX_SKIP_P2ALIGN)
+	fi
+elif test x$gcc_cv_as != x; then
 	# Check if we have .balign and .p2align
 	echo ".balign  4" > conftest.s
 	echo ".p2align  2" >> conftest.s
@@ -4544,17 +4562,15 @@ AC_MSG_RESULT($gcc_cv_as_alignment_features)
 
 AC_MSG_CHECKING(assembler subsection support)
 gcc_cv_as_subsections=
-if test x$gcc_cv_as != x; then
+if test x$gcc_cv_gas_major_version != x -a x$gcc_cv_gas_minor_version != x; then
+  if test "$gcc_cv_gas_major_version" -eq 2 -a "$gcc_cv_gas_minor_version" -ge 9 -o "$gcc_cv_gas_major_version" -gt 2 && grep 'obj_format = elf' ../gas/Makefile > /dev/null; then
+    gcc_cv_as_subsections="working .subsection -1"
+  fi
+elif test x$gcc_cv_as != x; then
 	# Check if we have .subsection
 	echo ".subsection 1" > conftest.s
 	if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1; then
 		gcc_cv_as_subsections=".subsection"
-		if test -x nm$host_exeext; then
-			gcc_cv_nm=./nm$host_exeext
-		elif test x$host = x$target; then
-			# Native build.
-			gcc_cv_nm=nm$host_exeext
-		fi
 		if test x$gcc_cv_nm != x; then
 			cat > conftest.s <<EOF
 conftest_label1: .word 0
@@ -4569,43 +4585,56 @@ EOF
 					:
 				else
 					gcc_cv_as_subsections="working .subsection -1"
-					AC_DEFINE(HAVE_GAS_SUBSECTION_ORDERING, 1,
-[Define if your assembler supports .subsection and .subsection -1 starts
-   emitting at the beginning of your section.])
 				fi
 			fi
 		fi
 	fi
 	rm -f conftest.s conftest.o conftest.nm1 conftest.nm2
 fi
+if test x"$gcc_cv_as_subsections" = x"working .subsection -1"; then
+	AC_DEFINE(HAVE_GAS_SUBSECTION_ORDERING, 1,
+[Define if your assembler supports .subsection and .subsection -1 starts
+   emitting at the beginning of your section.])
+fi
 AC_MSG_RESULT($gcc_cv_as_subsections)
 
 AC_MSG_CHECKING(assembler weak support)
 gcc_cv_as_weak=
-if test x$gcc_cv_as != x; then
+if test x$gcc_cv_gas_major_version != x -a x$gcc_cv_gas_minor_version != x; then
+  if test "$gcc_cv_gas_major_version" -eq 2 -a "$gcc_cv_gas_minor_version" -ge 2 -o "$gcc_cv_gas_major_version" -gt 2; then
+    gcc_cv_as_weak="yes"
+  fi
+elif test x$gcc_cv_as != x; then
 	# Check if we have .weak
 	echo "	.weak foobar" > conftest.s
 	if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1; then
-		AC_DEFINE(HAVE_GAS_WEAK, 1,
-			[Define if your assembler supports .weak.])
 		gcc_cv_as_weak="yes"
 	fi
 	rm -f conftest.s conftest.o conftest.nm1 conftest.nm2
+fi
+if test x"$gcc_cv_as_weak" = xyes; then
+	AC_DEFINE(HAVE_GAS_WEAK, 1, [Define if your assembler supports .weak.])
 fi
 AC_MSG_RESULT($gcc_cv_as_weak)
 
 AC_MSG_CHECKING(assembler hidden support)
 gcc_cv_as_hidden=
-if test x$gcc_cv_as != x; then
+if test x$gcc_cv_gas_major_version != x -a x$gcc_cv_gas_minor_version != x; then
+  if test "$gcc_cv_gas_major_version" -eq 2 -a "$gcc_cv_gas_minor_version" -ge 10 -o "$gcc_cv_gas_major_version" -gt 2 && grep 'obj_format = elf' ../gas/Makefile > /dev/null; then
+    gcc_cv_as_hidden="yes"
+  fi
+elif test x$gcc_cv_as != x; then
 	# Check if we have .hidden
 	echo "	.hidden foobar" > conftest.s
 	echo "foobar:" >> conftest.s
 	if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1; then
-		AC_DEFINE(HAVE_GAS_HIDDEN, 1,
-			[Define if your assembler supports .hidden.])
 		gcc_cv_as_hidden="yes"
 	fi
 	rm -f conftest.s conftest.o conftest.nm1 conftest.nm2
+fi
+if test x"$gcc_cv_as_hidden" = xyes; then
+	AC_DEFINE(HAVE_GAS_HIDDEN, 1,
+		[Define if your assembler supports .hidden.])
 fi
 AC_MSG_RESULT($gcc_cv_as_hidden)
 
@@ -4721,18 +4750,24 @@ changequote(,)dnl
 changequote([,])dnl
     AC_MSG_CHECKING(assembler instructions)
     gcc_cv_as_instructions=
-    if test x$gcc_cv_as != x; then
+    if test x$gcc_cv_gas_major_version != x -a x$gcc_cv_gas_minor_version != x; then
+      if test "$gcc_cv_gas_major_version" -eq 2 -a "$gcc_cv_gas_minor_version" -ge 9 -o "$gcc_cv_gas_major_version" -gt 2; then
+	gcc_cv_as_instructions="filds fists"
+      fi
+    elif test x$gcc_cv_as != x; then
 	set "filds fists" "filds mem; fists mem"
 	while test $# -gt 0
   	do
 		echo "$2" > conftest.s
 		if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1; then
 			gcc_cv_as_instructions=${gcc_cv_as_instructions}$1" "
-			AC_DEFINE_UNQUOTED(HAVE_GAS_`echo "$1" | tr '[a-z ]' '[A-Z_]'`)
 		fi
 		shift 2
 	done
 	rm -f conftest.s conftest.o
+    fi
+    if test x"$gcc_cv_as_instructions" != x; then
+	AC_DEFINE_UNQUOTED(HAVE_GAS_`echo "$gcc_cv_as_instructions" | tr '[a-z ]' '[A-Z_]'`)
     fi
     AC_MSG_RESULT($gcc_cv_as_instructions)
     ;;
