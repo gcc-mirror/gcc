@@ -1,3 +1,10 @@
+2002-09-08  Jan Hubicka  <jh@suse.cz>
+
+	* emit-rtl.c (set_mem_attributes_minus_bitpos): Fix array_ref
+	handling.
+
+	* loop.c (loop_gics_reduce):  Emit addition after.
+
 2002-09-08  Alan Modra  <amodra@bigpond.net.au>
 
 	* varasm.c (default_assemble_visibility): Rename from
@@ -38,7 +45,7 @@
 	that subsequent clobbers will be dependent on it.
 
 2002-09-07  Igor Shevlyakov <igor@microunity.com>
-  
+
 	* combine.c (simplify_shift_const): Calculate rotate count
 	correctly for vector operands.
 
@@ -46,7 +53,7 @@
 
 	* c-typeck.c (c_tree_expr_nonnegative_p): New function.
 	(build_binary_op): Call c_tree_expr_nonnegative_p rather than
-	tree_expr_nonnegative_p.  
+	tree_expr_nonnegative_p.
 	(build_conditional_expr): Likewise.
 	* c-tree.h (c_tree_expr_nonnegative_p): Declare.
 
@@ -140,8 +147,8 @@ Fri Sep  6 16:17:33 2002  Nicola Pero  <n.pero@mi.flashnet.it>
 
 2002-09-06  Jason Thorpe  <thorpej@wasabisystems.com>
 
-	* config/arm/arm-protos.h (arm_gen_return_addr_mask): New 
-	prototype. 
+	* config/arm/arm-protos.h (arm_gen_return_addr_mask): New
+	prototype.
 	* config/arm/arm.c (arm_gen_return_addr_mask): New function.
 	* config/arm/arm.h (MASK_RETURN_ADDR): Use arm_gen_return_addr_mask
 	if not APCS26 and not Thumb or ARMv4-or-higher.  Use gen_int_mode
@@ -151,12 +158,12 @@ Fri Sep  6 16:17:33 2002  Nicola Pero  <n.pero@mi.flashnet.it>
 
 2002-09-06  Ulrich Weigand  <uweigand@de.ibm.com>
 
-	* config/s390/s390.md ("*adddi3_cc", "*adddi3_cconly", 
+	* config/s390/s390.md ("*adddi3_cc", "*adddi3_cconly",
 	"*adddi3_cconly2", "*adddi3_64", "*adddi3_31", "adddi3",
-	"*addsi3_carry1_cc", "*addsi3_carry1_cconly",	
+	"*addsi3_carry1_cc", "*addsi3_carry1_cconly",
 	"*addsi3_carry2_cc", "*addsi3_carry2_cconly",
 	"*addsi3_cc", "*addsi3_cconly", "*addsi3_cconly2", "addsi3",
-	"adddf3", "*adddf3", "*adddf3_ibm", 
+	"adddf3", "*adddf3", "*adddf3_ibm",
 	"addsf3", "*addsf3", "*addsf3_ibm",
 	"muldi3", "mulsi3", "mulsidi3",
 	"muldf3", "*muldf3", "*muldf3_ibm",
@@ -197,7 +204,7 @@ Fri Sep  6 16:17:33 2002  Nicola Pero  <n.pero@mi.flashnet.it>
 2002-09-05  Jason Thorpe  <thorpej@wasabisystems.com>
 
 	* config/arm/arm.c (arm_return_in_memory): Implement ATPCS
-	return-in-memory rules. 
+	return-in-memory rules.
 	* config/arm/arm.h (ARM_FLAG_ATPCS, TARGET_ATPCS): Define.
 
 2002-09-05  David Edelsohn  <edelsohn@gnu.org>
@@ -210,11 +217,11 @@ Fri Sep  6 16:17:33 2002  Nicola Pero  <n.pero@mi.flashnet.it>
 	* real.c: Avoid parse error if FLOAT_WORDS_BIG_ENDIAN is
 	not a compile-time constant for the non-IBM case.
 	* config/arm/arm-protos.h (arm_float_words_big_endian): New
-	prototype. 
+	prototype.
 	* config/arm/arm.c (arm_float_words_big_endian): New function.
 	* config/arm/arm.h (TARGET_CPU_CPP_BUILTINS): Define __VFP_FP__
-	if TARGET_VFP  and not TARGET_HARD_FLOAT. 
-	(ARM_FLAG_VFP, TARGET_VFP): Define. 
+	if TARGET_VFP  and not TARGET_HARD_FLOAT.
+	(ARM_FLAG_VFP, TARGET_VFP): Define.
 	(FLOAT_WORDS_BIG_ENDIAN): Use arm_float_words_big_endian.
 
 2002-09-05  David Edelsohn  <edelsohn@gnu.org>
@@ -238,7 +245,7 @@ Thu Sep  5 16:27:47 2002  J"orn Rennecke <joern.rennecke@superh.com>
 	double-word scratch register.
 	config/s390/s390.md ("reload_indi", "reload_insi"): Adapt.
 
-	("*tmqi_ext", "*tmdi_mem", "*tmsi_mem", "*tmhi_mem", "*tmqi_mem", 
+	("*tmqi_ext", "*tmdi_mem", "*tmsi_mem", "*tmhi_mem", "*tmqi_mem",
 	"*cli"): Replace s_operand by memory_operand.
 	("cmpstrdi", "cmpstrsi"): Replace s_operand by general_operand.
 
@@ -413,7 +420,7 @@ Wed Sep  4 18:48:10 2002  J"orn Rennecke <joern.rennecke@superh.com>
 	* config/m68hc11/m68hc11.c (print_operand): Likewise.
 	* config/m68k/hp320.h (PRINT_OPERAND, ASM_OUTPUT_FLOAT_OPERAND,
 	ASM_OUTPUT_DOUBLE_OPERAND, ASM_OUTPUT_LONG_DOUBLE_OPERAND): Likewise.
-	* config/m68k/m68k.h (ASM_OUTPUT_FLOAT_OPERAND, 
+	* config/m68k/m68k.h (ASM_OUTPUT_FLOAT_OPERAND,
 	ASM_OUTPUT_DOUBLE_OPERAND, ASM_OUTPUT_LONG_DOUBLE_OPERAND): Likewise.
 	* config/m68k/sun2o4.h (ASM_OUTPUT_FLOAT_OPERAND,
 	ASM_OUTPUT_DOUBLE_OPERAND): Likewise.
@@ -540,8 +547,8 @@ Wed Sep  4 11:22:14 2002  J"orn Rennecke <joern.rennecke@superh.com>
 	* config/s390/s390.md ("movti"): Add Q->Q alternative.
 	("*movdi_64", "*movdi_31", "*movsi", "movhi", "movqi_64",
 	"movqi", "*movdf_64", "*movdf_31", "*movsf"): Likewise.
-	
-	("*movti_ss", "*movdi_ss", "*movsi_ss", "*movdf_ss", 
+
+	("*movti_ss", "*movdi_ss", "*movsi_ss", "*movdf_ss",
 	"*movsf_ss"): Remove.
 
 2002-09-03  John David Anglin  <dave@hiauly1.hia.nrc.ca>
@@ -576,8 +583,8 @@ Tue Sep  3 11:32:14 2002  Nicola Pero  <n.pero@mi.flashnet.it>
 
 	PR objc/5956:
 	* objc/objc-act.c (build_typed_selector_reference): Fix typo which
-	was causing the new selector never to match the existing ones 
-	(Patch by Alexander Malmberg <alexander@malmberg.org>). 
+	was causing the new selector never to match the existing ones
+	(Patch by Alexander Malmberg <alexander@malmberg.org>).
 
 2002-09-03  Graham Stott  <graham.stott@btinternet.com>
 
@@ -630,7 +637,7 @@ Tue Sep  3 11:32:14 2002  Nicola Pero  <n.pero@mi.flashnet.it>
 	stuff.
 	(ip2k_gen_unsigned_comp_branch): Handle CONST_INT and
 	CONST_DOUBLE constants.
-	
+
 2002-08-30  Jason Thorpe  <thorpej@wasabisystems.com>
 
 	* config/alpha/alpha.h (TARGET_CPU_CPP_BUILTINS): Move language-
@@ -792,7 +799,7 @@ Fri Aug 30 00:33:37 2002  Nicola Pero  <n.pero@mi.flashnet.it>
 	(RTX_COSTS): Handle UMOD and UDIV.  Tune MULT for v850e.
 	(TARGET_SWITCHES):  Add strict-align.
 	(TARGET_STRICT_ALIGN): New.
-	(MASK_DEFAULT, STRICT_ALIGNMENT):  Redefine.	
+	(MASK_DEFAULT, STRICT_ALIGNMENT):  Redefine.
 	* config/v850/t-v850 (MULTILIB_OPTIONS, MULTILIB_DIRNAMES):
 	Define.
 	(LIB1ASMFUNCS): Add v850_negdi2, v850_cmpdi2, v850_ucmpdi2,
@@ -873,7 +880,7 @@ Wed Aug 28 15:35:17 2002  J"orn Rennecke <joern.rennecke@superh.com>
 	* c-opts.c (COMMAND_LINE_OPTIONS): Add -Wabi.
 	(c_common_decode_option): Handle it.
 	* doc/invoke.texi: Document -Wabi.
-	
+
 Tue Aug 27 23:03:52 2002  Nicola Pero  <n.pero@mi.flashnet.it>
 
 	* c-common.c (warn_undeclared_selector): New variable.
@@ -988,7 +995,7 @@ Tue Aug 27 13:53:57 2002  J"orn Rennecke <joern.rennecke@superh.com>
 2002-08-27  Gabriel Dos Reis  <gdr@soliton.integrable-solutions.net>
 
 	* doc/cpp.texi (Common Predefined Macros): Don't mess with table
-	delimiter. 
+	delimiter.
 
 2002-08-27  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
@@ -1010,7 +1017,7 @@ Tue Aug 27 13:53:57 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 2002-08-26  Ulrich Weigand  <uweigand@de.ibm.com>
 
-	* config/s390/s390-protos.h (s390_function_prologue, 
+	* config/s390/s390-protos.h (s390_function_prologue,
 	s390_function_epilogue): Remove.
 	config/s390/s390.c (s390_function_prologue, s390_function_epilogue,
 	TARGET_ASM_FUNCTION_PROLOGUE, TARGET_ASM_FUNCTION_EPILOGUE): Remove.
@@ -1021,7 +1028,7 @@ Tue Aug 27 13:53:57 2002  J"orn Rennecke <joern.rennecke@superh.com>
 	config/s390/s390.c (s390_split_branches, s390_chunkify_pool): Adapt
 	to being called from MACHINE_DEPENDENT_REORG.  Update regs_ever_live.
 
-	config/s390/s390.c (s390_frame_info): Inline save_fprs_p.  Always 
+	config/s390/s390.c (s390_frame_info): Inline save_fprs_p.  Always
 	assume BASE_REGISTER and RETURN_REGNUM need to be saved.
 	(s390_emit_prologue): Assume RETURN_REGNUM to be saved iff
 	function is not a leaf function.  Use save_gprs and restore_gprs.
