@@ -422,6 +422,23 @@ EOF
 	  echo alpha-unknown-linux-gnu ; exit 0
 	elif test "${UNAME_MACHINE}" = "sparc" ; then
 	  echo sparc-unknown-linux-gnu ; exit 0
+	elif test "${UNAME_MACHINE}" = "mips" ; then
+	  cat >dummy.c <<EOF
+main(argc, argv)
+int argc;
+char *argv[];
+{
+#ifdef __MIPSEB__
+  printf ("%s-unknown-linux-gnu\n", argv[1]);
+#endif
+#ifdef __MIPSEL__
+  printf ("%sel-unknown-linux-gnu\n", argv[1]);
+#endif
+  return 0;
+}
+EOF
+	  ${CC-cc} dummy.c -o dummy 2>/dev/null && ./dummy "${UNAME_MACHINE}" && rm dummy.c dummy && exit 0
+	  rm -f dummy.c dummy
 	else
 	  # Either a pre-BFD a.out linker (linux-gnuoldld) or one that does not give us
 	  # useful --help.  Gcc wants to distinguish between linux-gnuoldld and linux-gnuaout.
