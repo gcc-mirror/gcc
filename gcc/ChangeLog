@@ -1,3 +1,7 @@
+Thu Nov 26 09:13:35 1998  Hans Cappelle  <cappelle@imec.be>
+
+	* reorg.c (fill_simple_delay_slots): Fix typo in sets_cc0_p call.
+
 Thu Nov 26 06:15:46 1998  Paul Edwards  <avon@matra.com.au>
  
 	* genattr.c (fatal): Use vprintf if available.
