@@ -1,5 +1,11 @@
 1998-12-10  Mark Mitchell  <mark@markmitchell.com>
 
+	* decl.c (start_enum): Use push_obstacks, not
+	end_temporary_allocation.
+	(finish_enum): Call pop_obstacks.
+
+1998-12-10  Mark Mitchell  <mark@markmitchell.com>
+
 	* class.c (instantiate_type): Return error_mark_node rather than
 	junk. 
 
