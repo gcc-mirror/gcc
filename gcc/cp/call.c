@@ -5462,7 +5462,7 @@ is_subseq (ics1, ics2)
 {
   for (;;)
     {
-      ics2 = TREE_OPERAND (ics2, 0));
+      ics2 = TREE_OPERAND (ics2, 0);
 
       if (TREE_CODE (ics2) == TREE_CODE (ics1)
 	  && comptypes (TREE_TYPE (ics2), TREE_TYPE (ics1), 1)
