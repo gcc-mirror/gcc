@@ -6,6 +6,19 @@
 	* config/sparc/sparc.c (pic_address_needs_scratch): LABEL_REFs are
 	not valid pic operands.
 
+	2000-12-26  Kazu Hirata  <kazu@hxi.com>
+	* config/h8300/h8300.c (get_shift_alg): Fix a typo in the
+	assembly code for 12-bit ASHIFTRT in HImode.
+
+	2000-07-17  Kazu Hirata  <kazu@hxi.com>
+	* h8300.md: Fix the format of mac.
+	(movsi_h8300hs): Output a tab after stmac instead of a space.
+
+	2000-10-07  Will Cohen  <wcohen@redhat.com>, Kazu Hirata  <kazu@hxi.com>
+	* config/h8300/h8300.md: Remove the memory alternative and correct
+	the insn lengths in the templates for sign extention and zero
+	extention.
+
 2000-12-22  Bernd Schmidt  <bernds@redhat.co.uk>
 
 	* calls.c (emit_call_1): Fall back to call_pop/call_value_pop if no

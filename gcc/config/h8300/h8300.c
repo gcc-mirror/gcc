@@ -2313,9 +2313,9 @@ get_shift_alg (cpu, shift_type, mode, count, assembler_p,
 	      if (TARGET_H8300)
 		*assembler_p = "mov.b\t%t0,%s0\n\tbld\t#7,%s0\n\tsubx\t%t0,%t0\n\tshar.b\t%s0\n\tshar.b\t%s0\n\tshar.b\t%s0\n\tshar.b\t%s0";
 	      else if (TARGET_H8300H)
-		*assembler_p = "mov.b\t%t0,%s0\n\textw.w\t%T0\n\tshar.b\t%s0\n\tshar.b\t%s0\n\tshar.b\t%s0\n\tshar.b\t%s0";
+		*assembler_p = "mov.b\t%t0,%s0\n\texts.w\t%T0\n\tshar.b\t%s0\n\tshar.b\t%s0\n\tshar.b\t%s0\n\tshar.b\t%s0";
 	      else if (TARGET_H8300S)
-		*assembler_p = "mov.b\t%t0,%s0\n\textw.w\t%T0\n\tshar.b\t#2,%s0\n\tshar.b\t#2,%s0";
+		*assembler_p = "mov.b\t%t0,%s0\n\texts.w\t%T0\n\tshar.b\t#2,%s0\n\tshar.b\t#2,%s0";
 	      *cc_valid_p = 0;
 	      return SHIFT_SPECIAL;
 	    }
