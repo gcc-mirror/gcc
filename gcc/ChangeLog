@@ -109,7 +109,7 @@ Sun Feb 18 15:45:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* jump.c (jump_optimize_1): Only define reversed_code #ifdef HAVE_trap.
 
 	* config/sparc/sparc.c (eligible_for_epilogue_delay): Don't put
-	assignments from FP constants sonce 'Y' output code can't handle it.
+	assignments from FP constants since 'Y' output code can't handle it.
 	(eligible_for_sibcall_delay): Likewise.
 
 	* flow.c (print_rtl_and_abort_fcn): Renamed from print_rtl_and_abort.
