@@ -216,6 +216,7 @@ static rtx remap_split_bivs PARAMS ((rtx));
 static rtx find_common_reg_term PARAMS ((rtx, rtx));
 static rtx subtract_reg_term PARAMS ((rtx, rtx));
 static rtx loop_find_equiv_value PARAMS ((const struct loop *, rtx));
+static rtx ujump_to_loop_cont PARAMS ((rtx, rtx));
 
 /* Try to unroll one loop and split induction variables in the loop.
 
@@ -348,6 +349,14 @@ unroll_loop (loop, insn_count, end_insert_before, strength_reduce_p)
 
   if (loop_info->n_iterations == 1)
     {
+      /* Handle the case where the loop begins with an unconditional
+	 jump to the loop condition.  Make sure to delete the jump
+	 insn, otherwise the loop body will never execute.  */
+
+      rtx ujump = ujump_to_loop_cont (loop->start, loop->cont);
+      if (ujump)
+	delete_insn (ujump);
+	
       /* If number of iterations is exactly 1, then eliminate the compare and
 	 branch at the end of the loop since they will never be taken.
 	 Then return, since no other action is needed here.  */
@@ -4152,3 +4161,41 @@ set_dominates_use (regno, first_uid, last_uid, copy_start, copy_end)
   /* FIRST_UID is always executed if LAST_UID is executed.  */
   return 1;
 }
+
+/* This routine is called when the number of iterations for the unrolled
+   loop is one.   The goal is to identify a loop that begins with an
+   unconditional branch to the loop continuation note (or a label just after).
+   In this case, the unconditional branch that starts the loop needs to be
+   deleted so that we execute the single iteration.  */
+static rtx
+ujump_to_loop_cont (loop_start, loop_cont)
+      rtx loop_start;
+      rtx loop_cont;
+{
+  rtx x, label, label_ref;
+
+  /* See if loop start, or the next insn is an unconditional jump.  */
+  loop_start = next_nonnote_insn (loop_start);
+
+  x = pc_set (loop_start);
+  if (!x)
+    return NULL_RTX;
+
+  label_ref = SET_SRC (x);
+  if (!label_ref)
+    return NULL_RTX;
+
+  /* Examine insn after loop continuation note.  Return if not a label.  */
+  label = next_nonnote_insn (loop_cont);
+  if (label == 0 || GET_CODE (label) != CODE_LABEL)
+    return NULL_RTX;
+
+  /* Return the loop start if the branch label matches the code label.  */
+  if (CODE_LABEL_NUMBER (label) == CODE_LABEL_NUMBER (XEXP (label_ref,0)))
+    return loop_start;
+  else
+    return NULL_RTX;
+
+}
+
+
