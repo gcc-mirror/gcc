@@ -41,6 +41,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 rtx hppa_compare_op0, hppa_compare_op1;
 enum cmp_type hppa_branch_type;
 
+rtx hppa_save_pic_table_rtx;
+
 /* Set by the FUNCTION_PROFILER macro. */
 int hp_profile_labelno;
 
@@ -492,9 +494,18 @@ initialize_pic ()
 void
 finalize_pic ()
 {
-  /* Need to emit this whether or not we obey regdecls,
-     since setjmp/longjmp can cause life info to screw up.  */
+  if (hppa_save_pic_table_rtx)
+    {
+      emit_insn_after (gen_rtx (SET, VOIDmode,
+				hppa_save_pic_table_rtx,
+				gen_rtx (REG, Pmode, 19)),
+		       get_insns ());
+      /* Need to emit this whether or not we obey regdecls,
+	 since setjmp/longjmp can cause life info to screw up.  */
+      hppa_save_pic_table_rtx = 0;
+    }
   emit_insn (gen_rtx (USE, VOIDmode, pic_offset_table_rtx));
+
 }
 
 /* For the HPPA, REG and REG+CONST is cost 0
