@@ -4186,9 +4186,8 @@ lookup_template_class (d1, arglist, in_decl, context, entering_scope, complain)
                  Create the partial instantiation.
                */
               TREE_VEC_LENGTH (arglist)--;
-              template = tsubst (template, arglist, /*complain=*/0, NULL_TREE);
+              found = tsubst (template, arglist, /*complain=*/0, NULL_TREE);
               TREE_VEC_LENGTH (arglist)++;
-              found = template;
             }
 	}
 
