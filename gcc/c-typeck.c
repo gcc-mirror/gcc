@@ -574,6 +574,11 @@ comptypes (type1, type2)
 	val = 1;
       break;
 
+    case VECTOR_TYPE:
+      /* The target might allow certain vector types to be compatible.  */
+      val = (*targetm.vector_types_compatible) (t1, t2);
+      break;
+
     default:
       break;
     }
@@ -4064,6 +4069,10 @@ convert_for_assignment (type, rhs, errtype, fundecl, funname, parmnum)
       rhs = build1 (NOP_EXPR, type, rhs);
       return rhs;
     }
+  /* Some types can interconvert without explicit casts.  */
+  else if (codel == VECTOR_TYPE && coder == VECTOR_TYPE
+	   && (*targetm.vector_types_compatible) (type, rhstype))
+    return convert (type, rhs);
   /* Arithmetic types all interconvert, and enum is treated like int.  */
   else if ((codel == INTEGER_TYPE || codel == REAL_TYPE 
 	    || codel == ENUMERAL_TYPE || codel == COMPLEX_TYPE

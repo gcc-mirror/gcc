@@ -256,6 +256,10 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #define TARGET_VALID_POINTER_MODE default_valid_pointer_mode
 #endif
 
+#ifndef TARGET_VECTOR_TYPES_COMPATIBLE
+#define TARGET_VECTOR_TYPES_COMPATIBLE hook_bool_tree_tree_false
+#endif
+
 /* In hook.c.  */
 #define TARGET_CANNOT_MODIFY_JUMPS_P hook_bool_void_false
 #define TARGET_CANNOT_FORCE_CONST_MEM hook_bool_rtx_false
@@ -303,6 +307,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
   TARGET_ENCODE_SECTION_INFO,			\
   TARGET_STRIP_NAME_ENCODING,			\
   TARGET_VALID_POINTER_MODE,                    \
+  TARGET_VECTOR_TYPES_COMPATIBLE,		\
   TARGET_RTX_COSTS,				\
   TARGET_ADDRESS_COST,				\
   TARGET_HAVE_NAMED_SECTIONS,			\
