@@ -459,9 +459,10 @@ gen_split (split)
   int operands;
 
   if (XVEC (split, 0) == 0)
-    fatal ("define_split %d lacks a pattern", insn_index_number);
+    fatal ("define_split (definition %d) lacks a pattern", insn_index_number);
   else if (XVEC (split, 2) == 0)
-    fatal ("define_split %d lacks a replacement pattern", insn_index_number);
+    fatal ("define_split (definition %d) lacks a replacement pattern",
+	   insn_index_number);
 
   /* Find out how many operands this function has.  */
 
