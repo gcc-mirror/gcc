@@ -1,3 +1,9 @@
+2004-12-11  Roger Sayle  <roger@eyesopen.com>
+
+	PR middle-end/18921
+	* fold-const.c (fold_unwidened_comparison): Use omit_one_operand
+	instead of constant_boolean_node as arg0 may have side-effects.
+
 2004-12-10  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa-host.c (pa_gt_pch_use_address): Use lseek and read to copy PCH

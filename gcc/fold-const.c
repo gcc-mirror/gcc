@@ -6023,27 +6023,27 @@ fold_widened_comparison (enum tree_code code, tree type, tree arg0, tree arg1)
     {
     case EQ_EXPR:
       if (above || below)
-	return constant_boolean_node (false, type);
+	return omit_one_operand (type, integer_zero_node, arg0);
       break;
 
     case NE_EXPR:
       if (above || below)
-	return constant_boolean_node (true, type);
+	return omit_one_operand (type, integer_one_node, arg0);
       break;
 
     case LT_EXPR:
     case LE_EXPR:
       if (above)
-	return constant_boolean_node (true, type);
+	return omit_one_operand (type, integer_one_node, arg0);
       else if (below)
-	return constant_boolean_node (false, type);;
+	return omit_one_operand (type, integer_zero_node, arg0);
 
     case GT_EXPR:
     case GE_EXPR:
       if (above)
-	return constant_boolean_node (false, type);
+	return omit_one_operand (type, integer_zero_node, arg0);
       else if (below)
-	return constant_boolean_node (true, type);;
+	return omit_one_operand (type, integer_one_node, arg0);
 
     default:
       break;
