@@ -67,21 +67,12 @@ Boston, MA 02111-1307, USA.  */
    object constructed before entering `main'. */
    
 #undef	STARTFILE_SPEC
-#if 0
-#define STARTFILE_SPEC \
-  "%{!shared: \
-     %{pg:gcrt1.o%s} %{!pg:%{p:gcrt1.o%s} \
-		       %{!p:%{profile:gcrt1.o%s} \
-			 %{!profile:crt1.o%s%}}}} \
-   crti.o%s %{!shared:crtbegin.o%s} %{shared:crtbeginS.o%s}"
-#else
 #define STARTFILE_SPEC \
   "%{!shared: \
      %{pg:gcrt1.o%s} %{!pg:%{p:gcrt1.o%s} \
 		       %{!p:%{profile:gcrt1.o%s} \
 			 %{!profile:crt1.o%s}}}} \
-   crti.o%s crtbegin.o%s"
-#endif
+   crti.o%s %{!shared:crtbegin.o%s} %{shared:crtbeginS.o%s}"
 
 /* Provide a ENDFILE_SPEC appropriate for Linux.  Here we tack on
    the Linux magical crtend.o file (see crtstuff.c) which
@@ -90,10 +81,25 @@ Boston, MA 02111-1307, USA.  */
    Linux "finalizer" file, `crtn.o'.  */
 
 #undef	ENDFILE_SPEC
-#if 0
 #define ENDFILE_SPEC \
   "%{!shared:crtend.o%s} %{shared:crtendS.o%s} crtn.o%s"
+
+/* This is for -profile to use -lc_p instead of -lc. */
+#undef  CC1_SPEC
+#define CC1_SPEC "%{profile:-p}"
+
+#undef	LIB_SPEC
+#if 1
+/* We no longer link with libc_p.a or libg.a by default. If you
+ * want to profile or debug the Linux C library, please add
+ * -profile or -ggdb to LDFLAGS at the link time, respectively.
+ */
+#define LIB_SPEC \
+  "%{!shared: %{p:-lgmon} %{pg:-lgmon} %{profile:-lgmon -lc_p} \
+     %{!profile:%{!ggdb:-lc} %{ggdb:-lg}}}"
 #else
-#define ENDFILE_SPEC \
-  "crtend.o%s crtn.o%s"
+#define LIB_SPEC \
+  "%{!shared: \
+     %{p:-lgmon -lc_p} %{pg:-lgmon -lc_p} \
+       %{!p:%{!pg:%{!g*:-lc} %{g*:-lg}}}}"
 #endif
