@@ -275,6 +275,10 @@ extern int flag_volatile_global;
 
 extern int flag_fast_math;
 
+/* Nonzero means to run loop optimizations twice.  */
+
+extern int flag_rerun_loop_opt;
+
 /* Nonzero means make functions that look like good inline candidates
    go inline.  */
 

@@ -508,7 +508,7 @@ static int flag_rerun_cse_after_loop;
 
 /* Nonzero means to run loop optimizations twice.  */
 
-static int flag_rerun_loop_opt;
+int flag_rerun_loop_opt;
 
 /* Nonzero for -finline-functions: ok to inline functions that look like
    good inline candidates.  */
