@@ -1495,10 +1495,11 @@ calculate_giv_inc (pattern, src_insn, regno)
       if (GET_CODE (increment) == LO_SUM)
 	increment = XEXP (increment, 1);
       else if (GET_CODE (increment) == IOR
-	       || GET_CODE (increment) == ASHIFT)
+	       || GET_CODE (increment) == ASHIFT
+	       || GET_CODE (increment) == PLUS)
 	{
 	  /* The rs6000 port loads some constants with IOR.
-	     The alpha port loads some constants with ASHIFT.  */
+	     The alpha port loads some constants with ASHIFT and PLUS.  */
 	  rtx second_part = XEXP (increment, 1);
 	  enum rtx_code code = GET_CODE (increment);
 
@@ -1513,6 +1514,8 @@ calculate_giv_inc (pattern, src_insn, regno)
 
 	  if (code == IOR)
 	    increment = GEN_INT (INTVAL (increment) | INTVAL (second_part));
+	  else if (code == PLUS)
+	    increment = GEN_INT (INTVAL (increment) + INTVAL (second_part));
 	  else
 	    increment = GEN_INT (INTVAL (increment) << INTVAL (second_part));
 	}
