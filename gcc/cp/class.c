@@ -5270,8 +5270,24 @@ finish_struct (tree t, tree attributes)
 
   if (processing_template_decl)
     {
+      tree x;
+
       finish_struct_methods (t);
       TYPE_SIZE (t) = bitsize_zero_node;
+
+      /* We need to emit an error message if this type was used as a parameter
+	 and it is an abstract type, even if it is a template. We construct
+	 a simple CLASSTYPE_PURE_VIRTUALS list without taking bases into
+	 account and we call complete_vars with this type, which will check
+	 the PARM_DECLS. Note that while the type is being defined,
+	 CLASSTYPE_PURE_VIRTUALS contains the list of the inline friends
+	 (see CLASSTYPE_INLINE_FRIENDS) so we need to clear it.  */
+      CLASSTYPE_PURE_VIRTUALS (t) = NULL_TREE;
+      for (x = TYPE_METHODS (t); x; x = TREE_CHAIN (x))
+	if (DECL_PURE_VIRTUAL_P (x))
+	  CLASSTYPE_PURE_VIRTUALS (t)
+	    = tree_cons (NULL_TREE, x, CLASSTYPE_PURE_VIRTUALS (t));
+      complete_vars (t);
     }
   else
     finish_struct_1 (t);

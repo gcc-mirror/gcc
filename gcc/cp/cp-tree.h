@@ -4315,6 +4315,7 @@ extern void cxx_incomplete_type_error		(tree, tree);
 extern tree error_not_base_type			(tree, tree);
 extern tree binfo_or_else			(tree, tree);
 extern void readonly_error			(tree, const char *, int);
+extern void complete_type_check_abstract	(tree);
 extern int abstract_virtuals_error		(tree, tree);
 
 extern tree store_init_value			(tree, tree);

@@ -4821,21 +4821,12 @@ cp_finish_decl (tree decl, tree init, tree asmspec_tree, int flags)
 
       make_rtl_for_nonlocal_decl (decl, init, asmspec);
 
+      /* Check for abstractness of the type. Notice that there is no
+	 need to strip array types here since the check for those types
+	 is already done within create_array_type_for_decl.  */
       if (TREE_CODE (type) == FUNCTION_TYPE
 	  || TREE_CODE (type) == METHOD_TYPE)
-	abstract_virtuals_error (decl,
-				 strip_array_types (TREE_TYPE (type)));
-      else if (POINTER_TYPE_P (type) || TREE_CODE (type) == ARRAY_TYPE)
-      {
-	/* If it's either a pointer or an array type, strip through all
-	   of them but the last one. If the last is an array type, issue 
-	   an error if the element type is abstract.  */
-	while (POINTER_TYPE_P (TREE_TYPE (type)) 
-	       || TREE_CODE (TREE_TYPE (type)) == ARRAY_TYPE)
-	  type = TREE_TYPE (type);
-	if (TREE_CODE (type) == ARRAY_TYPE)
-	  abstract_virtuals_error (decl, TREE_TYPE (type));
-      }
+	abstract_virtuals_error (decl, TREE_TYPE (type));
       else
 	abstract_virtuals_error (decl, type);
 
@@ -6161,6 +6152,11 @@ create_array_type_for_decl (tree name, tree type, tree size)
   /* Figure out the index type for the array.  */
   if (size)
     itype = compute_array_index_type (name, size);
+
+  /* [dcl.array]
+     T is called the array element type; this type shall not be [...] an
+     abstract class type.  */
+  abstract_virtuals_error (name, type);
 
   return build_cplus_array_type (type, itype);
 }
@@ -10592,6 +10588,9 @@ complete_vars (tree type)
       else
 	list = &TREE_CHAIN (*list);
     }
+
+  /* Check for pending declarations which may have abstract type.  */
+  complete_type_check_abstract (type);
 }
 
 /* If DECL is of a type which needs a cleanup, build that cleanup

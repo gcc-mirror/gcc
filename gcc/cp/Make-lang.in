@@ -99,7 +99,7 @@ $(srcdir)/cp/cfns.h: $(srcdir)/cp/cfns.gperf
 
 gtype-cp.h gt-cp-call.h gt-cp-decl.h gt-cp-decl2.h : s-gtype; @true
 gt-cp-pt.h gt-cp-repo.h gt-cp-parser.h gt-cp-method.h : s-gtype; @true
-gt-cp-tree.h gt-cp-mangle.h gt-cp-name-lookup.h: s-gtype; @true
+gt-cp-tree.h gt-cp-mangle.h gt-cp-name-lookup.h gt-cp-typeck2.h: s-gtype; @true
 
 #
 # Build hooks:
@@ -231,7 +231,7 @@ cp/decl.o: cp/decl.c $(CXX_TREE_H) $(TM_H) flags.h cp/decl.h stack.h \
 cp/decl2.o: cp/decl2.c $(CXX_TREE_H) $(TM_H) flags.h cp/decl.h $(EXPR_H) \
   output.h except.h toplev.h $(RTL_H) c-common.h gt-cp-decl2.h cgraph.h
 cp/typeck2.o: cp/typeck2.c $(CXX_TREE_H) $(TM_H) flags.h toplev.h output.h $(TM_P_H) \
-   diagnostic.h
+   diagnostic.h gt-cp-typeck2.h
 cp/typeck.o: cp/typeck.c $(CXX_TREE_H) $(TM_H) flags.h $(RTL_H) $(EXPR_H) toplev.h \
    diagnostic.h convert.h
 cp/class.o: cp/class.c $(CXX_TREE_H) $(TM_H) flags.h toplev.h $(RTL_H) $(TARGET_H) convert.h
