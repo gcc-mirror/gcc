@@ -1,3 +1,8 @@
+Tue Mar  3 01:58:11 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* decl.c (start_function): Don't call temporary_allocation for a
+	nested function.
+
 Mon Nov 24 12:15:55 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* typeck.c (mark_addressable): Don't assume a FUNCTION_DECL

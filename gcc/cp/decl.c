@@ -11615,8 +11615,11 @@ start_function (declspecs, declarator, attrs, pre_parsed_p)
       TREE_THIS_VOLATILE (DECL_RESULT (decl1)) = TYPE_VOLATILE (restype);
     }
 
-    /* Allocate further tree nodes temporarily during compilation
-       of this function only.  Tiemann moved up here from bottom of fn.  */
+  /* Allocate further tree nodes temporarily during compilation
+     of this function only.  Tiemann moved up here from bottom of fn.  */
+  /* If this is a nested function, then we must continue to allocate RTL
+     on the permanent obstack in case we need to inline it later.  */
+  if (! hack_decl_function_context (decl1))
     temporary_allocation ();
 
   if (processing_template_decl)
