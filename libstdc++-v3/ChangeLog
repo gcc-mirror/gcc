@@ -1,3 +1,7 @@
+2004-08-17  Paolo Carlini  <pcarlini@suse.de>
+
+	* config/abi/ia64-linux-gnu/baseline_symbols.txt: Update to 3.4.0.
+
 2004-08-17  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* config/abi/i486-linux-gnu/baseline_symbols.txt: Update to 3.4.0.
