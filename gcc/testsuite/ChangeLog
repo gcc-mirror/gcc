@@ -1,3 +1,9 @@
+2002-02-04  Ben Elliston  <bje@redhat.com>
+
+	* lib/gcc.exp (gcc_init): Check that the need_status_wrapper
+	target_info attribute != 0, in addition to the empty string.
+	(gcc_target_compile): Likewise.
+
 2002-02-03  Andrew Cagney  <ac131313@redhat.com>
 
 	* gcc.dg/Wswitch.c: New test.
