@@ -37,8 +37,11 @@ exception statement from your version. */
 
 
 package javax.naming.event;
-import javax.naming.*;
+
 import java.util.EventObject;
+import javax.naming.Context;
+import javax.naming.Name;
+import javax.naming.NamingException;
  
 /**
  * @author Warren Levy <warrenl@redhat.com>

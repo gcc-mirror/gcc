@@ -37,9 +37,11 @@ exception statement from your version. */
 
 
 package javax.naming.spi;
-import javax.naming.*;
-import javax.naming.directory.*;
+
 import java.util.Hashtable;
+import javax.naming.Context;
+import javax.naming.Name;
+import javax.naming.directory.Attributes;
  
 /**
  * @author Warren Levy <warrenl@redhat.com>

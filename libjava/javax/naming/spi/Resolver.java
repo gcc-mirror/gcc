@@ -37,7 +37,9 @@ exception statement from your version. */
 
 
 package javax.naming.spi;
-import javax.naming.*;
+
+import javax.naming.Name;
+import javax.naming.NamingException;
  
 /**
  * @author Warren Levy <warrenl@redhat.com>

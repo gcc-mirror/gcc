@@ -37,8 +37,9 @@ exception statement from your version. */
 
 
 package javax.naming.ldap;
-import javax.naming.*;
-import javax.naming.directory.*;
+
+import javax.naming.NamingException;
+import javax.naming.directory.DirContext;
  
 /**
  * @author Warren Levy <warrenl@redhat.com>

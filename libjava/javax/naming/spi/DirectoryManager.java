@@ -38,11 +38,19 @@ exception statement from your version. */
 
 package javax.naming.spi;
 
-import javax.naming.*;
-import javax.naming.directory.*;
+import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.StringTokenizer;
-import java.util.Enumeration;
+import javax.naming.CannotProceedException;
+import javax.naming.Context;
+import javax.naming.Name;
+import javax.naming.NamingException;
+import javax.naming.RefAddr;
+import javax.naming.Reference;
+import javax.naming.Referenceable;
+import javax.naming.StringRefAddr;
+import javax.naming.directory.Attributes;
+import javax.naming.directory.DirContext;
 
 /**
  * @author Tom Tromey <tromey@redhat.com>

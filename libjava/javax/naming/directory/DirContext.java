@@ -38,7 +38,10 @@ exception statement from your version. */
 
 package javax.naming.directory;
 
-import javax.naming.*;
+import javax.naming.Context;
+import javax.naming.Name;
+import javax.naming.NamingEnumeration;
+import javax.naming.NamingException;
 
 /**
  * @author Warren Levy <warrenl@redhat.com>

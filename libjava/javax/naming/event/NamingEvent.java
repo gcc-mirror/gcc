@@ -37,8 +37,9 @@ exception statement from your version. */
 
 
 package javax.naming.event;
-import javax.naming.*;
+
 import java.util.EventObject;
+import javax.naming.Binding;
  
 /**
  * @author Warren Levy <warrenl@redhat.com>
