@@ -1,7 +1,7 @@
 2001-10-20  Brendan Kehoe  <brendan@zen.org>
 
-	* include/bits/type_traits.h (__Boolean): Renamed template from _Bool.
-	(__true_type, __false_type): Change usage.
+	* bits/type_traits.h (_Bool): Removed this type.
+	(__true_type, __false_type): Change to be plain structs.
 	* src/string-inst.cc (__destroy_aux): Change third parm to be
 	__false_type instead of _Bool<false>.
 	* src/misc-inst.cc (__uninitialized_fill_n_aux,
