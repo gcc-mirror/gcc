@@ -2271,7 +2271,7 @@ demangle_qualified (work, mangled, result, isfuncname, append)
       int idx;
       (*mangled)++;
       idx = consume_count_with_underscores (mangled);
-      if (idx == -1 || idx > work -> numk)
+      if (idx == -1 || idx >= work -> numk)
         success = 0;
       else
         string_append (&temp, work -> ktypevec[idx]);
@@ -2359,7 +2359,7 @@ demangle_qualified (work, mangled, result, isfuncname, append)
           int idx;
           (*mangled)++;
           idx = consume_count_with_underscores (mangled);
-          if (idx == -1 || idx > work->numk)
+          if (idx == -1 || idx >= work->numk)
             success = 0;
           else
             string_append (&temp, work->ktypevec[idx]);
