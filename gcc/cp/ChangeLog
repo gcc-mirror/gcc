@@ -1,3 +1,7 @@
+Sun Nov 30 08:42:29 1997  Bruno Haible  <bruno@linuix.mathematik.uni-karlsruhe.de>
+
+	* pt.c (do_poplevel): Allow jumps into the block.
+
 Fri Nov 28 12:35:19 1997  Scott Christley  <scottc@net-community.com>
 
 	* repo.c: Prototype rindex only if needed.
