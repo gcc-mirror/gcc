@@ -1,3 +1,15 @@
+Wed Dec  9 15:29:26 1998  Dave Brolley  <brolley@cygnus.com>
+
+	* objc/objc-act.c (cpp_initialized): Removed.
+	(lang_init_options): Initialize cpplib.
+	(lang_decode_option): Move initialization of cpplib to
+	lang_init_options.
+	* c-lang.c: (parse_options,parse_in): Added.
+	(lang_init_options): Initialized cpplib here.
+	* c-decl.c (parse_options,cpp_initialized): Removed.
+	(c_decode_option): Move initialization of cpplib to
+	lang_init_options.
+
 Wed Dec  9 19:36:57 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* reload1.c (reload_combine, reload_combine_note_store):
