@@ -1,3 +1,9 @@
+2004-09-10  Ziemowit Laski  <zlaski@apple.com>
+
+        * decl.c (objc_mark_locals_volatile): Make description of 
+	routine more descriptive; only mark VAR_DECLs at each
+	binding level.
+
 2004-09-10  Richard Henderson  <rth@redhat.com>
 
 	PR c++/17386
