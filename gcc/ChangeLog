@@ -70,6 +70,12 @@
 	converting it to a double.  Handle the case where a normal value
 	rounds to infinity.
 
+2004-02-14  Olivier Hainque  <hainque@act-europe.fr>
+
+	* loop.c (check_dbra_loop): Use gen_int_mode instead of GEN_INT
+	for start_value when it is directly moved into reg, and factorize
+	the retrieval of GET_MODE (reg).
+
 2004-02-13  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* configure.ac: Search for as, ld below libexec/gcc.
