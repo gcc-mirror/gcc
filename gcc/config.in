@@ -41,7 +41,7 @@
 /* Whether atol must be declared even if <stdlib.h> is included.  */
 #undef NEED_DECLARATION_ATOL
 
-/* Whether sbrk must be declared even if <unistd.h> is included.  */
+/* Whether sbrk must be declared even if <stdlib.h> is included.  */
 #undef NEED_DECLARATION_SBRK
 
 /* Whether abort must be declared even if <stdlib.h> is included.  */
@@ -100,6 +100,9 @@
 
 /* Define if you have the strtoul function.  */
 #undef HAVE_STRTOUL
+
+/* Define if you have the sysconf function.  */
+#undef HAVE_SYSCONF
 
 /* Define if you have the vprintf function.  */
 #undef HAVE_VPRINTF

@@ -361,6 +361,7 @@ int optimize = 0;
    They won't actually be used.  */
 
 struct _global_rtl global_rtl;
+rtx pic_offset_table_rtx;
 
 static rtx attr_rtx		PVPROTO((enum rtx_code, ...));
 #ifdef HAVE_VPRINTF

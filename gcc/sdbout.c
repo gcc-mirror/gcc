@@ -1,5 +1,5 @@
 /* Output sdb-format symbol table information from GNU compiler.
-   Copyright (C) 1988, 92, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1988, 92-97, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -574,6 +574,9 @@ plain_type_1 (type, level)
 #ifdef EXTENDED_SDB_BASIC_TYPES
 	if (precision == LONG_DOUBLE_TYPE_SIZE)
 	  return T_LNGDBL;
+#else
+	if (precision == LONG_DOUBLE_TYPE_SIZE)
+	  return T_DOUBLE;	/* better than nothing */
 #endif
 	return 0;
       }
@@ -1066,8 +1069,9 @@ sdbout_field_types (type)
      tree type;
 {
   tree tail;
+
   for (tail = TYPE_FIELDS (type); tail; tail = TREE_CHAIN (tail))
-    if (TREE_CODE (TREE_TYPE (tail)) == POINTER_TYPE)
+    if (POINTER_TYPE_P (TREE_TYPE (tail)))
       sdbout_one_type (TREE_TYPE (TREE_TYPE (tail)));
     else
       sdbout_one_type (TREE_TYPE (tail));

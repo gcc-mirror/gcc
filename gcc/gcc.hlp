@@ -86,9 +86,6 @@
  In the case of the sharable library, only one  library  needs  to  be
  linked to.
 
- If you need to link to libg++, it  is  easiest  to  use  the  command
- procedure supplied with libg++ to link your program.
-
 2 /CASE_HACK
 
    /[NO]CASE_HACK      D=/CASE_HACK

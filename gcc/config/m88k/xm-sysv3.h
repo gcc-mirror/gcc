@@ -19,8 +19,6 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#include "m88k/xm-m88k.h"
-
 #define R_OK 4
 #define W_OK 2
 #define X_OK 1

@@ -5639,10 +5639,11 @@ move\\t%0,%z4\\n\\
 
 (define_insn "loadgp"
   [(set (reg:DI 28)
-	(unspec_volatile:DI [(match_operand:DI 0 "address_operand" "")] 2))
+	(unspec_volatile:DI [(match_operand:DI 0 "address_operand" "")
+			     (match_operand:DI 1 "register_operand" "")] 2))
    (clobber (reg:DI 1))]
   ""
-  "%[lui\\t$1,%%hi(%%neg(%%gp_rel(%a0)))\\n\\taddiu\\t$1,$1,%%lo(%%neg(%%gp_rel(%a0)))\\n\\tdaddu\\t$gp,$1,$25%]"
+  "%[lui\\t$1,%%hi(%%neg(%%gp_rel(%a0)))\\n\\taddiu\\t$1,$1,%%lo(%%neg(%%gp_rel(%a0)))\\n\\tdaddu\\t$gp,$1,%1%]"
   [(set_attr "type"	"move")
    (set_attr "mode"	"DI")
    (set_attr "length"	"3")])

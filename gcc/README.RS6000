@@ -120,4 +120,3 @@ an assembler modified after October 16th, 1995 in order to build the GNU C
 compiler.  This is because the GNU C compiler wants to build a variant of its
 library, libgcc.a with the -mcpu=common switch to support building programs
 that can run on either the Power or PowerPC machines.
-

@@ -1,5 +1,5 @@
 /* Lexical analyzer for C and Objective C.
-   Copyright (C) 1987, 88, 89, 92, 94-96, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 92, 94-97, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1513,8 +1513,8 @@ yylex ()
 	if (floatflag != NOT_FLOAT)
 	  {
 	    tree type = double_type_node;
-	    int exceeds_double = 0;
 	    int imag = 0;
+	    int conversion_errno = 0;
 	    REAL_VALUE_TYPE value;
 	    jmp_buf handler;
 
@@ -1543,7 +1543,6 @@ yylex ()
 	      }
 
 	    *p = 0;
-	    errno = 0;
 
 	    /* Convert string to a double, checking for overflow.  */
 	    if (setjmp (handler))
@@ -1613,7 +1612,9 @@ yylex ()
 		      error ("both `f' and `l' in floating constant");
 
 		    type = float_type_node;
+		    errno = 0;
 		    value = REAL_VALUE_ATOF (copy, TYPE_MODE (type));
+		    conversion_errno = errno;
 		    /* A diagnostic is required here by some ANSI C testsuites.
 		       This is not pedwarn, become some people don't want
 		       an error for this.  */
@@ -1623,13 +1624,17 @@ yylex ()
 		else if (lflag)
 		  {
 		    type = long_double_type_node;
+		    errno = 0;
 		    value = REAL_VALUE_ATOF (copy, TYPE_MODE (type));
+		    conversion_errno = errno;
 		    if (REAL_VALUE_ISINF (value) && pedantic)
 		      warning ("floating point number exceeds range of `long double'");
 		  }
 		else
 		  {
+		    errno = 0;
 		    value = REAL_VALUE_ATOF (copy, TYPE_MODE (type));
+		    conversion_errno = errno;
 		    if (REAL_VALUE_ISINF (value) && pedantic)
 		      warning ("floating point number exceeds range of `double'");
 		  }
@@ -1637,17 +1642,12 @@ yylex ()
 		set_float_handler (NULL_PTR);
 	    }
 #ifdef ERANGE
-	    if (errno == ERANGE && !flag_traditional && pedantic)
-	      {
-  		/* ERANGE is also reported for underflow,
-  		   so test the value to distinguish overflow from that.  */
-		if (REAL_VALUES_LESS (dconst1, value)
-		    || REAL_VALUES_LESS (value, dconstm1))
-		  {
-		    warning ("floating point number exceeds range of `double'");
-		    exceeds_double = 1;
-		  }
-	      }
+	    /* ERANGE is also reported for underflow,
+	       so test the value to distinguish overflow from that.  */
+	    if (conversion_errno == ERANGE && !flag_traditional && pedantic
+		&& (REAL_VALUES_LESS (dconst1, value)
+		    || REAL_VALUES_LESS (value, dconstm1)))
+	      warning ("floating point number exceeds range of `double'");
 #endif
 
 	    /* If the result is not a number, assume it must have been

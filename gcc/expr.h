@@ -1,5 +1,5 @@
 /* Definitions for code generation pass of GNU compiler.
-   Copyright (C) 1987, 91-96, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1987, 91-97, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -138,7 +138,7 @@ extern int target_temp_slot_level;
 
 struct args_size
 {
-  int constant;
+  HOST_WIDE_INT constant;
   tree var;
 };
 #endif
@@ -198,6 +198,11 @@ enum direction {none, upward, downward};  /* Value has this type.  */
   
 #ifndef FUNCTION_ARG_BOUNDARY
 #define FUNCTION_ARG_BOUNDARY(MODE, TYPE)	PARM_BOUNDARY
+#endif
+
+/* Provide a default value for STRICT_ARGUMENT_NAMING.  */
+#ifndef STRICT_ARGUMENT_NAMING
+#define STRICT_ARGUMENT_NAMING 0
 #endif
 
 /* Nonzero if we do not know how to pass TYPE solely in registers.
@@ -729,7 +734,7 @@ extern rtx gen_push_operand PROTO((void));
 #ifdef TREE_CODE
 /* Generate code to push something onto the stack, given its mode and type.  */
 extern void emit_push_insn PROTO((rtx, enum machine_mode, tree, rtx, int,
-				  int, rtx, int, rtx, rtx));
+				  int, rtx, int, rtx, rtx, int));
 
 /* Emit library call.  */
 extern void emit_library_call PVPROTO((rtx orgfun, int no_queue,

@@ -1,7 +1,7 @@
 /* Definitions for Linux-based GNU systems with ELF format
-   Copyright (C) 1995, 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996, 1997, 1998 Free Software Foundation, Inc.
    Contributed by Eric Youngdale.
-   Modified for stabs-in-ELF by H.J. Lu.
+   Modified for stabs-in-ELF by H.J. Lu (hjl@lucon.org).
 
 This file is part of GNU CC.
 

@@ -1,5 +1,5 @@
 /* Output routines for GCC for ARM/RISCiX.
-   Copyright (C) 1991, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1991, 93, 94, 95, 96, 97, 1998 Free Software Foundation, Inc.
    Contributed by Pieter `Tiggr' Schoenmakers (rcpieter@win.tue.nl)
    and Martin Simmons (@harleqn.co.uk).
    More major hacks by Richard Earnshaw (rwe11@cl.cam.ac.uk)
@@ -3271,6 +3271,16 @@ arm_reload_in_hi (operands)
   rtx base = find_replacement (&XEXP (operands[1], 0));
 
   emit_insn (gen_zero_extendqisi2 (operands[2], gen_rtx (MEM, QImode, base)));
+  /* Handle the case where the address is too complex to be offset by 1.  */
+  if (GET_CODE (base) == MINUS
+      || (GET_CODE (base) == PLUS && GET_CODE (XEXP (base, 1)) != CONST_INT))
+    {
+      rtx base_plus = gen_rtx (REG, SImode, REGNO (operands[0]));
+
+      emit_insn (gen_rtx (SET, VOIDmode, base_plus, base));
+      base = base_plus;
+    }
+
   emit_insn (gen_zero_extendqisi2 (gen_rtx (SUBREG, SImode, operands[0], 0),
 				   gen_rtx (MEM, QImode, 
 					    plus_constant (base, 1))));
@@ -3524,6 +3534,7 @@ find_barrier (from, max_count)
 {
   int count = 0;
   rtx found_barrier = 0;
+  rtx last = from;
 
   while (from && count < max_count)
     {
@@ -3537,11 +3548,12 @@ find_barrier (from, max_count)
 	  && CONSTANT_POOL_ADDRESS_P (SET_SRC (PATTERN (from))))
 	{
 	  rtx src = SET_SRC (PATTERN (from));
-	  count += 2;
+	  count += 8;
 	}
       else
 	count += get_attr_length (from);
 
+      last = from;
       from = NEXT_INSN (from);
     }
 
@@ -3552,7 +3564,7 @@ find_barrier (from, max_count)
       rtx label = gen_label_rtx ();
 
       if (from)
-	from = PREV_INSN (from);
+	from = PREV_INSN (last);
       else
 	from = get_last_insn ();
 

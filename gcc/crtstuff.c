@@ -1,6 +1,6 @@
 /* Specialized bits of code needed to support construction and
    destruction of file-scope objects in C++ code.
-   Copyright (C) 1991, 94-97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1991, 94, 95, 96, 97, 1998 Free Software Foundation, Inc.
    Contributed by Ron Guilmette (rfg@monkeys.com).
 
 This file is part of GNU CC.
@@ -389,10 +389,13 @@ __do_global_ctors_aux ()	/* prologue goes in .text section */
   asm (INIT_SECTION_ASM_OP);
   DO_GLOBAL_CTORS_BODY;
   ON_EXIT (__do_global_dtors, 0);
-#ifdef FORCE_INIT_SECTION_ALIGN
-  FORCE_INIT_SECTION_ALIGN;
-#endif
 }				/* epilogue and body go in .init section */
+
+#ifdef FORCE_INIT_SECTION_ALIGN
+FORCE_INIT_SECTION_ALIGN;
+#endif
+
+asm (TEXT_SECTION_ASM_OP);
 
 #endif /* OBJECT_FORMAT_ELF */
 

@@ -49,6 +49,9 @@ Boston, MA 02111-1307, USA.  */
 #include "rtl.h"
 #include "flags.h"
 #include "insn-attr.h"
+#include "insn-codes.h"
+#include "insn-config.h"
+#include "recog.h"
 #include "defaults.h"
 #include "output.h"
 #include "except.h"
@@ -993,8 +996,17 @@ get_run_time ()
 #ifdef USG
   {
     struct tms tms;
+#   if HAVE_SYSCONF && defined _SC_CLK_TCK
+#    define TICKS_PER_SECOND sysconf (_SC_CLK_TCK) /* POSIX 1003.1-1996 */
+#   else
+#    ifdef CLK_TCK
+#     define TICKS_PER_SECOND CLK_TCK /* POSIX 1003.1-1988; obsolescent */
+#    else
+#     define TICKS_PER_SECOND HZ /* traditional UNIX */
+#    endif
+#   endif
     times (&tms);
-    return (tms.tms_utime + tms.tms_stime) * (1000000 / HZ);
+    return (tms.tms_utime + tms.tms_stime) * (1000000 / TICKS_PER_SECOND);
   }
 #else
 #ifndef VMS
@@ -2485,7 +2497,14 @@ compile_file (name)
   /* Don't let the first function fall at the same address
      as gcc_compiled., if profiling.  */
   if (profile_flag || profile_block_flag)
-    assemble_zeros (UNITS_PER_WORD);
+    {
+      /* It's best if we can write a nop here since some
+	 assemblers don't tolerate zeros in the text section.  */
+      if (insn_template[CODE_FOR_nop] != 0)
+	output_asm_insn (insn_template[CODE_FOR_nop], NULL_PTR);
+      else
+	assemble_zeros (UNITS_PER_WORD);
+    }
 
   /* If dbx symbol table desired, initialize writing it
      and output the predefined types.  */
@@ -3572,7 +3591,8 @@ rest_of_compilation (decl)
 	     final (insns, asm_out_file, optimize, 0);
 	     final_end_function (insns, asm_out_file, optimize);
 	     assemble_end_function (decl, fnname);
-	     fflush (asm_out_file);
+	     if (! quiet_flag)
+	       fflush (asm_out_file);
 
 	     /* Release all memory held by regsets now */
 	     regset_release_memory ();

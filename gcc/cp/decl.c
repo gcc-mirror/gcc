@@ -1,6 +1,6 @@
-/* Process declarations and variables for C++ compiler.
-   Copyright (C) 1988, 92, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
-   Hacked by Michael Tiemann (tiemann@cygnus.com)
+/* Process declarations and variables for C compiler.
+   Copyright (C) 1988, 92-97, 1998 Free Software Foundation, Inc.
+   Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
 
@@ -170,7 +170,6 @@ static void record_builtin_type PROTO((enum rid, char *, tree));
 static int member_function_or_else PROTO((tree, tree, char *));
 static void bad_specifiers PROTO((tree, char *, int, int, int, int,
 				  int));
-static tree make_implicit_typename PROTO((tree, tree));
 
 /* a node which has tree code ERROR_MARK, and whose type is itself.
    All erroneous expressions are replaced with this node.  All functions

@@ -252,9 +252,10 @@ while [ $# != 0 ]; do
 # But the argument to egrep must be kept small, or many versions of egrep
 # won't be able to handle it.
 #
-# We use the pattern [!-.0-~] instead of [^/ 	] to match a noncomment
+# We use the pattern [!-.0-z{|}~] instead of [^/ 	] to match a noncomment
 # following #else or #endif because some buggy egreps think [^/] matches
 # newline, and they thus think `#else ' matches `#e[ndiflse]*[ 	]+[^/ 	]'.
+# [!-.0-~] does not work properly on AIX 4.1.
 #
 # We use the pattern [^a-zA-Z0-9_][_a-ce-km-z][a-z0-9] to match an identifier
 # following #if or #elif that is not surrounded by __.  The `a-ce-km-z'
@@ -263,7 +264,7 @@ while [ $# != 0 ]; do
 # identifiers below start with `d' or `l'.  It also greatly improves
 # performance, since many files contain lines of the form `#if ... defined ...'
 # or `#if lint'.
-    if egrep '//|[ 	_]_IO|CTRL|^#define.NULL|^#e[nl][ds][ief]*[ 	]+[!-.0-~]|^#[el]*if.*[^a-zA-Z0-9_][_a-ce-km-zA-Z][a-zA-Z0-9]' $file >/dev/null; then
+    if egrep '//|[ 	_]_IO|CTRL|^#define.NULL|^#e[nl][ds][ief]*[ 	]+[!-.0-z\{\|\}\~]|^#[el]*if.*[^a-zA-Z0-9_][_a-ce-km-zA-Z][a-zA-Z0-9]' $file >/dev/null; then
       if [ -r $file ]; then
 	cp $file $2/$file >/dev/null 2>&1	\
 	|| echo "Can't copy $file"
@@ -922,17 +923,21 @@ fi
 
 if [ -r ${LIB}/$file ]; then
   echo Fixing $file
+  if grep _GCC_SIZE_T ${LIB}/$file >/dev/null
+  then size_t_pattern='<<< do not double-wrap the size_t typedef >>>'
+  else size_t_pattern='typedef[ 	a-zA-Z_]*[ 	]size_t[ 	]*;'
+  fi
   sed -e 's/int	abort/void	abort/g' \
   -e 's/int	free/void	free/g' \
   -e 's/char[ 	]*\*[ 	]*calloc/void \*	calloc/g' \
   -e 's/char[ 	]*\*[ 	]*malloc/void \*	malloc/g' \
   -e 's/char[ 	]*\*[ 	]*realloc/void \*	realloc/g' \
   -e 's/int[ 	][ 	]*exit/void	exit/g' \
-  -e '/typedef[ 	a-zA-Z_]*[ 	]size_t[ 	]*;/i\
+  -e "/$size_t_pattern/"'i\
 #ifndef _GCC_SIZE_T\
 #define _GCC_SIZE_T
 ' \
-  -e '/typedef[ 	a-zA-Z_]*[ 	]size_t[ 	]*;/a\
+  -e "/$size_t_pattern/"'a\
 #endif
 ' \
       ${LIB}/$file > ${LIB}/${file}.sed
@@ -1856,6 +1861,7 @@ fi
 # comment.  Fortunately, HP/UX already uses #ifndefs in limits.h; if
 # we find a #ifndef FLT_MIN we assume that all the required #ifndefs
 # are there, and we do not add them ourselves.
+# Also fix a nested comment problem in sys/limits.h on Motorola sysV68 R3V7.1
 for file in limits.h sys/limits.h; do
   if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
     mkdir ${LIB}/sys 2>/dev/null
@@ -1905,6 +1911,7 @@ for file in limits.h sys/limits.h; do
 	  -e '/[ 	]DBL_DIG[ 	]/a\
 #endif
 '\
+	  -e '/^\(\/\*#define	HUGE_VAL	3\.[0-9e+]* *\)\/\*/s//\1/'\
 	${LIB}/$file > ${LIB}/${file}.sed
       rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
     fi
@@ -2871,7 +2878,7 @@ if [ -r ${LIB}/$file ]; then
 fi
 
 # sys/lc_core.h on some versions of OSF1/4.x pollutes the namespace by
-# defining regex.h related types.  This causes libg++ build and usage failures.
+# defining regex.h types.  This causes C++ library build and usage failures.
 # Fixing this correctly requires checking and modifying 3 files.
 for file in reg_types.h regex.h sys/lc_core.h; do
   if [ -r $file ] && [ ! -r ${LIB}/$file ]; then

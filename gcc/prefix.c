@@ -240,7 +240,7 @@ translate_name (name)
      char *name;
 {
   char code = name[0];
-  char *key, *prefix;
+  char *key, *prefix = 0;
   int keylen;
 
   if (code != '@' && code != '$')
@@ -268,11 +268,10 @@ translate_name (name)
 	prefix = std_prefix;
     }
   else
-    {
-      prefix = getenv (key);
-      if (prefix == 0)
-	prefix = concat ("$", key, NULL_PTR);
-    }
+    prefix = getenv (key);
+
+  if (prefix == 0)
+    prefix = PREFIX;
 
   /* Remove any trailing directory separator from what we got.  */
   if (prefix[strlen (prefix) - 1] == '/'

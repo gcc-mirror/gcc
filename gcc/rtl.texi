@@ -1,4 +1,4 @@
-@c Copyright (C) 1988, 1989, 1992, 1994, 1997 Free Software Foundation, Inc.
+@c Copyright (C) 1988, 89, 92, 94, 97, 1998 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -427,10 +427,12 @@ as @samp{/u}.
 @item INSN_FROM_TARGET_P (@var{insn})
 In an @code{insn} in a delay slot of a branch, indicates that the insn
 is from the target of the branch.  If the branch insn has
-@code{INSN_ANNULLED_BRANCH_P} set, this insn should only be executed if
-the branch is taken.  For annulled branches with this bit clear, the
-insn should be executed only if the branch is not taken.  Stored in the
-@code{in_struct} field and printed as @samp{/s}.
+@code{INSN_ANNULLED_BRANCH_P} set, this insn will only be executed if
+the branch is taken.  For annulled branches with
+@code{INSN_FROM_TARGET_P} clear, the insn will be executed only if the
+branch is not taken.  When @code{INSN_ANNULLED_BRANCH_P} is not set,
+this insn will always be executed.  Stored in the @code{in_struct}
+field and printed as @samp{/s}.
 
 @findex CONSTANT_POOL_ADDRESS_P 
 @cindex @code{symbol_ref} and @samp{/u}

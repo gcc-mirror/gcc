@@ -1,5 +1,5 @@
 /* Calculate branch probabilities, and basic block execution counts. 
-   Copyright (C) 1990, 91-94, 97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1990, 91-94, 96, 97, 1998 Free Software Foundation, Inc.
    Contributed by James E. Wilson, UC Berkeley/Cygnus Support;
    based on some ideas from Dain Samples of UC Berkeley.
    Further mangling by Bob Manson, Cygnus Support.
@@ -618,7 +618,7 @@ branch_prob (f, dump_file)
     register int i;
     int fall_through = 0;
     struct adj_list *arcptr;
-    int dest = NULL_RTX;
+    int dest = 0;
 
     /* Block 0 always falls through to block 1.  */
     num_arcs = 0;
@@ -1652,7 +1652,8 @@ output_func_start_profiler ()
   /* Reset flag_inline_functions to its original value.  */
   flag_inline_functions = save_flag_inline_functions;
 
-  fflush (asm_out_file);
+  if (! quiet_flag)
+    fflush (asm_out_file);
   current_function_decl = NULL_TREE;
 
   assemble_constructor (IDENTIFIER_POINTER (DECL_NAME (fndecl)));

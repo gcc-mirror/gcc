@@ -1,5 +1,5 @@
 /* Search an insn for pseudo regs that must be in hard regs and are not.
-   Copyright (C) 1987, 88, 89, 92-7, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 92-97, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -3172,16 +3172,6 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 		  && this_alternative_matches[i] < 0)
 		bad = 1;
 
-	      /* Alternative loses if it requires a type of reload not
-		 permitted for this insn.  We can always reload SCRATCH
-		 and objects with a REG_UNUSED note.  */
-	      if (GET_CODE (operand) != SCRATCH
-		  && modified[i] != RELOAD_READ && no_output_reloads
-		  && ! find_reg_note (insn, REG_UNUSED, operand))
-		bad = 1;
-	      else if (modified[i] != RELOAD_WRITE && no_input_reloads)
-		bad = 1;
-
 	      /* If this is a constant that is reloaded into the desired
 		 class by copying it to memory first, count that as another
 		 reload.  This is consistent with other code and is
@@ -3193,9 +3183,10 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	      if (CONSTANT_P (operand)
 		  /* force_const_mem does not accept HIGH.  */
 		  && GET_CODE (operand) != HIGH
-		  && (PREFERRED_RELOAD_CLASS (operand,
+		  && ((PREFERRED_RELOAD_CLASS (operand,
 					      (enum reg_class) this_alternative[i])
-		      == NO_REGS)
+		       == NO_REGS)
+		      || no_input_reloads)
 		  && operand_mode[i] != VOIDmode)
 		{
 		  const_to_mem = 1;
@@ -3214,6 +3205,18 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 					      (enum reg_class) this_alternative[i])
 		      == NO_REGS))
 		bad = 1;
+
+	      /* Alternative loses if it requires a type of reload not
+		 permitted for this insn.  We can always reload SCRATCH
+		 and objects with a REG_UNUSED note.  */
+	      else if (GET_CODE (operand) != SCRATCH
+		  && modified[i] != RELOAD_READ && no_output_reloads
+		  && ! find_reg_note (insn, REG_UNUSED, operand))
+		bad = 1;
+	      else if (modified[i] != RELOAD_WRITE && no_input_reloads
+		       && ! const_to_mem)
+		bad = 1;
+
 
 	      /* We prefer to reload pseudos over reloading other things,
 		 since such reloads may be able to be eliminated later.
@@ -3540,9 +3543,10 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	&& CONSTANT_P (recog_operand[i])
 	/* force_const_mem does not accept HIGH.  */
 	&& GET_CODE (recog_operand[i]) != HIGH
-	&& (PREFERRED_RELOAD_CLASS (recog_operand[i],
+	&& ((PREFERRED_RELOAD_CLASS (recog_operand[i],
 				    (enum reg_class) goal_alternative[i])
-	    == NO_REGS)
+	     == NO_REGS)
+	    || no_input_reloads)
 	&& operand_mode[i] != VOIDmode)
       {
 	*recog_operand_loc[i] = recog_operand[i]
@@ -3884,11 +3888,8 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 		reload_when_needed[reload_secondary_out_reload[secondary_out_reload]] 
 		  = RELOAD_FOR_OPADDR_ADDR;
 	    }
-	  if (reload_when_needed[i] == RELOAD_FOR_INPADDR_ADDRESS
-	      || reload_when_needed[i] == RELOAD_FOR_OUTADDR_ADDRESS)
-	    reload_when_needed[i] = RELOAD_FOR_OPADDR_ADDR;
-	  else
-	    reload_when_needed[i] = RELOAD_FOR_OPERAND_ADDRESS;
+
+	  reload_when_needed[i] = RELOAD_FOR_OPERAND_ADDRESS;
 	}
 
       if ((reload_when_needed[i] == RELOAD_FOR_INPUT_ADDRESS
@@ -6297,12 +6298,14 @@ debug_reload_to_stream (f)
       prefix = "\n\t";
       if (reload_secondary_in_icode[r] != CODE_FOR_nothing)
 	{
-	  fprintf (f, "%ssecondary_in_icode = %s", prefix, insn_name[r]);
+	  fprintf (stderr, "%ssecondary_in_icode = %s", prefix,
+		   insn_name[reload_secondary_in_icode[r]]);
 	  prefix = ", ";
 	}
 
       if (reload_secondary_out_icode[r] != CODE_FOR_nothing)
-	fprintf (f, "%ssecondary_out_icode = %s", prefix, insn_name[r]);
+	fprintf (stderr, "%ssecondary_out_icode = %s", prefix,
+		 insn_name[reload_secondary_out_icode[r]]);
 
       fprintf (f, "\n");
     }

@@ -32,7 +32,7 @@ compilers="cc1plus\$(exeext)"
 
 stagestuff="g++\$(exeext) g++-cross\$(exeext) cc1plus\$(exeext)"
 
-diff_excludes="-x cp/parse.c -x cp/parse.h"
+diff_excludes="-x parse.c -x parse.h"
 
 headers='$(CXX_EXTRA_HEADERS)'
 
