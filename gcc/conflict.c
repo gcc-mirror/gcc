@@ -112,7 +112,7 @@ struct conflict_graph_def
    R1 and R2.  R1 is assumed to be smaller or equal to R2.  */
 #define CONFLICT_HASH_FN(R1, R2) ((R2) * ((R2) - 1) / 2 + (R1))
 
-static unsigned arc_hash	PARAMS ((const void *));
+static hashval_t arc_hash	PARAMS ((const void *));
 static int arc_eq		PARAMS ((const void *, const void *));
 static int print_conflict	PARAMS ((int, int, void *));
 static void mark_reg		PARAMS ((rtx, rtx, void *));
@@ -120,7 +120,7 @@ static void mark_reg		PARAMS ((rtx, rtx, void *));
 /* Callback function to compute the hash value of an arc.  Uses
    current_graph to locate the graph to which the arc belongs.  */
 
-static unsigned
+static hashval_t
 arc_hash (arcp)
      const void *arcp;
 {

@@ -39,7 +39,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "cselib.h"
 
 static int entry_and_rtx_equal_p	PARAMS ((const void *, const void *));
-static unsigned int get_value_hash	PARAMS ((const void *));
+static hashval_t get_value_hash		PARAMS ((const void *));
 static struct elt_list *new_elt_list	PARAMS ((struct elt_list *,
 						 cselib_val *));
 static struct elt_loc_list *new_elt_loc_list PARAMS ((struct elt_loc_list *,
@@ -274,7 +274,7 @@ entry_and_rtx_equal_p (entry, x_arg)
    hash_rtx when adding an element; this function just extracts the hash
    value from a cselib_val structure.  */
 
-static unsigned int
+static hashval_t
 get_value_hash (entry)
      const void *entry;
 {
