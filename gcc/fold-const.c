@@ -2418,6 +2418,12 @@ decode_field_reference (exp, pbitsize, pbitpos, pmode, punsignedp,
   tree inner;
   tree offset;
 
+  /* All the optimizations using this function assume integer fields.  
+     There are problems with FP fields since the type_for_size call
+     below can fail for, e.g., XFmode.  */
+  if (! INTEGRAL_TYPE_P (TREE_TYPE (exp)))
+    return 0;
+
   STRIP_NOPS (exp);
 
   if (TREE_CODE (exp) == BIT_AND_EXPR)
