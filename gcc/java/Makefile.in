@@ -217,10 +217,10 @@ native: config.status ../jc1$(exeext)
 #
 # Compiling object files from source files.
 TREE_H = $(srcdir)/../tree.h $(srcdir)/../real.h $(srcdir)/../tree.def \
-        $(srcdir)/../machmode.h $(srcdir)/../machmode.def
+        $(srcdir)/../machmode.h $(srcdir)/../machmode.def ../tree-check.h
 JAVA_TREE_H = $(TREE_H) java-tree.h java-tree.def
 RTL_H = $(srcdir)/../rtl.h $(srcdir)/../rtl.def \
-        $(srcdir)/../machmode.h $(srcdir)/../machmode.def
+        $(srcdir)/../machmode.h $(srcdir)/../machmode.def ../genrtl.h
 EXPR_H = $(srcdir)/../expr.h ../insn-codes.h
 
 # Separating PARSE_DIR from PARSE_RELDIR lets us easily change the
