@@ -3492,6 +3492,7 @@ extern tree perform_implicit_conversion         PROTO((tree, tree));
 extern tree build_vbase_path			PROTO((enum tree_code, tree, tree, tree, int));
 extern tree build_vtbl_ref			PROTO((tree, tree));
 extern tree build_vfn_ref			PROTO((tree *, tree, tree));
+extern tree get_vtable_decl                     PROTO((tree, int));
 extern void add_method				PROTO((tree, tree *, tree));
 extern int currently_open_class			PROTO((tree));
 extern tree get_vfield_offset			PROTO((tree));
