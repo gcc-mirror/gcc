@@ -177,6 +177,7 @@ static void mark_sequence_stack         PARAMS ((struct sequence_stack *));
 static void unshare_all_rtl_1		PARAMS ((rtx));
 static void unshare_all_decls		PARAMS ((tree));
 static void reset_used_decls		PARAMS ((tree));
+static void mark_label_nuses		PARAMS ((rtx));
 static hashval_t const_int_htab_hash    PARAMS ((const void *));
 static int const_int_htab_eq            PARAMS ((const void *,
 						 const void *));
@@ -2391,6 +2392,32 @@ prev_cc0_setter (insn)
   return insn;
 }
 #endif
+
+/* Increment the label uses for all labels present in rtx.  */
+
+static void
+mark_label_nuses (x)
+     rtx x;
+{
+  register enum rtx_code code;
+  register int i, j;
+  register const char *fmt;
+
+  code = GET_CODE (x);
+  if (code == LABEL_REF)
+    LABEL_NUSES (XEXP (x, 0))++;
+
+  fmt = GET_RTX_FORMAT (code);
+  for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
+    {
+      if (fmt[i] == 'e')
+        mark_label_nuses (XEXP (x, i));
+      else if (fmt[i] == 'E')
+        for (j = XVECLEN (x, i) - 1; j >= 0; j--)
+	  mark_label_nuses (XVECEXP (x, i, j));
+    }
+}
+
 
 /* Try splitting insns that can be split for better scheduling.
    PAT is the pattern which might split.
@@ -2449,6 +2476,13 @@ try_split (pat, trial, last)
 	      if (GET_CODE (XVECEXP (seq, 0, i)) == CALL_INSN)
 		CALL_INSN_FUNCTION_USAGE (XVECEXP (seq, 0, i))
 		  = CALL_INSN_FUNCTION_USAGE (trial);
+
+	  /* If there are LABELS inside the split insns increment the
+	     usage count so we don't delete the label.  */
+	  if (GET_CODE (trial) == INSN)
+	    for (i = XVECLEN (seq, 0) - 1; i >= 0; i--)
+	      if (GET_CODE (XVECEXP (seq, 0, i)) == INSN)
+	        mark_label_nuses (PATTERN (XVECEXP (seq, 0, i)));
 
 	  tem = emit_insn_after (seq, before);
 

@@ -1,3 +1,9 @@
+2001-04-05 Herman A.J. ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
+
+	* emit-rtl.c (mark_label_nuses) Increment the label uses for
+	all labels present in rtx.
+	(try_split) Call new function for all split insns.
+
 2001-04-05  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* cppfiles.c (open_file): Fail directories silently, but
