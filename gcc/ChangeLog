@@ -1,5 +1,8 @@
 2001-12-27  Geoff Keating  <geoffk@redhat.com>
 
+	* combine.c (try_combine): Mask off sign bits when combining
+	stores to the low and high parts of a two-word value.
+
 	* expr.c (expand_expr): Don't mark memory for non-constants as
 	constant.
 
