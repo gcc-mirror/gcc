@@ -192,7 +192,7 @@ java::lang::ConcreteProcess::startProcess (jstringArray progarray,
       // with no way to communicate with it.
       errorStream = new FileInputStream (new FileChannelImpl(errp[0], FileChannelImpl::READ));
       inputStream = new FileInputStream (new FileChannelImpl(inp[0], FileChannelImpl::READ));
-      outputStream = new FileOutputStream (new FileChannelImpl(outp[0], FileChannelImpl::WRITE));
+      outputStream = new FileOutputStream (new FileChannelImpl(outp[1], FileChannelImpl::WRITE));
 
       // We don't use vfork() because that would cause the local
       // environment to be set by the child.
