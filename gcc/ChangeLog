@@ -1,3 +1,8 @@
+Mon Apr  6 17:23:41 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* haifa-sched.c (build_control_flow): Set unreachable for block whose
+	only predecessor is itself.
+
 Mon Apr  6 16:08:04 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
         * c-parse.in: Include system.h, and remove stuff now made redundant.

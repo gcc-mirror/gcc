@@ -1220,7 +1220,10 @@ build_control_flow ()
   for (i = 0; i < n_basic_blocks; i++)
     {
       nr_edges += num_succs[i];
-      if (num_preds[i] == 0)
+      /* ??? We must also detect unreachable loops here.  We only handle the
+	 trivial case of a loop with one basic block for now.  */
+      if (num_preds[i] == 0
+	  || (num_preds[i] == 1 && INT_LIST_VAL (s_preds[i]) == i))
 	unreachable = 1;
     }
 
