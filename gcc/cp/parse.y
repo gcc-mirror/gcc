@@ -1356,6 +1356,10 @@ primary:
 		  if (processing_template_decl)
 		    push_obstacks (&permanent_obstack, &permanent_obstack);
 		  $$ = combine_strings ($$);
+		  if (flag_const_strings)
+		    TREE_TYPE ($$) = build_cplus_array_type
+		      (TREE_TYPE (TREE_TYPE ($$)),
+		       TYPE_DOMAIN (TREE_TYPE ($$)));
 		  if (processing_template_decl)
 		    pop_obstacks ();
 		}
