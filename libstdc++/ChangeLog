@@ -1,3 +1,9 @@
+1998-11-23  Ulrich Drepper  <drepper@cygnus.com>
+
+	* std/bastring.cc (operator>>): Cast new character to char before
+	adding to string.
+	(getline): Likewise.
+
 Thu Sep 17 01:29:46 1998  H.J. Lu  (hjl@gnu.org)
 
 	* Makefile.in ($(ARLINK), $(SHLINK)): Don't rely on 'ln -f'.
@@ -55,7 +61,7 @@ Sun Aug 30 22:17:41 1998  H.J. Lu  (hjl@gnu.org)
 	* sinst.cc: Don't explicitly instantiation string_char_traits<char>.
 	* cinst.cc: Likewiwse, for complex<float>, complex<double>,
 	complex<long double>.
-	
+
 1998-08-17  Mark Mitchell  <mark@markmitchell.com>
 
 	* stdexcept: Put things in the std namespace, if appropriate.
