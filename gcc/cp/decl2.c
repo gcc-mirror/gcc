@@ -2258,7 +2258,8 @@ finish_anon_union (anon_union_decl)
       /* Only write out one anon union element--choose the one that
 	 can hold them all.  */
       if (main_decl == NULL_TREE
-	  && simple_cst_equal (DECL_SIZE (decl), DECL_SIZE (anon_union_decl)))
+	  && 1 == simple_cst_equal (DECL_SIZE (decl),
+				    DECL_SIZE (anon_union_decl)))
 	{
 	  main_decl = decl;
 	}
