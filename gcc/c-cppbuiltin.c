@@ -193,6 +193,16 @@ builtin_define_float_constants (const char *name_prefix, const char *fp_suffix, 
     if (i < n)
       *p++ = "08ce"[n - i];
     sprintf (p, "p%d", fmt->emax * fmt->log2_b);
+    if (fmt->pnan < fmt->p)
+      {
+	/* This is an IBM extended double format made up of two IEEE
+	   doubles.  The value of the long double is the sum of the
+	   values of the two parts.  The most significant part is
+	   required to be the value of the long double rounded to the
+	   nearest double.  Rounding means we need a slightly smaller
+	   value for LDBL_MAX.  */
+	buf[4 + fmt->pnan / 4] = "7bde"[fmt->pnan % 4];
+      }
   }
   sprintf (name, "__%s_MAX__", name_prefix);
   builtin_define_with_hex_fp_value (name, type, decimal_dig, buf, fp_suffix);

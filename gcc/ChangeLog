@@ -1,3 +1,9 @@
+2004-03-04  Alan Modra  <amodra@bigpond.net.au>
+
+	* real.c (encode_ibm_extended): Don't bother rounding low double.
+	* c-cppbuiltin.c (builtin_define_float_constants): Tweak MAX
+	when fmt->pnan < fmt->p.
+
 2004-03-04  Eric Christopher  <echristo@redhat.com>
 
 	* config/mips/mips.h (FUNCTION_ARG_REGNO_P): Fix to check
