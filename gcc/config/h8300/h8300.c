@@ -1704,9 +1704,11 @@ h8300_initial_elimination_offset (from, to)
      int from, to;
 {
   int offset = 0;
+  /* The number of bytes that the return address takes on the stack.  */
+  int pc_size = POINTER_SIZE / BITS_PER_UNIT;
 
   if (from == ARG_POINTER_REGNUM && to == FRAME_POINTER_REGNUM)
-    offset = UNITS_PER_WORD + frame_pointer_needed * UNITS_PER_WORD;
+    offset = pc_size + frame_pointer_needed * UNITS_PER_WORD;
   else if (from == RETURN_ADDRESS_POINTER_REGNUM && to == FRAME_POINTER_REGNUM)
     offset = frame_pointer_needed * UNITS_PER_WORD;
   else
@@ -1723,11 +1725,9 @@ h8300_initial_elimination_offset (from, to)
       offset += round_frame_size (get_frame_size ());
 
       if (from == ARG_POINTER_REGNUM && to == STACK_POINTER_REGNUM)
-	offset += UNITS_PER_WORD;	/* Skip saved PC */
+	/* Skip saved PC.  */
+	offset += pc_size;
     }
-
-  if ((TARGET_H8300H || TARGET_H8300S) && TARGET_NORMAL_MODE)
-    offset -= 2;
 
   return offset;
 }
