@@ -1,3 +1,7 @@
+2004-11-10  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* typeck.c (cxx_mark_addressable): Add braces around the first if.
+
 2004-11-10  Adam Nemet  <anemet@lnxw.com>
 
 	PR middle-end/18160  
