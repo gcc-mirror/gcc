@@ -2218,12 +2218,13 @@ typedef struct mips_args {
       emit_move_insn (gen_rtx (MEM, SImode, plus_constant (addr, 36)), CHAIN);\
     }									    \
 									    \
-  /* Flush the instruction cache.  */					    \
+  /* Flush both caches.  We need to flush the data cache in case	    \
+     the system has a write-back cache.  */				    \
   /* ??? Should check the return value for errors.  */			    \
-  emit_library_call (gen_rtx (SYMBOL_REF, Pmode, "cacheflush"),		    \
+  emit_library_call (gen_rtx (SYMBOL_REF, Pmode, "_flush_cache"),	    \
 		     0, VOIDmode, 3, addr, Pmode,			    \
 		     GEN_INT (TRAMPOLINE_SIZE), TYPE_MODE (integer_type_node),\
-		     GEN_INT (1), TYPE_MODE (integer_type_node));	    \
+		     GEN_INT (3), TYPE_MODE (integer_type_node));	    \
 }
 
 /* Addressing modes, and classification of registers for them.  */
