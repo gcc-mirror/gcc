@@ -16269,7 +16269,7 @@ ix86_expand_vector_set (bool mmx_ok, rtx target, rtx val, int elt)
 	  /* op0 = A B X D  */
 	  emit_insn (gen_sse_shufps_1 (target, target, tmp,
 				       GEN_INT (1), GEN_INT (0),
-				       GEN_INT (2), GEN_INT (3)));
+				       GEN_INT (2+4), GEN_INT (3+4)));
 	  return;
 
 	case 2:
@@ -16277,7 +16277,7 @@ ix86_expand_vector_set (bool mmx_ok, rtx target, rtx val, int elt)
 	  ix86_expand_vector_set (false, target, val, 0);
 	  emit_insn (gen_sse_shufps_1 (target, target, tmp,
 				       GEN_INT (0), GEN_INT (1),
-				       GEN_INT (0), GEN_INT (3)));
+				       GEN_INT (0+4), GEN_INT (3+4)));
 	  return;
 
 	case 3:
@@ -16285,7 +16285,7 @@ ix86_expand_vector_set (bool mmx_ok, rtx target, rtx val, int elt)
 	  ix86_expand_vector_set (false, target, val, 0);
 	  emit_insn (gen_sse_shufps_1 (target, target, tmp,
 				       GEN_INT (0), GEN_INT (1),
-				       GEN_INT (2), GEN_INT (0)));
+				       GEN_INT (2+4), GEN_INT (0+4)));
 	  return;
 
 	default:
@@ -16395,7 +16395,7 @@ ix86_expand_vector_extract (bool mmx_ok, rtx target, rtx vec, int elt)
 	  tmp = gen_reg_rtx (mode);
 	  emit_insn (gen_sse_shufps_1 (tmp, vec, vec,
 				       GEN_INT (elt), GEN_INT (elt),
-				       GEN_INT (elt), GEN_INT (elt)));
+				       GEN_INT (elt+4), GEN_INT (elt+4)));
 	  break;
 
 	case 2:
