@@ -1760,6 +1760,9 @@ start_catch_handler (rtime)
       catchstack.top->entry->false_label = gen_exception_label ();
 
       rtime_address = expand_expr (rtime, NULL_RTX, Pmode, EXPAND_INITIALIZER);
+#ifdef POINTERS_EXTEND_UNSIGNED
+      rtime_address = convert_memory_address (Pmode, rtime_address);
+#endif
       rtime_address = force_reg (Pmode, rtime_address);
 
       /* Now issue the call, and branch around handler if needed */

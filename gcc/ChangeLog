@@ -1,5 +1,8 @@
 Thu Apr 15 20:46:57 1999  Donn Terry (donn@interix.com)
 
+	* except.c (start_catch_hadler): Be sure rtime_address is Pmode
+	if POINTERS_EXTEND_UNSIGNED.
+
 	* except.c (expand_eh_return): Force pointers to proper mode if
 	POINTERS_EXTEND_UNSIGNED.
 
