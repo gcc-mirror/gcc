@@ -1,3 +1,9 @@
+2002-04-24  David S. Miller  <davem@redhat.com>
+
+	PR target/6420
+	* config/sparc/sparc.h (FUNCTION_OK_FOR_SIBCALL): Return false if
+	32-bit Sparc and current_function_returns_struct is true.
+
 Wed Apr 24 13:48:25 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* loop.c (canonicalize_condition): Use gen_int_mode.
