@@ -1,3 +1,8 @@
+Fri May 15 07:20:03 1998  Mark Mitchell  <mmitchell@usa.net>
+
+	* fold-const.c (constant_boolean_node): New function.
+	(fold): Use it.
+
 Fri May 15 11:21:16 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* sh.c (gen_shl_and): Don't sign extend constant for kind two.

@@ -94,6 +94,7 @@ static tree unextend		PROTO((tree, int, int, tree));
 static tree fold_truthop	PROTO((enum tree_code, tree, tree, tree));
 static tree strip_compound_expr PROTO((tree, tree));
 static int multiple_of_p	PROTO((tree, tree, tree));
+static tree constant_boolean_node PROTO((int, tree));
 
 #ifndef BRANCH_COST
 #define BRANCH_COST 1
@@ -3702,6 +3703,27 @@ strip_compound_expr (t, s)
   return t;
 }
 
+/* Return a node which has the indicated constant VALUE (either 0 or
+   1), and is of the indicated TYPE.  */
+
+tree
+constant_boolean_node (value, type)
+     int value;
+     tree type;
+{
+  if (type == integer_type_node)
+    return value ? integer_one_node : integer_zero_node;
+  else if (TREE_CODE (type) == BOOLEAN_TYPE)
+    return truthvalue_conversion (value ? integer_one_node :
+				  integer_zero_node); 
+  else 
+    {
+      tree t = build_int_2 (value, 0);
+      TREE_TYPE (t) = type;
+      return t;
+    }
+}
+
 /* Perform constant folding and related simplification of EXPR.
    The related simplifications include x*1 => x, x*0 => 0, etc.,
    and application of the associative law.
@@ -5343,14 +5365,7 @@ fold (expr)
 	    case GE_EXPR:
 	    case LE_EXPR:
 	      if (INTEGRAL_TYPE_P (TREE_TYPE (arg0)))
-		{
-		  if (type == integer_type_node)
-		    return integer_one_node;
-
-		  t = build_int_2 (1, 0);
-		  TREE_TYPE (t) = type;
-		  return t;
-		}
+		return constant_boolean_node (1, type);
 	      code = EQ_EXPR;
 	      TREE_SET_CODE (t, code);
 	      break;
@@ -5362,12 +5377,7 @@ fold (expr)
 	      /* ... fall through ...  */
 	    case GT_EXPR:
 	    case LT_EXPR:
-	      if (type == integer_type_node)
-		return integer_zero_node;
-
-	      t = build_int_2 (0, 0);
-	      TREE_TYPE (t) = type;
-	      return t;
+	      return constant_boolean_node (0, type);
 	    default:
 	      abort ();
 	    }
