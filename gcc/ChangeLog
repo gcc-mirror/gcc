@@ -1,3 +1,7 @@
+Sat Oct  6 07:42:39 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* gcc.c (default_compilers): Remove .ada.
+
 2001-10-06  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* doc/cppinternals.texi: Update.
