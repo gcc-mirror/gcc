@@ -30,9 +30,9 @@
 ;; 'f' for all DF/TFmode values, including those that are specific to the v8.
 
 ;; Attribute for cpu type.
-;; These must match those in sparc.h.
-(define_attr "cpu" "common,cypress,v8,supersparc,sparclite,sparclet,v9,ultrasparc"
-  (const (symbol_ref "sparc_cpu")))
+;; These must match the values for enum processor_type in sparc.h.
+(define_attr "cpu" "v7,cypress,v8,supersparc,sparclite,f930,f934,sparclet,90c701,v8plus,v9,ultrasparc"
+  (const (symbol_ref "sparc_cpu_attr")))
 
 ;; Attribute for the instruction set.
 ;; At present we only need to distinguish v9/!v9, but for clarity we
