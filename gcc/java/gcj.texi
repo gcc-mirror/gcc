@@ -11,7 +11,7 @@
 @set copyrights-gcj 2001, 2002
 
 @c Versions
-@set version-gcc 3.2
+@set version-gcc 3.2.2
 @set which-gcj GCC-@value{version-gcc}
 
 @macro gcctabopt{body}

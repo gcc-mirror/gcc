@@ -757,9 +757,12 @@ DEFTREECODE (CONJ_EXPR, "conj_expr", '1', 1)
 DEFTREECODE (REALPART_EXPR, "realpart_expr", '1', 1)
 DEFTREECODE (IMAGPART_EXPR, "imagpart_expr", '1', 1)
 
-/* Nodes for ++ and -- in C.
-   The second arg is how much to increment or decrement by.
-   For a pointer, it would be the size of the object pointed to.  */
+/* The first argument is the lvalue to be incremented or decremented.
+   The second argument is the value that should be added or
+   subtracted.  If the first argument has pointer type, the second
+   argument is interpreted as the number of bytes to add or subtract
+   from the address.  The second argument must not be a constant
+   zero.  */
 DEFTREECODE (PREDECREMENT_EXPR, "predecrement_expr", 'e', 2)
 DEFTREECODE (PREINCREMENT_EXPR, "preincrement_expr", 'e', 2)
 DEFTREECODE (POSTDECREMENT_EXPR, "postdecrement_expr", 'e', 2)
