@@ -1,3 +1,10 @@
+2003-03-25  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR optimization/8746
+	* config/i386/i386.md (and promoting splitters): Disable HImode to
+	SImode promoting when the sign bit matters and is not preserved.
+	Disable promoting when optimizing for size.
+
 2003-03-23  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR optimization/9414

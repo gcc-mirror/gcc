@@ -1,6 +1,6 @@
 /* PR optimization/8746 */
-/* { dg-do run } */
-/* { dg-options "-mcpu=i586 -O" { target i?86-*-* } } */
+/* { dg-do run { target i?86-*-* } } */
+/* { dg-options "-O1 -mcpu=i586" } */
 
 extern void abort (void);
 
