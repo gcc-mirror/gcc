@@ -1,9 +1,11 @@
 Mon Mar  2 08:06:58 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* Makefile.in (mostlyclean): Remove duplicate deletion of temp
+ 	files.  Delete more stamp files and [df]p-bit.c
+	(clean): Don't delete stamp files here.
+
 	* objc/Make-lang.in (objc/runtime-info.h): Rename emptyfile to
  	tmp-runtime and delete at end.
-
-	* Makefile.in (clean): Delete stamp-* and */stamp-*.
 
 Sun Mar  1 05:50:25 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
