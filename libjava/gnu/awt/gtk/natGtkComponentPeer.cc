@@ -5,14 +5,18 @@
 // Be aware: running `gcjh -stubs ' once more for this class may
 // overwrite any edits you have made to this file.
 
+#include <config.h>
+
+#include <gcj/cni.h>
+
 #include <java/awt/Point.h>
 #include <java/awt/Dimension.h>
-
-#include <gnu/awt/gtk/GtkComponentPeer.h>
-#include <gcj/cni.h>
-#include <gtk/gtk.h>
+#include <java/awt/Cursor.h>
 
 #include "gtkcommon.h"
+
+#include <gnu/awt/gtk/GtkComponentPeer.h>
+
 
 void
 gnu::awt::gtk::GtkComponentPeer::dispose ()
@@ -26,12 +30,10 @@ gnu::awt::gtk::GtkComponentPeer::dispose ()
 ::java::awt::Point *
 gnu::awt::gtk::GtkComponentPeer::getLocationOnScreen ()
 {
-  GDK_THREADS_ENTER ();
-  GDK_THREADS_LEAVE ();
-  
-  // FIXME
-  
-  return NULL;  
+  gint x, y;
+  _Jv_GdkThreadLock sync;
+  gdk_window_get_root_origin (GTK_WIDGET (ptr)->window, &x, &y);
+  return new ::java::awt::Point (x, y);
 }
 
 
@@ -86,9 +88,67 @@ gnu::awt::gtk::GtkComponentPeer::setBounds (jint x, jint y,
 
 
 void
-gnu::awt::gtk::GtkComponentPeer::setCursor (::java::awt::Cursor *)
+gnu::awt::gtk::GtkComponentPeer::setCursor (::java::awt::Cursor *cursor)
 {
-//  JvFail ("gnu::awt::gtk::GtkComponentPeer::setCursor (::java::awt::Cursor *) not implemented");
+  GdkCursorType type;
+
+  switch (cursor->type)
+    {
+    case ::java::awt::Cursor::CROSSHAIR_CURSOR:
+      type = GDK_CROSSHAIR;
+      break;
+    case ::java::awt::Cursor::TEXT_CURSOR:
+      type = GDK_XTERM;
+      break;
+    case ::java::awt::Cursor::WAIT_CURSOR:
+      type = GDK_WATCH;
+      break;
+    case ::java::awt::Cursor::SW_RESIZE_CURSOR:
+      type = GDK_BOTTOM_LEFT_CORNER;
+      break;
+    case ::java::awt::Cursor::SE_RESIZE_CURSOR:
+      type = GDK_BOTTOM_RIGHT_CORNER;
+      break;
+    case ::java::awt::Cursor::NW_RESIZE_CURSOR:
+      type = GDK_TOP_LEFT_CORNER;
+      break;
+    case ::java::awt::Cursor::NE_RESIZE_CURSOR:
+      type = GDK_TOP_RIGHT_CORNER;
+      break;
+    case ::java::awt::Cursor::N_RESIZE_CURSOR:
+      type = GDK_TOP_SIDE;
+      break;
+    case ::java::awt::Cursor::S_RESIZE_CURSOR:
+      type = GDK_RIGHT_SIDE;
+      break;
+    case ::java::awt::Cursor::W_RESIZE_CURSOR:
+      type = GDK_LEFT_SIDE;
+      break;
+    case ::java::awt::Cursor::E_RESIZE_CURSOR:
+      type = GDK_BOTTOM_SIDE;
+      break;
+    case ::java::awt::Cursor::HAND_CURSOR:
+      type = GDK_HAND1;
+      break;
+    case ::java::awt::Cursor::MOVE_CURSOR:
+      type = GDK_FLEUR;
+      break;
+    case ::java::awt::Cursor::CUSTOM_CURSOR:
+      // FIXME: not implemented yet.  We want a gtk-specific subclass
+      // of Cursor which holds a new gdk cursor.  For now, fall
+      // through.
+
+    case ::java::awt::Cursor::DEFAULT_CURSOR:
+    default:
+      type = GDK_LEFT_PTR;
+      break;
+    }
+
+  _Jv_GdkThreadLock sync;
+  GtkWidget *widget = GTK_WIDGET (ptr);
+  GdkCursor *cursor = gdk_cursor_new (type);
+  gdk_window_set_cursor (widget->window, cursor);
+  gdk_cursor_destroy (cursor);
 }
 
 

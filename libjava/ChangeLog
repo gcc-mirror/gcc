@@ -1,5 +1,20 @@
 2001-01-12  Tom Tromey  <tromey@redhat.com>
 
+	* gnu/awt/gtk/natGtkComponentPeer.cc (getLocationOnScreen):
+	Wrote.
+	(setCursor): Wrote.
+	Include Cursor.h.
+	* gnu/awt/gtk/natGtkLabelPeer.cc: New file.
+	* gnu/awt/gtk/natGtkButtonPeer.cc: New file.
+	* gnu/awt/gtk/gtkcommon.h (class _Jv_GdkThreadLock): New class.
+	* gnu/awt/gtk/GtkLabelPeer.java: New file.
+	* gnu/awt/gtk/GtkButtonPeer.java: New file.
+
+	* java/awt/dnd/DropTargetListener.java: New file.
+	* java/awt/dnd/DragSourceListener.java: New file.
+	* java/awt/dnd/DragGestureListener.java: New file.
+	* java/awt/dnd/AutoScroll.java: New file.
+
 	* java/lang/natSystem.cc: Include locale.h if it exists.
 	* configure: Rebuilt.
 	* configure.in: Check for locale.h.

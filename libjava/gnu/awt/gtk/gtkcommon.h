@@ -17,6 +17,20 @@ details.  */
 
 #include <java/awt/Color.h>
 
+class _Jv_GdkThreadLock
+{
+public:
+  _Jv_GdkThreadLock ()
+  {
+    GDK_THREADS_ENTER ();
+  }
+
+  ~_Jv_GdkThreadLock ()
+  {
+    GDK_THREADS_LEAVE ();
+  }
+};
+
 // Convert AWT Color to gdk color value.
 static inline void 
 _Jv_ConvertAwtColor(java::awt::Color* awtcolor, GdkColor* gdkcolor)
