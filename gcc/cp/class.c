@@ -1130,7 +1130,7 @@ handle_using_decl (tree using_decl, tree t)
     /* Ignore base type this came from.  */
     fdecl = BASELINK_FUNCTIONS (fdecl);
 
-  old_value = IDENTIFIER_CLASS_VALUE (name);
+  old_value = lookup_member (t, name, /*protect=*/0, /*want_type=*/false);
   if (old_value)
     {
       if (is_overloaded_fn (old_value))
@@ -5479,6 +5479,40 @@ init_class_processing (void)
   ridpointers[(int) RID_PROTECTED] = access_protected_node;
 }
 
+/* Restore the cached PREVIOUS_CLASS_LEVEL.  */
+
+static void
+restore_class_cache (void)
+{
+  cp_class_binding *cb;
+  tree type;
+  size_t i;
+
+  /* We are re-entering the same class we just left, so we don't
+     have to search the whole inheritance matrix to find all the
+     decls to bind again.  Instead, we install the cached
+     class_shadowed list and walk through it binding names.  */
+  push_binding_level (previous_class_level);
+  class_binding_level = previous_class_level;
+  for (i = 0; 
+       (cb = VEC_iterate (cp_class_binding, 
+			  previous_class_level->class_shadowed,
+			  i));
+       ++i)
+    {
+      tree id;
+
+      id = cb->identifier;
+      cb->base.previous = IDENTIFIER_BINDING (id);
+      IDENTIFIER_BINDING (id) = &cb->base;
+    }
+  /* Restore IDENTIFIER_TYPE_VALUE.  */
+  for (type = class_binding_level->type_shadowed; 
+       type; 
+       type = TREE_CHAIN (type))
+    SET_IDENTIFIER_TYPE_VALUE (TREE_PURPOSE (type), TREE_TYPE (type));
+}
+
 /* Set global variables CURRENT_CLASS_NAME and CURRENT_CLASS_TYPE as
    appropriate for TYPE.
 
@@ -5486,12 +5520,7 @@ init_class_processing (void)
    nodes of local TYPE_DECLs in the TREE_TYPE field of the name.
 
    For multiple inheritance, we perform a two-pass depth-first search
-   of the type lattice.  The first pass performs a pre-order search,
-   marking types after the type has had its fields installed in
-   the appropriate IDENTIFIER_CLASS_VALUE slot.  The second pass merely
-   unmarks the marked types.  If a field or member function name
-   appears in an ambiguous way, the IDENTIFIER_CLASS_VALUE of
-   that name becomes `error_mark_node'.  */
+   of the type lattice.  */
 
 void
 pushclass (tree type)
@@ -5535,11 +5564,6 @@ pushclass (tree type)
       invalidate_class_lookup_cache ();
     }
 
-  /* If we're about to enter a nested class, clear
-     IDENTIFIER_CLASS_VALUE for the enclosing classes.  */
-  if (current_class_depth > 1)
-    clear_identifier_class_values ();
-
   if (!previous_class_level 
       || type != previous_class_level->this_entity
       || current_class_depth > 1)
@@ -5560,58 +5584,18 @@ pushclass (tree type)
 	}
     }
   else
-    {
-      cp_class_binding *cb;
-      size_t i;
-
-      /* We are re-entering the same class we just left, so we don't
-	 have to search the whole inheritance matrix to find all the
-	 decls to bind again.  Instead, we install the cached
-	 class_shadowed list, and walk through it binding names and
-	 setting up IDENTIFIER_TYPE_VALUEs.  */
-      push_binding_level (previous_class_level);
-      class_binding_level = previous_class_level;
-      for (i = 0; 
-	   (cb = VEC_iterate (cp_class_binding, 
-			      previous_class_level->class_shadowed,
-			      i));
-	   ++i)
-	{
-	  tree id;
-	  tree type_decl;
-
-	  id = cb->identifier;
-	  cb->base.previous = IDENTIFIER_BINDING (id);
-	  IDENTIFIER_BINDING (id) = &cb->base;
-	  type_decl = cb->base.value;
-	  if (!type_decl || TREE_CODE (type_decl) != TYPE_DECL)
-	    type_decl = cb->base.type;
-	  if (type_decl && TREE_CODE (type_decl) == TYPE_DECL)
-	    set_identifier_type_value (id, type_decl);
-	}
-    }
+    restore_class_cache ();
   
   cxx_remember_type_decls (CLASSTYPE_NESTED_UTDS (type));
 }
 
-/* When we exit a toplevel class scope, we save the
-   IDENTIFIER_CLASS_VALUEs so that we can restore them quickly if we
-   reenter the class.  Here, we've entered some other class, so we
-   must invalidate our cache.  */
+/* When we exit a toplevel class scope, we save its binding level so
+   that we can restore it quickly.  Here, we've entered some other
+   class, so we must invalidate our cache.  */
 
 void
 invalidate_class_lookup_cache (void)
 {
-  size_t i;
-  cp_class_binding *cb;
-  
-  /* The IDENTIFIER_CLASS_VALUEs are no longer valid.  */
-  for (i = 0;
-       (cb = VEC_iterate (cp_class_binding, 
-			  previous_class_level->class_shadowed, i));
-       ++i)
-    IDENTIFIER_CLASS_VALUE (cb->identifier) = NULL_TREE;
-
   previous_class_level = NULL;
 }
  
@@ -5622,7 +5606,6 @@ void
 popclass (void)
 {
   poplevel_class ();
-  pop_class_decls ();
 
   current_class_depth--;
   current_class_name = current_class_stack[current_class_depth].name;
@@ -6448,12 +6431,14 @@ maybe_note_name_used_in_class (tree name, tree decl)
   splay_tree names_used;
 
   /* If we're not defining a class, there's nothing to do.  */
-  if (innermost_scope_kind() != sk_class)
+  if (!(innermost_scope_kind() == sk_class
+	&& TYPE_BEING_DEFINED (current_class_type)))
     return;
   
   /* If there's already a binding for this NAME, then we don't have
      anything to worry about.  */
-  if (IDENTIFIER_CLASS_VALUE (name))
+  if (lookup_member (current_class_type, name, 
+		     /*protect=*/0, /*want_type=*/false))
     return;
 
   if (!current_class_stack[current_class_depth - 1].names_used)

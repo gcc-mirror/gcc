@@ -997,9 +997,17 @@ pushdecl (tree x)
 	      /* No shadow warnings for vars made for inlining.  */
 	      && ! DECL_FROM_INLINE (x))
 	    {
-	      if (IDENTIFIER_CLASS_VALUE (name) != NULL_TREE
-		       && current_class_ptr
-		       && !TREE_STATIC (name))
+	      tree member;
+
+	      if (current_class_ptr)
+		member = lookup_member (current_class_type,
+					name,
+					/*protect=*/0,
+					/*want_type=*/false);
+	      else
+		member = NULL_TREE;
+		  
+	      if (member && !TREE_STATIC (member))
 		{
 		  /* Location of previous decl is not useful in this case.  */
 		  warning ("declaration of '%D' shadows a member of 'this'",
@@ -1777,6 +1785,7 @@ set_identifier_type_value_with_scope (tree id, tree decl, cxx_scope *b)
       b->type_shadowed
 	= tree_cons (id, old_type_value, b->type_shadowed);
       type = decl ? TREE_TYPE (decl) : NULL_TREE;
+      TREE_TYPE (b->type_shadowed) = type;
     }
   else
     {
@@ -2629,46 +2638,8 @@ poplevel_class (void)
   timevar_push (TV_NAME_LOOKUP);
   my_friendly_assert (level != 0, 354);
 
-  /* If we're leaving a toplevel class, don't bother to do the setting
-     of IDENTIFIER_CLASS_VALUE to NULL_TREE, since first of all this slot
-     shouldn't even be used when current_class_type isn't set, and second,
-     if we don't touch it here, we're able to use the cache effect if the
-     next time we're entering a class scope, it is the same class.  */
-  if (current_class_depth != 1)
-    {
-      struct cp_binding_level* b;
-      cp_class_binding* cb;
-      size_t i;
-
-      /* Clear out our IDENTIFIER_CLASS_VALUEs.  */
-      clear_identifier_class_values ();
-
-      /* Find the next enclosing class, and recreate
-	 IDENTIFIER_CLASS_VALUEs appropriate for that class.  */
-      b = level->level_chain;
-      while (b && b->kind != sk_class)
-	b = b->level_chain;
-
-      if (b)
-	for (i = 0;
-	     (cb = VEC_iterate (cp_class_binding, 
-				b->class_shadowed, 
-				i));
-	     ++i)
-	  {
-	    cxx_binding *binding;
-            
-	    binding = IDENTIFIER_BINDING (cb->identifier);
-	    while (binding && binding->scope != b)
-	      binding = binding->previous;
-
-	    if (binding)
-	      IDENTIFIER_CLASS_VALUE (cb->identifier) = binding->value;
-	  }
-    }
-  else
-    /* Remember to save what IDENTIFIER's were bound in this scope so we
-       can recover from cache misses.  */
+  /* If we're leaving a toplevel class, cache its binding level.  */
+  if (current_class_depth == 1)
     previous_class_level = level;
   for (shadowed = level->type_shadowed;
        shadowed;
@@ -2713,13 +2684,6 @@ push_class_binding (tree id, tree decl)
     /* Create a new binding.  */
     push_binding (id, decl, class_binding_level);
 
-  /* Update the IDENTIFIER_CLASS_VALUE for this ID to be the
-     class-level declaration.  Note that we do not use DECL here
-     because of the possibility of the `struct stat' hack; if DECL is
-     a class-name or enum-name we might prefer a field-name, or some
-     such.  */
-  IDENTIFIER_CLASS_VALUE (id) = IDENTIFIER_BINDING (id)->value;
-
   /* If this is a binding from a base class, mark it as such.  */
   binding = IDENTIFIER_BINDING (id);
   if (binding->value == decl && TREE_CODE (decl) != TREE_LIST)
@@ -2744,24 +2708,6 @@ push_class_binding (tree id, tree decl)
     INHERITED_VALUE_BINDING_P (binding) = 1;
 
   POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, result);
-}
-
-/* We are entering the scope of a class.  Clear IDENTIFIER_CLASS_VALUE
-   for any names in enclosing classes.  */
-
-void
-clear_identifier_class_values (void)
-{
-  size_t i;
-  cp_class_binding *cb;
-
-  if (class_binding_level)
-    for (i = 0;
-	 (cb = VEC_iterate (cp_class_binding, 
-			    class_binding_level->class_shadowed, 
-			    i));
-	 ++i)
-      IDENTIFIER_CLASS_VALUE (cb->identifier) = NULL_TREE;
 }
 
 /* Make the declaration of X appear in CLASS scope.  */
@@ -2821,9 +2767,9 @@ push_class_level_binding (tree name, tree x)
     POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, true);
 
   /* Check for invalid member names, if the class is being defined.
-     This function is also used to restore IDENTIFIER_CLASS_VALUE,
-     when reentering the class scope, and there is no point in
-     checking again at that time.  */
+     This function is also used to restore bindings when reentering
+     the class scope, and there is no point in checking again at that
+     time.  */
   if (TYPE_BEING_DEFINED (current_class_type))
     {
       tree decl = x;
@@ -2875,8 +2821,8 @@ push_class_level_binding (tree name, tree x)
     }
 
   /* If this declaration shadows a declaration from an enclosing
-     class, then we will need to restore IDENTIFIER_CLASS_VALUE when
-     we leave this class.  Record the shadowed declaration here.  */
+     class, then we will need to restore bindings when we leave this
+     class.  Record the shadowed declaration here.  */
   binding = IDENTIFIER_BINDING (name);
   if (binding && binding->value)
     {
@@ -2922,7 +2868,6 @@ push_class_level_binding (tree name, tree x)
 	     coming from a definition in the body of the class
 	     itself.  */
 	  INHERITED_VALUE_BINDING_P (binding) = 0;
-	  IDENTIFIER_CLASS_VALUE (name) = x;
 	  POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, true);
 	}
     }
@@ -3994,11 +3939,8 @@ qualified_lookup_using_namespace (tree name, tree scope,
    If PREFER_TYPE is > 1, we reject non-type decls (e.g. namespaces).
    Otherwise we prefer non-TYPE_DECLs.
 
-   If NONCLASS is nonzero, we don't look for the NAME in class scope,
-   using IDENTIFIER_CLASS_VALUE.  
-
-   If BLOCK_P is true, block scopes are examined; otherwise, they are
-   skipped.  */
+   If NONCLASS is nonzero, bindings in class scopes are ignored.  If
+   BLOCK_P is false, bindings in block scopes are ignored.  */
 
 tree
 lookup_name_real (tree name, int prefer_type, int nonclass, bool block_p,
@@ -4831,11 +4773,7 @@ store_binding (tree id, VEC(cxx_saved_binding) **old_bindings)
 {
   cxx_saved_binding *saved;
 
-  if (!id
-      /* Note that we may have an IDENTIFIER_CLASS_VALUE even when
-	 we have no IDENTIFIER_BINDING if we have left the class
-	 scope, but cached the class-level declarations.  */
-      || !(IDENTIFIER_BINDING (id) || IDENTIFIER_CLASS_VALUE (id)))
+  if (!id || !IDENTIFIER_BINDING (id))
     return;
 
   if (IDENTIFIER_MARKED (id))
@@ -4846,10 +4784,8 @@ store_binding (tree id, VEC(cxx_saved_binding) **old_bindings)
   saved = VEC_safe_push (cxx_saved_binding, *old_bindings, NULL);
   saved->identifier = id;
   saved->binding = IDENTIFIER_BINDING (id);
-  saved->class_value = IDENTIFIER_CLASS_VALUE (id);;
   saved->real_type_value = REAL_IDENTIFIER_TYPE_VALUE (id);
   IDENTIFIER_BINDING (id) = NULL;
-  IDENTIFIER_CLASS_VALUE (id) = NULL_TREE;
 }
 
 static void
@@ -4981,7 +4917,6 @@ pop_from_top_level (void)
       tree id = saved->identifier;
 
       IDENTIFIER_BINDING (id) = saved->binding;
-      IDENTIFIER_CLASS_VALUE (id) = saved->class_value;
       SET_IDENTIFIER_TYPE_VALUE (id, saved->real_type_value);
     }
 

@@ -567,10 +567,6 @@ do_build_copy_constructor (tree fndecl)
 	    {
 	      if (VFIELD_NAME_P (DECL_NAME (field)))
 		continue;
-
-	      /* True for duplicate members.  */
-	      if (IDENTIFIER_CLASS_VALUE (DECL_NAME (field)) != field)
-		continue;
 	    }
 	  else if ((t = TREE_TYPE (field)) != NULL_TREE
 		   && ANON_AGGR_TYPE_P (t)
@@ -672,10 +668,6 @@ do_build_assign_ref (tree fndecl)
 	  if (DECL_NAME (field))
 	    {
 	      if (VFIELD_NAME_P (DECL_NAME (field)))
-		continue;
-
-	      /* True for duplicate members.  */
-	      if (IDENTIFIER_CLASS_VALUE (DECL_NAME (field)) != field)
 		continue;
 	    }
 	  else if ((t = TREE_TYPE (field)) != NULL_TREE
