@@ -1,3 +1,14 @@
+1998-06-23  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* call.c (joust): Fix confusing conversion warning.
+
+	* call.c (build_op_delete_call): Add placement parm.  Check
+	LOOKUP_SPECULATIVELY.
+	* cp-tree.h, decl2.c, init.c: Adjust.
+	* decl.c (finish_function): Use it.
+
+	* pt.c (tsubst): Diagnose creating void fields or variables.
+
 Mon Jun 22 08:50:26 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* call.c (build_scoped_method_call): Remove unused variable `tmp'.

@@ -1326,8 +1326,8 @@ delete_sanity (exp, size, doing_vec, use_global_delete)
 	{
 	  /* Only do access checking here; we'll be calling op delete
 	     from the destructor.  */
-	  tree tmp = build_op_delete_call (DELETE_EXPR, t,
-					   size_zero_node, LOOKUP_NORMAL);
+	  tree tmp = build_op_delete_call (DELETE_EXPR, t, size_zero_node,
+					   LOOKUP_NORMAL, NULL_TREE);
 	  if (tmp == error_mark_node)
 	    return error_mark_node;
 	}

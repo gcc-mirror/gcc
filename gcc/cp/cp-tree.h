@@ -2251,7 +2251,7 @@ extern tree build_user_type_conversion		PROTO((tree, tree, int));
 extern tree build_new_function_call		PROTO((tree, tree));
 extern tree build_new_op			PROTO((enum tree_code, int, tree, tree, tree));
 extern tree build_op_new_call			PROTO((enum tree_code, tree, tree, int));
-extern tree build_op_delete_call		PROTO((enum tree_code, tree, tree, int));
+extern tree build_op_delete_call		PROTO((enum tree_code, tree, tree, int, tree));
 extern int can_convert				PROTO((tree, tree));
 extern int can_convert_arg			PROTO((tree, tree, tree));
 extern void enforce_access                      PROTO((tree, tree));

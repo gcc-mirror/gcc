@@ -2913,16 +2913,16 @@ build_op_new_call (code, type, args, flags)
    ADDR is the pointer to be deleted.  For placement delete, it is also
      used to determine what the corresponding new looked like.
    SIZE is the size of the memory block to be deleted.
-   FLAGS are the usual overloading flags.  */
+   FLAGS are the usual overloading flags.
+   PLACEMENT is the corresponding placement new call, or 0.  */
 
 tree
-build_op_delete_call (code, addr, size, flags)
+build_op_delete_call (code, addr, size, flags, placement)
      enum tree_code code;
-     tree addr, size;
+     tree addr, size, placement;
      int flags;
 {
   tree fn, fns, fnname, fntype, argtypes, args, type;
-  int placement;
 
   if (addr == error_mark_node)
     return error_mark_node;
@@ -2946,42 +2946,20 @@ build_op_delete_call (code, addr, size, flags)
   else
     fns = NULL_TREE;
 
-  if (fns)
-    {
-#if 0
-      /* It is unnecessary to wrap another TREE_LIST around it. (MvL) */
-      /* Build this up like build_offset_ref does.  */
-      fns = build_tree_list (error_mark_node, fns);
-      TREE_TYPE (fns) = build_offset_type (type, unknown_type_node);
-#endif
-    }
-  else
+  if (fns == NULL_TREE)
     fns = lookup_name_nonclass (fnname);
 
-  /* We can recognize a placement delete because of LOOKUP_SPECULATIVELY;
-     if we are doing placement delete we do nothing if we don't find a
-     matching op delete.  */
-  placement = !!(flags & LOOKUP_SPECULATIVELY);
   if (placement)
     {
-      /* If placement, we are coming from build_new, and we know that addr
-	 is the allocation expression, so extract the info we need from it.
-	 Obviously, if the build_new process changes this may have to
-	 change as well.  */
+      /* placement is a CALL_EXPR around an ADDR_EXPR around a function.  */
 
-      /* The NOP_EXPR.  */
-      tree t = TREE_OPERAND (addr, 1);
-      /* The CALL_EXPR.  */
-      t = TREE_OPERAND (t, 0);
-      /* The function.  */
-      argtypes = TREE_OPERAND (TREE_OPERAND (t, 0), 0);
-      /* The second parm type.  */
+      /* Extract the function.  */
+      argtypes = TREE_OPERAND (TREE_OPERAND (placement, 0), 0);
+      /* Then the second parm type.  */
       argtypes = TREE_CHAIN (TYPE_ARG_TYPES (TREE_TYPE (argtypes)));
-      /* The second argument.  */
-      args = TREE_CHAIN (TREE_OPERAND (t, 1));
 
-      /* Pull the dummy var out of the TARGET_EXPR for use in our call.  */
-      addr = TREE_OPERAND (addr, 0);
+      /* Also the second argument.  */
+      args = TREE_CHAIN (TREE_OPERAND (placement, 1));
     }
   else
     {
@@ -3012,6 +2990,8 @@ build_op_delete_call (code, addr, size, flags)
       return build_function_call (fn, expr_tree_cons (NULL_TREE, addr, args));
     }
 
+  /* If we are doing placement delete we do nothing if we don't find a
+     matching op delete.  */
   if (placement)
     return NULL_TREE;
 
@@ -3023,9 +3003,20 @@ build_op_delete_call (code, addr, size, flags)
   fn = instantiate_type (fntype, fns, 0);
 
   if (fn != error_mark_node)
-    return build_function_call
-      (fn, expr_tree_cons (NULL_TREE, addr,
-			   build_expr_list (NULL_TREE, size)));
+    {
+      if (TREE_CODE (fns) == TREE_LIST)
+	/* Member functions.  */
+	enforce_access (TREE_PURPOSE (fns), fn);
+      return build_function_call
+	(fn, expr_tree_cons (NULL_TREE, addr,
+			     build_expr_list (NULL_TREE, size)));
+    }
+
+  /* finish_function passes LOOKUP_SPECULATIVELY if we're in a
+     destructor, in which case the error should be deferred
+     until someone actually tries to delete one of these.  */
+  if (flags & LOOKUP_SPECULATIVELY)
+    return NULL_TREE;
 
   cp_error ("no suitable operator delete for `%T'", type);
   return error_mark_node;
@@ -4324,7 +4315,9 @@ joust (cand1, cand2, warn)
     }
 
   /* warn about confusing overload resolution */
-  if (winner && cand1->second_conv)
+  if (winner && cand1->second_conv
+      && (! DECL_CONSTRUCTOR_P (cand1->fn)
+	  || ! DECL_CONSTRUCTOR_P (cand2->fn)))
     {
       int comp = compare_ics (cand1->second_conv, cand2->second_conv);
       if (comp != winner)
@@ -4336,10 +4329,12 @@ joust (cand1, cand2, warn)
 	    w = cand2, l = cand1;
 	  if (warn)
 	    {
+	      tree source = source_type (TREE_VEC_ELT (w->convs, 0));
+	      if (! DECL_CONSTRUCTOR_P (w->fn))
+		source = TREE_TYPE (source);
 	      cp_warning ("choosing `%D' over `%D'", w->fn, l->fn);
 	      cp_warning ("  for conversion from `%T' to `%T'",
-			  TREE_TYPE (source_type (TREE_VEC_ELT (w->convs, 0))),
-			  TREE_TYPE (w->second_conv));
+			  source, TREE_TYPE (w->second_conv));
 	      cp_warning ("  because conversion sequence for the argument is better");
 	    }
 	  else
