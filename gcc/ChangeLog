@@ -1,3 +1,10 @@
+2004-11-28  David Edelsohn  <edelsohn@gnu.org>
+
+	PR target/16800
+	* config/rs6000/rs6000.c (rs6000_rtx_costs): Improve accuracy of
+	EQ, GTU, and LTU costs.  Add costs for GT, LT, and UNORDERED.
+	Distinguish between SImode and DImode CONST_INT.
+
 2004-11-28  Andreas Fischer <a_fisch@gmx.de>
 	    Alan Modra  <amodra@bigpond.net.au>
 
