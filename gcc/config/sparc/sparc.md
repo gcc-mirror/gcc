@@ -5220,31 +5220,11 @@
    (set_attr "fptype" "double")])
 
 (define_expand "extendsftf2"
-  [(set (match_operand:TF 0 "register_operand" "=e")
+  [(set (match_operand:TF 0 "nonimmediate_operand" "")
 	(float_extend:TF
-	 (match_operand:SF 1 "register_operand" "f")))]
+	 (match_operand:SF 1 "register_operand" "")))]
   "TARGET_FPU && (TARGET_HARD_QUAD || TARGET_ARCH64)"
-  "
-{
-  if (! TARGET_HARD_QUAD)
-    {
-      rtx slot0;
-
-      if (GET_CODE (operands[0]) != MEM)
-	slot0 = assign_stack_temp (TFmode, GET_MODE_SIZE(TFmode), 0);
-      else
-	slot0 = operands[0];
-
-      emit_library_call (gen_rtx (SYMBOL_REF, Pmode, \"_Qp_stoq\"), LCT_NORMAL,
-			 VOIDmode, 2,
-			 XEXP (slot0, 0), Pmode,
-			 operands[1], SFmode);
-
-      if (GET_CODE (operands[0]) != MEM)
-	emit_insn (gen_rtx_SET (VOIDmode, operands[0], slot0));
-      DONE;
-    }
-}")
+  "emit_tfmode_cvt (FLOAT_EXTEND, operands); DONE;")
 
 (define_insn "*extendsftf2_hq"
   [(set (match_operand:TF 0 "register_operand" "=e")
@@ -5255,31 +5235,11 @@
   [(set_attr "type" "fp")])
 
 (define_expand "extenddftf2"
-  [(set (match_operand:TF 0 "register_operand" "=e")
+  [(set (match_operand:TF 0 "nonimmediate_operand" "")
 	(float_extend:TF
-	 (match_operand:DF 1 "register_operand" "e")))]
+	 (match_operand:DF 1 "register_operand" "")))]
   "TARGET_FPU && (TARGET_HARD_QUAD || TARGET_ARCH64)"
-  "
-{
-  if (! TARGET_HARD_QUAD)
-    {
-      rtx slot0;
-
-      if (GET_CODE (operands[0]) != MEM)
-	slot0 = assign_stack_temp (TFmode, GET_MODE_SIZE(TFmode), 0);
-      else
-	slot0 = operands[0];
-
-      emit_library_call (gen_rtx (SYMBOL_REF, Pmode, \"_Qp_dtoq\"), LCT_NORMAL,
-			 VOIDmode, 2,
-			 XEXP (slot0, 0), Pmode,
-			 operands[1], DFmode);
-
-      if (GET_CODE (operands[0]) != MEM)
-	emit_insn (gen_rtx_SET (VOIDmode, operands[0], slot0));
-      DONE;
-    }
-}")
+  "emit_tfmode_cvt (FLOAT_EXTEND, operands); DONE;")
 
 (define_insn "*extenddftf2_hq"
   [(set (match_operand:TF 0 "register_operand" "=e")
@@ -5299,30 +5259,11 @@
    (set_attr "fptype" "double")])
 
 (define_expand "trunctfsf2"
-  [(set (match_operand:SF 0 "register_operand" "=f")
+  [(set (match_operand:SF 0 "register_operand" "")
 	(float_truncate:SF
-	 (match_operand:TF 1 "register_operand" "e")))]
+	 (match_operand:TF 1 "general_operand" "")))]
   "TARGET_FPU && (TARGET_HARD_QUAD || TARGET_ARCH64)"
-  "
-{
-  if (! TARGET_HARD_QUAD)
-    {
-      rtx slot0;
-
-      if (GET_CODE (operands[1]) != MEM)
-	{
-	  slot0 = assign_stack_temp (TFmode, GET_MODE_SIZE(TFmode), 0);
-	  emit_insn (gen_rtx_SET (VOIDmode, slot0, operands[1]));
-	}
-      else
-	slot0 = operands[1];
-
-      emit_library_call_value (gen_rtx (SYMBOL_REF, Pmode, \"_Qp_qtos\"),
-			       operands[0], LCT_NORMAL, SFmode, 1,
-			       XEXP (slot0, 0), Pmode);
-      DONE;
-    }
-}")
+  "emit_tfmode_cvt (FLOAT_TRUNCATE, operands); DONE;")
 
 (define_insn "*trunctfsf2_hq"
   [(set (match_operand:SF 0 "register_operand" "=f")
@@ -5333,30 +5274,11 @@
   [(set_attr "type" "fp")])
 
 (define_expand "trunctfdf2"
-  [(set (match_operand:DF 0 "register_operand" "=f")
+  [(set (match_operand:DF 0 "register_operand" "")
 	(float_truncate:DF
-	 (match_operand:TF 1 "register_operand" "e")))]
+	 (match_operand:TF 1 "general_operand" "")))]
   "TARGET_FPU && (TARGET_HARD_QUAD || TARGET_ARCH64)"
-  "
-{
-  if (! TARGET_HARD_QUAD)
-    {
-      rtx slot0;
-
-      if (GET_CODE (operands[1]) != MEM)
-	{
-	  slot0 = assign_stack_temp (TFmode, GET_MODE_SIZE(TFmode), 0);
-	  emit_insn (gen_rtx_SET (VOIDmode, slot0, operands[1]));
-	}
-      else
-	slot0 = operands[1];
-
-      emit_library_call_value (gen_rtx (SYMBOL_REF, Pmode, \"_Qp_qtod\"),
-			       operands[0], LCT_NORMAL, DFmode, 1,
-			       XEXP (slot0, 0), Pmode);
-      DONE;
-    }
-}")
+  "emit_tfmode_cvt (FLOAT_TRUNCATE, operands); DONE;")
 
 (define_insn "*trunctfdf2_hq"
   [(set (match_operand:DF 0 "register_operand" "=e")
@@ -5385,30 +5307,10 @@
    (set_attr "fptype" "double")])
 
 (define_expand "floatsitf2"
-  [(set (match_operand:TF 0 "register_operand" "=e")
-	(float:TF (match_operand:SI 1 "register_operand" "f")))]
+  [(set (match_operand:TF 0 "nonimmediate_operand" "")
+	(float:TF (match_operand:SI 1 "register_operand" "")))]
   "TARGET_FPU && (TARGET_HARD_QUAD || TARGET_ARCH64)"
-  "
-{
-  if (! TARGET_HARD_QUAD)
-    {
-      rtx slot0;
-
-      if (GET_CODE (operands[1]) != MEM)
-	slot0 = assign_stack_temp (TFmode, GET_MODE_SIZE(TFmode), 0);
-      else
-	slot0 = operands[1];
-
-      emit_library_call (gen_rtx (SYMBOL_REF, Pmode, \"_Qp_itoq\"), 0,
-			 VOIDmode, 2,
-			 XEXP (slot0, 0), Pmode,
-			 operands[1], SImode);
-
-      if (GET_CODE (operands[0]) != MEM)
-	emit_insn (gen_rtx_SET (VOIDmode, operands[0], slot0));
-      DONE;
-    }
-}")
+  "emit_tfmode_cvt (FLOAT, operands); DONE;")
 
 (define_insn "*floatsitf2_hq"
   [(set (match_operand:TF 0 "register_operand" "=e")
@@ -5418,27 +5320,10 @@
   [(set_attr "type" "fp")])
 
 (define_expand "floatunssitf2"
-  [(set (match_operand:TF 0 "register_operand" "=e")
-	(unsigned_float:TF (match_operand:SI 1 "register_operand" "e")))]
+  [(set (match_operand:TF 0 "nonimmediate_operand" "")
+	(unsigned_float:TF (match_operand:SI 1 "register_operand" "")))]
   "TARGET_FPU && TARGET_ARCH64 && ! TARGET_HARD_QUAD"
-  "
-{
-  rtx slot0;
-
-  if (GET_CODE (operands[1]) != MEM)
-    slot0 = assign_stack_temp (TFmode, GET_MODE_SIZE(TFmode), 0);
-  else
-    slot0 = operands[1];
-
-  emit_library_call (gen_rtx (SYMBOL_REF, Pmode, \"_Qp_uitoq\"), 0,
-		     VOIDmode, 2,
-		     XEXP (slot0, 0), Pmode,
-		     operands[1], SImode);
-
-  if (GET_CODE (operands[0]) != MEM)
-    emit_insn (gen_rtx_SET (VOIDmode, operands[0], slot0));
-  DONE;
-}")
+  "emit_tfmode_cvt (UNSIGNED_FLOAT, operands); DONE;")
 
 ;; Now the same for 64 bit sources.
 
@@ -5471,30 +5356,10 @@
   "sparc_emit_floatunsdi (operands); DONE;")
 
 (define_expand "floatditf2"
-  [(set (match_operand:TF 0 "register_operand" "=e")
-	(float:TF (match_operand:DI 1 "register_operand" "e")))]
+  [(set (match_operand:TF 0 "nonimmediate_operand" "")
+	(float:TF (match_operand:DI 1 "register_operand" "")))]
   "TARGET_FPU && TARGET_V9 && (TARGET_HARD_QUAD || TARGET_ARCH64)"
-  "
-{
-  if (! TARGET_HARD_QUAD)
-    {
-      rtx slot0;
-
-      if (GET_CODE (operands[1]) != MEM)
-	slot0 = assign_stack_temp (TFmode, GET_MODE_SIZE(TFmode), 0);
-      else
-	slot0 = operands[1];
-
-      emit_library_call (gen_rtx (SYMBOL_REF, Pmode, \"_Qp_xtoq\"), 0,
-			 VOIDmode, 2,
-			 XEXP (slot0, 0), Pmode,
-			 operands[1], DImode);
-
-      if (GET_CODE (operands[0]) != MEM)
-	emit_insn (gen_rtx_SET (VOIDmode, operands[0], slot0));
-      DONE;
-    }
-}")
+  "emit_tfmode_cvt (FLOAT, operands); DONE;")
 
 (define_insn "*floatditf2_hq"
   [(set (match_operand:TF 0 "register_operand" "=e")
@@ -5504,27 +5369,10 @@
   [(set_attr "type" "fp")])
 
 (define_expand "floatunsditf2"
-  [(set (match_operand:TF 0 "register_operand" "=e")
-	(unsigned_float:TF (match_operand:DI 1 "register_operand" "e")))]
+  [(set (match_operand:TF 0 "nonimmediate_operand" "")
+	(unsigned_float:TF (match_operand:DI 1 "register_operand" "")))]
   "TARGET_FPU && TARGET_ARCH64 && ! TARGET_HARD_QUAD"
-  "
-{
-  rtx slot0;
-
-  if (GET_CODE (operands[1]) != MEM)
-    slot0 = assign_stack_temp (TFmode, GET_MODE_SIZE(TFmode), 0);
-  else
-    slot0 = operands[1];
-
-  emit_library_call (gen_rtx (SYMBOL_REF, Pmode, \"_Qp_uxtoq\"), 0,
-		     VOIDmode, 2,
-		     XEXP (slot0, 0), Pmode,
-		     operands[1], DImode);
-
-  if (GET_CODE (operands[0]) != MEM)
-    emit_insn (gen_rtx_SET (VOIDmode, operands[0], slot0));
-  DONE;
-}")
+  "emit_tfmode_cvt (UNSIGNED_FLOAT, operands); DONE;")
 
 ;; Convert a float to an actual integer.
 ;; Truncation is performed as part of the conversion.
@@ -5546,58 +5394,23 @@
    (set_attr "fptype" "double")])
 
 (define_expand "fix_trunctfsi2"
-  [(set (match_operand:SI 0 "register_operand" "=f")
-	(fix:SI (fix:TF (match_operand:TF 1 "register_operand" "e"))))]
+  [(set (match_operand:SI 0 "register_operand" "")
+	(fix:SI (match_operand:TF 1 "general_operand" "")))]
   "TARGET_FPU && (TARGET_HARD_QUAD || TARGET_ARCH64)"
-  "
-{
-  if (! TARGET_HARD_QUAD)
-    {
-      rtx slot0;
-
-      if (GET_CODE (operands[1]) != MEM)
-	{
-	  slot0 = assign_stack_temp (TFmode, GET_MODE_SIZE(TFmode), 0);
-	  emit_insn (gen_rtx_SET (VOIDmode, slot0, operands[1]));
-	}
-      else
-	slot0 = operands[1];
-
-      emit_library_call_value (gen_rtx (SYMBOL_REF, Pmode, \"_Qp_qtoi\"),
-			       operands[0], LCT_NORMAL, SImode, 1,
-			       XEXP (slot0, 0), Pmode);
-      DONE;
-    }
-}")
+  "emit_tfmode_cvt (FIX, operands); DONE;")
 
 (define_insn "*fix_trunctfsi2_hq"
   [(set (match_operand:SI 0 "register_operand" "=f")
-	(fix:SI (fix:TF (match_operand:TF 1 "register_operand" "e"))))]
+	(fix:SI (match_operand:TF 1 "register_operand" "e")))]
   "TARGET_FPU && TARGET_HARD_QUAD"
   "fqtoi\\t%1, %0"
   [(set_attr "type" "fp")])
 
 (define_expand "fixuns_trunctfsi2"
-  [(set (match_operand:SI 0 "register_operand" "=f")
-	(unsigned_fix:SI (fix:TF (match_operand:TF 1 "register_operand" "e"))))]
+  [(set (match_operand:SI 0 "register_operand" "")
+	(unsigned_fix:SI (match_operand:TF 1 "general_operand" "")))]
   "TARGET_FPU && TARGET_ARCH64 && ! TARGET_HARD_QUAD"
-  "
-{
-  rtx slot0;
-
-  if (GET_CODE (operands[1]) != MEM)
-    {
-      slot0 = assign_stack_temp (TFmode, GET_MODE_SIZE(TFmode), 0);
-      emit_insn (gen_rtx_SET (VOIDmode, slot0, operands[1]));
-    }
-  else
-    slot0 = operands[1];
-
-  emit_library_call_value (gen_rtx (SYMBOL_REF, Pmode, \"_Qp_qtoui\"),
-			   operands[0], LCT_NORMAL, SImode, 1,
-			   XEXP (slot0, 0), Pmode);
-  DONE;
-}")
+  "emit_tfmode_cvt (UNSIGNED_FIX, operands); DONE;")
 
 ;; Now the same, for V9 targets
 
@@ -5618,59 +5431,23 @@
    (set_attr "fptype" "double")])
 
 (define_expand "fix_trunctfdi2"
-  [(set (match_operand:DI 0 "register_operand" "=e")
-	(fix:DI (fix:TF (match_operand:TF 1 "register_operand" "e"))))]
+  [(set (match_operand:DI 0 "register_operand" "")
+	(fix:DI (match_operand:TF 1 "general_operand" "")))]
   "TARGET_V9 && TARGET_FPU && (TARGET_HARD_QUAD || TARGET_ARCH64)"
-  "
-{
-  if (! TARGET_HARD_QUAD)
-    {
-      rtx slot0;
-
-      if (GET_CODE (operands[1]) != MEM)
-	{
-	  slot0 = assign_stack_temp (TFmode, GET_MODE_SIZE(TFmode), 0);
-	  emit_insn (gen_rtx_SET (VOIDmode, slot0, operands[1]));
-	}
-      else
-	slot0 = operands[1];
-
-      emit_library_call_value (gen_rtx (SYMBOL_REF, Pmode, \"_Qp_qtox\"),
-			       operands[0], LCT_NORMAL, DImode, 1,
-			       XEXP (slot0, 0), Pmode);
-      DONE;
-    }
-}")
+  "emit_tfmode_cvt (FIX, operands); DONE;")
 
 (define_insn "*fix_trunctfdi2_hq"
   [(set (match_operand:DI 0 "register_operand" "=e")
-	(fix:DI (fix:TF (match_operand:TF 1 "register_operand" "e"))))]
+	(fix:DI (match_operand:TF 1 "register_operand" "e")))]
   "TARGET_V9 && TARGET_FPU && TARGET_HARD_QUAD"
   "fqtox\\t%1, %0"
   [(set_attr "type" "fp")])
 
 (define_expand "fixuns_trunctfdi2"
-  [(set (match_operand:DI 0 "register_operand" "=f")
-	(unsigned_fix:DI (fix:TF (match_operand:TF 1 "register_operand" "e"))))]
+  [(set (match_operand:DI 0 "register_operand" "")
+	(unsigned_fix:DI (match_operand:TF 1 "general_operand" "")))]
   "TARGET_FPU && TARGET_ARCH64 && ! TARGET_HARD_QUAD"
-  "
-{
-  rtx slot0;
-
-  if (GET_CODE (operands[1]) != MEM)
-    {
-      slot0 = assign_stack_temp (TFmode, GET_MODE_SIZE(TFmode), 0);
-      emit_insn (gen_rtx_SET (VOIDmode, slot0, operands[1]));
-    }
-  else
-    slot0 = operands[1];
-
-  emit_library_call_value (gen_rtx (SYMBOL_REF, Pmode, \"_Qp_qtoux\"),
-			   operands[0], LCT_NORMAL, DImode, 1,
-			   XEXP (slot0, 0), Pmode);
-  DONE;
-}")
-
+  "emit_tfmode_cvt (UNSIGNED_FIX, operands); DONE;")
 
 ;;- arithmetic instructions
 
@@ -7570,42 +7347,7 @@
 	(plus:TF (match_operand:TF 1 "general_operand" "")
 		 (match_operand:TF 2 "general_operand" "")))]
   "TARGET_FPU && (TARGET_HARD_QUAD || TARGET_ARCH64)"
-  "
-{
-  if (! TARGET_HARD_QUAD)
-    {
-      rtx slot0, slot1, slot2;
-
-      if (GET_CODE (operands[0]) != MEM)
-	slot0 = assign_stack_temp (TFmode, GET_MODE_SIZE(TFmode), 0);
-      else
-	slot0 = operands[0];
-      if (GET_CODE (operands[1]) != MEM)
-	{
-	  slot1 = assign_stack_temp (TFmode, GET_MODE_SIZE(TFmode), 0);
-	  emit_insn (gen_rtx_SET (VOIDmode, slot1, operands[1]));
-	}
-      else
-	slot1 = operands[1];
-      if (GET_CODE (operands[2]) != MEM)
-	{
-	  slot2 = assign_stack_temp (TFmode, GET_MODE_SIZE(TFmode), 0);
-	  emit_insn (gen_rtx_SET (VOIDmode, slot2, operands[2]));
-	}
-      else
-	slot2 = operands[2];
-
-      emit_library_call (gen_rtx (SYMBOL_REF, Pmode, \"_Qp_add\"), 0,
-			 VOIDmode, 3,
-			 XEXP (slot0, 0), Pmode,
-			 XEXP (slot1, 0), Pmode,
-			 XEXP (slot2, 0), Pmode);
-
-      if (GET_CODE (operands[0]) != MEM)
-	emit_insn (gen_rtx_SET (VOIDmode, operands[0], slot0));
-      DONE;
-    }
-}")
+  "emit_tfmode_binop (PLUS, operands); DONE;")
 
 (define_insn "*addtf3_hq"
   [(set (match_operand:TF 0 "register_operand" "=e")
@@ -7637,42 +7379,7 @@
 	(minus:TF (match_operand:TF 1 "general_operand" "")
 		  (match_operand:TF 2 "general_operand" "")))]
   "TARGET_FPU && (TARGET_HARD_QUAD || TARGET_ARCH64)"
-  "
-{
-  if (! TARGET_HARD_QUAD)
-    {
-      rtx slot0, slot1, slot2;
-
-      if (GET_CODE (operands[0]) != MEM)
-	slot0 = assign_stack_temp (TFmode, GET_MODE_SIZE(TFmode), 0);
-      else
-	slot0 = operands[0];
-      if (GET_CODE (operands[1]) != MEM)
-	{
-	  slot1 = assign_stack_temp (TFmode, GET_MODE_SIZE(TFmode), 0);
-	  emit_insn (gen_rtx_SET (VOIDmode, slot1, operands[1]));
-	}
-      else
-	slot1 = operands[1];
-      if (GET_CODE (operands[2]) != MEM)
-	{
-	  slot2 = assign_stack_temp (TFmode, GET_MODE_SIZE(TFmode), 0);
-	  emit_insn (gen_rtx_SET (VOIDmode, slot2, operands[2]));
-	}
-      else
-	slot2 = operands[2];
-
-      emit_library_call (gen_rtx (SYMBOL_REF, Pmode, \"_Qp_sub\"), 0,
-			 VOIDmode, 3,
-			 XEXP (slot0, 0), Pmode,
-			 XEXP (slot1, 0), Pmode,
-			 XEXP (slot2, 0), Pmode);
-
-      if (GET_CODE (operands[0]) != MEM)
-	emit_insn (gen_rtx_SET (VOIDmode, operands[0], slot0));
-      DONE;
-    }
-}")
+  "emit_tfmode_binop (MINUS, operands); DONE;")
 
 (define_insn "*subtf3_hq"
   [(set (match_operand:TF 0 "register_operand" "=e")
@@ -7704,42 +7411,7 @@
 	(mult:TF (match_operand:TF 1 "general_operand" "")
 		 (match_operand:TF 2 "general_operand" "")))]
   "TARGET_FPU && (TARGET_HARD_QUAD || TARGET_ARCH64)"
-  "
-{
-  if (! TARGET_HARD_QUAD)
-    {
-      rtx slot0, slot1, slot2;
-
-      if (GET_CODE (operands[0]) != MEM)
-	slot0 = assign_stack_temp (TFmode, GET_MODE_SIZE(TFmode), 0);
-      else
-	slot0 = operands[0];
-      if (GET_CODE (operands[1]) != MEM)
-	{
-	  slot1 = assign_stack_temp (TFmode, GET_MODE_SIZE(TFmode), 0);
-	  emit_insn (gen_rtx_SET (VOIDmode, slot1, operands[1]));
-	}
-      else
-	slot1 = operands[1];
-      if (GET_CODE (operands[2]) != MEM)
-	{
-	  slot2 = assign_stack_temp (TFmode, GET_MODE_SIZE(TFmode), 0);
-	  emit_insn (gen_rtx_SET (VOIDmode, slot2, operands[2]));
-	}
-      else
-	slot2 = operands[2];
-
-      emit_library_call (gen_rtx (SYMBOL_REF, Pmode, \"_Qp_mul\"), 0,
-			 VOIDmode, 3,
-			 XEXP (slot0, 0), Pmode,
-			 XEXP (slot1, 0), Pmode,
-			 XEXP (slot2, 0), Pmode);
-
-      if (GET_CODE (operands[0]) != MEM)
-	emit_insn (gen_rtx_SET (VOIDmode, operands[0], slot0));
-      DONE;
-    }
-}")
+  "emit_tfmode_binop (MULT, operands); DONE;")
 
 (define_insn "*multf3_hq"
   [(set (match_operand:TF 0 "register_operand" "=e")
@@ -7788,42 +7460,7 @@
 	(div:TF (match_operand:TF 1 "general_operand" "")
 		(match_operand:TF 2 "general_operand" "")))]
   "TARGET_FPU && (TARGET_HARD_QUAD || TARGET_ARCH64)"
-  "
-{
-  if (! TARGET_HARD_QUAD)
-    {
-      rtx slot0, slot1, slot2;
-
-      if (GET_CODE (operands[0]) != MEM)
-	slot0 = assign_stack_temp (TFmode, GET_MODE_SIZE(TFmode), 0);
-      else
-	slot0 = operands[0];
-      if (GET_CODE (operands[1]) != MEM)
-	{
-	  slot1 = assign_stack_temp (TFmode, GET_MODE_SIZE(TFmode), 0);
-	  emit_insn (gen_rtx_SET (VOIDmode, slot1, operands[1]));
-	}
-      else
-	slot1 = operands[1];
-      if (GET_CODE (operands[2]) != MEM)
-	{
-	  slot2 = assign_stack_temp (TFmode, GET_MODE_SIZE(TFmode), 0);
-	  emit_insn (gen_rtx_SET (VOIDmode, slot2, operands[2]));
-	}
-      else
-	slot2 = operands[2];
-
-      emit_library_call (gen_rtx (SYMBOL_REF, Pmode, \"_Qp_div\"), 0,
-			 VOIDmode, 3,
-			 XEXP (slot0, 0), Pmode,
-			 XEXP (slot1, 0), Pmode,
-			 XEXP (slot2, 0), Pmode);
-
-      if (GET_CODE (operands[0]) != MEM)
-	emit_insn (gen_rtx_SET (VOIDmode, operands[0], slot0));
-      DONE;
-    }
-}")
+  "emit_tfmode_binop (DIV, operands); DONE;")
 
 ;; don't have timing for quad-prec. divide.
 (define_insn "*divtf3_hq"
@@ -8072,37 +7709,10 @@
   [(set_attr "type" "fpmove")])
 
 (define_expand "sqrttf2"
-  [(set (match_operand:TF 0 "register_operand" "=e")
-	(sqrt:TF (match_operand:TF 1 "register_operand" "e")))]
+  [(set (match_operand:TF 0 "nonimmediate_operand" "")
+	(sqrt:TF (match_operand:TF 1 "general_operand" "")))]
   "TARGET_FPU && (TARGET_HARD_QUAD || TARGET_ARCH64)"
-  "
-{
-  if (! TARGET_HARD_QUAD)
-    {
-      rtx slot0, slot1;
-
-      if (GET_CODE (operands[0]) != MEM)
-	slot0 = assign_stack_temp (TFmode, GET_MODE_SIZE(TFmode), 0);
-      else
-	slot0 = operands[0];
-      if (GET_CODE (operands[1]) != MEM)
-	{
-	  slot1 = assign_stack_temp (TFmode, GET_MODE_SIZE(TFmode), 0);
-	  emit_insn (gen_rtx_SET (VOIDmode, slot1, operands[1]));
-	}
-      else
-	slot1 = operands[1];
-
-      emit_library_call (gen_rtx (SYMBOL_REF, Pmode, \"_Qp_sqrt\"), 0,
-			 VOIDmode, 2,
-			 XEXP (slot0, 0), Pmode,
-			 XEXP (slot1, 0), Pmode);
-
-      if (GET_CODE (operands[0]) != MEM)
-	emit_insn (gen_rtx_SET (VOIDmode, operands[0], slot0));
-      DONE;
-    }
-}")
+  "emit_tfmode_unop (SQRT, operands); DONE;")
 
 (define_insn "*sqrttf2_hq"
   [(set (match_operand:TF 0 "register_operand" "=e")
