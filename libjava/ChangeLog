@@ -1,5 +1,13 @@
 2004-06-01  Michael Koch  <konqueror@gmx.de>
 
+	* java/text/CollationElementIterator.java,
+	java/text/CollationKey.java,
+	java/text/RuleBasedCollator.java: New versions from GNU classpath.
+	* testsuite/libjava.mauve/xfails: Removed all
+	java.text.CollationElementIterator tests.
+
+2004-06-01  Michael Koch  <konqueror@gmx.de>
+
 	* java/util/zip/InflaterInputStream.java: Merged more with Classpath
 	version.
 	* java/util/zip/ZipOutputStream.java (): Renamed enum to e to removed
