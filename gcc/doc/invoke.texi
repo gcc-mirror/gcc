@@ -3829,8 +3829,6 @@ The @option{-finline-limit=@var{n}} option sets some of these parameters
 as follows:
 
 @table @gcctabopt
- @item max-inline-insns
-  is set to @var{n}.
  @item max-inline-insns-single
   is set to @var{n}/2.
  @item max-inline-insns-auto
@@ -3841,8 +3839,7 @@ as follows:
   is set to @var{n}.
 @end table
 
-Using @option{-finline-limit=600} thus results in the default settings
-for these parameters.  See below for a documentation of the individual
+See below for a documentation of the individual
 parameters controlling inlining.
 
 @emph{Note:} pseudo instruction represents, in this particular context, an
@@ -4776,17 +4773,6 @@ by the compiler will be investigated.  To those functions, a different
 be applied.
 The default value is 150.
 
-@item max-inline-insns
-The tree inliner does decrease the allowable size for single functions 
-to be inlined after we already inlined the number of instructions
-given here by repeated inlining.  This number should be a factor of 
-two or more larger than the single function limit.
-Higher numbers result in better runtime performance, but incur higher
-compile-time resource (CPU time, memory) requirements and result in
-larger binaries.  Very high values are not advisable, as too large
-binaries may adversely affect runtime performance.
-The default value is 200.
-
 @item large-function-insns
 The limit specifying really large functions.  For functions greater than this
 limit inlining is constrained by @option{--param large-function-growth}.
@@ -4810,7 +4796,6 @@ For languages that use the RTL inliner (this happens at a later stage
 than tree inlining), you can set the maximum allowable size (counted 
 in RTL instructions) for the RTL inliner with this parameter.
 The default value is 600.
-
 
 @item max-unrolled-insns
 The maximum number of instructions that a loop should have if that loop
