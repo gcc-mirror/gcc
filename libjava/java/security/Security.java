@@ -64,12 +64,29 @@ public final class Security extends Object
   private static final String ALG_ALIAS = "Alg.Alias.";
 
   private static Vector providers = new Vector();
-  private static Properties secprops;
+  private static Properties secprops = new Properties();
   static
   {
     String base = System.getProperty("gnu.classpath.home.url");
-    loadProviders(base, System.getProperty("gnu.classpath.vm.shortname"));
-    loadProviders(base, "classpath");
+    String vendor = System.getProperty("gnu.classpath.vm.shortname");
+    
+    // Try VM specific security file
+    boolean loaded = loadProviders(base, vendor);
+    
+    // Append classpath standard provider if possible
+    if (!loadProviders(base, "classpath") && !loaded && providers.size() == 0)
+      {
+	// No providers found and both security files failed to load properly.
+	System.err.println
+	  ("WARNING: could not properly read security provider files:");
+	System.err.println
+	  ("         " + base + "/security/" + vendor + ".security");
+	System.err.println
+	  ("         " + base + "/security/" + "classpath" + ".security");
+	System.err.println
+	  ("         Falling back to standard GNU security provider");
+	providers.addElement(new gnu.java.security.provider.Gnu());
+      }
   }
 
   // This class can't be instantiated.
@@ -77,16 +94,21 @@ public final class Security extends Object
   {
   }
 
-  private static void loadProviders(String baseUrl, String vendor)
+  /**
+   * Tries to load the vender specific security providers from the given
+   * base URL. Returns true if the resource could be read and completely
+   * parsed successfully, false otherwise.
+   */
+  private static boolean loadProviders(String baseUrl, String vendor)
   {
     if (baseUrl == null || vendor == null)
-      return;
+      return false;
 
+    boolean result = true;
     String secfilestr = baseUrl + "/security/" + vendor + ".security";
     try
       {
 	InputStream fin = new URL(secfilestr).openStream();
-	secprops = new Properties();
 	secprops.load(fin);
 
 	int i = 1;
@@ -112,19 +134,20 @@ public final class Security extends Object
 	      }
 
 	    if (exception != null)
-	      System.err.println (
-	          "Error loading security provider " + name + ": " + exception);
+	      {
+		System.err.println ("WARNING: Error loading security provider "
+				    + name + ": " + exception);
+		result = false;
+	      }
 	    i++;
 	  }
       }
-    catch (FileNotFoundException ignored)
-      {
-        // Actually we probably shouldn't ignore these, once the security
-	// properties file is actually installed somewhere.
-      }
     catch (IOException ignored)
       {
+	result = false;
       }
+
+    return false;
   }
 
   /**
