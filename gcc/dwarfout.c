@@ -57,10 +57,12 @@ extern time_t time ();
 #include <string.h>
 #else
 #include <strings.h>
-#define strrchr rindex
 #endif
 
 extern char *getpwd ();
+
+extern char *index ();
+extern char *rindex ();
 
 /* IMPORTANT NOTE: Please see the file README.DWARF for important details
    regarding the GNU implementation of Dwarf.  */
@@ -992,7 +994,7 @@ dwarf_fund_type_name (ft)
 
    The current Dwarf draft specification calls for Dwarf fundamental types
    to accurately reflect the fact that a given type was either a "plain"
-   integral type or an explicitly "signed" integral type.  Unfortuantely,
+   integral type or an explicitly "signed" integral type.  Unfortunately,
    we can't always do this, because GCC may already have thrown away the
    information about the precise way in which the type was originally
    specified, as in:
@@ -1569,7 +1571,7 @@ data_member_location_attribute (decl)
     abort ();
 
   /* The bit position given by DECL_FIELD_BITPOS could be non-constant
-     in the case where one or more variable sized members preceeded this
+     in the case where one or more variable sized members preceded this
      member in the containing struct type.  We could probably correctly
      handle this case someday, by it's too complicated to deal with at
      the moment (and probably too rare to worry about), so just punt on
@@ -1794,7 +1796,7 @@ location_or_const_value_attribute (decl)
   /* Existing Dwarf debuggers need and expect the location descriptors for
      formal parameters to reflect either the place where the parameters get
      passed (if they are passed on the stack and in memory) or else the
-     (preserved) registers which the paramaters get copied to during the
+     (preserved) registers which the parameters get copied to during the
      function prologue.
 
      At least this is the way things are for most common CISC machines
@@ -2132,7 +2134,7 @@ bit_offset_attribute (decl)
   assert (type);				/* Must be a bit field.	 */
 
   /* The bit position given by DECL_FIELD_BITPOS could be non-constant
-     in the case where one or more variable sized members preceeded this
+     in the case where one or more variable sized members preceded this
      member in the containing struct type.  We could probably correctly
      handle this case someday, by it's too complicated to deal with at
      the moment, so just punt on the whole AT_bit_offset attribute for
@@ -4486,7 +4488,7 @@ dwarfout_line (filename, line)
         }
 
       {
-        register char *tail = strrchr (filename, '/');
+        register char *tail = rindex (filename, '/');
 
         if (tail != NULL)
           filename = tail;
