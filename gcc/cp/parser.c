@@ -9754,6 +9754,9 @@ cp_parser_elaborated_type_specifier (cp_parser* parser,
    enum-specifier:
      enum identifier [opt] { enumerator-list [opt] }
 
+   GNU Extensions:
+     enum identifier [opt] { enumerator-list [opt] } attributes
+
    Returns an ENUM_TYPE representing the enumeration.  */
 
 static tree
@@ -9790,6 +9793,16 @@ cp_parser_enum_specifier (cp_parser* parser)
 
   /* Consume the final '}'.  */
   cp_parser_require (parser, CPP_CLOSE_BRACE, "`}'");
+
+  /* Look for trailing attributes to apply to this enumeration, and
+     apply them if appropriate. */
+  if (cp_parser_allow_gnu_extensions_p (parser))
+    {
+      tree trailing_attr = cp_parser_attributes_opt (parser);
+      cplus_decl_attributes (&type,
+			     trailing_attr,
+			     (int) ATTR_FLAG_TYPE_IN_PLACE);
+    }
 
   /* Finish up the enumeration.  */
   finish_enum (type);

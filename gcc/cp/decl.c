@@ -9504,6 +9504,7 @@ finish_enum (tree enumtype)
   tree maxnode;
   tree t;
   bool unsignedp;
+  bool use_short_enum;
   int lowprec;
   int highprec;
   int precision;
@@ -9586,8 +9587,14 @@ finish_enum (tree enumtype)
 
      We use "int" or an "unsigned int" as the underlying type, even if
      a smaller integral type would work, unless the user has
-     explicitly requested that we use the smallest possible type.  */
-  for (itk = (flag_short_enums ? itk_char : itk_int);
+     explicitly requested that we use the smallest possible type.  The
+     user can request that for all enumerations with a command line
+     flag, or for just one enumeration with an attribute. */
+
+  use_short_enum = flag_short_enums
+    || lookup_attribute ("packed", TYPE_ATTRIBUTES (enumtype));
+
+  for (itk = (use_short_enum ? itk_char : itk_int);
        itk != itk_none;
        itk++)
     {
