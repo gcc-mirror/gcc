@@ -23,6 +23,9 @@ public final class Field extends AccessibleObject implements Member
   // Offset in bytes from the start of declaringClass's fields array.
   private int offset;
 
+  // The Class (or primitive TYPE) of this field.
+  private Class type;
+
   // This is instantiated by Class sometimes, but it uses C++ and
   // avoids the Java protection check.
   Field ()
@@ -136,76 +139,79 @@ public final class Field extends AccessibleObject implements Member
   public void setByte (Object obj, byte b)
     throws IllegalArgumentException, IllegalAccessException
   {
-    setByte(null, obj, b);
+    setByte(null, obj, b, true);
   }
 
   public void setShort (Object obj,  short s)
     throws IllegalArgumentException, IllegalAccessException
   {
-    setShort(null, obj, s);
+    setShort(null, obj, s, true);
   }
 
   public void setInt (Object obj, int i)
     throws IllegalArgumentException, IllegalAccessException
   {
-    setInt(null, obj, i);
+    setInt(null, obj, i, true);
   }
 
   public void setLong (Object obj, long l)
     throws IllegalArgumentException, IllegalAccessException
   {
-    setLong(null, obj, l);
+    setLong(null, obj, l, true);
   }
 
   public void setFloat (Object obj, float f)
     throws IllegalArgumentException, IllegalAccessException
   {
-    setFloat(null, obj, f);
+    setFloat(null, obj, f, true);
   }
 
   public void setDouble (Object obj, double d)
     throws IllegalArgumentException, IllegalAccessException
   {
-    setDouble(null, obj, d);
+    setDouble(null, obj, d, true);
   }
 
   public void setChar (Object obj, char c)
     throws IllegalArgumentException, IllegalAccessException
   {
-    setChar(null, obj, c);
+    setChar(null, obj, c, true);
   }
 
   public void setBoolean (Object obj, boolean b)
     throws IllegalArgumentException, IllegalAccessException
   {
-    setBoolean(null, obj, b);
+    setBoolean(null, obj, b, true);
   }
 
-  private native void setByte (Class caller, Object obj, byte b)
+  native void setByte (Class caller, Object obj, byte b, boolean checkFinal)
     throws IllegalArgumentException, IllegalAccessException;
 
-  private native void setShort (Class caller, Object obj, short s)
+  native void setShort (Class caller, Object obj, short s, boolean checkFinal)
     throws IllegalArgumentException, IllegalAccessException;
 
-  private native void setInt (Class caller, Object obj, int i)
+  native void setInt (Class caller, Object obj, int i, boolean checkFinal)  
     throws IllegalArgumentException, IllegalAccessException;
 
-  private native void setLong (Class caller, Object obj, long l)
+  native void setLong (Class caller, Object obj, long l, boolean checkFinal)
     throws IllegalArgumentException, IllegalAccessException;
 
-  private native void setFloat (Class caller, Object obj, float f)
+  native void setFloat (Class caller, Object obj, float f, boolean checkFinal)
     throws IllegalArgumentException, IllegalAccessException;
 
-  private native void setDouble (Class caller, Object obj, double d)
+  native void setDouble (Class caller, Object obj, double d,
+			 boolean checkFinal)
     throws IllegalArgumentException, IllegalAccessException;
 
-  private native void setChar (Class caller, Object obj, char c)
+  native void setChar (Class caller, Object obj, char c, boolean checkFinal)
     throws IllegalArgumentException, IllegalAccessException;
 
-  private native void setBoolean (Class caller, Object obj, boolean b)
+  native void setBoolean (Class caller, Object obj, boolean b,
+			  boolean checkFinal)
     throws IllegalArgumentException, IllegalAccessException;
 
-  private native void set (Class caller, Object obj, Object val, Class type)
+  native void set (Class caller, Object obj, Object val, Class type, 
+		   boolean checkFinal)
     throws IllegalArgumentException, IllegalAccessException;
 
   public void set (Object object, Object value)
@@ -219,23 +225,23 @@ public final class Field extends AccessibleObject implements Member
   {
     Class type = getType();
     if (! type.isPrimitive())
-      set(caller, object, value, type);
+      set(caller, object, value, type, true);
     else if (value instanceof Byte)
-      setByte(caller, object, ((Byte) value).byteValue());
+      setByte(caller, object, ((Byte) value).byteValue(), true);
     else if (value instanceof Short)
-      setShort (caller, object, ((Short) value).shortValue());
+      setShort (caller, object, ((Short) value).shortValue(), true);
     else if (value instanceof Integer)
-      setInt(caller, object, ((Integer) value).intValue());
+      setInt(caller, object, ((Integer) value).intValue(), true);
     else if (value instanceof Long)
-      setLong(caller, object, ((Long) value).longValue());
+      setLong(caller, object, ((Long) value).longValue(), true);
     else if (value instanceof Float)
-      setFloat(caller, object, ((Float) value).floatValue());
+      setFloat(caller, object, ((Float) value).floatValue(), true);
     else if (value instanceof Double)
-      setDouble(caller, object, ((Double) value).doubleValue());
+      setDouble(caller, object, ((Double) value).doubleValue(), true);
     else if (value instanceof Character)
-      setChar(caller, object, ((Character) value).charValue());
+      setChar(caller, object, ((Character) value).charValue(), true);
     else if (value instanceof Boolean)
-      setBoolean(caller, object, ((Boolean) value).booleanValue());
+      setBoolean(caller, object, ((Boolean) value).booleanValue(), true);
     else
       throw new IllegalArgumentException();
   }

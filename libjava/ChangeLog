@@ -1,3 +1,82 @@
+2005-02-21  Bryce McKinlay  <mckinlay@redhat.com>
+
+	Merge serialization from GNU Classpath.
+	* gcj/method.h: Add missing #includes.
+	* java/io/ObjectInputStream.java (readClassDescriptor): Check for 
+	primitive class IDs on the stream here...
+	(resolveClass): ...not here.
+	* java/io/ObjectStreamField.java: Use VMObjectStream class calls to set
+	fields.
+	* java/io/VMObjectStreamClass.java (setDoubleNative, setFloatNative,
+	setLongNative, setIntNative, setShortNative, setCharNative,
+	setByteNative, setBooleanNative, setObjectNative): New native methods.
+	* java/io/natVMObjectStreamClass.java (setDoubleNative, setFloatNative,
+	setLongNative, setIntNative, setShortNative, setCharNative,
+	setByteNative, setBooleanNative, setObjectNative): Implement them.
+	* java/io/natObjectInputStream.cc (allocateObject): Add new parameters
+	from Classpath's version. Use _Jv_FromReflectedConstructor(). Call
+	the constructor here.
+	(callConstructor): Removed.
+	(getCallersClassLoader): Removed.
+	* java/lang/reflect/Field.java (setByte, setShort, setInt, setLong,
+	setFloat, setDouble, setChar, setBoolean): Add 'checkFinal' parameter
+	to control whether setting final field values is permitted. Call
+	getAddr() with checkFinal parameter instead of setAddr().
+	* java/lang/reflect/natField.cc (getType): Lookup and resolve field
+	only if not done already.
+	(getAddr): Add checkFinal parameter. Do the final field check only if
+	checkFinal is set.
+	(setAddr): Removed.
+
+2005-02-21  Mark Wielaard  <mark@klomp.org>
+
+	# Fixes bug #11957
+	* java/io/ObjectInputStream.java (resolveClass): Don't check "void"
+	twice.
+	
+2005-02-21  Mark Wielaard  <mark@klomp.org>
+
+	Fixes bug #11618.
+	* java/io/ObjectInputStream.java (readClassDescriptor): Handle classes
+	without a super class and us ObjectStreamClass.lookupForClassObject().
+	(resolveClass): Check for primitive types.
+	(lookupClass): Return null when argument is null.
+
+2005-02-21  Jeroen Frijters  <jeroen@frijters.net>
+
+	* java/io/ObjectInputStream.java
+	(readObject): Fix to consume TC_ENDBLOCKDATA after readExternal.
+
+2005-02-21  Jeroen Frijters  <jeroen@frijters.net>
+
+	* java/io/ObjectOutputStream.java
+	(writeObject, callWriteMethod): Replaced reflection with accessing
+	cached info in ObjectStreamClass.
+	(getMethod): Removed.
+	* java/io/ObjectStreamClass.java
+	(findMethod): Added check to make sure the method found has the
+	right modifiers.
+	(cacheMethods): Added writeReplace and writeObject methods.
+	(setFlags): Look at new writeObjectMethod field instead of doing
+	reflection again.
+	(writeReplaceMethod): New field.
+	(writeObjectMethod): New field.
+
+2005-02-21  Guilhem Lavaux  <guilhem@kaffe.org>
+	Jeroen Frijters  <jeroen@frijters.net>
+
+	* java/io/ObjectInputStream.java
+	(newObject): Changed prototype. Get a constructor reflect object
+	directly.
+	(callConstructor): Removed.
+	(allocateObject): Changed prototype.
+	(readClassDescriptor): Build the constructor reflection directly.
+	(readObject): Invoke newObject using the new prototype.
+
+	* java/io/ObjectStreamClass.java
+	(firstNonSerializableParent): Removed.
+	(firstNonSerializableParentConstructor): Added.	
+
 2005-02-21  Mark Wielaard  <mark@klomp.org>
 
 	* gnu/java/locale/LocaleInformation_en.java: Extend
