@@ -41,6 +41,10 @@ somewhat more difficult.
 In 0.5.24 and `egcs' 1.1.2 (versus 0.5.23 and 1.1.1):
 =====================================================
 
+   * Fix the `IDate' Intrinsic (VXT) so the returned year is in the
+     documented, non-Y2K-compliant range of 0-99, instead of being
+     returned as 100 in the year 2000.
+
    * Fix the `Date_and_Time' intrinsic (in `libg2c') to return the
      milliseconds value properly in VALUES(8).
 
