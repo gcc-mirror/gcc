@@ -12522,12 +12522,15 @@ rs6000_variable_issue (stream, verbose, insn, more)
     {
       enum attr_type type = get_attr_type (insn);
       if (type == TYPE_LOAD_EXT_U || type == TYPE_LOAD_EXT_UX
-	  || type == TYPE_LOAD_UX || type == TYPE_STORE_UX
-	  || type == TYPE_FPLOAD_UX || type == TYPE_FPSTORE_UX)
+	  || type == TYPE_LOAD_UX || type == TYPE_STORE_UX)
 	return 0;
       else if (type == TYPE_LOAD_U || type == TYPE_STORE_U
 	       || type == TYPE_FPLOAD_U || type == TYPE_FPSTORE_U
-	       || type == TYPE_LOAD_EXT || type == TYPE_DELAYED_CR)
+	       || type == TYPE_FPLOAD_UX || type == TYPE_FPSTORE_UX
+	       || type == TYPE_LOAD_EXT || type == TYPE_DELAYED_CR
+	       || type == TYPE_COMPARE || type == TYPE_DELAYED_COMPARE
+	       || type == TYPE_IMUL_COMPARE || type == TYPE_LMUL_COMPARE
+	       || type == TYPE_IDIV || type == TYPE_LDIV)
 	return more > 2 ? more - 2 : 0;
     }
 
@@ -12580,6 +12583,8 @@ rs6000_adjust_cost (insn, link, dep_insn, cost)
 	      && (get_attr_type (dep_insn) == TYPE_CMP
 		  || get_attr_type (dep_insn) == TYPE_COMPARE
 		  || get_attr_type (dep_insn) == TYPE_DELAYED_COMPARE
+		  || get_attr_type (dep_insn) == TYPE_IMUL_COMPARE
+		  || get_attr_type (dep_insn) == TYPE_LMUL_COMPARE
 		  || get_attr_type (dep_insn) == TYPE_FPCOMPARE
 		  || get_attr_type (dep_insn) == TYPE_CR_LOGICAL
 		  || get_attr_type (dep_insn) == TYPE_DELAYED_CR))
@@ -13712,13 +13717,19 @@ rs6000_rtx_costs (x, code, outer_code, total)
 
 	case PROCESSOR_PPC620:
 	case PROCESSOR_PPC630:
-	case PROCESSOR_POWER4:
 	  *total = (GET_CODE (XEXP (x, 1)) != CONST_INT
 		    ? GET_MODE (XEXP (x, 1)) != DImode
 		    ? COSTS_N_INSNS (5) : COSTS_N_INSNS (7)
 		    : (INTVAL (XEXP (x, 1)) >= -256
 		       && INTVAL (XEXP (x, 1)) <= 255)
 		    ? COSTS_N_INSNS (3) : COSTS_N_INSNS (4));
+	  return true;
+
+	case PROCESSOR_POWER4:
+	  *total = (GET_CODE (XEXP (x, 1)) != CONST_INT
+		    ? GET_MODE (XEXP (x, 1)) != DImode
+		    ? COSTS_N_INSNS (5) : COSTS_N_INSNS (7)
+		    : COSTS_N_INSNS (4));
 	  return true;
 
 	default:

@@ -1,3 +1,20 @@
+2003-04-01  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/{40x.md,603.md,6xx.md,7450.md,7xx.md,mpc.md,
+	power4.md,rios1.md,rios2.md,rs64.md}: Change mult_compare to
+	imul_compare.  Add lmul_compare.
+	* config/rs6000/power4.md: Bump some latencies.  Model extra cycle
+	in second pair of dispatch slots.  Model stores more accurately.
+	Tweak multiply model.  Add bypasses for CR instructions dependent
+	on complicated compares.
+	* config/rs6000/rs6000.md (mulsi3): Name imul_compare patterns.
+	(muldi3): Add lmul_compare patterns.
+	* config/rs6000/rs6000.c (rs6000_variable_issue): Move FPLOAD_UX
+	and FPSTORE_UX to split instructions and add COMPARE,
+	DELAYED_COMPARE, IMUL_COMPARE, LMUL_COMPARE, IDIV, LDIV.
+	(rs6000_adjust_cost): Add IMUL_COMPARE and LMUL_COMPARE.
+	(rs6000_rtx_costs): Separate POWER4 multiply case.
+
 2003-04-01  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.c (s390_fixup_clobbered_return_reg):
