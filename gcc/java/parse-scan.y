@@ -42,15 +42,12 @@ definitions and other extensions.  */
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "input.h"
 #include "obstack.h"
 #include "toplev.h"
 
 extern FILE *finput, *out;
  
-/* Current position in real source file.  */
-
-location_t input_location;
+ const char *main_input_filename;
 
 /* Obstack for the lexer.  */
 struct obstack temporary_obstack;
@@ -1295,7 +1292,7 @@ report_class_declaration (const char * name)
       if (!previous_output)
 	{
 	  if (flag_list_filename)
-	    fprintf (out, "%s: ", input_filename);
+	    fprintf (out, "%s: ", main_input_filename);
 	  previous_output = 1;
 	}
 
@@ -1340,7 +1337,7 @@ report (void)
 {
   extern int flag_complexity;
   if (flag_complexity)
-    fprintf (out, "%s %d\n", input_filename, complexity);
+    fprintf (out, "%s %d\n", main_input_filename, complexity);
 }
 
 /* Reset global status used by the report functions.  */
@@ -1357,7 +1354,7 @@ reset_report (void)
 void
 yyerror (const char *msg ATTRIBUTE_UNUSED)
 {
-  fprintf (stderr, "%s: %d: %s\n", input_filename, input_line, msg);
+  fprintf (stderr, "%s: %s\n", main_input_filename, msg);
   exit (1);
 }
 
