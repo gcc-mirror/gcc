@@ -1456,12 +1456,14 @@ else
   YACC="\$(USUAL_YACC)"
 
   # If CC is still not set, try to get gcc.
+  cc_prog_is_gcc=
   if test -z "${CC}" ; then
     IFS="${IFS= 	}"; save_ifs="$IFS"; IFS="${IFS}:"
     for dir in $PATH; do
       test -z "$dir" && dir=.
       if test -f $dir/gcc; then
 	CC="gcc"
+	cc_prog_is_gcc=yes
 	echo 'void f(){}' > conftest.c
 	if test -z "`${CC} -g -c conftest.c 2>&1`"; then
 	  CFLAGS=${CFLAGS-"-g -O2"}
@@ -1477,11 +1479,20 @@ else
     IFS="$save_ifs"
     CC=${CC-cc}
   else
+    # Determine if we are using gcc.
+    cat > conftest.c <<EOF
+#ifdef __GNUC__
+  yes;
+#endif
+EOF
+    if ${CC} -E conftest.c | grep yes >/dev/null 2>&1; then
+      cc_prog_is_gcc=yes
+    fi
+    rm -f conftest.c
     if test -z "${CFLAGS}"; then
       # Here CC is set but CFLAGS is not.  Use a quick hack to use -O2 if CC
       # is set to a version of gcc.
-      case "${CC}" in
-      *gcc)
+      if test "$cc_prog_is_gcc" = yes; then
 	echo 'void f(){}' > conftest.c
 	if test -z "`${CC} -g -c conftest.c 2>&1`"; then
 	  CFLAGS=${CFLAGS-"-g -O2"}
@@ -1491,7 +1502,25 @@ else
 	  CXXFLAGS=${CXXFLAGS-"-O2"}
 	fi
 	rm -f conftest*
-	;;
+      fi
+    fi
+  fi
+
+  # We must set the default linker to the linker used by gcc for the correct
+  # operation of libtool.  If LD is not defined and we are using gcc, try to
+  # set the LD default to the ld used by gcc.
+  if test -z "$LD"; then
+    if test "$cc_prog_is_gcc" = yes; then
+      case $build in
+      *-*-mingw*)
+	gcc_prog_ld=`$CC -print-prog-name=ld 2>&1 | tr -d '\015'` ;;
+      *)
+	gcc_prog_ld=`$CC -print-prog-name=ld 2>&1` ;;
+      esac
+      case $gcc_prog_ld in
+      # Accept absolute paths.
+      [[\\/]* | [A-Za-z]:[\\/]*)]
+        LD="$gcc_prog_ld" ;;
       esac
     fi
   fi

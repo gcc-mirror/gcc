@@ -1,3 +1,9 @@
+2003-01-04 John David Anglin  <dave.anglin@nrc.ca>
+
+	* configure.in (LD): Improve test for gcc.  Try to set LD to the ld used
+	by gcc if LD is not defined and we are not doing a Canadian Cross.
+	* configure: Rebuilt.
+
 2002-12-31  Tom Tromey  <tromey@redhat.com>
 
 	* Makefile.in: Rebuilt.
