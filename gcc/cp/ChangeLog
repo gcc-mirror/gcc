@@ -1,5 +1,12 @@
 2002-07-17  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
+	PR c++/3797
+	* decl.c (duplicate_decls): Don't propagate inlining parameters from
+	olddecl to newdecl when newdecl is a specialization of the 
+	instantiation olddecl.
+
+2002-07-17  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
 	PR c++/4802, c++/5387
 	* decl.c (make_typename_type): Use enforce_access.
 
