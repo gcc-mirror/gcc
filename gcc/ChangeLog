@@ -1,3 +1,10 @@
+Sun May  7 00:54:57 EDT 2000  John Wehle  (john@feith.com)
+
+	* rtl.def (COND_EXEC): Clarify.
+
+	* i386.md (extendsidi2): Clobber (reg:CC 17) in the
+	same fashion as zero_extendsidi2.
+
 2000-05-06  Richard Henderson  <rth@cygnus.com>
 
 	* config/ia64/ia64.c (predicate_operator): New.
