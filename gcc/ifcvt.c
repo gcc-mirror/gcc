@@ -884,10 +884,8 @@ noce_try_addcc (struct noce_if_info *if_info)
   int subtract, normalize;
 
   if (! no_new_pseudos
-      /* Should be no `else' case to worry about.  */
-      && if_info->b == if_info->x
       && GET_CODE (if_info->a) == PLUS
-      && rtx_equal_p (XEXP (if_info->a, 0), if_info->x)
+      && rtx_equal_p (XEXP (if_info->a, 0), if_info->b)
       && (reversed_comparison_code (if_info->cond, if_info->jump)
 	  != UNKNOWN))
     {
@@ -942,7 +940,7 @@ noce_try_addcc (struct noce_if_info *if_info)
 	  if (target)
 	    target = expand_simple_binop (GET_MODE (if_info->x),
 					  subtract ? MINUS : PLUS,
-					  if_info->x, target, if_info->x,
+					  if_info->b, target, if_info->x,
 					  0, OPTAB_WIDEN);
 	  if (target)
 	    {
