@@ -77,4 +77,4 @@ extern int get_token _PARAMS ((FILE *, sstring *));
 extern int source_lineno;
 extern sstring source_filename;
 /* Current physical line number */
-extern int input_line;
+extern int lineno;

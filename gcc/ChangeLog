@@ -1,3 +1,7 @@
+2003-05-01  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* scan.h (lineno): Revert the rename here.
+
 2003-05-01  Stan Shebs  <shebs@apple.com>
 
 	* config/darwin.c (darwin_encode_section_info): Call
