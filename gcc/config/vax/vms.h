@@ -41,7 +41,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    and GNU CPP is not used on VMS except with GNU C.  */
 #define CPP_PREDEFINES \
 "-Dvax -Dvms -DVMS -D__vax__ -D__vms__ -D__VMS__\
- -D__GNUC__=2 -D__GNUC_MINOR__=6 -Asystem(vms) -Acpu(vax) -Amachine(vax)"
+ -D__GNUC__=2 -D__GNUC_MINOR__=7 -Asystem(vms) -Acpu(vax) -Amachine(vax)"
 
 /* These match the definitions used in VAXCRTL, the VMS C run-time library */
 
