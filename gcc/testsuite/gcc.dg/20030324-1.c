@@ -1,6 +1,11 @@
 /* { dg-do run } */
 /* { dg-options "-O -fstrength-reduce -fstrict-aliasing -fforce-mem -fgcse" } */
 
+/* PR optimization/10087 */
+/* Contributed by Peter van Hoof <p.van-hoof@qub.ac.uk> */
+ 
+extern void abort(void);
+
 void b(int*,int*);
     
 typedef struct {
@@ -26,7 +31,8 @@ int main(void)
       s = E[j][i].T1;
 
   b(&j,&i);
-  printf( "result %.6e\n", s);
+  if (s != 1)
+    abort ();
   return 0;
 }
 

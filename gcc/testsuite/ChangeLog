@@ -1,3 +1,7 @@
+2003-03-30  Glen Nakamura  <glen@imodulo.com>
+
+        * gcc.dg/20030324-1.c: Add comments and abort if test fails.
+
 2003-03-28  Roger Sayle  <roger@eyesopen.com>
 
 	* gcc.c-torture/execute/ieee/fp-cmp-6.c:  Correct test for -O0.
