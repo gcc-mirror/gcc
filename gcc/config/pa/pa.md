@@ -3881,7 +3881,7 @@
       rtx temp = gen_reg_rtx (SImode);
       emit_insn (gen_subsi3 (temp, GEN_INT (31), operands[2]));
       if (GET_CODE (operands[1]) == CONST_INT)
-	emit_insn (gen_zvdep_imm (operands[0], operands[1], temp));
+	emit_insn (gen_zvdep_imm32 (operands[0], operands[1], temp));
       else
 	emit_insn (gen_zvdep32 (operands[0], operands[1], temp));
       DONE;
@@ -3900,10 +3900,10 @@
   [(set_attr "type" "shift")
    (set_attr "length" "4")])
 
-; Match cases of op1 a CONST_INT here that zvdep_imm doesn't handle.
+; Match cases of op1 a CONST_INT here that zvdep_imm32 doesn't handle.
 ; Doing it like this makes slightly better code since reload can
 ; replace a register with a known value in range -16..15 with a
-; constant.  Ideally, we would like to merge zvdep32 and zvdep_imm,
+; constant.  Ideally, we would like to merge zvdep32 and zvdep_imm32,
 ; but since we have no more CONST_OK... characters, that is not
 ; possible.
 (define_insn "zvdep32"
@@ -3918,7 +3918,7 @@
   [(set_attr "type" "shift,shift")
    (set_attr "length" "4,4")])
 
-(define_insn "zvdep_imm"
+(define_insn "zvdep_imm32"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(ashift:SI (match_operand:SI 1 "lhs_lshift_cint_operand" "")
 		   (minus:SI (const_int 31)
