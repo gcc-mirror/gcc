@@ -3230,6 +3230,13 @@ expand_start_bindings (flags)
 
   thisblock->data.block.conditional_code = 0;
   thisblock->data.block.last_unconditional_cleanup = note;
+  /* When we insert instructions after the last unconditional cleanup,
+     we don't adjust last_insn.  That means that a later add_insn will
+     clobber the instructions we've just added.  The easiest way to
+     fix this is to just insert another instruction here, so that the
+     instructions inserted after the last unconditional cleanup are
+     never the last instruction.  */
+  emit_note (NULL_PTR, NOTE_INSN_DELETED);
   thisblock->data.block.cleanup_ptr = &thisblock->data.block.cleanups;
 
   if (block_stack

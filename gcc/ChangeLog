@@ -1,3 +1,8 @@
+Thu Sep 23 18:18:55 1999  Mark Mitchell  <mark@codesourcery.com>
+
+	* stmt.c (expand_start_bindings): Don't allow cleanup isntructions
+	to disappear.
+
 Thu Sep 23 18:07:01 1999  Mark Mitchell  <mark@codesourcery.com>
 
 	* optabs.c (init_traps): Register trap_rtx as a GC root.
