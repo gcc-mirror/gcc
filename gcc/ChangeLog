@@ -1,3 +1,8 @@
+Thu Oct 15 12:42:13 1998  David Edelsohn  <edelsohn@mhpcc.edu>
+
+	* loop.c (strength_reduce): Undo Oct 14 change marking bct_p
+	ATTRIBUTE_UNUSED.
+
 Thu Oct 15 00:57:55 1998  Robert Lipe  <robertl@dgii.com>
 
 	* c-pragma.c (handle_pragma_token): Test for null tree before
