@@ -851,7 +851,7 @@ struct tree_vec GTY(())
 #define SAVE_EXPR_NOPLACEHOLDER(NODE) TREE_UNSIGNED (SAVE_EXPR_CHECK (NODE))
 /* Nonzero if the SAVE_EXPRs value should be kept, even if it occurs
    both in normal code and in a handler.  (Normally, in a handler, all
-   SAVE_EXPRs are unsaved, meaning that there values are
+   SAVE_EXPRs are unsaved, meaning that their values are
    recalculated.)  */
 #define SAVE_EXPR_PERSISTENT_P(NODE) TREE_ASM_WRITTEN (SAVE_EXPR_CHECK (NODE))
 
