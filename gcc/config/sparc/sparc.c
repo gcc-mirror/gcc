@@ -1059,16 +1059,13 @@ output_move_double (operands)
 	op1 = operands[1], op2 = operands[0];
 
       /* Now see if we can trust the address to be 8-byte aligned.  */
-      /* Trust global variables.  */
+      /* Trust double-precision floats in global variables.  */
 
-      if (GET_CODE (op2) == LO_SUM)
+      if (GET_CODE (XEXP (op2, 0)) == LO_SUM && GET_MODE (op2) == DFmode)
 	{
-	  operands[0] = op1;
-	  operands[1] = op2;
-
 	  if (final_sequence)
 	    abort ();
-	  return "ldd %1,%0";
+	  return (op1 == operands[0] ? "ldd %1,%0" : "std %1,%0");
 	}
 
       if (GET_CODE (XEXP (op2, 0)) == PLUS)
@@ -1102,12 +1099,12 @@ output_move_double (operands)
 	       && GET_MODE (operands[1]) == DFmode
 	       && (CONSTANT_P (XEXP (operands[1], 0))
 		   /* Let user ask for it anyway.  */
-		   || TARGET_ALIGN))
+		   || TARGET_HOPE_ALIGN))
 	return "ldd %1,%0";
       else if (GET_CODE (operands[0]) == MEM
 	       && GET_MODE (operands[0]) == DFmode
 	       && (CONSTANT_P (XEXP (operands[0], 0))
-		   || TARGET_ALIGN))
+		   || TARGET_HOPE_ALIGN))
 	return "std %1,%0";
     }
 
@@ -1183,7 +1180,7 @@ output_fp_move_double (operands)
       addr = XEXP (operands[1], 0);
 
       /* Use ldd if known to be aligned.  */
-      if (TARGET_ALIGN
+      if (TARGET_HOPE_ALIGN
 	  || (GET_CODE (addr) == PLUS
 	      && (((XEXP (addr, 0) == frame_pointer_rtx
 		    || XEXP (addr, 0) == stack_pointer_rtx)
@@ -1215,7 +1212,7 @@ output_fp_move_double (operands)
       addr = XEXP (operands[0], 0);
 
       /* Use std if we can be sure it is well-aligned.  */
-      if (TARGET_ALIGN
+      if (TARGET_HOPE_ALIGN
 	  || (GET_CODE (addr) == PLUS
 	      && (((XEXP (addr, 0) == frame_pointer_rtx
 		    || XEXP (addr, 0) == stack_pointer_rtx)
@@ -1433,12 +1430,77 @@ output_block_move (operands)
   xoperands[1] = operands[1];
   xoperands[2] = temp1;
 
-  /* We can't move more than this many bytes at a time
-     because we have only one register to move them through.  */
-  if (align > GET_MODE_SIZE (GET_MODE (temp1)))
+  /* We can't move more than this many bytes at a time because we have only
+     one register, %g1, to move them through.  */
+  if (align > UNITS_PER_WORD)
     {
-      align = GET_MODE_SIZE (GET_MODE (temp1));
-      alignrtx = gen_rtx (CONST_INT, VOIDmode, GET_MODE_SIZE (GET_MODE (temp1)));
+      align = UNITS_PER_WORD;
+      alignrtx = gen_rtx (CONST_INT, VOIDmode, UNITS_PER_WORD);
+    }
+
+  /* We consider 8 ld/st pairs, for a total of 16 inline insns to be
+     reasonable here.  (Actually will emit a maximum of 18 inline insns for
+     the case of size == 31 and align == 4).  */
+
+  if (GET_CODE (sizertx) == CONST_INT && (INTVAL (sizertx) / align) <= 8
+      && memory_address_p (QImode, plus_constant_for_output (xoperands[0],
+							     INTVAL (sizertx)))
+      && memory_address_p (QImode, plus_constant_for_output (xoperands[1],
+							     INTVAL (sizertx))))
+    {
+      int size = INTVAL (sizertx);
+      int offset = 0;
+
+      /* We will store different integers into this particular RTX.  */
+      xoperands[2] = rtx_alloc (CONST_INT);
+      PUT_MODE (xoperands[2], VOIDmode);
+
+      /* This case is currently not handled.  Abort instead of generating
+	 bad code.  */
+      if (align > 4)
+	abort ();
+
+      if (align >= 4)
+	{
+	  for (i = (size >> 2) - 1; i >= 0; i--)
+	    {
+	      INTVAL (xoperands[2]) = (i << 2) + offset;
+	      output_asm_insn ("ld [%a1+%2],%%g1\n\tst %%g1,[%a0+%2]",
+			       xoperands);
+	    }
+	  offset += (size & ~0x3);
+	  size = size & 0x3;
+	  if (size == 0)
+	    return "";
+	}
+
+      if (align >= 2)
+	{
+	  for (i = (size >> 1) - 1; i >= 0; i--)
+	    {
+	      INTVAL (xoperands[2]) = (i << 1) + offset;
+	      output_asm_insn ("lduh [%a1+%2],%%g1\n\tsth %%g1,[%a0+%2]",
+			       xoperands);
+	    }
+	  offset += (size & ~0x1);
+	  size = size & 0x1;
+	  if (size == 0)
+	    return "";
+	}
+
+      if (align >= 1)
+	{
+	  for (i = size - 1; i >= 0; i--)
+	    {
+	      INTVAL (xoperands[2]) = i + offset;
+	      output_asm_insn ("ldub [%a1+%2],%%g1\n\tstb %%g1,[%a0+%2]",
+			       xoperands);
+	    }
+	  return "";
+	}
+
+      /* We should never reach here.  */
+      abort ();
     }
 
   /* If the size isn't known to be a multiple of the alignment,
@@ -1457,87 +1519,12 @@ output_block_move (operands)
   if (align != INTVAL (alignrtx))
     alignrtx = gen_rtx (CONST_INT, VOIDmode, align);
 
-  /* Recognize special cases of block moves.  These occur
-     when GNU C++ is forced to treat something as BLKmode
-     to keep it in memory, when its mode could be represented
-     with something smaller.
-
-     We cannot do this for global variables, since we don't know
-     what pages they don't cross.  Sigh.  */
-  if (GET_CODE (sizertx) == CONST_INT && INTVAL (sizertx) <= 16)
-    {
-      int size = INTVAL (sizertx);
-
-      if (align == 1)
-	{
-	  if (memory_address_p (QImode,
-				plus_constant_for_output (xoperands[0], size))
-	      && memory_address_p (QImode,
-				   plus_constant_for_output (xoperands[1],
-							     size)))
-	    {
-	      /* We will store different integers into this particular RTX.  */
-	      xoperands[2] = rtx_alloc (CONST_INT);
-	      PUT_MODE (xoperands[2], VOIDmode);
-	      for (i = size-1; i >= 0; i--)
-		{
-		  INTVAL (xoperands[2]) = i;
-		  output_asm_insn ("ldub [%a1+%2],%%g1\n\tstb %%g1,[%a0+%2]",
-				   xoperands);
-		}
-	      return "";
-	    }
-	}
-      else if (align == 2)
-	{
-	  if (memory_address_p (HImode,
-				plus_constant_for_output (xoperands[0], size))
-	      && memory_address_p (HImode,
-				   plus_constant_for_output (xoperands[1],
-							     size)))
-	    {
-	      /* We will store different integers into this particular RTX.  */
-	      xoperands[2] = rtx_alloc (CONST_INT);
-	      PUT_MODE (xoperands[2], VOIDmode);
-	      for (i = (size>>1)-1; i >= 0; i--)
-		{
-		  INTVAL (xoperands[2]) = i<<1;
-		  output_asm_insn ("lduh [%a1+%2],%%g1\n\tsth %%g1,[%a0+%2]",
-				   xoperands);
-		}
-	      return "";
-	    }
-	}
-      else
-	{
-	  if (memory_address_p (SImode,
-				plus_constant_for_output (xoperands[0], size))
-	      && memory_address_p (SImode,
-				   plus_constant_for_output (xoperands[1],
-							     size)))
-	    {
-	      /* We will store different integers into this particular RTX.  */
-	      xoperands[2] = rtx_alloc (CONST_INT);
-	      PUT_MODE (xoperands[2], VOIDmode);
-	      for (i = (size>>2)-1; i >= 0; i--)
-		{
-		  INTVAL (xoperands[2]) = i<<2;
-		  output_asm_insn ("ld [%a1+%2],%%g1\n\tst %%g1,[%a0+%2]",
-				   xoperands);
-		}
-	      return "";
-	    }
-	}
-    }
-
   xoperands[3] = gen_rtx (CONST_INT, VOIDmode, movstrsi_label++);
   xoperands[4] = gen_rtx (CONST_INT, VOIDmode, align);
   xoperands[5] = gen_rtx (CONST_INT, VOIDmode, movstrsi_label++);
 
-  /* This is the size of the transfer.
-     Either use the register which already contains the size,
-     or use a free register (used by no operands).
-     Also emit code to decrement the size value by ALIGN.  */
+  /* This is the size of the transfer.  Emit code to decrement the size
+     value by ALIGN, and store the result in the temp1 register.  */
   output_size_for_block_move (sizertx, temp1, alignrtx);
 
   /* Must handle the case when the size is zero or negative, so the first thing
