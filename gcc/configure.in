@@ -1718,6 +1718,55 @@ if test x"$gcc_cv_as_shf_merge" = xyes; then
 fi
 AC_MSG_RESULT($gcc_cv_as_shf_merge)
 
+AC_MSG_CHECKING(assembler thread-local storage support)
+gcc_cv_as_tls=no
+conftest_s=
+tls_first_major=
+tls_first_minor=
+case "$target" in
+changequote(,)dnl
+  i[34567]86-*-*)
+changequote([,])dnl
+    conftest_s='
+	.section ".tdata","awT",@progbits
+foo:	.long	25
+	.text
+	movl	%gs:0, %eax
+	leal	foo@TLSGD(,%ebx,1), %eax
+	leal	foo@TLSLDM(%ebx), %eax
+	leal	foo@DTPOFF(%eax), %edx
+	movl	foo@GOTTPOFF(%ebx), %eax
+	subl	foo@GOTTPOFF(%ebx), %eax
+	movl	$foo@TPOFF, %eax
+	subl	$foo@TPOFF, %eax
+	leal	foo@NTPOFF(%ecx), %eax'
+	tls_first_major=2
+	tls_first_minor=13
+	;;
+esac
+if test -z "$tls_first_major"; then
+  :
+elif test x$gcc_cv_gas_major_version != x -a x$gcc_cv_gas_minor_version != x
+then
+  if test "$gcc_cv_gas_major_version" -eq "$tls_first_major" \
+	  -a "$gcc_cv_gas_minor_version" -ge "$tls_first_minor" \
+	  -o "$gcc_cv_gas_major_version" -gt "$tls_first_major"; then
+    gcc_cv_as_tls=yes
+  fi
+elif test x$gcc_cv_as != x; then
+  echo "$conftest_s" > conftest.s
+  if $gcc_cv_as --fatal-warnings -o conftest.o conftest.s > /dev/null 2>&1
+  then
+    gcc_cv_as_tls=yes
+  fi
+  rm -f conftest.s conftest.o
+fi
+if test "$gcc_cv_as_tls" = yes; then
+  AC_DEFINE(HAVE_AS_TLS, 1,
+	    [Define if your assembler supports thread-local storage.])
+fi
+AC_MSG_RESULT($gcc_cv_as_tls)
+
 case "$target" in
   # All TARGET_ABI_OSF targets.
   alpha*-*-osf* | alpha*-*-linux* | alpha*-*-*bsd*)
