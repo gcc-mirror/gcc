@@ -128,13 +128,8 @@ namespace std
 	  long double __ld;
 	  errno = 0;
 	  int __p = sscanf(__s, "%Lf", &__ld);
-	  if (errno == ERANGE)
-	    __p = 0;
-#ifdef _GLIBCXX_HAVE_FINITEL
-	  if ((__p == 1) && !finitel (__ld))
-	    __p = 0;
-#endif
-	  if (__p && static_cast<int_type>(__p) != char_traits<char>::eof())
+	  if (__p && static_cast<int_type>(__p) != char_traits<char>::eof()
+	      && errno != ERANGE)
 	    __v = __ld;
 #endif
 	  else
