@@ -1961,11 +1961,23 @@ cxx_keyword_p (name, length)
        mid != old;
        old = mid, mid = (last + first) / 2)
     {
-      int r = utf8_cmp (name, length, cxx_keywords[mid]);
+      int kwl = strlen (cxx_keywords[mid]);
+      int min_length = kwl > length ? length : kwl;
+      int r = utf8_cmp (name, min_length, cxx_keywords[mid]);
 
       if (r == 0)
-	return 1;
-      else if (r < 0)
+	{
+	  int i;
+	  /* We've found a match if all the remaining characters are
+	     `$'.  */
+	  for (i = min_length; i < length && name[i] == '$'; ++i)
+	    ;
+	  if (i == length)
+	    return 1;
+	  r = 1;
+	}
+
+      if (r < 0)
 	last = mid;
       else
 	first = mid;
