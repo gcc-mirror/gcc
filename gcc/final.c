@@ -502,7 +502,7 @@ end_final (filename)
       ASM_GENERATE_INTERNAL_LABEL (name, "LPBX", 0);
       DECL_NAME (structure_value) = get_identifier (name);
 
-      /* Size of this structure. */
+      /* Size of this structure.  */
       TREE_VALUE (sizeof_field_value)
 	= convert (long_integer_type_node,
 		   build_int_2 (int_size_in_bytes (structure_decl), 0));
@@ -668,7 +668,7 @@ get_attr_length (insn)
 
       case JUMP_INSN:
 	body = PATTERN (insn);
-        if (GET_CODE (body) == ADDR_VEC || GET_CODE (body) == ADDR_DIFF_VEC)
+	if (GET_CODE (body) == ADDR_VEC || GET_CODE (body) == ADDR_DIFF_VEC)
 	  {
 	    /* Alignment is machine-dependent and should be handled by
 	       ADDR_VEC_ALIGN.  */
@@ -1521,7 +1521,7 @@ shorten_branches (first)
 
 		      insn_current_address += insn_lengths[inner_uid];
 		    }
-                }
+		}
 	      else
 		insn_current_address += insn_lengths[uid];
 
@@ -1937,7 +1937,7 @@ final (first, file, optimize, prescan)
       new_item->cfg_checksum = profile_info.current_function_cfg_checksum;
       new_item->count_edges = profile_info.count_edges_instrumented_now;
     }
-  
+
   free (line_note_exists);
   line_note_exists = NULL;
 }
@@ -2696,13 +2696,13 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	insn_code_number = recog_memoized (insn);
 	cleanup_subreg_operands (insn);
 
-       /* Dump the insn in the assembly for debugging.  */
-       if (flag_dump_rtl_in_asm)
-         {
-           print_rtx_head = ASM_COMMENT_START;
-           print_rtl_single (asm_out_file, insn);
-           print_rtx_head = "";
-         }
+	/* Dump the insn in the assembly for debugging.  */
+	if (flag_dump_rtl_in_asm)
+	  {
+	    print_rtx_head = ASM_COMMENT_START;
+	    print_rtl_single (asm_out_file, insn);
+	    print_rtx_head = "";
+	  }
 
 	if (! constrain_operands_cached (1))
 	  fatal_insn_not_found (insn);
@@ -3127,7 +3127,7 @@ output_operand_lossage VPARAMS ((const char *msgid, ...))
   pfx_str = this_is_asm_operands ? _("invalid `asm': ") : "output_operand: ";
   asprintf (&fmt_string, "%s%s", pfx_str, _(msgid));
   vasprintf (&new_message, fmt_string, ap);
-  
+
   if (this_is_asm_operands)
     error_for_asm (this_is_asm_operands, "%s", new_message);
   else
