@@ -4688,53 +4688,64 @@ instantiate_class_template (type)
      DECL_TI_ARGS of some instantiated member template.  */
   args = copy_to_permanent (args);
 
-  {
-    tree binfo = TYPE_BINFO (type);
-    tree pbases = TYPE_BINFO_BASETYPES (pattern);
+  if (TYPE_BINFO_BASETYPES (pattern))
+    {
+      tree base_list = NULL_TREE;
+      tree pbases = TYPE_BINFO_BASETYPES (pattern);
+      int i;
 
-    if (pbases)
-      {
-	tree bases;
-	int i;
-	int len = TREE_VEC_LENGTH (pbases);
-	bases = make_tree_vec (len);
-	for (i = 0; i < len; ++i)
-	  {
-	    tree elt, basetype;
+      /* Substitute into each of the bases to determine the actual
+	 basetypes.  */
+      for (i = 0; i < TREE_VEC_LENGTH (pbases); ++i)
+	{
+	  tree base;
+	  tree access;
+	  tree pbase;
 
-	    TREE_VEC_ELT (bases, i) = elt
-	      = tsubst (TREE_VEC_ELT (pbases, i), args,
-			/*complain=*/1, NULL_TREE);
-	    BINFO_INHERITANCE_CHAIN (elt) = binfo;
+	  pbase = TREE_VEC_ELT (pbases, i);
 
-	    basetype = TREE_TYPE (elt);
+	  /* Substitue to figure out the base class.  */
+	  base = tsubst (BINFO_TYPE (pbase), args, 
+			 /*complain=*/1, NULL_TREE);
+	  if (base == error_mark_node)
+	    continue;
 
-	    if (! IS_AGGR_TYPE (basetype))
-	      cp_error
-		("base type `%T' of `%T' fails to be a struct or class type",
-		 basetype, type);
-	    else if (TYPE_SIZE (complete_type (basetype)) == NULL_TREE)
-	      cp_error ("base class `%T' of `%T' has incomplete type",
-			basetype, type);
+	  /* Calculate the correct access node.  */
+	  if (TREE_VIA_VIRTUAL (pbase)) 
+	    {
+	      if (TREE_VIA_PUBLIC (pbase))
+		access = access_public_virtual_node;
+	      else if (TREE_VIA_PROTECTED (pbase))
+		access = access_protected_virtual_node;
+	      else if (TREE_VIA_PRIVATE (pbase))
+		access = access_private_virtual_node;
+	    }
+	  else
+	    {
+	      if (TREE_VIA_PUBLIC (pbase))
+		access = access_public_node;
+	      else if (TREE_VIA_PROTECTED (pbase))
+		access = access_protected_node;
+	      else if (TREE_VIA_PRIVATE (pbase))
+		access = access_private_node;
+	    }
 
-	    /* These are set up in xref_basetypes for normal classes, so
-	       we have to handle them here for template bases.  */
+	  base_list = tree_cons (access, base, base_list);
+	}
 
-	    unshare_base_binfos (elt);
+      /* The list is now in reverse order; correct that.  */
+      base_list = nreverse (base_list);
 
-	    if (TYPE_USES_VIRTUAL_BASECLASSES (basetype))
-	      {
-		TYPE_USES_VIRTUAL_BASECLASSES (type) = 1;
-		TYPE_USES_COMPLEX_INHERITANCE (type) = 1;
-	      }
-	    TYPE_GETS_NEW (type) |= TYPE_GETS_NEW (basetype);
-	    TYPE_GETS_DELETE (type) |= TYPE_GETS_DELETE (basetype);
-	  }
-	/* Don't initialize this until the vector is filled out, or
-	   lookups will crash.  */
-	BINFO_BASETYPES (binfo) = bases;
-      }
-  }
+      /* Now call xref_basetypes to set up all the base-class
+	 information.  */
+      xref_basetypes (TREE_CODE (pattern) == RECORD_TYPE
+		      ? (CLASSTYPE_DECLARED_CLASS (pattern)
+			 ? class_type_node : record_type_node)
+		      : union_type_node,
+		      DECL_NAME (TYPE_NAME (pattern)),
+		      type,
+		      base_list);
+    }
 
   for (t = CLASSTYPE_TAGS (pattern); t; t = TREE_CHAIN (t))
     {

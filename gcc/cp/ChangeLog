@@ -1,3 +1,8 @@
+1999-02-17  Mark Mitchell  <mark@markmitchell.com>
+
+	* decl.c (xref_basetypes): Comment.
+	* pt.c (instantiate_class_template): Use xref_basetypes.
+
 1999-02-16  Mark Mitchell  <mark@markmitchell.com>
 
 	* cp-tree.h (tsubst): Change prototype.

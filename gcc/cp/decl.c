@@ -12357,6 +12357,12 @@ xref_tag_from_type (old, id, globalize)
   return xref_tag (code_type_node, id, globalize);
 }
 
+/* REF is a type (named NAME), for which we have just seen some
+   baseclasses.  BINFO is a list of those baseclasses; the
+   TREE_PURPOSE is an access_* node, and the TREE_VALUE is the type of
+   the base-class.  CODE_TYPE_NODE indicates whether REF is a class,
+   struct, or union.  */
+
 void
 xref_basetypes (code_type_node, name, ref, binfo)
      tree code_type_node;
