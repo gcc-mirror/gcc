@@ -2009,12 +2009,6 @@ invalidate_for_call ()
 	{
 	  next = p->next_same_hash;
 
-	  if (p->in_memory)
-	    {
-	      remove_from_table (p, hash);
-	      continue;
-	    }
-
 	  if (GET_CODE (p->exp) != REG
 	      || REGNO (p->exp) >= FIRST_PSEUDO_REGISTER)
 	    continue;
