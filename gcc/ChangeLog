@@ -1,3 +1,8 @@
+1999-10-14  Gavin Romig-Koch  <gavin@cygnus.com>
+
+	* libgcc2.c (__do_global_dtors): Protect __deregister_frame_info
+	from multiple calls.
+
 Thu Oct 14 04:54:54 1999  Richard Henderson  <rth@cygnus.com>
 
 	* i386.md (call value patterns): Move to the end of the file.
