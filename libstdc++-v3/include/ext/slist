@@ -344,7 +344,7 @@ namespace __gnu_cxx
 	_Node* __node = this->_M_get_node();
 	try
 	  {
-	    get_allocator().construct(&__node->_M_data);
+	    get_allocator().construct(&__node->_M_data, value_type());
 	    __node->_M_next = 0;
 	  }
 	catch(...)

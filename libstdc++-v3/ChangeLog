@@ -1,3 +1,20 @@
+2004-08-01  Matt Austern  <austern@apple.com>
+
+	PR libstdc++/16844
+	* include/bits/stl_list.h (_M_create_node): Remove unused 
+	zero-argument version.
+	* include/ext/slist (_M_create_node): Pass two arguments to
+	allocator's construct() member function.
+	* testsuite/23_containers/deque/explicit_instantiation.cc: New.
+	* testsuite/23_containers/list/explicit_instantiation.cc: New.
+	* testsuite/23_containers/vector/explicit_instantiation.cc: New.
+	* testsuite/23_containers/map/explicit_instantiation.cc: New.
+	* testsuite/23_containers/set/explicit_instantiation.cc: New.
+	* testsuite/23_containers/multimap/explicit_instantiation.cc: New.
+	* testsuite/23_containers/multiset/explicit_instantiation.cc: New.
+	* testsuite/ext/hash_set_explicit_instantiation.cc: New.
+	* testsuite/ext/slist_explicit_instantiation.cc: New.
+	
 2004-07-30  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/locale_facets.tcc (num_get<>::_M_extract_float,
