@@ -4580,6 +4580,10 @@ fold_rtx (x, insn)
   switch (GET_RTX_CLASS (code))
     {
     case '1':
+      /* We can't simplify extension ops unless we know the original mode.  */
+      if ((code == ZERO_EXTEND || code == SIGN_EXTEND)
+	  && mode_arg0 == VOIDmode)
+	break;
       new = simplify_unary_operation (code, mode,
 				      const_arg0 ? const_arg0 : folded_arg0,
 				      mode_arg0);
@@ -6630,6 +6634,17 @@ cse_process_notes (x, object)
 	XEXP (x, 1) = cse_process_notes (XEXP (x, 1), 0);
       return x;
 
+    case SIGN_EXTEND:
+    case ZERO_EXTEND:
+      {
+	rtx new = cse_process_notes (XEXP (x, 0), object);
+	/* We don't substitute VOIDmode constants into these rtx,
+	   since they would impede folding.  */
+	if (GET_MODE (new) != VOIDmode)
+	  validate_change (object, &XEXP (x, 0), new, 0);
+	return x;
+      }
+
     case REG:
       i = reg_qty[REGNO (x)];
 
@@ -7599,6 +7614,7 @@ delete_dead_from_cse (insns, nreg)
   rtx insn;
   rtx tem;
   int i;
+  int in_libcall = 0;
 
   /* First count the number of times each register is used.  */
   bzero (counts, sizeof (int) * nreg);
@@ -7613,7 +7629,14 @@ delete_dead_from_cse (insns, nreg)
     {
       int live_insn = 0;
 
-      if (GET_CODE (PATTERN (insn)) == SET)
+      /* Don't delete any insns that are part of a libcall block.
+	 Flow or loop might get confused if we did that.  */
+      if (find_reg_note (insn, REG_LIBCALL, 0))
+	in_libcall = 1;
+
+      if (in_libcall)
+	live_insn = 1;
+      else if (GET_CODE (PATTERN (insn)) == SET)
 	{
 	  if (GET_CODE (SET_DEST (PATTERN (insn))) == REG
 	      && SET_DEST (PATTERN (insn)) == SET_SRC (PATTERN (insn)))
@@ -7665,16 +7688,17 @@ delete_dead_from_cse (insns, nreg)
 	live_insn = 1;
 
       /* If this is a dead insn, delete it and show registers in it aren't
-	 being used.  If this is the last insn of a libcall sequence, don't
-	 delete it even if it is dead because we don't know how to do so
-	 here.  */
+	 being used.  */
 
-      if (! live_insn && ! find_reg_note (insn, REG_RETVAL, 0))
+      if (! live_insn)
 	{
 	  count_reg_usage (insn, counts, -1);
 	  PUT_CODE (insn, NOTE);
 	  NOTE_SOURCE_FILE (insn) = 0;
 	  NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
 	}
+
+      if (find_reg_note (insn, REG_RETVAL, 0))
+	in_libcall = 0;
     }
 }
