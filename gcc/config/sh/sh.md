@@ -1688,9 +1688,8 @@
       rtx addr = force_reg (SImode, sym);
       rtx insns = gen_mulsi3_call (operands[0], operands[1],
 				   operands[2], addr);
-      first = XVECEXP (insns, 0, 0);
-      last = XVECEXP (insns, 0, XVECLEN (insns, 0) - 1);
-      emit_insn (insns);
+      first = insns;
+      last = emit_insn (insns);
     }
   else
     {
