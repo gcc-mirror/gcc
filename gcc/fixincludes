@@ -1660,23 +1660,41 @@ if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
 fi
 
 if [ -r ${LIB}/$file ]; then
-  if grep 'stderr' ${LIB}/$file >/dev/null ; then
-    if grep 'include.*stdio.h' ${LIB}/$file >/dev/null ; then
+  if grep 'stderr' ${LIB}/$file >/dev/null 2>/dev/null; then
+    if grep 'include.*stdio.h' ${LIB}/$file >/dev/null 2>/dev/null; then
       true
     else
       echo "Fixing $file (needs stdio.h)"
       echo '#include <stdio.h>' >>${LIB}/$file
     fi
   fi
-  if grep 'exit *(' ${LIB}/$file >/dev/null || 
-     grep 'abort *(' ${LIB}/$file >/dev/null ; then
-    if grep 'include.*stdlib.h' ${LIB}/$file >/dev/null ; then
+  if grep 'exit *(' ${LIB}/$file >/dev/null 2>/dev/null || 
+     grep 'abort *(' ${LIB}/$file >/dev/null 2>/dev/null; then
+    if grep 'include.*stdlib.h' ${LIB}/$file >/dev/null 2>/dev/null; then
       true
     else
       echo "Fixing $file (needs stdlib.h)"
       echo '#include <stdlib.h>' >>${LIB}/$file
     fi
   fi
+  if cmp $file ${LIB}/$file >/dev/null 2>&1; then
+    rm -f ${LIB}/$file
+  fi
+fi
+
+# Fix return value of sbrk in unistd.h on Alpha OSF/1 V2.0
+file=unistd.h
+if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
+  cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
+  chmod +w ${LIB}/$file 2>/dev/null
+  chmod a+r ${LIB}/$file 2>/dev/null
+fi
+
+if [ -r ${LIB}/$file ]; then
+  echo Fixing $file, sbrk declaration
+  sed -e 's/char\([ 	]*\*[	 ]*sbrk[ 	]*(\)/void\1/' \
+    ${LIB}/$file > ${LIB}/${file}.sed
+  rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
   if cmp $file ${LIB}/$file >/dev/null 2>&1; then
     rm -f ${LIB}/$file
   fi
