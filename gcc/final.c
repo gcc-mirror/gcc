@@ -837,7 +837,8 @@ label_to_alignment (label)
    GROWTH should be ~0 if the objective is to compute potential code size
    increase, and 0 if the objective is to compute potential shrink.
    The return value is undefined for any other value of GROWTH.  */
-int align_fuzz (start, end, known_align_log, growth)
+int
+align_fuzz (start, end, known_align_log, growth)
      rtx start, end;
      int known_align_log;
      unsigned growth;
