@@ -1,3 +1,8 @@
+2000-11-17  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* typeck2.c (incomplete_type_error): Reorganise to avoid
+	excessive diagnostics.
+
 2000-11-16  Zack Weinberg  <zack@wolery.stanford.edu>
 
 	* lex.c (struct impl_files, internal_filename): Constify a char *.

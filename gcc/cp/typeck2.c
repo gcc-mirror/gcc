@@ -187,10 +187,18 @@ incomplete_type_error (value, type)
      tree value;
      tree type;
 {
+  int decl = 0;
+  
   /* Avoid duplicate error message.  */
   if (TREE_CODE (type) == ERROR_MARK)
     return;
 
+  if (value != 0 && (TREE_CODE (value) == VAR_DECL
+		     || TREE_CODE (value) == PARM_DECL))
+    {
+      cp_error_at ("`%D' has incomplete type", value);
+      decl = 1;
+    }
 retry:
   /* We must print an error message.  Be clever about what it says.  */
 
@@ -199,12 +207,13 @@ retry:
     case RECORD_TYPE:
     case UNION_TYPE:
     case ENUMERAL_TYPE:
-      cp_error ("invalid use of undefined type `%#T'", type);
+      if (!decl)
+        cp_error ("invalid use of undefined type `%#T'", type);
       cp_error_at ("forward declaration of `%#T'", type);
       break;
 
     case VOID_TYPE:
-      cp_error ("invalid use of void expression");
+      cp_error ("invalid use of `%T'", type);
       break;
 
     case ARRAY_TYPE:
@@ -239,10 +248,6 @@ retry:
     default:
       my_friendly_abort (108);
     }
-
-  if (value != 0 && (TREE_CODE (value) == VAR_DECL
-		     || TREE_CODE (value) == PARM_DECL))
-    cp_error_at ("incomplete `%D' defined here", value);
 }
 
 /* This is a wrapper around fancy_abort, as used in the back end and
