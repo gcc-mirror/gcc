@@ -999,6 +999,7 @@ verify_jvm_instructions (jcf, byte_ops, length)
 	  break;
 
 	case OPCODE_athrow:
+	  // FIXME: athrow also empties the stack.
 	  pop_type (throwable_type_node);
 	  INVALIDATE_PC;
 	  break;
@@ -1197,21 +1198,46 @@ verify_jvm_instructions (jcf, byte_ops, length)
 		    }
 		}
 
+
+            }
+          break;
+        case OPCODE_jsr_w:        
+        case OPCODE_ret_w:
+        default:
+          error ("unknown opcode %d@pc=%d during verification", op_code, PC-1);
+          return 0;
+        }
+
 	      /* Check if there are any more pending blocks in this subroutine.
 		 Because we push pending blocks in a last-in-first-out order,
 		 and because we don't push anything from our caller until we
 		 are done with this subroutine or anything nested in it,
 		 then we are done if the top of the pending_blocks stack is
 		 not in a subroutine, or it is in our caller. */
+      if (current_subr 
+	  && PC == INVALID_PC)
+	{
+	  tree caller = LABEL_SUBR_CONTEXT (current_subr);
+
 	      if (pending_blocks == NULL_TREE
 		  || ! LABEL_IN_SUBR (pending_blocks)
 		  || LABEL_SUBR_START (pending_blocks) == caller)
 		{
-		  /* Since we are done with this subroutine (i.e. this is the
-		     last ret from it), set up the (so far known) return
-		     address as pending - with the merged type state. */
-		  tmp = LABEL_RETURN_LABELS (current_subr);
-		  current_subr = caller;
+	      int size = DECL_MAX_LOCALS(current_function_decl)+stack_pointer;
+	      tree ret_map = LABEL_RETURN_TYPE_STATE (current_subr);
+	      tmp = LABEL_RETURN_LABELS (current_subr);
+	      
+	      /* FIXME: If we exit a subroutine via a throw, we might
+		 have returned to an earlier caller.  Obviously a
+		 "ret" can only return one level, but a throw may
+		 return many levels.*/
+	      current_subr = caller;
+
+	      if (RETURN_MAP_ADJUSTED (ret_map))
+		{
+		  /* Since we are done with this subroutine , set up
+		     the (so far known) return address as pending -
+		     with the merged type state. */
 		  for ( ; tmp != NULL_TREE;  tmp = TREE_CHAIN (tmp))
 		    {
 		      tree return_label = TREE_VALUE (tmp);
@@ -1241,12 +1267,6 @@ verify_jvm_instructions (jcf, byte_ops, length)
 		    }
 		}
 	    }
-	  break;
-	case OPCODE_jsr_w:	  
-	case OPCODE_ret_w:
-        default:
-	  error ("unknown opcode %d@pc=%d during verification", op_code, PC-1);
-	  return 0;
 	}
 
       prevpc = oldpc;

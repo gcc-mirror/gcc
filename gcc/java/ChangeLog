@@ -1,3 +1,17 @@
+1999-06-21  Andrew Haley  <aph@cygnus.com>
+
+        * except.c (find_handler_in_range): The upper limit for exception
+        ranges is exclusive, not inclusive: (start <= pc < end).  
+        (link_handler): find child pointer which points to outer by
+        searching sibling list: previous code incorrectly assumed that
+        outer->outer->first_child must point to outer.
+        * verify.c (verify_jvm_instructions): FIXME added to code for
+        `athrow'.
+        (verify_jvm_instructions): Do not assume that the last block
+        processed in a subroutine is a block which ends with a `ret'
+        instruction.  With some control flows it is possible that the last
+        block ends with an `athrow'.
+
 Mon Jun 14 13:13:39 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (qualify_ambiguous_name): Reorganized the post

@@ -72,7 +72,7 @@ find_handler_in_range (pc, range, child)
     {
       if (pc < child->start_pc)
 	break;
-      if (pc <= child->end_pc)
+      if (pc < child->end_pc)
 	return find_handler_in_range (pc, child, child->first_child);
     }
   cache_range = range;
@@ -129,7 +129,12 @@ link_handler (range, outer)
       range->outer = outer->outer;
       range->next_sibling = NULL;
       range->first_child = outer;
-      outer->outer->first_child = range;
+      {
+	struct eh_range **pr = &(outer->outer->first_child);
+	while (*pr != outer)
+	  pr = &(*pr)->next_sibling;
+	*pr = range;
+      }
       outer->outer = range;
       return;
     }
