@@ -2208,7 +2208,7 @@ stmp-fixproto: fixhdr.ready fixproto stmp-int-hdrs
 
 docdir = $(srcdir)/doc
 
-doc: $(BUILD_INFO) gccbug
+doc: $(BUILD_INFO) $(GENERATED_MANPAGES) gccbug
 info: $(docdir)/cpp.info $(docdir)/gcc.info lang.info $(docdir)/cppinternals.info
 
 $(docdir)/cpp.info: $(docdir)/cpp.texi
