@@ -1,3 +1,12 @@
+Thu Mar 12 10:02:38 1998  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* basic-block.h (compute_preds_succs): Change return type in
+	prototype to void.
+	* flow.c (compute_preds_succs): Likewise in function definition.
+
+	* regmove.c (find_matches): Cast char used as array index to unsigned char
+	to supress warning.
+
 Thu Mar 12 09:39:40 1998  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* i386.h (RTX_COSTS): Insert braces around nested if.
