@@ -4466,12 +4466,17 @@ safe_from_p (x, exp)
 
   if (x == 0
       /* If EXP has varying size, we MUST use a target since we currently
-	 have no way of allocating temporaries of variable size.  So we
-	 assume here that something at a higher level has prevented a
+	 have no way of allocating temporaries of variable size
+	 (except for arrays that have TYPE_ARRAY_MAX_SIZE set).
+	 So we assume here that something at a higher level has prevented a
 	 clash.  This is somewhat bogus, but the best we can do.  Only
 	 do this when X is BLKmode.  */
       || (TREE_TYPE (exp) != 0 && TYPE_SIZE (TREE_TYPE (exp)) != 0
 	  && TREE_CODE (TYPE_SIZE (TREE_TYPE (exp))) != INTEGER_CST
+	  && (TREE_CODE (TREE_TYPE (exp)) != ARRAY_TYPE
+	      || TYPE_ARRAY_MAX_SIZE (TREE_TYPE (exp)) == NULL_TREE
+	      || TREE_CODE (TYPE_ARRAY_MAX_SIZE (TREE_TYPE (exp)))
+	      != INTEGER_CST)
 	  && GET_MODE (x) == BLKmode))
     return 1;
 
