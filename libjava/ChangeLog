@@ -1,3 +1,9 @@
+2002-12-18  Raif Naffah  <raif@fl.net.au>
+
+	* java/math/BigInteger.java (euclidInv): Make sure quot and rem are in
+	canonical form after divide().
+	(modInverse): Likewise.
+
 2002-12-13  Casey Marshall  <rsdio@metastatic.org>
 	    Mark Wielaard  <mark@klomp.org>
 
