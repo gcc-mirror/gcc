@@ -1,3 +1,10 @@
+2000-03-31  Geoff Keating  <geoffk@cygnus.com>
+
+	* config/rs6000/rs6000.c (print_operand): Don't use %l for 'low
+	part', it's already in use.  Use %K instead.  Add a return at the
+	end of what is now %K.
+	* config/rs6000/rs6000.md (elf_low): Use %K instead of %l. 
+
 Sat Apr  1 02:05:29 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 
 	* builtins.c  (expand_builtin_apply):  Pass proper parameters to
