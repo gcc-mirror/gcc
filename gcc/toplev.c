@@ -100,38 +100,38 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 extern int size_directive_output;
 extern tree last_assemble_variable_decl;
 
-extern void reg_alloc PARAMS ((void));
+extern void reg_alloc (void);
 
-static void general_init PARAMS ((char *));
-static void parse_options_and_default_flags PARAMS ((int, char **));
-static void do_compile PARAMS ((void));
-static void process_options PARAMS ((void));
-static void backend_init PARAMS ((void));
-static int lang_dependent_init PARAMS ((const char *));
-static void init_asm_output PARAMS ((const char *));
-static void finalize PARAMS ((void));
+static void general_init (char *);
+static void parse_options_and_default_flags (int, char **);
+static void do_compile (void);
+static void process_options (void);
+static void backend_init (void);
+static int lang_dependent_init (const char *);
+static void init_asm_output (const char *);
+static void finalize (void);
 
-static void set_target_switch PARAMS ((const char *));
+static void set_target_switch (const char *);
 
-static void crash_signal PARAMS ((int)) ATTRIBUTE_NORETURN;
-static void setup_core_dumping PARAMS ((void));
-static void compile_file PARAMS ((void));
-static void display_help PARAMS ((void));
-static void display_target_options PARAMS ((void));
+static void crash_signal (int) ATTRIBUTE_NORETURN;
+static void setup_core_dumping (void);
+static void compile_file (void);
+static void display_help (void);
+static void display_target_options (void);
 
-static void decode_d_option PARAMS ((const char *));
-static int decode_f_option PARAMS ((const char *));
-static int decode_W_option PARAMS ((const char *));
-static int decode_g_option PARAMS ((const char *));
-static unsigned int independent_decode_option PARAMS ((int, char **));
-static void set_Wextra PARAMS ((int));
+static void decode_d_option (const char *);
+static int decode_f_option (const char *);
+static int decode_W_option (const char *);
+static int decode_g_option (const char *);
+static unsigned int independent_decode_option (int, char **);
+static void set_Wextra (int);
 
-static void print_version PARAMS ((FILE *, const char *));
-static int print_single_switch PARAMS ((FILE *, int, int, const char *,
-				      const char *, const char *,
-				      const char *, const char *));
-static void print_switch_values PARAMS ((FILE *, int, int, const char *,
-				       const char *, const char *));
+static void print_version (FILE *, const char *);
+static int print_single_switch (FILE *, int, int, const char *,
+				const char *, const char *,
+				const char *, const char *);
+static void print_switch_values (FILE *, int, int, const char *,
+				 const char *, const char *);
 
 /* Rest of compilation helper functions.  */
 static bool rest_of_handle_inlining (tree);
@@ -349,9 +349,9 @@ static struct dump_file_info dump_file[DFI_MAX] =
   { "dbr",	'd', 0, 0, 0 },
 };
 
-static int open_dump_file PARAMS ((enum dump_file_index, tree));
-static void close_dump_file PARAMS ((enum dump_file_index,
-				     void (*) (FILE *, rtx), rtx));
+static int open_dump_file (enum dump_file_index, tree);
+static void close_dump_file (enum dump_file_index,
+			     void (*) (FILE *, rtx), rtx);
 
 /* Other flags saying which kinds of debugging dump have been requested.  */
 
@@ -1634,8 +1634,7 @@ static const lang_independent_options W_options[] =
 
 /* Initialize unused warning flags.  */
 void
-set_Wunused (setting)
-     int setting;
+set_Wunused (int setting)
 {
   warn_unused_function = setting;
   warn_unused_label = setting;
@@ -1652,8 +1651,7 @@ set_Wunused (setting)
 
 /* Initialize more unused warning flags.  */
 static void
-set_Wextra (setting)
-     int setting;
+set_Wextra (int setting)
 {
   extra_warnings = setting;
   warn_unused_value = setting;
@@ -1672,8 +1670,7 @@ set_Wextra (setting)
    -ffast-math and -fno-fast-math imply.  */
 
 void
-set_fast_math_flags (set)
-     int set;
+set_fast_math_flags (int set)
 {
   flag_trapping_math = !set;
   flag_unsafe_math_optimizations = set;
@@ -1685,7 +1682,7 @@ set_fast_math_flags (set)
 
 /* Return true iff flags are set as if -ffast-math.  */
 bool
-fast_math_flags_set_p ()
+fast_math_flags_set_p (void)
 {
   return (!flag_trapping_math
 	  && flag_unsafe_math_optimizations
@@ -1706,10 +1703,7 @@ FILE *rtl_dump_file = NULL;
    If PNAME is zero just return DEFVAL, do not call error.  */
 
 int
-read_integral_parameter (p, pname, defval)
-     const char *p;
-     const char *pname;
-     const int  defval;
+read_integral_parameter (const char *p, const char *pname, const int  defval)
 {
   const char *endp = p;
 
@@ -1737,8 +1731,7 @@ read_integral_parameter (p, pname, defval)
    This should be used via the `exact_log2' macro.  */
 
 int
-exact_log2_wide (x)
-     unsigned HOST_WIDE_INT x;
+exact_log2_wide (unsigned HOST_WIDE_INT x)
 {
   int log = 0;
   /* Test for 0 or a power of 2.  */
@@ -1755,8 +1748,7 @@ exact_log2_wide (x)
    This should be used via the floor_log2 macro.  */
 
 int
-floor_log2_wide (x)
-     unsigned HOST_WIDE_INT x;
+floor_log2_wide (unsigned HOST_WIDE_INT x)
 {
   int log = -1;
   while (x != 0)
@@ -1769,8 +1761,7 @@ floor_log2_wide (x)
    into ICE messages, which is much more user friendly.  */
 
 static void
-crash_signal (signo)
-     int signo;
+crash_signal (int signo)
 {
   internal_error ("%s", strsignal (signo));
 }
@@ -1779,7 +1770,7 @@ crash_signal (signo)
    printed first, except in the case of abort().)  */
 
 static void
-setup_core_dumping ()
+setup_core_dumping (void)
 {
 #ifdef SIGABRT
   signal (SIGABRT, SIG_DFL);
@@ -1804,9 +1795,7 @@ setup_core_dumping ()
    up to five characters.  (Java uses ".class".)  */
 
 void
-strip_off_ending (name, len)
-     char *name;
-     int len;
+strip_off_ending (char *name, int len)
 {
   int i;
   for (i = 2; i < 6 && len > i; i++)
@@ -1822,9 +1811,7 @@ strip_off_ending (name, len)
 /* Output a quoted string.  */
 
 void
-output_quoted_string (asm_file, string)
-     FILE *asm_file;
-     const char *string;
+output_quoted_string (FILE *asm_file, const char *string)
 {
 #ifdef OUTPUT_QUOTED_STRING
   OUTPUT_QUOTED_STRING (asm_file, string);
@@ -1850,9 +1837,7 @@ output_quoted_string (asm_file, string)
 /* Output NAME into FILE after having turned it into something
    usable as an identifier in a target's assembly file.  */
 void
-output_clean_symbol_name (file, name)
-     FILE *file;
-     const char *name;
+output_clean_symbol_name (FILE *file, const char *name)
 {
   /* Make a copy of NAME.  */
   char *id = xstrdup (name);
@@ -1868,9 +1853,7 @@ output_clean_symbol_name (file, name)
 /* Output a file name in the form wanted by System V.  */
 
 void
-output_file_directive (asm_file, input_name)
-     FILE *asm_file;
-     const char *input_name;
+output_file_directive (FILE *asm_file, const char *input_name)
 {
   int len = strlen (input_name);
   const char *na = input_name + len;
@@ -1899,9 +1882,7 @@ output_file_directive (asm_file, input_name)
 /* Routine to open a dump file.  Return true if the dump file is enabled.  */
 
 static int
-open_dump_file (index, decl)
-     enum dump_file_index index;
-     tree decl;
+open_dump_file (enum dump_file_index index, tree decl)
 {
   char *dump_name;
   const char *open_arg;
@@ -1957,10 +1938,9 @@ open_dump_file (index, decl)
 /* Routine to close a dump file.  */
 
 static void
-close_dump_file (index, func, insns)
-     enum dump_file_index index;
-     void (*func) PARAMS ((FILE *, rtx));
-     rtx insns;
+close_dump_file (enum dump_file_index index,
+		 void (*func) (FILE *, rtx),
+		 rtx insns)
 {
   if (! rtl_dump_file)
     return;
@@ -1995,9 +1975,7 @@ close_dump_file (index, func, insns)
    Returns nonzero if anything was put out.  */
 
 int
-wrapup_global_declarations (vec, len)
-     tree *vec;
-     int len;
+wrapup_global_declarations (tree *vec, int len)
 {
   tree decl;
   int i;
@@ -2099,9 +2077,7 @@ wrapup_global_declarations (vec, len)
    which there are LEN).  Output debugging information for them.  */
 
 void
-check_global_declarations (vec, len)
-     tree *vec;
-     int len;
+check_global_declarations (tree *vec, int len)
 {
   tree decl;
   int i;
@@ -2174,9 +2150,7 @@ check_global_declarations (vec, len)
    INPUT_LOCATION accordingly.  */
 
 void
-push_srcloc (file, line)
-     const char *file;
-     int line;
+push_srcloc (const char *file, int line)
 {
   struct file_stack *fs;
 
@@ -2197,7 +2171,7 @@ push_srcloc (file, line)
    stack.  */
 
 void
-pop_srcloc ()
+pop_srcloc (void)
 {
   struct file_stack *fs;
 
@@ -2219,7 +2193,7 @@ pop_srcloc ()
    output and various debugging dumps.  */
 
 static void
-compile_file ()
+compile_file (void)
 {
   /* Initialize yet another pass.  */
 
@@ -2316,11 +2290,10 @@ compile_file ()
    if this declaration is not within a function.  */
 
 void
-rest_of_decl_compilation (decl, asmspec, top_level, at_end)
-     tree decl;
-     const char *asmspec;
-     int top_level;
-     int at_end;
+rest_of_decl_compilation (tree decl,
+			  const char *asmspec,
+			  int top_level,
+			  int at_end)
 {
   /* We deferred calling assemble_alias so that we could collect
      other attributes such as visibility.  Emit the alias now.  */
@@ -2409,15 +2382,16 @@ rest_of_decl_compilation (decl, asmspec, top_level, at_end)
 /* Called after finishing a record, union or enumeral type.  */
 
 void
-rest_of_type_compilation (type, toplev)
+rest_of_type_compilation (
 #if defined (DBX_DEBUGGING_INFO) || defined (XCOFF_DEBUGGING_INFO)	\
     || defined (SDB_DEBUGGING_INFO) || defined (DWARF2_DEBUGGING_INFO)
-     tree type;
-     int toplev;
+			  tree type,
+			  int toplev
 #else
-     tree type ATTRIBUTE_UNUSED;
-     int toplev ATTRIBUTE_UNUSED;
+			  tree type ATTRIBUTE_UNUSED,
+			  int toplev ATTRIBUTE_UNUSED,
 #endif
+			  )
 {
   /* Avoid confusing the debug information machinery when there are
      errors.  */
@@ -2702,7 +2676,7 @@ rest_of_handle_reorder_blocks (tree decl, rtx insns)
 
   close_dump_file (DFI_bbro, print_rtl_with_bb, insns);
   timevar_pop (TV_REORDER_BLOCKS);
-}  
+}
 
 /* Run instruction scheduler.  */
 static void
@@ -3485,8 +3459,7 @@ rest_of_handle_loop2 (tree decl, rtx insns)
    After we return, the tree storage is freed.  */
 
 void
-rest_of_compilation (decl)
-     tree decl;
+rest_of_compilation (tree decl)
 {
   rtx insns;
   int rebuild_label_notes_after_reload;
@@ -3965,7 +3938,7 @@ rest_of_compilation (decl)
  exit_rest_of_compilation:
 
   coverage_end_function ();
-  
+
   /* In case the function was not output,
      don't leave any temporary anonymous types
      queued up for sdb output.  */
@@ -4032,7 +4005,7 @@ rest_of_compilation (decl)
 
 /* Display help for generic options.  */
 static void
-display_help ()
+display_help (void)
 {
   int undoc;
   unsigned long i;
@@ -4048,7 +4021,7 @@ display_help ()
   printf (_("  -fstack-limit-register=<register>  Trap if the stack goes past <register>\n"));
   printf (_("  -fstack-limit-symbol=<name>  Trap if the stack goes past symbol <name>\n"));
   printf (_("  -frandom-seed=<string>  Make compile reproducible using <string>\n"));
-  
+
 
   for (i = ARRAY_SIZE (f_options); i--;)
     {
@@ -4166,7 +4139,7 @@ display_help ()
 
 /* Display help for target options.  */
 static void
-display_target_options ()
+display_target_options (void)
 {
   int undoc, i;
   static bool displayed = false;
@@ -4238,8 +4211,7 @@ display_target_options ()
 /* Parse a -d... command line switch.  */
 
 static void
-decode_d_option (arg)
-     const char *arg;
+decode_d_option (const char *arg)
 {
   int i, c, matched;
 
@@ -4296,8 +4268,7 @@ decode_d_option (arg)
    Return the number of strings consumed.  */
 
 static int
-decode_f_option (arg)
-     const char *arg;
+decode_f_option (const char *arg)
 {
   int j;
   const char *option_value = NULL;
@@ -4427,8 +4398,7 @@ decode_f_option (arg)
    Return the number of strings consumed.  */
 
 static int
-decode_W_option (arg)
-     const char *arg;
+decode_W_option (const char *arg)
 {
   const char *option_value = NULL;
   int j;
@@ -4492,8 +4462,7 @@ const char *const debug_type_names[] =
    Return the number of strings consumed.  */
 
 static int
-decode_g_option (arg)
-     const char *arg;
+decode_g_option (const char *arg)
 {
   static unsigned level = 0;
   /* A lot of code assumes write_symbols == NO_DEBUG if the
@@ -4612,9 +4581,7 @@ ignoring option `%s' due to invalid debug level specification",
    Return the number of strings consumed.  */
 
 static unsigned int
-independent_decode_option (argc, argv)
-     int argc;
-     char **argv;
+independent_decode_option (int argc, char **argv)
 {
   char *arg = argv[0];
 
@@ -4856,8 +4823,7 @@ independent_decode_option (argc, argv)
 /* Decode the switch -mNAME.  */
 
 static void
-set_target_switch (name)
-     const char *name;
+set_target_switch (const char *name)
 {
   size_t j;
   int valid_target_option = 0;
@@ -4912,9 +4878,7 @@ set_target_switch (name)
    assembler output file).  */
 
 static void
-print_version (file, indent)
-     FILE *file;
-     const char *indent;
+print_version (FILE *file, const char *indent)
 {
 #ifndef __VERSION__
 #define __VERSION__ "[?]"
@@ -4938,10 +4902,9 @@ print_version (file, indent)
    other code will catch a disk full though.  */
 
 static int
-print_single_switch (file, pos, max, indent, sep, term, type, name)
-     FILE *file;
-     int pos, max;
-     const char *indent, *sep, *term, *type, *name;
+print_single_switch (FILE *file, int pos, int max,
+		     const char *indent, const char *sep, const char *term,
+		     const char *type, const char *name)
 {
   /* The ultrix fprintf returns 0 on success, so compute the result we want
      here since we need it for the following test.  */
@@ -4969,10 +4932,8 @@ print_single_switch (file, pos, max, indent, sep, term, type, name)
    Each switch is separated from the next by SEP.  */
 
 static void
-print_switch_values (file, pos, max, indent, sep, term)
-     FILE *file;
-     int pos, max;
-     const char *indent, *sep, *term;
+print_switch_values (FILE *file, int pos, int max,
+		     const char *indent, const char *sep, const char *term)
 {
   size_t j;
   char **p;
@@ -5053,8 +5014,7 @@ print_switch_values (file, pos, max, indent, sep, term)
    temporary file or bit bucket for us.  NAME is the file specified on
    the command line, possibly NULL.  */
 static void
-init_asm_output (name)
-     const char *name;
+init_asm_output (const char *name)
 {
   if (name == NULL && asm_file_name == 0)
     asm_out_file = stdout;
@@ -5107,8 +5067,7 @@ init_asm_output (name)
    options are parsed.  Signal handlers, internationalization etc.
    ARGV0 is main's argv[0].  */
 static void
-general_init (argv0)
-     char *argv0;
+general_init (char *argv0)
 {
   char *p;
 
@@ -5164,9 +5123,7 @@ general_init (argv0)
 
    Return nonzero to suppress compiler back end initialization.  */
 static void
-parse_options_and_default_flags (argc, argv)
-     int argc;
-     char **argv;
+parse_options_and_default_flags (int argc, char **argv)
 {
   int i;
 
@@ -5409,7 +5366,7 @@ parse_options_and_default_flags (argc, argv)
 
 /* Process the options that have been parsed.  */
 static void
-process_options ()
+process_options (void)
 {
   /* Allow the front end to perform consistency checks and do further
      initialization based on the command line options.  This hook also
@@ -5429,7 +5386,7 @@ process_options ()
   else if (filename)
     {
       char *name = xstrdup (lbasename (filename));
-      
+
       strip_off_ending (name, strlen (name));
       aux_base_name = name;
     }
@@ -5620,7 +5577,7 @@ process_options ()
 
 /* Initialize the compiler back end.  */
 static void
-backend_init ()
+backend_init (void)
 {
   /* init_emit_once uses reg_raw_mode and therefore must be called
      after init_regs which initialized reg_raw_mode.  */
@@ -5651,8 +5608,7 @@ backend_init ()
 
 /* Language-dependent initialization.  Returns nonzero on success.  */
 static int
-lang_dependent_init (name)
-     const char *name;
+lang_dependent_init (const char *name)
 {
   if (dump_base_name == 0)
     dump_base_name = name ? name : "gccdump";
@@ -5698,7 +5654,7 @@ lang_dependent_init (name)
 /* Clean up: close opened files, etc.  */
 
 static void
-finalize ()
+finalize (void)
 {
   /* Close the dump files.  */
   if (flag_gen_aux_info)
@@ -5754,7 +5710,7 @@ finalize ()
 
 /* Initialize the compiler, and compile the input file.  */
 static void
-do_compile ()
+do_compile (void)
 {
   /* Initialize timing first.  The C front ends read the main file in
      the post_options hook, and C++ does file timings.  */
@@ -5791,9 +5747,7 @@ do_compile ()
    It is not safe to call this function more than once.  */
 
 int
-toplev_main (argc, argv)
-     int argc;
-     char **argv;
+toplev_main (int argc, char **argv)
 {
   /* Initialization of GCC's environment, and diagnostics.  */
   general_init (argv[0]);
