@@ -161,6 +161,7 @@ GLUE(.L,name): \
 
 #elif defined (__powerpc64__)
 #define FUNC_NAME(name) GLUE(.,name)
+#define JUMP_TARGET(name) FUNC_NAME(name)
 #define FUNC_START(name) \
 	.section ".opd","aw"; \
 name: \

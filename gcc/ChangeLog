@@ -1,3 +1,8 @@
+2002-02-15  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/linux64.h (STRIP_NAME_ENCODING): Delete.
+	* config/rs6000/ppc-asm.h (JUMP_TARGET): Define for powerpc64.
+
 2002-02-15  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* gcc.c (init_gcc_specs): Revert patch from 2002-02-15.
