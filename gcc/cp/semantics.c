@@ -2163,7 +2163,7 @@ finish_typeof (expr)
 {
   tree type;
 
-  if (processing_template_decl)
+  if (type_dependent_expression_p (expr))
     {
       type = make_aggr_type (TYPEOF_TYPE);
       TYPE_FIELDS (type) = expr;
