@@ -1,3 +1,10 @@
+2001-04-01  Alexandre Oliva  <aoliva@redhat.com>
+
+	* Makefile.in (CXX_FOR_TARGET_FOR_RECURSIVE_MAKE, RECURSE_FLAGS):
+	New macros.
+	(bootstrap, cross): Use RECURSE_FLAGS.
+	* configure.in: Subst CXX_FOR_TARGET_FOR_RECURSIVE_MAKE.
+
 2001-03-27  Alexandre Oliva  <aoliva@redhat.com>
 
 	* configure.in (CXX_FOR_TARGET): Use xgcc for libstdc++-v3.
