@@ -2628,7 +2628,7 @@ emit_float_lib_cmp (x, y, comparison)
      enum rtx_code comparison;
 {
   enum machine_mode mode = GET_MODE (x);
-  rtx libfunc;
+  rtx libfunc = 0;
 
   if (mode == SFmode)
     switch (comparison)
@@ -2759,6 +2759,9 @@ emit_float_lib_cmp (x, y, comparison)
 	}
       abort ();
     }
+
+  if (libfunc == 0)
+    abort ();
 
   emit_library_call (libfunc, 1,
 		     word_mode, 2, x, mode, y, mode);
