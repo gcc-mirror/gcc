@@ -1,3 +1,8 @@
+2002-04-26  Richard Henderson  <rth@redhat.com>
+
+	PR c/5225
+	* c-typeck.c (build_unary_op) [CONVERT_EXPR]: Invoke non_lvalue.
+
 2002-04-26  Mark Mitchell  <mark@codesourcery.com>
 
 	PR bootstrap/6445
