@@ -1,5 +1,6 @@
 /* Definitions for specs for C++.
-   Copyright (C) 1995, 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000
+   Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -62,9 +63,9 @@ Boston, MA 02111-1307, USA.  */
 			    %{f*} %{+e*} %{aux-info*} %{Qn:-fno-ident}\
 			    %{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
 			    %{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%g.s}}|\n\
-              %{!S:as %a %Y\
+              %{!S:%{!fsyntax-only:as %a %Y\
 		      %{c:%W{o*}%{!o*:-o %w%b%O}}%{!c:-o %d%w%u%O}\
-                      %{!pipe:%g.s} %A\n }}}}"}},
+                      %{!pipe:%g.s} %A\n }}}}}"}},
 #else /* ! USE_CPPLIB */
    {"cpp -lang-c++ %{nostdinc*} %{C} %{v} %{A*} %{I*} %{P} %{$} %I\
 	%{C:%{!E:%eGNU C++ does not support -C without using -E}}\
@@ -86,9 +87,9 @@ Boston, MA 02111-1307, USA.  */
 			    %{f*} %{+e*} %{aux-info*} %{Qn:-fno-ident}\
 			    %{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
 			    %{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%g.s}}|\n\
-              %{!S:as %a %Y\
+              %{!S:%{!fsyntax-only:as %a %Y\
 		      %{c:%W{o*}%{!o*:-o %w%b%O}}%{!c:-o %d%w%u%O}\
-                      %{!pipe:%g.s} %A\n }}}}"}},
+                      %{!pipe:%g.s} %A\n }}}}}"}},
 #endif /* ! USE_CPPLIB */
   {".ii", {"@c++-cpp-output"}},
   {"@c++-cpp-output",
