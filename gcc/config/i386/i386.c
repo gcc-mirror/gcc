@@ -161,7 +161,7 @@ override_options ()
 	       i386_align_loops, MAX_CODE_ALIGN);
     }
   else
-    i386_align_loops = def_align;
+    i386_align_loops = 2;
 
   /* Validate -malign-jumps= value, or provide default */
   if (i386_align_jumps_string)
