@@ -1,5 +1,9 @@
 2002-01-22  Janis Johnson  <janis187@us.ibm.com>
 
+        * Makefile.in (loop.o): Depend on OPTABS_H.
+        * loop.c (expand_builtin_prefetch): Check the prefetch operand
+        against the predicate.
+
 	PR target/5379
 	* config/i386/i386.md (prefetch_sse): Specify "p" as a constraint
 	for the address operand.
