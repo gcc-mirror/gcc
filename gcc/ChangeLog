@@ -1,3 +1,8 @@
+Sun Jul  1 11:53:52 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* c-common.c (decl_attributes, case A_MODE): Don't call layout_decl
+	for FIELD_DECL.
+
 2001-07-01  Geoffrey Keating  <geoffk@redhat.com>
 
 	* doc/tm.texi (FUNCTION_ARG): Document that the last call
