@@ -110,19 +110,19 @@ jvmpiEnableEvent (jint event_type, void *)
     case JVMPI_EVENT_OBJECT_ALLOC:
       _Jv_JVMPI_Notify_OBJECT_ALLOC = _Jv_JVMPI_Interface.NotifyEvent;
       break;
-      
+
     case JVMPI_EVENT_THREAD_START:
       _Jv_JVMPI_Notify_THREAD_START = _Jv_JVMPI_Interface.NotifyEvent;
       break;
-      
+
     case JVMPI_EVENT_THREAD_END:
       _Jv_JVMPI_Notify_THREAD_END = _Jv_JVMPI_Interface.NotifyEvent;
       break;
-      
+
     default:
       return JVMPI_NOT_AVAILABLE;
     }
-  
+
   return JVMPI_SUCCESS;
 }
 
@@ -134,11 +134,11 @@ jvmpiDisableEvent (jint event_type, void *)
     case JVMPI_EVENT_OBJECT_ALLOC:
       _Jv_JVMPI_Notify_OBJECT_ALLOC = NULL;
       break;
-      
+
     default:
       return JVMPI_NOT_AVAILABLE;
     }
-  
+
   return JVMPI_SUCCESS;
 }
 #endif
@@ -317,7 +317,7 @@ _Jv_JNI_PopLocalFrame (JNIEnv *env, jobject result, int stop)
 
   bool done = false;
   while (rf != NULL && ! done)
-    {  
+    {
       for (int i = 0; i < rf->size; ++i)
 	if (rf->vec[i] != NULL)
 	  unmark_for_gc (rf->vec[i], local_ref_table);
@@ -396,7 +396,7 @@ _Jv_JNI_GetVersion (JNIEnv *)
 }
 
 static jclass
-_Jv_JNI_DefineClass (JNIEnv *env, jobject loader, 
+_Jv_JNI_DefineClass (JNIEnv *env, jobject loader,
 		     const jbyte *buf, jsize bufLen)
 {
   try
@@ -656,9 +656,9 @@ array_from_valist (jvalue *values, JArray<jclass> *arg_types, va_list vargs)
   for (int i = 0; i < arg_types->length; ++i)
     {
       if (arg_elts[i] == JvPrimClass (byte))
-	values[i].b = va_arg (vargs, jbyte);
+	values[i].b = (jbyte) va_arg (vargs, int);
       else if (arg_elts[i] == JvPrimClass (short))
-	values[i].s = va_arg (vargs, jshort);
+	values[i].s = (jshort) va_arg (vargs, int);
       else if (arg_elts[i] == JvPrimClass (int))
 	values[i].i = va_arg (vargs, jint);
       else if (arg_elts[i] == JvPrimClass (long))
@@ -668,9 +668,9 @@ array_from_valist (jvalue *values, JArray<jclass> *arg_types, va_list vargs)
       else if (arg_elts[i] == JvPrimClass (double))
 	values[i].d = va_arg (vargs, jdouble);
       else if (arg_elts[i] == JvPrimClass (boolean))
-	values[i].z = va_arg (vargs, jboolean);
+	values[i].z = (jboolean) va_arg (vargs, int);
       else if (arg_elts[i] == JvPrimClass (char))
-	values[i].c = va_arg (vargs, jchar);
+	values[i].c = (jchar) va_arg (vargs, int);
       else
 	{
 	  // An object.
@@ -1044,7 +1044,7 @@ _Jv_JNI_NewObjectA (JNIEnv *env, jclass klass, jmethodID id,
 
 template<typename T>
 static T
-_Jv_JNI_GetField (JNIEnv *env, jobject obj, jfieldID field) 
+_Jv_JNI_GetField (JNIEnv *env, jobject obj, jfieldID field)
 {
   JvAssert (obj);
   T *ptr = (T *) ((char *) obj + field->getOffset ());
@@ -1393,7 +1393,7 @@ _Jv_JNI_GetPrimitiveArrayRegion (JNIEnv *env, JArray<T> *array,
 
 template<typename T>
 static void
-_Jv_JNI_SetPrimitiveArrayRegion (JNIEnv *env, JArray<T> *array, 
+_Jv_JNI_SetPrimitiveArrayRegion (JNIEnv *env, JArray<T> *array,
 				 jsize start, jsize len, T *buf)
 {
   // The cast to unsigned lets us save a comparison.
