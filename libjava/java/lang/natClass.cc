@@ -34,6 +34,7 @@ details.  */
 #include <java/lang/ExceptionInInitializerError.h>
 #include <java/lang/IllegalAccessException.h>
 #include <java/lang/IllegalAccessError.h>
+#include <java/lang/IllegalArgumentException.h>
 #include <java/lang/IncompatibleClassChangeError.h>
 #include <java/lang/InstantiationException.h>
 #include <java/lang/NoClassDefFoundError.h>
@@ -75,9 +76,10 @@ java::lang::Class::forName (jstring className, jboolean initialize,
   char buffer[length];
   _Jv_GetStringUTFRegion (className, 0, length, buffer);
 
-  // FIXME: should check syntax of CLASSNAME and throw
-  // IllegalArgumentException on failure.
   _Jv_Utf8Const *name = _Jv_makeUtf8Const (buffer, length);
+
+  if (! _Jv_VerifyClassName (name))
+    throw new java::lang::ClassNotFoundException (className);
 
   // FIXME: should use bootstrap class loader if loader is null.
   jclass klass = (buffer[0] == '[' 

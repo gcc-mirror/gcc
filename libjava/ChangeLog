@@ -1,3 +1,27 @@
+2001-11-25  Tom Tromey  <tromey@redhat.com>
+
+	Fix for PR libgcj/2024, plus other class name cleanups:
+	* include/jvm.h (_Jv_VerifyFieldSignature,
+	_Jv_VerifyMethodSignature, _Jv_VerifyClassName,
+	_Jv_VerifyIdentifier, _Jv_ClassNameSamePackage): Moved from ...
+	* include/java-interp.h: ... here.
+	* defineclass.cc (UTF8_PEEK): No longer conditional on
+	interpreter.
+	(_Jv_VerifyOne): Likewise.
+	(_Jv_VerifyFieldSignature): Likewise.
+	(_Jv_VerifyMethodSignature): Likewise.
+	(is_identifier_start): Likewise.
+	(is_identifier_part): Likewise.
+	(_Jv_VerifyIdentifier): Likewise.
+	(_Jv_VerifyClassName): Likewise.
+	(_Jv_VerifyClassName): Likewise.
+	(_Jv_ClassNameSamePackage): Likewise.
+	(_Jv_VerifyClassName): Fail if class name is too long.
+	* java/lang/natClassLoader.cc (_Jv_NewArrayClass): Disallow array
+	of void.
+	* java/lang/natClass.cc (forName): Check syntax of class name.
+	Include IllegalArgumentException.h.
+
 2001-11-22  Tom Tromey  <tromey@redhat.com>
 
 	* verify.cc (_Jv_BytecodeVerifier::branch_prepass): Use

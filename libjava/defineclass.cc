@@ -22,8 +22,6 @@ details.  */
 
 #include <java-interp.h>
 
-#ifdef INTERPRETER
-
 #include <stdlib.h>
 #include <java-cpool.h>
 #include <gcj/cni.h>
@@ -42,6 +40,8 @@ details.  */
 #include <java/lang/reflect/Modifier.h>
 
 using namespace gcj;
+
+#ifdef INTERPRETER
 
 // these go in some separate functions, to avoid having _Jv_InitClass
 // inserted all over the place.
@@ -1368,6 +1368,50 @@ void _Jv_ClassReader::throw_class_format_error (char *msg)
   ::throw_class_format_error (str);
 }
 
+/** Here we define the exceptions that can be thrown */
+
+static void
+throw_no_class_def_found_error (jstring msg)
+{
+  throw (msg
+	 ? new java::lang::NoClassDefFoundError (msg)
+	 : new java::lang::NoClassDefFoundError);
+}
+
+static void
+throw_no_class_def_found_error (char *msg)
+{
+  throw_no_class_def_found_error (JvNewStringLatin1 (msg));
+}
+
+static void
+throw_class_format_error (jstring msg)
+{
+  throw (msg
+	 ? new java::lang::ClassFormatError (msg)
+	 : new java::lang::ClassFormatError);
+}
+
+static void
+throw_internal_error (char *msg)
+{
+  throw new java::lang::InternalError (JvNewStringLatin1 (msg));
+}
+
+static void throw_incompatible_class_change_error (jstring msg)
+{
+  throw new java::lang::IncompatibleClassChangeError (msg);
+}
+
+static void throw_class_circularity_error (jstring msg)
+{
+  throw new java::lang::ClassCircularityError (msg);
+}
+
+#endif /* INTERPRETER */
+
+
+
 /** This section takes care of verifying integrity of identifiers,
     signatures, field ddescriptors, and class names */
 
@@ -1376,7 +1420,7 @@ void _Jv_ClassReader::throw_class_format_error (char *msg)
      int xxch = UTF8_GET(PTR,LIMIT); \
      PTR = xxkeep; xxch; })
 
-/* verify one element of a type descriptor or signature */
+/* Verify one element of a type descriptor or signature.  */
 static unsigned char*
 _Jv_VerifyOne (unsigned char* ptr, unsigned char* limit, bool void_ok)
 {
@@ -1388,7 +1432,8 @@ _Jv_VerifyOne (unsigned char* ptr, unsigned char* limit, bool void_ok)
   switch (ch)
     {
     case 'V':
-      if (! void_ok) return 0;
+      if (! void_ok)
+	return 0;
 
     case 'S': case 'B': case 'I': case 'J':
     case 'Z': case 'C': case 'F': case 'D': 
@@ -1397,16 +1442,18 @@ _Jv_VerifyOne (unsigned char* ptr, unsigned char* limit, bool void_ok)
     case 'L':
       {
 	unsigned char *start = ptr, *end;
-	do {
-	  if (ptr > limit)
-	    return 0;
-		
-	  end = ptr;
-		
-	  if ((ch = UTF8_GET (ptr, limit)) == -1)
-	    return 0;
-		
-	} while (ch != ';');
+	do
+	  {
+	    if (ptr > limit)
+	      return 0;
+
+	    end = ptr;
+
+	    if ((ch = UTF8_GET (ptr, limit)) == -1)
+	      return 0;
+
+	  }
+	while (ch != ';');
 	if (! _Jv_VerifyClassName (start, (unsigned short) (end-start)))
 	  return 0;
       }
@@ -1415,18 +1462,15 @@ _Jv_VerifyOne (unsigned char* ptr, unsigned char* limit, bool void_ok)
     case '[':
       return _Jv_VerifyOne (ptr, limit, false);
       break;
-	
+
     default:
       return 0;
     }
 
   return ptr;
-    
 }
 
-
-/** verification and loading procedures **/
-
+/* Verification and loading procedures.  */
 bool
 _Jv_VerifyFieldSignature (_Jv_Utf8Const*sig)
 {
@@ -1449,7 +1493,7 @@ _Jv_VerifyMethodSignature (_Jv_Utf8Const*sig)
 
   while (ptr && UTF8_PEEK (ptr, limit) != ')')
     ptr = _Jv_VerifyOne (ptr, limit, false);
-    
+
   if (UTF8_GET (ptr, limit) != ')')
     return false;
 
@@ -1459,9 +1503,8 @@ _Jv_VerifyMethodSignature (_Jv_Utf8Const*sig)
   return ptr == limit;
 }
 
-/* we try to avoid calling the Character methods all the time, 
-   in fact, they will only be called for non-standard things */
-
+/* We try to avoid calling the Character methods all the time, in
+   fact, they will only be called for non-standard things. */
 static __inline__ int 
 is_identifier_start (int c)
 {
@@ -1522,7 +1565,10 @@ _Jv_VerifyClassName (unsigned char* ptr, _Jv_ushort length)
 
   if ('[' == UTF8_PEEK (ptr, limit))
     {
-      if (! _Jv_VerifyOne (++ptr, limit, false))
+      unsigned char *end = _Jv_VerifyOne (++ptr, limit, false);
+      // _Jv_VerifyOne must leave us looking at the terminating nul
+      // byte.
+      if (! end || *end)
 	return false;
       else
         return true;
@@ -1554,9 +1600,8 @@ _Jv_VerifyClassName (_Jv_Utf8Const *name)
 			      (_Jv_ushort) name->length);
 }
 
-/** returns true, if name1 and name2 represents classes in the same
-    package. */
-    
+/* Returns true, if NAME1 and NAME2 represent classes in the same
+   package.  */
 bool
 _Jv_ClassNameSamePackage (_Jv_Utf8Const *name1, _Jv_Utf8Const *name2)
 {
@@ -1571,22 +1616,22 @@ _Jv_ClassNameSamePackage (_Jv_Utf8Const *name1, _Jv_Utf8Const *name2)
 
     if (ch1 == '.')
       last1 = ptr1;
-	
+
     else if (ch1 == -1)
       return false;
   }
 
-  // now the length of name1's package name is len
+  // Now the length of NAME1's package name is LEN.
   int len = last1 - (unsigned char*) name1->data;
 
-  // if this is longer than name2, then we're off
+  // If this is longer than NAME2, then we're off.
   if (len > name2->length)
     return false;
 
-  // then compare the first len bytes for equality
+  // Then compare the first len bytes for equality.
   if (memcmp ((void*) name1->data, (void*) name2->data, len) == 0)
     {
-      // check that there are no .'s after position len in name2
+      // Check that there are no .'s after position LEN in NAME2.
 
       unsigned char* ptr2 = (unsigned char*) name2->data + len;
       unsigned char* limit2 =
@@ -1602,48 +1647,3 @@ _Jv_ClassNameSamePackage (_Jv_Utf8Const *name1, _Jv_Utf8Const *name2)
     }
   return false;
 }
-
-
-
-/** Here we define the exceptions that can be thrown */
-
-static void
-throw_no_class_def_found_error (jstring msg)
-{
-  throw (msg
-	 ? new java::lang::NoClassDefFoundError (msg)
-	 : new java::lang::NoClassDefFoundError);
-}
-
-static void
-throw_no_class_def_found_error (char *msg)
-{
-  throw_no_class_def_found_error (JvNewStringLatin1 (msg));
-}
-
-static void
-throw_class_format_error (jstring msg)
-{
-  throw (msg
-	 ? new java::lang::ClassFormatError (msg)
-	 : new java::lang::ClassFormatError);
-}
-
-static void
-throw_internal_error (char *msg)
-{
-  throw new java::lang::InternalError (JvNewStringLatin1 (msg));
-}
-
-static void throw_incompatible_class_change_error (jstring msg)
-{
-  throw new java::lang::IncompatibleClassChangeError (msg);
-}
-
-static void throw_class_circularity_error (jstring msg)
-{
-  throw new java::lang::ClassCircularityError (msg);
-}
-
-#endif /* INTERPRETER */
-

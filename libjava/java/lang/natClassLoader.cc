@@ -598,7 +598,11 @@ _Jv_NewArrayClass (jclass element, java::lang::ClassLoader *loader,
     return;
 
   if (element->isPrimitive())
-    len = 3;
+    {
+      if (element == JvPrimClass (void))
+	throw new java::lang::ClassNotFoundException ();
+      len = 3;
+    }
   else
     len = element->name->length + 5;
 
