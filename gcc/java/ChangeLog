@@ -4,6 +4,11 @@ Thu Aug 26 09:10:58 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
  	to set the column number.
 	(qualify_ambiguous_name): Take WFL wrappers into account.
 
+Wed Aug 25 15:37:15 1999  Gregg Townsend  <gmt@cs.arizona.edu>
+
+	* verify.c (verify_jvm_instructions): Don't check instruction
+	validity beyond end of method.
+
 1999-08-25  Tom Tromey  <tromey@cygnus.com>
 
 	* jvspec.c (lang_specific_driver): Correctly handle --help again.
