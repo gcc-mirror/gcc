@@ -1,3 +1,7 @@
+Fri Feb  2 20:03:50 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* diagnostic.h: Add missing "extern" in all declarations.
+
 2001-02-02  Alex Samuel  <samuel@codesourcery.com>
 
 	* Makefile.in (gcc_gxx_target_include_dir): Generate dynamically
