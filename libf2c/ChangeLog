@@ -1,3 +1,8 @@
+1998-10-24  Dave Love  <d.love@dl.ac.uk>
+
+	* configure.in: Touch g2c.h in AC_OUTPUT after multilib
+	disturbance.
+
 1998-10-23  Dave Love  <d.love@dl.ac.uk>
 
 	* f2cext.c: Include math.h.
