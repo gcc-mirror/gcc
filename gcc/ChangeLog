@@ -1,14 +1,17 @@
-2000-04-18  Mark Mitchell  <mark@codesourcery.com>
-
-	* cpplex.c (_cpp_lex_token): Don't call CPP_BUMP_LINE when the
-	mark is active.
-
 Tue Apr 18 14:16:47 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* expmed.c (emit_store_flag): If comparing two-word integer
+	with zero, can optimize NE, EQ, GE, and LT.
 
 	* c-decl.c (mark_binding_level): Use 'for' instead of `while'.
 	* conflict.c: Minor cleanups.
 	* optabs.c: Add blank line
-	* simplify-rtx.c: 
+	* simplify-rtx.c: Minor cleanups.
+
+2000-04-18  Mark Mitchell  <mark@codesourcery.com>
+
+	* cpplex.c (_cpp_lex_token): Don't call CPP_BUMP_LINE when the
+	mark is active.
 
 2000-04-17  Zack Weinberg  <zack@wolery.cumb.org>
 

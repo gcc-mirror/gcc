@@ -4181,6 +4181,29 @@ emit_store_flag (target, code, op0, op1, mode, unsignedp, normalizep)
       break;
     }
 
+  /* If we are comparing a double-word integer with zero, we can convert
+     the comparison into one involving a single word.  */
+  if (GET_MODE_BITSIZE (mode) == BITS_PER_WORD * 2
+      && GET_MODE_CLASS (mode) == MODE_INT
+      && op1 == const0_rtx)
+    {
+      if (code == EQ || code == NE)
+	{
+	  /* Do a logical OR of the two words and compare the result.  */
+	  rtx op0h = gen_highpart (word_mode, op0);
+	  rtx op0l = gen_lowpart (word_mode, op0);
+	  rtx op0both = expand_binop (word_mode, ior_optab, op0h, op0l,
+				      NULL_RTX, unsignedp, OPTAB_DIRECT);
+	  if (op0both != 0)
+	    return emit_store_flag (target, code, op0both, op1, word_mode,
+				    unsignedp, normalizep);
+	}
+      else if (code == LT || code == GE)
+	/* If testing the sign bit, can just test on high word.  */
+	return emit_store_flag (target, code, gen_highpart (word_mode, op0),
+				op1, word_mode, unsignedp, normalizep);
+    }
+
   /* From now on, we won't change CODE, so set ICODE now.  */
   icode = setcc_gen_code[(int) code];
 
