@@ -1,3 +1,85 @@
+2002-09-25  Michael Koch  <konqueror@gmx.de>
+
+	* java/net/DatagramPacket
+	(DatagramPacket): Exception documentation added.
+	(setData): Likewise.
+	(setSocketAddress): Likewise.
+	* java/net/DatagramSocketImpl.java
+	(peek): Documentation addded.
+	(peekData): Documentation addded.
+	(send): Documentation addded.
+	(receive): Documentation addded.
+	(connect): New method.
+	(disconnect): New method.
+	(joinGroup): New abstract method.
+	(leaveGroup): New abstract method.
+	* java/net/InetSocketAddress.java
+	(InetSocketAddress): Documentation added.
+	(equals): final keyword added.
+	(getAddress): final keyword added.
+	(getHostName): final keyword added.
+	(getPort): final keyword added.
+	(hashCode): final keyword added.
+	(isUnresolved): final keyword added.
+	* java/net/MulticastSocket.java
+	(MulticastSocket): Documentation added.
+	(MulticastSocket): New method.
+	(joinGroup): Documentation added.
+	(joinGroup): New method.
+	(leaveGroup): Documentation added.
+	(leaveGroup): New method.
+	(send): Documentation added.
+	* java/net/NetworkInterface.java
+	(getByName): Documentation added.
+	(getByInetAddress): Documentation added.
+	(getNetworkInterfaces): Documentation added.
+	* java/net/PlainDatagramSocketImpl.java
+	(connect): New method.
+	(disconnect): New method.
+	* java/net/SocketImpl.java
+	(create): Documentation added.
+	(shutdownInput): Convert public to protected, as it always was.
+	(shutdownOutput): Convert public to protected, as it always was.
+	* java/net/SocketOptions.java
+	(whole file): Reintented.
+	* java/net/URLClassLoader.java
+	(URLClassLoader): SecurityManager check added, documentation added.
+	(findResources): Documentation added.
+	(findClass): Documentation added.
+	(newInstance): More correct method arguments.
+	* java/net/URLConnection.java
+	(connect): Documentation added.
+	(getContent): Documentation added.
+	(getPermission): Documentation added.
+	(getInputStream): Documentation added.
+	(getOutputStream): Documentation added.
+	(setDoInput): Throw correct exception, documentation added.
+	(setDoOutput): Throw correct exception, documentation added.
+	(setAllowUserInteraction): Throw correct exception, documentation added.
+	(setUseCaches): Throw correct exception, documentation added.
+	(setIfModifiedSince): Throw correct exception, documentation added.
+	(setRequestProperty): Throw exception, documentation added.
+	(addRequestProperty): Throw exception, documentation added.
+	(getRequestProperty): Throw exception, documentation added.
+	(getRequestProperties): Documentation added.
+	(setContentHandlerFactory): Documentation added.
+	(guessContentTypeFromName): protected to public.
+	(setFileNameMap): Documentation added.
+	* java/net/URLDecoder.java
+	(URLDecoder): New method.
+	(decode): Documentation added.
+	(whole file): Reindented.
+	* java/net/URLEncoder.java
+	(encode): Documentation added.
+	* java/net/natPlainDatagramSocketImpl.cc
+	(connect): New method.
+	(disconnect): New method.
+	* javax/naming/RefAddr:
+	(addrType): addrType was never final.
+	(equals): Fix typo in method name.
+	* javax/naming/BinaryRefAddr:
+	(equals): Fix typo in method name.
+
 2002-09-22  Tom Tromey  <tromey@redhat.com>
 
 	Fix for PR libgcj/6576:
@@ -40,8 +122,8 @@
 
 2002-09-19  Tom Tromey  <tromey@redhat.com>
 
-	* java/lang/ClassLoader.java (resolveClass0): Set cause for
-	newly-created exception.
+       * java/lang/ClassLoader.java (resolveClass0): Set cause for
+       newly-created exception.
 
 2002-09-18  Michael Koch  <konqueror@gmx.de>
 

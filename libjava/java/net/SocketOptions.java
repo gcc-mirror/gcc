@@ -43,142 +43,125 @@ package java.net;
  */
 
 /**
-  * This interface is used by <code>SocketImpl</code> and 
-  * <code>DatagramSocketImpl</code> to implement options
-  * on sockets.  
-  *
-  * @since 1.2
-  *
-  * @author Aaron M. Renn (arenn@urbanophile.com)
-  * @author Warren Levy <warrenl@cygnus.com>
-  * @status should be completely JDK 1.4 compatible
-  */
+ * This interface is used by <code>SocketImpl</code> and 
+ * <code>DatagramSocketImpl</code> to implement options
+ * on sockets.  
+ *
+ * @since 1.2
+ *
+ * @author Aaron M. Renn (arenn@urbanophile.com)
+ * @author Warren Levy <warrenl@cygnus.com>
+ * @status should be completely JDK 1.4 compatible
+ */
 public interface SocketOptions
 {
-
-/*************************************************************************/
-
-/*
- * Static Variables
- */
-
-/**
- * Option id for the SO_KEEPALIVE value
- * @since 1.3
- */
-static final int SO_KEEPALIVE = 0x8;
+  /**
+   * Option id for the SO_KEEPALIVE value
+   * @since 1.3
+   */
+  static final int SO_KEEPALIVE = 0x8;
 	
-/**
-  * Option id for the SO_LINGER value
-  */
-static final int SO_LINGER = 0x80; // 128
+  /**
+   * Option id for the SO_LINGER value
+   */
+  static final int SO_LINGER = 0x80; // 128
 
-/**
-  * Option id for the SO_TIMEOUT value
-  */
-static final int SO_TIMEOUT = 0x1006; // 4102
+  /**
+   * Option id for the SO_TIMEOUT value
+   */
+  static final int SO_TIMEOUT = 0x1006; // 4102
 
-/**
-  * Retrieve the local address to which the socket is bound.
-  */
-static final int SO_BINDADDR = 0x0F; // 15
+  /**
+   * Retrieve the local address to which the socket is bound.
+   */
+  static final int SO_BINDADDR = 0x0F; // 15
 
-/**
-  * Option id for the send buffer size
-  * @since 1.2
-  */
-static final int SO_SNDBUF = 0x1001; // 4097
+  /**
+   * Option id for the send buffer size
+   * @since 1.2
+   */
+  static final int SO_SNDBUF = 0x1001; // 4097
 
-/**
-  * Option id for the receive buffer size
-  * @since 1.2
-  */
-static final int SO_RCVBUF = 0x1002; // 4098
+  /**
+   * Option id for the receive buffer size
+   * @since 1.2
+   */
+  static final int SO_RCVBUF = 0x1002; // 4098
 
-/**
-  * Sets the SO_REUSEADDR parameter on a socket
-  */
-static final int SO_REUSEADDR = 0x04; // 4
+  /**
+   * Sets the SO_REUSEADDR parameter on a socket
+   */
+  static final int SO_REUSEADDR = 0x04; // 4
 
-/**
- * Sets SO_BROADCAST for a socket
- * @since 1.4
- */
-static final int SO_BROADCAST = 0x20; // 32
+  /**
+   * Sets SO_BROADCAST for a socket
+   * @since 1.4
+   */
+  static final int SO_BROADCAST = 0x20; // 32
 
-/**
- * Sets SO_OOBINLINE for a socket
- * @since 1.4
- */
-static final int SO_OOBINLINE = 0x1003; // 4099
+  /**
+   * Sets SO_OOBINLINE for a socket
+   * @since 1.4
+   */
+  static final int SO_OOBINLINE = 0x1003; // 4099
 
-/**
-  * Option id for the TCP_NODELAY value
-  */
-static final int TCP_NODELAY = 0x01; // 1
+  /**
+    * Option id for the TCP_NODELAY value
+    */
+  static final int TCP_NODELAY = 0x01; // 1
 
-/**
-  * Options id for the IP_MULTICAST_IF value
-  */
-static final int IP_MULTICAST_IF = 0x10; // 16
+  /**
+    * Options id for the IP_MULTICAST_IF value
+    */
+  static final int IP_MULTICAST_IF = 0x10; // 16
 
-/**
- * same as above
- * @since 1.4
- */
-static final int IP_MULTICAST_IF2 = 0x1F; // 31
+  /**
+   * same as above
+   * @since 1.4
+   */
+  static final int IP_MULTICAST_IF2 = 0x1F; // 31
 
-/**
- * This option enables or disables local loopback of multicast datagrams.
- * @since 1.4
- */
-static final int IP_MULTICAST_LOOP = 0x12; // 18
+  /**
+   * This option enables or disables local loopback of multicast datagrams.
+   * @since 1.4
+   */
+  static final int IP_MULTICAST_LOOP = 0x12; // 18
 
-/**
- * This option sets the type-of-service or traffic class field in the
- * IP header for a TCP or UDP socket.
- * @since 1.4
- */
-static final int IP_TOS = 0x03; // 3
+  /**
+   * This option sets the type-of-service or traffic class field in the
+   * IP header for a TCP or UDP socket.
+   * @since 1.4
+   */
+  static final int IP_TOS = 0x03; // 3
 
-/*************************************************************************/
+  /**
+   * Sets the specified option on a socket to the passed in object.  For
+   * options that take an integer argument, the passed in object is an
+   * <code>Integer</code>.  For options that are set to on or off, the
+   * value passed will be a <code>Boolean</code>.   The <code>option_id</code>
+   * parameter is one of the defined constants in this interface.
+   *
+   * @param option_id The identifier of the option
+   * @param val The value to set the option to
+   *
+   * @exception SocketException If an error occurs
+   */
+  void setOption(int option_id, Object val) throws SocketException;
 
-/*
- * Interface Methods
- */
-
-/**
-  * Sets the specified option on a socket to the passed in object.  For
-  * options that take an integer argument, the passed in object is an
-  * <code>Integer</code>.  For options that are set to on or off, the
-  * value passed will be a <code>Boolean</code>.   The <code>option_id</code> 
-  * parameter is one of the defined constants in this interface.
-  *
-  * @param option_id The identifier of the option
-  * @param val The value to set the option to
-  *
-  * @exception SocketException If an error occurs
-  */
-void
-setOption(int option_id, Object val) throws SocketException;
-
-/*************************************************************************/
-
-/**
-  * Returns the current setting of the specified option.  The 
-  * <code>Object</code> returned will be an <code>Integer</code> for options 
-  * that have integer values.  For options that are set to on or off, a 
-  * <code>Boolean</code> will be returned.   The <code>option_id</code>
-  * is one of the defined constants in this interface.
-  *
-  * @param option_id The option identifier
-  *
-  * @return The current value of the option
-  *
-  * @exception SocketException If an error occurs
-  */
-Object
-getOption(int option_id) throws SocketException;
+  /**
+   * Returns the current setting of the specified option.  The
+   * <code>Object</code> returned will be an <code>Integer</code> for options
+   * that have integer values.  For options that are set to on or off, a
+   * <code>Boolean</code> will be returned.   The <code>option_id</code>
+   * is one of the defined constants in this interface.
+   *
+   * @param option_id The option identifier
+   *
+   * @return The current value of the option
+   *
+   * @exception SocketException If an error occurs
+   */
+  Object getOption(int option_id) throws SocketException;
 
 } // interface SocketOptions
 

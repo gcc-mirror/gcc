@@ -86,6 +86,20 @@ java::net::PlainDatagramSocketImpl::bind (jint, java::net::InetAddress *)
     JvNewStringLatin1 ("DatagramSocketImpl.bind: unimplemented"));
 }
 
+void
+java::net::PlainDatagramSocketImpl::connect (java::net::InetAddress *, jint)
+{
+  throw new java::io::SocketException (
+    JvNewStringLatin1 ("DatagramSocketImpl.connect: unimplemented"));
+}
+
+void
+java::net::PlainDatagramSocketImpl::disconnect ()
+{
+  throw new java::io::SocketException (
+    JvNewStringLatin1 ("DatagramSocketImpl.disconnect: unimplemented"));
+}
+
 jint
 java::net::PlainDatagramSocketImpl::peek (java::net::InetAddress *)
 {
@@ -263,6 +277,21 @@ java::net::PlainDatagramSocketImpl::bind (jint lport,
  error:
   char* strerr = strerror (errno);
   throw new java::net::BindException (JvNewStringUTF (strerr));
+}
+
+void
+java::net::PlainDatagramSocketImpl::connect (java::net::InetAddress *addr,
+		                             jint  port)
+{ 
+  throw new ::java::lang::InternalError (
+    JvNewStringLatin1 ("PlainDatagramSocketImpl::connect: not implemented yet"));
+}
+
+void
+java::net::PlainDatagramSocketImpl::disconnect ()
+{
+  throw new ::java::lang::InternalError (
+    JvNewStringLatin1 ("PlainDatagramSocketImpl::disconnect: not implemented yet"));
 }
 
 jint

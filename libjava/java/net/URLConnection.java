@@ -72,6 +72,8 @@ public abstract class URLConnection
   /**
    * Creates a real connection to the object references by the URL given
    * to the constructor
+   *
+   * @exception IOException If an error occurs
    */
   public abstract void connect() throws IOException;
 
@@ -229,6 +231,10 @@ public abstract class URLConnection
 
   /**
    * Retrieves the content of this URLConnection
+   *
+   * @exception IOException If an error occurs
+   * @exception UnknownServiceException If the protocol does not support the
+   * content type
    */
   public Object getContent() throws IOException
   {
@@ -248,6 +254,9 @@ public abstract class URLConnection
    * Returns a permission object representing the permission necessary to make
    * the connection represented by this object. This method returns null if no
    * permission is required to make the connection.
+   *
+   * @exception IOException If the computation of the permission requires
+   * network or file I/O and an exception occurs while computing it
    */
   public Permission getPermission() throws IOException
   {
@@ -257,6 +266,9 @@ public abstract class URLConnection
 
   /**
    * Returns the input stream of the URL connection
+   *
+   * @exception IOException If an error occurs
+   * @exception UnknownServiceException If the protocol does not support input
    */
   public InputStream getInputStream() throws IOException
   {
@@ -267,6 +279,9 @@ public abstract class URLConnection
 
   /**
    * Returns the output stream of the URL connection
+   *
+   * @exception IOException If an error occurs
+   * @exception UnknownServiceException If the protocol does not support output
    */
   public OutputStream getOutputStream() throws IOException
   {
@@ -287,11 +302,13 @@ public abstract class URLConnection
    * Sets tha value of the doInput field.
    *
    * @param doinput The new value of the doInput field
+   *
+   * @exception IllegalStateException If already connected
    */
   public void setDoInput(boolean doinput)
   {
     if (connected)
-      throw new IllegalAccessError("Already connected");
+      throw new IllegalStateException ("Already connected");
 
     doInput = doinput;
   }
@@ -308,11 +325,13 @@ public abstract class URLConnection
    * Sets the value of the doOutput field
    *
    * @param dooutput The new value of the doOutput field
+   *
+   * @exception IllegalStateException If already connected
    */
   public void setDoOutput(boolean dooutput)
   {
     if (connected)
-      throw new IllegalAccessError("Already connected");
+      throw new IllegalStateException ("Already connected");
 
     doOutput = dooutput;
   }
@@ -329,11 +348,13 @@ public abstract class URLConnection
    * Sets a new value to the allowUserInteraction field
    *
    * @param allowed The new value
+   *
+   * @exception IllegalStateException If already connected
    */
   public void setAllowUserInteraction(boolean allowed)
   {
     if (connected)
-      throw new IllegalAccessError("Already connected");
+      throw new IllegalStateException ("Already connected");
 
     allowUserInteraction = allowed;
   }
@@ -368,11 +389,13 @@ public abstract class URLConnection
    * Sets a new value to the useCaches field
    *
    * @param usecaches The new value
+   *
+   * @exception IllegalStateException If already connected
    */
   public void setUseCaches(boolean usecaches)
   {
     if (connected)
-      throw new IllegalAccessError("Already connected");
+      throw new IllegalStateException ("Already connected");
 
     useCaches = usecaches;
   }
@@ -390,11 +413,13 @@ public abstract class URLConnection
    *
    * @param ifmodifiedsince The new value in milliseconds
    * since January 1, 1970 GMT
+   *
+   * @exception IllegalStateException If already connected
    */
   public void setIfModifiedSince(long ifmodifiedsince)
   {
     if (connected)
-      throw new IllegalAccessError("Already connected");
+      throw new IllegalStateException ("Already connected");
 
     ifModifiedSince = ifmodifiedsince;
   }
@@ -431,11 +456,17 @@ public abstract class URLConnection
    * @param key Key of the property to set
    * @param value Value of the Property to set
    *
+   * @exception IllegalStateException If already connected
+   * @exception NullPointerException If key is null
+   *
    * @see URLConnection:getRequestProperty(String key)
-   * @see URLConnection:addRequestProperty/String key, String value)
+   * @see URLConnection:addRequestProperty(String key, String value)
    */
   public void setRequestProperty(String key, String value)
   {
+    if (connected)
+      throw new IllegalStateException ("Already connected");
+
     // Do nothing unless overridden by subclasses that support setting
     // header fields in the request.
   }
@@ -446,6 +477,9 @@ public abstract class URLConnection
    * 
    * @param key Key of the property to add
    * @param value Value of the Property to add
+   *
+   * @exception IllegalStateException If already connected
+   * @exception NullPointerException If key is null
    * 
    * @see URLConnection:getRequestProperty(String key)
    * @see URLConnection:setRequestProperty(String key, String value)
@@ -454,6 +488,9 @@ public abstract class URLConnection
    */
   public void addRequestProperty(String key, String value)
   {
+    if (connected)
+      throw new IllegalStateException ("Already connected");
+
     if (getRequestProperty (key) == null)
       {
         setRequestProperty (key, value);
@@ -465,6 +502,8 @@ public abstract class URLConnection
    *
    * @param key Key of the property to return
    *
+   * @exception IllegalStateException If already connected
+   *
    * @see URLConnection:setRequestProperty(String key, String value)
    * @see URLConnection:addRequestProperty(String key, String value)
    * 
@@ -472,6 +511,9 @@ public abstract class URLConnection
    */
   public String getRequestProperty(String key)
   {
+    if (connected)
+      throw new IllegalStateException ("Already connected");
+
     // Overridden by subclasses that support reading header fields from the
     // request.
     return null;
@@ -479,6 +521,8 @@ public abstract class URLConnection
 
   /**
    * Returns a map that contains all properties of the request
+   *
+   * @exception IllegalStateException If already connected
    *
    * @return The map of properties
    */
@@ -526,6 +570,10 @@ public abstract class URLConnection
    * Sets a ContentHandlerFactory
    *
    * @param fac The ContentHandlerFactory
+   *
+   * @exception Error If the factory has already been defined
+   * @exception SecurityException If a security manager exists and its
+   * checkSetFactory method doesn't allow the operation
    */
   public static void setContentHandlerFactory(ContentHandlerFactory fac)
   {
@@ -545,8 +593,10 @@ public abstract class URLConnection
    * specified file name
    *
    * @param fname The filename to guess the content type from
+   *
+   * @specnote public since JDK 1.4
    */
-  protected static String guessContentTypeFromName(String fname)
+  public static String guessContentTypeFromName(String fname)
   {
     int dot = fname.lastIndexOf (".");
     
@@ -597,6 +647,9 @@ public abstract class URLConnection
    * Sets a FileNameMap
    *
    * @param map The new FileNameMap
+   *
+   * @exception SecurityException If a security manager exists and its
+   * checkSetFactory method doesn't allow the operation
    * 
    * @since 1.2
    */

@@ -97,7 +97,7 @@ public class BinaryRefAddr extends RefAddr
    *         the addrType is the same as this addrType and the bytes of the
    *         content are the same.
    */
-  public boolean equal(Object o)
+  public boolean equals(Object o)
   {
     if (o instanceof BinaryRefAddr)
       {

@@ -108,6 +108,9 @@ public abstract class DatagramSocketImpl implements SocketOptions
    * @return The port number of the sender of the packet
    *
    * @exception IOException If an error occurs
+   * @exception PortUnreachableException May be thrown if the socket is
+   * connected to a currently unreachable destination. Note, there is no
+   * guarantee that the exception will be thrown.
    */
   protected abstract int peek(InetAddress i) throws IOException;
 
@@ -120,6 +123,9 @@ public abstract class DatagramSocketImpl implements SocketOptions
    * @return The port number of the sender of the packet.
    * 
    * @exception IOException If an error occurs
+   * @exception PortUnreachableException May be thrown if the socket is
+   * connected to a currently unreachable destination. Note, there is no
+   * guarantee that the exception will be thrown.
    * 
    * @since 1.4
    */
@@ -132,6 +138,9 @@ public abstract class DatagramSocketImpl implements SocketOptions
    * @param p The packet to send
    *
    * @exception IOException If an error occurs
+   * @exception PortUnreachableException May be thrown if the socket is
+   * connected to a currently unreachable destination. Note, there is no
+   * guarantee that the exception will be thrown.
    */
   protected abstract void send(DatagramPacket p) throws IOException;
 
@@ -143,8 +152,36 @@ public abstract class DatagramSocketImpl implements SocketOptions
    * @param p A place to store the incoming packet.
    *
    * @exception IOException If an error occurs
+   * @exception PortUnreachableException May be thrown if the socket is
+   * connected to a currently unreachable destination. Note, there is no
+   * guarantee that the exception will be thrown.
    */
   protected abstract void receive(DatagramPacket p) throws IOException;
+
+  /**
+   * Connects the socket to a host specified by address and port.
+   *
+   * @param address The InetAddress of the host to connect to
+   * @param port The port number of the host to connect to
+   *
+   * @exception SocketException If an error occurs
+   *
+   * @since 1.4
+   */
+  protected void connect (InetAddress address, int port) throws SocketException
+  {
+    // This method has to be overwritten by real implementations
+  }
+
+  /**
+   * Disconnects the socket.
+   * 
+   * @since 1.4
+   */
+  protected void disconnect ()
+  {
+    // This method has to be overwritten by real implementations
+  }
 
   /**
    * Sets the Time to Live (TTL) setting on this socket to the specified
@@ -202,6 +239,35 @@ public abstract class DatagramSocketImpl implements SocketOptions
    */
   protected abstract void leave(InetAddress inetaddr) throws IOException;
 
+  /**
+   * Causes this socket to join the specified multicast group on a specified
+   * device 
+   * 
+   * @param mcastaddr The address to leave
+   * @param netIf The specified network interface to join the group at
+   *
+   * @exception IOException If an error occurs
+   * 
+   * @since 1.4
+   */
+  protected abstract void joinGroup (SocketAddress mcastaddr,
+		                     NetworkInterface netIf)
+    throws IOException;
+
+  /**
+   * Leaves a multicast group
+   * 
+   * @param mcastaddr The address to join
+   * @param netIf The specified network interface to leave the group at
+   *
+   * @exception IOException If an error occurs
+   * 
+   * @since 1.4
+   */
+  protected abstract void leaveGroup (SocketAddress mcastaddr,
+		                      NetworkInterface netIf)
+    throws IOException;
+  
   /**
    * Returns the FileDescriptor for this socket
    */

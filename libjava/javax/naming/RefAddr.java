@@ -61,7 +61,7 @@ public abstract class RefAddr implements Serializable
    * The string resprenstation of the type of address.
    * Set by the constructor and returned by the getType() method.
    */
-  protected final String addrType;
+  protected String addrType;
 
   /**
    * Protected constructor for use by subclasses.
@@ -98,7 +98,7 @@ public abstract class RefAddr implements Serializable
    *         is the same as this addrType and the content is equals to the
    *         content of this object.
    */
-  public boolean equal(Object o)
+  public boolean equals(Object o)
   {
     if (o instanceof RefAddr)
       {
