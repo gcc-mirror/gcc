@@ -4749,13 +4749,15 @@ assign_parms (fndecl)
 	  /* If we were passed a pointer but the actual value
 	     can safely live in a register, put it in one.  */
 	  if (passed_pointer && TYPE_MODE (TREE_TYPE (parm)) != BLKmode
-	      && ! ((! optimize
-		     && ! DECL_REGISTER (parm))
-		    || TREE_SIDE_EFFECTS (parm)
-		    /* If -ffloat-store specified, don't put explicit
-		       float variables into registers.  */
-		    || (flag_float_store
-			&& TREE_CODE (TREE_TYPE (parm)) == REAL_TYPE)))
+	      /* If by-reference argument was promoted, demote it.  */
+	      && (TYPE_MODE (TREE_TYPE (parm)) != GET_MODE (DECL_RTL (parm))
+		  || ! ((! optimize
+			 && ! DECL_REGISTER (parm))
+			|| TREE_SIDE_EFFECTS (parm)
+			/* If -ffloat-store specified, don't put explicit
+			   float variables into registers.  */
+			|| (flag_float_store
+			    && TREE_CODE (TREE_TYPE (parm)) == REAL_TYPE))))
 	    {
 	      /* We can't use nominal_mode, because it will have been set to
 		 Pmode above.  We must use the actual mode of the parm.  */
