@@ -1802,9 +1802,11 @@ emit_group_load (x, y)
 	     to allow for AIX with 4 DF arguments after a single SI arg.  The
 	     last DF argument will only load 1 word into the integer registers,
 	     but load a DF value into the float registers.  */
-	  else if (GET_MODE_SIZE (GET_MODE (target_reg))
-		   <= GET_MODE_SIZE (GET_MODE (y)))
-	    source = gen_rtx (SUBREG, GET_MODE (target_reg), y, 0);
+	  else if ((GET_MODE_SIZE (GET_MODE (target_reg))
+		    <= GET_MODE_SIZE (GET_MODE (y)))
+		   && GET_MODE (target_reg) == word_mode)
+	    /* This might be a const_double, so we can't just use SUBREG.  */
+	    source = operand_subword (y, 0, 0, VOIDmode);
 	  else
 	    abort ();	    
 	}
