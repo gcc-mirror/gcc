@@ -4296,21 +4296,7 @@ build_x_compound_expr (tree op1, tree op2)
 
   result = build_new_op (COMPOUND_EXPR, LOOKUP_NORMAL, op1, op2, NULL_TREE);
   if (!result)
-    {
-      if (! TREE_SIDE_EFFECTS (op1))
-	{
-	  /* FIXME: This test should be in the implicit cast to void
-	     of the LHS.  */
-	  /* the left-hand operand of a comma expression is like an expression
-	     statement: we should warn if it doesn't have any side-effects,
-	     unless it was explicitly cast to (void).  */
-	  if (warn_unused_value
-	      && !(TREE_CODE (op1) == CONVERT_EXPR
-		   && VOID_TYPE_P (TREE_TYPE (op1))))
-	    warning("left-hand operand of comma expression has no effect");
-	}
-      result = build_compound_expr (op1, op2);
-    }
+    result = build_compound_expr (op1, op2);
 
   if (processing_template_decl && result != error_mark_node)
     return build_min (COMPOUND_EXPR, TREE_TYPE (result), 
@@ -4323,18 +4309,22 @@ build_x_compound_expr (tree op1, tree op2)
 tree
 build_compound_expr (tree lhs, tree rhs)
 {
-  lhs = decl_constant_value (lhs);
-  lhs = convert_to_void (lhs, "left-hand operand of comma");
+  if (!processing_template_decl)
+    {
+      lhs = decl_constant_value (lhs);
+      lhs = convert_to_void (lhs, "left-hand operand of comma");
+    }
+  
   if (lhs == error_mark_node || rhs == error_mark_node)
     return error_mark_node;
-
+  
   if (TREE_CODE (rhs) == TARGET_EXPR)
     {
       /* If the rhs is a TARGET_EXPR, then build the compound
          expression inside the target_expr's initializer. This
 	 helps the compiler to eliminate unncessary temporaries.  */
       tree init = TREE_OPERAND (rhs, 1);
-
+      
       init = build (COMPOUND_EXPR, TREE_TYPE (init), lhs, init);
       TREE_OPERAND (rhs, 1) = init;
       

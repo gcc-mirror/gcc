@@ -1229,7 +1229,7 @@ expand_default_init (tree binfo, tree true_exp, tree exp, tree init, int flags)
 
   rval = build_special_member_call (exp, ctor_name, parms, binfo, flags);
   if (TREE_SIDE_EFFECTS (rval))
-    finish_expr_stmt (rval);
+    finish_expr_stmt (convert_to_void (rval, NULL));
 }
 
 /* This function is responsible for initializing EXP with INIT

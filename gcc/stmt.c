@@ -2152,17 +2152,13 @@ expand_expr_stmt_value (tree exp, int want_value, int maybe_last)
      except for last statement in ({...}) where they may be useful.  */
   if (! want_value
       && (expr_stmts_for_value == 0 || ! maybe_last)
-      && exp != error_mark_node)
+      && exp != error_mark_node
+      && warn_unused_value)
     {
-      if (! TREE_SIDE_EFFECTS (exp))
-	{
-	  if (warn_unused_value
-	      && !(TREE_CODE (exp) == CONVERT_EXPR
-		   && VOID_TYPE_P (TREE_TYPE (exp))))
-	    warning ("%Hstatement with no effect", &emit_locus);
-	}
-      else if (warn_unused_value)
+      if (TREE_SIDE_EFFECTS (exp))
 	warn_if_unused_value (exp);
+      else if (!VOID_TYPE_P (TREE_TYPE (exp)))
+	warning ("%Hstatement with no effect", &emit_locus);
     }
 
   /* If EXP is of function type and we are expanding statements for

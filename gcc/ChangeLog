@@ -1,3 +1,9 @@
+2003-08-16  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/11512
+	* stmt.c (expand_expr_stmt_value): Don't warn about any void
+	typed expression.
+
 2003-08-16  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (ix86_fntype_regparm): Rename from ...
