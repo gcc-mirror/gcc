@@ -175,6 +175,10 @@ static int num_scratch;
 
 reg_info *reg_n_info;
 
+/* Size of the reg_n_info table.  */
+
+unsigned int reg_n_max;
+
 /* Element N is the next insn that uses (hard or pseudo) register number N
    within the current basic block; or zero, if there is no such insn.
    This is valid only during the final backward scan in propagate_block.  */

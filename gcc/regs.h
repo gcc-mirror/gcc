@@ -62,16 +62,28 @@ typedef struct reg_info_def {
 
 extern reg_info *reg_n_info;
 
+extern unsigned int reg_n_max;
+
+/* Check for REG_N_xxx macros being in bound, return N for use as an
+   index.  */
+#ifdef ENABLE_CHECKING
+#define REG_N_CHECK(N)							\
+((((unsigned)(N) < (unsigned)reg_n_max)					\
+ ? 0 : (fatal ("Register %d out of bounds", (N)), 0)), (N))
+#else
+#define REG_N_CHECK(N) (N)
+#endif
+
 /* Indexed by n, gives number of times (REG n) is used or set.
    References within loops may be counted more times.  */
 
-#define REG_N_REFS(N) (reg_n_info[(N)].refs)
+#define REG_N_REFS(N) (reg_n_info[REG_N_CHECK (N)].refs)
 
 /* Indexed by n, gives number of times (REG n) is set.
    ??? both regscan and flow allocate space for this.  We should settle
    on just copy.  */
 
-#define REG_N_SETS(N) (reg_n_info[(N)].sets)
+#define REG_N_SETS(N) (reg_n_info[REG_N_CHECK (N)].sets)
 
 /* Indexed by N, gives number of insns in which register N dies.
    Note that if register N is live around loops, it can die
@@ -79,13 +91,13 @@ extern reg_info *reg_n_info;
    So this is only a reliable indicator of how many regions of life there are
    for registers that are contained in one basic block.  */
 
-#define REG_N_DEATHS(N) (reg_n_info[(N)].deaths)
+#define REG_N_DEATHS(N) (reg_n_info[REG_N_CHECK (N)].deaths)
 
 /* Indexed by N; says whether a pseudo register N was ever used
    within a SUBREG that changes the size of the reg.  Some machines prohibit
    such objects to be in certain (usually floating-point) registers.  */
 
-#define REG_CHANGES_SIZE(N) (reg_n_info[(N)].changes_size)
+#define REG_CHANGES_SIZE(N) (reg_n_info[REG_N_CHECK (N)].changes_size)
 
 /* Get the number of consecutive words required to hold pseudo-reg N.  */
 
@@ -104,7 +116,7 @@ extern reg_info *reg_n_info;
 
 /* Indexed by N, gives number of CALL_INSNS across which (REG n) is live.  */
 
-#define REG_N_CALLS_CROSSED(N) (reg_n_info[(N)].calls_crossed)
+#define REG_N_CALLS_CROSSED(N) (reg_n_info[REG_N_CHECK (N)].calls_crossed)
 
 /* Total number of instructions at which (REG n) is live.
    The larger this is, the less priority (REG n) gets for
@@ -121,7 +133,7 @@ extern reg_info *reg_n_info;
    is not required.  global.c makes an allocno for this but does
    not try to assign a hard register to it.  */
 
-#define REG_LIVE_LENGTH(N) (reg_n_info[(N)].live_length)
+#define REG_LIVE_LENGTH(N) (reg_n_info[REG_N_CHECK (N)].live_length)
 
 /* Vector of substitutions of register numbers,
    used to map pseudo regs into hardware regs.
@@ -153,7 +165,7 @@ extern enum machine_mode reg_raw_mode[FIRST_PSEUDO_REGISTER];
    It is sometimes adjusted for subsequent changes during loop,
    but not adjusted by cse even if cse invalidates it.  */
 
-#define REGNO_FIRST_UID(N) (reg_n_info[(N)].first_uid)
+#define REGNO_FIRST_UID(N) (reg_n_info[REG_N_CHECK (N)].first_uid)
 
 /* Vector indexed by regno; gives uid of last insn using that reg.
    This is computed by reg_scan for use by cse and loop.
@@ -161,11 +173,11 @@ extern enum machine_mode reg_raw_mode[FIRST_PSEUDO_REGISTER];
    but not adjusted by cse even if cse invalidates it.
    This is harmless since cse won't scan through a loop end.  */
 
-#define REGNO_LAST_UID(N) (reg_n_info[(N)].last_uid)
+#define REGNO_LAST_UID(N) (reg_n_info[REG_N_CHECK (N)].last_uid)
 
 /* Similar, but includes insns that mention the reg in their notes.  */
 
-#define REGNO_LAST_NOTE_UID(N) (reg_n_info[(N)].last_note_uid)
+#define REGNO_LAST_NOTE_UID(N) (reg_n_info[REG_N_CHECK (N)].last_note_uid)
 
 /* This is reset to LAST_VIRTUAL_REGISTER + 1 at the start of each function.
    After rtl generation, it is 1 plus the largest register number used.  */
