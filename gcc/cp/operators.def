@@ -102,6 +102,9 @@ DEF_SIMPLE_OPERATOR ("alignof", ALIGNOF_EXPR, "v17alignof", 1)
 
 /* The cast operator.  */
 DEF_SIMPLE_OPERATOR ("", TYPE_EXPR, "cv", 1)
+DEF_SIMPLE_OPERATOR ("", CAST_EXPR, "cv", 1)
+DEF_SIMPLE_OPERATOR ("", CONST_CAST_EXPR, "cv", 1)
+DEF_SIMPLE_OPERATOR ("", STATIC_CAST_EXPR, "cv", 1)
 
 /* Binary operators.  */
 DEF_SIMPLE_OPERATOR ("+", PLUS_EXPR, "pl", 2)
