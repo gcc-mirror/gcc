@@ -1761,21 +1761,21 @@ while (0)
 #define BLOCK_EMPTY_P(NODE) \
   (TREE_CODE (NODE) == BLOCK && BLOCK_EXPR_BODY (NODE) == empty_stmt_node)
 
-#define BUILD_MONITOR_ENTER(WHERE, ARG)				\
-  {								\
-    (WHERE) = build (CALL_EXPR, int_type_node,			\
-		     build_address_of (soft_monitorenter_node),	\
-		     build_tree_list (NULL_TREE, (ARG)), 	\
-		     NULL_TREE);				\
-    TREE_SIDE_EFFECTS (WHERE) = 1;				\
+#define BUILD_MONITOR_ENTER(WHERE, ARG)					\
+  {									\
+    (WHERE) = build3 (CALL_EXPR, int_type_node,				\
+		      build_address_of (soft_monitorenter_node),	\
+		      build_tree_list (NULL_TREE, (ARG)),	 	\
+		      NULL_TREE);					\
+    TREE_SIDE_EFFECTS (WHERE) = 1;					\
   }
 
 #define BUILD_MONITOR_EXIT(WHERE, ARG)				\
   {								\
-    (WHERE) = build (CALL_EXPR, int_type_node,			\
-		     build_address_of (soft_monitorexit_node),	\
-		     build_tree_list (NULL_TREE, (ARG)),	\
-		     NULL_TREE);				\
+    (WHERE) = build3 (CALL_EXPR, int_type_node,			\
+		      build_address_of (soft_monitorexit_node),	\
+		      build_tree_list (NULL_TREE, (ARG)),	\
+		      NULL_TREE);				\
     TREE_SIDE_EFFECTS (WHERE) = 1;				\
   }
 

@@ -664,9 +664,9 @@ typedef struct jdeplist_s jdeplist;
 #define BUILD_THROW(WHERE, WHAT)				\
   {								\
     (WHERE) = 							\
-      build (CALL_EXPR, void_type_node,				\
-	     build_address_of (throw_node),			\
-	     build_tree_list (NULL_TREE, (WHAT)), NULL_TREE);	\
+      build3 (CALL_EXPR, void_type_node,			\
+	      build_address_of (throw_node),			\
+	      build_tree_list (NULL_TREE, (WHAT)), NULL_TREE);	\
     TREE_SIDE_EFFECTS ((WHERE)) = 1;				\
   }
 

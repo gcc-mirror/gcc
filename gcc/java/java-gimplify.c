@@ -174,8 +174,8 @@ java_gimplify_modify_expr (tree modify_expr)
     {
       tree new_lhs = java_replace_reference (lhs, /* want_lvalue */ true);
       tree new_rhs = build1 (NOP_EXPR, TREE_TYPE (new_lhs), rhs);
-      modify_expr = build (MODIFY_EXPR, TREE_TYPE (new_lhs),
-			   new_lhs, new_rhs);
+      modify_expr = build2 (MODIFY_EXPR, TREE_TYPE (new_lhs),
+			    new_lhs, new_rhs);
       modify_expr = build1 (NOP_EXPR, lhs_type, modify_expr);
     }
   
