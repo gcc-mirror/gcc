@@ -1,3 +1,15 @@
+2001-07-09  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* pa.c (pa_init_machine_status, pa_mark_machine_status,
+	pa_free_machine_status, hppa_init_pic_save): Delete.
+	(hppa_pic_save_rtx): New.  Use get_hard_reg_initial_val.
+	(hppa_profile_hook): Use hppa_pic_save_rtx.
+	* pa.h (struct machine_function, PIC_OFFSET_TABLE_SAVE_RTX,
+	hppa_init_pic_save): Delete.
+	(hppa_pic_save_rtx): Declare.
+	* pa.md (call, call_value, sibcall, sibcall_value,
+	builtin_setjmp_receiver): Use hppa_pic_save_rtx.
+
 2001-07-09  Kazu Hirata  <kazu@hxi.com>
 
 	* config/h8300/t-h8300 (LIB1ASMFUNCS): Add _floatdisf and _fixsfdi.

@@ -71,12 +71,6 @@ enum architecture_type
 };
 
 struct rtx_def;
-/* A C structure for machine-specific, per-function data.
-   This is added to the cfun structure.  */
-typedef struct machine_function
-{
-  struct rtx_def *pic_offset_table_save_rtx;
-} machine_function;
 
 /* For -march= option.  */
 extern const char *pa_arch_string;
@@ -517,10 +511,9 @@ extern int target_flags;
 #define PIC_OFFSET_TABLE_REGNUM (TARGET_64BIT ? 27 : 19)
 #define PIC_OFFSET_TABLE_REG_CALL_CLOBBERED 1
 
-/* Register into which we save the PIC_OFFSET_TABLE_REGNUM so that it
-   can be restored across function calls.  */
-#define PIC_OFFSET_TABLE_SAVE_RTX (cfun->machine->pic_offset_table_save_rtx)
-extern void hppa_init_pic_save PARAMS ((void));
+/* Function to return the rtx used to save the pic offset table register
+   across function calls.  */
+extern struct rtx_def *hppa_pic_save_rtx PARAMS ((void));
 
 #define DEFAULT_PCC_STRUCT_RETURN 0
 
