@@ -197,6 +197,8 @@ java_allocate_new_line ()
   ctxp->c_line->white_space_only = 1;
 }
 
+#define BAD_UTF8_VALUE 0xFFFE
+
 static unicode_t
 java_read_char ()
 {
@@ -235,9 +237,8 @@ java_read_char ()
 				   (( c1 & 0x3f) << 6) + (c2 & 0x3f));
 	    }
 	}
-      java_lex_error ("Bad utf8 encoding", 0);
+      return BAD_UTF8_VALUE;
     }
-  return 0;
 }
 
 static void
@@ -1312,12 +1313,12 @@ java_is_eol (fp, c)
   int next;
   switch (c)
     {
-    case '\n':
+    case '\r':
       next = getc (fp);
-      if (next != '\r' && next != EOF)
+      if (next != '\n' && next != EOF)
 	ungetc (next, fp);
       return 1;
-    case '\r':
+    case '\n':
       return 1;
     default:
       return 0;
