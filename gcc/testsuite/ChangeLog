@@ -1,3 +1,8 @@
+2004-10-07  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	PR c++/17115
+	* g++.dg/warn/Winline-4.C: New test.
+
 2004-10-07  Christian Ehrhardt  <ehrhardt@mathematik.uni-ulm.de>
 
 	* gcc.c-torture/compile/20041007-1.c: New test.
@@ -27,10 +32,10 @@
 	gcc.c-torture/compile/pr16566-3.c: New tests.
 
 2004-09-21  Bud Davis  <bdavis9659@comcast.net>
- 
-        PR fortran/17541
+
+	PR fortran/17541
 	* g77.f-torture/execute/pr17541.f: New test.
- 
+
 2004-09-20  Richard Sandiford  <rsandifo@redhat.com>
 
 	* gcc.dg/mips-asm-1.c: New test.
