@@ -1037,9 +1037,9 @@ dtors_section() 						\
   extern pfunc __ctors[];			\
   extern pfunc __ctors_end[];			\
   pfunc *p;					\
-  for (p = __ctors; p < __ctors_end; p++)	\
+  for (p = __ctors_end; p > __ctors; )		\
     {						\
-      (*p)();					\
+      (*--p)();					\
     }						\
 }						
 
