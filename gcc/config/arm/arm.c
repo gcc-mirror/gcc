@@ -7676,7 +7676,7 @@ arm_expand_prologue ()
   unsigned long live_regs_mask;
   unsigned long func_type;
   int fp_offset = 0;
-  
+
   func_type = arm_current_func_type ();
 
   /* Naked functions don't have prologues.  */
@@ -7687,7 +7687,7 @@ arm_expand_prologue ()
   live_regs_mask = arm_compute_save_reg_mask ();
 
   ip_rtx = gen_rtx_REG (SImode, IP_REGNUM);
-  
+
   if (frame_pointer_needed)
     {
       if (IS_NESTED (func_type))
@@ -7709,12 +7709,12 @@ arm_expand_prologue ()
 	     to be fixed sometime, but until then the flag is suppressed.
 	     [Use gcc/testsuite/gcc.c-torture/execute/921215-1.c with
 	     "-O3 -g" to test this].  */
-	  
+
 	  if (regs_ever_live[3] == 0)
 	    {
 	      insn = gen_rtx_REG (SImode, 3);
 	      insn = gen_rtx_SET (SImode, insn, ip_rtx);
-	      insn = emit_insn (insn);	      
+	      insn = emit_insn (insn);
 	      /* RTX_FRAME_RELATED_P (insn) = 1; */
 	    }
 	  else if (current_function_pretend_args_size == 0)
