@@ -1,5 +1,6 @@
 2003-03-31  Jason Merrill  <jason@redhat.com>
 
+	PR java/10145
 	* stor-layout.c (update_alignment_for_field): Respect
 	DECL_USER_ALIGN for zero-length bitfields, too.
 	* c-decl.c (finish_struct): Don't set DECL_ALIGN for normal
