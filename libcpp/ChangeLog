@@ -1,3 +1,8 @@
+2005-02-14  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* directives.c, files.c, init.c, internal.h, macro.c, pch.c,
+	traditional.c: Update copyright.
+
 2005-02-14  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR bootstrap/19818
