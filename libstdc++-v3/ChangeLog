@@ -1,3 +1,23 @@
+2004-10-25  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/Makefile.am (tr1_headers): Add tuple.
+	* include/Makefile.in: Regenerate.
+
+2004-10-25  Chris Jefferson  <chris@bubblescope.net>
+
+        * include/tr1/tuple: Implementation of tuple from library TR.
+	* testsuite/tr1/6_containers/tuple/tuple_element.cc: New.
+	* testsuite/tr1/6_containers/tuple/tuple_size.cc: New.
+	* testsuite/tr1/6_containers/tuple/comparison_operators/comparisons.cc:
+	New.
+	* testsuite/tr1/6_containers/tuple/cons/assignment.cc: New.
+	* testsuite/tr1/6_containers/tuple/cons/big_tuples.cc: New.
+	* testsuite/tr1/6_containers/tuple/cons/constructor.cc: New.
+	* testsuite/tr1/6_containers/tuple/creation_functions/make_tuple.cc: 
+	New.
+	* testsuite/tr1/6_containers/tuple/creation_functions/tie.cc: New.
+	* testsuite/tr1/6_containers/tuple/element_access/get.cc: New.
+
 2004-10-25  Paolo Carlini  <pcarlini@suse.de>
 	
 	* include/bits/basic_string.h (_Rep::_M_is_safe): Move to
