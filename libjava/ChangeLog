@@ -1,5 +1,11 @@
 2004-11-06  Tom Tromey  <tromey@redhat.com>
 
+	* java/security/Permissions.java (perms): Now package-private.
+	* java/security/UnresolvedPermission.java (permissions): Now
+	package-private.
+
+2004-11-06  Tom Tromey  <tromey@redhat.com>
+
 	* java/io/FilePermission.java: Reindented.
 
 2004-11-06  Tom Tromey  <tromey@redhat.com>
