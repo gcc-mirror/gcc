@@ -1,3 +1,9 @@
+Fri Feb 12 21:09:51 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* reload.c (find_reloads_subreg_address): New function, broken out of
+	find_reloads_toplev.
+	(find_reloads_toplev, find_reloads_address_1): Use it.
+
 Fri Feb 12 13:20:52 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* h8300.md (zero_extendhisi2 H8/300 variant): Correctly handle
