@@ -1,3 +1,18 @@
+2004-12-15  Uros Bizjak  <uros@kss-loka.si>
+
+	* config/i386/i386.md (floathisf2, *floathisf2_1, floatsisf2,
+	*floatsisf2_i387, *floatsisf2_sse, floatdisf2,
+	*floatdisf2_i387_only, *floatdisf2_i387, *floatdisf2_sse,
+	floathidf2, *floathidf2_1, *floatsidf2_i387, *floatsidf2_sse,
+	floatdidf2, *floatdidf2_i387_only, *floatdidf2_i387,
+	*floatdidf2_sse, floatunssisf2, floatunsdisf2, floatunsdidf2):
+	Unify enable constraint with respect to TARGET_80387, TARGET_SSE,
+	TARGET_SSE2, TARGET_64BIT, TARGET_SSE_MATH and TARGET_MIX_SSE_I387.
+	(*float?i?f_i387): Rename to *float?i?f2_mixed.
+	(*float?i?f2_1): Rename to *float?i?f2_i387.
+	(*float?i?f2_i387_only): Rename to *float?i?f2_i387.
+	(float?ixf2): Penalize integer register operand.
+
 2004-12-14  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR c++/17242
