@@ -1263,6 +1263,8 @@ extern const struct mips_cpu_info *mips_tune_info;
 /* The number of bytes in a double.  */
 #define UNITS_PER_DOUBLE (TYPE_PRECISION (double_type_node) / BITS_PER_UNIT)
 
+#define UNITS_PER_SIMD_WORD (TARGET_PAIRED_SINGLE_FLOAT ? 8 : 0)
+
 /* Set the sizes of the core types.  */
 #define SHORT_TYPE_SIZE 16
 #define INT_TYPE_SIZE (TARGET_INT64 ? 64 : 32)
