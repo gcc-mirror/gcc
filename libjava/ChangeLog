@@ -1,3 +1,8 @@
+2004-11-23  Michael Koch  <konqueror@gmx.de>
+
+	* Makefile.in, aclocal.m4, configure, gcj/Makefile.in,
+	include/Makefile.in, testsuite/Makefile.in: Regenerated.
+
 2004-11-22  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR target/18444
