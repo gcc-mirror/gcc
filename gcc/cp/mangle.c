@@ -2610,7 +2610,7 @@ mangle_call_offset (fixed_offset, virtual_offset)
    covariant thunk to FN_DECL.  FIXED_OFFSET is the initial adjustment
    to this used to find the vptr.  If VIRTUAL_OFFSET is non-NULL, this
    is a virtual thunk, and it is the vtbl offset in
-   bytes. THIS_ADJUSTING is non-zero for a this adjusting thunk and
+   bytes. THIS_ADJUSTING is nonzero for a this adjusting thunk and
    zero for a covariant thunk. Note, that FN_DECL might be a covariant
    thunk itself. A covariant thunk name always includes the adjustment
    for the this pointer, even if there is none.

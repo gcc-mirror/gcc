@@ -384,7 +384,7 @@ cp_lexer_new_from_tokens (cp_token_cache *tokens)
   return lexer;
 }
 
-/* Returns non-zero if debugging information should be output.  */
+/* Returns nonzero if debugging information should be output.  */
 
 static inline bool
 cp_lexer_debugging_p (cp_lexer *lexer)
@@ -419,7 +419,7 @@ cp_lexer_next_token (cp_lexer* lexer, cp_token* token)
   return token;
 }
 
-/* Non-zero if we are presently saving tokens.  */
+/* nonzero if we are presently saving tokens.  */
 
 static int
 cp_lexer_saving_tokens (const cp_lexer* lexer)
@@ -1756,7 +1756,7 @@ static bool cp_parser_is_keyword
 static tree cp_parser_scope_through_which_access_occurs
   (tree, tree, tree);
 
-/* Returns non-zero if we are parsing tentatively.  */
+/* Returns nonzero if we are parsing tentatively.  */
 
 static inline bool
 cp_parser_parsing_tentatively (cp_parser* parser)
@@ -1764,7 +1764,7 @@ cp_parser_parsing_tentatively (cp_parser* parser)
   return parser->context->next != NULL;
 }
 
-/* Returns non-zero if TOKEN is a string literal.  */
+/* Returns nonzero if TOKEN is a string literal.  */
 
 static bool
 cp_parser_is_string_literal (cp_token* token)
@@ -1772,7 +1772,7 @@ cp_parser_is_string_literal (cp_token* token)
   return (token->type == CPP_STRING || token->type == CPP_WSTRING);
 }
 
-/* Returns non-zero if TOKEN is the indicated KEYWORD.  */
+/* Returns nonzero if TOKEN is the indicated KEYWORD.  */
 
 static bool
 cp_parser_is_keyword (cp_token* token, enum rid keyword)
@@ -14632,7 +14632,7 @@ cp_parser_committed_to_tentative_parse (cp_parser* parser)
 	  && parser->context->status == CP_PARSER_STATUS_KIND_COMMITTED);
 }
 
-/* Returns non-zero iff an error has occurred during the most recent
+/* Returns nonzero iff an error has occurred during the most recent
    tentative parse.  */
    
 static bool
@@ -14642,7 +14642,7 @@ cp_parser_error_occurred (cp_parser* parser)
 	  && parser->context->status == CP_PARSER_STATUS_KIND_ERROR);
 }
 
-/* Returns non-zero if GNU extensions are allowed.  */
+/* Returns nonzero if GNU extensions are allowed.  */
 
 static bool
 cp_parser_allow_gnu_extensions_p (cp_parser* parser)
