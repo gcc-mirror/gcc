@@ -2571,7 +2571,7 @@ case 65:
 		  tree type = yyvsp[-5].ttype;
 		  finish_init ();
 
-		  if (pedantic && ! flag_isoc9x)
+		  if (pedantic && ! flag_isoc99)
 		    pedwarn ("ANSI C forbids constructor expressions");
 		  if (TYPE_NAME (type) != 0)
 		    {
@@ -3542,7 +3542,7 @@ case 267:
     break;}
 case 271:
 #line 1463 "objc-parse.y"
-{ if (pedantic && ! flag_isoc9x)
+{ if (pedantic && ! flag_isoc99)
 		    pedwarn ("comma at end of enumerator list"); ;
     break;}
 case 272:

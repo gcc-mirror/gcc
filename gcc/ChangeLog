@@ -1,5 +1,11 @@
 2000-01-29  Zack Weinberg  <zack@wolery.cumb.org>
 
+	* c-parse.in: Apply Ulrich's changes from c-parse.y.
+	* c-parse.y, objc/objc-parse.y, c-parse.c, objc/objc-parse.c:
+	Regenerate.
+
+2000-01-29  Zack Weinberg  <zack@wolery.cumb.org>
+
 	* cpperror.c (cpp_file_line_for_message): If 'line' is zero,
 	just print "<command line>".  If 'filename' is null or an
 	empty string, print "<stdin>" for the filename.
