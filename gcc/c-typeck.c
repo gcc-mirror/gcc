@@ -4605,7 +4605,7 @@ digest_init (type, init, tail, require_constant, constructor_constant, ofwhat)
 
   if (inside_init && TREE_TYPE (inside_init) != 0
       && ((TYPE_MAIN_VARIANT (TREE_TYPE (inside_init))
-	   == TYPE_MAIN_VARIANT (type)))
+	   == TYPE_MAIN_VARIANT (type))
 	  || (code == ARRAY_TYPE
 	      && comptypes (TREE_TYPE (inside_init), type))
 	  || (code == POINTER_TYPE
