@@ -86,7 +86,7 @@ static htab_t def_blocks;
 /* Stack of trees used to restore the global currdefs to its original
    state after completing rewriting of a block and its dominator children.
 
-   This varray is used in two contexts.  The first is rewriting of _DECL
+   This vector is used in two contexts.  The first is rewriting of _DECL
    nodes into SSA_NAMEs.  In that context it's elements have the
    following properties:
 
@@ -100,7 +100,7 @@ static htab_t def_blocks;
      current block. 
 
 
-   This varray is also used when rewriting an SSA_NAME which has multiple
+   This vector is also used when rewriting an SSA_NAME which has multiple
    definition sites into multiple SSA_NAMEs.  In that context entries come
    in pairs.
 
@@ -111,7 +111,8 @@ static htab_t def_blocks;
      with the current block.  */
 static VEC(tree_on_heap) *block_defs_stack;
 
-/* FIXME: The other stacks should also be VEC(tree_on_heap).  */
+/* Basic block vectors used in this file ought to be allocated in the heap.  */
+DEF_VEC_MALLOC_P(basic_block);
 
 /* Global data to attach to the main dominator walk structure.  */
 struct mark_def_sites_global_data
@@ -155,7 +156,7 @@ static void insert_phi_nodes (bitmap *, bitmap);
 static void rewrite_stmt (struct dom_walk_data *, basic_block,
 			  block_stmt_iterator);
 static inline void rewrite_operand (use_operand_p);
-static void insert_phi_nodes_for (tree, bitmap *, varray_type *);
+static void insert_phi_nodes_for (tree, bitmap *, VEC(basic_block) *);
 static tree get_reaching_def (tree);
 static hashval_t def_blocks_hash (const void *);
 static int def_blocks_eq (const void *, const void *);
@@ -584,11 +585,11 @@ prepare_def_operand_for_rename (tree def, size_t *uid_p)
 
 /* Helper for insert_phi_nodes.  If VAR needs PHI nodes, insert them
    at the dominance frontier (DFS) of blocks defining VAR.
-   WORK_STACK is the varray used to implement the worklist of basic
+   WORK_STACK is the vector used to implement the worklist of basic
    blocks.  */
 
 static inline
-void insert_phi_nodes_1 (tree var, bitmap *dfs, varray_type *work_stack)
+void insert_phi_nodes_1 (tree var, bitmap *dfs, VEC(basic_block) *work_stack)
 {
   if (get_phi_state (var) != NEED_PHI_STATE_NO)
     insert_phi_nodes_for (var, dfs, work_stack);
@@ -606,14 +607,14 @@ static void
 insert_phi_nodes (bitmap *dfs, bitmap names_to_rename)
 {
   unsigned i;
-  varray_type work_stack;
+  VEC(basic_block) *work_stack;
   bitmap_iterator bi;
 
   timevar_push (TV_TREE_INSERT_PHI_NODES);
 
-  /* Array WORK_STACK is a stack of CFG blocks.  Each block that contains
+  /* Vector WORK_STACK is a stack of CFG blocks.  Each block that contains
      an assignment or PHI node will be pushed to this stack.  */
-  VARRAY_GENERIC_PTR_NOGC_INIT (work_stack, last_basic_block, "work_stack");
+  work_stack = VEC_alloc (basic_block, last_basic_block);
 
   /* Iterate over all variables in VARS_TO_RENAME.  For each variable, add
      to the work list all the blocks that have a definition for the
@@ -624,19 +625,19 @@ insert_phi_nodes (bitmap *dfs, bitmap names_to_rename)
       EXECUTE_IF_SET_IN_BITMAP (names_to_rename, 0, i, bi)
 	{
 	  if (ssa_name (i))
-	    insert_phi_nodes_1 (ssa_name (i), dfs, &work_stack);
+	    insert_phi_nodes_1 (ssa_name (i), dfs, work_stack);
 	}
     }
   else if (vars_to_rename)
     EXECUTE_IF_SET_IN_BITMAP (vars_to_rename, 0, i, bi)
       {
-	insert_phi_nodes_1 (referenced_var (i), dfs, &work_stack);
+	insert_phi_nodes_1 (referenced_var (i), dfs, work_stack);
       }
   else
     for (i = 0; i < num_referenced_vars; i++)
-      insert_phi_nodes_1 (referenced_var (i), dfs, &work_stack);
+      insert_phi_nodes_1 (referenced_var (i), dfs, work_stack);
 
-  VARRAY_FREE (work_stack);
+  VEC_free (basic_block, work_stack);
 
   timevar_pop (TV_TREE_INSERT_PHI_NODES);
 }
@@ -994,11 +995,11 @@ htab_statistics (FILE *file, htab_t htab)
 
 
 /* Insert PHI nodes for variable VAR using the dominance frontier
-   information given in DFS.  WORK_STACK is the varray used to
+   information given in DFS.  WORK_STACK is the vector used to
    implement the worklist of basic blocks.  */
 
 static void
-insert_phi_nodes_for (tree var, bitmap *dfs, varray_type *work_stack)
+insert_phi_nodes_for (tree var, bitmap *dfs, VEC(basic_block) *work_stack)
 {
   struct def_blocks_d *def_map;
   bitmap phi_insertion_points;
@@ -1016,7 +1017,7 @@ insert_phi_nodes_for (tree var, bitmap *dfs, varray_type *work_stack)
 
   EXECUTE_IF_SET_IN_BITMAP (def_map->def_blocks, 0, bb_index, bi)
     {
-      VARRAY_PUSH_GENERIC_PTR_NOGC (*work_stack, BASIC_BLOCK (bb_index));
+      VEC_quick_push (basic_block, work_stack, BASIC_BLOCK (bb_index));
     }
 
   /* Pop a block off the worklist, add every block that appears in
@@ -1031,15 +1032,13 @@ insert_phi_nodes_for (tree var, bitmap *dfs, varray_type *work_stack)
      determine if fully pruned or semi pruned SSA form was appropriate.
 
      We now always use fully pruned SSA form.  */
-  while (VARRAY_ACTIVE_SIZE (*work_stack) > 0)
+  while (VEC_length (basic_block, work_stack) > 0)
     {
       unsigned dfs_index;
       bitmap_iterator bi;
 
-      bb = VARRAY_TOP_GENERIC_PTR_NOGC (*work_stack);
+      bb = VEC_pop (basic_block, work_stack);
       bb_index = bb->index;
-
-      VARRAY_POP (*work_stack);
       
       EXECUTE_IF_AND_COMPL_IN_BITMAP (dfs[bb_index],
 				      phi_insertion_points,
@@ -1047,7 +1046,7 @@ insert_phi_nodes_for (tree var, bitmap *dfs, varray_type *work_stack)
 	{
 	  basic_block bb = BASIC_BLOCK (dfs_index);
 
-	  VARRAY_PUSH_GENERIC_PTR_NOGC (*work_stack, bb);
+	  VEC_quick_push (basic_block, work_stack, bb);
 	  bitmap_set_bit (phi_insertion_points, dfs_index);
 	}
     }
