@@ -6,8 +6,8 @@
     If you want a working example of how to write a front end to GCC,
     you are in the right place.
 
-    Copyright (C) 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
-    2001, 2002 Free Software Foundation, Inc.
+    Copyright (C) 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
+    1999, 2000, 2001, 2002, 2003, Free Software Foundation, Inc.
 
     This code is based on toy.c written by Richard Kenner. 
     
@@ -73,6 +73,7 @@
 
 #include "treelang.h"
 #include "treetree.h"
+#include "parse.h"
 
 extern int option_main;
 extern char **file_names;
@@ -233,6 +234,8 @@ tree_code_create_function_prototype (unsigned char* chars,
   id = get_identifier ((const char*)chars);
   for (parm = parms; parm; parm = parm->tp.par.next)
     {
+      if (parm->category != parameter_category)
+        abort ();
       type_node = get_type_for_numeric_type (parm->type);
       type_list = tree_cons (NULL_TREE, type_node, type_list);
     }
@@ -1243,10 +1246,7 @@ treelang_init_decl_processing ()
   unsigned int i;
   tree id;
 
-  /* It is not necessary to register ridpointers as a GC root, because
-     all the trees it points to are permanently interned in the
-     get_identifier hash anyway.  */
-  ridpointers = (tree *) xcalloc ((int) RID_MAX, sizeof (tree));
+  ridpointers = (tree *) ggc_calloc ((int) RID_MAX, sizeof (tree));
   
   for (i = 0; i < N_reswords; i++)
     {
@@ -1283,4 +1283,16 @@ void
 dt (tree t)
 {
   debug_tree (t);
+}
+
+/* Get a stringpool entry for a string S of length L.  This is needed
+   because the GTY routines don't mark strings, forcing you to put
+   them into stringpool, which is never freed.  */
+
+const char*
+get_string (const char *s, size_t l)
+{
+  tree t;
+  t = get_identifier_with_length (s, l);
+  return IDENTIFIER_POINTER(t);
 }

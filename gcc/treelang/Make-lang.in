@@ -94,12 +94,13 @@ tree1$(exeext): treelang/tree1.o treelang/treetree.o treelang/lex.o treelang/par
 
 treelang/tree1.o: treelang/tree1.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   flags.h toplev.h $(GGC_H) $(TREE_H) diagnostic.h treelang/treelang.h \
+  treelang/treetree.h \
   treelang/treetree.h gt-treelang-tree1.h gtype-treelang.h
 
 treelang/treetree.o: treelang/treetree.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
   $(TM_H) $(TREE_H) flags.h output.h $(C_TREE_H) $(RTL_H) $(GGC_H) toplev.h \
   varray.h $(LANGHOOKS_DEF_H) langhooks.h treelang/treelang.h \
-  treelang/treetree.h
+  treelang/treetree.h treelang/parse.h
 
 treelang/parse.o: treelang/parse.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
   $(TM_H) diagnostic.h treelang/treelang.h treelang/treetree.h

@@ -3,7 +3,7 @@
     TREELANG Compiler almost main (tree1)
     Called by GCC's toplev.c
 
-    Copyright (C) 1986, 87, 89, 92-96, 1997, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+    Copyright (C) 1986, 87, 89, 92-96, 1997, 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 
     This program is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
@@ -187,6 +187,8 @@ treelang_init (const char* filename)
   input_filename = "";
   lineno = 0;
 
+  /* Init decls etc.  */
+
   treelang_init_decl_processing ();
 
   /* This error will not happen from GCC as it will always create a
@@ -229,7 +231,8 @@ treelang_parse_file (int debug_flag ATTRIBUTE_UNUSED)
   yyparse ();
 }
 
-/* Allocate SIZE bytes and clear them.  */
+/* Allocate SIZE bytes and clear them.  Not to be used for strings
+   which must go in stringpool.  */
 
 void *
 my_malloc (size_t size)
@@ -255,10 +258,17 @@ lookup_tree_name (struct prod_token_parm_item *prod)
   struct prod_token_parm_item *this;
   struct prod_token_parm_item *this_tok;
   struct prod_token_parm_item *tok;
+
+  sanity_check (prod);
+  
   tok = SYMBOL_TABLE_NAME (prod);
+  sanity_check (tok);
+  
   for (this = symbol_table; this; this = this->tp.pro.next)
     {
+      sanity_check (this);
       this_tok = this->tp.pro.main_token;
+      sanity_check (this_tok);
       if (tok->tp.tok.length != this_tok->tp.tok.length) 
         continue;
       if (memcmp (tok->tp.tok.chars, this_tok->tp.tok.chars, this_tok->tp.tok.length))
@@ -281,6 +291,7 @@ insert_tree_name (struct prod_token_parm_item *prod)
 {
   struct prod_token_parm_item *tok;
   tok = SYMBOL_TABLE_NAME (prod);
+  sanity_check (prod);
   if (lookup_tree_name (prod))
     {
       fprintf (stderr, "%s:%i:%i duplicate name %s\n", in_fname, tok->tp.tok.lineno, 
@@ -307,6 +318,22 @@ make_production (int type, struct prod_token_parm_item *main_tok)
   return prod;
 } 
 
+/* Abort if ITEM is not a valid structure, based on 'category'.  */
+
+void
+sanity_check (struct prod_token_parm_item *item)
+{
+  switch (item->category)
+    {
+    case   token_category:
+    case production_category:
+    case parameter_category:
+      break;
+      
+    default:
+      abort ();
+    }
+}  
 
 /* New garbage collection regime see gty.texi.  */
 #include "gt-treelang-tree1.h"

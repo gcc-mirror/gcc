@@ -5,7 +5,7 @@
 
      ---------------------------------------------------------------------
 
-     Copyright (C) 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+     Copyright (C) 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 
      This program is free software; you can redistribute it and/or modify it
      under the terms of the GNU General Public License as published by the
@@ -47,6 +47,7 @@
 #include "coretypes.h"
 #include "tm.h"
 #include "diagnostic.h"
+#include "timevar.h"
 
 #include "treelang.h"
 #include "treetree.h"
@@ -55,13 +56,26 @@
 #define YYPRINT(file, type, value) print_token (file, type, value) 
 #define YYERROR_VERBOSE YES
 
+/* My yylex routine used to intercept calls to flex generated code, to
+     record lex time.  */
+int yylex (void);
+static inline int my_yylex(void);
+/* Call lex, but ensure time is charged to TV_LEX.  */ 
+static inline int my_yylex ()
+{
+  int res;
+  timevar_push (TV_LEX);
+  res = yylex ();
+  timevar_pop (TV_LEX);
+  return res;
+}
+#define yylex my_yylex
 
 extern int option_parser_trace;
 
 /* Local prototypes.  */
 
 static void yyerror (const char *error_message);
-int yylex (void);
 int yyparse (void);
 void print_token (FILE * file, unsigned int type ATTRIBUTE_UNUSED, YYSTYPE value);
 static struct prod_token_parm_item *reverse_prod_list (struct prod_token_parm_item *old_first);
@@ -287,6 +301,7 @@ storage typename NAME LEFT_PARENTHESIS parameters RIGHT_PARENTHESIS SEMICOLON {
       if (!this_parm_var->tp.pro.main_token)
         abort ();
       this_parms->tp.par.variable_name = this_parm_var->tp.pro.main_token->tp.tok.chars;
+      this_parms->category = parameter_category;
       this_parms->type = NUMERIC_TYPE (( (struct prod_token_parm_item*)EXPRESSION_TYPE (this_parm_var)));
       if (last_parms)
         {
@@ -318,6 +333,7 @@ NAME LEFT_BRACE {
   struct prod_token_parm_item *this_parm;
   tok = $1;
   SYMBOL_TABLE_NAME ((&search_prod)) = tok;
+  search_prod.category = token_category;
   current_function = proto = lookup_tree_name (&search_prod);
   if (!proto)
     {
@@ -690,6 +706,7 @@ NAME LEFT_PARENTHESIS expressions_with_commas RIGHT_PARENTHESIS {
   SYMBOL_TABLE_NAME (prod) = tok;
   PARAMETERS (prod) = reverse_prod_list ($3);
   SYMBOL_TABLE_NAME ((&search_prod)) = tok;
+  search_prod.category = token_category;
   proto = lookup_tree_name (&search_prod);
   if (!proto)
     {
@@ -768,6 +785,7 @@ NAME {
 
   tok = $1;
   SYMBOL_TABLE_NAME ((&search_prod)) = tok;
+  search_prod.category = token_category;
   symbol_table_entry = lookup_tree_name (&search_prod);
   if (!symbol_table_entry)
     {
