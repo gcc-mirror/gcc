@@ -1,3 +1,8 @@
+2003-01-14  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.md (*andsi3_lshiftrt_9_sb): New.
+	(*iorsi3_and_lshiftrt_9_sb): Likewise.
+
 Tue Jan 14 00:45:33 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* convert.c (strip_float_extensions):  Look for narrowest type handling
