@@ -434,7 +434,7 @@ extern int leaf_function;
    it's not, there's no point in trying to eliminate the
    frame pointer.  If it is a leaf function, we guessed right!  */
 #define INITIAL_FRAME_POINTER_OFFSET(VAR) \
-  do { int __fsize = compute_frame_size (get_frame_size (), 1) + 32;	\
+  do { int __fsize = compute_frame_size (get_frame_size (), 1, 0) + 32;	\
        (VAR) = -(TARGET_SNAKE ? (__fsize + 63) & ~63 : __fsize); } while (0)
 
 /* Base register for access to arguments of the function.  */
@@ -1228,7 +1228,7 @@ extern union tree_node *current_function_decl;
   if (memory_address_p (MODE, X))				\
     goto WIN;							\
   if (flag_pic) (X) = legitimize_pic_address (X, MODE, gen_reg_rtx (Pmode));\
-  else if ((GET_CODE (X) == SYMBOL_REF && read_only_operand (X))	\
+  else if ((GET_CODE (X) == SYMBOL_REF && read_only_operand (X))\
 	    || GET_CODE (X) == LABEL_REF)			\
     (X) = gen_rtx (LO_SUM, Pmode,				\
 		   copy_to_mode_reg (Pmode, gen_rtx (HIGH, Pmode, X)), X); \
