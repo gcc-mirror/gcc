@@ -1,3 +1,7 @@
+2001-10-10  Geert Bosch  <bosch@gnat.com>
+
+	* gnat-style.texi: New file describing coding guidelines for Ada.
+	
 2001-10-10  Ed Schonberg <schonber@gnat.com>
 
 	* einfo.adb (Write_Entity_Flags): Elaboration_Entity_Required 

@@ -1,0 +1,627 @@
+\input texinfo   @c -*-texinfo-*-
+@c %**start of header
+@c oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
+@c                                                                            o
+@c                           GNAT DOCUMENTATION                               o
+@c                                                                            o
+@c                      G N A T   C O D I N G   S T Y L E                     o
+@c                                                                            o
+@c                               $Revision: 1.1 $
+@c                                                                            o
+@c          Copyright (C) 1992-2001 Ada Core Technologies, Inc.               o
+@c                                                                            o
+@c  GNAT is free software;  you can  redistribute it  and/or modify it under  o
+@c  terms of the  GNU General Public License as published  by the Free Soft-  o
+@c  ware  Foundation;  either version 2,  or (at your option) any later ver-  o
+@c  sion.  GNAT is distributed in the hope that it will be useful, but WITH-  o
+@c  OUT ANY WARRANTY;  without even the  implied warranty of MERCHANTABILITY  o
+@c  or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License  o
+@c  for  more details.  You should have  received  a copy of the GNU General  o
+@c  Public License  distributed with GNAT;  see file COPYING.  If not, write  o
+@c  to  the Free Software Foundation,  59 Temple Place - Suite 330,  Boston,  o
+@c  MA 02111-1307, USA.                                                       o
+@c                                                                            o
+@c oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
+
+@setfilename gnat-style.info
+@settitle GNAT Coding Style
+@c %**end of header
+
+@ifinfo
+     @center GNAT Coding Style
+
+     @center A guide for GNAT developers
+     Copyright (C) 1992-2001 Ada Core Technologies, Inc.
+@end ifinfo
+
+@titlepage
+@sp 10
+@title GNAT Coding Stye
+@subtitle A guide for GNAT developers
+@subtitle Document revision level $Revision: 1.1 $
+@subtitle Date: @today{}
+@author Ada Core Technologies, Inc.
+@end titlepage
+@raisesections
+
+@node    Top,       General,         , (dir)
+@comment node-name, next,    previous, up
+
+@menu
+* General::
+* Lexical Elements::
+* Declarations and Types::
+* Expressions and Names::
+* Statements::
+* Subprograms::
+* Packages::
+* Program Structure::
+@end menu
+
+@c  -------------------------------------------------------------------------
+@node    General, Lexical Elements, Top, Top
+@section General
+@c  -------------------------------------------------------------------------
+
+@noindent
+Most of GNAT is written in Ada using a consistent style to ensure
+readability of the code. This document has been written to help
+maintain this consistent style, while having a large group of developers 
+work on the compiler.
+
+@noindent
+For the coding style in the C parts of the compiler and run time,
+see the GNU Coding Guidelines.
+
+@noindent
+This document is structured after the Ada Reference manual. 
+Those familiar with that document should be able to quickly 
+lookup style rules for particular constructs.
+
+@c  -------------------------------------------------------------------------
+@node    Lexical Elements, Declarations and Types, General, Top
+@section Lexical Elements
+@c  -------------------------------------------------------------------------
+
+@subsection Character Set and Separators
+@c  -------------------------------------------------------------------------
+
+@itemize @bullet
+@item
+The character set used should be plain 7-bit ASCII.
+The only separators allowed are space and the end-of-line sequence. 
+No other control character or format effector (such as HT, VT, FF) 
+should be used.
+The normal end-of-line sequence is used, which may be LF, CR/LF or CR,
+depending on the host system. An optional SUB (16#1A#) may be present as the 
+last character in the file on hosts using that character as file terminator.
+
+@item
+Files that are checked in or distributed should be in host format.
+
+@item
+A line should never be longer than 79 characters, not counting the line
+separator.
+
+@item
+Lines must not have trailing blanks.
+
+@item
+Indentation is 3 characters per level for if-statements, loops, case
+statements. For exact information on required spacing between lexical
+elements, see file @file{style.adb}.
+
+@end itemize
+
+@subsection Identifiers
+@c  -------------------------------------------------------------------------
+@itemize @bullet
+@item
+Identifiers will start with an upper case letter, and each letter following
+an underscore will be upper case.  Short acronyms may be all upper case. 
+All other letters are lower case.  
+An exception is for identifiers matching a foreign language. In particular,
+we use all lower case where appropriate for C.
+
+@item
+Use underscores to separate words in an identifier.  
+
+@item Try to limit your use of abbreviations in identifiers. 
+It is ok to make a few abbreviations, explain what they mean, and then use them frequently, but don't use lots of obscure abbreviations. 
+An example is the @code{ALI} word which stands for Ada Library Information 
+and is by convention always written in upper-case when used in entity names.
+
+@smallexample
+       procedure Find_ALI_Files;
+@end smallexample
+
+@item
+Don't use the variable I, use J instead, I is too easily mixed up with
+1 in some fonts. Similarly don't use the variable O, which is too easily
+mixed up with zero.
+@end itemize
+
+@subsection Numeric Literals
+@c  -------------------------------------------------------------------------
+@itemize @bullet
+@item
+Numeric literals should include underscores where helpful for
+readability.
+
+@smallexample
+      1_000_000
+      16#8000_000#
+      3.14159_26535_89793_23846
+@end smallexample
+@end itemize
+
+@subsection Reserved Words
+@c  -------------------------------------------------------------------------
+@itemize @bullet
+@item
+Reserved words use all lower case.
+
+@smallexample
+       return else
+@end smallexample
+
+@item
+The words "Access", "Delta" and "Digits" are capitalized when used
+as attribute_designator.
+@end itemize
+
+@subsection Comments
+@c  -------------------------------------------------------------------------
+
+@itemize @bullet
+@item
+Comment start with @code{--  } (ie @code{--} followed by two spaces).
+The only exception to this rule (i.e. one space is tolerated) is when the
+comment ends with @code{--}.
+It also accepted to have only one space between @code{--} and the start 
+of the comment when the comment is at the end of a line, 
+after an Ada statement.
+
+@item
+Every sentence in a comment should start with an upper-case letter (including
+the first letter of the comment).
+
+@item
+When declarations are commented with "hanging" comments, i.e. comments
+after the declaration, there is no blank line before the comment, and
+if it is absolutely necessary to have blank lines within the comments
+these blank lines *do* have a -- (unlike the normal rule, which is to
+use entirely blank lines for separating comment paragraphs).
+The comment start at same level of indentation as code they are commenting.
+
+@smallexample
+       z : integer;
+       --  Integer value for storing value of z
+       --
+       --  The previous line was a blank line
+@end smallexample
+
+@item
+Comments that are dubious or incomplete or comment on possibly
+wrong or incomplete code should be preceded or followed by ???
+
+@item
+Comments in a subprogram body must generally be surrounded by blank lines,
+except after a "begin":
+
+@smallexample
+       begin
+          --  Comment for the next statement
+
+          A := 5;
+
+          --  Comment for the B statement
+
+          B := 6;
+@end smallexample
+
+@item
+In sequences of statements, comments at the end of the lines should be
+aligned.
+
+@smallexample
+        My_Identifier := 5;      --  First comment
+        Other_Id := 6;           --  Second comment
+@end smallexample
+
+@item
+Short comments that fit on a single line are NOT ended with a period.
+Comments taking more than a line are punctuated in the normal manner.
+
+@item
+Comments should focus on why instead of what.
+Descriptions of what subprograms do go with the specification.
+
+@item
+Comments describing a subprogram spec should specifically mention the
+formal argument names. General rule: write a comment that does not
+depend on the names of things. The names are supplementary, not
+sufficient, as comments.
+
+@item
+Do NOT put two spaces after periods in comments.
+@end itemize
+
+@c  -------------------------------------------------------------------------
+@node    Declarations and Types, Expressions and Names, Lexical Elements,Top
+@section Declarations and Types
+@c  -------------------------------------------------------------------------
+
+@itemize @bullet
+@item
+In entity declarations, colons must be surrounded by spaces. Colons
+should be aligned.
+
+@smallexample
+        Entity1   : Integer;
+        My_Entity : Integer;
+@end smallexample
+
+@item
+Declarations should be grouped in a logical order. 
+Related groups of declarations may be preceded by a header comment.
+
+@item
+All local subprograms in a subprogram or package body should be declared
+before the first local subprogram body. 
+
+@item
+Do not declare discriminated record types where the discriminant is used
+for constraining an unconstrained array type. (Discriminated
+records for a variant part are allowed.)
+
+@item
+Don't declare local entities that hide global entities.
+
+@item
+Don't declare multiple variables in one declaration that spans lines. 
+Start a new declaration on each line, instead
+
+@item
+The defining_identifiers of global declarations serve as comments of a sort. 
+So don't choose terse names, but look for names that give useful information 
+instead.
+
+@item
+Local names can be shorter, because they are used only within 
+one context, where comments explain their purpose.
+
+@end itemize
+
+
+@c  -------------------------------------------------------------------------
+@node    Expressions and Names, Statements, Declarations and Types, Top
+@section Expressions and Names
+@c  -------------------------------------------------------------------------
+
+@itemize @bullet
+
+@item
+Every operator must be surrounded by spaces, except for the 
+exponentiation operator.
+
+@smallexample
+       E := A * B**2 + 3 * (C - D);
+@end smallexample
+
+@item
+When folding a long line, fold before an operator, not after.
+
+@item
+Use parentheses where they make the intended order of evaluation clearer:
+@smallexample
+       (A / B) * C
+@end smallexample
+@end itemize
+
+@c  -------------------------------------------------------------------------
+@node    Statements, Subprograms, Expressions and Names, Top
+@section Statements
+@c  -------------------------------------------------------------------------
+
+@subsection Simple and Compound Statements
+@c  -------------------------------------------------------------------------
+@itemize @bullet
+@item
+Use only one statement or label per line.
+@item
+A longer sequence_of_statements may be divided in logical groups
+or separated from surrounding code using a blank line.
+@end itemize
+
+@subsection If Statements
+@c  -------------------------------------------------------------------------
+@itemize @bullet
+@item
+When the "if", "elsif" or "else" keywords fit on the same line with the
+condition and the "then" keyword, then the statement is formatted as follows:
+
+@smallexample
+        if <condition> then
+           ...
+        elsif <condition> then
+           ...
+        else
+           ...
+        end if;
+@end smallexample
+
+@noindent
+When the above layout is not possible, "then" should be aligned with "if",
+and conditions should preferably be split before an "and" or "or" keyword
+a follows:
+
+@smallexample
+        if <long_condition_that_has_to_be_split>
+          and then <continued_on_the_next_line>
+        then
+           ...
+        end if;
+@end smallexample
+
+@noindent
+The "elsif", "else" and "end if" always line up with the "if" keyword. The
+prefered location for splitting the line is before "and" or "or". The
+continuation of a condition is indented with two spaces or as many as needed
+to make nesting clear.
+As exception, if conditions are closely related either of the following is
+allowed:
+
+@smallexample
+     if x = lakdsjfhlkashfdlkflkdsalkhfsalkdhflkjdsahf
+          or else
+        x = asldkjhalkdsjfhhfd
+          or else
+        x = asdfadsfadsf
+     then
+
+     if x = lakdsjfhlkashfdlkflkdsalkhfsalkdhflkjdsahf or else
+        x = asldkjhalkdsjfhhfd                         or else
+        x = asdfadsfadsf
+     then
+@end smallexample
+
+@item
+Conditions should use short-circuit forms ("and then", "or else").
+
+@item
+Complex conditions in if-statements are indented two characters:
+
+@smallexample
+      if this_complex_condition
+        and then that_other_one
+        and then one_last_one
+      then
+         ...
+@end smallexample
+
+@item
+Every "if" block is preceded and followed by a blank line, except
+where it begins or ends a sequence_of_statements.
+
+@smallexample
+        A := 5;
+
+        if A = 5 then
+           null;
+        end if;
+
+        A := 6;
+@end smallexample
+@end itemize
+
+@subsection Case statements
+@itemize @bullet
+
+@item
+Layout is as below. For long case statements, the extra indentation
+can be saved by aligning the when clauses with the opening case.
+
+@smallexample
+       case <expression> is
+          when <condition> =>
+             ...
+          when <condition> =>
+             ...
+       end case;
+@end smallexample
+@end itemize
+
+@subsection Loop statements
+@itemize @bullet
+
+@noindent
+When possible, have "for" or "while" on one line with the condition
+and the "loop" keyword.
+
+@smallexample
+       for I in S'Range loop
+          ...
+       end loop;
+@end smallexample
+
+@noindent
+If the condition is too long, split the condition (see if_statement)
+and align "loop" with the "for" or "while" keyword.
+
+@smallexample
+      while <long_condition_that_has_to_be_split>
+        and then <continued_on_the_next_line>
+      loop
+         ...
+      end loop;
+@end smallexample
+
+@noindent
+If the loop_statement has an identifier, it is layout as follows:
+
+@smallexample
+      Outer : while not <condition> loop
+         ...
+      end Outer;
+@end smallexample
+@end itemize
+
+@subsection Block Statements
+@itemize @bullet
+
+@item
+The (optional) "declare", "begin" and "end" statements are aligned,
+except when the block_statement is named:
+
+@smallexample
+      Some_Block : declare
+         ...
+      begin
+         ...
+      end Some_Block;
+@end smallexample
+
+@end itemize
+
+@c  -------------------------------------------------------------------------
+@node    Subprograms, Packages, Statements, Top
+@section Subprograms
+@c  -------------------------------------------------------------------------
+
+
+@subsection Subprogram Declarations
+@c  -------------------------------------------------------------------------
+@itemize @bullet
+
+@item
+Do not write the "in" for parameters, especially in functions:
+
+@smallexample
+      function Length (S : String) return Integer;
+@end smallexample
+
+@item
+When the declaration line for a procedure or a function is too long, fold it.
+
+@smallexample
+      function Head
+        (Source : String;
+         Count  : Natural;
+         Pad    : Character := Space)
+         return   String;
+@end smallexample
+
+@item
+The parameter list for a subprogram is preceded by a space:
+
+@smallexample
+        procedure Func (A : Integer);
+@end smallexample
+
+@end itemize
+
+@subsection Subprogram Bodies
+@c  -------------------------------------------------------------------------
+@itemize @bullet
+
+@item
+The functions and procedures should always be sorted alphabetically in
+a compilation unit.
+
+@item
+All subprograms have a header giving the function name, with the following
+format:
+
+@smallexample
+      -----------------
+      -- My_Function --
+      -----------------
+
+      procedure My_Function is
+      begin
+@end smallexample
+Note that the name in the header is preceded by a single space, 
+not two spaces as for other comments.
+
+@item
+Every subprogram body must have a preceding subprogram_declaration.
+
+@item
+If declarations of a subprogram contain at least one nested subprogram
+body, then just before the begin is a line:
+
+@smallexample
+        --  Start of processing for bla bla
+
+	begin
+@end smallexample
+
+@end itemize
+
+@c  -------------------------------------------------------------------------
+@node    Packages, Program Structure, Subprograms, Top
+@section Packages and Visibility Rules
+@c  -------------------------------------------------------------------------
+
+@itemize @bullet
+
+@item
+All program units and subprograms have their name at the end:
+
+@smallexample
+      package P is
+         ...
+      end P;
+@end smallexample
+
+@item
+We will use the style of use-ing with-ed packages, with the context
+clauses looking like:
+
+@smallexample
+      with A; use A;
+      with B; use B;
+@end smallexample
+
+@item
+Names declared in the visible part of packages should be
+unique, to prevent name clashes when the packages are "use"d.
+
+@smallexample
+      package Entity is
+         type Entity_Kind is ...;
+	 ...
+      end Entity;
+@end smallexample
+
+@item
+After the file header comment, the context clause and unit specification
+should be the first thing in a program_unit.
+@end itemize
+
+@c  -------------------------------------------------------------------------
+@node    Program Structure,, Packages, Top
+@section Program Structure and Compilation Issues
+@c  -------------------------------------------------------------------------
+
+@itemize @bullet
+@item
+Every GNAT source file must be compiled with the "-gnatg" switch to check
+the coding style (Note that you should look at @file{style.adb} to 
+see the lexical rules enforced by -gnatg).
+
+@item
+Each source file should contain only one compilation unit.
+
+@item
+Filenames should be 8 characters or less followed by the ".adb" extension
+for a body or ".ads" for a spec.
+
+@item
+Unit names should be distinct when krunched to 8 characters 
+(see @file{krunch.ads}) and the filenames should match the unit name, 
+except that they are all lower case.
+@end itemize
+
+@bye
