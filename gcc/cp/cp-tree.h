@@ -2668,6 +2668,8 @@ extern void set_decl_namespace                  PROTO((tree, tree));
 extern tree current_decl_namespace              PROTO((void));
 extern void push_decl_namespace                 PROTO((tree));
 extern void pop_decl_namespace                  PROTO((void));
+extern void push_scope				PROTO((tree));
+extern void pop_scope				PROTO((tree));
 extern void do_namespace_alias			PROTO((tree, tree));
 extern void do_toplevel_using_decl		PROTO((tree));
 extern void do_local_using_decl                 PROTO((tree));
