@@ -1,3 +1,8 @@
+2003-12-08  Matt Austern  <austern@apple.com>
+
+	PR c/13134
+	* decl.c (duplicate_decls): Copy visibility flag when appropriate.
+	
 2003-12-09  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	* init.c (build_new_1): Deal with an OVERLOAD set when

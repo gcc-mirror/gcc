@@ -1854,8 +1854,20 @@ duplicate_decls (tree newdecl, tree olddecl)
   TREE_ADDRESSABLE (newdecl) = TREE_ADDRESSABLE (olddecl);
   TREE_ASM_WRITTEN (newdecl) = TREE_ASM_WRITTEN (olddecl);
   DECL_COMMON (newdecl) = DECL_COMMON (olddecl);
-  DECL_VISIBILITY (newdecl) = DECL_VISIBILITY (olddecl);
   COPY_DECL_ASSEMBLER_NAME (olddecl, newdecl);
+
+  /* If either declaration has a nondefault visibility, use it. */
+  if (DECL_VISIBILITY (olddecl) != VISIBILITY_DEFAULT)
+    {
+      if (DECL_VISIBILITY (newdecl) != VISIBILITY_DEFAULT
+	  && DECL_VISIBILITY (newdecl) != DECL_VISIBILITY (olddecl))
+	{
+	  warning ("%J'%D': visibility attribute ignored because it",
+		   newdecl, newdecl);
+	  warning ("%Jconflicts with previous declaration here", olddecl);
+	}
+      DECL_VISIBILITY (newdecl) = DECL_VISIBILITY (olddecl);
+    }
 
   if (TREE_CODE (newdecl) == FUNCTION_DECL)
     {
