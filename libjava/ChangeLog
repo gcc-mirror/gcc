@@ -1,3 +1,18 @@
+2003-02-07  Stephen Crawley  <crawley@dstc.edu.au>
+
+	* java/beans/PropertyDescriptor.java
+	(PropertyDescriptor(String, Class)): Sanity check getter and setter
+	methods.
+	(PropertyDescriptor(String, Class, String, String)): Likewise.
+	(PropertyDescriptor(String, Method, Method): Factor out getter and
+	setter method sanity checks into new method.
+	(findMethods): Don't do parameter sanity checking of get method here.
+	(checkMethods): New method.
+
+2003-02-07  Stephen Crawley  <crawley@dstc.edu.au>
+
+	* java/beans/PropertyDescriptor.java: Reformat.
+
 2003-02-04  Tom Tromey  <tromey@redhat.com>
 
 	* java/io/PipedOutputStream.java (flush): Declare as throwing
