@@ -1,5 +1,10 @@
 2003-07-25  Mark Wielaard  <mark@klomp.org>
 
+	* java/lang/natRuntime.cc (_load): Add library name to
+	UnsatisfiedLinkError when thrown.
+
+2003-07-25  Mark Wielaard  <mark@klomp.org>
+
 	* Makefile.am (awt_java_source_files): java/awt/GridBagLayoutInfo.java
 	added.
 	* Makefile.in: Likewise.
