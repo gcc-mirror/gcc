@@ -1,5 +1,7 @@
 2000-06-28  Zack Weinberg  <zack@wolery.cumb.org>
 
+	* c-torture/compile/961203-1.x: Delete.
+
 	* gcc.misc-tests/acker1.c: Report failure.  Use return from main,
 	not exit. Include stdio.h.
 	* gcc.misc-tests/dg-11.c: Remove anchors from regexp.
