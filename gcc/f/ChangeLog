@@ -1,3 +1,10 @@
+Mon Jun 28 10:43:11 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* com.c (ffecom_prepare_expr_): A COMPLEX intrinsic needs
+	a temp even if -fno-f2c.
+
+	* version.c: Bump version.
+
 Mon Jun 28 21:31:35 1999  Craig Burley  <craig@jcb-sc.com>
 
 	* bugs.texi, news.texi: Doc upgrade to netlib libf2c as of today.
