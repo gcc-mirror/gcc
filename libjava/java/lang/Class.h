@@ -58,7 +58,7 @@ struct _Jv_Method
 {
   _Jv_Utf8Const *name;
   _Jv_Utf8Const *signature;
-  unsigned short accflags;
+  _Jv_ushort accflags;
   void *ncode;
 
   _Jv_Method *getNextMethod ()
@@ -229,7 +229,7 @@ private:
   // Name of class.
   _Jv_Utf8Const *name;
   // Access flags for class.
-  unsigned short accflags;
+  _Jv_ushort accflags;
   // The superclass, or null for Object.
   jclass superclass;
   // Class constants.
@@ -240,17 +240,17 @@ private:
   _Jv_Method *methods;
   // Number of methods.  If this class is primitive, this holds the
   // character used to represent this type in a signature.
-  short method_count;
+  jshort method_count;
   // Number of methods in the vtable.
-  short vtable_method_count;
+  jshort vtable_method_count;
   // The fields.
   _Jv_Field *fields;
   // Size of instance fields, in bytes.
-  int size_in_bytes;
+  jint size_in_bytes;
   // Total number of fields (instance and static).
-  short field_count;
+  jshort field_count;
   // Number of static fields.
-  short static_field_count;
+  jshort static_field_count;
   // The vtbl for all objects of this class.
   _Jv_VTable *vtable;
   // Interfaces implemented by this class.
@@ -258,7 +258,7 @@ private:
   // The class loader for this class.
   java::lang::ClassLoader *loader;
   // Number of interfaces.
-  short interface_count;
+  jshort interface_count;
   // State of this class.
   jbyte state;
   // The thread which has locked this class.  Used during class

@@ -18,7 +18,9 @@ extern "Java" {
 class __JArray : public java::lang::Object
 {
 public:
-  int length;
+  // FIXME: we'd like this to be `const' but that causes problems with
+  // the C++ compiler.
+  jsize length;
   friend jsize JvGetArrayLength (__JArray*);
 };
 
