@@ -1,3 +1,7 @@
+2001-10-25  Robert Dewar <dewar@gnat.com>
+
+	* exp_ch4.adb (Expand_N_Allocator): Minor reformatting.
+
 2001-10-25  Geert Bosch  <bosch@gnat.com>
 
 	* osint.adb (Is_Relative): Remove duplicate.

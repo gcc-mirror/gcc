@@ -1840,8 +1840,8 @@ package body Exp_Ch4 is
                           and then Is_Entity_Name (Prefix (Nam))
                         then
                            Decls :=
-                             Build_Task_Image_Decls (
-                             Loc, Nam, Etype (Prefix (Nam)));
+                             Build_Task_Image_Decls
+                               (Loc, Nam, Etype (Prefix (Nam)));
                         else
                            Decls := Build_Task_Image_Decls (Loc, T, T);
                         end if;
