@@ -1354,6 +1354,9 @@ extern int all_types_permanent;
 
 extern char *(*decl_printable_name) ();
 
+/* In tree.c */
+extern char *perm_calloc			PROTO((int, long));
+
 /* In stmt.c */
 
 extern tree expand_start_stmt_expr		PROTO((void));

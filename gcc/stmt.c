@@ -1373,8 +1373,6 @@ warn_if_unused_value (exp)
     case CALL_EXPR:
     case METHOD_CALL_EXPR:
     case RTL_EXPR:
-    case WRAPPER_EXPR:
-    case ANTI_WRAPPER_EXPR:
     case WITH_CLEANUP_EXPR:
     case EXIT_EXPR:
       /* We don't warn about COND_EXPR because it may be a useful
