@@ -1,3 +1,9 @@
+2000-12-13  Anthony Green  <green@redhat.com>
+	
+	* configure.in: Disable libgcj for any target not specifically
+ 	listed.  Disable libgcj for x86 and Alpha Linux until compatible
+ 	with g++ abi.
+ 
 2000-12-13  Mike Stump  <mrs@wrs.com>
 
 	* Makefile.in (local-distclean): Also remove fastjar.
