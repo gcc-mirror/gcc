@@ -1,3 +1,8 @@
+Sun Apr  8 00:43:27 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* i386.c (call, call_value): Make sure that resulting call_insn
+	does have proper second operand.
+
 Sun Apr  8 22:50:49 2001  Christopher Faylor <cgf@cygnus.com>
 
 	* config/i386/xm-cygwin.h (GET_ENV_PATH_LIST): Eliminate obsolete
