@@ -1,3 +1,7 @@
+2003-02-27  Steve Ellcey  <sje@cup.hp.com>
+
+	* config/ia64/hpux.h (STARTFILE_PREFIX_SPEC): Remove.
+
 2003-02-27  Nick Clifton  <nickc@redhat.com>
 
 	* config/arm/arm.md (extendsfdf2): Add pattern accidentally
