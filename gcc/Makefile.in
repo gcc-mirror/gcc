@@ -1340,7 +1340,7 @@ diagnostic.o : diagnostic.c diagnostic.h diagnostic.def \
    $(GGC_H) input.h $(INSN_ATTR_H) insn-config.h toplev.h intl.h
 toplev.o : toplev.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(RTL_H) function.h \
    flags.h input.h $(INSN_ATTR_H) xcoffout.h output.h diagnostic.h \
-   debug.h insn-config.h intl.h $(RECOG_H) Makefile toplev.h dwarfout.h \
+   debug.h insn-config.h intl.h $(RECOG_H) Makefile toplev.h \
    dwarf2out.h sdbout.h dbxout.h $(EXPR_H) hard-reg-set.h $(BASIC_BLOCK_H) \
    graph.h $(LOOP_H) except.h $(REGS_H) $(TIMEVAR_H) $(lang_options_files) \
    ssa.h $(PARAMS_H) $(TM_P_H) reload.h dwarf2asm.h
@@ -1401,7 +1401,7 @@ sdbout.o : sdbout.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(RTL_H) flags.h \
    insn-config.h $(OBSTACK_H) xcoffout.h c-pragma.h ggc.h \
    sdbout.h toplev.h $(TM_P_H) except.h debug.h
 dwarfout.o : dwarfout.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(RTL_H) dwarf.h \
-   flags.h insn-config.h reload.h output.h toplev.h dwarfout.h $(TM_P_H) \
+   flags.h insn-config.h reload.h output.h toplev.h $(TM_P_H) \
    debug.h
 dwarf2out.o : dwarf2out.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(RTL_H) dwarf2.h \
    debug.h flags.h insn-config.h reload.h output.h diagnostic.h \
@@ -1524,7 +1524,7 @@ sched-vis.o : sched-vis.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) sched-int.h \
 final.o : final.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) $(TREE_H) flags.h intl.h \
    $(REGS_H) $(RECOG_H) conditions.h insn-config.h $(INSN_ATTR_H) function.h \
    real.h output.h hard-reg-set.h except.h debug.h \
-   xcoffout.h toplev.h reload.h dwarfout.h dwarf2out.h sdbout.h \
+   xcoffout.h toplev.h reload.h dwarf2out.h sdbout.h \
    dbxout.h $(BASIC_BLOCK_H) $(TM_P_H) $(TARGET_H)
 recog.o : recog.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) function.h $(BASIC_BLOCK_H) \
    $(REGS_H) $(RECOG_H) $(EXPR_H) hard-reg-set.h flags.h insn-config.h \

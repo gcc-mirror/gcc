@@ -76,10 +76,6 @@ Boston, MA 02111-1307, USA.  */
 #include "xcoffout.h"
 #endif
 
-#ifdef DWARF_DEBUGGING_INFO
-#include "dwarfout.h"
-#endif
-
 #if defined (DWARF2_UNWIND_INFO) || defined (DWARF2_DEBUGGING_INFO)
 #include "dwarf2out.h"
 #endif

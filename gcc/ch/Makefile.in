@@ -290,7 +290,7 @@ lang.o : lang.c $(CONFIG_H) $(CHILL_TREE_H) $(srcdir)/../input.h lex.h \
 	$(srcdir)/../diagnostic.h
 lex.o : lex.c $(CONFIG_H) $(CHILL_TREE_H) $(RTL_H) $(srcdir)/../flags.h \
 	$(srcdir)/../input.h $(srcdir)/parse.h $(srcdir)/../system.h	\
-	$(srcdir)/../toplev.h lex.h $(srcdir)/../dwarfout.h hash.h
+	$(srcdir)/../toplev.h lex.h hash.h
 loop.o : loop.c $(CONFIG_H) $(RTL_H) $(CHILL_TREE_H) lex.h \
 	$(srcdir)/../flags.h $(srcdir)/../input.h \
 	$(srcdir)/../tree.h $(srcdir)/../system.h $(srcdir)/../toplev.h

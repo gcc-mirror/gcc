@@ -317,6 +317,7 @@ static void dbxout_begin_function	PARAMS ((tree));
 
 static void dbxout_begin_block		PARAMS ((unsigned, unsigned));
 static void dbxout_end_block		PARAMS ((unsigned, unsigned));
+static void dbxout_function_decl	PARAMS ((tree));
 
 struct gcc_debug_hooks dbx_debug_hooks =
 {
@@ -337,7 +338,10 @@ struct gcc_debug_hooks dbx_debug_hooks =
 #else
   debug_nothing_tree,		/* begin_function */
 #endif
-  debug_nothing_int		/* end_function */
+  debug_nothing_int,		/* end_function */
+  dbxout_function_decl,
+  debug_nothing_tree,		/* global_decl */
+  debug_nothing_tree		/* deferred_inline_function */
 };
 #endif /* DBX_DEBUGGING_INFO  */
 
@@ -357,7 +361,10 @@ struct gcc_debug_hooks xcoff_debug_hooks =
   debug_nothing_int,		/* end_prologue */
   xcoffout_end_epilogue,
   debug_nothing_tree,		/* begin_function */
-  xcoffout_end_function
+  xcoffout_end_function,
+  debug_nothing_tree,		/* function_decl */
+  debug_nothing_tree,		/* global_decl */
+  debug_nothing_tree		/* deferred_inline_function */
 };
 #endif /* XCOFF_DEBUGGING_INFO  */
 
@@ -606,6 +613,33 @@ dbxout_end_block (line, n)
      unsigned int n;
 {
   ASM_OUTPUT_INTERNAL_LABEL (asmfile, "LBE", n);
+}
+
+/* Output dbx data for a function definition.
+   This includes a definition of the function name itself (a symbol),
+   definitions of the parameters (locating them in the parameter list)
+   and then output the block that makes up the function's body
+   (including all the auto variables of the function).  */
+
+static void
+dbxout_function_decl (decl)
+     tree decl;
+{
+#ifndef DBX_FUNCTION_FIRST
+  dbxout_begin_function (decl);
+#endif
+  dbxout_block (DECL_INITIAL (decl), 0, DECL_ARGUMENTS (decl));
+#ifdef DBX_OUTPUT_FUNCTION_END
+  DBX_OUTPUT_FUNCTION_END (asmfile, decl);
+#endif
+#if defined(ASM_OUTPUT_SECTION_NAME)
+  if (use_gnu_debug_info_extensions
+#if defined(NO_DBX_FUNCTION_END)
+      && ! NO_DBX_FUNCTION_END
+#endif
+      )
+    dbxout_function_end ();
+#endif
 }
 
 #endif /* DBX_DEBUGGING_INFO  */
@@ -2733,30 +2767,4 @@ dbxout_begin_function (decl)
     dbxout_symbol (DECL_RESULT (decl), 1);
 }
 
-/* Output dbx data for a function definition.
-   This includes a definition of the function name itself (a symbol),
-   definitions of the parameters (locating them in the parameter list)
-   and then output the block that makes up the function's body
-   (including all the auto variables of the function).  */
-
-void
-dbxout_function (decl)
-     tree decl;
-{
-#ifndef DBX_FUNCTION_FIRST
-  dbxout_begin_function (decl);
-#endif
-  dbxout_block (DECL_INITIAL (decl), 0, DECL_ARGUMENTS (decl));
-#ifdef DBX_OUTPUT_FUNCTION_END
-  DBX_OUTPUT_FUNCTION_END (asmfile, decl);
-#endif
-#if defined(ASM_OUTPUT_SECTION_NAME)
-  if (use_gnu_debug_info_extensions
-#if defined(NO_DBX_FUNCTION_END)
-      && ! NO_DBX_FUNCTION_END
-#endif
-      )
-    dbxout_function_end ();
-#endif
-}
 #endif /* DBX_DEBUGGING_INFO || XCOFF_DEBUGGING_INFO */

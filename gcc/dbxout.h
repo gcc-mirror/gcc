@@ -25,4 +25,3 @@ extern int dbxout_symbol		PARAMS ((tree, int));
 extern void dbxout_parms		PARAMS ((tree));
 extern void dbxout_reg_parms		PARAMS ((tree));
 extern int dbxout_syms			PARAMS ((tree));
-extern void dbxout_function		PARAMS ((tree));

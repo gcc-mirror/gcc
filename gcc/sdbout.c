@@ -99,6 +99,7 @@ static void sdbout_begin_block		PARAMS ((unsigned, unsigned));
 static void sdbout_end_block		PARAMS ((unsigned, unsigned));
 static void sdbout_source_line		PARAMS ((unsigned int, const char *));
 static void sdbout_end_epilogue		PARAMS ((void));
+static void sdbout_global_decl		PARAMS ((tree));
 #ifndef MIPS_DEBUGGING_INFO
 static void sdbout_begin_prologue	PARAMS ((unsigned int, const char *));
 #endif
@@ -315,7 +316,10 @@ struct gcc_debug_hooks sdb_debug_hooks =
 #endif
   sdbout_end_epilogue,
   sdbout_begin_function,
-  sdbout_end_function
+  sdbout_end_function,
+  debug_nothing_tree,		/* function_decl */
+  sdbout_global_decl,
+  debug_nothing_tree		/* deferred_inline_function */
 };
 
 #if 0
@@ -1470,6 +1474,32 @@ sdbout_reg_parms (parms)
 	      }
 	  }
       }
+}
+
+/* Output debug information for a global DECL.  Called from toplev.c
+   after compilation proper has finished.  */
+
+static void
+sdbout_global_decl (decl)
+     tree decl;
+{
+  if (TREE_CODE (decl) == VAR_DECL
+      && DECL_INITIAL (decl)
+      && ! DECL_EXTERNAL (decl)
+      && DECL_RTL (decl) != 0)
+    {
+      /* The COFF linker can move initialized global vars to the end.
+	 And that can screw up the symbol ordering.  By putting the
+	 symbols in that order to begin with, we avoid a problem.
+	 mcsun!unido!fauern!tumuc!pes@uunet.uu.net.  */
+      if (TREE_PUBLIC (decl))
+	sdbout_symbol (decl, 0);
+
+      /* Output COFF information for non-global file-scope initialized
+	 variables.  */
+      if (GET_CODE (DECL_RTL (decl)) == MEM)
+	sdbout_toplevel_data (decl);
+    }
 }
 
 /* Describe the beginning of an internal block within a function.

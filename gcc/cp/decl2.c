@@ -40,8 +40,6 @@ Boston, MA 02111-1307, USA.  */
 #include "output.h"
 #include "except.h"
 #include "toplev.h"
-#include "dwarf2out.h"
-#include "dwarfout.h"
 #include "ggc.h"
 #include "timevar.h"
 #include "cpplib.h"
