@@ -190,7 +190,8 @@ dw2_asm_output_offset VPARAMS ((int size, const char *label,
    different section or object file.  */
 
 void
-dw2_asm_output_pcrel VPARAMS ((int size, const char *label,
+dw2_asm_output_pcrel VPARAMS ((int size ATTRIBUTE_UNUSED,
+			       const char *label ATTRIBUTE_UNUSED,
 			       const char *comment, ...))
 {
   VA_OPEN (ap, comment);

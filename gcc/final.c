@@ -2271,11 +2271,13 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 #endif
 
 	  if (align && NEXT_INSN (insn))
+	    {
 #ifdef ASM_OUTPUT_MAX_SKIP_ALIGN
-	    ASM_OUTPUT_MAX_SKIP_ALIGN (file, align, max_skip);
+	      ASM_OUTPUT_MAX_SKIP_ALIGN (file, align, max_skip);
 #else
-	    ASM_OUTPUT_ALIGN (file, align);
+	      ASM_OUTPUT_ALIGN (file, align);
 #endif
+	    }
 	}
 #ifdef HAVE_cc0
       CC_STATUS_INIT;

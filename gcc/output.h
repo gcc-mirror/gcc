@@ -198,6 +198,10 @@ extern void tdesc_section PARAMS ((void));
 extern void drectve_section PARAMS ((void));
 #endif
 
+#ifdef SDATA_SECTION_ASM_OP
+extern void sdata_section PARAMS ((void));
+#endif
+
 #ifdef TREE_CODE
 /* Tell assembler to change to section NAME for DECL.
    If DECL is NULL, just switch to section NAME.
