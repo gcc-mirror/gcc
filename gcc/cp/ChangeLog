@@ -1,3 +1,8 @@
+1999-07-17  Alexandre Oliva  <oliva@dcc.unicamp.br>
+        
+	* typeck2.c (my_friendly_abort): Updated URL with bug reporting
+	instructions to gcc.gnu.org.  Removed e-mail address.
+
 1999-07-15  Mark Mitchell  <mark@codesourcery.com>
 
         * pt.c (check_default_tmpl_args): Handle friends defined in the
