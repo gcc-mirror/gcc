@@ -1,3 +1,7 @@
+2004-03-16  Eric Christopher  <echristo@redhat.com>
+
+	* doc/cppopts.texi(fwide-exec-charset): Fix typo.
+
 2004-03-16  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/i386/i386-protos.h: Add a prototype for
@@ -412,7 +416,7 @@
 	* doc/tm.texi: Document TARGET_USES_WEAK_UNWIND_INFO,
 	TARGET_EXPLICIT_INSTANTIATIONS_ONE_ONLY, TARGET_SUPPORTS_HIDDEN,
 	TARGET_ASM_EMIT_UNWIND_LABEL.
-	
+
 2004-03-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* builtins.c (expand_builtin_mathfn): Add pow10* to the
@@ -626,7 +630,7 @@
 	and gt_pch_use_address.
 	* config/host-linux.c, config/host-solaris.c: New files.
 	* config/x-linux, config/x-solaris: New files.
-	* config/rs6000/host-darwin.c (darwin_rs6000_gt_pch_get_address): 
+	* config/rs6000/host-darwin.c (darwin_rs6000_gt_pch_get_address):
 	Update for changed definition.
 	(darwin_rs6000_gt_pch_use_address): Likewise.
 	* doc/hostconfig.texi: Update docs.
