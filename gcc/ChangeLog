@@ -1,5 +1,11 @@
 Wed Dec 15 15:05:30 MET 1999  Jan Hubicka  <hubicka@freesoft.cz>
 
+	* flow.c (calculate_loop_depth): Make global, remove prototype,
+	rewrite to use new loop infrastructure.
+	(find_basic_block): Remove calculate_loop_depth call.
+	* toplev.c (rest_of_compilation): Call find_basic_block.
+	* output.h (calculate_loop_depth): Declare.
+
 	* flow.c (dump_flow_info): Dump loop_depth.
 	(flow_loops_nodes_find): Increase loop_depth for basic block in the
 	body.
