@@ -1297,7 +1297,8 @@ DRIVER_DEFINES = \
   -DDEFAULT_TARGET_VERSION=\"$(version)\" \
   -DDEFAULT_TARGET_MACHINE=\"$(target_alias)\" \
   -DTOOLDIR_BASE_PREFIX=\"$(exec_prefix)/\"
-gcc.o: gcc.c $(CONFIG_H) gansidecl.h multilib.h Makefile $(lang_specs_files)
+gcc.o: gcc.c $(CONFIG_H) gansidecl.h system.h multilib.h Makefile \
+	$(lang_specs_files)
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
   $(DRIVER_DEFINES) \
   -c `echo $(srcdir)/gcc.c | sed 's,^\./,,'`
