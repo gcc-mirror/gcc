@@ -6223,7 +6223,7 @@ output_millicode_call (insn, call_dest)
   /* Handle the common case where we are sure that the branch will
      reach the beginning of the $CODE$ subspace.  The within reach
      form of the $$sh_func_adrs call has a length of 28.  Because
-     it has an attribute type of multi, it never has a non-zero
+     it has an attribute type of multi, it never has a nonzero
      sequence length.  The length of the $$sh_func_adrs is the same
      as certain out of reach PIC calls to other routines.  */
   if (!TARGET_LONG_CALLS

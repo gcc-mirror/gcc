@@ -1,3 +1,26 @@
+2002-12-19  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* ChangeLog: Follow spelling conventions.
+	* ChangeLog.2: Likewise.
+	* ChangeLog.4: Likewise.
+	* ChangeLog.5: Likewise.
+	* cppexp.c: Likewise.
+	* df.c: Likewise.
+	* gcov.c: Likewise.
+	* gengtype.c: Likewise.
+	* reload1.c: Likewise.
+	* sched-rgn.c: Likewise.
+	* stmt.c: Likewise.
+	* stor-layout.c: Likewise.
+	* timevar.c: Likewise.
+	* toplev.c: Likewise.
+	* tree.h: Likewise.
+	* varasm.c: Likewise.
+	* config/fr30/fr30.md: Likewise.
+	* config/i386/i386.c: Likewise.
+	* config/ia64/ia64.c: Likewise.
+	* config/pa/pa.c: Likewise.
+
 2002-12-18  Roger Sayle  <roger@eyesopen.com>
 
 	* basic-block.h (flow_bb_inside_loop_p): Correct prototype.
@@ -3068,7 +3091,7 @@ Tue Oct 29 19:32:16 CET 2002  Jan Hubicka  <jh@suse.cz>
 	(sched_get_priority_max, sched_get_priority_min)
 	(pthread_getschedparam, pthread_setschedparam): Only use
 	if _POSIX_THREAD_PRIORITY_SCHEDULING is defined.
-	(__gthread_objc_thread_set_priority): Don't treat all non-zero
+	(__gthread_objc_thread_set_priority): Don't treat all nonzero
 	returns from sched_get_priority_max and sched_get_priority_min
 	as an error.
 
@@ -5022,7 +5045,7 @@ Thu Oct  3 23:20:58 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	(multilib_os_dir): New variable.
 	(static_specs): Add multilib_options.
 	(find_a_file): Add multilib argument.  Search in GCC or OS multilib
-	subdirs if non-zero.
+	subdirs if nonzero.
 	(read_specs, execute): Update callers.
 	(find_file): Likewise.  Don't prefix name with multilib_dir, instead
 	pass 1 as multilib option.

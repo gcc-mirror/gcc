@@ -148,10 +148,10 @@ Similarly, should the first entry in the use list be the last use
 
 5) Working with a sub-CFG.
 
-Often the whole CFG does not need to be analysed, for example,
+Often the whole CFG does not need to be analyzed, for example,
 when optimising a loop, only certain registers are of interest.
 Perhaps there should be a bitmap argument to df_analyse to specify
- which registers should be analysed?   */
+ which registers should be analyzed?   */
 
 #include "config.h"
 #include "system.h"
@@ -2317,7 +2317,7 @@ df_modified_p (df, blocks)
 }
 
 
-/* Analyse dataflow info for the basic blocks specified by the bitmap
+/* Analyze dataflow info for the basic blocks specified by the bitmap
    BLOCKS, or for the whole CFG if BLOCKS is zero, or just for the
    modified blocks if BLOCKS is -1.  */
 int

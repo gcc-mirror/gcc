@@ -1560,14 +1560,14 @@ enum INSN_TRAP_CLASS
 #define WORST_CLASS(class1, class2) \
 ((class1 > class2) ? class1 : class2)
 
-/* Non-zero if block bb_to is equal to, or reachable from block bb_from.  */
+/* Nonzero if block bb_to is equal to, or reachable from block bb_from.  */
 #define IS_REACHABLE(bb_from, bb_to)					\
   (bb_from == bb_to							\
    || IS_RGN_ENTRY (bb_from)						\
    || (TEST_BIT (ancestor_edges[bb_to],					\
 		 EDGE_TO_BIT (IN_EDGES (BB_TO_BLOCK (bb_from))))))
 
-/* Non-zero iff the address is comprised from at most 1 register.  */
+/* Nonzero iff the address is comprised from at most 1 register.  */
 #define CONST_BASED_ADDRESS_P(x)			\
   (GET_CODE (x) == REG					\
    || ((GET_CODE (x) == PLUS || GET_CODE (x) == MINUS	\

@@ -254,8 +254,8 @@ find_structure (name, isunion)
   return s;
 }
 
-/* Return the previously-defined parameterised structure for structure
-   T and parameters PARAM, or a new parameterised empty structure or
+/* Return the previously-defined parameterized structure for structure
+   T and parameters PARAM, or a new parameterized empty structure or
    union if none was defined previously.  */
 
 static type_p

@@ -633,7 +633,7 @@ already on the stack.
 The remaining cases are '(' and ')'.  We handle '(' by skipping the
 reduction phase completely.  ')' is given lower priority than
 everything else, including '(', effectively forcing a reduction of the
-parenthesised expression.  If there is a matching '(', the routine
+parenthesized expression.  If there is a matching '(', the routine
 reduce() exits immediately.  If the normal exit route sees a ')', then
 there cannot have been a matching '(' and an error message is output.
 

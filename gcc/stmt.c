@@ -390,7 +390,7 @@ struct stmt_status GTY(())
 #define emit_lineno (cfun->stmt->x_emit_lineno)
 #define goto_fixup_chain (cfun->stmt->x_goto_fixup_chain)
 
-/* Non-zero if we are using EH to handle cleanups.  */
+/* Nonzero if we are using EH to handle cleanups.  */
 static int using_eh_for_cleanups_p = 0;
 
 static int n_occurrences		PARAMS ((int, const char *));

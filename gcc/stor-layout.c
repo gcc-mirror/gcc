@@ -784,7 +784,7 @@ place_union_field (rli, field)
 }
 
 /* A bitfield of SIZE with a required access alignment of ALIGN is allocated
-   at BYTE_OFFSET / BIT_OFFSET.  Return non-zero if the field would span more
+   at BYTE_OFFSET / BIT_OFFSET.  Return nonzero if the field would span more
    units of alignment than the underlying TYPE.  */
 static int
 excess_unit_span (byte_offset, bit_offset, size, align, type)
