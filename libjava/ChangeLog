@@ -1,3 +1,11 @@
+2001-08-17  Hans-J. Boehm <Hans_Boehm@hp.com>
+
+	* boehm.cc: Include gc_local_alloc.h if appropriate.
+	(GC_GENERIC_MALLOC): Don't define.
+	(MAYBE_MARK): Redefine for GC 6.0.
+	(_Jv_MarkObj): Mark class differently.
+	(_Jv_AllocArray): Use GC_generic_malloc.
+
 2001-08-17  Mark J Roberts  <mjr@anarcast.net>
 
 	* java/math/BigInteger.java (randBytes): New method.
