@@ -1,3 +1,10 @@
+2004-04-23  Daniel Jacobowitz  <drow@mvista.com>
+
+	* config/arm/arm.c (arm_output_epilogue): Reverse the order of
+	loading iWMMXt registers with a frame pointer.  Use post-increment
+	without a frame pointer.
+	(arm_expand_prologue): Reverse the order of saving iWMMXt registers.
+
 2004-04-23  Paolo Bonzini  <bonzini@gnu.org>
 
 	* doc/invoke.texi (Optimize Options): Refer to "unit-at-a-time
