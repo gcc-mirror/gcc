@@ -1,5 +1,30 @@
 2000-04-07  Richard Henderson  <rth@cygnus.com>
 
+	* flow.c (loop_depth): Remove.
+	(reg_next_use, cc0_live, mem_set_list): Replace with ...
+	(struct propagate_block_info): New.
+	(life_analysis): Don't allocate reg_next_use.
+	(propagate_block_delete_insn): Break out of propagate_block.
+	Use flow_delete_insn to unlink rather than use NOTE_INSN_DELETED.
+	(propagate_block_delete_libcall): Likewise.
+	(propagate_block): Create a propagate_block_info struct to pass
+	to subroutines.  Allocate one not two temporary regsets.  Don't
+	clobber memory for const calls.  Look for clobbers in
+	CALL_INSN_FUNCTION_USAGE.
+	(mark_set_regs): Recognize COND_EXEC.
+	(mark_set_reg): Break out of mark_set_1.
+	(mark_used_reg): Break out of mark_used_regs.
+	(mark_used_regs): Recognize COND_EXEC.
+	(insn_dead_p): Use propagate_block_info struct.
+	(libcall_dead_p, invalidate_mems_from_autoinc): Likewise.
+	(find_auto_inc, try_pre_increment_1): Likewise.
+	(print_rtl_with_bb): Dump regs live at end too.
+	(count_reg_sets_1): Pass in loop_depth.
+	(count_reg_sets, count_reg_references): Likewise.
+	(recompute_reg_usage): Provide it.
+
+2000-04-07  Richard Henderson  <rth@cygnus.com>
+
 	* Makefile.in (conflict.o): Depend on $(RTL_H) and $(BASIC_BLOCK_H)
 	not the raw files.
 
