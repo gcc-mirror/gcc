@@ -112,7 +112,7 @@ require_complete_type (value)
 
   if (IS_AGGR_TYPE (type) && CLASSTYPE_TEMPLATE_INSTANTIATION (type))
     {
-      instantiate_class_template (type);
+      instantiate_class_template (TYPE_MAIN_VARIANT (type));
       if (TYPE_SIZE (type) != 0)
 	return value;
     }

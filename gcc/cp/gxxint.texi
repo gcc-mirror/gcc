@@ -1226,7 +1226,7 @@ stands.
 
 Only exact type matching or reference matching of throw types works when
 -fno-rtti is used.  Only works on a SPARC (like Suns), i386, arm,
-rs6000, PowerPC, Alpha, mips, VAX, and m68k machines.  Partial support
+rs6000, PowerPC, Alpha, mips, VAX, m68k and z8k machines.  Partial support
 is in for all other machines, but a stack unwinder called
 __unwind_function has to be written, and added to libgcc2 for them.  The
 new EH code doesn't rely upon the __unwind_function for C++ code,

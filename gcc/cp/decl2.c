@@ -1124,6 +1124,9 @@ delete_sanity (exp, size, doing_vec, use_global_delete)
      this down as a NULL_TREE into build_vec_delete.  */
   tree maxindex = NULL_TREE;
 
+  if (exp == error_mark_node)
+    return exp;
+
   if (current_template_parms)
     {
       t = build_min (DELETE_EXPR, void_type_node, exp, size);
@@ -2822,16 +2825,22 @@ finish_file ()
 
   start_time = get_run_time ();
 
-  /* Push into C language context, because that's all
-     we'll need here.  */
-  push_lang_context (lang_name_c);
-
   /* Otherwise, GDB can get confused, because in only knows
      about source for LINENO-1 lines.  */
   lineno -= 1;
 
   interface_unknown = 1;
   interface_only = 0;
+
+  for (fnname = pending_templates; fnname; fnname = TREE_CHAIN (fnname))
+    {
+      tree decl = TREE_VALUE (fnname);
+      instantiate_decl (decl);
+    }
+
+  /* Push into C language context, because that's all
+     we'll need here.  */
+  push_lang_context (lang_name_c);
 
 #if 1
   /* The reason for pushing garbage onto the global_binding_level is to
@@ -3082,11 +3091,6 @@ finish_file ()
   if (flag_handle_signatures)
     walk_sigtables ((void (*)())0, finish_sigtable_vardecl);
 
-  for (fnname = pending_templates; fnname; fnname = TREE_CHAIN (fnname))
-    {
-      tree decl = TREE_VALUE (fnname);
-      instantiate_decl (decl);
-    }
   for (fnname = saved_inlines; fnname; fnname = TREE_CHAIN (fnname))
     {
       tree decl = TREE_VALUE (fnname);

@@ -1,3 +1,24 @@
+Fri Mar 22 13:48:29 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* pt.c (tsubst, case TYPE_DECL): Set DECL_CONTEXT.
+
+	* typeck.c (require_complete_type): Be sure to instantiate the
+ 	MAIN_VARIANT of the type.
+
+	* decl2.c (finish_file): Instantiate pending templates before
+ 	processing static constructors and destructors.
+
+	* pt.c (instantiate_decl): Don't instantiate functions at toplevel
+ 	unless at_eof.
+
+Fri Mar 22 09:30:17 1996  Bob Manson  <manson@beauty.cygnus.com>
+
+	* decl2.c (delete_sanity): If error_mark_node is passed
+	in as an expression, quit while we're ahead.
+
+	* decl.c (grokdeclarator): Give an error message if `friend'
+	is combined with any storage class specifiers.
+
 Wed Mar 20 14:51:55 1996  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* parse.y (named_complex_class_head_sans_basetype): Don't crash on
