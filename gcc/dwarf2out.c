@@ -443,6 +443,7 @@ expand_builtin_init_dwarf_reg_sizes (tree address)
   enum machine_mode mode = TYPE_MODE (char_type_node);
   rtx addr = expand_expr (address, NULL_RTX, VOIDmode, 0);
   rtx mem = gen_rtx_MEM (BLKmode, addr);
+  bool wrote_return_column = false;
 
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     if (DWARF_FRAME_REGNUM (i) < DWARF_FRAME_REGISTERS)
@@ -453,12 +454,25 @@ expand_builtin_init_dwarf_reg_sizes (tree address)
 
 	if (HARD_REGNO_CALL_PART_CLOBBERED (i, save_mode))
 	  save_mode = choose_hard_reg_mode (i, 1, true);
+	if (DWARF_FRAME_REGNUM (i) == DWARF_FRAME_RETURN_COLUMN)
+	  {
+	    if (save_mode == VOIDmode)
+	      continue;
+	    wrote_return_column = true;
+	  }
 	size = GET_MODE_SIZE (save_mode);
 	if (offset < 0)
 	  continue;
 
 	emit_move_insn (adjust_address (mem, mode, offset), GEN_INT (size));
       }
+  if (! wrote_return_column)
+    {
+      enum machine_mode save_mode = Pmode;
+      HOST_WIDE_INT offset = DWARF_FRAME_RETURN_COLUMN * GET_MODE_SIZE (mode);
+      HOST_WIDE_INT size = GET_MODE_SIZE (save_mode);
+      emit_move_insn (adjust_address (mem, mode, offset), GEN_INT (size));
+    }
 }
 
 /* Convert a DWARF call frame info. operation to its string name */
