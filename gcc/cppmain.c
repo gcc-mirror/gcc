@@ -81,12 +81,12 @@ main (argc, argv)
   else if (! freopen (opts->out_fname, "w", stdout))
     cpp_pfatal_with_name (&parse_in, opts->out_fname);
 
-  do
+  if (! opts->no_output)
     {
-      kind = cpp_get_token (&parse_in);
-      if (CPP_WRITTEN (&parse_in) >= BUFSIZ || kind == CPP_EOF)
+      do
 	{
-	  if (! opts->no_output)
+	  kind = cpp_get_token (&parse_in);
+	  if (CPP_WRITTEN (&parse_in) >= BUFSIZ || kind == CPP_EOF)
 	    {
 	      size_t rem, count = CPP_WRITTEN (&parse_in);
 
@@ -94,12 +94,22 @@ main (argc, argv)
 	      if (rem < count)
 		/* Write error. */
 		cpp_pfatal_with_name (&parse_in, opts->out_fname);
-	    }
 
-	  CPP_SET_WRITTEN (&parse_in, 0);
+	      CPP_SET_WRITTEN (&parse_in, 0);
+	    }
 	}
+      while (kind != CPP_EOF);
     }
-  while (kind != CPP_EOF);
+  else
+    {
+      do
+	{
+	  cpp_scan_buffer (&parse_in);
+	  kind = cpp_get_token (&parse_in);
+	}
+      while (kind != CPP_EOF);
+      CPP_SET_WRITTEN (&parse_in, 0);
+    }
 
   cpp_finish (&parse_in);
   if (fwrite (parse_in.token_buffer, 1, CPP_WRITTEN (&parse_in), stdout)

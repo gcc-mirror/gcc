@@ -731,15 +731,42 @@ cpp_scan_buffer (pfile)
      cpp_reader *pfile;
 {
   cpp_buffer *buffer = CPP_BUFFER (pfile);
-  for (;;)
+  enum cpp_token token;
+  if (CPP_OPTIONS (pfile)->no_output)
     {
-      enum cpp_token token = cpp_get_token (pfile);
-      if (token == CPP_EOF) /* Should not happen ...  */
-	break;
-      if (token == CPP_POP && CPP_BUFFER (pfile) == buffer)
+      long old_written = CPP_WRITTEN (pfile);
+      /* In no-output mode, we can ignore everything but directives.  */
+      for (;;)
 	{
-	  cpp_pop_buffer (pfile);
-	  break;
+	  if (! pfile->only_seen_white)
+	    skip_rest_of_line (pfile);
+	  token = cpp_get_token (pfile);
+	  if (token == CPP_EOF) /* Should not happen ...  */
+	    break;
+	  if (token == CPP_POP && CPP_BUFFER (pfile) == buffer)
+	    {
+	      if (CPP_PREV_BUFFER (CPP_BUFFER (pfile))
+		  != CPP_NULL_BUFFER (pfile))
+		cpp_pop_buffer (pfile);
+	      break;
+	    }
+	}
+      CPP_SET_WRITTEN (pfile, old_written);
+    }
+  else
+    {
+      for (;;)
+	{
+	  token = cpp_get_token (pfile);
+	  if (token == CPP_EOF) /* Should not happen ...  */
+	    break;
+	  if (token == CPP_POP && CPP_BUFFER (pfile) == buffer)
+	    {
+	      if (CPP_PREV_BUFFER (CPP_BUFFER (pfile))
+		  != CPP_NULL_BUFFER (pfile))
+		cpp_pop_buffer (pfile);
+	      break;
+	    }
 	}
     }
 }
@@ -760,13 +787,8 @@ cpp_expand_to_buffer (pfile, buf, length)
      int length;
 {
   register cpp_buffer *ip;
-#if 0
-  cpp_buffer obuf;
-#endif
   U_CHAR *buf1;
-#if 0
-  int odepth = indepth;
-#endif
+  int save_no_output;
 
   if (length < 0)
     {
@@ -784,12 +806,12 @@ cpp_expand_to_buffer (pfile, buf, length)
   if (ip == NULL)
     return;
   ip->has_escapes = 1;
-#if 0
-  ip->lineno = obuf.lineno = 1;
-#endif
 
   /* Scan the input, create the output.  */
+  save_no_output = CPP_OPTIONS (pfile)->no_output;
+  CPP_OPTIONS (pfile)->no_output = 0;
   cpp_scan_buffer (pfile);
+  CPP_OPTIONS (pfile)->no_output = save_no_output;
 
   CPP_NUL_TERMINATE (pfile);
 }

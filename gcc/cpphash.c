@@ -1337,10 +1337,17 @@ macroexpand (pfile, hp)
 	      U_CHAR *l1 = p1 + arg->raw_length;
 	      if (ap->raw_before)
 		{
-		  while (p1 != l1 && is_space[*p1])
-		    p1++;
-		  while (p1 != l1 && is_idchar[*p1])
-		    xbuf[totlen++] = *p1++;
+		  /* Arg is concatenated before: delete leading whitespace,
+		     whitespace markers, and no-reexpansion markers.  */
+		  while (p1 != l1)
+		    {
+		      if (is_space[p1[0]])
+			p1++;
+		      else if (p1[0] == '\r')
+			p1 += 2;
+		      else
+			break;
+		    }
 		}
 	      if (ap->raw_after)
 		{
@@ -1460,15 +1467,12 @@ unsafe_chars (c1, c2)
 {
   switch (c1)
     {
-    case '+':
-    case '-':
+    case '+':  case '-':
       if (c2 == c1 || c2 == '=')
 	return 1;
       goto letter;
 
-    case '.':    case '0':    case '1':    case '2':    case '3':
-    case '4':    case '5':    case '6':    case '7':    case '8':
-    case '9':    case 'e':    case 'E':    case 'p':    case 'P':
+    case 'e':  case 'E':  case 'p':  case 'P':
       if (c2 == '-' || c2 == '+')
 	return 1;		/* could extend a pre-processing number */
       goto letter;
@@ -1478,6 +1482,8 @@ unsafe_chars (c1, c2)
 	return 1;		/* Could turn into L"xxx" or L'xxx'.  */
       goto letter;
 
+    case '.':  case '0':  case '1':  case '2':  case '3':
+    case '4':  case '5':  case '6':  case '7':  case '8':  case '9':
     case '_':  case 'a':  case 'b':  case 'c':  case 'd':  case 'f':
     case 'g':  case 'h':  case 'i':  case 'j':  case 'k':  case 'l':
     case 'm':  case 'n':  case 'o':  case 'q':  case 'r':  case 's':
