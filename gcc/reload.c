@@ -6705,12 +6705,14 @@ find_equiv_reg (rtx goal, rtx insn, enum reg_class class, int other,
 
 	  if (regno >= 0 && regno < FIRST_PSEUDO_REGISTER)
 	    for (i = 0; i < nregs; ++i)
-	      if (call_used_regs[regno + i])
+	      if (call_used_regs[regno + i]
+		  || HARD_REGNO_CALL_PART_CLOBBERED (regno + i, mode))
 		return 0;
 
 	  if (valueno >= 0 && valueno < FIRST_PSEUDO_REGISTER)
 	    for (i = 0; i < valuenregs; ++i)
-	      if (call_used_regs[valueno + i])
+	      if (call_used_regs[valueno + i]
+		  || HARD_REGNO_CALL_PART_CLOBBERED (valueno + i, mode))
 		return 0;
 	}
 

@@ -1380,7 +1380,10 @@ cselib_process_insn (rtx insn)
   if (CALL_P (insn))
     {
       for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-	if (call_used_regs[i])
+	if (call_used_regs[i]
+	    || (REG_VALUES (i) && REG_VALUES (i)->elt
+		&& HARD_REGNO_CALL_PART_CLOBBERED (i, 
+		      GET_MODE (REG_VALUES (i)->elt->u.val_rtx))))
 	  cselib_invalidate_regno (i, reg_raw_mode[i]);
 
       if (! CONST_OR_PURE_CALL_P (insn))
