@@ -1,3 +1,18 @@
+Tue Aug 18 07:15:27 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* config/sparc/sparc.c (ultra_find_type): Add empty semicolon
+	statement after end of loop label.
+
+Tue Aug 18 07:13:27 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
+
+	* config/sparc/sparc.c (ultra_types_avail): New variable.
+	(ultra_build_types_avail): New function to record mask of insn
+	types in ready list at this cycle.
+	(ultrasparc_sched_reorder): Call it.
+	(ultra_find_type): Use it to quicken the search.  Also simplif
+	dependency check, don't use rtx_equal_p because we know exactly
+	what we are looking for.
+
 Tue Aug 18 03:20:53 1998  Richard Earnshaw  (rearnsha@arm.com)
 
 	* arm.h (SECONDARY_INPUT_RELOAD_CLASS): Return NO_REGS if compiling
