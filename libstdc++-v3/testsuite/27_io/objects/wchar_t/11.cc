@@ -22,13 +22,13 @@
 #include <cstdio>
 #include <testsuite_hooks.h>
 
-// Test handling of UTF-8 in wcin
-void test10()
+// Test handling of UTF-8 in wcout
+void test11()
 {
   using namespace std;
   
   bool test = true;
-  const char* name = "tmp_10";
+  const char* name = "tmp_11";
 
   locale loc(__gnu_test::try_named_locale("se_NO.UTF-8"));
   locale::global(loc);
@@ -87,26 +87,23 @@ void test10()
   };
   size_t i_size = wcslen(i_lit);
 
-  FILE* file = fopen(name, "w");
-  size_t n = fwrite(e_lit, 1, e_size, file);
-  VERIFY( n == e_size );
-  fclose(file);
-
-  freopen(name, "r", stdin);
+  freopen(name, "w", stdout);
   
-  wchar_t* wbuf = new wchar_t[i_size + 10];
-  wcin.read(wbuf, i_size + 10);
-  n = wcin.gcount();
-  VERIFY( n == i_size );
-  VERIFY( !wmemcmp(wbuf, i_lit, i_size) );
-  VERIFY( wcin.eof() );
-  VERIFY( wcin.fail() );
-  VERIFY( !wcin.bad() );
-  delete[] wbuf;
+  wcout.write(i_lit, i_size);
+  wcout.flush();
+  VERIFY( wcout.good() );
+
+  FILE* file = fopen(name, "r");
+  char* buf = new char[e_size + 10];
+  size_t n = fread(buf, 1, e_size + 10, file);
+  VERIFY( n == e_size );
+  VERIFY( !memcmp(buf, e_lit, e_size) );
+  delete[] buf;
+  fclose(file);
 }
 
 int main()
 {
-  test10();
+  test11();
   return 0;
 }

@@ -1,3 +1,8 @@
+2003-08-27  Petur Runolfsson  <peturr02@ru.is>
+
+	* testsuite/27_io/objects/wchar_t/10.cc: Move wcout stuff...
+	* testsuite/27_io/objects/wchar_t/11.cc: ...here. New file.
+
 2003-08-27  Phil Edwards  <pme@gcc.gnu.org>
 
 	* Makefile.am:  Remove trailing whitespace.  Remove needless
