@@ -1,3 +1,7 @@
+Tue Mar  9 15:26:02 1999  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* i386.md (ashlsi3 splitter): Fix typo in last change.
+
 Tue Mar  9 11:35:20 1999  Richard Henderson  <rth@cygnus.com>
 
 	* reg-stack.c (stack_reg_life_analysis): Use returnjump_p
