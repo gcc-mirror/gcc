@@ -93,9 +93,9 @@ readonly_error (arg, string, soft)
   if (TREE_CODE (arg) == COMPONENT_REF)
     {
       if (TYPE_READONLY (TREE_TYPE (TREE_OPERAND (arg, 0))))
-        fmt = "%s of member `%D' in read-only structure";
+        fmt = "%s of data-member `%D' in read-only structure";
       else
-        fmt = "%s of read-only member `%D'";
+        fmt = "%s of read-only data-member `%D'";
       (*fn) (fmt, string, TREE_OPERAND (arg, 1));
     }
   else if (TREE_CODE (arg) == VAR_DECL)
@@ -156,7 +156,7 @@ abstract_virtuals_error (decl, type)
 		    decl, type);
       else if (TREE_CODE (decl) == FUNCTION_DECL
 	       && TREE_CODE (TREE_TYPE (decl)) == METHOD_TYPE)
-	cp_error ("invalid return type for method `%#D'", decl);
+	cp_error ("invalid return type for member function `%#D'", decl);
       else if (TREE_CODE (decl) == FUNCTION_DECL)
 	cp_error ("invalid return type for function `%#D'", decl);
     }
@@ -199,8 +199,8 @@ retry:
     case RECORD_TYPE:
     case UNION_TYPE:
     case ENUMERAL_TYPE:
-      cp_error ("invalid use of undefined type `%#T'", type);
-      cp_error_at ("forward declaration of `%#T'", type);
+      cp_error_at
+        ("invalid use of a forward-declared, but not defined type `%#T'", type);
       break;
 
     case VOID_TYPE:
@@ -821,13 +821,13 @@ process_init_constructor (type, init, elts)
 	{
 	  if (TYPE_USES_VIRTUAL_BASECLASSES (type))
 	    {
-	      sorry ("initializer list for object of class with virtual baseclasses");
+	      sorry ("initializer list for object of class with virtual base classes");
 	      return error_mark_node;
 	    }
 
 	  if (TYPE_BINFO_BASETYPES (type))
 	    {
-	      sorry ("initializer list for object of class with baseclasses");
+	      sorry ("initializer list for object of class with base classes");
 	      return error_mark_node;
 	    }
 
@@ -1462,7 +1462,7 @@ check_for_new_type (string, inptree)
 {
   if (inptree.new_type_flag
       && (pedantic || strcmp (string, "cast") != 0))
-    pedwarn ("ANSI C++ forbids defining types within %s",string);
+    pedwarn ("ISO C++ forbids defining types within %s",string);
 }
 
 /* Add new exception specifier SPEC, to the LIST we currently have.
