@@ -18,7 +18,6 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#include "mips/mips.h"
 #include "mips/abi64.h"
 
 #undef WCHAR_TYPE
@@ -188,14 +187,13 @@ void FN ()							\
         %{!dynamic-linker:-dynamic-linker /lib/ld.so.1}} \
         %{static:-static}}}"
 
-
 #undef SUBTARGET_ASM_SPEC
 #define SUBTARGET_ASM_SPEC "\
 %{mabi=64: -64} \
 %{!fno-PIC:%{!fno-pic:-KPIC}} \
 %{fno-PIC:-non_shared} %{fno-pic:-non_shared}"
 
-#undef SUBTARGET_ASM_DEBUGGING_SPEC
+#undef  SUBTARGET_ASM_DEBUGGING_SPEC
 #define SUBTARGET_ASM_DEBUGGING_SPEC "-g0"
 
 /* The MIPS assembler has different syntax for .set. We set it to

@@ -1439,7 +1439,7 @@ ia64*-*-hpux*)
 	use_collect2=no
 	float_format=i128
 	;;
-ip2k-*-elf)		
+ip2k-*-elf)
 	;;
 m32r-*-elf*)
 	tm_file="dbxelf.h elfos.h svr4.h ${tm_file}"
@@ -1786,7 +1786,7 @@ mips-sgi-irix6*)		# SGI System V.4., IRIX 6
 #	fi
 	;;
 mips-wrs-vxworks)
-	tm_file="mips/elf.h mips/vxworks.h"
+	tm_file="${tm_file} mips/elf.h mips/vxworks.h"
 	tmake_file=mips/t-ecoff
 	gas=yes
 	gnu_ld=yes
@@ -1854,11 +1854,11 @@ mips*-*-netbsd*)			# NetBSD/mips, either endian.
 	tmake_file="${tmake_file} mips/t-netbsd"
 	;;
 mips*-*-linux*)				# Linux MIPS, either endian.
-        tm_file="dbxelf.h elfos.h svr4.h linux.h mips/linux.h"
+        tm_file="${tm_file} dbxelf.h elfos.h svr4.h linux.h mips/linux.h"
 	case $machine in
         mipsisa32*-*)
-                tm_file="$tm_file mips/isa32-linux.h"
                 target_cpu_default="MASK_SOFT_FLOAT"
+		tm_defines="MIPS_ISA_DEFAULT=32"
                 ;;
         esac
 	tmake_file="t-slibgcc-elf-ver t-linux mips/t-linux"
@@ -1877,53 +1877,60 @@ mips*-*-openbsd*)		# mips big endian
 	tm_file="mips/openbsd-be.h ${tm_file}"
 	;;
 mips-*-ecoff* | mipsel-*-ecoff*)
-	tm_file="gofast.h mips/ecoff.h"
 	if test x$stabs = xyes; then
 		tm_file="${tm_file} dbx.h"
 	fi
 	tmake_file=mips/t-ecoff
 	;;
 mipsisa32-*-elf* | mipsisa32el-*-elf*)
-	tm_file="mips/isa3264.h mips/abi64.h"
+	tm_file="${tm_file} mips/elf.h mips/abi64.h"
 	tmake_file=mips/t-isa3264
-	target_cpu_default="MASK_SOFT_FLOAT"
+	tm_defines="MIPS_ISA_DEFAULT=32 MIPS_ABI_DEFAULT=ABI_MEABI"
 	;;
 mipsisa64-*-elf* | mipsisa64el-*-elf*)
-	tm_file="mips/isa3264.h mips/abi64.h"
+	tm_file="${tm_file} mips/elf.h mips/abi64.h"
 	tmake_file=mips/t-isa3264
 	target_cpu_default="MASK_64BIT|MASK_FLOAT64|MASK_GAS"
-	tm_defines="MIPS_ISA_DEFAULT=64"
+	tm_defines="MIPS_ISA_DEFAULT=64 MIPS_ABI_DEFAULT=ABI_MEABI"
 	;;
 mips-*-elf* | mipsel-*-elf*)
-	tm_file="mips/elf.h"
+	tm_file="${tm_file} mips/elf.h"
 	tmake_file=mips/t-elf
 	;;
 mips64-*-elf* | mips64el-*-elf*)
-	tm_file="mips/elf64.h"
+	tm_file="${tm_file} mips/elf64.h"
 	tmake_file=mips/t-elf
+	target_cpu_default="MASK_64BIT|MASK_FLOAT64|MASK_GAS"
+	tm_defines="MIPS_ISA_DEFAULT=3 MIPS_ABI_DEFAULT=ABI_O64"
 	;;
 mips64orion-*-elf* | mips64orionel-*-elf*)
-	tm_file="mips/elforion.h mips/elf64.h"
+	tm_file="${tm_file} mips/elforion.h mips/elf64.h"
 	tmake_file=mips/t-elf
+	tmake_file=mips/t-elf
+	target_cpu_default="MASK_64BIT|MASK_FLOAT64|MASK_GAS"
+	tm_defines="MIPS_ISA_DEFAULT=3 MIPS_ABI_DEFAULT=ABI_O64"
 	;;
 mips64orion-*-rtems*)
 	xm_defines=POSIX
-	tm_file="mips/elforion.h mips/elf64.h mips/rtems64.h rtems.h"
+	tm_file="${tm_file} mips/elforion.h mips/elf64.h mips/rtems64.h rtems.h"
 	tmake_file="mips/t-elf t-rtems"
+	tmake_file=mips/t-elf
+	target_cpu_default="MASK_64BIT|MASK_FLOAT64|MASK_GAS"
+	tm_defines="MIPS_ISA_DEFAULT=3 MIPS_ABI_DEFAULT=ABI_O64"
 	if test x$enable_threads = xyes; then
 	  thread_file='rtems'
 	fi
 	;;
 mips*-*-rtems*)
 	xm_defines=POSIX
-	tm_file="mips/elf.h mips/rtems.h rtems.h"
+	tm_file="${tm_file} mips/elf.h mips/rtems.h rtems.h"
 	tmake_file="mips/t-elf t-rtems"
 	if test x$enable_threads = xyes; then
 	  thread_file='rtems'
 	fi
 	;;
 mipstx39-*-elf* | mipstx39el-*-elf*)
-	tm_file="mips/r3900.h mips/elf.h mips/abi64.h"
+	tm_file="${tm_file} mips/r3900.h mips/elf.h mips/abi64.h"
 	tmake_file=mips/t-r3900
 	;;
 mmix-knuth-mmixware)
@@ -2915,6 +2922,14 @@ mips*-*-*)
 			tm_defines="TARGET_ENDIAN_DEFAULT=0 $tm_defines"
 			;;
 	esac
+	if test "x$enable_gofast" = xyes
+	then
+		tm_defines="INIT_SUBTARGET_OPTABS=INIT_GOFAST_OPTABS $tm_defines"
+		tm_file="gofast.h $tm_file"
+		tmake_file="mips/t-gofast $tmake_file"
+	else
+		tmake_file="mips/t-mips $tmake_file"
+	fi
 	;;
 powerpc*-*-* | rs6000-*-*)
         if test x$enable_altivec = xyes

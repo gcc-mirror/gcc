@@ -35,22 +35,3 @@ Boston, MA 02111-1307, USA.  */
 %{mhard-float:%e-mhard-float not supported} \
 %{msingle-float:%{msoft-float: \
   %e-msingle-float and -msoft-float can not both be specified}}"
-
-/* Debugging */
-
-#define DWARF2_DEBUGGING_INFO
-#define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
-
-/* For the 'preferred' cases ("gN" and "ggdbN") we need to tell the
-   gnu assembler not to generate debugging information.  */
-
-#define SUBTARGET_ASM_DEBUGGING_SPEC "\
-%{!mmips-as: \
-  %{g:-g0} %{g0:-g0} %{g1:-g0} %{g2:-g0} %{g3:-g0} \
-  %{ggdb:-g0} %{ggdb0:-g0} %{ggdb1:-g0} %{ggdb2:-g0} %{ggdb3:-g0} \
-  %{gdwarf-2*:-g0}} \
-%{gstabs:-g} %{gstabs0:-g0} %{gstabs1:-g1} %{gstabs2:-g2} %{gstabs3:-g3} \
-%{gstabs+:-g} %{gstabs+0:-g0} %{gstabs+1:-g1} %{gstabs+2:-g2} %{gstabs+3:-g3} \
-%{gcoff:-g} %{gcoff0:-g0} %{gcoff1:-g1} %{gcoff2:-g2} %{gcoff3:-g3}"
-
-/* eof */

@@ -65,8 +65,5 @@ Boston, MA 02111-1307, USA.  */
 #define WCHAR_TYPE	"unsigned char"
 #define WCHAR_TYPE_SIZE BITS_PER_UNIT
 
-/* Generate calls to memcpy, etc., not bcopy, etc.  */
-#define TARGET_MEM_FUNCTIONS
-
 /* Plain char is unsigned in the SGI compiler.  */
 #define DEFAULT_SIGNED_CHAR 0

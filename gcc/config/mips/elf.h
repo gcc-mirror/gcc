@@ -20,59 +20,39 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 /* Use ELF.  */
+#undef  OBJECT_FORMAT_COFF
+#undef  EXTENDED_COFF
 #define OBJECT_FORMAT_ELF
 
-/* All ELF targets can support DWARF-2.  */
+/* ??? Move all SDB stuff into separate header file.  */
+#undef  SDB_DEBUGGING_INFO
 
-#ifndef DWARF2_DEBUGGING_INFO
-#define DWARF2_DEBUGGING_INFO 1
-#endif
+#define DBX_DEBUGGING_INFO
+#define DWARF2_DEBUGGING_INFO
 
-/* Until we figure out what MIPS ELF targets normally use, just do
-   stabs in ELF.  */
-#ifndef PREFERRED_DEBUGGING_TYPE
-#define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
-#endif
+#undef  PREFERRED_DEBUGGING_TYPE
+#define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
 
-/* Mostly like ECOFF.  */
-#include "gofast.h"
-#include "mips/ecoff.h"
-
-/* We need to use .esize and .etype instead of .size and .type to
-   avoid conflicting with ELF directives.  */
-#undef PUT_SDB_SIZE
-#define PUT_SDB_SIZE(a)					\
-do {							\
-  extern FILE *asm_out_text_file;			\
-  fprintf (asm_out_text_file, "\t.esize\t");		\
-  fprintf (asm_out_text_file, HOST_WIDE_INT_PRINT_DEC, (HOST_WIDE_INT) (a)); \
-  fprintf (asm_out_text_file, ";");		       	\
-} while (0)
-
-#undef PUT_SDB_TYPE
-#define PUT_SDB_TYPE(a)					\
-do {							\
-  extern FILE *asm_out_text_file;			\
-  fprintf (asm_out_text_file, "\t.etype\t0x%x;", (a));	\
-} while (0)
+#undef  SUBTARGET_ASM_DEBUGGING_SPEC
+#define SUBTARGET_ASM_DEBUGGING_SPEC "-g0"
 
 /* Biggest alignment supported by the object file format of this
    machine.  Use this macro to limit the alignment which can be
    specified using the `__attribute__ ((aligned (N)))' construct.  If
    not defined, the default value is `BIGGEST_ALIGNMENT'.  */
 
-#undef MAX_OFILE_ALIGNMENT
+#undef  MAX_OFILE_ALIGNMENT
 #define MAX_OFILE_ALIGNMENT (32768*8)
 
 /* Switch into a generic section.  */
-#undef TARGET_ASM_NAMED_SECTION
+#undef  TARGET_ASM_NAMED_SECTION
 #define TARGET_ASM_NAMED_SECTION  default_elf_asm_named_section
 
 /* Given that Irix has it's own headers, not having TARGET_GAS here
    seems a mistake.  If we actually need to be prepared for file
    switching, then we need a custom TARGET_ASM_NAMED_SECTION too.  */
 
-#undef TEXT_SECTION
+#undef  TEXT_SECTION
 #define TEXT_SECTION()				\
 do {						\
   if (TARGET_FILE_SWITCHING)			\
@@ -145,7 +125,7 @@ do {									\
 
 /* Write the extra assembler code needed to declare an object properly.  */
 
-#undef ASM_DECLARE_OBJECT_NAME
+#undef  ASM_DECLARE_OBJECT_NAME
 #define ASM_DECLARE_OBJECT_NAME(FILE, NAME, DECL)			\
   do {									\
     HOST_WIDE_INT size;							\
@@ -166,7 +146,7 @@ do {									\
    size_directive_output was set
    by ASM_DECLARE_OBJECT_NAME when it was run for the same decl.  */
 
-#undef ASM_FINISH_DECLARE_OBJECT
+#undef  ASM_FINISH_DECLARE_OBJECT
 #define ASM_FINISH_DECLARE_OBJECT(FILE, DECL, TOP_LEVEL, AT_END)	 \
 do {									 \
      const char *name = XSTR (XEXP (DECL_RTL (DECL), 0), 0);		 \
@@ -198,7 +178,7 @@ do {									 \
    but until that support is generally available, the 'if' below
    should serve.  */
 
-#undef ASM_WEAKEN_LABEL
+#undef  ASM_WEAKEN_LABEL
 #define ASM_WEAKEN_LABEL(FILE,NAME) ASM_OUTPUT_WEAK_ALIAS(FILE,NAME,0)
 #define ASM_OUTPUT_WEAK_ALIAS(FILE,NAME,VALUE)	\
  do {						\
@@ -221,10 +201,10 @@ do {									 \
 
 /* A list of other sections which the compiler might be "in" at any
    given time.  */
-#undef EXTRA_SECTIONS
+#undef  EXTRA_SECTIONS
 #define EXTRA_SECTIONS in_sdata, in_sbss
 
-#undef EXTRA_SECTION_FUNCTIONS
+#undef  EXTRA_SECTION_FUNCTIONS
 #define EXTRA_SECTION_FUNCTIONS                                         \
   SECTION_FUNCTION_TEMPLATE(sdata_section, in_sdata, SDATA_SECTION_ASM_OP) \
   SECTION_FUNCTION_TEMPLATE(sbss_section, in_sbss, SBSS_SECTION_ASM_OP)
@@ -251,7 +231,7 @@ void FN ()                                                            \
 #define FINI_SECTION_ASM_OP     "\t.section\t.fini"
 
 /* Don't set the target flags, this is done by the linker script */
-#undef LIB_SPEC
+#undef  LIB_SPEC
 #define LIB_SPEC ""
 
 #undef  STARTFILE_SPEC

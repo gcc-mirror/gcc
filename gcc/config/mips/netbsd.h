@@ -60,13 +60,8 @@ Boston, MA 02111-1307, USA.  */
 #include <mips/elf.h>
 
 /* Now clean up after it.  */
-#undef OBJECT_FORMAT_COFF
 #undef MD_EXEC_PREFIX
 #undef MD_STARTFILE_PREFIX
-#undef US_SOFTWARE_GOFAST
-#undef INIT_SUBTARGET_OPTABS
-#define INIT_SUBTARGET_OPTABS
-
 
 /* Get generic NetBSD definitions.  */
 #include <netbsd.h>

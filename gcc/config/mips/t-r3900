@@ -1,5 +1,3 @@
-CONFIG2_H	= $(srcdir)/config/mips/ecoff.h
-
 LIB1ASMSRC = mips/mips16.S
 LIB1ASMFUNCS = _m16addsf3 _m16subsf3 _m16mulsf3 _m16divsf3 \
 	_m16eqsf2 _m16nesf2 _m16gtsf2 _m16gesf2 _m16lesf2 _m16ltsf2 \
@@ -19,34 +17,14 @@ LIB1ASMFUNCS = _m16addsf3 _m16subsf3 _m16mulsf3 _m16divsf3 \
 # without the $gp register.
 TARGET_LIBGCC2_CFLAGS = -G 0
 
-# We want fine grained libraries, so use the new code to build the
-# floating point emulation libraries.
-FPBIT = fp-bit.c
-DPBIT = dp-bit.c
-
-dp-bit.c: $(srcdir)/config/fp-bit.c
-	echo '#ifdef __MIPSEL__' > dp-bit.c
-	echo '#define FLOAT_BIT_ORDER_MISMATCH' >> dp-bit.c
-	echo '#endif' >> dp-bit.c
-	echo '#define US_SOFTWARE_GOFAST' >> dp-bit.c
-	cat $(srcdir)/config/fp-bit.c >> dp-bit.c
-
-fp-bit.c: $(srcdir)/config/fp-bit.c
-	echo '#define FLOAT' > fp-bit.c
-	echo '#ifdef __MIPSEL__' >> fp-bit.c
-	echo '#define FLOAT_BIT_ORDER_MISMATCH' >> fp-bit.c
-	echo '#endif' >> fp-bit.c
-	echo '#define US_SOFTWARE_GOFAST' >> fp-bit.c
-	cat $(srcdir)/config/fp-bit.c >> fp-bit.c
-
 EXTRA_MULTILIB_PARTS = crtbegin.o crtend.o
 # Don't let CTOR_LIST end up in sdata section.
 CRTSTUFF_T_CFLAGS = -G 0
 
 # Build the libraries for both hard and soft floating point
 
-MULTILIB_OPTIONS = msoft-float/msingle-float EL/EB
-MULTILIB_DIRNAMES = soft-float single el eb
+MULTILIB_OPTIONS = msoft-float EL/EB
+MULTILIB_DIRNAMES = soft-float el eb
 
 LIBGCC = stmp-multilib
 INSTALL_LIBGCC = install-multilib
