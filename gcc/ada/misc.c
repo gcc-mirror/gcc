@@ -94,7 +94,6 @@ static bool gnat_post_options		(const char **);
 static HOST_WIDE_INT gnat_get_alias_set	(tree);
 static void gnat_print_decl		(FILE *, tree, int);
 static void gnat_print_type		(FILE *, tree, int);
-static int gnat_types_compatible_p	(tree, tree);
 static const char *gnat_printable_name	(tree, int);
 static tree gnat_eh_runtime_type	(tree);
 static int gnat_eh_type_covers		(tree, tree);
@@ -130,6 +129,8 @@ static tree gnat_type_max_size		(tree);
 #define LANG_HOOKS_PUSHDECL		lhd_return_tree
 #undef  LANG_HOOKS_FINISH_INCOMPLETE_DECL
 #define LANG_HOOKS_FINISH_INCOMPLETE_DECL gnat_finish_incomplete_decl
+#undef	LANG_HOOKS_REDUCE_BIT_FIELD_OPERATIONS
+#define LANG_HOOKS_REDUCE_BIT_FIELD_OPERATIONS true
 #undef  LANG_HOOKS_GET_ALIAS_SET
 #define LANG_HOOKS_GET_ALIAS_SET	gnat_get_alias_set
 #undef  LANG_HOOKS_EXPAND_EXPR
@@ -142,8 +143,6 @@ static tree gnat_type_max_size		(tree);
 #define LANG_HOOKS_PRINT_DECL		gnat_print_decl
 #undef  LANG_HOOKS_PRINT_TYPE
 #define LANG_HOOKS_PRINT_TYPE		gnat_print_type
-#undef  LANG_HOOKS_TYPES_COMPATIBLE_P
-#define LANG_HOOKS_TYPES_COMPATIBLE_P	gnat_types_compatible_p
 #undef  LANG_HOOKS_TYPE_MAX_SIZE
 #define LANG_HOOKS_TYPE_MAX_SIZE	gnat_type_max_size
 #undef  LANG_HOOKS_DECL_PRINTABLE_NAME
@@ -552,27 +551,6 @@ gnat_print_type (FILE *file, tree node, int indent)
     default:
       break;
     }
-}
-
-/* We consider two types compatible if they have the same main variant,
-   but we also consider two array types compatible if they have the same
-   component type and bounds.
-
-   ??? We may also want to generalize to considering lots of integer types
-   compatible, but we need to understand the effects of alias sets first.  */
-
-static int
-gnat_types_compatible_p (tree x, tree y)
-{
-  if (TREE_CODE (x) == ARRAY_TYPE && TREE_CODE (y) == ARRAY_TYPE
-      && gnat_types_compatible_p (TREE_TYPE (x), TREE_TYPE (y))
-      && operand_equal_p (TYPE_MIN_VALUE (TYPE_DOMAIN (x)),
-			  TYPE_MIN_VALUE (TYPE_DOMAIN (y)), 0)
-      && operand_equal_p (TYPE_MAX_VALUE (TYPE_DOMAIN (x)),
-			  TYPE_MAX_VALUE (TYPE_DOMAIN (y)), 0))
-    return 1;
-  else
-    return TYPE_MAIN_VARIANT (x) == TYPE_MAIN_VARIANT (y);
 }
 
 static const char *
