@@ -2478,17 +2478,11 @@ finish_id_expression (tree id_expression,
 	  ;
 	  /* Const variables or static data members of integral or
 	     enumeration types initialized with constant expressions
-	     are OK.  We also accept dependent initializers; they may
-	     turn out to be constant at instantiation-time.  */
+	     are OK.  */
 	  else if (TREE_CODE (decl) == VAR_DECL
 		   && CP_TYPE_CONST_P (TREE_TYPE (decl))
 		   && INTEGRAL_OR_ENUMERATION_TYPE_P (TREE_TYPE (decl))
-		   && DECL_INITIAL (decl)
-		   && (TREE_CONSTANT (DECL_INITIAL (decl))
-		       || type_dependent_expression_p (DECL_INITIAL 
-						       (decl))
-		       || value_dependent_expression_p (DECL_INITIAL 
-							(decl))))
+		   && DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (decl))
 	    ;
 	  else
 	    {

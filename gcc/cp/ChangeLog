@@ -1,3 +1,39 @@
+2003-07-16  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/11547
+	* cp-tree.h (DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P): New
+	macro.
+	(DECL_PRETTY_FUNCTION_P): Use VAR_DECL_CHECK.
+	* decl.c (duplicate_decls): Merge
+	DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P.
+	* parser.c (cp_parser_postfix_expression): Adjust call to
+	cp_parser_initializer_list and
+	cp_parser_parenthesized_expression_list.
+	(cp_parser_parenthesized_expression_list): Add non_constant_p.
+	(cp_parser_new_placement): Adjust call to
+	cp_parser_parenthesized_expression_list.
+	(cp_parser_direct_new_declarator): Likewise.
+	(cp_parser_conditional_expression): Remove.
+	(cp_parser_constant_expression): Parse an assignment-expression,
+	not a conditional-expression.
+	(cp_parser_simple_declaration): Resolve expression/declaration
+	ambiguity more quickly.
+	(cp_parser_mem_initializer): Adjust call to
+	cp_parser_parenthesized_expression_list.
+	(cp_parser_init_declarator): Keep track of whether or not the
+	initializer is a constant-expression.
+	(cp_parser_initializer): Add non_constant_p parameter.
+	(cp_parser_initializer_clause): Likewise.
+	(cp_parser_initializer_list): Likewise.
+	(cp_parser_attribute_list): Adjust call to
+	cp_parser_parenthesized_expression_list.
+	(cp_parser_functional_cast): Likewise.
+	* pt.c (tsubst_decl): Copy
+	DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P.
+	(tsubst_expr): Tweak use of DECL_PRETTY_FUNCTION_P.
+	* semantics.c (finish_id_expression): Use
+	DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P.
+	
 2003-07-16  Neil Booth  <neil@daikokuya.co.uk>
 
 	* lang-options.h: Remove.

@@ -3306,6 +3306,8 @@ duplicate_decls (tree newdecl, tree olddecl)
 	{
 	  DECL_THIS_EXTERN (newdecl) |= DECL_THIS_EXTERN (olddecl);
 	  DECL_INITIALIZED_P (newdecl) |= DECL_INITIALIZED_P (olddecl);
+	  DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (newdecl)
+	    |= DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (olddecl);
 	}
 
       /* Do this after calling `merge_types' so that default

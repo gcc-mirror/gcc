@@ -6190,7 +6190,11 @@ tsubst_decl (tree t, tree args, tree type, tsubst_flags_t complain)
 
 	r = copy_decl (t);
 	if (TREE_CODE (r) == VAR_DECL)
-	  type = complete_type (type);
+	  {
+	    type = complete_type (type);
+	    DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (r)
+	      = DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (t);
+	  }
 	else if (DECL_SELF_REFERENCE_P (t))
 	  SET_DECL_SELF_REFERENCE_P (r);
 	TREE_TYPE (r) = type;
@@ -7620,7 +7624,8 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 		else 
 		  {
 		    maybe_push_decl (decl);
-		    if (DECL_PRETTY_FUNCTION_P (decl))
+		    if (TREE_CODE (decl) == VAR_DECL
+			&& DECL_PRETTY_FUNCTION_P (decl))
 		      {
 			/* For __PRETTY_FUNCTION__ we have to adjust the
 			   initializer.  */

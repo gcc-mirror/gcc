@@ -1311,7 +1311,7 @@ static tree cp_parser_class_or_namespace_name
 static tree cp_parser_postfix_expression
   (cp_parser *, bool);
 static tree cp_parser_parenthesized_expression_list
-  (cp_parser *, bool);
+  (cp_parser *, bool, bool *);
 static void cp_parser_pseudo_destructor_name
   (cp_parser *, tree *, tree *);
 static tree cp_parser_unary_expression
@@ -1355,8 +1355,6 @@ static tree cp_parser_inclusive_or_expression
 static tree cp_parser_logical_and_expression
   (cp_parser *);
 static tree cp_parser_logical_or_expression 
-  (cp_parser *);
-static tree cp_parser_conditional_expression
   (cp_parser *);
 static tree cp_parser_question_colon_clause
   (cp_parser *, tree);
@@ -1479,11 +1477,11 @@ static tree cp_parser_function_definition
 static void cp_parser_function_body
   (cp_parser *);
 static tree cp_parser_initializer
-  (cp_parser *, bool *);
+  (cp_parser *, bool *, bool *);
 static tree cp_parser_initializer_clause
-  (cp_parser *);
+  (cp_parser *, bool *);
 static tree cp_parser_initializer_list
-  (cp_parser *);
+  (cp_parser *, bool *);
 
 static bool cp_parser_ctor_initializer_opt_and_function_body
   (cp_parser *);
@@ -3375,9 +3373,10 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p)
 	       keep going.  */
 	    if (!cp_parser_error_occurred (parser))
 	      {
+		bool non_constant_p;
 		/* Parse the initializer-list.  */
 		initializer_list 
-		  = cp_parser_initializer_list (parser);
+		  = cp_parser_initializer_list (parser, &non_constant_p);
 		/* Allow a trailing `,'.  */
 		if (cp_lexer_next_token_is (parser->lexer, CPP_COMMA))
 		  cp_lexer_consume_token (parser->lexer);
@@ -3472,7 +3471,8 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p)
 	case CPP_OPEN_PAREN:
 	  /* postfix-expression ( expression-list [opt] ) */
 	  {
-	    tree args = cp_parser_parenthesized_expression_list (parser, false);
+	    tree args = (cp_parser_parenthesized_expression_list 
+			 (parser, false, /*non_constant_p=*/NULL));
 
 	    if (args == error_mark_node)
 	      {
@@ -3735,14 +3735,22 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p)
    error_mark_node is returned if the ( and or ) are
    missing. NULL_TREE is returned on no expressions. The parentheses
    are eaten. IS_ATTRIBUTE_LIST is true if this is really an attribute
-   list being parsed. */
+   list being parsed.  If NON_CONSTANT_P is non-NULL, *NON_CONSTANT_P
+   indicates whether or not all of the expressions in the list were
+   constant.  */
 
 static tree
-cp_parser_parenthesized_expression_list (cp_parser* parser, bool is_attribute_list)
+cp_parser_parenthesized_expression_list (cp_parser* parser, 
+					 bool is_attribute_list,
+					 bool *non_constant_p)
 {
   tree expression_list = NULL_TREE;
   tree identifier = NULL_TREE;
-  
+
+  /* Assume all the expressions will be constant.  */
+  if (non_constant_p)
+    *non_constant_p = false;
+
   if (!cp_parser_require (parser, CPP_OPEN_PAREN, "`('"))
     return error_mark_node;
   
@@ -3767,7 +3775,17 @@ cp_parser_parenthesized_expression_list (cp_parser* parser, bool is_attribute_li
 	else
 	  {
 	    /* Parse the next assignment-expression.  */
-	    expr = cp_parser_assignment_expression (parser);
+	    if (non_constant_p)
+	      {
+		bool expr_non_constant_p;
+		expr = (cp_parser_constant_expression 
+			(parser, /*allow_non_constant_p=*/true,
+			 &expr_non_constant_p));
+		if (expr_non_constant_p)
+		  *non_constant_p = true;
+	      }
+	    else
+	      expr = cp_parser_assignment_expression (parser);
 
 	     /* Add it to the list.  We add error_mark_node
 		expressions to the list, so that we can still tell if
@@ -4177,7 +4195,8 @@ cp_parser_new_placement (cp_parser* parser)
   tree expression_list;
 
   /* Parse the expression-list.  */
-  expression_list = cp_parser_parenthesized_expression_list (parser, false);
+  expression_list = (cp_parser_parenthesized_expression_list 
+		     (parser, false, /*non_constant_p=*/NULL));
 
   return expression_list;
 }
@@ -4341,7 +4360,8 @@ cp_parser_new_initializer (cp_parser* parser)
 {
   tree expression_list;
 
-  expression_list = cp_parser_parenthesized_expression_list (parser, false);
+  expression_list = (cp_parser_parenthesized_expression_list 
+		     (parser, false, /*non_constant_p=*/NULL));
   if (!expression_list)
     expression_list = void_zero_node;
 
@@ -4755,43 +4775,12 @@ cp_parser_logical_or_expression (cp_parser* parser)
 				      cp_parser_logical_and_expression);
 }
 
-/* Parse a conditional-expression.
-
-   conditional-expression:
-     logical-or-expression
-     logical-or-expression ? expression : assignment-expression
-     
-   GNU Extensions:
-   
-   conditional-expression:
-     logical-or-expression ?  : assignment-expression
-
-   Returns a representation of the expression.  */
-
-static tree
-cp_parser_conditional_expression (cp_parser* parser)
-{
-  tree logical_or_expr;
-
-  /* Parse the logical-or-expression.  */
-  logical_or_expr = cp_parser_logical_or_expression (parser);
-  /* If the next token is a `?', then we have a real conditional
-     expression.  */
-  if (cp_lexer_next_token_is (parser->lexer, CPP_QUERY))
-    return cp_parser_question_colon_clause (parser, logical_or_expr);
-  /* Otherwise, the value is simply the logical-or-expression.  */
-  else
-    return logical_or_expr;
-}
-
 /* Parse the `? expression : assignment-expression' part of a
    conditional-expression.  The LOGICAL_OR_EXPR is the
    logical-or-expression that started the conditional-expression.
    Returns a representation of the entire conditional-expression.
 
-   This routine exists only so that it can be shared between
-   cp_parser_conditional_expression and
-   cp_parser_assignment_expression.
+   This routine is used by cp_parser_assignment_expression.
 
      ? expression : assignment-expression
    
@@ -5071,8 +5060,16 @@ cp_parser_constant_expression (cp_parser* parser,
   parser->constant_expression_p = true;
   parser->allow_non_constant_expression_p = allow_non_constant_p;
   parser->non_constant_expression_p = false;
-  /* Parse the conditional-expression.  */
-  expression = cp_parser_conditional_expression (parser);
+  /* Although the grammar says "conditional-expression", we parse an
+     "assignment-expression", which also permits "throw-expression"
+     and the use of assignment operators.  In the case that
+     ALLOW_NON_CONSTANT_P is false, we get better errors than we would
+     otherwise.  In the case that ALLOW_NON_CONSTANT_P is true, it is
+     actually essential that we look for an assignment-expression.
+     For example, cp_parser_initializer_clauses uses this function to
+     determine whether a particular assignment-expression is in fact
+     constant.  */
+  expression = cp_parser_assignment_expression (parser);
   /* Restore the old settings.  */
   parser->constant_expression_p = saved_constant_expression_p;
   parser->allow_non_constant_expression_p 
@@ -6081,6 +6078,15 @@ cp_parser_simple_declaration (cp_parser* parser,
   /* We no longer need to defer access checks.  */
   stop_deferring_access_checks ();
 
+  /* In a block scope, a valid declaration must always have a
+     decl-specifier-seq.  By not trying to parse declarators, we can
+     resolve the declaration/expression ambiguity more quickly.  */
+  if (!function_definition_allowed_p && !decl_specifiers)
+    {
+      cp_parser_error (parser, "expected declaration");
+      goto done;
+    }
+
   /* If the next two tokens are both identifiers, the code is
      erroneous. The usual cause of this situation is code like:
 
@@ -6093,7 +6099,7 @@ cp_parser_simple_declaration (cp_parser* parser,
 	 looking at a declaration.  */
       cp_parser_commit_to_tentative_parse (parser);
       /* Give up.  */
-      return;
+      goto done;
     }
 
   /* Keep going until we hit the `;' at the end of the simple
@@ -6116,10 +6122,7 @@ cp_parser_simple_declaration (cp_parser* parser,
 	 statement is treated as a declaration-statement until proven
 	 otherwise.)  */
       if (cp_parser_error_occurred (parser))
-	{
-	  pop_deferring_access_checks ();
-	  return;
-	}
+	goto done;
       /* Handle function definitions specially.  */
       if (function_definition_p)
 	{
@@ -6152,8 +6155,7 @@ cp_parser_simple_declaration (cp_parser* parser,
 	  cp_parser_error (parser, "expected `,' or `;'");
 	  /* Skip tokens until we reach the end of the statement.  */
 	  cp_parser_skip_to_end_of_statement (parser);
-	  pop_deferring_access_checks ();
-	  return;
+	  goto done;
 	}
       /* After the first time around, a function-definition is not
 	 allowed -- even if it was OK at first.  For example:
@@ -6175,14 +6177,15 @@ cp_parser_simple_declaration (cp_parser* parser,
       perform_deferred_access_checks ();
     }
 
-  pop_deferring_access_checks ();
-
   /* Consume the `;'.  */
   cp_parser_require (parser, CPP_SEMICOLON, "`;'");
 
   /* Mark all the classes that appeared in the decl-specifier-seq as
      having received a `;'.  */
   note_list_got_semicolon (decl_specifiers);
+
+ done:
+  pop_deferring_access_checks ();
 }
 
 /* Parse a decl-specifier-seq.
@@ -6774,7 +6777,9 @@ cp_parser_mem_initializer (cp_parser* parser)
   if (member && !DECL_P (member))
     in_base_initializer = 1;
 
-  expression_list = cp_parser_parenthesized_expression_list (parser, false);
+  expression_list 
+    = cp_parser_parenthesized_expression_list (parser, false,
+					       /*non_constant_p=*/NULL);
   if (!expression_list)
     expression_list = void_type_node;
 
@@ -9156,6 +9161,7 @@ cp_parser_init_declarator (cp_parser* parser,
   tree scope;
   bool is_initialized;
   bool is_parenthesized_init;
+  bool is_non_constant_init;
   int ctor_dtor_or_conv_p;
   bool friend_p;
 
@@ -9325,11 +9331,14 @@ cp_parser_init_declarator (cp_parser* parser,
 
   /* Parse the initializer.  */
   if (is_initialized)
-    initializer = cp_parser_initializer (parser, &is_parenthesized_init);
+    initializer = cp_parser_initializer (parser, 
+					 &is_parenthesized_init,
+					 &is_non_constant_init);
   else
     {
       initializer = NULL_TREE;
       is_parenthesized_init = false;
+      is_non_constant_init = true;
     }
 
   /* The old parser allows attributes to appear after a parenthesized
@@ -9370,6 +9379,12 @@ cp_parser_init_declarator (cp_parser* parser,
 		       `explicit' constructor cannot be used.  */
 		    ((is_parenthesized_init || !is_initialized)
 		     ? 0 : LOOKUP_ONLYCONVERTING));
+
+  /* Remember whether or not variables were initialized by
+     constant-expressions.  */
+  if (decl && TREE_CODE (decl) == VAR_DECL 
+      && is_initialized && !is_non_constant_init)
+    DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (decl) = true;
 
   return decl;
 }
@@ -10729,10 +10744,13 @@ cp_parser_ctor_initializer_opt_and_function_body (cp_parser *parser)
 
    *IS_PARENTHESIZED_INIT is set to TRUE if the `( expression-list )'
    production is used, and zero otherwise.  *IS_PARENTHESIZED_INIT is
-   set to FALSE if there is no initializer present.  */
+   set to FALSE if there is no initializer present.  If there is an
+   initializer, and it is not a constant-expression, *NON_CONSTANT_P
+   is set to true; otherwise it is set to false.  */
 
 static tree
-cp_parser_initializer (cp_parser* parser, bool* is_parenthesized_init)
+cp_parser_initializer (cp_parser* parser, bool* is_parenthesized_init,
+		       bool* non_constant_p)
 {
   cp_token *token;
   tree init;
@@ -10743,16 +10761,19 @@ cp_parser_initializer (cp_parser* parser, bool* is_parenthesized_init)
   /* Let our caller know whether or not this initializer was
      parenthesized.  */
   *is_parenthesized_init = (token->type == CPP_OPEN_PAREN);
+  /* Assume that the initializer is constant.  */
+  *non_constant_p = false;
 
   if (token->type == CPP_EQ)
     {
       /* Consume the `='.  */
       cp_lexer_consume_token (parser->lexer);
       /* Parse the initializer-clause.  */
-      init = cp_parser_initializer_clause (parser);
+      init = cp_parser_initializer_clause (parser, non_constant_p);
     }
   else if (token->type == CPP_OPEN_PAREN)
-    init = cp_parser_parenthesized_expression_list (parser, false);
+    init = cp_parser_parenthesized_expression_list (parser, false,
+						    non_constant_p);
   else
     {
       /* Anything else is an error.  */
@@ -10779,17 +10800,21 @@ cp_parser_initializer (cp_parser* parser, bool* is_parenthesized_init)
    the elements of the initializer-list (or NULL_TREE, if the last
    production is used).  The TREE_TYPE for the CONSTRUCTOR will be
    NULL_TREE.  There is no way to detect whether or not the optional
-   trailing `,' was provided.  */
+   trailing `,' was provided.  NON_CONSTANT_P is as for
+   cp_parser_initializer.  */
 
 static tree
-cp_parser_initializer_clause (cp_parser* parser)
+cp_parser_initializer_clause (cp_parser* parser, bool* non_constant_p)
 {
   tree initializer;
 
   /* If it is not a `{', then we are looking at an
      assignment-expression.  */
   if (cp_lexer_next_token_is_not (parser->lexer, CPP_OPEN_BRACE))
-    initializer = cp_parser_assignment_expression (parser);
+    initializer 
+      = cp_parser_constant_expression (parser,
+				       /*allow_non_constant_p=*/true,
+				       non_constant_p);
   else
     {
       /* Consume the `{' token.  */
@@ -10805,12 +10830,11 @@ cp_parser_initializer_clause (cp_parser* parser)
 	{
 	  /* Parse the initializer list.  */
 	  CONSTRUCTOR_ELTS (initializer)
-	    = cp_parser_initializer_list (parser);
+	    = cp_parser_initializer_list (parser, non_constant_p);
 	  /* A trailing `,' token is allowed.  */
 	  if (cp_lexer_next_token_is (parser->lexer, CPP_COMMA))
 	    cp_lexer_consume_token (parser->lexer);
 	}
-
       /* Now, there should be a trailing `}'.  */
       cp_parser_require (parser, CPP_CLOSE_BRACE, "`}'");
     }
@@ -10832,12 +10856,16 @@ cp_parser_initializer_clause (cp_parser* parser)
 
    Returns a TREE_LIST.  The TREE_VALUE of each node is an expression
    for the initializer.  If the TREE_PURPOSE is non-NULL, it is the
-   IDENTIFIER_NODE naming the field to initialize.  */
+   IDENTIFIER_NODE naming the field to initialize.  NON_CONSTANT_P is
+   as for cp_parser_initializer.  */
 
 static tree
-cp_parser_initializer_list (cp_parser* parser)
+cp_parser_initializer_list (cp_parser* parser, bool* non_constant_p)
 {
   tree initializers = NULL_TREE;
+
+  /* Assume all of the expressions are constant.  */
+  *non_constant_p = false;
 
   /* Parse the rest of the list.  */
   while (true)
@@ -10845,7 +10873,8 @@ cp_parser_initializer_list (cp_parser* parser)
       cp_token *token;
       tree identifier;
       tree initializer;
-      
+      bool clause_non_constant_p;
+
       /* If the next token is an identifier and the following one is a
 	 colon, we are looking at the GNU designated-initializer
 	 syntax.  */
@@ -10862,8 +10891,11 @@ cp_parser_initializer_list (cp_parser* parser)
 	identifier = NULL_TREE;
 
       /* Parse the initializer.  */
-      initializer = cp_parser_initializer_clause (parser);
-
+      initializer = cp_parser_initializer_clause (parser, 
+						  &clause_non_constant_p);
+      /* If any clause is non-constant, so is the entire initializer.  */
+      if (clause_non_constant_p)
+	*non_constant_p = true;
       /* Add it to the list.  */
       initializers = tree_cons (identifier, initializer, initializers);
 
@@ -11821,12 +11853,18 @@ cp_parser_member_declaration (cp_parser* parser)
 		  (cp_lexer_peek_token (parser->lexer)))
 		decl = error_mark_node;
 	      else
-		/* Create the declaration.  */
-		decl = grokfield (declarator, 
-				  decl_specifiers, 
-				  initializer,
-				  asm_specification,
-				  attributes);
+		{
+		  /* Create the declaration.  */
+		  decl = grokfield (declarator, 
+				    decl_specifiers, 
+				    initializer,
+				    asm_specification,
+				    attributes);
+		  /* Any initialization must have been from a
+		     constant-expression.  */
+		  if (decl && TREE_CODE (decl) == VAR_DECL && initializer)
+		    DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (decl) = 1;
+		}
 	    }
 
 	  /* Reset PREFIX_ATTRIBUTES.  */
@@ -12616,8 +12654,8 @@ cp_parser_attribute_list (cp_parser* parser)
 	{
 	  tree arguments;
 
-	  arguments = cp_parser_parenthesized_expression_list (parser, true);
-
+	  arguments = (cp_parser_parenthesized_expression_list 
+		       (parser, true, /*non_constant_p=*/NULL));
 	  /* Save the identifier and arguments away.  */
 	  TREE_VALUE (attribute) = arguments;
 	}
@@ -13583,7 +13621,9 @@ cp_parser_functional_cast (cp_parser* parser, tree type)
 {
   tree expression_list;
 
-  expression_list = cp_parser_parenthesized_expression_list (parser, false);
+  expression_list 
+    = cp_parser_parenthesized_expression_list (parser, false,
+					       /*non_constant_p=*/NULL);
 
   return build_functional_cast (type, expression_list);
 }
