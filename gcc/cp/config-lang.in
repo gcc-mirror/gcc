@@ -37,3 +37,5 @@ diff_excludes="-x cp/parse.c -x cp/parse.h"
 headers='$(CXX_EXTRA_HEADERS)'
 
 lib2funcs=cplib2.txt
+
+outputs=cp/Makefile

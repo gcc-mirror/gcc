@@ -1,3 +1,7 @@
+Fri Sep 12 16:11:13 1997  Per Bothner  <bothner@cygnus.com>
+
+	* Makefile.in, config-lang.in:  Convert to autoconf.
+
 Thu Sep 11 17:14:55 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl.c (lookup_name_real): Add implicit 'typename' to types from
