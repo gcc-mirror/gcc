@@ -2013,7 +2013,7 @@ typedef enum
   dw_val_class_die_ref,
   dw_val_class_fde_ref,
   dw_val_class_lbl_id,
-  dw_val_class_section_offset,
+  dw_val_class_lbl_offset,
   dw_val_class_str
 }
 dw_val_class;
@@ -2092,7 +2092,6 @@ typedef struct dw_val_struct
       unsigned val_fde_index;
       char *val_str;
       char *val_lbl_id;
-      char *val_section;
       unsigned char val_flag;
     }
   v;
@@ -2451,7 +2450,7 @@ static void add_AT_addr			PROTO((dw_die_ref,
 					       enum dwarf_attribute, char *));
 static void add_AT_lbl_id		PROTO((dw_die_ref,
 					       enum dwarf_attribute, char *));
-static void add_AT_section_offset	PROTO((dw_die_ref,
+static void add_AT_lbl_offset		PROTO((dw_die_ref,
 					       enum dwarf_attribute, char *));
 static int is_extern_subr_die		PROTO((dw_die_ref));
 static dw_attr_ref get_AT		PROTO((dw_die_ref,
@@ -2624,6 +2623,22 @@ static unsigned lookup_filename		PROTO((char *));
 #define BSS_SECTION		".bss"
 #endif
 
+/* Labels we insert at beginning sections we can reference instead of
+   the section names themselves. */
+
+#ifndef TEXT_SECTION_LABEL
+#define TEXT_SECTION_LABEL	 "Ltext"
+#endif
+#ifndef DEBUG_LINE_SECTION_LABEL
+#define DEBUG_LINE_SECTION_LABEL "Ldebug_line"
+#endif
+#ifndef DEBUG_INFO_SECTION_LABEL
+#define DEBUG_INFO_SECTION_LABEL "Ldebug_info"
+#endif
+#ifndef ABBREV_SECTION_LABEL
+#define ABBREV_SECTION_LABEL     "Ldebug_abbrev"
+#endif
+
 
 /* Definitions of defaults for formats and names of various special
    (artificial) labels which may be generated within this file (when the -g
@@ -2632,6 +2647,10 @@ static unsigned lookup_filename		PROTO((char *));
    typically, overriding these defaults is unnecessary.  */
 
 static char text_end_label[MAX_ARTIFICIAL_LABEL_BYTES];
+static char text_section_label[MAX_ARTIFICIAL_LABEL_BYTES];
+static char abbrev_section_label[MAX_ARTIFICIAL_LABEL_BYTES];
+static char debug_info_section_label[MAX_ARTIFICIAL_LABEL_BYTES];
+static char debug_line_section_label[MAX_ARTIFICIAL_LABEL_BYTES];
 
 #ifndef TEXT_END_LABEL
 #define TEXT_END_LABEL		"Letext"
@@ -3831,17 +3850,17 @@ add_AT_lbl_id (die, attr_kind, lbl_id)
 /* Add a section offset attribute value to a DIE.  */
 
 static inline void
-add_AT_section_offset (die, attr_kind, section)
+add_AT_lbl_offset (die, attr_kind, label)
      register dw_die_ref die;
      register enum dwarf_attribute attr_kind;
-     register char *section;
+     register char *label;
 {
   register dw_attr_ref attr = (dw_attr_ref) xmalloc (sizeof (dw_attr_node));
 
   attr->dw_attr_next = NULL;
   attr->dw_attr = attr_kind;
-  attr->dw_attr_val.val_class = dw_val_class_section_offset;
-  attr->dw_attr_val.v.val_section = section;
+  attr->dw_attr_val.val_class = dw_val_class_lbl_offset;
+  attr->dw_attr_val.v.val_lbl_id = label;
   add_dwarf_attr (die, attr);
   
 }
@@ -4304,10 +4323,8 @@ print_die (die, outfile)
 	    fprintf (outfile, "die -> <null>");
 	  break;
 	case dw_val_class_lbl_id:
+	case dw_val_class_lbl_offset:
 	  fprintf (outfile, "label: %s", a->dw_attr_val.v.val_lbl_id);
-	  break;
-	case dw_val_class_section_offset:
-	  fprintf (outfile, "section: %s", a->dw_attr_val.v.val_section);
 	  break;
 	case dw_val_class_str:
 	  if (a->dw_attr_val.v.val_str != NULL)
@@ -4672,7 +4689,7 @@ size_of_die (die)
 	case dw_val_class_lbl_id:
 	  size += PTR_SIZE;
 	  break;
-	case dw_val_class_section_offset:
+	case dw_val_class_lbl_offset:
 	  size += DWARF_OFFSET_SIZE;
 	  break;
 	case dw_val_class_str:
@@ -4985,7 +5002,7 @@ value_format (v)
       return DW_FORM_data;
     case dw_val_class_lbl_id:
       return DW_FORM_addr;
-    case dw_val_class_section_offset:
+    case dw_val_class_lbl_offset:
       return DW_FORM_data;
     case dw_val_class_str:
       return DW_FORM_string;
@@ -5360,10 +5377,8 @@ output_die (die)
 	  ASM_OUTPUT_DWARF_ADDR (asm_out_file, a->dw_attr_val.v.val_lbl_id);
 	  break;
 
-	case dw_val_class_section_offset:
-	  ASM_OUTPUT_DWARF_OFFSET (asm_out_file,
-				   stripattributes
-				   (a->dw_attr_val.v.val_section));
+	case dw_val_class_lbl_offset:
+	  ASM_OUTPUT_DWARF_OFFSET (asm_out_file, a->dw_attr_val.v.val_lbl_id);
 	  break;
 
 	case dw_val_class_str:
@@ -5423,7 +5438,7 @@ output_compilation_unit_header ()
     fprintf (asm_out_file, "\t%s DWARF version number", ASM_COMMENT_START);
 
   fputc ('\n', asm_out_file);
-  ASM_OUTPUT_DWARF_OFFSET (asm_out_file, stripattributes (ABBREV_SECTION));
+  ASM_OUTPUT_DWARF_OFFSET (asm_out_file, abbrev_section_label);
   if (flag_debug_asm)
     fprintf (asm_out_file, "\t%s Offset Into Abbrev. Section",
 	     ASM_COMMENT_START);
@@ -5496,7 +5511,7 @@ output_pubnames ()
     fprintf (asm_out_file, "\t%s DWARF Version", ASM_COMMENT_START);
 
   fputc ('\n', asm_out_file);
-  ASM_OUTPUT_DWARF_OFFSET (asm_out_file, stripattributes (DEBUG_INFO_SECTION));
+  ASM_OUTPUT_DWARF_OFFSET (asm_out_file, debug_info_section_label);
   if (flag_debug_asm)
     fprintf (asm_out_file, "\t%s Offset of Compilation Unit Info.",
 	     ASM_COMMENT_START);
@@ -5577,7 +5592,7 @@ output_aranges ()
     fprintf (asm_out_file, "\t%s DWARF Version", ASM_COMMENT_START);
 
   fputc ('\n', asm_out_file);
-  ASM_OUTPUT_DWARF_OFFSET (asm_out_file, stripattributes (DEBUG_INFO_SECTION));
+  ASM_OUTPUT_DWARF_OFFSET (asm_out_file, debug_info_section_label);
   if (flag_debug_asm)
     fprintf (asm_out_file, "\t%s Offset of Compilation Unit Info.",
 	     ASM_COMMENT_START);
@@ -5603,13 +5618,13 @@ output_aranges ()
 	     ASM_COMMENT_START, 2 * PTR_SIZE);
 
   fputc ('\n', asm_out_file);
-  ASM_OUTPUT_DWARF_ADDR (asm_out_file, stripattributes (TEXT_SECTION));
+  ASM_OUTPUT_DWARF_ADDR (asm_out_file, text_section_label);
   if (flag_debug_asm)
     fprintf (asm_out_file, "\t%s Address", ASM_COMMENT_START);
 
   fputc ('\n', asm_out_file);
   ASM_OUTPUT_DWARF_ADDR_DELTA (asm_out_file, text_end_label,
-			       stripattributes (TEXT_SECTION));
+			       text_section_label);
   if (flag_debug_asm)
     fprintf (asm_out_file, "%s Length", ASM_COMMENT_START);
 
@@ -5794,14 +5809,14 @@ output_line_info ()
   fputc ('\n', asm_out_file);
   ASM_OUTPUT_DWARF_DATA1 (asm_out_file, DW_LNE_set_address);
   fputc ('\n', asm_out_file);
-  ASM_OUTPUT_DWARF_ADDR (asm_out_file, stripattributes (TEXT_SECTION));
+  ASM_OUTPUT_DWARF_ADDR (asm_out_file, text_section_label);
   fputc ('\n', asm_out_file);
 
   /* Generate the line number to PC correspondence table, encoded as
      a series of state machine operations.  */
   current_file = 1;
   current_line = 1;
-  strcpy (prev_line_label, stripattributes (TEXT_SECTION));
+  strcpy (prev_line_label, text_section_label);
   for (lt_index = 1; lt_index < line_info_table_in_use; ++lt_index)
     {
       register dw_line_info_ref line_info;
@@ -9853,6 +9868,21 @@ dwarf2out_init (asm_out_file, main_input_filename)
   gen_compile_unit_die (main_input_filename);
 
   ASM_GENERATE_INTERNAL_LABEL (text_end_label, TEXT_END_LABEL, 0);
+  ASM_GENERATE_INTERNAL_LABEL (abbrev_section_label, ABBREV_SECTION_LABEL, 0);
+  ASM_GENERATE_INTERNAL_LABEL (text_section_label, TEXT_SECTION_LABEL, 0);
+  ASM_GENERATE_INTERNAL_LABEL (debug_info_section_label, 
+			       DEBUG_INFO_SECTION_LABEL, 0);
+  ASM_GENERATE_INTERNAL_LABEL (debug_line_section_label, 
+			       DEBUG_LINE_SECTION_LABEL, 0);
+
+  ASM_OUTPUT_SECTION (asm_out_file, ABBREV_SECTION);
+  ASM_OUTPUT_LABEL (asm_out_file, abbrev_section_label);
+  ASM_OUTPUT_SECTION (asm_out_file, TEXT_SECTION);
+  ASM_OUTPUT_LABEL (asm_out_file, text_section_label);
+  ASM_OUTPUT_SECTION (asm_out_file, DEBUG_INFO_SECTION);
+  ASM_OUTPUT_LABEL (asm_out_file, debug_info_section_label);
+  ASM_OUTPUT_SECTION (asm_out_file, DEBUG_LINE_SECTION);
+  ASM_OUTPUT_LABEL (asm_out_file, debug_line_section_label);
 }
 
 /* Output stuff that dwarf requires at the end of every file,
@@ -9920,12 +9950,12 @@ dwarf2out_finish ()
 	 was in .text.  */
       if (separate_line_info_table_in_use == 0)
 	{
-	  add_AT_lbl_id (comp_unit_die, DW_AT_low_pc,
-			 stripattributes (TEXT_SECTION));
+	  add_AT_lbl_id (comp_unit_die, DW_AT_low_pc, text_section_label);
 	  add_AT_lbl_id (comp_unit_die, DW_AT_high_pc, text_end_label);
 	}
 
-      add_AT_section_offset (comp_unit_die, DW_AT_stmt_list, DEBUG_LINE_SECTION);
+      add_AT_lbl_offset (comp_unit_die, DW_AT_stmt_list,
+			 debug_line_section_label);
     }
 
   /* Output the abbreviation table.  */
