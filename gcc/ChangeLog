@@ -1,3 +1,13 @@
+2000-04-26  Richard Henderson  <rth@cygnus.com>
+
+	* jump.c (invert_jump): Always invert REG_BR_PROB.  Do it correctly.
+
+	* bb-reorder.c (reorder_basic_blocks): Don't run estimate_probability.
+	* flow.c (calculate_loop_depth): Remove.
+	* output.h (calculate_loop_depth): Don't declare.
+	* toplev.c (rest_of_compilation): Expand calculate_loop_depth
+	inline; run estimate_probability at the same time.
+
 2000-04-26  Neil Booth  <NeilB@earthling.net>
 
 	* cpplib.h: "~=" is not a single pp-token.

@@ -813,10 +813,6 @@ reorder_basic_blocks ()
   /* Dump loop information.  */
   flow_loops_dump (&loops_info, rtl_dump_file, 0);
 
-  /* Estimate using heuristics if no profiling info is available.  */
-  if (! flag_branch_probabilities)
-    estimate_probability (&loops_info);
-
   reorder_last_visited = BASIC_BLOCK (0);
 
   for (i = 0; i < n_basic_blocks; i++)

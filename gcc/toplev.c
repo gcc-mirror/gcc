@@ -3246,7 +3246,22 @@ rest_of_compilation (decl)
        find_basic_blocks (insns, max_reg_num (), rtl_dump_file);
        cleanup_cfg (insns);
        if (optimize)
-	 calculate_loop_depth (rtl_dump_file);
+	 {
+	   struct loops loops;
+
+	   /* Discover and record the loop depth at the head of each basic
+	      block.  The loop infrastructure does the real job for us.  */
+	   flow_loops_find (&loops);
+
+	   /* Estimate using heuristics if no profiling info is available.  */
+	   if (! flag_branch_probabilities)
+	     estimate_probability (&loops);
+
+	   if (rtl_dump_file)
+	     flow_loops_dump (&loops, rtl_dump_file, 0);
+
+	   flow_loops_free (&loops);
+	 }
        life_analysis (insns, rtl_dump_file, PROP_FINAL);
        mark_constant_function ();
      });
