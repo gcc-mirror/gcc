@@ -5277,9 +5277,14 @@ build_typename_type (context, name, fullname, base_type)
   return t;
 }
 
+/* Resolve `typename CONTEXT::NAME'.  Returns an appropriate type,
+   unless an error occurs, in which case error_mark_node is returned.
+   If COMPLAIN zero, don't complain about any errors that occur.  */
+
 tree
-make_typename_type (context, name)
+make_typename_type (context, name, complain)
      tree context, name;
+     int complain;
 {
   tree fullname;
 
@@ -5313,8 +5318,9 @@ make_typename_type (context, name)
     {
       /* We can get here from typename_sub0 in the explicit_template_type
 	 expansion.  Just fail.  */
-      cp_error ("no class template named `%#T' in `%#T'",
-		name, context);
+      if (complain)
+	cp_error ("no class template named `%#T' in `%#T'",
+		  name, context);
       return error_mark_node;
     }
 
@@ -5328,8 +5334,9 @@ make_typename_type (context, name)
 	    tmpl = lookup_field (context, name, 0, 0);
 	  if (!tmpl || !DECL_CLASS_TEMPLATE_P (tmpl))
 	    {
-	      cp_error ("no class template named `%#T' in `%#T'",
-			name, context);
+	      if (complain)
+		cp_error ("no class template named `%#T' in `%#T'",
+			  name, context);
 	      return error_mark_node;
 	    }
 
@@ -5344,7 +5351,8 @@ make_typename_type (context, name)
           
 	  if (!IS_AGGR_TYPE (context))
 	    {
-	      cp_error ("no type named `%#T' in `%#T'", name, context);
+	      if (complain)
+		cp_error ("no type named `%#T' in `%#T'", name, context);
 	      return error_mark_node;
 	    }
 
@@ -5358,7 +5366,8 @@ make_typename_type (context, name)
      there now or its never going to be.  */
   if (!uses_template_parms (context))
     {
-      cp_error ("no type named `%#T' in `%#T'", name, context);
+      if (complain)
+	cp_error ("no type named `%#T' in `%#T'", name, context);
       return error_mark_node;
     }
     

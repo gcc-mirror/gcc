@@ -1,3 +1,15 @@
+1999-10-29  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (make_typename_type): Change prototype.
+	* decl.c (make_typename_type): Only complain if so requested.
+	* parse.y (nested_name_specifier): Adjust calls.
+	(typename_sub0): Likewise.
+	(typename_sub1): Likewise.
+	* parse.c: Regenerated.
+	* pt.c (convert_template_argument): Pass complain to
+	make_typename_type.
+	(tsubst): Likewise.
+	
 1999-10-28  Mark Mitchell  <mark@codesourcery.com>
 
 	* semantics.c (finish_handler): End the scope of the handler
