@@ -1,3 +1,7 @@
+2003-11-19  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* gcc.dg/cpp/trad/xwin1.c: New test case.
+
 2003-11-19  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* g++.dg/compat/compat.exp: Add DYLD_LIBRARY_PATH for darwin.

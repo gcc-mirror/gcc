@@ -1,3 +1,8 @@
+2003-11-19  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* cpptrad.c (_cpp_scan_out_logical_line): Improve test for
+	whether directive begins at the beginning of a line.
+
 2003-11-19  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/frv/frv.c (frv_init_libfuncs): Correct ufix_optab entries.
