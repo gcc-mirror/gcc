@@ -1969,68 +1969,63 @@
   "jmp (%0)")
 
 ;; This is here to accept 5 arguments (as passed by expand_end_case)
-;; and pass the first 4 along to the casesi1 pattern that really does the work.
+;; and pass the first 4 along to the casesi1 pattern that really does
+;; the actual casesi work.  We emit a jump here to the default label
+;; _before_ the casesi so that we can be sure that the casesi never
+;; drops through.
+;; This is suboptimal perhaps, but so is much of the rest of this
+;; machine description.  For what it's worth, HPPA uses the same trick.
+;;
+;; operand 0 is index
+;; operand 1 is the minimum bound (a const_int)
+;; operand 2 is the maximum bound - minimum bound + 1 (also a const_int)
+;; operand 3 is CODE_LABEL for the table;
+;; operand 4 is the CODE_LABEL to go to if index out of range (ie. default).
+;;
+;; We emit:
+;;	i = index - minimum_bound
+;;	if (i > (maximum_bound - minimum_bound + 1) goto default;
+;;	casesi (i, 0, table);
+;;
 (define_expand "casesi"
-  [(match_operand:SI 0 "general_operand" "")	; index
-   (match_operand:SI 1 "general_operand" "")	; lower
-   (match_operand:SI 2 "general_operand" "")	; upper-lower
-   (match_operand 3 "" "")			; table label
-   (match_operand 4 "" "")]			; default label
+  [(match_operand:SI 0 "general_operand" "")
+   (match_operand:SI 1 "general_operand" "")
+   (match_operand:SI 2 "general_operand" "")
+   (match_operand 3 "" "")
+   (match_operand 4 "" "")]
   ""
 {
-  emit_jump_insn (gen_casesi1 (operands[0], operands[1],
-			       operands[2], operands[3]));
+  /* i = index - minimum_bound;
+     But only if the lower bound is not already zero.  */
+  if (operands[1] != const0_rtx)
+    {
+      rtx index = gen_reg_rtx (SImode);
+      emit_insn (gen_addsi3 (index,
+			     operands[0],
+			     GEN_INT (-INTVAL (operands[1]))));
+      operands[0] = index;
+    }
+
+  /* if (i > (maximum_bound - minimum_bound + 1) goto default;  */
+  emit_insn (gen_cmpsi (operands[0], operands[2]));
+  emit_jump_insn (gen_bgtu (operands[4]));
+
+  /* casesi (i, 0, table);  */
+  emit_jump_insn (gen_casesi1 (operands[0], operands[2], operands[3]));
   DONE;
 })
 
+;; This insn is a bit of a lier.  It actually falls through if no case
+;; matches.  But, we prevent that from ever happening by emiting a jump
+;; before this, see the define_expand above.
 (define_insn "casesi1"
-  [(set (pc)
-	(if_then_else
-	 (leu (minus:SI (match_operand:SI 0 "general_operand" "g")
-			(match_operand:SI 1 "general_operand" "g"))
-	      (match_operand:SI 2 "general_operand" "g"))
-	 (plus:SI (sign_extend:SI
-		   (mem:HI (plus:SI (mult:SI (minus:SI (match_dup 0)
-						       (match_dup 1))
-					     (const_int 2))
-				    (pc))))
-		  (label_ref:SI (match_operand 3 "" "")))
-	 (pc)))]
-  ""
-  "casel %0,%1,%2")
-
-;; This can arise by simplification when operand 1 is a constant int.
-(define_insn ""
-  [(set (pc)
-	(if_then_else
-	 (leu (plus:SI (match_operand:SI 0 "general_operand" "g")
-		       (match_operand:SI 1 "const_int_operand" "n"))
-	      (match_operand:SI 2 "general_operand" "g"))
-	 (plus:SI (sign_extend:SI
-		   (mem:HI (plus:SI (mult:SI (plus:SI (match_dup 0)
-						      (match_dup 1))
-					     (const_int 2))
-				    (pc))))
-		  (label_ref:SI (match_operand 3 "" "")))
-	 (pc)))]
-  ""
-  "*
-{
-  operands[1] = GEN_INT (-INTVAL (operands[1]));
-  return \"casel %0,%1,%2\";
-}")
-
-;; This can arise by simplification when the base for the case insn is zero.
-(define_insn ""
-  [(set (pc)
-	(if_then_else (leu (match_operand:SI 0 "general_operand" "g")
-			   (match_operand:SI 1 "general_operand" "g"))
-		      (plus:SI (sign_extend:SI
-				(mem:HI (plus:SI (mult:SI (match_dup 0)
-							  (const_int 2))
-					(pc))))
-			       (label_ref:SI (match_operand 2 "" "")))
-		      (pc)))]
+  [(match_operand:SI 1 "const_int_operand" "n")
+   (set (pc)
+	(plus:SI (sign_extend:SI
+		  (mem:HI (plus:SI (mult:SI (match_operand:SI 0 "general_operand" "g")
+					    (const_int 2))
+			  (pc))))
+		 (label_ref:SI (match_operand 2 "" ""))))]
   ""
   "casel %0,$0,%1")
 
