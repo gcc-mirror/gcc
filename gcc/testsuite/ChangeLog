@@ -1,3 +1,9 @@
+2002-03-25  David Billinghurst  <David.Billinghurst@riotinto.com>
+
+	* lib/g++.exp:  Fix handling of LD_LIBRARY_PATH et al
+	* lib/g77.exp:  Likewise
+	* lib/objc.exp: Likewise
+
 2002-03-23  Andrew Cagney  <ac131313@redhat.com>
 
 	* gcc.dg/Wswitch-default.c: New test.

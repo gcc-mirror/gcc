@@ -157,6 +157,18 @@ proc objc_target_compile { source dest type options } {
 	append ld_library_path ":${libobjc_dir}"
     }
     lappend options "compiler=$OBJC_UNDER_TEST"
+
+    # On IRIX 6, we have to set variables akin to LD_LIBRARY_PATH, but
+    # called LD_LIBRARYN32_PATH (for the N32 ABI) and LD_LIBRARY64_PATH
+    # (for the 64-bit ABI).  The right way to do this would be to modify
+    # unix.exp -- but that's not an option since it's part of DejaGNU
+    # proper, so we do it here.  We really only need to do 
+    # this on IRIX, but it shouldn't hurt to do it anywhere else.
+    setenv  LD_LIBRARY_PATH     $ld_library_path
+    setenv  SHLIB_PATH          $ld_library_path
+    setenv  LD_LIBRARYN32_PATH  $ld_library_path
+    setenv  LD_LIBRARY64_PATH   $ld_library_path
+
     return [target_compile $source $dest $type $options]
 }
 
@@ -240,20 +252,6 @@ if { [info procs prune_warnings] == "" } then {
 	return $text
     }
 }
-
-# On IRIX 6, we have to set variables akin to LD_LIBRARY_PATH, but
-# called LD_LIBRARYN32_PATH (for the N32 ABI) and LD_LIBRARY64_PATH
-# (for the 64-bit ABI).  The right way to do this would be to modify
-# unix.exp -- but that's not an option since it's part of DejaGNU
-# proper, so we do it here, by trickery.  We really only need to do 
-# this on IRIX, but it shouldn't hurt to do it anywhere else.
-
-proc ${tool}_set_ld_library_path { name element op } {
-  setenv LD_LIBRARYN32_PATH [getenv LD_LIBRARY_PATH]
-  setenv LD_LIBRARY64_PATH [getenv LD_LIBRARY_PATH]
-}
-
-trace variable env(LD_LIBRARY_PATH) w ${tool}_set_ld_library_path
 
 # Utility used by mike-gcc.exp and c-torture.exp.
 # Check the compiler(/assembler/linker) output for text indicating that
