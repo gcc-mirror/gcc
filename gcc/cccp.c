@@ -917,6 +917,9 @@ static U_CHAR is_space[256];
   
 static int errors = 0;			/* Error counter for exit code */
 
+/* Name of output file, for error messages.  */
+static char *out_fname;
+
 /* Zero means dollar signs are punctuation.
    -$ stores 0; -traditional may store 1.  Default is 1 for VMS, 0 otherwise.
    This must be 0 for correct processing of this ANSI C program:
@@ -972,7 +975,7 @@ main (argc, argv)
 {
   int st_mode;
   long st_size;
-  char *in_fname, *out_fname;
+  char *in_fname;
   char *p;
   int f, i;
   FILE_BUF *fp;
@@ -4683,10 +4686,10 @@ write_output ()
 				   line_command_len *= 2);
 	sprintf (line_command, "\n# %d \"%s\"\n",
 		 next_string->lineno, next_string->filename);
-	write (fileno (stdout), line_command, 
-	       strlen (line_command));
-	write (fileno (stdout),
-	       next_string->contents, next_string->len);
+	if (write (fileno (stdout), line_command, strlen (line_command)) < 0)
+	  perror_with_name (out_fname);
+	if (write (fileno (stdout), next_string->contents, next_string->len) < 0)
+	  perror_with_name (out_fname);
       }	      
       next_string = next_string->chain;
     }
@@ -4696,7 +4699,8 @@ write_output ()
 		- (cur_buf_loc - outbuf.buf))
 	     : outbuf.bufp - cur_buf_loc);
       
-      write (fileno (stdout), cur_buf_loc, len);
+      if (write (fileno (stdout), cur_buf_loc, len) < len)
+	perror_with_name (out_fname);
       cur_buf_loc += len;
     }
   }
