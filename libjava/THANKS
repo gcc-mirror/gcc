@@ -7,7 +7,10 @@ order.
 Geoff Berry for his object serialization work and various patches.
 Hans-J. Boehm for his garbage collector and other work.
 Godmar Back for his improvements and encouragement.
+Scott Bambrough for help porting the compiler.
 Per Bothner for dreaming up, designing and implementing much of gcj.
+Joerg Brunsmann for compiler hacking and help with the FAQ.
+Glenn Chambers for help with the FAQ.
 Steve Chamberlain for config fixes and the picoJava port.
 John-Marc Chandonia for various library patches.
 Eric Christopher for his porting help and clean-ups.
@@ -26,6 +29,7 @@ All of the Mauve project contributors, for test code.
 Rainer Orth for configuration clean-ups and porting help.
 Alexandre Petit-Bianco for implementing much of the compiler, 
 	and continued maintainership.
+Bradley Schatz for his work on the FAQ.
 Jeff Sturm for porting help, bug fixes, and encouragement.
 Tom Tromey for his many contributions and libgcj maintainership.
 Matt Welsh for help with Linux Threads.
@@ -42,10 +46,11 @@ Chris Baldwin
 David Billinghurst
 Jim Blandy
 Stephane Bortzmeyer
-Joerg Brunsmann
 Bradford Castalia
+Ralph Doncaster
 Richard Emberson
 Mark K. Gardner
+Charles Gauthier
 Simon Gornall
 John Griffin
 Kevin B. Hendricks
@@ -53,7 +58,10 @@ Patrik Hagglund
 Amancio Hasty 
 Joep Jansen
 Tobias Kuipers
+Anand Krishnaswamy
+Jesse Macnish
 Anon A. Mous
+Stefan Morrell
 Pekka Nikander
 Jon Olson
 Paul Reilly
@@ -63,5 +71,6 @@ Marc Schifer
 Franz Sirl
 Adam Sulmicki 
 Frederik Warg 
+David E. Young
 
 Thank you all!

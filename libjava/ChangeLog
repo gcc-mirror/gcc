@@ -1,3 +1,7 @@
+Fri Feb 11 19:48:08 2000  Anthony Green  <green@cygnus.com>
+
+	* THANKS: More thanks.
+
 2000-02-11  Tom Tromey  <tromey@cygnus.com>
 
 	* interpret.cc (continue1): Use STOREA, not STOREI, to implement
