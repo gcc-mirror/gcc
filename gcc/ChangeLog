@@ -1,3 +1,8 @@
+2004-09-27  DJ Delorie  <dj@redhat.com>
+
+	* config/stormy16/stormy16.c (xstormy16_asm_output_aligned_common):
+	.comm alignment is bytes, not bits.
+
 2004-09-27  Devang Patel  <dpatel@apple.com>
 
 	* tree-pretty-print.c (dump_generic_node): Print VEC_COND_EXPR.

@@ -1738,7 +1738,7 @@ xstormy16_asm_output_aligned_common (FILE *stream,
     }
   fprintf (stream, "\t.comm\t");
   assemble_name (stream, name);
-  fprintf (stream, ",%u,%u\n", size, align);
+  fprintf (stream, ",%u,%u\n", size, align / BITS_PER_UNIT);
 }
 
 /* Mark symbols with the "below100" attribute so that we can use the
