@@ -1,3 +1,8 @@
+2000-08-18  Ray Essick <essick@ddna.labs.mot.com> & Nick Clifton  <nickc@redhat.com>
+
+	* config/mcore/mcore.md (rotlsi3): Allow allow rotations by a
+	constant amount.  Do not generate ROTL instruction.
+
 Fri Aug 18 16:22:20 2000  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config/sh/elf.h: Do not include sh/sh.h.
