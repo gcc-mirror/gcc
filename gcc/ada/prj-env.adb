@@ -203,10 +203,13 @@ package body Prj.Env is
       return Projects.Table (Project).Ada_Include_Path;
    end Ada_Include_Path;
 
+   ----------------------
+   -- Ada_Include_Path --
+   ----------------------
+
    function Ada_Include_Path
      (Project   : Project_Id;
-      Recursive : Boolean)
-      return      String
+      Recursive : Boolean) return String
    is
    begin
       if Recursive then
@@ -224,8 +227,7 @@ package body Prj.Env is
 
    function Ada_Objects_Path
      (Project             : Project_Id;
-      Including_Libraries : Boolean := True)
-      return                String_Access
+      Including_Libraries : Boolean := True) return String_Access
    is
       procedure Add (Project : Project_Id);
       --  Add all the object directories of a project to the path only if
@@ -1061,8 +1063,7 @@ package body Prj.Env is
      (Name              : String;
       Project           : Project_Id;
       Main_Project_Only : Boolean := True;
-      Full_Path         : Boolean := False)
-      return              String
+      Full_Path         : Boolean := False) return String
    is
       The_Project   : Project_Id := Project;
       Data          : Project_Data := Projects.Table (Project);
@@ -1547,8 +1548,7 @@ package body Prj.Env is
 
    function Path_Name_Of_Library_Unit_Body
      (Name    : String;
-      Project : Project_Id)
-      return String
+      Project : Project_Id) return String
    is
       Data : constant Project_Data := Projects.Table (Project);
       Original_Name : String := Name;
@@ -1733,8 +1733,7 @@ package body Prj.Env is
 
    function Project_Of
      (Name         : String;
-      Main_Project : Project_Id)
-      return         Project_Id
+      Main_Project : Project_Id) return Project_Id
    is
       Result : Project_Id := No_Project;
 
@@ -1777,10 +1776,13 @@ package body Prj.Env is
          Unit := Units.Table (Current);
 
          --  Check for body
+
          Current_Name := Unit.File_Names (Body_Part).Name;
+
          --  Case of a body present
 
          if Current_Name /= No_Name then
+
             --  If it has the name of the original name or the body name,
             --  we have found the project.
 
@@ -1798,6 +1800,7 @@ package body Prj.Env is
          Current_Name := Unit.File_Names (Specification).Name;
 
          if Current_Name /= No_Name then
+
             --  If name same as the original name, or the spec name, we have
             --  found the project.
 

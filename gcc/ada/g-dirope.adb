@@ -123,11 +123,17 @@ package body GNAT.Directory_Operations is
                        Base_Name.Path (Cut_Start - Offset .. Cut_End - Offset);
             --  Here we use Base_Name.Path to keep the original casing
 
+            Has_Drive_Letter : constant Boolean :=
+                                 OS_Lib.Path_Separator /= ':';
+            --  If Path separator is not ':' then we are on a DOS based OS
+            --  where this character is used as a drive letter separator.
+
          begin
             if BN = "." or else BN = ".." then
                return "";
 
-            elsif BN'Length > 2
+            elsif Has_Drive_Letter
+              and then BN'Length > 2
               and then Characters.Handling.Is_Letter (BN (BN'First))
               and then BN (BN'First + 1) = ':'
             then

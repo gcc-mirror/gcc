@@ -91,8 +91,25 @@ package body Exp_Ch5 is
 
    procedure Expand_Assign_Record (N : Node_Id);
    --  N is an assignment of a non-tagged record value. This routine handles
-   --  the special cases and checks required for such assignments, including
-   --  change of representation.
+   --  the case where the assignment must be made component by component,
+   --  either because the target is not byte aligned, or there is a change
+   --  of representation.
+
+   function Maybe_Bit_Aligned_Large_Component (N : Node_Id) return Boolean;
+   --  This function is used in processing the assignment of a record or
+   --  indexed component. The back end can handle such assignments fine
+   --  if the object involved is small (64-bits) or if it is aligned on
+   --  a byte boundary (starts on a byte, and ends on a byte). However,
+   --  problems arise for large components that are not byte aligned,
+   --  since the assignment may clobber other components that share
+   --  bit positions in the starting or ending bytes. This function is
+   --  used to detect such situations, so that the assignment can be
+   --  handled component-wise. A value of False means that either the
+   --  object is known to be greater than 64 bits, or that it is known
+   --  to be byte aligned. True is returned if the object is known to
+   --  be greater than 64 bits, and is known to be unaligned. As implied
+   --  by the name, the result is conservative, in that if the compiler
+   --  cannot determine these conditions at compile time, True is returned.
 
    function Make_Tag_Ctrl_Assignment (N : Node_Id) return List_Id;
    --  Generate the necessary code for controlled and Tagged assignment,
@@ -982,19 +999,38 @@ package body Exp_Ch5 is
    --  by field assignments.
 
    procedure Expand_Assign_Record (N : Node_Id) is
+      Lhs : constant Node_Id := Name (N);
+      Rhs : Node_Id          := Expression (N);
+
    begin
-      if not Change_Of_Representation (N) then
+      --  If change of representation, then extract the real right hand
+      --  side from the type conversion, and proceed with component-wise
+      --  assignment, since the two types are not the same as far as the
+      --  back end is concerned.
+
+      if Change_Of_Representation (N) then
+         Rhs := Expression (Rhs);
+
+      --  If this may be a case of a large bit aligned component, then
+      --  proceed with component-wise assignment, to avoid possible
+      --  clobbering of other components sharing bits in the first or
+      --  last byte of the component to be assigned.
+
+      elsif Maybe_Bit_Aligned_Large_Component (Lhs) then
+         null;
+
+      --  If neither condition met, then nothing special to do, the back end
+      --  can handle assignment of the entire component as a single entity.
+
+      else
          return;
       end if;
 
-      --  At this stage we know that the right hand side is a conversion
+      --  At this stage we know that we must do a component wise assignment
 
       declare
          Loc   : constant Source_Ptr := Sloc (N);
-         Lhs   : constant Node_Id    := Name (N);
-         Rhs   : constant Node_Id    := Expression (Expression (N));
-         R_Rec : constant Node_Id    := Expression (Expression (N));
-         R_Typ : constant Entity_Id  := Base_Type (Etype (R_Rec));
+         R_Typ : constant Entity_Id  := Base_Type (Etype (Rhs));
          L_Typ : constant Entity_Id  := Base_Type (Etype (Lhs));
          Decl  : constant Node_Id    := Declaration_Node (R_Typ);
          RDef  : Node_Id;
@@ -1002,8 +1038,7 @@ package body Exp_Ch5 is
 
          function Find_Component
            (Typ  : Entity_Id;
-            Comp : Entity_Id)
-            return Entity_Id;
+            Comp : Entity_Id) return Entity_Id;
          --  Find the component with the given name in the underlying record
          --  declaration for Typ. We need to use the actual entity because
          --  the type may be private and resolution by identifier alone would
@@ -1027,9 +1062,7 @@ package body Exp_Ch5 is
 
          function Find_Component
            (Typ  : Entity_Id;
-            Comp : Entity_Id)
-            return Entity_Id
-
+            Comp : Entity_Id) return Entity_Id
          is
             Utyp : constant Entity_Id := Underlying_Type (Typ);
             C    : Entity_Id;
@@ -3174,5 +3207,92 @@ package body Exp_Ch5 is
       when RE_Not_Available =>
          return Empty_List;
    end Make_Tag_Ctrl_Assignment;
+
+   ---------------------------------------
+   -- Maybe_Bit_Aligned_Large_Component --
+   ---------------------------------------
+
+   function Maybe_Bit_Aligned_Large_Component (N : Node_Id) return Boolean is
+   begin
+      case Nkind (N) is
+
+         --  Case of indexed component
+
+         when N_Indexed_Component =>
+            declare
+               P    : constant Node_Id   := Prefix (N);
+               Ptyp : constant Entity_Id := Etype (P);
+
+            begin
+               --  If we know the component size and it is less than 64, then
+               --  we are definitely OK. The back end always does assignment
+               --  of misaligned small objects correctly.
+
+               if Known_Static_Component_Size (Ptyp)
+                 and then Component_Size (Ptyp) <= 64
+               then
+                  return False;
+
+               --  Otherwise, we need to test the prefix, to see if we are
+               --  indexing from a possibly unaligned component.
+
+               else
+                  return Maybe_Bit_Aligned_Large_Component (P);
+               end if;
+            end;
+
+         --  Case of selected component
+
+         when N_Selected_Component =>
+            declare
+               P    : constant Node_Id   := Prefix (N);
+               Comp : constant Entity_Id := Entity (Selector_Name (N));
+
+            begin
+               --  If there is no component clause, then we are in the clear
+               --  since the back end will never misalign a large component
+               --  unless it is forced to do so. In the clear means we need
+               --  only the recursive test on the prefix.
+
+               if No (Component_Clause (Comp)) then
+                  return Maybe_Bit_Aligned_Large_Component (P);
+
+               --  Otherwise we have a component clause, which means that
+               --  the Esize and Normalized_First_Bit fields are set and
+               --  contain static values known at compile time.
+
+               else
+                  --  If we know the size is 64 bits or less we are fine
+                  --  since the back end always handles small fields right.
+
+                  if Esize (Comp) <= 64 then
+                     return False;
+
+                  --  Otherwise if the component is not byte aligned, we
+                  --  know we have the nasty unaligned case.
+
+                  elsif Normalized_First_Bit (Comp) /= Uint_0
+                    or else Esize (Comp) mod System_Storage_Unit /= Uint_0
+                  then
+                     return True;
+
+                  --  If we are large and byte aligned, then OK at this level
+                  --  but we still need to test our prefix recursively.
+
+                  else
+                     return Maybe_Bit_Aligned_Large_Component (P);
+                  end if;
+               end if;
+            end;
+
+         --  If we have neither a record nor array component, it means that
+         --  we have fallen off the top testing prefixes recursively, and
+         --  we now have a stand alone object, where we don't have a problem
+
+         when others =>
+            return False;
+
+      end case;
+   end Maybe_Bit_Aligned_Large_Component;
 
 end Exp_Ch5;

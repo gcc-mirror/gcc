@@ -2887,7 +2887,7 @@ package body Sem_Ch12 is
                --  Remove entities in current scopes from visibility, so
                --  than instance body is compiled in a clean environment.
 
-               Save_Scope_Stack;
+               Save_Scope_Stack (Handle_Use => False);
 
                if Is_Child_Unit (S) then
 
@@ -2951,7 +2951,7 @@ package body Sem_Ch12 is
                end loop;
             end if;
 
-            Restore_Scope_Stack;
+            Restore_Scope_Stack (Handle_Use => False);
          end if;
 
          --  Restore use clauses. For a child unit, use clauses in the

@@ -7477,7 +7477,9 @@ package body Sem_Prag is
                   Error_Pragma
                     ("pragma% ignored, cannot pack aliased components?");
 
-               elsif Has_Atomic_Components (Typ) then
+               elsif Has_Atomic_Components (Typ)
+                 or else Is_Atomic (Component_Type (Typ))
+               then
                   Error_Pragma
                     ("?pragma% ignored, cannot pack atomic components");
 

@@ -157,7 +157,7 @@ $(compile_deps): force
 	@$(MAKE) -C $(dir $(subst |,:,$(@:compile_%=%))) -f Makefile.$(notdir $@) internal-compile
 
 $(object_deps): force
-	@$(MAKE) -C $(dir $(@:object_%=%)) -f Makefile.$(notdir $@) internal-archive-objects ARCHIVE=$(ARCHIVE)
+	@$(MAKE) -C $(dir $(subst |,:,$(@:object_%=%))) -f Makefile.$(notdir $@) internal-archive-objects ARCHIVE=$(ARCHIVE)
 
 $(ada_deps): force
 	@$(MAKE) -C $(dir $(subst |,:,$(@:ada_%=%))) -f Makefile.$(notdir $@) internal-ada

@@ -3386,7 +3386,7 @@ package body Make is
 
                   loop
                      declare
-                        Main      : constant String := Mains.Next_Main;
+                        Main : constant String := Mains.Next_Main;
                         --  The name specified on the command line may include
                         --  directory information.
 
@@ -3416,7 +3416,7 @@ package body Make is
                            if Main /= File_Name then
                               declare
                                  Data : constant Project_Data :=
-                                   Projects.Table (Main_Project);
+                                          Projects.Table (Main_Project);
 
                                  Project_Path : constant String :=
                                    Prj.Env.File_Name_Of_Library_Unit_Body
@@ -3478,12 +3478,14 @@ package body Make is
                            end if;
 
                            if not Unique_Compile then
+
                               --  Record the project, if it is the first main
 
                               if Real_Main_Project = No_Project then
                                  Real_Main_Project := Proj;
 
                               elsif Proj /= Real_Main_Project then
+
                                  --  Fail, as the current main is not a source
                                  --  of the same project as the first main.
 
@@ -3557,11 +3559,14 @@ package body Make is
 
                   declare
                      Data : Project_Data := Projects.Table (Main_Project);
+
                      Languages : Variable_Value :=
-                       Prj.Util.Value_Of
-                         (Name_Languages, Data.Decl.Attributes);
+                                   Prj.Util.Value_Of
+                                     (Name_Languages, Data.Decl.Attributes);
+
                      Current : String_List_Id;
                      Element : String_Element;
+
                      Foreign_Language  : Boolean := False;
                      At_Least_One_Main : Boolean := False;
 
@@ -3593,8 +3598,8 @@ package body Make is
                      while Value /= Prj.Nil_String loop
                         Get_Name_String (String_Elements.Table (Value).Value);
 
-                        --  To know if a main is an Ada main, get its project;
-                        --  it should be the project specified on the command
+                        --  To know if a main is an Ada main, get its project.
+                        --  It should be the project specified on the command
                         --  line.
 
                         if (not Foreign_Language) or else
@@ -3616,6 +3621,7 @@ package body Make is
                      --  we put all sources of the main project in the Q.
 
                      if not At_Least_One_Main then
+
                         --  First make sure that the binder and the linker
                         --  will not be invoked.
 
@@ -3739,6 +3745,45 @@ package body Make is
 
          exception
             when Directory_Error =>
+
+               --  This should never happen. But, if it does, display the
+               --  content of the parent directory of the obj dir.
+
+               declare
+                  Parent : constant Dir_Name_Str :=
+                    Dir_Name
+                      (Get_Name_String
+                           (Projects.Table (Main_Project).Object_Directory));
+                  Dir : Dir_Type;
+                  Str : String (1 .. 200);
+                  Last : Natural;
+
+               begin
+                  Write_Str ("Contents of directory """);
+                  Write_Str (Parent);
+                  Write_Line (""":");
+
+                  Open (Dir, Parent);
+
+                  loop
+                     Read (Dir, Str, Last);
+                     exit when Last = 0;
+                     Write_Str ("   ");
+                     Write_Line (Str (1 .. Last));
+                  end loop;
+
+                  Close (Dir);
+
+               exception
+                  when X : others =>
+                     Write_Line ("(unexpected exception)");
+                     Write_Line (Exception_Information (X));
+
+                     if Is_Open (Dir) then
+                        Close (Dir);
+                     end if;
+               end;
+
                Make_Failed ("unable to change working directory to """,
                             Get_Name_String
                              (Projects.Table (Main_Project).Object_Directory),
